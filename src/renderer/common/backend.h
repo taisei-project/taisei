@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_common_backend_h
+#define IGUARD_renderer_common_backend_h
+
 #include "taisei.h"
 
 #include "../api.h"
@@ -129,3 +131,5 @@ extern RendererBackend _r_backend;
 
 void _r_backend_init(void);
 void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base);
+
+#endif // IGUARD_renderer_common_backend_h

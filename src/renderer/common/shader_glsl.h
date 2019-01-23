@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_common_shader_glsl_h
+#define IGUARD_renderer_common_shader_glsl_h
+
 #include "taisei.h"
 
 #include "shader_defs.h"
@@ -38,3 +40,5 @@ typedef struct GLSLSourceOptions {
 bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
 char* glsl_parse_version(const char *str, GLSLVersion *out_version);
 int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version);
+
+#endif // IGUARD_renderer_common_shader_glsl_h

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_fbpair_h
+#define IGUARD_util_fbpair_h
+
 #include "taisei.h"
 
 #include "renderer/api.h"
@@ -36,3 +38,5 @@ void fbpair_destroy(FBPair *pair) attr_nonnull(1);
 void fbpair_swap(FBPair *pair) attr_nonnull(1);
 void fbpair_viewport(FBPair *pair, int x, int y, int w, int h) attr_nonnull(1);
 void fbpair_viewport_rect(FBPair *pair, IntRect vp) attr_nonnull(1);
+
+#endif // IGUARD_util_fbpair_h

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_common_shader_spirv_h
+#define IGUARD_renderer_common_shader_spirv_h
+
 #include "taisei.h"
 
 #include "shader_defs.h"
@@ -45,3 +47,5 @@ void spirv_shutdown_compiler(void);
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options);
+
+#endif // IGUARD_renderer_common_shader_spirv_h

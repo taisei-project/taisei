@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_gl33_vertex_buffer_h
+#define IGUARD_renderer_gl33_vertex_buffer_h
+
 #include "taisei.h"
 
 #include "common_buffer.h"
@@ -22,3 +24,5 @@ void gl33_vertex_buffer_destroy(VertexBuffer *vbuf);
 void gl33_vertex_buffer_invalidate(VertexBuffer *vbuf);
 SDL_RWops* gl33_vertex_buffer_get_stream(VertexBuffer *vbuf);
 void gl33_vertex_buffer_flush(VertexBuffer *vbuf);
+
+#endif // IGUARD_renderer_gl33_vertex_buffer_h

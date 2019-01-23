@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_gl33_common_buffer_h
+#define IGUARD_renderer_gl33_common_buffer_h
+
 #include "taisei.h"
 
 #include "opengl.h"
@@ -53,3 +55,5 @@ void gl33_buffer_flush(CommonBuffer *cbuf);
 	{ code } \
 	gl33_bind_buffer(_tempbind_bindidx, _tempbind_buf_saved); \
 } while(0)
+
+#endif // IGUARD_renderer_gl33_common_buffer_h

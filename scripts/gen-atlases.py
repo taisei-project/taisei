@@ -3,6 +3,7 @@
 from taiseilib.common import (
     ninja,
     run_main,
+    wait_for_futures,
 )
 
 from concurrent.futures import (
@@ -11,7 +12,8 @@ from concurrent.futures import (
 
 from pathlib import Path
 
-import os, sys, pprint
+import os
+import sys
 
 
 def main(args):
@@ -23,8 +25,13 @@ def main(args):
         exit(1)
 
     with ThreadPoolExecutor() as ex:
+        futures = []
+
         for target in args[1:]:
-            ex.submit(lambda: ninja('-vC', build_dir, target))
+            futures.append(ex.submit(lambda: ninja('-vC', build_dir, target)))
+
+        wait_for_futures(futures)
+
 
 if __name__ == '__main__':
     run_main(main)

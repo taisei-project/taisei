@@ -58,3 +58,9 @@ zip_target = run_target('zip',
 
 gen_atlas_command = find_program('./gen-atlas.py')
 gen_atlases_command = find_program('./gen-atlases.py')
+
+upkeep_command = find_program('./upkeep.py')
+
+upkeep_target = run_target('upkeep',
+    command: [upkeep_command, common_taiseilib_args],
+)

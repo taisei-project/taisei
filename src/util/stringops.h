@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_stringops_h
+#define IGUARD_util_stringops_h
+
 #include "taisei.h"
 
 #include <time.h>
@@ -72,3 +74,5 @@ typedef struct SystemTime {
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
 void get_system_time(SystemTime *time) attr_nonnull(1);
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
+
+#endif // IGUARD_util_stringops_h

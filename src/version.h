@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_version_h
+#define IGUARD_version_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -55,3 +57,5 @@ int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCm
 char* taisei_version_tostring(TaiseiVersion *version);
 size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
 size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);
+
+#endif // IGUARD_version_h

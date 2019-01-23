@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_resource_texture_h
+#define IGUARD_resource_texture_h
+
 #include "taisei.h"
 
 #include <SDL.h>
@@ -40,3 +42,5 @@ extern ResourceHandler texture_res_handler;
 
 #define TEX_PATH_PREFIX "res/gfx/"
 #define TEX_EXTENSION ".tex"
+
+#endif // IGUARD_resource_texture_h

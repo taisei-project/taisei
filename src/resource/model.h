@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_resource_model_h
+#define IGUARD_resource_model_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -50,3 +52,5 @@ extern ResourceHandler model_res_handler;
 
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".obj"
+
+#endif // IGUARD_resource_model_h

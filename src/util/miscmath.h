@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_miscmath_h
+#define IGUARD_util_miscmath_h
+
 #include "taisei.h"
 
 #define DEG2RAD (M_PI/180.0)
@@ -62,3 +64,5 @@ typedef float         vec4_noalign[4];
 typedef int          ivec4_noalign[4];
 typedef vec3_noalign  mat3_noalign[3];
 typedef vec4_noalign  mat4_noalign[4];
+
+#endif // IGUARD_util_miscmath_h

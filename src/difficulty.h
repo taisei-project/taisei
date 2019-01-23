@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_difficulty_h
+#define IGUARD_difficulty_h
+
 #include "taisei.h"
 
 #include "color.h"
@@ -32,3 +34,5 @@ const Color* difficulty_color(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
 void difficulty_preload(void);
+
+#endif // IGUARD_difficulty_h

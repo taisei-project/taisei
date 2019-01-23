@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_cli_h
+#define IGUARD_cli_h
+
 #include "taisei.h"
 
 #include "plrmodes.h"
@@ -34,3 +36,5 @@ struct CLIAction {
 
 int cli_args(int argc, char **argv, CLIAction *a);
 void free_cli_action(CLIAction *a);
+
+#endif // IGUARD_cli_h

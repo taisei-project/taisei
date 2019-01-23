@@ -2,7 +2,9 @@
 from contextlib import contextmanager
 from pathlib import Path
 
+import os
 import subprocess
+import concurrent.futures
 
 
 class TaiseiError(RuntimeError):
@@ -39,7 +41,18 @@ def add_common_args(parser, *, depfile=False):
         )
 
 
+def inject_taiseilib_path():
+    tl = str(Path(__file__).parent.resolve())
+    pp = os.environ.get('PYTHONPATH', '').split(os.pathsep)
+
+    if tl not in pp:
+        pp.insert(0, tl)
+        os.environ['PYTHONPATH'] = os.pathsep.join(pp)
+
+
 def run_main(func, args=None):
+    inject_taiseilib_path()
+
     if args is None:
         import sys
         args = sys.argv
@@ -98,3 +111,12 @@ def in_dir(dir):
         yield
     finally:
         os.chdir(str(old))
+
+
+def wait_for_futures(futures):
+    results = []
+
+    for future in concurrent.futures.as_completed(futures):
+        results.append(future.result())
+
+    return results

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_stagetext_h
+#define IGUARD_stagetext_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -67,3 +69,5 @@ void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title,
 void stagetext_table_add_separator(StageTextTable *tbl);
 
 void stagetext_table_test(void);
+
+#endif // IGUARD_stagetext_h

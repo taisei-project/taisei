@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_vfs_pathutil_h
+#define IGUARD_vfs_pathutil_h
+
 #include "taisei.h"
 
 #include <SDL_platform.h>
@@ -28,3 +30,5 @@ void vfs_path_root_prefix(char *path);
 void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, const char *relpath); // NOTE: doesn't normalize
 
 char* vfs_syspath_normalize_inplace(char *path);
+
+#endif // IGUARD_vfs_pathutil_h

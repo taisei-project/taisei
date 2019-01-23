@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_glm_h
+#define IGUARD_util_glm_h
+
 #include "taisei.h"
 
 // This is a wrapper header to include cglm the "right way".
@@ -26,3 +28,5 @@
     #include <cglm/cglm.h>
     PRAGMA(GCC diagnostic pop)
 #endif
+
+#endif // IGUARD_util_glm_h

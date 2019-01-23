@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_vfs_public_h
+#define IGUARD_vfs_public_h
+
 #include "taisei.h"
 
 #include <SDL.h>
@@ -63,3 +65,5 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 void vfs_init(void);
 void vfs_shutdown(void);
 const char* vfs_get_error(void) attr_returns_nonnull;
+
+#endif // IGUARD_vfs_public_h

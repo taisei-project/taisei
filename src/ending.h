@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_ending_h
+#define IGUARD_ending_h
+
 #include "taisei.h"
 
 #include "resource/texture.h"
@@ -69,3 +71,5 @@ void bad_ending_reimu(Ending *e);
 void good_ending_marisa(Ending *e);
 void good_ending_youmu(Ending *e);
 void good_ending_reimu(Ending *e);
+
+#endif // IGUARD_ending_h

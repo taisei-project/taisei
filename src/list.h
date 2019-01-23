@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_list_h
+#define IGUARD_list_h
+
 #include "taisei.h"
 
 typedef struct ListInterface ListInterface;
@@ -177,3 +179,5 @@ ListContainer* list_wrap_container(void *data) attr_nodiscard;
 	alist_free_all(LIST_ANCHOR_CAST(dest, *))
 
 #endif // LIST_NO_MACROS
+
+#endif // IGUARD_list_h

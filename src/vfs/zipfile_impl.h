@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_vfs_zipfile_impl_h
+#define IGUARD_vfs_zipfile_impl_h
+
 #include "taisei.h"
 
 #include <zip.h>
@@ -48,3 +50,5 @@ typedef struct VFSZipPathData {
 } VFSZipPathData;
 
 void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_int64_t idx);
+
+#endif // IGUARD_vfs_zipfile_impl_h

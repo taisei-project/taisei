@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_laser_h
+#define IGUARD_laser_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -79,3 +81,5 @@ float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);
 
 bool laser_intersects_circle(Laser *l, Circle circle);
+
+#endif // IGUARD_laser_h

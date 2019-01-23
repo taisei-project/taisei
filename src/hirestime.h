@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_hirestime_h
+#define IGUARD_hirestime_h
+
 #include "taisei.h"
 
 typedef uint64_t hrtime_t;
@@ -21,3 +23,5 @@ typedef int64_t shrtime_t;
 void time_init(void);
 void time_shutdown(void);
 hrtime_t time_get(void);
+
+#endif // IGUARD_hirestime_h

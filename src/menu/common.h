@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_menu_common_h
+#define IGUARD_menu_common_h
+
 #include "taisei.h"
 
 #include "menu.h"
@@ -20,3 +22,5 @@ void animate_menu_list(MenuData *m);
 void animate_menu_list_entries(MenuData *m);
 void animate_menu_list_entry(MenuData *m, int i);
 void menu_commonaction_close(MenuData *menu, void *arg);
+
+#endif // IGUARD_menu_common_h

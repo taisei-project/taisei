@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_entity_h
+#define IGUARD_entity_h
+
 #include "taisei.h"
 
 #include "objectpool.h"
@@ -141,3 +143,5 @@ void ent_hook_pre_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_pre_draw(EntityDrawHookCallback callback);
 void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
+
+#endif // IGUARD_entity_h

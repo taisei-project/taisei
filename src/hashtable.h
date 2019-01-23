@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_hashtable_h
+#define IGUARD_hashtable_h
+
 #include "taisei.h"
 
 /*
@@ -61,3 +63,5 @@ extern uint32_t (*htutil_hashfunc_string)(uint32_t crc, const char *str);
 
 // NOTE: For the hashtable API, see hashtable.inc.h
 // NOTE: For type-generic wrappers around the API, see hashtable_predefs.inc.h
+
+#endif // IGUARD_hashtable_h

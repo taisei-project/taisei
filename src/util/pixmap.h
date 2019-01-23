@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_pixmap_h
+#define IGUARD_util_pixmap_h
+
 #include "taisei.h"
 
 #include <SDL.h>
@@ -167,3 +169,5 @@ bool pixmap_load_stream_tga(SDL_RWops *stream, Pixmap *dst) attr_nonnull(1, 2) a
 
 bool pixmap_check_filename(const char *path);
 char* pixmap_source_path(const char *prefix, const char *path);
+
+#endif // IGUARD_util_pixmap_h

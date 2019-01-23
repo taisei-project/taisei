@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_log_h
+#define IGUARD_log_h
+
 #include "taisei.h"
 
 #include <SDL.h>
@@ -94,3 +96,5 @@ noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *
 	#undef UNREACHABLE
 	#define UNREACHABLE log_fatal("This code should never be reached")
 #endif
+
+#endif // IGUARD_log_h

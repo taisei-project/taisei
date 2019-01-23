@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_audio_mixer_h
+#define IGUARD_audio_mixer_h
+
 #include "taisei.h"
 
 #include <SDL_mixer.h>
@@ -28,3 +30,5 @@ typedef struct MixerInternalMusic {
 
 char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm);
 bool audio_mixer_check_sound_path(const char *path, bool isbgm);
+
+#endif // IGUARD_audio_mixer_h

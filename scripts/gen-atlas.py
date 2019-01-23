@@ -21,7 +21,6 @@ from contextlib import (
 
 from concurrent.futures import (
     ThreadPoolExecutor,
-    as_completed,
 )
 
 from PIL import (
@@ -32,6 +31,7 @@ from taiseilib.common import (
     run_main,
     update_text_file,
     TaiseiError,
+    wait_for_futures,
 )
 
 
@@ -321,10 +321,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             futures.append(process)
 
         # Wait for subprocesses to complete.
-        # The loop is needed in order to present exceptions.
-        for future in as_completed(futures):
-            future.result()
-
+        wait_for_futures(futures)
         executor.shutdown(wait=True)
 
         # Only now, if everything is ok so far, copy everything to the destination, possibly overwriting previous results

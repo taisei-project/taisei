@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_resource_resource_h
+#define IGUARD_resource_resource_h
+
 #include "taisei.h"
 
 #include "hashtable.h"
@@ -112,3 +114,5 @@ void* resource_for_each(ResourceType type, void* (*callback)(const char *name, R
 void resource_util_strip_ext(char *path);
 char* resource_util_basename(const char *prefix, const char *path);
 const char* resource_util_filename(const char *path);
+
+#endif // IGUARD_resource_resource_h

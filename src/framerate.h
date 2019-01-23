@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_framerate_h
+#define IGUARD_framerate_h
+
 #include "taisei.h"
 
 #include "hirestime.h"
@@ -34,3 +36,5 @@ uint32_t get_effective_frameskip(void);
 void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void *arg, uint32_t fps);
 void fpscounter_reset(FPSCounter *fps);
 void fpscounter_update(FPSCounter *fps);
+
+#endif // IGUARD_framerate_h

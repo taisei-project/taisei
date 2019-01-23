@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_replay_h
+#define IGUARD_replay_h
+
 #include "taisei.h"
 
 #include "stage.h"
@@ -229,3 +231,5 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events);
 void replay_play(Replay *rpy, int firstidx);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
+
+#endif // IGUARD_replay_h

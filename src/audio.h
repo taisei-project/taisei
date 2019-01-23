@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_audio_h
+#define IGUARD_audio_h
+
 #include "taisei.h"
 
 #include "resource/sfx.h"
@@ -79,3 +81,5 @@ void fade_bgm(double fadetime);
 void resume_bgm(void);
 void save_bgm(void); // XXX: this is broken
 void restore_bgm(void); // XXX: this is broken
+
+#endif // IGUARD_audio_h

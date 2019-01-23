@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_video_h
+#define IGUARD_video_h
+
 #include "taisei.h"
 
 // FIXME: This is just for IntRect, which probably should be placed elsewhere.
@@ -51,3 +53,5 @@ bool video_is_resizable(void);
 bool video_can_change_resolution(void);
 void video_take_screenshot(void);
 void video_swap_buffers(void);
+
+#endif // IGUARD_video_h

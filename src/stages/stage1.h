@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_stages_stage1_h
+#define IGUARD_stages_stage1_h
+
 #include "taisei.h"
 
 #include "stage.h"
@@ -43,3 +45,5 @@ extern StageProcs stage1_spell_procs;
 #ifdef SPELL_BENCHMARK
 extern AttackInfo stage1_spell_benchmark;
 #endif
+
+#endif // IGUARD_stages_stage1_h

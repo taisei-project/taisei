@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_compat_h
+#define IGUARD_util_compat_h
+
 #include "taisei.h"
 
 #include <stdbool.h>
@@ -201,3 +203,5 @@ typedef signed char schar;
 #else
 	#define attr_designated_init
 #endif
+
+#endif // IGUARD_util_compat_h

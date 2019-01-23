@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_gl33_index_buffer_h
+#define IGUARD_renderer_gl33_index_buffer_h
+
 #include "taisei.h"
 
 #include "common_buffer.h"
@@ -28,3 +30,5 @@ size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf);
 void gl33_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]);
 void gl33_index_buffer_destroy(IndexBuffer *ibuf);
 void gl33_index_buffer_flush(IndexBuffer *ibuf);
+
+#endif // IGUARD_renderer_gl33_index_buffer_h

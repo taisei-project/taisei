@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_graphics_h
+#define IGUARD_util_graphics_h
+
 #include "taisei.h"
 
 #include "fbpair.h"
@@ -55,3 +57,5 @@ void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, F
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 void fbutil_destroy_attachments(Framebuffer *fb);
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
+
+#endif // IGUARD_util_graphics_h

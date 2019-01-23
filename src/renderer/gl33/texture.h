@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_gl33_texture_h
+#define IGUARD_renderer_gl33_texture_h
+
 #include "taisei.h"
 
 #include "gl33.h"
@@ -42,3 +44,5 @@ void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
 
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type);
+
+#endif // IGUARD_renderer_gl33_texture_h

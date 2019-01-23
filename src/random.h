@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_random_h
+#define IGUARD_random_h
+
 #include "taisei.h"
 
 #define CMWC_CYCLE 4096 // as Marsaglia recommends
@@ -52,3 +54,5 @@ float __anfrand(int idx, const char *file, uint line);
 #define TSRAND_ARRAY_LIMIT 64
 #define srand USE_tsrand_seed_INSTEAD_OF_srand
 #define rand USE_tsrand_INSTEAD_OF_rand
+
+#endif // IGUARD_random_h

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_common_state_h
+#define IGUARD_renderer_common_state_h
+
 #include "taisei.h"
 
 #include "../api.h"
@@ -66,3 +68,5 @@ void _r_state_touch_vsync(void);
 
 void _r_state_init(void);
 void _r_state_shutdown(void);
+
+#endif // IGUARD_renderer_common_state_h

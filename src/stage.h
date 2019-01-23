@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_stage_h
+#define IGUARD_stage_h
+
 #include "taisei.h"
 
 #include "projectile.h"
@@ -135,3 +137,5 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 #include "stages/stage4.h"
 #include "stages/stage5.h"
 #include "stages/stage6.h"
+
+#endif // IGUARD_stage_h

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_stageutils_h
+#define IGUARD_stageutils_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -53,3 +55,5 @@ vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r);
 vec3 **single3dpos(vec3 q, float maxrange, vec3 p);
 
 void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);
+
+#endif // IGUARD_stageutils_h

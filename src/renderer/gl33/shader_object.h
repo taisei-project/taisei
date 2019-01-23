@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_renderer_gl33_shader_object_h
+#define IGUARD_renderer_gl33_shader_object_h
+
 #include "taisei.h"
 
 #include "resource/shader_object.h"
@@ -24,3 +26,5 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source);
 void gl33_shader_object_destroy(ShaderObject *shobj);
 void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label);
 const char* gl33_shader_object_get_debug_label(ShaderObject *shobj);
+
+#endif // IGUARD_renderer_gl33_shader_object_h

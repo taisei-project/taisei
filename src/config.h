@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_config_h
+#define IGUARD_config_h
+
 #include "taisei.h"
 
 #include <SDL_keycode.h>
@@ -222,3 +224,5 @@ void config_save(void);
 int config_set_int(ConfigIndex idx, int val);
 double config_set_float(ConfigIndex idx, double val);
 char* config_set_str(ConfigIndex idx, const char *val) attr_nonnull(2) attr_returns_nonnull;
+
+#endif // IGUARD_config_h

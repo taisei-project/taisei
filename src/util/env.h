@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_env_h
+#define IGUARD_util_env_h
+
 #include "taisei.h"
 
 const char* env_get_string(const char *var, const char *fallback)
@@ -60,3 +62,5 @@ void env_set_double(const char *var, double val, bool override)
 		double      : env_set_double, \
 		float       : env_set_double \
 	)(var, val, override))
+
+#endif // IGUARD_util_env_h

@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_projectile_h
+#define IGUARD_projectile_h
+
 #include "taisei.h"
 
 #include "util.h"
@@ -215,3 +217,5 @@ void projectiles_preload(void);
 void projectiles_free(void);
 
 complex projectile_graze_size(Projectile *p);
+
+#endif // IGUARD_projectile_h

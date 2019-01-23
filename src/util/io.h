@@ -2,11 +2,13 @@
  * This software is licensed under the terms of the MIT-License
  * See COPYING for further information.
  * ---
- * Copyright (c) 2011-2018, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2018, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#pragma once
+#ifndef IGUARD_util_io_h
+#define IGUARD_util_io_h
+
 #include "taisei.h"
 
 #include <SDL.h>
@@ -20,3 +22,5 @@ size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) attr_printf(2, 3);
 void tsfprintf(FILE *out, const char *restrict fmt, ...) attr_printf(2, 3);
 
 char* try_path(const char *prefix, const char *name, const char *ext);
+
+#endif // IGUARD_util_io_h
