@@ -15,7 +15,7 @@ endif
 if angle_enabled and host_machine.system() == 'windows'
     angle_launcher = 'taisei-angle.bat'
     custom_target(angle_launcher,
-        command : [eolconv, host_eol_style, '--no-bom', '@INPUT@', '@OUTPUT@'],
+        command : [eolconv_command, host_eol_style, '--no-bom', '@INPUT@', '@OUTPUT@'],
         input : angle_launcher,
         output : angle_launcher,
         install : true,

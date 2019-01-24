@@ -682,7 +682,7 @@ Boss* stage3_spawn_scuttle(complex pos) {
 	return scuttle;
 }
 
-Boss* stage3_create_midboss(void) {
+static Boss* stage3_create_midboss(void) {
 	Boss *scuttle = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
 
 	boss_add_attack(scuttle, AT_Move, "Introduction", 1, 0, scuttle_intro, NULL);
@@ -1325,7 +1325,7 @@ Boss* stage3_spawn_wriggle_ex(complex pos) {
 	return wriggle;
 }
 
-Boss* stage3_create_boss(void) {
+static Boss* stage3_create_boss(void) {
 	Boss *wriggle = stage3_spawn_wriggle_ex(VIEWPORT_W/2 - 200.0*I);
 
 	boss_add_attack(wriggle, AT_Move, "Introduction", 2, 0, stage3_boss_intro, NULL);
@@ -1340,8 +1340,6 @@ Boss* stage3_create_boss(void) {
 	boss_start_attack(wriggle, wriggle->attacks);
 	return wriggle;
 }
-
-void stage3_skip(int t);
 
 void stage3_events(void) {
 	TIMER(&global.timer);

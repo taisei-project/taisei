@@ -17,19 +17,19 @@
 
 // --- Menu entry <-> config option binding stuff --- //
 
-void bind_init(OptionBinding *bind) {
+static void bind_init(OptionBinding *bind) {
 	memset(bind, 0, sizeof(OptionBinding));
 	bind->selected      = -1;
 	bind->configentry   = -1;
 }
 
-OptionBinding* bind_new(void) {
+static OptionBinding* bind_new(void) {
 	OptionBinding *bind = malloc(sizeof(OptionBinding));
 	bind_init(bind);
 	return bind;
 }
 
-void bind_free(OptionBinding *bind) {
+static void bind_free(OptionBinding *bind) {
 	int i;
 
 	if(bind->values) {
@@ -39,14 +39,14 @@ void bind_free(OptionBinding *bind) {
 	}
 }
 
-OptionBinding* bind_get(MenuData *m, int idx) {
+static OptionBinding* bind_get(MenuData *m, int idx) {
 	MenuEntry *e = m->entries + idx;
 	return e->arg == m? NULL : e->arg;
 }
 
 // BT_IntValue: integer and boolean options
 // Values are defined with bind_addvalue or bind_setrange
-OptionBinding* bind_option(int cfgentry, BindingGetter getter, BindingSetter setter) {
+static OptionBinding* bind_option(int cfgentry, BindingGetter getter, BindingSetter setter) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_IntValue;
 	bind->configentry = cfgentry;
@@ -58,7 +58,7 @@ OptionBinding* bind_option(int cfgentry, BindingGetter getter, BindingSetter set
 }
 
 // BT_KeyBinding: keyboard action mapping options
-OptionBinding* bind_keybinding(int cfgentry) {
+static OptionBinding* bind_keybinding(int cfgentry) {
 	OptionBinding *bind = bind_new();
 
 	bind->configentry = cfgentry;
@@ -68,7 +68,7 @@ OptionBinding* bind_keybinding(int cfgentry) {
 }
 
 // BT_GamepadKeyBinding: gamepad action mapping options
-OptionBinding* bind_gpbinding(int cfgentry) {
+static OptionBinding* bind_gpbinding(int cfgentry) {
 	OptionBinding *bind = bind_new();
 
 	bind->configentry = cfgentry;
@@ -78,7 +78,7 @@ OptionBinding* bind_gpbinding(int cfgentry) {
 }
 
 // BT_GamepadAxisBinding: gamepad axis mapping options
-OptionBinding* bind_gpaxisbinding(int cfgentry) {
+static OptionBinding* bind_gpaxisbinding(int cfgentry) {
 	OptionBinding *bind = bind_new();
 
 	bind->configentry = cfgentry;
@@ -104,7 +104,7 @@ static int bind_gpdev_set(OptionBinding *b, int v) {
 }
 
 // BT_GamepadDevice: dynamic device list
-OptionBinding* bind_gpdevice(int cfgentry) {
+static OptionBinding* bind_gpdevice(int cfgentry) {
 	OptionBinding *bind = bind_new();
 
 	bind->configentry = cfgentry;
@@ -122,7 +122,7 @@ OptionBinding* bind_gpdevice(int cfgentry) {
 }
 
 // BT_StrValue: with a half-assed "textbox"
-OptionBinding* bind_stroption(ConfigIndex cfgentry) {
+static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_StrValue;
 	bind->configentry = cfgentry;
@@ -132,7 +132,7 @@ OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 }
 
 // BT_Resolution: super-special binding type for the resolution setting
-void bind_resolution_update(OptionBinding *bind) {
+static void bind_resolution_update(OptionBinding *bind) {
 	bind->valcount = video.mcount;
 
 	for(int i = 0; i < video.mcount; ++i) {
@@ -143,7 +143,7 @@ void bind_resolution_update(OptionBinding *bind) {
 	}
 }
 
-OptionBinding* bind_resolution(void) {
+static OptionBinding* bind_resolution(void) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_Resolution;
 	bind->selected = -1;
@@ -152,7 +152,7 @@ OptionBinding* bind_resolution(void) {
 }
 
 // BT_Scale: float values clamped to a range
-OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
+static OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 	OptionBinding *bind = bind_new();
 	bind->type = BT_Scale;
 	bind->configentry = cfgentry;
@@ -165,7 +165,7 @@ OptionBinding* bind_scale(int cfgentry, float smin, float smax, float step) {
 }
 
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
-OptionBinding* bind_getinputblocking(MenuData *m) {
+static OptionBinding* bind_getinputblocking(MenuData *m) {
 	int i;
 	for(i = 0; i < m->ecount; ++i) {
 		OptionBinding *bind = bind_get(m, i);
@@ -176,20 +176,21 @@ OptionBinding* bind_getinputblocking(MenuData *m) {
 }
 
 // Adds a value to a BT_IntValue type binding
-int bind_addvalue(OptionBinding *b, char *val) {
+static int bind_addvalue(OptionBinding *b, char *val) {
 	b->values = realloc(b->values, ++b->valcount * sizeof(char*));
 	b->values[b->valcount-1] = malloc(strlen(val) + 1);
 	strcpy(b->values[b->valcount-1], val);
 	return b->valcount-1;
 }
 
-void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
+attr_unused
+static void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
 	b->valrange_min = vmin;
 	b->valrange_max = vmax;
 }
 
 // Called to select a value of a BT_IntValue type binding by index
-int bind_setvalue(OptionBinding *b, int v) {
+static int bind_setvalue(OptionBinding *b, int v) {
 	if(b->setter)
 		return b->selected = b->setter(b, v);
 	else
@@ -197,7 +198,7 @@ int bind_setvalue(OptionBinding *b, int v) {
 }
 
 // Called to get the selected value of a BT_IntValue type binding by index
-int bind_getvalue(OptionBinding *b) {
+static int bind_getvalue(OptionBinding *b) {
 	if(b->getter) {
 		if(b->selected >= b->valcount && b->valcount) {
 			b->selected = 0;
@@ -213,7 +214,7 @@ int bind_getvalue(OptionBinding *b) {
 }
 
 // Selects the next to current value of a BT_IntValue type binding
-int bind_setnext(OptionBinding *b) {
+static int bind_setnext(OptionBinding *b) {
 	int s = b->selected + 1;
 
 	if(b->valrange_max) {
@@ -227,7 +228,7 @@ int bind_setnext(OptionBinding *b) {
 }
 
 // Selects the previous to current value of a BT_IntValue type binding
-int bind_setprev(OptionBinding *b) {
+static int bind_setprev(OptionBinding *b) {
 	int s = b->selected - 1;
 
 	if(b->valrange_max) {
@@ -240,11 +241,11 @@ int bind_setprev(OptionBinding *b) {
 	return bind_setvalue(b, s);
 }
 
-void bind_setdependence(OptionBinding *b, BindingDependence dep) {
+static void bind_setdependence(OptionBinding *b, BindingDependence dep) {
 	b->dependence = dep;
 }
 
-bool bind_isactive(OptionBinding *b) {
+static bool bind_isactive(OptionBinding *b) {
 	if(!b->dependence)
 		return true;
 	return b->dependence();
@@ -252,23 +253,23 @@ bool bind_isactive(OptionBinding *b) {
 
 // --- Shared binding callbacks --- //
 
-int bind_common_onoff_get(OptionBinding *b) {
+static int bind_common_onoff_get(OptionBinding *b) {
 	return !config_get_int(b->configentry);
 }
 
-int bind_common_onoff_set(OptionBinding *b, int v) {
+static int bind_common_onoff_set(OptionBinding *b, int v) {
 	return !config_set_int(b->configentry, !v);
 }
 
-int bind_common_onoff_inverted_get(OptionBinding *b) {
+static int bind_common_onoff_inverted_get(OptionBinding *b) {
 	return config_get_int(b->configentry);
 }
 
-int bind_common_onoff_inverted_set(OptionBinding *b, int v) {
+static int bind_common_onoff_inverted_set(OptionBinding *b, int v) {
 	return config_set_int(b->configentry, v);
 }
 
-int bind_common_onoffplus_get(OptionBinding *b) {
+static int bind_common_onoffplus_get(OptionBinding *b) {
 	int v = config_get_int(b->configentry);
 
 	if(v > 1)
@@ -276,7 +277,7 @@ int bind_common_onoffplus_get(OptionBinding *b) {
 	return !v;
 }
 
-int bind_common_onoffplus_set(OptionBinding *b, int v) {
+static int bind_common_onoffplus_set(OptionBinding *b, int v) {
 	if(v > 1)
 		return config_set_int(b->configentry, v);
 	return !config_set_int(b->configentry, !v);
@@ -285,34 +286,34 @@ int bind_common_onoffplus_set(OptionBinding *b, int v) {
 #define bind_common_int_get bind_common_onoff_inverted_get
 #define bind_common_int_set bind_common_onoff_inverted_set
 
-int bind_common_intplus1_get(OptionBinding *b) {
+static int bind_common_intplus1_get(OptionBinding *b) {
 	return config_get_int(b->configentry) - 1;
 }
 
-int bind_common_intplus1_set(OptionBinding *b, int v) {
+static int bind_common_intplus1_set(OptionBinding *b, int v) {
 	return config_set_int(b->configentry, v + 1) - 1;
 }
 
 
 // --- Binding callbacks for individual options --- //
 
-bool bind_audio_dependence(void) {
+static bool bind_audio_dependence(void) {
 	return audio_backend_initialized();
 }
 
-bool bind_resizable_dependence(void) {
+static bool bind_resizable_dependence(void) {
 	return !config_get_int(CONFIG_FULLSCREEN);
 }
 
-bool bind_bgquality_dependence(void) {
+static bool bind_bgquality_dependence(void) {
 	return !config_get_int(CONFIG_NO_STAGEBG);
 }
 
-bool bind_resolution_dependence(void) {
+static bool bind_resolution_dependence(void) {
 	return video_can_change_resolution();
 }
 
-int bind_resolution_set(OptionBinding *b, int v) {
+static int bind_resolution_set(OptionBinding *b, int v) {
 	if(v >= 0) {
 		VideoMode *m = video.modes + v;
 		config_set_int(CONFIG_VID_WIDTH, m->width);
@@ -322,17 +323,17 @@ int bind_resolution_set(OptionBinding *b, int v) {
 	return v;
 }
 
-int bind_power_set(OptionBinding *b, int v) {
+static int bind_power_set(OptionBinding *b, int v) {
 	return config_set_int(b->configentry, v * 100) / 100;
 }
 
-int bind_power_get(OptionBinding *b) {
+static int bind_power_get(OptionBinding *b) {
 	return config_get_int(b->configentry) / 100;
 }
 
 // --- Creating, destroying, filling the menu --- //
 
-void destroy_options_menu(MenuData *m) {
+static void destroy_options_menu(MenuData *m) {
 	for(int i = 0; i < m->ecount; ++i) {
 		OptionBinding *bind = bind_get(m, i);
 
@@ -363,7 +364,7 @@ static void do_nothing(MenuData *menu, void *arg) { }
 static void update_options_menu(MenuData *menu);
 void options_menu_input(MenuData*);
 
-void create_options_menu_basic(MenuData *m, char *s) {
+static void create_options_menu_basic(MenuData *m, char *s) {
 	create_menu(m);
 	m->transition = TransMenuDark;
 	m->flags = MF_Abortable;
@@ -376,7 +377,7 @@ void create_options_menu_basic(MenuData *m, char *s) {
 
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 
-void options_sub_video(MenuData *parent, void *arg) {
+static void options_sub_video(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
 	m = &menu;
@@ -455,7 +456,8 @@ void options_sub_video(MenuData *parent, void *arg) {
 	parent->frames = 0;
 }
 
-void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
+attr_unused
+static void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	int i = 0; for(i = 0; i <= ma; ++i) {
 		char tmp[16];
 		snprintf(tmp, 16, "%i", i);
@@ -467,7 +469,7 @@ static bool gamepad_enabled_depencence(void) {
 	return config_get_int(CONFIG_GAMEPAD_ENABLED);
 }
 
-void options_sub_gamepad_controls(MenuData *parent, void *arg) {
+static void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 
@@ -516,7 +518,7 @@ void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	parent->frames = 0;
 }
 
-void options_sub_gamepad(MenuData *parent, void *arg) {
+static void options_sub_gamepad(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	OptionBinding *b;
 	m = &menu;
@@ -576,7 +578,7 @@ void options_sub_gamepad(MenuData *parent, void *arg) {
 	free(gpdev);
 }
 
-void options_sub_controls(MenuData *parent, void *arg) {
+static void options_sub_controls(MenuData *parent, void *arg) {
 	MenuData menu, *m;
 	m = &menu;
 

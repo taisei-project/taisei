@@ -23,9 +23,6 @@ bool check_texture_path(const char *path);
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
 void end_draw_texture(void);
 
-void draw_texture_with_size(float x, float y, float w, float h, const char *name);
-void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex);
-
 void fill_viewport(float xoff, float yoff, float ratio, const char *name);
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex);
 

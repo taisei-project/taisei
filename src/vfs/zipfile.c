@@ -118,7 +118,7 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 	}
 }
 
-void vfs_zipfile_free_tls(VFSZipFileTLS *tls) {
+static void vfs_zipfile_free_tls(VFSZipFileTLS *tls) {
 	if(tls->zip) {
 		zip_discard(tls->zip);
 	}

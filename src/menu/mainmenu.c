@@ -24,22 +24,6 @@
 #include "version.h"
 #include "plrmodes.h"
 
-void enter_stagepractice(MenuData *menu, void *arg) {
-	MenuData m;
-
-	do {
-		create_difficulty_menu(&m);
-
-		if(menu_loop(&m) < 0) {
-			return;
-		}
-
-		global.diff = progress.game_settings.difficulty;
-		create_stgpract_menu(&m, global.diff);
-		menu_loop(&m);
-	} while(m.selected < 0 || m.selected == m.ecount - 1);
-}
-
 static MenuEntry *spell_practice_entry;
 static MenuEntry *stage_practice_entry;
 
@@ -70,7 +54,14 @@ static void begin_main_menu(MenuData *m) {
 	start_bgm("menu");
 }
 
-static void update_main_menu(MenuData *menu);
+static void update_main_menu(MenuData *menu) {
+	menu->drawdata[1] += (text_width(get_font("big"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
+	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
+
+	for(int i = 0; i < menu->ecount; i++) {
+		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
+	}
+}
 
 void create_main_menu(MenuData *m) {
 	create_menu(m);
@@ -87,7 +78,7 @@ void create_main_menu(MenuData *m) {
 #endif
 	add_menu_entry(m, "Replays", enter_replayview, NULL);
 	add_menu_entry(m, "Options", enter_options, NULL);
-	add_menu_entry(m, "Quit", menu_commonaction_close, NULL)->transition = TransFadeBlack;;
+	add_menu_entry(m, "Quit", menu_commonaction_close, NULL)->transition = TransFadeBlack;
 
 	stage_practice_entry = m->entries + 2;
 	spell_practice_entry = m->entries + 3;
@@ -97,15 +88,6 @@ void create_main_menu(MenuData *m) {
 void draw_main_menu_bg(MenuData* menu) {
 	r_color4(1, 1, 1, 1);
 	fill_screen("menu/mainmenubg");
-}
-
-static void update_main_menu(MenuData *menu) {
-	menu->drawdata[1] += (text_width(get_font("big"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
-	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
-
-	for(int i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
-	}
 }
 
 void draw_main_menu(MenuData *menu) {

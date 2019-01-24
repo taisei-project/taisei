@@ -29,7 +29,7 @@ static Dialog *stage6_dialog_pre_final(void) {
 	return d;
 }
 
-int stage6_hacker(Enemy *e, int t) {
+static int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
@@ -54,7 +54,7 @@ int stage6_hacker(Enemy *e, int t) {
 	return 1;
 }
 
-int stage6_side(Enemy *e, int t) {
+static int stage6_side(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
@@ -86,7 +86,7 @@ int stage6_side(Enemy *e, int t) {
 	return 1;
 }
 
-int wait_proj(Projectile *p, int t) {
+static int wait_proj(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -104,7 +104,7 @@ int wait_proj(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int stage6_flowermine(Enemy *e, int t) {
+static int stage6_flowermine(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
@@ -138,7 +138,7 @@ void scythe_common(Enemy *e, int t) {
 	e->args[1] += cimag(e->args[1]);
 }
 
-int scythe_mid(Enemy *e, int t) {
+static int scythe_mid(Enemy *e, int t) {
 	TIMER(&t);
 	complex n;
 
@@ -183,7 +183,7 @@ int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
-void ScytheTrail(Projectile *p, int t) {
+static void ScytheTrail(Projectile *p, int t) {
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
@@ -221,7 +221,7 @@ void Scythe(Enemy *e, int t, bool render) {
 	);
 }
 
-int scythe_intro(Enemy *e, int t) {
+static int scythe_intro(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 0;
@@ -264,7 +264,7 @@ void elly_intro(Boss *b, int t) {
 		global.dialog = stage6_dialog_pre_boss();
 }
 
-int scythe_infinity(Enemy *e, int t) {
+static int scythe_infinity(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -325,7 +325,7 @@ static Enemy* find_scythe(void) {
 	return NULL;
 }
 
-void elly_frequency(Boss *b, int t) {
+static void elly_frequency(Boss *b, int t) {
 	TIMER(&t);
 	Enemy *scythe;
 
@@ -352,7 +352,7 @@ static void elly_clap(Boss *b, int claptime) {
 	aniplayer_queue(&b->ani, "main", 0);
 }
 
-int scythe_newton(Enemy *e, int t) {
+static int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -473,7 +473,7 @@ void elly_newton(Boss *b, int t) {
 	}
 }
 
-int scythe_kepler(Enemy *e, int t) {
+static int scythe_kepler(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -502,7 +502,7 @@ static ProjPrototype* kepler_pick_bullet(int tier) {
 	}
 }
 
-int kepler_bullet(Projectile *p, int t) {
+static int kepler_bullet(Projectile *p, int t) {
 	TIMER(&t);
 	int tier = round(creal(p->args[1]));
 
@@ -597,7 +597,7 @@ void elly_kepler(Boss *b, int t) {
 	}
 }
 
-void elly_frequency2(Boss *b, int t) {
+static void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
 
 	AT(0) {
@@ -621,7 +621,7 @@ void elly_frequency2(Boss *b, int t) {
 	}
 }
 
-complex maxwell_laser(Laser *l, float t) {
+static complex maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
 		l->shader = r_shader_get_optional("lasers/maxwell");
@@ -631,7 +631,7 @@ complex maxwell_laser(Laser *l, float t) {
 	return l->pos + l->args[0]*(t+I*creal(l->args[2])*t*0.02*sin(0.1*t+cimag(l->args[2])));
 }
 
-void maxwell_laser_logic(Laser *l, int t) {
+static void maxwell_laser_logic(Laser *l, int t) {
 	static_laser(l, t);
 	TIMER(&t);
 
@@ -671,7 +671,7 @@ static void draw_baryon_connector(complex a, complex b) {
 	r_mat_pop();
 }
 
-void Baryon(Enemy *e, int t, bool render) {
+static void Baryon(Enemy *e, int t, bool render) {
 	if(render) {
 		// the center piece draws the nodes; applying the postprocessing effect is easier this way.
 		return;
@@ -692,22 +692,22 @@ void Baryon(Enemy *e, int t, bool render) {
 	*/
 }
 
-void draw_baryons(Enemy *e, int t) {
+static void draw_baryons(Enemy *bcenter, int t) {
 	// r_color4(1, 1, 1, 0.8);
 	r_mat_push();
-	r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+	r_mat_translate(creal(bcenter->pos), cimag(bcenter->pos), 0);
 	r_mat_rotate_deg(2*t, 0, 0, 1);
 	draw_sprite_batched(0, 0, "stage6/baryon_center");
 	r_mat_pop();
-	draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+	draw_sprite_batched(creal(bcenter->pos), cimag(bcenter->pos), "stage6/baryon");
 	r_color4(1, 1, 1, 1);
 
-	Enemy *link0 = REF(creal(e->args[1]));
-	Enemy *link1 = REF(cimag(e->args[1]));
+	Enemy *link0 = REF(creal(bcenter->args[1]));
+	Enemy *link1 = REF(cimag(bcenter->args[1]));
 
 	if(link0 && link1) {
-		draw_baryon_connector(e->pos, link0->pos);
-		draw_baryon_connector(e->pos, link1->pos);
+		draw_baryon_connector(bcenter->pos, link0->pos);
+		draw_baryon_connector(bcenter->pos, link1->pos);
 	}
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
@@ -722,7 +722,7 @@ void draw_baryons(Enemy *e, int t) {
 	}
 }
 
-void BaryonCenter(Enemy *e, int t, bool render) {
+static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 	if(!render) {
 		/*
 		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
@@ -745,7 +745,7 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	}
 
 	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
-		draw_baryons(e, t);
+		draw_baryons(bcenter, t);
 		return;
 	}
 
@@ -776,7 +776,7 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	r_state_pop();
 
 	r_shader("sprite_default");
-	draw_baryons(e, t);
+	draw_baryons(bcenter, t);
 
 	r_shader_standard();
 	fbpair_swap(&baryon_fbpair);
@@ -786,7 +786,7 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	r_color4(1, 1, 1, 1);
 	r_framebuffer(baryon_fbpair.front);
 	r_shader("sprite_default");
-	draw_baryons(e, t);
+	draw_baryons(bcenter, t);
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == Baryon) {
@@ -803,7 +803,7 @@ void BaryonCenter(Enemy *e, int t, bool render) {
 	}
 }
 
-int baryon_unfold(Enemy *baryon, int t) {
+static int baryon_unfold(Enemy *baryon, int t) {
 	if(t < 0)
 		return 1; // not catching death for references! because there will be no death!
 
@@ -836,7 +836,7 @@ int baryon_unfold(Enemy *baryon, int t) {
 	return 1;
 }
 
-int baryon_center(Enemy *e, int t) {
+static int baryon_center(Enemy *e, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(creal(e->args[1]));
 		free_ref(cimag(e->args[1]));
@@ -849,7 +849,7 @@ int baryon_center(Enemy *e, int t) {
 	return 1;
 }
 
-int scythe_explode(Enemy *e, int t) {
+static int scythe_explode(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 0;
@@ -898,7 +898,7 @@ void elly_spawn_baryons(complex pos) {
 	e->ent.draw_layer = LAYER_BACKGROUND;
 }
 
-void elly_paradigm_shift(Boss *b, int t) {
+static void elly_paradigm_shift(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
 	} else if(t == 0) {
@@ -943,7 +943,7 @@ static void set_baryon_rule(EnemyLogicRule r) {
 	}
 }
 
-int eigenstate_proj(Projectile *p, int t) {
+static int eigenstate_proj(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -955,7 +955,7 @@ int eigenstate_proj(Projectile *p, int t) {
 	return asymptotic(p, t);
 }
 
-int baryon_eigenstate(Enemy *e, int t) {
+static int baryon_eigenstate(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
 
@@ -990,7 +990,7 @@ int baryon_eigenstate(Enemy *e, int t) {
 	return 1;
 }
 
-int baryon_reset(Enemy *baryon, int t) {
+static int baryon_reset(Enemy *baryon, int t) {
 	if(t < 0) {
 		return 1;
 	}
@@ -1020,7 +1020,7 @@ void elly_eigenstate(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 }
 
-int broglie_particle(Projectile *p, int t) {
+static int broglie_particle(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[0]);
 		return ACTION_ACK;
@@ -1075,7 +1075,7 @@ int broglie_particle(Projectile *p, int t) {
 
 #define BROGLIE_PERIOD (420 - 30 * global.diff)
 
-void broglie_laser_logic(Laser *l, int t) {
+static void broglie_laser_logic(Laser *l, int t) {
 	double hue = cimag(l->args[3]);
 
 	if(t == EVENT_BIRTH) {
@@ -1092,7 +1092,7 @@ void broglie_laser_logic(Laser *l, int t) {
 	l->width_exponent = 1.0 - 0.5 * charge;
 }
 
-int broglie_charge(Projectile *p, int t) {
+static int broglie_charge(Projectile *p, int t) {
 	if(t == EVENT_BIRTH) {
 		play_sound_ex("shot3", 10, false);
 	}
@@ -1197,7 +1197,7 @@ int broglie_charge(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int baryon_broglie(Enemy *e, int t) {
+static int baryon_broglie(Enemy *e, int t) {
 	if(t < 0) {
 		return 1;
 	}
@@ -1306,7 +1306,7 @@ void elly_broglie(Boss *b, int t) {
 	}
 }
 
-int baryon_nattack(Enemy *e, int t) {
+static int baryon_nattack(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
 
@@ -1419,7 +1419,7 @@ static int ricci_proj2(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int baryon_ricci(Enemy *e, int t) {
+static int baryon_ricci(Enemy *e, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -1581,7 +1581,7 @@ void elly_ricci(Boss *b, int t) {
 #undef SAFE_RADIUS_PHASE_NUM
 /* Thank you for visiting Akari danmaku code (tm) */
 
-void elly_baryonattack(Boss *b, int t) {
+static void elly_baryonattack(Boss *b, int t) {
 	TIMER(&t);
 	AT(0)
 		set_baryon_rule(baryon_nattack);
@@ -1589,7 +1589,7 @@ void elly_baryonattack(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 }
 
-void elly_baryonattack2(Boss *b, int t) {
+static void elly_baryonattack2(Boss *b, int t) {
 	TIMER(&t);
 	AT(0) {
 		aniplayer_queue(&b->ani, "snipsnip", 0);
@@ -1624,7 +1624,7 @@ void elly_baryonattack2(Boss *b, int t) {
 	}
 }
 
-void lhc_laser_logic(Laser *l, int t) {
+static void lhc_laser_logic(Laser *l, int t) {
 	Enemy *e;
 
 	static_laser(l, t);
@@ -1641,7 +1641,7 @@ void lhc_laser_logic(Laser *l, int t) {
 		l->pos = e->pos;
 }
 
-int baryon_lhc(Enemy *e, int t) {
+static int baryon_lhc(Enemy *e, int t) {
 	int t1 = t % 400;
 	int g = (int)creal(e->args[2]);
 	if(g == 0 || g == 3)
@@ -1727,7 +1727,7 @@ void elly_lhc(Boss *b, int t) {
 	}
 }
 
-int baryon_explode(Enemy *e, int t) {
+static int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
@@ -1821,7 +1821,7 @@ int baryon_explode(Enemy *e, int t) {
 	return 1;
 }
 
-int baryon_curvature(Enemy *e, int t) {
+static int baryon_curvature(Enemy *e, int t) {
 	int num = creal(e->args[2])+0.5;
 	int odd = num&1;
 	complex bpos = global.boss->pos;
@@ -1842,7 +1842,7 @@ int baryon_curvature(Enemy *e, int t) {
 	return 1;
 }
 
-int curvature_bullet(Projectile *p, int t) {
+static int curvature_bullet(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -1868,7 +1868,7 @@ int curvature_bullet(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int curvature_orbiter(Projectile *p, int t) {
+static int curvature_orbiter(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -1892,7 +1892,7 @@ static double saw(double t) {
 	return cos(t)+cos(3*t)/9+cos(5*t)/25;
 }
 
-int curvature_slave(Enemy *e, int t) {
+static int curvature_slave(Enemy *e, int t) {
 	e->args[0] = -(e->args[1] - global.plr.pos);
 	e->args[1] = global.plr.pos;
 	play_loop("shot1_loop");
@@ -1971,7 +1971,8 @@ void elly_curvature(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
 
 }
-void elly_baryon_explode(Boss *b, int t) {
+
+static void elly_baryon_explode(Boss *b, int t) {
 	TIMER(&t);
 
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
@@ -2843,7 +2844,7 @@ static void elly_goto_center(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 }
 
-Boss* create_elly(void) {
+static Boss* create_elly(void) {
 	Boss *b = stage6_spawn_elly(-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);

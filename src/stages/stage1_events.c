@@ -27,14 +27,14 @@ static Dialog *stage1_dialog_post_boss(void) {
 	return d;
 }
 
-void cirno_intro(Boss *c, int time) {
+static void cirno_intro(Boss *c, int time) {
 	if(time < 0)
 		return;
 
 	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.035);
 }
 
-int cirno_snowflake_proj(Projectile *p, int time) {
+static int cirno_snowflake_proj(Projectile *p, int time) {
 	if(time < 0)
 		return ACTION_ACK;
 
@@ -65,7 +65,7 @@ int cirno_snowflake_proj(Projectile *p, int time) {
 	return 1;
 }
 
-void cirno_icy(Boss *b, int time) {
+static void cirno_icy(Boss *b, int time) {
 	int interval = 70 - 8 * global.diff;
 	int t = time % interval;
 	int run = time / interval;
@@ -85,7 +85,6 @@ void cirno_icy(Boss *b, int time) {
 		for(int i = 0; i < c; i++) {
 			double ang = 2*M_PI/c*i+run*515;
 			complex phase = cexp(I*ang);
-
 			complex pos = b->pos+vel*t+dr*_i*phase;
 
 			PROJECTILE(
@@ -109,15 +108,17 @@ void cirno_icy(Boss *b, int time) {
 			);
 
 			int split = 3;
+
 			if(_i > split) {
 				complex pos0 = b->pos+vel*t+dr*split*phase;
+
 				for(int j = -1; j <= 1; j+=2) {
 					complex phase2 = cexp(I*M_PI/4*j)*phase;
-					complex pos = pos0+(dr*(_i-split))*phase2;
+					complex pos2 = pos0+(dr*(_i-split))*phase2;
 
 					PROJECTILE(
 						.proto = pp_crystal,
-						.pos = pos,
+						.pos = pos2,
 						.color = RGB(0.0,0.3*size/5,1),
 						.rule = cirno_snowflake_proj,
 						.args = { vel, _i },
@@ -128,13 +129,6 @@ void cirno_icy(Boss *b, int time) {
 			}
 		}
 	}
-}
-
-void cirno_mid_outro(Boss *c, int time) {
-	if(time < 0)
-		return;
-
-	GO_TO(c, -300.0*I, 0.035);
 }
 
 static Projectile* spawn_stain(complex pos, float angle, int to) {
@@ -149,7 +143,7 @@ static Projectile* spawn_stain(complex pos, float angle, int to) {
 	);
 }
 
-int cirno_pfreeze_frogs(Projectile *p, int t) {
+static int cirno_pfreeze_frogs(Projectile *p, int t) {
 	if(t < 0)
 		return ACTION_ACK;
 
@@ -264,7 +258,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	r_color4(1.0, 1.0, 1.0, 1.0);
 }
 
-void cirno_mid_flee(Boss *c, int time) {
+static void cirno_mid_flee(Boss *c, int time) {
 	if(time >= 0) {
 		GO_TO(c, -250 + 30 * I, 0.02)
 	}
@@ -277,7 +271,7 @@ Boss* stage1_spawn_cirno(complex pos) {
 	return cirno;
 }
 
-Boss* create_cirno_mid(void) {
+static Boss* create_cirno_mid(void) {
 	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
 
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
@@ -289,7 +283,7 @@ Boss* create_cirno_mid(void) {
 	return cirno;
 }
 
-void cirno_intro_boss(Boss *c, int time) {
+static void cirno_intro_boss(Boss *c, int time) {
 	if(time < 0)
 		return;
 	TIMER(&time);
@@ -299,7 +293,7 @@ void cirno_intro_boss(Boss *c, int time) {
 		global.dialog = stage1_dialog_pre_boss();
 }
 
-void cirno_iceplosion0(Boss *c, int time) {
+static void cirno_iceplosion0(Boss *c, int time) {
 	int t = time % 300;
 	TIMER(&t);
 
@@ -407,7 +401,7 @@ void cirno_crystal_rain(Boss *c, int time) {
 		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.01);
 }
 
-void cirno_iceplosion1(Boss *c, int time) {
+static void cirno_iceplosion1(Boss *c, int time) {
 	int t = time % 300;
 	TIMER(&t);
 
@@ -634,7 +628,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	}
 }
 
-int cirno_icicles(Projectile *p, int t) {
+static int cirno_icicles(Projectile *p, int t) {
 	int turn = 60;
 
 	if(t < 0) {
@@ -715,7 +709,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 }
 
-int cirno_crystal_blizzard_proj(Projectile *p, int time) {
+static int cirno_crystal_blizzard_proj(Projectile *p, int time) {
 	if(time < 0) {
 		return ACTION_ACK;
 	}
@@ -825,7 +819,8 @@ void cirno_benchmark(Boss* b, int t) {
 	}
 }
 
-void cirno_superhardspellcard(Boss *c, int t) {
+attr_unused
+static void cirno_superhardspellcard(Boss *c, int t) {
 	// HOWTO: create a super hard spellcard in a few seconds
 
 	cirno_iceplosion0(c, t);
@@ -836,7 +831,7 @@ void cirno_superhardspellcard(Boss *c, int t) {
 	cirno_perfect_freeze(c, t);
 }
 
-Boss *create_cirno(void) {
+static Boss *create_cirno(void) {
 	Boss* cirno = stage1_spawn_cirno(-230 + 100.0*I);
 
 	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
@@ -855,7 +850,7 @@ Boss *create_cirno(void) {
 	return cirno;
 }
 
-int stage1_burst(Enemy *e, int time) {
+static int stage1_burst(Enemy *e, int time) {
 	TIMER(&time);
 
 	AT(EVENT_KILLED) {
@@ -893,7 +888,7 @@ int stage1_burst(Enemy *e, int time) {
 	return 1;
 }
 
-int stage1_circletoss(Enemy *e, int time) {
+static int stage1_circletoss(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 1, NULL);
@@ -928,7 +923,7 @@ int stage1_circletoss(Enemy *e, int time) {
 	return 1;
 }
 
-int stage1_sinepass(Enemy *e, int time) {
+static int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
 		tsrand_fill(2);
@@ -949,7 +944,7 @@ int stage1_sinepass(Enemy *e, int time) {
 	return 1;
 }
 
-int stage1_drop(Enemy *e, int t) {
+static int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, frand()>0.8, NULL);
@@ -972,7 +967,7 @@ int stage1_drop(Enemy *e, int t) {
 	return 1;
 }
 
-int stage1_circle(Enemy *e, int t) {
+static int stage1_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
@@ -995,7 +990,7 @@ int stage1_circle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage1_multiburst(Enemy *e, int t) {
+static int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
@@ -1025,7 +1020,7 @@ int stage1_multiburst(Enemy *e, int t) {
 	return 1;
 }
 
-int stage1_instantcircle(Enemy *e, int t) {
+static int stage1_instantcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 4, NULL);
@@ -1063,7 +1058,7 @@ int stage1_instantcircle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage1_tritoss(Enemy *e, int t) {
+static int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 2, NULL);

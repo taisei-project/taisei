@@ -1,6 +1,6 @@
 project('taisei', 'c',
     license : 'MIT',
-    version : 'v1.2',
+    version : 'v1.3-dev',
     meson_version : '>=0.45.0',
     default_options : [
         'c_std=c11',
@@ -9,101 +9,56 @@ project('taisei', 'c',
         'buildtype=release',
         'strip=true',
         'b_lto=true',
-        'b_ndebug=true',
+        'b_ndebug=if-release',
     ]
 )
 
-ver_fb = get_option('version_fallback').strip()
-version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
+cc = meson.get_compiler('c')
+python3 = import('python3').find_python()
+macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
-common_taiseilib_args = [
-    '--rootdir', meson.source_root(),
-    '--fallback-version', version_fallback
-]
-
-common_taiseilib_defs = [
-    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype')),
-    '-DMESON_BUILD_ROOT=@0@'.format(meson.build_root()),
-    '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
-]
-
-scripts_dir = 'scripts'
-
-version_script = find_program(join_paths(scripts_dir, 'version.py'))
-version_command = [version_script, common_taiseilib_args]
-
-preprocess_script = find_program(join_paths(scripts_dir, 'configure-file.py'))
-preprocess_args = common_taiseilib_args + common_taiseilib_defs
-preprocess_command = [preprocess_script, preprocess_args]
-
-preprocessor = generator(preprocess_script,
-    arguments: preprocess_args + ['@EXTRA_ARGS@', '--depfile', '@DEPFILE@', '@INPUT@', '@OUTPUT@'],
-    output: '@BASENAME@',
-    depfile: '@BASENAME@.d',
-)
-
-eolconv = find_program(join_paths(scripts_dir, 'eolconv.py'))
-host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
-
-taisei_version_result = run_command(version_command, '{string}')
-
-if taisei_version_result.stderr() != ''
-    warning(taisei_version_result.stderr().strip())
-endif
-
-if taisei_version_result.returncode() != 0
-    error('Version script exited with code @0@'.format(
-        taisei_version_result.returncode()
-    ))
-endif
-
-taisei_version_string = taisei_version_result.stdout().strip()
+subdir('scripts')
 
 config = configuration_data()
 
-cc = meson.get_compiler('c')
-python3 = import('python3').find_python()
+taisei_c_args = cc.get_supported_arguments(
+    '-Wall',
+    '-Wpedantic',
+    '-Werror=implicit-function-declaration',
 
-taisei_c_warnargs = []
-taisei_c_args = []
+    #
+    # Keep the rest sorted
+    #
 
-foreach flag : [
-            '-Werror=implicit-function-declaration',
-        ]
-    if cc.has_argument(flag)
-        taisei_c_args += flag
-    endif
-endforeach
-
-foreach flag : [
-            '-Wpedantic',
-            '-Wparentheses',
-            '-Wtype-limits',
-            '-Wstrict-prototypes',
-            '-Wlong-long',
-            '-Winit-self',
-            '-Wnull-dereference',
-            '-Wformat-pedantic',
-            '-Wgcc-compat',
-            '-Wfloat-overflow-conversion',
-            '-Wfloat-zero-conversion',
-            '-Wfor-loop-analysis',
-            '-Wimplicit-fallthrough',
-            '-Wsometimes-uninitialized',
-            '-Wunneeded-internal-declaration',
-            '-Wunreachable-code',
-            '-Wunreachable-code-loop-increment',
-            '-Wgnu',
-            '-Wcast-align',
-            '-Wcast-align=strict',
-            '-Wno-long-long',
-        ]
-    if cc.has_argument(flag)
-        taisei_c_warnargs += flag
-    endif
-endforeach
-
-taisei_c_args += taisei_c_warnargs
+    '-Wabsolute-value',
+    '-Wcast-align',
+    '-Wcast-align=strict',
+    '-Wclobbered',
+    '-Wduplicated-branches',
+    '-Wduplicated-cond',
+    '-Wfloat-overflow-conversion',
+    '-Wfloat-zero-conversion',
+    '-Wfor-loop-analysis',
+    '-Wformat-pedantic',
+    '-Wformat-security',
+    '-Wgcc-compat',
+    '-Wgnu',
+    '-Wignored-qualifiers',
+    '-Wimplicit-fallthrough',
+    '-Winit-self',
+    '-Wlogical-op',
+    '-Wmissing-prototypes',
+    '-Wno-long-long',
+    '-Wnull-dereference',
+    '-Wparentheses',
+    '-Wshadow=compatible-local',
+    '-Wsometimes-uninitialized',
+    '-Wstrict-prototypes',
+    '-Wtype-limits',
+    '-Wunneeded-internal-declaration',
+    '-Wunreachable-code',
+    '-Wunreachable-code-loop-increment',
+)
 
 static = get_option('static')
 
@@ -144,16 +99,26 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
+package_data = get_option('package_data')
+enable_zip = get_option('enable_zip')
+package_data = (package_data == 'auto' ? enable_zip : package_data == 'true')
+
+if enable_zip
+    if not dep_zip.found()
+        error('ZIP support enabled but libzip not found')
+    endif
+
+    taisei_deps += dep_zip
+endif
+
+if package_data and not enable_zip
+    error('ZIP support must be enabled for data packaging to work')
+endif
+
 if dep_sdl2_mixer.found() and get_option('enable_audio') != 'false'
     taisei_deps += dep_sdl2_mixer
 elif get_option('enable_audio') == 'true'
     error('Audio support enabled but SDL2_mixer not found')
-endif
-
-if dep_zip.found() and get_option('package_data') != 'false'
-    taisei_deps += dep_zip
-elif get_option('package_data') == 'true'
-    error('Data packaging enabled but libzip not found')
 endif
 
 config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
@@ -172,8 +137,6 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 
-macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
-
 if macos_app_bundle
     bundle_dir = 'Taisei.app'
     datadir = join_paths(bundle_dir, 'Contents', 'Resources')
@@ -184,9 +147,9 @@ if macos_app_bundle
     meson.add_install_script(
         python3.path(),
         join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
-        get_option('macos_lib_path'),
-        get_option('macos_tool_path'),
-        get_option('macos_tool_prefix'),
+        ':'.join(meson.get_cross_property('macos_lib_path', [])),
+        ':'.join(meson.get_cross_property('macos_tool_path', [])),
+        meson.get_cross_property('macos_tool_prefix', ''),
     )
 else
     datadir = get_option('datadir')
@@ -243,7 +206,7 @@ angle_enabled = get_option('install_angle')
 
 if host_machine.system() == 'windows'
     custom_target('COPYING.txt',
-        command : [eolconv, 'crlf', '@INPUT@', '@OUTPUT@'],
+        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
         input : 'COPYING',
         output : 'COPYING.txt',
         install : true,
@@ -267,6 +230,10 @@ endif
 
 systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())
 systype = '@0@, @1@, @2@'.format(systype, host_machine.cpu_family(), host_machine.cpu())
+
+if meson.is_cross_build()
+    systype = '@0@ (cross-compiling)'.format(systype)
+endif
 
 summary = '''
 
@@ -307,10 +274,7 @@ subdir('external')
 subdir('resources')
 subdir('doc')
 subdir('xdg')
-subdir('scripts')
 subdir('atlas')
 subdir('src')
 
 message(summary)
-
-run_command(find_program(join_paths(scripts_dir, 'dump-build-options.py')), meson.build_root())

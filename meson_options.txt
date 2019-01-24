@@ -8,14 +8,21 @@ option(
     'enable_audio',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
-    description : 'Enable audio support (needs SDL2_mixer)'
+    description : 'Enable audio support (requires SDL2_mixer)'
+)
+
+option(
+    'enable_zip',
+    type : 'boolean',
+    value : 'true',
+    description : 'Enable loading of game data from ZIP packages (requires libzip)'
 )
 
 option(
     'package_data',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
-    description : 'Package the game’s assets into a compressed archive instead of bundling plain files (needs libzip)'
+    description : 'Package the game’s assets into a compressed archive (requires enable_zip)'
 )
 
 option(
@@ -87,24 +94,6 @@ option(
 )
 
 option(
-    'macos_lib_path',
-    type : 'string',
-    description : 'List of paths (separated like the PATH environment variable) from where required runtime libraries will be copied into the bundle (useful for cross-compiling)'
-)
-
-option(
-    'macos_tool_path',
-    type : 'string',
-    description : 'List of paths (separated like the PATH environment variable) from where macOS-specific utilities (such as otool and install_name_tool) can be found. This is prepended to PATH (useful for cross-compiling)'
-)
-
-option(
-    'macos_tool_prefix',
-    type : 'string',
-    description : 'Names of macOS-specific tools are prefixed with this string (useful for cross-compiling)'
-)
-
-option(
     'docs',
     type : 'boolean',
     value : true,
@@ -115,7 +104,7 @@ option(
     'shader_transpiler',
     type : 'boolean',
     value : false,
-    description : 'Enable shader trans-compilation. Requires shaderc'
+    description : 'Enable shader trans-compilation (requires shaderc)'
 )
 
 option(

@@ -308,7 +308,7 @@ void player_logic(Player* plr) {
 	}
 }
 
-bool player_bomb(Player *plr) {
+static bool player_bomb(Player *plr) {
 	// stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	// return true;
 
@@ -590,7 +590,7 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 	}
 }
 
-bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
+static bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	if(flags == plr->inputflags) {
 		return false;
 	}
@@ -603,11 +603,11 @@ bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	return true;
 }
 
-bool player_updateinputflags_moveonly(Player *plr, PlrInputFlag flags) {
+static bool player_updateinputflags_moveonly(Player *plr, PlrInputFlag flags) {
 	return player_updateinputflags(plr, (flags & INFLAGS_MOVE) | (plr->inputflags & ~INFLAGS_MOVE));
 }
 
-bool player_setinputflag(Player *plr, KeyIndex key, bool mode) {
+static bool player_setinputflag(Player *plr, KeyIndex key, bool mode) {
 	PlrInputFlag newflags = plr->inputflags;
 	PlrInputFlag keyflag = key_to_inflag(key);
 
@@ -771,7 +771,7 @@ bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value) {
 }
 
 // free-axis movement
-bool player_applymovement_gamepad(Player *plr) {
+static bool player_applymovement_gamepad(Player *plr) {
 	if(!plr->axis_lr && !plr->axis_ud) {
 		if(plr->gamepadmove) {
 			plr->gamepadmove = false;

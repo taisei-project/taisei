@@ -39,7 +39,7 @@ static Dialog *stage4_dialog_post_boss(void) {
 	return d;
 }
 
-int stage4_splasher(Enemy *e, int t) {
+static int stage4_splasher(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, Bomb, 1, NULL);
@@ -72,7 +72,7 @@ int stage4_splasher(Enemy *e, int t) {
 	return 1;
 }
 
-int stage4_fodder(Enemy *e, int t) {
+static int stage4_fodder(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Power, 1, NULL);
@@ -95,8 +95,7 @@ int stage4_fodder(Enemy *e, int t) {
 	return 1;
 }
 
-
-int stage4_partcircle(Enemy *e, int t) {
+static int stage4_partcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 1, NULL);
@@ -124,7 +123,7 @@ int stage4_partcircle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage4_cardbuster(Enemy *e, int t) {
+static int stage4_cardbuster(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 2, NULL);
@@ -155,7 +154,7 @@ int stage4_cardbuster(Enemy *e, int t) {
 	return 1;
 }
 
-int stage4_backfire(Enemy *e, int t) {
+static int stage4_backfire(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 3, Power, 2, NULL);
@@ -185,7 +184,7 @@ int stage4_backfire(Enemy *e, int t) {
 	return 1;
 }
 
-int stage4_bigcircle(Enemy *e, int t) {
+static int stage4_bigcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
@@ -233,7 +232,7 @@ int stage4_bigcircle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage4_explosive(Enemy *e, int t) {
+static int stage4_explosive(Enemy *e, int t) {
 	if(t == EVENT_KILLED || (t >= 100 && global.diff >= D_Normal)) {
 		int i;
 
@@ -267,7 +266,7 @@ int stage4_explosive(Enemy *e, int t) {
 	return 1;
 }
 
-void KurumiSlave(Enemy *e, int t, bool render) {
+static void KurumiSlave(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
 	}
@@ -288,11 +287,11 @@ void KurumiSlave(Enemy *e, int t, bool render) {
 	}
 }
 
-void kurumi_intro(Boss *b, int t) {
+static void kurumi_intro(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
 }
 
-int kurumi_burstslave(Enemy *e, int t) {
+static int kurumi_burstslave(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_BIRTH)
 		e->args[1] = e->args[0];
@@ -322,7 +321,6 @@ int kurumi_burstslave(Enemy *e, int t) {
 	return 1;
 }
 
-
 void kurumi_slaveburst(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
@@ -342,7 +340,7 @@ void kurumi_slaveburst(Boss *b, int time) {
 	}
 }
 
-int kurumi_spikeslave(Enemy *e, int t) {
+static int kurumi_spikeslave(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_BIRTH)
 		e->args[1] = e->args[0];
@@ -437,11 +435,11 @@ void kurumi_spell_bg(Boss *b, int time) {
 	r_color4(1, 1, 1, 1);
 }
 
-void kurumi_outro(Boss *b, int time) {
+static void kurumi_outro(Boss *b, int time) {
 	b->pos += -5-I;
 }
 
-void kurumi_global_rule(Boss *b, int time) {
+static void kurumi_global_rule(Boss *b, int time) {
 	// FIXME: avoid running this every frame!
 
 	if(b->current && ATTACK_IS_SPELL(b->current->type)) {
@@ -458,7 +456,7 @@ Boss* stage4_spawn_kurumi(complex pos) {
 	return b;
 }
 
-Boss* create_kurumi_mid(void) {
+static Boss* create_kurumi_mid(void) {
 	Boss *b = stage4_spawn_kurumi(VIEWPORT_W/2-400.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 2, 0, kurumi_intro, NULL);
@@ -473,7 +471,7 @@ Boss* create_kurumi_mid(void) {
 	return b;
 }
 
-int splitcard(Projectile *p, int t) {
+static int splitcard(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -491,7 +489,7 @@ int splitcard(Projectile *p, int t) {
 	return asymptotic(p, t);
 }
 
-int stage4_supercard(Enemy *e, int t) {
+static int stage4_supercard(Enemy *e, int t) {
 	int time = t % 150;
 
 	TIMER(&t);
@@ -527,7 +525,7 @@ int stage4_supercard(Enemy *e, int t) {
 	return 1;
 }
 
-void kurumi_boss_intro(Boss *b, int t) {
+static void kurumi_boss_intro(Boss *b, int t) {
 	TIMER(&t);
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.015);
 
@@ -552,7 +550,7 @@ static int splitcard_elly(Projectile *p, int t) {
 	return asymptotic(p, t);
 }
 
-void kurumi_breaker(Boss *b, int time) {
+static void kurumi_breaker(Boss *b, int time) {
 	int t = time % 400;
 	int i;
 
@@ -594,7 +592,7 @@ void kurumi_breaker(Boss *b, int time) {
 
 }
 
-int aniwall_bullet(Projectile *p, int t) {
+static int aniwall_bullet(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -613,7 +611,7 @@ int aniwall_bullet(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int aniwall_slave(Enemy *e, int t) {
+static int aniwall_slave(Enemy *e, int t) {
 	float re, im;
 
 	if(t < 0)
@@ -662,7 +660,7 @@ int aniwall_slave(Enemy *e, int t) {
 	return 1;
 }
 
-void KurumiAniWallSlave(Enemy *e, int t, bool render) {
+static void KurumiAniWallSlave(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
 	}
@@ -700,7 +698,7 @@ void kurumi_aniwall(Boss *b, int time) {
 	}
 }
 
-void kurumi_sbreaker(Boss *b, int time) {
+static void kurumi_sbreaker(Boss *b, int time) {
 	if(time < 0)
 		return;
 
@@ -738,7 +736,7 @@ void kurumi_sbreaker(Boss *b, int time) {
 	}
 }
 
-int blowwall_slave(Enemy *e, int t) {
+static int blowwall_slave(Enemy *e, int t) {
 	float re, im;
 
 	if(t < 0)
@@ -886,7 +884,7 @@ static int kdanmaku_proj(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-int kdanmaku_slave(Enemy *e, int t) {
+static int kdanmaku_slave(Enemy *e, int t) {
 	float re;
 
 	if(t < 0)
@@ -958,14 +956,14 @@ void kurumi_danmaku(Boss *b, int time) {
 	}
 }
 
-void kurumi_extra_shield_pos(Enemy *e, int time) {
+static void kurumi_extra_shield_pos(Enemy *e, int time) {
 	double dst = 75 + 100 * max((60 - time) / 60.0, 0);
 	double spd = cimag(e->args[0]) * min(time / 120.0, 1);
 	e->args[0] += spd;
 	e->pos = global.boss->pos + dst * cexp(I*creal(e->args[0]));
 }
 
-bool kurumi_extra_shield_expire(Enemy *e, int time) {
+static bool kurumi_extra_shield_expire(Enemy *e, int time) {
 	if(time > creal(e->args[1])) {
 		e->hp = 0;
 		return true;
@@ -974,7 +972,7 @@ bool kurumi_extra_shield_expire(Enemy *e, int time) {
 	return false;
 }
 
-int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
+static int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	if(time < 0) {
 		return ACTION_ACK;
 	}
@@ -987,7 +985,7 @@ int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	return asymptotic(p, time);
 }
 
-int kurumi_extra_dead_shield(Enemy *e, int time) {
+static int kurumi_extra_dead_shield(Enemy *e, int time) {
 	if(time < 0) {
 		return 1;
 	}
@@ -1020,7 +1018,7 @@ int kurumi_extra_dead_shield(Enemy *e, int time) {
 	return 1;
 }
 
-int kurumi_extra_shield(Enemy *e, int time) {
+static int kurumi_extra_shield(Enemy *e, int time) {
 	if(time == EVENT_DEATH) {
 		if(global.boss && !global.game_over && !boss_is_dying(global.boss) && e->args[2] == 0) {
 			create_enemy2c(e->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_extra_dead_shield, e->args[0], e->args[1]);
@@ -1040,7 +1038,7 @@ int kurumi_extra_shield(Enemy *e, int time) {
 	return 1;
 }
 
-int kurumi_extra_bigfairy1(Enemy *e, int time) {
+static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	if(time < 0) {
 		return 1;
 	}
@@ -1070,7 +1068,7 @@ int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	return 1;
 }
 
-void kurumi_extra_drainer_draw(Projectile *p, int time) {
+static void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	complex org = p->pos;
 	complex targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);
@@ -1088,7 +1086,7 @@ void kurumi_extra_drainer_draw(Projectile *p, int time) {
 	loop_tex_line_p(org, targ, 24, time * 0.003, tex);
 }
 
-int kurumi_extra_drainer(Projectile *p, int time) {
+static int kurumi_extra_drainer(Projectile *p, int time) {
 	if(time == EVENT_DEATH) {
 		free_ref(p->args[0]);
 		return ACTION_ACK;
@@ -1122,7 +1120,7 @@ int kurumi_extra_drainer(Projectile *p, int time) {
 	return ACTION_NONE;
 }
 
-void kurumi_extra_create_drainer(Enemy *e) {
+static void kurumi_extra_create_drainer(Enemy *e) {
 	PROJECTILE(
 		.size = 1+I,
 		.pos = e->pos,
@@ -1135,7 +1133,7 @@ void kurumi_extra_create_drainer(Enemy *e) {
 	);
 }
 
-void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
+static void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 	if(!render) {
 		// why the hell was this here?
 		// Swirl(e, time, render);
@@ -1148,7 +1146,7 @@ void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
 	r_blend(BLEND_PREMUL_ALPHA);
 }
 
-void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
+static void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 	if(!render) {
 		Fairy(e, time, render);
 		return;
@@ -1161,7 +1159,7 @@ void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
 	// r_blend(BLEND_ALPHA);
 }
 
-void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
+static void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 	if(!render) {
 		BigFairy(e, time, render);
 		return;
@@ -1174,7 +1172,7 @@ void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 	// r_blend(BLEND_ALPHA);
 }
 
-int kurumi_extra_fairy(Enemy *e, int t) {
+static int kurumi_extra_fairy(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, NULL);
@@ -1336,7 +1334,7 @@ void kurumi_extra(Boss *b, int time) {
 }
 
 
-Boss *create_kurumi(void) {
+static Boss *create_kurumi(void) {
 	Boss* b = stage4_spawn_kurumi(-400.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, kurumi_boss_intro, NULL);
@@ -1422,8 +1420,6 @@ static int scythe_post_mid(Enemy *e, int t) {
 	scythe_common(e, t);
 	return 1;
 }
-
-void stage4_skip(int t);
 
 void stage4_events(void) {
 	TIMER(&global.timer);

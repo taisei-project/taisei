@@ -3,7 +3,7 @@ subdir('shader')
 
 dirs = ['bgm', 'gfx', 'models', 'sfx', 'shader', 'fonts']
 
-if taisei_deps.contains(dep_zip)
+if package_data
     archive = '00-taisei.zip'
     pack_exe = find_program('../scripts/pack.py')
     pack = custom_target('packed data files',
@@ -11,9 +11,8 @@ if taisei_deps.contains(dep_zip)
             '@OUTPUT@',
             meson.current_source_dir(),
             '@DEPFILE@',
-            '@INPUT@'
+            dirs,
         ],
-        input : dirs,
         output : archive,
         depfile : 'pack.d',
         install : true,

@@ -310,12 +310,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	*/
 
 	r_color(RGBA_MUL_ALPHA(1, 1, 1, fadein * fadeout));
-
-	if(yukkuri) {
-		r_mat_translate(0, (-h_body) * 0.5, 0);
-	} else {
-		r_mat_translate(0, (-h_body) * 0.5, 0);
-	}
+	r_mat_translate(0, h_body * -0.5, 0);
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri && !i) {

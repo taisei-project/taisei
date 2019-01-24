@@ -111,7 +111,7 @@ static void log_lib_versions(void) {
 	log_info("Using libpng %s", png_get_header_ver(NULL));
 }
 
-void log_system_specs(void) {
+static void log_system_specs(void) {
 	log_info("CPU count: %d", SDL_GetCPUCount());
 	// log_info("CPU type: %s", SDL_GetCPUType());
 	// log_info("CPU name: %s", SDL_GetCPUName());

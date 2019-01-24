@@ -43,7 +43,7 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 
 	if(v.profile == GLSL_PROFILE_NONE) {
 		v.profile = GLSL_PROFILE_CORE;
-		ShaderLangInfo *lang = alloc_lang();
+		lang = alloc_lang();
 		lang->lang = SHLANG_GLSL;
 		lang->glsl.version = v;
 	}

@@ -368,11 +368,11 @@ typedef struct CustomFadeout {
 	int counter;
 } CustomFadeout;
 
-void custom_fadeout_free(int chan, void *udata) {
+static void custom_fadeout_free(int chan, void *udata) {
 	free(udata);
 }
 
-void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
+static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 	CustomFadeout *e = udata;
 
 	assert(AUDIO_FORMAT == AUDIO_S16SYS); // if you wanna change the format, you get to implement it here. This is the hardcoded default format in SDL_Mixer by the way

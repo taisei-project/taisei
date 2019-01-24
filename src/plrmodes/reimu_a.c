@@ -320,20 +320,20 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 	p->pos += p->args[2];
 
 	for(int i = 0; i < 3 /*&& circlestrength < 1*/; i++) {
-		complex pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
-		complex v = global.plr.pos - pos;
-		v *= 3 * circlestrength / cabs(v);
+		complex trail_pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
+		complex trail_vel = global.plr.pos - trail_pos;
+		trail_vel *= 3 * circlestrength / cabs(trail_vel);
 
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/stain"),
 			// .color = reimu_spirit_orb_color(&(Color){0}, i),
 			.color = HSLA(t/p->timeout, 0.3, 0.3, 0.0),
-			.pos = pos,
+			.pos = trail_pos,
 			.angle = 2*M_PI*frand(),
 			.timeout = 30,
 			.draw_rule = ScaleFade,
 			.rule = reimu_spirit_bomb_orb_trail,
-			.args = { v, 0, 0.4 },
+			.args = { trail_vel, 0, 0.4 },
 		);
 	}
 	
@@ -635,7 +635,7 @@ static void reimu_spirit_power(Player *plr, short npow) {
 	}
 }
 
-double reimu_spirit_property(Player *plr, PlrProperty prop) {
+static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 	double base_value = reimu_common_property(plr, prop);
 
 	switch(prop) {

@@ -81,7 +81,7 @@ static inline bool healthbar_style_is_radial(void) {
 	return config_get_int(CONFIG_HEALTHBAR_STYLE) > 0;
 }
 
-const Color* boss_healthbar_color(AttackType atype) {
+static const Color* boss_healthbar_color(AttackType atype) {
 	static const Color colors[] = {
 		[AT_Normal]        = { 0.50, 0.50, 0.60, 1.00 },
 		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
@@ -385,6 +385,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	Font *font = get_font("standard");
+
 	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time - 40.0) / 60.0, 0, 1);
 	float f2 = clamp(time / 80.0, 0, 1);
@@ -442,7 +443,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
 		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
 
-		Font *font = get_font("small");
+		font = get_font("small");
 
 		draw_boss_text(ALIGN_RIGHT,
 			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
@@ -652,7 +653,7 @@ void draw_boss_hud(Boss *boss) {
 	}
 }
 
-void boss_rule_extra(Boss *boss, float alpha) {
+static void boss_rule_extra(Boss *boss, float alpha) {
 	if(global.frames % 5) {
 		return;
 	}
@@ -1197,7 +1198,7 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	return a;
 }
 
-void boss_generic_move(Boss *b, int time) {
+static void boss_generic_move(Boss *b, int time) {
 	Attack *atck = b->current;
 
 	if(atck->info->pos_dest == BOSS_NOMOVE) {

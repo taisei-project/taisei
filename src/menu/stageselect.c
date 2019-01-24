@@ -15,7 +15,7 @@
 #include "stageselect.h"
 #include "common.h"
 
-void draw_stage_menu(MenuData *m) {
+static void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Select Stage");
 	draw_menu_list(m, 100, 100, NULL);

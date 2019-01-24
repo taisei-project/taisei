@@ -1,4 +1,47 @@
 
+ver_fb = get_option('version_fallback').strip()
+version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
+
+common_taiseilib_args = [
+    '--rootdir', meson.source_root(),
+    '--fallback-version', version_fallback
+]
+
+common_taiseilib_defs = [
+    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype')),
+    '-DMESON_BUILD_ROOT=@0@'.format(meson.build_root()),
+    '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
+]
+
+version_script = find_program(files('version.py'))
+version_command = [version_script, common_taiseilib_args]
+
+taisei_version_result = run_command(version_command, '{string}')
+
+if taisei_version_result.stderr() != ''
+    warning(taisei_version_result.stderr().strip())
+endif
+
+if taisei_version_result.returncode() != 0
+    error('Version script exited with code @0@'.format(
+        taisei_version_result.returncode()
+    ))
+endif
+
+taisei_version_string = taisei_version_result.stdout().strip()
+
+preprocess_script = find_program(files('configure-file.py'))
+preprocess_args = common_taiseilib_args + common_taiseilib_defs
+preprocess_command = [preprocess_script, preprocess_args]
+preprocessor = generator(preprocess_script,
+    arguments: preprocess_args + ['@EXTRA_ARGS@', '--depfile', '@DEPFILE@', '@INPUT@', '@OUTPUT@'],
+    output: '@BASENAME@',
+    depfile: '@BASENAME@.d',
+)
+
+eolconv_command = find_program(files('eolconv.py'))
+host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
+
 if get_option('buildtype').contains('debug')
     dist_version_string = '@0@-@1@'.format(taisei_version_string, get_option('buildtype'))
 else
@@ -6,7 +49,7 @@ else
 endif
 
 if macos_app_bundle
-    dmg_command = find_program('./macos-gen-dmg.py')
+    dmg_command = find_program(files('macos-gen-dmg.py'))
     dmg_filename = 'Taisei-@0@-macOS.dmg'.format(dist_version_string)
     dmg_target = run_target('dmg',
         command: [dmg_command, join_paths(meson.build_root(), dmg_filename), meson.build_root()],
@@ -14,7 +57,7 @@ if macos_app_bundle
 endif
 
 if host_machine.system() == 'windows'
-    nsis_command = find_program('./win-gen-nsis.py')
+    nsis_command = find_program(files('win-gen-nsis.py'))
 
     nsis_filename = 'Taisei-@0@-setup-@1@.exe'.format(dist_version_string, host_machine.cpu_family())
     nsis_outpath = join_paths(meson.build_root(), nsis_filename)
@@ -47,20 +90,20 @@ if host_machine.system() == 'windows'
     )
 endif
 
-zip_command = find_program('./gen-zip.py')
-
+zip_command = find_program(files('gen-zip.py'))
 zip_filename = 'Taisei-@0@-@1@-@2@.zip'.format(dist_version_string, host_machine.system(), host_machine.cpu_family())
 zip_outpath = join_paths(meson.build_root(), zip_filename)
-
 zip_target = run_target('zip',
     command: [zip_command, meson.build_root(), zip_outpath],
 )
 
-gen_atlas_command = find_program('./gen-atlas.py')
-gen_atlases_command = find_program('./gen-atlases.py')
+gen_atlas_command = find_program(files('gen-atlas.py'))
+gen_atlases_command = find_program(files('gen-atlases.py'))
 
-upkeep_command = find_program('./upkeep.py')
+upkeep_script = find_program(files('upkeep.py'))
+upkeep_command = [upkeep_script, common_taiseilib_args]
+upkeep_target = run_target('upkeep', command: upkeep_command)
 
-upkeep_target = run_target('upkeep',
-    command: [upkeep_command, common_taiseilib_args],
-)
+postconf_script = find_program(files('dump-build-options.py'))
+# meson.add_postconf_script(postconf_script.path())
+run_command(postconf_script)

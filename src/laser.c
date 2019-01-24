@@ -314,7 +314,7 @@ static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg) {
 	}
 }
 
-void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
+static void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 
 	if(l->lrule)
@@ -326,7 +326,7 @@ void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	return NULL;
 }
 
-void delete_laser(LaserList *lasers, Laser *laser) {
+static void delete_laser(LaserList *lasers, Laser *laser) {
 	_delete_laser((ListAnchor*)lasers, (List*)laser, NULL);
 }
 

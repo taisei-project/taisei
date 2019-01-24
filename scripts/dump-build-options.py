@@ -3,15 +3,14 @@
 from taiseilib.common import (
     run_main,
     in_dir,
-    meson_introspect, meson,
-    add_common_args,
 )
 
+import os
 import subprocess
 
 
 def main(args):
-    with in_dir(args[1]):
+    with in_dir(os.environ['MESON_BUILD_ROOT']):
         with open('saved_options.json', 'wb') as outfile:
             outfile.write(subprocess.check_output(['meson', 'introspect', '--buildoptions']))
 

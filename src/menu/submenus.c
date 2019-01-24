@@ -13,6 +13,10 @@
 #include "stageselect.h"
 #include "replayview.h"
 #include "spellpractice.h"
+#include "stagepractice.h"
+#include "difficultyselect.h"
+#include "global.h"
+#include "submenus.h"
 
 void enter_options(MenuData *menu, void *arg) {
 	MenuData m;
@@ -36,4 +40,20 @@ void enter_spellpractice(MenuData *menu, void *arg) {
 	MenuData m;
 	create_spell_menu(&m);
 	menu_loop(&m);
+}
+
+void enter_stagepractice(MenuData *menu, void *arg) {
+	MenuData m;
+
+	do {
+		create_difficulty_menu(&m);
+
+		if(menu_loop(&m) < 0) {
+			return;
+		}
+
+		global.diff = progress.game_settings.difficulty;
+		create_stgpract_menu(&m, global.diff);
+		menu_loop(&m);
+	} while(m.selected < 0 || m.selected == m.ecount - 1);
 }

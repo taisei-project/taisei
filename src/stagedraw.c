@@ -485,8 +485,9 @@ static void draw_spellbg(int t) {
 	Boss *b = global.boss;
 	b->current->draw_rule(b, t);
 
-	if(b->current->type == AT_ExtraSpell)
+	if(b->current->type == AT_ExtraSpell) {
 		draw_extraspell_bg(b, t);
+	}
 
 	r_mat_push();
 	r_mat_translate(creal(b->pos), cimag(b->pos), 0);
@@ -501,11 +502,17 @@ static void draw_spellbg(int t) {
 	r_mat_pop();
 
 	float delay = ATTACK_START_DELAY;
-	if(b->current->type == AT_ExtraSpell)
+
+	if(b->current->type == AT_ExtraSpell) {
 		delay = ATTACK_START_DELAY_EXTRA;
-	float f = (-t+ATTACK_START_DELAY)/(delay+ATTACK_START_DELAY);
-	if(f > 0)
-		draw_wall_of_text(f, b->current->name);
+	}
+
+	{
+		float f = (-t+ATTACK_START_DELAY) / (delay+ATTACK_START_DELAY);
+		if(f > 0) {
+			draw_wall_of_text(f, b->current->name);
+		}
+	}
 
 	if(t < ATTACK_START_DELAY && b->dialog) {
 		r_mat_push();
@@ -992,7 +999,7 @@ static void draw_label(const char *label_str, double y_ofs, struct labels_s* lab
 	});
 }
 
-void stage_draw_hud_text(struct labels_s* labels) {
+static void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 	Font *font;
 

@@ -329,10 +329,6 @@ static void stage6_end(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void elly_intro(Boss*, int);
-void elly_spawn_baryons(complex pos);
-int scythe_reset(Enemy *e, int t);
-
 static void stage6_spellpractice_start(void) {
 	stage6_start();
 	skip_background_anim(stage6_update, 3800, &global.timer, &global.frames);

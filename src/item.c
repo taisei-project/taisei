@@ -100,7 +100,7 @@ void delete_items(void) {
 	}
 }
 
-complex move_item(Item *i) {
+static complex move_item(Item *i) {
 	int t = global.frames - i->birthtime;
 	complex lim = 0 + 2.0*I;
 
@@ -109,7 +109,6 @@ complex move_item(Item *i) {
 	if(i->auto_collect) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	} else {
-		complex oldpos = i->pos;
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
 		complex v = i->pos - oldpos;

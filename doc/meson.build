@@ -52,7 +52,7 @@ if get_option('docs')
 
     foreach f : txt_docs
         custom_target(f,
-            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : f,
             output : f,
             install : true,
@@ -63,7 +63,7 @@ if get_option('docs')
     foreach f : rst_docs
         name = f.split('.')[0] + '.html'
         custom_target(name,
-            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : rst_to_html.process(f),
             output : name,
             install : true,
@@ -74,7 +74,7 @@ if get_option('docs')
 
     if angle_enabled and host_machine.system() == 'windows'
         custom_target(f,
-            command : [eolconv, host_eol_style, '@INPUT@', '@OUTPUT@'],
+            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : 'LICENSE.ANGLE',
             output : 'LICENSE.txt',
             install : true,

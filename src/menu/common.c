@@ -8,6 +8,7 @@
 
 #include "taisei.h"
 
+#include "common.h"
 #include "global.h"
 #include "menu.h"
 #include "savereplay.h"

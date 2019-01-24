@@ -36,7 +36,7 @@ static Dialog *stage5_dialog_post_boss(void) {
 	return d;
 }
 
-int stage5_greeter(Enemy *e, int t) {
+static int stage5_greeter(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, Power, 2, NULL);
@@ -67,7 +67,7 @@ int stage5_greeter(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_lightburst(Enemy *e, int t) {
+static int stage5_lightburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 2, NULL);
@@ -94,7 +94,7 @@ int stage5_lightburst(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_swirl(Enemy *e, int t) {
+static int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, NULL);
@@ -115,7 +115,7 @@ int stage5_swirl(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_limiter(Enemy *e, int t) {
+static int stage5_limiter(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 4, NULL);
@@ -133,7 +133,7 @@ int stage5_limiter(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_laserfairy(Enemy *e, int t) {
+static int stage5_laserfairy(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, NULL);
@@ -158,7 +158,7 @@ int stage5_laserfairy(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_miner(Enemy *e, int t) {
+static int stage5_miner(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
@@ -191,7 +191,7 @@ static void lightning_particle(complex pos, int t) {
 	}
 }
 
-int stage5_magnetto(Enemy *e, int t) {
+static int stage5_magnetto(Enemy *e, int t) {
 	TIMER(&t);
 
 	AT(EVENT_KILLED) {
@@ -244,7 +244,7 @@ int stage5_magnetto(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_explosion(Enemy *e, int t) {
+static int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 5, Life, (int)creal(e->args[1]), NULL);
@@ -300,7 +300,7 @@ int stage5_explosion(Enemy *e, int t) {
 	return 1;
 }
 
-void iku_slave_visual(Enemy *e, int t, bool render) {
+static void iku_slave_visual(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
 	}
@@ -334,7 +334,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-void iku_mid_intro(Boss *b, int t) {
+static void iku_mid_intro(Boss *b, int t) {
 	TIMER(&t);
 
 	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
@@ -349,7 +349,7 @@ void iku_mid_intro(Boss *b, int t) {
 
 static void midboss_dummy(Boss *b, int t) { }
 
-Boss *create_iku_mid(void) {
+static Boss *create_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku_mid", 0, VIEWPORT_W+800.0*I);
 	b->glowcolor = *RGB(0.2, 0.4, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
@@ -362,7 +362,7 @@ Boss *create_iku_mid(void) {
 	return b;
 }
 
-int stage5_lightburst2(Enemy *e, int t) {
+static int stage5_lightburst2(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 4, NULL);
@@ -400,7 +400,7 @@ int stage5_lightburst2(Enemy *e, int t) {
 	return 1;
 }
 
-int stage5_superbullet(Enemy *e, int t) {
+static int stage5_superbullet(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 4, Power, 3, NULL);
@@ -422,7 +422,7 @@ int stage5_superbullet(Enemy *e, int t) {
 	return 1;
 }
 
-void iku_intro(Boss *b, int t) {
+static void iku_intro(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
 
 	if(t == 160)
@@ -451,7 +451,7 @@ static void cloud_common(void) {
 	);
 }
 
-void iku_bolts(Boss *b, int time) {
+static void iku_bolts(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -532,7 +532,7 @@ void iku_atmospheric(Boss *b, int time) {
 	}
 }
 
-complex bolts2_laser(Laser *l, float t) {
+static complex bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/iku_lightning");
 		return 0;
@@ -542,7 +542,7 @@ complex bolts2_laser(Laser *l, float t) {
 	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*diff)*sin(t*0.025*diff+creal(l->args[0]))*l->args[1];
 }
 
-void iku_bolts2(Boss *b, int time) {
+static void iku_bolts2(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -577,7 +577,7 @@ void iku_bolts2(Boss *b, int time) {
 
 }
 
-int lightning_slave(Enemy *e, int t) {
+static int lightning_slave(Enemy *e, int t) {
 	if(t < 0)
 		return 1;
 	if(t > 200)
@@ -714,7 +714,7 @@ void iku_lightning(Boss *b, int time) {
 	}
 }
 
-void iku_bolts3(Boss *b, int time) {
+static void iku_bolts3(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -756,7 +756,7 @@ static complex induction_bullet_traj(Projectile *p, float t) {
 	return p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
 }
 
-int induction_bullet(Projectile *p, int time) {
+static int induction_bullet(Projectile *p, int time) {
 	if(time < 0) {
 		return ACTION_ACK;
 	}
@@ -781,7 +781,7 @@ int induction_bullet(Projectile *p, int time) {
 	return 1;
 }
 
-complex cathode_laser(Laser *l, float t) {
+static complex cathode_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/iku_cathode");
 		return 0;
@@ -869,7 +869,7 @@ void iku_induction(Boss *b, int t) {
 
 void iku_spell_bg(Boss *b, int t);
 
-Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
+static Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	Enemy *nearest = NULL, *e;
 	double dist, mindist = INFINITY;
 
@@ -891,7 +891,7 @@ Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
 	return nearest;
 }
 
-void iku_extra_slave_visual(Enemy *e, int t, bool render) {
+static void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 	iku_slave_visual(e, t, render);
 
 	if(render) {
@@ -915,7 +915,7 @@ void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-int iku_extra_trigger_bullet(Projectile *p, int t) {
+static int iku_extra_trigger_bullet(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
 		free_ref(p->args[1]);
 		return ACTION_ACK;
@@ -975,7 +975,7 @@ int iku_extra_trigger_bullet(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-void iku_extra_fire_trigger_bullet(void) {
+static void iku_extra_fire_trigger_bullet(void) {
 	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
 
 	aniplayer_queue(&global.boss->ani,"dashdown_left",1);
@@ -996,7 +996,7 @@ void iku_extra_fire_trigger_bullet(void) {
 	play_sound("shot2");
 }
 
-int iku_extra_slave(Enemy *e, int t) {
+static int iku_extra_slave(Enemy *e, int t) {
 	GO_TO(e, e->args[0], 0.05);
 
 	if(e->args[1]) {
@@ -1114,7 +1114,7 @@ Boss* stage5_spawn_iku(complex pos) {
 	return b;
 }
 
-Boss* create_iku(void) {
+static Boss* create_iku(void) {
 	Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
 
 	boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
@@ -1135,8 +1135,6 @@ Boss* create_iku(void) {
 
 	return b;
 }
-
-void stage5_skip(int t);
 
 void stage5_events(void) {
 	TIMER(&global.timer);

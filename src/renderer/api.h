@@ -446,8 +446,9 @@ UniformType r_uniform_type(Uniform *uniform);
 void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data);
 
 #define _R_UNIFORM_GENERIC(suffix, uniform, ...) (_Generic((uniform), \
-	 char* : _r_uniform_##suffix, \
-	 Uniform* : _r_uniform_ptr_##suffix \
+	char* : _r_uniform_##suffix, \
+	const char* : _r_uniform_##suffix, \
+	Uniform* : _r_uniform_ptr_##suffix \
 ))(uniform, __VA_ARGS__)
 
 void _r_uniform_ptr_float(Uniform *uniform, float value);
@@ -576,12 +577,19 @@ void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) attr_nonnull(2);
 void _r_uniform_sampler(const char *uniform, const char *tex) attr_nonnull(1, 2);
 #define r_uniform_sampler(uniform, tex) (_Generic((uniform), \
 	char*         : _Generic((tex), \
-			char*     : _r_uniform_sampler, \
-			Texture*  : _r_uniform_sampler_ptr \
+			char*       : _r_uniform_sampler, \
+			const char* : _r_uniform_sampler, \
+			Texture*    : _r_uniform_sampler_ptr \
+	), \
+	const char*   : _Generic((tex), \
+			char*       : _r_uniform_sampler, \
+			const char* : _r_uniform_sampler, \
+			Texture*    : _r_uniform_sampler_ptr \
 	), \
 	Uniform*      : _Generic((tex), \
-			char*     : _r_uniform_ptr_sampler, \
-			Texture*  : _r_uniform_ptr_sampler_ptr \
+			char*       : _r_uniform_ptr_sampler, \
+			const char* : _r_uniform_ptr_sampler, \
+			Texture*    : _r_uniform_ptr_sampler_ptr \
 	) \
 ))(uniform, tex)
 
@@ -590,11 +598,15 @@ void _r_uniform_sampler_array_ptr(const char *uniform, uint offset, uint count, 
 void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, const char *values[count]) attr_nonnull(4);
 void _r_uniform_sampler_array(const char *uniform, uint offset, uint count, const char *values[count]) attr_nonnull(4);
 #define r_uniform_sampler_array(uniform, offset, count, values) (_Generic(uniform, \
-	 char*        : _Generic((values), \
+	char*        : _Generic((values), \
 			char**    : _r_uniform_sampler_array, \
 			Texture** : _r_uniform_sampler_array_ptr \
 	), \
-	 Uniform*     : _Generic((values), \
+	const char*  : _Generic((values), \
+			char**    : _r_uniform_sampler_array, \
+			Texture** : _r_uniform_sampler_array_ptr \
+	), \
+	Uniform*     : _Generic((values), \
 			char**    : _r_uniform_ptr_sampler_array, \
 			Texture** : _r_uniform_ptr_sampler_array_ptr \
 	) \

@@ -317,7 +317,7 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 	return false;
 }
 
-bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
+static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
 
@@ -362,12 +362,12 @@ bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	return false;
 }
 
-bool stage_input_handler_replay(SDL_Event *event, void *arg) {
+static bool stage_input_handler_replay(SDL_Event *event, void *arg) {
 	stage_input_common(event, arg);
 	return false;
 }
 
-void replay_input(void) {
+static void replay_input(void) {
 	ReplayStage *s = global.replay_stage;
 	int i;
 
@@ -406,7 +406,7 @@ void replay_input(void) {
 	player_applymovement(&global.plr);
 }
 
-void stage_input(void) {
+static void stage_input(void) {
 	events_poll((EventHandler[]){
 		{ .proc = stage_input_handler_gameplay },
 		{NULL}

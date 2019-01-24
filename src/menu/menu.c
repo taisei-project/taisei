@@ -49,7 +49,7 @@ void create_menu(MenuData *menu) {
 	menu->input = menu_input;
 }
 
-void close_menu_finish(MenuData *menu) {
+static void close_menu_finish(MenuData *menu) {
 	menu->state = MS_Dead;
 
 	if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {

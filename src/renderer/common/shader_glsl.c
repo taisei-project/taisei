@@ -116,7 +116,7 @@ static GLSLVersion glsl_parse_version_directive(GLSLFileParseState *fstate, char
 	return version;
 }
 
-bool glsl_try_write_header(GLSLFileParseState *fstate) {
+static bool glsl_try_write_header(GLSLFileParseState *fstate) {
 	if(fstate->global->version_defined) {
 		return true;
 	}

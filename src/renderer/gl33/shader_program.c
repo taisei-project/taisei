@@ -308,8 +308,8 @@ static bool cache_uniforms(ShaderProgram *prog) {
 				continue;
 		}
 
-		for(int i = 0; i < sizeof(magical_unfiroms)/sizeof(MagicalUniform); ++i) {
-			MagicalUniform *m = magical_unfiroms + i;
+		for(int j = 0; j < sizeof(magical_unfiroms)/sizeof(MagicalUniform); ++j) {
+			MagicalUniform *m = magical_unfiroms + j;
 
 			if(!strcmp(name, m->name) && uni.type != m->type) {
 				log_warn("Magical uniform '%s' must be of type '%s'", name, m->typename);

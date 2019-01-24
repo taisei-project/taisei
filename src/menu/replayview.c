@@ -356,7 +356,7 @@ static void replayview_draw(MenuData *m) {
 	r_shader_standard();
 }
 
-int replayview_cmp(const void *a, const void *b) {
+static int replayview_cmp(const void *a, const void *b) {
 	ReplayviewItemContext *actx = ((MenuEntry*)a)->arg;
 	ReplayviewItemContext *bctx = ((MenuEntry*)b)->arg;
 
@@ -366,7 +366,7 @@ int replayview_cmp(const void *a, const void *b) {
 	return brpy->stages[0].seed - arpy->stages[0].seed;
 }
 
-int fill_replayview_menu(MenuData *m) {
+static int fill_replayview_menu(MenuData *m) {
 	VFSDir *dir = vfs_dir_open("storage/replays");
 	const char *filename;
 	int rpys = 0;
@@ -408,7 +408,7 @@ int fill_replayview_menu(MenuData *m) {
 	return rpys;
 }
 
-void replayview_menu_input(MenuData *m) {
+static void replayview_menu_input(MenuData *m) {
 	ReplayviewContext *ctx = (ReplayviewContext*)m->context;
 	MenuData *sub = ctx->submenu;
 
@@ -423,7 +423,7 @@ void replayview_menu_input(MenuData *m) {
 	}
 }
 
-void replayview_free(MenuData *m) {
+static void replayview_free(MenuData *m) {
 	if(m->context) {
 		ReplayviewContext *ctx = m->context;
 

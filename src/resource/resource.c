@@ -232,7 +232,7 @@ static void load_resource_async(InternalResource *ires, char *path, char *name, 
 	ires->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, data });
 }
 
-void load_resource(InternalResource *ires, const char *path, const char *name, ResourceFlags flags, bool async) {
+static void load_resource(InternalResource *ires, const char *path, const char *name, ResourceFlags flags, bool async) {
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *typename = type_name(handler->type);
 	char *allocated_path = NULL;

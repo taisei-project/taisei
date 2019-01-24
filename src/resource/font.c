@@ -427,7 +427,7 @@ static bool add_glyph_to_spritesheets(Font *font, Sprite *sprite, Pixmap *pixmap
 	return add_glyph_to_spritesheet(font, sprite, pixmap, add_spritesheet(font, spritesheets));
 }
 
-static const char *const pixmode_name(FT_Pixel_Mode mode) {
+static const char* pixmode_name(FT_Pixel_Mode mode) {
 	switch(mode) {
 		case FT_PIXEL_MODE_NONE   : return "FT_PIXEL_MODE_NONE";
 		case FT_PIXEL_MODE_MONO   : return "FT_PIXEL_MODE_MONO";

@@ -253,14 +253,14 @@ static void marisa_star_bombbg(Player *plr) {
 }
 
 static void marisa_star_respawn_slaves(Player *plr, short npow) {
-	Enemy *e = plr->slaves.first, *tmp;
 	double dmg = 56;
 
-	while(e != 0) {
-		tmp = e;
-		e = e->next;
-		if(tmp->hp == ENEMY_IMMUNE)
-			delete_enemy(&plr->slaves, tmp);
+	for(Enemy *e = plr->slaves.first, *next; e; e = next) {
+		next = e->next;
+
+		if(e->hp == ENEMY_IMMUNE) {
+			delete_enemy(&plr->slaves, e);
+		}
 	}
 
 	if(npow / 100 == 1) {

@@ -36,4 +36,6 @@ extern struct stage5_spells_s {
 extern StageProcs stage5_procs;
 extern StageProcs stage5_spell_procs;
 
+void stage5_skip(int t);
+
 #endif // IGUARD_stages_stage5_h

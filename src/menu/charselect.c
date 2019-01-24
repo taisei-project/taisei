@@ -8,21 +8,22 @@
 
 #include "taisei.h"
 
+#include "charselect.h"
 #include "menu.h"
 #include "options.h"
 #include "common.h"
 #include "global.h"
 #include "video.h"
 
-void set_player(MenuData *m, void *p) {
+static void set_player(MenuData *m, void *p) {
 	progress.game_settings.character = (CharacterID)(uintptr_t)p;
 }
 
-void set_shotmode(MenuData *m, void *p) {
+static void set_shotmode(MenuData *m, void *p) {
 	progress.game_settings.shotmode = (ShotModeID)(uintptr_t)p;
 }
 
-void create_shottype_menu(MenuData *m) {
+static void create_shottype_menu(MenuData *m) {
 	create_menu(m);
 	m->transition = NULL;
 
@@ -35,11 +36,10 @@ void create_shottype_menu(MenuData *m) {
 	}
 }
 
-void char_menu_input(MenuData*);
-void draw_char_menu(MenuData*);
-void free_char_menu(MenuData*);
+static void char_menu_input(MenuData*);
+static void free_char_menu(MenuData*);
 
-void update_char_menu(MenuData *menu) {
+static void update_char_menu(MenuData *menu) {
 	for(int i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.08*(1.0*(menu->cursor != i) - menu->entries[i].drawdata);
 	}
@@ -179,7 +179,7 @@ void draw_char_menu(MenuData *menu) {
 	r_cull(cull_saved);
 }
 
-bool char_menu_input_handler(SDL_Event *event, void *arg) {
+static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
 	MenuData *mod  = menu->context;
 	TaiseiEvent type = TAISEI_EVENT(event->type);
@@ -217,14 +217,14 @@ bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	return false;
 }
 
-void char_menu_input(MenuData *menu) {
+static void char_menu_input(MenuData *menu) {
 	events_poll((EventHandler[]){
 		{ .proc = char_menu_input_handler, .arg = menu },
 		{ NULL }
 	}, EFLAG_MENU);
 }
 
-void free_char_menu(MenuData *menu) {
+static void free_char_menu(MenuData *menu) {
 	MenuData *mod = menu->context;
 	destroy_menu(mod);
 	free(mod);

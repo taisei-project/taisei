@@ -18,11 +18,11 @@
 // FIXME: put this into the menu struct somehow (drawdata is a bad system)
 static Color diff_color;
 
-void set_difficulty(MenuData *m, void *d) {
+static void set_difficulty(MenuData *m, void *d) {
 	progress.game_settings.difficulty = (Difficulty)(uintptr_t)d;
 }
 
-void update_difficulty_menu(MenuData *menu) {
+static void update_difficulty_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
 
 	for(int i = 0; i < menu->ecount; ++i) {

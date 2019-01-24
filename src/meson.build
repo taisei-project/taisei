@@ -14,7 +14,7 @@ if host_machine.system() == 'windows'
         '-DICONS_DIR=@0@'.format(join_paths(meson.source_root(), 'misc', 'icons'))
     ]
 
-    if get_option('buildtype').startswith('debug')
+    if is_debug_build
         rcdefs += ['-DBUILDTYPE_DEFINE=#define DEBUG_BUILD']
     else
         rcdefs += ['-DBUILDTYPE_DEFINE=#define RELEASE_BUILD']
@@ -101,15 +101,15 @@ endif
 
 sse42_src = []
 
+subdir('dialog')
 subdir('menu')
 subdir('plrmodes')
 subdir('renderer')
 subdir('resource')
 subdir('rwops')
 subdir('stages')
-subdir('dialog')
-subdir('vfs')
 subdir('util')
+subdir('vfs')
 
 if use_intel_intrin
     sse42_lib = static_library(
@@ -130,15 +130,15 @@ endif
 configure_file(configuration : config, output : 'build_config.h')
 
 taisei_src += [
+    dialog_src,
     menu_src,
     plrmodes_src,
     renderer_src,
     resource_src,
     rwops_src,
     stages_src,
-    vfs_src,
-    dialog_src,
     util_src,
+    vfs_src,
 ]
 
 if taisei_deps.contains(dep_sdl2_mixer)

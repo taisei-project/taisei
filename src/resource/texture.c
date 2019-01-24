@@ -529,30 +529,6 @@ void end_draw_texture(void) {
 	draw_texture_state.drawing = false;
 }
 
-void draw_texture_p(float x, float y, Texture *tex) {
-	uint tw, th;
-	r_texture_get_size(tex, 0, &tw, &th);
-	begin_draw_texture((FloatRect){ x, y, tw, th }, (FloatRect){ 0, 0, tw, th }, tex);
-	r_draw_quad();
-	end_draw_texture();
-}
-
-void draw_texture(float x, float y, const char *name) {
-	draw_texture_p(x, y, get_tex(name));
-}
-
-void draw_texture_with_size_p(float x, float y, float w, float h, Texture *tex) {
-	uint tw, th;
-	r_texture_get_size(tex, 0, &tw, &th);
-	begin_draw_texture((FloatRect){ x, y, w, h }, (FloatRect){ 0, 0, tw, th }, tex);
-	r_draw_quad();
-	end_draw_texture();
-}
-
-void draw_texture_with_size(float x, float y, float w, float h, const char *name) {
-	draw_texture_with_size_p(x, y, w, h, get_tex(name));
-}
-
 void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
 	fill_viewport_p(xoff, yoff, ratio, 1, 0, get_tex(name));
 }

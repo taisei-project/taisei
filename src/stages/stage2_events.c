@@ -28,7 +28,7 @@ static Dialog *stage2_dialog_post_boss(void) {
 	return d;
 }
 
-int stage2_great_circle(Enemy *e, int t) {
+static int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 5, Power, 4, NULL);
@@ -73,7 +73,7 @@ int stage2_great_circle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage2_small_spin_circle(Enemy *e, int t) {
+static int stage2_small_spin_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
@@ -106,7 +106,7 @@ int stage2_small_spin_circle(Enemy *e, int t) {
 	return 1;
 }
 
-int stage2_aim(Enemy *e, int t) {
+static int stage2_aim(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Power, 2, NULL);
@@ -135,7 +135,7 @@ int stage2_aim(Enemy *e, int t) {
 	return 1;
 }
 
-int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
+static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 1, NULL);
@@ -161,7 +161,7 @@ int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]
 	return 1;
 }
 
-int stage2_flea(Enemy *e, int t) {
+static int stage2_flea(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 2, NULL);
@@ -190,7 +190,7 @@ int stage2_flea(Enemy *e, int t) {
 	return 1;
 }
 
-int stage2_accel_circle(Enemy *e, int t) {
+static int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos, Point, 1, Power, 3, NULL);
@@ -229,7 +229,7 @@ static void wriggle_intro_stage2(Boss *w, int t) {
 	w->pos = VIEWPORT_W/2 + 100.0*I + 300*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
 }
 
-int wriggle_bug(Projectile *p, int t) {
+static int wriggle_bug(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -246,7 +246,7 @@ int wriggle_bug(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-void wriggle_small_storm(Boss *w, int time) {
+static void wriggle_small_storm(Boss *w, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -281,7 +281,7 @@ void wriggle_small_storm(Boss *w, int time) {
 	}
 }
 
-void wiggle_mid_flee(Boss *w, int t) {
+static void wiggle_mid_flee(Boss *w, int t) {
 	if(t == 0)
 		aniplayer_queue(&w->ani, "fly", 0);
 	if(t >= 0) {
@@ -289,7 +289,7 @@ void wiggle_mid_flee(Boss *w, int t) {
 	}
 }
 
-Boss *create_wriggle_mid(void) {
+static Boss *create_wriggle_mid(void) {
 	Boss* wriggle = create_boss("Wriggle", "wriggle", NULL, VIEWPORT_W + 150 - 30.0*I);
 	wriggle->glowcolor = *RGB(0.2, 0.4, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
@@ -302,7 +302,7 @@ Boss *create_wriggle_mid(void) {
 	return wriggle;
 }
 
-void hina_intro(Boss *h, int time) {
+static void hina_intro(Boss *h, int time) {
 	TIMER(&time);
 
 	AT(100)
@@ -311,7 +311,7 @@ void hina_intro(Boss *h, int time) {
 	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
 }
 
-void hina_cards1(Boss *h, int time) {
+static void hina_cards1(Boss *h, int time) {
 	int t = time % 500;
 	TIMER(&t);
 
@@ -361,7 +361,7 @@ void hina_amulet(Boss *h, int time) {
 	}
 }
 
-void hina_cards2(Boss *h, int time) {
+static void hina_cards2(Boss *h, int time) {
 	int t = time % 500;
 	TIMER(&t);
 
@@ -520,7 +520,7 @@ static int timeout_deadproj_linear(Projectile *p, int time) {
 	return ACTION_NONE;
 }
 
-int hina_monty_slave(Enemy *s, int time) {
+static int hina_monty_slave(Enemy *s, int time) {
 	if(time < 0) {
 		return 1;
 	}
@@ -552,7 +552,7 @@ int hina_monty_slave(Enemy *s, int time) {
 	return 1;
 }
 
-void hina_monty_slave_visual(Enemy *s, int time, bool render) {
+static void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	Swirl(s, time, render);
 
 	if(!render) {
@@ -748,7 +748,7 @@ Boss* stage2_spawn_hina(complex pos) {
 	return hina;
 }
 
-Boss *create_hina(void) {
+static Boss *create_hina(void) {
 	Boss *hina = stage2_spawn_hina(VIEWPORT_W + 150 + 100.0*I);
 
 	aniplayer_queue(&hina->ani,"main",3);
