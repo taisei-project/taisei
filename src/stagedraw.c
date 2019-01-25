@@ -527,7 +527,7 @@ static void draw_spellbg(int t) {
 }
 
 static inline bool should_draw_stage_bg(void) {
-	if(!global.boss)
+	if(!global.boss || !global.boss->current)
 		return true;
 
 	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal

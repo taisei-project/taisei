@@ -34,7 +34,7 @@ ResourceHandler model_res_handler = {
 	},
 };
 
-static void parse_obj(const char *filename, ObjFileData *data);
+static bool parse_obj(const char *filename, ObjFileData *data);
 static void free_obj(ObjFileData *data);
 
 char* model_path(const char *name) {
@@ -55,7 +55,10 @@ void* load_model_begin(const char *path, uint flags) {
 	ObjFileData *data = malloc(sizeof(ObjFileData));
 	GenericModelVertex *verts;
 
-	parse_obj(path, data);
+	if(!parse_obj(path, data)) {
+		free(data);
+		return NULL;
+	}
 
 	uint *indices = calloc(data->icount, sizeof(uint));
 	uint icount = data->icount;
@@ -146,12 +149,12 @@ static void free_obj(ObjFileData *data) {
 	free(data->indices);
 }
 
-static void parse_obj(const char *filename, ObjFileData *data) {
+static bool parse_obj(const char *filename, ObjFileData *data) {
 	SDL_RWops *rw = vfs_open(filename, VFS_MODE_READ);
 
 	if(!rw) {
 		log_warn("VFS error: %s", vfs_get_error());
-		return;
+		return false;
 	}
 
 	char line[256], *save;
@@ -227,8 +230,10 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 					ibuf[1] = 0;
 				}
 
-				if(jj == 0 || jj > 3 || segment[0] == '/')
-					log_fatal("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename,linen);
+				if(jj == 0 || jj > 3 || segment[0] == '/') {
+					log_warn("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename, linen);
+					goto fail;
+				}
 
 				data->indices = realloc(data->indices, sizeof(ivec3_noalign)*(++data->icount));
 				memcpy(data->indices[data->icount-1], ibuf, sizeof(ivec3_noalign));
@@ -237,15 +242,27 @@ static void parse_obj(const char *filename, ObjFileData *data) {
 			if(data->fverts == 0)
 				data->fverts = j;
 
-			if(data->fverts != j)
-				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
+			if(data->fverts != j) {
+				log_warn("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
+				goto fail;
+			}
 
-			if(data->fverts != 3)
-				log_fatal("OBJ file '%s:%d': Parsing error: face vertex count must be 3", filename, linen);
+			if(data->fverts != 3) {
+				log_warn("OBJ file '%s:%d': Parsing error: face vertex count must be 3", filename, linen);
+				goto fail;
+			}
 		}
 	}
 
 	SDL_RWclose(rw);
+	return true;
+
+fail:
+	SDL_RWclose(rw);
+	free(data->indices);
+	free(data->normals);
+	free(data->xs);
+	return false;
 }
 
 Model* get_model(const char *name) {

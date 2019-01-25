@@ -342,8 +342,8 @@ static void* load_texture_begin(const char *path, uint flags) {
 	}
 
 	if(!pixmap_load_file(source, &ld.pixmap)) {
-		free(source_allocated);
 		log_warn("%s: couldn't load texture image", source);
+		free(source_allocated);
 		return NULL;
 	}
 

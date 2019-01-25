@@ -126,6 +126,7 @@ static GLTextureFormatTuple* prepare_pixmap(Texture *tex, const Pixmap *px_in, P
 
 static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(mipmap < tex->params.mipmaps);
+	assert(image != NULL);
 
 	Pixmap pix;
 	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
@@ -272,8 +273,24 @@ void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt)
 }
 
 void gl33_texture_invalidate(Texture *tex) {
+	gl33_bind_texture(tex, false);
+	gl33_sync_texunit(tex->binding_unit, false, true);
+
 	for(uint i = 0; i < tex->params.mipmaps; ++i) {
-		gl33_texture_set(tex, i, NULL);
+		uint width, height;
+		gl33_texture_get_size(tex, i, &width, &height);
+
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			i,
+			tex->type_info->internal_fmt,
+			width,
+			height,
+			0,
+			tex->type_info->primary_external_format.gl_fmt,
+			tex->type_info->primary_external_format.gl_type,
+			NULL
+		);
 	}
 }
 
