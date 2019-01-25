@@ -23,7 +23,7 @@ static GLTextureFormatTuple* glcommon_find_best_pixformat_internal(GLTextureForm
 	size_t ideal_channels = PIXMAP_FORMAT_LAYOUT(pxfmt);
 	size_t ideal_depth = PIXMAP_FORMAT_DEPTH(pxfmt);
 	bool ideal_is_float = PIXMAP_FORMAT_IS_FLOAT(pxfmt);
-	bool best_is_float;
+	bool best_is_float = PIXMAP_FORMAT_IS_FLOAT(best->px_fmt);
 
 	for(GLTextureFormatTuple *fmt = formats + 1; fmt->px_fmt; ++fmt) {
 		if(pxfmt == fmt->px_fmt) {

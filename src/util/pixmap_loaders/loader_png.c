@@ -23,7 +23,7 @@ static bool px_png_probe(SDL_RWops *stream) {
 static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap) {
 	png_structp png = NULL;
 	png_infop png_info = NULL;
-	const char *error = NULL;
+	const char *volatile error = NULL;
 
 	pixmap->data.untyped = NULL;
 
