@@ -19,7 +19,7 @@ sse42_src += files(
     'sse42.c',
 )
 
-if is_debug_build
+if is_developer_build
     util_src += files('debug.c')
 endif
 

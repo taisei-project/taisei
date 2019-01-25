@@ -5,6 +5,13 @@ option(
 )
 
 option(
+    'developer',
+    type : 'combo',
+    choices : ['auto', 'true', 'false'],
+    description : 'Make a "developer" build with cheats and extra debugging features'
+)
+
+option(
     'enable_audio',
     type : 'combo',
     choices : ['auto', 'true', 'false'],

@@ -14,7 +14,7 @@ stages_src = files(
     'stage6_events.c',
 )
 
-if is_debug_build
+if is_developer_build
     stages_src += files(
         'dpstest.c',
     )
