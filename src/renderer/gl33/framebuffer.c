@@ -26,6 +26,14 @@ Framebuffer* gl33_framebuffer_create(void) {
 	Framebuffer *fb = calloc(1, sizeof(Framebuffer));
 	glGenFramebuffers(1, &fb->gl_fbo);
 	snprintf(fb->debug_label, sizeof(fb->debug_label), "FBO #%i", fb->gl_fbo);
+
+	// According to the GL spec, the FBO is only actually created when it's first bound.
+	// Let's make sure this happens as early as possible.
+	Framebuffer *prev_fb = r_framebuffer_current();
+	r_framebuffer(fb);
+	gl33_sync_framebuffer();
+	r_framebuffer(prev_fb);
+
 	return fb;
 }
 
