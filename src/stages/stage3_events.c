@@ -655,10 +655,9 @@ void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	r_color4(1,1,1,0.5);
-	// FIXME: blend
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_blend(BLEND_PREMUL_ALPHA);
@@ -666,7 +665,7 @@ void wriggle_spellbg(Boss *b, int time) {
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");

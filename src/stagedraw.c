@@ -501,6 +501,7 @@ static void draw_spellbg(int t) {
 	r_mat_push();
 
 	Boss *b = global.boss;
+
 	b->current->draw_rule(b, t);
 
 	if(b->current->type == AT_ExtraSpell) {

@@ -81,7 +81,7 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	r_color4(2000, 2000, 2000, 0);
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MIN,
-		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time*1.1+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
