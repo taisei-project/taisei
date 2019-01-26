@@ -25,7 +25,7 @@ from taiseilib.common import (
 
 
 def pack(args):
-    with ZipFile(str(args.output.resolve()), 'w', ZIP_DEFLATED) as zf:
+    with ZipFile(str(args.output), 'w', ZIP_DEFLATED) as zf:
         for path in sorted(args.directory.glob('**/*')):
             if path.name == 'meson.build':
                 continue
