@@ -16,7 +16,8 @@ common_taiseilib_defs = [
 version_script = find_program(files('version.py'))
 version_command = [version_script, common_taiseilib_args]
 
-taisei_version_result = run_command(version_command, '{string}', check : true)
+taisei_version_result = run_command(version_command, '{string}')
+assert(taisei_version_result.returncode() == 0, 'Version script failed')
 
 if taisei_version_result.stderr() != ''
     warning(taisei_version_result.stderr().strip())
@@ -105,4 +106,4 @@ run_command(postconf_script)
 pack_script = find_program(files('pack.py'))
 pack_command = [pack_script, common_taiseilib_args]
 
-glob_command = find_program(files('glob.py'))
+glob_command = find_program(files('glob-search.py'))

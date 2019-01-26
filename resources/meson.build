@@ -25,7 +25,8 @@ foreach pkg : packages
             install_dir : data_path,
         )
     else
-        glob_result = run_command(glob_command, pkg_path, '**/meson.build', check : true)
+        glob_result = run_command(glob_command, pkg_path, '**/meson.build')
+        assert(glob_result.returncode() == 0, 'Glob script failed')
         install_subdir(pkg_pkgdir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
     endif
 endforeach

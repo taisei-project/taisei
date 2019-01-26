@@ -122,9 +122,9 @@ static inline attr_must_inline const char* ent_type_name(EntityType type) {
 			#typename " doesn't implement EntityInterface"); \
 		static_assert(__builtin_offsetof(typename, entity_interface) == 0, \
 			"entity_interface has non-zero offset in " #typename); \
-		if(ent->type != _ENT_TYPEID_##typename && DEBUG) { \
+		IF_DEBUG(if(ent->type != _ENT_TYPEID_##typename) { \
 			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(ent->type)); \
-		} \
+		}) \
 		(typename *)(ent); \
 	}))
 #else

@@ -17,6 +17,9 @@
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this
 	#define DEBUG 1
+	#define IF_DEBUG(statement) do { statement } while(0)
+#else
+	#define IF_DEBUG(statement)
 #endif
 
 #ifdef TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE
