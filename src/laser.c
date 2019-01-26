@@ -320,7 +320,6 @@ static void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	if(l->lrule)
 		l->lrule(l, EVENT_DEATH);
 
-	del_ref(laser);
 	ent_unregister(&l->ent);
 	objpool_release(stage_object_pools.lasers, (ObjectInterface*)alist_unlink(lasers, laser));
 	return NULL;

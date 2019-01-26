@@ -110,6 +110,7 @@ void ent_unregister(EntityInterface *ent) {
 	EntityInterface *sub = entities.array[--entities.num];
 	assert(ent->index <= entities.num);
 	assert(entities.array[ent->index] == ent);
+	del_ref(ent);
 	entities.array[sub->index = ent->index] = sub;
 }
 

@@ -443,13 +443,11 @@ static void stage_logic(void) {
 
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {
 	if(flags & CLEAR_HAZARDS_BULLETS) {
-		ProjectileListInterface list_ptrs;
+		for(Projectile *p = global.projs.first, *next; p; p = next) {
+			next = p->next;
 
-		for(Projectile *p = global.projs.first; p; p = list_ptrs.next) {
 			if(!predicate || predicate(&p->ent, arg)) {
-				clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW, &list_ptrs);
-			} else {
-				*&list_ptrs.list_interface = p->list_interface;
+				clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
 			}
 		}
 	}

@@ -151,9 +151,8 @@ static inline char* event_name(int ev) {
 	switch(ev) {
 		case EVENT_BIRTH: return "EVENT_BIRTH";
 		case EVENT_DEATH: return "EVENT_DEATH";
+		default: UNREACHABLE;
 	}
-
-	log_fatal("Bad event %i", ev);
 }
 
 static Projectile* spawn_bullet_spawning_effect(Projectile *p);
@@ -174,10 +173,6 @@ static inline int proj_call_rule(Projectile *p, int t) {
 				result,
 				ACTION_ACK
 			);
-		}
-
-		if(t > 12 && p->type == EnemyProj && frand() < 0.1) {
-			// p->type = DeadProj;
 		}
 	}
 
@@ -325,22 +320,14 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 
 static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
-	ProjectileListInterface *out_list_pointers = arg;
 	proj_call_rule(p, EVENT_DEATH);
-
-	if(out_list_pointers) {
-		*&out_list_pointers->list_interface = p->list_interface;
-	}
-
-	del_ref(proj);
 	ent_unregister(&p->ent);
 	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)alist_unlink(projlist, proj));
-
 	return NULL;
 }
 
-void delete_projectile(ProjectileList *projlist, Projectile *proj, ProjectileListInterface *out_list_pointers) {
-	_delete_projectile((ListAnchor*)projlist, (List*)proj, out_list_pointers);
+void delete_projectile(ProjectileList *projlist, Projectile *proj) {
+	_delete_projectile((ListAnchor*)projlist, (List*)proj, NULL);
 }
 
 void delete_projectiles(ProjectileList *projlist) {
@@ -422,7 +409,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	}
 }
 
-void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col, ProjectileListInterface *out_list_pointers) {
+void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
 	switch(col->type) {
 		case PCOL_NONE:
 		case PCOL_VOID:
@@ -451,9 +438,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 	}
 
 	if(col->fatal) {
-		delete_projectile(projlist, p, out_list_pointers);
-	} else if(out_list_pointers) {
-		*&out_list_pointers->list_interface = p->list_interface;
+		delete_projectile(projlist, p);
 	}
 }
 
@@ -511,35 +496,30 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 	);
 }
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now, ProjectileListInterface *out_list_pointers) {
+static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) {
+	Projectile *effect = spawn_projectile_clear_effect(proj);
+	Item *clear_item = NULL;
+
+	if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
+		clear_item = create_bpoint(proj->pos);
+	}
+
+	if(clear_item != NULL && effect != NULL) {
+		effect->args[0] = add_ref(clear_item);
+	}
+
+	delete_projectile(projlist, proj);
+}
+
+bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now) {
 	if(proj->type == PlrProj || (!force && !projectile_is_clearable(proj))) {
-
-		if(out_list_pointers) {
-			*&out_list_pointers->list_interface = proj->list_interface;
-		}
-
 		return false;
 	}
 
+	proj->type = DeadProj;
+
 	if(now) {
-		Projectile *effect = spawn_projectile_clear_effect(proj);
-		Item *clear_item = NULL;
-
-		if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
-			clear_item = create_bpoint(proj->pos);
-		}
-
-		if(clear_item != NULL && effect != NULL) {
-			effect->args[0] = add_ref(clear_item);
-		}
-
-		delete_projectile(projlist, proj, out_list_pointers);
-	} else {
-		proj->type = DeadProj;
-
-		if(out_list_pointers) {
-			*&out_list_pointers->list_interface = proj->list_interface;
-		}
+		proj->flags |= PFLAG_KILLMEASAP;
 	}
 
 	return true;
@@ -547,28 +527,23 @@ bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bo
 
 void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
-	ProjectileListInterface list_ptrs;
 
 	char killed = 0;
 	int action;
 
-	for(Projectile *proj = projlist->first; proj; proj = list_ptrs.next) {
+	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
+		next = proj->next;
 		proj->prevpos = proj->pos;
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
-		*&list_ptrs.list_interface = proj->list_interface;
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
 			proj->graze_counter--;
 			proj->graze_counter_reset_timer = global.frames;
 		}
 
-		if(proj->type == DeadProj && killed < 10) {
+		if(proj->type == DeadProj && killed < 10 && !(proj->flags & PFLAG_KILLMEASAP)) {
+			proj->flags |= PFLAG_KILLMEASAP;
 			killed++;
-			action = ACTION_DESTROY;
-
-			if(clear_projectile(projlist, proj, true, true, &list_ptrs)) {
-				continue;
-			}
 		}
 
 		if(collision) {
@@ -589,7 +564,15 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			col.fatal = true;
 		}
 
-		apply_projectile_collision(projlist, proj, &col, &list_ptrs);
+		apply_projectile_collision(projlist, proj, &col);
+	}
+
+	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
+		next = proj->next;
+
+		if(proj->type == DeadProj && (proj->flags & PFLAG_KILLMEASAP)) {
+			really_clear_projectile(projlist, proj);
+		}
 	}
 }
 

@@ -111,11 +111,11 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 			col.fatal = false;
 		}
 
-		apply_projectile_collision(&lproj, lproj.first, &col, NULL);
+		apply_projectile_collision(&lproj, lproj.first, &col);
 
 		if(c) {
-			c->original_hp = ((Enemy*)col.entity)->hp;
-			((Enemy*)col.entity)->hp = ENEMY_IMMUNE;
+			c->original_hp = (ENT_CAST(col.entity, Enemy))->hp;
+			(ENT_CAST(col.entity, Enemy))->hp = ENEMY_IMMUNE;
 		}
 	}
 

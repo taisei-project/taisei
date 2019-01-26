@@ -123,7 +123,6 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	}
 
 	e->logic_rule(e, EVENT_DEATH);
-	del_ref(enemy);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, (ObjectInterface*)alist_unlink(enemies, enemy));
 

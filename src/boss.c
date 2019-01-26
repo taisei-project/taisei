@@ -1111,7 +1111,6 @@ static void free_attack(Attack *a) {
 }
 
 void free_boss(Boss *boss) {
-	del_ref(boss);
 	ent_unregister(&boss->ent);
 
 	for(int i = 0; i < boss->acount; i++)
