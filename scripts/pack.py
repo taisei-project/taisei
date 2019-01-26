@@ -2,40 +2,69 @@
 
 import os
 import sys
-from datetime import datetime
-from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED, ZIP_STORED
 
-from taiseilib.common import write_depfile
+from datetime import (
+    datetime,
+)
 
-assert(len(sys.argv) > 4)
-archive = sys.argv[1]
-sourcedir = sys.argv[2]
-depfile = sys.argv[3]
-directories = sys.argv[4:]
+from zipfile import (
+    ZipFile,
+    ZipInfo,
+    ZIP_DEFLATED,
+    ZIP_STORED,
+)
 
-with ZipFile(archive, "w", ZIP_DEFLATED) as zf:
-    handled_subdirs = set()
+from pathlib import Path
 
-    for directory in directories:
-        for root, dirs, files in os.walk(directory):
-            for fn in files:
-                if fn == 'meson.build':
-                    continue
+from taiseilib.common import (
+    DirPathType,
+    add_common_args,
+    run_main,
+    write_depfile,
+)
 
-                abspath = os.path.join(root, fn)
-                rel = os.path.join(os.path.basename(directory), os.path.relpath(abspath, directory))
 
-                reldir, _, _ = rel.rpartition('/')
+def pack(args):
+    with ZipFile(args.output, 'w', ZIP_DEFLATED) as zf:
+        for path in sorted(args.directory.glob('**/*')):
+            if path.name == 'meson.build':
+                continue
 
-                if reldir not in handled_subdirs:
-                    handled_subdirs.add(reldir)
-                    zi = ZipInfo(reldir + "/", datetime.fromtimestamp(os.path.getmtime(directory)).timetuple())
-                    zi.compress_type = ZIP_STORED
-                    zi.external_attr = 0o40755 << 16 # drwxr-xr-x
-                    zf.writestr(zi, "")
+            relpath = path.relative_to(args.directory)
 
-                zf.write(abspath, rel)
+            if path.is_dir():
+                zi = ZipInfo(str(relpath) + "/", datetime.fromtimestamp(path.stat().st_mtime).timetuple())
+                zi.compress_type = ZIP_STORED
+                zi.external_attr = 0o40755 << 16  # drwxr-xr-x
+                zf.writestr(zi, '')
+            else:
+                zf.write(str(path), str(relpath))
 
-    write_depfile(depfile, archive,
-        [os.path.join(sourcedir, x) for x in zf.namelist()] + [__file__]
+        if args.depfile is not None:
+            write_depfile(args.depfile, args.output,
+                [args.directory.resolve() / x for x in zf.namelist()] + [str(Path(__file__).resolve())]
+            )
+
+
+def main(args):
+    import argparse
+    parser = argparse.ArgumentParser(description='Package game assets.', prog=args[0])
+
+    parser.add_argument('directory',
+        type=DirPathType,
+        help='the source package directory'
     )
+
+    parser.add_argument('output',
+        type=Path,
+        help='the output archive path'
+    )
+
+    add_common_args(parser, depfile=True)
+
+    args = parser.parse_args(args[1:])
+    pack(args)
+
+
+if __name__ == '__main__':
+    run_main(main)

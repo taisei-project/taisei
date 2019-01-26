@@ -70,8 +70,7 @@ re_validate = make_re('validate')
 re_header = make_re('header')
 
 
-def update(args):
-    shaders_root = args.rootdir / 'resources' / 'shader'
+def update(args, shaders_root):
     subdir_map = {}
 
     for dir in sorted(shaders_root.glob('**/'), reverse=True):
@@ -121,7 +120,11 @@ def main(args):
     import argparse
     parser = argparse.ArgumentParser(description='Update build defintions to include all GLSL files.', prog=args[0])
     add_common_args(parser)
-    update(parser.parse_args(args[1:]))
+
+    args = parser.parse_args(args[1:])
+
+    for shaders_root in (args.rootdir / 'resources').glob('*/shader'):
+        update(args, shaders_root)
 
 
 if __name__ == '__main__':

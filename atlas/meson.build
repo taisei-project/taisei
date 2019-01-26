@@ -1,7 +1,7 @@
 
 atlases_dir = meson.current_source_dir()
 atlases_overrides_dir = join_paths(atlases_dir, 'overrides')
-resources_gfx_dir = join_paths(resources_dir, 'gfx')
+resources_gfx_dir = join_paths(resources_pkg_main, 'gfx')
 
 # Args are applied in this order:
 #   1. Common args

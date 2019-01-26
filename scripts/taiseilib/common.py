@@ -42,7 +42,7 @@ def add_common_args(parser, *, depfile=False):
 
 
 def inject_taiseilib_path():
-    tl = str(Path(__file__).parent.resolve())
+    tl = str(Path(__file__).parent.parent.resolve())
     pp = os.environ.get('PYTHONPATH', '').split(os.pathsep)
 
     if tl not in pp:
@@ -62,7 +62,7 @@ def run_main(func, args=None):
 
 def write_depfile(depfile, target, deps):
     with Path(depfile).open('w') as df:
-        l = [str(target) + ":"] + list(str(d) for d in deps) + [__file__]
+        l = [str(target) + ":"] + list(str(d) for d in deps) + [str(Path(__file__).resolve())]
         df.write(" \\\n ".join(l))
 
 
@@ -120,3 +120,12 @@ def wait_for_futures(futures):
         results.append(future.result())
 
     return results
+
+
+def DirPathType(arg):
+    p = Path(arg)
+
+    if not p.is_dir():
+        raise ValueError('Not a directory: %s' % p)
+
+    return p

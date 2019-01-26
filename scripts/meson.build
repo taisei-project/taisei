@@ -16,16 +16,10 @@ common_taiseilib_defs = [
 version_script = find_program(files('version.py'))
 version_command = [version_script, common_taiseilib_args]
 
-taisei_version_result = run_command(version_command, '{string}')
+taisei_version_result = run_command(version_command, '{string}', check : true)
 
 if taisei_version_result.stderr() != ''
     warning(taisei_version_result.stderr().strip())
-endif
-
-if taisei_version_result.returncode() != 0
-    error('Version script exited with code @0@'.format(
-        taisei_version_result.returncode()
-    ))
 endif
 
 taisei_version_string = taisei_version_result.stdout().strip()
@@ -107,3 +101,8 @@ upkeep_target = run_target('upkeep', command: upkeep_command)
 postconf_script = find_program(files('dump-build-options.py'))
 # meson.add_postconf_script(postconf_script.path())
 run_command(postconf_script)
+
+pack_script = find_program(files('pack.py'))
+pack_command = [pack_script, common_taiseilib_args]
+
+glob_command = find_program(files('glob.py'))
