@@ -6,12 +6,10 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#include "taisei.h"
-
-// begin before-taisei-h
+// BEGIN before-taisei-h
 #undef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
-// end before-taisei-h
+// END before-taisei-h
 
 #include "taisei.h"
 
