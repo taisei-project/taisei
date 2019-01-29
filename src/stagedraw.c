@@ -17,7 +17,7 @@
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
-	#define OBJPOOLSTATS_DEFAULT 1
+	#define OBJPOOLSTATS_DEFAULT 0
 #else
 	#define GRAPHS_DEFAULT 0
 	#define OBJPOOLSTATS_DEFAULT 0
@@ -1416,7 +1416,7 @@ static void stage_draw_framerate_graphs(void) {
 	float h = 30;
 
 	float x = SCREEN_W - w - pad;
-	float y = 320;
+	float y = 360;
 
 	r_shader("graph");
 
