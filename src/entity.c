@@ -170,7 +170,7 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 
 	DamageInfo new_damage;
 
-	if(damage->type == DMG_PLAYER_SHOT || damage->type == DMG_PLAYER_BOMB) {
+	if(DAMAGETYPE_IS_PLAYER(damage->type)) {
 		new_damage = *damage;
 		player_damage_hook(&global.plr, ent, &new_damage);
 		damage = &new_damage;

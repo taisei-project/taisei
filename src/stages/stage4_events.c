@@ -42,7 +42,7 @@ static Dialog *stage4_dialog_post_boss(void) {
 static int stage4_splasher(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 3, Bomb, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, ITEM_BOMB, 1, NULL);
 		return 1;
 	}
 
@@ -75,7 +75,7 @@ static int stage4_splasher(Enemy *e, int t) {
 static int stage4_fodder(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POWER, 1, NULL);
 		return 1;
 	}
 
@@ -98,7 +98,7 @@ static int stage4_fodder(Enemy *e, int t) {
 static int stage4_partcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 1, NULL);
 		return 1;
 	}
 
@@ -126,7 +126,7 @@ static int stage4_partcircle(Enemy *e, int t) {
 static int stage4_cardbuster(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -157,7 +157,7 @@ static int stage4_cardbuster(Enemy *e, int t) {
 static int stage4_backfire(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 3, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -187,7 +187,7 @@ static int stage4_backfire(Enemy *e, int t) {
 static int stage4_bigcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
 
 		return 1;
 	}
@@ -237,7 +237,7 @@ static int stage4_explosive(Enemy *e, int t) {
 		int i;
 
 		if(t == EVENT_KILLED)
-			spawn_items(e->pos, Power, 1, NULL);
+			spawn_items(e->pos, ITEM_POWER, 1, NULL);
 
 		int n = 10*global.diff;
 		complex phase = global.plr.pos-e->pos;
@@ -494,7 +494,7 @@ static int stage4_supercard(Enemy *e, int t) {
 
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -1175,7 +1175,7 @@ static void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
 static int kurumi_extra_fairy(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, NULL);
 		return 1;
 	}
 
@@ -1360,7 +1360,7 @@ static int scythe_post_mid(Enemy *e, int t) {
 
 	if(t == EVENT_DEATH) {
 		if(fleetime >= 300) {
-			spawn_items(e->pos, Life, 1, NULL);
+			spawn_items(e->pos, ITEM_LIFE, 1, NULL);
 		}
 
 		return 1;
@@ -1427,6 +1427,7 @@ void stage4_events(void) {
 	AT(0) {
 		stage_start_bgm("stage4");
 		stage4_skip(env_get("STAGE4_TEST", 0));
+		stage_set_voltage_thresholds(100, 220, 500, 800);
 	}
 
 	AT(70) {

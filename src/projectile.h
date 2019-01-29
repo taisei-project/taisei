@@ -57,7 +57,6 @@ typedef enum ProjFlags {
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 	PFLAG_PLRSPECIALPARTICLE = (1 << 11),
-	PFLAG_KILLMEASAP = (1 << 12),
 
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
@@ -89,6 +88,7 @@ struct Projectile {
 	DamageType damage_type;
 	int max_viewport_dist;
 	ProjFlags flags;
+	uint clear_flags;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -193,7 +193,7 @@ Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now);
+bool clear_projectile(ProjectileList *projlist, Projectile *proj, uint flags);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

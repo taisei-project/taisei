@@ -42,10 +42,12 @@ static struct {
 		struct {
 			Color active;
 			Color inactive;
+			Color dark;
 			Color label;
 			Color label_power;
 			Color label_value;
 			Color label_graze;
+			Color label_voltage;
 		} color;
 	} hud_text;
 
@@ -68,12 +70,14 @@ static struct {
 } stagedraw = {
 	.hud_text.color = {
 		// NOTE: premultiplied alpha
-		.active      = { 1.00, 1.00, 1.00, 1.00 },
-		.inactive    = { 0.50, 0.50, 0.50, 0.70 },
-		.label       = { 1.00, 1.00, 1.00, 1.00 },
-		.label_power = { 1.00, 0.50, 0.50, 1.00 },
-		.label_value = { 0.30, 0.60, 1.00, 1.00 },
-		.label_graze = { 0.50, 1.00, 0.50, 1.00 },
+		.active        = { 1.00, 1.00, 1.00, 1.00 },
+		.inactive      = { 0.50, 0.50, 0.50, 0.70 },
+		.dark          = { 0.30, 0.30, 0.30, 0.70 },
+		.label         = { 1.00, 1.00, 1.00, 1.00 },
+		.label_power   = { 1.00, 0.50, 0.50, 1.00 },
+		.label_value   = { 0.30, 0.60, 1.00, 1.00 },
+		.label_graze   = { 0.50, 1.00, 0.50, 1.00 },
+		.label_voltage = { 0.80, 0.50, 1.00, 1.00 },
 	}
 };
 
@@ -598,17 +602,24 @@ static bool copydepth_rule(Framebuffer *fb) {
 static bool powersurge_draw_predicate(EntityInterface *ent) {
 	uint layer = ent->draw_layer & ~LAYER_LOW_MASK;
 
-	switch(layer) {
-		case LAYER_PLAYER_SLAVE:
-		case LAYER_PLAYER_SHOT:
-		case LAYER_PLAYER_FOCUS:
-		case LAYER_PLAYER:
-			return true;
+	if(player_is_powersurge_active(&global.plr)) {
+		switch(layer) {
+			case LAYER_PLAYER_SLAVE:
+			case LAYER_PLAYER_SHOT:
+			case LAYER_PLAYER_FOCUS:
+			case LAYER_PLAYER:
+				return true;
+		}
+
+		if(ent->type == ENT_PROJECTILE) {
+			Projectile *p = ENT_CAST(ent, Projectile);
+			return p->flags & PFLAG_PLRSPECIALPARTICLE;
+		}
 	}
 
-	if(ent->type == ENT_PROJECTILE) {
-		Projectile *p = ENT_CAST(ent, Projectile);
-		return p->flags & PFLAG_PLRSPECIALPARTICLE;
+	if(ent->type == ENT_ITEM) {
+		Item *i = ENT_CAST(ent, Item);
+		return i->type == ITEM_VOLTAGE;
 	}
 
 	return false;
@@ -619,14 +630,14 @@ static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
 
-	if(player_is_powersurge_active(&global.plr)) {
+	// if(player_is_powersurge_active(&global.plr)) {
 		r_state_push();
 		r_framebuffer(stagedraw.powersurge_fbpair.front);
 		r_blend(BLEND_PREMUL_ALPHA);
 		r_shader("sprite_default");
 		ent_draw(powersurge_draw_predicate);
 		r_state_pop();
-	}
+	// }
 
 	// TODO: Add heuristic to not run the effect if the buffer can be reasonably assumed to be empty.
 
@@ -1130,6 +1141,7 @@ struct labels_s {
 		float bombs;
 		float power;
 		float value;
+		float voltage;
 		float graze;
 	} y;
 };
@@ -1167,6 +1179,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	r_mat_translate(28, 0, 0);
 	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
 	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
+	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 	r_mat_pop();
 
@@ -1205,6 +1218,53 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
+	});
+
+	// Voltage value
+	format_huge_num(4, global.plr.voltage, sizeof(buf), buf);
+	float volts_x = 0;
+
+	volts_x += text_draw(buf, &(TextParams) {
+		.pos = { volts_x, labels->y.voltage },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+		}
+	});
+
+	volts_x += text_draw("v", &(TextParams) {
+		.pos = { volts_x, labels->y.voltage },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.color = &stagedraw.hud_text.color.dark,
+	});
+
+	volts_x += text_draw(" / ", &(TextParams) {
+		.pos = { volts_x, labels->y.voltage },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.color = &stagedraw.hud_text.color.active,
+	});
+
+	format_huge_num(4, global.voltage_threshold, sizeof(buf), buf);
+
+	volts_x += text_draw(buf, &(TextParams) {
+		.pos = { volts_x, labels->y.voltage },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.glyph_callback = {
+			draw_numeric_callback,
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+		}
+	});
+
+	volts_x += text_draw("v", &(TextParams) {
+		.pos = { volts_x, labels->y.voltage },
+		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = fnt,
+		.color = &stagedraw.hud_text.color.dark,
 	});
 
 	// Graze value
@@ -1412,6 +1472,7 @@ void stage_draw_hud(void) {
 	label_cur_height = 240; i = 0;
 	labels.y.power   = label_cur_height+label_height*(i++);
 	labels.y.value   = label_cur_height+label_height*(i++);
+	labels.y.voltage = label_cur_height+label_height*(i++);
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
 	r_mat_push();
@@ -1482,7 +1543,7 @@ void stage_draw_hud(void) {
 		.shader = "sprite_default",
 	});
 
-	// Power/Item icons
+	// Power/Item/Voltage icons
 	r_mat_push();
 	r_mat_translate(14 + labels.x.ofs, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
 
@@ -1509,6 +1570,19 @@ void stage_draw_hud(void) {
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 0, labels.y.value },
 		.sprite = "item/point",
+		.shader = "sprite_default",
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 2, labels.y.voltage + 2 },
+		.sprite = "item/voltage",
+		.shader = "sprite_default",
+		.color = RGBA(0, 0, 0, 0.5),
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { 0, labels.y.voltage },
+		.sprite = "item/voltage",
 		.shader = "sprite_default",
 	});
 

@@ -121,16 +121,10 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
 
-		int num_items = 0;
-
 		for(Projectile *p = global.projs.first; p; p = p->next) {
 			if(p->type == EnemyProj && cabs(p->pos - e->pos) < 64) {
-				num_items += 1;
+				spawn_and_collect_item(e->pos, ITEM_PIV, 1);
 			}
-		}
-
-		if(num_items > 0) {
-			spawn_items(e->pos, BPoint, num_items, NULL);
 		}
 	}
 
@@ -336,6 +330,10 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 
 	if(enemy->hp <= 0) {
 		enemy->hp = ENEMY_KILLED;
+
+		if(dmg->type == DMG_PLAYER_DISCHARGE) {
+			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, imax(1, enemy->spawn_hp / 100), NULL);
+		}
 	}
 
 	if(enemy->hp < enemy->spawn_hp * 0.1) {

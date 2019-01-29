@@ -351,7 +351,7 @@ uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 
 uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 #ifdef UMULDIV64_SANITY_CHECK
-	static char sanity = -1;
+	static signed char sanity = -1;
 
 	if(sanity < 0) {
 		sanity = (_umuldiv64(UINT64_MAX, UINT64_MAX, UINT64_MAX) == UINT64_MAX);

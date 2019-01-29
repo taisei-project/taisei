@@ -123,6 +123,7 @@ typedef enum ClearHazardsFlags {
 	CLEAR_HAZARDS_LASERS = (1 << 1),
 	CLEAR_HAZARDS_FORCE = (1 << 2),
 	CLEAR_HAZARDS_NOW = (1 << 3),
+	CLEAR_HAZARDS_SPAWN_VOLTAGE = (1 << 4),
 
 	CLEAR_HAZARDS_ALL = CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_LASERS,
 } ClearHazardsFlags;
@@ -130,6 +131,8 @@ typedef enum ClearHazardsFlags {
 void stage_clear_hazards(ClearHazardsFlags flags);
 void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags);
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags);
+
+void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

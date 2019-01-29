@@ -32,7 +32,7 @@ static Dialog *stage6_dialog_pre_final(void) {
 static int stage6_hacker(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 4, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -57,7 +57,7 @@ static int stage6_hacker(Enemy *e, int t) {
 static int stage6_side(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 4, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -107,7 +107,7 @@ static int wait_proj(Projectile *p, int t) {
 static int stage6_flowermine(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 4, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -2879,6 +2879,7 @@ void stage6_events(void) {
 	AT(0) {
 		stage_start_bgm("stage6");
 		// skip_background_anim(&stage_3d_context, stage_get(6)->procs->update, 3800, &global.timer, &global.frames);
+		stage_set_voltage_thresholds(100, 220, 500, 800);
 	}
 
 	AT(100)

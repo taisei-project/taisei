@@ -124,7 +124,7 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 	l->width_exponent = 1.0;
 	l->speed = 1;
 	l->timeshift = 0;
-	l->dead = false;
+	l->clear_flags = 0;
 	l->unclearable = false;
 
 	l->ent.draw_layer = LAYER_LASER_HIGH;
@@ -333,13 +333,12 @@ void delete_lasers(void) {
 	alist_foreach(&global.lasers, _delete_laser, NULL);
 }
 
-bool clear_laser(LaserList *laserlist, Laser *l, bool force, bool now) {
-	if(!force && l->unclearable) {
+bool clear_laser(LaserList *laserlist, Laser *l, uint flags) {
+	if(!(flags & CLEAR_HAZARDS_FORCE) && l->unclearable) {
 		return false;
 	}
 
-	// TODO: implement "now"
-	l->dead = true;
+	l->clear_flags |= flags;
 	return true;
 }
 
@@ -349,7 +348,9 @@ void process_lasers(void) {
 	Laser *laser = global.lasers.first, *del = NULL;
 
 	while(laser != NULL) {
-		if(laser->dead) {
+		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {
+			// TODO: implement CLEAR_HAZARDS_NOW
+
 			laser->timespan *= 0.9;
 			bool kill_now = laser->timespan < 5;
 
@@ -360,7 +361,7 @@ void process_lasers(void) {
 				double y = cimag(p);
 
 				if(x > 0 && x < VIEWPORT_W && y > 0 && y < VIEWPORT_H) {
-					create_bpoint(p);
+					create_clear_item(p, laser->clear_flags);
 				}
 
 				if(kill_now) {
@@ -423,7 +424,7 @@ static bool collision_laser_curve(Laser *l) {
 			return true;
 		}
 
-		if(!grazed && !(global.frames % 7) && global.frames - abs(global.plr.recovery) > 0) {
+		if(!grazed && !(global.frames % 4) && global.frames - abs(global.plr.recovery) > 0) {
 			collision_area.radius = l->width * 2+8;
 			float f = lineseg_circle_intersect(segment, collision_area);
 

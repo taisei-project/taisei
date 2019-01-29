@@ -132,12 +132,12 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
-	// if we failed any spells on this boss up to this point, skip any extra spells,
+	// If the player hasn't gathered enough voltage, skip any extra spells,
 	// as well as any attacks associated with them.
 	//
-	// (for example, the "Generic move" that might have been automatically added by
+	// (For example, the "Generic move" that might have been automatically added by
 	// boss_add_attack_from_info. this is what the a->info->type check is for.)
-	if(boss->failed_spells && (a->type == AT_ExtraSpell || (a->info && a->info->type == AT_ExtraSpell))) {
+	if(global.plr.voltage < global.voltage_threshold && (a->type == AT_ExtraSpell || (a->info && a->info->type == AT_ExtraSpell))) {
 		return true;
 	}
 
@@ -757,10 +757,12 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	Boss *boss = ENT_CAST(ent, Boss);
 
 	float factor = 1.0;
-	if(dmg->type == DMG_PLAYER_SHOT)
+
+	if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
 		factor = boss->shot_damage_multiplier;
-	if(dmg->type == DMG_PLAYER_BOMB)
+	} else if(dmg->type == DMG_PLAYER_BOMB) {
 		factor = boss->bomb_damage_multiplier;
+	}
 
 	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {
 		return DMG_RESULT_IMMUNE;
@@ -903,8 +905,8 @@ void boss_finish_current_attack(Boss *boss) {
 			}
 
 			spawn_items(boss->pos,
-				Power, (int)(i_base * i_pwr),
-				Point, (int)(i_base * i_pts),
+				        ITEM_POWER, (int)(i_base * i_pwr),
+				        ITEM_POINTS, (int)(i_base * i_pts),
 			NULL);
 		}
 	}

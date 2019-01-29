@@ -118,6 +118,8 @@ typedef struct {
 	float shake_view;
 	float shake_view_fade;
 
+	uint voltage_threshold;
+
 	RandomState rand_game;
 	RandomState rand_visual;
 

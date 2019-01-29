@@ -24,6 +24,7 @@ void player_init(Player *plr) {
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->point_item_value = PLR_START_PIV;
+	plr->power = 100;
 	plr->deathtime = -1;
 	plr->continuetime = -1;
 	plr->mode = plrmode_find(0, 0);
@@ -242,14 +243,48 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		r_state_pop();
 
 		char buf[64];
-		snprintf(buf, sizeof(buf), "Surge bonus: %u",  player_powersurge_calc_bonus(&global.plr));
-		Font *fnt = get_font("standard");
+		PowerSurgeBonus bonus;
+		player_powersurge_calc_bonus(&global.plr, &bonus);
+		format_huge_num((bonus.baseline ? floor(log10(bonus.baseline)) : 0) + 1, bonus.baseline, sizeof(buf), buf);
+		Font *fnt = get_font("monotiny");
+
+		float x = creal(e->pos);
+		float y = cimag(e->pos) + 80;
+
+		float text_opacity = ps_opacity * 0.75;
+
+		x += text_draw(buf, &(TextParams) {
+			.shader = "text_hud",
+			.font_ptr = fnt,
+			.pos = { x, y },
+			.color = RGBA_MUL_ALPHA(1.0, 1.0, 1.0, text_opacity),
+			.align = ALIGN_CENTER,
+		});
+
+		snprintf(buf, sizeof(buf), " +%i", player_powersurge_calc_bonus_rate(&global.plr));
 
 		text_draw(buf, &(TextParams) {
 			.shader = "text_hud",
 			.font_ptr = fnt,
-			.pos = { 0, VIEWPORT_H - font_get_descent(fnt) - font_get_lineskip(fnt) * 0.5 },
-			.color = RGBA(ps_opacity, ps_opacity, ps_opacity, ps_opacity),
+			.pos = { x, y },
+			.color = RGBA_MUL_ALPHA(0.3, 0.6, 1.0, text_opacity),
+			.align = ALIGN_LEFT,
+		});
+
+		r_shader("sprite_filled_circle");
+		r_uniform_vec4("color_inner", 0, 0, 0, 0);
+		r_uniform_vec4("color_outer", 0, 0, 0.1 * ps_opacity, 0.1 * ps_opacity);
+
+		Sprite dummy = {
+			.w = 1,
+			.h = 1,
+			.tex = get_sprite("focus")->tex,
+		};
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = &dummy,
+			.pos = { creal(e->pos), cimag(e->pos) },
+			.scale = { .x = bonus.discharge_range*2, .y = bonus.discharge_range*2 },
 		});
 	}
 }
@@ -348,11 +383,15 @@ static int powersurge_trail(Projectile *p, int t) {
 }
 
 uint player_powersurge_calc_bonus_rate(Player *plr) {
-	return round(32 * plr->powersurge.negative);
+	return round(1000 * plr->powersurge.negative * plr->powersurge.negative);
 }
 
-uint player_powersurge_calc_bonus(Player *plr) {
-	return plr->powersurge.bonus;
+void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
+	b->baseline = plr->powersurge.bonus + plr->powersurge.damage_done * 0.8;
+	b->score = b->baseline;
+	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
+	b->discharge_range = 1.2 * b->discharge_power;
+	b->discharge_damage = 10 * pow(b->discharge_power, 1.1);
 }
 
 static void player_powersurge_logic(Player *plr) {
@@ -405,7 +444,7 @@ void player_logic(Player* plr) {
 		plr->continues_used += 1;
 		player_set_power(plr, 0);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-		spawn_items(plr->deathpos, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
+		spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
 	}
 
 	process_enemies(&plr->slaves);
@@ -477,7 +516,6 @@ static bool player_bomb(Player *plr) {
 		player_fail_spell(plr);
 		// player_cancel_powersurge(plr);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-		collect_all_items(1, 1, 0);
 
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;
@@ -499,6 +537,7 @@ static bool player_bomb(Player *plr) {
 		plr->bombcanceltime = 0;
 		plr->bombcanceldelay = 0;
 
+		collect_all_items(1);
 		return true;
 	}
 
@@ -519,9 +558,10 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.negative = 0.0;
 	plr->powersurge.time.activated = global.frames;
 	plr->powersurge.bonus = 0;
+	plr->powersurge.damage_accum = 0;
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
-	collect_all_items(1, 10, 0);
+	collect_all_items(1);
 	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, get_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
 
 	return true;
@@ -564,20 +604,35 @@ void player_cancel_bomb(Player *plr, int delay) {
 static void player_powersurge_expired(Player *plr) {
 	plr->powersurge.time.expired = global.frames;
 
-	int bonus = plr->powersurge.damage_done / 1000;
-	int mul = 1 + (plr->powersurge.time.expired - plr->powersurge.time.activated - 1) / PLR_POWERSURGE_DURATION;
+	PowerSurgeBonus bonus;
+	player_powersurge_calc_bonus(plr, &bonus);
 
-	if(mul < 1) {
-		mul = 1;
-	}
+	Sprite *blast = get_sprite("part/blast_huge_halo");
+	float scale = 2 * bonus.discharge_range / blast->w;
 
-	spawn_items(plr->pos, BPoint, bonus * mul, NULL);
+	PARTICLE(
+		.sprite_ptr = blast,
+		.pos = plr->pos,
+		.color = RGBA(0.6, 1.0, 4.4, 0.0),
+		.draw_rule = ScaleFade,
+		.timeout = 20,
+		.args = { 0, 0, scale * (2 + 0 * I) },
+		.angle = M_PI*2*frand(),
+	);
+
+	player_add_points(&global.plr, bonus.score);
+	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
+	stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
 
 	log_debug(
-		"Power Surge expired at %i (duration: %i); bonus = %i * %i",
+		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
 		plr->powersurge.time.expired,
 		plr->powersurge.time.expired - plr->powersurge.time.activated,
-		bonus, mul
+		bonus.baseline,
+		bonus.score,
+		bonus.discharge_power,
+		bonus.discharge_damage,
+		bonus.discharge_range
 	);
 
 	plr->powersurge.damage_done = 0;
@@ -657,7 +712,7 @@ void player_realdeath(Player *plr) {
 	int total_power = plr->power + plr->power_overflow;
 
 	int drop = max(2, (total_power * 0.15) / POWER_VALUE);
-	spawn_items(plr->deathpos, Power, drop, NULL);
+	spawn_items(plr->deathpos, ITEM_POWER, drop, NULL);
 
 	player_set_power(plr, total_power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
@@ -896,7 +951,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 				case KEY_SPECIAL:
 					useful = player_powersurge(plr);
 
-					if(!useful && plr->iddqd) {
+					if(!useful/* && plr->iddqd*/) {
 						player_cancel_powersurge(plr);
 						useful = true;
 					}
@@ -1199,7 +1254,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 	}
 	*/
 
-	spawn_items(pos, MiniPower, 1, NULL);
+	spawn_items(pos, ITEM_POWER_MINI, 1, NULL);
 }
 
 static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd) {
@@ -1284,24 +1339,39 @@ void player_add_piv(Player *plr, uint piv) {
 	}
 }
 
+void player_add_voltage(Player *plr, uint voltage) {
+	uint v = plr->voltage + voltage;
+
+	if(v > PLR_MAX_VOLTAGE || v < plr->voltage) {
+		plr->voltage = PLR_MAX_VOLTAGE;
+	} else {
+		plr->voltage = v;
+	}
+}
+
+void player_drain_voltage(Player *plr, uint voltage) {
+	// TODO: animate (or maybe handle that at stagedraw level)
+	plr->voltage -= imin(voltage, plr->voltage);
+}
+
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage) {
-	if(damage->type != DMG_PLAYER_SHOT && damage->type != DMG_PLAYER_BOMB) {
+	if(!DAMAGETYPE_IS_PLAYER(damage->type)) {
 		return;
 	}
 
-	if(player_is_powersurge_active(plr)) {
-		plr->powersurge.damage_done += damage->amount;
-	}
+	complex pos = NAN;
 
 	if(target != NULL) {
 		switch(target->type) {
 			case ENT_ENEMY: {
 				player_add_points(&global.plr, damage->amount * 0.5);
+				pos = ENT_CAST(target, Enemy)->pos;
 				break;
 			}
 
 			case ENT_BOSS: {
 				player_add_points(&global.plr, damage->amount * 0.2);
+				pos = ENT_CAST(target, Boss)->pos;
 				break;
 			}
 
@@ -1309,6 +1379,19 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		}
 	}
 
+	if(player_is_powersurge_active(plr)) {
+		plr->powersurge.damage_done += damage->amount;
+		plr->powersurge.damage_accum += damage->amount;
+
+		if(!isnan(creal(pos))) {
+			double rate = 500;
+
+			while(plr->powersurge.damage_accum > rate) {
+				plr->powersurge.damage_accum -= rate;
+				spawn_item(pos, ITEM_SURGE);
+			}
+		}
+	}
 
 #ifdef PLR_DPS_STATS
 	while(global.frames > plr->dmglogframe) {

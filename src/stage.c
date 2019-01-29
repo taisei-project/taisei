@@ -206,6 +206,7 @@ static void stage_start(StageInfo *stage) {
 	global.frames = 0;
 	global.game_over = 0;
 	global.shake_view = 0;
+	global.voltage_threshold = 0;
 
 	player_stage_pre_init(&global.plr);
 
@@ -447,7 +448,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 			next = p->next;
 
 			if(!predicate || predicate(&p->ent, arg)) {
-				clear_projectile(&global.projs, p, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
+				clear_projectile(&global.projs, p, flags);
 			}
 		}
 	}
@@ -457,7 +458,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 			next = l->next;
 
 			if(!predicate || predicate(&l->ent, arg)) {
-				clear_laser(&global.lasers, l, flags & CLEAR_HAZARDS_FORCE, flags & CLEAR_HAZARDS_NOW);
+				clear_laser(&global.lasers, l, flags);
 			}
 		}
 	}
@@ -577,6 +578,16 @@ void stage_start_bgm(const char *bgm) {
 	}
 
 	free(old_title);
+}
+
+void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
+	switch(global.diff) {
+		case D_Easy:    global.voltage_threshold = easy;    return;
+		case D_Normal:  global.voltage_threshold = normal;  return;
+		case D_Hard:    global.voltage_threshold = hard;    return;
+		case D_Lunatic: global.voltage_threshold = lunatic; return;
+		default: UNREACHABLE;
+	}
 }
 
 typedef struct StageFrameState {

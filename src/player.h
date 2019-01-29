@@ -32,6 +32,7 @@ enum {
 	// PLR_MAX_PIV = UINT32_MAX,
 	#define PLR_MAX_PIV UINT32_MAX
 	#define PLR_MAX_GRAZE UINT32_MAX
+	#define PLR_MAX_VOLTAGE UINT16_MAX
 
 	PLR_MAX_LIFE_FRAGMENTS = 5,
 	PLR_MAX_BOMB_FRAGMENTS = 5,
@@ -48,8 +49,7 @@ enum {
 
 	PLR_MIN_BORDER_DIST = 16,
 
-	PLR_POWERSURGE_DURATION = 300,
-	PLR_POWERSURGE_POWERCOST = 100,
+	PLR_POWERSURGE_POWERCOST = 200,
 };
 
 static const float PLR_POWERSURGE_POSITIVE_DRAIN_MAX = (0.15 / 60.0);
@@ -98,17 +98,19 @@ struct Player {
 		} time;
 		int bonus;
 		double damage_done;
+		double damage_accum;
 	} powersurge;
 
 	uint64_t points;
 
 	uint point_item_value;
+	uint graze;
+	uint voltage;
 	int lives;
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
 	int continues_used;
-	uint graze;
 	int focus;
 	int power;
 	int power_overflow;
@@ -134,6 +136,14 @@ struct Player {
 	int dmglog[240];
 #endif
 };
+
+typedef struct PowerSurgeBonus {
+	uint baseline;
+	uint score;
+	float discharge_power;
+	float discharge_range;
+	float discharge_damage;
+} PowerSurgeBonus;
 
 // this is used by both player and replay code
 enum {
@@ -187,6 +197,8 @@ void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
 void player_add_piv(Player *plr, uint piv);
+void player_add_voltage(Player *plr, uint voltage);
+void player_drain_voltage(Player *plr, uint voltage);
 void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
@@ -200,7 +212,7 @@ bool player_is_powersurge_active(Player *plr);
 bool player_is_vulnerable(Player *plr);
 bool player_is_alive(Player *plr);
 
-uint player_powersurge_calc_bonus(Player *plr);
+void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
 uint player_powersurge_calc_bonus_rate(Player *plr);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
