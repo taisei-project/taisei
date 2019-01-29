@@ -203,8 +203,6 @@ config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', is_debug_build and have_back
 config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
-angle_enabled = get_option('install_angle')
-
 if host_machine.system() == 'windows'
     custom_target('COPYING.txt',
         command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],

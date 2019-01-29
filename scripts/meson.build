@@ -51,6 +51,8 @@ if macos_app_bundle
     )
 endif
 
+angle_enabled = get_option('install_angle')
+
 if host_machine.system() == 'windows'
     nsis_command = find_program(files('win-gen-nsis.py'))
 
