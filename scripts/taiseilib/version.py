@@ -4,6 +4,7 @@ from . import common
 import sys
 import subprocess
 import shlex
+import re
 
 
 class VerionFormatError(common.TaiseiError):
@@ -11,30 +12,42 @@ class VerionFormatError(common.TaiseiError):
 
 
 class Version(object):
+    regex = re.compile(r'^v?(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:[-+](\d+))?(?:[-+](.*))?$')
+
+    def _make_string(self):
+        s = str(self.major) + "." + str(self.minor)
+
+        if self.patch > 0:
+            s += "." + str(self.patch)
+
+        if self.tweak > 0:
+            s += "-" + str(self.tweak)
+
+        if self.note is not None:
+            s += "-" + self.note
+
+        return s
+
     def __init__(self, version_str):
-        version_str = version_str.lstrip("v").replace("+", "-")
-        vparts = version_str.split("-")[0].split(".")
-        vextra = version_str.split("-")
+        match = self.regex.match(version_str)
 
-        if len(vextra) > 1:
-            vextra = vextra[1]
-        else:
-            vextra = "0"
+        if match is None:
+            raise VerionFormatError("Error: Malformed version string '{0}'. Please use the following format: [v]major[.minor[.patch]][-tweak][-extrainfo]".format(version_str))
 
-        if len(vparts) > 3:
-            raise VerionFormatError("Error: Too many dot-separated elements in version string '{0}'. Please use the following format: [v]major[.minor[.patch]][-tweak[-extrainfo]]".format(version_str))
-        elif len(vparts[0]) == 0 or not vextra.isnumeric():
-            raise VerionFormatError("Error: Invalid version string '{0}'. Please use the following format: [v]major[.minor[.patch]][-tweak[-extrainfo]]".format(version_str))
+        def mkint(val):
+            if val is None:
+                return 0
+            return int(val)
 
-        while len(vparts) < 3:
-            vparts.append(0)
+        ma, mi, pa, tw, no = match.groups()
 
-        self.major = int(vparts[0])
-        self.minor = int(vparts[1])
-        self.patch = int(vparts[2])
-        self.tweak = int(vextra)
-        self.string = version_str
-        self.full_string = "Taisei v{0}".format(version_str)
+        self.major = mkint(ma)
+        self.minor = mkint(mi)
+        self.patch = mkint(pa)
+        self.tweak = mkint(tw)
+        self.note = no
+        self.string = self._make_string()
+        self.full_string = "Taisei v{0}".format(self.string)
 
     def format(self, template='{string}'):
         return template.format(**self.__dict__)
@@ -78,7 +91,7 @@ def main(args):
     parser = argparse.ArgumentParser(description='Print the Taisei version.', prog=args[0])
 
     parser.add_argument('format', type=str, nargs='?', default='{string}',
-        help='format string; variables: major, minor, patch, tweak, string, full_string')
+        help='format string; variables: major, minor, patch, tweak, note, string, full_string')
 
     common.add_common_args(parser)
 
