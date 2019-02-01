@@ -57,9 +57,19 @@ taisei_c_args = cc.get_supported_arguments(
     '-Wstrict-prototypes',
     '-Wtype-limits',
     '-Wunneeded-internal-declaration',
-    '-Wunreachable-code',
     '-Wunreachable-code-loop-increment',
 )
+
+if cc.compiles('''
+int main() {
+    return 0;
+    __builtin_unreachable();
+}
+''', name : 'unreachable __builtin_unreachable() with -Werror', args : [ '-Wunreachable-code', '-Werror' ] )
+    taisei_c_args += cc.get_supported_arguments('-Wunreachable-code')
+else
+    warning('-Wunreachable-code will not be used due to incorrect handling of __builtin_unreachable')
+endif
 
 static = get_option('static')
 

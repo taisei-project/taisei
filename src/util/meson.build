@@ -23,22 +23,9 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
-use_builtin_unreachable = cc.compiles('''
-int main() {
-    return 0;
-    __builtin_unreachable();
-}
-''', name : '__builtin_unreachable() with -Werror', args : [ '-Wunreachable-code', '-Werror' ] )
-
 use_designated_init = cc.compiles('''
 struct { ; } __attribute__((designated_init)) x;
 ''', name : '__attribute__((designated_init)) with -Werror', args : [ '-Wattributes', '-Werror' ] )
-
-if use_builtin_unreachable
-    config.set('TAISEI_BUILDCONF_USE_BUILTIN_UNREACHABLE', true)
-else
-    config.set('TAISEI_BUILDCONF_USE_BUILTIN_UNREACHABLE', false)
-endif
 
 if use_designated_init
     config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', true)
