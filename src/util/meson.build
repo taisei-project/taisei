@@ -23,6 +23,20 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
+
+use_builtin_unreachable = cc.compiles('''
+int main() {
+    return 0;
+    __builtin_unreachable();
+}
+''', name : '__builtin_unreachable() with -Werror', args : [ '-Wunreachable-code', '-Werror' ] )
+
+if use_builtin_unreachable
+    config.set('TAISEI_BUILDCONF_USE_BUILTIN_UNREACHABLE', true)
+elif get_option('intel_intrin')
+    config.set('TAISEI_BUILDCONF_USE_BUILTIN_UNREACHABLE', false)
+endif
+
 if host_machine.system() == 'windows'
     # NOTE: Even if we ever build this with something like Midipix, we'd
     # probably still want to use the winapi implementation of this here.

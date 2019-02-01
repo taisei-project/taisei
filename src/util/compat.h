@@ -71,7 +71,11 @@
 #else
 	#define PRAGMA(p) _Pragma(#p)
 	#define USE_GNU_EXTENSIONS
+#ifdef TAISEI_BUILDCONF_USE_BUILTIN_UNREACHABLE
 	#define UNREACHABLE __builtin_unreachable()
+#else
+	#define UNREACHABLE
+#endif
 #endif
 
 #ifndef __has_attribute
