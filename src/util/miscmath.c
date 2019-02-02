@@ -113,6 +113,14 @@ intmax_t imax(intmax_t a, intmax_t b) {
 	return (a > b) ? a : b;
 }
 
+uintmax_t umin(uintmax_t a, uintmax_t b) {
+	return (a < b) ? a : b;
+}
+
+uintmax_t umax(uintmax_t a, uintmax_t b) {
+	return (a > b) ? a : b;
+}
+
 double clamp(double f, double lower, double upper) {
 	assert(lower <= upper);
 
@@ -228,18 +236,28 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
 	}
 }
 
-uint ipow10(uint n) {
-	static uint pow10[] = {
-		1,
-		10,
-		100,
-		1000,
-		10000,
-		100000,
-		1000000,
-		10000000,
-		100000000,
-		1000000000,
+uint64_t upow10(uint n) {
+	static uint64_t pow10[] = {
+		1ull,
+		10ull,
+		100ull,
+		1000ull,
+		10000ull,
+		100000ull,
+		1000000ull,
+		10000000ull,
+		100000000ull,
+		1000000000ull,
+		10000000000ull,
+		100000000000ull,
+		1000000000000ull,
+		10000000000000ull,
+		100000000000000ull,
+		1000000000000000ull,
+		10000000000000000ull,
+		100000000000000000ull,
+		1000000000000000000ull,
+		10000000000000000000ull,
 	};
 
 	assert(n < sizeof(pow10)/sizeof(*pow10));

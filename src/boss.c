@@ -487,7 +487,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 
 		SpellBonus bonus;
 		calc_spell_bonus(b->current, &bonus);
-		format_huge_num(floor(log10(bonus.total) + 1), bonus.total, sizeof(buf), buf);
+		format_huge_num(0, bonus.total, sizeof(buf), buf);
 
 		draw_boss_text(ALIGN_LEFT,
 			VIEWPORT_W - bonus_ofs, 0,
@@ -902,11 +902,12 @@ void boss_finish_current_attack(Boss *boss) {
 
 			if(!boss->current->failtime) {
 				i_base *= 2.0;
+				spawn_item(boss->pos, ITEM_BOMB_FRAGMENT);
 			}
 
 			spawn_items(boss->pos,
-				        ITEM_POWER, (int)(i_base * i_pwr),
-				        ITEM_POINTS, (int)(i_base * i_pts),
+				ITEM_POWER,  (int)(i_base * i_pwr),
+				ITEM_POINTS, (int)(i_base * i_pts),
 			NULL);
 		}
 	}
@@ -1201,6 +1202,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
+
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
 

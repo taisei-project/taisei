@@ -72,6 +72,12 @@ void player_stage_post_init(Player *plr) {
 	ent_register(&plr->ent, ENT_PLAYER);
 
 	player_spawn_focus_circle(plr);
+
+	plr->extralife_threshold = player_next_extralife_threshold(plr, plr->extralives_given);
+
+	while(plr->points >= plr->extralife_threshold) {
+		plr->extralife_threshold = player_next_extralife_threshold(plr, ++plr->extralives_given);
+	}
 }
 
 void player_free(Player *plr) {
@@ -245,7 +251,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		char buf[64];
 		PowerSurgeBonus bonus;
 		player_powersurge_calc_bonus(&global.plr, &bonus);
-		format_huge_num((bonus.baseline ? floor(log10(bonus.baseline)) : 0) + 1, bonus.baseline, sizeof(buf), buf);
+		format_huge_num(0, bonus.baseline, sizeof(buf), buf);
 		Font *fnt = get_font("monotiny");
 
 		float x = creal(e->pos);
@@ -717,6 +723,13 @@ void player_realdeath(Player *plr) {
 	player_set_power(plr, total_power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
+
+	drop = plr->voltage * 0.1;
+	plr->voltage = plr->voltage * 0.95 - drop;
+
+	if(drop > 0) {
+		spawn_items(plr->deathpos, ITEM_VOLTAGE, drop, NULL);
+	}
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
@@ -1321,6 +1334,11 @@ void player_add_points(Player *plr, uint points) {
 	attr_unused uint old = plr->points;
 	plr->points += points;
 
+	while(plr->points >= plr->extralife_threshold) {
+		player_add_lives(plr, 1);
+		plr->extralife_threshold = player_next_extralife_threshold(plr, ++plr->extralives_given);
+	}
+
 	/*
 	if(global.stage->type != STAGE_SPELL) {
 		try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
@@ -1402,6 +1420,17 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 
 	plr->dmglog[0] += damage->amount;
 #endif
+}
+
+uint64_t player_next_extralife_threshold(Player *plr, uint iteration) {
+	static const uint64_t base = 5000000;
+	uint64_t result = base;
+
+	while(iteration > 0) {
+		result += base * iteration--;
+	}
+
+	return result;
 }
 
 void player_preload(void) {

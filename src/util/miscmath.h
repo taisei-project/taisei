@@ -18,6 +18,8 @@ double lerp(double v0, double v1, double f) attr_const;
 complex clerp(complex v0, complex v1, double f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
+uintmax_t umin(uintmax_t, uintmax_t) attr_const;
+uintmax_t umax(uintmax_t, uintmax_t) attr_const;
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double min(double, double) attr_const;
 double max(double, double) attr_const;
@@ -42,7 +44,7 @@ float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 float sanitize_scale(float scale) attr_const;
-uint ipow10(uint n) attr_const;
+uint64_t upow10(uint n) attr_const;
 float normpdf(float x, float sigma) attr_const;
 void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) attr_nonnull(3);
 

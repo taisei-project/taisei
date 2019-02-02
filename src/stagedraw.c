@@ -1166,6 +1166,7 @@ static void draw_label(const char *label_str, double y_ofs, struct labels_s* lab
 static void stage_draw_hud_text(struct labels_s* labels) {
 	char buf[64];
 	Font *font;
+	bool kern_saved;
 
 	r_shader_ptr(stagedraw.hud_text.shader);
 
@@ -1198,22 +1199,45 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		r_color4(1, 1, 1, 1.0);
 	}
 
+	// Score left to next extra life
+	format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
+	font = get_font("small");
+
+	text_draw("Next:", &(TextParams) {
+		.pos = { 36, (labels->y.lives + labels->y.bombs) * 0.5 },
+		.font_ptr = font,
+		.align = ALIGN_LEFT,
+		.color = RGBA(0.5, 0.3, 0.4, 0.5),
+	});
+
+	kern_saved = font_get_kerning_enabled(font);
+	font_set_kerning_enabled(font, false);
+
+	text_draw(buf, &(TextParams) {
+		.pos = { 170, (labels->y.lives + labels->y.bombs) * 0.5 },
+		.font_ptr = font,
+		.align = ALIGN_RIGHT,
+		.color = RGBA(0.5, 0.3, 0.4, 0.5),
+	});
+
+	font_set_kerning_enabled(font, kern_saved);
+
 	r_mat_push();
 	r_mat_translate(16, 0, 0);
 
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
 
-	Font *fnt = get_font("standard");
-	bool kern_saved = font_get_kerning_enabled(fnt);
-	font_set_kerning_enabled(fnt, false);
+	font = get_font("standard");
+	kern_saved = font_get_kerning_enabled(font);
+	font_set_kerning_enabled(font, false);
 
 	// Point Item Value... value
 	format_huge_num(6, global.plr.point_item_value, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.value },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
@@ -1227,7 +1251,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
@@ -1237,14 +1261,14 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	volts_x += text_draw("v", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.dark,
 	});
 
 	volts_x += text_draw(" / ", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.active,
 	});
 
@@ -1253,7 +1277,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
@@ -1263,7 +1287,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	volts_x += text_draw("v", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.dark,
 	});
 
@@ -1272,14 +1296,14 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.graze },
 		.shader_ptr = stagedraw.hud_text.shader,
-		.font_ptr = fnt,
+		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
 		}
 	});
 
-	font_set_kerning_enabled(fnt, kern_saved);
+	font_set_kerning_enabled(font, kern_saved);
 	r_mat_pop();
 
 	// Warning: pops outer matrix!

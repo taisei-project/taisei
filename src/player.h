@@ -103,6 +103,9 @@ struct Player {
 
 	uint64_t points;
 
+	uint64_t extralife_threshold;
+	uint extralives_given;
+
 	uint point_item_value;
 	uint graze;
 	uint voltage;
@@ -214,6 +217,8 @@ bool player_is_alive(Player *plr);
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
 uint player_powersurge_calc_bonus_rate(Player *plr);
+
+uint64_t player_next_extralife_threshold(Player *plr, uint iteration);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);
