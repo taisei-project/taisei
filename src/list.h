@@ -11,13 +11,15 @@
 
 #include "taisei.h"
 
+#define LIST_ALIGN alignas(alignof(max_align_t))
+
 typedef struct ListInterface ListInterface;
 typedef struct List List;
 typedef struct ListAnchorInterface ListAnchorInterface;
 typedef struct ListAnchor ListAnchor;
 typedef struct ListContainer ListContainer;
 
-#define LIST_INTERFACE_BASE(typename) struct { \
+#define LIST_INTERFACE_BASE(typename) LIST_ALIGN struct { \
 	typename *next; \
 	typename *prev; \
 }
@@ -99,84 +101,93 @@ ListContainer* list_wrap_container(void *data) attr_nodiscard;
 #ifdef USE_GNU_EXTENSIONS
 	// thorough safeguard
 
-	#define LIST_CAST(expr,ptrlevel) (__extension__({ \
-		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((ptrlevel (expr)).list_interface)), \
+	#define LIST_CAST(expr) (__extension__ ({ \
+		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((*(expr)).list_interface)), \
 			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(__typeof__(ptrlevel (expr)), list_interface) == 0, \
+		static_assert(__builtin_offsetof(__typeof__(*(expr)), list_interface) == 0, \
 			"list_interface must be the first member in struct"); \
-		(List ptrlevel)(expr); \
+		CASTPTR_ASSUME_ALIGNED((expr), List); \
 	}))
 
-	#define LIST_ANCHOR_CAST(expr,ptrlevel) (__extension__({ \
-		static_assert(__builtin_types_compatible_p(ListAnchorInterface, __typeof__((ptrlevel (expr)).list_anchor_interface)), \
+	#define LIST_CAST_2(expr) (__extension__ ({ \
+		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((**(expr)).list_interface)), \
+			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
+		static_assert(__builtin_offsetof(__typeof__(**(expr)), list_interface) == 0, \
+			"list_interface must be the first member in struct"); \
+		CASTPTR_ASSUME_ALIGNED((expr), List*); \
+	}))
+
+	#define LIST_ANCHOR_CAST(expr) (__extension__ ({ \
+		static_assert(__builtin_types_compatible_p(ListAnchorInterface, __typeof__((*(expr)).list_anchor_interface)), \
 			"struct must implement ListAnchorInterface (use the LIST_ANCHOR_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(__typeof__(ptrlevel (expr)), list_anchor_interface) == 0, \
+		static_assert(__builtin_offsetof(__typeof__(*(expr)), list_anchor_interface) == 0, \
 			"list_anchor_interface must be the first member in struct"); \
-		(ListAnchor ptrlevel)(expr); \
+		CASTPTR_ASSUME_ALIGNED((expr), ListAnchor); \
 	}))
 
-	#define LIST_CAST_RETURN(expr) (__typeof__(expr))
+	#define LIST_CAST_RETURN(e_typekey, e_return) CASTPTR_ASSUME_ALIGNED((e_return), __typeof__(*(e_typekey)))
 #else
 	// basic safeguard
-	#define LIST_CAST(expr,ptrlevel) ((void)sizeof((ptrlevel (expr)).list_interface), (List ptrlevel)(expr))
-	#define LIST_ANCHOR_CAST(expr,ptrlevel) ((void)sizeof((ptrlevel (expr)).list_anchor_interface), (ListAnchor ptrlevel)(expr))
+	#define LIST_CAST(expr, ptrlevel) ((void)sizeof((*(expr)).list_interface), (List*)(expr))
+	#define LIST_CAST_2(expr, ptrlevel) ((void)sizeof((**(expr)).list_interface), (List**)(expr))
+	#define LIST_ANCHOR_CAST(expr) ((void)sizeof((*(expr)).list_anchor_interface), (ListAnchor*)(expr))
 	// don't even think about adding a void* cast here
-	#define LIST_CAST_RETURN(expr)
+	#define LIST_CAST_RETURN(e_typekey, e_return) (e_return)
 #endif
 
 #define list_insert(dest,elem) \
-	(LIST_CAST_RETURN(elem) list_insert(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, list_insert(LIST_CAST_2(dest), LIST_CAST(elem))))
 
 #define alist_insert(dest,ref,elem) \
-	(LIST_CAST_RETURN(elem) alist_insert(LIST_ANCHOR_CAST(dest, *), LIST_CAST(ref, *), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, alist_insert(LIST_ANCHOR_CAST(dest), LIST_CAST(ref), LIST_CAST(elem))))
 
 #define list_push(dest,elem) \
-	(LIST_CAST_RETURN(elem) list_push(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, list_push(LIST_CAST_2(dest), LIST_CAST(elem))))
 
 #define alist_push(dest,elem) \
-	(LIST_CAST_RETURN(elem) alist_push(LIST_ANCHOR_CAST(dest, *), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, alist_push(LIST_ANCHOR_CAST(dest), LIST_CAST(elem))))
 
 #define list_append(dest,elem) \
-	(LIST_CAST_RETURN(elem) list_append(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, list_append(LIST_CAST_2(dest), LIST_CAST(elem))))
 
 #define alist_append(dest,elem) \
-	(LIST_CAST_RETURN(elem) alist_append(LIST_ANCHOR_CAST(dest, *), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, alist_append(LIST_ANCHOR_CAST(dest), LIST_CAST(elem))))
 
 #define list_insert_at_priority_head(dest,elem,prio,prio_func) \
-	(LIST_CAST_RETURN(elem) list_insert_at_priority_head(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem, list_insert_at_priority_head(LIST_CAST_2(dest), LIST_CAST(elem), prio, prio_func)))
 
 #define alist_insert_at_priority_head(dest,elem,prio,prio_func) \
-	(LIST_CAST_RETURN(elem) alist_insert_at_priority_head(LIST_ANCHOR_CAST(dest, *), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem, alist_insert_at_priority_head(LIST_ANCHOR_CAST(dest), LIST_CAST(elem), prio, prio_func)))
 
 #define list_insert_at_priority_tail(dest,elem,prio,prio_func) \
-	(LIST_CAST_RETURN(elem) list_insert_at_priority_tail(LIST_CAST(dest, **), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem, list_insert_at_priority_tail(LIST_CAST_2(dest), LIST_CAST(elem), prio, prio_func)))
 
 #define alist_insert_at_priority_tail(dest,elem,prio,prio_func) \
-	(LIST_CAST_RETURN(elem) alist_insert_at_priority_tail(LIST_ANCHOR_CAST(dest, *), LIST_CAST(elem, *), prio, prio_func))
+	(LIST_CAST_RETURN(elem, alist_insert_at_priority_tail(LIST_ANCHOR_CAST(dest), LIST_CAST(elem), prio, prio_func)))
 
 #define list_pop(dest) \
-	(LIST_CAST_RETURN(*(dest)) list_pop(LIST_CAST(dest, **)))
+	(LIST_CAST_RETURN(*(dest), list_pop(LIST_CAST_2(dest))))
 
 #define alist_pop(dest) \
-	(LIST_CAST_RETURN((dest)->first) alist_pop(LIST_ANCHOR_CAST(dest, *)))
+	(LIST_CAST_RETURN((dest)->first, alist_pop(LIST_ANCHOR_CAST(dest))))
 
 #define list_unlink(dest,elem) \
-	(LIST_CAST_RETURN(elem) list_unlink(LIST_CAST(dest, **), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, list_unlink(LIST_CAST_2(dest), LIST_CAST(elem))))
 
 #define alist_unlink(dest,elem) \
-	(LIST_CAST_RETURN(elem) alist_unlink(LIST_ANCHOR_CAST(dest, *), LIST_CAST(elem, *)))
+	(LIST_CAST_RETURN(elem, alist_unlink(LIST_ANCHOR_CAST(dest), LIST_CAST(elem))))
 
 #define list_foreach(dest,callback,arg) \
-	list_foreach(LIST_CAST(dest, **), callback, arg)
+	list_foreach(LIST_CAST_2(dest), callback, arg)
 
 #define alist_foreach(dest,callback,arg) \
-	alist_foreach(LIST_ANCHOR_CAST(dest, *), callback, arg)
+	alist_foreach(LIST_ANCHOR_CAST(dest), callback, arg)
 
 #define list_free_all(dest) \
-	list_free_all(LIST_CAST(dest, **))
+	list_free_all(LIST_CAST_2(dest))
 
 #define alist_free_all(dest) \
-	alist_free_all(LIST_ANCHOR_CAST(dest, *))
+	alist_free_all(LIST_ANCHOR_CAST(dest))
 
 #endif // LIST_NO_MACROS
 

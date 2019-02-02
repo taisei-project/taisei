@@ -24,6 +24,7 @@ config = configuration_data()
 taisei_c_args = cc.get_supported_arguments(
     '-Wall',
     '-Wpedantic',
+    '-Werror=assume',
     '-Werror=implicit-function-declaration',
 
     #

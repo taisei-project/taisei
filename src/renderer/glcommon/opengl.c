@@ -479,11 +479,11 @@ static void glcommon_ext_vertex_array_object(void) {
 	log_warn("Extension not supported");
 }
 
-static void shim_glClearDepth(GLdouble depthval) {
+static APIENTRY GLvoid shim_glClearDepth(GLdouble depthval) {
 	glClearDepthf(depthval);
 }
 
-static void shim_glClearDepthf(GLfloat depthval) {
+static APIENTRY GLvoid shim_glClearDepthf(GLfloat depthval) {
 	glClearDepth(depthval);
 }
 

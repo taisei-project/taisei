@@ -64,6 +64,7 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 		}
 
 		case ZIP_SOURCE_READ: {
+			assume(tls->stream != NULL);
 			ret = SDL_RWread(tls->stream, data, 1, len);
 
 			if(!ret) {
@@ -78,6 +79,8 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 		case ZIP_SOURCE_SEEK: {
 			struct zip_source_args_seek *s;
 			s = ZIP_SOURCE_GET_ARGS(struct zip_source_args_seek, data, len, &tls->error);
+
+			assume(tls->stream != NULL);
 			ret = SDL_RWseek(tls->stream, s->offset, s->whence);
 
 			if(ret < 0) {
@@ -89,6 +92,7 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 		}
 
 		case ZIP_SOURCE_TELL: {
+			assume(tls->stream != NULL);
 			ret = SDL_RWtell(tls->stream);
 
 			if(ret < 0) {

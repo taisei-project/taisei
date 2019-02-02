@@ -71,11 +71,11 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 	// need to update draw buffers
 	framebuffer->initialized = false;
 
-	if(tex) {
+	IF_DEBUG(if(tex) {
 		log_debug("%s %s = %s (%ux%u mip %u)", framebuffer->debug_label, attachment_str(attachment), tex->debug_label, tex->params.width, tex->params.height, mipmap);
 	} else {
 		log_debug("%s %s = NULL", framebuffer->debug_label, attachment_str(attachment));
-	}
+	});
 }
 
 Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {

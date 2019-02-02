@@ -76,4 +76,6 @@ void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats);
 void objpool_memtest(ObjectPool *pool, ObjectInterface *object);
 size_t objpool_object_size(ObjectPool *pool);
 
+#define OBJPOOL_ACQUIRE(pool, type) CASTPTR_ASSUME_ALIGNED(objpool_acquire(pool), type)
+
 #endif // IGUARD_objectpool_h

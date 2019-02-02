@@ -20,6 +20,8 @@
 #include <math.h>
 #include <complex.h>
 
+#include "util/assert.h"
+
 #ifdef __FAST_MATH__
 	#error -ffast-math is prohibited
 #endif
@@ -63,13 +65,13 @@
 	#endif
 #endif
 
+#define PRAGMA(p) _Pragma(#p)
+
 #ifndef __GNUC__ // clang defines this too
 	#define __attribute__(...)
 	#define __extension__
-	#define PRAGMA(p)
 	#define UNREACHABLE
 #else
-	#define PRAGMA(p) _Pragma(#p)
 	#define USE_GNU_EXTENSIONS
 	#define UNREACHABLE __builtin_unreachable()
 #endif
@@ -80,6 +82,22 @@
 	#else
 		#define __has_attribute(attr) 0
 	#endif
+#endif
+
+#undef ASSUME
+
+#ifdef __has_builtin
+	#if __has_builtin(__builtin_assume)
+		#define ASSUME(x) __builtin_assume(x)
+	#endif
+#endif
+
+#if !defined(ASSUME) && defined(__GNUC__)
+	#define ASSUME(x) do { if(!(x)) { UNREACHABLE; } } while(0)
+#endif
+
+#ifndef ASSUME
+	#define ASSUME(x)
 #endif
 
 // On windows, use the MinGW implementations of printf and friends instead of the crippled mscrt ones.
@@ -203,5 +221,26 @@ typedef signed char schar;
 #else
 	#define attr_designated_init
 #endif
+
+#ifdef NDEBUG
+	#define _ensure_aligned(ptr, alignment) (ptr)
+#else
+	static inline attr_must_inline
+	void* _ensure_aligned(void *ptr, size_t alignment) {
+		assert(((uintptr_t)ptr & (alignment - 1)) == 0);
+		return ptr;
+	}
+#endif
+
+#ifdef USE_GNU_EXTENSIONS
+	#define ASSUME_ALIGNED(expr, alignment) (__extension__ ({ \
+		assert(__builtin_constant_p(alignment)); \
+		__builtin_assume_aligned(_ensure_aligned((expr), (alignment)), (alignment)); \
+	}))
+#else
+	#define ASSUME_ALIGNED(expr, alignment) (expr)
+#endif
+
+#define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
 #endif // IGUARD_util_compat_h

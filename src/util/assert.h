@@ -19,12 +19,17 @@ noreturn void _ts_assert_fail(const char *cond, const char *func, const char *fi
 #define static_assert _Static_assert
 
 #ifdef NDEBUG
-    #define _assert(cond,uselog)
+    #define _assert(cond, uselog)
+	#define _assume(cond, uselog) ASSUME(cond)
 #else
-    #define _assert(cond,uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+    #define _assert(cond, uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+	#define _assume(cond, uselog) _assert(cond, uselog)
 #endif
 
 #define assert(cond) _assert(cond, true)
 #define assert_nolog(cond) _assert(cond, false)
+
+#define assume(cond) _assume(cond, true)
+#define assume_nolog(cond) _assume(cond, false)
 
 #endif // IGUARD_util_assert_h

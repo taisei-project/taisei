@@ -315,6 +315,7 @@ int scythe_reset(Enemy *e, int t) {
 	return 1;
 }
 
+attr_returns_nonnull
 static Enemy* find_scythe(void) {
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == Scythe) {
@@ -322,7 +323,7 @@ static Enemy* find_scythe(void) {
 		}
 	}
 
-	return NULL;
+	UNREACHABLE;
 }
 
 static void elly_frequency(Boss *b, int t) {

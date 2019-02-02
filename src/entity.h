@@ -115,20 +115,21 @@ static inline attr_must_inline const char* ent_type_name(EntityType type) {
 #define ENT_TYPE_ID(typename) (_ENT_TYPEID_##typename)
 
 #ifdef USE_GNU_EXTENSIONS
-	#define ENT_CAST(ent, typename) (__extension__({ \
-		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(*(ent))), \
+	#define ENT_CAST(ent, typename) (__extension__ ({ \
+		__auto_type _ent = ent; \
+		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(*(_ent))), \
 			"Expression is not an EntityInterface pointer"); \
 		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(((typename){}).entity_interface)), \
 			#typename " doesn't implement EntityInterface"); \
 		static_assert(__builtin_offsetof(typename, entity_interface) == 0, \
 			"entity_interface has non-zero offset in " #typename); \
-		IF_DEBUG(if(ent->type != _ENT_TYPEID_##typename) { \
-			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(ent->type)); \
+		IF_DEBUG(if(_ent->type != _ENT_TYPEID_##typename) { \
+			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(_ent->type)); \
 		}); \
-		(typename *)(ent); \
+		CASTPTR_ASSUME_ALIGNED(_ent, typename); \
 	}))
 #else
-	#define ENT_CAST(ent, typename) ((typename *)(ent))
+	#define ENT_CAST(ent, typename) CASTPTR_ASSUME_ALIGNED(ent, typename)
 #endif
 
 void ent_init(void);

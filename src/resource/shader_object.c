@@ -61,6 +61,12 @@ static bool check_shader_object_path(const char *path) {
 
 static void* load_shader_object_begin(const char *path, uint flags) {
 	struct shobj_type *type = get_shobj_type(path);
+
+	if(type == NULL) {
+		log_warn("%s: can not determine shading language and/or shader stage from the filename", path);
+		return NULL;
+	}
+
 	struct shobj_load_data *ldata = calloc(1, sizeof(struct shobj_load_data));
 
 	switch(type->lang) {

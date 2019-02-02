@@ -719,13 +719,12 @@ void stage_loop(StageInfo *stage) {
 			p->unlocked = true;
 		}
 	} else {
-		if(!global.replay_stage) {
-			log_fatal("Attemped to replay a NULL stage");
-			return;
-		}
-
 		ReplayStage *stg = global.replay_stage;
-		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage_get(stg->stage)->title);
+
+		assert(stg != NULL);
+		assert(stage_get(stg->stage) == stage);
+
+		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
 
 		tsrand_seed_p(&global.rand_game, stg->seed);
 		log_debug("Random seed: %u", stg->seed);
