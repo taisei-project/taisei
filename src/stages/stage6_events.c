@@ -1844,13 +1844,17 @@ static int baryon_curvature(Enemy *e, int t) {
 }
 
 static int curvature_bullet(Projectile *p, int t) {
-	if(t < 0) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return ACTION_ACK;
+	} else if(t ==  EVENT_BIRTH) {
 		return ACTION_ACK;
 	}
 
 	if(REF(p->args[1]) == 0) {
 		return 0;
 	}
+
 	float vx, vy, x, y;
 	complex v = ((Enemy *)REF(p->args[1]))->args[0]*0.00005;
 	vx = creal(v);
@@ -1863,14 +1867,14 @@ static int curvature_bullet(Projectile *p, int t) {
 	float f3 = f1-f2*(x*x+y*y);
 	p->pos = global.plr.pos + (f1*v+f2*(x+I*y))/f3+p->args[0]/(1+2*(x*x+y*y)/VIEWPORT_W/VIEWPORT_W);
 
-	if(t == EVENT_DEATH)
-		free_ref(p->args[1]);
-
 	return ACTION_NONE;
 }
 
 static int curvature_orbiter(Projectile *p, int t) {
-	if(t < 0) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return ACTION_ACK;
+	} else if(t ==  EVENT_BIRTH) {
 		return ACTION_ACK;
 	}
 
@@ -1882,9 +1886,6 @@ static int curvature_orbiter(Projectile *p, int t) {
 	} else {
 		p->pos += p->args[2];
 	}
-
-	if(t == EVENT_DEATH)
-		free_ref(p->args[1]);
 
 	return ACTION_NONE;
 }

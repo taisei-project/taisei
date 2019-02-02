@@ -792,8 +792,7 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 		}
 
 		return ACTION_DESTROY;
-	} else if(time < 0)
-		return 1;
+	}
 
 	Laser *laser = (Laser*)REF(p->args[0]);
 
