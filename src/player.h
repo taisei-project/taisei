@@ -218,7 +218,7 @@ bool player_is_alive(Player *plr);
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
 uint player_powersurge_calc_bonus_rate(Player *plr);
 
-uint64_t player_next_extralife_threshold(Player *plr, uint iteration);
+uint64_t player_next_extralife_threshold(uint64_t step);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);

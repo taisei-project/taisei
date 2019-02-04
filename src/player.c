@@ -73,10 +73,10 @@ void player_stage_post_init(Player *plr) {
 
 	player_spawn_focus_circle(plr);
 
-	plr->extralife_threshold = player_next_extralife_threshold(plr, plr->extralives_given);
+	plr->extralife_threshold = player_next_extralife_threshold(plr->extralives_given);
 
 	while(plr->points >= plr->extralife_threshold) {
-		plr->extralife_threshold = player_next_extralife_threshold(plr, ++plr->extralives_given);
+		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
 	}
 }
 
@@ -1336,7 +1336,7 @@ void player_add_points(Player *plr, uint points) {
 
 	while(plr->points >= plr->extralife_threshold) {
 		player_add_lives(plr, 1);
-		plr->extralife_threshold = player_next_extralife_threshold(plr, ++plr->extralives_given);
+		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
 	}
 
 	/*
@@ -1422,15 +1422,9 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 #endif
 }
 
-uint64_t player_next_extralife_threshold(Player *plr, uint iteration) {
-	static const uint64_t base = 5000000;
-	uint64_t result = base;
-
-	while(iteration > 0) {
-		result += base * iteration--;
-	}
-
-	return result;
+uint64_t player_next_extralife_threshold(uint64_t step) {
+	static uint64_t base = 5000000;
+	return base * (step * step + step + 2) / 2;
 }
 
 void player_preload(void) {
