@@ -926,8 +926,7 @@ static int stage1_circletoss(Enemy *e, int time) {
 static int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
-		tsrand_fill(2);
-		spawn_items(e->pos, ITEM_POINTS, afrand(0)>0.5, ITEM_POWER, afrand(1)>0.8, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, NULL);
 		return 1;
 	}
 
@@ -947,7 +946,7 @@ static int stage1_sinepass(Enemy *e, int time) {
 static int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, frand()>0.8, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
 		return 1;
 	}
 	if(t < 0)
