@@ -124,6 +124,7 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 	l->width_exponent = 1.0;
 	l->speed = 1;
 	l->timeshift = 0;
+	l->next_graze = 0;
 	l->clear_flags = 0;
 	l->unclearable = false;
 
@@ -147,6 +148,11 @@ Laser *create_laserline_ab(complex a, complex b, float width, float charge, floa
 	complex m = (b-a)*0.005;
 
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
+}
+
+static double laser_graze_width(Laser *l, double *exponent) {
+	*exponent = 0; // l->width_exponent * 0.5;
+	return 5 * sqrt(l->width) + 15;
 }
 
 static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *out_timeshift) {
@@ -183,6 +189,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 		return;
 	}
 
+
 	r_shader_ptr(l->shader);
 	r_color(&l->color);
 	r_uniform_sampler("tex", "part/lasercurve");
@@ -192,7 +199,24 @@ static void draw_laser_curve_specialized(Laser *l) {
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
 	r_uniform_int("span", instances);
+
+#if 1
 	r_draw_quad_instanced(instances);
+#else
+	double graze_exp;
+
+	r_color(RGBA(0, 0, 0.2, 0.2));
+	r_uniform_sampler("tex", "part/lasercurve");
+	r_uniform_float("width", 2 * laser_graze_width(l, &graze_exp));
+	r_uniform_float("width_exponent", graze_exp);
+	r_draw_quad_instanced(instances);
+
+	r_color(&l->color);
+	r_uniform_sampler("tex", "part/lasercurve");
+	r_uniform_float("width", l->width);
+	r_uniform_float("width_exponent", l->width_exponent);
+	r_draw_quad_instanced(instances);
+#endif
 }
 
 static void draw_laser_curve_generic(Laser *l) {
@@ -402,7 +426,6 @@ static bool collision_laser_curve(Laser *l) {
 	float t_end = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
 	float t_death = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
 	float t = t_end - l->timespan;
-	bool grazed = false;
 
 	if(t < 0) {
 		t = 0;
@@ -412,10 +435,10 @@ static bool collision_laser_curve(Laser *l) {
 	Circle collision_area = { .origin = global.plr.pos };
 
 	for(t += l->collision_step; t <= min(t_end,t_death); t += l->collision_step) {
-		float t1 = t - l->timespan / 2; // i have no idea
+		float t1 = t - l->timespan / 2;
 		float tail = l->timespan / 1.9;
-		float widthfac = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
-		widthfac = max(0.25, pow(widthfac, l->width_exponent));
+		float widthfac_orig = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
+		float widthfac = max(0.25, pow(widthfac_orig, l->width_exponent));
 
 		segment.b = l->prule(l, t);
 		collision_area.radius = widthfac * l->width * 0.5 + 1;
@@ -424,13 +447,15 @@ static bool collision_laser_curve(Laser *l) {
 			return true;
 		}
 
-		if(!grazed && !(global.frames % 4) && global.frames - abs(global.plr.recovery) > 0) {
-			collision_area.radius = l->width * 2+8;
+		if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0) {
+			double exponent;
+			collision_area.radius = laser_graze_width(l, &exponent) * max(0.25, pow(widthfac_orig, exponent));
+			assert(collision_area.radius > 0);
 			float f = lineseg_circle_intersect(segment, collision_area);
 
 			if(f >= 0) {
 				player_graze(&global.plr, segment.a + f * (segment.b - segment.a), 7, 5, &l->color);
-				grazed = true;
+				l->next_graze = global.frames + 4;
 			}
 		}
 

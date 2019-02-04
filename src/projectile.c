@@ -200,7 +200,7 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 }
 
 complex projectile_graze_size(Projectile *p) {
-	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 5) {
+	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 3 && global.frames >= p->graze_cooldown) {
 		complex s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
 		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
 	}
@@ -424,6 +424,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			}
 
 			p->graze_counter++;
+			p->graze_cooldown = global.frames + 12;
 			p->graze_counter_reset_timer = global.frames;
 
 			break;

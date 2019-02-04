@@ -35,6 +35,7 @@ struct Laser {
 	Color color;
 
 	int birthtime;
+	int next_graze;
 	float timespan;
 	float deathtime;
 	float timeshift;

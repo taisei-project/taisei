@@ -95,6 +95,7 @@ struct Projectile {
 	float timeout;
 
 	int graze_counter_reset_timer;
+	int graze_cooldown;
 	short graze_counter;
 
 #ifdef PROJ_DEBUG
