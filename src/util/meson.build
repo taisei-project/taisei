@@ -24,7 +24,7 @@ if is_developer_build
 endif
 
 use_designated_init = cc.compiles('''
-struct { ; } __attribute__((designated_init)) x;
+struct { int dummy; } __attribute__((designated_init)) x;
 ''', name : '__attribute__((designated_init)) with -Werror', args : [ '-Wattributes', '-Werror' ] )
 
 if use_designated_init
