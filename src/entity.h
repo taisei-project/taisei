@@ -108,8 +108,6 @@ static inline attr_must_inline const char* ent_type_name(EntityType type) {
 		#undef ENT_TYPE
 		default: return "ENT_INVALID";
 	}
-
-	UNREACHABLE;
 }
 
 #define ENT_TYPE_ID(typename) (_ENT_TYPEID_##typename)
