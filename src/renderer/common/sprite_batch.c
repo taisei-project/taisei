@@ -183,7 +183,7 @@ void r_flush_sprites(void) {
 }
 
 static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWops *stream) {
-	SpriteAttribs alignas(16) attribs;
+	SpriteAttribs attribs;
 	r_mat_current(MM_MODELVIEW, attribs.transform);
 	r_mat_current(MM_TEXTURE, attribs.tex_transform);
 
