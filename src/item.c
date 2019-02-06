@@ -258,16 +258,12 @@ void process_items(void) {
 				play_sound("item_generic");
 				break;
 			case ITEM_PIV:
-				if(player_is_powersurge_active(&global.plr)) {
-					player_add_points(&global.plr, global.plr.point_item_value / 100);
-				}
-
 				player_add_piv(&global.plr, 1);
 				play_sound("item_generic");
 				break;
 			case ITEM_VOLTAGE:
 				player_add_voltage(&global.plr, 1);
-				player_add_piv(&global.plr, 50);
+				player_add_piv(&global.plr, 10);
 				play_sound("item_generic");
 				break;
 			case ITEM_LIFE:
