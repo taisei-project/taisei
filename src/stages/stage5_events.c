@@ -354,7 +354,8 @@ static Boss *create_iku_mid(void) {
 	b->glowcolor = *RGB(0.2, 0.4, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 
-	boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
+	Attack *a = boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
+	boss_set_attack_bonus(a, 5);
 
 	// suppress the boss death effects (this triggers the "boss fleeing" case)
 	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);

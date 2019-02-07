@@ -26,28 +26,28 @@ struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 32, 24000,
-			cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
+			cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 	},
 
 	.boss = {
 		.crystal_rain = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 28, 33000,
-			cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
+			cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 		.snow_halation = {
 			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 40, 40000,
-			cirno_snow_halation, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
+			cirno_snow_halation, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 		.icicle_fall = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Fall”", 35, 40000,
-			cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
+			cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 	},
 
 	.extra.crystal_blizzard = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
-		cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
+		cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 	},
 };
 

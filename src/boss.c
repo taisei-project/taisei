@@ -784,21 +784,24 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 }
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
+	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = a->failtime > 0;
 
 	int time_left = max(0, a->starttime + a->timeout - global.frames);
-	double sv = a->scorevalue;
 
-	bonus->clear = 0.5 * sv * !bonus->failed;
-	bonus->time = sv * (time_left / (double)a->timeout);
+	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
+	double base = a->bonus_base * 0.5 * (1 + piv_factor);
+
+	bonus->clear = bonus->failed ? 0 : base;
+	bonus->time = survival ? 0 : 0.5 * base * (time_left / (double)a->timeout);
 	bonus->endurance = 0;
 	bonus->survival = 0;
 
 	if(bonus->failed) {
 		bonus->time /= 4;
-		bonus->endurance = sv * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
-	} else if(a->type == AT_SurvivalSpell) {
-		bonus->survival = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
+		bonus->endurance = base * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
+	} else if(survival) {
+		bonus->survival = base * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
 
 	bonus->total = bonus->clear + bonus->time + bonus->endurance + bonus->survival;
@@ -1247,14 +1250,27 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	a->starttime = global.frames;
 
-	// FIXME: figure out a better value/formula, i pulled this out of my ass
-	a->scorevalue = (2000.0 + hp * 0.6) * 10;
+	return a;
+}
 
-	if(a->type == AT_ExtraSpell) {
-		a->scorevalue *= 1.5;
+void boss_set_attack_bonus(Attack *a, int rank) {
+	if(!ATTACK_IS_SPELL(a->type)) {
+		return;
 	}
 
-	return a;
+	if(rank == 0) {
+		log_warn("Bonus rank was not set for this spell!");
+	}
+
+	if(a->type == AT_SurvivalSpell) {
+		a->bonus_base = (2000.0 + 600.0 * (a->timeout / (double)FPS)) * (9 + rank);
+	} else {
+		a->bonus_base = (2000.0 + a->hp * 0.6) * (9 + rank);
+	}
+
+	if(a->type == AT_ExtraSpell) {
+		a->bonus_base *= 1.5;
+	}
 }
 
 static void boss_generic_move(Boss *b, int time) {
@@ -1286,6 +1302,7 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
 	a->info = info;
+	boss_set_attack_bonus(a, info->bonus_rank);
 	return a;
 }
 
