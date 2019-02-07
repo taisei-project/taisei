@@ -23,6 +23,16 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
+use_designated_init = cc.compiles('''
+struct { int dummy; } __attribute__((designated_init)) x;
+''', name : '__attribute__((designated_init)) with -Werror', args : [ '-Wattributes', '-Werror' ] )
+
+if use_designated_init
+    config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', true)
+else
+    config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', false)
+endif
+
 if host_machine.system() == 'windows'
     # NOTE: Even if we ever build this with something like Midipix, we'd
     # probably still want to use the winapi implementation of this here.

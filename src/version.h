@@ -44,7 +44,11 @@ typedef struct TaiseiVersion {
 )
 
 typedef enum {
-	VCMP_MAJOR,
+	// Start filling this enum from nonzero value.
+	// This would help avoid a warning on some compilers like
+	// those with EDG frontend. Actual values of VCMP_...
+	// don't matter, the thing which does matter is its order.
+	VCMP_MAJOR = 1,
 	VCMP_MINOR,
 	VCMP_PATCH,
 	VCMP_TWEAK,

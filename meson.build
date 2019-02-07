@@ -49,6 +49,7 @@ taisei_c_args = cc.get_supported_arguments(
     '-Winit-self',
     '-Wlogical-op',
     '-Wmissing-prototypes',
+    '-Wno-typedef-redefinition',
     '-Wno-long-long',
     '-Wnull-dereference',
     '-Wparentheses',
@@ -56,8 +57,8 @@ taisei_c_args = cc.get_supported_arguments(
     '-Wsometimes-uninitialized',
     '-Wstrict-prototypes',
     '-Wtype-limits',
-    '-Wunneeded-internal-declaration',
     '-Wunreachable-code',
+    '-Wunneeded-internal-declaration',
     '-Wunreachable-code-loop-increment',
 )
 

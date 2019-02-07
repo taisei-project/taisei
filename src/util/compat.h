@@ -215,7 +215,7 @@ typedef signed char schar;
 	__attribute__ ((always_inline))
 
 // Structure must not be initialized with an implicit (non-designated) initializer.
-#if __has_attribute(designated_init)
+#if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_USE_DESIGNATED_INIT)
 	#define attr_designated_init \
 		__attribute__ ((designated_init))
 #else
