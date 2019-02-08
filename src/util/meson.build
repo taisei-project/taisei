@@ -25,15 +25,11 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
-use_designated_init = cc.compiles('''
-struct { int dummy; } __attribute__((designated_init)) x;
-''', name : '__attribute__((designated_init)) with -Werror', args : [ '-Wattributes', '-Werror' ] )
-
-if use_designated_init
-    config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', true)
-else
-    config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', false)
-endif
+config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', cc.compiles(
+    'struct { int dummy; } __attribute__((designated_init)) x;',
+    name : '__attribute__((designated_init)) with -Werror',
+    args : ['-Wattributes', '-Werror']
+))
 
 use_libcrypto = get_option('use_libcrypto')
 
