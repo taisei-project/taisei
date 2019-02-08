@@ -14,7 +14,7 @@
 #include "util.h"
 #include "util/pixmap.h"
 #include "color.h"
-#include "common/shader.h"
+#include "common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
 
 typedef struct Texture Texture;

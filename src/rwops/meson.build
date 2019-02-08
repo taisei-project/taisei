@@ -1,6 +1,7 @@
 
 rwops_src = files(
     'rwops_autobuf.c',
+    'rwops_crc32.c',
     'rwops_dummy.c',
     'rwops_segment.c',
     'rwops_zlib.c',

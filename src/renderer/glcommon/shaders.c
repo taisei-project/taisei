@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "shaders.h"
-#include "../common/shader_glsl.h"
 #include "util.h"
 #include "opengl.h"
 #include "rwops/rwops_autobuf.h"

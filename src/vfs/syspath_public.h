@@ -19,4 +19,6 @@ enum {
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags)
 	attr_nonnull(1, 2) attr_nodiscard;
 
+char vfs_get_syspath_separator(void);
+
 #endif // IGUARD_vfs_syspath_public_h

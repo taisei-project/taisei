@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef IGUARD_renderer_common_shader_glsl_h
-#define IGUARD_renderer_common_shader_glsl_h
+#ifndef IGUARD_renderer_common_shaderlib_lang_glsl_h
+#define IGUARD_renderer_common_shaderlib_lang_glsl_h
 
 #include "taisei.h"
 
-#include "shader_defs.h"
+#include "defs.h"
 
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,
@@ -41,4 +41,4 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 char* glsl_parse_version(const char *str, GLSLVersion *out_version);
 int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version);
 
-#endif // IGUARD_renderer_common_shader_glsl_h
+#endif // IGUARD_renderer_common_shaderlib_lang_glsl_h

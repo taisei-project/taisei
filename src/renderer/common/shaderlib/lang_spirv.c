@@ -8,11 +8,13 @@
 
 #include "taisei.h"
 
-#include "../common/shader.h"
+#include "shaderlib.h"
+#include "lang_spirv_private.h"
 
 #include "util.h"
-#include "shaderc/shaderc.h"
-#include "crossc.h"
+
+#include <shaderc/shaderc.h>
+#include <crossc.h>
 
 static shaderc_compiler_t spirv_compiler;
 
@@ -77,7 +79,7 @@ void spirv_shutdown_compiler(void) {
 	}
 }
 
-bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
+bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
 	if(in->lang.lang != SHLANG_GLSL) {
 		log_warn("Unsupported source language");
 		return false;
@@ -184,7 +186,7 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 	return true;
 }
 
-bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
+bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
 	if(in->lang.lang != SHLANG_SPIRV) {
 		log_warn("Source is not a SPIR-V binary");
 		return false;
@@ -235,63 +237,4 @@ crossc_error:
 	log_warn("crossc error: %s", crossc_strerror(cc));
 	crossc_destroy(cc);
 	return false;
-}
-
-static bool lang_supports_uniform_locations(const ShaderLangInfo *lang) {
-	if(lang->lang != SHLANG_GLSL) {
-		return false; // FIXME?
-	}
-
-	if(lang->glsl.version.profile == GLSL_PROFILE_ES) {
-		return lang->glsl.version.version >= 310;
-	} else {
-		return lang->glsl.version.version >= 430;
-	}
-}
-
-bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) {
-	ShaderSource spirv = { 0 };
-	bool result;
-
-	ShaderSource _in = *in;
-	in = &_in;
-
-	if(
-		!lang_supports_uniform_locations(&_in.lang) &&
-		lang_supports_uniform_locations(options->lang) &&
-		_in.lang.lang == SHLANG_GLSL
-	) {
-		// HACK: This is annoying... shaderc/glslang does not support GL_ARB_explicit_uniform_location
-		// for some reason. Until there's a better solution, we'll try to compile the shader using a
-		// higher version.
-
-		if(_in.lang.glsl.version.profile == GLSL_PROFILE_ES) {
-			_in.lang.glsl.version.version = 310;
-		} else {
-			_in.lang.glsl.version.version = 430;
-		}
-	}
-
-	result = spirv_compile(in, &spirv, &(SPIRVCompileOptions) {
-		.target = SPIRV_TARGET_OPENGL_450, // TODO: specify this in the shader
-		.optimization_level = options->optimization_level,
-		.filename = options->filename,
-
-		// Preserve names of declarations.
-		// This can be vital for shader interface matching.
-		.debug_info = true,
-	});
-
-	if(result) {
-		result = spirv_decompile(&spirv, out, &(SPIRVDecompileOptions) {
-			.lang = options->lang,
-		});
-
-		if(result) {
-			log_debug("%s: translated code:\n%s", options->filename, out->content);
-		}
-	}
-
-	free(spirv.content);
-	return result;
 }

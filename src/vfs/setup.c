@@ -26,7 +26,7 @@ static char* get_default_res_path(void) {
 	return res;
 }
 
-static void get_core_paths(char **res, char **storage) {
+static void get_core_paths(char **res, char **storage, char **cache) {
 	if(*(*res = (char*)env_get("TAISEI_RES_PATH", ""))) {
 		*res = strdup(*res);
 	} else {
@@ -37,6 +37,13 @@ static void get_core_paths(char **res, char **storage) {
 		*storage = strdup(*storage);
 	} else {
 		*storage = SDL_GetPrefPath("", "taisei");
+	}
+
+	if(*(*cache = (char*)env_get("TAISEI_CACHE_PATH", ""))) {
+		*cache = strdup(*cache);
+	} else {
+		// TODO: follow XDG on linux
+		*cache = strfmt("%s%ccache", *storage, vfs_get_syspath_separator());
 	}
 }
 
@@ -116,27 +123,33 @@ static void load_packages(const char *dir, const char *unionmp) {
 }
 
 void vfs_setup(bool silent) {
-	char *res_path, *storage_path;
-	get_core_paths(&res_path, &storage_path);
+	char *res_path, *storage_path, *cache_path;
+	get_core_paths(&res_path, &storage_path, &cache_path);
+
+	char *local_res_path = strfmt("%s/resources", storage_path);
 
 	if(!silent) {
 		log_info("Resource path: %s", res_path);
 		log_info("Storage path: %s", storage_path);
+		log_info("Local resource path: %s", local_res_path);
+		log_info("Cache path: %s", cache_path);
 	}
 
-	char *p = NULL;
-
 	struct mpoint_t {
-		const char *dest;   const char *syspath;                      bool loadpaks; uint flags;
+		const char *dest;    const char *syspath; bool loadpaks; uint flags;
 	} mpts[] = {
 		// per-user directory, where configs, replays, screenshots, etc. get stored
-		{"storage",         storage_path,                             false,         VFS_SYSPATH_MOUNT_MKDIR },
+		{ "storage",         storage_path,        false,         VFS_SYSPATH_MOUNT_MKDIR },
 
 		// system-wide directory, contains all of the game assets
-		{"resdirs",         res_path,                                 true,          VFS_SYSPATH_MOUNT_READONLY },
+		{ "resdirs",         res_path,            true,          VFS_SYSPATH_MOUNT_READONLY },
 
 		// subpath of storage, files here override the global assets
-		{"resdirs",         p = strfmt("%s/resources", storage_path), true,          VFS_SYSPATH_MOUNT_MKDIR | VFS_SYSPATH_MOUNT_READONLY },
+		{ "resdirs",         local_res_path,      true,          VFS_SYSPATH_MOUNT_MKDIR | VFS_SYSPATH_MOUNT_READONLY },
+
+		// per-user directory, to contain various cached resources to speed up loading times
+		{ "cache",           cache_path,          false,         VFS_SYSPATH_MOUNT_MKDIR },
+
 		{NULL}
 	};
 
@@ -179,9 +192,10 @@ void vfs_setup(bool silent) {
 	vfs_mkdir_required("storage/replays");
 	vfs_mkdir_required("storage/screenshots");
 
-	free(p);
+	free(local_res_path);
 	free(res_path);
 	free(storage_path);
+	free(cache_path);
 
 	// set up the final "res" union and get rid of the temporaries
 

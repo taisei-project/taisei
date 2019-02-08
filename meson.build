@@ -64,6 +64,7 @@ taisei_c_args = cc.get_supported_arguments(
 
 static = get_option('static')
 
+dep_crossc      = dependency('crossc',         version : '>=1.5.0', required : false, static : static, fallback : ['crossc', 'crossc_dep'])
 dep_freetype    = dependency('freetype2',                           required : true,  static : static)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static)
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : true,  static : static)
@@ -72,8 +73,17 @@ dep_webp        = dependency('libwebp',        version : '>=0.5',   required : f
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zip         = dependency('libzip',         version : '>=1.0',   required : false, static : static)
 dep_zlib        = dependency('zlib',                                required : true,  static : static)
+dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 
-dep_m           = cc.find_library('m',                              required : false)
+# Thanks, google.
+# https://github.com/google/shaderc/issues/392
+if static
+    dep_shaderc = cc.find_library('shaderc_combined', required : false)
+else
+    dep_shaderc = cc.find_library('shaderc_shared', required : false)
+endif
+
+dep_m           = cc.find_library('m', required : false)
 
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')

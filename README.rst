@@ -16,23 +16,30 @@ Installation
 Dependencies
 ^^^^^^^^^^^^
 
--  SDL2 >= 2.0.5, SDL2_mixer
--  zlib
--  libzip >= 1.0
+-  OpenGL >= 3.3 or OpenGL ES >= 3.0
+-  SDL2 >= 2.0.5
+-  SDL2_mixer
+-  freetype2
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  freetype2
--  OpenGL >= 3.3 or OpenGL ES >= 3.0
--  libshaderc (optional, for OpenGL ES backends)
--  crossc >= 1.5.0 (optional, for OpenGL ES backends)
+-  libzip >= 1.0
+-  zlib
+
+Optional:
+
+-  OpenSSL (for a better SHA-256 implementation; used in shader cache)
+-  crossc >= 1.5.0 (for OpenGL ES backends)
+-  libshaderc (for OpenGL ES backends)
 
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
--  meson >= 0.45.0 (build system)
 -  Python >= 3.4
--  pkg-config
--  docutils (optional, for documentation)
+-  meson >= 0.45.0 (build system)
+
+Optional:
+
+-  docutils (for documentation)
 
 To build and install Taisei just follow these steps.
 

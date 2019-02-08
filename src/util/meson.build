@@ -1,4 +1,6 @@
 
+util_deps = []
+
 util_src = files(
     'assert.c',
     'crap.c',
@@ -31,6 +33,26 @@ if use_designated_init
     config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', true)
 else
     config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', false)
+endif
+
+use_libcrypto = get_option('use_libcrypto')
+
+if use_libcrypto == 'auto'
+    use_libcrypto = dep_crypto.found()
+else
+    use_libcrypto = (use_libcrypto == 'true')
+endif
+
+if use_libcrypto
+    assert(dep_crypto.found(), 'use_libcrypto forced but libcrypto not found. Install OpenSSL or disable use_libcrypto.')
+    util_src += files('sha256_openssl.c')
+    util_deps += [dep_crypto]
+else
+    assert(host_machine.endian() == 'little',
+        'The built-in SHA-256 implementation only supports little-endian CPUs. Enable use_libcrypto to use the OpenSSL version, or send a patch with a better implementation :)'
+    )
+
+    util_src += files('sha256_le.c')
 endif
 
 if host_machine.system() == 'windows'

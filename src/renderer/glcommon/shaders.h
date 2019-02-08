@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "../common/shader.h"
+#include "../common/shaderlib/shaderlib.h"
 
 extern ShaderLangInfo *glcommon_shader_lang_table;
 

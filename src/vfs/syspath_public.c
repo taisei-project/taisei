@@ -34,3 +34,7 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
 
 	return vfs_mount_or_decref(vfs_root, mountpoint, rdir);
 }
+
+char vfs_get_syspath_separator(void) {
+	return vfs_syspath_preferred_separator;
+}

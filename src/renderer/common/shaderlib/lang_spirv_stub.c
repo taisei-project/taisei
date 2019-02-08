@@ -8,23 +8,19 @@
 
 #include "taisei.h"
 
-#include "../common/shader_spirv.h"
+#include "shaderlib.h"
+#include "lang_spirv_private.h"
 #include "util.h"
 
 void spirv_init_compiler(void) { }
 void spirv_shutdown_compiler(void) { }
 
-bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
+bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
 	log_warn("Compiled without SPIR-V support");
 	return false;
 }
 
-bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
-	log_warn("Compiled without SPIR-V support");
-	return false;
-}
-
-bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) {
+bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
 	log_warn("Compiled without SPIR-V support");
 	return false;
 }

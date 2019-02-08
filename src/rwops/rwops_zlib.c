@@ -265,7 +265,7 @@ static size_t inflate_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum)
 	}
 
 	z->pos += (totalsize - z->stream->avail_out);
-	return (totalsize - z->stream->avail_out) / maxnum;
+	return (totalsize - z->stream->avail_out) / size;
 }
 
 static size_t inflate_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {

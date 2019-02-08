@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef IGUARD_renderer_common_shader_defs_h
-#define IGUARD_renderer_common_shader_defs_h
+#ifndef IGUARD_renderer_common_shaderlib_defs_h
+#define IGUARD_renderer_common_shaderlib_defs_h
 
 #include "taisei.h"
 
@@ -26,4 +26,4 @@ typedef enum ShaderLanguage {
 typedef struct ShaderSource ShaderSource;
 typedef struct ShaderLangInfo ShaderLangInfo;
 
-#endif // IGUARD_renderer_common_shader_defs_h
+#endif // IGUARD_renderer_common_shaderlib_defs_h

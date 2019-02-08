@@ -141,6 +141,11 @@ taisei_src += [
     vfs_src,
 ]
 
+taisei_deps += [
+    renderer_deps,
+    util_deps,
+]
+
 if taisei_deps.contains(dep_sdl2_mixer)
     taisei_src += files(
         'audio_mixer.c',
@@ -150,8 +155,6 @@ else
         'audio_null.c',
     )
 endif
-
-taisei_deps += renderer_deps
 
 if macos_app_bundle
     taisei_exe_name = 'Taisei'

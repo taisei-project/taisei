@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include "shader.h"
+#include "shaderlib.h"
 #include "rwops/rwops_autobuf.h"
 #include "vfs/pathutil.h"
 #include "vfs/public.h"

@@ -6,14 +6,16 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef IGUARD_renderer_common_shader_h
-#define IGUARD_renderer_common_shader_h
+#ifndef IGUARD_renderer_common_shaderlib_shaderlib_h
+#define IGUARD_renderer_common_shaderlib_shaderlib_h
 
 #include "taisei.h"
 
-#include "shader_defs.h"
-#include "shader_glsl.h"
-#include "shader_spirv.h"
+#include "defs.h"
+#include "cache.h"
+
+#include "lang_glsl.h"
+#include "lang_spirv.h"
 
 struct ShaderLangInfo {
 	ShaderLanguage lang;
@@ -36,4 +38,4 @@ struct ShaderSource {
 	ShaderStage stage;
 };
 
-#endif // IGUARD_renderer_common_shader_h
+#endif // IGUARD_renderer_common_shaderlib_shaderlib_h
