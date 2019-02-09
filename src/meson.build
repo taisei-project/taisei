@@ -165,6 +165,7 @@ endif
 taisei_exe = executable(taisei_exe_name, taisei_src, version_deps,
     dependencies : taisei_deps,
     c_args : taisei_c_args,
+    c_pch : 'pch/taisei_pch.h',
     gui_app : not get_option('win_console'),
     install : true,
     install_dir : bindir,

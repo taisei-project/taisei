@@ -12,10 +12,3 @@ if taisei_deps.contains(dep_zip)
         'rwops_zipfile.c',
     )
 endif
-
-if have_posix
-    rwops_src += files('rwops_pipe_posix.c')
-else
-    rwops_src += files('rwops_pipe_null.c')
-endif
-

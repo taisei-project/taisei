@@ -96,8 +96,6 @@ ListContainer* list_wrap_container(void *data) attr_nodiscard;
 
 // type-generic macros
 
-#ifndef LIST_NO_MACROS
-
 #ifdef USE_GNU_EXTENSIONS
 	// thorough safeguard
 
@@ -188,7 +186,5 @@ ListContainer* list_wrap_container(void *data) attr_nodiscard;
 
 #define alist_free_all(dest) \
 	alist_free_all(LIST_ANCHOR_CAST(dest))
-
-#endif // LIST_NO_MACROS
 
 #endif // IGUARD_list_h

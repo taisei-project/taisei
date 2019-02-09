@@ -13,7 +13,6 @@
 
 #include "rwops_autobuf.h"
 #include "rwops_crc32.h"
-#include "rwops_pipe.h"
 #include "rwops_segment.h"
 #include "rwops_zlib.h"
 

@@ -11,11 +11,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define LIST_NO_MACROS
-
 #include "list.h"
 #include "global.h"
 
+#undef list_insert
 List* list_insert(List **dest, List *elem) {
 	elem->prev = *dest;
 
@@ -35,6 +34,7 @@ List* list_insert(List **dest, List *elem) {
 	return elem;
 }
 
+#undef alist_insert
 List* alist_insert(ListAnchor *list, List *ref, List *elem) {
 	elem->prev = ref;
 
@@ -64,6 +64,7 @@ List* alist_insert(ListAnchor *list, List *ref, List *elem) {
 	return elem;
 }
 
+#undef list_push
 List* list_push(List **dest, List *elem) {
 	if(*dest) {
 		(*dest)->prev = elem;
@@ -76,6 +77,7 @@ List* list_push(List **dest, List *elem) {
 	return elem;
 }
 
+#undef alist_push
 List* alist_push(ListAnchor *list, List *elem) {
 	elem->next = list->first;
 	elem->prev = NULL;
@@ -92,6 +94,7 @@ List* alist_push(ListAnchor *list, List *elem) {
 	return elem;
 }
 
+#undef list_append
 List* list_append(List **dest, List *elem) {
 	if(*dest == NULL) {
 		return list_insert(dest, elem);
@@ -105,6 +108,7 @@ List* list_append(List **dest, List *elem) {
 	return list_insert(&end, elem);
 }
 
+#undef alist_append
 List* alist_append(ListAnchor *list, List *elem) {
 	elem->next = NULL;
 	elem->prev = list->last;
@@ -169,10 +173,12 @@ static List* list_insert_at_priority(List **list_head, List *elem, int prio, Lis
 	return elem;
 }
 
+#undef list_insert_at_priority_head
 List* list_insert_at_priority_head(List **dest, List *elem, int prio, ListPriorityFunc prio_func) {
 	return list_insert_at_priority(dest, elem, prio, prio_func, true);
 }
 
+#undef alist_insert_at_priority_head
 List* alist_insert_at_priority_head(ListAnchor *list, List *elem, int prio, ListPriorityFunc prio_func) {
 	if(list->first == NULL) {
 		assert(list->last == NULL);
@@ -217,10 +223,12 @@ List* alist_insert_at_priority_head(ListAnchor *list, List *elem, int prio, List
 	return elem;
 }
 
+#undef list_insert_at_priority_tail
 List* list_insert_at_priority_tail(List **dest, List *elem, int prio, ListPriorityFunc prio_func) {
 	return list_insert_at_priority(dest, elem, prio, prio_func, false);
 }
 
+#undef alist_insert_at_priority_tail
 List* alist_insert_at_priority_tail(ListAnchor *list, List *elem, int prio, ListPriorityFunc prio_func) {
 	if(list->last == NULL) {
 		assert(list->first == NULL);
@@ -268,6 +276,7 @@ List* alist_insert_at_priority_tail(ListAnchor *list, List *elem, int prio, List
 	return elem;
 }
 
+#undef list_unlink
 List* list_unlink(List **dest, List *elem) {
 	if(elem->prev != NULL) {
 		elem->prev->next = elem->next;
@@ -284,6 +293,7 @@ List* list_unlink(List **dest, List *elem) {
 	return elem;
 }
 
+#undef alist_unlink
 List* alist_unlink(ListAnchor *list, List *elem) {
 	if(list->last == elem) {
 		list->last = list->last->prev;
@@ -292,6 +302,7 @@ List* alist_unlink(ListAnchor *list, List *elem) {
 	return list_unlink(&list->first, elem);
 }
 
+#undef list_pop
 List* list_pop(List **dest) {
 	if(*dest == NULL) {
 		return NULL;
@@ -300,6 +311,7 @@ List* list_pop(List **dest) {
 	return list_unlink(dest, *dest);
 }
 
+#undef alist_pop
 List* alist_pop(ListAnchor *list) {
 	if(list->first == NULL) {
 		return NULL;
@@ -308,6 +320,7 @@ List* alist_pop(ListAnchor *list) {
 	return alist_unlink(list, list->first);
 }
 
+#undef list_foreach
 void* list_foreach(List **dest, ListForeachCallback callback, void *arg) {
 	void *ret = NULL;
 
@@ -322,6 +335,7 @@ void* list_foreach(List **dest, ListForeachCallback callback, void *arg) {
 	return ret;
 }
 
+#undef alist_foreach
 void* alist_foreach(ListAnchor *list, ListAnchorForeachCallback callback, void *arg) {
 	void *ret = NULL;
 
@@ -348,10 +362,12 @@ void* alist_callback_free_element(ListAnchor *list, List *elem, void *arg) {
 	return NULL;
 }
 
+#undef list_free_all
 void list_free_all(List **dest) {
 	list_foreach(dest, list_callback_free_element, NULL);
 }
 
+#undef alist_free_all
 void alist_free_all(ListAnchor *list) {
 	alist_foreach(list, alist_callback_free_element, NULL);
 }

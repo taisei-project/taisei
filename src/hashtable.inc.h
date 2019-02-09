@@ -212,8 +212,7 @@
  * If HT_DECL is defined, this header will generate declarations of the API types
  * and functions. This should be used in headers.
  *
- * If HT_IMPL is defined, then HT_DECL is implied, and definitions of the API
- * functions are also generated.
+ * If HT_IMPL is defined, this header will generate definitions of the API functions.
  *
  *  * Example:
  *
@@ -222,8 +221,6 @@
  */
 #if !defined(HT_DECL) && !defined(HT_IMPL)
 	#error neither HT_DECL nor HT_IMPL defined
-#elif defined(HT_IMPL) && !defined(HT_DECL)
-	#define HT_DECL
 #endif
 
 /*

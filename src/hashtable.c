@@ -8,9 +8,11 @@
 
 #include "taisei.h"
 
-#define HT_IMPL
 #include "hashtable.h"
 #include "util.h"
+
+#define HT_IMPL
+#include "hashtable_predefs.inc.h"
 
 uint32_t (*htutil_hashfunc_string)(uint32_t crc, const char *str);
 
