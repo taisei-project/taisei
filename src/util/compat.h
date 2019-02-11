@@ -136,7 +136,10 @@ typedef signed char schar;
 // Taisei code always uses just "complex" when it actually means "complex double", which is not really correct.
 // gcc doesn't seem to care, other compilers do (e.g. clang)
 #undef complex
-#define complex _Complex double
+// typedef it for convenience
+typedef _Complex double complex;
+// standard says `complex` should be a macro
+#define complex complex
 
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute
 #if !defined CMPLX
