@@ -21,7 +21,7 @@ subdir('scripts')
 
 config = configuration_data()
 
-taisei_c_args = cc.get_supported_arguments(
+taisei_c_args = [
     '-Wall',
     '-Wpedantic',
     '-Werror=assume',
@@ -60,7 +60,14 @@ taisei_c_args = cc.get_supported_arguments(
     '-Wunneeded-internal-declaration',
     '-Wunreachable-code',
     '-Wunreachable-code-loop-increment',
-)
+]
+
+if get_option('b_pch')
+    # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
+    taisei_c_args += ['-fpch-deps']
+endif
+
+taisei_c_args = cc.get_supported_arguments(taisei_c_args)
 
 static = get_option('static')
 
