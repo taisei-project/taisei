@@ -735,13 +735,7 @@ void player_realdeath(Player *plr) {
 	player_set_power(plr, total_power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
-
-	drop = plr->voltage * 0.1;
-	plr->voltage = plr->voltage * 0.95 - drop;
-
-	if(drop > 0) {
-		spawn_items(plr->deathpos, ITEM_VOLTAGE, drop, NULL);
-	}
+	plr->voltage *= 0.9;
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
