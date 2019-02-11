@@ -1397,6 +1397,11 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		}
 	}
 
+	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
+		double rate = target->type == ENT_BOSS ? 110 : 256;
+		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate), NULL);
+	}
+
 	if(player_is_powersurge_active(plr)) {
 		plr->powersurge.damage_done += damage->amount;
 		plr->powersurge.damage_accum += damage->amount;
