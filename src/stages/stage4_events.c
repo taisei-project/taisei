@@ -1427,7 +1427,7 @@ void stage4_events(void) {
 	AT(0) {
 		stage_start_bgm("stage4");
 		stage4_skip(env_get("STAGE4_TEST", 0));
-		stage_set_voltage_thresholds(100, 220, 500, 800);
+		stage_set_voltage_thresholds(170, 340, 660, 1040);
 	}
 
 	AT(70) {

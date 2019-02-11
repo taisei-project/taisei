@@ -778,7 +778,7 @@ void stage2_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage2");
-		stage_set_voltage_thresholds(100, 220, 500, 800);
+		stage_set_voltage_thresholds(75, 175, 400, 720);
 	}
 
 	AT(300) {
