@@ -77,6 +77,15 @@ enum {
 
 typedef struct Player Player;
 
+typedef struct PowerSurgeBonus {
+	uint baseline;
+	uint score;
+	uint gain_rate;
+	float discharge_power;
+	float discharge_range;
+	float discharge_damage;
+} PowerSurgeBonus;
+
 struct Player {
 	ENTITY_INTERFACE_NAMED(Player, ent);
 
@@ -96,9 +105,10 @@ struct Player {
 		struct {
 			int activated, expired;
 		} time;
-		int bonus;
+		int power;
 		double damage_done;
 		double damage_accum;
+		PowerSurgeBonus bonus;
 	} powersurge;
 
 	uint64_t points;
@@ -139,14 +149,6 @@ struct Player {
 	int dmglog[240];
 #endif
 };
-
-typedef struct PowerSurgeBonus {
-	uint baseline;
-	uint score;
-	float discharge_power;
-	float discharge_range;
-	float discharge_damage;
-} PowerSurgeBonus;
 
 // this is used by both player and replay code
 enum {
@@ -216,7 +218,6 @@ bool player_is_vulnerable(Player *plr);
 bool player_is_alive(Player *plr);
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
-uint player_powersurge_calc_bonus_rate(Player *plr);
 
 uint64_t player_next_extralife_threshold(uint64_t step);
 

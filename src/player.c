@@ -249,9 +249,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		r_state_pop();
 
 		char buf[64];
-		PowerSurgeBonus bonus;
-		player_powersurge_calc_bonus(&global.plr, &bonus);
-		format_huge_num(0, bonus.baseline, sizeof(buf), buf);
+		format_huge_num(0, global.plr.powersurge.bonus.baseline, sizeof(buf), buf);
 		Font *fnt = get_font("monotiny");
 
 		float x = creal(e->pos);
@@ -267,7 +265,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 			.align = ALIGN_CENTER,
 		});
 
-		snprintf(buf, sizeof(buf), " +%i", player_powersurge_calc_bonus_rate(&global.plr));
+		snprintf(buf, sizeof(buf), " +%u", global.plr.powersurge.bonus.gain_rate);
 
 		text_draw(buf, &(TextParams) {
 			.shader = "text_hud",
@@ -280,18 +278,6 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		r_shader("sprite_filled_circle");
 		r_uniform_vec4("color_inner", 0, 0, 0, 0);
 		r_uniform_vec4("color_outer", 0, 0, 0.1 * ps_opacity, 0.1 * ps_opacity);
-
-		Sprite dummy = {
-			.w = 1,
-			.h = 1,
-			.tex = get_sprite("focus")->tex,
-		};
-
-		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = &dummy,
-			.pos = { creal(e->pos), cimag(e->pos) },
-			.scale = { .x = bonus.discharge_range*2, .y = bonus.discharge_range*2 },
-		});
 	}
 }
 
@@ -364,10 +350,10 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 
 static void powersurge_trail_draw(Projectile *p, int t) {
 	if(t > 0) {
-		_powersurge_trail_draw(p, t - 0.5, 0.5);
-		_powersurge_trail_draw(p, t, 0.5);
+		_powersurge_trail_draw(p, t - 0.5, 0.25);
+		_powersurge_trail_draw(p, t, 0.25);
 	} else {
-		_powersurge_trail_draw(p, t, 1);
+		_powersurge_trail_draw(p, t, 0.5);
 	}
 }
 
@@ -388,19 +374,45 @@ static int powersurge_trail(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-uint player_powersurge_calc_bonus_rate(Player *plr) {
-	return round(1000 * plr->powersurge.negative * plr->powersurge.negative);
-}
-
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
-	b->baseline = plr->powersurge.bonus + plr->powersurge.damage_done * 0.8;
+	b->gain_rate = round(1000 * plr->powersurge.negative * plr->powersurge.negative);
+	b->baseline = plr->powersurge.power + plr->powersurge.damage_done * 0.8;
 	b->score = b->baseline;
 	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
 	b->discharge_range = 1.2 * b->discharge_power;
 	b->discharge_damage = 10 * pow(b->discharge_power, 1.1);
 }
 
+static int powersurge_charge_particle(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
+	Player *plr = &global.plr;
+
+	if(player_is_alive(plr)) {
+		p->pos = plr->pos;
+	}
+
+	return ACTION_NONE;
+}
+
 static void player_powersurge_logic(Player *plr) {
+	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
+	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
+
+	if(plr->powersurge.positive <= plr->powersurge.negative) {
+		player_powersurge_expired(plr);
+		return;
+	}
+
+	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
+	// plr->powersurge.bonus.gain_rate = 100;
+
 	PARTICLE(
 		.sprite_ptr = memdup(aniplayer_get_frame(&plr->ani), sizeof(Sprite)),
 		.pos = plr->pos,
@@ -412,32 +424,39 @@ static void player_powersurge_logic(Player *plr) {
 		.flags = PFLAG_NOREFLECT,
 	);
 
-	plr->powersurge.bonus += player_powersurge_calc_bonus_rate(plr);
+	if(!(global.frames % 6)) {
+		Sprite *spr = get_sprite("part/powersurge_field");
+		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
+		double angle = frand() * 2 * M_PI;
 
-	/*
-	if(player_should_shoot(plr, true)) {
-		int count = 3;
+		PARTICLE(
+			.sprite_ptr = spr,
+			.pos = plr->pos,
+			.color = color_mul_scalar(frand() < 0.5 ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
+			.rule = powersurge_charge_particle,
+			.draw_rule = ScaleFade,
+			.timeout = 14,
+			.angle = angle,
+			.args = { 0, 0, (1+I)*scale, 0},
+			.layer = LAYER_PLAYER - 1,
+			.flags = PFLAG_NOREFLECT,
+		);
 
-		for(int i = 0; i < count; ++i) {
-			float a = (2 * i * M_PI) / count + global.frames * M_PI * 0.47;
-
-			for(int j = -1; j < 2; j += 2) {
-				PROJECTILE(
-					.sprite_ptr = get_sprite("part/stain"),
-					.size = 32 * (1 + I),
-					.pos = plr->pos,
-					.color = color_mul_scalar(RGBA(1.0, 0.3 * psin(global.frames / 5.0), 0, 0.25), 0.025),
-					.rule = linear,
-					.args = { 10 * cexp(I*a) * j },
-					.type = PlrProj,
-					.damage = 10,
-					.shader = "sprite_default",
-					.layer = LAYER_PLAYER_SHOT - 1,
-				);
-			}
-		}
+		PARTICLE(
+			.sprite_ptr = spr,
+			.pos = plr->pos,
+			.color = RGBA(0.5, 0.5, 0.5, 0),
+			.rule = powersurge_charge_particle,
+			.draw_rule = ScaleFade,
+			.timeout = 3,
+			.angle = angle,
+			.args = { 0, 0, (1+I)*scale, 0},
+			.layer = LAYER_PLAYER - 1,
+			.flags = PFLAG_NOREFLECT,
+		);
 	}
-	*/
+
+	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
 }
 
 void player_logic(Player* plr) {
@@ -464,14 +483,7 @@ void player_logic(Player* plr) {
 	}
 
 	if(player_is_powersurge_active(plr)) {
-		plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
-		plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
-
-		if(plr->powersurge.positive <= plr->powersurge.negative) {
-			player_powersurge_expired(plr);
-		} else {
-			player_powersurge_logic(plr);
-		}
+		player_powersurge_logic(plr);
 	}
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
@@ -563,7 +575,7 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.positive = 1.0;
 	plr->powersurge.negative = 0.0;
 	plr->powersurge.time.activated = global.frames;
-	plr->powersurge.bonus = 0;
+	plr->powersurge.power = 0;
 	plr->powersurge.damage_accum = 0;
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
