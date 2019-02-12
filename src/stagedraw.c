@@ -795,7 +795,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				r_uniform_float("t", (t + delay) / duration);
 			} else {
 				int tn = global.frames - b->current->endtime;
-				float delay = b->current->endtime - b->current->endtime_undelayed;
+				delay = b->current->endtime - b->current->endtime_undelayed;
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
