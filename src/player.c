@@ -1266,22 +1266,16 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 		color_mul_scalar(c, 0.4);
 	}
 
-	/*
-	if(player_is_powersurge_active(plr)) {
-		spawn_items(pos, BPoint, 1, NULL);
-	} else {
-		if(!(plr->graze % 5)) {
-			spawn_items(pos, MiniPower, 1, NULL);
-		}
-	}
-	*/
-
 	spawn_items(pos, ITEM_POWER_MINI, 1, NULL);
 }
 
-static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd) {
-	if(*pwhole >= maxwhole) {
-		return;
+static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd, int score_per_excess) {
+	int total_frags = *pfrags + maxfrags * *pwhole;
+	int excess_frags = total_frags + frags - maxwhole * maxfrags;
+
+	if(excess_frags > 0) {
+		player_add_points(plr, excess_frags * score_per_excess);
+		frags -= excess_frags;
 	}
 
 	*pfrags += frags;
@@ -1307,16 +1301,30 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 }
 
 void player_add_life_fragments(Player *plr, int frags) {
-	player_add_fragments(plr, frags, &plr->lives, &plr->life_fragments, PLR_MAX_LIFE_FRAGMENTS, PLR_MAX_LIVES,
+	player_add_fragments(
+		plr,
+		frags,
+		&plr->lives,
+		&plr->life_fragments,
+		PLR_MAX_LIFE_FRAGMENTS,
+		PLR_MAX_LIVES,
 		"item_generic", // FIXME: replacement needed
-		"extra_life"
+		"extra_life",
+		(plr->point_item_value * 10) / PLR_MAX_LIFE_FRAGMENTS
 	);
 }
 
 void player_add_bomb_fragments(Player *plr, int frags) {
-	player_add_fragments(plr, frags, &plr->bombs, &plr->bomb_fragments, PLR_MAX_BOMB_FRAGMENTS, PLR_MAX_BOMBS,
+	player_add_fragments(
+		plr,
+		frags,
+		&plr->bombs,
+		&plr->bomb_fragments,
+		PLR_MAX_BOMB_FRAGMENTS,
+		PLR_MAX_BOMBS,
 		"item_generic",  // FIXME: replacement needed
-		"extra_bomb"
+		"extra_bomb",
+		(plr->point_item_value * 5) / PLR_MAX_BOMB_FRAGMENTS
 	);
 }
 
@@ -1328,17 +1336,6 @@ void player_add_bombs(Player *plr, int bombs) {
 	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
 }
 
-attr_unused
-static void try_spawn_bonus_item(Player *plr, ItemType type, uint oldpoints, uint reqpoints) {
-	int items = plr->points / reqpoints - oldpoints / reqpoints;
-
-	if(items > 0) {
-		complex p = creal(plr->pos);
-		create_item(p, -5*I, type);
-		spawn_items(p, type, --items, NULL);
-	}
-}
-
 void player_add_points(Player *plr, uint points) {
 	attr_unused uint old = plr->points;
 	plr->points += points;
@@ -1347,13 +1344,6 @@ void player_add_points(Player *plr, uint points) {
 		player_add_lives(plr, 1);
 		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
 	}
-
-	/*
-	if(global.stage->type != STAGE_SPELL) {
-		try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
-		try_spawn_bonus_item(plr, BombFrag, old, PLR_SCORE_PER_BOMB_FRAG);
-	}
-	*/
 }
 
 void player_add_piv(Player *plr, uint piv) {
