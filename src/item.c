@@ -277,7 +277,7 @@ void process_items(void) {
 				player_add_life_fragments(&global.plr, 1);
 				break;
 			case ITEM_BOMB_FRAGMENT:
-				player_add_bomb_fragments(&global.plr, 1);
+				player_add_bomb_fragments(&global.plr, PLR_MAX_BOMB_FRAGMENTS / 5);
 				break;
 			}
 		}

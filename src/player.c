@@ -1364,6 +1364,8 @@ void player_add_voltage(Player *plr, uint voltage) {
 	} else {
 		plr->voltage = v;
 	}
+
+	player_add_bomb_fragments(plr, voltage);
 }
 
 bool player_drain_voltage(Player *plr, uint voltage) {
