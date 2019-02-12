@@ -75,12 +75,18 @@ enum {
 
 	FPS = 60,
 
+	GAMEOVER_SCORE_DELAY = 60,
+};
+
+typedef enum GameoverType {
+	GAMEOVER_NONE,
 	GAMEOVER_DEFEAT = 1,
 	GAMEOVER_WIN,
 	GAMEOVER_ABORT,
 	GAMEOVER_RESTART,
-	GAMEOVER_TRANSITIONING = -1,
-};
+	GAMEOVER_SCORESCREEN = -1,
+	GAMEOVER_TRANSITIONING = -2,
+} GameoverType;
 
 typedef struct {
 	int8_t diff; // this holds values of type Difficulty, but should be signed to prevent obscure overflow errors
@@ -103,7 +109,8 @@ typedef struct {
 
 	RefArray refs;
 
-	int game_over;
+	GameoverType gameover;
+	int gameover_time;
 
 	struct {
 		FPSCounter logic;

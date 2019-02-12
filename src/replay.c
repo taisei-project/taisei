@@ -802,19 +802,19 @@ void replay_play(Replay *rpy, int firstidx) {
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		stage_loop(gstg);
 
-		if(global.game_over == GAMEOVER_ABORT) {
+		if(global.gameover == GAMEOVER_ABORT) {
 			break;
 		}
 
-		if(global.game_over == GAMEOVER_RESTART) {
+		if(global.gameover == GAMEOVER_RESTART) {
 			rstg->desynced = false;
 			--i;
 		}
 
-		global.game_over = 0;
+		global.gameover = 0;
 	}
 
-	global.game_over = 0;
+	global.gameover = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
 	global.replay_stage = NULL;

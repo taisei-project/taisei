@@ -357,7 +357,7 @@ void delete_lasers(void) {
 	alist_foreach(&global.lasers, _delete_laser, NULL);
 }
 
-bool clear_laser(LaserList *laserlist, Laser *l, uint flags) {
+bool clear_laser(Laser *l, uint flags) {
 	if(!(flags & CLEAR_HAZARDS_FORCE) && l->unclearable) {
 		return false;
 	}
@@ -370,8 +370,13 @@ static bool collision_laser_curve(Laser *l);
 
 void process_lasers(void) {
 	Laser *laser = global.lasers.first, *del = NULL;
+	bool stage_cleared = stage_is_cleared();
 
 	while(laser != NULL) {
+		if(stage_cleared) {
+			clear_laser(laser, CLEAR_HAZARDS_LASERS | CLEAR_HAZARDS_FORCE);
+		}
+
 		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {
 			// TODO: implement CLEAR_HAZARDS_NOW
 

@@ -203,7 +203,7 @@ void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
 void player_add_piv(Player *plr, uint piv);
 void player_add_voltage(Player *plr, uint voltage);
-void player_drain_voltage(Player *plr, uint voltage);
+bool player_drain_voltage(Player *plr, uint voltage);
 void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);

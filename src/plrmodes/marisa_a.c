@@ -338,7 +338,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
-		if(!global.game_over && creal(laser_renderer->args[0])) {
+		if(!(global.gameover > 0) && creal(laser_renderer->args[0])) {
 			spawn_laser_fader(e, laser_renderer->args[0]);
 		}
 

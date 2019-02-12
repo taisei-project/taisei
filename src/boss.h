@@ -86,6 +86,7 @@ typedef struct Attack {
 	int starttime;
 	int timeout;
 	int endtime;
+	int endtime_undelayed;
 
 	float bonus_base;
 	float maxhp;
@@ -152,7 +153,8 @@ void process_boss(Boss **boss) attr_nonnull(1);
 
 void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
 void draw_boss_background(Boss *boss) attr_nonnull(1);
-void draw_boss_hud(Boss *boss) attr_nonnull(1);
+void draw_boss_overlay(Boss *boss) attr_nonnull(1);
+void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;

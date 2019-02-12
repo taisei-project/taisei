@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
 		do {
 			global.replay_stage = NULL;
 			replay_init(&global.replay);
-			global.game_over = 0;
+			global.gameover = 0;
 			player_init(&global.plr);
 
 			if(a.plrmode) {
@@ -298,10 +298,10 @@ int main(int argc, char **argv) {
 
 			stage_loop(stg);
 
-			if(global.game_over == GAMEOVER_RESTART) {
+			if(global.gameover == GAMEOVER_RESTART) {
 				replay_destroy(&global.replay);
 			}
-		} while(global.game_over == GAMEOVER_RESTART);
+		} while(global.gameover == GAMEOVER_RESTART);
 
 		ask_save_replay();
 		return 0;

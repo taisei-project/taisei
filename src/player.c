@@ -405,13 +405,16 @@ static void player_powersurge_logic(Player *plr) {
 	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
 	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
 
+	if(stage_is_cleared()) {
+		player_cancel_powersurge(plr);
+	}
+
 	if(plr->powersurge.positive <= plr->powersurge.negative) {
 		player_powersurge_expired(plr);
 		return;
 	}
 
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
-	// plr->powersurge.bonus.gain_rate = 100;
 
 	PARTICLE(
 		.sprite_ptr = memdup(aniplayer_get_frame(&plr->ani), sizeof(Sprite)),
@@ -805,7 +808,7 @@ static int player_death_effect(Projectile *p, int t) {
 }
 
 void player_death(Player *plr) {
-	if(!player_is_vulnerable(plr)) {
+	if(!player_is_vulnerable(plr) || stage_is_cleared()) {
 		return;
 	}
 
@@ -1373,9 +1376,16 @@ void player_add_voltage(Player *plr, uint voltage) {
 	}
 }
 
-void player_drain_voltage(Player *plr, uint voltage) {
+bool player_drain_voltage(Player *plr, uint voltage) {
 	// TODO: animate (or maybe handle that at stagedraw level)
-	plr->voltage -= imin(voltage, plr->voltage);
+
+	if(plr->voltage >= voltage) {
+		plr->voltage -= voltage;
+		return true;
+	}
+
+	plr->voltage = 0;
+	return false;
 }
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage) {

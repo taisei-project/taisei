@@ -1020,7 +1020,7 @@ static int kurumi_extra_dead_shield(Enemy *e, int time) {
 
 static int kurumi_extra_shield(Enemy *e, int time) {
 	if(time == EVENT_DEATH) {
-		if(global.boss && !global.game_over && !boss_is_dying(global.boss) && e->args[2] == 0) {
+		if(global.boss && !(global.gameover > 0) && !boss_is_dying(global.boss) && e->args[2] == 0) {
 			create_enemy2c(e->pos, ENEMY_IMMUNE, KurumiSlave, kurumi_extra_dead_shield, e->args[0], e->args[1]);
 		}
 		return 1;
@@ -1502,7 +1502,7 @@ void stage4_events(void) {
 	AT(5400 + midboss_time)
 		global.dialog = stage4_dialog_post_boss();
 
-	AT(5550 + midboss_time - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(5405 + midboss_time) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

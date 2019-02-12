@@ -79,10 +79,10 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 			}
 		}
 
-		if(global.game_over == GAMEOVER_RESTART) {
+		if(global.gameover == GAMEOVER_RESTART) {
 			replay_destroy(&global.replay);
 			replay_init(&global.replay);
-			global.game_over = 0;
+			global.gameover = 0;
 			player_init(&global.plr);
 			global.plr.mode = mode;
 
@@ -95,7 +95,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
 	global.replay_stage = NULL;
 
-	if(global.game_over == GAMEOVER_WIN && !info) {
+	if(global.gameover == GAMEOVER_WIN && !info) {
 		ending_loop();
 		credits_loop();
 		free_resources(false);
@@ -104,7 +104,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 	start_bgm("menu");
 	replay_destroy(&global.replay);
 	main_menu_update_practice_menus();
-	global.game_over = 0;
+	global.gameover = 0;
 }
 
 void start_game(MenuData *m, void *arg) {

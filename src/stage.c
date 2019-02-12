@@ -204,7 +204,7 @@ StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
 static void stage_start(StageInfo *stage) {
 	global.timer = 0;
 	global.frames = 0;
-	global.game_over = 0;
+	global.gameover = 0;
 	global.shake_view = 0;
 	global.voltage_threshold = 0;
 
@@ -248,10 +248,10 @@ static void stage_ingame_menu_loop(MenuData *menu) {
 	pause_sounds();
 	menu_loop(menu);
 
-	if(global.game_over) {
+	if(global.gameover > 0) {
 		stop_sounds();
 
-		if(ingame_menu_interrupts_bgm() || global.game_over != GAMEOVER_RESTART) {
+		if(ingame_menu_interrupts_bgm() || global.gameover != GAMEOVER_RESTART) {
 			stage_fade_bgm();
 		}
 	} else {
@@ -261,7 +261,7 @@ static void stage_ingame_menu_loop(MenuData *menu) {
 }
 
 void stage_pause(void) {
-	if(global.game_over == GAMEOVER_TRANSITIONING) {
+	if(global.gameover == GAMEOVER_TRANSITIONING) {
 		return;
 	}
 
@@ -278,7 +278,7 @@ void stage_pause(void) {
 
 void stage_gameover(void) {
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
-		global.game_over = GAMEOVER_RESTART;
+		global.gameover = GAMEOVER_RESTART;
 		return;
 	}
 
@@ -318,6 +318,47 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 	return false;
 }
 
+static bool stage_input_key_filter(KeyIndex key, bool is_release) {
+	if(key == KEY_HAHAIWIN) {
+		IF_DEBUG(
+			if(!is_release) {
+				stage_finish(GAMEOVER_WIN);
+			}
+		);
+
+		return false;
+	}
+
+	IF_NOT_DEBUG(
+		if(
+			key == KEY_IDDQD ||
+			code == KEY_POWERUP ||
+			code == KEY_POWERDOWN
+		) {
+			return false;
+		}
+	);
+
+	if(stage_is_cleared()) {
+		if(key == KEY_SHOT) {
+			if(
+				global.gameover == GAMEOVER_SCORESCREEN &&
+				global.frames - global.gameover_time > GAMEOVER_SCORE_DELAY * 2
+			) {
+				if(!is_release) {
+					stage_finish(GAMEOVER_WIN);
+				}
+			}
+		}
+
+		if(key == KEY_BOMB || key == KEY_SPECIAL) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
@@ -328,25 +369,15 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 
 	switch(type) {
 		case TE_GAME_KEY_DOWN:
-			if(code == KEY_HAHAIWIN) {
-#ifdef DEBUG
-				stage_finish(GAMEOVER_WIN);
-#endif
-				break;
+			if(stage_input_key_filter(code, false)) {
+				player_event_with_replay(&global.plr, EV_PRESS, code);
 			}
-
-#ifndef DEBUG // no cheating for peasants
-			if( code == KEY_IDDQD ||
-				code == KEY_POWERUP ||
-				code == KEY_POWERDOWN)
-				break;
-#endif
-
-			player_event_with_replay(&global.plr, EV_PRESS, code);
 			break;
 
 		case TE_GAME_KEY_UP:
-			player_event_with_replay(&global.plr, EV_RELEASE, code);
+			if(stage_input_key_filter(code, true)) {
+				player_event_with_replay(&global.plr, EV_RELEASE, code);
+			}
 			break;
 
 		case TE_GAME_AXIS_LR:
@@ -385,7 +416,7 @@ static void replay_input(void) {
 
 		switch(e->type) {
 			case EV_OVER:
-				global.game_over = GAMEOVER_DEFEAT;
+				global.gameover = GAMEOVER_DEFEAT;
 				break;
 
 			case EV_CHECK_DESYNC:
@@ -437,7 +468,7 @@ static void stage_logic(void) {
 
 	if(global.replaymode == REPLAY_PLAY &&
 		global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
-		global.game_over != GAMEOVER_TRANSITIONING) {
+		global.gameover != GAMEOVER_TRANSITIONING) {
 		stage_finish(GAMEOVER_DEFEAT);
 	}
 }
@@ -448,7 +479,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 			next = p->next;
 
 			if(!predicate || predicate(&p->ent, arg)) {
-				clear_projectile(&global.projs, p, flags);
+				clear_projectile(p, flags);
 			}
 		}
 	}
@@ -458,7 +489,7 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 			next = l->next;
 
 			if(!predicate || predicate(&l->ent, arg)) {
-				clear_laser(&global.lasers, l, flags);
+				clear_laser(l, flags);
 			}
 		}
 	}
@@ -516,29 +547,35 @@ static void stage_free(void) {
 }
 
 static void stage_finalize(void *arg) {
-	global.game_over = (intptr_t)arg;
+	global.gameover = (intptr_t)arg;
 }
 
 void stage_finish(int gameover) {
-	// assert(global.game_over != GAMEOVER_TRANSITIONING);
+	assert(global.gameover != GAMEOVER_TRANSITIONING);
 
-	if(global.game_over == GAMEOVER_TRANSITIONING) {
-		log_debug("Requested gameover %i, but already transitioning", gameover);
-		return;
+	int prev_gameover = global.gameover;
+	global.gameover_time = global.frames;
+
+	if(gameover == GAMEOVER_SCORESCREEN) {
+		global.gameover = GAMEOVER_SCORESCREEN;
+	} else {
+		global.gameover = GAMEOVER_TRANSITIONING;
+		set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
+		stage_fade_bgm();
 	}
 
-	global.game_over = GAMEOVER_TRANSITIONING;
-	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
-	stage_fade_bgm();
+	if(
+		global.replaymode != REPLAY_PLAY &&
+		prev_gameover != GAMEOVER_SCORESCREEN &&
+		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
+	) {
+		StageProgress *p = stage_get_progress_from_info(global.stage, global.diff, true);
 
-	if(global.replaymode == REPLAY_PLAY || gameover != GAMEOVER_WIN) {
-		return;
-	}
+		if(p) {
+			++p->num_cleared;
+		}
 
-	StageProgress *p = stage_get_progress_from_info(global.stage, global.diff, true);
-
-	if(p) {
-		++p->num_cleared;
+		log_debug("Stage cleared %u times now", p->num_cleared);
 	}
 }
 
@@ -590,6 +627,10 @@ void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunati
 	}
 }
 
+bool stage_is_cleared(void) {
+	return global.gameover == GAMEOVER_SCORESCREEN || global.gameover == GAMEOVER_TRANSITIONING;
+}
+
 typedef struct StageFrameState {
 	StageInfo *stage;
 	int transition_delay;
@@ -605,6 +646,38 @@ static void stage_update_fps(StageFrameState *fstate) {
 			fstate->last_replay_fps = replay_fps;
 		}
 	}
+}
+
+static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonus) {
+	// FIXME: this is clunky...
+	if(!global.is_practice_mode && stage->type == STAGE_STORY) {
+		StageInfo *next = stage_get(stage->id + 1);
+
+		if(next == NULL || next->type != STAGE_STORY) {
+			bonus->all_clear = true;
+		}
+	}
+
+	if(stage->type == STAGE_STORY) {
+		bonus->base = stage->id * 1000000;
+	} else {
+		bonus->base = 0;
+	}
+
+	if(bonus->all_clear) {
+		bonus->base += global.plr.point_item_value * 100;
+		bonus->graze = global.plr.graze * (global.plr.point_item_value / 10);
+	} else {
+		bonus->graze = 0;
+	}
+
+	bonus->voltage = global.plr.voltage * (global.plr.point_item_value / 100);
+	bonus->lives = global.plr.lives * global.plr.point_item_value * 5;
+
+	// TODO: maybe a difficulty multiplier?
+
+	bonus->total = bonus->base + bonus->voltage + bonus->lives;
+	player_add_points(&global.plr, bonus->total);
 }
 
 static FrameAction stage_logic_frame(void *arg) {
@@ -627,9 +700,15 @@ static FrameAction stage_logic_frame(void *arg) {
 
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
-	if(global.game_over != GAMEOVER_TRANSITIONING) {
+	if(global.gameover != GAMEOVER_TRANSITIONING) {
 		if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
 			stage->procs->event();
+		}
+
+		if(global.gameover == GAMEOVER_SCORESCREEN && global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY) {
+			StageClearBonus b;
+			stage_give_clear_bonus(stage, &b);
+			stage_display_clear_screen(&b);
 		}
 
 		if(stage->type == STAGE_SPELL && !global.boss && !fstate->transition_delay) {
@@ -654,7 +733,7 @@ static FrameAction stage_logic_frame(void *arg) {
 		progress.hiscore = global.plr.points;
 	}
 
-	if(global.game_over > 0) {
+	if(global.gameover > 0) {
 		return LFRAME_STOP;
 	}
 
@@ -692,9 +771,9 @@ void stage_loop(StageInfo *stage) {
 	assert(stage->procs->update);
 	assert(stage->procs->shader_rules);
 
-	if(global.game_over == GAMEOVER_WIN) {
-		global.game_over = 0;
-	} else if(global.game_over) {
+	if(global.gameover == GAMEOVER_WIN) {
+		global.gameover = 0;
+	} else if(global.gameover) {
 		return;
 	}
 
@@ -759,7 +838,7 @@ void stage_loop(StageInfo *stage) {
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
 
-		if(global.game_over == GAMEOVER_WIN) {
+		if(global.gameover == GAMEOVER_WIN) {
 			global.replay_stage->flags |= REPLAY_SFLAG_CLEAR;
 		}
 	}
@@ -775,6 +854,6 @@ void stage_loop(StageInfo *stage) {
 	stop_sounds();
 
 	if(taisei_quit_requested()) {
-		global.game_over = GAMEOVER_ABORT;
+		global.gameover = GAMEOVER_ABORT;
 	}
 }

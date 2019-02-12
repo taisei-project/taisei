@@ -1302,7 +1302,7 @@ void stage5_events(void) {
 		global.dialog = stage5_dialog_post_boss();
 	}
 
-	AT(7210 - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(6985) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

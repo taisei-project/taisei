@@ -194,7 +194,7 @@ Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, uint flags);
+bool clear_projectile(Projectile *proj, uint flags);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

@@ -513,8 +513,16 @@ static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) 
 	delete_projectile(projlist, proj);
 }
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, uint flags) {
-	if(proj->type == PlrProj || (!(flags & CLEAR_HAZARDS_FORCE) && !projectile_is_clearable(proj))) {
+bool clear_projectile(Projectile *proj, uint flags) {
+	switch(proj->type) {
+		case PlrProj:
+		case Particle:
+			return false;
+
+		default: break;
+	}
+
+	if(!(flags & CLEAR_HAZARDS_FORCE) && !projectile_is_clearable(proj)) {
 		return false;
 	}
 
@@ -529,10 +537,16 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 
 	char killed = 0;
 	int action;
+	bool stage_cleared = stage_is_cleared();
 
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 		proj->prevpos = proj->pos;
+
+		if(stage_cleared) {
+			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
+		}
+
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
@@ -553,6 +567,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			}
 		} else {
 			memset(&col, 0, sizeof(col));
+			set_debug_info(&proj->debug);
 
 			if(!projectile_in_viewport(proj)) {
 				col.fatal = true;

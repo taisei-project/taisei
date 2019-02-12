@@ -101,6 +101,15 @@ typedef struct StageInfo {
 
 extern StageInfo *stages;
 
+typedef struct StageClearBonus {
+	uint64_t base;
+	uint64_t lives;
+	uint64_t voltage;
+	uint64_t graze;
+	uint64_t total;
+	bool all_clear;
+} StageClearBonus;
+
 StageInfo* stage_get(uint16_t);
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
 
@@ -133,6 +142,8 @@ void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags fla
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags);
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic);
+
+bool stage_is_cleared(void);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

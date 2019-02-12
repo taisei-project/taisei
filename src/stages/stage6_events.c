@@ -2905,7 +2905,7 @@ void stage6_events(void) {
 	AT(3800)
 		global.boss = create_elly();
 
-	AT(4160 - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(3805) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

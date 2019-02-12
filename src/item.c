@@ -190,6 +190,7 @@ void process_items(void) {
 	Item *item = global.items.first, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
+	bool stage_cleared = stage_is_cleared();
 
 	while(item != NULL) {
 		bool may_collect = true;
@@ -218,7 +219,7 @@ void process_items(void) {
 
 		if(may_collect) {
 			if(plr_alive) {
-				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) {
+				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) || stage_cleared) {
 					collect_item(item, 1);
 				} else if(cabs(global.plr.pos - item->pos) < r) {
 					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H);

@@ -56,6 +56,11 @@ static struct {
 		ShaderProgram *copy_depth;
 	} shaders;
 
+	struct {
+		float alpha;
+		float target_alpha;
+	} clear_screen;
+
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
@@ -370,6 +375,9 @@ void stage_draw_init(void) {
 	#endif
 
 	stage_draw_setup_framebuffers();
+
+	stagedraw.clear_screen.alpha = 0;
+	stagedraw.clear_screen.target_alpha = 0;
 
 	events_register_handler(&(EventHandler) {
 		stage_draw_event, NULL, EPRIO_SYSTEM,
@@ -787,14 +795,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				r_uniform_float("t", (t + delay) / duration);
 			} else {
 				int tn = global.frames - b->current->endtime;
-
-				if(boss_is_dying(b)) {
-					delay = BOSS_DEATH_DELAY;
-				} else if(b->current->type == AT_ExtraSpell) {
-					delay = ATTACK_END_DELAY_EXTRA;
-				} else {
-					delay = ATTACK_END_DELAY;
-				}
+				float delay = b->current->endtime - b->current->endtime_undelayed;
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
@@ -882,7 +883,7 @@ static void stage_draw_objects(void) {
 	);
 
 	if(global.boss) {
-		draw_boss_hud(global.boss);
+		draw_boss_fake_overlay(global.boss);
 	}
 
 	if(global.dialog) {
@@ -891,7 +892,26 @@ static void stage_draw_objects(void) {
 
 	stage_draw_collision_areas();
 	r_shader_standard();
+}
+
+static void stage_draw_overlay(void) {
+	r_state_push();
+	r_shader("sprite_default");
+	r_blend(BLEND_PREMUL_ALPHA);
+
+	if(global.boss) {
+		draw_boss_overlay(global.boss);
+	}
+
+	fapproach_p(&stagedraw.clear_screen.alpha, stagedraw.clear_screen.target_alpha, 0.01);
+
+	if(stagedraw.clear_screen.alpha > 0) {
+		fade_out(stagedraw.clear_screen.alpha * 0.5);
+	}
+
+	r_shader_standard();
 	stagetext_draw();
+	r_state_pop();
 }
 
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s) {
@@ -998,9 +1018,16 @@ void stage_draw_scene(StageInfo *stage) {
 	r_framebuffer(NULL);
 	set_ortho(SCREEN_W, SCREEN_H);
 
-	// draw the game viewport and HUD
+	// draw viewport contents
 	stage_draw_foreground();
-	r_blend(BLEND_PREMUL_ALPHA);
+
+	// draw overlay (in-viewport text and HUD elements, etc.)
+	r_mat_push();
+	r_mat_translate(VIEWPORT_X, VIEWPORT_Y, 0);
+	stage_draw_overlay();
+	r_mat_pop();
+
+	// draw HUD
 	stage_draw_hud();
 }
 
@@ -1473,6 +1500,8 @@ void stage_draw_hud(void) {
 	r_draw_model("hud");
 	r_mat_pop();
 
+	r_blend(BLEND_PREMUL_ALPHA);
+
 	// TODO: refactor this whole mess of arcane magic numbers into something more sensible
 	// hahaha who am I kidding, nobody is gonna do that.
 
@@ -1666,4 +1695,31 @@ void stage_draw_hud(void) {
 		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
 		r_color4(1, 1, 1, 1);
 	}
+}
+
+void stage_display_clear_screen(const StageClearBonus *bonus) {
+	StageTextTable tbl;
+	stagetext_begin_table(&tbl, bonus->all_clear ? "All Clear!" : "Stage Clear!", RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2,
+		20, 5184000, 60, 60);
+	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus->base);
+	stagetext_table_add_numeric_nonzero(&tbl, "Life bonus", bonus->lives);
+	stagetext_table_add_numeric_nonzero(&tbl, "Voltage bonus", bonus->voltage);
+	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
+	stagetext_table_add_separator(&tbl);
+	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
+	stagetext_end_table(&tbl);
+
+	stagetext_add(
+		"Press Fire to continue",
+		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
+		ALIGN_CENTER,
+		get_font("standard"),
+		RGB(1, 0.5, 0),
+		tbl.delay,
+		tbl.lifetime,
+		tbl.fadeintime,
+		tbl.fadeouttime
+	);
+
+	stagedraw.clear_screen.target_alpha = 1;
 }

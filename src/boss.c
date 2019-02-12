@@ -132,15 +132,6 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
-	// If the player hasn't gathered enough voltage, skip any extra spells,
-	// as well as any attacks associated with them.
-	//
-	// (For example, the "Generic move" that might have been automatically added by
-	// boss_add_attack_from_info. this is what the a->info->type check is for.)
-	if(global.plr.voltage < global.voltage_threshold && (a->type == AT_ExtraSpell || (a->info && a->info->type == AT_ExtraSpell))) {
-		return true;
-	}
-
 	// Immediates are handled in a special way by process_boss,
 	// but may be considered skipped/nonexistent for other purposes
 	if(a->type == AT_Immediate) {
@@ -595,8 +586,6 @@ void draw_boss_background(Boss *boss) {
 }
 
 static void ent_draw_boss(EntityInterface *ent) {
-	// TODO: separate overlay from this
-
 	Boss *boss = ENT_CAST(ent, Boss);
 
 	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
@@ -615,12 +604,16 @@ static void ent_draw_boss(EntityInterface *ent) {
 	r_color4(1, 1, 1, 1);
 }
 
-void draw_boss_hud(Boss *boss) {
+void draw_boss_fake_overlay(Boss *boss) {
+	if(healthbar_style_is_radial()) {
+		draw_radial_healthbar(boss);
+	}
+}
+
+void draw_boss_overlay(Boss *boss) {
 	bool radial_style = healthbar_style_is_radial();
 
-	if(radial_style) {
-		draw_radial_healthbar(boss);
-	} else {
+	if(!radial_style) {
 		draw_linear_healthbar(boss);
 	}
 
@@ -816,8 +809,8 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	bool extra = a->type == AT_ExtraSpell;
 
 	const char *title = extra ?
-	                    (bonus.failed ? "Extra Spell failed..." : "Extra Spell cleared!"):
-	                    (bonus.failed ?       "Spell failed..." :       "Spell cleared!");
+	                    (bonus.failed ? "Extra Spell failed..." : "Extra Spell captured!"):
+	                    (bonus.failed ? "Spell Card failed..."  : "Spell Card captured!");
 
 	char diff_bonus_text[6];
 	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
@@ -862,7 +855,7 @@ static int attack_end_delay(Boss *boss) {
 		Attack *next = boss_get_next_attack(boss);
 
 		if(next && next->type == AT_ExtraSpell) {
-			delay += ATTACK_END_DELAY_PRE_EXTRA;
+			// delay += ATTACK_END_DELAY_PRE_EXTRA;
 		}
 	}
 
@@ -915,7 +908,35 @@ void boss_finish_current_attack(Boss *boss) {
 		}
 	}
 
+	Attack *next = boss_get_next_attack(boss);
+
+	if(next != NULL && next->type == AT_ExtraSpell) {
+		// Unfortunately, we can't just put the voltage threshold condition into
+		// boss_should_skip_attack, because we intend to drain the voltage when
+		// the extra spell is about to start, which would automatically cancel it.
+		// If the next attack is an extra spell, we must decide right here and now
+		// whether it should be skipped or not. Delaying the decision will interfere
+		// with the death animation, if the extra spell happens to be the last (the
+		// common case). So we go out of our way to "predict" the future voltage
+		// value - these items will be collected during the downtime, and we'll
+		// drain the voltage when the extra spell is actually supposed to start.
+
+		uint voltage = global.plr.voltage;
+
+		for(Item *i = global.items.first; i; i = i->next) {
+			if(i->type == ITEM_VOLTAGE && i->auto_collect) {
+				voltage += 1;
+			}
+		}
+
+		if(voltage < global.voltage_threshold) {
+			// Not enough, cancel it
+			next->timeout = 0;
+		}
+	}
+
 	boss->current->endtime = global.frames + attack_end_delay(boss);
+	boss->current->endtime_undelayed = global.frames;
 }
 
 void process_boss(Boss **pboss) {
@@ -941,6 +962,7 @@ void process_boss(Boss **pboss) {
 	if(boss->current->type == AT_Immediate) {
 		boss->current->finished = true;
 		boss->current->endtime = global.frames;
+		boss->current->endtime_undelayed = global.frames;
 	}
 
 	int time = global.frames - boss->current->starttime;
@@ -1104,6 +1126,11 @@ void process_boss(Boss **pboss) {
 				}
 
 				continue;
+			}
+
+			// Cancellation is handled in boss_finish_current_attack of previous attack
+			if(boss->current->type == AT_ExtraSpell) {
+				player_drain_voltage(&global.plr, global.voltage_threshold);
 			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
