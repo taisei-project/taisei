@@ -48,15 +48,6 @@ static int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("shot_special1", 30, false);
 			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
 			spawn_projectile_highlight_effect(p);
-
-			PARTICLE(
-				.sprite = "stain",
-				.pos = p->pos,
-				.color = RGBA_MUL_ALPHA(0.45, 0.45, 0.5, 0.0),
-				.timeout = 10 + 2 * creal(p->args[1]),
-				.draw_rule = GrowFade,
-				.angle = p->angle,
-			);
 		}
 
 		p->pos -= cabs(p->args[0]) * cexp(I*p->angle);
