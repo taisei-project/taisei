@@ -845,7 +845,7 @@ static int stage1_burst(Enemy *e, int time) {
 	TIMER(&time);
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
 		return ACTION_ACK;
 	}
 
@@ -1017,7 +1017,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 		return 1;
 	}
 
-	AT(150) {
+	AT(75) {
 		play_sound("shot_special1");
 		for(int i = 0; i < 20+2*global.diff; i++) {
 			PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
@@ -1027,7 +1027,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 		}
 	}
 
-	AT(170) {
+	AT(95) {
 		if(global.diff > D_Easy) {
 			play_sound("shot_special1");
 			for(int i = 0; i < 20+3*global.diff; i++) {
@@ -1042,7 +1042,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 	if(t > 200) {
 		e->pos += e->args[1];
 	} else {
-		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.02);
+		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.04);
 	}
 
 	return 1;
