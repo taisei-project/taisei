@@ -1031,6 +1031,14 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_hud();
 }
 
+#define HUD_X_PADDING 16
+#define HUD_X_OFFSET (VIEWPORT_W + VIEWPORT_X)
+#define HUD_WIDTH (SCREEN_W - HUD_X_OFFSET)
+#define HUD_EFFECTIVE_WIDTH (HUD_WIDTH - HUD_X_PADDING * 2)
+#define HUD_X_SECONDARY_OFS_ICON 18
+#define HUD_X_SECONDARY_OFS_LABEL (HUD_X_SECONDARY_OFS_ICON + 12)
+#define HUD_X_SECONDARY_OFS_VALUE (HUD_X_SECONDARY_OFS_LABEL + 60)
+
 struct glyphcb_state {
 	Color *color1, *color2;
 };
@@ -1119,8 +1127,8 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 }
 
 static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *buf, size_t bufsize) {
-	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_hiscore, buf, bufsize, progress.hiscore);
-	stage_draw_hud_score(ALIGN_RIGHT, 170, ypos_score,   buf, bufsize, global.plr.points);
+	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_hiscore, buf, bufsize, progress.hiscore);
+	stage_draw_hud_score(ALIGN_RIGHT, HUD_EFFECTIVE_WIDTH, ypos_score,   buf, bufsize, global.plr.points);
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
@@ -1158,7 +1166,7 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 
 struct labels_s {
 	struct {
-		float ofs;
+		float next_life;
 	} x;
 
 	struct {
@@ -1171,6 +1179,8 @@ struct labels_s {
 		float voltage;
 		float graze;
 	} y;
+
+	Color lb_baseclr;
 };
 
 static void draw_graph(float x, float y, float w, float h) {
@@ -1185,7 +1195,7 @@ static void draw_label(const char *label_str, double y_ofs, struct labels_s* lab
 	text_draw(label_str, &(TextParams) {
 		.font_ptr = stagedraw.hud_text.font,
 		.shader_ptr = stagedraw.hud_text.shader,
-		.pos = { labels->x.ofs, y_ofs },
+		.pos = { 0, y_ofs },
 		.color = clr,
 	});
 }
@@ -1197,14 +1207,16 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	r_shader_ptr(stagedraw.hud_text.shader);
 
+	Color *lb_label_clr = color_mul(COLOR_COPY(&labels->lb_baseclr), &stagedraw.hud_text.color.label);
+
 	// Labels
 	draw_label("Hi-Score:",    labels->y.hiscore, labels, &stagedraw.hud_text.color.label);
 	draw_label("Score:",       labels->y.score,   labels, &stagedraw.hud_text.color.label);
-	draw_label("Lives:",       labels->y.lives,   labels, &stagedraw.hud_text.color.label);
-	draw_label("Spell Cards:", labels->y.bombs,   labels, &stagedraw.hud_text.color.label);
+	draw_label("Lives:",       labels->y.lives,   labels, lb_label_clr);
+	draw_label("Spell Cards:", labels->y.bombs,   labels, lb_label_clr);
 
 	r_mat_push();
-	r_mat_translate(28, 0, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_LABEL, 0, 0);
 	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
 	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
@@ -1212,7 +1224,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	r_mat_pop();
 
 	if(stagedraw.objpool_stats) {
-		stage_draw_hud_objpool_stats(labels->x.ofs, 390, 250);
+		stage_draw_hud_objpool_stats(0, 390, HUD_EFFECTIVE_WIDTH);
 	}
 
 	// Score/Hi-Score values
@@ -1220,37 +1232,40 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
-		r_color4(0.7, 0.7, 0.7, 0.7);
-		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
-		text_draw("N/A", &(TextParams) { .pos = { 170, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
+		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
 		r_color4(1, 1, 1, 1.0);
 	}
 
 	// Score left to next extra life
-	format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
-	font = get_font("small");
+	if(labels->x.next_life > 0) {
+		Color *next_clr = color_mul(RGBA(0.5, 0.3, 0.4, 0.5), &labels->lb_baseclr);
+		format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
+		font = get_font("small");
 
-	text_draw("Next:", &(TextParams) {
-		.pos = { 36, (labels->y.lives + labels->y.bombs) * 0.5 },
-		.font_ptr = font,
-		.align = ALIGN_LEFT,
-		.color = RGBA(0.5, 0.3, 0.4, 0.5),
-	});
+		text_draw("Next:", &(TextParams) {
+			.pos = { labels->x.next_life, (labels->y.lives + labels->y.bombs) * 0.5 },
+			.font_ptr = font,
+			.align = ALIGN_LEFT,
+			.color = next_clr,
+		});
 
-	kern_saved = font_get_kerning_enabled(font);
-	font_set_kerning_enabled(font, false);
+		kern_saved = font_get_kerning_enabled(font);
+		font_set_kerning_enabled(font, false);
 
-	text_draw(buf, &(TextParams) {
-		.pos = { 170, (labels->y.lives + labels->y.bombs) * 0.5 },
-		.font_ptr = font,
-		.align = ALIGN_RIGHT,
-		.color = RGBA(0.5, 0.3, 0.4, 0.5),
-	});
+		text_draw(buf, &(TextParams) {
+			.pos = { HUD_EFFECTIVE_WIDTH, (labels->y.lives + labels->y.bombs) * 0.5 },
+			.font_ptr = font,
+			.align = ALIGN_RIGHT,
+			.color = next_clr,
+		});
 
-	font_set_kerning_enabled(font, kern_saved);
+		font_set_kerning_enabled(font, kern_saved);
+	}
 
 	r_mat_push();
-	r_mat_translate(16, 0, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
 
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
@@ -1333,8 +1348,21 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	font_set_kerning_enabled(font, kern_saved);
 	r_mat_pop();
 
-	// Warning: pops outer matrix!
-	r_mat_pop();
+	// God Mode indicator
+	if(global.plr.iddqd) {
+		text_draw("God Mode is enabled!", &(TextParams) {
+			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
+			.font_ptr = font,
+			.shader_ptr = stagedraw.hud_text.shader,
+			.align = ALIGN_CENTER,
+			.color = RGB(1.0, 0.5, 0.2),
+		});
+	}
+}
+
+static void stage_draw_hud_bottom_text(void) {
+	char buf[64];
+	Font *font;
 
 #ifdef DEBUG
 	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
@@ -1457,18 +1485,11 @@ static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
 	}
 }
 
-static void stage_draw_framerate_graphs(void) {
+static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	#define NUM_SAMPLES (sizeof(((FPSCounter){{0}}).frametimes) / sizeof(((FPSCounter){{0}}).frametimes[0]))
 	static float samples[NUM_SAMPLES];
 
-	float pad = 10;
-
-	float w = 260 - pad;
-	float h = 30;
-
-	float x = SCREEN_W - w - pad;
-	float y = 360;
-
+	r_state_push();
 	r_shader("graph");
 
 	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
@@ -1488,7 +1509,7 @@ static void stage_draw_framerate_graphs(void) {
 	r_uniform_float_array("points[0]", 0, NUM_SAMPLES, samples);
 	draw_graph(x, y, w, h);
 
-	r_shader_standard();
+	r_state_pop();
 }
 
 void stage_draw_hud(void) {
@@ -1502,13 +1523,8 @@ void stage_draw_hud(void) {
 
 	r_blend(BLEND_PREMUL_ALPHA);
 
-	// TODO: refactor this whole mess of arcane magic numbers into something more sensible
-	// hahaha who am I kidding, nobody is gonna do that.
-
 	// Set up positions of most HUD elements
-	static struct labels_s labels = {
-		.x.ofs = -75,
-	};
+	struct labels_s labels = { 0 };
 
 	const float label_height = 33;
 	float label_cur_height = 0;
@@ -1529,19 +1545,23 @@ void stage_draw_hud(void) {
 	labels.y.graze   = label_cur_height+label_height*(i++);
 
 	r_mat_push();
-	r_mat_translate(615, 0, 0);
+	r_mat_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
 
-	// Set up variables for Extra Spell indicator
-	float a = 1, s = 0, fadein = 1, fadeout = 1, fade = 1;
+	// Set up Extra Spell indicator opacity early; some other elements depend on it
+	float extraspell_alpha = 0;
+	float extraspell_fadein = 1;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-		fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
-		fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
-		fade = max(fadein, fadeout);
-
-		s = 1 - fade;
-		a = 0.5 + 0.5 * fade;
+		extraspell_fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+		float fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+		float fade = max(extraspell_fadein, fadeout);
+		extraspell_alpha = 1 - fade;
 	}
+
+	labels.lb_baseclr.r = 1 - extraspell_alpha;
+	labels.lb_baseclr.g = 1 - extraspell_alpha;
+	labels.lb_baseclr.b = 1 - extraspell_alpha;
+	labels.lb_baseclr.a = 1 - extraspell_alpha * 0.5;
 
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
@@ -1552,8 +1572,10 @@ void stage_draw_hud(void) {
 		Sprite *spr_bomb = get_sprite("hud/star");
 
 		float spacing = 1;
-		float pos_lives = 170 - (PLR_MAX_LIVES - 0.5) * spr_life->w - (PLR_MAX_LIVES - 1.5) * spacing;
-		float pos_bombs = 170 - (PLR_MAX_BOMBS - 0.5) * spr_bomb->w - (PLR_MAX_BOMBS - 1.5) * spacing;
+		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (PLR_MAX_LIVES - 0.5) - spacing * (PLR_MAX_LIVES - 1);
+		float pos_bombs = HUD_EFFECTIVE_WIDTH - spr_bomb->w * (PLR_MAX_BOMBS - 0.5) - spacing * (PLR_MAX_BOMBS - 1);
+
+		labels.x.next_life = pos_lives - spr_life->w * 0.5;
 
 		draw_fragments(&(DrawFragmentsParams) {
 			.fill = spr_life,
@@ -1561,10 +1583,10 @@ void stage_draw_hud(void) {
 			.origin_offset = { 0, 0 },
 			.limits = { PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS },
 			.filled = { global.plr.lives, global.plr.life_fragments },
-			.alpha = a,
-			.spacing = 1,
+			.alpha = 1,
+			.spacing = spacing,
 			.color = {
-				.fill = RGBA(1, 1, 1, 1),
+				.fill = color_mul(RGBA(1, 1, 1, 1), &labels.lb_baseclr),
 				.back = RGBA(0, 0, 0, 0.5),
 				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
 			}
@@ -1576,12 +1598,12 @@ void stage_draw_hud(void) {
 			.origin_offset = { 0, 0.05 },
 			.limits = { PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS },
 			.filled = { global.plr.bombs, global.plr.bomb_fragments },
-			.alpha = a,
-			.spacing = 1,
+			.alpha = 1,
+			.spacing = spacing,
 			.color = {
-				.fill = RGBA(1, 1, 1, 1),
-				.back = RGBA(0, 0, 0, 0.5),
-				.frag = RGBA(0.5, 0.5, 0.6, 0.5),
+				.fill = color_mul(RGBA(1, 1, 1, 1), &labels.lb_baseclr),
+				.back = color_mul(RGBA(0, 0, 0, 0.5), &labels.lb_baseclr),
+				.frag = color_mul(RGBA(0.5, 0.5, 0.6, 0.5), &labels.lb_baseclr),
 			}
 		});
 
@@ -1591,14 +1613,14 @@ void stage_draw_hud(void) {
 	// Difficulty indicator
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = difficulty_sprite_name(global.diff),
-		.pos = { (SCREEN_W - 615) * 0.25, 400 },
+		.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 400 },
 		.scale.both = 0.6,
 		.shader = "sprite_default",
 	});
 
 	// Power/Item/Voltage icons
 	r_mat_push();
-	r_mat_translate(14 + labels.x.ofs, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
@@ -1640,50 +1662,37 @@ void stage_draw_hud(void) {
 	});
 
 	r_mat_pop();
-
-	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
-
-	// God Mode indicator
-	if(global.plr.iddqd) {
-		Font *fnt = get_font("standard");
-		const char *txt = "God Mode is enabled!";
-
-		text_draw(txt, &(TextParams) {
-			.pos = { -615 + VIEWPORT_X + VIEWPORT_W + (SCREEN_W - VIEWPORT_X - VIEWPORT_W) * 0.5, 450 },
-			.font_ptr = fnt,
-			.shader_ptr = stagedraw.hud_text.shader,
-			.align = ALIGN_CENTER,
-			.color = RGB(1.0, 0.5, 0.2),
-		});
-	}
+	stage_draw_hud_text(&labels);
 
 	// Extra Spell indicator
-	if(s) {
-		float s2 = max(0, swing(s, 3));
+	if(extraspell_alpha > 0) {
+		float s2 = max(0, swing(extraspell_alpha, 3));
+		r_state_push();
+		r_shader("text_default");
 		r_mat_push();
-		r_mat_translate((SCREEN_W - 615) * 0.25 - 615 * (1 - pow(2*fadein-1, 2)), 340, 0);
-		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * s));
+		r_mat_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 150, 0);
+		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * extraspell_alpha));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
 
+		Font *font = get_font("big");
+
 		// TODO: replace this with a shader
+		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		r_color4(extraspell_alpha, extraspell_alpha, extraspell_alpha, extraspell_alpha);
+		text_draw("Extra Spell!", &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
 
-		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font = "big", .align = ALIGN_CENTER });
-		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font = "big", .align = ALIGN_CENTER });
-		r_color4(s, s, s, s);
-		text_draw("Extra Spell!", &(TextParams) { .pos = {  0,  0 }, .font = "big", .align = ALIGN_CENTER });
-		r_color4(1, 1, 1, 1);
 		r_mat_pop();
+		r_state_pop();
 	}
-
-	r_shader_ptr(sh_prev);
-	// Warning: pops matrix!
-	stage_draw_hud_text(&labels);
 
 	if(stagedraw.framerate_graphs) {
-		stage_draw_framerate_graphs();
+		stage_draw_framerate_graphs(0, 360, HUD_EFFECTIVE_WIDTH, 30);
 	}
+
+	r_mat_pop();
+	stage_draw_hud_bottom_text();
 
 	// Boss indicator ("Enemy")
 	if(global.boss) {
