@@ -888,24 +888,11 @@ void boss_finish_current_attack(Boss *boss) {
 			boss->failed_spells++;
 		}
 
-		if(t != AT_SurvivalSpell) {
-			double i_base = 6.0, i_pwr = 1.0, i_pts = 1.0;
-
-			if(t == AT_ExtraSpell) {
-				i_pwr *= 1.25;
-				i_pts *= 2.0;
-			}
-
-			if(!boss->current->failtime) {
-				i_base *= 2.0;
-				spawn_item(boss->pos, ITEM_BOMB_FRAGMENT);
-			}
-
-			spawn_items(boss->pos,
-				ITEM_POWER,  (int)(i_base * i_pwr),
-				ITEM_POINTS, (int)(i_base * i_pts),
-			NULL);
-		}
+		spawn_items(boss->pos,
+			ITEM_POWER,  14,
+			ITEM_POINTS, 12,
+			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1),
+		NULL);
 	}
 
 	Attack *next = boss_get_next_attack(boss);
