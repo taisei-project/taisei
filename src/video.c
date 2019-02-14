@@ -95,12 +95,12 @@ static void video_check_fullscreen_sanity(void) {
 	SDL_DisplayMode mode;
 
 	if(SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(video.window), &mode)) {
-		log_warn("SDL_GetCurrentDisplayMode failed: %s", SDL_GetError());
+		log_sdl_error(LOG_WARN, "SDL_GetCurrentDisplayMode");
 		return;
 	}
 
 	if(video.current.width != mode.w || video.current.height != mode.h) {
-		log_warn("BUG: window is not actually fullscreen after modesetting. Video mode: %ix%i, window size: %ix%i",
+		log_error("BUG: window is not actually fullscreen after modesetting. Video mode: %ix%i, window size: %ix%i",
 			mode.w, mode.h, video.current.width, video.current.height);
 	}
 }
@@ -179,7 +179,7 @@ static bool video_set_display_mode(int w, int h) {
 	int display = SDL_GetWindowDisplayIndex(video.window);
 
 	if(!SDL_GetClosestDisplayMode(display, &target, &closest)) {
-		log_warn("No available display modes for %ix%i on display %i", w, h, display);
+		log_error("No available display modes for %ix%i on display %i", w, h, display);
 		return false;
 	}
 
@@ -188,7 +188,7 @@ static bool video_set_display_mode(int w, int h) {
 	}
 
 	if(SDL_SetWindowDisplayMode(video.window, &closest)) {
-		log_warn("Failed to set display mode for %ix%i on display %i: %s", closest.w, closest.h, display, SDL_GetError());
+		log_error("Failed to set display mode for %ix%i on display %i: %s", closest.w, closest.h, display, SDL_GetError());
 		return false;
 	}
 
@@ -200,7 +200,7 @@ static void video_set_fullscreen(bool fullscreen) {
 	events_pause_keyrepeat();
 
 	if(SDL_SetWindowFullscreen(video.window, flags) < 0) {
-		log_warn("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
+		log_error("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
 	}
 
 	SDL_RaiseWindow(video.window);
@@ -248,7 +248,7 @@ static void* video_screenshot_task(void *arg) {
 	SDL_RWops *output = vfs_open(tdata->dest_path, VFS_MODE_WRITE);
 
 	if(!output) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
 
@@ -298,7 +298,7 @@ static void* video_screenshot_task(void *arg) {
 
 done:
 	if(error) {
-		log_warn("Couldn't save screenshot: %s", error);
+		log_error("Couldn't save screenshot: %s", error);
 	}
 
 	for(int y = 0; y < height; y++) {
@@ -325,7 +325,7 @@ void video_take_screenshot(void) {
 	memset(&tdata, 0, sizeof(tdata));
 
 	if(!r_screenshot(&tdata.image)) {
-		log_warn("Failed to take a screenshot");
+		log_error("Failed to take a screenshot");
 		return;
 	}
 
@@ -479,7 +479,7 @@ void video_init(void) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
-				log_warn("SDL_GetDisplayMode() failed: %s", SDL_GetError());
+				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
 			} else {
 				video_add_mode(mode.w, mode.h);
 				fullscreen_available = true;

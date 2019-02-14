@@ -67,7 +67,7 @@ void spirv_init_compiler(void) {
 	if(spirv_compiler == NULL) {
 		spirv_compiler = shaderc_compiler_initialize();
 		if(spirv_compiler == NULL) {
-			log_warn("Failed to initialize the compiler");
+			log_error("Failed to initialize the compiler");
 		}
 	}
 }
@@ -81,19 +81,19 @@ void spirv_shutdown_compiler(void) {
 
 bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
 	if(in->lang.lang != SHLANG_GLSL) {
-		log_warn("Unsupported source language");
+		log_error("Unsupported source language");
 		return false;
 	}
 
 	if(spirv_compiler == NULL) {
-		log_warn("Compiler is not initialized");
+		log_error("Compiler is not initialized");
 		return false;
 	}
 
 	shaderc_compile_options_t opts = shaderc_compile_options_initialize();
 
 	if(opts == NULL) {
-		log_warn("Failed to initialize compiler options");
+		log_error("Failed to initialize compiler options");
 		return false;
 	}
 
@@ -125,7 +125,7 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	shaderc_compile_options_release(opts);
 
 	if(result == NULL) {
-		log_warn("Failed to allocate compilation result");
+		log_error("Failed to allocate compilation result");
 		return false;
 	}
 
@@ -133,19 +133,19 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 
 	switch(status) {
 		case shaderc_compilation_status_compilation_error:
-			log_warn("Compilation failed: errors in the shader");
+			log_error("Compilation failed: errors in the shader");
 			break;
 
 		case shaderc_compilation_status_internal_error:
-			log_warn("Compilation failed: internal compiler error");
+			log_error("Compilation failed: internal compiler error");
 			break;
 
 		case shaderc_compilation_status_invalid_assembly:
-			log_warn("Compilation failed: invalid assembly");
+			log_error("Compilation failed: invalid assembly");
 			break;
 
 		case shaderc_compilation_status_invalid_stage:
-			log_warn("Compilation failed: invalid shader stage");
+			log_error("Compilation failed: invalid shader stage");
 			break;
 
 		case shaderc_compilation_status_null_result_object:
@@ -155,7 +155,7 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 			break;
 
 		default:
-			log_warn("Compilation failed: unknown error");
+			log_error("Compilation failed: unknown error");
 			break;
 	}
 
@@ -164,7 +164,8 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	if(err_str != NULL && *err_str) {
 		size_t num_warnings = shaderc_result_get_num_warnings(result);
 		size_t num_errors = shaderc_result_get_num_errors(result);
-		log_warn("%s: %zu warnings, %zu errors:\n\n%s", filename, num_warnings, num_errors, err_str);
+		LogLevel lvl = status == shaderc_compilation_status_success ? LOG_WARN : LOG_ERROR;
+		log_custom(lvl, "%s: %zu warnings, %zu errors:\n\n%s", filename, num_warnings, num_errors, err_str);
 	}
 
 	if(status != shaderc_compilation_status_success) {
@@ -188,12 +189,12 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 
 bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
 	if(in->lang.lang != SHLANG_SPIRV) {
-		log_warn("Source is not a SPIR-V binary");
+		log_error("Source is not a SPIR-V binary");
 		return false;
 	}
 
 	if(options->lang->lang != SHLANG_GLSL) {
-		log_warn("Target language is not supported");
+		log_error("Target language is not supported");
 		return false;
 	}
 
@@ -203,7 +204,7 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 	crossc_compiler *cc = crossc_glsl_create(spirv, spirv_size);
 
 	if(cc == NULL) {
-		log_warn("Failed to initialize crossc");
+		log_error("Failed to initialize crossc");
 		return false;
 	}
 
@@ -234,7 +235,7 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 	return true;
 
 crossc_error:
-	log_warn("crossc error: %s", crossc_strerror(cc));
+	log_error("crossc error: %s", crossc_strerror(cc));
 	crossc_destroy(cc);
 	return false;
 }

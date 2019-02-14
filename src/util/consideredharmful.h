@@ -48,7 +48,7 @@ attr_deprecated("Use log_info instead")
 int printf(const char*, ...);
 
 #undef fprintf
-attr_deprecated("Use log_warn instead (or SDL_RWops if you want to write to a file)")
+attr_deprecated("Use log_warn or log_error instead (or SDL_RWops if you want to write to a file)")
 int fprintf(FILE*, const char*, ...);
 
 #undef strtok

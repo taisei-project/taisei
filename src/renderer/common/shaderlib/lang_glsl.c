@@ -81,7 +81,7 @@ static char* glsl_parse_include_directive(GLSLFileParseState *fstate, char *p) {
 	skip_space(&p);
 
 	if(*p != '"') {
-		log_warn("%s:%d: malformed %s directive: \" expected.", fstate->path, fstate->lineno, INCLUDE_DIRECTIVE);
+		log_error("%s:%d: malformed %s directive: \" expected.", fstate->path, fstate->lineno, INCLUDE_DIRECTIVE);
 		return NULL;
 	}
 
@@ -96,7 +96,7 @@ static char* glsl_parse_include_directive(GLSLFileParseState *fstate, char *p) {
 	}
 
 	if(*p != '"') {
-		log_warn("%s:%d: malformed %s directive: second \" expected.", fstate->path, fstate->lineno, INCLUDE_DIRECTIVE);
+		log_error("%s:%d: malformed %s directive: second \" expected.", fstate->path, fstate->lineno, INCLUDE_DIRECTIVE);
 		return NULL;
 	}
 
@@ -109,7 +109,7 @@ static GLSLVersion glsl_parse_version_directive(GLSLFileParseState *fstate, char
 	p += sizeof(INCLUDE_DIRECTIVE) - 1;
 
 	if(glsl_parse_version(p, &version) == p) {
-		log_warn("%s:%d: malformed %s directive.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
+		log_error("%s:%d: malformed %s directive.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
 		return (GLSLVersion) { 0, GLSL_PROFILE_NONE };
 	}
 
@@ -122,7 +122,7 @@ static bool glsl_try_write_header(GLSLFileParseState *fstate) {
 	}
 
 	if(fstate->global->options->version.version == 0) {
-		log_warn("%s:%d: no %s directive in shader and no default specified.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
+		log_error("%s:%d: no %s directive in shader and no default specified.", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
 		return false;
 	}
 
@@ -146,7 +146,7 @@ static bool check_directive(char *p, const char *directive) {
 
 static bool glsl_process_file(GLSLFileParseState *fstate) {
 	if(fstate->include_level > GLSL_INCLUDE_DEPTH) {
-		log_warn("%s: max include depth reached. Maybe there is an include cycle?", fstate->path);
+		log_error("%s: max include depth reached. Maybe there is an include cycle?", fstate->path);
 		return false;
 	}
 
@@ -154,7 +154,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 	SDL_RWops *dest = fstate->global->dest;
 
 	if(!stream) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
@@ -203,7 +203,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			fstate->need_lineno_marker = true;
 		} else if(check_directive(p, VERSION_DIRECTIVE)) {
 			if(fstate->global->version_defined) {
-				log_warn("%s:%d: duplicate or misplaced %s directive", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
+				log_error("%s:%d: duplicate or misplaced %s directive", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
 				SDL_RWclose(stream);
 				return false;
 			}
@@ -320,12 +320,12 @@ char* glsl_parse_version(const char *str, GLSLVersion *out_version) {
 	out_version->profile = GLSL_PROFILE_NONE;
 
 	if(p == end) {
-		log_warn("Malformed version '%s': version number expected.", str);
+		log_error("Malformed version '%s': version number expected.", str);
 		return orig;
 	}
 
 	if(out_version->version < 100) {
-		log_warn("Malformed version '%s': bad version number.", str);
+		log_error("Malformed version '%s': bad version number.", str);
 		return orig;
 	}
 

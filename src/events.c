@@ -210,8 +210,6 @@ void events_register_handler(EventHandler *handler) {
 		handler_alloc->priority,
 		handler_container_prio_func
 	);
-
-	log_debug("Registered handler: %p %u", *(void**)&handler_alloc->proc, handler_alloc->priority);
 }
 
 void events_unregister_handler(EventHandlerProc proc) {
@@ -365,9 +363,9 @@ static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 
 	if(timenow < keyrepeat_paused_until) {
 		log_debug(
-			"Prevented a potentially bogus key repeat (%f remaining). "
+			"Prevented a potentially bogus key repeat (%"PRIuTIME" remaining). "
 			"This is an SDL bug. See https://bugzilla.libsdl.org/show_bug.cgi?id=3287",
-			(double)(keyrepeat_paused_until - timenow)
+			keyrepeat_paused_until - timenow
 		);
 		return true;
 	}

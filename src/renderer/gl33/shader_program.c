@@ -312,7 +312,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 			MagicalUniform *m = magical_unfiroms + j;
 
 			if(!strcmp(name, m->name) && uni.type != m->type) {
-				log_warn("Magical uniform '%s' must be of type '%s'", name, m->typename);
+				log_error("Magical uniform '%s' must be of type '%s'", name, m->typename);
 				return false;
 			}
 		}
@@ -416,7 +416,7 @@ ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[n
 	glGetProgramiv(prog->gl_handle, GL_LINK_STATUS, &link_status);
 
 	if(!link_status) {
-		log_warn("Failed to link the shader program");
+		log_error("Failed to link the shader program");
 		glDeleteProgram(prog->gl_handle);
 		free(prog);
 		return NULL;

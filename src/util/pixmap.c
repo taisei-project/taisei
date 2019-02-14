@@ -378,7 +378,7 @@ bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) {
 		}
 	}
 
-	log_warn("Image format not recognized");
+	log_error("Image format not recognized");
 	return false;
 }
 
@@ -388,7 +388,7 @@ bool pixmap_load_file(const char *path, Pixmap *dst) {
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!stream) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 

@@ -73,7 +73,7 @@ void* load_sprite_begin(const char *path, uint flags) {
 		free(spr);
 		free(state->texture_name);
 		free(state);
-		log_warn("Failed to parse sprite file '%s'", path);
+		log_error("Failed to parse sprite file '%s'", path);
 		return NULL;
 	}
 
@@ -129,7 +129,7 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	for(struct infermap *m = infermap; m->dst; ++m) {
 		if(*m->dst <= 0) {
 			*m->dst = *m->src;
-			log_warn("%s: inferred %s from %s (%f)", basename, m->dstname, m->srcname, *m->src);
+			log_warn("%s: inferred %s from %s (%g)", basename, m->dstname, m->srcname, *m->src);
 		}
 	}
 

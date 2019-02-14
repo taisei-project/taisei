@@ -98,7 +98,7 @@ static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_
 	log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
 
 	if(SDL_RWseek(vfile, cmdsize, RW_SEEK_CUR) < 0) {
-		log_warn("SDL_RWseek() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_WARN, "SDL_RWseek");
 	}
 
 	return false;
@@ -108,18 +108,18 @@ static void progress_read(SDL_RWops *file) {
 	int64_t filesize = SDL_RWsize(file);
 
 	if(filesize < 0) {
-		log_warn("SDL_RWsize() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_RWseek");
 		return;
 	}
 
 	if(filesize > PROGRESS_MAXFILESIZE) {
-		log_warn("Progress file is huge (%"PRIi64" bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
+		log_error("Progress file is huge (%"PRIi64" bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
 		return;
 	}
 
 	for(int i = 0; i < sizeof(progress_magic_bytes); ++i) {
 		if(SDL_ReadU8(file) != progress_magic_bytes[i]) {
-			log_warn("Invalid header");
+			log_error("Invalid header");
 			return;
 		}
 	}
@@ -136,7 +136,7 @@ static void progress_read(SDL_RWops *file) {
 	uint8_t *buf = malloc(bufsize);
 
 	if(!SDL_RWread(file, buf, bufsize, 1)) {
-		log_warn("SDL_RWread() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_RWread");
 		free(buf);
 		return;
 	}
@@ -145,7 +145,7 @@ static void progress_read(SDL_RWops *file) {
 	uint32_t checksum = progress_checksum(buf, bufsize);
 
 	if(checksum != checksum_fromfile) {
-		log_warn("Bad checksum: %x != %x", checksum, checksum_fromfile);
+		log_error("Bad checksum: %x != %x", checksum, checksum_fromfile);
 		SDL_RWclose(vfile);
 		free(buf);
 		return;
@@ -679,7 +679,14 @@ void progress_load(void) {
 	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
 
 	if(!file) {
-		log_warn("Couldn't open the progress file: %s", vfs_get_error());
+		VFSInfo i = vfs_query(PROGRESS_FILE);
+
+		if(i.error) {
+			log_error("VFS error: %s", vfs_get_error());
+		} else if(i.exists) {
+			log_error("Progress file %s is not readable", PROGRESS_FILE);
+		}
+
 		return;
 	}
 
@@ -691,7 +698,7 @@ void progress_save(void) {
 	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
 
 	if(!file) {
-		log_warn("Couldn't open the progress file: %s", vfs_get_error());
+		log_error("Couldn't open the progress file for writing: %s", vfs_get_error());
 		return;
 	}
 

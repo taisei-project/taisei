@@ -32,14 +32,14 @@ static Mix_Music* load_mix_music(const char *path) {
 	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
 
 	Mix_Music *music = Mix_LoadMUS_RW(rwops, true);
 
 	if(!music) {
-		log_warn("Mix_LoadMUS_RW() failed: %s", Mix_GetError());
+		log_error("Mix_LoadMUS_RW() failed: %s", Mix_GetError());
 		return NULL;
 	}
 
@@ -63,7 +63,7 @@ void* load_bgm_begin(const char *path, uint flags) {
 			{ "loop_point", .out_double = &imus->loop_point },
 			{ NULL }
 		})) {
-			log_warn("Failed to parse bgm config '%s'", path);
+			log_error("Failed to parse bgm config '%s'", path);
 		} else {
 			imus->intro = load_mix_music(intro);
 			imus->loop = load_mix_music(loop);
@@ -81,7 +81,7 @@ void* load_bgm_begin(const char *path, uint flags) {
 		free(mus->title);
 		free(mus);
 		mus = NULL;
-		log_warn("Failed to load bgm '%s'", path);
+		log_error("Failed to load bgm '%s'", path);
 	}
 
 	return mus;

@@ -29,14 +29,14 @@ void* load_sound_begin(const char *path, uint flags) {
 	SDL_RWops *rwops = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
 
 	Mix_Chunk *sound = Mix_LoadWAV_RW(rwops, true);
 
 	if(!sound) {
-		log_warn("Mix_LoadWAV_RW() failed: %s", Mix_GetError());
+		log_error("Mix_LoadWAV_RW() failed: %s", Mix_GetError());
 		return NULL;
 	}
 

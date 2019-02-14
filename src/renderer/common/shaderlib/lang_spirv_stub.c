@@ -16,11 +16,11 @@ void spirv_init_compiler(void) { }
 void spirv_shutdown_compiler(void) { }
 
 bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {
-	log_warn("Compiled without SPIR-V support");
+	log_error("Compiled without SPIR-V support");
 	return false;
 }
 
 bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
-	log_warn("Compiled without SPIR-V support");
+	log_error("Compiled without SPIR-V support");
 	return false;
 }

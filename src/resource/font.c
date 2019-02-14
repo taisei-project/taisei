@@ -158,7 +158,7 @@ static bool fonts_event(SDL_Event *event, void *arg) {
 
 static void try_create_mutex(SDL_mutex **mtx) {
 	if((*mtx = SDL_CreateMutex()) == NULL) {
-		log_sdl_error("SDL_CreateMutex");
+		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
 	}
 }
 
@@ -228,7 +228,7 @@ static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong 
 	ulong error = count ? 0 : 1;
 
 	if(SDL_RWseek(rwops, offset, RW_SEEK_SET) < 0) {
-		log_warn("Can't seek in stream (%s)", (char*)stream->pathname.pointer);
+		log_error("Can't seek in stream (%s)", (char*)stream->pathname.pointer);
 		return error;
 	}
 
@@ -236,7 +236,6 @@ static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong 
 }
 
 static void ftstream_close(FT_Stream stream) {
-	log_debug("%s", (char*)stream->pathname.pointer);
 	SDL_RWclose((SDL_RWops*)stream->descriptor.pointer);
 }
 
@@ -262,7 +261,7 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		free(syspath);
 		return NULL;
 	}
@@ -283,14 +282,14 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	FT_Error err;
 
 	if((err = FT_Open_Face_Thread_Safe(globals.lib, &ftargs, index, &face))) {
-		log_warn("Failed to load font '%s' (face %li): FT_Open_Face() failed: %s", syspath, index, ft_error_str(err));
+		log_error("Failed to load font '%s' (face %li): FT_Open_Face() failed: %s", syspath, index, ft_error_str(err));
 		free(syspath);
 		free(ftstream);
 		return NULL;
 	}
 
 	if(!(FT_IS_SCALABLE(face))) {
-		log_warn("Font '%s' (face %li) is not scalable. This is not supported, sorry. Load aborted", syspath, index);
+		log_error("Font '%s' (face %li) is not scalable. This is not supported, sorry. Load aborted", syspath, index);
 		FT_Done_Face_Thread_Safe(face);
 		free(syspath);
 		free(ftstream);
@@ -312,12 +311,12 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 	pxsize = FT_MulFix(pxsize * 64, fixed_scale);
 
 	if((err = FT_Set_Char_Size(fnt->face, 0, pxsize, 0, 0))) {
-		log_warn("FT_Set_Char_Size(%u) failed: %s", pxsize, ft_error_str(err));
+		log_error("FT_Set_Char_Size(%u) failed: %s", pxsize, ft_error_str(err));
 		return err;
 	}
 
 	if((err = FT_Stroker_New(globals.lib, &fnt->stroker))) {
-		log_warn("FT_Stroker_New() failed: %s", ft_error_str(err));
+		log_error("FT_Stroker_New() failed: %s", ft_error_str(err));
 		return err;
 	}
 
@@ -684,7 +683,7 @@ void* load_font_begin(const char *path, uint flags) {
 		{ "face",    .out_long  = &font.base_face_idx },
 		{ NULL }
 	})) {
-		log_warn("Failed to parse font file '%s'", path);
+		log_error("Failed to parse font file '%s'", path);
 		return NULL;
 	}
 

@@ -157,7 +157,7 @@ Video and OpenGL
    If ``1``, framerate graphs will be drawn on the HUD.
 
 **TAISEI_OBJPOOL_STATS**
-   | Default: ``0`` for release builds, ``1`` for debug builds
+   | Default: ``0``
 
    Displays some statistics about usage of in-game objects.
 
@@ -202,7 +202,7 @@ Timing
 Logging
 ~~~~~~~
 
-Taisei's logging system currently has four basic levels and works by
+Taisei's logging system currently has five basic levels and works by
 dispatching messages to a few output handlers. Each handler has a level
 filter, which is configured by a separate environment variable. All of
 those variables work the same way: their value looks like an IRC mode
@@ -218,15 +218,18 @@ The levels
 -  **Info** (*i*) logs some events that are expected to occur during
    normal operation, for example when a spell is unlocked or a
    screenshot is taken.
--  **Warning** (*w*) alerts of non-critical errors, for example a
+-  **Warning** (*w*) usually complains about misuse of the engine
+   features, deprecations, unimplemented functionality, other small
+   anomalies that aren't directly detrimental to functionality.
+-  **Error** (*e*) alerts of non-critical errors, for example a
    missing optional resource, corrupted progress data, or failure to
    save a replay due to insufficient storage space or privileges.
--  **Fatal Error** (*e*) is an irrecoverable failure condition. Such an
+-  **Fatal** (*f*) is an irrecoverable failure condition. Such an
    event most likely signifies a programming error or a broken
    installation. The game will immediately crash after writing a message
    with this log level. On some platforms, it will also display a
    graphical message box.
--  **All** (*a*): this is not a real log level, but a shortcut directive
+-  **All** (*a*) is not a real log level, but a shortcut directive
    representing all possible log levels. See *Examples* for usage.
 
 The variables
@@ -239,21 +242,16 @@ The variables
    -  **TAISEI_LOGLVLS_STDOUT**: controls what goes to standard output.
       Defaults to *Debug and Info* (``+di``).
    -  **TAISEI_LOGLVLS_STDERR**: controls what goes to standard error.
-      Defaults to *Warning and Fatal Error* (``+we``).
+      Defaults to *Warning, Error, and Fatal* (``+wef``).
 
 -  **TAISEI_LOGLVLS_FILE**: controls what goes into the log file
    (``{storage directory}/log.txt``). Defaults to *All* (``+a``).
-
--  **TAISEI_LOGLVLS_BACKTRACE**: affects all outputs and controls which
-   log levels produce a call stack trace upon printing a message. Only
-   supported in Debug builds with glibc. Defaults to *Fatal Error*
-   (``+e``).
 
 Examples
 ^^^^^^^^
 
 -  In release builds: print *Info* messages to stdout, in addition to
-   *Warning*\ s and *Fatal Error*\ s as per default:
+   *Warning*\ s, *Error*\ s, and *Fatal*\ s as per default:
 
    .. code:: sh
 
@@ -283,11 +281,11 @@ Examples
 
        TAISEI_LOGLVLS_CONSOLE=-a
 
--  Don't save anything to the log file, except for *Warning*\ s:
+-  Don't save anything to the log file, except for *Errors*\ s and *Fatal*\ s:
 
    .. code:: sh
 
-       TAISEI_LOGLVLS_FILE=-a+w
+       TAISEI_LOGLVLS_FILE=-a+ef
 
 -  Print everything except *Debug* to ``stderr``, nothing to ``stdout``:
 
@@ -295,10 +293,3 @@ Examples
 
        TAISEI_LOGLVLS_STDOUT=-a
        TAISEI_LOGLVLS_STDERR=+a-d
-
--  In Debug builds: produce a stack trace for every *Warning* message,
-   in addition to *Fatal Error*\ s as per default:
-
-   .. code:: sh
-
-       TAISEI_LOGLVLS_BACKTRACE=+w

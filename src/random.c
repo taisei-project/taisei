@@ -22,10 +22,7 @@ static RandomState *tsrand_current;
 
 // CMWC engine
 uint32_t tsrand_p(RandomState *rnd) {
-	if(rnd->locked) {
-		log_warn("Attempted to use a locked RNG state");
-		return 0;
-	}
+	assert(!rnd->locked);
 
 	uint64_t const a = 18782; // as Marsaglia recommends
 	uint32_t const m = 0xfffffffe; // as Marsaglia recommends

@@ -145,7 +145,6 @@ config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
 have_posix      =       cc.has_header_symbol('unistd.h',    '_POSIX_VERSION')
 have_vla        = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_VLA__')
 have_complex    = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_COMPLEX__')
-have_backtrace  =       cc.has_header_symbol('execinfo.h',  'backtrace')
 have_timespec   =       cc.has_header_symbol('time.h',      'timespec_get')
 
 if not (have_vla and have_complex)
@@ -155,6 +154,7 @@ endif
 config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
+config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
 
 if macos_app_bundle
     bundle_dir = 'Taisei.app'
@@ -218,8 +218,11 @@ is_debug_build = get_option('buildtype').startswith('debug')
 is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
 
 config.set('TAISEI_BUILDCONF_DEVELOPER', is_developer_build)
-config.set('TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE', is_debug_build and have_backtrace)
-config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', host_machine.system() == 'windows' or host_machine.system() == 'darwin')
+config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
+    host_machine.system() == 'windows' or
+    host_machine.system() == 'darwin' or
+    not is_developer_build
+))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 if host_machine.system() == 'windows'

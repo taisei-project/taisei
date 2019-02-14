@@ -113,7 +113,7 @@ static void load_packages(const char *dir, const char *unionmp) {
 		char *tmp = strfmt("%s/%s", dir, entry);
 
 		if(!loader->mount(unionmp, tmp)) {
-			log_warn("VFS error: %s", vfs_get_error());
+			log_error("VFS error: %s", vfs_get_error());
 		}
 
 		free(tmp);
@@ -173,7 +173,7 @@ void vfs_setup(bool silent) {
 			}
 
 			if(!vfs_query("tmp").is_dir) {
-				log_warn("'%s' is not a directory", mp->syspath);
+				log_error("'%s' is not a directory", mp->syspath);
 				vfs_unmount("tmp");
 				continue;
 			}

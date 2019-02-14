@@ -76,7 +76,7 @@ static int taskmgr_thread(void *arg) {
 	attr_unused SDL_threadID tid = SDL_ThreadID();
 
 	if(SDL_SetThreadPriority(mgr->thread_prio) < 0) {
-		log_sdl_error("SDL_SetThreadPriority");
+		log_sdl_error(LOG_WARN, "SDL_SetThreadPriority");
 	}
 
 	bool running;
@@ -173,12 +173,12 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 	TaskManager *mgr = calloc(1, sizeof(TaskManager) + numthreads * sizeof(SDL_Thread*));
 
 	if(!(mgr->mutex = SDL_CreateMutex())) {
-		log_sdl_error("SDL_CreateMutex");
+		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
 		goto fail;
 	}
 
 	if(!(mgr->cond = SDL_CreateCond())) {
-		log_sdl_error("SDL_CreateCond");
+		log_sdl_error(LOG_WARN, "SDL_CreateCond");
 		goto fail;
 	}
 
@@ -192,7 +192,7 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 		snprintf(threadname, sizeof(threadname), "%s:%s/%i", prefix, name, i);
 
 		if(!(mgr->threads[i] = SDL_CreateThread(taskmgr_thread, threadname, mgr))) {
-			log_sdl_error("SDL_CreateThread");
+			log_sdl_error(LOG_WARN, "SDL_CreateThread");
 
 			for(uint j = 0; j < i; ++j) {
 				SDL_DetachThread(mgr->threads[j]);
@@ -242,12 +242,12 @@ Task* taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	task->status = TASK_PENDING;
 
 	if(!(task->mutex = SDL_CreateMutex())) {
-		log_sdl_error("SDL_CreateMutex");
+		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
 		goto fail;
 	}
 
 	if(!(task->cond = SDL_CreateCond())) {
-		log_sdl_error("SDL_CreateCond");
+		log_sdl_error(LOG_WARN, "SDL_CreateCond");
 		goto fail;
 	}
 

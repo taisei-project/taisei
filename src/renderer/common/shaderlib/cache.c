@@ -42,7 +42,7 @@ static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *ou
 		}
 
 		default: {
-			log_warn("Unhandled shading language id=%u", src->lang.lang);
+			log_error("Unhandled shading language id=%u", src->lang.lang);
 			goto fail;
 		}
 	}
@@ -75,7 +75,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 	out_src->content = NULL;
 
 	if(SDL_ReadU8(s) != CACHE_VERSION) {
-		log_warn("Version mismatch");
+		log_error("Version mismatch");
 		goto fail;
 	}
 
@@ -97,7 +97,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 		}
 
 		default: {
-			log_warn("Unhandled shading language id=%u", out_src->lang.lang);
+			log_error("Unhandled shading language id=%u", out_src->lang.lang);
 			goto fail;
 		}
 	}
@@ -106,14 +106,14 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 	out_src->content = calloc(1, out_src->content_size);
 
 	if(SDL_RWread(s, out_src->content, out_src->content_size, 1) != 1) {
-		log_warn("Read error");
+		log_error("Read error");
 		goto fail;
 	}
 
 	uint32_t file_crc = SDL_ReadLE32(stream);
 
 	if(crc != file_crc) {
-		log_warn("CRC mismatch (%08x != %08x), cache entry is corrupted", crc, file_crc);
+		log_error("CRC mismatch (%08x != %08x), cache entry is corrupted", crc, file_crc);
 		goto fail;
 	}
 
@@ -155,7 +155,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 	SDL_RWops *out = vfs_open(path, VFS_MODE_WRITE);
 
 	if(out == NULL) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 

@@ -273,7 +273,7 @@ void config_save(void) {
 	ConfigEntry *e = configdefs;
 
 	if(!out) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return;
 	}
 
@@ -457,9 +457,9 @@ void config_load(void) {
 		VFSInfo i = vfs_query(CONFIG_FILE);
 
 		if(i.error) {
-			log_warn("VFS error: %s", vfs_get_error());
+			log_error("VFS error: %s", vfs_get_error());
 		} else if(i.exists) {
-			log_warn("Config file %s is not readable", config_path);
+			log_error("Config file %s is not readable", config_path);
 		}
 	}
 

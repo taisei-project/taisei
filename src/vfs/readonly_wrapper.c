@@ -144,7 +144,7 @@ bool vfs_make_readonly(const char *path) {
 	vfs_decref(node);
 
 	if(!vfs_node_mount(parent, path_subdir, wrapper)) {
-		log_warn("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
+		log_error("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
 		vfs_decref(parent);
 		vfs_decref(wrapper);
 		return false;

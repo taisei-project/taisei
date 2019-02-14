@@ -60,7 +60,7 @@ static void* load_shader_program_begin(const char *path, uint flags) {
 	}
 
 	if(!ldata.num_objects) {
-		log_warn("%s: no shader objects to link", path);
+		log_error("%s: no shader objects to link", path);
 		free(ldata.objlist);
 		return NULL;
 	}
@@ -82,7 +82,7 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 
 	for(int i = 0; i < ldata.num_objects; ++i) {
 		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, ldata.load_flags))) {
-			log_warn("%s: couldn't load shader object '%s'", path, objname);
+			log_error("%s: couldn't load shader object '%s'", path, objname);
 			free(ldata.objlist);
 			return NULL;
 		}
@@ -98,7 +98,7 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 		r_shader_program_set_debug_label(prog, basename);
 		free(basename);
 	} else {
-		log_warn("%s: couldn't link shader program", path);
+		log_error("%s: couldn't link shader program", path);
 	}
 
 	return prog;

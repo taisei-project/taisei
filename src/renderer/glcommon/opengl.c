@@ -88,7 +88,7 @@ ext_flag_t glcommon_require_extension(const char *ext) {
 			log_fatal("Required extension %s is not available", ext);
 		}
 
-		log_warn("Required extension %s is not available, expect crashes or rendering errors", ext);
+		log_error("Required extension %s is not available, expect crashes or rendering errors", ext);
 	}
 
 	return val;

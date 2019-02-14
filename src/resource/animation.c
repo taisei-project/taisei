@@ -73,7 +73,7 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 			p += strlen(mirrortoken);
 			state = ANISEQ_MIRROR;
 		} else if(!isdigit(*p)) {
-			log_warn("AniSequence syntax error: '%s'[%d] does not start with a proper command",specstr,command);
+			log_error("AniSequence syntax error: '%s'[%d] does not start with a proper command",specstr,command);
 			return false;
 		}
 
@@ -88,12 +88,12 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 		bool no_arg = endptr-p == 0;
 
 		if(*endptr != '\0' && !isspace(*endptr)) {
-			log_warn("AniSequence syntax error: '%s'[%d] contains unexpected character '%c'",specstr,command,*endptr);
+			log_error("AniSequence syntax error: '%s'[%d] contains unexpected character '%c'",specstr,command,*endptr);
 			return false;
 		}
 
 		if(state != ANISEQ_MIRROR && no_arg) {
-			log_warn("AniSequence syntax error: '%s'[%d] expected argument after command",specstr,command);
+			log_error("AniSequence syntax error: '%s'[%d] expected argument after command",specstr,command);
 			return false;
 		}
 
@@ -106,7 +106,7 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 
 		if(state == ANISEQ_DELAY) {
 			if(arg < 0) {
-				log_warn("AniSequence syntax error: '%s'[%d] delay cannot be negative.",specstr,command);
+				log_error("AniSequence syntax error: '%s'[%d] delay cannot be negative.",specstr,command);
 				return false;
 			}
 			delay = arg;
@@ -116,12 +116,12 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 			} else if(arg == 0 || arg == 1) {
 				mirrored = arg;
 			} else {
-				log_warn("AniSequence syntax error: '%s'[%d] mirror can only take 0 or 1 or nothing as an argument. %s",specstr,command,endptr);
+				log_error("AniSequence syntax error: '%s'[%d] mirror can only take 0 or 1 or nothing as an argument. %s",specstr,command,endptr);
 				return false;
 			}
 		} else if(state == ANISEQ_SPRITEIDX) {
 			if(arg < 0) {
-				log_warn("AniSequence syntax error: '%s'[%d] sprite index cannot be negative.",specstr,command);
+				log_error("AniSequence syntax error: '%s'[%d] sprite index cannot be negative.",specstr,command);
 				return false;
 			}
 			int spriteidx = arg;
@@ -140,10 +140,9 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 	}
 
 	if(seq->length <= 0) {
-		log_warn("AniSequence syntax error: '%s' empty sequence.",specstr);
+		log_error("AniSequence syntax error: '%s' empty sequence.",specstr);
 		return false;
 	}
-
 
 	return true;
 }
@@ -157,7 +156,7 @@ static bool animation_parse_callback(const char *key, const char *value, void *d
 		char *endptr;
 		ani->sprite_count = strtol(value,&endptr,10);
 		if(*value == '\0' || *endptr != '\0' || ani->sprite_count <= 0) {
-			log_warn("Syntax error: %s must be positive integer",key);
+			log_error("Syntax error: %s must be positive integer",key);
 			return false;
 		}
 		return true;
@@ -202,7 +201,7 @@ void* load_animation_begin(const char *filename, uint flags) {
 	}
 
 	if(ani->sprite_count <= 0) {
-		log_warn("Animation sprite count of '%s', must be positive integer", name);
+		log_error("Animation sprite count of '%s', must be positive integer", name);
 		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 		ht_destroy(&ani->sequences);
 		free(ani);
@@ -228,7 +227,7 @@ static void *check_sequence_frame_callback(const char *key, void *value, void *v
 
 	for(int i = 0; i < seq->length; i++) {
 		if(seq->frames[i].spriteidx >= sprite_count) {
-			log_warn("Animation sequence %s: Sprite index %d is higher than sprite_count.", key, seq->frames[i].spriteidx);
+			log_error("Animation sequence %s: Sprite index %d is higher than sprite_count.", key, seq->frames[i].spriteidx);
 			errors++;
 		}
 	}
@@ -258,7 +257,7 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 		Resource *res = get_resource(RES_SPRITE, buf, flags);
 
 		if(res == NULL) {
-			log_warn("Animation frame '%s' not found but @sprite_count was %d",buf,ani->sprite_count);
+			log_error("Animation frame '%s' not found but @sprite_count was %d",buf,ani->sprite_count);
 			unload_animation(ani);
 			ani = NULL;
 			goto done;

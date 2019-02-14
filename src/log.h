@@ -13,15 +13,24 @@
 
 #include <SDL.h>
 
+enum {
+	_LOG_DEBUG_ID,
+	_LOG_INFO_ID,
+	_LOG_WARN_ID,
+	_LOG_ERROR_ID,
+	_LOG_FATAL_ID,
+};
+
 typedef enum LogLevel {
-	LOG_NONE = 0,
-	LOG_DEBUG = 1,
-	LOG_INFO = 2,
-	LOG_WARN = 4,
-	LOG_FATAL = 8,
+	LOG_NONE  = 0,
+	LOG_DEBUG = (1 << _LOG_DEBUG_ID),
+	LOG_INFO  = (1 << _LOG_INFO_ID),
+	LOG_WARN  = (1 << _LOG_WARN_ID),
+	LOG_ERROR = (1 << _LOG_ERROR_ID),
+	LOG_FATAL = (1 << _LOG_FATAL_ID),
 
 	LOG_SPAM = LOG_DEBUG | LOG_INFO,
-	LOG_ALERT = LOG_WARN | LOG_FATAL,
+	LOG_ALERT = LOG_WARN | LOG_ERROR | LOG_FATAL,
 
 	LOG_ALL = LOG_SPAM | LOG_ALERT,
 } LogLevel;
@@ -50,51 +59,68 @@ typedef enum LogLevel {
 	#define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
 #endif
 
-#ifndef LOG_DEFAULT_LEVELS_BACKTRACE
-	#ifdef LOG_ENABLE_BACKTRACE
-		#define LOG_DEFAULT_LEVELS_BACKTRACE LOG_FATAL
-	#else
-		#define LOG_DEFAULT_LEVELS_BACKTRACE LOG_NONE
-	#endif
-#endif
+typedef struct LogEntry {
+	const char *message;
+	const char *file;
+	const char *func;
+	uint time;
+	uint line;
+	LogLevel level;
+} LogEntry;
 
-#ifndef LOG_BACKTRACE_SIZE
-	#define LOG_BACKTRACE_SIZE 32
-#endif
+typedef struct FormatterObj FormatterObj;
 
-void log_init(LogLevel lvls, LogLevel backtrace_lvls);
+struct FormatterObj {
+	int (*format)(FormatterObj *self, char *buf, size_t buf_size, LogEntry *entry);
+	void (*free)(FormatterObj *self);
+	void *data;
+};
+
+// "constructor". initializer, actually.
+typedef void Formatter(FormatterObj *obj, const SDL_RWops *output);
+
+extern Formatter log_formatter_file;
+extern Formatter log_formatter_console;
+
+void log_init(LogLevel lvls);
 void log_shutdown(void);
-void log_add_output(LogLevel levels, SDL_RWops *output);
+void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) attr_nonnull(3);
 void log_backtrace(LogLevel lvl);
-LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod);
-bool log_initialized(void);
+LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
+bool log_initialized(void) attr_nodiscard;
+void log_set_gui_error_appendix(const char *message);
 
 #ifdef DEBUG
-	#define log_debug(...) _taisei_log(LOG_DEBUG, false, __func__, __VA_ARGS__)
+	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
+	#undef UNREACHABLE
+	#define UNREACHABLE log_fatal("This code should never be reached")
 #else
 	#define log_debug(...)
+	#define LOG_NO_FILENAMES
 #endif
 
-#define log_info(...) _taisei_log(LOG_INFO, false, __func__, __VA_ARGS__)
-#define log_warn(...) _taisei_log(LOG_WARN, false, __func__, __VA_ARGS__)
-#define log_fatal(...) _taisei_log_fatal(LOG_FATAL, __func__, __VA_ARGS__)
-#define log_custom(lvl, ...) _taisei_log(lvl, false, __func__, __VA_ARGS__)
+#ifdef LOG_NO_FILENAMES
+	#define _do_log(func, lvl, ...) (func)(lvl, __func__, "<unknown>", 0, __VA_ARGS__)
+#else
+	#define _do_log(func, lvl, ...) (func)(lvl, __func__, __FILE__, __LINE__, __VA_ARGS__)
+#endif
 
-#define log_sdl_error(funcname) log_warn("%s() failed: %s", funcname, SDL_GetError())
+#define log_custom(lvl, ...) _do_log(_taisei_log, lvl, __VA_ARGS__)
+#define log_info(...) log_custom(LOG_INFO, __VA_ARGS__)
+#define log_warn(...) log_custom(LOG_WARN, __VA_ARGS__)
+#define log_error(...) log_custom(LOG_ERROR, __VA_ARGS__)
+#define log_fatal(...) _do_log(_taisei_log_fatal, LOG_FATAL, __VA_ARGS__)
+
+#define log_sdl_error(lvl, funcname) log_custom(lvl, "%s() failed: %s", funcname, SDL_GetError())
 
 //
 // don't call these directly, use the macros
 //
 
-void _taisei_log(LogLevel lvl, bool is_backtrace, const char *funcname, const char *fmt, ...)
-	attr_printf(4, 5);
+void _taisei_log(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, ...)
+	attr_printf(5, 6);
 
-noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *fmt, ...)
-	attr_printf(3, 4);
-
-#ifdef DEBUG
-	#undef UNREACHABLE
-	#define UNREACHABLE log_fatal("This code should never be reached")
-#endif
+noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, ...)
+	attr_printf(5, 6);
 
 #endif // IGUARD_log_h

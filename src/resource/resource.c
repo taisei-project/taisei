@@ -254,7 +254,7 @@ static void load_resource(InternalResource *ires, const char *path, const char *
 			if(!(flags & RESF_OPTIONAL)) {
 				log_fatal("Required %s '%s' couldn't be located", typename, name);
 			} else {
-				log_warn("Failed to locate %s '%s'", typename, name);
+				log_error("Failed to locate %s '%s'", typename, name);
 			}
 
 			ires->status = RES_STATUS_FAILED;
@@ -291,7 +291,7 @@ static void finalize_resource(InternalResource *ires, const char *name, void *da
 		if(!(flags & RESF_OPTIONAL)) {
 			log_fatal("Required %s '%s' couldn't be loaded", typename, name);
 		} else {
-			log_warn("Failed to load %s '%s'", typename, name);
+			log_error("Failed to load %s '%s'", typename, name);
 		}
 	}
 

@@ -54,7 +54,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	}
 
 	if(!current) {
-		log_warn("Uniform '%s' ignored: no active shader", key);
+		log_error("Uniform '%s' ignored: no active shader", key);
 		return true;
 	}
 
@@ -68,7 +68,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	Uniform *uni = r_shader_uniform(current->shader, name);
 
 	if(!uni) {
-		log_warn("No active uniform '%s' in shader", name);
+		log_error("No active uniform '%s' in shader", name);
 		return true;
 	}
 
@@ -128,7 +128,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	}
 
 	if(val_idx == 0) {
-		log_warn("No values defined for uniform '%s'", name);
+		log_error("No values defined for uniform '%s'", name);
 		return true;
 	}
 

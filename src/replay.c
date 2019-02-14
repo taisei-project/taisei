@@ -244,7 +244,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 		TAISEI_VERSION_GET_CURRENT(&v);
 
 		if(taisei_version_write(file, &v) != TAISEI_VERSION_SIZE) {
-			log_warn("Failed to write game version: %s", SDL_GetError());
+			log_error("Failed to write game version: %s", SDL_GetError());
 			return false;
 		}
 	}
@@ -315,7 +315,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 #define PRINTPROP(prop,fmt) (void)(prop)
 #endif
 
-#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { log_warn("%s: Premature EOF", source); return false; }
+#define CHECKPROP(prop,fmt) PRINTPROP(prop,fmt); if(filesize > 0 && SDL_RWtell(file) == filesize) { log_error("%s: Premature EOF", source); return false; }
 
 static void replay_read_string(SDL_RWops *file, char **ptr, uint16_t version) {
 	size_t len;
@@ -339,7 +339,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	SDL_RWread(file, header, sizeof(header), 1);
 
 	if(memcmp(header, replay_magic_header, sizeof(header))) {
-		log_warn("%s: Incorrect header", source);
+		log_error("%s: Incorrect header", source);
 		return false;
 	}
 
@@ -363,7 +363,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS102000_REV2:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
-				log_warn("%s: Failed to read game version", source);
+				log_error("%s: Failed to read game version", source);
 				return false;
 			}
 
@@ -372,7 +372,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		}
 
 		default: {
-			log_warn("%s: Unknown struct version %u", source, base_version);
+			log_error("%s: Unknown struct version %u", source, base_version);
 			return false;
 		}
 	}
@@ -403,7 +403,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
 
 	if(!rpy->numstages) {
-		log_warn("%s: No stages in replay", source);
+		log_error("%s: No stages in replay", source);
 		return false;
 	}
 
@@ -445,7 +445,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg, version) + SDL_ReadLE32(file)) {
-			log_warn("%s: Stageinfo is corrupt", source);
+			log_error("%s: Stageinfo is corrupt", source);
 			return false;
 		}
 	}
@@ -458,7 +458,7 @@ static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, c
 		ReplayStage *stg = rpy->stages + i;
 
 		if(!stg->numevents) {
-			log_warn("%s: No events in stage", source);
+			log_error("%s: No events in stage", source);
 			return false;
 		}
 
@@ -500,7 +500,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 		memset(rpy, 0, sizeof(Replay));
 
 		if(filesize > 0 && filesize <= sizeof(replay_magic_header) + 2) {
-			log_warn("%s: Replay file is too short (%"PRIi64")", source, filesize);
+			log_error("%s: Replay file is too short (%"PRIi64")", source, filesize);
 			return false;
 		}
 
@@ -514,7 +514,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
 			if(rpy->fileoffset < SDL_RWtell(file)) {
-				log_warn("%s: Invalid offset %"PRIi32"", source, rpy->fileoffset);
+				log_error("%s: Invalid offset %"PRIi32"", source, rpy->fileoffset);
 				return false;
 			}
 
@@ -555,7 +555,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 			}
 
 			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
-				log_warn("%s: SDL_RWseek() failed: %s", source, SDL_GetError());
+				log_error("%s: SDL_RWseek() failed: %s", source, SDL_GetError());
 				return false;
 			}
 		}
@@ -606,7 +606,7 @@ bool replay_save(Replay *rpy, const char *name) {
 	free(p);
 
 	if(!file) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 
@@ -640,7 +640,7 @@ bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	free(p);
 
 	if(!file) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		free(sp);
 		return false;
 	}
@@ -670,7 +670,7 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 #endif
 
 	if(!file) {
-		log_warn("SDL_RWFromFile() failed: %s", SDL_GetError());
+		log_error("SDL_RWFromFile() failed: %s", SDL_GetError());
 		return false;
 	}
 
@@ -759,7 +759,7 @@ void replay_play(Replay *rpy, int firstidx) {
 	}
 
 	if(firstidx >= global.replay.numstages || firstidx < 0) {
-		log_warn("No stage #%i in the replay", firstidx);
+		log_error("No stage #%i in the replay", firstidx);
 		return;
 	}
 

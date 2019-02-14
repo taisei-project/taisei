@@ -60,16 +60,29 @@ static void init_log(void) {
 	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, env_get("TAISEI_LOGLVLS_CONSOLE", NULL));
 	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, env_get("TAISEI_LOGLVLS_STDOUT", NULL));
 	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", NULL));
-	LogLevel lvls_backtrace = log_parse_levels(LOG_DEFAULT_LEVELS_BACKTRACE, env_get("TAISEI_LOGLVLS_BACKTRACE", NULL));
 
-	log_init(LOG_DEFAULT_LEVELS, lvls_backtrace);
-	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false));
-	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false));
+	log_init(LOG_DEFAULT_LEVELS);
+	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false), log_formatter_console);
+	log_add_output(lvls_stderr, SDL_RWFromFP(stderr, false), log_formatter_console);
 }
 
 static void init_log_file(void) {
 	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", NULL));
-	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE));
+	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE), log_formatter_file);
+
+	char *logpath = vfs_repr("storage/log.txt", true);
+
+	if(logpath != NULL) {
+		char *m = strfmt(
+			"For more information, see the log file at %s\n\n"
+			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
+			logpath
+		);
+		log_set_gui_error_appendix(m);
+		free(m);
+	} else {
+		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
+	}
 }
 
 /*
@@ -178,25 +191,24 @@ int main(int argc, char **argv) {
 			headless = true;
 		}
 	} else if(a.type == CLI_DumpVFSTree) {
-		vfs_setup(true);
+		vfs_setup(false);
 
 		SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
+		int status = 0;
 
 		if(!rwops) {
 			log_fatal("SDL_RWFromFP() failed: %s", SDL_GetError());
-		}
-
-		if(!vfs_print_tree(rwops, a.filename)) {
-			log_warn("VFS error: %s", vfs_get_error());
-			SDL_RWclose(rwops);
-			free_cli_action(&a);
-			return 1;
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+			status = 1;
+		} else if(!vfs_print_tree(rwops, a.filename)) {
+			log_error("VFS error: %s", vfs_get_error());
+			status = 2;
 		}
 
 		SDL_RWclose(rwops);
 		vfs_shutdown();
 		free_cli_action(&a);
-		return 0;
+		return status;
 	}
 
 	free_cli_action(&a);

@@ -22,10 +22,6 @@
 	#define IF_DEBUG(statement)
 #endif
 
-#ifdef TAISEI_BUILDCONF_LOG_ENABLE_BACKTRACE
-	#define LOG_ENABLE_BACKTRACE
-#endif
-
 #ifdef TAISEI_BUILDCONF_LOG_FATAL_MSGBOX
 	#define LOG_FATAL_MSGBOX
 #endif

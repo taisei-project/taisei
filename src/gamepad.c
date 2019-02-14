@@ -204,7 +204,7 @@ void gamepad_init(void) {
 	}
 
 	if(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
-		log_warn("SDL_InitSubSystem() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
 		return;
 	}
 

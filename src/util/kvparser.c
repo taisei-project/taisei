@@ -75,7 +75,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 	SDL_RWops *strm = vfs_open(filename, VFS_MODE_READ);
 
 	if(!strm) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
 

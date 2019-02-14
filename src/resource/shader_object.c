@@ -63,7 +63,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 	struct shobj_type *type = get_shobj_type(path);
 
 	if(type == NULL) {
-		log_warn("%s: can not determine shading language and/or shader stage from the filename", path);
+		log_error("%s: can not determine shading language and/or shader stage from the filename", path);
 		return NULL;
 	}
 
@@ -90,7 +90,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 
 	if(!r_shader_language_supported(&ldata->source.lang, &altlang)) {
 		if(altlang.lang == SHLANG_INVALID) {
-			log_warn("%s: shading language not supported by backend", path);
+			log_error("%s: shading language not supported by backend", path);
 			goto fail;
 		}
 
@@ -106,7 +106,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 		});
 
 		if(!result) {
-			log_warn("%s: translation failed", path);
+			log_error("%s: translation failed", path);
 			goto fail;
 		}
 
@@ -137,7 +137,7 @@ static void* load_shader_object_end(void *opaque, const char *path, uint flags) 
 		r_shader_object_set_debug_label(shobj, basename);
 		free(basename);
 	} else {
-		log_warn("%s: failed to compile shader object", path);
+		log_error("%s: failed to compile shader object", path);
 	}
 
 	free(ldata);

@@ -305,7 +305,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 			source_allocated = pixmap_source_path(TEX_PATH_PREFIX, basename);
 
 			if(!source_allocated) {
-				log_warn("%s: couldn't infer source path from texture name", basename);
+				log_error("%s: couldn't infer source path from texture name", basename);
 			} else {
 				log_warn("%s: inferred source path from texture name: %s", basename, source_allocated);
 			}
@@ -336,13 +336,13 @@ static void* load_texture_begin(const char *path, uint flags) {
 
 		if(!format_ok) {
 			free(source_allocated);
-			log_warn("%s: bad or unsupported pixel format specification", path);
+			log_error("%s: bad or unsupported pixel format specification", path);
 			return NULL;
 		}
 	}
 
 	if(!pixmap_load_file(source, &ld.pixmap)) {
-		log_warn("%s: couldn't load texture image", source);
+		log_error("%s: couldn't load texture image", source);
 		free(source_allocated);
 		return NULL;
 	}

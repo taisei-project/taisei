@@ -37,18 +37,18 @@ void audio_backend_init(void) {
 	}
 
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-		log_warn("SDL_InitSubSystem() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
 		return;
 	}
 
 	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
-		log_warn("Mix_OpenAudio() failed: %s", Mix_GetError());
+		log_error("Mix_OpenAudio() failed: %s", Mix_GetError());
 		Mix_Quit();
 		return;
 	}
 
 	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
-		log_warn("Mix_Init() failed: %s", Mix_GetError());
+		log_error("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
 		return;
 	}
@@ -56,7 +56,7 @@ void audio_backend_init(void) {
 	int channels = Mix_AllocateChannels(AUDIO_CHANNELS);
 
 	if(!channels) {
-		log_warn("Unable to allocate any channels");
+		log_error("Unable to allocate any channels");
 		Mix_CloseAudio();
 		Mix_Quit();
 		return;
@@ -186,7 +186,7 @@ static void mixer_music_finished(void) {
 
 	if(next_loop) {
 		if(Mix_PlayMusic(next_loop, next_loop_point ? 0 : -1) == -1) {
-			log_warn("Mix_PlayMusic() failed: %s", Mix_GetError());
+			log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
 		} else if(next_loop_point >= 0) {
 			Mix_SetMusicPosition(next_loop_point);
 		} else {
@@ -265,7 +265,7 @@ bool audio_backend_music_play(void *impl) {
 	bool result = (Mix_PlayMusic(mmus, loops) != -1);
 
 	if(!result) {
-		log_warn("Mix_PlayMusic() failed: %s", Mix_GetError());
+		log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
 	}
 
 	return result;
@@ -281,7 +281,7 @@ bool audio_backend_music_set_position(double pos) {
 	Mix_RewindMusic();
 
 	if(Mix_SetMusicPosition(pos)) {
-		log_warn("Mix_SetMusicPosition() failed: %s", Mix_GetError());
+		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
 		return false;
 	}
 
@@ -315,7 +315,7 @@ static int audio_backend_sound_play_on_channel(int chan, MixerInternalSound *isn
 
 	Mix_UnregisterAllEffects(chan);
 	if(chan < 0) {
-		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
+		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
 		return false;
 	}
 
@@ -355,7 +355,7 @@ bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
 	Mix_UnregisterAllEffects(snd->loopchan);
 
 	if(snd->loopchan == -1) {
-		log_warn("Mix_PlayChannel() failed: %s", Mix_GetError());
+		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
 		return false;
 	}
 

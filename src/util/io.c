@@ -21,7 +21,7 @@ char* read_all(const char *filename, int *outsize) {
 	SDL_RWops *file = vfs_open(filename, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!file) {
-		log_warn("VFS error: %s", vfs_get_error());
+		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
 

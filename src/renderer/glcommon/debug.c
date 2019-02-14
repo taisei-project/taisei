@@ -77,7 +77,7 @@ static void APIENTRY glcommon_debug(
 
 void glcommon_debug_enable(void) {
 	if(!glext.debug_output) {
-		log_warn("OpenGL debugging is not supported on your system");
+		log_error("OpenGL debugging is not supported on your system");
 		return;
 	}
 

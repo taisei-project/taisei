@@ -130,7 +130,7 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 	uint major, minor;
 
 	if(glslvstr == NULL) {
-		log_warn("Failed to obtain the GLSL version string");
+		log_error("Failed to obtain the GLSL version string");
 		glcommon_free_shader_lang_table();
 		return;
 	}
@@ -155,7 +155,7 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 			}
 		}
 	} else {
-		log_warn("Failed to parse GLSL version string: %s", glslvstr_orig);
+		log_error("Failed to parse GLSL version string: %s", glslvstr_orig);
 
 		// We could try to infer it from the context version, but whatever.
 		// If we got here, then we're probably fucked anyway.
@@ -189,7 +189,7 @@ static void glcommon_build_shader_lang_table_finish(void) {
 		log_info("%s", str);
 		SDL_RWclose(abuf);
 	} else {
-		log_warn("Can not determine supported GLSL versions. Looks like the OpenGL implementation is non-conformant. Expect nothing to work.");
+		log_error("Can not determine supported GLSL versions. Looks like the OpenGL implementation is non-conformant. Expect nothing to work.");
 	}
 }
 

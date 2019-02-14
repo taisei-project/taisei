@@ -34,7 +34,7 @@ void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops) {
 }
 
 noreturn static void pngutil_error_handler(png_structp png_ptr, png_const_charp error_msg) {
-	log_warn("PNG error: %s", error_msg);
+	log_error("PNG error: %s", error_msg);
 	png_longjmp(png_ptr, 1);
 }
 

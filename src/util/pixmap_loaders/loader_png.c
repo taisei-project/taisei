@@ -119,7 +119,7 @@ done:
 	}
 
 	if(error) {
-		log_warn("Failed to load image: %s", error);
+		log_error("Failed to load image: %s", error);
 		free(pixmap->data.untyped);
 		pixmap->data.untyped = NULL;
 		return false;

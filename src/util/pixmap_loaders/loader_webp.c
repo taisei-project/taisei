@@ -54,7 +54,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
 	int status = WebPInitDecoderConfig(&config);
 
 	if(!status) {
-		log_warn("Library ABI mismatch");
+		log_error("Library ABI mismatch");
 		return false;
 	}
 
@@ -81,14 +81,14 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
 	status = WebPGetFeatures(buf, data_available, &features);
 
 	if(status != VP8_STATUS_OK) {
-		log_warn("WebPGetFeatures() failed: %s", webp_error_str(status));
+		log_error("WebPGetFeatures() failed: %s", webp_error_str(status));
 		return false;
 	}
 
 	WebPIDecoder *idec = WebPINewDecoder(&config.output);
 
 	if(idec == NULL) {
-		log_warn("WebPINewDecoder() failed");
+		log_error("WebPINewDecoder() failed");
 		return false;
 	}
 
@@ -100,7 +100,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
 
 	if(pixmap->height > ((size_t)-1)/(pixmap->width * pixel_size)) {
 		WebPIDelete(idec);
-		log_warn("The image is too large");
+		log_error("The image is too large");
 		return false;
 	}
 
@@ -116,7 +116,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
 		status = WebPIAppend(idec, buf, data_available);
 
 		if(status != VP8_STATUS_OK && status != VP8_STATUS_SUSPENDED) {
-			log_warn("WebPIAppend() failed: %s", webp_error_str(status));
+			log_error("WebPIAppend() failed: %s", webp_error_str(status));
 			free(pixmap->data.untyped);
 			pixmap->data.untyped = NULL;
 			break;
