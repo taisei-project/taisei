@@ -536,6 +536,10 @@ static int gamepad_game_key_for_button(GamepadButton button) {
 	return -1;
 }
 
+static inline hrtime_t gamepad_repeat_interval(ConfigIndex opt) {
+	return HRTIME_RESOLUTION * (double)config_get_float(opt);
+}
+
 static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 	int key = gamepad_game_key_for_button(button);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
@@ -543,9 +547,9 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 
 	if(state == SDL_PRESSED) {
 		if(is_repeat) {
-			btnstate->repeat_time = time_get() + config_get_float(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL);
+			btnstate->repeat_time = time_get() + gamepad_repeat_interval(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL);
 		} else {
-			btnstate->repeat_time = time_get() + config_get_float(CONFIG_GAMEPAD_BTNREPEAT_DELAY);
+			btnstate->repeat_time = time_get() + gamepad_repeat_interval(CONFIG_GAMEPAD_BTNREPEAT_DELAY);
 		}
 
 		btnstate->held = true;
