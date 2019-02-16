@@ -649,6 +649,8 @@ static void stage_update_fps(StageFrameState *fstate) {
 }
 
 static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonus) {
+	memset(bonus, 0, sizeof(*bonus));
+
 	// FIXME: this is clunky...
 	if(!global.is_practice_mode && stage->type == STAGE_STORY) {
 		StageInfo *next = stage_get(stage->id + 1);
@@ -660,15 +662,11 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 
 	if(stage->type == STAGE_STORY) {
 		bonus->base = stage->id * 1000000;
-	} else {
-		bonus->base = 0;
 	}
 
 	if(bonus->all_clear) {
 		bonus->base += global.plr.point_item_value * 100;
 		bonus->graze = global.plr.graze * (global.plr.point_item_value / 10);
-	} else {
-		bonus->graze = 0;
 	}
 
 	bonus->voltage = global.plr.voltage * (global.plr.point_item_value / 100);
