@@ -43,13 +43,16 @@
 
 	// Taisei v1.3 revision 0: adds piv; expands points to 64bit, graze to 32bit
 	#define REPLAY_STRUCT_VERSION_TS103000_REV0 9
+
+	// Taisei v1.3 revision 1: expands life and bomb fragments to 16bit
+	#define REPLAY_STRUCT_VERSION_TS103000_REV1 10
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV1 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -101,9 +104,9 @@ typedef struct ReplayStage {
 	uint8_t plr_focus;
 	uint16_t plr_power;
 	uint8_t plr_lives;
-	uint8_t plr_life_fragments;
+	uint16_t plr_life_fragments; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV1: uint8_t
 	uint8_t plr_bombs;
-	uint8_t plr_bomb_fragments;
+	uint16_t plr_bomb_fragments; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV1: uint8_t
 	uint8_t plr_inputflags;
 	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV2 and above */
 	uint32_t plr_graze; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV0: uint16_t

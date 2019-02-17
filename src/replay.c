@@ -225,9 +225,21 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_focus);
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lives);
-	SDL_WriteU8(file, stg->plr_life_fragments);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
+		SDL_WriteLE16(file, stg->plr_life_fragments);
+	} else {
+		SDL_WriteU8(file, stg->plr_life_fragments);
+	}
+
 	SDL_WriteU8(file, stg->plr_bombs);
-	SDL_WriteU8(file, stg->plr_bomb_fragments);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
+		SDL_WriteLE16(file, stg->plr_bomb_fragments);
+	} else {
+		SDL_WriteU8(file, stg->plr_bomb_fragments);
+	}
+
 	SDL_WriteU8(file, stg->plr_inputflags);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
@@ -377,6 +389,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS102000_REV1:
 		case REPLAY_STRUCT_VERSION_TS102000_REV2:
 		case REPLAY_STRUCT_VERSION_TS103000_REV0:
+		case REPLAY_STRUCT_VERSION_TS103000_REV1:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -454,9 +467,21 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_lives = SDL_ReadU8(file), u);
-		CHECKPROP(stg->plr_life_fragments = SDL_ReadU8(file), u);
+
+		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
+			CHECKPROP(stg->plr_life_fragments = SDL_ReadLE16(file), u);
+		} else {
+			CHECKPROP(stg->plr_life_fragments = SDL_ReadU8(file), u);
+		}
+
 		CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
-		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU8(file), u);
+
+		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
+			CHECKPROP(stg->plr_bomb_fragments = SDL_ReadLE16(file), u);
+		} else {
+			CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU8(file), u);
+		}
+
 		CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 
 		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
