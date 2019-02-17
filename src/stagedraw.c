@@ -1300,7 +1300,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		}
 	});
 
-	volts_x += text_draw("v", &(TextParams) {
+	volts_x += text_draw("V", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
 		.font_ptr = font,
@@ -1326,7 +1326,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		}
 	});
 
-	volts_x += text_draw("v", &(TextParams) {
+	volts_x += text_draw("V", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
 		.font_ptr = font,
