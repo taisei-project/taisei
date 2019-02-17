@@ -1452,20 +1452,22 @@ void player_preload(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, flags,
-		"focus",
 		"fairy_circle",
+		"focus",
+		"part/blast_huge_halo",
+		"part/powersurge_field",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
-		"graze",
 		"death",
-		"generic_shot",
-		"powerup",
-		"full_power",
-		"extra_life",
 		"extra_bomb",
+		"extra_life",
+		"full_power",
+		"generic_shot",
+		"graze",
 		"hit0",
 		"hit1",
+		"powerup",
 	NULL);
 }
 
