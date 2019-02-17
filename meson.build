@@ -62,12 +62,20 @@ taisei_c_args = [
     '-Wunreachable-code-loop-increment',
 ]
 
-if get_option('b_pch')
+if get_option('b_pch') and meson.version().version_compare('<0.50.0')
     # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
     taisei_c_args += ['-fpch-deps']
 endif
 
 taisei_c_args = cc.get_supported_arguments(taisei_c_args)
+
+foreach arglist : [
+        ['-msse', '-mfpmath=sse'],
+    ]
+    if cc.has_multi_arguments(arglist)
+        taisei_c_args += arglist
+    endif
+endforeach
 
 static = get_option('static')
 
