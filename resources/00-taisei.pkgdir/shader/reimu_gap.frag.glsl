@@ -17,6 +17,19 @@ bool posInBBox(vec2 pos, vec2 origin, float size) {
 	));
 }
 
+void drawGap(inout vec4 frag_color, vec2 frag_loc, int i) {
+	const float h0 = 1;
+	const float h1 = h0 * 0.8;
+	const vec4 gap_color = vec4(0.75, 0, 0.4, 1);
+
+	vec2 gap = gaps[i];
+	mat2 gap_rot = gap_rotations[i];
+	float edge = length(gap_rot * (frag_loc - gap) / gap_size);
+	float gap_mask = smoothstep(h0, h1, edge);
+	vec2 tc = gap_views[i];
+	frag_color = mix(frag_color, mix(gap_color, texture(tex, tc), 1 - pow(edge, 3)), gap_mask);
+}
+
 void main(void) {
 	vec4 bg = texture(tex, texCoord);
 	fragColor = bg;
@@ -49,18 +62,11 @@ void main(void) {
 	frag_loc.y += mag * sin(t * -1.29 - frag_loc.x * pmag);
 	frag_loc.x += mag * sin(t *  1.35 - frag_loc.y * pmag);
 
-	const float h0 = 1;
-	const float h1 = h0 * 0.8;
-	const vec4 gap_color = vec4(0.75, 0, 0.4, 1);
-
-	for(int i = 0; i < NUM_GAPS; ++i) {
-		vec2 gap = gaps[i];
-		mat2 gap_rot = gap_rotations[i];
-		float edge = length(gap_rot * (frag_loc - gap) / gap_size);
-		float gap_mask = smoothstep(h0, h1, edge);
-		vec2 tc = gap_views[i];
-		fragColor = mix(fragColor, mix(gap_color, texture(tex, tc), 1 - pow(edge, 3)), gap_mask);
-	}
+	// This used to be a loop, but unfortunately ANGLE miscompiles it for the D3D backend.
+	drawGap(fragColor, frag_loc, 0);
+	drawGap(fragColor, frag_loc, 1);
+	drawGap(fragColor, frag_loc, 2);
+	drawGap(fragColor, frag_loc, 3);
 
 	#ifdef DRAW_LINKS
 	for(int i = 0; i < NUM_GAPS; ++i) {
