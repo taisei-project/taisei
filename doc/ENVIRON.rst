@@ -281,7 +281,7 @@ Examples
 
        TAISEI_LOGLVLS_CONSOLE=-a
 
--  Don't save anything to the log file, except for *Errors*\ s and *Fatal*\ s:
+-  Don't save anything to the log file, except for *Error*\ s and *Fatal*\ s:
 
    .. code:: sh
 
