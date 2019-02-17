@@ -332,8 +332,8 @@ static bool stage_input_key_filter(KeyIndex key, bool is_release) {
 	IF_NOT_DEBUG(
 		if(
 			key == KEY_IDDQD ||
-			code == KEY_POWERUP ||
-			code == KEY_POWERDOWN
+			key == KEY_POWERUP ||
+			key == KEY_POWERDOWN
 		) {
 			return false;
 		}
