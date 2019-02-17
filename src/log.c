@@ -350,9 +350,8 @@ static int log_fmtconsole_format_plain(FormatterObj *obj, char *buf, size_t buf_
 	int r = snprintf(
 		buf,
 		buf_size,
-		"%-9d %s%s: %s: %s\n",
+		"%-9d %s: %s: %s\n",
 		entry->time,
-		level_ansi_style_code(entry->level),
 		level_prefix(entry->level),
 		entry->func,
 		entry->message
