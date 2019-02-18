@@ -13,8 +13,11 @@ common_taiseilib_defs = [
     '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
 ]
 
-version_script = find_program(files('version.py'))
-version_command = [version_script, common_taiseilib_args]
+# Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4947
+python_thunk = find_program(files('thunk.py'))
+
+version_script = files('version.py')
+version_command = [python_thunk, version_script, common_taiseilib_args]
 
 taisei_version_result = run_command(version_command, '{string}')
 assert(taisei_version_result.returncode() == 0, 'Version script failed')
@@ -25,16 +28,21 @@ endif
 
 taisei_version_string = taisei_version_result.stdout().strip()
 
-preprocess_script = find_program(files('configure-file.py'))
-preprocess_args = common_taiseilib_args + common_taiseilib_defs
-preprocess_command = [preprocess_script, preprocess_args]
-preprocessor = generator(preprocess_script,
+preprocess_script = files('configure-file.py')
+# generators are string supremacists apparently...
+preprocess_script_path = join_paths(meson.source_root(), '@0@'.format(preprocess_script[0]))
+preprocess_args = [preprocess_script_path] + common_taiseilib_args + common_taiseilib_defs
+preprocess_command = [python_thunk, preprocess_args]
+
+preprocessor = generator(preprocess_command[0],
     arguments: preprocess_args + ['@EXTRA_ARGS@', '--depfile', '@DEPFILE@', '@INPUT@', '@OUTPUT@'],
     output: '@BASENAME@',
     depfile: '@BASENAME@.d',
 )
 
-eolconv_command = find_program(files('eolconv.py'))
+eolconv_script = files('eolconv.py')
+eolconv_command = [python_thunk, eolconv_script]
+
 host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
 
 if get_option('buildtype').contains('debug')
@@ -44,17 +52,18 @@ else
 endif
 
 if macos_app_bundle
-    dmg_command = find_program(files('macos-gen-dmg.py'))
+    dmg_script = files('macos-gen-dmg.py')
     dmg_filename = 'Taisei-@0@-macOS.dmg'.format(dist_version_string)
     dmg_target = run_target('dmg',
-        command: [dmg_command, join_paths(meson.build_root(), dmg_filename), meson.build_root()],
+        command: [python_thunk, dmg_script, join_paths(meson.build_root(), dmg_filename), meson.build_root()],
     )
 endif
 
 angle_enabled = get_option('install_angle')
 
 if host_machine.system() == 'windows'
-    nsis_command = find_program(files('win-gen-nsis.py'))
+    nsis_script = files('win-gen-nsis.py')
+    nsis_command = [python_thunk, nsis_script]
 
     nsis_filename = 'Taisei-@0@-setup-@1@.exe'.format(dist_version_string, host_machine.cpu_family())
     nsis_outpath = join_paths(meson.build_root(), nsis_filename)
@@ -87,25 +96,29 @@ if host_machine.system() == 'windows'
     )
 endif
 
-zip_command = find_program(files('gen-zip.py'))
+zip_script = files('gen-zip.py')
+zip_command = [python_thunk, zip_script]
 zip_filename = 'Taisei-@0@-@1@-@2@.zip'.format(dist_version_string, host_machine.system(), host_machine.cpu_family())
 zip_outpath = join_paths(meson.build_root(), zip_filename)
 zip_target = run_target('zip',
     command: [zip_command, meson.build_root(), zip_outpath],
 )
 
-gen_atlas_command = find_program(files('gen-atlas.py'))
-gen_atlases_command = find_program(files('gen-atlases.py'))
+gen_atlas_script = files('gen-atlas.py')
+gen_atlas_command = [python_thunk, gen_atlas_script]
 
-upkeep_script = find_program(files('upkeep.py'))
-upkeep_command = [upkeep_script, common_taiseilib_args]
+gen_atlases_script = files('gen-atlases.py')
+gen_atlases_command = [python_thunk, gen_atlases_script]
+
+upkeep_script = files('upkeep.py')
+upkeep_command = [python_thunk, upkeep_script, common_taiseilib_args]
 upkeep_target = run_target('upkeep', command: upkeep_command)
 
-postconf_script = find_program(files('dump-build-options.py'))
-# meson.add_postconf_script(postconf_script.path())
-run_command(postconf_script)
+postconf_script = files('dump-build-options.py')
+run_command(python_thunk, postconf_script)
 
-pack_script = find_program(files('pack.py'))
-pack_command = [pack_script, common_taiseilib_args]
+pack_script = files('pack.py')
+pack_command = [python_thunk, pack_script, common_taiseilib_args]
 
-glob_command = find_program(files('glob-search.py'))
+glob_script = files('glob-search.py')
+glob_command = [python_thunk, glob_script]
