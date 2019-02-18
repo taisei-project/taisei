@@ -2,3 +2,7 @@
 	path = external/cglm
 	url = ../cglm.git
 	branch = taisei
+[submodule "gamecontrollerdb"]
+	path = external/gamecontrollerdb
+	url = ../SDL_GameControllerDB.git
+	branch = master
