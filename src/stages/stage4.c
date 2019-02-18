@@ -121,7 +121,7 @@ static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
 	for(i = 0; i < 3; i++)
 		d[i] = p[i] - pos[i];
 
-	if(glm_vec_norm(d) > maxrange) {
+	if(glm_vec3_norm(d) > maxrange) {
 		return NULL;
 	} else {
 		vec3 **list = calloc(2, sizeof(vec3*));

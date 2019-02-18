@@ -105,7 +105,7 @@ vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r) {
 		for(i = 0; i < 3; i++)
 			dif[i] = q[i] - p[i] - r[i]*num;
 
-		if(glm_vec_norm(dif) < maxrange) {
+		if(glm_vec3_norm(dif) < maxrange) {
 			list = realloc(list, (++size)*sizeof(vec3*));
 			list[size-1] = malloc(sizeof(vec3));
 			for(i = 0; i < 3; i++)
@@ -134,7 +134,7 @@ vec3 **single3dpos(vec3 q, float maxrange, vec3 p) {
 	for(i = 0; i < 3; i++)
 		d[i] = p[i] - q[i];
 
-	if(glm_vec_norm(d) > maxrange) {
+	if(glm_vec3_norm(d) > maxrange) {
 		return NULL;
 	} else {
 		vec3 **list = calloc(2, sizeof(vec3*));
