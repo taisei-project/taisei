@@ -1,8 +1,8 @@
 [submodule "cglm"]
 	path = external/cglm
-	url = ../cglm.git
+	url = https://github.com/taisei-project/cglm.git
 	branch = taisei
 [submodule "gamecontrollerdb"]
 	path = external/gamecontrollerdb
-	url = ../SDL_GameControllerDB.git
+	url = https://github.com/taisei-project/SDL_GameControllerDB.git
 	branch = master
