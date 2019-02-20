@@ -1290,13 +1290,20 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	format_huge_num(4, global.plr.voltage, sizeof(buf), buf);
 	float volts_x = 0;
 
+	Color *voltage_tint = global.plr.voltage >= global.voltage_threshold
+		? RGB(1.0, 0.9, 0.7) // RGB(0.9, 0.7, 1.0)
+		: RGB(1.0, 1.0, 1.0);
+
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
 		.shader_ptr = stagedraw.hud_text.shader,
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) {
+				color_mul(COLOR_COPY(&stagedraw.hud_text.color.inactive), voltage_tint),
+				color_mul(COLOR_COPY(&stagedraw.hud_text.color.active), voltage_tint),
+			},
 		}
 	});
 
