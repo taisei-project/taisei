@@ -132,6 +132,12 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
+	if(a->type == AT_ExtraSpell || (a->info != NULL && a->info->type == AT_ExtraSpell)) {
+		if(global.plr.voltage < global.voltage_threshold) {
+			return true;
+		}
+	}
+
 	// Immediates are handled in a special way by process_boss,
 	// but may be considered skipped/nonexistent for other purposes
 	if(a->type == AT_Immediate) {
@@ -152,6 +158,7 @@ static Attack* boss_get_final_attack(Boss *boss) {
 	return final >= boss->attacks ? final : NULL;
 }
 
+attr_unused
 static Attack* boss_get_next_attack(Boss *boss) {
 	Attack *next;
 	for(next = boss->current + 1; next < boss->attacks + boss->acount && boss_should_skip_attack(boss, next); ++next);
@@ -851,14 +858,6 @@ static int attack_end_delay(Boss *boss) {
 		default:                delay = ATTACK_END_DELAY;       break;
 	}
 
-	if(delay) {
-		Attack *next = boss_get_next_attack(boss);
-
-		if(next && next->type == AT_ExtraSpell) {
-			// delay += ATTACK_END_DELAY_PRE_EXTRA;
-		}
-	}
-
 	return delay;
 }
 
@@ -893,33 +892,6 @@ void boss_finish_current_attack(Boss *boss) {
 			ITEM_POINTS, 12,
 			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1),
 		NULL);
-	}
-
-	Attack *next = boss_get_next_attack(boss);
-
-	if(next != NULL && next->type == AT_ExtraSpell) {
-		// Unfortunately, we can't just put the voltage threshold condition into
-		// boss_should_skip_attack, because we intend to drain the voltage when
-		// the extra spell is about to start, which would automatically cancel it.
-		// If the next attack is an extra spell, we must decide right here and now
-		// whether it should be skipped or not. Delaying the decision will interfere
-		// with the death animation, if the extra spell happens to be the last (the
-		// common case). So we go out of our way to "predict" the future voltage
-		// value - these items will be collected during the downtime, and we'll
-		// drain the voltage when the extra spell is actually supposed to start.
-
-		uint voltage = global.plr.voltage;
-
-		for(Item *i = global.items.first; i; i = i->next) {
-			if(i->type == ITEM_VOLTAGE && i->auto_collect) {
-				voltage += 1;
-			}
-		}
-
-		if(voltage < global.voltage_threshold) {
-			// Not enough, cancel it
-			next->timeout = 0;
-		}
 	}
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
@@ -1113,11 +1085,6 @@ void process_boss(Boss **pboss) {
 				}
 
 				continue;
-			}
-
-			// Cancellation is handled in boss_finish_current_attack of previous attack
-			if(boss->current->type == AT_ExtraSpell) {
-				player_drain_voltage(&global.plr, global.voltage_threshold);
 			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
