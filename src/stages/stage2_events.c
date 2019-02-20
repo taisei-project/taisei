@@ -624,8 +624,8 @@ void hina_monty(Boss *h, int time) {
 
 		for(int i = 0; i < 2; ++i) {
 			int x = cwidth * (1 + i);
-			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0));
-			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0))->unclearable = true;
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0))->unclearable = true;
 		}
 
 		enemy_kill_all(&global.enemies);

@@ -986,11 +986,18 @@ static void iku_extra_fire_trigger_bullet(void) {
 
 	Boss *b = global.boss;
 
-	PROJECTILE("soul", b->pos, RGB(0.2, 0.2, 1.0), iku_extra_trigger_bullet, {
-		3*cexp(I*carg(e->pos - b->pos)),
-		add_ref(e),
-		-1
-	});
+	PROJECTILE(
+		.proto = pp_soul,
+		.pos = b->pos,
+		.color = RGBA(0.2, 0.2, 1.0, 0.0),
+		.rule = iku_extra_trigger_bullet,
+		.args = {
+			3*cexp(I*carg(e->pos - b->pos)),
+			add_ref(e),
+			-1
+		},
+		.flags = PFLAG_NOCLEAR,
+	);
 
 	play_sound("shot_special1");
 	play_sound("enemydeath");
@@ -1018,7 +1025,9 @@ static int iku_extra_slave(Enemy *e, int t) {
 				new->args[1] = 1;
 				new->args[3] = global.frames + 55 - 5 * global.diff;
 
-				create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], RGBA(0.3, 1, 1, 0))->ent.draw_layer = LAYER_LASER_LOW;
+				Laser *l = create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], RGBA(0.3, 1, 1, 0));
+				l->ent.draw_layer = LAYER_LASER_LOW;
+				l->unclearable = true;
 
 				if(global.diff > D_Easy) {
 					int cnt = floor(global.diff * 2.5), i;
