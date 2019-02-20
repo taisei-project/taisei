@@ -77,6 +77,18 @@ foreach arglist : [
     endif
 endforeach
 
+sm_check = run_command(check_submodules_command)
+
+if sm_check.stdout() != ''
+    foreach line : sm_check.stdout().strip().split('\n')
+        warning(line)
+    endforeach
+endif
+
+if sm_check.stderr() != ''
+    warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
+endif
+
 static = get_option('static')
 
 dep_crossc      = dependency('crossc',         version : '>=1.5.0', required : false, static : static, fallback : ['crossc', 'crossc_dep'])
@@ -307,3 +319,5 @@ subdir('atlas')
 subdir('src')
 
 message(summary)
+
+run_command(postconf_command)
