@@ -416,6 +416,15 @@ static void video_init_sdl(void) {
 }
 
 static void video_handle_resize(int w, int h) {
+	int minw, minh;
+	SDL_GetWindowMinimumSize(video.window, &minw, &minh);
+
+	if(w < minw || h < minh) {
+		log_warn("Bad resize: %ix%i is too small!", w, h);
+		video_new_window(video.intended.width, video.intended.height, false, video_is_resizable());
+		return;
+	}
+
 	log_debug("%ix%i --> %ix%i", video.current.width, video.current.height, w, h);
 	video.current.width = w;
 	video.current.height = h;
