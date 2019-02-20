@@ -115,10 +115,13 @@ upkeep_command = [python_thunk, upkeep_script, common_taiseilib_args]
 upkeep_target = run_target('upkeep', command: upkeep_command)
 
 postconf_script = files('dump-build-options.py')
-run_command(python_thunk, postconf_script)
+postconf_command = [python_thunk, postconf_script]
 
 pack_script = files('pack.py')
 pack_command = [python_thunk, pack_script, common_taiseilib_args]
 
 glob_script = files('glob-search.py')
 glob_command = [python_thunk, glob_script]
+
+check_submodules_script = files('check-submodules.py')
+check_submodules_command = [python_thunk, check_submodules_script]
