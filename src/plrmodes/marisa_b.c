@@ -30,72 +30,76 @@ static void marisa_star_trail_draw(Projectile *p, int t) {
 }
 
 static int marisa_star_projectile(Projectile *p, int t) {
-	if(t == EVENT_DEATH || t == EVENT_BIRTH)
+	if(t == EVENT_BIRTH) {
 		return ACTION_ACK;
-	float c = 0.3 * psin(t * 0.2);
-	p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
-	Color *clr = COLOR_COPY(&p->color);
-	clr->a = 0;
+	}
+
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[1]);
+		return ACTION_ACK;
+	}
+
+	if(REF(p->args[1]) == NULL) {
+		return ACTION_DESTROY;
+	}
+
+	Enemy *e = (Enemy *)REF(p->args[1]);
+
+	//float c = 0.3 * psin(t * 0.2);
+	//p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
 
 	
 	float freq = 0.1;
 	p->angle = t * freq;
 	
-	double focus = fabs(global.plr.focus)/30.0;
+	double focus = 1-fabs(global.plr.focus)/30.0;
 
 	double focusfac = 1;
 	if(focus > 0) {
 		focusfac = t*0.015-1/focus;
-		if(focusfac < 0) {
-			focusfac = tanh(focusfac);
-		} else {
-			focusfac = focusfac*exp(focusfac);
-		}
+		focusfac = tanh(sqrt(fabs(focusfac)));
 	}
 
 	double verticalfac = - 5*t*(1+0.01*t) + 10*t/(0.01*t+1);
-	p->pos = global.plr.pos + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
+	p->pos = e->args[2] + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
 
-	/*PARTICLE(
-		.sprite_ptr = get_sprite("proj/maristar"),
-		.pos = p->pos,
-		.color = clr,
-		.timeout = 8,
-		.draw_rule = marisa_star_trail_draw,
-		.angle = p->angle,
-		.flags = PFLAG_NOREFLECT,
-		.layer = LAYER_PARTICLE_LOW,
-	);*/
+	if(t == EVENT_DEATH) {
+		PARTICLE(
+			.sprite_ptr = get_sprite("proj/maristar"),
+			.pos = p->pos,
+			.color = &p->color,
+			.timeout = 40,
+			.draw_rule = GrowFade,
+			.args = { 0, 2 },
+			.angle = frand() * 2 * M_PI,
+			.flags = PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_HIGH,
+		);
+	}
 
 	return ACTION_NONE;
 }
 
 static int marisa_star_slave(Enemy *e, int t) {
-	double focus = global.plr.focus/30.0;
+	double focus = fabs(global.plr.focus/30.0);
 
-	if(abs(global.plr.focus) > 0) {
-		e->args[2] += 1;
-	} else if(creal(e->args[2]) > 0) {
-		e->args[2] -= 5;
-	}
-
-
-	for(int i = 0; i < 3; ++i) {
+	for(int i = 0; i < 2; ++i) {
 		if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 5)) {
-			complex v = e->args[1] * 2;
+			float fac = e->args[0]/M_PI/2; 
+			complex v = (1-2*i);
+			v = creal(v)/cabs(v);
+			v *= 1-0.9*fac;
+			v -= I*0.04*t*(4-3*fac);
 
-			v = creal(e->pos-global.plr.pos);
-			v /= cabs(v);
-			v -= I*0.1*t+I*i;
-
+			//v *= cexp(I*i*M_PI/20*sign(v));
 
 			PROJECTILE(
 				.proto = pp_maristar,
 				.pos = e->pos,
-				.color = RGB(1.0, 0.5, 1.0),
+				.color = RGBA(0.5+0.5*focus*(fac-0.2), 0.5+fac*0.4+(0.5+1.2*fac)*focus, 1.0-0.5*focus,0.5),
 				.rule = marisa_star_projectile,
 				// .draw_rule = marisa_star,
-				.args = { v },
+				.args = { v, add_ref(e) },
 				.type = PROJ_PLAYER,
 				.damage = e->args[3],
 				.shader = "sprite_default",
@@ -110,7 +114,9 @@ static int marisa_star_slave(Enemy *e, int t) {
 		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	}
 
-	e->pos = global.plr.pos + (100-40*fabs(focus))*sin(angle)+45*I;
+	complex d = global.plr.pos-e->args[2];
+	e->args[2] += (2+2*!global.plr.focus)*d/(cabs(d)+2);
+	e->pos = e->args[2] + 80*sin(angle)+45*I;
 
 	return 1;
 }
@@ -279,8 +285,11 @@ static void marisa_star_respawn_slaves(Player *plr, short npow) {
 		}
 	}
 
-	for(int i = 0; i < npow/100; i++) {
-		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, 2*M_PI*i/(npow/100), 0, 0, dmg);
+
+	int numslaves = npow/100;
+	dmg /= sqrt(numslaves);
+	for(int i = 0; i < numslaves; i++) {
+		create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, marisa_common_slave_visual, marisa_star_slave, 2*M_PI*i/numslaves, 0, global.plr.pos, dmg);
 	}
 
 	for(Enemy *e = plr->slaves.first; e; e = e->next) {
