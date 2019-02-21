@@ -27,7 +27,7 @@ void fpscounter_reset(FPSCounter *fps) {
 
 void fpscounter_update(FPSCounter *fps) {
 	const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
-	double frametime = time_get() - fps->last_update_time;
+	hrtime_t frametime = time_get() - fps->last_update_time;
 
 	memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(hrtime_t));
 	fps->frametimes[log_size - 1] = frametime;
@@ -54,6 +54,11 @@ uint32_t get_effective_frameskip(void) {
 
 	return frameskip;
 }
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#define SDL_Delay emscripten_sleep
+#endif
 
 void loop_at_fps(LogicFrameFunc logic_frame, RenderFrameFunc render_frame, void *arg, uint32_t fps) {
 	assert(logic_frame != NULL);
@@ -178,6 +183,10 @@ begin_frame:
 
 		next_frame_time = frame_start_time + target_frame_time;
 		// next_frame_time = frame_start_time + 2 * target_frame_time - global.fps.logic.frametime;
+
+#ifdef __EMSCRIPTEN__
+		SDL_Delay(1);
+#endif
 
 		if(compensate) {
 			hrtime_t rt = time_get();

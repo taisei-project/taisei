@@ -27,6 +27,11 @@ static char* get_default_res_path(void) {
 }
 
 static void get_core_paths(char **res, char **storage, char **cache) {
+#ifdef __EMSCRIPTEN__
+	*res = get_default_res_path();
+	*storage = strdup("/storage");
+	*cache = strdup("/cache");
+#else
 	if(*(*res = (char*)env_get("TAISEI_RES_PATH", ""))) {
 		*res = strdup(*res);
 	} else {
@@ -43,8 +48,13 @@ static void get_core_paths(char **res, char **storage, char **cache) {
 		*cache = strdup(*cache);
 	} else {
 		// TODO: follow XDG on linux
-		*cache = strfmt("%s%ccache", *storage, vfs_get_syspath_separator());
+		if(*storage != NULL) {
+			*cache = strfmt("%s%ccache", *storage, vfs_get_syspath_separator());
+		} else {
+			*cache = NULL;
+		}
 	}
+#endif
 }
 
 static bool vfs_mount_pkgdir(const char *dst, const char *src) {

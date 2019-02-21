@@ -141,6 +141,10 @@ typedef _Complex double complex;
 // standard says `complex` should be a macro
 #define complex complex
 
+#ifndef TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T
+typedef complex max_align_t;
+#endif
+
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute
 #if !defined CMPLX
   #undef HAS_BUILTIN_COMPLEX

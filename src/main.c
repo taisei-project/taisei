@@ -86,7 +86,7 @@ static void init_log_file(void) {
 }
 
 /*
-void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
 	log_debug("[%i %i] %s", category, priority, message);
 }
 */
@@ -101,11 +101,9 @@ static void init_sdl(void) {
 	// initialize it
 	is_main_thread();
 
-	/*
-	 * TODO: refine this and make it optional
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
-	SDL_LogSetOutputFunction(sdl_log, NULL);
-	*/
+	// * TODO: refine this and make it optional
+	// SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);
+	// SDL_LogSetOutputFunction(sdl_log, NULL);
 
 	log_info("SDL initialized");
 
@@ -224,6 +222,11 @@ int main(int argc, char **argv) {
 	} else {
 		init_log_file();
 	}
+
+#ifdef __EMSCRIPTEN__
+	env_set("TAISEI_NOASYNC", true, true);
+	env_set("TAISEI_NOPRELOAD", true, true);
+#endif
 
 	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 	log_system_specs();

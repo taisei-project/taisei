@@ -79,7 +79,6 @@ endforeach
 
 static = get_option('static')
 
-dep_crossc      = dependency('crossc',         version : '>=1.5.0', required : false, static : static, fallback : ['crossc', 'crossc_dep'])
 dep_freetype    = dependency('freetype2',                           required : true,  static : static)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static)
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : true,  static : static)
@@ -89,14 +88,6 @@ dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : f
 dep_zip         = dependency('libzip',         version : '>=1.0',   required : false, static : static)
 dep_zlib        = dependency('zlib',                                required : true,  static : static)
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
-
-# Thanks, google.
-# https://github.com/google/shaderc/issues/392
-if static
-    dep_shaderc = cc.find_library('shaderc_combined', required : false)
-else
-    dep_shaderc = cc.find_library('shaderc_shared', required : false)
-endif
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -150,19 +141,23 @@ endif
 
 config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
 
-have_posix      =       cc.has_header_symbol('unistd.h',    '_POSIX_VERSION')
-have_vla        = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_VLA__')
-have_complex    = not   cc.has_header_symbol('unistd.h',    '__STDC_NO_COMPLEX__')
-have_timespec   =       cc.has_header_symbol('time.h',      'timespec_get')
+have_posix    =     cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
+have_vla      = not cc.has_header_symbol('stdlib.h', '__STDC_NO_VLA__')
+have_complex  = not cc.has_header_symbol('stdlib.h', '__STDC_NO_COMPLEX__')
+have_timespec =     cc.has_header_symbol('time.h',   'timespec_get')
 
-if not (have_vla and have_complex)
-    error('Your C implementation needs to support complex numbers and variable-length arrays.')
-endif
+assert(have_vla and have_complex, 'Your C implementation needs to support complex numbers and variable-length arrays.')
 
 config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
+config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', cc.compiles('#include <stddef.h>\nmax_align_t i;', name : 'max_align_t test'))
+
+prefer_relpath_systems = [
+    'windows',
+    'emscripten',
+]
 
 if macos_app_bundle
     bundle_dir = 'Taisei.app'
@@ -182,7 +177,7 @@ else
     datadir = get_option('datadir')
 
     if get_option('install_relative') == 'auto'
-        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', host_machine.system() == 'windows')
+        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', prefer_relpath_systems.contains(host_machine.system()))
     else
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')
     endif
@@ -202,7 +197,7 @@ endif
 
 if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
     data_path = 'data'
-    doc_path = ''
+    doc_path = '.'  # Meson bug https://github.com/mesonbuild/meson/issues/4295
     xdg_path = 'freedesktop.org'
 
     # This is relative to SDL_GetBasePath()
@@ -233,14 +228,18 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
 ))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
+install_docs = get_option('docs') and host_machine.system() != 'emscripten'
+
 if host_machine.system() == 'windows'
-    custom_target('COPYING.txt',
-        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-        input : 'COPYING',
-        output : 'COPYING.txt',
-        install : true,
-        install_dir : doc_path
-    )
+    if install_docs
+        custom_target('COPYING.txt',
+            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
+            input : 'COPYING',
+            output : 'COPYING.txt',
+            install : true,
+            install_dir : doc_path
+        )
+    endif
 
     if angle_enabled
         install_data(
@@ -250,7 +249,9 @@ if host_machine.system() == 'windows'
         )
     endif
 else
-    install_data('COPYING', install_dir : doc_path)
+    if install_docs
+        install_data('COPYING', install_dir : doc_path)
+    endif
 
     if angle_enabled
         error('install_angle is only available for Windows targets at the moment')

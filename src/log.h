@@ -40,7 +40,11 @@ typedef enum LogLevel {
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_FILE
-	#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
+	#ifdef __EMSCRIPTEN__
+		#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
+	#else
+		#define LOG_DEFAULT_LEVELS_FILE LOG_NONE
+	#endif
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_CONSOLE
@@ -52,11 +56,19 @@ typedef enum LogLevel {
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_STDOUT
-	#define LOG_DEFAULT_LEVELS_STDOUT LOG_SPAM
+	#ifdef __EMSCRIPTEN__
+		#define LOG_DEFAULT_LEVELS_STDOUT LOG_ALL
+	#else
+		#define LOG_DEFAULT_LEVELS_STDOUT LOG_SPAM
+	#endif
 #endif
 
 #ifndef LOG_DEFAULT_LEVELS_STDERR
-	#define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
+	#ifdef __EMSCRIPTEN__
+		#define LOG_DEFAULT_LEVELS_STDERR LOG_NONE
+	#else
+		#define LOG_DEFAULT_LEVELS_STDERR LOG_ALERT
+	#endif
 #endif
 
 typedef struct LogEntry {
@@ -90,7 +102,7 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
 bool log_initialized(void) attr_nodiscard;
 void log_set_gui_error_appendix(const char *message);
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
 	#undef UNREACHABLE
 	#define UNREACHABLE log_fatal("This code should never be reached")

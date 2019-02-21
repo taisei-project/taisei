@@ -433,10 +433,9 @@ uint32_t utf8_getch(const char **src) {
 
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char *buf) {
 	if(digits == 0) {
-		digits = 1 + (num ? floor(log10(num)) : 0);
+		digits = digitcnt(num);
 	}
 
-	digits = umin(19, digits);
 	num = umin(upow10(digits) - 1, num);
 
 	div_t separators = div(digits, 3);

@@ -236,32 +236,57 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
 	}
 }
 
-uint64_t upow10(uint n) {
-	static uint64_t pow10[] = {
-		1ull,
-		10ull,
-		100ull,
-		1000ull,
-		10000ull,
-		100000ull,
-		1000000ull,
-		10000000ull,
-		100000000ull,
-		1000000000ull,
-		10000000000ull,
-		100000000000ull,
-		1000000000000ull,
-		10000000000000ull,
-		100000000000000ull,
-		1000000000000000ull,
-		10000000000000000ull,
-		100000000000000000ull,
-		1000000000000000000ull,
-		10000000000000000000ull,
-	};
+static const uint64_t upow10_table[] = {
+	1ull,
+	10ull,
+	100ull,
+	1000ull,
+	10000ull,
+	100000ull,
+	1000000ull,
+	10000000ull,
+	100000000ull,
+	1000000000ull,
+	10000000000ull,
+	100000000000ull,
+	1000000000000ull,
+	10000000000000ull,
+	100000000000000ull,
+	1000000000000000ull,
+	10000000000000000ull,
+	100000000000000000ull,
+	1000000000000000000ull,
+	10000000000000000000ull,
+};
 
-	assert(n < sizeof(pow10)/sizeof(*pow10));
-	return pow10[n];
+uint64_t upow10(uint n) {
+	assert(n < sizeof(upow10_table)/sizeof(*upow10_table));
+	return upow10_table[n];
+}
+
+uint digitcnt(uint64_t x) {
+	if(x == 0) {
+		return 1;
+	}
+
+	uint low = 0;
+	uint high = sizeof(upow10_table)/sizeof(*upow10_table) - 1;
+
+	for(;;) {
+		uint mid = (low + high) / 2;
+
+		if(x >= upow10_table[mid]) {
+			if(low == mid) {
+				return mid + 1;
+			}
+
+			low = mid;
+		} else {
+			high = mid;
+		}
+	}
+
+	UNREACHABLE;
 }
 
 typedef struct int128_bits {

@@ -8,9 +8,15 @@ r_shaderlib_src = files(
 r_shaderlib_libdeps = []
 
 if get_option('shader_transpiler')
-    assert(dep_shaderc.found() and dep_crossc.found(),
-        'shaderc and crossc are required for shader translation. Install them or disable shader_transpiler.'
-    )
+    dep_crossc = dependency('crossc', version : '>=1.5.0', required : true, static : static, fallback : ['crossc', 'crossc_dep'])
+
+    # Thanks, google.
+    # https://github.com/google/shaderc/issues/392
+    if static
+        dep_shaderc = cc.find_library('shaderc_combined', required : true)
+    else
+        dep_shaderc = cc.find_library('shaderc_shared', required : true)
+    endif
 
     r_shaderlib_src += files(
         'lang_spirv.c'

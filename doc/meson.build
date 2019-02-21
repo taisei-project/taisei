@@ -1,5 +1,5 @@
 
-if get_option('docs')
+if install_docs
     rst2html5 = find_program(
         'rst2html5',
         'rst2html5.py',
