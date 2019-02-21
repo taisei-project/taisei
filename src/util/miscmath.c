@@ -13,6 +13,14 @@
 
 #include <stdlib.h>
 
+double lerp(double v0, double v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
+complex clerp(complex v0, complex v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
 double approach(double v, double t, double d) {
 	if(v < t) {
 		v += d;
@@ -102,6 +110,14 @@ intmax_t imin(intmax_t a, intmax_t b) {
 }
 
 intmax_t imax(intmax_t a, intmax_t b) {
+	return (a > b) ? a : b;
+}
+
+uintmax_t umin(uintmax_t a, uintmax_t b) {
+	return (a < b) ? a : b;
+}
+
+uintmax_t umax(uintmax_t a, uintmax_t b) {
 	return (a > b) ? a : b;
 }
 
@@ -220,18 +236,28 @@ void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
 	}
 }
 
-uint ipow10(uint n) {
-	static uint pow10[] = {
-		1,
-		10,
-		100,
-		1000,
-		10000,
-		100000,
-		1000000,
-		10000000,
-		100000000,
-		1000000000,
+uint64_t upow10(uint n) {
+	static uint64_t pow10[] = {
+		1ull,
+		10ull,
+		100ull,
+		1000ull,
+		10000ull,
+		100000ull,
+		1000000ull,
+		10000000ull,
+		100000000ull,
+		1000000000ull,
+		10000000000ull,
+		100000000000ull,
+		1000000000000ull,
+		10000000000000ull,
+		100000000000000ull,
+		1000000000000000ull,
+		10000000000000000ull,
+		100000000000000000ull,
+		1000000000000000000ull,
+		10000000000000000000ull,
 	};
 
 	assert(n < sizeof(pow10)/sizeof(*pow10));
@@ -343,7 +369,7 @@ uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 
 uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 #ifdef UMULDIV64_SANITY_CHECK
-	static char sanity = -1;
+	static signed char sanity = -1;
 
 	if(sanity < 0) {
 		sanity = (_umuldiv64(UINT64_MAX, UINT64_MAX, UINT64_MAX) == UINT64_MAX);

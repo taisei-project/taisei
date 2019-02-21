@@ -204,7 +204,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Texture *tex0 = get_tex("part/marisa_laser0");
 	Texture *tex1 = get_tex("part/marisa_laser1");
 	FBPair *fbp_aux = stage_get_fbpair(FBPAIR_FG_AUX);
-	FBPair *fbp_fg = stage_get_fbpair(FBPAIR_FG);
+	Framebuffer *target_fb = r_framebuffer_current();
 
 	r_shader_ptr(shader);
 	r_uniform_vec4(u_clr0,       0.5, 0.5, 0.5, 0.0);
@@ -236,7 +236,7 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(fbp_aux);
 
-	r_framebuffer(fbp_fg->back);
+	r_framebuffer(target_fb);
 	r_shader_standard();
 	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
@@ -261,8 +261,6 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 			draw_laser_beam(e->pos, ld->trace_hit.first, 42, 200, t * -0.03, tex0, u_length);
 		}
 	}
-
-	r_shader("sprite_default");
 }
 
 static int marisa_laser_fader(Enemy *e, int t) {
@@ -340,7 +338,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
-		if(!global.game_over && creal(laser_renderer->args[0])) {
+		if(!(global.gameover > 0) && creal(laser_renderer->args[0])) {
 			spawn_laser_fader(e, laser_renderer->args[0]);
 		}
 

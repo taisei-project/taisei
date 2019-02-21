@@ -48,15 +48,6 @@ static int cirno_snowflake_proj(Projectile *p, int time) {
 			play_sound_ex("shot_special1", 30, false);
 			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
 			spawn_projectile_highlight_effect(p);
-
-			PARTICLE(
-				.sprite = "stain",
-				.pos = p->pos,
-				.color = RGBA_MUL_ALPHA(0.45, 0.45, 0.5, 0.0),
-				.timeout = 10 + 2 * creal(p->args[1]),
-				.draw_rule = GrowFade,
-				.angle = p->angle,
-			);
 		}
 
 		p->pos -= cabs(p->args[0]) * cexp(I*p->angle);
@@ -854,7 +845,7 @@ static int stage1_burst(Enemy *e, int time) {
 	TIMER(&time);
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
 		return ACTION_ACK;
 	}
 
@@ -891,7 +882,7 @@ static int stage1_burst(Enemy *e, int time) {
 static int stage1_circletoss(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 1, NULL);
 		return 1;
 	}
 
@@ -926,8 +917,7 @@ static int stage1_circletoss(Enemy *e, int time) {
 static int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
-		tsrand_fill(2);
-		spawn_items(e->pos, Point, afrand(0)>0.5, Power, afrand(1)>0.8, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, NULL);
 		return 1;
 	}
 
@@ -947,7 +937,7 @@ static int stage1_sinepass(Enemy *e, int time) {
 static int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, frand()>0.8, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
 		return 1;
 	}
 	if(t < 0)
@@ -970,7 +960,7 @@ static int stage1_drop(Enemy *e, int t) {
 static int stage1_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 3, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -993,7 +983,7 @@ static int stage1_circle(Enemy *e, int t) {
 static int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 3, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -1023,11 +1013,11 @@ static int stage1_multiburst(Enemy *e, int t) {
 static int stage1_instantcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 4, NULL);
 		return 1;
 	}
 
-	AT(150) {
+	AT(75) {
 		play_sound("shot_special1");
 		for(int i = 0; i < 20+2*global.diff; i++) {
 			PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
@@ -1037,7 +1027,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 		}
 	}
 
-	AT(170) {
+	AT(95) {
 		if(global.diff > D_Easy) {
 			play_sound("shot_special1");
 			for(int i = 0; i < 20+3*global.diff; i++) {
@@ -1052,7 +1042,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 	if(t > 200) {
 		e->pos += e->args[1];
 	} else {
-		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.02);
+		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.04);
 	}
 
 	return 1;
@@ -1061,7 +1051,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 static int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 5, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -1126,6 +1116,7 @@ void stage1_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage1");
+		stage_set_voltage_thresholds(50, 125, 300, 600);
 	}
 
 #ifdef BULLET_TEST
@@ -1248,7 +1239,7 @@ void stage1_events(void) {
 		global.dialog = stage1_dialog_post_boss();
 	}
 
-	AT(5400 - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(5105) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

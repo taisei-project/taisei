@@ -124,6 +124,8 @@ static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additi
 
 	if(additive) {
 		trail->color.a = 0;
+	} else {
+		trail->flags |= PFLAG_PLRSPECIALPARTICLE;
 	}
 
 	return trail;

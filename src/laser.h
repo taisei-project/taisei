@@ -26,30 +26,26 @@ struct Laser {
 	ENTITY_INTERFACE_NAMED(Laser, ent);
 
 	complex pos;
+	complex args[4];
+
+	ShaderProgram *shader;
+	LaserPosRule prule;
+	LaserLogicRule lrule;
 
 	Color color;
 
 	int birthtime;
-
+	int next_graze;
 	float timespan;
 	float deathtime;
-
 	float timeshift;
 	float speed;
 	float width;
 	float width_exponent;
-
-	ShaderProgram *shader;
-
 	float collision_step;
-
-	LaserPosRule prule;
-	LaserLogicRule lrule;
-
-	complex args[4];
+	uint clear_flags;
 
 	bool unclearable;
-	bool dead;
 };
 
 #define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)
@@ -67,7 +63,7 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 void delete_lasers(void);
 void process_lasers(void);
 
-bool clear_laser(LaserList *laserlist, Laser *l, bool force, bool now);
+bool clear_laser(Laser *l, uint flags);
 
 complex las_linear(Laser *l, float t);
 complex las_accel(Laser *l, float t);

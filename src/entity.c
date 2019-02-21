@@ -168,6 +168,14 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 		return DMG_RESULT_INAPPLICABLE;
 	}
 
+	DamageInfo new_damage;
+
+	if(DAMAGETYPE_IS_PLAYER(damage->type)) {
+		new_damage = *damage;
+		player_damage_hook(&global.plr, ent, &new_damage);
+		damage = &new_damage;
+	}
+
 	DamageResult res = ent->damage_func(ent, damage);
 
 	if(res == DMG_RESULT_OK) {

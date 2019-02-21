@@ -19,12 +19,12 @@
 #include "renderer/api.h"
 
 static void return_to_title(MenuData *m, void *arg) {
-	global.game_over = GAMEOVER_ABORT;
+	global.gameover = GAMEOVER_ABORT;
 	menu_commonaction_close(m, arg);
 }
 
 void restart_game(MenuData *m, void *arg) {
-	global.game_over = GAMEOVER_RESTART;
+	global.gameover = GAMEOVER_RESTART;
 	menu_commonaction_close(m, arg);
 }
 
@@ -130,7 +130,7 @@ void create_ingame_menu(MenuData *m) {
 }
 
 static void skip_stage(MenuData *m, void *arg) {
-	global.game_over = GAMEOVER_WIN;
+	global.gameover = GAMEOVER_WIN;
 	menu_commonaction_close(m, arg);
 }
 

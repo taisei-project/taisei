@@ -24,28 +24,28 @@ struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
 			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
-			scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS
+			scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS, 3
 		},
 	},
 
 	.boss = {
 		.moonlight_rocket = {
 			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 35, 40000,
-			wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS
+			wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
 		},
 		.wriggle_night_ignite = {
 			{10, 11, 12, 13}, AT_Spellcard, "Light Source “Wriggle Night Ignite”", 50, 46000,
-			wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS
+			wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
 		},
 		.firefly_storm = {
 			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign “Firefly Storm”", 45, 45000,
-			wriggle_firefly_storm, wriggle_spellbg, BOSS_DEFAULT_GO_POS
+			wriggle_firefly_storm, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
 		},
 	},
 
 	.extra.light_singularity = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign “Light Singularity”", 75, 45000,
-		wriggle_light_singularity, wriggle_spellbg, BOSS_DEFAULT_GO_POS
+		wriggle_light_singularity, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
 	},
 };
 
@@ -98,15 +98,16 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	r_mat_pop();
 }
 
-static void stage3_tunnel(Framebuffer *fb) {
+static bool stage3_tunnel(Framebuffer *fb) {
 	r_shader("tunnel");
 	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
 	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
-static void stage3_fog(Framebuffer *fb) {
+static bool stage3_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
@@ -116,9 +117,10 @@ static void stage3_fog(Framebuffer *fb) {
 	r_uniform_float("sphereness", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
-static void stage3_glitch(Framebuffer *fb) {
+static bool stage3_glitch(Framebuffer *fb) {
 	float strength;
 
 	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
@@ -132,12 +134,14 @@ static void stage3_glitch(Framebuffer *fb) {
 		r_uniform_float("strength", strength);
 		r_uniform_int("frames", global.frames + tsrand() % 30);
 	} else {
-		r_shader_standard();
-		r_color4(1, 1, 1, 1);
+		return false;
+		// r_shader_standard();
+		// r_color4(1, 1, 1, 1);
 	}
 
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
 static void stage3_start(void) {

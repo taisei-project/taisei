@@ -81,6 +81,13 @@ vec3 hsv2rgb(vec3 c) {
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
+vec3 hueShift(vec3 c, float s) {
+    // TODO: optimize this
+    vec3 hsv = rgb2hsv(c);
+    hsv.x += s;
+    return hsv2rgb(hsv);
+}
+
 float flip_topleft_to_native(float x) {
 #ifdef NATIVE_ORIGIN_BOTTOMLEFT
     return 1 - x;

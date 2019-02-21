@@ -57,6 +57,12 @@ static void stage_dpstest_boss_rule(Boss *b, int t) {
 		double x = pow((b->current->maxhp - b->current->hp) / b->current->maxhp, 0.75) * b->current->maxhp;
 		b->current->hp = clamp(b->current->hp + x * 0.0025, b->current->maxhp * 0.05, b->current->maxhp);
 	}
+
+#if 0
+	if(!(t % 500)) {
+		create_laserline_ab(VIEWPORT_W/3, VIEWPORT_W/3+VIEWPORT_H*I, 10 + 20 * frand(), 20, 500, RGBA(2, 0, 0, 0))->unclearable = true;
+	}
+#endif
 }
 
 static void stage_dpstest_boss_events(void) {

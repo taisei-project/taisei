@@ -24,23 +24,37 @@
 
 enum {
 	PLR_MAX_POWER = 400,
+	PLR_MAX_POWER_OVERFLOW = 200,
 	PLR_MAX_LIVES = 8,
 	PLR_MAX_BOMBS = 8,
 
+	// -Wpedantic doesn't like this
+	// PLR_MAX_PIV = UINT32_MAX,
+	#define PLR_MAX_PIV UINT32_MAX
+	#define PLR_MAX_GRAZE UINT32_MAX
+	#define PLR_MAX_VOLTAGE UINT16_MAX
+
 	PLR_MAX_LIFE_FRAGMENTS = 5,
-	PLR_MAX_BOMB_FRAGMENTS = 5,
+	PLR_MAX_BOMB_FRAGMENTS = 500,
 
 	PLR_START_LIVES = 2,
 	PLR_START_BOMBS = 3,
-
-	PLR_SCORE_PER_LIFE_FRAG = 55000,
-	PLR_SCORE_PER_BOMB_FRAG = 22000,
+	PLR_START_PIV = 10000,
 
 	PLR_STGPRACTICE_LIVES = PLR_MAX_LIVES,
 	PLR_STGPRACTICE_BOMBS = PLR_START_BOMBS,
 
 	PLR_MIN_BORDER_DIST = 16,
+
+	PLR_POWERSURGE_POWERCOST = 200,
 };
+
+static const float PLR_POWERSURGE_POSITIVE_DRAIN_MAX = (0.15 / 60.0);
+static const float PLR_POWERSURGE_POSITIVE_DRAIN_MIN = (0.15 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MAX = (0.10 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MIN = (0.01 / 60.0);
+static const float PLR_POWERSURGE_POSITIVE_GAIN      = (1.50 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_GAIN      = (0.20 / 60.0);
 
 typedef enum {
 	// do not reorder these or you'll break replays
@@ -60,23 +74,56 @@ enum {
 
 typedef struct Player Player;
 
+typedef struct PowerSurgeBonus {
+	uint baseline;
+	uint score;
+	uint gain_rate;
+	float discharge_power;
+	float discharge_range;
+	float discharge_damage;
+} PowerSurgeBonus;
+
 struct Player {
 	ENTITY_INTERFACE_NAMED(Player, ent);
 
 	complex pos;
 	complex velocity;
 	complex deathpos;
-	short focus;
+	complex lastmovedir;
 
-	uint16_t graze;
-	uint32_t points;
+	struct PlayerMode *mode;
+	AniPlayer ani;
+	EnemyList slaves;
+	EnemyList focus_circle;
 
+	struct {
+		float positive;
+		float negative;
+		struct {
+			int activated, expired;
+		} time;
+		int power;
+		double damage_done;
+		double damage_accum;
+		PowerSurgeBonus bonus;
+	} powersurge;
+
+	uint64_t points;
+
+	uint64_t extralife_threshold;
+	uint extralives_given;
+
+	uint point_item_value;
+	uint graze;
+	uint voltage;
 	int lives;
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
-	short power;
 	int continues_used;
+	int focus;
+	int power;
+	int power_overflow;
 
 	int continuetime;
 	int recovery;
@@ -86,18 +133,12 @@ struct Player {
 	int bombcanceldelay;
 	int bombtotaltime;
 
-	struct PlayerMode *mode;
-	AniPlayer ani;
-	EnemyList slaves;
-	EnemyList focus_circle;
-
 	int inputflags;
-	bool gamepadmove;
-	complex lastmovedir;
 	int lastmovesequence; // used for animation
 	int axis_ud;
 	int axis_lr;
 
+	bool gamepadmove;
 	bool iddqd;
 
 #ifdef PLR_DPS_STATS
@@ -139,6 +180,7 @@ void player_logic(Player*);
 bool player_should_shoot(Player *plr, bool extra);
 
 bool player_set_power(Player *plr, short npow);
+bool player_add_power(Player *plr, short pdelta);
 
 void player_move(Player*, complex delta);
 
@@ -156,18 +198,30 @@ void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
 void player_add_points(Player *plr, uint points);
+void player_add_piv(Player *plr, uint piv);
+void player_add_voltage(Player *plr, uint voltage);
+bool player_drain_voltage(Player *plr, uint voltage);
+void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
 void player_cancel_bomb(Player *plr, int delay);
+void player_cancel_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
 bool player_is_bomb_active(Player *plr);
+bool player_is_powersurge_active(Player *plr);
 bool player_is_vulnerable(Player *plr);
 bool player_is_alive(Player *plr);
 
+void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
+
+uint64_t player_next_extralife_threshold(uint64_t step);
+
 // Progress is normalized from 0: bomb start to 1: bomb end
 double player_get_bomb_progress(Player *plr, double *out_speed);
+
+void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 
 void player_preload(void);
 

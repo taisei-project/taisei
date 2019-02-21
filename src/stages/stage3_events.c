@@ -32,7 +32,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
 
 		float r, g;
 		if(frand() > 0.5) {
@@ -74,7 +74,7 @@ static int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -115,7 +115,7 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -173,7 +173,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, Power, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 5, NULL);
 		return 1;
 	}
 
@@ -273,7 +273,7 @@ static int stage3_chargefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 5, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -340,9 +340,9 @@ static int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 5, Power, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
 		if(creal(e->args[0]) && global.timer > 2800)
-			spawn_items(e->pos, Bomb, 1, NULL);
+			spawn_items(e->pos, ITEM_BOMB, 1, NULL);
 		return 1;
 	}
 
@@ -376,7 +376,7 @@ static int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
 		return -1;
 	}
 
@@ -398,7 +398,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 5, Power, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
 		return -1;
 	}
 
@@ -448,7 +448,7 @@ static void scuttle_intro(Boss *boss, int time) {
 
 static void scuttle_outro(Boss *boss, int time) {
 	if(time == 0) {
-		spawn_items(boss->pos, Point, 10, Power, 10, Life, 1, NULL);
+		spawn_items(boss->pos, ITEM_POINTS, 10, ITEM_POWER, 10, ITEM_LIFE, 1, NULL);
 	}
 
 	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
@@ -655,10 +655,9 @@ void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1,1,1,1);
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	r_color4(1,1,1,0.5);
-	// FIXME: blend
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_blend(BLEND_PREMUL_ALPHA);
@@ -666,7 +665,7 @@ void wriggle_spellbg(Boss *b, int time) {
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
@@ -1346,6 +1345,7 @@ void stage3_events(void) {
 	AT(0) {
 		stage_start_bgm("stage3");
 		stage3_skip(env_get("STAGE3_TEST", 0));
+		stage_set_voltage_thresholds(115, 250, 510, 860);
 	}
 
 	FROM_TO(160, 300, 10) {
@@ -1568,7 +1568,7 @@ void stage3_events(void) {
 		global.dialog = stage3_dialog_post_boss();
 	}
 
-	AT(5700 + midboss_time - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(5405 + midboss_time) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

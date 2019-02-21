@@ -75,6 +75,7 @@ typedef struct AttackInfo {
 	BossRule draw_rule;
 
 	complex pos_dest;
+	int bonus_rank;
 } AttackInfo;
 
 typedef struct Attack {
@@ -85,13 +86,14 @@ typedef struct Attack {
 	int starttime;
 	int timeout;
 	int endtime;
+	int endtime_undelayed;
 
+	float bonus_base;
 	float maxhp;
 	float hp;
 
 	bool finished;
 	int failtime;
-	double scorevalue;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -151,12 +153,14 @@ void process_boss(Boss **boss) attr_nonnull(1);
 
 void draw_extraspell_bg(Boss *boss, int time) attr_nonnull(1);
 void draw_boss_background(Boss *boss) attr_nonnull(1);
-void draw_boss_hud(Boss *boss) attr_nonnull(1);
+void draw_boss_overlay(Boss *boss) attr_nonnull(1);
+void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
+void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
 
 void boss_start_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
 void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
@@ -166,7 +170,6 @@ bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 
 void boss_death(Boss **boss) attr_nonnull(1);
-void boss_kill_projectiles(void);
 
 void boss_preload(void);
 

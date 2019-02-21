@@ -37,7 +37,8 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *f
 }
 
 static void stagetext_numeric_predraw(StageText *txt, int t, float a) {
-	snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
+	// snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
+	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(NUM_PLACEHOLDER), txt->text);
 }
 
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {

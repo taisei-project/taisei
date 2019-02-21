@@ -18,8 +18,10 @@
 	// TODO: maybe rename this
 	#define DEBUG 1
 	#define IF_DEBUG(statement) do { statement } while(0)
+	#define IF_NOT_DEBUG(statement) ((void)0)
 #else
-	#define IF_DEBUG(statement)
+	#define IF_DEBUG(statement) ((void)0)
+	#define IF_NOT_DEBUG(statement) do { statement } while(0)
 #endif
 
 #ifdef TAISEI_BUILDCONF_LOG_FATAL_MSGBOX

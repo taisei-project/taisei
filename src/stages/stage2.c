@@ -24,25 +24,25 @@ struct stage2_spells_s stage2_spells = {
 	.boss = {
 		.amulet_of_harm = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 26, 50000,
-			hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS
+			hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 		.bad_pick = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 30, 43200,
-			hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS
+			hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 		.wheel_of_fortune_easy = {
 			{ 8,  9, -1, -1}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 20, 36000,
-			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS
+			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 		.wheel_of_fortune_hard = {
 			{-1, -1, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 25, 36000,
-			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS
+			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 	},
 
 	.extra.monty_hall_danmaku = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign “Monty Hall Danmaku”", 60, 60000,
-		hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS
+		hina_monty, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 	},
 };
 
@@ -149,7 +149,7 @@ static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
 	return linear3dpos(pos, maxrange, p, r);
 }
 
-static void stage2_fog(Framebuffer *fb) {
+static bool stage2_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.05, 0.0, 0.03, 1.0);
@@ -159,15 +159,17 @@ static void stage2_fog(Framebuffer *fb) {
 	r_uniform_float("sphereness", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
-static void stage2_bloom(Framebuffer *fb) {
+static bool stage2_bloom(Framebuffer *fb) {
 	r_shader("bloom");
 	r_uniform_int("samples", 10);
 	r_uniform_float("intensity", 0.05);
 	r_uniform_float("radius", 0.03);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+	return true;
 }
 
 static void stage2_start(void) {

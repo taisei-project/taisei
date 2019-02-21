@@ -31,7 +31,7 @@ static Dialog *stage2_dialog_post_boss(void) {
 static int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 5, Power, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 4, NULL);
 		return 1;
 	}
 
@@ -76,7 +76,7 @@ static int stage2_great_circle(Enemy *e, int t) {
 static int stage2_small_spin_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
 		return 1;
 	}
 
@@ -109,7 +109,7 @@ static int stage2_small_spin_circle(Enemy *e, int t) {
 static int stage2_aim(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Power, 2, NULL);
+		spawn_items(e->pos, ITEM_POWER, 2, NULL);
 		return 1;
 	}
 
@@ -138,7 +138,7 @@ static int stage2_aim(Enemy *e, int t) {
 static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
 		return 1;
 	}
 
@@ -164,7 +164,7 @@ static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cim
 static int stage2_flea(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
 		return 1;
 	}
 
@@ -193,7 +193,7 @@ static int stage2_flea(Enemy *e, int t) {
 static int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, Point, 1, Power, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
 		return 1;
 	}
 
@@ -624,8 +624,8 @@ void hina_monty(Boss *h, int time) {
 
 		for(int i = 0; i < 2; ++i) {
 			int x = cwidth * (1 + i);
-			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0));
-			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0));
+			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0))->unclearable = true;
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0))->unclearable = true;
 		}
 
 		enemy_kill_all(&global.enemies);
@@ -713,7 +713,7 @@ void hina_monty(Boss *h, int time) {
 	}
 
 	FROM_TO(240, 390, 5) {
-		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0*I, _i % 2 ? Point : Power);
+		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0*I, _i % 2 ? ITEM_POINTS : ITEM_POWER);
 	}
 
 	AT(600) {
@@ -778,6 +778,7 @@ void stage2_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage2");
+		stage_set_voltage_thresholds(75, 175, 400, 720);
 	}
 
 	AT(300) {
@@ -845,7 +846,7 @@ void stage2_events(void) {
 		global.dialog = stage2_dialog_post_boss();
 	}
 
-	AT(5340 - FADE_TIME) {
-		stage_finish(GAMEOVER_WIN);
+	AT(5185) {
+		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

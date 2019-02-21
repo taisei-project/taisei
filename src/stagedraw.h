@@ -16,6 +16,7 @@
 
 typedef enum StageFBPair {
 	FBPAIR_BG,
+	FBPAIR_BG_AUX,
 	FBPAIR_FG,
 	FBPAIR_FG_AUX,
 	NUM_FBPAIRS,
@@ -27,6 +28,8 @@ void stage_draw_hud(void);
 void stage_draw_foreground(void);
 void stage_draw_scene(StageInfo *stage);
 bool stage_should_draw_particle(Projectile *p);
+
+void stage_display_clear_screen(const StageClearBonus *bonus);
 
 FBPair* stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
 Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);

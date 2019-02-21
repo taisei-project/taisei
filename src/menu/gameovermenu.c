@@ -20,7 +20,7 @@ static void continue_game(MenuData *m, void *arg) {
 }
 
 static void give_up(MenuData *m, void *arg) {
-	global.game_over = (MAX_CONTINUES - global.plr.continues_used)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
+	global.gameover = (MAX_CONTINUES - global.plr.continues_used)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
 void create_gameover_menu(MenuData *m) {

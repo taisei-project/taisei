@@ -1305,6 +1305,14 @@ double font_get_lineskip(Font *font) {
 	return font->metrics.lineskip / font->metrics.scale;
 }
 
+double font_get_ascent(Font *font) {
+	return font->metrics.descent / font->metrics.scale;
+}
+
+double font_get_descent(Font *font) {
+	return font->metrics.descent / font->metrics.scale;
+}
+
 const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
 	Glyph *g = get_glyph(font, c);
 

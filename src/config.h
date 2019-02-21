@@ -45,9 +45,10 @@
 	CONFIGDEF_KEYBINDING(KEY_FOCUS,             "key_focus",            SDL_SCANCODE_LSHIFT) \
 	CONFIGDEF_KEYBINDING(KEY_SHOT,              "key_shot",             SDL_SCANCODE_Z) \
 	CONFIGDEF_KEYBINDING(KEY_BOMB,              "key_bomb",             SDL_SCANCODE_X) \
+	CONFIGDEF_KEYBINDING(KEY_SPECIAL,           "key_special",          SDL_SCANCODE_C) \
+	CONFIGDEF_KEYBINDING(KEY_SKIP,              "key_skip",             SDL_SCANCODE_LCTRL) \
 	CONFIGDEF_KEYBINDING(KEY_FULLSCREEN,        "key_fullscreen",       SDL_SCANCODE_F11) \
 	CONFIGDEF_KEYBINDING(KEY_SCREENSHOT,        "key_screenshot",       SDL_SCANCODE_P) \
-	CONFIGDEF_KEYBINDING(KEY_SKIP,              "key_skip",             SDL_SCANCODE_LCTRL) \
 	CONFIGDEF_KEYBINDING(KEY_IDDQD,             "key_iddqd",            SDL_SCANCODE_Q) \
 	CONFIGDEF_KEYBINDING(KEY_HAHAIWIN,          "key_skipstage",        SDL_SCANCODE_E) \
 	CONFIGDEF_KEYBINDING(KEY_PAUSE,             "key_pause",            SDL_SCANCODE_PAUSE) \
@@ -69,6 +70,7 @@
 	CONFIGDEF_GPKEYBINDING(KEY_FOCUS,           "gamepad_key_focus",    GAMEPAD_BUTTON_X) \
 	CONFIGDEF_GPKEYBINDING(KEY_SHOT,            "gamepad_key_shot",     GAMEPAD_BUTTON_A) \
 	CONFIGDEF_GPKEYBINDING(KEY_BOMB,            "gamepad_key_bomb",     GAMEPAD_BUTTON_Y) \
+	CONFIGDEF_GPKEYBINDING(KEY_SPECIAL,         "gamepad_key_special",  GAMEPAD_BUTTON_SHOULDER_RIGHT) \
 	CONFIGDEF_GPKEYBINDING(KEY_SKIP,            "gamepad_key_skip",     GAMEPAD_BUTTON_B) \
 
 

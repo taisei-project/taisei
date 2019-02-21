@@ -57,7 +57,14 @@ typedef enum DamageType {
 	DMG_ENEMY_COLLISION,
 	DMG_PLAYER_SHOT,
 	DMG_PLAYER_BOMB,
+	DMG_PLAYER_DISCHARGE,
 } DamageType;
+
+#define DAMAGETYPE_IS_PLAYER(dmg) (\
+	(dmg) == DMG_PLAYER_SHOT || \
+	(dmg) == DMG_PLAYER_BOMB || \
+	(dmg) == DMG_PLAYER_DISCHARGE \
+)
 
 typedef enum DamageResult {
 	DMG_RESULT_OK,

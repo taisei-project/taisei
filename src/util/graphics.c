@@ -58,8 +58,18 @@ void draw_fragments(const DrawFragmentsParams *params) {
 		back_clr = color_mul_scalar(COLOR_COPY(back_clr), params->alpha);
 	}
 
+	static Color prev_back_clr;
+
 	ShaderProgram *prog_saved = r_shader_current();
-	r_shader("sprite_circleclipped_indicator");
+	ShaderProgram *prog_wanted = r_shader_get("sprite_circleclipped_indicator");
+
+	if(memcmp(&prev_back_clr, back_clr, sizeof(prev_back_clr))) {
+		// HACK/FIXME: we can't pass more than 4 floats via custom params, and we don't have auto-flush based on uniforms state, so...
+		prev_back_clr = *back_clr;
+		r_flush_sprites();
+	}
+
+	r_shader_ptr(prog_wanted);
 	r_uniform_vec4_rgba("back_color", back_clr);
 	r_uniform_vec2_vec("origin_ofs", (float*)&params->origin_offset);
 
@@ -198,7 +208,7 @@ void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachme
 	for(uint i = 0; i < num_attachments; ++i) {
 		log_debug("%i %i", attachments[i].tex_params.width, attachments[i].tex_params.height);
 		Texture *tex = r_texture_create(&attachments[i].tex_params);
-		snprintf(buf, sizeof(buf), "FB %p %s attachment", (void*)fb, attachment_name(attachments[i].attachment));
+		snprintf(buf, sizeof(buf), "%s [%s]", r_framebuffer_get_debug_label(fb), attachment_name(attachments[i].attachment));
 		r_texture_set_debug_label(tex, buf);
 		r_framebuffer_attach(fb, tex, 0, attachments[i].attachment);
 	}

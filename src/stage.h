@@ -58,7 +58,7 @@
 #define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
 
 typedef void (*StageProc)(void);
-typedef void (*ShaderRule)(Framebuffer *);
+typedef bool (*ShaderRule)(Framebuffer*); // true = drawn to color buffer
 
 // two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
 #define STAGE_SPELL_BIT 0x8000
@@ -101,6 +101,15 @@ typedef struct StageInfo {
 
 extern StageInfo *stages;
 
+typedef struct StageClearBonus {
+	uint64_t base;
+	uint64_t lives;
+	uint64_t voltage;
+	uint64_t graze;
+	uint64_t total;
+	bool all_clear;
+} StageClearBonus;
+
 StageInfo* stage_get(uint16_t);
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
 
@@ -123,6 +132,7 @@ typedef enum ClearHazardsFlags {
 	CLEAR_HAZARDS_LASERS = (1 << 1),
 	CLEAR_HAZARDS_FORCE = (1 << 2),
 	CLEAR_HAZARDS_NOW = (1 << 3),
+	CLEAR_HAZARDS_SPAWN_VOLTAGE = (1 << 4),
 
 	CLEAR_HAZARDS_ALL = CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_LASERS,
 } ClearHazardsFlags;
@@ -130,6 +140,10 @@ typedef enum ClearHazardsFlags {
 void stage_clear_hazards(ClearHazardsFlags flags);
 void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags);
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags);
+
+void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic);
+
+bool stage_is_cleared(void);
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"

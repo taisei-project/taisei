@@ -33,6 +33,8 @@ glsl_files = files(
     'masterspark.frag.glsl',
     'max_to_alpha.frag.glsl',
     'player_death.frag.glsl',
+    'powersurge_effect.frag.glsl',
+    'powersurge_feedback.frag.glsl',
     'reimu_bomb_bg.frag.glsl',
     'reimu_gap.frag.glsl',
     'reimu_gap.vert.glsl',

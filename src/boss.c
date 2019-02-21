@@ -18,6 +18,18 @@
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
 
+typedef struct SpellBonus {
+	int clear;
+	int time;
+	int survival;
+	int endurance;
+	float diff_multiplier;
+	int total;
+	bool failed;
+} SpellBonus;
+
+static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
+
 Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
 	Boss *buf = calloc(1, sizeof(Boss));
 
@@ -69,7 +81,7 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	r_color4(2000, 2000, 2000, 0);
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MIN,
-		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_MIN
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time*1.1+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
@@ -120,13 +132,10 @@ static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
-	// if we failed any spells on this boss up to this point, skip any extra spells,
-	// as well as any attacks associated with them.
-	//
-	// (for example, the "Generic move" that might have been automatically added by
-	// boss_add_attack_from_info. this is what the a->info->type check is for.)
-	if(boss->failed_spells && (a->type == AT_ExtraSpell || (a->info && a->info->type == AT_ExtraSpell))) {
-		return true;
+	if(a->type == AT_ExtraSpell || (a->info != NULL && a->info->type == AT_ExtraSpell)) {
+		if(global.plr.voltage < global.voltage_threshold) {
+			return true;
+		}
 	}
 
 	// Immediates are handled in a special way by process_boss,
@@ -149,6 +158,7 @@ static Attack* boss_get_final_attack(Boss *boss) {
 	return final >= boss->attacks ? final : NULL;
 }
 
+attr_unused
 static Attack* boss_get_next_attack(Boss *boss) {
 	Attack *next;
 	for(next = boss->current + 1; next < boss->attacks + boss->acount && boss_should_skip_attack(boss, next); ++next);
@@ -439,17 +449,55 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
 
 	if(p) {
-		char buf[16];
+		char buf[32];
 		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
-		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
-
 		font = get_font("small");
 
+		float bonus_ofs = 220;
+
+		r_mat_push();
+		r_mat_translate(
+			bonus_ofs * pow(1 - a, 2),
+			font_get_lineskip(font) + y_offset + y_text_offset + 0.5,
+		0);
+
+		bool kern = font_get_kerning_enabled(font);
+		font_set_kerning_enabled(font, false);
+
+		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+
 		draw_boss_text(ALIGN_RIGHT,
-			(VIEWPORT_W - 10) + (text_width(font, buf, 0) + 10) * pow(1 - a, 2),
-			text_height(font, buf, 0) + y_offset + y_text_offset,
-			buf, font, color_mul_scalar(RGBA(1, 1, 1, 1), a * opacity)
+			VIEWPORT_W - 10 - text_width(font, buf, 0), 0,
+			"History: ", font, color_mul_scalar(RGB(0.75, 0.75, 0.75), a * opacity)
 		);
+
+		draw_boss_text(ALIGN_RIGHT,
+			VIEWPORT_W - 10, 0,
+			buf, font, color_mul_scalar(RGB(0.50, 1.00, 0.50), a * opacity)
+		);
+
+		// r_mat_translate(0, 6.5, 0);
+
+		bonus_ofs -= draw_boss_text(ALIGN_LEFT,
+			VIEWPORT_W - bonus_ofs, 0,
+			"Bonus: ", font, color_mul_scalar(RGB(0.75, 0.75, 0.75), a * opacity)
+		);
+
+		SpellBonus bonus;
+		calc_spell_bonus(b->current, &bonus);
+		format_huge_num(0, bonus.total, sizeof(buf), buf);
+
+		draw_boss_text(ALIGN_LEFT,
+			VIEWPORT_W - bonus_ofs, 0,
+			buf, font, color_mul_scalar(
+				bonus.failed ? RGB(1.00, 0.50, 0.50)
+				             : RGB(0.30, 0.60, 1.00)
+			, a * opacity)
+		);
+
+		font_set_kerning_enabled(font, kern);
+
+		r_mat_pop();
 	}
 }
 
@@ -545,8 +593,6 @@ void draw_boss_background(Boss *boss) {
 }
 
 static void ent_draw_boss(EntityInterface *ent) {
-	// TODO: separate overlay from this
-
 	Boss *boss = ENT_CAST(ent, Boss);
 
 	float red = 0.5*exp(-0.5*(global.frames-boss->lastdamageframe));
@@ -565,12 +611,16 @@ static void ent_draw_boss(EntityInterface *ent) {
 	r_color4(1, 1, 1, 1);
 }
 
-void draw_boss_hud(Boss *boss) {
+void draw_boss_fake_overlay(Boss *boss) {
+	if(healthbar_style_is_radial()) {
+		draw_radial_healthbar(boss);
+	}
+}
+
+void draw_boss_overlay(Boss *boss) {
 	bool radial_style = healthbar_style_is_radial();
 
-	if(radial_style) {
-		draw_radial_healthbar(boss);
-	} else {
+	if(!radial_style) {
 		draw_linear_healthbar(boss);
 	}
 
@@ -707,10 +757,12 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	Boss *boss = ENT_CAST(ent, Boss);
 
 	float factor = 1.0;
-	if(dmg->type == DMG_PLAYER_SHOT)
+
+	if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
 		factor = boss->shot_damage_multiplier;
-	if(dmg->type == DMG_PLAYER_BOMB)
+	} else if(dmg->type == DMG_PLAYER_BOMB) {
 		factor = boss->bomb_damage_multiplier;
+	}
 
 	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {
 		return DMG_RESULT_IMMUNE;
@@ -731,53 +783,62 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	return DMG_RESULT_OK;
 }
 
-static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
-	bool fail = a->failtime, extra = a->type == AT_ExtraSpell;
-
-	const char *title = extra ?
-	                    (fail ? "Extra Spell failed..." : "Extra Spell cleared!"):
-	                    (fail ?       "Spell failed..." :       "Spell cleared!");
+static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
+	bool survival = a->type == AT_SurvivalSpell;
+	bonus->failed = a->failtime > 0;
 
 	int time_left = max(0, a->starttime + a->timeout - global.frames);
 
-	double sv = a->scorevalue;
+	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
+	double base = a->bonus_base * 0.5 * (1 + piv_factor);
 
-	int clear_bonus = 0.5 * sv * !fail;
-	int time_bonus = sv * (time_left / (double)a->timeout);
-	int endurance_bonus = 0;
-	int surv_bonus = 0;
+	bonus->clear = bonus->failed ? 0 : base;
+	bonus->time = survival ? 0 : 0.5 * base * (time_left / (double)a->timeout);
+	bonus->endurance = 0;
+	bonus->survival = 0;
 
-	if(fail) {
-		time_bonus /= 4;
-		endurance_bonus = sv * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
-	} else if(a->type == AT_SurvivalSpell) {
-		surv_bonus = sv * (1.0 + 0.02 * (a->timeout / (double)FPS));
+	if(bonus->failed) {
+		bonus->time /= 4;
+		bonus->endurance = base * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
+	} else if(survival) {
+		bonus->survival = base * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
 
-	int total = time_bonus + surv_bonus + endurance_bonus + clear_bonus;
-	float diff_bonus = 0.6 + 0.2 * global.diff;
-	total *= diff_bonus;
+	bonus->total = bonus->clear + bonus->time + bonus->endurance + bonus->survival;
+	bonus->diff_multiplier = 0.6 + 0.2 * global.diff;
+	bonus->total *= bonus->diff_multiplier;
+}
+
+static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
+	SpellBonus bonus = { 0 };
+	calc_spell_bonus(a, &bonus);
+
+	bool extra = a->type == AT_ExtraSpell;
+
+	const char *title = extra ?
+	                    (bonus.failed ? "Extra Spell failed..." : "Extra Spell captured!"):
+	                    (bonus.failed ? "Spell Card failed..."  : "Spell Card captured!");
 
 	char diff_bonus_text[6];
-	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", diff_bonus);
+	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
 
-	player_add_points(plr, total);
+	player_add_points(plr, bonus.total);
 
 	StageTextTable tbl;
 	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,
 		ATTACK_END_DELAY_SPELL * 2, ATTACK_END_DELAY_SPELL / 2, ATTACK_END_DELAY_SPELL);
-	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", clear_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", time_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", surv_bonus);
-	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", endurance_bonus);
+	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus.clear);
+	stagetext_table_add_numeric_nonzero(&tbl, "Time bonus", bonus.time);
+	stagetext_table_add_numeric_nonzero(&tbl, "Survival bonus", bonus.survival);
+	stagetext_table_add_numeric_nonzero(&tbl, "Endurance bonus", bonus.endurance);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add(&tbl, "Diff. multiplier", diff_bonus_text);
-	stagetext_table_add_numeric(&tbl, "Total", total);
+	stagetext_table_add_numeric(&tbl, "Total", bonus.total);
 	stagetext_end_table(&tbl);
 
 	play_sound("spellend");
 
-	if(!fail) {
+	if(!bonus.failed) {
 		play_sound("spellclear");
 	}
 }
@@ -795,14 +856,6 @@ static int attack_end_delay(Boss *boss) {
 		case AT_ExtraSpell:     delay = ATTACK_END_DELAY_EXTRA; break;
 		case AT_Move:           delay = ATTACK_END_DELAY_MOVE;  break;
 		default:                delay = ATTACK_END_DELAY;       break;
-	}
-
-	if(delay) {
-		Attack *next = boss_get_next_attack(boss);
-
-		if(next && next->type == AT_ExtraSpell) {
-			delay += ATTACK_END_DELAY_PRE_EXTRA;
-		}
 	}
 
 	return delay;
@@ -834,26 +887,15 @@ void boss_finish_current_attack(Boss *boss) {
 			boss->failed_spells++;
 		}
 
-		if(t != AT_SurvivalSpell) {
-			double i_base = 6.0, i_pwr = 1.0, i_pts = 1.0;
-
-			if(t == AT_ExtraSpell) {
-				i_pwr *= 1.25;
-				i_pts *= 2.0;
-			}
-
-			if(!boss->current->failtime) {
-				i_base *= 2.0;
-			}
-
-			spawn_items(boss->pos,
-				Power, (int)(i_base * i_pwr),
-				Point, (int)(i_base * i_pts),
-			NULL);
-		}
+		spawn_items(boss->pos,
+			ITEM_POWER,  14,
+			ITEM_POINTS, 12,
+			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1),
+		NULL);
 	}
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
+	boss->current->endtime_undelayed = global.frames;
 }
 
 void process_boss(Boss **pboss) {
@@ -879,6 +921,7 @@ void process_boss(Boss **pboss) {
 	if(boss->current->type == AT_Immediate) {
 		boss->current->finished = true;
 		boss->current->endtime = global.frames;
+		boss->current->endtime_undelayed = global.frames;
 	}
 
 	int time = global.frames - boss->current->starttime;
@@ -1143,6 +1186,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
 	a->rule(b, EVENT_BIRTH);
+
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
 
@@ -1187,14 +1231,27 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	a->starttime = global.frames;
 
-	// FIXME: figure out a better value/formula, i pulled this out of my ass
-	a->scorevalue = 2000.0 + hp * 0.6;
+	return a;
+}
 
-	if(a->type == AT_ExtraSpell) {
-		a->scorevalue *= 1.25;
+void boss_set_attack_bonus(Attack *a, int rank) {
+	if(!ATTACK_IS_SPELL(a->type)) {
+		return;
 	}
 
-	return a;
+	if(rank == 0) {
+		log_warn("Bonus rank was not set for this spell!");
+	}
+
+	if(a->type == AT_SurvivalSpell) {
+		a->bonus_base = (2000.0 + 600.0 * (a->timeout / (double)FPS)) * (9 + rank);
+	} else {
+		a->bonus_base = (2000.0 + a->hp * 0.6) * (9 + rank);
+	}
+
+	if(a->type == AT_ExtraSpell) {
+		a->bonus_base *= 1.5;
+	}
 }
 
 static void boss_generic_move(Boss *b, int time) {
@@ -1226,6 +1283,7 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
 	a->info = info;
+	boss_set_attack_bonus(a, info->bonus_rank);
 	return a;
 }
 

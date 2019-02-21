@@ -82,6 +82,8 @@ ShaderProgram* text_get_default_shader(void)
 
 const FontMetrics* font_get_metrics(Font *font) attr_nonnull(1) attr_returns_nonnull;
 
+double font_get_ascent(Font *font) attr_nonnull(1);
+double font_get_descent(Font *font) attr_nonnull(1);
 double font_get_lineskip(Font *font) attr_nonnull(1);
 
 const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) attr_nonnull(1);

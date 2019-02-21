@@ -431,8 +431,13 @@ uint32_t utf8_getch(const char **src) {
 	return ch;
 }
 
-void format_huge_num(uint digits, uint num, size_t bufsize, char *buf) {
-	assert(digits > 0);
+void format_huge_num(uint digits, uint64_t num, size_t bufsize, char *buf) {
+	if(digits == 0) {
+		digits = 1 + (num ? floor(log10(num)) : 0);
+	}
+
+	digits = umin(19, digits);
+	num = umin(upow10(digits) - 1, num);
 
 	div_t separators = div(digits, 3);
 	attr_unused uint len = digits + (separators.quot + !!separators.rem);
@@ -446,10 +451,9 @@ void format_huge_num(uint digits, uint num, size_t bufsize, char *buf) {
 			*p++ = ',';
 		}
 
-		div_t n = div(num, ipow10(digits - i - 1));
-		*p++ = '0' + n.quot;
-
-		num = n.rem;
+		uint64_t divisor = upow10(digits - i - 1);
+		*p++ = '0' + num / divisor;
+		num %= divisor;
 	}
 
 	*p = 0;

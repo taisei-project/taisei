@@ -200,7 +200,7 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 }
 
 complex projectile_graze_size(Projectile *p) {
-	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 5) {
+	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 3 && global.frames >= p->graze_cooldown) {
 		complex s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
 		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
 	}
@@ -238,6 +238,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->timeout = args->timeout;
 	p->damage = args->damage;
 	p->damage_type = args->damage_type;
+	p->clear_flags = 0;
 
 	if(args->shader_params != NULL) {
 		p->shader_params = *args->shader_params;
@@ -423,6 +424,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			}
 
 			p->graze_counter++;
+			p->graze_cooldown = global.frames + 12;
 			p->graze_counter_reset_timer = global.frames;
 
 			break;
@@ -501,7 +503,7 @@ static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) 
 	Item *clear_item = NULL;
 
 	if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
-		clear_item = create_bpoint(proj->pos);
+		clear_item = create_clear_item(proj->pos, proj->clear_flags);
 	}
 
 	if(clear_item != NULL && effect != NULL) {
@@ -511,16 +513,21 @@ static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) 
 	delete_projectile(projlist, proj);
 }
 
-bool clear_projectile(ProjectileList *projlist, Projectile *proj, bool force, bool now) {
-	if(proj->type == PlrProj || (!force && !projectile_is_clearable(proj))) {
+bool clear_projectile(Projectile *proj, uint flags) {
+	switch(proj->type) {
+		case PlrProj:
+		case Particle:
+			return false;
+
+		default: break;
+	}
+
+	if(!(flags & CLEAR_HAZARDS_FORCE) && !projectile_is_clearable(proj)) {
 		return false;
 	}
 
 	proj->type = DeadProj;
-
-	if(now) {
-		proj->flags |= PFLAG_KILLMEASAP;
-	}
+	proj->clear_flags |= flags;
 
 	return true;
 }
@@ -530,10 +537,16 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 
 	char killed = 0;
 	int action;
+	bool stage_cleared = stage_is_cleared();
 
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 		proj->prevpos = proj->pos;
+
+		if(stage_cleared) {
+			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
+		}
+
 		action = proj_call_rule(proj, global.frames - proj->birthtime);
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
@@ -541,8 +554,8 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			proj->graze_counter_reset_timer = global.frames;
 		}
 
-		if(proj->type == DeadProj && killed < 10 && !(proj->flags & PFLAG_KILLMEASAP)) {
-			proj->flags |= PFLAG_KILLMEASAP;
+		if(proj->type == DeadProj && killed < 10 && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
+			proj->clear_flags |= CLEAR_HAZARDS_NOW;
 			killed++;
 		}
 
@@ -554,6 +567,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			}
 		} else {
 			memset(&col, 0, sizeof(col));
+			set_debug_info(&proj->debug);
 
 			if(!projectile_in_viewport(proj)) {
 				col.fatal = true;
@@ -570,7 +584,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 
-		if(proj->type == DeadProj && (proj->flags & PFLAG_KILLMEASAP)) {
+		if(proj->type == DeadProj && (proj->clear_flags & CLEAR_HAZARDS_NOW)) {
 			really_clear_projectile(projlist, proj);
 		}
 	}
@@ -830,7 +844,7 @@ static int projectile_clear_effect_logic(Projectile *p, int t) {
 }
 
 Projectile* spawn_projectile_clear_effect(Projectile *proj) {
-	if(proj->flags & PFLAG_NOCLEAREFFECT) {
+	if((proj->flags & PFLAG_NOCLEAREFFECT) || proj->sprite == NULL) {
 		return NULL;
 	}
 

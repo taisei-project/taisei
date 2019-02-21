@@ -14,27 +14,35 @@
 #include "stageobjects.h"
 #include "objectpool_util.h"
 
-static Sprite* item_sprite(ItemType type) {
+static const char* item_sprite_name(ItemType type) {
 	static const char *const map[] = {
-		[Power]     = "item/power",
-		[Point]     = "item/point",
-		[Life]      = "item/life",
-		[Bomb]      = "item/bomb",
-		[LifeFrag]  = "item/lifefrag",
-		[BombFrag]  = "item/bombfrag",
-		[BPoint]    = "item/bullet_point",
+		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb",
+		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag",
+		[ITEM_LIFE          - ITEM_FIRST] = "item/life",
+		[ITEM_LIFE_FRAGMENT - ITEM_FIRST] = "item/lifefrag",
+		[ITEM_PIV           - ITEM_FIRST] = "item/bullet_point",
+		[ITEM_POINTS        - ITEM_FIRST] = "item/point",
+		[ITEM_POWER         - ITEM_FIRST] = "item/power",
+		[ITEM_POWER_MINI    - ITEM_FIRST] = "item/minipower",
+		[ITEM_SURGE         - ITEM_FIRST] = "item/surge",
+		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage",
 	};
 
-	// int cast to silence a WTF warning
-	assert((int)type < sizeof(map)/sizeof(char*));
-	return get_sprite(map[type]);
+	uint index = type - 1;
+
+	assert(index < ARRAY_SIZE(map));
+	return map[index];
+}
+
+static Sprite* item_sprite(ItemType type) {
+	return get_sprite(item_sprite_name(type));
 }
 
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
 	Color *c = RGBA_MUL_ALPHA(1, 1, 1,
-		i->type == BPoint && !i->auto_collect
+		i->type == ITEM_PIV && !i->auto_collect
 			? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
 			: 1.0
 	);
@@ -53,7 +61,9 @@ Item* create_item(complex pos, complex v, ItemType type) {
 		return NULL;
 	}
 
-	// type = 1 + floor(Life * frand());
+	if(type == ITEM_POWER_MINI && player_is_powersurge_active(&global.plr)) {
+		type = ITEM_SURGE;
+	}
 
 	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
 	alist_append(&global.items, i);
@@ -63,6 +73,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 	i->v = v;
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
+	i->collecttime = 0;
 	i->type = type;
 
 	i->ent.draw_layer = LAYER_ITEM | i->type;
@@ -77,17 +88,25 @@ void delete_item(Item *item) {
 	objpool_release(stage_object_pools.items, &alist_unlink(&global.items, item)->object_interface);
 }
 
-Item* create_bpoint(complex pos) {
-	Item *i = create_item(pos, 0, BPoint);
+Item *create_clear_item(complex pos, uint clear_flags) {
+	ItemType type = ITEM_PIV;
+
+	if(clear_flags & CLEAR_HAZARDS_SPAWN_VOLTAGE) {
+		type = ITEM_VOLTAGE;
+	}
+
+	Item *i = create_item(pos, -10*I + 5*nfrand(), type);
 
 	if(i) {
 		PARTICLE(
 			.sprite = "flare",
-			.pos = pos, .timeout = 30,
+			.pos = pos,
+			.timeout = 30,
 			.draw_rule = Fade,
 			.layer = LAYER_BULLET+1
 		);
-		i->auto_collect = 10;
+
+		collect_item(i, 1);
 	}
 
 	return i;
@@ -106,7 +125,7 @@ static complex move_item(Item *i) {
 
 	complex oldpos = i->pos;
 
-	if(i->auto_collect) {
+	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
@@ -140,63 +159,125 @@ static bool item_out_of_bounds(Item *item) {
 	);
 }
 
+bool collect_item(Item *item, float value) {
+	if(!player_is_alive(&global.plr)) {
+		return false;
+	}
+
+	const float speed = 10;
+	const int delay = 0;
+
+	if(item->auto_collect) {
+		item->auto_collect = imax(speed, item->auto_collect);
+		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
+		item->collecttime = imin(global.frames + delay, item->collecttime);
+	} else {
+		item->auto_collect = speed;
+		item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
+		item->collecttime = global.frames + delay;
+	}
+
+	return true;
+}
+
+void collect_all_items(float value) {
+	for(Item *i = global.items.first; i; i = i->next) {
+		collect_item(i, value);
+	}
+}
+
 void process_items(void) {
 	Item *item = global.items.first, *del = NULL;
 	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
-	bool plr_bombing = player_is_bomb_active(&global.plr);
+	bool stage_cleared = stage_is_cleared();
 
 	while(item != NULL) {
-		if((item->type == Power && global.plr.power >= PLR_MAX_POWER) ||
-			// just in case we ever have some weird spell that spawns those...
-			(global.stage->type == STAGE_SPELL && (item->type == Life || item->type == Bomb))
+		bool may_collect = true;
+
+		if(
+			(item->type == ITEM_POWER_MINI && global.plr.power == PLR_MAX_POWER) ||
+			(item->type == ITEM_SURGE && !player_is_powersurge_active(&global.plr))
 		) {
-			item->type = Point;
+			item->type = ITEM_PIV;
+
+			if(collect_item(item, 1)) {
+				item->pos0 = item->pos;
+				item->birthtime = global.frames;
+				item->v = -20*I + 10*nfrand();
+			}
 		}
 
-		if(plr_alive) {
-			if(
-				(cabs(global.plr.pos - item->pos) < r) ||
-				(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC)) ||
-				plr_bombing
-			) {
-				item->auto_collect = 1;
+		if(global.stage->type == STAGE_SPELL && (item->type == ITEM_LIFE || item->type == ITEM_BOMB || item->type == ITEM_LIFE_FRAGMENT || item->type == ITEM_BOMB_FRAGMENT)) {
+			// just in case we ever have some weird spell that spawns those...
+			item->type = ITEM_POINTS;
+		}
+
+		if(global.frames - item->birthtime < 20) {
+			may_collect = false;
+		}
+
+		if(may_collect) {
+			if(plr_alive) {
+				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) || stage_cleared) {
+					collect_item(item, 1);
+				} else if(cabs(global.plr.pos - item->pos) < r) {
+					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H);
+					item->auto_collect = 2;
+				}
+			} else if(item->auto_collect) {
+				item->auto_collect = 0;
+				item->pos0 = item->pos;
+				item->birthtime = global.frames;
+				item->v = -10*I + 5*nfrand();
 			}
-		} else if(item->auto_collect) {
-			item->auto_collect = 0;
-			item->pos0 = item->pos;
-			item->birthtime = global.frames;
-			item->v = -10*I + 5*nfrand();
 		}
 
 		complex deltapos = move_item(item);
+		int v = may_collect ? collision_item(item) : 0;
 
-		int v = collision_item(item);
 		if(v == 1) {
 			switch(item->type) {
-			case Power:
-				player_set_power(&global.plr, global.plr.power + POWER_VALUE);
+			case ITEM_POWER:
+				player_add_power(&global.plr, POWER_VALUE);
+				player_add_points(&global.plr, 25);
+				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN*3, PLR_POWERSURGE_NEGATIVE_GAIN*3);
 				play_sound("item_generic");
 				break;
-			case Point:
-				player_add_points(&global.plr, 100);
+			case ITEM_POWER_MINI:
+				player_add_power(&global.plr, POWER_VALUE_MINI);
+				player_add_points(&global.plr, 5);
 				play_sound("item_generic");
 				break;
-			case BPoint:
-				player_add_points(&global.plr, 1);
+			case ITEM_SURGE:
+				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN, PLR_POWERSURGE_NEGATIVE_GAIN);
+				player_add_points(&global.plr, 25);
 				play_sound("item_generic");
 				break;
-			case Life:
+			case ITEM_POINTS:
+				player_add_points(&global.plr, round(global.plr.point_item_value * item->pickup_value));
+				play_sound("item_generic");
+				break;
+			case ITEM_PIV:
+				player_add_piv(&global.plr, 1);
+				play_sound("item_generic");
+				break;
+			case ITEM_VOLTAGE:
+				player_add_voltage(&global.plr, 1);
+				player_add_piv(&global.plr, 10);
+				play_sound("item_generic");
+				break;
+			case ITEM_LIFE:
 				player_add_lives(&global.plr, 1);
 				break;
-			case Bomb:
+			case ITEM_BOMB:
 				player_add_bombs(&global.plr, 1);
 				break;
-			case LifeFrag:
+			case ITEM_LIFE_FRAGMENT:
 				player_add_life_fragments(&global.plr, 1);
 				break;
-			case BombFrag:
-				player_add_bomb_fragments(&global.plr, 1);
+			case ITEM_BOMB_FRAGMENT:
+				player_add_bomb_fragments(&global.plr, PLR_MAX_BOMB_FRAGMENTS / 5);
 				break;
 			}
 		}
@@ -218,37 +299,52 @@ int collision_item(Item *i) {
 	return 0;
 }
 
-void spawn_item(complex pos, ItemType type) {
+static void spawn_item_internal(complex pos, ItemType type, float collect_value) {
 	tsrand_fill(2);
-	create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))) - 3*I, type);
+	Item *i = create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))) - 3*I, type);
+
+	if(i != NULL && collect_value >= 0) {
+		collect_item(i, collect_value);
+	}
 }
 
-void spawn_items(complex pos, ...) {
-	va_list args;
-	va_start(args, pos);
+void spawn_item(complex pos, ItemType type) {
+	spawn_item_internal(pos, type, -1);
+}
 
+void spawn_and_collect_item(complex pos, ItemType type, float collect_value) {
+	spawn_item_internal(pos, type, collect_value);
+}
+
+static void spawn_items_internal(complex pos, va_list args, float collect_value) {
 	ItemType type;
 
 	while((type = va_arg(args, ItemType))) {
 		int num = va_arg(args, int);
 		for(int i = 0; i < num; ++i) {
-			spawn_item(pos, type);
+			spawn_item_internal(pos, type, collect_value);
 		}
 	}
+}
 
+void spawn_items(complex pos, ...) {
+	va_list args;
+	va_start(args, pos);
+	spawn_items_internal(pos, args, -1);
+	va_end(args);
+}
+
+void spawn_and_collect_items(complex pos, double collect_value, ...) {
+	va_list args;
+	va_start(args, collect_value);
+	spawn_items_internal(pos, args, collect_value);
 	va_end(args);
 }
 
 void items_preload(void) {
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
-		"item/power",
-		"item/point",
-		"item/life",
-		"item/bomb",
-		"item/lifefrag",
-		"item/bombfrag",
-		"item/bullet_point",
-	NULL);
+	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
+		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+	}
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"item_generic",

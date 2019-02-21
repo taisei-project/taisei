@@ -23,6 +23,8 @@ void player_init(Player *plr) {
 	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
+	plr->point_item_value = PLR_START_PIV;
+	plr->power = 100;
 	plr->deathtime = -1;
 	plr->continuetime = -1;
 	plr->mode = plrmode_find(0, 0);
@@ -70,6 +72,12 @@ void player_stage_post_init(Player *plr) {
 	ent_register(&plr->ent, ENT_PLAYER);
 
 	player_spawn_focus_circle(plr);
+
+	plr->extralife_threshold = player_next_extralife_threshold(plr->extralives_given);
+
+	while(plr->points >= plr->extralife_threshold) {
+		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
+	}
 }
 
 void player_free(Player *plr) {
@@ -89,16 +97,20 @@ static void player_full_power(Player *plr) {
 }
 
 bool player_set_power(Player *plr, short npow) {
-	npow = clamp(npow, 0, PLR_MAX_POWER);
+	int pow_base = clamp(npow, 0, PLR_MAX_POWER);
+	int pow_overflow = clamp(npow - PLR_MAX_POWER, 0, PLR_MAX_POWER_OVERFLOW);
 
 	if(plr->mode->procs.power) {
-		plr->mode->procs.power(plr, npow);
+		plr->mode->procs.power(plr, pow_base);
 	}
 
 	int oldpow = plr->power;
-	plr->power = npow;
+	int oldpow_over = plr->power_overflow;
 
-	if(oldpow / 100 < npow / 100) {
+	plr->power = pow_base;
+	plr->power_overflow = pow_overflow;
+
+	if((oldpow + oldpow_over) / 100 < (pow_base + pow_overflow) / 100) {
 		play_sound("powerup");
 	}
 
@@ -106,7 +118,11 @@ bool player_set_power(Player *plr, short npow) {
 		player_full_power(plr);
 	}
 
-	return oldpow != plr->power;
+	return (oldpow + oldpow_over) != (plr->power + plr->power_overflow);
+}
+
+bool player_add_power(Player *plr, short pdelta) {
+	return player_set_power(plr, plr->power + plr->power_overflow + pdelta);
 }
 
 void player_move(Player *plr, complex delta) {
@@ -174,30 +190,95 @@ static int player_focus_circle_logic(Enemy *e, int t) {
 }
 
 static void player_focus_circle_visual(Enemy *e, int t, bool render) {
-	if(!render || !creal(e->args[0])) {
+	if(!render) {
 		return;
 	}
 
-	int trans_frames = 12;
-	double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
-	double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
-	double scale = 1.0 + trans_factor;
+	float focus_opacity = creal(e->args[0]);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "focus",
-		.rotation.angle = rot_speed,
-		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.scale.both = scale,
-	});
+	if(focus_opacity > 0) {
+		int trans_frames = 12;
+		double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
+		double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
+		double scale = 1.0 + trans_factor;
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "focus",
-		.rotation.angle = rot_speed * -1,
-		.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.scale.both = scale,
-	});
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "focus",
+			.rotation.angle = rot_speed,
+			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
+			.pos = { creal(e->pos), cimag(e->pos) },
+			.scale.both = scale,
+		});
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "focus",
+			.rotation.angle = rot_speed * -1,
+			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
+			.pos = { creal(e->pos), cimag(e->pos) },
+			.scale.both = scale,
+		});
+	}
+
+	float ps_opacity = 1.0;
+	float ps_fill_factor = 1.0;
+
+	if(player_is_powersurge_active(&global.plr)) {
+		ps_opacity *= clamp((global.frames - global.plr.powersurge.time.activated) / 30.0, 0, 1);
+	} else if(global.plr.powersurge.time.expired == 0) {
+		ps_opacity = 0;
+	} else {
+		ps_opacity *= (1 - clamp((global.frames - global.plr.powersurge.time.expired) / 40.0, 0, 1));
+		ps_fill_factor = pow(ps_opacity, 2);
+	}
+
+	if(ps_opacity > 0) {
+		r_state_push();
+		r_mat_push();
+		r_mat_translate(creal(e->pos), cimag(e->pos), 0);
+		r_mat_scale(140, 140, 0);
+		r_shader("healthbar_radial");
+		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
+		r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 0.5, 0.75));
+		r_uniform_vec4_rgba("fillColor",     RGBA(1.5, 0.5, 0.0, 0.75));
+		r_uniform_vec4_rgba("altFillColor",  RGBA(0.0, 0.5, 1.5, 0.75));
+		r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.25));
+		r_uniform_vec2("fill", global.plr.powersurge.positive * ps_fill_factor, global.plr.powersurge.negative * ps_fill_factor);
+		r_uniform_float("opacity", ps_opacity);
+		r_draw_quad();
+		r_mat_pop();
+		r_state_pop();
+
+		char buf[64];
+		format_huge_num(0, global.plr.powersurge.bonus.baseline, sizeof(buf), buf);
+		Font *fnt = get_font("monotiny");
+
+		float x = creal(e->pos);
+		float y = cimag(e->pos) + 80;
+
+		float text_opacity = ps_opacity * 0.75;
+
+		x += text_draw(buf, &(TextParams) {
+			.shader = "text_hud",
+			.font_ptr = fnt,
+			.pos = { x, y },
+			.color = RGBA_MUL_ALPHA(1.0, 1.0, 1.0, text_opacity),
+			.align = ALIGN_CENTER,
+		});
+
+		snprintf(buf, sizeof(buf), " +%u", global.plr.powersurge.bonus.gain_rate);
+
+		text_draw(buf, &(TextParams) {
+			.shader = "text_hud",
+			.font_ptr = fnt,
+			.pos = { x, y },
+			.color = RGBA_MUL_ALPHA(0.3, 0.6, 1.0, text_opacity),
+			.align = ALIGN_LEFT,
+		});
+
+		r_shader("sprite_filled_circle");
+		r_uniform_vec4("color_inner", 0, 0, 0, 0);
+		r_uniform_vec4("color_outer", 0, 0, 0.1 * ps_opacity, 0.1 * ps_opacity);
+	}
 }
 
 static void player_spawn_focus_circle(Player *plr) {
@@ -226,10 +307,9 @@ static void player_fail_spell(Player *plr) {
 bool player_should_shoot(Player *plr, bool extra) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
-		!global.dialog &&
-		player_is_alive(&global.plr) &&
-		// TODO: maybe get rid of this?
-		(!extra || !player_is_bomb_active(plr));
+		!global.dialog
+		&& player_is_alive(&global.plr)
+		/* && (!extra || !player_is_bomb_active(plr)) */;
 }
 
 void player_placeholder_bomb_logic(Player *plr) {
@@ -252,16 +332,147 @@ void player_placeholder_bomb_logic(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 }
 
+static void player_powersurge_expired(Player *plr);
+
+static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
+	float nt = t / p->timeout;
+	float s = 1 + (2 + 0.5 * psin((t+global.frames*1.23)/5.0)) * nt * nt;
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = p->sprite,
+		.scale.both = s,
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
+		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
+		.shader = "sprite_silhouette",
+	});
+}
+
+static void powersurge_trail_draw(Projectile *p, int t) {
+	if(t > 0) {
+		_powersurge_trail_draw(p, t - 0.5, 0.25);
+		_powersurge_trail_draw(p, t, 0.25);
+	} else {
+		_powersurge_trail_draw(p, t, 0.5);
+	}
+}
+
+static int powersurge_trail(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_DEATH) {
+		free(p->sprite);
+		return ACTION_ACK;
+	}
+
+	complex v = (global.plr.pos - p->pos) * 0.05;
+	p->args[0] += (v - p->args[0]) * (1 - t / p->timeout);
+	p->pos += p->args[0];
+
+	return ACTION_NONE;
+}
+
+void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
+	b->gain_rate = round(1000 * plr->powersurge.negative * plr->powersurge.negative);
+	b->baseline = plr->powersurge.power + plr->powersurge.damage_done * 0.8;
+	b->score = b->baseline;
+	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
+	b->discharge_range = 1.2 * b->discharge_power;
+	b->discharge_damage = 10 * pow(b->discharge_power, 1.1);
+}
+
+static int powersurge_charge_particle(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
+	Player *plr = &global.plr;
+
+	if(player_is_alive(plr)) {
+		p->pos = plr->pos;
+	}
+
+	return ACTION_NONE;
+}
+
+static void player_powersurge_logic(Player *plr) {
+	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
+	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
+
+	if(stage_is_cleared()) {
+		player_cancel_powersurge(plr);
+	}
+
+	if(plr->powersurge.positive <= plr->powersurge.negative) {
+		player_powersurge_expired(plr);
+		return;
+	}
+
+	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
+
+	PARTICLE(
+		.sprite_ptr = memdup(aniplayer_get_frame(&plr->ani), sizeof(Sprite)),
+		.pos = plr->pos,
+		.color = RGBA(1, 1, 1, 0.5),
+		.rule = powersurge_trail,
+		.draw_rule = powersurge_trail_draw,
+		.timeout = 15,
+		.layer = LAYER_PARTICLE_HIGH,
+		.flags = PFLAG_NOREFLECT,
+	);
+
+	if(!(global.frames % 6)) {
+		Sprite *spr = get_sprite("part/powersurge_field");
+		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
+		double angle = frand() * 2 * M_PI;
+
+		PARTICLE(
+			.sprite_ptr = spr,
+			.pos = plr->pos,
+			.color = color_mul_scalar(frand() < 0.5 ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
+			.rule = powersurge_charge_particle,
+			.draw_rule = ScaleFade,
+			.timeout = 14,
+			.angle = angle,
+			.args = { 0, 0, (1+I)*scale, 0},
+			.layer = LAYER_PLAYER - 1,
+			.flags = PFLAG_NOREFLECT,
+		);
+
+		PARTICLE(
+			.sprite_ptr = spr,
+			.pos = plr->pos,
+			.color = RGBA(0.5, 0.5, 0.5, 0),
+			.rule = powersurge_charge_particle,
+			.draw_rule = ScaleFade,
+			.timeout = 3,
+			.angle = angle,
+			.args = { 0, 0, (1+I)*scale, 0},
+			.layer = LAYER_PLAYER - 1,
+			.flags = PFLAG_NOREFLECT,
+		);
+	}
+
+	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
+}
+
 void player_logic(Player* plr) {
 	if(plr->continuetime == global.frames) {
 		plr->lives = PLR_START_LIVES;
 		plr->bombs = PLR_START_BOMBS;
+		plr->point_item_value = PLR_START_PIV;
 		plr->life_fragments = 0;
 		plr->bomb_fragments = 0;
 		plr->continues_used += 1;
 		player_set_power(plr, 0);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-		spawn_items(plr->deathpos, Power, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
+		spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
 	}
 
 	process_enemies(&plr->slaves);
@@ -272,6 +483,10 @@ void player_logic(Player* plr) {
 		plr->pos -= I;
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		return;
+	}
+
+	if(player_is_powersurge_active(plr)) {
+		player_powersurge_logic(plr);
 	}
 
 	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
@@ -309,9 +524,6 @@ void player_logic(Player* plr) {
 }
 
 static bool player_bomb(Player *plr) {
-	// stage_clear_hazards(CLEAR_HAZARDS_ALL);
-	// return true;
-
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
 		return false;
 
@@ -323,7 +535,9 @@ static bool player_bomb(Player *plr) {
 
 	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
 		player_fail_spell(plr);
+		// player_cancel_powersurge(plr);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
+
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;
 
@@ -344,10 +558,38 @@ static bool player_bomb(Player *plr) {
 		plr->bombcanceltime = 0;
 		plr->bombcanceldelay = 0;
 
+		collect_all_items(1);
 		return true;
 	}
 
 	return false;
+}
+
+static bool player_powersurge(Player *plr) {
+	if(
+		!player_is_alive(plr) ||
+		player_is_bomb_active(plr) ||
+		player_is_powersurge_active(plr) ||
+		plr->power + plr->power_overflow < PLR_POWERSURGE_POWERCOST
+	) {
+		return false;
+	}
+
+	plr->powersurge.positive = 1.0;
+	plr->powersurge.negative = 0.0;
+	plr->powersurge.time.activated = global.frames;
+	plr->powersurge.power = 0;
+	plr->powersurge.damage_accum = 0;
+	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
+
+	collect_all_items(1);
+	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, get_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
+
+	return true;
+}
+
+bool player_is_powersurge_active(Player *plr) {
+	return plr->powersurge.positive > plr->powersurge.negative;
 }
 
 bool player_is_bomb_active(Player *plr) {
@@ -377,6 +619,61 @@ void player_cancel_bomb(Player *plr, int delay) {
 	} else {
 		plr->bombcanceltime = global.frames;
 		plr->bombcanceldelay = delay;
+	}
+}
+
+static void player_powersurge_expired(Player *plr) {
+	plr->powersurge.time.expired = global.frames;
+
+	PowerSurgeBonus bonus;
+	player_powersurge_calc_bonus(plr, &bonus);
+
+	Sprite *blast = get_sprite("part/blast_huge_halo");
+	float scale = 2 * bonus.discharge_range / blast->w;
+
+	PARTICLE(
+		.sprite_ptr = blast,
+		.pos = plr->pos,
+		.color = RGBA(0.6, 1.0, 4.4, 0.0),
+		.draw_rule = ScaleFade,
+		.timeout = 20,
+		.args = { 0, 0, scale * (2 + 0 * I) },
+		.angle = M_PI*2*frand(),
+	);
+
+	player_add_points(&global.plr, bonus.score);
+	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
+	stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+
+	log_debug(
+		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
+		plr->powersurge.time.expired,
+		plr->powersurge.time.expired - plr->powersurge.time.activated,
+		bonus.baseline,
+		bonus.score,
+		bonus.discharge_power,
+		bonus.discharge_damage,
+		bonus.discharge_range
+	);
+
+	plr->powersurge.damage_done = 0;
+}
+
+void player_cancel_powersurge(Player *plr) {
+	if(player_is_powersurge_active(plr)) {
+		plr->powersurge.positive = plr->powersurge.negative;
+		player_powersurge_expired(plr);
+	}
+}
+
+void player_extend_powersurge(Player *plr, float pos, float neg) {
+	if(player_is_powersurge_active(plr)) {
+		plr->powersurge.positive = clamp(plr->powersurge.positive + pos, 0, 1);
+		plr->powersurge.negative = clamp(plr->powersurge.negative + neg, 0, 1);
+
+		if(plr->powersurge.positive <= plr->powersurge.negative) {
+			player_powersurge_expired(plr);
+		}
 	}
 }
 
@@ -433,12 +730,15 @@ void player_realdeath(Player *plr) {
 		return;
 	}
 
-	int drop = max(2, (plr->power * 0.15) / POWER_VALUE);
-	spawn_items(plr->deathpos, Power, drop, NULL);
+	int total_power = plr->power + plr->power_overflow;
 
-	player_set_power(plr, plr->power * 0.7);
+	int drop = max(2, (total_power * 0.15) / POWER_VALUE);
+	spawn_items(plr->deathpos, ITEM_POWER, drop, NULL);
+
+	player_set_power(plr, total_power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
+	plr->voltage *= 0.9;
 
 	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
@@ -508,7 +808,7 @@ static int player_death_effect(Projectile *p, int t) {
 }
 
 void player_death(Player *plr) {
-	if(!player_is_vulnerable(plr)) {
+	if(!player_is_vulnerable(plr) || stage_is_cleared()) {
 		return;
 	}
 
@@ -561,6 +861,11 @@ void player_death(Player *plr) {
 	);
 
 	plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
+
+	if(player_is_powersurge_active(plr)) {
+		player_cancel_powersurge(plr);
+		// player_bomb(plr);
+	}
 }
 
 static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg) {
@@ -575,6 +880,12 @@ static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dm
 
 	player_death(plr);
 	return DMG_RESULT_OK;
+}
+
+void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg) {
+	if(player_is_powersurge_active(plr) && dmg->type == DMG_PLAYER_SHOT) {
+		dmg->amount *= 1.2;
+	}
 }
 
 static PlrInputFlag key_to_inflag(KeyIndex key) {
@@ -659,18 +970,28 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 
 					break;
 
+				case KEY_SPECIAL:
+					useful = player_powersurge(plr);
+
+					if(!useful/* && plr->iddqd*/) {
+						player_cancel_powersurge(plr);
+						useful = true;
+					}
+
+					break;
+
 				case KEY_IDDQD:
 					plr->iddqd = !plr->iddqd;
 					cheat = true;
 					break;
 
 				case KEY_POWERUP:
-					useful = player_set_power(plr, plr->power + 100);
+					useful = player_add_power(plr,  100);
 					cheat = true;
 					break;
 
 				case KEY_POWERDOWN:
-					useful = player_set_power(plr, plr->power - 100);
+					useful = player_add_power(plr, -100);
 					cheat = true;
 					break;
 
@@ -912,9 +1233,9 @@ void player_fix_input(Player *plr) {
 }
 
 void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color) {
-	if(!(++plr->graze)) {
-		log_warn("Graze counter overflow");
-		plr->graze = 0xffff;
+	if(++plr->graze >= PLR_MAX_GRAZE) {
+		log_debug("Graze counter overflow");
+		plr->graze = PLR_MAX_GRAZE;
 	}
 
 	pos = (pos + plr->pos) * 0.5;
@@ -944,11 +1265,17 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 
 		color_mul_scalar(c, 0.4);
 	}
+
+	spawn_items(pos, ITEM_POWER_MINI, 1, NULL);
 }
 
-static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd) {
-	if(*pwhole >= maxwhole) {
-		return;
+static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd, int score_per_excess) {
+	int total_frags = *pfrags + maxfrags * *pwhole;
+	int excess_frags = total_frags + frags - maxwhole * maxfrags;
+
+	if(excess_frags > 0) {
+		player_add_points(plr, excess_frags * score_per_excess);
+		frags -= excess_frags;
 	}
 
 	*pfrags += frags;
@@ -974,16 +1301,30 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 }
 
 void player_add_life_fragments(Player *plr, int frags) {
-	player_add_fragments(plr, frags, &plr->lives, &plr->life_fragments, PLR_MAX_LIFE_FRAGMENTS, PLR_MAX_LIVES,
+	player_add_fragments(
+		plr,
+		frags,
+		&plr->lives,
+		&plr->life_fragments,
+		PLR_MAX_LIFE_FRAGMENTS,
+		PLR_MAX_LIVES,
 		"item_generic", // FIXME: replacement needed
-		"extra_life"
+		"extra_life",
+		(plr->point_item_value * 10) / PLR_MAX_LIFE_FRAGMENTS
 	);
 }
 
 void player_add_bomb_fragments(Player *plr, int frags) {
-	player_add_fragments(plr, frags, &plr->bombs, &plr->bomb_fragments, PLR_MAX_BOMB_FRAGMENTS, PLR_MAX_BOMBS,
+	player_add_fragments(
+		plr,
+		frags,
+		&plr->bombs,
+		&plr->bomb_fragments,
+		PLR_MAX_BOMB_FRAGMENTS,
+		PLR_MAX_BOMBS,
 		"item_generic",  // FIXME: replacement needed
-		"extra_bomb"
+		"extra_bomb",
+		(plr->point_item_value * 5) / PLR_MAX_BOMB_FRAGMENTS
 	);
 }
 
@@ -995,41 +1336,68 @@ void player_add_bombs(Player *plr, int bombs) {
 	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
 }
 
+void player_add_points(Player *plr, uint points) {
+	attr_unused uint old = plr->points;
+	plr->points += points;
 
-static void try_spawn_bonus_item(Player *plr, ItemType type, uint oldpoints, uint reqpoints) {
-	int items = plr->points / reqpoints - oldpoints / reqpoints;
-
-	if(items > 0) {
-		complex p = creal(plr->pos);
-		create_item(p, -5*I, type);
-		spawn_items(p, type, --items, NULL);
+	while(plr->points >= plr->extralife_threshold) {
+		player_add_lives(plr, 1);
+		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
 	}
 }
 
-void player_add_points(Player *plr, uint points) {
-	uint old = plr->points;
-	plr->points += points;
+void player_add_piv(Player *plr, uint piv) {
+	uint v = plr->point_item_value + piv;
 
-	if(global.stage->type != STAGE_SPELL) {
-		try_spawn_bonus_item(plr, LifeFrag, old, PLR_SCORE_PER_LIFE_FRAG);
-		try_spawn_bonus_item(plr, BombFrag, old, PLR_SCORE_PER_BOMB_FRAG);
+	if(v > PLR_MAX_PIV || v < plr->point_item_value) {
+		plr->point_item_value = PLR_MAX_PIV;
+	} else {
+		plr->point_item_value = v;
 	}
+}
+
+void player_add_voltage(Player *plr, uint voltage) {
+	uint v = plr->voltage + voltage;
+
+	if(v > PLR_MAX_VOLTAGE || v < plr->voltage) {
+		plr->voltage = PLR_MAX_VOLTAGE;
+	} else {
+		plr->voltage = v;
+	}
+
+	player_add_bomb_fragments(plr, voltage);
+}
+
+bool player_drain_voltage(Player *plr, uint voltage) {
+	// TODO: animate (or maybe handle that at stagedraw level)
+
+	if(plr->voltage >= voltage) {
+		plr->voltage -= voltage;
+		return true;
+	}
+
+	plr->voltage = 0;
+	return false;
 }
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage) {
-	if(damage->type != DMG_PLAYER_SHOT && damage->type != DMG_PLAYER_BOMB) {
+	if(!DAMAGETYPE_IS_PLAYER(damage->type)) {
 		return;
 	}
+
+	complex pos = NAN;
 
 	if(target != NULL) {
 		switch(target->type) {
 			case ENT_ENEMY: {
 				player_add_points(&global.plr, damage->amount * 0.5);
+				pos = ENT_CAST(target, Enemy)->pos;
 				break;
 			}
 
 			case ENT_BOSS: {
 				player_add_points(&global.plr, damage->amount * 0.2);
+				pos = ENT_CAST(target, Boss)->pos;
 				break;
 			}
 
@@ -1037,6 +1405,24 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		}
 	}
 
+	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
+		double rate = target->type == ENT_BOSS ? 110 : 256;
+		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate), NULL);
+	}
+
+	if(player_is_powersurge_active(plr)) {
+		plr->powersurge.damage_done += damage->amount;
+		plr->powersurge.damage_accum += damage->amount;
+
+		if(!isnan(creal(pos))) {
+			double rate = 500;
+
+			while(plr->powersurge.damage_accum > rate) {
+				plr->powersurge.damage_accum -= rate;
+				spawn_item(pos, ITEM_SURGE);
+			}
+		}
+	}
 
 #ifdef PLR_DPS_STATS
 	while(global.frames > plr->dmglogframe) {
@@ -1047,6 +1433,11 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 
 	plr->dmglog[0] += damage->amount;
 #endif
+}
+
+uint64_t player_next_extralife_threshold(uint64_t step) {
+	static uint64_t base = 5000000;
+	return base * (step * step + step + 2) / 2;
 }
 
 void player_preload(void) {
@@ -1061,20 +1452,22 @@ void player_preload(void) {
 	NULL);
 
 	preload_resources(RES_SPRITE, flags,
-		"focus",
 		"fairy_circle",
+		"focus",
+		"part/blast_huge_halo",
+		"part/powersurge_field",
 	NULL);
 
 	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
-		"graze",
 		"death",
-		"generic_shot",
-		"powerup",
-		"full_power",
-		"extra_life",
 		"extra_bomb",
+		"extra_life",
+		"full_power",
+		"generic_shot",
+		"graze",
 		"hit0",
 		"hit1",
+		"powerup",
 	NULL);
 }
 
