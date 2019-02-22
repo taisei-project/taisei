@@ -70,20 +70,10 @@ SDL_RWops* gl33_buffer_get_stream(CommonBuffer *cbuf) {
 	return &cbuf->stream;
 }
 
-CommonBuffer* gl33_buffer_create(uint bindidx, size_t capacity, GLenum usage_hint, void *data) {
-	CommonBuffer *cbuf = calloc(1, sizeof(CommonBuffer));
-	cbuf->size = capacity = topow2(capacity);
-	cbuf->cache.buffer = calloc(1, capacity);
-	cbuf->cache.update_begin = capacity;
+CommonBuffer* gl33_buffer_create(uint bindidx, size_t alloc_size) {
+	CommonBuffer *cbuf = calloc(1, alloc_size);
+
 	cbuf->bindidx = bindidx;
-
-	glGenBuffers(1, &cbuf->gl_handle);
-
-	GL33_BUFFER_TEMP_BIND(cbuf, {
-		assert(glIsBuffer(cbuf->gl_handle));
-		glBufferData(gl33_bindidx_to_glenum(bindidx), capacity, data, usage_hint);
-	});
-
 	cbuf->stream.type = SDL_RWOPS_UNKNOWN;
 	cbuf->stream.close = gl33_buffer_stream_close;
 	cbuf->stream.read = gl33_buffer_stream_read;
@@ -91,7 +81,26 @@ CommonBuffer* gl33_buffer_create(uint bindidx, size_t capacity, GLenum usage_hin
 	cbuf->stream.seek = gl33_buffer_stream_seek;
 	cbuf->stream.size = gl33_buffer_stream_size;
 
+	glGenBuffers(1, &cbuf->gl_handle);
+
 	return cbuf;
+}
+
+void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint) {
+	assert(cbuf->cache.buffer == NULL);
+
+	cbuf->size = capacity = topow2(capacity);
+	cbuf->cache.buffer = calloc(1, capacity);
+	cbuf->cache.update_begin = capacity;
+
+	GL33_BUFFER_TEMP_BIND(cbuf, {
+		assert(glIsBuffer(cbuf->gl_handle));
+		glBufferData(gl33_bindidx_to_glenum(cbuf->bindidx), cbuf->size, data, usage_hint);
+	});
+
+	if(data != NULL) {
+		memcpy(cbuf->cache.buffer, data, cbuf->size);
+	}
 }
 
 void gl33_buffer_destroy(CommonBuffer *cbuf) {

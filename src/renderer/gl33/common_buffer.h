@@ -14,7 +14,9 @@
 #include "opengl.h"
 #include "../api.h"
 
-typedef struct CommonBuffer {
+typedef struct CommonBuffer CommonBuffer;
+
+struct CommonBuffer {
 	union {
 		SDL_RWops stream;
 		struct {
@@ -31,16 +33,20 @@ typedef struct CommonBuffer {
 			GLuint gl_handle;
 			uint bindidx;
 			char debug_label[R_DEBUG_LABEL_SIZE];
+
+			void (*pre_bind)(CommonBuffer *self);
+			void (*post_bind)(CommonBuffer *self);
 		};
 	};
-} CommonBuffer;
+};
 
 static_assert(
 	offsetof(CommonBuffer, stream) == 0,
 	"stream should be the first member in CommonBuffer for simplicity"
 );
 
-CommonBuffer* gl33_buffer_create(uint bindidx, size_t capacity, GLenum usage_hint, void *data);
+CommonBuffer* gl33_buffer_create(uint bindidx, size_t alloc_size);
+void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint);
 void gl33_buffer_destroy(CommonBuffer *cbuf);
 void gl33_buffer_invalidate(CommonBuffer *cbuf);
 SDL_RWops* gl33_buffer_get_stream(CommonBuffer *cbuf);
@@ -48,12 +54,24 @@ void gl33_buffer_flush(CommonBuffer *cbuf);
 
 #define GL33_BUFFER_TEMP_BIND(cbuf, code) do { \
 	CommonBuffer *_tempbind_cbuf = (cbuf); \
-	BufferBindingIndex _tempbind_bindidx = _tempbind_cbuf->bindidx; \
-	GLuint _tempbind_buf_saved = gl33_buffer_current(_tempbind_bindidx); \
-	gl33_bind_buffer(_tempbind_bindidx, _tempbind_cbuf->gl_handle); \
-	gl33_sync_buffer(_tempbind_bindidx); \
+	attr_unused BufferBindingIndex _tempbind_bindidx; \
+	attr_unused GLuint _tempbind_buf_saved; \
+	if(_tempbind_cbuf->pre_bind != NULL) { \
+		assume(_tempbind_cbuf->post_bind != NULL); \
+		_tempbind_cbuf->pre_bind(cbuf); \
+	} else { \
+		_tempbind_bindidx = _tempbind_cbuf->bindidx; \
+		_tempbind_buf_saved = gl33_buffer_current(_tempbind_bindidx); \
+		gl33_bind_buffer(_tempbind_bindidx, _tempbind_cbuf->gl_handle); \
+		gl33_sync_buffer(_tempbind_bindidx); \
+	} \
 	{ code } \
-	gl33_bind_buffer(_tempbind_bindidx, _tempbind_buf_saved); \
+	if(_tempbind_cbuf->post_bind != NULL) { \
+		assume(_tempbind_cbuf->pre_bind != NULL); \
+		_tempbind_cbuf->post_bind(cbuf); \
+	} else { \
+		gl33_bind_buffer(_tempbind_bindidx, _tempbind_buf_saved); \
+	} \
 } while(0)
 
 #endif // IGUARD_renderer_gl33_common_buffer_h

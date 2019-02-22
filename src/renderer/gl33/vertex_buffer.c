@@ -13,12 +13,8 @@
 #include "../glcommon/debug.h"
 
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
-	VertexBuffer *vbuf = (VertexBuffer*)gl33_buffer_create(
-        GL33_BUFFER_BINDING_ARRAY,
-        capacity,
-        GL_STATIC_DRAW,
-        data
-    );
+	VertexBuffer *vbuf = (VertexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ARRAY, sizeof(VertexBuffer));
+	gl33_buffer_init(&vbuf->cbuf, capacity, data, GL_STATIC_DRAW);
 
 	snprintf(vbuf->cbuf.debug_label, sizeof(vbuf->cbuf.debug_label), "VBO #%i", vbuf->cbuf.gl_handle);
 	log_debug("Created VBO %u with %zukb of storage", vbuf->cbuf.gl_handle, vbuf->cbuf.size / 1024);

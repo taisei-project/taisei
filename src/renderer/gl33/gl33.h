@@ -24,7 +24,9 @@ typedef enum BufferBindingIndex {
 	GL33_BUFFER_BINDING_COPY_WRITE,
 	GL33_BUFFER_BINDING_PIXEL_UNPACK,
 
-	GL33_NUM_BUFFER_BINDINGS
+	GL33_NUM_BUFFER_BINDINGS,
+
+	GL33_BUFFER_BINDING_ELEMENT_ARRAY,  // super special case!
 } BufferBindingIndex;
 
 // Internal helper functions

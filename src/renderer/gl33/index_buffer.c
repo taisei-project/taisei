@@ -12,17 +12,37 @@
 #include "gl33.h"
 #include "../glcommon/debug.h"
 
+static void gl33_index_buffer_pre_bind(CommonBuffer *cbuf) {
+	IndexBuffer *ibuf = (IndexBuffer*)cbuf;
+	ibuf->prev_vao = gl33_vao_current();
+	gl33_bind_vao(ibuf->vao);
+	gl33_sync_vao();
+}
+
+static void gl33_index_buffer_post_bind(CommonBuffer *cbuf) {
+	IndexBuffer *ibuf = (IndexBuffer*)cbuf;
+	gl33_bind_vao(ibuf->prev_vao);
+}
+
 IndexBuffer* gl33_index_buffer_create(size_t max_elements) {
-	IndexBuffer *ibuf = (IndexBuffer*)gl33_buffer_create(
-        GL33_BUFFER_BINDING_COPY_WRITE,
-        max_elements * sizeof(gl33_ibo_index_t),
-        GL_STATIC_DRAW,
-        NULL
-    );
+	IndexBuffer *ibuf = (IndexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ELEMENT_ARRAY, sizeof(IndexBuffer));
+	ibuf->cbuf.size = max_elements * sizeof(gl33_ibo_index_t);
+	ibuf->cbuf.pre_bind = gl33_index_buffer_pre_bind;
+	ibuf->cbuf.post_bind = gl33_index_buffer_post_bind;
 
 	snprintf(ibuf->cbuf.debug_label, sizeof(ibuf->cbuf.debug_label), "IBO #%i", ibuf->cbuf.gl_handle);
 	log_debug("Created IBO %u for %zu elements", ibuf->cbuf.gl_handle, max_elements);
 	return ibuf;
+}
+
+void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao) {
+	bool initialized = ibuf->vao != 0;
+	ibuf->vao = vao;
+
+	if(!initialized) {
+		gl33_buffer_init(&ibuf->cbuf, ibuf->cbuf.size, NULL, GL_STATIC_DRAW);
+		log_debug("Initialized %s", ibuf->cbuf.debug_label);
+	}
 }
 
 size_t gl33_index_buffer_get_capacity(IndexBuffer *ibuf) {

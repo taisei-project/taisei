@@ -522,6 +522,10 @@ void gl33_sync_vao(void) {
 }
 
 GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx) {
+	if(bindidx == GL33_BUFFER_BINDING_ELEMENT_ARRAY) {
+		return GL_ELEMENT_ARRAY_BUFFER;
+	}
+
 	static GLenum map[] = {
 		[GL33_BUFFER_BINDING_ARRAY] = GL_ARRAY_BUFFER,
 		[GL33_BUFFER_BINDING_COPY_WRITE] = GL_COPY_WRITE_BUFFER,
@@ -534,6 +538,8 @@ GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx) {
 }
 
 void gl33_sync_buffer(BufferBindingIndex bindidx) {
+	assert((uint)bindidx < GL33_NUM_BUFFER_BINDINGS);
+
 	if(R.buffer_objects[bindidx].active != R.buffer_objects[bindidx].pending) {
 		R.buffer_objects[bindidx].active = R.buffer_objects[bindidx].pending;
 		glBindBuffer(gl33_bindidx_to_glenum(bindidx), R.buffer_objects[bindidx].active);

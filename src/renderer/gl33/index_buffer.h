@@ -15,6 +15,8 @@
 
 typedef struct IndexBuffer {
 	CommonBuffer cbuf;
+	GLuint vao;
+	GLuint prev_vao;
 } IndexBuffer;
 
 typedef GLushort gl33_ibo_index_t;
@@ -30,5 +32,6 @@ size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf);
 void gl33_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]);
 void gl33_index_buffer_destroy(IndexBuffer *ibuf);
 void gl33_index_buffer_flush(IndexBuffer *ibuf);
+void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao);
 
 #endif // IGUARD_renderer_gl33_index_buffer_h

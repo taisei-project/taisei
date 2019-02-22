@@ -55,6 +55,7 @@ static void gl33_vertex_array_update_layout(VertexArray *varr) {
 		gl33_sync_vao();
 		if(varr->index_attachment) {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, varr->index_attachment->cbuf.gl_handle);
+			gl33_index_buffer_on_vao_attach(varr->index_attachment, varr->gl_handle);
 		} else {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
