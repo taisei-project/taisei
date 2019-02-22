@@ -502,7 +502,7 @@ void glcommon_check_extensions(void) {
 	glext.version.is_es = strstartswith(glv, "OpenGL ES");
 
 	if(glext.version.is_es) {
-		glext.version.is_ANGLE = GL_ANGLE_translated_shader_source;
+		glext.version.is_ANGLE = strstr(glv, "(ANGLE ");
 	}
 
 	log_info("OpenGL version: %s", glv);

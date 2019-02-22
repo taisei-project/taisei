@@ -12,8 +12,10 @@
 #include "taisei.h"
 
 #include "../glcommon/texture.h"
+#include "../glcommon/vtable.h"
 
 void gles_init_texformats_table(void);
 GLTextureTypeInfo* gles_texture_type_info(TextureType type);
+GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt);
 
 #endif // IGUARD_renderer_glescommon_texture_h

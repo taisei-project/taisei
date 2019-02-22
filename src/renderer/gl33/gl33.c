@@ -1091,6 +1091,7 @@ RendererBackend _r_backend_gl33 = {
 	.custom = &(GLBackendData) {
 		.vtable = {
 			.texture_type_info = gl33_texture_type_info,
+			.texture_format_caps = gl33_texture_format_caps,
 			.init_context = gl33_init_context,
 		}
 	},

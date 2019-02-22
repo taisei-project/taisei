@@ -50,9 +50,9 @@ static GLTextureTypeInfo gles_texformats[] = {
 	[TEX_TYPE_RGBA_32_FLOAT]  = MAKEFMT(GL_RGBA8, FMT_RGBA8),
 
 	// WARNING: ANGLE bug(?): texture binding fails if a sized format is used here.
-	[TEX_TYPE_DEPTH_8]        = MAKEFMT(GL_DEPTH_COMPONENT, FMT_DEPTH),
-	[TEX_TYPE_DEPTH_16]       = MAKEFMT(GL_DEPTH_COMPONENT, FMT_DEPTH),
-	[TEX_TYPE_DEPTH_32_FLOAT] = MAKEFMT(GL_DEPTH_COMPONENT, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_8]        = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_16]       = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_32_FLOAT] = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
 };
 
 static inline void set_format(TextureType t, GLenum internal, GLTextureFormatTuple external) {
@@ -63,11 +63,19 @@ static inline void set_format(TextureType t, GLenum internal, GLTextureFormatTup
 
 void gles_init_texformats_table(void) {
 	bool is_gles3 = GLES_ATLEAST(3, 0);
+	bool is_angle = glext.version.is_ANGLE;
 	bool have_rg = glext.texture_rg;
 	bool have_16bit = glext.texture_norm16;
 	bool have_renderable_float = glext.color_buffer_float;
-	bool have_float16 = glext.texture_half_float_linear && have_renderable_float;
-	bool have_float32 = glext.texture_float_linear && have_renderable_float && glext.float_blend;
+	bool have_float16 = /* glext.texture_half_float_linear && */ have_renderable_float;
+	bool have_float32 = /* glext.texture_float_linear && */ have_renderable_float && glext.float_blend;
+
+	// XXX: Workaround for an ANGLE bug
+	if(is_angle) {
+		set_format(TEX_TYPE_DEPTH_8, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+		set_format(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+		set_format(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+	}
 
 	// WARNING: GL_RGB* is generally not color-renderable, except for GL_RGB8
 	// So use GL_RGBA instead, where appropriate.
@@ -123,42 +131,7 @@ void gles_init_texformats_table(void) {
 		gles_texformats[i].external_formats[0] = gles_texformats[i].primary_external_format;
 
 		if(!is_gles3) {
-			switch(gles_texformats[i].internal_fmt) {
-				case GL_R8:
-				case GL_R16:
-				case GL_R16F:
-				case GL_R32F:
-					gles_texformats[i].internal_fmt = GL_RED;
-					break;
-
-				case GL_RG8:
-				case GL_RG16:
-				case GL_RG16F:
-				case GL_RG32F:
-					gles_texformats[i].internal_fmt = GL_RG;
-					break;
-
-				case GL_RGB8:
-				case GL_RGB16:
-				case GL_RGB16F:
-				case GL_RGB32F:
-					gles_texformats[i].internal_fmt = GL_RGB;
-					break;
-
-				case GL_RGBA8:
-				case GL_RGBA16:
-				case GL_RGBA16F:
-				case GL_RGBA32F:
-					gles_texformats[i].internal_fmt = GL_RGBA;
-					break;
-
-				case GL_DEPTH_COMPONENT:
-					break;
-
-				default:
-					UNREACHABLE;
-			}
-
+			gles_texformats[i].internal_fmt = glcommon_texture_base_format(gles_texformats[i].internal_fmt);
 			assert(gles_texformats[i].internal_fmt == gles_texformats[i].primary_external_format.gl_fmt);
 		}
 	}
@@ -167,4 +140,76 @@ void gles_init_texformats_table(void) {
 GLTextureTypeInfo* gles_texture_type_info(TextureType type) {
 	assert((uint)type < sizeof(gles_texformats)/sizeof(*gles_texformats));
 	return gles_texformats + type;
+}
+
+GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
+	GLTexFormatCapabilities caps = 0;
+
+	/*
+	 * Some formats we don't care about were omitted here
+	 */
+
+	switch(internal_fmt) {
+		case GL_R8:
+		case GL_RG8:
+		case GL_RGB8:
+		case GL_RGBA8:
+			caps |= GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE;
+			break;
+
+		case GL_R16:
+		case GL_RG16:
+		case GL_RGBA16:
+			if(glext.texture_norm16) {
+				caps |= GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE;
+			}
+			break;
+
+		case GL_RGB16:
+			if(glext.texture_norm16) {
+				caps |= GLTEX_FILTERABLE;
+			}
+			break;
+
+		case GL_R16F:
+		case GL_RG16F:
+		case GL_RGBA16F:
+			if(glext.color_buffer_float) {
+				caps |= GLTEX_COLOR_RENDERABLE;
+			}
+			// fallthrough
+		case GL_RGB16F:
+			if(glext.texture_half_float_linear) {
+				caps |= GLTEX_FILTERABLE;
+			}
+			break;
+
+		case GL_R32F:
+		case GL_RG32F:
+		case GL_RGB32F:
+		case GL_RGBA32F:
+			if(glext.float_blend) {
+				if(glext.color_buffer_float && internal_fmt != GL_RGB32F) {
+					caps |= GLTEX_COLOR_RENDERABLE;
+				}
+
+				if(glext.texture_float_linear) {
+					caps |= GLTEX_FILTERABLE;
+				}
+			}
+			break;
+
+		case GL_DEPTH_COMPONENT16:
+		case GL_DEPTH_COMPONENT24:
+			// FIXME: Is there an extension that makes it filterable?
+			// It seems to work on Mesa and ANGLE at least.
+			caps |= GLTEX_DEPTH_RENDERABLE;
+			break;
+
+		case GL_DEPTH_COMPONENT32F:
+			caps |= GLTEX_DEPTH_RENDERABLE | GLTEX_FILTERABLE;
+			break;
+	}
+
+	return caps;
 }

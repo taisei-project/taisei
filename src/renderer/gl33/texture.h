@@ -44,5 +44,6 @@ void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
 
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type);
+GLTexFormatCapabilities gl33_texture_format_caps(GLenum internal_fmt);
 
 #endif // IGUARD_renderer_gl33_texture_h

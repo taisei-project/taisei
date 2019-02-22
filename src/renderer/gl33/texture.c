@@ -14,7 +14,21 @@
 #include "gl33.h"
 #include "../glcommon/debug.h"
 
-static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {
+static GLenum linear_to_nearest(GLenum filter) {
+	switch(filter) {
+		case GL_LINEAR:
+			return GL_NEAREST;
+
+		case GL_LINEAR_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_NEAREST:
+			return GL_NEAREST_MIPMAP_NEAREST;
+
+		default:
+			return GL_NONE;
+	}
+}
+
+static GLuint r_filter_to_gl_filter(TextureFilterMode mode, GLenum for_format) {
 	static GLuint map[] = {
 		[TEX_FILTER_LINEAR]  = GL_LINEAR,
 		[TEX_FILTER_LINEAR_MIPMAP_NEAREST]  = GL_LINEAR_MIPMAP_NEAREST,
@@ -25,7 +39,35 @@ static GLuint r_filter_to_gl_filter(TextureFilterMode mode) {
 	};
 
 	assert((uint)mode < sizeof(map)/sizeof(*map));
-	return map[mode];
+	GLenum filter = map[mode];
+	GLenum alt_filter = linear_to_nearest(filter);
+
+	if(alt_filter != GL_NONE && !(GLVT.texture_format_caps(for_format) & GLTEX_FILTERABLE)) {
+		filter = alt_filter;
+	}
+
+	return filter;
+}
+
+GLTexFormatCapabilities gl33_texture_format_caps(GLenum internal_fmt) {
+	GLTexFormatCapabilities caps = 0;
+
+	GLenum base_fmt = glcommon_texture_base_format(internal_fmt);
+
+	switch(base_fmt) {
+		case GL_RED:
+		case GL_RG:
+		case GL_RGB:
+		case GL_RGBA:
+			caps |= GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE;
+			break;
+
+		case GL_DEPTH_COMPONENT:
+			caps |= GLTEX_DEPTH_RENDERABLE | GLTEX_FILTERABLE;
+			break;
+	}
+
+	return caps;
 }
 
 static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
@@ -197,10 +239,12 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	gl33_bind_texture(tex, false);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
+	tex->type_info = GLVT.texture_type_info(p->type);
+
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(p->wrap.s));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, tex->type_info->internal_fmt));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, tex->type_info->internal_fmt));
 
 	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
@@ -209,8 +253,6 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	if(glext.texture_filter_anisotropic) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p->anisotropy);
 	}
-
-	tex->type_info = GLVT.texture_type_info(p->type);
 
 	if(p->stream && glext.pixel_buffer_object) {
 		glGenBuffers(1, &tex->pbo);
@@ -245,14 +287,14 @@ void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilter
 		gl33_bind_texture(tex, false);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.min = fmin;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->type_info->internal_fmt));
 	}
 
 	if(tex->params.filter.mag != fmag) {
 		gl33_bind_texture(tex, false);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.mag = fmag;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->type_info->internal_fmt));
 	}
 }
 
