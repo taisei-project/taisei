@@ -40,7 +40,9 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	}
 
 	if(REF(p->args[1]) == NULL) {
-		return ACTION_DESTROY;
+		p->pos += p->pos0;
+		p->pos0 *= 1.001;
+		return ACTION_NONE;
 	}
 
 	Enemy *e = (Enemy *)REF(p->args[1]);
@@ -50,7 +52,6 @@ static int marisa_star_projectile(Projectile *p, int t) {
 
 	
 	float freq = 0.1;
-	p->angle = t * freq;
 	
 	double focus = 1-fabs(global.plr.focus)/30.0;
 
@@ -60,22 +61,14 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		focusfac = tanh(sqrt(fabs(focusfac)));
 	}
 
+	double centerfac = tanh(t/10.); // interpolate between player center and slave center
+	complex center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
+	
 	double verticalfac = - 5*t*(1+0.01*t) + 10*t/(0.01*t+1);
-	p->pos = e->args[2] + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
-
-	if(t == EVENT_DEATH) {
-		PARTICLE(
-			.sprite_ptr = get_sprite("proj/maristar"),
-			.pos = p->pos,
-			.color = &p->color,
-			.timeout = 40,
-			.draw_rule = GrowFade,
-			.args = { 0, 2 },
-			.angle = frand() * 2 * M_PI,
-			.flags = PFLAG_NOREFLECT,
-			.layer = LAYER_PARTICLE_HIGH,
-		);
-	}
+	p->pos0 = p->pos;
+	p->pos = center + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
+	p->pos0 = p->pos - p->pos0;
+	p->angle = carg(p->pos0);
 
 	return ACTION_NONE;
 }
