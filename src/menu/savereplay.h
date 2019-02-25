@@ -12,8 +12,8 @@
 #include "taisei.h"
 
 #include "menu.h"
+#include "eventloop/eventloop.h"
 
-void create_saverpy_menu(MenuData*);
-void ask_save_replay(void);
+void ask_save_replay(CallChain next);
 
 #endif // IGUARD_menu_savereplay_h

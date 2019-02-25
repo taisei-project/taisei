@@ -119,7 +119,7 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 void stage_init_array(void);
 void stage_free_array(void);
 
-void stage_loop(StageInfo *stage);
+void stage_enter(StageInfo *stage, CallChain next);
 void stage_finish(int gameover);
 
 void stage_pause(void);

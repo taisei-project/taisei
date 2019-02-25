@@ -13,48 +13,7 @@
 
 #include "menu.h"
 
-void create_options_menu(MenuData *m);
-void draw_options_menu(MenuData *m);
-
-typedef struct OptionBinding OptionBinding;
-
-typedef int (*BindingGetter)(OptionBinding*);
-typedef int (*BindingSetter)(OptionBinding*, int);
-typedef bool (*BindingDependence)(void);
-
-typedef enum BindingType {
-	BT_IntValue,
-	BT_KeyBinding,
-	BT_StrValue,
-	BT_Resolution,
-	BT_Scale,
-	BT_GamepadKeyBinding,
-	BT_GamepadAxisBinding,
-	BT_GamepadDevice,
-} BindingType;
-
-typedef struct OptionBinding {
-	union {
-		char **values;
-		char *strvalue;
-	};
-	bool displaysingle;
-	int valcount;
-	int valrange_min;
-	int valrange_max;
-	float scale_min;
-	float scale_max;
-	float scale_step;
-	BindingGetter getter;
-	BindingSetter setter;
-	BindingDependence dependence;
-	int selected;
-	int configentry;
-	BindingType type;
-	bool blockinput;
-	int pad;
-} OptionBinding;
-
+MenuData* create_options_menu(void);
 void draw_options_menu_bg(MenuData*);
 
 #endif // IGUARD_menu_options_h

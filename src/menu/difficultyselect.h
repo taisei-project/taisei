@@ -13,7 +13,7 @@
 
 #include "menu.h"
 
-void create_difficulty_menu(MenuData *menu);
+MenuData* create_difficulty_menu(void);
 void draw_difficulty_menu(MenuData *m);
 
 #endif // IGUARD_menu_difficultyselect_h

@@ -18,42 +18,33 @@
 #include "global.h"
 #include "submenus.h"
 
-void enter_options(MenuData *menu, void *arg) {
-	MenuData m;
-	create_options_menu(&m);
-	menu_loop(&m);
+void menu_action_enter_options(MenuData *menu, void *arg) {
+	enter_menu(create_options_menu(), NO_CALLCHAIN);
 }
 
-void enter_stagemenu(MenuData *menu, void *arg) {
-	MenuData m;
-	create_stage_menu(&m);
-	menu_loop(&m);
+void menu_action_enter_stagemenu(MenuData *menu, void *arg) {
+	enter_menu(create_stage_menu(), NO_CALLCHAIN);
 }
 
-void enter_replayview(MenuData *menu, void *arg) {
-	MenuData m;
-	create_replayview_menu(&m);
-	menu_loop(&m);
+void menu_action_enter_replayview(MenuData *menu, void *arg) {
+	enter_menu(create_replayview_menu(), NO_CALLCHAIN);
 }
 
-void enter_spellpractice(MenuData *menu, void *arg) {
-	MenuData m;
-	create_spell_menu(&m);
-	menu_loop(&m);
+void menu_action_enter_spellpractice(MenuData *menu, void *arg) {
+	enter_menu(create_spell_menu(), NO_CALLCHAIN);
 }
 
-void enter_stagepractice(MenuData *menu, void *arg) {
-	MenuData m;
+static void stgpract_do_choose_stage(CallChainResult ccr);
 
-	do {
-		create_difficulty_menu(&m);
+void menu_action_enter_stagepractice(MenuData *menu, void *arg) {
+	enter_menu(create_difficulty_menu(), CALLCHAIN(stgpract_do_choose_stage, NULL));
+}
 
-		if(menu_loop(&m) < 0) {
-			return;
-		}
+static void stgpract_do_choose_stage(CallChainResult ccr) {
+	MenuData *prev_menu = ccr.result;
+	assert(prev_menu != NULL);
 
-		global.diff = progress.game_settings.difficulty;
-		create_stgpract_menu(&m, global.diff);
-		menu_loop(&m);
-	} while(m.selected < 0 || m.selected == m.ecount - 1);
+	if(prev_menu->selected >= 0) {
+		enter_menu(create_stgpract_menu(progress.game_settings.difficulty), NO_CALLCHAIN);
+	}
 }

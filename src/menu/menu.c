@@ -30,23 +30,35 @@ void add_menu_separator(MenuData *menu) {
 	memset(menu->entries + menu->ecount - 1, 0, sizeof(MenuEntry));
 }
 
-void destroy_menu(MenuData *menu) {
+void free_menu(MenuData *menu) {
+	if(menu == NULL) {
+		return;
+	}
+
 	for(int i = 0; i < menu->ecount; i++) {
 		free(menu->entries[i].name);
 	}
 
 	free(menu->entries);
+	free(menu);
 }
 
-void create_menu(MenuData *menu) {
-	memset(menu, 0, sizeof(MenuData));
-
+MenuData* alloc_menu(void) {
+	MenuData *menu = calloc(1, sizeof(*menu));
 	menu->selected = -1;
 	menu->transition = TransMenu; // TransFadeBlack;
 	menu->transition_in_time = FADE_TIME;
 	menu->transition_out_time = FADE_TIME;
 	menu->fade = 1.0;
 	menu->input = menu_input;
+	return menu;
+}
+
+void kill_menu(MenuData *menu) {
+	if(menu != NULL) {
+		menu->state = MS_Dead;
+		// nani?!
+	}
 }
 
 static void close_menu_finish(MenuData *menu) {
@@ -59,6 +71,8 @@ static void close_menu_finish(MenuData *menu) {
 
 		menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
 	}
+
+	run_call_chain(&menu->cc, menu);
 }
 
 void close_menu(MenuData *menu) {
@@ -144,7 +158,7 @@ void menu_no_input(MenuData *menu) {
 	events_poll(NULL, 0);
 }
 
-static FrameAction menu_logic_frame(void *arg) {
+static LogicFrameAction menu_logic_frame(void *arg) {
 	MenuData *menu = arg;
 
 	if(menu->logic) {
@@ -165,27 +179,42 @@ static FrameAction menu_logic_frame(void *arg) {
 	return menu->state == MS_Dead ? LFRAME_STOP : LFRAME_WAIT;
 }
 
-static FrameAction menu_render_frame(void *arg) {
+static RenderFrameAction menu_render_frame(void *arg) {
 	MenuData *menu = arg;
 	assert(menu->draw);
+	set_ortho(SCREEN_W, SCREEN_H);
 	menu->draw(menu);
 	draw_transition();
 	return RFRAME_SWAP;
 }
 
-int menu_loop(MenuData *menu) {
-	set_ortho(SCREEN_W, SCREEN_H);
+static void menu_end_loop(void *ctx) {
+	MenuData *menu = ctx;
 
-	if(menu->begin) {
-		menu->begin(menu);
+	if(menu->state != MS_Dead) {
+		// definitely dead now...
+		menu->state = MS_Dead;
+		run_call_chain(&menu->cc, menu);
 	}
-
-	loop_at_fps(menu_logic_frame, menu_render_frame, menu, FPS);
 
 	if(menu->end) {
 		menu->end(menu);
 	}
 
-	destroy_menu(menu);
-	return menu->selected;
+	free_menu(menu);
+}
+
+void enter_menu(MenuData *menu, CallChain next) {
+	if(menu == NULL) {
+		run_call_chain(&next, NULL);
+		return;
+	}
+
+	menu->cc = next;
+
+	if(menu->begin != NULL) {
+		menu->begin(menu);
+	}
+
+	eventloop_enter(menu, menu_logic_frame, menu_render_frame, menu_end_loop, FPS);
 }

@@ -15,6 +15,45 @@
 #include "global.h"
 #include "video.h"
 
+typedef struct OptionBinding OptionBinding;
+
+typedef int (*BindingGetter)(OptionBinding*);
+typedef int (*BindingSetter)(OptionBinding*, int);
+typedef bool (*BindingDependence)(void);
+
+typedef enum BindingType {
+	BT_IntValue,
+	BT_KeyBinding,
+	BT_StrValue,
+	BT_Resolution,
+	BT_Scale,
+	BT_GamepadKeyBinding,
+	BT_GamepadAxisBinding,
+	BT_GamepadDevice,
+} BindingType;
+
+typedef struct OptionBinding {
+	union {
+		char **values;
+		char *strvalue;
+	};
+	bool displaysingle;
+	int valcount;
+	int valrange_min;
+	int valrange_max;
+	float scale_min;
+	float scale_max;
+	float scale_step;
+	BindingGetter getter;
+	BindingSetter setter;
+	BindingDependence dependence;
+	int selected;
+	int configentry;
+	BindingType type;
+	bool blockinput;
+	int pad;
+} OptionBinding;
+
 // --- Menu entry <-> config option binding stuff --- //
 
 static void bind_init(OptionBinding *bind) {
@@ -329,6 +368,11 @@ static int bind_power_get(OptionBinding *b) {
 
 // --- Creating, destroying, filling the menu --- //
 
+typedef struct OptionsMenuContext {
+	const char *title;
+	void *data;
+} OptionsMenuContext;
+
 static void destroy_options_menu(MenuData *m) {
 	for(int i = 0; i < m->ecount; ++i) {
 		OptionBinding *bind = bind_get(m, i);
@@ -354,31 +398,62 @@ static void destroy_options_menu(MenuData *m) {
 		bind_free(bind);
 		free(bind);
 	}
+
+	if(m->context) {
+		OptionsMenuContext *ctx = m->context;
+		free(ctx->data);
+		free(ctx);
+	}
 }
 
 static void do_nothing(MenuData *menu, void *arg) { }
 static void update_options_menu(MenuData *menu);
-void options_menu_input(MenuData*);
+static void options_menu_input(MenuData*);
+static void draw_options_menu(MenuData*);
 
-static void create_options_menu_basic(MenuData *m, char *s) {
-	create_menu(m);
+#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+
+static MenuData* create_options_menu_base(const char *s) {
+	MenuData *m = alloc_menu();
 	m->transition = TransMenuDark;
 	m->flags = MF_Abortable;
-	m->context = s;
 	m->input = options_menu_input;
 	m->draw = draw_options_menu;
 	m->logic = update_options_menu;
 	m->end = destroy_options_menu;
+
+	OptionsMenuContext *ctx = calloc(1, sizeof(OptionsMenuContext));
+	ctx->title = s;
+	m->context = ctx;
+
+	return m;
 }
 
-#define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
+static void options_enter_sub(MenuData *parent, MenuData *(*construct)(MenuData*)) {
+	parent->frames = 0;
+	enter_menu(construct(parent), NO_CALLCHAIN);
+}
 
-static void options_sub_video(MenuData *parent, void *arg) {
-	MenuData menu, *m;
+#define DECLARE_ENTER_FUNC(enter, construct) \
+	static void enter(MenuData *parent, void *arg) { \
+		options_enter_sub(parent, construct); \
+	}
+
+static MenuData* create_options_menu_controls(MenuData *parent);
+DECLARE_ENTER_FUNC(enter_options_menu_controls, create_options_menu_controls)
+
+static MenuData* create_options_menu_gamepad(MenuData *parent);
+DECLARE_ENTER_FUNC(enter_options_menu_gamepad, create_options_menu_gamepad)
+
+static MenuData* create_options_menu_gamepad_controls(MenuData *parent);
+DECLARE_ENTER_FUNC(enter_options_menu_gamepad_controls, create_options_menu_gamepad_controls)
+
+static MenuData* create_options_menu_video(MenuData *parent);
+DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
+
+static MenuData* create_options_menu_video(MenuData *parent) {
+	MenuData *m = create_options_menu_base("Video Options");
 	OptionBinding *b;
-	m = &menu;
-
-	create_options_menu_basic(m, "Video Options");
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
@@ -446,10 +521,9 @@ static void options_sub_video(MenuData *parent, void *arg) {
 		bind_addvalue(b, "full");
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	menu_loop(m);
-	parent->frames = 0;
+	return m;
 }
 
 attr_unused
@@ -465,11 +539,8 @@ static bool gamepad_enabled_depencence(void) {
 	return config_get_int(CONFIG_GAMEPAD_ENABLED);
 }
 
-static void options_sub_gamepad_controls(MenuData *parent, void *arg) {
-	MenuData menu, *m;
-	m = &menu;
-
-	create_options_menu_basic(m, "Gamepad Controls");
+static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
+	MenuData *m = create_options_menu_base("Gamepad Controls");
 
 	add_menu_entry(m, "Move up", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_UP)
@@ -512,18 +583,29 @@ static void options_sub_gamepad_controls(MenuData *parent, void *arg) {
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	menu_loop(m);
-	parent->frames = 0;
+	return m;
 }
 
-static void options_sub_gamepad(MenuData *parent, void *arg) {
-	MenuData menu, *m;
-	OptionBinding *b;
-	m = &menu;
+static void destroy_options_menu_gamepad(MenuData *m) {
+	OptionsMenuContext *ctx = m->context;
 
-	create_options_menu_basic(m, "Gamepad Options");
+	if(config_get_int(CONFIG_GAMEPAD_ENABLED) && strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), ctx->data)) {
+		gamepad_restart();
+	}
+
+	destroy_options_menu(m);
+}
+
+static MenuData* create_options_menu_gamepad(MenuData *parent) {
+	MenuData *m = create_options_menu_base("Gamepad Options");
+	m->end = destroy_options_menu_gamepad;
+
+	OptionsMenuContext *ctx = m->context;
+	ctx->data = strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
+
+	OptionBinding *b;
 
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
@@ -534,7 +616,7 @@ static void options_sub_gamepad(MenuData *parent, void *arg) {
 	);	bind_setdependence(b, gamepad_enabled_depencence);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Customize controls…", options_sub_gamepad_controls, NULL);
+	add_menu_entry(m, "Customize controls…", enter_options_menu_gamepad_controls, NULL);
 
 	add_menu_separator(m);
 
@@ -564,25 +646,13 @@ static void options_sub_gamepad(MenuData *parent, void *arg) {
 	);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	char *gpdev = strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
-
-	menu_loop(m);
-	parent->frames = 0;
-
-	if(config_get_int(CONFIG_GAMEPAD_ENABLED) && strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), gpdev)) {
-		gamepad_restart();
-	}
-
-	free(gpdev);
+	return m;
 }
 
-static void options_sub_controls(MenuData *parent, void *arg) {
-	MenuData menu, *m;
-	m = &menu;
-
-	create_options_menu_basic(m, "Controls");
+static MenuData* create_options_menu_controls(MenuData *parent) {
+	MenuData *m = create_options_menu_base("Controls");
 
 	add_menu_entry(m, "Move up", do_nothing,
 		bind_keybinding(CONFIG_KEY_UP)
@@ -677,16 +747,14 @@ static void options_sub_controls(MenuData *parent, void *arg) {
 #endif
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	menu_loop(m);
-	parent->frames = 0;
+	return m;
 }
 
-void create_options_menu(MenuData *m) {
+MenuData* create_options_menu(void) {
+	MenuData *m = create_options_menu_base("Options");
 	OptionBinding *b;
-
-	create_options_menu_basic(m, "Options");
 
 	add_menu_entry(m, "Player name", do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
@@ -736,12 +804,14 @@ void create_options_menu(MenuData *m) {
 	);	bind_onoff(b);
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Video options…", options_sub_video, NULL);
-	add_menu_entry(m, "Customize controls…", options_sub_controls, NULL);
-	add_menu_entry(m, "Gamepad & Joystick options…", options_sub_gamepad, NULL);
+	add_menu_entry(m, "Video options…", enter_options_menu_video, NULL);
+	add_menu_entry(m, "Customize controls…", enter_options_menu_controls, NULL);
+	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
+
+	return m;
 }
 
 // --- Drawing the menu --- //
@@ -766,9 +836,11 @@ static void update_options_menu(MenuData *menu) {
 	}
 }
 
-void draw_options_menu(MenuData *menu) {
+static void draw_options_menu(MenuData *menu) {
+	OptionsMenuContext *ctx = menu->context;
+
 	draw_options_menu_bg(menu);
-	draw_menu_title(menu, menu->context);
+	draw_menu_title(menu, ctx->title);
 
 	r_mat_push();
 	r_mat_translate(100, 100, 0);
@@ -1350,7 +1422,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 }
 #undef SHOULD_SKIP
 
-void options_menu_input(MenuData *menu) {
+static void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
 	EventFlags flags = EFLAG_MENU;
 

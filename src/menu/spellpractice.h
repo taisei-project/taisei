@@ -13,6 +13,6 @@
 
 #include "menu.h"
 
-void create_spell_menu(MenuData *m);
+MenuData* create_spell_menu(void);
 
 #endif // IGUARD_menu_spellpractice_h

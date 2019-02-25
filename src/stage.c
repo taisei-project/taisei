@@ -25,6 +25,7 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 #include "stageobjects.h"
+#include "eventloop/eventloop.h"
 
 #ifdef DEBUG
 	#define DPSTEST
@@ -240,13 +241,12 @@ static void stage_fade_bgm(void) {
 	fade_bgm((FPS * FADE_TIME) / 2000.0);
 }
 
-static void stage_ingame_menu_loop(MenuData *menu) {
-	if(ingame_menu_interrupts_bgm()) {
-		stop_bgm(false);
-	}
+static void stage_leave_ingame_menu(CallChainResult ccr) {
+	MenuData *m = ccr.result;
 
-	pause_sounds();
-	menu_loop(menu);
+	if(m->state != MS_Dead) {
+		return;
+	}
 
 	if(global.gameover > 0) {
 		stop_sounds();
@@ -258,6 +258,19 @@ static void stage_ingame_menu_loop(MenuData *menu) {
 		resume_sounds();
 		resume_bgm();
 	}
+
+	CallChain *cc = ccr.ctx;
+	run_call_chain(cc, NULL);
+	free(cc);
+}
+
+static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
+	if(ingame_menu_interrupts_bgm()) {
+		stop_bgm(false);
+	}
+
+	pause_sounds();
+	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, memdup(&next, sizeof(next))));
 }
 
 void stage_pause(void) {
@@ -265,15 +278,12 @@ void stage_pause(void) {
 		return;
 	}
 
-	MenuData menu;
-
-	if(global.replaymode == REPLAY_PLAY) {
-		create_ingame_menu_replay(&menu);
-	} else {
-		create_ingame_menu(&menu);
-	}
-
-	stage_ingame_menu_loop(&menu);
+	stage_enter_ingame_menu(
+		(global.replaymode == REPLAY_PLAY
+			? create_ingame_menu_replay
+			: create_ingame_menu
+		)(), NO_CALLCHAIN
+	);
 }
 
 void stage_gameover(void) {
@@ -282,9 +292,7 @@ void stage_gameover(void) {
 		return;
 	}
 
-	MenuData menu;
-	create_gameover_menu(&menu);
-	stage_ingame_menu_loop(&menu);
+	stage_enter_ingame_menu(create_gameover_menu(), NO_CALLCHAIN);
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
@@ -635,6 +643,8 @@ typedef struct StageFrameState {
 	StageInfo *stage;
 	int transition_delay;
 	uint16_t last_replay_fps;
+	CallChain cc;
+	int logic_calls;
 } StageFrameState;
 
 static void stage_update_fps(StageFrameState *fstate) {
@@ -678,9 +688,11 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total);
 }
 
-static FrameAction stage_logic_frame(void *arg) {
+static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
+
+	++fstate->logic_calls;
 
 	stage_update_fps(fstate);
 
@@ -742,7 +754,7 @@ static FrameAction stage_logic_frame(void *arg) {
 	return LFRAME_WAIT;
 }
 
-static FrameAction stage_render_frame(void *arg) {
+static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
@@ -758,7 +770,9 @@ static FrameAction stage_render_frame(void *arg) {
 	return RFRAME_SWAP;
 }
 
-void stage_loop(StageInfo *stage) {
+static void stage_end_loop(void *ctx);
+
+void stage_enter(StageInfo *stage, CallChain next) {
 	assert(stage);
 	assert(stage->procs);
 	assert(stage->procs->preload);
@@ -772,6 +786,7 @@ void stage_loop(StageInfo *stage) {
 	if(global.gameover == GAMEOVER_WIN) {
 		global.gameover = 0;
 	} else if(global.gameover) {
+		run_call_chain(&next, NULL);
 		return;
 	}
 
@@ -830,8 +845,15 @@ void stage_loop(StageInfo *stage) {
 		display_stage_title(stage);
 	}
 
-	StageFrameState fstate = { .stage = stage };
-	loop_at_fps(stage_logic_frame, stage_render_frame, &fstate, FPS);
+	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
+	fstate->stage = stage;
+	fstate->cc = next;
+
+	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
+}
+
+void stage_end_loop(void* ctx) {
+	StageFrameState *s = ctx;
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
@@ -841,7 +863,7 @@ void stage_loop(StageInfo *stage) {
 		}
 	}
 
-	stage->procs->end();
+	s->stage->procs->end();
 	stage_draw_shutdown();
 	stage_free();
 	player_free(&global.plr);
@@ -854,4 +876,7 @@ void stage_loop(StageInfo *stage) {
 	if(taisei_quit_requested()) {
 		global.gameover = GAMEOVER_ABORT;
 	}
+
+	run_call_chain(&s->cc, NULL);
+	free(s);
 }

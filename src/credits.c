@@ -27,6 +27,7 @@ static struct {
 	float panelalpha;
 	int end;
 	bool skipable;
+	CallChain cc;
 } credits;
 
 #define CREDITS_ENTRY_FADEIN 200.0
@@ -417,7 +418,7 @@ void credits_preload(void) {
 	NULL);
 }
 
-static FrameAction credits_logic_frame(void *arg) {
+static LogicFrameAction credits_logic_frame(void *arg) {
 	update_transition();
 	events_poll(NULL, 0);
 	credits_process();
@@ -432,14 +433,19 @@ static FrameAction credits_logic_frame(void *arg) {
 	}
 }
 
-static FrameAction credits_render_frame(void *arg) {
+static RenderFrameAction credits_render_frame(void *arg) {
 	credits_draw();
 	return RFRAME_SWAP;
 }
 
-void credits_loop(void) {
+static void credits_end_loop(void *ctx) {
+	credits_free();
+	run_call_chain(&credits.cc, NULL);
+}
+
+void credits_enter(CallChain next) {
 	credits_preload();
 	credits_init();
-	loop_at_fps(credits_logic_frame, credits_render_frame, NULL, FPS);
-	credits_free();
+	credits.cc = next;
+	eventloop_enter(&credits, credits_logic_frame, credits_render_frame, credits_end_loop, FPS);
 }

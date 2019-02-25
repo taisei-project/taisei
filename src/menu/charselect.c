@@ -15,29 +15,14 @@
 #include "global.h"
 #include "video.h"
 
-static void set_player(MenuData *m, void *p) {
+#define SELECTED_SUBSHOT(m) ((intptr_t)PLR_SHOT_A + (intptr_t)(m)->context)
+
+static void set_player_mode(MenuData *m, void *p) {
 	progress.game_settings.character = (CharacterID)(uintptr_t)p;
-}
-
-static void set_shotmode(MenuData *m, void *p) {
-	progress.game_settings.shotmode = (ShotModeID)(uintptr_t)p;
-}
-
-static void create_shottype_menu(MenuData *m) {
-	create_menu(m);
-	m->transition = NULL;
-
-	for(uintptr_t i = 0; i < NUM_SHOT_MODES_PER_CHARACTER; ++i) {
-		add_menu_entry(m, NULL, set_shotmode, (void*)i);
-
-		if(i == progress.game_settings.shotmode) {
-			m->cursor = i;
-		}
-	}
+	progress.game_settings.shotmode = SELECTED_SUBSHOT(m);
 }
 
 static void char_menu_input(MenuData*);
-static void free_char_menu(MenuData*);
 
 static void update_char_menu(MenuData *menu) {
 	for(int i = 0; i < menu->ecount; i++) {
@@ -45,28 +30,28 @@ static void update_char_menu(MenuData *menu) {
 	}
 }
 
-void create_char_menu(MenuData *m) {
-	create_menu(m);
+MenuData* create_char_menu(void) {
+	MenuData *m = alloc_menu();
+
 	m->input = char_menu_input;
 	m->draw = draw_char_menu;
 	m->logic = update_char_menu;
-	m->end = free_char_menu;
 	m->transition = TransMenuDark;
-	m->flags = MF_Abortable | MF_Transient;
-	m->context = malloc(sizeof(MenuData));
-	create_shottype_menu(m->context);
+	m->flags = MF_Abortable;
+	m->context = (void*)(intptr_t)progress.game_settings.shotmode;
 
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
-		add_menu_entry(m, NULL, set_player, (void*)i)->transition = TransFadeBlack;
+		add_menu_entry(m, NULL, set_player_mode, (void*)i)->transition = TransFadeBlack;
 
 		if(i == progress.game_settings.character) {
 			m->cursor = i;
 		}
 	}
+
+	return m;
 }
 
 void draw_char_menu(MenuData *menu) {
-	MenuData *mod = ((MenuData *)menu->context);
 	CullFaceMode cull_saved = r_cull_current();
 
 	draw_options_menu_bg(menu);
@@ -137,11 +122,13 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_push();
 	r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
 
-	for(int i = 0; i < mod->ecount; i++) {
-		PlayerMode *mode = plrmode_find(current_char, (ShotModeID)(uintptr_t)mod->entries[i].arg);
-		assert(mode != NULL);
+	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 
-		if(mod->cursor == i) {
+	for(ShotModeID shot = PLR_SHOT_A; shot < NUM_SHOT_MODES_PER_CHARACTER; shot++) {
+		PlayerMode *mode = plrmode_find(current_char, shot);
+		assume(mode != NULL);
+
+		if(shot == current_subshot) {
 			r_color4(0.9, 0.6, 0.2, 1);
 		} else {
 			r_color4(1, 1, 1, 1);
@@ -149,7 +136,7 @@ void draw_char_menu(MenuData *menu) {
 
 		text_draw(mode->name, &(TextParams) {
 			.align = ALIGN_CENTER,
-			.pos = { 0, 200+40*i },
+			.pos = { 0, 200 + 40 * (shot - PLR_SHOT_A) },
 			.shader = "text_default",
 		});
 	}
@@ -181,7 +168,6 @@ void draw_char_menu(MenuData *menu) {
 
 static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
-	MenuData *mod  = menu->context;
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 
 	if(type == TE_MENU_CURSOR_RIGHT) {
@@ -192,27 +178,24 @@ static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 		menu->cursor--;
 	} else if(type == TE_MENU_CURSOR_DOWN) {
 		play_ui_sound("generic_shot");
-		mod->cursor++;
+		menu->context = (void*)(SELECTED_SUBSHOT(menu) + 1);
 	} else if(type == TE_MENU_CURSOR_UP) {
 		play_ui_sound("generic_shot");
-		mod->cursor--;
+		menu->context = (void*)(SELECTED_SUBSHOT(menu) - 1);
 	} else if(type == TE_MENU_ACCEPT) {
 		play_ui_sound("shot_special1");
-		mod->selected = mod->cursor;
-		close_menu(mod);
 		menu->selected = menu->cursor;
 		close_menu(menu);
-
-		// XXX: This needs a better fix
-		set_shotmode(mod, mod->entries[mod->selected].arg);
 	} else if(type == TE_MENU_ABORT) {
 		play_ui_sound("hit");
 		close_menu(menu);
-		close_menu(mod);
 	}
 
 	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
-	mod->cursor = (mod->cursor % mod->ecount) + mod->ecount*(mod->cursor < 0);
+
+	intptr_t ss = SELECTED_SUBSHOT(menu);
+	ss = (ss % NUM_SHOT_MODES_PER_CHARACTER) + NUM_SHOT_MODES_PER_CHARACTER * (ss < 0);
+	menu->context = (void*)ss;
 
 	return false;
 }
@@ -222,10 +205,4 @@ static void char_menu_input(MenuData *menu) {
 		{ .proc = char_menu_input_handler, .arg = menu },
 		{ NULL }
 	}, EFLAG_MENU);
-}
-
-static void free_char_menu(MenuData *menu) {
-	MenuData *mod = menu->context;
-	destroy_menu(mod);
-	free(mod);
 }

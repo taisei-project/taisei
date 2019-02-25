@@ -33,12 +33,19 @@ typedef struct VideoMode {
 	int height;
 } VideoMode;
 
+typedef enum VideoBackend {
+	VIDEO_BACKEND_OTHER,
+	VIDEO_BACKEND_X11,
+	VIDEO_BACKEND_EMSCRIPTEN,
+} VideoBackend;
+
 typedef struct {
 	VideoMode *modes;
+	SDL_Window *window;
 	int mcount;
 	VideoMode intended;
 	VideoMode current;
-	SDL_Window *window;
+	VideoBackend backend;
 } Video;
 
 extern Video video;

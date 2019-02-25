@@ -10,8 +10,9 @@
 #define IGUARD_credits_h
 
 #include "taisei.h"
+#include "eventloop/eventloop.h"
 
-void credits_loop(void);
+void credits_enter(CallChain next);
 void credits_preload(void);
 
 #endif // IGUARD_credits_h

@@ -14,6 +14,6 @@
 #include "menu.h"
 #include "difficulty.h"
 
-void create_stgpract_menu(MenuData *m, Difficulty diff);
+MenuData* create_stgpract_menu(Difficulty diff);
 
 #endif // IGUARD_menu_stagepractice_h

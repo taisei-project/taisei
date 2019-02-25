@@ -111,35 +111,33 @@ static void update_saverpy_menu(MenuData *m) {
 	}
 }
 
-void create_saverpy_menu(MenuData *m) {
-	create_menu(m);
+static MenuData* create_saverpy_menu(void) {
+	MenuData *m = alloc_menu();
+
 	m->input = saverpy_menu_input;
 	m->draw = draw_saverpy_menu;
 	m->logic = update_saverpy_menu;
 	m->flags = MF_Transient;
 
 	add_menu_entry(m, "Yes", save_rpy, NULL);
-	add_menu_entry(m, "No", menu_commonaction_close, NULL);
+	add_menu_entry(m, "No", menu_action_close, NULL);
+
+	return m;
 }
 
-void ask_save_replay(void) {
+void ask_save_replay(CallChain next) {
 	assert(global.replay_stage != NULL);
 
 	switch(config_get_int(CONFIG_SAVE_RPY)) {
-		case 0: {
-			break;
-		}
-
-		case 1: {
+		case 1:
 			do_save_replay(&global.replay);
+			// fallthrough
+		case 0:
+			run_call_chain(&next, NULL);
 			break;
-		}
 
-		case 2: {
-			MenuData m;
-			create_saverpy_menu(&m);
-			menu_loop(&m);
+		case 2:
+			enter_menu(create_saverpy_menu(), next);
 			break;
-		}
 	}
 }

@@ -170,6 +170,9 @@ typedef complex max_align_t;
   #else
     #define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
   #endif
+#elif defined __EMSCRIPTEN__ && defined __clang__
+  // CMPLX from emscripten headers uses the clang-specific syntax without __extension__
+  #pragma clang diagnostic ignored "-Wcomplex-component-init"
 #endif
 
 /*

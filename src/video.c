@@ -220,13 +220,17 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			video_set_display_mode(w, h);
 			video_set_fullscreen(fs);
 			video_update_mode_settings();
-		} else {
+		} else if(video.backend == VIDEO_BACKEND_X11) {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
 			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
 			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
 			//
 			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
 			video_new_window(w, h, fs, resizable);
+			return;
+		} else {
+			SDL_SetWindowSize(video.window, w, h);
+			video_update_mode_settings();
 			return;
 		}
 	}
@@ -421,6 +425,8 @@ static void video_handle_resize(int w, int h) {
 
 	if(w < minw || h < minh) {
 		log_warn("Bad resize: %ix%i is too small!", w, h);
+		// FIXME: the video_new_window is actually a workaround for Wayland.
+		// I'm not sure if it's necessary for anything else.
 		video_new_window(video.intended.width, video.intended.height, false, video_is_resizable());
 		return;
 	}
@@ -477,7 +483,17 @@ void video_init(void) {
 	bool fullscreen_available = false;
 
 	video_init_sdl();
-	log_info("Using driver '%s'", SDL_GetCurrentVideoDriver());
+
+	const char *driver = SDL_GetCurrentVideoDriver();
+	log_info("Using driver '%s'", driver);
+
+	if(!strcmp(driver, "x11")) {
+		video.backend = VIDEO_BACKEND_X11;
+	} else if(!strcmp(driver, "emscripten")) {
+		video.backend = VIDEO_BACKEND_EMSCRIPTEN;
+	} else {
+		video.backend = VIDEO_BACKEND_OTHER;
+	}
 
 	r_init();
 

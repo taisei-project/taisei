@@ -13,7 +13,7 @@
 
 #include "menu.h"
 
-void create_main_menu(MenuData *m);
+MenuData* create_main_menu(void);
 void draw_main_menu_bg(MenuData *m);
 void draw_main_menu(MenuData *m);
 void main_menu_update_practice_menus(void);

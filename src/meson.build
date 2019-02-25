@@ -102,6 +102,7 @@ sse42_src = []
 
 subdir('audio')
 subdir('dialog')
+subdir('eventloop')
 subdir('menu')
 subdir('plrmodes')
 subdir('renderer')
@@ -132,6 +133,7 @@ configure_file(configuration : config, output : 'build_config.h')
 taisei_src += [
     audio_src,
     dialog_src,
+    eventloop_src,
     menu_src,
     plrmodes_src,
     renderer_src,

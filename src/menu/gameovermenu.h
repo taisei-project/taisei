@@ -13,6 +13,6 @@
 
 #include "menu.h"
 
-void create_gameover_menu(MenuData *);
+MenuData* create_gameover_menu(void);
 
 #endif // IGUARD_menu_gameovermenu_h

@@ -19,10 +19,11 @@ static void draw_stgpract_menu(MenuData *m) {
 	draw_menu_list(m, 100, 100, NULL);
 }
 
-void create_stgpract_menu(MenuData *m, Difficulty diff) {
+MenuData* create_stgpract_menu(Difficulty diff) {
 	char title[128];
 
-	create_menu(m);
+	MenuData *m = alloc_menu();
+
 	m->draw = draw_stgpract_menu;
 	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
@@ -45,9 +46,11 @@ void create_stgpract_menu(MenuData *m, Difficulty diff) {
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
 
 	while(!m->entries[m->cursor].action) {
 		++m->cursor;
 	}
+
+	return m;
 }

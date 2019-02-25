@@ -803,45 +803,87 @@ int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
 	return -1;
 }
 
-void replay_play(Replay *rpy, int firstidx) {
+typedef struct ReplayContext {
+	CallChain cc;
+	int stage_idx;
+} ReplayContext;
+
+static void replay_do_cleanup(CallChainResult ccr);
+static void replay_do_play(CallChainResult ccr);
+static void replay_do_post_play(CallChainResult ccr);
+
+void replay_play(Replay *rpy, int firstidx, CallChain next) {
 	if(rpy != &global.replay) {
 		replay_copy(&global.replay, rpy, true);
 	}
 
 	if(firstidx >= global.replay.numstages || firstidx < 0) {
 		log_error("No stage #%i in the replay", firstidx);
+		replay_destroy(&global.replay);
+		run_call_chain(&next, NULL);
 		return;
 	}
 
 	global.replaymode = REPLAY_PLAY;
 
-	for(int i = firstidx; i < global.replay.numstages; ++i) {
-		ReplayStage *rstg = global.replay_stage = global.replay.stages+i;
-		StageInfo *gstg = stage_get(rstg->stage);
+	ReplayContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->cc = next;
+	ctx->stage_idx = firstidx;
+
+	replay_do_play(CALLCHAIN_RESULT(ctx, NULL));
+}
+
+static void replay_do_play(CallChainResult ccr) {
+	ReplayContext *ctx = ccr.ctx;
+	ReplayStage *rstg = NULL;
+	StageInfo *gstg = NULL;
+
+	while(ctx->stage_idx < global.replay.numstages) {
+		rstg = global.replay_stage = global.replay.stages + ctx->stage_idx++;
+		gstg = stage_get(rstg->stage);
 
 		if(!gstg) {
-			log_warn("Invalid stage %X in replay at %i skipped.", rstg->stage, i);
+			log_warn("Invalid stage %X in replay at %i skipped.", rstg->stage, ctx->stage_idx);
 			continue;
 		}
 
-		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
-		stage_loop(gstg);
-
-		if(global.gameover == GAMEOVER_ABORT) {
-			break;
-		}
-
-		if(global.gameover == GAMEOVER_RESTART) {
-			rstg->desynced = false;
-			--i;
-		}
-
-		global.gameover = 0;
+		break;
 	}
+
+	if(gstg == NULL) {
+		replay_do_cleanup(ccr);
+	} else {
+		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
+		stage_enter(gstg, CALLCHAIN(replay_do_post_play, ctx));
+	}
+}
+
+static void replay_do_post_play(CallChainResult ccr) {
+	ReplayContext *ctx = ccr.ctx;
+
+	if(global.gameover == GAMEOVER_ABORT) {
+		replay_do_cleanup(ccr);
+		return;
+	}
+
+	if(global.gameover == GAMEOVER_RESTART) {
+		--ctx->stage_idx;
+	}
+
+	global.gameover = 0;
+	replay_do_play(ccr);
+}
+
+static void replay_do_cleanup(CallChainResult ccr) {
+	ReplayContext *ctx = ccr.ctx;
 
 	global.gameover = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
 	global.replay_stage = NULL;
 	free_resources(false);
+
+	CallChain cc = ctx->cc;
+	free(ctx);
+	run_call_chain(&cc, NULL);
 }

@@ -144,6 +144,9 @@ static void log_system_specs(void) {
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
 }
 
+static int main_singlestg(CLIAction *cli);
+static int main_replay(CLIAction *cli, Replay *rpy, int idx);
+
 int main(int argc, char **argv) {
 	setlocale(LC_ALL, "C");
 
@@ -182,6 +185,7 @@ int main(int argc, char **argv) {
 
 		if(replay_idx < 0) {
 			free_cli_action(&a);
+			replay_destroy(&replay);
 			return 1;
 		}
 
@@ -226,7 +230,7 @@ int main(int argc, char **argv) {
 
 #ifdef __EMSCRIPTEN__
 	env_set("TAISEI_NOASYNC", true, true);
-	env_set("TAISEI_NOPRELOAD", true, true);
+	// env_set("TAISEI_NOPRELOAD", true, true);
 #endif
 
 	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
@@ -257,13 +261,12 @@ int main(int argc, char **argv) {
 	atexit(taisei_shutdown);
 
 	if(a.type == CLI_PlayReplay || a.type == CLI_VerifyReplay) {
-		replay_play(&replay, replay_idx);
-		replay_destroy(&replay);
-		return 0;
+		return main_replay(&a, &replay, replay_idx);
 	}
 
 	if(a.type == CLI_Credits) {
-		credits_loop();
+		credits_enter(NO_CALLCHAIN);
+		eventloop_run();
 		return 0;
 	}
 
@@ -271,47 +274,87 @@ int main(int argc, char **argv) {
 	log_warn("Compiled with DEBUG flag!");
 
 	if(a.type == CLI_SelectStage) {
-		log_info("Entering stage skip mode: Stage %X", a.stageid);
-		StageInfo* stg = stage_get(a.stageid);
-		assert(stg); // properly checked before this
-
-		global.diff = stg->difficulty;
-		global.is_practice_mode = (stg->type != STAGE_EXTRA);
-
-		if(a.diff) {
-			global.diff = a.diff;
-			log_info("Setting difficulty to %s", difficulty_name(global.diff));
-		} else if(!global.diff) {
-			global.diff = D_Easy;
-		}
-
-		log_info("Entering %s", stg->title);
-
-		do {
-			global.replay_stage = NULL;
-			replay_init(&global.replay);
-			global.gameover = 0;
-			player_init(&global.plr);
-
-			if(a.plrmode) {
-				global.plr.mode = a.plrmode;
-			}
-
-			stage_loop(stg);
-
-			if(global.gameover == GAMEOVER_RESTART) {
-				replay_destroy(&global.replay);
-			}
-		} while(global.gameover == GAMEOVER_RESTART);
-
-		ask_save_replay();
-		return 0;
+		return main_singlestg(&a);
 	}
 #endif
 
-	MenuData menu;
-	create_main_menu(&menu);
-	menu_loop(&menu);
+	enter_menu(create_main_menu(), NO_CALLCHAIN);
+	eventloop_run();
+	return 0;
+}
 
+typedef struct SingleStageContext {
+	PlayerMode *plrmode;
+	StageInfo *stg;
+} SingleStageContext;
+
+static void main_singlestg_begin_game(CallChainResult ccr);
+static void main_singlestg_end_game(CallChainResult ccr);
+static void main_singlestg_cleanup(CallChainResult ccr);
+
+static void main_singlestg_begin_game(CallChainResult ccr) {
+	SingleStageContext *ctx = ccr.ctx;
+
+	global.replay_stage = NULL;
+	replay_init(&global.replay);
+	global.gameover = 0;
+	player_init(&global.plr);
+
+	if(ctx->plrmode) {
+		global.plr.mode = ctx->plrmode;
+	}
+
+	stage_enter(ctx->stg, CALLCHAIN(main_singlestg_end_game, ctx));
+}
+
+static void main_singlestg_end_game(CallChainResult ccr) {
+	if(global.gameover == GAMEOVER_RESTART) {
+		replay_destroy(&global.replay);
+		main_singlestg_begin_game(ccr);
+	} else {
+		ask_save_replay(CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
+	}
+}
+
+static void main_singlestg_cleanup(CallChainResult ccr) {
+	replay_destroy(&global.replay);
+	free(ccr.ctx);
+}
+
+static int main_singlestg(CLIAction *a) {
+	log_info("Entering stage skip mode: Stage %X", a->stageid);
+
+	StageInfo* stg = stage_get(a->stageid);
+	assert(stg); // properly checked before this
+
+	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->plrmode = a->plrmode;
+	ctx->stg = stg;
+
+	global.diff = stg->difficulty;
+	global.is_practice_mode = (stg->type != STAGE_EXTRA);
+
+	if(a->diff) {
+		global.diff = a->diff;
+		log_info("Setting difficulty to %s", difficulty_name(global.diff));
+	} else if(!global.diff) {
+		global.diff = D_Easy;
+	}
+
+	log_info("Entering %s", stg->title);
+
+	main_singlestg_begin_game(CALLCHAIN_RESULT(ctx, NULL));
+	eventloop_run();
+	return 0;
+}
+
+static void main_replay_cleanup(CallChainResult ccr) {
+	replay_destroy(&global.replay);
+}
+
+int main_replay(CLIAction *cli, Replay *rpy, int idx) {
+	replay_play(rpy, idx, CALLCHAIN(main_replay_cleanup, NULL));
+	replay_destroy(rpy);
+	eventloop_run();
 	return 0;
 }

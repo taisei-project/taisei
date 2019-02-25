@@ -13,7 +13,7 @@
 
 #include "menu.h"
 
-void create_char_menu(MenuData *m);
+MenuData* create_char_menu(void);
 void draw_char_menu(MenuData *menu);
 
 #endif // IGUARD_menu_charselect_h
