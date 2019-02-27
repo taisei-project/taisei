@@ -230,6 +230,7 @@ int main(int argc, char **argv) {
 
 #ifdef __EMSCRIPTEN__
 	env_set("TAISEI_NOASYNC", true, true);
+	env_set("TAISEI_NOUNLOAD", true, true);
 	// env_set("TAISEI_NOPRELOAD", true, true);
 #endif
 

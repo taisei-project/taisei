@@ -26,6 +26,8 @@ typedef struct GLSLParseState {
 	ShaderSource *src;
 	SDL_RWops *dest;
 	bool version_defined;
+	char *linebuf;
+	size_t linebuf_size;
 } GLSLParseState;
 
 typedef struct GLSLFileParseState {
@@ -158,14 +160,13 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		return false;
 	}
 
-	// TODO: Remove this dumb limitation; also handle comments and line continuations properly.
-	char linebuf[1024];
+	// TODO: Handle comments and line continuations properly.
 
 	++fstate->lineno;
 	glsl_write_lineno(fstate);
 
-	while(SDL_RWgets(stream, linebuf, sizeof(linebuf))) {
-		char *p = linebuf;
+	while(SDL_RWgets_realloc(stream, &fstate->global->linebuf, &fstate->global->linebuf_size)) {
+		char *p = fstate->global->linebuf;
 		skip_space(&p);
 
 		if(check_directive(p, INCLUDE_DIRECTIVE)) {
@@ -232,7 +233,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 					);
 					fstate->global->src->lang.glsl.version = opt_v;
 				} else {
-					log_warn(
+					log_debug(
 						"%s:%d: source overrides version to %s (default is %s)",
 						fstate->path, fstate->lineno, buf_shader, buf_opt
 					);
@@ -250,7 +251,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 				return false;
 			}
 
-			SDL_RWwrite(dest, linebuf, 1, strlen(linebuf));
+			SDL_RWwrite(dest, fstate->global->linebuf, 1, strlen(fstate->global->linebuf));
 		}
 
 		fstate->lineno++;
@@ -276,12 +277,15 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 	pstate.dest = out_buf;
 	pstate.src = out;
 	pstate.options = options;
+	pstate.linebuf_size = 128;
+	pstate.linebuf = calloc(1, pstate.linebuf_size);
 
 	GLSLFileParseState fstate = { 0 };
 	fstate.global = &pstate;
 	fstate.path = path;
 
 	bool result = glsl_process_file(&fstate);
+	free(pstate.linebuf);
 
 	if(result) {
 		SDL_WriteU8(out_buf, 0);

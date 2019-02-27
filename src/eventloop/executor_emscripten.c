@@ -58,5 +58,3 @@ void eventloop_run(void) {
 		em_handle_resize_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
 	});
 }
-
-#include "eventloop_private.h"

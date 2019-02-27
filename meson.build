@@ -90,7 +90,7 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-static = get_option('static')
+static = get_option('static') or (host_machine.system() == 'emscripten')
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static)
@@ -130,9 +130,14 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-package_data = get_option('package_data')
-enable_zip = get_option('enable_zip')
-package_data = (package_data == 'auto' ? enable_zip : package_data == 'true')
+if host_machine.system() == 'emscripten'
+    package_data = false
+    enable_zip = false
+else
+    package_data = get_option('package_data')
+    enable_zip = get_option('enable_zip')
+    package_data = (package_data == 'auto' ? enable_zip : package_data == 'true')
+endif
 
 if enable_zip
     if not dep_zip.found()
@@ -163,6 +168,9 @@ config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', cc.compiles('#include <stddef.h>
 
 prefer_relpath_systems = [
     'windows',
+]
+
+force_relpath_systems = [
     'emscripten',
 ]
 
@@ -183,7 +191,9 @@ if macos_app_bundle
 else
     datadir = get_option('datadir')
 
-    if get_option('install_relative') == 'auto'
+    if force_relpath_systems.contains(host_machine.system())
+        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
+    elif get_option('install_relative') == 'auto'
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', prefer_relpath_systems.contains(host_machine.system()))
     else
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')

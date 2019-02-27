@@ -62,6 +62,36 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	return buf;
 }
 
+char* SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) {
+	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
+	assert(end >= ptr);
+
+	while((c = SDL_ReadU8(rwops))) {
+		*ptr++ = c;
+
+		if(ptr > end) {
+			ptrdiff_t ofs = ptr - *buf;
+			*bufsize *= 2;
+			*buf = realloc(*buf, *bufsize);
+			end = *buf + *bufsize - 1;
+			ptr = *buf + ofs;
+			*end = 0;
+		}
+
+		if(c == '\n') {
+			break;
+		}
+	}
+
+	if(ptr == *buf)
+		return NULL;
+
+	assert(ptr <= end);
+	*ptr = 0;
+
+	return *buf;
+}
+
 size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);

@@ -197,7 +197,7 @@ const char* vfs_dir_read(VFSDir *dir) {
 	return vfs_node_iter(dir->node, &dir->opaque);
 }
 
-char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const char**, const char**), bool (*filter)(const char*)) {
+char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const void*, const void*), bool (*filter)(const char*)) {
 	char **results = NULL;
 	VFSDir *dir = vfs_dir_open(path);
 
@@ -225,7 +225,7 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
 	vfs_dir_close(dir);
 
 	if(*out_size) {
-		qsort(results, *out_size, sizeof(char*), (int (*)(const void*, const void*)) compare);
+		qsort(results, *out_size, sizeof(char*), compare);
 	}
 
 	return results;
@@ -243,12 +243,12 @@ void vfs_dir_list_free(char **list, size_t size) {
 	free(list);
 }
 
-int vfs_dir_list_order_ascending(const char **a, const char **b) {
-	return strcmp(*a, *b);
+int vfs_dir_list_order_ascending(const void *a, const void *b) {
+	return strcmp(*(char**)a, *(char**)b);
 }
 
-int vfs_dir_list_order_descending(const char **a, const char **b) {
-	return strcmp(*b, *a);
+int vfs_dir_list_order_descending(const void *a, const void *b) {
+	return strcmp(*(char**)b, *(char**)a);
 }
 
 void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg), void *arg) {

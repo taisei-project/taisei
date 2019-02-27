@@ -150,17 +150,79 @@ taisei_deps += [
     util_deps,
 ]
 
-if macos_app_bundle
-    taisei_exe_name = 'Taisei'
-else
-    taisei_exe_name = 'taisei'
-endif
+taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
-taisei_exe = executable(taisei_exe_name, taisei_src, version_deps,
-    dependencies : taisei_deps,
-    c_args : taisei_c_args,
-    c_pch : 'pch/taisei_pch.h',
-    gui_app : not get_option('win_console'),
-    install : true,
-    install_dir : bindir,
-)
+if host_machine.system() == 'emscripten'
+    em_debug = is_developer_build
+    em_link_outputs = []
+    em_link_output_suffixes = ['html', 'wasm', 'js', 'data']  # first element is significant
+    em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
+    em_link_args = [
+        '-s', 'WASM=1',
+        '-s', 'USE_WEBGL2=1',
+        '-s', 'ENVIRONMENT=web',
+        '-s', 'MAIN_MODULE=2',
+        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',  # TODO: fix code that breaks without this; this includes some dependencies
+        '-s', 'GL_POOL_TEMP_BUFFERS=0',
+        '--preload-file', '@0@@/@1@'.format(emfs_target_dir, em_data_dir),
+        '--preload-file', '@0@@/@1@/@2@'.format(gamecontrollerdb_path, em_data_dir, gamecontrollerdb_name),
+    ]
+
+    if em_debug
+        em_link_output_suffixes += ['wast']
+        em_link_args += [
+            '--emrun',
+            '-s', 'ASSERTIONS=2',
+            '-s', 'GL_DEBUG=1',
+            '-O0',
+            '-g3',
+            '--profiling-funcs',
+        ]
+    else
+        em_link_args += [
+            '-s', 'ASSERTIONS=0',
+            '-Os',
+            '-g0',
+        ]
+    endif
+
+    foreach suffix : em_link_output_suffixes
+        em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
+    endforeach
+
+    taisei = executable('@0@.bc'.format(taisei_basename), taisei_src, version_deps,
+        dependencies : taisei_deps,
+        depend_files : [gamecontrollerdb_path],
+        c_args : taisei_c_args,
+        install : false,
+    )
+
+    taisei_html = custom_target(em_link_outputs[0],
+        # NOTE: Unfortunately we can't just put 'taisei' directly into the command array.
+        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
+        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
+
+        command : [
+            cc.cmd_array(),
+            taisei.full_path(),
+            em_link_args,
+            '-o', '@OUTPUT0@'
+        ],
+        build_by_default : true,
+        depends : [taisei, em_filesystem],
+        output : em_link_outputs,
+        install : true,
+        install_dir : bindir,
+    )
+else
+    taisei = executable(taisei_basename, taisei_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        c_pch : 'pch/taisei_pch.h',
+        gui_app : not get_option('win_console'),
+        install : true,
+        install_dir : bindir,
+    )
+endif
