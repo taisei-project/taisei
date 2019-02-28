@@ -62,6 +62,10 @@ void kill_menu(MenuData *menu) {
 }
 
 static void close_menu_finish(MenuData *menu) {
+	// This may happen with MF_AlwaysProcessInput menus, so make absolutely sure we
+	// never run the call chain with menu->state == MS_Dead more than once.
+	bool was_dead = (menu->state == MS_Dead);
+
 	menu->state = MS_Dead;
 
 	if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
@@ -72,7 +76,9 @@ static void close_menu_finish(MenuData *menu) {
 		menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
 	}
 
-	run_call_chain(&menu->cc, menu);
+	if(!was_dead) {
+		run_call_chain(&menu->cc, menu);
+	}
 }
 
 void close_menu(MenuData *menu) {
@@ -161,6 +167,10 @@ void menu_no_input(MenuData *menu) {
 static LogicFrameAction menu_logic_frame(void *arg) {
 	MenuData *menu = arg;
 
+	if(menu->state == MS_Dead) {
+		return LFRAME_STOP;
+	}
+
 	if(menu->logic) {
 		menu->logic(menu);
 	}
@@ -176,7 +186,7 @@ static LogicFrameAction menu_logic_frame(void *arg) {
 
 	update_transition();
 
-	return menu->state == MS_Dead ? LFRAME_STOP : LFRAME_WAIT;
+	return LFRAME_WAIT;
 }
 
 static RenderFrameAction menu_render_frame(void *arg) {

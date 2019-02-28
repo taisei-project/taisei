@@ -26,6 +26,8 @@ typedef LogicFrameAction (*LogicFrameFunc)(void *context);
 typedef RenderFrameAction (*RenderFrameFunc)(void *context);
 typedef void (*PostLoopFunc)(void *context);
 
+#define DEBUG_CALLCHAIN
+
 #ifdef DEBUG_CALLCHAIN
 	#include "util/debug.h"
 	#include "log.h"
