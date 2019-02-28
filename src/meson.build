@@ -164,7 +164,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'MAIN_MODULE=2',
         '-s', 'TOTAL_MEMORY=268435456',
         '-s', 'ALLOW_MEMORY_GROWTH=1',
-        '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',  # TODO: fix code that breaks without this; this includes some dependencies
+        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',  # Try enabling this if unpatched Freetype crashes
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
         '--preload-file', '@0@@/@1@'.format(emfs_target_dir, em_data_dir),
         '--preload-file', '@0@@/@1@/@2@'.format(gamecontrollerdb_path, em_data_dir, gamecontrollerdb_name),

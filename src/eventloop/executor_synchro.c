@@ -13,43 +13,6 @@
 #include "framerate.h"
 #include "global.h"
 
-typedef struct FrameTimes {
-	hrtime_t target;
-	hrtime_t start;
-	hrtime_t next;
-} FrameTimes;
-
-static LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
-	LogicFrameAction lframe_action;
-	uint cnt = 0;
-
-	do {
-		lframe_action = run_logic_frame(*pframe);
-
-		while(evloop.stack_ptr != *pframe) {
-			*pframe = evloop.stack_ptr;
-			lframe_action = run_logic_frame(*pframe);
-			cnt = UINT_MAX; // break out of the outer loop
-		}
-	} while(
-		lframe_action == LFRAME_SKIP &&
-		++cnt < config_get_int(CONFIG_SKIP_SPEED) &&
-		ftimes->next > time_get() - ftimes->target
-	);
-
-	if(lframe_action == LFRAME_STOP) {
-		eventloop_leave();
-		*pframe = evloop.stack_ptr;
-
-		if(*pframe == NULL) {
-			return LFRAME_STOP;
-		}
-	}
-
-	fpscounter_update(&global.fps.logic);
-	return lframe_action;
-}
-
 void eventloop_run(void) {
 	assert(is_main_thread());
 

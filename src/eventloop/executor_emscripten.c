@@ -13,34 +13,35 @@
 #include "global.h"
 #include <emscripten.h>
 
+static FrameTimes frame_times;
+
 static bool em_handle_resize_event(SDL_Event *event, void *arg);
 
 static void em_loop_callback(void) {
-	hrtime_t frame_start_time = time_get();
-	global.fps.busy.last_update_time = frame_start_time;
-	LogicFrameAction lframe_action = LFRAME_WAIT;
-	RenderFrameAction rframe_action = RFRAME_SWAP;
-
 	LoopFrame *frame = evloop.stack_ptr;
-	lframe_action = run_logic_frame(frame);
 
-	while(frame != evloop.stack_ptr) {
-		frame = evloop.stack_ptr;
-		lframe_action = run_logic_frame(frame);
+	if(!frame) {
+		events_unregister_handler(em_handle_resize_event);
+		emscripten_cancel_main_loop();
+		return;
 	}
 
-	fpscounter_update(&global.fps.logic);
-	rframe_action = run_render_frame(frame);
-
-	if(lframe_action == LFRAME_STOP) {
-		eventloop_leave();
-
-		if(evloop.stack_ptr == NULL) {
-			events_unregister_handler(em_handle_resize_event);
-			emscripten_cancel_main_loop();
-		}
+	if(time_get() < frame_times.next) {
+		return;
 	}
 
+	frame_times.start = time_get();
+	frame_times.target = frame->frametime;
+	frame_times.next += frame_times.target;
+	global.fps.busy.last_update_time = frame_times.start;
+
+	LogicFrameAction lframe_action = handle_logic(&frame, &frame_times);
+
+	if(!frame || lframe_action == LFRAME_STOP) {
+		return;
+	}
+
+	run_render_frame(frame);
 	fpscounter_update(&global.fps.busy);
 }
 
@@ -52,6 +53,7 @@ static bool em_handle_resize_event(SDL_Event *event, void *arg) {
 }
 
 void eventloop_run(void) {
+	frame_times.next = time_get();
 	emscripten_set_main_loop(em_loop_callback, 0, false);
 	emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
 	events_register_handler(&(EventHandler) {

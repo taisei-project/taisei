@@ -32,9 +32,16 @@ extern struct evloop_s {
 	LoopFrame *stack_ptr;
 } evloop;
 
+typedef struct FrameTimes {
+	hrtime_t target;
+	hrtime_t start;
+	hrtime_t next;
+} FrameTimes;
+
 void eventloop_leave(void);
 
 LogicFrameAction run_logic_frame(LoopFrame *frame);
+LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes);
 RenderFrameAction run_render_frame(LoopFrame *frame);
 
 #endif // IGUARD_eventloop_eventloop_private_h
