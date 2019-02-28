@@ -41,9 +41,9 @@ typedef enum LogLevel {
 
 #ifndef LOG_DEFAULT_LEVELS_FILE
 	#ifdef __EMSCRIPTEN__
-		#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
-	#else
 		#define LOG_DEFAULT_LEVELS_FILE LOG_NONE
+	#else
+		#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
 	#endif
 #endif
 
