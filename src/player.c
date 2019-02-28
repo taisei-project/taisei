@@ -1347,12 +1347,11 @@ void player_add_bombs(Player *plr, int bombs) {
 }
 
 void player_add_points(Player *plr, uint points) {
-	attr_unused uint old = plr->points;
 	plr->points += points;
 
 	while(plr->points >= plr->extralife_threshold) {
-		player_add_lives(plr, 1);
 		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
+		player_add_lives(plr, 1);
 	}
 }
 
