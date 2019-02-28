@@ -333,7 +333,20 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		uni.cache.pending = calloc(uni.array_size, uni.elem_size);
 		uni.cache.update_first_idx = uni.array_size;
 
-		type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
+		if(glext.version.is_webgl) {
+			// Some browsers are pendatic about getting a null in GLctx.getUniform(),
+			// so we'd have to be very careful and query each array index with
+			// glGetUniformLocation in order to avoid an exception. Which is too much
+			// hassle, so instead here's a hack that fills initial cache state with
+			// some garbage that we'll not likely want to actually set.
+			//
+			// TODO: Might want to fix this properly if this issue ever actually
+			// affects cases where we write to an array with an offset. But that's
+			// probably not going to happen.
+			memset(uni.cache.commited, 0xf0, uni.array_size * uni.elem_size);
+		} else {
+			type_to_accessors[uni.type].getter(&uni, size, uni.cache.commited);
+		}
 
 		Uniform *new_uni = memdup(&uni, sizeof(uni));
 

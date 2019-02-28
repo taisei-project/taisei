@@ -71,6 +71,7 @@ struct glext_s {
 		char minor;
 		bool is_es;
 		bool is_ANGLE;
+		bool is_webgl;
 	} version;
 
 	ext_flag_t base_instance;

@@ -503,6 +503,7 @@ void glcommon_check_extensions(void) {
 
 	if(glext.version.is_es) {
 		glext.version.is_ANGLE = strstr(glv, "(ANGLE ");
+		glext.version.is_webgl = strstr(glv, "(WebGL ");
 	}
 
 	log_info("OpenGL version: %s", glv);
