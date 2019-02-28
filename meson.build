@@ -34,6 +34,7 @@ taisei_c_args = [
     '-Wabsolute-value',
     '-Wcast-align',
     '-Wcast-align=strict',
+    '-Wcast-function-type',
     '-Wclobbered',
     '-Wduplicated-branches',
     '-Wduplicated-cond',
