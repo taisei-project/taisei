@@ -402,11 +402,16 @@ static int powersurge_charge_particle(Projectile *p, int t) {
 }
 
 static void player_powersurge_logic(Player *plr) {
+	if(global.dialog) {
+		return;
+	}
+
 	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
 	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
 
 	if(stage_is_cleared()) {
 		player_cancel_powersurge(plr);
+		return;
 	}
 
 	if(plr->powersurge.positive <= plr->powersurge.negative) {
@@ -971,6 +976,11 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 					break;
 
 				case KEY_SPECIAL:
+					if(global.dialog) {
+						useful = false;
+						break;
+					}
+
 					useful = player_powersurge(plr);
 
 					if(!useful/* && plr->iddqd*/) {
