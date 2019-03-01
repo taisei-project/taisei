@@ -799,6 +799,10 @@ void cirno_benchmark(Boss* b, int t) {
 			.flags = PFLAG_NOGRAZE,
 		);
 
+		if(frand() < 0.1) {
+			p->flags &= ~PFLAG_NOGRAZE;
+		}
+
 		if(t > 700 && frand() > 0.5)
 			projectile_set_prototype(p, pp_plainball);
 
