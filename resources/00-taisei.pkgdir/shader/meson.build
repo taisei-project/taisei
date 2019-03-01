@@ -179,6 +179,8 @@ if validate_glsl != 'false'
         spvc_command = find_program('spirv-cross', required : true)
         glslc_args += ['-Os', '-g']
     endif
+else
+    validate_glsl = false
 endif
 
 # @begin validate
