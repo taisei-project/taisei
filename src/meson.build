@@ -153,38 +153,50 @@ taisei_deps += [
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
 if host_machine.system() == 'emscripten'
-    em_debug = is_developer_build
+    em_debug = get_option('debug')
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js', 'data']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
+    em_pgo = (get_option('b_pgo') == 'off' ? '0' : '1')
     em_link_args = [
-        '-s', 'WASM=1',
-        '-s', 'USE_WEBGL2=1',
-        '-s', 'ENVIRONMENT=web',
-        '-s', 'MAIN_MODULE=2',
-        '-s', 'TOTAL_MEMORY=268435456',
-        '-s', 'ALLOW_MEMORY_GROWTH=1',
-        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',  # Try enabling this if unpatched Freetype crashes
-        '-s', 'GL_POOL_TEMP_BUFFERS=0',
+        '--pre-js', em_preamble,
         '--preload-file', '@0@@/@1@'.format(emfs_target_dir, em_data_dir),
         '--preload-file', '@0@@/@1@/@2@'.format(gamecontrollerdb_path, em_data_dir, gamecontrollerdb_name),
+        '--shell-file', em_shell,
+        '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-s', 'ENVIRONMENT=web',
+        '-s', 'ERROR_ON_MISSING_LIBRARIES=0',
+        '-s', 'EXIT_RUNTIME=0',
+        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'EXPORT_NAME=Taisei',
+        '-s', 'GL_POOL_TEMP_BUFFERS=0',
+        '-s', 'MAIN_MODULE=2',
+        '-s', 'MODULARIZE=0',
+        '-s', 'PGO=@0@'.format(em_pgo),
+        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'USE_WEBGL2=1',
+        '-s', 'WASM=1',
+
+        # Try enabling this if unpatched Freetype crashes
+        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
 
     if em_debug
         em_link_output_suffixes += ['wast']
         em_link_args += [
             '--emrun',
-            '-s', 'ASSERTIONS=2',
-            '-s', 'GL_DEBUG=1',
+            '--profiling',
             '-O0',
             '-g3',
-            '--profiling-funcs',
+            '-s', 'ASSERTIONS=2',
+            '-s', 'GL_DEBUG=1',
         ]
     else
         em_link_args += [
-            '-s', 'ASSERTIONS=0',
-            '-Os',
+            '--llvm-lto', (get_option('b_lto') ? '3' : '0'),
+            '-O@0@'.format(get_option('optimization')),
             '-g0',
+            '-s', 'ASSERTIONS=0',
         ]
     endif
 
@@ -194,7 +206,6 @@ if host_machine.system() == 'emscripten'
 
     taisei = executable('@0@.bc'.format(taisei_basename), taisei_src, version_deps,
         dependencies : taisei_deps,
-        depend_files : [gamecontrollerdb_path],
         c_args : taisei_c_args,
         install : false,
     )
@@ -212,6 +223,7 @@ if host_machine.system() == 'emscripten'
         ],
         build_by_default : true,
         depends : [taisei, em_filesystem],
+        depend_files : [gamecontrollerdb_path],
         output : em_link_outputs,
         install : true,
         install_dir : bindir,

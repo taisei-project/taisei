@@ -200,9 +200,13 @@ typedef complex max_align_t;
 #define attr_sentinel \
 	__attribute__ ((sentinel))
 
-// Identifier is meant to be possibly unused.
+// Symbol is meant to be possibly unused.
 #define attr_unused \
 	__attribute__ ((unused))
+
+// Symbol should be emitted even if it appears to be unused.
+#define attr_used \
+	__attribute__ ((used))
 
 // Function or type is deprecated and should not be used.
 #define attr_deprecated(msg) \

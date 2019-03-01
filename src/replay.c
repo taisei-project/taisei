@@ -662,6 +662,7 @@ bool replay_save(Replay *rpy, const char *name) {
 
 	bool result = replay_write(rpy, file, REPLAY_STRUCT_VERSION_WRITE);
 	SDL_RWclose(file);
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 	return result;
 }
 

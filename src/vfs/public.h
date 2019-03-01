@@ -17,6 +17,7 @@
 #include "union_public.h"
 #include "zipfile_public.h"
 #include "readonly_wrapper_public.h"
+#include "eventloop/eventloop.h"
 
 typedef struct VFSInfo {
 	uchar error       : 1;
@@ -32,6 +33,11 @@ typedef enum VFSOpenMode {
 	VFS_MODE_WRITE = 2,
 	VFS_MODE_SEEKABLE  = 4,
 } VFSOpenMode;
+
+typedef enum VFSSyncMode {
+	VFS_SYNC_LOAD  = 1,
+	VFS_SYNC_STORE = 0,
+} VFSSyncMode;
 
 #define VFS_MODE_RWMASK (VFS_MODE_READ | VFS_MODE_WRITE)
 
@@ -65,5 +71,7 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 void vfs_init(void);
 void vfs_shutdown(void);
 const char* vfs_get_error(void) attr_returns_nonnull;
+
+void vfs_sync(VFSSyncMode mode, CallChain next);
 
 #endif // IGUARD_vfs_public_h

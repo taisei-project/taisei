@@ -286,6 +286,7 @@ endif
 version_deps = []
 
 subdir('misc')
+subdir('emscripten')
 subdir('external')
 subdir('resources')
 subdir('doc')

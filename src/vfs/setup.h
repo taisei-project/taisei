@@ -11,8 +11,8 @@
 
 #include "taisei.h"
 
-#include "util.h"
+#include "public.h"
 
-void vfs_setup(bool silent);
+void vfs_setup(CallChain onready);
 
 #endif // IGUARD_vfs_setup_h

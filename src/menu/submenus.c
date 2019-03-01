@@ -18,8 +18,16 @@
 #include "global.h"
 #include "submenus.h"
 
+static void on_leave_options(CallChainResult ccr) {
+	MenuData *m = ccr.result;
+
+	if(m->state == MS_Dead) {
+		taisei_commit_persistent_data();
+	}
+}
+
 void menu_action_enter_options(MenuData *menu, void *arg) {
-	enter_menu(create_options_menu(), NO_CALLCHAIN);
+	enter_menu(create_options_menu(), CALLCHAIN(on_leave_options, NULL));
 }
 
 void menu_action_enter_stagemenu(MenuData *menu, void *arg) {

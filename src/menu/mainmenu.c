@@ -109,7 +109,9 @@ MenuData* create_main_menu(void) {
 #endif
 	add_menu_entry(m, "Replays", menu_action_enter_replayview, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
+#ifndef __EMSCRIPTEN__
 	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+#endif
 
 	stage_practice_entry = m->entries + 2;
 	spell_practice_entry = m->entries + 3;

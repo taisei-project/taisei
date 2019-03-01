@@ -872,6 +872,7 @@ void stage_end_loop(void* ctx) {
 	ent_shutdown();
 	stage_objpools_free();
 	stop_sounds();
+	taisei_commit_persistent_data();
 
 	if(taisei_quit_requested()) {
 		global.gameover = GAMEOVER_ABORT;
