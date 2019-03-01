@@ -63,11 +63,41 @@ static void update_main_menu(MenuData *menu) {
 	}
 }
 
+static bool main_menu_input_handler(SDL_Event *event, void *arg) {
+	MenuData *m = arg;
+	TaiseiEvent te = TAISEI_EVENT(event->type);
+	static hrtime_t last_abort_time = 0;
+
+	if(te == TE_MENU_ABORT) {
+		play_ui_sound("hit");
+		m->cursor = m->ecount - 1;
+		hrtime_t t = time_get();
+
+		if(t - last_abort_time < HRTIME_RESOLUTION/5 && last_abort_time > 0) {
+			m->selected = m->cursor;
+			close_menu(m);
+		}
+
+		last_abort_time = t;
+		return true;
+	}
+
+	return menu_input_handler(event, arg);
+}
+
+static void main_menu_input(MenuData *m) {
+	events_poll((EventHandler[]){
+		{ .proc = main_menu_input_handler, .arg = m },
+		{ NULL }
+	}, EFLAG_MENU);
+}
+
 void create_main_menu(MenuData *m) {
 	create_menu(m);
 	m->draw = draw_main_menu;
 	m->logic = update_main_menu;
 	m->begin = begin_main_menu;
+	m->input = main_menu_input;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
