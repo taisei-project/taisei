@@ -20,6 +20,8 @@
 	#define ENEMY_DEBUG
 #endif
 
+#define ENEMY_HURT_RADIUS 7
+
 typedef struct Enemy Enemy;
 typedef LIST_ANCHOR(Enemy) EnemyList;
 typedef int (*EnemyLogicRule)(struct Enemy*, int t);

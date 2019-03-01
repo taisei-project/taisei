@@ -18,6 +18,8 @@
 #include "projectile.h"
 #include "entity.h"
 
+#define BOSS_HURT_RADIUS 16
+
 enum {
 	ATTACK_START_DELAY = 60,
 	ATTACK_START_DELAY_EXTRA = 150,

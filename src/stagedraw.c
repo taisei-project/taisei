@@ -444,13 +444,33 @@ static void stage_draw_collision_areas(void) {
 		});
 	}
 
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(e->hp > ENEMY_IMMUNE && e->alpha >= 1.0) {
+			r_draw_sprite(&(SpriteParams) {
+				.sprite_ptr = &stagedraw.dummy,
+				.pos = { creal(e->pos), cimag(e->pos) },
+				.scale = { .x = ENEMY_HURT_RADIUS * 2, .y = ENEMY_HURT_RADIUS * 2 },
+				.blend = BLEND_ALPHA,
+			});
+		}
+	}
+
+	if(global.boss && global.boss->current && !global.dialog) {
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = &stagedraw.dummy,
+			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
+			.scale = { .x = BOSS_HURT_RADIUS * 2, .y = BOSS_HURT_RADIUS * 2 },
+			.blend = BLEND_ALPHA,
+		});
+	}
+
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = &stagedraw.dummy,
 		.pos = { creal(global.plr.pos), cimag(global.plr.pos) },
 		.scale.both = 2, // NOTE: actual player is a singular point
 	});
 
-	// TODO: handle other objects the player may collide with (enemies, bosses...)
+	// TODO: perhaps handle lasers somehow
 
 	r_flush_sprites();
 #endif

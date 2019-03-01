@@ -357,7 +357,7 @@ void process_enemies(EnemyList *enemies) {
 
 		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
 
-		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < 7) {
+		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < ENEMY_HURT_RADIUS) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 

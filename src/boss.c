@@ -1053,7 +1053,7 @@ void process_boss(Boss **pboss) {
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
 	} else {
-		if(cabs(boss->pos - global.plr.pos) < 16) {
+		if(cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 	}
