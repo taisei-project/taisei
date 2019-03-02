@@ -1,5 +1,5 @@
 
-Taisei.preRun.push(function() {
+Module['preRun'].push(function() {
     ENV["TAISEI_NOASYNC"] = "1";
     ENV["TAISEI_NOUNLOAD"] = "1";
     ENV["TAISEI_PREFER_SDL_VIDEODRIVERS"] = "emscripten";
@@ -9,9 +9,9 @@ Taisei.preRun.push(function() {
     FS.mount(IDBFS, {}, '/persistent');
 });
 
-window['SyncFS'] = function(is_load, ccptr) {
+function SyncFS(is_load, ccptr) {
     FS.syncfs(is_load, function(err) {
-        Taisei.ccall(
+        Module['ccall'](
             'vfs_sync_callback',
             null, ["boolean", "string", "number"],
             [is_load, err, ccptr]

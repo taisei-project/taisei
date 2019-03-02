@@ -155,13 +155,11 @@ taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 if host_machine.system() == 'emscripten'
     em_debug = get_option('debug')
     em_link_outputs = []
-    em_link_output_suffixes = ['html', 'wasm', 'js', 'data']  # first element is significant
+    em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
-    em_pgo = (get_option('b_pgo') == 'off' ? '0' : '1')
     em_link_args = [
+        em_bundle_link_args,
         '--pre-js', em_preamble,
-        '--preload-file', '@0@@/@1@'.format(emfs_target_dir, em_data_dir),
-        '--preload-file', '@0@@/@1@/@2@'.format(gamecontrollerdb_path, em_data_dir, gamecontrollerdb_name),
         '--shell-file', em_shell,
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
@@ -169,10 +167,11 @@ if host_machine.system() == 'emscripten'
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'EXPORT_NAME=Taisei',
+        '-s', 'FILESYSTEM=1',
+        '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
-        '-s', 'MAIN_MODULE=2',
+        '-s', 'LZ4=1',
         '-s', 'MODULARIZE=0',
-        '-s', 'PGO=@0@'.format(em_pgo),
         '-s', 'TOTAL_MEMORY=268435456',
         '-s', 'USE_WEBGL2=1',
         '-s', 'WASM=1',
@@ -222,8 +221,7 @@ if host_machine.system() == 'emscripten'
             '-o', '@OUTPUT0@'
         ],
         build_by_default : true,
-        depends : [taisei, em_filesystem],
-        depend_files : [gamecontrollerdb_path],
+        depends : [taisei],
         output : em_link_outputs,
         install : true,
         install_dir : bindir,

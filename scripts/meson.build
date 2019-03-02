@@ -126,5 +126,5 @@ glob_command = [python_thunk, glob_script]
 check_submodules_script = files('check-submodules.py')
 check_submodules_command = [python_thunk, check_submodules_script]
 
-gen_emscripten_fs_script = files('gen-emscripten-fs.py')
-gen_emscripten_fs_command = [python_thunk, gen_emscripten_fs_script, common_taiseilib_args]
+em_set_bundle_uuid_script = files('em-set-bundle-uuid.py')
+em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]

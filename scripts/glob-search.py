@@ -6,6 +6,7 @@ from taiseilib.common import (
 )
 
 from pathlib import Path
+import fnmatch
 
 
 def main(args):
@@ -25,9 +26,12 @@ def main(args):
 
     args = parser.parse_args(args[1:])
 
-    for pattern in args.patterns:
-        for path in args.directory.glob(pattern):
-            print(path.relative_to(args.directory))
+    for path in (p.relative_to(args.directory) for p in args.directory.rglob('*')):
+        path = str(path)
+        for pattern in args.patterns:
+            if fnmatch.fnmatchcase(path, pattern):
+                print(path)
+                break
 
 
 if __name__ == '__main__':
