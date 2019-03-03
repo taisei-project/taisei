@@ -25,7 +25,7 @@ typedef struct ListContainer ListContainer;
 }
 
 #define LIST_INTERFACE(typename) union { \
-	ListInterface list_interface; \
+	alignas(8) ListInterface list_interface; \
 	LIST_INTERFACE_BASE(typename); \
 }
 
