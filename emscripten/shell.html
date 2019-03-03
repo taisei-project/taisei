@@ -43,7 +43,7 @@
             background: none;
             border: 0px none;
             color: #eeeeee;
-            overflow: hidden;
+            overflow: overlay;
             margin: 0px;
         }
 
@@ -179,7 +179,7 @@
             <label for="logToggle"> Show log</label>
         </div>
         <div id="logContainer" hidden>
-            <textarea class="emscripten" id="output" rows="12"></textarea>
+            <textarea class="emscripten" id="output" rows="12" readonly></textarea>
         </div>
     </div>
     <script>
@@ -189,11 +189,13 @@
         var canvasContainerElement = document.getElementById('canvasContainer');
         var logToggleElement = document.getElementById('logToggle');
         var logContainerElement = document.getElementById('logContainer');
+        var logOutputElement = document.getElementById('output');
         var dlMessage = statusElement.innerText;
         logToggleElement.checked = false;
 
         function toggleLog() {
             logContainerElement.hidden = !logToggleElement.checked;
+            logOutputElement.scrollTop = logOutputElement.scrollHeight;
         }
 
         var Taisei = {
@@ -205,15 +207,12 @@
                 Taisei.setStatus('', true);
             },
             print: (function() {
-                var element = document.getElementById('output');
-                if (element) element.value = ''; // clear browser cache
+                logOutputElement.value = ''; // clear browser cache
                 return function(text) {
                     if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
                     console.log(text);
-                    if (element) {
-                        element.value += text + "\n";
-                        element.scrollTop = element.scrollHeight; // focus on bottom
-                    }
+                    logOutputElement.value += text + "\n";
+                    logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
                 };
             })(),
             printErr: function(text) {
