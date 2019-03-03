@@ -890,8 +890,8 @@ void boss_finish_current_attack(Boss *boss) {
 		spawn_items(boss->pos,
 			ITEM_POWER,  14,
 			ITEM_POINTS, 12,
-			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1),
-		NULL);
+			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1)
+		);
 	}
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);

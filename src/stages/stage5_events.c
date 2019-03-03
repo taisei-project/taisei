@@ -39,7 +39,7 @@ static Dialog *stage5_dialog_post_boss(void) {
 static int stage5_greeter(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 2);
 		return 1;
 	}
 
@@ -70,7 +70,7 @@ static int stage5_greeter(Enemy *e, int t) {
 static int stage5_lightburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 2);
 		return 1;
 	}
 
@@ -97,7 +97,7 @@ static int stage5_lightburst(Enemy *e, int t) {
 static int stage5_swirl(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1);
 		return 1;
 	}
 
@@ -118,7 +118,7 @@ static int stage5_swirl(Enemy *e, int t) {
 static int stage5_limiter(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
 		return 1;
 	}
 
@@ -136,7 +136,7 @@ static int stage5_limiter(Enemy *e, int t) {
 static int stage5_laserfairy(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
 		return 1;
 	}
 
@@ -161,7 +161,7 @@ static int stage5_laserfairy(Enemy *e, int t) {
 static int stage5_miner(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2);
 		return 1;
 	}
 
@@ -195,7 +195,7 @@ static int stage5_magnetto(Enemy *e, int t) {
 	TIMER(&t);
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
 		return 1;
 	}
 
@@ -247,7 +247,11 @@ static int stage5_magnetto(Enemy *e, int t) {
 static int stage5_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, ITEM_LIFE, (int)creal(e->args[1]), NULL);
+		spawn_items(e->pos,
+			ITEM_POINTS, 5,
+			ITEM_POWER, 5,
+			ITEM_LIFE, creal(e->args[1])
+		);
 
 		PARTICLE(
 			.sprite = "blast_huge_rays",
@@ -366,7 +370,7 @@ static Boss *create_iku_mid(void) {
 static int stage5_lightburst2(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
 		return 1;
 	}
 
@@ -404,7 +408,7 @@ static int stage5_lightburst2(Enemy *e, int t) {
 static int stage5_superbullet(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3);
 		return 1;
 	}
 

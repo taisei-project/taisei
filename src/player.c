@@ -477,7 +477,7 @@ void player_logic(Player* plr) {
 		plr->continues_used += 1;
 		player_set_power(plr, 0);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-		spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE), NULL);
+		spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
 	}
 
 	process_enemies(&plr->slaves);
@@ -738,7 +738,7 @@ void player_realdeath(Player *plr) {
 	int total_power = plr->power + plr->power_overflow;
 
 	int drop = max(2, (total_power * 0.15) / POWER_VALUE);
-	spawn_items(plr->deathpos, ITEM_POWER, drop, NULL);
+	spawn_items(plr->deathpos, ITEM_POWER, drop);
 
 	player_set_power(plr, total_power * 0.7);
 	plr->bombs = PLR_START_BOMBS;
@@ -1276,7 +1276,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 		color_mul_scalar(c, 0.4);
 	}
 
-	spawn_items(pos, ITEM_POWER_MINI, 1, NULL);
+	spawn_items(pos, ITEM_POWER_MINI, 1);
 }
 
 static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd, int score_per_excess) {
@@ -1416,7 +1416,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 
 	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
 		double rate = target->type == ENT_BOSS ? 110 : 256;
-		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate), NULL);
+		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate));
 	}
 
 	if(player_is_powersurge_active(plr)) {

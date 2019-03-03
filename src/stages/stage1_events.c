@@ -849,7 +849,7 @@ static int stage1_burst(Enemy *e, int time) {
 	TIMER(&time);
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1);
 		return ACTION_ACK;
 	}
 
@@ -886,7 +886,7 @@ static int stage1_burst(Enemy *e, int time) {
 static int stage1_circletoss(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 1);
 		return 1;
 	}
 
@@ -921,7 +921,7 @@ static int stage1_circletoss(Enemy *e, int time) {
 static int stage1_sinepass(Enemy *e, int time) {
 	TIMER(&time);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1);
 		return 1;
 	}
 
@@ -941,7 +941,7 @@ static int stage1_sinepass(Enemy *e, int time) {
 static int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2);
 		return 1;
 	}
 	if(t < 0)
@@ -964,7 +964,7 @@ static int stage1_drop(Enemy *e, int t) {
 static int stage1_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2);
 		return 1;
 	}
 
@@ -987,7 +987,7 @@ static int stage1_circle(Enemy *e, int t) {
 static int stage1_multiburst(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2);
 		return 1;
 	}
 
@@ -1017,7 +1017,7 @@ static int stage1_multiburst(Enemy *e, int t) {
 static int stage1_instantcircle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 4);
 		return 1;
 	}
 
@@ -1055,7 +1055,7 @@ static int stage1_instantcircle(Enemy *e, int t) {
 static int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 2);
 		return 1;
 	}
 

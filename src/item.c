@@ -316,29 +316,22 @@ void spawn_and_collect_item(complex pos, ItemType type, float collect_value) {
 	spawn_item_internal(pos, type, collect_value);
 }
 
-static void spawn_items_internal(complex pos, va_list args, float collect_value) {
-	ItemType type;
-
-	while((type = va_arg(args, ItemType))) {
-		int num = va_arg(args, int);
-		for(int i = 0; i < num; ++i) {
-			spawn_item_internal(pos, type, collect_value);
+static void spawn_items_internal(complex pos, float collect_value, SpawnItemsArgs groups[]) {
+	for(SpawnItemsArgs *g = groups; g->type > 0; ++g) {
+		for(uint i = 0; i < g->count; ++i) {
+			spawn_item_internal(pos, g->type, collect_value);
 		}
 	}
 }
 
-void spawn_items(complex pos, ...) {
-	va_list args;
-	va_start(args, pos);
-	spawn_items_internal(pos, args, -1);
-	va_end(args);
+#undef spawn_items
+void spawn_items(complex pos, SpawnItemsArgs groups[]) {
+	spawn_items_internal(pos, 0, groups);
 }
 
-void spawn_and_collect_items(complex pos, double collect_value, ...) {
-	va_list args;
-	va_start(args, collect_value);
-	spawn_items_internal(pos, args, collect_value);
-	va_end(args);
+#undef spawn_and_collect_items
+void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs groups[]) {
+	spawn_items_internal(pos, collect_value, groups);
 }
 
 void items_preload(void) {

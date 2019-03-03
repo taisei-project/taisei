@@ -64,11 +64,19 @@ void process_items(void);
 void spawn_item(complex pos, ItemType type);
 void spawn_and_collect_item(complex pos, ItemType type, float collect_value);
 
-// The varargs are: ItemType type1, int num1, ItemType type2, int num2, ..., NULL
-// e.g.: Point 10, Power 3, LifeFrag 2, Bomb 1, NULL
-// WARNING: if you pass a float or double as the amount, it will not work! You must explicitly cast it to an int.
-void spawn_items(complex pos, ...) attr_sentinel;
-void spawn_and_collect_items(complex pos, double collect_value, ...) attr_sentinel;
+typedef struct SpawnItemsArgs {
+	ItemType type;
+	int count;
+} SpawnItemsArgs;
+
+void spawn_items(complex pos, SpawnItemsArgs groups[]);
+void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs groups[]);
+
+#define spawn_items(pos, ...) \
+	spawn_items(pos, ((SpawnItemsArgs[]) { __VA_ARGS__, { 0 } }))
+
+#define spawn_and_collect_items(pos, collect_value, ...) \
+	spawn_and_collect_items(pos, collect_value, ((SpawnItemsArgs[]) { __VA_ARGS__, 0 }))
 
 bool collect_item(Item *item, float value);
 void collect_all_items(float value);

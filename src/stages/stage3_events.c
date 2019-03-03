@@ -32,7 +32,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1);
 
 		float r, g;
 		if(frand() > 0.5) {
@@ -74,7 +74,7 @@ static int stage3_slavefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3);
 		return 1;
 	}
 
@@ -115,7 +115,7 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3);
 		return 1;
 	}
 
@@ -173,7 +173,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 5);
 		return 1;
 	}
 
@@ -273,7 +273,7 @@ static int stage3_chargefairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 3);
 		return 1;
 	}
 
@@ -340,9 +340,9 @@ static int stage3_bigfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
 		if(creal(e->args[0]) && global.timer > 2800)
-			spawn_items(e->pos, ITEM_BOMB, 1, NULL);
+			spawn_items(e->pos, ITEM_BOMB, 1);
 		return 1;
 	}
 
@@ -376,7 +376,7 @@ static int stage3_bitchswirl(Enemy *e, int t) {
 	}
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1);
 		return -1;
 	}
 
@@ -398,7 +398,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 	TIMER(&t)
 
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
 		return -1;
 	}
 
@@ -448,7 +448,7 @@ static void scuttle_intro(Boss *boss, int time) {
 
 static void scuttle_outro(Boss *boss, int time) {
 	if(time == 0) {
-		spawn_items(boss->pos, ITEM_POINTS, 10, ITEM_POWER, 10, ITEM_LIFE, 1, NULL);
+		spawn_items(boss->pos, ITEM_POINTS, 10, ITEM_POWER, 10, ITEM_LIFE, 1);
 	}
 
 	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));

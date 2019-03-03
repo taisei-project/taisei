@@ -31,7 +31,7 @@ static Dialog *stage2_dialog_post_boss(void) {
 static int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 4, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 4);
 		return 1;
 	}
 
@@ -76,7 +76,7 @@ static int stage2_great_circle(Enemy *e, int t) {
 static int stage2_small_spin_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2);
 		return 1;
 	}
 
@@ -109,7 +109,7 @@ static int stage2_small_spin_circle(Enemy *e, int t) {
 static int stage2_aim(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POWER, 2, NULL);
+		spawn_items(e->pos, ITEM_POWER, 2);
 		return 1;
 	}
 
@@ -138,7 +138,7 @@ static int stage2_aim(Enemy *e, int t) {
 static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1);
 		return 1;
 	}
 
@@ -164,7 +164,7 @@ static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cim
 static int stage2_flea(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 2);
 		return 1;
 	}
 
@@ -193,7 +193,7 @@ static int stage2_flea(Enemy *e, int t) {
 static int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3, NULL);
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3);
 		return 1;
 	}
 

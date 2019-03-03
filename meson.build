@@ -50,6 +50,7 @@ taisei_c_args = [
     '-Wlogical-op',
     '-Wmissing-prototypes',
     '-Wno-long-long',
+    '-Wno-missing-braces',
     '-Wno-typedef-redefinition',
     '-Wnull-dereference',
     '-Wparentheses',
