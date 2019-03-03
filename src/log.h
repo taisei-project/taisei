@@ -50,6 +50,8 @@ typedef enum LogLevel {
 #ifndef LOG_DEFAULT_LEVELS_CONSOLE
 	#ifdef DEBUG
 		#define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALL
+	#elif defined __EMSCRIPTEN__
+		#define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALERT | LOG_INFO
 	#else
 		#define LOG_DEFAULT_LEVELS_CONSOLE LOG_ALERT
 	#endif

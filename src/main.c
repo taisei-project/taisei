@@ -26,6 +26,7 @@
 #include "credits.h"
 #include "taskmanager.h"
 
+attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
@@ -155,7 +156,7 @@ typedef struct MainContext {
 } MainContext;
 
 static void main_post_vfsinit(CallChainResult ccr);
-static void main_singlestg(MainContext *mctx);
+static void main_singlestg(MainContext *mctx) attr_unused;
 static void main_replay(MainContext *mctx);
 static noreturn void main_vfstree(CallChainResult ccr);
 
