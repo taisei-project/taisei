@@ -33,7 +33,14 @@ static void em_loop_callback(void) {
 
 	frame_times.start = time_get();
 	frame_times.target = frame->frametime;
+
 	frame_times.next += frame_times.target;
+	hrtime_t min_next_time = frame_times.start - 2 * frame_times.target;
+
+	if(min_next_time > frame_times.next) {
+		frame_times.next = min_next_time;
+	}
+
 	global.fps.busy.last_update_time = frame_times.start;
 
 	LogicFrameAction lframe_action = handle_logic(&frame, &frame_times);
