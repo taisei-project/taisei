@@ -190,6 +190,7 @@
         var logToggleElement = document.getElementById('logToggle');
         var logContainerElement = document.getElementById('logContainer');
         var dlMessage = statusElement.innerText;
+        logToggleElement.checked = false;
 
         function toggleLog() {
             logContainerElement.hidden = !logToggleElement.checked;
