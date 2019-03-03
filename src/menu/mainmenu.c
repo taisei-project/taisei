@@ -63,6 +63,7 @@ static void update_main_menu(MenuData *menu) {
 	}
 }
 
+attr_unused
 static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *m = arg;
 	TaiseiEvent te = TAISEI_EVENT(event->type);
@@ -85,6 +86,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	return menu_input_handler(event, arg);
 }
 
+attr_unused
 static void main_menu_input(MenuData *m) {
 	events_poll((EventHandler[]){
 		{ .proc = main_menu_input_handler, .arg = m },
@@ -98,7 +100,6 @@ MenuData* create_main_menu(void) {
 	m->begin = begin_main_menu;
 	m->draw = draw_main_menu;
 	m->logic = update_main_menu;
-	m->input = main_menu_input;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
@@ -111,6 +112,7 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
 #ifndef __EMSCRIPTEN__
 	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+	m->input = main_menu_input;
 #endif
 
 	stage_practice_entry = m->entries + 2;
