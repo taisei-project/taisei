@@ -14,6 +14,7 @@
 #include <emscripten.h>
 
 static FrameTimes frame_times;
+static uint frame_num;
 
 static bool em_handle_resize_event(SDL_Event *event, void *arg);
 
@@ -41,7 +42,10 @@ static void em_loop_callback(void) {
 		return;
 	}
 
-	run_render_frame(frame);
+	if(!(frame_num++ % get_effective_frameskip())) {
+		run_render_frame(frame);
+	}
+
 	fpscounter_update(&global.fps.busy);
 }
 
