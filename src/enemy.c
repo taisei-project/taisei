@@ -332,7 +332,7 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 		enemy->hp = ENEMY_KILLED;
 
 		if(dmg->type == DMG_PLAYER_DISCHARGE) {
-			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, imax(1, enemy->spawn_hp / 100), NULL);
+			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)imax(1, enemy->spawn_hp / 100), NULL);
 		}
 	}
 
