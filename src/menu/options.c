@@ -280,10 +280,6 @@ static int bind_setprev(OptionBinding *b) {
 	return bind_setvalue(b, s);
 }
 
-static void bind_setdependence(OptionBinding *b, BindingDependence dep) {
-	b->dependence = dep;
-}
-
 static bool bind_isactive(OptionBinding *b) {
 	if(!b->dependence)
 		return true;
@@ -337,7 +333,7 @@ static int bind_common_intplus1_set(OptionBinding *b, int v) {
 // --- Binding callbacks for individual options --- //
 
 static bool bind_resizable_dependence(void) {
-	return !config_get_int(CONFIG_FULLSCREEN);
+	return video_query_capability(VIDEO_CAP_EXTERNAL_RESIZE) == VIDEO_AVAILABLE;
 }
 
 static bool bind_bgquality_dependence(void) {
@@ -345,7 +341,11 @@ static bool bind_bgquality_dependence(void) {
 }
 
 static bool bind_resolution_dependence(void) {
-	return video_can_change_resolution();
+	return video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE;
+}
+
+static bool bind_fullscreen_dependence(void) {
+	return video_query_capability(VIDEO_CAP_FULLSCREEN) == VIDEO_AVAILABLE;
 }
 
 static int bind_resolution_set(OptionBinding *b, int v) {
@@ -381,7 +381,7 @@ static void destroy_options_menu(MenuData *m) {
 			continue;
 		}
 
-		if(bind->type == BT_Resolution && video_can_change_resolution()) {
+		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
 				VideoMode *mode = video.modes + bind->selected;
 
@@ -458,6 +458,7 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
+		b->dependence = bind_fullscreen_dependence;
 
 	add_menu_entry(m, "Window size", do_nothing,
 		b = bind_resolution()
@@ -467,7 +468,7 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	add_menu_entry(m, "Resizable window", do_nothing,
 		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
-		bind_setdependence(b, bind_resizable_dependence);
+		b->dependence = bind_resizable_dependence;
 
 	add_menu_entry(m, "Pause the game when it's not focused", do_nothing,
 		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
@@ -613,7 +614,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 	add_menu_entry(m, "Device", do_nothing,
 		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)
-	);	bind_setdependence(b, gamepad_enabled_depencence);
+	);	b->dependence = gamepad_enabled_depencence;
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Customize controls…", enter_options_menu_gamepad_controls, NULL);
@@ -793,11 +794,11 @@ MenuData* create_options_menu(void) {
 
 	add_menu_entry(m, "SFX Volume", do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, audio_output_works);
+	);	b->dependence = audio_output_works;
 
 	add_menu_entry(m, "BGM Volume", do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, audio_output_works);
+	);	b->dependence = audio_output_works;
 
 	add_menu_entry(m, "Mute audio", do_nothing,
 		b = bind_option(CONFIG_MUTE_AUDIO,  bind_common_onoff_get, bind_common_onoff_set)

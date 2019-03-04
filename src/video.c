@@ -23,6 +23,53 @@ typedef struct ScreenshotTaskData {
 	Pixmap image;
 } ScreenshotTaskData;
 
+VideoCapabilityState (*video_query_capability)(VideoCapability cap);
+
+static VideoCapabilityState video_query_capability_generic(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_AVAILABLE;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return video_is_fullscreen() ? VIDEO_CURRENTLY_UNAVAILABLE : VIDEO_AVAILABLE;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			if(video_is_fullscreen() && config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
+				return VIDEO_CURRENTLY_UNAVAILABLE;
+			} else {
+				return VIDEO_AVAILABLE;
+			}
+	}
+
+	UNREACHABLE;
+}
+
+static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_ALWAYS_ENABLED;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_NEVER_AVAILABLE;
+
+		// XXX: Might not be actually working, but let's be optimistic.
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			return VIDEO_AVAILABLE;
+	}
+
+	UNREACHABLE;
+}
+
+static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_NEVER_AVAILABLE;
+
+		default:
+			return video_query_capability_generic(cap);
+	}
+}
+
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
 		for(uint i = 0; i < video.mcount; ++i) {
@@ -158,7 +205,7 @@ static void video_new_window(int w, int h, bool fs, bool resizable) {
 
 	if(fs) {
 		flags |= get_fullscreen_flag();
-	} else if(resizable) {
+	} else if(resizable && video.backend != VIDEO_BACKEND_EMSCRIPTEN) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
@@ -195,7 +242,7 @@ static bool video_set_display_mode(int w, int h) {
 	return true;
 }
 
-static void video_set_fullscreen(bool fullscreen) {
+static void video_set_fullscreen_internal(bool fullscreen) {
 	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
 	events_pause_keyrepeat();
 
@@ -218,7 +265,7 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 	if(w != video.current.width || h != video.current.height) {
 		if(fs && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
 			video_set_display_mode(w, h);
-			video_set_fullscreen(fs);
+			video_set_fullscreen_internal(fs);
 			video_update_mode_settings();
 		} else if(video.backend == VIDEO_BACKEND_X11) {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
@@ -228,15 +275,22 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
 			video_new_window(w, h, fs, resizable);
 			return;
+		} else if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && !fs) {
+			// Needed to work around various SDL bugs and HTML/DOM quirks...
+			video_new_window(w, h, fs, resizable);
+			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
 			video_update_mode_settings();
-			return;
 		}
 	}
 
-	video_set_fullscreen(fs);
+	video_set_fullscreen_internal(fs);
 	SDL_SetWindowResizable(video.window, resizable);
+}
+
+void video_set_fullscreen(bool fullscreen) {
+	video_set_mode(video.intended.width, video.intended.height, fullscreen, video_is_resizable());
 }
 
 static void* video_screenshot_task(void *arg) {
@@ -354,10 +408,6 @@ bool video_is_fullscreen(void) {
 	return WINFLAGS_IS_FULLSCREEN(SDL_GetWindowFlags(video.window));
 }
 
-bool video_can_change_resolution(void) {
-	return !video_is_fullscreen() || !config_get_int(CONFIG_FULLSCREEN_DESKTOP);
-}
-
 static void video_init_sdl(void) {
 	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
 	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
@@ -459,12 +509,7 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 
 	switch(evt->user.code) {
 		case CONFIG_FULLSCREEN:
-			video_set_mode(
-				config_get_int(CONFIG_VID_WIDTH),
-				config_get_int(CONFIG_VID_HEIGHT),
-				val->i,
-				config_get_int(CONFIG_VID_RESIZABLE)
-			);
+			video_set_fullscreen(val->i);
 			break;
 
 		case CONFIG_VID_RESIZABLE:
@@ -487,10 +532,23 @@ void video_init(void) {
 	const char *driver = SDL_GetCurrentVideoDriver();
 	log_info("Using driver '%s'", driver);
 
+	video_query_capability = video_query_capability_generic;
+
 	if(!strcmp(driver, "x11")) {
 		video.backend = VIDEO_BACKEND_X11;
 	} else if(!strcmp(driver, "emscripten")) {
 		video.backend = VIDEO_BACKEND_EMSCRIPTEN;
+		video_query_capability = video_query_capability_webcanvas;
+
+		// We can not start in fullscreen in the browser properly, so disable it here.
+		// Fullscreen is still accessible via the settings menu and the shortcut key.
+		config_set_int(CONFIG_FULLSCREEN, false);
+	} else if(!strcmp(driver, "KMSDRM")) {
+		video.backend = VIDEO_BACKEND_KMSDRM;
+		video_query_capability = video_query_capability_alwaysfullscreen;
+	} else if(!strcmp(driver, "RPI")) {
+		video.backend = VIDEO_BACKEND_RPI;
+		video_query_capability = video_query_capability_alwaysfullscreen;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
@@ -575,4 +633,7 @@ void video_shutdown(void) {
 void video_swap_buffers(void) {
 	r_framebuffer(NULL);
 	r_swap(video.window);
+
+	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
+	config_set_int(CONFIG_FULLSCREEN, video_is_fullscreen());
 }
