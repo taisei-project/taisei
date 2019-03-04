@@ -19,13 +19,13 @@ typedef struct ListAnchorInterface ListAnchorInterface;
 typedef struct ListAnchor ListAnchor;
 typedef struct ListContainer ListContainer;
 
-#define LIST_INTERFACE_BASE(typename) LIST_ALIGN struct { \
+#define LIST_INTERFACE_BASE(typename) struct { \
 	typename *next; \
 	typename *prev; \
 }
 
 #define LIST_INTERFACE(typename) union { \
-	alignas(8) ListInterface list_interface; \
+	LIST_ALIGN ListInterface list_interface; \
 	LIST_INTERFACE_BASE(typename); \
 }
 
