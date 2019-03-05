@@ -377,7 +377,7 @@ static void stage3_spellpractice_events(void) {
 
 void stage3_skip(int t) {
 	skip_background_anim(stage3_update, t, &global.timer, &global.frames);
-	audio_backend_music_set_position(global.timer / (double)FPS);
+	audio_music_set_position(global.timer / (double)FPS);
 }
 
 ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };

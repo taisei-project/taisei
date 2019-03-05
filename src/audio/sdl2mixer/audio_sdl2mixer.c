@@ -10,10 +10,11 @@
 
 #include <SDL_mixer.h>
 
-#include "audio.h"
-#include "audio_mixer.h"
+#include "../backend.h"
 #include "global.h"
 #include "list.h"
+
+#define B (_a_backend.funcs)
 
 #define AUDIO_FREQ 44100
 #define AUDIO_FORMAT MIX_DEFAULT_FORMAT
@@ -22,35 +23,44 @@
 #define UI_CHANNEL_GROUP 0
 #define MAIN_CHANNEL_GROUP 1
 
-static bool mixer_loaded = false;
+// I needed to add this for supporting loop sounds since Mixer doesn’t remember
+// what channel a sound is playing on.  - laochailan
+
+struct SoundImpl {
+	Mix_Chunk *ch;
+	int loopchan; // channel the sound may be looping on. -1 if not looping
+	int playchan; // channel the sound was last played on (looping does NOT set this). -1 if never played
+};
+
+struct MusicImpl {
+	Mix_Music *loop;
+	double loop_point;
+};
 
 static struct {
 	uchar first;
 	uchar num;
 } groups[2];
 
-static const char *mixer_audio_exts[] = { ".ogg", ".wav", NULL };
+static Mix_Music *next_loop;
+static double next_loop_point;
 
-void audio_backend_init(void) {
-	if(mixer_loaded) {
-		return;
-	}
-
+static bool audio_sdl2mixer_init(void) {
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
-		return;
+		return false;
 	}
 
 	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
 		log_error("Mix_OpenAudio() failed: %s", Mix_GetError());
 		Mix_Quit();
-		return;
+		return false;
 	}
 
 	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
 		log_error("Mix_Init() failed: %s", Mix_GetError());
-		Mix_Quit(); // Try to shutdown mixer if it was partly initialized
-		return;
+		Mix_Quit();
+		return false;
 	}
 
 	int channels = Mix_AllocateChannels(AUDIO_CHANNELS);
@@ -59,7 +69,7 @@ void audio_backend_init(void) {
 		log_error("Unable to allocate any channels");
 		Mix_CloseAudio();
 		Mix_Quit();
-		return;
+		return false;
 	}
 
 	if(channels < AUDIO_CHANNELS) {
@@ -96,10 +106,8 @@ void audio_backend_init(void) {
 	groups[MAIN_CHANNEL_GROUP].first = ui_channels;
 	groups[MAIN_CHANNEL_GROUP].num = main_channels;
 
-	mixer_loaded = true;
-
-	audio_backend_set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
-	audio_backend_set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
+	B.sound_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
+	B.music_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
 
 	int frequency = 0;
 	uint16_t format = 0;
@@ -125,58 +133,35 @@ void audio_backend_init(void) {
 
 	lv = Mix_Linked_Version();
 	log_info("Using SDL_mixer %u.%u.%u", lv->major, lv->minor, lv->patch);
+	return true;
 }
 
-void audio_backend_shutdown(void) {
-	mixer_loaded = false;
-
+static bool audio_sdl2mixer_shutdown(void) {
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 
-	log_info("Audio subsystem uninitialized (SDL2_Mixer)");
+	log_info("Audio subsystem deinitialized (SDL2_Mixer)");
+	return true;
 }
 
-bool audio_backend_initialized(void) {
-	return mixer_loaded;
+static bool audio_sdl2mixer_output_works(void) {
+	return true;
 }
 
-void audio_backend_set_sfx_volume(float gain) {
-	if(mixer_loaded)
-		Mix_Volume(-1, gain * MIX_MAX_VOLUME);
+static inline int gain_to_mixvol(double gain) {
+	return iclamp(gain * SDL_MIX_MAXVOLUME, 0, SDL_MIX_MAXVOLUME);
 }
 
-void audio_backend_set_bgm_volume(float gain) {
-	if(mixer_loaded)
-		Mix_VolumeMusic(gain * MIX_MAX_VOLUME);
+static bool audio_sdl2mixer_sound_set_global_volume(double gain) {
+	Mix_Volume(-1, gain_to_mixvol(gain));
+	return true;
 }
 
-char* audio_mixer_sound_path(const char *prefix, const char *name, bool isbgm) {
-	char *p = NULL;
-
-	if(isbgm && (p = try_path(prefix, name, ".bgm"))) {
-		return p;
-	}
-
-	for(const char **ext = mixer_audio_exts; *ext; ++ext) {
-		if((p = try_path(prefix, name, *ext))) {
-			return p;
-		}
-	}
-
-	return NULL;
+static bool audio_sdl2mixer_music_set_global_volume(double gain) {
+	Mix_VolumeMusic(gain * gain_to_mixvol(gain));
+	return true;
 }
-
-bool audio_mixer_check_sound_path(const char *path, bool isbgm) {
-	if(isbgm && strendswith(path, ".bgm")) {
-		return true;
-	}
-
-	return strendswith_any(path, mixer_audio_exts);
-}
-
-static Mix_Music *next_loop;
-static double next_loop_point;
 
 static void mixer_music_finished(void) {
 	// XXX: there may be a race condition in here
@@ -195,71 +180,55 @@ static void mixer_music_finished(void) {
 	}
 }
 
-void audio_backend_music_stop(void) {
-	if(mixer_loaded) {
-		Mix_HookMusicFinished(NULL);
-		Mix_HaltMusic();
-	}
+static bool audio_sdl2mixer_music_stop(void) {
+	Mix_HookMusicFinished(NULL);
+	Mix_HaltMusic();
+	return true;
 }
 
-void audio_backend_music_fade(double fadetime) {
-	if(mixer_loaded) {
-		Mix_HookMusicFinished(NULL);
-		Mix_FadeOutMusic(floor(1000 * fadetime));
-	}
+static bool audio_sdl2mixer_music_fade(double fadetime) {
+	Mix_HookMusicFinished(NULL);
+	Mix_FadeOutMusic(floor(1000 * fadetime));
+	return true;
 }
 
-bool audio_backend_music_is_paused(void) {
-	return mixer_loaded && Mix_PausedMusic();
+static bool audio_sdl2mixer_music_is_paused(void) {
+	return Mix_PausedMusic();
 }
 
-bool audio_backend_music_is_playing(void) {
-	return mixer_loaded && Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT;
+static bool audio_sdl2mixer_music_is_playing(void) {
+	return Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT;
 }
 
-void audio_backend_music_resume(void) {
-	if(mixer_loaded) {
-		Mix_HookMusicFinished(mixer_music_finished);
-		Mix_ResumeMusic();
-	}
+static bool audio_sdl2mixer_music_resume(void) {
+	Mix_HookMusicFinished(mixer_music_finished);
+	Mix_ResumeMusic();
+	return true;
 }
 
-void audio_backend_music_pause(void) {
-	if(mixer_loaded) {
-		Mix_HookMusicFinished(NULL);
-		Mix_PauseMusic();
-	}
+static bool audio_sdl2mixer_music_pause(void) {
+	Mix_HookMusicFinished(NULL);
+	Mix_PauseMusic();
+	return true;
 }
 
-bool audio_backend_music_play(void *impl) {
-	if(!mixer_loaded)
-		return false;
-
-	MixerInternalMusic *imus = impl;
+static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 	Mix_Music *mmus;
 	int loops;
 
 	Mix_HookMusicFinished(NULL);
 	Mix_HaltMusic();
 
-	if(imus->intro) {
-		next_loop = imus->loop;
-		next_loop_point = next_loop ? imus->loop_point : 0;
-		mmus = imus->intro;
+	mmus = imus->loop;
+	next_loop_point = imus->loop_point;
+
+	if(next_loop_point >= 0) {
 		loops = 0;
+		next_loop = imus->loop;
 		Mix_HookMusicFinished(mixer_music_finished);
 	} else {
-		mmus = imus->loop;
-		next_loop_point = imus->loop_point;
-
-		if(next_loop_point >= 0) {
-			loops = 0;
-			next_loop = imus->loop;
-			Mix_HookMusicFinished(mixer_music_finished);
-		} else {
-			loops = -1;
-			Mix_HookMusicFinished(NULL);
-		}
+		loops = -1;
+		Mix_HookMusicFinished(NULL);
 	}
 
 	bool result = (Mix_PlayMusic(mmus, loops) != -1);
@@ -271,13 +240,7 @@ bool audio_backend_music_play(void *impl) {
 	return result;
 }
 
-bool audio_backend_music_set_position(double pos) {
-	if(!mixer_loaded) {
-		return false;
-	}
-
-	// FIXME: BGMs that have intros are not handled correctly!
-
+static bool audio_sdl2mixer_music_set_position(double pos) {
 	Mix_RewindMusic();
 
 	if(Mix_SetMusicPosition(pos)) {
@@ -285,6 +248,11 @@ bool audio_backend_music_set_position(double pos) {
 		return false;
 	}
 
+	return true;
+}
+
+static bool audio_sdl2mixer_music_set_loop_point(MusicImpl *imus, double pos) {
+	imus->loop_point = pos;
 	return true;
 }
 
@@ -310,7 +278,7 @@ static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
 	return channel;
 }
 
-static int audio_backend_sound_play_on_channel(int chan, MixerInternalSound *isnd) {
+static int audio_sdl2mixer_sound_play_on_channel(int chan, SoundImpl *isnd) {
 	chan = Mix_PlayChannel(chan, isnd->ch, 0);
 
 	Mix_UnregisterAllEffects(chan);
@@ -323,38 +291,25 @@ static int audio_backend_sound_play_on_channel(int chan, MixerInternalSound *isn
 	return true;
 }
 
-bool audio_backend_sound_play(void *impl, AudioBackendSoundGroup group) {
-	if(!mixer_loaded)
-		return false;
-
-	MixerInternalSound *isnd = impl;
-	return audio_backend_sound_play_on_channel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd);
+static bool audio_sdl2mixer_sound_play(SoundImpl *isnd, AudioBackendSoundGroup group) {
+	return audio_sdl2mixer_sound_play_on_channel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd);
 }
 
-bool audio_backend_sound_play_or_restart(void *impl, AudioBackendSoundGroup group) {
-	if(!mixer_loaded) {
-		return false;
-	}
-
-	MixerInternalSound *isnd = impl;
+static bool audio_sdl2mixer_sound_play_or_restart(SoundImpl *isnd, AudioBackendSoundGroup group) {
 	int chan = isnd->playchan;
 
 	if(chan < 0 || Mix_GetChunk(chan) != isnd->ch) {
 		chan = pick_channel(group, MAIN_CHANNEL_GROUP);
 	}
 
-	return audio_backend_sound_play_on_channel(chan, isnd);
+	return audio_sdl2mixer_sound_play_on_channel(chan, isnd);
 }
 
-bool audio_backend_sound_loop(void *impl, AudioBackendSoundGroup group) {
-	if(!mixer_loaded)
-		return false;
+static bool audio_sdl2mixer_sound_loop(SoundImpl *isnd, AudioBackendSoundGroup group) {
+	isnd->loopchan = Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd->ch, -1);
+	Mix_UnregisterAllEffects(isnd->loopchan);
 
-	MixerInternalSound *snd = (MixerInternalSound *)impl;
-	snd->loopchan = Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), snd->ch, -1);
-	Mix_UnregisterAllEffects(snd->loopchan);
-
-	if(snd->loopchan == -1) {
+	if(isnd->loopchan == -1) {
 		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
 		return false;
 	}
@@ -385,33 +340,22 @@ static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 	}
 }
 
-
-bool audio_backend_sound_stop_loop(void *impl) {
-	if(!mixer_loaded)
-		return false;
-
-	MixerInternalSound *snd = (MixerInternalSound *)impl;
-
-	if(snd->loopchan == -1) {
+static bool audio_sdl2mixer_sound_stop_loop(SoundImpl *isnd) {
+	if(isnd->loopchan == -1) {
 		return false;
 	}
 
-	CustomFadeout *effect = calloc(1,sizeof(CustomFadeout));
+	CustomFadeout *effect = calloc(1, sizeof(CustomFadeout));
 	effect->counter = 0;
 	effect->duration = LOOPFADEOUT*AUDIO_FREQ/1000;
-	Mix_ExpireChannel(snd->loopchan, LOOPFADEOUT);
-	
-	Mix_RegisterEffect(snd->loopchan, custom_fadeout_proc, custom_fadeout_free, effect);
+	Mix_ExpireChannel(isnd->loopchan, LOOPFADEOUT);
+	Mix_RegisterEffect(isnd->loopchan, custom_fadeout_proc, custom_fadeout_free, effect);
 
 	return true;
 
 }
 
-bool audio_backend_sound_pause_all(AudioBackendSoundGroup group) {
-	if(!mixer_loaded) {
-		return false;
-	}
-
+static bool audio_sdl2mixer_sound_pause_all(AudioBackendSoundGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -428,11 +372,7 @@ bool audio_backend_sound_pause_all(AudioBackendSoundGroup group) {
 }
 
 
-bool audio_backend_sound_resume_all(AudioBackendSoundGroup group) {
-	if(!mixer_loaded) {
-		return false;
-	}
-
+static bool audio_sdl2mixer_sound_resume_all(AudioBackendSoundGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -448,11 +388,7 @@ bool audio_backend_sound_resume_all(AudioBackendSoundGroup group) {
 	return true;
 }
 
-bool audio_backend_sound_stop_all(AudioBackendSoundGroup group) {
-	if(!mixer_loaded) {
-		return false;
-	}
-
+static bool audio_sdl2mixer_sound_stop_all(AudioBackendSoundGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -463,3 +399,102 @@ bool audio_backend_sound_stop_all(AudioBackendSoundGroup group) {
 
 	return true;
 }
+
+static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
+	static const char *const exts[] = { ".ogg", ".wav" };
+	*numexts = ARRAY_SIZE(exts);
+	return exts;
+}
+
+static MusicImpl *audio_sdl2mixer_music_load(const char *vfspath) {
+	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!rw) {
+		log_error("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	Mix_Music *mus = Mix_LoadMUS_RW(rw, true);
+
+	if(!mus) {
+		log_error("Mix_LoadMUS_RW() failed: %s", Mix_GetError());
+		return NULL;
+	}
+
+	MusicImpl *imus = calloc(1, sizeof(*imus));
+	imus->loop = mus;
+
+	return imus;
+}
+
+static void audio_sdl2mixer_music_unload(MusicImpl *imus) {
+	Mix_FreeMusic(imus->loop);
+	free(imus);
+}
+
+static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
+	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!rw) {
+		log_error("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	Mix_Chunk *snd = Mix_LoadWAV_RW(rw, true);
+
+	if(!snd) {
+		log_error("Mix_LoadWAV_RW() failed: %s", Mix_GetError());
+		return NULL;
+	}
+
+	SoundImpl *isnd = calloc(1, sizeof(*isnd));
+	isnd->ch = snd;
+	isnd->loopchan = -1;
+	isnd->playchan = -1;
+
+	return isnd;
+}
+
+static void audio_sdl2mixer_sound_unload(SoundImpl *isnd) {
+	Mix_FreeChunk(isnd->ch);
+	free(isnd);
+}
+
+static bool audio_sdl2mixer_sound_set_volume(SoundImpl *isnd, double gain) {
+	Mix_VolumeChunk(isnd->ch, gain_to_mixvol(gain));
+	return true;
+}
+
+AudioBackend _a_backend_sdl2mixer = {
+	.name = "sdl2mixer",
+	.funcs = {
+		.get_supported_music_exts = audio_sdl2mixer_get_supported_exts,
+		.get_supported_sound_exts = audio_sdl2mixer_get_supported_exts,
+		.init = audio_sdl2mixer_init,
+		.music_fade = audio_sdl2mixer_music_fade,
+		.music_is_paused = audio_sdl2mixer_music_is_paused,
+		.music_is_playing = audio_sdl2mixer_music_is_playing,
+		.music_load = audio_sdl2mixer_music_load,
+		.music_pause = audio_sdl2mixer_music_pause,
+		.music_play = audio_sdl2mixer_music_play,
+		.music_resume = audio_sdl2mixer_music_resume,
+		.music_set_global_volume = audio_sdl2mixer_music_set_global_volume,
+		.music_set_loop_point = audio_sdl2mixer_music_set_loop_point,
+		.music_set_position = audio_sdl2mixer_music_set_position,
+		.music_stop = audio_sdl2mixer_music_stop,
+		.music_unload = audio_sdl2mixer_music_unload,
+		.output_works = audio_sdl2mixer_output_works,
+		.shutdown = audio_sdl2mixer_shutdown,
+		.sound_load = audio_sdl2mixer_sound_load,
+		.sound_loop = audio_sdl2mixer_sound_loop,
+		.sound_pause_all = audio_sdl2mixer_sound_pause_all,
+		.sound_play = audio_sdl2mixer_sound_play,
+		.sound_play_or_restart = audio_sdl2mixer_sound_play_or_restart,
+		.sound_resume_all = audio_sdl2mixer_sound_resume_all,
+		.sound_set_global_volume = audio_sdl2mixer_sound_set_global_volume,
+		.sound_set_volume = audio_sdl2mixer_sound_set_volume,
+		.sound_stop_all = audio_sdl2mixer_sound_stop_all,
+		.sound_stop_loop = audio_sdl2mixer_sound_stop_loop,
+		.sound_unload = audio_sdl2mixer_sound_unload,
+	}
+};

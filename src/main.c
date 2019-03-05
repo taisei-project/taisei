@@ -13,7 +13,7 @@
 
 #include "global.h"
 #include "video.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "stage.h"
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
@@ -216,6 +216,7 @@ int main(int argc, char **argv) {
 	if(headless) {
 		env_set("SDL_AUDIODRIVER", "dummy", true);
 		env_set("SDL_VIDEODRIVER", "dummy", true);
+		env_set("TAISEI_AUDIO_BACKEND", "null", true);
 		env_set("TAISEI_RENDERER", "null", true);
 		env_set("TAISEI_NOPRELOAD", true, false);
 		env_set("TAISEI_PRELOAD_REQUIRED", false, false);
@@ -244,10 +245,7 @@ int main(int argc, char **argv) {
 	r_post_init();
 	draw_loading_screen();
 
-	if(!headless) {
-		audio_init();
-	}
-
+	audio_init();
 	load_resources();
 	gamepad_init();
 	progress_load();

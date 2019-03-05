@@ -207,7 +207,7 @@ void stage5_skip(int t) {
 		mskip += 1100;
 	}
 
-	audio_backend_music_set_position(mskip / (double)FPS);
+	audio_music_set_position(mskip / (double)FPS);
 }
 
 static void stage5_spellpractice_start(void) {

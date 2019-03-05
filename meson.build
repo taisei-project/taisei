@@ -146,12 +146,6 @@ if package_data and not enable_zip
     error('ZIP support must be enabled for data packaging to work')
 endif
 
-if dep_sdl2_mixer.found() and get_option('enable_audio') != 'false'
-    taisei_deps += dep_sdl2_mixer
-elif get_option('enable_audio') == 'true'
-    error('Audio support enabled but SDL2_mixer not found')
-endif
-
 config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
 
 have_posix    =     cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
@@ -278,38 +272,6 @@ if meson.is_cross_build()
     systype = '@0@ (cross-compiling)'.format(systype)
 endif
 
-summary = '''
-
-Summary:
-    Taisei version:         @9@
-
-    System type:            @0@
-    Audio enabled:          @1@
-    Package data:           @2@
-
-    Relative install paths: @3@
-    Prefix:                 @4@
-    Executables:            @5@
-    Data:                   @6@
-    Documentation:          @7@
-
-    Build type:             @8@
-'''.format(
-        systype,
-        taisei_deps.contains(dep_sdl2_mixer),
-        taisei_deps.contains(dep_zip),
-        config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH'),
-        get_option('prefix'),
-
-        # the $ is intentional
-        join_paths('$prefix', bindir),
-        join_paths('$prefix', data_path),
-        join_paths('$prefix', doc_path),
-
-        get_option('buildtype'),
-        taisei_version_string
-    )
-
 version_deps = []
 
 subdir('misc')
@@ -319,6 +281,45 @@ subdir('doc')
 subdir('xdg')
 subdir('atlas')
 subdir('src')
+
+summary = '''
+
+Summary:
+    Taisei version:         @0@
+    System type:            @1@
+    Build type:             @2@
+
+    Audio backends:         @3@  (default: @4@)
+    Renderers:              @5@  (default: @6@)
+    Shader translation:     @7@
+    ZIP support:            @8@
+    Package data:           @9@
+
+    Relative install paths: @10@
+    Prefix:                 @11@
+    Executables:            @12@
+    Data:                   @13@
+    Documentation:          @14@
+'''.format(
+        taisei_version_string,
+        systype,
+        get_option('buildtype'),
+
+        ', '.join(enabled_audio_backends),
+        get_option('a_default'),
+        ', '.join(enabled_renderers),
+        get_option('r_default'),
+        get_option('shader_transpiler'),
+        enable_zip,
+        package_data,
+
+        config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH'),
+        get_option('prefix'),
+        # the $ is intentional
+        join_paths('$prefix', bindir),
+        join_paths('$prefix', data_path),
+        join_paths('$prefix', doc_path)
+    )
 
 message(summary)
 

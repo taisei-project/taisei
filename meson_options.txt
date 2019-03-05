@@ -12,13 +12,6 @@ option(
 )
 
 option(
-    'enable_audio',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
-    description : 'Enable audio support (requires SDL2_mixer)'
-)
-
-option(
     'enable_zip',
     type : 'boolean',
     value : 'true',
@@ -154,6 +147,27 @@ option(
     type : 'boolean',
     value : true,
     description : 'Build the no-op renderer (nothing is displayed)'
+)
+
+option(
+    'a_default',
+    type : 'combo',
+    choices : ['sdl2mixer', 'null'],
+    description : 'Which audio backend to use by default'
+)
+
+option(
+    'a_sdl2mixer',
+    type : 'boolean',
+    value : true,
+    description : 'Build the SDL2_Mixer audio backend'
+)
+
+option(
+    'a_null',
+    type : 'boolean',
+    value : true,
+    description : 'Build the no-op audio backend (silence); you want this on!'
 )
 
 option(

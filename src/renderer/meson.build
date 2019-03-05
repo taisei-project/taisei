@@ -10,6 +10,7 @@ renderer_src = files(
 )
 
 renderer_deps = []
+enabled_renderers = []
 
 # NOTE: Order matters here.
 subdir('null')
@@ -35,6 +36,7 @@ foreach m : modules
     if get_option('r_@0@'.format(m))
         renderer_src += get_variable('r_@0@_src'.format(m))
         r_macro += ['R(@0@)'.format(m)]
+        enabled_renderers += [m]
         needed_deps += get_variable('r_@0@_deps'.format(m))
         included_deps += [m]
         renderer_deps += get_variable('r_@0@_libdeps'.format(m))
@@ -51,4 +53,4 @@ endforeach
 
 r_macro = ' '.join(r_macro)
 config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
-config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', get_option('r_default'))
+config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_backend)

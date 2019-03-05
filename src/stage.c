@@ -20,7 +20,7 @@
 #include "player.h"
 #include "menu/ingamemenu.h"
 #include "menu/gameovermenu.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "log.h"
 #include "stagetext.h"
 #include "stagedraw.h"

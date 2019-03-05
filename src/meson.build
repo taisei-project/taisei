@@ -46,7 +46,6 @@ int main(int argc, char **argv) {
 
 taisei_src = files(
     'aniplayer.c',
-    'audio_common.c',
     'boss.c',
     'cli.c',
     'color.c',
@@ -101,6 +100,7 @@ endif
 
 sse42_src = []
 
+subdir('audio')
 subdir('dialog')
 subdir('menu')
 subdir('plrmodes')
@@ -130,6 +130,7 @@ endif
 configure_file(configuration : config, output : 'build_config.h')
 
 taisei_src += [
+    audio_src,
     dialog_src,
     menu_src,
     plrmodes_src,
@@ -142,19 +143,10 @@ taisei_src += [
 ]
 
 taisei_deps += [
+    audio_deps,
     renderer_deps,
     util_deps,
 ]
-
-if taisei_deps.contains(dep_sdl2_mixer)
-    taisei_src += files(
-        'audio_mixer.c',
-    )
-else
-    taisei_src += files(
-        'audio_null.c',
-    )
-endif
 
 if macos_app_bundle
     taisei_exe_name = 'Taisei'

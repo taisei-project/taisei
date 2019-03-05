@@ -12,8 +12,11 @@
 #include <stdio.h>
 
 #include "audio.h"
+#include "backend.h"
 #include "resource/resource.h"
 #include "global.h"
+
+#define B (_a_backend.funcs)
 
 CurrentBGM current_bgm = { .name = NULL };
 
@@ -29,6 +32,10 @@ static struct enqueued_sound {
 } *sound_queue;
 
 static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
+	if(!audio_output_works()) {
+		return;
+	}
+
 	if(delay > 0) {
 		struct enqueued_sound *s = malloc(sizeof(struct enqueued_sound));
 		s->time = global.frames + delay;
@@ -39,7 +46,7 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 		return;
 	}
 
-	if(!audio_backend_initialized() || global.frameskip) {
+	if(global.frameskip) {
 		return;
 	}
 
@@ -51,7 +58,7 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 
 	snd->lastplayframe = global.frames;
 
-	(replace ? audio_backend_sound_play_or_restart : audio_backend_sound_play)
+	(replace ? B.sound_play_or_restart : B.sound_play)
 		(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
 }
 
@@ -86,7 +93,7 @@ void play_ui_sound(const char *name) {
 }
 
 void play_loop(const char *name) {
-	if(!audio_backend_initialized() || global.frameskip) {
+	if(!audio_output_works() || global.frameskip) {
 		return;
 	}
 
@@ -97,9 +104,10 @@ void play_loop(const char *name) {
 	}
 
 	if(!snd->islooping) {
-		audio_backend_sound_loop(snd->impl, SNDGROUP_MAIN);
+		B.sound_loop(snd->impl, SNDGROUP_MAIN);
 		snd->islooping = true;
 	}
+
 	if(snd->islooping == LS_LOOPING) {
 		snd->lastplayframe = global.frames;
 	}
@@ -115,7 +123,7 @@ static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
 		}
 
 		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
-			audio_backend_sound_stop_loop(snd->impl);
+			B.sound_stop_loop(snd->impl);
 			snd->islooping = LS_FADEOUT;
 		}
 
@@ -145,15 +153,15 @@ void update_sounds(void) {
 }
 
 void pause_sounds(void) {
-	audio_backend_sound_pause_all(SNDGROUP_MAIN);
+	B.sound_pause_all(SNDGROUP_MAIN);
 }
 
 void resume_sounds(void) {
-	audio_backend_sound_resume_all(SNDGROUP_MAIN);
+	B.sound_resume_all(SNDGROUP_MAIN);
 }
 
 void stop_sounds(void) {
-	audio_backend_sound_stop_all(SNDGROUP_MAIN);
+	B.sound_stop_all(SNDGROUP_MAIN);
 }
 
 Sound* get_sound(const char *name) {
@@ -211,15 +219,15 @@ static void stop_bgm_internal(bool pause, double fadetime) {
 		stralloc(&current_bgm.name, NULL);
 	}
 
-	if(audio_backend_music_is_playing() && !audio_backend_music_is_paused()) {
+	if(B.music_is_playing() && !B.music_is_paused()) {
 		if(pause) {
-			audio_backend_music_pause();
+			B.music_pause();
 			log_debug("BGM paused");
 		} else if(fadetime > 0) {
-			audio_backend_music_fade(fadetime);
+			B.music_fade(fadetime);
 			log_debug("BGM fading out");
 		} else {
-			audio_backend_music_stop();
+			B.music_stop();
 			log_debug("BGM stopped");
 		}
 	} else {
@@ -255,7 +263,7 @@ void start_bgm(const char *name) {
 
 	// if BGM has changed, change it and start from beginning
 	if(!current_bgm.name || strcmp(name, current_bgm.name)) {
-		audio_backend_music_stop();
+		B.music_stop();
 
 		stralloc(&current_bgm.name, name);
 
@@ -268,15 +276,15 @@ void start_bgm(const char *name) {
 		}
 	}
 
-	if(audio_backend_music_is_paused()) {
-		audio_backend_music_resume();
+	if(B.music_is_paused()) {
+		B.music_resume();
 	}
 
-	if(audio_backend_music_is_playing()) {
+	if(B.music_is_playing()) {
 		return;
 	}
 
-	if(!audio_backend_music_play(current_bgm.music->impl)) {
+	if(!B.music_play(current_bgm.music->impl)) {
 		return;
 	}
 
@@ -293,12 +301,12 @@ void start_bgm(const char *name) {
 }
 
 static bool audio_config_updated(SDL_Event *evt, void *arg) {
-	if (config_get_int(CONFIG_MUTE_AUDIO) == 1) {
-		audio_backend_set_sfx_volume(0.0);
-		audio_backend_set_bgm_volume(0.0);
+	if(config_get_int(CONFIG_MUTE_AUDIO)) {
+		B.sound_set_global_volume(0.0);
+		B.music_set_global_volume(0.0);
 	} else {
-		audio_backend_set_sfx_volume(config_get_float(CONFIG_SFX_VOLUME));
-		audio_backend_set_bgm_volume(config_get_float(CONFIG_BGM_VOLUME));
+		B.sound_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
+		B.music_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
 	}
 
 	return false;
@@ -315,6 +323,14 @@ void audio_init(void) {
 
 void audio_shutdown(void) {
 	events_unregister_handler(audio_config_updated);
-	audio_backend_shutdown();
+	B.shutdown();
 	ht_destroy(&sfx_volumes);
+}
+
+bool audio_output_works(void) {
+	return B.output_works();
+}
+
+void audio_music_set_position(double pos) {
+	B.music_set_position(pos);
 }

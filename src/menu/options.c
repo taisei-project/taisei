@@ -297,10 +297,6 @@ static int bind_common_intplus1_set(OptionBinding *b, int v) {
 
 // --- Binding callbacks for individual options --- //
 
-static bool bind_audio_dependence(void) {
-	return audio_backend_initialized();
-}
-
 static bool bind_resizable_dependence(void) {
 	return !config_get_int(CONFIG_FULLSCREEN);
 }
@@ -729,11 +725,11 @@ void create_options_menu(MenuData *m) {
 
 	add_menu_entry(m, "SFX Volume", do_nothing,
 		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, bind_audio_dependence);
+	);	bind_setdependence(b, audio_output_works);
 
 	add_menu_entry(m, "BGM Volume", do_nothing,
 		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
-	);	bind_setdependence(b, bind_audio_dependence);
+	);	bind_setdependence(b, audio_output_works);
 
 	add_menu_entry(m, "Mute audio", do_nothing,
 		b = bind_option(CONFIG_MUTE_AUDIO,  bind_common_onoff_get, bind_common_onoff_set)

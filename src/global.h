@@ -41,7 +41,7 @@
 #include "events.h"
 #include "difficulty.h"
 #include "color.h"
-#include "audio.h"
+#include "audio/audio.h"
 #include "rwops/all.h"
 #include "cli.h"
 #include "hirestime.h"
