@@ -20,7 +20,7 @@
 
 void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
-	plr->pos = VIEWPORT_W/2 + I*(VIEWPORT_H-64);
+	plr->pos = PLR_SPAWN_POS;
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->point_item_value = PLR_START_PIV;
@@ -143,7 +143,7 @@ void player_move(Player *plr, complex delta) {
 static void ent_draw_player(EntityInterface *ent) {
 	Player *plr = ENT_CAST(ent, Player);
 
-	if(plr->deathtime > global.frames) {
+	if(plr->deathtime >= global.frames) {
 		return;
 	}
 
@@ -483,9 +483,10 @@ void player_logic(Player* plr) {
 	process_enemies(&plr->slaves);
 	aniplayer_update(&plr->ani);
 
-	if(plr->deathtime < -1) {
-		plr->deathtime++;
-		plr->pos -= I;
+	if(plr->respawntime > global.frames) {
+		double x = PLR_SPAWN_POS_X;
+		double y = lerp(PLR_SPAWN_POS_Y, VIEWPORT_H + 64, smoothstep(0.0, 1.0, (plr->respawntime - global.frames) / (double)PLR_RESPAWN_TIME));
+		plr->pos = CMPLX(x, y);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		return;
 	}
@@ -538,7 +539,7 @@ static bool player_bomb(Player *plr) {
 		return false;
 	}
 
-	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames - plr->respawntime >= 60) {
+	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames >= plr->respawntime) {
 		player_fail_spell(plr);
 		// player_cancel_powersurge(plr);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -546,7 +547,8 @@ static bool player_bomb(Player *plr) {
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;
 
-		if(plr->deathtime > 0) {
+		if(plr->deathtime >= global.frames) {
+			// death bomb - unkill the player!
 			plr->deathtime = -1;
 
 			if(plr->bombs) {
@@ -563,6 +565,7 @@ static bool player_bomb(Player *plr) {
 		plr->bombcanceltime = 0;
 		plr->bombcanceldelay = 0;
 
+		assert(player_is_alive(plr));
 		collect_all_items(1);
 		return true;
 	}
@@ -606,7 +609,7 @@ bool player_is_vulnerable(Player *plr) {
 }
 
 bool player_is_alive(Player *plr) {
-	return plr->deathtime >= -1 && plr->deathtime < global.frames;
+	return plr->deathtime < global.frames && global.frames >= plr->respawntime;
 }
 
 void player_cancel_bomb(Player *plr, int delay) {
@@ -720,14 +723,12 @@ double player_get_bomb_progress(Player *plr, double *out_speed) {
 }
 
 void player_realdeath(Player *plr) {
-	plr->deathtime = -DEATH_DELAY-1;
-	plr->respawntime = global.frames;
+	plr->respawntime = global.frames + PLR_RESPAWN_TIME;
 	plr->inputflags &= ~INFLAGS_MOVE;
 	plr->deathpos = plr->pos;
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
-	plr->recovery = -(global.frames + DEATH_DELAY + 150);
+	plr->recovery = -(plr->respawntime + 150);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
-
 	player_fail_spell(plr);
 
 	if(global.stage->type != STAGE_SPELL && global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
@@ -1164,7 +1165,7 @@ static void player_ani_moving(Player *plr, int dir) {
 void player_applymovement(Player *plr) {
 	plr->velocity = 0;
 
-	if(plr->deathtime != -1)
+	if(!player_is_alive(plr))
 		return;
 
 	bool gamepad = player_applymovement_gamepad(plr);
