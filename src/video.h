@@ -54,6 +54,7 @@ typedef enum VideoCapability {
 	VIDEO_CAP_FULLSCREEN,
 	VIDEO_CAP_EXTERNAL_RESIZE,
 	VIDEO_CAP_CHANGE_RESOLUTION,
+	VIDEO_CAP_VSYNC_ADAPTIVE,
 } VideoCapability;
 
 typedef enum VideoCapabilityState {

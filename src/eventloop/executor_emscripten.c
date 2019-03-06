@@ -56,10 +56,17 @@ static void em_loop_callback(void) {
 	fpscounter_update(&global.fps.busy);
 }
 
+static void update_vsync(void) {
+	switch(config_get_int(CONFIG_VSYNC)) {
+		case 0: r_vsync(VSYNC_NONE); break;
+		default: r_vsync(VSYNC_NORMAL); break;
+	}
+}
+
 static bool em_handle_resize_event(SDL_Event *event, void *arg) {
 	emscripten_cancel_main_loop();
 	emscripten_set_main_loop(em_loop_callback, 0, false);
-	emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+	update_vsync();
 	return false;
 }
 
@@ -82,7 +89,7 @@ static bool em_audio_workaround(SDL_Event *event, void *arg) {
 void eventloop_run(void) {
 	frame_times.next = time_get();
 	emscripten_set_main_loop(em_loop_callback, 0, false);
-	emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+	update_vsync();
 
 	events_register_handler(&(EventHandler) {
 		em_audio_workaround, NULL, EPRIO_SYSTEM, SDL_KEYDOWN,

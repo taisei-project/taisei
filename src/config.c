@@ -390,13 +390,23 @@ static bool config_set(const char *key, const char *val, void *data) {
 typedef void (*ConfigUpgradeFunc)(void);
 
 static void config_upgrade_1(void) {
-	// disable vsync by default
-	config_set_int(CONFIG_VSYNC, 0);
+	// reset vsync to the default value
+	config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
 
 	// this version also changes meaning of the vsync value
 	// previously it was: 0 = on,  1 = off, 2 = adaptive, because lachs0r doesn't know how my absolutely genius options menu works.
 	//         now it is: 0 = off, 1 = on,  2 = adaptive, as it should be.
 }
+
+#ifdef __EMSCRIPTEN__
+static void config_upgrade_2(void) {
+	// emscripten defaults for these have been changed
+	config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
+	config_set_int(CONFIG_FXAA, CONFIG_FXAA_DEFAULT);
+}
+#else
+#define config_upgrade_2 NULL
+#endif
 
 static ConfigUpgradeFunc config_upgrades[] = {
 	/*
@@ -408,6 +418,7 @@ static ConfigUpgradeFunc config_upgrades[] = {
 	*/
 
 	config_upgrade_1,
+	config_upgrade_2,
 };
 
 static void config_apply_upgrades(int start) {

@@ -74,6 +74,15 @@
 	CONFIGDEF_GPKEYBINDING(KEY_SKIP,            "gamepad_key_skip",     GAMEPAD_BUTTON_B) \
 
 
+#ifdef __EMSCRIPTEN__
+	#define CONFIG_VSYNC_DEFAULT 1
+	#define CONFIG_FXAA_DEFAULT 0
+#else
+	#define CONFIG_VSYNC_DEFAULT 0
+	#define CONFIG_FXAA_DEFAULT 1
+#endif
+
+
 #define CONFIGDEFS \
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
 	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
@@ -85,7 +94,7 @@
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
-	CONFIGDEF_INT       (VSYNC,                     "vsync",                                0) \
+	CONFIGDEF_INT       (VSYNC,                     "vsync",                                CONFIG_VSYNC_DEFAULT) \
 	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
 	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           0.5) \
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
@@ -100,7 +109,7 @@
 	CONFIGDEF_INT       (SHOT_INVERTED,             "shot_inverted",                        0) \
 	CONFIGDEF_INT       (FOCUS_LOSS_PAUSE,          "focus_loss_pause",                     1) \
 	CONFIGDEF_INT       (PARTICLES,                 "particles",                            1) \
-	CONFIGDEF_INT       (FXAA,                      "fxaa",                                 1) \
+	CONFIGDEF_INT       (FXAA,                      "fxaa",                                 CONFIG_FXAA_DEFAULT) \
 	CONFIGDEF_INT       (POSTPROCESS,               "postprocess",                          2) \
 	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
 	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \

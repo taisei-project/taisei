@@ -39,6 +39,9 @@ static VideoCapabilityState video_query_capability_generic(VideoCapability cap) 
 			} else {
 				return VIDEO_AVAILABLE;
 			}
+
+		case VIDEO_CAP_VSYNC_ADAPTIVE:
+			return VIDEO_AVAILABLE;
 	}
 
 	UNREACHABLE;
@@ -55,6 +58,9 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 		// XXX: Might not be actually working, but let's be optimistic.
 		case VIDEO_CAP_CHANGE_RESOLUTION:
 			return VIDEO_AVAILABLE;
+
+		case VIDEO_CAP_VSYNC_ADAPTIVE:
+			return VIDEO_AVAILABLE;
 	}
 
 	UNREACHABLE;
@@ -63,6 +69,9 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_VSYNC_ADAPTIVE:
 			return VIDEO_NEVER_AVAILABLE;
 
 		default:

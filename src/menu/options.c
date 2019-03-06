@@ -480,7 +480,10 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "on");
 		bind_addvalue(b, "off");
+
+	if(video_query_capability(VIDEO_CAP_VSYNC_ADAPTIVE) != VIDEO_NEVER_AVAILABLE) {
 		bind_addvalue(b, "adaptive");
+	}
 
 	add_menu_entry(m, "Skip frames", do_nothing,
 		b = bind_option(CONFIG_VID_FRAMESKIP, bind_common_intplus1_get, bind_common_intplus1_set)
