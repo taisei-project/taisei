@@ -87,7 +87,7 @@
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
 	CONFIGDEF_INT       (VSYNC,                     "vsync",                                0) \
 	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
-	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           1.0) \
+	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           0.5) \
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
 	CONFIGDEF_INT       (MUTE_AUDIO,                "mute_audio",                           0) \
 	CONFIGDEF_INT       (NO_STAGEBG,                "disable_stagebg",                      0) \
