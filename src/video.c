@@ -385,7 +385,7 @@ static void video_init_sdl(void) {
 		// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
 		// A suboptimal X11 server may be available on top of those systems,
 		// so we push X11 down in the priority list.
-		prefer_drivers = "wayland,mir,cocoa,windows,x11";
+		prefer_drivers = "wayland,cocoa,windows,x11";
 	}
 
 	if(prefer_drivers && *prefer_drivers && !*force_driver) {
