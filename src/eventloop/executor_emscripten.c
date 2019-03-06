@@ -63,10 +63,31 @@ static bool em_handle_resize_event(SDL_Event *event, void *arg) {
 	return false;
 }
 
+static bool em_audio_workaround(SDL_Event *event, void *arg) {
+	// Workaround for Chromium:
+	// https://github.com/emscripten-core/emscripten/issues/6511
+	// Will start playing audio as soon as the first input occurs.
+
+	(__extension__ EM_ASM({
+		var audioctx = Module['SDL2'].audioContext;
+		if(audioctx !== undefined) {
+			audioctx.resume();
+		}
+	}));
+
+	events_unregister_handler(em_audio_workaround);
+	return false;
+}
+
 void eventloop_run(void) {
 	frame_times.next = time_get();
 	emscripten_set_main_loop(em_loop_callback, 0, false);
 	emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+
+	events_register_handler(&(EventHandler) {
+		em_audio_workaround, NULL, EPRIO_SYSTEM, SDL_KEYDOWN,
+	});
+
 	events_register_handler(&(EventHandler) {
 		em_handle_resize_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
 	});
