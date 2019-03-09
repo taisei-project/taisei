@@ -24,7 +24,7 @@ void replay_init(Replay *rpy) {
 	log_debug("Replay at %p initialized for writing", (void*)rpy);
 }
 
-ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, Player *plr) {
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr) {
 	ReplayStage *s;
 
 	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
@@ -37,7 +37,8 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, D
 	s->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
 
 	s->stage = stage->id;
-	s->seed = seed;
+	s->start_time = start_time;
+	s->rng_seed = seed;
 	s->diff = diff;
 
 	s->plr_pos_x = floor(creal(plr->pos));
@@ -166,7 +167,7 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 	uint32_t cs = 0;
 
 	cs += stg->stage;
-	cs += stg->seed;
+	cs += stg->rng_seed;
 	cs += stg->diff;
 	cs += stg->plr_points;
 	cs += stg->plr_char;
@@ -200,24 +201,15 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 }
 
 static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t version) {
-	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-		SDL_WriteLE32(file, stg->flags);
-	}
+	assert(version >= REPLAY_STRUCT_VERSION_TS103000_REV2);
 
+	SDL_WriteLE32(file, stg->flags);
 	SDL_WriteLE16(file, stg->stage);
-	SDL_WriteLE32(file, stg->seed);
+	SDL_WriteLE64(file, stg->start_time);
+	SDL_WriteLE64(file, stg->rng_seed);
 	SDL_WriteU8(file, stg->diff);
-
-	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
-		SDL_WriteLE64(file, stg->plr_points);
-	} else {
-		SDL_WriteLE32(file, stg->plr_points);
-	}
-
-	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-		SDL_WriteU8(file, stg->plr_continues_used);
-	}
-
+	SDL_WriteLE64(file, stg->plr_points);
+	SDL_WriteU8(file, stg->plr_continues_used);
 	SDL_WriteU8(file, stg->plr_char);
 	SDL_WriteU8(file, stg->plr_shot);
 	SDL_WriteLE16(file, stg->plr_pos_x);
@@ -225,30 +217,12 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_focus);
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lives);
-
-	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
-		SDL_WriteLE16(file, stg->plr_life_fragments);
-	} else {
-		SDL_WriteU8(file, stg->plr_life_fragments);
-	}
-
+	SDL_WriteLE16(file, stg->plr_life_fragments);
 	SDL_WriteU8(file, stg->plr_bombs);
-
-	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
-		SDL_WriteLE16(file, stg->plr_bomb_fragments);
-	} else {
-		SDL_WriteU8(file, stg->plr_bomb_fragments);
-	}
-
+	SDL_WriteLE16(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
-
-	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
-		SDL_WriteLE32(file, stg->plr_graze);
-		SDL_WriteLE32(file, stg->plr_point_item_value);
-	} else if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
-		SDL_WriteLE16(file, stg->plr_graze);
-	}
-
+	SDL_WriteLE32(file, stg->plr_graze);
+	SDL_WriteLE32(file, stg->plr_point_item_value);
 	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
@@ -267,20 +241,20 @@ static void fix_flags(Replay *rpy) {
 }
 
 bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
+	assert(version >= REPLAY_STRUCT_VERSION_TS103000_REV2);
+
 	uint16_t base_version = (version & ~REPLAY_VERSION_COMPRESSION_BIT);
 	bool compression = (version & REPLAY_VERSION_COMPRESSION_BIT);
 
 	SDL_RWwrite(file, replay_magic_header, sizeof(replay_magic_header), 1);
 	SDL_WriteLE16(file, version);
 
-	if(base_version >= REPLAY_STRUCT_VERSION_TS102000_REV0) {
-		TaiseiVersion v;
-		TAISEI_VERSION_GET_CURRENT(&v);
+	TaiseiVersion v;
+	TAISEI_VERSION_GET_CURRENT(&v);
 
-		if(taisei_version_write(file, &v) != TAISEI_VERSION_SIZE) {
-			log_error("Failed to write game version: %s", SDL_GetError());
-			return false;
-		}
+	if(taisei_version_write(file, &v) != TAISEI_VERSION_SIZE) {
+		log_error("Failed to write game version: %s", SDL_GetError());
+		return false;
 	}
 
 	void *buf;
@@ -295,10 +269,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	replay_write_string(vfile, config_get_str(CONFIG_PLAYERNAME), base_version);
 	fix_flags(rpy);
 
-	if(base_version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-		SDL_WriteLE32(vfile, rpy->flags);
-	}
-
+	SDL_WriteLE32(vfile, rpy->flags);
 	SDL_WriteLE16(vfile, rpy->numstages);
 
 	for(int i = 0; i < rpy->numstages; ++i) {
@@ -390,6 +361,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS102000_REV2:
 		case REPLAY_STRUCT_VERSION_TS103000_REV0:
 		case REPLAY_STRUCT_VERSION_TS103000_REV1:
+		case REPLAY_STRUCT_VERSION_TS103000_REV2:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -447,7 +419,15 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		}
 
 		CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
-		CHECKPROP(stg->seed = SDL_ReadLE32(file), u);
+
+		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV2) {
+			CHECKPROP(stg->start_time = SDL_ReadLE64(file), u);
+			CHECKPROP(stg->rng_seed = SDL_ReadLE64(file), u);
+		} else {
+			stg->rng_seed = SDL_ReadLE32(file);
+			stg->start_time = stg->rng_seed;
+		}
+
 		CHECKPROP(stg->diff = SDL_ReadU8(file), u);
 
 		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {

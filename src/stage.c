@@ -783,19 +783,22 @@ void stage_loop(StageInfo *stage) {
 	stage_preload();
 	stage_draw_init();
 
-	uint32_t seed = (uint32_t)time(0);
 	tsrand_switch(&global.rand_game);
-	tsrand_seed_p(&global.rand_game, seed);
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
-		global.replay_stage = replay_create_stage(&global.replay, stage, seed, global.diff, &global.plr);
+		uint64_t start_time = (uint64_t)time(0);
+		uint64_t seed = makeseed();
+		tsrand_seed_p(&global.rand_game, seed);
+
+		global.replay_stage = replay_create_stage(&global.replay, stage, start_time, seed, global.diff, &global.plr);
 
 		// make sure our player state is consistent with what goes into the replay
 		player_init(&global.plr);
 		replay_stage_sync_player_state(global.replay_stage, &global.plr);
 
-		log_debug("Random seed: %u", seed);
+		log_debug("Start time: %"PRIu64, start_time);
+		log_debug("Random seed: 0x%"PRIx64, seed);
 
 		StageProgress *p = stage_get_progress_from_info(stage, global.diff, true);
 
@@ -812,10 +815,11 @@ void stage_loop(StageInfo *stage) {
 		assert(stg != NULL);
 		assert(stage_get(stg->stage) == stage);
 
-		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
+		tsrand_seed_p(&global.rand_game, stg->rng_seed);
 
-		tsrand_seed_p(&global.rand_game, stg->seed);
-		log_debug("Random seed: %u", stg->seed);
+		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
+		log_debug("Start time: %"PRIu64, stg->start_time);
+		log_debug("Random seed: 0x%"PRIx64, stg->rng_seed);
 
 		global.diff = stg->diff;
 		player_init(&global.plr);

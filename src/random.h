@@ -11,48 +11,43 @@
 
 #include "taisei.h"
 
-#define CMWC_CYCLE 4096 // as Marsaglia recommends
-#define CMWC_C_MAX 809430660 // as Marsaglia recommends
-
-struct RandomState {
-	uint32_t Q[CMWC_CYCLE];
-	uint32_t c; // must be limited with CMWC_C_MAX
-	uint32_t i;
+typedef struct RandomState {
+	uint64_t state[4];
 	bool locked;
-};
+} RandomState;
 
-typedef struct RandomState RandomState;
+uint64_t splitmix64(uint64_t *state);
+uint64_t makeseed(void);
 
-void tsrand_init(RandomState *rnd, uint32_t seed);
+void tsrand_init(RandomState *rnd, uint64_t seed);
 void tsrand_switch(RandomState *rnd);
-void tsrand_seed_p(RandomState *rnd, uint32_t seed);
+void tsrand_seed_p(RandomState *rnd, uint64_t seed);
 uint32_t tsrand_p(RandomState *rnd);
+uint64_t tsrand64_p(RandomState *rnd);
 
-void tsrand_seed(uint32_t seed);
+void tsrand_seed(uint64_t seed);
 uint32_t tsrand(void);
+uint64_t tsrand64(void);
 
 void tsrand_lock(RandomState *rnd);
 void tsrand_unlock(RandomState *rnd);
 
-float frand(void);
-float nfrand(void);
+double frand(void);
+double nfrand(void);
 
-void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
-void __tsrand_fill(int amount, const char *file, uint line);
-uint32_t __tsrand_a(int idx, const char *file, uint line);
-float __afrand(int idx, const char *file, uint line);
-float __anfrand(int idx, const char *file, uint line);
+void _tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
+void _tsrand_fill(int amount, const char *file, uint line);
+uint32_t _tsrand_a(int idx, const char *file, uint line);
+uint64_t _tsrand64_a(int idx, const char *file, uint line);
+double _afrand(int idx, const char *file, uint line);
+double _anfrand(int idx, const char *file, uint line);
 
-#define tsrand_fill_p(rnd,amount) __tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
-#define tsrand_fill(amount) __tsrand_fill(amount, __FILE__, __LINE__)
-#define tsrand_a(idx) __tsrand_a(idx, __FILE__, __LINE__)
-#define afrand(idx) __afrand(idx, __FILE__, __LINE__)
-#define anfrand(idx) __anfrand(idx, __FILE__, __LINE__)
+#define tsrand_fill_p(rnd,amount) _tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
+#define tsrand_fill(amount) _tsrand_fill(amount, __FILE__, __LINE__)
+#define tsrand_a(idx) _tsrand_a(idx, __FILE__, __LINE__)
+#define afrand(idx) _afrand(idx, __FILE__, __LINE__)
+#define anfrand(idx) _anfrand(idx, __FILE__, __LINE__)
 
-#define TSRAND_MAX UINT32_MAX
-
-#define TSRAND_ARRAY_LIMIT 64
-#define srand USE_tsrand_seed_INSTEAD_OF_srand
-#define rand USE_tsrand_INSTEAD_OF_rand
+#define TSRAND_ARRAY_LIMIT 16
 
 #endif // IGUARD_random_h

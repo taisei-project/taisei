@@ -235,7 +235,7 @@ static void replayview_drawitem(void *n, int item, int cnt) {
 	int columns = sizeof(sizes)/sizeof(float), i, j;
 	float base_size = (SCREEN_W - 110.0) / columns;
 
-	time_t t = rpy->stages[0].seed;
+	time_t t = rpy->stages[0].start_time;
 	struct tm* timeinfo = localtime(&t);
 
 	for(i = 0; i < columns; ++i) {
@@ -363,7 +363,7 @@ static int replayview_cmp(const void *a, const void *b) {
 	Replay *arpy = actx->replay;
 	Replay *brpy = bctx->replay;
 
-	return brpy->stages[0].seed - arpy->stages[0].seed;
+	return brpy->stages[0].start_time - arpy->stages[0].start_time;
 }
 
 static int fill_replayview_menu(MenuData *m) {

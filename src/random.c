@@ -16,62 +16,67 @@
 
 static RandomState *tsrand_current;
 
-/*
- *  Complementary-multiply-with-carry algorithm
- */
+uint64_t splitmix64(uint64_t *state) {
+	// from http://xoshiro.di.unimi.it/splitmix64.c
 
-// CMWC engine
-uint32_t tsrand_p(RandomState *rnd) {
-	assert(!rnd->locked);
-
-	uint64_t const a = 18782; // as Marsaglia recommends
-	uint32_t const m = 0xfffffffe; // as Marsaglia recommends
-	uint64_t t;
-	uint32_t x;
-
-	rnd->i = (rnd->i + 1) & (CMWC_CYCLE - 1);
-	t = a * rnd->Q[rnd->i] + rnd->c;
-	// Let c = t / 0xfffffff, x = t mod 0xffffffff
-	rnd->c = t >> 32;
-	x = t + rnd->c;
-
-	if(x < rnd->c) {
-		x++;
-		rnd->c++;
-	}
-
-	return rnd->Q[rnd->i] = m - x;
+	uint64_t z = (*state += 0x9e3779b97f4a7c15);
+	z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+	z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+	return z ^ (z >> 31);
 }
 
-void tsrand_seed_p(RandomState *rnd, uint32_t seed) {
-	static const uint32_t phi = 0x9e3779b9;
+uint64_t makeseed(void) {
+	static uint64_t s;
+	return splitmix64(&s) ^ SDL_GetPerformanceCounter();
+}
 
-	rnd->Q[0] = seed;
-	rnd->Q[1] = seed + phi;
-	rnd->Q[2] = seed + phi + phi;
+static inline uint64_t rotl(uint64_t x, int k) {
+	return (x << k) | (x >> (64 - k));
+}
 
-	for(int i = 3; i < CMWC_CYCLE; ++i) {
-		rnd->Q[i] = rnd->Q[i - 3] ^ rnd->Q[i - 2] ^ phi ^ i;
-	}
+static uint64_t xoshiro256plus(uint64_t s[4]) {
+	// from http://xoshiro.di.unimi.it/xoshiro256plus.c
 
-	rnd->c = 0x8edc04;
-	rnd->i = CMWC_CYCLE - 1;
+	const uint64_t result_plus = s[0] + s[3];
+	const uint64_t t = s[1] << 17;
 
-	for(int i = 0; i < CMWC_CYCLE*16; ++i) {
-		tsrand_p(rnd);
-	}
+	s[2] ^= s[0];
+	s[3] ^= s[1];
+	s[1] ^= s[2];
+	s[0] ^= s[3];
+	s[2] ^= t;
+	s[3] = rotl(s[3], 45);
+
+	return result_plus;
+}
+
+uint32_t tsrand_p(RandomState *rnd) {
+	assert(!rnd->locked);
+	return xoshiro256plus(rnd->state) >> 32;
+}
+
+uint64_t tsrand64_p(RandomState *rnd) {
+	assert(!rnd->locked);
+	return xoshiro256plus(rnd->state);
+}
+
+void tsrand_seed_p(RandomState *rnd, uint64_t seed) {
+	rnd->state[0] = splitmix64(&seed);
+	rnd->state[1] = splitmix64(&seed);
+	rnd->state[2] = splitmix64(&seed);
+	rnd->state[3] = splitmix64(&seed);
 }
 
 void tsrand_switch(RandomState *rnd) {
 	tsrand_current = rnd;
 }
 
-void tsrand_init(RandomState *rnd, uint32_t seed) {
+void tsrand_init(RandomState *rnd, uint64_t seed) {
 	memset(rnd, 0, sizeof(RandomState));
 	tsrand_seed_p(rnd, seed);
 }
 
-void tsrand_seed(uint32_t seed) {
+void tsrand_seed(uint64_t seed) {
 	tsrand_seed_p(tsrand_current, seed);
 }
 
@@ -79,17 +84,26 @@ uint32_t tsrand(void) {
 	return tsrand_p(tsrand_current);
 }
 
-float frand(void) {
-	return (float)((double)tsrand()/(double)TSRAND_MAX);
+uint64_t tsrand64(void) {
+	return tsrand64_p(tsrand_current);
 }
 
-float nfrand(void) {
+static inline double makedouble(uint64_t x) {
+	// Range: [0..1)
+	return (x >> 11) * (1.0 / (UINT64_C(1) << 53));
+}
+
+double frand(void) {
+	return makedouble(tsrand64());
+}
+
+double nfrand(void) {
 	return frand() * 2.0 - 1.0;
 }
 
 // we use this to support multiple rands in a single statement without breaking replays across different builds
 
-static uint32_t tsrand_array[TSRAND_ARRAY_LIMIT];
+static uint64_t tsrand_array[TSRAND_ARRAY_LIMIT];
 static int tsrand_array_elems;
 static uint64_t tsrand_fillflags = 0;
 
@@ -106,32 +120,32 @@ static void tsrand_error(const char *file, const char *func, uint line, const ch
 
 #define TSRANDERR(...) tsrand_error(file, __func__, line, __VA_ARGS__)
 
-void __tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) {
+void _tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) {
 	if(tsrand_fillflags) {
 		TSRANDERR("Some indices left unused from the previous call");
 		return;
 	}
 
 	tsrand_array_elems = amount;
-	tsrand_fillflags = (1L << amount) - 1;
+	tsrand_fillflags = (UINT64_C(1) << amount) - 1;
 
 	for(int i = 0; i < amount; ++i) {
-		tsrand_array[i] = tsrand_p(rnd);
+		tsrand_array[i] = tsrand64_p(rnd);
 	}
 }
 
-void __tsrand_fill(int amount, const char *file, uint line) {
-	__tsrand_fill_p(tsrand_current, amount, file, line);
+void _tsrand_fill(int amount, const char *file, uint line) {
+	_tsrand_fill_p(tsrand_current, amount, file, line);
 }
 
-uint32_t __tsrand_a(int idx, const char *file, uint line) {
+uint64_t _tsrand64_a(int idx, const char *file, uint line) {
 	if(idx >= tsrand_array_elems || idx < 0) {
 		TSRANDERR("Index out of range (%i / %i)", idx, tsrand_array_elems);
 		return 0;
 	}
 
-	if(tsrand_fillflags & (1L << idx)) {
-		tsrand_fillflags &= ~(1L << idx);
+	if(tsrand_fillflags & (UINT64_C(1) << idx)) {
+		tsrand_fillflags &= ~(UINT64_C(1) << idx);
 		return tsrand_array[idx];
 	}
 
@@ -139,12 +153,16 @@ uint32_t __tsrand_a(int idx, const char *file, uint line) {
 	return 0;
 }
 
-float __afrand(int idx, const char *file, uint line) {
-	return (float)((double)__tsrand_a(idx, file, line) / (double)TSRAND_MAX);
+uint32_t _tsrand_a(int idx, const char *file, uint line) {
+	return _tsrand64_a(idx, file, line) >> 32;
 }
 
-float __anfrand(int idx, const char *file, uint line) {
-	return __afrand(idx, file, line) * 2 - 1;
+double _afrand(int idx, const char *file, uint line) {
+	return makedouble(_tsrand64_a(idx, file, line));
+}
+
+double _anfrand(int idx, const char *file, uint line) {
+	return _afrand(idx, file, line) * 2 - 1;
 }
 
 void tsrand_lock(RandomState *rnd) {

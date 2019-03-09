@@ -46,13 +46,16 @@
 
 	// Taisei v1.3 revision 1: expands life and bomb fragments to 16bit
 	#define REPLAY_STRUCT_VERSION_TS103000_REV1 10
+
+	// Taisei v1.3 revision 2: RNG changed; seed separated from start time; time expanded to 64bit
+	#define REPLAY_STRUCT_VERSION_TS103000_REV2 11
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV1 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV2 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -88,8 +91,10 @@ typedef struct ReplayStage {
 
 	// initial game settings
 	uint16_t stage; // must match type of StageInfo.id in stage.h
-	uint32_t seed;  // this also happens to be the game initiation time, and we currently use this property
-                    // NOTE: this might change eventually
+	/* BEGIN REPLAY_STRUCT_VERSION_TS103000_REV2 and above */
+	uint64_t start_time;
+	/* END REPLAY_STRUCT_VERSION_TS103000_REV2 and above */
+	uint64_t rng_seed; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV2: uint32_t, also specifies start_time
 	uint8_t diff;
 
 	// initial player settings
@@ -219,7 +224,7 @@ typedef enum ReplayStageFlags {
 } ReplayStageFlags;
 
 void replay_init(Replay *rpy);
-ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t seed, Difficulty diff, Player *plr);
+ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr);
 
 void replay_destroy(Replay *rpy);
 void replay_destroy_events(Replay *rpy);

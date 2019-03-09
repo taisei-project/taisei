@@ -67,6 +67,14 @@ char* getenv();
 attr_deprecated("Use env_set instead")
 int setenv();
 
+#undef rand
+attr_deprecated("Use tsrand instead")
+int rand(void);
+
+#undef srand
+attr_deprecated("Use tsrand_seed instead")
+void srand(uint);
+
 PRAGMA(GCC diagnostic pop)
 
 #endif // IGUARD_util_consideredharmful_h
