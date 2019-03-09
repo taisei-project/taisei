@@ -580,7 +580,6 @@ void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat 
 }
 
 void r_vsync(VsyncMode mode) {
-	_r_state_touch_vsync();
 	B.vsync(mode);
 }
 

@@ -299,8 +299,74 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg);
 static bool events_handler_key_down(SDL_Event *event, void *arg);
 static bool events_handler_key_up(SDL_Event *event, void *arg);
 
+attr_unused
+static bool events_handler_debug_winevt(SDL_Event *event, void *arg) {
+	// copied from SDL wiki almost verbatim
+
+	if(event->type == SDL_WINDOWEVENT) {
+		switch(event->window.event) {
+			case SDL_WINDOWEVENT_SHOWN:
+				log_info("Window %d shown", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_HIDDEN:
+				log_info("Window %d hidden", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_EXPOSED:
+				log_info("Window %d exposed", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_MOVED:
+				log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
+				break;
+			case SDL_WINDOWEVENT_RESIZED:
+				log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+				break;
+			case SDL_WINDOWEVENT_SIZE_CHANGED:
+				log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+				break;
+			case SDL_WINDOWEVENT_MINIMIZED:
+				log_info("Window %d minimized", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_MAXIMIZED:
+				log_info("Window %d maximized", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_RESTORED:
+				log_info("Window %d restored", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_ENTER:
+				log_info("Mouse entered window %d", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_LEAVE:
+				log_info("Mouse left window %d", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				log_info("Window %d gained keyboard focus", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				log_info("Window %d lost keyboard focus", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_CLOSE:
+				log_info("Window %d closed", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_TAKE_FOCUS:
+				log_info("Window %d is offered a focus", event->window.windowID);
+				break;
+			case SDL_WINDOWEVENT_HIT_TEST:
+				log_info("Window %d has a special hit test", event->window.windowID);
+				break;
+			default:
+				log_warn("Window %d got unknown event %d", event->window.windowID, event->window.event);
+			break;
+		}
+	}
+
+	return false;
+}
+
 
 static EventHandler default_handlers[] = {
+#ifdef DEBUG_WINDOW_EVENTS
+	{ .proc = events_handler_debug_winevt,          .priority = EPRIO_SYSTEM,       .event_type = SDL_WINDOWEVENT },
+#endif
 	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
 	{ .proc = events_handler_config,                .priority = EPRIO_SYSTEM,       .event_type = 0 },
 	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
@@ -394,6 +460,10 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 	SDL_Scancode scan = event->key.keysym.scancode;
 	bool repeat = event->key.repeat;
 
+	if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && scan == SDL_SCANCODE_TAB) {
+		scan = SDL_SCANCODE_ESCAPE;
+	}
+
 	/*
 	 *  Emit menu events
 	 */
@@ -477,7 +547,7 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 	}
 
 	if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
-		config_set_int(CONFIG_FULLSCREEN, !config_get_int(CONFIG_FULLSCREEN));
+		video_set_fullscreen(!video_is_fullscreen());
 		return true;
 	}
 

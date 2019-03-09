@@ -12,10 +12,10 @@
 #include "taisei.h"
 
 #include "transition.h"
+#include "events.h"
+#include "eventloop/eventloop.h"
 
 #define IMENU_BLUR 0.05
-
-#include "events.h"
 
 enum {
 	FADE_TIME = 15
@@ -69,28 +69,32 @@ struct MenuData {
 
 	void *context;
 
+	MenuProc begin;
 	MenuProc draw;
 	MenuProc input;
 	MenuProc logic;
-	MenuProc begin;
 	MenuProc end;
+
+	CallChain cc;
 };
+
+MenuData *alloc_menu(void);
+void free_menu(MenuData *menu);
+void close_menu(MenuData *menu);
+void kill_menu(MenuData *menu);
+
+// You will get a pointer to the MenuData in callchain result.
+// WARNING: Unless the menu state is MS_Dead at the time your callback is invoked, it may be called again!
+// This must be accounted for, otherwise demons will literally fly out of your nose.
+// No joke. Not *might*, they actually *will*. I wouldn't recommend testing that out.
+void enter_menu(MenuData *menu, CallChain next);
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg);
 MenuEntry *add_menu_entry_f(MenuData *menu, char *name, MenuAction action, void *arg, int flags);
-
 void add_menu_separator(MenuData *menu);
-void create_menu(MenuData *menu);
-void destroy_menu(MenuData *menu);
 
 void menu_input(MenuData *menu);
 void menu_no_input(MenuData *menu);
-
-void close_menu(MenuData *menu);
-
-void menu_key_action(MenuData *menu, int sym);
-
-int menu_loop(MenuData *menu);
 
 float menu_fade(MenuData *menu);
 

@@ -170,6 +170,9 @@ typedef complex max_align_t;
   #else
     #define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
   #endif
+#elif defined __EMSCRIPTEN__ && defined __clang__
+  // CMPLX from emscripten headers uses the clang-specific syntax without __extension__
+  #pragma clang diagnostic ignored "-Wcomplex-component-init"
 #endif
 
 /*
@@ -197,9 +200,13 @@ typedef complex max_align_t;
 #define attr_sentinel \
 	__attribute__ ((sentinel))
 
-// Identifier is meant to be possibly unused.
+// Symbol is meant to be possibly unused.
 #define attr_unused \
 	__attribute__ ((unused))
+
+// Symbol should be emitted even if it appears to be unused.
+#define attr_used \
+	__attribute__ ((used))
 
 // Function or type is deprecated and should not be used.
 #define attr_deprecated(msg) \

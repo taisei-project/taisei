@@ -76,6 +76,8 @@ static void* call_shutdown_hook(List **vlist, List *vhook, void *arg) {
 }
 
 void vfs_shutdown(void) {
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
+
 	list_foreach(&shutdown_hooks, call_shutdown_hook, NULL);
 
 	vfs_decref(vfs_root);

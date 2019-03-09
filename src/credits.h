@@ -11,7 +11,9 @@
 
 #include "taisei.h"
 
-void credits_loop(void);
+#include "eventloop/eventloop.h"
+
+void credits_enter(CallChain next);
 void credits_preload(void);
 
 #endif // IGUARD_credits_h

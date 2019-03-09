@@ -36,14 +36,14 @@ void main_menu_update_practice_menus(void) {
 			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
 
 			if(p && p->unlocked) {
-				spell_practice_entry->action = enter_spellpractice;
+				spell_practice_entry->action = menu_action_enter_spellpractice;
 			}
 		} else if(stg->type == STAGE_STORY) {
 			for(Difficulty d = D_Easy; d <= D_Lunatic; ++d) {
 				StageProgress *p = stage_get_progress_from_info(stg, d, false);
 
 				if(p && p->unlocked) {
-					stage_practice_entry->action = enter_stagepractice;
+					stage_practice_entry->action = menu_action_enter_stagepractice;
 				}
 			}
 		}
@@ -63,6 +63,7 @@ static void update_main_menu(MenuData *menu) {
 	}
 }
 
+attr_unused
 static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *m = arg;
 	TaiseiEvent te = TAISEI_EVENT(event->type);
@@ -85,6 +86,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	return menu_input_handler(event, arg);
 }
 
+attr_unused
 static void main_menu_input(MenuData *m) {
 	events_poll((EventHandler[]){
 		{ .proc = main_menu_input_handler, .arg = m },
@@ -92,27 +94,34 @@ static void main_menu_input(MenuData *m) {
 	}, EFLAG_MENU);
 }
 
-void create_main_menu(MenuData *m) {
-	create_menu(m);
+MenuData* create_main_menu(void) {
+	MenuData *m = alloc_menu();
+
+	m->begin = begin_main_menu;
 	m->draw = draw_main_menu;
 	m->logic = update_main_menu;
-	m->begin = begin_main_menu;
-	m->input = main_menu_input;
 
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
-	add_menu_entry(m, "Stage Practice", enter_stagepractice, NULL);
-	add_menu_entry(m, "Spell Practice", enter_spellpractice, NULL);
+	add_menu_entry(m, "Stage Practice", menu_action_enter_stagepractice, NULL);
+	add_menu_entry(m, "Spell Practice", menu_action_enter_spellpractice, NULL);
 #ifdef DEBUG
-	add_menu_entry(m, "Select Stage", enter_stagemenu, NULL);
+	add_menu_entry(m, "Select Stage", menu_action_enter_stagemenu, NULL);
 #endif
-	add_menu_entry(m, "Replays", enter_replayview, NULL);
-	add_menu_entry(m, "Options", enter_options, NULL);
-	add_menu_entry(m, "Quit", menu_commonaction_close, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, "Replays", menu_action_enter_replayview, NULL);
+	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
+#ifndef __EMSCRIPTEN__
+	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+	m->input = main_menu_input;
+#endif
 
 	stage_practice_entry = m->entries + 2;
 	spell_practice_entry = m->entries + 3;
 	main_menu_update_practice_menus();
+
+	start_bgm("menu");
+
+	return m;
 }
 
 void draw_main_menu_bg(MenuData* menu) {

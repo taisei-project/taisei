@@ -24,9 +24,9 @@
 #include "vfs/setup.h"
 #include "version.h"
 #include "credits.h"
-#include "renderer/api.h"
 #include "taskmanager.h"
 
+attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
@@ -144,76 +144,82 @@ static void log_system_specs(void) {
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
 }
 
+static void log_version(void) {
+	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
+}
+
+typedef struct MainContext {
+	CLIAction cli;
+	Replay replay;
+	int replay_idx;
+	uchar headless : 1;
+} MainContext;
+
+static void main_post_vfsinit(CallChainResult ccr);
+static void main_singlestg(MainContext *mctx) attr_unused;
+static void main_replay(MainContext *mctx);
+static noreturn void main_vfstree(CallChainResult ccr);
+
+static noreturn void main_quit(MainContext *ctx, int status) {
+	free_cli_action(&ctx->cli);
+	replay_destroy(&ctx->replay);
+	free(ctx);
+	exit(status);
+}
+
 int main(int argc, char **argv) {
+	MainContext *ctx = calloc(1, sizeof(*ctx));
+
 	setlocale(LC_ALL, "C");
-
-	Replay replay = {0};
-	int replay_idx = 0;
-	bool headless = false;
-
 	htutil_init();
 	init_log();
-
 	stage_init_array(); // cli_args depends on this
 
 	// commandline arguments should be parsed as early as possible
-	CLIAction a;
-	cli_args(argc, argv, &a); // stage_init_array goes first!
+	cli_args(argc, argv, &ctx->cli); // stage_init_array goes first!
 
-	if(a.type == CLI_Quit) {
-		free_cli_action(&a);
-		return 1;
+	if(ctx->cli.type == CLI_Quit) {
+		main_quit(ctx, 0);
 	}
 
-	if(a.type == CLI_DumpStages) {
+	if(ctx->cli.type == CLI_DumpStages) {
 		for(StageInfo *stg = stages; stg->procs; ++stg) {
 			tsfprintf(stdout, "%X %s: %s\n", stg->id, stg->title, stg->subtitle);
 		}
 
-		free_cli_action(&a);
-		return 0;
-	} else if(a.type == CLI_PlayReplay || a.type == CLI_VerifyReplay) {
-		if(!replay_load_syspath(&replay, a.filename, REPLAY_READ_ALL)) {
-			free_cli_action(&a);
-			return 1;
-		}
-
-		replay_idx = a.stageid ? replay_find_stage_idx(&replay, a.stageid) : 0;
-
-		if(replay_idx < 0) {
-			free_cli_action(&a);
-			return 1;
-		}
-
-		if(a.type == CLI_VerifyReplay) {
-			headless = true;
-		}
-	} else if(a.type == CLI_DumpVFSTree) {
-		vfs_setup(false);
-
-		SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
-		int status = 0;
-
-		if(!rwops) {
-			log_fatal("SDL_RWFromFP() failed: %s", SDL_GetError());
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
-			status = 1;
-		} else if(!vfs_print_tree(rwops, a.filename)) {
-			log_error("VFS error: %s", vfs_get_error());
-			status = 2;
-		}
-
-		SDL_RWclose(rwops);
-		vfs_shutdown();
-		free_cli_action(&a);
-		return status;
+		main_quit(ctx, 0);
 	}
 
-	free_cli_action(&a);
+	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
+		if(!replay_load_syspath(&ctx->replay, ctx->cli.filename, REPLAY_READ_ALL)) {
+			main_quit(ctx, 1);
+		}
 
-	vfs_setup(false);
+		ctx->replay_idx = ctx->cli.stageid ? replay_find_stage_idx(&ctx->replay, ctx->cli.stageid) : 0;
 
-	if(headless) {
+		if(ctx->replay_idx < 0) {
+			main_quit(ctx, 1);
+		}
+
+		if(ctx->cli.type == CLI_VerifyReplay) {
+			ctx->headless = true;
+		}
+	} else if(ctx->cli.type == CLI_DumpVFSTree) {
+		vfs_setup(CALLCHAIN(main_vfstree, ctx));
+		return 0; // NO main_quit here! vfs_setup may be asynchronous.
+	}
+
+	log_info("Girls are now preparing, please wait warmly...");
+
+	free_cli_action(&ctx->cli);
+	vfs_setup(CALLCHAIN(main_post_vfsinit, ctx));
+	return 0;
+}
+
+static void main_post_vfsinit(CallChainResult ccr) {
+	MainContext *ctx = ccr.ctx;
+
+	if(ctx->headless) {
 		env_set("SDL_AUDIODRIVER", "dummy", true);
 		env_set("SDL_VIDEODRIVER", "dummy", true);
 		env_set("TAISEI_AUDIO_BACKEND", "null", true);
@@ -224,12 +230,7 @@ int main(int argc, char **argv) {
 		init_log_file();
 	}
 
-#ifdef __EMSCRIPTEN__
-	env_set("TAISEI_NOASYNC", true, true);
-	env_set("TAISEI_NOPRELOAD", true, true);
-#endif
-
-	log_info("%s %s", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
+	log_version();
 	log_system_specs();
 	log_lib_versions();
 
@@ -238,7 +239,7 @@ int main(int argc, char **argv) {
 	init_sdl();
 	taskmgr_global_init();
 	time_init();
-	init_global(&a);
+	init_global(&ctx->cli);
 	events_init();
 	video_init();
 	init_resources();
@@ -254,64 +255,120 @@ int main(int argc, char **argv) {
 
 	log_info("Initialization complete");
 
+#ifndef __EMSCRIPTEN__
 	atexit(taisei_shutdown);
+#endif
 
-	if(a.type == CLI_PlayReplay || a.type == CLI_VerifyReplay) {
-		replay_play(&replay, replay_idx);
-		replay_destroy(&replay);
-		return 0;
+	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
+		main_replay(ctx);
+		return;
 	}
 
-	if(a.type == CLI_Credits) {
-		credits_loop();
-		return 0;
+	if(ctx->cli.type == CLI_Credits) {
+		credits_enter(NO_CALLCHAIN);
+		eventloop_run();
+		return;
 	}
 
 #ifdef DEBUG
 	log_warn("Compiled with DEBUG flag!");
 
-	if(a.type == CLI_SelectStage) {
-		log_info("Entering stage skip mode: Stage %X", a.stageid);
-		StageInfo* stg = stage_get(a.stageid);
-		assert(stg); // properly checked before this
-
-		global.diff = stg->difficulty;
-		global.is_practice_mode = (stg->type != STAGE_EXTRA);
-
-		if(a.diff) {
-			global.diff = a.diff;
-			log_info("Setting difficulty to %s", difficulty_name(global.diff));
-		} else if(!global.diff) {
-			global.diff = D_Easy;
-		}
-
-		log_info("Entering %s", stg->title);
-
-		do {
-			global.replay_stage = NULL;
-			replay_init(&global.replay);
-			global.gameover = 0;
-			player_init(&global.plr);
-
-			if(a.plrmode) {
-				global.plr.mode = a.plrmode;
-			}
-
-			stage_loop(stg);
-
-			if(global.gameover == GAMEOVER_RESTART) {
-				replay_destroy(&global.replay);
-			}
-		} while(global.gameover == GAMEOVER_RESTART);
-
-		ask_save_replay();
-		return 0;
+	if(ctx->cli.type == CLI_SelectStage) {
+		main_singlestg(ctx);
+		return;
 	}
 #endif
 
-	MenuData menu;
-	create_main_menu(&menu);
-	menu_loop(&menu);
+	enter_menu(create_main_menu(), NO_CALLCHAIN);
+	eventloop_run();
+}
 
-	return 0;
+typedef struct SingleStageContext {
+	PlayerMode *plrmode;
+	StageInfo *stg;
+} SingleStageContext;
+
+static void main_singlestg_begin_game(CallChainResult ccr);
+static void main_singlestg_end_game(CallChainResult ccr);
+static void main_singlestg_cleanup(CallChainResult ccr);
+
+static void main_singlestg_begin_game(CallChainResult ccr) {
+	SingleStageContext *ctx = ccr.ctx;
+
+	global.replay_stage = NULL;
+	replay_init(&global.replay);
+	global.gameover = 0;
+	player_init(&global.plr);
+
+	if(ctx->plrmode) {
+		global.plr.mode = ctx->plrmode;
+	}
+
+	stage_enter(ctx->stg, CALLCHAIN(main_singlestg_end_game, ctx));
+}
+
+static void main_singlestg_end_game(CallChainResult ccr) {
+	if(global.gameover == GAMEOVER_RESTART) {
+		replay_destroy(&global.replay);
+		main_singlestg_begin_game(ccr);
+	} else {
+		ask_save_replay(CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
+	}
+}
+
+static void main_singlestg_cleanup(CallChainResult ccr) {
+	replay_destroy(&global.replay);
+	free(ccr.ctx);
+}
+
+static void main_singlestg(MainContext *mctx) {
+	CLIAction *a = &mctx->cli;
+	log_info("Entering stage skip mode: Stage %X", a->stageid);
+
+	StageInfo* stg = stage_get(a->stageid);
+	assert(stg); // properly checked before this
+
+	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->plrmode = a->plrmode;
+	ctx->stg = stg;
+
+	global.diff = stg->difficulty;
+	global.is_practice_mode = (stg->type != STAGE_EXTRA);
+
+	if(a->diff) {
+		global.diff = a->diff;
+		log_info("Setting difficulty to %s", difficulty_name(global.diff));
+	} else if(!global.diff) {
+		global.diff = D_Easy;
+	}
+
+	log_info("Entering %s", stg->title);
+
+	main_singlestg_begin_game(CALLCHAIN_RESULT(ctx, NULL));
+	eventloop_run();
+}
+
+static void main_replay(MainContext *mctx) {
+	replay_play(&mctx->replay, mctx->replay_idx, NO_CALLCHAIN);
+	replay_destroy(&mctx->replay); // replay_play makes a copy
+	eventloop_run();
+}
+
+static void main_vfstree(CallChainResult ccr) {
+	MainContext *mctx = ccr.ctx;
+	SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
+	int status = 0;
+
+	if(!rwops) {
+		log_fatal("SDL_RWFromFP() failed: %s", SDL_GetError());
+		log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+		status = 1;
+	} else if(!vfs_print_tree(rwops, mctx->cli.filename)) {
+		log_error("VFS error: %s", vfs_get_error());
+		status = 2;
+	}
+
+	SDL_RWclose(rwops);
+	vfs_shutdown();
+	main_quit(mctx, status);
 }

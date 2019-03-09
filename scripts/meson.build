@@ -125,3 +125,6 @@ glob_command = [python_thunk, glob_script]
 
 check_submodules_script = files('check-submodules.py')
 check_submodules_command = [python_thunk, check_submodules_script]
+
+em_set_bundle_uuid_script = files('em-set-bundle-uuid.py')
+em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]

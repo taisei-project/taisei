@@ -55,3 +55,9 @@ void taisei_quit(void) {
 bool taisei_quit_requested(void) {
 	return SDL_AtomicGet(&quitting);
 }
+
+void taisei_commit_persistent_data(void) {
+	config_save();
+	progress_save();
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
+}

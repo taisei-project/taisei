@@ -19,92 +19,159 @@
 #include "mainmenu.h"
 #include "video.h"
 
+typedef struct StartGameContext {
+	StageInfo *restart_stage;
+	StageInfo *current_stage;
+	MenuData *diff_menu;
+	MenuData *char_menu;
+	Difficulty difficulty;
+} StartGameContext;
+
+static void start_game_do_pick_character(CallChainResult ccr);
+static void start_game_do_enter_stage(CallChainResult ccr);
+static void start_game_do_leave_stage(CallChainResult ccr);
+static void start_game_do_show_ending(CallChainResult ccr);
+static void start_game_do_show_credits(CallChainResult ccr);
+static void start_game_do_cleanup(CallChainResult ccr);
+
 static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
-	MenuData m;
-	Difficulty stagediff;
-	bool restart;
+	StartGameContext *ctx = calloc(1, sizeof(*ctx));
 
-	player_init(&global.plr);
+	if(info == NULL) {
+		global.is_practice_mode = false;
+		ctx->current_stage = stages;
+		ctx->restart_stage = stages;
+	} else {
+		global.is_practice_mode = (info->type != STAGE_EXTRA);
+		ctx->current_stage = info;
+		ctx->restart_stage = info;
+	}
 
-	do {
-		restart = false;
-		stagediff = info ? info->difficulty : D_Any;
+	Difficulty stagediff = info ? info->difficulty : D_Any;
 
-		if(stagediff == D_Any) {
-			if(difficulty_menu) {
-				create_difficulty_menu(&m);
-				if(menu_loop(&m) == -1) {
-					return;
-				}
+	CallChain cc_pick_character = CALLCHAIN(start_game_do_pick_character, ctx);
 
-				global.diff = progress.game_settings.difficulty;
-			} else {
-				// assume global.diff is set up beforehand
-			}
+	if(stagediff == D_Any) {
+		if(difficulty_menu) {
+			ctx->diff_menu = create_difficulty_menu();
+			enter_menu(ctx->diff_menu, cc_pick_character);
 		} else {
-			global.diff = stagediff;
+			ctx->difficulty = progress.game_settings.difficulty;
+			run_call_chain(&cc_pick_character, NULL);
+		}
+	} else {
+		ctx->difficulty = stagediff;
+		run_call_chain(&cc_pick_character, NULL);
+	}
+}
+
+static void start_game_do_pick_character(CallChainResult ccr) {
+	StartGameContext *ctx = ccr.ctx;
+	MenuData *prev_menu = ccr.result;
+
+	if(prev_menu) {
+		if(prev_menu->state == MS_Dead) {
+			start_game_do_cleanup(ccr);
+			return;
 		}
 
-		create_char_menu(&m);
-		if(menu_loop(&m) == -1) {
-			if(stagediff != D_Any || !difficulty_menu) {
-				return;
-			}
+		// came here from the difficulty menu - update our setting
+		ctx->difficulty = progress.game_settings.difficulty;
+	}
 
-			restart = true;
-		}
-	} while(restart);
+	assert(ctx->char_menu == NULL);
+	ctx->char_menu = create_char_menu();
+	enter_menu(ctx->char_menu, CALLCHAIN(start_game_do_enter_stage, ctx));
+}
 
+static void reset_game(StartGameContext *ctx) {
+	ctx->current_stage = ctx->restart_stage;
+
+	global.gameover = GAMEOVER_NONE;
+	global.replay_stage = NULL;
+	replay_destroy(&global.replay);
+	replay_init(&global.replay);
+	player_init(&global.plr);
 	global.plr.mode = plrmode_find(
 		progress.game_settings.character,
 		progress.game_settings.shotmode
 	);
+	global.diff = ctx->difficulty;
 
 	assert(global.plr.mode != NULL);
+}
 
-	global.replay_stage = NULL;
-	replay_init(&global.replay);
-	PlayerMode *mode = global.plr.mode;
+static void kill_aux_menus(StartGameContext *ctx) {
+	kill_menu(ctx->char_menu);
+	kill_menu(ctx->diff_menu);
+	ctx->char_menu = ctx->diff_menu = NULL;
+}
 
-	do {
-		restart = false;
+static void start_game_do_enter_stage(CallChainResult ccr) {
+	StartGameContext *ctx = ccr.ctx;
+	MenuData *prev_menu = ccr.result;
 
-		if(info) {
-			global.is_practice_mode = (info->type != STAGE_EXTRA);
-			stage_loop(info);
-		} else {
-			global.is_practice_mode = false;
-			for(StageInfo *s = stages; s->type == STAGE_STORY; ++s) {
-				stage_loop(s);
-			}
-		}
-
-		if(global.gameover == GAMEOVER_RESTART) {
-			replay_destroy(&global.replay);
-			replay_init(&global.replay);
-			global.gameover = 0;
-			player_init(&global.plr);
-			global.plr.mode = mode;
-
-			restart = true;
-		}
-	} while(restart);
-
-	free_resources(false);
-	ask_save_replay();
-
-	global.replay_stage = NULL;
-
-	if(global.gameover == GAMEOVER_WIN && !info) {
-		ending_loop();
-		credits_loop();
-		free_resources(false);
+	if(prev_menu && prev_menu->state == MS_Dead) {
+		assert(prev_menu == ctx->char_menu);
+		ctx->char_menu = NULL;
+		return;
 	}
 
-	start_bgm("menu");
+	kill_aux_menus(ctx);
+	reset_game(ctx);
+	stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+}
+
+static void start_game_do_leave_stage(CallChainResult ccr) {
+	StartGameContext *ctx = ccr.ctx;
+
+	if(global.gameover == GAMEOVER_RESTART) {
+		reset_game(ctx);
+		stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+		return;
+	}
+
+	if(ctx->current_stage->type == STAGE_STORY && !global.is_practice_mode) {
+		++ctx->current_stage;
+
+		if(ctx->current_stage->type == STAGE_STORY) {
+			stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+		} else {
+			CallChain cc;
+
+			if(global.gameover == GAMEOVER_WIN) {
+				ending_preload();
+				credits_preload();
+				cc = CALLCHAIN(start_game_do_show_ending, ctx);
+			} else {
+				cc = CALLCHAIN(start_game_do_cleanup, ctx);
+			}
+
+			ask_save_replay(cc);
+		}
+	} else {
+		ask_save_replay(CALLCHAIN(start_game_do_cleanup, ctx));
+	}
+}
+
+static void start_game_do_show_ending(CallChainResult ccr) {
+	ending_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx));
+}
+
+static void start_game_do_show_credits(CallChainResult ccr) {
+	credits_enter(CALLCHAIN(start_game_do_cleanup, ccr.ctx));
+}
+
+static void start_game_do_cleanup(CallChainResult ccr) {
+	StartGameContext *ctx = ccr.ctx;
+	kill_aux_menus(ctx);
+	free(ctx);
+	free_resources(false);
+	global.replay_stage = NULL;
+	global.gameover = GAMEOVER_NONE;
 	replay_destroy(&global.replay);
 	main_menu_update_practice_menus();
-	global.gameover = 0;
+	start_bgm("menu");
 }
 
 void start_game(MenuData *m, void *arg) {
@@ -126,7 +193,7 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 	r_mat_pop();
 }
 
-void draw_menu_title(MenuData *m, char *title) {
+void draw_menu_title(MenuData *m, const char *title) {
 	text_draw(title, &(TextParams) {
 		.pos = { (text_width(get_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
 		.align = ALIGN_RIGHT,
@@ -200,6 +267,6 @@ void animate_menu_list(MenuData *m) {
 	animate_menu_list_entries(m);
 }
 
-void menu_commonaction_close(MenuData *menu, void *arg) {
+void menu_action_close(MenuData *menu, void *arg) {
 	menu->state = MS_Dead;
 }

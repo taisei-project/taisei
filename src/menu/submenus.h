@@ -11,10 +11,10 @@
 
 #include "taisei.h"
 
-void enter_options(MenuData *menu, void *arg);
-void enter_stagemenu(MenuData *menu, void *arg);
-void enter_replayview(MenuData *menu, void *arg);
-void enter_spellpractice(MenuData *menu, void *arg);
-void enter_stagepractice(MenuData *menu, void *arg);
+void menu_action_enter_options(MenuData *menu, void *arg);
+void menu_action_enter_stagemenu(MenuData *menu, void *arg);
+void menu_action_enter_replayview(MenuData *menu, void *arg);
+void menu_action_enter_spellpractice(MenuData *menu, void *arg);
+void menu_action_enter_stagepractice(MenuData *menu, void *arg);
 
 #endif // IGUARD_menu_submenus_h

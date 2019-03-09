@@ -18,7 +18,9 @@
 		uint line;
 	} DebugInfo;
 
-	#define _DEBUG_INFO_PTR_ (&(DebugInfo){ __FILE__, __func__, __LINE__ })
+	#define _DEBUG_INFO_INITIALIZER_ { __FILE__, __func__, __LINE__ }
+	#define _DEBUG_INFO_ ((DebugInfo) _DEBUG_INFO_INITIALIZER_)
+	#define _DEBUG_INFO_PTR_ (&_DEBUG_INFO_)
 	#define set_debug_info(debug) _set_debug_info(debug, _DEBUG_INFO_PTR_)
 	void _set_debug_info(DebugInfo *debug, DebugInfo *meta);
 	DebugInfo* get_debug_info(void);

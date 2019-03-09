@@ -5,7 +5,6 @@ vfs_src = files(
     'private.c',
     'public.c',
     'readonly_wrapper.c',
-    'setup.c',
     'syspath_public.c',
     'union.c',
     'union_public.c',
@@ -30,4 +29,12 @@ elif host_machine.system() == 'windows'
     vfs_src += files('syspath_win32.c')
 else
     vfs_src += files('syspath_posix.c') # eeehh, maybe it'll work ¯\_(ツ)_/¯
+endif
+
+if host_machine.system() == 'emscripten'
+    vfs_src += files('setup_emscripten.c')
+    vfs_src += files('sync_emscripten.c')
+else
+    vfs_src += files('setup_generic.c')
+    vfs_src += files('sync_noop.c')
 endif

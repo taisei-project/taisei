@@ -20,12 +20,12 @@
 
 static void return_to_title(MenuData *m, void *arg) {
 	global.gameover = GAMEOVER_ABORT;
-	menu_commonaction_close(m, arg);
+	menu_action_close(m, arg);
 }
 
 void restart_game(MenuData *m, void *arg) {
 	global.gameover = GAMEOVER_RESTART;
-	menu_commonaction_close(m, arg);
+	menu_action_close(m, arg);
 }
 
 static void ingame_menu_do(MenuData *m, MenuAction action) {
@@ -113,8 +113,9 @@ static void ingame_menu_input(MenuData *m) {
 	}, EFLAG_MENU);
 }
 
-void create_ingame_menu(MenuData *m) {
-	create_menu(m);
+MenuData* create_ingame_menu(void) {
+	MenuData *m = alloc_menu();
+
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
 	m->input = ingame_menu_input;
@@ -122,33 +123,38 @@ void create_ingame_menu(MenuData *m) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = "Game Paused";
-	add_menu_entry(m, "Options", enter_options, NULL)->transition = TransMenuDark;
-	add_menu_entry(m, "Return to Game", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransMenuDark;
+	add_menu_entry(m, "Return to Game", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop the Game", return_to_title, NULL)->transition = TransFadeBlack;
 	set_transition(TransEmpty, 0, m->transition_out_time);
+
+	return m;
 }
 
 static void skip_stage(MenuData *m, void *arg) {
 	global.gameover = GAMEOVER_WIN;
-	menu_commonaction_close(m, arg);
+	menu_action_close(m, arg);
 }
 
-void create_ingame_menu_replay(MenuData *m) {
-	create_menu(m);
+MenuData* create_ingame_menu_replay(void) {
+	MenuData *m = alloc_menu();
+
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
 	m->flags = MF_Abortable | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = "Replay Paused";
-	add_menu_entry(m, "Options", enter_options, NULL)->transition = TransMenuDark;
-	add_menu_entry(m, "Continue Watching", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransMenuDark;
+	add_menu_entry(m, "Continue Watching", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Stage", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Skip the Stage", skip_stage, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop Watching", return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;
 	set_transition(TransEmpty, 0, m->transition_out_time);
+
+	return m;
 }
 
 void draw_ingame_menu_bg(MenuData *menu, float f) {

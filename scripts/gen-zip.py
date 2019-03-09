@@ -52,5 +52,6 @@ def main(args):
 
     print("Generated package {}".format(str(args.output)))
 
+
 if __name__ == '__main__':
     run_main(main)

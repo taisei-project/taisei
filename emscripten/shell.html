@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/x-icon" href="favicon.ico"/>
+    <title>Taisei Project — Web version (Experimental!)</title>
+    <style>
+        body {
+            background-image: url('background.webp');
+            background-color: #111111;
+            background-repeat: no-repeat;
+            background-position: 50% 50%;
+            background-size: cover;
+            color: #eeeeee;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            left: 0px;
+            right: 0px;
+        }
+
+        html {
+            background-color: #000000;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        .emscripten {
+            padding-right: 0;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+
+        textarea.emscripten {
+            font-family: monospace;
+            width: 100%;
+            resize: none;
+            background: none;
+            border: 0px none;
+            color: #eeeeee;
+            overflow: overlay;
+            margin: 0px;
+        }
+
+        div.emscripten {
+            text-align: center;
+        }
+
+        div.emscripten_border {
+            border: 0px none;
+        }
+
+        div.centered {
+            position: absolute;
+            bottom: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(50%);
+            background-color: #000000C0;
+            padding: 16px 0px;
+        }
+
+        /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+        canvas.emscripten {
+            border: 0px none;
+            background-color: none;
+        }
+
+        #spinner {
+            overflow: visible;
+            padding-bottom: 16px;
+        }
+
+        #progress {
+            margin: 4px;
+        }
+
+        #logContainer {
+            width: 80%;
+            margin: auto;
+        }
+
+        #logToggleContainer {
+            display: /* inline-block */ none;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.5;
+        }
+
+        progress {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            border: 0px none;
+            background-color: #eee;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+        }
+
+        progress::-webkit-progress-bar {
+            background-color: #eee;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25) inset;
+        }
+
+        progress::-webkit-progress-value {
+            background-image:
+                -webkit-linear-gradient(top, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.25)),
+                -webkit-linear-gradient(left, #5c7da8, #6db0ed);
+
+            border-radius: 5px;
+            background-size: 35px 20px, 100% 100%, 100% 100%;
+        }
+
+        progress::-moz-progress-bar {
+            background-image:
+                -moz-linear-gradient(top, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0.25)),
+                -moz-linear-gradient(left, #5c7da8, #6db0ed);
+
+            border-radius: 5px;
+            background-size: 35px 20px, 100% 100%, 100% 100%;
+        }
+
+        div.spinner {
+            height: 75px;
+            width: 75px;
+            margin: 0px auto;
+        }
+
+        img.spinner {
+            height: 75px;
+            width: 75px;
+            margin: 4px auto;
+            -webkit-animation: rotation 0.8s linear infinite;
+            -moz-animation: rotation 0.8s linear infinite;
+            -o-animation: rotation 0.8s linear infinite;
+            animation: rotation 0.6s linear infinite;
+            border: 0px none;
+        }
+
+        @-webkit-keyframes rotation {
+            from { -webkit-transform: rotate(0deg); }
+            to { -webkit-transform: rotate(360deg); }
+        }
+
+        @-moz-keyframes rotation {
+            from { -moz-transform: rotate(0deg); }
+            to { -moz-transform: rotate(360deg); }
+        }
+
+        @-o-keyframes rotation {
+            from { -o-transform: rotate(0deg); }
+            to { -o-transform: rotate(360deg); }
+        }
+
+        @keyframes rotation {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="centered">
+        <div class="spinner" id="spinner"><img src="scythe.webp" class="spinner"/></div>
+        <div class="emscripten" id="status">Girls are now downloading, please wait warmly…</div>
+        <div class="emscripten">
+            <progress value="0" max="100" id="progress" ></progress>
+        </div>
+        <div class="emscripten_border" id="canvasContainer" hidden>
+            <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+        </div>
+        <div id="logToggleContainer" hidden>
+            <input type="checkbox" name="logToggle" id="logToggle" onclick="toggleLog()"/>
+            <label for="logToggle"> Show log</label>
+        </div>
+        <div id="logContainer" hidden>
+            <textarea class="emscripten" id="output" rows="12" readonly></textarea>
+        </div>
+    </div>
+    <script>
+        var statusElement = document.getElementById('status');
+        var progressElement = document.getElementById('progress');
+        var spinnerElement = document.getElementById('spinner');
+        var canvasContainerElement = document.getElementById('canvasContainer');
+        var logToggleElement = document.getElementById('logToggle');
+        var logContainerElement = document.getElementById('logContainer');
+        var logOutputElement = document.getElementById('output');
+        var dlMessage = statusElement.innerText;
+        logToggleElement.checked = false;
+
+        function toggleLog() {
+            logContainerElement.hidden = !logToggleElement.checked;
+            logOutputElement.scrollTop = logOutputElement.scrollHeight;
+        }
+
+        var Taisei = {
+            preRun: [],
+            postRun: [],
+            onFirstFrame: function() {
+                canvasContainerElement.hidden = false;
+                logToggleContainer.style.display = "inline-block";
+                Taisei.setStatus('', true);
+            },
+            print: (function() {
+                logOutputElement.value = ''; // clear browser cache
+                return function(text) {
+                    if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                    logOutputElement.value += text + "\n";
+                    logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
+                };
+            })(),
+            printErr: function(text) {
+                if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            canvas: (function() {
+                var canvas = document.getElementById('canvas');
+
+                // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+                // application robust, you may want to override this behavior before shipping!
+                // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+                canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+                return canvas;
+            })(),
+            setStatus: function(text, force) {
+                if (!text && !force) return;
+                if (!Taisei.setStatus.last) Taisei.setStatus.last = { time: Date.now(), text: '' };
+                if (text === Taisei.setStatus.last.text) return;
+                var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+                var now = Date.now();
+                if (m && now - Taisei.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+                Taisei.setStatus.last.time = now;
+                Taisei.setStatus.last.text = text;
+                if (m) {
+                    text = m[1];
+                    progressElement.value = parseInt(m[2])*100;
+                    progressElement.max = parseInt(m[4])*100;
+                    progressElement.hidden = false;
+                    spinnerElement.hidden = false;
+                } else {
+                    progressElement.value = null;
+                    progressElement.max = null;
+                    progressElement.hidden = true;
+                    if (!text) spinnerElement.hidden = true;
+                }
+                statusElement.innerText = text.replace(/^Downloading(?: data)?\.\.\./, dlMessage).replace('...', '…');
+                console.log("[STATUS] " + statusElement.innerText);
+            },
+            totalDependencies: 0,
+            monitorRunDependencies: function(left) {
+                this.totalDependencies = Math.max(this.totalDependencies, left);
+                Taisei.setStatus(left ? 'Preparing… (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+            }
+        };
+
+        window.onerror = function(error) {
+            Taisei.setStatus('Error: ' + error);
+        };
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

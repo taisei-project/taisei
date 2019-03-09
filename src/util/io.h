@@ -16,6 +16,7 @@
 char* read_all(const char *filename, int *size);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
+char* SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize);
 size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) attr_printf(2, 3);
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*

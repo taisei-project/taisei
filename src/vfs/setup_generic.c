@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-#include "build_config.h"
 #include "public.h"
 #include "setup.h"
 #include "error.h"
@@ -132,18 +131,18 @@ static void load_packages(const char *dir, const char *unionmp) {
 	vfs_dir_list_free(paklist, numpaks);
 }
 
-void vfs_setup(bool silent) {
+// NOTE: For simplicity, we will assume that vfs_sync is not needed in this backend.
+
+void vfs_setup(CallChain next) {
 	char *res_path, *storage_path, *cache_path;
 	get_core_paths(&res_path, &storage_path, &cache_path);
 
 	char *local_res_path = strfmt("%s/resources", storage_path);
 
-	if(!silent) {
-		log_info("Resource path: %s", res_path);
-		log_info("Storage path: %s", storage_path);
-		log_info("Local resource path: %s", local_res_path);
-		log_info("Cache path: %s", cache_path);
-	}
+	log_info("Resource path: %s", res_path);
+	log_info("Storage path: %s", storage_path);
+	log_info("Local resource path: %s", local_res_path);
+	log_info("Cache path: %s", cache_path);
 
 	struct mpoint_t {
 		const char *dest;    const char *syspath; bool loadpaks; uint flags;
@@ -215,4 +214,6 @@ void vfs_setup(bool silent) {
 
 	vfs_unmount("resdirs");
 	vfs_unmount("respkgs");
+
+	run_call_chain(&next, NULL);
 }

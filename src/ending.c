@@ -13,18 +13,19 @@
 #include "video.h"
 #include "progress.h"
 
-struct EndingEntry {
+typedef struct EndingEntry {
 	char *msg;
 	Sprite *sprite;
 	int time;
-};
+} EndingEntry;
 
-struct Ending {
+typedef struct Ending {
 	EndingEntry *entries;
 	int count;
 	int duration;
 	int pos;
-};
+	CallChain cc;
+} Ending;
 
 static void track_ending(int ending) {
 	assert(ending >= 0 && ending < NUM_ENDINGS);
@@ -150,9 +151,7 @@ void good_ending_reimu(Ending *e) {
 	track_ending(ENDING_GOOD_3);
 }
 
-static void create_ending(Ending *e) {
-	memset(e, 0, sizeof(Ending));
-
+static void init_ending(Ending *e) {
 	if(global.plr.continues_used) {
 		global.plr.mode->character->ending.bad(e);
 	} else {
@@ -234,7 +233,7 @@ static bool ending_input_handler(SDL_Event *event, void *arg) {
 	return false;
 }
 
-static FrameAction ending_logic_frame(void *arg) {
+static LogicFrameAction ending_logic_frame(void *arg) {
 	Ending *e = arg;
 
 	update_transition();
@@ -267,7 +266,7 @@ static FrameAction ending_logic_frame(void *arg) {
 	return LFRAME_WAIT;
 }
 
-static FrameAction ending_render_frame(void *arg) {
+static RenderFrameAction ending_render_frame(void *arg) {
 	Ending *e = arg;
 
 	if(e->pos < e->count-1)
@@ -277,13 +276,24 @@ static FrameAction ending_render_frame(void *arg) {
 	return RFRAME_SWAP;
 }
 
-void ending_loop(void) {
-	Ending e;
+static void ending_loop_end(void *ctx) {
+	Ending *e = ctx;
+	CallChain cc = e->cc;
+	free_ending(e);
+	free(e);
+	run_call_chain(&cc, NULL);
+}
+
+void ending_enter(CallChain next) {
 	ending_preload();
-	create_ending(&e);
+
+	Ending *e = calloc(1, sizeof(Ending));
+	init_ending(e);
+	e->cc = next;
+
 	global.frames = 0;
 	set_ortho(SCREEN_W, SCREEN_H);
 	start_bgm("ending");
-	loop_at_fps(ending_logic_frame, ending_render_frame, &e, FPS);
-	free_ending(&e);
+
+	eventloop_enter(e, ending_logic_frame, ending_render_frame, ending_loop_end, FPS);
 }

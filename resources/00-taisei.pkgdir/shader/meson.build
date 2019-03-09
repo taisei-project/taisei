@@ -91,9 +91,8 @@ subdirs = [
 # @end subdirs
 ]
 
-glsl_targets = []
-
-validate_glsl = false
+spirv_targets = []
+essl_targets = []
 
 glslc_args = [
     # '-fauto-bind-uniforms',
@@ -124,9 +123,31 @@ glslc_vert_args = [
     '-DVERT_STAGE',
 ]
 
-if get_option('validate_glsl') != 'false'
+spvc_args = [
+    '--version', '300',
+    '--es',
+    '--remove-unused-variables',
+]
+
+spvc_frag_args = [
+    '--stage', 'frag',
+]
+
+spvc_vert_args = [
+    '--stage', 'vert',
+]
+
+if host_machine.system() == 'emscripten'
+    validate_glsl = 'true'
+    transpile_glsl = true
+else
+    validate_glsl = get_option('validate_glsl')
+    transpile_glsl = false
+endif
+
+if validate_glsl != 'false'
     glslc_command = find_program('glslc',
-        required : (get_option('validate_glsl') == 'true')
+        required : (validate_glsl == 'true')
     )
 
     if glslc_command.found()
@@ -143,13 +164,23 @@ if get_option('validate_glsl') != 'false'
         else
             warning(test_result.stderr())
 
-            if get_option('validate_glsl') == 'auto'
+            if validate_glsl == 'auto'
                 warning('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
+                validate_glsl = false
             else
                 error('glslc test failed, you probably have an incompatible version.')
             endif
         endif
+    else
+        validate_glsl = false
     endif
+
+    if validate_glsl and transpile_glsl
+        spvc_command = find_program('spirv-cross', required : true)
+        glslc_args += ['-Os', '-g']
+    endif
+else
+    validate_glsl = false
 endif
 
 # @begin validate
@@ -158,7 +189,7 @@ if validate_glsl
         fname = '@0@'.format(src)
         stage = fname.split('.')[-2]
 
-        glsl_targets += custom_target(fname.underscorify(),
+        spirv = custom_target('SPIRV_' + fname.underscorify(),
             input : src,
             output : '@BASENAME@.spv',
             command : [
@@ -169,6 +200,26 @@ if validate_glsl
             build_by_default : true,
             depfile : '@0@.d'.format(fname.underscorify()),
         )
+
+        spirv_targets += spirv
+
+        if transpile_glsl
+            essl = custom_target('ESSL_' + fname.underscorify(),
+                input : spirv,
+                output : '@BASENAME@.glsl',
+                command : [
+                    spvc_command,
+                    '--output', '@OUTPUT@', '@INPUT@',
+                    spvc_args,
+                    get_variable('spvc_@0@_args'.format(stage)),
+                ],
+                install : false,
+                build_by_default : true,
+                depfile : '@0@.d'.format(fname.underscorify()),
+            )
+
+            essl_targets += essl
+        endif
     endforeach
 endif
 # @end validate
@@ -176,3 +227,5 @@ endif
 foreach sd : subdirs
     subdir(sd)
 endforeach
+
+shaders_build_dir = meson.current_build_dir()

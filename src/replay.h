@@ -242,7 +242,7 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode);
 
 void replay_copy(Replay *dst, Replay *src, bool steal_events);
 
-void replay_play(Replay *rpy, int firstidx);
+void replay_play(Replay *rpy, int firstidx, CallChain next);
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
 

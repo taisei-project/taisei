@@ -200,4 +200,5 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 void free_cli_action(CLIAction *a) {
 	free(a->filename);
+	a->filename = NULL;
 }

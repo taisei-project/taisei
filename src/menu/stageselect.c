@@ -21,11 +21,12 @@ static void draw_stage_menu(MenuData *m) {
 	draw_menu_list(m, 100, 100, NULL);
 }
 
-void create_stage_menu(MenuData *m) {
+MenuData* create_stage_menu(void) {
 	char title[STGMENU_MAX_TITLE_LENGTH];
 	Difficulty lastdiff = D_Any;
 
-	create_menu(m);
+	MenuData *m = alloc_menu();
+
 	m->draw = draw_stage_menu;
 	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
@@ -43,5 +44,7 @@ void create_stage_menu(MenuData *m) {
 	}
 
 	add_menu_separator(m);
-	add_menu_entry(m, "Back", menu_commonaction_close, NULL);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
+
+	return m;
 }

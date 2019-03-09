@@ -42,7 +42,7 @@ validation_code = '''if validate_glsl
         fname = '@0@'.format(src)
         stage = fname.split('.')[-2]
 
-        glsl_targets += custom_target(fname.underscorify(),
+        spirv = custom_target('SPIRV_' + fname.underscorify(),
             input : src,
             output : '@BASENAME@.spv',
             command : [
@@ -53,6 +53,26 @@ validation_code = '''if validate_glsl
             build_by_default : true,
             depfile : '@0@.d'.format(fname.underscorify()),
         )
+
+        spirv_targets += spirv
+
+        if transpile_glsl
+            essl = custom_target('ESSL_' + fname.underscorify(),
+                input : spirv,
+                output : '@BASENAME@.glsl',
+                command : [
+                    spvc_command,
+                    '--output', '@OUTPUT@', '@INPUT@',
+                    spvc_args,
+                    get_variable('spvc_@0@_args'.format(stage)),
+                ],
+                install : false,
+                build_by_default : true,
+                depfile : '@0@.d'.format(fname.underscorify()),
+            )
+
+            essl_targets += essl
+        endif
     endforeach
 endif'''
 

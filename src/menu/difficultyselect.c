@@ -32,12 +32,13 @@ static void update_difficulty_menu(MenuData *menu) {
 	color_approach(&diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
 }
 
-void create_difficulty_menu(MenuData *m) {
-	create_menu(m);
+MenuData* create_difficulty_menu(void) {
+	MenuData *m = alloc_menu();
+
 	m->draw = draw_difficulty_menu;
 	m->logic = update_difficulty_menu;
 	m->transition = TransMenuDark;
-	m->flags = MF_Transient | MF_Abortable;
+	m->flags = MF_Abortable;
 
 	add_menu_entry(m, "“All those bullets confuse me!”\nYou will be stuck here forever", set_difficulty, (void *)D_Easy);
 	add_menu_entry(m, "“So it's not just about shooting stuff?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
@@ -52,6 +53,8 @@ void create_difficulty_menu(MenuData *m) {
 			break;
 		}
 	}
+
+	return m;
 }
 
 void draw_difficulty_menu(MenuData *menu) {

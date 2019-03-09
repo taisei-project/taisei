@@ -13,6 +13,6 @@
 
 #include "menu.h"
 
-void create_replayview_menu(MenuData *m);
+MenuData* create_replayview_menu(void);
 
 #endif // IGUARD_menu_replayview_h

@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "resource/texture.h"
+#include "eventloop/eventloop.h"
 
 enum {
 	ENDING_FADE_OUT = 200,
@@ -56,10 +56,9 @@ static inline attr_must_inline bool ending_is_bad(EndingID end) {
 	#undef ENDING
 }
 
-typedef struct EndingEntry EndingEntry;
 typedef struct Ending Ending;
 
-void ending_loop(void);
+void ending_enter(CallChain next);
 void ending_preload(void);
 
 /*

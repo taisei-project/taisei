@@ -102,6 +102,7 @@ sse42_src = []
 
 subdir('audio')
 subdir('dialog')
+subdir('eventloop')
 subdir('menu')
 subdir('plrmodes')
 subdir('renderer')
@@ -132,6 +133,7 @@ configure_file(configuration : config, output : 'build_config.h')
 taisei_src += [
     audio_src,
     dialog_src,
+    eventloop_src,
     menu_src,
     plrmodes_src,
     renderer_src,
@@ -148,17 +150,89 @@ taisei_deps += [
     util_deps,
 ]
 
-if macos_app_bundle
-    taisei_exe_name = 'Taisei'
-else
-    taisei_exe_name = 'taisei'
-endif
+taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
-taisei_exe = executable(taisei_exe_name, taisei_src, version_deps,
-    dependencies : taisei_deps,
-    c_args : taisei_c_args,
-    c_pch : 'pch/taisei_pch.h',
-    gui_app : not get_option('win_console'),
-    install : true,
-    install_dir : bindir,
-)
+if host_machine.system() == 'emscripten'
+    em_debug = get_option('debug')
+    em_link_outputs = []
+    em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
+    em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
+    em_link_args = [
+        em_bundle_link_args,
+        '--pre-js', em_preamble,
+        '--shell-file', em_shell,
+        '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-s', 'ENVIRONMENT=web',
+        '-s', 'ERROR_ON_MISSING_LIBRARIES=0',
+        '-s', 'EXIT_RUNTIME=0',
+        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'EXPORT_NAME=Taisei',
+        '-s', 'FILESYSTEM=1',
+        '-s', 'FORCE_FILESYSTEM=1',
+        '-s', 'GL_POOL_TEMP_BUFFERS=0',
+        '-s', 'LZ4=1',
+        '-s', 'MODULARIZE=0',
+        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'USE_WEBGL2=1',
+        '-s', 'WASM=1',
+
+        # Try enabling this if unpatched Freetype crashes
+        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
+    ]
+
+    if em_debug
+        em_link_output_suffixes += ['wast']
+        em_link_args += [
+            '--emrun',
+            '--profiling',
+            '-O0',
+            '-g3',
+            '-s', 'ASSERTIONS=2',
+            '-s', 'GL_DEBUG=1',
+        ]
+    else
+        em_link_args += [
+            '--llvm-lto', (get_option('b_lto') ? '3' : '0'),
+            '-O@0@'.format(get_option('optimization')),
+            '-g0',
+            '-s', 'ASSERTIONS=0',
+        ]
+    endif
+
+    foreach suffix : em_link_output_suffixes
+        em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
+    endforeach
+
+    taisei = executable('@0@.bc'.format(taisei_basename), taisei_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        install : false,
+    )
+
+    taisei_html = custom_target(em_link_outputs[0],
+        # NOTE: Unfortunately we can't just put 'taisei' directly into the command array.
+        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
+        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
+
+        command : [
+            cc.cmd_array(),
+            taisei.full_path(),
+            em_link_args,
+            '-o', '@OUTPUT0@'
+        ],
+        build_by_default : true,
+        depends : [taisei],
+        output : em_link_outputs,
+        install : true,
+        install_dir : bindir,
+    )
+else
+    taisei = executable(taisei_basename, taisei_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        c_pch : 'pch/taisei_pch.h',
+        gui_app : not get_option('win_console'),
+        install : true,
+        install_dir : bindir,
+    )
+endif
