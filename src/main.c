@@ -78,6 +78,7 @@ static void init_log_file(void) {
 			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
 			logpath
 		);
+		free(logpath);
 		log_set_gui_error_appendix(m);
 		free(m);
 	} else {
@@ -165,6 +166,14 @@ static noreturn void main_quit(MainContext *ctx, int status) {
 	replay_destroy(&ctx->replay);
 	free(ctx);
 	exit(status);
+}
+
+static void main_cleanup(CallChainResult ccr) {
+	MenuData *m = ccr.result;
+
+	if(m == NULL || m->state == MS_Dead) {
+		main_quit(ccr.ctx, 0);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -265,7 +274,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	}
 
 	if(ctx->cli.type == CLI_Credits) {
-		credits_enter(NO_CALLCHAIN);
+		credits_enter(CALLCHAIN(main_cleanup, ctx));
 		eventloop_run();
 		return;
 	}
@@ -279,11 +288,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	}
 #endif
 
-	enter_menu(create_main_menu(), NO_CALLCHAIN);
+	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 	eventloop_run();
 }
 
 typedef struct SingleStageContext {
+	MainContext *mctx;
 	PlayerMode *plrmode;
 	StageInfo *stg;
 } SingleStageContext;
@@ -317,8 +327,11 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 }
 
 static void main_singlestg_cleanup(CallChainResult ccr) {
+	SingleStageContext *ctx = ccr.ctx;
+	MainContext *mctx = ctx->mctx;
 	replay_destroy(&global.replay);
 	free(ccr.ctx);
+	main_quit(mctx, 0);
 }
 
 static void main_singlestg(MainContext *mctx) {
@@ -329,6 +342,7 @@ static void main_singlestg(MainContext *mctx) {
 	assert(stg); // properly checked before this
 
 	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->mctx = mctx;
 	ctx->plrmode = a->plrmode;
 	ctx->stg = stg;
 
@@ -349,7 +363,7 @@ static void main_singlestg(MainContext *mctx) {
 }
 
 static void main_replay(MainContext *mctx) {
-	replay_play(&mctx->replay, mctx->replay_idx, NO_CALLCHAIN);
+	replay_play(&mctx->replay, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
 	replay_destroy(&mctx->replay); // replay_play makes a copy
 	eventloop_run();
 }

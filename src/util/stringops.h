@@ -26,7 +26,12 @@
 #define strlcpy SDL_strlcpy
 
 #undef strdup
-#define strdup SDL_strdup
+#define strdup _ts_strdup
+static attr_must_inline inline char *strdup(const char *str) {
+	char *s = malloc(strlen(str) + 1);
+	strcpy(s, str);
+	return s;
+}
 
 #undef strtok_r
 #define strtok_r _ts_strtok_r

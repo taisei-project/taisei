@@ -315,6 +315,10 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 		return err;
 	}
 
+	if(fnt->stroker) {
+		FT_Stroker_Done(fnt->stroker);
+	}
+
 	if((err = FT_Stroker_New(globals.lib, &fnt->stroker))) {
 		log_error("FT_Stroker_New() failed: %s", ft_error_str(err));
 		return err;
@@ -706,6 +710,7 @@ void* load_font_begin(const char *path, uint flags) {
 #ifdef DEBUG
 	char *basename = resource_util_basename(FONT_PATH_PREFIX, path);
 	strlcpy(font.debug_label, basename, sizeof(font.debug_label));
+	free(basename);
 #endif
 
 	font_set_kerning_enabled(&font, true);
