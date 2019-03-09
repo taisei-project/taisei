@@ -326,7 +326,7 @@ static void spawn_items_internal(complex pos, float collect_value, SpawnItemsArg
 
 #undef spawn_items
 void spawn_items(complex pos, SpawnItemsArgs groups[]) {
-	spawn_items_internal(pos, 0, groups);
+	spawn_items_internal(pos, -1, groups);
 }
 
 #undef spawn_and_collect_items
