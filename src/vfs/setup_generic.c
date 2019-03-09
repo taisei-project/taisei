@@ -11,6 +11,7 @@
 #include "public.h"
 #include "setup.h"
 #include "error.h"
+#include "util.h"
 
 static char* get_default_res_path(void) {
 	char *res;
