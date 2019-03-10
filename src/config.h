@@ -114,7 +114,7 @@
 	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
 	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \
 	KEYDEFS \
-	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      0) \
+	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      1) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "default") \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_UD,           "gamepad_axis_ud",                      1) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_LR,           "gamepad_axis_lr",                      0) \
