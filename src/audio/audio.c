@@ -194,10 +194,9 @@ static void load_config_files(void) {
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, NULL);
 }
 
-static inline char* get_bgm_desc(char *name) {
-	Music *music = get_music(name);
-	assert(music != NULL);
-	return music->title;
+static inline char* get_bgm_title(char *name) {
+	MusicMetadata *meta = get_resource_data(RES_BGM_METADATA, name, RESF_OPTIONAL);
+	return meta ? meta->title : NULL;
 }
 
 int get_default_sfx_volume(const char *sfx) {
@@ -289,7 +288,7 @@ void start_bgm(const char *name) {
 	}
 
 	// Support drawing BGM title in game loop (only when music changed!)
-	if((current_bgm.title = get_bgm_desc(current_bgm.name)) != NULL) {
+	if((current_bgm.title = get_bgm_title(current_bgm.name)) != NULL) {
 		current_bgm.started_at = global.frames;
 		// Boss BGM title color may differ from the one at beginning of stage
 		current_bgm.isboss = strendswith(current_bgm.name, "boss");

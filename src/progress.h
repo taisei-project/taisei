@@ -22,7 +22,7 @@
 #endif
 
 typedef enum ProgfileCommand {
-// do not reorder this!
+	// Do not reorder this!
 
 	PCMD_UNLOCK_STAGES                     = 0x00,
 	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
@@ -31,23 +31,48 @@ typedef enum ProgfileCommand {
 	PCMD_ENDINGS                           = 0x04,
 	PCMD_GAME_SETTINGS                     = 0x05,
 	PCMD_GAME_VERSION                      = 0x06,
+	PCMD_UNLOCK_BGMS                       = 0x07,
 } ProgfileCommand;
 
 typedef struct StageProgress {
-	// keep this struct small if you can
-	// see stage_get_progress_from_info() in stage.c for more information
-
-	uint unlocked : 1;
+	// Keep this struct small if you can
+	// See stage_get_progress_from_info() in stage.c for more information
 
 	uint32_t num_played;
 	uint32_t num_cleared;
+	uchar unlocked : 1;
 } StageProgress;
+
+typedef enum ProgressBGMID {
+	// Do not reorder! Append at the end only, reserve space if removing.
+
+	PBGM_MENU,
+	PBGM_STAGE1,
+	PBGM_STAGE1_BOSS,
+	PBGM_STAGE2,
+	PBGM_STAGE2_BOSS,
+	PBGM_STAGE3,
+	PBGM_STAGE3_BOSS,
+	PBGM_STAGE4,
+	PBGM_STAGE4_BOSS,
+	PBGM_STAGE5,
+	PBGM_STAGE5_BOSS,
+	PBGM_STAGE6,
+	PBGM_STAGE6_BOSS1,
+	PBGM_STAGE6_BOSS2,
+	PBGM_STAGE6_BOSS3,
+	PBGM_ENDING,
+	PBGM_CREDITS,
+	PBGM_BONUS0,  // old Iku theme
+	PBGM_BONUS1,  // Scuttle theme
+} ProgressBGMID;
 
 struct UnknownCmd;
 
 typedef struct GlobalProgress {
 	uint32_t hiscore;
 	uint32_t achieved_endings[NUM_ENDINGS];
+	uint64_t unlocked_bgms;
 	struct UnknownCmd *unknown;
 
 	struct {
@@ -65,5 +90,8 @@ void progress_unload(void);
 
 uint32_t progress_times_any_ending_achieved(void);
 uint32_t progress_times_any_good_ending_achieved(void);
+
+bool progress_is_bgm_unlocked(const char *name);
+void progress_unlock_bgm(const char *name);
 
 #endif // IGUARD_progress_h

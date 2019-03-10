@@ -1261,7 +1261,7 @@ void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufs
 	strcpy(src_copy, src);
 	*buf = 0;
 
-	while((next = strtok_r(NULL, " \t\n", &sptr))) {
+	while((next = strtok_r(NULL, " \t", &sptr))) {
 		int curwidth;
 
 		if(!*next) {

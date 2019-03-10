@@ -14,7 +14,7 @@
 #include "sfxbgm_common.h"
 #include "util.h"
 
-static char* bgm_path(const char *name) {
+static char *bgm_path(const char *name) {
 	return sfxbgm_make_path(BGM_PATH_PREFIX, name, true);
 }
 
@@ -32,37 +32,25 @@ static MusicImpl *load_music(const char *path) {
 
 static void *load_bgm_begin(const char *path, uint flags) {
 	Music *mus = calloc(1, sizeof(Music));
-	double loop_point = 0;
 
 	if(strendswith(path, ".bgm")) {
-		char *intro = NULL;
-		char *loop = NULL;
+		char *basename = resource_util_basename(BGM_PATH_PREFIX, path);
+		mus->meta = get_resource_data(RES_BGM_METADATA, basename, flags);
+		free(basename);
 
-		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
-			{ "artist" }, // don’t print a warning because this field is supposed to be here
-			{ "title",      .out_str    = &mus->title },
-			{ "loop",       .out_str    = &loop       },
-			{ "loop_point", .out_double = &loop_point },
-			{ NULL }
-		})) {
-			log_error("Failed to parse bgm config '%s'", path);
-		} else {
-			mus->impl = load_music(loop);
+		if(mus->meta) {
+			mus->impl = load_music(mus->meta->loop_path);
 		}
-
-		free(intro);
-		free(loop);
 	} else {
 		mus->impl = load_music(path);
 	}
 
 	if(!mus->impl) {
-		free(mus->title);
 		free(mus);
 		mus = NULL;
 		log_error("Failed to load bgm '%s'", path);
-	} else if(loop_point > 0) {
-		_a_backend.funcs.music_set_loop_point(mus->impl, loop_point);
+	} else if(mus->meta->loop_point > 0) {
+		_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
 	}
 
 	return mus;
@@ -75,7 +63,6 @@ static void *load_bgm_end(void *opaque, const char *path, uint flags) {
 static void unload_bgm(void *vmus) {
 	Music *mus = vmus;
 	_a_backend.funcs.music_unload(mus->impl);
-	free(mus->title);
 	free(mus);
 }
 

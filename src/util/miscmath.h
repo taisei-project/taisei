@@ -13,6 +13,7 @@
 
 #define DEG2RAD (M_PI/180.0)
 #define RAD2DEG (180.0/M_PI)
+#define GOLDEN_RATIO 1.618033988749895
 
 double lerp(double v0, double v1, double f) attr_const;
 complex clerp(complex v0, complex v1, double f) attr_const;
@@ -25,6 +26,7 @@ double min(double, double) attr_const;
 double max(double, double) attr_const;
 double clamp(double, double, double) attr_const;
 double smoothstep(double edge0, double edge1, double x) attr_const;
+double smoothmin(double a, double b, double k);
 double approach(double v, double t, double d) attr_const;
 float fapproach(float v, float t, float d) attr_const;
 void approach_p(double *v, double t, double d);

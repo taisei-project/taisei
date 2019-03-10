@@ -12,11 +12,12 @@
 #include "common.h"
 #include "options.h"
 #include "global.h"
+#include "video.h"
 
 static void draw_spell_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Spell Practice");
-	draw_menu_list(m, 100, 100, NULL);
+	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
 }
 
 MenuData* create_spell_menu(void) {

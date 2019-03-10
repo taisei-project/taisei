@@ -839,10 +839,12 @@ void stage2_events(void) {
 		create_enemy1c(VIEWPORT_W*(0.5+0.1*sqrt(_i)*(1-2*(_i&1)))-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
 
 	AT(5100) {
+		stage_unlock_bgm("stage2");
 		global.boss = create_hina();
 	}
 
 	AT(5180) {
+		stage_unlock_bgm("stage2boss");
 		global.dialog = stage2_dialog_post_boss();
 	}
 

@@ -281,6 +281,7 @@ static void ending_loop_end(void *ctx) {
 	CallChain cc = e->cc;
 	free_ending(e);
 	free(e);
+	progress_unlock_bgm("ending");
 	run_call_chain(&cc, NULL);
 }
 

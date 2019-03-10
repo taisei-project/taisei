@@ -883,6 +883,11 @@ void boss_finish_current_attack(Boss *boss) {
 			if(p) {
 				++p->num_cleared;
 			}
+
+			// HACK
+			if(boss->current->info == &stage5_spells.extra.overload) {
+				stage_unlock_bgm("bonus0");
+			}
 		} else if(boss->current->type != AT_ExtraSpell) {
 			boss->failed_spells++;
 		}

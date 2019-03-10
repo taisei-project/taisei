@@ -49,6 +49,7 @@ void strip_trailing_slashes(char *buf);
 char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo);
+void expand_escape_sequences(char *str);
 
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);

@@ -154,6 +154,11 @@ double smoothstep(double edge0, double edge1, double x) {
 	return x * x * (3 - 2 * x);
 }
 
+double smoothmin(double a, double b, double k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return lerp(b, a, h) - k * h * (1.0 - h);
+}
+
 int sign(double x) {
 	return (x > 0) - (x < 0);
 }

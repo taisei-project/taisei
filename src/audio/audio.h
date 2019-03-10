@@ -13,6 +13,7 @@
 
 #include "resource/sfx.h"
 #include "resource/bgm.h"
+#include "resource/bgm_metadata.h"
 
 #define LOOPTIMEOUTFRAMES 10
 #define DEFAULT_SFX_VOLUME 100
@@ -35,8 +36,8 @@ typedef struct Sound {
 } Sound;
 
 typedef struct Music {
-	char *title;
 	MusicImpl *impl;
+	MusicMetadata *meta;
 } Music;
 
 typedef struct CurrentBGM {

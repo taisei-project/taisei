@@ -1561,10 +1561,12 @@ void stage3_events(void) {
 	}
 
 	AT(5300 + midboss_time) {
+		stage_unlock_bgm("stage3");
 		global.boss = stage3_create_boss();
 	}
 
 	AT(5400 + midboss_time) {
+		stage_unlock_bgm("stage3boss");
 		global.dialog = stage3_dialog_post_boss();
 	}
 

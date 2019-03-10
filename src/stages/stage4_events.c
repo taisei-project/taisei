@@ -1496,11 +1496,15 @@ void stage4_events(void) {
 	FROM_TO(4800 + midboss_time, 5200 + midboss_time, 10)
 		create_enemy1c(20.0*I+I*VIEWPORT_H/3*frand()+VIEWPORT_W*(_i&1), 100, Swirl, stage4_explosive, (1-2*(_i&1))*3+I);
 
-	AT(5300 + midboss_time)
+	AT(5300 + midboss_time) {
+		stage_unlock_bgm("stage4");
 		global.boss = create_kurumi();
+	}
 
-	AT(5400 + midboss_time)
+	AT(5400 + midboss_time) {
+		stage_unlock_bgm("stage4boss");
 		global.dialog = stage4_dialog_post_boss();
+	}
 
 	AT(5405 + midboss_time) {
 		stage_finish(GAMEOVER_SCORESCREEN);

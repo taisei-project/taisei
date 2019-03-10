@@ -1308,10 +1308,12 @@ void stage5_events(void) {
 	}
 
 	AT(6960) {
+		stage_unlock_bgm("stage5");
 		global.boss = create_iku();
 	}
 
 	AT(6980) {
+		stage_unlock_bgm("stage5boss");
 		global.dialog = stage5_dialog_post_boss();
 	}
 

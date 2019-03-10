@@ -6,10 +6,13 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
+#ifndef IGUARD_menu_musicroom_h
+#define IGUARD_menu_musicroom_h
+
 #include "taisei.h"
 
-#include "public.h"
+#include "menu.h"
 
-void vfs_sync(VFSSyncMode mode, CallChain next) {
-	run_call_chain(&next, NULL);
-}
+MenuData* create_musicroom_menu(void);
+
+#endif // IGUARD_menu_musicroom_h

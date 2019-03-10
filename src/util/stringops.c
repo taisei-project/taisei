@@ -473,3 +473,29 @@ void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_si
 
 	*output = 0;
 }
+
+void expand_escape_sequences(char *str) {
+	bool in_escape = false;
+	char *p = str;
+
+	for(p = str; *p; ++p) {
+		if(in_escape) {
+			switch(*p) {
+				case 'n': p[-1] = '\n'; break;
+				case 't': p[-1] = '\t'; break;
+				case 'r': p[-1] = '\r'; break;
+				default:  p[-1] =   *p; break;
+			}
+
+			memmove(p, p + 1, strlen(p + 1) + 1);
+			--p;
+			in_escape = false;
+		} else if(*p == '\\') {
+			in_escape = true;
+		}
+	}
+
+	if(in_escape) {
+		p[-1] = 0;
+	}
+}

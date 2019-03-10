@@ -1236,10 +1236,12 @@ void stage1_events(void) {
 
 	AT(5000) {
 		enemy_kill_all(&global.enemies);
+		stage_unlock_bgm("stage1");
 		global.boss = create_cirno();
 	}
 
 	AT(5100) {
+		stage_unlock_bgm("stage1boss");
 		global.dialog = stage1_dialog_post_boss();
 	}
 

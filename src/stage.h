@@ -145,6 +145,8 @@ void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunati
 
 bool stage_is_cleared(void);
 
+void stage_unlock_bgm(const char *bgm);
+
 #include "stages/stage1.h"
 #include "stages/stage2.h"
 #include "stages/stage3.h"

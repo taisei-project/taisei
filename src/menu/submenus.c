@@ -15,6 +15,7 @@
 #include "spellpractice.h"
 #include "stagepractice.h"
 #include "difficultyselect.h"
+#include "musicroom.h"
 #include "global.h"
 #include "submenus.h"
 
@@ -55,4 +56,8 @@ static void stgpract_do_choose_stage(CallChainResult ccr) {
 	if(prev_menu->selected >= 0) {
 		enter_menu(create_stgpract_menu(progress.game_settings.difficulty), NO_CALLCHAIN);
 	}
+}
+
+void menu_action_enter_musicroom(MenuData *menu, void *arg) {
+	enter_menu(create_musicroom_menu(), NO_CALLCHAIN);
 }

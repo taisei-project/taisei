@@ -923,6 +923,7 @@ static void elly_paradigm_shift(Boss *b, int t) {
 
 	AT(100) {
 		if(global.stage->type != STAGE_SPELL) {
+			stage_unlock_bgm("stage6boss_phase1");
 			stage_start_bgm("stage6boss_phase2");
 			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 120, 10, 30);
 		}
@@ -2837,6 +2838,7 @@ static void elly_begin_toe(Boss *b, int t) {
 
 	AT(1) {
 		start_fall_over();
+		stage_unlock_bgm("stage6boss_phase2");
 		stage_start_bgm("stage6boss_phase3");
 		global.shake_view_fade = 0;
 	}
@@ -2902,10 +2904,13 @@ void stage6_events(void) {
 	AT(2300)
 		create_enemy3c(200.0*I-200, ENEMY_IMMUNE, Scythe, scythe_mid, 1, 0.2*I, 1);
 
-	AT(3800)
+	AT(3800) {
+		stage_unlock_bgm("stage6");
 		global.boss = create_elly();
+	}
 
 	AT(3805) {
+		stage_unlock_bgm("stage6boss_phase3");
 		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }

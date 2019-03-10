@@ -14,11 +14,12 @@
 #include "stage.h"
 #include "stageselect.h"
 #include "common.h"
+#include "video.h"
 
 static void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Select Stage");
-	draw_menu_list(m, 100, 100, NULL);
+	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
 }
 
 MenuData* create_stage_menu(void) {

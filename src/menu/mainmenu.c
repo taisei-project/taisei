@@ -109,6 +109,7 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Select Stage", menu_action_enter_stagemenu, NULL);
 #endif
 	add_menu_entry(m, "Replays", menu_action_enter_replayview, NULL);
+	add_menu_entry(m, "Music Room", menu_action_enter_musicroom, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
 #ifndef __EMSCRIPTEN__
 	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
@@ -119,6 +120,7 @@ MenuData* create_main_menu(void) {
 	spell_practice_entry = m->entries + 3;
 	main_menu_update_practice_menus();
 
+	progress_unlock_bgm("menu");
 	start_bgm("menu");
 
 	return m;
@@ -134,7 +136,7 @@ void draw_main_menu(MenuData *menu) {
 	draw_sprite(150.5, 100, "menu/logo");
 
 	r_mat_push();
-	r_mat_translate(0, SCREEN_H-270, 0);
+	r_mat_translate(0, SCREEN_H - 15 - 35 * menu->ecount, 0);
 	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
 	r_shader("text_default");
 

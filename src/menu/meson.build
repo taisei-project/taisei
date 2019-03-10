@@ -7,6 +7,7 @@ menu_src = files(
     'ingamemenu.c',
     'mainmenu.c',
     'menu.c',
+    'musicroom.c',
     'options.c',
     'replayview.c',
     'savereplay.c',

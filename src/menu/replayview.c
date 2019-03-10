@@ -346,7 +346,7 @@ static void replayview_draw(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Replays");
 
-	draw_menu_list(m, 50, 100, replayview_drawitem);
+	draw_menu_list(m, 50, 100, replayview_drawitem, SCREEN_H);
 
 	if(ctx->submenu) {
 		ctx->submenu->draw(ctx->submenu);

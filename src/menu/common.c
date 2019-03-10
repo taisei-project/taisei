@@ -203,12 +203,13 @@ void draw_menu_title(MenuData *m, const char *title) {
 	});
 }
 
-void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)) {
+void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int, int), float scroll_threshold) {
 	r_mat_push();
-	float offset = ((((m->ecount+5) * 20) > SCREEN_H)? min(0, SCREEN_H * 0.7 - y - m->drawdata[2]) : 0);
+	float offset = smoothmin(0, scroll_threshold * 0.8 - y - m->drawdata[2], 80);
 	r_mat_translate(x, y + offset, 0);
 
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
+	ShaderProgram *text_shader = r_shader_get("text_default");
 
 	for(int i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
@@ -235,10 +236,10 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 		if(draw && i < m->ecount-1) {
 			draw(e, i, m->ecount);
 		} else if(e->name) {
-			ShaderProgram *sh_prev = r_shader_current();
-			r_shader("text_default");
-			text_draw(e->name, &(TextParams) { .pos = { 20 - e->drawdata, 20*i } });
-			r_shader_ptr(sh_prev);
+			text_draw(e->name, &(TextParams) {
+				.pos = { 20 - e->drawdata, 20*i },
+				.shader_ptr = text_shader,
+			});
 		}
 	}
 
@@ -247,7 +248,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(void*, int, int)
 
 void animate_menu_list_entry(MenuData *m, int i) {
 	MenuEntry *e = &(m->entries[i]);
-	e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
+	fapproach_asymptotic_p(&e->drawdata, 10 * (i == m->cursor), 0.2, 1e-4);
 }
 
 void animate_menu_list_entries(MenuData *m) {
@@ -260,9 +261,9 @@ void animate_menu_list(MenuData *m) {
 	MenuEntry *s = m->entries + m->cursor;
 	int w = text_width(get_font("standard"), s->name, 0);
 
-	m->drawdata[0] += (10 + w/2.0 - m->drawdata[0])/10.0;
-	m->drawdata[1] += (w*2 - m->drawdata[1])/10.0;
-	m->drawdata[2] += (20*m->cursor - m->drawdata[2])/10.0;
+	fapproach_asymptotic_p(&m->drawdata[0], 10 + w * 0.5, 0.1, 1e-5);
+	fapproach_asymptotic_p(&m->drawdata[1], w * 2, 0.1, 1e-5);
+	fapproach_asymptotic_p(&m->drawdata[2], 20 * m->cursor, 0.1, 1e-5);
 
 	animate_menu_list_entries(m);
 }

@@ -885,3 +885,9 @@ void stage_end_loop(void* ctx) {
 	run_call_chain(&s->cc, NULL);
 	free(s);
 }
+
+void stage_unlock_bgm(const char *bgm) {
+	if(global.replaymode != REPLAY_PLAY && !global.plr.continues_used) {
+		progress_unlock_bgm(bgm);
+	}
+}

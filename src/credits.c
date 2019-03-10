@@ -440,6 +440,7 @@ static RenderFrameAction credits_render_frame(void *arg) {
 
 static void credits_end_loop(void *ctx) {
 	credits_free();
+	progress_unlock_bgm("credits");
 	run_call_chain(&credits.cc, NULL);
 }
 

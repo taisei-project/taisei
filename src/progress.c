@@ -54,6 +54,10 @@
 
 		- PCMD_GAME_VERSION
 			Sets the game version this file was last written with
+
+		- PCMD_UNLOCK_BGMS
+			Unlocks BGMs in the music room
+
 */
 
 /*
@@ -244,6 +248,12 @@ static void progress_read(SDL_RWops *file) {
 					char *vstr = taisei_version_tostring(&version_info);
 					log_info("Progress file from Taisei v%s", vstr);
 					free(vstr);
+				}
+				break;
+
+			case PCMD_UNLOCK_BGMS:
+				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint64_t))) {
+					progress.unlocked_bgms |= SDL_ReadLE64(vfile);
 				}
 				break;
 
@@ -566,6 +576,20 @@ static void progress_write_cmd_game_version(SDL_RWops *vfile, void **arg) {
 }
 
 //
+//  PCMD_UNLOCK_BGMS
+//
+
+static void progress_prepare_cmd_unlock_bgms(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
+}
+
+static void progress_write_cmd_unlock_bgms(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, PCMD_UNLOCK_BGMS);
+	SDL_WriteLE16(vfile, sizeof(uint64_t));
+	SDL_WriteLE64(vfile, progress.unlocked_bgms);
+}
+
+//
 //  Copy unhandled commands from the original file
 //
 
@@ -610,6 +634,7 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_endings, progress_write_cmd_endings, NULL},
 		{progress_prepare_cmd_game_settings, progress_write_cmd_game_settings, NULL},
 		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
+		{progress_prepare_cmd_unlock_bgms, progress_write_cmd_unlock_bgms, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}
 	};
@@ -645,13 +670,15 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWwrite(file, &cs, 4, 1);
 
 	if(!SDL_RWwrite(file, buf, bufsize, 1)) {
-		log_fatal("SDL_RWwrite() failed: %s", SDL_GetError());
+		log_error("SDL_RWwrite() failed: %s", SDL_GetError());
 		return;
 	}
 
 	free(buf);
 	SDL_RWclose(vfile);
 }
+
+#define PROGRESS_UNLOCK_ALL
 
 #ifdef PROGRESS_UNLOCK_ALL
 static void progress_unlock_all(void) {
@@ -665,6 +692,8 @@ static void progress_unlock_all(void) {
 			}
 		}
 	}
+
+	progress.unlocked_bgms = UINT64_MAX;
 }
 #endif
 
@@ -735,4 +764,48 @@ uint32_t progress_times_any_good_ending_achieved(void) {
 	#undef ENDING
 
 	return x;
+}
+
+static ProgressBGMID progress_bgm_id(const char *bgm) {
+	static const char* map[] = {
+		[PBGM_MENU]         = "menu",
+		[PBGM_STAGE1]       = "stage1",
+		[PBGM_STAGE1_BOSS]  = "stage1boss",
+		[PBGM_STAGE2]       = "stage2",
+		[PBGM_STAGE2_BOSS]  = "stage2boss",
+		[PBGM_STAGE3]       = "stage3",
+		[PBGM_STAGE3_BOSS]  = "stage3boss",
+		[PBGM_STAGE4]       = "stage4",
+		[PBGM_STAGE4_BOSS]  = "stage4boss",
+		[PBGM_STAGE5]       = "stage5",
+		[PBGM_STAGE5_BOSS]  = "stage5boss",
+		[PBGM_STAGE6]       = "stage6",
+		[PBGM_STAGE6_BOSS1] = "stage6boss_phase1",
+		[PBGM_STAGE6_BOSS2] = "stage6boss_phase2",
+		[PBGM_STAGE6_BOSS3] = "stage6boss_phase3",
+		[PBGM_ENDING]       = "ending",
+		[PBGM_CREDITS]      = "credits",
+		[PBGM_BONUS0]       = "bonus0",
+		[PBGM_BONUS1]       = "scuttle",
+	};
+
+	for(int i = 0; i < ARRAY_SIZE(map); ++i) {
+		if(!strcmp(map[i], bgm)) {
+			return i;
+		}
+	}
+
+	UNREACHABLE;
+}
+
+static inline uint64_t progress_bgm_bit(ProgressBGMID id) {
+	return (UINT64_C(1) << id);
+}
+
+bool progress_is_bgm_unlocked(const char *name) {
+	return progress.unlocked_bgms & progress_bgm_bit(progress_bgm_id(name));
+}
+
+void progress_unlock_bgm(const char *name) {
+	progress.unlocked_bgms |= progress_bgm_bit(progress_bgm_id(name));
 }

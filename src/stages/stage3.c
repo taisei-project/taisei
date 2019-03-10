@@ -361,6 +361,7 @@ static void stage3_spellpractice_start(void) {
 	if(global.stage->spell->draw_rule == scuttle_spellbg) {
 		skip_background_anim(stage3_update, 2800, &global.timer, NULL);
 		global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
+		stage_unlock_bgm("scuttle");
 		stage_start_bgm("scuttle");
 	} else {
 		skip_background_anim(stage3_update, 5300 + STAGE3_MIDBOSS_TIME, &global.timer, NULL);

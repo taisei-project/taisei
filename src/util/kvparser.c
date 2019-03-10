@@ -17,11 +17,12 @@
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
 	static const char separator[] = "= ";
 
-	char buffer[256];
+	size_t bufsize = 256;
+	char *buffer = malloc(bufsize);
 	int lineno = 0;
 	int errors = 0;
 
-	loopstart: while(SDL_RWgets(strm, buffer, sizeof(buffer))) {
+	loopstart: while(SDL_RWgets_realloc(strm, &buffer, &bufsize)) {
 		char *ptr = buffer;
 		char *sep, *key, *val;
 
@@ -68,6 +69,7 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 		}
 	}
 
+	free(buffer);
 	return !errors;
 }
 

@@ -16,5 +16,6 @@ void menu_action_enter_stagemenu(MenuData *menu, void *arg);
 void menu_action_enter_replayview(MenuData *menu, void *arg);
 void menu_action_enter_spellpractice(MenuData *menu, void *arg);
 void menu_action_enter_stagepractice(MenuData *menu, void *arg);
+void menu_action_enter_musicroom(MenuData *menu, void *arg);
 
 #endif // IGUARD_menu_submenus_h
