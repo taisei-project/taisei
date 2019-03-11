@@ -40,11 +40,7 @@ void events_init(void) {
 	if(sdl_first_user_event == (uint32_t)-1) {
 		char *s =
 			"You have exhausted the SDL userevent pool. "
-			"How you managed that is beyond me, but congratulations. "
-#if (LOG_DEFAULT_LEVELS_BACKTRACE & LOG_FATAL)
-			"Here's your prize stack trace."
-#endif
-			;
+			"How you managed that is beyond me, but congratulations.";
 		log_fatal("%s", s);
 	}
 
@@ -98,6 +94,22 @@ static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
 	return c;
 }
 
+static int ehandler_sort_cmp(const void *a, const void *b) {
+	EventHandler *const *h0 = a;
+	EventHandler *const *h1 = b;
+
+	EventPriority p0 = real_priority((*h0)->priority);
+	EventPriority p1 = real_priority((*h1)->priority);
+
+	int diff = (p0 > p1) - (p1 > p0);
+
+	if(diff == 0) {
+		diff = ((intptr_t)h0 > (intptr_t)h1) - ((intptr_t)h1 > (intptr_t)h0);
+	}
+
+	return diff;
+}
+
 static bool _events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
 	// invoke handlers from two sources (a list and an array) in the correct order according to priority
 	// list items take precedence
@@ -127,37 +139,39 @@ static bool _events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_l
 	if(h_list && h_array) {
 		// case 2 (suboptimal): we have both a list and a disordered array; need to do some actual work
 		// if you want to optimize this be my guest
+		uint cnt = 0, idx =0;
 
-		EventHandlerList merged_list = { .first = NULL };
-
-		// copy the list
 		for(EventHandlerContainer *c = h_list; c; c = c->next) {
-			alist_append(&merged_list, ehandler_wrap_container(c->handler));
+			++cnt;
 		}
 
-		// merge the array into the list copy, respecting priority
 		for(EventHandler *h = h_array; h->proc; ++h) {
-			alist_insert_at_priority_tail(
-				&merged_list,
-				ehandler_wrap_container(h),
-				real_priority(h->priority),
-				handler_container_prio_func
-			);
+			++cnt;
 		}
 
-		// iterate over the merged list
-		for(EventHandlerContainer *c = merged_list.first; c; c = c->next) {
-			if(c->handler->_private.removal_pending) {
+		EventHandler *merged[cnt];
+
+		for(EventHandlerContainer *c = h_list; c; c = c->next, ++idx) {
+			merged[idx] = c->handler;
+		}
+
+		for(EventHandler *h = h_array; h->proc; ++h, ++idx) {
+			merged[idx] = h;
+		}
+
+		qsort(merged, cnt, sizeof(*merged), ehandler_sort_cmp);
+
+		for(int i = 0; i < cnt; ++i) {
+			EventHandler *e = merged[i];
+
+			if(e->_private.removal_pending) {
 				continue;
 			}
 
-			if((result = events_invoke_handler(event, c->handler))) {
+			if((result = events_invoke_handler(event, e))) {
 				break;
 			}
 		}
-
-		alist_free_all(&merged_list);
-		return result;
 	}
 
 	if(!h_list && h_array) {
