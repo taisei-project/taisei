@@ -678,8 +678,6 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWclose(vfile);
 }
 
-#define PROGRESS_UNLOCK_ALL
-
 #ifdef PROGRESS_UNLOCK_ALL
 static void progress_unlock_all(void) {
 	StageInfo *stg;
