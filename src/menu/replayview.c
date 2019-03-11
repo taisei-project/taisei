@@ -221,8 +221,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	r_mat_pop();
 }
 
-static void replayview_drawitem(void *n, int item, int cnt) {
-	MenuEntry *e = (MenuEntry*)n;
+static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 	ReplayviewItemContext *ictx = e->arg;
 
 	if(!ictx) {
