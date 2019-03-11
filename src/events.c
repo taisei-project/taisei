@@ -94,19 +94,26 @@ static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
 	return c;
 }
 
-static int ehandler_sort_cmp(const void *a, const void *b) {
-	EventHandler *const *h0 = a;
-	EventHandler *const *h1 = b;
+typedef struct EventHandlerSortHelper {
+	EventHandler *handler;
+	uint idx;
+} EventHandlerSortHelper;
 
-	EventPriority p0 = real_priority((*h0)->priority);
-	EventPriority p1 = real_priority((*h1)->priority);
+static int ehandler_sort_cmp(const void *a, const void *b) {
+	const EventHandlerSortHelper *h0 = a;
+	const EventHandlerSortHelper *h1 = b;
+
+	EventPriority p0 = real_priority(h0->handler->priority);
+	EventPriority p1 = real_priority(h1->handler->priority);
 
 	int diff = (p0 > p1) - (p1 > p0);
 
 	if(diff == 0) {
-		diff = ((intptr_t)h0 > (intptr_t)h1) - ((intptr_t)h1 > (intptr_t)h0);
+		// stabilize sort
+		diff = (h0->idx > h1->idx) - (h1->idx > h0->idx);
 	}
 
+	assert(diff != 0);
 	return diff;
 }
 
@@ -149,20 +156,22 @@ static bool _events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_l
 			++cnt;
 		}
 
-		EventHandler *merged[cnt];
+		EventHandlerSortHelper merged[cnt];
 
 		for(EventHandlerContainer *c = h_list; c; c = c->next, ++idx) {
-			merged[idx] = c->handler;
+			merged[idx].handler = c->handler;
+			merged[idx].idx = idx;
 		}
 
 		for(EventHandler *h = h_array; h->proc; ++h, ++idx) {
-			merged[idx] = h;
+			merged[idx].handler = h;
+			merged[idx].idx = idx;
 		}
 
 		qsort(merged, cnt, sizeof(*merged), ehandler_sort_cmp);
 
 		for(int i = 0; i < cnt; ++i) {
-			EventHandler *e = merged[i];
+			EventHandler *e = merged[i].handler;
 
 			if(e->_private.removal_pending) {
 				continue;
