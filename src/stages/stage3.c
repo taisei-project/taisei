@@ -64,7 +64,7 @@ static struct {
 	float tunnel_side;
 } stgstate;
 
-static vec3 **stage3_bg_pos(vec3 pos, float maxrange) {
+static uint stage3_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	//vec3 p = {100 * cos(global.frames / 52.0), 100, 50 * sin(global.frames / 50.0)};
 	vec3 p = {
 		stgstate.tunnel_side * cos(global.frames / 52.0),
@@ -73,7 +73,7 @@ static vec3 **stage3_bg_pos(vec3 pos, float maxrange) {
 	};
 	vec3 r = {0, 3000, 0};
 
-	return linear3dpos(pos, maxrange, p, r);
+	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
 static void stage3_bg_tunnel_draw(vec3 pos) {
@@ -145,7 +145,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 }
 
 static void stage3_start(void) {
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10;
 	stage_3d_context.crot[0] = -95;

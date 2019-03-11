@@ -82,20 +82,19 @@ static float starpos[3*NUM_STARS];
 Framebuffer *baryon_aux_fb;
 FBPair baryon_fbpair;
 
-vec3 **stage6_towerwall_pos(vec3 pos, float maxrange) {
+uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, -220};
 	vec3 r = {0, 0, 300};
 
-	vec3 **list = linear3dpos(pos, maxrange, p, r);
+	uint num = linear3dpos(s3d, pos, maxrange, p, r);
 
-	int i;
-
-	for(i = 0; list[i] != NULL; i++) {
-		if((*list[i])[2] > 0)
-			(*list[i])[1] = -90000;
+	for(uint i = 0; i < num; ++i) {
+		if(s3d->pos_buffer[i][2] > 0) {
+			s3d->pos_buffer[i][1] = -90000;
+		}
 	}
 
-	return list;
+	return num;
 }
 
 void stage6_towerwall_draw(vec3 pos) {
@@ -111,10 +110,9 @@ void stage6_towerwall_draw(vec3 pos) {
 	r_shader_standard();
 }
 
-static vec3 **stage6_towertop_pos(vec3 pos, float maxrange) {
+static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 70};
-
-	return single3dpos(pos, maxrange, p);
+	return single3dpos(s3d, pos, maxrange, p);
 }
 
 static void stage6_towertop_draw(vec3 pos) {
@@ -127,8 +125,8 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_mat_pop();
 }
 
-static vec3 **stage6_skysphere_pos(vec3 pos, float maxrange) {
-	return single3dpos(pos, maxrange, stage_3d_context.cx);
+static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
+	return single3dpos(s3d, pos, maxrange, s3d->cx);
 }
 
 static void stage6_skysphere_draw(vec3 pos) {
@@ -216,7 +214,9 @@ void start_fall_over(void) { //troll
 }
 
 static void stage6_start(void) {
-	init_stage3d(&stage_3d_context);
+	// TODO: make this background slightly less horribly inefficient
+
+	init_stage3d(&stage_3d_context, 128);
 	fall_over = 0;
 
 	add_model(&stage_3d_context, stage6_skysphere_draw, stage6_skysphere_pos);

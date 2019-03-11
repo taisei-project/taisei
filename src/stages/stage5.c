@@ -59,11 +59,11 @@ struct {
 	float rad;
 } stagedata;
 
-static vec3 **stage5_stairs_pos(vec3 pos, float maxrange) {
+static uint stage5_stairs_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 0};
 	vec3 r = {0, 0, 6000};
 
-	return linear3dpos(pos, maxrange, p, r);
+	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
 static void stage5_stairs_draw(vec3 pos) {
@@ -153,7 +153,7 @@ void iku_spell_bg(Boss *b, int t) {
 static void stage5_start(void) {
 	memset(&stagedata, 0, sizeof(stagedata));
 
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 	add_model(&stage_3d_context, stage5_stairs_draw, stage5_stairs_pos);
 
 	stage_3d_context.crot[0] = 60;

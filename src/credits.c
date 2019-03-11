@@ -211,7 +211,7 @@ static void credits_towerwall_draw(vec3 pos) {
 
 static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 
 	add_model(&stage_3d_context, credits_towerwall_draw, stage6_towerwall_pos);
 

@@ -17,9 +17,11 @@
 
 Stage3D stage_3d_context;
 
-void init_stage3d(Stage3D *s) {
+void init_stage3d(Stage3D *s, uint pos_buffer_size) {
 	memset(s, 0, sizeof(Stage3D));
 	s->projangle = 45;
+	s->pos_buffer_size = pos_buffer_size;
+	s->pos_buffer = calloc(s->pos_buffer_size, sizeof(vec3));
 }
 
 void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
@@ -65,16 +67,12 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 	if(s->cx[0] || s->cx[1] || s->cx[2])
 		r_mat_translate(-s->cx[0],-s->cx[1],-s->cx[2]);
 
-	for(int i = 0; i < s->msize; i++) {
-		vec3 **list;
-		list = s->models[i].pos(s->cx, maxrange);
+	for(uint i = 0; i < s->msize; i++) {
+		uint num = s->models[i].pos(s, s->cx, maxrange);
 
-		for(int j = 0; list && list[j] != NULL; j++) {
-			s->models[i].draw(*list[j]);
-			free(list[j]);
+		for(uint j = 0; j < num; ++j) {
+			s->models[i].draw(s->pos_buffer[j]);
 		}
-
-		free(list);
 	}
 
 	r_mat_pop();
@@ -82,34 +80,35 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 
 void free_stage3d(Stage3D *s) {
 	free(s->models);
+	free(s->pos_buffer);
 }
 
-vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r) {
-	int i;
+uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r) {
 	float n = 0, z = 0;
-	for(i = 0; i < 3; i++) {
+
+	for(uint i = 0; i < 3; i++) {
 		n += q[i]*r[i] - p[i]*r[i];
 		z += r[i]*r[i];
 	}
 
 	float t = n/z;
-
-	vec3 **list = NULL;
-	int size = 0;
 	int mod = 1;
-
 	int num = t;
-	while(1) {
+	uint size = 0;
+
+	while(size < s3d->pos_buffer_size) {
 		vec3 dif;
 
-		for(i = 0; i < 3; i++)
+		for(uint i = 0; i < 3; i++) {
 			dif[i] = q[i] - p[i] - r[i]*num;
+		}
 
 		if(glm_vec3_norm(dif) < maxrange) {
-			list = realloc(list, (++size)*sizeof(vec3*));
-			list[size-1] = malloc(sizeof(vec3));
-			for(i = 0; i < 3; i++)
-				(*list[size-1])[i] = p[i] + r[i]*num;
+			for(uint i = 0; i < 3; i++) {
+				s3d->pos_buffer[size][i] = p[i] + r[i]*num;
+			}
+
+			++size;
 		} else if(mod == 1) {
 			mod = -1;
 			num = t;
@@ -120,31 +119,22 @@ vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r) {
 		num += mod;
 	}
 
-	list = realloc(list, (++size)*sizeof(vec3*));
-	list[size-1] = NULL;
-
-	return list;
+	return size;
 }
 
-vec3 **single3dpos(vec3 q, float maxrange, vec3 p) {
+uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
+	assume(s3d->pos_buffer_size > 0);
 	vec3 d;
 
-	int i;
-
-	for(i = 0; i < 3; i++)
+	for(uint i = 0; i < 3; i++) {
 		d[i] = p[i] - q[i];
+	}
 
 	if(glm_vec3_norm(d) > maxrange) {
-		return NULL;
+		return 0;
 	} else {
-		vec3 **list = calloc(2, sizeof(vec3*));
-
-		list[0] = malloc(sizeof(vec3));
-		for(i = 0; i < 3; i++)
-			(*list[0])[i] = p[i];
-		list[1] = NULL;
-
-		return list;
+		memcpy(s3d->pos_buffer, p, sizeof(vec3));
+		return 1;
 	}
 }
 

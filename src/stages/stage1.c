@@ -207,9 +207,9 @@ static void stage1_water_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static vec3 **stage1_bg_pos(vec3 p, float maxrange) {
+static uint stage1_bg_pos(Stage3D *s3d, vec3 p, float maxrange) {
 	vec3 q = {0,0,0};
-	return single3dpos(p, INFINITY, q);
+	return single3dpos(s3d, p, INFINITY, q);
 }
 
 static void stage1_smoke_draw(vec3 pos) {
@@ -233,10 +233,10 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static vec3 **stage1_smoke_pos(vec3 p, float maxrange) {
+static uint stage1_smoke_pos(Stage3D *s3d, vec3 p, float maxrange) {
 	vec3 q = {0,0,-300};
 	vec3 r = {0,300,0};
-	return linear3dpos(p, maxrange/2.0, q, r);
+	return linear3dpos(s3d, p, maxrange/2.0, q, r);
 }
 
 static bool stage1_fog(Framebuffer *fb) {
@@ -309,7 +309,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 }
 
 static void stage1_start(void) {
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 	add_model(&stage_3d_context, stage1_water_draw, stage1_bg_pos);
 	add_model(&stage_3d_context, stage1_waterplants_draw, stage1_smoke_pos);
 	add_model(&stage_3d_context, stage1_smoke_draw, stage1_smoke_pos);

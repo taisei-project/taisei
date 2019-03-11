@@ -62,7 +62,7 @@ extern Framebuffer *baryon_aux_fb;
 
 void start_fall_over(void);
 
-vec3 **stage6_towerwall_pos(vec3 pos, float maxrange);
+uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange);
 void stage6_towerwall_draw(vec3 pos);
 
 #endif // IGUARD_stages_stage6_h

@@ -85,20 +85,19 @@ static bool stage4_fog(Framebuffer *fb) {
 	return true;
 }
 
-static vec3 **stage4_fountain_pos(vec3 pos, float maxrange) {
+static uint stage4_fountain_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 400, 1500};
 	vec3 r = {0, 0, 3000};
 
-	vec3 **list = linear3dpos(pos, maxrange, p, r);
+	uint num = linear3dpos(s3d, pos, maxrange, p, r);
 
-	int i;
-
-	for(i = 0; list[i] != NULL; i++) {
-		if((*list[i])[2] > 0)
-			(*list[i])[2] = -9000;
+	for(uint i = 0; i < num; ++i) {
+		if(s3d->pos_buffer[i][2] > 0) {
+			s3d->pos_buffer[i][2] = -9000;
+		}
 	}
 
-	return list;
+	return num;
 }
 
 static void stage4_fountain_draw(vec3 pos) {
@@ -114,27 +113,9 @@ static void stage4_fountain_draw(vec3 pos) {
 	r_mat_pop();
 }
 
-static vec3 **stage4_lake_pos(vec3 pos, float maxrange) {
+static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 600, 0};
-	vec3 d;
-
-	int i;
-
-	for(i = 0; i < 3; i++)
-		d[i] = p[i] - pos[i];
-
-	if(glm_vec3_norm(d) > maxrange) {
-		return NULL;
-	} else {
-		vec3 **list = calloc(2, sizeof(vec3*));
-
-		list[0] = malloc(sizeof(vec3));
-		for(i = 0; i < 3; i++)
-			(*list[0])[i] = p[i];
-		list[1] = NULL;
-
-		return list;
-	}
+	return single3dpos(s3d, pos, maxrange, p);
 }
 
 static void stage4_lake_draw(vec3 pos) {
@@ -153,20 +134,19 @@ static void stage4_lake_draw(vec3 pos) {
 	r_mat_pop();
 }
 
-static vec3 **stage4_corridor_pos(vec3 pos, float maxrange) {
+static uint stage4_corridor_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 2400, 50};
 	vec3 r = {0, 2000, 0};
 
-	vec3 **list = linear3dpos(pos, maxrange, p, r);
+	uint num = linear3dpos(s3d, pos, maxrange, p, r);
 
-	int i;
-
-	for(i = 0; list[i] != NULL; i++) {
-		if((*list[i])[1] < p[1])
-			(*list[i])[1] = -9000;
+	for(uint i = 0; i < num; ++i) {
+		if(s3d->pos_buffer[i][1] < p[1]) {
+			s3d->pos_buffer[i][1] = -9000;
+		}
 	}
 
-	return list;
+	return num;
 }
 
 static void stage4_corridor_draw(vec3 pos) {
@@ -229,7 +209,7 @@ static void stage4_corridor_draw(vec3 pos) {
 }
 
 static void stage4_start(void) {
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10000;
 	stage_3d_context.cv[2] = 19.7;

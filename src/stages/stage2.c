@@ -128,25 +128,25 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	r_mat_mode(MM_MODELVIEW);
 }
 
-static vec3 **stage2_bg_pos(vec3 pos, float maxrange) {
+static uint stage2_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 0};
 	vec3 r = {0, 1000, 0};
 
-	return linear3dpos(pos, maxrange, p, r);
+	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
-static vec3 **stage2_bg_grass_pos(vec3 pos, float maxrange) {
+static uint stage2_bg_grass_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 0};
 	vec3 r = {0, 2000, 0};
 
-	return linear3dpos(pos, maxrange, p, r);
+	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
-static vec3 **stage2_bg_grass_pos2(vec3 pos, float maxrange) {
+static uint stage2_bg_grass_pos2(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 1234, 40};
 	vec3 r = {0, 2000, 0};
 
-	return linear3dpos(pos, maxrange, p, r);
+	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
 static bool stage2_fog(Framebuffer *fb) {
@@ -173,7 +173,7 @@ static bool stage2_bloom(Framebuffer *fb) {
 }
 
 static void stage2_start(void) {
-	init_stage3d(&stage_3d_context);
+	init_stage3d(&stage_3d_context, 16);
 	stage_3d_context.cx[2] = 1000;
 	stage_3d_context.cx[0] = -850;
 	stage_3d_context.crot[0] = 60;

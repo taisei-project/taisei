@@ -14,19 +14,22 @@
 #include "util.h"
 
 typedef struct StageSegment StageSegment;
+typedef struct Stage3D Stage3D;
 
 typedef void (*SegmentDrawRule)(vec3 pos);
-typedef vec3 **(*SegmentPositionRule)(vec3 q, float maxrange); // returns NULL-terminated array
+typedef uint (*SegmentPositionRule)(Stage3D *s3d, vec3 q, float maxrange); // returns number of elements written to Stage3D pos_buffer
 
 struct StageSegment {
 	SegmentDrawRule draw;
 	SegmentPositionRule pos;
 };
 
-typedef struct Stage3D Stage3D;
 struct Stage3D {
 	StageSegment *models;
 	int msize;
+
+	vec3 *pos_buffer;
+	uint pos_buffer_size;
 
 	// Camera
 	vec3 cx; // x
@@ -39,7 +42,7 @@ struct Stage3D {
 
 extern Stage3D stage_3d_context;
 
-void init_stage3d(Stage3D *s);
+void init_stage3d(Stage3D *s, uint pos_buffer_size);
 
 void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos);
 
@@ -50,9 +53,8 @@ void update_stage3d(Stage3D *s);
 
 void free_stage3d(Stage3D *s);
 
-vec3 **linear3dpos(vec3 q, float maxrange, vec3 p, vec3 r);
-
-vec3 **single3dpos(vec3 q, float maxrange, vec3 p);
+uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
+uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
 
 void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);
 

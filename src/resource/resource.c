@@ -553,7 +553,7 @@ void free_resources(bool all) {
 			unload_resource(ires);
 			free(c);
 
-			log_debug(
+			log_info(
 				"Unloaded %s '%s' (%s)",
 				type_name(type),
 				name,
