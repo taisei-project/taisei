@@ -147,9 +147,11 @@ Sprite* get_sprite(const char *name) {
 }
 
 Sprite* prefix_get_sprite(const char *name, const char *prefix) {
-	char *full = strjoin(prefix, name, NULL);
-	Sprite *spr = get_sprite(full);
-	free(full);
+	uint plen = strlen(prefix);
+	char buf[plen + strlen(name)];
+	strcpy(buf, prefix);
+	strcpy(buf + plen, name);
+	Sprite *spr = get_sprite(buf);
 	return spr;
 }
 
