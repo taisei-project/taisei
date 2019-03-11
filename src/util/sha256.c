@@ -12,11 +12,6 @@
 #include "util/stringops.h"
 
 #include <string.h>
-#include <SDL.h>
-
-#if SDL_BYTEORDER != SDL_LIL_ENDIAN
-	#error "This SHA-256 is little-endian only"
-#endif
 
 typedef uint32_t sha256_word_t;
 typedef uint8_t sha256_byte_t;

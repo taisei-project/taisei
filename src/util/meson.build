@@ -44,11 +44,7 @@ if use_libcrypto
     util_src += files('sha256_openssl.c')
     util_deps += [dep_crypto]
 else
-    assert(host_machine.endian() == 'little',
-        'The built-in SHA-256 implementation only supports little-endian CPUs. Enable use_libcrypto to use the OpenSSL version, or send a patch with a better implementation :)'
-    )
-
-    util_src += files('sha256_le.c')
+    util_src += files('sha256.c')
 endif
 
 if host_machine.system() == 'windows'
