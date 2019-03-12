@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.3-dev',
-    meson_version : '>=0.46.0',
+    meson_version : '>=0.45.0',
     default_options : [
         'c_std=c11',
 
@@ -12,6 +12,12 @@ project('taisei', 'c',
         'b_ndebug=if-release',
     ]
 )
+
+minimum_recommended_meson_version = '0.48.0'
+
+if meson.version().version_compare('<@0@'.format(minimum_recommended_meson_version))
+    warning('Old Meson version detected. Try upgrading to at least @0@ if the build fails.'.format(minimum_recommended_meson_version))
+endif
 
 cc = meson.get_compiler('c')
 python3 = import('python3').find_python()
