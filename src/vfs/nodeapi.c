@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "private.h"
+#include "rwops/rwops_ro.h"
 
 VFSInfo vfs_node_query(VFSNode *node) {
 	assert(node->funcs != NULL);
@@ -130,6 +131,15 @@ SDL_RWops* vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	// TODO: Ensure the stream is read-only if write mode wasn't requested.
-	return filenode->funcs->open(filenode, mode);
+	SDL_RWops *stream = filenode->funcs->open(filenode, mode);
+
+	if(!stream) {
+		return NULL;
+	}
+
+	if(!(mode & VFS_MODE_WRITE) && !vfs_node_query(filenode).is_readonly) {
+		stream = SDL_RWWrapReadOnly(stream, true);
+	}
+
+	return stream;
 }

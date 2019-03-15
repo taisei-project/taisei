@@ -10,6 +10,7 @@
 
 #include "readonly_wrapper.h"
 #include "private.h"
+#include "rwops/rwops_ro.h"
 
 #define WRAPPED(n) ((VFSNode*)(n)->data1)
 
@@ -76,7 +77,7 @@ static SDL_RWops* vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	return vfs_node_open(WRAPPED(filenode), mode);
+	return SDL_RWWrapReadOnly(vfs_node_open(WRAPPED(filenode), mode), true);
 }
 
 static VFSNodeFuncs vfs_funcs_ro = {
@@ -118,6 +119,10 @@ bool vfs_make_readonly(const char *path) {
 	char npath[strlen(path)+1];
 	strcpy(npath, buf);
 
+	if(vfs_query(path).is_readonly) {
+		return true;
+	}
+
 	vfs_path_split_right(buf, &path_parent, &path_subdir);
 
 	VFSNode *parent = vfs_locate(vfs_root, path_parent);
@@ -152,5 +157,6 @@ bool vfs_make_readonly(const char *path) {
 
 	vfs_decref(parent);
 	// vfs_decref(wrapper);
+	assert(vfs_query(path).is_readonly);
 	return true;
 }
