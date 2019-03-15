@@ -796,11 +796,11 @@ MenuData* create_options_menu(void) {
 	add_menu_separator(m);
 
 	add_menu_entry(m, "SFX Volume", do_nothing,
-		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.1)
+		b = bind_scale(CONFIG_SFX_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
 	add_menu_entry(m, "BGM Volume", do_nothing,
-		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.1)
+		b = bind_scale(CONFIG_BGM_VOLUME, 0, 1, 0.05)
 	);	b->dependence = audio_output_works;
 
 	add_menu_entry(m, "Mute audio", do_nothing,
