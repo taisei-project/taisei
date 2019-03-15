@@ -450,7 +450,7 @@ Texture* get_tex(const char *name) {
 
 Texture* prefix_get_tex(const char *name, const char *prefix) {
 	uint plen = strlen(prefix);
-	char buf[plen + strlen(name)];
+	char buf[plen + strlen(name) + 1];
 	strcpy(buf, prefix);
 	strcpy(buf + plen, name);
 	Texture *tex = get_tex(buf);
