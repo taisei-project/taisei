@@ -54,8 +54,8 @@ void gl33_buffer_flush(CommonBuffer *cbuf);
 
 #define GL33_BUFFER_TEMP_BIND(cbuf, code) do { \
 	CommonBuffer *_tempbind_cbuf = (cbuf); \
-	attr_unused BufferBindingIndex _tempbind_bindidx; \
-	attr_unused GLuint _tempbind_buf_saved; \
+	attr_unused BufferBindingIndex _tempbind_bindidx = 0; \
+	attr_unused GLuint _tempbind_buf_saved = 0; \
 	if(_tempbind_cbuf->pre_bind != NULL) { \
 		assume(_tempbind_cbuf->post_bind != NULL); \
 		_tempbind_cbuf->pre_bind(cbuf); \
