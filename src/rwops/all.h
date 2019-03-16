@@ -21,4 +21,8 @@
 #include "rwops_zipfile.h"
 #endif
 
+#ifdef DEBUG
+#include "rwops_trace.h"
+#endif
+
 #endif // IGUARD_rwops_all_h

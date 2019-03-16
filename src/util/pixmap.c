@@ -383,8 +383,6 @@ bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) {
 }
 
 bool pixmap_load_file(const char *path, Pixmap *dst) {
-	// TODO: Make this work without having to read the whole file into memory
-	// (that is what the VFS_MODE_SEEKABLE bit currently does with zip archives).
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!stream) {

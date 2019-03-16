@@ -13,3 +13,9 @@ if taisei_deps.contains(dep_zip)
         'rwops_zipfile.c',
     )
 endif
+
+if is_debug_build
+    rwops_src += files(
+        'rwops_trace.c',
+    )
+endif

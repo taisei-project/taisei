@@ -6,15 +6,13 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
  */
 
-#ifndef IGUARD_rwops_rwops_zipfile_h
-#define IGUARD_rwops_rwops_zipfile_h
+#ifndef IGUARD_rwops_rwops_trace_h
+#define IGUARD_rwops_rwops_trace_h
 
 #include "taisei.h"
 
 #include <SDL.h>
-#include <zip.h>
-#include "vfs/zipfile_impl.h"
 
-SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata);
+SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose);
 
-#endif // IGUARD_rwops_rwops_zipfile_h
+#endif // IGUARD_rwops_rwops_trace_h

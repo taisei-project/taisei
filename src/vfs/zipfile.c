@@ -11,8 +11,6 @@
 #include "zipfile.h"
 #include "zipfile_impl.h"
 
-static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
-
 #define LOG_SDL_ERROR log_debug("SDL error: %s", SDL_GetError())
 
 static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
@@ -192,7 +190,7 @@ static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
 	}
 
 	VFSNode *n = vfs_alloc();
-	vfs_zippath_init(n, node, tls, idx);
+	vfs_zippath_init(n, node, idx);
 	return n;
 }
 
@@ -312,7 +310,7 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 	}
 }
 
-static VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
+VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 	VFSZipFileData *zdata = node->data1;
 	VFSZipFileTLS *tls = SDL_TLSGet(zdata->tls_id);
 

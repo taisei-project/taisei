@@ -297,7 +297,6 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	}
 
 	log_info("Loaded font '%s' (face %li)", syspath, index);
-
 	return face;
 }
 

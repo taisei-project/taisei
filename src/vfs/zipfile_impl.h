@@ -44,11 +44,13 @@ void vfs_zipfile_iter_stop(VFSNode *node, void **opaque);
 
 typedef struct VFSZipPathData {
 	VFSNode *zipnode;
-	VFSZipFileTLS *tls;
 	uint64_t index;
+	ssize_t size;
 	VFSInfo info;
+	bool seekable;
 } VFSZipPathData;
 
-void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_int64_t idx);
+void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx);
+VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
 
 #endif // IGUARD_vfs_zipfile_impl_h

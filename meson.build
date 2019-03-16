@@ -105,7 +105,7 @@ dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : t
 dep_sdl2_mixer  = dependency('SDL2_mixer',                          required : false, static : static)
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : false, static : static)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
-dep_zip         = dependency('libzip',         version : '>=1.0',   required : false, static : static)
+dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static)
 dep_zlib        = dependency('zlib',                                required : true,  static : static)
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 

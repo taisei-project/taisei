@@ -13,9 +13,11 @@
 #include "syspath.h"
 #include "rwops/all.h"
 
+#define ZTLS(pdata) vfs_zipfile_get_tls((pdata)->zipnode, true)
+
 static const char* vfs_zippath_name(VFSNode *node) {
 	VFSZipPathData *zdata = node->data1;
-	return zip_get_name(zdata->tls->zip, zdata->index, 0);
+	return zip_get_name(ZTLS(zdata)->zip, zdata->index, 0);
 }
 
 static void vfs_zippath_free(VFSNode *node) {
@@ -65,14 +67,14 @@ static const char* vfs_zippath_iter(VFSNode *node, void **opaque) {
 
 	if(!idata) {
 		idata = calloc(1, sizeof(VFSZipFileIterData));
-		idata->num = zip_get_num_entries(zdata->tls->zip, 0);
+		idata->num = zip_get_num_entries(ZTLS(zdata)->zip, 0);
 		idata->idx = zdata->index;
 		idata->prefix = vfs_zippath_name(node);
 		idata->prefix_len = strlen(idata->prefix);
 		*opaque = idata;
 	}
 
-	return vfs_zipfile_iter_shared(node, zdata->zipnode->data1, idata, zdata->tls);
+	return vfs_zipfile_iter_shared(node, zdata->zipnode->data1, idata, ZTLS(zdata));
 }
 
 #define vfs_zippath_iter_stop vfs_zipfile_iter_stop
@@ -84,23 +86,14 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	}
 
 	VFSZipPathData *zdata = node->data1;
-	zip_file_t *zipfile = zip_fopen_index(zdata->tls->zip, zdata->index, 0);
 
-	if(!zipfile) {
-		vfs_set_error("ZIP error: %s", zip_error_strerror(&zdata->tls->error));
-		return NULL;
+	if(mode & VFS_MODE_SEEKABLE && !zdata->seekable) {
+		char *repr = vfs_node_repr(node, true);
+		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", repr);
+		free(repr);
 	}
 
-	SDL_RWops *ziprw = SDL_RWFromZipFile(zipfile, true);
-	assert(ziprw != NULL);
-
-	if(!(mode & VFS_MODE_SEEKABLE)) {
-		return ziprw;
-	}
-
-	SDL_RWops *bufrw = SDL_RWCopyToBuffer(ziprw);
-	SDL_RWclose(ziprw);
-	return bufrw;
+	return SDL_RWFromZipFile(node, zdata);
 }
 
 static VFSNodeFuncs vfs_funcs_zippath = {
@@ -116,11 +109,11 @@ static VFSNodeFuncs vfs_funcs_zippath = {
 	.open = vfs_zippath_open,
 };
 
-void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_int64_t idx) {
+void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
 	VFSZipPathData *zdata = calloc(1, sizeof(VFSZipPathData));
 	zdata->zipnode = zipnode;
-	zdata->tls = tls;
 	zdata->index = idx;
+	zdata->size = -1;
 	node->data1 = zdata;
 
 	zdata->info.exists = true;
@@ -128,6 +121,20 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, VFSZipFileTLS *tls, zip_i
 
 	if('/' == *(strchr(vfs_zippath_name(node), 0) - 1)) {
 		zdata->info.is_dir = true;
+	}
+
+	zip_stat_t zstat;
+
+	if(zip_stat_index(ZTLS(zdata)->zip, zdata->index, 0, &zstat) < 0) {
+		log_warn("zip_stat_index(%"PRIi64") failed: %s", idx, zip_error_strerror(&ZTLS(zdata)->error));
+	} else {
+		if(zstat.valid & ZIP_STAT_SIZE) {
+			zdata->size = zstat.size;
+		}
+
+		if(zstat.valid & ZIP_STAT_COMP_METHOD) {
+			zdata->seekable = (zstat.comp_method == ZIP_CM_STORE);
+		}
 	}
 
 	node->funcs = &vfs_funcs_zippath;

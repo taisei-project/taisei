@@ -99,8 +99,7 @@ static void init_sdl(void) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 	}
 
-	// initialize it
-	is_main_thread();
+	main_thread_id = SDL_ThreadID();
 
 	// * TODO: refine this and make it optional
 	// SDL_LogSetAllPriority(SDL_LOG_PRIORITY_DEBUG);

@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 
 from datetime import (
     datetime,
@@ -25,9 +26,21 @@ from taiseilib.common import (
 
 
 def pack(args):
-    with ZipFile(str(args.output), 'w', ZIP_DEFLATED) as zf:
+    nocompress_file = args.directory / '.nocompress'
+
+    try:
+        nocompress = list(map(re.compile, filter(None, nocompress_file.read_text().strip().split('\n'))))
+    except FileNotFoundError:
+        nocompress = []
+        nocompress_file = None
+
+    zkwargs = {}
+    if (sys.version_info.major, sys.version_info.minor) >= (3, 7):
+        zkwargs['compresslevel'] = 9
+
+    with ZipFile(str(args.output), 'w', ZIP_DEFLATED, **zkwargs) as zf:
         for path in sorted(args.directory.glob('**/*')):
-            if path.name == 'meson.build':
+            if path.name[0] == '.' or path.name == 'meson.build':
                 continue
 
             relpath = path.relative_to(args.directory)
@@ -38,11 +51,20 @@ def pack(args):
                 zi.external_attr = 0o40755 << 16  # drwxr-xr-x
                 zf.writestr(zi, '')
             else:
-                zf.write(str(path), str(relpath))
+                ctype = ZIP_DEFLATED
+
+                for pattern in nocompress:
+                    if pattern.match(str(relpath)):
+                        ctype = ZIP_STORED
+                        break
+
+                zf.write(str(path), str(relpath), compress_type=ctype)
 
         if args.depfile is not None:
             write_depfile(args.depfile, args.output,
-                [args.directory.resolve() / x for x in zf.namelist()] + [str(Path(__file__).resolve())]
+                [args.directory.resolve() / x for x in zf.namelist()] +
+                [str(Path(__file__).resolve())] +
+                list(filter(None, [nocompress_file]))
             )
 
 

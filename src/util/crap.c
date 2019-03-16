@@ -31,15 +31,13 @@ void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) 
 	}
 }
 
-bool is_main_thread(void) {
-	static bool initialized = false;
-	static SDL_threadID main_thread_id = 0;
-	SDL_threadID tid = SDL_ThreadID();
+SDL_threadID main_thread_id = 0;
 
-	if(!initialized) {
-		main_thread_id = tid;
+bool is_main_thread(void) {
+	if(main_thread_id == 0) {
+		return true;
 	}
 
+	SDL_threadID tid = SDL_ThreadID();
 	return main_thread_id == tid;
 }
-

@@ -21,7 +21,7 @@ Dependencies
 -  freetype2
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  libzip >= 1.0
+-  libzip >= 1.2
 -  zlib
 
 Optional:
