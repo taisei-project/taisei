@@ -1,3 +1,4 @@
-crossc/
-libzip/
-zlib/
+crossc
+libzip
+zlib
+libpng

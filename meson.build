@@ -104,7 +104,7 @@ endif
 static = get_option('static') or (host_machine.system() == 'emscripten')
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static)
-dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static)
+dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : true,  static : static)
 dep_sdl2_mixer  = dependency('SDL2_mixer',                          required : false, static : static)
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : false, static : static)

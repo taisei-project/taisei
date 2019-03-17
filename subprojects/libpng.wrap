@@ -1,0 +1,5 @@
+[wrap-git]
+directory=libpng
+url=https://github.com/taisei-project/libpng.git
+push-url=git@github.com:taisei-project/libpng.git
+revision=meson-1.6.36
