@@ -4,6 +4,10 @@ project('taisei', 'c',
     meson_version : '>=0.45.0',
     default_options : [
         'c_std=c11',
+        'default_library=static',
+
+        'libzip:enable_crypto=false',
+        'libzip:enable_bzip2=false',
 
         # You may want to change these for a debug build dir
         'buildtype=release',
@@ -105,7 +109,7 @@ dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : t
 dep_sdl2_mixer  = dependency('SDL2_mixer',                          required : false, static : static)
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : false, static : static)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
-dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static)
+dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_zlib        = dependency('zlib',                                required : true,  static : static)
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 
@@ -147,10 +151,7 @@ else
 endif
 
 if enable_zip
-    if not dep_zip.found()
-        error('ZIP support enabled but libzip not found')
-    endif
-
+    assert(dep_zip.found(), 'ZIP support enabled but libzip not found')
     taisei_deps += dep_zip
 endif
 
