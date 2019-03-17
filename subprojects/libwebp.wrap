@@ -1,0 +1,5 @@
+[wrap-git]
+directory=libwebp
+url=https://github.com/taisei-project/libwebp.git
+push-url=git@github.com:taisei-project/libwebp.git
+revision=meson-1.0.2
