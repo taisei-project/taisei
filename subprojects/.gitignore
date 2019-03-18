@@ -4,3 +4,5 @@ zlib
 libpng
 freetype
 libwebp
+sdl2
+sdl2_mixer
