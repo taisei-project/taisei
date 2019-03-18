@@ -10,7 +10,6 @@
 
 #include "projectile.h"
 
-#include <stdlib.h>
 #include "global.h"
 #include "list.h"
 #include "stageobjects.h"

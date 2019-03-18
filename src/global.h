@@ -13,7 +13,6 @@
 
 #include <SDL.h>
 #include <SDL_platform.h>
-#include <math.h>
 
 #include "util.h"
 #include "color.h"

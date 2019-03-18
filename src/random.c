@@ -8,9 +8,8 @@
 
 #include "taisei.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
+
 #include "global.h"
 #include "random.h"
 

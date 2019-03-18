@@ -10,8 +10,6 @@
 
 #include "dialog.h"
 #include "global.h"
-#include <stdlib.h>
-#include <string.h>
 
 Dialog *create_dialog(const char *left, const char *right) {
 	Dialog *d = malloc(sizeof(Dialog));

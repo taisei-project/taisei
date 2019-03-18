@@ -8,9 +8,6 @@
 
 #include "taisei.h"
 
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "list.h"
 #include "global.h"
 

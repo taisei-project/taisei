@@ -8,9 +8,6 @@
 
 #include "taisei.h"
 
-#include <string.h>
-#include <stdlib.h>
-
 #include "stringops.h"
 #include "miscmath.h"
 #include "assert.h"

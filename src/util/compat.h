@@ -11,14 +11,19 @@
 
 #include "taisei.h"
 
-#include <stdbool.h>
-#include <stdalign.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdnoreturn.h>
+// Common standard library headers
+#include <complex.h>
+#include <ctype.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <math.h>
-#include <complex.h>
+#include <stdalign.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdnoreturn.h>
+#include <string.h>
 
 #include "util/assert.h"
 

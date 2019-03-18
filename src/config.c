@@ -8,8 +8,6 @@
 
 #include "taisei.h"
 
-#include <string.h>
-
 #include "config.h"
 #include "global.h"
 #include "version.h"

@@ -11,8 +11,6 @@
 #include "sha256.h"
 #include "util/stringops.h"
 
-#include <string.h>
-
 typedef uint32_t sha256_word_t;
 typedef uint8_t sha256_byte_t;
 

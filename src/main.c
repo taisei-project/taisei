@@ -175,6 +175,10 @@ static void main_cleanup(CallChainResult ccr) {
 	}
 }
 
+// shut up -Wmissing-prototypes
+int main(int argc, char **argv);
+
+attr_used
 int main(int argc, char **argv) {
 	MainContext *ctx = calloc(1, sizeof(*ctx));
 

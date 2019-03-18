@@ -11,8 +11,6 @@
 #include "crap.h"
 #include "assert.h"
 
-#include <stdlib.h>
-#include <string.h>
 #include <SDL_thread.h>
 
 void* memdup(const void *src, size_t size) {

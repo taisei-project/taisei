@@ -8,10 +8,9 @@
 
 #include "taisei.h"
 
-#include "cli.h"
 #include <getopt.h>
-#include <string.h>
-#include <stdlib.h>
+
+#include "cli.h"
 #include "difficulty.h"
 #include "util.h"
 #include "log.h"

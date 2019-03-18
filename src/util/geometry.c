@@ -10,8 +10,6 @@
 
 #include "geometry.h"
 
-#include <string.h>
-
 bool point_in_ellipse(complex p, Ellipse e) {
 	double Xp = creal(p);
 	double Yp = cimag(p);

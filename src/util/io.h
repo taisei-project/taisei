@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+#include <stdio.h>
 
 char* read_all(const char *filename, int *size);
 

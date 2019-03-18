@@ -11,8 +11,6 @@
 
 #include "taisei.h"
 
-#include <stdlib.h>
-
 #include "list.h"
 
 #ifdef DEBUG

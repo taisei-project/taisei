@@ -8,9 +8,6 @@
 
 #include "taisei.h"
 
-#include <string.h>
-#include <stdio.h>
-
 #include "audio.h"
 #include "backend.h"
 #include "resource/resource.h"

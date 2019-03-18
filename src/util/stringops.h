@@ -36,6 +36,9 @@ static attr_must_inline inline char *strdup(const char *str) {
 #undef strtok_r
 #define strtok_r _ts_strtok_r
 
+#undef strcasecmp
+#define strcasecmp SDL_strcasecmp
+
 char* copy_segment(const char *text, const char *delim, int *size);
 bool strendswith(const char *s, const char *e) attr_pure;
 bool strstartswith(const char *s, const char *p) attr_pure;

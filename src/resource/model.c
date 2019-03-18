@@ -8,10 +8,6 @@
 
 #include "taisei.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include "model.h"
 #include "list.h"
 #include "resource.h"

@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-#include <stdbool.h>
 #include "rwops_segment.h"
 #include "util.h"
 

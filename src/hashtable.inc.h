@@ -7,7 +7,6 @@
 #include "util/assert.h"
 #include "log.h"
 
-#include <stdlib.h>
 #include <SDL.h>
 
 /******************************************************************************\

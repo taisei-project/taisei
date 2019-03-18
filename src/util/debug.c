@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "debug.h"
-#include <string.h>
 
 #ifndef DEBUG
 #error Your build system is broken
