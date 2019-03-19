@@ -1187,6 +1187,7 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 struct labels_s {
 	struct {
 		float next_life;
+		float next_bomb;
 	} x;
 
 	struct {
@@ -1199,6 +1200,13 @@ struct labels_s {
 		float voltage;
 		float graze;
 	} y;
+
+	struct {
+		float lives_display;
+		float lives_text;
+		float bombs_display;
+		float bombs_text;
+	} y_ofs;
 
 	Color lb_baseclr;
 };
@@ -1258,6 +1266,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		r_color4(1, 1, 1, 1.0);
 	}
 
+	const float res_text_padding = 4;
+
 	// Score left to next extra life
 	if(labels->x.next_life > 0) {
 		Color *next_clr = color_mul(RGBA(0.5, 0.3, 0.4, 0.5), &labels->lb_baseclr);
@@ -1265,7 +1275,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		font = get_font("small");
 
 		text_draw("Next:", &(TextParams) {
-			.pos = { labels->x.next_life, (labels->y.lives + labels->y.bombs) * 0.5 },
+			.pos = { labels->x.next_life + res_text_padding, labels->y.lives + labels->y_ofs.lives_text },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
 			.color = next_clr,
@@ -1275,7 +1285,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		font_set_kerning_enabled(font, false);
 
 		text_draw(buf, &(TextParams) {
-			.pos = { HUD_EFFECTIVE_WIDTH, (labels->y.lives + labels->y.bombs) * 0.5 },
+			.pos = { HUD_EFFECTIVE_WIDTH - res_text_padding, labels->y.lives + labels->y_ofs.lives_text },
 			.font_ptr = font,
 			.align = ALIGN_RIGHT,
 			.color = next_clr,
@@ -1283,6 +1293,33 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 		font_set_kerning_enabled(font, kern_saved);
 	}
+
+	// Bomb fragments (numeric)
+	if(labels->x.next_bomb > 0) {
+		Color *next_clr = color_mul(RGBA(0.3, 0.5, 0.3, 0.5), &labels->lb_baseclr);
+		snprintf(buf, sizeof(buf), "%d / %d", global.plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
+		font = get_font("small");
+
+		text_draw("Fragments:", &(TextParams) {
+			.pos = { labels->x.next_bomb + res_text_padding, labels->y.bombs + labels->y_ofs.bombs_text },
+			.font_ptr = font,
+			.align = ALIGN_LEFT,
+			.color = next_clr,
+		});
+
+		kern_saved = font_get_kerning_enabled(font);
+		font_set_kerning_enabled(font, false);
+
+		text_draw(buf, &(TextParams) {
+			.pos = { HUD_EFFECTIVE_WIDTH - res_text_padding, labels->y.bombs + labels->y_ofs.bombs_text },
+			.font_ptr = font,
+			.align = ALIGN_RIGHT,
+			.color = next_clr,
+		});
+
+		font_set_kerning_enabled(font, kern_saved);
+	}
+
 
 	r_mat_push();
 	r_mat_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
@@ -1553,23 +1590,22 @@ void stage_draw_hud(void) {
 	// Set up positions of most HUD elements
 	struct labels_s labels = { 0 };
 
-	const float label_height = 33;
-	float label_cur_height = 0;
-	int i;
+	const float label_spacing = 32;
+	float label_ypos = 0;
 
-	label_cur_height = 49;  i = 0;
-	labels.y.hiscore = label_cur_height+label_height*(i++);
-	labels.y.score   = label_cur_height+label_height*(i++);
+	label_ypos = 16;
+	labels.y.hiscore = label_ypos += label_spacing;
+	labels.y.score   = label_ypos += label_spacing;
 
-	label_cur_height = 140; i = 0;
-	labels.y.lives   = label_cur_height+label_height*(i++);
-	labels.y.bombs   = label_cur_height+label_height*(i++);
+	label_ypos = 108;
+	labels.y.lives   = label_ypos += label_spacing;
+	labels.y.bombs   = label_ypos += label_spacing * 1.25;
 
-	label_cur_height = 240; i = 0;
-	labels.y.power   = label_cur_height+label_height*(i++);
-	labels.y.value   = label_cur_height+label_height*(i++);
-	labels.y.voltage = label_cur_height+label_height*(i++);
-	labels.y.graze   = label_cur_height+label_height*(i++);
+	label_ypos = 208;
+	labels.y.power   = label_ypos += label_spacing;
+	labels.y.value   = label_ypos += label_spacing;
+	labels.y.voltage = label_ypos += label_spacing;
+	labels.y.graze   = label_ypos += label_spacing;
 
 	r_mat_push();
 	r_mat_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
@@ -1602,11 +1638,18 @@ void stage_draw_hud(void) {
 		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (PLR_MAX_LIVES - 0.5) - spacing * (PLR_MAX_LIVES - 1);
 		float pos_bombs = HUD_EFFECTIVE_WIDTH - spr_bomb->w * (PLR_MAX_BOMBS - 0.5) - spacing * (PLR_MAX_BOMBS - 1);
 
+		labels.y_ofs.lives_display = 0 /* spr_life->h * -0.25 */;
+		labels.y_ofs.bombs_display = 0 /* spr_bomb->h * -0.25 */;
+
+		labels.y_ofs.lives_text = labels.y_ofs.lives_display + spr_life->h;
+		labels.y_ofs.bombs_text = labels.y_ofs.bombs_display + spr_bomb->h;
+
 		labels.x.next_life = pos_lives - spr_life->w * 0.5;
+		labels.x.next_bomb = pos_bombs - spr_bomb->w * 0.5;
 
 		draw_fragments(&(DrawFragmentsParams) {
 			.fill = spr_life,
-			.pos = { pos_lives, labels.y.lives },
+			.pos = { pos_lives, labels.y.lives + labels.y_ofs.lives_display },
 			.origin_offset = { 0, 0 },
 			.limits = { PLR_MAX_LIVES, PLR_MAX_LIFE_FRAGMENTS },
 			.filled = { global.plr.lives, global.plr.life_fragments },
@@ -1621,7 +1664,7 @@ void stage_draw_hud(void) {
 
 		draw_fragments(&(DrawFragmentsParams) {
 			.fill = spr_bomb,
-			.pos = { pos_bombs, labels.y.bombs },
+			.pos = { pos_bombs, labels.y.bombs + labels.y_ofs.bombs_display },
 			.origin_offset = { 0, 0.05 },
 			.limits = { PLR_MAX_BOMBS, PLR_MAX_BOMB_FRAGMENTS },
 			.filled = { global.plr.bombs, global.plr.bomb_fragments },
