@@ -273,6 +273,10 @@ static size_t inflate_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 }
 
 SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	if(!src) {
+		return NULL;
+	}
+
 	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
 	if(!rw) {
@@ -291,6 +295,10 @@ SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
 }
 
 SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	if(!src) {
+		return NULL;
+	}
+
 	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
 	if(!rw) {

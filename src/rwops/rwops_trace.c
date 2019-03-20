@@ -58,6 +58,10 @@ static size_t trace_write(SDL_RWops *rw, const void *ptr, size_t size, size_t ma
 }
 
 SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose) {
+	if(!src) {
+		return NULL;
+	}
+
 	SDL_RWops *rw = SDL_AllocRW();
 	memset(rw, 0, sizeof(SDL_RWops));
 
