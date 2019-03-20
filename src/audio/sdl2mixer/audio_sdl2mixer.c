@@ -51,6 +51,20 @@ static bool audio_sdl2mixer_init(void) {
 		return false;
 	}
 
+	uint num_drivers = SDL_GetNumAudioDrivers();
+	void *buf;
+	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+
+	SDL_RWprintf(out, "Available audio drivers:");
+
+	for(uint i = 0; i < num_drivers; ++i) {
+		SDL_RWprintf(out, " %s", SDL_GetAudioDriver(i));
+	}
+
+	SDL_WriteU8(out, 0);
+	log_info("%s", (char*)buf);
+	SDL_RWclose(out);
+
 	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
 		log_error("Mix_OpenAudio() failed: %s", Mix_GetError());
 		Mix_Quit();
@@ -62,6 +76,8 @@ static bool audio_sdl2mixer_init(void) {
 		Mix_Quit();
 		return false;
 	}
+
+	log_info("Using driver '%s'", SDL_GetCurrentAudioDriver());
 
 	int channels = Mix_AllocateChannels(AUDIO_CHANNELS);
 
