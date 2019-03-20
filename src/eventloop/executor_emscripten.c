@@ -76,9 +76,12 @@ static bool em_audio_workaround(SDL_Event *event, void *arg) {
 	// Will start playing audio as soon as the first input occurs.
 
 	(__extension__ EM_ASM({
-		var audioctx = Module['SDL2'].audioContext;
-		if(audioctx !== undefined) {
-			audioctx.resume();
+		var sdl2 = Module['SDL2'];
+		if(sdl2 !== undefined) {
+			var audioctx = sdl2.audioContext;
+			if(audioctx !== undefined) {
+				audioctx.resume();
+			}
 		}
 	}));
 

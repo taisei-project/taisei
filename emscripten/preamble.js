@@ -7,6 +7,14 @@ Module['preRun'].push(function() {
 
     FS.mkdir('/persistent');
     FS.mount(IDBFS, {}, '/persistent');
+
+    // This function has been removed from Emscripten, but SDL still uses it...
+    Module['Pointer_stringify'] = function(ptr) {
+        return UTF8ToString(ptr);
+    }
+
+    Pointer_stringify = Module['Pointer_stringify']
+    window.Pointer_stringify = Module['Pointer_stringify']
 });
 
 function SyncFS(is_load, ccptr) {
