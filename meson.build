@@ -9,10 +9,10 @@ project('taisei', 'c',
         'libzip:enable_crypto=false',
         'libzip:enable_bzip2=false',
 
-        'sdl2:enable_haptic=false',
-        'sdl2:enable_power=false',
-        'sdl2:enable_render=false',
-        'sdl2:enable_sensor=false',
+        'sdl2:use_haptic=disabled',
+        'sdl2:use_power=disabled',
+        'sdl2:use_render=disabled',
+        'sdl2:use_sensor=disabled',
 
         # You may want to change these for a debug build dir
         'buildtype=release',
