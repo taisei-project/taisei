@@ -1,0 +1,5 @@
+[wrap-git]
+directory=shaderc
+url=https://github.com/taisei-project/shaderc.git
+push-url=git@github.com:taisei-project/shaderc.git
+revision=meson
