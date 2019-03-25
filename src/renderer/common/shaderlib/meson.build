@@ -11,7 +11,7 @@ if get_option('shader_transpiler')
     dep_crossc = dependency('crossc', version : '>=1.5.0', required : true, static : static, fallback : ['crossc', 'crossc_dep'])
 
     if get_option('wrap_mode') != 'forcefallback'
-        dep_shaderc = dependency('shaderc', required : false)
+        dep_shaderc = dependency('shaderc', static : static, required : false)
 
         if not dep_shaderc.found()
             # Thanks, google.
@@ -22,12 +22,11 @@ if get_option('shader_transpiler')
                 dep_shaderc = cc.find_library('shaderc_shared', required : false)
             endif
         endif
-
         if not dep_shaderc.found()
-            dep_shaderc = dependency('shaderc', fallback : ['shaderc', 'shaderc_dep'])
+            dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
         endif
     else
-        dep_shaderc = dependency('shaderc', fallback : ['shaderc', 'shaderc_dep'])
+        dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
     endif
 
     assert(dep_shaderc.found(), 'shaderc is required for the shader transpiler')
