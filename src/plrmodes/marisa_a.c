@@ -385,25 +385,31 @@ static int marisa_laser_slave(Enemy *e, int t) {
 	return 1;
 }
 
-static void masterspark_visual(Enemy *e, int t2, bool render) {
+static float masterspark_width(void) {
+	float t = player_get_bomb_progress(&global.plr, NULL);
+	float w = 1;
+
+	if(t < 1./6) {
+		w = t*6;
+		w = pow(w, 1.0/3.0);
+	}
+
+	if(t > 4./5) {
+		w = 1-t*5 + 4;
+		w = pow(w, 5);
+	}
+
+	return w;
+}
+
+static void masterspark_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
 	}
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
-	float fade = 1;
+	float fade = masterspark_width();
 
-	if(t < 1./6) {
-		fade = t*6;
-		fade = pow(fade, 1.0/3.0);
-	}
-
-	if(t > 4./5) {
-		fade = 1-t*5 + 4;
-		fade = pow(fade, 5);
-	}
-
-	marisa_common_masterspark_draw(1, &(MarisaBeamInfo){global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t2}, fade);
+	marisa_common_masterspark_draw(1, &(MarisaBeamInfo){global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t}, fade);
 }
 
 static int masterspark_star(Projectile *p, int t) {
@@ -413,6 +419,38 @@ static int masterspark_star(Projectile *p, int t) {
 	}
 
 	return linear(p, t);
+}
+
+static void masterspark_damage(Enemy *e) {
+	// lazy inefficient approximation of the beam parabola
+
+	float r = 96 * masterspark_width();
+	float growth = 0.25;
+	complex v = e->args[0] * cexp(-I*M_PI*0.5);
+	complex p = global.plr.pos - 30 * I + r * v;
+
+	Rect vp_rect, seg_rect;
+	vp_rect.top_left = 0;
+	vp_rect.bottom_right = CMPLX(VIEWPORT_W, VIEWPORT_H);
+
+	int iter = 0;
+	int maxiter = 10;
+
+	do {
+		stage_clear_hazards_at(p, r, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		ent_area_damage(p, r, &(DamageInfo) { 80, DMG_PLAYER_BOMB }, NULL, NULL);
+
+		p += v * r;
+		r *= 1 + growth;
+		growth *= 0.75;
+
+		complex o = (1 + I);
+		seg_rect.top_left = p - o * r;
+		seg_rect.bottom_right = p + o * r;
+
+		++iter;
+	} while(rect_rect_intersect(seg_rect, vp_rect, true, true) && iter < maxiter);
+	// log_debug("%i", iter);
 }
 
 static int masterspark(Enemy *e, int t2) {
@@ -487,6 +525,7 @@ static int masterspark(Enemy *e, int t2) {
 		return ACTION_DESTROY;
 	}
 
+	masterspark_damage(e);
 	return 1;
 }
 
@@ -578,7 +617,6 @@ static void marisa_laser_init(Player *plr) {
 static void marisa_laser_think(Player *plr) {
 	assert(laser_renderer != NULL);
 	assert(laser_renderer->logic_rule == marisa_laser_renderer);
-	player_placeholder_bomb_logic(plr);
 }
 
 static void marisa_laser_shot(Player *plr) {
