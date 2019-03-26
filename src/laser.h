@@ -63,6 +63,7 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 void delete_lasers(void);
 void process_lasers(void);
 
+bool laser_is_clearable(Laser *l);
 bool clear_laser(Laser *l, uint flags);
 
 complex las_linear(Laser *l, float t);
@@ -77,5 +78,6 @@ float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);
 
 bool laser_intersects_circle(Laser *l, Circle circle);
+bool laser_intersects_ellipse(Laser *l, Ellipse ellipse);
 
 #endif // IGUARD_laser_h

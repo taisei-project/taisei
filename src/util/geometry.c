@@ -10,6 +10,12 @@
 
 #include "geometry.h"
 
+static inline void ellipse_bbox(const Ellipse *e, Rect *r) {
+	float largest_radius = fmax(creal(e->axes), cimag(e->axes)) * 0.5;
+	r->top_left     = e->origin - largest_radius - I * largest_radius;
+	r->bottom_right = e->origin + largest_radius + I * largest_radius;
+}
+
 bool point_in_ellipse(complex p, Ellipse e) {
 	double Xp = creal(p);
 	double Yp = cimag(p);
@@ -17,7 +23,10 @@ bool point_in_ellipse(complex p, Ellipse e) {
 	double Ye = cimag(e.origin);
 	double a = e.angle;
 
-	return (
+	Rect e_bbox;
+	ellipse_bbox(&e, &e_bbox);
+
+	return point_in_rect(p, e_bbox) && (
 		pow(cos(a) * (Xp - Xe) + sin(a) * (Yp - Ye), 2) / pow(creal(e.axes)/2, 2) +
 		pow(sin(a) * (Xp - Xe) - cos(a) * (Yp - Ye), 2) / pow(cimag(e.axes)/2, 2)
 	) <= 1;
@@ -32,11 +41,8 @@ static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e
 		.bottom_right = fmax(creal(seg.a), creal(seg.b)) + I * fmax(cimag(seg.a), cimag(seg.b))
 	};
 
-	float largest_radius = fmax(creal(e.axes), cimag(e.axes))/2;
-	Rect e_bbox = {
-		.top_left = e.origin - largest_radius - I*largest_radius,
-		.bottom_right = e.origin + largest_radius + I*largest_radius
-	};
+	Rect e_bbox;
+	ellipse_bbox(&e, &e_bbox);
 
 	return !rect_rect_intersect(seg_bbox, e_bbox, true, true);
 }
@@ -66,7 +72,7 @@ static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
 	projection = -creal(v*conj(m)) / lm; // project v onto the line
 
 	// now the distance can be calculated by Pythagoras
-	distance = sqrt(pow(lv, 2) - pow(projection, 2));
+	distance = sqrt(lv*lv - projection*projection);
 
 	if(distance <= c.radius) {
 		double f = projection/lm;
@@ -108,6 +114,14 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 		return -1;
 	}
 	return lineseg_circle_intersect_fallback(seg, c);
+}
+
+bool point_in_rect(complex p, Rect r) {
+	return
+		creal(p) >= rect_left(r)  &&
+		creal(p) <= rect_right(r) &&
+		cimag(p) >= rect_top(r)   &&
+		cimag(p) <= rect_bottom(r);
 }
 
 bool rect_in_rect(Rect inner, Rect outer) {

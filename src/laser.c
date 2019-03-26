@@ -357,6 +357,10 @@ void delete_lasers(void) {
 	alist_foreach(&global.lasers, _delete_laser, NULL);
 }
 
+bool laser_is_clearable(Laser *l) {
+	return !l->unclearable;
+}
+
 bool clear_laser(Laser *l, uint flags) {
 	if(!(flags & CLEAR_HAZARDS_FORCE) && l->unclearable) {
 		return false;
@@ -366,7 +370,7 @@ bool clear_laser(Laser *l, uint flags) {
 	return true;
 }
 
-static bool collision_laser_curve(Laser *l);
+static bool laser_collision(Laser *l);
 
 void process_lasers(void) {
 	Laser *laser = global.lasers.first, *del = NULL;
@@ -404,7 +408,7 @@ void process_lasers(void) {
 				}
 			}
 		} else {
-			if(collision_laser_curve(laser)) {
+			if(laser_collision(laser)) {
 				ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
 			}
 
@@ -423,14 +427,43 @@ void process_lasers(void) {
 	}
 }
 
-static bool collision_laser_curve(Laser *l) {
+static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circle *collision_area, float t, float width_tail_factor, float tail) {
+	float t1 = t - l->timespan / 2;
+	float widthfac_orig = width_tail_factor * (t1 - tail) * (t1 + tail);
+	float widthfac = max(0.25, pow(widthfac_orig, l->width_exponent));
+
+	segment->b = l->prule(l, t);
+	collision_area->radius = widthfac * l->width * 0.5 + 1;
+
+	if(lineseg_circle_intersect(*segment, *collision_area) >= 0) {
+		return true;
+	}
+
+	if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0) {
+		double exponent;
+		collision_area->radius = laser_graze_width(l, &exponent) * max(0.25, pow(widthfac_orig, exponent));
+		assert(collision_area->radius > 0);
+		float f = lineseg_circle_intersect(*segment, *collision_area);
+
+		if(f >= 0) {
+			player_graze(&global.plr, segment->a + f * (segment->b - segment->a), 7, 5, &l->color);
+			l->next_graze = global.frames + 4;
+		}
+	}
+
+	segment->a = segment->b;
+	return false;
+}
+
+static bool laser_collision(Laser *l) {
 	if(l->width <= 3.0) {
 		return false;
 	}
 
-	float t_end = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
-	float t_death = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
-	float t = t_end - l->timespan;
+	float t_end_len = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
+	float t_end_lifetime = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
+	float t = t_end_len - l->timespan;
+	float t_end = fmin(t_end_len, t_end_lifetime);
 
 	if(t < 0) {
 		t = 0;
@@ -439,80 +472,59 @@ static bool collision_laser_curve(Laser *l) {
 	LineSegment segment = { .a = l->prule(l,t) };
 	Circle collision_area = { .origin = global.plr.pos };
 
-	for(t += l->collision_step; t <= min(t_end,t_death); t += l->collision_step) {
-		float t1 = t - l->timespan / 2;
-		float tail = l->timespan / 1.9;
-		float widthfac_orig = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
-		float widthfac = max(0.25, pow(widthfac_orig, l->width_exponent));
+	float tail = l->timespan / 1.9;
+	float width_tail_factor = -0.75 / (tail * tail);
 
-		segment.b = l->prule(l, t);
-		collision_area.radius = widthfac * l->width * 0.5 + 1;
-
-		if(lineseg_circle_intersect(segment, collision_area) >= 0) {
+	for(t += l->collision_step; t <= t_end; t += l->collision_step) {
+		if(laser_collision_segment(l, &segment, &collision_area, t, width_tail_factor, tail)) {
 			return true;
 		}
-
-		if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0) {
-			double exponent;
-			collision_area.radius = laser_graze_width(l, &exponent) * max(0.25, pow(widthfac_orig, exponent));
-			assert(collision_area.radius > 0);
-			float f = lineseg_circle_intersect(segment, collision_area);
-
-			if(f >= 0) {
-				player_graze(&global.plr, segment.a + f * (segment.b - segment.a), 7, 5, &l->color);
-				l->next_graze = global.frames + 4;
-			}
-		}
-
-		segment.a = segment.b;
 	}
 
-	segment.b = l->prule(l, min(t_end, t_death));
-	collision_area.radius = l->width * 0.5; // WTF: what is this sorcery?
-
-	return lineseg_circle_intersect(segment, collision_area) >= 0;
+	return laser_collision_segment(l, &segment, &collision_area, t_end, width_tail_factor, tail);
 }
 
-bool laser_intersects_circle(Laser *l, Circle circle) {
-	// TODO: lots of copypasta from the function above here, maybe refactor both somehow.
+bool laser_intersects_ellipse(Laser *l, Ellipse ellipse) {
+	// NOTE: this function does not take laser width into account
 
-	float t_end = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
-	float t_death = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
-	float t = t_end - l->timespan;
+	float t_end_len = (global.frames - l->birthtime) * l->speed + l->timeshift; // end of the laser based on length
+	float t_end_lifetime = l->deathtime * l->speed + l->timeshift; // end of the laser based on lifetime
+	float t = t_end_len - l->timespan;
+	float t_end = fmin(t_end_len, t_end_lifetime);
 
 	if(t < 0) {
 		t = 0;
 	}
 
 	LineSegment segment = { .a = l->prule(l, t) };
-	double orig_radius = circle.radius;
 
-	for(t += l->collision_step; t <= min(t_end, t_death); t += l->collision_step) {
-		float t1 = t - l->timespan / 2; // i have no idea
-		float tail = l->timespan / 1.9;
-		float widthfac = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
-		widthfac = max(0.25, pow(widthfac, l->width_exponent));
-
+	for(t += l->collision_step; t <= t_end; t += l->collision_step) {
 		segment.b = l->prule(l, t);
-		circle.radius = orig_radius + widthfac * l->width * 0.5 + 1;
 
-		if(lineseg_circle_intersect(segment, circle) >= 0) {
+		if(lineseg_ellipse_intersect(segment, ellipse)) {
 			return true;
 		}
 
 		segment.a = segment.b;
 	}
 
-	segment.b = l->prule(l, min(t_end, t_death));
-	circle.radius = orig_radius + l->width * 0.5; // WTF: what is this sorcery?
+	segment.b = l->prule(l, t_end);
+	return lineseg_ellipse_intersect(segment, ellipse);
+}
 
-	return lineseg_circle_intersect(segment, circle) >= 0;
+bool laser_intersects_circle(Laser *l, Circle circle) {
+	Ellipse ellipse = {
+		.origin = circle.origin,
+		.axes = circle.radius * 2 * (1 + I),
+	};
+
+	return laser_intersects_ellipse(l, ellipse);
 }
 
 complex las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/linear");
-		l->collision_step = max(3,l->timespan/10);
+		l->collision_step = max(3, l->timespan/10);
 		return 0;
 	}
 
@@ -522,6 +534,7 @@ complex las_linear(Laser *l, float t) {
 complex las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/accelerated");
+		l->collision_step = max(3, l->timespan/10);
 		return 0;
 	}
 

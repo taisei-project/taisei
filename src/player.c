@@ -542,7 +542,7 @@ static bool player_bomb(Player *plr) {
 	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames >= plr->respawntime) {
 		player_fail_spell(plr);
 		// player_cancel_powersurge(plr);
-		stage_clear_hazards(CLEAR_HAZARDS_ALL);
+		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;

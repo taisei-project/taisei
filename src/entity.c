@@ -206,6 +206,27 @@ void ent_area_damage(complex origin, float radius, const DamageInfo *damage, Ent
 	}
 }
 
+void ent_area_damage_ellipse(Ellipse ellipse, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
+	for(Enemy *e = global.enemies.first; e; e = e->next) {
+		if(
+			point_in_ellipse(e->pos, ellipse) &&
+			ent_damage(&e->ent, damage) == DMG_RESULT_OK &&
+			callback != NULL
+		) {
+			callback(&e->entity_interface, e->pos, callback_arg);
+		}
+	}
+
+	if(
+		global.boss != NULL &&
+		point_in_ellipse(global.boss->pos, ellipse) &&
+		ent_damage(&global.boss->ent, damage) == DMG_RESULT_OK &&
+		callback != NULL
+	) {
+		callback(&global.boss->entity_interface, global.boss->pos, callback_arg);
+	}
+}
+
 void ent_hook_pre_draw(EntityDrawHookCallback callback, void *arg) {
 	add_hook(&entities.hooks.pre_draw, callback, arg);
 }

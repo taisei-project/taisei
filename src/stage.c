@@ -482,9 +482,15 @@ static void stage_logic(void) {
 }
 
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {
+	bool force = flags & CLEAR_HAZARDS_FORCE;
+
 	if(flags & CLEAR_HAZARDS_BULLETS) {
 		for(Projectile *p = global.projs.first, *next; p; p = next) {
 			next = p->next;
+
+			if(!force && !projectile_is_clearable(p)) {
+				continue;
+			}
 
 			if(!predicate || predicate(&p->ent, arg)) {
 				clear_projectile(p, flags);
@@ -495,6 +501,10 @@ void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void 
 	if(flags & CLEAR_HAZARDS_LASERS) {
 		for(Laser *l = global.lasers.first, *next; l; l = next) {
 			next = l->next;
+
+			if(!force && !laser_is_clearable(l)) {
+				continue;
+			}
 
 			if(!predicate || predicate(&l->ent, arg)) {
 				clear_laser(l, flags);
@@ -525,9 +535,30 @@ static bool proximity_predicate(EntityInterface *ent, void *varg) {
 	}
 }
 
+static bool ellipse_predicate(EntityInterface *ent, void *varg) {
+	Ellipse *e = varg;
+
+	switch(ent->type) {
+		case ENT_PROJECTILE: {
+			Projectile *p = ENT_CAST(ent, Projectile);
+			return point_in_ellipse(p->pos, *e);
+		}
+
+		case ENT_LASER: {
+			Laser *l = ENT_CAST(ent, Laser);
+			return laser_intersects_ellipse(l, *e);
+		}
+
+		default: UNREACHABLE;
+	}
+}
 void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags) {
 	Circle area = { origin, radius };
 	stage_clear_hazards_predicate(proximity_predicate, &area, flags);
+}
+
+void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
+	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
 }
 
 static void stage_free(void) {

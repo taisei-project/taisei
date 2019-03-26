@@ -139,6 +139,7 @@ typedef enum ClearHazardsFlags {
 
 void stage_clear_hazards(ClearHazardsFlags flags);
 void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags);
+void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags);
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags);
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic);

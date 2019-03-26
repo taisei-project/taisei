@@ -226,13 +226,34 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(p->angle/M_PI*180,0,0,1);
 	r_mat_scale(f,1,1);
-	//draw_texture(0,0,"part/youmu_slice");
 	ProjDrawCore(p, &p->color);
 	r_mat_pop();
 
 	double slicelen = 500;
 	complex slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
 	draw_sprite_batched_p(creal(slicepos), cimag(slicepos), aniplayer_get_frame(&global.plr.ani));
+
+	/*
+	Sprite *s = get_sprite("part/smoothdot");
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = s,
+		.pos = { creal(p->pos), cimag(p->pos) },
+		.rotation.angle = p->angle + M_PI/2,
+		.scale.x = 512 / s->w,
+		.scale.y = 32 / s->h,
+		.color = RGBA(0.5, 0, 0, 0.5),
+	});
+	*/
+}
+
+static int youmu_slice_petal(Projectile *p, int t) {
+	int r = accelerated(p, t);
+
+	if(t >= 0) {
+		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / 40.0));
+	}
+
+	return r;
 }
 
 static int youmu_particle_slice_logic(Projectile *p, int t) {
@@ -253,15 +274,15 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 
 	p->color = *RGBA(a, a, a, 0);
 
-	complex phase = cexp(p->angle*I);
+	complex phase = cexp(p->angle * I);
+
 	if(t%5 == 0) {
 		tsrand_fill(4);
 		PARTICLE(
 			.sprite = "petal",
 			.pos = p->pos-400*phase,
-			.rule = accelerated,
+			.rule = youmu_slice_petal,
 			.draw_rule = Petal,
-			.color = RGBA(0.1, 0.1, 0.5, 0),
 			.args = {
 				phase,
 				phase*cexp(0.1*I),
@@ -273,12 +294,21 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 		);
 	}
 
+	Ellipse e = {
+		.origin = p->pos,
+		.axes = CMPLX(512, 64),
+		.angle = p->angle + M_PI * 0.5,
+	};
+
+	// FIXME: this may still be too slow for lasers in some cases
+	stage_clear_hazards_in_ellipse(e, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+	ent_area_damage_ellipse(e, &(DamageInfo) { 52, DMG_PLAYER_BOMB }, NULL, NULL);
+
 	return ACTION_NONE;
 }
 
 static void YoumuSlash(Enemy *e, int t, bool render) {
 }
-
 
 static int youmu_slash(Enemy *e, int t) {
 	if(t > creal(e->args[0]))
@@ -429,6 +459,5 @@ PlayerMode plrmode_youmu_b = {
 		.init = youmu_haunting_init,
 		.shot = youmu_haunting_shot,
 		.preload = youmu_haunting_preload,
-		.think = player_placeholder_bomb_logic,
 	},
 };

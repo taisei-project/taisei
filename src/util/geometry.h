@@ -102,6 +102,7 @@ void rect_move(Rect *r, complex pos) {
 	r->bottom_right += vector;
 }
 
+bool point_in_rect(complex p, Rect r);
 bool rect_in_rect(Rect inner, Rect outer) attr_const;
 bool rect_rect_intersect(Rect r1, Rect r2, bool edges, bool corners) attr_const;
 bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *out) attr_pure attr_nonnull(5);
