@@ -41,7 +41,7 @@ typedef enum {
 	EnemyProj, // hazard, collides with player
 	DeadProj,  // no collision, will be converted to a BPoint item shortly
 	Particle,  // no collision, not a hazard
-	FakeProj,  // hazard, but no collision
+	FakeProj attr_deprecated("Use PFLAG_NOCOLLISION instead"),  // hazard, but no collision
 	PlrProj,   // collides with enemies and bosses
 } ProjType;
 
@@ -57,6 +57,7 @@ typedef enum ProjFlags {
 	PFLAG_NOREFLECT = (1 << 9),
 	PFLAG_REQUIREDPARTICLE = (1 << 10),
 	PFLAG_PLRSPECIALPARTICLE = (1 << 11),
+	PFLAG_NOCOLLISION = (1 << 12),
 
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;

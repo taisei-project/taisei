@@ -303,7 +303,8 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 	double circletime = 100+20*index;
 
 	if(t == circletime) {
-		p->args[3] = global.plr.pos - 128*I;
+		p->args[3] = global.plr.pos - 256*I;
+		p->flags &= ~PFLAG_NOCOLLISION;
 		play_sound("redirect");
 	}
 
@@ -316,7 +317,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 	complex target_homing = p->args[3];
 	complex homing = target_homing - p->pos;
 	complex v = 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
-	p->args[2] += (v - p->args[2]) * 0.2;
+	p->args[2] += (v - p->args[2]) * 0.1;
 	p->pos += p->args[2];
 
 	for(int i = 0; i < 3 /*&& circlestrength < 1*/; i++) {
@@ -350,12 +351,12 @@ static void reimu_spirit_bomb(Player *p) {
 			.draw_rule = reimu_spirit_bomb_orb_visual,
 			.rule = reimu_spirit_bomb_orb,
 			.args = { cexp(I*2*M_PI/count*i), i, 0, 0},
-			.timeout = 160 + 20 * i,
+			.timeout = 200 + 20 * i,
 			.type = PlrProj,
-			.damage = 0,
+			.damage = 1000,
 			.size = 10 + 10*I,
 			.layer = LAYER_PLAYER_FOCUS - 1,
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_NOCOLLISION,
 		);
 	}
 
@@ -640,9 +641,14 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 
 	switch(prop) {
 		case PLR_PROP_SPEED: {
-			return base_value * (pow(player_get_bomb_progress(plr, NULL), 0.5));
+			float p = player_get_bomb_progress(plr, NULL);
+
+			if(p < 0.5) {
+				return base_value * p * 2;
+			}
 		}
 
+		// fallthrough
 		default: {
 			return base_value;
 		}

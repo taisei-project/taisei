@@ -344,6 +344,10 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 	out_col->damage.amount = p->damage;
 	out_col->damage.type = p->damage_type;
 
+	if(p->flags & PFLAG_NOCOLLISION) {
+		goto skip_collision;
+	}
+
 	if(p->type == EnemyProj) {
 		Ellipse e_proj = {
 			.axes = p->collision_size,
@@ -402,6 +406,8 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			}
 		}
 	}
+
+skip_collision:
 
 	if(out_col->type == PCOL_NONE && !projectile_in_viewport(p)) {
 		out_col->type = PCOL_VOID;
