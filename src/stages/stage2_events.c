@@ -226,7 +226,8 @@ static void wriggle_ani_flyin(Boss *w) {
 static void wriggle_intro_stage2(Boss *w, int t) {
 	if(t < 0)
 		return;
-	w->pos = VIEWPORT_W/2 + 100.0*I + 300*(1.0-t/(4.0*FPS))*cexp(I*(3-t*0.04));
+	t = smoothstep(0.0, 1.0, t / 240.0) * 240;
+	w->pos = CMPLX(VIEWPORT_W/2, 100.0) + (1.0 - t / 240.0) * (300 * cexp(I * (3 - t * 0.04)) - 128);
 }
 
 static int wriggle_bug(Projectile *p, int t) {
