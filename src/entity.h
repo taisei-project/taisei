@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include "objectpool.h"
+#include "util/geometry.h"
 
 #define LAYER_LOW_BITS 16
 #define LAYER_LOW_MASK ((1 << LAYER_LOW_BITS) - 1)
