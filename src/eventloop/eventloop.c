@@ -60,6 +60,7 @@ LogicFrameAction run_logic_frame(LoopFrame *frame) {
 	}
 
 	LogicFrameAction a = frame->logic(frame->context);
+	fpscounter_update(&global.fps.logic);
 
 	if(taisei_quit_requested()) {
 		a = LFRAME_STOP;
@@ -95,7 +96,6 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 		}
 	}
 
-	fpscounter_update(&global.fps.logic);
 	return lframe_action;
 }
 
