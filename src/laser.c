@@ -357,12 +357,16 @@ void delete_lasers(void) {
 	alist_foreach(&global.lasers, _delete_laser, NULL);
 }
 
+bool laser_is_active(Laser *l) {
+	return l->width > 3.0;
+}
+
 bool laser_is_clearable(Laser *l) {
-	return !l->unclearable;
+	return !l->unclearable && laser_is_active(l);
 }
 
 bool clear_laser(Laser *l, uint flags) {
-	if(!(flags & CLEAR_HAZARDS_FORCE) && l->unclearable) {
+	if(!(flags & CLEAR_HAZARDS_FORCE) && !laser_is_clearable(l)) {
 		return false;
 	}
 
@@ -456,7 +460,7 @@ static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circl
 }
 
 static bool laser_collision(Laser *l) {
-	if(l->width <= 3.0) {
+	if(!laser_is_active(l)) {
 		return false;
 	}
 

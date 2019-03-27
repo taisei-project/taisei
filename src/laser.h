@@ -63,6 +63,7 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 void delete_lasers(void);
 void process_lasers(void);
 
+bool laser_is_active(Laser *l);
 bool laser_is_clearable(Laser *l);
 bool clear_laser(Laser *l, uint flags);
 
