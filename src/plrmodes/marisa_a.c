@@ -614,11 +614,6 @@ static void marisa_laser_init(Player *plr) {
 	marisa_laser_respawn_slaves(plr, plr->power);
 }
 
-static void marisa_laser_think(Player *plr) {
-	assert(laser_renderer != NULL);
-	assert(laser_renderer->logic_rule == marisa_laser_renderer);
-}
-
 static void marisa_laser_shot(Player *plr) {
 	marisa_common_shot(plr, 175 - 4 * (plr->power / 100));
 }
@@ -687,6 +682,5 @@ PlayerMode plrmode_marisa_a = {
 		.power = marisa_laser_power,
 		.preload = marisa_laser_preload,
 		.init = marisa_laser_init,
-		.think = marisa_laser_think,
 	},
 };
