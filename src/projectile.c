@@ -564,7 +564,10 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			killed++;
 		}
 
-		if(collision) {
+		if(action == ACTION_DESTROY) {
+			memset(&col, 0, sizeof(col));
+			col.fatal = true;
+		} else if(collision) {
 			calc_projectile_collision(proj, &col);
 
 			if(col.fatal && col.type != PCOL_VOID) {
@@ -572,15 +575,10 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			}
 		} else {
 			memset(&col, 0, sizeof(col));
-			set_debug_info(&proj->debug);
 
 			if(!projectile_in_viewport(proj)) {
 				col.fatal = true;
 			}
-		}
-
-		if(action == ACTION_DESTROY) {
-			col.fatal = true;
 		}
 
 		apply_projectile_collision(projlist, proj, &col);
