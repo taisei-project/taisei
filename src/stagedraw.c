@@ -881,7 +881,7 @@ static bool stage_draw_predicate(EntityInterface *ent) {
 	if(ent->type == ENT_PROJECTILE) {
 		Projectile *p = ENT_CAST(ent, Projectile);
 
-		if(p->type == Particle) {
+		if(p->type == PROJ_PARTICLE) {
 			return stage_should_draw_particle(p);
 		}
 	}

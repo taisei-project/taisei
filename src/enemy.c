@@ -121,7 +121,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
 
 		for(Projectile *p = global.projs.first; p; p = p->next) {
-			if(p->type == EnemyProj && !(p->flags & PFLAG_NOCOLLISION) && cabs(p->pos - e->pos) < 64) {
+			if(p->type == PROJ_ENEMY && !(p->flags & PFLAG_NOCOLLISION) && cabs(p->pos - e->pos) < 64) {
 				spawn_and_collect_item(e->pos, ITEM_PIV, 1);
 			}
 		}

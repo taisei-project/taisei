@@ -489,7 +489,7 @@ static int halation_orb(Projectile *p, int time) {
 
 	GO_TO(p, pos2, 0.1);
 
-	if(p->type == DeadProj) {
+	if(p->type == PROJ_DEAD) {
 		return 1;
 	}
 

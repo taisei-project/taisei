@@ -62,7 +62,7 @@ void marisa_common_shot(Player *plr, float dmg) {
 				.color = c,
 				.rule = linear,
 				.args = { -20.0*I },
-				.type = PlrProj,
+				.type = PROJ_PLAYER,
 				.damage = dmg,
 				.shader = "sprite_default",
 			);

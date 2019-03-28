@@ -378,7 +378,7 @@ static int scythe_newton(Enemy *e, int t) {
 		Projectile *p;
 		for(p = global.projs.first; p; p = p->next) {
 			if(
-				p->type == EnemyProj &&
+				p->type == PROJ_ENEMY &&
 				cabs(p->pos-e->pos) < 50 &&
 				cabs(global.plr.pos-e->pos) > 50 &&
 				p->args[2] == 0 &&
@@ -1054,7 +1054,7 @@ static int broglie_particle(Projectile *p, int t) {
 			}
 		}
 	} else {
-		if(t == scattertime && p->type != DeadProj) {
+		if(t == scattertime && p->type != PROJ_DEAD) {
 			p->draw_rule = ProjDraw;
 			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
 
@@ -1481,7 +1481,7 @@ static int ricci_proj(Projectile *p, int t) {
 		return ACTION_DESTROY;
 	}
 
-	if(p->type == DeadProj) {
+	if(p->type == PROJ_DEAD) {
 		// p->pos += p->args[0];
 		p->prevpos = p->pos0 = p->pos;
 		p->birthtime = global.frames;

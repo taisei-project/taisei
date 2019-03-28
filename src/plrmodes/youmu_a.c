@@ -205,7 +205,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 		.rule = myon_proj,
 		.args = { speed*dir },
 		.draw_rule = myon_proj_draw,
-		.type = PlrProj,
+		.type = PROJ_PLAYER,
 		.layer = LAYER_PLAYER_SHOT | 0x10,
 		.damage = dmg,
 		.shader = "sprite_youmu_myon_shot",
@@ -320,7 +320,7 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 
 static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, float dmg, double turntime) {
 	return PROJECTILE("youmu", plr->pos + ofs, 0,
-		.type = PlrProj,
+		.type = PROJ_PLAYER,
 		.damage = dmg,
 		.shader = "sprite_default",
 		.layer = LAYER_PLAYER_SHOT | 0x20,

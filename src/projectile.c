@@ -20,7 +20,7 @@ static ProjArgs defaults_proj = {
 	.sprite = "proj/",
 	.draw_rule = ProjDraw,
 	.dest = &global.projs,
-	.type = EnemyProj,
+	.type = PROJ_ENEMY,
 	.damage_type = DMG_ENEMY_SHOT,
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_PREMUL_ALPHA,
@@ -32,7 +32,7 @@ static ProjArgs defaults_part = {
 	.sprite = "part/",
 	.draw_rule = ProjDraw,
 	.dest = &global.particles,
-	.type = Particle,
+	.type = PROJ_PARTICLE,
 	.damage_type = DMG_UNDEFINED,
 	.color = RGB(1, 1, 1),
 	.blend = BLEND_PREMUL_ALPHA,
@@ -104,12 +104,12 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->color = defaults->color;
 	}
 
-	if(!args->max_viewport_dist && (args->type == Particle || args->type == PlrProj)) {
+	if(!args->max_viewport_dist && (args->type == PROJ_PARTICLE || args->type == PROJ_PLAYER)) {
 		args->max_viewport_dist = 300;
 	}
 
 	if(!args->layer) {
-		if(args->type == PlrProj) {
+		if(args->type == PROJ_PLAYER) {
 			args->layer = LAYER_PLAYER_SHOT;
 		} else {
 			args->layer = defaults->layer;
@@ -119,20 +119,20 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 	if(args->damage_type == DMG_UNDEFINED) {
 		args->damage_type = defaults->damage_type;
 
-		if(args->type == PlrProj && args->damage_type == DMG_ENEMY_SHOT) {
+		if(args->type == PROJ_PLAYER && args->damage_type == DMG_ENEMY_SHOT) {
 			args->damage_type = DMG_PLAYER_SHOT;
 		}
 	}
 
-	if(args->type == EnemyProj && args->proto) {
+	if(args->type == PROJ_ENEMY && args->proto) {
 		// args->proto = pp_crystal;
 	}
 
-	assert(args->type <= PlrProj);
+	assert(args->type <= PROJ_PLAYER);
 }
 
 static void projectile_size(Projectile *p, double *w, double *h) {
-	if(p->type == Particle && p->sprite != NULL) {
+	if(p->type == PROJ_PARTICLE && p->sprite != NULL) {
 		*w = p->sprite->w;
 		*h = p->sprite->h;
 	} else {
@@ -200,7 +200,7 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 
 complex projectile_graze_size(Projectile *p) {
 	if(
-		p->type == EnemyProj &&
+		p->type == PROJ_ENEMY &&
 		!(p->flags & (PFLAG_NOGRAZE | PFLAG_NOCOLLISION)) &&
 		p->graze_counter < 3 &&
 		global.frames >= p->graze_cooldown
@@ -258,7 +258,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// p->collision_size *= 10;
 	// p->size *= 5;
 
-	if((p->type == EnemyProj || p->type == PlrProj) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
+	if((p->type == PROJ_ENEMY || p->type == PROJ_PLAYER) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
 		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
 	}
 
@@ -266,7 +266,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		drawlayer_low_t sublayer;
 
 		switch(p->type) {
-			case EnemyProj:
+			case PROJ_ENEMY:
 				// 1. Large projectiles go below smaller ones.
 				sublayer = LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p);
 				sublayer = (sublayer << 4) & LAYER_LOW_MASK;
@@ -276,7 +276,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 				p->ent.draw_layer |= sublayer;
 				break;
 
-			case Particle:
+			case PROJ_PARTICLE:
 				// 1. Group by shader (hardcoded precedence).
 				sublayer = ht_get(&shader_sublayer_map, p->shader, 0) & 0xf;
 				sublayer <<= 4;
@@ -349,7 +349,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		goto skip_collision;
 	}
 
-	if(p->type == EnemyProj) {
+	if(p->type == PROJ_ENEMY) {
 		Ellipse e_proj = {
 			.axes = p->collision_size,
 			.angle = p->angle + M_PI/2,
@@ -388,7 +388,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 				out_col->location = p->pos;
 			}
 		}
-	} else if(p->type == PlrProj) {
+	} else if(p->type == PROJ_PLAYER) {
 		for(Enemy *e = global.enemies.first; e; e = e->next) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
 				out_col->type = PCOL_ENTITY;
@@ -521,8 +521,8 @@ static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) 
 
 bool clear_projectile(Projectile *proj, uint flags) {
 	switch(proj->type) {
-		case PlrProj:
-		case Particle:
+		case PROJ_PLAYER:
+		case PROJ_PARTICLE:
 			return false;
 
 		default: break;
@@ -532,7 +532,7 @@ bool clear_projectile(Projectile *proj, uint flags) {
 		return false;
 	}
 
-	proj->type = DeadProj;
+	proj->type = PROJ_DEAD;
 	proj->clear_flags |= flags;
 
 	return true;
@@ -560,7 +560,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			proj->graze_counter_reset_timer = global.frames;
 		}
 
-		if(proj->type == DeadProj && killed < 10 && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
+		if(proj->type == PROJ_DEAD && killed < 10 && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
 			proj->clear_flags |= CLEAR_HAZARDS_NOW;
 			killed++;
 		}
@@ -588,7 +588,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 
-		if(proj->type == DeadProj && (proj->clear_flags & CLEAR_HAZARDS_NOW)) {
+		if(proj->type == PROJ_DEAD && (proj->clear_flags & CLEAR_HAZARDS_NOW)) {
 			really_clear_projectile(projlist, proj);
 		}
 	}
@@ -610,11 +610,11 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 }
 
 bool projectile_is_clearable(Projectile *p) {
-	if(p->type == DeadProj) {
+	if(p->type == PROJ_DEAD) {
 		return true;
 	}
 
-	if(p->type == EnemyProj) {
+	if(p->type == PROJ_ENEMY) {
 		return (p->flags & PFLAG_NOCLEAR) != PFLAG_NOCLEAR;
 	}
 
@@ -672,7 +672,7 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 static inline bool proj_uses_spawning_effect(Projectile *proj, ProjFlags effect_flag) {
-	if(proj->type != EnemyProj) {
+	if(proj->type != PROJ_ENEMY) {
 		return false;
 	}
 

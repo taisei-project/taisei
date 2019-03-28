@@ -513,7 +513,7 @@ static int timeout_deadproj_linear(Projectile *p, int time) {
 	}
 
 	if(time > creal(p->args[0])) {
-		p->type = DeadProj;
+		p->type = PROJ_DEAD;
 	}
 
 	p->pos += p->args[1];

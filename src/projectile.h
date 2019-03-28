@@ -36,12 +36,12 @@ typedef void (*ProjDrawRule)(Projectile *p, int t);
 typedef bool (*ProjPredicate)(Projectile *p);
 
 typedef enum {
-	_InvalidProj,
+	PROJ_INVALID,
 
-	EnemyProj, // hazard, collides with player
-	DeadProj,  // no collision, will be cleared shortly
-	Particle,  // no collision, not a hazard
-	PlrProj,   // collides with enemies and bosses
+	PROJ_ENEMY,    // hazard, collides with player
+	PROJ_DEAD,     // no collision, will be cleared shortly
+	PROJ_PARTICLE, // no collision, not a hazard
+	PROJ_PLAYER,   // collides with enemies and bosses
 } ProjType;
 
 typedef enum ProjFlags {

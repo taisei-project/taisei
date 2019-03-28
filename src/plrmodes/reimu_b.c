@@ -128,7 +128,7 @@ static void reimu_dream_gap_bomb(Enemy *e, int t) {
 			.pos = e->pos + e->args[0] * (frand() - 0.5) * GAP_LENGTH * 0.5,
 			.rule = reimu_dream_gap_bomb_projectile,
 			.draw_rule = reimu_dream_gap_bomb_projectile_draw,
-			.type = PlrProj,
+			.type = PROJ_PLAYER,
 			.damage_type = DMG_PLAYER_BOMB,
 			.damage = 75,
 			.args = { -20 * e->pos0 },
@@ -448,7 +448,7 @@ static void reimu_dream_shot(Player *p) {
 					.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
 					.rule = reimu_dream_ofuda,
 					.args = { -20.0 * shot_dir },
-					.type = PlrProj,
+					.type = PROJ_PLAYER,
 					.damage = dmg,
 					.shader = "sprite_default",
 				);
@@ -505,7 +505,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.35),
 				.rule = reimu_dream_needle,
 				.args = { 20.0 * shotdir },
-				.type = PlrProj,
+				.type = PROJ_PLAYER,
 				.damage = 35,
 				.shader = "sprite_default",
 			);

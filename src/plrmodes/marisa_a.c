@@ -63,7 +63,7 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 		.dest = &lproj,
 		.pos = e->pos,
 		.size = 28*(1+I),
-		.type = PlrProj,
+		.type = PROJ_PLAYER,
 		.damage = damage,
 		.rule = linear,
 		.args = { vel },
