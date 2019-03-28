@@ -39,9 +39,8 @@ typedef enum {
 	_InvalidProj,
 
 	EnemyProj, // hazard, collides with player
-	DeadProj,  // no collision, will be converted to a BPoint item shortly
+	DeadProj,  // no collision, will be cleared shortly
 	Particle,  // no collision, not a hazard
-	FakeProj attr_deprecated("Use PFLAG_NOCOLLISION instead"),  // hazard, but no collision
 	PlrProj,   // collides with enemies and bosses
 } ProjType;
 

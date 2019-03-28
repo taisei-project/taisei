@@ -589,9 +589,8 @@ void cirno_snow_halation(Boss *c, int time) {
 				.args = {
 					center, rotation, p + I * projs, halate_time
 				},
-				.type = FakeProj,
 				.max_viewport_dist = 200,
-				.flags = PFLAG_NOCLEAR,
+				.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
 			);
 		}
 	}

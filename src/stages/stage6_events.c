@@ -1055,9 +1055,8 @@ static int broglie_particle(Projectile *p, int t) {
 		}
 	} else {
 		if(t == scattertime && p->type != DeadProj) {
-			p->type = EnemyProj;
 			p->draw_rule = ProjDraw;
-			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT);
+			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
 
 			double angle_ampl = creal(p->args[3]);
 			double angle_freq = cimag(p->args[3]);
@@ -1161,8 +1160,7 @@ static int broglie_charge(Projectile *p, int t) {
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
 					.draw_rule = ProjNoDraw,
-					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS,
-					.type = FakeProj,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION,
 				);
 			}
 		}
@@ -2126,7 +2124,6 @@ static int elly_toe_boson(Projectile *p, int t) {
 		p->prevpos = p->pos; // don't lerp
 
 		if(warps_left-- < 1) {
-			p->type = FakeProj; // prevent invisible collision at would-be warp location
 			return ACTION_DESTROY;
 		}
 

@@ -199,7 +199,12 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 }
 
 complex projectile_graze_size(Projectile *p) {
-	if(p->type == EnemyProj && !(p->flags & PFLAG_NOGRAZE) && p->graze_counter < 3 && global.frames >= p->graze_cooldown) {
+	if(
+		p->type == EnemyProj &&
+		!(p->flags & (PFLAG_NOGRAZE | PFLAG_NOCOLLISION)) &&
+		p->graze_counter < 3 &&
+		global.frames >= p->graze_cooldown
+	) {
 		complex s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
 		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
 	}
@@ -262,7 +267,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 		switch(p->type) {
 			case EnemyProj:
-			case FakeProj: {
 				// 1. Large projectiles go below smaller ones.
 				sublayer = LAYER_LOW_MASK - (drawlayer_low_t)projectile_rect_area(p);
 				sublayer = (sublayer << 4) & LAYER_LOW_MASK;
@@ -271,9 +275,8 @@ static Projectile* _create_projectile(ProjArgs *args) {
 				// If specific blending order is required, then you should set up the sublayer manually.
 				p->ent.draw_layer |= sublayer;
 				break;
-			}
 
-			case Particle: {
+			case Particle:
 				// 1. Group by shader (hardcoded precedence).
 				sublayer = ht_get(&shader_sublayer_map, p->shader, 0) & 0xf;
 				sublayer <<= 4;
@@ -281,11 +284,9 @@ static Projectile* _create_projectile(ProjArgs *args) {
 				// If specific blending order is required, then you should set up the sublayer manually.
 				p->ent.draw_layer |= sublayer;
 				break;
-			}
 
-			default: {
+			default:
 				break;
-			}
 		}
 	}
 
@@ -613,7 +614,7 @@ bool projectile_is_clearable(Projectile *p) {
 		return true;
 	}
 
-	if(p->type == EnemyProj || p->type == FakeProj) {
+	if(p->type == EnemyProj) {
 		return (p->flags & PFLAG_NOCLEAR) != PFLAG_NOCLEAR;
 	}
 
@@ -671,11 +672,11 @@ int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
 }
 
 static inline bool proj_uses_spawning_effect(Projectile *proj, ProjFlags effect_flag) {
-	if((proj->flags & effect_flag) == effect_flag) {
+	if(proj->type != EnemyProj) {
 		return false;
 	}
 
-	if(proj->type != EnemyProj && proj->type != FakeProj) {
+	if((proj->flags & effect_flag) == effect_flag) {
 		return false;
 	}
 
