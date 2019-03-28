@@ -45,18 +45,21 @@ typedef enum {
 } ProjType;
 
 typedef enum ProjFlags {
-	PFLAG_NOSPAWNFLARE = (1 << 0),
-	PFLAG_NOSPAWNFADE = (1 << 1),
-	PFLAG_NOGRAZE = (1 << 3),
-	PFLAG_NOCLEAR = (1 << 4),
-	PFLAG_NOCLEAREFFECT = (1 << 5),
-	PFLAG_NOCOLLISIONEFFECT = (1 << 6),
-	PFLAG_NOCLEARBONUS = (1 << 7),
+	// NOTE: Many of these flags are only meaningful for a specific type(s) of projectile.
+	// The relevant ProjType enum(s) are specified in [square brackets], or [ALL] if all apply.
+
+	PFLAG_NOSPAWNFLARE = (1 << 0),          // [PROJ_ENEMY] Don't spawn the standard particle effect when spawned.
+	PFLAG_NOSPAWNFADE = (1 << 1),           // [PROJ_ENEMY] Don't fade in when spawned; assume 100% opacity immediately.
+	PFLAG_NOGRAZE = (1 << 3),               // [PROJ_ENEMY] Can't be grazed.
+	PFLAG_NOCLEAR = (1 << 4),               // [PROJ_ENEMY] Can't be cleared (unless forced).
+	PFLAG_NOCLEAREFFECT = (1 << 5),         // [PROJ_ENEMY, PROJ_DEAD] Don't spawn the standard particle effect when cleared.
+	PFLAG_NOCOLLISIONEFFECT = (1 << 6),     // [PROJ_ENEMY, PROJ_DEAD, PROJ_PLAYER] Don't spawn the standard particle effect on collision.
+	PFLAG_NOCLEARBONUS = (1 << 7),          // [PROJ_ENEMY, PROJ_DEAD] Don't spawn any bonus items on clear.
 	// PFLAG_RESERVED = (1 << 8),
-	PFLAG_NOREFLECT = (1 << 9),
-	PFLAG_REQUIREDPARTICLE = (1 << 10),
-	PFLAG_PLRSPECIALPARTICLE = (1 << 11),
-	PFLAG_NOCOLLISION = (1 << 12),
+	PFLAG_NOREFLECT = (1 << 9),             // [ALL] Don't render a "reflection" of this on the Stage 1 water surface.
+	PFLAG_REQUIREDPARTICLE = (1 << 10),     // [PROJ_PARTICLE] Visible at "minimal" particles setting.
+	PFLAG_PLRSPECIALPARTICLE = (1 << 11),   // [PROJ_PARTICLE] Apply Power Surge effect to this particle, as if it was a PROJ_PLAYER.
+	PFLAG_NOCOLLISION = (1 << 12),          // [PROJ_ENEMY, PROJ_PLAYER] Disable collision detection.
 
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
