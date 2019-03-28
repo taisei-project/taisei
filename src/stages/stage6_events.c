@@ -1561,7 +1561,7 @@ void elly_ricci(Boss *b, int t) {
 			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
-				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR | PFLAG_GRAZESPAM,
+				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
 		}

@@ -423,11 +423,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 			break;
 
 		case PCOL_PLAYER_GRAZE: {
-			if(p->flags & PFLAG_GRAZESPAM) {
-				player_graze(ENT_CAST(col->entity, Player), col->location, 10, 2, &p->color);
-			} else {
-				player_graze(ENT_CAST(col->entity, Player), col->location, 10 + 10 * p->graze_counter, 3 + p->graze_counter, &p->color);
-			}
+			player_graze(ENT_CAST(col->entity, Player), col->location, 10 + 10 * p->graze_counter, 3 + p->graze_counter, &p->color);
 
 			p->graze_counter++;
 			p->graze_cooldown = global.frames + 12;
