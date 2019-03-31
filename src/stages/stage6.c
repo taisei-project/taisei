@@ -29,26 +29,26 @@ struct stage6_spells_s stage6_spells = {
 			elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
 		},
 		.orbital_clockwork = {
-			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 45, 60000,
+			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 50, 60000,
 			elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
 		},
 		.wave_theory = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 25, 30000,
+			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 30, 25000,
 			elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
 		},
 	},
 
 	.baryon = {
 		.many_world_interpretation = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 40, 60000,
+			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 50, 60000,
 			elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
 		},
 		.wave_particle_duality = {
-			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 70000,
+			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 65000,
 			elly_broglie, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7
 		},
 		.spacetime_curvature = {
-			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 90000,
+			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 80000,
 			elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
 		},
 		.higgs_boson_uncovered = {

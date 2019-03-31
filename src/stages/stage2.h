@@ -20,8 +20,7 @@ extern struct stage2_spells_s {
 	struct {
 		AttackInfo amulet_of_harm;
 		AttackInfo bad_pick;
-		AttackInfo wheel_of_fortune_easy;
-		AttackInfo wheel_of_fortune_hard;
+		AttackInfo wheel_of_fortune;
 	} boss;
 
 	struct {

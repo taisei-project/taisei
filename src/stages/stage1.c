@@ -25,18 +25,18 @@
 struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 32, 24000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
 			cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 	},
 
 	.boss = {
 		.crystal_rain = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 28, 33000,
+			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
 			cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 		.snow_halation = {
-			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 40, 40000,
+			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
 			cirno_snow_halation, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
 		},
 		.icicle_fall = {

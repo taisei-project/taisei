@@ -761,13 +761,7 @@ static Boss *create_hina(void) {
 	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);
 	boss_add_attack(hina, AT_Normal, "Cards2", 40, 30000, hina_cards2, NULL);
 	boss_add_attack_from_info(hina, &stage2_spells.boss.bad_pick, false);
-
-	if(global.diff < D_Hard) {
-		boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune_easy, false);
-	} else {
-		boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune_hard, false);
-	}
-
+	boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune, false);
 	boss_add_attack_from_info(hina, &stage2_spells.extra.monty_hall_danmaku, false);
 
 	boss_start_attack(hina, hina->attacks);

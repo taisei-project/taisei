@@ -750,18 +750,22 @@ bool boss_is_fleeing(Boss *boss) {
 }
 
 bool boss_is_vulnerable(Boss *boss) {
-	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && boss->current->starttime < global.frames && !boss->current->finished;
+	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && !boss->current->finished;
 }
 
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
-	float factor = 1.0;
+	float factor;
 
-	if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
+	if(boss->current && ATTACK_IS_SPELL(boss->current->type) && global.frames - boss->current->starttime < 120) {
+		factor = 0.0;
+	} else if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
 		factor = boss->shot_damage_multiplier;
 	} else if(dmg->type == DMG_PLAYER_BOMB) {
 		factor = boss->bomb_damage_multiplier;
+	} else {
+		factor = 1.0;
 	}
 
 	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {

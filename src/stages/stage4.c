@@ -25,34 +25,34 @@
 struct stage4_spells_s stage4_spells = {
 	.mid = {
 		.gate_of_walachia = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Bloodless “Gate of Walachia”", 25, 44000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "Bloodless “Gate of Walachia”", 50, 44000,
 			kurumi_slaveburst, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 		.dry_fountain = {
-			{ 4,  5, -1, -1}, AT_Spellcard, "Bloodless “Dry Fountain”", 30, 44000,
+			{ 4,  5, -1, -1}, AT_Spellcard, "Bloodless “Dry Fountain”", 50, 44000,
 			kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 		.red_spike = {
-			{-1, -1,  6,  7}, AT_Spellcard, "Bloodless “Red Spike”", 30, 46000,
+			{-1, -1,  6,  7}, AT_Spellcard, "Bloodless “Red Spike”", 50, 46000,
 			kurumi_redspike, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 	},
 
 	.boss = {
 		.animate_wall = {
-			{ 8,  9, -1, -1}, AT_Spellcard, "Limit “Animate Wall”", 30, 50000,
+			{ 8,  9, -1, -1}, AT_Spellcard, "Limit “Animate Wall”", 60, 50000,
 			kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 		.demon_wall = {
-			{-1, -1, 10, 11}, AT_Spellcard, "Summoning “Demon Wall”", 30, 55000,
+			{-1, -1, 10, 11}, AT_Spellcard, "Summoning “Demon Wall”", 60, 55000,
 			kurumi_aniwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 		.blow_the_walls = {
-			{12, 13, 14, 15}, AT_Spellcard, "Power Sign “Blow the Walls”", 30, 55000,
+			{12, 13, 14, 15}, AT_Spellcard, "Power Sign “Blow the Walls”", 60, 55000,
 			kurumi_blowwall, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 		.bloody_danmaku = {
-			{18, 19, 16, 17}, AT_Spellcard, "Predation “Vampiric Vapor”", 40, 60000,
+			{18, 19, 16, 17}, AT_Spellcard, "Predation “Vampiric Vapor”", 80, 60000,
 			kurumi_danmaku, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4
 		},
 	},

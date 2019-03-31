@@ -30,7 +30,7 @@ struct stage3_spells_s stage3_spells = {
 
 	.boss = {
 		.moonlight_rocket = {
-			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 35, 40000,
+			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 40, 40000,
 			wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
 		},
 		.wriggle_night_ignite = {

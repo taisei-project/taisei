@@ -23,19 +23,15 @@
 struct stage2_spells_s stage2_spells = {
 	.boss = {
 		.amulet_of_harm = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 26, 50000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 50, 50000,
 			hina_amulet, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 		.bad_pick = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 30, 43200,
+			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 60, 43200,
 			hina_bad_pick, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
-		.wheel_of_fortune_easy = {
-			{ 8,  9, -1, -1}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 20, 36000,
-			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
-		},
-		.wheel_of_fortune_hard = {
-			{-1, -1, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 25, 36000,
+		.wheel_of_fortune = {
+			{ 8,  9, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 50, 32000,
 			hina_wheel, hina_spell_bg, BOSS_DEFAULT_GO_POS, 2
 		},
 	},
