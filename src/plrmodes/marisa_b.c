@@ -119,7 +119,7 @@ static Color marisa_slaveclr(int i, float low) {
 static int marisa_star_orbit(Enemy *e, int t) {
 	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.6);
 
-	float tb = player_get_bomb_progress(&global.plr, NULL);
+	float tb = player_get_bomb_progress(&global.plr);
 	if(t == EVENT_BIRTH) {
 		global.shake_view = 8;
 		return 1;
@@ -186,7 +186,7 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	float tb = player_get_bomb_progress(&global.plr, NULL);
+	float tb = player_get_bomb_progress(&global.plr);
 	Color color = marisa_slaveclr(rint(creal(e->args[0])), 0.2);
 
 	float fade = 1;
@@ -241,7 +241,7 @@ static void marisa_star_bombbg(Player *plr) {
 		return;
 	}
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
+	float t = player_get_bomb_progress(&global.plr);
 	
 	ShaderProgram *s = r_shader_get("maristar_bombbg");
 	r_shader_ptr(s);

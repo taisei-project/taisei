@@ -512,21 +512,6 @@ void player_logic(Player* plr) {
 	} else if(plr->deathtime > global.frames) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 	}
-
-	if(player_is_bomb_active(plr)) {
-		if(plr->bombcanceltime) {
-			int bctime = plr->bombcanceltime + plr->bombcanceldelay;
-
-			if(bctime <= global.frames) {
-				plr->recovery = global.frames;
-				plr->bombcanceltime = 0;
-				plr->bombcanceldelay = 0;
-				return;
-			}
-		}
-
-		player_fail_spell(plr);
-	}
 }
 
 static bool player_bomb(Player *plr) {
@@ -562,8 +547,6 @@ static bool player_bomb(Player *plr) {
 
 		plr->bombtotaltime = bomb_time;
 		plr->recovery = global.frames + plr->bombtotaltime;
-		plr->bombcanceltime = 0;
-		plr->bombcanceldelay = 0;
 
 		assert(player_is_alive(plr));
 		collect_all_items(1);
@@ -610,24 +593,6 @@ bool player_is_vulnerable(Player *plr) {
 
 bool player_is_alive(Player *plr) {
 	return plr->deathtime < global.frames && global.frames >= plr->respawntime;
-}
-
-void player_cancel_bomb(Player *plr, int delay) {
-	if(!player_is_bomb_active(plr)) {
-		return;
-	}
-
-	if(plr->bombcanceltime) {
-		int canceltime_queued = plr->bombcanceltime + plr->bombcanceldelay;
-		int canceltime_requested = global.frames + delay;
-
-		if(canceltime_queued > canceltime_requested) {
-			plr->bombcanceldelay -= (canceltime_queued - canceltime_requested);
-		}
-	} else {
-		plr->bombcanceltime = global.frames;
-		plr->bombcanceldelay = delay;
-	}
 }
 
 static void player_powersurge_expired(Player *plr) {
@@ -685,41 +650,13 @@ void player_extend_powersurge(Player *plr, float pos, float neg) {
 	}
 }
 
-double player_get_bomb_progress(Player *plr, double *out_speed) {
+double player_get_bomb_progress(Player *plr) {
 	if(!player_is_bomb_active(plr)) {
-		if(out_speed != NULL) {
-			*out_speed = 1.0;
-		}
-
 		return 1;
 	}
 
-	int start_time = plr->recovery - plr->bombtotaltime;
 	int end_time = plr->recovery;
-
-	if(!plr->bombcanceltime || plr->bombcanceltime + plr->bombcanceldelay >= end_time) {
-		if(out_speed != NULL) {
-			*out_speed = 1.0;
-		}
-
-		return (plr->bombtotaltime - (end_time - global.frames))/(double)plr->bombtotaltime;
-	}
-
-	int cancel_time = plr->bombcanceltime + plr->bombcanceldelay;
-	int passed_time = plr->bombcanceltime - start_time;
-
-	int shortened_total_time = (plr->bombtotaltime - passed_time) - (end_time - cancel_time);
-	int shortened_passed_time = (global.frames - plr->bombcanceltime);
-
-	double passed_fraction = passed_time / (double)plr->bombtotaltime;
-	double shortened_fraction = shortened_passed_time / (double)shortened_total_time;
-	shortened_fraction *= (1 - passed_fraction);
-
-	if(out_speed != NULL) {
-		*out_speed = (plr->bombtotaltime - passed_time) / (double)shortened_total_time;
-	}
-
-	return passed_fraction + shortened_fraction;
+	return (plr->bombtotaltime - (end_time - global.frames))/(double)plr->bombtotaltime;
 }
 
 void player_realdeath(Player *plr) {
@@ -967,13 +904,6 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 			switch(value) {
 				case KEY_BOMB:
 					useful = player_bomb(plr);
-
-					if(!useful && plr->iddqd) {
-						// smooth bomb cancellation test
-						player_cancel_bomb(plr, 60);
-						useful = true;
-					}
-
 					break;
 
 				case KEY_SPECIAL:

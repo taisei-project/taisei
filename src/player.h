@@ -135,8 +135,6 @@ struct Player {
 	int recovery;
 	int deathtime;
 	int respawntime;
-	int bombcanceltime;
-	int bombcanceldelay;
 	int bombtotaltime;
 
 	int inputflags;
@@ -211,7 +209,6 @@ void player_extend_powersurge(Player *plr, float pos, float neg);
 
 void player_register_damage(Player *plr, EntityInterface *target, const DamageInfo *damage);
 
-void player_cancel_bomb(Player *plr, int delay);
 void player_cancel_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
@@ -225,7 +222,7 @@ void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *bonus);
 uint64_t player_next_extralife_threshold(uint64_t step);
 
 // Progress is normalized from 0: bomb start to 1: bomb end
-double player_get_bomb_progress(Player *plr, double *out_speed);
+double player_get_bomb_progress(Player *plr);
 
 void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 

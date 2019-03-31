@@ -96,7 +96,7 @@ void youmu_common_bombbg(Player *plr) {
 		return;
 	}
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
+	float t = player_get_bomb_progress(&global.plr);
 	float fade = 1;
 
 	if(t < 1./12)

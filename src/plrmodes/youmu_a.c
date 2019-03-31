@@ -446,7 +446,7 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 	}
 
 	// roughly matches the shader effect
-	float bombtime = player_get_bomb_progress(&global.plr, 0);
+	float bombtime = player_get_bomb_progress(&global.plr);
 	float envelope = bombtime * (1 - bombtime);
 	float range = 200 / (1 + pow(0.08 / envelope, 5));
 
@@ -459,7 +459,7 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 static bool youmu_mirror_shader(Framebuffer *fb) {
 	ShaderProgram *shader = r_shader_get("youmua_bomb");
 
-	double t = player_get_bomb_progress(&global.plr, 0);
+	double t = player_get_bomb_progress(&global.plr);
 	r_shader_ptr(shader);
 	r_uniform_float("tbomb", t);
 

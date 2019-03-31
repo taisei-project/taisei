@@ -1208,10 +1208,6 @@ void boss_start_attack(Boss *b, Attack *a) {
 				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
 			);
 		}
-
-		// schedule a bomb cancellation for when the spell actually starts
-		// we don't want an ongoing bomb to immediately ruin the spell bonus
-		player_cancel_bomb(&global.plr, a->starttime - global.frames);
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);

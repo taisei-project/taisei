@@ -369,8 +369,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		return;
 	}
 
-	double speed;
-	double t = player_get_bomb_progress(p, &speed);
+	double t = player_get_bomb_progress(p);
 	float alpha = 0;
 	if(t > 0)
 		alpha = min(1,10*t);
@@ -641,7 +640,7 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 
 	switch(prop) {
 		case PLR_PROP_SPEED: {
-			float p = player_get_bomb_progress(plr, NULL);
+			float p = player_get_bomb_progress(plr);
 
 			if(p < 0.5) {
 				return base_value * p * 2;

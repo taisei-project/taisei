@@ -386,7 +386,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 }
 
 static float masterspark_width(void) {
-	float t = player_get_bomb_progress(&global.plr, NULL);
+	float t = player_get_bomb_progress(&global.plr);
 	float w = 1;
 
 	if(t < 1./6) {
@@ -471,7 +471,7 @@ static int masterspark(Enemy *e, int t2) {
 	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + nfrand() * 0.005));
 	complex diroffset = e->args[0];
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
+	float t = player_get_bomb_progress(&global.plr);
 
 	if(t >= 3.0/4.0) {
 		global.shake_view = 8 * (1 - t * 4 + 3);
@@ -534,7 +534,7 @@ static void marisa_laser_bombbg(Player *plr) {
 		return;
 	}
 
-	float t = player_get_bomb_progress(&global.plr, NULL);
+	float t = player_get_bomb_progress(&global.plr);
 	float fade = 1;
 
 	if(t < 1./6)
