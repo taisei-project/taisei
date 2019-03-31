@@ -1349,6 +1349,7 @@ static void ricci_laser_logic(Laser *l, int t) {
 	if(t == EVENT_BIRTH) {
 		// remember maximum radius, start at 0 actual radius
 		l->args[1] = 0 + creal(l->args[1]) * I;
+		l->width = 0;
 		return;
 	}
 
@@ -1367,6 +1368,7 @@ static void ricci_laser_logic(Laser *l, int t) {
 	if(t > 0) {
 		// expand then shrink radius
 		l->args[1] = cimag(l->args[1]) * (I + sin(M_PI * t / (l->deathtime + l->timespan)));
+		l->width = clamp(t / 4.0, 0, 10);
 	}
 
 	return;
@@ -1394,8 +1396,8 @@ static int ricci_proj2(Projectile *p, int t) {
 		create_laser(p->pos, 12, 60, RGBA(0.2, 1, 0.5, 0), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
 		create_laser(p->pos, 12, 60, RGBA(0.2, 0.4, 1, 0), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
 
-		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
-		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos)->width = 10;
+		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
+		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
 
 		free_ref(p->args[1]);
 		return ACTION_ACK;
@@ -1463,6 +1465,7 @@ static int baryon_ricci(Enemy *e, int t) {
 						-n,
 						add_ref(e),
 					},
+					.flags = PFLAG_NOCOLLISION,
 				);
 			}
 		}
@@ -1556,9 +1559,12 @@ void elly_ricci(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
 
 	FROM_TO(30, 100000, interval) {
+		float w = VIEWPORT_W;
+		float ofs = -1 * w/(float)c;
+		w *= (1 + 2.0 / c);
+
 		for(int i = 0; i < c; i++) {
-			int w = VIEWPORT_W;
-			complex pos = 0.5 * w/(float)c + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
+			complex pos = ofs + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
 				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
