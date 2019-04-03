@@ -28,15 +28,6 @@ float min3(vec3 c) {
     return min(c.x, min(c.y, c.z));
 }
 
-float _smoothstep(float x) { // TODO: use glsl builtin function
-    return 1.0/(exp(8.*x)+1.0);
-}
-
-float _smoothstep(float x, float b) { // TODO: use glsl smoothstep
-    x = clamp(x/b - 0.5, 0.0, 1.0);
-    return x*x*(3.0 - 2.0*x);
-}
-
 vec2 uv_to_region(vec4 region, vec2 uv) {
     return vec2(
         mix(region.x, region.x + region.z, uv.x),

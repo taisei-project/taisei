@@ -13,7 +13,7 @@ void main(void) {
 
 	// everything bigger than rmax is not drawn. The sine creates the
 	// spinning wavy border.
-	float rmax = 1 + _smoothstep(t - 0.5) * sin(t * 40 + 10 * phi);
+	float rmax = 1 + smoothstep(1, 0, t) * sin(t * 40 + 10 * phi);
 
 	// now make it grow with time.
 	rmax *= step(0, t) * t * 1.5;
