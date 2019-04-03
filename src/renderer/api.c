@@ -460,17 +460,17 @@ void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *c
 	B.framebuffer_clear(fb, flags, colorval, depthval);
 }
 
-void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h) {
-	r_framebuffer_viewport_rect(fb, (IntRect) { x, y, w, h });
+void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h) {
+	r_framebuffer_viewport_rect(fb, (FloatRect) { x, y, w, h });
 }
 
-void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport) {
+void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport) {
 	assert(viewport.h > 0);
 	assert(viewport.w > 0);
 	B.framebuffer_viewport(fb, viewport);
 }
 
-void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) {
+void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) {
 	B.framebuffer_viewport_current(fb, viewport);
 }
 

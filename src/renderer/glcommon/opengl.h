@@ -89,6 +89,7 @@ struct glext_s {
 	ext_flag_t texture_norm16;
 	ext_flag_t texture_rg;
 	ext_flag_t vertex_array_object;
+	ext_flag_t viewport_array;
 
 	//
 	// debug_output
@@ -173,6 +174,19 @@ struct glext_s {
 	PFNGLISVERTEXARRAYPROC IsVertexArray;
 	#undef glIsVertexArray
 	#define glIsVertexArray (glext.IsVertexArray)
+
+	//
+	//	viewport_array
+	//	NOTE: only the subset we actually use is defined here
+	//
+
+	PFNGLGETFLOATI_VPROC GetFloati_v;
+	#undef glGetFloati_v
+	#define glGetFloati_v (glext.GetFloati_v)
+
+	PFNGLVIEWPORTINDEXEDFVPROC ViewportIndexedfv;
+	#undef glViewportIndexedfv
+	#define glViewportIndexedfv (glext.ViewportIndexedfv)
 };
 
 #define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))

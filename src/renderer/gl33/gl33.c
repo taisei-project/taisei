@@ -99,8 +99,8 @@ static struct {
 	} capabilities;
 
 	struct {
-		IntRect active;
-		IntRect default_framebuffer;
+		FloatRect active;
+		FloatRect default_framebuffer;
 	} viewport;
 
 	Color color;
@@ -223,6 +223,27 @@ static void gl33_init_texunits(void) {
 	log_info("Using %i texturing units (%i available)", R.texunits.limit, texunits_available);
 }
 
+static void gl33_get_viewport(FloatRect *vp) {
+	IntRect vp_int;
+	glGetIntegerv(GL_VIEWPORT, &vp_int.x);
+	vp->x = vp_int.x;
+	vp->y = vp_int.y;
+	vp->w = vp_int.w;
+	vp->h = vp_int.h;
+}
+
+static void gl33_set_viewport(const FloatRect *vp) {
+	glViewport(vp->x, vp->y, vp->w, vp->h);
+}
+
+static void gl41_get_viewport(FloatRect *vp) {
+	glGetFloati_v(GL_VIEWPORT, 0, &vp->x);
+}
+
+static void gl41_set_viewport(const FloatRect *vp) {
+	glViewportIndexedfv(0, &vp->x);
+}
+
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
 
@@ -241,9 +262,17 @@ static void gl33_init_context(SDL_Window *window) {
 	gl33_set_clear_depth(1);
 	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
+	if(glext.viewport_array) {
+		GLVT.get_viewport = gl41_get_viewport;
+		GLVT.set_viewport = gl41_set_viewport;
+	} else {
+		GLVT.get_viewport = gl33_get_viewport;
+		GLVT.set_viewport = gl33_set_viewport;
+	}
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glGetIntegerv(GL_VIEWPORT, &R.viewport.default_framebuffer.x);
+	GLVT.get_viewport(&R.viewport.default_framebuffer);
 
 	if(glReadBuffer != NULL) {
 		glReadBuffer(GL_BACK);
@@ -292,7 +321,7 @@ static void gl33_apply_capability(RendererCapability cap, bool value) {
 	}
 }
 
-static inline IntRect* get_framebuffer_viewport(Framebuffer *fb) {
+static inline FloatRect* get_framebuffer_viewport(Framebuffer *fb) {
 	if(fb == NULL) {
 		return &R.viewport.default_framebuffer;
 	}
@@ -301,11 +330,11 @@ static inline IntRect* get_framebuffer_viewport(Framebuffer *fb) {
 }
 
 static void gl33_sync_viewport(void) {
-	IntRect *vp = get_framebuffer_viewport(R.framebuffer.pending);
+	FloatRect *vp = get_framebuffer_viewport(R.framebuffer.pending);
 
-	if(memcmp(&R.viewport.active, vp, sizeof(IntRect))) {
+	if(memcmp(&R.viewport.active, vp, sizeof(R.viewport.active))) {
 		R.viewport.active = *vp;
-		glViewport(vp->x, vp->y, vp->w, vp->h);
+		GLVT.set_viewport(vp);
 	}
 }
 
@@ -934,11 +963,11 @@ static Framebuffer *gl33_framebuffer_current(void) {
 	return R.framebuffer.pending;
 }
 
-static void gl33_framebuffer_viewport(Framebuffer *fb, IntRect vp) {
+static void gl33_framebuffer_viewport(Framebuffer *fb, FloatRect vp) {
 	memcpy(get_framebuffer_viewport(fb), &vp, sizeof(vp));
 }
 
-static void gl33_framebuffer_viewport_current(Framebuffer *fb, IntRect *out_rect) {
+static void gl33_framebuffer_viewport_current(Framebuffer *fb, FloatRect *out_rect) {
 	*out_rect = *get_framebuffer_viewport(fb);
 }
 
@@ -1006,7 +1035,7 @@ static DepthTestFunc gl33_depth_func_current(void) {
 }
 
 static bool gl33_screenshot(Pixmap *out) {
-	IntRect *vp = &R.viewport.default_framebuffer;
+	FloatRect *vp = &R.viewport.default_framebuffer;
 	out->width = vp->w;
 	out->height = vp->h;
 	out->format = PIXMAP_FORMAT_RGB8;

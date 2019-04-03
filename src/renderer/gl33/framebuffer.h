@@ -18,7 +18,7 @@
 struct Framebuffer {
 	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];
 	uint attachment_mipmaps[FRAMEBUFFER_MAX_ATTACHMENTS];
-	IntRect viewport;
+	FloatRect viewport;
 	GLuint gl_fbo;
 	bool initialized;
 	char debug_label[R_DEBUG_LABEL_SIZE];

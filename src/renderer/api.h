@@ -636,9 +636,9 @@ void r_framebuffer_set_debug_label(Framebuffer *fb, const char* label) attr_nonn
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) attr_nonnull(1);
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
-void r_framebuffer_viewport(Framebuffer *fb, int x, int y, int w, int h);
-void r_framebuffer_viewport_rect(Framebuffer *fb, IntRect viewport);
-void r_framebuffer_viewport_current(Framebuffer *fb, IntRect *viewport) attr_nonnull(2);
+void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h);
+void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
+void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval);
 

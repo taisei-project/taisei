@@ -101,7 +101,7 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-void video_get_viewport_size(int *width, int *height) {
+void video_get_viewport_size(float *width, float *height) {
 	float w = video.current.width;
 	float h = video.current.height;
 	float r = w / h;
@@ -116,14 +116,14 @@ void video_get_viewport_size(int *width, int *height) {
 	*height = h;
 }
 
-void video_get_viewport(IntRect *vp) {
+void video_get_viewport(FloatRect *vp) {
 	video_get_viewport_size(&vp->w, &vp->h);
-	vp->x = (video.current.width  - vp->w) / 2;
-	vp->y = (video.current.height - vp->h) / 2;
+	vp->x = (int)((video.current.width  - vp->w) / 2);
+	vp->y = (int)((video.current.height - vp->h) / 2);
 }
 
 static void video_set_viewport(void) {
-	IntRect vp;
+	FloatRect vp;
 	video_get_viewport(&vp);
 	r_framebuffer_viewport_rect(NULL, vp);
 }

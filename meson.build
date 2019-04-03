@@ -39,8 +39,10 @@ config = configuration_data()
 taisei_c_args = [
     '-Wall',
     '-Wpedantic',
+
     '-Werror=assume',
     '-Werror=implicit-function-declaration',
+    '-Werror=incompatible-pointer-types',
 
     #
     # Keep the rest sorted

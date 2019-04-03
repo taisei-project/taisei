@@ -70,12 +70,12 @@ void fbpair_resize_all(FBPair *pair, uint width, uint height) {
 	fbpair_clear(pair);
 }
 
-void fbpair_viewport(FBPair *pair, int x, int y, int w, int h) {
+void fbpair_viewport(FBPair *pair, float x, float y, float w, float h) {
 	r_framebuffer_viewport(pair->front, x, y, w, h);
 	r_framebuffer_viewport(pair->back, x, y, w, h);
 }
 
-void fbpair_viewport_rect(FBPair *pair, IntRect vp) {
+void fbpair_viewport_rect(FBPair *pair, FloatRect vp) {
 	r_framebuffer_viewport_rect(pair->front, vp);
 	r_framebuffer_viewport_rect(pair->back, vp);
 }

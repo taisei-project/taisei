@@ -77,8 +77,8 @@ typedef struct RendererFuncs {
 	void (*framebuffer_set_debug_label)(Framebuffer *framebuffer, const char *label);
 	void (*framebuffer_destroy)(Framebuffer *framebuffer);
 	void (*framebuffer_attach)(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment);
-	void (*framebuffer_viewport)(Framebuffer *framebuffer, IntRect vp);
-	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, IntRect *vp);
+	void (*framebuffer_viewport)(Framebuffer *framebuffer, FloatRect vp);
+	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, FloatRect *vp);
 	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	uint (*framebuffer_get_attachment_mipmap)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	void (*framebuffer_clear)(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);

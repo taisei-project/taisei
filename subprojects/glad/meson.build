@@ -17,6 +17,7 @@ glad_extensions = [
     'GL_ARB_pixel_buffer_object',
     'GL_ARB_texture_filter_anisotropic',
     'GL_ARB_vertex_array_object',
+    'GL_ARB_viewport_array',
     'GL_ATI_draw_buffers',
     'GL_EXT_base_instance',
     'GL_EXT_color_buffer_float',
@@ -36,6 +37,7 @@ glad_extensions = [
     'GL_OES_texture_float_linear',
     'GL_OES_texture_half_float_linear',
     'GL_OES_vertex_array_object',
+    'GL_OES_viewport_array',
     'GL_SGIX_depth_texture',
 ]
 

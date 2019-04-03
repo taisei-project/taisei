@@ -93,7 +93,7 @@ static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
 
-static IntRect default_fb_viewport;
+static FloatRect default_fb_viewport;
 
 static Framebuffer* null_framebuffer_create(void) { return (void*)&placeholder; }
 static void null_framebuffer_set_debug_label(Framebuffer *fb, const char *label) { }
@@ -102,8 +102,8 @@ static void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint
 static Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) { return (void*)&placeholder; }
 static uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) { return 0; }
 static void null_framebuffer_destroy(Framebuffer *framebuffer) { }
-static void null_framebuffer_viewport(Framebuffer *framebuffer, IntRect vp) { }
-static void null_framebuffer_viewport_current(Framebuffer *framebuffer, IntRect *vp) { *vp = default_fb_viewport; }
+static void null_framebuffer_viewport(Framebuffer *framebuffer, FloatRect vp) { }
+static void null_framebuffer_viewport_current(Framebuffer *framebuffer, FloatRect *vp) { *vp = default_fb_viewport; }
 static void null_framebuffer(Framebuffer *framebuffer) { }
 static Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 static void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }

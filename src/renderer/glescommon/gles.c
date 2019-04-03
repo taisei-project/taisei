@@ -25,7 +25,7 @@ void gles_init_context(SDL_Window *w) {
 }
 
 bool gles_screenshot(Pixmap *out) {
-	IntRect vp;
+	FloatRect vp;
 	r_framebuffer_viewport_current(NULL, &vp);
 	out->width = vp.w;
 	out->height = vp.h;

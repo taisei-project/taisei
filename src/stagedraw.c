@@ -87,7 +87,7 @@ static struct {
 };
 
 static double fb_scale(void) {
-	int vp_width, vp_height;
+	float vp_width, vp_height;
 	video_get_viewport_size(&vp_width, &vp_height);
 	return (double)vp_height / SCREEN_H;
 }
@@ -941,29 +941,41 @@ static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s) {
 }
 
 void stage_draw_foreground(void) {
-	int vw, vh;
+	float vw, vh;
 	video_get_viewport_size(&vw, &vh);
 
 	// CAUTION: Very intricate pixel perfect scaling that will ruin your day.
 	float facw = (float)vw/SCREEN_W;
 	float fach = (float)vh/SCREEN_H;
-	// confer video_update_quality to understand why this is fach. fach is equal to facw up to roundoff error.
+	// fach is equal to facw up to roundoff error.
 	float scale = fach;
 
 	// draw the foreground Framebuffer
 	r_mat_push();
-		r_mat_scale(1/facw,1/fach,1);
-		r_mat_translate(floorf(facw*VIEWPORT_X), floorf(fach*VIEWPORT_Y), 0);
-		r_mat_scale(floorf(scale*VIEWPORT_W)/VIEWPORT_W,floorf(scale*VIEWPORT_H)/VIEWPORT_H,1);
+		r_mat_scale(1/facw, 1/fach,1);
+		r_mat_translate(roundf(facw*VIEWPORT_X), roundf(fach*VIEWPORT_Y), 0);
+		r_mat_scale(roundf(scale*VIEWPORT_W), roundf(scale*VIEWPORT_H), 1);
 
 		// apply the screenshake effect
 		if(global.shake_view) {
-			r_mat_translate(global.shake_view*sin(global.frames),global.shake_view*sin(global.frames*1.1+3),0);
-			r_mat_scale(1+2*global.shake_view/VIEWPORT_W,1+2*global.shake_view/VIEWPORT_H,1);
-			r_mat_translate(-global.shake_view,-global.shake_view,0);
+			r_mat_translate(
+				global.shake_view * sin(global.frames) / VIEWPORT_W,
+				global.shake_view * sin(global.frames * 1.1 + 3) / VIEWPORT_H,
+				0
+			);
+			r_mat_scale(
+				1 + 2 * global.shake_view / VIEWPORT_W,
+				1 + 2 * global.shake_view / VIEWPORT_H,
+				1
+			);
+			r_mat_translate(
+				-global.shake_view / VIEWPORT_W,
+				-global.shake_view / VIEWPORT_H,
+				0
+			);
 		}
 
-		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, VIEWPORT_W, VIEWPORT_H);
+		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, 1, 1);
 	r_mat_pop();
 }
 

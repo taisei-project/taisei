@@ -479,6 +479,36 @@ static void glcommon_ext_vertex_array_object(void) {
 	log_warn("Extension not supported");
 }
 
+static void glcommon_ext_viewport_array(void) {
+	if((GL_ATLEAST(4, 1))
+		&& (glext.GetFloati_v = glad_glGetFloati_v)
+		&& (glext.ViewportIndexedfv = glad_glViewportIndexedfv)
+	) {
+		glext.viewport_array = TSGL_EXTFLAG_NATIVE;
+		log_info("Using core functionality");
+		return;
+	}
+
+	if((glext.viewport_array = glcommon_check_extension("GL_ARB_viewport_array"))
+		&& (glext.GetFloati_v = glad_glGetFloati_v)
+		&& (glext.ViewportIndexedfv = glad_glViewportIndexedfv)
+	) {
+		log_info("Using GL_ARB_viewport_array");
+		return;
+	}
+
+	if((glext.viewport_array = glcommon_check_extension("GL_OES_viewport_array"))
+		&& (glext.GetFloati_v = glad_glGetFloati_vOES)
+		&& (glext.ViewportIndexedfv = glad_glViewportIndexedfvOES)
+	) {
+		log_info("Using GL_OES_viewport_array");
+		return;
+	}
+
+	glext.viewport_array = 0;
+	log_warn("Extension not supported");
+}
+
 static APIENTRY GLvoid shim_glClearDepth(GLdouble depthval) {
 	glClearDepthf(depthval);
 }
@@ -548,6 +578,7 @@ void glcommon_check_extensions(void) {
 	glcommon_ext_texture_norm16();
 	glcommon_ext_texture_rg();
 	glcommon_ext_vertex_array_object();
+	glcommon_ext_viewport_array();
 
 	// GLES has only glClearDepthf
 	// Core has only glClearDepth until GL 4.1
