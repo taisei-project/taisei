@@ -303,12 +303,10 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 		case TE_GAME_KEY_DOWN:
 			switch(code) {
 				case KEY_STOP:
-					// global.game_over = GAMEOVER_DEFEAT;
 					stage_finish(GAMEOVER_DEFEAT);
 					return true;
 
 				case KEY_RESTART:
-					// global.game_over = GAMEOVER_RESTART;
 					stage_finish(GAMEOVER_RESTART);
 					return true;
 			}
@@ -590,7 +588,9 @@ static void stage_finalize(void *arg) {
 }
 
 void stage_finish(int gameover) {
-	assert(global.gameover != GAMEOVER_TRANSITIONING);
+	if(global.gameover == GAMEOVER_TRANSITIONING) {
+		return;
+	}
 
 	int prev_gameover = global.gameover;
 	global.gameover_time = global.frames;
