@@ -1242,6 +1242,10 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 }
 
 void player_add_life_fragments(Player *plr, int frags) {
+	if(global.stage->type == STAGE_SPELL) {
+		return;
+	}
+
 	player_add_fragments(
 		plr,
 		frags,
@@ -1256,6 +1260,10 @@ void player_add_life_fragments(Player *plr, int frags) {
 }
 
 void player_add_bomb_fragments(Player *plr, int frags) {
+	if(global.stage->type == STAGE_SPELL) {
+		return;
+	}
+
 	player_add_fragments(
 		plr,
 		frags,
