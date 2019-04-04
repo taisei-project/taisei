@@ -4,13 +4,18 @@ dst="$PWD"
 cd "$(dirname "${BASH_SOURCE[0]}")"/.. || exit $?
 src="$PWD"
 
-${MESON:-meson} "$src" "$dst" \
+${MESON:-meson} \
     --buildtype=debug \
-    --prefix="$dst/install"
-
-${MESON:-meson} configure \
+    --prefix="$dst/install" \
     -Dstrip=false \
     -Db_lto=false \
     -Db_ndebug=false \
     -Db_sanitize=address,undefined \
-    "$@" "$dst"
+    -Dr_gles20=true \
+    -Dr_gles30=true \
+    -Dshader_transpiler=true \
+    -Duse_libcrypto=false \
+    -Dobjpools=false \
+    -Dpackage_data=false \
+    -Dc_args=-march=native \
+    "$@" "$dst" "$src"
