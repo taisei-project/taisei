@@ -102,6 +102,8 @@ static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
 
 			new_pos = sz - offset;
 			break;
+
+		default: UNREACHABLE;
 	}
 
 	if(new_pos < 0 || new_pos > sz) {

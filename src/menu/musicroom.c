@@ -91,7 +91,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt) {
 		return;
 	}
 
-	char buf[8];
+	char buf[16];
 	const char *title = p->state & MSTATE_TITLE_VISIBLE ? e->name : "???????";
 	Color clr = *r_color_current();
 	TextParams tparams = {

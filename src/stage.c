@@ -612,9 +612,8 @@ void stage_finish(int gameover) {
 
 		if(p) {
 			++p->num_cleared;
+			log_debug("Stage cleared %u times now", p->num_cleared);
 		}
-
-		log_debug("Stage cleared %u times now", p->num_cleared);
 	}
 }
 
