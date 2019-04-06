@@ -793,6 +793,10 @@ MenuData* create_options_menu(void) {
 	);	bind_addvalue(b, "classic");
 		bind_addvalue(b, "modern");
 
+	add_menu_entry(m, "Floating score text visibility", do_nothing,
+		b = bind_scale(CONFIG_SCORETEXT_ALPHA, 0, 1, 0.05)
+	);
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, "SFX Volume", do_nothing,

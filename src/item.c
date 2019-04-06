@@ -240,31 +240,31 @@ void process_items(void) {
 			switch(item->type) {
 			case ITEM_POWER:
 				player_add_power(&global.plr, POWER_VALUE);
-				player_add_points(&global.plr, 25);
+				player_add_points(&global.plr, 25, item->pos);
 				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN*3, PLR_POWERSURGE_NEGATIVE_GAIN*3);
 				play_sound("item_generic");
 				break;
 			case ITEM_POWER_MINI:
 				player_add_power(&global.plr, POWER_VALUE_MINI);
-				player_add_points(&global.plr, 5);
+				player_add_points(&global.plr, 5, item->pos);
 				play_sound("item_generic");
 				break;
 			case ITEM_SURGE:
 				player_extend_powersurge(&global.plr, PLR_POWERSURGE_POSITIVE_GAIN, PLR_POWERSURGE_NEGATIVE_GAIN);
-				player_add_points(&global.plr, 25);
+				player_add_points(&global.plr, 25, item->pos);
 				play_sound("item_generic");
 				break;
 			case ITEM_POINTS:
-				player_add_points(&global.plr, round(global.plr.point_item_value * item->pickup_value));
+				player_add_points(&global.plr, round(global.plr.point_item_value * item->pickup_value), item->pos);
 				play_sound("item_generic");
 				break;
 			case ITEM_PIV:
-				player_add_piv(&global.plr, 1);
+				player_add_piv(&global.plr, 1, item->pos);
 				play_sound("item_generic");
 				break;
 			case ITEM_VOLTAGE:
 				player_add_voltage(&global.plr, 1);
-				player_add_piv(&global.plr, 10);
+				player_add_piv(&global.plr, 10, item->pos);
 				play_sound("item_generic");
 				break;
 			case ITEM_LIFE:

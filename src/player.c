@@ -614,7 +614,7 @@ static void player_powersurge_expired(Player *plr) {
 		.angle = M_PI*2*frand(),
 	);
 
-	player_add_points(&global.plr, bonus.score);
+	player_add_points(&global.plr, bonus.score, plr->pos);
 	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
 	stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
 
@@ -1181,7 +1181,7 @@ void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const
 
 	pos = (pos + plr->pos) * 0.5;
 
-	player_add_points(plr, pts);
+	player_add_points(plr, pts, pos);
 	play_sound("graze");
 
 	Color *c = COLOR_COPY(color);
@@ -1215,7 +1215,7 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 	int excess_frags = total_frags + frags - maxwhole * maxfrags;
 
 	if(excess_frags > 0) {
-		player_add_points(plr, excess_frags * score_per_excess);
+		player_add_points(plr, excess_frags * score_per_excess, plr->pos);
 		frags -= excess_frags;
 	}
 
@@ -1285,16 +1285,40 @@ void player_add_bombs(Player *plr, int bombs) {
 	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
 }
 
-void player_add_points(Player *plr, uint points) {
+static void scoretext_predraw(StageText *txt, int t, float a) {
+	float r = bits_to_float((uintptr_t)txt->custom.data1);
+	txt->pos -= I * cexp(I*r) * a;
+}
+
+static float scoreval_importance(Player *plr, uint points) {
+	return clamp((double)points / (double)plr->point_item_value, 0, 1);
+}
+
+void player_add_points(Player *plr, uint points, complex location) {
 	plr->points += points;
 
 	while(plr->points >= plr->extralife_threshold) {
 		plr->extralife_threshold = player_next_extralife_threshold(++plr->extralives_given);
 		player_add_lives(plr, 1);
 	}
+
+	float rnd = nfrand();
+	float imp = scoreval_importance(plr, points);
+	float a = clamp((0.5 + 0.5 * cbrtf(imp)) * config_get_float(CONFIG_SCORETEXT_ALPHA), 0, 1);
+
+	if(a < 1e-4) {
+		return;
+	}
+
+	char buf[64];
+	format_huge_num(0, points, sizeof(buf), buf);
+	Color *c = color_mul_scalar(color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), imp), a);
+	StageText *t = stagetext_add(buf, location, ALIGN_CENTER, get_font("small"), c, 0, 25 + 20 * imp, 10, 20);
+	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
+	t->custom.predraw = scoretext_predraw;
 }
 
-void player_add_piv(Player *plr, uint piv) {
+void player_add_piv(Player *plr, uint piv, complex location) {
 	uint v = plr->point_item_value + piv;
 
 	if(v > PLR_MAX_PIV || v < plr->point_item_value) {
@@ -1302,6 +1326,21 @@ void player_add_piv(Player *plr, uint piv) {
 	} else {
 		plr->point_item_value = v;
 	}
+
+	float rnd = nfrand();
+	float a = clamp((0.5 + 0.5 * min(piv/10.0, 1)) * config_get_float(CONFIG_SCORETEXT_ALPHA), 0, 1);
+
+	if(a < 1e-4) {
+		return;
+	}
+
+	char buf[64];
+	format_huge_num(0, piv, sizeof(buf), buf);
+	strcat(buf, "v");
+	Color *c = color_mul_scalar(RGB(0.5, 0.8, 1.0), a);
+	StageText *t = stagetext_add(buf, location, ALIGN_CENTER, get_font("small"), c, 0, 35, 10, 20);
+	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
+	t->custom.predraw = scoretext_predraw;
 }
 
 void player_add_voltage(Player *plr, uint voltage) {
@@ -1338,14 +1377,14 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 	if(target != NULL) {
 		switch(target->type) {
 			case ENT_ENEMY: {
-				player_add_points(&global.plr, damage->amount * 0.5);
 				pos = ENT_CAST(target, Enemy)->pos;
+				player_add_points(&global.plr, damage->amount * 0.5, pos);
 				break;
 			}
 
 			case ENT_BOSS: {
-				player_add_points(&global.plr, damage->amount * 0.2);
 				pos = ENT_CAST(target, Boss)->pos;
+				player_add_points(&global.plr, damage->amount * 0.2, pos);
 				break;
 			}
 

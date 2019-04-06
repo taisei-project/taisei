@@ -826,7 +826,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	char diff_bonus_text[6];
 	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
 
-	player_add_points(plr, bonus.total);
+	player_add_points(plr, bonus.total, plr->pos);
 
 	StageTextTable tbl;
 	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 0,

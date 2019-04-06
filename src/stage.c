@@ -715,7 +715,7 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	// TODO: maybe a difficulty multiplier?
 
 	bonus->total = bonus->base + bonus->voltage + bonus->lives;
-	player_add_points(&global.plr, bonus->total);
+	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
 static LogicFrameAction stage_logic_frame(void *arg) {

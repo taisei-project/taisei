@@ -17,10 +17,14 @@ static StageText *textlist = NULL;
 #define NUM_PLACEHOLDER "........................"
 
 StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = malloc(sizeof(StageText));
+	StageText *t = (StageText*)objpool_acquire(stage_object_pools.stagetext);
 	list_append(&textlist, t);
 
-	t->text = strdup(text);
+	if(text != NULL) {
+		assert(strlen(text) < sizeof(t->text));
+		strcpy(t->text, text);
+	}
+
 	t->font = font;
 	t->pos = pos;
 	t->align = align;
@@ -30,8 +34,6 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *f
 	t->time.fadein = fadeintime;
 	t->time.fadeout = fadeouttime;
 	t->time.life = lifetime + fadeouttime;
-
-	memset(&t->custom, 0, sizeof(t->custom));
 
 	return t;
 }
@@ -49,8 +51,7 @@ StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font
 }
 
 static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	free(((StageText*)txt)->text);
-	free(list_unlink(dest, txt));
+	objpool_release(stage_object_pools.stagetext, (ObjectInterface*)list_unlink(dest, txt));
 	return NULL;
 }
 

@@ -13,6 +13,7 @@
 
 #include "util.h"
 #include "color.h"
+#include "objectpool.h"
 #include "resource/font.h"
 
 typedef struct StageText StageText;
@@ -21,15 +22,23 @@ typedef void (*StageTextPreDrawFunc)(StageText* txt, int t, float alpha);
 
 typedef struct StageTextTable StageTextTable;
 
+// NOTE: tweaked to consume all padding in StageText, assuming x86_64 ABI
+#define STAGETEXT_BUF_SIZE 76
+
 struct StageText {
-	LIST_INTERFACE(StageText);
+	OBJECT_INTERFACE(StageText);
 
-	char *text;
 	Font *font;
-
 	complex pos;
-	Alignment align;
+
+	struct {
+		StageTextPreDrawFunc predraw;
+		void *data1;
+		void *data2;
+	} custom;
+
 	Color color;
+	Alignment align;
 
 	struct {
 		int spawn;
@@ -38,11 +47,7 @@ struct StageText {
 		int fadeout;
 	} time;
 
-	struct {
-		StageTextPreDrawFunc predraw;
-		void *data1;
-		void *data2;
-	} custom;
+	char text[STAGETEXT_BUF_SIZE];
 };
 
 void stagetext_free(void);
