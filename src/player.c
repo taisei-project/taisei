@@ -1310,10 +1310,9 @@ void player_add_points(Player *plr, uint points, complex location) {
 		return;
 	}
 
-	char buf[64];
-	format_huge_num(0, points, sizeof(buf), buf);
 	Color *c = color_mul_scalar(color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), imp), a);
-	StageText *t = stagetext_add(buf, location, ALIGN_CENTER, get_font("small"), c, 0, 25 + 20 * imp, 10, 20);
+	StageText *t = stagetext_add(NULL, location, ALIGN_CENTER, get_font("small"), c, 0, 25 + 20 * imp, 10, 20);
+	format_huge_num(0, points, sizeof(t->text), t->text);
 	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
 	t->custom.predraw = scoretext_predraw;
 }
@@ -1334,11 +1333,10 @@ void player_add_piv(Player *plr, uint piv, complex location) {
 		return;
 	}
 
-	char buf[64];
-	format_huge_num(0, piv, sizeof(buf), buf);
-	strcat(buf, "v");
 	Color *c = color_mul_scalar(RGB(0.5, 0.8, 1.0), a);
-	StageText *t = stagetext_add(buf, location, ALIGN_CENTER, get_font("small"), c, 0, 35, 10, 20);
+	StageText *t = stagetext_add(NULL, location, ALIGN_CENTER, get_font("small"), c, 0, 35, 10, 20);
+	format_huge_num(0, piv, sizeof(t->text), t->text);
+	strcat(t->text, "v");
 	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
 	t->custom.predraw = scoretext_predraw;
 }
