@@ -8,7 +8,7 @@ r_shaderlib_src = files(
 r_shaderlib_libdeps = []
 
 if get_option('shader_transpiler')
-    dep_crossc = dependency('crossc', version : '>=1.5.0', required : true, static : static, fallback : ['crossc', 'crossc_dep'])
+    dep_spvc = dependency('spirv-cross-c-shared', required : true, static : static, fallback : ['SPIRV-Cross', 'spirv_cross_dep'])
 
     if get_option('wrap_mode') != 'forcefallback'
         dep_shaderc = dependency('shaderc', static : static, required : false)
@@ -35,7 +35,7 @@ if get_option('shader_transpiler')
         'lang_spirv.c'
     )
 
-    r_shaderlib_libdeps += [dep_shaderc, dep_crossc]
+    r_shaderlib_libdeps += [dep_shaderc, dep_spvc]
 
     if host_machine.system() == 'windows' and get_option('b_lto') and get_option('static')
         error(

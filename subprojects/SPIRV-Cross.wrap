@@ -1,0 +1,5 @@
+[wrap-git]
+directory=SPIRV-Cross
+url=https://github.com/taisei-project/SPIRV-Cross.git
+push-url=git@github.com:taisei-project/SPIRV-Cross.git
+revision=meson

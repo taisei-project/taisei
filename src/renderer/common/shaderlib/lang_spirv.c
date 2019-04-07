@@ -14,7 +14,7 @@
 #include "util.h"
 
 #include <shaderc/shaderc.h>
-#include <crossc.h>
+#include <spirv_cross_c.h>
 
 static shaderc_compiler_t spirv_compiler;
 
@@ -201,41 +201,40 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 	size_t spirv_size = (in->content_size - 1) / sizeof(uint32_t);
 	const uint32_t *spirv = (uint32_t*)(void*)in->content;
 
-	crossc_compiler *cc = crossc_glsl_create(spirv, spirv_size);
+	spvc_context context = NULL;
+	spvc_parsed_ir ir = NULL;
+	spvc_compiler compiler = NULL;
+	spvc_compiler_options spvc_options = NULL;
+	const char *code = NULL;
+	spvc_context_create(&context);
 
-	if(cc == NULL) {
-		log_error("Failed to initialize crossc");
+	#define SPVCCALL(c) do if((c) != SPVC_SUCCESS) { goto spvc_error; } while(0)
+
+	if(context == NULL) {
+		log_error("Failed to initialize SPIRV-Cross");
 		return false;
 	}
 
-	if(!crossc_has_valid_program(cc)) {
-		goto crossc_error;
-	}
+	SPVCCALL(spvc_context_parse_spirv(context, spirv, spirv_size, &ir));
+	SPVCCALL(spvc_context_create_compiler(context, SPVC_BACKEND_GLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
+	SPVCCALL(spvc_compiler_create_compiler_options(compiler, &spvc_options));
+	SPVCCALL(spvc_compiler_options_set_uint(spvc_options, SPVC_COMPILER_OPTION_GLSL_VERSION, options->lang->glsl.version.version));
+	SPVCCALL(spvc_compiler_options_set_bool(spvc_options, SPVC_COMPILER_OPTION_GLSL_ES, options->lang->glsl.version.profile == GLSL_PROFILE_ES));
+	SPVCCALL(spvc_compiler_install_compiler_options(compiler, spvc_options));
+	SPVCCALL(spvc_compiler_compile(compiler, &code));
 
-	crossc_glsl_profile profile = (
-		options->lang->glsl.version.profile == GLSL_PROFILE_ES
-			? CROSSC_GLSL_PROFILE_ES
-			: CROSSC_GLSL_PROFILE_CORE
-	);
-
-	crossc_glsl_set_version(cc, options->lang->glsl.version.version, profile);
-
-	const char *code = crossc_compile(cc);
-
-	if(code == NULL) {
-		goto crossc_error;
-	}
+	assume(code != NULL);
 
 	out->content = strdup(code);
 	out->content_size = strlen(code) + 1;
 	out->stage = in->stage;
 	out->lang = *options->lang;
 
-	crossc_destroy(cc);
+	spvc_context_destroy(context);
 	return true;
 
-crossc_error:
-	log_error("crossc error: %s", crossc_strerror(cc));
-	crossc_destroy(cc);
+spvc_error:
+	log_error("SPIRV-Cross error: %s", spvc_context_get_last_error_string(context));
+	spvc_context_destroy(context);
 	return false;
 }

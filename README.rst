@@ -27,7 +27,7 @@ Dependencies
 Optional:
 
 -  OpenSSL (for a better SHA-256 implementation; used in shader cache)
--  crossc >= 1.5.0 (for OpenGL ES backends)
+-  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
 
 Build-only dependencies
