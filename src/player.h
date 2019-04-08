@@ -57,7 +57,7 @@ enum {
 
 static const float PLR_POWERSURGE_POSITIVE_DRAIN_MAX = (0.15 / 60.0);
 static const float PLR_POWERSURGE_POSITIVE_DRAIN_MIN = (0.15 / 60.0);
-static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MAX = (0.20 / 60.0);
+static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MAX = (0.15 / 60.0);
 static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MIN = (0.01 / 60.0);
 static const float PLR_POWERSURGE_POSITIVE_GAIN      = (1.50 / 60.0);
 static const float PLR_POWERSURGE_NEGATIVE_GAIN      = (0.40 / 60.0);
