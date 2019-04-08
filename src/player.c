@@ -468,6 +468,10 @@ static void player_powersurge_logic(Player *plr) {
 }
 
 void player_logic(Player* plr) {
+	if(plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames && plr->lives < 0 && global.replaymode != REPLAY_PLAY) {
+		stage_gameover();
+	}
+
 	if(plr->continuetime == global.frames) {
 		plr->lives = PLR_START_LIVES;
 		plr->bombs = PLR_START_BOMBS;
@@ -482,6 +486,10 @@ void player_logic(Player* plr) {
 
 	process_enemies(&plr->slaves);
 	aniplayer_update(&plr->ani);
+
+	if(plr->lives < 0) {
+		return;
+	}
 
 	if(plr->respawntime > global.frames) {
 		double x = PLR_SPAWN_POS_X;
@@ -682,10 +690,7 @@ void player_realdeath(Player *plr) {
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 	plr->voltage *= 0.9;
-
-	if(plr->lives-- == 0 && global.replaymode != REPLAY_PLAY) {
-		stage_gameover();
-	}
+	plr->lives--;
 }
 
 static void player_death_effect_draw_overlay(Projectile *p, int t) {
