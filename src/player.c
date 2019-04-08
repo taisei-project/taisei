@@ -603,6 +603,24 @@ bool player_is_alive(Player *plr) {
 	return plr->deathtime < global.frames && global.frames >= plr->respawntime;
 }
 
+static int powersurge_discharge(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_DEATH) {
+		return ACTION_ACK;
+	}
+
+	// double damage = creal(p->args[0]) / p->timeout;
+	double range = cimag(p->args[0]);
+
+	// ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
+	stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+
+	return ACTION_NONE;
+}
+
 static void player_powersurge_expired(Player *plr) {
 	plr->powersurge.time.expired = global.frames;
 
@@ -624,7 +642,18 @@ static void player_powersurge_expired(Player *plr) {
 
 	player_add_points(&global.plr, bonus.score, plr->pos);
 	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
-	stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+	// stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+
+	PROJECTILE(
+		.pos = plr->pos,
+		.size = 1+I,
+		.draw_rule = ProjNoDraw,
+		.timeout = 10,
+		.type = PROJ_PLAYER,
+		.rule = powersurge_discharge,
+		.args = { CMPLX(bonus.discharge_damage, bonus.discharge_range) },
+		.flags = PFLAG_NOCOLLISION,
+	);
 
 	log_debug(
 		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
