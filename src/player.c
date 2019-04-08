@@ -621,6 +621,30 @@ static int powersurge_discharge(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
+static void powersurge_distortion_draw(Projectile *p, int t) {
+	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
+		return;
+	}
+
+	double radius = p->args[0] * pow(1 - t / p->timeout, 8) * (2 * t / 10.0);
+
+	Framebuffer *fb_aux = stage_get_fbpair(FBPAIR_FG_AUX)->front;
+	Framebuffer *fb_main = r_framebuffer_current();
+
+	r_framebuffer(fb_aux);
+	r_shader("circle_distort");
+	r_uniform_vec3("distortOriginRadius", creal(p->pos), VIEWPORT_H - cimag(p->pos), radius);
+	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	r_blend(BLEND_NONE);
+	draw_framebuffer_tex(fb_main, VIEWPORT_W, VIEWPORT_H);
+
+	r_framebuffer(fb_main);
+	r_shader_standard();
+	r_color4(1.0, 0.9, 0.8, 1.0);
+	r_blend(BLEND_PREMUL_ALPHA);
+	draw_framebuffer_tex(fb_aux, VIEWPORT_W, VIEWPORT_H);
+}
+
 static void player_powersurge_expired(Player *plr) {
 	plr->powersurge.time.expired = global.frames;
 
@@ -631,6 +655,16 @@ static void player_powersurge_expired(Player *plr) {
 	float scale = 2 * bonus.discharge_range / blast->w;
 
 	PARTICLE(
+		.size = 1+I,
+		.pos = plr->pos,
+		.timeout = 60,
+		.draw_rule = powersurge_distortion_draw,
+		.args = { bonus.discharge_range },
+		.layer = LAYER_PLAYER,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
+	);
+
+	PARTICLE(
 		.sprite_ptr = blast,
 		.pos = plr->pos,
 		.color = RGBA(0.6, 1.0, 4.4, 0.0),
@@ -638,6 +672,7 @@ static void player_powersurge_expired(Player *plr) {
 		.timeout = 20,
 		.args = { 0, 0, scale * (2 + 0 * I) },
 		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
 
 	player_add_points(&global.plr, bonus.score, plr->pos);
@@ -1463,6 +1498,7 @@ void player_preload(void) {
 	const int flags = RESF_DEFAULT;
 
 	preload_resources(RES_SHADER_PROGRAM, flags,
+		"circle_distort",
 		"player_death",
 	NULL);
 
