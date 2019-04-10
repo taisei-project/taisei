@@ -41,7 +41,8 @@ static int marisa_star_projectile(Projectile *p, int t) {
 
 	if(REF(p->args[1]) == NULL) {
 		p->pos += p->pos0;
-		p->pos0 *= 1.001;
+		p->pos0 *= 1.005;
+		p->angle += 0.1;
 		return ACTION_NONE;
 	}
 
@@ -61,8 +62,12 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		focusfac = tanh(sqrt(fabs(focusfac)));
 	}
 
+
 	double centerfac = tanh(t/10.); // interpolate between player center and slave center
 	complex center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
+
+	double brightener = -1/(1+sqrt(0.03*fabs(creal(p->pos-center))));
+	p->color = *RGBA(0.3+(1-focus)*0.7+brightener,0.8+brightener,1.0-(1-focus)*0.7+brightener,0.2+brightener);
 	
 	double verticalfac = - 5*t*(1+0.01*t) + 10*t/(0.01*t+1);
 	p->pos0 = p->pos;
@@ -89,9 +94,8 @@ static int marisa_star_slave(Enemy *e, int t) {
 			PROJECTILE(
 				.proto = pp_maristar,
 				.pos = e->pos,
-				.color = RGBA(0.5+0.5*focus*(fac-0.2), 0.5+fac*0.4+(0.5+1.2*fac)*focus, 1.0-0.5*focus,0.5),
+				.color = RGBA(0.3,0.8,1.0,0.6),
 				.rule = marisa_star_projectile,
-				// .draw_rule = marisa_star,
 				.args = { v, add_ref(e) },
 				.type = PROJ_PLAYER,
 				.damage = e->args[3],
