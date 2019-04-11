@@ -193,6 +193,10 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 		cs += stg->plr_point_item_value;
 	}
 
+	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
+		cs += stg->plr_points_final;
+	}
+
 	log_debug("%08x", cs);
 	return cs;
 }
@@ -220,6 +224,11 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_inputflags);
 	SDL_WriteLE32(file, stg->plr_graze);
 	SDL_WriteLE32(file, stg->plr_point_item_value);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
+		SDL_WriteLE64(file, stg->plr_points_final);
+	}
+
 	SDL_WriteLE16(file, stg->numevents);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
@@ -359,6 +368,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS103000_REV0:
 		case REPLAY_STRUCT_VERSION_TS103000_REV1:
 		case REPLAY_STRUCT_VERSION_TS103000_REV2:
+		case REPLAY_STRUCT_VERSION_TS103000_REV3:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -467,6 +477,10 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		} else if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
 			CHECKPROP(stg->plr_graze = SDL_ReadLE16(file), u);
 			stg->plr_point_item_value = PLR_START_PIV;
+		}
+
+		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
+			CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
 		}
 
 		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);

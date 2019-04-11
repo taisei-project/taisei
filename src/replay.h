@@ -49,13 +49,16 @@
 
 	// Taisei v1.3 revision 2: RNG changed; seed separated from start time; time expanded to 64bit
 	#define REPLAY_STRUCT_VERSION_TS103000_REV2 11
+
+	// Taisei v1.3 revision 3: add final score at the end of each stage
+	#define REPLAY_STRUCT_VERSION_TS103000_REV3 12
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV2 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV3 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -119,6 +122,11 @@ typedef struct ReplayStage {
 	/* BEGIN REPLAY_STRUCT_VERSION_TS103000_REV0 and above */
 	uint32_t plr_point_item_value;
 	/* END REPLAY_STRUCT_VERSION_TS103000_REV0 and above */
+
+	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
+	// player score at the end of the stage
+	uint64_t plr_points_final;
+	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
 
 	// player input
 	uint16_t numevents;

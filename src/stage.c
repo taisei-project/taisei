@@ -893,6 +893,7 @@ void stage_end_loop(void* ctx) {
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
+		global.replay_stage->plr_points_final = global.plr.points;
 
 		if(global.gameover == GAMEOVER_WIN) {
 			global.replay_stage->flags |= REPLAY_SFLAG_CLEAR;
