@@ -78,7 +78,7 @@ int reimu_common_ofuda(Projectile *p, int t) {
 
 	PARTICLE(
 		// .sprite_ptr = p->sprite,
-		.sprite = "hghost",
+		.sprite_ptr = get_sprite("proj/hghost"),
 		.color = &p->color,
 		.timeout = 12,
 		.pos = p->pos + p->args[0] * 0.3,

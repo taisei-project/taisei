@@ -186,7 +186,11 @@ static int youmu_trap(Projectile *p, int t) {
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
-			PROJECTILE("youmu", p->pos, RGBA(1, 1, 1, 0.85), youmu_homing,
+			PROJECTILE(
+				.proto = pp_youmu,
+				.pos = p->pos,
+				.color = RGBA(1, 1, 1, 0.85),
+				.rule = youmu_homing,
 				.args = { 5 * (1 + charge) * dir, aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
 				.type = PROJ_PLAYER,
 				.damage = dmg,
@@ -367,7 +371,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 		complex dir = cexp(I*carg(sign*p*spread-speed*I));
 
 		PROJECTILE(
-			.sprite = "hghost",
+			.proto = pp_hghost,
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
 			.color = RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0),
@@ -392,7 +396,11 @@ static void youmu_haunting_shot(Player *plr) {
 				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
 				complex aim = 0.15*I;
 
-				PROJECTILE("youhoming", plr->pos, RGB(1, 1, 1), youmu_trap,
+				PROJECTILE(
+					.proto = pp_youhoming,
+					.pos = plr->pos,
+					.color = RGB(1, 1, 1),
+					.rule = youmu_trap,
 					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
 					.type = PROJ_PLAYER,
 					.damage = 1000,
@@ -402,7 +410,11 @@ static void youmu_haunting_shot(Player *plr) {
 			}
 		} else {
 			if(!(global.frames % 6)) {
-				PROJECTILE("hghost", plr->pos, RGB(0.75, 0.9, 1), youmu_homing,
+				PROJECTILE(
+					.proto = pp_hghost,
+					.pos = plr->pos,
+					.color = RGB(0.75, 0.9, 1),
+					.rule = youmu_homing,
 					.args = { -10.0*I, 0.02*I, 60, VIEWPORT_W*0.5 },
 					.type = PROJ_PLAYER,
 					.damage = 120,

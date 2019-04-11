@@ -800,12 +800,11 @@ static int player_death_effect(Projectile *p, int t) {
 		if(t == EVENT_DEATH) {
 			for(int i = 0; i < 12; ++i) {
 				PARTICLE(
-					.sprite = "blast",
+					.proto = pp_blast,
 					.pos = p->pos + 2 * frand() * cexp(I*M_PI*2*frand()),
 					.color = RGBA(0.15, 0.2, 0.5, 0),
 					.timeout = 12 + i + 2 * nfrand(),
 					.draw_rule = GrowFade,
-					.args = { 0, 20 + i },
 					.angle = M_PI*2*frand(),
 					.flags = PFLAG_NOREFLECT,
 					.layer = LAYER_OVERLAY,

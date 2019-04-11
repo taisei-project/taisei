@@ -1056,8 +1056,21 @@ void process_boss(Boss **pboss) {
 				);
 			}
 
-			PARTICLE("blast", boss->pos, 0, .timeout = 60, .args = { 0, 3.0 }, .draw_rule = GrowFade);
-			PARTICLE("blast", boss->pos, 0, .timeout = 70, .args = { 0, 2.5 }, .draw_rule = GrowFade);
+			PARTICLE(
+				.proto = pp_blast,
+				.pos = boss->pos,
+				.timeout = 60,
+				.args = { 0, 3.0 },
+				.draw_rule = GrowFade,
+			);
+
+			PARTICLE(
+				.proto = pp_blast,
+				.pos = boss->pos,
+				.timeout = 70,
+				.args = { 0, 2.5 },
+				.draw_rule = GrowFade,
+			);
 		}
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);

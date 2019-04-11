@@ -107,24 +107,24 @@ struct Projectile {
 };
 
 typedef struct ProjArgs {
-	const char *sprite;
-	complex pos;
+	ProjPrototype *proto;
 	const Color *color;
-	ProjRule rule;
-	complex args[RULE_ARGC];
-	float angle;
-	ProjFlags flags;
-	BlendMode blend;
-	ProjDrawRule draw_rule;
+	const char *sprite;
+	Sprite *sprite_ptr;
 	const char *shader;
 	ShaderProgram *shader_ptr;
-	ProjPrototype *proto;
 	const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
-	ProjType type;
-	Sprite *sprite_ptr;
+	ProjRule rule;
+	complex args[RULE_ARGC];
+	ProjDrawRule draw_rule;
+	complex pos;
 	complex size; // affects default draw order, out-of-viewport culling, and grazing
 	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
+	ProjType type;
+	ProjFlags flags;
+	BlendMode blend;
+	float angle;
 	float damage;
 	DamageType damage_type;
 	int max_viewport_dist;
@@ -133,7 +133,7 @@ typedef struct ProjArgs {
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
 	float timeout;
-} /* attr_designated_init */ ProjArgs;
+} attr_designated_init ProjArgs;
 
 struct ProjPrototype {
 	void (*preload)(ProjPrototype *proto);

@@ -410,13 +410,29 @@ static void cirno_iceplosion1(Boss *c, int time) {
 	FROM_TO(20,30,2) {
 		int i;
 		for(i = 0; i < 15+global.diff; i++) {
-			PROJECTILE("plainball", c->pos, RGB(0,0,0.5), asymptotic, { (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff)*(1 - 2*frand()))), _i*0.7 });
+			PROJECTILE(
+				.proto = pp_plainball,
+				.pos = c->pos,
+				.color = RGB(0,0,0.5),
+				.rule = asymptotic,
+				.args = { (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff)*(1 - 2*frand()))), _i*0.7 }
+			);
 		}
 	}
 
 	FROM_TO_SND("shot1_loop",40,100,2+2*(global.diff<D_Hard)) {
-		PROJECTILE("crystal", c->pos + 100, RGB(0.3,0.3,0.8), accelerated, { 1.5*cexp(2.0*I*M_PI*frand()) - 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))) });
-		PROJECTILE("crystal", c->pos - 100, RGB(0.3,0.3,0.8), accelerated, { 1.5*cexp(2.0*I*M_PI*frand()) + 0.4 + 2.0*I*global.diff/4., 0.002*cexp(I*(M_PI/10.0*(_i%20))) });
+		for(int i = 1; i >= -1; i -= 2) {
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = c->pos + i * 100,
+				.color = RGB(0.3,0.3,0.8),
+				.rule = accelerated,
+				.args = {
+					1.5*cexp(2.0*I*M_PI*frand()) - i * 0.4 + 2.0*I*global.diff/4.0,
+					0.002*cexp(I*(M_PI/10.0*(_i%20)))
+				}
+			);
+		}
 	}
 
 	FROM_TO(150, 300, 30 - 6 * global.diff) {
@@ -429,7 +445,13 @@ static void cirno_iceplosion1(Boss *c, int time) {
 
 		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("plainball", c->pos, RGB(0.04*_i,0.04*_i,0.4+0.04*_i), asymptotic, { (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5 });
+			PROJECTILE(
+				.proto = pp_plainball,
+				.pos = c->pos,
+				.color = RGB(0.04*_i,0.04*_i,0.4+0.04*_i),
+				.rule = asymptotic,
+				.args = { (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5 }
+			);
 		}
 	}
 }
@@ -530,7 +552,13 @@ static int halation_orb(Projectile *p, int time) {
 		float rot = frand() * 2 * M_PI;
 
 		for(int i = 0; i < pcount; ++i) {
-			PROJECTILE("crystal", p->pos, colors+i, asymptotic, { cexp(I*(rot + M_PI * 2 * (float)(i+1)/pcount)), 3 });
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = p->pos,
+				.color = colors+i,
+				.rule = asymptotic,
+				.args = { cexp(I*(rot + M_PI * 2 * (float)(i+1)/pcount)), 3 }
+			);
 		}
 
 		return ACTION_DESTROY;
@@ -663,8 +691,8 @@ void cirno_icicle_fall(Boss *c, int time) {
 	FROM_TO(20,200,30-3*global.diff) {
 		play_sound("shot1");
 		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
-			PROJECTILE("crystal", c->pos, RGB(0.3,0.3,0.9), cirno_icicles, { 6*i*cexp(I*(-0.1+0.1*_i)) });
-			PROJECTILE("crystal", c->pos, RGB(0.3,0.3,0.9), cirno_icicles, { 6*i*cexp(I*(M_PI+0.1-0.1*_i)) });
+			PROJECTILE(.proto = pp_crystal, .pos = c->pos, .color = RGB(0.3,0.3,0.9), .rule = cirno_icicles, .args = { 6*i*cexp(I*(-0.1+0.1*_i)) });
+			PROJECTILE(.proto = pp_crystal, .pos = c->pos, .color = RGB(0.3,0.3,0.9), .rule = cirno_icicles, .args = { 6*i*cexp(I*(M_PI+0.1-0.1*_i)) });
 		}
 	}
 
@@ -672,10 +700,11 @@ void cirno_icicle_fall(Boss *c, int time) {
 		FROM_TO_SND("shot1_loop",120,200,3) {
 			float f = frand()*_i;
 
-			PROJECTILE("ball", c->pos, RGB(0.,0.,0.3), accelerated, { 0.2*(-2*I-1.5+f),-0.02*I });
-			PROJECTILE("ball", c->pos, RGB(0.,0.,0.3), accelerated, { 0.2*(-2*I+1.5-f),-0.02*I });
+			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I-1.5+f),-0.02*I });
+			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I+1.5+f),-0.02*I });
 		}
 	}
+
 	if(global.diff > D_Normal) {
 		FROM_TO(300,400,10) {
 			play_sound("shot1");
@@ -683,15 +712,27 @@ void cirno_icicle_fall(Boss *c, int time) {
 			float angle1 = M_PI/10*frand();
 			float angle2 = M_PI/10*frand();
 			for(float i = 1; i < 5; i++) {
-				PROJECTILE("ball", x, RGB(0.,0.,0.3), accelerated, {
-					i*I*0.5*cexp(I*angle1),
-					0.001*I-(global.diff == D_Lunatic)*0.001*frand()
-				});
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = x,
+					.color = RGB(0.,0.,0.3),
+					.rule = accelerated,
+					.args = {
+						i*I*0.5*cexp(I*angle1),
+						0.001*I-(global.diff == D_Lunatic)*0.001*frand()
+					}
+				);
 
-				PROJECTILE("ball", VIEWPORT_W-x, RGB(0.,0.,0.3), accelerated, {
-					i*I*0.5*cexp(-I*angle2),
-					0.001*I+(global.diff == D_Lunatic)*0.001*frand()
-				});
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = VIEWPORT_W-x,
+					.color = RGB(0.,0.,0.3),
+					.rule = accelerated,
+					.args = {
+						i*I*0.5*cexp(-I*angle2),
+						0.001*I+(global.diff == D_Lunatic)*0.001*frand()
+					}
+				);
 			}
 		}
 	}
@@ -729,7 +770,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		int i, cnt = 14 + global.diff * 3;
 		for(i = 0; i < cnt; ++i) {
 			PROJECTILE(
-				.sprite = "crystal",
+				.proto = pp_crystal,
 				.pos = i*VIEWPORT_W/cnt,
 				.color = i % 2? RGB(0.2,0.2,0.4) : RGB(0.5,0.5,0.5),
 				.rule = accelerated,
@@ -750,7 +791,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		if(!(time % (1 + D_Lunatic - global.diff))) {
 			tsrand_fill(2);
 			PROJECTILE(
-				.sprite = "wave",
+				.proto = pp_wave,
 				.pos = c->pos,
 				.color = RGBA(0.2, 0.2, 0.4, 0.0),
 				.rule = cirno_crystal_blizzard_proj,
@@ -766,7 +807,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 			int i, cnt = global.diff - 1;
 			for(i = 0; i < cnt; ++i) {
 				PROJECTILE(
-					.sprite = "ball",
+					.proto = pp_ball,
 					.pos = c->pos,
 					.color = RGBA(0.1, 0.1, 0.5, 0.0),
 					.rule = accelerated,
@@ -794,7 +835,12 @@ void cirno_benchmark(Boss* b, int t) {
 		double plrx = creal(global.plr.pos);
 		x = plrx + sqrt((x-plrx)*(x-plrx)+100)*(1-2*(x<plrx));
 
-		Projectile *p = PROJECTILE("ball", x, RGB(0.1, 0.1, 0.5), linear, { speed*I },
+		Projectile *p = PROJECTILE(
+			.proto = pp_ball,
+			.pos = x,
+			.color = RGB(0.1, 0.1, 0.5),
+			.rule = linear,
+			.args = { speed*I },
 			.flags = PFLAG_NOGRAZE,
 		);
 
@@ -863,10 +909,16 @@ static int stage1_burst(Enemy *e, int time) {
 
 		play_sound("shot1");
 		for(i = -n; i <= n; i++) {
-			PROJECTILE("crystal", e->pos, RGB(0.2, 0.3, 0.5), asymptotic, {
-				(2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)),
-				5
-			});
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.3, 0.5),
+				.rule = asymptotic,
+				.args = {
+					(2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)),
+					5
+				}
+			);
 		}
 
 		e->moving = true;
@@ -895,19 +947,31 @@ static int stage1_circletoss(Enemy *e, int time) {
 	int dur = 40;
 	FROM_TO_SND("shot1_loop",60,60+dur,inter) {
 		e->args[0] = 0.8*e->args[0];
-		PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-			2*cexp(I*2*M_PI*inter/dur*_i),
-			_i/2.0
-		});
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos,
+			.color = RGB(0.6, 0.2, 0.7),
+			.rule = asymptotic,
+			.args = {
+				2*cexp(I*2*M_PI*inter/dur*_i),
+				_i/2.0
+			}
+		);
 	}
 
 	if(global.diff > D_Easy) {
 		FROM_TO_INT_SND("shot1_loop",90,500,150,5+7*global.diff,1) {
 			tsrand_fill(2);
-			PROJECTILE("thickrice", e->pos, RGB(0.2, 0.4, 0.8), asymptotic, {
-				(1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*anfrand(1)),
-				3
-			});
+			PROJECTILE(
+				.proto = pp_thickrice,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.4, 0.8),
+				.rule = asymptotic,
+				.args = {
+					(1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*anfrand(1)),
+					3
+				}
+			);
 		}
 	}
 
@@ -929,9 +993,15 @@ static int stage1_sinepass(Enemy *e, int time) {
 
 	if(frand() > 0.997-0.005*(global.diff-1)) {
 		play_sound("shot1");
-		PROJECTILE("ball", e->pos, RGB(0.8,0.8,0.4), linear, {
-			(1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
-		});
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(0.8,0.8,0.4),
+			.rule = linear,
+			.args = {
+				(1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
+			}
+		);
 	}
 
 	return 1;
@@ -951,9 +1021,15 @@ static int stage1_drop(Enemy *e, int t) {
 	FROM_TO(10,1000,1) {
 		if(frand() > 0.997-0.007*(global.diff-1)) {
 			play_sound("shot1");
-			PROJECTILE("ball", e->pos, RGB(0.8,0.8,0.4), linear, {
-				(1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
-			});
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = RGB(0.8,0.8,0.4),
+				.rule = linear,
+				.args = {
+					(1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
+				}
+			);
 		}
 	}
 
@@ -971,10 +1047,16 @@ static int stage1_circle(Enemy *e, int t) {
 		e->pos += (e->args[0] - e->pos)*0.02;
 
 	FROM_TO_INT_SND("shot1_loop",150, 550, 40, 40, 2+2*(global.diff<D_Hard)) {
-		PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-			(1.7+0.2*global.diff)*cexp(I*M_PI/10*_ni),
-			_ni/2.0
-		});
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos,
+			.color = RGB(0.6, 0.2, 0.7),
+			.rule = asymptotic,
+			.args = {
+				(1.7+0.2*global.diff)*cexp(I*M_PI/10*_ni),
+				_ni/2.0
+			}
+		);
 	}
 
 	FROM_TO(560,1000,1)
@@ -996,12 +1078,17 @@ static int stage1_multiburst(Enemy *e, int t) {
 
 	FROM_TO_INT(60, 300, 70, 40, 18-2*global.diff) {
 		play_sound("shot1");
-		int i;
 		int n = global.diff-1;
-		for(i = -n; i <= n; i++) {
-			PROJECTILE("crystal", e->pos, RGB(0.2, 0.3, 0.5), linear, {
-				2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0))
-			});
+		for(int i = -n; i <= n; i++) {
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.3, 0.5),
+				.rule = linear,
+				.args = {
+					2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0))
+				}
+			);
 		}
 	}
 
@@ -1023,10 +1110,16 @@ static int stage1_instantcircle(Enemy *e, int t) {
 	AT(75) {
 		play_sound("shot_special1");
 		for(int i = 0; i < 20+2*global.diff; i++) {
-			PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-				1.5*cexp(I*2*M_PI/(20.0+global.diff)*i),
-				2.0
-			});
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = e->pos,
+				.color = RGB(0.6, 0.2, 0.7),
+				.rule = asymptotic,
+				.args = {
+					1.5*cexp(I*2*M_PI/(20.0+global.diff)*i),
+					2.0,
+				},
+			);
 		}
 	}
 
@@ -1034,10 +1127,16 @@ static int stage1_instantcircle(Enemy *e, int t) {
 		if(global.diff > D_Easy) {
 			play_sound("shot_special1");
 			for(int i = 0; i < 20+3*global.diff; i++) {
-				PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-					3*cexp(I*2*M_PI/(20.0+global.diff)*i),
-					3.0
-				});
+				PROJECTILE(
+					.proto = pp_rice,
+					.pos = e->pos,
+					.color = RGB(0.6, 0.2, 0.7),
+					.rule = asymptotic,
+					.args = {
+						3*cexp(I*2*M_PI/(20.0+global.diff)*i),
+						3.0,
+					},
+				);
 			}
 		}
 	}
@@ -1069,10 +1168,16 @@ static int stage1_tritoss(Enemy *e, int t) {
 		int n = 3+global.diff/2;
 
 		for(i = 0; i < n; i++){
-			PROJECTILE("thickrice", e->pos, RGB(0.2, 0.4, 0.8), asymptotic, {
-				2*cexp(I*a+2.0*I*M_PI/n*i),
-				3
-			});
+			PROJECTILE(
+				.proto = pp_thickrice,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.4, 0.8),
+				.rule = asymptotic,
+				.args = {
+					2*cexp(I*a+2.0*I*M_PI/n*i),
+					3,
+				},
+			);
 		}
 	}
 
@@ -1080,16 +1185,28 @@ static int stage1_tritoss(Enemy *e, int t) {
 		play_sound("shot_special1");
 		int i, n = 15 + global.diff*3;
 		for(i = 0; i < n; i++) {
-			PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-				1.5*cexp(I*2*M_PI/n*i),
-				2.0
-			});
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = e->pos,
+				.color = RGB(0.6, 0.2, 0.7),
+				.rule = asymptotic,
+				.args = {
+					1.5*cexp(I*2*M_PI/n*i),
+					2.0,
+				},
+			);
 
 			if(global.diff > D_Easy) {
-				PROJECTILE("rice", e->pos, RGB(0.6, 0.2, 0.7), asymptotic, {
-					3*cexp(I*2*M_PI/n*i),
-					3.0
-				});
+				PROJECTILE(
+					.proto = pp_rice,
+					.pos = e->pos,
+					.color = RGB(0.6, 0.2, 0.7),
+					.rule = asymptotic,
+					.args = {
+						3*cexp(I*2*M_PI/n*i),
+						3.0,
+					},
+				);
 			}
 		}
 	}

@@ -173,7 +173,7 @@ static void myon_proj_draw(Projectile *p, int t) {
 	youmu_common_draw_proj(p, &p->color, 1);
 }
 
-static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
+static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, complex pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
 	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
 	dir = dir / cabs(dir);
 
@@ -200,7 +200,7 @@ static Projectile* youmu_mirror_myon_proj(char *tex, complex pos, double speed, 
 
 	return PROJECTILE(
 		.color = &c,
-		.sprite = tex,
+		.proto = proto,
 		.pos = pos,
 		.rule = myon_proj,
 		.args = { speed*dir },
@@ -274,27 +274,27 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 		int dmg_side = 41 - 3 * p;
 
 		if(plr->power >= 100 && !((global.frames+0) % 6)) {
-			youmu_mirror_myon_proj("youmu",  e->pos, v2, a,  r1*1, u, dmg_side);
-			youmu_mirror_myon_proj("youmu",  e->pos, v2, a, -r1*1, u, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a,  r1*1, u, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a, -r1*1, u, dmg_side);
 		}
 
 		if(plr->power >= 200 && !((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj("youmu", e->pos, v1, a,  r2*2, 0, dmg_side);
-			youmu_mirror_myon_proj("youmu", e->pos, v1, a, -r2*2, 0, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a,  r2*2, 0, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, -r2*2, 0, dmg_side);
 		}
 
 		if(plr->power >= 300 && !((global.frames+0) % 6)) {
-			youmu_mirror_myon_proj("youmu",  e->pos, v2, a,  r1*3, 0, dmg_side);
-			youmu_mirror_myon_proj("youmu",  e->pos, v2, a, -r1*3, 0, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a,  r1*3, 0, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a, -r1*3, 0, dmg_side);
 		}
 
 		if(plr->power >= 400 && !((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj("youmu", e->pos, v1, a,  r2*4, u, dmg_side);
-			youmu_mirror_myon_proj("youmu", e->pos, v1, a, -r2*4, u, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a,  r2*4, u, dmg_side);
+			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, -r2*4, u, dmg_side);
 		}
 
 		if(!((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj("youmu", e->pos, v1, a, 0, 0, dmg_center);
+			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, 0, 0, dmg_center);
 		}
 	}
 
@@ -319,7 +319,9 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 }
 
 static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, float dmg, double turntime) {
-	return PROJECTILE("youmu", plr->pos + ofs, 0,
+	return PROJECTILE(
+		.proto = pp_youmu,
+		.pos = plr->pos + ofs,
 		.type = PROJ_PLAYER,
 		.damage = dmg,
 		.shader = "sprite_default",

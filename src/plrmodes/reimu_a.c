@@ -268,7 +268,6 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		for(int i = 0; i < 3; ++i) {
 			PARTICLE(
 				.sprite = "blast",
-				.size = 64 * (I+1),
 				.color = color_mul_scalar(reimu_spirit_orb_color(&(Color){0}, i), 2),
 				.pos = p->pos + 30 * cexp(I*2*M_PI/3*(i+t*0.1)),
 				.timeout = 40,

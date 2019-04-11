@@ -55,7 +55,7 @@ static int stage4_splasher(Enemy *e, int t) {
 	FROM_TO_SND("shot1_loop", 66-6*global.diff, 150, 5-global.diff) {
 		tsrand_fill(4);
 		PROJECTILE(
-			.sprite = afrand(0) > 0.5 ? "rice" : "thickrice",
+			.proto = afrand(0) > 0.5 ? pp_rice : pp_thickrice,
 			.pos = e->pos,
 			.color = RGB(0.8,0.3-0.1*afrand(1),0.5),
 			.rule = accelerated,
@@ -86,10 +86,16 @@ static int stage4_fodder(Enemy *e, int t) {
 
 	FROM_TO(100, 200, 22-global.diff*3) {
 		play_sound_ex("shot3",5,false);
-		PROJECTILE("ball", e->pos, RGB(1, 0.3, 0.5), asymptotic, {
-			2*cexp(I*M_PI*2*frand()),
-			3
-		});
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(1, 0.3, 0.5),
+			.rule = asymptotic,
+			.args = {
+				2*cexp(I*M_PI*2*frand()),
+				3
+			}
+		);
 	}
 
 	return 1;
@@ -113,7 +119,13 @@ static int stage4_partcircle(Enemy *e, int t) {
 		for(i = 0; i < global.diff; i++) {
 			play_sound("shot2");
 			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
-			PROJECTILE("wave", e->pos + (30)*n, RGB(1-0.2*i,0.5,0.7), asymptotic, { 2*n, 2+2*i });
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos + (30)*n,
+				.color = RGB(1-0.2*i,0.5,0.7),
+				.rule = asymptotic,
+				.args = { 2*n, 2+2*i }
+			);
 		}
 	}
 
@@ -143,12 +155,25 @@ static int stage4_cardbuster(Enemy *e, int t) {
 	complex n = cexp(I*carg(global.plr.pos - e->pos) + 4*M_PI/(c+1)*I*_i);
 
 	FROM_TO_SND("shot1_loop", 120, 120+c*global.diff, 1) {
-		if(_i&1)
-			PROJECTILE("card", e->pos + 30*n, RGB(0, 0.8, 0.2), accelerated, { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n });
+		if(_i&1) {
+			PROJECTILE(
+				.proto = pp_card,
+				.pos = e->pos + 30*n,
+				.color = RGB(0, 0.8, 0.2),
+				.rule = accelerated,
+				.args = { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n }
+			);
+		}
 	}
 
 	FROM_TO_SND("shot1_loop", 300, 320+20*global.diff, 1) {
-		PROJECTILE("card", e->pos + 30*n, RGB(0, 0.7, 0.5), asymptotic, { (0.8+0.2*global.diff)*n, 0.4*I });
+		PROJECTILE(
+			.proto = pp_card,
+			.pos = e->pos + 30*n,
+			.color = RGB(0, 0.7, 0.5),
+			.rule = asymptotic,
+			.args = { (0.8+0.2*global.diff)*n, 0.4*I }
+		);
 	}
 
 	return 1;
@@ -176,9 +201,15 @@ static int stage4_backfire(Enemy *e, int t) {
 	FROM_TO(20,180+global.diff*20,2) {
 		play_sound("shot2");
 		complex n = cexp(I*M_PI*frand()-I*copysign(M_PI/2.0, creal(e->args[0])));
-		int i;
-		for(i = 0; i < global.diff; i++)
-			PROJECTILE("wave", e->pos, RGB(0.2, 0.2, 1-0.2*i), asymptotic, { 2*n, 2+2*i });
+		for(int i = 0; i < global.diff; i++) {
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.2, 1-0.2*i),
+				.rule = asymptotic,
+				.args = { 2*n, 2+2*i }
+			);
+		}
 	}
 
 	return 1;
@@ -205,7 +236,7 @@ static int stage4_bigcircle(Enemy *e, int t) {
 		int n = 10+3*global.diff;
 		for(i = 0; i < n; i++) {
 			PROJECTILE(
-				.sprite = "bigball",
+				.proto = pp_bigball,
 				.pos = e->pos,
 				.color = RGBA(0, 0.8 - 0.4 * _i, 0, 0),
 				.rule = asymptotic,
@@ -217,7 +248,7 @@ static int stage4_bigcircle(Enemy *e, int t) {
 
 			if(global.diff > D_Easy) {
 				PROJECTILE(
-					.sprite = "ball",
+					.proto = pp_ball,
 					.pos = e->pos,
 					.color = RGBA(0, 0.3 * _i, 0.4, 0),
 					.rule = asymptotic,
@@ -246,7 +277,7 @@ static int stage4_explosive(Enemy *e, int t) {
 		for(i = 0; i < n; i++) {
 			double angle = 2*M_PI*i/n+carg(phase);
 			PROJECTILE(
-				.sprite = "ball",
+				.proto = pp_ball,
 				.pos = e->pos,
 				.color = RGB(0.1+0.6*(i&1), 0.2, 1-0.6*(i&1)),
 				.rule = accelerated,
@@ -308,8 +339,17 @@ static int kurumi_burstslave(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], RGB(r,0,0), accelerated, { 2.0*I*e->args[0], -0.01*e->args[1] });
-		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], RGB(r,0,0), accelerated, {-2.0*I*e->args[0], -0.01*e->args[1] });
+
+		for(int i = 1; i >= -1; i -= 2) {
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos + i*10.0*I*e->args[0],
+				.color = RGB(r,0,0),
+				.rule = accelerated,
+				.args = { i*2.0*I*e->args[0], -0.01*e->args[1] }
+			);
+		}
+
 		play_sound("shot1");
 	}
 
@@ -358,8 +398,17 @@ static int kurumi_spikeslave(Enemy *e, int t) {
 
 	FROM_TO(0, 600, 18-2*global.diff) {
 		float r = cimag(e->pos)/VIEWPORT_H;
-		PROJECTILE("wave", e->pos + 10.0*I*e->args[0], RGB(r,0,0), linear, { 1.5*I*e->args[1], -0.01*e->args[0] });
-		PROJECTILE("wave", e->pos - 10.0*I*e->args[0], RGB(r,0,0), linear, {-1.5*I*e->args[1], -0.01*e->args[0] });
+
+		for(int i = 1; i >= -1; i -= 2) {
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos + 10.0*I*e->args[0],
+				.color = RGB(r,0,0),
+				.rule = linear,
+				.args = { i*1.5*I*e->args[1] }
+			);
+		}
+
 		play_sound("shot1");
 	}
 
@@ -387,7 +436,7 @@ void kurumi_redspike(Boss *b, int time) {
 			int n = global.diff*8;
 			for(i = 0; i < n; i++) {
 				PROJECTILE(
-					.sprite = "bigball",
+					.proto = pp_bigball,
 					.pos = b->pos,
 					.color = RGBA(1.0, 0.0, 0.0, 0.0),
 					.rule = asymptotic,
@@ -413,7 +462,11 @@ void kurumi_redspike(Boss *b, int time) {
 			tsrand_fill(2);
 			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
 			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
-			PROJECTILE("rice", b->pos+offset, RGBA(1, 0, 0, 0), accelerated,
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = b->pos+offset,
+				.color = RGBA(1, 0, 0, 0),
+				.rule = accelerated,
 				.args = { -1*n, 0.05*n },
 			);
 			play_sound_ex("warp",0,false);
@@ -516,10 +569,15 @@ static int stage4_supercard(Enemy *e, int t) {
 
 		int i;
 		complex n = cexp(I*carg(global.plr.pos - e->pos) + 2*M_PI/20.*I*_i);
-		for(i = -1; i <= 1 && t; i++)
-			PROJECTILE("card", e->pos + 30*n, RGB(0,0.4,1-_i/40.0), splitcard,
-				{1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
-						);
+		for(i = -1; i <= 1 && t; i++) {
+			PROJECTILE(
+				.proto = pp_card,
+				.pos = e->pos + 30*n,
+				.color = RGB(0,0.4,1-_i/40.0),
+				.rule = splitcard,
+				.args = {1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
+			);
+		}
 	}
 
 	return 1;
@@ -569,13 +627,17 @@ static void kurumi_breaker(Boss *b, int time) {
 
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2.0*I*M_PI/c*i);
-			PROJECTILE("rice", p, RGB(1,0,0.5), splitcard_elly, {
-				3*n,
-				0,
-				kt,
-				1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-2.6*n
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = p,
+				.color = RGB(1,0,0.5),
+				.rule = splitcard_elly,
+				.args = {
+					3*n,
+					0,
+					kt,
+					1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-2.6*n
 			});
-
 		}
 	}
 
@@ -584,12 +646,15 @@ static void kurumi_breaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani,"muda",1);
 		aniplayer_queue(&b->ani,"main",0);
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, RGBA(0.5, 0.0, 0.5, 0.0), asymptotic,
+			PROJECTILE(
+				.proto = pp_bigball,
+				.pos = b->pos,
+				.color = RGBA(0.5, 0.0, 0.5, 0.0),
+				.rule = asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
 			);
 		}
 	}
-
 }
 
 static int aniwall_bullet(Projectile *p, int t) {
@@ -652,7 +717,13 @@ static int aniwall_slave(Enemy *e, int t) {
 			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
 			if(cimag(v) > -0.1 || global.diff >= D_Normal) {
 				play_sound("shot1");
-				PROJECTILE("ball", e->pos+I*v*20*nfrand(), RGB(1,0,0), aniwall_bullet, { 1*v, 40 });
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = e->pos+I*v*20*nfrand(),
+					.color = RGB(1,0,0),
+					.rule = aniwall_bullet,
+					.args = { 1*v, 40 }
+				);
 			}
 		}
 	}
@@ -714,13 +785,18 @@ static void kurumi_sbreaker(Boss *b, int time) {
 		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
 		complex n = cexp(2.0*I*M_PI/c*_i);
-		PROJECTILE("rice", p, RGB(1.0, 0.0, 0.5), splitcard_elly, {
-			2*n,
-			0,
-			kt,
-			1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-1.7*n
-		});
-
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = p,
+			.color = RGB(1.0, 0.0, 0.5),
+			.rule = splitcard_elly,
+			.args = {
+				2*n,
+				0,
+				kt,
+				1.5*cexp(I*carg(global.plr.pos - p - 2*kt*n))-1.7*n
+			}
+		);
 	}
 
 	FROM_TO(60, dur, 100) {
@@ -729,7 +805,11 @@ static void kurumi_sbreaker(Boss *b, int time) {
 		aniplayer_queue(&b->ani, "main", 0);
 
 		for(i = 0; i < 20; i++) {
-			PROJECTILE("bigball", b->pos, RGBA(0.5, 0.0, 0.5, 0.0), asymptotic,
+			PROJECTILE(
+				.proto = pp_bigball,
+				.pos = b->pos,
+				.color = RGBA(0.5, 0.0, 0.5, 0.0),
+				.rule = asymptotic,
 				.args = { cexp(2.0*I*M_PI/20.0*i), 3 },
 			);
 		}
@@ -759,21 +839,26 @@ static int blowwall_slave(Enemy *e, int t) {
 	if(re <= 0 || im <= 0 || re >= VIEWPORT_W || im >= VIEWPORT_H) {
 		int i, c;
 		float f;
-		char *type;
+		ProjPrototype *type;
 
 		c = 20 + global.diff*40;
 
 		for(i = 0; i < c; i++) {
 			f = frand();
 
-			if(f < 0.3)
-				type = "soul";
-			else if(f < 0.6)
-				type = "bigball";
-			else
-				type = "plainball";
+			if(f < 0.3) {
+				type = pp_soul;
+			} else if(f < 0.6) {
+				type = pp_bigball;
+			} else {
+				type = pp_plainball;
+			}
 
-			PROJECTILE(type, e->pos, RGBA(1.0, 0.1, 0.1, 0.0), asymptotic,
+			PROJECTILE(
+				.proto = type,
+				.pos = e->pos,
+				.color = RGBA(1.0, 0.1, 0.1, 0.0),
+				.rule = asymptotic,
 				.args = { (1+3*f)*cexp(2.0*I*M_PI*frand()), 4 },
 			);
 		}
@@ -915,7 +1000,11 @@ static int kdanmaku_slave(Enemy *e, int t) {
 		for(i = 0; i < n; i++) {
 			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
-				PROJECTILE("thickrice", p, RGBA(1.0, 0.5, 0.5, 0.0), kdanmaku_proj,
+				PROJECTILE(
+					.proto = pp_thickrice,
+					.pos = p,
+					.color = RGBA(1.0, 0.5, 0.5, 0.0),
+					.rule = kdanmaku_proj,
 					.args = { 160, speed*0.5*cexp(2.0*I*M_PI*sin(245*t+i*i*3501)) },
 					.flags = PFLAG_NOSPAWNFLARE,
 				);
@@ -994,7 +1083,12 @@ static int kurumi_extra_dead_shield(Enemy *e, int time) {
 		// complex dir = cexp(I*(M_PI * 0.5 * nfrand() + carg(global.plr.pos - e->pos)));
 		// complex dir = cexp(I*(carg(global.plr.pos - e->pos)));
 		complex dir = cexp(I*creal(e->args[0]));
-		PROJECTILE("rice", e->pos, 0, kurumi_extra_dead_shield_proj, { 2*dir, 10 });
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos,
+			.rule = kurumi_extra_dead_shield_proj,
+			.args = { 2*dir, 10 }
+		);
 		play_sound("shot1");
 	}
 
@@ -1007,7 +1101,10 @@ static int kurumi_extra_dead_shield(Enemy *e, int time) {
 		for(int i = 0; i < cnt; ++i) {
 			complex dir = cexp(I*M_PI*2*i/(double)cnt);
 			tsrand_fill(2);
-			PROJECTILE("ball", e->pos, 0, kurumi_extra_dead_shield_proj,
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.rule = kurumi_extra_dead_shield_proj,
 				.args = { 1.5 * (1 + afrand(0)) * dir, 4 + anfrand(1) },
 			);
 		}
@@ -1059,7 +1156,13 @@ static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 			if(global.diff == D_Lunatic)
 				arg *= phase;
 			create_lasercurve2c(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0), las_accel, arg, 0.1*arg);
-			PROJECTILE("bullet", e->pos, RGB(1.0, 0.3, 0.7), accelerated, { arg, 0.1*arg });
+			PROJECTILE(
+				.proto = pp_bullet,
+				.pos = e->pos,
+				.color = RGB(1.0, 0.3, 0.7),
+				.rule = accelerated,
+				.args = { arg, 0.1*arg },
+			);
 		}
 
 		play_sound("laser1");
@@ -1205,7 +1308,13 @@ static int kurumi_extra_fairy(Enemy *e, int t) {
 				for(int j = 0; j < count; j++) {
 					complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
 					pos *= cexp(I*2*M_PI/corners*i);
-					PROJECTILE("flea", e->pos+pos, RGB(1, 0.3, 0.5), linear, { vel+0.1*I*pos/cabs(pos) });
+					PROJECTILE(
+						.proto = pp_flea,
+						.pos = e->pos+pos,
+						.color = RGB(1, 0.3, 0.5),
+						.rule = linear,
+						.args = { vel+0.1*I*pos/cabs(pos) }
+					);
 				}
 			}
 		} else {
@@ -1215,7 +1324,13 @@ static int kurumi_extra_fairy(Enemy *e, int t) {
 				double x = (j/(double)count-0.5)*2*M_PI;
 				complex pos = 0.5*cos(x)+sin(2*x) + (0.5*sin(x)+cos(2*x))*I;
 				pos*=vel/cabs(vel);
-				PROJECTILE("flea", e->pos+rad*pos, RGB(0.5, 0.3, 1), linear, { vel+0.1*pos });
+				PROJECTILE(
+					.proto = pp_flea,
+					.pos = e->pos+rad*pos,
+					.color = RGB(0.5, 0.3, 1),
+					.rule = linear,
+					.args = { vel+0.1*pos },
+				);
 			}
 		}
 	}
@@ -1392,11 +1507,11 @@ static int scythe_post_mid(Enemy *e, int t) {
 		complex shotorg = e->pos+80*cexp(I*creal(e->args[1]));
 		complex shotdir = cexp(I*creal(e->args[1]));
 
-		struct projentry { char *proj; char *snd; } projs[] = {
-			{ "ball",       "shot1"},
-			{ "bigball",    "shot1"},
-			{ "soul",       "shot_special1"},
-			{ "bigball",    "shot1"},
+		struct projentry { ProjPrototype *proj; char *snd; } projs[] = {
+			{ pp_ball,       "shot1"},
+			{ pp_bigball,    "shot1"},
+			{ pp_soul,       "shot_special1"},
+			{ pp_bigball,    "shot1"},
 		};
 
 		struct projentry *pe = &projs[_i % (sizeof(projs)/sizeof(struct projentry))];
@@ -1405,11 +1520,17 @@ static int scythe_post_mid(Enemy *e, int t) {
 		Color *c = RGB(cos(ca), sin(ca), cos(ca+2.1));
 
 		play_sound_ex(pe->snd, 3, true);
-		PROJECTILE(pe->proj, shotorg, c, asymptotic, {
-			(1.2-0.1*global.diff)*shotdir,
-			5 * sin(t/150.0)
-		});
 
+		PROJECTILE(
+			.proto = pe->proj,
+			.pos = shotorg,
+			.color = c,
+			.rule = asymptotic,
+			.args = {
+				(1.2-0.1*global.diff)*shotdir,
+				5 * sin(t/150.0)
+			},
+		);
 	}
 
 	FROM_TO(fleetime - 120, fleetime, 1) {

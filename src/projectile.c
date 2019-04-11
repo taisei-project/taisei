@@ -41,30 +41,6 @@ static ProjArgs defaults_part = {
 };
 
 static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
-	// Detect the deprecated way to spawn projectiles and remap it to prototypes,
-	// if possible. This is so that I can conserve the remains of my sanity by
-	// not having to convert every single PROJECTILE call in the game manually
-	// and in one go. So, TODO: convert every single PROJECTILE call in the game
-	// and remove this mess.
-
-	if(!args->proto && args->sprite && args->size == 0) {
-		static struct {
-			const char *name;
-			ProjPrototype *proto;
-		} proto_map[] = {
-			#define PP(name) { #name, &_pp_##name },
-			#include "projectile_prototypes/all.inc.h"
-		};
-
-		for(int i = 0; i < sizeof(proto_map)/sizeof(*proto_map); ++i) {
-			if(!strcmp(args->sprite, proto_map[i].name)) {
-				args->proto = proto_map[i].proto;
-				args->sprite = NULL;
-				break;
-			}
-		}
-	}
-
 	if(args->proto && args->proto->process_args) {
 		args->proto->process_args(args->proto, args);
 		return;
@@ -122,10 +98,6 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		if(args->type == PROJ_PLAYER && args->damage_type == DMG_ENEMY_SHOT) {
 			args->damage_type = DMG_PLAYER_SHOT;
 		}
-	}
-
-	if(args->type == PROJ_ENEMY && args->proto) {
-		// args->proto = pp_crystal;
 	}
 
 	assert(args->type <= PROJ_PLAYER);

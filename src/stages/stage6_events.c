@@ -43,9 +43,15 @@ static int stage6_hacker(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < 6; i++) {
 			complex n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
-			PROJECTILE("wave", e->pos + 120*n, RGB(1.0, 0.2-0.01*_i, 0.0), linear, {
-				(0.25-0.5*psin(global.frames+_i*46752+16463*i+467*sin(global.frames*_i*i)))*global.diff+creal(n)+2.0*I
-			});
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos + 120*n,
+				.color = RGB(1.0, 0.2-0.01*_i, 0.0),
+				.rule = linear,
+				.args = {
+					(0.25-0.5*psin(global.frames+_i*46752+16463*i+467*sin(global.frames*_i*i)))*global.diff+creal(n)+2.0*I
+				},
+			);
 		}
 	}
 
@@ -70,7 +76,7 @@ static int stage6_side(Enemy *e, int t) {
 		play_sound_ex("shot1",4,true);
 		for(i = 0; i < c; i++) {
 			PROJECTILE(
-				.sprite = (i%2 == 0) ? "rice" : "flea",
+				.proto = (i%2 == 0) ? pp_rice : pp_flea,
 				.pos = e->pos+5*(i/2)*e->args[1],
 				.color = RGB(0.1*cabs(e->args[2]), 0.5, 1),
 				.rule = accelerated,
@@ -118,7 +124,7 @@ static int stage6_flowermine(Enemy *e, int t) {
 
 	FROM_TO(0, 1000, 7-global.diff) {
 		PROJECTILE(
-			.sprite = "rice",
+			.proto = pp_rice,
 			.pos = e->pos + 40*cexp(I*0.6*_i+I*carg(e->args[0])),
 			.color = RGB(1-psin(_i), 0.3, psin(_i)),
 			.rule = wait_proj,
@@ -156,7 +162,7 @@ static int scythe_mid(Enemy *e, int t) {
 	n = cexp(cimag(e->args[1])*I*t);
 	FROM_TO_SND("shot1_loop",0,300,1) {}
 	PROJECTILE(
-		.sprite = "bigball",
+		.proto = pp_bigball,
 		.pos = e->pos + 80*n,
 		.color = RGBA(0.2, 0.5-0.5*cimag(n), 0.5+0.5*creal(n), 0.0),
 		.rule = wait_proj,
@@ -167,7 +173,11 @@ static int scythe_mid(Enemy *e, int t) {
 	);
 
 	if(global.diff > D_Normal && t&1) {
-		Projectile *p = PROJECTILE("ball", e->pos + 80*n, RGBA(0, 0.2, 0.5, 0.0), accelerated,
+		Projectile *p = PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos + 80*n,
+			.color = RGBA(0, 0.2, 0.5, 0.0),
+			.rule = accelerated,
 			.args = {
 				n,
 				0.01*global.diff*cexp(I*carg(global.plr.pos - e->pos - 80*n))
@@ -282,7 +292,7 @@ static int scythe_infinity(Enemy *e, int t) {
 		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 
 		PROJECTILE(
-			.sprite = "ball",
+			.proto = pp_ball,
 			.pos = e->pos+80*cexp(I*creal(e->args[1])),
 			.color = RGB(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)),
 			.rule = asymptotic,
@@ -466,9 +476,16 @@ void elly_newton(Boss *b, int t) {
 		float w = global.diff/2.0+1.5;
 
 		play_sound("shot_special1");
+
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
-				PROJECTILE("ball", b->pos+(x+I*y)*25*cexp(I*a), RGB(0, 0.5, 1), linear, { (2+(_i==0))*cexp(I*a) });
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = b->pos+(x+I*y)*25*cexp(I*a),
+					.color = RGB(0, 0.5, 1),
+					.rule = linear,
+					.args = { (2+(_i==0))*cexp(I*a) }
+				);
 			}
 		}
 	}
@@ -571,8 +588,15 @@ void elly_kepler(Boss *b, int t) {
 		scythe->birthtime = global.frames;
 		scythe->logic_rule = scythe_kepler;
 
-		PROJECTILE("soul", b->pos, RGB(0.3,0.8,1), kepler_bullet, { 50+10*global.diff });
-		elly_clap(b,20);
+		PROJECTILE(
+			.proto = pp_soul,
+			.pos = b->pos,
+			.color = RGB(0.3,0.8,1),
+			.rule = kepler_bullet,
+			.args = { 50+10*global.diff }
+		);
+
+		elly_clap(b, 20);
 	}
 
 	AT(EVENT_DEATH) {
@@ -618,7 +642,13 @@ static void elly_frequency2(Boss *b, int t) {
 
 	FROM_TO_SND("shot1_loop",0, 2000, 3-global.diff/2) {
 		complex n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
-		PROJECTILE("plainball", b->pos+80*n, RGB(0,0,0.7), asymptotic, { 2*n/cabs(n), 3 });
+		PROJECTILE(
+			.proto = pp_plainball,
+			.pos = b->pos+80*n,
+			.color = RGB(0,0,0.7),
+			.rule = asymptotic,
+			.args = { 2*n/cabs(n), 3 }
+		);
 	}
 }
 
@@ -974,7 +1004,8 @@ static int baryon_eigenstate(Enemy *e, int t) {
 		for(i = 0; i < c; i++) {
 			complex n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++) {
-				PROJECTILE(.sprite = "plainball",
+				PROJECTILE(
+					.proto = pp_plainball,
 					.pos = e->pos + 60*cexp(2.0*I*M_PI/c*i),
 					.color = RGBA(j == 0, j == 1, j == 2, 0.0),
 					.rule = eigenstate_proj,
@@ -1116,7 +1147,6 @@ static int broglie_charge(Projectile *p, int t) {
 
 		PARTICLE(
 			.sprite = "blast",
-			.size = 16*(1+I), // HACK: thwart prototype (see TODO in projectile.c)
 			.pos = p->pos,
 			.color = &clr,
 			.timeout = 35,
@@ -1149,7 +1179,7 @@ static int broglie_charge(Projectile *p, int t) {
 				bool fast = global.diff == D_Easy || pnum & 1;
 
 				PROJECTILE(
-					.sprite = fast ? "thickrice" : "rice",
+					.proto = fast ? pp_thickrice : pp_rice,
 					.pos = l->prule(l, ofs),
 					.color = HSLA(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5, 0.0),
 					.rule = broglie_particle,
@@ -1251,7 +1281,7 @@ static int baryon_broglie(Enemy *e, int t) {
 		double hue = (attack_num * M_PI + a + M_PI/6) / (M_PI*2);
 
 		PROJECTILE(
-			.sprite = "ball",
+			.proto = pp_ball,
 			.pos = e->pos + 15*n,
 			.color = HSLA(hue, 1.0, 0.55, 0.0),
 			.rule = broglie_charge,
@@ -1318,7 +1348,7 @@ static int baryon_nattack(Enemy *e, int t) {
 		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
 		float ca = a + t/60.0f;
 		PROJECTILE(
-			.sprite = "ball",
+			.proto = pp_ball,
 			.pos = e->pos+40*cexp(I*a),
 			.color = RGB(cos(ca), sin(ca), cos(ca+2.1)),
 			.rule = asymptotic,
@@ -1457,7 +1487,7 @@ static int baryon_ricci(Enemy *e, int t) {
 				int c = 3;
 				complex n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
 				PROJECTILE(
-					.sprite = "ball",
+					.proto = pp_ball,
 					.pos = 15*n,
 					.color = RGBA(0.0, 0.5, 0.1, 0.0),
 					.rule = ricci_proj2,
@@ -1566,7 +1596,12 @@ void elly_ricci(Boss *b, int t) {
 		for(int i = 0; i < c; i++) {
 			complex pos = ofs + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
-			PROJECTILE("ball", pos, RGBA(0, 0, 0, 0), ricci_proj, { -v*I },
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = pos,
+				.color = RGBA(0, 0, 0, 0),
+				.rule = ricci_proj,
+				.args = { -v*I },
 				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 			);
@@ -1615,7 +1650,13 @@ static void elly_baryonattack2(Boss *b, int t) {
 				complex n = cexp(I*(a+carg(global.plr.pos-b->pos)));
 
 				for(int j = 0; j < 3; ++j) {
-					PROJECTILE("bigball", b->pos, RGB(0,0.2,0.9), asymptotic, { n, 2 * j });
+					PROJECTILE(
+						.proto = pp_bigball,
+						.pos = b->pos,
+						.color = RGB(0,0.2,0.9),
+						.rule = asymptotic,
+						.args = { n, 2 * j }
+					);
 				}
 			}
 		} else {
@@ -1623,9 +1664,17 @@ static void elly_baryonattack2(Boss *b, int t) {
 			int w = 1+(global.diff > D_Normal);
 			complex n = cexp(I*carg(global.plr.pos-b->pos));
 
-			for(x = -w; x <= w; x++)
-				for(y = -w; y <= w; y++)
-					PROJECTILE("bigball", b->pos+25*(x+I*y)*n, RGB(0,0.2,0.9), asymptotic, { n, 3 });
+			for(x = -w; x <= w; x++) {
+				for(y = -w; y <= w; y++) {
+					PROJECTILE(
+						.proto = pp_bigball,
+						.pos = b->pos+25*(x+I*y)*n,
+						.color = RGB(0,0.2,0.9),
+						.rule = asymptotic,
+						.args = { n, 3 },
+					);
+				}
+			}
 		}
 	}
 }
@@ -1697,11 +1746,20 @@ void elly_lhc(Boss *b, int t) {
 			tsrand_fill(4);
 			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
-			PROJECTILE("soul",    pos, RGBA(0.4, 0.0, 1.0, 0.0), linear,
+			PROJECTILE(
+				.proto = pp_soul,
+				.pos = pos,
+				.color = RGBA(0.4, 0.0, 1.0, 0.0),
+				.rule = linear,
 				.args = { (1+2.5*afrand(0))*cexp(2.0*I*M_PI*afrand(1)) },
 				.flags = PFLAG_NOSPAWNFLARE,
 			);
-			PROJECTILE("bigball", pos, RGBA(1.0, 0.0, 0.4, 0.0), linear,
+
+			PROJECTILE(
+				.proto = pp_bigball,
+				.pos = pos,
+				.color = RGBA(1.0, 0.0, 0.4, 0.0),
+				.rule = linear,
 				.args = { (1+2.5*afrand(2))*cexp(2.0*I*M_PI*afrand(3)) },
 				.flags = PFLAG_NOSPAWNFLARE,
 			);
@@ -1723,7 +1781,11 @@ void elly_lhc(Boss *b, int t) {
 
 	FROM_TO(0, 100000,7-global.diff) {
 		play_sound_ex("shot2",10,false);
-		PROJECTILE("ball", b->pos, RGBA(0.0, 0.4, 1.0, 0.0), asymptotic,
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = b->pos,
+			.color = RGBA(0.0, 0.4, 1.0, 0.0),
+			.rule = asymptotic,
 			.args = { cexp(2.0*I*_i), 3 },
 		);
 	}
@@ -1839,9 +1901,13 @@ static int baryon_curvature(Enemy *e, int t) {
 		complex pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
 
 		if(cabs(pos - global.plr.pos) > 100) {
-			PROJECTILE("ball", pos, RGBA(1.0, 0.4, 1.0, 0.0), linear,
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = pos,
+				.color = RGBA(1.0, 0.4, 1.0, 0.0),
+				.rule = linear,
 				.args = { cexp(I*carg(global.plr.pos-pos)) },
-			  );
+			);
 		}
 	}
 
@@ -1912,7 +1978,7 @@ static int curvature_slave(Enemy *e, int t) {
 			float speed = 0.5/(1+(global.diff < D_Hard));
 
 			PROJECTILE(
-				.sprite = "flea",
+				.proto = pp_flea,
 				.pos = pos,
 				.color = RGB(0.1*afrand(0), 0.6,1),
 				.rule = curvature_bullet,
@@ -1927,7 +1993,7 @@ static int curvature_slave(Enemy *e, int t) {
 	if(global.diff >= D_Hard && !(t%20)) {
 		play_sound_ex("shot2",10,false);
 		Projectile *p =PROJECTILE(
-			.sprite = "bigball",
+			.proto = pp_bigball,
 			.pos = global.boss->pos,
 			.color = RGBA(0.5, 0.4, 1.0, 0.0),
 			.rule = linear,
@@ -1936,7 +2002,7 @@ static int curvature_slave(Enemy *e, int t) {
 
 		if(global.diff == D_Lunatic) {
 			PROJECTILE(
-				.sprite = "plainball",
+				.proto = pp_plainball,
 				.pos = global.boss->pos,
 				.color = RGBA(0.2, 0.4, 1.0, 0.0),
 				.rule = curvature_orbiter,
@@ -2104,7 +2170,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		play_sound("redirect");
 
 			PARTICLE(
-				.sprite_ptr = get_sprite("part/blast"),
+				.sprite = "blast",
 				.pos = p->pos,
 				.color = HSLA(carg(p->args[0]),0.5,0.5,0),
 				.rule = elly_toe_boson_effect,
@@ -2165,7 +2231,11 @@ static int elly_toe_boson(Projectile *p, int t) {
 		thiscolor_additive = p->color;
 		thiscolor_additive.a = 0;
 
-		PARTICLE("stardust", p->pos, &thiscolor_additive, elly_toe_boson_effect,
+		PARTICLE(
+			.sprite = "stardust",
+			.pos = p->pos,
+			.color = &thiscolor_additive,
+			.rule = elly_toe_boson_effect,
 			.draw_rule = ScaleFade,
 			.timeout = 30,
 			.args = { 0, p->args[0] * 2, 2 * I, M_PI*2*frand() },
@@ -2284,7 +2354,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 			play_sound_ex("shot_special1", 5, false);
 
 			PARTICLE(
-				.sprite_ptr = get_sprite("part/blast"),
+				.sprite = "blast",
 				.pos = p->pos,
 				.color = &thiscolor_additive,
 				.rule = elly_toe_fermion_yukawa_effect,
@@ -2405,14 +2475,22 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 	Color *c = color_mul(COLOR_COPY(&l->color), &l->color);
 	c->a = 0;
 
-	PARTICLE("stardust", origin, c, elly_toe_laser_particle_rule,
+	PARTICLE(
+		.sprite = "stardust",
+		.pos = origin,
+		.color = c,
+		.rule = elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 30,
 		.args = { 0, 0, 1.5 * I, add_ref(l) },
 		.angle = M_PI*2*frand(),
 	);
 
-	PARTICLE("stain", origin, color_mul_scalar(COLOR_COPY(c),0.5), elly_toe_laser_particle_rule,
+	PARTICLE(
+		.sprite = "stain",
+		.pos = origin,
+		.color = color_mul_scalar(COLOR_COPY(c),0.5),
+		.rule = elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 20,
 		.args = { 0, 0, 1 * I, add_ref(l) },
@@ -2420,7 +2498,11 @@ static void elly_toe_laser_particle(Laser *l, complex origin) {
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
-	PARTICLE("smoothdot", origin, c, elly_toe_laser_particle_rule,
+	PARTICLE(
+		.sprite = "smoothdot",
+		.pos = origin,
+		.color = c,
+		.rule = elly_toe_laser_particle_rule,
 		.draw_rule = ScaleFade,
 		.timeout = 40,
 		.args = { 0, 0, 1, add_ref(l) },
@@ -2592,7 +2674,8 @@ void elly_theory(Boss *b, int time) {
 
 				complex bpos = b->pos + 18 * dir * i;
 
-				PROJECTILE("rice",
+				PROJECTILE(
+					.proto = pp_rice,
 					.pos = b->pos,
 					.color = boson_color(&(Color){0}, i, 0),
 					.rule = elly_toe_boson,
@@ -2614,15 +2697,18 @@ void elly_theory(Boss *b, int time) {
 
 		complex dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
-			PROJECTILE("ball", b->pos, RGBA(clr==0, clr==1, clr==2, 0),
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = b->pos,
+				.color = RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
 					dest,
 					clr*2*M_PI/3,
 					40,
 				},
-				.max_viewport_dist=50,
-                                .flags = PFLAG_NOSPAWNFLARE,
+				.max_viewport_dist = 50,
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}
@@ -2641,7 +2727,7 @@ void elly_theory(Boss *b, int time) {
 		global.shake_view_fade=1;
 
 		PARTICLE(
-			.sprite_ptr = get_sprite("part/blast"),
+			.sprite = "blast",
 			.pos = b->pos,
 			.color = RGBA(1.0, 0.3, 0.3, 0.0),
 			.timeout = 60,
@@ -2698,10 +2784,13 @@ void elly_theory(Boss *b, int time) {
 					int t = time-symmetrytime;
 					v*=cexp(-I*0.001*t*t+0.01*frand()*dir);
 				}
-				PROJECTILE("flea", b->pos, RGB(dir*(time>symmetrytime),0,1),
+				PROJECTILE(
+					.proto = pp_flea,
+					.pos = b->pos,
+					.color = RGB(dir*(time>symmetrytime),0,1),
 					.rule = elly_toe_higgs,
 					.args = { v },
-                                        .flags = PFLAG_NOSPAWNFLARE,
+					.flags = PFLAG_NOSPAWNFLARE,
 				);
 			}
 		}
@@ -2728,7 +2817,10 @@ void elly_theory(Boss *b, int time) {
 		// play_sound("shot_special1");
 
 		for(int clr = 0; clr < 3; clr++) {
-			PROJECTILE("soul", b->pos, RGBA(clr==0, clr==1, clr==2, 0),
+			PROJECTILE(
+				.proto = pp_soul,
+				.pos = b->pos,
+				.color = RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
 					50*cexp(1.3*I*_i),
@@ -2736,8 +2828,8 @@ void elly_theory(Boss *b, int time) {
 					40,
 					-1,
 				},
-				.max_viewport_dist=50,
-                                .flags = PFLAG_NOSPAWNFLARE,
+				.max_viewport_dist = 50,
+				.flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
 	}
