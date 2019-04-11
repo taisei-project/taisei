@@ -11,18 +11,42 @@
 
 #include "taisei.h"
 
+typedef struct FloatOffset {
+	float x, y;
+} FloatOffset;
+
+typedef struct FloatExtent {
+	float w, h;
+} FloatExtent;
+
 typedef struct FloatRect {
-	float x;
-	float y;
-	float w;
-	float h;
+	union {
+		FloatOffset offset;
+		struct { float x, y; };
+	};
+	union {
+		FloatExtent extent;
+		struct { float w, h; };
+	};
 } FloatRect;
 
+typedef struct IntOffset {
+	int x, y;
+} IntOffset;
+
+typedef struct IntExtent {
+	int w, h;
+} IntExtent;
+
 typedef struct IntRect {
-	int x;
-	int y;
-	int w;
-	int h;
+	union {
+		IntOffset offset;
+		struct { int x, y; };
+	};
+	union {
+		IntExtent extent;
+		struct { int w, h; };
+	};
 } IntRect;
 
 typedef struct Ellipse {

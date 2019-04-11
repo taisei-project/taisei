@@ -28,6 +28,8 @@ enum {
 	SCREEN_H = 600,
 };
 
+#define SCREEN_SIZE { SCREEN_W, SCREEN_H }
+
 typedef struct VideoMode {
 	int width;
 	int height;
