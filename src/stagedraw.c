@@ -180,6 +180,11 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 
 			break;
 		}
+
+		case TE_FRAME: {
+			fapproach_p(&stagedraw.clear_screen.alpha, stagedraw.clear_screen.target_alpha, 0.01);
+			break;
+		}
 	}
 
 	return false;
@@ -922,8 +927,6 @@ static void stage_draw_overlay(void) {
 	if(global.boss) {
 		draw_boss_overlay(global.boss);
 	}
-
-	fapproach_p(&stagedraw.clear_screen.alpha, stagedraw.clear_screen.target_alpha, 0.01);
 
 	if(stagedraw.clear_screen.alpha > 0) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);

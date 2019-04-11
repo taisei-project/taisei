@@ -38,7 +38,7 @@ StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *f
 	return t;
 }
 
-static void stagetext_numeric_predraw(StageText *txt, int t, float a) {
+static void stagetext_numeric_update(StageText *txt, int t, float a) {
 	// snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
 	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(NUM_PLACEHOLDER), txt->text);
 }
@@ -46,7 +46,7 @@ static void stagetext_numeric_predraw(StageText *txt, int t, float a) {
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
-	t->custom.predraw = stagetext_numeric_predraw;
+	t->custom.update = stagetext_numeric_update;
 	return t;
 }
 
@@ -59,7 +59,12 @@ void stagetext_free(void) {
 	list_foreach(&textlist, stagetext_delete, NULL);
 }
 
-static void stagetext_draw_single(StageText *txt) {
+static inline float stagetext_alpha(StageText *txt) {
+	int t = global.frames - txt->time.spawn;
+	return clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
+}
+
+static void stagetext_update_single(StageText *txt) {
 	if(global.frames < txt->time.spawn) {
 		return;
 	}
@@ -69,8 +74,24 @@ static void stagetext_draw_single(StageText *txt) {
 		return;
 	}
 
+	if(txt->custom.update) {
+		txt->custom.update(txt, global.frames - txt->time.spawn, stagetext_alpha(txt));
+	}
+}
+
+static void stagetext_draw_single(StageText *txt) {
+	if(global.frames < txt->time.spawn) {
+		return;
+	}
+
+	if(global.frames > txt->time.spawn + txt->time.life) {
+		log_warn("FIXME: deleting stagetext [%s] in draw function", txt->text);
+		stagetext_delete((List**)&textlist, (List*)txt, NULL);
+		return;
+	}
+
 	int t = global.frames - txt->time.spawn;
-	float f = 1.0 - clamp((txt->time.life - t) / (float)txt->time.fadeout, 0, clamp(t / (float)txt->time.fadein, 0, 1));
+	float f = 1.0 - stagetext_alpha(txt);
 	float ofs_x, ofs_y;
 
 	if(txt->time.life - t < txt->time.fadeout) {
@@ -78,10 +99,6 @@ static void stagetext_draw_single(StageText *txt) {
 		ofs_x = 0;
 	} else {
 		ofs_x = ofs_y = 10 * pow(f, 2);
-	}
-
-	if(txt->custom.predraw) {
-		txt->custom.predraw(txt, t, 1.0 - f);
 	}
 
 	TextParams params = { 0 };
@@ -96,6 +113,13 @@ static void stagetext_draw_single(StageText *txt) {
 	params.color = &txt->color;
 
 	text_draw(txt->text, &params);
+}
+
+void stagetext_update(void) {
+	for(StageText *t = textlist, *next = NULL; t; t = next) {
+		next = t->next;
+		stagetext_update_single(t);
+	}
 }
 
 void stagetext_draw(void) {

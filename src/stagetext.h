@@ -18,7 +18,7 @@
 
 typedef struct StageText StageText;
 typedef LIST_ANCHOR(StageText) StageTextList;
-typedef void (*StageTextPreDrawFunc)(StageText* txt, int t, float alpha);
+typedef void (*StageTextUpdateFunc)(StageText* txt, int t, float alpha);
 
 typedef struct StageTextTable StageTextTable;
 
@@ -32,7 +32,7 @@ struct StageText {
 	complex pos;
 
 	struct {
-		StageTextPreDrawFunc predraw;
+		StageTextUpdateFunc update;
 		void *data1;
 		void *data2;
 	} custom;
@@ -51,6 +51,7 @@ struct StageText {
 };
 
 void stagetext_free(void);
+void stagetext_update(void);
 void stagetext_draw(void);
 StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);

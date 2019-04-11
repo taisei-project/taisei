@@ -477,6 +477,8 @@ static void stage_logic(void) {
 		global.gameover != GAMEOVER_TRANSITIONING) {
 		stage_finish(GAMEOVER_DEFEAT);
 	}
+
+	stagetext_update();
 }
 
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {

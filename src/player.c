@@ -1353,7 +1353,7 @@ void player_add_bombs(Player *plr, int bombs) {
 	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
 }
 
-static void scoretext_predraw(StageText *txt, int t, float a) {
+static void scoretext_update(StageText *txt, int t, float a) {
 	float r = bits_to_float((uintptr_t)txt->custom.data1);
 	txt->pos -= I * cexp(I*r) * a;
 }
@@ -1382,7 +1382,7 @@ void player_add_points(Player *plr, uint points, complex location) {
 	StageText *t = stagetext_add(NULL, location, ALIGN_CENTER, get_font("small"), c, 0, 25 + 20 * imp, 10, 20);
 	format_huge_num(0, points, sizeof(t->text), t->text);
 	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
-	t->custom.predraw = scoretext_predraw;
+	t->custom.update = scoretext_update;
 }
 
 void player_add_piv(Player *plr, uint piv, complex location) {
@@ -1406,7 +1406,7 @@ void player_add_piv(Player *plr, uint piv, complex location) {
 	format_huge_num(0, piv, sizeof(t->text), t->text);
 	strcat(t->text, "v");
 	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
-	t->custom.predraw = scoretext_predraw;
+	t->custom.update = scoretext_update;
 }
 
 void player_add_voltage(Player *plr, uint voltage) {
