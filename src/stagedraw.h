@@ -25,7 +25,8 @@ typedef enum StageFBPair {
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
 void stage_draw_hud(void);
-void stage_draw_foreground(void);
+void stage_draw_viewport(void);
+void stage_draw_overlay(void);
 void stage_draw_scene(StageInfo *stage);
 bool stage_should_draw_particle(Projectile *p);
 

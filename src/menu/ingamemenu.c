@@ -160,11 +160,12 @@ MenuData* create_ingame_menu_replay(void) {
 void draw_ingame_menu_bg(MenuData *menu, float f) {
 	float rad = f*IMENU_BLUR;
 
+	r_state_push();
 	r_shader("ingame_menu");
 	r_uniform_float("rad", rad);
 	r_uniform_float("phase", menu->frames / 100.0);
-	stage_draw_foreground();
-	r_shader_standard();
+	stage_draw_viewport();
+	r_state_pop();
 }
 
 void update_ingame_menu(MenuData *menu) {

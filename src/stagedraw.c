@@ -919,7 +919,7 @@ static void stage_draw_objects(void) {
 	r_shader_standard();
 }
 
-static void stage_draw_overlay(void) {
+void stage_draw_overlay(void) {
 	r_state_push();
 	r_shader("sprite_default");
 	r_blend(BLEND_PREMUL_ALPHA);
@@ -943,42 +943,50 @@ static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s) {
 	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
 }
 
-void stage_draw_foreground(void) {
-	float vw, vh;
-	video_get_viewport_size(&vw, &vh);
+static inline void begin_viewport_shake(void) {
+	if(global.shake_view) {
+		r_mat_push();
+		r_mat_translate(
+			global.shake_view * sin(global.frames),
+			global.shake_view * sin(global.frames * 1.1 + 3),
+			0
+		);
+		r_mat_scale(
+			1 + 2 * global.shake_view / VIEWPORT_W,
+			1 + 2 * global.shake_view / VIEWPORT_H,
+			1
+		);
+		r_mat_translate(
+			-global.shake_view,
+			-global.shake_view,
+			0
+		);
+	}
+}
+
+static inline void end_viewport_shake(void) {
+	if(global.shake_view) {
+		r_mat_pop();
+	}
+}
+
+void stage_draw_viewport(void) {
+	FloatRect dest_vp;
+	r_framebuffer_viewport_current(r_framebuffer_current(), &dest_vp);
+	r_uniform_sampler("tex", r_framebuffer_get_attachment(stagedraw.fb_pairs[FBPAIR_FG].front, FRAMEBUFFER_ATTACH_COLOR0));
 
 	// CAUTION: Very intricate pixel perfect scaling that will ruin your day.
-	float facw = (float)vw/SCREEN_W;
-	float fach = (float)vh/SCREEN_H;
+	float facw = dest_vp.w / SCREEN_W;
+	float fach = dest_vp.h / SCREEN_H;
 	// fach is equal to facw up to roundoff error.
 	float scale = fach;
 
-	// draw the foreground Framebuffer
 	r_mat_push();
-		r_mat_scale(1/facw, 1/fach,1);
-		r_mat_translate(roundf(facw*VIEWPORT_X), roundf(fach*VIEWPORT_Y), 0);
-		r_mat_scale(roundf(scale*VIEWPORT_W), roundf(scale*VIEWPORT_H), 1);
-
-		// apply the screenshake effect
-		if(global.shake_view) {
-			r_mat_translate(
-				global.shake_view * sin(global.frames) / VIEWPORT_W,
-				global.shake_view * sin(global.frames * 1.1 + 3) / VIEWPORT_H,
-				0
-			);
-			r_mat_scale(
-				1 + 2 * global.shake_view / VIEWPORT_W,
-				1 + 2 * global.shake_view / VIEWPORT_H,
-				1
-			);
-			r_mat_translate(
-				-global.shake_view / VIEWPORT_W,
-				-global.shake_view / VIEWPORT_H,
-				0
-			);
-		}
-
-		draw_framebuffer_tex(stage_get_fbpair(FBPAIR_FG)->front, 1, 1);
+	r_mat_scale(1/facw, 1/fach, 1);
+	r_mat_translate(roundf(facw * VIEWPORT_X), roundf(fach * VIEWPORT_Y), 0);
+	r_mat_scale(roundf(scale * VIEWPORT_W), roundf(scale * VIEWPORT_H), 1);
+	r_mat_translate(0.5, 0.5, 0);
+	r_draw_quad();
 	r_mat_pop();
 }
 
@@ -1006,6 +1014,8 @@ void stage_draw_scene(StageInfo *stage) {
 	r_cull(CULL_BACK);
 	r_shader_standard();
 
+	begin_viewport_shake();
+
 	if(draw_bg) {
 		// blit the background
 		r_state_push();
@@ -1025,6 +1035,12 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw the 2D objects
 	stage_draw_objects();
+
+	end_viewport_shake();
+
+	// draw overlay: in-viewport text and HUD elements, etc.
+	// this stuff is not affected by the screen shake effect
+	stage_draw_overlay();
 
 	// everything drawn, now apply postprocessing
 	fbpair_swap(foreground);
@@ -1054,13 +1070,7 @@ void stage_draw_scene(StageInfo *stage) {
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	// draw viewport contents
-	stage_draw_foreground();
-
-	// draw overlay (in-viewport text and HUD elements, etc.)
-	r_mat_push();
-	r_mat_translate(VIEWPORT_X, VIEWPORT_Y, 0);
-	stage_draw_overlay();
-	r_mat_pop();
+	stage_draw_viewport();
 
 	// draw HUD
 	stage_draw_hud();
