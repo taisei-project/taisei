@@ -126,11 +126,10 @@ ListContainer* list_wrap_container(void *data) attr_nodiscard;
 	#define LIST_CAST_RETURN(e_typekey, e_return) CASTPTR_ASSUME_ALIGNED((e_return), __typeof__(*(e_typekey)))
 #else
 	// basic safeguard
-	#define LIST_CAST(expr, ptrlevel) ((void)sizeof((*(expr)).list_interface), (List*)(expr))
-	#define LIST_CAST_2(expr, ptrlevel) ((void)sizeof((**(expr)).list_interface), (List**)(expr))
+	#define LIST_CAST(expr) ((void)sizeof((*(expr)).list_interface), (List*)(expr))
+	#define LIST_CAST_2(expr) ((void)sizeof((**(expr)).list_interface), (List**)(expr))
 	#define LIST_ANCHOR_CAST(expr) ((void)sizeof((*(expr)).list_anchor_interface), (ListAnchor*)(expr))
-	// don't even think about adding a void* cast here
-	#define LIST_CAST_RETURN(e_typekey, e_return) (e_return)
+	#define LIST_CAST_RETURN(e_typekey, e_return) (void*)(e_return)
 #endif
 
 #define list_insert(dest,elem) \
