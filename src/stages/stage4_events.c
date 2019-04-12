@@ -84,17 +84,62 @@ static int stage4_fodder(Enemy *e, int t) {
 	e->dir = creal(e->args[0]) < 0;
 	e->pos += e->args[0];
 
-	FROM_TO(100, 200, 22-global.diff*3) {
-		play_sound_ex("shot3",5,false);
+	FROM_TO(10, 200, 120) {
+		complex fairy_halfsize = 21 * (1 + I);
+
+		if(!rect_rect_intersect(
+			(Rect) { e->pos - fairy_halfsize, e->pos + fairy_halfsize },
+			(Rect) { 0, CMPLX(VIEWPORT_W, VIEWPORT_H) },
+			true, true)
+		) {
+			return 1;
+		}
+
+		play_sound_ex("shot3", 5, false);
+		complex aim = global.plr.pos - e->pos;
+		aim /= cabs(aim);
+
+		float speed = 3;
+		float boost_factor = 1.2;
+		float boost_base = 1;
+		int chain_len = global.diff + 2;
+
 		PROJECTILE(
-			.proto = pp_ball,
+			.proto = pp_wave,
 			.pos = e->pos,
 			.color = RGB(1, 0.3, 0.5),
 			.rule = asymptotic,
 			.args = {
-				2*cexp(I*M_PI*2*frand()),
-				3
-			}
+				speed * aim,
+				boost_base + (chain_len + 1) * boost_factor,
+			},
+			.max_viewport_dist = 32,
+		);
+
+		for(int i = chain_len; i; --i) {
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = e->pos,
+				.color = RGB(i / (float)(chain_len+1), 0.3, 0.5),
+				.rule = asymptotic,
+				.args = {
+					speed * aim,
+					boost_base + i * boost_factor,
+				},
+				.max_viewport_dist = 32,
+			);
+		}
+
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(0, 0.3, 0.5),
+			.rule = asymptotic,
+			.args = {
+				speed * aim,
+				boost_base,
+			},
+			.max_viewport_dist = 32,
 		);
 	}
 
@@ -154,19 +199,19 @@ static int stage4_cardbuster(Enemy *e, int t) {
 	int c = 40;
 	complex n = cexp(I*carg(global.plr.pos - e->pos) + 4*M_PI/(c+1)*I*_i);
 
-	FROM_TO_SND("shot1_loop", 120, 120+c*global.diff, 1) {
-		if(_i&1) {
+	FROM_TO_SND("shot1_loop", 60, 60+c*global.diff, 1) {
+		for(int i = 0; i < 3; ++i) {
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = e->pos + 30*n,
-				.color = RGB(0, 0.8, 0.2),
+				.color = RGB(0, 0.2, 0.4 + 0.2 * i),
 				.rule = accelerated,
-				.args = { (0.8+0.2*global.diff)*n, 0.01*(1+0.01*_i)*n }
+				.args = { (0.8+0.2*global.diff)*(1.0 + 0.1 * i)*n, 0.01*(1+0.01*_i)*n }
 			);
 		}
 	}
 
-	FROM_TO_SND("shot1_loop", 300, 320+20*global.diff, 1) {
+	FROM_TO_SND("shot1_loop", 240, 260+20*global.diff, 1) {
 		PROJECTILE(
 			.proto = pp_card,
 			.pos = e->pos + 30*n,
@@ -530,16 +575,20 @@ static int splitcard(Projectile *p, int t) {
 	}
 
 	if(t == creal(p->args[2])) {
-		p->color = *RGB(0, p->color.b, p->color.g);
+		// projectile_set_prototype(p, pp_bigball);
+		p->color = *RGB(p->color.b, 0.2, p->color.g);
 		play_sound_ex("redirect", 10, false);
 		spawn_projectile_highlight_effect(p);
 	}
 
 	if(t > creal(p->args[2])) {
 		p->args[0] += 0.01*p->args[3];
+		asymptotic(p, t);
+	} else {
+		p->angle = carg(p->args[0]);
 	}
 
-	return asymptotic(p, t);
+	return ACTION_NONE; // asymptotic(p, t);
 }
 
 static int stage4_supercard(Enemy *e, int t) {
@@ -567,15 +616,14 @@ static int stage4_supercard(Enemy *e, int t) {
 	FROM_TO(70, 70+20*global.diff, 1) {
 		play_sound_ex("shot1",5,false);
 
-		int i;
-		complex n = cexp(I*carg(global.plr.pos - e->pos) + 2*M_PI/20.*I*_i);
-		for(i = -1; i <= 1 && t; i++) {
+		complex n = cexp(I*(2*M_PI/20.0*_i + (t / 150) * M_PI/4));
+		for(int i = -1; i <= 1 && t; i++) {
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = e->pos + 30*n,
 				.color = RGB(0,0.4,1-_i/40.0),
 				.rule = splitcard,
-				.args = {1*n, 0.1*_i, 100-time+70, 1.4*I*i*n}
+				.args = {1*n, 0.1*_i, 100-time+70, 2*I*i*n}
 			);
 		}
 	}
@@ -1555,8 +1603,15 @@ void stage4_events(void) {
 		create_enemy1c(VIEWPORT_W + VIEWPORT_H/4*3*I, 3000, BigFairy, stage4_splasher, -3-4.0*I);
 	}
 
-	FROM_TO(300, 450, 20) {
-		create_enemy1c(VIEWPORT_W*frand(), 200, Fairy, stage4_fodder, 3.0*I);
+	FROM_TO(300, 450, 10) {
+		float span = VIEWPORT_W * 0.5;
+		float phase = 2*_i/M_PI;
+
+		if(_i & 1) {
+			phase *= -1;
+		}
+
+		create_enemy1c((VIEWPORT_W + span * sin(phase)) * 0.5 - 32*I, 200, Fairy, stage4_fodder, 2.0*I*cexp(I*phase*0.1));
 	}
 
 	FROM_TO(500, 550, 10) {
@@ -1574,8 +1629,16 @@ void stage4_events(void) {
 		create_enemy1c(VIEWPORT_W+VIEWPORT_H/2.0*I, 2000, Swirl, stage4_backfire, -0.5);
 	}
 
-	FROM_TO(2000, 2600, 20)
-		create_enemy1c(300.0*I*frand(), 200, Fairy, stage4_fodder, 2);
+	FROM_TO(2060, 2600, 15) {
+		float span = 300;
+		float phase = 2*_i/M_PI;
+
+		if(_i & 1) {
+			phase *= -1;
+		}
+
+		create_enemy1c(I * span * psin(phase) - 24, 200, Fairy, stage4_fodder, 2.0*cexp(I*phase*0.005));
+	}
 
 	FROM_TO(2000, 2400, 200)
 		create_enemy1c(VIEWPORT_W/2+200-400*frand(), 1000, BigFairy, stage4_bigcircle, 2.0*I);
@@ -1600,12 +1663,21 @@ void stage4_events(void) {
 		}
 	}
 
-	FROM_TO(3201 + midboss_time, 3601 + midboss_time, 10)
-		create_enemy1c(VIEWPORT_W*(_i&1)+VIEWPORT_H/2*I-300.0*I*frand(), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
+	FROM_TO(3201 + midboss_time, 3501 + midboss_time, 10) {
+		float span = 120;
+		float phase = 2*_i/M_PI;
+		create_enemy1c(VIEWPORT_W*(_i&1)+span*I*psin(phase), 200, Fairy, stage4_fodder, 2-4*(_i&1)+1.0*I);
+	}
 
-	FROM_TO(3350 + midboss_time, 4000 + midboss_time, 100)
+	FROM_TO(3350 + midboss_time, 4000 + midboss_time, 60) {
+		int d = _i&1;
+		create_enemy1c(VIEWPORT_W*d, 1000, Fairy, stage4_partcircle, 2*cexp(I*M_PI/2.0*(0.2+0.6*frand()+d)));
+	}
+
+	FROM_TO(3550 + midboss_time, 4200 + midboss_time, 200) {
 		create_enemy3c(VIEWPORT_W/4.0 + VIEWPORT_W/2.0*(_i&1), 3000, BigFairy, stage4_cardbuster, VIEWPORT_W/2.+VIEWPORT_W*0.4*(1-2*(_i&1))+100.0*I,
 					VIEWPORT_W/4.0+VIEWPORT_W/2.0*((_i+1)&1)+300.0*I, VIEWPORT_W/2.0-200.0*I);
+	}
 
 	AT(3800 + midboss_time)
 		create_enemy1c(VIEWPORT_W/2, 9000, BigFairy, stage4_supercard, 4.0*I);
