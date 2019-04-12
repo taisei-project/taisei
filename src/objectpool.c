@@ -12,42 +12,45 @@
 #include "util.h"
 #include "list.h"
 
+typedef struct ObjHeader {
+	alignas(alignof(max_align_t)) struct ObjHeader *next;
+} ObjHeader;
+
 struct ObjectPool {
 	char *tag;
 	size_t size_of_object;
 	size_t max_objects;
+#ifdef OBJPOOL_TRACK_STATS
 	size_t usage;
 	size_t peak_usage;
+#endif
 	size_t num_extents;
 	char **extents;
-	ObjectInterface *free_objects;
+	ObjHeader *free_objects;
 	char objects[];
 };
 
-static inline ObjectInterface* obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
-	return (ObjectInterface*)(void*)(objects + idx * pool->size_of_object);
+inline attr_must_inline attr_returns_max_aligned
+static ObjHeader *obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
+	return CASTPTR_ASSUME_ALIGNED(objects + idx * pool->size_of_object, ObjHeader);
 }
 
 static void objpool_register_objects(ObjectPool *pool, char *objects) {
 	for(size_t i = 0; i < pool->max_objects; ++i) {
-		list_push(&pool->free_objects, obj_ptr(pool, objects, i));
+		ObjHeader *o = obj_ptr(pool, objects, i);
+		o->next = pool->free_objects;
+		pool->free_objects = o;
 	}
 }
 
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
 	// TODO: overflow handling
 
-	ObjectPool *pool = malloc(sizeof(ObjectPool) + (obj_size * max_objects));
+	ObjectPool *pool = calloc(1, sizeof(ObjectPool) + (obj_size * max_objects));
 	pool->size_of_object = obj_size;
 	pool->max_objects = max_objects;
-	pool->free_objects = NULL;
-	pool->usage = 0;
-	pool->peak_usage = 0;
-	pool->num_extents = 0;
-	pool->extents = NULL;
 	pool->tag = strdup(tag);
 
-	memset(pool->objects, 0, obj_size * max_objects);
 	objpool_register_objects(pool, pool->objects);
 
 	log_debug("[%s] Allocated pool for %zu objects, %zu bytes each",
@@ -89,22 +92,20 @@ static char* objpool_fmt_size(ObjectPool *pool) {
 	}
 }
 
-ObjectInterface *objpool_acquire(ObjectPool *pool) {
-	ObjectInterface *obj = list_pop(&pool->free_objects);
+void *objpool_acquire(ObjectPool *pool) {
+	ObjHeader *obj = pool->free_objects;
 
 	if(obj) {
 acquired:
+		pool->free_objects = obj->next;
 		memset(obj, 0, pool->size_of_object);
 
-		IF_OBJPOOL_DEBUG({
-			obj->_object_private.used = true;
-		})
-
+#ifdef OBJPOOL_TRACK_STATS
 		if(++pool->usage > pool->peak_usage) {
 			pool->peak_usage = pool->usage;
 		}
+#endif
 
-		// log_debug("[%s] Usage: %zu", pool->tag, pool->usage);
 		return obj;
 	}
 
@@ -116,39 +117,27 @@ acquired:
 	free(tmp);
 
 	objpool_add_extent(pool);
-	obj = list_pop(&pool->free_objects);
+	obj = pool->free_objects;
 	assert(obj != NULL);
 	goto acquired;
 }
 
-void objpool_release(ObjectPool *pool, ObjectInterface *object) {
+void objpool_release(ObjectPool *pool, void *object) {
 	objpool_memtest(pool, object);
-
-	IF_OBJPOOL_DEBUG({
-		if(!object->_object_private.used) {
-			log_fatal("[%s] Attempted to release an unused object %p",
-				pool->tag,
-				(void*)object
-			);
-		}
-
-		object->_object_private.used = false;
-	})
-
-	list_push(&pool->free_objects, object);
-
+	ObjHeader *obj = object;
+	obj->next = pool->free_objects;
+	pool->free_objects = obj;
+#ifdef OBJPOOL_TRACK_STATS
 	pool->usage--;
-	// log_debug("[%s] Usage: %zu", pool->tag, pool->usage);
+#endif
 }
 
 void objpool_free(ObjectPool *pool) {
-	if(!pool) {
-		return;
-	}
-
+#ifdef OBJPOOL_TRACK_STATS
 	if(pool->usage != 0) {
 		log_warn("[%s] %zu objects still in use", pool->tag, pool->usage);
 	}
+#endif
 
 	for(size_t i = 0; i < pool->num_extents; ++i) {
 		free(pool->extents[i]);
@@ -166,12 +155,17 @@ size_t objpool_object_size(ObjectPool *pool) {
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
 	stats->tag = pool->tag;
 	stats->capacity = pool->max_objects * (1 + pool->num_extents);
+#ifdef OBJPOOL_TRACK_STATS
 	stats->usage = pool->usage;
 	stats->peak_usage = pool->peak_usage;
+#else
+	stats->usage = 0;
+	stats->peak_usage = 0;
+#endif
 }
 
 attr_unused
-static bool objpool_object_in_subpool(ObjectPool *pool, ObjectInterface *object, char *objects) {
+static bool objpool_object_in_subpool(ObjectPool *pool, ObjHeader *object, char *objects) {
 	char *objofs = (char*)object;
 	char *minofs = objects;
 	char *maxofs = objects + (pool->max_objects - 1) * pool->size_of_object;
@@ -194,7 +188,7 @@ static bool objpool_object_in_subpool(ObjectPool *pool, ObjectInterface *object,
 }
 
 attr_unused
-static bool objpool_object_in_pool(ObjectPool *pool, ObjectInterface *object) {
+static bool objpool_object_in_pool(ObjectPool *pool, ObjHeader *object) {
 	if(objpool_object_in_subpool(pool, object, pool->objects)) {
 		return true;
 	}
@@ -208,16 +202,13 @@ static bool objpool_object_in_pool(ObjectPool *pool, ObjectInterface *object) {
 	return false;
 }
 
-void objpool_memtest(ObjectPool *pool, ObjectInterface *object) {
-	assert(pool != NULL);
-	assert(object != NULL);
-
-	IF_OBJPOOL_DEBUG({
-		if(!objpool_object_in_pool(pool, object)) {
-			log_fatal("[%s] Object pointer %p does not belong to this pool",
-				pool->tag,
-				(void*)object
-			);
-		}
-	})
+#ifdef OBJPOOL_DEBUG
+void objpool_memtest(ObjectPool *pool, void *object) {
+	if(!objpool_object_in_pool(pool, object)) {
+		log_fatal("[%s] Object pointer %p does not belong to this pool",
+			pool->tag,
+			object
+		);
+	}
 }
+#endif

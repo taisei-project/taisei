@@ -12,7 +12,6 @@
 #include "global.h"
 #include "list.h"
 #include "stageobjects.h"
-#include "objectpool_util.h"
 
 static const char* item_sprite_name(ItemType type) {
 	static const char *const map[] = {
@@ -85,7 +84,7 @@ Item* create_item(complex pos, complex v, ItemType type) {
 
 void delete_item(Item *item) {
 	ent_unregister(&item->ent);
-	objpool_release(stage_object_pools.items, &alist_unlink(&global.items, item)->object_interface);
+	objpool_release(stage_object_pools.items, alist_unlink(&global.items, item));
 }
 
 Item *create_clear_item(complex pos, uint clear_flags) {

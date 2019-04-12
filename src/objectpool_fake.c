@@ -21,11 +21,11 @@ ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) 
 	return pool;
 }
 
-ObjectInterface *objpool_acquire(ObjectPool *pool) {
+void *objpool_acquire(ObjectPool *pool) {
 	return calloc(1, pool->size_of_object);
 }
 
-void objpool_release(ObjectPool *pool, ObjectInterface *object) {
+void objpool_release(ObjectPool *pool, void *object) {
 	free(object);
 }
 
@@ -38,11 +38,11 @@ void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
 	stats->tag = "<N/A>";
 }
 
-void objpool_memtest(ObjectPool *pool, ObjectInterface *object) {
-	assert(pool != NULL);
-	assert(object != NULL);
-}
-
 size_t objpool_object_size(ObjectPool *pool) {
 	return pool->size_of_object;
 }
+
+#ifdef OBJPOOL_DEBUG
+void objpool_memtest(ObjectPool *pool, void *object) {
+}
+#endif

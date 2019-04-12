@@ -16,11 +16,11 @@
 #include "stagetext.h"
 #include "aniplayer.h"
 
-#define MAX_projectiles             1024
+#define MAX_projectiles             2048
 #define MAX_items                   MAX_projectiles
 #define MAX_enemies                 64
 #define MAX_lasers                  64
-#define MAX_stagetext               128
+#define MAX_stagetext               1024
 
 #define OBJECT_POOLS \
 	OBJECT_POOL(Projectile, projectiles) \

@@ -51,7 +51,7 @@ StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font
 }
 
 static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	objpool_release(stage_object_pools.stagetext, (ObjectInterface*)list_unlink(dest, txt));
+	objpool_release(stage_object_pools.stagetext, list_unlink(dest, txt));
 	return NULL;
 }
 

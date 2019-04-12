@@ -68,7 +68,6 @@ taisei_src = files(
     'list.c',
     'log.c',
     'main.c',
-    'objectpool_util.c',
     'player.c',
     'plrmodes.c',
     'progress.c',

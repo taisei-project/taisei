@@ -85,7 +85,7 @@ typedef void (*EntityDrawHookCallback)(EntityInterface *ent, void *arg);
 typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, complex ent_origin, void *arg);
 
 #define ENTITY_INTERFACE_BASE(typename) struct { \
-	OBJECT_INTERFACE(typename); \
+	LIST_INTERFACE(typename); \
 	EntityType type; \
 	EntityDrawFunc draw_func; \
 	EntityDamageFunc damage_func; \
@@ -100,7 +100,7 @@ typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, complex ent_origi
 }
 
 #define ENTITY_INTERFACE_NAMED(typename, name) union { \
-	OBJECT_INTERFACE(typename); \
+	LIST_INTERFACE(typename); \
 	EntityInterface entity_interface; \
 	EntityInterface name; \
 }

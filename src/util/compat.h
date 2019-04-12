@@ -233,6 +233,14 @@ typedef complex max_align_t;
 #define attr_must_inline \
 	__attribute__ ((always_inline))
 
+// Function returns a pointer aligned to x bytes
+#define attr_returns_aligned(x) \
+	__attribute__ ((assume_aligned(x)))
+
+// Function returns a pointer aligned the same as max_align_t
+#define attr_returns_max_aligned \
+	attr_returns_aligned(alignof(max_align_t))
+
 // Structure must not be initialized with an implicit (non-designated) initializer.
 #if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_USE_DESIGNATED_INIT)
 	#define attr_designated_init \

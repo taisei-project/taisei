@@ -12,7 +12,6 @@
 #include "list.h"
 #include "global.h"
 #include "stageobjects.h"
-#include "objectpool_util.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence) {
 	memset(plr,0,sizeof(AniPlayer));

@@ -102,7 +102,7 @@ void lasers_free(void) {
 static void ent_draw_laser(EntityInterface *ent);
 
 Laser *create_laser(complex pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
-	Laser *l = (Laser*)alist_push(&global.lasers, objpool_acquire(stage_object_pools.lasers));
+	Laser *l = alist_push(&global.lasers, (Laser*)objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
 	l->timespan = time;
@@ -345,7 +345,7 @@ static void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 		l->lrule(l, EVENT_DEATH);
 
 	ent_unregister(&l->ent);
-	objpool_release(stage_object_pools.lasers, (ObjectInterface*)alist_unlink(lasers, laser));
+	objpool_release(stage_object_pools.lasers, alist_unlink(lasers, laser));
 	return NULL;
 }
 

@@ -40,7 +40,7 @@ void capproach_asymptotic_p(complex *val, complex target, double rate, double ep
 double psin(double) attr_const;
 int sign(double) attr_const;
 double swing(double x, double s) attr_const;
-uint32_t topow2_u32(uint32_t  x) attr_const;
+uint32_t topow2_u32(uint32_t x) attr_const;
 uint64_t topow2_u64(uint64_t x) attr_const;
 float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;

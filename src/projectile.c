@@ -295,7 +295,7 @@ static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
 	proj_call_rule(p, EVENT_DEATH);
 	ent_unregister(&p->ent);
-	objpool_release(stage_object_pools.projectiles, (ObjectInterface*)alist_unlink(projlist, proj));
+	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, proj));
 	return NULL;
 }
 

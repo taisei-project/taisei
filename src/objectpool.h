@@ -18,13 +18,13 @@
 #endif
 
 #ifdef OBJPOOL_DEBUG
+	#define OBJPOOL_TRACK_STATS
 	#define IF_OBJPOOL_DEBUG(code) code
 #else
 	#define IF_OBJPOOL_DEBUG(code)
 #endif
 
 typedef struct ObjectPool ObjectPool;
-typedef struct ObjectInterface ObjectInterface;
 typedef struct ObjectPoolStats ObjectPoolStats;
 
 struct ObjectPoolStats {
@@ -34,46 +34,20 @@ struct ObjectPoolStats {
 	size_t peak_usage;
 };
 
-#define OBJECT_INTERFACE_BASE(typename) struct { \
-	LIST_INTERFACE(typename); \
-	IF_OBJPOOL_DEBUG( \
-		struct { \
-			bool used; \
-		} _object_private; \
-	) \
-}
-
-#define OBJECT_INTERFACE(typename) union { \
-	ObjectInterface object_interface; \
-	OBJECT_INTERFACE_BASE(typename); \
-}
-
-struct ObjectInterface {
-	OBJECT_INTERFACE_BASE(ObjectInterface);
-};
-
-#ifdef USE_GNU_EXTENSIONS
-	// Do some compile-time checks to make sure the type is compatible with object pools
-
-	#define OBJPOOL_ALLOC(typename,max_objects) (__extension__ ({ \
-		static_assert(__builtin_types_compatible_p(ObjectInterface, __typeof__(((typename*)(0))->object_interface)), \
-			#typename " must implement ObjectInterface (use the OBJECT_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(typename, object_interface) == 0, \
-			"object_interface must be the first member in " #typename); \
-		objpool_alloc(sizeof(typename), max_objects, #typename); \
-	}))
-#else
-	#define OBJPOOL_ALLOC(typename,max_objects) objpool_alloc(sizeof(typename), max_objects, #typename)
-#endif
-
-ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag);
-void objpool_free(ObjectPool *pool);
-ObjectInterface *objpool_acquire(ObjectPool *pool);
-void objpool_release(ObjectPool *pool, ObjectInterface *object);
-void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats);
-void objpool_memtest(ObjectPool *pool, ObjectInterface *object);
-size_t objpool_object_size(ObjectPool *pool);
-
+#define OBJPOOL_ALLOC(typename,max_objects) objpool_alloc(sizeof(typename), max_objects, #typename)
 #define OBJPOOL_ACQUIRE(pool, type) CASTPTR_ASSUME_ALIGNED(objpool_acquire(pool), type)
+
+ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) attr_returns_nonnull attr_nodiscard attr_nonnull(3);
+void objpool_free(ObjectPool *pool) attr_nonnull(1);
+void *objpool_acquire(ObjectPool *pool) attr_returns_max_aligned attr_returns_nonnull attr_nodiscard attr_hot attr_nonnull(1);
+void objpool_release(ObjectPool *pool, void *object) attr_hot attr_nonnull(1, 2);
+void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) attr_nonnull(1, 2);
+size_t objpool_object_size(ObjectPool *pool) attr_nonnull(1);
+
+#ifdef OBJPOOL_DEBUG
+void objpool_memtest(ObjectPool *pool, void *object) attr_nonnull(1, 2);
+#else
+#define objpool_memtest(pool, object) ((void)(pool), (void)(object))
+#endif
 
 #endif // IGUARD_objectpool_h

@@ -63,9 +63,9 @@ Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
-	// XXX: some code relies on the insertion logic
-	Enemy *e = (Enemy*)alist_insert(enemies, enemies->first, objpool_acquire(stage_object_pools.enemies));
-	// Enemy *e = (Enemy*)alist_append(enemies, objpool_acquire(stage_object_pools.enemies));
+	// FIXME: some code relies on the insertion logic (which?)
+	Enemy *e = alist_insert(enemies, enemies->first, (Enemy*)objpool_acquire(stage_object_pools.enemies));
+	// Enemy *e = alist_append(enemies, (Enemy*)objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
 
@@ -129,7 +129,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 
 	e->logic_rule(e, EVENT_DEATH);
 	ent_unregister(&e->ent);
-	objpool_release(stage_object_pools.enemies, (ObjectInterface*)alist_unlink(enemies, enemy));
+	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
 	return NULL;
 }

@@ -26,7 +26,7 @@ typedef struct StageTextTable StageTextTable;
 #define STAGETEXT_BUF_SIZE 76
 
 struct StageText {
-	OBJECT_INTERFACE(StageText);
+	LIST_INTERFACE(StageText);
 
 	Font *font;
 	complex pos;
