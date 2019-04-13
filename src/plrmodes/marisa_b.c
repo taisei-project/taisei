@@ -13,22 +13,6 @@
 #include "marisa.h"
 #include "renderer/api.h"
 
-static void marisa_star_trail_draw(Projectile *p, int t) {
-	float s = 1 - t / (double)p->timeout;
-
-	Color *clr = COLOR_COPY(&p->color);
-
-	color_mul_scalar(clr, s * 0.5);
-
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	// render_rotate_deg(t*10, 0, 0, 1);
-	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
-	r_mat_scale(s, s, 1);
-	ProjDrawCore(p, clr);
-	r_mat_pop();
-}
-
 static int marisa_star_projectile(Projectile *p, int t) {
 	if(t == EVENT_BIRTH) {
 		return ACTION_ACK;
@@ -74,6 +58,19 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	p->pos = center + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
 	p->pos0 = p->pos - p->pos0;
 	p->angle = carg(p->pos0);
+
+	if(t%(2+(int)round(2*frand())) == 0) {
+		PARTICLE(
+			.sprite = "stardust",
+			.pos = p->pos,
+			.color = RGBA(0.5*(1-focus),0,0.5*focus,0),
+			.timeout = 5,
+			.angle = t*0.1,
+			.draw_rule = GrowFade,
+			.args = { 1, 0.4},
+			.flags = PFLAG_NOREFLECT,
+		);
+	}
 
 	return ACTION_NONE;
 }
