@@ -34,7 +34,7 @@ void main(void) {
 	vec4 c = textureGrad(shotlayer, uv, gradX, gradY);
 
 	#ifdef ENABLE_ALPHA_CULLING
-	if(c.a <= 0) {
+	if(c == vec4(0.0)) {
 		#ifdef DEBUG_ALPHA_CULLING
 		fragColor = vec4(1, 0, 0, 1);
 		return;
