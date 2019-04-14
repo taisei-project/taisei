@@ -22,17 +22,19 @@ Continues to keep playing (without scores or replays).
 Controls
 --------
 
-+-------+------------------------------------------+
-| Name  | Default Key                              |
-+=======+==========================================+
-| Shoot | ``Z``                                    |
-+-------+------------------------------------------+
-| Bomb  | ``X``                                    |
-+-------+------------------------------------------+
-| Focus | ``Left Shift``                           |
-+-------+------------------------------------------+
-| Move  | ``Up``,\ ``Down``,\ ``Left``,\ ``Right`` |
-+-------+------------------------------------------+
++-------------+------------------------------------------+
+| Name        | Default Key                              |
++=============+==========================================+
+| Shoot       | ``Z``                                    |
++-------------+------------------------------------------+
+| Bomb        | ``X``                                    |
++-------------+------------------------------------------+
+| Power Surge | ``X``                                    |
++-------------+------------------------------------------+
+| Focus       | ``Left Shift``                           |
++-------------+------------------------------------------+
+| Move        | ``Up``,\ ``Down``,\ ``Left``,\ ``Right`` |
++-------------+------------------------------------------+
 
 Using the Gamepad is also supported. See options to set up controls.
 
@@ -63,13 +65,11 @@ HUD
 The numbers in the HUD are
 
 -  **Score** Your current score. Raise this by shooting enemies,
-   grazing, and collecting items. As you accumulate score, the game will
-   reward you with life and bomb fragments. Be sure to catch those!
+   grazing, and collecting items.
 -  **Player** How many lives you have. Only full stars count.
 -  **Bombs** How many bombs you have.
--  **Power** How strong your current weapon is. Maxes out at 4.
--  **Graze** If you are fearless and kiss bullets by going really close
-   to them, this will increase and raise your score.
+-  **Power** How strong your current weapon is. Maxes out at 4, but can
+   be overcollected until 6.
 
 Items
 -----
@@ -79,11 +79,14 @@ at first, but they are safe to touch.
 
 These are:
 
--  **Blue** Increases your score.
--  **Red** Gives you more power.
+-  **Blue** Point items that increase your score.
+-  **Red** Gives you more power. Comes in different sizes, always with a capital P.
 -  **Green Star** Bomb. Appears either filled (full bomb) or as an empty
    outline (bomb fragment). 5 fragments make up one bomb.
 -  **Pink Star** Life or Life fragment.
+-  **PIV Items** Small yellow ghosts that increase the value of your point items.
+-  **Surge Lightning** Will spawn during your Power Surge to provide charge.
+-  **Voltage** Spawn after a Power Surge completes and increase your Voltage Meter.
 
 If you fly near to the top of the screen, all the visible items will be
 picked up (shown as flying towards you).
@@ -109,13 +112,16 @@ Attacks:
    You can revisit spellcards you have encountered in the *Spell
    Practice* mode to get better at the ones you frequently die on.
 
--  **Extra Spell**: *Capture* every Spell Card of a boss in succession
-   and you activate their *Extra Spell*.
+-  **Voltage Overdrive**: Collect enough `Voltage`_ to
+   unlock these at the end of the boss battles.
 
    These are super hard, unique spells that will take all your skills
-   and creativity to dodge. Special safety magic has locked your Bomb
-   and Life meters so they can’t hurt you, but you can’t use your bombs
-   either.
+   and creativity to dodge. Due to the extremely ionized Danmaku conditions,
+   your Bomb and Life meters are malfunctioning. You can’t be hurt, but
+   you can’t use your bombs either.
+
+   One boss seems to be especially attuned to these surroundings and awaits
+   you with about the strangest spell in the game.
 
 -  **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card
    that makes them completely invincible-- turning their health bar
@@ -158,6 +164,48 @@ you the beauty of all the patterns. ;)
 
 There is no shame in playing Easy. Some say that even the dev who
 initially founded the project and wrote this section can’t beat Easy…
+
+Score System
+------------
+
+The amount of score you collect is not a flat value. It depends on
+different factors you can influence to maximize the amount of points
+you earn. Point items for example give more score if they are collected
+higher up on the screen. If you go up beyond a certain point, the game
+will also auto collect all items on the screen.
+
+Auto collection is also triggered by other events such as bombs and
+the items will always count as collected at the top so it is beneficial
+for your score.
+
+The point items themselves also get more valuable as you cancel or graze
+bullets at full power among other things.
+
+.. _Voltage:
+
+The most visible part of the scoring system is the Power Surge mechanic.
+While Power 4.00 is the maximum your shots will put out, you can overcharge
+your Power meter up to 6.00. The surplus Power (and also the rest, if
+you are in a bind) can be used to start a Power Surge (see `Controls`_).
+
+The Power Surge will charge up the air around you with Danmaku electricity.
+This boosts your damage by 20%, but you have to maintain the charge meter
+around your character. When the positive (yellow) charge goes down and hits
+the negative, the surge ends. The special lightning items that appear during
+the surge replenish both kinds of charges. By timing these items you can
+control the relative amounts of charge and the higher your negative charge,
+the more difficult the surge becomes to keep up.
+
+The longer you continue this game and the more damage and negative charge you,
+stack up, the more powerful your surge will become. That will visibly increase
+the radius of your sparkly aura.
+Once the surge ends, all of it is released in a blast that damages enemies and
+bullets. Be in the right spot when that happens because all that havoc will be
+transformed into collectible Voltage items.
+
+If your Voltage reaches the Breakdown level shown in the HUD, you unlock a
+special spell at the end of the stage.
+
 
 More info
 ---------
