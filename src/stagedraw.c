@@ -911,10 +911,6 @@ static void stage_draw_objects(void) {
 		draw_boss_fake_overlay(global.boss);
 	}
 
-	if(global.dialog) {
-		draw_dialog(global.dialog);
-	}
-
 	stage_draw_collision_areas();
 	r_shader_standard();
 }
@@ -926,6 +922,10 @@ void stage_draw_overlay(void) {
 
 	if(global.boss) {
 		draw_boss_overlay(global.boss);
+	}
+
+	if(global.dialog) {
+		draw_dialog(global.dialog);
 	}
 
 	if(stagedraw.clear_screen.alpha > 0) {
