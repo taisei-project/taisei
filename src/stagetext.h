@@ -53,8 +53,9 @@ struct StageText {
 void stagetext_free(void);
 void stagetext_update(void);
 void stagetext_draw(void);
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText *stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText *stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText *stagetext_list_head(void);
 
 struct StageTextTable {
 	complex pos;

@@ -200,3 +200,7 @@ void stagetext_table_test(void) {
 	stagetext_table_add_numeric(&tbl, "Total Score", 9000000);
 	stagetext_end_table(&tbl);
 }
+
+StageText *stagetext_list_head(void) {
+	return textlist;
+}

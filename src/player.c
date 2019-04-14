@@ -1358,8 +1358,81 @@ static void scoretext_update(StageText *txt, int t, float a) {
 	txt->pos -= I * cexp(I*r) * a;
 }
 
-static float scoreval_importance(Player *plr, uint points) {
-	return clamp((double)points / (double)plr->point_item_value, 0, 1);
+#define SCORETEXT_PIV_BIT ((uintptr_t)1 << ((sizeof(uintptr_t) * 8) - 1))
+
+static StageText *find_scoretext_combination_candidate(complex pos, bool is_piv) {
+	for(StageText *stxt = stagetext_list_head(); stxt; stxt = stxt->next) {
+		if(
+			stxt->custom.update == scoretext_update &&
+			stxt->time.spawn > global.frames &&
+			(bool)((uintptr_t)(stxt->custom.data2) & SCORETEXT_PIV_BIT) == is_piv &&
+			cabs(pos - stxt->pos) < 32
+		) {
+			return stxt;
+		}
+	}
+
+	return NULL;
+}
+
+static void add_score_text(Player *plr, complex location, uint points, bool is_piv) {
+	float rnd = nfrand();
+
+	StageText *stxt = find_scoretext_combination_candidate(location, is_piv);
+
+	if(stxt) {
+		points += ((uintptr_t)stxt->custom.data2 & ~SCORETEXT_PIV_BIT);
+	}
+
+	float importance;
+	float a;
+	Color c;
+
+	struct {
+		int delay, lifetime, fadeintime, fadeouttime;
+	} timings;
+
+	timings.delay = 6;
+	timings.fadeintime = 10;
+	timings.fadeouttime = 20;
+
+	if(is_piv) {
+		importance = sqrt(min(points/500.0, 1));
+		a = lerp(0.4, 1.0, importance);
+		c = *color_lerp(RGB(0.5, 0.8, 1.0), RGB(1.0, 0.3, 1.0), importance);
+		timings.lifetime = 35 + 10 * importance;
+	} else {
+		importance = clamp(0.25 * (double)points / (double)plr->point_item_value, 0, 1);
+		a = clamp(0.5 + 0.5 * cbrtf(importance), 0, 1);
+		c = *color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), importance);
+		timings.lifetime = 25 + 20 * importance;
+	}
+
+	a *= config_get_float(CONFIG_SCORETEXT_ALPHA);
+	color_mul_scalar(&c, a);
+
+	if(!stxt) {
+		if(c.a < 1e-4) {
+			return;
+		}
+
+		stxt = stagetext_add(
+			NULL, location, ALIGN_CENTER, get_font("small"), &c,
+			timings.delay, timings.lifetime, timings.fadeintime, timings.fadeouttime
+		);
+
+		stxt->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
+		stxt->custom.update = scoretext_update;
+	} else {
+		stxt->color = c;
+	}
+
+	format_huge_num(0, points, sizeof(stxt->text), stxt->text);
+	stxt->custom.data2 = (void*)(uintptr_t)(points | (SCORETEXT_PIV_BIT * is_piv));
+
+	if(is_piv) {
+		strlcat(stxt->text, " PIV", sizeof(stxt->text));
+	}
 }
 
 void player_add_points(Player *plr, uint points, complex location) {
@@ -1370,19 +1443,7 @@ void player_add_points(Player *plr, uint points, complex location) {
 		player_add_lives(plr, 1);
 	}
 
-	float rnd = nfrand();
-	float imp = scoreval_importance(plr, points);
-	float a = clamp((0.5 + 0.5 * cbrtf(imp)) * config_get_float(CONFIG_SCORETEXT_ALPHA), 0, 1);
-
-	if(a < 1e-4) {
-		return;
-	}
-
-	Color *c = color_mul_scalar(color_lerp(RGB(1.0, 0.8, 0.4), RGB(0.4, 1.0, 0.3), imp), a);
-	StageText *t = stagetext_add(NULL, location, ALIGN_CENTER, get_font("small"), c, 0, 25 + 20 * imp, 10, 20);
-	format_huge_num(0, points, sizeof(t->text), t->text);
-	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
-	t->custom.update = scoretext_update;
+	add_score_text(plr, location, points, false);
 }
 
 void player_add_piv(Player *plr, uint piv, complex location) {
@@ -1394,19 +1455,7 @@ void player_add_piv(Player *plr, uint piv, complex location) {
 		plr->point_item_value = v;
 	}
 
-	float rnd = nfrand();
-	float a = clamp((0.5 + 0.5 * min(piv/10.0, 1)) * config_get_float(CONFIG_SCORETEXT_ALPHA), 0, 1);
-
-	if(a < 1e-4) {
-		return;
-	}
-
-	Color *c = color_mul_scalar(RGB(0.5, 0.8, 1.0), a);
-	StageText *t = stagetext_add(NULL, location, ALIGN_CENTER, get_font("small"), c, 0, 35, 10, 20);
-	format_huge_num(0, piv, sizeof(t->text), t->text);
-	strcat(t->text, "v");
-	t->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
-	t->custom.update = scoretext_update;
+	add_score_text(plr, location, piv, true);
 }
 
 void player_add_voltage(Player *plr, uint voltage) {
