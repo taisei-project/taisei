@@ -38,14 +38,13 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	
 	float freq = 0.1;
 	
-	double focus = 1-fabs(global.plr.focus)/30.0;
+	double focus = 1 - abs(global.plr.focus) / 30.0;
 
 	double focusfac = 1;
 	if(focus > 0) {
 		focusfac = t*0.015-1/focus;
 		focusfac = tanh(sqrt(fabs(focusfac)));
 	}
-
 
 	double centerfac = tanh(t/10.); // interpolate between player center and slave center
 	complex center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
@@ -76,8 +75,6 @@ static int marisa_star_projectile(Projectile *p, int t) {
 }
 
 static int marisa_star_slave(Enemy *e, int t) {
-	double focus = fabs(global.plr.focus/30.0);
-
 	for(int i = 0; i < 2; ++i) {
 		if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 5)) {
 			float fac = e->args[0]/M_PI/2; 
