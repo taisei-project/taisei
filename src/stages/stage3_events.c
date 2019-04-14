@@ -1194,10 +1194,8 @@ void wriggle_light_singularity(Boss *boss, int time) {
 		}
 
 		play_sound("shot_special1");
-	} else if(!(time % 150)) {
-		aniplayer_queue(&boss->ani, "fly", 1);
-		aniplayer_queue(&boss->ani, "main", 0);
 	}
+	
 }
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {

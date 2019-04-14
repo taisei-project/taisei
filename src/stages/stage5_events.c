@@ -787,7 +787,7 @@ void iku_lightning(Boss *b, int time) {
 	}
 
 	AT(100) {
-		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		aniplayer_hard_switch(&b->ani, ((time/141)&1) ? "dashdown_left" : "dashdown_right",1);
 		aniplayer_queue(&b->ani, "main", 0);
 		int c = 40;
 		int l = 200;
@@ -908,11 +908,10 @@ void iku_cathode(Boss *b, int t) {
 
 	TIMER(&t)
 
-	FROM_TO(37, 18000, 70-global.diff*10) {
-		aniplayer_queue(&b->ani,"dashdown_wait",1);
-		aniplayer_queue(&b->ani,"main",0);
-	}
 	FROM_TO(50, 18000, 70-global.diff*10) {
+		aniplayer_hard_switch(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
+		aniplayer_queue(&b->ani,"main",0);
+		
 		int i;
 		int c = 7+global.diff/2;
 
@@ -953,7 +952,7 @@ void iku_induction(Boss *b, int t) {
 
 	TIMER(&t);
 	AT(0) {
-		aniplayer_queue(&b->ani, "dashdown_left", 0);
+		aniplayer_queue(&b->ani, "dashdown_wait", 0);
 	}
 
 	FROM_TO_SND("shot1_loop", 0, 18000, 8) {
@@ -1087,6 +1086,7 @@ static int iku_extra_trigger_bullet(Projectile *p, int t) {
 		}
 		global.shake_view += 5;
 		global.shake_view_fade = 0.2;
+		aniplayer_hard_switch(&global.boss->ani,"main_mirror",0);
 		play_sound("boom");
 		return ACTION_DESTROY;
 	}
@@ -1111,7 +1111,8 @@ static int iku_extra_trigger_bullet(Projectile *p, int t) {
 static void iku_extra_fire_trigger_bullet(void) {
 	Enemy *e = iku_extra_find_next_slave(global.boss->pos, 250);
 
-	aniplayer_queue(&global.boss->ani,"dashdown_left",1);
+	aniplayer_hard_switch(&global.boss->ani,"dashdown_left",1);
+	aniplayer_queue(&global.boss->ani,"main",0);
 	if(!e) {
 		return;
 	}
@@ -1212,7 +1213,6 @@ static int iku_extra_slave(Enemy *e, int t) {
 				for(l = global.lasers.first; l; l = l->next) {
 					l->deathtime = global.frames - l->birthtime + 20;
 				}
-
 				play_sound("boom");
 				iku_extra_fire_trigger_bullet();
 			}

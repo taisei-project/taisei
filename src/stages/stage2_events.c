@@ -512,8 +512,12 @@ void hina_bad_pick(Boss *h, int time) {
 		}
 	}
 
-	AT(200) {
+	AT(190) {
 		aniplayer_queue(&h->ani,"guruguru",2);
+		aniplayer_queue(&h->ani,"main",0);
+	}
+
+	AT(200) {
 		play_sound("shot_special1");
 
 		int win = tsrand()%SLOTS;

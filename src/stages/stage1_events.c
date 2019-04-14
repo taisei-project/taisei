@@ -783,7 +783,7 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 
 	AT(330)
 		aniplayer_queue(&c->ani,"(9)",0);
-	AT(700)
+	AT(699)
 		aniplayer_queue(&c->ani,"main",0);
 	FROM_TO_SND("shot1_loop",330, 700, 1) {
 		GO_TO(c, global.plr.pos, 0.01);
