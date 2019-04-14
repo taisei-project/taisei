@@ -1,3 +1,2 @@
 
-objects = healthbar_linear.vert healthbar_linear.frag
-
+objects = healthbar.vert healthbar_linear.frag

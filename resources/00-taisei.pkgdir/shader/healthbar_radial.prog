@@ -1,3 +1,2 @@
 
-objects = healthbar_radial.vert healthbar_radial.frag
-
+objects = healthbar.vert healthbar_radial.frag
