@@ -11,6 +11,10 @@
 
 #include "taisei.h"
 
+/*
+ * NOTE: if you're here to attempt fixing any of this braindeath, better just delete the file and start over
+ */
+
 typedef struct {
 	void *ptr;
 	int refs;

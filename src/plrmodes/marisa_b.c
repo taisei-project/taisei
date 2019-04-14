@@ -23,14 +23,24 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	if(REF(p->args[1]) == NULL) {
+	Enemy *e = NULL;
+
+	if(creal(p->args[1]) >= 0) {
+		e = (Enemy*)REF(p->args[1]);
+	}
+
+	if(e != NULL && !player_should_shoot(&global.plr, true)) {
+		free_ref(p->args[1]);
+		p->args[1] = -1;
+		e = NULL;
+	}
+
+	if(e == NULL) {
 		p->pos += p->pos0;
 		p->pos0 *= 1.005;
 		p->angle += 0.1;
 		return ACTION_NONE;
 	}
-
-	Enemy *e = (Enemy *)REF(p->args[1]);
 
 	//float c = 0.3 * psin(t * 0.2);
 	//p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
