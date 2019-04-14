@@ -285,6 +285,8 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 
 		FBPair *fbpair = stage_get_fbpair(FBPAIR_FG_AUX);
 
+		stage_draw_begin_noshake();
+
 		r_framebuffer(lasers.saved_fb);
 		r_state_push();
 
@@ -327,6 +329,7 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_state_pop();
+		stage_draw_end_noshake();
 		lasers.saved_fb = NULL;
 	}
 }

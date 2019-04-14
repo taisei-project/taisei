@@ -780,7 +780,9 @@ static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 		return;
 	}
 
+	stage_draw_begin_noshake();
 	r_state_push();
+
 	r_shader("baryon_feedback");
 	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
 	r_uniform_float("hue_shift", 0);
@@ -792,6 +794,7 @@ static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 	// r_uniform_float("hue_shift", 0.04 * sin(global.frames/30.0));
 	r_uniform_float("hue_shift", 0.01);
 	r_color4(0.95, 0.88, 0.9, 0.5);
+
 	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
 
 	fbpair_swap(&baryon_fbpair);
@@ -805,14 +808,19 @@ static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 	// r_shader("sprite_default");
 	// draw_baryons(e, t);
 	r_state_pop();
+	stage_draw_end_noshake();
 
 	r_shader("sprite_default");
 	draw_baryons(bcenter, t);
+
+	stage_draw_begin_noshake();
 
 	r_shader_standard();
 	fbpair_swap(&baryon_fbpair);
 	r_color4(0.7, 0.7, 0.7, 0.7);
 	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	stage_draw_end_noshake();
 
 	r_color4(1, 1, 1, 1);
 	r_framebuffer(baryon_fbpair.front);

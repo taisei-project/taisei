@@ -642,7 +642,9 @@ static void powersurge_distortion_draw(Projectile *p, int t) {
 	r_shader_standard();
 	r_color4(1.0, 0.9, 0.8, 1.0);
 	r_blend(BLEND_PREMUL_ALPHA);
+	stage_draw_begin_noshake();
 	draw_framebuffer_tex(fb_aux, VIEWPORT_W, VIEWPORT_H);
+	stage_draw_end_noshake();
 }
 
 static void player_powersurge_expired(Player *plr) {

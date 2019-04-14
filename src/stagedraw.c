@@ -970,6 +970,42 @@ static inline void end_viewport_shake(void) {
 	}
 }
 
+/*
+ * Small helpers for entities draw code that might want to suppress viewport shake temporarily.
+ * This is mostly useful when multiple framebuffers are involved.
+ */
+static int shake_suppressed = 0;
+
+void stage_draw_begin_noshake(void) {
+	assert(!shake_suppressed);
+	shake_suppressed = 1;
+
+	if(global.shake_view) {
+		shake_suppressed = 2;
+		MatrixMode mm = r_mat_mode_current();
+		r_mat_mode(MM_MODELVIEW);
+		r_mat_push();
+		r_mat_identity();
+		r_mat_mode(mm);
+	}
+}
+
+void stage_draw_end_noshake(void) {
+	assert(shake_suppressed);
+
+	if(global.shake_view) {
+		// make sure shake_view doesn't change in-between the begin/end calls;
+		// that would've been *really* nasty to debug.
+		assert(shake_suppressed == 2);
+		MatrixMode mm = r_mat_mode_current();
+		r_mat_mode(MM_MODELVIEW);
+		r_mat_pop();
+		r_mat_mode(mm);
+	}
+
+	shake_suppressed = 0;
+}
+
 void stage_draw_viewport(void) {
 	FloatRect dest_vp;
 	r_framebuffer_viewport_current(r_framebuffer_current(), &dest_vp);

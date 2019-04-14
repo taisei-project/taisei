@@ -230,6 +230,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_blend(BLEND_PREMUL_ALPHA);
 	fbpair_swap(fbp_aux);
 
+	stage_draw_begin_noshake();
+
 	r_framebuffer(fbp_aux->back);
 	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_shader("max_to_alpha");
@@ -241,6 +243,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	r_shader_ptr(shader);
+
+	stage_draw_end_noshake();
 
 	r_uniform_vec4(u_clr0, 0.5, 0.0, 0.0, 0.0);
 	r_uniform_vec4(u_clr1, 1.0, 0.0, 0.0, 0.0);
