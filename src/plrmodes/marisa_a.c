@@ -98,6 +98,7 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 				.draw_rule = Shrink,
 				.args = { (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1)) },
 				.flags = PFLAG_NOREFLECT,
+				.layer = LAYER_PARTICLE_HIGH,
 			);
 
 			if(col.type == PCOL_ENTITY && col.entity->type == ENT_ENEMY) {
@@ -614,7 +615,7 @@ static void marisa_laser_power(Player *plr, short npow) {
 
 static void marisa_laser_init(Player *plr) {
 	laser_renderer = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
-	laser_renderer->ent.draw_layer = LAYER_PLAYER_SHOT;
+	laser_renderer->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
 	marisa_laser_respawn_slaves(plr, plr->power);
 }
 

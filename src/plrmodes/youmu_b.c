@@ -84,7 +84,22 @@ static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
 }
 
 static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: base, i: gain), a[2]: (r: timeout, i: charge), a[3]: initial target
-	if(t == EVENT_DEATH || t == EVENT_BIRTH) {
+	if(t == EVENT_BIRTH) {
+		return ACTION_ACK;
+	}
+
+	if(t == EVENT_DEATH) {
+		PARTICLE(
+			.sprite = "blast",
+			.color = color_lerp(RGBA(0.5, 0.7, 1.0, 0.5), RGBA(1.0, 0.65, 0.8, 0.5), cimag(p->args[2])),
+			.pos = p->pos,
+			.timeout = 20,
+			.draw_rule = ScaleFade,
+			.layer = LAYER_PARTICLE_HIGH,
+			.args = { 0, 0, 0.5 * I },
+			.flags = PFLAG_NOREFLECT,
+			.angle = M_PI*nfrand(),
+		);
 		return ACTION_ACK;
 	}
 
@@ -182,7 +197,7 @@ static int youmu_trap(Projectile *p, int t) {
 		complex aim = p->args[3];
 
 		for(int i = 0; i < cnt; ++i) {
-			int dur = 55 + 20 * nfrand();
+			int dur = 120; // 55 + 20 * nfrand();
 			float a = (i / (float)cnt) * M_PI * 2;
 			complex dir = cexp(I*(a));
 
@@ -378,7 +393,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.draw_rule = youmu_homing_draw_proj,
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
 			.type = PROJ_PLAYER,
-			.damage = 30,
+			.damage = 20,
 			.shader = "sprite_default",
 		);
 	}

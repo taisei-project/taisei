@@ -223,22 +223,37 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 	Player *plr = &global.plr;
 	float rad = cabs(e->pos0);
 
+	double followfactor = 0.1;
 	double nfocus = plr->focus / 30.0;
 
-	if(!(plr->inputflags & INFLAG_SHOT)) {
+	if(plr->inputflags & INFLAG_FOCUS) {
+		e->args[3] = 1;
+	} else if(e->args[3] == 1) {
 		nfocus = 0.0;
 		e->pos0 = -rad * I;
-	} else if(!(plr->inputflags & INFLAG_FOCUS)) {
-		if((plr->inputflags & INFLAGS_MOVE)) {
-			e->pos0 = rad * -plr->lastmovedir;
-		} else {
-			e->pos0 = e->pos - plr->pos;
-			e->pos0 *= rad / cabs(e->pos0);
+		followfactor *= 3;
+
+		if(plr->inputflags & INFLAGS_MOVE) {
+			e->args[3] = 0;
+		}
+	}
+
+	if(e->args[3] == 0) {
+		if(!(plr->inputflags & INFLAG_SHOT)) {
+			nfocus = 0.0;
+			e->pos0 = -rad * I;
+		} else if(!(plr->inputflags & INFLAG_FOCUS)) {
+			if((plr->inputflags & INFLAGS_MOVE)) {
+				e->pos0 = rad * -plr->lastmovedir;
+			} else {
+				e->pos0 = e->pos - plr->pos;
+				e->pos0 *= rad / cabs(e->pos0);
+			}
 		}
 	}
 
 	complex target = plr->pos + e->pos0;
-	complex v = cexp(I*carg(target - e->pos)) * min(10, 0.07 * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
+	complex v = cexp(I*carg(target - e->pos)) * min(10, followfactor * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
 	float s = sign(creal(e->pos) - creal(global.plr.pos));
 
 	if(!s) {
@@ -253,7 +268,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 		e->args[0] = plr->pos - e->pos;
 	}
 
-	e->args[1] += (e->args[0] - e->args[1]) * 0.1;
+	e->args[1] += (e->args[0] - e->args[1]) * 0.5;
 
 	if(player_should_shoot(&global.plr, true)) {
 		int v1 = -10;

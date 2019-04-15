@@ -434,7 +434,7 @@ static int reimu_dream_needle(Projectile *p, int t) {
 
 static void reimu_dream_shot(Player *p) {
 	play_loop("generic_shot");
-	int dmg = 50;
+	int dmg = 60;
 
 	if(!(global.frames % 6)) {
 		for(int i = -1; i < 2; i += 2) {
@@ -498,7 +498,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 	}
 
 	if(player_should_shoot(&global.plr, true)) {
-		if(!(global.frames % 6)) {
+		if(!((global.frames + 3) % 6)) {
 			PROJECTILE(
 				.proto = pp_needle2,
 				.pos = e->pos,
@@ -506,7 +506,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 				.rule = reimu_dream_needle,
 				.args = { 20.0 * shotdir },
 				.type = PROJ_PLAYER,
-				.damage = 35,
+				.damage = 42,
 				.shader = "sprite_default",
 			);
 		}

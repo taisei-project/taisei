@@ -566,7 +566,7 @@ static void reimu_spirit_kill_slaves(EnemyList *slaves) {
 
 static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
 	double dmg_homing = 120 - 12 * plr->power / 100; // every 12 frames
-	double dmg_needle = 90 - 10 * plr->power / 100; // every 3 frames
+	double dmg_needle = 92 - 10 * plr->power / 100; // every 3 frames
 	complex dmg = dmg_homing + I * dmg_needle;
 	EnemyVisualRule visual;
 

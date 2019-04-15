@@ -65,33 +65,39 @@ static bool particle_filter(Projectile *part) {
 }
 
 static bool stage1_draw_predicate(EntityInterface *ent) {
-	if(ent->draw_layer == LAYER_PLAYER_SLAVE || ent->draw_layer == LAYER_PLAYER_FOCUS || ent->draw_layer == LAYER_PLAYER_SHOT) {
-		return false;
+	switch(ent->draw_layer & ~LAYER_LOW_MASK) {
+		case LAYER_PLAYER_SLAVE:
+		case LAYER_PLAYER_FOCUS:
+		case LAYER_PLAYER_SHOT:
+		case LAYER_PLAYER_SHOT_HIGH:
+			return false;
+		default: break;
 	}
 
-	if(ent->type == ENT_BOSS) {
-		return true;
-	}
+	switch(ent->type) {
+		case ENT_BOSS: return true;
+		case ENT_ENEMY: {
+			Enemy *e = ENT_CAST(ent, Enemy);
 
-	if(ent->type == ENT_ENEMY) {
-		Enemy *e = ENT_CAST(ent, Enemy);
+			if(e->hp == ENEMY_BOMB) {
+				return false;
+			}
 
-		if(e->hp == ENEMY_BOMB) {
+			return true;
+		}
+		case ENT_PROJECTILE: {
+			Projectile *p = ENT_CAST(ent, Projectile);
+
+			if(p->type == PROJ_PARTICLE) {
+				return particle_filter(p);
+			}
+
 			return false;
 		}
-
-		return true;
+		default: return false;
 	}
 
-	if(ent->type == ENT_PROJECTILE) {
-		Projectile *p = ENT_CAST(ent, Projectile);
-
-		if(p->type == PROJ_PARTICLE) {
-			return particle_filter(p);
-		}
-	}
-
-	return false;
+	UNREACHABLE;
 }
 
 static void stage1_water_draw(vec3 pos) {

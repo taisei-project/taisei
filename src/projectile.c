@@ -463,6 +463,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.pos = proj->pos,
 		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PARTICLE_HIGH,
 		.shader_ptr = proj->shader,
 		.rule = linear,
 		.draw_rule = DeathShrink,

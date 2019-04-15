@@ -639,6 +639,7 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 		switch(layer) {
 			case LAYER_PLAYER_SLAVE:
 			case LAYER_PLAYER_SHOT:
+			case LAYER_PLAYER_SHOT_HIGH:
 			case LAYER_PLAYER_FOCUS:
 			case LAYER_PLAYER:
 				return true;
