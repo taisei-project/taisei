@@ -13,144 +13,13 @@ Introduction
 
 Taisei is a shoot-em-up game. Lots of bullets cover the screen and if
 you are hit by one, you die. To make things easier, your hitbox is very
-small-- much smaller than your character.
+small–much smaller than your character.
 
-If you get hit you lose a life (displayed on the right hand side in the
-HUD); if you are out of lives, it’s Game Over, but you get a few
-Continues to keep playing (without scores or replays).
-
-Controls
---------
-
-+-------------+------------------------------------------+
-| Name        | Default Key                              |
-+=============+==========================================+
-| Shoot       | ``Z``                                    |
-+-------------+------------------------------------------+
-| Bomb        | ``X``                                    |
-+-------------+------------------------------------------+
-| Power Surge | ``X``                                    |
-+-------------+------------------------------------------+
-| Focus       | ``Left Shift``                           |
-+-------------+------------------------------------------+
-| Move        | ``Up``,\ ``Down``,\ ``Left``,\ ``Right`` |
-+-------------+------------------------------------------+
-
-Using the Gamepad is also supported. See options to set up controls.
-
-Users of non-qwerty keyboard layouts: Don’t worry, Taisei’s controls are
-not based on layout but key location.
-
-Shotmodes
----------
-
-The different playable characters have different shots. You start out
-weak and have to raise your power meter to get stronger.
-
-Try a few modes to find the one that fits you best.
-
-Focus
------
-
-While pressing ``Shift``, your movement is slower and the weapon will be
-more focused, hence the name *Focus* to describe this mode. It is useful
-for accurate dodging, but you shouldn’t stay in this mode all the time.
-
-The white circle appearing in this mode is a representation of your
-hitbox. As you can see it is really small.
-
-HUD
----
-
-The numbers in the HUD are
-
--  **Score** Your current score. Raise this by shooting enemies,
-   grazing, and collecting items.
--  **Player** How many lives you have. Only full stars count.
--  **Bombs** How many bombs you have.
--  **Power** How strong your current weapon is. Maxes out at 4, but can
-   be overcollected until 6.
-
-Items
------
-
-Killed enemies drop various amounts of items. They may look like bullets
-at first, but they are safe to touch.
-
-These are:
-
--  **Blue** Point items that increase your score.
--  **Red** Gives you more power. Comes in different sizes, always with a capital P.
--  **Green Star** Bomb. Appears either filled (full bomb) or as an empty
-   outline (bomb fragment). 5 fragments make up one bomb.
--  **Pink Star** Life or Life fragment.
--  **PIV Items** Small yellow ghosts that increase the value of your point items.
--  **Surge Lightning** Will spawn during your Power Surge to provide charge.
--  **Voltage** Spawn after a Power Surge completes and increase your Voltage Meter.
-
-If you fly near to the top of the screen, all the visible items will be
-picked up (shown as flying towards you).
-
-Bosses
-------
-
-Taisei has 6 levels (called *stages*). Each stage has a boss and a
-midboss in some form. They are much stronger than normal enemies and
-have different attacks with time limits. There are different types of
-Attacks:
-
--  **Normal**: A signature move every boss has. They are a break between
-   the other, more fierce attacks, but some say there are Normals in the
-   game that are way too hard.
-
--  **Spell Card**: This is where the Bosses concentrate their powers
-   (resulting in a background change) and hit you with really hard and
-   unusual patterns. They give a lot of extra points when you *capture*
-   them. That means shooting down the HP within the time limit without
-   getting hit or using bombs.
-
-   You can revisit spellcards you have encountered in the *Spell
-   Practice* mode to get better at the ones you frequently die on.
-
--  **Voltage Overdrive**: Collect enough `Voltage`_ to
-   unlock these at the end of the boss battles.
-
-   These are super hard, unique spells that will take all your skills
-   and creativity to dodge. Due to the extremely ionized Danmaku conditions,
-   your Bomb and Life meters are malfunctioning. You can’t be hurt, but
-   you can’t use your bombs either.
-
-   One boss seems to be especially attuned to these surroundings and awaits
-   you with about the strangest spell in the game.
-
--  **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card
-   that makes them completely invincible-- turning their health bar
-   blue.
-
-   You are on your own here. Try to survive somehow until the timer runs
-   out.
-
-Bombs
------
-
-Your characters are, of course, no less apt at magic than the bosses, so
-they have Spell Cards of their own. These are called *bombs*.
-
-You can use them to clear out bullets and enemies from the screen.
-However you only get a limited amount of them, so they are best used
-when you are in a pinch. When used against a boss' Spell Card, it voids
-your capturing bonus.
-
-Rumor has it that if you get hit by a bullet and hit the bomb key fast
-enough, you can avoid death. This is called *Death Bombing* and people
-who master it-- so the lore goes-- will find their bomb meter becoming a
-second life meter.
+If you get hit you lose a life; if you are out of lives, it’s Game Over,
+but you get a few Continues to keep playing (without scores).
 
 Difficulty
 ----------
-
-:strike:`If you found this guide helpful, you probably should start
-playing Easy mode.`
 
 Taisei is a very hard game, especially for newcomers to the genre. In
 many modern games, *Easy* is a placeholder and *Normal* is the easy mode
@@ -165,8 +34,161 @@ you the beauty of all the patterns. ;)
 There is no shame in playing Easy. Some say that even the dev who
 initially founded the project and wrote this section can’t beat Easy…
 
-Score System
-------------
+Characters and Shotmodes
+------------------------
+
+The different playable characters have different shots. You start out
+weak and have to raise your power meter to get stronger.
+
+Try a few modes to find the one that fits you best.
+
+HUD
+---
+
+Once you reach the game itself, a bunch of numbers will appear on the right
+of your screen (HUD). These are
+
+-  **Score** Your current score. See `Scoring System`_.
+   grazing, and collecting items.
+-  **Lives** How many lives you have. The *Next* value shows the next
+   score at which you receive a bonus new life.
+-  **Spell Cards** How many `Bombs`_ you have. If your *Fragment* count
+   goes to 500, you get a new bomb.
+-  **Power** How strong your current weapon is. Maxes out at 4, but can
+   be overcollected until 6.
+-  **Value** `Point Item Value`_ at the top of the screen.
+-  **Volts** See `Scoring System`_.
+-  **Graze** Raise it by getting close to bullets.
+
+Controls
+--------
+
++-------------+------------------------------------------+
+| Name        | Default Key                              |
++=============+==========================================+
+| Shoot       | ``Z``                                    |
++-------------+------------------------------------------+
+| Bomb        | ``X``                                    |
++-------------+------------------------------------------+
+| Power Surge | ``C``                                    |
++-------------+------------------------------------------+
+| Focus       | ``Left Shift``                           |
++-------------+------------------------------------------+
+| Move        | ``Up``,\ ``Down``,\ ``Left``,\ ``Right`` |
++-------------+------------------------------------------+
+
+If you don’t like the defaults you can easily remap them in the settings.
+
+Using the Gamepad is also supported. See options to set up controls.
+
+Users of non-qwerty keyboard layouts: Don’t worry, Taisei’s controls are
+not based on layout but key location.
+
+Focus
+-----
+
+While pressing ``Shift``, your movement is slower and the pattern of your
+shot changes. It is useful for accurate dodging, but you shouldn’t stay
+in this mode all the time.
+
+The white circle appearing in this mode is a representation of your
+hitbox. As you can see it is really small.
+
+.. _Bombs:
+
+Bombs (Player Spell Cards)
+--------------------------
+
+In a stressful life where all the bullets kill you in a single hit you
+sometimes want something powerful to shoot back with. Thankfully your character
+has magical power to trigger so called Spell Cards. These are essentially
+bombs that do a lot of damage.
+
+You can use them to clear out bullets and enemies from the screen.
+However you only get a limited amount of them, so they are best used
+when you are in a pinch. When used against a boss' Spell Card, it voids
+your capturing bonus.
+
+Rumor has it that if you get hit by a bullet and hit the bomb key fast
+enough, you can avoid death. This is called *Death Bombing* and people
+who master it-- so the lore goes-- will find their bomb meter becoming a
+second life meter.
+
+Power Surge
+-----------
+
+You can activate a special aura that gives you increased damage and a way to
+clear a limited area of bullets. Read more about it in `Scoring System_`.
+
+Items
+-----
+
+Now that you can kill enemies you will notice that they drop various amounts of items.
+They may look like bullets at first, but they are safe to touch.
+
+These are:
+
+-  **Blue** Point items that increase your score.
+-  **Red** Gives you more power. Comes in different sizes, always with a capital P.
+-  **Green Star** Bomb. Appears either filled (full bomb) or as an empty
+   outline (worth 500 bomb fragments).
+-  **Pink Heart** One extra life.
+-  **PIV Items** Small yellow ghosts that increase the value of your point items.
+-  **Surge Lightning** Will spawn during your Power Surge to provide charge.
+-  **Voltage** Spawn after a Power Surge completes and increase PIV (*a lot*), Bombs and Volts.
+
+If you fly near to the top of the screen, all the visible items will be
+picked up (shown as flying towards you).
+
+Bosses
+------
+
+Taisei has 6 levels (called *stages*). Each stage has a boss and a
+midboss in some form. They are much stronger than normal enemies and
+have different attacks with time limits. There are different types of
+Attacks:
+
+-  **Normal**: A signature move every boss has. They are a break between
+   the other, more fierce attacks, but don’t let your guard down.
+
+-  **Spell Card**: This is where the Bosses concentrate their powers
+   (resulting in a background change) and hit you with really hard and
+   unusual patterns. They give a lot of extra points and 100 bomb fragments
+   when you *capture* them. That means shooting down the HP within the time
+   limit without getting hit or using bombs.
+
+   You can revisit spellcards you have encountered in the *Spell
+   Practice* mode to get better at the ones you frequently die on.
+
+-  **Voltage Overdrive**: Collect enough `Voltage`_ to
+   unlock these at the end of the boss battles.
+
+   These are tricky unique spells that will take some creativity to dodge.
+   Due to the extremely ionized Danmaku conditions, your Bomb and Life
+   meters are malfunctioning. You can’t be hurt, but you can’t use your
+   bombs either.
+
+   One boss seems to be especially attuned to these surroundings and awaits
+   you with about the strangest spell in the game. If you capture it,
+   it may unlock something nice.
+
+-  **Survival Spell**: Rarely, a very strong boss can invoke a Spell Card
+   that makes them completely invincible. You are on your own here. Try to
+   survive somehow until the timer runs out.
+
+   You might want to use *Spell Practice* to perfect one of them.
+
+Scoring System
+--------------
+
+Scoring might seem like something important for the adept pro player only. The
+lowly easy mode player just cares about surviving, right? Not necessarily!
+In Taisei, you are rewarded with extra lives as you score. So while the statement
+from the beginning is true to an extent, knowing the basics of getting a good
+score (and the non score related benefits you get along the way) is helpful for
+everyone.
+
+.. _Point Item Value:
 
 The amount of score you collect is not a flat value. It depends on
 different factors you can influence to maximize the amount of points
@@ -189,19 +211,22 @@ your Power meter up to 6.00. The surplus Power (and also the rest, if
 you are in a bind) can be used to start a Power Surge (see `Controls`_).
 
 The Power Surge will charge up the air around you with Danmaku electricity.
-This boosts your damage by 20%, but you have to maintain the charge meter
-around your character. When the positive (yellow) charge goes down and hits
-the negative, the surge ends. The special lightning items that appear during
-the surge replenish both kinds of charges. By timing these items you can
-control the relative amounts of charge and the higher your negative charge,
-the more difficult the surge becomes to keep up.
+This boosts your damage by 20%, but you have to maintain the two kinds of charges
+in the charge meter around your character. When the positive (yellow) charge
+goes down and hits the negative, the surge ends. The special lightning items
+that appear during the surge replenish both kinds of charges. By timing these
+items you can control the relative amounts of charge and the higher your
+negative charge, the more difficult the surge becomes to keep up.
 
-The longer you continue this game and the more damage and negative charge you,
+The longer you continue this game and the more damage and negative charge you
 stack up, the more powerful your surge will become. That will visibly increase
 the radius of your sparkly aura.
 Once the surge ends, all of it is released in a blast that damages enemies and
 bullets. Be in the right spot when that happens because all that havoc will be
 transformed into collectible Voltage items.
+
+These will increase your Point Item Value, give you 1 Bomb Fragment and also add
+to your Volts meter.
 
 If your Voltage reaches the Breakdown level shown in the HUD, you unlock a
 special spell at the end of the stage.
