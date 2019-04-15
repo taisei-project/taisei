@@ -146,15 +146,20 @@ static int stage5_limiter(Enemy *e, int t) {
 
 	FROM_TO_SND("shot1_loop", 0, 1200, 3) {
 		uint f = PFLAG_NOSPAWNFADE;
+		double base_angle = carg(global.plr.pos - e->pos);
 
 		for(int i = 1; i >= -1; i -= 2) {
+			double a = i * 0.2 - 0.1 * (global.diff / 4) + i * 3.0 / (_i + 1);
+			complex aim = cexp(I * (base_angle + a));
+
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = e->pos,
 				.color = RGB(0.5,0.1,0.2),
 				.rule = asymptotic,
-				.args = { 10*cexp(I*carg(global.plr.pos-e->pos)+i*0.2*I-0.1*I*(global.diff/4)+3.0*I/(_i+1)), 2 },
-				.flags = f);
+				.args = { 10*aim, 2 },
+				.flags = f,
+			);
 		}
 	}
 
