@@ -118,7 +118,7 @@ Power Surge
 -----------
 
 You can activate a special aura that gives you increased damage and a way to
-clear a limited area of bullets. Read more about it in `Scoring System_`.
+clear a limited area of bullets. Read more about it in `Scoring System`_.
 
 Items
 -----
