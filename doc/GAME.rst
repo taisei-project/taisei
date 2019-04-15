@@ -23,7 +23,7 @@ Difficulty
 
 Taisei is a very hard game, especially for newcomers to the genre. In
 many modern games, *Easy* is a placeholder and *Normal* is the easy mode
-so people playing it don’t have to feel bad. So you might feel inclined
+so people playing it don’t have to feel bad, so you might feel inclined
 to start at Normal like in your other games.
 
 This approach doesn’t work for Taisei though. Easy is balanced around
@@ -37,7 +37,7 @@ initially founded the project and wrote this section can’t beat Easy…
 Characters and Shotmodes
 ------------------------
 
-The different playable characters have different shots. You start out
+The three different playable characters have different shots. You start out
 weak and have to raise your power meter to get stronger.
 
 Try a few modes to find the one that fits you best.
@@ -47,14 +47,14 @@ HUD
 
 Once you reach the game itself, a bunch of numbers will appear on the right
 of your screen (HUD). These are
-
+.
 -  **Score** Your current score. See `Scoring System`_.
    grazing, and collecting items.
 -  **Lives** How many lives you have. The *Next* value shows the next
    score at which you receive a bonus new life.
 -  **Spell Cards** How many `Bombs`_ you have. If your *Fragment* count
    goes to 500, you get a new bomb.
--  **Power** How strong your current weapon is. Maxes out at 4, but can
+-  **Power** How strong your current shot is. Maxes out at 4, but can
    be overcollected until 6.
 -  **Value** `Point Item Value`_ at the top of the screen.
 -  **Volts** See `Scoring System`_.
@@ -77,7 +77,7 @@ Controls
 | Move        | ``Up``,\ ``Down``,\ ``Left``,\ ``Right`` |
 +-------------+------------------------------------------+
 
-If you don’t like the defaults you can easily remap them in the settings.
+If you don’t like the defaults, you can easily remap them in the settings.
 
 Using the Gamepad is also supported. See options to set up controls.
 
@@ -99,8 +99,8 @@ hitbox. As you can see it is really small.
 Bombs (Player Spell Cards)
 --------------------------
 
-In a stressful life where all the bullets kill you in a single hit you
-sometimes want something powerful to shoot back with. Thankfully your character
+In a stressful life where all the bullets kill you in a single hit, you
+sometimes want something powerful to shoot back with. Thankfully, your character
 has magical power to trigger so called Spell Cards. These are essentially
 bombs that do a lot of damage.
 
@@ -185,7 +185,7 @@ Scoring might seem like something important for the adept pro player only. The
 lowly easy mode player just cares about surviving, right? Not necessarily!
 In Taisei, you are rewarded with extra lives as you score. So while the statement
 from the beginning is true to an extent, knowing the basics of getting a good
-score (and the non score related benefits you get along the way) is helpful for
+score (and the non score-related benefits you get along the way) is helpful for
 everyone.
 
 .. _Point Item Value:
@@ -196,9 +196,9 @@ you earn. Point items for example give more score if they are collected
 higher up on the screen. If you go up beyond a certain point, the game
 will also auto collect all items on the screen.
 
-Auto collection is also triggered by other events such as bombs and
-the items will always count as collected at the top so it is beneficial
-for your score.
+Auto collection is also triggered by other events such as bombs, and
+the items collected in this way will always count as collected at the top,
+so it is beneficial for your score.
 
 The point items themselves also get more valuable as you cancel or graze
 bullets at full power among other things.
@@ -219,10 +219,10 @@ items you can control the relative amounts of charge and the higher your
 negative charge, the more difficult the surge becomes to keep up.
 
 The longer you continue this game and the more damage and negative charge you
-stack up, the more powerful your surge will become. That will visibly increase
+stack up, the more powerful your surge will become. This will visibly increase
 the radius of your sparkly aura.
 Once the surge ends, all of it is released in a blast that damages enemies and
-bullets. Be in the right spot when that happens because all that havoc will be
+bullets. Be in the right spot when that happens, because all that havoc will be
 transformed into collectible Voltage items.
 
 These will increase your Point Item Value, give you 1 Bomb Fragment and also add
