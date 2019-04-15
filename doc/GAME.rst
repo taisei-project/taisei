@@ -46,8 +46,8 @@ HUD
 ---
 
 Once you reach the game itself, a bunch of numbers will appear on the right
-of your screen (HUD). These are
-.
+of your screen (HUD). These are:
+
 -  **Score** Your current score. See `Scoring System`_.
    grazing, and collecting items.
 -  **Lives** How many lives you have. The *Next* value shows the next
