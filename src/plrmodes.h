@@ -110,7 +110,7 @@ PlayerCharacter* plrchar_get(CharacterID id);
 void plrchar_preload(PlayerCharacter *pc);
 
 PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
-int plrmode_repr(char *out, size_t outsize, PlayerMode *mode);
+int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal);
 PlayerMode* plrmode_parse(const char *name);
 void plrmode_preload(PlayerMode *mode);
 

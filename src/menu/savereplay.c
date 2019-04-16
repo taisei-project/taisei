@@ -25,7 +25,7 @@ static void do_save_replay(Replay *rpy) {
 	ReplayStage *stg = rpy->stages;
 
 	filename_timestamp(strtime, sizeof(strtime), stg->init_time);
-	plrmode_repr(prepr, 16, plrmode_find(stg->plr_char, stg->plr_shot));
+	plrmode_repr(prepr, 16, plrmode_find(stg->plr_char, stg->plr_shot), true);
 	strlcpy(drepr, difficulty_name(stg->diff), 16);
 	drepr[0] += 'a' - 'A';
 

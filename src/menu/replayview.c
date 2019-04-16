@@ -265,8 +265,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 				if(plrmode == NULL) {
 					strlcpy(tmp, "?????", sizeof(tmp));
 				} else {
-					plrmode_repr(tmp, sizeof(tmp), plrmode);
-					tmp[0] = tmp[0] - 'a' + 'A';
+					plrmode_repr(tmp, sizeof(tmp), plrmode, false);
 				}
 
 				break;

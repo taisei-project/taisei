@@ -44,12 +44,12 @@ void plrchar_preload(PlayerCharacter *pc) {
 	preload_resource(RES_SPRITE, pc->dialog_sprite_name, RESF_DEFAULT);
 }
 
-int plrmode_repr(char *out, size_t outsize, PlayerMode *mode) {
+int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {
 	assert(mode->character != NULL);
 	assert((unsigned)mode->shot_mode < NUM_SHOT_MODES_PER_CHARACTER);
 
 	return snprintf(out, outsize, "%s%c",
-		mode->character->lower_name,
+		internal ? mode->character->lower_name : mode->character->proper_name,
 		mode->shot_mode + 'A'
 	);
 }
