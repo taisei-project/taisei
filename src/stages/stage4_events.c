@@ -35,7 +35,6 @@ static Dialog *stage4_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/kurumi");
 	pm->dialog->stage4_post_boss(d);
-	dadd_msg(d, BGM, "stage4boss");
 	return d;
 }
 
