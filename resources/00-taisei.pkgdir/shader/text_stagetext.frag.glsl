@@ -1,14 +1,14 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 #include "lib/util.glslh"
 
 float tc_mask(vec2 tc) {
     return float(tc.x >= 0 && tc.x <= 1 && tc.y >= 0 && tc.y <= 1);
 }
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     float t = customParams.r;
     vec2 tc = flip_native_to_topleft(texCoord);
     vec2 tc_overlay = texCoordOverlay;

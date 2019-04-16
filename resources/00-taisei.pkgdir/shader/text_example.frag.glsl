@@ -1,10 +1,10 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 #include "lib/util.glslh"
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     vec2 tc = texCoord;
     vec2 tc_overlay = texCoordOverlay;
 

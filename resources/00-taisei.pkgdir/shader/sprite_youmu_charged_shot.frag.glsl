@@ -1,6 +1,6 @@
 #version 330 core
 
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 
 /*
 ported from:
@@ -11,7 +11,7 @@ ported from:
 .A[1] = c_a,
 */
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     vec4 texel = texture(tex, texCoord);
     float charge = customParams.r;
 

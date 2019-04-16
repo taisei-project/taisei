@@ -1,10 +1,10 @@
 #version 330 core
 
 #include "lib/render_context.glslh"
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 #include "lib/util.glslh"
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     float gradient = 0.5 + 0.5 * flip_native_to_bottomleft(texCoordOverlay.y);
     vec2 tc = flip_native_to_topleft(texCoord);
 

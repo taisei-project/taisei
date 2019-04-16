@@ -1,7 +1,7 @@
 #version 330 core
 
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     fragColor = color * vec4(texture(tex, texCoord).r);
 }

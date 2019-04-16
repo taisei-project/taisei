@@ -1,7 +1,7 @@
 #version 330 core
 
 #include "lib/util.glslh"
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 
 vec2 g(vec2 x, float p) {
     return 0.5 * (pow(2.0 * x - 1.0, vec2(p)) + 1.0);
@@ -14,7 +14,7 @@ vec2 apply_deform(vec2 uv, float strength) {
     return 1.0 - uv;
 }
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
     vec2 uv = texCoordRaw;
     vec2 uv_orig = uv;
     vec4 texel;

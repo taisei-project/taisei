@@ -1,0 +1,39 @@
+
+#include "../interface/sprite.glslh"
+
+#ifndef SPRITE_USE_DISCARD
+#define SPRITE_USE_DISCARD 1
+#endif
+
+#ifndef SPRITE_DISCARD_THRESHOLD
+// ((1 << 16) - 1) — minimum color value in a 16-bit texture
+#define SPRITE_DISCARD_THRESHOLD 1.5259021896696422e-05
+#endif
+
+#ifndef SPRITE_DISCARD_DEBUG
+#define SPRITE_DISCARD_DEBUG 0
+#endif
+
+void spriteMain(out vec4 fragColor);
+
+void main(void) {
+	vec4 color = vec4(0);
+	spriteMain(color);
+
+	#if SPRITE_USE_DISCARD
+	// if(color == vec4(0)) {
+	if(all(lessThan(color, vec4(SPRITE_DISCARD_THRESHOLD)))) {
+		#if SPRITE_DISCARD_DEBUG
+		if(color == vec4(0)) {
+			color = vec4(0, 1, 0, 1) * 0.05;
+		} else {
+			color = vec4(1, 0, 0, 1) * 0.2;
+		}
+		#else
+		discard;
+		#endif
+	}
+	#endif
+
+	fragColor = color;
+}

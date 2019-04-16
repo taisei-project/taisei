@@ -1,12 +1,12 @@
 #version 330 core
 
 #include "lib/util.glslh"
-#include "interface/sprite.glslh"
+#include "lib/sprite_main.frag.glslh"
 
 UNIFORM(1) vec4 back_color;
 UNIFORM(2) vec2 origin_ofs;
 
-void main(void) {
+void spriteMain(out vec4 fragColor) {
 	float fill = customParams.r;
 	vec4 texel = texture(tex, texCoord);
 	vec2 tc = flip_native_to_bottomleft(texCoordRaw) - vec2(0.5) + origin_ofs;
