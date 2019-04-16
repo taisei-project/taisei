@@ -581,6 +581,8 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.damage_accum = 0;
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
+	play_sound("powersurge_start");
+
 	collect_all_items(1);
 	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, get_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
 
@@ -655,6 +657,8 @@ static void player_powersurge_expired(Player *plr) {
 
 	Sprite *blast = get_sprite("part/blast_huge_halo");
 	float scale = 2 * bonus.discharge_range / blast->w;
+
+	play_sound("powersurge_end");
 
 	PARTICLE(
 		.size = 1+I,
@@ -1573,6 +1577,8 @@ void player_preload(void) {
 		"hit0",
 		"hit1",
 		"powerup",
+                "powersurge_start",
+                "powersurge_end",
 	NULL);
 }
 
