@@ -299,7 +299,7 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_set_mode(video.intended.width, video.intended.height, fullscreen, video_is_resizable());
+	video_set_mode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
 }
 
 static void* video_screenshot_task(void *arg) {
