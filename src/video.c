@@ -185,7 +185,7 @@ static const char* modeflagsstr(uint32_t flags) {
 	}
 }
 
-static void video_new_window_internal(int w, int h, uint32_t flags, bool fallback) {
+static void video_new_window_internal(uint display, uint w, uint h, uint32_t flags, bool fallback) {
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
@@ -193,7 +193,12 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
 	snprintf(title, sizeof(title), "%s v%s", WINDOW_TITLE, TAISEI_VERSION);
-	video.window = r_create_window(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, flags);
+	video.window = r_create_window(
+		title,
+		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+		w, h, flags
+	);
 
 	if(video.window) {
 		SDL_SetWindowMinimumSize(video.window, SCREEN_W / 4, SCREEN_H / 4);
@@ -206,10 +211,10 @@ static void video_new_window_internal(int w, int h, uint32_t flags, bool fallbac
 		return;
 	}
 
-	video_new_window_internal(RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
+	video_new_window_internal(display, RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
 }
 
-static void video_new_window(int w, int h, bool fs, bool resizable) {
+static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
 	uint32_t flags = 0;
 
 	if(fs) {
@@ -218,21 +223,23 @@ static void video_new_window(int w, int h, bool fs, bool resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	video_new_window_internal(w, h, flags, false);
+	video_new_window_internal(display, w, h, flags, false);
+	display = video_current_display();
 
-	log_info("Created a new window: %ix%i (%s)",
+	log_info("Created a new window: %ix%i (%s), on display #%i %s",
 		video.current.width,
 		video.current.height,
-		modeflagsstr(SDL_GetWindowFlags(video.window))
+		modeflagsstr(SDL_GetWindowFlags(video.window)),
+		display,
+		video_display_name(display)
 	);
 
 	events_pause_keyrepeat();
 	SDL_RaiseWindow(video.window);
 }
 
-static bool video_set_display_mode(int w, int h) {
+static bool video_set_display_mode(uint display, uint w, uint h) {
 	SDL_DisplayMode closest, target = { .w = w, .h = h };
-	int display = SDL_GetWindowDisplayIndex(video.window);
 
 	if(!SDL_GetClosestDisplayMode(display, &target, &closest)) {
 		log_error("No available display modes for %ix%i on display %i", w, h, display);
@@ -262,18 +269,32 @@ static void video_set_fullscreen_internal(bool fullscreen) {
 	SDL_RaiseWindow(video.window);
 }
 
-void video_set_mode(int w, int h, bool fs, bool resizable) {
+void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	video.intended.width = w;
 	video.intended.height = h;
 
+	if(display >= video_num_displays()) {
+		log_warn("Display index %u is invalid, falling back to 0 (%s)", display, video_display_name(0));
+		display = 0;
+	}
+
 	if(!video.window) {
-		video_new_window(w, h, fs, resizable);
+		video_new_window(display, w, h, fs, resizable);
 		return;
 	}
 
-	if(w != video.current.width || h != video.current.height) {
+	uint old_display = video_current_display();
+	bool display_changed = display != old_display;
+	bool size_changed = w != video.current.width || h != video.current.height;
+
+	if(display_changed) {
+		video_new_window(display, w, h, fs, resizable);
+		return;
+	}
+
+	if(size_changed) {
 		if(fs && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-			video_set_display_mode(w, h);
+			video_set_display_mode(display, w, h);
 			video_set_fullscreen_internal(fs);
 			video_update_mode_settings();
 		} else if(video.backend == VIDEO_BACKEND_X11) {
@@ -282,11 +303,11 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
 			//
 			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
-			video_new_window(w, h, fs, resizable);
+			video_new_window(display, w, h, fs, resizable);
 			return;
 		} else if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && !fs) {
 			// Needed to work around various SDL bugs and HTML/DOM quirks...
-			video_new_window(w, h, fs, resizable);
+			video_new_window(display, w, h, fs, resizable);
 			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
@@ -299,7 +320,23 @@ void video_set_mode(int w, int h, bool fs, bool resizable) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_set_mode(video.intended.width, video.intended.height, fullscreen, config_get_int(CONFIG_VID_RESIZABLE));
+	video_set_mode(
+		SDL_GetWindowDisplayIndex(video.window),
+		video.intended.width,
+		video.intended.height,
+		fullscreen,
+		config_get_int(CONFIG_VID_RESIZABLE)
+	);
+}
+
+void video_set_display(uint idx) {
+	video_set_mode(
+		idx,
+		video.intended.width,
+		video.intended.height,
+		config_get_int(CONFIG_FULLSCREEN),
+		config_get_int(CONFIG_VID_RESIZABLE)
+	);
 }
 
 static void* video_screenshot_task(void *arg) {
@@ -486,7 +523,7 @@ static void video_handle_resize(int w, int h) {
 		log_warn("Bad resize: %ix%i is too small!", w, h);
 		// FIXME: the video_new_window is actually a workaround for Wayland.
 		// I'm not sure if it's necessary for anything else.
-		video_new_window(video.intended.width, video.intended.height, false, video_is_resizable());
+		video_new_window(video_current_display(), video.intended.width, video.intended.height, false, video_is_resizable());
 		return;
 	}
 
@@ -521,6 +558,10 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 			video_set_fullscreen(val->i);
 			break;
 
+		case CONFIG_VID_DISPLAY:
+			video_set_display(val->i);
+			break;
+
 		case CONFIG_VID_RESIZABLE:
 			SDL_SetWindowResizable(video.window, val->i);
 			break;
@@ -531,6 +572,46 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 	}
 
 	return false;
+}
+
+uint video_num_displays(void) {
+	int displays = SDL_GetNumVideoDisplays();
+
+	if(displays < 1) {
+		if(displays == 0) {
+			log_warn("SDL_GetNumVideoDisplays() returned 0, this shouldn't happen");
+		} else {
+			log_sdl_error(LOG_WARN, "SDL_GetNumVideoDisplays");
+		}
+
+		displays = 1;
+	}
+
+	return displays;
+}
+
+const char *video_display_name(uint id) {
+	assert(id < video_num_displays());
+
+	const char *name = SDL_GetDisplayName(id);
+
+	if(name == NULL) {
+		log_sdl_error(LOG_WARN, "SDL_GetDisplayName");
+		name = "Unknown";
+	}
+
+	return name;
+}
+
+uint video_current_display(void) {
+	int display = SDL_GetWindowDisplayIndex(video.window);
+
+	if(display < 0) {
+		log_sdl_error(LOG_WARN, "SDL_GetWindowDisplayIndex");
+		display = 1;
+	}
+
+	return display;
 }
 
 void video_init(void) {
@@ -566,7 +647,8 @@ void video_init(void) {
 
 	// Register all resolutions that are available in fullscreen
 
-	for(int s = 0; s < SDL_GetNumVideoDisplays(); ++s) {
+	for(int s = 0; s < video_num_displays(); ++s) {
+		log_info("Found display #%i: %s", s, video_display_name(s));
 		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
 			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
 
@@ -609,6 +691,7 @@ void video_init(void) {
 	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
 
 	video_set_mode(
+		config_get_int(CONFIG_VID_DISPLAY),
 		config_get_int(CONFIG_VID_WIDTH),
 		config_get_int(CONFIG_VID_HEIGHT),
 		config_get_int(CONFIG_FULLSCREEN),

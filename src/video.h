@@ -46,7 +46,7 @@ typedef enum VideoBackend {
 typedef struct {
 	VideoMode *modes;
 	SDL_Window *window;
-	int mcount;
+	uint mcount;
 	VideoMode intended;
 	VideoMode current;
 	VideoBackend backend;
@@ -70,7 +70,7 @@ extern Video video;
 
 void video_init(void);
 void video_shutdown(void);
-void video_set_mode(int w, int h, bool fs, bool resizable);
+void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable);
 void video_set_fullscreen(bool fullscreen);
 void video_get_viewport(FloatRect *vp);
 void video_get_viewport_size(float *width, float *height);
@@ -79,5 +79,9 @@ bool video_is_resizable(void);
 extern VideoCapabilityState (*video_query_capability)(VideoCapability cap);
 void video_take_screenshot(void);
 void video_swap_buffers(void);
+uint video_num_displays(void);
+uint video_current_display(void);
+void video_set_display(uint idx);
+const char *video_display_name(uint id) attr_returns_nonnull;
 
 #endif // IGUARD_video_h

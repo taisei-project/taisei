@@ -30,6 +30,7 @@ typedef enum BindingType {
 	BT_GamepadKeyBinding,
 	BT_GamepadAxisBinding,
 	BT_GamepadDevice,
+	BT_VideoDisplay,
 } BindingType;
 
 typedef struct OptionBinding {
@@ -321,6 +322,24 @@ static int bind_common_onoffplus_set(OptionBinding *b, int v) {
 #define bind_common_int_get bind_common_onoff_inverted_get
 #define bind_common_int_set bind_common_onoff_inverted_set
 
+// BT_VideoDisplay: fullscreen display number
+static OptionBinding* bind_video_display(int cfgentry) {
+	OptionBinding *bind = bind_new();
+
+	bind->configentry = cfgentry;
+	bind->type = BT_VideoDisplay;
+
+	bind->getter = bind_common_int_get;
+	bind->setter = bind_common_int_set;
+
+	bind->valrange_min = 0;
+	bind->valrange_max = 0; // updated later
+
+	bind->selected = video_current_display();
+
+	return bind;
+}
+
 static int bind_common_intplus1_get(OptionBinding *b) {
 	return config_get_int(b->configentry) - 1;
 }
@@ -374,6 +393,8 @@ typedef struct OptionsMenuContext {
 } OptionsMenuContext;
 
 static void destroy_options_menu(MenuData *m) {
+	bool change_vidmode = false;
+
 	for(int i = 0; i < m->ecount; ++i) {
 		OptionBinding *bind = bind_get(m, i);
 
@@ -384,19 +405,24 @@ static void destroy_options_menu(MenuData *m) {
 		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
 				VideoMode *mode = video.modes + bind->selected;
-
-				video_set_mode(mode->width, mode->height,
-					config_get_int(CONFIG_FULLSCREEN),
-					config_get_int(CONFIG_VID_RESIZABLE)
-				);
-
-				config_set_int(CONFIG_VID_WIDTH, video.intended.width);
-				config_set_int(CONFIG_VID_HEIGHT, video.intended.height);
+				config_set_int(CONFIG_VID_WIDTH, mode->width);
+				config_set_int(CONFIG_VID_HEIGHT, mode->height);
+				change_vidmode = true;
 			}
 		}
 
 		bind_free(bind);
 		free(bind);
+	}
+
+	if(change_vidmode) {
+		video_set_mode(
+			config_get_int(CONFIG_VID_DISPLAY),
+			config_get_int(CONFIG_VID_WIDTH),
+			config_get_int(CONFIG_VID_HEIGHT),
+			config_get_int(CONFIG_FULLSCREEN),
+			config_get_int(CONFIG_VID_RESIZABLE)
+		);
 	}
 
 	if(m->context) {
@@ -455,10 +481,15 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	MenuData *m = create_options_menu_base("Video Options");
 	OptionBinding *b;
 
+
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 		b->dependence = bind_fullscreen_dependence;
+
+	add_menu_entry(m, "Display", do_nothing,
+		b = bind_video_display(CONFIG_VID_DISPLAY)
+	);
 
 	add_menu_entry(m, "Window size", do_nothing,
 		b = bind_resolution()
@@ -470,11 +501,11 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 	);	bind_onoff(b);
 		b->dependence = bind_resizable_dependence;
 
-	add_menu_entry(m, "Pause the game when it's not focused", do_nothing,
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Pause the game when not focused", do_nothing,
 		b = bind_option(CONFIG_FOCUS_LOSS_PAUSE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
-
-	add_menu_separator(m);
 
 	add_menu_entry(m, "Vertical synchronization", do_nothing,
 		b = bind_option(CONFIG_VSYNC, bind_common_onoffplus_get, bind_common_onoffplus_set)
@@ -972,7 +1003,7 @@ static void draw_options_menu(MenuData *menu) {
 				case BT_GamepadDevice: {
 					if(bind_isactive(bind)) {
 						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
-						bind->valrange_max = gamepad_device_count();
+						bind->valrange_max = gamepad_device_count() - 1;
 
 						if(bind->selected < 0 || bind->selected > bind->valrange_max) {
 							bind->selected = gamepad_current_device_num();
@@ -1000,6 +1031,29 @@ static void draw_options_menu(MenuData *menu) {
 						});
 					}
 
+					break;
+				}
+
+				case BT_VideoDisplay: {
+					// XXX: see the BT_GamepadDevice case...
+					bind->valrange_max = video_num_displays() - 1;
+
+					if(bind->selected < 0 || bind->selected > bind->valrange_max) {
+						bind->selected = video_current_display();
+
+						if(bind->selected < 0) {
+							bind->selected = 0;
+						}
+					}
+
+					char buf[64];
+					snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, video_display_name(bind->selected));
+					text_draw(buf, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = &clr,
+						.max_width = (SCREEN_W - 220) / 2,
+					});
 					break;
 				}
 
@@ -1378,6 +1432,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 					case BT_GamepadDevice:
 					case BT_IntValue:
 					case BT_Resolution:
+					case BT_VideoDisplay:
 						(next ? bind_setnext : bind_setprev)(bind);
 						break;
 

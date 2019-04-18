@@ -92,6 +92,7 @@
 	CONFIGDEF_INT       (FULLSCREEN_DESKTOP,        "fullscreen_desktop_mode",              1) \
 	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
+	CONFIGDEF_INT       (VID_DISPLAY,               "vid_display",                          0) \
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
 	CONFIGDEF_INT       (VSYNC,                     "vsync",                                CONFIG_VSYNC_DEFAULT) \
