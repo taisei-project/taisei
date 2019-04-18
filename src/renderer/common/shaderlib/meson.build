@@ -37,14 +37,8 @@ if get_option('shader_transpiler')
 
     r_shaderlib_libdeps += [dep_shaderc, dep_spvc]
 
-    if host_machine.system() == 'windows' and get_option('b_lto') and get_option('static')
-        error(
-    '''
-
-    -!-  LTO is known to break glslang on Windows.
-    -!-  Please disable it with `meson configure -Db_lto=false`.
-    -!-  If you *really* want to use LTO, force it via compiler args or patch this check out.
-    ''')
+    if false and host_machine.system() == 'windows' and get_option('b_lto') and get_option('static') and cc.get_id() == 'gcc'
+        warning('LTO is known to break glslang on GCC-mingw64 based toolchains')
     endif
 else
     r_shaderlib_src += files(
