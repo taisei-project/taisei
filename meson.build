@@ -298,6 +298,7 @@ if meson.is_cross_build()
 endif
 
 version_deps = []
+bindist_deps = []
 
 subdir('misc')
 subdir('emscripten')
@@ -307,6 +308,25 @@ subdir('doc')
 subdir('xdg')
 subdir('atlas')
 subdir('src')
+
+if macos_app_bundle
+    dmg_target = run_target('dmg',
+        command : dmg_command,
+        depends : bindist_deps,
+    )
+endif
+
+if host_machine.system() == 'windows'
+    nsis_target = run_target('nsis',
+        command : nsis_command,
+        depends : bindist_deps,
+    )
+endif
+
+zip_target = run_target('zip',
+    command: zip_command,
+    depends : bindist_deps,
+)
 
 summary = '''
 

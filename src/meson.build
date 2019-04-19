@@ -234,4 +234,6 @@ else
         install : true,
         install_dir : bindir,
     )
+    bindist_deps += taisei
 endif
+

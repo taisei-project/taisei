@@ -2,7 +2,7 @@
 if macos_app_bundle
     install_data(join_paths('icons', 'Taisei.icns'), install_dir : datadir)
 
-    version_deps += custom_target('macOS property list',
+    plist += custom_target('macOS property list',
         command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
         build_always : true,
         input : 'Info.plist.in',
@@ -10,17 +10,21 @@ if macos_app_bundle
         install : true,
         install_dir : join_paths(bundle_dir, 'Contents')
     )
+
+    version_deps += plist
+    bindist_deps += plist
 endif
 
 if angle_enabled and host_machine.system() == 'windows'
     angle_launcher = 'taisei-angle.bat'
-    custom_target(angle_launcher,
+    angle_bat = custom_target(angle_launcher,
         command : [eolconv_command, host_eol_style, '--no-bom', '@INPUT@', '@OUTPUT@'],
         input : angle_launcher,
         output : angle_launcher,
         install : true,
         install_dir : bindir,
     )
+    bindist_deps += angle_bat
 endif
 
 glslc_test_file = files('glslc-test.frag.glsl')

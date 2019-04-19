@@ -76,7 +76,7 @@ foreach pkg : packages
             endforeach
         endforeach
     elif package_data
-        custom_target(pkg_zip,
+        bindist_deps += custom_target(pkg_zip,
             command : [pack_command,
                 pkg_path,
                 '@OUTPUT@',

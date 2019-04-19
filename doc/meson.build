@@ -51,7 +51,7 @@ if install_docs
     ]
 
     foreach f : txt_docs
-        custom_target(f,
+        bindist_deps += custom_target(f,
             command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : f,
             output : f,
@@ -62,7 +62,7 @@ if install_docs
 
     foreach f : rst_docs
         name = f.split('.')[0] + '.html'
-        custom_target(name,
+        bindist_deps += custom_target(name,
             command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : rst_to_html.process(f),
             output : name,
@@ -73,7 +73,7 @@ if install_docs
     endforeach
 
     if angle_enabled and host_machine.system() == 'windows'
-        custom_target(f,
+        bindist_deps += custom_target(f,
             command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : 'LICENSE.ANGLE',
             output : 'LICENSE.txt',
