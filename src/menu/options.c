@@ -39,7 +39,6 @@ typedef struct OptionBinding {
 		char *strvalue;
 	};
 	bool displaysingle;
-	int valcount;
 	int valrange_min;
 	int valrange_max;
 	float scale_min;
@@ -72,9 +71,13 @@ static OptionBinding* bind_new(void) {
 static void bind_free(OptionBinding *bind) {
 	int i;
 
-	if(bind->values) {
-		for(i = 0; i < bind->valcount; ++i)
+	if(bind->type == BT_StrValue) {
+		free(bind->strvalue);
+	} else if(bind->values) {
+		assert(bind->valrange_min == 0);
+		for(i = 0; i <= bind->valrange_max; ++i) {
 			free(*(bind->values+i));
+		}
 		free(bind->values);
 	}
 }
@@ -128,15 +131,32 @@ static OptionBinding* bind_gpaxisbinding(int cfgentry) {
 }
 
 static int bind_gpdev_get(OptionBinding *b) {
-	return gamepad_device_num_from_guid(config_get_str(b->configentry));
+	const char *guid = config_get_str(b->configentry);
+	int val = gamepad_device_num_from_guid(guid);
+
+	if(val == GAMEPAD_DEVNUM_ANY) {
+		val = -1;
+	}
+
+	return val;
 }
 
 static int bind_gpdev_set(OptionBinding *b, int v) {
 	char guid[33] = {0};
+
+	if(v == -1) {
+		v = GAMEPAD_DEVNUM_ANY;
+	}
+
 	gamepad_device_guid(v, guid, sizeof(guid));
 
 	if(*guid) {
 		config_set_str(b->configentry, guid);
+
+		if(v == GAMEPAD_DEVNUM_ANY) {
+			v = -1;
+		}
+
 		b->selected = v;
 	}
 
@@ -153,7 +173,7 @@ static OptionBinding* bind_gpdevice(int cfgentry) {
 	bind->getter = bind_gpdev_get;
 	bind->setter = bind_gpdev_set;
 
-	bind->valrange_min = 0;
+	bind->valrange_min = -1;
 	bind->valrange_max = 0; // updated later
 
 	bind->selected = gamepad_device_num_from_guid(config_get_str(bind->configentry));
@@ -173,7 +193,8 @@ static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 
 // BT_Resolution: super-special binding type for the resolution setting
 static void bind_resolution_update(OptionBinding *bind) {
-	bind->valcount = video.mcount;
+	bind->valrange_min = 0;
+	bind->valrange_max = video.mcount - 1;
 
 	for(int i = 0; i < video.mcount; ++i) {
 		VideoMode *m = video.modes + i;
@@ -217,14 +238,25 @@ static OptionBinding* bind_getinputblocking(MenuData *m) {
 
 // Adds a value to a BT_IntValue type binding
 static int bind_addvalue(OptionBinding *b, char *val) {
-	b->values = realloc(b->values, ++b->valcount * sizeof(char*));
-	b->values[b->valcount-1] = malloc(strlen(val) + 1);
-	strcpy(b->values[b->valcount-1], val);
-	return b->valcount-1;
+	assert(b->valrange_min == 0);
+
+	if(b->values == NULL) {
+		b->values = malloc(sizeof(char*));
+		b->valrange_min = 0;
+		b->valrange_max = 0;
+	} else {
+		assert(b->valrange_min == 0);
+		++b->valrange_max;
+	}
+
+	b->values = realloc(b->values, (1 + b->valrange_max) * sizeof(char*));
+	b->values[b->valrange_max] = strdup(val);
+	return b->valrange_max;
 }
 
 attr_unused
 static void bind_setvaluerange(OptionBinding *b, int vmin, int vmax) {
+	assert(b->values == NULL);
 	b->valrange_min = vmin;
 	b->valrange_max = vmax;
 }
@@ -240,14 +272,7 @@ static int bind_setvalue(OptionBinding *b, int v) {
 // Called to get the selected value of a BT_IntValue type binding by index
 static int bind_getvalue(OptionBinding *b) {
 	if(b->getter) {
-		if(b->selected >= b->valcount && b->valcount) {
-			b->selected = 0;
-		} else {
-			b->selected = b->getter(b);
-
-			if(b->selected >= b->valcount && b->valcount)
-				b->selected = 0;
-		}
+		b->selected = b->getter(b);
 	}
 
 	return b->selected;
@@ -257,11 +282,8 @@ static int bind_getvalue(OptionBinding *b) {
 static int bind_setnext(OptionBinding *b) {
 	int s = b->selected + 1;
 
-	if(b->valrange_max) {
-		if(s > b->valrange_max)
-			s = b->valrange_min;
-	} else if(s >= b->valcount) {
-		s = 0;
+	if(s > b->valrange_max) {
+		s = b->valrange_min;
 	}
 
 	return bind_setvalue(b, s);
@@ -271,11 +293,8 @@ static int bind_setnext(OptionBinding *b) {
 static int bind_setprev(OptionBinding *b) {
 	int s = b->selected - 1;
 
-	if(b->valrange_max) {
-		if(s < b->valrange_min)
-			s = b->valrange_max;
-	} else if(s < 0) {
-		s = b->valcount - 1;
+	if(s < b->valrange_min) {
+		s = b->valrange_max;
 	}
 
 	return bind_setvalue(b, s);
@@ -627,7 +646,7 @@ static void destroy_options_menu_gamepad(MenuData *m) {
 	OptionsMenuContext *ctx = m->context;
 
 	if(config_get_int(CONFIG_GAMEPAD_ENABLED) && strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), ctx->data)) {
-		gamepad_restart();
+		gamepad_update_devices();
 	}
 
 	destroy_options_menu(m);
@@ -924,16 +943,7 @@ static void draw_options_menu(MenuData *menu) {
 				case BT_IntValue: {
 					int val = bind_getvalue(bind);
 
-					if(bind->valrange_max) {
-						char tmp[16];   // who'd use a 16-digit number here anyway?
-						snprintf(tmp, 16, "%d", bind_getvalue(bind));
-
-						text_draw(tmp, &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
-					} else if(bind->configentry == CONFIG_PRACTICE_POWER) {
+					if(bind->configentry == CONFIG_PRACTICE_POWER) {
 						Font *fnt_int = get_font("standard");
 						Font *fnt_fract = get_font("small");
 
@@ -948,18 +958,29 @@ static void draw_options_menu(MenuData *menu) {
 							&clr,
 							false
 						);
-					} else for(j = bind->displaysingle? val : bind->valcount-1; (j+1) && (!bind->displaysingle || j == val); --j) {
-						if(j != bind->valcount-1 && !bind->displaysingle) {
-							origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
-						}
+					} else if(bind->values) {
+						for(j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
+							if(j != bind->valrange_max && !bind->displaysingle) {
+								origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
+							}
 
-						if(val == j) {
-							clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
-						} else {
-							clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
-						}
+							if(val == j) {
+								clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
+							} else {
+								clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
+							}
 
-						text_draw(bind->values[j], &(TextParams) {
+							text_draw(bind->values[j], &(TextParams) {
+								.pos = { origin, 20*i },
+								.align = ALIGN_RIGHT,
+								.color = &clr,
+							});
+						}
+					} else {
+						char tmp[16];   // who'd use a 16-digit number here anyway?
+						snprintf(tmp, 16, "%d", bind_getvalue(bind));
+
+						text_draw(tmp, &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,
@@ -1005,20 +1026,24 @@ static void draw_options_menu(MenuData *menu) {
 						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
 						bind->valrange_max = gamepad_device_count() - 1;
 
-						if(bind->selected < 0 || bind->selected > bind->valrange_max) {
-							bind->selected = gamepad_current_device_num();
+						if(bind->selected < -1 || bind->selected > bind->valrange_max) {
+							bind->selected = gamepad_get_active_device();
 
-							if(bind->selected < 0) {
-								bind->selected = 0;
+							if(bind->selected < -1) {
+								bind->selected = -1;
 							}
 						}
 
 						char *txt;
 						char buf[64];
 
-						if(bind->valrange_max > 0) {
-							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
-							txt = buf;
+						if(bind->valrange_max >= 0) {
+							if(bind->selected < 0) {
+								txt = "All devices";
+							} else {
+								snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
+								txt = buf;
+							}
 						} else {
 							txt = "No devices available";
 						}

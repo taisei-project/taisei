@@ -84,6 +84,11 @@ typedef enum GamepadAxis {
 	GAMEPAD_AXIS_MAX
 } GamepadAxis;
 
+enum {
+	GAMEPAD_DEVNUM_INVALID = -1,
+	GAMEPAD_DEVNUM_ANY = -2,
+};
+
 void gamepad_init(void);
 void gamepad_shutdown(void);
 void gamepad_restart(void);
@@ -93,7 +98,8 @@ int gamepad_device_count(void);
 const char* gamepad_device_name(int);
 void gamepad_device_guid(int num, char *guid_str, size_t guid_str_sz);
 int gamepad_device_num_from_guid(const char *guid_str);
-int gamepad_current_device_num(void);
+int gamepad_get_active_device(void);
+bool gamepad_update_devices(void);
 
 bool gamepad_button_pressed(GamepadButton btn);
 bool gamepad_game_key_pressed(KeyIndex key);
