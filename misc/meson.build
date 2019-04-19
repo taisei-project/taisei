@@ -2,7 +2,7 @@
 if macos_app_bundle
     install_data(join_paths('icons', 'Taisei.icns'), install_dir : datadir)
 
-    plist += custom_target('macOS property list',
+    plist = custom_target('macOS property list',
         command : [preprocess_command, '@INPUT@', '@OUTPUT@'],
         build_always : true,
         input : 'Info.plist.in',
