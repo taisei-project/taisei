@@ -123,7 +123,7 @@ MenuData* create_ingame_menu(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = "Game Paused";
-	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransMenuDark;
+	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Return to Game", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop the Game", return_to_title, NULL)->transition = TransFadeBlack;
@@ -146,7 +146,7 @@ MenuData* create_ingame_menu_replay(void) {
 	m->transition = TransEmpty;
 	m->cursor = 1;
 	m->context = "Replay Paused";
-	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransMenuDark;
+	add_menu_entry(m, "Options", menu_action_enter_options, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Continue Watching", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Stage", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Skip the Stage", skip_stage, NULL)->transition = TransFadeBlack;

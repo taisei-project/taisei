@@ -29,7 +29,7 @@ MenuData* create_spell_menu(void) {
 	m->draw = draw_spell_menu;
 	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 
 	for(StageInfo *stg = stages; stg->procs; ++stg) {
 		if(stg->type != STAGE_SPELL) {

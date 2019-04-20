@@ -45,8 +45,6 @@ extern Transition transition;
 void TransFadeBlack(double fade);
 void TransFadeWhite(double fade);
 void TransLoader(double fade);
-void TransMenu(double fade);
-void TransMenuDark(double fade);
 void TransEmpty(double fade);
 
 void set_transition(TransitionRule rule, int dur1, int dur2);

@@ -28,18 +28,6 @@ void TransLoader(double fade) {
 	r_color4(1, 1, 1, 1);
 }
 
-void TransMenu(double fade) {
-	r_color4(fade, fade, fade, fade);
-	fill_screen("menu/mainmenubg");
-	r_color4(1, 1, 1, 1);
-}
-
-void TransMenuDark(double fade) {
-	r_color4(fade * 0.3, fade * 0.3, fade * 0.3, fade);
-	fill_screen("menu/mainmenubg");
-	r_color4(1, 1, 1, 1);
-}
-
 void TransEmpty(double fade) { }
 
 static bool popq(void) {

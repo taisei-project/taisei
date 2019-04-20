@@ -28,7 +28,7 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 	m->draw = draw_stgpract_menu;
 	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 
 	for(StageInfo *stg = stages; stg->procs; ++stg) {
 		if(stg->type != STAGE_STORY) {

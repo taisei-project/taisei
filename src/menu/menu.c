@@ -46,7 +46,7 @@ void free_menu(MenuData *menu) {
 MenuData* alloc_menu(void) {
 	MenuData *menu = calloc(1, sizeof(*menu));
 	menu->selected = -1;
-	menu->transition = TransMenu; // TransFadeBlack;
+	menu->transition = TransFadeBlack;
 	menu->transition_in_time = FADE_TIME;
 	menu->transition_out_time = FADE_TIME;
 	menu->fade = 1.0;

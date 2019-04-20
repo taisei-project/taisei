@@ -31,7 +31,7 @@ MenuData* create_stage_menu(void) {
 	m->draw = draw_stage_menu;
 	m->logic = animate_menu_list;
 	m->flags = MF_Abortable;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 
 	for(int i = 0; stages[i].procs; ++i) {
 		if(stages[i].difficulty < lastdiff || (stages[i].difficulty == D_Extra && lastdiff != D_Extra) || (stages[i].difficulty && !lastdiff)) {

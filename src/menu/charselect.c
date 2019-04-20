@@ -10,7 +10,7 @@
 
 #include "charselect.h"
 #include "menu.h"
-#include "options.h"
+#include "mainmenu.h"
 #include "common.h"
 #include "global.h"
 #include "video.h"
@@ -26,7 +26,7 @@ static void char_menu_input(MenuData*);
 
 static void update_char_menu(MenuData *menu) {
 	for(int i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.08*(1.0*(menu->cursor != i) - menu->entries[i].drawdata);
+		menu->entries[i].drawdata += 0.08*((menu->cursor != i) - menu->entries[i].drawdata);
 	}
 }
 
@@ -36,7 +36,7 @@ MenuData* create_char_menu(void) {
 	m->input = char_menu_input;
 	m->draw = draw_char_menu;
 	m->logic = update_char_menu;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 	m->context = (void*)(intptr_t)progress.game_settings.shotmode;
 
@@ -54,15 +54,15 @@ MenuData* create_char_menu(void) {
 void draw_char_menu(MenuData *menu) {
 	CullFaceMode cull_saved = r_cull_current();
 
-	draw_options_menu_bg(menu);
+	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*(1-menu->entries[menu->cursor].drawdata));
 	draw_menu_title(menu, "Select Character");
 
 	r_mat_push();
 	r_color4(0, 0, 0, 0.7);
-	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	r_mat_scale(300, SCREEN_H, 1);
+	r_mat_translate(0, SCREEN_H/2, 0);
+	r_mat_scale(700, SCREEN_H, 1);
 	r_shader_standard_notex();
-	r_draw_quad();
+	//r_draw_quad();
 	r_shader_standard();
 	r_mat_pop();
 
@@ -83,10 +83,10 @@ void draw_char_menu(MenuData *menu) {
 		float o = 1-menu->entries[i].drawdata*2;
 
 		r_color4(o, o, o, o);
-		draw_sprite(SCREEN_W/3-200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
+		draw_sprite(SCREEN_W/2+260+200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
 
 		r_mat_push();
-		r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
+		r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 		r_mat_push();
 
@@ -111,7 +111,7 @@ void draw_char_menu(MenuData *menu) {
 
 		text_draw(title, &(TextParams) {
 			.align = ALIGN_CENTER,
-			.pos = { 0, 70 },
+			.pos = { 60-20*o, 30 },
 			.shader = "text_default",
 			.color = RGBA(o, o, o, o),
 		});
@@ -120,7 +120,7 @@ void draw_char_menu(MenuData *menu) {
 	}
 
 	r_mat_push();
-	r_mat_translate(SCREEN_W/4*3, SCREEN_H/3, 0);
+	r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 
@@ -144,12 +144,14 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_pop();
 
 	float o = 0.3*sin(menu->frames/20.0)+0.5;
+	o *= 1-menu->entries[menu->cursor].drawdata;
 	r_color4(o, o, o, o);
 
 	for(int i = 0; i <= 1; i++) {
 		r_mat_push();
 
-		r_mat_translate(60 + (SCREEN_W/2 - 30)*i, SCREEN_H/2+80, 0);
+		r_mat_translate(30 + 340*i, SCREEN_H/3+10, 0);
+		r_mat_scale(0.5,0.7,1);
 
 		if(i) {
 			r_mat_scale(-1,1,1);

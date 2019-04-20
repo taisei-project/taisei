@@ -247,7 +247,7 @@ MenuData* create_musicroom_menu(void) {
 	m->logic = musicroom_logic;
 	m->draw = musicroom_draw;
 	m->end = musicroom_free;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
 	add_bgm(m, "menu");

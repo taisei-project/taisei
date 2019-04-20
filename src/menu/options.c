@@ -12,6 +12,7 @@
 #include "menu.h"
 #include "common.h"
 #include "options.h"
+#include "mainmenu.h"
 #include "global.h"
 #include "video.h"
 
@@ -460,7 +461,7 @@ static void draw_options_menu(MenuData*);
 
 static MenuData* create_options_menu_base(const char *s) {
 	MenuData *m = alloc_menu();
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 	m->input = options_menu_input;
 	m->draw = draw_options_menu;
@@ -875,8 +876,17 @@ MenuData* create_options_menu(void) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	r_color(RGBA_MUL_ALPHA(0.3, 0.3, 0.3, 0.9 + 0.1 * sin(menu->frames/100.0)));
-	fill_screen("menu/mainmenubg");
+	draw_main_menu_bg(menu, 0, 0, 0.05);
+
+	r_mat_push();
+	r_mat_scale(SCREEN_W, SCREEN_H, 1);
+	r_shader_standard_notex();
+	r_mat_translate(0.5,0.5,0);
+	r_color(RGBA(0, 0, 0, 0.5));
+	r_draw_quad();
+	r_mat_pop();
+	r_shader_standard();
+	
 	r_color4(1, 1, 1, 1);
 }
 

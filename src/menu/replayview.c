@@ -444,7 +444,7 @@ MenuData* create_replayview_menu(void) {
 	m->input = replayview_menu_input;
 	m->draw = replayview_draw;
 	m->end = replayview_free;
-	m->transition = TransMenuDark;
+	m->transition = TransFadeBlack;
 
 	ReplayviewContext *ctx = malloc(sizeof(ReplayviewContext));
 	memset(ctx, 0, sizeof(ReplayviewContext));

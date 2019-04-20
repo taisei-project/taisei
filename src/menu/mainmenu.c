@@ -55,8 +55,7 @@ static void begin_main_menu(MenuData *m) {
 }
 
 static void update_main_menu(MenuData *menu) {
-	menu->drawdata[1] += (text_width(get_font("big"), menu->entries[menu->cursor].name, 0) - menu->drawdata[1])/10.0;
-	menu->drawdata[2] += (35*menu->cursor - menu->drawdata[2])/10.0;
+	menu->drawdata[1] += 0.1*(menu->cursor-menu->drawdata[1]);
 
 	for(int i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
@@ -126,24 +125,27 @@ MenuData* create_main_menu(void) {
 	return m;
 }
 
-void draw_main_menu_bg(MenuData* menu) {
+void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double R) {
 	r_color4(1, 1, 1, 1);
+	r_shader("mainmenubg");
+	r_uniform_float("R", R/(1-menu_fade(menu)));
+	r_uniform_vec2("bg_translation", 0.001*menu->frames, 0);
+	r_uniform_vec2("center", center_x, center_y);
 	fill_screen("menu/mainmenubg");
+	r_shader_standard();
 }
 
 void draw_main_menu(MenuData *menu) {
-	draw_main_menu_bg(menu);
-	draw_sprite(150.5, 100, "menu/logo");
+	draw_main_menu_bg(menu, 0, 0, 0.05);
+	draw_sprite(390, 300, "menu/logo");
 
 	r_mat_push();
-	r_mat_translate(0, SCREEN_H - 15 - 35 * menu->ecount, 0);
-	draw_menu_selector(50 + menu->drawdata[1]/2, menu->drawdata[2], 1.5 * menu->drawdata[1], 64, menu->frames);
+	r_mat_translate(0, SCREEN_H/2, 0);
 	r_shader("text_default");
 
 	float o = 0.7;
 
 	for(int i = 0; i < menu->ecount; i++) {
-		float s = 5*sin(menu->frames/80.0 + 20*i);
 
 		if(menu->entries[i].action == NULL) {
 			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
@@ -153,10 +155,8 @@ void draw_main_menu(MenuData *menu) {
 		}
 
 		text_draw(menu->entries[i].name, &(TextParams) {
-			.pos = { 50 + s, 35*i },
-			.font = "big",
-			// .shader = "text_example",
-			// .custom = time_get()
+			.pos = { 50, 20*(i-menu->drawdata[1]) },
+			.font = "standard",
 		});
 	}
 
