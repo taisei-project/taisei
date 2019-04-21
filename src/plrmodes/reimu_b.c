@@ -582,7 +582,8 @@ static void reimu_dream_init(Player *plr) {
 }
 
 PlayerMode plrmode_reimu_b = {
-	.name = "Dream Sign",
+	.name = "Dream Science",
+	.description = "Bend space like the ribbon in your hair with the power of your dreams!",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
 	.shot_mode = PLR_SHOT_REIMU_DREAM,

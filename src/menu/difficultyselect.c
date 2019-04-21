@@ -58,7 +58,7 @@ MenuData* create_difficulty_menu(void) {
 }
 
 void draw_difficulty_menu(MenuData *menu) {
-	draw_main_menu_bg(menu, 0, 0, 0.05);
+	draw_main_menu_bg(menu, 0, 0, 0.05, "stage1/cirnobg");
 	draw_menu_title(menu, "Select Difficulty");
 
 	Color c = diff_color;

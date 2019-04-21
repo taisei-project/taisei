@@ -876,7 +876,7 @@ MenuData* create_options_menu(void) {
 // --- Drawing the menu --- //
 
 void draw_options_menu_bg(MenuData* menu) {
-	draw_main_menu_bg(menu, 0, 0, 0.05);
+	draw_main_menu_bg(menu, 0, 0, 0.05, "loading");
 
 	r_mat_push();
 	r_mat_scale(SCREEN_W, SCREEN_H, 1);

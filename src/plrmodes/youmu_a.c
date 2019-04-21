@@ -530,6 +530,7 @@ static void youmu_mirror_bomb_logic(Player *plr) {
 
 PlayerMode plrmode_youmu_a = {
 	.name = "Mirror Sign",
+	.description = "Your half ghost companion will give you a hand… or tail.",
 	.character = &character_youmu,
 	.dialog = &dialog_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,

@@ -676,6 +676,7 @@ static void marisa_laser_preload(void) {
 
 PlayerMode plrmode_marisa_a = {
 	.name = "Laser Sign",
+	.description = "Kill it with lasers. Dodging is easy anyway. I will shoot them in their faces!",
 	.character = &character_marisa,
 	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,

@@ -28,6 +28,9 @@ static void update_char_menu(MenuData *menu) {
 	for(int i = 0; i < menu->ecount; i++) {
 		menu->entries[i].drawdata += 0.08*((menu->cursor != i) - menu->entries[i].drawdata);
 	}
+
+	menu->drawdata[1] += 0.1*(1-menu->entries[menu->cursor].drawdata - menu->drawdata[1]);
+	menu->drawdata[0] += 0.1*(SELECTED_SUBSHOT(menu)-PLR_SHOT_A - menu->drawdata[0]);
 }
 
 MenuData* create_char_menu(void) {
@@ -54,7 +57,14 @@ MenuData* create_char_menu(void) {
 void draw_char_menu(MenuData *menu) {
 	CullFaceMode cull_saved = r_cull_current();
 
-	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*(1-menu->entries[menu->cursor].drawdata));
+	char *bgs[] = {
+		"stage3/wspellbg",
+		"marisa_bombbg",
+		"youmu_bombbg1",
+	};
+	assert(menu->cursor < 3);
+	
+	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*menu->drawdata[1], bgs[menu->cursor]);
 	draw_menu_title(menu, "Select Character");
 
 	r_mat_push();
@@ -111,7 +121,7 @@ void draw_char_menu(MenuData *menu) {
 
 		text_draw(title, &(TextParams) {
 			.align = ALIGN_CENTER,
-			.pos = { 60-20*o, 30 },
+			.pos = { 20*(1-o), 30 },
 			.shader = "text_default",
 			.color = RGBA(o, o, o, o),
 		});
@@ -123,22 +133,50 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
+	
+
+	float f = menu->drawdata[0]-PLR_SHOT_A;
+	
+	r_color4(0, 0, 0, 0.5);
+	r_shader_standard_notex();
+	r_mat_push();
+	r_mat_translate(-150,225 + 20*f, 0);
+	r_mat_scale(650, 80+30*f, 1);
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_pop();
+
 
 	for(ShotModeID shot = PLR_SHOT_A; shot < NUM_SHOT_MODES_PER_CHARACTER; shot++) {
 		PlayerMode *mode = plrmode_find(current_char, shot);
 		assume(mode != NULL);
+		int shotidx = shot-PLR_SHOT_A;
 
-		if(shot == current_subshot) {
-			r_color4(0.9, 0.6, 0.2, 1);
+		float o = 1-fabs(f - shotidx);
+		float al = 0.2+o;
+		if(shot == current_subshot && shot == PLR_SHOT_A) {
+			r_color4(0.9*al, 0.6*al, 0.2*al, 1*al);
+		} else if(shot == current_subshot && shot == PLR_SHOT_B) {
+			r_color4(0.2*al, 0.6*al, 0.9*al, 1*al);
 		} else {
-			r_color4(1, 1, 1, 1);
+			r_color4(al, al, al, al);
 		}
 
+		double y = 200 + (100-70*f)*shotidx-20*f;
 		text_draw(mode->name, &(TextParams) {
 			.align = ALIGN_CENTER,
-			.pos = { 0, 200 + 40 * (shot - PLR_SHOT_A) },
+			.pos = { 0, y},
 			.shader = "text_default",
 		});
+
+		if(shot == current_subshot) {
+			r_color4(o, o, o, o);
+			text_draw_wrapped(mode->description,  SCREEN_W/3+40, &(TextParams) {
+				.align = ALIGN_CENTER,
+				.pos = { 0, y + 30 },
+				.shader = "text_default",
+			});
+		}
 	}
 
 	r_mat_pop();

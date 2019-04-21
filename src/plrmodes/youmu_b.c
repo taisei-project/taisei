@@ -475,7 +475,8 @@ static void youmu_haunting_init(Player *plr) {
 }
 
 PlayerMode plrmode_youmu_b = {
-	.name = "Haunting Sign",
+	.name = "Haunting Science",
+	.description = "Ghosts are real–obstacles are not. Keep your timing and release the powers of your employer.",
 	.character = &character_youmu,
 	.dialog = &dialog_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,

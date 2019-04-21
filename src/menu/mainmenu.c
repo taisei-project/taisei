@@ -125,18 +125,19 @@ MenuData* create_main_menu(void) {
 	return m;
 }
 
-void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double R) {
+void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double R, const char *tex2) {
 	r_color4(1, 1, 1, 1);
 	r_shader("mainmenubg");
 	r_uniform_float("R", R/(1-menu_fade(menu)));
 	r_uniform_vec2("bg_translation", 0.001*menu->frames, 0);
 	r_uniform_vec2("center", center_x, center_y);
+	r_uniform_sampler("tex2", tex2);
 	fill_screen("menu/mainmenubg");
 	r_shader_standard();
 }
 
 void draw_main_menu(MenuData *menu) {
-	draw_main_menu_bg(menu, 0, 0, 0.05);
+	draw_main_menu_bg(menu, 0, 0, 0.05, "stage1/cirnobg");
 	draw_sprite(390, 300, "menu/logo");
 
 	r_mat_push();
@@ -155,7 +156,7 @@ void draw_main_menu(MenuData *menu) {
 		}
 
 		text_draw(menu->entries[i].name, &(TextParams) {
-			.pos = { 50, 20*(i-menu->drawdata[1]) },
+			.pos = { 50-15*menu->entries[i].drawdata, 20*(i-menu->drawdata[1]) },
 			.font = "standard",
 		});
 	}

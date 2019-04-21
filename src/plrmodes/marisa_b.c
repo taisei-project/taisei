@@ -359,7 +359,8 @@ static void marisa_star_preload(void) {
 }
 
 PlayerMode plrmode_marisa_b = {
-	.name = "Star Sign",
+	.name = "Star Science",
+	.description = "These are loads of bullets… some of them are bound to hit. Is this what homing means?",
 	.character = &character_marisa,
 	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
