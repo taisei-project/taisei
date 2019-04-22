@@ -28,6 +28,7 @@ glsl_files = files(
     'healthbar_radial.frag.glsl',
     'ingame_menu.frag.glsl',
     'laser_generic.vert.glsl',
+    'mainmenubg.frag.glsl',
     'marisa_laser.frag.glsl',
     'maristar_bombbg.frag.glsl',
     'masterspark.frag.glsl',
