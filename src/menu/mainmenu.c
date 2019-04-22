@@ -130,7 +130,8 @@ void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double 
 	r_shader("mainmenubg");
 	r_uniform_float("R", R/(1-menu_fade(menu)));
 	r_uniform_vec2("bg_translation", 0.001*menu->frames, 0);
-	r_uniform_vec2("center", center_x, center_y);
+	r_uniform_vec2("center", 0.5 + center_x / SCREEN_W, 0.5 + center_y / SCREEN_H);
+	r_uniform_float("inv_aspect_ratio", 1.0 / VIDEO_ASPECT_RATIO);
 	r_uniform_sampler("blend_mask", "cell_noise");
 	r_uniform_sampler("tex2", tex2);
 	fill_screen(tex1);

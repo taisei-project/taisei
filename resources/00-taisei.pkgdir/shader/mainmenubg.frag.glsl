@@ -9,6 +9,7 @@ UNIFORM(2) vec2 bg_translation;
 UNIFORM(3) vec2 center;
 UNIFORM(4) sampler2D tex2;
 UNIFORM(5) sampler2D blend_mask;
+UNIFORM(6) float inv_aspect_ratio;
 
 const float bmin = 3*sqrt(3)/2;
 
@@ -24,11 +25,8 @@ float bending(float b) {
 }
 
 void main(void) {
-	float dx = dFdx(texCoord.x);
-	float dy = dFdy(texCoord.y);
-	vec2 d = texCoordRaw-vec2(0.5+center.x*dx,0.5+center.y*dy);
-
-	d.y /= dy/dx;
+	vec2 d = texCoordRaw - center;
+	d.y *= inv_aspect_ratio;
 
 	float b = length(d)/R;
 	if(b < bmin) {

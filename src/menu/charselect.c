@@ -83,7 +83,7 @@ void draw_char_menu(MenuData *menu) {
 
 	assert(menu->cursor < 3);
 	
-	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", bgs[menu->cursor]);
+	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", bgs[menu->cursor]);
 	draw_menu_title(menu, "Select Character");
 
 	r_mat_push();
