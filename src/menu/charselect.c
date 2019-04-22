@@ -86,15 +86,6 @@ void draw_char_menu(MenuData *menu) {
 	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", bgs[menu->cursor]);
 	draw_menu_title(menu, "Select Character");
 
-	r_mat_push();
-	r_color4(0, 0, 0, 0.7);
-	r_mat_translate(0, SCREEN_H/2, 0);
-	r_mat_scale(700, SCREEN_H, 1);
-	r_shader_standard_notex();
-	//r_draw_quad();
-	r_shader_standard();
-	r_mat_pop();
-
 	CharacterID current_char = 0;
 
 	for(int i = 0; i < menu->ecount; i++) {
