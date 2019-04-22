@@ -16,6 +16,7 @@
 #include "video.h"
 
 #define SELECTED_SUBSHOT(m) ((intptr_t)PLR_SHOT_A + (intptr_t)(m)->context)
+#define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)
 
 static void set_player_mode(MenuData *m, void *p) {
 	progress.game_settings.character = (CharacterID)(uintptr_t)p;
@@ -29,8 +30,20 @@ static void update_char_menu(MenuData *menu) {
 		menu->entries[i].drawdata += 0.08*((menu->cursor != i) - menu->entries[i].drawdata);
 	}
 
-	menu->drawdata[1] += 0.1*(1-menu->entries[menu->cursor].drawdata - menu->drawdata[1]);
-	menu->drawdata[0] += 0.1*(SELECTED_SUBSHOT(menu)-PLR_SHOT_A - menu->drawdata[0]);
+	PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
+	assume(pchar != NULL);
+
+	PlayerMode *m = plrmode_find(pchar->id, SELECTED_SUBSHOT(menu));
+	assume(m != NULL);
+
+	Font *font = get_font("standard");
+	char buf[256] = { 0 };
+	text_wrap(font, m->description, DESCRIPTION_WIDTH, buf, sizeof(buf));
+	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
+
+	fapproach_asymptotic_p(&menu->drawdata[0], SELECTED_SUBSHOT(menu) - PLR_SHOT_A, 0.1, 1e-5);
+	fapproach_asymptotic_p(&menu->drawdata[1], 1 - menu->entries[menu->cursor].drawdata, 0.1, 1e-5);
+	fapproach_asymptotic_p(&menu->drawdata[2], height, 0.1, 1e-5);
 }
 
 MenuData* create_char_menu(void) {
@@ -62,9 +75,15 @@ void draw_char_menu(MenuData *menu) {
 		"marisa_bombbg",
 		"youmu_bombbg1",
 	};
+
+	char *prefixes[] = {
+		"Intuition",
+		"Science",
+	};
+
 	assert(menu->cursor < 3);
 	
-	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*menu->drawdata[1], bgs[menu->cursor]);
+	draw_main_menu_bg(menu, SCREEN_W/2+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", bgs[menu->cursor]);
 	draw_menu_title(menu, "Select Character");
 
 	r_mat_push();
@@ -134,18 +153,17 @@ void draw_char_menu(MenuData *menu) {
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 	
-
 	float f = menu->drawdata[0]-PLR_SHOT_A;
-	
+	float selbg_ofs = 200 + (100-70*f)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
+
 	r_color4(0, 0, 0, 0.5);
 	r_shader_standard_notex();
 	r_mat_push();
-	r_mat_translate(-150,225 + 20*f, 0);
-	r_mat_scale(650, 80+30*f, 1);
+	r_mat_translate(-150, selbg_ofs + menu->drawdata[2] * 0.5, 0);
+	r_mat_scale(650, menu->drawdata[2], 1);
 	r_draw_quad();
 	r_shader_standard();
 	r_mat_pop();
-
 
 	for(ShotModeID shot = PLR_SHOT_A; shot < NUM_SHOT_MODES_PER_CHARACTER; shot++) {
 		PlayerMode *mode = plrmode_find(current_char, shot);
@@ -162,8 +180,11 @@ void draw_char_menu(MenuData *menu) {
 			r_color4(al, al, al, al);
 		}
 
+		char buf[64];
+		snprintf(buf, sizeof(buf), "%s: %s", prefixes[shot - PLR_SHOT_A], mode->name);
+
 		double y = 200 + (100-70*f)*shotidx-20*f;
-		text_draw(mode->name, &(TextParams) {
+		text_draw(buf, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, y},
 			.shader = "text_default",
@@ -171,7 +192,7 @@ void draw_char_menu(MenuData *menu) {
 
 		if(shot == current_subshot) {
 			r_color4(o, o, o, o);
-			text_draw_wrapped(mode->description,  SCREEN_W/3+40, &(TextParams) {
+			text_draw_wrapped(mode->description, DESCRIPTION_WIDTH, &(TextParams) {
 				.align = ALIGN_CENTER,
 				.pos = { 0, y + 30 },
 				.shader = "text_default",

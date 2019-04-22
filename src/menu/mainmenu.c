@@ -125,20 +125,32 @@ MenuData* create_main_menu(void) {
 	return m;
 }
 
-void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double R, const char *tex2) {
+void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double R, const char *tex1, const char *tex2) {
 	r_color4(1, 1, 1, 1);
 	r_shader("mainmenubg");
 	r_uniform_float("R", R/(1-menu_fade(menu)));
 	r_uniform_vec2("bg_translation", 0.001*menu->frames, 0);
 	r_uniform_vec2("center", center_x, center_y);
+	r_uniform_sampler("blend_mask", "cell_noise");
 	r_uniform_sampler("tex2", tex2);
-	fill_screen("menu/mainmenubg");
+	fill_screen(tex1);
 	r_shader_standard();
 }
 
 void draw_main_menu(MenuData *menu) {
-	draw_main_menu_bg(menu, 0, 0, 0.05, "stage1/cirnobg");
-	draw_sprite(390, 300, "menu/logo");
+	draw_main_menu_bg(menu, 0, 0, 0.05, "menu/mainmenubg", "stage1/cirnobg");
+
+	float rot = sqrt(menu->frames/120.0);
+	float rotfac = (1 - pow(menu_fade(menu), 2.0));
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "menu/logo",
+		.pos = { SCREEN_W/2, SCREEN_H/2 },
+		.shader = "sprite_default",
+		.rotation.vector = { 0, -1, 0 },
+		.rotation.angle = max(0, M_PI/1.5 - min(M_PI/1.5, rot) * rotfac),
+		.color = color_mul_scalar(RGBA(1, 1, 1, 1), min(1, rot) * rotfac),
+	});
 
 	r_mat_push();
 	r_mat_translate(0, SCREEN_H/2, 0);
@@ -216,14 +228,13 @@ void draw_loading_screen(void) {
 	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
-	/*
-	text_draw(TAISEI_VERSION, &(TextParams) {
-		.align = ALIGN_RIGHT,
-		.pos = { SCREEN_W-5, SCREEN_H-10 },
-		.font = "small",
+	text_draw("Please wait warmly…", &(TextParams) {
+		.align = ALIGN_CENTER,
+		.pos = { SCREEN_W/2, SCREEN_H-10 },
+		.font = "standard",
 		.shader = "text_default",
+		.color = RGBA(0.25, 0.25, 0.25, 0.25),
 	});
-	*/
 	video_swap_buffers();
 }
 

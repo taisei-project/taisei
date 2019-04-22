@@ -8,6 +8,7 @@ UNIFORM(1) float R;
 UNIFORM(2) vec2 bg_translation;
 UNIFORM(3) vec2 center;
 UNIFORM(4) sampler2D tex2;
+UNIFORM(5) sampler2D blend_mask;
 
 const float bmin = 3*sqrt(3)/2;
 
@@ -42,16 +43,19 @@ void main(void) {
 	n.zx = dir(phi);
 	n.xy = rot(theta)*n.xy;
 
-	float step = smoothstep(0.2,0.0,n.x)+smoothstep(-0.6,0,n.z);
+	float o = 0.1;
+
+	float step0 = smoothstep(0.2, 0.0, n.x) + smoothstep(-0.6, 0, n.z);
+	float step1 = smoothstep(0.2, 0.0, n.x + o) + smoothstep(-0.6, 0, n.z + o);
+
 	float antialiasing = smoothstep(bmin,bmin+0.03,b);
 
 	n.xy += bg_translation;
-	
+
 	vec4 tex1c = texture(tex, n.xy+vec2(0.5,0));
 	vec4 tex2c = texture(tex2, n.xy+vec2(0.5));
+	float blendfac = texture(blend_mask, n.xy).r;
 
-
-
-	fragColor =  r_color * mix(tex1c, tex2c, step);
+	fragColor = r_color * mix(tex1c, tex2c, clamp(mix(step1, step0, blendfac), 0, 1));
 	fragColor.rgb *= antialiasing;
 }

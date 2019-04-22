@@ -14,7 +14,7 @@
 #include "menu.h"
 
 MenuData* create_main_menu(void);
-void draw_main_menu_bg(MenuData *m, double center_x, double center_y, double R, const char *tex2);
+void draw_main_menu_bg(MenuData *m, double center_x, double center_y, double R, const char *tex1, const char *tex2);
 void draw_main_menu(MenuData *m);
 void main_menu_update_practice_menus(void);
 void draw_loading_screen(void);

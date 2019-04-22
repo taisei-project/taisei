@@ -883,6 +883,10 @@ int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 		if(text_lines++ == maxlines) {
 			break;
 		}
+
+		if(*tptr == '\n') {
+			++tptr;
+		}
 	}
 
 	return font->metrics.lineskip * text_lines;

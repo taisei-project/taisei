@@ -475,8 +475,8 @@ static void youmu_haunting_init(Player *plr) {
 }
 
 PlayerMode plrmode_youmu_b = {
-	.name = "Haunting Science",
-	.description = "Ghosts are real–obstacles are not. Keep your timing and release the powers of your employer.",
+	.name = "Haunting Revelation",
+	.description = "Ghosts are real, and quite hospitable too. The Netherworld shall welcome your foes, if you choose a good time to send the invitation.",
 	.character = &character_youmu,
 	.dialog = &dialog_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,
