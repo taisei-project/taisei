@@ -21,6 +21,7 @@ PlayerCharacter character_youmu = {
 	.title = "Half-Phantom Girl",
 	.dialog_sprite_name = "dialog/youmu",
 	.player_sprite_name = "player/youmu",
+	.menu_texture_name = "youmu_bombbg1",
 	.ending = {
 		.good = good_ending_youmu,
 		.bad = bad_ending_youmu,

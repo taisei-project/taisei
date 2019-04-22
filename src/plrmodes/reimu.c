@@ -23,6 +23,7 @@ PlayerCharacter character_reimu = {
 	.title = "Shrine Maiden of Paradise",
 	.dialog_sprite_name = "dialog/reimu",
 	.player_sprite_name = "player/reimu",
+	.menu_texture_name = "reimubg",
 	.ending = {
 		.good = good_ending_reimu,
 		.bad = bad_ending_reimu,

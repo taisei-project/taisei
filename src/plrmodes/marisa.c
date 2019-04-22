@@ -21,6 +21,7 @@ PlayerCharacter character_marisa = {
 	.title = "Ordinary Black Magician",
 	.dialog_sprite_name = "dialog/marisa",
 	.player_sprite_name = "player/marisa",
+	.menu_texture_name = "marisa_bombbg",
 	.ending = {
 		.good = good_ending_marisa,
 		.bad = bad_ending_marisa,

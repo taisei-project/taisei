@@ -65,6 +65,7 @@ typedef struct PlayerCharacter {
 	const char *title;
 	const char *dialog_sprite_name;
 	const char *player_sprite_name;
+	const char *menu_texture_name;
 
 	struct {
 		PlrCharEndingProc good;

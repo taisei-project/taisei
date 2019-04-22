@@ -70,20 +70,15 @@ MenuData* create_char_menu(void) {
 void draw_char_menu(MenuData *menu) {
 	CullFaceMode cull_saved = r_cull_current();
 
-	char *bgs[] = {
-		"stage3/wspellbg",
-		"marisa_bombbg",
-		"youmu_bombbg1",
-	};
-
 	char *prefixes[] = {
 		"Intuition",
 		"Science",
 	};
 
 	assert(menu->cursor < 3);
-	
-	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", bgs[menu->cursor]);
+	PlayerCharacter *selected_char = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
+
+	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", selected_char->menu_texture_name);
 	draw_menu_title(menu, "Select Character");
 
 	CharacterID current_char = 0;
