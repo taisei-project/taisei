@@ -20,7 +20,7 @@
 struct TsOption { struct option opt; const char *help; const char *argname;};
 
 static void print_help(struct TsOption* opts) {
-	tsfprintf(stdout, "Usage: taisei [OPTIONS]\nTaisei is an open source Touhou clone.\n\nOptions:\n");
+	tsfprintf(stdout, "Usage: taisei [OPTIONS]\nTaisei is an open source Tōhō Project fangame.\n\nOptions:\n");
 	int margin = 20;
 	for(struct TsOption *opt = opts; opt->opt.name; opt++) {
 		tsfprintf(stdout, "  -%c, --%s ", opt->opt.val,opt->opt.name);

@@ -238,7 +238,7 @@ More info
 Knowing this much should help to get you started!
 
 If you want more tricks and hints on how to *“git gud”*, check out
-resources on how to play *Touhou*, the game Taisei is based on.
+resources on how to play *Tōhō*, the game Taisei is based on.
 
 Enjoy playing, and if you want to contact us, visit us on Freenode IRC
 #taisei-project or on `Discord <https://discord.gg/JEHCMzW>`__.
