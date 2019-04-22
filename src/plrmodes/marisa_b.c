@@ -336,11 +336,12 @@ static void marisa_star_preload(void) {
 	const int flags = RESF_DEFAULT;
 
 	preload_resources(RES_SPRITE, flags,
-		"proj/marisa",
-		"proj/maristar",
-		"part/maristar_orbit",
 		"hakkero",
 		"masterspark_ring",
+		"part/maristar_orbit",
+		"part/stardust",
+		"proj/marisa",
+		"proj/maristar",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,

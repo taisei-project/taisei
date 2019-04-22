@@ -226,7 +226,9 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	preload_resource(RES_TEXTURE, "loading", RESF_PERMANENT);
+	preload_resource(RES_TEXTURE, "loading", RESF_DEFAULT);
+	preload_resource(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
+
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
 	text_draw("Please wait warmly…", &(TextParams) {
@@ -236,6 +238,7 @@ void draw_loading_screen(void) {
 		.shader = "text_default",
 		.color = RGBA(0.25, 0.25, 0.25, 0.25),
 	});
+
 	video_swap_buffers();
 }
 
@@ -248,6 +251,10 @@ void menu_preload(void) {
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+		"abstract_blue",
+		"abstract_brown",
+		"cell_noise",
+		"stage1/cirnobg",
 		"menu/mainmenubg",
 	NULL);
 
@@ -260,6 +267,7 @@ void menu_preload(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		"mainmenubg",
 		"sprite_circleclipped_indicator",
 	NULL);
 
@@ -274,6 +282,8 @@ void menu_preload(void) {
 	NULL);
 
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
-		preload_resource(RES_SPRITE, plrchar_get(i)->dialog_sprite_name, RESF_PERMANENT);
+		PlayerCharacter *pchar = plrchar_get(i);
+		preload_resource(RES_SPRITE, pchar->dialog_sprite_name, RESF_PERMANENT);
+		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
 	}
 }

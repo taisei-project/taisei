@@ -412,9 +412,10 @@ static void credits_free(void) {
 void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
 	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
+	preload_resource(RES_SPRITE, "yukkureimu", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towerwall",
-		"yukkureimu",
+		"loading",  // for transition
 	NULL);
 }
 
