@@ -626,10 +626,7 @@ static void stage_preload(void) {
 	items_preload();
 	boss_preload();
 	lasers_preload();
-
-	if(global.stage->type != STAGE_SPELL) {
-		enemies_preload();
-	}
+	enemies_preload();
 
 	global.stage->procs->preload();
 }
