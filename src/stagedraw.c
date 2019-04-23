@@ -1802,7 +1802,7 @@ void stage_draw_hud(void) {
 		r_state_push();
 		r_shader("text_default");
 		r_mat_push();
-		r_mat_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 150, 0);
+		r_mat_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 128, 0);
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * extraspell_alpha));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
@@ -1810,10 +1810,10 @@ void stage_draw_hud(void) {
 		Font *font = get_font("big");
 
 		// TODO: replace this with a shader
-		text_draw("Extra Spell!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
-		text_draw("Extra Spell!", &(TextParams) { .pos = { -1, -1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = { -1, -1 }, .font_ptr = font, .align = ALIGN_CENTER });
 		r_color4(extraspell_alpha, extraspell_alpha, extraspell_alpha, extraspell_alpha);
-		text_draw("Extra Spell!", &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
+		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
 
 		r_mat_pop();
 		r_state_pop();

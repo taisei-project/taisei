@@ -817,11 +817,7 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	SpellBonus bonus = { 0 };
 	calc_spell_bonus(a, &bonus);
 
-	bool extra = a->type == AT_ExtraSpell;
-
-	const char *title = extra ?
-	                    (bonus.failed ? "Extra Spell failed..." : "Extra Spell captured!"):
-	                    (bonus.failed ? "Spell Card failed..."  : "Spell Card captured!");
+	const char *title = bonus.failed ? "Spell Card failed..."  : "Spell Card captured!";
 
 	char diff_bonus_text[6];
 	snprintf(diff_bonus_text, sizeof(diff_bonus_text), "x%.2f", bonus.diff_multiplier);
