@@ -55,6 +55,22 @@
             border: 0px none;
         }
 
+        a {
+            color: #6789bf;
+        }
+
+        div.header {
+            padding: 0px 16px;
+            text-align: center;
+        }
+
+        div.footer {
+            text-align: center;
+            position: absolute;
+            bottom: 16px;
+            width: 100%;
+        }
+
         div.centered {
             position: absolute;
             bottom: 50%;
@@ -63,6 +79,7 @@
             transform: translateY(50%);
             background-color: #000000C0;
             padding: 16px 0px;
+            z-index: 1;
         }
 
         /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
@@ -165,6 +182,9 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <h3>Note: this web port is experimental and may not perform as well as the original game, which you can[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]<a href="https://taisei-project.org/download">download here</a>.</h3>
+    </div>
     <div class="centered">
         <div class="spinner" id="spinner"><img src="scythe.webp" class="spinner"/></div>
         <div class="emscripten" id="status">Girls are now downloading, please wait warmly…</div>
@@ -181,6 +201,13 @@
         <div id="logContainer" hidden>
             <textarea class="emscripten" id="output" rows="12" readonly></textarea>
         </div>
+    </div>
+    <div class="footer">
+        <a href="https://taisei-project.org/">Taisei Project</a>[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]·[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]
+        <a href="https://github.com/taisei-project/taisei">Source code</a>[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]·[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]
+        <a href="https://discord.gg/JEHCMzW">Discord</a>
+        <br/>
+        Powered by[[THIS IS AN INTENTIONAL WHITESPACE, DO NOT "OPTIMIZE" IT OUT YOU ABSOLUTE FUCKING MORON]]<a href="https://emscripten.org/">Emscripten</a>
     </div>
     <script>
         var statusElement = document.getElementById('status');
