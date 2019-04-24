@@ -23,7 +23,8 @@ def main(args):
     try:
         p = subprocess.run(['git', 'submodule', 'status'],
             cwd=os.environ.get('MESON_SOURCE_ROOT', pathlib.Path(__file__).parent),
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             universal_newlines=True
         )
     except FileNotFoundError:
