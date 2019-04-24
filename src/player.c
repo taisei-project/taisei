@@ -91,7 +91,6 @@ void player_free(Player *plr) {
 }
 
 static void player_full_power(Player *plr) {
-	play_sound("full_power");
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
@@ -1571,14 +1570,13 @@ void player_preload(void) {
 		"death",
 		"extra_bomb",
 		"extra_life",
-		"full_power",
 		"generic_shot",
 		"graze",
 		"hit0",
 		"hit1",
 		"powerup",
-                "powersurge_start",
-                "powersurge_end",
+		"powersurge_start",
+		"powersurge_end",
 	NULL);
 }
 
