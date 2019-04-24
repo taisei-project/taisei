@@ -29,7 +29,6 @@ def main(args):
 
     args = parser.parse_args(args[1:])
 
-    print(args.compiler + ['-o', str(args.output)])
     proc = subprocess.run(args.compiler + ['-o', str(args.output)])
 
     if proc.returncode != 0:
