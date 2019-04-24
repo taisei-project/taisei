@@ -110,7 +110,7 @@ acquired:
 	}
 
 	char *tmp = objpool_fmt_size(pool);
-	log_warn("[%s] Object pool exhausted (%s), extending",
+	log_debug("[%s] Object pool exhausted (%s), extending",
 		pool->tag,
 		tmp
 	);

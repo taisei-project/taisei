@@ -307,7 +307,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 			if(!source_allocated) {
 				log_error("%s: couldn't infer source path from texture name", basename);
 			} else {
-				log_warn("%s: inferred source path from texture name: %s", basename, source_allocated);
+				log_info("%s: inferred source path from texture name: %s", basename, source_allocated);
 			}
 
 			free(basename);

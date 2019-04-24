@@ -79,7 +79,7 @@ void* load_sprite_begin(const char *path, uint flags) {
 
 	if(!state->texture_name) {
 		state->texture_name = resource_util_basename(TEX_PATH_PREFIX, path);
-		log_warn("%s: inferred texture name from sprite name", state->texture_name);
+		log_info("%s: inferred texture name from sprite name", state->texture_name);
 	}
 
 	return state;
@@ -129,7 +129,7 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	for(struct infermap *m = infermap; m->dst; ++m) {
 		if(*m->dst <= 0) {
 			*m->dst = *m->src;
-			log_warn("%s: inferred %s from %s (%g)", basename, m->dstname, m->srcname, *m->src);
+			log_info("%s: inferred %s from %s (%g)", basename, m->dstname, m->srcname, *m->src);
 		}
 	}
 
