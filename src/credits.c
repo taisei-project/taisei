@@ -34,9 +34,9 @@ static struct {
 #define CREDITS_ENTRY_FADEOUT 100.0
 #define CREDITS_YUKKURI_SCALE 0.5
 
-#define CREDITS_FADEOUT 240
+#define CREDITS_FADEOUT 180
 
-#define ENTRY_TIME 350
+#define ENTRY_TIME 345
 
 static void credits_add(char *data, int time);
 
@@ -160,7 +160,7 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	// yukkureimu
-	credits_add("*\nAnd don't forget to take it easy!", 200);
+	credits_add("*\nAnd don't forget to take it easy!", 180);
 }
 
 static void credits_add(char *data, int time) {
@@ -211,7 +211,7 @@ static void credits_towerwall_draw(vec3 pos) {
 
 static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
-	init_stage3d(&stage_3d_context, 16);
+	init_stage3d(&stage_3d_context, 64);
 
 	add_model(&stage_3d_context, credits_towerwall_draw, stage6_towerwall_pos);
 
@@ -407,6 +407,7 @@ static void credits_free(void) {
 	}
 
 	free(credits.entries);
+	free_stage3d(&stage_3d_context);
 }
 
 void credits_preload(void) {
