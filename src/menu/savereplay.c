@@ -45,7 +45,7 @@ static void save_rpy(MenuData *menu, void *a) {
 
 static void draw_saverpy_menu(MenuData *m) {
 	PlayerCharacter *pchar = plrchar_get(progress.game_settings.character);
-	draw_main_menu_bg(m, 0, 0, 0.05, pchar->menu_texture_name, "abstract_blue");
+	draw_main_menu_bg(m, 0, 0, 0.05, pchar->menu_texture_name, "stage1/cirnobg");
 	colorfill(0, 0, 0, 0.5);
 
 	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);

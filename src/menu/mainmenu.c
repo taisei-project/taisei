@@ -233,10 +233,10 @@ void draw_loading_screen(void) {
 	fill_screen("loading");
 	text_draw("Please wait warmly…", &(TextParams) {
 		.align = ALIGN_CENTER,
-		.pos = { SCREEN_W/2, SCREEN_H-10 },
+		.pos = { SCREEN_W/2, SCREEN_H-20 },
 		.font = "standard",
 		.shader = "text_default",
-		.color = RGBA(0.25, 0.25, 0.25, 0.25),
+		.color = RGBA(0.35, 0.35, 0.35, 0.35),
 	});
 
 	video_swap_buffers();
@@ -251,7 +251,6 @@ void menu_preload(void) {
 	NULL);
 
 	preload_resources(RES_TEXTURE, RESF_PERMANENT,
-		"abstract_blue",
 		"abstract_brown",
 		"cell_noise",
 		"stage1/cirnobg",
