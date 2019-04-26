@@ -615,7 +615,7 @@ static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Fire", do_nothing,
+	add_menu_entry(m, "Shoot", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SHOT)
 	);
 
@@ -623,11 +623,11 @@ static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Spell", do_nothing,
+	add_menu_entry(m, "Use Spell Card", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_BOMB)
 	);
 
-	add_menu_entry(m, "Power Surge", do_nothing,
+	add_menu_entry(m, "Power Surge / Discharge", do_nothing,
 		bind_gpbinding(CONFIG_GAMEPAD_KEY_SPECIAL)
 	);
 
@@ -727,7 +727,7 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Fire", do_nothing,
+	add_menu_entry(m, "Shoot", do_nothing,
 		bind_keybinding(CONFIG_KEY_SHOT)
 	);
 
@@ -735,11 +735,11 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 		bind_keybinding(CONFIG_KEY_FOCUS)
 	);
 
-	add_menu_entry(m, "Spell", do_nothing,
+	add_menu_entry(m, "Use Spell Card", do_nothing,
 		bind_keybinding(CONFIG_KEY_BOMB)
 	);
 
-	add_menu_entry(m, "Power Surge", do_nothing,
+	add_menu_entry(m, "Power Surge / Discharge", do_nothing,
 		bind_keybinding(CONFIG_KEY_SPECIAL)
 	);
 
