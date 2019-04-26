@@ -140,7 +140,7 @@ void draw_char_menu(MenuData *menu) {
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 	
 	float f = menu->drawdata[0]-PLR_SHOT_A;
-	float selbg_ofs = 200 + (100-70*f)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
+	float selbg_ofs = 200 + (100-70)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
 
 	r_color4(0, 0, 0, 0.5);
 	r_shader_standard_notex();
