@@ -1,5 +1,7 @@
 Unicode true
 
+!include LogicLib.nsh
+
 !define PROJECT "Taisei Project"
 !define PROJECT_URL "https://taisei-project.org/"
 !define PUBLISHER "${PROJECT}"
@@ -15,8 +17,6 @@ SetCompressor /SOLID zlib
 !define VERSION "@VERSION({string})@"
 !define PATCH "0"
 !define INST_DIR "@INSTALL_DIR@"
-
-!include LogicLib.nsh
 
 !if @TAISEI_64BIT@ == 1
     !include x64.nsh
