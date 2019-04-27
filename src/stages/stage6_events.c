@@ -2969,7 +2969,7 @@ static Boss* create_elly(void) {
 	boss_add_attack_from_info(b, &stage6_spells.baryon.higgs_boson_uncovered, false);
 	boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
 	boss_add_attack(b, AT_Move, "Explode", 4, 0, elly_baryon_explode, NULL);
-	boss_add_attack(b, AT_Move, "Move to center", 1, 0, elly_goto_center, NULL);
+	boss_add_attack(b, AT_Move, "Move to center", 4, 0, elly_goto_center, NULL);
 	boss_add_attack(b, AT_Immediate, "Final dialog", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
