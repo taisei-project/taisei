@@ -214,12 +214,10 @@ if host_machine.system() == 'emscripten'
         # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
 
         command : [
-            emcc_wrapper_command,
-            '@OUTPUT0@',
-            '--',
             cc.cmd_array(),
             taisei.full_path(),
             em_link_args,
+            '-o', '@OUTPUT0@',
         ],
         build_by_default : true,
         depends : [taisei],

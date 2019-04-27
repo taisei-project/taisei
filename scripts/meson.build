@@ -118,6 +118,3 @@ check_submodules_command = [python_thunk, check_submodules_script]
 
 em_set_bundle_uuid_script = files('em-set-bundle-uuid.py')
 em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]
-
-emcc_wrapper_script = files('emcc-wrapper.py')
-emcc_wrapper_command = [python_thunk, emcc_wrapper_script]
