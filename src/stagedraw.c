@@ -1142,7 +1142,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 
 	int pw = global.plr.power + global.plr.power_overflow;
 
-	Color *c_whole, *c_fract;
+	Color *c_whole, c_whole_buf, *c_fract, c_fract_buf;
 	Color *c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
 
 	if(pw <= PLR_MAX_POWER) {
@@ -1150,10 +1150,10 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 		c_fract = &stagedraw.hud_text.color.inactive;
 	} else if(pw - PLR_MAX_POWER < 100) {
 		c_whole = &stagedraw.hud_text.color.active;
-		c_fract = color_mul(COLOR_COPY(&stagedraw.hud_text.color.inactive), c_op_mod);
+		c_fract = color_mul(color_copy(&c_fract_buf, &stagedraw.hud_text.color.inactive), c_op_mod);
 	} else {
-		c_whole = color_mul(COLOR_COPY(&stagedraw.hud_text.color.active), c_op_mod);
-		c_fract = color_mul(COLOR_COPY(&stagedraw.hud_text.color.inactive), c_op_mod);
+		c_whole = color_mul(color_copy(&c_whole_buf, &stagedraw.hud_text.color.active), c_op_mod);
+		c_fract = color_mul(color_copy(&c_fract_buf, &stagedraw.hud_text.color.inactive), c_op_mod);
 	}
 
 	xpos = draw_fraction(
