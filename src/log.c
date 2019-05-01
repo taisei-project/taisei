@@ -361,6 +361,8 @@ static int log_fmtconsole_format_plain(FormatterObj *obj, char *buf, size_t buf_
 }
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
+#include <unistd.h>
+
 static bool output_supports_ansi_sequences(const SDL_RWops *output) {
 	if(!strcmp(env_get("TERM", "dumb"), "dumb")) {
 		return false;
@@ -369,9 +371,6 @@ static bool output_supports_ansi_sequences(const SDL_RWops *output) {
 	if(output->type != SDL_RWOPS_STDFILE) {
 		return false;
 	}
-
-	int isatty(int);
-	int fileno(FILE*);
 
 	return isatty(fileno(output->hidden.stdio.fp));
 }

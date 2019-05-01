@@ -11,6 +11,10 @@
 
 #include "taisei.h"
 
+#ifdef TAISEI_BUILDCONF_HAVE_POSIX
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 // Common standard library headers
 #include <complex.h>
 #include <ctype.h>
