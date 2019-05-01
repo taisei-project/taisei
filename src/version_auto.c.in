@@ -12,7 +12,6 @@
 
 const char *const TAISEI_VERSION = "${VERSION({string})}";
 const char *const TAISEI_VERSION_FULL = "${VERSION({full_string})}";
-const char *const TAISEI_VERSION_BUILD_TYPE = "${MESON_BUILD_TYPE}";
 
 const uint8_t  TAISEI_VERSION_MAJOR = ${VERSION({major})};
 const uint8_t  TAISEI_VERSION_MINOR = ${VERSION({minor})};

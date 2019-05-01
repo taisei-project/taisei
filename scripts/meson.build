@@ -8,7 +8,6 @@ common_taiseilib_args = [
 ]
 
 common_taiseilib_defs = [
-    '-DMESON_BUILD_TYPE=@0@'.format(get_option('buildtype')),
     '-DMESON_BUILD_ROOT=@0@'.format(meson.build_root()),
     '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
 ]
@@ -45,10 +44,14 @@ eolconv_command = [python_thunk, eolconv_script]
 
 host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
 
-if get_option('buildtype').contains('debug')
-    dist_version_string = '@0@-@1@'.format(taisei_version_string, get_option('buildtype'))
-else
-    dist_version_string = taisei_version_string
+dist_version_string = taisei_version_string
+
+if is_developer_build
+    dist_version_string = '@0@-devbuild'.format(dist_version_string)
+endif
+
+if is_debug_build
+    dist_version_string = '@0@-debug'.format(dist_version_string)
 endif
 
 dmg_script = files('macos-gen-dmg.py')

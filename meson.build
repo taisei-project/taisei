@@ -28,6 +28,9 @@ if meson.version().version_compare('<@0@'.format(minimum_recommended_meson_versi
     warning('Old Meson version detected. Try upgrading to at least @0@ if the build fails.'.format(minimum_recommended_meson_version))
 endif
 
+is_debug_build = get_option('debug')
+is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
+
 cc = meson.get_compiler('c')
 python3 = import('python3').find_python()
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
@@ -249,9 +252,7 @@ else
     xdg_path = datadir
 endif
 
-is_debug_build = get_option('buildtype').startswith('debug')
-is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
-
+config.set('TAISEI_BUILDCONF_DEBUG', is_debug_build)
 config.set('TAISEI_BUILDCONF_DEVELOPER', is_developer_build)
 config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'windows' or
@@ -334,6 +335,7 @@ Summary:
     Taisei version:         @0@
     System type:            @1@
     Build type:             @2@
+    Developer mode:         @15@
 
     Audio backends:         @3@  (default: @4@)
     Renderers:              @5@  (default: @6@)
@@ -364,7 +366,8 @@ Summary:
         # the $ is intentional
         join_paths('$prefix', bindir),
         join_paths('$prefix', data_path),
-        join_paths('$prefix', doc_path)
+        join_paths('$prefix', doc_path),
+        is_developer_build
     )
 
 message(summary)
