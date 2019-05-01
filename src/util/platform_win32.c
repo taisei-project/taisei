@@ -8,8 +8,7 @@
 
 #include "taisei.h"
 
-#include "assert.h"
-#include "stringops.h"
+#include "systime.h"
 
 static time_t win32time_to_posixtime(SYSTEMTIME *wtime) {
 	struct tm ptime = { 0 };

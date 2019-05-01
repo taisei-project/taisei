@@ -1,0 +1,25 @@
+/*
+ * This software is licensed under the terms of the MIT-License
+ * See COPYING for further information.
+ * ---
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
+ */
+
+#ifndef IGUARD_util_systime_h
+#define IGUARD_util_systime_h
+
+#include "taisei.h"
+
+#ifdef TAISEI_BUILDCONF_HAVE_TIMESPEC
+typedef struct timespec SystemTime;
+#else
+typedef struct SystemTime {
+	time_t tv_sec;
+	long tv_nsec;
+} SystemTime;
+#endif
+
+void get_system_time(SystemTime *time) attr_nonnull(1);
+
+#endif // IGUARD_util_systime_h

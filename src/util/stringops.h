@@ -14,6 +14,8 @@
 #include <time.h>
 #include <SDL.h>
 
+#include "systime.h"
+
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF
 #define UNICODE_BOM_SWAPPED 0xFFFE
@@ -70,19 +72,7 @@ uint32_t crc32str(uint32_t crc, const char *str);
 void format_huge_num(uint digits, uint64_t num, size_t bufsize, char *buf);
 void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_size);
 
-// XXX: Not sure if this is the appropriate header for this
-
-#ifdef TAISEI_BUILDCONF_HAVE_TIMESPEC
-typedef struct timespec SystemTime;
-#else
-typedef struct SystemTime {
-	time_t tv_sec;
-	long tv_nsec;
-} SystemTime;
-#endif
-
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
-void get_system_time(SystemTime *time) attr_nonnull(1);
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
 
 #endif // IGUARD_util_stringops_h

@@ -14,6 +14,7 @@
 #include "stage.h"
 #include "player.h"
 #include "version.h"
+#include "util/systime.h"
 
 
 /*

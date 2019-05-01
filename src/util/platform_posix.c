@@ -8,8 +8,9 @@
 
 #include "taisei.h"
 
-#include "assert.h"
-#include "stringops.h"
+#include <time.h>
+
+#include "systime.h"
 
 void get_system_time(SystemTime *systime) {
 	#if defined(TAISEI_BUILDCONF_HAVE_TIMESPEC)
