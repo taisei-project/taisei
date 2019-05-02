@@ -16,9 +16,9 @@
 
 #define B (_a_backend.funcs)
 
-#define AUDIO_FREQ 44100
+#define AUDIO_FREQ 44800
 #define AUDIO_FORMAT MIX_DEFAULT_FORMAT
-#define AUDIO_CHANNELS 100
+#define AUDIO_CHANNELS 32
 #define UI_CHANNELS 4
 #define UI_CHANNEL_GROUP 0
 #define MAIN_CHANNEL_GROUP 1
@@ -416,8 +416,14 @@ static bool audio_sdl2mixer_sound_stop_all(AudioBackendSoundGroup group) {
 	return true;
 }
 
-static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
+static const char *const *audio_sdl2mixer_get_supported_sfx_exts(uint *numexts) {
 	static const char *const exts[] = { ".ogg", ".wav" };
+	*numexts = ARRAY_SIZE(exts);
+	return exts;
+}
+
+static const char *const *audio_sdl2mixer_get_supported_bgm_exts(uint *numexts) {
+	static const char *const exts[] = { ".opus", ".ogg", ".wav" };
 	*numexts = ARRAY_SIZE(exts);
 	return exts;
 }
@@ -433,13 +439,14 @@ static MusicImpl *audio_sdl2mixer_music_load(const char *vfspath) {
 	Mix_Music *mus = Mix_LoadMUS_RW(rw, true);
 
 	if(!mus) {
-		log_error("Mix_LoadMUS_RW() failed: %s", Mix_GetError());
+		log_error("Mix_LoadMUS_RW() failed: %s (%s)", Mix_GetError(), vfspath);
 		return NULL;
 	}
 
 	MusicImpl *imus = calloc(1, sizeof(*imus));
 	imus->loop = mus;
 
+	log_debug("Loaded stream from %s", vfspath);
 	return imus;
 }
 
@@ -459,7 +466,7 @@ static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 	Mix_Chunk *snd = Mix_LoadWAV_RW(rw, true);
 
 	if(!snd) {
-		log_error("Mix_LoadWAV_RW() failed: %s", Mix_GetError());
+		log_error("Mix_LoadWAV_RW() failed: %s (%s)", Mix_GetError(), vfspath);
 		return NULL;
 	}
 
@@ -468,6 +475,7 @@ static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 	isnd->loopchan = -1;
 	isnd->playchan = -1;
 
+	log_debug("Loaded chunk from %s", vfspath);
 	return isnd;
 }
 
@@ -484,8 +492,8 @@ static bool audio_sdl2mixer_sound_set_volume(SoundImpl *isnd, double gain) {
 AudioBackend _a_backend_sdl2mixer = {
 	.name = "sdl2mixer",
 	.funcs = {
-		.get_supported_music_exts = audio_sdl2mixer_get_supported_exts,
-		.get_supported_sound_exts = audio_sdl2mixer_get_supported_exts,
+		.get_supported_music_exts = audio_sdl2mixer_get_supported_bgm_exts,
+		.get_supported_sound_exts = audio_sdl2mixer_get_supported_sfx_exts,
 		.init = audio_sdl2mixer_init,
 		.music_fade = audio_sdl2mixer_music_fade,
 		.music_is_paused = audio_sdl2mixer_music_is_paused,

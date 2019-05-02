@@ -1,0 +1,5 @@
+[wrap-git]
+directory=opusfile
+url=https://github.com/taisei-project/opusfile.git
+push-url=git@github.com:taisei-project/opusfile.git
+revision=meson-0.11
