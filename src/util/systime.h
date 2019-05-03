@@ -9,8 +9,8 @@
 #ifndef IGUARD_util_systime_h
 #define IGUARD_util_systime_h
 
-#include <time.h>
 #include "taisei.h"
+#include <time.h>
 
 #ifdef TAISEI_BUILDCONF_HAVE_TIMESPEC
 typedef struct timespec SystemTime;
