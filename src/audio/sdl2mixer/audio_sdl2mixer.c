@@ -9,19 +9,31 @@
 #include "taisei.h"
 
 #include <SDL_mixer.h>
+#include <opusfile.h>
 
 #include "../backend.h"
 #include "global.h"
 #include "list.h"
+#include "util/opuscruft.h"
 
 #define B (_a_backend.funcs)
 
-#define AUDIO_FREQ 44800
-#define AUDIO_FORMAT MIX_DEFAULT_FORMAT
+#define AUDIO_FREQ 48000
+#define AUDIO_FORMAT AUDIO_F32SYS
 #define AUDIO_CHANNELS 32
 #define UI_CHANNELS 4
 #define UI_CHANNEL_GROUP 0
 #define MAIN_CHANNEL_GROUP 1
+
+#if AUDIO_FORMAT == AUDIO_S16SYS
+typedef int16_t sample_t;
+#define OPUS_READ_SAMPLES_STEREO op_read_stereo
+#elif AUDIO_FORMAT == AUDIO_F32SYS
+typedef float sample_t;
+#define OPUS_READ_SAMPLES_STEREO op_read_float_stereo
+#else
+#error Audio format not recognized
+#endif
 
 // I needed to add this for supporting loop sounds since Mixer doesn’t remember
 // what channel a sound is playing on.  - laochailan
@@ -71,7 +83,7 @@ static bool audio_sdl2mixer_init(void) {
 		return false;
 	}
 
-	if(!(Mix_Init(MIX_INIT_OGG) & MIX_INIT_OGG)) {
+	if(!(Mix_Init(MIX_INIT_OPUS) & MIX_INIT_OPUS)) {
 		log_error("Mix_Init() failed: %s", Mix_GetError());
 		Mix_Quit();
 		return false;
@@ -346,10 +358,9 @@ static void custom_fadeout_free(int chan, void *udata) {
 static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 	CustomFadeout *e = udata;
 
-	assert(AUDIO_FORMAT == AUDIO_S16SYS); // if you wanna change the format, you get to implement it here. This is the hardcoded default format in SDL_Mixer by the way
+	sample_t *data = stream;
+	len /= sizeof(sample_t);
 
-	int16_t *data = stream;
-	len /= 2;
 	for(int i = 0; i < len; i++) {
 		e->counter++;
 		data[i]*=1.-min(1,(double)e->counter/(double)e->duration);
@@ -416,13 +427,7 @@ static bool audio_sdl2mixer_sound_stop_all(AudioBackendSoundGroup group) {
 	return true;
 }
 
-static const char *const *audio_sdl2mixer_get_supported_sfx_exts(uint *numexts) {
-	static const char *const exts[] = { ".ogg", ".wav" };
-	*numexts = ARRAY_SIZE(exts);
-	return exts;
-}
-
-static const char *const *audio_sdl2mixer_get_supported_bgm_exts(uint *numexts) {
+static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
 	static const char *const exts[] = { ".opus", ".ogg", ".wav" };
 	*numexts = ARRAY_SIZE(exts);
 	return exts;
@@ -455,6 +460,92 @@ static void audio_sdl2mixer_music_unload(MusicImpl *imus) {
 	free(imus);
 }
 
+static OggOpusFile *try_load_opus(SDL_RWops *rw) {
+	uint8_t buf[128];
+	SDL_RWread(rw, buf, 1, sizeof(buf));
+	int error = op_test(NULL, buf, sizeof(buf));
+
+	if(error != 0) {
+		log_debug("op_test() failed: %i", error);
+		goto fail;
+	}
+
+	OggOpusFile *opus = op_open_callbacks(rw, &opusutil_rwops_callbacks, buf, sizeof(buf), &error);
+
+	if(opus == NULL) {
+		log_debug("op_open_callbacks() failed: %i", error);
+		goto fail;
+	}
+
+	return opus;
+
+fail:
+	SDL_RWseek(rw, 0, RW_SEEK_SET);
+	return NULL;
+}
+
+static Mix_Chunk *read_opus_chunk(OggOpusFile *opus, const char *vfspath) {
+	// WARNING: it's important to use the SDL_* allocation functions here for the pcm buffer,
+	// so that SDL_mixer can free it properly later.
+
+	const size_t read_size = 1920;
+	size_t buf_size = read_size * 4;
+	size_t samples = 0;
+	sample_t *pcm = SDL_malloc(buf_size * sizeof(*pcm)), *pcm_ptr = pcm;
+
+	for(;;) {
+		ptrdiff_t ofs = (ptrdiff_t)(pcm_ptr - pcm);
+
+		if(buf_size - ofs < read_size) {
+			buf_size *= 2;
+			pcm = SDL_realloc(pcm, buf_size * sizeof(*pcm));
+			pcm_ptr = pcm + ofs;
+		}
+
+		int r = OPUS_READ_SAMPLES_STEREO(opus, pcm_ptr, read_size);
+
+		if(r == OP_HOLE) {
+			continue;
+		}
+
+		if(r < 0) {
+			log_error("Opus decode error %i after %zu samples (%s)", r, samples, vfspath);
+			SDL_free(pcm);
+			op_free(opus);
+			return NULL;
+		}
+
+		// r is the number of samples read !!PER CHANNEL!!
+		// since we tell Opusfile to downmix to stereo, exactly 2 channels are guaranteed.
+		int read = r * 2;
+		samples += read;
+
+		if(read == 0) {
+			op_free(opus);
+
+			// try to avoid wasting memory
+			pcm = SDL_realloc(pcm, samples * sizeof(*pcm));
+
+			Mix_Chunk *snd = Mix_QuickLoad_RAW((void*)pcm, samples * sizeof(*pcm));
+
+			if(!snd) {
+				log_error("Mix_QuickLoad_RAW() failed: %s (%s)", Mix_GetError(), vfspath);
+				SDL_free(pcm);
+				return NULL;
+			}
+
+			// hack to make SDL_mixer free the buffer for us
+			snd->allocated = true;
+
+			return snd;
+		}
+
+		pcm_ptr += read;
+	}
+
+	UNREACHABLE;
+}
+
 static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
@@ -463,11 +554,27 @@ static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 		return NULL;
 	}
 
-	Mix_Chunk *snd = Mix_LoadWAV_RW(rw, true);
+	// SDL2_Mixer as of 2.0.4 is too dumb to actually try to load Opus chunks,
+	// even if it was compiled with Opus support (which only works for music apparently /facepalm)
+	// So we'll try to load them via opusfile manually.
 
-	if(!snd) {
-		log_error("Mix_LoadWAV_RW() failed: %s (%s)", Mix_GetError(), vfspath);
-		return NULL;
+	Mix_Chunk *snd = NULL;
+	OggOpusFile *opus = try_load_opus(rw);
+
+	if(opus) {
+		snd = read_opus_chunk(opus, vfspath);
+
+		if(!snd) {
+			// error message printed by read_opus_chunk
+			return NULL;
+		}
+	} else {
+		snd = Mix_LoadWAV_RW(rw, true);
+
+		if(!snd) {
+			log_error("Mix_LoadWAV_RW() failed: %s (%s)", Mix_GetError(), vfspath);
+			return NULL;
+		}
 	}
 
 	SoundImpl *isnd = calloc(1, sizeof(*isnd));
@@ -492,8 +599,8 @@ static bool audio_sdl2mixer_sound_set_volume(SoundImpl *isnd, double gain) {
 AudioBackend _a_backend_sdl2mixer = {
 	.name = "sdl2mixer",
 	.funcs = {
-		.get_supported_music_exts = audio_sdl2mixer_get_supported_bgm_exts,
-		.get_supported_sound_exts = audio_sdl2mixer_get_supported_sfx_exts,
+		.get_supported_music_exts = audio_sdl2mixer_get_supported_exts,
+		.get_supported_sound_exts = audio_sdl2mixer_get_supported_exts,
 		.init = audio_sdl2mixer_init,
 		.music_fade = audio_sdl2mixer_music_fade,
 		.music_is_paused = audio_sdl2mixer_music_is_paused,
