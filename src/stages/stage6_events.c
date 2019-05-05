@@ -446,12 +446,12 @@ void elly_newton(Boss *b, int t) {
 
 	FROM_TO(30 + 60 * (D_Lunatic - global.diff), 10000000, 30 - 6 * global.diff) {
 		Sprite *apple = get_sprite("proj/apple");
-		Color *c = NULL;
+		Color c;
 
 		switch(tsrand() % 3) {
-			case 0: c = RGB(0.8, 0.0, 0.1); break;
-			case 1: c = RGB(0.4, 0.6, 0.0); break;
-			case 2: c = RGB(0.8, 0.6, 0.0); break;
+			case 0: c = *RGB(0.8, 0.0, 0.1); break;
+			case 1: c = *RGB(0.4, 0.6, 0.0); break;
+			case 2: c = *RGB(0.8, 0.6, 0.0); break;
 		}
 
 		complex apple_pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
@@ -463,7 +463,7 @@ void elly_newton(Boss *b, int t) {
 			.args = {
 				0, 0.05*I, M_PI*2*frand()
 			},
-			.color = c,
+			.color = &c,
 			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
 		);
 
