@@ -654,7 +654,7 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 }
 
 PlayerMode plrmode_reimu_a = {
-	.name = "Youkai Buster",
+	.name = "Yōkai Buster",
 	.description = "Sometimes it is easier to let your resolve do the aiming.",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
