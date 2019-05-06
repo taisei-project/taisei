@@ -485,65 +485,68 @@ fail:
 }
 
 static Mix_Chunk *read_opus_chunk(OggOpusFile *opus, const char *vfspath) {
-	// WARNING: it's important to use the SDL_* allocation functions here for the pcm buffer,
-	// so that SDL_mixer can free it properly later.
+	int mix_frequency = 0;
+	int mix_channels;
+	uint16_t mix_format = 0;
+	Mix_QuerySpec(&mix_frequency, &mix_format, &mix_channels);
 
-	const size_t read_size = 1920;
-	size_t buf_size = read_size * 4;
-	size_t samples = 0;
-	sample_t *pcm = SDL_malloc(buf_size * sizeof(*pcm)), *pcm_ptr = pcm;
+	SDL_AudioStream *stream = SDL_NewAudioStream(AUDIO_FORMAT, 2, 48000, mix_format, mix_channels, mix_frequency);
 
 	for(;;) {
-		ptrdiff_t ofs = (ptrdiff_t)(pcm_ptr - pcm);
-
-		if(buf_size - ofs < read_size) {
-			buf_size *= 2;
-			pcm = SDL_realloc(pcm, buf_size * sizeof(*pcm));
-			pcm_ptr = pcm + ofs;
-		}
-
-		int r = OPUS_READ_SAMPLES_STEREO(opus, pcm_ptr, read_size);
+		sample_t read_buf[1920];
+		int r = OPUS_READ_SAMPLES_STEREO(opus, read_buf, sizeof(read_buf));
 
 		if(r == OP_HOLE) {
 			continue;
 		}
 
 		if(r < 0) {
-			log_error("Opus decode error %i after %zu samples (%s)", r, samples, vfspath);
-			SDL_free(pcm);
+			log_error("Opus decode error %i (%s)", r, vfspath);
+			SDL_FreeAudioStream(stream);
 			op_free(opus);
 			return NULL;
+		}
+
+		if(r == 0) {
+			op_free(opus);
+			SDL_AudioStreamFlush(stream);
+			break;
 		}
 
 		// r is the number of samples read !!PER CHANNEL!!
 		// since we tell Opusfile to downmix to stereo, exactly 2 channels are guaranteed.
 		int read = r * 2;
-		samples += read;
 
-		if(read == 0) {
+		if(SDL_AudioStreamPut(stream, read_buf, read * sizeof(*read_buf)) < 0) {
+			log_sdl_error(LOG_ERROR, "SDL_AudioStreamPut");
+			SDL_FreeAudioStream(stream);
 			op_free(opus);
-
-			// try to avoid wasting memory
-			pcm = SDL_realloc(pcm, samples * sizeof(*pcm));
-
-			Mix_Chunk *snd = Mix_QuickLoad_RAW((void*)pcm, samples * sizeof(*pcm));
-
-			if(!snd) {
-				log_error("Mix_QuickLoad_RAW() failed: %s (%s)", Mix_GetError(), vfspath);
-				SDL_free(pcm);
-				return NULL;
-			}
-
-			// hack to make SDL_mixer free the buffer for us
-			snd->allocated = true;
-
-			return snd;
+			return NULL;
 		}
-
-		pcm_ptr += read;
 	}
 
-	UNREACHABLE;
+	int resampled_bytes = SDL_AudioStreamAvailable(stream);
+
+	if(resampled_bytes <= 0) {
+		log_error("SDL_AudioStream returned no data");
+		SDL_FreeAudioStream(stream);
+		return NULL;
+	}
+
+	// WARNING: it's important to use the SDL_* allocation functions here for the pcm buffer,
+	// so that SDL_mixer can free it properly later.
+
+	uint8_t *pcm = SDL_calloc(1, resampled_bytes);
+
+	SDL_AudioStreamGet(stream, pcm, resampled_bytes);
+	SDL_FreeAudioStream(stream);
+
+	Mix_Chunk *snd = Mix_QuickLoad_RAW(pcm, resampled_bytes);
+
+	// hack to make SDL_mixer free the buffer for us
+	snd->allocated = true;
+
+	return snd;
 }
 
 static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
