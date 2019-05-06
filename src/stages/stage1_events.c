@@ -156,6 +156,7 @@ static int cirno_pfreeze_frogs(Projectile *p, int t) {
 	}
 
 	if(t == 240) {
+		p->prevpos = p->pos;
 		p->pos0 = p->pos;
 		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
 		spawn_stain(p->pos, p->angle, 30);

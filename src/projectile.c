@@ -337,13 +337,14 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		if(seglen > 30) {
 			log_debug(
 				seglen > VIEWPORT_W
-					? "Lerp over HUGE distance %f; this is ABSOLUTELY a bug! Player speed was %f. Spawned at %s:%d (%s)"
-					: "Lerp over large distance %f; this is either a bug or a very fast projectile, investigate. Player speed was %f. Spawned at %s:%d (%s)",
+					? "Lerp over HUGE distance %f; this is ABSOLUTELY a bug! Player speed was %f. Spawned at %s:%d (%s); proj time = %d"
+					: "Lerp over large distance %f; this is either a bug or a very fast projectile, investigate. Player speed was %f. Spawned at %s:%d (%s); proj time = %d",
 				seglen,
 				cabs(global.plr.velocity),
 				p->debug.file,
 				p->debug.line,
-				p->debug.func
+				p->debug.func,
+				global.frames - p->birthtime
 			);
 		}
 
