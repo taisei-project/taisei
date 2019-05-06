@@ -302,10 +302,11 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
                         subprocess.check_call([
                             'cwebp',
                             '-progress',
-                            '-preset', 'drawing',
+                            '-preset', 'icon',
                             '-z', '9',
                             '-lossless',
                             '-q', '100',
+                            '-m', '6',
                             str(dstfile),
                             '-o', str(new_dstfile),
                         ])
