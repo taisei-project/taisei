@@ -156,14 +156,15 @@ endif
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
 if host_machine.system() == 'emscripten'
+    if get_option('b_staticpic')
+        warning('b_staticpic is not compatible with the LLVM WebAssembly backend')
+    endif
+
     em_debug = get_option('debug')
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
     em_link_args = [
-        em_bundle_link_args,
-        '--pre-js', em_preamble,
-        '--shell-file', em_shell,
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'ERROR_ON_MISSING_LIBRARIES=0',
@@ -178,13 +179,14 @@ if host_machine.system() == 'emscripten'
         '-s', 'TOTAL_MEMORY=268435456',
         '-s', 'USE_WEBGL2=1',
         '-s', 'WASM=1',
+        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
 
         # Try enabling this if unpatched Freetype crashes
         # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
 
     if em_debug
-        em_link_output_suffixes += ['wast']
+        # em_link_output_suffixes += ['wast']
         em_link_args += [
             '--emrun',
             '--profiling',
@@ -209,6 +211,7 @@ if host_machine.system() == 'emscripten'
     taisei = executable('@0@.bc'.format(taisei_basename), taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
+        link_args : em_link_args,
         install : false,
     )
 
@@ -220,6 +223,9 @@ if host_machine.system() == 'emscripten'
         command : [
             cc.cmd_array(),
             taisei.full_path(),
+            em_bundle_link_args,
+            '--pre-js', em_preamble,
+            '--shell-file', em_shell,
             em_link_args,
             '-o', '@OUTPUT0@',
         ],
