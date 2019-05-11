@@ -8,6 +8,8 @@ libpng
 libwebp
 libzip
 ogg
+opus
+opusfile
 sdl2
 sdl2_mixer
 shaderc

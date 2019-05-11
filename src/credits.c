@@ -125,8 +125,8 @@ static void credits_fill(void) {
 		"https://zlib.net/\n\n"
 		"libpng\n"
 		"http://www.libpng.org/\n\n"
-		"Ogg Vorbis\n"
-		"https://xiph.org/vorbis/"
+		"Ogg Opus\n"
+		"https://www.opus-codec.org/"
 	), 350);
 
 	credits_add((

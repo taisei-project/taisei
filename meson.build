@@ -114,13 +114,14 @@ endif
 static = get_option('static') or (host_machine.system() == 'emscripten')
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
+dep_opusfile    = dependency('opusfile',                            required : false, static : static, fallback : ['opusfile', 'opusfile_dep'])
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.5', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
-dep_sdl2_mixer  = dependency('SDL2_mixer',                          required : false, static : static, fallback : ['sdl2_mixer', 'sdl2_mixer_dep'])
+dep_sdl2        = dependency('sdl2',           version : '>=2.0.6', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
+dep_sdl2_mixer  = dependency('SDL2_mixer',     version : '>=2.0.4', required : false, static : static, fallback : ['sdl2_mixer', 'sdl2_mixer_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : false, static : static, fallback : ['libwebp', 'webp_dep'])
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static, fallback : ['libwebp', 'webpdecoder_dep'])
-dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
+dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 
 dep_m           = cc.find_library('m', required : false)

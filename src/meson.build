@@ -149,6 +149,10 @@ taisei_deps += [
     util_deps,
 ]
 
+if taisei_deps.contains(dep_opusfile)
+    taisei_src += util_opus_src
+endif
+
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
 if host_machine.system() == 'emscripten'

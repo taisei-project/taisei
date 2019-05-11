@@ -17,6 +17,10 @@ util_src = files(
     'stringops.c',
 )
 
+util_opus_src = files(
+    'opuscruft.c',
+)
+
 sse42_src += files(
     'sse42.c',
 )
