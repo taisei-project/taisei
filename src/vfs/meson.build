@@ -32,9 +32,13 @@ else
 endif
 
 if host_machine.system() == 'emscripten'
-    vfs_src += files('setup_emscripten.c')
-    vfs_src += files('sync_emscripten.c')
+    vfs_src += files(
+        'setup_emscripten.c',
+        'sync_emscripten.c',
+    )
 else
-    vfs_src += files('setup_generic.c')
-    vfs_src += files('sync_noop.c')
+    vfs_src += files(
+        'setup_generic.c',
+        'sync_noop.c',
+    )
 endif
