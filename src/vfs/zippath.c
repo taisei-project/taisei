@@ -36,8 +36,9 @@ static char* vfs_zippath_repr(VFSNode *node) {
 static char* vfs_zippath_syspath(VFSNode *node) {
 	VFSZipPathData *zdata = node->data1;
 	char *zippath = vfs_node_repr(zdata->zipnode, true);
-	char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_preferred_separator, vfs_zippath_name(node));
+	char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_separators[0], vfs_zippath_name(node));
 	free(zippath);
+	vfs_syspath_normalize_inplace(subpath);
 	return subpath;
 }
 
@@ -51,7 +52,7 @@ static VFSNode* vfs_zippath_locate(VFSNode *node, const char *path) {
 
 	const char *mypath = vfs_zippath_name(node);
 	char fullpath[strlen(mypath) + strlen(path) + 2];
-	snprintf(fullpath, sizeof(fullpath), "%s%c%s", mypath, VFS_PATH_SEP, path);
+	snprintf(fullpath, sizeof(fullpath), "%s%c%s", mypath, VFS_PATH_SEPARATOR, path);
 	vfs_path_normalize_inplace(fullpath);
 
 	return vfs_locate(zdata->zipnode, fullpath);

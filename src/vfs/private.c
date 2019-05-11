@@ -190,7 +190,7 @@ bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) {
 	void *o = NULL;
 	bool is_dir = vfs_node_query(root).is_dir;
-	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? (char[]){VFS_PATH_SEP, 0} : "");
+	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");
 	char *r;
 
 	SDL_RWprintf(dest, "%s = %s\n", newprefix, r = vfs_node_repr(root, false));

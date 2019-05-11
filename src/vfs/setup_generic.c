@@ -49,6 +49,10 @@ static void get_core_paths(char **res, char **storage, char **cache) {
 			*cache = NULL;
 		}
 	}
+
+	if(*res)     vfs_syspath_normalize_inplace(*res);
+	if(*storage) vfs_syspath_normalize_inplace(*storage);
+	if(*cache)   vfs_syspath_normalize_inplace(*cache);
 }
 
 static bool vfs_mount_pkgdir(const char *dst, const char *src) {
@@ -132,7 +136,8 @@ void vfs_setup(CallChain next) {
 	char *res_path, *storage_path, *cache_path;
 	get_core_paths(&res_path, &storage_path, &cache_path);
 
-	char *local_res_path = strfmt("%s/resources", storage_path);
+	char *local_res_path = strfmt("%s%cresources", storage_path, vfs_get_syspath_separator());
+	vfs_syspath_normalize_inplace(local_res_path);
 
 	log_info("Resource path: %s", res_path);
 	log_info("Storage path: %s", storage_path);

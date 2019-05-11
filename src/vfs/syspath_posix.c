@@ -18,7 +18,7 @@
 
 #define _path_ data1
 
-char vfs_syspath_preferred_separator = '/';
+char *vfs_syspath_separators = "/";
 
 static void vfs_syspath_init_internal(VFSNode *node, char *path);
 
@@ -51,7 +51,7 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 
 static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
 	VFSNode *n = vfs_alloc();
-	vfs_syspath_init_internal(n, strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEP, path));
+	vfs_syspath_init_internal(n, strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEPARATOR, path));
 	return n;
 }
 
@@ -102,7 +102,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		subdir = "";
 	}
 
-	char *p = strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEP, subdir);
+	char *p = strfmt("%s%c%s", (char*)node->_path_, VFS_PATH_SEPARATOR, subdir);
 	bool ok = !mkdir(p, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 
 	if(!ok && errno == EEXIST) {

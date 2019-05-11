@@ -18,22 +18,22 @@ char* vfs_path_normalize(const char *path, char *out) {
 	char *path_end = strchr(path, 0);
 
 	while(p < path_end) {
-		if(strchr(VFS_PATH_SEPS, *p)) {
-			if(o > out && *(o - 1) != VFS_PATH_SEP) {
+		if(VFS_IS_PATH_SEPARATOR(*p)) {
+			if(o > out && !VFS_IS_PATH_SEPARATOR(o[-1])) {
 				last_sep = o;
-				*o++ = VFS_PATH_SEP;
+				*o++ = VFS_PATH_SEPARATOR;
 			}
 
 			do {
 				++p;
-			} while(p < path_end && strchr(VFS_PATH_SEPS, *p));
-		} else if(*p == '.' && strchr(VFS_PATH_SEPS, *(p + 1))) {
+			} while(p < path_end && VFS_IS_PATH_SEPARATOR(*p));
+		} else if(*p == '.' && VFS_IS_PATH_SEPARATOR(p[1])) {
 			p += 2;
-		} else if(!strncmp(p, "..", 2) && strchr(VFS_PATH_SEPS, *(p + 2))) {
+		} else if(!strncmp(p, "..", 2) && VFS_IS_PATH_SEPARATOR(p[2])) {
 			if(last_sep >= out) {
 				do {
 					--last_sep;
-				} while(*last_sep != VFS_PATH_SEP && last_sep >= out);
+				} while(!VFS_IS_PATH_SEPARATOR(*last_sep) && last_sep >= out);
 
 				o = last_sep-- + 1;
 			}
@@ -65,12 +65,12 @@ char* vfs_path_normalize_inplace(char *path) {
 void vfs_path_split_left(char *path, char **lpath, char **rpath) {
 	char *sep;
 
-	while(*path == VFS_PATH_SEP)
+	while(VFS_IS_PATH_SEPARATOR(*path))
 		++path;
 
 	*lpath = path;
 
-	if((sep = strchr(path, VFS_PATH_SEP))) {
+	if((sep = strchr(path, VFS_PATH_SEPARATOR))) {
 		*sep = 0;
 		*rpath = sep + 1;
 	} else {
@@ -82,10 +82,10 @@ void vfs_path_split_right(char *path, char **lpath, char **rpath) {
 	char *sep, *c;
 	assert(*path != 0);
 
-	while(*(c = strrchr(path, 0) - 1) == VFS_PATH_SEP)
+	while(VFS_IS_PATH_SEPARATOR(*(c = strrchr(path, 0) - 1)))
 		*c = 0;
 
-	if((sep = strrchr(path, VFS_PATH_SEP))) {
+	if((sep = strrchr(path, VFS_PATH_SEPARATOR))) {
 		*sep = 0;
 		*lpath = path;
 		*rpath = sep + 1;
@@ -107,7 +107,7 @@ void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, 
 	char *end = strrchr(buf, 0);
 
 	while(end > buf) {
-		if(end[-1] == VFS_PATH_SEP) {
+		if(VFS_IS_PATH_SEPARATOR(end[-1])) {
 			break;
 		}
 
@@ -118,11 +118,9 @@ void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, 
 }
 
 void vfs_path_root_prefix(char *path) {
-	if(!strchr(VFS_PATH_SEPS, *path)) {
+	if(!VFS_IS_PATH_SEPARATOR(*path)) {
 		memmove(path+1, path, strlen(path)+1);
-		*path = VFS_PATH_SEP;
-	} else {
-		*path = VFS_PATH_SEP;
+		*path = VFS_PATH_SEPARATOR;
 	}
 }
 

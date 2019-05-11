@@ -13,13 +13,11 @@
 
 #include <SDL_platform.h>
 
-#ifdef __WINDOWS__
-	#define VFS_PATH_SEPS "/\\"
-#else
-	#define VFS_PATH_SEPS "/"
-#endif
+#define VFS_PATH_SEPARATOR_STR "/"
+#define VFS_PATH_SEPARATOR VFS_PATH_SEPARATOR_STR[0]
+#define VFS_IS_PATH_SEPARATOR(chr) ((chr) == VFS_PATH_SEPARATOR)
 
-#define VFS_PATH_SEP VFS_PATH_SEPS[0]
+static_assert(sizeof(VFS_PATH_SEPARATOR_STR) == 2, "No more than one VFS path separator, please");
 
 char* vfs_path_normalize(const char *path, char *out);
 char* vfs_path_normalize_alloc(const char *path);
@@ -28,7 +26,5 @@ void vfs_path_split_left(char *path, char **lpath, char **rpath);
 void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
 void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, const char *relpath); // NOTE: doesn't normalize
-
-char* vfs_syspath_normalize_inplace(char *path);
 
 #endif // IGUARD_vfs_pathutil_h

@@ -14,8 +14,7 @@
 #include "private.h"
 #include "syspath_public.h"
 
-extern char vfs_syspath_preferred_separator;
+extern char *vfs_syspath_separators;
 bool vfs_syspath_init(VFSNode *node, const char *path);
-void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path);
 
 #endif // IGUARD_vfs_syspath_h

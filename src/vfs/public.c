@@ -265,7 +265,7 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 
 	for(const char *e; (e = vfs_dir_read(dir));) {
 		char fullpath[strlen(npath) + strlen(e) + 2];
-		snprintf(fullpath, sizeof(fullpath), "%s%c%s", npath, VFS_PATH_SEP, e);
+		snprintf(fullpath, sizeof(fullpath), "%s%c%s", npath, VFS_PATH_SEPARATOR, e);
 
 		if((result = visit(fullpath, arg))) {
 			return result;

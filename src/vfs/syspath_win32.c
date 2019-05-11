@@ -17,7 +17,7 @@
 #define _path_ data1
 #define _wpath_ data2
 
-char vfs_syspath_preferred_separator = '\\';
+char *vfs_syspath_separators = "\\/";
 
 // taken from SDL
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))

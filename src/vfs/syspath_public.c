@@ -36,5 +36,5 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
 }
 
 char vfs_get_syspath_separator(void) {
-	return vfs_syspath_preferred_separator;
+	return vfs_syspath_separators[0];
 }
