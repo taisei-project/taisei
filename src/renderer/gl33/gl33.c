@@ -997,8 +997,13 @@ void gl33_set_clear_depth(float depth) {
 
 static void gl33_swap(SDL_Window *window) {
 	r_flush_sprites();
+
+	Framebuffer *prev_fb = r_framebuffer_current();
+	r_framebuffer(NULL);
 	gl33_sync_framebuffer();
 	SDL_GL_SwapWindow(window);
+	r_framebuffer(prev_fb);
+
 	gl33_stats_post_frame();
 
 	if(glext.version.is_webgl) {

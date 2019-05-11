@@ -723,7 +723,6 @@ void video_shutdown(void) {
 }
 
 void video_swap_buffers(void) {
-	r_framebuffer(NULL);
 	r_swap(video.window);
 
 	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
