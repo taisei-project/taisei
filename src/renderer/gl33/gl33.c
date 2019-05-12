@@ -321,6 +321,26 @@ static void gl33_apply_capability(RendererCapability cap, bool value) {
 	}
 }
 
+static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
+	int fb_height = 0;
+
+	if(fb == NULL) {
+		SDL_Window *win = SDL_GL_GetCurrentWindow();
+		assume(win != NULL);
+		SDL_GL_GetDrawableSize(win, NULL, &fb_height);
+	} else {
+		for(FramebufferAttachment a = FRAMEBUFFER_ATTACH_COLOR0; a < FRAMEBUFFER_MAX_ATTACHMENTS; ++a) {
+			if(fb->attachments[a] != NULL) {
+				fb_height = fb->attachments[a]->params.height;
+				break;
+			}
+		}
+	}
+
+	assert(fb_height > 0);
+	vp->y = fb_height - vp->y - vp->h;
+}
+
 static inline FloatRect* get_framebuffer_viewport(Framebuffer *fb) {
 	if(fb == NULL) {
 		return &R.viewport.default_framebuffer;
@@ -964,11 +984,13 @@ static Framebuffer *gl33_framebuffer_current(void) {
 }
 
 static void gl33_framebuffer_viewport(Framebuffer *fb, FloatRect vp) {
+	transform_viewport_origin(fb, &vp);
 	memcpy(get_framebuffer_viewport(fb), &vp, sizeof(vp));
 }
 
 static void gl33_framebuffer_viewport_current(Framebuffer *fb, FloatRect *out_rect) {
 	*out_rect = *get_framebuffer_viewport(fb);
+	transform_viewport_origin(fb, out_rect);
 }
 
 static void gl33_shader(ShaderProgram *prog) {

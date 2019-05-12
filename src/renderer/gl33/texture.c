@@ -352,7 +352,7 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 
 	glTexSubImage2D(
 		GL_TEXTURE_2D, mipmap,
-		x, y, pix.width, pix.height,
+		x, tex->params.height - y - pix.height, pix.width, pix.height,
 		fmt->gl_fmt,
 		fmt->gl_type,
 		pix.data.untyped

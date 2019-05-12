@@ -487,6 +487,11 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	float s = frag.w/tw;
 	float t = frag.h/th;
 
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		// FIXME: please somehow abstract this shit away!
+		frag.y = th - frag.y - frag.h;
+	}
+
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
