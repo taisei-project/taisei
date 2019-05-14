@@ -70,6 +70,7 @@ typedef struct TextParams {
 	const ShaderCustomParams *shader_params;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	double max_width;
+	FloatRect *overlay_projection;
 	BlendMode blend;
 	Alignment align;
 } TextParams;

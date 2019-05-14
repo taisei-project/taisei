@@ -839,23 +839,25 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox)
 		x += apply_kerning(font, prev_glyph_idx, glyph);
 
 		int g_x0 = x + glyph->metrics.bearing_x;
-		int g_x1 = g_x0 + glyph->metrics.width;
+		int g_x1 = g_x0 + imax(glyph->metrics.width, glyph->sprite.w);
 
-		bbox->x.max = max(bbox->x.max, g_x0);
-		bbox->x.max = max(bbox->x.max, g_x1);
-		bbox->x.min = min(bbox->x.min, g_x0);
-		bbox->x.min = min(bbox->x.min, g_x1);
+		bbox->x.max = imax(bbox->x.max, g_x0);
+		bbox->x.max = imax(bbox->x.max, g_x1);
+		bbox->x.min = imin(bbox->x.min, g_x0);
+		bbox->x.min = imin(bbox->x.min, g_x1);
 
 		int g_y0 = y - glyph->metrics.bearing_y;
-		int g_y1 = g_y0 + glyph->metrics.height;
+		int g_y1 = g_y0 + imax(glyph->metrics.height, glyph->sprite.h);
 
-		bbox->y.max = max(bbox->y.max, g_y0);
-		bbox->y.max = max(bbox->y.max, g_y1);
-		bbox->y.min = min(bbox->y.min, g_y0);
-		bbox->y.min = min(bbox->y.min, g_y1);
+		bbox->y.max = imax(bbox->y.max, g_y0);
+		bbox->y.max = imax(bbox->y.max, g_y1);
+		bbox->y.min = imin(bbox->y.min, g_y0);
+		bbox->y.min = imin(bbox->y.min, g_y1);
 
 		prev_glyph_idx = glyph->ft_index;
+
 		x += glyph->metrics.advance;
+		bbox->x.max = imax(bbox->x.max, x);
 	}
 }
 
@@ -961,9 +963,16 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	BBox bbox;
 	double x = params->pos.x;
 	double y = params->pos.y;
-	double iscale = 1 / font->metrics.scale;
+	double scale = font->metrics.scale;
+	double iscale = 1 / scale;
+
+	struct {
+		struct { double min, max; } x, y;
+		double w, h;
+	} overlay;
 
 	text_ucs4_bbox(font, ucs4text, 0, &bbox);
+
 	sp.shader_ptr = params->shader_ptr;
 
 	if(sp.shader_ptr == NULL) {
@@ -991,28 +1000,48 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	r_mat_push();
 	r_mat_translate(x, y, 0);
 	r_mat_scale(iscale, iscale, 1);
+
+	double orig_x = x;
+	double orig_y = y;
 	x = y = 0;
 
-	double x_orig = x;
-	adjust_xpos(font, ucs4text, params->align, x_orig, &x);
+	adjust_xpos(font, ucs4text, params->align, 0, &x);
 
-	// bbox.y.max = imax(bbox.y.max, font->metrics.ascent);
-	// bbox.y.min = imin(bbox.y.min, font->metrics.descent);
+	if(params->overlay_projection) {
+		FloatRect *op = params->overlay_projection;
+		overlay.x.min = (op->x - orig_x) * scale;
+		overlay.x.max = overlay.x.min + op->w * scale;
+		overlay.y.min = (op->y - orig_y) * scale;
+		overlay.y.max = overlay.y.min + op->h * scale;
+	} else {
+		overlay.x.min = bbox.x.min + x;
+		overlay.x.max = bbox.x.max + x;
+		overlay.y.min = bbox.y.min - font->metrics.descent;
+		overlay.y.max = bbox.y.max - font->metrics.descent;
+	}
 
-	double bbox_w = bbox.x.max - bbox.x.min;
-	double bbox_h = bbox.y.max - bbox.y.min;
+	overlay.w = overlay.x.max - overlay.x.min;
+	overlay.h = overlay.y.max - overlay.y.min;
 
 	#ifdef TEXT_DRAW_BBOX
-	// TODO: align this correctly in the multi-line case
+	double bbox_w = bbox.x.max - bbox.x.min;
+	double bbox_h = bbox.y.max - bbox.y.min;
 	double bbox_x_mid = x + bbox.x.min + bbox_w * 0.5;
-	double bbox_y_mid = y + bbox.y.min - font->metrics.descent + bbox_h * 0.5;
+	double bbox_y_mid = y + bbox.y.min + bbox_h * 0.5 - font->metrics.descent;
+
+	#if 0  /* enable to visualize the overlay projection instead */
+	bbox_w = overlay.w;
+	bbox_h = overlay.h;
+	bbox_x_mid = overlay.x.min + overlay.w * 0.5;
+	bbox_y_mid = overlay.y.min + overlay.h * 0.5;
+	#endif
 
 	r_state_push();
 	r_shader_standard_notex();
 	r_mat_push();
 	r_mat_translate(bbox_x_mid, bbox_y_mid, 0);
 	r_mat_scale(bbox_w, bbox_h, 0);
-	r_color(color_mul(RGBA(0.5, 0.5, 0.5, 0.5), r_color_current()));
+	r_color(color_mul(RGBA(0.5, 0.5, 0.5, 0.5), sp.color));
 	r_draw_quad();
 	r_mat_pop();
 	r_state_pop();
@@ -1020,8 +1049,8 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	r_mat_mode(MM_TEXTURE);
 	r_mat_push();
-	r_mat_scale(1/bbox_w, 1/bbox_h, 1.0);
-	r_mat_translate(-bbox.x.min - (x - x_orig), -bbox.y.min + font->metrics.descent, 0);
+	r_mat_scale(1/overlay.w, 1/overlay.h, 1.0);
+	r_mat_translate(-overlay.x.min, overlay.y.min, 0);
 
 	// FIXME: is there a better way?
 	float texmat_offset_sign;
@@ -1039,7 +1068,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
-			adjust_xpos(font, tptr, params->align, x_orig, &x);
+			adjust_xpos(font, tptr, params->align, 0, &x);
 			y += font->metrics.lineskip;
 			continue;
 		}
@@ -1067,7 +1096,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			sp.scale.both = font->metrics.scale;
 
 			r_mat_push();
-			r_mat_translate(sp.pos.x - x_orig, sp.pos.y * texmat_offset_sign, 0);
+			r_mat_translate(sp.pos.x, sp.pos.y * texmat_offset_sign + overlay.h, 0);
 			r_mat_scale(w_saved, h_saved, 1.0);
 			r_mat_translate(-0.5, -0.5, 0);
 
@@ -1093,7 +1122,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	r_mat_pop();
 	r_mat_mode(mm_prev);
 
-	return x_orig + (x - x_orig) / font->metrics.scale;
+	return x * iscale;
 }
 
 static double _text_draw(Font *font, const char *text, const TextParams *params) {
