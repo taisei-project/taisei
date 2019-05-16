@@ -86,6 +86,7 @@ typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 typedef struct PlayerMode {
 	const char *name;
 	const char *description;
+	const char *spellcard_name;
 	PlayerCharacter *character;
 	PlayerDialogProcs *dialog;
 	ShotModeID shot_mode;

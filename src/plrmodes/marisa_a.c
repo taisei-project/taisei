@@ -683,6 +683,7 @@ static void marisa_laser_preload(void) {
 PlayerMode plrmode_marisa_a = {
 	.name = "Illusion Laser",
 	.description = "Kill it with lasers! Dodging is easy when nobody's firing. Just shoot them in the face, if they have one.",
+	.spellcard_name = "Pure Love “Galactic Spark”",
 	.character = &character_marisa,
 	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,

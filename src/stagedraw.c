@@ -931,6 +931,7 @@ void stage_draw_overlay(void) {
 
 	r_shader_standard();
 	stagetext_draw();
+	player_draw_overlay(&global.plr);
 	r_state_pop();
 }
 
@@ -1071,22 +1072,22 @@ void stage_draw_scene(StageInfo *stage) {
 
 	end_viewport_shake();
 
-	// draw overlay: in-viewport text and HUD elements, etc.
-	// this stuff is not affected by the screen shake effect
-	stage_draw_overlay();
-
-	// everything drawn, now apply postprocessing
+	// prepare to apply postprocessing
 	fbpair_swap(foreground);
 	r_blend(BLEND_NONE);
-
-	// stage postprocessing
-	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// bomb effects shader if present and player bombing
 	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {
 		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
 		apply_shader_rules(rules, foreground);
 	}
+
+	// draw overlay: in-viewport text and HUD elements, etc.
+	// this stuff is not affected by the screen shake effect
+	stage_draw_overlay();
+
+	// stage postprocessing
+	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// custom postprocessing
 	postprocess(

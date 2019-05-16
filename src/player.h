@@ -142,6 +142,8 @@ struct Player {
 	int axis_ud;
 	int axis_lr;
 
+	float bomb_cutin_alpha;
+
 	bool gamepadmove;
 	bool iddqd;
 
@@ -180,7 +182,8 @@ void player_stage_post_init(Player *plr);
 
 void player_free(Player *plr);
 
-void player_logic(Player*);
+void player_draw_overlay(Player *plr);
+void player_logic(Player *plr);
 bool player_should_shoot(Player *plr, bool extra);
 
 bool player_set_power(Player *plr, short npow);

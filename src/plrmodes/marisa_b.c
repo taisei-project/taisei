@@ -362,6 +362,7 @@ static void marisa_star_preload(void) {
 PlayerMode plrmode_marisa_b = {
 	.name = "Stellar Vortex",
 	.description = "Loads and loads of bullets. Some of them are bound to hit. That's called “homing”, right?",
+	.spellcard_name = "Magic Sign “Stellar Vortex”",
 	.character = &character_marisa,
 	.dialog = &dialog_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
