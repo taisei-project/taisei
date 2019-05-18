@@ -147,8 +147,8 @@ double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font
 		default: UNREACHABLE;
 	}
 
-	double ofs_int = font_get_metrics(f_int)->descent / font_get_metrics(f_int)->scale;
-	double ofs_fract = font_get_metrics(f_fract)->descent / font_get_metrics(f_fract)->scale - ofs_int;
+	double ofs_int = font_get_descent(f_int);
+	double ofs_fract = font_get_descent(f_fract) - ofs_int;
 	ofs_int = 0;
 
 	pos_x += text_draw(buf_int, &(TextParams) {

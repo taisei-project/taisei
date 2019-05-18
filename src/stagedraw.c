@@ -1691,7 +1691,7 @@ void stage_draw_hud(void) {
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
 		r_mat_push();
-		r_mat_translate(0, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+		r_mat_translate(0, font_get_descent(get_font("standard")), 0);
 
 		Sprite *spr_life = get_sprite("hud/heart");
 		Sprite *spr_bomb = get_sprite("hud/star");
@@ -1752,7 +1752,7 @@ void stage_draw_hud(void) {
 
 	// Power/Item/Voltage icons
 	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_metrics(get_font("standard"))->descent * 0.5, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
