@@ -15,7 +15,8 @@
 #include "stagedraw.h"
 
 // args are pain
-static Enemy *laser_renderer;
+static int _laser_renderer_ref;
+#define laser_renderer ((Enemy*)REF(_laser_renderer_ref))
 
 typedef struct MarisaLaserData {
 	struct {
@@ -343,7 +344,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
-		if(!(global.gameover > 0) && creal(laser_renderer->args[0])) {
+		if(!(global.gameover > 0) && laser_renderer && creal(laser_renderer->args[0])) {
 			spawn_laser_fader(e, laser_renderer->args[0]);
 		}
 
@@ -614,9 +615,14 @@ static void marisa_laser_power(Player *plr, short npow) {
 }
 
 static void marisa_laser_init(Player *plr) {
-	laser_renderer = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
-	laser_renderer->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
+	Enemy *e = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
+	e->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
+	_laser_renderer_ref = add_ref(e);
 	marisa_laser_respawn_slaves(plr, plr->power);
+}
+
+static void marisa_laser_free(Player *plr) {
+	free_ref(_laser_renderer_ref);
 }
 
 static void marisa_laser_shot(Player *plr) {
@@ -688,5 +694,6 @@ PlayerMode plrmode_marisa_a = {
 		.power = marisa_laser_power,
 		.preload = marisa_laser_preload,
 		.init = marisa_laser_init,
+		.free = marisa_laser_free,
 	},
 };
