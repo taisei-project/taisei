@@ -190,6 +190,9 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
 
+	float ofs_x = spr->offset.x;
+	float ofs_y = spr->offset.y;
+
 	if(params->pos.x || params->pos.y) {
 		glm_translate(attribs.transform, (vec3) { params->pos.x, params->pos.y });
 	}
@@ -206,8 +209,16 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 
 	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
 
-	if(spr->offset.x || spr->offset.y) {
-		glm_translate(attribs.transform, (vec3) { spr->offset.x / spr->w, spr->offset.y / spr->h });
+	if(ofs_x || ofs_y) {
+		if(params->flip.x) {
+			ofs_x *= -1;
+		}
+
+		if(params->flip.y) {
+			ofs_y *= -1;
+		}
+
+		glm_translate(attribs.transform, (vec3) { ofs_x / spr->w, ofs_y / spr->h });
 	}
 
 	if(params->color == NULL) {
