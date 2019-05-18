@@ -1663,7 +1663,7 @@ void stage_draw_hud(void) {
 	labels.y.lives   = label_ypos += label_spacing;
 	labels.y.bombs   = label_ypos += label_spacing * 1.25;
 
-	label_ypos = 208;
+	label_ypos = 210;
 	labels.y.power   = label_ypos += label_spacing;
 	labels.y.value   = label_ypos += label_spacing;
 	labels.y.voltage = label_ypos += label_spacing;
@@ -1752,7 +1752,7 @@ void stage_draw_hud(void) {
 
 	// Power/Item/Voltage icons
 	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5 - 1, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
