@@ -1111,6 +1111,9 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw dialog
 	draw_dialog(global.dialog);
+
+	// draw "bottom text" (FPS, replay info, etc.)
+	stage_draw_bottom_text();
 }
 
 #define HUD_X_PADDING 16
@@ -1486,7 +1489,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	}
 }
 
-static void stage_draw_hud_bottom_text(void) {
+void stage_draw_bottom_text(void) {
 	char buf[64];
 	Font *font;
 
@@ -1824,7 +1827,6 @@ void stage_draw_hud(void) {
 	}
 
 	r_mat_pop();
-	stage_draw_hud_bottom_text();
 
 	// Boss indicator ("Enemy")
 	if(global.boss) {
@@ -1832,9 +1834,12 @@ void stage_draw_hud(void) {
 		if(red > 1)
 			red = 0;
 		
-		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
-		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		r_color4(1, 1, 1, 1);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "boss_indicator",
+			.shader = "sprite_default",
+			.pos = { VIEWPORT_X+creal(global.boss->pos), 590 },
+			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
+		});
 	}
 }
 

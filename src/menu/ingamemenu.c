@@ -221,5 +221,8 @@ void draw_ingame_menu(MenuData *menu) {
 	r_mat_pop();
 	r_shader_ptr(sh_prev);
 
+	// TODO handle dialog somehow
+
 	stage_draw_hud();
+	stage_draw_bottom_text();
 }
