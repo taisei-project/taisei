@@ -68,6 +68,8 @@ void* load_sprite_begin(const char *path, uint flags) {
 		{ "region_h", .out_float = &spr->tex_area.h },
 		{ "w",        .out_float = &spr->w },
 		{ "h",        .out_float = &spr->h },
+		{ "offset_x", .out_float = &spr->offset.x },
+		{ "offset_y", .out_float = &spr->offset.y },
 		{ NULL }
 	})) {
 		free(spr);
@@ -168,7 +170,7 @@ void draw_sprite_batched_p(float x, float y, Sprite *spr) {
 
 void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
 	begin_draw_texture(
-		(FloatRect){ x, y, spr->w * scale_x, spr->h * scale_y },
+		(FloatRect){ x + spr->offset.x * scale_x, y + spr->offset.y * scale_y, spr->w * scale_x, spr->h * scale_y },
 		(FloatRect){ spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
 		spr->tex
 	);

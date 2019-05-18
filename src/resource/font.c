@@ -459,6 +459,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	}
 
 	Glyph *glyph = font->glyphs + font->glyphs_used - 1;
+	memset(glyph, 0, sizeof(*glyph));
 
 	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_NO_BITMAP | FT_LOAD_TARGET_LIGHT);
 

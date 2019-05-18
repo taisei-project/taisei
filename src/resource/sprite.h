@@ -17,9 +17,23 @@
 typedef struct Sprite {
 	Texture *tex;
 	FloatRect tex_area;
-	float w;
-	float h;
+	union {
+		FloatRect sprite_area;
+		struct {
+			union {
+				FloatOffset offset;
+				struct { float x, y; };
+			};
+			union {
+				FloatExtent extent;
+				struct { float w, h; };
+			};
+		};
+	};
 } Sprite;
+
+static_assert(offsetof(Sprite, sprite_area.offset) == offsetof(Sprite, offset), "Sprite struct layout inconsistent with FloatRect");
+static_assert(offsetof(Sprite, sprite_area.extent) == offsetof(Sprite, extent), "Sprite struct layout inconsistent with FloatRect");
 
 char* sprite_path(const char *name);
 void* load_sprite_begin(const char *path, uint flags);

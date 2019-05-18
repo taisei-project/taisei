@@ -206,6 +206,10 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 
 	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
 
+	if(spr->offset.x || spr->offset.y) {
+		glm_translate(attribs.transform, (vec3) { spr->offset.x / spr->w, spr->offset.y / spr->h });
+	}
+
 	if(params->color == NULL) {
 		// XXX: should we use r_color_current here?
 		attribs.rgba[0] = attribs.rgba[1] = attribs.rgba[2] = attribs.rgba[3] = 1;
