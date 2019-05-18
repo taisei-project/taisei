@@ -61,7 +61,7 @@ class ConfigSyntaxError(Exception):
     pass
 
 
-def write_sprite_def(dst, texture, region, size, overrides=None):
+def write_sprite_def(dst, texture, region, overrides=None):
     dst.parent.mkdir(exist_ok=True, parents=True)
 
     text = (
@@ -71,8 +71,6 @@ def write_sprite_def(dst, texture, region, size, overrides=None):
         f'region_y = {region[1]}\n'
         f'region_w = {region[2]}\n'
         f'region_h = {region[3]}\n'
-        # f'w = {size[0]}\n'
-        # f'h = {size[1]}\n'
     )
 
     if overrides is not None:
@@ -277,13 +275,12 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
                     override_contents = override_path.read_text()
                 else:
                     override_contents = None
-                    write_override_template(override_path, img.size)
+                    write_override_template(override_path, (rect.width - border * 2, rect.height - border * 2))
 
                 write_sprite_def(
                     temp_dst / f'{name}.spr',
                     textureid,
                     (rect.x + border, rect.y + border, rect.width - border * 2, rect.height - border * 2),
-                    img.size,
                     overrides=override_contents
                 )
 
