@@ -97,11 +97,6 @@ endforeach
 if host_machine.system() == 'emscripten'
     # First add some stuff that isn't sourced from resources/
 
-    em_bundle_misc_files += gamecontrollerdb_path
-    em_bundle_misc_packer_args += [
-        '--preload', '@0@@@1@/@2@'.format(gamecontrollerdb_path, em_data_prefix, gamecontrollerdb_name)
-    ]
-
     foreach shader : essl_targets
         # This one is especially dirty!
         abs_path = shader.full_path()
