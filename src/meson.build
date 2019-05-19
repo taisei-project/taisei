@@ -197,11 +197,18 @@ if host_machine.system() == 'emscripten'
         ]
     else
         em_link_args += [
-            '--llvm-lto', (get_option('b_lto') ? '3' : '0'),
             '-O@0@'.format(get_option('optimization')),
             '-g0',
             '-s', 'ASSERTIONS=0',
         ]
+
+        if get_option('b_lto')
+            em_link_args += [
+                # See https://github.com/emscripten-core/emscripten/issues/8574
+                '-s', 'WASM_OBJECT_FILES=0',
+                '--llvm-lto', '3',
+            ]
+        endif
     endif
 
     foreach suffix : em_link_output_suffixes
