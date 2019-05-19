@@ -252,8 +252,21 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 	return B.create_window(title, x, y, w, h, flags);
 }
 
-bool r_supports(RendererFeature feature) {
-	return B.supports(feature);
+r_feature_bits_t r_features(void) {
+	return B.features();
+}
+
+r_capability_bits_t r_capabilities_current(void) {
+	return B.capabilities_current();
+}
+
+void r_capabilities(r_capability_bits_t newcaps) {
+	r_capability_bits_t caps = B.capabilities_current();
+
+	if(caps != newcaps) {
+		_r_state_touch_capabilities();
+		B.capabilities(newcaps);
+	}
 }
 
 void r_capability(RendererCapability cap, bool value) {

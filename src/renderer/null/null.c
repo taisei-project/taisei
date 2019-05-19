@@ -23,9 +23,7 @@ static void null_init(void) { }
 static void null_post_init(void) { }
 static void null_shutdown(void) { }
 
-static bool null_supports(RendererFeature feature) {
-	return true;
-}
+static r_feature_bits_t null_features(void) { return ~0; }
 
 static void null_capabilities(r_capability_bits_t capbits) { }
 static r_capability_bits_t null_capabilities_current(void) { return (r_capability_bits_t)-1; }
@@ -169,7 +167,7 @@ RendererBackend _r_backend_null = {
 		.post_init = null_post_init,
 		.shutdown = null_shutdown,
 		.create_window = null_create_window,
-		.supports = null_supports,
+		.features = null_features,
 		.capabilities = null_capabilities,
 		.capabilities_current = null_capabilities_current,
 		.draw = null_draw,

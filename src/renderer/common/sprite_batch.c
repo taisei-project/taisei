@@ -14,6 +14,14 @@
 #include "resource/sprite.h"
 #include "resource/model.h"
 
+#ifndef SPRITE_BATCH_STATS
+#ifdef DEBUG
+	#define SPRITE_BATCH_STATS 1
+#else
+	#define SPRITE_BATCH_STATS 0
+#endif
+#endif
+
 typedef struct SpriteAttribs {
 	mat4 transform;
 	mat4 tex_transform;
@@ -29,30 +37,33 @@ typedef struct SpriteAttribs {
 #define SIZEOF_SPRITE_ATTRIBS (offsetof(SpriteAttribs, end_of_fields))
 
 static struct SpriteBatchState {
+	// constants (set once on init and not expected to change)
 	VertexArray *varr;
 	VertexBuffer *vbuf;
-	uint base_instance;
+	Model quad;
+	r_feature_bits_t renderer_features;
+
+	// varying state
+	mat4 projection;
 	Texture *primary_texture;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	ShaderProgram *shader;
-	BlendMode blend;
 	Framebuffer *framebuffer;
+	uint base_instance;
+	BlendMode blend;
 	CullFaceMode cull_mode;
 	DepthTestFunc depth_func;
-	mat4 projection CGLM_ALIGN(32);
-	uint cull_enabled : 1;
-	uint depth_test_enabled : 1;
-	uint depth_write_enabled : 1;
 	uint num_pending;
+	r_capability_bits_t capbits;
 
-	Model quad;
-
+#if SPRITE_BATCH_STATS
 	struct {
 		uint flushes;
 		uint sprites;
 		uint best_batch;
 		uint worst_batch;
 	} frame_stats;
+#endif
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
@@ -113,6 +124,8 @@ void _r_sprite_batch_init(void) {
 	_r_sprite_batch.quad.offset = 0;
 	_r_sprite_batch.quad.primitive = PRIM_TRIANGLE_STRIP;
 	_r_sprite_batch.quad.vertex_array = _r_sprite_batch.varr;
+
+	_r_sprite_batch.renderer_features = r_features();
 }
 
 void _r_sprite_batch_shutdown(void) {
@@ -128,21 +141,23 @@ void r_flush_sprites(void) {
 	uint pending = _r_sprite_batch.num_pending;
 
 	// needs to be done early to thwart recursive callss
+	_r_sprite_batch.num_pending = 0;
 
+#if SPRITE_BATCH_STATS
 	if(_r_sprite_batch.frame_stats.flushes) {
-		if(_r_sprite_batch.num_pending > _r_sprite_batch.frame_stats.best_batch) {
-			_r_sprite_batch.frame_stats.best_batch = _r_sprite_batch.num_pending;
+		if(pending > _r_sprite_batch.frame_stats.best_batch) {
+			_r_sprite_batch.frame_stats.best_batch = pending;
 		}
 
-		if(_r_sprite_batch.num_pending < _r_sprite_batch.frame_stats.worst_batch) {
-			_r_sprite_batch.frame_stats.worst_batch = _r_sprite_batch.num_pending;
+		if(pending < _r_sprite_batch.frame_stats.worst_batch) {
+			_r_sprite_batch.frame_stats.worst_batch = pending;
 		}
 	} else {
-		_r_sprite_batch.frame_stats.worst_batch = _r_sprite_batch.frame_stats.best_batch = _r_sprite_batch.num_pending;
+		_r_sprite_batch.frame_stats.worst_batch = _r_sprite_batch.frame_stats.best_batch = pending;
 	}
 
-	_r_sprite_batch.num_pending = 0;
 	_r_sprite_batch.frame_stats.flushes++;
+#endif
 
 	r_state_push();
 
@@ -155,13 +170,17 @@ void r_flush_sprites(void) {
 	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
-	r_capability(RCAP_DEPTH_TEST, _r_sprite_batch.depth_test_enabled);
-	r_capability(RCAP_DEPTH_WRITE, _r_sprite_batch.depth_write_enabled);
-	r_capability(RCAP_CULL_FACE, _r_sprite_batch.cull_enabled);
-	r_depth_func(_r_sprite_batch.depth_func);
-	r_cull(_r_sprite_batch.cull_mode);
+	r_capabilities(_r_sprite_batch.capbits);
 
-	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
+	if(_r_sprite_batch.capbits & r_capability_bit(RCAP_DEPTH_TEST)) {
+		r_depth_func(_r_sprite_batch.depth_func);
+	}
+
+	if(_r_sprite_batch.capbits & r_capability_bit(RCAP_CULL_FACE)) {
+		r_cull(_r_sprite_batch.cull_mode);
+	}
+
+	if(_r_sprite_batch.renderer_features & r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
 		r_draw_model_ptr(&_r_sprite_batch.quad, pending, _r_sprite_batch.base_instance);
 		_r_sprite_batch.base_instance += pending;
 
@@ -256,7 +275,10 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 	}
 
 	SDL_RWwrite(stream, &attribs, SIZEOF_SPRITE_ATTRIBS, 1);
+
+#if SPRITE_BATCH_STATS
 	_r_sprite_batch.frame_stats.sprites++;
+#endif
 }
 
 void r_draw_sprite(const SpriteParams *params) {
@@ -319,33 +341,21 @@ void r_draw_sprite(const SpriteParams *params) {
 		_r_sprite_batch.blend = blend;
 	}
 
-	bool depth_test_enabled = r_capability_current(RCAP_DEPTH_TEST);
-	bool depth_write_enabled = r_capability_current(RCAP_DEPTH_WRITE);
-	bool cull_enabled = r_capability_current(RCAP_CULL_FACE);
+	r_capability_bits_t caps = r_capabilities_current();
 	DepthTestFunc depth_func = r_depth_func_current();
 	CullFaceMode cull_mode = r_cull_current();
 
-	if(_r_sprite_batch.depth_test_enabled != depth_test_enabled) {
+	if(_r_sprite_batch.capbits != caps) {
 		r_flush_sprites();
-		_r_sprite_batch.depth_test_enabled = depth_test_enabled;
+		_r_sprite_batch.capbits = caps;
 	}
 
-	if(_r_sprite_batch.depth_write_enabled != depth_write_enabled) {
-		r_flush_sprites();
-		_r_sprite_batch.depth_write_enabled = depth_write_enabled;
-	}
-
-	if(_r_sprite_batch.cull_enabled != cull_enabled) {
-		r_flush_sprites();
-		_r_sprite_batch.cull_enabled = cull_enabled;
-	}
-
-	if(_r_sprite_batch.depth_func != depth_func) {
+	if((caps & r_capability_bit(RCAP_DEPTH_TEST)) && _r_sprite_batch.depth_func != depth_func) {
 		r_flush_sprites();
 		_r_sprite_batch.depth_func = depth_func;
 	}
 
-	if(_r_sprite_batch.cull_mode != cull_mode) {
+	if((caps & r_capability_bit(RCAP_CULL_FACE)) && _r_sprite_batch.cull_mode != cull_mode) {
 		r_flush_sprites();
 		_r_sprite_batch.cull_mode = cull_mode;
 	}
@@ -361,6 +371,8 @@ void r_draw_sprite(const SpriteParams *params) {
 	size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
 
 	if(remaining < SIZEOF_SPRITE_ATTRIBS) {
+		// TODO: maybe it is better to grow the buffer instead?
+
 		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
 			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %zu remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, remaining);
 		}
@@ -375,12 +387,12 @@ void r_draw_sprite(const SpriteParams *params) {
 #include "resource/font.h"
 
 void _r_sprite_batch_end_frame(void) {
-#ifdef DEBUG
+	r_flush_sprites();
+
+#if SPRITE_BATCH_STATS
 	if(!_r_sprite_batch.frame_stats.flushes) {
 		return;
 	}
-
-	r_flush_sprites();
 
 	static char buf[512];
 	snprintf(buf, sizeof(buf), "%6i sprites %6i flushes %9.02f spr/flush %6i best %6i worst",
@@ -400,7 +412,6 @@ void _r_sprite_batch_end_frame(void) {
 	});
 
 	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
-
 #endif
 }
 

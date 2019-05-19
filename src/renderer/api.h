@@ -409,7 +409,10 @@ void r_init(void);
 void r_post_init(void);
 void r_shutdown(void);
 
-bool r_supports(RendererFeature feature);
+r_feature_bits_t r_features(void);
+
+r_capability_bits_t r_capabilities_current(void);
+void r_capabilities(r_capability_bits_t newcaps);
 
 void r_capability(RendererCapability cap, bool value);
 bool r_capability_current(RendererCapability cap);
@@ -836,6 +839,11 @@ r_feature_bits_t r_feature_bit(RendererFeature feat) {
 	r_feature_bits_t idx = feat;
 	assert(idx < NUM_RFEATS);
 	return (1 << idx);
+}
+
+static inline attr_must_inline
+bool r_supports(RendererFeature feature) {
+	return r_features() & r_feature_bit(feature);
 }
 
 #endif // IGUARD_renderer_api_h

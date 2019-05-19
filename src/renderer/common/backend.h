@@ -20,7 +20,7 @@ typedef struct RendererFuncs {
 
 	SDL_Window* (*create_window)(const char *title, int x, int y, int w, int h, uint32_t flags);
 
-	bool (*supports)(RendererFeature feature);
+	r_feature_bits_t (*features)(void);
 
 	void (*capabilities)(r_capability_bits_t capbits);
 	r_capability_bits_t (*capabilities_current)(void);

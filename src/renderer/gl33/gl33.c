@@ -855,8 +855,8 @@ static SDL_Window* gl33_create_window(const char *title, int x, int y, int w, in
 	return window;
 }
 
-static bool gl33_supports(RendererFeature feature) {
-	return R.features & r_feature_bit(feature);
+static r_feature_bits_t gl33_features(void) {
+	return R.features;
 }
 
 static void gl33_capabilities(r_capability_bits_t capbits) {
@@ -1079,7 +1079,7 @@ RendererBackend _r_backend_gl33 = {
 		.post_init = gl33_post_init,
 		.shutdown = gl33_shutdown,
 		.create_window = gl33_create_window,
-		.supports = gl33_supports,
+		.features = gl33_features,
 		.capabilities = gl33_capabilities,
 		.capabilities_current = gl33_capabilities_current,
 		.draw = gl33_draw,
