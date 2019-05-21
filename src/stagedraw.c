@@ -561,7 +561,6 @@ static void draw_spellbg(int t) {
 }
 
 static void draw_spellbg_overlay(int t) {
-	r_mat_push();
 	Boss *b = global.boss;
 
 	float delay = ATTACK_START_DELAY;
@@ -570,24 +569,11 @@ static void draw_spellbg_overlay(int t) {
 		delay = ATTACK_START_DELAY_EXTRA;
 	}
 
-	{
-		float f = (-t+ATTACK_START_DELAY) / (delay+ATTACK_START_DELAY);
+	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
-		if(f > 0) {
-			draw_wall_of_text(f, b->current->name);
-		}
+	if(f > 0) {
+		draw_wall_of_text(f, b->current->name);
 	}
-
-	if(t < ATTACK_START_DELAY && b->dialog) {
-		r_mat_push();
-		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		r_color(RGBA_MUL_ALPHA(1,1,1,-f*f+2*f));
-		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
-		r_color4(1,1,1,1);
-		r_mat_pop();
-	}
-
-	r_mat_pop();
 }
 
 static inline bool should_draw_stage_bg(void) {
