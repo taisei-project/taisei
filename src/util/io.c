@@ -13,31 +13,44 @@
 #include "vfs/public.h"
 #include "assert.h"
 #include "stringops.h"
+#include "rwops/rwops_autobuf.h"
+#include "util/crap.h"
 
-char* read_all(const char *filename, int *outsize) {
-	char *text;
-	size_t size;
-
-	SDL_RWops *file = vfs_open(filename, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+char* read_all(const char *filename, size_t *outsize) {
+	SDL_RWops *file = vfs_open(filename, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
 		return NULL;
 	}
 
-	size = SDL_RWsize(file);
+	char *result, buf[BUFSIZ];
+	SDL_RWops *abuf = SDL_RWAutoBuffer((void**)&result, sizeof(buf));
+	assume(abuf != NULL);
 
-	text = malloc(size+1);
-	SDL_RWread(file, text, size, 1);
-	text[size] = 0;
+	size_t size = 0;
+
+	for(;;) {
+		size_t read = SDL_RWread(file, buf, 1, sizeof(buf));
+
+		if(read == 0) {
+			break;
+		}
+
+		SDL_RWwrite(abuf, buf, 1, read);
+		size += read;
+	}
 
 	SDL_RWclose(file);
+	SDL_WriteU8(abuf, 0);
+	result = memdup(result, size + 1);
+	SDL_RWclose(abuf);
 
 	if(outsize) {
 		*outsize = size;
 	}
 
-	return text;
+	return result;
 }
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {

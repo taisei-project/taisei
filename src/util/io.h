@@ -14,7 +14,7 @@
 #include <SDL.h>
 #include <stdio.h>
 
-char* read_all(const char *filename, int *size);
+char* read_all(const char *filename, size_t *size);
 
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize);
 char* SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize);

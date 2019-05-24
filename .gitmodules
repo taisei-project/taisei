@@ -6,3 +6,7 @@
 	path = external/gamecontrollerdb
 	url = https://github.com/taisei-project/SDL_GameControllerDB.git
 	branch = master
+[submodule "external/lua"]
+	path = external/lua
+	url = https://github.com/taisei-project/lua.git
+	branch = taisei

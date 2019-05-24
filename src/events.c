@@ -13,6 +13,7 @@
 #include "global.h"
 #include "video.h"
 #include "gamepad.h"
+#include "script/console.h"
 
 typedef struct EventHandlerContainer {
 	LIST_INTERFACE(struct EventHandlerContainer);
@@ -563,6 +564,11 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 
 	SDL_Scancode scan = event->key.keysym.scancode;
 	SDL_Keymod mod = event->key.keysym.mod;
+
+	if(scan == SDL_SCANCODE_GRAVE && (mod & KMOD_LSHIFT)) {
+		con_set_active(!con_is_active());
+		return true;
+	}
 
 	if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
 		video_take_screenshot();

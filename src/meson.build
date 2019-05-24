@@ -107,6 +107,7 @@ subdir('plrmodes')
 subdir('renderer')
 subdir('resource')
 subdir('rwops')
+subdir('script')
 subdir('stages')
 subdir('util')
 subdir('vfs')
@@ -138,6 +139,7 @@ taisei_src += [
     renderer_src,
     resource_src,
     rwops_src,
+    script_src,
     stages_src,
     util_src,
     vfs_src,

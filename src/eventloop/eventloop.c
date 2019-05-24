@@ -12,6 +12,7 @@
 #include "util.h"
 #include "global.h"
 #include "video.h"
+#include "script/console.h"
 
 struct evloop_s evloop;
 
@@ -59,7 +60,15 @@ LogicFrameAction run_logic_frame(LoopFrame *frame) {
 		return LFRAME_STOP;
 	}
 
-	LogicFrameAction a = frame->logic(frame->context);
+	LogicFrameAction a;
+
+	if(con_is_active()) {
+		con_update();
+		a = LFRAME_WAIT;
+	} else {
+		a = frame->logic(frame->context);
+	}
+
 	fpscounter_update(&global.fps.logic);
 
 	if(taisei_quit_requested()) {
@@ -104,6 +113,11 @@ RenderFrameAction run_render_frame(LoopFrame *frame) {
 	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 	RenderFrameAction a = frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
+
+	if(con_is_active()) {
+		con_draw();
+		a = RFRAME_SWAP;
+	}
 
 	if(a == RFRAME_SWAP) {
 		video_swap_buffers();

@@ -129,9 +129,15 @@ dep_m           = cc.find_library('m', required : false)
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
 
+proj_lua = subproject('lua')
+dep_lua_core = proj_lua.get_variable('lua_dep')
+dep_lua_stdlib = proj_lua.get_variable('lua_stdlib_dep')
+
 taisei_deps = [
     dep_cglm,
     dep_freetype,
+    dep_lua_core,
+    dep_lua_stdlib,
     dep_m,
     dep_png,
     dep_sdl2,

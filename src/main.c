@@ -25,10 +25,15 @@
 #include "version.h"
 #include "credits.h"
 #include "taskmanager.h"
+#include "script/script.h"
+#include "script/console.h"
 
 attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
+
+	con_shutdown();
+	script_shutdown();
 
 	taskmgr_global_shutdown();
 
@@ -248,6 +253,9 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	log_system_specs();
 	log_lib_versions();
 
+	con_init();
+	script_init();
+
 	config_load();
 
 	init_sdl();
@@ -260,6 +268,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	r_post_init();
 	draw_loading_screen();
 
+	con_postinit();
 	audio_init();
 	res_post_init();
 	gamepad_init();
