@@ -87,7 +87,7 @@ void draw_char_menu(MenuData *menu) {
 		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
 		assert(pchar != NULL);
 
-		const char *spr = pchar->dialog_sprite_name;
+		Sprite *spr = get_sprite(pchar->dialog_sprite_name);
 		const char *name = pchar->full_name;
 		const char *title = pchar->title;
 
@@ -98,7 +98,7 @@ void draw_char_menu(MenuData *menu) {
 		float o = 1-menu->entries[i].drawdata*2;
 
 		r_color4(o, o, o, o);
-		draw_sprite(SCREEN_W/2+260+200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
+		draw_sprite_p(SCREEN_W/2+240+220*menu->entries[i].drawdata, SCREEN_H - spr->h * 0.5, spr);
 
 		r_mat_push();
 		r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
@@ -138,7 +138,7 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
-	
+
 	float f = menu->drawdata[0]-PLR_SHOT_A;
 	float selbg_ofs = 200 + (100-70)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
 
