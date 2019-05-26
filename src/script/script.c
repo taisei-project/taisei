@@ -13,15 +13,10 @@
 #include "console.h"
 #include "version.h"
 
-#include <lua.h>
-#include <lualib.h>
-#include <lauxlib.h>
-
 #include "rwops_reader.h"
+#include "script_internal.h"
 
-static struct {
-	lua_State *lstate;
-} script;
+struct script script;
 
 static int script_msghandler(lua_State *L) {
 	// NOTE: Copied almost verbatim from lua.c
@@ -50,7 +45,7 @@ static noreturn int script_panic(lua_State *L) {
 	log_fatal("Unexpected Lua error:\n\n%s", error);
 }
 
-static int script_pcall_with_msghandler(lua_State *L, int narg, int nres) {
+int script_pcall_with_msghandler(lua_State *L, int narg, int nres) {
 	// NOTE: Copied almost verbatim from lua.c
 
 	int status;
@@ -162,21 +157,3 @@ void script_init(void) {
 void script_shutdown(void) {
 	script_state_destroy(&script.lstate);
 }
-
-ScriptReplResult script_repl(const char *chunk) {
-	ScriptReplResult result = REPL_OK;
-	assert(lua_gettop(script.lstate) == 0);
-
-	if(luaL_loadbufferx(script.lstate, chunk, strlen(chunk), "=(console)", "t") != LUA_OK) {
-		con_printf("%s\n", lua_tostring(script.lstate, -1));
-		result = REPL_ERROR;
-	} else if(script_pcall_with_msghandler(script.lstate, 0, 0) != LUA_OK) {
-		con_printf("%s\n", lua_tostring(script.lstate, -1));
-		result = REPL_ERROR;
-	}
-
-	lua_settop(script.lstate, 0);
-	return result;
-}
-
-#include "script.h"

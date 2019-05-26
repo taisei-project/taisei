@@ -16,6 +16,7 @@
 #include "util/graphics.h"
 #include "version.h"
 #include "script.h"
+#include "repl.h"
 
 #define CON_MAXLINES 1024
 #define CON_LINELEN 512
@@ -163,6 +164,21 @@ static void con_submit(void) {
 
 static void con_move_cursor(int ofs) {
 	console.input_cursor = iclamp((int)console.input_cursor + ofs, console.prompt_len, ucs4len(console.input_buffer));
+}
+
+void con_set_prompt(const char *prompt) {
+	uint32_t *input = INPUT_POINTER(0);
+	uint32_t pbuf[strlen(prompt) + 1];
+	utf8_to_ucs4(prompt, sizeof(pbuf), pbuf);
+	int plen = ucs4len(pbuf);
+
+	if(plen != console.prompt_len) {
+		memmove(input + plen, input + console.prompt_len, (ucs4len(input + console.prompt_len) + 1) * sizeof(*input));
+		console.input_cursor += (plen - (int)console.prompt_len);
+	}
+
+	memcpy(input, pbuf, sizeof(pbuf) - 1);
+	console.prompt_len = plen;
 }
 
 void con_init(void) {

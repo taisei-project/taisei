@@ -18,8 +18,8 @@ void con_update(void);
 void con_draw(void);
 void con_set_active(bool active);
 bool con_is_active(void);
-
-void con_print(const char *text);
-void con_printf(const char *fmt, ...) attr_printf(1, 2);
+void con_print(const char *text) attr_nonnull(1);
+void con_printf(const char *fmt, ...) attr_printf(1, 2) attr_nonnull(1);
+void con_set_prompt(const char *prompt) attr_nonnull(1);
 
 #endif // IGUARD_script_console_h
