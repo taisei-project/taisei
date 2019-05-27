@@ -19,6 +19,7 @@
 #include "repl.h"
 
 #define CON_MAXLINES 1024
+#define CON_MAXHISTORY 64
 #define CON_LINELEN 512
 #define CON_FONT "monotiny"
 #define CON_LINE_PREFIX "] "
@@ -29,58 +30,75 @@ static struct {
 		ResourceRef shader;
 	} res;
 
-	char *line_buffer;
-	uint32_t *input_buffer;
-	uint num_lines;
-	uint current_line;
-	uint line_cursor;
-	uint input_cursor;
-	uint prompt_len;
+	struct {
+		char *buffer;
+		struct {
+			uint index;
+			uint cursor;
+		} current;
+		uint num;
+	} lines;
+
+	struct {
+		uint32_t *buffer;
+		uint cursor;
+		uint prompt_len;
+	} input;
+
+	struct {
+		char *buffer;
+		char *input_saved;
+		uint current;
+		int selected;
+		uint num;
+	} history;
+
 	uint frames;
 	bool active;
 } console;
 
 static bool con_event(SDL_Event *evt, void *arg);
 
-#define LINE_POINTER(idx, ofs) (console.line_buffer + (idx) * CON_LINELEN + (ofs))
-#define INPUT_POINTER(ofs) (console.input_buffer + (ofs))
+#define LINE_POINTER(idx, ofs) (console.lines.buffer + (idx) * CON_LINELEN + (ofs))
+#define INPUT_POINTER(ofs) (console.input.buffer + (ofs))
+#define HISTORY_POINTER(idx) (console.history.buffer + (idx) * CON_LINELEN)
 
 static void con_print_internal(const char *text, const char *line_prefix) {
-	char *line = LINE_POINTER(console.current_line, console.line_cursor);
+	char *line = LINE_POINTER(console.lines.current.index, console.lines.current.cursor);
 	char *line_end = line + CON_LINELEN - 1;
 	uint pref_len = strlen(line_prefix);
 
 	for(const char *c = text; *c; ++c) {
 		if(*c == '\n' || line == line_end) {
-			console.current_line = (console.current_line + 1) % CON_MAXLINES;
+			console.lines.current.index = (console.lines.current.index + 1) % CON_MAXLINES;
+			*line = 0;
 
-			if(console.num_lines < CON_MAXLINES) {
-				++console.num_lines;
+			if(console.lines.num <= console.lines.current.index) {
+				console.lines.buffer = realloc(console.lines.buffer, ++console.lines.num * CON_LINELEN);
 			}
 
-			*line = 0;
-			line = LINE_POINTER(console.current_line, 0);
+			line = LINE_POINTER(console.lines.current.index, 0);
 			line_end = line + CON_LINELEN - 1;
 
 			for(const char *p = line_prefix; *p; ++p) {
 				*line++ = *p;
 			}
 
-			console.line_cursor = pref_len;
+			console.lines.current.cursor = pref_len;
 
 			if(*c != '\n') {
 				*line++ = *c;
-				++console.line_cursor;
+				++console.lines.current.cursor;
 			}
 		} else if(*c == '\r') {
-			console.line_cursor = pref_len;
-			line = LINE_POINTER(console.current_line, console.line_cursor);
+			console.lines.current.cursor = pref_len;
+			line = LINE_POINTER(console.lines.current.index, console.lines.current.cursor);
 		} else if(*c == '\b') {
-			console.line_cursor = imax(pref_len, (int)console.line_cursor - 1);
-			line = LINE_POINTER(console.current_line, console.line_cursor);
+			console.lines.current.cursor = imax(pref_len, (int)console.lines.current.cursor - 1);
+			line = LINE_POINTER(console.lines.current.index, console.lines.current.cursor);
 		} else {
 			*line++ = *c;
-			++console.line_cursor;
+			++console.lines.current.cursor;
 		}
 	}
 }
@@ -99,24 +117,24 @@ void con_printf(const char *fmt, ...) {
 }
 
 static void con_insert(const char *text_utf8) {
-	if(console.input_cursor >= CON_LINELEN) {
+	if(console.input.cursor >= CON_LINELEN) {
 		return;
 	}
 
-	uint32_t *input_ptr = INPUT_POINTER(console.input_cursor);
+	uint32_t *input_ptr = INPUT_POINTER(console.input.cursor);
 	// uint32_t *input_end = INPUT_POINTER(CON_LINELEN - 1);
 	size_t tail_len = ucs4len(input_ptr);
 	uint32_t tail[tail_len + 1];
 	memcpy(tail, input_ptr, sizeof(tail));
 
-	assert(tail_len + console.input_cursor == ucs4len(INPUT_POINTER(0)));
-	uint space_left = CON_LINELEN - console.input_cursor - tail_len - 1;
+	assert(tail_len + console.input.cursor == ucs4len(INPUT_POINTER(0)));
+	uint space_left = CON_LINELEN - console.input.cursor - tail_len - 1;
 
 	while(*text_utf8 && space_left) {
 		uint32_t chr = utf8_getch(&text_utf8);
 		*input_ptr++ = chr;
 		--space_left;
-		console.input_cursor++;
+		console.input.cursor++;
 	}
 
 	memcpy(input_ptr, tail, sizeof(tail));
@@ -124,46 +142,99 @@ static void con_insert(const char *text_utf8) {
 
 static void con_erase(int num) {
 	if(num < 0) {
-		int dest_ofs = (int)console.input_cursor + num;
+		int dest_ofs = (int)console.input.cursor + num;
 
-		if(dest_ofs < console.prompt_len) {
-			dest_ofs = console.prompt_len;
+		if(dest_ofs < console.input.prompt_len) {
+			dest_ofs = console.input.prompt_len;
 		}
 
-		if(console.input_cursor == dest_ofs) {
+		if(console.input.cursor == dest_ofs) {
 			return;
 		}
 
-		uint32_t *input_ptr = INPUT_POINTER(console.input_cursor);
-		memmove(console.input_buffer + dest_ofs, input_ptr, (ucs4len(input_ptr) + 1) * sizeof(*console.input_buffer));
-		console.input_cursor = dest_ofs;
+		uint32_t *input_ptr = INPUT_POINTER(console.input.cursor);
+		memmove(console.input.buffer + dest_ofs, input_ptr, (ucs4len(input_ptr) + 1) * sizeof(*console.input.buffer));
+		console.input.cursor = dest_ofs;
 	} else if(num > 0) {
-		uint32_t *input_ptr = INPUT_POINTER(console.input_cursor);
+		uint32_t *input_ptr = INPUT_POINTER(console.input.cursor);
 		size_t tail_len = ucs4len(input_ptr);
 
 		if(num > tail_len) {
 			num = tail_len;
 		}
 
-		memmove(input_ptr, input_ptr + num, (tail_len - num + 1) * sizeof(*console.input_buffer));
+		memmove(input_ptr, input_ptr + num, (tail_len - num + 1) * sizeof(*console.input.buffer));
 	}
+}
+
+static inline const char* con_fetch_history(int ofs) {
+	return HISTORY_POINTER((console.history.current - ofs - 1) % CON_MAXHISTORY);
+}
+
+static void con_add_history(char *line) {
+	if(!*line || (console.history.num > 0 && !strcmp(line, con_fetch_history(0)))) {
+		return;
+	}
+
+	if(console.history.num <= console.history.current) {
+		console.history.num++;
+		console.history.buffer = realloc(console.history.buffer, CON_MAXHISTORY * CON_LINELEN);
+	}
+
+	memcpy(HISTORY_POINTER(console.history.current), line, strlen(line) + 1);
+	console.history.current = (console.history.current + 1) % CON_MAXHISTORY;
+
+	console.history.selected = -1;
+	free(console.history.input_saved);
+	console.history.input_saved = NULL;
+}
+
+static void con_pull_history(int ofs) {
+	ofs = iclamp(ofs, -1, (int)console.history.num - 1);
+
+	if(ofs == console.history.selected) {
+		return;
+	}
+
+	uint32_t *ip = INPUT_POINTER(console.input.prompt_len);
+
+	if(ofs == -1) {
+		assert(console.history.input_saved != NULL);
+		utf8_to_ucs4(console.history.input_saved, CON_LINELEN - console.input.prompt_len, ip);
+		free(console.history.input_saved);
+		console.history.input_saved = NULL;
+	} else {
+		if(console.history.input_saved == NULL) {
+			console.history.input_saved = ucs4_to_utf8_alloc(ip);
+		}
+
+		const char *histline = con_fetch_history(ofs);
+		utf8_to_ucs4(histline, CON_LINELEN - console.input.prompt_len, ip);
+	}
+
+	console.input.cursor = ucs4len(ip) + console.input.prompt_len;
+	console.history.selected = ofs;
+}
+
+static inline void con_cycle_history(int ofs) {
+	con_pull_history(console.history.selected + ofs);
 }
 
 static void con_submit(void) {
 	uint32_t *input = INPUT_POINTER(0);
-	char buf[CON_LINELEN + 2];
 	char *utf8line = ucs4_to_utf8_alloc(input);
-	snprintf(buf, sizeof(buf), "\r%s", utf8line);
-	con_print_internal(buf, "");
+	con_print_internal("\r", "");
+	con_print_internal(utf8line, "");
 	con_print("\n");
-	script_repl(utf8line + console.prompt_len);
+	script_repl(utf8line + console.input.prompt_len);
+	con_add_history(utf8line + console.input.prompt_len);
 	free(utf8line);
-	console.input_cursor = console.prompt_len;
-	input[console.input_cursor] = 0;
+	console.input.cursor = console.input.prompt_len;
+	input[console.input.cursor] = 0;
 }
 
 static void con_move_cursor(int ofs) {
-	console.input_cursor = iclamp((int)console.input_cursor + ofs, console.prompt_len, ucs4len(console.input_buffer));
+	console.input.cursor = iclamp((int)console.input.cursor + ofs, console.input.prompt_len, ucs4len(console.input.buffer));
 }
 
 void con_set_prompt(const char *prompt) {
@@ -172,22 +243,22 @@ void con_set_prompt(const char *prompt) {
 	utf8_to_ucs4(prompt, sizeof(pbuf), pbuf);
 	int plen = ucs4len(pbuf);
 
-	if(plen != console.prompt_len) {
-		memmove(input + plen, input + console.prompt_len, (ucs4len(input + console.prompt_len) + 1) * sizeof(*input));
-		console.input_cursor += (plen - (int)console.prompt_len);
+	if(plen != console.input.prompt_len) {
+		memmove(input + plen, input + console.input.prompt_len, (ucs4len(input + console.input.prompt_len) + 1) * sizeof(*input));
+		console.input.cursor += (plen - (int)console.input.prompt_len);
 	}
 
 	memcpy(input, pbuf, sizeof(pbuf) - 1);
-	console.prompt_len = plen;
+	console.input.prompt_len = plen;
 }
 
 void con_init(void) {
-	console.line_buffer = calloc(CON_MAXLINES, CON_LINELEN);
-	console.input_buffer = calloc(sizeof(*console.input_buffer), CON_LINELEN);
-	console.num_lines = 1;
+	console.lines.buffer = calloc(1, CON_LINELEN);
+	console.input.buffer = calloc(sizeof(*console.input.buffer), CON_LINELEN);
+	console.lines.num = 1;
+	console.history.selected = -1;
 	con_print_internal(CON_LINE_PREFIX, "");
-	con_insert("> ");
-	console.prompt_len = 2;
+	con_set_prompt("> ");
 }
 
 void con_postinit(void) {
@@ -197,8 +268,10 @@ void con_postinit(void) {
 
 void con_shutdown(void) {
 	res_unref((ResourceRef*)&console.res, sizeof(console.res)/sizeof(ResourceRef));
-	free(console.line_buffer);
-	free(console.input_buffer);
+	free(console.lines.buffer);
+	free(console.input.buffer);
+	free(console.history.buffer);
+	free(console.history.input_saved);
 	memset(&console, 0, sizeof(console));
 }
 
@@ -339,7 +412,7 @@ void con_draw(void) {
 
 	uint32_t ucs4_buf[CON_LINELEN * 2];
 
-	int line_idx = console.current_line;
+	int line_idx = console.lines.current.index;
 	int first_idx = line_idx;
 
 	TextParams tp = {
@@ -354,7 +427,7 @@ void con_draw(void) {
 
 	double cur_x, cur_y;
 
-	rewrap_ucs4(INPUT_POINTER(0), ucs4_buf, sizeof(ucs4_buf), tp.font_ptr, con_width, console.input_cursor, &cur_x, &cur_y);
+	rewrap_ucs4(INPUT_POINTER(0), ucs4_buf, sizeof(ucs4_buf), tp.font_ptr, con_width, console.input.cursor, &cur_x, &cur_y);
 	tp.pos.y -= text_ucs4_height(tp.font_ptr, ucs4_buf, 0);
 	text_ucs4_draw(ucs4_buf, &tp);
 
@@ -369,7 +442,7 @@ void con_draw(void) {
 
 	for(;;) {
 		if(--line_idx < 0) {
-			line_idx = console.num_lines - 1;
+			line_idx = console.lines.num - 1;
 		}
 
 		if(line_idx == first_idx || line_idx < 0 || tp.pos.y < con_line_spacing) {
@@ -437,6 +510,14 @@ static bool con_event(SDL_Event *evt, void *arg) {
 
 				case SDL_SCANCODE_RIGHT:
 					con_move_cursor(+1);
+					break;
+
+				case SDL_SCANCODE_UP:
+					con_cycle_history(+1);
+					break;
+
+				case SDL_SCANCODE_DOWN:
+					con_cycle_history(-1);
 					break;
 
 				case SDL_SCANCODE_HOME:
