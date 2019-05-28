@@ -231,8 +231,8 @@ static void con_submit(void) {
 	con_print_internal("\r", "");
 	con_print_internal(utf8line, "");
 	con_print("\n");
-	script_repl(utf8line + console.input.prompt_len);
 	con_add_history(utf8line + console.input.prompt_len);
+	script_repl(utf8line + console.input.prompt_len);
 	free(utf8line);
 	console.lines.scroll_pos = 0;
 	console.input.cursor = console.input.prompt_len;
