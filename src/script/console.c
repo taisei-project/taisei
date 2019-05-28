@@ -308,11 +308,45 @@ static void rewrap(const char *text_utf8, uint32_t *buf_ucs4, size_t buf_size, F
 	uint32_t *bufend = buf_ucs4 + buf_size - 1;
 	double iscale = 1 / font_get_metrics(font)->scale;
 	double width = 0;
+	double space_width = font_get_char_metrics(font, ' ')->advance * iscale;
+	int line_charnum = 0;
 
 	while(*text_utf8) {
 		// NOTE: This can be made much faster if we can assume the font is monospace.
 
 		uint32_t chr = utf8_getch(&text_utf8);
+
+		if(chr == '\t') {
+			int numspaces = 8 - (line_charnum % 8);
+
+			do {
+				width += space_width;
+
+				if(width > max_width) {
+					width = 0;
+					*bufptr++ = '\n';
+					assert(bufptr < buf_ucs4 + buf_size);
+
+					if(bufptr == bufend) {
+						goto end;
+					}
+
+					line_charnum = 0;
+				}
+
+				*bufptr++ = ' ';
+				assert(bufptr < buf_ucs4 + buf_size);
+
+				if(bufptr == bufend) {
+					goto end;
+				}
+
+				++line_charnum;
+			} while(--numspaces);
+
+			continue;
+		}
+
 		const GlyphMetrics *m = font_get_char_metrics(font, chr);
 
 		if(m) {
@@ -327,6 +361,8 @@ static void rewrap(const char *text_utf8, uint32_t *buf_ucs4, size_t buf_size, F
 			if(bufptr == bufend) {
 				break;
 			}
+
+			line_charnum = 0;
 		}
 
 		*bufptr++ = chr;
@@ -335,8 +371,11 @@ static void rewrap(const char *text_utf8, uint32_t *buf_ucs4, size_t buf_size, F
 		if(bufptr == bufend) {
 			break;
 		}
+
+		++line_charnum;
 	}
 
+end:
 	*bufptr = 0;
 }
 
@@ -350,6 +389,9 @@ static void rewrap_ucs4(const uint32_t *text_ucs4, uint32_t *buf_ucs4, size_t bu
 
 	for(uint32_t chr, idx = 0; (chr = *text_ucs4); ++text_ucs4, ++idx) {
 		// NOTE: This can be made much faster if we can assume the font is monospace.
+
+		// XXX: No support for printing tabs here, but could be added if needed.
+		// There's no way to input them currently anyway.
 
 		const GlyphMetrics *m = font_get_char_metrics(font, chr);
 
