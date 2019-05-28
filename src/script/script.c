@@ -14,6 +14,7 @@
 #include "version.h"
 
 #include "rwops_reader.h"
+#include "lib/all.h"
 #include "script_internal.h"
 
 struct script script;
@@ -91,6 +92,7 @@ static lua_State *script_state_create(void) {
 	lua_atpanic(lstate, script_panic);
 	lua_gc(lstate, LUA_GCINC, 0, 0);
 	luaL_openlibs(lstate);
+	lapi_open_all(lstate);
 	lua_pushglobaltable(lstate);
 	luaL_setfuncs(lstate, (luaL_Reg[]) {
 		{ "print", script_print },
