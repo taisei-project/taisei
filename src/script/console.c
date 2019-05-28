@@ -37,6 +37,7 @@ static struct {
 			uint cursor;
 		} current;
 		uint num;
+		uint scroll_pos;
 	} lines;
 
 	struct {
@@ -138,6 +139,7 @@ static void con_insert(const char *text_utf8) {
 	}
 
 	memcpy(input_ptr, tail, sizeof(tail));
+	console.lines.scroll_pos = 0;
 }
 
 static void con_erase(int num) {
@@ -165,6 +167,8 @@ static void con_erase(int num) {
 
 		memmove(input_ptr, input_ptr + num, (tail_len - num + 1) * sizeof(*console.input.buffer));
 	}
+
+	console.lines.scroll_pos = 0;
 }
 
 static inline const char* con_fetch_history(int ofs) {
@@ -218,6 +222,7 @@ static void con_pull_history(int ofs) {
 
 static inline void con_cycle_history(int ofs) {
 	con_pull_history(console.history.selected + ofs);
+	console.lines.scroll_pos = 0;
 }
 
 static void con_submit(void) {
@@ -229,12 +234,28 @@ static void con_submit(void) {
 	script_repl(utf8line + console.input.prompt_len);
 	con_add_history(utf8line + console.input.prompt_len);
 	free(utf8line);
+	console.lines.scroll_pos = 0;
 	console.input.cursor = console.input.prompt_len;
 	input[console.input.cursor] = 0;
 }
 
 static void con_move_cursor(int ofs) {
 	console.input.cursor = iclamp((int)console.input.cursor + ofs, console.input.prompt_len, ucs4len(console.input.buffer));
+	console.lines.scroll_pos = 0;
+}
+
+static void con_scroll(int ofs) {
+	console.lines.scroll_pos = iclamp((int)console.lines.scroll_pos + ofs, 0, console.lines.num - 1);
+}
+
+static void con_clear(void) {
+	console.lines.buffer = realloc(console.lines.buffer, CON_LINELEN);
+	console.lines.num = 1;
+	console.lines.current.index = 0;
+	console.lines.current.cursor = 0;
+	console.lines.scroll_pos = 0;
+	memset(console.lines.buffer, 0, CON_LINELEN);
+	con_print_internal(CON_LINE_PREFIX, "");
 }
 
 void con_set_prompt(const char *prompt) {
@@ -253,11 +274,9 @@ void con_set_prompt(const char *prompt) {
 }
 
 void con_init(void) {
-	console.lines.buffer = calloc(1, CON_LINELEN);
 	console.input.buffer = calloc(sizeof(*console.input.buffer), CON_LINELEN);
-	console.lines.num = 1;
 	console.history.selected = -1;
-	con_print_internal(CON_LINE_PREFIX, "");
+	con_clear();
 	con_set_prompt("> ");
 }
 
@@ -414,35 +433,45 @@ void con_draw(void) {
 
 	int line_idx = console.lines.current.index;
 	int first_idx = line_idx;
+	line_idx -= (int)console.lines.scroll_pos;
 
+	Color clr;
 	TextParams tp = {
 		.pos = { 0, con_height + con_text_yofs + con_line_spacing },
 		.font_ptr = font,
 		.shader_ptr = res_ref_data(console.res.shader),
 		.align = ALIGN_LEFT,
 		.blend = BLEND_PREMUL_ALPHA,
+		.color = &clr,
 	};
-
-	tp.color = RGBA(1, 0.4, 0.2, 1);
 
 	double cur_x, cur_y;
 
-	rewrap_ucs4(INPUT_POINTER(0), ucs4_buf, sizeof(ucs4_buf), tp.font_ptr, con_width, console.input.cursor, &cur_x, &cur_y);
+	if(console.lines.scroll_pos) {
+		clr = *RGBA(0.4, 1, 1, 1);
+		char buf[64];
+		snprintf(buf, sizeof(buf), " --- %i MORE ---", console.lines.scroll_pos);
+		rewrap(buf, ucs4_buf, sizeof(ucs4_buf), tp.font_ptr, con_width);
+	} else {
+		clr = *RGBA(1, 0.4, 0.2, 1);
+		rewrap_ucs4(INPUT_POINTER(0), ucs4_buf, sizeof(ucs4_buf), tp.font_ptr, con_width, console.input.cursor, &cur_x, &cur_y);
+	}
+
 	tp.pos.y -= text_ucs4_height(tp.font_ptr, ucs4_buf, 0);
 	text_ucs4_draw(ucs4_buf, &tp);
 
-	if((console.frames / 30) % 2) {
+	if((console.frames / 30) % 2 && !console.lines.scroll_pos) {
 		TextParams tp_cur = tp;
 		tp_cur.pos.x = cur_x;
 		tp_cur.pos.y += cur_y + 2;
 		text_draw("_", &tp_cur);
 	}
 
-	tp.color = RGBA(0.75, 0.75, 0.75, 1);
+	clr = *RGBA(0.75, 0.75, 0.75, 1);
 
 	for(;;) {
 		if(--line_idx < 0) {
-			line_idx = console.lines.num - 1;
+			line_idx = console.lines.num + line_idx;
 		}
 
 		if(line_idx == first_idx || line_idx < 0 || tp.pos.y < con_line_spacing) {
@@ -513,11 +542,19 @@ static bool con_event(SDL_Event *evt, void *arg) {
 					break;
 
 				case SDL_SCANCODE_UP:
-					con_cycle_history(+1);
+					if(evt->key.keysym.mod & KMOD_SHIFT) {
+						con_scroll(+1);
+					} else {
+						con_cycle_history(+1);
+					}
 					break;
 
 				case SDL_SCANCODE_DOWN:
-					con_cycle_history(-1);
+					if(evt->key.keysym.mod & KMOD_SHIFT) {
+						con_scroll(-1);
+					} else {
+						con_cycle_history(-1);
+					}
 					break;
 
 				case SDL_SCANCODE_HOME:
@@ -526,6 +563,14 @@ static bool con_event(SDL_Event *evt, void *arg) {
 
 				case SDL_SCANCODE_END:
 					con_move_cursor(+CON_LINELEN);
+					break;
+
+				case SDL_SCANCODE_PAGEUP:
+					con_scroll(+5);
+					break;
+
+				case SDL_SCANCODE_PAGEDOWN:
+					con_scroll(-5);
 					break;
 
 				case SDL_SCANCODE_BACKSPACE:
@@ -546,6 +591,12 @@ static bool con_event(SDL_Event *evt, void *arg) {
 				case SDL_SCANCODE_H:
 					if(evt->key.keysym.mod & KMOD_CTRL) {
 						con_erase(-1);
+					}
+					break;
+
+				case SDL_SCANCODE_L:
+					if(evt->key.keysym.mod & KMOD_CTRL) {
+						con_clear();
 					}
 					break;
 
