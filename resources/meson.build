@@ -26,6 +26,7 @@ if host_machine.system() == 'emscripten'
         'gfx/*.tex',
         'fonts/*.font',
         'models/*.obj',
+        'scripts/*.lua',
 
         # We don't want to include the shader sources here, we're going to translate them first.
         'shader/*.prog'
