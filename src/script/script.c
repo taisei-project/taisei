@@ -118,11 +118,16 @@ static bool script_load_vfs_file(lua_State *L, const char *vfspath) {
 		return false;
 	}
 
+#if 0
 	char *syspath = vfs_repr(vfspath, true);
 	assume(syspath != NULL);
 	char chunk_name[strlen(syspath) + 2];
 	snprintf(chunk_name, sizeof(chunk_name), "@%s", syspath);
 	free(syspath);
+#else
+	char chunk_name[strlen(vfspath) + 2];
+	snprintf(chunk_name, sizeof(chunk_name), "@%s", vfspath);
+#endif
 
 	lua_Reader reader;
 	LuaRWopsReader *lrw = lrwreader_create(rw, true, &reader);
