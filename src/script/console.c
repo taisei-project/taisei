@@ -187,10 +187,6 @@ static void con_add_history(char *line) {
 
 	memcpy(HISTORY_POINTER(console.history.current), line, strlen(line) + 1);
 	console.history.current = (console.history.current + 1) % CON_MAXHISTORY;
-
-	console.history.selected = -1;
-	free(console.history.input_saved);
-	console.history.input_saved = NULL;
 }
 
 static void con_pull_history(int ofs) {
@@ -237,6 +233,9 @@ static void con_submit(void) {
 	console.lines.scroll_pos = 0;
 	console.input.cursor = console.input.prompt_len;
 	input[console.input.cursor] = 0;
+	console.history.selected = -1;
+	free(console.history.input_saved);
+	console.history.input_saved = NULL;
 }
 
 static void con_move_cursor(int ofs) {
