@@ -41,9 +41,9 @@ static int script_msghandler(lua_State *L) {
 
 static noreturn int script_panic(lua_State *L) {
 	script_msghandler(L);
-	const char *error = lua_tostring(L, 1);
+	const char *error = lua_tostring(L, -1);
 	assume(error != NULL);
-	log_fatal("Unexpected Lua error:\n\n%s", error);
+	log_fatal("Unexpected Lua error: %s", error);
 }
 
 int script_pcall_with_msghandler(lua_State *L, int narg, int nres) {
