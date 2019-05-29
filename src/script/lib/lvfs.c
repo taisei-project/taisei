@@ -115,6 +115,7 @@ static void lvfs_sync_callback(CallChainResult ccr) {
 	struct lvfs_sync ctx = *(struct lvfs_sync*)ccr.ctx;
 	free(ccr.ctx);
 
+	lua_geti(ctx.L, LUA_REGISTRYINDEX, ctx.ref);
 	luaL_unref(ctx.L, LUA_REGISTRYINDEX, ctx.ref);
 	lua_call(ctx.L, 0, 0);
 }
