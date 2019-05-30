@@ -20,5 +20,6 @@ extern struct script {
 } script;
 
 int script_pcall_with_msghandler(lua_State *L, int narg, int nres);
+void script_dumpstack(lua_State *L);
 
 #endif // IGUARD_script_script_internal_h

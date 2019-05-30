@@ -164,3 +164,31 @@ void script_init(void) {
 void script_shutdown(void) {
 	script_state_destroy(&script.lstate);
 }
+
+void script_dumpstack(lua_State *L) {
+	int top = lua_gettop(L);
+	con_printf("dumpstack -- BEGIN\n");
+	for(int i = 1; i <= top; i++) {
+		con_printf("%d\t%s\t", i, luaL_typename(L,i));
+		switch (lua_type(L, i)) {
+			case LUA_TNUMBER: {
+				lua_Number n = lua_tonumber(L,i);
+				con_printf("%g%+gi\n", l_real(n), l_imag(n));
+				break;
+			}
+			case LUA_TSTRING:
+				con_printf("%s\n", lua_tostring(L, i));
+				break;
+			case LUA_TBOOLEAN:
+				con_printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+				break;
+			case LUA_TNIL:
+				con_printf("%s\n", "nil");
+				break;
+			default:
+				con_printf("%p\n", lua_topointer(L, i));
+				break;
+		}
+	}
+	con_printf("dumpstack -- END\n");
+}

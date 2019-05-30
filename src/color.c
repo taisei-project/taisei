@@ -76,6 +76,22 @@ Color* color_div_scalar(Color *clr, float scalar) {
 	return clr;
 }
 
+Color* color_pow(Color *clr, const Color *clr2) {
+	clr->r = pow(clr->r, clr2->r);
+	clr->g = pow(clr->g, clr2->g);
+	clr->b = pow(clr->b, clr2->b);
+	clr->a = pow(clr->a, clr2->a);
+	return clr;
+}
+
+Color* color_pow_scalar(Color *clr, float scalar) {
+	clr->r = pow(clr->r, scalar);
+	clr->g = pow(clr->g, scalar);
+	clr->b = pow(clr->b, scalar);
+	clr->a = pow(clr->a, scalar);
+	return clr;
+}
+
 Color* color_lerp(Color *clr, const Color *clr2, float a) {
 	float ia = 1 - a;
 	clr->r = clr->r * ia + clr2->r * a;

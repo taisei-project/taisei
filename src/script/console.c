@@ -71,8 +71,9 @@ static void con_print_internal(const char *text, const char *line_prefix) {
 
 	for(const char *c = text; *c; ++c) {
 		if(*c == '\n' || line == line_end) {
-			console.lines.current.index = (console.lines.current.index + 1) % CON_MAXLINES;
 			*line = 0;
+			log_info("%s", LINE_POINTER(console.lines.current.index, 0));
+			console.lines.current.index = (console.lines.current.index + 1) % CON_MAXLINES;
 
 			if(console.lines.num <= console.lines.current.index) {
 				console.lines.buffer = realloc(console.lines.buffer, ++console.lines.num * CON_LINELEN);

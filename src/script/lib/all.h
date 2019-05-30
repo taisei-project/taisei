@@ -11,6 +11,10 @@
 
 #include "taisei.h"
 
+#include "../script_internal.h"
+#include "../console.h"
+#include "color.h"
+
 #include <lua.h>
 #include <SDL_rwops.h>
 
@@ -20,6 +24,10 @@ void lvio_wrap_rw(lua_State *L, SDL_RWops *rw);
 
 #define LAPI_VFS_LIBNAME "vfs"
 LUAMOD_API int luaopen_vfs(lua_State *L);
+
+#define LAPI_COLOR_LIBNAME "color"
+LUAMOD_API int luaopen_color(lua_State *L);
+Color *lcolor_tocolor(lua_State *L, int idx, bool copy);
 
 void lapi_open_all(lua_State *L);
 

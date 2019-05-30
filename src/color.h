@@ -13,8 +13,9 @@
 
 #include "util.h"
 
-typedef struct Color {
-	float r, g, b, a;
+typedef union Color {
+	struct { float r, g, b, a; };
+	float array[4];
 } Color;
 
 /*
@@ -67,6 +68,12 @@ Color* color_div_alpha(Color *clr)
 	attr_nonnull(1) attr_returns_nonnull;
 
 Color* color_div_scalar(Color *clr, float scalar)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_pow(Color *clr, const Color *clr2)
+	attr_nonnull(1) attr_returns_nonnull;
+
+Color* color_pow_scalar(Color *clr, float scalar)
 	attr_nonnull(1) attr_returns_nonnull;
 
 Color* color_lerp(Color *clr, const Color *clr2, float a)
