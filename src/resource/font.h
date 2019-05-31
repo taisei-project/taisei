@@ -122,7 +122,6 @@ void font_set_kerning_enabled(Font *font, bool newval) attr_nonnull(1);
 
 extern ResourceHandler font_res_handler;
 
-#define FONT_PATH_PREFIX "res/fonts/"
 #define FONT_EXTENSION ".font"
 
 #endif // IGUARD_resource_font_h

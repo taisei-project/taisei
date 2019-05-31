@@ -39,12 +39,12 @@ PlayerCharacter* plrchar_get(CharacterID id) {
 	return pc;
 }
 
-void plrchar_preload(PlayerCharacter *pc) {
-	preload_resource(RES_ANIM, pc->player_sprite_name, RESF_DEFAULT);
-	preload_resource(RES_SPRITE, pc->dialog_base_sprite_name, RESF_DEFAULT);
+void plrchar_preload(PlayerCharacter *pc, ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT, pc->player_sprite_name, NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, pc->dialog_base_sprite_name, NULL);
 
 	for(int i = 0; i < DIALOG_NUM_FACES; ++i) {
-		preload_resource(RES_SPRITE, pc->dialog_face_sprite_names[i], RESF_DEFAULT);
+		res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, pc->dialog_face_sprite_names[i], NULL);
 	}
 }
 
@@ -107,7 +107,7 @@ void plrchar_make_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
 	r_framebuffer_destroy(fb);
 
 	Sprite s = { 0 };
-	s.tex = ptex;
+	s.tex = res_ref_wrap_external_data(RES_TEXTURE, ptex);
 	s.offset = s_base->offset;
 	s.extent = s_base->extent;
 	s.tex_area.w = tex_w;
@@ -188,11 +188,11 @@ PlayerMode* plrmode_parse(const char *name) {
 	return plrmode_find(char_id, shot_id);
 }
 
-void plrmode_preload(PlayerMode *mode) {
+void plrmode_preload(PlayerMode *mode, ResourceRefGroup *rg) {
 	assert(mode != NULL);
-	plrchar_preload(mode->character);
+	plrchar_preload(mode->character, rg);
 
 	if(mode->procs.preload) {
-		mode->procs.preload();
+		mode->procs.preload(rg);
 	}
 }

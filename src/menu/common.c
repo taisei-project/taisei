@@ -24,6 +24,7 @@ typedef struct StartGameContext {
 	StageInfo *current_stage;
 	MenuData *diff_menu;
 	MenuData *char_menu;
+	ResourceRefGroup resources;
 	Difficulty difficulty;
 } StartGameContext;
 
@@ -85,6 +86,8 @@ static void start_game_do_pick_character(CallChainResult ccr) {
 }
 
 static void reset_game(StartGameContext *ctx) {
+	res_group_destroy(&ctx->resources);
+	res_group_init(&ctx->resources, 32);
 	ctx->current_stage = ctx->restart_stage;
 
 	global.gameover = GAMEOVER_NONE;
@@ -119,7 +122,7 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 
 	kill_aux_menus(ctx);
 	reset_game(ctx);
-	stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+	stage_enter(ctx->current_stage, &ctx->resources, CALLCHAIN(start_game_do_leave_stage, ctx));
 }
 
 static void start_game_do_leave_stage(CallChainResult ccr) {
@@ -127,7 +130,7 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 
 	if(global.gameover == GAMEOVER_RESTART) {
 		reset_game(ctx);
-		stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+		stage_enter(ctx->current_stage, &ctx->resources, CALLCHAIN(start_game_do_leave_stage, ctx));
 		return;
 	}
 
@@ -135,13 +138,17 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 		++ctx->current_stage;
 
 		if(ctx->current_stage->type == STAGE_STORY) {
-			stage_enter(ctx->current_stage, CALLCHAIN(start_game_do_leave_stage, ctx));
+			res_group_destroy(&ctx->resources);
+			res_group_init(&ctx->resources, 32);
+			stage_enter(ctx->current_stage, &ctx->resources, CALLCHAIN(start_game_do_leave_stage, ctx));
 		} else {
 			CallChain cc;
 
 			if(global.gameover == GAMEOVER_WIN) {
-				ending_preload();
-				credits_preload();
+				res_group_destroy(&ctx->resources);
+				res_group_init(&ctx->resources, 16);
+				ending_preload(&ctx->resources);
+				credits_preload(&ctx->resources);
 				cc = CALLCHAIN(start_game_do_show_ending, ctx);
 			} else {
 				cc = CALLCHAIN(start_game_do_cleanup, ctx);
@@ -155,23 +162,25 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 }
 
 static void start_game_do_show_ending(CallChainResult ccr) {
-	ending_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx));
+	StartGameContext *ctx = ccr.ctx;
+	ending_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx), &ctx->resources);
 }
 
 static void start_game_do_show_credits(CallChainResult ccr) {
-	credits_enter(CALLCHAIN(start_game_do_cleanup, ccr.ctx));
+	StartGameContext *ctx = ccr.ctx;
+	credits_enter(CALLCHAIN(start_game_do_cleanup, ccr.ctx), &ctx->resources);
 }
 
 static void start_game_do_cleanup(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
+	res_group_destroy(&ctx->resources);
 	kill_aux_menus(ctx);
 	free(ctx);
-	free_resources(false);
 	global.replay_stage = NULL;
 	global.gameover = GAMEOVER_NONE;
 	replay_destroy(&global.replay);
 	main_menu_update_practice_menus();
-	start_bgm("menu");
+	bgm_start("menu");
 }
 
 void start_game(MenuData *m, void *arg) {

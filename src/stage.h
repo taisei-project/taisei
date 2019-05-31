@@ -76,7 +76,7 @@ typedef struct StageProcs StageProcs;
 
 struct StageProcs {
 	StageProc begin;
-	StageProc preload;
+	void (*preload)(ResourceRefGroup *rg);
 	StageProc end;
 	StageProc draw;
 	StageProc event;
@@ -120,7 +120,7 @@ StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, b
 void stage_init_array(void);
 void stage_free_array(void);
 
-void stage_enter(StageInfo *stage, CallChain next);
+void stage_enter(StageInfo *stage, ResourceRefGroup *rg, CallChain next);
 void stage_finish(int gameover);
 
 void stage_pause(void);

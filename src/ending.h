@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include "eventloop/eventloop.h"
+#include "resource/resource.h"
 
 enum {
 	ENDING_FADE_OUT = 200,
@@ -58,8 +59,8 @@ static inline attr_must_inline bool ending_is_bad(EndingID end) {
 
 typedef struct Ending Ending;
 
-void ending_enter(CallChain next);
-void ending_preload(void);
+void ending_enter(CallChain next, ResourceRefGroup *rg);
+void ending_preload(ResourceRefGroup *rg);
 
 /*
  * These ending callbacks are referenced in plrmodes/ code

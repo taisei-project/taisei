@@ -12,8 +12,11 @@
 #include "util.h"
 #include "list.h"
 
+#define OBJECT_ALIGNMENT (alignof(max_align_t))
+#define OBJECT_ALIGN alignas(OBJECT_ALIGNMENT)
+
 typedef struct ObjHeader {
-	alignas(alignof(max_align_t)) struct ObjHeader *next;
+	OBJECT_ALIGN struct ObjHeader *next;
 } ObjHeader;
 
 struct ObjectPool {
@@ -27,7 +30,7 @@ struct ObjectPool {
 	size_t num_extents;
 	char **extents;
 	ObjHeader *free_objects;
-	char objects[];
+	OBJECT_ALIGN char objects[];
 };
 
 inline attr_must_inline attr_returns_max_aligned
@@ -46,6 +49,9 @@ static void objpool_register_objects(ObjectPool *pool, char *objects) {
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
 	// TODO: overflow handling
 
+	attr_unused size_t orig_size = obj_size;
+	obj_size = (((obj_size - 1) / OBJECT_ALIGNMENT) + 1) * OBJECT_ALIGNMENT;
+
 	ObjectPool *pool = calloc(1, sizeof(ObjectPool) + (obj_size * max_objects));
 	pool->size_of_object = obj_size;
 	pool->max_objects = max_objects;
@@ -53,10 +59,11 @@ ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) 
 
 	objpool_register_objects(pool, pool->objects);
 
-	log_debug("[%s] Allocated pool for %zu objects, %zu bytes each",
+	log_debug("[%s] Allocated pool for %zu objects, %zu bytes each, %zu alignment overhead per object",
 		pool->tag,
 		pool->max_objects,
-		pool->size_of_object
+		pool->size_of_object,
+		obj_size - orig_size
 	);
 
 	return pool;

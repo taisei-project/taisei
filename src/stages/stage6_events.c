@@ -959,7 +959,7 @@ static void elly_paradigm_shift(Boss *b, int t) {
 
 	if(global.stage->type != STAGE_SPELL) {
 		AT(80) {
-			fade_bgm(0.5);
+			bgm_fade(0.5);
 		}
 	}
 
@@ -2069,7 +2069,7 @@ static void elly_baryon_explode(Boss *b, int t) {
 	}
 
 	AT(42) {
-		fade_bgm(1.0);
+		bgm_fade(1.0);
 	}
 
 	FROM_TO(0, 200, 1) {

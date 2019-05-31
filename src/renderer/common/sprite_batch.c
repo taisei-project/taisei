@@ -45,7 +45,7 @@ static struct SpriteBatchState {
 
 	// varying state
 	mat4 projection;
-	Texture *primary_texture;
+	ResourceRef primary_texture;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
 	ShaderProgram *shader;
 	Framebuffer *framebuffer;
@@ -63,12 +63,18 @@ static struct SpriteBatchState {
 		uint best_batch;
 		uint worst_batch;
 	} frame_stats;
+
+	struct {
+		ResourceRef font;
+		ResourceRef shader;
+	} frame_stats_res;
 #endif
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
-	#ifdef DEBUG
-	preload_resource(RES_FONT, "monotiny", RESF_PERMANENT);
+	#if SPRITE_BATCH_STATS
+	_r_sprite_batch.frame_stats_res.font = res_ref(RES_FONT, "monotiny", RESF_DEFAULT);
+	_r_sprite_batch.frame_stats_res.shader = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT);
 	#endif
 
 	size_t sz_vert = sizeof(GenericModelVertex);
@@ -129,6 +135,10 @@ void _r_sprite_batch_init(void) {
 }
 
 void _r_sprite_batch_shutdown(void) {
+#if SPRITE_BATCH_STATS
+	res_unref(&_r_sprite_batch.frame_stats_res.font);
+	res_unref(&_r_sprite_batch.frame_stats_res.shader);
+#endif
 	r_vertex_array_destroy(_r_sprite_batch.varr);
 	r_vertex_buffer_destroy(_r_sprite_batch.vbuf);
 }
@@ -166,7 +176,7 @@ void r_flush_sprites(void) {
 	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
 
 	r_shader_ptr(_r_sprite_batch.shader);
-	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
+	r_uniform_sampler("tex", (Texture*)res_ref_data(_r_sprite_batch.primary_texture));
 	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
 	r_blend(_r_sprite_batch.blend);
@@ -248,7 +258,7 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 	}
 
 	uint tw, th;
-	r_texture_get_size(spr->tex, 0, &tw, &th);
+	r_texture_get_size(res_ref_data(spr->tex), 0, &tw, &th);
 
 	attribs.texrect.x = spr->tex_area.x / tw;
 	attribs.texrect.y = spr->tex_area.y / th;
@@ -292,9 +302,9 @@ void r_draw_sprite(const SpriteParams *params) {
 		spr = get_sprite(params->sprite);
 	}
 
-	if(spr->tex != _r_sprite_batch.primary_texture) {
+	if(!res_refs_are_equivalent(_r_sprite_batch.primary_texture, spr->tex)) {
 		r_flush_sprites();
-		_r_sprite_batch.primary_texture = spr->tex;
+		_r_sprite_batch.primary_texture = res_ref_copy_weak(spr->tex);
 	}
 
 	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {
@@ -403,12 +413,12 @@ void _r_sprite_batch_end_frame(void) {
 		_r_sprite_batch.frame_stats.worst_batch
 	);
 
-	Font *font = get_font("monotiny");
+	Font *font = res_ref_data(_r_sprite_batch.frame_stats_res.font);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, font_get_lineskip(font) },
 		.font_ptr = font,
 		.color = RGB(1, 1, 1),
-		.shader = "text_default",
+		.shader_ptr = res_ref_data(_r_sprite_batch.frame_stats_res.shader),
 	});
 
 	memset(&_r_sprite_batch.frame_stats, 0, sizeof(_r_sprite_batch.frame_stats));
@@ -416,8 +426,8 @@ void _r_sprite_batch_end_frame(void) {
 }
 
 void _r_sprite_batch_texture_deleted(Texture *tex) {
-	if(_r_sprite_batch.primary_texture == tex) {
-		_r_sprite_batch.primary_texture = NULL;
+	if(res_ref_data_or_null(_r_sprite_batch.primary_texture) == tex) {
+		res_unref(&_r_sprite_batch.primary_texture);
 	}
 
 	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {

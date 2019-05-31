@@ -183,9 +183,9 @@ static void stage2_start(void) {
 	add_model(&stage_3d_context, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
-static void stage2_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+static void stage2_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage2/border",
 		"stage2/leaves",
 		"stage2/roadgrass",
@@ -194,18 +194,18 @@ static void stage2_preload(void) {
 		"stage2/spellbg2",
 		"dialog/hina",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"bloom",
 		"zbuf_fog",
 		"alpha_depth",
 		"lasers/linear",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/wriggle",
 		"boss/hina",
 		"fire",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

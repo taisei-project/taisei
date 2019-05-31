@@ -15,6 +15,7 @@
 #define DPSTEST_HP 90000
 
 static void dpstest_stub_proc(void) { }
+static void dpstest_stub_proc2(ResourceRefGroup *rg) { }
 
 static int dpstest_dummy(Enemy *e, int t) {
 	e->hp = DPSTEST_HP;
@@ -77,7 +78,7 @@ static void stage_dpstest_boss_events(void) {
 
 StageProcs stage_dpstest_single_procs = {
 	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
+	.preload = dpstest_stub_proc2,
 	.end = dpstest_stub_proc,
 	.draw = dpstest_stub_proc,
 	.update = dpstest_stub_proc,
@@ -87,7 +88,7 @@ StageProcs stage_dpstest_single_procs = {
 
 StageProcs stage_dpstest_multi_procs = {
 	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
+	.preload = dpstest_stub_proc2,
 	.end = dpstest_stub_proc,
 	.draw = dpstest_stub_proc,
 	.update = dpstest_stub_proc,
@@ -97,7 +98,7 @@ StageProcs stage_dpstest_multi_procs = {
 
 StageProcs stage_dpstest_boss_procs = {
 	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
+	.preload = dpstest_stub_proc2,
 	.end = dpstest_stub_proc,
 	.draw = dpstest_stub_proc,
 	.update = dpstest_stub_proc,

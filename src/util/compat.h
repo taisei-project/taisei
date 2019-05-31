@@ -278,4 +278,6 @@ typedef complex max_align_t;
 
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
+#define INLINE __attribute__((always_inline, artificial, gnu_inline)) static inline
+
 #endif // IGUARD_util_compat_h

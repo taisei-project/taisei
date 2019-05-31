@@ -14,38 +14,27 @@
 #include "sfxbgm_common.h"
 #include "util.h"
 
-static char* sound_path(const char *name) {
-	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false);
+static char *sound_path(const char *name) {
+	return sfxbgm_make_path(RES_PATHPREFIX_SOUND, name, false);
 }
 
 static bool check_sound_path(const char *path) {
-	return sfxbgm_check_path(SFX_PATH_PREFIX, path, false);
+	return sfxbgm_check_path(RES_PATHPREFIX_SOUND, path, false);
 }
 
-static void* load_sound_begin(const char *path, uint flags) {
-	SoundImpl *sound = _a_backend.funcs.sound_load(path);
+static void *load_sound_begin(ResourceLoadInfo li) {
+	SoundImpl *sound = _a_backend.funcs.sound_load(li.path);
 
 	if(!sound) {
 		return NULL;
 	}
 
-	assert(strstartswith(path, SFX_PATH_PREFIX));
-	char resname[strlen(path) - sizeof(SFX_PATH_PREFIX) + 2];
-	strcpy(resname, path + sizeof(SFX_PATH_PREFIX) - 1);
-	char *dot = strrchr(resname, '.');
-	assert(dot != NULL);
-	*dot = 0;
-
-	_a_backend.funcs.sound_set_volume(sound, get_default_sfx_volume(resname) / 128.0);
+	_a_backend.funcs.sound_set_volume(sound, get_default_sfx_volume(li.name) / 128.0);
 
 	Sound *snd = calloc(1, sizeof(Sound));
 	snd->impl = sound;
 
 	return snd;
-}
-
-static void* load_sound_end(void *opaque, const char *path, uint flags) {
-	return opaque;
 }
 
 static void unload_sound(void *vsnd) {
@@ -55,15 +44,12 @@ static void unload_sound(void *vsnd) {
 }
 
 ResourceHandler sfx_res_handler = {
-    .type = RES_SFX,
-    .typename = "sfx",
-    .subdir = SFX_PATH_PREFIX,
+	.type = RES_SOUND,
 
-    .procs = {
-        .find = sound_path,
-        .check = check_sound_path,
-        .begin_load = load_sound_begin,
-        .end_load = load_sound_end,
-        .unload = unload_sound,
-    },
+	.procs = {
+		.find = sound_path,
+		.check = check_sound_path,
+		.begin_load = load_sound_begin,
+		.unload = unload_sound,
+	},
 };

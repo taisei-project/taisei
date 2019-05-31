@@ -277,10 +277,10 @@ static int reimu_dream_gap_renderer(Enemy *e, int t) {
 	return ACTION_NONE;
 }
 
-static void reimu_dream_preload(void) {
+static void reimu_dream_preload(ResourceRefGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_multi_add(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle2",
@@ -289,19 +289,19 @@ static void reimu_dream_preload(void) {
 		"part/stardust",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_multi_add(rg, RES_TEXTURE, flags,
 		"runes",
 		"gaplight",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_multi_add(rg, RES_SHADERPROG, flags,
 		"sprite_yinyang",
 		"reimu_gap",
 		"reimu_gap_light",
 		"reimu_bomb_bg",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, flags | RESF_OPTIONAL,
 		"bomb_marisa_a",
 		"boon",
 	NULL);

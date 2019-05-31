@@ -89,6 +89,6 @@ void BigFairy(Enemy*, int t, bool render);
 
 int enemy_flare(Projectile *p, int t);
 
-void enemies_preload(void);
+void enemies_preload(ResourceRefGroup *rg);
 
 #endif // IGUARD_enemy_h

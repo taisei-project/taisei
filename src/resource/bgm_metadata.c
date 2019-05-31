@@ -13,11 +13,11 @@
 #include "util.h"
 
 static char *bgm_meta_path(const char *name) {
-	return strjoin(BGM_PATH_PREFIX, name, ".bgm", NULL);
+	return strjoin(RES_PATHPREFIX_MUSICMETA, name, ".bgm", NULL);
 }
 
 static bool check_bgm_meta_path(const char *path) {
-	return strendswith(path, ".bgm") && strstartswith(path, BGM_PATH_PREFIX);
+	return strendswith(path, ".bgm") && strstartswith(path, RES_PATHPREFIX_MUSICMETA);
 }
 
 static void free_metadata_fields(MusicMetadata *meta) {
@@ -27,10 +27,10 @@ static void free_metadata_fields(MusicMetadata *meta) {
 	free(meta->title);
 }
 
-static void *load_bgm_meta_begin(const char *path, uint flags) {
+static void *load_bgm_meta_begin(ResourceLoadInfo li) {
 	MusicMetadata meta = { 0 };
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+	if(!parse_keyvalue_file_with_spec(li.path, (KVSpec[]) {
 		{ "artist",     .out_str    = &meta.artist     },
 		{ "title",      .out_str    = &meta.title      },
 		{ "comment",    .out_str    = &meta.comment    },
@@ -38,7 +38,7 @@ static void *load_bgm_meta_begin(const char *path, uint flags) {
 		{ "loop_point", .out_double = &meta.loop_point },
 		{ NULL }
 	})) {
-		log_error("Failed to parse BGM metadata '%s'", path);
+		log_error("Failed to parse BGM metadata '%s'", li.path);
 		free_metadata_fields(&meta);
 		return NULL;
 	}
@@ -50,10 +50,6 @@ static void *load_bgm_meta_begin(const char *path, uint flags) {
 	return memdup(&meta, sizeof(meta));
 }
 
-static void *load_bgm_meta_end(void *opaque, const char *path, uint flags) {
-	return opaque;
-}
-
 static void unload_bgm_meta(void *vmus) {
 	MusicMetadata *meta = vmus;
 	free_metadata_fields(meta);
@@ -61,15 +57,12 @@ static void unload_bgm_meta(void *vmus) {
 }
 
 ResourceHandler bgm_metadata_res_handler = {
-    .type = RES_BGM_METADATA,
-    .typename = "bgm metadata",
-    .subdir = BGM_PATH_PREFIX,
+    .type = RES_MUSICMETA,
 
     .procs = {
         .find = bgm_meta_path,
         .check = check_bgm_meta_path,
         .begin_load = load_bgm_meta_begin,
-        .end_load = load_bgm_meta_end,
         .unload = unload_bgm_meta,
     },
 };

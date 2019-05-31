@@ -125,6 +125,21 @@ void vfs_mkdir_required(const char *path) {
 	}
 }
 
+char* vfs_syspath(const char *path) {
+	char buf[strlen(path)+1];
+	path = vfs_path_normalize(path, buf);
+	VFSNode *node = vfs_locate(vfs_root, path);
+
+	if(node) {
+		char *p = vfs_node_syspath(node);
+		vfs_decref(node);
+		return p;
+	}
+
+	vfs_set_error("Node '%s' does not exist", path);
+	return NULL;
+}
+
 char* vfs_repr(const char *path, bool try_syspath) {
 	char buf[strlen(path)+1];
 	path = vfs_path_normalize(path, buf);

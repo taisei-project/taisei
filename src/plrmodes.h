@@ -81,7 +81,7 @@ typedef void (*PlayerModeShotProc)(Player *plr);
 typedef void (*PlayerModeBombProc)(Player *plr);
 typedef void (*PlayerModeBombBgProc)(Player *plr);
 typedef void (*PlayerModePowerProc)(Player *plr, short npow);
-typedef void (*PlayerModePreloadProc)(void);
+typedef void (*PlayerModePreloadProc)(ResourceRefGroup *rg);
 typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 
 typedef struct PlayerMode {
@@ -111,14 +111,14 @@ enum {
 };
 
 PlayerCharacter* plrchar_get(CharacterID id);
-void plrchar_preload(PlayerCharacter *pc);
+void plrchar_preload(PlayerCharacter *pc, ResourceRefGroup *rg);
 void plrchar_make_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr);
 void plrchar_make_dialog_actor(PlayerCharacter *pc, DialogActor *out_actor);
 
 PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal);
 PlayerMode* plrmode_parse(const char *name);
-void plrmode_preload(PlayerMode *mode);
+void plrmode_preload(PlayerMode *mode, ResourceRefGroup *rg);
 
 double player_property(Player *plr, PlrProperty prop);
 

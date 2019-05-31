@@ -173,7 +173,7 @@ bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 
 void boss_death(Boss **boss) attr_nonnull(1);
 
-void boss_preload(void);
+void boss_preload(ResourceRefGroup *rg);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

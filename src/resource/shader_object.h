@@ -17,6 +17,4 @@ typedef struct ShaderObject ShaderObject;
 
 extern ResourceHandler shader_object_res_handler;
 
-#define SHOBJ_PATH_PREFIX "res/shader/"
-
 #endif // IGUARD_resource_shader_object_h

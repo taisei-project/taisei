@@ -16,28 +16,14 @@
 // TODO: Rewrite all of this mess, maybe even consider a different format
 // IQM for instance: http://sauerbraten.org/iqm/
 
-ResourceHandler model_res_handler = {
-	.type = RES_MODEL,
-	.typename = "model",
-	.subdir = MDL_PATH_PREFIX,
-
-	.procs = {
-		.find = model_path,
-		.check = check_model_path,
-		.begin_load = load_model_begin,
-		.end_load = load_model_end,
-		.unload = unload_model,
-	},
-};
-
 static bool parse_obj(const char *filename, ObjFileData *data);
 static void free_obj(ObjFileData *data);
 
-char* model_path(const char *name) {
-	return strjoin(MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
+static char *model_path(const char *name) {
+	return strjoin(RES_PATHPREFIX_MODEL, name, MDL_EXTENSION, NULL);
 }
 
-bool check_model_path(const char *path) {
+static bool check_model_path(const char *path) {
 	return strendswith(path, MDL_EXTENSION);
 }
 
@@ -47,11 +33,11 @@ typedef struct ModelLoadData {
 	uint icount;
 } ModelLoadData;
 
-void* load_model_begin(const char *path, uint flags) {
+static void *load_model_begin(ResourceLoadInfo rli) {
 	ObjFileData *data = malloc(sizeof(ObjFileData));
 	GenericModelVertex *verts;
 
-	if(!parse_obj(path, data)) {
+	if(!parse_obj(rli.path, data)) {
 		free(data);
 		return NULL;
 	}
@@ -61,8 +47,8 @@ void* load_model_begin(const char *path, uint flags) {
 
 	verts = calloc(data->icount, sizeof(GenericModelVertex));
 
-#define BADREF(filename,aux,n) { \
-	log_error("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
+#define BADREF(aux,n) { \
+	log_error("OBJ file '%s': Index %d: bad %s index reference\n", rli.path, n, aux); \
 	goto fail; \
 }
 
@@ -73,14 +59,14 @@ void* load_model_begin(const char *path, uint flags) {
 
 		xi = data->indices[i][0]-1;
 		if(xi < 0 || xi >= data->xcount)
-			BADREF(path, "vertex", i);
+			BADREF("vertex", i);
 
 		memcpy(verts[i].position, data->xs[xi], sizeof(vec3_noalign));
 
 		if(data->tcount) {
 			ti = data->indices[i][1]-1;
 			if(ti < 0 || ti >= data->tcount)
-				BADREF(path, "texcoord", i);
+				BADREF("texcoord", i);
 
 			verts[i].uv.s = data->texcoords[ti][0];
 			verts[i].uv.t = data->texcoords[ti][1];
@@ -89,7 +75,7 @@ void* load_model_begin(const char *path, uint flags) {
 		if(data->ncount) {
 			ni = data->indices[i][2]-1;
 			if(ni < 0 || ni >= data->ncount)
-				BADREF(path, "normal", ni);
+				BADREF("normal", ni);
 
 			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3_noalign));
 		}
@@ -117,12 +103,9 @@ fail:
 	return NULL;
 }
 
-void* load_model_end(void *opaque, const char *path, uint flags) {
+attr_nonnull(2)
+static void *load_model_end(ResourceLoadInfo rli, void *opaque) {
 	ModelLoadData *ldata = opaque;
-
-	if(!ldata) {
-		return NULL;
-	}
 
 	Model *model = calloc(1, sizeof(Model));
 	r_model_add_static(model, PRIM_TRIANGLES, ldata->icount, ldata->verts, ldata->indices);
@@ -134,7 +117,8 @@ void* load_model_end(void *opaque, const char *path, uint flags) {
 	return model;
 }
 
-void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+static void unload_model(void *model) {
+	// FIXME: Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
 	free(model);
 }
 
@@ -262,6 +246,17 @@ fail:
 }
 
 Model* get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_DEFAULT)->data;
+	return res_get_data(RES_MODEL, name, RESF_DEFAULT);
 }
 
+ResourceHandler model_res_handler = {
+	.type = RES_MODEL,
+
+	.procs = {
+		.find = model_path,
+		.check = check_model_path,
+		.begin_load = load_model_begin,
+		.end_load = load_model_end,
+		.unload = unload_model,
+	},
+};

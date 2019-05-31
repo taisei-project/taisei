@@ -164,7 +164,7 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 	}
 
 	if(numthreads == 0) {
-		numthreads = numcores * 4;
+		numthreads = numcores * 2;
 	} else if(numthreads > maxthreads) {
 		log_warn("Number of threads capped to %i (%i requested)", maxthreads, numthreads);
 		numthreads = maxthreads;

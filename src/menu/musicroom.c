@@ -30,8 +30,9 @@ enum {
 };
 
 typedef struct MusicEntryParam {
-	MusicMetadata *bgm_meta;
-	const char *bgm;
+	// MusicMetadata *bgm_meta;
+	ResourceRef bgm_ref;
+	ResourceRef bgm_meta_ref;
 	ShaderProgram *text_shader;
 	uint8_t state;
 } MusicEntryParam;
@@ -53,6 +54,11 @@ static void musicroom_logic(MenuData *m) {
 		fapproach_asymptotic_p(&m->drawdata[3], 0, 0.2, 1e-5);
 	}
 
+	ResourceRef cur_bgm;
+	if(!bgm_get_ref(&cur_bgm, true)) {
+		cur_bgm = RES_INVALID_REF;
+	}
+
 	for(int i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = m->entries + i;
 		MusicEntryParam *p = e->arg;
@@ -62,11 +68,7 @@ static void musicroom_logic(MenuData *m) {
 				p->state &= ~MSTATE_CONFIRM;
 			}
 
-			if(
-				current_bgm.music &&
-				current_bgm.music->meta &&
-				current_bgm.music->meta == p->bgm_meta
-			) {
+			if(res_refs_are_equivalent(cur_bgm, p->bgm_ref)) {
 				p->state |= MSTATE_PLAYING;
 			} else {
 				p->state &= ~MSTATE_PLAYING;
@@ -164,7 +166,7 @@ static void musicroom_draw(MenuData *m) {
 
 		const char *comment;
 		MusicEntryParam *p = e->arg;
-		MusicMetadata *meta = p->bgm_meta;
+		MusicMetadata *meta = res_ref_data(p->bgm_meta_ref);
 		Color *clr = RGBA(a, a, a, a);
 
 		if(p->state & MSTATE_CONFIRM) {
@@ -213,24 +215,24 @@ static void action_play_bgm(MenuData *m, void *arg) {
 
 	if(p->state & (MSTATE_CONFIRM | MSTATE_UNLOCKED)) {
 		p->state &= ~MSTATE_CONFIRM;
-		preload_resource(RES_BGM, p->bgm, RESF_OPTIONAL);
-		start_bgm(p->bgm);
+		bgm_start_ref(p->bgm_ref);
 	} else if (!(p->state & MSTATE_PLAYING)) {
 		p->state |= MSTATE_CONFIRM;
 	}
 }
 
 static void add_bgm(MenuData *m, const char *bgm) {
-	MusicMetadata *meta = get_resource_data(RES_BGM_METADATA, bgm, RESF_OPTIONAL | RESF_PRELOAD);
-	const char *title = (meta && meta->title) ? meta->title : "Unknown track";
 	MusicEntryParam *p = calloc(1, sizeof(*p));
-	p->bgm = bgm;
-	p->bgm_meta = meta;
+	p->bgm_meta_ref = res_ref(RES_MUSICMETA, bgm, RESF_OPTIONAL);
+	p->bgm_ref = res_ref(RES_MUSIC, bgm, RESF_OPTIONAL | RESF_LAZY);
 	p->text_shader = r_shader_get("text_default");
 
 	if(progress_is_bgm_unlocked(bgm)) {
 		p->state |= MSTATE_UNLOCKED;
 	}
+
+	MusicMetadata *meta = res_ref_data(p->bgm_meta_ref);
+	const char *title = (meta && meta->title) ? meta->title : "Unknown track";
 
 	MenuEntry *e = add_menu_entry(m, title, action_play_bgm, p);
 	e->transition = NULL;
@@ -238,7 +240,13 @@ static void add_bgm(MenuData *m, const char *bgm) {
 
 static void musicroom_free(MenuData *m) {
 	for(MenuEntry *e = m->entries; e < m->entries + m->ecount; ++e) {
-		free(e->arg);
+		MusicEntryParam *p = e->arg;
+
+		if(p) {
+			res_unref(&p->bgm_ref);
+			res_unref(&p->bgm_meta_ref);
+			free(p);
+		}
 	}
 }
 

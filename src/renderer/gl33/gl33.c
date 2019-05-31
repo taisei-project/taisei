@@ -839,6 +839,10 @@ static void gl33_post_init(void) {
 }
 
 static void gl33_shutdown(void) {
+	// Prevent r_shader_standard from being called by gl33_shader_deleted during shutdown,
+	// which would lead to an invalid resource dereference.
+	R.progs.pending = R.progs.active = NULL;
+
 	glcommon_unload_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }

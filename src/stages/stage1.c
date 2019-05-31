@@ -283,10 +283,11 @@ static void stage1_waterplants_draw(vec3 pos) {
 	r_mat_rotate(2*M_PI*sin(32.234*pos[1]) + global.frames / 800.0, 0, 0, 1);
 
 	Sprite spr = { 0 };
+	Texture *spr_tex = get_tex("stage1/waterplants");
 	spr.w = spr.h = 1;
-	spr.tex = get_tex("stage1/waterplants");
+	spr.tex = res_ref_wrap_external_data(RES_TEXTURE, spr_tex);
 	uint tw, th;
-	r_texture_get_size(spr.tex, 0, &tw, &th);
+	r_texture_get_size(spr_tex, 0, &tw, &th);
 	spr.tex_area.w = tw * 0.5;
 	spr.tex_area.h = th;
 	spr.tex_area.x = spr.tex_area.w * tile;
@@ -336,25 +337,25 @@ static void stage1_start(void) {
 	stage1_bg_fbpair.back = stage_add_background_framebuffer("Stage 1 water FB 2", 0.2, 0.5, 1, &cfg);
 }
 
-static void stage1_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+static void stage1_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
 		"stage1/waterplants",
 		"dialog/cirno",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"blur5",
 		"lasers/linear",
 		"stage1_water",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/cirno",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }
@@ -366,7 +367,7 @@ static void stage1_end(void) {
 static void stage1_spellpractice_start(void) {
 	stage1_start();
 
-	Boss* cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
+	Boss *cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
 	boss_add_attack_from_info(cirno, global.stage->spell, true);
 	boss_start_attack(cirno, cirno->attacks);
 	global.boss = cirno;

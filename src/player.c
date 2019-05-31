@@ -36,7 +36,6 @@ void player_stage_pre_init(Player *plr) {
 	plr->deathtime = -1;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
-	plrmode_preload(plr->mode);
 }
 
 double player_property(Player *plr, PlrProperty prop) {
@@ -86,7 +85,7 @@ void player_free(Player *plr) {
 		plr->mode->procs.free(plr);
 	}
 
-	r_texture_destroy(plr->bomb_portrait.tex);
+	r_texture_destroy(res_ref_data(plr->bomb_portrait.tex));
 	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
 	delete_enemy(&plr->focus_circle, plr->focus_circle.first);
@@ -357,10 +356,6 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 			.color = RGBA_MUL_ALPHA(0.3, 0.6, 1.0, text_opacity),
 			.align = ALIGN_LEFT,
 		});
-
-		r_shader("sprite_filled_circle");
-		r_uniform_vec4("color_inner", 0, 0, 0, 0);
-		r_uniform_vec4("color_outer", 0, 0, 0.1 * ps_opacity, 0.1 * ps_opacity);
 	}
 }
 
@@ -1634,26 +1629,26 @@ uint64_t player_next_extralife_threshold(uint64_t step) {
 	return base * (step * step + step + 2) / 2;
 }
 
-void player_preload(void) {
+void player_preload(ResourceRefGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_multi_add(rg, RES_SHADERPROG, flags,
 		"circle_distort",
 		"player_death",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_multi_add(rg, RES_TEXTURE, flags,
 		"static",
 	NULL);
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_multi_add(rg, RES_SPRITE, flags,
 		"fairy_circle",
 		"focus",
 		"part/blast_huge_halo",
 		"part/powersurge_field",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, flags | RESF_OPTIONAL,
 		"death",
 		"extra_bomb",
 		"extra_life",

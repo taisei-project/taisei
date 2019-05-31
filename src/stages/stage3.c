@@ -159,9 +159,9 @@ static void stage3_start(void) {
 	stgstate.fog_brightness = 0.5;
 }
 
-static void stage3_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+static void stage3_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage3/border",
 		"stage3/spellbg1",
 		"stage3/spellbg2",
@@ -171,7 +171,7 @@ static void stage3_preload(void) {
 		"dialog/wriggle",
 		"dialog/scuttle",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"tunnel",
 		"zbuf_fog",
 		"glitch",
@@ -179,11 +179,11 @@ static void stage3_preload(void) {
 		"lasers/accelerated",
 		"lasers/sine_expanding",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/scuttle",
 		"boss/wriggleex",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

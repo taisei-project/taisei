@@ -232,7 +232,7 @@ static void credits_init(void) {
 	credits.end += 500 + CREDITS_ENTRY_FADEOUT;
 	credits.skipable = progress_times_any_good_ending_achieved() > 0;
 
-	start_bgm("credits");
+	bgm_start("credits");
 }
 
 static double entry_height(CreditsEntry *e, double *head, double *body) {
@@ -417,11 +417,11 @@ static void credits_free(void) {
 	free_stage3d(&stage_3d_context);
 }
 
-void credits_preload(void) {
-	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
-	preload_resource(RES_SPRITE, "yukkureimu", RESF_DEFAULT);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+void credits_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "credits", NULL);
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT, "tower_wall", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, "yukkureimu", NULL);
+	res_group_multi_add(rg, RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towerwall",
 		"loading",  // for transition
 	NULL);
@@ -453,8 +453,8 @@ static void credits_end_loop(void *ctx) {
 	run_call_chain(&credits.cc, NULL);
 }
 
-void credits_enter(CallChain next) {
-	credits_preload();
+void credits_enter(CallChain next, ResourceRefGroup *rg) {
+	credits_preload(rg);
 	credits_init();
 	credits.cc = next;
 	eventloop_enter(&credits, credits_logic_frame, credits_render_frame, credits_end_loop, FPS);

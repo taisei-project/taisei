@@ -13,7 +13,7 @@
 
 #include "eventloop/eventloop.h"
 
-void credits_enter(CallChain next);
-void credits_preload(void);
+void credits_enter(CallChain next, ResourceRefGroup *rg);
+void credits_preload(ResourceRefGroup *rg);
 
 #endif // IGUARD_credits_h

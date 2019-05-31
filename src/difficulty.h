@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include "color.h"
+#include "resource/resource.h"
 
 typedef enum {
 	D_Any = 0,
@@ -33,6 +34,6 @@ const char* difficulty_sprite_name(Difficulty diff)
 const Color* difficulty_color(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
-void difficulty_preload(void);
+void difficulty_preload(ResourceRefGroup *rg);
 
 #endif // IGUARD_difficulty_h

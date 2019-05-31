@@ -33,8 +33,8 @@ typedef struct LaserInstancedAttribs {
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
 static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
 
-void lasers_preload(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+void lasers_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"blur25",
 		"blur5",
 		"laser_generic",
