@@ -17,9 +17,6 @@
 
 typedef struct Texture Texture;
 
-char* texture_path(const char *name);
-bool check_texture_path(const char *path);
-
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
 void end_draw_texture(void);
 
@@ -32,12 +29,11 @@ void fill_screen_p(Texture *tex);
 void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
 
-Texture* get_tex(const char *name);
-Texture* prefix_get_tex(const char *name, const char *prefix);
+Texture *get_tex(const char *name);
+Texture *prefix_get_tex(const char *name, const char *prefix);
 
 extern ResourceHandler texture_res_handler;
 
-#define TEX_PATH_PREFIX "res/gfx/"
 #define TEX_EXTENSION ".tex"
 
 #endif // IGUARD_resource_texture_h

@@ -11,18 +11,31 @@
 
 #include "taisei.h"
 
-noreturn void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
+void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert
 #undef static_assert
 
 #define static_assert _Static_assert
 
+#if defined(NDEBUG)
+	#define TRAP() abort()
+#elif defined(__clang__)
+	#define TRAP() __builtin_debugtrap()
+#elif defined(__GNUC__)
+	#define TRAP() __builtin_trap()
+#elif TAISEI_BUILDCONF_HAVE_POSIX
+	#include <signal.h>
+	#define TRAP() raise(SIGTRAP)
+#else
+	#define TRAP() abort()
+#endif
+
 #ifdef NDEBUG
     #define _assert(cond, uselog)
 	#define _assume(cond, uselog) ASSUME(cond)
 #else
-    #define _assert(cond, uselog) ((cond) ? (void)0 : _ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog))
+    #define _assert(cond, uselog) ((cond) ? (void)0 : (_ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog), TRAP()))
 	#define _assume(cond, uselog) _assert(cond, uselog)
 #endif
 

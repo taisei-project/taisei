@@ -21,32 +21,6 @@
 #include "events.h"
 #include "renderer/api.h"
 
-static void init_fonts(void);
-static void post_init_fonts(void);
-static void shutdown_fonts(void);
-static char* font_path(const char*);
-static bool check_font_path(const char*);
-static void* load_font_begin(const char*, uint);
-static void* load_font_end(void*, const char*, uint);
-static void unload_font(void*);
-
-ResourceHandler font_res_handler = {
-	.type = RES_FONT,
-	.typename = "font",
-	.subdir = FONT_PATH_PREFIX,
-
-	.procs = {
-		.init = init_fonts,
-		.post_init = post_init_fonts,
-		.shutdown = shutdown_fonts,
-		.find = font_path,
-		.check = check_font_path,
-		.begin_load = load_font_begin,
-		.end_load = load_font_end,
-		.unload = unload_font,
-	},
-};
-
 // Handy routines for converting from fixed point
 // From SDL_ttf
 #define FT_FLOOR(X) (((X) & -64) / 64)
@@ -113,7 +87,7 @@ struct Font {
 
 static struct {
 	FT_Library lib;
-	ShaderProgram *default_shader;
+	ResourceRef default_shader;
 	Texture *render_tex;
 	Framebuffer *render_buf;
 
@@ -176,10 +150,6 @@ static void init_fonts(void) {
 		fonts_event, NULL, EPRIO_SYSTEM,
 	});
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
-		"standard",
-	NULL);
-
 	// WARNING: Preloading the default shader here is unsafe.
 
 	globals.render_tex = r_texture_create(&(TextureParams) {
@@ -203,7 +173,11 @@ static void init_fonts(void) {
 }
 
 static void post_init_fonts(void) {
-	globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+	globals.default_shader = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT);
+}
+
+static void pre_shutdown_fonts(void) {
+	res_unref(&globals.default_shader);
 }
 
 static void shutdown_fonts(void) {
@@ -216,11 +190,11 @@ static void shutdown_fonts(void) {
 }
 
 static char* font_path(const char *name) {
-	return strjoin(FONT_PATH_PREFIX, name, FONT_EXTENSION, NULL);
+	return strjoin(RES_PATHPREFIX_FONT, name, FONT_EXTENSION, NULL);
 }
 
-bool check_font_path(const char *path) {
-	return strstartswith(path, FONT_PATH_PREFIX) && strendswith(path, FONT_EXTENSION);
+static bool check_font_path(const char *path) {
+	return strstartswith(path, RES_PATHPREFIX_FONT) && strendswith(path, FONT_EXTENSION);
 }
 
 static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong count) {
@@ -404,7 +378,7 @@ static bool add_glyph_to_spritesheet(Font *font, Sprite *sprite, Pixmap *pixmap,
 		pixmap
 	);
 
-	sprite->tex = ss->tex;
+	sprite->tex = res_ref_wrap_external_data(RES_TEXTURE, ss->tex);
 	sprite->w = pixmap->width;
 	sprite->h = pixmap->height;
 	sprite->tex_area.x = rect_x(sprite_pos);
@@ -677,17 +651,17 @@ static void free_font_resources(Font *font) {
 	free(font->glyphs);
 }
 
-void* load_font_begin(const char *path, uint flags) {
+static void *load_font_begin(ResourceLoadInfo rli) {
 	Font font;
 	memset(&font, 0, sizeof(font));
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+	if(!parse_keyvalue_file_with_spec(rli.path, (KVSpec[]){
 		{ "source",  .out_str   = &font.source_path },
 		{ "size",    .out_int   = &font.base_size },
 		{ "face",    .out_long  = &font.base_face_idx },
 		{ NULL }
 	})) {
-		log_error("Failed to parse font file '%s'", path);
+		log_error("Failed to parse font file '%s'", rli.path);
 		return NULL;
 	}
 
@@ -708,20 +682,14 @@ void* load_font_begin(const char *path, uint flags) {
 	font.glyphs = calloc(font.glyphs_allocated, sizeof(Glyph));
 
 #ifdef DEBUG
-	char *basename = resource_util_basename(FONT_PATH_PREFIX, path);
-	strlcpy(font.debug_label, basename, sizeof(font.debug_label));
-	free(basename);
+	strlcpy(font.debug_label, rli.name, sizeof(font.debug_label));
 #endif
 
 	font_set_kerning_enabled(&font, true);
 	return memdup(&font, sizeof(font));
 }
 
-void* load_font_end(void *opaque, const char *path, uint flags) {
-	return opaque;
-}
-
-void unload_font(void *vfont) {
+static void unload_font(void *vfont) {
 	free_font_resources(vfont);
 	free(vfont);
 }
@@ -738,14 +706,14 @@ static void reload_font(Font *font, double quality) {
 	}
 }
 
-static void* reload_font_callback(const char *name, Resource *res, void *varg) {
+static void* reload_font_callback(const char *name, void *res, void *varg) {
 	struct rlfonts_arg *a = varg;
-	reload_font((Font*)res->data, a->quality);
+	reload_font((Font*)res, a->quality);
 	return NULL;
 }
 
 static void reload_fonts(double quality) {
-	resource_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
+	res_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
 }
 
 static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
@@ -933,11 +901,11 @@ static inline void adjust_xpos(Font *font, const uint32_t *ucs4text, Alignment a
 }
 
 Font* get_font(const char *font) {
-	return get_resource_data(RES_FONT, font, RESF_DEFAULT);
+	return res_get_data(RES_FONT, font, RESF_DEFAULT);
 }
 
 ShaderProgram* text_get_default_shader(void) {
-	return globals.default_shader;
+	return res_ref_data(globals.default_shader);
 }
 
 // #define TEXT_DRAW_BBOX
@@ -1084,7 +1052,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 		sp.sprite_ptr = &glyph->sprite;
 
-		if(glyph->sprite.tex != NULL) {
+		if(res_ref_is_valid(glyph->sprite.tex)) {
 			sp.pos.x = x + glyph->metrics.bearing_x + sp.sprite_ptr->w * 0.5;
 			sp.pos.y = y - glyph->metrics.bearing_y + sp.sprite_ptr->h * 0.5 - font->metrics.descent;
 
@@ -1236,7 +1204,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		.font_ptr = font,
 		.pos = { -out_bbox->x.min, -out_bbox->y.min + font->metrics.descent },
 		.color = RGB(1, 1, 1),
-		.shader = "text_default",
+		.shader_ptr = text_get_default_shader(),
 	});
 
 	font->metrics.scale = fontscale;
@@ -1253,7 +1221,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 
 	r_state_pop();
 
-	out_sprite->tex = tex;
+	out_sprite->tex = res_ref_wrap_external_data(RES_TEXTURE, tex);
 	out_sprite->tex_area.w = bbox_width;
 	out_sprite->tex_area.h = bbox_height;
 	out_sprite->tex_area.x = 0;
@@ -1360,3 +1328,18 @@ const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
 
 	return &g->metrics;
 }
+
+ResourceHandler font_res_handler = {
+	.type = RES_FONT,
+
+	.procs = {
+		.init = init_fonts,
+		.post_init = post_init_fonts,
+		.pre_shutdown = pre_shutdown_fonts,
+		.shutdown = shutdown_fonts,
+		.find = font_path,
+		.check = check_font_path,
+		.begin_load = load_font_begin,
+		.unload = unload_font,
+	},
+};

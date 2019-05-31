@@ -229,7 +229,7 @@ double player_get_bomb_progress(Player *plr);
 
 void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 
-void player_preload(void);
+void player_preload(ResourceRefGroup *rg);
 
 // FIXME: where should this be?
 complex plrutil_homing_target(complex org, complex fallback);

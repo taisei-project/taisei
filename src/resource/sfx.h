@@ -15,6 +15,4 @@
 
 extern ResourceHandler sfx_res_handler;
 
-#define SFX_PATH_PREFIX "res/sfx/"
-
 #endif // IGUARD_resource_sfx_h

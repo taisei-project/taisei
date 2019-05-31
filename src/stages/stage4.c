@@ -226,9 +226,9 @@ static void stage4_start(void) {
 	add_model(&stage_3d_context, stage4_corridor_draw, stage4_corridor_pos);
 }
 
-static void stage4_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+static void stage4_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage2/border", // Stage 2 is intentional!
 		"stage4/kurumibg1",
 		"stage4/kurumibg2",
@@ -238,25 +238,25 @@ static void stage4_preload(void) {
 		"stage4/wall",
 		"dialog/kurumi",
 	NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is also intentional
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"zbuf_fog",
 		"sprite_negative",
 		"lasers/accelerated",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/kurumi",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_MODEL, RESF_DEFAULT,
 		"mansion",
 		"lake",
 	NULL);
-	preload_resources(RES_TEXTURE, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_TEXTURE, RESF_OPTIONAL,
 		"part/sinewave",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"laser1",
 		"boom",
 		"warp",
@@ -264,7 +264,7 @@ static void stage4_preload(void) {
 
 	// XXX: Special case for spell practice of the god damn extra spell, because it always needs a special case.
 	// TODO: Maybe add spell-specific preloads instead of putting everything into the stage one?
-	enemies_preload();
+	enemies_preload(rg);
 }
 
 static void stage4_end(void) {

@@ -14,23 +14,23 @@
 
 typedef struct PPBasicPriv {
 	const char *sprite_name;
-	Sprite *sprite;
+	ResourceRef sprite_ref;
 	complex size;
 	complex collision_size;
 } PPBasicPriv;
 
-static void pp_basic_preload(ProjPrototype *proto) {
-	preload_resource(RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_PERMANENT);
+static void pp_basic_preload(ProjPrototype *proto, ResourceRefGroup *rg) {
+	// res_group_multi_add(rg, RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_DEFAULT);
 	// not assigning ->sprite here because it'll block the thread until loaded
+	PPBasicPriv *pdata = proto->private;
+	pdata->sprite_ref = res_ref(RES_SPRITE, pdata->sprite_name, RESF_DEFAULT);
+	res_group_add_ref(rg, pdata->sprite_ref);
 }
 
 static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 	PPBasicPriv *pdata = proto->private;
 
-	p->sprite = pdata->sprite
-		? pdata->sprite
-		: (pdata->sprite = get_sprite(pdata->sprite_name));
-
+	p->sprite = res_ref_data(pdata->sprite_ref);
 	p->size = pdata->size;
 	p->collision_size = pdata->collision_size;
 }

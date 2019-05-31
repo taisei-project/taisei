@@ -373,18 +373,23 @@ void process_enemies(EnemyList *enemies) {
 	}
 }
 
-void enemies_preload(void) {
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+void enemies_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"enemy/fairy",
 		"enemy/bigfairy",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
+		"enemy/fairy",
+		"enemy/bigfairy",
+	NULL);
+
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
 		"enemy/swirl",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"enemydeath",
 	NULL);
 }

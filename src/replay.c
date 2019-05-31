@@ -796,6 +796,7 @@ int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
 }
 
 typedef struct ReplayContext {
+	ResourceRefGroup resources;
 	CallChain cc;
 	int stage_idx;
 } ReplayContext;
@@ -845,8 +846,11 @@ static void replay_do_play(CallChainResult ccr) {
 	if(gstg == NULL) {
 		replay_do_cleanup(ccr);
 	} else {
+		res_group_destroy(&ctx->resources);
+		res_group_init(&ctx->resources, 32);
+
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
-		stage_enter(gstg, CALLCHAIN(replay_do_post_play, ctx));
+		stage_enter(gstg, &ctx->resources, CALLCHAIN(replay_do_post_play, ctx));
 	}
 }
 
@@ -868,12 +872,12 @@ static void replay_do_post_play(CallChainResult ccr) {
 
 static void replay_do_cleanup(CallChainResult ccr) {
 	ReplayContext *ctx = ccr.ctx;
+	res_group_destroy(&ctx->resources);
 
 	global.gameover = 0;
 	global.replaymode = REPLAY_RECORD;
 	replay_destroy(&global.replay);
 	global.replay_stage = NULL;
-	free_resources(false);
 
 	CallChain cc = ctx->cc;
 	free(ctx);

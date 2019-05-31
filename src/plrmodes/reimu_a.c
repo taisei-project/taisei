@@ -19,10 +19,10 @@ static struct {
 	bool respawn_slaves;
 } reimu_spirit_state;
 
-static void reimu_spirit_preload(void) {
+static void reimu_spirit_preload(ResourceRefGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_multi_add(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle",
@@ -32,16 +32,16 @@ static void reimu_spirit_preload(void) {
 		"part/fantasyseal_impact",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_multi_add(rg, RES_TEXTURE, flags,
 		"runes",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_multi_add(rg, RES_SHADERPROG, flags,
 		"sprite_yinyang",
 		"reimu_bomb_bg",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, flags | RESF_OPTIONAL,
 		"boom",
 		"bomb_reimu_a",
 		"bomb_marisa_b",
@@ -336,7 +336,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 			.args = { trail_vel, 0, 0.4 },
 		);
 	}
-	
+
 	return ACTION_NONE;
 }
 
@@ -374,7 +374,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		alpha = min(1,10*t);
 	if(t > 0.7)
 		alpha *= 1-pow((t-0.7)/0.3,4);
-	
+
 	reimu_common_bomb_bg(p, alpha);
 	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }

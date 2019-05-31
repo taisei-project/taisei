@@ -20,6 +20,7 @@ typedef struct EndingEntry {
 } EndingEntry;
 
 typedef struct Ending {
+	ResourceRefGroup resources;
 	EndingEntry *entries;
 	int count;
 	int duration;
@@ -201,8 +202,8 @@ static void ending_draw(Ending *e) {
 	r_color4(1,1,1,1);
 }
 
-void ending_preload(void) {
-	preload_resource(RES_BGM, "ending", RESF_OPTIONAL);
+void ending_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "ending", NULL);
 }
 
 static void ending_advance(Ending *e) {
@@ -247,7 +248,7 @@ static LogicFrameAction ending_logic_frame(void *arg) {
 	if(e->pos < e->count-1 && global.frames >= e->entries[e->pos+1].time) {
 		e->pos++;
 		if(e->pos == e->count-1) {
-			fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
+			bgm_fade((FPS * ENDING_FADE_OUT) / 4000.0);
 			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 			e->duration = global.frames+ENDING_FADE_OUT;
 		}
@@ -285,8 +286,8 @@ static void ending_loop_end(void *ctx) {
 	run_call_chain(&cc, NULL);
 }
 
-void ending_enter(CallChain next) {
-	ending_preload();
+void ending_enter(CallChain next, ResourceRefGroup *rg) {
+	ending_preload(rg);
 
 	Ending *e = calloc(1, sizeof(Ending));
 	init_ending(e);
@@ -294,7 +295,7 @@ void ending_enter(CallChain next) {
 
 	global.frames = 0;
 	set_ortho(SCREEN_W, SCREEN_H);
-	start_bgm("ending");
+	bgm_start("ending");
 
 	eventloop_enter(e, ending_logic_frame, ending_render_frame, ending_loop_end, FPS);
 }

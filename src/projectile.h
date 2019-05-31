@@ -136,7 +136,7 @@ typedef struct ProjArgs {
 } attr_designated_init ProjArgs;
 
 struct ProjPrototype {
-	void (*preload)(ProjPrototype *proto);
+	void (*preload)(ProjPrototype *proto, ResourceRefGroup *rg);
 	void (*process_args)(ProjPrototype *proto, ProjArgs *args);
 	void (*init_projectile)(ProjPrototype *proto, Projectile *p);
 	void (*deinit_projectile)(ProjPrototype *proto, Projectile *p);
@@ -219,7 +219,7 @@ void petal_explosion(int n, complex pos);
 
 void Blast(Projectile *p, int t);
 
-void projectiles_preload(void);
+void projectiles_preload(ResourceRefGroup *rg);
 void projectiles_free(void);
 
 complex projectile_graze_size(Projectile *p);

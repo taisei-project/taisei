@@ -1022,7 +1022,7 @@ void petal_explosion(int n, complex pos) {
 	}
 }
 
-void projectiles_preload(void) {
+void projectiles_preload(ResourceRefGroup *rg) {
 	const char *shaders[] = {
 		// This array defines a shader-based fallback draw order
 		"sprite_silhouette",
@@ -1034,17 +1034,17 @@ void projectiles_preload(void) {
 	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);
 
 	for(uint i = 0; i < num_shaders; ++i) {
-		preload_resource(RES_SHADER_PROGRAM, shaders[i], RESF_PERMANENT);
+		res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT, shaders[i], NULL);
 	}
 
 	// FIXME: Why is this here?
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_TEXTURE, RESF_DEFAULT,
 		"part/lasercurve",
 	NULL);
 
 	// TODO: Maybe split this up into stage-specific preloads too?
 	// some of these are ubiquitous, but some only appear in very specific parts.
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/blast",
 		"part/bullet_cloud",
 		"part/flare",
@@ -1059,7 +1059,7 @@ void projectiles_preload(void) {
 		"part/stardust_green",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_SOUND, RESF_DEFAULT,
 		"shot1",
 		"shot2",
 		"shot3",
@@ -1068,7 +1068,7 @@ void projectiles_preload(void) {
 		"redirect",
 	NULL);
 
-	#define PP(name) (_pp_##name).preload(&_pp_##name);
+	#define PP(name) (_pp_##name).preload(&_pp_##name, rg);
 	#include "projectile_prototypes/all.inc.h"
 
 	ht_create(&shader_sublayer_map);

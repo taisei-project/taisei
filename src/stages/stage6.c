@@ -264,18 +264,18 @@ static void stage6_start(void) {
 	baryon_aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
 }
 
-static void stage6_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL,
+static void stage6_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL,
 		"stage6",
 		"stage6boss_phase1",
 		"stage6boss_phase2",
 		"stage6boss_phase3",
 	NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towertop",
 		"stage6/towerwall",
 	NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"dialog/elly",
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
@@ -296,7 +296,7 @@ static void stage6_preload(void) {
 		"stage6/toelagrangian/3",
 		"stage6/toelagrangian/4",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"baryon_feedback",
 		"lasers/accelerated",
 		"lasers/circle",
@@ -310,15 +310,15 @@ static void stage6_preload(void) {
 		"stage6_sky",
 		"tower_wall",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/elly",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_MODEL, RESF_DEFAULT,
 		"towerwall",
 		"towertop",
 		"skysphere",
 	NULL);
-	preload_resources(RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_DEFAULT | RESF_OPTIONAL,
 		"warp",
 		"noise1",
 		"boom",

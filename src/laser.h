@@ -53,7 +53,7 @@ struct Laser {
 #define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
 #define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
 
-void lasers_preload(void);
+void lasers_preload(ResourceRefGroup *rg);
 void lasers_free(void);
 
 Laser *create_laserline(complex pos, complex dir, float charge, float dur, const Color *clr);

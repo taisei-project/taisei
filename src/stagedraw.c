@@ -35,6 +35,8 @@ typedef struct CustomFramebuffer {
 } CustomFramebuffer;
 
 static struct {
+	ResourceRefGroup resources;
+
 	struct {
 		ShaderProgram *shader;
 		Font *font;
@@ -306,32 +308,35 @@ static void stage_draw_destroy_framebuffers(void) {
 }
 
 void stage_draw_init(void) {
-	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
+	res_group_init(&stagedraw.resources, 32);
+
+	res_group_multi_add(&stagedraw.resources, RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_group_multi_add(&stagedraw.resources, RES_SPRITE, RESF_DEFAULT,
 		"hud/heart",
 		"hud/star",
 		"star",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_group_multi_add(&stagedraw.resources, RES_TEXTURE, RESF_DEFAULT,
 		"powersurge_flow",
 		"titletransition",
 		"hud",
 	NULL);
 
-	preload_resources(RES_MODEL, RESF_PERMANENT,
+	res_group_multi_add(&stagedraw.resources, RES_MODEL, RESF_DEFAULT,
 		"hud",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_multi_add(&stagedraw.resources, RES_SHADERPROG, RESF_DEFAULT,
 		"copy_depth",
 		"ingame_menu",
 		"powersurge_effect",
 		"powersurge_feedback",
 		"sprite_circleclipped_indicator",
+		"sprite_default",
 		"text_hud",
 		"text_stagetext",
 
@@ -344,28 +349,29 @@ void stage_draw_init(void) {
 		#endif
 	NULL);
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_multi_add(&stagedraw.resources, RES_FONT, RESF_DEFAULT,
 		"mono",
-		"small",
 		"monosmall",
+		"small",
+		"standard",
 	NULL);
 
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
-		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		res_group_multi_add(&stagedraw.resources, RES_SHADERPROG, RESF_DEFAULT,
 			"graph",
 		NULL);
 	}
 
 	if(stagedraw.objpool_stats) {
-		preload_resources(RES_FONT, RESF_PERMANENT,
+		res_group_multi_add(&stagedraw.resources, RES_FONT, RESF_DEFAULT,
 			"monotiny",
 		NULL);
 	}
 
-	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
+	stagedraw.viewport_pp = res_get_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = r_shader_get("text_hud");
 	stagedraw.hud_text.font = get_font("standard");
 	stagedraw.shaders.fxaa = r_shader_get("fxaa");
@@ -392,6 +398,7 @@ void stage_draw_init(void) {
 void stage_draw_shutdown(void) {
 	events_unregister_handler(stage_draw_event);
 	stage_draw_destroy_framebuffers();
+	res_group_destroy(&stagedraw.resources);
 }
 
 FBPair* stage_get_fbpair(StageFBPair id) {
@@ -519,7 +526,9 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_mat_scale(w, h, 1.0);
 
 	uint tw, th;
-	r_texture_get_size(spr.tex, 0, &tw, &th);
+	Texture *tex = res_ref_data(spr.tex);
+
+	r_texture_get_size(tex, 0, &tw, &th);
 
 	r_shader("spellcard_walloftext");
 	r_uniform_float("w", spr.tex_area.w / tw);
@@ -527,7 +536,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_uniform_float("ratio", h/w);
 	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
-	r_uniform_sampler("tex", spr.tex);
+	r_uniform_sampler("tex", tex);
 	r_draw_quad();
 	r_shader_standard();
 
@@ -583,7 +592,7 @@ static inline bool should_draw_stage_bg(void) {
 	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal
 	if(global.boss->current->type == AT_ExtraSpell)
 		render_delay = 0;
-	
+
 	return (
 		!global.boss
 		|| !global.boss->current
@@ -1819,7 +1828,7 @@ void stage_draw_hud(void) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
-		
+
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "boss_indicator",
 			.shader = "sprite_default",

@@ -748,12 +748,12 @@ void r_disable(RendererCapability cap) {
 
 static inline attr_must_inline
 ShaderProgram* r_shader_get(const char *name) {
-	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_DEFAULT | RESF_UNSAFE);
+	return res_get_data(RES_SHADERPROG, name, RESF_DEFAULT);
 }
 
 static inline attr_must_inline
 ShaderProgram* r_shader_get_optional(const char *name) {
-	ShaderProgram *prog = get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
+	ShaderProgram *prog = res_get_data(RES_SHADERPROG, name, RESF_OPTIONAL);
 
 	if(!prog) {
 		log_warn("shader program %s could not be loaded", name);
@@ -764,7 +764,7 @@ ShaderProgram* r_shader_get_optional(const char *name) {
 
 static inline attr_must_inline
 Texture* r_texture_get(const char *name) {
-	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE);
+	return res_get_data(RES_TEXTURE, name, RESF_DEFAULT);
 }
 
 static inline attr_must_inline
@@ -819,12 +819,12 @@ void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
 
 static inline attr_must_inline attr_nonnull(1)
 void r_draw_model(const char *model) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), 0, 0);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
 }
 
 static inline attr_must_inline attr_nonnull(1)
 void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), instances, base_instance);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
 }
 
 static inline attr_must_inline

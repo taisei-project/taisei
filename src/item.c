@@ -46,7 +46,7 @@ static const char* item_indicator_sprite_name(ItemType type) {
 		[ITEM_SURGE         - ITEM_FIRST] = NULL,
 		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage_indicator",
 	};
-	
+
 	uint index = type - 1;
 
 	assert(index < ARRAY_SIZE(map));
@@ -69,7 +69,7 @@ static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
 	const int indicator_display_y = 6;
-	
+
 	float y = cimag(i->pos);
 	if(y < 0) {
 		Sprite *s = item_indicator_sprite(i->type);
@@ -85,12 +85,12 @@ static void ent_draw_item(EntityInterface *ent) {
 		}
 	}
 
-	
+
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
 		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
 	}
-	
+
 	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
@@ -381,16 +381,16 @@ void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs gr
 	spawn_items_internal(pos, collect_value, groups);
 }
 
-void items_preload(void) {
+void items_preload(ResourceRefGroup *rg) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
-		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, item_sprite_name(i), NULL);
 		const char *indicator = item_indicator_sprite_name(i);
 		if(indicator != NULL) {
-			preload_resource(RES_SPRITE, indicator, RESF_PERMANENT);
+			res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, indicator, NULL);
 		}
 	}
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"item_generic",
 	NULL);
 }

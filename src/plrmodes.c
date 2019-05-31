@@ -39,9 +39,9 @@ PlayerCharacter* plrchar_get(CharacterID id) {
 	return pc;
 }
 
-void plrchar_preload(PlayerCharacter *pc) {
-	preload_resource(RES_ANIM, pc->player_sprite_name, RESF_DEFAULT);
-	preload_resource(RES_SPRITE, pc->dialog_sprite_name, RESF_DEFAULT);
+void plrchar_preload(PlayerCharacter *pc, ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT, pc->player_sprite_name, NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, pc->dialog_sprite_name, NULL);
 }
 
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {
@@ -107,11 +107,11 @@ PlayerMode* plrmode_parse(const char *name) {
 	return plrmode_find(char_id, shot_id);
 }
 
-void plrmode_preload(PlayerMode *mode) {
+void plrmode_preload(PlayerMode *mode, ResourceRefGroup *rg) {
 	assert(mode != NULL);
-	plrchar_preload(mode->character);
+	plrchar_preload(mode->character, rg);
 
 	if(mode->procs.preload) {
-		mode->procs.preload();
+		mode->procs.preload(rg);
 	}
 }

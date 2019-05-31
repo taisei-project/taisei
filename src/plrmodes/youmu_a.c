@@ -501,26 +501,26 @@ static void youmu_mirror_init(Player *plr) {
 	youmu_common_bomb_buffer_init();
 }
 
-static void youmu_mirror_preload(void) {
+static void youmu_mirror_preload(ResourceRefGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_multi_add(rg, RES_SPRITE, flags,
 		"proj/youmu",
 		"part/myon",
 		"part/stardust",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_multi_add(rg, RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_multi_add(rg, RES_SHADERPROG, flags,
 		"sprite_youmu_myon_shot",
 		"youmu_bomb_bg",
 		"youmua_bomb",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

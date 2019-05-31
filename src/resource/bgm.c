@@ -15,11 +15,11 @@
 #include "util.h"
 
 static char *bgm_path(const char *name) {
-	return sfxbgm_make_path(BGM_PATH_PREFIX, name, true);
+	return sfxbgm_make_path(RES_PATHPREFIX_MUSIC, name, true);
 }
 
 static bool check_bgm_path(const char *path) {
-	return sfxbgm_check_path(BGM_PATH_PREFIX, path, true);
+	return sfxbgm_check_path(RES_PATHPREFIX_MUSIC, path, true);
 }
 
 static MusicImpl *load_music(const char *path) {
@@ -30,52 +30,43 @@ static MusicImpl *load_music(const char *path) {
 	return _a_backend.funcs.music_load(path);
 }
 
-static void *load_bgm_begin(const char *path, uint flags) {
+static void *load_bgm_begin(ResourceLoadInfo li) {
 	Music *mus = calloc(1, sizeof(Music));
+	MusicMetadata *meta = NULL;
 
-	if(strendswith(path, ".bgm")) {
-		char *basename = resource_util_basename(BGM_PATH_PREFIX, path);
-		mus->meta = get_resource_data(RES_BGM_METADATA, basename, flags);
-		free(basename);
-
-		if(mus->meta) {
-			mus->impl = load_music(mus->meta->loop_path);
-		}
+	if(strendswith(li.path, ".bgm")) {
+		mus->meta = res_ref(RES_MUSICMETA, li.name, li.flags | RESF_LAZY);
+		meta = res_ref_data(mus->meta);
+		mus->impl = load_music(meta->loop_path);
 	} else {
-		mus->impl = load_music(path);
+		mus->impl = load_music(li.path);
 	}
 
 	if(!mus->impl) {
 		free(mus);
 		mus = NULL;
-		log_error("Failed to load bgm '%s'", path);
-	} else if(mus->meta->loop_point > 0) {
-		_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
+		log_error("Failed to load bgm '%s'", li.path);
+	} else if(meta && meta->loop_point > 0) {
+		_a_backend.funcs.music_set_loop_point(mus->impl, meta->loop_point);
 	}
 
 	return mus;
 }
 
-static void *load_bgm_end(void *opaque, const char *path, uint flags) {
-	return opaque;
-}
-
 static void unload_bgm(void *vmus) {
 	Music *mus = vmus;
+	res_unref(&mus->meta);
 	_a_backend.funcs.music_unload(mus->impl);
 	free(mus);
 }
 
 ResourceHandler bgm_res_handler = {
-    .type = RES_BGM,
-    .typename = "bgm",
-    .subdir = BGM_PATH_PREFIX,
+	.type = RES_MUSIC,
 
-    .procs = {
-        .find = bgm_path,
-        .check = check_bgm_path,
-        .begin_load = load_bgm_begin,
-        .end_load = load_bgm_end,
-        .unload = unload_bgm,
-    },
+	.procs = {
+		.find = bgm_path,
+		.check = check_bgm_path,
+		.begin_load = load_bgm_begin,
+		.unload = unload_bgm,
+	},
 };

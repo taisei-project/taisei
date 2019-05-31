@@ -81,7 +81,7 @@ void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs gr
 bool collect_item(Item *item, float value);
 void collect_all_items(float value);
 
-void items_preload(void);
+void items_preload(ResourceRefGroup *rg);
 
 #define POWER_VALUE 3
 #define POWER_VALUE_MINI 1

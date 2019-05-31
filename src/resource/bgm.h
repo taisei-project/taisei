@@ -15,6 +15,4 @@
 
 extern ResourceHandler bgm_res_handler;
 
-#define BGM_PATH_PREFIX "res/bgm/"
-
 #endif // IGUARD_resource_bgm_h

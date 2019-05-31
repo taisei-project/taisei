@@ -19,6 +19,8 @@ enum {
 	_LOG_WARN_ID,
 	_LOG_ERROR_ID,
 	_LOG_FATAL_ID,
+
+	_LOG_NOABORT_BIT,
 };
 
 typedef enum LogLevel {
@@ -33,6 +35,10 @@ typedef enum LogLevel {
 	LOG_ALERT = LOG_WARN | LOG_ERROR | LOG_FATAL,
 
 	LOG_ALL = LOG_SPAM | LOG_ALERT,
+
+	LOG_NOABORT_BIT = (1 << _LOG_NOABORT_BIT),
+
+	LOG_FAKEFATAL = LOG_FATAL | LOG_NOABORT_BIT,
 } LogLevel;
 
 #ifndef LOG_DEFAULT_LEVELS

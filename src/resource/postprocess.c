@@ -14,20 +14,6 @@
 #include "resource.h"
 #include "renderer/api.h"
 
-ResourceHandler postprocess_res_handler = {
-	.type = RES_POSTPROCESS,
-	.typename = "postprocessing pipeline",
-	.subdir = PP_PATH_PREFIX,
-
-	.procs = {
-		.find = postprocess_path,
-		.check = check_postprocess_path,
-		.begin_load = load_postprocess_begin,
-		.end_load = load_postprocess_end,
-		.unload = unload_postprocess,
-	},
-};
-
 typedef struct PostprocessLoadData {
 	PostprocessShader *list;
 	ResourceFlags resflags;
@@ -43,7 +29,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 		current->uniforms = NULL;
 
 		// if loading this fails, get_resource will print a warning
-		current->shader = get_resource_data(RES_SHADER_PROGRAM, value, ldata->resflags);
+		current->shader = res_get_data(RES_SHADERPROG, value, ldata->resflags);
 
 		list_append(slist, current);
 		return true;
@@ -148,21 +134,21 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	return true;
 }
 
-static void* delete_uniform(List **dest, List *data, void *arg) {
+static void *delete_uniform(List **dest, List *data, void *arg) {
 	PostprocessShaderUniform *uni = (PostprocessShaderUniform*)data;
 	free(uni->values);
 	free(list_unlink(dest, data));
 	return NULL;
 }
 
-static void* delete_shader(List **dest, List *data, void *arg) {
+static void *delete_shader(List **dest, List *data, void *arg) {
 	PostprocessShader *ps = (PostprocessShader*)data;
 	list_foreach(&ps->uniforms, delete_uniform, NULL);
 	free(list_unlink(dest, data));
 	return NULL;
 }
 
-PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
+static PostprocessShader *postprocess_load(const char *path, ResourceFlags flags) {
 	PostprocessLoadData *ldata = calloc(1, sizeof(PostprocessLoadData));
 	ldata->resflags = flags;
 	parse_keyvalue_file_cb(path, postprocess_load_callback, ldata);
@@ -180,7 +166,7 @@ PostprocessShader* postprocess_load(const char *path, ResourceFlags flags) {
 	return list;
 }
 
-void postprocess_unload(PostprocessShader **list) {
+static void postprocess_unload(PostprocessShader **list) {
 	list_foreach(list, delete_shader, NULL);
 }
 
@@ -220,22 +206,34 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
  *  Glue for resources api
  */
 
-char* postprocess_path(const char *name) {
-	return strjoin(PP_PATH_PREFIX, name, PP_EXTENSION, NULL);
+static char *postprocess_path(const char *name) {
+	return strjoin(RES_PATHPREFIX_POSTPROCESS, name, PP_EXTENSION, NULL);
 }
 
-bool check_postprocess_path(const char *path) {
+static bool check_postprocess_path(const char *path) {
 	return strendswith(path, PP_EXTENSION);
 }
 
-void* load_postprocess_begin(const char *path, uint flags) {
-	return (void*)true;
+static void *load_postprocess_begin(ResourceLoadInfo rli) {
+	return (void*)rli.path;
 }
 
-void* load_postprocess_end(void *opaque, const char *path, uint flags) {
-	return postprocess_load(path, flags);
+static void *load_postprocess_end(ResourceLoadInfo rli, void *opaque) {
+	return postprocess_load(rli.path, rli.flags);
 }
 
-void unload_postprocess(void *vlist) {
+static void unload_postprocess(void *vlist) {
 	postprocess_unload((PostprocessShader**)&vlist);
 }
+
+ResourceHandler postprocess_res_handler = {
+	.type = RES_POSTPROCESS,
+
+	.procs = {
+		.find = postprocess_path,
+		.check = check_postprocess_path,
+		.begin_load = load_postprocess_begin,
+		.end_load = load_postprocess_end,
+		.unload = unload_postprocess,
+	},
+};

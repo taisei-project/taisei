@@ -64,6 +64,7 @@ void vfs_dir_list_free(char **list, size_t size);
 int vfs_dir_list_order_ascending(const void *a, const void *b);
 int vfs_dir_list_order_descending(const void *a, const void *b);
 
+char* vfs_syspath(const char *path) attr_nonnull(1) attr_nodiscard;
 char* vfs_repr(const char *path, bool try_syspath) attr_nonnull(1) attr_nodiscard;
 bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 

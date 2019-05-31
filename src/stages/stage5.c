@@ -161,9 +161,9 @@ static void stage5_start(void) {
 	stagedata.rad = 2800;
 }
 
-static void stage5_preload(void) {
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+static void stage5_preload(ResourceRefGroup *rg) {
+	res_group_multi_add(rg, RES_MUSIC, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"dialog/iku",
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
@@ -173,21 +173,21 @@ static void stage5_preload(void) {
 		"stage5/spell_lightning",
 		"stage5/tower",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"tower_light",
 		"lasers/linear",
 		"lasers/accelerated",
 		"lasers/iku_cathode",
 		"lasers/iku_lightning",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_ANIMATION, RESF_DEFAULT,
 		"boss/iku",
 		"boss/iku_mid",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_group_multi_add(rg, RES_MODEL, RESF_DEFAULT,
 		"tower",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
 		"boom",
 		"laser1",
 		"enemydeath",

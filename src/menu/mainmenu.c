@@ -51,7 +51,7 @@ void main_menu_update_practice_menus(void) {
 }
 
 static void begin_main_menu(MenuData *m) {
-	start_bgm("menu");
+	bgm_start("menu");
 }
 
 static void update_main_menu(MenuData *menu) {
@@ -120,7 +120,7 @@ MenuData* create_main_menu(void) {
 	main_menu_update_practice_menus();
 
 	progress_unlock_bgm("menu");
-	start_bgm("menu");
+	bgm_start("menu");
 
 	return m;
 }
@@ -226,38 +226,45 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	preload_resource(RES_TEXTURE, "loading", RESF_DEFAULT);
-	preload_resource(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
+	ResourceRef bg_ref = res_ref(RES_TEXTURE, "loading", RESF_DEFAULT);
+	ResourceRef font_ref = res_ref(RES_FONT, "standard", RESF_DEFAULT);
+	ResourceRef shader_ref = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT);
 
 	set_ortho(SCREEN_W, SCREEN_H);
-	fill_screen("loading");
+	fill_screen_p(res_ref_data(bg_ref));
 	text_draw("Please wait warmly…", &(TextParams) {
 		.align = ALIGN_CENTER,
 		.pos = { SCREEN_W/2, SCREEN_H-20 },
-		.font = "standard",
-		.shader = "text_default",
+		.font_ptr = res_ref_data(font_ref),
+		.shader_ptr = res_ref_data(shader_ref),
 		.color = RGBA(0.35, 0.35, 0.35, 0.35),
 	});
+
+	res_unref(&bg_ref);
+	res_unref(&font_ref);
+	res_unref(&shader_ref);
 
 	video_swap_buffers();
 }
 
-void menu_preload(void) {
-	difficulty_preload();
+void menu_preload(ResourceRefGroup *rg) {
+	difficulty_preload(rg);
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_FONT, RESF_DEFAULT,
 		"big",
 		"small",
+		"standard",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_TEXTURE, RESF_DEFAULT,
 		"abstract_brown",
 		"cell_noise",
-		"stage1/cirnobg",
+		"loading", // FIXME: it's only needed for the transition, we don't want it around forever...
 		"menu/mainmenubg",
+		"stage1/cirnobg",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/smoke",
 		"part/petal",
 		"menu/logo",
@@ -265,24 +272,25 @@ void menu_preload(void) {
 		"star",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_multi_add(rg, RES_SHADERPROG, RESF_DEFAULT,
 		"mainmenubg",
 		"sprite_circleclipped_indicator",
+		"sprite_default",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_SOUND, RESF_DEFAULT | RESF_OPTIONAL,
 		"generic_shot",
 		"shot_special1",
 		"hit",
 	NULL);
 
-	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_multi_add(rg, RES_MUSIC, RESF_DEFAULT | RESF_OPTIONAL,
 		"menu",
 	NULL);
 
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
 		PlayerCharacter *pchar = plrchar_get(i);
-		preload_resource(RES_SPRITE, pchar->dialog_sprite_name, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
+		res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, pchar->dialog_sprite_name, NULL);
+		res_group_multi_add(rg, RES_TEXTURE, RESF_DEFAULT, pchar->menu_texture_name, NULL);
 	}
 }

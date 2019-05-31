@@ -15,35 +15,17 @@
 #include "renderer/api.h"
 #include "util/pixmap.h"
 
-static void* load_texture_begin(const char *path, uint flags);
-static void* load_texture_end(void *opaque, const char *path, uint flags);
-static void free_texture(Texture *tex);
-
-ResourceHandler texture_res_handler = {
-	.type = RES_TEXTURE,
-	.typename = "texture",
-	.subdir = TEX_PATH_PREFIX,
-
-	.procs = {
-		.find = texture_path,
-		.check = check_texture_path,
-		.begin_load = load_texture_begin,
-		.end_load = load_texture_end,
-		.unload = (ResourceUnloadProc)free_texture,
-	},
-};
-
-char* texture_path(const char *name) {
+static char *texture_path(const char *name) {
 	char *p = NULL;
 
-	if((p = try_path(TEX_PATH_PREFIX, name, TEX_EXTENSION))) {
+	if((p = try_path(RES_PATHPREFIX_TEXTURE, name, TEX_EXTENSION))) {
 		return p;
 	}
 
-	return pixmap_source_path(TEX_PATH_PREFIX, name);
+	return pixmap_source_path(RES_PATHPREFIX_TEXTURE, name);
 }
 
-bool check_texture_path(const char *path) {
+static bool check_texture_path(const char *path) {
 	if(strendswith(path, TEX_EXTENSION)) {
 		return true;
 	}
@@ -251,10 +233,11 @@ typedef struct TextureLoadData {
 	Pixmap pixmap;
 	Pixmap pixmap_alphamap;
 	TextureParams params;
+	ResourceRef post_load_shader;
 } TextureLoadData;
 
-static void* load_texture_begin(const char *path, uint flags) {
-	const char *source = path;
+static void *load_texture_begin(ResourceLoadInfo loadinfo) {
+	const char *source = loadinfo.path;
 	char *source_allocated = NULL;
 	char *alphamap_allocated = NULL;
 
@@ -275,19 +258,20 @@ static void* load_texture_begin(const char *path, uint flags) {
 			// post-load shader, which will premultiply alpha.
 			// Mipmaps and filtering are basically broken without premultiplied alpha.
 			.mipmap_mode = TEX_MIPMAP_MANUAL,
-		}
+		},
+		.post_load_shader = res_ref(RES_SHADERPROG, "texture_post_load", RESF_DEFAULT),
 	};
 
 	PixmapFormat override_format = 0;
 
-	if(strendswith(path, TEX_EXTENSION)) {
+	if(strendswith(loadinfo.path, TEX_EXTENSION)) {
 		char *str_filter_min = NULL;
 		char *str_filter_mag = NULL;
 		char *str_wrap_s = NULL;
 		char *str_wrap_t = NULL;
 		char *str_format = NULL;
 
-		if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+		if(!parse_keyvalue_file_with_spec(loadinfo.path, (KVSpec[]) {
 			{ "source",     .out_str  = &source_allocated },
 			{ "alphamap",   .out_str  = &alphamap_allocated },
 			{ "filter_min", .out_str  = &str_filter_min },
@@ -305,16 +289,13 @@ static void* load_texture_begin(const char *path, uint flags) {
 		}
 
 		if(!source_allocated) {
-			char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
-			source_allocated = pixmap_source_path(TEX_PATH_PREFIX, basename);
+			source_allocated = pixmap_source_path(RES_PATHPREFIX_TEXTURE, loadinfo.name);
 
 			if(!source_allocated) {
-				log_error("%s: couldn't infer source path from texture name", basename);
+				log_error("%s: couldn't infer source path from texture name", loadinfo.name);
 			} else {
-				log_info("%s: inferred source path from texture name: %s", basename, source_allocated);
+				log_info("%s: inferred source path from texture name: %s", loadinfo.name, source_allocated);
 			}
-
-			free(basename);
 
 			if(!source_allocated) {
 				return NULL;
@@ -341,7 +322,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 		if(!format_ok) {
 			free(source_allocated);
 			free(alphamap_allocated);
-			log_error("%s: bad or unsupported pixel format specification", path);
+			log_error("%s: bad or unsupported pixel format specification", loadinfo.path);
 			return NULL;
 		}
 	}
@@ -380,7 +361,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 	override_format = override_format ? override_format : ld.pixmap.format;
 	ld.params.type = pixmap_format_to_texture_type(override_format);
 	log_debug("%s: %d channels, %d bits per channel, %s",
-		path,
+		loadinfo.path,
 		PIXMAP_FORMAT_LAYOUT(override_format),
 		PIXMAP_FORMAT_DEPTH(override_format),
 		PIXMAP_FORMAT_IS_FLOAT(override_format) ? "float" : "uint"
@@ -396,7 +377,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 	return memdup(&ld, sizeof(ld));
 }
 
-static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
+static Texture *texture_post_load(Texture *tex, Texture *alphamap, ShaderProgram *postload_shader) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
@@ -416,7 +397,7 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	r_texture_set_filter(tex, TEX_FILTER_NEAREST, TEX_FILTER_NEAREST);
 	fbo_tex = r_texture_create(&params);
 
-	r_shader("texture_post_load");
+	r_shader_ptr(postload_shader);
 	r_uniform_sampler("tex", tex);
 
 	if(alphamap) {
@@ -454,16 +435,11 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	return fbo_tex;
 }
 
-static void* load_texture_end(void *opaque, const char *path, uint flags) {
+static void *load_texture_end(ResourceLoadInfo loadinfo, void *opaque) {
 	TextureLoadData *ld = opaque;
 
-	if(!ld) {
-		return NULL;
-	}
-
-	char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
 	Texture *texture = r_texture_create(&ld->params);
-	r_texture_set_debug_label(texture, basename);
+	r_texture_set_debug_label(texture, loadinfo.name);
 	r_texture_fill(texture, 0, &ld->pixmap);
 	free(ld->pixmap.data.untyped);
 
@@ -474,18 +450,18 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 		p.type = PIXMAP_FORMAT_DEPTH(ld->pixmap_alphamap.format) > 8 ? TEX_TYPE_R_16 : TEX_TYPE_R_8;
 		alphamap = r_texture_create(&p);
 		const char suffix[] = " alphamap";
-		char buf[strlen(basename) + sizeof(suffix)];
-		snprintf(buf, sizeof(buf), "%s%s", basename, suffix);
+		char buf[strlen(loadinfo.name) + sizeof(suffix)];
+		snprintf(buf, sizeof(buf), "%s%s", loadinfo.name, suffix);
 		r_texture_set_debug_label(alphamap, buf);
 		r_texture_fill(alphamap, 0, &ld->pixmap_alphamap);
 		free(ld->pixmap_alphamap.data.untyped);
 	}
 
+	texture = texture_post_load(texture, alphamap, res_ref_data(ld->post_load_shader));
+	res_unref(&ld->post_load_shader);
 	free(ld);
 
-	texture = texture_post_load(texture, alphamap);
-	r_texture_set_debug_label(texture, basename);
-	free(basename);
+	r_texture_set_debug_label(texture, loadinfo.name);
 
 	if(alphamap) {
 		r_texture_destroy(alphamap);
@@ -507,7 +483,7 @@ Texture* prefix_get_tex(const char *name, const char *prefix) {
 	return tex;
 }
 
-static void free_texture(Texture *tex) {
+static void unload_texture(void *tex) {
 	r_texture_destroy(tex);
 }
 
@@ -687,3 +663,15 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
 	loop_tex_line_p(a, b, w, t, get_tex(texture));
 }
+
+ResourceHandler texture_res_handler = {
+	.type = RES_TEXTURE,
+
+	.procs = {
+		.find = texture_path,
+		.check = check_texture_path,
+		.begin_load = load_texture_begin,
+		.end_load = load_texture_end,
+		.unload = unload_texture,
+	},
+};

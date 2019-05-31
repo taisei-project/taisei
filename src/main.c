@@ -40,9 +40,9 @@ static void taisei_shutdown(void) {
 	progress_unload();
 
 	free_all_refs();
-	free_resources(true);
-	audio_shutdown();
 	video_shutdown();
+	audio_shutdown();
+	res_shutdown();
 	gamepad_shutdown();
 	stage_free_array();
 	config_shutdown();
@@ -149,6 +149,7 @@ static void log_version(void) {
 }
 
 typedef struct MainContext {
+	ResourceRefGroup resources;
 	CLIAction cli;
 	Replay replay;
 	int replay_idx;
@@ -161,6 +162,7 @@ static void main_replay(MainContext *mctx);
 static noreturn void main_vfstree(CallChainResult ccr);
 
 static noreturn void main_quit(MainContext *ctx, int status) {
+	res_group_destroy(&ctx->resources);
 	free_cli_action(&ctx->cli);
 	replay_destroy(&ctx->replay);
 	free(ctx);
@@ -254,12 +256,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	init_global(&ctx->cli);
 	events_init();
 	video_init();
-	init_resources();
+	res_init();
 	r_post_init();
 	draw_loading_screen();
 
 	audio_init();
-	load_resources();
+	res_post_init();
 	gamepad_init();
 	progress_load();
 
@@ -271,13 +273,15 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	atexit(taisei_shutdown);
 #endif
 
+	res_group_init(&ctx->resources, 16);
+
 	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
 		main_replay(ctx);
 		return;
 	}
 
 	if(ctx->cli.type == CLI_Credits) {
-		credits_enter(CALLCHAIN(main_cleanup, ctx));
+		credits_enter(CALLCHAIN(main_cleanup, ctx), &ctx->resources);
 		eventloop_run();
 		return;
 	}
@@ -291,6 +295,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	}
 #endif
 
+	menu_preload(&ctx->resources);
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 	eventloop_run();
 }
@@ -299,6 +304,7 @@ typedef struct SingleStageContext {
 	MainContext *mctx;
 	PlayerMode *plrmode;
 	StageInfo *stg;
+	ResourceRefGroup resources;
 } SingleStageContext;
 
 static void main_singlestg_begin_game(CallChainResult ccr);
@@ -317,7 +323,7 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 		global.plr.mode = ctx->plrmode;
 	}
 
-	stage_enter(ctx->stg, CALLCHAIN(main_singlestg_end_game, ctx));
+	stage_enter(ctx->stg, &ctx->resources, CALLCHAIN(main_singlestg_end_game, ctx));
 }
 
 static void main_singlestg_end_game(CallChainResult ccr) {
@@ -332,6 +338,7 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
+	res_group_destroy(&ctx->resources);
 	replay_destroy(&global.replay);
 	free(ccr.ctx);
 	main_quit(mctx, 0);
@@ -348,6 +355,7 @@ static void main_singlestg(MainContext *mctx) {
 	ctx->mctx = mctx;
 	ctx->plrmode = a->plrmode;
 	ctx->stg = stg;
+	res_group_init(&ctx->resources, 32);
 
 	global.diff = stg->difficulty;
 	global.is_practice_mode = (stg->type != STAGE_EXTRA);

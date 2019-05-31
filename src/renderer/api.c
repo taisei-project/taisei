@@ -23,8 +23,8 @@
 
 static struct {
 	struct {
-		ShaderProgram *standard;
-		ShaderProgram *standardnotex;
+		ResourceRef standard;
+		ResourceRef standardnotex;
 	} progs;
 } R;
 
@@ -45,17 +45,10 @@ void r_post_init(void) {
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"sprite_default",
-		"texture_post_load",
-		"standard",
-		"standardnotex",
-	NULL);
+	R.progs.standard = res_ref(RES_SHADERPROG, "standard", RESF_DEFAULT);
+	R.progs.standardnotex = res_ref(RES_SHADERPROG, "standardnotex", RESF_DEFAULT);
 
-	R.progs.standard = r_shader_get("standard");
-	R.progs.standardnotex = r_shader_get("standardnotex");
-
-	r_shader_ptr(R.progs.standard);
+	r_shader_ptr(res_ref_data(R.progs.standard));
 	r_color4(1, 1, 1, 1);
 	r_enable(RCAP_DEPTH_TEST);
 	r_enable(RCAP_DEPTH_WRITE);
@@ -69,6 +62,9 @@ void r_post_init(void) {
 }
 
 void r_shutdown(void) {
+	res_unref(&R.progs.standard);
+	res_unref(&R.progs.standardnotex);
+
 	_r_state_shutdown();
 	_r_sprite_batch_shutdown();
 	_r_models_shutdown();
@@ -76,11 +72,11 @@ void r_shutdown(void) {
 }
 
 void r_shader_standard(void) {
-	r_shader_ptr(R.progs.standard);
+	r_shader_ptr(res_ref_data(R.progs.standard));
 }
 
 void r_shader_standard_notex(void) {
-	r_shader_ptr(R.progs.standardnotex);
+	r_shader_ptr(res_ref_data(R.progs.standardnotex));
 }
 
 #ifdef DEBUG

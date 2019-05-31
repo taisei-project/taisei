@@ -30,25 +30,15 @@ typedef enum {
 } LoopState;
 
 typedef struct Sound {
+	SoundImpl *impl;
 	int lastplayframe;
 	LoopState islooping;
-	void *impl;
 } Sound;
 
 typedef struct Music {
 	MusicImpl *impl;
-	MusicMetadata *meta;
+	ResourceRef meta;
 } Music;
-
-typedef struct CurrentBGM {
-	char *name;
-	char *title;
-	int isboss;
-	int started_at;
-	Music *music;
-} CurrentBGM;
-
-extern CurrentBGM current_bgm;
 
 void audio_init(void);
 void audio_shutdown(void);
@@ -68,14 +58,17 @@ void update_sounds(void); // checks if loops need to be stopped
 
 int get_default_sfx_volume(const char *sfx);
 
-Sound* get_sound(const char *name) attr_nonnull(1);
-Music* get_music(const char *music) attr_nonnull(1);
+Sound *get_sound(const char *name) attr_nonnull(1);
+Music *get_music(const char *music) attr_nonnull(1);
 
-void start_bgm(const char *name);
-void stop_bgm(bool force);
-void fade_bgm(double fadetime);
-void resume_bgm(void);
-void save_bgm(void); // XXX: this is broken
-void restore_bgm(void); // XXX: this is broken
+void bgm_start(const char *name);
+void bgm_start_p(Music *bgm);
+void bgm_start_ref(ResourceRef bgm);
+void bgm_stop(bool force);
+void bgm_fade(double fadetime);
+bool bgm_get_ref(ResourceRef *out_ref, bool weak);
+const char *bgm_get_title(void);
+#define bgm_is_playing() bgm_get_ref(NULL)
+void bgm_resume(void);
 
 #endif // IGUARD_audio_audio_h
