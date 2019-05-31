@@ -29,6 +29,7 @@ void lapi_open_all(lua_State *L) {
 		{ LAPI_COLOR_LIBNAME, luaopen_color, },
 		{ LAPI_VFS_LIBNAME, luaopen_vfs, },
 		{ LAPI_VIO_LIBNAME, luaopen_vio, },
+		{ LAPI_RESOURCES_LIBNAME, luaopen_resources, },
 
 		{ NULL },
 	};

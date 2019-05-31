@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include "../script_internal.h"
+#include "../luahelpers.h"
 #include "../console.h"
 #include "color.h"
 
@@ -30,6 +31,9 @@ LUAMOD_API int luaopen_vfs(lua_State *L);
 #define LAPI_COLOR_LIBNAME "color"
 LUAMOD_API int luaopen_color(lua_State *L);
 Color *lcolor_tocolor(lua_State *L, int idx, bool copy);
+
+#define LAPI_RESOURCES_LIBNAME "resources"
+LUAMOD_API int luaopen_resources(lua_State *L);
 
 void lapi_open_all(lua_State *L);
 
