@@ -15,6 +15,8 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
+#define SCRIPT_PATH_PREFIX "res/scripts"
+
 extern struct script {
 	lua_State *lstate;
 } script;

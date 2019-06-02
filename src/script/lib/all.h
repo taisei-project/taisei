@@ -18,6 +18,8 @@
 #include <lua.h>
 #include <SDL_rwops.h>
 
+void lapi_baseext_register(lua_State *L);
+
 #define LAPI_VIO_LIBNAME "vio"
 LUAMOD_API int luaopen_vio(lua_State *L);
 void lvio_wrap_rw(lua_State *L, SDL_RWops *rw);

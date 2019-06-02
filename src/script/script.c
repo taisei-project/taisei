@@ -91,7 +91,6 @@ static lua_State *script_state_create(void) {
 	luaL_checkversion(lstate);
 	lua_atpanic(lstate, script_panic);
 	lua_gc(lstate, LUA_GCINC, 0, 0);
-	luaL_openlibs(lstate);
 	lapi_open_all(lstate);
 	lua_pushglobaltable(lstate);
 	luaL_setfuncs(lstate, (luaL_Reg[]) {
@@ -110,52 +109,17 @@ static void script_state_destroy(lua_State **lstate) {
 	}
 }
 
-static bool script_load_vfs_file(lua_State *L, const char *vfspath) {
-	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ);
-
-	if(!rw) {
-		log_error("VFS error: %s", vfs_get_error());
-		return false;
-	}
-
-#if 0
-	char *syspath = vfs_repr(vfspath, true);
-	assume(syspath != NULL);
-	char chunk_name[strlen(syspath) + 2];
-	snprintf(chunk_name, sizeof(chunk_name), "@%s", syspath);
-	free(syspath);
-#else
-	char chunk_name[strlen(vfspath) + 2];
-	snprintf(chunk_name, sizeof(chunk_name), "@%s", vfspath);
-#endif
-
-	lua_Reader reader;
-	LuaRWopsReader *lrw = lrwreader_create(rw, true, &reader);
-
-	bool ok = true;
-
-	if(lua_load(L, reader, lrw, chunk_name, "t") != LUA_OK) {
-		const char *msg = lua_tostring(L, -1);
-		log_error("Lua error: %s", msg);
-		lua_pop(L, 1);
-		ok = false;
-	}
-
-	lrwreader_destroy(lrw);
-
-	return ok;
-}
-
 void script_init(void) {
 	script.lstate = script_state_create();
 
 	con_printf("%s\n%s\n", TAISEI_VERSION_FULL, LUA_COPYRIGHT);
 
-	if(!script_load_vfs_file(script.lstate, "res/scripts/init.lua")) {
-		log_fatal("Failed to load the init script");
-	}
+	lua_pushglobaltable(script.lstate);
+	lua_getfield(script.lstate, -1, "require");
+	lua_remove(script.lstate, -2);
+	lua_pushstring(script.lstate, "init");
 
-	if(script_pcall_with_msghandler(script.lstate, 0, 0) != LUA_OK) {
+	if(script_pcall_with_msghandler(script.lstate, 1, 0) != LUA_OK) {
 		const char *msg = lua_tostring(script.lstate, -1);
 		log_fatal("Lua error: %s", msg);
 	}
