@@ -150,6 +150,10 @@ typedef _Complex double complex;
 // standard says `complex` should be a macro
 #define complex complex
 
+// unfortunately, the above `complex` hack conflicts with some headers that define
+// `CMPLX` like ((double complex){ x, y })
+#undef CMPLX
+
 #ifndef TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T
 typedef complex max_align_t;
 #endif
