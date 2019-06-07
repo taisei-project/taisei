@@ -242,6 +242,14 @@ if host_machine.system() == 'emscripten'
         install : true,
         install_dir : bindir,
     )
+elif host_machine.system() == 'android'
+    taisei = shared_library(taisei_basename, taisei_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        c_pch : 'pch/taisei_pch.h',
+        install : true,
+        install_dir : bindir,
+    )
 else
     taisei = executable(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,

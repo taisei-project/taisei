@@ -15,6 +15,10 @@
 #include "util.h"
 #include "list.h"
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
 
@@ -175,6 +179,24 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.level = lvl,
 		.time = SDL_GetTicks(),
 	};
+
+#ifdef __ANDROID__
+	{
+		int prio;
+		switch(entry.level) {
+			case LOG_DEBUG: prio = ANDROID_LOG_DEBUG; break;
+			case LOG_INFO: prio = ANDROID_LOG_INFO; break;
+			case LOG_WARN: prio = ANDROID_LOG_WARN; break;
+			case LOG_ERROR: prio = ANDROID_LOG_ERROR; break;
+			case LOG_FATAL: prio = ANDROID_LOG_FATAL; break;
+			default: prio = ANDROID_LOG_WARN; break;
+		}
+
+		char msg[strlen(entry.message) + strlen(entry.func) + 3];
+		snprintf(msg, sizeof(msg), "%s: %s", entry.func, entry.message);
+		__android_log_print(prio, "TaiseiNative", "%s:%s:%i: %s", entry.file, entry.func, entry.line, entry.message);
+	}
+#endif
 
 	for(Logger *l = logging.outputs; l; l = l->next) {
 		if(l->levels & lvl) {

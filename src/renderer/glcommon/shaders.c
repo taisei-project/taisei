@@ -36,6 +36,8 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 		}
 	}
 
+	log_debug("%d%s", v.version, v.profile == GLSL_PROFILE_ES ? " es" : "");
+
 	ShaderLangInfo *lang = alloc_lang();
 	lang->lang = SHLANG_GLSL;
 	lang->glsl.version = v;
@@ -77,14 +79,22 @@ void glcommon_build_shader_lang_table(void) {
 	GLint num_versions = 0;
 	glGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &num_versions);
 
+	log_debug("num_versions = %d", num_versions);
+
 	if(num_versions < 1) {
 		glcommon_build_shader_lang_table_fallback();
 		glcommon_build_shader_lang_table_finish();
 		return;
 	}
 
+	assert(num_langs == 0);
+
 	for(int i = 0; i < num_versions; ++i) {
 		add_glsl_version((char*)glGetStringi(GL_SHADING_LANGUAGE_VERSION, i));
+	}
+
+	if(!num_langs) {
+		glcommon_build_shader_lang_table_fallback();
 	}
 
 	// TODO: Maybe also detect compatibility profile somehow.

@@ -152,7 +152,7 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-if host_machine.system() == 'emscripten'
+if ['emscripten', 'android'].contains(host_machine.system())
     package_data = false
     enable_zip = false
 else
@@ -190,6 +190,7 @@ prefer_relpath_systems = [
 ]
 
 force_relpath_systems = [
+    'android',
     'emscripten',
 ]
 
@@ -211,6 +212,9 @@ else
     datadir = get_option('datadir')
 
     if force_relpath_systems.contains(host_machine.system())
+        if host_machine.system() == 'android'
+            datadir = 'assets'
+        endif
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
     elif get_option('install_relative') == 'auto'
         config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', prefer_relpath_systems.contains(host_machine.system()))
@@ -232,14 +236,18 @@ else
 endif
 
 if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
-    data_path = 'data'
+    if host_machine.system() == 'android'
+        data_path = 'resources'
+    else
+        data_path = 'data'
+    endif
     doc_path = '.'  # Meson bug https://github.com/mesonbuild/meson/issues/4295
     xdg_path = 'freedesktop.org'
 
     # This is relative to SDL_GetBasePath()
     config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
 
-    if macos_app_bundle
+    if macos_app_bundle or host_machine.system() == 'android'
         # Actual installation path
         data_path = join_paths(datadir, data_path)
 

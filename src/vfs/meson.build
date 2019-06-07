@@ -36,8 +36,16 @@ if host_machine.system() == 'emscripten'
         'setup_emscripten.c',
         'sync_emscripten.c',
     )
+elif host_machine.system() == 'android'
+    vfs_src += files(
+        'android_assets.c',
+        'loadpacks.c',
+        'setup_android.c',
+        'sync_noop.c',
+    )
 else
     vfs_src += files(
+        'loadpacks.c',
         'setup_generic.c',
         'sync_noop.c',
     )

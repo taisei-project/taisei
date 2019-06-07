@@ -10,6 +10,7 @@
 #define IGUARD_util_systime_h
 
 #include "taisei.h"
+
 #include <time.h>
 
 #ifdef TAISEI_BUILDCONF_HAVE_TIMESPEC
