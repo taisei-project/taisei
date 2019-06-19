@@ -14,6 +14,8 @@ project('taisei', 'c',
         'sdl2:use_render=disabled',
         'sdl2:use_sensor=disabled',
 
+        'lua:restricted=true',
+
         # You may want to change these for a debug build dir
         'buildtype=release',
         'strip=true',

@@ -58,29 +58,6 @@ int script_pcall_with_msghandler(lua_State *L, int narg, int nres) {
 	return status;
 }
 
-static int script_print(lua_State *L) {
-	int n = lua_gettop(L);
-
-	for(int i = 1; i <= n; i++) {
-		size_t l;
-		const char *s = luaL_tolstring(L, i, &l);
-
-		if(s == NULL) {
-			s = "(null)";
-		}
-
-		if(i > 1) {
-			con_print("\t");
-		}
-
-		con_print(s);
-		lua_pop(L, 1);
-	}
-
-	con_print("\n");
-	return 0;
-}
-
 static lua_State *script_state_create(void) {
 	lua_State *lstate = luaL_newstate();
 
@@ -90,14 +67,7 @@ static lua_State *script_state_create(void) {
 
 	luaL_checkversion(lstate);
 	lua_atpanic(lstate, script_panic);
-	lua_gc(lstate, LUA_GCINC, 0, 0);
 	lapi_open_all(lstate);
-	lua_pushglobaltable(lstate);
-	luaL_setfuncs(lstate, (luaL_Reg[]) {
-		{ "print", script_print },
-		{ NULL }
-	}, 0);
-	lua_pop(lstate, 1);
 
 	return lstate;
 }
@@ -155,4 +125,30 @@ void script_dumpstack(lua_State *L) {
 		}
 	}
 	con_printf("dumpstack -- END\n");
+}
+
+void luahook_writestring(const char *string, size_t len) {
+	con_print(string);
+}
+
+void luahook_writestringerror(const char *format, const char *arg) {
+	con_printf(format, arg);
+
+	static char warnbuffer[512];
+	static int warnbuffer_idx;
+
+	char tempbuffer[256], *tempbuffer_ptr = tempbuffer;
+	snprintf(tempbuffer, sizeof(tempbuffer), format, arg);
+
+	char c;
+	while((c = *tempbuffer_ptr++)) {
+		if(c == '\n' || warnbuffer_idx == sizeof(warnbuffer) - 1) {
+			warnbuffer[warnbuffer_idx] = 0;
+			log_warn("%s", warnbuffer);
+			memset(warnbuffer, 0, warnbuffer_idx);
+			warnbuffer_idx = 0;
+		} else {
+			warnbuffer[warnbuffer_idx++] = c;
+		}
+	}
 }

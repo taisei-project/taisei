@@ -66,7 +66,7 @@ static bool con_event(SDL_Event *evt, void *arg);
 
 static void con_print_internal(const char *text, const char *line_prefix) {
 	char *line = LINE_POINTER(console.lines.current.index, console.lines.current.cursor);
-	char *line_end = line + CON_LINELEN - 1;
+	char *line_end = line + CON_LINELEN - 1 - console.lines.current.cursor;
 	uint pref_len = strlen(line_prefix);
 
 	for(const char *c = text; *c; ++c) {
