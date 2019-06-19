@@ -298,6 +298,7 @@ void gamepad_init(void) {
 	}
 
 	gamepad.initialized = true;
+	gamepad.update_needed = true;
 	gamepad.axes = calloc(GAMEPAD_AXIS_MAX, sizeof(GamepadAxisState));
 	gamepad.buttons = calloc(GAMEPAD_BUTTON_MAX + GAMEPAD_EMULATED_BUTTON_MAX, sizeof(GamepadButtonState));
 	gamepad.active_dev_num = GAMEPAD_DEVNUM_INVALID;
@@ -309,7 +310,6 @@ void gamepad_init(void) {
 	});
 
 	SDL_GameControllerEventState(SDL_ENABLE);
-	gamepad_update_devices();
 }
 
 void gamepad_shutdown(void) {
