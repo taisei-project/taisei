@@ -309,7 +309,7 @@ void gamepad_init(void) {
 	});
 
 	SDL_GameControllerEventState(SDL_ENABLE);
-	gamepad_update_device_list();
+	gamepad_update_devices();
 }
 
 void gamepad_shutdown(void) {
