@@ -123,6 +123,7 @@ static int lres_status(lua_State *L) {
 	return 1;
 }
 
+attr_unused
 static int lres_copy(lua_State *L) {
 	ResourceRef *ref = luaL_checkudata(L, 1, RESREF_NAME);
 	lres_wrapref(L, res_ref_copy(*ref));
@@ -399,7 +400,7 @@ LUAMOD_API int luaopen_resources(lua_State *L) {
 		{ NULL },
 	}), ((luaL_Reg[]) {
 		// methods
-		{ "copy", lres_copy },
+		// { "copy", lres_copy },
 		{ NULL },
 	}));
 
@@ -409,7 +410,7 @@ LUAMOD_API int luaopen_resources(lua_State *L) {
 	#define RESOURCE_TYPE(idname, capname, fullname, pathprefix) \
 		{ #idname, lres_ref_##idname },
 	luaL_newlib(L, ((luaL_Reg[]) {
-		{ "ref", lres_ref },
+		// { "ref", lres_ref },
 		RESOURCE_TYPES
 		{ NULL },
 	}));
