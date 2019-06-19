@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 void script_init(void);
+void script_post_init(void);
 void script_shutdown(void);
 
 #endif // IGUARD_script_script_h

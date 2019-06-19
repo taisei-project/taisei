@@ -81,9 +81,10 @@ static void script_state_destroy(lua_State **lstate) {
 
 void script_init(void) {
 	script.lstate = script_state_create();
-
 	con_printf("%s\n%s\n", TAISEI_VERSION_FULL, LUA_COPYRIGHT);
+}
 
+void script_post_init(void) {
 	lua_pushglobaltable(script.lstate);
 	lua_getfield(script.lstate, -1, "require");
 	lua_remove(script.lstate, -2);

@@ -40,6 +40,7 @@ do
 		Try to execute the local init script
 	--]]
 
-	local ok, result = pcall(require, 'local_init')
-	if not ok then print(result) end
+	-- local ok, result = pcall(require, 'local_init')
+	-- if not ok then print(result) end
+	require 'local_init'
 end
