@@ -166,7 +166,7 @@ static int lvio_rw_gc(lua_State *L) {
 }
 
 void lvio_wrap_rw(lua_State *L, SDL_RWops *rw) {
-	SDL_RWops **vio = lua_newuserdata(L, sizeof(rw));
+	SDL_RWops **vio = lua_newuserdatauv(L, sizeof(rw), 0);
 	*vio = rw;
 	luaL_getmetatable(L, VIO_NAME);
 	lua_setmetatable(L, -2);

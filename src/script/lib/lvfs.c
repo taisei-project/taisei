@@ -61,7 +61,7 @@ static int lvfs_iterdir(lua_State *L) {
 		return 2;
 	}
 
-	VFSDir **vdirp = lua_newuserdata(L, sizeof(vdir));
+	VFSDir **vdirp = lua_newuserdatauv(L, sizeof(vdir), 0);
 	assume(vdirp != NULL);
 	*vdirp = vdir;
 

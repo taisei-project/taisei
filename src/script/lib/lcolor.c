@@ -37,7 +37,7 @@ static bool lcolor_rgb_chanvalue(lua_State *L, int idx, int chan, float *outval)
 }
 
 static Color *lcolor_new(lua_State *L, const Color *initval) {
-	Color *clr = lua_newuserdata(L, sizeof(Color));
+	Color *clr = lua_newuserdatauv(L, sizeof(Color), 0);
 	*clr = *initval;
 	luaL_setmetatable(L, COLOR_NAME);
 	return clr;
