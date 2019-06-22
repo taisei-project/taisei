@@ -37,20 +37,59 @@ static Sprite* item_sprite(ItemType type) {
 	return get_sprite(item_sprite_name(type));
 }
 
+static Sprite* item_indicator_sprite(ItemType type) {
+	char *name;
+	switch(type) {
+		case ITEM_BOMB:
+		case ITEM_BOMB_FRAGMENT:
+		case ITEM_LIFE:
+		case ITEM_LIFE_FRAGMENT:
+		case ITEM_POINTS:
+		case ITEM_POWER:
+		case ITEM_VOLTAGE:
+			name = strjoin(item_sprite_name(type), "_indicator", NULL);
+			Sprite *s = get_sprite(name);
+			free(name);
+			return s;
+		default:
+			return NULL;
+	}
+}
+
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
-	Color *c = RGBA_MUL_ALPHA(1, 1, 1,
-		i->type == ITEM_PIV && !i->auto_collect
-			? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
-			: 1.0
-	);
+	const int indicator_display_y = 6;
+	
+	float y = cimag(i->pos);
+	if(y < 0) {
+		Sprite *s = item_indicator_sprite(i->type);
+
+		float alpha = -tanh(y*0.1)/(1+0.1*fabs(y));
+
+		if(s != 0) {
+			r_draw_sprite(&(SpriteParams) {
+				.sprite_ptr = s,
+				.pos = { creal(i->pos), indicator_display_y },
+				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
+			});
+		}
+	}
+
+	
+	float alpha = 1;
+	if(i->type == ITEM_PIV && !i->auto_collect) {
+		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
+	}
+	
+	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = item_sprite(i->type),
-		.pos = { creal(i->pos), cimag(i->pos) },
+		.pos = { creal(i->pos), y },
 		.color = c,
 	});
+
 }
 
 Item* create_item(complex pos, complex v, ItemType type) {
@@ -337,6 +376,16 @@ void items_preload(void) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
 		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
 	}
+	
+	preload_resources(RES_SPRITE, RESF_PERMANENT,
+		"item/power_indicator",
+		"item/point_indicator",
+		"item/bomb_indicator",
+		"item/bombfrag_indicator",
+		"item/life_indicator",
+		"item/lifefrag_indicator",
+		"item/voltage_indicator",
+	NULL);
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"item_generic",
