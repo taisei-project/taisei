@@ -386,7 +386,7 @@ void items_preload(void) {
 		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
 		const char *indicator = item_indicator_sprite_name(i);
 		if(indicator != NULL) {
-			preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+			preload_resource(RES_SPRITE, indicator, RESF_PERMANENT);
 		}
 	}
 
