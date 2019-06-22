@@ -33,27 +33,36 @@ static const char* item_sprite_name(ItemType type) {
 	return map[index];
 }
 
+static const char* item_indicator_sprite_name(ItemType type) {
+	static const char *const map[] = {
+		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb_indicator",
+		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag_indicator",
+		[ITEM_LIFE          - ITEM_FIRST] = "item/life_indicator",
+		[ITEM_LIFE_FRAGMENT - ITEM_FIRST] = "item/lifefrag_indicator",
+		[ITEM_PIV           - ITEM_FIRST] = NULL,
+		[ITEM_POINTS        - ITEM_FIRST] = "item/point_indicator",
+		[ITEM_POWER         - ITEM_FIRST] = "item/power_indicator",
+		[ITEM_POWER_MINI    - ITEM_FIRST] = NULL,
+		[ITEM_SURGE         - ITEM_FIRST] = NULL,
+		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage_indicator",
+	};
+	
+	uint index = type - 1;
+
+	assert(index < ARRAY_SIZE(map));
+	return map[index];
+}
+
 static Sprite* item_sprite(ItemType type) {
 	return get_sprite(item_sprite_name(type));
 }
 
 static Sprite* item_indicator_sprite(ItemType type) {
-	char *name;
-	switch(type) {
-		case ITEM_BOMB:
-		case ITEM_BOMB_FRAGMENT:
-		case ITEM_LIFE:
-		case ITEM_LIFE_FRAGMENT:
-		case ITEM_POINTS:
-		case ITEM_POWER:
-		case ITEM_VOLTAGE:
-			name = strjoin(item_sprite_name(type), "_indicator", NULL);
-			Sprite *s = get_sprite(name);
-			free(name);
-			return s;
-		default:
-			return NULL;
+	const char *name = item_indicator_sprite_name(type);
+	if(name == NULL) {
+		return NULL;
 	}
+	return get_sprite(name);
 }
 
 static void ent_draw_item(EntityInterface *ent) {
@@ -67,7 +76,7 @@ static void ent_draw_item(EntityInterface *ent) {
 
 		float alpha = -tanh(y*0.1)/(1+0.1*fabs(y));
 
-		if(s != 0) {
+		if(s != NULL) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = s,
 				.pos = { creal(i->pos), indicator_display_y },
@@ -375,17 +384,11 @@ void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs gr
 void items_preload(void) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
 		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		const char *indicator = item_indicator_sprite_name(i);
+		if(indicator != NULL) {
+			preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		}
 	}
-	
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
-		"item/power_indicator",
-		"item/point_indicator",
-		"item/bomb_indicator",
-		"item/bombfrag_indicator",
-		"item/life_indicator",
-		"item/lifefrag_indicator",
-		"item/voltage_indicator",
-	NULL);
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"item_generic",
