@@ -306,8 +306,8 @@ static void player_fail_spell(Player *plr) {
 bool player_should_shoot(Player *plr, bool extra) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
-		!global.dialog
-		&& player_is_alive(&global.plr)
+		!dialog_is_active(global.dialog) &&
+		player_is_alive(&global.plr)
 		/* && (!extra || !player_is_bomb_active(plr)) */;
 }
 
@@ -401,7 +401,7 @@ static int powersurge_charge_particle(Projectile *p, int t) {
 }
 
 static void player_powersurge_logic(Player *plr) {
-	if(global.dialog) {
+	if(dialog_is_active(global.dialog)) {
 		return;
 	}
 
@@ -969,7 +969,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 
 	switch(type) {
 		case EV_PRESS:
-			if(global.dialog && (value == KEY_SHOT || value == KEY_BOMB)) {
+			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
 				useful = page_dialog(&global.dialog);
 				break;
 			}
@@ -980,7 +980,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 					break;
 
 				case KEY_SPECIAL:
-					if(global.dialog) {
+					if(dialog_is_active(global.dialog)) {
 						useful = false;
 						break;
 					}

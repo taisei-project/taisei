@@ -186,7 +186,7 @@ static void update_healthbar(Boss *boss) {
 		boss_is_fleeing(boss) ||
 		!boss->current ||
 		boss->current->type == AT_Move ||
-		global.dialog
+		dialog_is_active(global.dialog)
 	) {
 		target_opacity = 0.0;
 	}
@@ -310,7 +310,7 @@ static void update_hud(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(!boss->current || boss->current->type == AT_Move || global.dialog) {
+	if(!boss->current || boss->current->type == AT_Move || dialog_is_active(global.dialog)) {
 		target_opacity = 0.0;
 	}
 
@@ -919,7 +919,7 @@ void process_boss(Boss **pboss) {
 
 	spawn_particle_effects(boss);
 
-	if(!boss->current || global.dialog) {
+	if(!boss->current || dialog_is_active(global.dialog)) {
 		return;
 	}
 
@@ -1098,7 +1098,7 @@ void process_boss(Boss **pboss) {
 				boss->current->starttime = global.frames;
 				boss->current->rule(boss, EVENT_BIRTH);
 
-				if(global.dialog) {
+				if(dialog_is_active(global.dialog)) {
 					break;
 				}
 

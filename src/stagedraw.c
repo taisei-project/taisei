@@ -460,7 +460,7 @@ static void stage_draw_collision_areas(void) {
 		}
 	}
 
-	if(global.boss && global.boss->current && !global.dialog) {
+	if(global.boss && global.boss->current && !dialog_is_active(global.dialog)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
 			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
@@ -925,10 +925,6 @@ void stage_draw_overlay(void) {
 		draw_boss_overlay(global.boss);
 	}
 
-	if(global.dialog) {
-		draw_dialog(global.dialog);
-	}
-
 	if(stagedraw.clear_screen.alpha > 0) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);
 	}
@@ -1111,6 +1107,9 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw HUD
 	stage_draw_hud();
+
+	// draw dialog
+	draw_dialog(global.dialog);
 }
 
 #define HUD_X_PADDING 16

@@ -468,7 +468,7 @@ static void stage_logic(void) {
 
 	global.frames++;
 
-	if(!global.dialog && (!global.boss || boss_is_fleeing(global.boss))) {
+	if(!dialog_is_active(global.dialog) && (!global.boss || boss_is_fleeing(global.boss))) {
 		global.timer++;
 	}
 
@@ -740,7 +740,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
-		if((!global.boss || boss_is_fleeing(global.boss)) && !global.dialog) {
+		if((!global.boss || boss_is_fleeing(global.boss)) && !dialog_is_active(global.dialog)) {
 			stage->procs->event();
 		}
 
