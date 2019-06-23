@@ -36,7 +36,7 @@ static struct {
 
 #define CREDITS_FADEOUT 180
 
-#define ENTRY_TIME 345
+#define ENTRY_TIME 322
 
 static void credits_add(char *data, int time);
 
@@ -68,6 +68,13 @@ static void credits_fill(void) {
 		"Discord: @Tuck#1679\n"
 		"YouTube: https://is.gd/exafez\n\n"
 		"Original soundtrack"
+	), ENTRY_TIME);
+
+	credits_add((
+		"afensorm\n"
+		"https://gensokyo.social/@afensorm\n"
+		"https://pixiv.me/afens\n\n"
+		"Character art"
 	), ENTRY_TIME);
 
 	credits_add((
@@ -127,7 +134,7 @@ static void credits_fill(void) {
 		"http://www.libpng.org/\n\n"
 		"Ogg Opus\n"
 		"https://www.opus-codec.org/"
-	), 350);
+	), 327);
 
 	credits_add((
 		"\n"
@@ -138,7 +145,7 @@ static void credits_fill(void) {
 		"M cross environment\n"
 		"http://mxe.cc/\n\n"
 		"and many other projects"
-	), 350);
+	), 327);
 
 	credits_add((
 		"Mochizuki Ado\n"
