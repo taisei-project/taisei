@@ -257,11 +257,12 @@ typedef complex max_align_t;
 	#define attr_designated_init
 #endif
 
+#define INLINE __attribute__((always_inline, artificial, gnu_inline)) static inline
+
 #ifdef NDEBUG
 	#define _ensure_aligned(ptr, alignment) (ptr)
 #else
-	static inline attr_must_inline
-	void* _ensure_aligned(void *ptr, size_t alignment) {
+	INLINE void *_ensure_aligned(void *ptr, size_t alignment) {
 		assert(((uintptr_t)ptr & (alignment - 1)) == 0);
 		return ptr;
 	}
@@ -278,6 +279,12 @@ typedef complex max_align_t;
 
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
-#define INLINE __attribute__((always_inline, artificial, gnu_inline)) static inline
+#ifdef USE_GNU_EXTENSIONS
+	#define likely(...) ((bool)__builtin_expect((bool)(__VA_ARGS__), 1))
+	#define unlikely(...) ((bool)__builtin_expect((bool)(__VA_ARGS__), 0))
+#else
+	#define likely(...) (__VA_ARGS__)
+	#define unlikely(...) (__VA_ARGS__)
+#endif
 
 #endif // IGUARD_util_compat_h

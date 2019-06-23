@@ -11,10 +11,37 @@
 #include "objectpool.h"
 #include "util.h"
 
+#include "script/allocator.h"
+
 struct ObjectPool {
 	size_t size_of_object;
 };
 
+#if 1
+ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
+	ObjectPool *pool = lalloc(NULL, NULL, 0, sizeof(*pool)); // malloc(sizeof(ObjectPool));
+	pool->size_of_object = obj_size;
+	return pool;
+}
+
+void *objpool_acquire(ObjectPool *pool) {
+	// return calloc(1, pool->size_of_object);
+	size_t sz = pool->size_of_object;
+	void *obj = lalloc(NULL, NULL, 0, sz);
+	memset(obj, 0, sz);
+	return obj;
+}
+
+void objpool_release(ObjectPool *pool, void *object) {
+	// free(object);
+	lalloc(NULL, object, pool->size_of_object, 0);
+}
+
+void objpool_free(ObjectPool *pool) {
+	// free(pool);
+	lalloc(NULL, pool, sizeof(*pool), 0);
+}
+#else
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
 	ObjectPool *pool = malloc(sizeof(ObjectPool));
 	pool->size_of_object = obj_size;
@@ -32,6 +59,7 @@ void objpool_release(ObjectPool *pool, void *object) {
 void objpool_free(ObjectPool *pool) {
 	free(pool);
 }
+#endif
 
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {
 	memset(stats, 0, sizeof(ObjectPoolStats));

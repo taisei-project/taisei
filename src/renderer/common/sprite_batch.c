@@ -395,6 +395,8 @@ void r_draw_sprite(const SpriteParams *params) {
 
 #include "resource/font.h"
 
+#include "script/allocator.h"
+
 void _r_sprite_batch_end_frame(void) {
 	r_flush_sprites();
 
@@ -417,6 +419,14 @@ void _r_sprite_batch_end_frame(void) {
 		.pos = { 0, font_get_lineskip(font) },
 		.font_ptr = font,
 		.color = RGB(1, 1, 1),
+		.shader_ptr = res_ref_data(_r_sprite_batch.frame_stats_res.shader),
+	});
+
+	lmemstatstr(buf, sizeof(buf));
+	text_draw(buf, &(TextParams) {
+		.pos = { 0, font_get_lineskip(font) * 2 },
+		.font_ptr = font,
+		.color = RGB(0.1, 1.0, 0.1),
 		.shader_ptr = res_ref_data(_r_sprite_batch.frame_stats_res.shader),
 	});
 

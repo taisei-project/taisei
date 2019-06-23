@@ -1,5 +1,6 @@
 
 script_src = files(
+    'allocator.c',
     'console.c',
     'luahelpers.c',
     'repl.c',

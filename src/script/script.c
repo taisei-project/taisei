@@ -12,6 +12,7 @@
 #include "util.h"
 #include "console.h"
 #include "version.h"
+#include "allocator.h"
 
 #include "rwops_reader.h"
 #include "lib/all.h"
@@ -59,7 +60,7 @@ int script_pcall_with_msghandler(lua_State *L, int narg, int nres) {
 }
 
 static lua_State *script_state_create(void) {
-	lua_State *lstate = luaL_newstate();
+	lua_State *lstate = lua_newstate(lalloc, NULL);
 
 	if(!lstate) {
 		log_fatal("Failed to create Lua state");
@@ -80,6 +81,7 @@ static void script_state_destroy(lua_State **lstate) {
 }
 
 void script_init(void) {
+	lalloc_init();
 	script.lstate = script_state_create();
 	con_printf("%s\n%s\n", TAISEI_VERSION_FULL, LUA_COPYRIGHT);
 }
@@ -98,6 +100,7 @@ void script_post_init(void) {
 
 void script_shutdown(void) {
 	script_state_destroy(&script.lstate);
+	lalloc_shutdown();
 }
 
 void script_dumpstack(lua_State *L) {
