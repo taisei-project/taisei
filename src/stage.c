@@ -906,6 +906,7 @@ void stage_end_loop(void* ctx) {
 	stage_draw_shutdown();
 	stage_free();
 	player_free(&global.plr);
+	items_unload();
 	tsrand_switch(&global.rand_visual);
 	free_all_refs();
 	ent_shutdown();

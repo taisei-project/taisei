@@ -35,6 +35,8 @@ typedef enum {
 
 	ITEM_FIRST = ITEM_PIV,
 	ITEM_LAST = ITEM_LIFE,
+
+	NUM_ITEMS = ITEM_LAST - ITEM_FIRST + 1,
 } ItemType;
 
 struct Item {
@@ -82,6 +84,7 @@ bool collect_item(Item *item, float value);
 void collect_all_items(float value);
 
 void items_preload(ResourceRefGroup *rg);
+void items_unload(void);
 
 #define POWER_VALUE 3
 #define POWER_VALUE_MINI 1
