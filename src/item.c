@@ -33,24 +33,72 @@ static const char* item_sprite_name(ItemType type) {
 	return map[index];
 }
 
+static const char* item_indicator_sprite_name(ItemType type) {
+	static const char *const map[] = {
+		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb_indicator",
+		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag_indicator",
+		[ITEM_LIFE          - ITEM_FIRST] = "item/life_indicator",
+		[ITEM_LIFE_FRAGMENT - ITEM_FIRST] = "item/lifefrag_indicator",
+		[ITEM_PIV           - ITEM_FIRST] = NULL,
+		[ITEM_POINTS        - ITEM_FIRST] = "item/point_indicator",
+		[ITEM_POWER         - ITEM_FIRST] = "item/power_indicator",
+		[ITEM_POWER_MINI    - ITEM_FIRST] = NULL,
+		[ITEM_SURGE         - ITEM_FIRST] = NULL,
+		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage_indicator",
+	};
+	
+	uint index = type - 1;
+
+	assert(index < ARRAY_SIZE(map));
+	return map[index];
+}
+
 static Sprite* item_sprite(ItemType type) {
 	return get_sprite(item_sprite_name(type));
+}
+
+static Sprite* item_indicator_sprite(ItemType type) {
+	const char *name = item_indicator_sprite_name(type);
+	if(name == NULL) {
+		return NULL;
+	}
+	return get_sprite(name);
 }
 
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
-	Color *c = RGBA_MUL_ALPHA(1, 1, 1,
-		i->type == ITEM_PIV && !i->auto_collect
-			? clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0)
-			: 1.0
-	);
+	const int indicator_display_y = 6;
+	
+	float y = cimag(i->pos);
+	if(y < 0) {
+		Sprite *s = item_indicator_sprite(i->type);
+
+		float alpha = -tanh(y*0.1)/(1+0.1*fabs(y));
+
+		if(s != NULL) {
+			r_draw_sprite(&(SpriteParams) {
+				.sprite_ptr = s,
+				.pos = { creal(i->pos), indicator_display_y },
+				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
+			});
+		}
+	}
+
+	
+	float alpha = 1;
+	if(i->type == ITEM_PIV && !i->auto_collect) {
+		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
+	}
+	
+	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = item_sprite(i->type),
-		.pos = { creal(i->pos), cimag(i->pos) },
+		.pos = { creal(i->pos), y },
 		.color = c,
 	});
+
 }
 
 Item* create_item(complex pos, complex v, ItemType type) {
@@ -336,6 +384,10 @@ void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs gr
 void items_preload(void) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
 		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		const char *indicator = item_indicator_sprite_name(i);
+		if(indicator != NULL) {
+			preload_resource(RES_SPRITE, indicator, RESF_PERMANENT);
+		}
 	}
 
 	preload_resources(RES_SFX, RESF_OPTIONAL,
