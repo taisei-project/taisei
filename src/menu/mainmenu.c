@@ -226,24 +226,27 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	ResourceRef bg_ref = res_ref(RES_TEXTURE, "loading", RESF_DEFAULT);
-	ResourceRef font_ref = res_ref(RES_FONT, "standard", RESF_DEFAULT);
-	ResourceRef shader_ref = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT);
+	struct {
+		ResourceRef bg;
+		ResourceRef font;
+		ResourceRef shader;
+	} refs = {
+		.bg = res_ref(RES_TEXTURE, "loading", RESF_DEFAULT),
+		.font = res_ref(RES_FONT, "standard", RESF_DEFAULT),
+		.shader = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT),
+	};
 
 	set_ortho(SCREEN_W, SCREEN_H);
-	fill_screen_p(res_ref_data(bg_ref));
+	fill_screen_p(res_ref_data(refs.bg));
 	text_draw("Please wait warmly…", &(TextParams) {
 		.align = ALIGN_CENTER,
 		.pos = { SCREEN_W/2, SCREEN_H-20 },
-		.font_ptr = res_ref_data(font_ref),
-		.shader_ptr = res_ref_data(shader_ref),
+		.font_ptr = res_ref_data(refs.font),
+		.shader_ptr = res_ref_data(refs.shader),
 		.color = RGBA(0.35, 0.35, 0.35, 0.35),
 	});
 
-	res_unref(&bg_ref);
-	res_unref(&font_ref);
-	res_unref(&shader_ref);
-
+	res_unref((void*)&refs, sizeof(refs)/sizeof(ResourceRef));
 	video_swap_buffers();
 }
 

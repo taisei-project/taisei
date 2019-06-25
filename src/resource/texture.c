@@ -458,7 +458,7 @@ static void *load_texture_end(ResourceLoadInfo loadinfo, void *opaque) {
 	}
 
 	texture = texture_post_load(texture, alphamap, res_ref_data(ld->post_load_shader));
-	res_unref(&ld->post_load_shader);
+	res_unref(&ld->post_load_shader, 1);
 	free(ld);
 
 	r_texture_set_debug_label(texture, loadinfo.name);

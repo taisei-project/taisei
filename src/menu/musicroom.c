@@ -243,8 +243,8 @@ static void musicroom_free(MenuData *m) {
 		MusicEntryParam *p = e->arg;
 
 		if(p) {
-			res_unref(&p->bgm_ref);
-			res_unref(&p->bgm_meta_ref);
+			res_unref(&p->bgm_ref, 1);
+			res_unref(&p->bgm_meta_ref, 1);
 			free(p);
 		}
 	}

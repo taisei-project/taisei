@@ -182,8 +182,8 @@ ResourceRef res_ref(ResourceType type, const char *name, ResourceFlags flags) at
 ResourceRef res_ref_copy(ResourceRef ref);
 ResourceRef res_ref_copy_weak(ResourceRef ref);
 ResourceRef res_ref_wrap_external_data(ResourceType type, void *data) attr_nonnull(2);
-void res_unref(ResourceRef *ref) attr_nonnull(1);
-void res_unref_if_valid(ResourceRef *ref) attr_nonnull(1);  // only use this one for refs that may be *intentionally* invalid
+void res_unref(ResourceRef *ref, size_t numrefs) attr_nonnull(1);
+void res_unref_if_valid(ResourceRef *ref, size_t numrefs) attr_nonnull(1);  // only use this one for refs that may be *intentionally* invalid
 void *res_ref_data(ResourceRef ref);
 ResourceType res_ref_type(ResourceRef ref);
 ResourceStatus res_ref_status(ResourceRef ref);

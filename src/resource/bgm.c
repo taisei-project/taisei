@@ -55,7 +55,7 @@ static void *load_bgm_begin(ResourceLoadInfo li) {
 
 static void unload_bgm(void *vmus) {
 	Music *mus = vmus;
-	res_unref(&mus->meta);
+	res_unref(&mus->meta, 1);
 	_a_backend.funcs.music_unload(mus->impl);
 	free(mus);
 }

@@ -136,8 +136,7 @@ void _r_sprite_batch_init(void) {
 
 void _r_sprite_batch_shutdown(void) {
 #if SPRITE_BATCH_STATS
-	res_unref(&_r_sprite_batch.frame_stats_res.font);
-	res_unref(&_r_sprite_batch.frame_stats_res.shader);
+	res_unref((void*)&_r_sprite_batch.frame_stats_res, sizeof(_r_sprite_batch.frame_stats_res)/sizeof(ResourceRef));
 #endif
 	r_vertex_array_destroy(_r_sprite_batch.varr);
 	r_vertex_buffer_destroy(_r_sprite_batch.vbuf);
@@ -427,7 +426,7 @@ void _r_sprite_batch_end_frame(void) {
 
 void _r_sprite_batch_texture_deleted(Texture *tex) {
 	if(res_ref_data_or_null(_r_sprite_batch.primary_texture) == tex) {
-		res_unref(&_r_sprite_batch.primary_texture);
+		res_unref(&_r_sprite_batch.primary_texture, 1);
 	}
 
 	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {
