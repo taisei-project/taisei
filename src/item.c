@@ -13,56 +13,30 @@
 #include "list.h"
 #include "stageobjects.h"
 
-static const char* item_sprite_name(ItemType type) {
-	static const char *const map[] = {
-		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb",
-		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag",
-		[ITEM_LIFE          - ITEM_FIRST] = "item/life",
-		[ITEM_LIFE_FRAGMENT - ITEM_FIRST] = "item/lifefrag",
-		[ITEM_PIV           - ITEM_FIRST] = "item/bullet_point",
-		[ITEM_POINTS        - ITEM_FIRST] = "item/point",
-		[ITEM_POWER         - ITEM_FIRST] = "item/power",
-		[ITEM_POWER_MINI    - ITEM_FIRST] = "item/minipower",
-		[ITEM_SURGE         - ITEM_FIRST] = "item/surge",
-		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage",
-	};
+static struct {
+	ResourceRef pickup_sprites[NUM_ITEMS];
+	ResourceRef indicator_sprites[NUM_ITEMS];
+	struct {
+		ResourceRef pickup_generic;
+	} sounds;
+} item_res;
 
-	uint index = type - 1;
-
-	assert(index < ARRAY_SIZE(map));
-	return map[index];
+static inline Sprite* item_sprite(ItemType type) {
+	uint idx = type - ITEM_FIRST;
+	assert(idx < ARRAY_SIZE(item_res.pickup_sprites));
+	return res_ref_data(item_res.pickup_sprites[idx]);
 }
 
-static const char* item_indicator_sprite_name(ItemType type) {
-	static const char *const map[] = {
-		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb_indicator",
-		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag_indicator",
-		[ITEM_LIFE          - ITEM_FIRST] = "item/life_indicator",
-		[ITEM_LIFE_FRAGMENT - ITEM_FIRST] = "item/lifefrag_indicator",
-		[ITEM_PIV           - ITEM_FIRST] = NULL,
-		[ITEM_POINTS        - ITEM_FIRST] = "item/point_indicator",
-		[ITEM_POWER         - ITEM_FIRST] = "item/power_indicator",
-		[ITEM_POWER_MINI    - ITEM_FIRST] = NULL,
-		[ITEM_SURGE         - ITEM_FIRST] = NULL,
-		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage_indicator",
-	};
+static inline Sprite* item_indicator_sprite(ItemType type) {
+	uint idx = type - ITEM_FIRST;
+	assert(idx < ARRAY_SIZE(item_res.indicator_sprites));
+	ResourceRef ref = item_res.indicator_sprites[idx];
 
-	uint index = type - 1;
-
-	assert(index < ARRAY_SIZE(map));
-	return map[index];
-}
-
-static Sprite* item_sprite(ItemType type) {
-	return get_sprite(item_sprite_name(type));
-}
-
-static Sprite* item_indicator_sprite(ItemType type) {
-	const char *name = item_indicator_sprite_name(type);
-	if(name == NULL) {
-		return NULL;
+	if(res_ref_is_valid(ref)) {
+		return res_ref_data(ref);
 	}
-	return get_sprite(name);
+
+	return NULL;
 }
 
 static void ent_draw_item(EntityInterface *ent) {
@@ -84,7 +58,6 @@ static void ent_draw_item(EntityInterface *ent) {
 			});
 		}
 	}
-
 
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
@@ -284,6 +257,8 @@ void process_items(void) {
 		int v = may_collect ? collision_item(item) : 0;
 
 		if(v == 1) {
+			// TODO: ref-aware interface for play_sound so we can use item_res.sounds.pickup_generic
+
 			switch(item->type) {
 			case ITEM_POWER:
 				player_add_power(&global.plr, POWER_VALUE);
@@ -382,15 +357,41 @@ void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs gr
 }
 
 void items_preload(ResourceRefGroup *rg) {
-	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
-		res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, item_sprite_name(i), NULL);
-		const char *indicator = item_indicator_sprite_name(i);
-		if(indicator != NULL) {
-			res_group_multi_add(rg, RES_SPRITE, RESF_DEFAULT, indicator, NULL);
-		}
-	}
 
-	res_group_multi_add(rg, RES_SOUND, RESF_OPTIONAL,
-		"item_generic",
-	NULL);
+	#define PICKUP_SPRITE(item, spr) \
+		item_res.pickup_sprites[(item) - ITEM_FIRST] = res_ref(RES_SPRITE, (spr), RESF_DEFAULT)
+
+	#define INDICATOR_SPRITE(item, spr) \
+		item_res.indicator_sprites[(item) - ITEM_FIRST] = res_ref(RES_SPRITE, (spr), RESF_DEFAULT)
+
+	#define INDICATOR_SPRITE_MISSING(item) \
+		item_res.indicator_sprites[(item) - ITEM_FIRST] = RES_INVALID_REF
+
+	PICKUP_SPRITE(ITEM_BOMB,          "item/bomb");
+	PICKUP_SPRITE(ITEM_BOMB_FRAGMENT, "item/bombfrag");
+	PICKUP_SPRITE(ITEM_LIFE,          "item/life");
+	PICKUP_SPRITE(ITEM_LIFE_FRAGMENT, "item/lifefrag");
+	PICKUP_SPRITE(ITEM_PIV,           "item/bullet_point");
+	PICKUP_SPRITE(ITEM_POINTS,        "item/point");
+	PICKUP_SPRITE(ITEM_POWER,         "item/power");
+	PICKUP_SPRITE(ITEM_POWER_MINI,    "item/minipower");
+	PICKUP_SPRITE(ITEM_SURGE,         "item/surge");
+	PICKUP_SPRITE(ITEM_VOLTAGE,       "item/voltage");
+
+	INDICATOR_SPRITE(ITEM_BOMB,          "item/bomb_indicator");
+	INDICATOR_SPRITE(ITEM_BOMB_FRAGMENT, "item/bombfrag_indicator");
+	INDICATOR_SPRITE(ITEM_LIFE,          "item/life_indicator");
+	INDICATOR_SPRITE(ITEM_LIFE_FRAGMENT, "item/lifefrag_indicator");
+	INDICATOR_SPRITE_MISSING(ITEM_PIV);
+	INDICATOR_SPRITE(ITEM_POINTS,        "item/point_indicator");
+	INDICATOR_SPRITE(ITEM_POWER,         "item/power_indicator");
+	INDICATOR_SPRITE_MISSING(ITEM_POWER_MINI);
+	INDICATOR_SPRITE_MISSING(ITEM_SURGE);
+	INDICATOR_SPRITE(ITEM_VOLTAGE,       "item/voltage_indicator");
+
+	item_res.sounds.pickup_generic = res_ref(RES_SOUND, "item_generic", RESF_OPTIONAL);
+}
+
+void items_unload(void) {
+	res_unref_if_valid((void*)&item_res, sizeof(item_res)/sizeof(ResourceRef));
 }
