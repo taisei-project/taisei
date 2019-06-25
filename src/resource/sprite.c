@@ -63,7 +63,7 @@ static void *load_sprite_begin(ResourceLoadInfo loadinfo) {
 		{ "offset_y", .out_float = &spr->offset.y },
 		{ NULL }
 	})) {
-		res_unref_if_valid(&spr->tex);
+		res_unref_if_valid(&spr->tex, 1);
 		free(spr);
 		free(state);
 		log_error("Failed to parse sprite file '%s'", loadinfo.path);
@@ -88,7 +88,7 @@ static void *load_sprite_end(ResourceLoadInfo loadinfo, void *opaque) {
 	free(state);
 
 	if(tex == NULL) {
-		res_unref(&spr->tex);
+		res_unref(&spr->tex, 1);
 		free(spr);
 		return NULL;
 	}
@@ -124,7 +124,7 @@ static void *load_sprite_end(ResourceLoadInfo loadinfo, void *opaque) {
 
 static void unload_sprite(void *sprite) {
 	Sprite *spr = sprite;
-	res_unref(&spr->tex);
+	res_unref(&spr->tex, 1);
 	free(spr);
 }
 

@@ -766,7 +766,7 @@ ResourceRef res_ref_wrap_external_data(ResourceType type, void *data) {
 	return ref;
 }
 
-void res_unref(ResourceRef *ref) {
+static void res_unref_one(ResourceRef *ref) {
 	verify_ref(*ref);
 
 	if(_ref_test_flags(ref, RESF_WEAK)) {
@@ -793,11 +793,25 @@ void res_unref(ResourceRef *ref) {
 	_ref_set(ref, NULL, 0, 0);
 }
 
-void res_unref_if_valid(ResourceRef *ref) {
+static void res_unref_if_valid_one(ResourceRef *ref) {
 	if(res_ref_is_valid(*ref)) {
-		res_unref(ref);
+		res_unref_one(ref);
 	} else {
 		REF_DEBUG("UnRef {%p} (invalid)", (void*)ref);
+	}
+}
+
+void res_unref(ResourceRef *ref, size_t numrefs) {
+	ResourceRef *end = ref + numrefs;
+	for(; ref < end; ++ref) {
+		res_unref_one(ref);
+	}
+}
+
+void res_unref_if_valid(ResourceRef *ref, size_t numrefs) {
+	ResourceRef *end = ref + numrefs;
+	for(; ref < end; ++ref) {
+		res_unref_if_valid_one(ref);
 	}
 }
 
@@ -949,13 +963,11 @@ void res_group_destroy(ResourceRefGroup *group) {
 		return;
 	}
 
-	ResourceRef *end = group->refs + group->num_used;
-
-	for(ResourceRef *ref = group->refs; ref < end; ++ref) {
-		res_unref(ref);
+	if(group->refs) {
+		res_unref(group->refs, group->num_used);
+		free(group->refs);
 	}
 
-	free(group->refs);
 	memset(group, 0, sizeof(*group));
 }
 

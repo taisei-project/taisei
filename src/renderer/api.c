@@ -62,8 +62,7 @@ void r_post_init(void) {
 }
 
 void r_shutdown(void) {
-	res_unref(&R.progs.standard);
-	res_unref(&R.progs.standardnotex);
+	res_unref((void*)&R.progs, sizeof(R.progs)/sizeof(ResourceRef));
 
 	_r_state_shutdown();
 	_r_sprite_batch_shutdown();

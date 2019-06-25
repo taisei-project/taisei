@@ -223,13 +223,13 @@ static void *check_sequence_frame_callback(const char *key, void *value, void *v
 static void unload_animation(void *vani) {
 	Animation *ani = vani;
 
-	for(int i = 0; i < ani->sprite_count; ++i) {
-		res_unref(ani->sprites + i);
+	if(ani->sprites) {
+		res_unref(ani->sprites, ani->sprite_count);
+		free(ani->sprites);
 	}
 
 	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 	ht_destroy(&ani->sequences);
-	free(ani->sprites);
 	free(ani);
 }
 

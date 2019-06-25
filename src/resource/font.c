@@ -177,7 +177,7 @@ static void post_init_fonts(void) {
 }
 
 static void pre_shutdown_fonts(void) {
-	res_unref(&globals.default_shader);
+	res_unref(&globals.default_shader, 1);
 }
 
 static void shutdown_fonts(void) {

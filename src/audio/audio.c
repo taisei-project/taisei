@@ -215,7 +215,7 @@ static void stop_bgm_internal(bool pause, double fadetime) {
 	}
 
 	if(!pause) {
-		res_unref(&audio.current_bgm);
+		res_unref(&audio.current_bgm, 1);
 	}
 
 	if(B.music_is_playing() && !B.music_is_paused()) {
@@ -276,7 +276,7 @@ static void start_bgm_internal(ResourceRef bgmref) {
 		}
 
 		B.music_stop();
-		res_unref_if_valid(&audio.current_bgm);
+		res_unref_if_valid(&audio.current_bgm, 1);
 		bgmref = res_ref_copy(bgmref);
 		audio.current_bgm = bgmref;
 	}
@@ -306,7 +306,7 @@ void bgm_start(const char *name) {
 
 	ResourceRef bgmref = res_ref(RES_MUSIC, name, RESF_OPTIONAL);
 	start_bgm_internal(bgmref);
-	res_unref(&bgmref);
+	res_unref(&bgmref, 1);
 }
 
 void bgm_start_ref(ResourceRef bgmref) {
@@ -345,7 +345,7 @@ void audio_init(void) {
 }
 
 void audio_shutdown(void) {
-	res_unref_if_valid(&audio.current_bgm);
+	res_unref_if_valid(&audio.current_bgm, 1);
 	events_unregister_handler(audio_config_updated);
 	B.shutdown();
 	ht_destroy(&audio.sfx_volumes);
