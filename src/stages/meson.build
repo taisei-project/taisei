@@ -19,3 +19,5 @@ if is_developer_build
         'dpstest.c',
     )
 endif
+
+stages_src += files('corotest.c')
