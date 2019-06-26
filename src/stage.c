@@ -95,6 +95,8 @@ static bool spellfilter_extra(AttackInfo *spell) {
 	return spell->type == AT_ExtraSpell;
 }
 
+#include "stages/corotest.h"
+
 void stage_init_array(void) {
 	int spellnum = 0;
 
@@ -119,6 +121,8 @@ void stage_init_array(void) {
 #ifdef SPELL_BENCHMARK
 	add_spellpractice_stage(stages, &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
 #endif
+
+	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
 
 	end_stages();
 
