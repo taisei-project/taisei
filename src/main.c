@@ -25,6 +25,7 @@
 #include "version.h"
 #include "credits.h"
 #include "taskmanager.h"
+#include "coroutine.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -249,6 +250,8 @@ int main(int argc, char **argv) {
 	}
 
 	log_info("Girls are now preparing, please wait warmly...");
+
+	coroutines_init();
 
 	free_cli_action(&ctx->cli);
 	vfs_setup(CALLCHAIN(main_post_vfsinit, ctx));
