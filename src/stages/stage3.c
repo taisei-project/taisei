@@ -169,6 +169,7 @@ static void stage3_preload(void) {
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
 		"dialog/wriggle",
+		"dialog/scuttle",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tunnel",
