@@ -102,7 +102,18 @@ void draw_dialog(Dialog *dialog) {
 	const float page_text_time = 60;
 	float page_text_alpha = min(global.frames - dialog->page_time, page_text_time) / page_text_time;
 
-	for(int i = 0; i < 2; i++) {
+	int loop_start = 1;
+	int loop_incr = 1;
+
+	if(cur_side == 0) {
+		loop_start = 1;
+		loop_incr = -1;
+	} else {
+		loop_start = 0;
+		loop_incr = 1;
+	}
+
+	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
 		r_mat_push();
 
 		if(i == Left) {
@@ -146,7 +157,7 @@ void draw_dialog(Dialog *dialog) {
 			r_mat_pop();
 			r_state_pop();
 		}
-		
+
 		r_mat_pop();
 	}
 
