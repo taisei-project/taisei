@@ -3,7 +3,7 @@
  * See COPYING for further information.
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #ifndef IGUARD_script_luahelpers_h
@@ -53,6 +53,10 @@ int luaTS_pushproxy(lua_State *L, int rootidx, const char *proxyname, lua_CFunct
 int luaTS_pushinstancedproxy(lua_State *L, int rootidx, const char *proxyname, lua_CFunction mtinit);
 void *luaTS_checkproxiedudata(lua_State *L, int idx, const char *mt, bool swap);
 int luaTS_pushproxyinstance(lua_State *L, int idx);
+
+INLINE void luaTS_pushconstlightuserdata(lua_State *L, const void *ud) {
+	lua_pushlightuserdata(L, (void*)ud);
+}
 
 #define LPROPTABLES_PLACEHOLDERS \
 	{ LKEY_PROPSETTERS, NULL }, \
