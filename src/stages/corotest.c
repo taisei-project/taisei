@@ -66,6 +66,8 @@ dead:
 }
 
 TASK(stage_main, { int ignored; }) {
+	YIELD;
+
 	WAIT(30);
 	log_debug("test 1! %i", global.timer);
 	WAIT(60);
@@ -97,7 +99,7 @@ static void cotest_events(void) {
 StageProcs corotest_procs = {
 	.begin = cotest_begin,
 	.preload = cotest_stub_proc,
-	.end = cotest_stub_proc,
+	.end = cotest_end,
 	.draw = cotest_stub_proc,
 	.update = cotest_stub_proc,
 	.event = cotest_events,

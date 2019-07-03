@@ -33,7 +33,7 @@ void *cotask_yield(void *arg);
 CoStatus cotask_status(CoTask *task);
 
 CoSched *cosched_new(void);
-void *cosched_newtask(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, returns whatever it yields, schedules it for resume on cosched_run_tasks if it's still alive
+void *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, returns whatever it yields, schedules it for resume on cosched_run_tasks if it's still alive
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
 void cosched_free(CoSched *sched);
 
@@ -49,10 +49,10 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 
 #define INVOKE_TASK(name, ...) do { \
 	COARGS_##name _coargs = { __VA_ARGS__ }; \
-	cosched_newtask(_cosched_global, COTASKTHUNK_##name, &_coargs); \
+	cosched_new_task(_cosched_global, COTASKTHUNK_##name, &_coargs); \
 } while(0)
 
 #define YIELD cotask_yield(NULL)
-#define WAIT(delay) do { int _delay = (delay); do YIELD; while(_delay--); } while(0)
+#define WAIT(delay) do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
 
 #endif // IGUARD_coroutine_h
