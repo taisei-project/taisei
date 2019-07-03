@@ -22,21 +22,19 @@ TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, dummy_rule, 0);
 	int eref = add_ref(e);
 
-	#define UPDATE_REF    do { if(!(e = REF(eref))) goto dead; } while(0)
-	#define UYIELD        do { YIELD; UPDATE_REF; } while(0)
-	#define UWAIT(frames) do { WAIT(frames); UPDATE_REF; } while(0)
+	#define BREAK_CONDITION !UPDATE_REF(eref, e)
 
-	UYIELD;
+	BYIELD;
 
 	while(true) {
 		// wander around for a bit...
 		for(int i = 0; i < 20; ++i) {
 			e->pos += ARGS.dir;
-			UYIELD;
+			BYIELD;
 		}
 
 		// stop and...
-		UWAIT(10);
+		BWAIT(10);
 
 		// pew pew!!!
 		int pcount = 10 + 10 * frand();
@@ -52,15 +50,15 @@ TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 				.args = { aim },
 			);
 
-			UWAIT(3);
+			BWAIT(3);
 		}
 
 		// keep wandering, randomly
 		ARGS.dir *= cexp(I*M_PI*nfrand());
-		UYIELD;
+		BYIELD;
 	}
 
-dead:
+BREAK:
 	log_debug("enemy died!");
 	free_ref(eref);
 }

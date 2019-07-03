@@ -52,7 +52,12 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	cosched_new_task(_cosched_global, COTASKTHUNK_##name, &_coargs); \
 } while(0)
 
-#define YIELD cotask_yield(NULL)
-#define WAIT(delay) do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
+#define YIELD         cotask_yield(NULL)
+#define WAIT(delay)   do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
+
+// to use these inside a coroutine, define a BREAK_CONDITION macro and a BREAK label.
+#define CHECK_BREAK   do { if(BREAK_CONDITION) goto BREAK; } while(0)
+#define BYIELD        do { YIELD; CHECK_BREAK; } while(0)
+#define BWAIT(frames) do { WAIT(frames); CHECK_BREAK; } while(0)
 
 #endif // IGUARD_coroutine_h
