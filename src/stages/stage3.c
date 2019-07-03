@@ -169,6 +169,7 @@ static void stage3_preload(void) {
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
 		"dialog/wriggle",
+		"dialog/scuttle",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tunnel",
@@ -202,7 +203,7 @@ static void stage3_update(void) {
 	stgstate.tunnel_angle += stgstate.tunnel_avel;
 	stage_3d_context.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 
-	if(global.dialog) {
+	if(dialog_is_active(global.dialog)) {
 		update_stage3d(&stage_3d_context);
 		return;
 	}

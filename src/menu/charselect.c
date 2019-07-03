@@ -68,7 +68,7 @@ MenuData* create_char_menu(void) {
 }
 
 void draw_char_menu(MenuData *menu) {
-	CullFaceMode cull_saved = r_cull_current();
+	r_state_push();
 
 	char *prefixes[] = {
 		"Intuition",
@@ -87,7 +87,7 @@ void draw_char_menu(MenuData *menu) {
 		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
 		assert(pchar != NULL);
 
-		const char *spr = pchar->dialog_sprite_name;
+		Sprite *spr = get_sprite(pchar->dialog_sprite_name);
 		const char *name = pchar->full_name;
 		const char *title = pchar->title;
 
@@ -97,8 +97,13 @@ void draw_char_menu(MenuData *menu) {
 
 		float o = 1-menu->entries[i].drawdata*2;
 
-		r_color4(o, o, o, o);
-		draw_sprite(SCREEN_W/2+260+200*menu->entries[i].drawdata, 2*SCREEN_H/3, spr);
+		r_draw_sprite(&(SpriteParams) {
+			.pos = { SCREEN_W/2 + 240 + 220 * menu->entries[i].drawdata, SCREEN_H - spr->h * 0.5 },
+			.sprite_ptr = spr,
+			.shader = "sprite_default",
+			.color = RGBA(o, o, o, o),
+			// .flip.x = true,
+		});
 
 		r_mat_push();
 		r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
@@ -114,6 +119,7 @@ void draw_char_menu(MenuData *menu) {
 			.align = ALIGN_CENTER,
 			.font = "big",
 			.shader = "text_default",
+			.color = RGBA(o, o, o, o),
 		});
 
 		r_mat_pop();
@@ -138,7 +144,7 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
-	
+
 	float f = menu->drawdata[0]-PLR_SHOT_A;
 	float selbg_ofs = 200 + (100-70)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
 
@@ -190,27 +196,24 @@ void draw_char_menu(MenuData *menu) {
 
 	float o = 0.3*sin(menu->frames/20.0)+0.5;
 	o *= 1-menu->entries[menu->cursor].drawdata;
-	r_color4(o, o, o, o);
+	r_shader("sprite_default");
 
-	for(int i = 0; i <= 1; i++) {
-		r_mat_push();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "menu/arrow",
+		.pos = { 30, SCREEN_H/3+10 },
+		.color = RGBA(o, o, o, o),
+		.scale = { 0.5, 0.7 },
+	});
 
-		r_mat_translate(30 + 340*i, SCREEN_H/3+10, 0);
-		r_mat_scale(0.5,0.7,1);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "menu/arrow",
+		.pos = { 30 + 340, SCREEN_H/3+10 },
+		.color = RGBA(o, o, o, o),
+		.scale = { 0.5, 0.7 },
+		.flip.x = true,
+	});
 
-		if(i) {
-			r_mat_scale(-1,1,1);
-			r_cull(CULL_FRONT);
-		} else {
-			r_cull(CULL_BACK);
-		}
-
-		draw_sprite(0, 0, "menu/arrow");
-		r_mat_pop();
-	}
-
-	r_color3(1, 1, 1);
-	r_cull(cull_saved);
+	r_state_pop();
 }
 
 static bool char_menu_input_handler(SDL_Event *event, void *arg) {

@@ -728,7 +728,7 @@ void wriggle_spellbg(Boss *b, int time) {
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", 0, pos);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", "dialog/scuttle", pos);
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
 	return scuttle;
@@ -1195,7 +1195,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 		play_sound("shot_special1");
 	}
-	
+
 }
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {

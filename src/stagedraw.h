@@ -28,6 +28,7 @@ void stage_draw_hud(void);
 void stage_draw_viewport(void);
 void stage_draw_overlay(void);
 void stage_draw_scene(StageInfo *stage);
+void stage_draw_bottom_text(void);
 bool stage_should_draw_particle(Projectile *p);
 
 void stage_display_clear_screen(const StageClearBonus *bonus);

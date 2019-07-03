@@ -2,11 +2,11 @@
 
 texture = atlas_portraits_0
 region_x = 2
-region_y = 1006
-region_w = 673
-region_h = 1000
+region_y = 962
+region_w = 653
+region_h = 956
 
 # -- Pasted from the override file --
 
-w = 336.5
-h = 500
+w = 326.5
+h = 478

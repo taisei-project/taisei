@@ -16,6 +16,7 @@
 #include "progress.h"
 #include "difficulty.h"
 #include "util/graphics.h"
+#include "dialog.h"
 
 /* taisei's strange macro language.
  *

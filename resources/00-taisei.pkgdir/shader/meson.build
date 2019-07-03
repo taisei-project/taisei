@@ -70,6 +70,8 @@ glsl_files = files(
     'standardnotex.vert.glsl',
     'text_default.frag.glsl',
     'text_default.vert.glsl',
+    'text_dialog.frag.glsl',
+    'text_dialog.vert.glsl',
     'text_example.frag.glsl',
     'text_example.vert.glsl',
     'text_hud.frag.glsl',

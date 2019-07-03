@@ -584,6 +584,7 @@ static void reimu_dream_init(Player *plr) {
 PlayerMode plrmode_reimu_b = {
 	.name = "Dream Shaper",
 	.description = "Bend the boundaries of space like the ribbon in your hair.",
+	.spellcard_name = "Dream Sign “Ethereal Boundary Rupture”",
 	.character = &character_reimu,
 	.dialog = &dialog_reimu,
 	.shot_mode = PLR_SHOT_REIMU_DREAM,

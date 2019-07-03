@@ -139,6 +139,87 @@ void player_move(Player *plr, complex delta) {
 	plr->velocity = realdir;
 }
 
+void player_draw_overlay(Player *plr) {
+	// plr->bomb_cutin_alpha = 1 - fmod(global.frames / 200.0, 1.0);
+	float a = 1 - plr->bomb_cutin_alpha;
+
+	if(a <= 0 || a >= 1) {
+		return;
+	}
+
+	r_state_push();
+	r_shader("sprite_default");
+
+	float char_in = clamp(a * 1.5, 0, 1);
+	float char_out = min(1, 2 - (2 * a));
+	float char_opacity_in = 0.75 * min(1, a * 5);
+	float char_opacity = char_opacity_in * char_out * char_out;
+	float char_xofs = -20 * a;
+
+	Sprite *char_spr = get_sprite(plr->mode->character->dialog_sprite_name);
+
+	for(int i = 1; i <= 3; ++i) {
+		float t = a * 200;
+		float dur = 20;
+		float start = 200 - dur * 5;
+		float end = start + dur;
+		float ofs = 0.2 * dur * (i - 1);
+		float o = 1 - smoothstep(start + ofs, end + ofs, t);
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = char_spr,
+			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
+			.flip.x = true,
+			.scale.both = 1.0 + 0.02 * (min(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+		});
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = char_spr,
+		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
+		.flip.x = true,
+		.scale.both = 1.0 + 0.1 * (1 - char_out),
+	});
+
+	float spell_in = min(1, a * 3.0);
+	float spell_out = min(1, 3 - (3 * a));
+	float spell_opacity = min(1, a * 5) * spell_out * spell_out;
+
+	float spell_x = 128 * (1 - pow(1 - spell_in, 5)) + (VIEWPORT_W + 256) * pow(1 - spell_in, 3);
+	float spell_y = VIEWPORT_H - 128 * sqrt(a);
+
+	Sprite *spell_spr = get_sprite("spell");
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spell_spr,
+		.pos = { spell_x, spell_y },
+		.color = color_mul_scalar(RGBA(1, 1, 1, spell_in * 0.5), spell_opacity),
+		.scale.both = 3 - 2 * (1 - pow(1 - spell_in, 3)) + 2 * (1 - spell_out),
+	});
+
+	Font *font = get_font("standard");
+
+	r_mat_push();
+	r_mat_translate(spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent, 0);
+
+	TextParams tp = {
+		// .pos = { spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent },
+		.shader = "text_hud",
+		.font_ptr = font,
+		.color = color_mul_scalar(RGBA(1, 1, 1, spell_in), spell_opacity),
+	};
+
+	r_mat_push();
+	r_mat_scale(2 - 1 * spell_opacity, 2 - 1 * spell_opacity, 1);
+	text_draw(plr->mode->spellcard_name, &tp);
+	r_mat_pop();
+
+	r_mat_pop();
+	r_state_pop();
+}
+
 static void ent_draw_player(EntityInterface *ent) {
 	Player *plr = ENT_CAST(ent, Player);
 
@@ -306,8 +387,8 @@ static void player_fail_spell(Player *plr) {
 bool player_should_shoot(Player *plr, bool extra) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
-		!global.dialog
-		&& player_is_alive(&global.plr)
+		!dialog_is_active(global.dialog) &&
+		player_is_alive(&global.plr)
 		/* && (!extra || !player_is_bomb_active(plr)) */;
 }
 
@@ -401,7 +482,7 @@ static int powersurge_charge_particle(Projectile *p, int t) {
 }
 
 static void player_powersurge_logic(Player *plr) {
-	if(global.dialog) {
+	if(dialog_is_active(global.dialog)) {
 		return;
 	}
 
@@ -467,6 +548,8 @@ static void player_powersurge_logic(Player *plr) {
 }
 
 void player_logic(Player* plr) {
+	fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
+
 	if(plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames && plr->lives < 0 && global.replaymode != REPLAY_PLAY) {
 		stage_gameover();
 	}
@@ -554,6 +637,7 @@ static bool player_bomb(Player *plr) {
 
 		plr->bombtotaltime = bomb_time;
 		plr->recovery = global.frames + plr->bombtotaltime;
+		plr->bomb_cutin_alpha = 1;
 
 		assert(player_is_alive(plr));
 		collect_all_items(1);
@@ -969,7 +1053,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 
 	switch(type) {
 		case EV_PRESS:
-			if(global.dialog && (value == KEY_SHOT || value == KEY_BOMB)) {
+			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
 				useful = page_dialog(&global.dialog);
 				break;
 			}
@@ -980,7 +1064,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 					break;
 
 				case KEY_SPECIAL:
-					if(global.dialog) {
+					if(dialog_is_active(global.dialog)) {
 						useful = false;
 						break;
 					}

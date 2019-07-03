@@ -14,7 +14,6 @@
 #include "resource/sprite.h"
 
 struct DialogMessage;
-struct DialogSpeaker;
 
 typedef enum {
 	Right,
@@ -34,10 +33,10 @@ typedef struct Dialog {
 
 	int count;
 	int pos;
-
 	int page_time;
-
 	int birthtime;
+
+	float opacity;
 } Dialog;
 
 Dialog *create_dialog(const char *left, const char *right)
@@ -52,11 +51,12 @@ DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg)
 void delete_dialog(Dialog *d)
 	attr_nonnull(1);
 
-void draw_dialog(Dialog *dialog)
-	attr_nonnull(1);
+void draw_dialog(Dialog *dialog);
 
 bool page_dialog(Dialog **d) attr_nonnull(1);
 void process_dialog(Dialog **d) attr_nonnull(1);
+
+bool dialog_is_active(Dialog *d);
 
 // FIXME: might not be the best place for this
 typedef struct PlayerDialogProcs {

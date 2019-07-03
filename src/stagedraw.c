@@ -460,7 +460,7 @@ static void stage_draw_collision_areas(void) {
 		}
 	}
 
-	if(global.boss && global.boss->current && !global.dialog) {
+	if(global.boss && global.boss->current && !dialog_is_active(global.dialog)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
 			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
@@ -561,7 +561,6 @@ static void draw_spellbg(int t) {
 }
 
 static void draw_spellbg_overlay(int t) {
-	r_mat_push();
 	Boss *b = global.boss;
 
 	float delay = ATTACK_START_DELAY;
@@ -570,24 +569,11 @@ static void draw_spellbg_overlay(int t) {
 		delay = ATTACK_START_DELAY_EXTRA;
 	}
 
-	{
-		float f = (-t+ATTACK_START_DELAY) / (delay+ATTACK_START_DELAY);
+	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
-		if(f > 0) {
-			draw_wall_of_text(f, b->current->name);
-		}
+	if(f > 0) {
+		draw_wall_of_text(f, b->current->name);
 	}
-
-	if(t < ATTACK_START_DELAY && b->dialog) {
-		r_mat_push();
-		float f = -0.5*t/(float)ATTACK_START_DELAY+0.5;
-		r_color(RGBA_MUL_ALPHA(1,1,1,-f*f+2*f));
-		draw_sprite_p(VIEWPORT_W*3/4-10*f*f,VIEWPORT_H*2/3-10*f*f,b->dialog);
-		r_color4(1,1,1,1);
-		r_mat_pop();
-	}
-
-	r_mat_pop();
 }
 
 static inline bool should_draw_stage_bg(void) {
@@ -925,16 +911,13 @@ void stage_draw_overlay(void) {
 		draw_boss_overlay(global.boss);
 	}
 
-	if(global.dialog) {
-		draw_dialog(global.dialog);
-	}
-
 	if(stagedraw.clear_screen.alpha > 0) {
 		fade_out(stagedraw.clear_screen.alpha * 0.5);
 	}
 
 	r_shader_standard();
 	stagetext_draw();
+	player_draw_overlay(&global.plr);
 	r_state_pop();
 }
 
@@ -1075,22 +1058,22 @@ void stage_draw_scene(StageInfo *stage) {
 
 	end_viewport_shake();
 
-	// draw overlay: in-viewport text and HUD elements, etc.
-	// this stuff is not affected by the screen shake effect
-	stage_draw_overlay();
-
-	// everything drawn, now apply postprocessing
+	// prepare to apply postprocessing
 	fbpair_swap(foreground);
 	r_blend(BLEND_NONE);
-
-	// stage postprocessing
-	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// bomb effects shader if present and player bombing
 	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {
 		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
 		apply_shader_rules(rules, foreground);
 	}
+
+	// draw overlay: in-viewport text and HUD elements, etc.
+	// this stuff is not affected by the screen shake effect
+	stage_draw_overlay();
+
+	// stage postprocessing
+	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
 
 	// custom postprocessing
 	postprocess(
@@ -1111,6 +1094,12 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// draw HUD
 	stage_draw_hud();
+
+	// draw dialog
+	draw_dialog(global.dialog);
+
+	// draw "bottom text" (FPS, replay info, etc.)
+	stage_draw_bottom_text();
 }
 
 #define HUD_X_PADDING 16
@@ -1486,7 +1475,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	}
 }
 
-static void stage_draw_hud_bottom_text(void) {
+void stage_draw_bottom_text(void) {
 	char buf[64];
 	Font *font;
 
@@ -1824,7 +1813,6 @@ void stage_draw_hud(void) {
 	}
 
 	r_mat_pop();
-	stage_draw_hud_bottom_text();
 
 	// Boss indicator ("Enemy")
 	if(global.boss) {
@@ -1832,9 +1820,12 @@ void stage_draw_hud(void) {
 		if(red > 1)
 			red = 0;
 		
-		r_color4(1 - red, 1 - red, 1 - red, 1 - red);
-		draw_sprite(VIEWPORT_X+creal(global.boss->pos), 590, "boss_indicator");
-		r_color4(1, 1, 1, 1);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "boss_indicator",
+			.shader = "sprite_default",
+			.pos = { VIEWPORT_X+creal(global.boss->pos), 590 },
+			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
+		});
 	}
 }
 

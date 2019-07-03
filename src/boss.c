@@ -14,6 +14,7 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 #include "entity.h"
+#include "util/glm.h"
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -186,7 +187,7 @@ static void update_healthbar(Boss *boss) {
 		boss_is_fleeing(boss) ||
 		!boss->current ||
 		boss->current->type == AT_Move ||
-		global.dialog
+		dialog_is_active(global.dialog)
 	) {
 		target_opacity = 0.0;
 	}
@@ -310,7 +311,7 @@ static void update_hud(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(!boss->current || boss->current->type == AT_Move || global.dialog) {
+	if(!boss->current || boss->current->type == AT_Move || dialog_is_active(global.dialog)) {
 		target_opacity = 0.0;
 	}
 
@@ -409,7 +410,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "spell",
-		.pos = { (VIEWPORT_W - 128) * (1 - pow(1 - f2, 5)) -256 * pow(1 - f2, 2), y_offset },
+		.pos = { (VIEWPORT_W - 128), y_offset * (1 - pow(1 - f2, 5)) + VIEWPORT_H * pow(1 - f2, 2) },
 		.color = color_mul_scalar(RGBA(1, 1, 1, f2 * 0.5), opacity * f2) ,
 		.scale.both = 3 - 2 * (1 - pow(1 - f2, 3)),
 	});
@@ -424,7 +425,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	r_mat_translate(creal(x), cimag(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_scale(scale,scale,1);
-	r_mat_rotate_deg(360*f,1,1,0);
+	r_mat_rotate(glm_ease_quad_out(f) * 2 * M_PI, 0.8, -0.2, 0);
 
 	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6);
 	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
@@ -499,6 +500,72 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 
 		r_mat_pop();
 	}
+}
+
+static void draw_spell_portrait(Boss *b, int time) {
+	const int anim_time = 200;
+
+	if(time <= 0 || time >= anim_time) {
+		return;
+	}
+
+	if(!b->dialog) {
+		return;
+	}
+
+	if(b->current->draw_rule == NULL) {
+		// No spell background? Assume not cut-in is intended, either.
+		return;
+	}
+
+	// NOTE: Mostly copypasted from player.c::player_draw_overlay()
+	// TODO: Maybe somehow generalize and make it more intelligible
+
+	float a = time / (float)anim_time;
+
+	r_state_push();
+	r_shader("sprite_default");
+
+	float char_in = clamp(a * 1.5, 0, 1);
+	float char_out = min(1, 2 - (2 * a));
+	float char_opacity_in = 0.75 * min(1, a * 5);
+	float char_opacity = char_opacity_in * char_out * char_out;
+	float char_xofs = -20 * a;
+
+	Sprite *char_spr = b->dialog;
+
+	r_mat_push();
+	r_mat_scale(-1, 1, 1);
+	r_mat_translate(-VIEWPORT_W, 0, 0);
+	r_cull(CULL_FRONT);
+
+	for(int i = 1; i <= 3; ++i) {
+		float t = a * 200;
+		float dur = 20;
+		float start = 200 - dur * 5;
+		float end = start + dur;
+		float ofs = 0.2 * dur * (i - 1);
+		float o = 1 - smoothstep(start + ofs, end + ofs, t);
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = char_spr,
+			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
+			.flip.x = true,
+			.scale.both = 1.0 + 0.02 * (min(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+		});
+	}
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = char_spr,
+		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
+		.flip.x = true,
+		.scale.both = 1.0 + 0.1 * (1 - char_out),
+	});
+
+	r_mat_pop();
+	r_state_pop();
 }
 
 static void BossGlow(Projectile *p, int t) {
@@ -638,7 +705,17 @@ void draw_boss_overlay(Boss *boss) {
 		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGBA(o, o, o, o));
 
 		if(ATTACK_IS_SPELL(boss->current->type)) {
-			draw_spell_name(boss, global.frames - boss->current->starttime, radial_style);
+			int t_portrait, t_spell;
+			t_portrait = t_spell = global.frames - boss->current->starttime;
+
+			if(boss->current->type == AT_ExtraSpell) {
+				t_portrait += ATTACK_START_DELAY_EXTRA;
+			} else {
+				t_portrait += ATTACK_START_DELAY;
+			}
+
+			draw_spell_portrait(boss, t_portrait);
+			draw_spell_name(boss, t_spell, radial_style);
 		}
 
 		float remaining = boss->hud.attack_timer;
@@ -919,7 +996,7 @@ void process_boss(Boss **pboss) {
 
 	spawn_particle_effects(boss);
 
-	if(!boss->current || global.dialog) {
+	if(!boss->current || dialog_is_active(global.dialog)) {
 		return;
 	}
 
@@ -1098,7 +1175,7 @@ void process_boss(Boss **pboss) {
 				boss->current->starttime = global.frames;
 				boss->current->rule(boss, EVENT_BIRTH);
 
-				if(global.dialog) {
+				if(dialog_is_active(global.dialog)) {
 					break;
 				}
 
