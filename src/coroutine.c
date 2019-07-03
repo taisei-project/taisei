@@ -96,7 +96,7 @@ CoSched *cosched_new(void) {
 	return sched;
 }
 
-void *cosched_newtask(CoSched *sched, CoTaskFunc func, void *arg) {
+void *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg) {
 	CoTask *task = cotask_new(func);
 	void *ret = cotask_resume(task, arg);
 
@@ -120,7 +120,7 @@ uint cosched_run_tasks(CoSched *sched) {
 	for(CoTask *t = sched->tasks.first, *next; t; t = next) {
 		next = t->next;
 		assert(t->status == CO_STATUS_SUSPENDED);
-		cotask_resume(t, NULL);
+		cotask_resume(t, t->arg);
 		++ran;
 
 		if(t->status == CO_STATUS_DEAD) {
