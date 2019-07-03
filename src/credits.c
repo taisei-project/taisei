@@ -3,7 +3,7 @@
  * See COPYING for further information.
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "taisei.h"
@@ -59,7 +59,7 @@ static void credits_fill(void) {
 	credits_add((
 		"Akari\n"
 		"Andrei Alexeyev\n"
-		"akari@alienslab.net\n\n"
+		"akari@taisei-project.org\n\n"
 		"Programming, game design"
 	), ENTRY_TIME);
 
