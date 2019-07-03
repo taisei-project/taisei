@@ -35,6 +35,9 @@ Color *lcolor_tocolor(lua_State *L, int idx, bool copy);
 #define LAPI_RESOURCES_LIBNAME "resources"
 LUAMOD_API int luaopen_resources(lua_State *L);
 
+#define LAPI_ENGINE_LIBNAME "engine"
+LUAMOD_API int luaopen_engine(lua_State *L);
+
 void lapi_open_all(lua_State *L);
 
 #endif // IGUARD_script_lib_all_h

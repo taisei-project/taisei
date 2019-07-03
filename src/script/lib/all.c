@@ -30,6 +30,7 @@ void lapi_open_all(lua_State *L) {
 		{ LAPI_VFS_LIBNAME, luaopen_vfs, },
 		{ LAPI_VIO_LIBNAME, luaopen_vio, },
 		{ LAPI_RESOURCES_LIBNAME, luaopen_resources, },
+		{ LAPI_ENGINE_LIBNAME, luaopen_engine, },
 
 		{ NULL },
 	};

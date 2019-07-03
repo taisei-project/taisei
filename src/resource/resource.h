@@ -146,18 +146,22 @@ typedef struct ResourceHandler {
 #endif
 
 typedef struct ResourceRef {
-	struct {
+	union {
+		struct {
 #if defined(RESREF_LAYOUT_TAGGED64)
-		union {
-			uintptr_t handle;
-			void *handle_as_ptr;
-		};
+			union {
+				uintptr_t handle;
+				void *handle_as_ptr;
+			};
 #elif defined(RESREF_LAYOUT_PORTABLE)
-		void *ptr;
-		uint16_t flags;
-		uint16_t type;
+			void *ptr;
+			uint16_t flags;
+			uint16_t type;
 #endif
-	} _internal;
+		} _internal;
+
+		uint64_t as_int;
+	};
 
 #ifdef DEBUG
 	void *_beacon;  // holds a dummy 1-byte heap allocation; this is a cheap way to detect some ref leaks with ASan/LeakSan
@@ -165,6 +169,8 @@ typedef struct ResourceRef {
 } ResourceRef;
 
 #define RES_INVALID_REF ((ResourceRef) { 0 })
+
+static_assert(sizeof(RES_INVALID_REF.as_int) >= sizeof(RES_INVALID_REF._internal), "");
 
 typedef uintptr_t res_id_t;
 
