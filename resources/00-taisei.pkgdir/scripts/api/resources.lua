@@ -10,15 +10,17 @@ local res_ref = assert(E.res_ref)
 local res_ref_data = assert(E.res_ref_data)
 local res_ref_name = assert(E.res_ref_name)
 local res_ref_status = assert(E.res_ref_status)
+local res_ref_type = assert(E.res_ref_type)
 local res_ref_wait_ready = assert(E.res_ref_wait_ready)
+local res_unref = assert(E.res_unref)
 local res_unref_if_valid = assert(E.res_unref_if_valid)
 local sprite_get_extent = assert(E.sprite_get_extent)
 local sprite_get_offset = assert(E.sprite_get_offset)
 local sprite_get_texarea_extent = assert(E.sprite_get_texarea_extent)
 local sprite_get_texarea_offset = assert(E.sprite_get_texarea_offset)
-local res_ref_type = assert(E.res_ref_type)
 
 local cookie = {}
+local private = setmetatable({}, { __mode = 'k' })
 
 local function make_metatable(name)
 	return {
@@ -39,14 +41,16 @@ end
 
 local function getref(self)
 	assert(getmetatable(self).cookie == cookie, 'not a ResourceRef value')
-	return rawget(self, '__ref')
+	return private[self].__ref
 end
 
 local function make_proxy(self, proxymt)
-	return setmetatable({
+	local obj = setmetatable({}, proxymt)
+	private[obj] = {
 		__ref = getref(self),
 		__obj = self,
-	}, proxymt)
+	}
+	return obj
 end
 
 local ResourceRefBase = make_metatable('ResourceRefBase')
@@ -70,7 +74,7 @@ end
 local ResourceRef = inherit(ResourceRefBase, 'ResourceRef')
 do
 	function ResourceRef:__gc()
-		ref_unref_if_valid(getref(self))
+		res_unref_if_valid(getref(self))
 	end
 
 	function ResourceRef.getters:type()
@@ -118,8 +122,9 @@ do
 end
 
 local function new_ref(rtype, metatable, name, flags)
-	local ref = res_ref(rtype, name, flags or RESF_DEFAULT)
-	return setmetatable({ __ref = ref }, metatable)
+	local obj = setmetatable({}, metatable)
+	private[obj] = { __ref = res_ref(rtype, name, flags or RESF_DEFAULT) }
+	return obj
 end
 
 local function make_res_func(rtype, metatable)

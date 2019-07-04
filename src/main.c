@@ -32,8 +32,8 @@ attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
-	con_shutdown();
 	script_shutdown();
+	con_shutdown();
 
 	taskmgr_global_shutdown();
 
