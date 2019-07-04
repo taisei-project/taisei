@@ -15,6 +15,24 @@ do
 		end
 		return t
 	end
+
+	function table.copy(t)
+		local newt = {}
+
+		for k, v in pairs(t) do
+			newt[k] = v
+		end
+
+		return newt
+	end
+
+	function table.meld(dest, src)
+		for k, v in pairs(src) do
+			dest[k] = v
+		end
+
+		return dest
+	end
 end
 
 do
@@ -34,6 +52,8 @@ do
 
 	function p(t) for k, v in pairs(t) do print(("%24s"):format(k), v) end end
 end
+
+api = require('api')
 
 do
 	--[[

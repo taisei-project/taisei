@@ -74,6 +74,12 @@ static int lengine_res_ref_data(lua_State *L) {
 	return 1;
 }
 
+static int lengine_res_ref_type(lua_State *L) {
+	ResourceRef ref = getref(L, 1);
+	lua_pushinteger(L, res_ref_type(ref));
+	return 1;
+}
+
 static int lengine_res_ref_status(lua_State *L) {
 	ResourceRef ref = getref(L, 1);
 	lua_pushinteger(L, res_ref_status(ref));
@@ -115,6 +121,12 @@ static int lengine_res_unref(lua_State *L) {
 	ResourceRef ref = getref(L, 1);
 	res_unref(&ref, 1);
 	return 0;
+}
+
+static int lengine_res_ref_id(lua_State *L) {
+	ResourceRef ref = getref(L, 1);
+	lua_pushinteger(L, res_ref_id(ref));
+	return 1;
 }
 
 #define GETTER_BASIC(type, prefix, suffix, field, pushfunc) \
@@ -304,9 +316,11 @@ LUAMOD_API int luaopen_engine(lua_State *L) {
 		EXPORT_FUNC(res_ref),
 		EXPORT_FUNC(res_ref_copy),
 		EXPORT_FUNC(res_ref_data),
+		EXPORT_FUNC(res_ref_id),
 		EXPORT_FUNC(res_ref_is_valid),
 		EXPORT_FUNC(res_ref_name),
 		EXPORT_FUNC(res_ref_status),
+		EXPORT_FUNC(res_ref_type),
 		EXPORT_FUNC(res_ref_wait_ready),
 		EXPORT_FUNC(res_ref_wrap_external_data),
 		EXPORT_FUNC(res_refs_are_equivalent),
