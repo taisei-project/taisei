@@ -1096,28 +1096,10 @@ void res_shutdown(void) {
 
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = res_type_handler(type);
-		Resource *res;
-		ht_str2ptr_ts_key_list_t *unset_list = NULL, *unset_entry;
 
 		ht_iter_begin(&handler->private.mapping, &iter);
-
 		for(; iter.has_data; ht_iter_next(&iter)) {
-			res = iter.value;
-
-			unset_entry = calloc(1, sizeof(*unset_entry));
-			unset_entry->key = iter.key;
-			list_push(&unset_list, unset_entry);
-		}
-
-		ht_iter_end(&iter);
-
-		for(ht_str2ptr_ts_key_list_t *c; (c = list_pop(&unset_list));) {
-			char *tmp = c->key;
-			char name[strlen(tmp) + 1];
-			strcpy(name, tmp);
-
-			res = ht_get(&handler->private.mapping, name, NULL);
-			assert(res != NULL);
+			Resource *res = iter.value;
 
 			int refs = SDL_AtomicGet(&res->refcount);
 			if(refs > 0) {
@@ -1125,9 +1107,19 @@ void res_shutdown(void) {
 			}
 
 			unload_resource(res);
-			free_resource(res);
-			free(c);
 		}
+		ht_iter_end(&iter);
+	}
+
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = res_type_handler(type);
+
+		ht_iter_begin(&handler->private.mapping, &iter);
+		for(; iter.has_data; ht_iter_next(&iter)) {
+			Resource *res = iter.value;
+			free_resource(res);
+		}
+		ht_iter_end(&iter);
 
 		if(handler->procs.shutdown != NULL) {
 			handler->procs.shutdown();
