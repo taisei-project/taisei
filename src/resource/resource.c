@@ -685,7 +685,7 @@ static ResourceRef create_ref(Resource *res, ResourceFlags flags) {
 	assert(_ref_get_type(&ref) == res->type);
 	assert(_ref_get_flags(&ref) == flags);
 
-#ifdef DEBUG
+#ifdef RES_REF_BEACON
 	ref._beacon = (flags & RESF_WEAK) ? NULL : malloc(1);
 #endif
 
@@ -785,7 +785,7 @@ static void res_unref_one(ResourceRef *ref) {
 
 	REF_DEBUG("UnRef {%p} (%i) %s %s %p", (void*)ref, prevrc - 1, res_type_idname(res_ref_type(*ref)), res_ref_name(*ref), (void*)ref_get_resource(*ref));
 
-#ifdef DEBUG
+#ifdef RES_REF_BEACON
 	free(ref->_beacon);
 	ref->_beacon = NULL;
 #endif

@@ -3,40 +3,6 @@ print('Hello, Lua!')
 
 do
 	--[[
-		Some useful utilities
-	--]]
-
-	function table.collect(iterator, state, var)
-		local t = {}
-		while true do
-			var = iterator(state, var)
-			if var == nil then break end
-			t[#t + 1] = var
-		end
-		return t
-	end
-
-	function table.copy(t)
-		local newt = {}
-
-		for k, v in pairs(t) do
-			newt[k] = v
-		end
-
-		return newt
-	end
-
-	function table.meld(dest, src)
-		for k, v in pairs(src) do
-			dest[k] = v
-		end
-
-		return dest
-	end
-end
-
-do
-	--[[
 		Some console shortcuts
 	--]]
 

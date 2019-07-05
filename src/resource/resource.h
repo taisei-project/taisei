@@ -163,7 +163,8 @@ typedef struct ResourceRef {
 		uint64_t as_int;
 	};
 
-#ifdef DEBUG
+// NOTE: disabled because it doesn't work with low-level Lua bindings
+#ifdef RES_REF_BEACON
 	void *_beacon;  // holds a dummy 1-byte heap allocation; this is a cheap way to detect some ref leaks with ASan/LeakSan
 #endif
 } ResourceRef;

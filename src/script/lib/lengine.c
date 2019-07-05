@@ -247,6 +247,25 @@ static int lengine_animation_get_sequence_frame(lua_State *L) {
 	return 3;
 }
 
+static int lengine_animation_get_sequences(lua_State *L) {
+	Animation *ani = lua_touserdata(L, 1);
+
+	int idx = 1;
+	lua_newtable(L);
+
+	ht_str2ptr_iter_t iter;
+	ht_iter_begin(&ani->sequences, &iter);
+
+	for(; iter.has_data; ht_iter_next(&iter)) {
+		lua_pushstring(L, iter.key);
+		lua_rawseti(L, -2, idx++);
+	}
+
+	ht_iter_end(&iter);
+
+	return 1;
+}
+
 static int lengine_animation_get_sprite(lua_State *L) {
 	Animation *ani = lua_touserdata(L, 1);
 	lua_Integer num = luaL_checkinteger(L, 2);
@@ -300,6 +319,7 @@ LUAMOD_API int luaopen_engine(lua_State *L) {
 		EXPORT_ACCESSORS(sprite, texture_ref),
 		EXPORT_FUNC(animation_get_sequence_frame),
 		EXPORT_FUNC(animation_get_sequence_length),
+		EXPORT_FUNC(animation_get_sequences),
 		EXPORT_FUNC(animation_get_sprite),
 		EXPORT_FUNC(animation_get_sprite_count),
 		EXPORT_FUNC(font_get_ascent),

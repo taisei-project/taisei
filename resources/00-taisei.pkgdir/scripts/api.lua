@@ -1,4 +1,5 @@
 
 return {
-	resources = require 'api.resources'
+	util = require 'api.util',
+	resources = require 'api.resources',
 }
