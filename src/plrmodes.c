@@ -41,7 +41,88 @@ PlayerCharacter* plrchar_get(CharacterID id) {
 
 void plrchar_preload(PlayerCharacter *pc) {
 	preload_resource(RES_ANIM, pc->player_sprite_name, RESF_DEFAULT);
-	preload_resource(RES_SPRITE, pc->dialog_sprite_name, RESF_DEFAULT);
+	preload_resource(RES_SPRITE, pc->dialog_base_sprite_name, RESF_DEFAULT);
+
+	for(int i = 0; i < DIALOG_NUM_FACES; ++i) {
+		preload_resource(RES_SPRITE, pc->dialog_face_sprite_names[i], RESF_DEFAULT);
+	}
+}
+
+void plrchar_make_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
+	r_state_push();
+
+	Sprite *s_base = get_sprite(pc->dialog_base_sprite_name);
+	Sprite *s_face = get_sprite(pc->dialog_face_sprite_names[DIALOG_FACE_NORMAL]);
+
+	uint tex_w = s_base->tex_area.extent.w;
+	uint tex_h = s_base->tex_area.extent.h;
+	uint spr_w = s_base->extent.w;
+	uint spr_h = s_base->extent.h;
+
+	Texture *ptex = r_texture_create(&(TextureParams) {
+		.type = TEX_TYPE_RGBA_8,
+		.width = tex_w,
+		.height = tex_h,
+		.filter.min = TEX_FILTER_LINEAR_MIPMAP_LINEAR,
+		.filter.mag = TEX_FILTER_LINEAR,
+		.mipmap_mode = TEX_MIPMAP_AUTO,
+		.mipmaps = 3,
+	});
+
+	char label[128];
+	snprintf(label, sizeof(label), "%s bomb portrait", pc->lower_name);
+	r_texture_set_debug_label(ptex, label);
+
+	Framebuffer *fb = r_framebuffer_create();
+	snprintf(label, sizeof(label), "%s bomb portrait FB", pc->lower_name);
+	r_framebuffer_set_debug_label(fb, label);
+	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
+	r_framebuffer(fb);
+
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	r_mat_ortho(0, spr_w, spr_h, 0, -1, 1);
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_push();
+	r_mat_identity();
+
+	SpriteParams sp = { 0 };
+	sp.sprite_ptr = s_base;
+	sp.blend = BLEND_NONE;
+	sp.pos.x = spr_w / 2.0 - s_base->offset.x;
+	sp.pos.y = spr_h / 2.0 - s_base->offset.y;
+	sp.color = RGBA(1, 1, 1, 1);
+	sp.shader_ptr = r_shader_get("sprite_default"),
+	r_draw_sprite(&sp);
+	sp.blend = BLEND_PREMUL_ALPHA;
+	sp.sprite_ptr = s_face;
+	r_draw_sprite(&sp);
+	r_flush_sprites();
+
+	r_mat_pop();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_pop();
+	r_state_pop();
+	r_framebuffer_destroy(fb);
+
+	Sprite s = { 0 };
+	s.tex = ptex;
+	s.offset = s_base->offset;
+	s.extent = s_base->extent;
+	s.tex_area.w = tex_w;
+	s.tex_area.h = tex_h;
+	*out_spr = s;
+}
+
+void plrchar_make_dialog_actor(PlayerCharacter *pc, DialogActor *out_actor) {
+	out_actor->base = get_sprite(pc->dialog_base_sprite_name);
+
+	for(int i = 0; i < DIALOG_NUM_FACES; ++i) {
+		out_actor->faces[i] = get_sprite(pc->dialog_face_sprite_names[i]);
+	}
+
+	out_actor->face = out_actor->faces[DIALOG_FACE_NORMAL];
 }
 
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {

@@ -14,9 +14,16 @@
 #include "common.h"
 #include "global.h"
 #include "video.h"
+#include "util/glm.h"
 
-#define SELECTED_SUBSHOT(m) ((intptr_t)PLR_SHOT_A + (intptr_t)(m)->context)
+#define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)
+
+typedef struct CharMenuContext {
+	ShotModeID subshot;
+	CharacterID char_draw_order[NUM_CHARACTERS];
+	CharacterID prev_selected_char;
+} CharMenuContext;
 
 static void set_player_mode(MenuData *m, void *p) {
 	progress.game_settings.character = (CharacterID)(uintptr_t)p;
@@ -25,9 +32,25 @@ static void set_player_mode(MenuData *m, void *p) {
 
 static void char_menu_input(MenuData*);
 
+static void update_char_draw_order(MenuData *menu) {
+	CharMenuContext *ctx = menu->context;
+
+	for(int i = 0; i < NUM_CHARACTERS; ++i) {
+		if(ctx->char_draw_order[i] == menu->cursor) {
+			while(i) {
+				ctx->char_draw_order[i] = ctx->char_draw_order[i - 1];
+				ctx->char_draw_order[i - 1] = menu->cursor;
+				--i;
+			}
+
+			break;
+		}
+	}
+}
+
 static void update_char_menu(MenuData *menu) {
 	for(int i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.08*((menu->cursor != i) - menu->entries[i].drawdata);
+		menu->entries[i].drawdata += 0.05*((menu->cursor != i) - menu->entries[i].drawdata);
 	}
 
 	PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
@@ -46,28 +69,51 @@ static void update_char_menu(MenuData *menu) {
 	fapproach_asymptotic_p(&menu->drawdata[2], height, 0.1, 1e-5);
 }
 
+static void end_char_menu(MenuData *m) {
+	free(m->context);
+}
+
+static void transition_to_game(double fade) {
+	fade_out(pow(max(0, (fade - 0.5) * 2), 2));
+}
+
 MenuData* create_char_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->input = char_menu_input;
 	m->draw = draw_char_menu;
 	m->logic = update_char_menu;
+	m->end = end_char_menu;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
-	m->context = (void*)(intptr_t)progress.game_settings.shotmode;
+
+	CharMenuContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->subshot = progress.game_settings.shotmode;
+	ctx->prev_selected_char = -1;
+	m->context = ctx;
 
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
-		add_menu_entry(m, NULL, set_player_mode, (void*)i)->transition = TransFadeBlack;
+		MenuEntry *e = add_menu_entry(m, NULL, set_player_mode, (void*)i);
+		e->transition = transition_to_game;
+		e->drawdata = 1;
 
 		if(i == progress.game_settings.character) {
 			m->cursor = i;
 		}
 	}
 
+	for(CharacterID c = 0; c < NUM_CHARACTERS; ++c) {
+		ctx->char_draw_order[c] = c;
+	}
+
+	m->drawdata[1] = 1;
+
 	return m;
 }
 
 void draw_char_menu(MenuData *menu) {
+	CharMenuContext *ctx = menu->context;
+
 	r_state_push();
 
 	char *prefixes[] = {
@@ -78,16 +124,19 @@ void draw_char_menu(MenuData *menu) {
 	assert(menu->cursor < 3);
 	PlayerCharacter *selected_char = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
 
-	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1*menu->drawdata[1], "menu/mainmenubg", selected_char->menu_texture_name);
+	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * menu->drawdata[1]), "menu/mainmenubg", selected_char->menu_texture_name);
 	draw_menu_title(menu, "Select Character");
 
 	CharacterID current_char = 0;
 
-	for(int i = 0; i < menu->ecount; i++) {
+	for(int j = 0; j < menu->ecount; j++) {
+		CharacterID i = ctx->char_draw_order[j];
+
 		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
 		assert(pchar != NULL);
+		assert(pchar->id == i);
 
-		Sprite *spr = get_sprite(pchar->dialog_sprite_name);
+		Sprite *spr = get_sprite(pchar->dialog_base_sprite_name);
 		const char *name = pchar->full_name;
 		const char *title = pchar->title;
 
@@ -97,13 +146,38 @@ void draw_char_menu(MenuData *menu) {
 
 		float o = 1-menu->entries[i].drawdata*2;
 
-		r_draw_sprite(&(SpriteParams) {
-			.pos = { SCREEN_W/2 + 240 + 220 * menu->entries[i].drawdata, SCREEN_H - spr->h * 0.5 },
+		const char *face;
+
+		if(menu->selected == i) {
+			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SMUG];
+		} else if(fabs(o - 1) < 1e-1) {
+			face = pchar->dialog_face_sprite_names[DIALOG_FACE_NORMAL];
+		} else if(menu->cursor == i) {
+			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SURPRISED];
+		} else {
+			face = pchar->dialog_face_sprite_names[DIALOG_FACE_ANNOYED];
+		}
+
+		float pofs = max(0, menu->entries[i].drawdata * 1.5 - 0.5);
+		pofs = glm_ease_back_in(pofs);
+
+		if(i != menu->selected) {
+			pofs = lerp(pofs, 1, menu_fade(menu));
+		}
+
+		float pbrightness = 0.6 + 0.4 * o;
+
+		SpriteParams portrait_params = {
+			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
 			.sprite_ptr = spr,
 			.shader = "sprite_default",
-			.color = RGBA(o, o, o, o),
+			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
 			// .flip.x = true,
-		});
+		};
+
+		r_draw_sprite(&portrait_params);
+		portrait_params.sprite_ptr = get_sprite(face);
+		r_draw_sprite(&portrait_params);
 
 		r_mat_push();
 		r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
@@ -218,7 +292,10 @@ void draw_char_menu(MenuData *menu) {
 
 static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
+	CharMenuContext *ctx = menu->context;
 	TaiseiEvent type = TAISEI_EVENT(event->type);
+
+	int prev_cursor = menu->cursor;
 
 	if(type == TE_MENU_CURSOR_RIGHT) {
 		play_ui_sound("generic_shot");
@@ -228,24 +305,30 @@ static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 		menu->cursor--;
 	} else if(type == TE_MENU_CURSOR_DOWN) {
 		play_ui_sound("generic_shot");
-		menu->context = (void*)(SELECTED_SUBSHOT(menu) + 1);
+		ctx->subshot++;
 	} else if(type == TE_MENU_CURSOR_UP) {
 		play_ui_sound("generic_shot");
-		menu->context = (void*)(SELECTED_SUBSHOT(menu) - 1);
+		ctx->subshot--;
 	} else if(type == TE_MENU_ACCEPT) {
 		play_ui_sound("shot_special1");
 		menu->selected = menu->cursor;
+		menu->transition_in_time = FADE_TIME * 1.5;
+		menu->transition_out_time = FADE_TIME * 3;
 		close_menu(menu);
 	} else if(type == TE_MENU_ABORT) {
 		play_ui_sound("hit");
 		close_menu(menu);
 	}
 
-	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount * (menu->cursor < 0);
+	ctx->subshot = (ctx->subshot % NUM_SHOT_MODES_PER_CHARACTER) + NUM_SHOT_MODES_PER_CHARACTER * (ctx->subshot < 0);
 
-	intptr_t ss = SELECTED_SUBSHOT(menu);
-	ss = (ss % NUM_SHOT_MODES_PER_CHARACTER) + NUM_SHOT_MODES_PER_CHARACTER * (ss < 0);
-	menu->context = (void*)ss;
+	if(menu->cursor != prev_cursor) {
+		if(ctx->prev_selected_char != menu->cursor || menu->entries[menu->cursor].drawdata > 0.95) {
+			ctx->prev_selected_char = prev_cursor;
+			update_char_draw_order(menu);
+		}
+	}
 
 	return false;
 }

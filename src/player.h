@@ -101,6 +101,7 @@ struct Player {
 	AniPlayer ani;
 	EnemyList slaves;
 	EnemyList focus_circle;
+	Sprite bomb_portrait;
 
 	struct {
 		float positive;

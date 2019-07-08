@@ -14,24 +14,29 @@
 
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, NULL);
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	pm->dialog->stage5_post_midboss(d);
 	assert(d->count == 1);
-	d->messages->timeout = global.frames + 120;
+	d->actions->timeout = global.frames + 120;
 	return d;
 }
 
 static Dialog *stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/iku");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
 	pm->dialog->stage5_pre_boss(d);
-	dadd_msg(d, BGM, "stage5boss");
+	dialog_add_action(d, DIALOG_SET_BGM, "stage5boss");
 	return d;
 }
 
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/iku");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
 	pm->dialog->stage5_post_boss(d);
 	return d;
 }
@@ -916,7 +921,7 @@ void iku_cathode(Boss *b, int t) {
 	FROM_TO(50, 18000, 70-global.diff*10) {
 		aniplayer_hard_switch(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
 		aniplayer_queue(&b->ani,"main",0);
-		
+
 		int i;
 		int c = 7+global.diff/2;
 

@@ -15,15 +15,19 @@
 
 static Dialog *stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/wriggle");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
 	pm->dialog->stage3_pre_boss(d);
-	dadd_msg(d, BGM, "stage3boss");
+	dialog_add_action(d, DIALOG_SET_BGM, "stage3boss");
 	return d;
 }
 
 static Dialog *stage3_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/wriggle");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
 	pm->dialog->stage3_post_boss(d);
 	return d;
 }

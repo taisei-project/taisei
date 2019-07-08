@@ -13,23 +13,44 @@
 
 #include "resource/sprite.h"
 
-struct DialogMessage;
+struct DialogAction;
 
 typedef enum {
-	Right,
-	Left,
-	BGM
-} Side;
+	DIALOG_RIGHT,
+	DIALOG_LEFT,
+} DialogSide;
 
-typedef struct DialogMessage {
-	Side side;
+typedef enum {
+	DIALOG_MSG_RIGHT = DIALOG_RIGHT,
+	DIALOG_MSG_LEFT = DIALOG_LEFT,
+	DIALOG_SET_BGM
+} DialogActionType;
+
+typedef enum {
+	DIALOG_FACE_NORMAL,
+	DIALOG_FACE_SURPRISED,
+	DIALOG_FACE_ANNOYED,
+	DIALOG_FACE_SMUG,
+
+	DIALOG_NUM_FACES,
+	DIALOG_FACE_NONE,
+} DialogFace;
+
+typedef struct DialogAction {
+	DialogActionType type;
 	char *msg;
 	int timeout;
-} DialogMessage;
+} DialogAction;
+
+typedef struct DialogActor {
+	Sprite *base;
+	Sprite *face;
+	Sprite *faces[DIALOG_NUM_FACES];
+} DialogActor;
 
 typedef struct Dialog {
-	DialogMessage *messages;
-	Sprite *images[2];
+	DialogAction *actions;
+	DialogActor actors[2];
 
 	int count;
 	int pos;
@@ -39,22 +60,31 @@ typedef struct Dialog {
 	float opacity;
 } Dialog;
 
-Dialog *create_dialog(const char *left, const char *right)
+Dialog *dialog_create(void)
 	attr_returns_nonnull attr_nodiscard;
 
-void dset_image(Dialog *d, Side side, const char *name)
-	attr_nonnull(1, 3);
-
-DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg)
-	attr_nonnull(1, 3);
-
-void delete_dialog(Dialog *d)
+void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor)
 	attr_nonnull(1);
 
-void draw_dialog(Dialog *dialog);
+// HACK circular dependency...
+typedef struct PlayerCharacter PlayerCharacter;
 
-bool page_dialog(Dialog **d) attr_nonnull(1);
-void process_dialog(Dialog **d) attr_nonnull(1);
+void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face)
+	attr_nonnull(1, 3);
+
+void dialog_set_image(Dialog *d, DialogSide side, const char *name)
+	attr_nonnull(1, 3);
+
+DialogAction *dialog_add_action(Dialog *d, DialogActionType side, const char *msg)
+	attr_nonnull(1, 3);
+
+void dialog_destroy(Dialog *d)
+	attr_nonnull(1);
+
+void dialog_draw(Dialog *dialog);
+
+bool dialog_page(Dialog **d) attr_nonnull(1);
+void dialog_update(Dialog **d) attr_nonnull(1);
 
 bool dialog_is_active(Dialog *d);
 

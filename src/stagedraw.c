@@ -1096,7 +1096,7 @@ void stage_draw_scene(StageInfo *stage) {
 	stage_draw_hud();
 
 	// draw dialog
-	draw_dialog(global.dialog);
+	dialog_draw(global.dialog);
 
 	// draw "bottom text" (FPS, replay info, etc.)
 	stage_draw_bottom_text();

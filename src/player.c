@@ -64,6 +64,7 @@ void player_stage_post_init(Player *plr) {
 		plr->mode->procs.init(plr);
 	}
 
+	plrchar_make_bomb_portrait(plr->mode->character, &plr->bomb_portrait);
 	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
 
 	plr->ent.draw_layer = LAYER_PLAYER;
@@ -85,6 +86,7 @@ void player_free(Player *plr) {
 		plr->mode->procs.free(plr);
 	}
 
+	r_texture_destroy(plr->bomb_portrait.tex);
 	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
 	delete_enemy(&plr->focus_circle, plr->focus_circle.first);
@@ -156,7 +158,8 @@ void player_draw_overlay(Player *plr) {
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
-	Sprite *char_spr = get_sprite(plr->mode->character->dialog_sprite_name);
+	// Sprite *char_spr = get_sprite(plr->mode->character->dialog_sprite_name);
+	Sprite *char_spr = &plr->bomb_portrait;
 
 	for(int i = 1; i <= 3; ++i) {
 		float t = a * 200;
@@ -1054,7 +1057,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 	switch(type) {
 		case EV_PRESS:
 			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
-				useful = page_dialog(&global.dialog);
+				useful = dialog_page(&global.dialog);
 				break;
 			}
 

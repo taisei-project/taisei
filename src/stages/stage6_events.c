@@ -16,15 +16,19 @@
 
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/elly");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
 	pm->dialog->stage6_pre_boss(d);
-	dadd_msg(d, BGM, "stage6boss_phase1");
+	dialog_add_action(d, DIALOG_SET_BGM, "stage6boss_phase1");
 	return d;
 }
 
 static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = create_dialog(pm->character->dialog_sprite_name, "dialog/elly");
+	Dialog *d = dialog_create();
+	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }
@@ -2876,7 +2880,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 	for(int i = 0; i < count; i++) {
 		if(t<delays[i])
 			break;
-		
+
 		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
 		char *texname = strfmt("stage6/toelagrangian/%d",i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
@@ -2886,7 +2890,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 		free(texname);
 		r_mat_pop();
 	}
-	
+
 	r_color4(1, 1, 1, 1);
 	r_shader_standard();
 }

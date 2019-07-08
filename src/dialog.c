@@ -11,20 +11,29 @@
 #include "dialog.h"
 #include "global.h"
 
-Dialog *create_dialog(const char *left, const char *right) {
+Dialog *dialog_create(void) {
 	Dialog *d = calloc(1, sizeof(Dialog));
-
-	if(left) {
-		d->images[Left] = get_sprite(left);
-	}
-
-	if(right) {
-		d->images[Right] = get_sprite(right);
-	}
-
 	d->page_time = global.frames;
 	d->birthtime = global.frames;
 	return d;
+}
+
+void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor) {
+	if(actor) {
+		d->actors[side] = *actor;
+	} else {
+		memset(d->actors + side, 0, sizeof(*d->actors));
+	}
+}
+
+void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face) {
+	plrchar_make_dialog_actor(pc, d->actors + side);
+
+	if(face == DIALOG_FACE_NONE) {
+		d->actors[side].face = NULL;
+	} else {
+		d->actors[side].face = d->actors[side].faces[face];
+	}
 }
 
 static int message_index(Dialog *d, int offset) {
@@ -34,36 +43,36 @@ static int message_index(Dialog *d, int offset) {
 		idx = d->count - 1;
 	}
 
-	while(idx >= 0 && d->messages[idx].side == BGM) {
+	while(
+		idx >= 0 &&
+		d->actions[idx].type != DIALOG_MSG_LEFT &&
+		d->actions[idx].type != DIALOG_MSG_RIGHT
+	) {
 		--idx;
 	}
 
 	return idx;
 }
 
-void dset_image(Dialog *d, Side side, const char *name) {
-	d->images[side] = get_sprite(name);
+DialogAction * dialog_add_action(Dialog *d, DialogActionType side, const char *msg) {
+	d->actions = realloc(d->actions, (++d->count)*sizeof(DialogAction));
+	d->actions[d->count-1].type = side;
+	d->actions[d->count-1].msg = malloc(strlen(msg) + 1);
+	d->actions[d->count-1].timeout = 0;
+	strlcpy(d->actions[d->count-1].msg, msg, strlen(msg) + 1);
+	return &d->actions[d->count-1];
 }
 
-DialogMessage* dadd_msg(Dialog *d, Side side, const char *msg) {
-	d->messages = realloc(d->messages, (++d->count)*sizeof(DialogMessage));
-	d->messages[d->count-1].side = side;
-	d->messages[d->count-1].msg = malloc(strlen(msg) + 1);
-	d->messages[d->count-1].timeout = 0;
-	strlcpy(d->messages[d->count-1].msg, msg, strlen(msg) + 1);
-	return &d->messages[d->count-1];
-}
-
-void delete_dialog(Dialog *d) {
+void dialog_destroy(Dialog *d) {
 	for(int i = 0; i < d->count; i++) {
-		free(d->messages[i].msg);
+		free(d->actions[i].msg);
 	}
 
-	free(d->messages);
+	free(d->actions);
 	free(d);
 }
 
-void draw_dialog(Dialog *dialog) {
+void dialog_draw(Dialog *dialog) {
 	if(dialog == NULL) {
 		return;
 	}
@@ -91,8 +100,8 @@ void draw_dialog(Dialog *dialog) {
 
 	assume(cur_idx >= 0);
 
-	int cur_side = dialog->messages[cur_idx].side;
-	int pre_side = pre_idx >= 0 ? dialog->messages[pre_idx].side : 2;
+	int cur_side = dialog->actions[cur_idx].type;
+	int pre_side = pre_idx >= 0 ? dialog->actions[pre_idx].type : 2;
 
 	Color clr = { 0 };
 
@@ -114,9 +123,16 @@ void draw_dialog(Dialog *dialog) {
 	}
 
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
+		Sprite *base = dialog->actors[i].base;
+		Sprite *face = dialog->actors[i].face;
+
+		if(!base) {
+			continue;
+		}
+
 		r_mat_push();
 
-		if(i == Left) {
+		if(i == DIALOG_MSG_LEFT) {
 			r_cull(CULL_FRONT);
 			r_mat_scale(-1, 1, 1);
 		} else {
@@ -141,21 +157,18 @@ void draw_dialog(Dialog *dialog) {
 		}
 
 		color_mul_scalar(&clr, o);
-		r_color(&clr);
 
-		if(dialog->images[i]) {
-			Sprite *s = dialog->images[i];
-			r_mat_translate((dialog_width - s->w)/2 + 32, VIEWPORT_H - s->h/2, 0);
-			draw_sprite_batched_p(0, 0, s);
-			r_state_push();
-			r_shader_standard_notex();
-			r_mat_push();
-			r_mat_scale(s->w, s->h, 1);
-			// r_mat_translate(0.5, 0.5, 0);
-			r_color4(0.2, 0.2, 0.2, 0.2);
-			// r_draw_quad();
-			r_mat_pop();
-			r_state_pop();
+		SpriteParams sp = { 0 };
+		sp.blend = BLEND_PREMUL_ALPHA;
+		sp.color = &clr;
+		sp.pos.x = (dialog_width - base->w) / 2 + 32;
+		sp.pos.y = VIEWPORT_H - base->h / 2;
+		sp.sprite_ptr = base;
+		r_draw_sprite(&sp);
+
+		if(face) {
+			sp.sprite_ptr = face;
+			r_draw_sprite(&sp);
 		}
 
 		r_mat_pop();
@@ -197,7 +210,7 @@ void draw_dialog(Dialog *dialog) {
 	// dialog_bg_rect.h = dialog_bg_rect.w;
 
 	if(pre_idx >= 0 && page_text_alpha < 1) {
-		if(pre_side == Right) {
+		if(pre_side == DIALOG_MSG_RIGHT) {
 			clr = *RGB(0.6, 0.6, 1.0);
 		} else {
 			clr = *RGB(1.0, 1.0, 1.0);
@@ -205,7 +218,7 @@ void draw_dialog(Dialog *dialog) {
 
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->messages[pre_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+		text_draw_wrapped(dialog->actions[pre_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { get_tex("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * page_text_alpha)), 1 }},
@@ -217,7 +230,7 @@ void draw_dialog(Dialog *dialog) {
 		});
 	}
 
-	if(cur_side == Right) {
+	if(cur_side == DIALOG_MSG_RIGHT) {
 		clr = *RGB(0.6, 0.6, 1.0);
 	} else {
 		clr = *RGB(1.0, 1.0, 1.0);
@@ -225,7 +238,7 @@ void draw_dialog(Dialog *dialog) {
 
 	color_mul_scalar(&clr, o);
 
-	text_draw_wrapped(dialog->messages[cur_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+	text_draw_wrapped(dialog->actions[cur_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
 		.shader = "text_dialog",
 		.aux_textures = { get_tex("cell_noise") },
 		.shader_params = &(ShaderCustomParams) {{ o * page_text_alpha, 0 }},
@@ -245,12 +258,12 @@ void draw_dialog(Dialog *dialog) {
 	r_state_pop();
 }
 
-bool page_dialog(Dialog **d) {
+bool dialog_page(Dialog **d) {
 	if(!*d || (*d)->pos >= (*d)->count) {
 		return false;
 	}
 
-	int to = (*d)->messages[(*d)->pos].timeout;
+	int to = (*d)->actions[(*d)->pos].timeout;
 
 	if(to && to > global.frames) {
 		return false;
@@ -263,27 +276,27 @@ bool page_dialog(Dialog **d) {
 		// XXX: maybe this can be handled elsewhere?
 		if(!global.boss)
 			global.timer++;
-	} else if((*d)->messages[(*d)->pos].side == BGM) {
-		stage_start_bgm((*d)->messages[(*d)->pos].msg);
-		return page_dialog(d);
+	} else if((*d)->actions[(*d)->pos].type == DIALOG_SET_BGM) {
+		stage_start_bgm((*d)->actions[(*d)->pos].msg);
+		return dialog_page(d);
 	}
 
 	return true;
 }
 
-void process_dialog(Dialog **d) {
+void dialog_update(Dialog **d) {
 	if(!*d) {
 		return;
 	}
 
 	if(dialog_is_active(*d)) {
-		int to = (*d)->messages[(*d)->pos].timeout;
+		int to = (*d)->actions[(*d)->pos].timeout;
 
 		if(
 			(to && to >= global.frames) ||
 			((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
 		) {
-			page_dialog(d);
+			dialog_page(d);
 		}
 	}
 
@@ -294,7 +307,7 @@ void process_dialog(Dialog **d) {
 	} else {
 		fapproach_asymptotic_p(&(*d)->opacity, 0, 0.1, 1e-3);
 		if((*d)->opacity == 0) {
-			delete_dialog(*d);
+			dialog_destroy(*d);
 			*d = NULL;
 		}
 	}

@@ -336,7 +336,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 			.args = { trail_vel, 0, 0.4 },
 		);
 	}
-	
+
 	return ACTION_NONE;
 }
 
@@ -374,7 +374,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		alpha = min(1,10*t);
 	if(t > 0.7)
 		alpha *= 1-pow((t-0.7)/0.3,4);
-	
+
 	reimu_common_bomb_bg(p, alpha);
 	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }

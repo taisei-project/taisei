@@ -462,7 +462,7 @@ static void stage_logic(void) {
 	process_items();
 	process_lasers();
 	process_projectiles(&global.particles, false);
-	process_dialog(&global.dialog);
+	dialog_update(&global.dialog);
 
 	update_sounds();
 
@@ -571,7 +571,7 @@ static void stage_free(void) {
 	delete_projectiles(&global.particles);
 
 	if(global.dialog) {
-		delete_dialog(global.dialog);
+		dialog_destroy(global.dialog);
 		global.dialog = NULL;
 	}
 
