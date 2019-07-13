@@ -22,17 +22,29 @@ struct CoSched {
 	LIST_ANCHOR(CoTask) tasks, pending_tasks;
 };
 
+static LIST_ANCHOR(CoTask) task_pool;
+static size_t task_pool_size;
+
 CoSched *_cosched_global;
 
 CoTask *cotask_new(CoTaskFunc func) {
-	CoTask *task = calloc(1, sizeof(*task));
-	koishi_init(&task->ko, CO_STACK_SIZE, func);
+	CoTask *task;
+
+	if((task = alist_pop(&task_pool))) {
+		koishi_recycle(&task->ko, func);
+		log_debug("Recycled task %p for proc %p", (void*)task, *(void**)&func);
+	} else {
+		task = calloc(1, sizeof(*task));
+		koishi_init(&task->ko, CO_STACK_SIZE, func);
+		++task_pool_size;
+		log_debug("Created new task %p for proc %p (%zu tasks in pool)", (void*)task, *(void**)&func, task_pool_size);
+	}
+
 	return task;
 }
 
 void cotask_free(CoTask *task) {
-	koishi_deinit(&task->ko);
-	free(task);
+	alist_push(&task_pool, task);
 }
 
 void *cotask_resume(CoTask *task, void *arg) {
@@ -102,4 +114,11 @@ void cosched_free(CoSched *sched) {
 
 void coroutines_init(void) {
 
+}
+
+void coroutines_shutdown(void) {
+	for(CoTask *task; (task = alist_pop(&task_pool));) {
+		koishi_deinit(&task->ko);
+		free(task);
+	}
 }
