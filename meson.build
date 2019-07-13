@@ -165,12 +165,12 @@ dep_m           = cc.find_library('m', required : false)
 
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
-dep_libco       = subproject('libco').get_variable('libco_dep')
+dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 
 taisei_deps = [
     dep_cglm,
     dep_freetype,
-    dep_libco,
+    dep_koishi,
     dep_m,
     dep_png,
     dep_sdl2,
