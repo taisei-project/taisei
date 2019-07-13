@@ -11,17 +11,19 @@
 
 #include "taisei.h"
 
+#include <koishi.h>
+
 typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
-typedef void (*CoTaskFunc)(void *arg);
+typedef void *(*CoTaskFunc)(void *arg);
 
 // target for the INVOKE_TASK macro
 extern CoSched *_cosched_global;
 
 typedef enum CoStatus {
-	CO_STATUS_SUSPENDED,
-	CO_STATUS_RUNNING,
-	CO_STATUS_DEAD,
+	CO_STATUS_SUSPENDED = KOISHI_SUSPENDED,
+	CO_STATUS_RUNNING   = KOISHI_RUNNING,
+	CO_STATUS_DEAD      = KOISHI_DEAD,
 } CoStatus;
 
 void coroutines_init(void);
@@ -42,8 +44,9 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 #define TASK(name, argstruct) \
 	typedef struct argstruct COARGS_##name; \
 	static void COTASK_##name(COARGS_##name ARGS); \
-	static void COTASKTHUNK_##name(void *arg) { \
+	static void *COTASKTHUNK_##name(void *arg) { \
 		COTASK_##name(*(COARGS_##name*)arg); \
+		return NULL; \
 	} \
 	static void COTASK_##name(COARGS_##name ARGS)
 
