@@ -50,6 +50,7 @@ static void taisei_shutdown(void) {
 	vfs_shutdown();
 	events_shutdown();
 	time_shutdown();
+	coroutines_shutdown();
 
 	log_info("Good bye");
 	SDL_Quit();
