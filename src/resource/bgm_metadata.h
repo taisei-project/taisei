@@ -14,6 +14,7 @@
 #include "resource.h"
 
 typedef struct MusicMetadata {
+	RESOURCE_ALIGN
 	char *title;
 	char *artist;
 	char *comment;

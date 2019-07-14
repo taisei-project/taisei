@@ -30,7 +30,6 @@ enum {
 };
 
 typedef struct MusicEntryParam {
-	// MusicMetadata *bgm_meta;
 	ResourceRef bgm_ref;
 	ResourceRef bgm_meta_ref;
 	ShaderProgram *text_shader;

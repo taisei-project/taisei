@@ -267,6 +267,8 @@ const char *bgm_get_title(void) {
 }
 
 static void start_bgm_internal(ResourceRef bgmref) {
+	assert(res_ref_status(bgmref) != RES_STATUS_EXTERNAL);
+
 	// if BGM has changed, change it and start from beginning
 	if(!is_playing_specific_bgm(bgmref)) {
 		// TODO: perhaps make this async
@@ -311,10 +313,6 @@ void bgm_start(const char *name) {
 
 void bgm_start_ref(ResourceRef bgmref) {
 	start_bgm_internal(bgmref);
-}
-
-void bgm_start_p(Music *bgm) {
-	bgm_start_ref(res_ref_wrap_external_data(RES_MUSIC, bgm));
 }
 
 void bgm_resume(void) {

@@ -25,6 +25,7 @@ typedef struct AniSequence {
 } AniSequence;
 
 typedef struct Animation {
+	RESOURCE_ALIGN
 	ht_str2ptr_t sequences;
 	ResourceRef *sprites;
 	Sprite transformed_sprite; // temporary sprite used to apply animation transformations.

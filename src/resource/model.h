@@ -33,6 +33,7 @@ typedef struct ObjFileData {
 } ObjFileData;
 
 struct Model {
+	RESOURCE_ALIGN
 	VertexArray *vertex_array;
 	size_t num_vertices;
 	size_t offset;

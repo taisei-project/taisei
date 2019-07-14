@@ -696,7 +696,7 @@ static ResourceRef create_ref(Resource *res, ResourceFlags flags) {
 static inline Resource *ref_get_resource(ResourceRef ref) {
 	verify_ref(ref);
 
-	if((_ref_test_flags(&ref, RESF_ALIEN)) == RESF_ALIEN) {
+	if(_ref_test_flags(&ref, RESF_ALIEN)) {
 		return NULL;
 	}
 
@@ -712,7 +712,7 @@ static inline uint_fast8_t ref_get_flags(ResourceRef ref) {
 static inline void *ref_get_external_data(ResourceRef ref) {
 	verify_ref(ref);
 
-	if((_ref_test_flags(&ref, RESF_ALIEN)) == RESF_ALIEN) {
+	if(_ref_test_flags(&ref, RESF_ALIEN)) {
 		return _ref_get_ptr(&ref);
 	}
 
@@ -769,12 +769,7 @@ ResourceRef res_ref_wrap_external_data(ResourceType type, void *data) {
 static void res_unref_one(ResourceRef *ref) {
 	verify_ref(*ref);
 
-	if(_ref_test_flags(ref, RESF_WEAK)) {
-		if((_ref_test_flags(ref, RESF_ALIEN)) == RESF_ALIEN) {
-			// REF_DEBUG("UnRef {%p} (external) %p", (void*)ref, ref_get_external_data(*ref));
-		} else {
-			// REF_DEBUG("UnRef {%p} (weak) %s %s %p", (void*)ref, res_type_idname(res_ref_type(*ref)), res_ref_name(*ref), (void*)ref_get_resource(*ref));
-		}
+	if(_ref_test_flags(ref, RESF_WEAK | RESF_ALIEN)) {
 		return;
 	}
 

@@ -15,6 +15,7 @@
 #include "texture.h"
 
 typedef struct Sprite {
+	RESOURCE_ALIGN
 	ResourceRef tex;
 	FloatRect tex_area;
 	union {

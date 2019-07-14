@@ -62,7 +62,6 @@ Sound *get_sound(const char *name) attr_nonnull(1);
 Music *get_music(const char *music) attr_nonnull(1);
 
 void bgm_start(const char *name);
-void bgm_start_p(Music *bgm);
 void bgm_start_ref(ResourceRef bgm);
 void bgm_stop(bool force);
 void bgm_fade(double fadetime);

@@ -46,7 +46,7 @@ typedef enum ResourceFlags {
 
 	/// internal flags for refs, do not use.
 	RESF_WEAK = 4,  /// only refers to a resource, has no effect on its reference count
-	RESF_ALIEN = (RESF_WEAK | RESF_LAZY),  /// wraps some external data, not managed by the resource system
+	RESF_ALIEN = 8,  /// wraps some external data, not managed by the resource system
 
 	RESF_INTERNAL_REF_FLAG_BITS = RESF_WEAK,
 } ResourceFlags;
@@ -135,7 +135,9 @@ typedef struct ResourceHandler {
 
 } ResourceHandler;
 
-#define REF_POINTER_MIN_ALIGNMENT 8
+#define REF_POINTER_MIN_ALIGNMENT 16
+
+#define RESOURCE_ALIGN alignas(REF_POINTER_MIN_ALIGNMENT)
 
 #if TAISEI_BUILDCONF_RESREF_TYPE == TAISEI_BUILDCONF_RESREF_TYPE_X64 || TAISEI_BUILDCONF_RESREF_TYPE == TAISEI_BUILDCONF_RESREF_TYPE_AARCH64
 #define RESREF_LAYOUT_TAGGED64
