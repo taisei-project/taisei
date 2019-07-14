@@ -71,7 +71,7 @@ void *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg) {
 	if(cotask_status(task) == CO_STATUS_DEAD) {
 		cotask_free(task);
 	} else {
-		assume(cotask_status(task) == CO_STATUS_SUSPENDED);
+		assert(cotask_status(task) == CO_STATUS_SUSPENDED);
 		alist_append(&sched->pending_tasks, task);
 	}
 
