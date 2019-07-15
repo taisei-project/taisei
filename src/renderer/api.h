@@ -808,6 +808,11 @@ void r_shader(const char *prog) {
 }
 
 static inline attr_must_inline
+void r_shader_ref(ResourceRef prog) {
+	r_shader_ptr(res_ref_data(prog));
+}
+
+static inline attr_must_inline
 Uniform* r_shader_current_uniform(const char *name) {
 	return r_shader_uniform(r_shader_current(), name);
 }

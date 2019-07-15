@@ -34,13 +34,60 @@ typedef struct CustomFramebuffer {
 	StageFBPair scaling_base;
 } CustomFramebuffer;
 
+#define R (stagedraw.res)
+
 static struct {
-	ResourceRefGroup resources;
+	// ResourceRefGroup resources;
 
 	struct {
-		ShaderProgram *shader;
-		Font *font;
+		struct {
+			ResourceRef boss_zoom;
+			ResourceRef copy_depth;
+			ResourceRef fxaa;
+			ResourceRef graph;
+			ResourceRef powersurge_effect;
+			ResourceRef powersurge_feedback;
+			ResourceRef spellcard_intro;
+			ResourceRef spellcard_outro;
+			ResourceRef spellcard_walloftext;
+			ResourceRef sprite_circleclipped_indicator;
+			ResourceRef sprite_default;
+			ResourceRef text_default;
+			ResourceRef text_hud;
+			ResourceRef text_stagetext;
+			#ifdef DEBUG
+			ResourceRef sprite_filled_circle;
+			#endif
+		} shader;
 
+		struct {
+			ResourceRef big;
+			ResourceRef monosmall;
+			ResourceRef monotiny;
+			ResourceRef small;
+			ResourceRef standard;
+		} font;
+
+		struct {
+			ResourceRef viewport;
+		} postprocess;
+
+		struct {
+			ResourceRef hud_star;
+			ResourceRef hud_heart;
+		} sprite;
+
+		struct {
+			ResourceRef hud;
+			ResourceRef powersurge_flow;
+		} texture;
+
+		struct {
+			ResourceRef hud;
+		} model;
+	} res;
+
+	struct {
 		struct {
 			Color active;
 			Color inactive;
@@ -54,16 +101,10 @@ static struct {
 	} hud_text;
 
 	struct {
-		ShaderProgram *fxaa;
-		ShaderProgram *copy_depth;
-	} shaders;
-
-	struct {
 		float alpha;
 		float target_alpha;
 	} clear_screen;
 
-	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
 	CustomFramebuffer *custom_fbs;
@@ -308,79 +349,43 @@ static void stage_draw_destroy_framebuffers(void) {
 }
 
 void stage_draw_init(void) {
-	res_group_init(&stagedraw.resources, 32);
-
-	res_group_multi_add(&stagedraw.resources, RES_POSTPROCESS, RESF_OPTIONAL,
-		"viewport",
-	NULL);
-
-	res_group_multi_add(&stagedraw.resources, RES_SPRITE, RESF_DEFAULT,
-		"hud/heart",
-		"hud/star",
-		"star",
-	NULL);
-
-	res_group_multi_add(&stagedraw.resources, RES_TEXTURE, RESF_DEFAULT,
-		"powersurge_flow",
-		"titletransition",
-		"hud",
-	NULL);
-
-	res_group_multi_add(&stagedraw.resources, RES_MODEL, RESF_DEFAULT,
-		"hud",
-	NULL);
-
-	res_group_multi_add(&stagedraw.resources, RES_SHADERPROG, RESF_DEFAULT,
-		"copy_depth",
-		"ingame_menu",
-		"powersurge_effect",
-		"powersurge_feedback",
-		"sprite_circleclipped_indicator",
-		"sprite_default",
-		"text_hud",
-		"text_stagetext",
-
-		// TODO: Maybe don't preload this if FXAA is disabled.
-		// But then we also have to handle the edge case of it being enabled later mid-game.
-		"fxaa",
-
-		#ifdef DEBUG
-		"sprite_filled_circle",
-		#endif
-	NULL);
-
-	res_group_multi_add(&stagedraw.resources, RES_FONT, RESF_DEFAULT,
-		"mono",
-		"monosmall",
-		"small",
-		"standard",
-	NULL);
-
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
-	if(stagedraw.framerate_graphs) {
-		res_group_multi_add(&stagedraw.resources, RES_SHADERPROG, RESF_DEFAULT,
-			"graph",
-		NULL);
-	}
+	R.font.big = res_ref(RES_FONT, "big", RESF_DEFAULT);
+	R.font.monosmall = res_ref(RES_FONT, "monosmall", RESF_DEFAULT);
+	R.font.monotiny = res_ref(RES_FONT, "monotiny", RESF_LAZY);
+	R.font.small = res_ref(RES_FONT, "small", RESF_DEFAULT);
+	R.font.standard = res_ref(RES_FONT, "standard", RESF_DEFAULT);
+	R.model.hud = res_ref(RES_MODEL, "hud", RESF_DEFAULT);
+	R.postprocess.viewport = res_ref(RES_POSTPROCESS, "viewport", RESF_OPTIONAL | RESF_LAZY);
+	R.shader.boss_zoom = res_ref(RES_SHADERPROG, "boss_zoom", RESF_DEFAULT);
+	R.shader.copy_depth = res_ref(RES_SHADERPROG, "copy_depth", RESF_LAZY);
+	R.shader.fxaa = res_ref(RES_SHADERPROG, "fxaa", RESF_LAZY);
+	R.shader.graph = res_ref(RES_SHADERPROG, "graph", RESF_LAZY);
+	R.shader.powersurge_effect = res_ref(RES_SHADERPROG, "powersurge_effect", RESF_DEFAULT);
+	R.shader.powersurge_feedback = res_ref(RES_SHADERPROG, "powersurge_feedback", RESF_DEFAULT);
+	R.shader.spellcard_intro = res_ref(RES_SHADERPROG, "spellcard_intro", RESF_DEFAULT);
+	R.shader.spellcard_outro = res_ref(RES_SHADERPROG, "spellcard_outro", RESF_DEFAULT);
+	R.shader.spellcard_walloftext = res_ref(RES_SHADERPROG, "spellcard_walloftext", RESF_DEFAULT);
+	R.shader.sprite_circleclipped_indicator = res_ref(RES_SHADERPROG, "sprite_circleclipped_indicator", RESF_DEFAULT);
+	R.shader.sprite_default = res_ref(RES_SHADERPROG, "sprite_default", RESF_DEFAULT);
+	R.shader.text_default = res_ref(RES_SHADERPROG, "text_default", RESF_DEFAULT);
+	R.shader.text_hud = res_ref(RES_SHADERPROG, "text_hud", RESF_DEFAULT);
+	R.shader.text_stagetext = res_ref(RES_SHADERPROG, "text_stagetext", RESF_DEFAULT);
+	R.sprite.hud_heart = res_ref(RES_SPRITE, "hud/heart", RESF_DEFAULT);
+	R.sprite.hud_star = res_ref(RES_SPRITE, "hud/star", RESF_DEFAULT);
+	R.texture.hud = res_ref(RES_TEXTURE, "hud", RESF_DEFAULT);
+	R.texture.powersurge_flow = res_ref(RES_TEXTURE, "powersurge_flow", RESF_DEFAULT);
 
-	if(stagedraw.objpool_stats) {
-		res_group_multi_add(&stagedraw.resources, RES_FONT, RESF_DEFAULT,
-			"monotiny",
-		NULL);
-	}
-
-	stagedraw.viewport_pp = res_get_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
-	stagedraw.hud_text.shader = r_shader_get("text_hud");
-	stagedraw.hud_text.font = get_font("standard");
-	stagedraw.shaders.fxaa = r_shader_get("fxaa");
-	stagedraw.shaders.copy_depth = r_shader_get("copy_depth");
+	#ifdef DEBUG
+	R.shader.sprite_filled_circle = res_ref(RES_SPRITE, "sprite_filled_circle", RESF_LAZY);
+	#endif
 
 	r_shader_standard();
 
 	#ifdef DEBUG
-	stagedraw.dummy.tex = get_sprite("star")->tex;
+	stagedraw.dummy.tex = R.texture.hud;
 	stagedraw.dummy.w = 1;
 	stagedraw.dummy.h = 1;
 	#endif
@@ -398,7 +403,7 @@ void stage_draw_init(void) {
 void stage_draw_shutdown(void) {
 	events_unregister_handler(stage_draw_event);
 	stage_draw_destroy_framebuffers();
-	res_group_destroy(&stagedraw.resources);
+	res_unref_if_valid((ResourceRef*)&R, sizeof(R)/sizeof(ResourceRef));
 }
 
 FBPair* stage_get_fbpair(StageFBPair id) {
@@ -423,7 +428,7 @@ static void stage_draw_collision_areas(void) {
 		return;
 	}
 
-	r_shader("sprite_filled_circle");
+	r_shader_ref(R.shader.sprite_filled_circle);
 	r_uniform_vec4("color_inner", 0, 0, 0, 1);
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
@@ -512,7 +517,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	memcpy(buf, txt, sizeof(buf) - 4);
 	memcpy(buf + sizeof(buf) - 4, " ~ ", 4);
 
-	text_render(buf, get_font("standard"), &spr, &bbox);
+	text_render(buf, res_ref_data(R.font.standard), &spr, &bbox);
 
 	// FIXME: The shader currently assumes that the sprite takes up the entire texture.
 	// If it could handle any arbitrary sprite, then text_render wouldn't have to resize
@@ -530,7 +535,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 
 	r_texture_get_size(tex, 0, &tw, &th);
 
-	r_shader("spellcard_walloftext");
+	r_shader_ref(R.shader.spellcard_walloftext);
 	r_uniform_float("w", spr.tex_area.w / tw);
 	r_uniform_float("h", spr.tex_area.h / th);
 	r_uniform_float("ratio", h/w);
@@ -607,7 +612,7 @@ static bool fxaa_rule(Framebuffer *fb) {
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
 	r_blend(BLEND_NONE);
-	r_shader_ptr(stagedraw.shaders.fxaa);
+	r_shader_ref(R.shader.fxaa);
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_state_pop();
@@ -620,7 +625,7 @@ static bool copydepth_rule(Framebuffer *fb) {
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
 	r_blend(BLEND_NONE);
-	r_shader_ptr(stagedraw.shaders.copy_depth);
+	r_shader_ref(R.shader.copy_depth);
 	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
 	r_state_pop();
 
@@ -663,14 +668,14 @@ static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 		r_state_push();
 		r_framebuffer(stagedraw.powersurge_fbpair.front);
 		r_blend(BLEND_PREMUL_ALPHA);
-		r_shader("sprite_default");
+		r_shader_ref(R.shader.sprite_default);
 		ent_draw(powersurge_draw_predicate);
 		r_state_pop();
 	// }
 
 	// TODO: Add heuristic to not run the effect if the buffer can be reasonably assumed to be empty.
 
-	r_shader("powersurge_feedback");
+	r_shader_ref(R.shader.powersurge_feedback);
 	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
 
 	r_framebuffer(stagedraw.powersurge_fbpair.back);
@@ -685,9 +690,9 @@ static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 	draw_framebuffer_tex(stagedraw.powersurge_fbpair.front, VIEWPORT_W, VIEWPORT_H);
 
 	r_framebuffer(target_fb);
-	r_shader("powersurge_effect");
+	r_shader_ref(R.shader.powersurge_effect);
 	r_uniform_sampler("shotlayer", r_framebuffer_get_attachment(stagedraw.powersurge_fbpair.back, FRAMEBUFFER_ATTACH_COLOR0));
-	r_uniform_sampler("flowlayer", "powersurge_flow");
+	r_uniform_sampler("flowlayer", (Texture*)res_ref_data(R.texture.powersurge_flow));
 	r_uniform_float("time", global.frames/60.0);
 	r_blend(blend);
 	r_cull(CULL_BACK);
@@ -715,7 +720,7 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	complex fpos = global.boss->pos;
 	complex pos = fpos + 15*cexp(I*global.frames/4.5);
 
-	r_shader("boss_zoom");
+	r_shader_ref(R.shader.boss_zoom);
 	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
 	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
 	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
@@ -810,7 +815,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 					delay = ATTACK_START_DELAY;
 				}
 
-				r_shader("spellcard_intro");
+				r_shader_ref(R.shader.spellcard_intro);
 				r_uniform_float("ratio", ratio);
 				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
 				r_uniform_float("t", (t + delay) / duration);
@@ -818,7 +823,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				int tn = global.frames - b->current->endtime;
 				delay = b->current->endtime - b->current->endtime_undelayed;
 
-				r_shader("spellcard_outro");
+				r_shader_ref(R.shader.spellcard_outro);
 				r_uniform_float("ratio", ratio);
 				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
 				r_uniform_float("t", max(0, tn / delay + 1));
@@ -891,7 +896,7 @@ static bool stage_draw_predicate(EntityInterface *ent) {
 }
 
 static void stage_draw_objects(void) {
-	r_shader("sprite_default");
+	r_shader_ref(R.shader.sprite_default);
 
 	if(global.boss) {
 		draw_boss_background(global.boss);
@@ -913,7 +918,7 @@ static void stage_draw_objects(void) {
 
 void stage_draw_overlay(void) {
 	r_state_push();
-	r_shader("sprite_default");
+	r_shader_ref(R.shader.sprite_default);
 	r_blend(BLEND_PREMUL_ALPHA);
 
 	if(global.boss) {
@@ -1086,7 +1091,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 	// custom postprocessing
 	postprocess(
-		stagedraw.viewport_pp,
+		res_ref_data(R.postprocess.viewport),
 		foreground,
 		postprocess_prepare,
 		draw_framebuffer_tex,
@@ -1135,8 +1140,8 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *
 }
 
 static inline void stage_draw_hud_power_value(float xpos, float ypos) {
-	Font *fnt_int = get_font("standard");
-	Font *fnt_fract = get_font("small");
+	Font *fnt_int = res_ref_data(R.font.standard);
+	Font *fnt_fract = res_ref_data(R.font.small);
 
 	int pw = global.plr.power + global.plr.power_overflow;
 
@@ -1189,7 +1194,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
 	format_huge_num(10, score, bufsize, buf);
 
-	Font *fnt = get_font("standard");
+	Font *fnt = res_ref_data(R.font.standard);
 	bool kern_saved = font_get_kerning_enabled(fnt);
 	font_set_kerning_enabled(fnt, false);
 
@@ -1213,19 +1218,16 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
-	Font *font = get_font("monotiny");
+	Font *font = res_ref_data(R.font.monotiny);
 
 	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
+	r_shader_ref(R.shader.text_default);
 	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
 		ObjectPoolStats stats;
 		char buf[32];
 		objpool_get_stats(*pool, &stats);
 
 		snprintf(buf, sizeof(buf), "%zu | %5zu", stats.usage, stats.peak_usage);
-		// draw_text(ALIGN_LEFT  | AL_Flag_NoAdjust, (int)x,           (int)y, stats.tag, font);
-		// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, (int)(x + width), (int)y, buf,       font);
-		// y += stringheight(buf, font) * 1.1;
 
 		text_draw(stats.tag, &(TextParams) {
 			.pos = { x, y },
@@ -1281,8 +1283,8 @@ static void draw_graph(float x, float y, float w, float h) {
 
 static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
 	text_draw(label_str, &(TextParams) {
-		.font_ptr = stagedraw.hud_text.font,
-		.shader_ptr = stagedraw.hud_text.shader,
+		.font_ptr = res_ref_data(R.font.standard),
+		.shader_ptr = res_ref_data(R.shader.text_hud),
 		.pos = { 0, y_ofs },
 		.color = clr,
 	});
@@ -1293,7 +1295,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	Font *font;
 	bool kern_saved;
 
-	r_shader_ptr(stagedraw.hud_text.shader);
+	ShaderProgram *hud_text_shader = res_ref_data(R.shader.text_hud);
+	r_shader_ptr(hud_text_shader);
 
 	Color *lb_label_clr = color_mul(COLOR_COPY(&labels->lb_baseclr), &stagedraw.hud_text.color.label);
 
@@ -1320,9 +1323,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Lives and Bombs (N/A)
 	if(global.stage->type == STAGE_SPELL) {
+		font = res_ref_data(R.font.standard);
 		r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
-		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
-		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.bombs }, .font_ptr = stagedraw.hud_text.font, .align = ALIGN_RIGHT });
+		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.lives }, .font_ptr = font, .align = ALIGN_RIGHT });
+		text_draw("N/A", &(TextParams) { .pos = { HUD_EFFECTIVE_WIDTH, labels->y.bombs }, .font_ptr = font, .align = ALIGN_RIGHT });
 		r_color4(1, 1, 1, 1.0);
 	}
 
@@ -1332,7 +1336,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	if(labels->x.next_life > 0) {
 		Color *next_clr = color_mul(RGBA(0.5, 0.3, 0.4, 0.5), &labels->lb_baseclr);
 		format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
-		font = get_font("small");
+		font = res_ref_data(R.font.small);
 
 		text_draw("Next:", &(TextParams) {
 			.pos = { labels->x.next_life + res_text_padding, labels->y.lives + labels->y_ofs.lives_text },
@@ -1358,7 +1362,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	if(labels->x.next_bomb > 0) {
 		Color *next_clr = color_mul(RGBA(0.3, 0.5, 0.3, 0.5), &labels->lb_baseclr);
 		snprintf(buf, sizeof(buf), "%d / %d", global.plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
-		font = get_font("small");
+		font = res_ref_data(R.font.small);
 
 		text_draw("Fragments:", &(TextParams) {
 			.pos = { labels->x.next_bomb + res_text_padding, labels->y.bombs + labels->y_ofs.bombs_text },
@@ -1387,7 +1391,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
 
-	font = get_font("standard");
+	font = res_ref_data(R.font.standard);
 	kern_saved = font_get_kerning_enabled(font);
 	font_set_kerning_enabled(font, false);
 
@@ -1395,7 +1399,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	format_huge_num(6, global.plr.point_item_value, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.value },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
@@ -1413,7 +1417,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
@@ -1426,14 +1430,14 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	volts_x += text_draw("V", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.dark,
 	});
 
 	volts_x += text_draw(" / ", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.active,
 	});
@@ -1442,7 +1446,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	volts_x += text_draw(buf, &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
@@ -1452,7 +1456,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	volts_x += text_draw("V", &(TextParams) {
 		.pos = { volts_x, labels->y.voltage },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.color = &stagedraw.hud_text.color.dark,
 	});
@@ -1461,7 +1465,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	format_huge_num(6, global.plr.graze, sizeof(buf), buf);
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, labels->y.graze },
-		.shader_ptr = stagedraw.hud_text.shader,
+		.shader_ptr = hud_text_shader,
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
@@ -1477,7 +1481,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		text_draw("God Mode is enabled!", &(TextParams) {
 			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
 			.font_ptr = font,
-			.shader_ptr = stagedraw.hud_text.shader,
+			.shader_ptr = hud_text_shader,
 			.align = ALIGN_CENTER,
 			.color = RGB(1.0, 0.5, 0.2),
 		});
@@ -1508,7 +1512,7 @@ void stage_draw_bottom_text(void) {
 	}
 #endif
 
-	font = get_font("monosmall");
+	font = res_ref_data(R.font.monosmall);
 
 	text_draw(buf, &(TextParams) {
 		.align = ALIGN_RIGHT,
@@ -1517,7 +1521,7 @@ void stage_draw_bottom_text(void) {
 	});
 
 	if(global.replaymode == REPLAY_PLAY) {
-		r_shader_ptr(stagedraw.hud_text.shader);
+		r_shader_ref(R.shader.text_hud);
 		// XXX: does it make sense to use the monospace font here?
 
 		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
@@ -1587,7 +1591,7 @@ void stage_draw_bottom_text(void) {
 			.color = &stagedraw.hud_text.color.active,
 		});
 
-		r_shader("graph");
+		r_shader_ref(R.shader.graph);
 		r_uniform_vec3("color_low",  1.0, 0.0, 0.0);
 		r_uniform_vec3("color_mid",  1.0, 1.0, 0.0);
 		r_uniform_vec3("color_high", 0.0, 1.0, 0.0);
@@ -1614,7 +1618,7 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 	static float samples[NUM_SAMPLES];
 
 	r_state_push();
-	r_shader("graph");
+	r_shader_ref(R.shader.graph);
 
 	fill_graph(NUM_SAMPLES, samples, &global.fps.logic);
 	r_uniform_vec3("color_low",  0.0, 1.0, 1.0);
@@ -1641,8 +1645,8 @@ void stage_draw_hud(void) {
 	r_mat_push();
 	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	r_shader_standard();
-	r_uniform_sampler("tex", "hud");
-	r_draw_model("hud");
+	r_uniform_sampler("tex", (Texture*)res_ref_data(R.texture.hud));
+	r_draw_model_ptr(res_ref_data(R.model.hud), 0, 0);
 	r_mat_pop();
 
 	r_blend(BLEND_PREMUL_ALPHA);
@@ -1689,10 +1693,10 @@ void stage_draw_hud(void) {
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
 		r_mat_push();
-		r_mat_translate(0, font_get_descent(get_font("standard")), 0);
+		r_mat_translate(0, font_get_descent(res_ref_data(R.font.standard)), 0);
 
-		Sprite *spr_life = get_sprite("hud/heart");
-		Sprite *spr_bomb = get_sprite("hud/star");
+		Sprite *spr_life = res_ref_data(R.sprite.hud_heart);
+		Sprite *spr_bomb = res_ref_data(R.sprite.hud_star);
 
 		float spacing = 1;
 		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (PLR_MAX_LIVES - 0.5) - spacing * (PLR_MAX_LIVES - 1);
@@ -1750,7 +1754,7 @@ void stage_draw_hud(void) {
 
 	// Power/Item/Voltage icons
 	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5 - 1, 0);
+	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(res_ref_data(R.font.standard)) * 0.5 - 1, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
@@ -1798,14 +1802,14 @@ void stage_draw_hud(void) {
 	if(extraspell_alpha > 0) {
 		float s2 = max(0, swing(extraspell_alpha, 3));
 		r_state_push();
-		r_shader("text_default");
+		r_shader_ref(R.shader.text_default);
 		r_mat_push();
 		r_mat_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 128, 0);
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * extraspell_alpha));
 		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
 		r_mat_scale(s2, s2, 0);
 
-		Font *font = get_font("big");
+		Font *font = res_ref_data(R.font.big);
 
 		// TODO: replace this with a shader
 		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
@@ -1854,7 +1858,7 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 		"Press Fire to continue",
 		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
 		ALIGN_CENTER,
-		get_font("standard"),
+		res_ref_data(R.font.standard),
 		RGB(1, 0.5, 0),
 		tbl.delay,
 		tbl.lifetime,
