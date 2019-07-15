@@ -16,10 +16,8 @@ static CoSched *cotest_sched;
 
 static void cotest_stub_proc(void) { }
 
-static int dummy_rule(Enemy *e, int t) { return t < 0 ? ACTION_ACK : ACTION_NONE; }
-
 TASK(test_enemy, { double hp; complex pos; complex dir; }) {
-	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, dummy_rule, 0);
+	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
 	int eref = add_ref(e);
 
 	#define BREAK_CONDITION !UPDATE_REF(eref, e)
