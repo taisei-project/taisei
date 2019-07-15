@@ -57,6 +57,14 @@ static void fix_pos0_visual(Enemy *e) {
 	e->pos0_visual = x + y * I;
 }
 
+static inline int enemy_call_logic_rule(Enemy *e, int t) {
+	if(e->logic_rule) {
+		return e->logic_rule(e, t);
+	}
+
+	return ACTION_NONE;
+}
+
 Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				      cmplx a1, cmplx a2, cmplx a3, cmplx a4) {
 	if(IN_DRAW_CODE) {
@@ -93,7 +101,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_ENEMY);
 
-	e->logic_rule(e, EVENT_BIRTH);
+	enemy_call_logic_rule(e, EVENT_BIRTH);
 	return e;
 }
 
@@ -127,7 +135,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		}
 	}
 
-	e->logic_rule(e, EVENT_DEATH);
+	enemy_call_logic_rule(e, EVENT_DEATH);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
@@ -349,12 +357,12 @@ void process_enemies(EnemyList *enemies) {
 		next = enemy->next;
 
 		if(enemy->hp == ENEMY_KILLED) {
-			enemy->logic_rule(enemy, EVENT_KILLED);
+			enemy_call_logic_rule(enemy, EVENT_KILLED);
 			delete_enemy(enemies, enemy);
 			continue;
 		}
 
-		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
+		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
 
 		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < ENEMY_HURT_RADIUS) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
