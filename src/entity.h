@@ -51,6 +51,7 @@ typedef enum EntityType {
 
 typedef struct EntityInterface EntityInterface;
 typedef struct EntityListNode EntityListNode;
+typedef struct BoxedEntity BoxedEntity;
 
 typedef enum DamageType {
 	DMG_UNDEFINED,
@@ -109,6 +110,11 @@ struct EntityInterface {
 	ENTITY_INTERFACE_BASE(EntityInterface);
 };
 
+struct BoxedEntity {
+	uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
+	uint_fast32_t spawn_id;
+};
+
 INLINE const char* ent_type_name(EntityType type) {
 	switch(type) {
 		#define ENT_TYPE(typename, id) case id: return #id;
@@ -151,5 +157,19 @@ void ent_hook_pre_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_pre_draw(EntityDrawHookCallback callback);
 void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
+
+BoxedEntity ent_box(EntityInterface *ent);
+EntityInterface *ent_unbox(BoxedEntity box);
+
+#define ENT_BOX(ent) ent_box(&(ent)->entity_interface)
+
+#if defined(USE_GNU_EXTENSIONS) && defined(DEBUG)
+	#define ENT_UNBOX(h, typename) (__extension__ ({ \
+		EntityInterface *_unboxed_ent = ent_unbox(h); \
+		_unboxed_ent ? ENT_CAST(_unboxed_ent, typename) : NULL; \
+	}))
+#else
+	#define ENT_UNBOX(h, typename) CASTPTR_ASSUME_ALIGNED(ent_unbox(h), typename)
+#endif
 
 #endif // IGUARD_entity_h
