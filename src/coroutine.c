@@ -16,6 +16,7 @@
 struct CoTask {
 	LIST_INTERFACE(CoTask);
 	koishi_coroutine_t ko;
+	BoxedEntity bound_ent;
 };
 
 struct CoSched {
@@ -44,10 +45,20 @@ CoTask *cotask_new(CoTaskFunc func) {
 }
 
 void cotask_free(CoTask *task) {
+	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
 	alist_push(&task_pool, task);
 }
 
+CoTask *cotask_active(void) {
+	return CASTPTR_ASSUME_ALIGNED((char*)koishi_active() - offsetof(CoTask, ko), CoTask);
+}
+
 void *cotask_resume(CoTask *task, void *arg) {
+	if(task->bound_ent.ent && !ent_unbox(task->bound_ent)) {
+		koishi_kill(&task->ko);
+		return NULL;
+	}
+
 	return koishi_resume(&task->ko, arg);
 }
 
@@ -57,6 +68,11 @@ void *cotask_yield(void *arg) {
 
 CoStatus cotask_status(CoTask *task) {
 	return koishi_state(&task->ko);
+}
+
+void cotask_bind_to_entity(CoTask *task, EntityInterface *ent) {
+	assert(task->bound_ent.ent == 0);
+	task->bound_ent = ent_box(ent);
 }
 
 CoSched *cosched_new(void) {

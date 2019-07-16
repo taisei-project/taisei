@@ -18,21 +18,19 @@ static void cotest_stub_proc(void) { }
 
 TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
-	int eref = add_ref(e);
+	TASK_BIND(e);
 
-	#define BREAK_CONDITION !UPDATE_REF(eref, e)
-
-	BYIELD;
+	YIELD;
 
 	while(true) {
 		// wander around for a bit...
 		for(int i = 0; i < 20; ++i) {
 			e->pos += ARGS.dir;
-			BYIELD;
+			YIELD;
 		}
 
 		// stop and...
-		BWAIT(10);
+		WAIT(10);
 
 		// pew pew!!!
 		int pcount = 10 + 10 * frand();
@@ -48,17 +46,13 @@ TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 				.args = { aim },
 			);
 
-			BWAIT(3);
+			WAIT(3);
 		}
 
 		// keep wandering, randomly
 		ARGS.dir *= cexp(I*M_PI*nfrand());
-		BYIELD;
+		YIELD;
 	}
-
-BREAK:
-	log_debug("enemy died!");
-	free_ref(eref);
 }
 
 TASK(stage_main, { int ignored; }) {
