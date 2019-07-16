@@ -11,6 +11,7 @@
 
 #include "taisei.h"
 
+#include "entity.h"
 #include <koishi.h>
 
 typedef struct CoTask CoTask;
@@ -34,6 +35,8 @@ void cotask_free(CoTask *task);
 void *cotask_resume(CoTask *task, void *arg);
 void *cotask_yield(void *arg);
 CoStatus cotask_status(CoTask *task);
+CoTask *cotask_active(void);
+void cotask_bind_to_entity(CoTask *task, EntityInterface *ent);
 
 CoSched *cosched_new(void);
 void *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, returns whatever it yields, schedules it for resume on cosched_run_tasks if it's still alive
@@ -63,5 +66,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 #define CHECK_BREAK   do { if(BREAK_CONDITION) goto BREAK; } while(0)
 #define BYIELD        do { YIELD; CHECK_BREAK; } while(0)
 #define BWAIT(frames) do { WAIT(frames); CHECK_BREAK; } while(0)
+
+#define TASK_BIND(ent) cotask_bind_to_entity(cotask_active(), &ent->entity_interface)
 
 #endif // IGUARD_coroutine_h

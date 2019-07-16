@@ -92,7 +92,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 		// This is not really an error, but it may result in weird draw order
 		// in some corner cases. If this overflow ever actually occurs, though,
 		// then you've probably got much bigger problems.
-		log_debug("spawn_id just overflowed. You might be spawning stuff waaaay too often");
+		log_warn("spawn_id just overflowed. You might be spawning stuff waaaay too often");
 	}
 
 	if(entities.capacity < entities.num) {
@@ -107,6 +107,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 }
 
 void ent_unregister(EntityInterface *ent) {
+	ent->spawn_id = 0;
 	EntityInterface *sub = entities.array[--entities.num];
 	assert(ent->index <= entities.num);
 	assert(entities.array[ent->index] == ent);
@@ -241,4 +242,21 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg) {
 
 void ent_unhook_post_draw(EntityDrawHookCallback callback) {
 	remove_hook(&entities.hooks.post_draw, callback);
+}
+
+BoxedEntity ent_box(EntityInterface *ent) {
+	BoxedEntity h;
+	h.ent = (uintptr_t)ent;
+	h.spawn_id = ent->spawn_id;
+	return h;
+}
+
+EntityInterface *ent_unbox(BoxedEntity box) {
+	EntityInterface *e = (EntityInterface*)box.ent;
+
+	if(e->spawn_id == box.spawn_id) {
+		return e;
+	}
+
+	return NULL;
 }
