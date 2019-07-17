@@ -102,6 +102,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->ent.draw_func = ent_draw_enemy;
 	e->ent.damage_func = ent_damage_enemy;
 
+	coevent_init(&e->events.killed);
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_ENEMY);
 
