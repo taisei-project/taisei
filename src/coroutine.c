@@ -13,11 +13,33 @@
 
 #define CO_STACK_SIZE (64 * 1024)
 
+#define TASK_DEBUG
+// #define EVT_DEBUG
+
+#ifdef TASK_DEBUG
+	#undef TASK_DEBUG
+	#define TASK_DEBUG(...) log_debug(__VA_ARGS__)
+#else
+	#define TASK_DEBUG(...) ((void)0)
+#endif
+
+#ifdef EVT_DEBUG
+	#undef EVT_DEBUG
+	#define EVT_DEBUG(...) log_debug(__VA_ARGS__)
+#else
+	#define EVT_DEBUG(...) ((void)0)
+#endif
+
 struct CoTask {
 	LIST_INTERFACE(CoTask);
 	List event_subscriber_chain;
 	koishi_coroutine_t ko;
 	BoxedEntity bound_ent;
+
+	struct {
+		CoTaskFunc func;
+		void *arg;
+	} finalizer;
 };
 
 struct CoSched {
@@ -25,21 +47,31 @@ struct CoSched {
 };
 
 static LIST_ANCHOR(CoTask) task_pool;
-static size_t task_pool_size;
+static size_t num_tasks_allocated;
+static size_t num_tasks_in_use;
 
 CoSched *_cosched_global;
 
 CoTask *cotask_new(CoTaskFunc func) {
 	CoTask *task;
+	++num_tasks_in_use;
 
 	if((task = alist_pop(&task_pool))) {
 		koishi_recycle(&task->ko, func);
-		log_debug("Recycled task %p for proc %p", (void*)task, *(void**)&func);
+		TASK_DEBUG(
+			"Recycled task %p for proc %p (%zu tasks allocated / %zu in use)",
+			(void*)task, *(void**)&func,
+			num_tasks_allocated, num_tasks_in_use
+		);
 	} else {
 		task = calloc(1, sizeof(*task));
 		koishi_init(&task->ko, CO_STACK_SIZE, func);
-		++task_pool_size;
-		log_debug("Created new task %p for proc %p (%zu tasks in pool)", (void*)task, *(void**)&func, task_pool_size);
+		++num_tasks_allocated;
+		TASK_DEBUG(
+			"Created new task %p for proc %p (%zu tasks allocated / %zu in use)",
+			(void*)task, *(void**)&func,
+			num_tasks_allocated, num_tasks_in_use
+		);
 	}
 
 	return task;
@@ -47,7 +79,16 @@ CoTask *cotask_new(CoTaskFunc func) {
 
 void cotask_free(CoTask *task) {
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
+	memset(&task->finalizer, 0, sizeof(task->finalizer));
 	alist_push(&task_pool, task);
+
+	--num_tasks_in_use;
+
+	TASK_DEBUG(
+		"Released task %p (%zu tasks allocated / %zu in use)",
+		(void*)task,
+		num_tasks_allocated, num_tasks_in_use
+	);
 }
 
 CoTask *cotask_active(void) {
@@ -57,10 +98,21 @@ CoTask *cotask_active(void) {
 void *cotask_resume(CoTask *task, void *arg) {
 	if(task->bound_ent.ent && !ent_unbox(task->bound_ent)) {
 		koishi_kill(&task->ko);
+
+		if(task->finalizer.func) {
+			task->finalizer.func(task->finalizer.arg);
+		}
+
 		return NULL;
 	}
 
-	return koishi_resume(&task->ko, arg);
+	arg = koishi_resume(&task->ko, arg);
+
+	if(task->finalizer.func && cotask_status(task) == CO_STATUS_DEAD) {
+		task->finalizer.func(task->finalizer.arg);
+	}
+
+	return arg;
 }
 
 void *cotask_yield(void *arg) {
@@ -68,6 +120,8 @@ void *cotask_yield(void *arg) {
 }
 
 bool cotask_wait_event(CoEvent *evt, void *arg) {
+	assert(evt->unique_id > 0);
+
 	struct {
 		uint32_t unique_id;
 		uint32_t num_signaled;
@@ -76,17 +130,26 @@ bool cotask_wait_event(CoEvent *evt, void *arg) {
 	alist_append(&evt->subscribers, &cotask_active()->event_subscriber_chain);
 
 	while(true) {
+		EVT_DEBUG("[%p]", (void*)evt);
+		EVT_DEBUG("evt->unique_id        == %u", evt->unique_id);
+		EVT_DEBUG("snapshot.unique_id    == %u", snapshot.unique_id);
+		EVT_DEBUG("evt->num_signaled     == %u", evt->num_signaled);
+		EVT_DEBUG("snapshot.num_signaled == %u", snapshot.num_signaled);
+
 		if(
 			evt->unique_id != snapshot.unique_id ||
 			evt->num_signaled < snapshot.num_signaled
 		) {
+			EVT_DEBUG("Event was canceled");
 			return false;
 		}
 
 		if(evt->num_signaled > snapshot.num_signaled) {
+			EVT_DEBUG("Event was signaled");
 			return true;
 		}
 
+		EVT_DEBUG("Event hasn't changed; waiting...");
 		cotask_yield(arg);
 	}
 }
@@ -100,6 +163,12 @@ void cotask_bind_to_entity(CoTask *task, EntityInterface *ent) {
 	task->bound_ent = ent_box(ent);
 }
 
+void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg) {
+	assert(task->finalizer.func == NULL);
+	task->finalizer.func = finalizer;
+	task->finalizer.arg = arg;
+}
+
 void coevent_init(CoEvent *evt) {
 	static uint32_t g_uid;
 	evt->unique_id = ++g_uid;
@@ -110,6 +179,7 @@ void coevent_init(CoEvent *evt) {
 static void coevent_wake_subscribers(CoEvent *evt) {
 	for(List *node = evt->subscribers.first; node; node = node->next) {
 		CoTask *task = CASTPTR_ASSUME_ALIGNED((char*)node - offsetof(CoTask, event_subscriber_chain), CoTask);
+		TASK_DEBUG("Resume CoEvent{%p} subscriber %p", (void*)evt, (void*)task);
 		cotask_resume(task, NULL);
 	}
 

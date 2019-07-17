@@ -22,6 +22,7 @@ TASK(drop_items, { complex *pos; ItemCounts items; }) {
 	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
 		for(int j = ARGS.items.as_array[i]; j; --j) {
 			spawn_item(p, i + ITEM_FIRST);
+			WAIT(2);
 		}
 	}
 }
@@ -34,6 +35,7 @@ TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }
 
 	if(!WAIT_EVENT(&ARGS.e->events.killed)) {
 		// Event canceled? Nothing to do here.
+		log_debug("[%p] leave (canceled)", (void*)cotask_active());
 		return;
 	}
 
@@ -64,7 +66,10 @@ TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }
 	}
 }
 
-TASK(test_enemy, { double hp; complex pos; complex dir; }) {
+TASK_WITH_FINALIZER(test_enemy, {
+	double hp; complex pos; complex dir;
+	struct { int x; } for_finalizer;
+}) {
 	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
 	TASK_BIND(e);
 
@@ -77,9 +82,10 @@ TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 
 	INVOKE_TASK(wait_event_test, e, 3, 10, 15, 3);
 
-	YIELD;
+	for(;;) {
+		YIELD;
+		ARGS.for_finalizer.x++;
 
-	while(true) {
 		// wander around for a bit...
 		for(int i = 0; i < 20; ++i) {
 			e->pos += ARGS.dir;
@@ -108,8 +114,11 @@ TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 
 		// keep wandering, randomly
 		ARGS.dir *= cexp(I*M_PI*nfrand());
-		YIELD;
 	}
+}
+
+TASK_FINALIZER(test_enemy) {
+	log_debug("finalizer called (x = %i)", ARGS.for_finalizer.x);
 }
 
 TASK(stage_main, { int ignored; }) {
