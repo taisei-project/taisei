@@ -58,6 +58,10 @@ static void fix_pos0_visual(Enemy *e) {
 }
 
 static inline int enemy_call_logic_rule(Enemy *e, int t) {
+	if(t == EVENT_KILLED) {
+		coevent_signal(&e->events.killed);
+	}
+
 	if(e->logic_rule) {
 		return e->logic_rule(e, t);
 	}
@@ -136,6 +140,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	}
 
 	enemy_call_logic_rule(e, EVENT_DEATH);
+	coevent_cancel(&e->events.killed);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 

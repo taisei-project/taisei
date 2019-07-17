@@ -15,6 +15,7 @@
 #include "projectile.h"
 #include "objectpool.h"
 #include "entity.h"
+#include "coroutine.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -39,20 +40,24 @@ struct Enemy {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
-
-	long birthtime;
-
-	int dir;
-	bool moving;
+	cmplx args[RULE_ARGC];
 
 	EnemyLogicRule logic_rule;
 	EnemyVisualRule visual_rule;
 
+	struct {
+		CoEvent killed;
+	} events;
+
+	int birthtime;
+	int dir;
+
 	float spawn_hp;
 	float hp;
 
-	cmplx args[RULE_ARGC];
 	float alpha;
+
+	bool moving;
 
 #ifdef ENEMY_DEBUG
 	DebugInfo debug;

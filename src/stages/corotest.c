@@ -16,9 +16,66 @@ static CoSched *cotest_sched;
 
 static void cotest_stub_proc(void) { }
 
+TASK(drop_items, { complex *pos; ItemCounts items; }) {
+	complex p = *ARGS.pos;
+
+	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
+		for(int j = ARGS.items.as_array[i]; j; --j) {
+			spawn_item(p, i + ITEM_FIRST);
+		}
+	}
+}
+
+TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }) {
+	// WAIT_EVENT yields until the event fires.
+	// Returns true if the event was signaled, false if it was canceled.
+	// All waiting tasks will resume right after either of those occur, in the
+	// order they started waiting.
+
+	if(!WAIT_EVENT(&ARGS.e->events.killed)) {
+		// Event canceled? Nothing to do here.
+		return;
+	}
+
+	// Event signaled. Since this is an enemy death event, e will be invalid
+	// in the next frame. Let's save its position while we can.
+	complex pos = ARGS.e->pos;
+
+	while(ARGS.rounds--) {
+		WAIT(ARGS.delay);
+
+		double angle_ofs = frand() * M_PI * 2;
+
+		for(int i = 0; i < ARGS.cnt; ++i) {
+			complex aim = cexp(I * (angle_ofs + M_PI * 2.0 * i / (double)ARGS.cnt));
+
+			PROJECTILE(
+				.pos = pos,
+				.proto = pp_crystal,
+				.color = RGBA(i / (double)ARGS.cnt, 0.0, 1.0 - i / (double)ARGS.cnt, 0.0),
+				.rule = asymptotic,
+				.args = { 2 * aim, 5 },
+			);
+
+			WAIT(1);
+		}
+
+		ARGS.cnt += ARGS.cnt_inc;
+	}
+}
+
 TASK(test_enemy, { double hp; complex pos; complex dir; }) {
 	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
 	TASK_BIND(e);
+
+	INVOKE_TASK_WHEN(&e->events.killed, drop_items, &e->pos, {
+		.life_fragment = 1,
+		.bomb_fragment = 1,
+		.power = 3,
+		.points = 5,
+	});
+
+	INVOKE_TASK(wait_event_test, e, 3, 10, 15, 3);
 
 	YIELD;
 
