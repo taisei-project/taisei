@@ -44,6 +44,7 @@ bool cotask_wait_event(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 void cotask_bind_to_entity(CoTask *task, EntityInterface *ent);
+void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg);
 
 void coevent_init(CoEvent *evt);
 void coevent_signal(CoEvent *evt);
@@ -56,33 +57,94 @@ void cosched_free(CoSched *sched);
 
 static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
 
-#define TASK(name, argstruct) \
+#define TASK_ARGS_NAME(name) COARGS_##name
+#define TASK_ARGS(name) struct TASK_ARGS_NAME(name)
+
+#define TASK_ARGSCOND_NAME(name) COARGSCOND_##name
+#define TASK_ARGSCOND(name) struct TASK_ARGSCOND_NAME(name)
+
+#define ARGS (*_cotask_args)
+
+#define TASK_COMMON_DECLARATIONS(name, argstruct) \
+	/* produce warning if the task is never used */ \
 	static char COTASK_UNUSED_CHECK_##name; \
-	typedef struct argstruct COARGS_##name; \
-	static void COTASK_##name(COARGS_##name ARGS); \
+	/* user-defined type of args struct */ \
+	struct TASK_ARGS_NAME(name) argstruct; \
+	/* type of internal args struct for INVOKE_TASK_WHEN */ \
+	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS(name) real_args; CoEvent *event; }; \
+	/* user-defined task body */ \
+	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
+	/* called from the entry points before task body (inlined, hopefully) */ \
+	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args); \
+	/* task entry point for INVOKE_TASK */ \
 	attr_unused static void *COTASKTHUNK_##name(void *arg) { \
-		COTASK_##name(*(COARGS_##name*)arg); \
+		/* copy args to our coroutine stack so that they're valid after caller returns */ \
+		TASK_ARGS(name) args_copy = *(TASK_ARGS(name)*)arg; \
+		/* call prologue */ \
+		COTASKPROLOGUE_##name(&args_copy); \
+		/* call body */ \
+		COTASK_##name(&args_copy); \
+		/* exit coroutine */ \
 		return NULL; \
 	} \
-	typedef struct { CoEvent *event; COARGS_##name args; } COARGSCOND_##name; \
+	/* task entry point for INVOKE_TASK_WHEN */ \
 	attr_unused static void *COTASKTHUNKCOND_##name(void *arg) { \
-		COARGSCOND_##name args = *(COARGSCOND_##name*)arg; \
-		if(WAIT_EVENT(args.event)) { \
-			COTASK_##name(args.args); \
+		/* copy args to our coroutine stack so that they're valid after caller returns */ \
+		TASK_ARGSCOND(name) args_copy = *(TASK_ARGSCOND(name)*)arg; \
+		/* wait for event, and if it wasn't canceled... */ \
+		if(WAIT_EVENT(args_copy.event)) { \
+			/* call prologue */ \
+			COTASKPROLOGUE_##name(&args_copy.real_args); \
+			/* call body */ \
+			COTASK_##name(&args_copy.real_args); \
 		} \
+		/* exit coroutine */ \
+		return NULL; \
+	}
+
+/* define a normal task */
+#define TASK(name, argstruct) \
+	TASK_COMMON_DECLARATIONS(name, argstruct) \
+	/* empty prologue */ \
+	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { } \
+	/* begin task body definition */ \
+	static void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+
+/* define a task that needs a finalizer */
+#define TASK_WITH_FINALIZER(name, argstruct) \
+	TASK_COMMON_DECLARATIONS(name, argstruct) \
+	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
+	struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER { char dummy; }; \
+	/* user-defined finalizer function */ \
+	static inline attr_must_inline void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args); \
+	/* real finalizer entry point */ \
+	static void *COTASKFINALIZERTHUNK_##name(void *arg) { \
+		COTASKFINALIZER_##name((TASK_ARGS(name)*)arg); \
 		return NULL; \
 	} \
-	static void COTASK_##name(COARGS_##name ARGS)
+	/* prologue; sets up finalizer before executing task body */ \
+	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { \
+		cotask_set_finalizer(cotask_active(), COTASKFINALIZERTHUNK_##name, _cotask_args); \
+	} \
+	/* begin task body definition */ \
+	static void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+
+/* define the finalizer for a TASK_WITH_FINALIZER */
+#define TASK_FINALIZER(name) \
+	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
+	attr_unused struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER; \
+	/* begin finalizer body definition */ \
+	static void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args)
 
 #define INVOKE_TASK(name, ...) do { \
 	(void)COTASK_UNUSED_CHECK_##name; \
-	COARGS_##name _coargs = { __VA_ARGS__ }; \
+	TASK_ARGS(name) _coargs = { __VA_ARGS__ }; \
 	cosched_new_task(_cosched_global, COTASKTHUNK_##name, &_coargs); \
 } while(0)
 
-#define INVOKE_TASK_WHEN(event, name, ...) do { \
+#define INVOKE_TASK_WHEN(_event, name, ...) do { \
 	(void)COTASK_UNUSED_CHECK_##name; \
-	COARGSCOND_##name _coargs = { event, { __VA_ARGS__ } }; \
+	TASK_ARGSCOND(name) _coargs = { .real_args = { __VA_ARGS__ }, .event = (_event) }; \
 	cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, &_coargs); \
 } while(0)
 
