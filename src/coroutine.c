@@ -15,6 +15,7 @@
 
 struct CoTask {
 	LIST_INTERFACE(CoTask);
+	List event_subscriber_chain;
 	koishi_coroutine_t ko;
 	BoxedEntity bound_ent;
 };
@@ -66,6 +67,30 @@ void *cotask_yield(void *arg) {
 	return koishi_yield(arg);
 }
 
+bool cotask_wait_event(CoEvent *evt, void *arg) {
+	struct {
+		uint32_t unique_id;
+		uint32_t num_signaled;
+	} snapshot = { evt->unique_id, evt->num_signaled };
+
+	alist_append(&evt->subscribers, &cotask_active()->event_subscriber_chain);
+
+	while(true) {
+		if(
+			evt->unique_id != snapshot.unique_id ||
+			evt->num_signaled < snapshot.num_signaled
+		) {
+			return false;
+		}
+
+		if(evt->num_signaled > snapshot.num_signaled) {
+			return true;
+		}
+
+		cotask_yield(arg);
+	}
+}
+
 CoStatus cotask_status(CoTask *task) {
 	return koishi_state(&task->ko);
 }
@@ -73,6 +98,33 @@ CoStatus cotask_status(CoTask *task) {
 void cotask_bind_to_entity(CoTask *task, EntityInterface *ent) {
 	assert(task->bound_ent.ent == 0);
 	task->bound_ent = ent_box(ent);
+}
+
+void coevent_init(CoEvent *evt) {
+	static uint32_t g_uid;
+	evt->unique_id = ++g_uid;
+	evt->num_signaled = 0;
+	assert(g_uid != 0);
+}
+
+static void coevent_wake_subscribers(CoEvent *evt) {
+	for(List *node = evt->subscribers.first; node; node = node->next) {
+		CoTask *task = CASTPTR_ASSUME_ALIGNED((char*)node - offsetof(CoTask, event_subscriber_chain), CoTask);
+		cotask_resume(task, NULL);
+	}
+
+	evt->subscribers.first = evt->subscribers.last = NULL;
+}
+
+void coevent_signal(CoEvent *evt) {
+	++evt->num_signaled;
+	assert(evt->num_signaled != 0);
+	coevent_wake_subscribers(evt);
+}
+
+void coevent_cancel(CoEvent* evt) {
+	evt->num_signaled = evt->unique_id = 0;
+	coevent_wake_subscribers(evt);
 }
 
 CoSched *cosched_new(void) {
@@ -103,13 +155,14 @@ uint cosched_run_tasks(CoSched *sched) {
 
 	for(CoTask *t = sched->tasks.first, *next; t; t = next) {
 		next = t->next;
-		assert(cotask_status(t) == CO_STATUS_SUSPENDED);
-		cotask_resume(t, NULL);
-		++ran;
 
 		if(cotask_status(t) == CO_STATUS_DEAD) {
 			alist_unlink(&sched->tasks, t);
 			cotask_free(t);
+		} else {
+			assert(cotask_status(t) == CO_STATUS_SUSPENDED);
+			cotask_resume(t, NULL);
+			++ran;
 		}
 	}
 

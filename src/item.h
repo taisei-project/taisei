@@ -37,6 +37,23 @@ typedef enum {
 	ITEM_LAST = ITEM_LIFE,
 } ItemType;
 
+typedef union ItemCounts {
+	struct {
+		// CAUTION: must match enum order!
+		int piv;
+		int points;
+		int power_mini;
+		int power;
+		int surge;
+		int voltage;
+		int bomb_fragment;
+		int life_fragment;
+		int bomb;
+		int life;
+	};
+	int as_array[ITEM_LAST - ITEM_FIRST];
+} ItemCounts;
+
 struct Item {
 	ENTITY_INTERFACE_NAMED(Item, ent);
 
