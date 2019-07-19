@@ -291,7 +291,7 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 }
 #endif
 
-static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
+static void *_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
 	proj_call_rule(p, EVENT_DEATH);
 	ent_unregister(&p->ent);
@@ -299,7 +299,7 @@ static void* _delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	return NULL;
 }
 
-void delete_projectile(ProjectileList *projlist, Projectile *proj) {
+static void delete_projectile(ProjectileList *projlist, Projectile *proj) {
 	_delete_projectile((ListAnchor*)projlist, (List*)proj, NULL);
 }
 
@@ -508,6 +508,11 @@ bool clear_projectile(Projectile *proj, uint flags) {
 	return true;
 }
 
+void kill_projectile(Projectile* proj) {
+	proj->flags |= PFLAG_INTERNAL_DEAD | PFLAG_NOCOLLISION | PFLAG_NOCLEAR;
+	proj->draw_rule = ProjNoDraw;
+}
+
 void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
 
@@ -518,6 +523,11 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
 		proj->prevpos = proj->pos;
+
+		if(proj->flags & PFLAG_INTERNAL_DEAD) {
+			delete_projectile(projlist, proj);
+			continue;
+		}
 
 		if(stage_cleared) {
 			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
