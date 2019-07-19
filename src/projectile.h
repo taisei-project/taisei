@@ -60,6 +60,7 @@ typedef enum ProjFlags {
 	PFLAG_REQUIREDPARTICLE = (1 << 10),     // [PROJ_PARTICLE] Visible at "minimal" particles setting.
 	PFLAG_PLRSPECIALPARTICLE = (1 << 11),   // [PROJ_PARTICLE] Apply Power Surge effect to this particle, as if it was a PROJ_PLAYER.
 	PFLAG_NOCOLLISION = (1 << 12),          // [PROJ_ENEMY, PROJ_PLAYER] Disable collision detection.
+	PFLAG_INTERNAL_DEAD = (1 << 13),        // [ALL] Delete as soon as processed. (internal flag, do not use)
 
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
@@ -181,7 +182,6 @@ Projectile* create_particle(ProjArgs *args);
 #define PROJECTILE(...) _PROJ_GENERIC_SPAWN(create_projectile, __VA_ARGS__)
 #define PARTICLE(...) _PROJ_GENERIC_SPAWN(create_particle, __VA_ARGS__)
 
-void delete_projectile(ProjectileList *projlist, Projectile *proj);
 void delete_projectiles(ProjectileList *projlist);
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
@@ -198,6 +198,7 @@ Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
 
 bool clear_projectile(Projectile *proj, uint flags);
+void kill_projectile(Projectile *proj);
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

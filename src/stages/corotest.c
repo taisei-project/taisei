@@ -27,6 +27,26 @@ TASK(drop_items, { complex *pos; ItemCounts items; }) {
 	}
 }
 
+TASK(laserize_proj, { Projectile *p; int t; }) {
+	TASK_BIND(ARGS.p);
+	WAIT(ARGS.t);
+
+	complex pos = ARGS.p->pos;
+	double a = ARGS.p->angle;
+	Color clr = ARGS.p->color;
+	kill_projectile(ARGS.p);
+
+	complex aim = 12 * cexp(I * a);
+	create_laserline(pos, aim, 20, 40, &clr);
+
+	PROJECTILE(
+		.pos = pos,
+		.proto = pp_ball,
+		.color = &clr,
+		.timeout = 20,
+	);
+}
+
 TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }) {
 	// WAIT_EVENT yields until the event fires.
 	// Returns true if the event was signaled, false if it was canceled.
@@ -101,13 +121,15 @@ TASK_WITH_FINALIZER(test_enemy, {
 			complex aim = global.plr.pos - e->pos;
 			aim *= 5 * cexp(I*M_PI*0.1*nfrand()) / cabs(aim);
 
-			PROJECTILE(
+			Projectile *p = PROJECTILE(
 				.pos = e->pos,
 				.proto = pp_rice,
 				.color = RGBA(1.0, 0.0, i / (pcount - 1.0), 0.0),
 				.rule = linear,
 				.args = { aim },
 			);
+
+			INVOKE_TASK(laserize_proj, p, 30);
 
 			WAIT(3);
 		}
@@ -131,7 +153,7 @@ TASK(stage_main, { int ignored; }) {
 
 	for(;;) {
 		INVOKE_TASK(test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
-		WAIT(240);
+		WAIT(500);
 	}
 }
 
