@@ -48,6 +48,7 @@ void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg);
 
 void coevent_init(CoEvent *evt);
 void coevent_signal(CoEvent *evt);
+void coevent_signal_once(CoEvent *evt);
 void coevent_cancel(CoEvent *evt);
 
 CoSched *cosched_new(void);

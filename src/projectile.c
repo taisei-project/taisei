@@ -269,6 +269,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		}
 	}
 
+	coevent_init(&p->events.killed);
 	ent_register(&p->ent, ENT_PROJECTILE);
 
 	// TODO: Maybe allow ACTION_DESTROY here?
@@ -301,6 +302,7 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 static void *_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
 	proj_call_rule(p, EVENT_DEATH);
+	coevent_signal_once(&p->events.killed);
 	ent_unregister(&p->ent);
 	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, proj));
 	return NULL;
@@ -516,6 +518,7 @@ bool clear_projectile(Projectile *proj, uint flags) {
 }
 
 void kill_projectile(Projectile* proj) {
+	coevent_signal_once(&proj->events.killed);
 	proj->flags |= PFLAG_INTERNAL_DEAD | PFLAG_NOCOLLISION | PFLAG_NOCLEAR;
 	proj->draw_rule = ProjNoDraw;
 }

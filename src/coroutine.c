@@ -192,6 +192,12 @@ void coevent_signal(CoEvent *evt) {
 	coevent_wake_subscribers(evt);
 }
 
+void coevent_signal_once(CoEvent *evt) {
+	if(!evt->num_signaled) {
+		coevent_signal(evt);
+	}
+}
+
 void coevent_cancel(CoEvent* evt) {
 	evt->num_signaled = evt->unique_id = 0;
 	coevent_wake_subscribers(evt);
