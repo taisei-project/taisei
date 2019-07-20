@@ -18,6 +18,7 @@
 #include "objectpool.h"
 #include "renderer/api.h"
 #include "entity.h"
+#include "move.h"
 
 #ifdef DEBUG
 	#define PROJ_DEBUG
@@ -82,6 +83,7 @@ struct Projectile {
 	ShaderProgram *shader;
 	Sprite *sprite;
 	ProjPrototype *proto;
+	MoveParams move;
 	Color color;
 	ShaderCustomParams shader_params;
 	BlendMode blend;
@@ -122,6 +124,7 @@ typedef struct ProjArgs {
 	cmplx pos;
 	cmplx size; // affects default draw order, out-of-viewport culling, and grazing
 	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
+	MoveParams move;
 	ProjType type;
 	ProjFlags flags;
 	BlendMode blend;
