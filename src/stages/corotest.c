@@ -27,6 +27,10 @@ TASK(drop_items, { complex *pos; ItemCounts items; }) {
 	}
 }
 
+TASK(laserproj_death, { Projectile *p; }) {
+	spawn_projectile_clear_effect(ARGS.p);
+}
+
 TASK(laserize_proj, { Projectile *p; int t; }) {
 	TASK_BIND(ARGS.p);
 	WAIT(ARGS.t);
@@ -39,12 +43,14 @@ TASK(laserize_proj, { Projectile *p; int t; }) {
 	complex aim = 12 * cexp(I * a);
 	create_laserline(pos, aim, 60, 80, &clr);
 
-	PROJECTILE(
+	Projectile *p = PROJECTILE(
 		.pos = pos,
 		.proto = pp_ball,
 		.color = &clr,
 		.timeout = 60,
 	);
+
+	INVOKE_TASK_WHEN(&p->events.killed, laserproj_death, p);
 }
 
 TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }) {
