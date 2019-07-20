@@ -343,7 +343,7 @@ void udiv_128_64(int128_bits_t divident, uint64_t divisor, uint64_t *out_quotien
 
 static inline attr_must_inline attr_unused
 void umul_128_64(uint64_t multiplicant, uint64_t multiplier, int128_bits_t *result) {
-#if (defined(__x86_64) || defined(__x86_64__))
+#if defined(__GNUC__) && (defined(__x86_64) || defined(__x86_64__))
     __asm__ (
         "mulq %3"
         : "=a,a" (result->lo),   "=d,d" (result->hi)
