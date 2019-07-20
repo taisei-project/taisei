@@ -145,6 +145,12 @@ static inline int proj_call_rule(Projectile *p, int t) {
 				ACTION_ACK
 			);
 		}
+	} else if(t >= 0) {
+		p->pos += move_update(&p->move);
+
+		if(p->pos != p->prevpos) {
+			p->angle = carg(p->pos - p->prevpos);
+		}
 	}
 
 	if(/*t == 0 ||*/ t == EVENT_BIRTH) {
@@ -215,6 +221,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->damage = args->damage;
 	p->damage_type = args->damage_type;
 	p->clear_flags = 0;
+	p->move = args->move;
 
 	if(args->shader_params != NULL) {
 		p->shader_params = *args->shader_params;

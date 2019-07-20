@@ -6,13 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_corotest_h
-#define IGUARD_stages_corotest_h
-
 #include "taisei.h"
 
-#include "stage.h"
+#include "move.h"
 
-extern StageProcs corotest_procs;
-
-#endif // IGUARD_stages_corotest_h
+complex move_update(MoveParams *p) {
+	complex v = p->velocity;
+	p->velocity = p->acceleration + p->retention * v;
+	return v;
+}

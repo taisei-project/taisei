@@ -83,6 +83,7 @@ taisei_src = files(
     'list.c',
     'log.c',
     'main.c',
+    'move.c',
     'player.c',
     'plrmodes.c',
     'progress.c',
