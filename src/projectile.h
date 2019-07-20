@@ -19,6 +19,7 @@
 #include "renderer/api.h"
 #include "entity.h"
 #include "move.h"
+#include "coroutine.h"
 
 #ifdef DEBUG
 	#define PROJ_DEBUG
@@ -84,6 +85,9 @@ struct Projectile {
 	Sprite *sprite;
 	ProjPrototype *proto;
 	MoveParams move;
+	struct {
+		CoEvent killed;
+	} events;
 	Color color;
 	ShaderCustomParams shader_params;
 	BlendMode blend;
