@@ -250,6 +250,11 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
+config.set('TAISEI_BUILDCONF_HAVE_SINCOS', cc.has_function('sincos', dependencies : dep_m))
+
+if config.get('TAISEI_BUILDCONF_HAVE_SINCOS')
+    config.set('_GNU_SOURCE', true)
+endif
 
 if host_machine.system() == 'emscripten'
     # Emscripten bug: https://github.com/emscripten-core/emscripten/issues/10072

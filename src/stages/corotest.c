@@ -3,7 +3,7 @@
  * See COPYING for further information.
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@alienslab.net>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
 #include "taisei.h"
@@ -37,13 +37,13 @@ TASK(laserize_proj, { Projectile *p; int t; }) {
 	kill_projectile(ARGS.p);
 
 	complex aim = 12 * cexp(I * a);
-	create_laserline(pos, aim, 20, 40, &clr);
+	create_laserline(pos, aim, 60, 80, &clr);
 
 	PROJECTILE(
 		.pos = pos,
 		.proto = pp_ball,
 		.color = &clr,
-		.timeout = 20,
+		.timeout = 60,
 	);
 }
 
@@ -75,8 +75,7 @@ TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }
 				.pos = pos,
 				.proto = pp_crystal,
 				.color = RGBA(i / (double)ARGS.cnt, 0.0, 1.0 - i / (double)ARGS.cnt, 0.0),
-				.rule = asymptotic,
-				.args = { 2 * aim, 5 },
+				.move = move_asymptotic(12 * aim, 2 * aim, 0.8),
 			);
 
 			WAIT(1);
@@ -107,7 +106,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 		ARGS.for_finalizer.x++;
 
 		// wander around for a bit...
-		for(int i = 0; i < 20; ++i) {
+		for(int i = 0; i < 60; ++i) {
 			e->pos += ARGS.dir;
 			YIELD;
 		}
@@ -116,22 +115,25 @@ TASK_WITH_FINALIZER(test_enemy, {
 		WAIT(10);
 
 		// pew pew!!!
-		int pcount = 10 + 10 * frand();
+		complex aim = 3 * cnormalize(global.plr.pos - e->pos);
+		int pcount = 120;
+
 		for(int i = 0; i < pcount; ++i) {
-			complex aim = global.plr.pos - e->pos;
-			aim *= 5 * cexp(I*M_PI*0.1*nfrand()) / cabs(aim);
+			for(int j = -1; j < 2; j += 2) {
+				double a = j * M_PI * 0.1 * psin(20 * (2 * global.frames + i * 10));
 
-			Projectile *p = PROJECTILE(
-				.pos = e->pos,
-				.proto = pp_rice,
-				.color = RGBA(1.0, 0.0, i / (pcount - 1.0), 0.0),
-				.rule = linear,
-				.args = { aim },
-			);
+				Projectile *p = PROJECTILE(
+					.pos = e->pos,
+					.proto = pp_rice,
+					.color = RGBA(1.0, 0.0, i / (pcount - 1.0), 0.0),
+					.move = move_asymptotic(aim * 4 * cdir(a + M_PI), aim * cdir(-a * 2), 0.9),
+					.max_viewport_dist = 128,
+				);
 
-			INVOKE_TASK(laserize_proj, p, 30);
+				INVOKE_TASK(laserize_proj, p, 40);
+			}
 
-			WAIT(3);
+			WAIT(2);
 		}
 
 		// keep wandering, randomly
@@ -153,7 +155,7 @@ TASK(stage_main, { int ignored; }) {
 
 	for(;;) {
 		INVOKE_TASK(test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
-		WAIT(500);
+		WAIT(1000);
 	}
 }
 

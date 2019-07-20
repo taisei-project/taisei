@@ -91,6 +91,22 @@ void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilo
 	*val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
+cmplx cnormalize(cmplx c) {
+	return c / cabs(c);
+}
+
+cmplx cdir(double angle) {
+	// this is faster than cexp(I*angle)
+
+	#ifdef TAISEI_BUILDCONF_HAVE_SINCOS
+	double s, c;
+	sincos(angle, &s, &c);
+	return CMPLX(c, s);
+	#else
+	return CMPLX(cos(angle), sin(angle));
+	#endif
+}
+
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
