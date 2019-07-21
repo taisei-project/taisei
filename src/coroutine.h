@@ -66,19 +66,27 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 
 #define ARGS (*_cotask_args)
 
-#define TASK_COMMON_DECLARATIONS(name, argstruct) \
+#define TASK_COMMON_PRIVATE_DECLARATIONS(name) \
+	/* user-defined task body */ \
+	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
+	/* called from the entry points before task body (inlined, hopefully) */ \
+	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) /* require semicolon */ \
+
+#define TASK_COMMON_DECLARATIONS(name, argstruct, linkage) \
 	/* produce warning if the task is never used */ \
-	static char COTASK_UNUSED_CHECK_##name; \
+	linkage char COTASK_UNUSED_CHECK_##name; \
 	/* user-defined type of args struct */ \
 	struct TASK_ARGS_NAME(name) argstruct; \
 	/* type of internal args struct for INVOKE_TASK_WHEN */ \
 	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS(name) real_args; CoEvent *event; }; \
-	/* user-defined task body */ \
-	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
-	/* called from the entry points before task body (inlined, hopefully) */ \
-	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args); \
 	/* task entry point for INVOKE_TASK */ \
-	attr_unused static void *COTASKTHUNK_##name(void *arg) { \
+	attr_unused linkage void *COTASKTHUNK_##name(void *arg); \
+	/* task entry point for INVOKE_TASK_WHEN */ \
+	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) /* require semicolon */ \
+
+#define TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
+	/* task entry point for INVOKE_TASK */ \
+	attr_unused linkage void *COTASKTHUNK_##name(void *arg) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
 		TASK_ARGS(name) args_copy = *(TASK_ARGS(name)*)arg; \
 		/* call prologue */ \
@@ -89,7 +97,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 		return NULL; \
 	} \
 	/* task entry point for INVOKE_TASK_WHEN */ \
-	attr_unused static void *COTASKTHUNKCOND_##name(void *arg) { \
+	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
 		TASK_ARGSCOND(name) args_copy = *(TASK_ARGSCOND(name)*)arg; \
 		/* wait for event, and if it wasn't canceled... */ \
@@ -103,17 +111,48 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 		return NULL; \
 	}
 
-/* define a normal task */
-#define TASK(name, argstruct) \
-	TASK_COMMON_DECLARATIONS(name, argstruct) \
+#define TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage) \
+	linkage void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+
+
+#define DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, linkage) \
+	TASK_COMMON_DECLARATIONS(name, argstruct, linkage) /* require semicolon */
+
+#define DEFINE_TASK_EXPLICIT_LINKAGE(name, linkage) \
+	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
+	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* empty prologue */ \
 	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { } \
 	/* begin task body definition */ \
-	static void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
 
-/* define a task that needs a finalizer */
-#define TASK_WITH_FINALIZER(name, argstruct) \
-	TASK_COMMON_DECLARATIONS(name, argstruct) \
+
+/* declare a task with static linkage (needs to be defined later) */
+#define DECLARE_TASK(name, argstruct) \
+	DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, static) /* require semicolon */
+
+/* define a task with static linkage (needs to be defined later) */
+#define DEFINE_TASK(name) \
+	DEFINE_TASK_EXPLICIT_LINKAGE(name, static)
+
+/* declare and define a task with static linkage */
+#define TASK(name, argstruct) \
+	DECLARE_TASK(name, argstruct); \
+	DEFINE_TASK(name)
+
+
+/* declare a task with extern linkage (needs to be defined later) */
+#define DECLARE_EXTERN_TASK(name, argstruct) \
+	DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, extern) /* require semicolon */
+
+/* define a task with extern linkage (needs to be declared first) */
+#define DEFINE_EXTERN_TASK(name) \
+	DEFINE_TASK_EXPLICIT_LINKAGE(name, extern)
+
+
+#define DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, linkage) \
+	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
+	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
 	struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER { char dummy; }; \
 	/* user-defined finalizer function */ \
@@ -128,7 +167,20 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 		cotask_set_finalizer(cotask_active(), COTASKFINALIZERTHUNK_##name, _cotask_args); \
 	} \
 	/* begin task body definition */ \
-	static void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
+
+/* define a task that needs a finalizer with static linkage (needs to be declared first) */
+#define DEFINE_TASK_WITH_FINALIZER(name) \
+	DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, static)
+
+/* define a task that needs a finalizer with static linkage (needs to be declared first) */
+#define DEFINE_EXTERN_TASK_WITH_FINALIZER(name) \
+	DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, extern)
+
+/* declare and define a task that needs a finalizer with static linkage */
+#define TASK_WITH_FINALIZER(name, argstruct) \
+	DECLARE_TASK(name, argstruct); \
+	DEFINE_TASK_WITH_FINALIZER(name)
 
 /* define the finalizer for a TASK_WITH_FINALIZER */
 #define TASK_FINALIZER(name) \
