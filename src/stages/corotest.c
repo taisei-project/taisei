@@ -11,21 +11,11 @@
 #include "corotest.h"
 #include "coroutine.h"
 #include "global.h"
+#include "common_tasks.h"
 
 static CoSched *cotest_sched;
 
 static void cotest_stub_proc(void) { }
-
-TASK(drop_items, { complex *pos; ItemCounts items; }) {
-	complex p = *ARGS.pos;
-
-	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
-		for(int j = ARGS.items.as_array[i]; j; --j) {
-			spawn_item(p, i + ITEM_FIRST);
-			WAIT(2);
-		}
-	}
-}
 
 TASK(laserproj_death, { Projectile *p; }) {
 	spawn_projectile_clear_effect(ARGS.p);
@@ -98,7 +88,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
 	TASK_BIND(e);
 
-	INVOKE_TASK_WHEN(&e->events.killed, drop_items, &e->pos, {
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.life_fragment = 1,
 		.bomb_fragment = 1,
 		.power = 3,
