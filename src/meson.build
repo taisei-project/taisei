@@ -64,6 +64,7 @@ taisei_src = files(
     'cli.c',
     'color.c',
     'color.c',
+    'common_tasks.c',
     'config.c',
     'coroutine.c',
     'credits.c',
