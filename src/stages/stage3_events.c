@@ -13,11 +13,20 @@
 #include "stage.h"
 #include "enemy.h"
 
+static void make_wriggle_actor(DialogActor *a, char *base, DialogFace face) {
+	a->base = get_sprite(base);
+	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/wriggle_face_normal");
+	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/wriggle_face_defeated");
+	a->faces[DIALOG_FACE_SMUG] = get_sprite("dialog/wriggle_face_calm");
+	a->faces[DIALOG_FACE_HAPPY] = get_sprite("dialog/wriggle_face_proud");
+	a->face = a->faces[face];
+}
+
 static Dialog *stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	make_wriggle_actor(d->actors + DIALOG_RIGHT, "dialog/wriggle", DIALOG_FACE_NORMAL);
 	pm->dialog->stage3_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage3boss");
 	return d;
@@ -28,6 +37,7 @@ static Dialog *stage3_dialog_post_boss(void) {
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	make_wriggle_actor(d->actors + DIALOG_RIGHT, "dialog/wriggle_variant_defeated", DIALOG_FACE_DEFEATED);
 	pm->dialog->stage3_post_boss(d);
 	return d;
 }
@@ -732,7 +742,8 @@ void wriggle_spellbg(Boss *b, int time) {
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", "dialog/scuttle", pos);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", pos);
+	boss_set_portrait(scuttle, get_sprite("dialog/scuttle"), get_sprite("dialog/scuttle_face_happy"));
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
 	return scuttle;
@@ -1415,7 +1426,8 @@ static void stage3_boss_intro(Boss *boss, int time) {
 }
 
 Boss* stage3_spawn_wriggle_ex(complex pos) {
-	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", pos);
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", pos);
+	boss_set_portrait(wriggle, get_sprite("dialog/wriggle"), get_sprite("dialog/wriggle_face_normal"));
 	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
 	return wriggle;

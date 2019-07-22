@@ -27,6 +27,7 @@ PlayerCharacter character_reimu = {
 		[DIALOG_FACE_SURPRISED] = "dialog/reimu_face_surprised",
 		[DIALOG_FACE_ANNOYED] = "dialog/reimu_face_unamused",
 		[DIALOG_FACE_SMUG] = "dialog/reimu_face_smug",
+		[DIALOG_FACE_HAPPY] = "dialog/reimu_face_happy",
 	},
 	.player_sprite_name = "player/reimu",
 	.menu_texture_name = "reimubg",

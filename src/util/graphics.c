@@ -248,3 +248,65 @@ void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment,
 	params.mipmaps = 0; // FIXME
 	r_framebuffer_attach(fb, r_texture_create(&params), 0, attachment);
 }
+
+void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
+	r_state_push();
+
+	uint tex_w = s_base->tex_area.extent.w;
+	uint tex_h = s_base->tex_area.extent.h;
+	uint spr_w = s_base->extent.w;
+	uint spr_h = s_base->extent.h;
+
+	Texture *ptex = r_texture_create(&(TextureParams) {
+		.type = TEX_TYPE_RGBA_8,
+		.width = tex_w,
+		.height = tex_h,
+		.filter.min = TEX_FILTER_LINEAR_MIPMAP_LINEAR,
+		.filter.mag = TEX_FILTER_LINEAR,
+		.mipmap_mode = TEX_MIPMAP_AUTO,
+		.mipmaps = 3,
+	});
+
+	char label[128];
+	r_texture_set_debug_label(ptex, label);
+
+	Framebuffer *fb = r_framebuffer_create();
+	r_framebuffer_set_debug_label(fb, label);
+	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
+	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
+	r_framebuffer(fb);
+
+	r_mat_mode(MM_PROJECTION);
+	r_mat_push();
+	r_mat_ortho(0, spr_w, spr_h, 0, -1, 1);
+	r_mat_mode(MM_MODELVIEW);
+	r_mat_push();
+	r_mat_identity();
+
+	SpriteParams sp = { 0 };
+	sp.sprite_ptr = s_base;
+	sp.blend = BLEND_NONE;
+	sp.pos.x = spr_w / 2.0 - s_base->offset.x;
+	sp.pos.y = spr_h / 2.0 - s_base->offset.y;
+	sp.color = RGBA(1, 1, 1, 1);
+	sp.shader_ptr = r_shader_get("sprite_default"),
+	r_draw_sprite(&sp);
+	sp.blend = BLEND_PREMUL_ALPHA;
+	sp.sprite_ptr = s_face;
+	r_draw_sprite(&sp);
+	r_flush_sprites();
+
+	r_mat_pop();
+	r_mat_mode(MM_PROJECTION);
+	r_mat_pop();
+	r_state_pop();
+	r_framebuffer_destroy(fb);
+
+	Sprite s = { 0 };
+	s.tex = ptex;
+	s.offset = s_base->offset;
+	s.extent = s_base->extent;
+	s.tex_area.w = tex_w;
+	s.tex_area.h = tex_h;
+	*s_out = s;
+}

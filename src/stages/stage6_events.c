@@ -14,11 +14,18 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 
+static void make_elly_actor(DialogActor *a, char *base, DialogFace face) {
+	a->base = get_sprite(base);
+	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/elly_face_normal");
+	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/elly_face_angry");
+	a->face = a->faces[face];
+}
+
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
+	make_elly_actor(d->actors + DIALOG_RIGHT, "dialog/elly", DIALOG_FACE_NORMAL);
 	pm->dialog->stage6_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage6boss_phase1");
 	return d;
@@ -28,7 +35,7 @@ static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
+	make_elly_actor(d->actors + DIALOG_RIGHT, "dialog/elly", DIALOG_FACE_DEFEATED);
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }
@@ -2931,7 +2938,8 @@ static void elly_global_rule(Boss *b, int time) {
 }
 
 Boss* stage6_spawn_elly(complex pos) {
-	Boss *b = create_boss("Elly", "elly", "dialog/elly", pos);
+	Boss *b = create_boss("Elly", "elly", pos);
+	boss_set_portrait(b, get_sprite("dialog/elly"), get_sprite("dialog/elly_face_normal"));
 	b->global_rule = elly_global_rule;
 	return b;
 }

@@ -149,7 +149,11 @@ void draw_char_menu(MenuData *menu) {
 		const char *face;
 
 		if(menu->selected == i) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SMUG];
+			face = pchar->dialog_face_sprite_names[
+				SELECTED_SUBSHOT(menu) == PLR_SHOT_A
+					? DIALOG_FACE_HAPPY
+					: DIALOG_FACE_SMUG
+			];
 		} else if(fabs(o - 1) < 1e-1) {
 			face = pchar->dialog_face_sprite_names[DIALOG_FACE_NORMAL];
 		} else if(menu->cursor == i) {

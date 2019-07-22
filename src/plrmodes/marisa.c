@@ -25,6 +25,7 @@ PlayerCharacter character_marisa = {
 		[DIALOG_FACE_SURPRISED] = "dialog/marisa_face_surprised",
 		[DIALOG_FACE_ANNOYED] = "dialog/marisa_face_unamused",
 		[DIALOG_FACE_SMUG] = "dialog/marisa_face_smug",
+		[DIALOG_FACE_HAPPY] = "dialog/marisa_face_happy",
 	},
 	.player_sprite_name = "player/marisa",
 	.menu_texture_name = "marisa_bombbg",

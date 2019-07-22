@@ -25,6 +25,7 @@ PlayerCharacter character_youmu = {
 		[DIALOG_FACE_SURPRISED] = "dialog/youmu_face_surprised",
 		[DIALOG_FACE_ANNOYED] = "dialog/youmu_face_unamused",
 		[DIALOG_FACE_SMUG] = "dialog/youmu_face_smug",
+		[DIALOG_FACE_HAPPY] = "dialog/youmu_face_happy",
 	},
 	.player_sprite_name = "player/youmu",
 	.menu_texture_name = "youmu_bombbg1",

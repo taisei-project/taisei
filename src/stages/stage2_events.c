@@ -13,11 +13,18 @@
 #include "stage.h"
 #include "enemy.h"
 
+static void make_hina_actor(DialogActor *a, char *base, DialogFace face) {
+	a->base = get_sprite(base);
+	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/hina_face_normal");
+	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/hina_face_defeated");
+	a->face = a->faces[face];
+}
+
 static Dialog *stage2_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/hina") });
+	make_hina_actor(d->actors + DIALOG_RIGHT, "dialog/hina", DIALOG_FACE_NORMAL);
 	pm->dialog->stage2_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage2boss");
 	return d;
@@ -27,7 +34,7 @@ static Dialog *stage2_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/hina") });
+	make_hina_actor(d->actors + DIALOG_RIGHT, "dialog/hina_variant_defeated", DIALOG_FACE_DEFEATED);
 	pm->dialog->stage2_post_boss(d);
 	return d;
 }
@@ -351,7 +358,7 @@ static void wiggle_mid_flee(Boss *w, int t) {
 }
 
 static Boss *create_wriggle_mid(void) {
-	Boss* wriggle = create_boss("Wriggle", "wriggle", NULL, VIEWPORT_W + 150 - 30.0*I);
+	Boss* wriggle = create_boss("Wriggle", "wriggle", VIEWPORT_W + 150 - 30.0*I);
 	wriggle->glowcolor = *RGB(0.2, 0.4, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
 	wriggle_ani_flyin(wriggle);
@@ -854,7 +861,8 @@ void hina_spell_bg(Boss *h, int time) {
 }
 
 Boss* stage2_spawn_hina(complex pos) {
-	Boss *hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", pos);
+	Boss *hina = create_boss("Kagiyama Hina", "hina", pos);
+	boss_set_portrait(hina, get_sprite("dialog/hina"), get_sprite("dialog/hina_face_normal"));
 	hina->glowcolor = *RGBA_MUL_ALPHA(0.7, 0.2, 0.3, 0.5);
 	hina->shadowcolor = hina->glowcolor;
 	return hina;

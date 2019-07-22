@@ -58,4 +58,6 @@ void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachme
 void fbutil_destroy_attachments(Framebuffer *fb);
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
 
+void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out);
+
 #endif // IGUARD_util_graphics_h

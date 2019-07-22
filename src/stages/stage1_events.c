@@ -12,11 +12,18 @@
 #include "global.h"
 #include "stagetext.h"
 
+static void make_cirno_actor(DialogActor *a, char *base, DialogFace face) {
+	a->base = get_sprite(base);
+	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/cirno_face_normal");
+	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/cirno_face_defeated");
+	a->face = a->faces[face];
+}
+
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	make_cirno_actor(d->actors + DIALOG_RIGHT, "dialog/cirno", DIALOG_FACE_NORMAL);
 	pm->dialog->stage1_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage1boss");
 	return d;
@@ -26,7 +33,7 @@ static Dialog *stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	make_cirno_actor(d->actors + DIALOG_RIGHT, "dialog/cirno_variant_defeated", DIALOG_FACE_DEFEATED);
 	pm->dialog->stage1_post_boss(d);
 	return d;
 }
@@ -261,7 +268,8 @@ static void cirno_mid_flee(Boss *c, int time) {
 }
 
 Boss* stage1_spawn_cirno(complex pos) {
-	Boss *cirno = create_boss("Cirno", "cirno", "dialog/cirno", pos);
+	Boss *cirno = create_boss("Cirno", "cirno", pos);
+	boss_set_portrait(cirno, get_sprite("dialog/cirno"), get_sprite("dialog/cirno_face_normal"));
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
 	cirno->glowcolor = *RGB(0.2, 0.35, 0.5);
 	return cirno;
