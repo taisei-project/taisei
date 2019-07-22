@@ -82,6 +82,12 @@ taisei_c_args = [
     '-Wunneeded-internal-declaration',
     '-Wunreachable-code',
     '-Wunreachable-code-loop-increment',
+
+    '-fexcess-precision=standard',
+    '-fmerge-all-constants',
+    '-fno-math-errno',
+    '-fno-signaling-nans',
+    '-fno-trapping-math',
 ]
 
 if get_option('b_pch') and meson.version().version_compare('<0.50.0')
