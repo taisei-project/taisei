@@ -150,7 +150,7 @@ TASK(stage_main, { int ignored; }) {
 	log_debug("test 2! %i", global.timer);
 
 	for(;;) {
-		INVOKE_TASK(test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
+		INVOKE_TASK_DELAYED(60, test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
 		WAIT(1000);
 	}
 }
