@@ -13,10 +13,6 @@
 #include "global.h"
 #include "common_tasks.h"
 
-static CoSched *cotest_sched;
-
-static void cotest_stub_proc(void) { }
-
 TASK(laserproj_death, { Projectile *p; }) {
 	spawn_projectile_clear_effect(ARGS.p);
 }
@@ -144,40 +140,21 @@ TASK_FINALIZER(test_enemy) {
 TASK(stage_main, { int ignored; }) {
 	YIELD;
 
-	WAIT(30);
+	stage_wait(30);
 	log_debug("test 1! %i", global.timer);
-	WAIT(60);
+	stage_wait(60);
 	log_debug("test 2! %i", global.timer);
 
 	for(;;) {
 		INVOKE_TASK_DELAYED(60, test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
-		WAIT(1000);
+		stage_wait(1000);
 	}
 }
 
 static void cotest_begin(void) {
-	cotest_sched = cosched_new();
-	cosched_set_invoke_target(cotest_sched);
 	INVOKE_TASK(stage_main, 0);
-}
-
-static void cotest_end(void) {
-	cosched_free(cotest_sched);
-}
-
-static void cotest_events(void) {
-	if(!global.gameover && !cosched_run_tasks(cotest_sched)) {
-		log_debug("over!");
-		stage_finish(GAMEOVER_SCORESCREEN);
-	}
 }
 
 StageProcs corotest_procs = {
 	.begin = cotest_begin,
-	.preload = cotest_stub_proc,
-	.end = cotest_end,
-	.draw = cotest_stub_proc,
-	.update = cotest_stub_proc,
-	.event = cotest_events,
-	.shader_rules = (ShaderRule[]) { NULL },
 };
