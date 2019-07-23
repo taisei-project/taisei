@@ -149,6 +149,10 @@ bool stage_is_cleared(void);
 
 void stage_unlock_bgm(const char *bgm);
 
+bool stage_should_yield(void);
+void stage_yield(void);
+void stage_wait(int delay);
+
 #include "stages/stage1.h"
 #include "stages/stage2.h"
 #include "stages/stage3.h"

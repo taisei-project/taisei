@@ -44,10 +44,6 @@ struct CoTask {
 	uint32_t unique_id;
 };
 
-struct CoSched {
-	LIST_ANCHOR(CoTask) tasks, pending_tasks;
-};
-
 static LIST_ANCHOR(CoTask) task_pool;
 static size_t num_tasks_allocated;
 static size_t num_tasks_in_use;
@@ -283,9 +279,8 @@ void coevent_cancel(CoEvent* evt) {
 	evt->subscribers = NULL;
 }
 
-CoSched *cosched_new(void) {
-	CoSched *sched = calloc(1, sizeof(*sched));
-	return sched;
+void cosched_init(CoSched *sched) {
+	memset(sched, 0, sizeof(*sched));
 }
 
 CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg) {
@@ -319,7 +314,7 @@ uint cosched_run_tasks(CoSched *sched) {
 	return ran;
 }
 
-void cosched_free(CoSched *sched) {
+void cosched_finish(CoSched *sched) {
 	for(CoTask *t = sched->pending_tasks.first, *next; t; t = next) {
 		next = t->next;
 		cotask_free(t);
@@ -329,6 +324,8 @@ void cosched_free(CoSched *sched) {
 		next = t->next;
 		cotask_free(t);
 	}
+
+	memset(sched, 0, sizeof(*sched));
 }
 
 void coroutines_init(void) {
