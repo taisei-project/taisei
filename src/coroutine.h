@@ -43,6 +43,10 @@ typedef struct CoEvent {
 	uint8_t num_subscribers_allocated;
 } CoEvent;
 
+struct CoSched {
+	LIST_ANCHOR(CoTask) tasks, pending_tasks;
+};
+
 void coroutines_init(void);
 void coroutines_shutdown(void);
 
@@ -65,10 +69,10 @@ void coevent_signal(CoEvent *evt);
 void coevent_signal_once(CoEvent *evt);
 void coevent_cancel(CoEvent *evt);
 
-CoSched *cosched_new(void);
+void cosched_init(CoSched *sched);
 CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
-void cosched_free(CoSched *sched);
+void cosched_finish(CoSched *sched);
 
 static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
 

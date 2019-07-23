@@ -677,10 +677,11 @@ bool stage_is_cleared(void) {
 
 typedef struct StageFrameState {
 	StageInfo *stage;
-	int transition_delay;
-	uint16_t last_replay_fps;
 	CallChain cc;
+	CoSched sched;
+	int transition_delay;
 	int logic_calls;
+	uint16_t last_replay_fps;
 
 #ifdef DEBUG
 	bool skip_to_dialog;
@@ -728,6 +729,22 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
+inline bool stage_should_yield(void) {
+	return (global.boss && !boss_is_fleeing(global.boss)) || dialog_is_active(global.dialog);
+}
+
+void stage_yield(void) {
+	do {
+		cotask_yield(NULL);
+	} while(stage_should_yield());
+}
+
+void stage_wait(int delay) {
+	while(delay-- > 0) {
+		stage_yield();
+	}
+}
+
 static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
@@ -757,7 +774,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
-		if((!global.boss || boss_is_fleeing(global.boss)) && !dialog_is_active(global.dialog)) {
+		cosched_run_tasks(&fstate->sched);
+
+		if(!stage_should_yield()) {
 			stage->procs->event();
 		}
 
@@ -839,16 +858,28 @@ static RenderFrameAction stage_render_frame(void *arg) {
 
 static void stage_end_loop(void *ctx);
 
+static void stage_stub_proc(void) { }
+
 void stage_enter(StageInfo *stage, CallChain next) {
 	assert(stage);
 	assert(stage->procs);
-	assert(stage->procs->preload);
-	assert(stage->procs->begin);
-	assert(stage->procs->end);
-	assert(stage->procs->draw);
-	assert(stage->procs->event);
-	assert(stage->procs->update);
-	assert(stage->procs->shader_rules);
+
+	#define STUB_PROC(proc, stub) do {\
+		if(!stage->procs->proc) { \
+			stage->procs->proc = stub; \
+			log_debug(#proc " proc is missing"); \
+		} \
+	} while(0)
+
+	static const ShaderRule shader_rules_stub[1] = { NULL };
+
+	STUB_PROC(preload, stage_stub_proc);
+	STUB_PROC(begin, stage_stub_proc);
+	STUB_PROC(end, stage_stub_proc);
+	STUB_PROC(draw, stage_stub_proc);
+	STUB_PROC(event, stage_stub_proc);
+	STUB_PROC(update, stage_stub_proc);
+	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
 
 	if(global.gameover == GAMEOVER_WIN) {
 		global.gameover = 0;
@@ -910,20 +941,22 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		stg->playpos = 0;
 	}
 
-	stage->procs->begin();
-	player_stage_post_init(&global.plr);
-
-	if(global.stage->type != STAGE_SPELL) {
-		display_stage_title(stage);
-	}
-
 	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
+	cosched_init(&fstate->sched);
+	cosched_set_invoke_target(&fstate->sched);
 	fstate->stage = stage;
 	fstate->cc = next;
 
 	#ifdef DEBUG
 	fstate->skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
 	#endif
+
+	stage->procs->begin();
+	player_stage_post_init(&global.plr);
+
+	if(global.stage->type != STAGE_SPELL) {
+		display_stage_title(stage);
+	}
 
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }
@@ -944,6 +977,7 @@ void stage_end_loop(void* ctx) {
 	stage_draw_shutdown();
 	stage_free();
 	player_free(&global.plr);
+	cosched_finish(&s->sched);
 	tsrand_switch(&global.rand_visual);
 	free_all_refs();
 	ent_shutdown();
