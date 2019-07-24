@@ -1237,13 +1237,177 @@ static int proj_rotate(Projectile *p, int t) {
 }
 #endif
 
+TASK(burst_fairy, { complex pos; complex dir; }) {
+	Enemy *e = create_enemy1c(ARGS.pos, 700, Fairy, stage1_burst, ARGS.dir);
+	TASK_BIND_UNBOXED(e);
+}
+
+struct circletoss_shared {
+	complex velocity;
+	complex exit_accel;
+	int exit_time;
+};
+
+TASK(circletoss_move, { BoxedEnemy e; struct circletoss_shared *shared; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	for(int i = 0;; ++i) {
+		e->pos += ARGS.shared->velocity;
+
+		if(i >= ARGS.shared->exit_time) {
+			ARGS.shared->velocity += ARGS.shared->exit_accel;
+		}
+
+		YIELD;
+	}
+}
+
+TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; struct circletoss_shared *shared; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	int cnt = ARGS.duration / ARGS.interval;
+	double angle_step = 2 * M_PI / cnt;
+
+	for(int i = 0; i < cnt; ++i) {
+		play_loop("shot1_loop");
+		ARGS.shared->velocity *= 0.8;
+
+		complex aim = cdir(angle_step * i);
+
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos,
+			.color = RGB(0.6, 0.2, 0.7),
+			.move = move_asymptotic_simple(2 * aim, i * 0.5),
+		);
+
+		WAIT(ARGS.interval);
+	}
+}
+
+TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	while(ARGS.times--) {
+		for(int i = ARGS.duration; i--;) {
+			play_loop("shot1_loop");
+
+			double aim_angle = carg(global.plr.pos - e->pos);
+			aim_angle += 0.05 * global.diff * nfrand();
+
+			complex aim = cdir(aim_angle);
+			aim *= 1 + frand() * 2;
+
+			PROJECTILE(
+				.proto = pp_thickrice,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.4, 0.8),
+				.move = move_asymptotic_simple(aim, 3),
+			);
+
+			WAIT(1);
+		}
+
+		WAIT(ARGS.period - ARGS.duration);
+	}
+}
+
+TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int exit_time; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
+
+	struct circletoss_shared shared = {
+		.velocity = ARGS.velocity,
+		.exit_accel = 0.03 * ARGS.exit_accel - 0.04 * I,
+		.exit_time = ARGS.exit_time,
+	};
+
+	INVOKE_TASK(circletoss_move, ENT_BOX(e), &shared);
+
+	INVOKE_TASK_DELAYED(60, circletoss_shoot_circle, ENT_BOX(e),
+		.duration = 40,
+		.interval = 2 + (global.diff < D_Hard),
+		.shared = &shared
+	);
+
+	if(global.diff > D_Easy) {
+		INVOKE_TASK_DELAYED(90, circletoss_shoot_toss, ENT_BOX(e),
+			.times = 4,
+			.period = 150,
+			.duration = 5 + 7 * global.diff
+		);
+	}
+
+	for(;;) YIELD;
+}
+
+// opening. projectile bursts
+TASK(burst_fairies_1, NO_ARGS) {
+	for(int i = 3; i--;) {
+		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 + 70,  1 + 0.6*I);
+		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 - 70, -1 + 0.6*I);
+		stage_wait(25);
+	}
+}
+
+// more bursts. fairies move / \ like
+TASK(burst_fairies_2, NO_ARGS) {
+	for(int i = 3; i--;) {
+		double ofs = 70 + i * 40;
+		INVOKE_TASK(burst_fairy, ofs,               1 + 0.6*I);
+		stage_wait(15);
+		INVOKE_TASK(burst_fairy, VIEWPORT_W - ofs, -1 + 0.6*I);
+		stage_wait(15);
+	}
+}
+
+// swirl, sine pass
+TASK(sinepass_swirls, NO_ARGS) {
+	const int cnt = 32;
+
+	for(int i = 0; i < cnt; ++i) {
+		tsrand_fill(2);
+		create_enemy2c(VIEWPORT_W*(i&1) + afrand(0)*100.0*I + 70.0*I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(i&1)), afrand(1)*7.0*I);
+		stage_wait(20);
+	}
+}
+
+// big fairies, circle + projectile toss
+TASK(circletoss_fairies_1, NO_ARGS) {
+	for(int i = 0; i < 2; ++i) {
+		INVOKE_TASK(circletoss_fairy,
+			.pos = VIEWPORT_W * i + VIEWPORT_H / 3 * I,
+			.velocity = 2 - 4 * i - 0.3 * I,
+			.exit_accel = 1 - 2 * i,
+			.exit_time = (global.diff > D_Easy) ? 500 : 240
+		);
+
+		stage_wait(50);
+	}
+}
+
+TASK(stage_timeline, NO_ARGS) {
+	stage_start_bgm("stage1");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+	YIELD;
+
+	stage_wait(100);
+	INVOKE_TASK(burst_fairies_1);
+	stage_wait(140);
+	INVOKE_TASK(burst_fairies_2);
+	stage_wait(200);
+	INVOKE_TASK(sinepass_swirls);
+	stage_wait(20);
+	INVOKE_TASK(circletoss_fairies_1);
+}
+
 void stage1_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		stage_start_bgm("stage1");
-		stage_set_voltage_thresholds(50, 125, 300, 600);
+		INVOKE_TASK(stage_timeline);
 	}
+
+	return;
 
 #ifdef BULLET_TEST
 	if(!global.projs) {
