@@ -733,16 +733,25 @@ inline bool stage_should_yield(void) {
 	return (global.boss && !boss_is_fleeing(global.boss)) || dialog_is_active(global.dialog);
 }
 
-void stage_yield(void) {
+int stage_yield(void) {
+	int num_yields = 0;
+
 	do {
 		cotask_yield(NULL);
+		++num_yields;
 	} while(stage_should_yield());
+
+	return num_yields;
 }
 
-void stage_wait(int delay) {
+int stage_wait(int delay) {
+	int num_yields = 0;
+
 	while(delay-- > 0) {
-		stage_yield();
+		num_yields += stage_yield();
 	}
+
+	return num_yields;
 }
 
 static LogicFrameAction stage_logic_frame(void *arg) {
