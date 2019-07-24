@@ -58,7 +58,7 @@ void *cotask_yield(void *arg);
 bool cotask_wait_event(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
-void cotask_bind_to_entity(CoTask *task, EntityInterface *ent);
+EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
 void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg);
 
 BoxedTask cotask_box(CoTask *task);
@@ -87,6 +87,9 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 
 #define ARGS (*_cotask_args)
 
+#define NO_ARGS { char _dummy_0; }
+#define ARGS_STRUCT(argstruct) { struct argstruct; char _dummy_1; }
+
 #define TASK_COMMON_PRIVATE_DECLARATIONS(name) \
 	/* user-defined task body */ \
 	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
@@ -97,7 +100,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	/* produce warning if the task is never used */ \
 	linkage char COTASK_UNUSED_CHECK_##name; \
 	/* user-defined type of args struct */ \
-	struct TASK_ARGS_NAME(name) argstruct; \
+	struct TASK_ARGS_NAME(name) ARGS_STRUCT(argstruct); \
 	/* type of internal args struct for INVOKE_TASK_DELAYED */ \
 	struct TASK_ARGSDELAY_NAME(name) { TASK_ARGS(name) real_args; int delay; }; \
 	/* type of internal args struct for INVOKE_TASK_WHEN */ \
@@ -227,26 +230,32 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	/* begin finalizer body definition */ \
 	static void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args)
 
-#define INVOKE_TASK(name, ...) ( \
+#define INVOKE_TASK_(name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
 		&(TASK_ARGS(name)) { __VA_ARGS__ } \
 	) \
 )
 
-#define INVOKE_TASK_WHEN(_event, name, ...) ( \
+#define INVOKE_TASK(...) INVOKE_TASK_(__VA_ARGS__, ._dummy_1 = 0)
+
+#define INVOKE_TASK_WHEN_(_event, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
 		&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event) } \
 	) \
 )
 
-#define INVOKE_TASK_DELAYED(_delay, name, ...) ( \
+#define INVOKE_TASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(_event, __VA_ARGS__, ._dummy_1 = 0)
+
+#define INVOKE_TASK_DELAYED_(_delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	cosched_new_task(_cosched_global, COTASKTHUNKDELAY_##name, \
 		&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) } \
 	) \
 )
+
+#define INVOKE_TASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(_delay, __VA_ARGS__, ._dummy_1 = 0)
 
 DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
@@ -263,6 +272,24 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define BYIELD        do { YIELD; CHECK_BREAK; } while(0)
 #define BWAIT(frames) do { WAIT(frames); CHECK_BREAK; } while(0)
 
-#define TASK_BIND(ent) cotask_bind_to_entity(cotask_active(), &ent->entity_interface)
+#define ENT_TYPE(typename, id) \
+	struct typename; \
+	struct typename *_cotask_bind_to_entity_##typename(CoTask *task, struct typename *ent);
+
+ENT_TYPES
+#undef ENT_TYPE
+
+#define cotask_bind_to_entity(task, ent) (_Generic((ent), \
+	Projectile*: _cotask_bind_to_entity_Projectile, \
+	Laser*: _cotask_bind_to_entity_Laser, \
+	Enemy*: _cotask_bind_to_entity_Enemy, \
+	Boss*: _cotask_bind_to_entity_Boss, \
+	Player*: _cotask_bind_to_entity_Player, \
+	Item*: _cotask_bind_to_entity_Item, \
+	EntityInterface*: cotask_bind_to_entity \
+)(task, ent))
+
+#define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
+#define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
 
 #endif // IGUARD_coroutine_h
