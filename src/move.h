@@ -36,4 +36,10 @@ MOVE_FUNC move_asymptotic(complex vel0, complex vel1, complex retention) {
 	return (MoveParams) { vel0, vel1 * (1 - retention), retention };
 }
 
+MOVE_FUNC move_asymptotic_simple(complex vel, double boost_factor) {
+	// NOTE: this matches the old asymptotic rule semantics exactly
+	double retention = 0.8;
+	return move_asymptotic(vel * (1 + boost_factor * retention), vel, retention);
+}
+
 #endif // IGUARD_move_h
