@@ -204,9 +204,15 @@ CoStatus cotask_status(CoTask *task) {
 	return koishi_state(&task->ko);
 }
 
-void cotask_bind_to_entity(CoTask *task, EntityInterface *ent) {
+EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 	assert(task->bound_ent.ent == 0);
+
+	if(ent == NULL) {
+		koishi_die(NULL);
+	}
+
 	task->bound_ent = ent_box(ent);
+	return ent;
 }
 
 void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg) {
@@ -346,3 +352,18 @@ DEFINE_EXTERN_TASK(_cancel_task_helper) {
 		cotask_cancel(task);
 	}
 }
+
+#include <projectile.h>
+#include <laser.h>
+#include <item.h>
+#include <enemy.h>
+#include <boss.h>
+#include <player.h>
+
+#define ENT_TYPE(typename, id) \
+	typename *_cotask_bind_to_entity_##typename(CoTask *task, typename *ent) { \
+		return ENT_CAST((cotask_bind_to_entity)(task, ent ? &ent->entity_interface : NULL), typename); \
+	}
+
+ENT_TYPES
+#undef ENT_TYPE

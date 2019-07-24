@@ -17,19 +17,19 @@ TASK(laserproj_death, { Projectile *p; }) {
 	spawn_projectile_clear_effect(ARGS.p);
 }
 
-TASK(laserize_proj, { Projectile *p; int t; }) {
-	TASK_BIND(ARGS.p);
+TASK(laserize_proj, { BoxedProjectile p; int t; }) {
+	Projectile *p = TASK_BIND(ARGS.p);
 	WAIT(ARGS.t);
 
-	complex pos = ARGS.p->pos;
-	double a = ARGS.p->angle;
-	Color clr = ARGS.p->color;
-	kill_projectile(ARGS.p);
+	complex pos = p->pos;
+	double a = p->angle;
+	Color clr = p->color;
+	kill_projectile(p);
 
 	complex aim = 12 * cexp(I * a);
 	create_laserline(pos, aim, 60, 80, &clr);
 
-	Projectile *p = PROJECTILE(
+	p = PROJECTILE(
 		.pos = pos,
 		.proto = pp_ball,
 		.color = &clr,
@@ -39,13 +39,15 @@ TASK(laserize_proj, { Projectile *p; int t; }) {
 	INVOKE_TASK_WHEN(&p->events.killed, laserproj_death, p);
 }
 
-TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }) {
+TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_inc; }) {
 	// WAIT_EVENT yields until the event fires.
 	// Returns true if the event was signaled, false if it was canceled.
 	// All waiting tasks will resume right after either of those occur, in the
 	// order they started waiting.
 
-	if(!WAIT_EVENT(&ARGS.e->events.killed)) {
+	Enemy *e = ENT_UNBOX(ARGS.e);
+
+	if(!WAIT_EVENT(&e->events.killed)) {
 		// Event canceled? Nothing to do here.
 		log_debug("[%p] leave (canceled)", (void*)cotask_active());
 		return;
@@ -53,7 +55,7 @@ TASK(wait_event_test, { Enemy *e; int rounds; int delay; int cnt; int cnt_inc; }
 
 	// Event signaled. Since this is an enemy death event, e will be invalid
 	// in the next frame. Let's save its position while we can.
-	complex pos = ARGS.e->pos;
+	complex pos = e->pos;
 
 	while(ARGS.rounds--) {
 		WAIT(ARGS.delay);
@@ -81,8 +83,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 	double hp; complex pos; complex dir;
 	struct { int x; } for_finalizer;
 }) {
-	Enemy *e = create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0);
-	TASK_BIND(e);
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.life_fragment = 1,
@@ -91,7 +92,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 		.points = 5,
 	});
 
-	INVOKE_TASK(wait_event_test, e, 3, 10, 15, 3);
+	INVOKE_TASK(wait_event_test, ENT_BOX(e), 3, 10, 15, 3);
 
 	for(;;) {
 		YIELD;
@@ -122,7 +123,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 					.max_viewport_dist = 128,
 				);
 
-				INVOKE_TASK(laserize_proj, p, 40);
+				INVOKE_TASK(laserize_proj, ENT_BOX(p), 40);
 			}
 
 			WAIT(2);
@@ -137,7 +138,7 @@ TASK_FINALIZER(test_enemy) {
 	log_debug("finalizer called (x = %i)", ARGS.for_finalizer.x);
 }
 
-TASK(stage_main, { int ignored; }) {
+TASK(stage_main, NO_ARGS) {
 	YIELD;
 
 	stage_wait(30);
@@ -152,7 +153,7 @@ TASK(stage_main, { int ignored; }) {
 }
 
 static void cotest_begin(void) {
-	INVOKE_TASK(stage_main, 0);
+	INVOKE_TASK(stage_main);
 }
 
 StageProcs corotest_procs = {

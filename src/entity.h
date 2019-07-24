@@ -110,11 +110,6 @@ struct EntityInterface {
 	ENTITY_INTERFACE_BASE(EntityInterface);
 };
 
-struct BoxedEntity {
-	uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
-	uint_fast32_t spawn_id;
-};
-
 INLINE const char* ent_type_name(EntityType type) {
 	switch(type) {
 		#define ENT_TYPE(typename, id) case id: return #id;
@@ -158,18 +153,47 @@ void ent_unhook_pre_draw(EntityDrawHookCallback callback);
 void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
 
+struct BoxedEntity {
+	uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
+	uint_fast32_t spawn_id;
+};
+
 BoxedEntity ent_box(EntityInterface *ent);
 EntityInterface *ent_unbox(BoxedEntity box);
 
-#define ENT_BOX(ent) ent_box(&(ent)->entity_interface)
+#define ENT_TYPE(typename, id) \
+	typedef union Boxed##typename { \
+		BoxedEntity as_generic; \
+		struct { \
+			uintptr_t ent; \
+			uint_fast32_t spawn_id; \
+		}; \
+	} Boxed##typename; \
+	struct typename; \
+	Boxed##typename _ent_box_##typename(struct typename *ent); \
+	struct typename *_ent_unbox_##typename(Boxed##typename box); \
 
-#if defined(USE_GNU_EXTENSIONS) && defined(DEBUG)
-	#define ENT_UNBOX(h, typename) (__extension__ ({ \
-		EntityInterface *_unboxed_ent = ent_unbox(h); \
-		_unboxed_ent ? ENT_CAST(_unboxed_ent, typename) : NULL; \
-	}))
-#else
-	#define ENT_UNBOX(h, typename) CASTPTR_ASSUME_ALIGNED(ent_unbox(h), typename)
-#endif
+ENT_TYPES
+#undef ENT_TYPE
+
+#define ENT_BOX(ent) (_Generic((ent), \
+	Projectile*: _ent_box_Projectile, \
+	Laser*: _ent_box_Laser, \
+	Enemy*: _ent_box_Enemy, \
+	Boss*: _ent_box_Boss, \
+	Player*: _ent_box_Player, \
+	Item*: _ent_box_Item, \
+	EntityInterface*: ent_box \
+)(ent))
+
+#define ENT_UNBOX(box) (_Generic((box), \
+	BoxedProjectile: _ent_unbox_Projectile, \
+	BoxedLaser: _ent_unbox_Laser, \
+	BoxedEnemy: _ent_unbox_Enemy, \
+	BoxedBoss: _ent_unbox_Boss, \
+	BoxedPlayer: _ent_unbox_Player, \
+	BoxedItem: _ent_unbox_Item, \
+	BoxedEntity: ent_unbox \
+)(box))
 
 #endif // IGUARD_entity_h
