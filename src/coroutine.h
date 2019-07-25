@@ -172,7 +172,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 #define DECLARE_TASK(name, argstruct) \
 	DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, static) /* require semicolon */
 
-/* define a task with static linkage (needs to be defined later) */
+/* define a task with static linkage (needs to be declared first) */
 #define DEFINE_TASK(name) \
 	DEFINE_TASK_EXPLICIT_LINKAGE(name, static)
 
@@ -266,11 +266,13 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define YIELD         cotask_yield(NULL)
 #define WAIT(delay)   do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
 #define WAIT_EVENT(e) cotask_wait_event((e), NULL)
+#define STALL         do { YIELD; } while(1)
 
 // to use these inside a coroutine, define a BREAK_CONDITION macro and a BREAK label.
 #define CHECK_BREAK   do { if(BREAK_CONDITION) goto BREAK; } while(0)
 #define BYIELD        do { YIELD; CHECK_BREAK; } while(0)
 #define BWAIT(frames) do { WAIT(frames); CHECK_BREAK; } while(0)
+#define BSTALL        do { BYIELD; } while(1)
 
 #define ENT_TYPE(typename, id) \
 	struct typename; \

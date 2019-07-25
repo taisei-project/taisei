@@ -11,6 +11,7 @@
 #include "stage1_events.h"
 #include "global.h"
 #include "stagetext.h"
+#include "common_tasks.h"
 
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -1238,39 +1239,52 @@ static int proj_rotate(Projectile *p, int t) {
 #endif
 
 TASK(burst_fairy, { complex pos; complex dir; }) {
-	Enemy *e = create_enemy1c(ARGS.pos, 700, Fairy, stage1_burst, ARGS.dir);
-	TASK_BIND_UNBOXED(e);
-}
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 700, Fairy, NULL, ARGS.dir));
 
-struct circletoss_shared {
-	complex velocity;
-	complex exit_accel;
-	int exit_time;
-};
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+		.power = 1,
+	});
 
-TASK(circletoss_move, { BoxedEnemy e; struct circletoss_shared *shared; }) {
-	Enemy *e = TASK_BIND(ARGS.e);
+	e->move.attraction_point = ARGS.pos + 120*I;
+	e->move.attraction = 0.03;
 
-	for(int i = 0;; ++i) {
-		e->pos += ARGS.shared->velocity;
+	WAIT(60);
 
-		if(i >= ARGS.shared->exit_time) {
-			ARGS.shared->velocity += ARGS.shared->exit_accel;
-		}
+	play_sound("shot1");
+	int n = 1.5 * global.diff - 1;
 
+	for(int i = -n; i <= n; i++) {
+		complex aim = cdir(carg(global.plr.pos - e->pos) + 0.2 * i);
+
+		PROJECTILE(
+			.proto = pp_crystal,
+			.pos = e->pos,
+			.color = RGB(0.2, 0.3, 0.5),
+			.move = move_asymptotic_simple(aim * (2 + 0.5 * global.diff), 5),
+		);
+	}
+
+	WAIT(1);
+
+	e->move.attraction = 0;
+	e->move.acceleration = 0.04 * ARGS.dir;
+	e->move.retention = 1;
+
+	for(;;) {
 		YIELD;
 	}
 }
 
-TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; struct circletoss_shared *shared; }) {
+TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; }) {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	int cnt = ARGS.duration / ARGS.interval;
-	double angle_step = 2 * M_PI / cnt;
+	double angle_step = M_TAU / cnt;
 
 	for(int i = 0; i < cnt; ++i) {
 		play_loop("shot1_loop");
-		ARGS.shared->velocity *= 0.8;
+		e->move.velocity *= 0.8;
 
 		complex aim = cdir(angle_step * i);
 
@@ -1296,7 +1310,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 			aim_angle += 0.05 * global.diff * nfrand();
 
 			complex aim = cdir(aim_angle);
-			aim *= 1 + frand() * 2;
+			aim *= rand_range(1, 3);
 
 			PROJECTILE(
 				.proto = pp_thickrice,
@@ -1315,18 +1329,16 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int exit_time; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
 
-	struct circletoss_shared shared = {
-		.velocity = ARGS.velocity,
-		.exit_accel = 0.03 * ARGS.exit_accel - 0.04 * I,
-		.exit_time = ARGS.exit_time,
-	};
+	e->move = move_linear(ARGS.velocity);
 
-	INVOKE_TASK(circletoss_move, ENT_BOX(e), &shared);
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+		.power = 1,
+	});
 
 	INVOKE_TASK_DELAYED(60, circletoss_shoot_circle, ENT_BOX(e),
 		.duration = 40,
-		.interval = 2 + (global.diff < D_Hard),
-		.shared = &shared
+		.interval = 2 + (global.diff < D_Hard)
 	);
 
 	if(global.diff > D_Easy) {
@@ -1337,7 +1349,100 @@ TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int 
 		);
 	}
 
-	for(;;) YIELD;
+	WAIT(ARGS.exit_time);
+	e->move.acceleration += ARGS.exit_accel;
+	STALL;
+}
+
+TASK(sinepass_swirl_move, { BoxedEnemy e; complex v; complex sv; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	complex sv = ARGS.sv;
+	complex v = ARGS.v;
+
+	for(;;) {
+		sv -= cimag(e->pos - e->pos0) * 0.03 * I;
+		e->pos += sv * 0.4 + v;
+		YIELD;
+	}
+}
+
+TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+	});
+
+	INVOKE_TASK(sinepass_swirl_move, ENT_BOX(e), ARGS.vel, ARGS.svel);
+
+	WAIT(difficulty_value(25, 20, 15, 10));
+
+	int shot_interval = difficulty_value(50, 40, 30, 20);
+
+	for(;;) {
+		play_sound("shot1");
+
+		complex aim = cnormalize(global.plr.pos - e->pos);
+		aim *= difficulty_value(1.5, 2, 2.5, 3);
+
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(0.8, 0.8, 0.4),
+			.move = move_asymptotic_simple(aim, 5),
+		);
+
+		WAIT(shot_interval);
+	}
+}
+
+TASK(circle_fairy, { complex pos; complex target_pos; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1400, BigFairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 3,
+		.power = 2,
+	});
+
+	e->move.attraction = 0.005;
+	e->move.retention = 0.8;
+	e->move.attraction_point = ARGS.target_pos;
+
+	WAIT(150);
+
+	int shot_interval = difficulty_value(4, 4, 2, 2);
+	int shot_count = difficulty_value(10, 15, 20, 15);
+	int round_interval = 120 - shot_interval * shot_count;
+
+	for(int round = 0; round < 4; ++round) {
+		double a_ofs = rand_angle();
+
+		for(int i = 0; i < shot_count; ++i) {
+			complex aim;
+
+			aim = circle_dir_ofs((round & 1) ? i : shot_count - i, shot_count, a_ofs);
+			aim *= difficulty_value(1.9, 2.1, 2.3, 2.5);
+
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = e->pos,
+				.color = RGB(0.6, 0.2, 0.7),
+				.move = move_asymptotic_simple(aim, i * 0.5),
+			);
+
+			play_loop("shot1_loop");
+			WAIT(shot_interval);
+		}
+
+		e->move.attraction_point += 30 * cdir(rand_angle());
+		WAIT(round_interval);
+	}
+
+	WAIT(10);
+	e->move.attraction = 0;
+	e->move.retention = 1;
+	e->move.acceleration = -0.04 * I * cdir(nfrand() * M_TAU / 12);
+	STALL;
 }
 
 // opening. projectile bursts
@@ -1361,13 +1466,14 @@ TASK(burst_fairies_2, NO_ARGS) {
 }
 
 // swirl, sine pass
-TASK(sinepass_swirls, NO_ARGS) {
-	const int cnt = 32;
+TASK(sinepass_swirls, { int cnt; double level; double dir; }) {
+	const int cnt = ARGS.cnt;
+	const double dir = ARGS.dir;
+	const complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
 
 	for(int i = 0; i < cnt; ++i) {
-		tsrand_fill(2);
-		create_enemy2c(VIEWPORT_W*(i&1) + afrand(0)*100.0*I + 70.0*I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(i&1)), afrand(1)*7.0*I);
-		stage_wait(20);
+		INVOKE_TASK(sinepass_swirl, pos, 3.5 * dir, 7.0 * I);
+		stage_wait(10);
 	}
 }
 
@@ -1377,7 +1483,7 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 		INVOKE_TASK(circletoss_fairy,
 			.pos = VIEWPORT_W * i + VIEWPORT_H / 3 * I,
 			.velocity = 2 - 4 * i - 0.3 * I,
-			.exit_accel = 1 - 2 * i,
+			.exit_accel = 0.03 * (1 - 2 * i) - 0.04 * I ,
 			.exit_time = (global.diff > D_Easy) ? 500 : 240
 		);
 
@@ -1390,14 +1496,34 @@ TASK(stage_timeline, NO_ARGS) {
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 	YIELD;
 
+	for(;;) {
+		complex pos, tpos;
+
+		if(frand() > 0.5) {
+			pos = VIEWPORT_W - 64;
+		} else {
+			pos = 64;
+		}
+
+		tpos = rand_range(64, VIEWPORT_W - 64) + 200 * I;
+
+		INVOKE_TASK(circle_fairy, pos, tpos);
+		WAIT(240);
+	}
+	return;
+
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
 	stage_wait(140);
 	INVOKE_TASK(burst_fairies_2);
 	stage_wait(200);
-	INVOKE_TASK(sinepass_swirls);
+	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
 	stage_wait(20);
 	INVOKE_TASK(circletoss_fairies_1);
+	stage_wait(160);
+	INVOKE_TASK(sinepass_swirls, 18, 150, -1);
+	stage_wait(160);
+	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
 }
 
 void stage1_events(void) {

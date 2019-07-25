@@ -230,6 +230,18 @@ float sanitize_scale(float scale) {
 	return max(0.1, scale);
 }
 
+double circle_angle(double index, double max_elements) {
+	return (index * (M_PI * 2.0)) / max_elements;
+}
+
+complex circle_dir(double index, double max_elements) {
+	return cdir(circle_angle(index, max_elements));
+}
+
+complex circle_dir_ofs(double index, double max_elements, double ofs) {
+	return cdir(circle_angle(index, max_elements) + ofs);
+}
+
 float normpdf(float x, float sigma) {
     return 0.39894 * exp(-0.5 * pow(x, 2) / pow(sigma, 2)) / sigma;
 }
