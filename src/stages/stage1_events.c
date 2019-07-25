@@ -11,6 +11,7 @@
 #include "stage1_events.h"
 #include "global.h"
 #include "stagetext.h"
+#include "common_tasks.h"
 
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -1238,8 +1239,47 @@ static int proj_rotate(Projectile *p, int t) {
 #endif
 
 TASK(burst_fairy, { complex pos; complex dir; }) {
-	Enemy *e = create_enemy1c(ARGS.pos, 700, Fairy, stage1_burst, ARGS.dir);
-	TASK_BIND_UNBOXED(e);
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 700, Fairy, NULL, ARGS.dir));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+		.power = 1,
+	});
+
+	for(int i = 60; i--;) {
+		GO_TO(e, ARGS.pos + 120*I, 0.03);
+		YIELD;
+	}
+
+	{
+		play_sound("shot1");
+		int n = 1.5 * global.diff - 1;
+
+		for(int i = -n; i <= n; i++) {
+			complex aim = cdir(carg(global.plr.pos - e->pos) + 0.2 * i);
+
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.3, 0.5),
+				.move = move_asymptotic_simple(aim * (2 + 0.5 * global.diff), 5),
+			);
+		}
+
+		e->moving = true;
+		e->dir = creal(e->args[0]) < 0;
+
+		YIELD;
+	}
+
+	complex v = ARGS.dir;
+	complex a = 0.04 * v;
+
+	for(;;) {
+		e->pos += v;
+		v += a;
+		YIELD;
+	}
 }
 
 struct circletoss_shared {
@@ -1340,6 +1380,45 @@ TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int 
 	for(;;) YIELD;
 }
 
+TASK(sinepass_swirl_move, { BoxedEnemy e; complex v; complex sv; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	complex sv = ARGS.sv;
+	complex v = ARGS.v;
+
+	for(;;) {
+		sv -= cimag(e->pos - e->pos0) * 0.03 * I;
+		e->pos += sv * 0.4 + v;
+		YIELD;
+	}
+}
+
+TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+	});
+
+	INVOKE_TASK(sinepass_swirl_move, ENT_BOX(e), ARGS.vel, ARGS.svel);
+
+	WAIT(30 - 5 * global.diff);
+
+	for(;;) {
+		play_sound("shot1");
+
+		complex aim = cnormalize(global.plr.pos - e->pos);
+
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(0.8, 0.8, 0.4),
+			.move = move_asymptotic_simple((1 + 0.5 * global.diff) * aim, 5),
+		);
+
+		WAIT(60 - 10 * global.diff);
+	}
+}
+
 // opening. projectile bursts
 TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
@@ -1365,8 +1444,11 @@ TASK(sinepass_swirls, NO_ARGS) {
 	const int cnt = 32;
 
 	for(int i = 0; i < cnt; ++i) {
-		tsrand_fill(2);
-		create_enemy2c(VIEWPORT_W*(i&1) + afrand(0)*100.0*I + 70.0*I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(i&1)), afrand(1)*7.0*I);
+		double odd = i & 1;
+		double sign = 1 - 2 * odd;
+
+		INVOKE_TASK(sinepass_swirl, VIEWPORT_W * odd + 100 * I, 3.5 * sign, 7.0 * I);
+
 		stage_wait(20);
 	}
 }
@@ -1389,6 +1471,8 @@ TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 	YIELD;
+
+	INVOKE_TASK(sinepass_swirls);
 
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
