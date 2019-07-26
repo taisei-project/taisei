@@ -97,6 +97,12 @@ else
     )
 endif
 
+if host_machine.system() == 'nx'
+    taisei_src += files(
+        'arch_switch.c',
+    )
+endif
+
 sse42_src = []
 
 subdir('audio')
