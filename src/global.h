@@ -50,8 +50,13 @@
 
 enum {
 	// defaults
+#ifdef __SWITCH__
+	RESX = 1280,
+	RESY = 720,
+#else
 	RESX = 800,
 	RESY = 600,
+#endif
 
 	VIEWPORT_X = 40,
 	VIEWPORT_Y = 20,
