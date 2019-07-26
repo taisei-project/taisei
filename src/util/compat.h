@@ -278,4 +278,10 @@ typedef complex max_align_t;
 
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
+#ifdef __SWITCH__
+	#include "../arch_switch.h"
+	#define atexit nxAtExit
+	#define exit nxExit
+#endif
+
 #endif // IGUARD_util_compat_h

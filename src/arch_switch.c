@@ -21,15 +21,31 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #pragma GCC diagnostic ignored "-Wformat-truncation"
-#pragma GCC diagnostic ignored "-Wpedantic"
 
 #define NX_LOG_FMT(fmt, ...) printf("[NX] " fmt "\n", ##__VA_ARGS__)
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);setenv(name, val, 1)
 
+static nxAtExitFn g_nxAtExitFn = NULL;
+static AppletHookCookie g_hookCookie;
+
+static void onAppletHook(AppletHookType hook, void *param) {
+	switch (hook) {
+		case AppletHookType_OnExitRequest:
+			NX_LOG("Got AppletHook OnExitRequest, exiting.\n");
+			taisei_quit();
+			break;
+
+		default:
+			break;
+	}
+}
+
 attr_used
 void userAppInit() {
 	socketInitializeDefault();
+	appletLockExit();
+	appletHook(&g_hookCookie, onAppletHook, NULL);
 
 #ifdef DEBUG
 	dup2(1, 2);
@@ -73,7 +89,28 @@ void userAppInit() {
 
 attr_used
 void userAppExit() {
+	if(g_nxAtExitFn != NULL) {
+		NX_LOG("calling exit callback");
+		g_nxAtExitFn();
+		g_nxAtExitFn = NULL;
+	}
 	socketExit();
+	appletUnlockExit();
+}
+
+int nxAtExit(nxAtExitFn fn) {
+	if(g_nxAtExitFn == NULL) {
+		NX_LOG("got exit callback");
+		g_nxAtExitFn = fn;
+		return 0;
+	}
+	return -1;
+}
+
+void __attribute__((weak)) __libnx_exit(int rc);
+
+void nxExit(int rc) {
+	__libnx_exit(rc);
 }
 
 #pragma GCC diagnostic pop

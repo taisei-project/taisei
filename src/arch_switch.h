@@ -8,7 +8,12 @@
 #ifndef IGUARD_arch_switch_h
 #define IGUARD_arch_switch_h
 
+typedef void (*nxAtExitFn)(void);
+
 void userAppInit(void);
 void userAppExit(void);
+int nxAtExit(nxAtExitFn fn);
+
+void nxExit(int rc);
 
 #endif // IGUARD_arch_switch_h
