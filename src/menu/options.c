@@ -662,9 +662,11 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 	OptionBinding *b;
 
+#ifndef __SWITCH__
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
+#endif
 
 	add_menu_entry(m, "Device", do_nothing,
 		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)

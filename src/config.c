@@ -476,4 +476,8 @@ void config_load(void) {
 
 	// set config version to the latest
 	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));
+
+#ifdef __SWITCH__
+	config_set_int(CONFIG_GAMEPAD_ENABLED, true);
+#endif
 }
