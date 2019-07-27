@@ -13,7 +13,7 @@
 
 #define CO_STACK_SIZE (64 * 1024)
 
-#define TASK_DEBUG
+// #define TASK_DEBUG
 // #define EVT_DEBUG
 
 #ifdef TASK_DEBUG

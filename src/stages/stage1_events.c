@@ -1282,27 +1282,7 @@ TASK(burst_fairy, { complex pos; complex dir; }) {
 	}
 }
 
-struct circletoss_shared {
-	complex velocity;
-	complex exit_accel;
-	int exit_time;
-};
-
-TASK(circletoss_move, { BoxedEnemy e; struct circletoss_shared *shared; }) {
-	Enemy *e = TASK_BIND(ARGS.e);
-
-	for(int i = 0;; ++i) {
-		e->pos += ARGS.shared->velocity;
-
-		if(i >= ARGS.shared->exit_time) {
-			ARGS.shared->velocity += ARGS.shared->exit_accel;
-		}
-
-		YIELD;
-	}
-}
-
-TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; struct circletoss_shared *shared; }) {
+TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; }) {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	int cnt = ARGS.duration / ARGS.interval;
@@ -1310,7 +1290,7 @@ TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; struct
 
 	for(int i = 0; i < cnt; ++i) {
 		play_loop("shot1_loop");
-		ARGS.shared->velocity *= 0.8;
+		e->move.velocity *= 0.8;
 
 		complex aim = cdir(angle_step * i);
 
@@ -1355,18 +1335,11 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int exit_time; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
 
-	struct circletoss_shared shared = {
-		.velocity = ARGS.velocity,
-		.exit_accel = 0.03 * ARGS.exit_accel - 0.04 * I,
-		.exit_time = ARGS.exit_time,
-	};
-
-	INVOKE_TASK(circletoss_move, ENT_BOX(e), &shared);
+	e->move = move_linear(ARGS.velocity);
 
 	INVOKE_TASK_DELAYED(60, circletoss_shoot_circle, ENT_BOX(e),
 		.duration = 40,
-		.interval = 2 + (global.diff < D_Hard),
-		.shared = &shared
+		.interval = 2 + (global.diff < D_Hard)
 	);
 
 	if(global.diff > D_Easy) {
@@ -1376,6 +1349,9 @@ TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int 
 			.duration = 5 + 7 * global.diff
 		);
 	}
+
+	WAIT(ARGS.exit_time);
+	e->move.acceleration += 0.03 * ARGS.exit_accel - 0.04 * I;
 
 	for(;;) YIELD;
 }
@@ -1471,8 +1447,6 @@ TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 	YIELD;
-
-	INVOKE_TASK(sinepass_swirls);
 
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
