@@ -36,7 +36,7 @@ static Dialog *stage4_dialog_pre_boss(void) {
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	make_kurumi_actor(d->actors + DIALOG_RIGHT, "dialog/kurumi", DIALOG_FACE_NORMAL);
 	pm->dialog->stage4_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage4boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage4boss"});
 	return d;
 }
 

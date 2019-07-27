@@ -15,43 +15,59 @@ DIALOG_SCRIPT(marisa_stage1_pre_boss) {
 	RIGHT("Every time there’s an incident, we fairies show up to stop weak humans like you from spoiling the fun!");
 	LEFT("So, you’re callin’ me weak?");
 	RIGHT("Weak to cold for sure! I’ll turn you into a human-sized popsicle!");
+	LEFT_FACE(SMUG);
 	LEFT("I’d like to see ya try.");
 }
 
 DIALOG_SCRIPT(marisa_stage1_post_boss) {
 	RIGHT("Waah, it’s hot! I’m gonna melt!");
+	LEFT_FACE(HAPPY);
 	LEFT("I’ve made the lake a lot warmer now, so ya can’t freeze anyone.");
 }
 
 DIALOG_SCRIPT(marisa_stage2_pre_boss) {
 	RIGHT("I can’t let you pass any further than this. Please go back down the mountain.");
+	LEFT_FACE(SMUG);
 	LEFT("So, is that your misfortune talkin’?");
 	RIGHT("Exploring that tunnel is only going to lead you to ruin. I’ll protect you by driving you away!");
+	LEFT_FACE(ANNOYED);
 	LEFT("I can make dumb decisions on my own, thanks.");
+	LEFT_FACE(NORMAL);
 	RIGHT("A bad attitude like that is destined to be cursed from the beginning. I’ll send you packing home as a favor to you, so you don’t get hurt further by your terrible ideas!");
 }
 
 DIALOG_SCRIPT(marisa_stage2_post_boss) {
+	LEFT_FACE(HAPPY);
 	LEFT("Somehow I already feel luckier after beating ya. Fixin’ the border should be no sweat!");
 	RIGHT("It’s as much as I can do since I cannot stop you. But maybe you could reconsider…?");
+	LEFT_FACE(SMUG);
 	LEFT("Nope! I’m way too excited!");
 }
 
 DIALOG_SCRIPT(marisa_stage3_pre_boss) {
 	LEFT("Huh, didn’t expect a bug to make it this far down the tunnel.");
 	RIGHT("All of this beautiful light, and you didn’t expect me to be drawn to it?");
+	LEFT_FACE(SMUG);
 	LEFT("I expected ya to lose, that’s all.");
+	RIGHT_FACE(HAPPY);
 	RIGHT("I’m nowhere near as weak as you think, human! In fact, being here has made me stronger than ever! That’s because I’m the one that made this tunnel and broke the barrier,");
+	LEFT_FACE(NORMAL);
+	RIGHT_FACE(SMUG);
 	RIGHT("in order to finally show you all the true merit of insect power!");
+	LEFT_FACE(SMUG);
 	LEFT("I can’t really say I believe ya on that point, bein’ that you’re just a bug ’n all.");
+	RIGHT_FACE(HAPPY);
 	RIGHT("Ha! Watch me put on a grand light show that will put your dud fireworks to shame!");
 }
 
 DIALOG_SCRIPT(marisa_stage3_post_boss) {
+	LEFT_FACE(SMUG);
 	LEFT("So where’s the finale? Nothing’s changed.");
 	RIGHT("I was lying! I just wanted to take you down a peg with my new magic!");
+	LEFT_FACE(NORMAL);
 	LEFT("Y’know, fly too close to the sun and ya get burned. I’ll be goin’ to take care of some real threats now.");
 	RIGHT("Ugh, just wait and see! This won’t be over if I ever get the chance again!");
+	LEFT_FACE(HAPPY);
 	LEFT("Yeah, yeah. You’ll need to be less crispy first, though.");
 }
 

@@ -54,18 +54,43 @@ static int message_index(Dialog *d, int offset) {
 	return idx;
 }
 
-DialogAction * dialog_add_action(Dialog *d, DialogActionType side, const char *msg) {
+DialogAction *dialog_add_action(Dialog *d, const DialogAction *action) {
 	d->actions = realloc(d->actions, (++d->count)*sizeof(DialogAction));
-	d->actions[d->count-1].type = side;
-	d->actions[d->count-1].msg = malloc(strlen(msg) + 1);
-	d->actions[d->count-1].timeout = 0;
-	strlcpy(d->actions[d->count-1].msg, msg, strlen(msg) + 1);
-	return &d->actions[d->count-1];
+
+	DialogAction *a = d->actions + d->count - 1;
+	memcpy(a, action, sizeof(*a));
+
+	switch(a->type) {
+		case DIALOG_MSG_LEFT:
+		case DIALOG_MSG_RIGHT:
+			a->msg = strdup(a->msg);
+			break;
+
+		case DIALOG_SET_BGM:
+			a->bgm = strdup(a->bgm);
+			break;
+
+		case DIALOG_SET_FACE_RIGHT:
+		case DIALOG_SET_FACE_LEFT:
+			break;
+
+		default:
+			UNREACHABLE;
+	}
+
+	return a;
 }
 
 void dialog_destroy(Dialog *d) {
 	for(int i = 0; i < d->count; i++) {
-		free(d->actions[i].msg);
+		switch(d->actions[i].type) {
+			case DIALOG_MSG_LEFT:
+			case DIALOG_MSG_RIGHT:
+			case DIALOG_SET_BGM:
+				free(d->actions[i].msg);
+			default:
+				break;
+		}
 	}
 
 	free(d->actions);
@@ -258,27 +283,50 @@ void dialog_draw(Dialog *dialog) {
 	r_state_pop();
 }
 
-bool dialog_page(Dialog **d) {
-	if(!*d || (*d)->pos >= (*d)->count) {
+bool dialog_page(Dialog **pdialog) {
+	Dialog *d = *pdialog;
+
+recurse:
+
+	if(!d || d->pos >= d->count) {
 		return false;
 	}
 
-	int to = (*d)->actions[(*d)->pos].timeout;
+	int to = d->actions[d->pos].timeout;
 
 	if(to && to > global.frames) {
 		return false;
 	}
 
-	(*d)->pos++;
-	(*d)->page_time = global.frames;
+	DialogAction *a = d->actions + d->pos;
+	d->pos++;
+	d->page_time = global.frames;
 
-	if((*d)->pos >= (*d)->count) {
+	if(d->pos >= d->count) {
 		// XXX: maybe this can be handled elsewhere?
 		if(!global.boss)
 			global.timer++;
-	} else if((*d)->actions[(*d)->pos].type == DIALOG_SET_BGM) {
-		stage_start_bgm((*d)->actions[(*d)->pos].msg);
-		return dialog_page(d);
+	}
+
+	switch(a->type) {
+		case DIALOG_SET_BGM:
+			stage_start_bgm(a->bgm);
+			break;
+
+		case DIALOG_SET_FACE_RIGHT:
+		case DIALOG_SET_FACE_LEFT: {
+			DialogActor *actor = &d->actors[
+				a->type == DIALOG_SET_FACE_RIGHT
+					? DIALOG_RIGHT
+					: DIALOG_LEFT
+			];
+
+			actor->face = actor->faces[a->face];
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	return true;
@@ -290,17 +338,30 @@ void dialog_update(Dialog **d) {
 	}
 
 	if(dialog_is_active(*d)) {
-		int to = (*d)->actions[(*d)->pos].timeout;
+		while((*d)->pos < (*d)->count) {
+			if(
+				(*d)->actions[(*d)->pos].type != DIALOG_MSG_LEFT &&
+				(*d)->actions[(*d)->pos].type != DIALOG_MSG_RIGHT
+			) {
+				log_debug("auto page %i begin", (*d)->pos);
+				dialog_page(d);
+				log_debug("auto page %i end", (*d)->pos);
+			} else {
+				int to = (*d)->actions[(*d)->pos].timeout;
 
-		if(
-			(to && to >= global.frames) ||
-			((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
-		) {
-			dialog_page(d);
+				if(
+					(to && to >= global.frames) ||
+					((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
+				) {
+					dialog_page(d);
+				}
+
+				break;
+			}
 		}
 	}
 
-	// important to check this again; the page_dialog call may have ended the dialog
+	// important to check this again; the dialog_page call may have ended the dialog
 
 	if(dialog_is_active(*d)) {
 		fapproach_asymptotic_p(&(*d)->opacity, 1, 0.05, 1e-3);

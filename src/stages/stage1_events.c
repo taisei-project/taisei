@@ -25,7 +25,7 @@ static Dialog *stage1_dialog_pre_boss(void) {
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	make_cirno_actor(d->actors + DIALOG_RIGHT, "dialog/cirno", DIALOG_FACE_NORMAL);
 	pm->dialog->stage1_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage1boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage1boss"});
 	return d;
 }
 

@@ -26,7 +26,7 @@ static Dialog *stage2_dialog_pre_boss(void) {
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	make_hina_actor(d->actors + DIALOG_RIGHT, "dialog/hina", DIALOG_FACE_NORMAL);
 	pm->dialog->stage2_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage2boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage2boss"});
 	return d;
 }
 

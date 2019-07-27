@@ -674,6 +674,10 @@ typedef struct StageFrameState {
 	uint16_t last_replay_fps;
 	CallChain cc;
 	int logic_calls;
+
+#ifdef DEBUG
+	bool skip_to_dialog;
+#endif
 } StageFrameState;
 
 static void stage_update_fps(StageFrameState *fstate) {
@@ -724,6 +728,12 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	++fstate->logic_calls;
 
 	stage_update_fps(fstate);
+
+	#ifdef DEBUG
+	if(fstate->skip_to_dialog) {
+		global.plr.iddqd = true;
+	}
+	#endif
 
 	if(global.shake_view > 30) {
 		global.shake_view = 30;
@@ -776,6 +786,21 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return LFRAME_STOP;
 	}
 
+	#ifdef DEBUG
+	if(fstate->skip_to_dialog) {
+		if(dialog_is_active(global.dialog)) {
+			fstate->skip_to_dialog = false;
+			global.plr.iddqd = false;
+		} else {
+			return LFRAME_SKIP;
+		}
+	}
+
+	if(gamekeypressed(KEY_SKIP)) {
+		return LFRAME_SKIP;
+	}
+	#endif
+
 	if(global.frameskip || (global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP))) {
 		return LFRAME_SKIP;
 	}
@@ -786,6 +811,10 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
+
+	if(fstate->skip_to_dialog) {
+		return RFRAME_DROP;
+	}
 
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
@@ -881,6 +910,10 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
 	fstate->stage = stage;
 	fstate->cc = next;
+
+	#ifdef DEBUG
+	fstate->skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
+	#endif
 
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }

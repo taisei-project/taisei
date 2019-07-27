@@ -13,20 +13,27 @@
 DIALOG_SCRIPT(reimu_stage1_pre_boss) {
 	LEFT("Good grief, it’s too early in the morning to be flying around.");
 	RIGHT("Hey, shrine maiden! Am I making you cold?");
+	LEFT_FACE(ANNOYED);
 	LEFT("Not as much as you’re just being a pest. I’m too busy to play games with fairies.");
-	RIGHT("That’s not true! It’s never too early to have fun!");
+	RIGHT("That’s not true! There is always time to have some fun!");
 	RIGHT("Prepare to catch an air conditioner cold on my ice playground!");
 }
 
 DIALOG_SCRIPT(reimu_stage1_post_boss) {
+	LEFT_FACE(HAPPY);
 	LEFT("A~ah, what a sight! It’s snowing during springtime.");
-	LEFT("A little too cold for my taste, though. I'd rather get going.");
+	// RIGHT("@_@");
+	LEFT_FACE(NORMAL);
+	LEFT("A little too cold for my taste, though. I should get going.");
 }
 
 DIALOG_SCRIPT(reimu_stage2_pre_boss) {
 	RIGHT("I can’t let you pass any further than this. Please go back down the mountain.");
+	LEFT_FACE(SURPRISED);
 	LEFT("You help humans that wander around the mountain, don’t you? So why are you getting in the way?");
+	LEFT_FACE(NORMAL);
 	RIGHT("I can feel misfortune leaking from this tunnel. You won’t be going anywhere safe down this route so I need to stop you!");
+	LEFT_FACE(ANNOYED);
 	LEFT("You should know by now that my job is taking care of dangerous things, so step aside.");
 	RIGHT("I’m afraid not!");
 }
@@ -34,35 +41,50 @@ DIALOG_SCRIPT(reimu_stage2_pre_boss) {
 DIALOG_SCRIPT(reimu_stage2_post_boss) {
 	LEFT("In the end, you only made things harder for the both of us.");
 	RIGHT("I’m sorry, Miss Shrine Maiden! Would you like a blessing to make up for it?");
+	LEFT_FACE(SMUG);
 	LEFT("No need. I’m the luckiest person in Gensokyo, at least when it’s not about money.");
+	LEFT_FACE(HAPPY);
 	LEFT("If you want to help, donate to my shrine. I don’t care if it’s cursed.");
 }
 
 DIALOG_SCRIPT(reimu_stage3_pre_boss) {
 	LEFT("Huh, a bug that managed to escape extermination.");
-	RIGHT("I heard that! ");
+	RIGHT_FACE(SMUG);  // "calm"
+	RIGHT("I heard that!");
+	RIGHT_FACE(NORMAL);
 	RIGHT("Do you really think I’ll let you get away with such a callous remark?");
+	LEFT_FACE(SMUG);
 	LEFT("You’re just an insect yōkai. What do you think you’re capable of?");
+	RIGHT_FACE(HAPPY);  // "proud" (wink)
 	RIGHT("Why, this entire incident! You’re looking at the culprit right here, right now!");
+	RIGHT_FACE(NORMAL);
+	LEFT_FACE(HAPPY);
 	LEFT("You can’t be serious. Are you just drunk on all this light?");
+	RIGHT_FACE(HAPPY);  // "proud" (wink)
 	RIGHT("I’m drunk on power! I’ll prove my mettle by defeating you once and for all!");
 }
 
 DIALOG_SCRIPT(reimu_stage3_post_boss) {
 	LEFT("If humans get drunk from moonshine, then I guess bugs can become intoxicated by sunshine too.");
 	RIGHT("Ugh, my head hurts. Can’t you go easy on me?");
+	LEFT_FACE(SMUG);
 	LEFT("I don’t go easy on anyone that claims to be causing an incident. But I can tell you are lying about that.");
 	RIGHT("There’s no need to make fun of me for that! You’ll regret it if you lose later!");
+	LEFT_FACE(NORMAL);
 	RIGHT("I won’t forget this humiliation!");
+	LEFT_FACE(HAPPY);
 	LEFT("Go take a nap already.");
 }
 
 DIALOG_SCRIPT(reimu_stage4_pre_boss) {
+	LEFT_FACE(SURPRISED);
 	RIGHT("Halt, intruder!");
 	LEFT("Oh, it’s somebody new.");
 	RIGHT("No, definitely not! I could never forget you from all those years ago! That was the most intense battle of my life!");
+	LEFT_FACE(NORMAL);
 	LEFT("Hmm, nope, I don’t remember fighting you. Maybe if you told me your name, I could recall faster.");
 	RIGHT("Unforgivable! How about I just jog your memory through terror instead?");
+	LEFT_FACE(ANNOYED);
 	LEFT("I’m in a hurry, and that also sounds unpleasant.");
 	RIGHT("You don’t get a choice! Prepare to have bloody nightmares for weeks, shrine maiden!");
 }

@@ -14,8 +14,14 @@
 #include "dialog.h"
 
 #define DIALOG_SCRIPT(name) static void dialog_##name(Dialog *d)
-#define LEFT(message) dialog_add_action(d, DIALOG_MSG_LEFT, message)
-#define RIGHT(message) dialog_add_action(d, DIALOG_MSG_RIGHT, message)
+#define MSG(_side, _text) \
+	dialog_add_action(d, &(DialogAction) { .type = (_side), .msg = (_text) })
+#define FACE(_side, _face) \
+	dialog_add_action(d, &(DialogAction) { .type = (_side), .face = DIALOG_FACE_##_face })
+#define LEFT(text) MSG(DIALOG_MSG_LEFT, text)
+#define RIGHT(text) MSG(DIALOG_MSG_RIGHT, text)
+#define LEFT_FACE(face) FACE(DIALOG_SET_FACE_LEFT, face)
+#define RIGHT_FACE(face) FACE(DIALOG_SET_FACE_RIGHT, face)
 
 #define EXPORT_DIALOG_SCRIPT(name) \
 	PlayerDialogProcs dialog_##name = { \

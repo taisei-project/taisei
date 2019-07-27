@@ -35,7 +35,7 @@ static Dialog *stage5_dialog_pre_boss(void) {
 	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
 	make_iku_actor(d->actors + DIALOG_RIGHT, "dialog/iku", DIALOG_FACE_NORMAL);
 	pm->dialog->stage5_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage5boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage5boss"});
 	return d;
 }
 

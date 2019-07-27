@@ -12,9 +12,12 @@
 
 DIALOG_SCRIPT(youmu_stage1_pre_boss) {
 	LEFT("The temperature of the lake almost resembles the Netherworld’s. Good thing I don’t get cold easily.");
+	LEFT_FACE(SURPRISED);
 	RIGHT("What’s that? You think you can’t get cold?");
+	LEFT_FACE(ANNOYED);
 	LEFT("I don’t just think that, I know that. I’m half-phantom, so even my body is cold.");
 	RIGHT("I’ll take that as a challenge! Prepare to be chilled in a way no ghost can match!");
+	LEFT_FACE(NORMAL);
 	RIGHT("Let’s see if phantoms are good as soft-serve ice cream!");
 }
 
@@ -24,33 +27,45 @@ DIALOG_SCRIPT(youmu_stage1_post_boss) {
 
 DIALOG_SCRIPT(youmu_stage2_pre_boss) {
 	RIGHT("I can’t let you pass any further than this. Please go back down the mountain.");
+	LEFT_FACE(SURPRISED);
 	LEFT("Are you a goddess? It’s nice of you to be looking out for me, but the Netherworld has been put at risk due to this incident.");
+	LEFT_FACE(NORMAL);
 	LEFT("I have to keep going.");
 	RIGHT("The tunnel leads nowhere but to ruin. If you don’t return to the ghostly world where you come from, I’ll have to stop you by force!");
 	LEFT("My mistress won’t like it if I tell her I was stopped by divine intervention. You’ll have to come up with another excuse.");
 }
 
 DIALOG_SCRIPT(youmu_stage2_post_boss) {
+	LEFT_FACE(HAPPY);
 	LEFT("It’s strange, but I feel as if my burdens have been lifted. Did you decide to bless me after all?");
 	RIGHT("It’s the least I can do since I cannot stop you. Are you sure you want to go through the tunnel?");
+	LEFT_FACE(NORMAL);
 	LEFT("I don’t have a choice. I’m being ordered to by a power far beyond us both.");
 	LEFT("She’s most definitely stronger than gods when she is angry.");
 }
 
 DIALOG_SCRIPT(youmu_stage3_pre_boss) {
 	LEFT("Huh, why is it that I feel like I’ve fought you before? But when I try to recall anything, my skin crawls and I seem to forget immediately.");
+	RIGHT_FACE(HAPPY);
 	RIGHT("Maybe it’s because you realized the true power of us insects?");
+	LEFT_FACE(SMUG);
 	LEFT("No, I think it’s because I was too disgusted.");
+	RIGHT_FACE(NORMAL);
 	RIGHT("How dare you! We make life possible for you humans, and in turn you disrespect us and call us derogatory things!");
+	RIGHT_FACE(SMUG);
 	RIGHT("Entering this light has given me great power. I’ll stomp you out in the same cruel way you humans step on bugs!");
 	LEFT("If I cut legs off of an insect, do they squirm all on their own? How gross!");
 }
 
 DIALOG_SCRIPT(youmu_stage3_post_boss) {
+	LEFT_FACE(SMUG);
 	RIGHT("I surrender! Please don’t chop anything off!");
+	LEFT_FACE(HAPPY);
 	LEFT("I suppose that as long as you don’t eat anything in my garden, I can let you go.");
 	RIGHT("I prefer meat, but not when it’s holding a skewer!");
+	LEFT_FACE(NORMAL);
 	RIGHT("Still, I wasn’t able to properly teach you a lesson. You better not lose, for I’ll be happy to strike you when you’re weak!");
+	LEFT_FACE(ANNOYED);
 	LEFT("I’m too busy to listen to this buzzing.");
 }
 

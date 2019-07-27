@@ -23,7 +23,9 @@ typedef enum {
 typedef enum {
 	DIALOG_MSG_RIGHT = DIALOG_RIGHT,
 	DIALOG_MSG_LEFT = DIALOG_LEFT,
-	DIALOG_SET_BGM
+	DIALOG_SET_BGM,
+	DIALOG_SET_FACE_RIGHT,
+	DIALOG_SET_FACE_LEFT,
 } DialogActionType;
 
 typedef enum {
@@ -40,7 +42,13 @@ typedef enum {
 
 typedef struct DialogAction {
 	DialogActionType type;
-	char *msg;
+
+	union {
+		char *msg;
+		char *bgm;
+		DialogFace face;
+	};
+
 	int timeout;
 } DialogAction;
 
@@ -77,8 +85,8 @@ void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc
 void dialog_set_image(Dialog *d, DialogSide side, const char *name)
 	attr_nonnull(1, 3);
 
-DialogAction *dialog_add_action(Dialog *d, DialogActionType side, const char *msg)
-	attr_nonnull(1, 3);
+DialogAction *dialog_add_action(Dialog *d, const DialogAction *action)
+	attr_nonnull(1, 2);
 
 void dialog_destroy(Dialog *d)
 	attr_nonnull(1);
