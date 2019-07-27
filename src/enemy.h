@@ -16,6 +16,7 @@
 #include "objectpool.h"
 #include "entity.h"
 #include "coroutine.h"
+#include "move.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -40,7 +41,11 @@ struct Enemy {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
-	cmplx args[RULE_ARGC];
+
+	union {
+		cmplx args[RULE_ARGC];
+		MoveParams move;
+	};
 
 	EnemyLogicRule logic_rule;
 	EnemyVisualRule visual_rule;
