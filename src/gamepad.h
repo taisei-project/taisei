@@ -44,10 +44,17 @@ typedef enum GamepadEmulatedButton {
 typedef enum GamepadButton {
 	// must match SDL_GameControllerButton
 	GAMEPAD_BUTTON_INVALID = -1,
+#ifdef __SWITCH__
+	GAMEPAD_BUTTON_B,
+	GAMEPAD_BUTTON_A,
+	GAMEPAD_BUTTON_Y,
+	GAMEPAD_BUTTON_X,
+#else
 	GAMEPAD_BUTTON_A,
 	GAMEPAD_BUTTON_B,
 	GAMEPAD_BUTTON_X,
 	GAMEPAD_BUTTON_Y,
+#endif
 	GAMEPAD_BUTTON_BACK,
 	GAMEPAD_BUTTON_GUIDE,
 	GAMEPAD_BUTTON_START,
