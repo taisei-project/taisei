@@ -813,11 +813,13 @@ MenuData* create_options_menu(void) {
 	MenuData *m = create_options_menu_base("Options");
 	OptionBinding *b;
 
+#ifndef __SWITCH__
 	add_menu_entry(m, "Player name", do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
 	);
 
 	add_menu_separator(m);
+#endif
 
 	add_menu_entry(m, "Save replays", do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
