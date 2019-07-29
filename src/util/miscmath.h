@@ -11,9 +11,10 @@
 
 #include "taisei.h"
 
-#define DEG2RAD (M_PI/180.0)
-#define RAD2DEG (180.0/M_PI)
+#define DEG2RAD (M_PI / 180.0)
+#define RAD2DEG (180.0 / M_PI)
 #define GOLDEN_RATIO 1.618033988749895
+#define M_TAU (M_PI * 2)
 
 double lerp(double v0, double v1, double f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
@@ -48,6 +49,9 @@ float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 float sanitize_scale(float scale) attr_const;
+double circle_angle(double index, double max_elements) attr_const;
+complex circle_dir(double index, double max_elements) attr_const;
+complex circle_dir_ofs(double index, double max_elements, double ofs) attr_const;
 uint64_t upow10(uint n) attr_const;
 uint digitcnt(uint64_t x) attr_const;
 float normpdf(float x, float sigma) attr_const;

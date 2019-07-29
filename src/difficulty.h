@@ -35,4 +35,7 @@ const Color* difficulty_color(Difficulty diff)
 
 void difficulty_preload(void);
 
+double difficulty_value(double easy, double normal, double hard, double lunatic)
+	attr_pure;
+
 #endif // IGUARD_difficulty_h
