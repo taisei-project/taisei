@@ -13,7 +13,7 @@ typedef void (*nxAtExitFn)(void);
 void userAppInit(void);
 void userAppExit(void);
 int nxAtExit(nxAtExitFn fn);
-
 void nxExit(int rc);
+const char* nxGetProgramDir(void);
 
 #endif // IGUARD_arch_switch_h

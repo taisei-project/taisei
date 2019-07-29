@@ -27,6 +27,7 @@
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);setenv(name, val, 1)
 
 static nxAtExitFn g_nxAtExitFn = NULL;
+static char g_programDir[FS_MAX_PATH] = {0};
 static AppletHookCookie g_hookCookie;
 
 static void onAppletHook(AppletHookType hook, void *param) {
@@ -58,16 +59,7 @@ void userAppInit() {
 	appletInitializeGamePlayRecording();
 	appletSetGamePlayRecordingState(1);
 
-	char cwd[FS_MAX_PATH] = {0};
-	getcwd(cwd, FS_MAX_PATH);
-
-	char path[FS_MAX_PATH] = {0};
-	snprintf(path, FS_MAX_PATH, "%s/%s", cwd, TAISEI_BUILDCONF_DATA_PATH);
-	NX_SETENV("TAISEI_RES_PATH", path);
-	snprintf(path, FS_MAX_PATH, "%s/storage", cwd);
-	NX_SETENV("TAISEI_STORAGE_PATH", path);
-	snprintf(path, FS_MAX_PATH, "%s/cache", cwd);
-	NX_SETENV("TAISEI_CACHE_PATH", path);
+	getcwd(g_programDir, FS_MAX_PATH);
 
 #if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
 	// enable Mesa logging:
@@ -75,7 +67,6 @@ void userAppInit() {
 	NX_SETENV("MESA_VERBOSE", "all");
 	NX_SETENV("MESA_DEBUG", "1");
 	NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
-	snprintf(path, FS_MAX_PATH, "%s/cache", cwd);
 
 	// enable shader debugging in Nouveau:
 	NX_SETENV("NV50_PROG_OPTIMIZE", "0");
@@ -111,6 +102,10 @@ void __attribute__((weak)) __libnx_exit(int rc);
 
 void nxExit(int rc) {
 	__libnx_exit(rc);
+}
+
+const char* nxGetProgramDir() {
+	return g_programDir;
 }
 
 #pragma GCC diagnostic pop
