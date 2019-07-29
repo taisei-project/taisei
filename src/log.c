@@ -93,10 +93,6 @@ noreturn static void log_abort(const char *msg) {
 
 	log_shutdown();
 
-#ifdef __SWITCH__
-	char* ptr = 0;
-	*ptr = 1;
-#endif
 	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
 	abort();
 }

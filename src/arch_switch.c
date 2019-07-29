@@ -18,13 +18,9 @@
 
 #include "taisei.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-
-#define NX_LOG_FMT(fmt, ...) printf("[NX] " fmt "\n", ##__VA_ARGS__)
+#define NX_LOG_FMT(fmt, ...) tsfprintf(stdout, "[NX] " fmt "\n", ##__VA_ARGS__)
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
-#define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);setenv(name, val, 1)
+#define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);env_set_string(name, val, true)
 
 static nxAtExitFn g_nxAtExitFn = NULL;
 static char g_programDir[FS_MAX_PATH] = {0};
@@ -98,14 +94,18 @@ int nxAtExit(nxAtExitFn fn) {
 	return -1;
 }
 
-void __attribute__((weak)) __libnx_exit(int rc);
+void __attribute__((weak)) noreturn __libnx_exit(int rc);
 
-void nxExit(int rc) {
+void noreturn nxExit(int rc) {
 	__libnx_exit(rc);
+}
+
+void noreturn nxAbort(void) {
+	/* Using abort would not give us correct offsets in crash reports,
+	 * nor code region name, so we use __builtin_trap instead */
+	__builtin_trap();
 }
 
 const char* nxGetProgramDir() {
 	return g_programDir;
 }
-
-#pragma GCC diagnostic pop

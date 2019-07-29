@@ -282,6 +282,7 @@ typedef complex max_align_t;
 	#include "../arch_switch.h"
 	#define atexit nxAtExit
 	#define exit nxExit
+	#define abort nxAbort
 #endif
 
 #endif // IGUARD_util_compat_h
