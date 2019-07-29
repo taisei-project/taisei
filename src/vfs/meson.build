@@ -1,5 +1,6 @@
 
 vfs_src = files(
+    'loadpacks.c',
     'nodeapi.c',
     'pathutil.c',
     'private.c',

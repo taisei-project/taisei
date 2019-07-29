@@ -12,6 +12,7 @@
 #include "setup.h"
 #include "error.h"
 #include "util.h"
+#include "loadpacks.h"
 
 static char* get_default_res_path(void) {
 	char *res;
@@ -53,81 +54,6 @@ static void get_core_paths(char **res, char **storage, char **cache) {
 	if(*res)     vfs_syspath_normalize_inplace(*res);
 	if(*storage) vfs_syspath_normalize_inplace(*storage);
 	if(*cache)   vfs_syspath_normalize_inplace(*cache);
-}
-
-static bool vfs_mount_pkgdir(const char *dst, const char *src) {
-	VFSInfo stat = vfs_query(src);
-
-	if(stat.error) {
-		return false;
-	}
-
-	if(!stat.exists || !stat.is_dir) {
-		vfs_set_error("Not a directory");
-		return false;
-	}
-
-	return vfs_mount_alias(dst, src);
-}
-
-static struct pkg_loader_t {
-	const char *const ext;
-	bool (*mount)(const char *mp, const char *arg);
-} pkg_loaders[] = {
-	{ ".zip",       vfs_mount_zipfile },
-	{ ".pkgdir",    vfs_mount_pkgdir  },
-	{ NULL },
-};
-
-static struct pkg_loader_t* find_loader(const char *str) {
-	char buf[strlen(str) + 1];
-	memset(buf, 0, sizeof(buf));
-
-	for(char *p = buf; *str; ++p, ++str) {
-		*p = tolower(*str);
-	}
-
-	for(struct pkg_loader_t *l = pkg_loaders; l->ext; ++l) {
-		if(strendswith(buf, l->ext)) {
-			return l;
-		}
-	}
-
-	return NULL;
-}
-
-static void load_packages(const char *dir, const char *unionmp) {
-	// go over the packages in dir in alphapetical order and merge them into unionmp
-	// e.g. files in 00-aaa.zip will be shadowed by files in 99-zzz.zip
-
-	size_t numpaks = 0;
-	char **paklist = vfs_dir_list_sorted(dir, &numpaks, vfs_dir_list_order_ascending, NULL);
-
-	if(!paklist) {
-		log_fatal("VFS error: %s", vfs_get_error());
-	}
-
-	for(size_t i = 0; i < numpaks; ++i) {
-		const char *entry = paklist[i];
-		struct pkg_loader_t *loader = find_loader(entry);
-
-		if(loader == NULL) {
-			continue;
-		}
-
-		log_info("Adding package: %s", entry);
-		assert(loader->mount != NULL);
-
-		char *tmp = strfmt("%s/%s", dir, entry);
-
-		if(!loader->mount(unionmp, tmp)) {
-			log_error("VFS error: %s", vfs_get_error());
-		}
-
-		free(tmp);
-	}
-
-	vfs_dir_list_free(paklist, numpaks);
 }
 
 // NOTE: For simplicity, we will assume that vfs_sync is not needed in this backend.
@@ -188,7 +114,7 @@ void vfs_setup(CallChain next) {
 			}
 
 			// load all packages from this directory into the respkgs union
-			load_packages("tmp", "respkgs");
+			vfs_load_packages("tmp", "respkgs");
 
 			// now mount it to the intended destination, and remove the temporary mountpoint
 			vfs_mount_alias(mp->dest, "tmp");
