@@ -146,10 +146,10 @@ static inline int proj_call_rule(Projectile *p, int t) {
 			);
 		}
 	} else if(t >= 0) {
-		p->pos += move_update(&p->move);
+		complex v = move_update(&p->pos, &p->move);
 
-		if(p->pos != p->prevpos) {
-			p->angle = carg(p->pos - p->prevpos);
+		if(v) {
+			p->angle = carg(v);
 		}
 	}
 

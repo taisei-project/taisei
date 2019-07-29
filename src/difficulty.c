@@ -10,6 +10,7 @@
 
 #include "difficulty.h"
 #include "resource/resource.h"
+#include "global.h"
 
 typedef struct DiffDef {
 	const char *name;
@@ -57,4 +58,11 @@ void difficulty_preload(void) {
 	for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; ++diff) {
 		preload_resource(RES_SPRITE, difficulty_sprite_name(diff), RESF_PERMANENT);
 	}
+}
+
+double difficulty_value(double easy, double normal, double hard, double lunatic) {
+	uint idx = global.diff - D_Easy;
+	double vals[NUM_SELECTABLE_DIFFICULTIES] = { easy, normal, hard, lunatic };
+	assert(idx < ARRAY_SIZE(vals));
+	return vals[idx];
 }
