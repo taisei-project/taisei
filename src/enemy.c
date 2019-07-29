@@ -66,9 +66,9 @@ static inline int enemy_call_logic_rule(Enemy *e, int t) {
 		return e->logic_rule(e, t);
 	} else {
 		// TODO: backport unified left/right move animations from the obsolete `newart` branch
-		e->moving = cabs(e->move.velocity) >= 1;
-		e->dir = creal(e->move.velocity) < 0;
-		e->pos += move_update(&e->move);
+		complex v = move_update(&e->pos, &e->move);
+		e->moving = cabs(v) >= 2;
+		e->dir = creal(v) < 0;
 	}
 
 	return ACTION_NONE;
