@@ -19,9 +19,11 @@
 
 typedef struct MoveParams {
 	complex velocity, acceleration, retention;
+	complex attraction, attraction_norm;
+	complex attraction_point;
 } MoveParams;
 
-complex move_update(MoveParams *params);
+complex move_update(complex *restrict pos, MoveParams *restrict params);
 
 MOVE_FUNC move_linear(complex vel) {
 	return (MoveParams) { vel, 0, 1 };
