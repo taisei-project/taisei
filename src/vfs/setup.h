@@ -13,6 +13,7 @@
 #include "taisei.h"
 
 #include "public.h"
+#include "loadpacks.h"
 
 typedef struct VfsSetupFixedPaths {
 	const char* res_path;
@@ -32,7 +33,9 @@ static inline void vfs_setup_fixedpaths_onsync(CallChainResult ccr, VfsSetupFixe
 	log_info("Storage path: %s", paths->storage_path);
 	log_info("Cache path: %s", paths->cache_path);
 
-	if(!vfs_mount_syspath("/res", paths->res_path, VFS_SYSPATH_MOUNT_READONLY)) {
+	vfs_create_union_mountpoint("/res");
+
+	if(!vfs_mount_syspath("/res-dir", paths->res_path, VFS_SYSPATH_MOUNT_READONLY)) {
 		log_fatal("Failed to mount '%s': %s", paths->res_path, vfs_get_error());
 	}
 
@@ -43,6 +46,10 @@ static inline void vfs_setup_fixedpaths_onsync(CallChainResult ccr, VfsSetupFixe
 	if(!vfs_mount_syspath("/cache", paths->cache_path, VFS_SYSPATH_MOUNT_MKDIR)) {
 		log_fatal("Failed to mount '%s': %s", paths->cache_path, vfs_get_error());
 	}
+
+	vfs_load_packages("/res-dir", "/res");
+	vfs_mount_alias("/res", "/res-dir");
+	vfs_unmount("/res-dir");
 
 	vfs_mkdir_required("storage/replays");
 	vfs_mkdir_required("storage/screenshots");
