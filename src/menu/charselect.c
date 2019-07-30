@@ -19,6 +19,40 @@
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)
 
+enum {
+	F_HAPPY,
+	F_NORMAL,
+	F_SMUG,
+	F_SURPRISED,
+	F_UNAMUSED,
+	NUM_FACES,
+};
+
+#define FACENAME_LEN 32
+static const char facedefs[NUM_CHARACTERS][NUM_FACES][FACENAME_LEN] = {
+	[PLR_CHAR_REIMU]  = {
+		[F_HAPPY]     = "dialog/reimu_face_happy",
+		[F_NORMAL]    = "dialog/reimu_face_normal",
+		[F_SMUG]      = "dialog/reimu_face_smug",
+		[F_SURPRISED] = "dialog/reimu_face_surprised",
+		[F_UNAMUSED]  = "dialog/reimu_face_unamused",
+	},
+	[PLR_CHAR_MARISA]  = {
+		[F_HAPPY]     = "dialog/marisa_face_happy",
+		[F_NORMAL]    = "dialog/marisa_face_normal",
+		[F_SMUG]      = "dialog/marisa_face_smug",
+		[F_SURPRISED] = "dialog/marisa_face_surprised",
+		[F_UNAMUSED]  = "dialog/marisa_face_unamused",
+	},
+	[PLR_CHAR_YOUMU]  = {
+		[F_HAPPY]     = "dialog/youmu_face_happy",
+		[F_NORMAL]    = "dialog/youmu_face_normal",
+		[F_SMUG]      = "dialog/youmu_face_smug",
+		[F_SURPRISED] = "dialog/youmu_face_surprised",
+		[F_UNAMUSED]  = "dialog/youmu_face_unamused",
+	},
+};
+
 typedef struct CharMenuContext {
 	ShotModeID subshot;
 	CharacterID char_draw_order[NUM_CHARACTERS];
@@ -116,7 +150,7 @@ void draw_char_menu(MenuData *menu) {
 
 	r_state_push();
 
-	char *prefixes[] = {
+	static const char *const prefixes[] = {
 		"Intuition",
 		"Science",
 	};
@@ -149,17 +183,13 @@ void draw_char_menu(MenuData *menu) {
 		const char *face;
 
 		if(menu->selected == i) {
-			face = pchar->dialog_face_sprite_names[
-				SELECTED_SUBSHOT(menu) == PLR_SHOT_A
-					? DIALOG_FACE_HAPPY
-					: DIALOG_FACE_SMUG
-			];
+			face = facedefs[i][SELECTED_SUBSHOT(menu) == PLR_SHOT_A ? F_HAPPY : F_SMUG];
 		} else if(fabs(o - 1) < 1e-1) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_NORMAL];
+			face = facedefs[i][F_NORMAL];
 		} else if(menu->cursor == i) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SURPRISED];
+			face = facedefs[i][F_SURPRISED];
 		} else {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_ANNOYED];
+			face = facedefs[i][F_UNAMUSED];
 		}
 
 		float pofs = max(0, menu->entries[i].drawdata * 1.5 - 0.5);
@@ -342,4 +372,12 @@ static void char_menu_input(MenuData *menu) {
 		{ .proc = char_menu_input_handler, .arg = menu },
 		{ NULL }
 	}, EFLAG_MENU);
+}
+
+void preload_char_menu(void) {
+	char *p = (char*)facedefs;
+
+	for(int i = 0; i < sizeof(facedefs) / FACENAME_LEN; ++i) {
+		preload_resource(RES_SPRITE, p + i * FACENAME_LEN, RESF_PERMANENT);
+	}
 }

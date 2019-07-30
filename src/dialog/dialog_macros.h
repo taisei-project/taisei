@@ -15,13 +15,14 @@
 
 #define DIALOG_SCRIPT(name) static void dialog_##name(Dialog *d)
 #define MSG(_side, _text) \
-	dialog_add_action(d, &(DialogAction) { .type = (_side), .msg = (_text) })
-#define FACE(_side, _face) \
-	dialog_add_action(d, &(DialogAction) { .type = (_side), .face = DIALOG_FACE_##_face })
+	dialog_add_action(d, &(DialogAction) { .type = (_side), .data = (_text) })
+#define FACE(_side, _chr, _face) \
+	dialog_add_action(d, &(DialogAction) { .type = (_side), .data = "dialog/" #_chr "_face_" #_face })
 #define LEFT(text) MSG(DIALOG_MSG_LEFT, text)
 #define RIGHT(text) MSG(DIALOG_MSG_RIGHT, text)
-#define LEFT_FACE(face) FACE(DIALOG_SET_FACE_LEFT, face)
-#define RIGHT_FACE(face) FACE(DIALOG_SET_FACE_RIGHT, face)
+#define DIALOG_EVAL(a, b) a b
+#define LEFT_FACE(face) DIALOG_EVAL(FACE, (DIALOG_SET_FACE_LEFT, LEFT_BASE, face))
+#define RIGHT_FACE(face) DIALOG_EVAL(FACE, (DIALOG_SET_FACE_RIGHT, RIGHT_BASE, face))
 
 #define EXPORT_DIALOG_SCRIPT(name) \
 	PlayerDialogProcs dialog_##name = { \

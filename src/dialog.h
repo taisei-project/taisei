@@ -28,39 +28,16 @@ typedef enum {
 	DIALOG_SET_FACE_LEFT,
 } DialogActionType;
 
-typedef enum {
-	DIALOG_FACE_NORMAL,
-	DIALOG_FACE_SURPRISED,
-	DIALOG_FACE_ANNOYED,
-	DIALOG_FACE_SMUG,
-	DIALOG_FACE_HAPPY,
-	DIALOG_FACE_DEFEATED,
-
-	DIALOG_NUM_FACES,
-	DIALOG_FACE_NONE,
-} DialogFace;
-
 typedef struct DialogAction {
 	DialogActionType type;
-
-	union {
-		char *msg;
-		char *bgm;
-		DialogFace face;
-	};
-
+	const char *data;
 	int timeout;
 } DialogAction;
 
-typedef struct DialogActor {
-	Sprite *base;
-	Sprite *face;
-	Sprite *faces[DIALOG_NUM_FACES];
-} DialogActor;
-
 typedef struct Dialog {
 	DialogAction *actions;
-	DialogActor actors[2];
+	Sprite *spr_base[2];
+	Sprite *spr_face[2];
 
 	int count;
 	int pos;
@@ -73,17 +50,20 @@ typedef struct Dialog {
 Dialog *dialog_create(void)
 	attr_returns_allocated;
 
-void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor)
+void dialog_set_base(Dialog *d, DialogSide side, const char *sprite)
 	attr_nonnull(1);
 
-// HACK circular dependency...
-typedef struct PlayerCharacter PlayerCharacter;
+void dialog_set_base_p(Dialog *d, DialogSide side, Sprite *sprite)
+	attr_nonnull(1);
 
-void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face)
-	attr_nonnull(1, 3);
+void dialog_set_face(Dialog *d, DialogSide side, const char *sprite)
+	attr_nonnull(1);
 
-void dialog_set_image(Dialog *d, DialogSide side, const char *name)
-	attr_nonnull(1, 3);
+void dialog_set_face_p(Dialog *d, DialogSide side, Sprite *sprite)
+	attr_nonnull(1);
+
+void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const char *char_face, const char *char_variant)
+	attr_nonnull(1, 3, 4);
 
 DialogAction *dialog_add_action(Dialog *d, const DialogAction *action)
 	attr_nonnull(1, 2);

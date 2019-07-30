@@ -13,31 +13,21 @@
 #include "stage.h"
 #include "enemy.h"
 
-static void make_wriggle_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/wriggle_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/wriggle_face_defeated");
-	a->faces[DIALOG_FACE_SMUG] = get_sprite("dialog/wriggle_face_calm");
-	a->faces[DIALOG_FACE_HAPPY] = get_sprite("dialog/wriggle_face_proud");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_wriggle_actor(d->actors + DIALOG_RIGHT, "dialog/wriggle", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "normal", NULL);
 	pm->dialog->stage3_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage3boss"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage3boss"});
 	return d;
 }
 
 static Dialog *stage3_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
-	make_wriggle_actor(d->actors + DIALOG_RIGHT, "dialog/wriggle_variant_defeated", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "defeated", "defeated");
 	pm->dialog->stage3_post_boss(d);
 	return d;
 }

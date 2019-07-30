@@ -23,28 +23,21 @@ void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
-static void make_kurumi_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/kurumi_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/kurumi_face_defeated");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage4_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_kurumi_actor(d->actors + DIALOG_RIGHT, "dialog/kurumi", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "normal", NULL);
 	pm->dialog->stage4_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage4boss"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage4boss"});
 	return d;
 }
 
 static Dialog *stage4_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_kurumi_actor(d->actors + DIALOG_RIGHT, "dialog/kurumi_variant_defeated", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "defeated", "defeated");
 	pm->dialog->stage4_post_boss(d);
 	return d;
 }

@@ -20,13 +20,6 @@ PlayerCharacter character_youmu = {
 	.full_name = "Konpaku Yōmu",
 	.title = "Half-Phantom Girl",
 	.dialog_base_sprite_name = "dialog/youmu",
-	.dialog_face_sprite_names = {
-		[DIALOG_FACE_NORMAL] = "dialog/youmu_face_normal",
-		[DIALOG_FACE_SURPRISED] = "dialog/youmu_face_surprised",
-		[DIALOG_FACE_ANNOYED] = "dialog/youmu_face_unamused",
-		[DIALOG_FACE_SMUG] = "dialog/youmu_face_smug",
-		[DIALOG_FACE_HAPPY] = "dialog/youmu_face_happy",
-	},
 	.player_sprite_name = "player/youmu",
 	.menu_texture_name = "youmu_bombbg1",
 	.ending = {

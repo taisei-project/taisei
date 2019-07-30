@@ -12,28 +12,21 @@
 #include "global.h"
 #include "stagetext.h"
 
-static void make_cirno_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/cirno_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/cirno_face_defeated");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_cirno_actor(d->actors + DIALOG_RIGHT, "dialog/cirno", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "cirno", "normal", NULL);
 	pm->dialog->stage1_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage1boss"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage1boss"});
 	return d;
 }
 
 static Dialog *stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_cirno_actor(d->actors + DIALOG_RIGHT, "dialog/cirno_variant_defeated", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "cirno", "defeated", "defeated");
 	pm->dialog->stage1_post_boss(d);
 	return d;
 }

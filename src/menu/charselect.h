@@ -15,5 +15,6 @@
 
 MenuData* create_char_menu(void);
 void draw_char_menu(MenuData *menu);
+void preload_char_menu(void);
 
 #endif // IGUARD_menu_charselect_h

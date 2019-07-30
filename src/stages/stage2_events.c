@@ -13,28 +13,21 @@
 #include "stage.h"
 #include "enemy.h"
 
-static void make_hina_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/hina_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/hina_face_defeated");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage2_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_hina_actor(d->actors + DIALOG_RIGHT, "dialog/hina", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "hina", "normal", NULL);
 	pm->dialog->stage2_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage2boss"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage2boss"});
 	return d;
 }
 
 static Dialog *stage2_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_hina_actor(d->actors + DIALOG_RIGHT, "dialog/hina_variant_defeated", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "hina", "defeated", "defeated");
 	pm->dialog->stage2_post_boss(d);
 	return d;
 }

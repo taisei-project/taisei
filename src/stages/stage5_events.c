@@ -12,38 +12,30 @@
 #include "stage5.h"
 #include "global.h"
 
-static void make_iku_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/iku_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/iku_face_defeated");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_SURPRISED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "surprised", NULL);
 	pm->dialog->stage5_post_midboss(d);
-	assert(d->count == 1);
-	d->actions->timeout = global.frames + 120;
+	d->actions[d->count - 1].timeout = global.frames + 120;
 	return d;
 }
 
 static Dialog *stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_iku_actor(d->actors + DIALOG_RIGHT, "dialog/iku", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "iku", "normal", NULL);
 	pm->dialog->stage5_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage5boss"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage5boss"});
 	return d;
 }
 
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_iku_actor(d->actors + DIALOG_RIGHT, "dialog/iku_variant_defeated", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "iku", "defeated", "defeated");
 	pm->dialog->stage5_post_boss(d);
 	return d;
 }

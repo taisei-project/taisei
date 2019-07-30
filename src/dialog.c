@@ -18,22 +18,58 @@ Dialog *dialog_create(void) {
 	return d;
 }
 
-void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor) {
-	if(actor) {
-		d->actors[side] = *actor;
-	} else {
-		memset(d->actors + side, 0, sizeof(*d->actors));
-	}
+void dialog_set_base(Dialog *d, DialogSide side, const char *sprite) {
+	d->spr_base[side] = sprite ? get_sprite(sprite) : NULL;
 }
 
-void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face) {
-	plrchar_make_dialog_actor(pc, d->actors + side);
+void dialog_set_base_p(Dialog *d, DialogSide side, Sprite *sprite) {
+	d->spr_base[side] = sprite;
+}
 
-	if(face == DIALOG_FACE_NONE) {
-		d->actors[side].face = NULL;
-	} else {
-		d->actors[side].face = d->actors[side].faces[face];
+void dialog_set_face(Dialog *d, DialogSide side, const char *sprite) {
+	d->spr_face[side] = sprite ? get_sprite(sprite) : NULL;
+}
+
+void dialog_set_face_p(Dialog *d, DialogSide side, Sprite *sprite) {
+	d->spr_face[side] = sprite;
+}
+
+void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const char *char_face, const char *char_variant) {
+	size_t name_len = strlen(char_name);
+	size_t face_len = strlen(char_face);
+	size_t variant_len;
+
+	size_t lenfull_base = sizeof("dialog/") + name_len - 1;
+	size_t lenfull_face = lenfull_base + sizeof("_face_") + face_len - 1;
+
+	if(char_variant) {
+		variant_len = strlen(char_variant);
+		lenfull_base += sizeof("_variant_") + variant_len - 1;
 	}
+
+	char buf[imax(lenfull_base, lenfull_face) + 1];
+	char *dst = buf;
+	char *variant_dst;
+	dst = memcpy(dst, "dialog/", sizeof("dialog/") - 1);
+	dst = memcpy(dst + sizeof("dialog/") - 1, char_name, name_len + 1);
+
+	if(char_variant) {
+		variant_dst = dst + name_len;
+	} else {
+		d->spr_base[side] = get_sprite(buf);
+	}
+
+	dst = memcpy(dst + name_len, "_face_", sizeof("_face_") - 1);
+	dst = memcpy(dst + sizeof("_face_") - 1, char_face, face_len + 1);
+	d->spr_face[side] = get_sprite(buf);
+
+	if(!char_variant) {
+		return;
+	}
+
+	dst = memcpy(variant_dst, "_variant_", sizeof("_variant_") - 1);
+	dst = memcpy(dst + sizeof("_variant_") - 1, char_variant, variant_len + 1);
+	d->spr_base[side] = get_sprite(buf);
 }
 
 static int message_index(Dialog *d, int offset) {
@@ -56,43 +92,11 @@ static int message_index(Dialog *d, int offset) {
 
 DialogAction *dialog_add_action(Dialog *d, const DialogAction *action) {
 	d->actions = realloc(d->actions, (++d->count)*sizeof(DialogAction));
-
-	DialogAction *a = d->actions + d->count - 1;
-	memcpy(a, action, sizeof(*a));
-
-	switch(a->type) {
-		case DIALOG_MSG_LEFT:
-		case DIALOG_MSG_RIGHT:
-			a->msg = strdup(a->msg);
-			break;
-
-		case DIALOG_SET_BGM:
-			a->bgm = strdup(a->bgm);
-			break;
-
-		case DIALOG_SET_FACE_RIGHT:
-		case DIALOG_SET_FACE_LEFT:
-			break;
-
-		default:
-			UNREACHABLE;
-	}
-
-	return a;
+	d->actions[d->count - 1] = *action;
+	return d->actions + d->count - 1;
 }
 
 void dialog_destroy(Dialog *d) {
-	for(int i = 0; i < d->count; i++) {
-		switch(d->actions[i].type) {
-			case DIALOG_MSG_LEFT:
-			case DIALOG_MSG_RIGHT:
-			case DIALOG_SET_BGM:
-				free(d->actions[i].msg);
-			default:
-				break;
-		}
-	}
-
 	free(d->actions);
 	free(d);
 }
@@ -148,8 +152,8 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
-		Sprite *base = dialog->actors[i].base;
-		Sprite *face = dialog->actors[i].face;
+		Sprite *base = dialog->spr_base[i];
+		Sprite *face = dialog->spr_face[i];
 
 		if(!base) {
 			continue;
@@ -243,7 +247,7 @@ void dialog_draw(Dialog *dialog) {
 
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->actions[pre_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+		text_draw_wrapped(dialog->actions[pre_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { get_tex("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * page_text_alpha)), 1 }},
@@ -263,7 +267,7 @@ void dialog_draw(Dialog *dialog) {
 
 	color_mul_scalar(&clr, o);
 
-	text_draw_wrapped(dialog->actions[cur_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+	text_draw_wrapped(dialog->actions[cur_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
 		.shader = "text_dialog",
 		.aux_textures = { get_tex("cell_noise") },
 		.shader_params = &(ShaderCustomParams) {{ o * page_text_alpha, 0 }},
@@ -295,6 +299,7 @@ recurse:
 	int to = d->actions[d->pos].timeout;
 
 	if(to && to > global.frames) {
+		assert(d->actions[d->pos].type == DIALOG_MSG_LEFT || d->actions[d->pos].type == DIALOG_MSG_RIGHT);
 		return false;
 	}
 
@@ -310,18 +315,18 @@ recurse:
 
 	switch(a->type) {
 		case DIALOG_SET_BGM:
-			stage_start_bgm(a->bgm);
+			stage_start_bgm(a->data);
 			break;
 
 		case DIALOG_SET_FACE_RIGHT:
 		case DIALOG_SET_FACE_LEFT: {
-			DialogActor *actor = &d->actors[
+			DialogSide side = (
 				a->type == DIALOG_SET_FACE_RIGHT
 					? DIALOG_RIGHT
 					: DIALOG_LEFT
-			];
+			);
 
-			actor->face = actor->faces[a->face];
+			dialog_set_face(d, side, a->data);
 			break;
 		}
 
@@ -343,9 +348,7 @@ void dialog_update(Dialog **d) {
 				(*d)->actions[(*d)->pos].type != DIALOG_MSG_LEFT &&
 				(*d)->actions[(*d)->pos].type != DIALOG_MSG_RIGHT
 			) {
-				log_debug("auto page %i begin", (*d)->pos);
 				dialog_page(d);
-				log_debug("auto page %i end", (*d)->pos);
 			} else {
 				int to = (*d)->actions[(*d)->pos].timeout;
 

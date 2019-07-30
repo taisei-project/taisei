@@ -20,13 +20,6 @@ PlayerCharacter character_marisa = {
 	.full_name = "Kirisame Marisa",
 	.title = "Ordinary Black Magician",
 	.dialog_base_sprite_name = "dialog/marisa",
-	.dialog_face_sprite_names = {
-		[DIALOG_FACE_NORMAL] = "dialog/marisa_face_normal",
-		[DIALOG_FACE_SURPRISED] = "dialog/marisa_face_surprised",
-		[DIALOG_FACE_ANNOYED] = "dialog/marisa_face_unamused",
-		[DIALOG_FACE_SMUG] = "dialog/marisa_face_smug",
-		[DIALOG_FACE_HAPPY] = "dialog/marisa_face_happy",
-	},
 	.player_sprite_name = "player/marisa",
 	.menu_texture_name = "marisa_bombbg",
 	.ending = {

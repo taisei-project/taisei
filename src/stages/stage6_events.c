@@ -14,28 +14,21 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 
-static void make_elly_actor(DialogActor *a, char *base, DialogFace face) {
-	a->base = get_sprite(base);
-	a->faces[DIALOG_FACE_NORMAL] = get_sprite("dialog/elly_face_normal");
-	a->faces[DIALOG_FACE_DEFEATED] = get_sprite("dialog/elly_face_angry");
-	a->face = a->faces[face];
-}
-
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_elly_actor(d->actors + DIALOG_RIGHT, "dialog/elly", DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
 	pm->dialog->stage6_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .bgm = "stage6boss_phase1"});
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
 	return d;
 }
 
 static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	make_elly_actor(d->actors + DIALOG_RIGHT, "dialog/elly", DIALOG_FACE_DEFEATED);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", NULL);
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }
