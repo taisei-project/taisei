@@ -102,7 +102,7 @@ DIALOG_SCRIPT(reimu_stage4_pre_boss) {
 	LEFT_FACE(puzzled);
 	LEFT("Hmm, nope, I don’t remember fighting you. Maybe if you told me your name, I could recall faster.");
 	RIGHT("Unforgivable! How about I just jog your memory through terror instead?");
-	LEFT_FACE(annoyed);
+	LEFT_FACE(unamused);
 	LEFT("I’m in a hurry, and that also sounds unpleasant.");
 	RIGHT("You don’t get a choice! Prepare to have bloody nightmares for weeks, shrine maiden!");
 }
