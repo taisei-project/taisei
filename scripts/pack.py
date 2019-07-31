@@ -24,7 +24,6 @@ from taiseilib.common import (
     write_depfile,
 )
 
-
 def pack(args):
     nocompress_file = args.directory / '.nocompress'
 
@@ -40,7 +39,7 @@ def pack(args):
 
     with ZipFile(str(args.output), 'w', ZIP_DEFLATED, **zkwargs) as zf:
         for path in sorted(args.directory.glob('**/*')):
-            if path.name[0] == '.' or path.name == 'meson.build':
+            if (path.name[0] == '.' or (args.exclude is not None and next((True for x in args.exclude if path.match(x)), False))):
                 continue
 
             relpath = path.relative_to(args.directory)
@@ -80,6 +79,11 @@ def main(args):
     parser.add_argument('output',
         type=Path,
         help='the output archive path'
+    )
+
+    parser.add_argument('--exclude',
+        action='append',
+        help='file exclusion pattern'
     )
 
     add_common_args(parser, depfile=True)

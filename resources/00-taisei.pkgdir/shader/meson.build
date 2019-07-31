@@ -140,7 +140,7 @@ spvc_vert_args = [
     '--stage', 'vert',
 ]
 
-if host_machine.system() == 'emscripten'
+if host_machine.system() in ['emscripten', 'nx']
     validate_glsl = 'true'
     transpile_glsl = true
 else
