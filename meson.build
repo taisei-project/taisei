@@ -158,7 +158,7 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-if host_machine.system() in ['emscripten', 'nx']
+if host_machine.system() == 'emscripten'
     package_data = false
     enable_zip = false
 else
