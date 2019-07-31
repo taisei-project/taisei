@@ -1,8 +1,22 @@
+modules = [
+    'gl33',
+    'gles20',
+    'gles30',
+    'null',
+]
 
-default_backend = get_option('r_default')
+if host_machine.system() == 'nx'
+    has_forced_renderer = true
+    forced_renderer = 'gles30'
+else
+    has_forced_renderer = false
+    forced_renderer = ''
+endif
 
-if not get_option('r_@0@'.format(default_backend))
-    error('Default renderer \'@0@\' is not enabled. Enable it with -Dr_@0@=true, or set r_default to something else.'.format(default_backend))
+default_renderer = has_forced_renderer ? forced_renderer : get_option('r_default')
+
+if not has_forced_renderer and not get_option('r_@0@'.format(default_renderer))
+    error('Default renderer \'@0@\' is not enabled. Enable it with -Dr_@0@=true, or set r_default to something else.'.format(default_renderer))
 endif
 
 renderer_src = files(
@@ -21,19 +35,13 @@ subdir('glescommon')
 subdir('gles20')
 subdir('gles30')
 
-modules = [
-    'gl33',
-    'gles20',
-    'gles30',
-    'null',
-]
-
 included_deps = []
 needed_deps = ['common']
 r_macro = []
 
 foreach m : modules
-    if get_option('r_@0@'.format(m))
+    should_include = has_forced_renderer ? m == forced_renderer : get_option('r_@0@'.format(m))
+    if should_include
         renderer_src += get_variable('r_@0@_src'.format(m))
         r_macro += ['R(@0@)'.format(m)]
         enabled_renderers += [m]
@@ -53,4 +61,4 @@ endforeach
 
 r_macro = ' '.join(r_macro)
 config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
-config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_backend)
+config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)

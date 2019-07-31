@@ -311,6 +311,7 @@ bindist_deps = []
 
 subdir('misc')
 subdir('emscripten')
+subdir('switch')
 subdir('external')
 subdir('resources')
 subdir('doc')
@@ -364,7 +365,7 @@ Summary:
         ', '.join(enabled_audio_backends),
         get_option('a_default'),
         ', '.join(enabled_renderers),
-        get_option('r_default'),
+        default_renderer,
         get_option('shader_transpiler'),
         enable_zip,
         package_data,

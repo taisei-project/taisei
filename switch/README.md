@@ -34,11 +34,10 @@ Other dependencies common to the main targets include:
 Run one of the following commands from the project root:
 
 ```
-# release build
-./switch/build.sh
-
-# debug build
-./switch/build.sh debug
+mkdir -p ./build/nx
+./switch/crossfile.sh > ./build/nx/crossfile.txt
+meson --cross-file="./build/nx/crossfile.txt" . ./build/nx
+ninja -C ./build/nx
 ```
 
-NRO and assets will be in the `switch/out` folder.
+**Note:** You can optionally set a custom prefix and `ninja install` NRO and assets into that folder.

@@ -27,6 +27,8 @@ cpp = '$(bin_path g++)'
 ar = '$(bin_path gcc-ar)'
 strip = '$(bin_path strip)'
 pkgconfig = '$(bin_path pkg-config)'
+elf2nro = '$(which elf2nro)'
+nacptool = '$(which nacptool)'
 
 [properties]
 c_args = [$(meson_arg_list $CPPFLAGS $CFLAGS)]
