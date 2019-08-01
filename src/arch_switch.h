@@ -8,6 +8,8 @@
 #ifndef IGUARD_arch_switch_h
 #define IGUARD_arch_switch_h
 
+#include "taisei.h"
+
 typedef void (*nxAtExitFn)(void);
 
 void userAppInit(void);

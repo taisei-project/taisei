@@ -5,18 +5,14 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
+#include "taisei.h"
+
 #include "arch_switch.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include <switch/runtime/devices/socket.h>
 #include <switch/runtime/nxlink.h>
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
-
-#include "taisei.h"
 
 #define NX_LOG_FMT(fmt, ...) tsfprintf(stdout, "[NX] " fmt "\n", ##__VA_ARGS__)
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
