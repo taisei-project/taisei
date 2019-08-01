@@ -19,6 +19,7 @@ DIALOG_SCRIPT(reimu_stage1_pre_boss) {
 	RIGHT("Hey, shrine maiden! Am I making you cold?");
 	LEFT_FACE(unamused);
 	LEFT("Not as much as you’re just being a pest. I’m too busy to play games with fairies.");
+	RIGHT_FACE(angry);
 	RIGHT("That’s not true! There is always time to have some fun!");
 	RIGHT("Prepare to catch an air conditioner cold on my ice playground!");
 }

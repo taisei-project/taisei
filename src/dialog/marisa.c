@@ -18,6 +18,7 @@ DIALOG_SCRIPT(marisa_stage1_pre_boss) {
 	LEFT("It’s gotten pretty cold ’round here. I wish I brought a sweater.");
 	RIGHT("Every time there’s an incident, we fairies show up to stop weak humans like you from spoiling the fun!");
 	LEFT("So, you’re callin’ me weak?");
+	RIGHT_FACE(angry);
 	RIGHT("Weak to cold for sure! I’ll turn you into a human-sized popsicle!");
 	LEFT_FACE(smug);
 	LEFT("I’d like to see ya try.");

@@ -20,6 +20,7 @@ DIALOG_SCRIPT(youmu_stage1_pre_boss) {
 	RIGHT("What’s that? You think you can’t get cold?");
 	LEFT_FACE(unamused);
 	LEFT("I don’t just think that, I know that. I’m half-phantom, so even my body is cold.");
+	RIGHT_FACE(angry);
 	RIGHT("I’ll take that as a challenge! Prepare to be chilled in a way no ghost can match!");
 	LEFT_FACE(normal);
 	RIGHT("Let’s see if phantoms are good as soft-serve ice cream!");

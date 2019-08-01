@@ -28,7 +28,7 @@ static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
 	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }
@@ -2627,6 +2627,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH) {
 		global.shake_view = 10;
+		boss_set_portrait(b, get_sprite("dialog/elly_variant_beaten"), get_sprite("dialog/elly_face_angry"));
 		return;
 	}
 
