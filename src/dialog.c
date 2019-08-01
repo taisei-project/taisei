@@ -20,18 +20,22 @@ Dialog *dialog_create(void) {
 
 void dialog_set_base(Dialog *d, DialogSide side, const char *sprite) {
 	d->spr_base[side] = sprite ? get_sprite(sprite) : NULL;
+	d->valid_composites &= ~(1 << side);
 }
 
 void dialog_set_base_p(Dialog *d, DialogSide side, Sprite *sprite) {
 	d->spr_base[side] = sprite;
+	d->valid_composites &= ~(1 << side);
 }
 
 void dialog_set_face(Dialog *d, DialogSide side, const char *sprite) {
 	d->spr_face[side] = sprite ? get_sprite(sprite) : NULL;
+	d->valid_composites &= ~(1 << side);
 }
 
 void dialog_set_face_p(Dialog *d, DialogSide side, Sprite *sprite) {
 	d->spr_face[side] = sprite;
+	d->valid_composites &= ~(1 << side);
 }
 
 void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const char *char_face, const char *char_variant) {
@@ -70,6 +74,8 @@ void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const ch
 	dst = memcpy(variant_dst, "_variant_", sizeof("_variant_") - 1);
 	dst = memcpy(dst + sizeof("_variant_") - 1, char_variant, variant_len + 1);
 	d->spr_base[side] = get_sprite(buf);
+
+	d->valid_composites &= ~(1 << side);
 }
 
 static int message_index(Dialog *d, int offset) {
@@ -96,7 +102,39 @@ DialogAction *dialog_add_action(Dialog *d, const DialogAction *action) {
 	return d->actions + d->count - 1;
 }
 
+static void update_composite(Dialog *d, DialogSide side) {
+	if(d->valid_composites & (1 << side)) {
+		return;
+	}
+
+	Sprite *composite = d->spr_composite + side;
+	Sprite *spr_base = d->spr_base[side];
+	Sprite *spr_face = d->spr_face[side];
+
+	if(composite->tex != NULL) {
+		r_texture_destroy(composite->tex);
+	}
+
+	if(spr_base != NULL) {
+		assert(spr_face != NULL);
+		render_character_portrait(spr_base, spr_face, composite);
+	} else {
+		composite->tex = NULL;
+	}
+
+	d->valid_composites |= (1 << side);
+}
+
+static void update_composites(Dialog *d) {
+	update_composite(d, DIALOG_LEFT);
+	update_composite(d, DIALOG_RIGHT);
+}
+
 void dialog_destroy(Dialog *d) {
+	memset(&d->spr_base, 0, sizeof(d->spr_base));
+	memset(&d->spr_face, 0, sizeof(d->spr_face));
+	d->valid_composites = 0;
+	update_composites(d);
 	free(d->actions);
 	free(d);
 }
@@ -111,6 +149,8 @@ void dialog_draw(Dialog *dialog) {
 	if(o == 0) {
 		return;
 	}
+
+	update_composites(dialog);
 
 	r_state_push();
 	r_state_push();
@@ -152,10 +192,9 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
-		Sprite *base = dialog->spr_base[i];
-		Sprite *face = dialog->spr_face[i];
+		Sprite *portrait = dialog->spr_composite + i;
 
-		if(!base) {
+		if(portrait == NULL) {
 			continue;
 		}
 
@@ -187,18 +226,13 @@ void dialog_draw(Dialog *dialog) {
 
 		color_mul_scalar(&clr, o);
 
-		SpriteParams sp = { 0 };
-		sp.blend = BLEND_PREMUL_ALPHA;
-		sp.color = &clr;
-		sp.pos.x = (dialog_width - base->w) / 2 + 32;
-		sp.pos.y = VIEWPORT_H - base->h / 2;
-		sp.sprite_ptr = base;
-		r_draw_sprite(&sp);
-
-		if(face) {
-			sp.sprite_ptr = face;
-			r_draw_sprite(&sp);
-		}
+		r_draw_sprite(&(SpriteParams) {
+			.blend = BLEND_PREMUL_ALPHA,
+			.color = &clr,
+			.pos.x = (dialog_width - portrait->w) / 2 + 32,
+			.pos.y = VIEWPORT_H - portrait->h / 2,
+			.sprite_ptr = portrait,
+		});
 
 		r_mat_pop();
 	}
@@ -289,8 +323,6 @@ void dialog_draw(Dialog *dialog) {
 
 bool dialog_page(Dialog **pdialog) {
 	Dialog *d = *pdialog;
-
-recurse:
 
 	if(!d || d->pos >= d->count) {
 		return false;

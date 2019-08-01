@@ -36,8 +36,12 @@ typedef struct DialogAction {
 
 typedef struct Dialog {
 	DialogAction *actions;
+
 	Sprite *spr_base[2];
 	Sprite *spr_face[2];
+
+	Sprite spr_composite[2];
+	uint valid_composites;
 
 	int count;
 	int pos;
