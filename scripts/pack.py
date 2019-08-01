@@ -39,7 +39,7 @@ def pack(args):
 
     with ZipFile(str(args.output), 'w', ZIP_DEFLATED, **zkwargs) as zf:
         for path in sorted(args.directory.glob('**/*')):
-            if (path.name[0] == '.' or (args.exclude is not None and next((True for x in args.exclude if path.match(x)), False))):
+            if path.name[0] == '.' or any(path.match(x) for x in args.exclude):
                 continue
 
             relpath = path.relative_to(args.directory)
@@ -83,6 +83,7 @@ def main(args):
 
     parser.add_argument('--exclude',
         action='append',
+        default=[],
         help='file exclusion pattern'
     )
 

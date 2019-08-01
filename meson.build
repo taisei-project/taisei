@@ -117,7 +117,7 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-static = get_option('static') or (host_machine.system() in ['emscripten', 'nx'])
+static = get_option('static') or ['emscripten', 'nx'].contains(host_machine.system())
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
 dep_opusfile    = dependency('opusfile',                            required : false, static : static, fallback : ['opusfile', 'opusfile_dep'])
@@ -269,7 +269,7 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
 ))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
-install_docs = get_option('docs') and host_machine.system() not in ['emscripten', 'nx']
+install_docs = get_option('docs') and not ['emscripten', 'nx'].contains(host_machine.system())
 
 if host_machine.system() == 'windows'
     if install_docs
