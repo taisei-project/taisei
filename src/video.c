@@ -66,6 +66,7 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 	UNREACHABLE;
 }
 
+#ifndef __SWITCH__
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
@@ -78,6 +79,7 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 			return video_query_capability_generic(cap);
 	}
 }
+#endif
 
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
