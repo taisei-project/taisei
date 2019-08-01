@@ -263,6 +263,8 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 		.height = tex_h,
 		.filter.min = TEX_FILTER_LINEAR_MIPMAP_LINEAR,
 		.filter.mag = TEX_FILTER_LINEAR,
+		.wrap.s = TEX_WRAP_CLAMP,
+		.wrap.t = TEX_WRAP_CLAMP,
 		.mipmap_mode = TEX_MIPMAP_AUTO,
 		.mipmaps = 3,
 	});
@@ -275,6 +277,7 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
 	r_framebuffer(fb);
+	r_framebuffer_clear(fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_mat_mode(MM_PROJECTION);
 	r_mat_push();
