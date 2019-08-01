@@ -39,7 +39,7 @@ static void onAppletHook(AppletHookType hook, void *param) {
 }
 
 attr_used
-void userAppInit() {
+void userAppInit(void) {
 	socketInitializeDefault();
 	appletLockExit();
 	appletHook(&g_hookCookie, onAppletHook, NULL);
@@ -75,7 +75,7 @@ void userAppInit() {
 }
 
 attr_used
-void userAppExit() {
+void userAppExit(void) {
 	if(g_nxAtExitFn != NULL) {
 		NX_LOG("calling exit callback");
 		g_nxAtExitFn();
@@ -106,6 +106,6 @@ void noreturn nxAbort(void) {
 	__builtin_trap();
 }
 
-const char* nxGetProgramDir() {
+const char* nxGetProgramDir(void) {
 	return g_programDir;
 }
