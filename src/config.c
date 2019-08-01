@@ -479,5 +479,6 @@ void config_load(void) {
 
 #ifdef __SWITCH__
 	config_set_int(CONFIG_GAMEPAD_ENABLED, true);
+	config_set_str(CONFIG_GAMEPAD_DEVICE, "any");
 #endif
 }
