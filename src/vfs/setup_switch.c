@@ -14,13 +14,22 @@
 #include "util.h"
 
 static void vfs_setup_onsync(CallChainResult ccr) {
+	const char *program_dir = nxGetProgramDir();
+	char *res_path = strfmt("%s/%s", program_dir, TAISEI_BUILDCONF_DATA_PATH);
+	char *storage_path = strfmt("%s/storage", program_dir);
+	char *cache_path = strfmt("%s/cache", program_dir);
+
 	VfsSetupFixedPaths paths = {
-		.res_path = "/" TAISEI_BUILDCONF_DATA_PATH,
-		.storage_path = "/persistent/storage",
-		.cache_path ="/persistent/cache",
+		.res_path = res_path,
+		.storage_path = storage_path,
+		.cache_path = cache_path,
 	};
 
 	vfs_setup_fixedpaths_onsync(ccr, &paths);
+
+	free(res_path);
+	free(storage_path);
+	free(cache_path);
 }
 
 void vfs_setup(CallChain next) {

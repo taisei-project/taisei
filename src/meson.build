@@ -97,6 +97,12 @@ else
     )
 endif
 
+if host_machine.system() == 'nx'
+    taisei_src += files(
+        'arch_switch.c',
+    )
+endif
+
 sse42_src = []
 
 subdir('audio')
@@ -242,6 +248,53 @@ if host_machine.system() == 'emscripten'
         install : true,
         install_dir : bindir,
     )
+elif host_machine.system() == 'nx'
+    taisei_elf_name = '@0@.elf'.format(taisei_basename)
+    taisei_elf = executable(taisei_elf_name, taisei_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        c_pch : 'pch/taisei_pch.h',
+        install : true,
+        install_dir : bindir,
+        override_options: ['strip=false'],
+    )
+    bindist_deps += taisei_elf
+
+    taisei_nacp_name = '@0@.nacp'.format(taisei_basename)
+    taisei_nacp = custom_target(taisei_nacp_name,
+        command : [
+            find_program('nacptool'),
+            '--create',
+            nx_app_title,
+            nx_app_author,
+            taisei_version_string,
+            '@OUTPUT@',
+        ],
+        build_by_default : true,
+        install : false,
+        output : taisei_nacp_name,
+    )
+
+    taisei_nro_name = '@0@.nro'.format(taisei_basename)
+    taisei_nro = custom_target(taisei_nro_name,
+        # NOTE: Unfortunately we can't just put 'taisei_elf' directly into the command array.
+        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
+        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
+
+        command : [
+            find_program('elf2nro'),
+            taisei_elf.full_path(),   # workaround for the above issue
+            '@OUTPUT@',
+            '--nacp=@0@'.format(taisei_nacp.full_path()),   # if we could pass the path in a standalone argument, we could have meson generate an implicit dependency here...
+            '--icon=@0@'.format(nx_icon_path),
+        ],
+        build_by_default : true,
+        depends : [taisei_elf, taisei_nacp],
+        install : true,
+        install_dir : bindir,
+        output : taisei_nro_name,
+    )
+    bindist_deps += taisei_nro
 else
     taisei = executable(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,

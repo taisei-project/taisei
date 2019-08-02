@@ -66,6 +66,7 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 	UNREACHABLE;
 }
 
+#ifndef __SWITCH__
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
@@ -78,6 +79,7 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 			return video_query_capability_generic(cap);
 	}
 }
+#endif
 
 static void video_add_mode(int width, int height) {
 	if(video.modes) {
@@ -622,6 +624,10 @@ void video_init(void) {
 	const char *driver = SDL_GetCurrentVideoDriver();
 	log_info("Using driver '%s'", driver);
 
+#ifdef __SWITCH__
+	video.backend = VIDEO_BACKEND_SWITCH;
+	video_query_capability = video_query_capability_alwaysfullscreen;
+#else
 	video_query_capability = video_query_capability_generic;
 
 	if(!strcmp(driver, "x11")) {
@@ -642,11 +648,12 @@ void video_init(void) {
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
+#endif
 
 	r_init();
 
 	// Register all resolutions that are available in fullscreen
-
+#ifndef __SWITCH__
 	for(int s = 0; s < video_num_displays(); ++s) {
 		log_info("Found display #%i: %s", s, video_display_name(s));
 		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
@@ -660,6 +667,7 @@ void video_init(void) {
 			}
 		}
 	}
+#endif
 
 	if(!fullscreen_available) {
 		log_warn("No available fullscreen modes");
@@ -669,6 +677,11 @@ void video_init(void) {
 	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
 	// This is required for some multihead setups.
 	VideoMode common_modes[] = {
+#ifdef __SWITCH__
+		{640, 480},
+		{1280, 720},
+		{1920, 1080},
+#else
 		{RESX, RESY},
 		{SCREEN_W, SCREEN_H},
 
@@ -679,7 +692,7 @@ void video_init(void) {
 		{1152, 864},
 		{1400, 1050},
 		{1440, 1080},
-
+#endif
 		{0, 0},
 	};
 

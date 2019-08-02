@@ -37,6 +37,11 @@ if host_machine.system() == 'emscripten'
         'setup_emscripten.c',
         'sync_emscripten.c',
     )
+elif host_machine.system() == 'nx'
+    vfs_src += files(
+        'setup_switch.c',
+        'sync_noop.c',
+    )
 else
     vfs_src += files(
         'setup_generic.c',

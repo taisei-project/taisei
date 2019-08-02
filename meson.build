@@ -117,7 +117,7 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-static = get_option('static') or (host_machine.system() == 'emscripten')
+static = get_option('static') or ['emscripten', 'nx'].contains(host_machine.system())
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
 dep_opusfile    = dependency('opusfile',                            required : false, static : static, fallback : ['opusfile', 'opusfile_dep'])
@@ -197,6 +197,7 @@ prefer_relpath_systems = [
 
 force_relpath_systems = [
     'emscripten',
+    'nx'
 ]
 
 if macos_app_bundle
@@ -268,7 +269,7 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
 ))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
-install_docs = get_option('docs') and host_machine.system() != 'emscripten'
+install_docs = get_option('docs') and not ['emscripten', 'nx'].contains(host_machine.system())
 
 if host_machine.system() == 'windows'
     if install_docs
@@ -310,6 +311,7 @@ bindist_deps = []
 
 subdir('misc')
 subdir('emscripten')
+subdir('switch')
 subdir('external')
 subdir('resources')
 subdir('doc')
@@ -363,7 +365,7 @@ Summary:
         ', '.join(enabled_audio_backends),
         get_option('a_default'),
         ', '.join(enabled_renderers),
-        get_option('r_default'),
+        default_renderer,
         get_option('shader_transpiler'),
         enable_zip,
         package_data,

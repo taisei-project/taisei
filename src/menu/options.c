@@ -164,6 +164,7 @@ static int bind_gpdev_set(OptionBinding *b, int v) {
 	return b->selected;
 }
 
+#ifndef __SWITCH__
 // BT_GamepadDevice: dynamic device list
 static OptionBinding* bind_gpdevice(int cfgentry) {
 	OptionBinding *bind = bind_new();
@@ -191,6 +192,7 @@ static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 
 	return bind;
 }
+#endif
 
 // BT_Resolution: super-special binding type for the resolution setting
 static void bind_resolution_update(OptionBinding *bind) {
@@ -590,9 +592,11 @@ static void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 	}
 }
 
+#ifndef __SWITCH__
 static bool gamepad_enabled_depencence(void) {
 	return config_get_int(CONFIG_GAMEPAD_ENABLED);
 }
+#endif
 
 static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
 	MenuData *m = create_options_menu_base("Gamepad Controls");
@@ -662,6 +666,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 	OptionBinding *b;
 
+#ifndef __SWITCH__
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
@@ -669,6 +674,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 	add_menu_entry(m, "Device", do_nothing,
 		b = bind_gpdevice(CONFIG_GAMEPAD_DEVICE)
 	);	b->dependence = gamepad_enabled_depencence;
+#endif
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Customize controls…", enter_options_menu_gamepad_controls, NULL);
@@ -811,11 +817,13 @@ MenuData* create_options_menu(void) {
 	MenuData *m = create_options_menu_base("Options");
 	OptionBinding *b;
 
+#ifndef __SWITCH__
 	add_menu_entry(m, "Player name", do_nothing,
 		b = bind_stroption(CONFIG_PLAYERNAME)
 	);
 
 	add_menu_separator(m);
+#endif
 
 	add_menu_entry(m, "Save replays", do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)

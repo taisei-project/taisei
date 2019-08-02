@@ -91,8 +91,9 @@ noreturn static void log_abort(const char *msg) {
 	}
 #endif
 
-	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
 	log_shutdown();
+
+	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
 	abort();
 }
 

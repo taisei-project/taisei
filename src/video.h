@@ -41,6 +41,7 @@ typedef enum VideoBackend {
 	VIDEO_BACKEND_EMSCRIPTEN,
 	VIDEO_BACKEND_KMSDRM,
 	VIDEO_BACKEND_RPI,
+	VIDEO_BACKEND_SWITCH,
 } VideoBackend;
 
 typedef struct {

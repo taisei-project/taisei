@@ -81,6 +81,7 @@ foreach pkg : packages
                 pkg_path,
                 '@OUTPUT@',
                 '--depfile', '@DEPFILE@',
+                '--exclude', '**/meson.build',
             ],
             output : pkg_zip,
             depfile : '@0@.d'.format(pkg_zip),
@@ -93,6 +94,31 @@ foreach pkg : packages
         install_subdir(pkg_pkgdir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
     endif
 endforeach
+
+if host_machine.system() == 'nx'
+    # Package shaders that were transpiled
+    shader_pkg_zip = '01-es-shaders.zip'
+    shader_pkg_path = join_paths(shaders_build_dir, '..')
+    if package_data
+        bindist_deps += custom_target(shader_pkg_zip,
+            command : [pack_command,
+                shader_pkg_path,
+                '@OUTPUT@',
+                '--depfile', '@DEPFILE@',
+                '--exclude', '**/*.spv',
+                '--exclude', '**/meson.build',
+            ],
+            output : shader_pkg_zip,
+            depfile : '@0@.d'.format(shader_pkg_zip),
+            install : true,
+            install_dir : data_path,
+        )
+    else
+        glob_result = run_command(glob_command, shaders_build_dir, '**/*.spv', '**/meson.build')
+        assert(glob_result.returncode() == 0, 'Glob script failed')
+        install_subdir(shaders_build_dir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
+    endif
+endif
 
 if host_machine.system() == 'emscripten'
     # First add some stuff that isn't sourced from resources/
