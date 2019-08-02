@@ -269,11 +269,7 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 		.mipmaps = 3,
 	});
 
-	char label[128];
-	r_texture_set_debug_label(ptex, label);
-
 	Framebuffer *fb = r_framebuffer_create();
-	r_framebuffer_set_debug_label(fb, label);
 	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
 	r_framebuffer(fb);
