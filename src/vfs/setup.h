@@ -14,6 +14,7 @@
 
 #include "public.h"
 #include "loadpacks.h"
+#include "log.h"
 
 typedef struct VfsSetupFixedPaths {
 	const char* res_path;
