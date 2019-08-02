@@ -14,10 +14,24 @@
 #include "geometry.h"
 
 typedef struct RectPack RectPack;
+typedef struct RectPackSection RectPackSection;
 
-RectPack* rectpack_new(double width, double height);
-void rectpack_reset(RectPack *rp);
-void rectpack_free(RectPack *rp);
-bool rectpack_add(RectPack *rp, double width, double height, Rect *out_rect);
+RectPack *rectpack_new(double width, double height)
+	attr_returns_max_aligned attr_returns_nonnull attr_nodiscard;
+
+void rectpack_reset(RectPack *rp)
+	attr_nonnull(1);
+
+void rectpack_free(RectPack *rp)
+	attr_nonnull(1);
+
+RectPackSection *rectpack_add(RectPack *rp, double width, double height)
+	attr_nonnull(1);
+
+Rect rectpack_section_rect(RectPackSection *s)
+	attr_nonnull(1);
+
+void rectpack_reclaim(RectPack *rp, RectPackSection *s)
+	attr_nonnull(1, 2);
 
 #endif // IGUARD_util_rectpack_h

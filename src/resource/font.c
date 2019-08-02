@@ -75,13 +75,6 @@ static const char* ft_error_str(FT_Error err_code) {
 	return "Unknown error";
 }
 
-typedef struct Glyph {
-	Sprite sprite;
-	Sprite outline_sprite;
-	GlyphMetrics metrics;
-	ulong ft_index;
-} Glyph;
-
 typedef struct SpriteSheet {
 	LIST_INTERFACE(struct SpriteSheet);
 	Texture *tex;
@@ -90,6 +83,14 @@ typedef struct SpriteSheet {
 } SpriteSheet;
 
 typedef LIST_ANCHOR(SpriteSheet) SpriteSheetAnchor;
+
+typedef struct Glyph {
+	Sprite sprite;
+	SpriteSheet *spritesheet;
+	RectPackSection *spritesheet_section;
+	GlyphMetrics metrics;
+	ulong ft_index;
+} Glyph;
 
 struct Font {
 	char *source_path;
@@ -383,16 +384,21 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 // The padding is needed to prevent glyph edges from bleeding in due to linear filtering.
 #define GLYPH_SPRITE_PADDING 1
 
-static bool add_glyph_to_spritesheet(Font *font, Sprite *sprite, Pixmap *pixmap, SpriteSheet *ss) {
+static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *ss) {
 	uint padded_w = pixmap->width + 2 * GLYPH_SPRITE_PADDING;
 	uint padded_h = pixmap->height + 2 * GLYPH_SPRITE_PADDING;
-	Rect sprite_pos;
 
-	if(!rectpack_add(ss->rectpack, padded_w, padded_h, &sprite_pos)) {
+	glyph->spritesheet_section = rectpack_add(ss->rectpack, padded_w, padded_h);
+
+	if(glyph->spritesheet_section == NULL) {
 		return false;
 	}
 
+	glyph->spritesheet = ss;
+
 	complex ofs = GLYPH_SPRITE_PADDING * (1+I);
+
+	Rect sprite_pos = rectpack_section_rect(glyph->spritesheet_section);
 	sprite_pos.bottom_right += ofs;
 	sprite_pos.top_left += ofs;
 
@@ -404,6 +410,7 @@ static bool add_glyph_to_spritesheet(Font *font, Sprite *sprite, Pixmap *pixmap,
 		pixmap
 	);
 
+	Sprite *sprite = &glyph->sprite;
 	sprite->tex = ss->tex;
 	sprite->w = pixmap->width;
 	sprite->h = pixmap->height;
@@ -417,16 +424,16 @@ static bool add_glyph_to_spritesheet(Font *font, Sprite *sprite, Pixmap *pixmap,
 	return true;
 }
 
-static bool add_glyph_to_spritesheets(Font *font, Sprite *sprite, Pixmap *pixmap, SpriteSheetAnchor *spritesheets) {
+static bool add_glyph_to_spritesheets(Font *font, Glyph *glyph, Pixmap *pixmap, SpriteSheetAnchor *spritesheets) {
 	bool result;
 
 	for(SpriteSheet *ss = spritesheets->first; ss; ss = ss->next) {
-		if((result = add_glyph_to_spritesheet(font, sprite, pixmap, ss))) {
+		if((result = add_glyph_to_spritesheet(glyph, pixmap, ss))) {
 			return result;
 		}
 	}
 
-	return add_glyph_to_spritesheet(font, sprite, pixmap, add_spritesheet(font, spritesheets));
+	return add_glyph_to_spritesheet(glyph, pixmap, add_spritesheet(font, spritesheets));
 }
 
 static const char* pixmode_name(FT_Pixel_Mode mode) {
@@ -585,7 +592,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			}
 		}
 
-		if(!add_glyph_to_spritesheets(font, &glyph->sprite, &px, spritesheets)) {
+		if(!add_glyph_to_spritesheets(font, glyph, &px, spritesheets)) {
 			log_warn(
 				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %zux%zu; max spritesheet size: %ux%u)",
 				gindex,
