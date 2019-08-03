@@ -391,7 +391,7 @@ typedef struct SpriteParams {
 		unsigned int x : 1;
 		unsigned int y : 1;
 	} flip;
-} attr_designated_init SpriteParams;
+} SpriteParams;
 
 /*
  * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.
