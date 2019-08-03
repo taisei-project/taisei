@@ -256,7 +256,6 @@
 
 #define HT_DECLARE_FUNC(return_type, name, arguments) return_type HT_FUNC(name) arguments
 #define HT_DECLARE_PRIV_FUNC(return_type, name, arguments) static return_type HT_PRIV_FUNC(name) arguments
-#define HT_INLINE inline attr_must_inline
 
 /****************\
  * Declarations *
@@ -391,7 +390,7 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht))
  *
  * Returns the allocated hashtable structure.
  */
-static HT_INLINE attr_returns_nonnull attr_nodiscard
+INLINE attr_returns_nonnull attr_nodiscard
 HT_DECLARE_FUNC(HT_BASETYPE*, new, (void))  {
 	HT_BASETYPE *ht = calloc(1, sizeof(HT_BASETYPE));
 	HT_FUNC(create)(ht);
@@ -1024,7 +1023,6 @@ HT_DECLARE_FUNC(void, iter_end, (HT_TYPE(iter) *iter)) {
 #undef HT_FUNC_HASH_KEY
 #undef HT_FUNC_KEYS_EQUAL
 #undef HT_IMPL
-#undef HT_INLINE
 #undef HT_KEY_CONST
 #undef HT_KEY_TYPE
 #undef HT_MIN_SIZE

@@ -65,8 +65,7 @@ void eventloop_enter(
 void eventloop_run(void);
 
 #ifdef DEBUG_CALLCHAIN
-attr_must_inline
-static inline void run_call_chain(CallChain *cc, void *result, DebugInfo caller_dbg) {
+INLINE attr_nonnull(1) void run_call_chain(CallChain *cc, void *result, DebugInfo caller_dbg) {
 	if(cc->callback != NULL) {
 		log_debug("Calling CC set in %s (%s:%u)",
 			cc->_debug_.func, cc->_debug_.file, cc->_debug_.line);
@@ -82,8 +81,7 @@ static inline void run_call_chain(CallChain *cc, void *result, DebugInfo caller_
 
 #define run_call_chain(cc, result) run_call_chain(cc, result, _DEBUG_INFO_)
 #else
-attr_must_inline
-static inline void run_call_chain(CallChain *cc, void *result) {
+INLINE attr_nonnull(1) void run_call_chain(CallChain *cc, void *result) {
 	if(cc->callback != NULL) {
 		cc->callback(CALLCHAIN_RESULT(cc->ctx, result));
 	}

@@ -30,8 +30,8 @@ struct ObjectPool {
 	char objects[];
 };
 
-inline attr_must_inline attr_returns_max_aligned
-static ObjHeader *obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
+INLINE attr_returns_max_aligned
+ObjHeader *obj_ptr(ObjectPool *pool, char *objects, size_t idx) {
 	return CASTPTR_ASSUME_ALIGNED(objects + idx * pool->size_of_object, ObjHeader);
 }
 

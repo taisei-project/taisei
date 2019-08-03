@@ -29,7 +29,7 @@
 
 #undef strdup
 #define strdup _ts_strdup
-static attr_must_inline inline char *strdup(const char *str) {
+INLINE attr_returns_max_aligned attr_nonnull(1) char *strdup(const char *str) {
 	char *s = malloc(strlen(str) + 1);
 	strcpy(s, str);
 	return s;
