@@ -15,8 +15,6 @@
  * Simple generalized projectile movement based on laochailan's idea
  */
 
-#define MOVE_FUNC static inline attr_must_inline MoveParams
-
 typedef struct MoveParams {
 	complex velocity, acceleration, retention;
 	complex attraction, attraction_norm;
@@ -25,20 +23,20 @@ typedef struct MoveParams {
 
 complex move_update(complex *restrict pos, MoveParams *restrict params);
 
-MOVE_FUNC move_linear(complex vel) {
+INLINE MoveParams move_linear(complex vel) {
 	return (MoveParams) { vel, 0, 1 };
 }
 
-MOVE_FUNC move_accelerated(complex vel, complex accel) {
+INLINE MoveParams move_accelerated(complex vel, complex accel) {
 	return (MoveParams) { vel, accel, 1 };
 }
 
-MOVE_FUNC move_asymptotic(complex vel0, complex vel1, complex retention) {
+INLINE MoveParams move_asymptotic(complex vel0, complex vel1, complex retention) {
 	// NOTE: retention could be derived by something like: exp(-1 / halflife)
 	return (MoveParams) { vel0, vel1 * (1 - retention), retention };
 }
 
-MOVE_FUNC move_asymptotic_simple(complex vel, double boost_factor) {
+INLINE MoveParams move_asymptotic_simple(complex vel, double boost_factor) {
 	// NOTE: this matches the old asymptotic rule semantics exactly
 	double retention = 0.8;
 	return move_asymptotic(vel * (1 + boost_factor * retention), vel, retention);

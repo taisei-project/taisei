@@ -50,12 +50,12 @@ double _anfrand(int idx, const char *file, uint line);
 
 #define TSRAND_ARRAY_LIMIT 16
 
-static inline attr_must_inline double rand_range(double rmin, double rmax) {
+INLINE double rand_range(double rmin, double rmax) {
 	// TODO: ensure uniform distribution?
 	return frand() * (rmax - rmin) + rmin;
 }
 
-static inline attr_must_inline double rand_angle(void) {
+INLINE double rand_angle(void) {
 	// TODO: ensure uniform distribution?
 	return frand() * (M_PI * 2);
 }
