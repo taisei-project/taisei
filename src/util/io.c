@@ -14,32 +14,6 @@
 #include "assert.h"
 #include "stringops.h"
 
-char* read_all(const char *filename, int *outsize) {
-	char *text;
-	size_t size;
-
-	SDL_RWops *file = vfs_open(filename, VFS_MODE_READ | VFS_MODE_SEEKABLE);
-
-	if(!file) {
-		log_error("VFS error: %s", vfs_get_error());
-		return NULL;
-	}
-
-	size = SDL_RWsize(file);
-
-	text = malloc(size+1);
-	SDL_RWread(file, text, size, 1);
-	text[size] = 0;
-
-	SDL_RWclose(file);
-
-	if(outsize) {
-		*outsize = size;
-	}
-
-	return text;
-}
-
 char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	char c, *ptr = buf, *end = buf + bufsize - 1;
 	assert(end > ptr);

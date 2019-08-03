@@ -40,7 +40,6 @@ INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
 
-char* copy_segment(const char *text, const char *delim, int *size);
 bool strendswith(const char *s, const char *e) attr_pure;
 bool strstartswith(const char *s, const char *p) attr_pure;
 bool strendswith_any(const char *s, const char **earray) attr_pure;

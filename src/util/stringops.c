@@ -144,25 +144,6 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
 	};
 }
 
-char* copy_segment(const char *text, const char *delim, int *size) {
-	char *seg, *beg, *end;
-
-	beg = strstr(text, delim);
-	if(!beg)
-		return NULL;
-	beg += strlen(delim);
-
-	end = strstr(beg, "%%");
-	if(!end)
-		return NULL;
-
-	*size = end-beg;
-	seg = malloc(*size+1);
-	strlcpy(seg, beg, *size+1);
-
-	return seg;
-}
-
 void strip_trailing_slashes(char *buf) {
 	for(char *c = buf + strlen(buf) - 1; c >= buf && (*c == '/' || *c == '\\'); c--)
 		*c = 0;
