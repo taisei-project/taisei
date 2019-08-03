@@ -29,10 +29,9 @@
 
 #undef strdup
 #define strdup _ts_strdup
-INLINE attr_returns_max_aligned attr_nonnull(1) char *strdup(const char *str) {
-	char *s = malloc(strlen(str) + 1);
-	strcpy(s, str);
-	return s;
+INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
+	size_t sz = strlen(str) + 1;
+	return memcpy(malloc(sz), str, sz);
 }
 
 #undef strtok_r
@@ -47,23 +46,23 @@ bool strstartswith(const char *s, const char *p) attr_pure;
 bool strendswith_any(const char *s, const char **earray) attr_pure;
 bool strstartswith_any(const char *s, const char **earray) attr_pure;
 void stralloc(char **dest, const char *src);
-char* strjoin(const char *first, ...) attr_sentinel;
-char* vstrfmt(const char *fmt, va_list args);
-char* strfmt(const char *fmt, ...) attr_printf(1,  2);
+char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
+char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated;
+char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
 void strip_trailing_slashes(char *buf);
 char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
-char* strftimealloc(const char *fmt, const struct tm *timeinfo);
+char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);
 
 uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
 size_t ucs4len(const uint32_t *ucs4);
 
 void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);
-uint32_t* utf8_to_ucs4_alloc(const char *utf8) attr_nonnull(1) attr_returns_nonnull attr_nodiscard;
+uint32_t* utf8_to_ucs4_alloc(const char *utf8) attr_nonnull(1) attr_returns_allocated attr_nonnull(1);
 
 void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) attr_nonnull(1, 3);
-char* ucs4_to_utf8_alloc(const uint32_t *ucs4) attr_nonnull(1) attr_returns_nonnull attr_nodiscard;
+char* ucs4_to_utf8_alloc(const uint32_t *ucs4) attr_nonnull(1) attr_returns_allocated attr_nonnull(1);
 
 uint32_t utf8_getch(const char **src) attr_nonnull(1);
 

@@ -92,7 +92,7 @@ void* alist_foreach(ListAnchor *list, ListAnchorForeachCallback callback, void *
 void* alist_callback_free_element(ListAnchor *list, List *elem, void *arg);
 void alist_free_all(ListAnchor *list) attr_nonnull(1);
 
-ListContainer* list_wrap_container(void *data) attr_nodiscard;
+ListContainer* list_wrap_container(void *data) attr_returns_allocated;
 
 // type-generic macros
 

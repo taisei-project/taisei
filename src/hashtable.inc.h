@@ -390,7 +390,7 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht))
  *
  * Returns the allocated hashtable structure.
  */
-INLINE attr_returns_nonnull attr_nodiscard
+INLINE attr_returns_allocated
 HT_DECLARE_FUNC(HT_BASETYPE*, new, (void))  {
 	HT_BASETYPE *ht = calloc(1, sizeof(HT_BASETYPE));
 	HT_FUNC(create)(ht);

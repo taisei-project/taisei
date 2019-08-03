@@ -61,7 +61,7 @@ typedef struct Dialog {
 } Dialog;
 
 Dialog *dialog_create(void)
-	attr_returns_nonnull attr_nodiscard;
+	attr_returns_allocated;
 
 void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor)
 	attr_nonnull(1);

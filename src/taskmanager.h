@@ -77,7 +77,7 @@ typedef struct TaskParams {
  * On failure, returns NULL.
  */
 TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name)
-	attr_nodiscard attr_nonnull(3);
+	attr_nodiscard attr_returns_max_aligned attr_nonnull(3);
 
 /**
  * Submit a new task to [mgr] described by [params]. It is generally placed at the end of the
@@ -94,7 +94,7 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
  * On failure, returns NULL.
  */
 Task* taskmgr_submit(TaskManager *mgr, TaskParams params)
-	attr_nonnull(1) attr_nodiscard;
+	attr_nonnull(1) attr_nodiscard attr_returns_max_aligned;
 
 /**
  * Returns the number of remaining tasks in [mgr]'s queue.

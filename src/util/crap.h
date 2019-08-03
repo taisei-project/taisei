@@ -13,8 +13,8 @@
 
 #include <SDL.h>
 
-void* memdup(const void *src, size_t size);
-void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]);
+void* memdup(const void *src, size_t size) attr_returns_allocated attr_nonnull(1);
+void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) attr_nonnull(2, 3);
 bool is_main_thread(void);
 
 INLINE uint32_t float_to_bits(float f) {

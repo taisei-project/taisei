@@ -15,7 +15,7 @@
 
 typedef struct SHA256State SHA256State;
 
-SHA256State* sha256_new(void) attr_nodiscard;
+SHA256State* sha256_new(void) attr_returns_allocated;
 void sha256_update(SHA256State *state, const uint8_t *data, size_t len) attr_nonnull(1, 2);
 void sha256_final(SHA256State *state, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen) attr_nonnull(1, 2);
 void sha256_free(SHA256State *state);

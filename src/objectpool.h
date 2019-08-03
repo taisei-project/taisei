@@ -37,9 +37,9 @@ struct ObjectPoolStats {
 #define OBJPOOL_ALLOC(typename,max_objects) objpool_alloc(sizeof(typename), max_objects, #typename)
 #define OBJPOOL_ACQUIRE(pool, type) CASTPTR_ASSUME_ALIGNED(objpool_acquire(pool), type)
 
-ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) attr_returns_nonnull attr_nodiscard attr_nonnull(3);
+ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) attr_returns_allocated attr_nonnull(3);
 void objpool_free(ObjectPool *pool) attr_nonnull(1);
-void *objpool_acquire(ObjectPool *pool) attr_returns_max_aligned attr_returns_nonnull attr_nodiscard attr_hot attr_nonnull(1);
+void *objpool_acquire(ObjectPool *pool) attr_returns_allocated attr_hot attr_nonnull(1);
 void objpool_release(ObjectPool *pool, void *object) attr_hot attr_nonnull(1, 2);
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) attr_nonnull(1, 2);
 size_t objpool_object_size(ObjectPool *pool) attr_nonnull(1);

@@ -249,6 +249,10 @@ typedef complex max_align_t;
 #define attr_returns_max_aligned \
 	attr_returns_aligned(alignof(max_align_t))
 
+// Shorthand: always returns non-null pointer aligned to max_align_t; no discard.
+#define attr_returns_allocated \
+	attr_returns_nonnull attr_returns_max_aligned attr_nodiscard
+
 // Structure must not be initialized with an implicit (non-designated) initializer.
 #if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_USE_DESIGNATED_INIT)
 	#define attr_designated_init \
