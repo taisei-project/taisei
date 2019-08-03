@@ -138,7 +138,7 @@ def main(args):
 
     j = Janitor(pargs.rootdir / 'src')
 
-    with ThreadPoolExecutor(max_workers=1) as ex:
+    with ThreadPoolExecutor() as ex:
         tuple(ex.map(j.do_maintenance, j.iter_files()))
 
 
