@@ -13,12 +13,11 @@
 #include "log.h"
 
 void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log) {
-    use_log = use_log && log_initialized();
+	use_log = use_log && log_initialized();
 
-    if(use_log) {
-        log_fatal("%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
-    } else {
-        tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
-        abort();
-    }
+	if(use_log) {
+		_taisei_log(LOG_FAKEFATAL, func, file, line, "%s:%i: assertion `%s` failed", file, line, cond);
+	} else {
+		tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed", file, line, func, cond);
+	}
 }

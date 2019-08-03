@@ -142,6 +142,7 @@ static void add_debug_info(char **buf) {
 static void log_internal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, va_list args) {
 	assert(fmt[strlen(fmt)-1] != '\n');
 
+	bool noabort = lvl & LOG_NOABORT_BIT;
 	lvl &= logging.enabled_log_levels;
 
 	if(lvl == LOG_NONE) {
@@ -164,7 +165,7 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 
 	assert_nolog(slen >= 0);
 
-	if(lvl == LOG_FATAL) {
+	if(lvl & LOG_FATAL) {
 		add_debug_info(&logging.fmt_buf1);
 	}
 
@@ -203,7 +204,7 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		}
 	}
 
-	if(lvl & LOG_FATAL) {
+	if((lvl & LOG_FATAL) && !noabort) {
 		log_abort(entry.message);
 	}
 
