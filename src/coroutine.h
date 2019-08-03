@@ -74,7 +74,7 @@ CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // create
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
 void cosched_finish(CoSched *sched);
 
-static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
+INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
 
 #define TASK_ARGS_NAME(name) COARGS_##name
 #define TASK_ARGS(name) struct TASK_ARGS_NAME(name)
@@ -94,7 +94,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	/* user-defined task body */ \
 	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
 	/* called from the entry points before task body (inlined, hopefully) */ \
-	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) /* require semicolon */ \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) /* require semicolon */ \
 
 #define TASK_COMMON_DECLARATIONS(name, argstruct, linkage) \
 	/* produce warning if the task is never used */ \
@@ -163,7 +163,7 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
 	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* empty prologue */ \
-	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { } \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { } \
 	/* begin task body definition */ \
 	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
 
@@ -197,14 +197,14 @@ static inline attr_must_inline void cosched_set_invoke_target(CoSched *sched) { 
 	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
 	struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER { char dummy; }; \
 	/* user-defined finalizer function */ \
-	static inline attr_must_inline void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args); \
+	INLINE void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args); \
 	/* real finalizer entry point */ \
 	static void *COTASKFINALIZERTHUNK_##name(void *arg) { \
 		COTASKFINALIZER_##name((TASK_ARGS(name)*)arg); \
 		return NULL; \
 	} \
 	/* prologue; sets up finalizer before executing task body */ \
-	static inline attr_must_inline void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { \
 		cotask_set_finalizer(cotask_active(), COTASKFINALIZERTHUNK_##name, _cotask_args); \
 	} \
 	/* begin task body definition */ \
