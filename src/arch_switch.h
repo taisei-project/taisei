@@ -1,5 +1,5 @@
 /*
- * This software is licensed under the terms of the MIT-License
+ * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.

@@ -21,13 +21,14 @@ from pathlib import Path
 # The maintenance script is actually a pile of unmaintainable regular expressions!
 # What a shocking twist!
 
-copyright_comment = r"""/*
- * This software is licensed under the terms of the MIT-License
+copyright_comment_prefix = r"""/*
+ * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
- * ---
+ * ---"""
+
+copyright_comment_default_copyrights = r"""
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
 """
 
 guard_prefix = 'IGUARD_'
@@ -44,15 +45,25 @@ include_taiseih_pattern = rf'{hash_pattern}include[ \t]+"taisei.h"'
 
 pragma_regex = re.compile(rf'{pragma_once_pattern}\s*?\n+(.*)\n+$', re.DOTALL)
 guard_regex = re.compile(rf'\s*?\n{guard_header_pattern}\s*?\n+(.*?)\n{hash_pattern}endif{comment_pattern}\s*$', re.DOTALL)
-header_regex = re.compile(rf'^(?:\s*?/\*.*?\*/)?{pragma_once_or_guard_header_pattern}(?:\s*?(\n{pre_taiseih_block_pattern}))?{pragma_once_or_guard_header_pattern}(?:\s*?{include_taiseih_pattern})?\s*', re.DOTALL)
+header_regex = re.compile(rf'^(?:(?:\s*?/\*.*?---)(.*?)\*/)?{pragma_once_or_guard_header_pattern}(?:\s*?(\n{pre_taiseih_block_pattern}))?{pragma_once_or_guard_header_pattern}(?:\s*?{include_taiseih_pattern})?\s*', re.DOTALL)
 badchar_regex = re.compile(rf'[^{guard_chars}]')
 missing_guard_test_regex = re.compile(rf'^(?:\s*?/\*.*?\*/)\n(?:\n{pre_taiseih_block_pattern})?\n{include_taiseih_pattern}\n', re.DOTALL)
 
-header_template = (
-    f'{copyright_comment}'
-    r'\1\3\2' '\n'
-    '#include "taisei.h"\n\n'
-)
+
+def header_template(match):
+    copyright_contributors = match.group(1) or ''
+    guard1 = match.group(2) or ''
+    pre_taisei_h = match.group(3) or ''
+    guard2 = match.group(4) or ''
+
+    if not copyright_contributors.strip():
+        copyright_contributors = copyright_comment_default_copyrights
+
+    return (
+        f'{copyright_comment_prefix}' +
+        (copyright_contributors + '*/\n' + guard1 + guard2 + pre_taisei_h) +
+        '\n#include "taisei.h"\n\n'
+    )
 
 
 class Janitor:
@@ -127,7 +138,7 @@ def main(args):
 
     j = Janitor(pargs.rootdir / 'src')
 
-    with ThreadPoolExecutor() as ex:
+    with ThreadPoolExecutor(max_workers=1) as ex:
         tuple(ex.map(j.do_maintenance, j.iter_files()))
 
 
