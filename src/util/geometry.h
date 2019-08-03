@@ -74,52 +74,52 @@ bool point_in_ellipse(complex p, Ellipse e) attr_const;
 double lineseg_circle_intersect(LineSegment seg, Circle c) attr_const;
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) attr_const;
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_x(Rect r) {
 	return creal(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_y(Rect r) {
 	return cimag(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_width(Rect r) {
 	return creal(r.bottom_right) - creal(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_height(Rect r) {
 	return cimag(r.bottom_right) - cimag(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_top(Rect r) {
 	return cimag(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_bottom(Rect r) {
 	return cimag(r.bottom_right);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_left(Rect r) {
 	return creal(r.top_left);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_right(Rect r) {
 	return creal(r.bottom_right);
 }
 
-static inline attr_must_inline attr_const
+INLINE attr_const
 double rect_area(Rect r) {
 	return rect_width(r) * rect_height(r);
 }
 
-static inline attr_must_inline
+INLINE
 void rect_move(Rect *r, complex pos) {
 	complex vector = pos - r->top_left;
 	r->top_left += vector;

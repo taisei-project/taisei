@@ -297,7 +297,7 @@ typedef struct int128_bits {
 	uint64_t lo;
 } int128_bits_t;
 
-static inline attr_must_inline attr_unused
+INLINE attr_unused
 void udiv_128_64(int128_bits_t divident, uint64_t divisor, uint64_t *out_quotient) {
 	/*
 	if(!divident.hi) {
@@ -341,7 +341,7 @@ void udiv_128_64(int128_bits_t divident, uint64_t divisor, uint64_t *out_quotien
 	*out_quotient = quotient;
 }
 
-static inline attr_must_inline attr_unused
+INLINE attr_unused
 void umul_128_64(uint64_t multiplicant, uint64_t multiplier, int128_bits_t *result) {
 #if defined(__GNUC__) && (defined(__x86_64) || defined(__x86_64__))
     __asm__ (
@@ -371,7 +371,7 @@ void umul_128_64(uint64_t multiplicant, uint64_t multiplier, int128_bits_t *resu
 #endif
 }
 
-static inline attr_must_inline attr_unused
+INLINE attr_unused
 uint64_t _umuldiv64_slow(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 	int128_bits_t intermediate;
 	uint64_t result;
@@ -382,7 +382,7 @@ uint64_t _umuldiv64_slow(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 
 #include "util.h"
 
-static inline attr_must_inline
+INLINE
 uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 #if defined(TAISEI_BUILDCONF_HAVE_INT128)
 	__extension__ typedef unsigned __int128 uint128_t;

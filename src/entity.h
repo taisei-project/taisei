@@ -109,7 +109,7 @@ struct EntityInterface {
 	ENTITY_INTERFACE_BASE(EntityInterface);
 };
 
-static inline attr_must_inline const char* ent_type_name(EntityType type) {
+INLINE const char* ent_type_name(EntityType type) {
 	switch(type) {
 		#define ENT_TYPE(typename, id) case id: return #id;
 		ENT_TYPES

@@ -17,13 +17,13 @@ void* memdup(const void *src, size_t size);
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]);
 bool is_main_thread(void);
 
-static inline attr_must_inline uint32_t float_to_bits(float f) {
+INLINE uint32_t float_to_bits(float f) {
 	union { uint32_t i; float f; } u;
 	u.f = f;
 	return u.i;
 }
 
-static inline attr_must_inline float bits_to_float(uint32_t i) {
+INLINE float bits_to_float(uint32_t i) {
 	union { uint32_t i; float f; } u;
 	u.i = i;
 	return u.f;

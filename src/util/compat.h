@@ -257,11 +257,12 @@ typedef complex max_align_t;
 	#define attr_designated_init
 #endif
 
+#define INLINE static inline attr_must_inline __attribute__((gnu_inline, artificial))
+
 #ifdef NDEBUG
 	#define _ensure_aligned(ptr, alignment) (ptr)
 #else
-	static inline attr_must_inline
-	void* _ensure_aligned(void *ptr, size_t alignment) {
+	INLINE void *_ensure_aligned(void *ptr, size_t alignment) {
 		assert(((uintptr_t)ptr & (alignment - 1)) == 0);
 		return ptr;
 	}

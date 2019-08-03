@@ -736,22 +736,22 @@ VertexAttribFormat* r_vertex_attrib_format_interleaved(
  * Small convenience wrappers
  */
 
-static inline attr_must_inline
+INLINE
 void r_enable(RendererCapability cap) {
 	r_capability(cap, true);
 }
 
-static inline attr_must_inline
+INLINE
 void r_disable(RendererCapability cap) {
 	r_capability(cap, false);
 }
 
-static inline attr_must_inline
+INLINE
 ShaderProgram* r_shader_get(const char *name) {
 	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_DEFAULT | RESF_UNSAFE);
 }
 
-static inline attr_must_inline
+INLINE
 ShaderProgram* r_shader_get_optional(const char *name) {
 	ShaderProgram *prog = get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
 
@@ -762,86 +762,86 @@ ShaderProgram* r_shader_get_optional(const char *name) {
 	return prog;
 }
 
-static inline attr_must_inline
+INLINE
 Texture* r_texture_get(const char *name) {
 	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE);
 }
 
-static inline attr_must_inline
+INLINE
 void r_mat_translate(float x, float y, float z) {
 	r_mat_translate_v((vec3) { x, y, z });
 }
 
-static inline attr_must_inline
+INLINE
 void r_mat_rotate(float angle, float nx, float ny, float nz) {
 	r_mat_rotate_v(angle, (vec3) { nx, ny, nz });
 }
 
-static inline attr_must_inline
+INLINE
 void r_mat_rotate_deg(float angle_degrees, float nx, float ny, float nz) {
 	r_mat_rotate_v(angle_degrees * 0.017453292519943295, (vec3) { nx, ny, nz });
 }
 
-static inline attr_must_inline
+INLINE
 void r_mat_rotate_deg_v(float angle_degrees, vec3 v) {
 	r_mat_rotate_v(angle_degrees * 0.017453292519943295, v);
 }
 
-static inline attr_must_inline
+INLINE
 void r_mat_scale(float sx, float sy, float sz) {
 	r_mat_scale_v((vec3) { sx, sy, sz });
 }
 
-static inline attr_must_inline
+INLINE
 void r_color(const Color *c) {
 	r_color4(c->r, c->g, c->b, c->a);
 }
 
-static inline attr_must_inline
+INLINE
 void r_color3(float r, float g, float b) {
 	r_color4(r, g, b, 1.0);
 }
 
-static inline attr_must_inline attr_nonnull(1)
+INLINE attr_nonnull(1)
 void r_shader(const char *prog) {
 	r_shader_ptr(r_shader_get(prog));
 }
 
-static inline attr_must_inline
+INLINE
 Uniform* r_shader_current_uniform(const char *name) {
 	return r_shader_uniform(r_shader_current(), name);
 }
 
-static inline attr_must_inline
+INLINE
 void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
 	r_framebuffer_clear(r_framebuffer_current(), flags, colorval, depthval);
 }
 
-static inline attr_must_inline attr_nonnull(1)
+INLINE attr_nonnull(1)
 void r_draw_model(const char *model) {
 	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), 0, 0);
 }
 
-static inline attr_must_inline attr_nonnull(1)
+INLINE attr_nonnull(1)
 void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
 	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), instances, base_instance);
 }
 
-static inline attr_must_inline
+INLINE
 r_capability_bits_t r_capability_bit(RendererCapability cap) {
 	r_capability_bits_t idx = cap;
 	assert(idx < NUM_RCAPS);
 	return (1 << idx);
 }
 
-static inline attr_must_inline
+INLINE
 r_feature_bits_t r_feature_bit(RendererFeature feat) {
 	r_feature_bits_t idx = feat;
 	assert(idx < NUM_RFEATS);
 	return (1 << idx);
 }
 
-static inline attr_must_inline
+INLINE
 bool r_supports(RendererFeature feature) {
 	return r_features() & r_feature_bit(feature);
 }

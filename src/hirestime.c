@@ -18,7 +18,7 @@ static uint64_t prev_hires_time;
 static uint64_t prev_hires_freq;
 static uint64_t fast_path_mul;
 
-static inline attr_must_inline void set_freq(uint64_t freq) {
+INLINE void set_freq(uint64_t freq) {
 	prev_hires_freq = freq;
 	lldiv_t d = lldiv(HRTIME_RESOLUTION, freq);
 	fast_path_mul = d.quot * (d.rem == 0);

@@ -31,7 +31,7 @@ void htutil_init(void);
  * Hash function for 32-bit integers
  * NOTE: assuming hash_t stays uint32_t, this function has no collisions.
  */
-static inline attr_must_inline hash_t htutil_hashfunc_uint32(uint32_t x) {
+INLINE hash_t htutil_hashfunc_uint32(uint32_t x) {
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = ((x >> 16) ^ x) * 0x45d9f3b;
 	x = (x >> 16) ^ x;
@@ -43,7 +43,7 @@ static inline attr_must_inline hash_t htutil_hashfunc_uint32(uint32_t x) {
  *
  * Hash function for 64-bit integers.
  */
-static inline attr_must_inline hash_t htutil_hashfunc_uint64(uint64_t x) {
+INLINE hash_t htutil_hashfunc_uint64(uint64_t x) {
 	x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
 	x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
 	x = x ^ (x >> 31);

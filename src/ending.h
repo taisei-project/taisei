@@ -40,7 +40,7 @@ typedef enum EndingID {
 	ENDING(ENDING_BAD_2) \
 	ENDING(ENDING_BAD_3) \
 
-static inline attr_must_inline bool ending_is_good(EndingID end) {
+INLINE bool ending_is_good(EndingID end) {
 	#define ENDING(e) (end == (e)) ||
 	return (
 		GOOD_ENDINGS
@@ -48,7 +48,7 @@ static inline attr_must_inline bool ending_is_good(EndingID end) {
 	#undef ENDING
 }
 
-static inline attr_must_inline bool ending_is_bad(EndingID end) {
+INLINE bool ending_is_bad(EndingID end) {
 	#define ENDING(e) (end == (e)) ||
 	return (
 		BAD_ENDINGS
