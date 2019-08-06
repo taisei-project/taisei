@@ -366,10 +366,7 @@ typedef struct SpriteParams {
 	const Color *color;
 	BlendMode blend;
 
-	struct {
-		float x;
-		float y;
-	} pos;
+	FloatOffset pos;
 
 	struct {
 		union {

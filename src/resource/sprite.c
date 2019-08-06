@@ -60,16 +60,22 @@ void* load_sprite_begin(const char *path, uint flags) {
 		return state;
 	}
 
+	float ofs_x = 0, ofs_y = 0;
+
 	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
-		{ "texture",  .out_str   = &state->texture_name },
-		{ "region_x", .out_float = &spr->tex_area.x },
-		{ "region_y", .out_float = &spr->tex_area.y },
-		{ "region_w", .out_float = &spr->tex_area.w },
-		{ "region_h", .out_float = &spr->tex_area.h },
-		{ "w",        .out_float = &spr->w },
-		{ "h",        .out_float = &spr->h },
-		{ "offset_x", .out_float = &spr->offset.x },
-		{ "offset_y", .out_float = &spr->offset.y },
+		{ "texture",        .out_str   = &state->texture_name },
+		{ "region_x",       .out_float = &spr->tex_area.x },
+		{ "region_y",       .out_float = &spr->tex_area.y },
+		{ "region_w",       .out_float = &spr->tex_area.w },
+		{ "region_h",       .out_float = &spr->tex_area.h },
+		{ "w",              .out_float = &spr->w },
+		{ "h",              .out_float = &spr->h },
+		{ "offset_x",       .out_float = &ofs_x, KVSPEC_DEPRECATED("margin_left; margin_right") },
+		{ "offset_y",       .out_float = &ofs_y, KVSPEC_DEPRECATED("margin_top; margin_bottom") },
+		{ "padding_top",    .out_float = &spr->padding.top },
+		{ "padding_bottom", .out_float = &spr->padding.bottom },
+		{ "padding_left",   .out_float = &spr->padding.left },
+		{ "padding_right",  .out_float = &spr->padding.right },
 		{ NULL }
 	})) {
 		free(spr);
@@ -78,6 +84,11 @@ void* load_sprite_begin(const char *path, uint flags) {
 		log_error("Failed to parse sprite file '%s'", path);
 		return NULL;
 	}
+
+	spr->padding.left += ofs_x;
+	spr->padding.right -= ofs_x;
+	spr->padding.top += ofs_y;
+	spr->padding.bottom -= ofs_y;
 
 	if(!state->texture_name) {
 		state->texture_name = resource_util_basename(TEX_PATH_PREFIX, path);
@@ -169,8 +180,10 @@ void draw_sprite_batched_p(float x, float y, Sprite *spr) {
 }
 
 void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
+	FloatOffset o = sprite_padded_offset(spr);
+
 	begin_draw_texture(
-		(FloatRect){ x + spr->offset.x * scale_x, y + spr->offset.y * scale_y, spr->w * scale_x, spr->h * scale_y },
+		(FloatRect){ x + o.x * scale_x, y + o.y * scale_y, spr->w * scale_x, spr->h * scale_y },
 		(FloatRect){ spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
 		spr->tex
 	);

@@ -14,26 +14,49 @@
 #include "resource.h"
 #include "texture.h"
 
+typedef struct SpriteMargin {
+	float top, bottom, left, right;
+} SpriteMargin;
+
 typedef struct Sprite {
 	Texture *tex;
 	FloatRect tex_area;
 	union {
-		FloatRect sprite_area;
-		struct {
-			union {
-				FloatOffset offset;
-				struct { float x, y; };
-			};
-			union {
-				FloatExtent extent;
-				struct { float w, h; };
-			};
-		};
+		FloatExtent extent;
+		struct { float w, h; };
 	};
+	SpriteMargin padding;
 } Sprite;
 
-static_assert(offsetof(Sprite, sprite_area.offset) == offsetof(Sprite, offset), "Sprite struct layout inconsistent with FloatRect");
-static_assert(offsetof(Sprite, sprite_area.extent) == offsetof(Sprite, extent), "Sprite struct layout inconsistent with FloatRect");
+INLINE float sprite_padded_width(const Sprite *restrict spr) {
+	return spr->extent.w + spr->padding.left + spr->padding.right;
+}
+
+INLINE float sprite_padded_height(const Sprite *restrict spr) {
+	return spr->extent.h + spr->padding.top + spr->padding.bottom;
+}
+
+INLINE FloatExtent sprite_padded_extent(Sprite *restrict spr) {
+	FloatExtent e;
+	e.w = sprite_padded_width(spr);
+	e.h = sprite_padded_height(spr);
+	return e;
+}
+
+INLINE float sprite_padded_offset_x(Sprite *restrict spr) {
+	return (spr->padding.left - spr->padding.right) * 0.5;
+}
+
+INLINE float sprite_padded_offset_y(Sprite *restrict spr) {
+	return (spr->padding.top - spr->padding.bottom) * 0.5;
+}
+
+INLINE FloatOffset sprite_padded_offset(Sprite *restrict spr) {
+	FloatOffset o;
+	o.x = sprite_padded_offset_x(spr);
+	o.y = sprite_padded_offset_y(spr);
+	return o;
+}
 
 char* sprite_path(const char *name);
 void* load_sprite_begin(const char *path, uint flags);
