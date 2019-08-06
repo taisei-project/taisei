@@ -198,6 +198,9 @@ void dialog_draw(Dialog *dialog) {
 			continue;
 		}
 
+		float portrait_w = sprite_padded_width(portrait);
+		float portrait_h = sprite_padded_height(portrait);
+
 		r_mat_push();
 
 		if(i == DIALOG_MSG_LEFT) {
@@ -229,8 +232,8 @@ void dialog_draw(Dialog *dialog) {
 		r_draw_sprite(&(SpriteParams) {
 			.blend = BLEND_PREMUL_ALPHA,
 			.color = &clr,
-			.pos.x = (dialog_width - portrait->w) / 2 + 32,
-			.pos.y = VIEWPORT_H - portrait->h / 2,
+			.pos.x = (dialog_width - portrait_w) / 2 + 32,
+			.pos.y = VIEWPORT_H - portrait_h / 2,
 			.sprite_ptr = portrait,
 		});
 

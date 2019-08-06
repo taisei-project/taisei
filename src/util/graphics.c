@@ -285,8 +285,8 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	SpriteParams sp = { 0 };
 	sp.sprite_ptr = s_base;
 	sp.blend = BLEND_NONE;
-	sp.pos.x = spr_w / 2.0 - s_base->offset.x;
-	sp.pos.y = spr_h / 2.0 - s_base->offset.y;
+	sp.pos.x = spr_w / 2.0 - sprite_padded_offset_x(s_base);
+	sp.pos.y = spr_h / 2.0 - sprite_padded_offset_y(s_base);
 	sp.color = RGBA(1, 1, 1, 1);
 	sp.shader_ptr = r_shader_get("sprite_default"),
 	r_draw_sprite(&sp);
@@ -303,8 +303,8 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 
 	Sprite s = { 0 };
 	s.tex = ptex;
-	s.offset = s_base->offset;
 	s.extent = s_base->extent;
+	s.padding = s_base->padding;
 	s.tex_area.w = tex_w;
 	s.tex_area.h = tex_h;
 	*s_out = s;
