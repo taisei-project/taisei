@@ -10,5 +10,7 @@ region_h = 217
 
 w = 116
 h = 108.5
-offset_x = 8
-offset_y = -167.5
+padding_top = 27
+padding_bottom = 362
+padding_left = 78
+padding_right = 62

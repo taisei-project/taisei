@@ -1,5 +1,7 @@
 
 w = 124
 h = 117
-offset_x = -93
-offset_y = -174.75
+padding_top = 5.5
+padding_bottom = 355
+padding_left = 8
+padding_right = 194

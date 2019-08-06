@@ -64,8 +64,10 @@ DIALOG_SCRIPT(marisa_stage3_pre_boss) {
 	RIGHT("All of this beautiful light, and you didn’t expect me to be drawn to it?");
 	LEFT_FACE(smug);
 	LEFT("I expected ya to lose, that’s all.");
+	RIGHT_FACE(outraged);
+	RIGHT("I’m nowhere near as weak as you think, human!");
 	RIGHT_FACE(proud);
-	RIGHT("I’m nowhere near as weak as you think, human! In fact, being here has made me stronger than ever! That’s because I’m the one that made this tunnel and broke the barrier,");
+	RIGHT("In fact, being here has made me stronger than ever! That’s because I’m the one that made this tunnel and broke the barrier,");
 	LEFT_FACE(normal);
 	RIGHT_FACE(calm);
 	RIGHT("in order to finally show you all the true merit of insect power!");
@@ -81,8 +83,10 @@ DIALOG_SCRIPT(marisa_stage3_post_boss) {
 	RIGHT("I was lying! I just wanted to take you down a peg with my new magic!");
 	LEFT_FACE(normal);
 	LEFT("Y’know, fly too close to the sun and ya get burned. I’ll be goin’ to take care of some real threats now.");
+	RIGHT_FACE(outraged_unlit);
 	RIGHT("Ugh, just wait and see! This won’t be over if I ever get the chance again!");
 	LEFT_FACE(happy);
+	RIGHT_FACE(defeated);
 	LEFT("Yeah, yeah. You’ll need to be less crispy first, though.");
 }
 
@@ -91,12 +95,16 @@ DIALOG_SCRIPT(marisa_stage3_post_boss) {
 
 DIALOG_SCRIPT(marisa_stage4_pre_boss) {
 	LEFT_FACE(surprised);
+	RIGHT_FACE(tsun);
 	RIGHT("Halt, intruder!");
+	RIGHT_FACE(normal);
 	LEFT_FACE(normal);
 	LEFT("Now here’s a face I haven’t seen in a long time. What’s this fancy house all about anyways? Decided to guard Yūka again, or is it somebody new?");
+	RIGHT_FACE(tsun_blush);
 	RIGHT("It’s none of your business, that’s what it is. My friend is busy with some important work and she can’t be disturbed by nosy humans poking into where they don’t belong.");
 	LEFT_FACE(happy);
 	LEFT("Now that’s no way to treat an old acquaintance! I know ya from before, so how about just givin’ me a backstage pass, eh?");
+	RIGHT_FACE(tsun);
 	RIGHT("If you know me as well as you think you do, you’d know that all you’re going to get acquainted with is the taste of your own blood!");
 	LEFT_FACE(unamused);
 	LEFT("Shoot, so that’s a no to my reservation, right?");

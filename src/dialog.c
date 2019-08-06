@@ -194,7 +194,7 @@ void dialog_draw(Dialog *dialog) {
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
 		Sprite *portrait = dialog->spr_composite + i;
 
-		if(portrait == NULL) {
+		if(portrait->tex == NULL) {
 			continue;
 		}
 
@@ -219,12 +219,12 @@ void dialog_draw(Dialog *dialog) {
 
 		if(page_alpha < 10 && ((i != pre_side && i == cur_side) || (i == pre_side && i != cur_side))) {
 			r_mat_translate(ofs * page_alpha, ofs * page_alpha, 0);
-			float brightness = min(1.0 - 0.7 * page_alpha * dir, 1);
+			float brightness = min(1.0 - 0.5 * page_alpha * dir, 1);
 			clr.r = clr.g = clr.b = brightness;
 			clr.a = 1;
 		} else {
 			r_mat_translate(ofs, ofs, 0);
-			clr = *RGB(1 - (dir > 0) * 0.7, 1 - (dir > 0) * 0.7, 1 - (dir > 0) * 0.7);
+			clr = *RGB(1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5);
 		}
 
 		color_mul_scalar(&clr, o);

@@ -1159,6 +1159,12 @@ void process_boss(Boss **pboss) {
 		}
 	}
 
+	#ifdef DEBUG
+	if(env_get("TAISEI_SKIP_TO_DIALOG", 0) && gamekeypressed(KEY_FOCUS)) {
+		over = true;
+	}
+	#endif
+
 	if(over) {
 		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
 			stage_gameover();

@@ -65,7 +65,7 @@ DIALOG_SCRIPT(reimu_stage3_pre_boss) {
 	LEFT("Huh, a bug that managed to escape extermination.");
 	RIGHT_FACE(calm);
 	RIGHT("I heard that!");
-	RIGHT_FACE(proud);
+	RIGHT_FACE(outraged);
 	RIGHT("Do you really think I’ll let you get away with such a callous remark?");
 	LEFT_FACE(smug);
 	LEFT("You’re just an insect yōkai. What do you think you’re capable of?");
@@ -83,9 +83,11 @@ DIALOG_SCRIPT(reimu_stage3_post_boss) {
 	RIGHT("Ugh, my head hurts. Can’t you go easy on me?");
 	LEFT_FACE(smug);
 	LEFT("I don’t go easy on anyone that claims to be causing an incident. But I can tell you are lying about that.");
+	RIGHT_FACE(outraged_unlit);
 	RIGHT("There’s no need to make fun of me for that! You’ll regret it if you lose later!");
 	LEFT_FACE(normal);
 	RIGHT("I won’t forget this humiliation!");
+	RIGHT_FACE(defeated);
 	LEFT_FACE(happy);
 	LEFT("Go take a nap already.");
 }
@@ -97,11 +99,15 @@ DIALOG_SCRIPT(reimu_stage4_pre_boss) {
 	// TODO rewrite this
 
 	LEFT_FACE(surprised);
+	RIGHT_FACE(tsun);
 	RIGHT("Halt, intruder!");
+	RIGHT_FACE(normal);
 	LEFT("Oh, it’s somebody new.");
+	RIGHT_FACE(tsun_blush);
 	RIGHT("No, definitely not! I could never forget you from all those years ago! That was the most intense battle of my life!");
 	LEFT_FACE(puzzled);
 	LEFT("Hmm, nope, I don’t remember fighting you. Maybe if you told me your name, I could recall faster.");
+	RIGHT_FACE(tsun);
 	RIGHT("Unforgivable! How about I just jog your memory through terror instead?");
 	LEFT_FACE(unamused);
 	LEFT("I’m in a hurry, and that also sounds unpleasant.");
@@ -113,8 +119,11 @@ DIALOG_SCRIPT(reimu_stage4_post_boss) {
 
 	LEFT("See, I don’t scare easily, so that didn’t work. You should have just told me your name.");
 	RIGHT("I didn’t think it was possible, but you’re so much stronger than before!");
+	RIGHT_FACE(tsun_blush);
 	RIGHT("Can’t you remember? I’m Kurumi!");
+	RIGHT_FACE(defeated);
 	LEFT("You don’t seem like the sort that is worth remembering after several years.");
+	RIGHT_FACE(tsun_blush);
 	RIGHT("Waah, so mean! You were way cuter back then!");
 }
 
