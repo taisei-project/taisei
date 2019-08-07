@@ -812,9 +812,11 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
+#if DEBUG
 	if(fstate->skip_to_dialog) {
 		return RFRAME_DROP;
 	}
+#endif
 
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
