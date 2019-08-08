@@ -141,13 +141,18 @@ DIALOG_SCRIPT(youmu_stage4_post_boss) {
 
 DIALOG_SCRIPT(youmu_stage5_pre_boss) {
 	LEFT("You were quite difficult to pin down. Don’t worry; I’ll listen to whatever warning you have before I continue forward.");
-	RIGHT("Hmm, you’re the groundskeeper of the Netherworld, correct?");
+	RIGHT("Hmm, you must be the groundskeeper of the Netherworld, correct?");
 	LEFT("That’s right. My mistress sent me here to investigate since the world of spirits has been put in jeopardy by this new world infringing on its boundaries.");
+	RIGHT_FACE(eyes_closed);
 	RIGHT("I’m afraid I cannot let you pass. This new world is a great issue caused by an incredible new power. Only a Celestial or greater is qualified to handle such a dangerous occurrence.");
+	RIGHT_FACE(normal);
 	LEFT_FACE(eeeeh);
 	LEFT("That doesn’t seem fair considering I’ve solved incidents before. I know what I am doing, and Lady Yuyuko entrusted me with this.");
 	LEFT_FACE(unamused);
-	RIGHT("If your confidence will not allow you to back down, then so be it. I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
+	RIGHT_FACE(eyes_closed);
+	RIGHT("If your confidence will not allow you to back down, then so be it.");
+	RIGHT_FACE(serious);
+	RIGHT("I will test you using all of Heaven’s might, and if you are unfit, you shall be cast down from this Tower of Babel!");
 	LEFT_FACE(sigh);
 	LEFT("I shall pass whatever test necessary if it will allow me to fulfill the wishes of Lady Yuyuko!");
 }
@@ -197,6 +202,7 @@ DIALOG_SCRIPT(youmu_stage6_pre_final) {
 	LEFT_FACE(puzzled);
 	RIGHT("Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	LEFT_FACE(surprised);
+	RIGHT_FACE(shouting);
 	RIGHT("Prepare to see the barrier destroyed!");
 }
 

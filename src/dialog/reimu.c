@@ -133,14 +133,20 @@ DIALOG_SCRIPT(reimu_stage4_post_boss) {
 DIALOG_SCRIPT(reimu_stage5_pre_boss) {
 	LEFT_FACE(puzzled);
 	LEFT("I didn’t expect someone actually respectable like you to cause me trouble for no reason.");
+	RIGHT_FACE(serious);
 	RIGHT("You may be the Hakurei Shrine Maiden, but I’m afraid that you don’t have permission from Heaven to be here.");
+	RIGHT_FACE(normal);
 	LEFT_FACE(surprised);
 	LEFT("What, are you saying that the gods suddenly don’t think I’m fit for duty anymore?");
+	RIGHT_FACE(serious);
 	RIGHT("No, that’s not it. We already have a more suitable candidate from our concerned Celestials, and she is due to arrive instead.");
+	RIGHT_FACE(smile);
 	RIGHT("That means you can go home.");
 	LEFT_FACE(unamused);
 	LEFT("Absolutely not. I’ve worked too hard to get here, so even if I’d like to leave, it’d be far too much wasted time.");
+	RIGHT_FACE(eyes_closed);
 	RIGHT("I’ll compromise by offering a test instead. Defeat me, and you can take our representative’s place.");
+	RIGHT_FACE(serious);
 	RIGHT("If you can weather the storm I’m about to summon, then I’ll be fully confident that you can strike down the master of this tower!");
 }
 
@@ -187,6 +193,7 @@ DIALOG_SCRIPT(reimu_stage6_pre_final) {
 	LEFT_FACE(puzzled);
 	RIGHT("Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	LEFT_FACE(surprised);
+	RIGHT_FACE(shouting);
 	RIGHT("Prepare to see the barrier destroyed!");
 }
 

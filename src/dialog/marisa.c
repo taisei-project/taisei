@@ -127,14 +127,20 @@ DIALOG_SCRIPT(marisa_stage5_pre_boss) {
 	LEFT("I finally caught up to ya! I should’ve known that the Dragon’s messenger would be hard to chase down in the air.");
 	LEFT_FACE(puzzled);
 	LEFT("Are you part of the incident too?");
+	RIGHT_FACE(serious);
 	RIGHT("Weren’t those earlier bombs enough of a deterrent? As this world is cutting into the space of Heaven, only those authorized are allowed to investigate.");
+	RIGHT_FACE(eyes_closed);
 	RIGHT("You’re not a Celestial or anyone else from Heaven. That means you cannot go further.");
 	LEFT_FACE(happy);
+	RIGHT_FACE(normal);
 	LEFT("C’mon, you’re good at readin’ the atmosphere, right? Then ya should know that I’m not gonna back down after comin’ this far.");
 	LEFT_FACE(normal);
+	RIGHT_FACE(eyes_closed);
 	RIGHT("I don’t have time to reason with you, unfortunately.");
+	RIGHT_FACE(smile);
 	RIGHT("When it comes to an average human sticking out arrogantly, there’s only one reasonable course of action for a bolt of lightning to take.");
 	LEFT_FACE(surprised);
+	RIGHT_FACE(serious);
 	RIGHT("Prepare to be struck down from Heaven’s door!");
 }
 
@@ -184,6 +190,7 @@ DIALOG_SCRIPT(marisa_stage6_pre_final) {
 	LEFT_FACE(puzzled);
 	RIGHT("Space, time, dimensions… it all becomes clear when you understand The Theory of Everything!");
 	LEFT_FACE(surprised);
+	RIGHT_FACE(shouting);
 	RIGHT("Prepare to see the barrier destroyed!");
 }
 

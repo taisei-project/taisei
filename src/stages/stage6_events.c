@@ -2627,7 +2627,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH) {
 		global.shake_view = 10;
-		boss_set_portrait(b, get_sprite("dialog/elly_variant_beaten"), get_sprite("dialog/elly_face_angry"));
+		boss_set_portrait(b, get_sprite("dialog/elly_variant_beaten"), get_sprite("dialog/elly_face_shouting"));
 		return;
 	}
 
