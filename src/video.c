@@ -15,6 +15,7 @@
 #include "renderer/api.h"
 #include "util/pngcruft.h"
 #include "taskmanager.h"
+#include "video_postprocess.h"
 
 Video video;
 
@@ -22,6 +23,8 @@ typedef struct ScreenshotTaskData {
 	char *dest_path;
 	Pixmap image;
 } ScreenshotTaskData;
+
+static VideoPostProcess *v_postprocess;
 
 VideoCapabilityState (*video_query_capability)(VideoCapability cap);
 
@@ -726,7 +729,13 @@ void video_init(void) {
 	log_info("Video subsystem initialized");
 }
 
+void video_post_init(void) {
+	v_postprocess = video_postprocess_init();
+	r_framebuffer(video_get_screen_framebuffer());
+}
+
 void video_shutdown(void) {
+	video_postprocess_shutdown(v_postprocess);
 	events_unregister_handler(video_handle_window_event);
 	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);
@@ -735,7 +744,30 @@ void video_shutdown(void) {
 	SDL_VideoQuit();
 }
 
+Framebuffer *video_get_screen_framebuffer(void) {
+	return video_postprocess_get_framebuffer(v_postprocess);
+}
+
 void video_swap_buffers(void) {
+	Framebuffer *pp_fb = video_postprocess_render(v_postprocess);
+
+	if(pp_fb) {
+		r_flush_sprites();
+		r_state_push();
+		r_mat_mode(MM_PROJECTION);
+		r_mat_push();
+		set_ortho(SCREEN_W, SCREEN_H);
+		r_mat_mode(MM_MODELVIEW);
+		r_framebuffer(NULL);
+		r_shader_standard();
+		r_color3(1, 1, 1);
+		draw_framebuffer_tex(pp_fb, SCREEN_W, SCREEN_H);
+		r_framebuffer_clear(pp_fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+		r_mat_mode(MM_PROJECTION);
+		r_mat_pop();
+		r_state_pop();
+	}
+
 	r_swap(video.window);
 
 	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events

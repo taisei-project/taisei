@@ -44,6 +44,7 @@ typedef enum VideoBackend {
 	VIDEO_BACKEND_SWITCH,
 } VideoBackend;
 
+// TODO make this struct private
 typedef struct {
 	VideoMode *modes;
 	SDL_Window *window;
@@ -70,6 +71,7 @@ typedef enum VideoCapabilityState {
 extern Video video;
 
 void video_init(void);
+void video_post_init(void);
 void video_shutdown(void);
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable);
 void video_set_fullscreen(bool fullscreen);
@@ -84,5 +86,6 @@ uint video_num_displays(void);
 uint video_current_display(void);
 void video_set_display(uint idx);
 const char *video_display_name(uint id) attr_returns_nonnull;
+Framebuffer *video_get_screen_framebuffer(void);
 
 #endif // IGUARD_video_h

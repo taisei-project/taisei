@@ -583,7 +583,7 @@ static inline bool should_draw_stage_bg(void) {
 	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal
 	if(global.boss->current->type == AT_ExtraSpell)
 		render_delay = 0;
-	
+
 	return (
 		!global.boss
 		|| !global.boss->current
@@ -921,7 +921,7 @@ void stage_draw_overlay(void) {
 	r_state_pop();
 }
 
-static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s) {
+static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
@@ -1082,11 +1082,12 @@ void stage_draw_scene(StageInfo *stage) {
 		postprocess_prepare,
 		draw_framebuffer_tex,
 		VIEWPORT_W,
-		VIEWPORT_H
+		VIEWPORT_H,
+		NULL
 	);
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)
-	r_framebuffer(NULL);
+	r_framebuffer(video_get_screen_framebuffer());
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	// draw viewport contents
@@ -1819,7 +1820,7 @@ void stage_draw_hud(void) {
 		float red = 0.5*exp(-0.5*(global.frames-global.boss->lastdamageframe)); // hit indicator
 		if(red > 1)
 			red = 0;
-		
+
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "boss_indicator",
 			.shader = "sprite_default",

@@ -184,7 +184,7 @@ void postprocess_unload(PostprocessShader **list) {
 	list_foreach(list, delete_shader, NULL);
 }
 
-void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height) {
+void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height, void *arg) {
 	if(!ppshaders) {
 		return;
 	}
@@ -201,7 +201,7 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
 		r_shader_ptr(s);
 
 		if(prepare) {
-			prepare(fbos->back, s);
+			prepare(fbos->back, s, arg);
 		}
 
 		for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {

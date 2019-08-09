@@ -262,6 +262,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	load_resources();
 	gamepad_init();
 	progress_load();
+	video_post_init();
 
 	set_transition(TransLoader, 0, FADE_TIME*2);
 

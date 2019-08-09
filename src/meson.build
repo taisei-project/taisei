@@ -85,6 +85,7 @@ taisei_src = files(
     'transition.c',
     'version.c',
     'video.c',
+    'video_postprocess.c',
 )
 
 if get_option('objpools')
