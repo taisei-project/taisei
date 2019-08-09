@@ -5,6 +5,7 @@ import argparse
 import shutil
 import subprocess
 import re
+import functools
 
 from pathlib import (
     Path,
@@ -151,6 +152,198 @@ def find_alphamap(basepath):
             return mpath
 
 
+@functools.total_ordering
+class PackResult:
+    def __init__(self, packer, rects):
+        self.packer = packer
+        self.num_bins = 0
+        self.num_images_packed = 0
+
+        for bin in packer:
+            self.num_bins += 1
+            self.num_images_packed += len(bin)
+
+        self.success = self.num_images_packed == len(rects)
+        assert(self.num_images_packed <= len(rects))
+
+        self.total_area = self._calculate_total_area()
+
+    def __repr__(self):
+        return f'PackResult(num_bins={self.num_bins}, num_images_packed={self.num_images_packed}, total_area={self.total_area}, success={self.success})'
+
+    def _calculate_bin_area(self, bin):
+        xmin, xmax, ymin, ymax = 0xffffffffffffffff, 0, 0xffffffffffffffff, 0
+
+        for rect in bin:
+            for x in (rect.x, rect.x + rect.width):
+                if x < xmin:
+                    xmin = x
+                if x > xmax:
+                    xmax = x
+
+            for y in (rect.y, rect.y + rect.height):
+                if y < ymin:
+                    ymin = y
+                if y > ymax:
+                    ymax = y
+
+        return (xmax - xmin) * (ymax - ymin)
+
+    def _calculate_total_area(self):
+        return sum(self._calculate_bin_area(bin) for bin in self.packer)
+
+    def __eq__(self, other):
+        return (
+            self.num_bins == other.num_bins and
+            self.num_images_packed == other.num_images_packed and
+            self.total_area == other.total_area
+        )
+
+    # less == better-than
+    def __lt__(self, other):
+        if self.num_images_packed > other.num_images_packed:
+            return True
+
+        if self.num_images_packed < other.num_images_packed:
+            return False
+
+        if self.num_bins < other.num_bins:
+            return True
+
+        if self.num_bins > other.num_bins:
+            return False
+
+        if self.total_area < other.total_area:
+            return True
+
+        return False
+
+
+def pack_rects(rects, bin_size, packer_factory, single_bin):
+    bin_size = list(bin_size)
+
+    if single_bin:
+        while True:
+            packer = packer_factory()
+            packer.add_bin(*bin_size)
+
+            for rect in rects:
+                packer.add_rect(*rect)
+
+            packer.pack()
+
+            if sum(len(bin) for bin in packer) == len(rects):
+                break
+
+            if bin_size[1] < bin_size[0]:
+                bin_size[1] *= 2
+            else:
+                bin_size[0] *= 2
+    else:
+        packer = packer_factory()
+
+        for rect in rects:
+            packer.add_rect(*rect)
+            packer.add_bin(*bin_size)
+
+        packer.pack()
+
+    return PackResult(packer, rects)
+
+
+def pack_rects_brute_force(rects, bin_size, single_bin):
+    algos_guillotine = [
+        rectpack.GuillotineBafLas,
+        rectpack.GuillotineBafLlas,
+        rectpack.GuillotineBafMaxas,
+        rectpack.GuillotineBafMinas,
+        rectpack.GuillotineBafSas,
+        rectpack.GuillotineBafSlas,
+        rectpack.GuillotineBlsfLas,
+        rectpack.GuillotineBlsfLlas,
+        rectpack.GuillotineBlsfMaxas,
+        rectpack.GuillotineBlsfMinas,
+        rectpack.GuillotineBlsfSas,
+        rectpack.GuillotineBlsfSlas,
+        rectpack.GuillotineBssfLas,
+        rectpack.GuillotineBssfLlas,
+        rectpack.GuillotineBssfMaxas,
+        rectpack.GuillotineBssfMinas,
+        rectpack.GuillotineBssfSas,
+        rectpack.GuillotineBssfSlas,
+    ]
+
+    algos_maxrects = [
+        rectpack.MaxRectsBaf,
+        rectpack.MaxRectsBl,
+        rectpack.MaxRectsBlsf,
+        rectpack.MaxRectsBssf,
+    ]
+
+    algos_skyline = [
+        rectpack.SkylineBl,
+        rectpack.SkylineBlWm,
+        rectpack.SkylineMwf,
+        rectpack.SkylineMwfWm,
+        rectpack.SkylineMwfl,
+        rectpack.SkylineMwflWm,
+    ]
+
+    algos = []
+    # MaxRects is the slowest algorithm, but the results blow the other two out of the water.
+    # algos += algos_guillotine
+    algos += algos_maxrects
+    # algos += algos_skyline
+
+    sorts = [
+        (rectpack.SORT_AREA,  'area'),
+        (rectpack.SORT_DIFF,  'difference'),
+        (rectpack.SORT_LSIDE, 'longest-side'),
+        (rectpack.SORT_NONE,  'no'),
+        (rectpack.SORT_PERI,  'perimeter'),
+        (rectpack.SORT_RATIO, 'ratio'),
+        (rectpack.SORT_SSIDE, 'shortest-side'),
+    ]
+
+    best = None
+    best_algos = None
+
+    def verbose(*msg):
+        print('[bruteforce]', *msg)
+
+    for algo_class in algos:
+        for sort_func, sort_name in sorts:
+            verbose(f'Trying {algo_class.__name__} with {sort_name} sort...')
+
+            def packer_factory(algo_class=algo_class, sort_func=sort_func):
+                return rectpack.newPacker(
+                    rotation=False,   # No rotation support in Taisei yet
+                    pack_algo=algo_class,
+                    sort_algo=sort_func,
+                    bin_algo=rectpack.PackingBin.BFF,
+                )
+
+            result = pack_rects(
+                rects=rects,
+                packer_factory=packer_factory,
+                bin_size=bin_size,
+                single_bin=single_bin
+            )
+
+            if best is None or result < best:
+                verbose(f'\tResult: {result} (best yet)')
+                best = result
+                best_algos = (algo_class, sort_name)
+            else:
+                verbose(f'\tResult: {result}')
+
+    verbose('*' * 64)
+    verbose(f'WINNER: {best_algos[0].__name__} with {best_algos[1]} sort')
+    verbose(f'\tBest result: {best}')
+    verbose('*' * 64)
+    return best
+
+
 def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_formats[0], border=1, force_single=False, crop=True, leanify=True):
     overrides = Path(overrides).resolve()
     src = Path(src).resolve()
@@ -185,50 +378,10 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             rects.append((img.size[0]+border*2, img.size[1]+border*2, (path, sprite_name)))
             img.close()
 
-    total_images = len(rects)
+    pack_result = pack_rects_brute_force(rects=rects, bin_size=binsize, single_bin=force_single)
 
-    make_packer = lambda: rectpack.newPacker(
-        # No rotation support in Taisei yet
-        rotation=False,
-
-        # Fine-tuned for least area used after crop
-        sort_algo=rectpack.SORT_SSIDE,
-        bin_algo=rectpack.PackingBin.BFF,
-        pack_algo=rectpack.MaxRectsBl,
-    )
-
-    binsize = list(binsize)
-
-    if force_single:
-        while True:
-            packer = make_packer()
-            packer.add_bin(*binsize)
-
-            for rect in rects:
-                packer.add_rect(*rect)
-
-            packer.pack()
-
-            if sum(len(bin) for bin in packer) == total_images:
-                break
-
-            if binsize[1] < binsize[0]:
-                binsize[1] *= 2
-            else:
-                binsize[0] *= 2
-    else:
-        packer = make_packer()
-
-        for rect in rects:
-            packer.add_rect(*rect)
-            packer.add_bin(*binsize)
-
-        packer.pack()
-
-    packed_images = sum(len(bin) for bin in packer)
-
-    if total_images != packed_images:
-        missing = total_images - packed_images
+    if not pack_result.success:
+        missing = len(rects) - pack_result.num_images_packed
         raise TaiseiError(
             f'{missing} sprite{"s were" if missing > 1 else " was"} not packed (bin size is too small?)'
         )
@@ -243,7 +396,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
         # Yeah I'm too lazy to use Popen properly
         executor = stack.enter_context(ThreadPoolExecutor())
 
-        for i, bin in enumerate(packer):
+        for i, bin in enumerate(pack_result.packer):
             textureid = f'atlas_{atlasname}_{i}'
             # dstfile = temp_dst / f'{textureid}.{tex_format}'
             # NOTE: we always save PNG first and convert with an external tool later if needed.
