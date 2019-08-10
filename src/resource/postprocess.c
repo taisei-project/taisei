@@ -33,6 +33,8 @@ typedef struct PostprocessLoadData {
 	ResourceFlags resflags;
 } PostprocessLoadData;
 
+#define SAMPLER_TAG 0xf0f0f0f0
+
 static bool postprocess_load_callback(const char *key, const char *value, void *data) {
 	PostprocessLoadData *ldata = data;
 	PostprocessShader **slist = &ldata->list;
@@ -75,6 +77,20 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	UniformType type = r_uniform_type(uni);
 	const UniformTypeInfo *type_info = r_uniform_type_info(type);
 
+	if(type == UNIFORM_SAMPLER) {
+		Texture *tex = get_resource_data(RES_TEXTURE, value, ldata->resflags);
+
+		if(tex) {
+			PostprocessShaderUniform *psu = calloc(1, sizeof(PostprocessShaderUniform));
+			psu->uniform = uni;
+			psu->texture = tex;
+			psu->elements = SAMPLER_TAG;
+			list_append(&current->uniforms, psu);
+		}
+
+		return true;
+	}
+
 	bool integer_type;
 
 	switch(type) {
@@ -82,7 +98,6 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 		case UNIFORM_IVEC2:
 		case UNIFORM_IVEC3:
 		case UNIFORM_IVEC4:
-		case UNIFORM_SAMPLER:
 			integer_type = true;
 			break;
 
@@ -150,7 +165,9 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 
 static void* delete_uniform(List **dest, List *data, void *arg) {
 	PostprocessShaderUniform *uni = (PostprocessShaderUniform*)data;
-	free(uni->values);
+	if(uni->elements != SAMPLER_TAG) {
+		free(uni->values);
+	}
 	free(list_unlink(dest, data));
 	return NULL;
 }
@@ -205,7 +222,11 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
 		}
 
 		for(PostprocessShaderUniform *u = pps->uniforms; u; u = u->next) {
-			r_uniform_ptr_unsafe(u->uniform, 0, u->elements, u->values);
+			if(u->elements == SAMPLER_TAG) {
+				r_uniform_sampler(u->uniform, u->texture);
+			} else {
+				r_uniform_ptr_unsafe(u->uniform, 0, u->elements, u->values);
+			}
 		}
 
 		draw(fbos->front, width, height);

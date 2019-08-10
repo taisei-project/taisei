@@ -36,7 +36,12 @@ struct PostprocessShaderUniform {
 	LIST_INTERFACE(PostprocessShaderUniform);
 
 	Uniform *uniform;
-	PostprocessShaderUniformValue *values;
+
+	union {
+		PostprocessShaderUniformValue *values;
+		Texture *texture;
+	};
+
 	uint elements;
 };
 
