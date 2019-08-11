@@ -1377,13 +1377,13 @@ TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
 
 	WAIT(difficulty_value(25, 20, 15, 10));
 
-	int shot_interval = difficulty_value(50, 40, 30, 20);
+	int shot_interval = difficulty_value(120, 40, 30, 20);
 
 	for(;;) {
 		play_sound("shot1");
 
 		complex aim = cnormalize(global.plr.pos - e->pos);
-		aim *= difficulty_value(1.5, 2, 2.5, 3);
+		aim *= difficulty_value(2, 2, 2.5, 3);
 
 		PROJECTILE(
 			.proto = pp_ball,
@@ -1408,20 +1408,20 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	e->move.retention = 0.8;
 	e->move.attraction_point = ARGS.target_pos;
 
-	WAIT(150);
+	WAIT(120);
 
-	int shot_interval = difficulty_value(4, 4, 2, 2);
-	int shot_count = difficulty_value(10, 15, 20, 15);
+	int shot_interval = 2;
+	int shot_count = difficulty_value(10, 10, 20, 25);
 	int round_interval = 120 - shot_interval * shot_count;
 
-	for(int round = 0; round < 4; ++round) {
+	for(int round = 0; round < 2; ++round) {
 		double a_ofs = rand_angle();
 
 		for(int i = 0; i < shot_count; ++i) {
 			complex aim;
 
 			aim = circle_dir_ofs((round & 1) ? i : shot_count - i, shot_count, a_ofs);
-			aim *= difficulty_value(1.9, 2.1, 2.3, 2.5);
+			aim *= difficulty_value(1.7, 2.0, 2.5, 2.5);
 
 			PROJECTILE(
 				.proto = pp_rice,
@@ -1466,14 +1466,15 @@ TASK(burst_fairies_2, NO_ARGS) {
 }
 
 // swirl, sine pass
-TASK(sinepass_swirls, { int cnt; double level; double dir; }) {
-	const int cnt = ARGS.cnt;
-	const double dir = ARGS.dir;
-	const complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
+TASK(sinepass_swirls, { int duration; double level; double dir; }) {
+	int duration = ARGS.duration;
+	double dir = ARGS.dir;
+	complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
+	int delay = difficulty_value(30, 20, 15, 10);
 
-	for(int i = 0; i < cnt; ++i) {
+	for(int t = 0; t < duration; t += delay) {
 		INVOKE_TASK(sinepass_swirl, pos, 3.5 * dir, 7.0 * I);
-		stage_wait(10);
+		stage_wait(delay);
 	}
 }
 
@@ -1491,11 +1492,34 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 	}
 }
 
+TASK(schedule_swirls, NO_ARGS) {
+	INVOKE_TASK(sinepass_swirls, 180, 150, -1);
+	stage_wait(160);
+	INVOKE_TASK(sinepass_swirls, 180, 100, 1);
+}
+
+TASK(circle_fairies_1, NO_ARGS) {
+	for(int j = 0; j < 3; ++j) {
+		INVOKE_TASK(circle_fairy, VIEWPORT_W - 64, VIEWPORT_W/2 - 100 + 200 * I + 128 * j);
+		stage_wait(60);
+	}
+
+	stage_wait(90);
+
+	for(int j = 0; j < 3; ++j) {
+		INVOKE_TASK(circle_fairy, 64, VIEWPORT_W/2 + 100 + 200 * I - 128 * j);
+		stage_wait(60);
+	}
+
+	stage_wait(240);
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 	YIELD;
 
+	/*
 	for(;;) {
 		complex pos, tpos;
 
@@ -1511,19 +1535,20 @@ TASK(stage_timeline, NO_ARGS) {
 		WAIT(240);
 	}
 	return;
+	*/
 
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
 	stage_wait(140);
 	INVOKE_TASK(burst_fairies_2);
 	stage_wait(200);
-	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
+	INVOKE_TASK(sinepass_swirls, 180, 100, 1);
 	stage_wait(20);
 	INVOKE_TASK(circletoss_fairies_1);
 	stage_wait(160);
-	INVOKE_TASK(sinepass_swirls, 18, 150, -1);
-	stage_wait(160);
-	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
+	INVOKE_TASK(schedule_swirls);
+	stage_wait(180);
+	INVOKE_TASK(circle_fairies_1);
 }
 
 void stage1_events(void) {
