@@ -1377,13 +1377,13 @@ TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
 
 	WAIT(difficulty_value(25, 20, 15, 10));
 
-	int shot_interval = difficulty_value(50, 40, 30, 20);
+	int shot_interval = difficulty_value(120, 40, 30, 20);
 
 	for(;;) {
 		play_sound("shot1");
 
 		complex aim = cnormalize(global.plr.pos - e->pos);
-		aim *= difficulty_value(1.5, 2, 2.5, 3);
+		aim *= difficulty_value(2, 2, 2.5, 3);
 
 		PROJECTILE(
 			.proto = pp_ball,
@@ -1408,20 +1408,20 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	e->move.retention = 0.8;
 	e->move.attraction_point = ARGS.target_pos;
 
-	WAIT(150);
+	WAIT(120);
 
-	int shot_interval = difficulty_value(4, 4, 2, 2);
-	int shot_count = difficulty_value(10, 15, 20, 15);
+	int shot_interval = 2;
+	int shot_count = difficulty_value(10, 10, 20, 25);
 	int round_interval = 120 - shot_interval * shot_count;
 
-	for(int round = 0; round < 4; ++round) {
+	for(int round = 0; round < 2; ++round) {
 		double a_ofs = rand_angle();
 
 		for(int i = 0; i < shot_count; ++i) {
 			complex aim;
 
 			aim = circle_dir_ofs((round & 1) ? i : shot_count - i, shot_count, a_ofs);
-			aim *= difficulty_value(1.9, 2.1, 2.3, 2.5);
+			aim *= difficulty_value(1.7, 2.0, 2.5, 2.5);
 
 			PROJECTILE(
 				.proto = pp_rice,
@@ -1445,6 +1445,78 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	STALL;
 }
 
+TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+	});
+
+	e->move = move_accelerated(ARGS.vel, ARGS.accel);
+
+	int shot_interval = difficulty_value(120, 40, 30, 20);
+
+	WAIT(20);
+
+	while(true) {
+		complex aim = cnormalize(global.plr.pos - e->pos);
+		aim *= 1 + 0.3 * global.diff + frand();
+
+		play_sound("shot1");
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos,
+			.color = RGB(0.8, 0.8, 0.4),
+			.move = move_linear(aim),
+		);
+
+		WAIT(shot_interval);
+	}
+}
+
+TASK(multiburst_fairy, { complex pos; complex target_pos; complex exit_accel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 3,
+		.power = 2,
+	});
+
+	e->move.attraction = 0.05;
+	// e->move.retention = 0.8;
+	e->move.attraction_point = ARGS.target_pos;
+
+	WAIT(60);
+
+	int burst_interval = difficulty_value(22, 20, 18, 16);
+	int bursts = 4;
+
+	for(int i = 0; i < bursts; ++i) {
+		play_sound("shot1");
+		int n = global.diff - 1;
+
+		for(int j = -n; j <= n; j++) {
+			complex aim = cdir(carg(global.plr.pos - e->pos) + j / 5.0);
+			aim *= 2.5;
+
+			PROJECTILE(
+				.proto = pp_crystal,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.3, 0.5),
+				.move = move_linear(aim),
+			);
+		}
+
+		WAIT(burst_interval);
+	}
+
+	WAIT(10);
+	e->move.attraction = 0;
+	e->move.retention = 1;
+	e->move.acceleration = ARGS.exit_accel;
+	STALL;
+}
+
 // opening. projectile bursts
 TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
@@ -1465,15 +1537,24 @@ TASK(burst_fairies_2, NO_ARGS) {
 	}
 }
 
-// swirl, sine pass
-TASK(sinepass_swirls, { int cnt; double level; double dir; }) {
-	const int cnt = ARGS.cnt;
-	const double dir = ARGS.dir;
-	const complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
+TASK(burst_fairies_3, NO_ARGS) {
+	for(int i = 10; i--;) {
+		complex pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
+		INVOKE_TASK(burst_fairy, pos, sign(nfrand()));
+		stage_wait(60);
+	}
+}
 
-	for(int i = 0; i < cnt; ++i) {
+// swirl, sine pass
+TASK(sinepass_swirls, { int duration; double level; double dir; }) {
+	int duration = ARGS.duration;
+	double dir = ARGS.dir;
+	complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
+	int delay = difficulty_value(30, 20, 15, 10);
+
+	for(int t = 0; t < duration; t += delay) {
 		INVOKE_TASK(sinepass_swirl, pos, 3.5 * dir, 7.0 * I);
-		stage_wait(10);
+		stage_wait(delay);
 	}
 }
 
@@ -1491,11 +1572,59 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 	}
 }
 
+TASK(drop_swirls, { int cnt; complex pos; complex vel; complex accel; }) {
+	for(int i = 0; i < ARGS.cnt; ++i) {
+		INVOKE_TASK(drop_swirl, ARGS.pos, ARGS.vel, ARGS.accel);
+		stage_wait(20);
+	}
+}
+
+TASK(schedule_swirls, NO_ARGS) {
+	INVOKE_TASK(drop_swirls, 25, VIEWPORT_W/3, 2*I, 0.06);
+	stage_wait(400);
+	INVOKE_TASK(drop_swirls, 25, 200*I, 4, -0.06*I);
+}
+
+TASK(circle_fairies_1, NO_ARGS) {
+	for(int i = 0; i < 3; ++i) {
+		for(int j = 0; j < 3; ++j) {
+			INVOKE_TASK(circle_fairy, VIEWPORT_W - 64, VIEWPORT_W/2 - 100 + 200 * I + 128 * j);
+			stage_wait(60);
+		}
+
+		stage_wait(90);
+
+		for(int j = 0; j < 3; ++j) {
+			INVOKE_TASK(circle_fairy, 64, VIEWPORT_W/2 + 100 + 200 * I - 128 * j);
+			stage_wait(60);
+		}
+
+		stage_wait(240);
+	}
+}
+
+TASK(multiburst_fairies_1, NO_ARGS) {
+	for(int row = 0; row < 3; ++row) {
+		for(int col = 0; col < 5; ++col) {
+			log_debug("WTF %i %i", row, col);
+			complex pos = VIEWPORT_W * frand();
+			complex target_pos = 64 + 64 * col + I * (64 * row + 100);
+			complex exit_accel = 0.02 * I + 0.03;
+			INVOKE_TASK(multiburst_fairy, pos, target_pos, exit_accel);
+
+			WAIT(10);
+		}
+
+		WAIT(120);
+	}
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 	YIELD;
 
+	/*
 	for(;;) {
 		complex pos, tpos;
 
@@ -1511,19 +1640,25 @@ TASK(stage_timeline, NO_ARGS) {
 		WAIT(240);
 	}
 	return;
+	*/
 
+	INVOKE_TASK(drop_swirls);
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
 	stage_wait(140);
 	INVOKE_TASK(burst_fairies_2);
 	stage_wait(200);
-	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
-	stage_wait(20);
+	INVOKE_TASK(sinepass_swirls, 180, 100, 1);
+	stage_wait(40);
 	INVOKE_TASK(circletoss_fairies_1);
-	stage_wait(160);
-	INVOKE_TASK(sinepass_swirls, 18, 150, -1);
-	stage_wait(160);
-	INVOKE_TASK(sinepass_swirls, 18, 100, 1);
+	stage_wait(180);
+	INVOKE_TASK(circle_fairies_1);
+	stage_wait(240);
+	INVOKE_TASK(schedule_swirls);
+	stage_wait(600);
+	INVOKE_TASK(burst_fairies_3);
+	stage_wait(700);
+	INVOKE_TASK(multiburst_fairies_1);
 }
 
 void stage1_events(void) {

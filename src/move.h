@@ -17,8 +17,9 @@
 
 typedef struct MoveParams {
 	complex velocity, acceleration, retention;
-	complex attraction, attraction_norm;
+	complex attraction;
 	complex attraction_point;
+	double attraction_max_speed;
 } MoveParams;
 
 complex move_update(complex *restrict pos, MoveParams *restrict params);
