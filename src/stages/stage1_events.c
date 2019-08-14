@@ -1445,6 +1445,33 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	STALL;
 }
 
+TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+	});
+
+	e->move = move_accelerated(ARGS.vel, ARGS.accel);
+
+	while(true) {
+		if(frand() > 0.997-0.007*(global.diff-1)) {
+			complex aim = cnormalize(global.plr.pos - e->pos);
+			aim *= 1 + 0.3 * global.diff + frand();
+
+			play_sound("shot1");
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = RGB(0.8, 0.8, 0.4),
+				.move = move_linear(aim),
+			);
+		}
+
+		YIELD;
+	}
+}
+
 // opening. projectile bursts
 TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
@@ -1489,6 +1516,13 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 		);
 
 		stage_wait(50);
+	}
+}
+
+TASK(drop_swirls, NO_ARGS) {
+	for(int i = 0; i < 25; ++i) {
+		INVOKE_TASK(drop_swirl, VIEWPORT_W/3, 3.0*I, 0.06);
+		stage_wait(20);
 	}
 }
 
@@ -1537,6 +1571,7 @@ TASK(stage_timeline, NO_ARGS) {
 	return;
 	*/
 
+	INVOKE_TASK(drop_swirls);
 	stage_wait(100);
 	INVOKE_TASK(burst_fairies_1);
 	stage_wait(140);
