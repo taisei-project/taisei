@@ -50,6 +50,7 @@ DIALOG_SCRIPT(reimu_stage2_pre_boss) {
 }
 
 DIALOG_SCRIPT(reimu_stage2_post_boss) {
+	LEFT_FACE(sigh);
 	LEFT("In the end, you only made things harder for the both of us.");
 	RIGHT("I’m sorry, Miss Shrine Maiden! Would you like a blessing to make up for it?");
 	LEFT_FACE(smug);
@@ -88,7 +89,7 @@ DIALOG_SCRIPT(reimu_stage3_post_boss) {
 	LEFT_FACE(normal);
 	RIGHT("I won’t forget this humiliation!");
 	RIGHT_FACE(defeated);
-	LEFT_FACE(happy);
+	LEFT_FACE(sigh);
 	LEFT("Go take a nap already.");
 }
 
@@ -122,6 +123,7 @@ DIALOG_SCRIPT(reimu_stage4_post_boss) {
 	RIGHT_FACE(tsun_blush);
 	RIGHT("Can’t you remember? I’m Kurumi!");
 	RIGHT_FACE(defeated);
+	LEFT_FACE(sigh);
 	LEFT("You don’t seem like the sort that is worth remembering after several years.");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("Waah, so mean! You were way cuter back then!");
@@ -147,6 +149,7 @@ DIALOG_SCRIPT(reimu_stage5_pre_boss) {
 	RIGHT_FACE(eyes_closed);
 	RIGHT("I’ll compromise by offering a test instead. Defeat me, and you can take our representative’s place.");
 	RIGHT_FACE(serious);
+	LEFT_FACE(sigh);
 	RIGHT("If you can weather the storm I’m about to summon, then I’ll be fully confident that you can strike down the master of this tower!");
 }
 
@@ -177,6 +180,7 @@ DIALOG_SCRIPT(reimu_stage6_pre_boss) {
 	RIGHT("That is because we met before in another time, when you were much younger…");
 	RIGHT("Back then, I was a mere guard. But then my master left Kurumi and I behind. We fell into the real world instead of Gensōkyō,");
 	RIGHT("and I realized that logic was far superior to the chaos of fantasy.");
+	LEFT_FACE(sigh);
 	LEFT("Do you really think it’s acceptable to threaten Gensōkyō just for some petty delusion of intelligence?");
 	RIGHT_FACE(angry);
 	RIGHT("An unenlightened fool like you could never see how your faith blinds you.");

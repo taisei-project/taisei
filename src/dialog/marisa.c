@@ -106,7 +106,7 @@ DIALOG_SCRIPT(marisa_stage4_pre_boss) {
 	LEFT("Now that’s no way to treat an old acquaintance! I know ya from before, so how about just givin’ me a backstage pass, eh?");
 	RIGHT_FACE(tsun);
 	RIGHT("If you know me as well as you think you do, you’d know that all you’re going to get acquainted with is the taste of your own blood!");
-	LEFT_FACE(unamused);
+	LEFT_FACE(sweat_smile);
 	LEFT("Shoot, so that’s a no to my reservation, right?");
 }
 
@@ -158,7 +158,7 @@ DIALOG_SCRIPT(marisa_stage5_post_boss) {
 	LEFT_FACE(smug);
 	LEFT("If you want, I can put in a good word for ya in the bureaucracy. Ask me later, all right?");
 	RIGHT("As much as I appreciate the offer, I’d rather not have you create a bigger mess.");
-	LEFT_FACE(happy);
+	LEFT_FACE(sweat_smile);
 	LEFT("No guarantees!");
 }
 
