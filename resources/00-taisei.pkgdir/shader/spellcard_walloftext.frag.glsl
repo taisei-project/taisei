@@ -28,7 +28,7 @@ void main(void) {
 	// The complicated example I don’t understand either:
 
 	pos.x *= h/w;
-	pos.x += t * (floor(mod(pos.y, 2.0)) - 0.5);
+	pos.x += t * (mod(pos.y, 2.0) - 0.5);
 	pos = mod(pos, vec2(1 + 0.01 / w, 1));
 	pos = flip_topleft_to_native(pos);
 	pos *= vec2(w, h);
