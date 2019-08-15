@@ -28,11 +28,11 @@ void main(void) {
 	// The complicated example I don’t understand either:
 
 	pos.x *= h/w;
-	pos.x += t * 0.5 * float(2 * int(mod(pos.y, 2)) - 1);
+	pos.x += t * (floor(mod(pos.y, 2.0)) - 0.5);
 	pos = mod(pos, vec2(1 + 0.01 / w, 1));
 	pos = flip_topleft_to_native(pos);
-	pos *= vec2(w,h);
+	pos *= vec2(w, h);
 
 	vec4 texel = texture(tex, pos);
-	fragColor = vec4(texel.r) * float(pos.x < w && pos.y < h)*t*(2-t);
+	fragColor = vec4(texel.r) * t * (2 - t);
 }
