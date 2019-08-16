@@ -687,8 +687,10 @@ void video_init(void) {
 		{0, 0},
 	};
 
-	for(int i = 0; common_modes[i].width; ++i) {
-		video_add_mode(common_modes[i].width, common_modes[i].height);
+	if(video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED) {
+		for(int i = 0; common_modes[i].width; ++i) {
+			video_add_mode(common_modes[i].width, common_modes[i].height);
+		}
 	}
 
 	// sort it, mainly for the options menu
