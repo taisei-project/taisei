@@ -14,6 +14,8 @@
 // FIXME: This is just for IntRect, which probably should be placed elsewhere.
 #include "util/geometry.h"
 
+#include "renderer/api.h"
+
 #include <SDL.h>
 
 #define WINFLAGS_IS_FULLSCREEN(f)       ((f) & SDL_WINDOW_FULLSCREEN_DESKTOP)
