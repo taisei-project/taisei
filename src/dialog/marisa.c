@@ -102,6 +102,7 @@ DIALOG_SCRIPT(marisa_stage4_pre_boss) {
 	LEFT("Now here’s a face I haven’t seen in a long time. What’s this fancy house all about anyways? Decided to guard Yūka again, or is it somebody new?");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("It’s none of your business, that’s what it is. My friend is busy with some important work and she can’t be disturbed by nosy humans poking into where they don’t belong.");
+	RIGHT_FACE(dissatisfied);
 	LEFT_FACE(happy);
 	LEFT("Now that’s no way to treat an old acquaintance! I know ya from before, so how about just givin’ me a backstage pass, eh?");
 	RIGHT_FACE(tsun);
@@ -115,6 +116,7 @@ DIALOG_SCRIPT(marisa_stage4_post_boss) {
 	LEFT_FACE(smug);
 	LEFT("Right, got any tickets left then? I’ll probably be a little early, but I wanna meet the star of this show.");
 	LEFT("She seems like somebody I’d know.");
+	RIGHT_FACE(dissatisfied);
 	RIGHT("Attendance might as well be free since I’m too drained to do anything about it.");
 	LEFT_FACE(happy);
 	LEFT("Now that’s what I like t’ hear!");

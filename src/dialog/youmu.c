@@ -109,15 +109,17 @@ DIALOG_SCRIPT(youmu_stage4_pre_boss) {
 	RIGHT("I'm Kuru—");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("Hey, my name isn’t important for a nosy person like you to know!");
+	RIGHT_FACE(dissatisfied);
 	LEFT_FACE(unamused);
 	LEFT("I only wanted to know so I could refer to you politely. I don’t want to call you a “random somebody” in your own house.");
 	RIGHT_FACE(normal);
 	LEFT_FACE(relaxed);
 	LEFT("Your house is very nice, by the way. Although I still think Hakugyokurō is bigger. Have you ever been there? Lady Yuyuko loves guests.");
-	RIGHT_FACE(tsun);
+	RIGHT_FACE(tsun_blush);
 	RIGHT("This isn’t my house, and you’re not allowed to snoop any more than you have! If you keep ignoring me, I’ll have to suck you dry right here where we stand!");
 	LEFT_FACE(sigh);
 	LEFT("It’s not your house, and yet you’re telling me to leave? You sound just as presumptuous as the other vampire I’ve met.");
+	RIGHT_FACE(tsun);
 	LEFT_FACE(normal);
 	RIGHT("I can bet you that I’m much more frightening.");
 }
@@ -129,6 +131,7 @@ DIALOG_SCRIPT(youmu_stage4_post_boss) {
 	LEFT("Maybe you should work on your manners and buy yourself a nice mansion to lord over instead of taking someone else’s.");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("I don’t care about being a stuffy noble! Just leave my friend alone to do her work!");
+	RIGHT_FACE(dissatisfied);
 	LEFT_FACE(happy);
 	LEFT("Normally I wouldn’t impose on someone who is busy, but I’ll have to make an exception for your mistress this time.");
 	LEFT_FACE(relaxed);

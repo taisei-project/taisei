@@ -106,6 +106,7 @@ DIALOG_SCRIPT(reimu_stage4_pre_boss) {
 	LEFT("Oh, it’s somebody new.");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("No, definitely not! I could never forget you from all those years ago! That was the most intense battle of my life!");
+	RIGHT_FACE(dissatisfied);
 	LEFT_FACE(puzzled);
 	LEFT("Hmm, nope, I don’t remember fighting you. Maybe if you told me your name, I could recall faster.");
 	RIGHT_FACE(tsun);
@@ -122,7 +123,7 @@ DIALOG_SCRIPT(reimu_stage4_post_boss) {
 	RIGHT("I didn’t think it was possible, but you’re so much stronger than before!");
 	RIGHT_FACE(tsun_blush);
 	RIGHT("Can’t you remember? I’m Kurumi!");
-	RIGHT_FACE(defeated);
+	RIGHT_FACE(dissatisfied);
 	LEFT_FACE(sigh);
 	LEFT("You don’t seem like the sort that is worth remembering after several years.");
 	RIGHT_FACE(tsun_blush);
