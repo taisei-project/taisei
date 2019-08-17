@@ -95,6 +95,16 @@ cmplx cnormalize(cmplx c) {
 	return c / cabs(c);
 }
 
+cmplx cclampabs(cmplx c, double maxabs) {
+	double a = cabs(c);
+
+	if(a > maxabs) {
+		return maxabs * c / a;
+	}
+
+	return c;
+}
+
 cmplx cdir(double angle) {
 	// this is faster than cexp(I*angle)
 
