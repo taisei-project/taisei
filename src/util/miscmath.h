@@ -39,6 +39,7 @@ void approach_asymptotic_p(double *val, double target, double rate, double epsil
 void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
 void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
 cmplx cnormalize(cmplx c) attr_const;
+cmplx cclampabs(cmplx c, double maxabs) attr_const;
 cmplx cdir(double angle) attr_const;
 double psin(double) attr_const;
 int sign(double) attr_const;

@@ -17,10 +17,14 @@ complex move_update(complex *restrict pos, MoveParams *restrict p) {
 	*pos += v;
 	p->velocity = p->acceleration + p->retention * v;
 
-	if(p->attraction_norm || p->attraction) {
+	if(p->attraction) {
 		complex av = p->attraction_point - *pos;
+
+		if(p->attraction_max_speed) {
+			av = cclampabs(av, p->attraction_max_speed);
+		}
+
 		p->velocity += p->attraction * av;
-		p->velocity += p->attraction_norm * cnormalize(av);
 	}
 
 	return v;
