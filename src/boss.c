@@ -31,35 +31,45 @@ typedef struct SpellBonus {
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
-Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
-	Boss *buf = calloc(1, sizeof(Boss));
+Boss* create_boss(char *name, char *ani, complex pos) {
+	Boss *boss = calloc(1, sizeof(Boss));
 
-	buf->name = strdup(name);
-	buf->pos = pos;
+	boss->name = strdup(name);
+	boss->pos = pos;
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
 	snprintf(strbuf, sizeof(strbuf), "boss/%s", ani);
-	aniplayer_create(&buf->ani, get_ani(strbuf), "main");
+	aniplayer_create(&boss->ani, get_ani(strbuf), "main");
 
-	if(dialog) {
-		buf->dialog = get_sprite(dialog);
-	}
+	boss->birthtime = global.frames;
+	boss->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
 
-	buf->birthtime = global.frames;
-	buf->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
-
-	buf->ent.draw_layer = LAYER_BOSS;
-	buf->ent.draw_func = ent_draw_boss;
-	buf->ent.damage_func = ent_damage_boss;
-	ent_register(&buf->ent, ENT_BOSS);
+	boss->ent.draw_layer = LAYER_BOSS;
+	boss->ent.draw_func = ent_draw_boss;
+	boss->ent.damage_func = ent_damage_boss;
+	ent_register(&boss->ent, ENT_BOSS);
 
 	// This is not necessary because the default will be set at the start of every attack.
 	// But who knows. Maybe this will be triggered somewhen. If bosses without attacks start
 	// taking over the world, I will be the one who put in this weak point to make them vulnerable.
-	buf->bomb_damage_multiplier = 1.0;
-	buf->shot_damage_multiplier = 1.0;
+	boss->bomb_damage_multiplier = 1.0;
+	boss->shot_damage_multiplier = 1.0;
 
-	return buf;
+	return boss;
+}
+
+void boss_set_portrait(Boss *boss, Sprite *base, Sprite *face) {
+	if(boss->portrait.tex != NULL) {
+		r_texture_destroy(boss->portrait.tex);
+		boss->portrait.tex = NULL;
+	}
+
+	if(base != NULL) {
+		assume(face != NULL);
+		render_character_portrait(base, face, &boss->portrait);
+	} else {
+		assume(face == NULL);
+	}
 }
 
 static double draw_boss_text(Alignment align, float x, float y, const char *text, Font *fnt, const Color *clr) {
@@ -505,11 +515,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 static void draw_spell_portrait(Boss *b, int time) {
 	const int anim_time = 200;
 
-	if(time <= 0 || time >= anim_time) {
-		return;
-	}
-
-	if(!b->dialog) {
+	if(time <= 0 || time >= anim_time || !b->portrait.tex) {
 		return;
 	}
 
@@ -532,7 +538,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
-	Sprite *char_spr = b->dialog;
+	Sprite *char_spr = &b->portrait;
 
 	r_mat_push();
 	r_mat_scale(-1, 1, 1);
@@ -1153,6 +1159,12 @@ void process_boss(Boss **pboss) {
 		}
 	}
 
+	#ifdef DEBUG
+	if(env_get("TAISEI_SKIP_TO_DIALOG", 0) && gamekeypressed(KEY_FOCUS)) {
+		over = true;
+	}
+	#endif
+
 	if(over) {
 		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
 			stage_gameover();
@@ -1254,6 +1266,7 @@ void free_boss(Boss *boss) {
 	for(int i = 0; i < boss->acount; i++)
 		free_attack(&boss->attacks[i]);
 
+	boss_set_portrait(boss, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);
 	free(boss->attacks);

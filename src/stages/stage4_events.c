@@ -26,18 +26,18 @@ void kurumi_extra(Boss*, int);
 static Dialog *stage4_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/kurumi") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "normal", NULL);
 	pm->dialog->stage4_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage4boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage4boss"});
 	return d;
 }
 
 static Dialog *stage4_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/kurumi") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "defeated", "defeated");
 	pm->dialog->stage4_post_boss(d);
 	return d;
 }
@@ -551,7 +551,8 @@ static void kurumi_global_rule(Boss *b, int time) {
 }
 
 Boss* stage4_spawn_kurumi(complex pos) {
-	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", pos);
+	Boss* b = create_boss("Kurumi", "kurumi", pos);
+	boss_set_portrait(b, get_sprite("dialog/kurumi"), get_sprite("dialog/kurumi_face_normal"));
 	b->glowcolor = *RGB(0.5, 0.1, 0.0);
 	b->global_rule = kurumi_global_rule;
 	return b;

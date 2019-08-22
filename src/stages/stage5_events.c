@@ -15,28 +15,27 @@
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "surprised", NULL);
 	pm->dialog->stage5_post_midboss(d);
-	assert(d->count == 1);
-	d->actions->timeout = global.frames + 120;
+	d->actions[d->count - 1].timeout = global.frames + 120;
 	return d;
 }
 
 static Dialog *stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "iku", "normal", NULL);
 	pm->dialog->stage5_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage5boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage5boss"});
 	return d;
 }
 
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "iku", "defeated", "defeated");
 	pm->dialog->stage5_post_boss(d);
 	return d;
 }
@@ -420,7 +419,7 @@ static void iku_mid_intro(Boss *b, int t) {
 static void midboss_dummy(Boss *b, int t) { }
 
 static Boss *create_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku_mid", 0, VIEWPORT_W+800.0*I);
+	Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
 	b->glowcolor = *RGB(0.2, 0.4, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 
@@ -1268,7 +1267,8 @@ void iku_extra(Boss *b, int t) {
 }
 
 Boss* stage5_spawn_iku(complex pos) {
-	Boss *b = create_boss("Nagae Iku", "iku", "dialog/iku", pos);
+	Boss *b = create_boss("Nagae Iku", "iku", pos);
+	boss_set_portrait(b, get_sprite("dialog/iku"), get_sprite("dialog/iku_face_normal"));
 	b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 	return b;

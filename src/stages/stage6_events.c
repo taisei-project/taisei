@@ -17,18 +17,18 @@
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
 	pm->dialog->stage6_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage6boss_phase1");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
 	return d;
 }
 
 static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/elly") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }
@@ -2627,6 +2627,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH) {
 		global.shake_view = 10;
+		boss_set_portrait(b, get_sprite("dialog/elly_variant_beaten"), get_sprite("dialog/elly_face_shouting"));
 		return;
 	}
 
@@ -2931,7 +2932,8 @@ static void elly_global_rule(Boss *b, int time) {
 }
 
 Boss* stage6_spawn_elly(complex pos) {
-	Boss *b = create_boss("Elly", "elly", "dialog/elly", pos);
+	Boss *b = create_boss("Elly", "elly", pos);
+	boss_set_portrait(b, get_sprite("dialog/elly"), get_sprite("dialog/elly_face_normal"));
 	b->global_rule = elly_global_rule;
 	return b;
 }

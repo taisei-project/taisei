@@ -115,7 +115,7 @@ typedef struct Boss {
 	int acount;
 
 	AniPlayer ani;
-	Sprite *dialog; // Used in spellcard intros
+	Sprite portrait; // Used in spellcard intros
 
 	Color zoomcolor;
 	Color shadowcolor;
@@ -149,7 +149,7 @@ typedef struct Boss {
 	} hud;
 } Boss;
 
-Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;
+Boss* create_boss(char *name, char *ani, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 
@@ -163,6 +163,8 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
 void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
+
+void boss_set_portrait(Boss *boss, Sprite *base, Sprite *face) attr_nonnull(1);
 
 void boss_start_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
 void boss_finish_current_attack(Boss *boss) attr_nonnull(1);

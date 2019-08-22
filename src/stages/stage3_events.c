@@ -16,18 +16,18 @@
 static Dialog *stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "normal", NULL);
 	pm->dialog->stage3_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage3boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage3boss"});
 	return d;
 }
 
 static Dialog *stage3_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "defeated", "defeated");
 	pm->dialog->stage3_post_boss(d);
 	return d;
 }
@@ -732,7 +732,8 @@ void wriggle_spellbg(Boss *b, int time) {
 }
 
 Boss* stage3_spawn_scuttle(complex pos) {
-	Boss *scuttle = create_boss("Scuttle", "scuttle", "dialog/scuttle", pos);
+	Boss *scuttle = create_boss("Scuttle", "scuttle", pos);
+	boss_set_portrait(scuttle, get_sprite("dialog/scuttle"), get_sprite("dialog/scuttle_face_normal"));
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
 	return scuttle;
@@ -1415,7 +1416,8 @@ static void stage3_boss_intro(Boss *boss, int time) {
 }
 
 Boss* stage3_spawn_wriggle_ex(complex pos) {
-	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", "dialog/wriggle", pos);
+	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", pos);
+	boss_set_portrait(wriggle, get_sprite("dialog/wriggle"), get_sprite("dialog/wriggle_face_proud"));
 	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
 	return wriggle;

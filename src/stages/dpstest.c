@@ -69,7 +69,7 @@ static void stage_dpstest_boss_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		global.boss = create_boss("Baka", "cirno", NULL, BOSS_DEFAULT_GO_POS);
+		global.boss = create_boss("Baka", "cirno", BOSS_DEFAULT_GO_POS);
 		boss_add_attack(global.boss, AT_Move, "", 1, DPSTEST_HP, stage_dpstest_boss_rule, NULL);
 		boss_add_attack(global.boss, AT_Spellcard, "Masochism ~ Eternal Torment", 5184000, DPSTEST_HP, stage_dpstest_boss_rule, NULL);
 	}

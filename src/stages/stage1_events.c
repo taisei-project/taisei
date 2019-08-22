@@ -15,18 +15,18 @@
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "cirno", "normal", NULL);
 	pm->dialog->stage1_pre_boss(d);
-	dialog_add_action(d, DIALOG_SET_BGM, "stage1boss");
+	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage1boss"});
 	return d;
 }
 
 static Dialog *stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	dialog_set_char(d, DIALOG_RIGHT, "cirno", "defeated", "defeated");
 	pm->dialog->stage1_post_boss(d);
 	return d;
 }
@@ -261,7 +261,8 @@ static void cirno_mid_flee(Boss *c, int time) {
 }
 
 Boss* stage1_spawn_cirno(complex pos) {
-	Boss *cirno = create_boss("Cirno", "cirno", "dialog/cirno", pos);
+	Boss *cirno = create_boss("Cirno", "cirno", pos);
+	boss_set_portrait(cirno, get_sprite("dialog/cirno"), get_sprite("dialog/cirno_face_normal"));
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
 	cirno->glowcolor = *RGB(0.2, 0.35, 0.5);
 	return cirno;

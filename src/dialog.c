@@ -18,22 +18,64 @@ Dialog *dialog_create(void) {
 	return d;
 }
 
-void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor) {
-	if(actor) {
-		d->actors[side] = *actor;
-	} else {
-		memset(d->actors + side, 0, sizeof(*d->actors));
-	}
+void dialog_set_base(Dialog *d, DialogSide side, const char *sprite) {
+	d->spr_base[side] = sprite ? get_sprite(sprite) : NULL;
+	d->valid_composites &= ~(1 << side);
 }
 
-void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face) {
-	plrchar_make_dialog_actor(pc, d->actors + side);
+void dialog_set_base_p(Dialog *d, DialogSide side, Sprite *sprite) {
+	d->spr_base[side] = sprite;
+	d->valid_composites &= ~(1 << side);
+}
 
-	if(face == DIALOG_FACE_NONE) {
-		d->actors[side].face = NULL;
-	} else {
-		d->actors[side].face = d->actors[side].faces[face];
+void dialog_set_face(Dialog *d, DialogSide side, const char *sprite) {
+	d->spr_face[side] = sprite ? get_sprite(sprite) : NULL;
+	d->valid_composites &= ~(1 << side);
+}
+
+void dialog_set_face_p(Dialog *d, DialogSide side, Sprite *sprite) {
+	d->spr_face[side] = sprite;
+	d->valid_composites &= ~(1 << side);
+}
+
+void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const char *char_face, const char *char_variant) {
+	size_t name_len = strlen(char_name);
+	size_t face_len = strlen(char_face);
+	size_t variant_len;
+
+	size_t lenfull_base = sizeof("dialog/") + name_len - 1;
+	size_t lenfull_face = lenfull_base + sizeof("_face_") + face_len - 1;
+
+	if(char_variant) {
+		variant_len = strlen(char_variant);
+		lenfull_base += sizeof("_variant_") + variant_len - 1;
 	}
+
+	char buf[imax(lenfull_base, lenfull_face) + 1];
+	char *dst = buf;
+	char *variant_dst;
+	dst = memcpy(dst, "dialog/", sizeof("dialog/") - 1);
+	dst = memcpy(dst + sizeof("dialog/") - 1, char_name, name_len + 1);
+
+	if(char_variant) {
+		variant_dst = dst + name_len;
+	} else {
+		d->spr_base[side] = get_sprite(buf);
+	}
+
+	dst = memcpy(dst + name_len, "_face_", sizeof("_face_") - 1);
+	dst = memcpy(dst + sizeof("_face_") - 1, char_face, face_len + 1);
+	d->spr_face[side] = get_sprite(buf);
+
+	if(!char_variant) {
+		return;
+	}
+
+	dst = memcpy(variant_dst, "_variant_", sizeof("_variant_") - 1);
+	dst = memcpy(dst + sizeof("_variant_") - 1, char_variant, variant_len + 1);
+	d->spr_base[side] = get_sprite(buf);
+
+	d->valid_composites &= ~(1 << side);
 }
 
 static int message_index(Dialog *d, int offset) {
@@ -54,20 +96,45 @@ static int message_index(Dialog *d, int offset) {
 	return idx;
 }
 
-DialogAction * dialog_add_action(Dialog *d, DialogActionType side, const char *msg) {
+DialogAction *dialog_add_action(Dialog *d, const DialogAction *action) {
 	d->actions = realloc(d->actions, (++d->count)*sizeof(DialogAction));
-	d->actions[d->count-1].type = side;
-	d->actions[d->count-1].msg = malloc(strlen(msg) + 1);
-	d->actions[d->count-1].timeout = 0;
-	strlcpy(d->actions[d->count-1].msg, msg, strlen(msg) + 1);
-	return &d->actions[d->count-1];
+	d->actions[d->count - 1] = *action;
+	return d->actions + d->count - 1;
+}
+
+static void update_composite(Dialog *d, DialogSide side) {
+	if(d->valid_composites & (1 << side)) {
+		return;
+	}
+
+	Sprite *composite = d->spr_composite + side;
+	Sprite *spr_base = d->spr_base[side];
+	Sprite *spr_face = d->spr_face[side];
+
+	if(composite->tex != NULL) {
+		r_texture_destroy(composite->tex);
+	}
+
+	if(spr_base != NULL) {
+		assert(spr_face != NULL);
+		render_character_portrait(spr_base, spr_face, composite);
+	} else {
+		composite->tex = NULL;
+	}
+
+	d->valid_composites |= (1 << side);
+}
+
+static void update_composites(Dialog *d) {
+	update_composite(d, DIALOG_LEFT);
+	update_composite(d, DIALOG_RIGHT);
 }
 
 void dialog_destroy(Dialog *d) {
-	for(int i = 0; i < d->count; i++) {
-		free(d->actions[i].msg);
-	}
-
+	memset(&d->spr_base, 0, sizeof(d->spr_base));
+	memset(&d->spr_face, 0, sizeof(d->spr_face));
+	d->valid_composites = 0;
+	update_composites(d);
 	free(d->actions);
 	free(d);
 }
@@ -82,6 +149,8 @@ void dialog_draw(Dialog *dialog) {
 	if(o == 0) {
 		return;
 	}
+
+	update_composites(dialog);
 
 	r_state_push();
 	r_state_push();
@@ -123,12 +192,14 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
-		Sprite *base = dialog->actors[i].base;
-		Sprite *face = dialog->actors[i].face;
+		Sprite *portrait = dialog->spr_composite + i;
 
-		if(!base) {
+		if(portrait->tex == NULL) {
 			continue;
 		}
+
+		float portrait_w = sprite_padded_width(portrait);
+		float portrait_h = sprite_padded_height(portrait);
 
 		r_mat_push();
 
@@ -148,28 +219,23 @@ void dialog_draw(Dialog *dialog) {
 
 		if(page_alpha < 10 && ((i != pre_side && i == cur_side) || (i == pre_side && i != cur_side))) {
 			r_mat_translate(ofs * page_alpha, ofs * page_alpha, 0);
-			float brightness = min(1.0 - 0.7 * page_alpha * dir, 1);
+			float brightness = min(1.0 - 0.5 * page_alpha * dir, 1);
 			clr.r = clr.g = clr.b = brightness;
 			clr.a = 1;
 		} else {
 			r_mat_translate(ofs, ofs, 0);
-			clr = *RGB(1 - (dir > 0) * 0.7, 1 - (dir > 0) * 0.7, 1 - (dir > 0) * 0.7);
+			clr = *RGB(1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5);
 		}
 
 		color_mul_scalar(&clr, o);
 
-		SpriteParams sp = { 0 };
-		sp.blend = BLEND_PREMUL_ALPHA;
-		sp.color = &clr;
-		sp.pos.x = (dialog_width - base->w) / 2 + 32;
-		sp.pos.y = VIEWPORT_H - base->h / 2;
-		sp.sprite_ptr = base;
-		r_draw_sprite(&sp);
-
-		if(face) {
-			sp.sprite_ptr = face;
-			r_draw_sprite(&sp);
-		}
+		r_draw_sprite(&(SpriteParams) {
+			.blend = BLEND_PREMUL_ALPHA,
+			.color = &clr,
+			.pos.x = (dialog_width - portrait_w) / 2 + 32,
+			.pos.y = VIEWPORT_H - portrait_h / 2,
+			.sprite_ptr = portrait,
+		});
 
 		r_mat_pop();
 	}
@@ -218,7 +284,7 @@ void dialog_draw(Dialog *dialog) {
 
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->actions[pre_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+		text_draw_wrapped(dialog->actions[pre_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { get_tex("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * page_text_alpha)), 1 }},
@@ -238,7 +304,7 @@ void dialog_draw(Dialog *dialog) {
 
 	color_mul_scalar(&clr, o);
 
-	text_draw_wrapped(dialog->actions[cur_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
+	text_draw_wrapped(dialog->actions[cur_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
 		.shader = "text_dialog",
 		.aux_textures = { get_tex("cell_noise") },
 		.shader_params = &(ShaderCustomParams) {{ o * page_text_alpha, 0 }},
@@ -258,27 +324,49 @@ void dialog_draw(Dialog *dialog) {
 	r_state_pop();
 }
 
-bool dialog_page(Dialog **d) {
-	if(!*d || (*d)->pos >= (*d)->count) {
+bool dialog_page(Dialog **pdialog) {
+	Dialog *d = *pdialog;
+
+	if(!d || d->pos >= d->count) {
 		return false;
 	}
 
-	int to = (*d)->actions[(*d)->pos].timeout;
+	int to = d->actions[d->pos].timeout;
 
 	if(to && to > global.frames) {
+		assert(d->actions[d->pos].type == DIALOG_MSG_LEFT || d->actions[d->pos].type == DIALOG_MSG_RIGHT);
 		return false;
 	}
 
-	(*d)->pos++;
-	(*d)->page_time = global.frames;
+	DialogAction *a = d->actions + d->pos;
+	d->pos++;
+	d->page_time = global.frames;
 
-	if((*d)->pos >= (*d)->count) {
+	if(d->pos >= d->count) {
 		// XXX: maybe this can be handled elsewhere?
 		if(!global.boss)
 			global.timer++;
-	} else if((*d)->actions[(*d)->pos].type == DIALOG_SET_BGM) {
-		stage_start_bgm((*d)->actions[(*d)->pos].msg);
-		return dialog_page(d);
+	}
+
+	switch(a->type) {
+		case DIALOG_SET_BGM:
+			stage_start_bgm(a->data);
+			break;
+
+		case DIALOG_SET_FACE_RIGHT:
+		case DIALOG_SET_FACE_LEFT: {
+			DialogSide side = (
+				a->type == DIALOG_SET_FACE_RIGHT
+					? DIALOG_RIGHT
+					: DIALOG_LEFT
+			);
+
+			dialog_set_face(d, side, a->data);
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	return true;
@@ -290,17 +378,28 @@ void dialog_update(Dialog **d) {
 	}
 
 	if(dialog_is_active(*d)) {
-		int to = (*d)->actions[(*d)->pos].timeout;
+		while((*d)->pos < (*d)->count) {
+			if(
+				(*d)->actions[(*d)->pos].type != DIALOG_MSG_LEFT &&
+				(*d)->actions[(*d)->pos].type != DIALOG_MSG_RIGHT
+			) {
+				dialog_page(d);
+			} else {
+				int to = (*d)->actions[(*d)->pos].timeout;
 
-		if(
-			(to && to >= global.frames) ||
-			((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
-		) {
-			dialog_page(d);
+				if(
+					(to && to >= global.frames) ||
+					((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
+				) {
+					dialog_page(d);
+				}
+
+				break;
+			}
 		}
 	}
 
-	// important to check this again; the page_dialog call may have ended the dialog
+	// important to check this again; the dialog_page call may have ended the dialog
 
 	if(dialog_is_active(*d)) {
 		fapproach_asymptotic_p(&(*d)->opacity, 1, 0.05, 1e-3);

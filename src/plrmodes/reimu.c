@@ -22,12 +22,6 @@ PlayerCharacter character_reimu = {
 	.full_name = "Hakurei Reimu",
 	.title = "Shrine Maiden of Paradise",
 	.dialog_base_sprite_name = "dialog/reimu",
-	.dialog_face_sprite_names = {
-		[DIALOG_FACE_NORMAL] = "dialog/reimu_face_normal",
-		[DIALOG_FACE_SURPRISED] = "dialog/reimu_face_surprised",
-		[DIALOG_FACE_ANNOYED] = "dialog/reimu_face_unamused",
-		[DIALOG_FACE_SMUG] = "dialog/reimu_face_smug",
-	},
 	.player_sprite_name = "player/reimu",
 	.menu_texture_name = "reimubg",
 	.ending = {

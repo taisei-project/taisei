@@ -17,6 +17,7 @@
 #include "savereplay.h"
 #include "stagepractice.h"
 #include "difficultyselect.h"
+#include "charselect.h"
 
 #include "global.h"
 #include "video.h"
@@ -283,6 +284,7 @@ void menu_preload(void) {
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
 		PlayerCharacter *pchar = plrchar_get(i);
 		preload_resource(RES_SPRITE, pchar->dialog_base_sprite_name, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
 	}
+
+	preload_char_menu();
 }
