@@ -10,7 +10,9 @@ UNIFORM(3) float time;
 UNIFORM(4) sampler2D runes;
 
 float _split(float x) {
-	return sqrt(0.25 - pow(x - 0.5, 2));
+	x -= 0.5;
+	x *= x;
+	return sqrt(0.25 - x);
 }
 
 vec2 runes_transform_uv(vec2 uv) {
@@ -74,21 +76,20 @@ void main(void) {
 	vec2 uv_b = uv;
 
 	vec3 c = vec3(0);
-	float rfactor = sqrt(dd*dd + ld*ld) * 0.01 * yy;
-	float kek = (1 - 2 * yy);
+	float rfactor = (1 - 2 * yy) * (1 + sqrt(dd*dd + ld*ld));
 
 	ld = sqrt(ld);
 	dd = sqrt(dd);
 
-	mat2 m_r = rot(dd * 0.00005 * kek) / (1 + ld * -0.0006 * kek);
-	mat2 m_g = rot(dd * 0.00009 * kek) / (1 + ld * -0.0004 * kek);
-	mat2 m_b = rot(dd * 0.00012 * kek) / (1 + ld * -0.0002 * kek);
+	mat2 m_r = rot(dd * 0.00005 * rfactor) / (1 + ld * -0.0006 * rfactor);
+	mat2 m_g = rot(dd * 0.00009 * rfactor) / (1 + ld * -0.0004 * rfactor);
+	mat2 m_b = rot(dd * 0.00012 * rfactor) / (1 + ld * -0.0002 * rfactor);
 
 	m_r = m_r * m_r * m_r;
 	m_g = m_g * m_g * m_g;
 	m_b = m_b * m_b * m_b;
 
-	const int samples = 8;
+	const int samples = 2;
 	const float isamples = 1.0 / samples;
 
 	for(int i = 0; i < samples; ++i) {
