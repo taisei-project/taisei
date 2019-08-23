@@ -34,7 +34,7 @@ void main(void) {
 	vec4 c = textureGrad(shotlayer, uv, gradX, gradY);
 
 	#ifdef ENABLE_ALPHA_CULLING
-	if(c == vec4(0.0)) {
+	if(all(lessThan(c, vec4(1.0 / 255.0)))) {
 		#ifdef DEBUG_ALPHA_CULLING
 		fragColor = vec4(1, 0, 0, 1);
 		return;
@@ -49,19 +49,11 @@ void main(void) {
 	vec4 m = vec4(vec3(0), 1);
 	float t = (time + c.a * 0.2) * 0.1 + 92.123431 + fwidth(c.a);
 
-	m.r += textureGrad(flowlayer, uv + 0.0524 * vec2(3.123*sin(t*1.632), -t*36.345), gradX, gradY).r;
-	m.g += textureGrad(flowlayer, uv + 0.0513 * vec2(3.312*sin(t*1.213), -t*31.314), gradX, gradY).g;
-	m.b += textureGrad(flowlayer, uv + 0.0551 * vec2(3.341*sin(t*1.623), -t*35.642), gradX, gradY).b;
+	m.rgb += textureGrad(flowlayer, uv + 0.0524 * vec2(3.123*sin(t*1.632), t*36.345), gradX, gradY).rgb;
+	m.rgb += textureGrad(flowlayer, uv + 0.0531 * vec2(t*13.624, -t*49.851), gradX, gradY).rgb;
+	m.rgb += textureGrad(flowlayer, uv + 0.0543 * vec2(-t*12.931, -t*24.341), gradX, gradY).rgb;
 
-	m.r += textureGrad(flowlayer, uv + 0.0531 * vec2(t*13.624, -t*49.851), gradX, gradY).g;
-	m.g += textureGrad(flowlayer, uv + 0.0501 * vec2(t*12.314, -t*42.123), gradX, gradY).b;
-	m.b += textureGrad(flowlayer, uv + 0.0593 * vec2(t*11.324, -t*44.681), gradX, gradY).r;
-
-	m.r += textureGrad(flowlayer, uv + 0.0543 * vec2(-t*12.931, -t*24.341), gradX, gradY).b;
-	m.g += textureGrad(flowlayer, uv + 0.0534 * vec2(-t*11.123, -t*23.934), gradX, gradY).r;
-	m.b += textureGrad(flowlayer, uv + 0.0584 * vec2(-t*13.631, -t*25.341), gradX, gradY).g;
-
-	m.rgb = hueShift(clamp(m.rgb / 3, 0, 1), time * 0.1 + uv.y);
+	m.rgb = hueShift(clamp(m.rgb / 2.5, 0, 1), time * 0.1 + uv.y);
 
 	fragColor = c * m;
 }
