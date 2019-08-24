@@ -334,6 +334,7 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 			.draw_rule = ScaleFade,
 			.rule = reimu_spirit_bomb_orb_trail,
 			.args = { trail_vel, 0, 0.4 },
+			.flags = PFLAG_NOREFLECT,
 		);
 	}
 
