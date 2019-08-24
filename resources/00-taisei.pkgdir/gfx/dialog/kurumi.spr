@@ -2,7 +2,7 @@
 
 texture = atlas_portraits_0
 region_x = 2
-region_y = 1095
+region_y = 2
 region_w = 801
 region_h = 954
 
@@ -10,5 +10,7 @@ region_h = 954
 
 w = 400.5
 h = 477
-offset_x = 0
-offset_y = 0
+padding_top = 0
+padding_bottom = 0
+padding_left = 0
+padding_right = 0
