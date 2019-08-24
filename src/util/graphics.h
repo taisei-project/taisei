@@ -54,10 +54,6 @@ double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font
 void draw_framebuffer_tex(Framebuffer *fb, double width, double height);
 void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment);
 
-void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
-void fbutil_destroy_attachments(Framebuffer *fb);
-void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
-
 void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out);
 
 #endif // IGUARD_util_graphics_h

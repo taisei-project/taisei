@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "renderer/api.h"
+#include "fbutil.h"
 
 typedef struct FBPair {
 	/*
@@ -25,11 +25,6 @@ typedef struct FBPair {
 	Framebuffer *front;
 	Framebuffer *back;
 } FBPair;
-
-typedef struct FBAttachmentConfig {
-	FramebufferAttachment attachment;
-	TextureParams tex_params;
-} FBAttachmentConfig;
 
 void fbpair_create(FBPair *pair, uint num_attachments, FBAttachmentConfig attachments[num_attachments], const char *debug_label) attr_nonnull(1, 3);
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) attr_nonnull(1);

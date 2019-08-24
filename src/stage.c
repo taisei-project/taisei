@@ -855,6 +855,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 
 	ent_init();
 	stage_objpools_alloc();
+	stage_draw_pre_init();
 	stage_preload();
 	stage_draw_init();
 

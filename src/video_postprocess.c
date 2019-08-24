@@ -8,26 +8,25 @@
 
 #include "taisei.h"
 
-#include "events.h"
 #include "log.h"
 #include "resource/postprocess.h"
 #include "util/graphics.h"
 #include "video.h"
 #include "video_postprocess.h"
+#include "util/fbmgr.h"
 
 struct VideoPostProcess {
+	ManagedFramebufferGroup *mfb_group;
 	FBPair framebuffers;
 	PostprocessShader *pp_pipeline;
 	int frames;
 };
 
-static bool video_postprocess_resize_event(SDL_Event *e, void *arg) {
-	VideoPostProcess *vpp = arg;
+static void video_postprocess_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
 	float w, h;
 	video_get_viewport_size(&w, &h);
-	fbpair_resize_all(&vpp->framebuffers, w, h);
-	fbpair_viewport(&vpp->framebuffers, 0, 0, w, h);
-	return false;
+	*fb_size = (IntExtent) { w, h };
+	*fb_viewport = (FloatRect) { 0, 0, w, h };
 }
 
 VideoPostProcess *video_postprocess_init(void) {
@@ -39,6 +38,7 @@ VideoPostProcess *video_postprocess_init(void) {
 
 	VideoPostProcess *vpp = calloc(1, sizeof(*vpp));
 	vpp->pp_pipeline = pps;
+	vpp->mfb_group = fbmgr_group_create();
 
 	FBAttachmentConfig a = { 0 };
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
@@ -51,31 +51,18 @@ VideoPostProcess *video_postprocess_init(void) {
 	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	a.tex_params.wrap.t = TEX_WRAP_MIRROR;
 
-	float w, h;
-	video_get_viewport_size(&w, &h);
-	a.tex_params.width = w;
-	a.tex_params.height = h;
+	FramebufferConfig fbconf = { 0 };
+	fbconf.num_attachments = 1;
+	fbconf.attachments = &a;
+	fbconf.resize_strategy.resize_func = video_postprocess_resize_strategy;
 
-	fbpair_create(&vpp->framebuffers, 1, &a, "Global postprocess");
-	fbpair_viewport(&vpp->framebuffers, 0, 0, w, h);
-
-	r_framebuffer_clear(vpp->framebuffers.back, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-	r_framebuffer_clear(vpp->framebuffers.front, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-
-	events_register_handler(&(EventHandler) {
-		.proc = video_postprocess_resize_event,
-		.priority = EPRIO_SYSTEM,
-		.arg = vpp,
-		.event_type = MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED),
-	});
-
+	fbmgr_group_fbpair_create(vpp->mfb_group, "Global postprocess", &fbconf, &vpp->framebuffers);
 	return vpp;
 }
 
 void video_postprocess_shutdown(VideoPostProcess *vpp) {
 	if(vpp) {
-		events_unregister_handler(video_postprocess_resize_event);
-		fbpair_destroy(&vpp->framebuffers);
+		fbmgr_group_destroy(vpp->mfb_group);
 		free(vpp);
 	}
 }

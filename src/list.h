@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#define LIST_ALIGN alignas(alignof(max_align_t))
+#define LIST_ALIGN alignas(16)
 
 typedef struct ListInterface ListInterface;
 typedef struct List List;

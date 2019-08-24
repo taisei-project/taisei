@@ -22,6 +22,7 @@ typedef enum StageFBPair {
 	NUM_FBPAIRS,
 } StageFBPair;
 
+void stage_draw_pre_init(void);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
 void stage_draw_hud(void);
