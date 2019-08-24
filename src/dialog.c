@@ -18,22 +18,8 @@ Dialog *dialog_create(void) {
 	return d;
 }
 
-void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor) {
-	if(actor) {
-		d->actors[side] = *actor;
-	} else {
-		memset(d->actors + side, 0, sizeof(*d->actors));
-	}
-}
-
-void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face) {
-	plrchar_make_dialog_actor(pc, d->actors + side);
-
-	if(face == DIALOG_FACE_NONE) {
-		d->actors[side].face = NULL;
-	} else {
-		d->actors[side].face = d->actors[side].faces[face];
-	}
+void dialog_set_image(Dialog *d, DialogSide side, const char *img) {
+	d->images[side] = img ? get_sprite(img) : NULL;
 }
 
 static int message_index(Dialog *d, int offset) {
@@ -123,10 +109,9 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
-		Sprite *base = dialog->actors[i].base;
-		Sprite *face = dialog->actors[i].face;
+		Sprite *portrait = dialog->images[i];
 
-		if(!base) {
+		if(!portrait) {
 			continue;
 		}
 
@@ -161,13 +146,13 @@ void dialog_draw(Dialog *dialog) {
 		SpriteParams sp = { 0 };
 		sp.blend = BLEND_PREMUL_ALPHA;
 		sp.color = &clr;
-		sp.pos.x = (dialog_width - base->w) / 2 + 32;
-		sp.pos.y = VIEWPORT_H - base->h / 2;
-		sp.sprite_ptr = base;
+		sp.pos.x = (dialog_width - portrait->w) / 2 + 32;
+		sp.pos.y = VIEWPORT_H - portrait->h / 2;
+		sp.sprite_ptr = portrait;
 		r_draw_sprite(&sp);
 
-		if(face) {
-			sp.sprite_ptr = face;
+		if(portrait) {
+			sp.sprite_ptr = portrait;
 			r_draw_sprite(&sp);
 		}
 

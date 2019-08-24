@@ -16,8 +16,8 @@
 static Dialog *stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/wriggle");
 	pm->dialog->stage3_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage3boss");
 	return d;
@@ -26,8 +26,8 @@ static Dialog *stage3_dialog_pre_boss(void) {
 static Dialog *stage3_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/wriggle") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/wriggle");
 	pm->dialog->stage3_post_boss(d);
 	return d;
 }

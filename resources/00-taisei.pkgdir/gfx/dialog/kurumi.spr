@@ -2,7 +2,7 @@
 
 texture = atlas_portraits_0
 region_x = 2
-region_y = 2
+region_y = 1095
 region_w = 801
 region_h = 954
 

@@ -15,8 +15,8 @@
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/cirno");
 	pm->dialog->stage1_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage1boss");
 	return d;
@@ -25,8 +25,8 @@ static Dialog *stage1_dialog_pre_boss(void) {
 static Dialog *stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/cirno") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/cirno");
 	pm->dialog->stage1_post_boss(d);
 	return d;
 }

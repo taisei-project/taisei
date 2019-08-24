@@ -16,8 +16,8 @@
 static Dialog *stage2_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/hina") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/hina");
 	pm->dialog->stage2_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage2boss");
 	return d;
@@ -26,8 +26,8 @@ static Dialog *stage2_dialog_pre_boss(void) {
 static Dialog *stage2_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/hina") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/hina");
 	pm->dialog->stage2_post_boss(d);
 	return d;
 }

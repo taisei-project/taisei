@@ -26,31 +26,15 @@ typedef enum {
 	DIALOG_SET_BGM
 } DialogActionType;
 
-typedef enum {
-	DIALOG_FACE_NORMAL,
-	DIALOG_FACE_SURPRISED,
-	DIALOG_FACE_ANNOYED,
-	DIALOG_FACE_SMUG,
-
-	DIALOG_NUM_FACES,
-	DIALOG_FACE_NONE,
-} DialogFace;
-
 typedef struct DialogAction {
 	DialogActionType type;
 	char *msg;
 	int timeout;
 } DialogAction;
 
-typedef struct DialogActor {
-	Sprite *base;
-	Sprite *face;
-	Sprite *faces[DIALOG_NUM_FACES];
-} DialogActor;
-
 typedef struct Dialog {
 	DialogAction *actions;
-	DialogActor actors[2];
+	Sprite *images[2];
 
 	int count;
 	int pos;
@@ -63,17 +47,8 @@ typedef struct Dialog {
 Dialog *dialog_create(void)
 	attr_returns_allocated;
 
-void dialog_set_actor(Dialog *d, DialogSide side, DialogActor *actor)
-	attr_nonnull(1);
-
-// HACK circular dependency...
-typedef struct PlayerCharacter PlayerCharacter;
-
-void dialog_set_playerchar_actor(Dialog *d, DialogSide side, PlayerCharacter *pc, DialogFace face)
-	attr_nonnull(1, 3);
-
 void dialog_set_image(Dialog *d, DialogSide side, const char *name)
-	attr_nonnull(1, 3);
+	attr_nonnull(1);
 
 DialogAction *dialog_add_action(Dialog *d, DialogActionType side, const char *msg)
 	attr_nonnull(1, 3);

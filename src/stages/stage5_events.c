@@ -15,7 +15,7 @@
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
 	pm->dialog->stage5_post_midboss(d);
 	assert(d->count == 1);
 	d->actions->timeout = global.frames + 120;
@@ -25,8 +25,8 @@ static Dialog *stage5_dialog_post_midboss(void) {
 static Dialog *stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/iku");
 	pm->dialog->stage5_pre_boss(d);
 	dialog_add_action(d, DIALOG_SET_BGM, "stage5boss");
 	return d;
@@ -35,8 +35,8 @@ static Dialog *stage5_dialog_pre_boss(void) {
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
-	dialog_set_playerchar_actor(d, DIALOG_LEFT, pm->character, DIALOG_FACE_NORMAL);
-	dialog_set_actor(d, DIALOG_RIGHT, &(DialogActor) { .base = get_sprite("dialog/iku") });
+	dialog_set_image(d, DIALOG_LEFT, pm->character->dialog_base_sprite_name);
+	dialog_set_image(d, DIALOG_RIGHT, "dialog/iku");
 	pm->dialog->stage5_post_boss(d);
 	return d;
 }

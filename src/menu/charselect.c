@@ -146,18 +146,6 @@ void draw_char_menu(MenuData *menu) {
 
 		float o = 1-menu->entries[i].drawdata*2;
 
-		const char *face;
-
-		if(menu->selected == i) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SMUG];
-		} else if(fabs(o - 1) < 1e-1) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_NORMAL];
-		} else if(menu->cursor == i) {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_SURPRISED];
-		} else {
-			face = pchar->dialog_face_sprite_names[DIALOG_FACE_ANNOYED];
-		}
-
 		float pofs = max(0, menu->entries[i].drawdata * 1.5 - 0.5);
 		pofs = glm_ease_back_in(pofs);
 
@@ -175,8 +163,6 @@ void draw_char_menu(MenuData *menu) {
 			// .flip.x = true,
 		};
 
-		r_draw_sprite(&portrait_params);
-		portrait_params.sprite_ptr = get_sprite(face);
 		r_draw_sprite(&portrait_params);
 
 		r_mat_push();
