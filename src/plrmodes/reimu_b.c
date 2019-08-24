@@ -220,16 +220,26 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	}
 
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
+	bool render_to_fg = r_framebuffer_current() == framebuffers->back;
 
-	fbpair_swap(framebuffers);
-	Framebuffer *target_fb = framebuffers->back;
+	if(render_to_fg) {
+		fbpair_swap(framebuffers);
+		Framebuffer *target_fb = framebuffers->back;
 
-	// This change must propagate
-	r_state_pop();
-	r_framebuffer(target_fb);
-	r_state_push();
+		// This change must propagate
+		r_state_pop();
+		r_framebuffer(target_fb);
+		r_state_push();
 
-	r_shader("reimu_gap");
+		r_shader("reimu_gap");
+		r_uniform_int("draw_background", true);
+		r_blend(BLEND_NONE);
+	} else {
+		r_shader("reimu_gap");
+		r_uniform_int("draw_background", false);
+		r_blend(BLEND_PREMUL_ALPHA);
+	}
+
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("time", t / (float)FPS);
 	r_uniform_vec2("gap_size", GAP_WIDTH/2.0, GAP_LENGTH/2.0);
@@ -237,6 +247,8 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	r_uniform_float_array("gap_angles[0]", 0, NUM_GAPS, angles);
 	r_uniform_int_array("gap_links[0]", 0, NUM_GAPS, links);
 	draw_framebuffer_tex(framebuffers->front, VIEWPORT_W, VIEWPORT_H);
+
+	r_blend(BLEND_PREMUL_ALPHA);
 
 	FOR_EACH_GAP(gap) {
 		r_mat_push();

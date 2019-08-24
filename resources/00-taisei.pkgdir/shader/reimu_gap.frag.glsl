@@ -31,8 +31,11 @@ void drawGap(inout vec4 frag_color, vec2 frag_loc, int i) {
 }
 
 void main(void) {
-	vec4 bg = texture(tex, texCoord);
-	fragColor = bg;
+	if(draw_background != 0) {
+		fragColor = texture(tex, texCoord);
+	} else {
+		fragColor = vec4(0);
+	}
 
 	vec2 frag_loc = texCoord * viewport;
 	frag_loc.y = viewport.y - frag_loc.y;
