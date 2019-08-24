@@ -14,6 +14,7 @@
 #include "video.h"
 #include "resource/model.h"
 #include "renderer/api.h"
+#include "util/glm.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -32,11 +33,10 @@ static struct {
 
 #define CREDITS_ENTRY_FADEIN 200.0
 #define CREDITS_ENTRY_FADEOUT 100.0
-#define CREDITS_YUKKURI_SCALE 0.5
 
 #define CREDITS_FADEOUT 180
 
-#define ENTRY_TIME 322
+#define ENTRY_TIME 347
 
 static void credits_add(char *data, int time);
 
@@ -148,11 +148,6 @@ static void credits_fill(void) {
 	), 327);
 
 	credits_add((
-		"Mochizuki Ado\n"
-		"for a nice yukkuri image"
-	), ENTRY_TIME);
-
-	credits_add((
 		"…and You!\n"
 		"for playing"
 	), ENTRY_TIME);
@@ -166,7 +161,7 @@ static void credits_fill(void) {
 		"https://discord.gg/JEHCMzW"
 	), ENTRY_TIME);
 
-	// yukkureimu
+	// Yukkuri Kyouko
 	credits_add("*\nAnd don't forget to take it easy!", 180);
 }
 
@@ -244,7 +239,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 
 	if(e->lines > 0) {
 		if(*(e->data[0]) == '*') {
-			total += *head = r_texture_get_height(get_tex("yukkureimu"), 0) * CREDITS_YUKKURI_SCALE;
+			total += *head = sprite_padded_height(get_sprite("kyoukkuri"));
 		} else {
 			total += *head = font_get_lineskip(get_font("big"));
 		}
@@ -255,6 +250,24 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 	}
 
 	return total;
+}
+
+static float yukkuri_jump(float t) {
+	float k = 0.2;
+	float l = 1 - k;
+
+	if(t > 1 || t < 0) {
+		return 0;
+	}
+
+	if(t > k) {
+		t = (t - k) / l;
+		float b = glm_ease_bounce_out(t);
+		float e = glm_ease_sine_out(b);
+		return 1 - lerp(b, e, glm_ease_sine_out(t));
+	}
+
+	return glm_ease_quad_out(t / k);
 }
 
 static void credits_draw_entry(CreditsEntry *e) {
@@ -290,12 +303,10 @@ static void credits_draw_entry(CreditsEntry *e) {
 		return;
 	}
 
-	bool yukkuri = false;
 	Sprite *yukkuri_spr = NULL;
 
 	if(*e->data[0] == '*') {
-		yukkuri = true;
-		yukkuri_spr = get_sprite("yukkureimu");
+		yukkuri_spr = get_sprite("kyoukkuri");
 	}
 
 	r_mat_push();
@@ -321,12 +332,21 @@ static void credits_draw_entry(CreditsEntry *e) {
 	r_mat_translate(0, h_body * -0.5, 0);
 
 	for(int i = 0; i < e->lines; ++i) {
-		if(yukkuri && !i) {
-			r_mat_push();
-			r_mat_scale(CREDITS_YUKKURI_SCALE, CREDITS_YUKKURI_SCALE, 1.0);
-			draw_sprite_p(0, 10 * sin(global.frames / 10.0) * fadeout * fadein, yukkuri_spr);
-			r_mat_pop();
-			r_mat_translate(0, yukkuri_spr->h * CREDITS_YUKKURI_SCALE * 0.5, 0);
+		if(yukkuri_spr && !i) {
+			float t = ((global.frames) % 90) / 59.0;
+			float elevation = yukkuri_jump(t);
+			float squeeze = (elevation - yukkuri_jump(t - 0.03)) * 0.4;
+			float halfheight = sprite_padded_height(yukkuri_spr) * 0.5;
+
+			r_draw_sprite(&(SpriteParams) {
+				.sprite_ptr = yukkuri_spr,
+				.pos.y = -60 * elevation * fadein + halfheight * squeeze,
+				.shader = "sprite_default",
+				.scale.x = 1.0 - squeeze,
+				.scale.y = 1.0 + squeeze,
+			});
+
+			r_mat_translate(0, halfheight, 0);
 		} else {
 			Font *font = get_font(i ? "standard" : "big");
 			r_shader("text_default");
@@ -420,7 +440,7 @@ static void credits_free(void) {
 void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
 	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
-	preload_resource(RES_SPRITE, "yukkureimu", RESF_DEFAULT);
+	preload_resource(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage6/towerwall",
 		"loading",  // for transition
