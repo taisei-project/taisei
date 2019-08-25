@@ -159,5 +159,6 @@ int stage_wait(int delay);
 #include "stages/stage4.h"
 #include "stages/stage5.h"
 #include "stages/stage6.h"
+#include "stages/extra.h"
 
 #endif // IGUARD_stage_h
