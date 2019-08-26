@@ -174,7 +174,6 @@ if host_machine.system() == 'emscripten'
     em_link_args = [
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
-        '-s', 'ERROR_ON_MISSING_LIBRARIES=0',
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'EXPORT_NAME=Taisei',
