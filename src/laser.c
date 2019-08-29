@@ -15,6 +15,8 @@
 #include "stagedraw.h"
 #include "renderer/api.h"
 #include "resource/model.h"
+#include "util/fbmgr.h"
+#include "video.h"
 
 static struct {
 	VertexArray *varr;
@@ -23,6 +25,8 @@ static struct {
 	Model quad_generic;
 	Framebuffer *saved_fb;
 	Framebuffer *render_fb;
+	FBPair blur_fb_pair;
+	ManagedFramebufferGroup *mfb_group;
 } lasers;
 
 typedef struct LaserInstancedAttribs {
@@ -32,6 +36,26 @@ typedef struct LaserInstancedAttribs {
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
 static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
+
+static void lasers_fb_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
+	float w, h;
+	float vid_vp_w, vid_vp_h;
+	video_get_viewport_size(&vid_vp_w, &vid_vp_h);
+
+	bool is_blur_fb = (bool)(uintptr_t)userdata;
+
+	float q = config_get_float(CONFIG_FG_QUALITY);
+
+	if(!is_blur_fb && config_get_int(CONFIG_POSTPROCESS) > 1) {
+		q *= 2;
+	}
+
+	w = floorf(fmin(1.0, vid_vp_w / SCREEN_W) * VIEWPORT_W) * q;
+	h = floorf(fmin(1.0, vid_vp_h / SCREEN_H) * VIEWPORT_H) * q;
+
+	*fb_size = (IntExtent) { w, h };
+	*fb_viewport = (FloatRect) { 0, 0, w, h };
+}
 
 void lasers_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
@@ -70,15 +94,23 @@ void lasers_preload(void) {
 	r_vertex_array_attach_vertex_buffer(lasers.varr, lasers.vbuf, 1);
 	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
 
-	FBAttachmentConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
-	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	cfg.tex_params.type = TEX_TYPE_RGBA;
-	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
-	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
-	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	lasers.render_fb = stage_add_foreground_framebuffer("Lasers FB", 0.5, 1, 1, &cfg);
+	FBAttachmentConfig aconf = { 0 };
+	aconf.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	aconf.tex_params.type = TEX_TYPE_RGBA_8;
+	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
+	aconf.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	aconf.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	aconf.tex_params.wrap.t = TEX_WRAP_MIRROR;
+
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = &aconf;
+	fbconf.num_attachments = 1;
+	fbconf.resize_strategy.resize_func = lasers_fb_resize_strategy;
+
+	lasers.mfb_group = fbmgr_group_create();
+	lasers.render_fb = fbmgr_group_framebuffer_create(lasers.mfb_group, "Lasers render FB", &fbconf);
+	fbconf.resize_strategy.userdata = (void*)(uintptr_t)true;
+	fbmgr_group_fbpair_create(lasers.mfb_group, "Lasers blur", &fbconf, &lasers.blur_fb_pair);
 
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
 	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
@@ -93,6 +125,7 @@ void lasers_preload(void) {
 }
 
 void lasers_free(void) {
+	fbmgr_group_destroy(lasers.mfb_group);
 	r_vertex_array_destroy(lasers.varr);
 	r_vertex_buffer_destroy(lasers.vbuf);
 	ent_unhook_pre_draw(lasers_ent_predraw_hook);
@@ -283,49 +316,56 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 			return;
 		}
 
-		FBPair *fbpair = stage_get_fbpair(FBPAIR_FG_AUX);
+		FBPair *fbpair = &lasers.blur_fb_pair;
 
 		stage_draw_begin_noshake();
 
 		r_framebuffer(lasers.saved_fb);
 		r_state_push();
+		r_blend(BLEND_NONE);
 
 		if(pp_quality > 1) {
 			// Ambient glow pass (large kernel)
-			r_framebuffer(fbpair->back);
-			r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+
 			r_shader("blur25");
 			r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+
+			r_framebuffer(fbpair->back);
 			r_uniform_vec2("blur_direction", 1, 0);
 			draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+
 			fbpair_swap(fbpair);
-			r_framebuffer(lasers.saved_fb);
+
+			r_framebuffer(fbpair->back);
 			r_uniform_vec2("blur_direction", 0, 1);
 			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+
+			r_framebuffer(lasers.saved_fb);
+			r_blend(BLEND_PREMUL_ALPHA);
+			r_shader_standard();
+			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+			r_blend(BLEND_NONE);
 		}
 
 		// Smoothed laser curves pass (small kernel)
-		r_framebuffer(fbpair->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 		r_shader("blur5");
 		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+
+		r_framebuffer(fbpair->back);
 		r_uniform_vec2("blur_direction", 1, 0);
 		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbpair);
-		r_uniform_vec2("blur_direction", 0, 1);
 
-		if(pp_quality < 2) {
-			// Since the aux framebuffers are smaller in this case, it's actually
-			// a bit faster to finish the blur pass there, and then blend it onto
-			// the main Framebuffer.
-			r_framebuffer(fbpair->back);
-			r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
-			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-			fbpair_swap(fbpair);
-			r_shader_standard();
-		}
+		fbpair_swap(fbpair);
+
+		r_framebuffer(fbpair->back);
+		r_uniform_vec2("blur_direction", 0, 1);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+
+		fbpair_swap(fbpair);
 
 		r_framebuffer(lasers.saved_fb);
+		r_blend(BLEND_PREMUL_ALPHA);
+		r_shader_standard();
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_state_pop();
