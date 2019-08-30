@@ -285,6 +285,12 @@ void coevent_cancel(CoEvent* evt) {
 	evt->subscribers = NULL;
 }
 
+void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*)) {
+	for(uint i = 0; i < num; ++i) {
+		func(events + i);
+	}
+}
+
 void cosched_init(CoSched *sched) {
 	memset(sched, 0, sizeof(*sched));
 }
