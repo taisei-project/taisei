@@ -17,6 +17,7 @@
 #include "color.h"
 #include "projectile.h"
 #include "entity.h"
+#include "coroutine.h"
 
 #define BOSS_HURT_RADIUS 16
 
@@ -100,6 +101,12 @@ typedef struct Attack {
 	BossRule rule;
 	BossRule draw_rule;
 
+	COEVENTS_ARRAY(
+		initiated,
+		started,
+		finished
+	) events;
+
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 } Attack;
 
@@ -127,6 +134,8 @@ typedef struct Boss {
 
 	BossRule global_rule;
 
+	MoveParams move;
+
 	// These are publicly accessible damage multipliers *you* can use to buff your spells.
 	// Just change the numbers. global.shake_view style. 1.0 is the default.
 	// If a new attack starts, they are reset. Nothing can go wrong!
@@ -147,6 +156,8 @@ typedef struct Boss {
 		float plrproximity_opacity;
 		float attack_timer;
 	} hud;
+
+	COEVENTS_ARRAY(defeated);
 } Boss;
 
 Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
@@ -174,6 +185,8 @@ bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 
 void boss_death(Boss **boss) attr_nonnull(1);
+
+void boss_reset_motion(Boss *boss) attr_nonnull(1);
 
 void boss_preload(void);
 
