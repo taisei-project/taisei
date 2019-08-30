@@ -1619,10 +1619,21 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 	}
 }
 
+TASK(spawn_midboss, NO_ARGS) {
+	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
+
+	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
+	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 24000, cirno_icy, NULL);
+	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
+	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
+
+	boss_start_attack(cirno, cirno->attacks);
+	global.boss = cirno;
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
-	YIELD;
 
 	/*
 	for(;;) {
@@ -1642,23 +1653,15 @@ TASK(stage_timeline, NO_ARGS) {
 	return;
 	*/
 
-	INVOKE_TASK(drop_swirls);
-	stage_wait(100);
-	INVOKE_TASK(burst_fairies_1);
-	stage_wait(140);
-	INVOKE_TASK(burst_fairies_2);
-	stage_wait(200);
-	INVOKE_TASK(sinepass_swirls, 180, 100, 1);
-	stage_wait(40);
-	INVOKE_TASK(circletoss_fairies_1);
-	stage_wait(180);
-	INVOKE_TASK(circle_fairies_1);
-	stage_wait(240);
-	INVOKE_TASK(schedule_swirls);
-	stage_wait(600);
-	INVOKE_TASK(burst_fairies_3);
-	stage_wait(700);
-	INVOKE_TASK(multiburst_fairies_1);
+	INVOKE_TASK_DELAYED(100, burst_fairies_1);
+	INVOKE_TASK_DELAYED(240, burst_fairies_2);
+	INVOKE_TASK_DELAYED(440, sinepass_swirls, 180, 100, 1);
+	INVOKE_TASK_DELAYED(480, circletoss_fairies_1);
+	INVOKE_TASK_DELAYED(660, circle_fairies_1);
+	INVOKE_TASK_DELAYED(900, schedule_swirls);
+	INVOKE_TASK_DELAYED(1500, burst_fairies_3);
+	INVOKE_TASK_DELAYED(2200, multiburst_fairies_1);
+	INVOKE_TASK_DELAYED(2700, spawn_midboss);
 }
 
 void stage1_events(void) {
