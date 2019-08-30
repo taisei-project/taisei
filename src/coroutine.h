@@ -69,6 +69,14 @@ void coevent_signal(CoEvent *evt);
 void coevent_signal_once(CoEvent *evt);
 void coevent_cancel(CoEvent *evt);
 
+void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*));
+
+#define COEVENTS_ARRAY(...) union { CoEvent _first_event_; struct { CoEvent __VA_ARGS__; }; }
+
+#define COEVENT_ARRAY_ACTION(func, array) (_coevent_array_action(sizeof(array)/sizeof(CoEvent), &((array)._first_event_), func))
+#define COEVENT_INIT_ARRAY(array) COEVENT_ARRAY_ACTION(coevent_init, array)
+#define COEVENT_CANCEL_ARRAY(array) COEVENT_ARRAY_ACTION(coevent_cancel, array)
+
 void cosched_init(CoSched *sched);
 CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran

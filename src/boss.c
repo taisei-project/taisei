@@ -952,12 +952,18 @@ static int attack_end_delay(Boss *boss) {
 	return delay;
 }
 
+static void boss_call_rule(Boss *boss, int t) {
+	if(boss->current->rule) {
+		boss->current->rule(boss, t);
+	}
+}
+
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
 	boss->current->hp = 0;
 	boss->current->finished = true;
-	boss->current->rule(boss, EVENT_DEATH);
+	boss_call_rule(boss, EVENT_DEATH);
 
 	aniplayer_soft_switch(&boss->ani,"main",0);
 
@@ -992,6 +998,8 @@ void boss_finish_current_attack(Boss *boss) {
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
 	boss->current->endtime_undelayed = global.frames;
+
+	coevent_signal_once(&boss->current->events.finished);
 }
 
 void process_boss(Boss **pboss) {
@@ -1024,6 +1032,12 @@ void process_boss(Boss **pboss) {
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = boss->current->finished && global.frames >= boss->current->endtime;
 
+	if(time == 0) {
+		coevent_signal_once(&boss->current->events.started);
+	}
+
+	move_update(&boss->pos, &boss->move);
+
 	if(!boss->current->endtime) {
 		int remaining = boss->current->timeout - time;
 
@@ -1031,7 +1045,7 @@ void process_boss(Boss **pboss) {
 			play_sound(remaining <= 6*FPS ? "timeout2" : "timeout1");
 		}
 
-		boss->current->rule(boss, time);
+		boss_call_rule(boss, time);
 	}
 
 	if(extra) {
@@ -1179,6 +1193,11 @@ void process_boss(Boss **pboss) {
 		}
 
 		log_debug("Current attack [%s] is over", boss->current->name);
+		COEVENT_CANCEL_ARRAY(boss->current->events);
+
+		if(ATTACK_IS_SPELL(boss->current->type)) {
+			boss_reset_motion(boss);
+		}
 
 		for(;;) {
 			if(boss->current == boss->attacks + boss->acount - 1) {
@@ -1193,7 +1212,12 @@ void process_boss(Boss **pboss) {
 
 			if(boss->current->type == AT_Immediate) {
 				boss->current->starttime = global.frames;
-				boss->current->rule(boss, EVENT_BIRTH);
+				boss_call_rule(boss, EVENT_BIRTH);
+
+				coevent_signal_once(&boss->current->events.initiated);
+				coevent_signal_once(&boss->current->events.started);
+				coevent_signal_once(&boss->current->events.finished);
+				COEVENT_CANCEL_ARRAY(boss->current->events);
 
 				if(dialog_is_active(global.dialog)) {
 					break;
@@ -1203,6 +1227,7 @@ void process_boss(Boss **pboss) {
 			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
+				COEVENT_CANCEL_ARRAY(boss->current->events);
 				continue;
 			}
 
@@ -1210,6 +1235,14 @@ void process_boss(Boss **pboss) {
 			break;
 		}
 	}
+}
+
+void boss_reset_motion(Boss *boss) {
+	boss->move.acceleration = 0;
+	boss->move.attraction = 0;
+	boss->move.attraction_max_speed = 0;
+	boss->move.attraction_point = 0;
+	boss->move.retention = 0.8;
 }
 
 static void boss_death_effect_draw_overlay(Projectile *p, int t) {
@@ -1266,6 +1299,7 @@ void boss_death(Boss **boss) {
 }
 
 static void free_attack(Attack *a) {
+	COEVENT_CANCEL_ARRAY(a->events);
 	free(a->name);
 }
 
@@ -1323,6 +1357,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+	coevent_signal_once(&a->events.initiated);
 }
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
@@ -1343,6 +1378,8 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	a->draw_rule = draw_rule;
 
 	a->starttime = global.frames;
+
+	COEVENT_INIT_ARRAY(a->events);
 
 	return a;
 }
