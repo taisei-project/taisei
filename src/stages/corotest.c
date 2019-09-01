@@ -138,6 +138,30 @@ TASK_FINALIZER(test_enemy) {
 	log_debug("finalizer called (x = %i)", ARGS.for_finalizer.x);
 }
 
+TASK_WITH_FINALIZER(subtask_test, { int depth; int num; }) {
+	if(ARGS.depth > 0) {
+		for(int i = 0; i < 3; ++i) {
+			INVOKE_SUBTASK(subtask_test, ARGS.depth - 1, i);
+		}
+	}
+
+	for(int i = 0;; ++i) {
+		log_debug("subtask_test: depth=%i; num=%i; iter=%i", ARGS.depth, ARGS.num, i);
+		YIELD;
+	}
+}
+
+TASK_FINALIZER(subtask_test) {
+	log_debug("finalize subtask_test: depth=%i; num=%i", ARGS.depth, ARGS.num);
+}
+
+TASK(subtask_test_init, NO_ARGS) {
+	log_debug("************ BEGIN ************");
+	INVOKE_SUBTASK(subtask_test, 3, -1);
+	WAIT(30);
+	log_debug("************  END  ************");
+}
+
 TASK(stage_main, NO_ARGS) {
 	YIELD;
 
@@ -147,6 +171,7 @@ TASK(stage_main, NO_ARGS) {
 	log_debug("test 2! %i", global.timer);
 
 	for(;;) {
+		INVOKE_TASK(subtask_test_init);
 		INVOKE_TASK_DELAYED(60, test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
 		stage_wait(1000);
 	}
