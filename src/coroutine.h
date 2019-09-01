@@ -84,8 +84,7 @@ void cosched_finish(CoSched *sched);
 
 INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
 
-#define TASK_ARGS_NAME(name) COARGS_##name
-#define TASK_ARGS(name) struct TASK_ARGS_NAME(name)
+#define TASK_ARGS_TYPE(name) COARGS_##name
 
 #define TASK_ARGSDELAY_NAME(name) COARGSDELAY_##name
 #define TASK_ARGSDELAY(name) struct TASK_ARGSDELAY_NAME(name)
@@ -93,26 +92,38 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 #define TASK_ARGSCOND_NAME(name) COARGSCOND_##name
 #define TASK_ARGSCOND(name) struct TASK_ARGSCOND_NAME(name)
 
+#define TASK_IFACE_NAME(iface, suffix) COTASKIFACE_##iface##_##suffix
+#define TASK_IFACE_ARGS_TYPE(iface) TASK_IFACE_NAME(iface, ARGS)
+#define TASK_INDIRECT_TYPE(iface) TASK_IFACE_NAME(iface, HANDLE)
+
+#define DEFINE_TASK_INTERFACE(iface, argstruct) \
+	typedef TASK_ARGS_STRUCT(argstruct) TASK_IFACE_ARGS_TYPE(iface); \
+	typedef struct { void *(*_cotask_##iface##_thunk)(void*); } TASK_INDIRECT_TYPE(iface)  /* require semicolon */
+
+#define TASK_INDIRECT_TYPE_ALIAS(task) TASK_IFACE_NAME(task, HANDLEALIAS)
+
 #define ARGS (*_cotask_args)
 
 #define NO_ARGS { char _dummy_0; }
-#define ARGS_STRUCT(argstruct) { struct argstruct; char _dummy_1; }
+#define TASK_ARGS_STRUCT(argstruct) struct { struct argstruct; char _dummy_1; }
 
 #define TASK_COMMON_PRIVATE_DECLARATIONS(name) \
 	/* user-defined task body */ \
-	static void COTASK_##name(TASK_ARGS(name) *_cotask_args); \
+	static void COTASK_##name(TASK_ARGS_TYPE(name) *_cotask_args); \
 	/* called from the entry points before task body (inlined, hopefully) */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) /* require semicolon */ \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) /* require semicolon */ \
 
-#define TASK_COMMON_DECLARATIONS(name, argstruct, linkage) \
+#define TASK_COMMON_DECLARATIONS(name, argstype, handletype, linkage) \
 	/* produce warning if the task is never used */ \
 	linkage char COTASK_UNUSED_CHECK_##name; \
+	/* type of indirect handle to a compatible task */ \
+	typedef handletype TASK_INDIRECT_TYPE_ALIAS(name); \
 	/* user-defined type of args struct */ \
-	struct TASK_ARGS_NAME(name) ARGS_STRUCT(argstruct); \
+	typedef argstype TASK_ARGS_TYPE(name); \
 	/* type of internal args struct for INVOKE_TASK_DELAYED */ \
-	struct TASK_ARGSDELAY_NAME(name) { TASK_ARGS(name) real_args; int delay; }; \
+	struct TASK_ARGSDELAY_NAME(name) { TASK_ARGS_TYPE(name) real_args; int delay; }; \
 	/* type of internal args struct for INVOKE_TASK_WHEN */ \
-	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS(name) real_args; CoEvent *event; }; \
+	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS_TYPE(name) real_args; CoEvent *event; }; \
 	/* task entry point for INVOKE_TASK */ \
 	attr_unused linkage void *COTASKTHUNK_##name(void *arg); \
 	/* task entry point for INVOKE_TASK_DELAYED */ \
@@ -124,7 +135,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	/* task entry point for INVOKE_TASK */ \
 	attr_unused linkage void *COTASKTHUNK_##name(void *arg) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
-		TASK_ARGS(name) args_copy = *(TASK_ARGS(name)*)arg; \
+		TASK_ARGS_TYPE(name) args_copy = *(TASK_ARGS_TYPE(name)*)arg; \
 		/* call prologue */ \
 		COTASKPROLOGUE_##name(&args_copy); \
 		/* call body */ \
@@ -161,58 +172,71 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	}
 
 #define TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage) \
-	linkage void COTASK_##name(TASK_ARGS(name) *_cotask_args)
+	linkage void COTASK_##name(TASK_ARGS_TYPE(name) *_cotask_args)
 
 
-#define DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, linkage) \
-	TASK_COMMON_DECLARATIONS(name, argstruct, linkage) /* require semicolon */
+#define DECLARE_TASK_EXPLICIT(name, argstype, handletype, linkage) \
+	TASK_COMMON_DECLARATIONS(name, argstype, handletype, linkage) /* require semicolon */
 
-#define DEFINE_TASK_EXPLICIT_LINKAGE(name, linkage) \
+#define DEFINE_TASK_EXPLICIT(name, linkage) \
 	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
 	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* empty prologue */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { } \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) { } \
 	/* begin task body definition */ \
 	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
 
 
 /* declare a task with static linkage (needs to be defined later) */
 #define DECLARE_TASK(name, argstruct) \
-	DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, static) /* require semicolon */
+	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, static) /* require semicolon */
+
+/* TODO document */
+#define DECLARE_TASK_WITH_INTERFACE(name, iface) \
+	DECLARE_TASK_EXPLICIT(name, TASK_IFACE_ARGS_TYPE(iface), TASK_INDIRECT_TYPE(iface), static) /* require semicolon */
 
 /* define a task with static linkage (needs to be declared first) */
 #define DEFINE_TASK(name) \
-	DEFINE_TASK_EXPLICIT_LINKAGE(name, static)
+	DEFINE_TASK_EXPLICIT(name, static)
 
 /* declare and define a task with static linkage */
 #define TASK(name, argstruct) \
 	DECLARE_TASK(name, argstruct); \
 	DEFINE_TASK(name)
 
+/* TODO document */
+#define TASK_WITH_INTERFACE(name, iface) \
+	DECLARE_TASK_WITH_INTERFACE(name, iface); \
+	DEFINE_TASK(name)
+
 
 /* declare a task with extern linkage (needs to be defined later) */
 #define DECLARE_EXTERN_TASK(name, argstruct) \
-	DECLARE_TASK_EXPLICIT_LINKAGE(name, argstruct, extern) /* require semicolon */
+	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, extern) /* require semicolon */
+
+/* TODO document */
+#define DECLARE_EXTERN_TASK_WITH_INTERFACE(name, iface) \
+	DECLARE_TASK_EXPLICIT(name, TASK_IFACE_ARGS_TYPE(iface), TASK_INDIRECT_TYPE(iface), extern) /* require semicolon */
 
 /* define a task with extern linkage (needs to be declared first) */
 #define DEFINE_EXTERN_TASK(name) \
-	DEFINE_TASK_EXPLICIT_LINKAGE(name, extern)
+	DEFINE_TASK_EXPLICIT(name, extern)
 
 
-#define DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, linkage) \
+#define DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, linkage) \
 	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
 	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
 	struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER { char dummy; }; \
 	/* user-defined finalizer function */ \
-	INLINE void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args); \
+	INLINE void COTASKFINALIZER_##name(TASK_ARGS_TYPE(name) *_cotask_args); \
 	/* real finalizer entry point */ \
 	static void *COTASKFINALIZERTHUNK_##name(void *arg) { \
-		COTASKFINALIZER_##name((TASK_ARGS(name)*)arg); \
+		COTASKFINALIZER_##name((TASK_ARGS_TYPE(name)*)arg); \
 		return NULL; \
 	} \
 	/* prologue; sets up finalizer before executing task body */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS(name) *_cotask_args) { \
+	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) { \
 		cotask_set_finalizer(cotask_active(), COTASKFINALIZERTHUNK_##name, _cotask_args); \
 	} \
 	/* begin task body definition */ \
@@ -220,11 +244,11 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 /* define a task that needs a finalizer with static linkage (needs to be declared first) */
 #define DEFINE_TASK_WITH_FINALIZER(name) \
-	DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, static)
+ 	DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, static)
 
 /* define a task that needs a finalizer with static linkage (needs to be declared first) */
 #define DEFINE_EXTERN_TASK_WITH_FINALIZER(name) \
-	DEFINE_TASK_WITH_FINALIZER_EXPLICIT_LINKAGE(name, extern)
+	DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, extern)
 
 /* declare and define a task that needs a finalizer with static linkage */
 #define TASK_WITH_FINALIZER(name, argstruct) \
@@ -236,12 +260,12 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
 	attr_unused struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER; \
 	/* begin finalizer body definition */ \
-	static void COTASKFINALIZER_##name(TASK_ARGS(name) *_cotask_args)
+	static void COTASKFINALIZER_##name(TASK_ARGS_TYPE(name) *_cotask_args)
 
 #define INVOKE_TASK_(name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
-		&(TASK_ARGS(name)) { __VA_ARGS__ } \
+		&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ } \
 	) \
 )
 
@@ -269,6 +293,22 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
 #define CANCEL_TASK_WHEN(_event, _task) INVOKE_TASK_WHEN(_event, _cancel_task_helper, _task)
 
+#define TASK_INDIRECT(iface, task) ( \
+	(void)COTASK_UNUSED_CHECK_##task, \
+	(TASK_INDIRECT_TYPE_ALIAS(task)) { ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
+)
+
+#define TASK_INDIRECT_INIT(iface, task) \
+	{ ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
+
+#define INVOKE_TASK_INDIRECT_(iface, taskhandle, ...) ( \
+	cosched_new_task(_cosched_global, taskhandle._cotask_##iface##_thunk, \
+		&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ } \
+	) \
+)
+
+#define INVOKE_TASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(iface, __VA_ARGS__, ._dummy_1 = 0)
+
 #define THIS_TASK     cotask_box(cotask_active())
 
 #define YIELD         cotask_yield(NULL)
@@ -290,12 +330,12 @@ ENT_TYPES
 #undef ENT_TYPE
 
 #define cotask_bind_to_entity(task, ent) (_Generic((ent), \
-	Projectile*: _cotask_bind_to_entity_Projectile, \
-	Laser*: _cotask_bind_to_entity_Laser, \
-	Enemy*: _cotask_bind_to_entity_Enemy, \
-	Boss*: _cotask_bind_to_entity_Boss, \
-	Player*: _cotask_bind_to_entity_Player, \
-	Item*: _cotask_bind_to_entity_Item, \
+	struct Projectile*: _cotask_bind_to_entity_Projectile, \
+	struct Laser*: _cotask_bind_to_entity_Laser, \
+	struct Enemy*: _cotask_bind_to_entity_Enemy, \
+	struct Boss*: _cotask_bind_to_entity_Boss, \
+	struct Player*: _cotask_bind_to_entity_Player, \
+	struct Item*: _cotask_bind_to_entity_Item, \
 	EntityInterface*: cotask_bind_to_entity \
 )(task, ent))
 

@@ -20,6 +20,7 @@
 #include "coroutine.h"
 
 #define BOSS_HURT_RADIUS 16
+#define BOSS_MAX_ATTACKS 24
 
 enum {
 	ATTACK_START_DELAY = 60,
@@ -33,7 +34,9 @@ enum {
 	BOSS_DEATH_DELAY = 120,
 };
 
-struct Boss;
+typedef struct Boss Boss;
+typedef struct Attack Attack;
+typedef struct AttackInfo AttackInfo;
 
 typedef void (*BossRule)(struct Boss*, int time) attr_nonnull(1);
 
@@ -48,7 +51,15 @@ typedef enum AttackType {
 
 #define ATTACK_IS_SPELL(a) ((a) == AT_Spellcard || (a) == AT_SurvivalSpell || (a) == AT_ExtraSpell)
 
-typedef struct AttackInfo {
+DEFINE_TASK_INTERFACE(BossAttack, {
+	BoxedBoss boss;
+	Attack *attack;
+});
+
+typedef TASK_INDIRECT_TYPE(BossAttack) BossAttackTask;
+typedef TASK_IFACE_ARGS_TYPE(BossAttack) BossAttackTaskArgs;
+
+struct AttackInfo {
 	/*
 		HOW TO SET UP THE IDMAP FOR DUMMIES
 
@@ -79,9 +90,12 @@ typedef struct AttackInfo {
 
 	cmplx pos_dest;
 	int bonus_rank;
-} AttackInfo;
 
-typedef struct Attack {
+	// TODO: when we no longer need rule, this shall take its place
+	TASK_INDIRECT_TYPE(BossAttack) task;
+};
+
+struct Attack {
 	char *name;
 
 	AttackType type;
@@ -102,19 +116,20 @@ typedef struct Attack {
 	BossRule draw_rule;
 
 	COEVENTS_ARRAY(
-		initiated,
-		started,
-		finished
+		initiated,   // before start delay
+		started,     // after start delay
+		finished,    // before end delay
+		completed    // after end delay
 	) events;
 
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
-} Attack;
+};
 
-typedef struct Boss {
-	ENTITY_INTERFACE_NAMED(struct Boss, ent);
+struct Boss {
+	ENTITY_INTERFACE_NAMED(Boss, ent);
 	cmplx pos;
 
-	Attack *attacks;
+	Attack attacks[BOSS_MAX_ATTACKS];
 	Attack *current;
 
 	char *name;
@@ -158,7 +173,7 @@ typedef struct Boss {
 	} hud;
 
 	COEVENTS_ARRAY(defeated);
-} Boss;
+};
 
 Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
@@ -170,6 +185,8 @@ void draw_boss_overlay(Boss *boss) attr_nonnull(1);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+	attr_nonnull(1) attr_returns_nonnull;
+Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;

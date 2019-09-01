@@ -13,10 +13,24 @@
 
 #include "coroutine.h"
 #include "item.h"
+#include "move.h"
+#include "entity.h"
 
 DECLARE_EXTERN_TASK(
 	common_drop_items,
 	{ complex *pos; ItemCounts items; }
 );
+
+DECLARE_EXTERN_TASK(
+	common_move,
+	{ complex *pos; MoveParams move_params; BoxedEntity ent; }
+);
+
+DECLARE_EXTERN_TASK(
+	common_move_ext,
+	{ complex *pos; MoveParams *move_params; BoxedEntity ent; }
+);
+
+void common_move_loop(complex *restrict pos, MoveParams *restrict mp);
 
 #endif // IGUARD_common_tasks_h
