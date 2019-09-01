@@ -20,3 +20,27 @@ DEFINE_EXTERN_TASK(common_drop_items) {
 		}
 	}
 }
+
+void common_move_loop(complex *restrict pos, MoveParams *restrict mp) {
+	for(;;) {
+		move_update(pos, mp);
+		YIELD;
+	}
+}
+
+DEFINE_EXTERN_TASK(common_move) {
+	if(ARGS.ent.ent) {
+		TASK_BIND(ARGS.ent);
+	}
+
+	MoveParams p = ARGS.move_params;
+	common_move_loop(ARGS.pos, &p);
+}
+
+DEFINE_EXTERN_TASK(common_move_ext) {
+	if(ARGS.ent.ent) {
+		TASK_BIND(ARGS.ent);
+	}
+
+	common_move_loop(ARGS.pos, ARGS.move_params);
+}

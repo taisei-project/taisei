@@ -1036,8 +1036,6 @@ void process_boss(Boss **pboss) {
 		coevent_signal_once(&boss->current->events.started);
 	}
 
-	move_update(&boss->pos, &boss->move);
-
 	if(!boss->current->endtime) {
 		int remaining = boss->current->timeout - time;
 
@@ -1047,6 +1045,8 @@ void process_boss(Boss **pboss) {
 
 		boss_call_rule(boss, time);
 	}
+
+	move_update(&boss->pos, &boss->move);
 
 	if(extra) {
 		float base = 0.2;
@@ -1193,11 +1193,10 @@ void process_boss(Boss **pboss) {
 		}
 
 		log_debug("Current attack [%s] is over", boss->current->name);
-		COEVENT_CANCEL_ARRAY(boss->current->events);
 
-		if(ATTACK_IS_SPELL(boss->current->type)) {
-			boss_reset_motion(boss);
-		}
+		boss_reset_motion(boss);
+		coevent_signal_once(&boss->current->events.completed);
+		COEVENT_CANCEL_ARRAY(boss->current->events);
 
 		for(;;) {
 			if(boss->current == boss->attacks + boss->acount - 1) {
@@ -1217,6 +1216,7 @@ void process_boss(Boss **pboss) {
 				coevent_signal_once(&boss->current->events.initiated);
 				coevent_signal_once(&boss->current->events.started);
 				coevent_signal_once(&boss->current->events.finished);
+				coevent_signal_once(&boss->current->events.completed);
 				COEVENT_CANCEL_ARRAY(boss->current->events);
 
 				if(dialog_is_active(global.dialog)) {
@@ -1311,11 +1311,11 @@ void free_boss(Boss *boss) {
 	boss_set_portrait(boss, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);
-	free(boss->attacks);
 	free(boss);
 }
 
 void boss_start_attack(Boss *b, Attack *a) {
+	b->current = a;
 	log_debug("%s", a->name);
 
 	StageInfo *i;
@@ -1335,7 +1335,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	b->shot_damage_multiplier = 1.0;
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
-	a->rule(b, EVENT_BIRTH);
+	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
@@ -1356,15 +1356,16 @@ void boss_start_attack(Boss *b, Attack *a) {
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+	boss_reset_motion(b);
 	coevent_signal_once(&a->events.initiated);
 }
 
-Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
-	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
-	Attack *a = &boss->attacks[boss->acount-1];
-	memset(a, 0, sizeof(Attack));
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+	assert(boss->acount < BOSS_MAX_ATTACKS);
 
-	boss->current = &boss->attacks[0];
+	Attack *a = &boss->attacks[boss->acount];
+	boss->acount += 1;
+	memset(a, 0, sizeof(Attack));
 
 	a->type = type;
 	a->name = strdup(name);
@@ -1380,6 +1381,32 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	COEVENT_INIT_ARRAY(a->events);
 
+	return a;
+}
+
+TASK(attack_task_helper, {
+	BossAttackTask task;
+	BossAttackTaskArgs task_args;
+}) {
+	// NOTE: We could do INVOKE_TASK_INDIRECT here, but that's a bit wasteful.
+	// A better idea than both that and this contraption would be to come up
+	// with an INVOKE_TASK_INDIRECT_WHEN.
+	ARGS.task._cotask_BossAttack_thunk(&ARGS.task_args);
+}
+
+static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
+	INVOKE_TASK_WHEN(&a->events.initiated, attack_task_helper,
+		.task = task,
+		.task_args = {
+			.boss = ENT_BOX(boss),
+			.attack = a
+		}
+	);
+}
+
+Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	setup_attack_task(boss, a, task);
 	return a;
 }
 
@@ -1433,6 +1460,11 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
 	a->info = info;
 	boss_set_attack_bonus(a, info->bonus_rank);
+
+	if(info->task._cotask_BossAttack_thunk) {
+		setup_attack_task(boss, a, info->task);
+	}
+
 	return a;
 }
 

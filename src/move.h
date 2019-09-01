@@ -43,4 +43,11 @@ INLINE MoveParams move_asymptotic_simple(complex vel, double boost_factor) {
 	return move_asymptotic(vel * (1 + boost_factor * retention), vel, retention);
 }
 
+INLINE MoveParams move_towards(complex target, complex attraction) {
+	return (MoveParams) {
+		.attraction = attraction,
+		.attraction_point = target,
+	};
+}
+
 #endif // IGUARD_move_h
