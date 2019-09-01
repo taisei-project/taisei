@@ -146,10 +146,16 @@ static inline int proj_call_rule(Projectile *p, int t) {
 			);
 		}
 	} else if(t >= 0) {
-		complex v = move_update(&p->pos, &p->move);
+		if(!(p->flags & PFLAG_NOMOVE)) {
+			move_update(&p->pos, &p->move);
+		}
 
-		if(v) {
-			p->angle = carg(v);
+		if(!(p->flags & PFLAG_MANUALANGLE)) {
+			complex delta_pos = p->pos - p->prevpos;
+
+			if(delta_pos) {
+				p->angle = carg(delta_pos);
+			}
 		}
 	}
 
