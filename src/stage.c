@@ -72,7 +72,7 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 			break;
 		}
 
-		for(AttackInfo *a = s->spell; a->rule; ++a) {
+		for(AttackInfo *a = s->spell; a->name; ++a) {
 			if(!filter(a)) {
 				continue;
 			}
