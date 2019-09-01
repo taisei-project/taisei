@@ -14,6 +14,7 @@
 #include "video.h"
 #include "renderer/api.h"
 #include "util/pngcruft.h"
+#include "util/fbmgr.h"
 #include "taskmanager.h"
 #include "video_postprocess.h"
 
@@ -720,12 +721,14 @@ void video_init(void) {
 }
 
 void video_post_init(void) {
+	fbmgr_init();
 	v_postprocess = video_postprocess_init();
 	r_framebuffer(video_get_screen_framebuffer());
 }
 
 void video_shutdown(void) {
 	video_postprocess_shutdown(v_postprocess);
+	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);
 	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);

@@ -11,7 +11,6 @@
 #include "fbpair.h"
 #include "global.h"
 #include "util.h"
-#include "util/graphics.h"
 
 static void fbpair_destroy_fb(Framebuffer *fb) {
 	fbutil_destroy_attachments(fb);

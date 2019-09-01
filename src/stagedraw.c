@@ -14,6 +14,7 @@
 #include "video.h"
 #include "resource/postprocess.h"
 #include "entity.h"
+#include "util/fbmgr.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -22,17 +23,6 @@
 	#define GRAPHS_DEFAULT 0
 	#define OBJPOOLSTATS_DEFAULT 0
 #endif
-
-typedef struct CustomFramebuffer {
-	LIST_INTERFACE(struct CustomFramebuffer);
-	Framebuffer *fb;
-
-	struct {
-		float worst, best;
-	} scale;
-
-	StageFBPair scaling_base;
-} CustomFramebuffer;
 
 static struct {
 	struct {
@@ -64,10 +54,11 @@ static struct {
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
-	CustomFramebuffer *custom_fbs;
 
 	bool framerate_graphs;
 	bool objpool_stats;
+
+	ManagedFramebufferGroup *mfb_group;
 
 	#ifdef DEBUG
 		Sprite dummy;
@@ -125,28 +116,22 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, fl
 	*h = round(VIEWPORT_H * scale);
 }
 
-static inline void set_custom_fb_size(CustomFramebuffer *cfb, int *w, int *h) {
-	set_fb_size(cfb->scaling_base, w, h, cfb->scale.worst, cfb->scale.best);
+typedef struct StageFramebufferResizeParams {
+	struct { float worst, best; } scale;
+	StageFBPair scaling_base;
+	int refs;
+} StageFramebufferResizeParams;
+
+static void stage_framebuffer_resize_strategy(void *userdata, IntExtent *out_dimensions, FloatRect *out_viewport) {
+	StageFramebufferResizeParams *rp = userdata;
+	set_fb_size(rp->scaling_base, &out_dimensions->w, &out_dimensions->h, rp->scale.worst, rp->scale.best);
+	*out_viewport = (FloatRect) { 0, 0, out_dimensions->w, out_dimensions->h };
 }
 
-static void update_fb_size(StageFBPair fb_id) {
-	int w, h;
-	set_fb_size(fb_id, &w, &h, 1, 1);
-	fbpair_resize_all(stagedraw.fb_pairs + fb_id, w, h);
-	fbpair_viewport(stagedraw.fb_pairs + fb_id, 0, 0, w, h);
-
-	if(fb_id != FBPAIR_FG_AUX && fb_id != FBPAIR_BG_AUX) {
-		for(CustomFramebuffer *cfb = stagedraw.custom_fbs; cfb; cfb = cfb->next) {
-			if(cfb->scaling_base == fb_id) {
-				set_custom_fb_size(cfb, &w, &h);
-
-				for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-					fbutil_resize_attachment(cfb->fb, i, w, h);
-				}
-
-				r_framebuffer_viewport(cfb->fb, 0, 0, w, h);
-			}
-		}
+static void stage_framebuffer_resize_strategy_cleanup(void *userdata) {
+	StageFramebufferResizeParams *rp = userdata;
+	if(--rp->refs <= 0) {
+		free(rp);
 	}
 }
 
@@ -156,31 +141,6 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 	}
 
 	switch(TAISEI_EVENT(e->type)) {
-		case TE_VIDEO_MODE_CHANGED: {
-			for(uint i = 0; i < NUM_FBPAIRS; ++i) {
-				update_fb_size(i);
-			}
-
-			break;
-		}
-
-		case TE_CONFIG_UPDATED: {
-			switch(e->user.code) {
-				case CONFIG_POSTPROCESS:
-				case CONFIG_BG_QUALITY:
-					update_fb_size(FBPAIR_BG);
-					update_fb_size(FBPAIR_BG_AUX);
-					// fallthrough
-
-				case CONFIG_FG_QUALITY:
-					update_fb_size(FBPAIR_FG);
-					update_fb_size(FBPAIR_FG_AUX);
-					break;
-			}
-
-			break;
-		}
-
 		case TE_FRAME: {
 			fapproach_p(&stagedraw.clear_screen.alpha, stagedraw.clear_screen.target_alpha, 0.01);
 			break;
@@ -190,11 +150,26 @@ static bool stage_draw_event(SDL_Event *e, void *arg) {
 	return false;
 }
 
+static void stage_draw_fbpair_create(
+	FBPair *pair,
+	int num_attachments,
+	FBAttachmentConfig *attachments,
+	const StageFramebufferResizeParams *resize_params,
+	const char *name
+) {
+	StageFramebufferResizeParams *rp = memdup(resize_params, sizeof(*resize_params));
+	rp->refs = 2;
+
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = attachments;
+	fbconf.num_attachments = num_attachments;
+	fbconf.resize_strategy.resize_func = stage_framebuffer_resize_strategy;
+	fbconf.resize_strategy.userdata = rp;
+	fbconf.resize_strategy.cleanup_func = stage_framebuffer_resize_strategy_cleanup;
+	fbmgr_group_fbpair_create(stagedraw.mfb_group, name, &fbconf, pair);
+}
+
 static void stage_draw_setup_framebuffers(void) {
-	int fg_width, fg_height;
-	int bg_width, bg_height;
-	int fga_width, fga_height;
-	int bga_width, bga_height;
 	FBAttachmentConfig a[2], *a_color, *a_depth;
 	memset(a, 0, sizeof(a));
 
@@ -204,10 +179,10 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a_depth->attachment = FRAMEBUFFER_ATTACH_DEPTH;
 
-	set_fb_size(FBPAIR_FG, &fg_width, &fg_height, 1, 1);
-	set_fb_size(FBPAIR_FG_AUX, &fga_width, &fga_height, 1, 1);
-	set_fb_size(FBPAIR_BG, &bg_width, &bg_height, 1, 1);
-	set_fb_size(FBPAIR_BG_AUX, &bga_width, &bga_height, 1, 1);
+	StageFramebufferResizeParams rp_fg =     { .scaling_base = FBPAIR_FG,     .scale.best = 1, .scale.worst = 1 };
+	StageFramebufferResizeParams rp_fg_aux = { .scaling_base = FBPAIR_FG_AUX, .scale.best = 1, .scale.worst = 1 };
+	StageFramebufferResizeParams rp_bg =     { .scaling_base = FBPAIR_BG,     .scale.best = 1, .scale.worst = 1 };
+	StageFramebufferResizeParams rp_bg_aux = { .scaling_base = FBPAIR_BG_AUX, .scale.best = 1, .scale.worst = 1 };
 
 	// Set up some parameters shared by all attachments
 	TextureParams tex_common = {
@@ -220,36 +195,23 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
+	a_depth->tex_params.type = TEX_TYPE_DEPTH;
+
 	// Foreground: 1 RGB texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGB_16;
-	a_color->tex_params.width = fg_width;
-	a_color->tex_params.height = fg_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a, "Stage FG");
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG, 0, 0, fg_width, fg_height);
+	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a, &rp_fg, "Stage FG");
 
 	// Foreground auxiliary: 1 RGBA texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGBA;
-	a_color->tex_params.width = fga_width;
-	a_color->tex_params.height = fga_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a, "Stage FG AUX");
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_FG_AUX, 0, 0, fga_width, fga_height);
+	a_color->tex_params.type = TEX_TYPE_RGBA_8;
+	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a, &rp_fg_aux, "Stage FG AUX");
 
 	// Background: 1 RGB texture + depth per FB
-	a_color->tex_params.type = TEX_TYPE_RGB;
-	a_color->tex_params.width = bg_width;
-	a_color->tex_params.height = bg_height;
-	a_depth->tex_params.type = TEX_TYPE_DEPTH;
-	a_depth->tex_params.width = bg_width;
-	a_depth->tex_params.height = bg_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, "Stage BG");
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG, 0, 0, bg_width, bg_height);
+	a_color->tex_params.type = TEX_TYPE_RGB_8;
+	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, &rp_bg, "Stage BG");
 
 	// Background auxiliary: 1 RGBA texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGBA_8;
-	a_color->tex_params.width = bga_width;
-	a_color->tex_params.height = bga_height;
-	fbpair_create(stagedraw.fb_pairs + FBPAIR_BG_AUX, 1, a, "Stage BG AUX");
-	fbpair_viewport(stagedraw.fb_pairs + FBPAIR_BG_AUX, 0, 0, bga_width, bga_height);
+	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_BG_AUX, 1, a, &rp_bg_aux, "Stage BG AUX");
 
 	// CAUTION: should be at least 16-bit, lest the feedback shader do an oopsie!
 	a_color->tex_params.type = TEX_TYPE_RGBA_16;
@@ -257,31 +219,26 @@ static void stage_draw_setup_framebuffers(void) {
 	stagedraw.powersurge_fbpair.back  = stage_add_background_framebuffer("Powersurge effect FB 2", 0.125, 0.25, 1, a);
 }
 
-static Framebuffer* add_custom_framebuffer(const char *label, StageFBPair fbtype, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
-	CustomFramebuffer *cfb = calloc(1, sizeof(*cfb));
-	list_push(&stagedraw.custom_fbs, cfb);
+static Framebuffer *add_custom_framebuffer(
+	const char *label,
+	StageFBPair fbtype,
+	float scale_worst,
+	float scale_best,
+	uint num_attachments,
+	FBAttachmentConfig attachments[num_attachments]
+) {
+	StageFramebufferResizeParams rp = { 0 };
+	rp.scaling_base = fbtype;
+	rp.scale.worst = scale_worst;
+	rp.scale.best = scale_best;
 
-	FBAttachmentConfig cfg[num_attachments];
-	memcpy(cfg, attachments, sizeof(cfg));
-
-	int width, height;
-	cfb->scale.worst = scale_worst;
-	cfb->scale.best = scale_best;
-	cfb->scaling_base = fbtype;
-	set_custom_fb_size(cfb, &width, &height);
-
-	for(uint i = 0; i < num_attachments; ++i) {
-		cfg[i].tex_params.width = width;
-		cfg[i].tex_params.height = height;
-	}
-
-	cfb->fb = r_framebuffer_create();
-	r_framebuffer_set_debug_label(cfb->fb, label);
-	fbutil_create_attachments(cfb->fb, num_attachments, cfg);
-	r_framebuffer_viewport(cfb->fb, 0, 0, width, height);
-	r_framebuffer_clear(cfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-
-	return cfb->fb;
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = attachments;
+	fbconf.num_attachments = num_attachments;
+	fbconf.resize_strategy.resize_func = stage_framebuffer_resize_strategy;
+	fbconf.resize_strategy.userdata = memdup(&rp, sizeof(rp));
+	fbconf.resize_strategy.cleanup_func = stage_framebuffer_resize_strategy_cleanup;
+	return fbmgr_group_framebuffer_create(stagedraw.mfb_group, label, &fbconf);
 }
 
 Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
@@ -293,19 +250,13 @@ Framebuffer* stage_add_background_framebuffer(const char *label, float scale_wor
 }
 
 static void stage_draw_destroy_framebuffers(void) {
-	for(uint i = 0; i < NUM_FBPAIRS; ++i) {
-		fbpair_destroy(stagedraw.fb_pairs + i);
-	}
-
-	for(CustomFramebuffer *cfb = stagedraw.custom_fbs, *next; cfb; cfb = next) {
-		next = cfb->next;
-		fbutil_destroy_attachments(cfb->fb);
-		r_framebuffer_destroy(cfb->fb);
-		free(list_unlink(&stagedraw.custom_fbs, cfb));
-	}
+	fbmgr_group_destroy(stagedraw.mfb_group);
+	stagedraw.mfb_group = NULL;
 }
 
-void stage_draw_init(void) {
+void stage_draw_pre_init(void) {
+	stagedraw.mfb_group = fbmgr_group_create();
+
 	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
@@ -364,7 +315,9 @@ void stage_draw_init(void) {
 			"monotiny",
 		NULL);
 	}
+}
 
+void stage_draw_init(void) {
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = r_shader_get("text_hud");
 	stagedraw.hud_text.font = get_font("standard");
