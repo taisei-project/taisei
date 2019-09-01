@@ -26,7 +26,7 @@ struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
-			cirno_perfect_freeze, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
+			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze)
 		},
 	},
 
