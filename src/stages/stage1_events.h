@@ -24,4 +24,6 @@ void cirno_benchmark(Boss*, int);
 void stage1_events(void);
 Boss* stage1_spawn_cirno(cmplx pos);
 
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
+
 #endif // IGUARD_stages_stage1_events_h

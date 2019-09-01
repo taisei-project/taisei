@@ -1619,16 +1619,50 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 	}
 }
 
+TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	WAIT_EVENT(&ARGS.attack->events.started);
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.035);
+}
+
+TASK_WITH_INTERFACE(icy_storm, BossAttack) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	Attack *a = ARGS.attack;
+
+	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
+	WAIT_EVENT(&a->events.started);
+
+	// TODO implement
+	(void)boss;
+}
+
+DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	Attack *a = ARGS.attack;
+
+	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
+	WAIT_EVENT(&a->events.started);
+
+	// TODO implement
+	(void)boss;
+}
+
+TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	WAIT_EVENT(&ARGS.attack->events.started);
+	boss->move = move_towards(-250 + 30 * I, 0.02);
+}
+
 TASK(spawn_midboss, NO_ARGS) {
-	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
+	Boss *boss = global.boss = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
 
-	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
-	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 24000, cirno_icy, NULL);
-	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
-	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
+	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_intro), NULL);
+	boss_add_attack_task(boss, AT_Normal, "Icy Storm", 20, 24000, TASK_INDIRECT(BossAttack, icy_storm), NULL);
+	boss_add_attack_from_info(boss, &stage1_spells.mid.perfect_freeze, false);
+	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_flee), NULL);
 
-	boss_start_attack(cirno, cirno->attacks);
-	global.boss = cirno;
+	boss_start_attack(boss, boss->attacks);
 }
 
 TASK(stage_timeline, NO_ARGS) {
