@@ -60,6 +60,7 @@ CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
 void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg);
+void cotask_enslave(CoTask *slave);
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);
@@ -262,32 +263,45 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	/* begin finalizer body definition */ \
 	static void COTASKFINALIZER_##name(TASK_ARGS_TYPE(name) *_cotask_args)
 
-#define INVOKE_TASK_(name, ...) ( \
+
+INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
+	if(is_subtask) {
+		cotask_enslave(t);
+	}
+
+	return cotask_box(t);
+}
+
+
+#define INVOKE_TASK_(is_subtask, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
+	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
 		&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ } \
-	) \
+	), is_subtask) \
 )
 
-#define INVOKE_TASK(...) INVOKE_TASK_(__VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK(...) INVOKE_TASK_(false, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK(...) INVOKE_TASK_(true, __VA_ARGS__, ._dummy_1 = 0)
 
-#define INVOKE_TASK_WHEN_(_event, name, ...) ( \
+#define INVOKE_TASK_WHEN_(is_subtask, _event, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
+	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
 		&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event) } \
-	) \
+	), is_subtask) \
 )
 
-#define INVOKE_TASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(_event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(false, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(true, _event, __VA_ARGS__, ._dummy_1 = 0)
 
-#define INVOKE_TASK_DELAYED_(_delay, name, ...) ( \
+#define INVOKE_TASK_DELAYED_(is_subtask, _delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	cosched_new_task(_cosched_global, COTASKTHUNKDELAY_##name, \
+	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKDELAY_##name, \
 		&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) } \
-	) \
+	), is_subtask) \
 )
 
-#define INVOKE_TASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(_delay, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(false, _delay, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(true, _delay, __VA_ARGS__, ._dummy_1 = 0)
 
 DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
@@ -301,13 +315,14 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_INDIRECT_INIT(iface, task) \
 	{ ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
 
-#define INVOKE_TASK_INDIRECT_(iface, taskhandle, ...) ( \
-	cosched_new_task(_cosched_global, taskhandle._cotask_##iface##_thunk, \
+#define INVOKE_TASK_INDIRECT_(is_subtask, iface, taskhandle, ...) ( \
+	_cotask_invoke_helper(cosched_new_task(_cosched_global, taskhandle._cotask_##iface##_thunk, \
 		&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ } \
-	) \
+	), is_subtask) \
 )
 
-#define INVOKE_TASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(iface, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(false, iface, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(true, iface, __VA_ARGS__, ._dummy_1 = 0)
 
 #define THIS_TASK     cotask_box(cotask_active())
 
@@ -324,7 +339,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
 #define ENT_TYPE(typename, id) \
 	struct typename; \
-	struct typename *_cotask_bind_to_entity_##typename(CoTask *task, struct typename *ent);
+	struct typename *_cotask_bind_to_entity_##typename(CoTask *task, struct typename *ent) attr_returns_nonnull attr_returns_max_aligned;
 
 ENT_TYPES
 #undef ENT_TYPE
