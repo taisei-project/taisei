@@ -32,7 +32,6 @@
 
 struct CoTask {
 	LIST_INTERFACE(CoTask);
-	// List event_subscriber_chain;
 	koishi_coroutine_t ko;
 	BoxedEntity bound_ent;
 
@@ -41,8 +40,14 @@ struct CoTask {
 		void *arg;
 	} finalizer;
 
+	CoTask *supertask;
+	ListAnchor subtasks;
+	List subtask_chain;
+
 	uint32_t unique_id;
 };
+
+#define SUBTASK_NODE_TO_TASK(n) CASTPTR_ASSUME_ALIGNED((char*)(n) - offsetof(CoTask, subtask_chain), CoTask)
 
 static LIST_ANCHOR(CoTask) task_pool;
 static size_t num_tasks_allocated;
@@ -98,6 +103,9 @@ CoTask *cotask_new(CoTaskFunc func) {
 
 void cotask_free(CoTask *task) {
 	task->unique_id = 0;
+	task->supertask = NULL;
+	assume(task->subtasks.first == NULL);
+	assume(task->subtasks.last == NULL);
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
 	memset(&task->finalizer, 0, sizeof(task->finalizer));
 	alist_push(&task_pool, task);
@@ -115,10 +123,39 @@ CoTask *cotask_active(void) {
 	return CASTPTR_ASSUME_ALIGNED((char*)koishi_active() - offsetof(CoTask, ko), CoTask);
 }
 
+static void cotask_finalize(CoTask *task) {
+	if(task->finalizer.func) {
+		task->finalizer.func(task->finalizer.arg);
+		#ifdef DEBUG
+		task->finalizer.func = (void*(*)(void*)) 0xDECEA5E;
+		#endif
+	}
+
+	List *node;
+
+	while((node = alist_pop(&task->subtasks))) {
+		CoTask *sub = SUBTASK_NODE_TO_TASK(node);
+		assume(sub->supertask == task);
+		cotask_cancel(sub);
+
+		TASK_DEBUG(
+			"Cancelled slave task %p (of master task %p)",
+			(void*)sub, (void*)task
+		);
+	}
+}
+
+static void cotask_force_cancel(CoTask *task) {
+	// WARNING: It's important to finalize first, because if task == active task,
+	// then koishi_kill will not return!
+	cotask_finalize(task);
+	koishi_kill(&task->ko);
+	assert(cotask_status(task) == CO_STATUS_DEAD);
+}
+
 bool cotask_cancel(CoTask *task) {
 	if(cotask_status(task) != CO_STATUS_DEAD) {
-		koishi_kill(&task->ko);
-		assert(cotask_status(task) == CO_STATUS_DEAD);
+		cotask_force_cancel(task);
 		return true;
 	}
 
@@ -127,19 +164,14 @@ bool cotask_cancel(CoTask *task) {
 
 void *cotask_resume(CoTask *task, void *arg) {
 	if(task->bound_ent.ent && !ent_unbox(task->bound_ent)) {
-		koishi_kill(&task->ko);
-
-		if(task->finalizer.func) {
-			task->finalizer.func(task->finalizer.arg);
-		}
-
+		cotask_force_cancel(task);
 		return NULL;
 	}
 
 	arg = koishi_resume(&task->ko, arg);
 
-	if(task->finalizer.func && cotask_status(task) == CO_STATUS_DEAD) {
-		task->finalizer.func(task->finalizer.arg);
+	if(cotask_status(task) == CO_STATUS_DEAD) {
+		cotask_finalize(task);
 	}
 
 	return arg;
@@ -172,8 +204,6 @@ bool cotask_wait_event(CoEvent *evt, void *arg) {
 	}
 
 	evt->subscribers[evt->num_subscribers - 1] = cotask_box(cotask_active());
-
-	// alist_append(&evt->subscribers, &cotask_active()->event_subscriber_chain);
 
 	while(true) {
 		EVT_DEBUG("[%p]", (void*)evt);
@@ -208,7 +238,8 @@ EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 	assert(task->bound_ent.ent == 0);
 
 	if(ent == NULL) {
-		koishi_die(NULL);
+		cotask_force_cancel(task);
+		UNREACHABLE;
 	}
 
 	task->bound_ent = ent_box(ent);
@@ -221,6 +252,21 @@ void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg) {
 	task->finalizer.arg = arg;
 }
 
+void cotask_enslave(CoTask *slave) {
+	assert(slave->supertask == NULL);
+
+	CoTask *master = cotask_active();
+	assert(master != NULL);
+
+	slave->supertask = master;
+	alist_append(&master->subtasks, &slave->subtask_chain);
+
+	TASK_DEBUG(
+		"Made task %p a slave of task %p",
+		(void*)slave, (void*)slave->supertask
+	);
+}
+
 void coevent_init(CoEvent *evt) {
 	static uint32_t g_uid;
 	*evt = (CoEvent) { .unique_id = ++g_uid };
@@ -228,23 +274,6 @@ void coevent_init(CoEvent *evt) {
 }
 
 static void coevent_wake_subscribers(CoEvent *evt) {
-#if 0
-	List *subs_head = evt->subscribers.first;
-	evt->subscribers.first = evt->subscribers.last = NULL;
-
-	// NOTE: might need to copy the list into an array before iterating, to make sure nothing can corrupt the chain...
-
-	for(List *node = subs_head, *next; node; node = next) {
-		next = node->next;
-		CoTask *task = CASTPTR_ASSUME_ALIGNED((char*)node - offsetof(CoTask, event_subscriber_chain), CoTask);
-
-		if(cotask_status(task) != CO_STATUS_DEAD) {
-			TASK_DEBUG("Resume CoEvent{%p} subscriber %p", (void*)evt, (void*)task);
-			cotask_resume(task, NULL);
-		}
-	}
-#endif
-
 	if(!evt->num_subscribers) {
 		return;
 	}
