@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "common_tasks.h"
+#include "random.h"
 
 DEFINE_EXTERN_TASK(common_drop_items) {
 	complex p = *ARGS.pos;
@@ -43,4 +44,42 @@ DEFINE_EXTERN_TASK(common_move_ext) {
 	}
 
 	common_move_loop(ARGS.pos, ARGS.move_params);
+}
+
+complex common_wander(complex origin, double dist, Rect bounds) {
+	int attempts = 32;
+	double angle;
+	complex dest;
+	complex dir;
+
+	// assert(point_in_rect(origin, bounds));
+
+	while(attempts--) {
+		angle = rand_angle();
+		dir = cdir(angle);
+		dest = origin + dist * dir;
+
+		if(point_in_rect(dest, bounds)) {
+			return dest;
+		}
+	}
+
+	log_warn("Clipping fallback  origin = %f%+fi  dist = %f  bounds.top_left = %f%+fi  bounds.bottom_right = %f%+fi",
+		creal(origin), cimag(origin),
+		dist,
+		creal(bounds.top_left), cimag(bounds.top_left),
+		creal(bounds.bottom_right), cimag(bounds.bottom_right)
+	);
+
+	// TODO: implement proper line-clipping here?
+
+	double step = cabs(bounds.bottom_right - bounds.top_left) / 16;
+	dir *= step;
+	dest = origin;
+
+	while(point_in_rect(dest + dir, bounds)) {
+		dest += dir;
+	}
+
+	return dest;
 }
