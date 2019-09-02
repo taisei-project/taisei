@@ -1629,15 +1629,13 @@ TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
 
 
 TASK(cirno_snowflake_proj_twist, { BoxedProjectile p; }) {
-	Projectile *p = ENT_UNBOX(ARGS.p);
+	Projectile *p = TASK_BIND(ARGS.p);
 
-	if(p != NULL) {
-		play_sound_ex("redirect", 30, false);
-		play_sound_ex("shot_special1", 30, false);
-		color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
-		spawn_projectile_highlight_effect(p);
-		p->move.velocity = -cabs(p->move.velocity)*cdir(p->angle);
-	}
+	play_sound_ex("redirect", 30, false);
+	play_sound_ex("shot_special1", 30, false);
+	color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+	spawn_projectile_highlight_effect(p);
+	p->move.velocity = -cabs(p->move.velocity)*cdir(p->angle);
 }
 
 TASK_WITH_INTERFACE(icy_storm, BossAttack) {
@@ -1691,7 +1689,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 						complex phase2 = cdir(M_PI/4*side)*phase;
 						complex pos2 = pos0+(dr*(j-split))*phase2;
 
-						PROJECTILE(
+						p = PROJECTILE(
 							.proto = pp_crystal,
 							.pos = pos2,
 							.color = RGB(0.0,0.3*size/5,1),
@@ -1700,6 +1698,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 							.max_viewport_dist = 64,
 							.flags = PFLAG_MANUALANGLE,
 						);
+						INVOKE_TASK_DELAYED(split_time, cirno_snowflake_proj_twist, ENT_BOX(p));
 					}
 				}
 			}
@@ -1716,21 +1715,103 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	Attack *a = ARGS.attack;
 
 	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 	WAIT_EVENT(&a->events.started);
+	
+	for(int run = 1;;run++) {
+		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
-	// TODO implement
+		int n = global.diff;
+		int nfrog = n*60;
+		BoxedProjectile projs[nfrog];
 
-	boss->move.retention = 0.8;
-	boss->move.attraction = 0.01;
+		WAIT(20);
+		for(int i = 0; i < nfrog/n; i++) {
+			play_loop("shot1_loop");
+			
+			float r = frand();
+			float g = frand();
+			float b = frand();
 
-	Rect move_bounds;
-	move_bounds.top_left = CMPLX(64, 64);
-	move_bounds.bottom_right = CMPLX(VIEWPORT_W - 64, 200);
+			for(int j = 0; j < n; j++) {
+				float speed = 1+(4+0.5*global.diff)*frand();
+				projs[i*n+j] = ENT_BOX(PROJECTILE(
+					.proto = pp_ball,
+					.pos = boss->pos,
+					.color = RGB(r, g, b),
+					.move = move_linear(speed*cexp(I*tsrand())),
+				));
+			}
+			YIELD;
+		}
+		WAIT(20);
+		for(int i = 0; i < nfrog; i++) {
+			Projectile *p = ENT_UNBOX(projs[i]);
+			if(p == NULL) {
+				continue;
+			}
+			spawn_stain(p->pos, p->angle, 30);
+			spawn_stain(p->pos, p->angle, 30);
+			spawn_projectile_highlight_effect(p);
+			play_sound("shot_special1");
 
-	for(;;) {
-		boss->move.attraction_point = common_wander(boss->pos, rand_range(50, 200), move_bounds);
+			p->color = *RGB(0.9, 0.9, 0.9);
+			p->move.retention = 0.8*cdir(rand_angle());
+			if(frand() < 0.2) {
+				YIELD;
+			}
+		}
 		WAIT(60);
+		int dir = 2*(frand()>0.5)-1; // wait till they figure this out
+		boss->move = (MoveParams){ .velocity = dir*2.7+I, .retention = 0.99, .acceleration = -dir*0.017 };
+
+		aniplayer_queue(&boss->ani,"(9)",0);
+		int d = max(0, global.diff - D_Normal);
+		WAIT(60-5*global.diff);
+		for(int i = 0; i < nfrog; i++) {
+			Projectile *p = ENT_UNBOX(projs[i]);
+			if(p == NULL) {
+				continue;
+			}
+
+			p->color = *RGB(0.9, 0.9, 0.9);
+			p->move.retention = 1+0.002*global.diff*frand();
+			p->move.velocity = 2*cdir(rand_angle());
+			spawn_stain(p->pos, p->angle, 30);
+			spawn_projectile_highlight_effect(p);
+			play_sound_ex("shot2", 0, false);
+			if(frand() < 0.4) {
+				YIELD;
+			}
+		}
+		
+		for(int i = 0; i < 30+10*d; i++) { 
+			play_loop("shot1_loop");
+			float r1, r2;
+
+			if(global.diff > D_Normal) {
+				r1 = sin(i/M_PI*5.3) * cos(2*i/M_PI*5.3);
+				r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
+			} else {
+				r1 = nfrand();
+				r2 = nfrand();
+			}
+
+			complex aim = cnormalize(global.plr.pos - boss->pos);
+			float speed = 2+0.2*global.diff;
+
+			for(int sign = -1; sign <= 1; sign += 2) {
+				PROJECTILE(
+					.proto = pp_rice,
+					.pos = boss->pos + sign*60,
+					.color = RGB(0.3, 0.4, 0.9),
+					.move = move_asymptotic_simple(speed*aim*cdir(0.5*(sign > 0 ? r1 : r2)), 2.5+(global.diff>D_Normal)*0.1*sign*I),
+				);
+			}
+			WAIT(6-global.diff/2);
+		}
+		aniplayer_queue(&boss->ani,"main",0);
+
+		WAIT(40-5*global.diff);
 	}
 }
 
