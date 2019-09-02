@@ -33,4 +33,13 @@ DECLARE_EXTERN_TASK(
 
 void common_move_loop(complex *restrict pos, MoveParams *restrict mp);
 
+INLINE Rect viewport_bounds(double margin) {
+	return (Rect) {
+		.top_left = CMPLX(margin, margin),
+		.bottom_right = CMPLX(VIEWPORT_W - margin, VIEWPORT_H - margin),
+	};
+}
+
+complex common_wander(complex origin, double dist, Rect bounds);
+
 #endif // IGUARD_common_tasks_h
