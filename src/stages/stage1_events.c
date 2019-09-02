@@ -88,10 +88,11 @@ static void cirno_icy(Boss *b, int time) {
 				.pos = pos+6*I*phase,
 				.color = RGB(0.0, 0.1 + 0.1 * size / 5, 0.8),
 				.rule = cirno_snowflake_proj,
-				.args = { vel, _i, },
+				.move = move_linear(vel),
 				.angle = ang+M_PI/4,
 				.max_viewport_dist = 64,
 			);
+
 
 			PROJECTILE(
 				.proto = pp_crystal,
@@ -1625,15 +1626,89 @@ TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.035);
 }
 
+
+
+TASK(cirno_snowflake_proj_twist, { BoxedProjectile p; }) {
+	Projectile *p = ENT_UNBOX(ARGS.p);
+
+	if(p != NULL) {
+		play_sound_ex("redirect", 30, false);
+		play_sound_ex("shot_special1", 30, false);
+		color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+		spawn_projectile_highlight_effect(p);
+		p->move.velocity = -cabs(p->move.velocity)*cdir(p->angle);
+	}
+}
+
 TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	Attack *a = ARGS.attack;
 
 	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
 	WAIT_EVENT(&a->events.started);
+	
+	int interval = 70 - 8 * global.diff;
 
-	// TODO implement
-	(void)boss;
+	for(int run = 0;; run++) {
+		complex vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
+		int c = 6;
+		double dr = 15;
+		int size = 5+3*sin(337*run);
+
+		int start_time = global.frames;
+		
+		for(int j = 0; j < size; j++) {
+			WAIT(3);
+			play_loop("shot1_loop");
+			for(int i = 0; i < c; i++) {
+				double ang = 2*M_PI/c*i+run*515;
+				complex phase = cdir(ang);
+				int t = global.frames-start_time;
+				complex pos = boss->pos+vel*t+dr*j*phase;
+
+				int split_time = 200 - 20*global.diff - j*3;
+				Projectile *p;
+
+				for(int side = -1; side <= 1; side += 2) {
+					p = PROJECTILE(
+						.proto = pp_crystal,
+						.pos = pos+side*6*I*phase,
+						.color = RGB(0.0, 0.1 + 0.1 * size / 5, 0.8),
+						.move = move_linear(vel),
+						.angle = ang+side*M_PI/4,
+						.max_viewport_dist = 64,
+						.flags = PFLAG_MANUALANGLE,
+					);
+					INVOKE_TASK_DELAYED(split_time, cirno_snowflake_proj_twist, ENT_BOX(p));
+				}
+
+				int split = 3;
+
+				if(j > split) {
+					complex pos0 = boss->pos+vel*t+dr*split*phase;
+
+					for(int side = -1; side <= 1; side+=2) {
+						complex phase2 = cdir(M_PI/4*side)*phase;
+						complex pos2 = pos0+(dr*(j-split))*phase2;
+
+						PROJECTILE(
+							.proto = pp_crystal,
+							.pos = pos2,
+							.color = RGB(0.0,0.3*size/5,1),
+							.move = move_linear(vel),
+							.angle = ang+M_PI/4*side,
+							.max_viewport_dist = 64,
+							.flags = PFLAG_MANUALANGLE,
+						);
+					}
+				}
+			}
+
+		}
+
+		WAIT(interval-3*size);
+	}
+	
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
