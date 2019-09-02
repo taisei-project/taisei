@@ -158,7 +158,7 @@ TASK_FINALIZER(subtask_test) {
 TASK(subtask_test_init, NO_ARGS) {
 	log_debug("************ BEGIN ************");
 	INVOKE_SUBTASK(subtask_test, 3, -1);
-	WAIT(30);
+	WAIT(300);
 	log_debug("************  END  ************");
 }
 
