@@ -104,8 +104,6 @@ CoTask *cotask_new(CoTaskFunc func) {
 void cotask_free(CoTask *task) {
 	task->unique_id = 0;
 	task->supertask = NULL;
-	assume(task->subtasks.first == NULL);
-	assume(task->subtasks.last == NULL);
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
 	memset(&task->finalizer, 0, sizeof(task->finalizer));
 	alist_push(&task_pool, task);
