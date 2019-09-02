@@ -1720,7 +1720,18 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	WAIT_EVENT(&a->events.started);
 
 	// TODO implement
-	(void)boss;
+
+	boss->move.retention = 0.8;
+	boss->move.attraction = 0.01;
+
+	Rect move_bounds;
+	move_bounds.top_left = CMPLX(64, 64);
+	move_bounds.bottom_right = CMPLX(VIEWPORT_W - 64, 200);
+
+	for(;;) {
+		boss->move.attraction_point = common_wander(boss->pos, rand_range(50, 200), move_bounds);
+		WAIT(60);
+	}
 }
 
 TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
