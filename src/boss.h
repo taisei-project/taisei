@@ -172,7 +172,7 @@ struct Boss {
 		float attack_timer;
 	} hud;
 
-	COEVENTS_ARRAY(defeated);
+	COEVENTS_ARRAY(defeated) events;
 };
 
 Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;

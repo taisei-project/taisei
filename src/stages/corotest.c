@@ -40,14 +40,9 @@ TASK(laserize_proj, { BoxedProjectile p; int t; }) {
 }
 
 TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_inc; }) {
-	// WAIT_EVENT yields until the event fires.
-	// Returns true if the event was signaled, false if it was canceled.
-	// All waiting tasks will resume right after either of those occur, in the
-	// order they started waiting.
-
 	Enemy *e = ENT_UNBOX(ARGS.e);
 
-	if(!WAIT_EVENT(&e->events.killed)) {
+	if(WAIT_EVENT(&e->events.killed).event_status == CO_EVENT_CANCELED) {
 		// Event canceled? Nothing to do here.
 		log_debug("[%p] leave (canceled)", (void*)cotask_active());
 		return;
