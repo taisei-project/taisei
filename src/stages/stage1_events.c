@@ -1644,7 +1644,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 
 	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
 	WAIT_EVENT(&a->events.started);
-	
+
 	int interval = 70 - 8 * global.diff;
 
 	for(int run = 0;; run++) {
@@ -1654,7 +1654,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 		int size = 5+3*sin(337*run);
 
 		int start_time = global.frames;
-		
+
 		for(int j = 0; j < size; j++) {
 			WAIT(3);
 			play_loop("shot1_loop");
@@ -1707,7 +1707,6 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 
 		WAIT(interval-3*size);
 	}
-	
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
@@ -1716,7 +1715,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
 	WAIT_EVENT(&a->events.started);
-	
+
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
@@ -1727,7 +1726,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		WAIT(20);
 		for(int i = 0; i < nfrog/n; i++) {
 			play_loop("shot1_loop");
-			
+
 			float r = frand();
 			float g = frand();
 			float b = frand();
@@ -1783,8 +1782,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 				YIELD;
 			}
 		}
-		
-		for(int i = 0; i < 30+10*d; i++) { 
+
+		for(int i = 0; i < 30+10*d; i++) {
 			play_loop("shot1_loop");
 			float r1, r2;
 
@@ -1863,6 +1862,10 @@ TASK(stage_timeline, NO_ARGS) {
 	INVOKE_TASK_DELAYED(1500, burst_fairies_3);
 	INVOKE_TASK_DELAYED(2200, multiburst_fairies_1);
 	INVOKE_TASK_DELAYED(2700, spawn_midboss);
+
+	while(!global.boss) YIELD;
+	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+	log_debug("midboss time: %i", midboss_time);
 }
 
 void stage1_events(void) {

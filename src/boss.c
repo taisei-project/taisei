@@ -55,6 +55,8 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	boss->bomb_damage_multiplier = 1.0;
 	boss->shot_damage_multiplier = 1.0;
 
+	COEVENT_INIT_ARRAY(boss->events);
+
 	return boss;
 }
 
@@ -1109,6 +1111,13 @@ void process_boss(Boss **pboss) {
 		}
 	}
 
+	bool dying = boss_is_dying(boss);
+	bool fleeing = boss_is_fleeing(boss);
+
+	if(dying || fleeing) {
+		coevent_signal_once(&boss->events.defeated);
+	}
+
 	if(boss_is_dying(boss)) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		tsrand_fill(6);
@@ -1304,11 +1313,13 @@ static void free_attack(Attack *a) {
 }
 
 void free_boss(Boss *boss) {
-	ent_unregister(&boss->ent);
+	COEVENT_CANCEL_ARRAY(boss->events);
 
-	for(int i = 0; i < boss->acount; i++)
+	for(int i = 0; i < boss->acount; i++) {
 		free_attack(&boss->attacks[i]);
+	}
 
+	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);

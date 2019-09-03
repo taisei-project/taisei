@@ -27,6 +27,12 @@ typedef enum CoStatus {
 	CO_STATUS_DEAD      = KOISHI_DEAD,
 } CoStatus;
 
+typedef enum CoEventStatus {
+	CO_EVENT_PENDING,
+	CO_EVENT_SIGNALED,
+	CO_EVENT_CANCELED,
+} CoEventStatus;
+
 typedef struct BoxedTask {
 	uintptr_t ptr;
 	uint32_t unique_id;
@@ -47,6 +53,11 @@ struct CoSched {
 	LIST_ANCHOR(CoTask) tasks, pending_tasks;
 };
 
+typedef struct CoWaitResult {
+	int frames;
+	CoEventStatus event_status;
+} CoWaitResult;
+
 void coroutines_init(void);
 void coroutines_shutdown(void);
 
@@ -55,7 +66,7 @@ void cotask_free(CoTask *task);
 bool cotask_cancel(CoTask *task);
 void *cotask_resume(CoTask *task, void *arg);
 void *cotask_yield(void *arg);
-bool cotask_wait_event(CoEvent *evt, void *arg);
+CoWaitResult cotask_wait_event(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
@@ -162,7 +173,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
 		TASK_ARGSCOND(name) args_copy = *(TASK_ARGSCOND(name)*)arg; \
 		/* wait for event, and if it wasn't canceled... */ \
-		if(WAIT_EVENT(args_copy.event)) { \
+		if(WAIT_EVENT(args_copy.event).event_status == CO_EVENT_SIGNALED) { \
 			/* call prologue */ \
 			COTASKPROLOGUE_##name(&args_copy.real_args); \
 			/* call body */ \
