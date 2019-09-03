@@ -137,7 +137,7 @@ static void cotask_finalize(CoTask *task) {
 		cotask_cancel(sub);
 
 		TASK_DEBUG(
-			"Cancelled slave task %p (of master task %p)",
+			"Canceled slave task %p (of master task %p)",
 			(void*)sub, (void*)task
 		);
 	}
@@ -179,8 +179,13 @@ void *cotask_yield(void *arg) {
 	return koishi_yield(arg);
 }
 
-bool cotask_wait_event(CoEvent *evt, void *arg) {
+CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	assert(evt->unique_id > 0);
+
+	CoWaitResult result = {
+		.frames = 0,
+		.event_status = CO_EVENT_PENDING,
+	};
 
 	struct {
 		uint32_t unique_id;
@@ -215,15 +220,18 @@ bool cotask_wait_event(CoEvent *evt, void *arg) {
 			evt->num_signaled < snapshot.num_signaled
 		) {
 			EVT_DEBUG("Event was canceled");
-			return false;
+			result.event_status = CO_EVENT_CANCELED;
+			return result;
 		}
 
 		if(evt->num_signaled > snapshot.num_signaled) {
 			EVT_DEBUG("Event was signaled");
-			return true;
+			result.event_status = CO_EVENT_SIGNALED;
+			return result;
 		}
 
 		EVT_DEBUG("Event hasn't changed; waiting...");
+		++result.frames;
 		cotask_yield(arg);
 	}
 }
