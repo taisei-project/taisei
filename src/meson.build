@@ -200,12 +200,15 @@ if host_machine.system() == 'emscripten'
             '-g3',
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_DEBUG=1',
+            '-s', 'GL_ASSERTIONS=1',
+            '-s', 'GL_TRACK_ERRORS=1',
         ]
     else
         em_link_args += [
             '-O@0@'.format(get_option('optimization')),
             '-g0',
             '-s', 'ASSERTIONS=0',
+            '-s', 'GL_TRACK_ERRORS=0',
         ]
 
         if get_option('b_lto')
