@@ -461,6 +461,33 @@ static void draw_options_menu(MenuData*);
 
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 
+static bool entry_is_active(MenuData *m, int idx) {
+	assume(idx >= 0);
+	assume(idx < m->ecount);
+
+	MenuEntry *e = m->entries + idx;
+
+	if(!e->action) {
+		return false;
+	}
+
+	OptionBinding *bind = bind_get(m, idx);
+
+	if(bind) {
+		return bind_isactive(bind);
+	}
+
+	return true;
+}
+
+static void begin_options_menu(MenuData *m) {
+	for(m->cursor = 0; m->cursor <= m->ecount; ++m->cursor) {
+		if(entry_is_active(m, m->cursor)) {
+			break;
+		}
+	}
+}
+
 static MenuData* create_options_menu_base(const char *s) {
 	MenuData *m = alloc_menu();
 	m->transition = TransFadeBlack;
@@ -468,6 +495,7 @@ static MenuData* create_options_menu_base(const char *s) {
 	m->input = options_menu_input;
 	m->draw = draw_options_menu;
 	m->logic = update_options_menu;
+	m->begin = begin_options_menu;
 	m->end = destroy_options_menu;
 
 	OptionsMenuContext *ctx = calloc(1, sizeof(OptionsMenuContext));
@@ -502,7 +530,6 @@ DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
 static MenuData* create_options_menu_video(MenuData *parent) {
 	MenuData *m = create_options_menu_base("Video Options");
 	OptionBinding *b;
-
 
 	add_menu_entry(m, "Fullscreen", do_nothing,
 		b = bind_option(CONFIG_FULLSCREEN, bind_common_onoff_get, bind_common_onoff_set)
@@ -894,7 +921,7 @@ void draw_options_menu_bg(MenuData* menu) {
 	r_draw_quad();
 	r_mat_pop();
 	r_shader_standard();
-	
+
 	r_color4(1, 1, 1, 1);
 }
 
@@ -935,7 +962,7 @@ static void draw_options_menu(MenuData *menu) {
 		}
 
 		float a = e->drawdata * 0.1;
-		float alpha = (!bind || bind_isactive(bind))? 1 : 0.5;
+		float alpha = entry_is_active(menu, i) ? 1 : 0.5;
 
 		if(e->action == NULL) {
 			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
@@ -1461,8 +1488,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 					menu->cursor = menu->ecount - 1;
 				}
 
-				bind = bind_get(menu, menu->cursor);
-			} while(!menu->entries[menu->cursor].action || (bind && !bind_isactive(bind)));
+			} while(!entry_is_active(menu, menu->cursor));
 		break;
 
 		case TE_MENU_CURSOR_LEFT:
