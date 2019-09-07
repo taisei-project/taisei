@@ -113,7 +113,7 @@ typedef enum TextureMipmapMode {
 } TextureMipmapMode;
 
 enum {
-	TEX_ANISOTROPY_DEFAULT = 8,
+	TEX_ANISOTROPY_DEFAULT = 1,
 	// TEX_MIPMAPS_MAX = ((uint)(-1)),
 	// pedantic out-of-range warning
 	#define TEX_MIPMAPS_MAX ((uint)(-1))
