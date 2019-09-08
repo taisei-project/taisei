@@ -224,10 +224,11 @@ if host_machine.system() == 'emscripten'
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
 
-    taisei = executable('@0@.bc'.format(taisei_basename), taisei_src, version_deps,
+    taisei = executable(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         link_args : em_link_args,
+        name_suffix : 'bc',
         install : false,
     )
 
