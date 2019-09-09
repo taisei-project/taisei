@@ -13,7 +13,47 @@
 
 #include <SDL.h>
 
-#include "glad/glad.h"
+#ifdef TAISEI_BUILDCONF_RENDERER_STATIC_GLES30
+	#define STATIC_GLES3
+#endif
+
+#ifdef STATIC_GLES3
+	#define GL_GLEXT_PROTOTYPES
+	#include <GLES3/gl32.h>
+	#include <GLES2/gl2ext.h>
+
+	typedef PFNGLOBJECTLABELKHRPROC PFNGLOBJECTLABELPROC;
+	typedef PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEEXTPROC PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC;
+	typedef PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEEXTPROC PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEPROC;
+	typedef PFNGLVIEWPORTINDEXEDFVOESPROC PFNGLVIEWPORTINDEXEDFVPROC;
+	typedef PFNGLGETFLOATI_VNVPROC PFNGLGETFLOATI_VPROC;
+	typedef PFNGLCLEARTEXIMAGEEXTPROC PFNGLCLEARTEXIMAGEPROC;
+
+	#define GL_FUNC(func) (gl##func)
+
+	#ifndef APIENTRY
+	#define APIENTRY GL_APIENTRY
+	#endif
+
+	#define GL_DEPTH_COMPONENT32 GL_DEPTH_COMPONENT32_OES
+	#define GL_R16 GL_R16_EXT
+	#define GL_R16_SNORM GL_R16_SNORM_EXT
+	#define GL_RG16 GL_RG16_EXT
+	#define GL_RG16_SNORM GL_RG16_SNORM_EXT
+	#define GL_RGB10 GL_RGB10_EXT
+	#define GL_RGB16 GL_RGB16_EXT
+	#define GL_RGB16_SNORM GL_RGB16_SNORM_EXT
+	#define GL_RGBA16 GL_RGBA16_EXT
+	#define GL_RGBA16_SNORM GL_RGBA16_SNORM_EXT
+	#define GL_TEXTURE_MAX_ANISOTROPY GL_TEXTURE_MAX_ANISOTROPY_EXT
+
+	#define glClearDepth glClearDepthf
+	#define glClearTexImage glClearTexImageEXT
+#else
+	#include "glad/glad.h"
+	#define GL_FUNC(f) (glad_gl##f)
+#endif
+
 #include "assert.h"
 
 // NOTE: The ability to query supported GLSL versions was added in GL 4.3,
@@ -53,7 +93,7 @@ extern struct glext_s glext;
 
 void glcommon_load_library(void);
 void glcommon_load_functions(void);
-void glcommon_check_extensions(void);
+void glcommon_check_capabilities(void);
 void glcommon_unload_library(void);
 ext_flag_t glcommon_check_extension(const char *ext);
 ext_flag_t glcommon_require_extension(const char *ext);
@@ -95,6 +135,7 @@ struct glext_s {
 	// debug_output
 	//
 
+#ifndef STATIC_GLES3
 	PFNGLDEBUGMESSAGECONTROLKHRPROC DebugMessageControl;
 	#undef glDebugMessageControl
 	#define glDebugMessageControl (glext.DebugMessageControl)
@@ -106,9 +147,11 @@ struct glext_s {
 	PFNGLOBJECTLABELPROC ObjectLabel;
 	#undef glObjectLabel
 	#define glObjectLabel (glext.ObjectLabel)
+#endif
 
 	// instanced_arrays
 
+#ifndef STATIC_GLES3
 	PFNGLDRAWARRAYSINSTANCEDPROC DrawArraysInstanced;
 	#undef glDrawArraysInstanced
 	#define glDrawArraysInstanced (glext.DrawArraysInstanced)
@@ -120,11 +163,13 @@ struct glext_s {
 	PFNGLVERTEXATTRIBDIVISORPROC VertexAttribDivisor;
 	#undef glVertexAttribDivisor
 	#define glVertexAttribDivisor (glext.VertexAttribDivisor)
+#endif
 
 	//
 	// base_instance
 	//
 
+#ifndef STATIC_GLES3
 	PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC DrawArraysInstancedBaseInstance;
 	#undef glDrawArraysInstancedBaseInstance
 	#define glDrawArraysInstancedBaseInstance (glext.DrawArraysInstancedBaseInstance)
@@ -132,24 +177,29 @@ struct glext_s {
 	PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEPROC DrawElementsInstancedBaseInstance;
 	#undef glDrawElementsInstancedBaseInstance
 	#define glDrawElementsInstancedBaseInstance (glext.DrawElementsInstancedBaseInstance)
+#endif
 
 	//
 	// draw_buffers
 	//
 
+#ifndef STATIC_GLES3
 	PFNGLDRAWBUFFERSPROC DrawBuffers;
 	#undef glDrawBuffers
 	#define glDrawBuffers (glext.DrawBuffers)
+#endif
 
 	//
 	// clear_texture
-	// NOTE: no need for indirection here; the entrypoint names are the same.
 	//
-	/*
+
+#ifndef STATIC_GLES3
 	PFNGLCLEARTEXIMAGEPROC ClearTexImage;
 	#undef glClearTexImage
 	#define glClearTexImage (glext.ClearTexImage)
+#endif
 
+	/*
 	PFNGLCLEARTEXSUBIMAGEPROC ClearTexSubImage;
 	#undef glClearTexSubImage
 	#define glClearTexSubImage (glext.ClearTexSubImage)
@@ -159,6 +209,7 @@ struct glext_s {
 	// 	vertex_array_object
 	//
 
+#ifndef STATIC_GLES3
 	PFNGLBINDVERTEXARRAYPROC BindVertexArray;
 	#undef glBindVertexArray
 	#define glBindVertexArray (glext.BindVertexArray)
@@ -174,12 +225,14 @@ struct glext_s {
 	PFNGLISVERTEXARRAYPROC IsVertexArray;
 	#undef glIsVertexArray
 	#define glIsVertexArray (glext.IsVertexArray)
+#endif
 
 	//
 	//	viewport_array
 	//	NOTE: only the subset we actually use is defined here
 	//
 
+#ifndef STATIC_GLES3
 	PFNGLGETFLOATI_VPROC GetFloati_v;
 	#undef glGetFloati_v
 	#define glGetFloati_v (glext.GetFloati_v)
@@ -187,6 +240,7 @@ struct glext_s {
 	PFNGLVIEWPORTINDEXEDFVPROC ViewportIndexedfv;
 	#undef glViewportIndexedfv
 	#define glViewportIndexedfv (glext.ViewportIndexedfv)
+#endif
 };
 
 #define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))

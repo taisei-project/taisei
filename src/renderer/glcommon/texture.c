@@ -86,6 +86,7 @@ GLTextureFormatTuple* glcommon_find_best_pixformat(TextureType textype, PixmapFo
 GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 	switch(internal_fmt) {
 		// NOTE: semi-generated code
+		#ifndef STATIC_GLES3
 		case GL_COMPRESSED_RED: return GL_RED;
 		case GL_COMPRESSED_RED_RGTC1: return GL_RED;
 		case GL_COMPRESSED_RG: return GL_RG;
@@ -96,6 +97,14 @@ GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 		case GL_COMPRESSED_SIGNED_RG_RGTC2: return GL_RG;
 		case GL_COMPRESSED_SRGB: return GL_RGB;
 		case GL_COMPRESSED_SRGB_ALPHA: return GL_RGBA;
+		case GL_R3_G3_B2: return GL_RGB;
+		case GL_RGB12: return GL_RGB;
+		case GL_RGB4: return GL_RGB;
+		case GL_RGB5: return GL_RGB;
+		case GL_RGBA12: return GL_RGBA;
+		case GL_RGBA2: return GL_RGBA;
+		#endif
+
 		case GL_DEPTH24_STENCIL8: return GL_DEPTH_STENCIL;
 		case GL_DEPTH32F_STENCIL8: return GL_DEPTH_STENCIL;
 		case GL_DEPTH_COMPONENT16: return GL_DEPTH_COMPONENT;
@@ -111,7 +120,6 @@ GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 		case GL_R32F: return GL_RED;
 		case GL_R32I: return GL_RED;
 		case GL_R32UI: return GL_RED;
-		case GL_R3_G3_B2: return GL_RGB;
 		case GL_R8: return GL_RED;
 		case GL_R8I: return GL_RED;
 		case GL_R8UI: return GL_RED;
@@ -131,7 +139,6 @@ GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 		case GL_RGB10: return GL_RGB;
 		case GL_RGB10_A2: return GL_RGBA;
 		case GL_RGB10_A2UI: return GL_RGBA;
-		case GL_RGB12: return GL_RGB;
 		case GL_RGB16: return GL_RGB;
 		case GL_RGB16F: return GL_RGB;
 		case GL_RGB16I: return GL_RGB;
@@ -140,21 +147,17 @@ GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 		case GL_RGB32F: return GL_RGB;
 		case GL_RGB32I: return GL_RGB;
 		case GL_RGB32UI: return GL_RGB;
-		case GL_RGB4: return GL_RGB;
-		case GL_RGB5: return GL_RGB;
 		case GL_RGB5_A1: return GL_RGBA;
 		case GL_RGB8: return GL_RGB;
 		case GL_RGB8I: return GL_RGB;
 		case GL_RGB8UI: return GL_RGB;
 		case GL_RGB8_SNORM: return GL_RGB;
 		case GL_RGB9_E5: return GL_RGB;
-		case GL_RGBA12: return GL_RGBA;
 		case GL_RGBA16: return GL_RGBA;
 		case GL_RGBA16F: return GL_RGBA;
 		case GL_RGBA16I: return GL_RGBA;
 		case GL_RGBA16UI: return GL_RGBA;
 		case GL_RGBA16_SNORM: return GL_RGBA;
-		case GL_RGBA2: return GL_RGBA;
 		case GL_RGBA32F: return GL_RGBA;
 		case GL_RGBA32I: return GL_RGBA;
 		case GL_RGBA32UI: return GL_RGBA;

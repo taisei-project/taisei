@@ -20,6 +20,7 @@ glad_extensions = [
     'GL_ARB_viewport_array',
     'GL_ATI_draw_buffers',
     'GL_EXT_base_instance',
+    'GL_EXT_clear_texture',
     'GL_EXT_color_buffer_float',
     'GL_EXT_draw_buffers',
     'GL_EXT_draw_instanced',

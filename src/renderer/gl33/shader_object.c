@@ -79,7 +79,7 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
 
 	glCompileShader(gl_handle);
 
-#ifdef DEBUG
+#if defined DEBUG && !defined STATIC_GLES3
 	if(GLAD_GL_ANGLE_translated_shader_source) {
 		GLint srclen;
 		glGetShaderiv(gl_handle, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE, &srclen);
