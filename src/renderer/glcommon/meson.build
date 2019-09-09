@@ -6,4 +6,8 @@ r_glcommon_src = files(
     'texture.c',
 )
 
-r_glcommon_libdeps = [dep_glad]
+r_glcommon_libdeps = []
+
+if not static_gles30
+    r_glcommon_libdeps += dep_glad
+endif

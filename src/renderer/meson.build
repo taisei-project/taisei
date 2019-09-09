@@ -5,17 +5,16 @@ modules = [
     'null',
 ]
 
-if host_machine.system() == 'nx'
-    has_forced_renderer = true
+if ['nx', 'emscripten'].contains(host_machine.system())
     forced_renderer = 'gles30'
 else
-    has_forced_renderer = false
     forced_renderer = ''
 endif
 
-default_renderer = has_forced_renderer ? forced_renderer : get_option('r_default')
+default_renderer = (forced_renderer == '') ? get_option('r_default') : forced_renderer
+static_gles30 = (host_machine.system() == 'emscripten')
 
-if not has_forced_renderer and not get_option('r_@0@'.format(default_renderer))
+if forced_renderer == '' and not get_option('r_@0@'.format(default_renderer))
     error('Default renderer \'@0@\' is not enabled. Enable it with -Dr_@0@=true, or set r_default to something else.'.format(default_renderer))
 endif
 
@@ -40,7 +39,7 @@ needed_deps = ['common']
 r_macro = []
 
 foreach m : modules
-    should_include = has_forced_renderer ? m == forced_renderer : get_option('r_@0@'.format(m))
+    should_include = (forced_renderer == '') ? get_option('r_@0@'.format(m)) : (m == forced_renderer)
     if should_include
         renderer_src += get_variable('r_@0@_src'.format(m))
         r_macro += ['R(@0@)'.format(m)]

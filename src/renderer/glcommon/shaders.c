@@ -75,7 +75,10 @@ void glcommon_build_shader_lang_table(void) {
 	// but it's not exposed by any extension. This is pretty silly.
 
 	GLint num_versions = 0;
-	glGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &num_versions);
+
+	if(!glext.version.is_webgl) {
+		glGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &num_versions);
+	}
 
 	if(num_versions < 1) {
 		glcommon_build_shader_lang_table_fallback();

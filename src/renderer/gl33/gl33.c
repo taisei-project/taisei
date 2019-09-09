@@ -236,6 +236,7 @@ static void gl33_set_viewport(const FloatRect *vp) {
 	glViewport(vp->x, vp->y, vp->w, vp->h);
 }
 
+#ifndef STATIC_GLES3
 static void gl41_get_viewport(FloatRect *vp) {
 	glGetFloati_v(GL_VIEWPORT, 0, &vp->x);
 }
@@ -243,6 +244,7 @@ static void gl41_get_viewport(FloatRect *vp) {
 static void gl41_set_viewport(const FloatRect *vp) {
 	glViewportIndexedfv(0, &vp->x);
 }
+#endif
 
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
@@ -252,7 +254,7 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 
 	glcommon_load_functions();
-	glcommon_check_extensions();
+	glcommon_check_capabilities();
 
 	if(glcommon_debug_requested()) {
 		glcommon_debug_enable();
@@ -262,6 +264,10 @@ static void gl33_init_context(SDL_Window *window) {
 	gl33_set_clear_depth(1);
 	gl33_set_clear_color(RGBA(0, 0, 0, 0));
 
+#ifdef STATIC_GLES3
+	GLVT.get_viewport = gl33_get_viewport;
+	GLVT.set_viewport = gl33_set_viewport;
+#else
 	if(glext.viewport_array) {
 		GLVT.get_viewport = gl41_get_viewport;
 		GLVT.set_viewport = gl41_set_viewport;
@@ -269,6 +275,7 @@ static void gl33_init_context(SDL_Window *window) {
 		GLVT.get_viewport = gl33_get_viewport;
 		GLVT.set_viewport = gl33_set_viewport;
 	}
+#endif
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -941,7 +948,11 @@ static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint co
 
 	if(instances) {
 		if(base_instance) {
+		#ifdef STATIC_GLES3
+			log_fatal("base_instance is not supported");
+		#else
 			glDrawArraysInstancedBaseInstance(gl_prim, firstvert, count, instances, base_instance);
+		#endif
 		} else {
 			glDrawArraysInstanced(gl_prim, firstvert, count, instances);
 		}
@@ -964,7 +975,11 @@ static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, 
 
 	if(instances) {
 		if(base_instance) {
+		#ifdef STATIC_GLES3
+			log_fatal("base_instance is not supported");
+		#else
 			glDrawElementsInstancedBaseInstance(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances, base_instance);
+		#endif
 		} else {
 			glDrawElementsInstanced(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances);
 		}

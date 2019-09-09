@@ -363,9 +363,13 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 }
 
 void gl44_texture_clear(Texture *tex, const Color *clr) {
+#ifdef STATIC_GLES3
+	UNREACHABLE;
+#else
 	for(int i = 0; i < tex->params.mipmaps; ++i) {
 		glClearTexImage(tex->gl_handle, i, GL_RGBA, GL_FLOAT, &clr->r);
 	}
+#endif
 }
 
 void gl33_texture_clear(Texture *tex, const Color *clr) {

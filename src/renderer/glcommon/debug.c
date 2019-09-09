@@ -12,6 +12,8 @@
 #include "util.h"
 #include "../api.h"
 
+#ifndef STATIC_GLES3
+
 static void APIENTRY glcommon_debug(
 	GLenum source,
 	GLenum type,
@@ -94,6 +96,16 @@ void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *lab
 		glObjectLabel(identifier, name, strlen(label), label);
 	}
 }
+
+#else
+
+void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label) { }
+
+void glcommon_debug_enable(void) {
+	log_error("OpenGL debugging is not supported on your system");
+}
+
+#endif
 
 bool glcommon_debug_requested(void) {
 	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
