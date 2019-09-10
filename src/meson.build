@@ -172,6 +172,7 @@ if host_machine.system() == 'emscripten'
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
     em_link_args = [
+        '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
@@ -185,18 +186,19 @@ if host_machine.system() == 'emscripten'
         '-s', 'TOTAL_MEMORY=268435456',
         '-s', 'USE_WEBGL2=1',
         '-s', 'WASM=1',
-        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
+        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
+        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
+        '-s', 'GL_PREINITIALIZED_CONTEXT=1',
 
         # Try enabling this if unpatched Freetype crashes
         # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
 
     if em_debug
-        # em_link_output_suffixes += ['wast']
+        # em_link_output_suffixes += ['wasm.map']
         em_link_args += [
             '--emrun',
             '--profiling',
-            '-O0',
             '-g3',
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_DEBUG=1',
@@ -210,14 +212,14 @@ if host_machine.system() == 'emscripten'
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
         ]
+    endif
 
-        if get_option('b_lto')
-            em_link_args += [
-                # See https://github.com/emscripten-core/emscripten/issues/8574
-                '-s', 'WASM_OBJECT_FILES=0',
-                '--llvm-lto', '3',
-            ]
-        endif
+    if get_option('b_lto')
+        em_link_args += [
+            # See https://github.com/emscripten-core/emscripten/issues/8574
+            '-s', 'WASM_OBJECT_FILES=0',
+            '--llvm-lto', '3',
+        ]
     endif
 
     foreach suffix : em_link_output_suffixes
@@ -243,6 +245,8 @@ if host_machine.system() == 'emscripten'
             em_bundle_link_args,
             '--pre-js', em_preamble,
             '--shell-file', em_shell,
+            get_option('c_args'),
+            get_option('c_link_args'),
             em_link_args,
             '-o', '@OUTPUT0@',
         ],

@@ -26,3 +26,15 @@ function SyncFS(is_load, ccptr) {
         );
     });
 };
+
+Module['preinitializedWebGLContext'] = document.getElementById('canvas').getContext('webgl2', {
+    alpha : false,
+    antialias : false,
+    depth : false,
+    powerPreference : 'high-performance',
+    premultipliedAlpha : true,
+    preserveDrawingBuffer : false,
+    stencil : false,
+});
+
+// Module['preinitializedWebGLContext'] = WebGLDebugUtils.makeDebugContext(Module['preinitializedWebGLContext']);
