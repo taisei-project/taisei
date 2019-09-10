@@ -91,7 +91,7 @@ void glcommon_debug_enable(void) {
 	log_info("Enabled OpenGL debugging");
 }
 
-void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label) {
+void glcommon_set_debug_label_gl(GLenum identifier, GLuint name, const char *label) {
 	if(glext.debug_output & (TSGL_EXTFLAG_NATIVE | TSGL_EXTFLAG_KHR)) {
 		glObjectLabel(identifier, name, strlen(label), label);
 	}
@@ -99,7 +99,7 @@ void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *lab
 
 #else
 
-void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label) { }
+void glcommon_set_debug_label_gl(GLenum identifier, GLuint name, const char *label) { }
 
 void glcommon_debug_enable(void) {
 	log_error("OpenGL debugging is not supported on your system");
@@ -111,7 +111,7 @@ bool glcommon_debug_requested(void) {
 	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
 }
 
-void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum gl_enum, GLuint gl_handle, const char *label) {
+void glcommon_set_debug_label_local(char *label_storage, const char *kind_name, GLuint gl_handle, const char *label) {
 	if(label) {
 		log_debug("%s \"%s\" renamed to \"%s\"", kind_name, label_storage, label);
 		strlcpy(label_storage, label, R_DEBUG_LABEL_SIZE);
@@ -121,6 +121,9 @@ void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum
 		log_debug("%s \"%s\" renamed to \"%s\"", kind_name, label_storage, tmp);
 		strlcpy(label_storage, tmp, R_DEBUG_LABEL_SIZE);
 	}
+}
 
-	glcommon_debug_object_label(gl_enum, gl_handle, label_storage);
+void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum gl_enum, GLuint gl_handle, const char *label) {
+	glcommon_set_debug_label_local(label_storage, kind_name, gl_handle, label);
+	glcommon_set_debug_label_gl(gl_enum, gl_handle, label_storage);
 }

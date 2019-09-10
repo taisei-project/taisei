@@ -15,7 +15,8 @@
 
 bool glcommon_debug_requested(void);
 void glcommon_debug_enable(void);
-void glcommon_debug_object_label(GLenum identifier, GLuint name, const char *label);
 void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum gl_enum, GLuint gl_handle, const char *label);
+void glcommon_set_debug_label_local(char *label_storage, const char *kind_name, GLuint gl_handle, const char *label);
+void glcommon_set_debug_label_gl(GLenum identifier, GLuint name, const char *label);
 
 #endif // IGUARD_renderer_glcommon_debug_h
