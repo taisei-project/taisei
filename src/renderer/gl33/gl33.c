@@ -833,11 +833,23 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  */
 
 static void gl33_init(void) {
-	glcommon_setup_attributes(
-		SDL_GL_CONTEXT_PROFILE_CORE,
-		3, 3,
-		SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
-	);
+	SDL_GLprofile profile;
+	SDL_GLcontextFlag flags = 0;
+
+	if(env_get("TAISEI_GL33_CORE_PROFILE", true)) {
+		profile = SDL_GL_CONTEXT_PROFILE_CORE;
+	} else {
+		profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
+	}
+
+	if(env_get("TAISEI_GL33_FORWARD_COMPATIBLE", true)) {
+		flags |= SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
+	}
+
+	int major = env_get("TAISEI_GL33_VERSION_MAJOR", 3);
+	int minor = env_get("TAISEI_GL33_VERSION_MINOR", 3);
+
+	glcommon_setup_attributes(profile, major, minor, flags);
 	glcommon_load_library();
 }
 
