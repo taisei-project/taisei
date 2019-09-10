@@ -48,6 +48,25 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 	}
 }
 
+static void add_glsl_version_nonstandard(const char *vstr) {
+	// because intel wants to be fucking special again
+
+	char a, b, c;
+
+	if(sscanf(vstr, "%c.%c%c - ", &a, &b, &c) == 3) {
+		if(isdigit(a) && isdigit(b) && isdigit(c)) {
+			GLSLVersion v = { 0 };
+			v.version = (a - '0') * 100 + (b - '0') * 10 + (c - '0');
+			v.profile = GLSL_PROFILE_NONE;
+			add_glsl_version_parsed(v);
+			v.profile = GLSL_PROFILE_CORE;
+			add_glsl_version_parsed(v);
+			v.profile = GLSL_PROFILE_COMPATIBILITY;
+			add_glsl_version_parsed(v);
+		}
+	}
+}
+
 static void add_glsl_version(const char *vstr) {
 	if(!*vstr) {
 		// Special case: the very first GLSL version doesn't have a version string.
@@ -58,6 +77,7 @@ static void add_glsl_version(const char *vstr) {
 	GLSLVersion v;
 
 	if(glsl_parse_version(vstr, &v) == vstr) {
+		add_glsl_version_nonstandard(vstr);
 		return;
 	}
 
@@ -80,14 +100,12 @@ void glcommon_build_shader_lang_table(void) {
 		glGetIntegerv(GL_NUM_SHADING_LANGUAGE_VERSIONS, &num_versions);
 	}
 
-	if(num_versions < 1) {
-		glcommon_build_shader_lang_table_fallback();
-		glcommon_build_shader_lang_table_finish();
-		return;
-	}
-
 	for(int i = 0; i < num_versions; ++i) {
 		add_glsl_version((char*)glGetStringi(GL_SHADING_LANGUAGE_VERSION, i));
+	}
+
+	if(num_langs < 1) {
+		glcommon_build_shader_lang_table_fallback();
 	}
 
 	// TODO: Maybe also detect compatibility profile somehow.
@@ -168,7 +186,7 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 }
 
 static void glcommon_build_shader_lang_table_finish(void) {
-	if(glcommon_shader_lang_table != NULL) {
+	if(num_langs > 0) {
 		alloc_lang(); // sentinel for iteration
 
 		char *str;
