@@ -41,6 +41,7 @@ void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao) {
 
 	if(!initialized) {
 		gl33_buffer_init(&ibuf->cbuf, ibuf->cbuf.size, NULL, GL_STATIC_DRAW);
+		glcommon_set_debug_label_gl(GL_BUFFER, ibuf->cbuf.gl_handle, ibuf->cbuf.debug_label);
 		log_debug("Initialized %s", ibuf->cbuf.debug_label);
 	}
 }
@@ -54,7 +55,11 @@ const char* gl33_index_buffer_get_debug_label(IndexBuffer *ibuf) {
 }
 
 void gl33_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) {
-	glcommon_set_debug_label(ibuf->cbuf.debug_label, "IBO", GL_BUFFER, ibuf->cbuf.gl_handle, label);
+	glcommon_set_debug_label_local(ibuf->cbuf.debug_label, "IBO", ibuf->cbuf.gl_handle, label);
+
+	if(ibuf->vao) {
+		glcommon_set_debug_label_gl(GL_BUFFER, ibuf->cbuf.gl_handle, label);
+	}
 }
 
 void gl33_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) {
