@@ -400,15 +400,11 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
-	ShaderProgram *shader_saved = r_shader_current();
-	Framebuffer *fb_saved = r_framebuffer_current();
-	BlendMode blend_saved = r_blend_current();
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
-
 	Texture *fbo_tex;
 	TextureParams params;
 	Framebuffer *fb;
 
+	r_state_push();
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_CULL_FACE);
 	r_texture_get_params(tex, &params);
@@ -423,6 +419,10 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 		r_uniform_sampler("alphamap", alphamap);
 		r_uniform_int("have_alphamap", 1);
 	} else {
+		// FIXME: even though we aren't going to actually use this sampler, it
+		// must be set to something valid, lest WebGL throw a fit. This should be
+		// worked around in the renderer code, not here.
+		r_uniform_sampler("alphamap", tex);
 		r_uniform_int("have_alphamap", 0);
 	}
 
@@ -444,12 +444,9 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	r_mat_mode(MM_PROJECTION);
 	r_mat_pop();
 	r_mat_mode(MM_MODELVIEW);
-	r_framebuffer(fb_saved);
-	r_shader_ptr(shader_saved);
-	r_blend(blend_saved);
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
 	r_framebuffer_destroy(fb);
 	r_texture_destroy(tex);
+	r_state_pop();
 
 	return fbo_tex;
 }
@@ -462,8 +459,10 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	}
 
 	char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
+	char namebuf[strlen(basename) + sizeof(" (transient)")];
+	snprintf(namebuf, sizeof(namebuf), "%s (transient)", basename);
 	Texture *texture = r_texture_create(&ld->params);
-	r_texture_set_debug_label(texture, basename);
+	r_texture_set_debug_label(texture, namebuf);
 	r_texture_fill(texture, 0, &ld->pixmap);
 	free(ld->pixmap.data.untyped);
 
