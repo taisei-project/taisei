@@ -18,7 +18,14 @@
 #include "taskmanager.h"
 #include "video_postprocess.h"
 
-Video video;
+static struct {
+	VideoMode *modes;
+	SDL_Window *window;
+	uint mcount;
+	VideoMode intended;
+	VideoMode current;
+	VideoBackend backend;
+} video;
 
 typedef struct ScreenshotTaskData {
 	char *dest_path;
@@ -765,4 +772,21 @@ void video_swap_buffers(void) {
 
 	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
 	config_set_int(CONFIG_FULLSCREEN, video_is_fullscreen());
+}
+
+VideoBackend video_get_backend(void) {
+	return video.backend;
+}
+
+VideoMode video_get_mode(uint idx) {
+	assert(idx < video.mcount);
+	return video.modes[idx];
+}
+
+uint video_get_num_modes(void) {
+	return video.mcount;
+}
+
+VideoMode video_get_current_mode(void) {
+	return video.current;
 }
