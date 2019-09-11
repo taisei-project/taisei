@@ -306,8 +306,6 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	if(size_changed) {
 		if(fs && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
 			video_set_display_mode(display, w, h);
-			video_set_fullscreen_internal(fs);
-			video_update_mode_settings();
 		} else if(video.backend == VIDEO_BACKEND_X11) {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
 			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
@@ -322,12 +320,15 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
-			video_update_mode_settings();
 		}
 	}
 
 	video_set_fullscreen_internal(fs);
 	SDL_SetWindowResizable(video.window, resizable);
+
+	if(size_changed) {
+		video_update_mode_settings();
+	}
 }
 
 void video_set_fullscreen(bool fullscreen) {
