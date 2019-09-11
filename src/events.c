@@ -483,7 +483,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 	SDL_Scancode scan = event->key.keysym.scancode;
 	bool repeat = event->key.repeat;
 
-	if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && scan == SDL_SCANCODE_TAB) {
+	if(video_get_backend() == VIDEO_BACKEND_EMSCRIPTEN && scan == SDL_SCANCODE_TAB) {
 		scan = SDL_SCANCODE_ESCAPE;
 	}
 

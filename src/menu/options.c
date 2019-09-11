@@ -196,12 +196,15 @@ static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 
 // BT_Resolution: super-special binding type for the resolution setting
 static void bind_resolution_update(OptionBinding *bind) {
-	bind->valrange_min = 0;
-	bind->valrange_max = video.mcount - 1;
+	uint nmodes = video_get_num_modes();
+	VideoMode cur = video_get_current_mode();
 
-	for(int i = 0; i < video.mcount; ++i) {
-		VideoMode *m = video.modes + i;
-		if(m->width == video.current.width && m->height == video.current.height) {
+	bind->valrange_min = 0;
+	bind->valrange_max = nmodes - 1;
+
+	for(int i = 0; i < nmodes; ++i) {
+		VideoMode m = video_get_mode(i);
+		if(m.width == cur.width && m.height == cur.height) {
 			bind->selected = i;
 		}
 	}
@@ -391,9 +394,9 @@ static bool bind_fullscreen_dependence(void) {
 
 static int bind_resolution_set(OptionBinding *b, int v) {
 	if(v >= 0) {
-		VideoMode *m = video.modes + v;
-		config_set_int(CONFIG_VID_WIDTH, m->width);
-		config_set_int(CONFIG_VID_HEIGHT, m->height);
+		VideoMode m = video_get_mode(v);
+		config_set_int(CONFIG_VID_WIDTH, m.width);
+		config_set_int(CONFIG_VID_HEIGHT, m.height);
 	}
 
 	return v;
@@ -426,9 +429,9 @@ static void destroy_options_menu(MenuData *m) {
 
 		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
-				VideoMode *mode = video.modes + bind->selected;
-				config_set_int(CONFIG_VID_WIDTH, mode->width);
-				config_set_int(CONFIG_VID_HEIGHT, mode->height);
+				VideoMode mode = video_get_mode(bind->selected);
+				config_set_int(CONFIG_VID_WIDTH, mode.width);
+				config_set_int(CONFIG_VID_HEIGHT, mode.height);
 				change_vidmode = true;
 			}
 		}
@@ -1180,15 +1183,16 @@ static void draw_options_menu(MenuData *menu) {
 				case BT_Resolution: {
 					char tmp[16];
 					int w, h;
+					VideoMode m;
 
 					if(bind->selected == -1) {
-						w = video.intended.width;
-						h = video.intended.height;
+						m = video_get_current_mode();
 					} else {
-						VideoMode *m = video.modes + bind->selected;
-						w = m->width;
-						h = m->height;
+						m = video_get_mode(bind->selected);
 					}
+
+					w = m.width;
+					h = m.height;
 
 					snprintf(tmp, 16, "%dx%d", w, h);
 					text_draw(tmp, &(TextParams) {

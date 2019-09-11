@@ -26,6 +26,7 @@
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
 
 enum {
+	// virtual screen coordinates
 	SCREEN_W = 800,
 	SCREEN_H = 600,
 };
@@ -47,14 +48,6 @@ typedef enum VideoBackend {
 } VideoBackend;
 
 // TODO make this struct private
-typedef struct {
-	VideoMode *modes;
-	SDL_Window *window;
-	uint mcount;
-	VideoMode intended;
-	VideoMode current;
-	VideoBackend backend;
-} Video;
 
 typedef enum VideoCapability {
 	VIDEO_CAP_FULLSCREEN,
@@ -69,8 +62,6 @@ typedef enum VideoCapabilityState {
 	VIDEO_ALWAYS_ENABLED,
 	VIDEO_CURRENTLY_UNAVAILABLE,
 } VideoCapabilityState;
-
-extern Video video;
 
 void video_init(void);
 void video_post_init(void);
@@ -89,5 +80,9 @@ uint video_current_display(void);
 void video_set_display(uint idx);
 const char *video_display_name(uint id) attr_returns_nonnull;
 Framebuffer *video_get_screen_framebuffer(void);
+VideoBackend video_get_backend(void);
+VideoMode video_get_mode(uint idx);
+uint video_get_num_modes(void);
+VideoMode video_get_current_mode(void);
 
 #endif // IGUARD_video_h
