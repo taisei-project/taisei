@@ -82,6 +82,8 @@ void dialog_update(Dialog **d) attr_nonnull(1);
 
 bool dialog_is_active(Dialog *d);
 
+void dialog_preload(void);
+
 // FIXME: might not be the best place for this
 typedef struct PlayerDialogProcs {
 	void (*stage1_pre_boss)(Dialog *d);

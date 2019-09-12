@@ -415,3 +415,7 @@ void dialog_update(Dialog **d) {
 bool dialog_is_active(Dialog *d) {
 	return d && (d->pos < d->count);
 }
+
+void dialog_preload(void) {
+	preload_resource(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
+}
