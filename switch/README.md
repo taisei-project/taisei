@@ -21,6 +21,9 @@ which can be done by holding R over any installed title on latest Atmosphère, w
 For building, you need the devkitA64 from devkitPro setup, along with switch portlibs and libnx. 
 Documentation to setup that can be found [here](https://switchbrew.org/wiki/Setting_up_Development_Environment).
 
+You will need the following packages/group installed from devkitPro pacman: 
+`switch-dev switch-portlibs devkitpro-pkgbuild-helpers switch-pkg-config`
+
 Other dependencies common to the main targets include:
 
     * meson >= 0.45.0 (build system; >=0.48.0 recommended)
