@@ -628,6 +628,10 @@ static void stage_preload(void) {
 	lasers_preload();
 	enemies_preload();
 
+	if(global.stage->type != STAGE_SPELL) {
+		dialog_preload();
+	}
+
 	global.stage->procs->preload();
 }
 
