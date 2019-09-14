@@ -2,4 +2,4 @@
 directory=freetype
 url=https://github.com/taisei-project/freetype2.git
 push-url=git@github.com:taisei-project/freetype2.git
-revision=meson-2.10.0
+revision=meson-2.10.1
