@@ -41,7 +41,14 @@ void main(void) {
     float borderOutline = min(borderOuter, 1.0 - borderInner);
     float border = sdf(fwidth(borderOutline), borderOutline);
 
-    float glow = sdf(0.75, borderOuter * 0.5) * 1.25;
+    float glow = sdf(0.75, borderOuter * 0.5);
+
+    // optimization: we know that glow will be >0 for every visible fragment
+    if(glow == 0) {
+        discard;
+    }
+
+    glow *= 1.25;
 
     float fillShrink = 0.01;
     float fillSmoothing = 0.3;
