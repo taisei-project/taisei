@@ -10,27 +10,38 @@ float sdf(float s, float x) {
 
 void main(void) {
     vec2 uv = texCoord;
-    float hp = fill.x;
-    float alt = fill.y;
 
     vec2 uvShifted = uv - 0.5;
     float centerDist = length(uvShifted);
-    float angle = atan(uvShifted.x, -uvShifted.y);
-
-    float normAngle = 0.5 * angle / pi + 0.5;
-    float normMinAngle = fillNormAngles.x;
-    float normMaxAngle = fillNormAngles.y;
-    float normMinAltAngle = fillNormAngles.z;
-    float normMaxAltAngle = fillNormAngles.w;
 
     float globalDist = 1.08;
     float iDist = globalDist / 0.90;
     float oDist = globalDist / 0.96;
     float circleW = 1.01;
 
+    float i0raw = iDist * centerDist;
+    float o1raw = (oDist / circleW) * centerDist;
+
+    float glow = sdf(0.05, i0raw) - sdf(0.05, o1raw);
+
+    // optimization: we know that glow will be >0 for every visible fragment
+    if(glow == 0) {
+        discard;
+    }
+
+    float hp = fill.x;
+    float alt = fill.y;
+
+    float angle = atan(uvShifted.x, -uvShifted.y);
+    float normAngle = 0.5 * angle / pi + 0.5;
+    float normMinAngle = fillNormAngles.x;
+    float normMaxAngle = fillNormAngles.y;
+    float normMinAltAngle = fillNormAngles.z;
+    float normMaxAltAngle = fillNormAngles.w;
+
     float smoothing = fwidth(uv.x) * globalDist;
 
-    float i0raw = iDist * centerDist;
+    // float i0raw = iDist * centerDist;
     float i0 = sdf(smoothing, i0raw);
     float i1raw = (iDist / circleW) * centerDist;
     float i1 = sdf(smoothing, i1raw);
@@ -38,11 +49,9 @@ void main(void) {
 
     float o0raw = oDist * centerDist;
     float o0 = sdf(smoothing, o0raw);
-    float o1raw = (oDist / circleW) * centerDist;
+    // float o1raw = (oDist / circleW) * centerDist;
     float o1 = sdf(smoothing, o1raw);
     float outer = o0 - o1;
-
-    float glow = sdf(0.05, i0raw) - sdf(0.05, o1raw);
 
     float fillShrink = 0.01;
     float fillFactor = sdf(0.01, i0raw * (1.0 - fillShrink)) - sdf(0.01, o1raw * (1.0 + fillShrink));
@@ -62,7 +71,7 @@ void main(void) {
 
     vec4 effectiveFillColor = alphaCompose(mix(fillColor, altFillColor, altFactor), coreFillColor * coreFactor);
 
-    fragColor = alphaCompose(vec4(0), glowColor * glow);
+    fragColor = glowColor * glow;
     fragColor = alphaCompose(fragColor, effectiveFillColor * fillFactor);
     fragColor = alphaCompose(fragColor, borderColor * inner);
     fragColor = alphaCompose(fragColor, borderColor * outer);
