@@ -5,7 +5,6 @@
 
 void main(void) {
 	vec2 pos = texCoordRaw;
-	vec4 clr = texture(tex, texCoord);
 	pos -= origin;
 	pos.y *= ratio;
 	float r = length(pos);
@@ -18,8 +17,12 @@ void main(void) {
 	// now make it grow with time.
 	rmax *= step(0, t) * t * 1.5;
 
+	if(r > rmax) {
+		discard;
+	}
+
+	vec4 clr = texture(tex, texCoord);
+
 	// at the rim, invert colors
 	fragColor = mix(clr, vec4(1) - vec4(clr.rgb, 0), step(rmax-0.1*sqrt(r),r));
-
-	fragColor *= step(r, rmax);
 }
