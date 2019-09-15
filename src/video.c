@@ -471,13 +471,16 @@ static void video_init_sdl(void) {
 	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
 
 	uint num_drivers = SDL_GetNumVideoDrivers();
+	const char *video_drivers[num_drivers];
+
 	void *buf;
 	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
 
 	SDL_RWprintf(out, "Available video drivers:");
 
 	for(uint i = 0; i < num_drivers; ++i) {
-		SDL_RWprintf(out, " %s", SDL_GetVideoDriver(i));
+		video_drivers[i] = SDL_GetVideoDriver(i);
+		SDL_RWprintf(out, " %s", video_drivers[i]);
 	}
 
 	SDL_WriteU8(out, 0);
@@ -503,7 +506,21 @@ static void video_init_sdl(void) {
 		strcpy(buf, prefer_drivers);
 
 		while((driver = strtok_r(NULL, " :;,", &bufptr))) {
+			bool skip = true;
+
+			for(uint i = 0; i < num_drivers; ++i) {
+				if(!strcmp(video_drivers[i], driver)) {
+					skip = false;
+					break;
+				}
+			}
+
 			++drivernum;
+
+			if(skip) {
+				continue;
+			}
+
 			log_info("Trying preferred driver #%i: %s", drivernum, driver);
 
 			if(SDL_VideoInit(driver)) {
