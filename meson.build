@@ -268,7 +268,7 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
 ))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
-install_docs = get_option('docs') and not ['emscripten', 'nx'].contains(host_machine.system())
+install_docs = get_option('docs') and host_machine.system() != 'emscripten'
 
 if host_machine.system() == 'windows'
     if install_docs
