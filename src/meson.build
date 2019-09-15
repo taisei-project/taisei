@@ -262,7 +262,7 @@ elif host_machine.system() == 'nx'
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
-        install : true,
+        install : get_option('debug'),
         install_dir : bindir,
         override_options: ['strip=false'],
     )
