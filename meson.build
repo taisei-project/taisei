@@ -124,8 +124,8 @@ dep_opusfile    = dependency('opusfile',                            required : f
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.6', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
 dep_sdl2_mixer  = dependency('SDL2_mixer',     version : '>=2.0.4', required : false, static : static, fallback : ['sdl2_mixer', 'sdl2_mixer_dep'])
-dep_webp        = dependency('libwebp',        version : '>=0.5',   required : false, static : static, fallback : ['libwebp', 'webp_dep'])
-dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static, fallback : ['libwebp', 'webpdecoder_dep'])
+dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
+dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
@@ -145,13 +145,12 @@ taisei_deps = [
     # don't add glad here
 ]
 
-if dep_webpdecoder.found()
+if dep_webpdecoder.found() and get_option('wrap_mode') != 'forcefallback'
+    # distro libwebpdecoder
     taisei_deps += dep_webpdecoder
-elif dep_webp.found()
-    warning('libwebpdecoder not found, will link against libwebp instead')
-    taisei_deps += dep_webp
 else
-    error('libwebpdecoder or libwebp is required, neither found')
+    # either distro libwebp, or libwebpdecoder from subproject
+    taisei_deps += dep_webp
 endif
 
 if host_machine.system() == 'windows'
