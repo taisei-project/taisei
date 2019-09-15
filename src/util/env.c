@@ -11,10 +11,20 @@
 #include "env.h"
 #include "util.h"
 
-const char* env_get_string(const char *var, const char *fallback) {
-	const char* val = SDL_getenv(var);
+const char *env_get_string(const char *var, const char *fallback) {
+	const char *val = SDL_getenv(var);
 
 	if(val == NULL) {
+		return fallback;
+	}
+
+	return val;
+}
+
+const char *env_get_string_nonempty(const char *var, const char *fallback) {
+	const char *val = SDL_getenv(var);
+
+	if(!val || !*val) {
 		return fallback;
 	}
 
@@ -26,7 +36,7 @@ void env_set_string(const char *var, const char *val, bool override) {
 }
 
 int64_t env_get_int(const char *var, int64_t fallback) {
-	const char* val = SDL_getenv(var);
+	const char *val = SDL_getenv(var);
 
 	if(val == NULL) {
 		return fallback;

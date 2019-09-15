@@ -484,23 +484,19 @@ static void video_init_sdl(void) {
 	log_info("%s", (char*)buf);
 	SDL_RWclose(out);
 
-	const char *prefer_drivers = env_get("TAISEI_PREFER_SDL_VIDEODRIVERS", "");
-	const char *force_driver = env_get("TAISEI_VIDEO_DRIVER", "");
+	// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
+	// A suboptimal X11 server may be available on top of those systems,
+	// so we push X11 down in the priority list.
+	const char *prefer_drivers = env_get_string_nonempty("TAISEI_PREFER_SDL_VIDEODRIVERS", "wayland,cocoa,windows,x11");
+	const char *force_driver = env_get_string_nonempty("TAISEI_VIDEO_DRIVER", NULL);
 
-	if(*force_driver) {
+	if(force_driver) {
 		log_warn("TAISEI_VIDEO_DRIVER is deprecated and will be removed, use TAISEI_PREFER_SDL_VIDEODRIVERS or SDL_VIDEODRIVER instead");
 	} else {
-		force_driver = env_get("SDL_VIDEODRIVER", "");
+		force_driver = env_get_string_nonempty("SDL_VIDEODRIVER", NULL);
 	}
 
-	if(!(prefer_drivers && *prefer_drivers)) {
-		// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
-		// A suboptimal X11 server may be available on top of those systems,
-		// so we push X11 down in the priority list.
-		prefer_drivers = "wayland,cocoa,windows,x11";
-	}
-
-	if(prefer_drivers && *prefer_drivers && !*force_driver) {
+	if(prefer_drivers && *prefer_drivers && !force_driver) {
 		char buf[strlen(prefer_drivers) + 1];
 		char *driver, *bufptr = buf;
 		int drivernum = 0;

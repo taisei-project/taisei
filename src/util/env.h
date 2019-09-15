@@ -11,7 +11,10 @@
 
 #include "taisei.h"
 
-const char* env_get_string(const char *var, const char *fallback)
+const char *env_get_string(const char *var, const char *fallback)
+	attr_nonnull(1);
+
+const char *env_get_string_nonempty(const char *var, const char *fallback)
 	attr_nonnull(1);
 
 void env_set_string(const char *var, const char *val, bool override)
