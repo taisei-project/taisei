@@ -42,7 +42,15 @@ preprocessor = generator(preprocess_command[0],
 eolconv_script = files('eolconv.py')
 eolconv_command = [python_thunk, eolconv_script]
 
-host_eol_style = host_machine.system() == 'windows' ? 'crlf' : 'lf'
+package_system_name = host_machine.system()
+
+if package_system_name == 'darwin'
+    package_system_name = 'macOS'   # could also be iOS etc., but we don't support that.
+elif package_system_name == 'nx'
+    package_system_name = 'switch'
+endif
+
+host_eol_style = package_system_name == 'windows' ? 'crlf' : 'lf'
 
 dist_version_string = taisei_version_string
 
@@ -55,12 +63,12 @@ if is_debug_build
 endif
 
 dmg_script = files('macos-gen-dmg.py')
-dmg_filename = 'Taisei-@0@-macOS.dmg'.format(dist_version_string)
+dmg_filename = 'Taisei-@0@-@1@-@2@.dmg'.format(dist_version_string, package_system_name, host_machine.cpu_family())
 dmg_command = [python_thunk, dmg_script, join_paths(meson.build_root(), dmg_filename), meson.build_root()]
 
 angle_enabled = get_option('install_angle')
 
-if host_machine.system() == 'windows'
+if package_system_name == 'windows'
     nsis_script = files('win-gen-nsis.py')
     nsis_filename = 'Taisei-@0@-setup-@1@.exe'.format(dist_version_string, host_machine.cpu_family())
     nsis_outpath = join_paths(meson.build_root(), nsis_filename)
@@ -93,7 +101,7 @@ if host_machine.system() == 'windows'
 endif
 
 zip_script = files('gen-zip.py')
-zip_filename = 'Taisei-@0@-@1@-@2@.zip'.format(dist_version_string, host_machine.system(), host_machine.cpu_family())
+zip_filename = 'Taisei-@0@-@1@-@2@.zip'.format(dist_version_string, package_system_name, host_machine.cpu_family())
 zip_outpath = join_paths(meson.build_root(), zip_filename)
 zip_command = [python_thunk, zip_script, meson.build_root(), zip_outpath]
 
