@@ -1,24 +1,20 @@
 
 if install_docs
+    rst2html_variants = []
+
+    # This is *completely* ridiculous, but apparently this thing has THAT many faces.
+    basenames = ['rst2html5', 'rst2html', 'rst2html4']
+    suffixes = ['', '-3', '3', '-docutils']
+
+    foreach basename : basenames
+        foreach suffix : suffixes
+            variant = '@0@@1@'.format(basename, suffix)
+            rst2html_variants += [variant, '@0@.py'.format(variant)]
+        endforeach
+    endforeach
+
     rst2html5 = find_program(
-        'rst2html5',
-        'rst2html5.py',
-        'rst2html5-docutils',
-        'rst2html5-3',
-        'rst2html53',
-        'rst2html5-3.py',
-        'rst2html4',
-        'rst2html4.py',
-        'rst2html4-3',
-        'rst2html43',
-        'rst2html4-3.py',
-        'rst2html4-docutils',
-        'rst2html',
-        'rst2html.py',
-        'rst2html-3',
-        'rst2html3',
-        'rst2html-3.py',
-        'rst2html-docutils',
+        rst2html_variants,
         required : false
     )
 
