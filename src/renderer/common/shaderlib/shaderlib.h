@@ -21,21 +21,25 @@ struct ShaderLangInfo {
 	ShaderLanguage lang;
 
 	union {
-		struct {
-			GLSLVersion version;
-		} glsl;
-
-		struct {
-			SPIRVTarget target;
-		} spirv;
+		ShaderLangInfoGLSL glsl;
+		ShaderLangInfoSPIRV spirv;
 	};
+};
+
+union ShaderSourceMeta {
+	ShaderSourceMetaGLSL glsl;
 };
 
 struct ShaderSource {
 	char *content;
 	size_t content_size;
 	ShaderLangInfo lang;
+	ShaderSourceMeta meta;
 	ShaderStage stage;
 };
+
+void shader_free_source(ShaderSource *src);
+bool shader_lang_supports_uniform_locations(const ShaderLangInfo *lang) attr_nonnull(1);
+bool shader_lang_supports_attribute_locations(const ShaderLangInfo *lang) attr_nonnull(1);
 
 #endif // IGUARD_renderer_common_shaderlib_shaderlib_h

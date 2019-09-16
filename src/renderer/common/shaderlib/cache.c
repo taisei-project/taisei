@@ -14,7 +14,7 @@
 #include "util/sha256.h"
 #include "rwops/all.h"
 
-#define CACHE_VERSION 1
+#define CACHE_VERSION 2
 #define CRC_INIT 0
 
 static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *out_size) {
@@ -33,6 +33,27 @@ static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *ou
 		case SHLANG_GLSL: {
 			SDL_WriteLE16(dest, src->lang.glsl.version.version);
 			SDL_WriteU8(dest, src->lang.glsl.version.profile);
+
+			if(src->meta.glsl.num_attributes > 255) {
+				log_error("Too many attributes (%i)", src->meta.glsl.num_attributes);
+				goto fail;
+			}
+
+			SDL_WriteU8(dest, src->meta.glsl.num_attributes);
+
+			for(uint i = 0; i < src->meta.glsl.num_attributes; ++i) {
+				SDL_WriteLE32(dest, src->meta.glsl.attributes[i].location);
+
+				size_t len = strlen(src->meta.glsl.attributes[i].name);
+
+				if(len > 255) {
+					log_error("Attribute name is too long (%zu): %s", len, src->meta.glsl.attributes[i].name);
+					goto fail;
+				}
+
+				SDL_WriteU8(dest, len);
+				SDL_RWwrite(dest, src->meta.glsl.attributes[i].name, len, 1);
+			}
 			break;
 		}
 
@@ -47,7 +68,12 @@ static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *ou
 		}
 	}
 
-	SDL_WriteLE64(dest, src->content_size);
+	if(src->content_size > 65535) {
+		log_error("Content is too large (%zu)", src->content_size);
+		goto fail;
+	}
+
+	SDL_WriteLE16(dest, src->content_size);
 	SDL_RWwrite(dest, src->content, src->content_size, 1);
 
 	dest = abuf;
@@ -72,6 +98,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 	uint32_t crc = CRC_INIT;
 	SDL_RWops *s = SDL_RWWrapCRC32(stream, &crc, false);
 
+	memset(out_src, 0, sizeof(*out_src));
 	out_src->content = NULL;
 
 	if(SDL_ReadU8(s) != CACHE_VERSION) {
@@ -88,6 +115,21 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 		case SHLANG_GLSL: {
 			out_src->lang.glsl.version.version = SDL_ReadLE16(s);
 			out_src->lang.glsl.version.profile = SDL_ReadU8(s);
+
+			uint nattrs = SDL_ReadU8(s);
+
+			if(nattrs > 0) {
+				out_src->meta.glsl.num_attributes = nattrs;
+				out_src->meta.glsl.attributes = calloc(nattrs, sizeof(*out_src->meta.glsl.attributes));
+
+				for(uint i = 0; i < nattrs; ++i) {
+					GLSLAttribute *attr = out_src->meta.glsl.attributes + i;
+					attr->location = SDL_ReadLE32(s);
+					uint len = SDL_ReadU8(s);
+					attr->name = calloc(1, len + 1);
+					SDL_RWread(s, attr->name, len, 1);
+				}
+			}
 			break;
 		}
 
@@ -102,7 +144,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 		}
 	}
 
-	out_src->content_size = SDL_ReadLE64(s);
+	out_src->content_size = SDL_ReadLE16(s);
 	out_src->content = calloc(1, out_src->content_size);
 
 	if(SDL_RWread(s, out_src->content, out_src->content_size, 1) != 1) {
@@ -121,8 +163,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 	return true;
 
 fail:
-	free(out_src->content);
-	out_src->content = NULL;
+	shader_free_source(out_src);
 	SDL_RWclose(s);
 	return false;
 }
@@ -141,6 +182,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 	bool result = shader_cache_load_entry(stream, entry);
 	SDL_RWclose(stream);
 
+	log_debug("Retrieved %s/%s from cache", hash, key);
 	return result;
 }
 
@@ -175,6 +217,7 @@ bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src
 	if(entry != NULL) {
 		shader_cache_set_raw(hash, key, entry, entry_size);
 		free(entry);
+		log_debug("Stored %s/%s in cache", hash, key);
 		return true;
 	}
 

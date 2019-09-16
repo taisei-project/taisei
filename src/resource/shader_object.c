@@ -110,14 +110,14 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 			goto fail;
 		}
 
-		free(ldata->source.content);
+		shader_free_source(&ldata->source);
 		ldata->source = newsrc;
 	}
 
 	return ldata;
 
 fail:
-	free(ldata->source.content);
+	shader_free_source(&ldata->source);
 	free(ldata);
 	return NULL;
 }
@@ -130,7 +130,7 @@ static void* load_shader_object_end(void *opaque, const char *path, uint flags) 
 	}
 
 	ShaderObject *shobj = r_shader_object_compile(&ldata->source);
-	free(ldata->source.content);
+	shader_free_source(&ldata->source);
 
 	if(shobj) {
 		char *basename = resource_util_basename(SHOBJ_PATH_PREFIX, path);

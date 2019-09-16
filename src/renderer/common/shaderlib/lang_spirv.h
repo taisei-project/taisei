@@ -25,6 +25,10 @@ typedef enum SPIRVOptimizationLevel {
 	SPIRV_OPTIMIZE_PERFORMANCE,
 } SPIRVOptimizationLevel;
 
+typedef struct ShaderLangInfoSPIRV {
+	SPIRVTarget target;
+} ShaderLangInfoSPIRV;
+
 typedef struct SPIRVCompileOptions {
 	SPIRVTarget target;
 	SPIRVOptimizationLevel optimization_level;

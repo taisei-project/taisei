@@ -40,7 +40,7 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 	lang->lang = SHLANG_GLSL;
 	lang->glsl.version = v;
 
-	if(v.profile == GLSL_PROFILE_NONE) {
+	if(v.profile == GLSL_PROFILE_NONE && v.version >= 330) {
 		v.profile = GLSL_PROFILE_CORE;
 		lang = alloc_lang();
 		lang->lang = SHLANG_GLSL;
@@ -131,11 +131,11 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 		{ 41, { 410, GLSL_PROFILE_NONE } },
 		{ 40, { 400, GLSL_PROFILE_NONE } },
 		{ 33, { 330, GLSL_PROFILE_NONE } },
-		// { 32, { 150, GLSL_PROFILE_NONE } },
-		// { 31, { 140, GLSL_PROFILE_NONE } },
-		// { 30, { 130, GLSL_PROFILE_NONE } },
-		// { 21, { 120, GLSL_PROFILE_NONE } },
-		// { 20, { 110, GLSL_PROFILE_NONE } },
+		{ 32, { 150, GLSL_PROFILE_NONE } },
+		{ 31, { 140, GLSL_PROFILE_NONE } },
+		{ 30, { 130, GLSL_PROFILE_NONE } },
+		{ 21, { 120, GLSL_PROFILE_NONE } },
+		{ 20, { 110, GLSL_PROFILE_NONE } },
 
 		// OpenGL ES
 		{ 32, { 320, GLSL_PROFILE_ES } },
