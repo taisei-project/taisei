@@ -267,11 +267,10 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 	SDL_RWops *out_buf = SDL_RWAutoBuffer(&bufdata_ptr, 1024);
 	assert(out_buf != NULL);
 
+	memset(out, 0, sizeof(*out));
 	out->lang.lang = SHLANG_GLSL;
 	out->lang.glsl.version = options->version;
 	out->stage = options->stage;
-	out->content = NULL;
-	out->content_size = 0;
 
 	GLSLParseState pstate = { 0 };
 	pstate.dest = out_buf;
@@ -316,7 +315,7 @@ int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version) {
 	return snprintf(buf, bufsize, "%i%s", version.version, profile_suffix(version));
 }
 
-char* glsl_parse_version(const char *str, GLSLVersion *out_version) {
+char *glsl_parse_version(const char *str, GLSLVersion *out_version) {
 	char *end, *p = (char*)str, *orig = (char*)str;
 
 	skip_space(&p);
@@ -360,4 +359,22 @@ char* glsl_parse_version(const char *str, GLSLVersion *out_version) {
 	}
 
 	return p;
+}
+
+void glsl_free_source(ShaderSource *src) {
+	ShaderSourceMetaGLSL *m = &src->meta.glsl;
+
+	for(uint i = 0; i < m->num_attributes; ++i) {
+		free(m->attributes[i].name);
+	}
+
+	free(m->attributes);
+}
+
+bool glsl_version_supports_instanced_rendering(GLSLVersion v) {
+	if(v.profile == GLSL_PROFILE_ES) {
+		return v.version >= 300;
+	} else {
+		return v.version >= 330;
+	}
 }

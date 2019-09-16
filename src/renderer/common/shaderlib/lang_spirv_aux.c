@@ -101,18 +101,6 @@ bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecom
 	return result;
 }
 
-static bool lang_supports_uniform_locations(const ShaderLangInfo *lang) {
-	if(lang->lang != SHLANG_GLSL) {
-		return false; // FIXME?
-	}
-
-	if(lang->glsl.version.profile == GLSL_PROFILE_ES) {
-		return lang->glsl.version.version >= 310;
-	} else {
-		return lang->glsl.version.version >= 430;
-	}
-}
-
 bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) {
 	ShaderSource spirv = { 0 };
 	bool result;
@@ -121,8 +109,8 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 	in = &_in;
 
 	if(
-		!lang_supports_uniform_locations(&_in.lang) &&
-		lang_supports_uniform_locations(options->lang) &&
+		!shader_lang_supports_uniform_locations(&_in.lang) &&
+		shader_lang_supports_uniform_locations(options->lang) &&
 		_in.lang.lang == SHLANG_GLSL
 	) {
 		// HACK: This is annoying... shaderc/glslang does not support GL_ARB_explicit_uniform_location

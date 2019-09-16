@@ -98,10 +98,19 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
 	ShaderObject *shobj = NULL;
 
 	if(status) {
-		shobj = calloc(1, sizeof(*shobj));
+		uint nattribs = source->meta.glsl.num_attributes;
+
+		shobj = calloc(1, sizeof(*shobj) + sizeof(GLSLAttribute) * nattribs);
 		shobj->gl_handle = gl_handle;
 		shobj->stage = source->stage;
+		shobj->num_attribs = nattribs;
 		snprintf(shobj->debug_label, sizeof(shobj->debug_label), "Shader object #%i", gl_handle);
+
+		for(uint i = 0; i < nattribs; ++i) {
+			GLSLAttribute *a = source->meta.glsl.attributes + i;
+			shobj->attribs[i].name = strdup(a->name);
+			shobj->attribs[i].location = a->location;
+		}
 	} else {
 		glDeleteShader(gl_handle);
 	}
@@ -111,6 +120,13 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
 
 void gl33_shader_object_destroy(ShaderObject *shobj) {
 	glDeleteShader(shobj->gl_handle);
+
+	uint nattribs = shobj->num_attribs;
+
+	for(uint i = 0; i < nattribs; ++i) {
+		free(shobj->attribs[i].name);
+	}
+
 	free(shobj);
 }
 

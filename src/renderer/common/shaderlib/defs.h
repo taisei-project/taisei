@@ -25,5 +25,6 @@ typedef enum ShaderLanguage {
 
 typedef struct ShaderSource ShaderSource;
 typedef struct ShaderLangInfo ShaderLangInfo;
+typedef union ShaderSourceMeta ShaderSourceMeta;
 
 #endif // IGUARD_renderer_common_shaderlib_defs_h
