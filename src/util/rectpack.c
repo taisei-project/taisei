@@ -57,7 +57,17 @@ RectPack* rectpack_new(double width, double height) {
 	rp->root.rect.top_left = CMPLX(0, 0);
 	rp->root.rect.bottom_right = CMPLX(width, height);
 	list_push(&rp->freelist, &rp->root);
+	assert(rectpack_is_empty(rp));
 	return rp;
+}
+
+bool rectpack_is_empty(RectPack *rp) {
+	if(rp->freelist == &rp->root) {
+		assert(rp->root.next == NULL);
+		return true;
+	}
+
+	return false;
 }
 
 static void delete_subsections(RectPackSection *restrict s) {
@@ -135,6 +145,7 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
 	} else {
 		RP_DEBUG("added to free list");
 		list_push(&rp->freelist, s);
+		assert(s != &rp->root || rectpack_is_empty(rp));
 	}
 
 	RP_DEBUG("END RECLAIM %p[%gx%g]", (void*)s, w, h);

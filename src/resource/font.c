@@ -95,7 +95,6 @@ typedef struct Glyph {
 struct Font {
 	char *source_path;
 	Glyph *glyphs;
-	SpriteSheetAnchor spritesheets;
 	FT_Face face;
 	FT_Stroker stroker;
 	long base_face_idx;
@@ -117,6 +116,7 @@ static struct {
 	ShaderProgram *default_shader;
 	Texture *render_tex;
 	Framebuffer *render_buf;
+	SpriteSheetAnchor spritesheets;
 
 	struct {
 		SDL_mutex *new_face;
@@ -354,7 +354,7 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 #define SS_WIDTH 1024
 #define SS_HEIGHT 1024
 
-static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets) {
+static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
 	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
 
@@ -372,7 +372,7 @@ static SpriteSheet* add_spritesheet(Font *font, SpriteSheetAnchor *spritesheets)
 
 #ifdef DEBUG
 	char buf[128];
-	snprintf(buf, sizeof(buf), "Font %s spritesheet", font->debug_label);
+	snprintf(buf, sizeof(buf), "Fonts spritesheet %p", (void*)ss);
 	r_texture_set_debug_label(ss->tex, buf);
 #endif
 
@@ -424,7 +424,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 	return true;
 }
 
-static bool add_glyph_to_spritesheets(Font *font, Glyph *glyph, Pixmap *pixmap, SpriteSheetAnchor *spritesheets) {
+static bool add_glyph_to_spritesheets(Glyph *glyph, Pixmap *pixmap, SpriteSheetAnchor *spritesheets) {
 	bool result;
 
 	for(SpriteSheet *ss = spritesheets->first; ss; ss = ss->next) {
@@ -433,7 +433,7 @@ static bool add_glyph_to_spritesheets(Font *font, Glyph *glyph, Pixmap *pixmap, 
 		}
 	}
 
-	return add_glyph_to_spritesheet(glyph, pixmap, add_spritesheet(font, spritesheets));
+	return add_glyph_to_spritesheet(glyph, pixmap, add_spritesheet(spritesheets));
 }
 
 static const char* pixmode_name(FT_Pixel_Mode mode) {
@@ -592,7 +592,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			}
 		}
 
-		if(!add_glyph_to_spritesheets(font, glyph, &px, spritesheets)) {
+		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
 			log_warn(
 				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %zux%zu; max spritesheet size: %ux%u)",
 				gindex,
@@ -636,7 +636,7 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
 			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
 		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
-			glyph = load_glyph(fnt, ft_index, &fnt->spritesheets);
+			glyph = load_glyph(fnt, ft_index, &globals.spritesheets);
 			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
 			ht_set(&fnt->ftindex_to_glyph_ofs, ft_index, ofs);
 		}
@@ -649,13 +649,29 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 
 attr_nonnull(1)
 static void wipe_glyph_cache(Font *font) {
+	for(uint i = 0; i < font->glyphs_used; ++i) {
+		Glyph *g = font->glyphs + i;
+		SpriteSheet *ss = g->spritesheet;
+
+		if(ss == NULL) {
+			continue;
+		}
+
+		RectPack *rp = ss->rectpack;
+		assume(rp != NULL);
+
+		RectPackSection *section = g->spritesheet_section;
+		assume(section != NULL);
+
+		rectpack_reclaim(rp, section);
+
+		if(rectpack_is_empty(rp)) {
+			delete_spritesheet(&globals.spritesheets, ss);
+		}
+	}
+
 	ht_unset_all(&font->charcodes_to_glyph_ofs);
 	ht_unset_all(&font->ftindex_to_glyph_ofs);
-
-	for(SpriteSheet *ss = font->spritesheets.first, *next; ss; ss = next) {
-		next = ss->next;
-		delete_spritesheet(&font->spritesheets, ss);
-	}
 
 	font->glyphs_used = 0;
 }

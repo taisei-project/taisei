@@ -34,4 +34,7 @@ Rect rectpack_section_rect(RectPackSection *s)
 void rectpack_reclaim(RectPack *rp, RectPackSection *s)
 	attr_nonnull(1, 2);
 
+bool rectpack_is_empty(RectPack *rp)
+	attr_nonnull(1);
+
 #endif // IGUARD_util_rectpack_h
