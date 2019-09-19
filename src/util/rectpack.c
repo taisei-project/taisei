@@ -11,8 +11,6 @@
 #include "rectpack.h"
 #include "util.h"
 
-#include <limits.h>
-
 /*
  *  This implements a slightly modified Guillotine rect-packing algorithm.
  *  All subdivisions are tracked with a tree data structure, which enables fairly

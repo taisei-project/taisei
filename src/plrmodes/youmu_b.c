@@ -8,8 +8,6 @@
 
 #include "taisei.h"
 
-#include <float.h>
-
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
@@ -240,7 +238,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	if(tt > 0.5) {
 		f = 1+(tt-0.5)/0.5;
 	}
-	
+
 	r_mat_push();
 	r_mat_translate(creal(p->pos), cimag(p->pos),0);
 	r_mat_rotate_deg(p->angle/M_PI*180,0,0,1);

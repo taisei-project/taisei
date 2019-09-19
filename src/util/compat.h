@@ -18,6 +18,7 @@
 // Common standard library headers
 #include <complex.h>
 #include <ctype.h>
+#include <float.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
