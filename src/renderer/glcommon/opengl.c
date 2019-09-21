@@ -593,6 +593,78 @@ static APIENTRY GLvoid shim_glClearDepthf(GLfloat depthval) {
 }
 #endif
 
+static void detect_broken_intel_driver(void) {
+#ifdef TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK
+	extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+
+	bool is_broken_intel_driver = (
+		!glext.version.is_es &&
+		strstartswith((const char*)glGetString(GL_VENDOR), "Intel") &&
+		strstr((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION), " - Build ")
+	);
+
+	if(!is_broken_intel_driver) {
+		return;
+	}
+
+	int button;
+	SDL_MessageBoxData mbdata = { 0 };
+
+	mbdata.flags = SDL_MESSAGEBOX_WARNING;
+	mbdata.title = "Taisei Project";
+
+	char *msg = strfmt(
+		"Looks like you have a broken OpenGL driver.\n"
+		"Taisei will probably not work correctly, if at all.\n\n"
+		"Starting the game in ANGLE mode should fix the problem, but may introduce slowdown.\n\n"
+		"Restart in ANGLE mode now? (If unsure, press YES)"
+	);
+
+	mbdata.message = msg;
+	mbdata.numbuttons = 3;
+	mbdata.buttons = (SDL_MessageBoxButtonData[]) {
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Abort" },
+		{ 0, 1, "No" },
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "Yes (safe)" },
+	};
+
+	int mbresult = SDL_ShowMessageBox(&mbdata, &button);
+	free(msg);
+
+	if(mbresult < 0) {
+		log_sdl_error(LOG_ERROR, "SDL_ShowMessageBox");
+	} else if(button == 1) {
+		return;
+	} else if(button == 2) {
+		exit(1);
+	}
+
+	const WCHAR *cmdline = GetCommandLine();
+	const WCHAR renderer_args[] = L" --renderer gles30";
+	WCHAR new_cmdline[wcslen(cmdline) + wcslen(renderer_args) + 1];
+	memcpy(new_cmdline, cmdline, sizeof(WCHAR) * wcslen(cmdline));
+	memcpy(new_cmdline + wcslen(cmdline), renderer_args, sizeof(renderer_args));
+
+	PROCESS_INFORMATION pi;
+	STARTUPINFO si = { sizeof(si) };
+
+	CreateProcessW(
+		NULL,
+		new_cmdline,
+		NULL,
+		NULL,
+		false,
+		0,
+		NULL,
+		NULL,
+		&si,
+		&pi
+	);
+
+	exit(0);
+#endif
+}
+
 void glcommon_check_capabilities(void) {
 	memset(&glext, 0, sizeof(glext));
 
@@ -631,6 +703,8 @@ void glcommon_check_capabilities(void) {
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
 	log_info("GLSL version: %s", glslv);
+
+	detect_broken_intel_driver();
 
 	// XXX: this is the legacy way, maybe we shouldn't try this first
 	const char *exts = (const char*)glGetString(GL_EXTENSIONS);

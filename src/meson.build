@@ -10,8 +10,15 @@ if host_machine.system() == 'windows'
     winmod = import('windows')
 
     rcpath = join_paths(meson.current_build_dir(), 'taisei.rc')
+    icons_dir = join_paths(meson.source_root(), 'misc', 'icons')
+    icon_main = join_paths(icons_dir, 'taisei.ico')
+    icon_replay = join_paths(icons_dir, 'taisei-replay.ico')
+    manifest = join_paths(meson.current_source_dir(), 'taisei.manifest')
+
     rcdefs = [
-        '-DICONS_DIR=@0@'.format(join_paths(meson.source_root(), 'misc', 'icons'))
+        '-DICON_MAIN=@0@'.format(icon_main),
+        '-DICON_REPLAY=@0@'.format(icon_replay),
+        '-DMANIFEST=@0@'.format(manifest),
     ]
 
     if is_debug_build
@@ -28,12 +35,25 @@ if host_machine.system() == 'windows'
         output : 'taisei.rc',
     )
 
-    version_deps += winmod.compile_resources(rc_target)
+    if meson.version().version_compare('>=0.47.0')
+        version_deps += winmod.compile_resources(
+            rc_target,
+            depend_files : files(
+                'taisei.manifest',
+                icon_main,
+                icon_replay,
+            )
+        )
+    else
+        version_deps += winmod.compile_resources(rc_target)
+    endif
 
     # msvcrt is dumb and only supports up to c89.
     # with this defined, alternative implementations from mingw for e.g. the
     # printf family of functions will be used, which conform to c11.
     config.set('__USE_MINGW_ANSI_STDIO', 1)
+
+    taisei_deps += cc.find_library('comctl32')
 endif
 
 use_intel_intrin = get_option('intel_intrin') and cc.links('''
