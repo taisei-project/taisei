@@ -179,7 +179,7 @@ void draw_sprite_batched_p(float x, float y, Sprite *spr) {
 	draw_sprite_ex(x, y, 1, 1, true, spr);
 }
 
-void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
+static void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
 	FloatOffset o = sprite_padded_offset(spr);
 
 	begin_draw_texture(
@@ -189,7 +189,7 @@ void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *s
 	);
 }
 
-void end_draw_sprite(void) {
+static void end_draw_sprite(void) {
 	end_draw_texture();
 }
 
