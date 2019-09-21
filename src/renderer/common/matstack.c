@@ -88,10 +88,138 @@ void r_mat_current(MatrixMode mode, mat4 out_mat) {
 	glm_mat4_copy(*_r_matrices.indexed[mode].head, out_mat);
 }
 
-mat4* r_mat_current_ptr(MatrixMode mode) {
+mat4 *r_mat_current_ptr(MatrixMode mode) {
 	assert((uint)mode < sizeof(_r_matrices.indexed) / sizeof(MatrixStack));
 	return _r_matrices.indexed[mode].head;
 }
+
+// BEGIN modelview
+
+void r_mat_mv_push(void) {
+	matstack_push(&_r_matrices.modelview);
+}
+
+void r_mat_mv_pop(void) {
+	matstack_pop(&_r_matrices.modelview);
+}
+
+void r_mat_mv(mat4 mat) {
+	glm_mat4_copy(mat, *_r_matrices.modelview.head);
+}
+
+void r_mat_mv_current(mat4 out_mat) {
+	glm_mat4_copy(*_r_matrices.modelview.head, out_mat);
+}
+
+mat4 *r_mat_mv_current_ptr(mat4 out_mat) {
+	return _r_matrices.modelview.head;
+}
+
+void r_mat_mv_identity(void) {
+	glm_mat4_identity(*_r_matrices.modelview.head);
+}
+
+void r_mat_mv_translate_v(vec3 v) {
+	glm_translate(*_r_matrices.modelview.head, v);
+}
+
+void r_mat_mv_rotate_v(float angle, vec3 v) {
+	glm_rotate(*_r_matrices.modelview.head, angle, v);
+}
+
+void r_mat_mv_scale_v(vec3 v) {
+	glm_scale(*_r_matrices.modelview.head, v);
+}
+
+// END modelview
+
+// BEGIN projection
+
+void r_mat_proj_push(void) {
+	matstack_push(&_r_matrices.projection);
+}
+
+void r_mat_proj_pop(void) {
+	matstack_pop(&_r_matrices.projection);
+}
+
+void r_mat_proj(mat4 mat) {
+	glm_mat4_copy(mat, *_r_matrices.projection.head);
+}
+
+void r_mat_proj_current(mat4 out_mat) {
+	glm_mat4_copy(*_r_matrices.projection.head, out_mat);
+}
+
+mat4 *r_mat_proj_current_ptr(mat4 out_mat) {
+	return _r_matrices.projection.head;
+}
+
+void r_mat_proj_identity(void) {
+	glm_mat4_identity(*_r_matrices.projection.head);
+}
+
+void r_mat_proj_translate_v(vec3 v) {
+	glm_translate(*_r_matrices.projection.head, v);
+}
+
+void r_mat_proj_rotate_v(float angle, vec3 v) {
+	glm_rotate(*_r_matrices.projection.head, angle, v);
+}
+
+void r_mat_proj_scale_v(vec3 v) {
+	glm_scale(*_r_matrices.projection.head, v);
+}
+
+void r_mat_proj_ortho(float left, float right, float bottom, float top, float near, float far) {
+	glm_ortho(left, right, bottom, top, near, far, *_r_matrices.projection.head);
+}
+
+void r_mat_proj_perspective(float angle, float aspect, float near, float far) {
+	glm_perspective(angle, aspect, near, far, *_r_matrices.projection.head);
+}
+
+// END projection
+
+// BEGIN texture
+
+void r_mat_tex_push(void) {
+	matstack_push(&_r_matrices.texture);
+}
+
+void r_mat_tex_pop(void) {
+	matstack_pop(&_r_matrices.texture);
+}
+
+void r_mat_tex(mat4 mat) {
+	glm_mat4_copy(mat, *_r_matrices.texture.head);
+}
+
+void r_mat_tex_current(mat4 out_mat) {
+	glm_mat4_copy(*_r_matrices.texture.head, out_mat);
+}
+
+mat4 *r_mat_tex_current_ptr(mat4 out_mat) {
+	return _r_matrices.texture.head;
+}
+
+void r_mat_tex_identity(void) {
+	glm_mat4_identity(*_r_matrices.texture.head);
+}
+
+void r_mat_tex_translate_v(vec3 v) {
+	glm_translate(*_r_matrices.texture.head, v);
+}
+
+void r_mat_tex_rotate_v(float angle, vec3 v) {
+	glm_rotate(*_r_matrices.texture.head, angle, v);
+}
+
+void r_mat_tex_scale_v(vec3 v) {
+	glm_scale(*_r_matrices.texture.head, v);
+}
+
+// END texture
 
 void _r_mat_init(void) {
 	matstack_reset(&_r_matrices.texture);
