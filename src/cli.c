@@ -19,27 +19,53 @@
 
 struct TsOption { struct option opt; const char *help; const char *argname;};
 
+enum {
+	OPT_RENDERER = INT_MIN,
+};
+
 static void print_help(struct TsOption* opts) {
 	tsfprintf(stdout, "Usage: taisei [OPTIONS]\nTaisei is an open source Tōhō Project fangame.\n\nOptions:\n");
 	int margin = 20;
 	for(struct TsOption *opt = opts; opt->opt.name; opt++) {
-		tsfprintf(stdout, "  -%c, --%s ", opt->opt.val,opt->opt.name);
+		if(opt->opt.val > 0) {
+			tsfprintf(stdout, "  -%c, --%s ", opt->opt.val, opt->opt.name);
+		} else {
+			tsfprintf(stdout, "      --%s ", opt->opt.name);
+		}
+
 		int length = margin-(int)strlen(opt->opt.name);
+
 		if(opt->argname) {
 			tsfprintf(stdout, "%s", opt->argname);
 			length -= (int)strlen(opt->argname);
 		}
-		for(int i = 0; i < length; i++)
-			tsfprintf(stdout, " ");
-		if(opt->argname)
+
+		for(int i = 0; i < length; i++) {
+			fputc(' ', stdout);
+		}
+
+		fputs("  ", stdout);
+
+		if(opt->argname && strchr(opt->help, '%')) {
 			tsfprintf(stdout, opt->help, opt->argname);
-		else
+		} else {
 			tsfprintf(stdout, "%s", opt->help);
+		}
+
 		tsfprintf(stdout, "\n");
 	}
 }
 
 int cli_args(int argc, char **argv, CLIAction *a) {
+	const char *const _renderer_list =
+	#define R(r) ","#r
+	TAISEI_BUILDCONF_RENDERER_BACKENDS
+	#undef R
+	;
+
+	char renderer_list[strlen(_renderer_list) + 2];
+	snprintf(renderer_list, sizeof(renderer_list), "{%s}", _renderer_list+1);
+
 	struct TsOption taisei_opts[] = {
 		{{"replay", required_argument, 0, 'r'}, "Play a replay from %s", "FILE"},
 		{{"verify-replay", required_argument, 0, 'R'}, "Play a replay from %s in headless mode, crash as soon as it desyncs", "FILE"},
@@ -53,6 +79,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 #endif
 		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits", no_argument, 0, 'c'}, "Show the credits scene and exit"},
+		{{"renderer", required_argument, 0, OPT_RENDERER}, "Choose the rendering backend", renderer_list},
 		{{"help", no_argument, 0, 'h'}, "Display this help"},
 		{{0,0,0,0},0,0}
 	};
@@ -66,6 +93,11 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	for(int i = 0; i < nopts; i++) {
 		opts[i] = taisei_opts[i].opt;
+
+		if(opts[i].val <= 0) {
+			continue;
+		}
+
 		*ptr = opts[i].val;
 		ptr++;
 
@@ -160,8 +192,11 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 'c':
 			a->type = CLI_Credits;
 			break;
+		case OPT_RENDERER:
+			env_set("TAISEI_RENDERER", optarg, true);
+			break;
 		default:
-			log_fatal("Unknown option (this shouldn’t happen)");
+			UNREACHABLE;
 		}
 	}
 

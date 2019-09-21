@@ -208,10 +208,11 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 		title,
 		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
 		SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-		w, h, flags
+		w, h, flags | SDL_WINDOW_HIDDEN
 	);
 
 	if(video.window) {
+		SDL_ShowWindow(video.window);
 		SDL_SetWindowMinimumSize(video.window, SCREEN_W / 4, SCREEN_H / 4);
 		video_update_mode_settings();
 		return;

@@ -155,20 +155,17 @@ Section "-Core installation"
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
 
     CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+    CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Taisei.lnk" "$INSTDIR\taisei.exe"
 
     !if @USE_ANGLE@ == 1
-        CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Taisei (OpenGL).lnk" "$INSTDIR\taisei.exe"
-        CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Taisei (ANGLE).lnk" "$INSTDIR\taisei-angle.bat" "" "$INSTDIR\taisei.exe" 0 SW_SHOWMINIMIZED
-    !else
-        CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Taisei.lnk" "$INSTDIR\taisei.exe"
+        CreateShortcut "$SMPROGRAMS\$STARTMENU_FOLDER\Taisei (ANGLE).lnk" "$INSTDIR\taisei.exe" "--renderer gles30"
     !endif
 
     ${If} "$INSTALL_DESKTOP" == "1"
+        CreateShortcut "$DESKTOP\Taisei.lnk" "$INSTDIR\taisei.exe"
+
         !if @USE_ANGLE@ == 1
-            CreateShortcut "$DESKTOP\Taisei (OpenGL).lnk" "$INSTDIR\taisei.exe"
-            CreateShortcut "$DESKTOP\Taisei (ANGLE).lnk" "$INSTDIR\taisei-angle.bat" "" "$INSTDIR\taisei.exe" 0 SW_SHOWMINIMIZED
-        !else
-            CreateShortcut "$DESKTOP\Taisei.lnk" "$INSTDIR\taisei.exe"
+            CreateShortcut "$DESKTOP\Taisei (ANGLE).lnk" "$INSTDIR\taisei.exe" "--renderer gles30"
         !endif
     ${EndIf}
 
@@ -257,7 +254,7 @@ Function .onInit
     StrCmp $0 "" inst
 
     MessageBox MB_YESNOCANCEL|MB_ICONEXCLAMATION \
-        "${APPNAME} is already installed. $\n$\nDo you want to uninstall the old version before installing the new one?" \
+        "${APPNAME} is already installed.$\n$\nDo you want to uninstall the old version before installing the new one?$\n$\nIf unsure, choose YES." \
         /SD IDYES IDYES uninst IDNO inst
     Abort
 

@@ -2,15 +2,18 @@
 #define IDS_TAISEI 1
 #define IDS_REPLAY 2
 
-#include "winver.h"
+#include <winver.h>
+#include <windows.h>
 
-IDI_ICON1 ICON "${ICONS_DIR}/taisei.ico"
-IDI_ICON2 ICON "${ICONS_DIR}/taisei-replay.ico"
+IDI_ICON1 ICON "${ICON_MAIN}"
+IDI_ICON2 ICON "${ICON_REPLAY}"
 
 STRINGTABLE BEGIN
 	IDS_TAISEI, "Taisei Project"
 	IDS_REPLAY, "Taisei Project replay"
 END
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "${MANIFEST}"
 
 ${BUILDTYPE_DEFINE}
 

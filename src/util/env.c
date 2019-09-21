@@ -32,6 +32,7 @@ const char *env_get_string_nonempty(const char *var, const char *fallback) {
 }
 
 void env_set_string(const char *var, const char *val, bool override) {
+	log_debug("%s=%s (%i)", var, val, override);
 	SDL_setenv(var, val, override);
 }
 
