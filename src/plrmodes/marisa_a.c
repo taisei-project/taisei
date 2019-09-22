@@ -75,10 +75,11 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 	int col_types = PCOL_ENTITY;
 
 	struct enemy_col {
-		LIST_INTERFACE(struct enemy_col);
 		Enemy *enemy;
 		int original_hp;
-	} *prev_collisions = NULL;
+	} enemy_collisions[64] = { 0 };  // 64 collisions ought to be enough for everyone
+
+	int num_enemy_collissions = 0;
 
 	while(lproj.first) {
 		timeofs = trace_projectile(lproj.first, &col, col_types | PCOL_VOID, timeofs);
@@ -103,9 +104,11 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 			);
 
 			if(col.type == PCOL_ENTITY && col.entity->type == ENT_ENEMY) {
-				c = malloc(sizeof(struct enemy_col));
-				c->enemy = ENT_CAST(col.entity, Enemy);
-				list_push(&prev_collisions, c);
+				assert(num_enemy_collissions < ARRAY_SIZE(enemy_collisions));
+				if(num_enemy_collissions < ARRAY_SIZE(enemy_collisions)) {
+					c = enemy_collisions + num_enemy_collissions++;
+					c->enemy = ENT_CAST(col.entity, Enemy);
+				}
 			} else {
 				col_types &= ~col.type;
 			}
@@ -121,11 +124,10 @@ static void trace_laser(Enemy *e, complex vel, float damage) {
 		}
 	}
 
-	for(struct enemy_col *c = prev_collisions, *next; c; c = next) {
-		next = c->next;
-		c->enemy->hp = c->original_hp;
-		list_unlink(&prev_collisions, c);
-		free(c);
+	assume(num_enemy_collissions < ARRAY_SIZE(enemy_collisions));
+
+	for(int i = 0; i < num_enemy_collissions; ++i) {
+		enemy_collisions[i].enemy->hp = enemy_collisions[i].original_hp;
 	}
 
 	ld->trace_hit.last = col.location;
