@@ -332,10 +332,14 @@ if host_machine.system() == 'windows'
     )
 endif
 
-zip_target = run_target('zip',
-    command: zip_command,
-    depends : bindist_deps,
-)
+bindist_targets = ['zip', 'tar', 'txz', 'tgz', 'tbz']
+
+foreach bindist_target : bindist_targets
+    run_target(bindist_target,
+        command : get_variable('@0@_command'.format(bindist_target)),
+        depends : bindist_deps,
+    )
+endforeach
 
 summary = '''
 
