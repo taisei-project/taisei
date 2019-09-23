@@ -71,9 +71,9 @@ def main(args):
         if args.prefix is not None:
             os.chdir(str(install_dir.parent))
             install_dir.rename(install_dir.parent / args.prefix)
-            archive = shutil.make_archive(args.output, args.format, '.', args.prefix)
+            archive = shutil.make_archive(args.output, args.format, '.', str(args.prefix))
         else:
-            archive = shutil.make_archive(args.output, args.format, install_dir)
+            archive = shutil.make_archive(args.output, args.format, str(install_dir))
 
         archive = Path(archive)
         archive.rename(args.output)
