@@ -62,8 +62,33 @@ if is_debug_build
     dist_version_string = '@0@-debug'.format(dist_version_string)
 endif
 
+dist_script = files('gen-dist.py')
+dist_name = 'Taisei-@0@-@1@-@2@'.format(dist_version_string, package_system_name, host_machine.cpu_family())
+dist_command = [python_thunk, dist_script, common_taiseilib_args]
+dist_prefix_args = ['--prefix=@0@'.format(dist_name)]
+
+zip_filename = '@0@.zip'.format(dist_name)
+zip_outpath = join_paths(meson.build_root(), zip_filename)
+zip_command = [dist_command, '--format=zip', meson.build_root(), zip_outpath]
+
+txz_filename = '@0@.tar.xz'.format(dist_name)
+txz_outpath = join_paths(meson.build_root(), txz_filename)
+txz_command = [dist_command, '--format=xztar', dist_prefix_args, meson.build_root(), txz_outpath]
+
+tgz_filename = '@0@.tar.gz'.format(dist_name)
+tgz_outpath = join_paths(meson.build_root(), tgz_filename)
+tgz_command = [dist_command, '--format=gztar', dist_prefix_args, meson.build_root(), tgz_outpath]
+
+tbz_filename = '@0@.tar.bz2'.format(dist_name)
+tbz_outpath = join_paths(meson.build_root(), tbz_filename)
+tbz_command = [dist_command, '--format=bztar', dist_prefix_args, meson.build_root(), tbz_outpath]
+
+tar_filename = '@0@.tar'.format(dist_name)
+tar_outpath = join_paths(meson.build_root(), tar_filename)
+tar_command = [dist_command, '--format=tar', dist_prefix_args, meson.build_root(), tar_outpath]
+
 dmg_script = files('macos-gen-dmg.py')
-dmg_filename = 'Taisei-@0@-@1@-@2@.dmg'.format(dist_version_string, package_system_name, host_machine.cpu_family())
+dmg_filename = '@0@.dmg'.format(dist_name)
 dmg_command = [python_thunk, dmg_script, join_paths(meson.build_root(), dmg_filename), meson.build_root()]
 
 angle_enabled = get_option('install_angle')
@@ -99,11 +124,6 @@ if package_system_name == 'windows'
         files('taisei.nsi.in')
     ]
 endif
-
-zip_script = files('gen-zip.py')
-zip_filename = 'Taisei-@0@-@1@-@2@.zip'.format(dist_version_string, package_system_name, host_machine.cpu_family())
-zip_outpath = join_paths(meson.build_root(), zip_filename)
-zip_command = [python_thunk, zip_script, meson.build_root(), zip_outpath]
 
 gen_atlas_script = files('gen-atlas.py')
 gen_atlas_command = [python_thunk, gen_atlas_script]
