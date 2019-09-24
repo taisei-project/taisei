@@ -126,24 +126,19 @@ static void credits_fill(void) {
 
 	credits_add((
 		"Free Software\n"
-		"Simple DirectMedia Layer\n"
-		"https://libsdl.org/\n\n"
-		"zlib\n"
-		"https://zlib.net/\n\n"
-		"libpng\n"
-		"http://www.libpng.org/\n\n"
-		"Ogg Opus\n"
-		"https://www.opus-codec.org/"
+		"Simple DirectMedia Layer\n"  "https://libsdl.org/\n\n"
+		"libpng\n"                    "http://libpng.org/\n\n"
+		"libwebp\n"                   "https://git.io/WebP\n\n"
+		"FreeType\n"                  "https://freetype.org/\n\n"
+		"Ogg Opus\n"                  "https://www.opus-codec.org/"
 	), 327);
 
 	credits_add((
 		"\n"
-		"libzip\n"
-		"https://libzip.org/\n\n"
-		"Meson build system\n"
-		"http://mesonbuild.com/\n\n"
-		"M cross environment\n"
-		"http://mxe.cc/\n\n"
+		"zlib\n"                      "https://zlib.net/\n\n"
+		"libzip\n"                    "https://libzip.org/\n\n"
+		"Meson build system\n"        "https://mesonbuild.com/\n\n"
+		"Krita\n"                     "https://krita.org/\n\n"
 		"and many other projects"
 	), 327);
 
