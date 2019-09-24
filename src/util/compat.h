@@ -155,8 +155,12 @@ typedef _Complex double complex;
 // `CMPLX` like ((double complex){ x, y })
 #undef CMPLX
 
-#ifndef TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T
-typedef complex max_align_t;
+// FIXME this is likely incorrect!
+#if TAISEI_BUILDCONF_MALLOC_ALIGNMENT < 0
+	#warning max_align_t not supported
+	#undef TAISEI_BUILDCONF_MALLOC_ALIGNMENT
+	#define TAISEI_BUILDCONF_MALLOC_ALIGNMENT 8
+	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) long double a; } max_align_t;
 #endif
 
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute
@@ -264,19 +268,12 @@ typedef complex max_align_t;
 
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline, artificial))
 
-#ifdef NDEBUG
-	#define _ensure_aligned(ptr, alignment) (ptr)
-#else
-	INLINE void *_ensure_aligned(void *ptr, size_t alignment) {
-		assert(((uintptr_t)ptr & (alignment - 1)) == 0);
-		return ptr;
-	}
-#endif
-
 #ifdef USE_GNU_EXTENSIONS
 	#define ASSUME_ALIGNED(expr, alignment) (__extension__ ({ \
-		assert(__builtin_constant_p(alignment)); \
-		__builtin_assume_aligned(_ensure_aligned((expr), (alignment)), (alignment)); \
+		static_assert(__builtin_constant_p(alignment), ""); \
+		__auto_type _assume_aligned_ptr = (expr); \
+		assert(((uintptr_t)_assume_aligned_ptr & ((alignment) - 1)) == 0); \
+		__builtin_assume_aligned(_assume_aligned_ptr, (alignment)); \
 	}))
 #else
 	#define ASSUME_ALIGNED(expr, alignment) (expr)

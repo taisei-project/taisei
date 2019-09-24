@@ -11,7 +11,11 @@
 
 #include "taisei.h"
 
-#define LIST_ALIGN alignas(16)
+#if TAISEI_BUILDCONF_MALLOC_ALIGNMENT < 16
+	#define LIST_ALIGN alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT)
+#else
+	#define LIST_ALIGN alignas(16)
+#endif
 
 typedef struct ListInterface ListInterface;
 typedef struct List List;

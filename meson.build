@@ -188,7 +188,7 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
-config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', cc.compiles('#include <stddef.h>\nmax_align_t i;', name : 'max_align_t test'))
+config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', cc.alignment('max_align_t', prefix : '#include <stddef.h>\n'))
 
 prefer_relpath_systems = [
     'windows',
