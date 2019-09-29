@@ -35,18 +35,14 @@ if host_machine.system() == 'windows'
         output : 'taisei.rc',
     )
 
-    if meson.version().version_compare('>=0.47.0')
-        version_deps += winmod.compile_resources(
-            rc_target,
-            depend_files : files(
-                'taisei.manifest',
-                icon_main,
-                icon_replay,
-            )
+    version_deps += winmod.compile_resources(
+        rc_target,
+        depend_files : files(
+            'taisei.manifest',
+            icon_main,
+            icon_replay,
         )
-    else
-        version_deps += winmod.compile_resources(rc_target)
-    endif
+    )
 
     # msvcrt is dumb and only supports up to c89.
     # with this defined, alternative implementations from mingw for e.g. the

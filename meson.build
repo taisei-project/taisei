@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.4-dev',
-    meson_version : '>=0.45.0',
+    meson_version : '>=0.48.0',
     default_options : [
         'c_std=c11',
         'default_library=static',
@@ -22,7 +22,7 @@ project('taisei', 'c',
     ]
 )
 
-minimum_recommended_meson_version = '0.48.0'
+minimum_recommended_meson_version = '0.49.0'
 
 if meson.version().version_compare('<@0@'.format(minimum_recommended_meson_version))
     warning('Old Meson version detected. Try upgrading to at least @0@ if the build fails.'.format(minimum_recommended_meson_version))
@@ -145,7 +145,13 @@ taisei_deps = [
     # don't add glad here
 ]
 
-if dep_webpdecoder.found() and get_option('wrap_mode') != 'forcefallback'
+if meson.version().version_compare('<0.49.0')
+    wrap_mode_forcefallback = false
+else
+    wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
+endif
+
+if dep_webpdecoder.found() and not wrap_mode_forcefallback
     # distro libwebpdecoder
     taisei_deps += dep_webpdecoder
 else
