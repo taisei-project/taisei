@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+	<id>org.taisei_project.Taisei</id>
+	<launchable type="desktop-id">org.taisei_project.Taisei.desktop</launchable>
+	<project_license>MIT and CC-BY-4.0 and CC0-1.0</project_license>
+	<metadata_license>CC0-1.0</metadata_license>
+	<name>Taisei</name>
+	<summary>Bullet hell shoot 'em up game set in the Tōhō universe</summary>
+	<description>
+		<p>Taisei (泰西, lit. Occident) is a free and open-source fangame of the Tōhō series.</p>
+		<p>Basically, it is a shoot ’em up game with lots of bullets (the genre is literally called bullet hell). It doesn’t aim to rebuild a particular installment of the Tōhō games, but is rather an original game set in the world of Tōhō. Enjoy dodging through 6 stages full of new bullet patterns on four difficulty levels!</p>
+	</description>
+	<developer_name>Taisei Project Team</developer_name>
+	<keywords>
+		<keyword>bullet hell</keyword>
+		<keyword>danmaku</keyword>
+		<keyword>game</keyword>
+		<keyword>shmup</keyword>
+		<keyword>touhou</keyword>
+	</keywords>
+	<provides>
+		<binary>taisei</binary>
+	</provides>
+	<url type="homepage">https://taisei-project.org</url>
+	<url type="bugtracker">https://github.com/taisei-project/taisei/issues</url>
+	<url type="help">https://github.com/taisei-project/taisei/blob/v1.3.1/doc/GAME.rst</url>
+	<url type="donation">https://www.patreon.com/taisei_project</url>
+	<screenshots>
+		<screenshot type="default">
+			<image>https://taisei-project.org/static/screenshots/007_1.3.1/taisei_20190922_20-38-06-359.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://taisei-project.org/static/screenshots/006_1.3/taisei_20190425_16-34-47-761.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://taisei-project.org/static/screenshots/007_1.3.1/taisei_20190923_00-43-28-277.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://taisei-project.org/static/screenshots/006_1.3/taisei_20190425_16-08-39-726.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://taisei-project.org/static/screenshots/006_1.3/taisei_20190425_16-50-29-232.png</image>
+		</screenshot>
+		<screenshot>
+			<image>https://taisei-project.org/static/screenshots/006_1.3/taisei_20190425_18-13-06-813.png</image>
+		</screenshot>
+	</screenshots>
+	<releases>
+		<release version="1.3.1" date="2019-09-29">
+			<url>https://taisei-project.org/news/0012_v1.3.1</url>
+			<description>
+				<p>This is a stable maintenance release. It features some important bug fixes and a few optimizations and visual improvements backported from the v1.4 development tree, as well as new character art.</p>
+			</description>
+		</release>
+		<release version="1.3.0" date="2019-04-27">
+			<url>https://taisei-project.org/news/0011_v1.3</url>
+			<description>
+				<p>This is another major release. Includes lots of graphical updates, a completely rewritten renderer, a new playable character (guess who!), a new scoring mechanic, and lots of various other changes.</p>
+			</description>
+		</release>
+		<release version="1.2.0" date="2018-01-27">
+			<url>https://taisei-project.org/news/0010_v1.2</url>
+			<description>
+				<p>This is a major release. There are lots of changes, including a complete all-original soundtrack, new graphics, sound effects, vast gameplay improvements, and much more!</p>
+			</description>
+		</release>
+		<release version="1.1.2" date="2017-11-20">
+			<url>https://taisei-project.org/news/0009_v1.1.2</url>
+			<description>
+				<p>This is a stable maintenance release. It contains mostly bug fixes backported from the v1.2 development tree. There are no gameplay changes; this version should be 100% replay compatible with the initial v1.1 release.</p>
+			</description>
+		</release>
+		<release version="1.1.1" date="2017-10-28">
+			<url>https://taisei-project.org/news/0008_v1.1.1</url>
+			<description>
+				<p>This is a stable maintenance release. It includes many bugfixes and some new features backported from the v1.2 development tree. There are no gameplay changes; this version should be 100% replay compatible with the initial v1.1 release.</p>
+			</description>
+		</release>
+		<release version="1.1.0" date="2017-09-25">
+			<url>https://taisei-project.org/news/0007_v1.1</url>
+			<description>
+				<p>Taisei 1.1 contains gameplay and stage changes, new extra spells, many graphics improvements, a new resource system, replay improvements and more.</p>
+			</description>
+		</release>
+	</releases>
+	<content_rating type="oars-1.0">
+		<content_attribute id="language-profanity">mild</content_attribute>
+		<content_attribute id="language-humor">mild</content_attribute>
+	</content_rating>
+	<update_contact>akari@taisei-project.org</update_contact>
+</component>
