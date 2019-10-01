@@ -181,7 +181,7 @@ if host_machine.system() == 'emscripten'
         warning('b_staticpic is not compatible with the LLVM WebAssembly backend')
     endif
 
-    em_debug = get_option('debug')
+    em_debug = is_debug_build
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
@@ -276,7 +276,7 @@ elif host_machine.system() == 'nx'
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
-        install : get_option('debug'),
+        install : is_debug_build,
         install_dir : bindir,
         override_options: ['strip=false'],
     )
