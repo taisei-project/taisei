@@ -90,7 +90,7 @@ taisei_c_args = [
     '-fno-trapping-math',
 ]
 
-if get_option('b_pch') and meson.version().version_compare('<0.50.0')
+if meson.version().version_compare('<0.50.0') and get_option('b_pch')
     # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
     taisei_c_args += ['-fpch-deps']
 endif
