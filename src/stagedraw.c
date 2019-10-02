@@ -1068,14 +1068,14 @@ struct glyphcb_state {
 	Color *color1, *color2;
 };
 
-static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata) {
+static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_attribs, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0' && charcode != ',') {
 		st->color1 = st->color2;
 	}
 
-	spr_params->color = st->color1;
+	spr_attribs->rgba = *st->color1;
 	return 0;
 }
 
@@ -1325,7 +1325,6 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		font_set_kerning_enabled(font, kern_saved);
 	}
 
-
 	r_mat_push();
 	r_mat_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
 
@@ -1344,7 +1343,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active },
 		}
 	});
 
@@ -1391,7 +1390,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active },
 		}
 	});
 
@@ -1410,7 +1409,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		.font_ptr = font,
 		.glyph_callback = {
 			draw_numeric_callback,
-			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive },
+			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
 		}
 	});
 

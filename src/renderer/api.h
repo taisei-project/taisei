@@ -354,6 +354,32 @@ typedef union ShaderCustomParams {
 	Color color;
 } ShaderCustomParams;
 
+typedef struct SpriteStateParams {
+	Texture *primary_texture;
+	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
+	BlendMode blend;
+	ShaderProgram *shader;
+} SpriteStateParams;
+
+typedef struct SpriteScaleParams {
+	union {
+		float x;
+		float both;
+	};
+
+	float y;
+} SpriteScaleParams;
+
+typedef struct SpriteRotationParams {
+	vec3 vector;
+	float angle;
+} SpriteRotationParams;
+
+typedef struct SpriteFlipParams {
+	unsigned char x : 1;
+	unsigned char y : 1;
+} SpriteFlipParams;
+
 typedef struct SpriteParams {
 	const char *sprite;
 	Sprite *sprite_ptr;
@@ -362,33 +388,34 @@ typedef struct SpriteParams {
 	ShaderProgram *shader_ptr;
 
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
-
 	const Color *color;
+	const ShaderCustomParams *shader_params;
+
 	BlendMode blend;
 
 	FloatOffset pos;
-
-	struct {
-		union {
-			float x;
-			float both;
-		};
-
-		float y;
-	} scale;
-
-	struct {
-		float angle;
-		vec3 vector;
-	} rotation;
-
-	const ShaderCustomParams *shader_params;
-
-	struct {
-		unsigned int x : 1;
-		unsigned int y : 1;
-	} flip;
+	SpriteScaleParams scale;
+	SpriteRotationParams rotation;
+	SpriteFlipParams flip;
 } SpriteParams;
+
+// Matches vertex buffer layout
+typedef struct SpriteInstanceAttribs {
+	mat4 mv_transform;
+	mat4 tex_transform;
+
+	union {
+		FloatRect texrect;
+		vec4 texrect_vec4;
+	};
+
+	Color rgba;
+	FloatExtent sprite_size;
+	ShaderCustomParams custom;
+
+	// offsetof(end_of_fields) == size without padding.
+	char end_of_fields;
+} SpriteInstanceAttribs;
 
 /*
  * Creates an SDL window with proper flags, and, if needed, sets up a rendering context associated with it.
@@ -708,6 +735,9 @@ void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);
 void r_draw_model_ptr(Model *model, uint instances, uint base_instance) attr_nonnull(1);
 void r_draw_sprite(const SpriteParams *params) attr_nonnull(1);
+
+void r_sprite_batch_prepare_state(const SpriteStateParams *stp);
+void r_sprite_batch_add_instance(const SpriteInstanceAttribs *attribs);
 
 void r_flush_sprites(void);
 

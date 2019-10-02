@@ -36,22 +36,22 @@ INLINE float sprite_padded_height(const Sprite *restrict spr) {
 	return spr->extent.h + spr->padding.top + spr->padding.bottom;
 }
 
-INLINE FloatExtent sprite_padded_extent(Sprite *restrict spr) {
+INLINE FloatExtent sprite_padded_extent(const Sprite *restrict spr) {
 	FloatExtent e;
 	e.w = sprite_padded_width(spr);
 	e.h = sprite_padded_height(spr);
 	return e;
 }
 
-INLINE float sprite_padded_offset_x(Sprite *restrict spr) {
+INLINE float sprite_padded_offset_x(const Sprite *restrict spr) {
 	return (spr->padding.left - spr->padding.right) * 0.5;
 }
 
-INLINE float sprite_padded_offset_y(Sprite *restrict spr) {
+INLINE float sprite_padded_offset_y(const Sprite *restrict spr) {
 	return (spr->padding.top - spr->padding.bottom) * 0.5;
 }
 
-INLINE FloatOffset sprite_padded_offset(Sprite *restrict spr) {
+INLINE FloatOffset sprite_padded_offset(const Sprite *restrict spr) {
 	FloatOffset o;
 	o.x = sprite_padded_offset_x(spr);
 	o.y = sprite_padded_offset_y(spr);

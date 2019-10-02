@@ -54,7 +54,8 @@ typedef struct BBox {
 	} y;
 } BBox;
 
-typedef int (*GlyphDrawCallback)(Font *font, charcode_t charcode, SpriteParams *spr_params, void *userdata);
+// FIXME: this is a quite crude low-level-ish hack, and probably should be replaced with some kind of markup system.
+typedef int (*GlyphDrawCallback)(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_instance, void *userdata);
 
 typedef struct TextParams {
 	const char *font;
