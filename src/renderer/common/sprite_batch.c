@@ -384,7 +384,10 @@ void r_draw_sprite(const SpriteParams *params) {
 	_r_sprite_batch_add(spr, params, stream);
 }
 
+#if SPRITE_BATCH_STATS
 #include "resource/font.h"
+#include "global.h"
+#endif
 
 void _r_sprite_batch_end_frame(void) {
 	r_flush_sprites();
@@ -395,12 +398,13 @@ void _r_sprite_batch_end_frame(void) {
 	}
 
 	static char buf[512];
-	snprintf(buf, sizeof(buf), "%6i sprites %6i flushes %9.02f spr/flush %6i best %6i worst",
+	snprintf(buf, sizeof(buf), "%6i sprites %6i flushes %9.02f spr/flush %6i best %6i worst %12.02f fps",
 		_r_sprite_batch.frame_stats.sprites,
 		_r_sprite_batch.frame_stats.flushes,
 		_r_sprite_batch.frame_stats.sprites / (double)_r_sprite_batch.frame_stats.flushes,
 		_r_sprite_batch.frame_stats.best_batch,
-		_r_sprite_batch.frame_stats.worst_batch
+		_r_sprite_batch.frame_stats.worst_batch,
+		global.fps.render.fps
 	);
 
 	Font *font = get_font("monotiny");
