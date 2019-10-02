@@ -22,19 +22,7 @@
 #endif
 #endif
 
-typedef struct SpriteAttribs {
-	mat4 transform;
-	mat4 tex_transform;
-	float rgba[4];
-	FloatRect texrect;
-	float sprite_size[2];
-	float custom[4];
-
-	// offset of this == size without padding.
-	char end_of_fields;
-} SpriteAttribs;
-
-#define SIZEOF_SPRITE_ATTRIBS (offsetof(SpriteAttribs, end_of_fields))
+#define SIZEOF_SPRITE_ATTRIBS (offsetof(SpriteInstanceAttribs, end_of_fields))
 
 static struct SpriteBatchState {
 	// constants (set once on init and not expected to change)
@@ -75,7 +63,7 @@ void _r_sprite_batch_init(void) {
 	size_t sz_attr = SIZEOF_SPRITE_ATTRIBS;
 
 	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
-	#define INSTANCE_OFS(attr) offsetof(SpriteAttribs, attr)
+	#define INSTANCE_OFS(attr) offsetof(SpriteInstanceAttribs, attr)
 
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
@@ -84,10 +72,10 @@ void _r_sprite_batch_init(void) {
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),                 0 },
 
 		// Per-instance attributes (for our own sprites buffer, bound at 1)
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[0]),     1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[1]),     1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[2]),     1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(transform[3]),     1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[0]),  1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[1]),  1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[2]),  1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(mv_transform[3]),  1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[0]), 1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[1]), 1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[2]), 1 },
@@ -140,7 +128,7 @@ void r_flush_sprites(void) {
 
 	uint pending = _r_sprite_batch.num_pending;
 
-	// needs to be done early to thwart recursive callss
+	// needs to be done early to thwart recursive calls
 	_r_sprite_batch.num_pending = 0;
 
 #if SPRITE_BATCH_STATS
@@ -201,29 +189,33 @@ void r_flush_sprites(void) {
 	r_state_pop();
 }
 
-static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWops *stream) {
-	SpriteAttribs attribs;
-	r_mat_current(MM_MODELVIEW, attribs.transform);
+static void _r_sprite_batch_compute_attribs(
+	const Sprite *restrict spr,
+	const SpriteParams *restrict params,
+	SpriteInstanceAttribs *out_attribs
+) {
+	SpriteInstanceAttribs attribs;
+	r_mat_current(MM_MODELVIEW, attribs.mv_transform);
 	r_mat_current(MM_TEXTURE, attribs.tex_transform);
 
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
 
 	if(params->pos.x || params->pos.y) {
-		glm_translate(attribs.transform, (vec3) { params->pos.x, params->pos.y });
+		glm_translate(attribs.mv_transform, (vec3) { params->pos.x, params->pos.y });
 	}
 
 	if(params->rotation.angle) {
 		float *rvec = (float*)params->rotation.vector;
 
 		if(rvec[0] == 0 && rvec[1] == 0 && rvec[2] == 0) {
-			glm_rotate(attribs.transform, params->rotation.angle, (vec3) { 0, 0, 1 });
+			glm_rotate(attribs.mv_transform, params->rotation.angle, (vec3) { 0, 0, 1 });
 		} else {
-			glm_rotate(attribs.transform, params->rotation.angle, rvec);
+			glm_rotate(attribs.mv_transform, params->rotation.angle, rvec);
 		}
 	}
 
-	glm_scale(attribs.transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
+	glm_scale(attribs.mv_transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
 
 	float ofs_x = sprite_padded_offset_x(spr);
 	float ofs_y = sprite_padded_offset_y(spr);
@@ -237,23 +229,26 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 			ofs_y *= -1;
 		}
 
-		glm_translate(attribs.transform, (vec3) { ofs_x / spr->w, ofs_y / spr->h });
+		glm_translate(attribs.mv_transform, (vec3) { ofs_x / spr->w, ofs_y / spr->h });
 	}
 
 	if(params->color == NULL) {
 		// XXX: should we use r_color_current here?
-		attribs.rgba[0] = attribs.rgba[1] = attribs.rgba[2] = attribs.rgba[3] = 1;
+		attribs.rgba = *RGBA(1, 1, 1, 1);
 	} else {
-		memcpy(attribs.rgba, params->color, sizeof(attribs.rgba));
+		attribs.rgba = *params->color;
 	}
 
 	uint tw, th;
 	r_texture_get_size(spr->tex, 0, &tw, &th);
+	float rtw = 1.0f / tw;
+	float rth = 1.0f / th;
 
-	attribs.texrect.x = spr->tex_area.x / tw;
-	attribs.texrect.y = spr->tex_area.y / th;
-	attribs.texrect.w = spr->tex_area.w / tw;
-	attribs.texrect.h = spr->tex_area.h / th;
+	glm_vec4_mul(
+		(vec4) { spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
+		(vec4) {             rtw,             rth,             rtw,             rth },
+		attribs.texrect_vec4
+	);
 
 	if(params->flip.x) {
 		attribs.texrect.x += attribs.texrect.w;
@@ -265,40 +260,55 @@ static void _r_sprite_batch_add(Sprite *spr, const SpriteParams *params, SDL_RWo
 		attribs.texrect.h *= -1;
 	}
 
-	attribs.sprite_size[0] = spr->w;
-	attribs.sprite_size[1] = spr->h;
+	attribs.sprite_size = spr->extent;
 
-	if(params->shader_params != NULL) {
-		memcpy(attribs.custom, params->shader_params, sizeof(attribs.custom));
+	if(params->shader_params == NULL) {
+		memset(&attribs.custom, 0, sizeof(attribs.custom));
 	} else {
-		memset(attribs.custom, 0, sizeof(attribs.custom));
+		attribs.custom = *params->shader_params;
 	}
 
-	SDL_RWwrite(stream, &attribs, SIZEOF_SPRITE_ATTRIBS, 1);
-
-#if SPRITE_BATCH_STATS
-	_r_sprite_batch.frame_stats.sprites++;
-#endif
+	*out_attribs = attribs;
 }
 
-void r_draw_sprite(const SpriteParams *params) {
-	assert(!(params->shader && params->shader_ptr));
-	assert(!(params->sprite && params->sprite_ptr));
+INLINE void _r_sprite_batch_process_params(
+	const SpriteParams *restrict sprite_params,
+	SpriteStateParams *restrict state_params,
+	Sprite *restrict *sprite
+) {
+	assert(!(sprite_params->shader && sprite_params->shader_ptr));
+	assert(!(sprite_params->sprite && sprite_params->sprite_ptr));
 
-	Sprite *spr = params->sprite_ptr;
-
-	if(spr == NULL) {
-		assert(params->sprite != NULL);
-		spr = get_sprite(params->sprite);
+	if((*sprite = sprite_params->sprite_ptr) == NULL) {
+		assert(sprite_params->sprite != NULL);
+		*sprite = get_sprite(sprite_params->sprite);
 	}
 
-	if(spr->tex != _r_sprite_batch.primary_texture) {
+	state_params->primary_texture = (*sprite)->tex;
+	memcpy(&state_params->aux_textures, &sprite_params->aux_textures, sizeof(sprite_params->aux_textures));
+	state_params->blend = sprite_params->blend;
+
+	if(state_params->blend == 0) {
+		state_params->blend = r_blend_current();
+	}
+
+	if((state_params->shader = sprite_params->shader_ptr) == NULL) {
+		if(sprite_params->shader != NULL) {
+			state_params->shader = r_shader_get(sprite_params->shader);
+		} else {
+			state_params->shader = r_shader_current();
+		}
+	}
+}
+
+void r_sprite_batch_prepare_state(const SpriteStateParams *stp) {
+	if(stp->primary_texture != _r_sprite_batch.primary_texture) {
 		r_flush_sprites();
-		_r_sprite_batch.primary_texture = spr->tex;
+		_r_sprite_batch.primary_texture = stp->primary_texture;
 	}
 
 	for(uint i = 0; i < R_NUM_SPRITE_AUX_TEXTURES; ++i) {
-		Texture *aux_tex = params->aux_textures[i];
+		Texture *aux_tex = stp->aux_textures[i];
 
 		if(aux_tex != NULL && aux_tex != _r_sprite_batch.aux_textures[i]) {
 			r_flush_sprites();
@@ -306,21 +316,16 @@ void r_draw_sprite(const SpriteParams *params) {
 		}
 	}
 
-	ShaderProgram *prog = params->shader_ptr;
-
-	if(prog == NULL) {
-		if(params->shader == NULL) {
-			prog = r_shader_current();
-		} else {
-			prog = r_shader_get(params->shader);
-		}
+	if(stp->shader != _r_sprite_batch.shader) {
+		r_flush_sprites();
+		_r_sprite_batch.shader = stp->shader;
 	}
 
-	assert(prog != NULL);
+	BlendMode blend = stp->blend;
 
-	if(prog != _r_sprite_batch.shader) {
+	if(blend != _r_sprite_batch.blend) {
 		r_flush_sprites();
-		_r_sprite_batch.shader = prog;
+		_r_sprite_batch.blend = blend;
 	}
 
 	Framebuffer *fb = r_framebuffer_current();
@@ -328,17 +333,6 @@ void r_draw_sprite(const SpriteParams *params) {
 	if(fb != _r_sprite_batch.framebuffer) {
 		r_flush_sprites();
 		_r_sprite_batch.framebuffer = fb;
-	}
-
-	BlendMode blend = params->blend;
-
-	if(blend == 0) {
-		blend = r_blend_current();
-	}
-
-	if(blend != _r_sprite_batch.blend) {
-		r_flush_sprites();
-		_r_sprite_batch.blend = blend;
 	}
 
 	r_capability_bits_t caps = r_capabilities_current();
@@ -366,7 +360,9 @@ void r_draw_sprite(const SpriteParams *params) {
 		r_flush_sprites();
 		glm_mat4_copy(*current_projection, _r_sprite_batch.projection);
 	}
+}
 
+static SDL_RWops *_r_sprite_batch_prepare_buffer(void) {
 	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
 	size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
 
@@ -380,8 +376,29 @@ void r_draw_sprite(const SpriteParams *params) {
 		r_flush_sprites();
 	}
 
+	return stream;
+}
+
+void r_sprite_batch_add_instance(const SpriteInstanceAttribs *attribs) {
+	SDL_RWops *stream = _r_sprite_batch_prepare_buffer();
+	SDL_RWwrite(stream, attribs, SIZEOF_SPRITE_ATTRIBS, 1);
+
 	_r_sprite_batch.num_pending++;
-	_r_sprite_batch_add(spr, params, stream);
+
+#if SPRITE_BATCH_STATS
+	_r_sprite_batch.frame_stats.sprites++;
+#endif
+}
+
+void r_draw_sprite(const SpriteParams *params) {
+	SpriteStateParams state_params;
+	SpriteInstanceAttribs attribs;
+	Sprite *spr;
+
+	_r_sprite_batch_process_params(params, &state_params, &spr);
+	r_sprite_batch_prepare_state(&state_params);
+	_r_sprite_batch_compute_attribs(spr, params, &attribs);
+	r_sprite_batch_add_instance(&attribs);
 }
 
 #if SPRITE_BATCH_STATS

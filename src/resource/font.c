@@ -13,13 +13,14 @@
 #include FT_STROKER_H
 
 #include "font.h"
-#include "util.h"
-#include "util/rectpack.h"
-#include "util/graphics.h"
 #include "config.h"
-#include "video.h"
 #include "events.h"
 #include "renderer/api.h"
+#include "util.h"
+#include "util/glm.h"
+#include "util/graphics.h"
+#include "util/rectpack.h"
+#include "video.h"
 
 static void init_fonts(void);
 static void post_init_fonts(void);
@@ -963,10 +964,8 @@ ShaderProgram* text_get_default_shader(void) {
 	return globals.default_shader;
 }
 
-// #define TEXT_DRAW_BBOX
-
 attr_returns_nonnull
-static Font* font_from_params(const TextParams *params) {
+static Font *font_from_params(const TextParams *params) {
 	Font *font = params->font_ptr;
 
 	if(font == NULL) {
@@ -981,9 +980,38 @@ static Font* font_from_params(const TextParams *params) {
 	return font;
 }
 
+static void set_batch_texture(SpriteStateParams *stp, Texture *tex, float *inverse_tex_w, float *inverse_tex_h) {
+	if(stp->primary_texture != tex) {
+		stp->primary_texture = tex;
+		r_sprite_batch_prepare_state(stp);
+
+		uint tw, th;
+		r_texture_get_size(tex, 0, &tw, &th);
+		*inverse_tex_w = 1.0f / tw;
+		*inverse_tex_h = 1.0f / th;
+	}
+}
+
 attr_nonnull(1, 2, 3)
 static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextParams *params) {
-	SpriteParams sp = { .sprite = NULL };
+	SpriteStateParams batch_state_params;
+
+	memcpy(batch_state_params.aux_textures, params->aux_textures, sizeof(batch_state_params.aux_textures));
+
+	if((batch_state_params.blend = params->blend) == 0) {
+		batch_state_params.blend = r_blend_current();
+	}
+
+	if((batch_state_params.shader = params->shader_ptr) == NULL) {
+		if(params->shader != NULL) {
+			batch_state_params.shader = r_shader_get(params->shader);
+		} else {
+			batch_state_params.shader = r_shader_current();
+		}
+	}
+
+	batch_state_params.primary_texture = NULL;
+
 	BBox bbox;
 	double x = params->pos.x;
 	double y = params->pos.y;
@@ -997,33 +1025,31 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	text_ucs4_bbox(font, ucs4text, 0, &bbox);
 
-	sp.shader_ptr = params->shader_ptr;
+	Color color;
 
-	if(sp.shader_ptr == NULL) {
-		// don't defer this to r_draw_sprite; we don't want to call r_shader_get more than necessary.
-
-		if(params->shader != NULL) {
-			sp.shader_ptr = r_shader_get(params->shader);
-		} else {
-			sp.shader_ptr = r_shader_current();
-		}
-	}
-
-	sp.color = params->color;
-	sp.blend = params->blend;
-	sp.shader_params = params->shader_params;
-	memcpy(sp.aux_textures, params->aux_textures, sizeof(sp.aux_textures));
-
-	if(sp.color == NULL) {
+	if(params->color == NULL) {
 		// XXX: sprite batch code defaults this to RGB(1, 1, 1)
-		sp.color = r_color_current();
+		color = *r_color_current();
+	} else {
+		color = *params->color;
 	}
 
-	MatrixMode mm_prev = r_mat_mode_current();
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_push();
-	r_mat_translate(x, y, 0);
-	r_mat_scale(iscale, iscale, 1);
+	ShaderCustomParams shader_params;
+
+	if(params->shader_params == NULL) {
+		memset(&shader_params, 0, sizeof(shader_params));
+	} else {
+		shader_params = *params->shader_params;
+	}
+
+	mat4 mat_texture;
+	mat4 mat_model;
+
+	r_mat_current(MM_TEXTURE, mat_texture);
+	r_mat_current(MM_MODELVIEW, mat_model);
+
+	glm_translate(mat_model, (vec3) { x, y } );
+	glm_scale(mat_model, (vec3) { iscale, iscale, 1 } );
 
 	double orig_x = x;
 	double orig_y = y;
@@ -1047,34 +1073,8 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	overlay.w = overlay.x.max - overlay.x.min;
 	overlay.h = overlay.y.max - overlay.y.min;
 
-	#ifdef TEXT_DRAW_BBOX
-	double bbox_w = bbox.x.max - bbox.x.min;
-	double bbox_h = bbox.y.max - bbox.y.min;
-	double bbox_x_mid = x + bbox.x.min + bbox_w * 0.5;
-	double bbox_y_mid = y + bbox.y.min + bbox_h * 0.5 - font->metrics.descent;
-
-	#if 0  /* enable to visualize the overlay projection instead */
-	bbox_w = overlay.w;
-	bbox_h = overlay.h;
-	bbox_x_mid = overlay.x.min + overlay.w * 0.5;
-	bbox_y_mid = overlay.y.min + overlay.h * 0.5;
-	#endif
-
-	r_state_push();
-	r_shader_standard_notex();
-	r_mat_push();
-	r_mat_translate(bbox_x_mid, bbox_y_mid, 0);
-	r_mat_scale(bbox_w, bbox_h, 0);
-	r_color(color_mul(RGBA(0.5, 0.5, 0.5, 0.5), sp.color));
-	r_draw_quad();
-	r_mat_pop();
-	r_state_pop();
-	#endif
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	r_mat_scale(1/overlay.w, 1/overlay.h, 1.0);
-	r_mat_translate(-overlay.x.min, overlay.y.min, 0);
+	glm_scale(mat_texture, (vec3) { 1/overlay.w, 1/overlay.h, 1.0 });
+	glm_translate(mat_texture, (vec3) { -overlay.x.min, overlay.y.min, 0 });
 
 	// FIXME: is there a better way?
 	float texmat_offset_sign;
@@ -1087,6 +1087,8 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	uint prev_glyph_idx = 0;
 	const uint32_t *tptr = ucs4text;
+
+	float inverse_tex_w, inverse_tex_h;
 
 	while(*tptr) {
 		uint32_t uchar = *tptr++;
@@ -1105,46 +1107,43 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 		x += apply_kerning(font, prev_glyph_idx, glyph);
 
-		sp.sprite_ptr = &glyph->sprite;
-
 		if(glyph->sprite.tex != NULL) {
-			sp.pos.x = x + glyph->metrics.bearing_x + sp.sprite_ptr->w * 0.5;
-			sp.pos.y = y - glyph->metrics.bearing_y + sp.sprite_ptr->h * 0.5 - font->metrics.descent;
+			Sprite *spr = &glyph->sprite;
+			set_batch_texture(&batch_state_params, spr->tex, &inverse_tex_w, &inverse_tex_h);
 
-			// HACK/FIXME: Glyphs have their sprite w/h unadjusted for scale.
-			// We have to temporarily fix that up here so that the shader gets resolution-independent dimensions.
-			float w_saved = sp.sprite_ptr->w;
-			float h_saved = sp.sprite_ptr->h;
-			sp.sprite_ptr->w /= font->metrics.scale;
-			sp.sprite_ptr->h /= font->metrics.scale;
-			sp.scale.both = font->metrics.scale;
+			SpriteInstanceAttribs attribs;
+			attribs.rgba = color;
+			attribs.custom = shader_params;
 
-			r_mat_push();
-			r_mat_translate(sp.pos.x, sp.pos.y * texmat_offset_sign + overlay.h, 0);
-			r_mat_scale(w_saved, h_saved, 1.0);
-			r_mat_translate(-0.5, -0.5, 0);
+			float g_x = x + glyph->metrics.bearing_x + spr->w * 0.5;
+			float g_y = y - glyph->metrics.bearing_y + spr->h * 0.5 - font->metrics.descent;
+
+			glm_translate_to(mat_texture, (vec3) { g_x - spr->w * 0.5, g_y * texmat_offset_sign + overlay.h - spr->h * 0.5 }, attribs.tex_transform );
+			glm_scale(attribs.tex_transform, (vec3) { spr->w, spr->h, 1.0 });
+
+			glm_translate_to(mat_model, (vec3) { g_x, g_y }, attribs.mv_transform);
+			glm_scale(attribs.mv_transform, (vec3) { spr->w, spr->h, 1.0 } );
+
+			glm_vec4_mul(
+				(vec4) { spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
+				(vec4) { inverse_tex_w, inverse_tex_h, inverse_tex_w, inverse_tex_h },
+				attribs.texrect_vec4
+			);
+
+			// NOTE: Glyphs have their sprite w/h unadjusted for scale.
+			attribs.sprite_size.w = spr->w * iscale;
+			attribs.sprite_size.h = spr->h * iscale;
 
 			if(params->glyph_callback.func != NULL) {
-				x += params->glyph_callback.func(font, uchar, &sp, params->glyph_callback.userdata);
+				params->glyph_callback.func(font, uchar, &attribs, params->glyph_callback.userdata);
 			}
 
-			r_draw_sprite(&sp);
-
-			// HACK/FIXME: See above.
-			sp.sprite_ptr->w = w_saved;
-			sp.sprite_ptr->h = h_saved;
-
-			r_mat_pop();
+			r_sprite_batch_add_instance(&attribs);
 		}
 
 		x += glyph->metrics.advance;
 		prev_glyph_idx = glyph->ft_index;
 	}
-
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_pop();
-	r_mat_mode(mm_prev);
 
 	return x * iscale;
 }
