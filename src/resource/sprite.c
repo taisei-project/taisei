@@ -207,6 +207,6 @@ void draw_sprite_ex(float x, float y, float scale_x, float scale_y, bool batched
 	} else {
 		begin_draw_sprite(x, y, scale_x, scale_y, spr);
 		r_draw_quad();
-		end_draw_texture();
+		end_draw_sprite();
 	}
 }
