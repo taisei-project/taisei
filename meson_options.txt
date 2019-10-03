@@ -183,3 +183,10 @@ option(
     choices : ['auto', 'true', 'false'],
     description : 'Use libcrypto from OpenSSL for better SHA implementations'
 )
+
+option(
+    'deprecation_warnings',
+    choices : ['default', 'error', 'no-error', 'ignore'],
+    type : 'combo',
+    description : 'Treatment of deprecation warnings'
+)
