@@ -131,9 +131,20 @@ static void cotask_finalize(CoTask *task) {
 
 	List *node;
 
+	if(task->supertask) {
+		TASK_DEBUG(
+			"Slave task %p detaching from master %p",
+			(void*)task, (void*)task->supertask
+		);
+
+		alist_unlink(&task->supertask->subtasks, &task->subtask_chain);
+		task->supertask = NULL;
+	}
+
 	while((node = alist_pop(&task->subtasks))) {
 		CoTask *sub = SUBTASK_NODE_TO_TASK(node);
 		assume(sub->supertask == task);
+		sub->supertask = NULL;
 		cotask_cancel(sub);
 
 		TASK_DEBUG(
