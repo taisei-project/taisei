@@ -9,10 +9,10 @@ charset = utf-8
 indent_style = tab
 # indent_size = 4
 
-[*.{py,html,js,nsi.in}]
+[*.{py,html,js,nsi.in,rst}]
 indent_style = space
 indent_size = 4
 
-[meson.build]
+[{meson.build,meson_options.txt}]
 indent_style = space
 indent_size = 4
