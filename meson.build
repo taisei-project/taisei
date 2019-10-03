@@ -90,6 +90,16 @@ taisei_c_args = [
     '-fno-trapping-math',
 ]
 
+deprecation_warnings = get_option('deprecation_warnings')
+
+if deprecation_warnings == 'error'
+    taisei_c_args += '-Werror=deprecated-declarations'
+elif deprecation_warnings == 'no-error'
+    taisei_c_args += '-Wno-error=deprecated-declarations'
+elif deprecation_warnings == 'ignore'
+    taisei_c_args += '-Wno-deprecated-declarations'
+endif
+
 if meson.version().version_compare('<0.50.0') and get_option('b_pch')
     # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
     taisei_c_args += ['-fpch-deps']
