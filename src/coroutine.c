@@ -172,7 +172,7 @@ bool cotask_cancel(CoTask *task) {
 }
 
 void *cotask_resume(CoTask *task, void *arg) {
-	if(task->bound_ent.ent && !ent_unbox(task->bound_ent)) {
+	if(task->bound_ent.ent && !ENT_UNBOX(task->bound_ent)) {
 		cotask_force_cancel(task);
 		return NULL;
 	}
@@ -259,7 +259,7 @@ EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 		UNREACHABLE;
 	}
 
-	task->bound_ent = ent_box(ent);
+	task->bound_ent = ENT_BOX(ent);
 	return ent;
 }
 
