@@ -340,6 +340,8 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 			r_uniform_vec2("blur_direction", 0, 1);
 			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 
+			fbpair_swap(fbpair);
+
 			r_framebuffer(lasers.saved_fb);
 			r_blend(BLEND_PREMUL_ALPHA);
 			r_shader_standard();
