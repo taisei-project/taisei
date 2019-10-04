@@ -1721,7 +1721,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		int n = global.diff;
 		int nfrog = n*60;
-		BoxedProjectile projs[nfrog];
+
+		DECLARE_ENT_ARRAY(Projectile, projs, nfrog);
 
 		WAIT(20);
 		for(int i = 0; i < nfrog/n; i++) {
@@ -1733,7 +1734,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 			for(int j = 0; j < n; j++) {
 				float speed = 1+(4+0.5*global.diff)*frand();
-				projs[i*n+j] = ENT_BOX(PROJECTILE(
+
+				ENT_ARRAY_ADD(&projs, PROJECTILE(
 					.proto = pp_ball,
 					.pos = boss->pos,
 					.color = RGB(r, g, b),
@@ -1743,11 +1745,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			YIELD;
 		}
 		WAIT(20);
-		for(int i = 0; i < nfrog; i++) {
-			Projectile *p = ENT_UNBOX(projs[i]);
-			if(p == NULL) {
-				continue;
-			}
+
+		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 			spawn_stain(p->pos, p->angle, 30);
 			spawn_stain(p->pos, p->angle, 30);
 			spawn_projectile_highlight_effect(p);
@@ -1758,7 +1757,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			if(frand() < 0.2) {
 				YIELD;
 			}
-		}
+		});
+
 		WAIT(60);
 		int dir = 2*(frand()>0.5)-1; // wait till they figure this out
 		boss->move = (MoveParams){ .velocity = dir*2.7+I, .retention = 0.99, .acceleration = -dir*0.017 };
@@ -1766,12 +1766,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		aniplayer_queue(&boss->ani,"(9)",0);
 		int d = max(0, global.diff - D_Normal);
 		WAIT(60-5*global.diff);
-		for(int i = 0; i < nfrog; i++) {
-			Projectile *p = ENT_UNBOX(projs[i]);
-			if(p == NULL) {
-				continue;
-			}
 
+		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 			p->color = *RGB(0.9, 0.9, 0.9);
 			p->move.retention = 1+0.002*global.diff*frand();
 			p->move.velocity = 2*cdir(rand_angle());
@@ -1781,7 +1777,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			if(frand() < 0.4) {
 				YIELD;
 			}
-		}
+		});
 
 		for(int i = 0; i < 30+10*d; i++) {
 			play_loop("shot1_loop");

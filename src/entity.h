@@ -13,6 +13,7 @@
 
 #include "objectpool.h"
 #include "util/geometry.h"
+#include "util/macrohax.h"
 
 #define LAYER_LOW_BITS 16
 #define LAYER_LOW_MASK ((1 << LAYER_LOW_BITS) - 1)
@@ -158,8 +159,8 @@ struct BoxedEntity {
 	uint_fast32_t spawn_id;
 };
 
-BoxedEntity ent_box(EntityInterface *ent);
-EntityInterface *ent_unbox(BoxedEntity box);
+BoxedEntity _ent_box_Entity(EntityInterface *ent);
+EntityInterface *_ent_unbox_Entity(BoxedEntity box);
 
 #define ENT_TYPE(typename, id) \
 	typedef union Boxed##typename { \
@@ -172,28 +173,105 @@ EntityInterface *ent_unbox(BoxedEntity box);
 	struct typename; \
 	Boxed##typename _ent_box_##typename(struct typename *ent); \
 	struct typename *_ent_unbox_##typename(Boxed##typename box); \
+	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; }
 
 ENT_TYPES
 #undef ENT_TYPE
 
-#define ENT_BOX(ent) (_Generic((ent), \
-	Projectile*: _ent_box_Projectile, \
-	Laser*: _ent_box_Laser, \
-	Enemy*: _ent_box_Enemy, \
-	Boss*: _ent_box_Boss, \
-	Player*: _ent_box_Player, \
-	Item*: _ent_box_Item, \
-	EntityInterface*: ent_box \
-)(ent))
+INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { return box; }
 
-#define ENT_UNBOX(box) (_Generic((box), \
-	BoxedProjectile: _ent_unbox_Projectile, \
-	BoxedLaser: _ent_unbox_Laser, \
-	BoxedEnemy: _ent_unbox_Enemy, \
-	BoxedBoss: _ent_unbox_Boss, \
-	BoxedPlayer: _ent_unbox_Player, \
-	BoxedItem: _ent_unbox_Item, \
-	BoxedEntity: ent_unbox \
-)(box))
+#define ENT_UNBOXED_DISPATCH_TABLE(func_prefix) \
+	struct Projectile*: func_prefix##Projectile, \
+	struct Laser*: func_prefix##Laser, \
+	struct Enemy*: func_prefix##Enemy, \
+	struct Boss*: func_prefix##Boss, \
+	struct Player*: func_prefix##Player, \
+	struct Item*: func_prefix##Item, \
+	EntityInterface*: func_prefix##Entity \
+
+#define ENT_BOXED_DISPATCH_TABLE(func_prefix) \
+	BoxedProjectile: func_prefix##Projectile, \
+	BoxedLaser: func_prefix##Laser, \
+	BoxedEnemy: func_prefix##Enemy, \
+	BoxedBoss: func_prefix##Boss, \
+	BoxedPlayer: func_prefix##Player, \
+	BoxedItem: func_prefix##Item, \
+	BoxedEntity: func_prefix##Entity \
+
+#define ENT_UNBOXED_DISPATCH_FUNCTION(func_prefix, ...) \
+	_Generic((MACROHAX_FIRST(__VA_ARGS__)), \
+		ENT_UNBOXED_DISPATCH_TABLE(func_prefix) \
+	)(MACROHAX_EXPAND(__VA_ARGS__))
+
+#define ENT_BOXED_DISPATCH_FUNCTION(func_prefix, ...) \
+	_Generic((MACROHAX_FIRST(__VA_ARGS__)), \
+		ENT_BOXED_DISPATCH_TABLE(func_prefix) \
+	)(MACROHAX_EXPAND(__VA_ARGS__))
+
+#define ENT_MIXED_DISPATCH_FUNCTION(func_prefix_unboxed, func_prefix_boxed, ...) \
+	_Generic((MACROHAX_FIRST(__VA_ARGS__)), \
+		ENT_UNBOXED_DISPATCH_TABLE(func_prefix_unboxed), \
+		ENT_BOXED_DISPATCH_TABLE(func_prefix_boxed) \
+	)(MACROHAX_EXPAND(__VA_ARGS__))
+
+#define ENT_BOX(ent) ENT_UNBOXED_DISPATCH_FUNCTION(_ent_box_, ent)
+#define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
+#define ENT_BOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_box_, _ent_boxed_passthrough_helper_, ent)
+
+typedef struct BoxedEntityArray {
+	BoxedEntity *array;
+	uint capacity;
+	uint size;
+} BoxedEntityArray;
+
+#define ENT_TYPE(typename, id) \
+	typedef union Boxed##typename##Array { \
+		BoxedEntityArray as_generic_UNSAFE; \
+		struct { \
+			Boxed##typename *array; \
+			uint capacity; \
+			uint size; \
+		}; \
+	} Boxed##typename##Array; \
+	INLINE void _ent_array_add_##typename(Boxed##typename box, Boxed##typename##Array *a) { \
+		assert(a->size < a->capacity); \
+		a->array[a->size++] = box; \
+	}
+
+ENT_TYPES
+#undef ENT_TYPE
+
+INLINE void _ent_array_add_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
+	assert(a->size < a->capacity);
+	a->array[a->size++] = box;
+}
+
+INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray *a) {
+	_ent_array_add_BoxedEntity(ENT_BOX(ent), a);
+}
+
+#define ENT_ARRAY_ADD(_array, _ent) ENT_BOXED_DISPATCH_FUNCTION(_ent_array_add_, ENT_BOX_OR_PASSTHROUGH(_ent), _array)
+#define ENT_ARRAY_GET_BOXED(_array, _index) ((_array)->array[_index])
+#define ENT_ARRAY_GET(_array, _index) ENT_UNBOX(ENT_ARRAY_GET_BOXED(_array, _index))
+
+#define DECLARE_ENT_ARRAY(_ent_type, _name, _capacity) \
+	Boxed##_ent_type##Array _name; \
+	_name.size = 0; \
+	_name.capacity = _capacity; \
+	Boxed##_ent_type _ent_array_data##_name[_name.capacity]; \
+	_name.array = _ent_array_data##_name
+
+#define ENT_ARRAY(_typename, _capacity) \
+	((Boxed##_typename##Array) { .array = (Boxed##_typename[_capacity]) { 0 }, .capacity = (_capacity), .size = 0 })
+
+#define ENT_ARRAY_FOREACH(_array, _var, _block) do { \
+	for(uint MACROHAX_ADDLINENUM(_ent_array_iterator) = 0; MACROHAX_ADDLINENUM(_ent_array_iterator) < (_array)->size; ++MACROHAX_ADDLINENUM(_ent_array_iterator)) { \
+		void *MACROHAX_ADDLINENUM(_ent_array_temp) = ENT_ARRAY_GET((_array), MACROHAX_ADDLINENUM(_ent_array_iterator)); \
+		if(MACROHAX_ADDLINENUM(_ent_array_temp) != NULL) { \
+			_var = MACROHAX_ADDLINENUM(_ent_array_temp); \
+			_block \
+		} \
+	} \
+} while(0)
 
 #endif // IGUARD_entity_h
