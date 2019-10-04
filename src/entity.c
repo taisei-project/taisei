@@ -244,14 +244,14 @@ void ent_unhook_post_draw(EntityDrawHookCallback callback) {
 	remove_hook(&entities.hooks.post_draw, callback);
 }
 
-BoxedEntity ent_box(EntityInterface *ent) {
+BoxedEntity _ent_box_Entity(EntityInterface *ent) {
 	BoxedEntity h;
 	h.ent = (uintptr_t)ent;
 	h.spawn_id = ent->spawn_id;
 	return h;
 }
 
-EntityInterface *ent_unbox(BoxedEntity box) {
+EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
 	EntityInterface *e = (EntityInterface*)box.ent;
 
 	if(e->spawn_id == box.spawn_id) {
@@ -263,10 +263,10 @@ EntityInterface *ent_unbox(BoxedEntity box) {
 
 #define ENT_TYPE(typename, id) \
 	Boxed##typename _ent_box_##typename(struct typename *ent) { \
-		return (Boxed##typename) { .as_generic = ent_box(&ent->entity_interface) };\
+		return (Boxed##typename) { .as_generic = _ent_box_Entity(&ent->entity_interface) };\
 	} \
 	struct typename *_ent_unbox_##typename(Boxed##typename box) { \
-		EntityInterface *e = ent_unbox(box.as_generic); \
+		EntityInterface *e = _ent_unbox_Entity(box.as_generic); \
 		return e ? ENT_CAST(e, typename) : NULL; \
 	}
 
