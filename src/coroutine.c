@@ -106,6 +106,7 @@ void cotask_free(CoTask *task) {
 	task->supertask = NULL;
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
 	memset(&task->finalizer, 0, sizeof(task->finalizer));
+	memset(&task->subtasks, 0, sizeof(task->subtasks));
 	alist_push(&task_pool, task);
 
 	--num_tasks_in_use;
@@ -373,6 +374,8 @@ uint cosched_run_tasks(CoSched *sched) {
 }
 
 void cosched_finish(CoSched *sched) {
+	// FIXME: should we ensure that finalizers get called even here?
+
 	for(CoTask *t = sched->pending_tasks.first, *next; t; t = next) {
 		next = t->next;
 		cotask_free(t);
