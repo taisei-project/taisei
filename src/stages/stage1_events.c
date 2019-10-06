@@ -1623,89 +1623,124 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	WAIT_EVENT(&ARGS.attack->events.started);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.035);
+	boss->move = move_towards(VIEWPORT_W/2.0 + 200.0*I, 0.035);
 }
 
+#define SNOWFLAKE_ARMS 6
 
+static int snowflake_bullet_limit(int size) {
+	// >= number of bullets spawned per snowflake of this size
+	return SNOWFLAKE_ARMS * 4 * size;
+}
 
-TASK(cirno_snowflake_proj_twist, { BoxedProjectile p; }) {
-	Projectile *p = TASK_BIND(ARGS.p);
+TASK(make_snowflake, { complex pos; MoveParams move; int size; double rot_angle; BoxedProjectileArray *array; }) {
+	const double spacing = 12;
+	const int split = 3;
+	int t = 0;
 
-	play_sound_ex("redirect", 30, false);
-	play_sound_ex("shot_special1", 30, false);
-	color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
-	spawn_projectile_highlight_effect(p);
-	p->move.velocity = -cabs(p->move.velocity)*cdir(p->angle);
+	for(int j = 0; j < ARGS.size; j++) {
+		play_loop("shot1_loop");
+
+		for(int i = 0; i < SNOWFLAKE_ARMS; i++) {
+			double ang = M_TAU / SNOWFLAKE_ARMS * i + ARGS.rot_angle;
+			complex phase = cdir(ang);
+			complex pos0 = ARGS.pos + spacing * j * phase;
+
+			Projectile *p;
+
+			for(int side = -1; side <= 1; side += 2) {
+				p = PROJECTILE(
+					.proto = pp_crystal,
+					.pos = pos0 + side * 5 * I * phase,
+					.color = RGB(0.0 + 0.05 * j, 0.1 + 0.1 * j, 0.9),
+					.move = ARGS.move,
+					.angle = ang + side * M_PI / 4,
+					.max_viewport_dist = 128,
+					.flags = PFLAG_MANUALANGLE,
+				);
+				move_update_multiple(t, &p->pos, &p->move);
+				p->pos0 = p->prevpos = p->pos;
+				ENT_ARRAY_ADD(ARGS.array, p);
+			}
+
+			WAIT(1);
+			++t;
+
+			if(j > split) {
+				complex pos1 = ARGS.pos + spacing * split * phase;
+
+				for(int side = -1; side <= 1; side += 2) {
+					complex phase2 = cdir(M_PI / 4 * side) * phase;
+					complex pos2 = pos1 + (spacing * (j - split)) * phase2;
+
+					p = PROJECTILE(
+						.proto = pp_crystal,
+						.pos = pos2,
+						.color = RGB(0.0, 0.3 * ARGS.size / 5, 1),
+						.move = ARGS.move,
+						.angle = ang + side * M_PI / 4,
+						.max_viewport_dist = 128,
+						.flags = PFLAG_MANUALANGLE,
+					);
+					move_update_multiple(t, &p->pos, &p->move);
+					p->pos0 = p->prevpos = p->pos;
+					ENT_ARRAY_ADD(ARGS.array, p);
+				}
+
+				WAIT(1);
+				++t;
+			}
+		}
+	}
 }
 
 TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	Attack *a = ARGS.attack;
 
+	boss->move = move_towards(CMPLX(VIEWPORT_W/2, 200), 0.02);
+
 	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
 	WAIT_EVENT(&a->events.started);
 
-	int interval = 70 - 8 * global.diff;
+	boss->move = move_stop(0.8);
 
-	for(int run = 0;; run++) {
-		complex vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
-		int c = 6;
-		double dr = 15;
-		int size = 5+3*sin(337*run);
+	int flake_spawn_interval = difficulty_value(11, 10, 9, 8);
+	int flakes_per_burst = difficulty_value(3, 5, 7, 9);
+	double launch_speed = difficulty_value(5, 6.25, 6.875, 8.75);
+	int size_base = 5;
+	int size_oscillation = 3;
+	int size_max = size_base + size_oscillation;
+	int burst_interval = difficulty_value(120, 80, 80, 80);
 
-		int start_time = global.frames;
+	int flakes_limit = flakes_per_burst * snowflake_bullet_limit(size_max);
+	DECLARE_ENT_ARRAY(Projectile, snowflake_projs, flakes_limit);
 
-		for(int j = 0; j < size; j++) {
-			WAIT(3);
-			play_loop("shot1_loop");
-			for(int i = 0; i < c; i++) {
-				double ang = 2*M_PI/c*i+run*515;
-				complex phase = cdir(ang);
-				int t = global.frames-start_time;
-				complex pos = boss->pos+vel*t+dr*j*phase;
+	for(int burst = 0;; ++burst) {
+		double angle_ofs = carg(global.plr.pos - boss->pos);
+		int size = size_base + size_oscillation * sin(burst * 2.21);
 
-				int split_time = 200 - 20*global.diff - j*3;
-				Projectile *p;
-
-				for(int side = -1; side <= 1; side += 2) {
-					p = PROJECTILE(
-						.proto = pp_crystal,
-						.pos = pos+side*6*I*phase,
-						.color = RGB(0.0, 0.1 + 0.1 * size / 5, 0.8),
-						.move = move_linear(vel),
-						.angle = ang+side*M_PI/4,
-						.max_viewport_dist = 64,
-						.flags = PFLAG_MANUALANGLE,
-					);
-					INVOKE_TASK_DELAYED(split_time, cirno_snowflake_proj_twist, ENT_BOX(p));
-				}
-
-				int split = 3;
-
-				if(j > split) {
-					complex pos0 = boss->pos+vel*t+dr*split*phase;
-
-					for(int side = -1; side <= 1; side+=2) {
-						complex phase2 = cdir(M_PI/4*side)*phase;
-						complex pos2 = pos0+(dr*(j-split))*phase2;
-
-						p = PROJECTILE(
-							.proto = pp_crystal,
-							.pos = pos2,
-							.color = RGB(0.0,0.3*size/5,1),
-							.move = move_linear(vel),
-							.angle = ang+M_PI/4*side,
-							.max_viewport_dist = 64,
-							.flags = PFLAG_MANUALANGLE,
-						);
-						INVOKE_TASK_DELAYED(split_time, cirno_snowflake_proj_twist, ENT_BOX(p));
-					}
-				}
-			}
-
+		for(int flake = 0; flake < flakes_per_burst; ++flake) {
+			double angle = circle_angle(flake + flakes_per_burst / 2, flakes_per_burst) + angle_ofs;
+			MoveParams move = move_asymptotic(launch_speed * cdir(angle), 0, 0.95);
+			INVOKE_SUBTASK(make_snowflake, boss->pos, move, size, angle, &snowflake_projs);
+			WAIT(flake_spawn_interval);
 		}
 
-		WAIT(interval-3*size);
+		WAIT(65 - 4 * (size_base + size_oscillation - size));
+
+		play_sound("redirect");
+		// play_sound("shot_special1");
+
+		ENT_ARRAY_FOREACH(&snowflake_projs, Projectile *p, {
+			spawn_projectile_highlight_effect(p)->shader_params.vector[0] = 0.75;
+			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
+			p->move.velocity = 2 * cdir(p->angle);
+			p->move.acceleration = -cdir(p->angle) * difficulty_value(0.1, 0.15, 0.2, 0.2);
+		});
+
+		ENT_ARRAY_CLEAR(&snowflake_projs);
+		WAIT(burst_interval);
 	}
 }
 
