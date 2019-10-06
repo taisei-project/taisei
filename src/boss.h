@@ -211,4 +211,8 @@ void boss_preload(void);
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
 
+Boss *_init_boss_attack(const BossAttackTaskArgs *restrict args);
+#define INIT_BOSS_ATTACK() _init_boss_attack(&ARGS)
+#define BEGIN_BOSS_ATTACK() WAIT_EVENT_OR_DIE(&ARGS.attack->events.started)
+
 #endif // IGUARD_boss_h
