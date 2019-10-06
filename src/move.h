@@ -23,6 +23,7 @@ typedef struct MoveParams {
 } MoveParams;
 
 complex move_update(complex *restrict pos, MoveParams *restrict params);
+complex move_update_multiple(uint times, complex *restrict pos, MoveParams *restrict params);
 
 INLINE MoveParams move_linear(complex vel) {
 	return (MoveParams) { vel, 0, 1 };
@@ -48,6 +49,10 @@ INLINE MoveParams move_towards(complex target, complex attraction) {
 		.attraction = attraction,
 		.attraction_point = target,
 	};
+}
+
+INLINE MoveParams move_stop(complex retention) {
+	return (MoveParams) { .retention = retention };
 }
 
 #endif // IGUARD_move_h
