@@ -32,102 +32,6 @@ static Dialog *stage1_dialog_post_boss(void) {
 	return d;
 }
 
-static void cirno_intro(Boss *c, int time) {
-	if(time < 0)
-		return;
-
-	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.035);
-}
-
-static int cirno_snowflake_proj(Projectile *p, int time) {
-	if(time < 0)
-		return ACTION_ACK;
-
-	int split_time = 200 - 20*global.diff - creal(p->args[1]) * 3;
-
-	if(time < split_time) {
-		p->pos += p->args[0];
-	} else {
-		if(time == split_time) {
-			play_sound_ex("redirect", 30, false);
-			play_sound_ex("shot_special1", 30, false);
-			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
-			spawn_projectile_highlight_effect(p);
-		}
-
-		p->pos -= cabs(p->args[0]) * cexp(I*p->angle);
-	}
-
-	return 1;
-}
-
-static void cirno_icy(Boss *b, int time) {
-	int interval = 70 - 8 * global.diff;
-	int t = time % interval;
-	int run = time / interval;
-	int size = 5+3*sin(337*run);
-
-	TIMER(&t);
-
-	if(time < 0) {
-		return;
-	}
-
-	cmplx vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
-	int c = 6;
-	double dr = 15;
-
-	FROM_TO_SND("shot1_loop", 0, 3*size, 3) {
-		for(int i = 0; i < c; i++) {
-			double ang = 2*M_PI/c*i+run*515;
-			cmplx phase = cexp(I*ang);
-			cmplx pos = b->pos+vel*t+dr*_i*phase;
-
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = pos+6*I*phase,
-				.color = RGB(0.0, 0.1 + 0.1 * size / 5, 0.8),
-				.rule = cirno_snowflake_proj,
-				.move = move_linear(vel),
-				.angle = ang+M_PI/4,
-				.max_viewport_dist = 64,
-			);
-
-
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = pos-6*I*phase,
-				.color = RGB(0.0,0.1+0.1*size/5,0.8),
-				.rule = cirno_snowflake_proj,
-				.args = { vel, _i },
-				.angle = ang-M_PI/4,
-				.max_viewport_dist = 64,
-			);
-
-			int split = 3;
-
-			if(_i > split) {
-				cmplx pos0 = b->pos+vel*t+dr*split*phase;
-
-				for(int j = -1; j <= 1; j+=2) {
-					cmplx phase2 = cexp(I*M_PI/4*j)*phase;
-					cmplx pos2 = pos0+(dr*(_i-split))*phase2;
-
-					PROJECTILE(
-						.proto = pp_crystal,
-						.pos = pos2,
-						.color = RGB(0.0,0.3*size/5,1),
-						.rule = cirno_snowflake_proj,
-						.args = { vel, _i },
-						.angle = ang+M_PI/4*j,
-						.max_viewport_dist = 64,
-					);
-				}
-			}
-		}
-	}
-}
-
 static Projectile* spawn_stain(cmplx pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
@@ -138,110 +42,6 @@ static Projectile* spawn_stain(cmplx pos, float angle, int to) {
 		.color = RGBA(0.4, 0.4, 0.4, 0),
 		.args = {0, 0, 0.8*I}
 	);
-}
-
-static int cirno_pfreeze_frogs(Projectile *p, int t) {
-	if(t < 0)
-		return ACTION_ACK;
-
-	Boss *parent = global.boss;
-
-	if(parent == NULL)
-		return ACTION_DESTROY;
-
-	int boss_t = (global.frames - parent->current->starttime) % 320;
-
-	if(boss_t < 110)
-		linear(p, t);
-	else if(boss_t == 110) {
-		p->color = *RGB(0.7, 0.7, 0.7);
-		spawn_stain(p->pos, p->angle, 30);
-		spawn_stain(p->pos, p->angle, 30);
-		spawn_projectile_highlight_effect(p);
-		play_sound("shot_special1");
-	}
-
-	if(t == 240) {
-		p->prevpos = p->pos;
-		p->pos0 = p->pos;
-		p->args[0] = (1.8+0.2*global.diff)*cexp(I*2*M_PI*frand());
-		spawn_stain(p->pos, p->angle, 30);
-		spawn_projectile_highlight_effect(p);
-		play_sound_ex("shot2", 0, false);
-	}
-
-	if(t > 240)
-		linear(p, t-240);
-
-	return 1;
-}
-
-void cirno_perfect_freeze(Boss *c, int time) {
-	int t = time % 320;
-	TIMER(&t);
-
-	if(time < 0)
-		return;
-
-	FROM_TO(-40, 0, 1)
-		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.04);
-
-	FROM_TO_SND("shot1_loop",20,80,1) {
-		float r = frand();
-		float g = frand();
-		float b = frand();
-
-		int i;
-		int n = global.diff;
-		for(i = 0; i < n; i++) {
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = c->pos,
-				.color = RGB(r, g, b),
-				.rule = cirno_pfreeze_frogs,
-				.args = { 4*cexp(I*tsrand()) },
-			);
-		}
-	}
-
-	GO_AT(c, 160, 190, 2 + 1.0*I);
-
-	int d = max(0, global.diff - D_Normal);
-	AT(140-50*d)
-		aniplayer_queue(&c->ani,"(9)",0);
-	AT(220+30*d)
-		aniplayer_queue(&c->ani,"main",0);
-	FROM_TO_SND("shot1_loop", 160 - 50*d, 220 + 30*d, 6-global.diff/2) {
-		float r1, r2;
-
-		if(global.diff > D_Normal) {
-			r1 = sin(time/M_PI*5.3) * cos(2*time/M_PI*5.3);
-			r2 = cos(time/M_PI*5.3) * sin(2*time/M_PI*5.3);
-		} else {
-			r1 = nfrand();
-			r2 = nfrand();
-		}
-
-		PROJECTILE(
-			.proto = pp_rice,
-			.pos = c->pos + 60,
-			.color = RGB(0.3, 0.4, 0.9),
-			.rule = asymptotic,
-			.args = { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r1)), 2.5 }
-		);
-		PROJECTILE(
-			.proto = pp_rice,
-			.pos = c->pos - 60,
-			.color = RGB(0.3, 0.4, 0.9),
-			.rule = asymptotic,
-			.args = { (2.+0.2*global.diff)*cexp(I*(carg(global.plr.pos - c->pos) + 0.5*r2)), 2.5 }
-		);
-	}
-
-	GO_AT(c, 190, 220, -2);
-
-	FROM_TO(280, 320, 1)
-		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 }
 
 void cirno_pfreeze_bg(Boss *c, int time) {
@@ -256,29 +56,11 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 	r_color4(1.0, 1.0, 1.0, 1.0);
 }
 
-static void cirno_mid_flee(Boss *c, int time) {
-	if(time >= 0) {
-		GO_TO(c, -250 + 30 * I, 0.02)
-	}
-}
-
 Boss* stage1_spawn_cirno(cmplx pos) {
 	Boss *cirno = create_boss("Cirno", "cirno", pos);
 	boss_set_portrait(cirno, get_sprite("dialog/cirno"), get_sprite("dialog/cirno_face_normal"));
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
 	cirno->glowcolor = *RGB(0.2, 0.35, 0.5);
-	return cirno;
-}
-
-static Boss* create_cirno_mid(void) {
-	Boss *cirno = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
-
-	boss_add_attack(cirno, AT_Move, "Introduction", 2, 0, cirno_intro, NULL);
-	boss_add_attack(cirno, AT_Normal, "Icy Storm", 20, 24000, cirno_icy, NULL);
-	boss_add_attack_from_info(cirno, &stage1_spells.mid.perfect_freeze, false);
-	boss_add_attack(cirno, AT_Move, "Flee", 5, 0, cirno_mid_flee, NULL);
-
-	boss_start_attack(cirno, cirno->attacks);
 	return cirno;
 }
 
@@ -867,18 +649,6 @@ void cirno_benchmark(Boss* b, int t) {
 	}
 }
 
-attr_unused
-static void cirno_superhardspellcard(Boss *c, int t) {
-	// HOWTO: create a super hard spellcard in a few seconds
-
-	cirno_iceplosion0(c, t);
-	cirno_iceplosion1(c, t);
-	cirno_crystal_rain(c, t);
-	cirno_icicle_fall(c, t);
-	cirno_icy(c, t);
-	cirno_perfect_freeze(c, t);
-}
-
 static Boss *create_cirno(void) {
 	Boss* cirno = stage1_spawn_cirno(-230 + 100.0*I);
 
@@ -896,50 +666,6 @@ static Boss *create_cirno(void) {
 
 	boss_start_attack(cirno, cirno->attacks);
 	return cirno;
-}
-
-static int stage1_burst(Enemy *e, int time) {
-	TIMER(&time);
-
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 1);
-		return ACTION_ACK;
-	}
-
-	FROM_TO(0, 60, 1) {
-		// e->pos += 2.0*I;
-		GO_TO(e, e->pos0 + 120*I, 0.03);
-	}
-
-	AT(60) {
-		int i = 0;
-		int n = 1.5*global.diff-1;
-
-		play_sound("shot1");
-		for(i = -n; i <= n; i++) {
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = e->pos,
-				.color = RGB(0.2, 0.3, 0.5),
-				.rule = asymptotic,
-				.args = {
-					(2+0.1*global.diff)*cexp(I*(carg(global.plr.pos - e->pos) + 0.2*i)),
-					5
-				}
-			);
-		}
-
-		e->moving = true;
-		e->dir = creal(e->args[0]) < 0;
-
-		e->pos0 = e->pos;
-	}
-
-	FROM_TO(70, 900, 1) {
-		e->pos = e->pos0 + (0.04*e->args[0])*_i*_i;
-	}
-
-	return 1;
 }
 
 static int stage1_circletoss(Enemy *e, int time) {
@@ -989,32 +715,6 @@ static int stage1_circletoss(Enemy *e, int time) {
 	return 1;
 }
 
-static int stage1_sinepass(Enemy *e, int time) {
-	TIMER(&time);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1);
-		return 1;
-	}
-
-	e->args[1] -= cimag(e->pos-e->pos0)*0.03*I;
-	e->pos += e->args[1]*0.4 + e->args[0];
-
-	if(frand() > 0.997-0.005*(global.diff-1)) {
-		play_sound("shot1");
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = e->pos,
-			.color = RGB(0.8,0.8,0.4),
-			.rule = linear,
-			.args = {
-				(1+0.2*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
-			}
-		);
-	}
-
-	return 1;
-}
-
 static int stage1_drop(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
@@ -1040,35 +740,6 @@ static int stage1_drop(Enemy *e, int t) {
 			);
 		}
 	}
-
-	return 1;
-}
-
-static int stage1_circle(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2);
-		return 1;
-	}
-
-	FROM_TO(0, 150, 1)
-		e->pos += (e->args[0] - e->pos)*0.02;
-
-	FROM_TO_INT_SND("shot1_loop",150, 550, 40, 40, 2+2*(global.diff<D_Hard)) {
-		PROJECTILE(
-			.proto = pp_rice,
-			.pos = e->pos,
-			.color = RGB(0.6, 0.2, 0.7),
-			.rule = asymptotic,
-			.args = {
-				(1.7+0.2*global.diff)*cexp(I*M_PI/10*_ni),
-				_ni/2.0
-			}
-		);
-	}
-
-	FROM_TO(560,1000,1)
-		e->pos += e->args[1];
 
 	return 1;
 }
@@ -1866,24 +1537,6 @@ TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
-	/*
-	for(;;) {
-		complex pos, tpos;
-
-		if(frand() > 0.5) {
-			pos = VIEWPORT_W - 64;
-		} else {
-			pos = 64;
-		}
-
-		tpos = rand_range(64, VIEWPORT_W - 64) + 200 * I;
-
-		INVOKE_TASK(circle_fairy, pos, tpos);
-		WAIT(240);
-	}
-	return;
-	*/
-
 	INVOKE_TASK_DELAYED(100, burst_fairies_1);
 	INVOKE_TASK_DELAYED(240, burst_fairies_2);
 	INVOKE_TASK_DELAYED(440, sinepass_swirls, 180, 100, 1);
@@ -1907,96 +1560,6 @@ void stage1_events(void) {
 	}
 
 	return;
-
-#ifdef BULLET_TEST
-	if(!global.projs) {
-		PROJECTILE(
-			.proto = pp_rice,
-			.pos = (VIEWPORT_W + VIEWPORT_H * I) * 0.5,
-			.color = hsl(0.5, 1.0, 0.5),
-			.rule = proj_rotate,
-		);
-	}
-
-	if(!(global.frames % 36)) {
-		ProjPrototype *projs[] = {
-			pp_thickrice,
-			pp_rice,
-			// pp_ball,
-			// pp_plainball,
-			// pp_bigball,
-			// pp_soul,
-			pp_wave,
-			pp_card,
-			pp_bigball,
-			pp_plainball,
-			pp_ball,
-		};
-		int numprojs = sizeof(projs)/sizeof(*projs);
-
-		for(int i = 0; i < numprojs; ++i) {
-			PROJECTILE(
-				.proto = projs[i],
-				.pos = ((0.5 + i) * VIEWPORT_W/numprojs + 0 * I),
-				.color = hsl(0.5, 1.0, 0.5),
-				.rule = linear,
-				.args = { 1*I },
-			);
-		}
-
-	}
-
-	return;
-#endif
-
-	// opening. projectile bursts
-	FROM_TO(100, 160, 25) {
-		create_enemy1c(VIEWPORT_W/2 + 70, 700, Fairy, stage1_burst, 1 + 0.6*I);
-		create_enemy1c(VIEWPORT_W/2 - 70, 700, Fairy, stage1_burst, -1 + 0.6*I);
-	}
-
-	// more bursts. fairies move / \ like
-	FROM_TO(240, 300, 30) {
-		create_enemy1c(70 + _i*40, 700, Fairy, stage1_burst, -1 + 0.6*I);
-		create_enemy1c(VIEWPORT_W - (70 + _i*40), 700, Fairy, stage1_burst, 1 + 0.6*I);
-	}
-
-	// big fairies, circle + projectile toss
-	FROM_TO(400, 460, 50)
-		create_enemy2c(VIEWPORT_W*_i + VIEWPORT_H/3*I, 1500, BigFairy, stage1_circletoss, 2-4*_i-0.3*I, 1-2*_i);
-
-	// swirl, sine pass
-	FROM_TO(380, 1000, 20) {
-		tsrand_fill(2);
-		create_enemy2c(VIEWPORT_W*(_i&1) + afrand(0)*100.0*I + 70.0*I, 100, Swirl, stage1_sinepass, 3.5*(1-2*(_i&1)), afrand(1)*7.0*I);
-	}
-
-	// swirl, drops
-	FROM_TO(1100, 1600, 20)
-		create_enemy2c(VIEWPORT_W/3, 100, Swirl, stage1_drop, 4.0*I, 0.06);
-
-	FROM_TO(1500, 2000, 20)
-		create_enemy2c(VIEWPORT_W+200.0*I, 100, Swirl, stage1_drop, -2, -0.04-0.03*I);
-
-	// bursts
-	FROM_TO(1250, 1800, 60) {
-		create_enemy1c(VIEWPORT_W/2 - 200 * sin(1.17*global.frames), 500, Fairy, stage1_burst, nfrand());
-	}
-
-	// circle - multi burst combo
-	FROM_TO(1700, 2300, 300) {
-		tsrand_fill(3);
-		create_enemy2c(VIEWPORT_W/2, 1400, BigFairy, stage1_circle, VIEWPORT_W/4 + VIEWPORT_W/2*afrand(0)+200.0*I, 3-6*(afrand(1)>0.5)+afrand(2)*2.0*I);
-	}
-
-	FROM_TO(2000, 2500, 200) {
-		int t = global.diff + 1;
-		for(int i = 0; i < t; i++)
-			create_enemy1c(VIEWPORT_W/2 - 40*t + 80*i, 1000, Fairy, stage1_multiburst, i - 2.5);
-	}
-
-	AT(2700)
-		global.boss = create_cirno_mid();
 
 	// some chaotic swirls + instant circle combo
 	FROM_TO(2760, 3800, 20) {

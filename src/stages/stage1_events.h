@@ -13,7 +13,6 @@
 
 #include "boss.h"
 
-void cirno_perfect_freeze(Boss*, int);
 void cirno_crystal_rain(Boss*, int);
 void cirno_snow_halation(Boss*, int);
 void cirno_icicle_fall(Boss*, int);
