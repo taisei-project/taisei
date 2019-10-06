@@ -67,6 +67,7 @@ bool cotask_cancel(CoTask *task);
 void *cotask_resume(CoTask *task, void *arg);
 void *cotask_yield(void *arg);
 CoWaitResult cotask_wait_event(CoEvent *evt, void *arg);
+CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
@@ -135,12 +136,12 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	/* type of internal args struct for INVOKE_TASK_DELAYED */ \
 	struct TASK_ARGSDELAY_NAME(name) { TASK_ARGS_TYPE(name) real_args; int delay; }; \
 	/* type of internal args struct for INVOKE_TASK_WHEN */ \
-	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS_TYPE(name) real_args; CoEvent *event; }; \
+	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS_TYPE(name) real_args; CoEvent *event; bool unconditional; }; \
 	/* task entry point for INVOKE_TASK */ \
 	attr_unused linkage void *COTASKTHUNK_##name(void *arg); \
 	/* task entry point for INVOKE_TASK_DELAYED */ \
 	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg); \
-	/* task entry point for INVOKE_TASK_WHEN */ \
+	/* task entry point for INVOKE_TASK_WHEN and INVOKE_TASK_AFTER */ \
 	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) /* require semicolon */ \
 
 #define TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
@@ -168,12 +169,12 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		/* exit coroutine */ \
 		return NULL; \
 	} \
-	/* task entry point for INVOKE_TASK_WHEN */ \
+	/* task entry point for INVOKE_TASK_WHEN and INVOKE_TASK_AFTER */ \
 	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
 		TASK_ARGSCOND(name) args_copy = *(TASK_ARGSCOND(name)*)arg; \
-		/* wait for event, and if it wasn't canceled... */ \
-		if(WAIT_EVENT(args_copy.event).event_status == CO_EVENT_SIGNALED) { \
+		/* wait for event, and if it wasn't canceled (or if we want to run unconditionally)... */ \
+		if(WAIT_EVENT(args_copy.event).event_status == CO_EVENT_SIGNALED || args_copy.unconditional) { \
 			/* call prologue */ \
 			COTASKPROLOGUE_##name(&args_copy.real_args); \
 			/* call body */ \
@@ -203,7 +204,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 #define DECLARE_TASK(name, argstruct) \
 	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, static) /* require semicolon */
 
-/* TODO document */
+/* declare a task with static linkage that conforms to a common interface (needs to be defined later) */
 #define DECLARE_TASK_WITH_INTERFACE(name, iface) \
 	DECLARE_TASK_EXPLICIT(name, TASK_IFACE_ARGS_TYPE(iface), TASK_INDIRECT_TYPE(iface), static) /* require semicolon */
 
@@ -216,7 +217,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	DECLARE_TASK(name, argstruct); \
 	DEFINE_TASK(name)
 
-/* TODO document */
+/* declare and define a task with static linkage that conforms to a common interface */
 #define TASK_WITH_INTERFACE(name, iface) \
 	DECLARE_TASK_WITH_INTERFACE(name, iface); \
 	DEFINE_TASK(name)
@@ -226,7 +227,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 #define DECLARE_EXTERN_TASK(name, argstruct) \
 	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, extern) /* require semicolon */
 
-/* TODO document */
+/* declare a task with extern linkage that conforms to a common interface (needs to be defined later) */
 #define DECLARE_EXTERN_TASK_WITH_INTERFACE(name, iface) \
 	DECLARE_TASK_EXPLICIT(name, TASK_IFACE_ARGS_TYPE(iface), TASK_INDIRECT_TYPE(iface), extern) /* require semicolon */
 
@@ -283,40 +284,97 @@ INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
 	return cotask_box(t);
 }
 
+/*
+ * INVOKE_TASK(task_name, args...)
+ * INVOKE_SUBTASK(task_name, args...)
+ *
+ * This is the most basic way to start an asynchronous task. Control is transferred
+ * to the new task immediately when this is called, and returns to the call site
+ * when the task yields or terminates.
+ *
+ * Args are optional. They are treated simply as an initializer for the task's
+ * args struct, so it's possible to use designated initializer syntax to emulate
+ * "keyword arguments", etc.
+ *
+ * INVOKE_SUBTASK is identical INVOKE_TASK, except the spawned task will attach
+ * to the currently executing task, becoming its "sub-task" or "slave". When a
+ * task finishes executing, all of its sub-tasks are also terminated recursively.
+ *
+ * Other INVOKE_ macros with a _SUBTASK version behave analogously.
+ */
 
-#define INVOKE_TASK_(is_subtask, name, ...) ( \
+#define INVOKE_TASK(...) _internal_INVOKE_TASK(false, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK(...) _internal_INVOKE_TASK(true, __VA_ARGS__, ._dummy_1 = 0)
+
+#define _internal_INVOKE_TASK(is_subtask, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
 		&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ } \
 	), is_subtask) \
 )
 
-#define INVOKE_TASK(...) INVOKE_TASK_(false, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK(...) INVOKE_TASK_(true, __VA_ARGS__, ._dummy_1 = 0)
+/*
+ * INVOKE_TASK_DELAYED(delay, task_name, args...)
+ * INVOKE_SUBTASK_DELAYED(delay, task_name, args...)
+ *
+ * Like INVOKE_TASK, but the task will yield <delay> times before executing the
+ * actual task body.
+ */
 
-#define INVOKE_TASK_WHEN_(is_subtask, _event, name, ...) ( \
-	(void)COTASK_UNUSED_CHECK_##name, \
-	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
-		&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event) } \
-	), is_subtask) \
-)
+#define INVOKE_TASK_DELAYED(_delay, ...) _internal_INVOKE_TASK_DELAYED(false, _delay, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_DELAYED(_delay, ...) _internal_INVOKE_TASK_DELAYED(true, _delay, __VA_ARGS__, ._dummy_1 = 0)
 
-#define INVOKE_TASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(false, _event, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_WHEN(_event, ...) INVOKE_TASK_WHEN_(true, _event, __VA_ARGS__, ._dummy_1 = 0)
-
-#define INVOKE_TASK_DELAYED_(is_subtask, _delay, name, ...) ( \
+#define _internal_INVOKE_TASK_DELAYED(is_subtask, _delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKDELAY_##name, \
 		&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) } \
 	), is_subtask) \
 )
 
-#define INVOKE_TASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(false, _delay, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_DELAYED(_delay, ...) INVOKE_TASK_DELAYED_(true, _delay, __VA_ARGS__, ._dummy_1 = 0)
+/*
+ * INVOKE_TASK_WHEN(event, task_name, args...)
+ * INVOKE_SUBTASK_WHEN(event, task_name, args...)
+ *
+ * INVOKE_TASK_AFTER(event, task_name, args...)
+ * INVOKE_SUBTASK_AFTER(event, task_name, args...)
+ *
+ * Both INVOKE_TASK_WHEN and INVOKE_TASK_AFTER spawn a task that waits for an
+ * event to occur. The difference is that _WHEN aborts the task if the event has
+ * been canceled, but _AFTER proceeds to execute it unconditionally.
+ *
+ * <event> is a pointer to a CoEvent struct.
+ */
 
-DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
+#define INVOKE_TASK_WHEN(_event, ...) _internal_INVOKE_TASK_ON_EVENT(false, false, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_WHEN(_event, ...) _internal_INVOKE_TASK_ON_EVENT(true, false, _event, __VA_ARGS__, ._dummy_1 = 0)
+
+#define INVOKE_TASK_AFTER(_event, ...) _internal_INVOKE_TASK_ON_EVENT(false, true, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_AFTER(_event, ...) _internal_INVOKE_TASK_ON_EVENT(true, true, _event, __VA_ARGS__, ._dummy_1 = 0)
+
+#define _internal_INVOKE_TASK_ON_EVENT(is_subtask, is_unconditional, _event, name, ...) ( \
+	(void)COTASK_UNUSED_CHECK_##name, \
+	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
+		&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event), .unconditional = is_unconditional } \
+	), is_subtask) \
+)
+
+/*
+ * CANCEL_TASK_WHEN(event, boxed_task)
+ * CANCEL_TASK_AFTER(event, boxed_task)
+ *
+ * Invokes an auxiliary task that will wait for an event, and then cancel another
+ * running task. The difference between WHEN and AFTER is the same as in
+ * INVOKE_TASK_WHEN/INVOKE_TASK_AFTER -- this is a simple wrapper around those.
+ *
+ * <event> is a pointer to a CoEvent struct.
+ * <boxed_task> is a BoxedTask struct; use cotask_box to obtain one from a pointer.
+ * You can also use the THIS_TASK macro to refer to the currently running task.
+ */
 
 #define CANCEL_TASK_WHEN(_event, _task) INVOKE_TASK_WHEN(_event, _cancel_task_helper, _task)
+#define CANCEL_TASK_AFTER(_event, _task) INVOKE_TASK_AFTER(_event, _cancel_task_helper, _task)
+
+DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
 #define TASK_INDIRECT(iface, task) ( \
 	(void)COTASK_UNUSED_CHECK_##task, \
@@ -340,6 +398,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define YIELD         cotask_yield(NULL)
 #define WAIT(delay)   do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
 #define WAIT_EVENT(e) cotask_wait_event((e), NULL)
+#define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die((e), NULL)
 #define STALL         do { YIELD; } while(1)
 
 // to use these inside a coroutine, define a BREAK_CONDITION macro and a BREAK label.

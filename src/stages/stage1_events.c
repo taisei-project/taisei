@@ -1292,8 +1292,8 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 }
 
 TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
-	Boss *boss = TASK_BIND(ARGS.boss);
-	WAIT_EVENT(&ARGS.attack->events.started);
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
 	boss->move = move_towards(VIEWPORT_W/2.0 + 200.0*I, 0.035);
 }
 
@@ -1366,14 +1366,9 @@ TASK(make_snowflake, { complex pos; MoveParams move; int size; double rot_angle;
 }
 
 TASK_WITH_INTERFACE(icy_storm, BossAttack) {
-	Boss *boss = TASK_BIND(ARGS.boss);
-	Attack *a = ARGS.attack;
-
+	Boss *boss = INIT_BOSS_ATTACK();
 	boss->move = move_towards(CMPLX(VIEWPORT_W/2, 200), 0.02);
-
-	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
-	WAIT_EVENT(&a->events.started);
-
+	BEGIN_BOSS_ATTACK();
 	boss->move = move_stop(0.8);
 
 	int flake_spawn_interval = difficulty_value(11, 10, 9, 8);
@@ -1416,11 +1411,8 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
-	Boss *boss = TASK_BIND(ARGS.boss);
-	Attack *a = ARGS.attack;
-
-	CANCEL_TASK_WHEN(&a->events.finished, THIS_TASK);
-	WAIT_EVENT(&a->events.started);
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
 
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
@@ -1517,8 +1509,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 }
 
 TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
-	Boss *boss = TASK_BIND(ARGS.boss);
-	WAIT_EVENT(&ARGS.attack->events.started);
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
 	boss->move = move_towards(-250 + 30 * I, 0.02);
 }
 
