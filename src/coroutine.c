@@ -248,6 +248,17 @@ CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	}
 }
 
+CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg) {
+	CoWaitResult wr = cotask_wait_event(evt, arg);
+
+	if(wr.event_status == CO_EVENT_CANCELED) {
+		cotask_cancel(cotask_active());
+		UNREACHABLE;
+	}
+
+	return wr;
+}
+
 CoStatus cotask_status(CoTask *task) {
 	return koishi_state(&task->ko);
 }
