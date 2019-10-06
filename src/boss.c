@@ -1479,6 +1479,12 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	return a;
 }
 
+Boss *_init_boss_attack(const BossAttackTaskArgs *restrict args) {
+	Boss *boss = TASK_BIND(args->boss);
+	CANCEL_TASK_AFTER(&args->attack->events.finished, THIS_TASK);
+	return boss;
+}
+
 void boss_preload(void) {
 	preload_resources(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
