@@ -11,7 +11,7 @@
 #include "coroutine.h"
 #include "util.h"
 
-#define CO_STACK_SIZE (64 * 1024)
+#define CO_STACK_SIZE (128 * 1024)
 
 // #define TASK_DEBUG
 // #define EVT_DEBUG
