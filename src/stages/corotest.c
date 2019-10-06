@@ -113,7 +113,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 				Projectile *p = PROJECTILE(
 					.pos = e->pos,
 					.proto = pp_rice,
-					.color = RGBA(1.0, 0.0, i / (pcount - 1.0), 0.0),
+					.color = RGBA(1.0, 0.2, i / (pcount - 1.0), 0.0),
 					.move = move_asymptotic(aim * 4 * cdir(a + M_PI), aim * cdir(-a * 2), 0.9),
 					.max_viewport_dist = 128,
 				);

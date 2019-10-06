@@ -709,6 +709,7 @@ static void bullet_highlight_draw(Projectile *p, int t) {
 
 	float opacity = pow(1 - timefactor, 2);
 	opacity = min(1, 1.5 * opacity) * min(1, timefactor * 10);
+	opacity *= 1 - p->shader_params.vector[0];
 
 	r_mat_tex_push();
 	r_mat_tex_translate(0.5, 0.5, 0);
