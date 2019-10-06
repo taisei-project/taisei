@@ -274,4 +274,6 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 	} \
 } while(0)
 
+#define ENT_ARRAY_CLEAR(_array) ((_array)->size = 0)
+
 #endif // IGUARD_entity_h

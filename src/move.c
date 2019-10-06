@@ -29,3 +29,13 @@ complex move_update(complex *restrict pos, MoveParams *restrict p) {
 
 	return v;
 }
+
+complex move_update_multiple(uint times, complex *restrict pos, MoveParams *restrict p) {
+	complex v = p->velocity;
+
+	while(times--) {
+		move_update(pos, p);
+	}
+
+	return v;
+}
