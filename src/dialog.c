@@ -156,13 +156,13 @@ void dialog_draw(Dialog *dialog) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	r_mat_push();
-	r_mat_translate(VIEWPORT_X, 0, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(VIEWPORT_X, 0, 0);
 
 	const double dialog_width = VIEWPORT_W * 1.2;
 
-	r_mat_push();
-	r_mat_translate(dialog_width/2.0, 64, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(dialog_width/2.0, 64, 0);
 
 	int cur_idx = message_index(dialog, 0);
 	int pre_idx = message_index(dialog, -1);
@@ -201,29 +201,29 @@ void dialog_draw(Dialog *dialog) {
 		float portrait_w = sprite_padded_width(portrait);
 		float portrait_h = sprite_padded_height(portrait);
 
-		r_mat_push();
+		r_mat_mv_push();
 
 		if(i == DIALOG_MSG_LEFT) {
 			r_cull(CULL_FRONT);
-			r_mat_scale(-1, 1, 1);
+			r_mat_mv_scale(-1, 1, 1);
 		} else {
 			r_cull(CULL_BACK);
 		}
 
 		if(o < 1) {
-			r_mat_translate(120 * (1 - o), 0, 0);
+			r_mat_mv_translate(120 * (1 - o), 0, 0);
 		}
 
 		float dir = (1 - 2 * (i == cur_side));
 		float ofs = 10 * dir;
 
 		if(page_alpha < 10 && ((i != pre_side && i == cur_side) || (i == pre_side && i != cur_side))) {
-			r_mat_translate(ofs * page_alpha, ofs * page_alpha, 0);
+			r_mat_mv_translate(ofs * page_alpha, ofs * page_alpha, 0);
 			float brightness = min(1.0 - 0.5 * page_alpha * dir, 1);
 			clr.r = clr.g = clr.b = brightness;
 			clr.a = 1;
 		} else {
-			r_mat_translate(ofs, ofs, 0);
+			r_mat_mv_translate(ofs, ofs, 0);
 			clr = *RGB(1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5);
 		}
 
@@ -237,10 +237,10 @@ void dialog_draw(Dialog *dialog) {
 			.sprite_ptr = portrait,
 		});
 
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 
 	o *= smooth(clamp((global.frames - dialog->birthtime - 10) / 30.0, 0, 1));
@@ -250,25 +250,23 @@ void dialog_draw(Dialog *dialog) {
 		.offset = { VIEWPORT_W/2, VIEWPORT_H-55 },
 	};
 
-	r_mat_push();
+	r_mat_mv_push();
 	if(o < 1) {
-		r_mat_translate(0, 100 * (1 - o), 0);
+		r_mat_mv_translate(0, 100 * (1 - o), 0);
 	}
 	r_color4(0, 0, 0, 0.8 * o);
-	r_mat_push();
-	r_mat_translate(dialog_bg_rect.x, dialog_bg_rect.y, 0);
-	r_mat_scale(dialog_bg_rect.w, dialog_bg_rect.h, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(dialog_bg_rect.x, dialog_bg_rect.y, 0);
+	r_mat_mv_scale(dialog_bg_rect.w, dialog_bg_rect.h, 1);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	Font *font = get_font("standard");
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	// r_mat_scale(2, 0.2, 0);
-	// r_mat_translate(0, -global.frames/page_text_time, 0);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_push();
+	// r_mat_tex_scale(2, 0.2, 0);
+	// r_mat_tex_translate(0, -global.frames/page_text_time, 0);
 
 	dialog_bg_rect.w = VIEWPORT_W * 0.86;
 	dialog_bg_rect.x -= dialog_bg_rect.w * 0.5;
@@ -315,12 +313,9 @@ void dialog_draw(Dialog *dialog) {
 		.overlay_projection = &dialog_bg_rect,
 	});
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
-
-	r_mat_pop();
-	r_mat_pop();
+	r_mat_tex_pop();
+	r_mat_mv_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 }
 
