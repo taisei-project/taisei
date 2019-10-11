@@ -192,6 +192,7 @@ static void ending_draw(Ending *e) {
 			.sprite_ptr = e->entries[e->pos].sprite,
 			.pos = { SCREEN_W/2, SCREEN_H/2 },
 			.shader = "sprite_default",
+			.color = r_color_current(),
 		});
 	}
 
