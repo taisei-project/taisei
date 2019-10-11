@@ -121,7 +121,7 @@ void r_mat_mv_current(mat4 out_mat) {
 	glm_mat4_copy(*_r_matrices.modelview.head, out_mat);
 }
 
-mat4 *r_mat_mv_current_ptr(mat4 out_mat) {
+mat4 *r_mat_mv_current_ptr(void) {
 	return _r_matrices.modelview.head;
 }
 
@@ -165,7 +165,7 @@ void r_mat_proj_current(mat4 out_mat) {
 	glm_mat4_copy(*_r_matrices.projection.head, out_mat);
 }
 
-mat4 *r_mat_proj_current_ptr(mat4 out_mat) {
+mat4 *r_mat_proj_current_ptr(void) {
 	return _r_matrices.projection.head;
 }
 
@@ -217,7 +217,7 @@ void r_mat_tex_current(mat4 out_mat) {
 	glm_mat4_copy(*_r_matrices.texture.head, out_mat);
 }
 
-mat4 *r_mat_tex_current_ptr(mat4 out_mat) {
+mat4 *r_mat_tex_current_ptr(void) {
 	return _r_matrices.texture.head;
 }
 
