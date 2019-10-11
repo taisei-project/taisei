@@ -188,7 +188,11 @@ static void ending_draw(Ending *e) {
 	r_color4(s, s, s, s);
 
 	if(e->entries[e->pos].sprite) {
-		draw_sprite_p(SCREEN_W/2, SCREEN_H/2, e->entries[e->pos].sprite);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite_ptr = e->entries[e->pos].sprite,
+			.pos = { SCREEN_W/2, SCREEN_H/2 },
+			.shader = "sprite_default",
+		});
 	}
 
 	r_shader("text_default");
