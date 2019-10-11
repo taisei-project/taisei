@@ -1515,6 +1515,8 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 }
 
 TASK(spawn_midboss, NO_ARGS) {
+	STAGE_BOOKMARK_DELAYED(120, midboss);
+
 	Boss *boss = global.boss = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
 
 	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_intro), NULL);
