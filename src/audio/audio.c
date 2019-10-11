@@ -29,7 +29,7 @@ static struct enqueued_sound {
 } *sound_queue;
 
 static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
-	if(!audio_output_works()) {
+	if(!audio_output_works() || global.frameskip) {
 		return;
 	}
 
@@ -43,7 +43,7 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 		return;
 	}
 
-	if(global.frameskip) {
+	if(taisei_is_skip_mode_enabled()) {
 		return;
 	}
 
@@ -67,7 +67,10 @@ static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
 }
 
 static void* play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
-	play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
+	if(!taisei_is_skip_mode_enabled()) {
+		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
+	}
+
 	free(snd->name);
 	free(list_unlink(queue, snd));
 	return NULL;
