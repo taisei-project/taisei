@@ -2897,7 +2897,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 			break;
 
 		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
-		char texname[32];
+		char texname[33];
 		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
 
