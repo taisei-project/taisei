@@ -105,17 +105,17 @@ static void stage1_water_draw(vec3 pos) {
 
 	r_state_push();
 
-	r_mat_push();
-	r_mat_translate(0,stage_3d_context.cx[1]+500,0);
-	r_mat_rotate_deg(180,1,0,0);
+	r_mat_mv_push();
+	r_mat_mv_translate(0, stage_3d_context.cx[1] + 500, 0);
+	r_mat_mv_rotate(M_PI, 1, 0, 0);
 
 	r_shader_standard_notex();
-	r_mat_push();
-	r_mat_scale(1200,3000,1);
+	r_mat_mv_push();
+	r_mat_mv_scale(1200, 3000, 1);
 	r_color4(0, 0.1, 0.1, 1);
 	r_draw_quad();
 	r_color4(1, 1, 1, 1);
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_disable(RCAP_CULL_FACE);
 	r_disable(RCAP_DEPTH_TEST);
@@ -123,33 +123,31 @@ static void stage1_water_draw(vec3 pos) {
 	Framebuffer *bg_fb = r_framebuffer_current();
 	FBPair *fbpair = &stage1_bg_fbpair;
 	r_framebuffer(fbpair->back);
-	r_mat_mode(MM_PROJECTION);
-	r_mat_push();
+	r_mat_proj_push();
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_push();
-	r_mat_identity();
-	r_mat_push();
+	r_mat_mv_push();
+	r_mat_mv_identity();
+	r_mat_mv_push();
 
 	float z = 0.75;
 	float zo = -0.05;
 
-	r_mat_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
-	r_mat_scale(z, z, 1);
+	r_mat_mv_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
+	r_mat_mv_scale(z, z, 1);
 	r_clear(CLEAR_ALL, RGBA(0, 0.08, 0.08, 1), 1);
 	r_shader("sprite_default");
 
 	ent_draw(stage1_draw_predicate);
 
-	r_mat_push();
+	r_mat_mv_push();
 	r_shader_standard_notex();
-	r_mat_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
-	r_mat_scale(VIEWPORT_W/z, VIEWPORT_H/z, 1);
+	r_mat_mv_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	r_mat_mv_scale(VIEWPORT_W/z, VIEWPORT_H/z, 1);
 	r_color4(0, 0.08, 0.08, 0.8);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	fbpair_swap(fbpair);
 	r_framebuffer(fbpair->back);
@@ -176,10 +174,8 @@ static void stage1_water_draw(vec3 pos) {
 		fbpair_swap(fbpair);
 	}
 
-	r_mat_pop();
-	r_mat_mode(MM_PROJECTION);
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_mv_pop();
+	r_mat_proj_pop();
 
 	r_enable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_DEPTH_WRITE);
@@ -193,23 +189,23 @@ static void stage1_water_draw(vec3 pos) {
 		r_shader_standard();
 	}
 
-	r_mat_push();
-	r_mat_translate(0, 70, 0);
-	r_mat_rotate_deg(10,1,0,0);
-	r_mat_scale(.85/(z+zo),-.85/(z+zo),.85);
-	r_mat_translate(-VIEWPORT_W/2,0,0);
+	r_mat_mv_push();
+	r_mat_mv_translate(0, 70, 0);
+	r_mat_mv_rotate(10 * DEG2RAD, 1, 0, 0);
+	r_mat_mv_scale(0.85 / (z + zo), -0.85 / (z + zo), 0.85);
+	r_mat_mv_translate(-VIEWPORT_W/2, 0, 0);
 	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_shader_standard_notex();
-	r_mat_push();
-	r_mat_scale(1200,3000,1);
+	r_mat_mv_push();
+	r_mat_mv_scale(1200,3000,1);
 	r_color4(0, 0.08, 0.08, 0.08);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 }
 
@@ -225,17 +221,17 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_shader("sprite_default");
 	r_disable(RCAP_DEPTH_TEST);
 	r_cull(CULL_BACK);
-	r_mat_push();
-	r_mat_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
-	r_mat_rotate_deg(90,-1,0,0);
-	r_mat_scale(3.5,2,1);
-	r_mat_rotate_deg(global.frames,0,0,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0]+200*sin(pos[1]), pos[1], pos[2]+200*sin(pos[1]/25.0));
+	r_mat_mv_rotate(M_PI/2, -1, 0, 0);
+	r_mat_mv_scale(3.5, 2, 1);
+	r_mat_mv_rotate(global.frames * DEG2RAD, 0, 0, 1);
 	float o = ((d-500)*(d-500))/1.5e7;
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "stage1/fog",
 		.color = RGBA(0.8 * o, 0.8 * o, 0.8 * o, o * 0.5),
 	});
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 }
 
@@ -278,9 +274,9 @@ static void stage1_waterplants_draw(vec3 pos) {
 	int tile = floathash(pos[1] * 3124312) & 1;
 	float offs = 200 * sin(2*M_PI*remainder(3214.322211333 * floathash(pos[1]), M_E));
 	float d = -55+50*sin(pos[1]/25.0);
-	r_mat_push();
-	r_mat_translate(pos[0]+offs, pos[1], d);
-	r_mat_rotate(2*M_PI*sin(32.234*pos[1]) + global.frames / 800.0, 0, 0, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0]+offs, pos[1], d);
+	r_mat_mv_rotate(2 * M_PI * sin(32.234*pos[1]) + global.frames / 800.0, 0, 0, 1);
 
 	Sprite spr = { 0 };
 	spr.w = spr.h = 1;
@@ -293,14 +289,13 @@ static void stage1_waterplants_draw(vec3 pos) {
 
 	float a = 0.8;
 	float s = 160 * (1 + 2 * psin(13.12993*pos[1]));
-	r_mat_scale(s, s, 1);
+	r_mat_mv_scale(s, s, 1);
 	r_depth_func(DEPTH_GREATER);
 	r_disable(RCAP_DEPTH_WRITE);
 	r_cull(CULL_FRONT);
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	r_mat_scale(0.5, 1, 1);
-	r_mat_translate(tile, 0, 0);
+	r_mat_tex_push();
+	r_mat_tex_scale(0.5, 1, 1);
+	r_mat_tex_translate(tile, 0, 0);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = &spr,
 		.shader = "sprite_default",
@@ -308,9 +303,8 @@ static void stage1_waterplants_draw(vec3 pos) {
 		.flip.y = floathash(pos[1] * 941233.513) & 1,
 		.color = RGBA(0.5*a, 0.4*a, 0.5*a, 0.5*a),
 	});
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_pop();
+	r_mat_tex_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 }
 
