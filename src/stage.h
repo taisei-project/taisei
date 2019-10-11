@@ -17,6 +17,7 @@
 #include "difficulty.h"
 #include "util/graphics.h"
 #include "dialog.h"
+#include "coroutine.h"
 
 /* taisei's strange macro language.
  *
@@ -152,6 +153,16 @@ void stage_unlock_bgm(const char *bgm);
 bool stage_should_yield(void);
 int stage_yield(void);
 int stage_wait(int delay);
+
+#ifdef DEBUG
+void _stage_bookmark(const char *name);
+#define STAGE_BOOKMARK(name) _stage_bookmark(#name)
+DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
+#define STAGE_BOOKMARK_DELAYED(delay, name) INVOKE_TASK_DELAYED(delay, stage_bookmark, #name)
+#else
+#define STAGE_BOOKMARK(name) ((void)0)
+#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
+#endif
 
 #include "stages/stage1.h"
 #include "stages/stage2.h"
