@@ -1045,8 +1045,8 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	mat4 mat_texture;
 	mat4 mat_model;
 
-	r_mat_current(MM_TEXTURE, mat_texture);
-	r_mat_current(MM_MODELVIEW, mat_model);
+	r_mat_tex_current(mat_texture);
+	r_mat_mv_current(mat_model);
 
 	glm_translate(mat_model, (vec3) { x, y } );
 	glm_scale(mat_model, (vec3) { iscale, iscale, 1 } );
@@ -1236,18 +1236,15 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_cull(CULL_BACK);
 	r_disable(RCAP_DEPTH_TEST);
 
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_push();
-	r_mat_identity();
+	r_mat_mv_push();
+	r_mat_mv_identity();
 
-	r_mat_mode(MM_PROJECTION);
-	r_mat_push();
-	r_mat_identity();
-	r_mat_ortho(0, tex_new_w, tex_new_h, 0, -100, 100);
+	r_mat_proj_push();
+	r_mat_proj_identity();
+	r_mat_proj_ortho(0, tex_new_w, tex_new_h, 0, -1, 1);
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	r_mat_identity();
+	r_mat_tex_push();
+	r_mat_tex_identity();
 
 	// HACK: Coordinates are in texel space, font scale must not be used.
 	// This probably should be exposed in the text_draw API.
@@ -1264,14 +1261,9 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	font->metrics.scale = fontscale;
 	r_flush_sprites();
 
-	// r_mat_mode(MM_TEXTURE);
-	r_mat_pop();
-
-	r_mat_mode(MM_PROJECTION);
-	r_mat_pop();
-
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_pop();
+	r_mat_tex_pop();
+	r_mat_proj_pop();
+	r_mat_mv_pop();
 
 	r_state_pop();
 
