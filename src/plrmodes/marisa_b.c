@@ -45,9 +45,9 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	//float c = 0.3 * psin(t * 0.2);
 	//p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
 
-	
+
 	float freq = 0.1;
-	
+
 	double focus = 1 - abs(global.plr.focus) / 30.0;
 
 	double focusfac = 1;
@@ -61,7 +61,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 
 	double brightener = -1/(1+sqrt(0.03*fabs(creal(p->pos-center))));
 	p->color = *RGBA(0.3+(1-focus)*0.7+brightener,0.8+brightener,1.0-(1-focus)*0.7+brightener,0.2+brightener);
-	
+
 	double verticalfac = - 5*t*(1+0.01*t) + 10*t/(0.01*t+1);
 	p->pos0 = p->pos;
 	p->pos = center + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
@@ -87,7 +87,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 static int marisa_star_slave(Enemy *e, int t) {
 	for(int i = 0; i < 2; ++i) {
 		if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 5)) {
-			float fac = e->args[0]/M_PI/2; 
+			float fac = e->args[0]/M_PI/2;
 			complex v = (1-2*i);
 			v = creal(v)/cabs(v);
 			v *= 1-0.9*fac;
@@ -173,7 +173,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	if(t%1 == 0) {
 		Color *color2 = COLOR_COPY(&color);
 		color_mul_scalar(color2, 0.5);
-		
+
 		PARTICLE(
 			.sprite_ptr = get_sprite("part/maristar_orbit"),
 			.pos = e->pos,
@@ -237,15 +237,21 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 		marisa_common_masterspark_draw(NUM_MARISTAR_SLAVES, beams, fade);
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(e->pos),cimag(e->pos),0);
 	color.a = 0;
-	r_color(&color);
-	r_mat_rotate_deg(t*10,0,0,1);
-	draw_sprite_batched(0,0,"fairy_circle");
-	r_mat_scale(0.6,0.6,1);
-	draw_sprite_batched(0,0,"part/lightningball");
-	r_mat_pop();
+
+	SpriteParams sp = { 0 };
+	sp.pos.x = creal(e->pos);
+	sp.pos.y = cimag(e->pos);
+	sp.color = &color;
+	sp.rotation = (SpriteRotationParams) {
+		.angle = t * 10 * DEG2RAD,
+		.vector = { 0, 0, 1 },
+	};
+	sp.sprite = "fairy_circle";
+	r_draw_sprite(&sp);
+	sp.sprite = "part/lightningball";
+	sp.scale.both = 0.6;
+	r_draw_sprite(&sp);
 }
 
 static void marisa_star_bomb(Player *plr) {
@@ -265,7 +271,7 @@ static void marisa_star_bombbg(Player *plr) {
 	}
 
 	float t = player_get_bomb_progress(&global.plr);
-	
+
 	ShaderProgram *s = r_shader_get("maristar_bombbg");
 	r_shader_ptr(s);
 	r_uniform_float("t", t);
