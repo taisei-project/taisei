@@ -86,6 +86,8 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	// overlay for all extra spells
 	// FIXME: Please replace this with something that doesn't look like shit.
 
+	r_state_push();
+
 	float opacity = 0.7;
 	r_color4(0.2 * opacity, 0.1 * opacity, 0, 0);
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
@@ -96,8 +98,8 @@ void draw_extraspell_bg(Boss *boss, int time) {
 	));
 	fill_viewport(cos(time) * 0.015, time / 70.0, 1, "stage4/kurumibg2");
 	fill_viewport(sin(time*1.1+2.1) * 0.015, time / 30.0, 1, "stage4/kurumibg2");
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(1, 1, 1, 1);
+
+	r_state_pop();
 }
 
 static inline bool healthbar_style_is_radial(void) {
