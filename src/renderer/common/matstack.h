@@ -30,9 +30,14 @@ void matstack_reset(MatrixStack *ms)
 	attr_nonnull(1);
 
 // Pushes a new matrix onto [ms], updates [ms]->head.
-// It's initialized to a copy of theprevious head.
+// It's initialized to a copy of the previous head.
 void matstack_push(MatrixStack *ms)
 	attr_nonnull(1);
+
+// Pushes a new matrix onto [ms], updates [ms]->head.
+// [mat] is copied into the new [ms]->head.
+void matstack_push_premade(MatrixStack *ms, mat4 mat)
+	attr_nonnull(1, 2);
 
 // Pops a matrix from [ms], updates [ms]->head.
 // It's an error to pop the last element.

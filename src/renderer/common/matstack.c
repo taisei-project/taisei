@@ -24,6 +24,12 @@ void matstack_push(MatrixStack *ms) {
 	ms->head++;
 }
 
+void matstack_push_premade(MatrixStack *ms, mat4 mat) {
+	assert(ms->head < ms->stack + MATSTACK_LIMIT);
+	ms->head++;
+	glm_mat4_copy(mat, *ms->head);
+}
+
 void matstack_pop(MatrixStack *ms) {
 	assert(ms->head > ms->stack);
 	ms->head--;
@@ -99,6 +105,10 @@ void r_mat_mv_push(void) {
 	matstack_push(&_r_matrices.modelview);
 }
 
+void r_mat_mv_push_premade(mat4 mat) {
+	matstack_push_premade(&_r_matrices.modelview, mat);
+}
+
 void r_mat_mv_pop(void) {
 	matstack_pop(&_r_matrices.modelview);
 }
@@ -137,6 +147,10 @@ void r_mat_mv_scale_v(vec3 v) {
 
 void r_mat_proj_push(void) {
 	matstack_push(&_r_matrices.projection);
+}
+
+void r_mat_proj_push_premade(mat4 mat) {
+	matstack_push_premade(&_r_matrices.projection, mat);
 }
 
 void r_mat_proj_pop(void) {
@@ -185,6 +199,10 @@ void r_mat_proj_perspective(float angle, float aspect, float near, float far) {
 
 void r_mat_tex_push(void) {
 	matstack_push(&_r_matrices.texture);
+}
+
+void r_mat_tex_push_premade(mat4 mat) {
+	matstack_push_premade(&_r_matrices.texture, mat);
 }
 
 void r_mat_tex_pop(void) {

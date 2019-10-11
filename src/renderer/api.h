@@ -718,11 +718,12 @@ void r_mat_scale_v(vec3 v) attr_deprecated("Use r_mat_{mv,proj,tex}_scale_v inst
 void r_mat_ortho(float left, float right, float bottom, float top, float near, float far) attr_deprecated("Use r_mat_proj_ortho instead");
 void r_mat_perspective(float angle, float aspect, float near, float far) attr_deprecated("Use r_mat_proj_perspective instead");
 
-void r_mat(MatrixMode mode, mat4 mat) attr_deprecated("Use r_mat_{mv,proj,tex} instead");
+void r_mat(MatrixMode mode, mat4 mat) attr_deprecated("Use r_mat_{mv,proj,tex} or r_mat_{mv,proj,tex}_push_premade instead");
 void r_mat_current(MatrixMode mode, mat4 out_mat) attr_deprecated("Use r_mat_{mv,proj,tex}_current instead");
 mat4* r_mat_current_ptr(MatrixMode mode) attr_deprecated("Use r_mat_{mv,proj,tex}_current_ptr instead");
 
 void r_mat_mv_push(void);
+void r_mat_mv_push_premade(mat4 mat);
 void r_mat_mv_pop(void);
 void r_mat_mv(mat4 mat);
 void r_mat_mv_current(mat4 out_mat);
@@ -733,6 +734,7 @@ void r_mat_mv_rotate_v(float angle, vec3 v);
 void r_mat_mv_scale_v(vec3 v);
 
 void r_mat_proj_push(void);
+void r_mat_proj_push_premade(mat4 mat);
 void r_mat_proj_pop(void);
 void r_mat_proj(mat4 mat);
 void r_mat_proj_current(mat4 out_mat);
@@ -745,6 +747,7 @@ void r_mat_proj_ortho(float left, float right, float bottom, float top, float ne
 void r_mat_proj_perspective(float angle, float aspect, float near, float far);
 
 void r_mat_tex_push(void);
+void r_mat_tex_push_premade(mat4 mat);
 void r_mat_tex_pop(void);
 void r_mat_tex(mat4 mat);
 void r_mat_tex_current(mat4 out_mat);
