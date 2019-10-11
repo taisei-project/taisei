@@ -426,24 +426,17 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 		r_uniform_int("have_alphamap", 0);
 	}
 
-	r_mat_push();
-	r_mat_identity();
-	r_mat_mode(MM_PROJECTION);
-	r_mat_push();
-	r_mat_identity();
-	r_mat_ortho(0, params.width, params.height, 0, -100, 100);
-	r_mat_mode(MM_MODELVIEW);
-	r_mat_scale(params.width, params.height, 1);
-	r_mat_translate(0.5, 0.5, 0);
+	r_mat_mv_push_identity();
+	r_mat_proj_push_ortho(params.width, params.height);
+	r_mat_mv_scale(params.width, params.height, 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
 	fb = r_framebuffer_create();
 	r_framebuffer_attach(fb, fbo_tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(fb, 0, 0, params.width, params.height);
 	r_framebuffer(fb);
 	r_draw_quad();
-	r_mat_pop();
-	r_mat_mode(MM_PROJECTION);
-	r_mat_pop();
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_mv_pop();
+	r_mat_proj_pop();
 	r_framebuffer_destroy(fb);
 	r_texture_destroy(tex);
 	r_state_pop();
@@ -523,7 +516,7 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	draw_texture_state.drawing = true;
 
 	r_uniform_sampler("tex", tex);
-	r_mat_push();
+	r_mat_mv_push();
 
 	uint tw, th;
 	r_texture_get_size(tex, 0, &tw, &th);
@@ -544,44 +537,37 @@ void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex) {
 	if(s != 1 || t != 1 || frag.x || frag.y) {
 		draw_texture_state.texture_matrix_tainted = true;
 
-		r_mat_mode(MM_TEXTURE);
-		r_mat_identity();
+		r_mat_tex_push();
 
-		r_mat_scale(1.0/tw, 1.0/th, 1);
+		r_mat_tex_scale(1.0/tw, 1.0/th, 1);
 
 		if(frag.x || frag.y) {
-			r_mat_translate(frag.x, frag.y, 0);
+			r_mat_tex_translate(frag.x, frag.y, 0);
 		}
 
 		if(s != 1 || t != 1) {
-			r_mat_scale(frag.w, frag.h, 1);
+			r_mat_tex_scale(frag.w, frag.h, 1);
 		}
-
-		r_mat_mode(MM_MODELVIEW);
 	}
 
 	if(x || y) {
-		r_mat_translate(x, y, 0);
+		r_mat_mv_translate(x, y, 0);
 	}
 
 	if(w != 1 || h != 1) {
-		r_mat_scale(w, h, 1);
+		r_mat_mv_scale(w, h, 1);
 	}
 }
 
 void end_draw_texture(void) {
-	if(!draw_texture_state.drawing) {
-		log_fatal("Not drawing. Did you forget to call begin_draw_texture, or call me on the wrong thread?");
-	}
+	assume(draw_texture_state.drawing);
 
 	if(draw_texture_state.texture_matrix_tainted) {
 		draw_texture_state.texture_matrix_tainted = false;
-		r_mat_mode(MM_TEXTURE);
-		r_mat_identity();
-		r_mat_mode(MM_MODELVIEW);
+		r_mat_tex_pop();
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	draw_texture_state.drawing = false;
 }
 
@@ -612,35 +598,32 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 
 	if(xoff || yoff || rw != 1 || rh != 1 || angle) {
 		texture_matrix_tainted = true;
-		r_mat_mode(MM_TEXTURE);
+
+		r_mat_tex_push();
 
 		if(xoff || yoff) {
-			r_mat_translate(xoff, yoff, 0);
+			r_mat_tex_translate(xoff, yoff, 0);
 		}
 
 		if(rw != 1 || rh != 1) {
-			r_mat_scale(rw, rh, 1);
+			r_mat_tex_scale(rw, rh, 1);
 		}
 
 		if(angle) {
-			r_mat_translate(0.5, 0.5, 0);
-			r_mat_rotate_deg(angle, 0, 0, 1);
-			r_mat_translate(-0.5, -0.5, 0);
+			r_mat_tex_translate(0.5, 0.5, 0);
+			r_mat_tex_rotate(angle * DEG2RAD, 0, 0, 1);
+			r_mat_tex_translate(-0.5, -0.5, 0);
 		}
-
-		r_mat_mode(MM_MODELVIEW);
 	}
 
-	r_mat_push();
-	r_mat_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
-	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(VIEWPORT_W*0.5, VIEWPORT_H*0.5, 0);
+	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	if(texture_matrix_tainted) {
-		r_mat_mode(MM_TEXTURE);
-		r_mat_identity();
-		r_mat_mode(MM_MODELVIEW);
+		r_mat_tex_pop();
 	}
 }
 
@@ -663,24 +646,19 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	complex d = b-a;
 	complex c = (b+a)/2;
 
-	r_mat_push();
-	r_mat_translate(creal(c),cimag(c),0);
-	r_mat_rotate_deg(180/M_PI*carg(d),0,0,1);
-	r_mat_scale(cabs(d),w,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(c), cimag(c), 0);
+	r_mat_mv_rotate(carg(d), 0, 0, 1);
+	r_mat_mv_scale(cabs(d), w, 1);
 
-	r_mat_mode(MM_TEXTURE);
-	// r_mat_identity();
-	r_mat_translate(t, 0, 0);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_push();
+	r_mat_tex_translate(t, 0, 0);
 
 	r_uniform_sampler("tex", texture);
 	r_draw_quad();
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
-
-	r_mat_pop();
+	r_mat_tex_pop();
+	r_mat_mv_pop();
 }
 
 void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
