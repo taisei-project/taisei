@@ -148,6 +148,9 @@ void taisei_quit(void);
 bool taisei_quit_requested(void);
 void taisei_commit_persistent_data(void);
 
+bool taisei_is_skip_mode_enabled(void);
+void taisei_set_skip_mode(bool state);
+
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key);
 

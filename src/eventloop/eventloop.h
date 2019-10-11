@@ -12,14 +12,14 @@
 #include "taisei.h"
 
 typedef enum RenderFrameAction {
-    RFRAME_SWAP,
-    RFRAME_DROP,
+	RFRAME_SWAP,
+	RFRAME_DROP,
 } RenderFrameAction;
 
 typedef enum LogicFrameAction {
-    LFRAME_WAIT,
-    LFRAME_SKIP,
-    LFRAME_STOP,
+	LFRAME_WAIT,
+	LFRAME_SKIP,
+	LFRAME_STOP,
 } LogicFrameAction;
 
 typedef LogicFrameAction (*LogicFrameFunc)(void *context);
