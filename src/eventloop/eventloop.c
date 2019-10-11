@@ -77,6 +77,10 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 	do {
 		lframe_action = run_logic_frame(*pframe);
 
+		if(lframe_action == LFRAME_SKIP && taisei_is_skip_mode_enabled()) {
+			cnt = 0;
+		}
+
 		while(evloop.stack_ptr != *pframe) {
 			*pframe = evloop.stack_ptr;
 			lframe_action = run_logic_frame(*pframe);
@@ -100,6 +104,10 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 }
 
 RenderFrameAction run_render_frame(LoopFrame *frame) {
+	if(taisei_is_skip_mode_enabled()) {
+		return RFRAME_DROP;
+	}
+
 	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
 	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 	RenderFrameAction a = frame->render(frame->context);
