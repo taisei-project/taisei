@@ -18,16 +18,24 @@ void matstack_reset(MatrixStack *ms) {
 	glm_mat4_identity(ms->stack[0]);
 }
 
-void matstack_push(MatrixStack *ms) {
+static void matstack_push_raw(MatrixStack *ms) {
 	assert(ms->head < ms->stack + MATSTACK_LIMIT);
-	glm_mat4_copy(*ms->head, *(ms->head + 1));
 	ms->head++;
 }
 
+void matstack_push(MatrixStack *ms) {
+	matstack_push_raw(ms);
+	glm_mat4_copy(*(ms->head - 1), *ms->head);
+}
+
 void matstack_push_premade(MatrixStack *ms, mat4 mat) {
-	assert(ms->head < ms->stack + MATSTACK_LIMIT);
-	ms->head++;
+	matstack_push_raw(ms);
 	glm_mat4_copy(mat, *ms->head);
+}
+
+void matstack_push_identity(MatrixStack *ms) {
+	matstack_push_raw(ms);
+	glm_mat4_identity(*ms->head);
 }
 
 void matstack_pop(MatrixStack *ms) {
@@ -109,6 +117,10 @@ void r_mat_mv_push_premade(mat4 mat) {
 	matstack_push_premade(&_r_matrices.modelview, mat);
 }
 
+void r_mat_mv_push_identity(void) {
+	matstack_push_identity(&_r_matrices.modelview);
+}
+
 void r_mat_mv_pop(void) {
 	matstack_pop(&_r_matrices.modelview);
 }
@@ -151,6 +163,24 @@ void r_mat_proj_push(void) {
 
 void r_mat_proj_push_premade(mat4 mat) {
 	matstack_push_premade(&_r_matrices.projection, mat);
+}
+
+void r_mat_proj_push_identity(void) {
+	matstack_push_identity(&_r_matrices.projection);
+}
+
+void r_mat_proj_push_ortho_ex(float left, float right, float bottom, float top, float near, float far) {
+	matstack_push_raw(&_r_matrices.projection);
+	r_mat_proj_ortho(left, right, bottom, top, near, far);
+}
+
+void r_mat_proj_push_ortho(float width, float height) {
+	r_mat_proj_push_ortho_ex(0, width, height, 0, -1, 1);
+}
+
+void r_mat_proj_push_perspective(float angle, float aspect, float near, float far) {
+	matstack_push_raw(&_r_matrices.projection);
+	r_mat_proj_perspective(angle, aspect, near, far);
 }
 
 void r_mat_proj_pop(void) {
@@ -203,6 +233,10 @@ void r_mat_tex_push(void) {
 
 void r_mat_tex_push_premade(mat4 mat) {
 	matstack_push_premade(&_r_matrices.texture, mat);
+}
+
+void r_mat_tex_push_identity(void) {
+	matstack_push_identity(&_r_matrices.texture);
 }
 
 void r_mat_tex_pop(void) {

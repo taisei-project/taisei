@@ -39,6 +39,11 @@ void matstack_push(MatrixStack *ms)
 void matstack_push_premade(MatrixStack *ms, mat4 mat)
 	attr_nonnull(1, 2);
 
+// Pushes a new matrix onto [ms], updates [ms]->head.
+// It's initialized to the identity matrix.
+void matstack_push_identity(MatrixStack *ms)
+	attr_nonnull(1);
+
 // Pops a matrix from [ms], updates [ms]->head.
 // It's an error to pop the last element.
 void matstack_pop(MatrixStack *ms)
