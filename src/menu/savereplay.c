@@ -50,15 +50,15 @@ static void draw_saverpy_menu(MenuData *m) {
 
 	draw_menu_selector(SCREEN_W/2 + 100 * m->drawdata[0] - 50, SCREEN_H/2, 163, 81, m->frames);
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/2, SCREEN_H/2 - 100, 0);
 	text_draw("Save Replay?", &(TextParams) {
 		.font = "big",
 		.align = ALIGN_CENTER,
 		.shader = "text_default",
 		.color = RGBA(1, 1, 1, 1),
 	});
-	r_mat_translate(0, 100, 0);
+	r_mat_mv_translate(0, 100, 0);
 
 	for(int i = 0; i < m->ecount; i++) {
 		MenuEntry *e = &(m->entries[i]);
@@ -83,7 +83,7 @@ static void draw_saverpy_menu(MenuData *m) {
 		});
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static bool savepry_input_handler(SDL_Event *event, void *arg) {
