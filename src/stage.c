@@ -277,7 +277,7 @@ static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
 }
 
 void stage_pause(void) {
-	if(global.gameover == GAMEOVER_TRANSITIONING) {
+	if(global.gameover == GAMEOVER_TRANSITIONING || taisei_is_skip_mode_enabled()) {
 		return;
 	}
 
@@ -456,6 +456,31 @@ static void stage_input(void) {
 	player_applymovement(&global.plr);
 }
 
+#ifdef DEBUG
+static const char *_skip_to_bookmark;
+bool _skip_to_dialog;
+
+void _stage_bookmark(const char *name) {
+	if(_skip_to_bookmark && !strcmp(_skip_to_bookmark, name)) {
+		_skip_to_bookmark = NULL;
+		global.plr.iddqd = false;
+	}
+}
+
+DEFINE_EXTERN_TASK(stage_bookmark) {
+	_stage_bookmark(ARGS.name);
+}
+#endif
+
+static bool _stage_should_skip(void) {
+#ifdef DEBUG
+	if(_skip_to_bookmark || _skip_to_dialog) {
+		return true;
+	}
+#endif
+	return false;
+}
+
 static void stage_logic(void) {
 	player_logic(&global.plr);
 
@@ -466,6 +491,16 @@ static void stage_logic(void) {
 	process_lasers();
 	process_projectiles(&global.particles, false);
 	dialog_update(&global.dialog);
+
+	if(_stage_should_skip()) {
+		if(dialog_is_active(global.dialog)) {
+			dialog_page(&global.dialog);
+		}
+
+		if(global.boss) {
+			ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
+		}
+	}
 
 	update_sounds();
 
@@ -683,10 +718,6 @@ typedef struct StageFrameState {
 	int transition_delay;
 	int logic_calls;
 	uint16_t last_replay_fps;
-
-#ifdef DEBUG
-	bool skip_to_dialog;
-#endif
 } StageFrameState;
 
 static void stage_update_fps(StageFrameState *fstate) {
@@ -763,11 +794,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 
 	stage_update_fps(fstate);
 
-	#ifdef DEBUG
-	if(fstate->skip_to_dialog) {
+	if(_stage_should_skip()) {
 		global.plr.iddqd = true;
 	}
-	#endif
 
 	if(global.shake_view > 30) {
 		global.shake_view = 30;
@@ -822,20 +851,18 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return LFRAME_STOP;
 	}
 
-	#ifdef DEBUG
-	if(fstate->skip_to_dialog) {
-		if(dialog_is_active(global.dialog)) {
-			fstate->skip_to_dialog = false;
-			global.plr.iddqd = false;
-		} else {
-			return LFRAME_SKIP;
-		}
+#ifdef DEBUG
+	if(_skip_to_dialog && dialog_is_active(global.dialog)) {
+		_skip_to_dialog = false;
+		global.plr.iddqd = false;
 	}
 
-	if(gamekeypressed(KEY_SKIP)) {
+	taisei_set_skip_mode(_stage_should_skip());
+
+	if(taisei_is_skip_mode_enabled() || gamekeypressed(KEY_SKIP)) {
 		return LFRAME_SKIP;
 	}
-	#endif
+#endif
 
 	if(global.frameskip || (global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP))) {
 		return LFRAME_SKIP;
@@ -848,11 +875,9 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-#if DEBUG
-	if(fstate->skip_to_dialog) {
+	if(_stage_should_skip()) {
 		return RFRAME_DROP;
 	}
-#endif
 
 	tsrand_lock(&global.rand_game);
 	tsrand_switch(&global.rand_visual);
@@ -958,7 +983,9 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	fstate->cc = next;
 
 	#ifdef DEBUG
-	fstate->skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
+	_skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
+	_skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
+	taisei_set_skip_mode(_stage_should_skip());
 	#endif
 
 	stage->procs->begin();
@@ -993,7 +1020,9 @@ void stage_end_loop(void* ctx) {
 	ent_shutdown();
 	stage_objpools_free();
 	stop_sounds();
+
 	taisei_commit_persistent_data();
+	taisei_set_skip_mode(false);
 
 	if(taisei_quit_requested()) {
 		global.gameover = GAMEOVER_ABORT;

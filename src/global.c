@@ -61,3 +61,12 @@ void taisei_commit_persistent_data(void) {
 	progress_save();
 	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 }
+
+#ifdef DEBUG
+static bool _skip_mode;
+bool taisei_is_skip_mode_enabled(void) { return _skip_mode; }
+void taisei_set_skip_mode(bool state) { _skip_mode = state; }
+#else
+bool taisei_is_skip_mode_enabled(void) { return false; }
+void taisei_set_skip_mode(bool state) {  }
+#endif
