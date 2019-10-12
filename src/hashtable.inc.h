@@ -903,10 +903,12 @@ HT_DECLARE_PRIV_FUNC(void, resize, (HT_BASETYPE *ht, size_t new_size)) {
 	free(ht->table);
 	ht->table = new_table;
 
+	/*
 	log_debug(
 		"Resized hashtable at %p: %"PRIuMAX" -> %"PRIuMAX"",
 		(void*)ht, (uintmax_t)ht->table_size, (uintmax_t)new_size
 	);
+	*/
 
 	ht->table_size = new_size;
 	ht->hash_mask = new_hash_mask;
