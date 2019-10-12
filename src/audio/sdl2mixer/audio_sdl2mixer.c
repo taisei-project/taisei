@@ -271,6 +271,10 @@ static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 static bool audio_sdl2mixer_music_set_position(double pos) {
 	Mix_RewindMusic();
 
+	// TODO Handle looping here.
+	// Unfortunately SDL2_Mixer will not tell us the total length of the file,
+	// so a hack is required here.
+
 	if(Mix_SetMusicPosition(pos)) {
 		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
 		return false;
