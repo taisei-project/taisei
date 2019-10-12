@@ -461,6 +461,8 @@ static const char *_skip_to_bookmark;
 bool _skip_to_dialog;
 
 void _stage_bookmark(const char *name) {
+	log_debug("Bookmark [%s] reached at %i", name, global.frames);
+
 	if(_skip_to_bookmark && !strcmp(_skip_to_bookmark, name)) {
 		_skip_to_bookmark = NULL;
 		global.plr.iddqd = false;
