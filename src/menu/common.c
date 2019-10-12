@@ -184,13 +184,16 @@ void start_game_no_difficulty_menu(MenuData *m, void *arg) {
 
 void draw_menu_selector(float x, float y, float w, float h, float t) {
 	Sprite *bg = get_sprite("part/smoke");
-	r_mat_push();
-	r_mat_translate(x, y, 0);
-	r_mat_scale(w / bg->w, h / bg->h, 1);
-	r_mat_rotate_deg(t*2,0,0,1);
-	r_color4(0,0,0,0.5 * (1 - transition.fade));
-	draw_sprite(0, 0, "part/smoke");
-	r_mat_pop();
+	r_mat_mv_push();
+	r_mat_mv_translate(x, y, 0);
+	r_mat_mv_scale(w / bg->w, h / bg->h, 1);
+	r_mat_mv_rotate(t * 2 * DEG2RAD, 0, 0, 1);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = bg,
+		.color = RGBA(0, 0, 0, 0.5 * (1 - transition.fade)),
+		.shader = "sprite_default",
+	});
+	r_mat_mv_pop();
 }
 
 void draw_menu_title(MenuData *m, const char *title) {
@@ -204,9 +207,9 @@ void draw_menu_title(MenuData *m, const char *title) {
 }
 
 void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int, int), float scroll_threshold) {
-	r_mat_push();
+	r_mat_mv_push();
 	float offset = smoothmin(0, scroll_threshold * 0.8 - y - m->drawdata[2], 80);
-	r_mat_translate(x, y + offset, 0);
+	r_mat_mv_translate(x, y + offset, 0);
 
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
 	ShaderProgram *text_shader = r_shader_get("text_default");
@@ -243,7 +246,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 		}
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void animate_menu_list_entry(MenuData *m, int i) {

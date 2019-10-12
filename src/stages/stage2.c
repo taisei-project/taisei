@@ -43,85 +43,74 @@ struct stage2_spells_s stage2_spells = {
 };
 
 static void stage2_bg_leaves_draw(vec3 pos) {
+	r_state_push();
+
+	r_mat_tex_push();
+	r_mat_tex_scale(-1, 1, 1);
+
 	r_shader("alpha_depth");
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_scale(-1,1,1);
-	r_mat_mode(MM_MODELVIEW);
-
 	r_uniform_sampler("tex", "stage2/leaves");
 
-	r_mat_push();
-	r_mat_translate(pos[0]-360,pos[1],pos[2]+500);
-	r_mat_rotate_deg(-160,0,1,0);
-	r_mat_translate(-50,0,0);
-	r_mat_scale(1000,3000,1);
-
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0] - 360, pos[1], pos[2] + 500);
+	r_mat_mv_rotate(-160 * DEG2RAD, 0, 1, 0);
+	r_mat_mv_translate(-50,0,0);
+	r_mat_mv_scale(1000,3000,1);
 	r_draw_quad();
+	r_mat_mv_pop();
 
-	r_mat_pop();
-
-	r_shader_standard();
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_pop();
+	r_state_pop();
 }
 
 static void stage2_bg_grass_draw(vec3 pos) {
+	r_state_push();
 	r_disable(RCAP_DEPTH_TEST);
 	r_uniform_sampler("tex", "stage2/roadgrass");
 
-	r_mat_push();
-	r_mat_translate(pos[0]+250,pos[1],pos[2]+40);
-	r_mat_rotate_deg(pos[2]/2-14,0,1,0);
-
-	r_mat_scale(-500,2000,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0]+250, pos[1], pos[2] + 40);
+	r_mat_mv_rotate((pos[2] / 2 - 14) * DEG2RAD, 0, 1, 0);
+	r_mat_mv_scale(-500, 2000, 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_enable(RCAP_DEPTH_TEST);
+	r_state_pop();
 }
 
 static void stage2_bg_ground_draw(vec3 pos) {
-	r_mat_push();
-	r_mat_translate(pos[0]-50,pos[1],pos[2]);
-	r_mat_scale(-1000,1000,1);
+	r_state_push();
 
-	r_color4(0.08,0.,0.1,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0] - 50, pos[1], pos[2]);
+	r_mat_mv_scale(-1000, 1000, 1);
+
+	r_color4(0.08, 0.0, 0.1, 1.0);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_shader_standard();
 	r_uniform_sampler("tex", "stage2/roadstones");
-	r_color4(0.5,0.5,0.5,1);
+	r_color4(0.5, 0.5, 0.5, 1);
 	r_draw_quad();
-	r_color4(1,1,1,1);
-	r_mat_translate(0,0,+10);
+	r_color4(1, 1, 1, 1);
+	r_mat_mv_translate(0,0,+10);
 	r_draw_quad();
 
-	r_mat_pop();
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_translate(global.frames/100.0,1*sin(global.frames/100.0),0);
-	r_mat_mode(MM_MODELVIEW);
-
-	r_mat_push();
+	r_mat_mv_pop();
 
 	r_uniform_sampler("tex", "stage2/border");
 
-	r_mat_translate(pos[0]+410,pos[1],pos[2]+600);
-	r_mat_rotate_deg(90,0,1,0);
-	r_mat_scale(1200,1000,1);
-
+	r_mat_tex_push();
+	r_mat_tex_translate(global.frames / 100.0, sin(global.frames/100.0), 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0] + 410, pos[1], pos[2] + 600);
+	r_mat_mv_rotate(M_PI/2, 0, 1, 0);
+	r_mat_mv_scale(1200,1000,1);
 	r_draw_quad();
+	r_mat_mv_pop();
+	r_mat_tex_pop();
 
-	r_mat_pop();
-
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
+	r_state_pop();
 }
 
 static uint stage2_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {

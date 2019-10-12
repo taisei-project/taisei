@@ -57,10 +57,6 @@ void r_state_pop(void) {
 		B.capabilities(S.capabilities);
 	}
 
-	RESTORE(RSTATE_MATMODE) {
-		r_mat_mode(S.matmode);
-	}
-
 	RESTORE(RSTATE_COLOR) {
 		B.color4(S.color.r, S.color.g, S.color.b, S.color.a);
 	}
@@ -99,12 +95,6 @@ void r_state_pop(void) {
 void _r_state_touch_capabilities(void) {
 	TAINT(RSTATE_CAPABILITIES, {
 		S.capabilities = B.capabilities_current();
-	});
-}
-
-void _r_state_touch_matrix_mode(void) {
-	TAINT(RSTATE_MATMODE, {
-		S.matmode = r_mat_mode_current();
 	});
 }
 

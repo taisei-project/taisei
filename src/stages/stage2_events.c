@@ -664,8 +664,8 @@ static void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 	Color *clr2 = RGBA(0.0, 0.0, 1.0, 0.0);
 	Color *clr3 = RGBA(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 0.0);
 
-	r_mat_push();
-	r_mat_translate(creal(s->pos), cimag(s->pos), 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(s->pos), cimag(s->pos), 0);
 	r_shader("sprite_bullet");
 
 	r_draw_sprite(&(SpriteParams) {
@@ -691,8 +691,7 @@ static void hina_monty_slave_visual(Enemy *s, int time, bool render) {
 		.color = clr3,
 	});
 
-	r_mat_pop();
-	r_shader("sprite_default");
+	r_mat_mv_pop();
 }
 
 void hina_monty(Boss *h, int time) {
@@ -836,21 +835,29 @@ void hina_monty(Boss *h, int time) {
 }
 
 void hina_spell_bg(Boss *h, int time) {
-	r_mat_push();
-	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	r_mat_push();
-	r_mat_scale(0.6,0.6,1);
-	draw_sprite(0, 0, "stage2/spellbg1");
-	r_mat_pop();
-	r_blend(BLEND_MOD);
-	r_mat_rotate_deg(time*5, 0,0,1);
-	draw_sprite(0, 0, "stage2/spellbg2");
-	r_mat_pop();
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(1, 1, 1, 0);
+	SpriteParams sp = { 0 };
+	sp.pos.x = VIEWPORT_W/2;
+	sp.pos.y = VIEWPORT_H/2;
+	sp.scale.both = 0.6;
+	sp.shader_ptr = r_shader_get("sprite_default");
+	sp.blend = BLEND_PREMUL_ALPHA;
+	sp.sprite = "stage2/spellbg1";
+	r_draw_sprite(&sp);
+	sp.scale.both = 1;
+	sp.blend = BLEND_MOD;
+	sp.sprite = "stage2/spellbg2";
+	sp.rotation = (SpriteRotationParams) { .angle = time * 5 * DEG2RAD, .vector = { 0, 0, 1 } };
+	r_draw_sprite(&sp);
+
 	Animation *fireani = get_ani("fire");
-	draw_sprite_p(creal(h->pos), cimag(h->pos), animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames));
-	r_color4(1, 1, 1, 1);
+	sp.sprite_ptr = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames);
+	sp.sprite = NULL;
+	sp.pos.x = creal(h->pos);
+	sp.pos.y = cimag(h->pos);
+	sp.scale.both = 1;
+	sp.rotation = (SpriteRotationParams) { 0 };
+	sp.blend = BLEND_PREMUL_ALPHA;
+	r_draw_sprite(&sp);
 }
 
 Boss* stage2_spawn_hina(complex pos) {

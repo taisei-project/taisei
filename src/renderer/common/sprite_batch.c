@@ -148,10 +148,7 @@ void r_flush_sprites(void) {
 #endif
 
 	r_state_push();
-
-	r_mat_mode(MM_PROJECTION);
-	r_mat_push();
-	glm_mat4_copy(_r_sprite_batch.projection, *r_mat_current_ptr(MM_PROJECTION));
+	r_mat_proj_push_premade(_r_sprite_batch.projection);
 
 	r_shader_ptr(_r_sprite_batch.shader);
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
@@ -185,7 +182,7 @@ void r_flush_sprites(void) {
 		r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 	}
 
-	r_mat_pop();
+	r_mat_proj_pop();
 	r_state_pop();
 }
 
@@ -195,8 +192,8 @@ static void _r_sprite_batch_compute_attribs(
 	SpriteInstanceAttribs *out_attribs
 ) {
 	SpriteInstanceAttribs attribs;
-	r_mat_current(MM_MODELVIEW, attribs.mv_transform);
-	r_mat_current(MM_TEXTURE, attribs.tex_transform);
+	r_mat_mv_current(attribs.mv_transform);
+	r_mat_tex_current(attribs.tex_transform);
 
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
@@ -354,7 +351,7 @@ void r_sprite_batch_prepare_state(const SpriteStateParams *stp) {
 		_r_sprite_batch.cull_mode = cull_mode;
 	}
 
-	mat4 *current_projection = r_mat_current_ptr(MM_PROJECTION);
+	mat4 *current_projection = r_mat_proj_current_ptr();
 
 	if(memcmp(*current_projection, _r_sprite_batch.projection, sizeof(mat4))) {
 		r_flush_sprites();

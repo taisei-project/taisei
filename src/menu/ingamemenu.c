@@ -175,19 +175,17 @@ void update_ingame_menu(MenuData *menu) {
 
 void draw_ingame_menu(MenuData *menu) {
 	set_ortho(SCREEN_W, SCREEN_H);
-
-	r_mat_push();
-
 	draw_ingame_menu_bg(menu, 1.0-menu_fade(menu));
+	r_state_push();
 
-	r_mat_push();
-	r_mat_translate(VIEWPORT_X, VIEWPORT_Y, 0);
-	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/4, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(VIEWPORT_X, VIEWPORT_Y, 0);
+	r_mat_mv_translate(VIEWPORT_W/2, VIEWPORT_H/4, 0);
 
 	draw_menu_selector(0, menu->drawdata[0], menu->drawdata[1]*2, 41, menu->frames);
 
-	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
+
 	if(menu->context) {
 		float s = 0.3 + 0.2 * sin(menu->frames/10.0);
 		r_color(RGBA_MUL_ALPHA(1-s/2, 1-s/2, 1-s, 1-menu_fade(menu)));
@@ -216,10 +214,8 @@ void draw_ingame_menu(MenuData *menu) {
 		});
 	}
 
-	r_color4(1,1,1,1);
-	r_mat_pop();
-	r_mat_pop();
-	r_shader_ptr(sh_prev);
+	r_mat_mv_pop();
+	r_state_pop();
 
 	// TODO handle dialog somehow
 

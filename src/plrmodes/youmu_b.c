@@ -239,28 +239,20 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 		f = 1+(tt-0.5)/0.5;
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos),0);
-	r_mat_rotate_deg(p->angle/M_PI*180,0,0,1);
-	r_mat_scale(f,1,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos),0);
+	r_mat_mv_rotate(p->angle, 0, 0, 1);
+	r_mat_mv_scale(f, 1, 1);
 	ProjDrawCore(p, &p->color);
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	double slicelen = 500;
 	complex slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
-	draw_sprite_batched_p(creal(slicepos), cimag(slicepos), aniplayer_get_frame(&global.plr.ani));
 
-	/*
-	Sprite *s = get_sprite("part/smoothdot");
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = s,
-		.pos = { creal(p->pos), cimag(p->pos) },
-		.rotation.angle = p->angle + M_PI/2,
-		.scale.x = 512 / s->w,
-		.scale.y = 32 / s->h,
-		.color = RGBA(0.5, 0, 0, 0.5),
+		.sprite_ptr = aniplayer_get_frame(&global.plr.ani),
+		.pos = { creal(slicepos), cimag(slicepos) },
 	});
-	*/
 }
 
 static int youmu_slice_petal(Projectile *p, int t) {

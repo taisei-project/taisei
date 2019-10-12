@@ -15,7 +15,6 @@
 
 #define RSTATE_FLAGS \
 	RSTATE(CAPABILITIES) \
-	RSTATE(MATMODE) \
 	RSTATE(COLOR) \
 	RSTATE(BLENDMODE) \
 	RSTATE(CULLMODE) \
@@ -43,7 +42,6 @@ typedef struct RendererStateRollback {
 	r_state_bits_t dirty_bits;
 
 	r_capability_bits_t capabilities;
-	MatrixMode matmode;
 	Color color;
 	BlendMode blend_mode;
 	CullFaceMode cull_mode;
@@ -54,7 +52,6 @@ typedef struct RendererStateRollback {
 } RendererStateRollback;
 
 void _r_state_touch_capabilities(void);
-void _r_state_touch_matrix_mode(void);
 void _r_state_touch_color(void);
 void _r_state_touch_blend_mode(void);
 void _r_state_touch_cull_mode(void);

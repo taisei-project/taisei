@@ -141,6 +141,7 @@ void draw_main_menu_bg(MenuData* menu, double center_x, double center_y, double 
 
 void draw_main_menu(MenuData *menu) {
 	draw_main_menu_bg(menu, 0, 0, 0.05, "menu/mainmenubg", "stage1/cirnobg");
+	r_state_push();
 
 	float rot = sqrt(menu->frames/120.0);
 	float rotfac = (1 - pow(menu_fade(menu), 2.0));
@@ -154,8 +155,8 @@ void draw_main_menu(MenuData *menu) {
 		.color = color_mul_scalar(RGBA(1, 1, 1, 1), min(1, rot) * rotfac),
 	});
 
-	r_mat_push();
-	r_mat_translate(0, SCREEN_H/2, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(0, SCREEN_H/2, 0);
 	r_shader("text_default");
 
 	float o = 0.7;
@@ -175,11 +176,9 @@ void draw_main_menu(MenuData *menu) {
 		});
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
-	r_color4(1, 1, 1, 0);
 	r_shader("sprite_default");
 
 	for(int i = 0; i < 50; i++) { // who needs persistent state for a particle system?
@@ -204,16 +203,17 @@ void draw_main_menu(MenuData *menu) {
 		if(posx > SCREEN_W+20 || posy < -20 || posy > SCREEN_H+20)
 			continue;
 
-		r_mat_push();
-		r_mat_translate(posx,posy,0);
-		r_mat_scale(0.2,0.2,0.2);
-		r_mat_rotate_deg(2*(t%period),rx,ry,rz);
-		draw_sprite_batched(0,0,"part/petal");
-		r_mat_pop();
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "part/petal",
+			.color = RGBA(1, 1, 1, 0),
+			.pos = { posx, posy },
+			.scale.both = 0.2,
+			.rotation.angle = DEG2RAD * 2 * (t % period),
+			.rotation.vector = { rx, ry, rz },
+		});
 	}
 
-	r_shader("text_default");
-	r_capability(RCAP_CULL_FACE, cullcap_saved);
+	r_enable(RCAP_CULL_FACE);
 
 	char version[32];
 	snprintf(version, sizeof(version), "v%s", TAISEI_VERSION);
@@ -221,9 +221,11 @@ void draw_main_menu(MenuData *menu) {
 		.align = ALIGN_RIGHT,
 		.pos = { SCREEN_W-5, SCREEN_H-10 },
 		.font = "small",
+		.shader = "text_default",
+		.color = RGBA(1, 1, 1, 1),
 	});
 
-	r_shader_standard();
+	r_state_pop();
 }
 
 void draw_loading_screen(void) {

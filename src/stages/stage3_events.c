@@ -863,10 +863,10 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 
 static void wriggle_slave_part_draw(Projectile *p, int t) {
 	float b = 1 - t / (double)p->timeout;
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), b));
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static int wriggle_spell_slave(Enemy *e, int time) {
@@ -1205,9 +1205,9 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 	float f = 1-min(time/60.0,1);
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
 	ProjDrawCore(p, &p->color);
 
 	if(f > 0) {
@@ -1216,13 +1216,12 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
 		Color c = p->color;
 		c.a = 0;
 		p->sprite = get_sprite("proj/ball");
-		r_mat_scale(f,f,f);
+		r_mat_mv_scale(f,f,f);
 		ProjDrawCore(p, &c);
-		r_mat_scale(1/f,1/f,1/f);
 		p->sprite = s;
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static int wriggle_fstorm_proj(Projectile *p, int time) {

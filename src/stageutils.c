@@ -30,16 +30,11 @@ void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos) {
 }
 
 void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh) {
-	r_mat_mode(MM_PROJECTION);
-
-	r_mat_identity();
 	float facw = SCREEN_W/(float)VIEWPORT_W;
 	float fach = SCREEN_H/(float)VIEWPORT_H;
-	r_mat_perspective(glm_rad(s->projangle), 1, n, f);
-	r_mat_scale(facw,fach,1);
-	r_mat_translate(vx+vw/2.0, vy+vh/2.0, 0);
-
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_proj_perspective(glm_rad(s->projangle), 1, n, f);
+	r_mat_proj_scale(facw, fach, 1);
+	r_mat_proj_translate(vx + vw / 2.0, vy + vh / 2.0, 0);
 }
 
 void set_perspective(Stage3D *s, float n, float f) {
@@ -53,17 +48,17 @@ void update_stage3d(Stage3D *s) {
 }
 
 void draw_stage3d(Stage3D *s, float maxrange) {
-	r_mat_push();
+	r_mat_mv_push();
 
 	if(s->crot[0])
-		r_mat_rotate_deg(-s->crot[0], 1, 0, 0);
+		r_mat_mv_rotate(-s->crot[0] * DEG2RAD, 1, 0, 0);
 	if(s->crot[1])
-		r_mat_rotate_deg(-s->crot[1], 0, 1, 0);
+		r_mat_mv_rotate(-s->crot[1] * DEG2RAD, 0, 1, 0);
 	if(s->crot[2])
-		r_mat_rotate_deg(-s->crot[2], 0, 0, 1);
+		r_mat_mv_rotate(-s->crot[2] * DEG2RAD, 0, 0, 1);
 
 	if(s->cx[0] || s->cx[1] || s->cx[2])
-		r_mat_translate(-s->cx[0],-s->cx[1],-s->cx[2]);
+		r_mat_mv_translate(-s->cx[0], -s->cx[1], -s->cx[2]);
 
 	for(uint i = 0; i < s->msize; i++) {
 		uint num = s->models[i].pos(s, s->cx, maxrange);
@@ -73,7 +68,7 @@ void draw_stage3d(Stage3D *s, float maxrange) {
 		}
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void free_stage3d(Stage3D *s) {

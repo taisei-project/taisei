@@ -103,26 +103,25 @@ static void draw_masterspark_ring(int t, float width) {
 }
 
 static void draw_masterspark_beam(complex origin, complex size, float angle, int t, float alpha) {
-	r_mat_push();
-	r_mat_translate(creal(origin), cimag(origin), 0);
-	r_mat_rotate(angle, 0, 0, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(origin), cimag(origin), 0);
+	r_mat_mv_rotate(angle, 0, 0, 1);
 
 	r_shader("masterspark");
 	r_uniform_float("t", t);
 
-	r_mat_push();
-	r_mat_translate(0, cimag(size) * -0.5, 0);
-	r_mat_scale(alpha * creal(size), cimag(size), 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(0, cimag(size) * -0.5, 0);
+	r_mat_mv_scale(alpha * creal(size), cimag(size), 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	for(int i = 0; i < 4; i++) {
 		draw_masterspark_ring(t % 20 + 10 * i, alpha * creal(size));
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
-
 
 void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, float alpha) {
 	r_state_push();

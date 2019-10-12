@@ -197,11 +197,11 @@ static void credits_towerwall_draw(vec3 pos) {
 	r_uniform_sampler("tex", "stage6/towerwall");
 	r_uniform_float("lendiv", 2800.0 + 300.0 * sin(global.frames / 77.7));
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
-	r_mat_scale(30,30,30);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(30,30,30);
 	r_draw_model("towerwall");
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_shader_standard();
 }
@@ -304,27 +304,17 @@ static void credits_draw_entry(CreditsEntry *e) {
 		yukkuri_spr = get_sprite("kyoukkuri");
 	}
 
-	r_mat_push();
+	r_state_push();
+	r_mat_mv_push();
 
 	if(fadein < 1) {
-		r_mat_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
+		r_mat_mv_translate(0, SCREEN_W * pow(1 - fadein,  2) *  0.5, 0);
 	} else if(fadeout < 1) {
-		r_mat_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
+		r_mat_mv_translate(0, SCREEN_W * pow(1 - fadeout, 2) * -0.5, 0);
 	}
 
-	// for debugging: draw a quad as tall as the entry is expected to be
-	/*
-	render_push();
-	render_color4(1, 0, 0, fadein * fadeout);
-	render_shader_standard_notex();
-	render_scale(300, h_total, 1);
-	render_draw_quad();
-	render_shader_standard();
-	render_pop();
-	*/
-
 	r_color(RGBA_MUL_ALPHA(1, 1, 1, fadein * fadeout));
-	r_mat_translate(0, h_body * -0.5, 0);
+	r_mat_mv_translate(0, h_body * -0.5, 0);
 
 	for(int i = 0; i < e->lines; ++i) {
 		if(yukkuri_spr && !i) {
@@ -341,7 +331,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 				.scale.y = 1.0 + squeeze,
 			});
 
-			r_mat_translate(0, halfheight, 0);
+			r_mat_mv_translate(0, halfheight, 0);
 		} else {
 			Font *font = get_font(i ? "standard" : "big");
 			r_shader("text_default");
@@ -350,39 +340,39 @@ static void credits_draw_entry(CreditsEntry *e) {
 				.font_ptr = font,
 			});
 			r_shader_standard();
-			r_mat_translate(0, font_get_lineskip(font), 0);
+			r_mat_mv_translate(0, font_get_lineskip(font), 0);
 		}
 	}
 
-	r_mat_pop();
-	r_color4(1, 1, 1, 1);
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void credits_draw(void) {
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
-	r_mat_push();
-	r_mat_translate(-SCREEN_W/2, 0, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(-SCREEN_W/2, 0, 0);
 	r_enable(RCAP_DEPTH_TEST);
 
 	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
 	draw_stage3d(&stage_3d_context, 10000);
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);
 
-	r_mat_push();
+	r_mat_mv_push();
 	r_color4(0, 0, 0, credits.panelalpha * 0.7);
-	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	r_mat_scale(300, SCREEN_H, 1);
+	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_mv_scale(300, SCREEN_H, 1);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_color4(1, 1, 1, 1);
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
 
 	r_shader_standard();
 
@@ -390,7 +380,7 @@ static void credits_draw(void) {
 		credits_draw_entry(&(credits.entries[i]));
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	draw_transition();
 }
