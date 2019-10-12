@@ -102,15 +102,12 @@ static uint stage4_fountain_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 static void stage4_fountain_draw(vec3 pos) {
 	r_uniform_sampler("tex", "stage2/border");
-
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
-	r_mat_rotate_deg(-90, 1,0,0);
-	r_mat_scale(1000,3010,1);
-
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_rotate(-M_PI/2, 1, 0, 0);
+	r_mat_mv_scale(1000, 3010, 1);
 	r_draw_quad();
-
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -120,18 +117,18 @@ static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 static void stage4_lake_draw(vec3 pos) {
 	r_uniform_sampler("tex", "stage4/lake");
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1]+140, pos[2]);
-	r_mat_scale(15,15,15);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1]+140, pos[2]);
+	r_mat_mv_scale(15, 15, 15);
 	r_draw_model("lake");
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_uniform_sampler("tex", "stage4/mansion");
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1]+944, pos[2]+50);
-	r_mat_scale(30,30,30);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1] + 944, pos[2] + 50);
+	r_mat_mv_scale(30, 30, 30);
 	r_draw_model("mansion");
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static uint stage4_corridor_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -150,62 +147,57 @@ static uint stage4_corridor_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage4_corridor_draw(vec3 pos) {
+	r_state_push();
 	r_uniform_sampler("tex", "stage4/planks");
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_scale(1,2,1);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_push();
+	r_mat_tex_scale(1, 2, 1);
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
-	r_mat_push();
-	r_mat_rotate_deg(180, 1,0,0);
-	r_mat_scale(300,2000,1);
+	r_mat_mv_push();
+	r_mat_mv_rotate(M_PI, 1,0,0);
+	r_mat_mv_scale(300, 2000, 1);
 
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_uniform_sampler("tex", "stage4/wall");
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_rotate_deg(90,0,0,1);
-	r_mat_scale(1,10,1);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_pop();
+	r_mat_tex_push();
+	r_mat_tex_rotate(M_PI/2, 0, 0, 1);
+	r_mat_tex_scale(1, 10, 1);
 
-	r_mat_push();
-	r_mat_translate(100,5,75);
-	r_mat_rotate_deg(90, 0,1,0);
-	r_mat_scale(150,2000,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(100, 5, 75);
+	r_mat_mv_rotate(M_PI/2, 0, 1, 0);
+	r_mat_mv_scale(150, 2000, 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_push();
-	r_mat_translate(-100,5,75);
-	r_mat_rotate_deg(180,1,0,0);
-	r_mat_rotate_deg(-90, 0,1,0);
-	r_mat_scale(150,2000,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(-100, 5, 75);
+	r_mat_mv_rotate(M_PI, 1, 0, 0);
+	r_mat_mv_rotate(-M_PI/2, 0, 1, 0);
+	r_mat_mv_scale(150, 2000, 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_pop();
 
 	r_shader_standard_notex();
 
 	r_color3(0.01,0.01,0.01);
-	r_mat_push();
-	r_mat_translate(0,0,150);
-	r_mat_scale(500,2000,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(0,0,150);
+	r_mat_mv_scale(500,2000,1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_pop();
-	r_color3(1,1,1);
-
-	r_shader_standard();
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void stage4_start(void) {
