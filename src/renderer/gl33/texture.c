@@ -412,7 +412,7 @@ void gl33_texture_taint(Texture *tex) {
 
 void gl33_texture_prepare(Texture *tex) {
 	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
-		log_debug("Generating mipmaps for %s (%u)", tex->debug_label, tex->gl_handle);
+		// log_debug("Generating mipmaps for %s (%u)", tex->debug_label, tex->gl_handle);
 
 		gl33_bind_texture(tex, false);
 		gl33_sync_texunit(tex->binding_unit, false, true);
