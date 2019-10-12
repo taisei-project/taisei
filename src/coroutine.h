@@ -160,6 +160,8 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
 		TASK_ARGSDELAY(name) args_copy = *(TASK_ARGSDELAY(name)*)arg; \
+		/* if delay is negative, bail out early */ \
+		if(args_copy.delay < 0) return NULL; \
 		/* wait out the delay */ \
 		WAIT(args_copy.delay); \
 		/* call prologue */ \
@@ -319,6 +321,11 @@ INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
  *
  * Like INVOKE_TASK, but the task will yield <delay> times before executing the
  * actual task body.
+ *
+ * If <delay> is negative, the task will not be invoked. The arguments are still
+ * evaluated, however. (Caveat: in the current implementation, a task is spawned
+ * either way; it just aborts early without executing the body if the delay is
+ * negative, so there's some overhead).
  */
 
 #define INVOKE_TASK_DELAYED(_delay, ...) _internal_INVOKE_TASK_DELAYED(false, _delay, __VA_ARGS__, ._dummy_1 = 0)
