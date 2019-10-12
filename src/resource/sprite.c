@@ -163,22 +163,6 @@ Sprite* prefix_get_sprite(const char *name, const char *prefix) {
 	return spr;
 }
 
-void draw_sprite(float x, float y, const char *name) {
-	draw_sprite_p(x, y, get_sprite(name));
-}
-
-void draw_sprite_p(float x, float y, Sprite *spr) {
-	draw_sprite_ex(x, y, 1, 1, false, spr);
-}
-
-void draw_sprite_batched(float x, float y, const char *name) {
-	draw_sprite_ex(x, y, 1, 1, true, get_sprite(name));
-}
-
-void draw_sprite_batched_p(float x, float y, Sprite *spr) {
-	draw_sprite_ex(x, y, 1, 1, true, spr);
-}
-
 static void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
 	FloatOffset o = sprite_padded_offset(spr);
 
@@ -193,20 +177,16 @@ static void end_draw_sprite(void) {
 	end_draw_texture();
 }
 
-void draw_sprite_ex(float x, float y, float scale_x, float scale_y, bool batched, Sprite *spr) {
-	if(batched) {
-		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = spr,
-			.pos.x = x,
-			.pos.y = y,
-			.scale.x = scale_x,
-			.scale.y = scale_y,
-			.shader_ptr = r_shader_current(),
-			.color = r_color_current(),
-		});
-	} else {
-		begin_draw_sprite(x, y, scale_x, scale_y, spr);
-		r_draw_quad();
-		end_draw_sprite();
-	}
+static void draw_sprite_ex(float x, float y, float scale_x, float scale_y, Sprite *spr) {
+	begin_draw_sprite(x, y, scale_x, scale_y, spr);
+	r_draw_quad();
+	end_draw_sprite();
+}
+
+void draw_sprite(float x, float y, const char *name) {
+	draw_sprite_p(x, y, get_sprite(name));
+}
+
+void draw_sprite_p(float x, float y, Sprite *spr) {
+	draw_sprite_ex(x, y, 1, 1, spr);
 }

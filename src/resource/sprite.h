@@ -65,9 +65,6 @@ bool check_sprite_path(const char *path);
 
 void draw_sprite(float x, float y, const char *name);
 void draw_sprite_p(float x, float y, Sprite *spr);
-void draw_sprite_batched(float x, float y, const char *name) attr_deprecated("Use r_draw_sprite instead");
-void draw_sprite_batched_p(float x, float y, Sprite *spr) attr_deprecated("Use r_draw_sprite instead");
-void draw_sprite_ex(float x, float y, float scale_x, float scale_y, bool batched, Sprite *spr) attr_deprecated("Use r_draw_sprite instead");
 
 Sprite* get_sprite(const char *name);
 Sprite* prefix_get_sprite(const char *name, const char *prefix);
