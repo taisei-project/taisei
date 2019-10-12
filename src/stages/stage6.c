@@ -98,16 +98,18 @@ uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 void stage6_towerwall_draw(vec3 pos) {
+	r_state_push();
+
 	r_shader("tower_wall");
 	r_uniform_sampler("tex", "stage6/towerwall");
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
-	r_mat_scale(30,30,30);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(30,30,30);
 	r_draw_model("towerwall");
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_shader_standard();
+	r_state_pop();
 }
 
 static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -118,11 +120,11 @@ static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 static void stage6_towertop_draw(vec3 pos) {
 	r_uniform_sampler("tex", "stage6/towertop");
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
-	r_mat_scale(28,28,28);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(28,28,28);
 	r_draw_model("towertop");
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -130,33 +132,35 @@ static uint stage6_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage6_skysphere_draw(vec3 pos) {
+	r_state_push();
+
 	r_disable(RCAP_DEPTH_TEST);
 	ShaderProgram *s = r_shader_get("stage6_sky");
 	r_shader_ptr(s);
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]-30);
-	r_mat_scale(150,150,150);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2] - 30);
+	r_mat_mv_scale(150, 150, 150);
 	r_draw_model("skysphere");
 
 	r_shader("sprite_default");
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		r_mat_push();
+		r_mat_mv_push();
 		float x = starpos[3*i+0], y = starpos[3*i+1], z = starpos[3*i+2];
-		r_color(RGBA_MUL_ALPHA(0.9, 0.9, 1.0, 0.8 * z));
-		r_mat_translate(x,y,z);
-		r_mat_rotate_deg(180/M_PI*acos(starpos[3*i+2]),-y,x,0);
-		r_mat_scale(1./4000,1./4000,1./4000);
-		draw_sprite_batched(0,0,"part/smoothdot");
-		r_mat_pop();
+		r_mat_mv_translate(x, y, z);
+		r_mat_mv_rotate(acos(starpos[3*i+2]), -y, x, 0);
+		r_mat_mv_scale(1.0/4000, 1.0/4000, 1.0/4000);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "part/smoothdot",
+			.color = RGBA_MUL_ALPHA(0.9, 0.9, 1.0, 0.8 * z),
+		});
+		r_mat_mv_pop();
+
 	}
 
-	r_shader_standard();
-
-	r_mat_pop();
-	r_color4(1,1,1,1);
-	r_enable(RCAP_DEPTH_TEST);
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void stage6_draw(void) {
