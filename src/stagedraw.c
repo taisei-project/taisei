@@ -923,8 +923,7 @@ void stage_draw_begin_noshake(void) {
 
 	if(global.shake_view) {
 		shake_suppressed = 2;
-		r_mat_mv_push();
-		r_mat_mv_identity();
+		r_mat_mv_push_identity();
 	}
 }
 

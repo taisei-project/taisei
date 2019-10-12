@@ -1236,15 +1236,9 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_cull(CULL_BACK);
 	r_disable(RCAP_DEPTH_TEST);
 
-	r_mat_mv_push();
-	r_mat_mv_identity();
-
-	r_mat_proj_push();
-	r_mat_proj_identity();
-	r_mat_proj_ortho(0, tex_new_w, tex_new_h, 0, -1, 1);
-
-	r_mat_tex_push();
-	r_mat_tex_identity();
+	r_mat_mv_push_identity();
+	r_mat_proj_push_ortho(tex_new_w, tex_new_h);
+	r_mat_tex_push_identity();
 
 	// HACK: Coordinates are in texel space, font scale must not be used.
 	// This probably should be exposed in the text_draw API.

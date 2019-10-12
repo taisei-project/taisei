@@ -125,9 +125,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_framebuffer(fbpair->back);
 	r_mat_proj_push();
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
-	r_mat_mv_push();
-	r_mat_mv_identity();
-	r_mat_mv_push();
+	r_mat_mv_push_identity();
 
 	float z = 0.75;
 	float zo = -0.05;
@@ -174,7 +172,6 @@ static void stage1_water_draw(vec3 pos) {
 		fbpair_swap(fbpair);
 	}
 
-	r_mat_mv_pop();
 	r_mat_proj_pop();
 
 	r_enable(RCAP_DEPTH_TEST);

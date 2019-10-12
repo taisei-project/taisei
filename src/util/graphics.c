@@ -213,10 +213,8 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_framebuffer(fb);
 	r_framebuffer_clear(fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
-	r_mat_proj_push();
-	r_mat_proj_ortho(0, spr_w, spr_h, 0, -1, 1);
-	r_mat_mv_push();
-	r_mat_mv_identity();
+	r_mat_proj_push_ortho(spr_w, spr_h);
+	r_mat_mv_push_identity();
 
 	SpriteParams sp = { 0 };
 	sp.sprite_ptr = s_base;
