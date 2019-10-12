@@ -779,56 +779,6 @@ static int stage1_multiburst(Enemy *e, int t) {
 	return 1;
 }
 
-static int stage1_instantcircle(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 4);
-		return 1;
-	}
-
-	AT(75) {
-		play_sound("shot_special1");
-		for(int i = 0; i < 20+2*global.diff; i++) {
-			PROJECTILE(
-				.proto = pp_rice,
-				.pos = e->pos,
-				.color = RGB(0.6, 0.2, 0.7),
-				.rule = asymptotic,
-				.args = {
-					1.5*cexp(I*2*M_PI/(20.0+global.diff)*i),
-					2.0,
-				},
-			);
-		}
-	}
-
-	AT(95) {
-		if(global.diff > D_Easy) {
-			play_sound("shot_special1");
-			for(int i = 0; i < 20+3*global.diff; i++) {
-				PROJECTILE(
-					.proto = pp_rice,
-					.pos = e->pos,
-					.color = RGB(0.6, 0.2, 0.7),
-					.rule = asymptotic,
-					.args = {
-						3*cexp(I*2*M_PI/(20.0+global.diff)*i),
-						3.0,
-					},
-				);
-			}
-		}
-	}
-
-	if(t > 200) {
-		e->pos += e->args[1];
-	} else {
-		GO_TO(e, e->pos0 + e->args[0] * 110 , 0.04);
-	}
-
-	return 1;
-}
-
 static int stage1_tritoss(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
@@ -1189,6 +1139,57 @@ TASK(multiburst_fairy, { complex pos; complex target_pos; complex exit_accel; })
 	STALL;
 }
 
+TASK(instantcircle_fairy_exit, { BoxedEnemy e; complex exit_accel; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	e->move.attraction = 0;
+	e->move.retention = 1;
+	e->move.acceleration = ARGS.exit_accel;
+}
+
+TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double boost; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	play_sound("shot_special1");
+
+	for(int i = 0; i < ARGS.cnt; ++i) {
+		complex vel = ARGS.speed * circle_dir(i, ARGS.cnt);
+
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos,
+			.color = RGB(0.6, 0.2, 0.7),
+			.move = move_asymptotic_simple(vel, ARGS.boost),
+		);
+	}
+}
+
+TASK(instantcircle_fairy, { complex pos; complex target_pos; complex exit_accel; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1200, Fairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+		.power = 4,
+	});
+
+	e->move = move_towards(ARGS.target_pos, 0.04);
+	BoxedEnemy be = ENT_BOX(e);
+
+	INVOKE_TASK_DELAYED(75, instantcircle_fairy_shoot, be,
+		.cnt = difficulty_value(22, 24, 26, 28),
+		.speed = 1.5,
+		.boost = 2.0
+	);
+
+	if(global.diff > D_Easy) {
+		INVOKE_TASK_DELAYED(95, instantcircle_fairy_shoot, be,
+			.cnt = difficulty_value(0, 26, 29, 32),
+			.speed = 3,
+			.boost = 3.0
+		);
+	}
+
+	INVOKE_TASK_DELAYED(200, instantcircle_fairy_exit, be, ARGS.exit_accel);
+}
+
 // opening. projectile bursts
 TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
@@ -1288,6 +1289,17 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 		}
 
 		WAIT(120);
+	}
+}
+
+TASK(instantcircle_fairies, { int duration; }) {
+	int interval = difficulty_value(160, 130, 100, 70);
+
+	for(int t = ARGS.duration; t > 0; t -= interval) {
+		double x = VIEWPORT_W/2 + 205 * sin(2.13*global.frames);
+		double y = VIEWPORT_H/2 + 120 * cos(1.91*global.frames);
+		INVOKE_TASK(instantcircle_fairy, x, x+y*I, 0.2 * I);
+		WAIT(interval);
 	}
 }
 
@@ -1543,7 +1555,27 @@ TASK(stage_timeline, NO_ARGS) {
 
 	while(!global.boss) YIELD;
 	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
-	log_debug("midboss time: %i", midboss_time);
+	int filler_time = 2180;
+	int time_ofs = 500 - midboss_time;
+
+	log_debug("midboss_time = %i; filler_time = %i; time_ofs = %i", midboss_time, filler_time, time_ofs);
+
+	STAGE_BOOKMARK(post-midboss);
+
+	int swirl_spam_time = 600;
+
+	for(int i = 0; i < swirl_spam_time; i += 30) {
+		int o = ((int[]) { 0, 1, 0, -1 })[(i / 60) % 4];
+		INVOKE_TASK_DELAYED(i + time_ofs, sinepass_swirls, 40, 132 + 32 * o, 1 - 2 * ((i / 60) & 1));
+	}
+
+	time_ofs += swirl_spam_time - 120;
+
+	INVOKE_TASK_DELAYED(40 + time_ofs, burst_fairies_1);
+	INVOKE_TASK_DELAYED(120 + time_ofs, instantcircle_fairies, 320);
+
+	WAIT(filler_time - midboss_time);
+	STAGE_BOOKMARK(post-midboss-filler);
 }
 
 void stage1_events(void) {
@@ -1555,6 +1587,7 @@ void stage1_events(void) {
 
 	return;
 
+	/*
 	// some chaotic swirls + instant circle combo
 	FROM_TO(2760, 3800, 20) {
 		tsrand_fill(2);
@@ -1564,6 +1597,7 @@ void stage1_events(void) {
 	FROM_TO(2900, 3750, 190-30*global.diff) {
 		create_enemy2c(VIEWPORT_W/2 + 205 * sin(2.13*global.frames), 1200, Fairy, stage1_instantcircle, 2.0*I, 3.0 - 6*frand() - 1.0*I);
 	}
+	*/
 
 	// multiburst + normal circletoss, later tri-toss
 	FROM_TO(3900, 4800, 200) {
