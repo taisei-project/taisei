@@ -141,12 +141,12 @@ static void musicroom_draw(MenuData *m) {
 	float comment_offset = smoothstep(0, 1, (1 - comment_alpha)) * comment_height;
 
 	r_shader_standard_notex();
-	r_mat_push();
-	r_mat_translate(SCREEN_W * 0.5, SCREEN_H - comment_height * 0.5 + comment_offset, 0);
-	r_mat_scale(SCREEN_W, comment_height, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W * 0.5, SCREEN_H - comment_height * 0.5 + comment_offset, 0);
+	r_mat_mv_scale(SCREEN_W, comment_height, 1);
 	r_color4(0, 0, 0, 0.6 * comment_alpha);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 
 	Font *const text_font = get_font("standard");

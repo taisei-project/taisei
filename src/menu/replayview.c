@@ -156,15 +156,16 @@ static void replayview_freearg(void *a) {
 }
 
 static void replayview_draw_submenu_bg(float width, float height, float alpha) {
-	r_mat_push();
-	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
-	r_mat_scale(width, height, 1);
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+	r_mat_mv_scale(width, height, 1);
 	alpha *= 0.7;
 	r_color4(0.1 * alpha, 0.1 * alpha, 0.1 * alpha, alpha);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_shader("text_default");
-	r_mat_pop();
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void replayview_draw_messagebox(MenuData* m) {
@@ -175,15 +176,12 @@ static void replayview_draw_messagebox(MenuData* m) {
 	float width  = text_width(get_font("standard"), m->entries->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
-
 	text_draw(m->entries->name, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha),
+		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 },
+		.shader = "text_default",
 	});
-
-	r_mat_pop();
 }
 
 static void replayview_draw_stagemenu(MenuData *m) {
@@ -195,8 +193,8 @@ static void replayview_draw_stagemenu(MenuData *m) {
 
 	replayview_draw_submenu_bg(width, height, alpha);
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
 
 	for(int i = 0; i < m->ecount; ++i) {
 		MenuEntry *e = &(m->entries[i]);
@@ -215,10 +213,11 @@ static void replayview_draw_stagemenu(MenuData *m) {
 			.align = ALIGN_CENTER,
 			.pos = { 0, 20*i },
 			.color = &clr,
+			.shader = "text_default",
 		});
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static void replayview_drawitem(MenuEntry *e, int item, int cnt) {

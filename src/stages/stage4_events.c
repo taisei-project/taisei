@@ -525,12 +525,12 @@ void kurumi_redspike(Boss *b, int time) {
 void kurumi_spell_bg(Boss *b, int time) {
 	float f = 0.5+0.5*sin(time/80.0);
 
-	r_mat_push();
-	r_mat_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
-	r_mat_scale(0.6, 0.6, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	r_mat_mv_scale(0.6, 0.6, 1);
 	r_color3(f, 1 - f, 1 - f);
 	draw_sprite(0, 0, "stage4/kurumibg1");
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_color4(1, 1, 1, 0);
 	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
 	r_color4(1, 1, 1, 1);

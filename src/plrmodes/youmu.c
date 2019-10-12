@@ -122,12 +122,12 @@ void youmu_common_bombbg(Player *plr) {
 }
 
 void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
-	r_mat_scale(scale, scale, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
+	r_mat_mv_scale(scale, scale, 1);
 	ProjDrawCore(p, c);
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void youmu_common_bomb_buffer_init(void) {
@@ -141,4 +141,3 @@ void youmu_common_bomb_buffer_init(void) {
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
 	bomb_buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
 }
-

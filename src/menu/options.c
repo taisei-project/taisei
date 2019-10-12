@@ -916,16 +916,15 @@ MenuData* create_options_menu(void) {
 void draw_options_menu_bg(MenuData* menu) {
 	draw_main_menu_bg(menu, 0, 0, 0.05, "abstract_brown", "stage1/cirnobg");
 
-	r_mat_push();
-	r_mat_scale(SCREEN_W, SCREEN_H, 1);
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_scale(SCREEN_W, SCREEN_H, 1);
 	r_shader_standard_notex();
-	r_mat_translate(0.5,0.5,0);
+	r_mat_mv_translate(0.5, 0.5, 0);
 	r_color(RGBA(0, 0, 0, 0.5));
 	r_draw_quad();
-	r_mat_pop();
-	r_shader_standard();
-
-	r_color4(1, 1, 1, 1);
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void update_options_menu(MenuData *menu) {
@@ -948,8 +947,8 @@ static void draw_options_menu(MenuData *menu) {
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, ctx->title);
 
-	r_mat_push();
-	r_mat_translate(100, 100, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(100, 100, 0);
 
 	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
 
@@ -1219,24 +1218,24 @@ static void draw_options_menu(MenuData *menu) {
 					if(!strcmp(tmp, "-0%"))
 						strcpy(tmp, "0%");
 
-					r_mat_push();
-					r_mat_translate(origin - (w+cw) * 0.5, 20 * i, 0);
+					r_mat_mv_push();
+					r_mat_mv_translate(origin - (w+cw) * 0.5, 20 * i, 0);
 					text_draw(tmp, &(TextParams) {
 						.pos = { -((w+cw) * 0.5 + 10), 0 },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
 					r_shader_standard_notex();
-					r_mat_push();
-					r_mat_scale(w+cw, h, 1);
+					r_mat_mv_push();
+					r_mat_mv_scale(w+cw, h, 1);
 					r_color(RGBA_MUL_ALPHA(1, 1, 1, (0.1 + 0.2 * a) * alpha));
 					r_draw_quad();
-					r_mat_pop();
-					r_mat_translate(w * (pos - 0.5), 0, 0);
-					r_mat_scale(cw, h, 0);
+					r_mat_mv_pop();
+					r_mat_mv_translate(w * (pos - 0.5), 0, 0);
+					r_mat_mv_scale(cw, h, 0);
 					r_color(RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha));
 					r_draw_quad();
-					r_mat_pop();
+					r_mat_mv_pop();
 					r_shader("text_default");
 
 					break;
@@ -1245,7 +1244,7 @@ static void draw_options_menu(MenuData *menu) {
 		}
 	}
 	r_shader_standard();
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 // --- Input/event processing --- //

@@ -201,8 +201,8 @@ void player_draw_overlay(Player *plr) {
 
 	Font *font = get_font("standard");
 
-	r_mat_push();
-	r_mat_translate(spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent, 0);
 
 	TextParams tp = {
 		// .pos = { spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent },
@@ -211,12 +211,12 @@ void player_draw_overlay(Player *plr) {
 		.color = color_mul_scalar(RGBA(1, 1, 1, spell_in), spell_opacity),
 	};
 
-	r_mat_push();
-	r_mat_scale(2 - 1 * spell_opacity, 2 - 1 * spell_opacity, 1);
+	r_mat_mv_push();
+	r_mat_mv_scale(2 - 1 * spell_opacity, 2 - 1 * spell_opacity, 1);
 	text_draw(plr->mode->spellcard_name, &tp);
-	r_mat_pop();
+	r_mat_mv_pop();
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_state_pop();
 }
 
@@ -313,9 +313,9 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 
 	if(ps_opacity > 0) {
 		r_state_push();
-		r_mat_push();
-		r_mat_translate(creal(e->pos), cimag(e->pos), 0);
-		r_mat_scale(140, 140, 0);
+		r_mat_mv_push();
+		r_mat_mv_translate(creal(e->pos), cimag(e->pos), 0);
+		r_mat_mv_scale(140, 140, 0);
 		r_shader("healthbar_radial");
 		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
 		r_uniform_vec4_rgba("glowColor",     RGBA(0.5, 0.5, 0.5, 0.75));
@@ -325,7 +325,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		r_uniform_vec2("fill", global.plr.powersurge.positive * ps_fill_factor, global.plr.powersurge.negative * ps_fill_factor);
 		r_uniform_float("opacity", ps_opacity);
 		r_draw_quad();
-		r_mat_pop();
+		r_mat_mv_pop();
 		r_state_pop();
 
 		char buf[64];

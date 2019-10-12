@@ -31,27 +31,22 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	complex dir = dst - src;
 	complex center = (src + dst) * 0.5;
 
-	r_mat_push();
+	r_mat_mv_push();
 
-	r_mat_translate(creal(center), cimag(center), 0);
-	r_mat_rotate_deg(180/M_PI*carg(dir), 0, 0, 1);
-	r_mat_scale(cabs(dir), size, 1);
+	r_mat_mv_translate(creal(center), cimag(center), 0);
+	r_mat_mv_rotate(carg(dir), 0, 0, 1);
+	r_mat_mv_scale(cabs(dir), size, 1);
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_translate(-cimag(src) / step + t, 0, 0);
-	r_mat_scale(cabs(dir) / step, 1, 1);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_tex_push_identity();
+	r_mat_tex_translate(-cimag(src) / step + t, 0, 0);
+	r_mat_tex_scale(cabs(dir) / step, 1, 1);
 
 	r_uniform_sampler("tex", tex);
 	r_uniform_float(u_length, cabs(dir) / step);
 	r_draw_quad();
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_identity();
-	r_mat_mode(MM_MODELVIEW);
-
-	r_mat_pop();
+	r_mat_tex_pop();
+	r_mat_mv_pop();
 }
 
 static void trace_laser(Enemy *e, complex vel, float damage) {

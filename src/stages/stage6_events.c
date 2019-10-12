@@ -198,14 +198,13 @@ static int scythe_mid(Enemy *e, int t) {
 }
 
 static void ScytheTrail(Projectile *p, int t) {
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_rotate_deg(p->angle*180/M_PI+90, 0, 0, 1);
-	r_mat_scale(creal(p->args[1]), creal(p->args[1]), 1);
-
-	float a = (1.0 - t/(double)p->timeout) * (1.0 - cimag(p->args[1]));
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(p->angle + (M_PI * 0.5), 0, 0, 1);
+	r_mat_mv_scale(creal(p->args[1]), creal(p->args[1]), 1);
+	float a = (1.0 - t/p->timeout) * (1.0 - cimag(p->args[1]));
 	ProjDrawCore(p, RGBA(a, a, a, a));
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void Scythe(Enemy *e, int t, bool render) {
@@ -698,12 +697,13 @@ void elly_maxwell(Boss *b, int t) {
 
 static void draw_baryon_connector(complex a, complex b) {
 	Sprite *spr = get_sprite("stage6/baryon_connector");
-	r_mat_push();
-	r_mat_translate(creal(a+b)/2.0, cimag(a+b)/2.0, 0);
-	r_mat_rotate_deg(180/M_PI*carg(a-b), 0, 0, 1);
-	r_mat_scale((cabs(a-b)-70) / spr->w, 20 / spr->h, 1);
-	draw_sprite_batched_p(0, 0, spr);
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = spr,
+		.pos = { creal(a + b) * 0.5, cimag(a + b) * 0.5 },
+		.rotation.vector = { 0, 0, 1 },
+		.rotation.angle = carg(a - b),
+		.scale = { (cabs(a - b) - 70) / spr->w, 20 / spr->h },
+	});
 }
 
 static void Baryon(Enemy *e, int t, bool render) {
@@ -729,12 +729,22 @@ static void Baryon(Enemy *e, int t, bool render) {
 
 static void draw_baryons(Enemy *bcenter, int t) {
 	// r_color4(1, 1, 1, 0.8);
-	r_mat_push();
-	r_mat_translate(creal(bcenter->pos), cimag(bcenter->pos), 0);
-	r_mat_rotate_deg(2*t, 0, 0, 1);
-	draw_sprite_batched(0, 0, "stage6/baryon_center");
-	r_mat_pop();
-	draw_sprite_batched(creal(bcenter->pos), cimag(bcenter->pos), "stage6/baryon");
+
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(bcenter->pos), cimag(bcenter->pos), 0);
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "stage6/baryon_center",
+		.rotation.angle = DEG2RAD * 2 * t,
+		.rotation.vector = { 0, 0, 1 },
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "stage6/baryon",
+	});
+
+	r_mat_mv_pop();
+
 	r_color4(1, 1, 1, 1);
 
 	Enemy *link0 = REF(creal(bcenter->args[1]));
@@ -747,7 +757,11 @@ static void draw_baryons(Enemy *bcenter, int t) {
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == Baryon) {
-			draw_sprite_batched(creal(e->pos), cimag(e->pos), "stage6/baryon");
+			r_draw_sprite(&(SpriteParams) {
+				.pos = { creal(e->pos), cimag(e->pos) },
+				.sprite = "stage6/baryon",
+			});
+
 			Enemy *n = REF(e->args[1]);
 
 			if(n != NULL) {
@@ -2882,13 +2896,17 @@ void elly_spellbg_toe(Boss *b, int t) {
 			break;
 
 		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
-		char *texname = strfmt("stage6/toelagrangian/%d",i);
+		char texname[33];
+		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
 		float wobble = max(0,t-BREAKTIME)*0.03;
-		r_mat_push();
-		r_mat_translate(VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,0);
-		draw_sprite_batched(0,0,texname);
-		free(texname);
-		r_mat_pop();
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = texname,
+			.pos = {
+				VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,
+				VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,
+			},
+		});
 	}
 
 	r_color4(1, 1, 1, 1);

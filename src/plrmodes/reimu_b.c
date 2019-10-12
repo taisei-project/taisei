@@ -192,12 +192,12 @@ static void reimu_dream_gap_draw_lights(int time, double strength) {
 		const float len = GAP_LENGTH * 3 * sqrt(log(strength + 1) / 0.693);
 		complex center = gap->pos - gap->pos0 * (len * 0.5 - GAP_WIDTH * 0.6);
 
-		r_mat_push();
-		r_mat_translate(creal(center), cimag(center), 0);
-		r_mat_rotate(carg(gap->pos0)+M_PI, 0, 0, 1);
-		r_mat_scale(len, GAP_LENGTH, 1);
+		r_mat_mv_push();
+		r_mat_mv_translate(creal(center), cimag(center), 0);
+		r_mat_mv_rotate(carg(gap->pos0)+M_PI, 0, 0, 1);
+		r_mat_mv_scale(len, GAP_LENGTH, 1);
 		r_draw_quad();
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 }
 
@@ -251,8 +251,8 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	r_blend(BLEND_PREMUL_ALPHA);
 
 	FOR_EACH_GAP(gap) {
-		r_mat_push();
-		r_mat_translate(creal(gap->pos), cimag(gap->pos), 0);
+		r_mat_mv_push();
+		r_mat_mv_translate(creal(gap->pos), cimag(gap->pos), 0);
 		complex stretch_vector = gap->args[0];
 
 		for(float ofs = -0.5; ofs <= 0.5; ofs += 1) {
@@ -269,7 +269,7 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 			});
 		}
 
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 
 	reimu_dream_gap_draw_lights(t, pow(e->args[0], 2));

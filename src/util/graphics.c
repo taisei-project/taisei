@@ -14,9 +14,7 @@
 #include "pixmap.h"
 
 void set_ortho(float w, float h) {
-	r_mat_mode(MM_PROJECTION);
-	r_mat_ortho(0, w, h, 0, -100, 100);
-	r_mat_mode(MM_MODELVIEW);
+	r_mat_proj_ortho(0, w, h, 0, -100, 100);
 
 	// FIXME: should we take this out of here and call it explicitly instead?
 	r_disable(RCAP_DEPTH_TEST);
@@ -30,12 +28,12 @@ void colorfill(float r, float g, float b, float a) {
 	r_shader_standard_notex();
 	r_color4(r,g,b,a);
 
-	r_mat_push();
-	r_mat_scale(SCREEN_W,SCREEN_H,1);
-	r_mat_translate(0.5,0.5,0);
+	r_mat_mv_push();
+	r_mat_mv_scale(SCREEN_W,SCREEN_H,1);
+	r_mat_mv_translate(0.5,0.5,0);
 
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_color4(1,1,1,1);
 	r_shader_standard();
@@ -77,11 +75,11 @@ void draw_fragments(const DrawFragmentsParams *params) {
 
 	float spacing = params->spacing + params->fill->w;
 
-	r_mat_push();
-	r_mat_translate(params->pos.x - spacing, params->pos.y, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(params->pos.x - spacing, params->pos.y, 0);
 
 	while(i < params->filled.elements) {
-		r_mat_translate(spacing, 0, 0);
+		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 1 }},
@@ -91,7 +89,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 	}
 
 	if(params->filled.fragments) {
-		r_mat_translate(spacing, 0, 0);
+		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ params->filled.fragments / (float)params->limits.fragments }},
@@ -101,7 +99,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 	}
 
 	while(i < params->limits.elements) {
-		r_mat_translate(spacing, 0, 0);
+		r_mat_mv_translate(spacing, 0, 0);
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = params->fill,
 			.shader_params = &(ShaderCustomParams){{ 0 }},
@@ -110,7 +108,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 		i++;
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_shader_ptr(prog_saved);
 }
 
@@ -175,12 +173,12 @@ void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, F
 	CullFaceMode cull_saved = r_cull_current();
 	r_cull(CULL_BACK);
 
-	r_mat_push();
+	r_mat_mv_push();
 	r_uniform_sampler("tex", r_framebuffer_get_attachment(fb, attachment));
-	r_mat_scale(width, height, 1);
-	r_mat_translate(0.5, 0.5, 0);
+	r_mat_mv_scale(width, height, 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_cull(cull_saved);
 }

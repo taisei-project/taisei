@@ -81,21 +81,21 @@ static void stage3_bg_tunnel_draw(vec3 pos) {
 	float r = 300;
 	int i;
 
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
 	r_uniform_sampler("tex", "stage3/border");
 
 	for(i = 0; i < n; i++) {
-		r_mat_push();
-		r_mat_rotate_deg(360.0/n*i + stgstate.tunnel_angle, 0, 1, 0);
-		r_mat_translate(0,0,-r);
-		r_mat_scale(2*r/tan((n-2)*M_PI/n), 3000, 1);
+		r_mat_mv_push();
+		r_mat_mv_rotate(M_PI*2.0/n*i + stgstate.tunnel_angle * DEG2RAD, 0, 1, 0);
+		r_mat_mv_translate(0,0,-r);
+		r_mat_mv_scale(2*r/tan((n-2)*M_PI/n), 3000, 1);
 		r_draw_quad();
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static bool stage3_tunnel(Framebuffer *fb) {

@@ -467,9 +467,9 @@ static void draw_wall_of_text(float f, const char *txt) {
 	float w = VIEWPORT_W;
 	float h = VIEWPORT_H;
 
-	r_mat_push();
-	r_mat_translate(w/2, h/2, 0);
-	r_mat_scale(w, h, 1.0);
+	r_mat_mv_push();
+	r_mat_mv_translate(w/2, h/2, 0);
+	r_mat_mv_scale(w, h, 1.0);
 
 	uint tw, th;
 	r_texture_get_size(spr.tex, 0, &tw, &th);
@@ -484,33 +484,34 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_draw_quad();
 	r_shader_standard();
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static void draw_spellbg(int t) {
-	r_mat_push();
-
 	Boss *b = global.boss;
 
+	r_state_push();
 	b->current->draw_rule(b, t);
+	r_state_pop();
 
 	if(b->current->type == AT_ExtraSpell) {
 		draw_extraspell_bg(b, t);
 	}
 
-	r_mat_push();
-	r_mat_translate(creal(b->pos), cimag(b->pos), 0);
-	r_mat_rotate_deg(global.frames*7.0, 0, 0, -1);
+	float scale = 1;
 
 	if(t < 0) {
-		float f = 1.0 - t/(float)ATTACK_START_DELAY;
-		r_mat_scale(f,f,f);
+		scale = 1.0 - t/(float)ATTACK_START_DELAY;
 	}
 
-	draw_sprite(0, 0, "boss_spellcircle0");
-	r_mat_pop();
-
-	r_mat_pop();
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "boss_spellcircle0",
+		.shader = "sprite_default",
+		.pos = { creal(b->pos), cimag(b->pos) },
+		.rotation.angle = global.frames * 7.0 * DEG2RAD,
+		.rotation.vector = { 0, 0, -1 },
+		.scale.both = scale,
+	});
 }
 
 static void draw_spellbg_overlay(int t) {
@@ -635,11 +636,11 @@ static bool draw_powersurge_effect(Framebuffer *target_fb, BlendMode blend) {
 	r_uniform_float("time", global.frames/60.0);
 	r_blend(blend);
 	r_cull(CULL_BACK);
-	r_mat_push();
-	r_mat_scale(VIEWPORT_W, VIEWPORT_H, 1);
-	r_mat_translate(0.5, 0.5, 0);
+	r_mat_mv_push();
+	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 	fbpair_swap(&stagedraw.powersurge_fbpair);
 
 	r_state_pop();
@@ -787,11 +788,14 @@ static void stage_render_bg(StageInfo *stage) {
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
-		r_mat_push();
-		r_mat_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2),0);
+		// FIXME: These suspicious VIEWPORT_X/Y offsets might be bogus.
+		// I suspect them to be remnants of a past long gone, when the stage framebuffers
+		// were all screen-sized.
+		r_mat_mv_push();
+		r_mat_mv_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2), 0);
 		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
-		r_mat_pop();
+		r_mat_mv_pop();
 		fbpair_swap(background);
 	}
 
@@ -882,18 +886,18 @@ static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 
 static inline void begin_viewport_shake(void) {
 	if(global.shake_view) {
-		r_mat_push();
-		r_mat_translate(
+		r_mat_mv_push();
+		r_mat_mv_translate(
 			global.shake_view * sin(global.frames),
 			global.shake_view * sin(global.frames * 1.1 + 3),
 			0
 		);
-		r_mat_scale(
+		r_mat_mv_scale(
 			1 + 2 * global.shake_view / VIEWPORT_W,
 			1 + 2 * global.shake_view / VIEWPORT_H,
 			1
 		);
-		r_mat_translate(
+		r_mat_mv_translate(
 			-global.shake_view,
 			-global.shake_view,
 			0
@@ -903,7 +907,7 @@ static inline void begin_viewport_shake(void) {
 
 static inline void end_viewport_shake(void) {
 	if(global.shake_view) {
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 }
 
@@ -919,11 +923,7 @@ void stage_draw_begin_noshake(void) {
 
 	if(global.shake_view) {
 		shake_suppressed = 2;
-		MatrixMode mm = r_mat_mode_current();
-		r_mat_mode(MM_MODELVIEW);
-		r_mat_push();
-		r_mat_identity();
-		r_mat_mode(mm);
+		r_mat_mv_push_identity();
 	}
 }
 
@@ -934,10 +934,7 @@ void stage_draw_end_noshake(void) {
 		// make sure shake_view doesn't change in-between the begin/end calls;
 		// that would've been *really* nasty to debug.
 		assert(shake_suppressed == 2);
-		MatrixMode mm = r_mat_mode_current();
-		r_mat_mode(MM_MODELVIEW);
-		r_mat_pop();
-		r_mat_mode(mm);
+		r_mat_mv_pop();
 	}
 
 	shake_suppressed = 0;
@@ -954,13 +951,13 @@ void stage_draw_viewport(void) {
 	// fach is equal to facw up to roundoff error.
 	float scale = fach;
 
-	r_mat_push();
-	r_mat_scale(1/facw, 1/fach, 1);
-	r_mat_translate(roundf(facw * VIEWPORT_X), roundf(fach * VIEWPORT_Y), 0);
-	r_mat_scale(roundf(scale * VIEWPORT_W), roundf(scale * VIEWPORT_H), 1);
-	r_mat_translate(0.5, 0.5, 0);
+	r_mat_mv_push();
+	r_mat_mv_scale(1/facw, 1/fach, 1);
+	r_mat_mv_translate(roundf(facw * VIEWPORT_X), roundf(fach * VIEWPORT_Y), 0);
+	r_mat_mv_scale(roundf(scale * VIEWPORT_W), roundf(scale * VIEWPORT_H), 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void stage_draw_scene(StageInfo *stage) {
@@ -1217,11 +1214,11 @@ struct labels_s {
 };
 
 static void draw_graph(float x, float y, float w, float h) {
-	r_mat_push();
-	r_mat_translate(x + w/2, y + h/2, 0);
-	r_mat_scale(w, h, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(x + w/2, y + h/2, 0);
+	r_mat_mv_scale(w, h, 1);
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static void draw_label(const char *label_str, double y_ofs, struct labels_s* labels, Color *clr) {
@@ -1248,13 +1245,13 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Lives:",       labels->y.lives,   labels, lb_label_clr);
 	draw_label("Spell Cards:", labels->y.bombs,   labels, lb_label_clr);
 
-	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_LABEL, 0, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(HUD_X_SECONDARY_OFS_LABEL, 0, 0);
 	draw_label("Power:",       labels->y.power,   labels, &stagedraw.hud_text.color.label_power);
 	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	if(stagedraw.objpool_stats) {
 		stage_draw_hud_objpool_stats(0, 390, HUD_EFFECTIVE_WIDTH);
@@ -1325,8 +1322,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		font_set_kerning_enabled(font, kern_saved);
 	}
 
-	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(HUD_X_SECONDARY_OFS_VALUE, 0, 0);
 
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
@@ -1414,7 +1411,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	});
 
 	font_set_kerning_enabled(font, kern_saved);
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	// God Mode indicator
 	if(global.plr.iddqd) {
@@ -1582,12 +1579,12 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 
 void stage_draw_hud(void) {
 	// Background
-	r_mat_push();
-	r_mat_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
 	r_shader_standard();
 	r_uniform_sampler("tex", "hud");
 	r_draw_model("hud");
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	r_blend(BLEND_PREMUL_ALPHA);
 
@@ -1611,8 +1608,8 @@ void stage_draw_hud(void) {
 	labels.y.voltage = label_ypos += label_spacing;
 	labels.y.graze   = label_ypos += label_spacing;
 
-	r_mat_push();
-	r_mat_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
 
 	// Set up Extra Spell indicator opacity early; some other elements depend on it
 	float extraspell_alpha = 0;
@@ -1632,8 +1629,8 @@ void stage_draw_hud(void) {
 
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
-		r_mat_push();
-		r_mat_translate(0, font_get_descent(get_font("standard")), 0);
+		r_mat_mv_push();
+		r_mat_mv_translate(0, font_get_descent(get_font("standard")), 0);
 
 		Sprite *spr_life = get_sprite("hud/heart");
 		Sprite *spr_bomb = get_sprite("hud/star");
@@ -1681,7 +1678,7 @@ void stage_draw_hud(void) {
 			}
 		});
 
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 
 	// Difficulty indicator
@@ -1693,8 +1690,8 @@ void stage_draw_hud(void) {
 	});
 
 	// Power/Item/Voltage icons
-	r_mat_push();
-	r_mat_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5 - 1, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5 - 1, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
@@ -1735,7 +1732,7 @@ void stage_draw_hud(void) {
 		.shader = "sprite_default",
 	});
 
-	r_mat_pop();
+	r_mat_mv_pop();
 	stage_draw_hud_text(&labels);
 
 	// Extra Spell indicator
@@ -1743,11 +1740,11 @@ void stage_draw_hud(void) {
 		float s2 = max(0, swing(extraspell_alpha, 3));
 		r_state_push();
 		r_shader("text_default");
-		r_mat_push();
-		r_mat_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 128, 0);
+		r_mat_mv_push();
+		r_mat_mv_translate(lerp(-HUD_X_OFFSET - HUD_X_PADDING, HUD_EFFECTIVE_WIDTH * 0.5, pow(2*extraspell_fadein-1, 2)), 128, 0);
+		r_mat_mv_rotate((360 * (1-s2) - 25) * DEG2RAD, 0, 0, 1);
+		r_mat_mv_scale(s2, s2, 0);
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * extraspell_alpha));
-		r_mat_rotate_deg(-25 + 360 * (1-s2), 0, 0, 1);
-		r_mat_scale(s2, s2, 0);
 
 		Font *font = get_font("big");
 
@@ -1757,7 +1754,7 @@ void stage_draw_hud(void) {
 		r_color4(extraspell_alpha, extraspell_alpha, extraspell_alpha, extraspell_alpha);
 		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  0,  0 }, .font_ptr = font, .align = ALIGN_CENTER });
 
-		r_mat_pop();
+		r_mat_mv_pop();
 		r_state_pop();
 	}
 
@@ -1765,7 +1762,7 @@ void stage_draw_hud(void) {
 		stage_draw_framerate_graphs(0, 360, HUD_EFFECTIVE_WIDTH, 30);
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	// Boss indicator ("Enemy")
 	if(global.boss) {

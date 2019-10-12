@@ -664,14 +664,14 @@ static float proj_spawn_effect_factor(Projectile *proj, int t) {
 }
 
 static inline void apply_common_transforms(Projectile *proj, int t) {
-	r_mat_translate(creal(proj->pos), cimag(proj->pos), 0);
-	r_mat_rotate_deg(proj->angle*180/M_PI+90, 0, 0, 1);
+	r_mat_mv_translate(creal(proj->pos), cimag(proj->pos), 0);
+	r_mat_mv_rotate(proj->angle + M_PI/2, 0, 0, 1);
 
 	/*
 	float s = 0.75 + 0.25 * proj_spawn_effect_factor(proj, t);
 
 	if(s != 1) {
-		r_mat_scale(s, s, 1);
+		r_mat_mv_scale(s, s, 1);
 	}
 	*/
 }
@@ -684,11 +684,10 @@ static void bullet_highlight_draw(Projectile *p, int t) {
 	float opacity = pow(1 - timefactor, 2);
 	opacity = min(1, 1.5 * opacity) * min(1, timefactor * 10);
 
-	r_mat_mode(MM_TEXTURE);
-	r_mat_push();
-	r_mat_translate(0.5, 0.5, 0);
-	r_mat_rotate(p->args[1], 0, 0, 1);
-	r_mat_translate(-0.5, -0.5, 0);
+	r_mat_tex_push();
+	r_mat_tex_translate(0.5, 0.5, 0);
+	r_mat_tex_rotate(p->args[1], 0, 0, 1);
+	r_mat_tex_translate(-0.5, -0.5, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = p->sprite,
@@ -700,7 +699,7 @@ static void bullet_highlight_draw(Projectile *p, int t) {
 		.pos = { creal(p->pos), cimag(p->pos) }
 	});
 
-	r_mat_pop();
+	r_mat_tex_pop();
 }
 
 static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, bool flare) {
@@ -771,7 +770,7 @@ static Projectile* spawn_bullet_spawning_effect(Projectile *p) {
 }
 
 static void projectile_clear_effect_draw(Projectile *p, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 
 	float timefactor = t / p->timeout;
@@ -791,7 +790,7 @@ static void projectile_clear_effect_draw(Projectile *p, int t) {
 		// .scale.both = 1 + 0.5 * sqrt(tf),
 	});
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static int projectile_clear_effect_logic(Projectile *p, int t) {
@@ -858,7 +857,7 @@ void ProjDrawCore(Projectile *proj, const Color *c) {
 }
 
 void ProjDraw(Projectile *proj, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(proj, t);
 
 	float eff = proj_spawn_effect_factor(proj, t);
@@ -885,59 +884,65 @@ void ProjDraw(Projectile *proj, int t) {
 		ProjDrawCore(proj, &proj->color);
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void ProjNoDraw(Projectile *proj, int t) {
 }
 
 void Blast(Projectile *p, int t) {
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_rotate_deg(creal(p->args[1]), cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(creal(p->args[1]) * DEG2RAD, cimag(p->args[1]), creal(p->args[2]), cimag(p->args[2]));
 
 	if(t != p->timeout && p->timeout != 0) {
-		r_mat_scale(t/(double)p->timeout, t/(double)p->timeout, 1);
+		r_mat_mv_scale(t/(double)p->timeout, t/(double)p->timeout, 1);
 	}
 
 	float fade = 1.0 - t / (double)p->timeout;
 	r_color(RGBA_MUL_ALPHA(0.3, 0.6, 1.0, fade));
 
-	draw_sprite_batched_p(0,0,p->sprite);
-	r_mat_scale(0.5+creal(p->args[2]),0.5+creal(p->args[2]),1);
+	SpriteParams sp = {
+		.sprite_ptr = p->sprite,
+		.color = RGBA_MUL_ALPHA(0.3, 0.6, 1.0, fade),
+	};
+
+	r_draw_sprite(&sp);
+	r_mat_mv_scale(0.5+creal(p->args[2]), 0.5+creal(p->args[2]), 1);
 	r_color4(0.3 * fade, 0.6 * fade, 1.0 * fade, 0);
-	draw_sprite_batched_p(0,0,p->sprite);
-	r_mat_pop();
+	sp.color = RGBA(0.3 * fade, 0.6 * fade, 1.0 * fade, 0);
+	r_draw_sprite(&sp);
+	r_mat_mv_pop();
 }
 
 void Shrink(Projectile *p, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/(double)p->timeout*2;
 	if(s != 1) {
-		r_mat_scale(s, s, 1);
+		r_mat_mv_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, &p->color);
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void DeathShrink(Projectile *p, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 
 	float s = 2.0-t/(double)p->timeout*2;
 	if(s != 1) {
-		r_mat_scale(s, 1, 1);
+		r_mat_mv_scale(s, 1, 1);
 	}
 
 	ProjDrawCore(p, &p->color);
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void GrowFade(Projectile *p, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 
 	set_debug_info(&p->debug);
@@ -945,22 +950,22 @@ void GrowFade(Projectile *p, int t) {
 
 	float s = t/(double)p->timeout*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
 	if(s != 1) {
-		r_mat_scale(s, s, 1);
+		r_mat_mv_scale(s, s, 1);
 	}
 
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void Fade(Projectile *p, int t) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static void ScaleFadeImpl(Projectile *p, int t, int fade_exponent) {
-	r_mat_push();
+	r_mat_mv_push();
 	apply_common_transforms(p, t);
 
 	double scale_min = creal(p->args[2]);
@@ -969,9 +974,9 @@ static void ScaleFadeImpl(Projectile *p, int t, int fade_exponent) {
 	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
 	double alpha = pow(fabs(1 - timefactor), fade_exponent);
 
-	r_mat_scale(scale, scale, 1);
+	r_mat_mv_scale(scale, scale, 1);
 	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void ScaleFade(Projectile *p, int t) {
@@ -991,11 +996,11 @@ void Petal(Projectile *p, int t) {
 	x /= r; y /= r; z /= r;
 
 	r_disable(RCAP_CULL_FACE);
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos),0);
-	r_mat_rotate_deg(t*4.0 + cimag(p->args[3]), x, y, z);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos),0);
+	r_mat_mv_rotate(DEG2RAD * (t*4.0 + cimag(p->args[3])), x, y, z);
 	ProjDrawCore(p, &p->color);
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 void petal_explosion(int n, complex pos) {

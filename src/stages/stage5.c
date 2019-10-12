@@ -67,21 +67,18 @@ static uint stage5_stairs_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage5_stairs_draw(vec3 pos) {
-	r_mat_push();
-	r_mat_translate(pos[0], pos[1], pos[2]);
-	r_mat_scale(300,300,300);
-
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(300,300,300);
 	r_shader("tower_light");
 	r_uniform_sampler("tex", "stage5/tower");
 	r_uniform_vec3("lightvec", 0, 0, 0);
 	r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
 	r_uniform_float("strength", stagedata.light_strength);
-
 	r_draw_model("tower");
-
-	r_mat_pop();
-
-	r_shader_standard();
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void stage5_draw(void) {
@@ -126,28 +123,20 @@ void iku_spell_bg(Boss *b, int t) {
 	fill_viewport(0, t*0.001, 0.7, "stage5/noise");
 	r_blend(BLEND_PREMUL_ALPHA);
 
-	r_mat_push();
-	r_mat_translate(0, -100, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(0, -100, 0);
+	fill_viewport(t/100.0, 0, 0.5, "stage5/spell_clouds");
+	r_mat_mv_translate(0, 100, 0);
+	fill_viewport(t/100.0 * 0.75, 0, 0.6, "stage5/spell_clouds");
+	r_mat_mv_translate(0, 100, 0);
+	fill_viewport(t/100.0 * 0.5, 0, 0.7, "stage5/spell_clouds");
+	r_mat_mv_translate(0, 100, 0);
+	fill_viewport(t/100.0 * 0.25, 0, 0.8, "stage5/spell_clouds");
+	r_mat_mv_pop();
 
-	fill_viewport(t/100.0,0,0.5,"stage5/spell_clouds");
-	r_mat_push();
-	r_mat_translate(0, 100, 0);
-	fill_viewport(t/100.0*0.75,0,0.6,"stage5/spell_clouds");
-	r_mat_push();
-	r_mat_translate(0, 100, 0);
-	fill_viewport(t/100.0*0.5,0,0.7,"stage5/spell_clouds");
-	r_mat_push();
-	r_mat_translate(0, 100, 0);
-	fill_viewport(t/100.0*0.25,0,0.8,"stage5/spell_clouds");
-	r_mat_pop();
-	r_mat_pop();
-	r_mat_pop();
-	r_mat_pop();
-
-	float opacity = 0.05*stagedata.light_strength;
+	float opacity = 0.05 * stagedata.light_strength;
 	r_color4(opacity, opacity, opacity, opacity);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
-	r_color4(1,1,1,1);
 }
 
 static void stage5_start(void) {

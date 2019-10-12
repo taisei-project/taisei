@@ -165,14 +165,14 @@ void draw_char_menu(MenuData *menu) {
 
 		r_draw_sprite(&portrait_params);
 
-		r_mat_push();
-		r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
+		r_mat_mv_push();
+		r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
-		r_mat_push();
+		r_mat_mv_push();
 
 		if(menu->entries[i].drawdata != 0) {
-			r_mat_translate(0,-300*menu->entries[i].drawdata, 0);
-			r_mat_rotate_deg(180*menu->entries[i].drawdata, 1,0,0);
+			r_mat_mv_translate(0, -300 * menu->entries[i].drawdata, 0);
+			r_mat_mv_rotate(M_PI * menu->entries[i].drawdata, 1, 0, 0);
 		}
 
 		text_draw(name, &(TextParams) {
@@ -182,7 +182,7 @@ void draw_char_menu(MenuData *menu) {
 			.color = RGBA(o, o, o, o),
 		});
 
-		r_mat_pop();
+		r_mat_mv_pop();
 
 		if(menu->entries[i].drawdata) {
 			o = 1-menu->entries[i].drawdata*3;
@@ -197,11 +197,11 @@ void draw_char_menu(MenuData *menu) {
 			.color = RGBA(o, o, o, o),
 		});
 
-		r_mat_pop();
+		r_mat_mv_pop();
 	}
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W/4, SCREEN_H/3, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
 
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 
@@ -210,12 +210,12 @@ void draw_char_menu(MenuData *menu) {
 
 	r_color4(0, 0, 0, 0.5);
 	r_shader_standard_notex();
-	r_mat_push();
-	r_mat_translate(-150, selbg_ofs + menu->drawdata[2] * 0.5, 0);
-	r_mat_scale(650, menu->drawdata[2], 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(-150, selbg_ofs + menu->drawdata[2] * 0.5, 0);
+	r_mat_mv_scale(650, menu->drawdata[2], 1);
 	r_draw_quad();
 	r_shader_standard();
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	for(ShotModeID shot = PLR_SHOT_A; shot < NUM_SHOT_MODES_PER_CHARACTER; shot++) {
 		PlayerMode *mode = plrmode_find(current_char, shot);
@@ -252,7 +252,7 @@ void draw_char_menu(MenuData *menu) {
 		}
 	}
 
-	r_mat_pop();
+	r_mat_mv_pop();
 
 	float o = 0.3*sin(menu->frames/20.0)+0.5;
 	o *= 1-menu->entries[menu->cursor].drawdata;

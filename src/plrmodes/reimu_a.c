@@ -78,12 +78,12 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
 
 static void reimu_spirit_homing_draw(Projectile *p, int t) {
-	r_mat_push();
-	r_mat_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_rotate(p->angle + M_PI/2, 0, 0, 1);
-	r_mat_scale(REIMU_SPIRIT_HOMING_SCALE, REIMU_SPIRIT_HOMING_SCALE, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
+	r_mat_mv_scale(REIMU_SPIRIT_HOMING_SCALE, REIMU_SPIRIT_HOMING_SCALE, 1);
 	ProjDrawCore(p, &p->color);
-	r_mat_pop();
+	r_mat_mv_pop();
 }
 
 static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {

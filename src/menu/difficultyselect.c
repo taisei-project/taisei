@@ -58,20 +58,22 @@ MenuData* create_difficulty_menu(void) {
 }
 
 void draw_difficulty_menu(MenuData *menu) {
+	r_state_push();
+
 	draw_main_menu_bg(menu, 0, 0, 0.05, "menu/mainmenubg", "stage1/cirnobg");
 	draw_menu_title(menu, "Select Difficulty");
 
 	Color c = diff_color;
 	r_color(color_mul(&c, RGBA(0.07, 0.07, 0.07, 0.7)));
 
-	r_mat_push();
-	r_mat_translate(SCREEN_W/2, SCREEN_H/2,0);
-	r_mat_rotate_deg(4*menu->drawdata[0]-4,0,0,1);
-	r_mat_push();
-	r_mat_scale(SCREEN_W*1.5,120,1);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/2, SCREEN_H/2,0);
+	r_mat_mv_rotate((4 * menu->drawdata[0] - 4) * DEG2RAD, 0, 0, 1);
+	r_mat_mv_push();
+	r_mat_mv_scale(SCREEN_W*1.5,120,1);
 	r_shader_standard_notex();
 	r_draw_quad();
-	r_mat_pop();
+	r_mat_mv_pop();
 	r_color3(1,1,1);
 
 	r_shader("text_default");
@@ -84,20 +86,16 @@ void draw_difficulty_menu(MenuData *menu) {
 
 	r_shader("sprite_default");
 
-	
-
 	for(int i = 0; i < menu->ecount; ++i) {
-		r_mat_push();
-		r_mat_translate(0, 240*tanh(0.7*(i-menu->drawdata[0])),0);
-		float scale = 0.5+menu->entries[i].drawdata;
-		r_color4(scale, scale, scale, scale);
-		r_mat_scale(scale, scale, 1);
-
-		draw_sprite_batched(0, 0, difficulty_sprite_name(D_Easy+i));
-		r_mat_pop();
-		r_color3(1,1,1);
+		float scale = 0.5 + menu->entries[i].drawdata;
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = difficulty_sprite_name(D_Easy + i),
+			.pos = { 0, 240*tanh(0.7*(i-menu->drawdata[0])) },
+			.color = RGBA(scale, scale, scale, scale),
+			.scale.both = scale,
+		});
 	}
 
-	r_mat_pop();
-	r_shader_standard();
+	r_mat_mv_pop();
+	r_state_pop();
 }
