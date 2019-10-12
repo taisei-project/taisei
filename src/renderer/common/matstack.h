@@ -59,8 +59,6 @@ typedef struct MatrixStates {
 
 		MatrixStack indexed[3];
 	};
-
-	MatrixStack *active;
 } MatrixStates;
 
 extern MatrixStates _r_matrices;

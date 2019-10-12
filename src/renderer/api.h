@@ -54,15 +54,6 @@ typedef enum RendererCapability {
 
 typedef uint_fast8_t r_capability_bits_t;
 
-typedef enum MatrixMode {
-	// XXX: Mimicking the gl matrix mode api for easy replacement.
-	// But we might just want to add proper functions to modify the non modelview matrices.
-
-	MM_MODELVIEW,
-	MM_PROJECTION,
-	MM_TEXTURE,
-} MatrixMode;
-
 typedef enum TextureType {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEX_TYPE_RGBA_8,
@@ -707,21 +698,6 @@ void r_swap(SDL_Window *window);
 
 bool r_screenshot(Pixmap *dest) attr_nodiscard attr_nonnull(1);
 
-void r_mat_mode(MatrixMode mode) attr_deprecated("Use r_mat_{mv,proj,tex}* instead");
-MatrixMode r_mat_mode_current(void) attr_deprecated("Use r_mat_{mv,proj,tex}* instead");
-void r_mat_push(void) attr_deprecated("Use r_mat_{mv,proj,tex}_push instead");
-void r_mat_pop(void) attr_deprecated("Use r_mat_{mv,proj,tex}_pop instead");
-void r_mat_identity(void) attr_deprecated("Use r_mat_{mv,proj,tex}_identity instead");
-void r_mat_translate_v(vec3 v) attr_deprecated("Use r_mat_{mv,proj,tex}_translate_v instead");
-void r_mat_rotate_v(float angle, vec3 v) attr_deprecated("Use r_mat_{mv,proj,tex}_rotate_v instead");
-void r_mat_scale_v(vec3 v) attr_deprecated("Use r_mat_{mv,proj,tex}_scale_v instead");
-void r_mat_ortho(float left, float right, float bottom, float top, float near, float far) attr_deprecated("Use r_mat_proj_ortho instead");
-void r_mat_perspective(float angle, float aspect, float near, float far) attr_deprecated("Use r_mat_proj_perspective instead");
-
-void r_mat(MatrixMode mode, mat4 mat) attr_deprecated("Use r_mat_{mv,proj,tex} or r_mat_{mv,proj,tex}_push_premade instead");
-void r_mat_current(MatrixMode mode, mat4 out_mat) attr_deprecated("Use r_mat_{mv,proj,tex}_current instead");
-mat4* r_mat_current_ptr(MatrixMode mode) attr_deprecated("Use r_mat_{mv,proj,tex}_current_ptr instead");
-
 void r_mat_mv_push(void);
 void r_mat_mv_push_premade(mat4 mat);
 void r_mat_mv_push_identity(void);
@@ -838,25 +814,14 @@ Texture* r_texture_get(const char *name) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 
-attr_deprecated("Use r_mat_{mv,proj,tex}_translate instead")
-INLINE void r_mat_translate(float x, float y, float z) { r_mat_translate_v((vec3) { x, y, z }); }
 INLINE void r_mat_mv_translate(float x, float y, float z) { r_mat_mv_translate_v((vec3) { x, y, z }); }
 INLINE void r_mat_proj_translate(float x, float y, float z) { r_mat_proj_translate_v((vec3) { x, y, z }); }
 INLINE void r_mat_tex_translate(float x, float y, float z) { r_mat_tex_translate_v((vec3) { x, y, z }); }
 
-attr_deprecated("Use r_mat_{mv,proj,tex}_rotate instead")
-INLINE void r_mat_rotate(float angle, float nx, float ny, float nz) { r_mat_rotate_v(angle, (vec3) { nx, ny, nz }); }
 INLINE void r_mat_mv_rotate(float angle, float nx, float ny, float nz) { r_mat_mv_rotate_v(angle, (vec3) { nx, ny, nz }); }
 INLINE void r_mat_proj_rotate(float angle, float nx, float ny, float nz) { r_mat_proj_rotate_v(angle, (vec3) { nx, ny, nz }); }
 INLINE void r_mat_tex_rotate(float angle, float nx, float ny, float nz) { r_mat_tex_rotate_v(angle, (vec3) { nx, ny, nz }); }
 
-attr_deprecated("Use r_mat_{mv,proj,tex}_rotate instead")
-INLINE void r_mat_rotate_deg(float angle_degrees, float nx, float ny, float nz) { r_mat_rotate_v(angle_degrees * 0.017453292519943295, (vec3) { nx, ny, nz }); }
-attr_deprecated("Use r_mat_{mv,proj,tex}_rotate_v instead")
-INLINE void r_mat_rotate_deg_v(float angle_degrees, vec3 v) { r_mat_rotate_v(angle_degrees * 0.017453292519943295, v); }
-
-attr_deprecated("Use r_mat_{mv,proj,tex}_scale instead")
-INLINE void r_mat_scale(float sx, float sy, float sz) { r_mat_scale_v((vec3) { sx, sy, sz }); }
 INLINE void r_mat_mv_scale(float sx, float sy, float sz) { r_mat_mv_scale_v((vec3) { sx, sy, sz }); }
 INLINE void r_mat_proj_scale(float sx, float sy, float sz) { r_mat_proj_scale_v((vec3) { sx, sy, sz }); }
 INLINE void r_mat_tex_scale(float sx, float sy, float sz) { r_mat_tex_scale_v((vec3) { sx, sy, sz }); }
