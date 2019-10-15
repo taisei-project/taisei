@@ -20,9 +20,9 @@
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)
 
 typedef struct CharMenuContext {
-	ShotModeID subshot;
-	CharacterID char_draw_order[NUM_CHARACTERS];
-	CharacterID prev_selected_char;
+	int8_t subshot;
+	int8_t char_draw_order[NUM_CHARACTERS];
+	int8_t prev_selected_char;
 } CharMenuContext;
 
 static void set_player_mode(MenuData *m, void *p) {
