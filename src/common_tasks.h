@@ -15,6 +15,7 @@
 #include "item.h"
 #include "move.h"
 #include "entity.h"
+#include "global.h"
 
 DECLARE_EXTERN_TASK(
 	common_drop_items,
