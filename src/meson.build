@@ -208,11 +208,14 @@ if host_machine.system() == 'emscripten'
         # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
+        '-s', 'ASYNCIFY_IMPORTS=["_koishi_impl_fiber_swap"]',
         '-lidbfs.js',
 
         # Try enabling this if unpatched Freetype crashes
         # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
+
+    em_link_args += subproject('koishi').get_variable('koishi_external_link_args')
 
     if em_debug
         # em_link_output_suffixes += ['wasm.map']
