@@ -715,136 +715,6 @@ static int stage1_circletoss(Enemy *e, int time) {
 	return 1;
 }
 
-static int stage1_drop(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2);
-		return 1;
-	}
-	if(t < 0)
-		return 1;
-
-	e->pos = e->pos0 + e->args[0]*t + e->args[1]*t*t;
-
-	FROM_TO(10,1000,1) {
-		if(frand() > 0.997-0.007*(global.diff-1)) {
-			play_sound("shot1");
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = e->pos,
-				.color = RGB(0.8,0.8,0.4),
-				.rule = linear,
-				.args = {
-					(1+0.3*global.diff+frand())*cexp(I*carg(global.plr.pos - e->pos))
-				}
-			);
-		}
-	}
-
-	return 1;
-}
-
-static int stage1_multiburst(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 3, ITEM_POWER, 2);
-		return 1;
-	}
-
-	FROM_TO(0, 100, 1) {
-		GO_TO(e, e->pos0 + 100*I , 0.02);
-	}
-
-	FROM_TO_INT(60, 300, 70, 40, 18-2*global.diff) {
-		play_sound("shot1");
-		int n = global.diff-1;
-		for(int i = -n; i <= n; i++) {
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = e->pos,
-				.color = RGB(0.2, 0.3, 0.5),
-				.rule = linear,
-				.args = {
-					2.5*cexp(I*(carg(global.plr.pos - e->pos) + i/5.0))
-				}
-			);
-		}
-	}
-
-	FROM_TO(320, 700, 1) {
-		e->args[1] += 0.03;
-		e->pos += e->args[0]*e->args[1] + 1.4*I;
-	}
-
-	return 1;
-}
-
-static int stage1_tritoss(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 2);
-		return 1;
-	}
-
-	FROM_TO(0, 100, 1) {
-		e->pos += e->args[0];
-	}
-
-	FROM_TO(120, 800,8-global.diff) {
-		play_sound("shot1");
-		float a = M_PI/30.0*((_i/7)%30)+0.1*nfrand();
-		int i;
-		int n = 3+global.diff/2;
-
-		for(i = 0; i < n; i++){
-			PROJECTILE(
-				.proto = pp_thickrice,
-				.pos = e->pos,
-				.color = RGB(0.2, 0.4, 0.8),
-				.rule = asymptotic,
-				.args = {
-					2*cexp(I*a+2.0*I*M_PI/n*i),
-					3,
-				},
-			);
-		}
-	}
-
-	FROM_TO(480, 800, 300) {
-		play_sound("shot_special1");
-		int i, n = 15 + global.diff*3;
-		for(i = 0; i < n; i++) {
-			PROJECTILE(
-				.proto = pp_rice,
-				.pos = e->pos,
-				.color = RGB(0.6, 0.2, 0.7),
-				.rule = asymptotic,
-				.args = {
-					1.5*cexp(I*2*M_PI/n*i),
-					2.0,
-				},
-			);
-
-			if(global.diff > D_Easy) {
-				PROJECTILE(
-					.proto = pp_rice,
-					.pos = e->pos,
-					.color = RGB(0.6, 0.2, 0.7),
-					.rule = asymptotic,
-					.args = {
-						3*cexp(I*2*M_PI/n*i),
-						3.0,
-					},
-				);
-			}
-		}
-	}
-
-	if(t > 820)
-		e->pos += e->args[1];
-
-	return 1;
-}
 
 // #define BULLET_TEST
 
@@ -1539,6 +1409,67 @@ TASK(spawn_midboss, NO_ARGS) {
 	boss_start_attack(boss, boss->attacks);
 }
 
+TASK(tritoss_fairy, { complex pos; complex velocity; complex end_velocity; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 4000, BigFairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 5,
+		.power = 2,
+	});
+
+	e->move = move_linear(ARGS.velocity);
+
+	WAIT(120);
+
+	e->move.retention = 0.8;
+
+	int interval = difficulty_value(7,6,5,3);
+	int rounds = 680/interval;
+	for(int k = 0; k < rounds; k++) {
+		play_sound("shot1");
+
+		float a = M_PI / 30.0 * ((k/7) % 30) + 0.1 * nfrand();
+		int n = difficulty_value(3,4,4,5);
+
+		for(int i = 0; i < n; i++){
+			PROJECTILE(
+				.proto = pp_thickrice,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.4, 0.8),
+				.move = move_asymptotic_simple(2*cdir(a+2.0*M_PI/n*i), 3),
+			);
+		}
+
+		if(k == rounds/2 || k == rounds-1) {
+			play_sound("shot_special1");
+			int n2 = difficulty_value(20, 23, 26, 30);
+			for(int i = 0; i < n2; i++) {
+				PROJECTILE(
+					.proto = pp_rice,
+					.pos = e->pos,
+					.color = RGB(0.6, 0.2, 0.7),
+					.move = move_asymptotic_simple(1.5*cexp(I*2*M_PI/n2*i),2),
+				);
+
+				if(global.diff > D_Easy) {
+					PROJECTILE(
+						.proto = pp_rice,
+						.pos = e->pos,
+						.color = RGB(0.6, 0.2, 0.7),
+						.move = move_asymptotic_simple(3*cexp(I*2*M_PI/n2*i), 3.0),
+					);
+				}
+			}
+		}
+		WAIT(interval);
+	}
+
+
+	WAIT(20);
+	e->move = move_asymptotic_simple(ARGS.end_velocity, -1);
+	STALL;
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage1");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
@@ -1576,6 +1507,17 @@ TASK(stage_timeline, NO_ARGS) {
 
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-midboss-filler);
+
+	for(int i = 0; i < 5; i++) {
+		INVOKE_TASK_DELAYED(i*200, multiburst_fairy, VIEWPORT_W/2 - 195 * cos(2.43 * i) - 20 * I, VIEWPORT_W / 2 - 100 * cos(2.43 * i) + 100 * I, 0.1 * sign(nfrand()));
+	}
+
+	for(int i = 0; i < difficulty_value(2, 2, 4, 4); i++) {
+		INVOKE_TASK_DELAYED(100 + 20 * (i&1), circletoss_fairy, (VIEWPORT_W+50) * (i&1) - 25 + VIEWPORT_H / 3 * I * (1 + i/2), 1 - 2 * (i&1) - 0.5 * I, 0.01 * (1 - 2 * (i&1) - I), 200);
+	}
+
+	INVOKE_TASK_DELAYED(300, tritoss_fairy, VIEWPORT_W / 2 - 30*I, 2 * I, -2.6 * I);
+
 }
 
 void stage1_events(void) {
@@ -1597,7 +1539,7 @@ void stage1_events(void) {
 	FROM_TO(2900, 3750, 190-30*global.diff) {
 		create_enemy2c(VIEWPORT_W/2 + 205 * sin(2.13*global.frames), 1200, Fairy, stage1_instantcircle, 2.0*I, 3.0 - 6*frand() - 1.0*I);
 	}
-	*/
+	
 
 	// multiburst + normal circletoss, later tri-toss
 	FROM_TO(3900, 4800, 200) {
@@ -1609,7 +1551,7 @@ void stage1_events(void) {
 
 	AT(4200)
 		create_enemy2c(VIEWPORT_W/2.0, 4000, BigFairy, stage1_tritoss, 2.0*I, -2.6*I);
-
+*/
 	AT(5000) {
 		enemy_kill_all(&global.enemies);
 		stage_unlock_bgm("stage1");
