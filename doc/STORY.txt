@@ -47,11 +47,7 @@
 ■ 1. Incident
 ================================================================================
 
- Another villain threatens to turn the land of dreams into a place of terror.
- The barrier is disrupted, and a strange tunnel opens on Yōkai Mountain that
- leads to an unknown land.  Gensōkyō is thrown into chaos as humans and yōkai
- alike flock to this rift, where they will discover both new forces and old
- forces that have changed beyond recognition.
+ FIXME: Removed due to issue #179
 
 ================================================================================
 ■ 2. Characters
@@ -60,116 +56,15 @@
 
   ○ Hakurei Reimu
 
-    For Reimu, today should have been a peaceful day. It was spring, so early
-    mornings were still chilly and flowers were just beginning to burst into
-    bright blooms around the shrine. But unfortunately, Reimu did not get to
-    enjoy her luxury of sleeping in as she was rudely awoken by insistent
-    prodding into her cheek.
-
-    “Mmmh?”
-
-    “Wake up, Reimu. There is a serious incident unraveling itself as we speak!”
-
-    Although annoyed at being woken up in her own shrine, she nevertheless
-    cracked an unamused eye open to stare at her beauty sleep’s disturbance. The
-    voice was familiar, and so was the tall, unsettling woman peering back at
-    her from her own personal crack of distorted reality.
-
-    “What now, Yukari? Can’t you see I am doing the important duty of self-care
-    as a shrine maiden?”
-
-    “You should think about switching duties then,” Yukari quipped back,
-    reaching over to outright pinch Reimu’s cheek. “The barrier is being
-    distorted by someone with a great deal of unexpected power, and it is of a
-    sort that I cannot manipulate.”
-
-    “So, you can’t fix it, then?”
-
-    “Of course not. It’s too… logical. Even though I created this barrier with
-    mathematics in mind, my parameters were fictional. It’s a power grounded in
-    reality, and it seems to have outright torn open a hole in the barrier up on
-    Yōkai Mountain, creating a tunnel to somewhere else entirely.”
-
-    Now fully awake, Reimu sat up and batted Yukari’s intrusive hands away. But
-    even though she sincerely wanted to ignore the yōkai sage that plagued her
-    life as a constant irritation, she too could feel something off in the air.
-    The Hakurei Shrine sat at the very edge of Gensōkyō, and it held the barrier
-    steady as a medium between both sides of the boundary. Items from the
-    Outside World commonly ended up strewn around the grounds, and so did the
-    occasional high school girl as well. Despite the unusual atmosphere of the
-    shrine, Reimu immediately knew just by glancing around that it was not
-    normal for her shrine’s walls to look patchy and moldy in places, or for the
-    floor to have random cracks and stains not present from everyday use.
-
-    “You can see it, can you not? The Hakurei Shrine from the Outside World is
-    merging with ours as our fantasy disappears. Soon it will replace yours
-    entirely, and you will live in the broken down version of your beloved
-    home.”
-
-    That was all it took to get Reimu in action as she slipped into her uniform
-    and grabbed her Yin-Yang Orbs and purification rod. Although the weakening
-    of the Hakurei Barrier was worrying enough on its own, there was no way she
-    could allow her shrine to turn into the run-down mess it was on the other
-    side of the border. Whoever was behind this needed to stop, for her sake and
-    everyone else’s. And if nothing else, the shrine maiden was loath to become
-    homeless. That simply would not do.
-
-    “Yukari, you’ll take me there, won’t you?”
-
-    Unfortunately for the shrine maiden, she was met with silence. It seemed as
-    though she would have to take the long route to Yōkai Mountain.
+    FIXME: Removed due to issue #179
 
   ○ Kirisame Marisa
 
-    Early one spring day, just after dawn had passed, Marisa was finding a
-    severe lack of things to do. She had just finished some battle magic
-    research for her hakkero yesterday, and as usual, no customers seemed eager
-    to brave the dark, dank Forest of Magic in order to purchase anything or
-    pay for extermination services.
-
-    The day likely would have stayed dull had Aya not decided to fervently bang
-    on the door, a rare presence that normally wouldn’t brave the Forest of
-    Magic’s unpleasantness unless something serious was happening.
-
-    “Have you heard, Miss Marisa? The border has been broken on Yōkai
-    Mountain, and a tunnel to an unknown world has opened up! You’ll need to
-    leave now if you’re going to want to stay on top of this new development.”
-
-    “Sign me up! Beats sittin’ in here all day, and anyway, that sounds like
-    it’s the start of a big incident! I can’t be left behind as Gensōkyō’s
-    second best incident resolver!”
-
-    With her mind settled, Marisa grabbed her hat and bolted out the door past
-    the expectant tengu. Living as isolated as she does, Marisa wasn’t
-    completely sure what she was heading into, but that didn’t matter. As long
-    as she had her magic and her experience, she was confident that she could
-    handle anyone and anything. After all, what incident couldn’t be fixed with
-    a liberal application of “Master Spark!” to the face? No incident, that’s
-    what.
-
+    FIXME: Removed due to issue #179
 
   ○ Konpaku Yōmu
 
-    As what passed for dawn gently shook the Netherworld awake, the world’s
-    peaceful tranquility was broken by the disconcerting sounds of the breaking
-    barrier. As a world between worlds, the Netherworld was always sensitive to
-    changes in the boundary, and this time was no exception as the ghosts cried
-    and moaned at the disturbance to their afterlife.
-
-    “Yōmu, I cannot sleep in late with all this ruckus. And anyways, isn’t this
-    a bit unexpected? Miss Yakumo doesn’t put such strain on the border without
-    asking nicely and this doesn’t seem like her doing. I suspect this is the
-    work of someone else, and that’s just no good. We wouldn’t want the spirits
-    to break free and be bothersome to whomever they find now, would we?”
-
-    “You’re absolutely correct, Lady Yuyuko! I’ll cut to the truth of the matter
-    and ask whoever is responsible to both turn down the noise and the stress
-    put on the Netherworld’s boundary! You can count on me for anything!”
-
-    Something new and intrusive was pushing on the borders of the Netherworld,
-    weakening them. Were they to break, the restless dead would surely explore
-    whatever new space they were led to. Yōmu was resolved to end the incident
-    quickly, before any unwanted changes happened.
+    FIXME: Removed due to issue #179
 
 ================================================================================
 ■ 3. Stages
@@ -191,89 +86,34 @@
   ○ Stage 1 Boss
     Cirno
 
-    Incidents are always exciting to fairies. They never know what is going on,
-    but seeing trouble unfolding around them gives them the perfect excuse to
-    let loose and shoot at whoever they want. Instinctually, Cirno decides to
-    play along. Whoever stumbles across her lake would have to deal with an
-    ice-cold challenge!
+    FIXME: Removed due to issue #179
 
 
   ○ Stage 2 Boss
     Kagiyama Hina
 
-    As the epicenter of the new disaster, the small forest and dark road home
-    to the wandering goddess had turned into a hotbed of activity.  Although
-    misguided, she decides that she needs to take action to prevent anyone from
-    entering the unknown rift, fearing that whatever is inside it would lead to
-    chaos and the eventual propagation of misfortune in Gensōkyō.
+    FIXME: Removed due to issue #179
 
 
   ○ Stage 3 Boss
     Wriggle
 
-    Normally an unimpressive and simpleminded yōkai, Wriggle nevertheless
-    manages to sneak past Hina and into the tunnel while the heroines are
-    fighting the goddess. Finding herself surrounded by distorted magical
-    energies, she gleefully absorbs a power past her own and decides that she
-    should prove insect superiority once and for all to the human simpletons
-    following right behind her.
+    FIXME: Removed due to issue #179
 
 
   ○ Stage 4 Boss
     Kurumi
 
-    This former guardian of the Lake of Blood had found herself jobless and
-    homeless after Yuuka dissolved her world and headed to Gensōkyō. Instead of
-    following Yuuka to Gensōkyō, however, she and Elly had left for the Outside
-    World. While relatively unchanged and unscathed by her long stay there, she
-    had grown decidedly closer to Elly, and is happy to support any of her new
-    goals, even if they go against yōkai standards. To that degree she is
-    gatekeeping once more… but this time for a new, more personal master. And
-    since it’s been a while since she last fed on humans freely, she may be a
-    little too excited to apply gratuitous force. Only a little.
+    FIXME: Removed due to issue #179
 
 
   ○ Stage 5 Boss
     Nagae Iku
 
-    Similarly to Wriggle, Iku took full advantage of Kurumi’s distraction with
-    the heroines to sneak past them all and swiftly fly up to the top of the
-    tower, where she appears to have set herself up as an impromptu guardian.
-    Much like the Netherworld, Heaven’s space and borders were also being
-    infringed upon by the new world, and so the Celestials had decreed that Iku
-    be there to stop anyone other than them from dealing with it. Having gotten
-    there barely on time, she is flustered and irritated, and wants the
-    heroines to leave so that she can quietly investigate the issue and file a
-    report on it to her superiors. Since they refuse to let her be, she shocks
-    them with a surprisingly fierce fight!
+    FIXME: Removed due to issue #179
 
 
   ○ Stage 6 Boss
     Elly
 
-    Like Kurumi, this former gatekeeper became literally disillusioned with her
-    job as she was cast from Mugenkan into the Outside World, both having
-    gotten lost on their way to Gensōkyō. Despite the seeming contradictory
-    nature of logic and reasoning being used by a yōkai, it seems as though
-    Elly has been able to embrace these things, giving her the ability to
-    manipulate relations via complex calculations. Her impossible existence has
-    given rise to a fusion of magic and science, and by deconstructing the
-    nonsense making up Gensōkyō’s border separating it from the Outside, she
-    was able to return to prominence in fantasy once more, as the one who
-    created a new world with a mansion and an impossibly high tower breaking
-    into Heaven.
-
-    It is in this tower where she devotes herself to researching The Theory of
-    Everything, and as long as she continues to do so, Gensōkyō is put at risk
-    of being deconstructed due to its inherently illogical nature. She doesn’t
-    mean to do this, of course, but by finishing this theory, it is only
-    natural that Gensōkyō, which should not be able to exist, would be
-    affected.
-
-    Besides that, her world’s pushy nature makes her a very bad neighbor, but
-    she’s too busy to care.
-
-    Her spell cards are based on physical phenomena, turning her experiments
-    into powerful weapons.
-
-    Fun Fact™: Taisei actually uses complex math for projectile positioning.
+    FIXME: Removed due to issue #179

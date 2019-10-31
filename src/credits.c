@@ -36,14 +36,13 @@ static struct {
 
 #define CREDITS_FADEOUT 180
 
-#define ENTRY_TIME 347
+#define ENTRY_TIME 376
 
 static void credits_add(char *data, int time);
 
 static void credits_fill(void) {
 	// In case the shortened URLs break,
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
-	// Lalasa's YouTube: https://www.youtube.com/channel/UCc6ePuGLYnKTkdDqxP3OB4Q
 	// InsideI's bandcamp: https://vnutriya.bandcamp.com/
 
 	credits_add("Taisei Project\nbrought to you by…", 200);
@@ -75,14 +74,6 @@ static void credits_fill(void) {
 		"https://gensokyo.social/@afensorm\n"
 		"https://pixiv.me/afens\n\n"
 		"Character art"
-	), ENTRY_TIME);
-
-	credits_add((
-		"Lalasa\n"
-		"Ola Kruzel\n"
-		"okruzel@comcast.net\n"
-		"YouTube: https://is.gd/ohihef\n\n"
-		"Writing, playtesting"
 	), ENTRY_TIME);
 
 	credits_add((
