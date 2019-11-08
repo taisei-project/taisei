@@ -223,7 +223,7 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 	s->children[1]->sibling = sub;
 	list_push(&rp->freelist, s->children[1]);
 
-	log_debug("made new subsections from %p: %p[%gx%g]; %p[%gx%g]",
+	RP_DEBUG("made new subsections from %p: %p[%gx%g]; %p[%gx%g]",
 		(void*)s,
 		(void*)s->children[0], rect_width(s->children[0]->rect), rect_height(s->children[0]->rect),
 		(void*)s->children[1], rect_width(s->children[1]->rect), rect_height(s->children[1]->rect)
