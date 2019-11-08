@@ -47,8 +47,6 @@ typedef enum VideoBackend {
 	VIDEO_BACKEND_SWITCH,
 } VideoBackend;
 
-// TODO make this struct private
-
 typedef enum VideoCapability {
 	VIDEO_CAP_FULLSCREEN,
 	VIDEO_CAP_EXTERNAL_RESIZE,

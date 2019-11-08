@@ -234,7 +234,7 @@
 	#define HT_MIN_SIZE 32
 #endif
 
-// TODO: static_assert HT_MIN_SIZE is a power of 2
+static_assert((HT_MIN_SIZE & (~HT_MIN_SIZE + 1)) == HT_MIN_SIZE, "HT_MIN_SIZE must be power of two");
 
 /*
  * The following macros comprise the core of the templating machinery.
