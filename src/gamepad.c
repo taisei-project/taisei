@@ -337,11 +337,6 @@ void gamepad_shutdown(void) {
 	events_unregister_handler(gamepad_event_handler);
 }
 
-void gamepad_restart(void) {
-	gamepad_shutdown();
-	gamepad_init();
-}
-
 static float gamepad_axis_sens(GamepadAxis id) {
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
 		return config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS);
