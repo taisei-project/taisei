@@ -1493,17 +1493,23 @@ TASK(stage_timeline, NO_ARGS) {
 
 	STAGE_BOOKMARK(post-midboss);
 
-	int swirl_spam_time = 600;
+	int swirl_spam_time = 760;
 
 	for(int i = 0; i < swirl_spam_time; i += 30) {
 		int o = ((int[]) { 0, 1, 0, -1 })[(i / 60) % 4];
 		INVOKE_TASK_DELAYED(i + time_ofs, sinepass_swirls, 40, 132 + 32 * o, 1 - 2 * ((i / 60) & 1));
 	}
 
-	time_ofs += swirl_spam_time - 120;
+	time_ofs += swirl_spam_time;
 
 	INVOKE_TASK_DELAYED(40 + time_ofs, burst_fairies_1);
-	INVOKE_TASK_DELAYED(120 + time_ofs, instantcircle_fairies, 320);
+
+	int instacircle_time = filler_time - swirl_spam_time - 400;
+
+	for(int i = 0; i < instacircle_time; i += 180) {
+		INVOKE_TASK_DELAYED(i + time_ofs, sinepass_swirls, 80, 132, 1);
+		INVOKE_TASK_DELAYED(120 + i + time_ofs, instantcircle_fairies, 120);
+	}
 
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-midboss-filler);
@@ -1539,7 +1545,7 @@ void stage1_events(void) {
 	FROM_TO(2900, 3750, 190-30*global.diff) {
 		create_enemy2c(VIEWPORT_W/2 + 205 * sin(2.13*global.frames), 1200, Fairy, stage1_instantcircle, 2.0*I, 3.0 - 6*frand() - 1.0*I);
 	}
-	
+
 
 	// multiburst + normal circletoss, later tri-toss
 	FROM_TO(3900, 4800, 200) {
