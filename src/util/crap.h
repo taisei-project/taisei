@@ -17,16 +17,30 @@ void* memdup(const void *src, size_t size) attr_returns_allocated attr_nonnull(1
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) attr_nonnull(2, 3);
 bool is_main_thread(void);
 
+typedef union FloatBits {
+	float val;
+	uint32_t bits;
+} FloatBits;
+
+typedef union DoubleBits {
+	double val;
+	uint64_t bits;
+} DoubleBits;
+
 INLINE uint32_t float_to_bits(float f) {
-	union { uint32_t i; float f; } u;
-	u.f = f;
-	return u.i;
+	return ((FloatBits) { .val = f }).bits;
 }
 
 INLINE float bits_to_float(uint32_t i) {
-	union { uint32_t i; float f; } u;
-	u.i = i;
-	return u.f;
+	return ((FloatBits) { .bits = i }).val;
+}
+
+INLINE uint32_t double_to_bits(float f) {
+	return ((DoubleBits) { .val = f }).bits;
+}
+
+INLINE double bits_to_double(uint64_t i) {
+	return ((DoubleBits) { .bits = i }).val;
 }
 
 extern SDL_threadID main_thread_id;

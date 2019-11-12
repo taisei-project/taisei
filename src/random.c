@@ -87,17 +87,38 @@ uint64_t tsrand64(void) {
 	return tsrand64_p(tsrand_current);
 }
 
-static inline double makedouble(uint64_t x) {
-	// Range: [0..1)
-	return (x >> 11) * (1.0 / (UINT64_C(1) << 53));
+static inline double make_unsigned_double(uint64_t x) {
+	// Range: [0.0; 1.0)
+	return (x >> 11) * 0x1.0p-53;
+}
+
+static inline double make_signed_double(uint64_t x) {
+	// Range: (-1.0; 1.0)
+	// NOTE: slight bias towards 0, because -0 exists
+	DoubleBits db;
+	db.val = make_unsigned_double(x << 1);
+	db.bits |= x & (UINT64_C(1) << 63);
+	return db.val;
 }
 
 double frand(void) {
-	return makedouble(tsrand64());
+	return make_unsigned_double(tsrand64());
 }
 
 double nfrand(void) {
-	return frand() * 2.0 - 1.0;
+	return make_signed_double(tsrand64());
+}
+
+bool rand_bool(void) {
+	return tsrand64() >> 63;
+}
+
+double rand_sign(void) {
+	return bits_to_double((UINT64_C(0x3FF) << 52) | (tsrand64() & (UINT64_C(1) << 63)));
+}
+
+float rand_signf(void) {
+	return bits_to_float((0x7f << 23) | (tsrand() & (1 << 31)));
 }
 
 // we use this to support multiple rands in a single statement without breaking replays across different builds
@@ -157,11 +178,11 @@ uint32_t _tsrand_a(int idx, const char *file, uint line) {
 }
 
 double _afrand(int idx, const char *file, uint line) {
-	return makedouble(_tsrand64_a(idx, file, line));
+	return make_unsigned_double(_tsrand64_a(idx, file, line));
 }
 
 double _anfrand(int idx, const char *file, uint line) {
-	return _afrand(idx, file, line) * 2 - 1;
+	return make_signed_double(_tsrand64_a(idx, file, line));
 }
 
 void tsrand_lock(RandomState *rnd) {
