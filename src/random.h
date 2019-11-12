@@ -32,8 +32,11 @@ uint64_t tsrand64(void);
 void tsrand_lock(RandomState *rnd);
 void tsrand_unlock(RandomState *rnd);
 
-double frand(void);
-double nfrand(void);
+double frand(void);  // Range: [0.0; 1.0)
+double nfrand(void);  // Range: (-1.0; 1.0)
+bool rand_bool(void);
+double rand_sign(void);  // 1.0 or -1.0
+float rand_signf(void);  // 1.0f or -1.0f
 
 void _tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line);
 void _tsrand_fill(int amount, const char *file, uint line);
@@ -50,6 +53,7 @@ double _anfrand(int idx, const char *file, uint line);
 
 #define TSRAND_ARRAY_LIMIT 16
 
+// Range: [rmin; rmax)
 INLINE double rand_range(double rmin, double rmax) {
 	// TODO: ensure uniform distribution?
 	return frand() * (rmax - rmin) + rmin;
@@ -58,6 +62,10 @@ INLINE double rand_range(double rmin, double rmax) {
 INLINE double rand_angle(void) {
 	// TODO: ensure uniform distribution?
 	return frand() * (M_PI * 2);
+}
+
+INLINE bool rand_chance(double chance) {
+	return frand() < chance;
 }
 
 #endif // IGUARD_random_h
