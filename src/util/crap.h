@@ -35,8 +35,8 @@ INLINE float bits_to_float(uint32_t i) {
 	return ((FloatBits) { .bits = i }).val;
 }
 
-INLINE uint32_t double_to_bits(float f) {
-	return ((DoubleBits) { .val = f }).bits;
+INLINE uint64_t double_to_bits(double d) {
+	return ((DoubleBits) { .val = d }).bits;
 }
 
 INLINE double bits_to_double(uint64_t i) {
