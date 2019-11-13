@@ -14,7 +14,8 @@ class TaiseiError(RuntimeError):
 class DefaultArgs(object):
     def __init__(self):
         self.fallback_version = None
-        self.rootdir = Path(__file__).parent.parent.parent
+        self.rootdir = Path(os.environ.get('MESON_SOURCE_ROOT', Path(__file__).parent.parent.parent)).resolve()
+        self.builddir = Path(os.environ.get('MESON_BUILD_ROOT', '.')).resolve()
         self.depfile = None
 
 
@@ -31,6 +32,12 @@ def add_common_args(parser, *, depfile=False):
         type=Path,
         default=default_args.rootdir,
         help='Taisei source directory'
+    )
+
+    parser.add_argument('--builddir',
+        type=Path,
+        default=default_args.builddir,
+        help='Taisei build directory'
     )
 
     if depfile:
@@ -62,15 +69,15 @@ def run_main(func, args=None):
 
 def write_depfile(depfile, target, deps):
     with Path(depfile).open('w') as df:
-        l = [str(target) + ":"] + list(str(d) for d in deps) + [str(Path(__file__).resolve())]
-        df.write(" \\\n ".join(l))
+        l = [str(target) + ':'] + list(str(d) for d in deps) + [str(Path(__file__).resolve())]
+        df.write(' \\\n '.join(l))
 
 
 def update_text_file(outpath, data):
     import io
 
     try:
-        with open(str(outpath), "r+t") as outfile:
+        with open(str(outpath), 'r+t') as outfile:
             contents = outfile.read()
 
             if contents == data:
@@ -80,7 +87,7 @@ def update_text_file(outpath, data):
             outfile.write(data)
             outfile.truncate()
     except (FileNotFoundError, io.UnsupportedOperation):
-        with open(str(outpath), "w") as outfile:
+        with open(str(outpath), 'w') as outfile:
             outfile.write(data)
 
 

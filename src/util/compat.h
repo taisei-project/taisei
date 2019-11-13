@@ -309,4 +309,8 @@ typedef cmplx64 cmplx;
 	#define abort nxAbort
 #endif
 
+#ifdef RNG_API_CHECK
+	#define _Generic(ignore, ...) _Generic(0, __VA_ARGS__)
+#endif
+
 #endif // IGUARD_util_compat_h
