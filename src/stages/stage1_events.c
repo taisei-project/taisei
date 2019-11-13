@@ -107,12 +107,12 @@ static void cirno_iceplosion0(Boss *c, int time) {
 			.pos = c->pos,
 			.color = RGB(0.3,0.3,0.8),
 			.rule = accelerated,
-			.args = { global.diff/4.*cexp(2.0*I*M_PI*frand()) + 2.0*I, 0.002*cexp(I*(M_PI/10.0*(_i%20))) }
+			.args = { global.diff/4.0*rng_dir() + 2.0*I, 0.002*cdir(M_PI/10.0*(_i%20)) }
 		);
 	}
 
 	FROM_TO(150, 300, 30-5*global.diff) {
-		float dif = M_PI*2*frand();
+		float dif = rng_angle();
 		int i;
 		play_sound("shot1");
 		for(i = 0; i < 20; i++) {
@@ -142,14 +142,14 @@ void cirno_crystal_rain(Boss *c, int time) {
 
 	int hdiff = max(0, (int)global.diff - D_Normal);
 
-	if(frand() > 0.95-0.1*global.diff) {
-		tsrand_fill(2);
+	if(rng_chance(0.05 + 0.1 * global.diff)) {
+		RNG_ARRAY(rng, 2);
 		PROJECTILE(
 			.proto = pp_crystal,
-			.pos = VIEWPORT_W*afrand(0),
+			.pos = vrng_range(rng[0], 0, VIEWPORT_W),
 			.color = RGB(0.2,0.2,0.4),
 			.rule = accelerated,
-			.args = { 1.0*I, 0.01*I + (-0.005+0.005*global.diff)*anfrand(1) }
+			.args = { 1.0*I, 0.01*I + (-0.005+0.005*global.diff) * vrng_sreal(rng[1]) }
 		);
 	}
 
@@ -205,7 +205,7 @@ static void cirno_iceplosion1(Boss *c, int time) {
 				.pos = c->pos,
 				.color = RGB(0,0,0.5),
 				.rule = asymptotic,
-				.args = { (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff)*(1 - 2*frand()))), _i*0.7 }
+				.args = { (3+_i/3.0)*cexp(I*((2)*M_PI/8.0*i + (0.1+0.03*global.diff) * rng_sreal())), _i*0.7 }
 			);
 		}
 	}
@@ -218,7 +218,7 @@ static void cirno_iceplosion1(Boss *c, int time) {
 				.color = RGB(0.3,0.3,0.8),
 				.rule = accelerated,
 				.args = {
-					1.5*cexp(2.0*I*M_PI*frand()) - i * 0.4 + 2.0*I*global.diff/4.0,
+					1.5*rng_angle() - i * 0.4 + 2.0*I*global.diff/4.0,
 					0.002*cexp(I*(M_PI/10.0*(_i%20)))
 				}
 			);
@@ -226,7 +226,7 @@ static void cirno_iceplosion1(Boss *c, int time) {
 	}
 
 	FROM_TO(150, 300, 30 - 6 * global.diff) {
-		float dif = M_PI*2*frand();
+		float dif = rng_angle();
 		int i;
 
 		if(_i > 15) {
@@ -240,7 +240,7 @@ static void cirno_iceplosion1(Boss *c, int time) {
 				.pos = c->pos,
 				.color = RGB(0.04*_i,0.04*_i,0.4+0.04*_i),
 				.rule = asymptotic,
-				.args = { (3+_i/3.0)*cexp(I*(2*M_PI/8.0*i + dif)), 2.5 }
+				.args = { (3+_i/3.0)*cdir(2*M_PI/8.0*i + dif), 2.5 }
 			);
 		}
 	}
@@ -339,7 +339,7 @@ static int halation_orb(Projectile *p, int time) {
 		};
 
 		int pcount = sizeof(colors)/sizeof(Color);
-		float rot = frand() * 2 * M_PI;
+		float rot = rng_angle();
 
 		for(int i = 0; i < pcount; ++i) {
 			PROJECTILE(
@@ -347,7 +347,7 @@ static int halation_orb(Projectile *p, int time) {
 				.pos = p->pos,
 				.color = colors+i,
 				.rule = asymptotic,
-				.args = { cexp(I*(rot + M_PI * 2 * (float)(i+1)/pcount)), 3 }
+				.args = { cdir(rot + M_PI * 2 * (float)(i+1)/pcount), 3 }
 			);
 		}
 
@@ -452,7 +452,7 @@ static int cirno_icicles(Projectile *p, int t) {
 	} else if(t == turn) {
 		p->args[0] = 2.5*cexp(I*(carg(p->args[0])-M_PI/2.0+M_PI*(creal(p->args[0]) > 0)));
 		if(global.diff > D_Normal)
-			p->args[0] += 0.05*nfrand();
+			p->args[0] += rng_range(0, 0.05);
 		play_sound("redirect");
 		spawn_projectile_highlight_effect(p);
 	} else if(t > turn) {
@@ -488,7 +488,7 @@ void cirno_icicle_fall(Boss *c, int time) {
 
 	if(global.diff > D_Easy) {
 		FROM_TO_SND("shot1_loop",120,200,3) {
-			float f = frand()*_i;
+			float f = rng_range(0, _i);
 
 			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I-1.5+f),-0.02*I });
 			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I+1.5+f),-0.02*I });
@@ -499,8 +499,8 @@ void cirno_icicle_fall(Boss *c, int time) {
 		FROM_TO(300,400,10) {
 			play_sound("shot1");
 			float x = VIEWPORT_W/2+VIEWPORT_W/2*(0.3+_i/10.);
-			float angle1 = M_PI/10*frand();
-			float angle2 = M_PI/10*frand();
+			float angle1 = rng_range(0, M_PI/10);
+			float angle2 = rng_range(0, M_PI/10);
 			for(float i = 1; i < 5; i++) {
 				PROJECTILE(
 					.proto = pp_ball,
@@ -508,8 +508,8 @@ void cirno_icicle_fall(Boss *c, int time) {
 					.color = RGB(0.,0.,0.3),
 					.rule = accelerated,
 					.args = {
-						i*I*0.5*cexp(I*angle1),
-						0.001*I-(global.diff == D_Lunatic)*0.001*frand()
+						i*I*0.5*cdir(angle1),
+						0.001*I-(global.diff == D_Lunatic)*0.001*rng_real()
 					}
 				);
 
@@ -519,8 +519,8 @@ void cirno_icicle_fall(Boss *c, int time) {
 					.color = RGB(0.,0.,0.3),
 					.rule = accelerated,
 					.args = {
-						i*I*0.5*cexp(-I*angle2),
-						0.001*I+(global.diff == D_Lunatic)*0.001*frand()
+						i*I*0.5*cdir(-angle2),
+						0.001*I+(global.diff == D_Lunatic)*0.001*rng_real()
 					}
 				);
 			}
@@ -579,14 +579,14 @@ void cirno_crystal_blizzard(Boss *c, int time) {
 		GO_TO(c, global.plr.pos, 0.01);
 
 		if(!(time % (1 + D_Lunatic - global.diff))) {
-			tsrand_fill(2);
+			RNG_ARRAY(rng, 2);
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = c->pos,
 				.color = RGBA(0.2, 0.2, 0.4, 0.0),
 				.rule = cirno_crystal_blizzard_proj,
 				.args = {
-					20 * (0.1 + 0.1 * anfrand(0)) * cexp(I*(carg(global.plr.pos - c->pos) + anfrand(1) * 0.2)),
+					20 * (0.1 + 0.1 * vrng_sreal(rng[0])) * cexp(I*(carg(global.plr.pos - c->pos) + vrng_sreal(rng[1]) * 0.2)),
 					5
 				},
 			);
@@ -621,7 +621,7 @@ void cirno_benchmark(Boss* b, int t) {
 	double speed = 10;
 	int c = N*speed/VIEWPORT_H;
 	for(int i = 0; i < c; i++) {
-		double x = frand()*VIEWPORT_W;
+		double x = rng_range(0, VIEWPORT_W);
 		double plrx = creal(global.plr.pos);
 		x = plrx + sqrt((x-plrx)*(x-plrx)+100)*(1-2*(x<plrx));
 
@@ -634,17 +634,17 @@ void cirno_benchmark(Boss* b, int t) {
 			.flags = PFLAG_NOGRAZE,
 		);
 
-		if(frand() < 0.1) {
+		if(rng_chance(0.1)) {
 			p->flags &= ~PFLAG_NOGRAZE;
 		}
 
-		if(t > 700 && frand() > 0.5)
+		if(t > 700 && rng_chance(0.5))
 			projectile_set_prototype(p, pp_plainball);
 
-		if(t > 1200 && frand() > 0.5)
+		if(t > 1200 && rng_chance(0.5))
 			p->color = *RGB(1.0, 0.2, 0.8);
 
-		if(t > 350 && frand() > 0.5)
+		if(t > 350 && rng_chance(0.5))
 			p->color.a = 0;
 	}
 }
@@ -695,14 +695,14 @@ static int stage1_circletoss(Enemy *e, int time) {
 
 	if(global.diff > D_Easy) {
 		FROM_TO_INT_SND("shot1_loop",90,500,150,5+7*global.diff,1) {
-			tsrand_fill(2);
+			RNG_ARRAY(rng, 2);
 			PROJECTILE(
 				.proto = pp_thickrice,
 				.pos = e->pos,
 				.color = RGB(0.2, 0.4, 0.8),
 				.rule = asymptotic,
 				.args = {
-					(1+afrand(0)*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*anfrand(1)),
+					(1+vrng_real(rng[0])*2)*cexp(I*carg(global.plr.pos - e->pos)+0.05*I*global.diff*vrng_sreal(rng[1])),
 					3
 				}
 			);
@@ -799,10 +799,10 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 			play_loop("shot1_loop");
 
 			double aim_angle = carg(global.plr.pos - e->pos);
-			aim_angle += 0.05 * global.diff * nfrand();
+			aim_angle += 0.05 * global.diff * rng_real();
 
 			complex aim = cdir(aim_angle);
-			aim *= rand_range(1, 3);
+			aim *= rng_range(1, 3);
 
 			PROJECTILE(
 				.proto = pp_thickrice,
@@ -907,7 +907,7 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	int round_interval = 120 - shot_interval * shot_count;
 
 	for(int round = 0; round < 2; ++round) {
-		double a_ofs = rand_angle();
+		double a_ofs = rng_angle();
 
 		for(int i = 0; i < shot_count; ++i) {
 			complex aim;
@@ -926,14 +926,14 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 			WAIT(shot_interval);
 		}
 
-		e->move.attraction_point += 30 * cdir(rand_angle());
+		e->move.attraction_point += 30 * rng_dir();
 		WAIT(round_interval);
 	}
 
 	WAIT(10);
 	e->move.attraction = 0;
 	e->move.retention = 1;
-	e->move.acceleration = -0.04 * I * cdir(nfrand() * M_TAU / 12);
+	e->move.acceleration = -0.04 * I * cdir(rng_range(0, M_TAU / 12));
 	STALL;
 }
 
@@ -952,7 +952,7 @@ TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
 
 	while(true) {
 		complex aim = cnormalize(global.plr.pos - e->pos);
-		aim *= 1 + 0.3 * global.diff + frand();
+		aim *= 1 + 0.3 * global.diff + rng_real();
 
 		play_sound("shot1");
 		PROJECTILE(
@@ -1083,7 +1083,7 @@ TASK(burst_fairies_2, NO_ARGS) {
 TASK(burst_fairies_3, NO_ARGS) {
 	for(int i = 10; i--;) {
 		complex pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
-		INVOKE_TASK(burst_fairy, pos, sign(nfrand()));
+		INVOKE_TASK(burst_fairy, pos, rng_sign());
 		stage_wait(60);
 	}
 }
@@ -1150,7 +1150,7 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 	for(int row = 0; row < 3; ++row) {
 		for(int col = 0; col < 5; ++col) {
 			log_debug("WTF %i %i", row, col);
-			complex pos = VIEWPORT_W * frand();
+			complex pos = rng_range(0, VIEWPORT_W);
 			complex target_pos = 64 + 64 * col + I * (64 * row + 100);
 			complex exit_accel = 0.02 * I + 0.03;
 			INVOKE_TASK(multiburst_fairy, pos, target_pos, exit_accel);
@@ -1308,18 +1308,18 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		for(int i = 0; i < nfrog/n; i++) {
 			play_loop("shot1_loop");
 
-			float r = frand();
-			float g = frand();
-			float b = frand();
+			float r = rng_f32();
+			float g = rng_f32();
+			float b = rng_f32();
 
 			for(int j = 0; j < n; j++) {
-				float speed = 1+(4+0.5*global.diff)*frand();
+				float speed = rng_range(1.0f, 5.0f + 0.5f * global.diff);
 
 				ENT_ARRAY_ADD(&projs, PROJECTILE(
 					.proto = pp_ball,
 					.pos = boss->pos,
 					.color = RGB(r, g, b),
-					.move = move_linear(speed*cexp(I*tsrand())),
+					.move = move_linear(speed * rng_dir()),
 				));
 			}
 			YIELD;
@@ -1333,14 +1333,14 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			play_sound("shot_special1");
 
 			p->color = *RGB(0.9, 0.9, 0.9);
-			p->move.retention = 0.8*cdir(rand_angle());
-			if(frand() < 0.2) {
+			p->move.retention = 0.8 * rng_dir();
+			if(rng_chance(0.2)) {
 				YIELD;
 			}
 		});
 
 		WAIT(60);
-		int dir = 2*(frand()>0.5)-1; // wait till they figure this out
+		double dir = rng_sign();
 		boss->move = (MoveParams){ .velocity = dir*2.7+I, .retention = 0.99, .acceleration = -dir*0.017 };
 
 		aniplayer_queue(&boss->ani,"(9)",0);
@@ -1349,12 +1349,13 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 			p->color = *RGB(0.9, 0.9, 0.9);
-			p->move.retention = 1+0.002*global.diff*frand();
-			p->move.velocity = 2*cdir(rand_angle());
+			p->move.retention = 1 + 0.002 * global.diff * rng_f64();
+			p->move.velocity = 2 * rng_dir();
 			spawn_stain(p->pos, p->angle, 30);
 			spawn_projectile_highlight_effect(p);
 			play_sound_ex("shot2", 0, false);
-			if(frand() < 0.4) {
+
+			if(rng_chance(0.4)) {
 				YIELD;
 			}
 		});
@@ -1367,8 +1368,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 				r1 = sin(i/M_PI*5.3) * cos(2*i/M_PI*5.3);
 				r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
 			} else {
-				r1 = nfrand();
-				r2 = nfrand();
+				r1 = rng_f32();
+				r2 = rng_f32();
 			}
 
 			complex aim = cnormalize(global.plr.pos - boss->pos);
@@ -1428,7 +1429,7 @@ TASK(tritoss_fairy, { complex pos; complex velocity; complex end_velocity; }) {
 	for(int k = 0; k < rounds; k++) {
 		play_sound("shot1");
 
-		float a = M_PI / 30.0 * ((k/7) % 30) + 0.1 * nfrand();
+		float a = M_PI / 30.0 * ((k/7) % 30) + 0.1 * rng_f32();
 		int n = difficulty_value(3,4,4,5);
 
 		for(int i = 0; i < n; i++){
@@ -1515,7 +1516,11 @@ TASK(stage_timeline, NO_ARGS) {
 	STAGE_BOOKMARK(post-midboss-filler);
 
 	for(int i = 0; i < 5; i++) {
-		INVOKE_TASK_DELAYED(i*200, multiburst_fairy, VIEWPORT_W/2 - 195 * cos(2.43 * i) - 20 * I, VIEWPORT_W / 2 - 100 * cos(2.43 * i) + 100 * I, 0.1 * sign(nfrand()));
+		INVOKE_TASK_DELAYED(i*200, multiburst_fairy,
+			VIEWPORT_W/2 - 195 * cos(2.43 * i) - 20 * I,
+			VIEWPORT_W / 2 - 100 * cos(2.43 * i) + 100 * I,
+			0.1 * rng_sign()
+		);
 	}
 
 	for(int i = 0; i < difficulty_value(2, 2, 4, 4); i++) {
