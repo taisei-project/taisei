@@ -21,7 +21,7 @@
 #include "move.h"
 #include "coroutine.h"
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(RNG_API_CHECK)
 	#define PROJ_DEBUG
 #endif
 

@@ -881,13 +881,13 @@ static RenderFrameAction stage_render_frame(void *arg) {
 		return RFRAME_DROP;
 	}
 
-	tsrand_lock(&global.rand_game);
-	tsrand_switch(&global.rand_visual);
+	rng_lock(&global.rand_game);
+	rng_make_active(&global.rand_visual);
 	BEGIN_DRAW_CODE();
 	stage_draw_scene(stage);
 	END_DRAW_CODE();
-	tsrand_unlock(&global.rand_game);
-	tsrand_switch(&global.rand_game);
+	rng_unlock(&global.rand_game);
+	rng_make_active(&global.rand_game);
 	draw_transition();
 
 	return RFRAME_SWAP;
@@ -934,13 +934,13 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	stage_preload();
 	stage_draw_init();
 
-	tsrand_switch(&global.rand_game);
+	rng_make_active(&global.rand_game);
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
 		uint64_t start_time = (uint64_t)time(0);
 		uint64_t seed = makeseed();
-		tsrand_seed_p(&global.rand_game, seed);
+		rng_seed(&global.rand_game, seed);
 
 		global.replay_stage = replay_create_stage(&global.replay, stage, start_time, seed, global.diff, &global.plr);
 
@@ -966,7 +966,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		assert(stg != NULL);
 		assert(stage_get(stg->stage) == stage);
 
-		tsrand_seed_p(&global.rand_game, stg->rng_seed);
+		rng_seed(&global.rand_game, stg->rng_seed);
 
 		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
 		log_debug("Start time: %"PRIu64, stg->start_time);
@@ -1017,7 +1017,7 @@ void stage_end_loop(void* ctx) {
 	stage_free();
 	player_free(&global.plr);
 	cosched_finish(&s->sched);
-	tsrand_switch(&global.rand_visual);
+	rng_make_active(&global.rand_visual);
 	free_all_refs();
 	ent_shutdown();
 	stage_objpools_free();
