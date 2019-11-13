@@ -15,9 +15,9 @@ Global global;
 void init_global(CLIAction *cli) {
 	memset(&global, 0, sizeof(global));
 
-	tsrand_init(&global.rand_game, time(0));
-	tsrand_init(&global.rand_visual, time(0));
-	tsrand_switch(&global.rand_visual);
+	rng_init(&global.rand_game, time(0));
+	rng_init(&global.rand_visual, time(0));
+	rng_make_active(&global.rand_visual);
 
 	memset(&global.replay, 0, sizeof(Replay));
 

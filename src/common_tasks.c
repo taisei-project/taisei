@@ -55,7 +55,7 @@ complex common_wander(complex origin, double dist, Rect bounds) {
 	// assert(point_in_rect(origin, bounds));
 
 	while(attempts--) {
-		angle = rand_angle();
+		angle = rng_angle();
 		dir = cdir(angle);
 		dest = origin + dist * dir;
 

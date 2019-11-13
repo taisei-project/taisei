@@ -26,12 +26,21 @@ def main(args):
     scripts = pargs.rootdir / 'scripts' / 'upkeep'
 
     tasks = (
-        'fixup-source-files',
+        ['fixup-source-files', 'check-rng-usage'],
         'update-glsl-sources',
     )
 
     with ThreadPoolExecutor() as ex:
-        tuple(ex.map(lambda task: subprocess.check_call([scripts / f'{task}.py'] + args[1:]), tasks))
+        def do_task(task):
+            if isinstance(task, str):
+                print('[upkeep] begin task', task)
+                subprocess.check_call([scripts / f'{task}.py'] + args[1:])
+                print('[upkeep] task', task, 'done')
+            else:
+                for t in task:
+                    do_task(t)
+
+        tuple(ex.map(do_task, tasks))
 
 
 if __name__ == '__main__':
