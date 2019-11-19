@@ -203,6 +203,7 @@ if host_machine.system() == 'emscripten'
         # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
+        '-lidbfs.js',
 
         # Try enabling this if unpatched Freetype crashes
         # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
@@ -232,7 +233,7 @@ if host_machine.system() == 'emscripten'
         em_link_args += [
             # See https://github.com/emscripten-core/emscripten/issues/8574
             '-s', 'WASM_OBJECT_FILES=0',
-            '--llvm-lto', '3',
+            '--llvm-lto', '1',
         ]
     endif
 
