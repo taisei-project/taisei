@@ -208,7 +208,6 @@ if host_machine.system() == 'emscripten'
         # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
-        '-s', 'ASYNCIFY_IMPORTS=["_koishi_impl_fiber_swap"]',
         '-lidbfs.js',
 
         # Try enabling this if unpatched Freetype crashes
@@ -237,6 +236,17 @@ if host_machine.system() == 'emscripten'
         ]
     endif
 
+<<<<<<< HEAD
+=======
+    if get_option('b_lto')
+        em_link_args += [
+            # See https://github.com/emscripten-core/emscripten/issues/8574
+            '-s', 'WASM_OBJECT_FILES=0',
+            '--llvm-lto', '1',
+        ]
+    endif
+
+>>>>>>> Emscripten compat fixups
     foreach suffix : em_link_output_suffixes
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
