@@ -12,7 +12,11 @@
 #include "taisei.h"
 
 #include "entity.h"
+#include "util/debug.h"
+
 #include <koishi.h>
+
+// #define CO_TASK_DEBUG
 
 typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
@@ -58,6 +62,18 @@ typedef struct CoWaitResult {
 	CoEventStatus event_status;
 } CoWaitResult;
 
+#ifdef CO_TASK_DEBUG
+typedef struct CoTaskDebugInfo {
+	const char *label;
+	DebugInfo debug_info;
+} CoTaskDebugInfo;
+
+#define COTASK_DEBUG_INFO(label) ((CoTaskDebugInfo) { (label), _DEBUG_INFO_INITIALIZER_ })
+#else
+typedef char CoTaskDebugInfo;
+#define COTASK_DEBUG_INFO(label) (0)
+#endif
+
 void coroutines_init(void);
 void coroutines_shutdown(void);
 
@@ -91,7 +107,8 @@ void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*));
 #define COEVENT_CANCEL_ARRAY(array) COEVENT_ARRAY_ACTION(coevent_cancel, array)
 
 void cosched_init(CoSched *sched);
-CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
+CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, CoTaskDebugInfo debug);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
+#define cosched_new_task(sched, func, arg, debug_label) _cosched_new_task(sched, func, arg, COTASK_DEBUG_INFO(debug_label))
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
 void cosched_finish(CoSched *sched);
 
@@ -311,7 +328,7 @@ INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
 #define _internal_INVOKE_TASK(is_subtask, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNK_##name, \
-		&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ } \
+		(&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ }), #name \
 	), is_subtask) \
 )
 
@@ -334,7 +351,7 @@ INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
 #define _internal_INVOKE_TASK_DELAYED(is_subtask, _delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKDELAY_##name, \
-		&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) } \
+		(&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) }), #name \
 	), is_subtask) \
 )
 
@@ -361,7 +378,7 @@ INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
 #define _internal_INVOKE_TASK_ON_EVENT(is_subtask, is_unconditional, _event, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, COTASKTHUNKCOND_##name, \
-		&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event), .unconditional = is_unconditional } \
+		(&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event), .unconditional = is_unconditional }), #name \
 	), is_subtask) \
 )
 
@@ -393,7 +410,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
 #define INVOKE_TASK_INDIRECT_(is_subtask, iface, taskhandle, ...) ( \
 	_cotask_invoke_helper(cosched_new_task(_cosched_global, taskhandle._cotask_##iface##_thunk, \
-		&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ } \
+		(&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ }), "<indirect>" \
 	), is_subtask) \
 )
 
