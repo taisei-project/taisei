@@ -13,11 +13,9 @@
 
 #define CO_STACK_SIZE (128 * 1024)
 
-// #define TASK_DEBUG
 // #define EVT_DEBUG
 
-#ifdef TASK_DEBUG
-	#undef TASK_DEBUG
+#ifdef CO_TASK_DEBUG
 	#define TASK_DEBUG(...) log_debug(__VA_ARGS__)
 #else
 	#define TASK_DEBUG(...) ((void)0)
@@ -45,6 +43,10 @@ struct CoTask {
 	List subtask_chain;
 
 	uint32_t unique_id;
+
+#ifdef CO_TASK_DEBUG
+	char debug_label[256];
+#endif
 };
 
 #define SUBTASK_NODE_TO_TASK(n) CASTPTR_ASSUME_ALIGNED((char*)(n) - offsetof(CoTask, subtask_chain), CoTask)
@@ -54,6 +56,13 @@ static size_t num_tasks_allocated;
 static size_t num_tasks_in_use;
 
 CoSched *_cosched_global;
+
+#ifdef CO_TASK_DEBUG
+static size_t debug_event_id;
+#define TASK_DEBUG_EVENT(ev) uint64_t ev = debug_event_id++
+#else
+#define TASK_DEBUG_EVENT(ev) ((void)0)
+#endif
 
 BoxedTask cotask_box(CoTask *task) {
 	return (BoxedTask) {
@@ -98,6 +107,10 @@ CoTask *cotask_new(CoTaskFunc func) {
 	task->unique_id = ++unique_counter;
 	assert(unique_counter != 0);
 
+#ifdef CO_TASK_DEBUG
+	snprintf(task->debug_label, sizeof(task->debug_label), "<unknown at %p; proc=%p>", (void*)task, *(void**)&func);
+#endif
+
 	return task;
 }
 
@@ -112,8 +125,8 @@ void cotask_free(CoTask *task) {
 	--num_tasks_in_use;
 
 	TASK_DEBUG(
-		"Released task %p (%zu tasks allocated / %zu in use)",
-		(void*)task,
+		"Released task %s (%zu tasks allocated / %zu in use)",
+		task->debug_label,
 		num_tasks_allocated, num_tasks_in_use
 	);
 }
@@ -134,8 +147,8 @@ static void cotask_finalize(CoTask *task) {
 
 	if(task->supertask) {
 		TASK_DEBUG(
-			"Slave task %p detaching from master %p",
-			(void*)task, (void*)task->supertask
+			"Slave task %s detaching from master %s",
+			task->debug_label, task->supertask->debug_label
 		);
 
 		alist_unlink(&task->supertask->subtasks, &task->subtask_chain);
@@ -149,8 +162,8 @@ static void cotask_finalize(CoTask *task) {
 		cotask_cancel(sub);
 
 		TASK_DEBUG(
-			"Canceled slave task %p (of master task %p)",
-			(void*)sub, (void*)task
+			"Canceled slave task %s (of master task %s)",
+			sub->debug_label, task->debug_label
 		);
 	}
 }
@@ -159,7 +172,10 @@ static void cotask_force_cancel(CoTask *task) {
 	// WARNING: It's important to finalize first, because if task == active task,
 	// then koishi_kill will not return!
 	cotask_finalize(task);
+	TASK_DEBUG_EVENT(ev);
+	TASK_DEBUG("[%zu] Killing task %s", ev, task->debug_label);
 	koishi_kill(&task->ko);
+	TASK_DEBUG("[%zu] koishi_kill returned (%s)", ev, task->debug_label);
 	assert(cotask_status(task) == CO_STATUS_DEAD);
 }
 
@@ -178,7 +194,10 @@ void *cotask_resume(CoTask *task, void *arg) {
 		return NULL;
 	}
 
+	TASK_DEBUG_EVENT(ev);
+	TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
 	arg = koishi_resume(&task->ko, arg);
+	TASK_DEBUG("[%zu] koishi_resume returned (%s)", ev, task->debug_label);
 
 	if(cotask_status(task) == CO_STATUS_DEAD) {
 		cotask_finalize(task);
@@ -188,7 +207,12 @@ void *cotask_resume(CoTask *task, void *arg) {
 }
 
 void *cotask_yield(void *arg) {
-	return koishi_yield(arg);
+	CoTask *task = cotask_active();
+	TASK_DEBUG_EVENT(ev);
+	TASK_DEBUG("[%zu] Yielding from task %s", ev, task->debug_label);
+	arg = koishi_yield(arg);
+	TASK_DEBUG("[%zu] koishi_yield returned (%s)", ev, task->debug_label);
+	return arg;
 }
 
 CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
@@ -291,8 +315,8 @@ void cotask_enslave(CoTask *slave) {
 	alist_append(&master->subtasks, &slave->subtask_chain);
 
 	TASK_DEBUG(
-		"Made task %p a slave of task %p",
-		(void*)slave, (void*)slave->supertask
+		"Made task %s a slave of task %s",
+		slave->debug_label, slave->supertask->debug_label
 	);
 }
 
@@ -317,7 +341,7 @@ static void coevent_wake_subscribers(CoEvent *evt) {
 		CoTask *task = cotask_unbox(subs_snapshot[i]);
 
 		if(task && cotask_status(task) != CO_STATUS_DEAD) {
-			EVT_DEBUG("Resume CoEvent{%p} subscriber %p", (void*)evt, (void*)task);
+			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
 			cotask_resume(task, NULL);
 		}
 	}
@@ -353,8 +377,11 @@ void cosched_init(CoSched *sched) {
 	memset(sched, 0, sizeof(*sched));
 }
 
-CoTask *cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg) {
+CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, CoTaskDebugInfo debug) {
 	CoTask *task = cotask_new(func);
+#ifdef CO_TASK_DEBUG
+	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);
+#endif
 	cotask_resume(task, arg);
 	assert(cotask_status(task) == CO_STATUS_SUSPENDED || cotask_status(task) == CO_STATUS_DEAD);
 	alist_append(&sched->pending_tasks, task);
