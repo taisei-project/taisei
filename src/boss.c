@@ -31,7 +31,7 @@ typedef struct SpellBonus {
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
-Boss* create_boss(char *name, char *ani, char *dialog, complex pos) {
+Boss* create_boss(char *name, char *ani, char *dialog, cmplx pos) {
 	Boss *buf = calloc(1, sizeof(Boss));
 
 	buf->name = strdup(name);
@@ -391,7 +391,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 	float flash = 0.2 + 0.8 * pow(psin(M_PI + 5 * M_PI * f), 0.5);
 	f = 0.15 * f + 0.85 * (0.5 * pow(2 * f - 1, 3) + 0.5);
 	opacity *= 1 - 2 * fabs(f - 0.5);
-	complex pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
+	cmplx pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
 
 	draw_boss_text(ALIGN_CENTER, creal(pos), cimag(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
 }
@@ -399,12 +399,12 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	Font *font = get_font("standard");
 
-	complex x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
+	cmplx x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time - 40.0) / 60.0, 0, 1);
 	float f2 = clamp(time / 80.0, 0, 1);
 	float y_offset = 26 + healthbar_radial * -15;
 	float y_text_offset = 5 - font_get_metrics(font)->descent;
-	complex x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
+	cmplx x = x0 + ((VIEWPORT_W - 10) + I*(y_offset + y_text_offset) - x0) * f*(f+1)*0.5;
 	int strw = text_width(font, b->current->name, 0);
 
 	float opacity_noplr = b->hud.spell_opacity * b->hud.global_opacity;
@@ -804,8 +804,8 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 
 	for(int i = 0; i < cnt; ++i) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
-		complex dir = cexp(I*(a+global.frames/50.0));
-		complex vel = dir * 3;
+		cmplx dir = cexp(I*(a+global.frames/50.0));
+		cmplx vel = dir * 3;
 		float v = max(0, alpha - 1);
 		float psina = psin(a);
 

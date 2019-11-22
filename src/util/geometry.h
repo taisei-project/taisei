@@ -50,27 +50,27 @@ typedef struct IntRect {
 } IntRect;
 
 typedef struct Ellipse {
-	complex origin;
-	complex axes; // NOT half-axes!
+	cmplx origin;
+	cmplx axes; // NOT half-axes!
 	double angle;
 } Ellipse;
 
 typedef struct LineSegment {
-	complex a;
-	complex b;
+	cmplx a;
+	cmplx b;
 } LineSegment;
 
 typedef struct Circle {
-	complex origin;
+	cmplx origin;
 	double radius;
 } Circle;
 
 typedef struct Rect {
-	complex top_left;
-	complex bottom_right;
+	cmplx top_left;
+	cmplx bottom_right;
 } Rect;
 
-bool point_in_ellipse(complex p, Ellipse e) attr_const;
+bool point_in_ellipse(cmplx p, Ellipse e) attr_const;
 double lineseg_circle_intersect(LineSegment seg, Circle c) attr_const;
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) attr_const;
 
@@ -120,13 +120,13 @@ double rect_area(Rect r) {
 }
 
 INLINE
-void rect_move(Rect *r, complex pos) {
-	complex vector = pos - r->top_left;
+void rect_move(Rect *r, cmplx pos) {
+	cmplx vector = pos - r->top_left;
 	r->top_left += vector;
 	r->bottom_right += vector;
 }
 
-bool point_in_rect(complex p, Rect r);
+bool point_in_rect(cmplx p, Rect r);
 bool rect_in_rect(Rect inner, Rect outer) attr_const;
 bool rect_rect_intersect(Rect r1, Rect r2, bool edges, bool corners) attr_const;
 bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *out) attr_pure attr_nonnull(5);

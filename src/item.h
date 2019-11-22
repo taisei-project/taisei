@@ -42,35 +42,35 @@ struct Item {
 
 	int birthtime;
 	int collecttime;
-	complex pos;
-	complex pos0;
+	cmplx pos;
+	cmplx pos0;
 
 	int auto_collect;
 	ItemType type;
 	float pickup_value;
 
-	complex v;
+	cmplx v;
 };
 
-Item *create_item(complex pos, complex v, ItemType type);
+Item *create_item(cmplx pos, cmplx v, ItemType type);
 void delete_item(Item *item);
 void delete_items(void);
 
-Item* create_clear_item(complex pos, uint clear_flags);
+Item* create_clear_item(cmplx pos, uint clear_flags);
 
 int collision_item(Item *p);
 void process_items(void);
 
-void spawn_item(complex pos, ItemType type);
-void spawn_and_collect_item(complex pos, ItemType type, float collect_value);
+void spawn_item(cmplx pos, ItemType type);
+void spawn_and_collect_item(cmplx pos, ItemType type, float collect_value);
 
 typedef struct SpawnItemsArgs {
 	ItemType type;
 	int count;
 } SpawnItemsArgs;
 
-void spawn_items(complex pos, SpawnItemsArgs groups[]);
-void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs groups[]);
+void spawn_items(cmplx pos, SpawnItemsArgs groups[]);
+void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs groups[]);
 
 #define spawn_items(pos, ...) \
 	spawn_items(pos, ((SpawnItemsArgs[]) { __VA_ARGS__, { 0 } }))

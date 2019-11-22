@@ -124,13 +124,13 @@ bool player_add_power(Player *plr, short pdelta) {
 	return player_set_power(plr, plr->power + plr->power_overflow + pdelta);
 }
 
-void player_move(Player *plr, complex delta) {
+void player_move(Player *plr, cmplx delta) {
 	delta *= player_property(plr, PLR_PROP_SPEED);
-	complex lastpos = plr->pos;
+	cmplx lastpos = plr->pos;
 	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
 	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
 	plr->pos = x + y*I;
-	complex realdir = plr->pos - lastpos;
+	cmplx realdir = plr->pos - lastpos;
 
 	if(cabs(realdir)) {
 		plr->lastmovedir = realdir / cabs(realdir);
@@ -447,7 +447,7 @@ static int powersurge_trail(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	complex v = (global.plr.pos - p->pos) * 0.05;
+	cmplx v = (global.plr.pos - p->pos) * 0.05;
 	p->args[0] += (v - p->args[0]) * (1 - t / p->timeout);
 	p->pos += p->args[0];
 
@@ -1199,7 +1199,7 @@ static bool player_applymovement_gamepad(Player *plr) {
 		return false;
 	}
 
-	complex direction = (
+	cmplx direction = (
 		gamepad_normalize_axis_value(plr->axis_lr) +
 		gamepad_normalize_axis_value(plr->axis_ud) * I
 	);
@@ -1274,7 +1274,7 @@ void player_applymovement(Player *plr) {
 		return;
 	}
 
-	complex direction = 0;
+	cmplx direction = 0;
 
 	if(up)      direction -= 1.0*I;
 	if(down)    direction += 1.0*I;
@@ -1330,7 +1330,7 @@ void player_fix_input(Player *plr) {
 	}
 }
 
-void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color) {
+void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color) {
 	if(++plr->graze >= PLR_MAX_GRAZE) {
 		log_debug("Graze counter overflow");
 		plr->graze = PLR_MAX_GRAZE;
@@ -1449,7 +1449,7 @@ static void scoretext_update(StageText *txt, int t, float a) {
 
 #define SCORETEXT_PIV_BIT ((uintptr_t)1 << ((sizeof(uintptr_t) * 8) - 1))
 
-static StageText *find_scoretext_combination_candidate(complex pos, bool is_piv) {
+static StageText *find_scoretext_combination_candidate(cmplx pos, bool is_piv) {
 	for(StageText *stxt = stagetext_list_head(); stxt; stxt = stxt->next) {
 		if(
 			stxt->custom.update == scoretext_update &&
@@ -1464,7 +1464,7 @@ static StageText *find_scoretext_combination_candidate(complex pos, bool is_piv)
 	return NULL;
 }
 
-static void add_score_text(Player *plr, complex location, uint points, bool is_piv) {
+static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv) {
 	float rnd = nfrand();
 
 	StageText *stxt = find_scoretext_combination_candidate(location, is_piv);
@@ -1524,7 +1524,7 @@ static void add_score_text(Player *plr, complex location, uint points, bool is_p
 	}
 }
 
-void player_add_points(Player *plr, uint points, complex location) {
+void player_add_points(Player *plr, uint points, cmplx location) {
 	plr->points += points;
 
 	while(plr->points >= plr->extralife_threshold) {
@@ -1535,7 +1535,7 @@ void player_add_points(Player *plr, uint points, complex location) {
 	add_score_text(plr, location, points, false);
 }
 
-void player_add_piv(Player *plr, uint piv, complex location) {
+void player_add_piv(Player *plr, uint piv, cmplx location) {
 	uint v = plr->point_item_value + piv;
 
 	if(v > PLR_MAX_PIV || v < plr->point_item_value) {
@@ -1576,7 +1576,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		return;
 	}
 
-	complex pos = NAN;
+	cmplx pos = NAN;
 
 	if(target != NULL) {
 		switch(target->type) {
@@ -1666,9 +1666,9 @@ void player_preload(void) {
 
 // FIXME: where should this be?
 
-complex plrutil_homing_target(complex org, complex fallback) {
+cmplx plrutil_homing_target(cmplx org, cmplx fallback) {
 	double mindst = INFINITY;
-	complex target = fallback;
+	cmplx target = fallback;
 
 	if(global.boss && boss_is_vulnerable(global.boss)) {
 		target = global.boss->pos;

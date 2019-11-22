@@ -20,16 +20,16 @@ static int _laser_renderer_ref;
 
 typedef struct MarisaLaserData {
 	struct {
-		complex first;
-		complex last;
+		cmplx first;
+		cmplx last;
 	} trace_hit;
-	complex prev_pos;
+	cmplx prev_pos;
 	float lean;
 } MarisaLaserData;
 
-static void draw_laser_beam(complex src, complex dst, double size, double step, double t, Texture *tex, Uniform *u_length) {
-	complex dir = dst - src;
-	complex center = (src + dst) * 0.5;
+static void draw_laser_beam(cmplx src, cmplx dst, double size, double step, double t, Texture *tex, Uniform *u_length) {
+	cmplx dir = dst - src;
+	cmplx center = (src + dst) * 0.5;
 
 	r_mat_mv_push();
 
@@ -49,7 +49,7 @@ static void draw_laser_beam(complex src, complex dst, double size, double step, 
 	r_mat_mv_pop();
 }
 
-static void trace_laser(Enemy *e, complex vel, float damage) {
+static void trace_laser(Enemy *e, cmplx vel, float damage) {
 	ProjCollisionResult col;
 	ProjectileList lproj = { .first = NULL };
 
@@ -323,7 +323,7 @@ static void marisa_laser_flash_draw(Projectile *p, int t) {
 	Color *c = color_mul_scalar(COLOR_COPY(&p->color), 1 - t / p->timeout);
 	c->r *= (1 - t / p->timeout);
 
-	complex pos = p->pos;
+	cmplx pos = p->pos;
 	pos += p->args[0] * 10;
 
 	r_draw_sprite(&(SpriteParams) {
@@ -355,11 +355,11 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		return 1;
 	}
 
-	complex target_pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
+	cmplx target_pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
 	e->pos += (target_pos - e->pos) * 0.5;
 
 	MarisaLaserData *ld = REF(e->args[3]);
-	complex pdelta = e->pos - ld->prev_pos;
+	cmplx pdelta = e->pos - ld->prev_pos;
 	ld->prev_pos = e->pos;
 	ld->lean += (-0.01 * creal(pdelta) - ld->lean) * 0.2;
 
@@ -369,7 +369,7 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		f = smoothreclamp(f, 0, 1, 0, 1);
 		float factor = (1.0 + 0.7 * psin(t/15.0)) * -(1-f) * !!angle;
 
-		complex dir = -cexp(I*(angle*factor + ld->lean + M_PI/2));
+		cmplx dir = -cexp(I*(angle*factor + ld->lean + M_PI/2));
 		trace_laser(e, 5 * dir, creal(e->args[1]));
 
 		PARTICLE(
@@ -429,8 +429,8 @@ static void masterspark_damage(Enemy *e) {
 
 	float r = 96 * masterspark_width();
 	float growth = 0.25;
-	complex v = e->args[0] * cexp(-I*M_PI*0.5);
-	complex p = global.plr.pos - 30 * I + r * v;
+	cmplx v = e->args[0] * cexp(-I*M_PI*0.5);
+	cmplx p = global.plr.pos - 30 * I + r * v;
 
 	Rect vp_rect, seg_rect;
 	vp_rect.top_left = 0;
@@ -447,7 +447,7 @@ static void masterspark_damage(Enemy *e) {
 		r *= 1 + growth;
 		growth *= 0.75;
 
-		complex o = (1 + I);
+		cmplx o = (1 + I);
 		seg_rect.top_left = p - o * r;
 		seg_rect.bottom_right = p + o * r;
 
@@ -472,14 +472,14 @@ static int masterspark(Enemy *e, int t2) {
 		return 1;
 
 	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + nfrand() * 0.005));
-	complex diroffset = e->args[0];
+	cmplx diroffset = e->args[0];
 
 	float t = player_get_bomb_progress(&global.plr);
 
 	if(t >= 3.0/4.0) {
 		global.shake_view = 8 * (1 - t * 4 + 3);
 	} else if(t2 % 2 == 0) {
-		complex dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
+		cmplx dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
 		Color *c = HSLA(-t*5.321,1,0.5,0.5*frand());
 
 		uint flags = PFLAG_NOREFLECT;
@@ -557,7 +557,7 @@ static void marisa_laser_bomb(Player *plr) {
 	e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 }
 
-static Enemy* marisa_laser_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+static Enemy* marisa_laser_spawn_slave(Player *plr, cmplx pos, cmplx a0, cmplx a1, cmplx a2, cmplx a3) {
 	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, marisa_laser_slave_visual, marisa_laser_slave, a0, a1, a2, a3);
 	e->pos = plr->pos;
 	return e;

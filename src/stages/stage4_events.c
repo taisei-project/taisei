@@ -88,7 +88,7 @@ static int stage4_fodder(Enemy *e, int t) {
 	e->pos += e->args[0];
 
 	FROM_TO(10, 200, 120) {
-		complex fairy_halfsize = 21 * (1 + I);
+		cmplx fairy_halfsize = 21 * (1 + I);
 
 		if(!rect_rect_intersect(
 			(Rect) { e->pos - fairy_halfsize, e->pos + fairy_halfsize },
@@ -99,7 +99,7 @@ static int stage4_fodder(Enemy *e, int t) {
 		}
 
 		play_sound_ex("shot3", 5, false);
-		complex aim = global.plr.pos - e->pos;
+		cmplx aim = global.plr.pos - e->pos;
 		aim /= cabs(aim);
 
 		float speed = 3;
@@ -166,7 +166,7 @@ static int stage4_partcircle(Enemy *e, int t) {
 		int i;
 		for(i = 0; i < global.diff; i++) {
 			play_sound("shot2");
-			complex n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
+			cmplx n = cexp(I*M_PI/16.0*_i + I*carg(e->args[0])-I*M_PI/4.0 + 0.01*I*i*(1-2*(creal(e->args[0]) > 0)));
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = e->pos + (30)*n,
@@ -200,7 +200,7 @@ static int stage4_cardbuster(Enemy *e, int t) {
 		e->pos += (e->args[2]-e->args[1])/200.0;
 
 	int c = 40;
-	complex n = cexp(I*carg(global.plr.pos - e->pos) + 4*M_PI/(c+1)*I*_i);
+	cmplx n = cexp(I*carg(global.plr.pos - e->pos) + 4*M_PI/(c+1)*I*_i);
 
 	FROM_TO_SND("shot1_loop", 60, 60+c*global.diff, 1) {
 		for(int i = 0; i < 3; ++i) {
@@ -248,7 +248,7 @@ static int stage4_backfire(Enemy *e, int t) {
 
 	FROM_TO(20,180+global.diff*20,2) {
 		play_sound("shot2");
-		complex n = cexp(I*M_PI*frand()-I*copysign(M_PI/2.0, creal(e->args[0])));
+		cmplx n = cexp(I*M_PI*frand()-I*copysign(M_PI/2.0, creal(e->args[0])));
 		for(int i = 0; i < global.diff; i++) {
 			PROJECTILE(
 				.proto = pp_wave,
@@ -319,7 +319,7 @@ static int stage4_explosive(Enemy *e, int t) {
 			spawn_items(e->pos, ITEM_POWER, 1);
 
 		int n = 10*global.diff;
-		complex phase = global.plr.pos-e->pos;
+		cmplx phase = global.plr.pos-e->pos;
 		phase /= cabs(phase);
 
 		for(i = 0; i < n; i++) {
@@ -351,7 +351,7 @@ static void KurumiSlave(Enemy *e, int t, bool render) {
 	}
 
 	if(!(t%2)) {
-		complex offset = (frand()-0.5)*30;
+		cmplx offset = (frand()-0.5)*30;
 		offset += (frand()-0.5)*20.0*I;
 		PARTICLE(
 			.sprite = "smoothdot",
@@ -508,8 +508,8 @@ void kurumi_redspike(Boss *b, int time) {
 
 		FROM_TO_INT(80, 500, 40,200,2+2*(global.diff == D_Hard)) {
 			tsrand_fill(2);
-			complex offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
-			complex n = cexp(I*carg(global.plr.pos-b->pos-offset));
+			cmplx offset = 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1));
+			cmplx n = cexp(I*carg(global.plr.pos-b->pos-offset));
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = b->pos+offset,
@@ -550,7 +550,7 @@ static void kurumi_global_rule(Boss *b, int time) {
 	}
 }
 
-Boss* stage4_spawn_kurumi(complex pos) {
+Boss* stage4_spawn_kurumi(cmplx pos) {
 	Boss* b = create_boss("Kurumi", "kurumi", "dialog/kurumi", pos);
 	b->glowcolor = *RGB(0.5, 0.1, 0.0);
 	b->global_rule = kurumi_global_rule;
@@ -619,7 +619,7 @@ static int stage4_supercard(Enemy *e, int t) {
 	FROM_TO(70, 70+20*global.diff, 1) {
 		play_sound_ex("shot1",5,false);
 
-		complex n = cexp(I*(2*M_PI/20.0*_i + (t / 150) * M_PI/4));
+		cmplx n = cexp(I*(2*M_PI/20.0*_i + (t / 150) * M_PI/4));
 		for(int i = -1; i <= 1 && t; i++) {
 			PROJECTILE(
 				.proto = pp_card,
@@ -674,10 +674,10 @@ static void kurumi_breaker(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO_SND("shot1_loop", 50, 400, 50-7*global.diff) {
-		complex p = b->pos + 150*sin(_i) + 100.0*I*cos(_i);
+		cmplx p = b->pos + 150*sin(_i) + 100.0*I*cos(_i);
 
 		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0*I*M_PI/c*i);
+			cmplx n = cexp(2.0*I*M_PI/c*i);
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = p,
@@ -765,7 +765,7 @@ static int aniwall_slave(Enemy *e, int t) {
 		e->pos += e->args[2];
 
 		if(!(t % 7-global.diff-2*(global.diff > D_Normal))) {
-			complex v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
+			cmplx v = e->args[2]/cabs(e->args[2])*I*sign(creal(e->args[0]));
 			if(cimag(v) > -0.1 || global.diff >= D_Normal) {
 				play_sound("shot1");
 				PROJECTILE(
@@ -833,9 +833,9 @@ static void kurumi_sbreaker(Boss *b, int time) {
 	int kt = 40;
 
 	FROM_TO_SND("shot1_loop", 50, dur, 2+(global.diff < D_Hard)) {
-		complex p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
+		cmplx p = b->pos + 150*sin(_i/8.0)+100.0*I*cos(_i/15.0);
 
-		complex n = cexp(2.0*I*M_PI/c*_i);
+		cmplx n = cexp(2.0*I*M_PI/c*_i);
 		PROJECTILE(
 			.proto = pp_rice,
 			.pos = p,
@@ -965,7 +965,7 @@ void kurumi_blowwall(Boss *b, int time) {
 
 }
 
-static Projectile* vapor_particle(complex pos, const Color *clr) {
+static Projectile* vapor_particle(cmplx pos, const Color *clr) {
 	return PARTICLE(
 		.sprite = "stain",
 		.color = clr,
@@ -1049,7 +1049,7 @@ static int kdanmaku_slave(Enemy *e, int t) {
 		float speed = 1.5+0.1*global.diff;
 
 		for(i = 0; i < n; i++) {
-			complex p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
+			cmplx p = VIEWPORT_W/(float)n*(i+psin(t*t*i*i+t*t)) + I*cimag(e->pos);
 			if(cabs(p-global.plr.pos) > 60) {
 				PROJECTILE(
 					.proto = pp_thickrice,
@@ -1131,9 +1131,9 @@ static int kurumi_extra_dead_shield(Enemy *e, int time) {
 	}
 
 	if(!(time % 6)) {
-		// complex dir = cexp(I*(M_PI * 0.5 * nfrand() + carg(global.plr.pos - e->pos)));
-		// complex dir = cexp(I*(carg(global.plr.pos - e->pos)));
-		complex dir = cexp(I*creal(e->args[0]));
+		// cmplx dir = cexp(I*(M_PI * 0.5 * nfrand() + carg(global.plr.pos - e->pos)));
+		// cmplx dir = cexp(I*(carg(global.plr.pos - e->pos)));
+		cmplx dir = cexp(I*creal(e->args[0]));
 		PROJECTILE(
 			.proto = pp_rice,
 			.pos = e->pos,
@@ -1150,7 +1150,7 @@ static int kurumi_extra_dead_shield(Enemy *e, int time) {
 	if(kurumi_extra_shield_expire(e, time)) {
 		int cnt = 10;
 		for(int i = 0; i < cnt; ++i) {
-			complex dir = cexp(I*M_PI*2*i/(double)cnt);
+			cmplx dir = cexp(I*M_PI*2*i/(double)cnt);
 			tsrand_fill(2);
 			PROJECTILE(
 				.proto = pp_ball,
@@ -1201,9 +1201,9 @@ static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 
 	FROM_TO(50,escapetime,60) {
 		int count = 5;
-		complex phase = cexp(I*2*M_PI*frand());
+		cmplx phase = cexp(I*2*M_PI*frand());
 		for(int i = 0; i < count; i++) {
-			complex arg = cexp(I*2*M_PI*i/count);
+			cmplx arg = cexp(I*2*M_PI*i/count);
 			if(global.diff == D_Lunatic)
 				arg *= phase;
 			create_lasercurve2c(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0), las_accel, arg, 0.1*arg);
@@ -1223,8 +1223,8 @@ static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 }
 
 static void kurumi_extra_drainer_draw(Projectile *p, int time) {
-	complex org = p->pos;
-	complex targ = p->args[1];
+	cmplx org = p->pos;
+	cmplx targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);
 	Texture *tex = get_tex("part/sinewave");
 
@@ -1350,14 +1350,14 @@ static int kurumi_extra_fairy(Enemy *e, int t) {
 	int attacktime = creal(e->args[1]);
 	int flytime = cimag(e->args[1]);
 	FROM_TO_SND("shot1_loop", attacktime-20,attacktime+20,20) {
-		complex vel = cexp(I*frand()*2*M_PI)*(2+0.1*(global.diff-D_Easy));
+		cmplx vel = cexp(I*frand()*2*M_PI)*(2+0.1*(global.diff-D_Easy));
 		if(e->args[2] == 0) { // attack type
 			int corners = 5;
 			double len = 50;
 			int count = 5;
 			for(int i = 0; i < corners; i++) {
 				for(int j = 0; j < count; j++) {
-					complex pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
+					cmplx pos = len/2/tan(2*M_PI/corners)*I+(j/(double)count-0.5)*len;
 					pos *= cexp(I*2*M_PI/corners*i);
 					PROJECTILE(
 						.proto = pp_flea,
@@ -1373,7 +1373,7 @@ static int kurumi_extra_fairy(Enemy *e, int t) {
 			double rad = 20;
 			for(int j = 0; j < count; j++) {
 				double x = (j/(double)count-0.5)*2*M_PI;
-				complex pos = 0.5*cos(x)+sin(2*x) + (0.5*sin(x)+cos(2*x))*I;
+				cmplx pos = 0.5*cos(x)+sin(2*x) + (0.5*sin(x)+cos(2*x))*I;
 				pos*=vel/cabs(vel);
 				PROJECTILE(
 					.proto = pp_flea,
@@ -1449,7 +1449,7 @@ void kurumi_extra(Boss *b, int time) {
 			if(b->current->hp < castlimit)
 				b->current->hp = castlimit;
 			tsrand_fill(2);
-			complex pos = VIEWPORT_W/2*afrand(0)+I*afrand(1)*VIEWPORT_H*2/3;
+			cmplx pos = VIEWPORT_W/2*afrand(0)+I*afrand(1)*VIEWPORT_H*2/3;
 			if(direction)
 				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
 			// immune so they don’t get killed while they are still offscreen.
@@ -1460,7 +1460,7 @@ void kurumi_extra(Boss *b, int time) {
 		play_sound("shot_special1");
 	}
 
-	complex sidepos = VIEWPORT_W * (0.5+0.3*(1-2*direction)) + VIEWPORT_H * 0.28 * I;
+	cmplx sidepos = VIEWPORT_W * (0.5+0.3*(1-2*direction)) + VIEWPORT_H * 0.28 * I;
 	FROM_TO(90,120,1) {
 		GO_TO(b, sidepos,0.1)
 	}
@@ -1481,8 +1481,8 @@ void kurumi_extra(Boss *b, int time) {
 	if(global.diff >= D_Hard) {
 		AT(300) {
 			double ofs = VIEWPORT_W * 0.5;
-			complex pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
-			complex targ = 0.5 *VIEWPORT_W + VIEWPORT_H * 0.3 * I;
+			cmplx pos = 0.5 * VIEWPORT_W + I * (VIEWPORT_H - 100);
+			cmplx targ = 0.5 *VIEWPORT_W + VIEWPORT_H * 0.3 * I;
 			create_enemy1c(pos + ofs, 3300, kurumi_extra_bigfairy_visual, kurumi_extra_bigfairy1, targ + 0.8*ofs);
 			create_enemy1c(pos - ofs, 3300, kurumi_extra_bigfairy_visual, kurumi_extra_bigfairy1, targ - 0.8*ofs);
 		}
@@ -1543,11 +1543,11 @@ static int scythe_post_mid(Enemy *e, int t) {
 	double alpha = scale * scale;
 	double spin = (0.2 + 0.2 * (1.0 - alpha)) * 1.5;
 
-	complex opos = VIEWPORT_W/2+160*I;
+	cmplx opos = VIEWPORT_W/2+160*I;
 	double targ = (t-300) * (0.5 + psin(t/300.0));
 	double w = min(0.15, 0.0001*targ);
 
-	complex pofs = 150*cos(w*targ+M_PI/2.0) + I*80*sin(2*w*targ);
+	cmplx pofs = 150*cos(w*targ+M_PI/2.0) + I*80*sin(2*w*targ);
 	pofs += ((VIEWPORT_W/2+VIEWPORT_H/2*I - opos) * (global.diff - D_Easy)) / (D_Lunatic - D_Easy);
 
 	e->pos = opos + pofs * (1.0 - clamp((t - (fleetime - 120)) / 60.0, 0.0, 1.0)) * smooth(smooth(scale));
@@ -1555,8 +1555,8 @@ static int scythe_post_mid(Enemy *e, int t) {
 	e->args[1] = creal(e->args[1]) + spin * I;
 
 	FROM_TO(90, fleetime - 120, 1) {
-		complex shotorg = e->pos+80*cexp(I*creal(e->args[1]));
-		complex shotdir = cexp(I*creal(e->args[1]));
+		cmplx shotorg = e->pos+80*cexp(I*creal(e->args[1]));
+		cmplx shotdir = cexp(I*creal(e->args[1]));
 
 		struct projentry { ProjPrototype *proj; char *snd; } projs[] = {
 			{ pp_ball,       "shot1"},

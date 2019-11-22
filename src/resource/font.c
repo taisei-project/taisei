@@ -397,7 +397,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 
 	glyph->spritesheet = ss;
 
-	complex ofs = GLYPH_SPRITE_PADDING * (1+I);
+	cmplx ofs = GLYPH_SPRITE_PADDING * (1+I);
 
 	Rect sprite_pos = rectpack_section_rect(glyph->spritesheet_section);
 	sprite_pos.bottom_right += ofs;

@@ -53,7 +53,7 @@ static int stage2_great_circle(Enemy *e, int t) {
 
 
 		for(n = 0; n < c; n++) {
-			complex dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
+			cmplx dir = cexp(I*(2*M_PI/c*n+partdist*(_i%c2-c2/2)+bunchdist*(_i/c2)));
 
 			PROJECTILE(
 				.proto = pp_rice,
@@ -400,19 +400,19 @@ void hina_amulet(Boss *h, int time) {
 
 	TIMER(&t);
 
-	complex d = global.plr.pos - h->pos;
+	cmplx d = global.plr.pos - h->pos;
 	int loopduration = 200*(global.diff+0.5)/(D_Lunatic+0.5);
 	AT(0) {
 		aniplayer_queue_frames(&h->ani,"guruguru",loopduration);
 	}
 	FROM_TO_SND("shot1_loop", 0,loopduration,1) {
 		float f = _i/30.0;
-		complex n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
+		cmplx n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
 		float speed = 1.0 + 0.75 * max(0, (int)global.diff - D_Normal);
 		float accel = 1.0 + 1.20 * max(0, (int)global.diff - D_Normal);
 
-		complex p = h->pos+30*log(1+_i/2.0)*n;
+		cmplx p = h->pos+30*log(1+_i/2.0)*n;
 
 		ProjPrototype *t0 = pp_ball;
 		ProjPrototype *t1 = global.diff == D_Easy ? t0 : pp_crystal;
@@ -531,7 +531,7 @@ void hina_bad_pick(Boss *h, int time) {
 
 			float cnt = (1+min(D_Normal,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
-				complex o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
+				cmplx o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
 
 				PROJECTILE(
 					.proto = pp_ball,
@@ -700,7 +700,7 @@ void hina_monty(Boss *h, int time) {
 
 	static short slave_pos, bad_pos, good_pos, plr_pos;
 	static int cwidth = VIEWPORT_W / 3.0;
-	static complex targetpos;
+	static cmplx targetpos;
 
 	if(time == EVENT_DEATH) {
 		enemy_kill_all(&global.enemies);
@@ -732,7 +732,7 @@ void hina_monty(Boss *h, int time) {
 		do slave_pos = tsrand() % 3; while(slave_pos == plr_pos || slave_pos == good_pos);
 		while(bad_pos == slave_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
 
-		complex o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
+		cmplx o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
 
 		play_sound("laser1");
 		create_laserline_ab(h->pos, o, 15, 30, 60, RGBA(1.0, 0.3, 0.3, 0.0));
@@ -760,7 +760,7 @@ void hina_monty(Boss *h, int time) {
 		float cnt = (2.0+global.diff) * 5;
 		for(int i = 0; i < cnt; i++) {
 			bool top = ((global.diff > D_Hard) && (_i % 2));
-			complex o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
+			cmplx o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
 
 			PROJECTILE(
 				.proto = pp_ball,
@@ -801,7 +801,7 @@ void hina_monty(Boss *h, int time) {
 				p = 1.0 - p;
 			}
 
-			complex o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
+			cmplx o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
 
 			if(global.diff > D_Normal) {
 				PROJECTILE(
@@ -860,7 +860,7 @@ void hina_spell_bg(Boss *h, int time) {
 	r_draw_sprite(&sp);
 }
 
-Boss* stage2_spawn_hina(complex pos) {
+Boss* stage2_spawn_hina(cmplx pos) {
 	Boss *hina = create_boss("Kagiyama Hina", "hina", "dialog/hina", pos);
 	hina->glowcolor = *RGBA_MUL_ALPHA(0.7, 0.2, 0.3, 0.5);
 	hina->shadowcolor = hina->glowcolor;

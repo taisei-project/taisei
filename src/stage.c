@@ -10,8 +10,6 @@
 
 #include "util.h"
 #include "stage.h"
-
-#include <time.h>
 #include "global.h"
 #include "video.h"
 #include "resource/bgm.h"
@@ -552,7 +550,7 @@ static bool ellipse_predicate(EntityInterface *ent, void *varg) {
 		default: UNREACHABLE;
 	}
 }
-void stage_clear_hazards_at(complex origin, double radius, ClearHazardsFlags flags) {
+void stage_clear_hazards_at(cmplx origin, double radius, ClearHazardsFlags flags) {
 	Circle area = { origin, radius };
 	stage_clear_hazards_predicate(proximity_predicate, &area, flags);
 }

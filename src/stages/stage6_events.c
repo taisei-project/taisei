@@ -46,7 +46,7 @@ static int stage6_hacker(Enemy *e, int t) {
 	FROM_TO_SND("shot1_loop",100, 180+40*global.diff, 3) {
 		int i;
 		for(i = 0; i < 6; i++) {
-			complex n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
+			cmplx n = sin(_i*0.2)*cexp(I*0.3*(i/2-1))*(1-2*(i&1));
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = e->pos + 120*n,
@@ -150,7 +150,7 @@ void scythe_common(Enemy *e, int t) {
 
 static int scythe_mid(Enemy *e, int t) {
 	TIMER(&t);
-	complex n;
+	cmplx n;
 
 	if(t < 0) {
 		scythe_common(e, t);
@@ -457,7 +457,7 @@ void elly_newton(Boss *b, int t) {
 			case 2: c = *RGB(0.8, 0.6, 0.0); break;
 		}
 
-		complex apple_pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
+		cmplx apple_pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
 
 		PROJECTILE(
 			.pos = apple_pos,
@@ -537,7 +537,7 @@ static int kepler_bullet(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	complex pos = p->pos0;
+	cmplx pos = p->pos0;
 
 	if(tier != 0) {
 		Projectile *parent = (Projectile *) REF(creal(p->args[2]));
@@ -551,15 +551,15 @@ static int kepler_bullet(Projectile *p, int t) {
 		pos += t*p->args[2];
 	}
 
-	complex newpos = pos + tanh(t/90.)*p->args[0]*cexp((1-2*(tier&1))*I*t*0.5/cabs(p->args[0]));
-	complex vel = newpos-p->pos;
+	cmplx newpos = pos + tanh(t/90.)*p->args[0]*cexp((1-2*(tier&1))*I*t*0.5/cabs(p->args[0]));
+	cmplx vel = newpos-p->pos;
 	p->pos = newpos;
 	p->args[3] = vel;
 
 	if(t%(30-5*global.diff) == 0) {
 		p->args[1]+=1*I;
 		int tau = global.frames-global.boss->current->starttime;
-		complex phase = cexp(I*0.2*tau*tau);
+		cmplx phase = cexp(I*0.2*tau*tau);
 		int n = global.diff/2+3+(frand()>0.3);
 		if(global.diff == D_Easy)
 			n=7;
@@ -612,7 +612,7 @@ void elly_kepler(Boss *b, int t) {
 		int c = 2;
 		play_sound("shot_special1");
 		for(int i = 0; i < c; i++) {
-			complex n = cexp(I*2*M_PI/c*i+I*0.6*_i);
+			cmplx n = cexp(I*2*M_PI/c*i+I*0.6*_i);
 
 			PROJECTILE(
 				.proto = kepler_pick_bullet(0),
@@ -644,7 +644,7 @@ static void elly_frequency2(Boss *b, int t) {
 	}
 
 	FROM_TO_SND("shot1_loop",0, 2000, 3-global.diff/2) {
-		complex n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
+		cmplx n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
 		PROJECTILE(
 			.proto = pp_plainball,
 			.pos = b->pos+80*n,
@@ -655,7 +655,7 @@ static void elly_frequency2(Boss *b, int t) {
 	}
 }
 
-static complex maxwell_laser(Laser *l, float t) {
+static cmplx maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
 		l->shader = r_shader_get_optional("lasers/maxwell");
@@ -695,7 +695,7 @@ void elly_maxwell(Boss *b, int t) {
 
 }
 
-static void draw_baryon_connector(complex a, complex b) {
+static void draw_baryon_connector(cmplx a, cmplx b) {
 	Sprite *spr = get_sprite("stage6/baryon_connector");
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = spr,
@@ -774,7 +774,7 @@ static void draw_baryons(Enemy *bcenter, int t) {
 static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 	if(!render) {
 		/*
-		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
+		cmplx p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
 
 		PARTICLE("flare", p, RGBA(0.0, 1.0, 1.0, 0.0),
 			.draw_rule = GrowFade,
@@ -847,7 +847,7 @@ static void BaryonCenter(Enemy *bcenter, int t, bool render) {
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == Baryon) {
-			complex p = e->pos;//+10*frand()*cexp(2.0*I*M_PI*frand());
+			cmplx p = e->pos;//+10*frand()*cexp(2.0*I*M_PI*frand());
 
 			r_draw_sprite(&(SpriteParams) {
 				.sprite = "part/myon",
@@ -933,7 +933,7 @@ static int scythe_explode(Enemy *e, int t) {
 	return 1;
 }
 
-void elly_spawn_baryons(complex pos) {
+void elly_spawn_baryons(cmplx pos) {
 	int i;
 	Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
 
@@ -1028,7 +1028,7 @@ static int baryon_eigenstate(Enemy *e, int t) {
 		play_sound("shot_special1");
 		play_sound_delayed("redirect",4,true,60);
 		for(i = 0; i < c; i++) {
-			complex n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
+			cmplx n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++) {
 				PROJECTILE(
 					.proto = pp_plainball,
@@ -1056,7 +1056,7 @@ static int baryon_reset(Enemy *baryon, int t) {
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == BaryonCenter) {
-			complex targ_pos = baryon->pos0 - e->pos0 + e->pos;
+			cmplx targ_pos = baryon->pos0 - e->pos0 + e->pos;
 			GO_TO(baryon, targ_pos, 0.1);
 
 			return 1;
@@ -1103,7 +1103,7 @@ static int broglie_particle(Projectile *p, int t) {
 		Laser *laser = (Laser*)REF(p->args[0]);
 
 		if(laser) {
-			complex oldpos = p->pos;
+			cmplx oldpos = p->pos;
 			p->pos = laser->prule(laser, min(t, cimag(p->args[1])));
 
 			if(oldpos != p->pos) {
@@ -1185,7 +1185,7 @@ static int broglie_charge(Projectile *p, int t) {
 		double hue = creal(p->args[3]);
 
 		p->pos -= p->args[0] * 15;
-		complex aim = cexp(I*p->angle);
+		cmplx aim = cexp(I*p->angle);
 
 		double s_ampl = 30 + 2 * attack_num;
 		double s_freq = 0.10 + 0.01 * attack_num;
@@ -1224,14 +1224,14 @@ static int broglie_charge(Projectile *p, int t) {
 		return ACTION_DESTROY;
 	} else {
 		float f = pow(clamp((140 - (firetime - t)) / 90.0, 0, 1), 8);
-		complex o = p->pos - p->args[0] * 15;
+		cmplx o = p->pos - p->args[0] * 15;
 		p->args[0] *= cexp(I*M_PI*0.2*f);
 		p->pos = o + p->args[0] * 15;
 
 		if(f > 0.1) {
 			play_loop("charge_generic");
 
-			complex n = cexp(2.0*I*M_PI*frand());
+			cmplx n = cexp(2.0*I*M_PI*frand());
 			float l = 50*frand()+25;
 			float s = 4+f;
 
@@ -1303,7 +1303,7 @@ static int baryon_broglie(Enemy *e, int t) {
 
 	FROM_TO(delay, delay + step * cnt - 1, step) {
 		double a = 2*M_PI * (0.25 + 1.0/cnt*_i);
-		complex n = cexp(I*a);
+		cmplx n = cexp(I*a);
 		double hue = (attack_num * M_PI + a + M_PI/6) / (M_PI*2);
 
 		PROJECTILE(
@@ -1323,7 +1323,7 @@ static int baryon_broglie(Enemy *e, int t) {
 	}
 
 	if(t < delay /*|| t > delay + fire_delay*/) {
-		complex target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
+		cmplx target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
 		GO_TO(e, target_pos, 0.03);
 	}
 
@@ -1348,7 +1348,7 @@ void elly_broglie(Boss *b, int t) {
 	int period = BROGLIE_PERIOD;
 	double ofs = 100;
 
-	complex positions[] = {
+	cmplx positions[] = {
 		VIEWPORT_W-ofs + ofs*I,
 		VIEWPORT_W-ofs + ofs*I,
 		ofs + (VIEWPORT_H-ofs)*I,
@@ -1358,7 +1358,7 @@ void elly_broglie(Boss *b, int t) {
 	};
 
 	if(t/period > 0) {
-		GO_TO(b, positions[(t/period) % (sizeof(positions)/sizeof(complex))], 0.02);
+		GO_TO(b, positions[(t/period) % (sizeof(positions)/sizeof(cmplx))], 0.02);
 	}
 }
 
@@ -1491,7 +1491,7 @@ static int baryon_ricci(Enemy *e, int t) {
 			GO_TO(e, global.plr.pos, 0.1);
 		} else {
 			float s = 1.00 + 0.25 * (global.diff - D_Easy);
-			complex d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(s*t/200.)+25*I*cos(s*t*3./500.);
+			cmplx d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(s*t/200.)+25*I*cos(s*t*3./500.);
 			e->pos += -0.5*d/cabs(d);
 		}
 	} else {
@@ -1511,7 +1511,7 @@ static int baryon_ricci(Enemy *e, int t) {
 		if(phase < 0.55 && phase > 0.15) {
 			FROM_TO(150,100000,10) {
 				int c = 3;
-				complex n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
+				cmplx n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = 15*n,
@@ -1552,7 +1552,7 @@ static int ricci_proj(Projectile *p, int t) {
 
 	int time = global.frames-global.boss->current->starttime;
 
-	complex shift = 0;
+	cmplx shift = 0;
 	p->pos = p->pos0 + p->args[0]*t;
 
 	double influence = 0;
@@ -1566,7 +1566,7 @@ static int ricci_proj(Projectile *p, int t) {
 
 		if(num % 2 == 0) {
 			double radius = SAFE_RADIUS(e);
-			complex d = e->pos-p->pos;
+			cmplx d = e->pos-p->pos;
 			float s = 1.00 + 0.25 * (global.diff - D_Easy);
 			int gaps = SAFE_RADIUS_PHASE_NUM(e) + 5;
 			double r = cabs(d)/(1.0-0.15*sin(gaps*carg(d)+0.01*s*time));
@@ -1620,7 +1620,7 @@ void elly_ricci(Boss *b, int t) {
 		w *= (1 + 2.0 / c);
 
 		for(int i = 0; i < c; i++) {
-			complex pos = ofs + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
+			cmplx pos = ofs + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
 
 			PROJECTILE(
 				.proto = pp_ball,
@@ -1673,7 +1673,7 @@ static void elly_baryonattack2(Boss *b, int t) {
 			for(int i = 0; i < cnt; ++i) {
 				float a = M_PI/4;
 				a = a * (i/(float)cnt) - a/2;
-				complex n = cexp(I*(a+carg(global.plr.pos-b->pos)));
+				cmplx n = cexp(I*(a+carg(global.plr.pos-b->pos)));
 
 				for(int j = 0; j < 3; ++j) {
 					PROJECTILE(
@@ -1688,7 +1688,7 @@ static void elly_baryonattack2(Boss *b, int t) {
 		} else {
 			int x, y;
 			int w = 1+(global.diff > D_Normal);
-			complex n = cexp(I*carg(global.plr.pos-b->pos));
+			cmplx n = cexp(I*carg(global.plr.pos-b->pos));
 
 			for(x = -w; x <= w; x++) {
 				for(y = -w; y <= w; y++) {
@@ -1762,13 +1762,13 @@ void elly_lhc(Boss *b, int t) {
 	FROM_TO(280, 10000, 400) {
 		int i;
 		int c = 30+10*global.diff;
-		complex pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
+		cmplx pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
 
 		global.shake_view = 16;
 		play_sound("boom");
 
 		for(i = 0; i < c; i++) {
-			complex v = 3*cexp(2.0*I*M_PI*frand());
+			cmplx v = 3*cexp(2.0*I*M_PI*frand());
 			tsrand_fill(4);
 			create_lasercurve2c(pos, 70+20*global.diff, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, v, 0.02*frand()*copysign(1,creal(v)))->width=15;
 
@@ -1918,13 +1918,13 @@ static int baryon_explode(Enemy *e, int t) {
 static int baryon_curvature(Enemy *e, int t) {
 	int num = creal(e->args[2])+0.5;
 	int odd = num&1;
-	complex bpos = global.boss->pos;
-	complex target = (1-2*odd)*(300+100*sin(t*0.01))*cexp(I*(2*M_PI*(num+0.5*odd)/6+0.6*sqrt(1+t*t/600.)));
+	cmplx bpos = global.boss->pos;
+	cmplx target = (1-2*odd)*(300+100*sin(t*0.01))*cexp(I*(2*M_PI*(num+0.5*odd)/6+0.6*sqrt(1+t*t/600.)));
 	GO_TO(e,bpos+target, 0.1);
 
 	if(global.diff > D_Easy && t % (80-4*global.diff) == 0) {
 		tsrand_fill(2);
-		complex pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
+		cmplx pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
 
 		if(cabs(pos - global.plr.pos) > 100) {
 			PROJECTILE(
@@ -1953,7 +1953,7 @@ static int curvature_bullet(Projectile *p, int t) {
 	}
 
 	float vx, vy, x, y;
-	complex v = ((Enemy *)REF(p->args[1]))->args[0]*0.00005;
+	cmplx v = ((Enemy *)REF(p->args[1]))->args[0]*0.00005;
 	vx = creal(v);
 	vy = cimag(v);
 	x = creal(p->pos-global.plr.pos);
@@ -1998,7 +1998,7 @@ static int curvature_slave(Enemy *e, int t) {
 
 	if(t % (2+(global.diff < D_Hard)) == 0) {
 		tsrand_fill(2);
-		complex pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
+		cmplx pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
 		if(cabs(pos - global.plr.pos) > 50) {
 			tsrand_fill(2);
 			float speed = 0.5/(1+(global.diff < D_Hard));
@@ -2106,7 +2106,7 @@ static void elly_baryon_explode(Boss *b, int t) {
 	}
 }
 
-static complex wrap_around(complex *pos) {
+static cmplx wrap_around(cmplx *pos) {
 	// This function only works approximately. If more than one of these conditions are true,
 	// dir has to correspond to the wall that was passed first for the
 	// current preview display to work.
@@ -2115,7 +2115,7 @@ static complex wrap_around(complex *pos) {
 	// preview calculation, but the spell as it is currently seems to work
 	// perfectly with this simplified version.
 
-	complex dir = 0;
+	cmplx dir = 0;
 	if(creal(*pos) < -10) {
 		*pos += VIEWPORT_W;
 		dir += -1;
@@ -2214,7 +2214,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 	}
 
 	p->pos += p->args[0];
-	complex prev_pos = p->pos;
+	cmplx prev_pos = p->pos;
 	int warps_left = creal(p->args[1]);
 	int warps_initial = cimag(p->args[1]);
 
@@ -2271,10 +2271,10 @@ static int elly_toe_boson(Projectile *p, int t) {
 	}
 
 	float tLookahead = 40;
-	complex posLookahead = p->pos+p->args[0]*tLookahead;
-	complex dir = wrap_around(&posLookahead);
+	cmplx posLookahead = p->pos+p->args[0]*tLookahead;
+	cmplx dir = wrap_around(&posLookahead);
 	if(dir != 0 && t%3 == 0 && warps_left > 0) {
-		complex pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
+		cmplx pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
 
 		// Re [a b^*] behaves like the 2D vector scalar product
 		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
@@ -2304,7 +2304,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 #define SYMMETRYTIME (HIGGSTIME+200)
 #define BREAKTIME (YUKAWATIME+400)
 
-static bool elly_toe_its_yukawatime(complex pos) {
+static bool elly_toe_its_yukawatime(cmplx pos) {
 	int t = global.frames-global.boss->current->starttime;
 
 	if(pos == 0)
@@ -2425,14 +2425,14 @@ static int elly_toe_higgs(Projectile *p, int t) {
 		global_time = max_time;
 	}
 
-	complex vel = p->args[0] * cexp(I*rotation*global_time/(float)max_time);
+	cmplx vel = p->args[0] * cexp(I*rotation*global_time/(float)max_time);
 	p->pos = p->pos0 + t * vel;
 	p->angle = carg(vel);
 
 	return ACTION_NONE;
 }
 
-static complex elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
+static cmplx elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
 	int type = creal(l->args[1]+0.5);
 
 	if(t == EVENT_BIRTH) {
@@ -2497,7 +2497,7 @@ static int elly_toe_laser_particle_rule(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static void elly_toe_laser_particle(Laser *l, complex origin) {
+static void elly_toe_laser_particle(Laser *l, cmplx origin) {
 	Color *c = color_mul(COLOR_COPY(&l->color), &l->color);
 	c->a = 0;
 
@@ -2546,7 +2546,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 			{0, 3, 3, 1}
 		};
 
-		complex newpos = l->prule(l,t);
+		cmplx newpos = l->prule(l,t);
 		if(creal(newpos) < 0 || cimag(newpos) < 0 || creal(newpos) > VIEWPORT_W || cimag(newpos) > VIEWPORT_H)
 			return;
 
@@ -2562,8 +2562,8 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 			// I removed type 3 because i can’t draw dotted lines and it would be too difficult either way
 		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
 
-		complex origin = l->prule(l,t);
-		complex newdir = cexp(0.3*I);
+		cmplx origin = l->prule(l,t);
+		cmplx newdir = cexp(0.3*I);
 
 		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
 			elly_toe_laser_pos,elly_toe_laser_logic,
@@ -2695,10 +2695,10 @@ void elly_theory(Boss *b, int time) {
 			for(int i = 0; i < 4; i++) {
 				pnum = (count - pnum - 1);
 
-				complex dir = I*cexp(I*(2*M_PI/count*(pnum+0.5)));
+				cmplx dir = I*cexp(I*(2*M_PI/count*(pnum+0.5)));
 				dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
 
-				complex bpos = b->pos + 18 * dir * i;
+				cmplx bpos = b->pos + 18 * dir * i;
 
 				PROJECTILE(
 					.proto = pp_rice,
@@ -2721,7 +2721,7 @@ void elly_theory(Boss *b, int time) {
 		// play_loop("noise1");
 		play_sound_ex("shot1", 5, false);
 
-		complex dest = 100*cexp(I*1*_i);
+		cmplx dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE(
 				.proto = pp_ball,
@@ -2803,7 +2803,7 @@ void elly_theory(Boss *b, int time) {
 
 		for(int dir = 0; dir < 2; dir++) {
 			for(int arm = 0; arm < arms; arm++) {
-				complex v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
+				cmplx v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
 				if(dir)
 					v = -conj(v);
 				if(time>symmetrytime) {
@@ -2825,7 +2825,7 @@ void elly_theory(Boss *b, int time) {
 	FROM_TO(breaktime,breaktime+10000,100) {
 		play_sound_ex("laser1", 0, true);
 
-		complex phase = cexp(2*I*M_PI*frand());
+		cmplx phase = cexp(2*I*M_PI*frand());
 		int count = 8;
 		for(int i = 0; i < count; i++) {
 			create_laser(b->pos,LASER_LENGTH,LASER_LENGTH/2,RGBA(1, 1, 1, 0),
@@ -2948,7 +2948,7 @@ static void elly_global_rule(Boss *b, int time) {
 	global.boss->shadowcolor = *HSLA_MUL_ALPHA((time+20)/120.0, 1.0, 0.25, 0.5);
 }
 
-Boss* stage6_spawn_elly(complex pos) {
+Boss* stage6_spawn_elly(cmplx pos) {
 	Boss *b = create_boss("Elly", "elly", "dialog/elly", pos);
 	b->global_rule = elly_global_rule;
 	return b;
@@ -3016,7 +3016,7 @@ void stage6_events(void) {
 		create_enemy3c(VIEWPORT_W*(_i&1), 2000, Fairy, stage6_side, 2.0*I+0.1*(1-2*(_i&1)),1-2*(_i&1),_i);
 
 	FROM_TO(720, 940, 10) {
-		complex p = VIEWPORT_W/2+(1-2*(_i&1))*20*(_i%10);
+		cmplx p = VIEWPORT_W/2+(1-2*(_i&1))*20*(_i%10);
 		create_enemy3c(p, 2000, Fairy, stage6_side, 2.0*I+1*(1-2*(_i&1)),I*cexp(I*carg(global.plr.pos-p))*(1-2*(_i&1)),_i*psin(_i));
 	}
 

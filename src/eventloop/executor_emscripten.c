@@ -11,6 +11,7 @@
 #include "eventloop_private.h"
 #include "events.h"
 #include "global.h"
+
 #include <emscripten.h>
 
 static FrameTimes frame_times;

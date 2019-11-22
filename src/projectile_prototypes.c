@@ -15,8 +15,8 @@
 typedef struct PPBasicPriv {
 	const char *sprite_name;
 	Sprite *sprite;
-	complex size;
-	complex collision_size;
+	cmplx size;
+	cmplx collision_size;
 } PPBasicPriv;
 
 static void pp_basic_preload(ProjPrototype *proto) {

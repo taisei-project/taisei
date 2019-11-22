@@ -485,16 +485,16 @@ void _r_uniform_ptr_vec2_vec(Uniform *uniform, vec2_noalign value) attr_nonnull(
 void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) attr_nonnull(1, 2);
 #define r_uniform_vec2_vec(uniform, ...) _R_UNIFORM_GENERIC(vec2_vec, uniform, __VA_ARGS__)
 
-void _r_uniform_ptr_vec2_complex(Uniform *uniform, complex value);
-void _r_uniform_vec2_complex(const char *uniform, complex value) attr_nonnull(1);
+void _r_uniform_ptr_vec2_complex(Uniform *uniform, cmplx value);
+void _r_uniform_vec2_complex(const char *uniform, cmplx value) attr_nonnull(1);
 #define r_uniform_vec2_complex(uniform, ...) _R_UNIFORM_GENERIC(vec2_complex, uniform, __VA_ARGS__)
 
 void _r_uniform_ptr_vec2_array(Uniform *uniform, uint offset, uint count, vec2_noalign elements[count]) attr_nonnull(4);
 void _r_uniform_vec2_array(const char *uniform, uint offset, uint count, vec2_noalign elements[count]) attr_nonnull(1, 4);
 #define r_uniform_vec2_array(uniform, ...) _R_UNIFORM_GENERIC(vec2_array, uniform, __VA_ARGS__)
 
-void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, complex elements[count]) attr_nonnull(4);
-void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, complex elements[count]) attr_nonnull(1, 4);
+void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, cmplx elements[count]) attr_nonnull(4);
+void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, cmplx elements[count]) attr_nonnull(1, 4);
 #define r_uniform_vec2_array_complex(uniform, ...) _R_UNIFORM_GENERIC(vec2_array_complex, uniform, __VA_ARGS__)
 
 void _r_uniform_ptr_vec3(Uniform *uniform, float x, float y, float z);

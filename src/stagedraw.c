@@ -374,7 +374,7 @@ static void stage_draw_collision_areas(void) {
 	r_uniform_vec4("color_outer", 1, 1, 1, 0.1);
 
 	for(Projectile *p = global.projs.first; p; p = p->next) {
-		complex gsize = projectile_graze_size(p);
+		cmplx gsize = projectile_graze_size(p);
 
 		if(creal(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
@@ -657,8 +657,8 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
 
-	complex fpos = global.boss->pos;
-	complex pos = fpos + 15*cexp(I*global.frames/4.5);
+	cmplx fpos = global.boss->pos;
+	cmplx pos = fpos + 15*cexp(I*global.frames/4.5);
 
 	r_shader("boss_zoom");
 	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
@@ -742,7 +742,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 			fbpair_swap(fbos);
 			r_framebuffer(fbos->back);
 
-			complex pos = b->pos;
+			cmplx pos = b->pos;
 			float ratio = (float)VIEWPORT_H/VIEWPORT_W;
 			float delay;
 
@@ -1542,7 +1542,7 @@ void stage_draw_bottom_text(void) {
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
 	for(int i = 0; i < num_samples; ++i) {
-		samples[i] = fps->frametimes[i] / (2.0 * (HRTIME_RESOLUTION / (long double)FPS));
+		samples[i] = fps->frametimes[i] / (2.0 * (HRTIME_RESOLUTION / (float64x)FPS));
 
 		if(samples[i] > 1.0) {
 			samples[i] = 1.0;

@@ -81,9 +81,22 @@
 	#define __attribute__(...)
 	#define __extension__
 	#define UNREACHABLE
+	#define DIAGNOSTIC(x)
+	#define DIAGNOSTIC_GCC(x)
+	#define DIAGNOSTIC_CLANG(x)
 #else
 	#define USE_GNU_EXTENSIONS
 	#define UNREACHABLE __builtin_unreachable()
+
+	#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
+
+	#if defined(__clang__)
+		#define DIAGNOSTIC_GCC(x)
+		#define DIAGNOSTIC_CLANG(x) PRAGMA(clang diagnostic x)
+	#else
+		#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
+		#define DIAGNOSTIC_CLANG(x)
+	#endif
 #endif
 
 #ifndef __has_attribute
@@ -132,6 +145,27 @@ typedef unsigned char uchar;
 #undef schar
 typedef signed char schar;
 
+#undef float32
+typedef float float32;
+
+#undef float64
+typedef double float64;
+
+#undef float64x
+typedef long double float64x;
+
+#undef real
+typedef float64 real;
+
+#undef cmplx32
+typedef _Complex float cmplx32;
+
+#undef cmplx64
+typedef _Complex double cmplx64;
+
+#undef cmplx
+typedef cmplx64 cmplx;
+
 // These definitions are common but non-standard, so we provide our own
 #undef M_PI
 #undef M_PI_2
@@ -142,25 +176,12 @@ typedef signed char schar;
 #define M_PI_4 0.78539816339744830962
 #define M_E 2.7182818284590452354
 
-// This is a workaround to properly specify the type of our "complex" variables...
-// Taisei code always uses just "complex" when it actually means "complex double", which is not really correct.
-// gcc doesn't seem to care, other compilers do (e.g. clang)
-#undef complex
-// typedef it for convenience
-typedef _Complex double complex;
-// standard says `complex` should be a macro
-#define complex complex
-
-// unfortunately, the above `complex` hack conflicts with some headers that define
-// `CMPLX` like ((double complex){ x, y })
-#undef CMPLX
-
 // FIXME this is likely incorrect!
 #if TAISEI_BUILDCONF_MALLOC_ALIGNMENT < 0
 	#warning max_align_t not supported
 	#undef TAISEI_BUILDCONF_MALLOC_ALIGNMENT
 	#define TAISEI_BUILDCONF_MALLOC_ALIGNMENT 8
-	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) long double a; } max_align_t;
+	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) float64x a; } max_align_t;
 #endif
 
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute

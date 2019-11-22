@@ -134,7 +134,7 @@ void lasers_free(void) {
 
 static void ent_draw_laser(EntityInterface *ent);
 
-Laser *create_laser(complex pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3) {
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3) {
 	Laser *l = alist_push(&global.lasers, (Laser*)objpool_acquire(stage_object_pools.lasers));
 
 	l->birthtime = global.frames;
@@ -173,12 +173,12 @@ Laser *create_laser(complex pos, float time, float deathtime, const Color *color
 	return l;
 }
 
-Laser *create_laserline(complex pos, complex dir, float charge, float dur, const Color *clr) {
+Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr) {
 	return create_laserline_ab(pos, (pos)+(dir)*VIEWPORT_H*1.4/cabs(dir), cabs(dir), charge, dur, clr);
 }
 
-Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, const Color *clr) {
-	complex m = (b-a)*0.005;
+Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
+	cmplx m = (b-a)*0.005;
 
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
@@ -272,8 +272,8 @@ static void draw_laser_curve_generic(Laser *l) {
 	r_vertex_buffer_invalidate(lasers.vbuf);
 
 	for(uint i = 0; i < instances; ++i) {
-		complex pos = l->prule(l, i * 0.5 + timeshift);
-		complex delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
+		cmplx pos = l->prule(l, i * 0.5 + timeshift);
+		cmplx delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
 
 		LaserInstancedAttribs attr;
 		attr.pos[0] = creal(pos);
@@ -438,7 +438,7 @@ void process_lasers(void) {
 
 			if(!((global.frames - laser->birthtime) % 2) || kill_now) {
 				double t = max(0, (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift);
-				complex p = laser->prule(laser, t);
+				cmplx p = laser->prule(laser, t);
 				double x = creal(p);
 				double y = cimag(p);
 
@@ -570,7 +570,7 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 	return laser_intersects_ellipse(l, ellipse);
 }
 
-complex las_linear(Laser *l, float t) {
+cmplx las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/linear");
 		l->collision_step = max(3, l->timespan/10);
@@ -580,7 +580,7 @@ complex las_linear(Laser *l, float t) {
 	return l->pos + l->args[0]*t;
 }
 
-complex las_accel(Laser *l, float t) {
+cmplx las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/accelerated");
 		l->collision_step = max(3, l->timespan/10);
@@ -590,7 +590,7 @@ complex las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-complex las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// XXX: this used to be called "las_sine", but it's actually not a proper sine wave
 	// do we even still need this?
 
@@ -603,7 +603,7 @@ complex las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] =
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
 
-complex las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
@@ -611,18 +611,18 @@ complex las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sin
 		return 0;
 	}
 
-	complex line_vel = l->args[0];
-	complex line_dir = line_vel / cabs(line_vel);
-	complex line_normal = cimag(line_dir) - I*creal(line_dir);
-	complex sine_amp = l->args[1];
-	complex sine_freq = l->args[2];
-	complex sine_phase = l->args[3];
+	cmplx line_vel = l->args[0];
+	cmplx line_dir = line_vel / cabs(line_vel);
+	cmplx line_normal = cimag(line_dir) - I*creal(line_dir);
+	cmplx sine_amp = l->args[1];
+	cmplx sine_freq = l->args[2];
+	cmplx sine_phase = l->args[3];
 
-	complex sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
+	cmplx sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
 	return l->pos + t * line_vel + sine_ofs;
 }
 
-complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
+cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
@@ -630,7 +630,7 @@ complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine am
 		return 0;
 	}
 
-	complex velocity = l->args[0];
+	cmplx velocity = l->args[0];
 	double amplitude = creal(l->args[1]);
 	double frequency = creal(l->args[2]);
 	double phase = creal(l->args[3]);
@@ -642,14 +642,14 @@ complex las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine am
 	return l->pos + cexp(I * (angle + amplitude * sin(s))) * t * speed;
 }
 
-complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
+cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/turning");
 		return 0;
 	}
 
-	complex v0 = l->args[0];
-	complex v1 = l->args[1];
+	cmplx v0 = l->args[0];
+	cmplx v1 = l->args[1];
 	float begin = creal(l->args[2]);
 	float end = cimag(l->args[2]);
 
@@ -657,12 +657,12 @@ complex las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn 
 	a = 1.0 - (0.5 + 0.5 * cos(a * M_PI));
 	a = 1.0 - pow(1.0 - a, 2);
 
-	complex v = v1 * a + v0 * (1 - a);
+	cmplx v = v1 * a + v0 * (1 - a);
 
 	return l->pos + v * t;
 }
 
-complex las_circle(Laser *l, float t) {
+cmplx las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/circle");
 		return 0;

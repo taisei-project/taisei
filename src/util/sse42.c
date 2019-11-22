@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include <immintrin.h>
+
 #include "sse42.h"
 
 uint32_t crc32str_sse42(uint32_t crc, const char *str) {

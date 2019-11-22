@@ -30,10 +30,10 @@ void elly_theory(Boss*, int);
 void elly_curvature(Boss*, int);
 void elly_intro(Boss*, int);
 
-void elly_spawn_baryons(complex pos);
+void elly_spawn_baryons(cmplx pos);
 
 void stage6_events(void);
-Boss* stage6_spawn_elly(complex pos);
+Boss* stage6_spawn_elly(cmplx pos);
 
 void Scythe(Enemy *e, int t, bool render);
 void scythe_common(Enemy *e, int t);

@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+
 #include "hashtable.h"
 
 // The callback should return true on success and false on error. In the case of

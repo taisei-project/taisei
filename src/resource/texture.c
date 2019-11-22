@@ -642,9 +642,9 @@ void fill_screen_p(Texture *tex) {
 // draws a thin, w-width rectangle from point A to point B with a texture that
 // moves along the line.
 //
-void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
-	complex d = b-a;
-	complex c = (b+a)/2;
+void loop_tex_line_p(cmplx a, cmplx b, float w, float t, Texture *texture) {
+	cmplx d = b-a;
+	cmplx c = (b+a)/2;
 
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(c), cimag(c), 0);
@@ -661,6 +661,6 @@ void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture) {
 	r_mat_mv_pop();
 }
 
-void loop_tex_line(complex a, complex b, float w, float t, const char *texture) {
+void loop_tex_line(cmplx a, cmplx b, float w, float t, const char *texture) {
 	loop_tex_line_p(a, b, w, t, get_tex(texture));
 }

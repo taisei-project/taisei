@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+
 #include "../pixmap.h"
 
 typedef struct PixmapLoader {

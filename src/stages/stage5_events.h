@@ -21,6 +21,6 @@ void iku_induction(Boss*, int);
 void iku_extra(Boss*, int);
 
 void stage5_events(void);
-Boss* stage5_spawn_iku(complex pos);
+Boss* stage5_spawn_iku(cmplx pos);
 
 #endif // IGUARD_stages_stage5_events_h

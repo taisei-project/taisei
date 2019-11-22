@@ -76,7 +76,7 @@ typedef struct AttackInfo {
 	BossRule rule;
 	BossRule draw_rule;
 
-	complex pos_dest;
+	cmplx pos_dest;
 	int bonus_rank;
 } AttackInfo;
 
@@ -105,7 +105,7 @@ typedef struct Attack {
 
 typedef struct Boss {
 	ENTITY_INTERFACE_NAMED(struct Boss, ent);
-	complex pos;
+	cmplx pos;
 
 	Attack *attacks;
 	Attack *current;
@@ -149,7 +149,7 @@ typedef struct Boss {
 	} hud;
 } Boss;
 
-Boss* create_boss(char *name, char *ani, char *dialog, complex pos) attr_nonnull(1, 2) attr_returns_nonnull;
+Boss* create_boss(char *name, char *ani, char *dialog, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 

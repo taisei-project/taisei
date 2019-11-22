@@ -10,6 +10,7 @@
 
 #include <SDL.h>
 #include <zlib.h>
+
 #include "rwops_zlib.h"
 #include "util.h"
 

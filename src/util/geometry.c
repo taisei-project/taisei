@@ -16,7 +16,7 @@ static inline void ellipse_bbox(const Ellipse *e, Rect *r) {
 	r->bottom_right = e->origin + largest_radius + I * largest_radius;
 }
 
-bool point_in_ellipse(complex p, Ellipse e) {
+bool point_in_ellipse(cmplx p, Ellipse e) {
 	double Xp = creal(p);
 	double Yp = cimag(p);
 	double Xe = creal(e.origin);
@@ -52,7 +52,7 @@ static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e
 // if yes, return f so that a+f*(b-a) is that point.
 // otherwise return -1.
 static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
-	complex m, v;
+	cmplx m, v;
 	double projection, lv, lm, distance;
 
 	m = seg.b - seg.a; // vector pointing along the line
@@ -98,7 +98,7 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	seg.b -= e.origin;
 
 	double ratio = creal(e.axes) / cimag(e.axes);
-	complex rotation = cexp(I * -e.angle);
+	cmplx rotation = cexp(I * -e.angle);
 	seg.a *= rotation;
 	seg.b *= rotation;
 	seg.a = creal(seg.a) + I * ratio * cimag(seg.a);
@@ -116,7 +116,7 @@ double lineseg_circle_intersect(LineSegment seg, Circle c) {
 	return lineseg_circle_intersect_fallback(seg, c);
 }
 
-bool point_in_rect(complex p, Rect r) {
+bool point_in_rect(cmplx p, Rect r) {
 	return
 		creal(p) >= rect_left(r)  &&
 		creal(p) <= rect_right(r) &&
