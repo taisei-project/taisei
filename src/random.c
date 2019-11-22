@@ -25,7 +25,7 @@ uint64_t splitmix64(uint64_t *state) {
 }
 
 uint64_t makeseed(void) {
-	static uint64_t s = (uintptr_t)&makeseed;
+	static uint64_t s = 69;
 	return splitmix64(&s) ^ SDL_GetPerformanceCounter();
 }
 
