@@ -16,7 +16,7 @@
 #define GOLDEN_RATIO 1.618033988749895
 
 double lerp(double v0, double v1, double f) attr_const;
-complex clerp(complex v0, complex v1, double f) attr_const;
+cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
 uintmax_t umin(uintmax_t, uintmax_t) attr_const;
@@ -33,10 +33,10 @@ void approach_p(double *v, double t, double d);
 void fapproach_p(float *v, float t, float d);
 double approach_asymptotic(double val, double target, double rate, double epsilon) attr_const;
 float fapproach_asymptotic(float val, float target, float rate, float epsilon) attr_const;
-complex capproach_asymptotic(complex val, complex target, double rate, double epsilon) attr_const;
+cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon) attr_const;
 void approach_asymptotic_p(double *val, double target, double rate, double epsilon);
 void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
-void capproach_asymptotic_p(complex *val, complex target, double rate, double epsilon);
+void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
 double psin(double) attr_const;
 int sign(double) attr_const;
 double swing(double x, double s) attr_const;

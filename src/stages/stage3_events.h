@@ -23,8 +23,8 @@ void wriggle_firefly_storm(Boss*, int t);
 void wriggle_light_singularity(Boss*, int t);
 
 void stage3_events(void);
-Boss* stage3_spawn_scuttle(complex pos);
-Boss* stage3_spawn_wriggle_ex(complex pos);
+Boss* stage3_spawn_scuttle(cmplx pos);
+Boss* stage3_spawn_wriggle_ex(cmplx pos);
 
 #define STAGE3_MIDBOSS_TIME 1765
 

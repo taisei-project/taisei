@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+
 #include "events.h"
 #include "config.h"
 

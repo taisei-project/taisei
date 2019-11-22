@@ -50,7 +50,7 @@
 	#define glClearDepth glClearDepthf
 	#define glClearTexImage glClearTexImageEXT
 #else
-	#include "glad/glad.h"
+	#include <glad/glad.h>
 	#define GL_FUNC(f) (glad_gl##f)
 #endif
 

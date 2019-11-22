@@ -29,7 +29,7 @@ struct StageText {
 	LIST_INTERFACE(StageText);
 
 	Font *font;
-	complex pos;
+	cmplx pos;
 
 	struct {
 		StageTextUpdateFunc update;
@@ -53,12 +53,12 @@ struct StageText {
 void stagetext_free(void);
 void stagetext_update(void);
 void stagetext_draw(void);
-StageText *stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
-StageText *stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText *stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
+StageText *stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime);
 StageText *stagetext_list_head(void);
 
 struct StageTextTable {
-	complex pos;
+	cmplx pos;
 	double width;
 	Color clr;
 	int lifetime;

@@ -24,8 +24,8 @@ void marisa_common_shot(Player *plr, float dmg);
 void marisa_common_slave_visual(Enemy *e, int t, bool render);
 
 typedef struct MarisaBeamInfo {
-	complex origin;
-	complex size;
+	cmplx origin;
+	cmplx size;
 	float angle;
 	int t;
 } MarisaBeamInfo;

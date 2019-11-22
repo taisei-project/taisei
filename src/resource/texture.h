@@ -11,7 +11,6 @@
 
 #include "taisei.h"
 
-#include <SDL.h>
 #include "util.h"
 #include "resource.h"
 
@@ -29,8 +28,8 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 void fill_screen(const char *name);
 void fill_screen_p(Texture *tex);
 
-void loop_tex_line_p(complex a, complex b, float w, float t, Texture *texture);
-void loop_tex_line(complex a, complex b, float w, float t, const char *texture);
+void loop_tex_line_p(cmplx a, cmplx b, float w, float t, Texture *texture);
+void loop_tex_line(cmplx a, cmplx b, float w, float t, const char *texture);
 
 Texture* get_tex(const char *name);
 Texture* prefix_get_tex(const char *name, const char *prefix);

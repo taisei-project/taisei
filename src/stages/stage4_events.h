@@ -22,7 +22,7 @@ void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
 void stage4_events(void);
-Boss* stage4_spawn_kurumi(complex pos);
+Boss* stage4_spawn_kurumi(cmplx pos);
 
 #define STAGE4_MIDBOSS_TIME 3724
 #define STAGE4_MIDBOSS_MUSIC_TIME 2818

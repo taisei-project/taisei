@@ -92,10 +92,10 @@ typedef struct PowerSurgeBonus {
 struct Player {
 	ENTITY_INTERFACE_NAMED(Player, ent);
 
-	complex pos;
-	complex velocity;
-	complex deathpos;
-	complex lastmovedir;
+	cmplx pos;
+	cmplx velocity;
+	cmplx deathpos;
+	cmplx lastmovedir;
 
 	struct PlayerMode *mode;
 	AniPlayer ani;
@@ -190,11 +190,11 @@ bool player_should_shoot(Player *plr, bool extra);
 bool player_set_power(Player *plr, short npow);
 bool player_add_power(Player *plr, short pdelta);
 
-void player_move(Player*, complex delta);
+void player_move(Player*, cmplx delta);
 
 void player_realdeath(Player*);
 void player_death(Player*);
-void player_graze(Player *plr, complex pos, int pts, int effect_intensity, const Color *color);
+void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color);
 
 void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
@@ -205,8 +205,8 @@ void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);
 void player_add_lives(Player *plr, int lives);
 void player_add_bombs(Player *plr, int bombs);
-void player_add_points(Player *plr, uint points, complex location);
-void player_add_piv(Player *plr, uint piv, complex location);
+void player_add_points(Player *plr, uint points, cmplx location);
+void player_add_piv(Player *plr, uint piv, cmplx location);
 void player_add_voltage(Player *plr, uint voltage);
 bool player_drain_voltage(Player *plr, uint voltage);
 void player_extend_powersurge(Player *plr, float pos, float neg);
@@ -233,6 +233,6 @@ void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 void player_preload(void);
 
 // FIXME: where should this be?
-complex plrutil_homing_target(complex org, complex fallback);
+cmplx plrutil_homing_target(cmplx org, cmplx fallback);
 
 #endif // IGUARD_player_h

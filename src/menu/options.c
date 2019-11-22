@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include <stdio.h>
+
 #include "menu.h"
 #include "common.h"
 #include "options.h"

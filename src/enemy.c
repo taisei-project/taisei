@@ -57,8 +57,8 @@ static void fix_pos0_visual(Enemy *e) {
 	e->pos0_visual = x + y * I;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, complex pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
-				  complex a1, complex a2, complex a3, complex a4) {
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
+				      cmplx a1, cmplx a2, cmplx a3, cmplx a4) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
@@ -142,21 +142,21 @@ void delete_enemies(EnemyList *enemies) {
 	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
-static complex enemy_visual_pos(Enemy *enemy) {
+static cmplx enemy_visual_pos(Enemy *enemy) {
 	double t = (global.frames - enemy->birthtime) / 30.0;
 
 	if(t >= 1 || enemy->hp == ENEMY_IMMUNE) {
 		return enemy->pos;
 	}
 
-	complex p = enemy->pos - enemy->pos0;
+	cmplx p = enemy->pos - enemy->pos0;
 	p += t * enemy->pos0 + (1 - t) * enemy->pos0_visual;
 
 	return p;
 }
 
 static void call_visual_rule(Enemy *e, bool render) {
-	complex tmp = e->pos;
+	cmplx tmp = e->pos;
 	e->pos = enemy_visual_pos(e);
 	e->visual_rule(e, global.frames - e->birthtime, render);
 	e->pos = tmp;
@@ -216,7 +216,7 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 void BigFairy(Enemy *e, int t, bool render) {
 	if(!render) {
 		if(!(t % 5)) {
-			complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+			cmplx offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 
 			PARTICLE(
 				.sprite = "smoothdot",

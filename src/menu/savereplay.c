@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-#include <time.h>
 #include "savereplay.h"
 #include "mainmenu.h"
 #include "global.h"

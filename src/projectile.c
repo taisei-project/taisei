@@ -170,14 +170,14 @@ void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
 	p->proto = proto;
 }
 
-complex projectile_graze_size(Projectile *p) {
+cmplx projectile_graze_size(Projectile *p) {
 	if(
 		p->type == PROJ_ENEMY &&
 		!(p->flags & (PFLAG_NOGRAZE | PFLAG_NOCOLLISION)) &&
 		p->graze_counter < 3 &&
 		global.frames >= p->graze_cooldown
 	) {
-		complex s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
+		cmplx s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
 		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
 	}
 
@@ -1003,7 +1003,7 @@ void Petal(Projectile *p, int t) {
 	r_mat_mv_pop();
 }
 
-void petal_explosion(int n, complex pos) {
+void petal_explosion(int n, cmplx pos) {
 	for(int i = 0; i < n; i++) {
 		tsrand_fill(6);
 		float t = frand();

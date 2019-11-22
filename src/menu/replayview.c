@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-#include <time.h>
 #include "global.h"
 #include "menu.h"
 #include "options.h"

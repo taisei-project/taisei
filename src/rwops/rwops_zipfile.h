@@ -12,7 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <zip.h>
+
 #include "vfs/zipfile_impl.h"
 
 SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata);

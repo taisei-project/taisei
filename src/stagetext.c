@@ -16,7 +16,7 @@ static StageText *textlist = NULL;
 
 #define NUM_PLACEHOLDER "........................"
 
-StageText* stagetext_add(const char *text, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = (StageText*)objpool_acquire(stage_object_pools.stagetext);
 	list_append(&textlist, t);
 
@@ -43,7 +43,7 @@ static void stagetext_numeric_update(StageText *txt, int t, float a) {
 	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(NUM_PLACEHOLDER), txt->text);
 }
 
-StageText* stagetext_add_numeric(int n, complex pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
+StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.update = stagetext_numeric_update;
@@ -154,7 +154,7 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *
 }
 
 void stagetext_end_table(StageTextTable *tbl) {
-	complex ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
+	cmplx ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
 
 	for(ListContainer *c = tbl->elems; c; c = c->next) {
 		((StageText*)c->data)->pos += ofs;

@@ -185,7 +185,7 @@ DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) {
 	return res;
 }
 
-void ent_area_damage(complex origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
+void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) {
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(
 			cabs(origin - e->pos) < radius &&

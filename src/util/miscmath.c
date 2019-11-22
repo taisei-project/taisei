@@ -15,7 +15,7 @@ double lerp(double v0, double v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
-complex clerp(complex v0, complex v1, double f) {
+cmplx clerp(cmplx v0, cmplx v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
@@ -71,7 +71,7 @@ float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
 	return val + (target - val) * rate;
 }
 
-complex capproach_asymptotic(complex val, complex target, double rate, double epsilon) {
+cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon) {
 	if(cabs(val - target) < epsilon || rate >= 1) {
 		return target;
 	}
@@ -87,7 +87,7 @@ void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon)
 	*val = fapproach_asymptotic(*val, target, rate, epsilon);
 }
 
-void capproach_asymptotic_p(complex *val, complex target, double rate, double epsilon) {
+void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon) {
 	*val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
@@ -389,7 +389,7 @@ uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 	return ((uint128_t)x * (uint128_t)multiplier) / divisor;
 #elif defined(TAISEI_BUILDCONF_HAVE_LONG_DOUBLE)
 	#define UMULDIV64_SANITY_CHECK
-	return ((long double)x * (long double)multiplier) / (long double)divisor;
+	return ((float64x)x * (float64x)multiplier) / (float64x)divisor;
 #else
 	return _umuldiv64_slow(x, multiplier, divisor);
 #endif

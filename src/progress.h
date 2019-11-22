@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+
 #include "ending.h"
 
 #define PROGRESS_FILE "storage/progress.dat"

@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include <SDL.h>
+
 #include "util.h"
 #include "postprocess.h"
 #include "resource.h"

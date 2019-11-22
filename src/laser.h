@@ -19,14 +19,14 @@
 typedef struct Laser Laser;
 typedef LIST_ANCHOR(Laser) LaserList;
 
-typedef complex (*LaserPosRule)(Laser* l, float time);
+typedef cmplx (*LaserPosRule)(Laser* l, float time);
 typedef void (*LaserLogicRule)(Laser* l, int time);
 
 struct Laser {
 	ENTITY_INTERFACE_NAMED(Laser, ent);
 
-	complex pos;
-	complex args[4];
+	cmplx pos;
+	cmplx args[4];
 
 	ShaderProgram *shader;
 	LaserPosRule prule;
@@ -56,10 +56,10 @@ struct Laser {
 void lasers_preload(void);
 void lasers_free(void);
 
-Laser *create_laserline(complex pos, complex dir, float charge, float dur, const Color *clr);
-Laser *create_laserline_ab(complex a, complex b, float width, float charge, float dur, const Color *clr);
+Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr);
+Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr);
 
-Laser *create_laser(complex pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, complex a0, complex a1, complex a2, complex a3);
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
 void delete_lasers(void);
 void process_lasers(void);
 
@@ -67,13 +67,13 @@ bool laser_is_active(Laser *l);
 bool laser_is_clearable(Laser *l);
 bool clear_laser(Laser *l, uint flags);
 
-complex las_linear(Laser *l, float t);
-complex las_accel(Laser *l, float t);
-complex las_sine(Laser *l, float t);
-complex las_weird_sine(Laser *l, float t);
-complex las_sine_expanding(Laser *l, float t);
-complex las_turning(Laser *l, float t);
-complex las_circle(Laser *l, float t);
+cmplx las_linear(Laser *l, float t);
+cmplx las_accel(Laser *l, float t);
+cmplx las_sine(Laser *l, float t);
+cmplx las_weird_sine(Laser *l, float t);
+cmplx las_sine_expanding(Laser *l, float t);
+cmplx las_turning(Laser *l, float t);
+cmplx las_circle(Laser *l, float t);
 
 float laser_charge(Laser *l, int t, float charge, float width);
 void static_laser(Laser *l, int t);

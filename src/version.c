@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include <version.h>
+#include "version.h"
 
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level) {
 	int result = 0;
