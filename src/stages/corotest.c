@@ -157,6 +157,17 @@ TASK(subtask_test_init, NO_ARGS) {
 	log_debug("************  END  ************");
 }
 
+TASK(punching_bag, NO_ARGS) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(0.5*(VIEWPORT_W+VIEWPORT_H*I), 1000, BigFairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.life_fragment = 10,
+		.bomb_fragment = 100,
+		.power = 3,
+		.points = 5,
+	});
+}
+
 TASK(stage_main, NO_ARGS) {
 	YIELD;
 
@@ -164,6 +175,9 @@ TASK(stage_main, NO_ARGS) {
 	log_debug("test 1! %i", global.timer);
 	stage_wait(60);
 	log_debug("test 2! %i", global.timer);
+
+	INVOKE_TASK(punching_bag);
+	return;
 
 	for(;;) {
 		INVOKE_TASK(subtask_test_init);
