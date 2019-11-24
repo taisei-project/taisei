@@ -28,6 +28,17 @@
 	#define EVT_DEBUG(...) ((void)0)
 #endif
 
+enum {
+	COTASK_WAIT_NONE,
+	COTASK_WAIT_DELAY,
+	COTASK_WAIT_EVENT,
+};
+
+typedef struct CoEventSnapshot {
+	uint32_t unique_id;
+	uint16_t num_signaled;
+} CoEventSnapshot;
+
 struct CoTask {
 	LIST_INTERFACE(CoTask);
 	koishi_coroutine_t ko;
@@ -43,6 +54,22 @@ struct CoTask {
 	List subtask_chain;
 
 	uint32_t unique_id;
+
+	struct {
+		CoWaitResult result;
+		char wait_type;
+
+		union {
+			struct {
+				int remaining;
+			} delay;
+
+			struct {
+				CoEvent *pevent;
+				CoEventSnapshot snapshot;
+			} event;
+		};
+	} wait;
 
 #ifdef CO_TASK_DEBUG
 	char debug_label[256];
@@ -120,6 +147,7 @@ void cotask_free(CoTask *task) {
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
 	memset(&task->finalizer, 0, sizeof(task->finalizer));
 	memset(&task->subtasks, 0, sizeof(task->subtasks));
+	memset(&task->wait, 0, sizeof(task->wait));
 	alist_push(&task_pool, task);
 
 	--num_tasks_in_use;
@@ -188,7 +216,9 @@ bool cotask_cancel(CoTask *task) {
 	return false;
 }
 
-void *cotask_resume(CoTask *task, void *arg) {
+static void *cotask_force_resume(CoTask *task, void *arg) {
+	assert(task->wait.wait_type == COTASK_WAIT_NONE);
+
 	if(task->bound_ent.ent && !ENT_UNBOX(task->bound_ent)) {
 		cotask_force_cancel(task);
 		return NULL;
@@ -206,6 +236,76 @@ void *cotask_resume(CoTask *task, void *arg) {
 	return arg;
 }
 
+static void *cotask_wake_and_resume(CoTask *task, void *arg) {
+	task->wait.wait_type = COTASK_WAIT_NONE;
+	return cotask_force_resume(task, arg);
+}
+
+static CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
+	EVT_DEBUG("[%p]", (void*)evt);
+	EVT_DEBUG("evt->unique_id        == %u", evt->unique_id);
+	EVT_DEBUG("snap->unique_id    == %u", snap->unique_id);
+	EVT_DEBUG("evt->num_signaled     == %u", evt->num_signaled);
+	EVT_DEBUG("snap->num_signaled == %u", snap->num_signaled);
+
+	if(
+		evt->unique_id != snap->unique_id ||
+		evt->num_signaled < snap->num_signaled
+	) {
+		EVT_DEBUG("Event was canceled");
+		return CO_EVENT_CANCELED;
+	}
+
+	if(evt->num_signaled > snap->num_signaled) {
+		EVT_DEBUG("Event was signaled");
+		return CO_EVENT_SIGNALED;
+	}
+
+	EVT_DEBUG("Event hasn't changed; waiting...");
+	return CO_EVENT_PENDING;
+}
+
+static bool cotask_do_wait(CoTask *task) {
+	switch(task->wait.wait_type) {
+		case COTASK_WAIT_NONE: {
+			return false;
+		}
+
+		case COTASK_WAIT_DELAY: {
+			if(--task->wait.delay.remaining < 0) {
+				return false;
+			}
+
+			break;
+		}
+
+		case COTASK_WAIT_EVENT: {
+			TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task->debug_label);
+
+			CoEventStatus stat = coevent_poll(task->wait.event.pevent, &task->wait.event.snapshot);
+			if(stat != CO_EVENT_PENDING) {
+				task->wait.result.event_status = stat;
+				TASK_DEBUG("COTASK_WAIT_EVENT in task %s RESULT = %i", task->debug_label, stat);
+				return false;
+			}
+
+			break;
+		}
+	}
+
+	task->wait.result.frames++;
+	return true;
+}
+
+void *cotask_resume(CoTask *task, void *arg) {
+	if(!cotask_do_wait(task)) {
+		return cotask_wake_and_resume(task, arg);
+	}
+
+	assert(task->wait.wait_type != COTASK_WAIT_NONE);
+	return NULL;
+}
+
 void *cotask_yield(void *arg) {
 	CoTask *task = cotask_active();
 	TASK_DEBUG_EVENT(ev);
@@ -215,19 +315,49 @@ void *cotask_yield(void *arg) {
 	return arg;
 }
 
-CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
-	assert(evt->unique_id > 0);
+static inline CoWaitResult cotask_wait_init(CoTask *task, char wait_type) {
+	CoWaitResult wr = task->wait.result;
+	memset(&task->wait, 0, sizeof(task->wait));
+	task->wait.wait_type = wait_type;
+	return wr;
+}
 
-	CoWaitResult result = {
-		.frames = 0,
-		.event_status = CO_EVENT_PENDING,
+int cotask_wait(int delay) {
+	CoTask *task = cotask_active();
+	assert(task->wait.wait_type == COTASK_WAIT_NONE);
+
+	cotask_wait_init(task, COTASK_WAIT_DELAY);
+	task->wait.delay.remaining = delay;
+	if(cotask_do_wait(task))
+		cotask_yield(NULL);
+	return cotask_wait_init(task, COTASK_WAIT_NONE).frames;
+
+	/*
+	if(delay == 1) {
+		cotask_yield(NULL);
+		return 1;
+	}
+
+	if(delay > 1) {
+		cotask_wait_init(task, COTASK_WAIT_DELAY);
+		task->wait.delay.remaining = delay;
+		cotask_do_wait(task);
+		cotask_yield(NULL);
+		return cotask_wait_init(task, COTASK_WAIT_NONE).frames;
+	}
+	*/
+
+	return 0;
+}
+
+static inline CoEventSnapshot coevent_snapshot(CoEvent *evt) {
+	return (CoEventSnapshot) {
+		.unique_id = evt->unique_id,
+		.num_signaled = evt->num_signaled,
 	};
+}
 
-	struct {
-		uint32_t unique_id;
-		uint16_t num_signaled;
-	} snapshot = { evt->unique_id, evt->num_signaled };
-
+static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
 	evt->num_subscribers++;
 	assert(evt->num_subscribers != 0);
 
@@ -242,34 +372,42 @@ CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 		evt->subscribers = realloc(evt->subscribers, sizeof(*evt->subscribers) * evt->num_subscribers_allocated);
 	}
 
-	evt->subscribers[evt->num_subscribers - 1] = cotask_box(cotask_active());
+	evt->subscribers[evt->num_subscribers - 1] = cotask_box(task);
+}
 
+CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
+	assert(evt->unique_id > 0);
+
+	/*
+	CoWaitResult result = {
+		.frames = 0,
+		.event_status = CO_EVENT_PENDING,
+	};
+	*/
+
+	CoTask *task = cotask_active();
+	CoEventSnapshot snapshot = coevent_snapshot(evt);
+	coevent_add_subscriber(evt, task);
+
+	cotask_wait_init(task, COTASK_WAIT_EVENT);
+	task->wait.event.pevent = evt;
+	task->wait.event.snapshot = coevent_snapshot(evt);
+
+	if(cotask_do_wait(task)) {
+		cotask_yield(NULL);
+	}
+
+	return cotask_wait_init(task, COTASK_WAIT_NONE);
+
+	/*
 	while(true) {
-		EVT_DEBUG("[%p]", (void*)evt);
-		EVT_DEBUG("evt->unique_id        == %u", evt->unique_id);
-		EVT_DEBUG("snapshot.unique_id    == %u", snapshot.unique_id);
-		EVT_DEBUG("evt->num_signaled     == %u", evt->num_signaled);
-		EVT_DEBUG("snapshot.num_signaled == %u", snapshot.num_signaled);
-
-		if(
-			evt->unique_id != snapshot.unique_id ||
-			evt->num_signaled < snapshot.num_signaled
-		) {
-			EVT_DEBUG("Event was canceled");
-			result.event_status = CO_EVENT_CANCELED;
+		if((result.event_status = coevent_poll(evt, &snapshot)) != CO_EVENT_PENDING) {
 			return result;
 		}
 
-		if(evt->num_signaled > snapshot.num_signaled) {
-			EVT_DEBUG("Event was signaled");
-			result.event_status = CO_EVENT_SIGNALED;
-			return result;
-		}
-
-		EVT_DEBUG("Event hasn't changed; waiting...");
 		++result.frames;
 		cotask_yield(arg);
-	}
+	}*/
 }
 
 CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg) {
@@ -342,6 +480,7 @@ static void coevent_wake_subscribers(CoEvent *evt) {
 
 		if(task && cotask_status(task) != CO_STATUS_DEAD) {
 			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
+			// cotask_wake_and_resume(task, NULL);
 			cotask_resume(task, NULL);
 		}
 	}
@@ -382,7 +521,7 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, CoTaskDebu
 #ifdef CO_TASK_DEBUG
 	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);
 #endif
-	cotask_resume(task, arg);
+	cotask_force_resume(task, arg);
 	assert(cotask_status(task) == CO_STATUS_SUSPENDED || cotask_status(task) == CO_STATUS_DEAD);
 	alist_append(&sched->pending_tasks, task);
 	return task;
