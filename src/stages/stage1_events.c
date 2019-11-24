@@ -1498,7 +1498,9 @@ TASK(stage_timeline, NO_ARGS) {
 
 	for(int i = 0; i < swirl_spam_time; i += 30) {
 		int o = ((int[]) { 0, 1, 0, -1 })[(i / 60) % 4];
+		log_debug("PRE %i", i + time_ofs);
 		INVOKE_TASK_DELAYED(i + time_ofs, sinepass_swirls, 40, 132 + 32 * o, 1 - 2 * ((i / 60) & 1));
+		log_debug("POST %i", i + time_ofs);
 	}
 
 	time_ofs += swirl_spam_time;
