@@ -27,4 +27,5 @@ if angle_enabled and host_machine.system() == 'windows'
     bindist_deps += angle_bat
 endif
 
-glslc_test_file = files('glslc-test.frag.glsl')
+glslc_test_basic_file = files('glslc-test-basic.frag.glsl')
+glslc_test_uniform_location_file = files('glslc-test-uniform-location.frag.glsl')
