@@ -151,7 +151,7 @@ if validate_glsl != 'false'
     if force_vendored_shader_tools
         glslc_command = disabler()
     else
-        glslc_command = find_program('glslc')
+        glslc_command = find_program('glslc', required : false)
     endif
 
     if not glslc_command.found() and validate_glsl == 'true'
@@ -204,7 +204,7 @@ if validate_glsl != 'false'
         if force_vendored_shader_tools
             spvc_command = disabler()
         else
-            spvc_command = find_program('spirv-cross')
+            spvc_command = find_program('spirv-cross', required : false)
         endif
 
         if not spvc_command.found()
