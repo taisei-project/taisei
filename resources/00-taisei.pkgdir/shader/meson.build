@@ -148,12 +148,23 @@ else
     transpile_glsl = false
 endif
 
-if validate_glsl != 'false'
-    glslc_command = find_program('glslc',
-        required : (validate_glsl == 'true')
-    )
+force_vendored_shader_tools = get_option('force_vendored_shader_tools')
 
-    if glslc_command.found()
+if force_vendored_shader_tools and validate_glsl != 'false'
+    validate_glsl = 'true'
+endif
+
+if validate_glsl != 'false'
+    if force_vendored_shader_tools
+        glslc_command = disabler()
+    else
+        glslc_command = find_program('glslc')
+    endif
+
+    if not glslc_command.found() and validate_glsl == 'true'
+        glslc_command = subproject('shaderc').get_variable('glslc_native')
+        validate_glsl = true
+    elif glslc_command.found()
         test_result = run_command(glslc_command,
             glslc_args,
             glslc_frag_args,
@@ -175,11 +186,21 @@ if validate_glsl != 'false'
             endif
         endif
     else
+        warning('GLSL validation or translation requested, but glslc was not found')
         validate_glsl = false
     endif
 
     if validate_glsl and transpile_glsl
-        spvc_command = find_program('spirv-cross', required : true)
+        if force_vendored_shader_tools
+            spvc_command = disabler()
+        else
+            spvc_command = find_program('spirv-cross')
+        endif
+
+        if not spvc_command.found()
+            spvc_command = subproject('SPIRV-Cross').get_variable('spirv_cross_native')
+        endif
+
         glslc_args += ['-Os', '-g']
     endif
 else

@@ -190,3 +190,10 @@ option(
     type : 'combo',
     description : 'Treatment of deprecation warnings'
 )
+
+option(
+    'force_vendored_shader_tools',
+    type : 'boolean',
+    value : false,
+    description : 'Build shaderc and spirv-cross CLI tools from subprojects even if system versions exist'
+)
