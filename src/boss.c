@@ -638,7 +638,7 @@ static void spawn_particle_effects(Boss *boss) {
 			.timeout = 180,
 			.draw_rule = Shrink,
 			.args = { 0, add_ref(boss), },
-			.angle = M_PI * 2 * frand(),
+			.angle = rng_angle(),
 		);
 	}
 
@@ -807,7 +807,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 
 	if(alpha == 0) {
 		lt += 2;
-		alpha = 1 * frand();
+		alpha = rng_real();
 	}
 
 	for(int i = 0; i < cnt; ++i) {
@@ -818,7 +818,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 		float psina = psin(a);
 
 		PARTICLE(
-			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
+			.sprite = (rng_chance(v * 0.3) || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
 			.color = color_mul_scalar(RGBA(
 				1.0 - 0.5 * psina *    v,
@@ -1120,7 +1120,7 @@ void process_boss(Boss **pboss) {
 
 	if(boss_is_dying(boss)) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		tsrand_fill(6);
+		RNG_ARRAY(rng, 6);
 
 		Color *clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
 		clr->a = 0;
@@ -1132,10 +1132,10 @@ void process_boss(Boss **pboss) {
 			.draw_rule = Petal,
 			.color = clr,
 			.args = {
-				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
+				vrng_sign(rng[5]) * (3 + t * 5 * vrng_real(rng[0])) * cdir(M_PI*8*t),
 				5+I,
-				afrand(2) + afrand(3)*I,
-				afrand(4) + 360.0*I*afrand(1)
+				vrng_real(rng[2]) + vrng_real(rng[3])*I,
+				vrng_real(rng[4]) + 360.0*I*vrng_real(rng[1])
 			},
 			.layer = LAYER_PARTICLE_PETAL,
 			.flags = PFLAG_REQUIREDPARTICLE,
@@ -1155,14 +1155,14 @@ void process_boss(Boss **pboss) {
 			}
 
 			for(int i = 0; i < 256; i++) {
-				tsrand_fill(3);
+				RNG_ARRAY(rng, 3);
 				PARTICLE(
 					.sprite = "flare",
 					.pos = boss->pos,
-					.timeout = 60 + 10 * afrand(2),
+					.timeout = vrng_range(rng[2], 60, 70),
 					.rule = linear,
 					.draw_rule = Fade,
-					.args = { (3+afrand(0)*10)*cexp(I*tsrand_a(1)) },
+					.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
 				);
 			}
 
@@ -1352,16 +1352,16 @@ void boss_start_attack(Boss *b, Attack *a) {
 		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
 
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
-			tsrand_fill(4);
+			RNG_ARRAY(rng, 4);
 
 			PARTICLE(
 				.sprite = "stain",
-				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
+				.pos = CMPLX(VIEWPORT_W/2 + vrng_sreal(rng[0]) * VIEWPORT_W/4, VIEWPORT_H/2 + vrng_sreal(rng[1]) * 30),
 				.color = RGBA(0.2, 0.3, 0.4, 0.0),
 				.rule = linear,
 				.timeout = 50,
 				.draw_rule = GrowFade,
-				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
+				.args = { vrng_sign(rng[2]) * 10 * vrng_range(rng[3], 1, 4) },
 			);
 		}
 	}
