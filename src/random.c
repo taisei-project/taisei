@@ -180,6 +180,8 @@ bool vrng_f32_chance(rng_val_t v, float chance) {
  * Deprecated APIs; to be removed
  */
 
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 uint32_t tsrand_p(RandomState *rng) {
 	return vrng_u32(rng_next_p(rng));
 }
