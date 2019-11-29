@@ -122,15 +122,14 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		play_sound("enemydeath");
 
 		for(int i = 0; i < 10; i++) {
-			tsrand_fill(2);
-
+			RNG_ARRAY(rng, 2);
 			PARTICLE(
 				.sprite = "flare",
 				.pos = e->pos,
 				.timeout = 10,
 				.rule = linear,
 				.draw_rule = Fade,
-				.args = { (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI) },
+				.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
 			);
 		}
 
@@ -235,7 +234,8 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 void BigFairy(Enemy *e, int t, bool render) {
 	if(!render) {
 		if(!(t % 5)) {
-			cmplx offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+			cmplx offset = rng_sreal() * 15;
+			offset += rng_sreal() * 10 * I;
 
 			PARTICLE(
 				.sprite = "smoothdot",
