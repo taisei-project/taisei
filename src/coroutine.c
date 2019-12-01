@@ -218,11 +218,7 @@ bool cotask_cancel(CoTask *task) {
 
 static void *cotask_force_resume(CoTask *task, void *arg) {
 	assert(task->wait.wait_type == COTASK_WAIT_NONE);
-
-	if(task->bound_ent.ent && !ENT_UNBOX(task->bound_ent)) {
-		cotask_force_cancel(task);
-		return NULL;
-	}
+	assert(!task->bound_ent.ent || ENT_UNBOX(task->bound_ent));
 
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
@@ -298,6 +294,11 @@ static bool cotask_do_wait(CoTask *task) {
 }
 
 void *cotask_resume(CoTask *task, void *arg) {
+	if(task->bound_ent.ent && !ENT_UNBOX(task->bound_ent)) {
+		cotask_force_cancel(task);
+		return NULL;
+	}
+
 	if(!cotask_do_wait(task)) {
 		return cotask_wake_and_resume(task, arg);
 	}
