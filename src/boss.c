@@ -1118,7 +1118,7 @@ void process_boss(Boss **pboss) {
 		coevent_signal_once(&boss->events.defeated);
 	}
 
-	if(boss_is_dying(boss)) {
+	if(dying) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
 		RNG_ARRAY(rng, 6);
 
