@@ -199,6 +199,14 @@ double swing(double x, double s) {
 	return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
+double sawtooth(double x) {
+	return 2 * (x - floor(x + 0.5));
+}
+
+double triangle(double x) {
+	return 2 * fabs(sawtooth(x)) - 1;
+}
+
 uint32_t topow2_u32(uint32_t x) {
 	x -= 1;
 	x |= (x >> 1);
