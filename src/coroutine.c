@@ -578,6 +578,27 @@ void coroutines_shutdown(void) {
 	}
 }
 
+#ifdef DEBUG
+#include "video.h"
+#include "resource/font.h"
+#endif
+
+void coroutines_draw_debug(void) {
+#ifdef DEBUG
+	static char buf[128];
+	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ", num_tasks_in_use, num_tasks_allocated);
+
+	Font *font = get_font("monotiny");
+	text_draw(buf, &(TextParams) {
+		.pos = { SCREEN_W, font_get_lineskip(font) },
+		.font_ptr = font,
+		.color = RGB(1, 1, 1),
+		.shader = "text_default",
+		.align = ALIGN_RIGHT,
+	});
+#endif
+}
+
 DEFINE_EXTERN_TASK(_cancel_task_helper) {
 	CoTask *task = cotask_unbox(ARGS.task);
 
