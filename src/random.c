@@ -24,6 +24,13 @@ uint64_t splitmix64(uint64_t *state) {
 	return z ^ (z >> 31);
 }
 
+uint32_t splitmix32(uint32_t *state) {
+	uint32_t z = (*state += 0x9e3779b9);
+	z = (z ^ (z >> 15)) * 0x85ebca6b;
+	z = (z ^ (z >> 13)) * 0xc2b2ae3d;
+	return z ^ (z >> 16);
+}
+
 uint64_t makeseed(void) {
 	static uint64_t s = 69;
 	return splitmix64(&s) ^ SDL_GetPerformanceCounter();
