@@ -768,18 +768,24 @@ void video_swap_buffers(void) {
 
 	if(pp_fb) {
 		r_flush_sprites();
+
+		Framebuffer *prev_fb = r_framebuffer_current();
+		r_framebuffer(NULL);
+
 		r_state_push();
 		r_mat_proj_push_ortho(SCREEN_W, SCREEN_H);
-		r_framebuffer(NULL);
 		r_shader_standard();
 		r_color3(1, 1, 1);
 		draw_framebuffer_tex(pp_fb, SCREEN_W, SCREEN_H);
 		r_framebuffer_clear(pp_fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 		r_mat_proj_pop();
 		r_state_pop();
-	}
 
-	r_swap(video.window);
+		r_swap(video.window);
+		r_framebuffer(prev_fb);
+	} else {
+		r_swap(video.window);
+	}
 
 	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
 	config_set_int(CONFIG_FULLSCREEN, video_is_fullscreen());
