@@ -46,7 +46,11 @@ DEFINE_EXTERN_TASK(common_move_ext) {
 	common_move_loop(ARGS.pos, ARGS.move_params);
 }
 
-complex common_wander(complex origin, double dist, Rect bounds) {
+DEFINE_EXTERN_TASK(common_call_func) {
+	ARGS.func();
+}
+
+cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
 	double angle;
 	complex dest;
