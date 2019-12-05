@@ -28,6 +28,7 @@ typedef struct rng_val {
 } rng_val_t;
 
 uint64_t splitmix64(uint64_t *state) attr_nonnull(1);
+uint32_t splitmix32(uint32_t *state) attr_nonnull(1);
 uint64_t makeseed(void);
 
 void rng_init(RandomState *rng, uint64_t seed) attr_nonnull(1);

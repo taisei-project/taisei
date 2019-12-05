@@ -1431,6 +1431,9 @@ TASK(spawn_midboss, NO_ARGS) {
 	boss_add_attack_task(boss, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, midboss_flee), NULL);
 
 	boss_start_attack(boss, boss->attacks);
+
+	WAIT(60);
+	stage1_bg_enable_snow();
 }
 
 TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
@@ -1526,6 +1529,9 @@ TASK(stage_timeline, NO_ARGS) {
 	INVOKE_TASK_DELAYED(900, schedule_swirls);
 	INVOKE_TASK_DELAYED(1500, burst_fairies_3);
 	INVOKE_TASK_DELAYED(2200, multiburst_fairies_1);
+
+	INVOKE_TASK_DELAYED(2200, common_call_func, stage1_bg_raise_camera);
+	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 	INVOKE_TASK_DELAYED(2700, spawn_midboss);
 
 	while(!global.boss) YIELD;
@@ -1597,7 +1603,10 @@ TASK(stage_timeline, NO_ARGS) {
 	WAIT_EVENT(&global.boss->events.defeated);
 
 	stage_unlock_bgm("stage1boss");
-	WAIT(240);
+
+	WAIT(120);
+	stage1_bg_disable_snow();
+	WAIT(120);
 
 	global.dialog = stage1_dialog_post_boss();
 	while(dialog_is_active(global.dialog)) {

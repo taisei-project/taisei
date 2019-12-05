@@ -102,6 +102,12 @@ uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r) {
 			}
 
 			++size;
+
+			if(size == s3d->pos_buffer_size) {
+				s3d->pos_buffer_size *= 2;
+				log_debug("pos_buffer exhausted, reallocating %u -> %u", size, s3d->pos_buffer_size);
+				s3d->pos_buffer = realloc(s3d->pos_buffer, sizeof(vec3) * s3d->pos_buffer_size);
+			}
 		} else if(mod == 1) {
 			mod = -1;
 			num = t;
@@ -111,6 +117,8 @@ uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r) {
 
 		num += mod;
 	}
+
+	assert(size < s3d->pos_buffer_size);
 
 	return size;
 }
