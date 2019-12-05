@@ -1597,7 +1597,9 @@ TASK(stage_timeline, NO_ARGS) {
 	INVOKE_TASK_DELAYED(2120, waveshot_fairy, VIEWPORT_W + 42 + 300*I,               130 + 140*I, 0.2 * (-2 - I));
 	INVOKE_TASK_DELAYED(2120, waveshot_fairy,            - 42 + 300*I, VIEWPORT_W -  130 + 140*I, 0.2 * ( 2 - I));
 
-	WAIT(2500);
+	STAGE_BOOKMARK_DELAYED(2300, pre-boss);
+
+	WAIT(2560);
 	INVOKE_TASK(spawn_boss);
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
