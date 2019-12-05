@@ -4,6 +4,11 @@
 #include "interface/standard.glslh"
 
 UNIFORM(1) float time;
+UNIFORM(2) vec4 water_color;
+UNIFORM(3) float wave_offset;
+
+const vec4 reflection_color = vec4(0.5, 0.8, 0.8, 1.0);
+const vec4 wave_color = vec4(0.8, 0.8, 1.0, 1.0);
 
 // Based on https://www.shadertoy.com/view/Xl2XWz
 
@@ -36,7 +41,7 @@ float warpedNoise(vec2 p) {
 }
 
 void main(void) {
-	vec2 uv = flip_native_to_bottomleft(texCoord - vec2(0, 2+time * 0.2)) * rot(-pi/4);
+	vec2 uv = flip_native_to_bottomleft(texCoord - vec2(0, wave_offset)) * rot(-pi/4);
 
 	float n = warpedNoise(uv * 4);
 
@@ -47,11 +52,14 @@ void main(void) {
 	bump  = bump  * bump  * 0.5;
 	bump2 = bump2 * bump2 * 0.5;
 
-	vec4 cmod = vec4(0.5, 0.8, 0.8, 1.0);
-
 	uv = flip_native_to_bottomleft(texCoord);
 	uv += 0.25 * vec2(bump, bump2);
 	uv = flip_bottomleft_to_native(uv);
 
-	fragColor = mix(cmod * texture(tex, uv), vec4(0.8, 0.8, 1.0, 1.0), (bump2 - bump * 0.25) * 0.05);
+	vec4 reflection = texture(tex, uv);
+	reflection.rgb = mix(reflection.rgb, water_color.rgb, reflection.a * 0.5);
+	reflection = reflection * reflection_color * 0.5;
+	vec4 surface = alphaCompose(water_color, reflection);
+
+	fragColor = mix(surface, wave_color, (bump2 - bump * 0.25) * 0.05);
 }
