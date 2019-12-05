@@ -32,7 +32,12 @@ DECLARE_EXTERN_TASK(
 	{ complex *pos; MoveParams *move_params; BoxedEntity ent; }
 );
 
-void common_move_loop(complex *restrict pos, MoveParams *restrict mp);
+DECLARE_EXTERN_TASK(
+	common_call_func,
+	{ void (*func)(void); }
+);
+
+void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 
 INLINE Rect viewport_bounds(double margin) {
 	return (Rect) {
