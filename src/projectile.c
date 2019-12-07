@@ -14,7 +14,7 @@
 #include "list.h"
 #include "stageobjects.h"
 
-ht_ptr2int_t shader_sublayer_map;
+static ht_ptr2int_t shader_sublayer_map;
 
 static ProjArgs defaults_proj = {
 	.sprite = "proj/",
@@ -750,17 +750,19 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		sx = pow(p->sprite->w, 0.7);
 		sy = pow(p->sprite->h, 0.7);
 
+		RNG_ARRAY(R, 5);
+
 		PARTICLE(
 			.sprite = "stardust_green",
 			.shader = "sprite_bullet",
 			.size = p->size * 4.5,
 			.layer = LAYER_PARTICLE_HIGH | 0x40,
 			.draw_rule = ScaleSquaredFade,
-			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) * (1 - 0.2 * frand()) },
-			.angle = frand() * M_PI * 2,
-			.pos = p->pos + frand() * 8 * cexp(I*M_PI*2*frand()),
+			.args = { 0, 0, (0 + 2*I) * 0.1 * fmax(sx, sy) * (1 - 0.2 * vrng_real(R[0])) },
+			.angle = vrng_angle(R[1]),
+			.pos = p->pos + vrng_range(R[2], 0, 8) * vrng_dir(R[3]),
 			.flags = PFLAG_NOREFLECT,
-			.timeout = 24 + 2 * nfrand(),
+			.timeout = vrng_range(R[4], 22, 26),
 			.color = &clr,
 		);
 	}
@@ -769,17 +771,19 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 	sy = pow((1.5 * p->sprite->h + 0.5 * p->sprite->w) * 0.5, 0.65);
 	clr.a = 0.2;
 
+	RNG_ARRAY(R, 5);
+
 	return PARTICLE(
 		.sprite = "bullet_cloud",
 		.size = p->size * 4.5,
 		.shader = "sprite_bullet",
 		.layer = LAYER_PARTICLE_HIGH | 0x80,
 		.draw_rule = bullet_highlight_draw,
-		.args = { 0.125 * (sx + I * sy), frand() * M_PI * 2 },
+		.args = { 0.125 * (sx + I * sy), vrng_angle(R[0]) },
 		.angle = p->angle,
-		.pos = p->pos + frand() * 5 * cexp(I*M_PI*2*frand()),
+		.pos = p->pos + vrng_range(R[1], 0, 5) * vrng_dir(R[2]),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.timeout = 32 + 2 * nfrand(),
+		.timeout = vrng_range(R[3], 30, 34),
 		.color = &clr,
 	);
 }
@@ -1032,8 +1036,8 @@ void Petal(Projectile *p, int t) {
 
 void petal_explosion(int n, cmplx pos) {
 	for(int i = 0; i < n; i++) {
-		tsrand_fill(6);
-		float t = frand();
+		RNG_ARRAY(R, 6);
+		real t = rng_real();
 
 		PARTICLE(
 			.sprite = "petal",
@@ -1042,10 +1046,10 @@ void petal_explosion(int n, cmplx pos) {
 			.rule = asymptotic,
 			.draw_rule = Petal,
 			.args = {
-				(3+5*afrand(2))*cexp(I*M_PI*2*afrand(3)),
+				vrng_range(R[0], 3, 8) * vrng_dir(R[1]),
 				5,
-				afrand(4) + afrand(5)*I,
-				afrand(1) + 360.0*I*afrand(0),
+				vrng_real(R[2]) + vrng_real(R[3])*I,
+				vrng_real(R[4]) + vrng_range(R[5], 0, 360)*I,
 			},
 			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
 			.flags = PFLAG_NOREFLECT | (n % 2 ? 0 : PFLAG_REQUIREDPARTICLE),

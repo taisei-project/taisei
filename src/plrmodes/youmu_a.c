@@ -66,48 +66,50 @@ static void myon_draw_trail(Projectile *p, int t) {
 }
 
 static void spawn_stardust(cmplx pos, float myon_color_f, int timeout, cmplx v) {
+	RNG_ARRAY(R, 4);
+
 	PARTICLE(
 		.sprite = "stardust",
-		.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
+		.pos = pos + vrng_range(R[0], 0, 5) * vrng_dir(R[1]),
 		.draw_rule = myon_draw_trail,
 		.rule = myon_particle_rule,
 		.timeout = timeout,
-		.args = { v, 0.2 + 0.1 * frand(), 0, myon_color_f },
-		.angle = M_PI*2*frand(),
+		.args = { v, vrng_range(R[2], 0.2, 0.3), 0, myon_color_f },
+		.angle = vrng_angle(R[3]),
 		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW | 1,
 	);
 }
 
 static void myon_spawn_trail(Enemy *e, int t) {
-	float a = global.frames * 0.07;
-	cmplx pos = e->pos + 3 * (cos(a) + I * sin(a));
-
-	cmplx stardust_v = 3 * myon_tail_dir() * cexp(I*M_PI/16*sin(1.33*t));
-	float f = abs(global.plr.focus) / 30.0;
+	cmplx pos = e->pos + 3 * cdir(global.frames * 0.07);
+	cmplx stardust_v = 3 * myon_tail_dir() * cdir(M_PI/16*sin(1.33*t));
+	real f = abs(global.plr.focus) / 30.0;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
 	if(player_should_shoot(&global.plr, true)) {
+		RNG_ARRAY(R, 7);
+
 		PARTICLE(
 			.sprite = "smoke",
-			.pos = pos+10*frand()*cexp(2.0*I*M_PI*frand()),
+			.pos = pos + vrng_range(R[0], 0, 10) * vrng_dir(R[1]),
 			.draw_rule = myon_draw_trail,
 			.rule = myon_particle_rule,
 			.timeout = 60,
-			.args = { -I*0.0*cexp(I*M_PI/16*sin(t)), -0.2, 0, f },
+			.args = { 0, -0.2, 0, f },
 			.flags = PFLAG_NOREFLECT,
-			.angle = M_PI*2*frand(),
+			.angle = vrng_angle(R[2]),
 		);
 
 		PARTICLE(
 			.sprite = "flare",
-			.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
+			.pos = pos + vrng_range(R[3], 0, 5) * vrng_dir(R[4]),
 			.draw_rule = Shrink,
 			.rule = myon_particle_rule,
 			.timeout = 10,
-			.args = { cexp(I*M_PI*2*frand())*0.5, 0.2, 0, f },
+			.args = { 0.5 * vrng_dir(R[5]), 0.2, 0, f },
 			.flags = PFLAG_NOREFLECT,
-			.angle = M_PI*2*frand(),
+			.angle = vrng_angle(R[6]),
 		);
 	}
 
@@ -119,7 +121,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		.args = { f * stardust_v, 0, 0, f },
 		.draw_rule = Shrink,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.angle = M_PI*2*frand(),
+		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
 
@@ -372,17 +374,20 @@ static void youmu_mirror_shot(Player *plr) {
 }
 
 static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx victim_origin, void *arg) {
-	victim_origin += cexp(I*M_PI*2*frand()) * 15 * frand();
+	cmplx ofs_dir = rng_dir();
+	victim_origin += ofs_dir * rng_range(0, 15);
+
+	RNG_ARRAY(R, 6);
 
 	PARTICLE(
 		.sprite = "blast_huge_halo",
 		.pos = victim_origin,
-		.color = RGBA(0.6 + 0.1 * frand(), 0.8, 0.7 + 0.075 * frand(), 0.5 * frand()),
+		.color = RGBA(vrng_range(R[0], 0.6, 0.7), 0.8, vrng_range(R[1], 0.7, 0.775), vrng_range(R[2], 0, 0.5)),
 		.timeout = 30,
 		.draw_rule = ScaleFade,
 		.args = { 0, 0, (0.0 + 0.5*I) },
 		.layer = LAYER_PARTICLE_HIGH | 0x4,
-		.angle = frand() * 2 * M_PI,
+		.angle = vrng_angle(R[3]),
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
@@ -390,7 +395,8 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		return;
 	}
 
-	float t = frand();
+	real t = rng_real();
+	RNG_NEXT(R);
 
 	PARTICLE(
 		.sprite = "petal",
@@ -399,10 +405,10 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		.draw_rule = Petal,
 		.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
 		.args = {
-			sign(nfrand())*(3+t*5*frand())*cexp(I*M_PI*8*t),
+			vrng_sign(R[0]) * vrng_range(R[1], 3, 3 + 5 * t) * cdir(M_PI*8*t),
 			5+I,
-			frand() + frand()*I,
-			frand() + 360.0*I*frand()
+			vrng_real(R[2]) + vrng_real(R[3])*I,
+			vrng_real(R[4]) + vrng_range(R[5], 0, 360)*I,
 		},
 		.layer = LAYER_PARTICLE_PETAL,
 	);
@@ -441,20 +447,23 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 			.color = RGBA(0.9, 0.8, 1.0, 0.0),
 			.timeout = 30,
 			.args = {
-				2*cexp(2*I*M_PI*frand()),
+				2 * rng_dir(),
 			},
 			.flags = _i%2 == 0 ? PFLAG_REQUIREDPARTICLE : 0
 		);
+
+		RNG_ARRAY(R, 2);
+
 		PARTICLE(
 			.sprite = "stain",
 			.pos = e->pos,
 			.rule = accelerated,
 			.draw_rule = GrowFade,
-			.angle = 2*M_PI*frand(),
+			.angle = vrng_angle(R[0]),
 			.color = RGBA(0.2, 0.1, 1.0, 0.0),
 			.timeout = 50,
 			.args = {
-				-1*e->args[0]*cexp(I*0.2*nfrand())/30,
+				-1*e->args[0]*cdir(0.2*rng_real())/30,
 				0.1*e->args[0]*I*sin(t/4.)/30,
 				2
 			},
