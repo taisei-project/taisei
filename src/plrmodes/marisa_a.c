@@ -86,14 +86,14 @@ static void trace_laser(Enemy *e, cmplx vel, float damage) {
 		}
 
 		if(col.type & col_types) {
-			tsrand_fill(3);
+			RNG_ARRAY(R, 3);
 			PARTICLE(
 				.sprite = "flare",
 				.pos = col.location,
 				.rule = linear,
-				.timeout = 3 + 5 * afrand(2),
+				.timeout = vrng_range(R[0], 3, 8),
 				.draw_rule = Shrink,
-				.args = { (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1)) },
+				.args = { vrng_range(R[1], 2, 8) * vrng_dir(R[2]) },
 				.flags = PFLAG_NOREFLECT,
 				.layer = LAYER_PARTICLE_HIGH,
 			);
@@ -471,7 +471,7 @@ static int masterspark(Enemy *e, int t2) {
 	if(t2 < 0)
 		return 1;
 
-	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + nfrand() * 0.005));
+	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + rng_sreal() * 0.005));
 	cmplx diroffset = e->args[0];
 
 	float t = player_get_bomb_progress(&global.plr);
@@ -480,7 +480,7 @@ static int masterspark(Enemy *e, int t2) {
 		global.shake_view = 8 * (1 - t * 4 + 3);
 	} else if(t2 % 2 == 0) {
 		cmplx dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
-		Color *c = HSLA(-t*5.321,1,0.5,0.5*frand());
+		Color *c = HSLA(-t*5.321, 1, 0.5, rng_range(0, 0.5));
 
 		uint flags = PFLAG_NOREFLECT;
 
@@ -495,7 +495,7 @@ static int masterspark(Enemy *e, int t2) {
 			.rule = masterspark_star,
 			.timeout = 50,
 			.args= { (10 * dir - 10*I)*diroffset, 4 },
-			.angle = nfrand(),
+			.angle = rng_angle(),
 			.draw_rule = GrowFade,
 			.flags = flags,
 		);
@@ -507,7 +507,7 @@ static int masterspark(Enemy *e, int t2) {
 			.rule = masterspark_star,
 			.timeout = 50,
 			.args = { (10 * dir - 10*I)*diroffset, 4 },
-			.angle = nfrand(),
+			.angle = rng_angle(),
 			.draw_rule = GrowFade,
 			.flags = flags,
 		);
@@ -518,7 +518,7 @@ static int masterspark(Enemy *e, int t2) {
 			.rule = linear,
 			.timeout = 50,
 			.args = { -7*dir + 7*I, 6 },
-			.angle = nfrand(),
+			.angle = rng_angle(),
 			.draw_rule = GrowFade,
 			.flags = flags,
 		);
