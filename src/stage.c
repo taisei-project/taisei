@@ -834,7 +834,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		stage->procs->update();
 	}
 
-	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
+	replay_stage_check_desync(global.replay_stage, global.frames, (rng_u64() ^ global.plr.points) & 0xFFFF, global.replaymode);
 	stage_logic();
 
 	if(fstate->transition_delay) {
