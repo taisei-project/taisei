@@ -57,8 +57,15 @@ static void pp_blast_init_projectile(ProjPrototype *proto, Projectile *p) {
 	pp_basic_init_projectile(proto, p);
 	assert(p->rule == NULL);
 	assert(p->timeout > 0);
-	p->args[1] = frand()*360 + frand()*I;
-	p->args[2] = frand()     + frand()*I;
+
+	real a1_x, a1_y, a2_x, a2_y;
+	a1_x = rng_range(0, 360);
+	a1_y = rng_real();
+	a2_x = rng_real();
+	a2_y = rng_real();
+
+	p->args[1] = CMPLX(a1_x, a1_y);
+	p->args[2] = CMPLX(a2_x, a2_y);
 }
 
 ProjPrototype _pp_blast = {
