@@ -55,7 +55,7 @@ TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_in
 	while(ARGS.rounds--) {
 		WAIT(ARGS.delay);
 
-		double angle_ofs = frand() * M_PI * 2;
+		real angle_ofs = rng_angle();
 
 		for(int i = 0; i < ARGS.cnt; ++i) {
 			complex aim = cexp(I * (angle_ofs + M_PI * 2.0 * i / (double)ARGS.cnt));
@@ -125,7 +125,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 		}
 
 		// keep wandering, randomly
-		ARGS.dir *= cexp(I*M_PI*nfrand());
+		ARGS.dir *= rng_dir();
 	}
 }
 
