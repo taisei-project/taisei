@@ -68,7 +68,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	p->pos0 = p->pos - p->pos0;
 	p->angle = carg(p->pos0);
 
-	if(t%(2+(int)round(2*frand())) == 0) {
+	if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
