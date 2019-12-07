@@ -96,7 +96,7 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 			.layer = LAYER_PARTICLE_HIGH,
 			.args = { 0, 0, 0.5 * I },
 			.flags = PFLAG_NOREFLECT,
-			.angle = M_PI*nfrand(),
+			.angle = rng_angle(),
 		);
 		return ACTION_ACK;
 	}
@@ -283,10 +283,11 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 
 	p->color = *RGBA(a, a, a, 0);
 
-	cmplx phase = cexp(p->angle * I);
 
 	if(t%5 == 0) {
-		tsrand_fill(4);
+		cmplx phase = cdir(p->angle);
+		RNG_ARRAY(R, 4);
+
 		PARTICLE(
 			.sprite = "petal",
 			.pos = p->pos-400*phase,
@@ -294,9 +295,9 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 			.draw_rule = Petal,
 			.args = {
 				phase,
-				phase*cexp(0.1*I),
-				afrand(1) + afrand(2)*I,
-				afrand(3) + 360.0*I*afrand(0)
+				phase*cdir(0.1),
+				vrng_real(R[0]) + vrng_real(R[1])*I,
+				vrng_real(R[2]) + vrng_range(R[3], 0, 360)*I,
 			},
 			.layer = LAYER_PARTICLE_HIGH | 0x2,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
