@@ -15,19 +15,25 @@
 #define RIGHT_BASE cirno
 
 DIALOG_SCRIPT(marisa_stage1_pre_boss) {
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(angry);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
+    LEFT_FACE(puzzled);
+    LEFT("Aw man, snow again? I just put away my winter coat.");
+    RIGHT_FACE(normal);
+    RIGHT("Nice, right? It's my snow. I did it!");
+    LEFT_FACE(normal);
+    LEFT("Mind if I borrow some money for the drycleaning bill? I was gonna get it done in the fall, but now…");
+    RIGHT("No, but I can lend you some ice cream! After I turn *you* into ice cream!");
+    LEFT_FACE(smug);
+    LEFT("I prefer shaved ice, myself.");
 }
 
 DIALOG_SCRIPT(marisa_stage1_post_boss) {
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(happy);
-	LEFT("FIXME: Removed due to issue #179");
+    LEFT_FACE(smug);
+    RIGHT_FACE(defeated);
+    LEFT("Why don't ya just go play with your new fairy friend, the one from Hell? I'm sure she'd love to test your, uh, 'invincibility.'");
+    RIGHT("Ouch- I mean, last time she lost! And next time you will too!");
+    LEFT("Sure, sure.");
+
+
 }
 
 #undef RIGHT_BASE
