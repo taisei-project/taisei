@@ -18,22 +18,22 @@ DIALOG_SCRIPT(reimu_stage1_pre_boss) {
         LEFT_FACE(puzzled);
         LEFT("Unseasonable snow? I wonder if I have to pay that 'Secret God' a visit again...");
         RIGHT_FACE(normal);
-	RIGHT("'Secret God'? What, are you *that* impressed by invincible snow magic?!");
-	LEFT_FACE(sigh);
-	LEFT("Right, of course, I completely forgot about you. I should've known.");
-	RIGHT_FACE(angry);
-	RIGHT("Known better than to intrude on my secret base!!");
+        RIGHT("'Secret God'? What, are you *that* impressed by invincible snow magic?!");
+        LEFT_FACE(sigh);
+        LEFT("Right, of course, I completely forgot about you. I should've known.");
+        RIGHT_FACE(angry);
+        RIGHT("Known better than to intrude on my secret base!!");
         LEFT("Well, if you're getting excited, then I guess there really is something going on. I'd ask if you'd just let me through, but...");
         RIGHT_FACE(normal);
         RIGHT("No way! Prepare to get frozen!");
 }
 
 DIALOG_SCRIPT(reimu_stage1_post_boss) {
-    LEFT_FACE(amused);
-    RIGHT_FACE(defeated);
-    RIGHT("Cool down! I didn't mean it like that!");
-    LEFT("I did say you could just let me through, you know.");
-    RIGHT("I don't remember that! You broke the rules! I wasn't ready yet...");
+        LEFT_FACE(amused);
+        RIGHT_FACE(defeated);
+        RIGHT("Cool down! I didn't mean it like that!");
+        LEFT("I did say you could just let me through, you know.");
+        RIGHT("I don't remember that! You broke the rules! I wasn't ready yet...");
 }
 
 #undef RIGHT_BASE
