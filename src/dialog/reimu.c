@@ -29,7 +29,7 @@ DIALOG_SCRIPT(reimu_stage1_pre_boss) {
 }
 
 DIALOG_SCRIPT(reimu_stage1_post_boss) {
-        LEFT_FACE(amused);
+        LEFT_FACE(smug);
         RIGHT_FACE(defeated);
         RIGHT("Cool down! I didn't mean it like that!");
         LEFT("I did say you could just let me through, you know.");
