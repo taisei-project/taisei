@@ -202,7 +202,7 @@ static void cotask_force_cancel(CoTask *task) {
 	cotask_finalize(task);
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Killing task %s", ev, task->debug_label);
-	koishi_kill(&task->ko);
+	koishi_kill(&task->ko, NULL);
 	TASK_DEBUG("[%zu] koishi_kill returned (%s)", ev, task->debug_label);
 	assert(cotask_status(task) == CO_STATUS_DEAD);
 }
