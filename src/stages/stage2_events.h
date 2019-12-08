@@ -20,6 +20,6 @@ void hina_wheel(Boss*, int);
 void hina_monty(Boss*, int);
 
 void stage2_events(void);
-Boss* stage2_spawn_hina(complex pos);
+Boss* stage2_spawn_hina(cmplx pos);
 
 #endif // IGUARD_stages_stage2_events_h

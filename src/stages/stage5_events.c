@@ -94,7 +94,7 @@ static int stage5_lightburst(Enemy *e, int t) {
 	FROM_TO_SND("shot1_loop", 20, 300, 5) {
 		int c = 5+global.diff;
 		for(int i = 0; i < c; i++) {
-			complex n = cexp(I*carg(global.plr.pos) + 2.0*I*M_PI/c*i);
+			cmplx n = cexp(I*carg(global.plr.pos) + 2.0*I*M_PI/c*i);
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = e->pos + 50*n*cexp(-0.4*I*_i*global.diff),
@@ -154,7 +154,7 @@ static int stage5_limiter(Enemy *e, int t) {
 
 		for(int i = 1; i >= -1; i -= 2) {
 			double a = i * 0.2 - 0.1 * (global.diff / 4) + i * 3.0 / (_i + 1);
-			complex aim = cexp(I * (base_angle + a));
+			cmplx aim = cexp(I * (base_angle + a));
 
 			PROJECTILE(
 				.proto = pp_rice,
@@ -185,7 +185,7 @@ static int stage5_laserfairy(Enemy *e, int t) {
 		e->pos -= e->args[0];
 
 	FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
-		complex n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
+		cmplx n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
 		float fac = (0.5+0.2*global.diff);
 		create_lasercurve2c(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0), las_accel, fac*4*n, fac*0.05*n);
 		PROJECTILE(
@@ -225,7 +225,7 @@ static int stage5_miner(Enemy *e, int t) {
 	return 1;
 }
 
-static void lightning_particle(complex pos, int t) {
+static void lightning_particle(cmplx pos, int t) {
 	if(!(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
 		PARTICLE(
@@ -252,7 +252,7 @@ static int stage5_magnetto(Enemy *e, int t) {
 		return 1;
 	}
 
-	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
+	cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 	lightning_particle(e->pos + 3*offset, t);
 
 	FROM_TO(0, 70, 1) {
@@ -273,7 +273,7 @@ static int stage5_magnetto(Enemy *e, int t) {
 		// complex dir = cexp(I*carg(global.plr.pos - e->pos));
 
 		for(int i = 0; i < 2 - (global.diff == D_Easy); ++i) {
-			complex dir = cexp(I*(M_PI*i + M_PI/8*sin(2*(t-140)/70.0 * M_PI) + carg(e->args[1] - e->pos)));
+			cmplx dir = cexp(I*(M_PI*i + M_PI/8*sin(2*(t-140)/70.0 * M_PI) + carg(e->args[1] - e->pos)));
 
 			PROJECTILE(
 				.proto = pp_ball,
@@ -374,7 +374,7 @@ static void iku_slave_visual(Enemy *e, int t, bool render) {
 		return;
 	}
 
-	complex offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
+	cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 
 	if(e->args[2] && !(t % 5)) {
 		lightning_particle(e->pos + 3*offset, t);
@@ -451,7 +451,7 @@ static int stage5_lightburst2(Enemy *e, int t) {
 		int c = 4+global.diff-(global.diff==D_Easy);
 		for(i = 0; i < c; i++) {
 			tsrand_fill(2);
-			complex n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
+			cmplx n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
 			PROJECTILE(
 				.proto = pp_bigball,
 				.pos = e->pos + 50*n*cexp(-1.0*I*_i*global.diff),
@@ -482,7 +482,7 @@ static int stage5_superbullet(Enemy *e, int t) {
 	}
 
 	FROM_TO(60, 200, 1) {
-		complex n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
+		cmplx n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
 		PROJECTILE(
 			.proto = pp_bullet,
 			.pos = e->pos + 50*n,
@@ -582,8 +582,8 @@ void iku_atmospheric(Boss *b, int time) {
 
 	FROM_TO(0, 500, 23-2*global.diff) {
 		tsrand_fill(4);
-		complex p1 = VIEWPORT_W*afrand(0) + VIEWPORT_H/2*I*afrand(1);
-		complex p2 = p1 + (120+20*global.diff)*cexp(0.5*I-afrand(2)*I)*(1-2*(afrand(3) > 0.5));
+		cmplx p1 = VIEWPORT_W*afrand(0) + VIEWPORT_H/2*I*afrand(1);
+		cmplx p2 = p1 + (120+20*global.diff)*cexp(0.5*I-afrand(2)*I)*(1-2*(afrand(3) > 0.5));
 
 		int i;
 		int c = 6+global.diff;
@@ -626,7 +626,7 @@ void iku_atmospheric(Boss *b, int time) {
 	}
 }
 
-static complex bolts2_laser(Laser *l, float t) {
+static cmplx bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/iku_lightning");
 		return 0;
@@ -763,7 +763,7 @@ void iku_lightning(Boss *b, int time) {
 	}
 
 	FROM_TO(0, 60, 1) {
-		complex n = cexp(2.0*I*M_PI*frand());
+		cmplx n = cexp(2.0*I*M_PI*frand());
 		float l = 150*frand()+50;
 		float s = 4+_i*0.01;
 		float alpha = 0.5;
@@ -803,7 +803,7 @@ void iku_lightning(Boss *b, int time) {
 		int s = 10;
 
 		for(int i=0; i < c; i++) {
-			complex n = cexp(2.0*I*M_PI*frand());
+			cmplx n = cexp(2.0*I*M_PI*frand());
 			PARTICLE(
 				.sprite = "smoke",
 				.pos = b->pos,
@@ -835,7 +835,7 @@ static void iku_bolts3(Boss *b, int time) {
 		aniplayer_queue(&b->ani, (_i&1) ? "dashdown_left" : "dashdown_right",1);
 		aniplayer_queue(&b->ani, "main", 0);
 		int i, c = 10+global.diff;
-		complex n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
+		cmplx n = cexp(I*carg(global.plr.pos-b->pos)+0.1*I-0.2*I*frand());
 		for(i = 0; i < c; i++) {
 			PROJECTILE(
 				.proto = pp_ball,
@@ -872,7 +872,7 @@ static void iku_bolts3(Boss *b, int time) {
 
 }
 
-static complex induction_bullet_traj(Projectile *p, float t) {
+static cmplx induction_bullet_traj(Projectile *p, float t) {
 	return p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
 }
 
@@ -901,7 +901,7 @@ static int induction_bullet(Projectile *p, int time) {
 	return 1;
 }
 
-static complex cathode_laser(Laser *l, float t) {
+static cmplx cathode_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/iku_cathode");
 		return 0;
@@ -951,7 +951,7 @@ void iku_cathode(Boss *b, int t) {
 
 void iku_induction(Boss *b, int t) {
 	// thwarf safespots
-	complex ofs = global.diff > D_Normal ? 10*I : 0;
+	cmplx ofs = global.diff > D_Normal ? 10*I : 0;
 
 	GO_TO(b, VIEWPORT_W/2+200.0*I + ofs, 0.03);
 
@@ -996,11 +996,11 @@ void iku_induction(Boss *b, int t) {
 
 void iku_spell_bg(Boss *b, int t);
 
-static Enemy* iku_extra_find_next_slave(complex from, double playerbias) {
+static Enemy* iku_extra_find_next_slave(cmplx from, double playerbias) {
 	Enemy *nearest = NULL, *e;
 	double dist, mindist = INFINITY;
 
-	complex org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
+	cmplx org = from + playerbias * cexp(I*(carg(global.plr.pos - from)));
 
 	for(e = global.enemies.first; e; e = e->next) {
 		if(e->args[2]) {
@@ -1026,7 +1026,7 @@ static void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 	}
 
 	if(e->args[2] && !(t % 5)) {
-		complex offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+		cmplx offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
 		PARTICLE(
 			.sprite = "smoothdot",
 			.pos = offset,
@@ -1075,7 +1075,7 @@ static int iku_extra_trigger_bullet(Projectile *p, int t) {
 	if(creal(p->args[2]) == 0) {
 		int cnt = 6 + 2 * global.diff;
 		for(int i = 0; i < cnt; ++i) {
-			complex dir = cexp(I*(t + i*2*M_PI/cnt));
+			cmplx dir = cexp(I*(t + i*2*M_PI/cnt));
 
 			PROJECTILE(
 				.proto = pp_bigball,
@@ -1156,7 +1156,7 @@ static int iku_extra_slave(Enemy *e, int t) {
 		}
 
 		if(global.frames == creal(e->args[3])) {
-			complex o2 = e->args[2];
+			cmplx o2 = e->args[2];
 			e->args[2] = 0;
 			Enemy *new = iku_extra_find_next_slave(e->pos, 75);
 			e->args[2] = o2;
@@ -1255,7 +1255,7 @@ void iku_extra(Boss *b, int t) {
 
 		for(i = 0; i < cnt; ++i) {
 			for(j = 0; j < cnt; ++j) {
-				complex epos = step * (0.5 + i) + (step * j + 125) * I;
+				cmplx epos = step * (0.5 + i) + (step * j + 125) * I;
 				create_enemy4c(b->pos, ENEMY_IMMUNE, iku_extra_slave_visual, iku_extra_slave, epos, 0, 0, 1);
 			}
 		}
@@ -1266,7 +1266,7 @@ void iku_extra(Boss *b, int t) {
 	}
 }
 
-Boss* stage5_spawn_iku(complex pos) {
+Boss* stage5_spawn_iku(cmplx pos) {
 	Boss *b = create_boss("Nagae Iku", "iku", pos);
 	boss_set_portrait(b, get_sprite("dialog/iku"), get_sprite("dialog/iku_face_normal"));
 	b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
@@ -1434,10 +1434,10 @@ void stage5_events(void) {
 		double ofs = 42*2;
 
 		FROM_TO(5620, 5620 + step*cnt-1, step) {
-			complex src1 = -ofs/4               + (-ofs/4 +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			complex src2 = (VIEWPORT_W + ofs/4) + (-ofs/4 + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			complex dst1 = ofs                  + ( ofs   +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			complex dst2 = (VIEWPORT_W - ofs)   + ( ofs   + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx src1 = -ofs/4               + (-ofs/4 +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx src2 = (VIEWPORT_W + ofs/4) + (-ofs/4 + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst1 = ofs                  + ( ofs   +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs   + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 
 			create_enemy2c(src1, 2000, Swirl, stage5_magnetto, dst1, dst2);
 			create_enemy2c(src2, 2000, Swirl, stage5_magnetto, dst2, dst1);

@@ -27,7 +27,7 @@
 
 static Enemy *gap_renderer;
 
-static complex reimu_dream_gap_target_pos(Enemy *e) {
+static cmplx reimu_dream_gap_target_pos(Enemy *e) {
 	double x, y;
 
 	if(creal(e->pos0)) {
@@ -156,7 +156,7 @@ static int reimu_dream_gap(Enemy *e, int t) {
 		reimu_dream_gap_bomb(e, t + cimag(e->args[3]));
 	}
 
-	complex new_pos = reimu_dream_gap_target_pos(e);
+	cmplx new_pos = reimu_dream_gap_target_pos(e);
 
 	if(t == 0) {
 		e->pos = new_pos;
@@ -190,7 +190,7 @@ static void reimu_dream_gap_draw_lights(int time, double strength) {
 
 	FOR_EACH_GAP(gap) {
 		const float len = GAP_LENGTH * 3 * sqrt(log(strength + 1) / 0.693);
-		complex center = gap->pos - gap->pos0 * (len * 0.5 - GAP_WIDTH * 0.6);
+		cmplx center = gap->pos - gap->pos0 * (len * 0.5 - GAP_WIDTH * 0.6);
 
 		r_mat_mv_push();
 		r_mat_mv_translate(creal(center), cimag(center), 0);
@@ -253,7 +253,7 @@ static void reimu_dream_gap_renderer_visual(Enemy *e, int t, bool render) {
 	FOR_EACH_GAP(gap) {
 		r_mat_mv_push();
 		r_mat_mv_translate(creal(gap->pos), cimag(gap->pos), 0);
-		complex stretch_vector = gap->args[0];
+		cmplx stretch_vector = gap->args[0];
 
 		for(float ofs = -0.5; ofs <= 0.5; ofs += 1) {
 			r_draw_sprite(&(SpriteParams) {
@@ -329,7 +329,7 @@ static void reimu_dream_bomb_bg(Player *p) {
 }
 
 
-static void reimu_dream_spawn_warp_effect(complex pos, bool exit) {
+static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 	PARTICLE(
 		.sprite = "myon",
 		.pos = pos,
@@ -359,7 +359,7 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 	}
 
 	double p_long_side = max(creal(p->size), cimag(p->size));
-	complex half = 0.5 * (1 + I);
+	cmplx half = 0.5 * (1 + I);
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
 	FOR_EACH_GAP(gap) {
@@ -370,14 +370,14 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 		}
 
 		Rect gap_bbox, overlap;
-		complex gap_size = (GAP_LENGTH + I * GAP_WIDTH) * cexp(I*carg(gap->args[0]));
-		complex p0 = gap->pos - gap_size * 0.5;
-		complex p1 = gap->pos + gap_size * 0.5;
+		cmplx gap_size = (GAP_LENGTH + I * GAP_WIDTH) * cexp(I*carg(gap->args[0]));
+		cmplx p0 = gap->pos - gap_size * 0.5;
+		cmplx p1 = gap->pos + gap_size * 0.5;
 		gap_bbox.top_left = min(creal(p0), creal(p1)) + I * min(cimag(p0), cimag(p1));
 		gap_bbox.bottom_right = max(creal(p0), creal(p1)) + I * max(cimag(p0), cimag(p1));
 
 		if(rect_rect_intersection(p_bbox, gap_bbox, true, false, &overlap)) {
-			complex o = (overlap.top_left + overlap.bottom_right) / 2;
+			cmplx o = (overlap.top_left + overlap.bottom_right) / 2;
 			double fract;
 
 			if(creal(gap_size) > cimag(gap_size)) {
@@ -404,7 +404,7 @@ static int reimu_dream_ofuda(Projectile *p, int t) {
 		reimu_dream_bullet_warp(p, t);
 	}
 
-	complex ov = p->args[0];
+	cmplx ov = p->args[0];
 	double s = cabs(ov);
 	p->args[0] *= clamp(s * (1.5 - t / 10.0), s*1.0, 1.5*s) / s;
 	int r = reimu_common_ofuda(p, t);
@@ -450,8 +450,8 @@ static void reimu_dream_shot(Player *p) {
 
 	if(!(global.frames % 6)) {
 		for(int i = -1; i < 2; i += 2) {
-			complex shot_dir = i * ((p->inputflags & INFLAG_FOCUS) ? 1 : I);
-			complex spread_dir = shot_dir * cexp(I*M_PI*0.5);
+			cmplx shot_dir = i * ((p->inputflags & INFLAG_FOCUS) ? 1 : I);
+			cmplx spread_dir = shot_dir * cexp(I*M_PI*0.5);
 
 			for(int j = -1; j < 2; j += 2) {
 				PROJECTILE(
@@ -492,8 +492,8 @@ static int reimu_dream_slave(Enemy *e, int t) {
 
 	// double a = M_PI * psin(t * 0.1) + creal(e->args[0]) + M_PI/2;
 	double a = t * -0.1 + creal(e->args[0]) + M_PI/2;
-	complex ofs = e->pos0;
-	complex shotdir = e->args[1];
+	cmplx ofs = e->pos0;
+	cmplx shotdir = e->args[1];
 
 	if(global.plr.inputflags & INFLAG_FOCUS) {
 		ofs = cimag(ofs) + I * creal(ofs);
@@ -505,7 +505,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 	} else {
 		double x = creal(ofs);
 		double y = cimag(ofs);
-		complex tpos = global.plr.pos + x * sin(a) + y * I * cos(a);
+		cmplx tpos = global.plr.pos + x * sin(a) + y * I * cos(a);
 		e->pos += (tpos - e->pos) * 0.5;
 	}
 
@@ -527,7 +527,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 	return ACTION_NONE;
 }
 
-static Enemy* reimu_dream_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+static Enemy* reimu_dream_spawn_slave(Player *plr, cmplx pos, cmplx a0, cmplx a1, cmplx a2, cmplx a3) {
 	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, reimu_dream_slave_visual, reimu_dream_slave, a0, a1, a2, a3);
 	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	return e;
@@ -560,7 +560,7 @@ static void reimu_dream_power(Player *p, short npow) {
 	}
 }
 
-static Enemy* reimu_dream_spawn_gap(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3) {
+static Enemy* reimu_dream_spawn_gap(Player *plr, cmplx pos, cmplx a0, cmplx a1, cmplx a2, cmplx a3) {
 	Enemy *gap = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, NULL, reimu_dream_gap, a0, a1, a2, a3);
 	gap->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	return gap;

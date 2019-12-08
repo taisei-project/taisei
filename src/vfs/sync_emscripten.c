@@ -10,6 +10,7 @@
 
 #include "public.h"
 #include "util.h"
+
 #include <emscripten.h>
 
 void EMSCRIPTEN_KEEPALIVE vfs_sync_callback(bool is_load, char *error, CallChain *next);

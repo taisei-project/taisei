@@ -102,7 +102,7 @@ static void draw_masterspark_ring(int t, float width) {
 	});
 }
 
-static void draw_masterspark_beam(complex origin, complex size, float angle, int t, float alpha) {
+static void draw_masterspark_beam(cmplx origin, cmplx size, float angle, int t, float alpha) {
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(origin), cimag(origin), 0);
 	r_mat_mv_rotate(angle, 0, 0, 1);

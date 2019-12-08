@@ -50,7 +50,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 		int cnt = 24 - (D_Lunatic - global.diff) * 4;
 		for(int i = 0; i < cnt; ++i) {
 			double a = (M_PI * 2.0 * i) / cnt;
-			complex dir = cexp(I*a);
+			cmplx dir = cexp(I*a);
 
 			PROJECTILE(
 				.proto = e->args[1]? pp_ball : pp_rice,
@@ -97,7 +97,7 @@ static int stage3_slavefairy(Enemy *e, int t) {
 
 	FROM_TO_SND("shot1_loop", 30, 120, 5 - global.diff) {
 		float a = _i * 0.5;
-		complex dir = cexp(I*a);
+		cmplx dir = cexp(I*a);
 
 		PROJECTILE(
 			.proto = pp_wave,
@@ -151,7 +151,7 @@ static int stage3_slavefairy2(Enemy *e, int t) {
 			a *= -1;
 		}
 
-		complex dir = cexp(I*a);
+		cmplx dir = cexp(I*a);
 		PROJECTILE(
 			.proto = pp_wave,
 			.pos = e->pos,
@@ -182,7 +182,7 @@ static void charge_effect(Enemy *e, int t, int chargetime) {
 	TIMER(&t);
 
 	FROM_TO(chargetime - 30, chargetime, 1) {
-		complex n = cexp(2.0*I*M_PI*frand());
+		cmplx n = cexp(2.0*I*M_PI*frand());
 		float l = 50*frand()+25;
 		float s = 4+_i*0.01;
 
@@ -224,7 +224,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 
 			int cnt = 6 + 4 * global.diff;
 			for(int p = 0; p < cnt; ++p) {
-				complex dir = cexp(I*M_PI*2*p/cnt);
+				cmplx dir = cexp(I*M_PI*2*p/cnt);
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = e->args[0],
@@ -249,7 +249,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 
 	FROM_TO_SND("shot1_loop", bursttime, bursttime + burstspan, step) {
 		double phase = (t - bursttime) / (double)burstspan;
-		complex dir = cexp(I*M_PI*phase);
+		cmplx dir = cexp(I*M_PI*phase);
 
 		int cnt = 5 + global.diff;
 		for(int p = 0; p < cnt; ++p) {
@@ -330,9 +330,9 @@ static int stage3_chargefairy(Enemy *e, int t) {
 	charge_effect(e, t, chargetime);
 
 	FROM_TO_SND("shot1_loop", chargetime, chargetime + cnt * step - 1, step) {
-		complex aim = e->args[3] - e->pos;
+		cmplx aim = e->args[3] - e->pos;
 		aim /= cabs(aim);
-		complex aim_norm = -cimag(aim) + I*creal(aim);
+		cmplx aim_norm = -cimag(aim) + I*creal(aim);
 
 		int layers = 1 + global.diff;
 		int i = _i;
@@ -344,8 +344,8 @@ static int stage3_chargefairy(Enemy *e, int t) {
 
 			double f = i / (cnt - 1.0);
 			int w = 100 - 20 * layer;
-			complex o = e->pos + w * psin(M_PI*f) * aim + aim_norm * w*0.8 * (f - 0.5);
-			complex paim = e->pos + (w+1) * aim - o;
+			cmplx o = e->pos + w * psin(M_PI*f) * aim + aim_norm * w*0.8 * (f - 0.5);
+			cmplx paim = e->pos + (w+1) * aim - o;
 			paim /= cabs(paim);
 
 			PROJECTILE(
@@ -594,7 +594,7 @@ static void scuttle_lethbite(Boss *boss, int time) {
 		int cnt = 21 - 1 * (D_Lunatic - global.diff);
 
 		for(i = 0; i < cnt; ++i) {
-			complex v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
+			cmplx v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = boss->pos - v * 50,
@@ -731,7 +731,7 @@ void wriggle_spellbg(Boss *b, int time) {
 	r_color4(1, 1, 1, 1);
 }
 
-Boss* stage3_spawn_scuttle(complex pos) {
+Boss* stage3_spawn_scuttle(cmplx pos) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", pos);
 	boss_set_portrait(scuttle, get_sprite("dialog/scuttle"), get_sprite("dialog/scuttle_face_normal"));
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
@@ -791,8 +791,8 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 
 	if(time >= creal(p->args[1])) {
 		if(p->args[2]) {
-			complex dist = global.plr.pos - p->pos;
-			complex accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * dist / cabs(dist);
+			cmplx dist = global.plr.pos - p->pos;
+			cmplx accel = (0.1 + 0.2 * (global.diff / (float)D_Lunatic)) * dist / cabs(dist);
 			float deathtime = sqrt(2*cabs(dist)/cabs(accel));
 
 			Laser *l = create_lasercurve2c(p->pos, deathtime, deathtime, RGBA(0.4, 0.9, 1.0, 0.0), las_accel, 0, accel);
@@ -873,7 +873,7 @@ static int wriggle_spell_slave(Enemy *e, int time) {
 	TIMER(&time)
 
 	float angle = e->args[2] * (time / 70.0 + e->args[1]);
-	complex dir = cexp(I*angle);
+	cmplx dir = cexp(I*angle);
 	Boss *boss = (Boss*)REF(e->args[0]);
 
 	if(!boss)
@@ -1064,7 +1064,7 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		float b = 0.3;
 		float c = 0.3;
 
-		complex vel = 2 * cexp(I*a);
+		cmplx vel = 2 * cexp(I*a);
 		double amp = M_PI/5;
 		double freq = 0.05;
 
@@ -1139,7 +1139,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 				aofs = 0.7;
 			}
 
-			complex vel = 2 * cexp(I*(aofs + M_PI / 4 + M_PI * 2 * i / (double)cnt));
+			cmplx vel = 2 * cexp(I*(aofs + M_PI / 4 + M_PI * 2 * i / (double)cnt));
 			double amp = (4.0/cnt) * (M_PI/5.0);
 			double freq = 0.05;
 
@@ -1184,7 +1184,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 		for(int i = 0; i < cnt; ++i) {
 			double a = ((M_PI*2.0*i)/cnt);
-			complex dir = cexp(I*a);
+			cmplx dir = cexp(I*a);
 
 			PROJECTILE(
 				.proto = ptype,
@@ -1292,7 +1292,7 @@ void wriggle_firefly_storm(Boss *boss, int time) {
 		for(i = 0; i < cnt; ++i) {
 			float r = tanh(sin(_i/200.));
 			float v = lun ? cos(_i/150.)/pow(cosh(atanh(r)),2) : 0.5;
-			complex pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
+			cmplx pos = 230*cexp(I*(_i*0.301+2*M_PI/cnt*i))*r;
 
 			PROJECTILE(
 				.proto = (global.diff >= D_Hard) && !(i%10) ? pp_bigball : pp_ball,
@@ -1313,7 +1313,7 @@ static int wriggle_nonspell_slave(Enemy *e, int time) {
 
 	int level = e->args[3];
 	float angle = e->args[2] * (time / 70.0 + e->args[1]);
-	complex dir = cexp(I*angle);
+	cmplx dir = cexp(I*angle);
 	Boss *boss = (Boss*)REF(e->args[0]);
 
 	if(!boss)
@@ -1414,7 +1414,7 @@ static void stage3_boss_intro(Boss *boss, int time) {
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
 
-Boss* stage3_spawn_wriggle_ex(complex pos) {
+Boss* stage3_spawn_wriggle_ex(cmplx pos) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", pos);
 	boss_set_portrait(wriggle, get_sprite("dialog/wriggle"), get_sprite("dialog/wriggle_face_proud"));
 	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
@@ -1461,7 +1461,7 @@ void stage3_events(void) {
 	}
 
 	FROM_TO(800, 1000-30*(D_Lunatic-global.diff), 20) {
-		complex f = 5 + (0.93 + 0.01 * _i) * I;
+		cmplx f = 5 + (0.93 + 0.01 * _i) * I;
 		create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, f);
 		create_enemy3c(VIEWPORT_W+20 + 20*I, 50, Swirl, stage3_bitchswirl, -5, 1*I, f);
 	}
@@ -1473,8 +1473,8 @@ void stage3_events(void) {
 		FROM_TO(start, start + step * cnt - 1, step) {
 			int i = _i % cnt;
 			double span = 300 - 60 * (i/2);
-			complex pos1 = VIEWPORT_W/2;
-			complex pos2 = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
+			cmplx pos1 = VIEWPORT_W/2;
+			cmplx pos2 = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
 			create_enemy4c(pos1, 700, Fairy, stage3_burstfairy, pos2, i&1, 0, start + step * 6 - global.timer);
 		}
 	}
@@ -1486,9 +1486,9 @@ void stage3_events(void) {
 		FROM_TO(start, start + cnt * step - 1, step) {
 			int i = _i % 4;
 			double span = 300 - 60 * (i/2);
-			complex pos = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
+			cmplx pos = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
 
-			complex exitdir = pos - (VIEWPORT_W+VIEWPORT_H*I)/2;
+			cmplx exitdir = pos - (VIEWPORT_W+VIEWPORT_H*I)/2;
 			exitdir /= cabs(exitdir);
 
 			create_enemy3c(pos, 1000, Fairy, stage3_chargefairy, pos, 30, exitdir);
@@ -1511,8 +1511,8 @@ void stage3_events(void) {
 		if(global.enemies.first == NULL) {
 			int cnt = 2;
 			for(int i = 0; i <= cnt;i++) {
-				complex pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
-				complex pos2 = VIEWPORT_W/2+50*(i-cnt/2)+VIEWPORT_H/3*I;
+				cmplx pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
+				cmplx pos2 = VIEWPORT_W/2+50*(i-cnt/2)+VIEWPORT_H/3*I;
 				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy2, pos2, i&1,0.5*(i-cnt/2));
 			}
 		}
@@ -1532,10 +1532,10 @@ void stage3_events(void) {
 	AT(2400) {
 		double offs = -50;
 
-		complex p1 = 0+0*I;
-		complex p2 = VIEWPORT_W+0*I;
-		complex p3 = VIEWPORT_W+VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H*I;
+		cmplx p1 = 0+0*I;
+		cmplx p2 = VIEWPORT_W+0*I;
+		cmplx p3 = VIEWPORT_W+VIEWPORT_H*I;
+		cmplx p4 = 0+VIEWPORT_H*I;
 
 		create_enemy2c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I);
 		create_enemy2c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I);
@@ -1546,10 +1546,10 @@ void stage3_events(void) {
 	if(global.diff > D_Normal) AT(2490) {
 		double offs = -50;
 
-		complex p1 = VIEWPORT_W/2+0*I;
-		complex p2 = VIEWPORT_W+VIEWPORT_H/2*I;
-		complex p3 = VIEWPORT_W/2+VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H/2*I;
+		cmplx p1 = VIEWPORT_W/2+0*I;
+		cmplx p2 = VIEWPORT_W+VIEWPORT_H/2*I;
+		cmplx p3 = VIEWPORT_W/2+VIEWPORT_H*I;
+		cmplx p4 = 0+VIEWPORT_H/2*I;
 
 		create_enemy2c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs*I, p2 + offs);
 		create_enemy2c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs,   p3 + offs*I);
@@ -1600,8 +1600,8 @@ void stage3_events(void) {
 		int cnt = 4;
 		int step = 60;
 		FROM_TO(3500 + midboss_time, 3500 + cnt * step - 1 + midboss_time, step) {
-			complex pos = VIEWPORT_W - VIEWPORT_W/3 + (VIEWPORT_H/5)*I;
-			complex spos = creal(pos) - 20 * I;
+			cmplx pos = VIEWPORT_W - VIEWPORT_W/3 + (VIEWPORT_H/5)*I;
+			cmplx spos = creal(pos) - 20 * I;
 			create_enemy3c(spos, 1000, Fairy, stage3_chargefairy, pos, 30, 2*I);
 		}
 	}
@@ -1613,8 +1613,8 @@ void stage3_events(void) {
 		FROM_TO(start, start + step * cnt - 1, step) {
 			int i = _i % cnt;
 			double span = 300 - 60 * (1-i/2);
-			complex pos1 = VIEWPORT_W/2;
-			complex pos2 = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
+			cmplx pos1 = VIEWPORT_W/2;
+			cmplx pos2 = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
 			create_enemy4c(pos1, 3000, BigFairy, stage3_burstfairy, pos2, i&1, 0,
 				(start + 300 - global.timer) + I *
 				(30)
@@ -1629,10 +1629,10 @@ void stage3_events(void) {
 	AT(4330 + midboss_time) {
 		double offs = -50;
 
-		complex p1 = 0+0*I;
-		complex p2 = VIEWPORT_W+0*I;
-		complex p3 = VIEWPORT_W+VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H*I;
+		cmplx p1 = 0+0*I;
+		cmplx p2 = VIEWPORT_W+0*I;
+		cmplx p3 = VIEWPORT_W+VIEWPORT_H*I;
+		cmplx p4 = 0+VIEWPORT_H*I;
 
 		create_enemy3c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I, 1);
 		create_enemy3c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I, 1);
@@ -1643,10 +1643,10 @@ void stage3_events(void) {
 	if(global.diff > D_Normal) AT(4480 + midboss_time) {
 		double offs = -50;
 
-		complex p1 = VIEWPORT_W/2+0*I;
-		complex p2 = VIEWPORT_W+VIEWPORT_H/2*I;
-		complex p3 = VIEWPORT_W/2+VIEWPORT_H*I;
-		complex p4 = 0+VIEWPORT_H/2*I;
+		cmplx p1 = VIEWPORT_W/2+0*I;
+		cmplx p2 = VIEWPORT_W+VIEWPORT_H/2*I;
+		cmplx p3 = VIEWPORT_W/2+VIEWPORT_H*I;
+		cmplx p4 = 0+VIEWPORT_H/2*I;
 
 		create_enemy3c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs*I, p2 + offs, 0);
 		create_enemy3c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs,   p3 + offs*I, 0);

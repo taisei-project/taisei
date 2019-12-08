@@ -154,7 +154,7 @@ static int reimu_spirit_homing(Projectile *p, int t) {
 	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
 	double v = cabs(p->args[0]);
 
-	complex aimdir = cexp(I*carg(p->args[3] - p->pos));
+	cmplx aimdir = cexp(I*carg(p->args[3] - p->pos));
 	double aim = reimu_spirit_homing_aimfactor(t, p->args[1]);
 
 	p->args[0] += v * 0.25 * aim * aimdir;
@@ -174,10 +174,10 @@ static Color *reimu_spirit_orb_color(Color *c, int i) {
 }
 
 static void reimu_spirit_bomb_orb_visual(Projectile *p, int t) {
-	complex pos = p->pos;
+	cmplx pos = p->pos;
 
 	for(int i = 0; i < 3; i++) {
-		complex offset = (10 + pow(t, 0.5)) * cexp(I * (2 * M_PI / 3*i + sqrt(1 + t * t / 300.0)));
+		cmplx offset = (10 + pow(t, 0.5)) * cexp(I * (2 * M_PI / 3*i + sqrt(1 + t * t / 300.0)));
 
 		Color c;
 		r_draw_sprite(&(SpriteParams) {
@@ -307,21 +307,21 @@ static int reimu_spirit_bomb_orb(Projectile *p, int t) {
 		play_sound("redirect");
 	}
 
-	complex target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
+	cmplx target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
 	p->args[0] *= cexp(I*0.12);
 
 	double circlestrength = 1.0 / (1 + exp(t-circletime));
 
 	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
-	complex target_homing = p->args[3];
-	complex homing = target_homing - p->pos;
-	complex v = 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
+	cmplx target_homing = p->args[3];
+	cmplx homing = target_homing - p->pos;
+	cmplx v = 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
 	p->args[2] += (v - p->args[2]) * 0.1;
 	p->pos += p->args[2];
 
 	for(int i = 0; i < 3 /*&& circlestrength < 1*/; i++) {
-		complex trail_pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
-		complex trail_vel = global.plr.pos - trail_pos;
+		cmplx trail_pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
+		cmplx trail_vel = global.plr.pos - trail_pos;
 		trail_vel *= 3 * circlestrength / cabs(trail_vel);
 
 		PARTICLE(
@@ -439,7 +439,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.shader = "sprite_default",
 		);
 	} else if(!(st % 12)) {
-		complex v = -10 * I * cexp(I*cimag(e->args[0]));
+		cmplx v = -10 * I * cexp(I*cimag(e->args[0]));
 
 		PROJECTILE(
 			.proto = pp_ofuda,
@@ -546,7 +546,7 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 	}
 }
 
-static inline Enemy* reimu_spirit_spawn_slave(Player *plr, complex pos, complex a0, complex a1, complex a2, complex a3, EnemyVisualRule visual) {
+static inline Enemy* reimu_spirit_spawn_slave(Player *plr, cmplx pos, cmplx a0, cmplx a1, cmplx a2, cmplx a3, EnemyVisualRule visual) {
 	Enemy *e = create_enemy_p(&plr->slaves, pos, ENEMY_IMMUNE, visual, reimu_spirit_slave, a0, a1, a2, a3);
 	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	return e;
@@ -565,10 +565,10 @@ static void reimu_spirit_kill_slaves(EnemyList *slaves) {
 	}
 }
 
-static void reimu_spirit_respawn_slaves(Player *plr, short npow, complex param) {
+static void reimu_spirit_respawn_slaves(Player *plr, short npow, cmplx param) {
 	double dmg_homing = 120 - 12 * plr->power / 100; // every 12 frames
 	double dmg_needle = 92 - 10 * plr->power / 100; // every 3 frames
-	complex dmg = dmg_homing + I * dmg_needle;
+	cmplx dmg = dmg_homing + I * dmg_needle;
 	EnemyVisualRule visual;
 
 	if(plr->inputflags & INFLAG_FOCUS) {

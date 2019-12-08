@@ -6,6 +6,10 @@
     #extension GL_ARB_explicit_uniform_location : require
 #endif
 
+#if defined(SPIRV)
+	#extension GL_ARB_separate_shader_objects : require
+#endif
+
 #define LOC(l) layout(location = l)
 
 #if defined(GL_ARB_explicit_uniform_location) || __VERSION__ >= 430
@@ -14,7 +18,7 @@
     #define UNIFORM(l) uniform
 #endif
 
-#if __VERSION__ >= 420
+#if __VERSION__ >= 420 || defined(SPIRV)
     #define IN(l) LOC(l) in
     #define OUT(l) LOC(l) out
 #else

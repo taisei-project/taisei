@@ -72,15 +72,15 @@ static void cirno_icy(Boss *b, int time) {
 		return;
 	}
 
-	complex vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
+	cmplx vel = (1+0.125*global.diff)*cexp(I*fmod(200*run,M_PI));
 	int c = 6;
 	double dr = 15;
 
 	FROM_TO_SND("shot1_loop", 0, 3*size, 3) {
 		for(int i = 0; i < c; i++) {
 			double ang = 2*M_PI/c*i+run*515;
-			complex phase = cexp(I*ang);
-			complex pos = b->pos+vel*t+dr*_i*phase;
+			cmplx phase = cexp(I*ang);
+			cmplx pos = b->pos+vel*t+dr*_i*phase;
 
 			PROJECTILE(
 				.proto = pp_crystal,
@@ -105,11 +105,11 @@ static void cirno_icy(Boss *b, int time) {
 			int split = 3;
 
 			if(_i > split) {
-				complex pos0 = b->pos+vel*t+dr*split*phase;
+				cmplx pos0 = b->pos+vel*t+dr*split*phase;
 
 				for(int j = -1; j <= 1; j+=2) {
-					complex phase2 = cexp(I*M_PI/4*j)*phase;
-					complex pos2 = pos0+(dr*(_i-split))*phase2;
+					cmplx phase2 = cexp(I*M_PI/4*j)*phase;
+					cmplx pos2 = pos0+(dr*(_i-split))*phase2;
 
 					PROJECTILE(
 						.proto = pp_crystal,
@@ -126,7 +126,7 @@ static void cirno_icy(Boss *b, int time) {
 	}
 }
 
-static Projectile* spawn_stain(complex pos, float angle, int to) {
+static Projectile* spawn_stain(cmplx pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
 		.pos = pos,
@@ -260,7 +260,7 @@ static void cirno_mid_flee(Boss *c, int time) {
 	}
 }
 
-Boss* stage1_spawn_cirno(complex pos) {
+Boss* stage1_spawn_cirno(cmplx pos) {
 	Boss *cirno = create_boss("Cirno", "cirno", pos);
 	boss_set_portrait(cirno, get_sprite("dialog/cirno"), get_sprite("dialog/cirno_face_normal"));
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
@@ -489,7 +489,7 @@ static void halation_laser(Laser *l, int time) {
 	}
 }
 
-static complex halation_calc_orb_pos(complex center, float rotation, int proj, int projs) {
+static cmplx halation_calc_orb_pos(cmplx center, float rotation, int proj, int projs) {
 	double f = (double)((proj % projs)+0.5)/projs;
 	return 200 * cexp(I*(rotation + f * 2 * M_PI)) + center;
 }
@@ -503,17 +503,17 @@ static int halation_orb(Projectile *p, int time) {
 		spawn_stain(p->pos, global.frames * 15, 20);
 	}
 
-	complex center = p->args[0];
+	cmplx center = p->args[0];
 	double rotation = p->args[1];
 	int id = creal(p->args[2]);
 	int count = cimag(p->args[2]);
 	int halate_time = creal(p->args[3]);
 	int phase_time = 60;
 
-	complex pos0 = halation_calc_orb_pos(center, rotation, id, count);
-	complex pos1 = halation_calc_orb_pos(center, rotation, id + count/2, count);
-	complex pos2 = halation_calc_orb_pos(center, rotation, id + count/2 - 1, count);
-	complex pos3 = halation_calc_orb_pos(center, rotation, id + count/2 - 2, count);
+	cmplx pos0 = halation_calc_orb_pos(center, rotation, id, count);
+	cmplx pos1 = halation_calc_orb_pos(center, rotation, id + count/2, count);
+	cmplx pos2 = halation_calc_orb_pos(center, rotation, id + count/2 - 1, count);
+	cmplx pos3 = halation_calc_orb_pos(center, rotation, id + count/2 - 2, count);
 
 	GO_TO(p, pos2, 0.1);
 
@@ -580,7 +580,7 @@ void cirno_snow_halation(Boss *c, int time) {
 	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
 	// tfw it's 2018 and still no args
 	// tfw when you then add another static
-	static complex center;
+	static cmplx center;
 	static float rotation;
 	static int cheater;
 

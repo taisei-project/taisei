@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-#include <stdio.h>
 #include "color.h"
 
 #define COLOR_OP(c1, op, c2) do { \

@@ -35,9 +35,9 @@ static int myon_particle_rule(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static complex myon_tail_dir(void) {
+static cmplx myon_tail_dir(void) {
 	double angle = carg(MYON->args[0]);
-	complex dir = cexp(I*(0.1 * sin(global.frames * 0.05) + angle));
+	cmplx dir = cexp(I*(0.1 * sin(global.frames * 0.05) + angle));
 	float f = abs(global.plr.focus) / 30.0;
 	return f * f * dir;
 }
@@ -65,7 +65,7 @@ static void myon_draw_trail(Projectile *p, int t) {
 	youmu_common_draw_proj(p, &c, fadein * (2-s) * p->args[1]);
 }
 
-static void spawn_stardust(complex pos, float myon_color_f, int timeout, complex v) {
+static void spawn_stardust(cmplx pos, float myon_color_f, int timeout, cmplx v) {
 	PARTICLE(
 		.sprite = "stardust",
 		.pos = pos+5*frand()*cexp(2.0*I*M_PI*frand()),
@@ -81,9 +81,9 @@ static void spawn_stardust(complex pos, float myon_color_f, int timeout, complex
 
 static void myon_spawn_trail(Enemy *e, int t) {
 	float a = global.frames * 0.07;
-	complex pos = e->pos + 3 * (cos(a) + I * sin(a));
+	cmplx pos = e->pos + 3 * (cos(a) + I * sin(a));
 
-	complex stardust_v = 3 * myon_tail_dir() * cexp(I*M_PI/16*sin(1.33*t));
+	cmplx stardust_v = 3 * myon_tail_dir() * cexp(I*M_PI/16*sin(1.33*t));
 	float f = abs(global.plr.focus) / 30.0;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
@@ -173,8 +173,8 @@ static void myon_proj_draw(Projectile *p, int t) {
 	youmu_common_draw_proj(p, &p->color, 1);
 }
 
-static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, complex pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
-	complex dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
+static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, cmplx pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
+	cmplx dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
 	dir = dir / cabs(dir);
 
 	// float f = ((global.plr.inputflags & INFLAG_FOCUS) == INFLAG_FOCUS);
@@ -252,8 +252,8 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 		}
 	}
 
-	complex target = plr->pos + e->pos0;
-	complex v = cexp(I*carg(target - e->pos)) * min(10, followfactor * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
+	cmplx target = plr->pos + e->pos0;
+	cmplx v = cexp(I*carg(target - e->pos)) * min(10, followfactor * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
 	float s = sign(creal(e->pos) - creal(global.plr.pos));
 
 	if(!s) {
@@ -321,19 +321,19 @@ static int youmu_mirror_self_proj(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	complex v0 = p->args[0];
-	complex v1 = p->args[1];
+	cmplx v0 = p->args[0];
+	cmplx v1 = p->args[1];
 	double f = creal(p->args[2]) ? clamp(t / p->args[2], 0, 1) : 1;
-	complex v = v1*f + v0*(1-f);
+	cmplx v = v1*f + v0*(1-f);
 
-	complex diff = p->pos0 + v * t - p->pos;
+	cmplx diff = p->pos0 + v * t - p->pos;
 	p->pos += diff;
 	p->angle = carg(diff ? diff : v);
 
 	return 1;
 }
 
-static Projectile* youmu_mirror_self_shot(Player *plr, complex ofs, complex vel, float dmg, double turntime) {
+static Projectile* youmu_mirror_self_shot(Player *plr, cmplx ofs, cmplx vel, float dmg, double turntime) {
 	return PROJECTILE(
 		.proto = pp_youmu,
 		.pos = plr->pos + ofs,
@@ -371,7 +371,7 @@ static void youmu_mirror_shot(Player *plr) {
 	}
 }
 
-static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, complex victim_origin, void *arg) {
+static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx victim_origin, void *arg) {
 	victim_origin += cexp(I*M_PI*2*frand()) * 15 * frand();
 
 	PARTICLE(
@@ -418,10 +418,10 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 	}
 
 	MYON->pos = e->pos;
-	complex myonpos = MYON->pos;
+	cmplx myonpos = MYON->pos;
 
 	e->pos += e->args[0];
-	complex aim = (global.plr.pos - e->pos) * 0.01;
+	cmplx aim = (global.plr.pos - e->pos) * 0.01;
 	double accel_max = 1;
 
 	if(cabs(aim) > accel_max) {
@@ -480,7 +480,7 @@ static bool youmu_mirror_shader(Framebuffer *fb) {
 	r_shader_ptr(shader);
 	r_uniform_float("tbomb", t);
 
-	complex myonpos = MYON->pos;
+	cmplx myonpos = MYON->pos;
 	float f = max(0,1 - 10*t);
 	r_uniform_vec2("myon", creal(myonpos)/VIEWPORT_W, 1-cimag(myonpos)/VIEWPORT_H);
 	r_uniform_vec4("fill_overlay", f, f, f, f);

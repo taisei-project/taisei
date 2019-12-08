@@ -36,9 +36,9 @@ enum {
 struct Enemy {
 	ENTITY_INTERFACE_NAMED(Enemy, ent);
 
-	complex pos;
-	complex pos0;
-	complex pos0_visual;
+	cmplx pos;
+	cmplx pos0;
+	cmplx pos0_visual;
 
 	long birthtime;
 
@@ -51,7 +51,7 @@ struct Enemy {
 	float spawn_hp;
 	float hp;
 
-	complex args[RULE_ARGC];
+	cmplx args[RULE_ARGC];
 	float alpha;
 
 #ifdef ENEMY_DEBUG
@@ -65,8 +65,8 @@ struct Enemy {
 #define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
 
 Enemy *create_enemy_p(
-	EnemyList *enemies, complex pos, float hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
-	complex a1, complex a2, complex a3, complex a4
+	EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
+	cmplx a1, cmplx a2, cmplx a3, cmplx a4
 );
 
 #ifdef ENEMY_DEBUG

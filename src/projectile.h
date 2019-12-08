@@ -70,12 +70,12 @@ typedef struct ProjPrototype ProjPrototype;
 struct Projectile {
 	ENTITY_INTERFACE_NAMED(Projectile, ent);
 
-	complex pos;
-	complex pos0;
-	complex prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
-	complex size; // affects out-of-viewport culling and grazing
-	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
-	complex args[RULE_ARGC];
+	cmplx pos;
+	cmplx pos0;
+	cmplx prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
+	cmplx size; // affects out-of-viewport culling and grazing
+	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
+	cmplx args[RULE_ARGC];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
 	ShaderProgram *shader;
@@ -116,11 +116,11 @@ typedef struct ProjArgs {
 	const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
 	ProjRule rule;
-	complex args[RULE_ARGC];
+	cmplx args[RULE_ARGC];
 	ProjDrawRule draw_rule;
-	complex pos;
-	complex size; // affects default draw order, out-of-viewport culling, and grazing
-	complex collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
+	cmplx pos;
+	cmplx size; // affects default draw order, out-of-viewport culling, and grazing
+	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
 	ProjType type;
 	ProjFlags flags;
 	BlendMode blend;
@@ -161,7 +161,7 @@ typedef enum ProjCollisionType {
 typedef struct ProjCollisionResult {
 	ProjCollisionType type;
 	bool fatal; // for the projectile
-	complex location;
+	cmplx location;
 	DamageInfo damage;
 	EntityInterface *entity;
 } ProjCollisionResult;
@@ -215,13 +215,13 @@ void ScaleFade(Projectile *p, int t);
 void ScaleSquaredFade(Projectile *p, int t);
 
 void Petal(Projectile *p, int t);
-void petal_explosion(int n, complex pos);
+void petal_explosion(int n, cmplx pos);
 
 void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
 void projectiles_free(void);
 
-complex projectile_graze_size(Projectile *p);
+cmplx projectile_graze_size(Projectile *p);
 
 #endif // IGUARD_projectile_h

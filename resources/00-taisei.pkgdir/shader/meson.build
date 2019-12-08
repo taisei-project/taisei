@@ -100,15 +100,8 @@ essl_targets = []
 glslc_args = [
     # '-fauto-bind-uniforms',
     # '-fauto-map-locations',
-
-    # XXX: glslc currently doesn't support ARB_explicit_uniform_location, so we have
-    # to force a standard that supports it natively to check for location overlaps.
-    '-std=430core',
-
-    # TODO: somehow shut up that annoying warning caused by forcing glsl version.
-    # '-Werror',
-
     '--target-env=opengl',
+    '-DSPIRV',
 ]
 
 glslc_depfile_args = [
@@ -148,38 +141,76 @@ else
     transpile_glsl = false
 endif
 
-if validate_glsl != 'false'
-    glslc_command = find_program('glslc',
-        required : (validate_glsl == 'true')
-    )
+force_vendored_shader_tools = get_option('force_vendored_shader_tools')
 
-    if glslc_command.found()
+if force_vendored_shader_tools and validate_glsl != 'false'
+    validate_glsl = 'true'
+endif
+
+if validate_glsl != 'false'
+    if force_vendored_shader_tools
+        glslc_command = disabler()
+    else
+        glslc_command = find_program('glslc', required : false)
+    endif
+
+    if not glslc_command.found() and validate_glsl == 'true'
+        glslc_command = subproject('shaderc').get_variable('glslc_native')
+        glslc_args += '-Werror'
+        validate_glsl = true
+    elif glslc_command.found()
         test_result = run_command(glslc_command,
             glslc_args,
             glslc_frag_args,
-            glslc_test_file,
-            '-o',
-            join_paths(meson.build_root(), 'glslc-test.spv')
+            glslc_test_uniform_location_file,
+            '-o', '-',
+            capture : false
         )
 
         if test_result.returncode() == 0
+            glslc_args += '-Werror'
             validate_glsl = true
         else
-            warning(test_result.stderr())
+            glslc_args += '-std=430core'
+            warning('glslc does not support GL_ARB_explicit_uniform_location, forcing shader version to 430core as a workaround.\n\n@0@'.format(test_result.stderr()))
 
-            if validate_glsl == 'auto'
-                warning('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
-                validate_glsl = false
+            test_result = run_command(glslc_command,
+                glslc_args,
+                glslc_frag_args,
+                glslc_test_basic_file,
+                '-o', '-',
+                capture : false
+            )
+
+            if test_result.returncode() == 0
+                validate_glsl = true
             else
-                error('glslc test failed, you probably have an incompatible version.')
+                warning(test_result.stderr())
+
+                if validate_glsl == 'auto'
+                    warning('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
+                    validate_glsl = false
+                else
+                    error('glslc test failed, you probably have an incompatible version.')
+                endif
             endif
         endif
     else
+        warning('GLSL validation or translation requested, but glslc was not found')
         validate_glsl = false
     endif
 
     if validate_glsl and transpile_glsl
-        spvc_command = find_program('spirv-cross', required : true)
+        if force_vendored_shader_tools
+            spvc_command = disabler()
+        else
+            spvc_command = find_program('spirv-cross', required : false)
+        endif
+
+        if not spvc_command.found()
+            spvc_command = subproject('SPIRV-Cross').get_variable('spirv_cross_native')
+        endif
+
         glslc_args += ['-Os', '-g']
     endif
 else

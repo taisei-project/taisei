@@ -12,7 +12,7 @@
 #include "plrmodes.h"
 #include "youmu.h"
 
-static complex youmu_homing_target(complex org, complex fallback) {
+static cmplx youmu_homing_target(cmplx org, cmplx fallback) {
 	return plrutil_homing_target(org, fallback);
 }
 
@@ -64,7 +64,7 @@ static float youmu_trap_charge(int t) {
 	return pow(clamp(t / 60.0, 0, 1), 1.5);
 }
 
-static Projectile* youmu_homing_trail(Projectile *p, complex v, int to) {
+static Projectile* youmu_homing_trail(Projectile *p, cmplx v, int to) {
 	return PARTICLE(
 		.sprite_ptr = p->sprite,
 		.pos = p->pos,
@@ -108,7 +108,7 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	p->args[3] = youmu_homing_target(p->pos, p->args[3]);
 
 	double v = cabs(p->args[0]);
-	complex aimdir = cexp(I*carg(p->args[3] - p->pos));
+	cmplx aimdir = cexp(I*carg(p->args[3] - p->pos));
 
 	p->args[0] += creal(p->args[1]) * aimdir;
 	// p->args[0] = v * cexp(I*carg(p->args[0])) + cimag(p->args[1]) * aimdir;
@@ -128,7 +128,7 @@ static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r:
 	return 1;
 }
 
-static Projectile* youmu_trap_trail(Projectile *p, complex v, int t, bool additive) {
+static Projectile* youmu_trap_trail(Projectile *p, cmplx v, int t, bool additive) {
 	Projectile *trail = youmu_homing_trail(p, v, t);
 	trail->draw_rule = youmu_trap_draw_trail;
 	// trail->args[3] = global.frames - p->birthtime;
@@ -192,12 +192,12 @@ static int youmu_trap(Projectile *p, int t) {
 
 		int cnt = round(creal(p->args[2]));
 		int dmg = cimag(p->args[2]);
-		complex aim = p->args[3];
+		cmplx aim = p->args[3];
 
 		for(int i = 0; i < cnt; ++i) {
 			int dur = 120; // 55 + 20 * nfrand();
 			float a = (i / (float)cnt) * M_PI * 2;
-			complex dir = cexp(I*(a));
+			cmplx dir = cexp(I*(a));
 
 			PROJECTILE(
 				.proto = pp_youmu,
@@ -247,7 +247,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t) {
 	r_mat_mv_pop();
 
 	double slicelen = 500;
-	complex slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
+	cmplx slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&global.plr.ani),
@@ -283,7 +283,7 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 
 	p->color = *RGBA(a, a, a, 0);
 
-	complex phase = cexp(p->angle * I);
+	cmplx phase = cexp(p->angle * I);
 
 	if(t%5 == 0) {
 		tsrand_fill(4);
@@ -331,7 +331,7 @@ static int youmu_slash(Enemy *e, int t) {
 
 	TIMER(&t);
 	FROM_TO(0,10000,3) {
-	complex pos = cexp(I*_i)*(100+10*_i*_i*0.01);
+		cmplx pos = cexp(I*_i)*(100+10*_i*_i*0.01);
 		PARTICLE(
 			.sprite = "youmu_slice",
 			.color = RGBA(1, 1, 1, 0),
@@ -373,7 +373,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 	float np = (float)p / (2 * plr->power / 100);
 
 	for(int sign = -1; sign < 2; sign += 2) {
-		complex dir = cexp(I*carg(sign*p*spread-speed*I));
+		cmplx dir = cexp(I*carg(sign*p*spread-speed*I));
 
 		PROJECTILE(
 			.proto = pp_hghost,
@@ -399,7 +399,7 @@ static void youmu_haunting_shot(Player *plr) {
 			if(!(global.frames % (45 - 4 * pwr))) {
 				int pcnt = 11 + pwr * 4;
 				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
-				complex aim = 0.15*I;
+				cmplx aim = 0.15*I;
 
 				PROJECTILE(
 					.proto = pp_youhoming,

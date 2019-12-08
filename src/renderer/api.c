@@ -652,12 +652,12 @@ void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
 	_r_uniform_ptr_vec2_vec(r_shader_current_uniform(uniform), value);
 }
 
-void _r_uniform_ptr_vec2_complex(Uniform *uniform, complex value) {
+void _r_uniform_ptr_vec2_complex(Uniform *uniform, cmplx value) {
 	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
 	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
 }
 
-void _r_uniform_vec2_complex(const char *uniform, complex value) {
+void _r_uniform_vec2_complex(const char *uniform, cmplx value) {
 	_r_uniform_ptr_vec2_complex(r_shader_current_uniform(uniform), value);
 }
 
@@ -670,11 +670,11 @@ void _r_uniform_vec2_array(const char *uniform, uint offset, uint count, vec2_no
 	_r_uniform_ptr_vec2_array(r_shader_current_uniform(uniform), offset, count, elements);
 }
 
-void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, complex elements[count]) {
+void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count, cmplx elements[count]) {
 	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
 	if(uniform && count) {
 		float arr[2 * count];
-		complex *eptr = elements;
+		cmplx *eptr = elements;
 		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
 
 		do {
@@ -686,7 +686,7 @@ void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count
 	}
 }
 
-void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, complex elements[count]) {
+void _r_uniform_vec2_array_complex(const char *uniform, uint offset, uint count, cmplx elements[count]) {
 	_r_uniform_ptr_vec2_array_complex(r_shader_current_uniform(uniform), offset, count, elements);
 }
 

@@ -82,7 +82,7 @@ typedef void (*EntityDrawFunc)(EntityInterface *ent);
 typedef bool (*EntityPredicate)(EntityInterface *ent);
 typedef DamageResult (*EntityDamageFunc)(EntityInterface *target, const DamageInfo *damage);
 typedef void (*EntityDrawHookCallback)(EntityInterface *ent, void *arg);
-typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, complex ent_origin, void *arg);
+typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, cmplx ent_origin, void *arg);
 
 #define ENTITY_INTERFACE_BASE(typename) struct { \
 	LIST_INTERFACE(typename); \
@@ -144,7 +144,7 @@ void ent_register(EntityInterface *ent, EntityType type) attr_nonnull(1);
 void ent_unregister(EntityInterface *ent) attr_nonnull(1);
 void ent_draw(EntityPredicate predicate);
 DamageResult ent_damage(EntityInterface *ent, const DamageInfo *damage) attr_nonnull(1, 2);
-void ent_area_damage(complex origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) attr_nonnull(3);
+void ent_area_damage(cmplx origin, float radius, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) attr_nonnull(3);
 void ent_area_damage_ellipse(Ellipse ellipse, const DamageInfo *damage, EntityAreaDamageCallback callback, void *callback_arg) attr_nonnull(2);
 
 void ent_hook_pre_draw(EntityDrawHookCallback callback, void *arg);

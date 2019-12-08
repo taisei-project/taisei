@@ -46,7 +46,7 @@ static const char* item_indicator_sprite_name(ItemType type) {
 		[ITEM_SURGE         - ITEM_FIRST] = NULL,
 		[ITEM_VOLTAGE       - ITEM_FIRST] = "item/voltage_indicator",
 	};
-	
+
 	uint index = type - 1;
 
 	assert(index < ARRAY_SIZE(map));
@@ -69,7 +69,7 @@ static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
 	const int indicator_display_y = 6;
-	
+
 	float y = cimag(i->pos);
 	if(y < 0) {
 		Sprite *s = item_indicator_sprite(i->type);
@@ -85,12 +85,12 @@ static void ent_draw_item(EntityInterface *ent) {
 		}
 	}
 
-	
+
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
 		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
 	}
-	
+
 	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
@@ -101,7 +101,7 @@ static void ent_draw_item(EntityInterface *ent) {
 
 }
 
-Item* create_item(complex pos, complex v, ItemType type) {
+Item* create_item(cmplx pos, cmplx v, ItemType type) {
 	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
 		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
@@ -135,7 +135,7 @@ void delete_item(Item *item) {
 	objpool_release(stage_object_pools.items, alist_unlink(&global.items, item));
 }
 
-Item *create_clear_item(complex pos, uint clear_flags) {
+Item *create_clear_item(cmplx pos, uint clear_flags) {
 	ItemType type = ITEM_PIV;
 
 	if(clear_flags & CLEAR_HAZARDS_SPAWN_VOLTAGE) {
@@ -166,23 +166,23 @@ void delete_items(void) {
 	}
 }
 
-static complex move_item(Item *i) {
+static cmplx move_item(Item *i) {
 	int t = global.frames - i->birthtime;
-	complex lim = 0 + 2.0*I;
+	cmplx lim = 0 + 2.0*I;
 
-	complex oldpos = i->pos;
+	cmplx oldpos = i->pos;
 
 	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
 		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
-		complex v = i->pos - oldpos;
+		cmplx v = i->pos - oldpos;
 		double half = item_sprite(i->type)->w/2.0;
 		bool over = false;
 
 		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
-			complex normal = over ? -1 : 1;
+			cmplx normal = over ? -1 : 1;
 			v -= 2 * normal * (creal(normal)*creal(v));
 			v = 1.5*creal(v) - I*fabs(cimag(v));
 
@@ -280,7 +280,7 @@ void process_items(void) {
 			}
 		}
 
-		complex deltapos = move_item(item);
+		cmplx deltapos = move_item(item);
 		int v = may_collect ? collision_item(item) : 0;
 
 		if(v == 1) {
@@ -346,7 +346,7 @@ int collision_item(Item *i) {
 	return 0;
 }
 
-static void spawn_item_internal(complex pos, ItemType type, float collect_value) {
+static void spawn_item_internal(cmplx pos, ItemType type, float collect_value) {
 	tsrand_fill(2);
 	Item *i = create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))) - 3*I, type);
 
@@ -355,15 +355,15 @@ static void spawn_item_internal(complex pos, ItemType type, float collect_value)
 	}
 }
 
-void spawn_item(complex pos, ItemType type) {
+void spawn_item(cmplx pos, ItemType type) {
 	spawn_item_internal(pos, type, -1);
 }
 
-void spawn_and_collect_item(complex pos, ItemType type, float collect_value) {
+void spawn_and_collect_item(cmplx pos, ItemType type, float collect_value) {
 	spawn_item_internal(pos, type, collect_value);
 }
 
-static void spawn_items_internal(complex pos, float collect_value, SpawnItemsArgs groups[]) {
+static void spawn_items_internal(cmplx pos, float collect_value, SpawnItemsArgs groups[]) {
 	for(SpawnItemsArgs *g = groups; g->type > 0; ++g) {
 		for(uint i = 0; i < g->count; ++i) {
 			spawn_item_internal(pos, g->type, collect_value);
@@ -372,12 +372,12 @@ static void spawn_items_internal(complex pos, float collect_value, SpawnItemsArg
 }
 
 #undef spawn_items
-void spawn_items(complex pos, SpawnItemsArgs groups[]) {
+void spawn_items(cmplx pos, SpawnItemsArgs groups[]) {
 	spawn_items_internal(pos, -1, groups);
 }
 
 #undef spawn_and_collect_items
-void spawn_and_collect_items(complex pos, float collect_value, SpawnItemsArgs groups[]) {
+void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs groups[]) {
 	spawn_items_internal(pos, collect_value, groups);
 }
 

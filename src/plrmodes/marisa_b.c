@@ -57,7 +57,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	}
 
 	double centerfac = tanh(t/10.); // interpolate between player center and slave center
-	complex center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
+	cmplx center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
 
 	double brightener = -1/(1+sqrt(0.03*fabs(creal(p->pos-center))));
 	p->color = *RGBA(0.3+(1-focus)*0.7+brightener,0.8+brightener,1.0-(1-focus)*0.7+brightener,0.2+brightener);
@@ -88,7 +88,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 	for(int i = 0; i < 2; ++i) {
 		if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 5)) {
 			float fac = e->args[0]/M_PI/2;
-			complex v = (1-2*i);
+			cmplx v = (1-2*i);
 			v = creal(v)/cabs(v);
 			v *= 1-0.9*fac;
 			v -= I*0.04*t*(4-3*fac);
@@ -115,7 +115,7 @@ static int marisa_star_slave(Enemy *e, int t) {
 		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	}
 
-	complex d = global.plr.pos-e->args[2];
+	cmplx d = global.plr.pos-e->args[2];
 	e->args[2] += (2+2*!global.plr.focus)*d/(cabs(d)+2);
 	e->pos = e->args[2] + 80*sin(angle)+45*I;
 
@@ -158,7 +158,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	}
 
 	double r = 100*pow(tanh(t/20.),2);
-	complex dir = e->args[1]*r*cexp(I*(sqrt(1000+t*t+0.03*t*t*t))*0.04);
+	cmplx dir = e->args[1]*r*cexp(I*(sqrt(1000+t*t+0.03*t*t*t))*0.04);
 	e->pos = global.plr.pos+dir;
 
 	float fadetime = 3./4;
@@ -258,7 +258,7 @@ static void marisa_star_bomb(Player *plr) {
 	play_sound("bomb_marisa_b");
 
 	for(int i = 0; i < NUM_MARISTAR_SLAVES; i++) {
-		complex dir = cexp(2*I*M_PI/NUM_MARISTAR_SLAVES*i);
+		cmplx dir = cexp(2*I*M_PI/NUM_MARISTAR_SLAVES*i);
 		Enemy *e = create_enemy2c(plr->pos, ENEMY_BOMB, marisa_star_orbit_visual, marisa_star_orbit, i ,dir);
 		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 	}

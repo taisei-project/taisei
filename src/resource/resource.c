@@ -466,6 +466,7 @@ static void* preload_shaders(const char *path, void *arg) {
 
 	char *name = resource_util_basename(SHPROG_PATH_PREFIX, path);
 	preload_resource(RES_SHADER_PROGRAM, name, RESF_PERMANENT);
+	free(name);
 
 	return NULL;
 }
