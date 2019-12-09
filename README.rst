@@ -31,6 +31,15 @@ Optional:
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
 
+Platform-Specific Instructions
+""""""""""""""""""""""""""""""
+
+The build system will try to pull in as many missing dependencies as it can into the build environment. However, this has a few caveats.
+
+On *Linux*, you should use the libraries provided by your distribution's package manager (i.e: apt, yum, etc.). In particular, not installing packages like `libsdl2-dev` might not work, especially if your system uses Wayland. Ensure that you've correctly installed the SDL2 dev packages if you run into errors like `SDL_Error: No available video device`.
+
+On *macOS*, it's the opposite. Let the project pull in as much as possible. Using `brew` will *probably not work well,* even for things like SDL2. If you run into compile-time issues, try seeing if you have any of those dependencies above installed and remove them. 
+
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
