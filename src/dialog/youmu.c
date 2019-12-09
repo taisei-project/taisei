@@ -15,27 +15,27 @@
 #define RIGHT_BASE cirno
 
 DIALOG_SCRIPT(youmu_stage1_pre_boss) {
-        LEFT("I suppose falling snow can be pretty, too...");
-        RIGHT_FACE(normal);
-        RIGHT("I'm cooler than you, so get off my lake!");
-        LEFT_FACE(annoyed);
-        LEFT("I can see that you're quite cold, yes.");
-        LEFT_FACE(smug);
-        LEFT("I tend to dislike fighting those weaker than myself, so I'd appreciate it if you'd step aside.");
-        RIGHT_FACE(annoyed);
-        RIGHT("Ha! Then maybe *you* should step aside yourself!");
-        LEFT_FACE(annoyed);
-        LEFT("I suppose it's a good a time as any to practice my snowflake-cutting technique.");
-        RIGHT_FACE(normal);
-        RIGHT("If I turn you into a snowflake, you'll have to cut yourself!");
+	LEFT("I suppose falling snow can be pretty, too...");
+	RIGHT_FACE(normal);
+	RIGHT("I'm cooler than you, so get off my lake!");
+	LEFT_FACE(annoyed);
+	LEFT("I can see that you're quite cold, yes.");
+	LEFT_FACE(smug);
+	LEFT("I tend to dislike fighting those weaker than myself, so I'd appreciate it if you'd step aside.");
+	RIGHT_FACE(annoyed);
+	RIGHT("Ha! Then maybe *you* should step aside yourself!");
+	LEFT_FACE(annoyed);
+	LEFT("I suppose it's a good a time as any to practice my snowflake-cutting technique.");
+	RIGHT_FACE(normal);
+	RIGHT("If I turn you into a snowflake, you'll have to cut yourself!");
 }
 
 DIALOG_SCRIPT(youmu_stage1_post_boss) {
-        LEFT_FACE(annoyed);
-        RIGHT_FACE(defeated);
-        LEFT("The cold is no good for such fine blades... sigh.");
-        RIGHT("Y-you should be careful with those!");
-        LEFT("Yes, that's what I was just saying.");
+	LEFT_FACE(annoyed);
+	RIGHT_FACE(defeated);
+	LEFT("The cold is no good for such fine blades... sigh.");
+	RIGHT("Y-you should be careful with those!");
+	LEFT("Yes, that's what I was just saying.");
 }
 
 #undef RIGHT_BASE
