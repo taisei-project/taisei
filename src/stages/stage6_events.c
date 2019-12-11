@@ -197,7 +197,8 @@ static int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
-static void ScytheTrail(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void ScytheTrail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_mv_rotate(p->angle + (M_PI * 0.5), 0, 0, 1);
@@ -1085,14 +1086,6 @@ static int broglie_particle(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	/*
-	if(t == EVENT_BIRTH) {
-		// hidden and no collision detection until scattertime
-		p->type = FakeProj;
-		p->draw = ProjNoDraw;
-	}
-	*/
-
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -1112,7 +1105,7 @@ static int broglie_particle(Projectile *p, int t) {
 		}
 	} else {
 		if(t == scattertime && p->type != PROJ_DEAD) {
-			p->draw_rule = ProjDraw;
+			projectile_set_layer(p, LAYER_BULLET);
 			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
 
 			double angle_ampl = creal(p->args[3]);
@@ -1215,7 +1208,7 @@ static int broglie_charge(Projectile *p, int t) {
 						fast ? 2.0 : 1.5,
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
-					.draw_rule = ProjNoDraw,
+					.layer = LAYER_NODRAW,
 					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION,
 				);
 			}

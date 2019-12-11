@@ -108,12 +108,12 @@ static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t) {
+static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = p->sprite,
 		.shader_ptr = p->shader,
 		.color = &p->color,
-		.shader_params = &p->shader_params,
+		.shader_params = &(ShaderCustomParams) {{ p->opacity }},
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.scale.both = 0.75 * clamp(t / 5.0, 0.1, 1.0),
 	});
@@ -341,10 +341,11 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.layer = LAYER_PLAYER_FOCUS,
 	);
 
+	Color *clr = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit);
 	PARTICLE(
 		.sprite = exit ? "stain" : "stardust",
 		.pos = pos,
-		.color = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit),
+		.color = clr,
 		.timeout = 20,
 		.angle = rng_angle(),
 		.draw_rule = ScaleFade,

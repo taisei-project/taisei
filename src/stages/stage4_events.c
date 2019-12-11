@@ -1223,7 +1223,8 @@ static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	return 1;
 }
 
-static void kurumi_extra_drainer_draw(Projectile *p, int time) {
+DEPRECATED_DRAW_RULE
+static void kurumi_extra_drainer_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
 	cmplx org = p->pos;
 	cmplx targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);

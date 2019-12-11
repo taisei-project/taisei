@@ -11,224 +11,46 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "youmu.h"
+#include "util/glm.h"
 
 static cmplx youmu_homing_target(cmplx org, cmplx fallback) {
 	return plrutil_homing_target(org, fallback);
 }
 
-static void youmu_homing_draw_common(Projectile *p, float clrfactor, float scale, float alpha) {
-	Color c = p->color;
-	color_mul(&c, RGBA(0.7f + 0.3f * clrfactor, 0.9f + 0.1f * clrfactor, 1, 1));
+static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
+	uint32_t tmp = p->ent.spawn_id;
+	float u = M_PI * 2.0f * (float)(splitmix32(&tmp) / (double)UINT32_MAX);
 
-	if(alpha <= 0) {
-		return;
-	}
+	RNG_ARRAY(R, 5);
 
-	bool special_snowflake_shader_bullshit = p->shader_params.vector[1] != 0;
-
-	if(special_snowflake_shader_bullshit) {
-		// FIXME: maybe move this to logic someh-- nah. Don't even bother with this crap.
-		float old = p->shader_params.vector[1];
-		p->shader_params.vector[1] = alpha;
-		youmu_common_draw_proj(p, &c, scale);
-		p->shader_params.vector[1] = old;
-	} else {
-		color_mul_scalar(&c, alpha);
-		youmu_common_draw_proj(p, &c, scale);
-	}
-}
-
-static void youmu_homing_draw_proj(Projectile *p, int t) {
-	float a = clamp(1.0f - (float)t / p->args[2], 0, 1);
-	youmu_homing_draw_common(p, a, 1, 0.5f);
-}
-
-static void youmu_homing_draw_trail(Projectile *p, int t) {
-	float a = clamp(1.0f - (float)t / p->timeout, 0, 1);
-	youmu_homing_draw_common(p, a, 5 * (1 - a), 0.15f * a);
-}
-
-static void youmu_trap_draw_trail(Projectile *p, int t) {
-	float a = clamp(1.0f - (float)t / p->timeout, 0, 1);
-	youmu_homing_draw_common(p, a, 2 - a, 0.15f * a);
-}
-
-static void youmu_trap_draw_child_proj(Projectile *p, int t) {
-	float to = p->args[2];
-	float a = clamp(1.0 - 3 * ((t - (to - to/3)) / to), 0, 1);
-	a = 1 - pow(1 - a, 2);
-	youmu_homing_draw_common(p, a, 1 + 2 * pow(1 - a, 2), a);
-}
-
-static float youmu_trap_charge(int t) {
-	return pow(clamp(t / 60.0, 0, 1), 1.5);
-}
-
-static Projectile* youmu_homing_trail(Projectile *p, cmplx v, int to) {
-	return PARTICLE(
-		.sprite_ptr = p->sprite,
-		.pos = p->pos,
-		.color = &p->color,
-		.angle = p->angle,
-		.rule = linear,
+	PARTICLE(
+		.sprite = "stardust",
+		.pos = p->pos + vrng_range(R[0], 3, 12) * vrng_dir(R[1]),
+		.color = RGBA(0.0, 0.3 * vrng_real(R[2]), 0.3, 0.0),
+		// .draw_rule = pdraw_timeout_fade(1, 0),
+		.draw_rule = pdraw_timeout_scalefade_exp(0.001*I, vrng_range(R[3], 0.5, 1.0)*(1+I), 2, 0, 2),
+		.move = move_linear(-v),
 		.timeout = to,
-		.draw_rule = youmu_homing_draw_trail,
-		.args = { v },
+		.scale = 0.5,
+		.angle = vrng_angle(R[4]),
+		.flags = PFLAG_NOREFLECT | PFLAG_PLRSPECIALPARTICLE | PFLAG_MANUALANGLE,
+		.layer = LAYER_PARTICLE_MID,
+	);
+
+	PARTICLE(
+		.sprite = "smoothdot",
+		.pos = p->pos,
+		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), &p->color),
+		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*creal(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*cimag(p->pos)/VIEWPORT_H*M_TAU)), 2),
+		.draw_rule = pdraw_timeout_scalefade_exp(0.5+0.5*I, 3+7*I, 1, 0, 2),
+		.timeout = to,
 		.flags = PFLAG_NOREFLECT,
-		.shader_ptr = p->shader,
-		.shader_params = &p->shader_params,
 		.layer = LAYER_PARTICLE_LOW,
 	);
 }
 
-static int youmu_homing(Projectile *p, int t) { // a[0]: velocity, a[1]: aim (r: base, i: gain), a[2]: (r: timeout, i: charge), a[3]: initial target
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if(t == EVENT_DEATH) {
-		PARTICLE(
-			.sprite = "blast",
-			.color = color_lerp(RGBA(0.5, 0.7, 1.0, 0.5), RGBA(1.0, 0.65, 0.8, 0.5), cimag(p->args[2])),
-			.pos = p->pos,
-			.timeout = 20,
-			.draw_rule = ScaleFade,
-			.layer = LAYER_PARTICLE_HIGH,
-			.args = { 0, 0, 0.5 * I },
-			.flags = PFLAG_NOREFLECT,
-			.angle = rng_angle(),
-		);
-		return ACTION_ACK;
-	}
-
-	if(t > creal(p->args[2])) {
-		return ACTION_DESTROY;
-	}
-
-	p->args[3] = youmu_homing_target(p->pos, p->args[3]);
-
-	double v = cabs(p->args[0]);
-	cmplx aimdir = cexp(I*carg(p->args[3] - p->pos));
-
-	p->args[0] += creal(p->args[1]) * aimdir;
-	// p->args[0] = v * cexp(I*carg(p->args[0])) + cimag(p->args[1]) * aimdir;
-	p->args[0] *= v / cabs(p->args[0]);
-
-	p->args[1] = creal(p->args[1]) + cimag(p->args[1]) * (1 + I);
-
-	p->angle = carg(p->args[0]);
-	p->pos += p->args[0];
-
-	Projectile *trail = youmu_homing_trail(p, 0.5 * p->args[0], 12);
-	trail->args[2] = p->args[2];
-
-	p->shader_params.vector[0] = cimag(p->args[2]);
-	trail->shader_params.vector[0] = cimag(p->args[2]);
-
-	return 1;
-}
-
-static Projectile* youmu_trap_trail(Projectile *p, cmplx v, int t, bool additive) {
-	Projectile *trail = youmu_homing_trail(p, v, t);
-	trail->draw_rule = youmu_trap_draw_trail;
-	// trail->args[3] = global.frames - p->birthtime;
-	trail->shader_params.vector[0] = p->shader_params.vector[0];
-	trail->flags |= PFLAG_REQUIREDPARTICLE;
-
-	if(additive) {
-		trail->color.a = 0;
-	} else {
-		trail->flags |= PFLAG_PLRSPECIALPARTICLE;
-	}
-
-	return trail;
-}
-
-static int youmu_trap(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		PARTICLE(
-			.proto = pp_blast,
-			.pos = p->pos,
-			.timeout = 15,
-			.draw_rule = Blast,
-			.flags = PFLAG_REQUIREDPARTICLE,
-			.layer = LAYER_PARTICLE_LOW,
-		);
-		return ACTION_ACK;
-	}
-
-	// FIXME: replace this with timeout?
-	double expiretime = creal(p->args[1]);
-
-	if(t > expiretime) {
-		return ACTION_DESTROY;
-	}
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	float charge = youmu_trap_charge(t);
-	p->shader_params.vector[0] = charge;
-
-	if(!(global.plr.inputflags & INFLAG_FOCUS)) {
-		PARTICLE(
-			.proto = pp_blast,
-			.pos = p->pos,
-			.timeout = 20,
-			.draw_rule = Blast,
-			.flags = PFLAG_REQUIREDPARTICLE,
-			.layer = LAYER_PARTICLE_LOW,
-		);
-
-		PARTICLE(
-			.proto = pp_blast,
-			.pos = p->pos,
-			.timeout = 23,
-			.draw_rule = Blast,
-			.flags = PFLAG_REQUIREDPARTICLE,
-			.layer = LAYER_PARTICLE_LOW,
-		);
-
-		int cnt = round(creal(p->args[2]));
-		int dmg = cimag(p->args[2]);
-		cmplx aim = p->args[3];
-
-		for(int i = 0; i < cnt; ++i) {
-			int dur = 120; // 55 + 20 * nfrand();
-			float a = (i / (float)cnt) * M_PI * 2;
-			cmplx dir = cexp(I*(a));
-
-			PROJECTILE(
-				.proto = pp_youmu,
-				.pos = p->pos,
-				.color = RGBA(1, 1, 1, 0.85),
-				.rule = youmu_homing,
-				.args = { 5 * (1 + charge) * dir, aim, dur + charge*I, creal(p->pos) - VIEWPORT_H*I },
-				.type = PROJ_PLAYER,
-				.damage = dmg,
-				.draw_rule = youmu_trap_draw_child_proj,
-				.shader = "sprite_youmu_charged_shot",
-				.shader_params = &(ShaderCustomParams){{ 0, 1 }},
-			);
-		}
-
-		// TODO: dedicated sound for this?
-		play_sound("enemydeath");
-		play_sound("hit");
-
-		return ACTION_DESTROY;
-	}
-
-	p->angle = global.frames + t;
-	p->pos += p->args[0] * (0.01 + 0.99 * max(0, (10 - t) / 10.0));
-
-	youmu_trap_trail(p, cexp(I*p->angle), 30 * (1 + charge), true);
-	youmu_trap_trail(p, cexp(I*-p->angle), 30, false);
-	return 1;
-}
-
-static void youmu_particle_slice_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	double lifetime = p->timeout;
 	double tt = t/lifetime;
 	double f = 0;
@@ -286,18 +108,15 @@ static int youmu_particle_slice_logic(Projectile *p, int t) {
 
 	if(t%5 == 0) {
 		cmplx phase = cdir(p->angle);
-		RNG_ARRAY(R, 4);
 
 		PARTICLE(
 			.sprite = "petal",
 			.pos = p->pos-400*phase,
 			.rule = youmu_slice_petal,
-			.draw_rule = Petal,
+			.draw_rule = pdraw_petal_random(),
 			.args = {
 				phase,
 				phase*cdir(0.1),
-				vrng_real(R[0]) + vrng_real(R[1])*I,
-				vrng_real(R[2]) + vrng_range(R[3], 0, 360)*I,
 			},
 			.layer = LAYER_PARTICLE_HIGH | 0x2,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
@@ -380,13 +199,243 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 			.proto = pp_hghost,
 			.pos =  plr->pos,
 			.rule = youmu_asymptotic,
-			.color = RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0),
-			.draw_rule = youmu_homing_draw_proj,
+			.color = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5),
 			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
 			.type = PROJ_PLAYER,
 			.damage = 20,
 			.shader = "sprite_default",
 		);
+	}
+}
+
+TASK(youmu_homing_shot, { BoxedPlayer plr; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_hghost,
+		.pos = ENT_UNBOX(ARGS.plr)->pos,
+		.color = RGB(0.75, 0.9, 1),
+		.type = PROJ_PLAYER,
+		.damage = 120,
+		.shader = "sprite_default",
+	));
+
+	real speed = 10;
+	real aim_strength = 0;
+	real aim_strength_accel = 0.02;
+	p->move = move_linear(-I * speed);
+	cmplx target = VIEWPORT_W * 0.5;
+
+	for(int i = 0; i < 60; ++i) {
+		target = youmu_homing_target(p->pos, target);
+		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity*10);
+		p->move.velocity += aim_strength * aimdir;
+		p->move.velocity *= speed / cabs(p->move.velocity);
+		aim_strength += aim_strength_accel;
+
+		youmu_homing_trail(p, 0.5 * p->move.velocity, 12);
+		YIELD;
+	}
+}
+
+TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
+	Projectile *p = ENT_UNBOX(ARGS.p);
+
+	PARTICLE(
+		.sprite_ptr = p->sprite,
+		.shader_ptr = p->shader,
+		.color = &p->color,
+		.timeout = 30,
+		.draw_rule = pdraw_timeout_scalefade(1+I, 0.1+I, 1, 0),
+		.pos = p->pos,
+		.move = p->move,
+		.angle = p->angle,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PLAYER_SHOT,
+	);
+}
+
+static int youmu_orb_homing_spirit_timeout(Projectile *orb) {
+	return orb->timeout - projectile_time(orb);
+}
+
+TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real charge; real damage; real spin; BoxedProjectile orb; }) {
+	int timeout = youmu_orb_homing_spirit_timeout(ENT_UNBOX(ARGS.orb));
+
+	if(timeout <= 0) {
+		return;
+	}
+
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_hghost,
+		.pos = ARGS.pos,
+		.color = color_mul_scalar(RGB(0.75, 0.9, 1), 0.5),
+		.type = PROJ_PLAYER,
+		.timeout = timeout,
+		.damage = ARGS.damage,
+		.shader = "sprite_particle",
+	));
+
+	INVOKE_TASK_AFTER(&p->events.killed, youmu_orb_homing_spirit_expire, ENT_BOX(p));
+
+	real speed = cabs(ARGS.velocity);
+	real speed_target = speed;
+	real aim_strength = -0.1;
+	p->move = move_accelerated(ARGS.velocity, -0.06 * ARGS.velocity);
+	p->move.retention = cdir(ARGS.spin);
+	cmplx target = ARGS.target;
+
+	bool aim_peaked = false;
+	bool orb_died = false;
+	Projectile *orb = NULL;
+
+	for(;;) {
+		if(!orb_died) {
+			orb = ENT_UNBOX(ARGS.orb);
+
+			if(orb == NULL) {
+				orb_died = true;
+				p->timeout = 0;
+				// p->move.velocity = 0;
+				p->move.retention *= 0.9;
+				aim_peaked = false;
+				aim_strength = -0.2;
+				speed *= 1.2;
+			}
+		}
+
+		if(orb) {
+			target = orb->pos;
+		} else {
+			target = youmu_homing_target(p->pos, creal(global.plr.pos) - 128*I);
+		}
+
+		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity);
+		capproach_asymptotic_p(&p->move.retention, 0.8, 0.1, 1e-3);
+		p->move.acceleration *= 0.95;
+		p->move.acceleration += aim_strength * aimdir;
+
+		if(aim_peaked) {
+			if(!orb) {
+				approach_p(&aim_strength, 0.00, 0.001);
+			}
+		} else {
+			approach_p(&aim_strength, 0.1, 0.02);
+			if(aim_strength == 0.1) {
+				aim_peaked = true;
+			}
+		}
+
+		real s = max(speed, cabs(p->move.velocity));
+		p->move.velocity = s * cnormalize(p->move.velocity + aim_strength * s * aimdir);
+		approach_asymptotic_p(&speed, speed_target, 0.05, 1e-5);
+
+		youmu_homing_trail(p, 0.5 * p->move.velocity, 12);
+		YIELD;
+	}
+}
+
+TASK(youmu_orb_update, { BoxedPlayer plr; BoxedProjectile orb; }) {
+	Player *plr = ENT_UNBOX(ARGS.plr);
+	Projectile *orb = TASK_BIND(ARGS.orb);
+
+	for(;;) {
+		float tf = glm_ease_bounce_out(1.0f - projectile_timeout_factor(orb));
+		orb->color.g = tf * tf;
+		orb->color.b = tf;
+		orb->scale = 0.5 + 0.5 * tf;
+		orb->angle += 0.2;
+
+		// TODO events for player input?
+		if(!(plr->inputflags & INFLAG_FOCUS)) {
+			PARTICLE(
+				.sprite = "blast_huge_rays",
+				.pos = orb->pos,
+				.timeout = 20,
+				.color = RGBA(0.1, 0.5, 0.1, 0.0),
+				.draw_rule = pdraw_timeout_scalefade_exp(0.01*(1+I), 1, 1, 0, 2),
+				.flags = PFLAG_REQUIREDPARTICLE,
+				.angle = rng_angle(),
+				.layer = LAYER_PARTICLE_LOW,
+			);
+
+			PARTICLE(
+				.sprite = "blast_huge_halo",
+				.pos = orb->pos,
+				.timeout = 30,
+				.color = RGBA(0.1, 0.1, 0.5, 0.0),
+				.draw_rule = pdraw_timeout_scalefade_exp(1, 0.01*(1+I), 1, 0, 2),
+				.flags = PFLAG_REQUIREDPARTICLE,
+				.angle = rng_angle(),
+				.layer = LAYER_PARTICLE_LOW,
+			);
+
+			PARTICLE(
+				.sprite = "blast_huge_halo",
+				.pos = orb->pos,
+				.timeout = 40,
+				.color = RGBA(0.5, 0.1, 0.1, 0.0),
+				.draw_rule = pdraw_timeout_scalefade_exp(0.8, -0.3*(1+I), 1, 0, 2),
+				.flags = PFLAG_REQUIREDPARTICLE,
+				.angle = rng_angle(),
+				.layer = LAYER_PARTICLE_LOW,
+			);
+
+			// TODO sound effect;
+			kill_projectile(orb);
+			break;
+		}
+
+		YIELD;
+	}
+}
+
+TASK(youmu_orb_death, { BoxedProjectile orb; BoxedTask control_task; }) {
+	cotask_cancel(cotask_unbox(ARGS.control_task));
+	Projectile *orb = ENT_UNBOX(ARGS.orb);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = orb->pos,
+		.timeout = 20,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PARTICLE_LOW,
+	);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = orb->pos,
+		.timeout = 23,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PARTICLE_LOW,
+	);
+}
+
+TASK(youmu_orb_shot, { BoxedPlayer plr; }) {
+	Player *plr = ENT_UNBOX(ARGS.plr);
+	int pwr = plr->power / 100;
+
+	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_youhoming,
+		.pos = plr->pos,
+		.color = RGB(1, 1, 1),
+		.type = PROJ_PLAYER,
+		.damage = 1000,
+		.timeout = 100 + 10 * pwr,
+		.move = move_asymptotic(-30.0*I, -0.7*I, 0.8),
+		.flags = PFLAG_MANUALANGLE,
+	));
+
+	INVOKE_TASK(youmu_orb_update, ARGS.plr, ENT_BOX(orb));
+	INVOKE_TASK_AFTER(&orb->events.killed, youmu_orb_death, ENT_BOX(orb), THIS_TASK);
+
+	real pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
+	cmplx v = 5 * I;
+
+	for(;;) {
+		WAIT(11);
+		INVOKE_TASK(youmu_orb_homing_spirit, orb->pos, v, 0, 0, pdmg,  0.1, ENT_BOX(orb));
+		INVOKE_TASK(youmu_orb_homing_spirit, orb->pos, v, 0, 0, pdmg, -0.1, ENT_BOX(orb));
 	}
 }
 
@@ -398,34 +447,11 @@ static void youmu_haunting_shot(Player *plr) {
 			int pwr = plr->power / 100;
 
 			if(!(global.frames % (45 - 4 * pwr))) {
-				int pcnt = 11 + pwr * 4;
-				int pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
-				cmplx aim = 0.15*I;
-
-				PROJECTILE(
-					.proto = pp_youhoming,
-					.pos = plr->pos,
-					.color = RGB(1, 1, 1),
-					.rule = youmu_trap,
-					.args = { -30.0*I, 120, pcnt+pdmg*I, aim },
-					.type = PROJ_PLAYER,
-					.damage = 1000,
-					.shader = "sprite_youmu_charged_shot",
-					.shader_params = &(ShaderCustomParams){{ 0, 1 }},
-				);
+				INVOKE_TASK(youmu_orb_shot, ENT_BOX(plr));
 			}
 		} else {
 			if(!(global.frames % 6)) {
-				PROJECTILE(
-					.proto = pp_hghost,
-					.pos = plr->pos,
-					.color = RGB(0.75, 0.9, 1),
-					.rule = youmu_homing,
-					.args = { -10.0*I, 0.02*I, 60, VIEWPORT_W*0.5 },
-					.type = PROJ_PLAYER,
-					.damage = 120,
-					.shader = "sprite_default",
-				);
+				INVOKE_TASK(youmu_homing_shot, ENT_BOX(plr));
 			}
 
 			for(int p = 1; p <= 2*PLR_MAX_POWER/100; ++p) {
@@ -446,10 +472,6 @@ static void youmu_haunting_preload(void) {
 	preload_resources(RES_SPRITE, flags,
 		"proj/youmu",
 		"part/youmu_slice",
-	NULL);
-
-	preload_resources(RES_SHADER_PROGRAM, flags,
-		"sprite_youmu_charged_shot",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,

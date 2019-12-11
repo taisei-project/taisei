@@ -361,13 +361,17 @@ typedef struct SpriteStateParams {
 	ShaderProgram *shader;
 } SpriteStateParams;
 
-typedef struct SpriteScaleParams {
-	union {
-		float x;
-		float both;
+typedef union SpriteScaleParams {
+	struct {
+		union {
+			float x;
+			float both;
+		};
+
+		float y;
 	};
 
-	float y;
+	cmplx32 as_cmplx;
 } SpriteScaleParams;
 
 typedef struct SpriteRotationParams {
@@ -388,6 +392,8 @@ typedef struct SpriteParams {
 	ShaderProgram *shader_ptr;
 
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
+
+	// TODO: maybe embed these by value and get rid of SpriteParamsBuffer?
 	const Color *color;
 	const ShaderCustomParams *shader_params;
 
@@ -398,6 +404,11 @@ typedef struct SpriteParams {
 	SpriteRotationParams rotation;
 	SpriteFlipParams flip;
 } SpriteParams;
+
+typedef struct SpriteParamsBuffer {
+	Color color;
+	ShaderCustomParams shader_params;
+} SpriteParamsBuffer;
 
 // Matches vertex buffer layout
 typedef struct SpriteInstanceAttribs {

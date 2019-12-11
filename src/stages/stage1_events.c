@@ -1304,7 +1304,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 		// play_sound("shot_special1");
 
 		ENT_ARRAY_FOREACH(&snowflake_projs, Projectile *p, {
-			spawn_projectile_highlight_effect(p)->shader_params.vector[0] = 0.75;
+			spawn_projectile_highlight_effect(p)->opacity = 0.25;
 			color_lerp(&p->color, RGB(0.5, 0.5, 0.5), 0.5);
 			p->move.velocity = 2 * cdir(p->angle);
 			p->move.acceleration = -cdir(p->angle) * difficulty_value(0.1, 0.15, 0.2, 0.2);
