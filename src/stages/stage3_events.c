@@ -861,7 +861,8 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	return 1;
 }
 
-static void wriggle_slave_part_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void wriggle_slave_part_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float b = 1 - t / (double)p->timeout;
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
@@ -1203,7 +1204,8 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 }
 
-static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
+DEPRECATED_DRAW_RULE
+static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
 	float f = 1-min(time/60.0,1);
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
@@ -1249,7 +1251,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->args[1] *= 2/cabs(p->args[1]);
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
-		p->draw_rule = wriggle_fstorm_proj_draw;
+		p->draw_rule = (ProjDrawRule) { wriggle_fstorm_proj_draw };
 		p->sprite = NULL;
 		projectile_set_prototype(p, pp_rice);
 		spawn_projectile_highlight_effect(p);
