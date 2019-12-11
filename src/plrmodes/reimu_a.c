@@ -77,15 +77,6 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
 
-static void reimu_spirit_homing_draw(Projectile *p, int t) {
-	r_mat_mv_push();
-	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
-	r_mat_mv_scale(REIMU_SPIRIT_HOMING_SCALE, REIMU_SPIRIT_HOMING_SCALE, 1);
-	ProjDrawCore(p, &p->color);
-	r_mat_mv_pop();
-}
-
 static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
 	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
 	c->a = 0;
@@ -173,24 +164,6 @@ static Color *reimu_spirit_orb_color(Color *c, int i) {
 	return c;
 }
 
-static void reimu_spirit_bomb_orb_visual(Projectile *p, int t) {
-	cmplx pos = p->pos;
-
-	for(int i = 0; i < 3; i++) {
-		cmplx offset = (10 + pow(t, 0.5)) * cexp(I * (2 * M_PI / 3*i + sqrt(1 + t * t / 300.0)));
-
-		Color c;
-		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = p->sprite,
-			.shader_ptr = p->shader,
-			.pos = { creal(pos+offset), cimag(pos+offset) },
-			.color = reimu_spirit_orb_color(&c, i),
-
-//			.shader_params = &(ShaderCustomParams) {.vector = {0.3,0,0,0}},
-		});
-	}
-}
-
 static int reimu_spirit_bomb_orb_trail(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
@@ -204,162 +177,219 @@ static int reimu_spirit_bomb_orb_trail(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static void reimu_spirit_bomb_orb_draw_impact(Projectile *p, int t) {
-	float attack = min(1, (7 + 5 * p->args[0]) * t / p->timeout);
-	float decay = t / p->timeout;
+static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
+	real offset = rng_real();
 
-	Color c = p->color;
-	color_lerp(&c, RGBA(0.2, 0.1, 0, 1.0), decay);
-	color_mul_scalar(&c, pow(1 - decay, 2) * 0.75);
+	for(int i = 0; i < count; i++) {
+		PARTICLE(
+			.sprite_ptr = get_sprite("proj/glowball"),
+			.shader = "sprite_bullet",
+			.color = HSLA(3 * (float)i / count + offset, 1, 0.5, 0),
+			.timeout = 60,
+			.pos = pos,
+			.args = { cdir(2 * M_PI / count * (i + offset)) * 15 },
+			.angle = rng_angle(),
+			.rule = linear,
+			.draw_rule = Fade,
+			.layer = LAYER_BOSS,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		);
+	}
+}
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
-		.pos = { creal(p->pos), cimag(p->pos) },
-		.color = &c,
-		.shader_ptr = p->shader,
-		.shader_params = &p->shader_params,
-		.scale.both = (0.75 + 0.25 / (pow(decay, 3.0) + 1.0)) + sqrt(5 * (1 - attack)),
+TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
+	cmplx pos = ENT_UNBOX(ARGS.orb)->pos;
+
+	play_sound("boom");
+	play_sound("spellend");
+
+	global.shake_view = 20;
+	global.shake_view_fade = 0.6;
+
+	double damage = 2000;
+	double range = 300;
+
+	ent_area_damage(pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB}, NULL, NULL);
+	stage_clear_hazards_at(pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+
+	reimu_spirit_bomb_impact_balls(pos, 21);
+
+	int num_impacts = 3;
+	int t = global.frames;
+	BoxedProjectileArray impact_effects = ENT_ARRAY(Projectile, 3);
+	RNG_ARRAY(rand, num_impacts);
+	Color base_colors[3];
+
+	for(int i = 0; i < 3; ++i) {
+		base_colors[i] = *reimu_spirit_orb_color(&(Color){0}, i);
+
+		PARTICLE(
+			.sprite = "blast",
+			.color = color_mul_scalar(COLOR_COPY(&base_colors[i]), 2),
+			.pos = pos + 30 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
+			.timeout = 40,
+			.draw_rule = ScaleFade,
+			.layer = LAYER_BOSS + 2,
+			.args = { 0, 0, 7.5*I },
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		);
+
+		ENT_ARRAY_ADD(&impact_effects, PARTICLE(
+			.sprite = "fantasyseal_impact",
+			.color = reimu_spirit_orb_color(&(Color){0}, i),
+			.pos = pos + 2 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
+			.timeout = 120,
+			.layer = LAYER_BOSS + 1,
+			.angle = -M_PI/2,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		));
+	}
+
+	for(;;) {
+		int live = 0;
+
+		ENT_ARRAY_FOREACH_COUNTER(&impact_effects, int i, Projectile *p, {
+			float t = (global.frames - p->birthtime) / p->timeout;
+			float attack = min(1, vrng_range(rand[i], 7, 12) * t);
+			float decay = t;
+
+			Color c = base_colors[i];
+			color_lerp(&c, RGBA(0.2, 0.1, 0, 1.0), decay);
+			color_mul_scalar(&c, powf(1.0f - decay, 2.0f) * 0.75f);
+			p->color = c;
+			p->scale = (0.75f + 0.25f / (powf(decay, 3.0f) + 1.0f)) + sqrtf(5.0f * (1.0f - attack));
+
+			++live;
+		});
+
+		if(!live) {
+			break;
+		}
+
+		YIELD;
+	}
+}
+
+TASK(reimu_spirit_bomb_orb_visual_kill, { BoxedProjectileArray components; }) {
+	ENT_ARRAY_FOREACH(&ARGS.components, Projectile *p, {
+		kill_projectile(p);
 	});
 }
 
-static int reimu_spirit_bomb_orb(Projectile *p, int t) {
-	int index = creal(p->args[1]) + 0.5;
+TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
+	Projectile *orb = TASK_BIND(ARGS.orb);
+	DECLARE_ENT_ARRAY(Projectile, components, 3);
 
-	if(t == EVENT_BIRTH) {
-		if(index == 0)
-			global.shake_view = 4;
-		p->args[3] = global.plr.pos;
-		return ACTION_ACK;
+	Sprite *glowball = get_sprite("proj/glowball");
+	ShaderProgram *shader = r_shader_get("sprite_bullet");
+
+	for(int i = 0; i < components.capacity; ++i) {
+		ENT_ARRAY_ADD(&components, PARTICLE(
+			.sprite_ptr = glowball,
+			.shader_ptr = shader,
+			.color = reimu_spirit_orb_color(&(Color){0}, i),
+			.opacity = 0.7,
+			.layer = LAYER_PLAYER_FOCUS - 1,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		));
 	}
 
-	if(t == EVENT_DEATH) {
-		if(global.gameover > 0) {
-			return ACTION_ACK;
+	INVOKE_TASK_AFTER(&orb->events.killed, reimu_spirit_bomb_orb_visual_kill, components);
+	CANCEL_TASK_AFTER(&orb->events.killed, THIS_TASK);
+
+	for(;;) {
+		cmplx pos = orb->pos;
+
+		ENT_ARRAY_FOREACH_COUNTER(&components, int i, Projectile *p, {
+			real t = global.frames - p->birthtime;
+			cmplx32 offset = (10 + pow(t, 0.5)) * cdir(2.0 * M_PI / 3*i + sqrt(1 + t * t / 300));
+			p->pos = pos + offset;
+		});
+
+		YIELD;
+	}
+}
+
+TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
+	int index = ARGS.index;
+
+	Player *plr = ENT_UNBOX(ARGS.plr);
+	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+		.pos = plr->pos,
+		.timeout = 200 + 20 * index,
+		.type = PROJ_PLAYER,
+		.damage = 1000,
+		.damage_type = DMG_PLAYER_BOMB,
+		.size = 10 * (1+I),
+		.layer = LAYER_NODRAW,
+		.flags = PFLAG_NOREFLECT | PFLAG_NOCOLLISION | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
+	));
+
+	BoxedProjectile b_orb = ENT_BOX(orb);
+
+	INVOKE_TASK(reimu_spirit_bomb_orb_visual, b_orb);
+	INVOKE_TASK_WHEN(&orb->events.killed, reimu_spirit_bomb_orb_impact, b_orb);
+	CANCEL_TASK_AFTER(&orb->events.killed, THIS_TASK);
+
+	int circletime = 100 + 20 * index;
+	cmplx target_homing = plr->pos;
+	cmplx dir = cdir(ARGS.angle);
+	cmplx vel = 0;
+
+	for(int t = 0;; ++t) {
+		if(!player_is_bomb_active(plr)) {
+			kill_projectile(orb);
+			return;
 		}
 
-		global.shake_view = 20;
-		global.shake_view_fade = 0.6;
+		if(t == circletime) {
+			target_homing = global.plr.pos - 256*I;
+			orb->flags &= ~PFLAG_NOCOLLISION;
+			play_sound("redirect");
+		}
 
-		double damage = 2000;
-		double range = 300;
+		cmplx target_circle = plr->pos + 10 * sqrt(t) * dir * (1 + 0.1 * sin(0.2 * t));
+		dir *= cdir(0.12);
 
-		ent_area_damage(p->pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB}, NULL, NULL);
-		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		double circlestrength = 1.0 / (1 + exp(t - circletime));
 
-		int count = 21;
-		real offset = rng_real();
+		target_homing = plrutil_homing_target(orb->pos, target_homing);
+		cmplx homing = target_homing - orb->pos;
+		cmplx v = 0.3 * (circlestrength * (target_circle - orb->pos) + 0.2 * (1 - circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
+		vel += (v - vel) * 0.1;
+		orb->pos += vel;
 
-		for(int i = 0; i < count; i++) {
+		for(int i = 0; i < 3; i++) {
+			cmplx trail_pos = orb->pos + 10 * cdir(2*M_PI/3*(i+t*0.1));
+			cmplx trail_vel = global.plr.pos - trail_pos;
+			trail_vel *= 3 * circlestrength / cabs(trail_vel);
+
 			PARTICLE(
-				.sprite_ptr = get_sprite("proj/glowball"),
-				.shader = "sprite_bullet",
-				.color = HSLA(3 * (float)i / count + offset, 1, 0.5, 0),
-				.timeout = 60,
-				.pos = p->pos,
-				.args = { cdir(2 * M_PI / count * (i + offset)) * 15 },
+				.sprite_ptr = get_sprite("part/stain"),
+				// .color = reimu_spirit_orb_color(&(Color){0}, i),
+				.color = HSLA(t/orb->timeout, 0.3, 0.3, 0.0),
+				.pos = trail_pos,
 				.angle = rng_angle(),
-				.rule = linear,
-				.draw_rule = Fade,
-				.layer = LAYER_BOSS,
-				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			);
-		}
-
-		for(int i = 0; i < 3; ++i) {
-			PARTICLE(
-				.sprite = "blast",
-				.color = color_mul_scalar(reimu_spirit_orb_color(&(Color){0}, i), 2),
-				.pos = p->pos + 30 * cexp(I*2*M_PI/3*(i+t*0.1)),
-				.timeout = 40,
+				.timeout = 30,
 				.draw_rule = ScaleFade,
-				.layer = LAYER_BOSS + 2,
-				.args = { 0, 0, 7.5*I },
-				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			);
-
-			PARTICLE(
-				.sprite = "fantasyseal_impact",
-				.color = reimu_spirit_orb_color(&(Color){0}, i),
-				.pos = p->pos + 2 * cexp(I*2*M_PI/3*(i+t*0.1)),
-				.timeout = 120,
-				.draw_rule = reimu_spirit_bomb_orb_draw_impact,
-				.layer = LAYER_BOSS + 1,
-				.args = { rng_real() },
-				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+				.rule = reimu_spirit_bomb_orb_trail,
+				.args = { trail_vel, 0, 0.4 },
+				.flags = PFLAG_NOREFLECT,
 			);
 		}
 
-		play_sound("boom");
-		play_sound("spellend");
-
-		return ACTION_ACK;
+		YIELD;
 	}
-
-	if(!player_is_bomb_active(&global.plr) > 0) {
-		return ACTION_DESTROY;
-	}
-
-	double circletime = 100+20*index;
-
-	if(t == circletime) {
-		p->args[3] = global.plr.pos - 256*I;
-		p->flags &= ~PFLAG_NOCOLLISION;
-		play_sound("redirect");
-	}
-
-	cmplx target_circle = global.plr.pos + 10 * sqrt(t) * p->args[0]*(1 + 0.1 * sin(0.2*t));
-	p->args[0] *= cexp(I*0.12);
-
-	double circlestrength = 1.0 / (1 + exp(t-circletime));
-
-	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
-	cmplx target_homing = p->args[3];
-	cmplx homing = target_homing - p->pos;
-	cmplx v = 0.3 * (circlestrength * (target_circle - p->pos) + 0.2 * (1-circlestrength) * (homing + 2*homing/(cabs(homing)+0.01)));
-	p->args[2] += (v - p->args[2]) * 0.1;
-	p->pos += p->args[2];
-
-	for(int i = 0; i < 3 /*&& circlestrength < 1*/; i++) {
-		cmplx trail_pos = p->pos + 10 * cexp(I*2*M_PI/3*(i+t*0.1));
-		cmplx trail_vel = global.plr.pos - trail_pos;
-		trail_vel *= 3 * circlestrength / cabs(trail_vel);
-
-		PARTICLE(
-			.sprite_ptr = get_sprite("part/stain"),
-			// .color = reimu_spirit_orb_color(&(Color){0}, i),
-			.color = HSLA(t/p->timeout, 0.3, 0.3, 0.0),
-			.pos = trail_pos,
-			.angle = rng_angle(),
-			.timeout = 30,
-			.draw_rule = ScaleFade,
-			.rule = reimu_spirit_bomb_orb_trail,
-			.args = { trail_vel, 0, 0.4 },
-			.flags = PFLAG_NOREFLECT,
-		);
-	}
-
-	return ACTION_NONE;
 }
 
 static void reimu_spirit_bomb(Player *p) {
 	int count = 6;
 
 	for(int i = 0; i < count; i++) {
-		PROJECTILE(
-			.sprite = "glowball",
-			.pos = p->pos,
-			.draw_rule = reimu_spirit_bomb_orb_visual,
-			.rule = reimu_spirit_bomb_orb,
-			.args = { cexp(I*2*M_PI/count*i), i, 0, 0},
-			.timeout = 200 + 20 * i,
-			.type = PROJ_PLAYER,
-			.damage = 1000,
-			.size = 10 + 10*I,
-			.layer = LAYER_PLAYER_FOCUS - 1,
-			.flags = PFLAG_NOREFLECT | PFLAG_NOCOLLISION,
-		);
+		INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(p), i, 2*M_PI/count*i);
 	}
 
+	global.shake_view = 4;
 	play_sound("bomb_reimu_a");
 	play_sound("bomb_marisa_b");
 }
@@ -446,13 +476,13 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.pos = e->pos,
 			.color = RGBA_MUL_ALPHA(1, 0.9, 0.95, 0.7),
 			.rule = reimu_spirit_homing,
-			.draw_rule = reimu_spirit_homing_draw,
 			.args = { v , 60, 0, e->pos + v * VIEWPORT_H * VIEWPORT_W /*creal(e->pos)*/ },
 			.type = PROJ_PLAYER,
 			.damage_type = DMG_PLAYER_SHOT,
 			.damage = creal(e->args[2]),
 			// .timeout = 60,
 			.shader = "sprite_default",
+			.scale = REIMU_SPIRIT_HOMING_SCALE,
 			.flags = PFLAG_NOCOLLISIONEFFECT,
 		);
 	}

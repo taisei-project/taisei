@@ -274,6 +274,17 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 	} \
 } while(0)
 
+#define ENT_ARRAY_FOREACH_COUNTER(_array, _cntr_var, _ent_var, _block) do { \
+	for(uint MACROHAX_ADDLINENUM(_ent_array_iterator) = 0; MACROHAX_ADDLINENUM(_ent_array_iterator) < (_array)->size; ++MACROHAX_ADDLINENUM(_ent_array_iterator)) { \
+		void *MACROHAX_ADDLINENUM(_ent_array_temp) = ENT_ARRAY_GET((_array), MACROHAX_ADDLINENUM(_ent_array_iterator)); \
+		if(MACROHAX_ADDLINENUM(_ent_array_temp) != NULL) { \
+			_cntr_var = MACROHAX_ADDLINENUM(_ent_array_iterator); \
+			_ent_var = MACROHAX_ADDLINENUM(_ent_array_temp); \
+			_block \
+		} \
+	} \
+} while(0)
+
 #define ENT_ARRAY_CLEAR(_array) ((_array)->size = 0)
 
 #endif // IGUARD_entity_h

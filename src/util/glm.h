@@ -29,4 +29,10 @@
     PRAGMA(GCC diagnostic pop)
 #endif
 
+typedef float (*glm_ease_t)(float);
+
+INLINE float glm_ease_apply(glm_ease_t ease, float f) {
+	return ease ? ease(f) : f;
+}
+
 #endif // IGUARD_util_glm_h

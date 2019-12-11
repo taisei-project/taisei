@@ -431,7 +431,8 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	});
 }
 
-static void powersurge_trail_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void powersurge_trail_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(t > 0) {
 		_powersurge_trail_draw(p, t - 0.5, 0.25);
 		_powersurge_trail_draw(p, t, 0.25);
@@ -709,7 +710,8 @@ static int powersurge_discharge(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static void powersurge_distortion_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
 		return;
 	}
@@ -774,7 +776,7 @@ static void player_powersurge_expired(Player *plr) {
 	PROJECTILE(
 		.pos = plr->pos,
 		.size = 1+I,
-		.draw_rule = ProjNoDraw,
+		.layer = LAYER_NODRAW,
 		.timeout = 10,
 		.type = PROJ_PLAYER,
 		.rule = powersurge_discharge,
@@ -849,7 +851,8 @@ void player_realdeath(Player *plr) {
 	plr->lives--;
 }
 
-static void player_death_effect_draw_overlay(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
@@ -868,7 +871,8 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	r_state_push();
 }
 
-static void player_death_effect_draw_sprite(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = t / p->timeout;
 
 	float stretch_range = 3, sx, sy;
