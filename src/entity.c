@@ -129,6 +129,10 @@ static int ent_cmp(const void *ptr1, const void *ptr2) {
 	return r;
 }
 
+static inline bool ent_is_drawable(EntityInterface *ent) {
+	return (ent->draw_layer & ~LAYER_LOW_MASK) > LAYER_NODRAW && ent->draw_func;
+}
+
 void ent_draw(EntityPredicate predicate) {
 	call_hooks(&entities.hooks.pre_draw, NULL);
 	qsort(entities.array, entities.num, sizeof(EntityInterface*), ent_cmp);
@@ -138,7 +142,7 @@ void ent_draw(EntityPredicate predicate) {
 			ent->index = _ent - entities.array;
 			assert(entities.array[ent->index] == ent);
 
-			if(ent->draw_func && predicate(ent)) {
+			if(ent_is_drawable(ent) && predicate(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);
@@ -151,7 +155,7 @@ void ent_draw(EntityPredicate predicate) {
 			ent->index = _ent - entities.array;
 			assert(entities.array[ent->index] == ent);
 
-			if(ent->draw_func) {
+			if(ent_is_drawable(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);

@@ -578,7 +578,8 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_state_pop();
 }
 
-static void BossGlow(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void BossGlow(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
@@ -632,7 +633,7 @@ static void spawn_particle_effects(Boss *boss) {
 	if(!(global.frames % 13) && !is_extra) {
 		PARTICLE(
 			.sprite = "smoke",
-			.pos = cexp(I*global.frames),
+			.pos = cdir(global.frames),
 			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
 			.rule = enemy_flare,
 			.timeout = 180,
@@ -1120,7 +1121,7 @@ void process_boss(Boss **pboss) {
 
 	if(dying) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		RNG_ARRAY(rng, 6);
+		RNG_ARRAY(rng, 2);
 
 		Color *clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
 		clr->a = 0;
@@ -1129,13 +1130,11 @@ void process_boss(Boss **pboss) {
 			.sprite = "petal",
 			.pos = boss->pos,
 			.rule = asymptotic,
-			.draw_rule = Petal,
+			.draw_rule = pdraw_petal_random(),
 			.color = clr,
 			.args = {
-				vrng_sign(rng[5]) * (3 + t * 5 * vrng_real(rng[0])) * cdir(M_PI*8*t),
+				vrng_sign(rng[0]) * (3 + t * 5 * vrng_real(rng[1])) * cdir(M_PI*8*t),
 				5+I,
-				vrng_real(rng[2]) + vrng_real(rng[3])*I,
-				vrng_real(rng[4]) + 360.0*I*vrng_real(rng[1])
 			},
 			.layer = LAYER_PARTICLE_PETAL,
 			.flags = PFLAG_REQUIREDPARTICLE,
@@ -1254,7 +1253,8 @@ void boss_reset_motion(Boss *boss) {
 	boss->move.retention = 0.8;
 }
 
-static void boss_death_effect_draw_overlay(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
@@ -1361,7 +1361,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 				.color = RGBA(0.2, 0.3, 0.4, 0.0),
 				.rule = linear,
 				.timeout = 50,
-				.draw_rule = GrowFade,
+				.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 				.args = { vrng_sign(rng[2]) * 10 * vrng_range(rng[3], 1, 4) },
 			);
 		}

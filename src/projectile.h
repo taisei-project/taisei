@@ -34,8 +34,18 @@ typedef LIST_ANCHOR(Projectile) ProjectileList;
 typedef LIST_INTERFACE(Projectile) ProjectileListInterface;
 
 typedef int (*ProjRule)(Projectile *p, int t);
-typedef void (*ProjDrawRule)(Projectile *p, int t);
+// typedef void (*ProjDrawRule)(Projectile *p, int t);
 typedef bool (*ProjPredicate)(Projectile *p);
+
+typedef union {
+	float32 as_float[2];
+	cmplx32 as_cmplx;
+} ProjDrawRuleArgs[RULE_ARGC];
+
+typedef struct ProjDrawRule {
+	void (*func)(Projectile *p, int t, ProjDrawRuleArgs args);
+	ProjDrawRuleArgs args;
+} ProjDrawRule;
 
 typedef enum {
 	PROJ_INVALID,
@@ -90,7 +100,7 @@ struct Projectile {
 		CoEvent killed;
 	} events;
 	Color color;
-	ShaderCustomParams shader_params;
+	attr_deprecated("this won't work") ShaderCustomParams shader_params;
 	BlendMode blend;
 	int birthtime;
 	float damage;
@@ -100,6 +110,9 @@ struct Projectile {
 	int max_viewport_dist;
 	ProjFlags flags;
 	uint clear_flags;
+
+	cmplx32 scale;
+	float32 opacity;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -121,7 +134,7 @@ typedef struct ProjArgs {
 	Sprite *sprite_ptr;
 	const char *shader;
 	ShaderProgram *shader_ptr;
-	const ShaderCustomParams *shader_params;
+	attr_deprecated("this won't work") const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
 	ProjRule rule;
 	cmplx args[RULE_ARGC];
@@ -138,6 +151,9 @@ typedef struct ProjArgs {
 	DamageType damage_type;
 	int max_viewport_dist;
 	drawlayer_t layer;
+
+	cmplx32 scale;
+	float32 opacity;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -204,6 +220,7 @@ Projectile* spawn_projectile_clear_effect(Projectile *proj);
 Projectile* spawn_projectile_highlight_effect(Projectile *proj);
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
+void projectile_set_layer(Projectile *p, drawlayer_t layer);
 
 bool clear_projectile(Projectile *proj, uint flags);
 void kill_projectile(Projectile *proj);
@@ -212,16 +229,26 @@ int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);
 int asymptotic(Projectile *p, int t);
 
-void ProjDrawCore(Projectile *proj, const Color *c);
-void ProjDraw(Projectile *p, int t);
-void ProjNoDraw(Projectile *proj, int t);
+#define DEPRECATED_DRAW_RULE attr_deprecated("")
 
-void Shrink(Projectile *p, int t);
-void DeathShrink(Projectile *p, int t);
-void Fade(Projectile *p, int t);
-void GrowFade(Projectile *p, int t);
-void ScaleFade(Projectile *p, int t);
-void ScaleSquaredFade(Projectile *p, int t);
+void ProjDrawCore(Projectile *proj, const Color *c);
+void ProjDraw(Projectile *proj, int t, ProjDrawRuleArgs args) DEPRECATED_DRAW_RULE;
+
+void Shrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+void DeathShrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+void Fade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+void ScaleSquaredFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
+
+ProjDrawRule pdraw_basic(void);
+ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1, float32 opacity_exp);
+ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1);
+ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1);
+ProjDrawRule pdraw_timeout_fade(float32 opacity0, float32 opacity1);
+ProjDrawRule pdraw_petal(float32 rot_angle, vec3 rot_axis);
+ProjDrawRule pdraw_petal_random(void);
+ProjDrawRule pdraw_blast(void);
 
 void Petal(Projectile *p, int t);
 void petal_explosion(int n, cmplx pos);
@@ -232,5 +259,9 @@ void projectiles_preload(void);
 void projectiles_free(void);
 
 cmplx projectile_graze_size(Projectile *p);
+float32 projectile_timeout_factor(Projectile *p);
+int projectile_time(Projectile *p);
+
+SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbuf);
 
 #endif // IGUARD_projectile_h

@@ -115,27 +115,50 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	return e;
 }
 
+static void enemy_death_effect(cmplx pos) {
+	for(int i = 0; i < 10; i++) {
+		RNG_ARRAY(rng, 2);
+		PARTICLE(
+			.sprite = "flare",
+			.pos = pos,
+			.timeout = 10,
+			.rule = linear,
+			.draw_rule = pdraw_timeout_fade(1, 0),
+			.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
+		);
+	}
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 20,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 20,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 15,
+		.draw_rule = pdraw_timeout_scalefade(0, rng_f32_range(1, 2), 1, 0),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
+}
+
 static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE && e->hp != ENEMY_BOMB) {
 		play_sound("enemydeath");
-
-		for(int i = 0; i < 10; i++) {
-			RNG_ARRAY(rng, 2);
-			PARTICLE(
-				.sprite = "flare",
-				.pos = e->pos,
-				.timeout = 10,
-				.rule = linear,
-				.draw_rule = Fade,
-				.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
-			);
-		}
-
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
+		enemy_death_effect(e->pos);
 
 		for(Projectile *p = global.projs.first; p; p = p->next) {
 			if(p->type == PROJ_ENEMY && !(p->flags & PFLAG_NOCOLLISION) && cabs(p->pos - e->pos) < 64) {
@@ -242,7 +265,8 @@ void BigFairy(Enemy *e, int t, bool render) {
 				.pos = offset,
 				.color = RGBA(0.0, 0.2, 0.3, 0.0),
 				.rule = enemy_flare,
-				.draw_rule = Shrink,
+				.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
+				.angle = M_PI/2,
 				.timeout = 50,
 				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
 			);
