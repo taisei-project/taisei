@@ -220,6 +220,7 @@ if macos_app_bundle
     datadir = join_paths(bundle_dir, 'Contents', 'Resources')
     bindir = join_paths(bundle_dir, 'Contents', 'MacOS')
     config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
+    config.set('TAISEI_DARWIN_SOURCE', true)
 
     # arguments must be strings...
     meson.add_install_script(

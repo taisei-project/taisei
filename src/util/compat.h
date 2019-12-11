@@ -11,11 +11,13 @@
 
 #include "taisei.h"
 
-// Apple doing weird stuff again
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
-#ifndef __APPLE__
 #define _POSIX_C_SOURCE 200809L
 #endif
+
+// Apple doing weird stuff again
+#ifdef TAISEI_DARWIN_SOURCE
+#define _DARWIN_C_SOURCE
 #endif
 
 // Common standard library headers
