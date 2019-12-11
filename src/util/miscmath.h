@@ -17,7 +17,9 @@
 #define M_TAU (M_PI * 2)
 
 double lerp(double v0, double v1, double f) attr_const;
+float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
 uintmax_t umin(uintmax_t, uintmax_t) attr_const;
@@ -41,6 +43,8 @@ void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilo
 cmplx cnormalize(cmplx c) attr_const;
 cmplx cclampabs(cmplx c, double maxabs) attr_const;
 cmplx cdir(double angle) attr_const;
+cmplx cwmul(cmplx c0, cmplx c1) attr_const;
+cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) attr_const;
 double psin(double) attr_const;
 int sign(double) attr_const;
 double swing(double x, double s) attr_const;

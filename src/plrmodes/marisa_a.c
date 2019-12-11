@@ -315,7 +315,8 @@ static int marisa_laser_renderer(Enemy *renderer, int t) {
 #undef FOR_EACH_SLAVE
 #undef FOR_EACH_REAL_SLAVE
 
-static void marisa_laser_flash_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *fire = get_ani("fire");
 	AniSequence *seq = get_ani_sequence(fire, "main");
 	Sprite *spr = animation_get_frame(fire, seq, p->birthtime);

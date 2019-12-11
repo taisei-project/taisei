@@ -53,6 +53,11 @@ typedef struct CoEvent {
 	uint8_t num_subscribers_allocated;
 } CoEvent;
 
+typedef struct CoEventSnapshot {
+	uint32_t unique_id;
+	uint16_t num_signaled;
+} CoEventSnapshot;
+
 struct CoSched {
 	LIST_ANCHOR(CoTask) tasks, pending_tasks;
 };
@@ -99,6 +104,8 @@ void coevent_init(CoEvent *evt);
 void coevent_signal(CoEvent *evt);
 void coevent_signal_once(CoEvent *evt);
 void coevent_cancel(CoEvent *evt);
+CoEventSnapshot coevent_snapshot(const CoEvent *evt);
+CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap);
 
 void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*));
 
