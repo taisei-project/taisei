@@ -34,11 +34,6 @@ enum {
 	COTASK_WAIT_EVENT,
 };
 
-typedef struct CoEventSnapshot {
-	uint32_t unique_id;
-	uint16_t num_signaled;
-} CoEventSnapshot;
-
 struct CoTask {
 	LIST_INTERFACE(CoTask);
 	koishi_coroutine_t ko;
@@ -237,11 +232,18 @@ static void *cotask_wake_and_resume(CoTask *task, void *arg) {
 	return cotask_force_resume(task, arg);
 }
 
-static CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
+CoEventSnapshot coevent_snapshot(const CoEvent *evt) {
+	return (CoEventSnapshot) {
+		.unique_id = evt->unique_id,
+		.num_signaled = evt->num_signaled,
+	};
+}
+
+CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
 	EVT_DEBUG("[%p]", (void*)evt);
-	EVT_DEBUG("evt->unique_id        == %u", evt->unique_id);
+	EVT_DEBUG("evt->unique_id     == %u", evt->unique_id);
 	EVT_DEBUG("snap->unique_id    == %u", snap->unique_id);
-	EVT_DEBUG("evt->num_signaled     == %u", evt->num_signaled);
+	EVT_DEBUG("evt->num_signaled  == %u", evt->num_signaled);
 	EVT_DEBUG("snap->num_signaled == %u", snap->num_signaled);
 
 	if(
@@ -349,13 +351,6 @@ int cotask_wait(int delay) {
 	*/
 
 	return 0;
-}
-
-static inline CoEventSnapshot coevent_snapshot(CoEvent *evt) {
-	return (CoEventSnapshot) {
-		.unique_id = evt->unique_id,
-		.num_signaled = evt->num_signaled,
-	};
 }
 
 static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {

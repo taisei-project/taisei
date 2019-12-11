@@ -15,7 +15,15 @@ double lerp(double v0, double v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
+float lerpf(float v0, float v1, float f) {
+	return f * (v1 - v0) + v0;
+}
+
 cmplx clerp(cmplx v0, cmplx v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) {
 	return f * (v1 - v0) + v0;
 }
 
@@ -115,6 +123,14 @@ cmplx cdir(double angle) {
 	#else
 	return CMPLX(cos(angle), sin(angle));
 	#endif
+}
+
+cmplx cwmul(cmplx c0, cmplx c1) {
+	return CMPLX(creal(c0)*creal(c1), cimag(c0)*cimag(c1));
+}
+
+cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) {
+	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
 }
 
 double psin(double x) {

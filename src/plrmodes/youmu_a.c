@@ -56,7 +56,8 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 	return r;
 }
 
-static void myon_draw_trail(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void myon_draw_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float fadein = clamp(t/10.0, p->args[2], 1);
 	float s = min(1, 1 - t / (double)p->timeout);
 	float a = p->color.r*fadein;
@@ -128,7 +129,8 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	spawn_stardust(pos, f, 60, stardust_v);
 }
 
-static void myon_draw_proj_trail(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float time_progress = t / p->timeout;
 	float s = 2 * time_progress;
 	float a = min(1, s) * (1 - time_progress);
@@ -166,12 +168,13 @@ static int myon_proj(Projectile *p, int t) {
 		.angle = p->angle,
 	);
 
-	p->shader_params.vector[0] = pow(1 - min(1, t / 10.0), 2);
+	p->opacity = 1.0f - powf(1.0f - fminf(1.0f, t / 10.0f), 2.0f);
 
 	return ACTION_NONE;
 }
 
-static void myon_proj_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void myon_proj_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	youmu_common_draw_proj(p, &p->color, 1);
 }
 
@@ -402,13 +405,11 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		.sprite = "petal",
 		.pos = victim_origin,
 		.rule = asymptotic,
-		.draw_rule = Petal,
+		.draw_rule = pdraw_petal_random(),
 		.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
 		.args = {
 			vrng_sign(R[0]) * vrng_range(R[1], 3, 3 + 5 * t) * cdir(M_PI*8*t),
 			5+I,
-			vrng_real(R[2]) + vrng_real(R[3])*I,
-			vrng_real(R[4]) + vrng_range(R[5], 0, 360)*I,
 		},
 		.layer = LAYER_PARTICLE_PETAL,
 	);
