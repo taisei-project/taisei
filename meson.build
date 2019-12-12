@@ -282,6 +282,8 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
+# fixes some build issues on macOS, see PR #183
+config.set('TAISEI_BUILDCONF_DARWIN_SOURCE', (host_machine.system() == 'darwin'))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 install_docs = get_option('docs') and host_machine.system() != 'emscripten'
