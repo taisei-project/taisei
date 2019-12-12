@@ -31,15 +31,6 @@ Optional:
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
 
-Platform-Specific Instructions
-""""""""""""""""""""""""""""""
-
-The build system will try to pull in as many missing dependencies as it can into the build environment. However, this has a few caveats.
-
-On **Linux**, you should use the libraries provided by your distribution's package manager (i.e: apt, yum, etc.). In particular, installing packages like ``libsdl2-dev`` is necessary, especially if your system uses Wayland, since it will pull in the necessary libraries to build for your system. Ensure that you've correctly installed the dependency packages if you run into errors like ``SDL_Error: No available video device``.
-
-On **macOS**, it's the opposite. You can try to use dependencies from ``brew`` but if anything fails you're better off uninstalling those dependencies and using whatever Meson pulls in at compile-time. 
-
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 

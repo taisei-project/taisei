@@ -220,7 +220,6 @@ if macos_app_bundle
     datadir = join_paths(bundle_dir, 'Contents', 'Resources')
     bindir = join_paths(bundle_dir, 'Contents', 'MacOS')
     config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
-    config.set('TAISEI_DARWIN_SOURCE', true)
 
     # arguments must be strings...
     meson.add_install_script(
@@ -283,6 +282,8 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
+# fixes some build issues on macOS, see PR #183
+config.set('TAISEI_BUILDCONF_DARWIN_SOURCE', (host_machine.system() == 'darwin'))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 install_docs = get_option('docs') and host_machine.system() != 'emscripten'
