@@ -31,7 +31,6 @@ Optional:
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
 
-
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
