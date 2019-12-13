@@ -48,7 +48,7 @@ The build system will try to pull in as many missing dependencies as it can into
 
 On **Linux**, you should use the libraries provided by your distribution's package manager (i.e: apt, yum, etc.). In particular, installing packages like ``libsdl2-dev`` is necessary, especially if your system uses Wayland, since it will pull in the necessary libraries to build for your system. Ensure that you've correctly installed the dependency packages if you run into errors like ``SDL_Error: No available video device``.
 
-On **macOS**, it's a bit different. Using ``brew`` (from Mac Homebrew), you can safely install: ``libzip``, ``libpng``, ``webp``, ``sdl2``, ``freetype``. What you should **avoid** is installing ``sdl2_mixer`` and ``opusfile``, as they versions they ship don't currently seem compatible with Taisei. The build system will pull those in for you so you can safely ignore them.
+On **macOS**, it's a bit different. Using ``brew`` (from Mac Homebrew), you can safely install: ``libzip``, ``libpng``, ``webp``, ``sdl2``, ``freetype``. What you should **avoid** is installing ``sdl2_mixer`` and ``opusfile``, as the versions they ship don't currently seem compatible with Taisei. The build system will pull those in for you so you can safely ignore them.
 
 Obtaining the source code
 ^^^^^^^^^^^^^^^^^^^^^^^^^
