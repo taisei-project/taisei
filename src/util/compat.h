@@ -11,17 +11,6 @@
 
 #include "taisei.h"
 
-#ifdef TAISEI_BUILDCONF_HAVE_POSIX
-#define _POSIX_C_SOURCE 200809L
-#endif
-
-// When compiling for Apple devices, the _POSIX_C_SOURCE option above messes with what header functions
-// are available to the compiler, and it'll complain that things like timespec_get, etc don't exist
-// even if Meson can detect them initially. Defining this fixes it.
-#ifdef TAISEI_BUILDCONF_DARWIN_SOURCE
-#define _DARWIN_C_SOURCE
-#endif
-
 // Common standard library headers
 #include <complex.h>
 #include <ctype.h>
