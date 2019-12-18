@@ -171,7 +171,7 @@ float vrng_f32_angle(rng_val_t v) {
 	return vrng_f32(v) * (float)(M_PI * 2.0f);
 }
 
-complex vrng_dir(rng_val_t v) {
+cmplx vrng_dir(rng_val_t v) {
 	return cdir(vrng_f64_angle(v));
 }
 

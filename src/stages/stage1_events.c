@@ -664,7 +664,7 @@ TASK(burst_fairy, { cmplx pos; cmplx dir; }) {
 	int n = 1.5 * global.diff - 1;
 
 	for(int i = -n; i <= n; i++) {
-		complex aim = cdir(carg(global.plr.pos - e->pos) + 0.2 * i);
+		cmplx aim = cdir(carg(global.plr.pos - e->pos) + 0.2 * i);
 
 		PROJECTILE(
 			.proto = pp_crystal,
@@ -695,7 +695,7 @@ TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; }) {
 		play_loop("shot1_loop");
 		e->move.velocity *= 0.8;
 
-		complex aim = cdir(angle_step * i);
+		cmplx aim = cdir(angle_step * i);
 
 		PROJECTILE(
 			.proto = pp_rice,
@@ -718,7 +718,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 			double aim_angle = carg(global.plr.pos - e->pos);
 			aim_angle += 0.05 * global.diff * rng_real();
 
-			complex aim = cdir(aim_angle);
+			cmplx aim = cdir(aim_angle);
 			aim *= rng_range(1, 3);
 
 			PROJECTILE(
@@ -735,7 +735,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 	}
 }
 
-TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int exit_time; }) {
+TASK(circletoss_fairy, { cmplx pos; cmplx velocity; cmplx exit_accel; int exit_time; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
 
 	e->move = move_linear(ARGS.velocity);
@@ -763,10 +763,10 @@ TASK(circletoss_fairy, { complex pos; complex velocity; complex exit_accel; int 
 	STALL;
 }
 
-TASK(sinepass_swirl_move, { BoxedEnemy e; complex v; complex sv; }) {
+TASK(sinepass_swirl_move, { BoxedEnemy e; cmplx v; cmplx sv; }) {
 	Enemy *e = TASK_BIND(ARGS.e);
-	complex sv = ARGS.sv;
-	complex v = ARGS.v;
+	cmplx sv = ARGS.sv;
+	cmplx v = ARGS.v;
 
 	for(;;) {
 		sv -= cimag(e->pos - e->pos0) * 0.03 * I;
@@ -775,7 +775,7 @@ TASK(sinepass_swirl_move, { BoxedEnemy e; complex v; complex sv; }) {
 	}
 }
 
-TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
+TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -791,7 +791,7 @@ TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
 	for(;;) {
 		play_sound("shot1");
 
-		complex aim = cnormalize(global.plr.pos - e->pos);
+		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		aim *= difficulty_value(2, 2, 2.5, 3);
 
 		PROJECTILE(
@@ -805,7 +805,7 @@ TASK(sinepass_swirl, { complex pos; complex vel; complex svel; }) {
 	}
 }
 
-TASK(circle_fairy, { complex pos; complex target_pos; }) {
+TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1400, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -827,7 +827,7 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 		double a_ofs = rng_angle();
 
 		for(int i = 0; i < shot_count; ++i) {
-			complex aim;
+			cmplx aim;
 
 			aim = circle_dir_ofs((round & 1) ? i : shot_count - i, shot_count, a_ofs);
 			aim *= difficulty_value(1.7, 2.0, 2.5, 2.5);
@@ -854,7 +854,7 @@ TASK(circle_fairy, { complex pos; complex target_pos; }) {
 	STALL;
 }
 
-TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
+TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -868,7 +868,7 @@ TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
 	WAIT(20);
 
 	while(true) {
-		complex aim = cnormalize(global.plr.pos - e->pos);
+		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		aim *= 1 + 0.3 * global.diff + rng_real();
 
 		play_sound("shot1");
@@ -883,7 +883,7 @@ TASK(drop_swirl, { complex pos; complex vel; complex accel; }) {
 	}
 }
 
-TASK(multiburst_fairy, { complex pos; complex target_pos; complex exit_accel; }) {
+TASK(multiburst_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -905,7 +905,7 @@ TASK(multiburst_fairy, { complex pos; complex target_pos; complex exit_accel; })
 		int n = global.diff - 1;
 
 		for(int j = -n; j <= n; j++) {
-			complex aim = cdir(carg(global.plr.pos - e->pos) + j / 5.0);
+			cmplx aim = cdir(carg(global.plr.pos - e->pos) + j / 5.0);
 			aim *= 2.5;
 
 			PROJECTILE(
@@ -930,7 +930,7 @@ TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double bo
 	play_sound("shot_special1");
 
 	for(int i = 0; i < ARGS.cnt; ++i) {
-		complex vel = ARGS.speed * circle_dir(i, ARGS.cnt);
+		cmplx vel = ARGS.speed * circle_dir(i, ARGS.cnt);
 
 		PROJECTILE(
 			.proto = pp_rice,
@@ -941,7 +941,7 @@ TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double bo
 	}
 }
 
-TASK(instantcircle_fairy, { complex pos; complex target_pos; complex exit_accel; }) {
+TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1200, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -1094,7 +1094,7 @@ TASK(burst_fairies_2, NO_ARGS) {
 
 TASK(burst_fairies_3, NO_ARGS) {
 	for(int i = 10; i--;) {
-		complex pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
+		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
 		INVOKE_TASK(burst_fairy, pos, rng_sign());
 		stage_wait(60);
 	}
@@ -1104,7 +1104,7 @@ TASK(burst_fairies_3, NO_ARGS) {
 TASK(sinepass_swirls, { int duration; double level; double dir; }) {
 	int duration = ARGS.duration;
 	double dir = ARGS.dir;
-	complex pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
+	cmplx pos = CMPLX(ARGS.dir < 0 ? VIEWPORT_W : 0, ARGS.level);
 	int delay = difficulty_value(30, 20, 15, 10);
 
 	for(int t = 0; t < duration; t += delay) {
@@ -1127,7 +1127,7 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 	}
 }
 
-TASK(drop_swirls, { int cnt; complex pos; complex vel; complex accel; }) {
+TASK(drop_swirls, { int cnt; cmplx pos; cmplx vel; cmplx accel; }) {
 	for(int i = 0; i < ARGS.cnt; ++i) {
 		INVOKE_TASK(drop_swirl, ARGS.pos, ARGS.vel, ARGS.accel);
 		stage_wait(20);
@@ -1162,9 +1162,9 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 	for(int row = 0; row < 3; ++row) {
 		for(int col = 0; col < 5; ++col) {
 			log_debug("WTF %i %i", row, col);
-			complex pos = rng_range(0, VIEWPORT_W);
-			complex target_pos = 64 + 64 * col + I * (64 * row + 100);
-			complex exit_accel = 0.02 * I + 0.03;
+			cmplx pos = rng_range(0, VIEWPORT_W);
+			cmplx target_pos = 64 + 64 * col + I * (64 * row + 100);
+			cmplx exit_accel = 0.02 * I + 0.03;
 			INVOKE_TASK(multiburst_fairy, pos, target_pos, exit_accel);
 
 			WAIT(10);
@@ -1209,7 +1209,7 @@ static int snowflake_bullet_limit(int size) {
 	return SNOWFLAKE_ARMS * 4 * size;
 }
 
-TASK(make_snowflake, { complex pos; MoveParams move; int size; double rot_angle; BoxedProjectileArray *array; }) {
+TASK(make_snowflake, { cmplx pos; MoveParams move; int size; double rot_angle; BoxedProjectileArray *array; }) {
 	const double spacing = 12;
 	const int split = 3;
 	int t = 0;
@@ -1219,8 +1219,8 @@ TASK(make_snowflake, { complex pos; MoveParams move; int size; double rot_angle;
 
 		for(int i = 0; i < SNOWFLAKE_ARMS; i++) {
 			double ang = M_TAU / SNOWFLAKE_ARMS * i + ARGS.rot_angle;
-			complex phase = cdir(ang);
-			complex pos0 = ARGS.pos + spacing * j * phase;
+			cmplx phase = cdir(ang);
+			cmplx pos0 = ARGS.pos + spacing * j * phase;
 
 			Projectile *p;
 
@@ -1243,11 +1243,11 @@ TASK(make_snowflake, { complex pos; MoveParams move; int size; double rot_angle;
 			++t;
 
 			if(j > split) {
-				complex pos1 = ARGS.pos + spacing * split * phase;
+				cmplx pos1 = ARGS.pos + spacing * split * phase;
 
 				for(int side = -1; side <= 1; side += 2) {
-					complex phase2 = cdir(M_PI / 4 * side) * phase;
-					complex pos2 = pos1 + (spacing * (j - split)) * phase2;
+					cmplx phase2 = cdir(M_PI / 4 * side) * phase;
+					cmplx pos2 = pos1 + (spacing * (j - split)) * phase2;
 
 					p = PROJECTILE(
 						.proto = pp_crystal,
@@ -1395,7 +1395,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 				r2 = rng_f32();
 			}
 
-			complex aim = cnormalize(global.plr.pos - boss->pos);
+			cmplx aim = cnormalize(global.plr.pos - boss->pos);
 			float speed = 2+0.2*global.diff;
 
 			for(int sign = -1; sign <= 1; sign += 2) {

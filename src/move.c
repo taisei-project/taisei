@@ -11,14 +11,14 @@
 #include "move.h"
 #include "util/miscmath.h"
 
-complex move_update(complex *restrict pos, MoveParams *restrict p) {
-	complex v = p->velocity;
+cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
+	cmplx v = p->velocity;
 
 	*pos += v;
 	p->velocity = p->acceleration + p->retention * v;
 
 	if(p->attraction) {
-		complex av = p->attraction_point - *pos;
+		cmplx av = p->attraction_point - *pos;
 
 		if(p->attraction_max_speed) {
 			av = cclampabs(av, p->attraction_max_speed);
@@ -30,8 +30,8 @@ complex move_update(complex *restrict pos, MoveParams *restrict p) {
 	return v;
 }
 
-complex move_update_multiple(uint times, complex *restrict pos, MoveParams *restrict p) {
-	complex v = p->velocity;
+cmplx move_update_multiple(uint times, cmplx *restrict pos, MoveParams *restrict p) {
+	cmplx v = p->velocity;
 
 	while(times--) {
 		move_update(pos, p);
