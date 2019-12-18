@@ -151,7 +151,7 @@ static inline int proj_call_rule(Projectile *p, int t) {
 		}
 
 		if(!(p->flags & PFLAG_MANUALANGLE)) {
-			complex delta_pos = p->pos - p->prevpos;
+			cmplx delta_pos = p->pos - p->prevpos;
 
 			if(delta_pos) {
 				p->angle = carg(delta_pos);
