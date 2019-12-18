@@ -12,7 +12,7 @@
 #include "random.h"
 
 DEFINE_EXTERN_TASK(common_drop_items) {
-	complex p = *ARGS.pos;
+	cmplx p = *ARGS.pos;
 
 	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
 		for(int j = ARGS.items.as_array[i]; j; --j) {
@@ -22,7 +22,7 @@ DEFINE_EXTERN_TASK(common_drop_items) {
 	}
 }
 
-void common_move_loop(complex *restrict pos, MoveParams *restrict mp) {
+void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp) {
 	for(;;) {
 		move_update(pos, mp);
 		YIELD;
@@ -53,8 +53,8 @@ DEFINE_EXTERN_TASK(common_call_func) {
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
 	double angle;
-	complex dest;
-	complex dir;
+	cmplx dest;
+	cmplx dir;
 
 	// assert(point_in_rect(origin, bounds));
 

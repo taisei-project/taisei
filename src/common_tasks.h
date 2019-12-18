@@ -19,17 +19,17 @@
 
 DECLARE_EXTERN_TASK(
 	common_drop_items,
-	{ complex *pos; ItemCounts items; }
+	{ cmplx *pos; ItemCounts items; }
 );
 
 DECLARE_EXTERN_TASK(
 	common_move,
-	{ complex *pos; MoveParams move_params; BoxedEntity ent; }
+	{ cmplx *pos; MoveParams move_params; BoxedEntity ent; }
 );
 
 DECLARE_EXTERN_TASK(
 	common_move_ext,
-	{ complex *pos; MoveParams *move_params; BoxedEntity ent; }
+	{ cmplx *pos; MoveParams *move_params; BoxedEntity ent; }
 );
 
 DECLARE_EXTERN_TASK(
@@ -46,6 +46,6 @@ INLINE Rect viewport_bounds(double margin) {
 	};
 }
 
-complex common_wander(complex origin, double dist, Rect bounds);
+cmplx common_wander(cmplx origin, double dist, Rect bounds);
 
 #endif // IGUARD_common_tasks_h
