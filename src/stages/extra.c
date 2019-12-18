@@ -14,20 +14,20 @@
 #include "common_tasks.h"
 
 TASK(glider_bullet, {
-	complex pos; double dir; double spacing; int interval;
+	cmplx pos; double dir; double spacing; int interval;
 }) {
 	const int nproj = 5;
 	const int nstep = 4;
 	BoxedProjectile projs[nproj];
 
-	const complex positions[][5] = {
+	const cmplx positions[][5] = {
 		{1+I, -1, 1, -I, 1-I},
 		{2, I, 1, -I, 1-I},
 		{2, 1+I, 2-I, -I, 1-I},
 		{2, 0, 2-I, 1-I, 1-2*I},
 	};
 
-	complex trans = cdir(ARGS.dir+1*M_PI/4)*ARGS.spacing;
+	cmplx trans = cdir(ARGS.dir+1*M_PI/4)*ARGS.spacing;
 
 	for(int i = 0; i < nproj; i++) {
 		projs[i] = ENT_BOX(PROJECTILE(
@@ -36,7 +36,7 @@ TASK(glider_bullet, {
 			.color = RGBA(0,0,1,1),
 		));
 	}
-			
+
 
 	for(int step = 0;; step++) {
 		int cur_step = step%nstep;
@@ -60,7 +60,7 @@ TASK(glider_bullet, {
 }
 
 TASK(glider_fairy, {
-	double hp; complex pos; complex dir;
+	double hp; cmplx pos; cmplx dir;
 }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(VIEWPORT_W/2-10*I, ARGS.hp, BigFairy, NULL, 0));
 

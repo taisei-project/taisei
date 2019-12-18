@@ -124,7 +124,7 @@ float vrng_f32_angle(rng_val_t v) attr_pure;
 #define vrng_angle(v) vrng_f64_angle(v)
 #define rng_angle() vrng_angle(rng_next())
 
-complex vrng_dir(rng_val_t v) attr_pure;
+cmplx vrng_dir(rng_val_t v) attr_pure;
 #define rng_dir() vrng_dir(rng_next())
 
 bool vrng_f64_chance(rng_val_t v, double chance) attr_pure;

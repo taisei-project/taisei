@@ -252,11 +252,11 @@ double circle_angle(double index, double max_elements) {
 	return (index * (M_PI * 2.0)) / max_elements;
 }
 
-complex circle_dir(double index, double max_elements) {
+cmplx circle_dir(double index, double max_elements) {
 	return cdir(circle_angle(index, max_elements));
 }
 
-complex circle_dir_ofs(double index, double max_elements, double ofs) {
+cmplx circle_dir_ofs(double index, double max_elements, double ofs) {
 	return cdir(circle_angle(index, max_elements) + ofs);
 }
 

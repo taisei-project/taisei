@@ -308,7 +308,7 @@ void *cotask_resume(CoTask *task, void *arg) {
 }
 
 void *cotask_yield(void *arg) {
-	CoTask *task = cotask_active();
+	attr_unused CoTask *task = cotask_active();
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Yielding from task %s", ev, task->debug_label);
 	arg = koishi_yield(arg);
@@ -387,7 +387,6 @@ CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	*/
 
 	CoTask *task = cotask_active();
-	CoEventSnapshot snapshot = coevent_snapshot(evt);
 	coevent_add_subscriber(evt, task);
 
 	cotask_wait_init(task, COTASK_WAIT_EVENT);
