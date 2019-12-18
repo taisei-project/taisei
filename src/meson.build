@@ -190,7 +190,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
-        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'EXPORT_NAME=Taisei',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
@@ -229,14 +229,6 @@ if host_machine.system() == 'emscripten'
         ]
     endif
 
-    if get_option('b_lto')
-        em_link_args += [
-            # See https://github.com/emscripten-core/emscripten/issues/8574
-            '-s', 'WASM_OBJECT_FILES=0',
-            '--llvm-lto', '1',
-        ]
-    endif
-
     foreach suffix : em_link_output_suffixes
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
@@ -257,12 +249,17 @@ if host_machine.system() == 'emscripten'
         command : [
             cc.cmd_array(),
             taisei.full_path(),
+            emscripten_global_link_args,
             em_bundle_link_args,
             '--pre-js', em_preamble,
             '--shell-file', em_shell,
             get_option('c_args'),
             get_option('c_link_args'),
             em_link_args,
+
+            # Emscripten bug https://github.com/emscripten-core/emscripten/issues/10066
+            '-s', 'WASM_OBJECT_FILES=1',
+
             '-o', '@OUTPUT0@',
         ],
         build_by_default : true,
@@ -271,6 +268,8 @@ if host_machine.system() == 'emscripten'
         install : true,
         install_dir : bindir,
     )
+
+    bindist_deps += taisei_html
 elif host_machine.system() == 'nx'
     taisei_elf_name = '@0@.elf'.format(taisei_basename)
     taisei_elf = executable(taisei_elf_name, taisei_src, version_deps,

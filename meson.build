@@ -35,6 +35,25 @@ cc = meson.get_compiler('c')
 python3 = import('python3').find_python()
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
+if cc.get_id() == 'emscripten'
+    # emscripten LTO is really tricky
+    # this logic should really be in Meson
+
+    if get_option('b_lto')
+        emscripten_global_link_args = [
+            '-s', 'WASM_OBJECT_FILES=0',
+            '--llvm-lto', '1',
+            '-flto',
+        ]
+    else
+        emscripten_global_link_args = []
+    endif
+    add_global_arguments(emscripten_global_link_args, language : 'c', native : false)
+    add_global_arguments(emscripten_global_link_args, language : 'cpp', native : false)
+    add_global_link_arguments(emscripten_global_link_args, language : 'c', native : false)
+    add_global_link_arguments(emscripten_global_link_args, language : 'cpp', native : false)
+endif
+
 subdir('scripts')
 
 config = configuration_data()
@@ -204,7 +223,16 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
-config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', cc.alignment('max_align_t', prefix : '#include <stddef.h>\n'))
+
+if host_machine.system() == 'emscripten'
+    # Emscripten bug: https://github.com/emscripten-core/emscripten/issues/10072
+    config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', 8)
+    config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', false)
+else
+    malloc_alignment = cc.alignment('max_align_t', prefix : '#include <stddef.h>\n')
+    config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', malloc_alignment)
+    config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', malloc_alignment > 0)
+endif
 
 prefer_relpath_systems = [
     'windows',
