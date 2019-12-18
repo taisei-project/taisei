@@ -183,12 +183,16 @@ typedef cmplx64 cmplx;
 #define M_PI_4 0.78539816339744830962
 #define M_E 2.7182818284590452354
 
-// FIXME this is likely incorrect!
-#if TAISEI_BUILDCONF_MALLOC_ALIGNMENT < 0
-	#warning max_align_t not supported
-	#undef TAISEI_BUILDCONF_MALLOC_ALIGNMENT
-	#define TAISEI_BUILDCONF_MALLOC_ALIGNMENT 8
-	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) float64x a; } max_align_t;
+#ifndef TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T
+	#if TAISEI_BUILDCONF_MALLOC_ALIGNMENT <= 0
+		#warning malloc alignment is unknown, assuming 8
+		#undef TAISEI_BUILDCONF_MALLOC_ALIGNMENT
+		#define TAISEI_BUILDCONF_MALLOC_ALIGNMENT 8
+	#endif
+
+	#undef max_align_t
+	#define max_align_t _fake_max_align_t
+	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) char a; } max_align_t;
 #endif
 
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute

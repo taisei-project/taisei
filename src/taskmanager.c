@@ -275,13 +275,13 @@ uint taskmgr_remaining(TaskManager *mgr) {
 	return SDL_AtomicGet(&mgr->numtasks);
 }
 
-static void taskmgr_finalize_and_wait(TaskManager *mgr, bool abort) {
+static void taskmgr_finalize_and_wait(TaskManager *mgr, bool do_abort) {
 	log_debug(
 		"%08lx [%p] waiting for %u tasks (abort = %i)",
 		SDL_ThreadID(),
 		(void*)mgr,
 		taskmgr_remaining(mgr),
-		abort
+		do_abort
 	);
 
 	assert(mgr->running);
@@ -289,7 +289,7 @@ static void taskmgr_finalize_and_wait(TaskManager *mgr, bool abort) {
 
 	SDL_LockMutex(mgr->mutex);
 	mgr->running = false;
-	mgr->aborted = abort;
+	mgr->aborted = do_abort;
 	SDL_CondBroadcast(mgr->cond);
 	SDL_UnlockMutex(mgr->mutex);
 
