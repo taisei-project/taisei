@@ -21,12 +21,12 @@ TASK(laserize_proj, { BoxedProjectile p; int t; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 	WAIT(ARGS.t);
 
-	complex pos = p->pos;
+	cmplx pos = p->pos;
 	double a = p->angle;
 	Color clr = p->color;
 	kill_projectile(p);
 
-	complex aim = 12 * cexp(I * a);
+	cmplx aim = 12 * cexp(I * a);
 	create_laserline(pos, aim, 60, 80, &clr);
 
 	p = PROJECTILE(
@@ -50,7 +50,7 @@ TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_in
 
 	// Event signaled. Since this is an enemy death event, e will be invalid
 	// in the next frame. Let's save its position while we can.
-	complex pos = e->pos;
+	cmplx pos = e->pos;
 
 	while(ARGS.rounds--) {
 		WAIT(ARGS.delay);
@@ -58,7 +58,7 @@ TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_in
 		real angle_ofs = rng_angle();
 
 		for(int i = 0; i < ARGS.cnt; ++i) {
-			complex aim = cexp(I * (angle_ofs + M_PI * 2.0 * i / (double)ARGS.cnt));
+			cmplx aim = cexp(I * (angle_ofs + M_PI * 2.0 * i / (double)ARGS.cnt));
 
 			PROJECTILE(
 				.pos = pos,
@@ -75,7 +75,7 @@ TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_in
 }
 
 TASK_WITH_FINALIZER(test_enemy, {
-	double hp; complex pos; complex dir;
+	double hp; cmplx pos; cmplx dir;
 	struct { int x; } for_finalizer;
 }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0));
@@ -103,7 +103,7 @@ TASK_WITH_FINALIZER(test_enemy, {
 		WAIT(10);
 
 		// pew pew!!!
-		complex aim = 3 * cnormalize(global.plr.pos - e->pos);
+		cmplx aim = 3 * cnormalize(global.plr.pos - e->pos);
 		int pcount = 120;
 
 		for(int i = 0; i < pcount; ++i) {
