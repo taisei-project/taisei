@@ -12,6 +12,9 @@
 #include "stage5.h"
 #include "global.h"
 
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();

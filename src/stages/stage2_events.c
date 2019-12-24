@@ -13,6 +13,9 @@
 #include "stage.h"
 #include "enemy.h"
 
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 static Dialog *stage2_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	Dialog *d = dialog_create();
