@@ -16,6 +16,9 @@
 #include "global.h"
 #include "resource/model.h"
 
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
  *  To add, remove, or reorder spells, see this stage's header file.
