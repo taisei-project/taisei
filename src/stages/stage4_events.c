@@ -15,6 +15,9 @@
 #include "enemy.h"
 #include "laser.h"
 
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);
 void kurumi_redspike(Boss*, int);
