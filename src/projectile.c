@@ -507,15 +507,10 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 }
 
 static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) {
-	Projectile *effect = spawn_projectile_clear_effect(proj);
-	Item *clear_item = NULL;
+	spawn_projectile_clear_effect(proj);
 
 	if(!(proj->flags & PFLAG_NOCLEARBONUS)) {
-		clear_item = create_clear_item(proj->pos, proj->clear_flags);
-	}
-
-	if(clear_item != NULL && effect != NULL) {
-		effect->args[0] = add_ref(clear_item);
+		create_clear_item(proj->pos, proj->clear_flags);
 	}
 
 	delete_projectile(projlist, proj);
@@ -550,7 +545,6 @@ void kill_projectile(Projectile* proj) {
 void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
 
-	char killed = 0;
 	int action;
 	bool stage_cleared = stage_is_cleared();
 
@@ -574,9 +568,8 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			proj->graze_counter_reset_timer = global.frames;
 		}
 
-		if(proj->type == PROJ_DEAD && killed < 10 && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
+		if(proj->type == PROJ_DEAD && !(proj->clear_flags & CLEAR_HAZARDS_NOW)) {
 			proj->clear_flags |= CLEAR_HAZARDS_NOW;
-			killed++;
 		}
 
 		if(action == ACTION_DESTROY) {
@@ -826,49 +819,29 @@ static Projectile* spawn_bullet_spawning_effect(Projectile *p) {
 }
 
 static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
+	float o_tf = projectile_timeout_factor(p);
+	float tf = glm_ease_circ_out(o_tf);
 
-	float timefactor = t / p->timeout;
-	float plrfactor = clamp(1 - (cabs(p->pos - global.plr.pos) - 64) / 128, 0, 1);
-	plrfactor *= clamp(timefactor * 10, 0, 1);
-	float opacity = timefactor * plrfactor;
+	Animation *ani = args[0].as_ptr;
+	AniSequence *seq = args[1].as_ptr;
+	float angle = args[2].as_float[0];
+	float scale = args[2].as_float[1];
 
-	Sprite spr = *p->sprite;
-	Sprite *ispr = get_sprite("item/bullet_point");
-	spr.w = lerpf(spr.w, ispr->w, opacity);
-	spr.h = lerpf(spr.h, ispr->h, opacity);
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = &spr,
-		.color = &p->color,
-		.shader_params = &(ShaderCustomParams){{ opacity }},
-	});
+	float o = spbuf.shader_params.vector[0];
+	spbuf.shader_params.vector[0] = o * fmaxf(0, 1.5 * (1 - tf) - 0.5);
 
-	r_mat_mv_pop();
-}
+	r_draw_sprite(&sp);
 
-static int projectile_clear_effect_logic(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[0]);
-		return ACTION_ACK;
-	}
+	sp.sprite_ptr = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
+	sp.scale.as_cmplx *= scale * (0.0 + 1.5*tf);
+	spbuf.color.a *= (1 - tf);
+	spbuf.shader_params.vector[0] = o;
+	sp.rotation.angle += t * 0.5*0 + angle;
 
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if((int)p->args[0] < 0) {
-		return ACTION_NONE;
-	}
-
-	Item *i = REF(p->args[0]);
-
-	if(i != NULL) {
-		p->pos = i->pos;
-	}
-
-	return ACTION_NONE;
+	r_draw_sprite(&sp);
 }
 
 Projectile *spawn_projectile_clear_effect(Projectile *proj) {
@@ -876,16 +849,16 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 		return NULL;
 	}
 
-	// spawn_projectile_highlight_effect_internal(proj, false);
-
-	ShaderProgram *shader = proj->shader;
-	uint32_t layer = LAYER_PARTICLE_BULLET_CLEAR;
-
-	if(proj->shader == defaults_proj.shader_ptr) {
-		// HACK
-		shader = r_shader_get("sprite_bullet_dead");
-		layer |= 0x1;
+	cmplx v = proj->move.velocity;
+	if(!v) {
+		v = proj->pos - proj->prevpos;
 	}
+
+	Animation *ani = get_ani("part/bullet_clear");
+	AniSequence *seq = get_ani_sequence(ani, "main");
+
+	Sprite *sprite_ref = ani->sprites[seq->frames[0].spriteidx];
+	float scale = fmaxf(proj->sprite->w, proj->sprite->h) / sprite_ref->w;
 
 	return PARTICLE(
 		.sprite_ptr = proj->sprite,
@@ -893,15 +866,19 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 		.pos = proj->pos,
 		.color = &proj->color,
 		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.shader_ptr = shader,
-		.rule = projectile_clear_effect_logic,
-		.draw_rule = projectile_clear_effect_draw,
+		.shader_ptr = proj->shader,
+		.draw_rule = {
+			projectile_clear_effect_draw,
+			.args[0].as_ptr = ani,
+			.args[1].as_ptr = seq,
+			.args[2].as_float = { rng_angle(), scale },
+		},
 		.angle = proj->angle,
 		.opacity = proj->opacity,
 		.scale = proj->scale,
-		.timeout = 24,
-		.args = { -1 },
-		.layer = layer,
+		.timeout = seq->length - 1,
+		.layer = LAYER_PARTICLE_BULLET_CLEAR,
+		.move = move_asymptotic(v, 0, 0.85),
 	);
 }
 
@@ -1209,7 +1186,6 @@ void projectiles_preload(void) {
 		"sprite_silhouette",
 		defaults_proj.shader,
 		defaults_part.shader,
-		"sprite_bullet_dead",
 	};
 
 	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);
@@ -1238,6 +1214,10 @@ void projectiles_preload(void) {
 		"part/smoothdot",
 		"part/stain",
 		"part/stardust_green",
+	NULL);
+
+	preload_resources(RES_ANIM, RESF_PERMANENT,
+		"part/bullet_clear",
 	NULL);
 
 	preload_resources(RES_SFX, RESF_PERMANENT,
