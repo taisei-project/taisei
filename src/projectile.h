@@ -40,6 +40,7 @@ typedef bool (*ProjPredicate)(Projectile *p);
 typedef union {
 	float32 as_float[2];
 	cmplx32 as_cmplx;
+	void *as_ptr;
 } ProjDrawRuleArgs[RULE_ARGC];
 
 typedef struct ProjDrawRule {
