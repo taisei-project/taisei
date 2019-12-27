@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
 
-cd "$(dirname "${BASH_SOURCE[0]}")"/.. || exit $?
-find resources -type f -name "*.png" -or -name '*.webp' | parallel -j$(nproc) scripts/optimize-img.sh
+opwd="$PWD"
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit $?
+script_dir="$PWD"
+cd "$opwd" || exit $?
+
+find "$@" -type f -name "*.png" -or -name '*.webp' | parallel -j$(nproc) "$script_dir"/optimize-img.sh
