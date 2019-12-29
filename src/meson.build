@@ -195,26 +195,29 @@ if host_machine.system() == 'emscripten'
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
-        '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
+        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
+        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'EXPORT_NAME=Taisei',
+        '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
-        '-s', 'LZ4=1',
-        '-s', 'MODULARIZE=0',
-        '-s', 'TOTAL_MEMORY=268435456',
-        '-s', 'USE_WEBGL2=1',
-        '-s', 'WASM=1',
-        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
-        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
+        '-s', 'LZ4=1',
+        '-s', 'MAX_WEBGL_VERSION=2',
+        '-s', 'MIN_WEBGL_VERSION=2',
+        '-s', 'MODULARIZE=0',
+        '-s', 'STRICT=1',
+        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'WASM=1',
+        '-lGL',
+        '-legl.js',
         '-lidbfs.js',
-
-        # Try enabling this if unpatched Freetype crashes
-        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
 
     em_link_args += subproject('koishi').get_variable('koishi_external_link_args')
+
+    taisei_c_args += ['-s', 'STRICT=1']
 
     if em_debug
         # em_link_output_suffixes += ['wasm.map']
@@ -233,6 +236,7 @@ if host_machine.system() == 'emscripten'
             '-g0',
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
+            '--closure', '1',
         ]
     endif
 
@@ -274,6 +278,7 @@ if host_machine.system() == 'emscripten'
         output : em_link_outputs,
         install : true,
         install_dir : bindir,
+        console : true,
     )
 
     bindist_deps += taisei_html
