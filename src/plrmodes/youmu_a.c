@@ -15,7 +15,7 @@
 
 #define MYON (global.plr.slaves.first)
 
-static Color* myon_color(Color *c, float f, float opacity, float alpha) {
+static Color *myon_color(Color *c, float f, float opacity, float alpha) {
 	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
 	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, opacity);
 	c->a *= alpha;
@@ -56,14 +56,28 @@ static int myon_flare_particle_rule(Projectile *p, int t) {
 	return r;
 }
 
-DEPRECATED_DRAW_RULE
-static void myon_draw_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float fadein = clamp(t/10.0, p->args[2], 1);
-	float s = min(1, 1 - t / (double)p->timeout);
-	float a = p->color.r*fadein;
-	Color c;
-	myon_color(&c, creal(p->args[3]), a * s * s, 0);
-	youmu_common_draw_proj(p, &c, fadein * (2-s) * p->args[1]);
+static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
+	float focus_factor = args[0].as_float[0];
+	float scale = args[0].as_float[1];
+
+	float fadein = clamp(t/10.0, 0, 1);
+	float s = 1 - projectile_timeout_factor(p);
+
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+
+	float a = spbuf.color.r * fadein;
+	myon_color(&spbuf.color, focus_factor, a * s * s, 0);
+	sp.scale.as_cmplx *= fadein * (2-s) * scale;
+
+	r_draw_sprite(&sp);
+}
+
+static ProjDrawRule myon_draw_trail(float scale, float focus_factor) {
+	return (ProjDrawRule) {
+		.func = myon_draw_trail_func,
+		.args[0].as_float = { focus_factor, scale },
+	};
 }
 
 static void spawn_stardust(cmplx pos, float myon_color_f, int timeout, cmplx v) {
@@ -72,10 +86,10 @@ static void spawn_stardust(cmplx pos, float myon_color_f, int timeout, cmplx v) 
 	PARTICLE(
 		.sprite = "stardust",
 		.pos = pos + vrng_range(R[0], 0, 5) * vrng_dir(R[1]),
-		.draw_rule = myon_draw_trail,
+		.draw_rule = myon_draw_trail(vrng_range(R[2], 0.2, 0.3), myon_color_f),
 		.rule = myon_particle_rule,
 		.timeout = timeout,
-		.args = { v, vrng_range(R[2], 0.2, 0.3), 0, myon_color_f },
+		.args = { v, 0, 0, myon_color_f },
 		.angle = vrng_angle(R[3]),
 		.flags = PFLAG_NOREFLECT,
 		.layer = LAYER_PARTICLE_LOW | 1,
@@ -94,7 +108,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = pos + vrng_range(R[0], 0, 10) * vrng_dir(R[1]),
-			.draw_rule = myon_draw_trail,
+			.draw_rule = myon_draw_trail(0.2, f),
 			.rule = myon_particle_rule,
 			.timeout = 60,
 			.args = { 0, -0.2, 0, f },
@@ -105,7 +119,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos + vrng_range(R[3], 0, 5) * vrng_dir(R[4]),
-			.draw_rule = Shrink,
+			.draw_rule = pdraw_timeout_scale(2, 0.01),
 			.rule = myon_particle_rule,
 			.timeout = 10,
 			.args = { 0.5 * vrng_dir(R[5]), 0.2, 0, f },
@@ -120,7 +134,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 		.rule = myon_flare_particle_rule,
 		.timeout = 40,
 		.args = { f * stardust_v, 0, 0, f },
-		.draw_rule = Shrink,
+		.draw_rule = pdraw_timeout_scale(2, 0.01),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
@@ -129,14 +143,16 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	spawn_stardust(pos, f, 60, stardust_v);
 }
 
-DEPRECATED_DRAW_RULE
 static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float time_progress = t / p->timeout;
+	float time_progress = projectile_timeout_factor(p);
 	float s = 2 * time_progress;
 	float a = min(1, s) * (1 - time_progress);
-	Color c = p->color;
-	color_mul_scalar(&c, a);
-	youmu_common_draw_proj(p, &c, s * p->args[1]);
+
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	color_mul_scalar(&spbuf.color, a);
+	sp.scale.as_cmplx *= s;
+	r_draw_sprite(&sp);
 }
 
 static int myon_proj(Projectile *p, int t) {
@@ -161,21 +177,16 @@ static int myon_proj(Projectile *p, int t) {
 		// .color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
 		.color = c,
 		.draw_rule = myon_draw_proj_trail,
-		.rule = linear,
 		.timeout = 10,
-		.args = { p->args[0]*0.8, 0.6 },
+		.move = move_linear(p->args[0]*0.8),
 		.flags = PFLAG_NOREFLECT,
 		.angle = p->angle,
+		.scale = 0.6,
 	);
 
 	p->opacity = 1.0f - powf(1.0f - fminf(1.0f, t / 10.0f), 2.0f);
 
 	return ACTION_NONE;
-}
-
-DEPRECATED_DRAW_RULE
-static void myon_proj_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	youmu_common_draw_proj(p, &p->color, 1);
 }
 
 static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, cmplx pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
@@ -209,7 +220,6 @@ static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, cmplx pos, doubl
 		.pos = pos,
 		.rule = myon_proj,
 		.args = { speed*dir },
-		.draw_rule = myon_proj_draw,
 		.type = PROJ_PLAYER,
 		.layer = LAYER_PLAYER_SHOT | 0x10,
 		.damage = dmg,
@@ -346,7 +356,6 @@ static Projectile* youmu_mirror_self_shot(Player *plr, cmplx ofs, cmplx vel, flo
 		.damage = dmg,
 		.shader = "sprite_default",
 		.layer = LAYER_PLAYER_SHOT | 0x20,
-		.draw_rule = myon_proj_draw,
 		.rule = youmu_mirror_self_proj,
 		.args = {
 			vel*0.2*cexp(I*M_PI*0.5*sign(creal(ofs))), vel, turntime,
