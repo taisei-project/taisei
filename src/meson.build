@@ -197,7 +197,6 @@ if host_machine.system() == 'emscripten'
         '-s', 'EXIT_RUNTIME=0',
         # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
-        '-s', 'EXPORT_NAME=Taisei',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
@@ -236,8 +235,15 @@ if host_machine.system() == 'emscripten'
             '-g0',
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
-            '--closure', '1',
         ]
+    endif
+
+    if get_option('optimization') != '0'
+        em_link_args += ['--closure', '1']
+
+        if em_debug
+            em_link_args += ['-g1']
+        endif
     endif
 
     foreach suffix : em_link_output_suffixes
@@ -261,8 +267,8 @@ if host_machine.system() == 'emscripten'
             cc.cmd_array(),
             taisei.full_path(),
             emscripten_global_link_args,
-            em_bundle_link_args,
             '--pre-js', em_preamble,
+            em_bundle_link_args,
             '--shell-file', em_shell,
             get_option('c_args'),
             get_option('c_link_args'),
