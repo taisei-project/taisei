@@ -92,7 +92,7 @@ static void trace_laser(Enemy *e, cmplx vel, float damage) {
 				.pos = col.location,
 				.rule = linear,
 				.timeout = vrng_range(R[0], 3, 8),
-				.draw_rule = Shrink,
+				.draw_rule = pdraw_timeout_scale(2, 0.01),
 				.args = { vrng_range(R[1], 2, 8) * vrng_dir(R[2]) },
 				.flags = PFLAG_NOREFLECT,
 				.layer = LAYER_PARTICLE_HIGH,
