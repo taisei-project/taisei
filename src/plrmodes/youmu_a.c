@@ -453,7 +453,7 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 			.sprite = "arc",
 			.pos = e->pos,
 			.rule = linear,
-			.draw_rule = Fade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.color = RGBA(0.9, 0.8, 1.0, 0.0),
 			.timeout = 30,
 			.args = {
