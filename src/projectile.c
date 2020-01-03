@@ -1111,10 +1111,12 @@ ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float32 opa
 }
 
 ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1) {
+	// TODO: specialized code path without fade component
 	return pdraw_timeout_scalefade(scale0, scale1, 1, 1);
 }
 
 ProjDrawRule pdraw_timeout_fade(float32 opacity0, float32 opacity1) {
+	// TODO: specialized code path without scale component
 	return pdraw_timeout_scalefade(1+I, 1+I, opacity0, opacity1);
 }
 

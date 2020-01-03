@@ -1160,7 +1160,7 @@ void process_boss(Boss **pboss) {
 					.pos = boss->pos,
 					.timeout = vrng_range(rng[2], 60, 70),
 					.rule = linear,
-					.draw_rule = Fade,
+					.draw_rule = pdraw_timeout_fade(1, 0),
 					.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
 				);
 			}
