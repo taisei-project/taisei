@@ -930,7 +930,7 @@ void player_death(Player *plr) {
 			.pos = plr->pos,
 			.rule = linear,
 			.timeout = 40,
-			.draw_rule = Shrink,
+			.draw_rule = pdraw_timeout_scale(2, 0.01),
 			.args = { vrng_range(R[0], 3, 10) * vrng_dir(R[1]) },
 			.flags = PFLAG_NOREFLECT,
 		);

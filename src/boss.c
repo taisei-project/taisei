@@ -637,7 +637,7 @@ static void spawn_particle_effects(Boss *boss) {
 			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
 			.rule = enemy_flare,
 			.timeout = 180,
-			.draw_rule = Shrink,
+			.draw_rule = pdraw_timeout_scale(2, 0.01),
 			.args = { 0, add_ref(boss), },
 			.angle = rng_angle(),
 		);
