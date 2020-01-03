@@ -149,7 +149,7 @@ Item *create_clear_item(cmplx pos, uint clear_flags) {
 			.sprite = "flare",
 			.pos = pos,
 			.timeout = 30,
-			.draw_rule = Fade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.layer = LAYER_BULLET+1
 		);
 

@@ -190,7 +190,7 @@ static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
 			.args = { cdir(2 * M_PI / count * (i + offset)) * 15 },
 			.angle = rng_angle(),
 			.rule = linear,
-			.draw_rule = Fade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.layer = LAYER_BOSS,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
