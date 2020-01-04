@@ -598,27 +598,17 @@ static void BossGlow(Projectile *p, int t, ProjDrawRuleArgs args) {
 	});
 }
 
-static int boss_glow(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free(p->sprite);
-	}
-
-	return linear(p, t);
-}
-
 static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
-	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
 	return PARTICLE(
-		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
+		.sprite_ptr = aniplayer_get_frame(&boss->ani),
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,
-		.rule = boss_glow,
 		.draw_rule = BossGlow,
 		.timeout = timeout,
 		.layer = LAYER_PARTICLE_LOW,
 		.shader = "sprite_silhouette",
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	);
 }
 
