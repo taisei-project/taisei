@@ -17,6 +17,7 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 #include "entity.h"
+#include "util/glm.h"
 
 void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
@@ -850,7 +851,6 @@ void player_realdeath(Player *plr) {
 	plr->lives--;
 }
 
-DEPRECATED_DRAW_RULE
 static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
@@ -870,25 +870,26 @@ static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleA
 	r_state_push();
 }
 
-DEPRECATED_DRAW_RULE
 static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = t / p->timeout;
-
 	float stretch_range = 3, sx, sy;
 
-	sx = 0.5 + 0.5 * cos(M_PI * (2 * pow(s, 0.5) + 1));
-	sx = (1 - s) * (1 + (stretch_range - 1) * sx) + s * stretch_range * sx;
-	sy = 1 + pow(s, 3);
+	s = glm_ease_quad_in(s);
+
+	sx = (1 - pow(2 * pow(1 - s, 4) - 1, 4));
+	sx = lerp(1 + (stretch_range - 1) * sx, stretch_range * sx, s);
+	sy = 1 + 2 * (stretch_range - 1) * pow(s, 4);
 
 	if(sx <= 0 || sy <= 0) {
 		return;
 	}
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
-		.pos = { creal(p->pos), cimag(p->pos) },
-		.scale = { .x = sx, .y = sy },
-	});
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	sp.scale.x *= sx;
+	sp.scale.y *= sy;
+	sp.rotation.angle = 0;
+	r_draw_sprite(&sp);
 }
 
 static int player_death_effect(Projectile *p, int t) {
@@ -927,10 +928,9 @@ void player_death(Player *plr) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = plr->pos,
-			.rule = linear,
 			.timeout = 40,
 			.draw_rule = pdraw_timeout_scale(2, 0.01),
-			.args = { vrng_range(R[0], 3, 10) * vrng_dir(R[1]) },
+			.move = move_linear(vrng_range(R[0], 3, 10) * vrng_dir(R[1])),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -954,14 +954,14 @@ void player_death(Player *plr) {
 		.draw_rule = player_death_effect_draw_overlay,
 		.blend = BLEND_NONE,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.layer = LAYER_NODRAW, // LAYER_OVERLAY,
+		.layer = LAYER_OVERLAY,
 		.shader = "player_death",
 	);
 
 	PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
 		.pos = plr->pos,
-		.timeout = 30,
+		.timeout = 38,
 		.rule = player_death_effect,
 		.draw_rule = player_death_effect_draw_sprite,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
