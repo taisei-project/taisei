@@ -817,10 +817,9 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 				0.5 + 0.5 * psina *    v,
 				0.0
 			), 0.8),
-			.rule = linear,
 			.timeout = 30*lt,
-			.draw_rule = GrowFade,
-			.args = { vel * (1 - 2 * !(global.frames % 10)), 2.5 },
+			.draw_rule = pdraw_timeout_scalefade(0, 3.5, 1, 0),
+			.move = move_linear(vel * (1 - 2 * !(global.frames % 10))),
 		);
 	}
 }
@@ -1159,16 +1158,14 @@ void process_boss(Boss **pboss) {
 				.proto = pp_blast,
 				.pos = boss->pos,
 				.timeout = 60,
-				.args = { 0, 3.0 },
-				.draw_rule = GrowFade,
+				.draw_rule = pdraw_timeout_scalefade(0, 4, 1, 0),
 			);
 
 			PARTICLE(
 				.proto = pp_blast,
 				.pos = boss->pos,
 				.timeout = 70,
-				.args = { 0, 2.5 },
-				.draw_rule = GrowFade,
+				.draw_rule = pdraw_timeout_scalefade(0, 3.5, 1, 0),
 			);
 		}
 

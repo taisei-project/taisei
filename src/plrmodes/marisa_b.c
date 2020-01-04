@@ -75,8 +75,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 			.color = RGBA(0.5*(1-focus),0,0.5*focus,0),
 			.timeout = 5,
 			.angle = t*0.1,
-			.draw_rule = GrowFade,
-			.args = { 1, 0.4},
+			.draw_rule = pdraw_timeout_scalefade(0, 1.4, 1, 0),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -180,8 +179,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.color = color2,
 			.timeout = 10,
 			.angle = t*0.1,
-			.draw_rule = GrowFade,
-			.args = { 1, tb*4},
+			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -192,10 +190,10 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.pos = e->pos,
 			.color = &color,
 			.rule = marisa_star_orbit_star,
-			.draw_rule = GrowFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 6, 1, 0),
 			.timeout = 150,
 			.flags = PFLAG_NOREFLECT,
-			.args = { -5*dir/cabs(dir), 5 },
+			.args = { -5*dir/cabs(dir) },
 		);
 	}
 
