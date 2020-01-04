@@ -468,14 +468,13 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 			.sprite = "stain",
 			.pos = e->pos,
 			.rule = accelerated,
-			.draw_rule = GrowFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
 			.angle = vrng_angle(R[0]),
 			.color = RGBA(0.2, 0.1, 1.0, 0.0),
 			.timeout = 50,
 			.args = {
 				-1*e->args[0]*cdir(0.2*rng_real())/30,
 				0.1*e->args[0]*I*sin(t/4.)/30,
-				2
 			},
 			.flags = _i%2 == 0 ? PFLAG_REQUIREDPARTICLE : 0
 		);

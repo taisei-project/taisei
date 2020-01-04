@@ -460,7 +460,7 @@ void process_lasers(void) {
 						.sprite = "flare",
 						.pos = p,
 						.timeout = 20,
-						.draw_rule = GrowFade
+						.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 					);
 					laser->deathtime = 0;
 				}

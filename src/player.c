@@ -901,7 +901,7 @@ static int player_death_effect(Projectile *p, int t) {
 					.pos = p->pos + vrng_range(R[0], 2, 3) * vrng_dir(R[1]),
 					.color = RGBA(0.15, 0.2, 0.5, 0),
 					.timeout = i + vrng_range(R[2], 10, 14),
-					.draw_rule = GrowFade,
+					.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 					.angle = vrng_angle(R[3]),
 					.flags = PFLAG_NOREFLECT,
 					.layer = LAYER_OVERLAY,
@@ -942,9 +942,9 @@ void player_death(Player *plr) {
 		.pos = plr->pos,
 		.color = RGBA(0.5, 0.15, 0.15, 0),
 		.timeout = 35,
-		.draw_rule = GrowFade,
-		.args = { 0, 2.4 },
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.draw_rule = pdraw_timeout_scalefade(0, 3.4, 1, 0),
+		.angle = rng_angle(),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	);
 
 	PARTICLE(
@@ -954,7 +954,7 @@ void player_death(Player *plr) {
 		.draw_rule = player_death_effect_draw_overlay,
 		.blend = BLEND_NONE,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.layer = LAYER_OVERLAY,
+		.layer = LAYER_NODRAW, // LAYER_OVERLAY,
 		.shader = "player_death",
 	);
 
