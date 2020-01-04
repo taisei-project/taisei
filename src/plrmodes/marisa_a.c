@@ -315,25 +315,13 @@ static int marisa_laser_renderer(Enemy *renderer, int t) {
 #undef FOR_EACH_SLAVE
 #undef FOR_EACH_REAL_SLAVE
 
-DEPRECATED_DRAW_RULE
 static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	Animation *fire = get_ani("fire");
-	AniSequence *seq = get_ani_sequence(fire, "main");
-	Sprite *spr = animation_get_frame(fire, seq, p->birthtime);
-
-	Color *c = color_mul_scalar(COLOR_COPY(&p->color), 1 - t / p->timeout);
-	c->r *= (1 - t / p->timeout);
-
-	cmplx pos = p->pos;
-	pos += p->args[0] * 10;
-
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = spr,
-		.color = c,
-		.pos = { creal(pos), cimag(pos)},
-		.rotation.angle = p->angle + M_PI/2,
-		.scale.both = 0.40,
-	});
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	float o = 1 - t / p->timeout;
+	color_mul_scalar(&spbuf.color, o);
+	spbuf.color.r *= o;
+	r_draw_sprite(&sp);
 }
 
 static int marisa_laser_slave(Enemy *e, int t) {
@@ -373,15 +361,21 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		cmplx dir = -cexp(I*(angle*factor + ld->lean + M_PI/2));
 		trace_laser(e, 5 * dir, creal(e->args[1]));
 
+		Animation *fire = get_ani("fire");
+		AniSequence *seq = get_ani_sequence(fire, "main");
+		Sprite *spr = animation_get_frame(fire, seq, global.frames);
+
 		PARTICLE(
+			.sprite_ptr = spr,
 			.size = 1+I,
-			.pos = e->pos,
+			.pos = e->pos + dir * 10,
 			.color = color_mul_scalar(RGBA(2, 0.2, 0.5, 0), 0.2),
 			.rule = linear,
 			.draw_rule = marisa_laser_flash_draw,
 			.timeout = 8,
 			.args = { dir, 0, 0.6 + 0.2*I, },
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.scale = 0.4,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
 	}
