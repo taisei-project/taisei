@@ -489,9 +489,9 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args= { (10 * dir - 10*I)*diroffset, 4 },
+			.args= { (10 * dir - 10*I)*diroffset },
 			.angle = rng_angle(),
-			.draw_rule = GrowFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
 			.flags = flags,
 		);
 		dir = -conj(dir);
@@ -501,21 +501,20 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args = { (10 * dir - 10*I)*diroffset, 4 },
+			.args = { (10 * dir - 10*I)*diroffset },
 			.angle = rng_angle(),
-			.draw_rule = GrowFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
 			.flags = flags,
 		);
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
 			.color = HSLA(2*t,1,2,0), //RGBA(0.3, 0.6, 1, 0),
-			.rule = linear,
 			.timeout = 50,
-			.args = { -7*dir + 7*I, 6 },
+			.move = move_linear(-7*dir + 7*I),
 			.angle = rng_angle(),
-			.draw_rule = GrowFade,
-			.flags = flags,
+			.draw_rule = pdraw_timeout_scalefade(0, 7, 1, 0),
+			.flags = flags | PFLAG_MANUALANGLE,
 		);
 	}
 
