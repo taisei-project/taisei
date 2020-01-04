@@ -66,7 +66,7 @@
 //	aniplayer_hard_switch(&plr->ani, "right", 0);
 //
 // Similar examples occur throughout the code so if you want context, you can just look there.
-// 
+//
 #include "resource/animation.h"
 #include "stageobjects.h"
 #include "list.h"
@@ -76,7 +76,7 @@ struct AniQueueEntry{
 	LIST_INTERFACE(AniQueueEntry);
 
 	AniSequence *sequence;
-	int clock; // frame counter. As long as clock < duration this entry will keep running 
+	int clock; // frame counter. As long as clock < duration this entry will keep running
 	int duration; // number of frames this sequence will be drawn
 };
 
@@ -92,7 +92,6 @@ void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence)
 void aniplayer_free(AniPlayer *plr);
 
 // AniPlayer version of animation_get_frame.
-// CAUTION: the returned Sprite is only valid until the next call to animation/aniplayer_get_frame
 Sprite *aniplayer_get_frame(AniPlayer *plr) attr_nonnull(1);
 
 // See comment above for these three stooges.
