@@ -857,7 +857,7 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 	Animation *ani = get_ani("part/bullet_clear");
 	AniSequence *seq = get_ani_sequence(ani, "main");
 
-	Sprite *sprite_ref = ani->sprites[seq->frames[0].spriteidx];
+	Sprite *sprite_ref = animation_get_frame(ani, seq, 0);
 	float scale = fmaxf(proj->sprite->w, proj->sprite->h) / sprite_ref->w;
 
 	return PARTICLE(

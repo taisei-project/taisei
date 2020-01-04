@@ -42,7 +42,7 @@ typedef struct AnimationLoadData {
 } AnimationLoadData;
 
 // See ANIMATION_FORMAT.rst for a documentation of this syntax.
-static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr) {
+static bool animation_parse_sequence_spec(AniSequence **seq, int seq_capacity, const char *specstr) {
 	const char *delaytoken = "d";
 	const char *mirrortoken = "m";
 
@@ -60,7 +60,6 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 
 	int delay = 1; // standard frame duration: one frame.
 	bool mirrored = false;
-	int seqcapacity = 0;
 
 	int command = 1;
 	// This loop is supposed to parse one command per iteration.
@@ -124,22 +123,23 @@ static bool animation_parse_sequence_spec(AniSequence *seq, const char *specstr)
 				log_error("AniSequence syntax error: '%s'[%d] sprite index cannot be negative.",specstr,command);
 				return false;
 			}
-			int spriteidx = arg;
+
+			// temporarily store flipped sprites with negative indices.
+			// a later pass will allocate actual flipped sprites for these and fix up the indices.
+			int spriteidx = mirrored ? -(arg + 1) : arg;
+
 			for(int i = 0; i < delay; i++) {
-				if(seqcapacity <= seq->length) {
-					seqcapacity++;
-					seqcapacity *= 2;
-					seq->frames = realloc(seq->frames,sizeof(AniSequenceFrame)*seqcapacity);
+				if(seq_capacity <= (*seq)->length) {
+					seq_capacity *= 2;
+					*seq = realloc(*seq, sizeof(AniSequence) + seq_capacity * sizeof(*(*seq)->frame_indices));
 				}
-				seq->frames[seq->length].spriteidx = spriteidx;
-				seq->frames[seq->length].mirrored = mirrored;
-				seq->length++;
+				(*seq)->frame_indices[(*seq)->length++] = spriteidx;
 			}
 		}
 		command++;
 	}
 
-	if(seq->length <= 0) {
+	if((*seq)->length <= 0) {
 		log_error("AniSequence syntax error: '%s' empty sequence.",specstr);
 		return false;
 	}
@@ -152,39 +152,46 @@ static bool animation_parse_callback(const char *key, const char *value, void *d
 
 	// parse fixed keys
 
-	if(!strcmp(key,"@sprite_count")) {
+	if(!strcmp(key, "@sprite_count")) {
 		char *endptr;
 		ani->sprite_count = strtol(value,&endptr,10);
 		if(*value == '\0' || *endptr != '\0' || ani->sprite_count <= 0) {
-			log_error("Syntax error: %s must be positive integer",key);
+			log_error("%s must be a positive integer (got `%s`)", key, value);
 			return false;
 		}
 		return true;
 	}
 
+	if(key[0] == '@') {
+		log_warn("Unknown animation property `%s` ignored", key);
+		return true;
+	}
+
 	// otherwise it is a sequence
 
-	AniSequence *seq = calloc(1,sizeof(AniSequence));
-	bool rc = animation_parse_sequence_spec(seq, value);
-	if(!rc) {
-		free(seq->frames);
+	AniSequence *prev_seq;
+	if((prev_seq = ht_get(&ani->sequences, key, NULL))) {
+		log_warn("Animation sequence `%s` overwritten", key);
+	}
+
+	int init_seq_size = 4;
+	AniSequence *seq = calloc(1, sizeof(AniSequence) + init_seq_size * sizeof(*seq->frame_indices));
+	if(!animation_parse_sequence_spec(&seq, init_seq_size, value)) {
 		free(seq);
 		return false;
 	}
 
 	ht_set(&ani->sequences, key, seq);
+	free(prev_seq);
 	return true;
 }
 
 static void *free_sequence_callback(const char *key, void *data, void *arg) {
-	AniSequence *seq = data;
-	free(seq->frames);
-	free(seq);
-
+	free(data);
 	return NULL;
 }
 
-void* load_animation_begin(const char *filename, uint flags) {
+void *load_animation_begin(const char *filename, uint flags) {
 	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
 	char name[strlen(basename) + 1];
 	strcpy(name, basename);
@@ -215,32 +222,83 @@ void* load_animation_begin(const char *filename, uint flags) {
 	return data;
 }
 
-union check_sequence_frame_callback_arg {
-	int sprite_count, errors;
+struct anim_remap_state {
+	Animation *ani;
+	ht_int2int_t flip_map;
+	int num_flipped_sprites;
+	int errors;
 };
 
-static void *check_sequence_frame_callback(const char *key, void *value, void *varg) {
+static void flip_sprite(Sprite *s) {
+	FloatRect *tex_area = &s->tex_area;
+	tex_area->x += tex_area->w;
+	tex_area->w *= -1;
+}
+
+static int remap_frame_index(struct anim_remap_state *st, int idx) {
+	int64_t remapped_idx;
+
+	if(idx >= 0) {
+		return idx;
+	}
+
+	if(st->num_flipped_sprites > 0 && ht_lookup(&st->flip_map, idx, &remapped_idx)) {
+		return remapped_idx;
+	}
+
+	if(st->num_flipped_sprites == 0) {
+		ht_create(&st->flip_map);
+	}
+
+	remapped_idx = st->ani->sprite_count;
+	int local_idx = st->num_flipped_sprites;
+	int orig_idx = -(idx + 1);
+
+	++st->num_flipped_sprites;
+	++st->ani->sprite_count;
+
+	ht_set(&st->flip_map, idx, remapped_idx);
+
+	st->ani->local_sprites = realloc(st->ani->local_sprites, sizeof(*st->ani->local_sprites) * st->num_flipped_sprites);
+	st->ani->local_sprites[local_idx] = *st->ani->sprites[orig_idx];
+	flip_sprite(st->ani->local_sprites + local_idx);
+
+	log_debug("%i -> %i", orig_idx, (int)remapped_idx);
+	log_debug("sprite_count: %i", st->ani->sprite_count);
+
+	return remapped_idx;
+}
+
+static void *remap_sequence_callback(const char *key, void *value, void *varg) {
 	AniSequence *seq = value;
-	union check_sequence_frame_callback_arg *arg = varg;
-	int sprite_count = arg->sprite_count;
+	struct anim_remap_state *st = varg;
+	// needs to be cached, because we may grow the count to allocate flipped sprites
+	int sprite_count = st->ani->sprite_count;
 	int errors = 0;
 
 	for(int i = 0; i < seq->length; i++) {
-		if(seq->frames[i].spriteidx >= sprite_count) {
-			log_error("Animation sequence %s: Sprite index %d is higher than sprite_count.", key, seq->frames[i].spriteidx);
+		int abs_idx = seq->frame_indices[i];
+		abs_idx = abs_idx >= 0 ? abs_idx : -(abs_idx + 1);
+
+		if(abs_idx >= sprite_count) {
+			log_error("Animation sequence `%s`: Sprite index %i is higher than sprite_count (%i).", key, abs_idx, sprite_count);
 			errors++;
+		}
+
+		if(seq->frame_indices[i] < 0) {
+			seq->frame_indices[i] = remap_frame_index(st, seq->frame_indices[i]);
 		}
 	}
 
 	if(errors) {
-		arg->errors = errors;
-		return arg;
+		st->errors += errors;
+		return st;
 	}
 
 	return NULL;
 }
 
-void* load_animation_end(void *opaque, const char *filename, uint flags) {
+void *load_animation_end(void *opaque, const char *filename, uint flags) {
 	AnimationLoadData *data = opaque;
 
 	if(opaque == NULL) {
@@ -266,14 +324,36 @@ void* load_animation_end(void *opaque, const char *filename, uint flags) {
 		ani->sprites[i] = res->data;
 	}
 
-	union check_sequence_frame_callback_arg arg = { ani->sprite_count };
+	struct anim_remap_state remap_state = { 0 };
+	remap_state.ani = ani;
+	int prev_sprite_count = ani->sprite_count;
 
-	if(ht_foreach(&ani->sequences, check_sequence_frame_callback, &arg) != NULL) {
+	if(ht_foreach(&ani->sequences, remap_sequence_callback, &remap_state) != NULL) {
 		unload_animation(ani);
 		ani = NULL;
 	}
 
+	if(ani->sprite_count != prev_sprite_count) {
+		// remapping generated new flipped sprites - add them to our sprites array
+
+		assume(ani->sprite_count > prev_sprite_count);
+		assume(remap_state.num_flipped_sprites == ani->sprite_count - prev_sprite_count);
+		assume(ani->local_sprites != NULL);
+		ani->sprites = realloc(ani->sprites, sizeof(*ani->sprites) * ani->sprite_count);
+
+		for(int i = 0; i < remap_state.num_flipped_sprites; ++i) {
+			ani->sprites[prev_sprite_count + i] = ani->local_sprites + i;
+		}
+	} else {
+		assert(remap_state.num_flipped_sprites == 0);
+		assert(ani->local_sprites == NULL);
+	}
+
 done:
+	if(remap_state.num_flipped_sprites > 0) {
+		ht_destroy(&remap_state.flip_map);
+	}
+
 	free(data->basename);
 	free(data);
 
@@ -285,6 +365,7 @@ void unload_animation(void *vani) {
 	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 	ht_destroy(&ani->sequences);
 	free(ani->sprites);
+	free(ani->local_sprites);
 	free(ani);
 }
 
@@ -296,24 +377,14 @@ AniSequence *get_ani_sequence(Animation *ani, const char *seqname) {
 	AniSequence *seq = ht_get(&ani->sequences, seqname, NULL);
 
 	if(seq == NULL) {
-		log_fatal("Sequence '%s' not found.",seqname);
+		log_fatal("Sequence '%s' not found.", seqname);
 	}
 
 	return seq;
 }
 
-Sprite* animation_get_frame(Animation *ani, AniSequence *seq, int seqframe) {
-	AniSequenceFrame *f = &seq->frames[seqframe%seq->length];
-	if(f->mirrored) {
-		memcpy(&ani->transformed_sprite,ani->sprites[f->spriteidx],sizeof(Sprite));
-		// XXX: maybe add sprite_flip() or something
-		FloatRect *tex_area = &ani->transformed_sprite.tex_area;
-		tex_area->x += tex_area->w;
-		tex_area->w *= -1;
-		return &ani->transformed_sprite;
-	}
-
-	assert(f->spriteidx < ani->sprite_count);
-	return ani->sprites[f->spriteidx];
+Sprite *animation_get_frame(Animation *ani, AniSequence *seq, int seqframe) {
+	int idx = seq->frame_indices[seqframe % seq->length];
+	assert(idx < ani->sprite_count);
+	return ani->sprites[idx];
 }
-
