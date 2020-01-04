@@ -447,7 +447,6 @@ static int powersurge_trail(Projectile *p, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
-		free(p->sprite);
 		return ACTION_ACK;
 	}
 
@@ -506,7 +505,7 @@ static void player_powersurge_logic(Player *plr) {
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 
 	PARTICLE(
-		.sprite_ptr = memdup(aniplayer_get_frame(&plr->ani), sizeof(Sprite)),
+		.sprite_ptr = aniplayer_get_frame(&plr->ani),
 		.pos = plr->pos,
 		.color = RGBA(1, 1, 1, 0.5),
 		.rule = powersurge_trail,
