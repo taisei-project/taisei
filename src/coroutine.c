@@ -329,28 +329,19 @@ int cotask_wait(int delay) {
 	CoTask *task = cotask_active();
 	assert(task->wait.wait_type == COTASK_WAIT_NONE);
 
-	cotask_wait_init(task, COTASK_WAIT_DELAY);
-	task->wait.delay.remaining = delay;
-	if(cotask_do_wait(task))
-		cotask_yield(NULL);
-	return cotask_wait_init(task, COTASK_WAIT_NONE).frames;
-
-	/*
 	if(delay == 1) {
 		cotask_yield(NULL);
 		return 1;
 	}
 
-	if(delay > 1) {
-		cotask_wait_init(task, COTASK_WAIT_DELAY);
-		task->wait.delay.remaining = delay;
-		cotask_do_wait(task);
-		cotask_yield(NULL);
-		return cotask_wait_init(task, COTASK_WAIT_NONE).frames;
-	}
-	*/
+	cotask_wait_init(task, COTASK_WAIT_DELAY);
+	task->wait.delay.remaining = delay;
 
-	return 0;
+	if(cotask_do_wait(task)) {
+		cotask_yield(NULL);
+	}
+
+	return cotask_wait_init(task, COTASK_WAIT_NONE).frames;
 }
 
 static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
@@ -374,13 +365,6 @@ static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
 CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	assert(evt->unique_id > 0);
 
-	/*
-	CoWaitResult result = {
-		.frames = 0,
-		.event_status = CO_EVENT_PENDING,
-	};
-	*/
-
 	CoTask *task = cotask_active();
 	coevent_add_subscriber(evt, task);
 
@@ -393,16 +377,6 @@ CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	}
 
 	return cotask_wait_init(task, COTASK_WAIT_NONE);
-
-	/*
-	while(true) {
-		if((result.event_status = coevent_poll(evt, &snapshot)) != CO_EVENT_PENDING) {
-			return result;
-		}
-
-		++result.frames;
-		cotask_yield(arg);
-	}*/
 }
 
 CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg) {
@@ -475,7 +449,6 @@ static void coevent_wake_subscribers(CoEvent *evt) {
 
 		if(task && cotask_status(task) != CO_STATUS_DEAD) {
 			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
-			// cotask_wake_and_resume(task, NULL);
 			cotask_resume(task, NULL);
 		}
 	}
