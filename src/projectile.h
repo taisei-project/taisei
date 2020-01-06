@@ -236,7 +236,6 @@ void ProjDrawCore(Projectile *proj, const Color *c);
 void ProjDraw(Projectile *proj, int t, ProjDrawRuleArgs args) DEPRECATED_DRAW_RULE;
 
 void Shrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void DeathShrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void Fade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
