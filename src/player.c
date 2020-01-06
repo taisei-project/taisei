@@ -515,22 +515,24 @@ static void player_powersurge_logic(Player *plr) {
 		.flags = PFLAG_NOREFLECT,
 	);
 
-	if(!(global.frames % 6)) {
+	if(!(global.frames % 6) && plr->powersurge.bonus.discharge_range > 0) {
 		Sprite *spr = get_sprite("part/powersurge_field");
 		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
 		double angle = rng_angle();
+
+		assert(scale > 0);
 
 		PARTICLE(
 			.sprite_ptr = spr,
 			.pos = plr->pos,
 			.color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
 			.rule = powersurge_charge_particle,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.timeout = 14,
 			.angle = angle,
-			.args = { 0, 0, (1+I)*scale, 0},
 			.layer = LAYER_PLAYER - 1,
 			.flags = PFLAG_NOREFLECT,
+			.scale = scale,
 		);
 
 		PARTICLE(
@@ -538,12 +540,12 @@ static void player_powersurge_logic(Player *plr) {
 			.pos = plr->pos,
 			.color = RGBA(0.5, 0.5, 0.5, 0),
 			.rule = powersurge_charge_particle,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.timeout = 3,
 			.angle = angle,
-			.args = { 0, 0, (1+I)*scale, 0},
 			.layer = LAYER_PLAYER - 1,
 			.flags = PFLAG_NOREFLECT,
+			.scale = scale,
 		);
 	}
 
@@ -714,7 +716,7 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 		return;
 	}
 
-	double radius = p->args[0] * pow(1 - t / p->timeout, 8) * (2 * t / 10.0);
+	double radius = args[0].as_float[0] * pow(1 - t / p->timeout, 8) * (2 * t / 10.0);
 
 	Framebuffer *fb_aux = stage_get_fbpair(FBPAIR_FG_AUX)->front;
 	Framebuffer *fb_main = r_framebuffer_current();
@@ -750,8 +752,10 @@ static void player_powersurge_expired(Player *plr) {
 		.size = 1+I,
 		.pos = plr->pos,
 		.timeout = 60,
-		.draw_rule = powersurge_distortion_draw,
-		.args = { bonus.discharge_range },
+		.draw_rule = {
+			powersurge_distortion_draw,
+			.args[0].as_float = { bonus.discharge_range },
+		},
 		.layer = LAYER_PLAYER,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
@@ -760,10 +764,10 @@ static void player_powersurge_expired(Player *plr) {
 		.sprite_ptr = blast,
 		.pos = plr->pos,
 		.color = RGBA(0.6, 1.0, 4.4, 0.0),
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(2, 0, 1, 0),
 		.timeout = 20,
-		.args = { 0, 0, scale * (2 + 0 * I) },
 		.angle = rng_angle(),
+		.scale = scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
 
@@ -1357,10 +1361,9 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 			.sprite = "graze",
 			.color = c,
 			.pos = pos,
-			.rule = asymptotic,
+			.draw_rule = pdraw_timeout_scalefade_exp(1, 0, 1, 0, 2),
+			.move = move_asymptotic_simple(0.2 * vrng_range(R[0], 1, 6) * vrng_dir(R[1]), 16 * (1 + 0.5 * vrng_sreal(R[3]))),
 			.timeout = vrng_range(R[2], 4, 29),
-			.draw_rule = ScaleSquaredFade,
-			.args = { 0.2 * vrng_range(R[0], 1, 6) * vrng_dir(R[1]), 16 * (1 + 0.5 * vrng_sreal(R[3])), 1 },
 			.flags = PFLAG_NOREFLECT,
 			// .layer = LAYER_PARTICLE_LOW,
 		);

@@ -32,15 +32,14 @@ static Dialog *stage1_dialog_post_boss(void) {
 	return d;
 }
 
-static Projectile* spawn_stain(cmplx pos, float angle, int to) {
+static Projectile *spawn_stain(cmplx pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",
 		.pos = pos,
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(0, 0.8, 1, 0),
 		.timeout = to,
 		.angle = angle,
 		.color = RGBA(0.4, 0.4, 0.4, 0),
-		.args = {0, 0, 0.8*I}
 	);
 }
 

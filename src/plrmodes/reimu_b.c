@@ -82,9 +82,8 @@ static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
 			.color = &p->color,
 			.pos = p->pos,
 			.timeout = 20,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 3 * range / spr->w, 1, 0),
 			.layer = LAYER_BOSS + 2,
-			.args = { 0, 0, 3 * range / spr->w * I },
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 
@@ -336,8 +335,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.color = RGBA(0.5, 0.5, 0.5, 0.5),
 		.timeout = 20,
 		.angle = rng_angle(),
-		.draw_rule = ScaleFade,
-		.args = { 0, 0, 0.2 + 1 * I },
+		.draw_rule = pdraw_timeout_scalefade(0.2, 1, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
 	);
 
@@ -348,8 +346,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.color = clr,
 		.timeout = 20,
 		.angle = rng_angle(),
-		.draw_rule = ScaleFade,
-		.args = { 0, 0, 0.1 + 0.6 * I },
+		.draw_rule = pdraw_timeout_scalefade(0.1, 0.6, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
 	);
 }
@@ -435,9 +432,8 @@ static int reimu_dream_needle(Projectile *p, int t) {
 		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * 0.8, 0, 0+3*I },
-		.rule = linear,
-		.draw_rule = ScaleFade,
+		.move = move_linear(p->args[0] * 0.8),
+		.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
 	);
