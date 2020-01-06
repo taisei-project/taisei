@@ -432,7 +432,6 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	});
 }
 
-DEPRECATED_DRAW_RULE
 static void powersurge_trail_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(t > 0) {
 		_powersurge_trail_draw(p, t - 0.5, 0.25);
@@ -710,7 +709,6 @@ static int powersurge_discharge(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-DEPRECATED_DRAW_RULE
 static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
 		return;
