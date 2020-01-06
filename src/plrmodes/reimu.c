@@ -83,9 +83,9 @@ int reimu_common_ofuda(Projectile *p, int t) {
 		.color = &p->color,
 		.timeout = 12,
 		.pos = p->pos + p->args[0] * 0.3,
-		.args = { p->args[0] * 0.5, 0, 1+2*I },
+		.args = { p->args[0] * 0.5 },
 		.rule = reimu_ofuda_trail,
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(1, 2, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
 	);
