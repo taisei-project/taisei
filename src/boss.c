@@ -578,8 +578,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_state_pop();
 }
 
-DEPRECATED_DRAW_RULE
-static void BossGlow(Projectile *p, int t, ProjDrawRuleArgs args) {
+static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
@@ -598,13 +597,13 @@ static void BossGlow(Projectile *p, int t, ProjDrawRuleArgs args) {
 	});
 }
 
-static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
+static Projectile *spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	return PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,
-		.draw_rule = BossGlow,
+		.draw_rule = boss_glow_draw,
 		.timeout = timeout,
 		.layer = LAYER_PARTICLE_LOW,
 		.shader = "sprite_silhouette",
@@ -1240,7 +1239,6 @@ void boss_reset_motion(Boss *boss) {
 	boss->move.retention = 0.8;
 }
 
-DEPRECATED_DRAW_RULE
 static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
