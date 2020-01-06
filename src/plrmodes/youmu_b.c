@@ -49,27 +49,26 @@ static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
 	);
 }
 
-DEPRECATED_DRAW_RULE
 static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	double lifetime = p->timeout;
-	double tt = t/lifetime;
-	double f = 0;
+	float lifetime = p->timeout;
+	float tt = t/lifetime;
+	float f = 0;
+
 	if(tt > 0.1) {
 		f = min(1,(tt-0.1)/0.2);
 	}
+
 	if(tt > 0.5) {
 		f = 1+(tt-0.5)/0.5;
 	}
 
-	r_mat_mv_push();
-	r_mat_mv_translate(creal(p->pos), cimag(p->pos),0);
-	r_mat_mv_rotate(p->angle, 0, 0, 1);
-	r_mat_mv_scale(f, 1, 1);
-	ProjDrawCore(p, &p->color);
-	r_mat_mv_pop();
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	sp.scale.x *= f;
+	r_draw_sprite(&sp);
 
-	double slicelen = 500;
-	cmplx slicepos = p->pos-(tt>0.1)*slicelen*I*cexp(I*p->angle)*(5*pow(tt-0.1,1.1)-0.5);
+	float slicelen = 500;
+	cmplx slicepos = p->pos-(tt>0.1)*slicelen*I*cdir(p->angle)*(5*pow(tt-0.1,1.1)-0.5);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&global.plr.ani),
@@ -160,7 +159,7 @@ static int youmu_slash(Enemy *e, int t) {
 			.rule = youmu_particle_slice_logic,
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 			.timeout = 100,
-			.angle = carg(pos),
+			.angle = carg(pos) + M_PI/2,
 			.layer = LAYER_PARTICLE_HIGH | 0x1,
 		);
 	}
