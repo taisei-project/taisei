@@ -1008,19 +1008,6 @@ void Shrink(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_pop();
 }
 
-void DeathShrink(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
-
-	float s = 2.0-t/(double)p->timeout*2;
-	if(s != 1) {
-		r_mat_mv_scale(s, 1, 1);
-	}
-
-	ProjDrawCore(p, &p->color);
-	r_mat_mv_pop();
-}
-
 void GrowFade(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_push();
 	apply_common_transforms(p, t);
