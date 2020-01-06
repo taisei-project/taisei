@@ -925,7 +925,7 @@ void ProjDrawCore(Projectile *proj, const Color *c) {
 	projectile_draw_sprite(proj->sprite, c, proj->opacity, proj->scale);
 }
 
-void ProjDraw(Projectile *proj, int t, ProjDrawRuleArgs args) {
+static void pdraw_basic_func(Projectile *proj, int t, ProjDrawRuleArgs args) {
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(proj, &spbuf);
 
@@ -940,7 +940,7 @@ void ProjDraw(Projectile *proj, int t, ProjDrawRuleArgs args) {
 }
 
 ProjDrawRule pdraw_basic(void) {
-	return (ProjDrawRule) { ProjDraw };
+	return (ProjDrawRule) { pdraw_basic_func };
 }
 
 static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
