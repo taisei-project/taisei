@@ -65,9 +65,8 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 		.color = &c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * 0.8, 0, 0+2*I },
-		.rule = linear,
-		.draw_rule = ScaleFade,
+		.move = move_linear(p->args[0] * 0.8),
+		.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
 	);
@@ -77,7 +76,7 @@ static int reimu_spirit_needle(Projectile *p, int t) {
 
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
 
-static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
+static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
 	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
 	c->a = 0;
 
@@ -87,12 +86,12 @@ static Projectile* reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.color = c,
 		.timeout = 12,
 		.pos = p->pos,
-		.args = { p->args[0] * rng_range(0.6, 1.0) * vfactor, 0, (1+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
-		.rule = linear,
-		.draw_rule = ScaleFade,
+		.move = move_linear(p->args[0] * rng_range(0.6, 1.0) * vfactor),
+		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.scale = REIMU_SPIRIT_HOMING_SCALE,
 	);
 }
 
@@ -118,12 +117,12 @@ static Projectile* reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
 		.color = &p->color,
 		.timeout = 32,
 		.pos = p->pos,
-		.args = { 0, 0, (1+1.5*I) * REIMU_SPIRIT_HOMING_SCALE },
 		.angle = p->angle,
 		.rule = reimu_spirit_homing_impact,
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_HIGH,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.scale = REIMU_SPIRIT_HOMING_SCALE,
 	);
 }
 
@@ -228,9 +227,8 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 			.color = color_mul_scalar(COLOR_COPY(&base_colors[i]), 2),
 			.pos = pos + 30 * cexp(I*2*M_PI/num_impacts*(i+t*0.1)),
 			.timeout = 40,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 7.5, 1, 0),
 			.layer = LAYER_BOSS + 2,
-			.args = { 0, 0, 7.5*I },
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		);
 
@@ -371,9 +369,9 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 				.pos = trail_pos,
 				.angle = rng_angle(),
 				.timeout = 30,
-				.draw_rule = ScaleFade,
+				.draw_rule = pdraw_timeout_scalefade(0.4, 0, 1, 0),
 				.rule = reimu_spirit_bomb_orb_trail,
-				.args = { trail_vel, 0, 0.4 },
+				.args = { trail_vel },
 				.flags = PFLAG_NOREFLECT,
 			);
 		}
@@ -529,13 +527,6 @@ static int reimu_spirit_slave(Enemy *e, int t) {
 	return ACTION_NONE;
 }
 
-static int reimu_spirit_yinyang_flare(Projectile *p, int t) {
-	double a = p->angle;
-	int r = linear(p, t);
-	p->angle = a;
-	return r;
-}
-
 static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 	if(!render && player_should_shoot(&global.plr, true)) {
 		RNG_ARRAY(R, 4);
@@ -544,11 +535,10 @@ static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
 			.color = RGBA(0.5, vrng_range(R[0], 0, 0.25), 0, 0),
 			.timeout = vrng_range(R[1], 8, 10),
 			.pos = e->pos,
-			.args = { -I * vrng_range(R[2], 5, 10), 0, 0.25 + 0*I },
 			.angle = vrng_angle(R[3]),
-			.rule = reimu_spirit_yinyang_flare,
-			.draw_rule = ScaleFade,
-			.flags = PFLAG_NOREFLECT,
+			.move = move_linear(-I * vrng_range(R[2], 5, 10)),
+			.draw_rule = pdraw_timeout_scalefade(0.25, 0, 1, 0),
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		);
 	}
 
@@ -567,9 +557,9 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 			.pos = e->pos,
 			.args = { -I * vrng_range(R[2], 5, 10), 0, 0.25 + 0*I },
 			.angle = vrng_angle(R[3]),
-			.rule = reimu_spirit_yinyang_flare,
-			.draw_rule = ScaleFade,
-			.flags = PFLAG_NOREFLECT,
+			.move = move_linear(-I * vrng_range(R[2], 5, 10)),
+			.draw_rule = pdraw_timeout_scalefade(0.25, 0, 1, 0),
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		);
 	}
 

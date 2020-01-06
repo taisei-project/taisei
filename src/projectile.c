@@ -1050,10 +1050,6 @@ void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
 	ScaleFadeImpl(p, t, 1);
 }
 
-void ScaleSquaredFade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	ScaleFadeImpl(p, t, 2);
-}
-
 static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	cmplx32 scale0 = args[0].as_cmplx;
 	cmplx32 scale1 = args[1].as_cmplx;
