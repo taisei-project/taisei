@@ -411,36 +411,6 @@ static int reimu_dream_ofuda(Projectile *p, int t) {
 	return r;
 }
 
-static int reimu_dream_needle(Projectile *p, int t) {
-	if(t >= 0) {
-		reimu_dream_bullet_warp(p, t);
-	}
-
-	p->angle = carg(p->args[0]);
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-
-	Color *c = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.35));
-	c->a = 0;
-
-	PARTICLE(
-		.sprite_ptr = p->sprite,
-		.color = c,
-		.timeout = 12,
-		.pos = p->pos,
-		.move = move_linear(p->args[0] * 0.8),
-		.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
-		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT,
-	);
-
-	return ACTION_NONE;
-}
-
 static void reimu_dream_shot(Player *p) {
 	play_loop("generic_shot");
 	int dmg = 60;
@@ -482,6 +452,40 @@ static void reimu_dream_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
+TASK(reimu_dream_needle, { cmplx pos; cmplx vel; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_needle2,
+		.pos = ARGS.pos,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.35),
+		.move = move_linear(ARGS.vel),
+		.type = PROJ_PLAYER,
+		.damage = 42,
+		.shader = "sprite_particle",
+	));
+
+	MoveParams trail_move = p->move;
+	trail_move.velocity *= 0.8;
+	Color *trail_color = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.35));
+	trail_color->a = 0;
+
+	for(int t = 0;; ++t) {
+		reimu_dream_bullet_warp(p, t);
+
+		PARTICLE(
+			.sprite_ptr = p->sprite,
+			.color = trail_color,
+			.timeout = 12,
+			.pos = p->pos,
+			.move = trail_move,
+			.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
+			.layer = LAYER_PARTICLE_LOW,
+			.flags = PFLAG_NOREFLECT,
+		);
+
+		YIELD;
+	}
+}
+
 static int reimu_dream_slave(Enemy *e, int t) {
 	if(t < 0) {
 		return ACTION_ACK;
@@ -508,16 +512,7 @@ static int reimu_dream_slave(Enemy *e, int t) {
 
 	if(player_should_shoot(&global.plr, true)) {
 		if(!((global.frames + 3) % 6)) {
-			PROJECTILE(
-				.proto = pp_needle2,
-				.pos = e->pos,
-				.color = RGBA_MUL_ALPHA(1, 1, 1, 0.35),
-				.rule = reimu_dream_needle,
-				.args = { 20.0 * shotdir },
-				.type = PROJ_PLAYER,
-				.damage = 42,
-				.shader = "sprite_default",
-			);
+			INVOKE_TASK(reimu_dream_needle, e->pos, 20 * shotdir);
 		}
 	}
 
