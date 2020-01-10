@@ -408,21 +408,42 @@ static void reimu_spirit_bomb_bg(Player *p) {
 	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }
 
+TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; }) {
+	Projectile *ofuda = PROJECTILE(
+		.proto = pp_ofuda,
+		.pos = ARGS.pos,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+		.move = move_linear(ARGS.vel),
+		.type = PROJ_PLAYER,
+		.damage = ARGS.damage,
+		.shader = "sprite_particle",
+	);
+
+	BoxedProjectile b_ofuda = ENT_BOX(ofuda);
+	ProjectileList trails = { 0 };
+
+	int t = 0;
+	while((ofuda = ENT_UNBOX(b_ofuda)) || trails.first) {
+		if(ofuda) {
+			reimu_common_ofuda_swawn_trail(ofuda, &trails);
+		}
+
+		for(Projectile *p = trails.first; p; p = p->next) {
+			p->color.g *= 0.95;
+		}
+
+		process_projectiles(&trails, false);
+		YIELD;
+		++t;
+	}
+}
+
 static void reimu_spirit_shot(Player *p) {
 	play_loop("generic_shot");
 
 	if(!(global.frames % 3)) {
 		int i = 1 - 2 * (bool)(global.frames % 6);
-		PROJECTILE(
-			.proto = pp_ofuda,
-			.pos = p->pos + 10 * i - 15.0*I,
-			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
-			.rule = reimu_common_ofuda,
-			.args = { -20.0*I },
-			.type = PROJ_PLAYER,
-			.damage = 100 - 8 * (p->power / 100),
-			.shader = "sprite_default",
-		);
+		INVOKE_TASK(reimu_spirit_ofuda, p->pos + 10 * i - 15.0*I, -20*I, 100 - 8 * (p->power / 100));
 	}
 
 	for(int pwr = 0; pwr <= p->power/100; ++pwr) {
