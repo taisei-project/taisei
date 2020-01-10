@@ -602,7 +602,7 @@ VsyncMode r_vsync_current(void) {
 }
 
 void r_swap(SDL_Window *window) {
-	coroutines_draw_debug();
+	coroutines_draw_stats();
 	_r_sprite_batch_end_frame();
 	B.swap(window);
 }
