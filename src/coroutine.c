@@ -15,6 +15,10 @@
 
 // #define EVT_DEBUG
 
+#ifdef DEBUG
+	#define CO_TASK_STATS
+#endif
+
 #ifdef CO_TASK_DEBUG
 	#define TASK_DEBUG(...) log_debug(__VA_ARGS__)
 #else
@@ -74,10 +78,24 @@ struct CoTask {
 #define SUBTASK_NODE_TO_TASK(n) CASTPTR_ASSUME_ALIGNED((char*)(n) - offsetof(CoTask, subtask_chain), CoTask)
 
 static LIST_ANCHOR(CoTask) task_pool;
-static size_t num_tasks_allocated;
-static size_t num_tasks_in_use;
 
 CoSched *_cosched_global;
+
+#ifdef CO_TASK_STATS
+static struct {
+	size_t num_tasks_allocated;
+	size_t num_tasks_in_use;
+	size_t num_switches_this_frame;
+} cotask_stats;
+
+#define STAT_VAL(name) (cotask_stats.name)
+#define STAT_VAL_SET(name, value) ((cotask_stats.name) = (value))
+#else
+#define STAT_VAL(name) (0)
+#define STAT_VAL_SET(name, value) (0)
+#endif
+
+#define STAT_VAL_ADD(name, value) STAT_VAL_SET(name, STAT_VAL(name) + (value))
 
 #ifdef CO_TASK_DEBUG
 static size_t debug_event_id;
@@ -105,23 +123,23 @@ CoTask *cotask_unbox(BoxedTask box) {
 
 CoTask *cotask_new(CoTaskFunc func) {
 	CoTask *task;
-	++num_tasks_in_use;
+	STAT_VAL_ADD(num_tasks_in_use, 1);
 
 	if((task = alist_pop(&task_pool))) {
 		koishi_recycle(&task->ko, func);
 		TASK_DEBUG(
 			"Recycled task %p for proc %p (%zu tasks allocated / %zu in use)",
 			(void*)task, *(void**)&func,
-			num_tasks_allocated, num_tasks_in_use
+			STAT_VAL(num_tasks_allocated), STAT_VAL(num_tasks_in_use)
 		);
 	} else {
 		task = calloc(1, sizeof(*task));
 		koishi_init(&task->ko, CO_STACK_SIZE, func);
-		++num_tasks_allocated;
+		STAT_VAL_ADD(num_tasks_allocated, 1);
 		TASK_DEBUG(
 			"Created new task %p for proc %p (%zu tasks allocated / %zu in use)",
 			(void*)task, *(void**)&func,
-			num_tasks_allocated, num_tasks_in_use
+			STAT_VAL(num_tasks_allocated), STAT_VAL(num_tasks_in_use)
 		);
 	}
 
@@ -145,12 +163,12 @@ void cotask_free(CoTask *task) {
 	memset(&task->wait, 0, sizeof(task->wait));
 	alist_push(&task_pool, task);
 
-	--num_tasks_in_use;
+	STAT_VAL_ADD(num_tasks_in_use, -1);
 
 	TASK_DEBUG(
 		"Released task %s (%zu tasks allocated / %zu in use)",
 		task->debug_label,
-		num_tasks_allocated, num_tasks_in_use
+		STAT_VAL(num_tasks_allocated), STAT_VAL(num_tasks_in_use)
 	);
 }
 
@@ -217,6 +235,7 @@ static void *cotask_force_resume(CoTask *task, void *arg) {
 
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
+	STAT_VAL_ADD(num_switches_this_frame, 1);
 	arg = koishi_resume(&task->ko, arg);
 	TASK_DEBUG("[%zu] koishi_resume returned (%s)", ev, task->debug_label);
 
@@ -313,6 +332,7 @@ void *cotask_yield(void *arg) {
 	attr_unused CoTask *task = cotask_active();
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Yielding from task %s", ev, task->debug_label);
+	STAT_VAL_ADD(num_switches_this_frame, 1);
 	arg = koishi_yield(arg);
 	TASK_DEBUG("[%zu] koishi_yield returned (%s)", ev, task->debug_label);
 	return arg;
@@ -550,19 +570,29 @@ void coroutines_shutdown(void) {
 #include "resource/font.h"
 #endif
 
-void coroutines_draw_debug(void) {
-#ifdef DEBUG
+void coroutines_draw_stats(void) {
+#ifdef CO_TASK_STATS
 	static char buf[128];
-	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ", num_tasks_in_use, num_tasks_allocated);
 
-	Font *font = get_font("monotiny");
-	text_draw(buf, &(TextParams) {
-		.pos = { SCREEN_W, font_get_lineskip(font) },
-		.font_ptr = font,
+	TextParams tp = {
+		.pos = { SCREEN_W },
 		.color = RGB(1, 1, 1),
-		.shader = "text_default",
+		.shader_ptr = r_shader_get("text_default"),
+		.font_ptr = get_font("monotiny"),
 		.align = ALIGN_RIGHT,
-	});
+	};
+
+	float ls = font_get_lineskip(tp.font_ptr);
+
+	tp.pos.y += ls;
+	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ", STAT_VAL(num_tasks_in_use), STAT_VAL(num_tasks_allocated));
+	text_draw(buf, &tp);
+
+	tp.pos.y += ls;
+	snprintf(buf, sizeof(buf), "Switches/frame: %4zu ", STAT_VAL(num_switches_this_frame));
+	text_draw(buf, &tp);
+
+	STAT_VAL_SET(num_switches_this_frame, 0);
 #endif
 }
 

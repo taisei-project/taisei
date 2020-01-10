@@ -81,7 +81,7 @@ typedef char CoTaskDebugInfo;
 
 void coroutines_init(void);
 void coroutines_shutdown(void);
-void coroutines_draw_debug(void);
+void coroutines_draw_stats(void);
 
 CoTask *cotask_new(CoTaskFunc func);
 void cotask_free(CoTask *task);
