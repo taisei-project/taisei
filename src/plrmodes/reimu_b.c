@@ -351,8 +351,8 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 	);
 }
 
-static void reimu_dream_bullet_warp(Projectile *p, int t) {
-	if(creal(p->args[3]) > 0 /*global.plr.power / 100*/) {
+static void reimu_dream_bullet_warp(Projectile *p, int *warp_count) {
+	if(*warp_count < 1) {
 		return;
 	}
 
@@ -361,7 +361,7 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
 	FOR_EACH_GAP(gap) {
-		double a = (carg(-gap->pos0) - carg(p->args[0]));
+		double a = (carg(-gap->pos0) - carg(p->move.velocity));
 
 		if(fabs(a) < 2*M_PI/3) {
 			continue;
@@ -390,30 +390,55 @@ static void reimu_dream_bullet_warp(Projectile *p, int t) {
 			reimu_dream_spawn_warp_effect(gap->pos + gap->args[0] * GAP_LENGTH * (fract - 0.5), false);
 			reimu_dream_spawn_warp_effect(o, true);
 
-			p->args[0] = -cabs(p->args[0]) * ngap->pos0;
-			p->pos = o + p->args[0];
-			p->args[3] += 1;
+			// p->args[0] = -cabs(p->args[0]) * ngap->pos0;
+			// p->pos = o + p->args[0];
+			// p->args[3] += 1;
+
+			cmplx new_vel = -cabs(p->move.velocity) * ngap->pos0;
+			real angle_diff = carg(new_vel) - carg(p->move.velocity);
+
+			p->move.velocity *= cdir(angle_diff);
+			p->move.acceleration *= cdir(angle_diff);
+			p->pos = o + p->move.velocity;
+			--*warp_count;
 		}
 	}
 }
 
-static int reimu_dream_ofuda(Projectile *p, int t) {
-	if(t >= 0) {
-		reimu_dream_bullet_warp(p, t);
+TASK(reimu_dream_ofuda, { cmplx pos; cmplx vel; }) {
+	Projectile *ofuda = PROJECTILE(
+		.proto = pp_ofuda,
+		.pos = ARGS.pos,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
+		.move = move_asymptotic(1.5 * ARGS.vel, ARGS.vel, 0.8),
+		.type = PROJ_PLAYER,
+		.damage = 60,
+		.shader = "sprite_particle",
+	);
+
+	BoxedProjectile b_ofuda = ENT_BOX(ofuda);
+	ProjectileList trails = { 0 };
+
+	int warp_cnt = 1;
+	int t = 0;
+	while((ofuda = ENT_UNBOX(b_ofuda)) || trails.first) {
+		if(ofuda) {
+			reimu_dream_bullet_warp(ofuda, &warp_cnt);
+			reimu_common_ofuda_swawn_trail(ofuda, &trails);
+		}
+
+		for(Projectile *p = trails.first; p; p = p->next) {
+			p->color.g *= 0.95;
+		}
+
+		process_projectiles(&trails, false);
+		YIELD;
+		++t;
 	}
-
-	cmplx ov = p->args[0];
-	double s = cabs(ov);
-	p->args[0] *= clamp(s * (1.5 - t / 10.0), s*1.0, 1.5*s) / s;
-	int r = reimu_common_ofuda(p, t);
-	p->args[0] = ov;
-
-	return r;
 }
 
 static void reimu_dream_shot(Player *p) {
 	play_loop("generic_shot");
-	int dmg = 60;
 
 	if(!(global.frames % 6)) {
 		for(int i = -1; i < 2; i += 2) {
@@ -421,16 +446,7 @@ static void reimu_dream_shot(Player *p) {
 			cmplx spread_dir = shot_dir * cexp(I*M_PI*0.5);
 
 			for(int j = -1; j < 2; j += 2) {
-				PROJECTILE(
-					.proto = pp_ofuda,
-					.pos = p->pos + 10 * j * spread_dir,
-					.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
-					.rule = reimu_dream_ofuda,
-					.args = { -20.0 * shot_dir },
-					.type = PROJ_PLAYER,
-					.damage = dmg,
-					.shader = "sprite_default",
-				);
+				INVOKE_TASK(reimu_dream_ofuda, p->pos + 10 * j * spread_dir, -20.0 * shot_dir);
 			}
 		}
 	}
@@ -463,20 +479,19 @@ TASK(reimu_dream_needle, { cmplx pos; cmplx vel; }) {
 		.shader = "sprite_particle",
 	));
 
-	MoveParams trail_move = p->move;
-	trail_move.velocity *= 0.8;
 	Color *trail_color = color_mul(COLOR_COPY(&p->color), RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.35));
 	trail_color->a = 0;
 
+	int warp_cnt = 1;
 	for(int t = 0;; ++t) {
-		reimu_dream_bullet_warp(p, t);
+		reimu_dream_bullet_warp(p, &warp_cnt);
 
 		PARTICLE(
 			.sprite_ptr = p->sprite,
 			.color = trail_color,
 			.timeout = 12,
 			.pos = p->pos,
-			.move = trail_move,
+			.move = move_linear(p->move.velocity * 0.8),
 			.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
 			.layer = LAYER_PARTICLE_LOW,
 			.flags = PFLAG_NOREFLECT,
