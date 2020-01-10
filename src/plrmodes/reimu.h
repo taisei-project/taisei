@@ -20,6 +20,7 @@ extern PlayerMode plrmode_reimu_b;
 
 double reimu_common_property(Player *plr, PlrProperty prop);
 int reimu_common_ofuda(Projectile *p, int t);
+Projectile *reimu_common_ofuda_swawn_trail(Projectile *p, ProjectileList *dest);
 void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c);
 void reimu_common_bomb_bg(Player *p, float alpha);
 void reimu_common_bomb_buffer_init(void);
