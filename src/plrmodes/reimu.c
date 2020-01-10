@@ -52,45 +52,19 @@ double reimu_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
-static int reimu_ofuda_trail(Projectile *p, int t) {
-	int r = linear(p, t);
-
-	if(t < 0) {
-		return r;
-	}
-
-	p->color.g *= 0.95;
-
-	return r;
-}
-
-int reimu_common_ofuda(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	p->angle = carg(p->args[0]);
-
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-
-	PARTICLE(
+Projectile *reimu_common_ofuda_swawn_trail(Projectile *p, ProjectileList *dest) {
+	return PARTICLE(
 		// .sprite_ptr = p->sprite,
 		.sprite_ptr = get_sprite("proj/hghost"),
 		.color = &p->color,
 		.timeout = 12,
-		.pos = p->pos + p->args[0] * 0.3,
-		.args = { p->args[0] * 0.5 },
-		.rule = reimu_ofuda_trail,
+		.pos = p->pos + p->move.velocity * 0.3,
+		.move = move_linear(p->move.velocity * 0.5),
 		.draw_rule = pdraw_timeout_scalefade(1, 2, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
+		.dest = dest,
 	);
-
-	return ACTION_NONE;
 }
 
 void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
