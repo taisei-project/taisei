@@ -11,7 +11,7 @@
 #include "coroutine.h"
 #include "util.h"
 
-#define CO_STACK_SIZE (128 * 1024)
+#define CO_STACK_SIZE (64 * 1024)
 
 // #define EVT_DEBUG
 
@@ -86,14 +86,21 @@ static struct {
 	size_t num_tasks_allocated;
 	size_t num_tasks_in_use;
 	size_t num_switches_this_frame;
+	size_t peak_stack_usage;
 } cotask_stats;
 
 #define STAT_VAL(name) (cotask_stats.name)
 #define STAT_VAL_SET(name, value) ((cotask_stats.name) = (value))
-#else
+
+// enable stack usage tracking (loose)
+#define CO_TASK_STATS_STACK
+
+#else // CO_TASK_STATS
+
 #define STAT_VAL(name) (0)
 #define STAT_VAL_SET(name, value) (0)
-#endif
+
+#endif // CO_TASK_STATS
 
 #define STAT_VAL_ADD(name, value) STAT_VAL_SET(name, STAT_VAL(name) + (value))
 
@@ -103,6 +110,131 @@ static size_t debug_event_id;
 #else
 #define TASK_DEBUG_EVENT(ev) ((void)0)
 #endif
+
+#ifdef CO_TASK_STATS_STACK
+
+/*
+ * Crude and simple method to estimate stack usage per task: at init time, fill
+ * the entire stack with a known 32-bit pattern (the "canary"). The canary is
+ * pseudo-random and depends on the task's unique ID. After the task is finished,
+ * try to find the first occurrence of the canary since the base of the stack
+ * with a fast binary search. If we happen to find a false canary somewhere
+ * in the middle of actually used stack space, well, tough luck. This was never
+ * meant to be exact, and it's pretty unlikely anyway. A linear search from the
+ * end of the region would fix this potential problem, but is slower.
+ *
+ * Note that we assume that the stack grows down, since that's how it is on most
+ * systems.
+ */
+
+/*
+ * Reserve some space for control structures on the stack; we don't want to
+ * overwrite that with canaries. fcontext requires this.
+ */
+#define STACK_BUFFER_UPPER 64
+#define STACK_BUFFER_LOWER 0
+
+// for splitmix32
+#include "random.h"
+
+static inline uint32_t get_canary(CoTask *task) {
+	uint32_t temp = task->unique_id;
+	return splitmix32(&temp);
+}
+
+static void *get_stack(CoTask *task, size_t *sz) {
+	char *lower = koishi_get_stack(&task->ko, sz);
+
+	// Not all koishi backends support stack inspection. Give up in those cases.
+	if(!lower || !*sz) {
+		log_debug("koishi_get_stack() returned NULL");
+		return NULL;
+	}
+
+	char *upper = lower + *sz;
+	assert(upper > lower);
+
+	lower += STACK_BUFFER_LOWER;
+	upper -= STACK_BUFFER_UPPER;
+	*sz = upper - lower;
+	return lower;
+}
+
+static void setup_stack(CoTask *task) {
+	size_t stack_size;
+	void *stack = get_stack(task, &stack_size);
+
+	if(!stack) {
+		return;
+	}
+
+	uint32_t canary = get_canary(task);
+	assert(stack_size == sizeof(canary) * (stack_size / sizeof(canary)));
+
+	for(uint32_t *p = stack; p < (uint32_t*)stack + stack_size / sizeof(canary); ++p) {
+		*p = canary;
+	}
+}
+
+/*
+ * Find the first occurrence of a canary since the base of the stack, assuming
+ * the base is at the top. Note that since this is essentially a binary search
+ * on an array that may or may *not* be sorted, it can sometimes give the wrong
+ * answer. This is fine though, since the odds are low and we only care about
+ * finding an approximate upper bound on stack usage for all tasks, anyway.
+ */
+static uint32_t *find_first_canary(uint32_t *region, size_t offset, size_t sz, uint32_t canary) {
+	if(sz == 1) {
+		return region + offset;
+	}
+
+	size_t half_size = sz / 2;
+	size_t mid_index = offset + half_size;
+
+	if(region[mid_index] == canary) {
+		return find_first_canary(region, offset + half_size, sz - half_size, canary);
+	} else {
+		return find_first_canary(region, offset, half_size, canary);
+	}
+}
+
+static void estimate_stack_usage(CoTask *task) {
+	size_t stack_size;
+	void *stack = get_stack(task, &stack_size);
+
+	if(!stack) {
+		return;
+	}
+
+	uint32_t canary = get_canary(task);
+
+	size_t num_segments = stack_size / sizeof(canary);
+	uint32_t *first_segment = stack;
+	uint32_t *p_canary = find_first_canary(stack, 0, num_segments, canary);
+	assert(p_canary[1] != canary);
+
+	size_t real_stack_size = stack_size + STACK_BUFFER_LOWER + STACK_BUFFER_UPPER;
+	size_t usage = (uintptr_t)(first_segment + num_segments - p_canary) * sizeof(canary) + STACK_BUFFER_UPPER;
+	double percentage = usage / (double)real_stack_size;
+
+	if(usage > STAT_VAL(peak_stack_usage)) {
+		TASK_DEBUG(">>> %s <<<", task->debug_label);
+		log_debug("New peak stack usage: %zu out of %zu (%.02f%%); recommended CO_STACK_SIZE >= %zu",
+			usage,
+			real_stack_size,
+			percentage * 100,
+			(size_t)(topow2_u64(usage) * 2)
+		);
+		STAT_VAL_SET(peak_stack_usage, usage);
+	}
+}
+
+#else // CO_TASK_STATS_STACK
+
+static void setup_stack(CoTask *task) { }
+static void estimate_stack_usage(CoTask *task) { }
+
+#endif // CO_TASK_STATS_STACK
 
 BoxedTask cotask_box(CoTask *task) {
 	return (BoxedTask) {
@@ -145,6 +277,7 @@ CoTask *cotask_new(CoTaskFunc func) {
 
 	static uint32_t unique_counter = 0;
 	task->unique_id = ++unique_counter;
+	setup_stack(task);
 	assert(unique_counter != 0);
 
 #ifdef CO_TASK_DEBUG
@@ -155,6 +288,8 @@ CoTask *cotask_new(CoTaskFunc func) {
 }
 
 void cotask_free(CoTask *task) {
+	estimate_stack_usage(task);
+
 	task->unique_id = 0;
 	task->supertask = NULL;
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
@@ -585,7 +720,11 @@ void coroutines_draw_stats(void) {
 	float ls = font_get_lineskip(tp.font_ptr);
 
 	tp.pos.y += ls;
-	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ", STAT_VAL(num_tasks_in_use), STAT_VAL(num_tasks_allocated));
+	snprintf(buf, sizeof(buf), "Peak stack: %zukb    Tasks: %4zu / %4zu ",
+		STAT_VAL(peak_stack_usage) / 1024,
+		STAT_VAL(num_tasks_in_use),
+		STAT_VAL(num_tasks_allocated)
+	);
 	text_draw(buf, &tp);
 
 	tp.pos.y += ls;
