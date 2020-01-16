@@ -16,7 +16,7 @@
 
 typedef struct Texture Texture;
 
-char* texture_path(const char *name);
+char *texture_path(const char *name);
 bool check_texture_path(const char *path);
 
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
@@ -31,8 +31,8 @@ void fill_screen_p(Texture *tex);
 void loop_tex_line_p(cmplx a, cmplx b, float w, float t, Texture *texture);
 void loop_tex_line(cmplx a, cmplx b, float w, float t, const char *texture);
 
-Texture* get_tex(const char *name);
-Texture* prefix_get_tex(const char *name, const char *prefix);
+Texture *get_tex(const char *name);
+Texture *prefix_get_tex(const char *name, const char *prefix);
 
 extern ResourceHandler texture_res_handler;
 
