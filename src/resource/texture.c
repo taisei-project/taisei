@@ -15,8 +15,8 @@
 #include "renderer/api.h"
 #include "util/pixmap.h"
 
-static void* load_texture_begin(const char *path, uint flags);
-static void* load_texture_end(void *opaque, const char *path, uint flags);
+static void *load_texture_begin(const char *path, uint flags);
+static void *load_texture_end(void *opaque, const char *path, uint flags);
 static void free_texture(Texture *tex);
 
 ResourceHandler texture_res_handler = {
@@ -141,35 +141,46 @@ static TextureType pixmap_format_to_texture_type(PixmapFormat fmt) {
 	bool is_float = PIXMAP_FORMAT_IS_FLOAT(fmt);
 
 	if(is_float) {
-		switch(layout) {
-			case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_32_FLOAT;
-			case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_32_FLOAT;
-			case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_32_FLOAT;
-			case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_32_FLOAT;
+		switch(depth) {
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			case 32: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_32_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_32_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_32_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_32_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			default: UNREACHABLE;
 		}
+	} else {
+		switch(depth) {
+			case 8: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_8;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_8;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_8;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_8;
+				default: UNREACHABLE;
+			}
 
-		UNREACHABLE;
-	}
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16;
+				default: UNREACHABLE;
+			}
 
-	if(depth > 8) {
-		switch(layout) {
-			case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16;
-			case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16;
-			case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16;
-			case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16;
+			default: UNREACHABLE;
 		}
-
-		UNREACHABLE;
 	}
-
-	switch(layout) {
-		case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_8;
-		case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_8;
-		case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_8;
-		case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_8;
-	}
-
-	UNREACHABLE;
 }
 
 static bool parse_format(const char *val, PixmapFormat *out) {
@@ -199,7 +210,7 @@ static bool parse_format(const char *val, PixmapFormat *out) {
 	}
 
 	if(channels < 1) {
-		log_warn("Invalid format '%s': bad channels specification, expected one of: RGBA, RGB, RG, R", val);
+		log_error("Invalid format '%s': bad channels specification, expected one of: RGBA, RGB, RG, R", val);
 		return false;
 	}
 
@@ -209,12 +220,12 @@ static bool parse_format(const char *val, PixmapFormat *out) {
 	uint depth = strtol(val + channels, &end, 10);
 
 	if(val + channels == end) {
-		log_warn("Invalid format '%s': bad depth specification, expected an integer", val);
+		log_error("Invalid format '%s': bad bit depth specification, expected an integer", val);
 		return false;
 	}
 
 	if(depth != 8 && depth != 16 && depth != 32) {
-		log_warn("Invalid format '%s': invalid bit depth %d, only 8, 16, and 32 are currently supported", val, depth);
+		log_error("Invalid format '%s': invalid bit depth %d, only 8, 16, and 32 are supported", val, depth);
 		return false;
 	}
 
@@ -230,17 +241,17 @@ static bool parse_format(const char *val, PixmapFormat *out) {
 		} else if(!SDL_strcasecmp(end, "f") || !SDL_strcasecmp(end, "float")) {
 			is_float = true;
 		} else {
-			log_warn("Invalid format '%s': bad type specification, expected one of: U, UINT, F, FLOAT, or nothing", val);
+			log_error("Invalid format '%s': bad type specification, expected one of: U, UINT, F, FLOAT, or nothing", val);
 			return false;
 		}
 	}
 
 	if(depth == 32 && !is_float) {
-		log_warn("Invalid format '%s': bit depth %d is currently only supported for floating point pixels", val, depth);
+		log_error("Invalid format '%s': bit depth %d is only supported for floating point pixels", val, depth);
 		return false;
-	} else if(depth < 32 && is_float) {
-		log_warn("Bit depth %d is currently not supported for floating point pixels, promoting to 32", depth);
-		depth = 32;
+	} else if(depth < 16 && is_float) {
+		log_error("Invalid format '%s': bit depth %d is not supported for floating point pixels", val, depth);
+		return false;
 	}
 
 	*out = PIXMAP_MAKE_FORMAT(channels, depth) | (is_float * PIXMAP_FLOAT_BIT);
@@ -444,7 +455,7 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	return fbo_tex;
 }
 
-static void* load_texture_end(void *opaque, const char *path, uint flags) {
+static void *load_texture_end(void *opaque, const char *path, uint flags) {
 	TextureLoadData *ld = opaque;
 
 	if(!ld) {
@@ -486,11 +497,11 @@ static void* load_texture_end(void *opaque, const char *path, uint flags) {
 	return texture;
 }
 
-Texture* get_tex(const char *name) {
+Texture *get_tex(const char *name) {
 	return r_texture_get(name);
 }
 
-Texture* prefix_get_tex(const char *name, const char *prefix) {
+Texture *prefix_get_tex(const char *name, const char *prefix) {
 	uint plen = strlen(prefix);
 	char buf[plen + strlen(name) + 1];
 	strcpy(buf, prefix);

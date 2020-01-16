@@ -27,7 +27,7 @@ typedef struct GLTextureTypeInfo {
 	GLTextureFormatTuple primary_external_format;
 } GLTextureTypeInfo;
 
-GLTextureFormatTuple* glcommon_find_best_pixformat(TextureType textype, PixmapFormat pxfmt);
+GLTextureFormatTuple *glcommon_find_best_pixformat(TextureType textype, PixmapFormat pxfmt);
 GLenum glcommon_texture_base_format(GLenum internal_fmt);
 
 #endif // IGUARD_renderer_glcommon_texture_h
