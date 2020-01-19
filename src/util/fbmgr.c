@@ -31,9 +31,15 @@ struct ManagedFramebufferGroup {
 
 static ManagedFramebufferData *framebuffers;
 
-static inline void fbmgr_framebuffer_get_metrics(ManagedFramebuffer *mfb, IntExtent *fb_size, FloatRect *fb_viewport) {
+static inline bool fbmgr_framebuffer_get_metrics(ManagedFramebuffer *mfb, IntExtent *fb_size, FloatRect *fb_viewport) {
 	ManagedFramebufferData *mfb_data = GET_DATA(mfb);
+
+	if(!mfb_data->resize_strategy.resize_func) {
+		return false;
+	}
+
 	mfb_data->resize_strategy.resize_func(mfb_data->resize_strategy.userdata, fb_size, fb_viewport);
+	return true;
 }
 
 static void fbmgr_framebuffer_update(ManagedFramebuffer *mfb) {
@@ -41,7 +47,9 @@ static void fbmgr_framebuffer_update(ManagedFramebuffer *mfb) {
 	FloatRect fb_viewport;
 	Framebuffer *fb = mfb->fb;
 
-	fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport);
+	if(!fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport)) {
+		return;
+	}
 
 	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
 		fbutil_resize_attachment(fb, i, fb_size.w, fb_size.h);
@@ -57,7 +65,6 @@ static void fbmgr_framebuffer_update_all(void) {
 }
 
 ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const FramebufferConfig *cfg) {
-	assert(cfg->resize_strategy.resize_func != NULL);
 	assert(cfg->attachments != NULL);
 	assert(cfg->num_attachments >= 1);
 
@@ -72,11 +79,17 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 
 	IntExtent fb_size;
 	FloatRect fb_viewport;
-	fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport);
 
-	for(int i = 0; i < cfg->num_attachments; ++i) {
-		ac[i].tex_params.width = fb_size.w;
-		ac[i].tex_params.height = fb_size.h;
+	if(fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport)) {
+		for(int i = 0; i < cfg->num_attachments; ++i) {
+			ac[i].tex_params.width = fb_size.w;
+			ac[i].tex_params.height = fb_size.h;
+		}
+	} else {
+		fb_viewport.x = 0;
+		fb_viewport.y = 0;
+		fb_viewport.w = ac[0].tex_params.width;
+		fb_viewport.h = ac[0].tex_params.height;
 	}
 
 	fbutil_create_attachments(mfb->fb, cfg->num_attachments, ac);
@@ -173,4 +186,3 @@ void fbmgr_group_fbpair_create(ManagedFramebufferGroup *group, const char *name,
 	snprintf(buf, sizeof(buf), "%s FB 2", name);
 	fbpair->back = fbmgr_group_framebuffer_create(group, buf, cfg);
 }
-

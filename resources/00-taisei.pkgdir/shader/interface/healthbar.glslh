@@ -11,6 +11,7 @@ ATTRIBUTE(2) vec2 texCoordRawIn;
 
 #ifdef FRAG_STAGE
 OUT(0) vec4 fragColor;
+OUT(1) vec4 fragGlow;
 #endif
 
 VARYING(0) vec2 texCoord;

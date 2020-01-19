@@ -58,6 +58,28 @@ vec4 alphaCompose(vec4 bg, vec4 fg) {
     return fg + bg * (1.0 - fg.a);
 }
 
+vec4 glowmap(vec4 color, float additiveFactor, float opaqueFactor, float transFactor, float opaqueOcclusion) {
+	vec4 glowAdditive = vec4(additiveFactor * (max(vec3(0), color.rgb) - color.a), 0);
+	vec4 glowOpaque = vec4(color.rgb * opaqueFactor * color.a, color.a * opaqueOcclusion);
+	vec4 glowTrans = vec4(color.rgb * transFactor * (1 - color.a), 0);
+	return alphaCompose(glowAdditive + glowTrans, glowOpaque);
+}
+
+vec4 glowmap(vec4 color) {
+	float additiveFactor = 1.0;
+	float opaqueFactor = 0.0;
+	float transFactor = 0.0;
+	float opaqueOcclusion = 1.0;
+	return glowmap(color, additiveFactor, opaqueFactor, transFactor, opaqueOcclusion);
+}
+
+vec4 glowmap(vec4 color, float additiveFactor) {
+	float opaqueFactor = 0.0;
+	float transFactor = 0.0;
+	float opaqueOcclusion = 1.0;
+	return glowmap(color, additiveFactor, opaqueFactor, transFactor, opaqueOcclusion);
+}
+
 // Taken from http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 
 vec3 rgb2hsv(vec3 c) {
@@ -81,6 +103,38 @@ vec3 hueShift(vec3 c, float s) {
     vec3 hsv = rgb2hsv(c);
     hsv.x += s;
     return hsv2rgb(hsv);
+}
+
+float smoothmin(float a, float b, float k) {
+	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+vec2 smoothmin(vec2 a, vec2 b, vec2 k) {
+	vec2 h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+vec2 smoothmin(vec2 a, vec2 b, float k) {
+	return smoothmin(a, b, vec2(k));
+}
+
+vec3 smoothmin(vec3 a, vec3 b, vec3 k) {
+	vec3 h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+vec3 smoothmin(vec3 a, vec3 b, float k) {
+	return smoothmin(a, b, vec3(k));
+}
+
+vec4 smoothmin(vec4 a, vec4 b, vec4 k) {
+	vec4 h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+vec4 smoothmin(vec4 a, vec4 b, float k) {
+	return smoothmin(a, b, vec4(k));
 }
 
 float flip_topleft_to_native(float x) {

@@ -31,6 +31,7 @@ ATTRIBUTE(14)  vec4  spriteCustomParams;
 
 #ifdef FRAG_STAGE
 OUT(0) vec4 fragColor;
+OUT(1) vec4 fragGlow;
 #endif
 
 UNIFORM(0) sampler2D tex;

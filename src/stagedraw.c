@@ -54,6 +54,7 @@ static struct {
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
+	FBPair glow_fbpair;
 
 	bool framerate_graphs;
 	bool objpool_stats;
@@ -169,15 +170,28 @@ static void stage_draw_fbpair_create(
 	fbmgr_group_fbpair_create(stagedraw.mfb_group, name, &fbconf, pair);
 }
 
+static void stage_draw_setup_glow_framebuffers(void) {
+	FBAttachmentConfig a = { 0 };
+	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a.tex_params.filter.min = TEX_FILTER_LINEAR;
+	a.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	a.tex_params.width = VIEWPORT_W;
+	a.tex_params.height = VIEWPORT_H;
+	a.tex_params.type = TEX_TYPE_RGB_16_FLOAT;
+	a.tex_params.wrap.s = TEX_WRAP_CLAMP;
+	a.tex_params.wrap.t = TEX_WRAP_CLAMP;
+
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = &a;
+	fbconf.num_attachments = 1;
+	fbmgr_group_fbpair_create(stagedraw.mfb_group, "Stage glow", &fbconf, &stagedraw.glow_fbpair);
+}
+
 static void stage_draw_setup_framebuffers(void) {
-	FBAttachmentConfig a[2], *a_color, *a_depth;
+	FBAttachmentConfig a[2];
 	memset(a, 0, sizeof(a));
 
-	a_color = &a[0];
-	a_depth = &a[1];
-
-	a_color->attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	a_depth->attachment = FRAMEBUFFER_ATTACH_DEPTH;
+	a[0].attachment = FRAMEBUFFER_ATTACH_COLOR0;
 
 	StageFramebufferResizeParams rp_fg =     { .scaling_base = FBPAIR_FG,     .scale.best = 1, .scale.worst = 1 };
 	StageFramebufferResizeParams rp_fg_aux = { .scaling_base = FBPAIR_FG_AUX, .scale.best = 1, .scale.worst = 1 };
@@ -192,31 +206,36 @@ static void stage_draw_setup_framebuffers(void) {
 		.wrap.t = TEX_WRAP_MIRROR,
 	};
 
-	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
-	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
+	for(int i = 0; i < ARRAY_SIZE(a); ++i) {
+		a[i].tex_params = tex_common;
+	}
 
-	a_depth->tex_params.type = TEX_TYPE_DEPTH;
-
-	// Foreground: 1 RGB texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGB_16;
-	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 1, a, &rp_fg, "Stage FG");
+	// Foreground: 1 RGB texture + glow buffer per FB
+	a[0].tex_params.type = TEX_TYPE_RGB_16;
+	a[1].attachment = FRAMEBUFFER_ATTACH_COLOR1;
+	a[1].tex_params.type = TEX_TYPE_RGB_16_FLOAT;
+	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG, 2, a, &rp_fg, "Stage FG");
 
 	// Foreground auxiliary: 1 RGBA texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGBA_8;
+	a[0].tex_params.type = TEX_TYPE_RGBA_8;
 	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a, &rp_fg_aux, "Stage FG AUX");
 
-	// Background: 1 RGB texture + depth per FB
-	a_color->tex_params.type = TEX_TYPE_RGB_8;
+	// Background: 1 RGB texture + depth buffer per FB
+	a[0].tex_params.type = TEX_TYPE_RGB_8;
+	a[1].attachment = FRAMEBUFFER_ATTACH_DEPTH;
+	a[1].tex_params.type = TEX_TYPE_DEPTH;
 	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, &rp_bg, "Stage BG");
 
 	// Background auxiliary: 1 RGBA texture per FB
-	a_color->tex_params.type = TEX_TYPE_RGBA_8;
+	a[0].tex_params.type = TEX_TYPE_RGBA_8;
 	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_BG_AUX, 1, a, &rp_bg_aux, "Stage BG AUX");
 
 	// CAUTION: should be at least 16-bit, lest the feedback shader do an oopsie!
-	a_color->tex_params.type = TEX_TYPE_RGBA_16;
-	stagedraw.powersurge_fbpair.front = stage_add_background_framebuffer("Powersurge effect FB 1", 0.125, 0.25, 1, a);
-	stagedraw.powersurge_fbpair.back  = stage_add_background_framebuffer("Powersurge effect FB 2", 0.125, 0.25, 1, a);
+	a[0].tex_params.type = TEX_TYPE_RGBA_16;
+	stagedraw.powersurge_fbpair.front = stage_add_background_framebuffer("Powersurge effect FB 1", 0.125, 0.25, 1, &a[0]);
+	stagedraw.powersurge_fbpair.back  = stage_add_background_framebuffer("Powersurge effect FB 2", 0.125, 0.25, 1, &a[0]);
+
+	stage_draw_setup_glow_framebuffers();
 }
 
 static Framebuffer *add_custom_framebuffer(
@@ -960,6 +979,50 @@ void stage_draw_viewport(void) {
 	r_mat_mv_pop();
 }
 
+static void stage_draw_glow(void) {
+	r_state_push();
+
+	Framebuffer *glow_accum = stagedraw.glow_fbpair.front;
+	Framebuffer *glow_staging = stagedraw.glow_fbpair.back;
+	FBPair *foreground = stage_get_fbpair(FBPAIR_FG);
+
+	r_shader("glow_feedback");
+	r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
+
+	r_blend(BLEND_NONE);
+	r_framebuffer(glow_staging);
+	r_uniform_vec2("blur_direction", 1, 0);
+	r_uniform_float("fade", 1);
+	draw_framebuffer_attachment(foreground->front, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_COLOR1);
+
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_framebuffer(glow_accum);
+	r_uniform_vec2("blur_direction", 0, 1);
+	r_uniform_float("fade", 1);
+	draw_framebuffer_tex(glow_staging, VIEWPORT_W, VIEWPORT_H);
+
+	r_blend(BLEND_NONE);
+
+	for(int i = 0; i < 1; ++i) {
+		r_framebuffer(glow_staging);
+		r_uniform_vec2("blur_direction", 1, 0);
+		r_uniform_float("fade", 1);
+		draw_framebuffer_tex(glow_accum, VIEWPORT_W, VIEWPORT_H);
+
+		r_framebuffer(glow_accum);
+		r_uniform_vec2("blur_direction", 0, 1);
+		r_uniform_float("fade", 0.7);
+		draw_framebuffer_tex(glow_staging, VIEWPORT_W, VIEWPORT_H);
+	}
+
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_shader("glow_apply");
+	r_framebuffer(foreground->front);
+	draw_framebuffer_tex(glow_accum, VIEWPORT_W, VIEWPORT_H);
+
+	r_state_pop();
+}
+
 void stage_draw_scene(StageInfo *stage) {
 #ifdef DEBUG
 	bool key_nobg = gamekeypressed(KEY_NOBACKGROUND);
@@ -986,6 +1049,10 @@ void stage_draw_scene(StageInfo *stage) {
 
 	begin_viewport_shake();
 
+	if(!key_nobg) {
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+	}
+
 	if(draw_bg) {
 		// blit the background
 		r_state_push();
@@ -999,8 +1066,6 @@ void stage_draw_scene(StageInfo *stage) {
 		if(global.plr.mode->procs.bombbg /*&& player_is_bomb_active(&global.plr)*/) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
-	} else if(!key_nobg) {
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 
 	// draw the 2D objects
@@ -1011,6 +1076,8 @@ void stage_draw_scene(StageInfo *stage) {
 	// prepare to apply postprocessing
 	fbpair_swap(foreground);
 	r_blend(BLEND_NONE);
+
+	stage_draw_glow();
 
 	// bomb effects shader if present and player bombing
 	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {

@@ -16,7 +16,7 @@
 // #define EVT_DEBUG
 
 #ifdef DEBUG
-	#define CO_TASK_STATS
+//	#define CO_TASK_STATS
 #endif
 
 #ifdef CO_TASK_DEBUG

@@ -1,5 +1,6 @@
 
 #include "../interface/sprite.glslh"
+#include "util.glslh"
 
 #ifndef SPRITE_USE_DISCARD
 #define SPRITE_USE_DISCARD 1
@@ -14,15 +15,29 @@
 #define SPRITE_DISCARD_DEBUG 0
 #endif
 
+#ifdef SPRITE_GLOW_CONTROL
+void spriteMain(out vec4 fragColor, out vec4 fragGlow);
+#else
 void spriteMain(out vec4 fragColor);
+#endif
 
 void main(void) {
 	vec4 color = vec4(0);
+	vec4 glow = vec4(0);
+
+#ifdef SPRITE_GLOW_CONTROL
+	spriteMain(color, glow);
+#else
 	spriteMain(color);
+	glow = glowmap(color);
+#endif
 
 	#if SPRITE_USE_DISCARD
 	// if(color == vec4(0)) {
-	if(all(lessThan(color, vec4(SPRITE_DISCARD_THRESHOLD)))) {
+	if(
+		all(lessThan(color, vec4(SPRITE_DISCARD_THRESHOLD))) &&
+		all(lessThan(glow,  vec4(SPRITE_DISCARD_THRESHOLD)))
+	) {
 		#if SPRITE_DISCARD_DEBUG
 		if(color == vec4(0)) {
 			color = vec4(0, 1, 0, 1) * 0.05;
@@ -36,4 +51,5 @@ void main(void) {
 	#endif
 
 	fragColor = color;
+	fragGlow = glow;
 }

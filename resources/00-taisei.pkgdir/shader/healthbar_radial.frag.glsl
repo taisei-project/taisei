@@ -76,4 +76,6 @@ void main(void) {
     fragColor = alphaCompose(fragColor, borderColor * inner);
     fragColor = alphaCompose(fragColor, borderColor * outer);
     fragColor *= opacity;
+
+    fragGlow = vec4(vec3(0), opacity * (glow + 2 * (fillFactor + inner + outer)));
 }

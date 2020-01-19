@@ -195,8 +195,8 @@ double smoothstep(double edge0, double edge1, double x) {
 }
 
 double smoothmin(double a, double b, double k) {
-  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-  return lerp(b, a, h) - k * h * (1.0 - h);
+	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return lerp(b, a, h) - k * h * (1.0 - h);
 }
 
 int sign(double x) {

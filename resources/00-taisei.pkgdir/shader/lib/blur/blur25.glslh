@@ -4,33 +4,37 @@
 #ifndef BLUR_blur25_H
 #define BLUR_blur25_H
 
+#ifndef BLUR25_SAMPLER_FUNC
+#define BLUR25_SAMPLER_FUNC(sampler, uv) texture(sampler, uv)
+#endif
+
 vec4 sample_blur25(sampler2D tex, vec2 uv, vec2 dir) {
     return
-        texture(tex, uv - dir * 12.0) * 0.0017488220286339797 +
-        texture(tex, uv - dir * 11.0) * 0.003305608712046086 +
-        texture(tex, uv - dir * 10.0) * 0.005911712274266129 +
-        texture(tex, uv - dir * 9.0) * 0.01000302024073443 +
-        texture(tex, uv - dir * 8.0) * 0.016014191642463458 +
-        texture(tex, uv - dir * 7.0) * 0.024256878344979343 +
-        texture(tex, uv - dir * 6.0) * 0.03476328537688979 +
-        texture(tex, uv - dir * 5.0) * 0.04713708609985263 +
-        texture(tex, uv - dir * 4.0) * 0.06047288180641397 +
-        texture(tex, uv - dir * 3.0) * 0.07340313576063635 +
-        texture(tex, uv - dir * 2.0) * 0.08429941797229662 +
-        texture(tex, uv - dir) * 0.09159896233905987 +
-        texture(tex, uv) * 0.09416999480345471 +
-        texture(tex, uv + dir) * 0.09159896233905987 +
-        texture(tex, uv + dir * 2.0) * 0.08429941797229662 +
-        texture(tex, uv + dir * 3.0) * 0.07340313576063635 +
-        texture(tex, uv + dir * 4.0) * 0.06047288180641397 +
-        texture(tex, uv + dir * 5.0) * 0.04713708609985263 +
-        texture(tex, uv + dir * 6.0) * 0.03476328537688979 +
-        texture(tex, uv + dir * 7.0) * 0.024256878344979343 +
-        texture(tex, uv + dir * 8.0) * 0.016014191642463458 +
-        texture(tex, uv + dir * 9.0) * 0.01000302024073443 +
-        texture(tex, uv + dir * 10.0) * 0.005911712274266129 +
-        texture(tex, uv + dir * 11.0) * 0.003305608712046086 +
-        texture(tex, uv + dir * 12.0) * 0.0017488220286339797;
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 12.0) * 0.0017488220286339797 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 11.0) * 0.003305608712046086 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 10.0) * 0.005911712274266129 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 9.0) * 0.01000302024073443 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 8.0) * 0.016014191642463458 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 7.0) * 0.024256878344979343 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 6.0) * 0.03476328537688979 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 5.0) * 0.04713708609985263 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 4.0) * 0.06047288180641397 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 3.0) * 0.07340313576063635 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir * 2.0) * 0.08429941797229662 +
+        BLUR25_SAMPLER_FUNC(tex, uv - dir) * 0.09159896233905987 +
+        BLUR25_SAMPLER_FUNC(tex, uv) * 0.09416999480345471 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir) * 0.09159896233905987 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 2.0) * 0.08429941797229662 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 3.0) * 0.07340313576063635 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 4.0) * 0.06047288180641397 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 5.0) * 0.04713708609985263 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 6.0) * 0.03476328537688979 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 7.0) * 0.024256878344979343 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 8.0) * 0.016014191642463458 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 9.0) * 0.01000302024073443 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 10.0) * 0.005911712274266129 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 11.0) * 0.003305608712046086 +
+        BLUR25_SAMPLER_FUNC(tex, uv + dir * 12.0) * 0.0017488220286339797;
 }
 
 #endif
