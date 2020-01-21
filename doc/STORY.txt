@@ -171,19 +171,19 @@
   ○ Stage 1 Boss
     Cirno
     Species: Fairy
-    Field of Study: Physics (Thermodynamic Systems)
+    Field of Study: Thermodynamic Systems
 
     The lovably-foolish ice fairy.
 
     Perhaps she's a bit unsatisified after her recent duels with secret gods and hellish fairies?
 
-    Considering going easy on her.
+    Consider going easy on her.
 
     
   ○ Stage 2 Boss
     Kagiyama Hina
-    Species: Youkai
-    Field of Study: Physics (Gyroscopic Stabilization)
+    Species: Pestilence God 
+    Field of Study: Gyroscopic Stabilization
 
     Guardian of Youkai Mountain. Her angular momentum is out of this world!
 
@@ -235,6 +235,6 @@
 
     A little bit upset over being forgotten. 
 
-    Has apparently hung up her scythe and gotten herself a tutor in the "dark art" of theoretical physics. Her side-hustle is megalomania. 
+    Has apparently gotten herself a tutor in the "dark art" of theoretical physics. Her side-hustle is megalomania. 
 
     Literally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent youkai below when her Tower of Babel starts to crumble.
