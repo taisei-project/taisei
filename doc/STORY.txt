@@ -131,7 +131,7 @@
 
     The confident, hyperactive witch.
 
-    Curious as ever about the limits of magic and the nature of reality, when she hears about "eldritch lunacy," her ears perk up.
+    Curious as ever about the limits of magic and the nature of reality, and when she hears about "eldritch lunacy," her curiosity gets the better of her.
 
     But maybe this "grimoire" is best left unread?
 
@@ -148,7 +148,7 @@
 
     Entirely too serious about everything, and utterly terrified of (half of) her own existence.
 
-    Still, she can't have spirits from the Netherworld getting too antsy, espeically not with Lady Yuyuko giving her a mission.
+    Still, she's been given an important mission by Lady Yuyuko. Hopefully she doesn't let it get to her head too much.
     
 
 ================================================================================
@@ -221,12 +221,11 @@
     Species: Oarfish
     Field of Study: Meteorology (Fulminology)
 
-    Messenger from the clouds, and amateur meteorologist.
+    Messenger from the clouds, and an amateur meteorologist.
 
     Seems to have been reading a few too many outdated psychiatry textbooks in recent times.
 
-    But she's the only one who seems to really know what's going on, despite being so formal and stuffy.
-
+    Despite being so formal and stuff, she seems to be the only one who knows what's going on.
 
   ○ Stage 6 Boss
     Elly
