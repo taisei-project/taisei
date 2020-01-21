@@ -78,7 +78,7 @@ static GLTextureFormatTuple* glcommon_find_best_pixformat_internal(GLTextureForm
 	return best;
 }
 
-GLTextureFormatTuple* glcommon_find_best_pixformat(TextureType textype, PixmapFormat pxfmt) {
+GLTextureFormatTuple *glcommon_find_best_pixformat(TextureType textype, PixmapFormat pxfmt) {
 	GLTextureFormatTuple *formats = GLVT.texture_type_info(textype)->external_formats;
 	return glcommon_find_best_pixformat_internal(formats, pxfmt);
 }

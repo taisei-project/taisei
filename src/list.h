@@ -116,7 +116,8 @@ ListContainer* list_wrap_container(void *data) attr_returns_allocated;
 			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
 		static_assert(__builtin_offsetof(__typeof__(**(expr)), list_interface) == 0, \
 			"list_interface must be the first member in struct"); \
-		CASTPTR_ASSUME_ALIGNED((expr), List*); \
+		(void)ASSUME_ALIGNED(*(expr), alignof(List)); \
+		(List**)(expr); \
 	}))
 
 	#define LIST_ANCHOR_CAST(expr) (__extension__ ({ \

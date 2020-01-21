@@ -3,7 +3,9 @@ project('taisei', 'c',
     version : 'v1.4-dev',
     meson_version : '>=0.48.0',
     default_options : [
-        'c_std=c11',
+        # Should really be c11, but gnu11 is a safer default because everything is terrible.
+        'c_std=gnu11',
+
         'default_library=static',
 
         'libzip:enable_crypto=false',
@@ -34,6 +36,25 @@ is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_o
 cc = meson.get_compiler('c')
 python3 = import('python3').find_python()
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
+
+if cc.get_id() == 'emscripten'
+    # emscripten LTO is really tricky
+    # this logic should really be in Meson
+
+    if get_option('b_lto')
+        emscripten_global_link_args = [
+            '-s', 'WASM_OBJECT_FILES=0',
+            '--llvm-lto', '1',
+            '-flto',
+        ]
+    else
+        emscripten_global_link_args = []
+    endif
+    add_global_arguments(emscripten_global_link_args, language : 'c', native : false)
+    add_global_arguments(emscripten_global_link_args, language : 'cpp', native : false)
+    add_global_link_arguments(emscripten_global_link_args, language : 'c', native : false)
+    add_global_link_arguments(emscripten_global_link_args, language : 'cpp', native : false)
+endif
 
 subdir('scripts')
 
@@ -193,10 +214,33 @@ endif
 
 config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
 
-have_posix    =     cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
+have_posix = cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
+
+# Feature test macros _SUCK_!
+# On some platforms (FreeBSD, macOS, ...), defining _POSIX_C_SOURCE disables C11
+# symbols, EVEN WHEN COMPILING IN C11 MODE! On macOS you can get around this
+# with _DARWIN_C_SOURCE; on BSD you're screwed apparently. Some libCs require
+# _POSIX_C_SOURCE for posix functionality (musl, glibc with __STRICT_ANSI__),
+# others include everything by default, it's an inconsistent trash fire. So far
+# the safest option seems to be to compile without strict conformance and only
+# define _POSIX_C_SOURCE if we have to.
+if have_posix
+    if not cc.has_header_symbol('stdio.h', 'fileno')
+        # No POSIX stuff by default? Then request it, and assume the libc isn't
+        # braindead enough to hide the standard C11 APIs.
+        # If it is then your system sucks.
+        config.set('_POSIX_C_SOURCE', '200809L')
+    endif
+
+    # For good measure
+    if host_machine.system() == 'darwin'
+        config.set('_DARWIN_C_SOURCE', true)
+    endif
+endif
+
 have_vla      = not cc.has_header_symbol('stdlib.h', '__STDC_NO_VLA__')
 have_complex  = not cc.has_header_symbol('stdlib.h', '__STDC_NO_COMPLEX__')
-have_timespec =     cc.has_header_symbol('time.h',   'timespec_get')
+have_timespec =     cc.has_function('timespec_get')
 
 assert(have_vla and have_complex, 'Your C implementation needs to support complex numbers and variable-length arrays.')
 
@@ -204,7 +248,16 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
-config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', cc.alignment('max_align_t', prefix : '#include <stddef.h>\n'))
+
+if host_machine.system() == 'emscripten'
+    # Emscripten bug: https://github.com/emscripten-core/emscripten/issues/10072
+    config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', 8)
+    config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', false)
+else
+    malloc_alignment = cc.alignment('max_align_t', prefix : '#include <stddef.h>\n')
+    config.set('TAISEI_BUILDCONF_MALLOC_ALIGNMENT', malloc_alignment)
+    config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', malloc_alignment > 0)
+endif
 
 prefer_relpath_systems = [
     'windows',
@@ -282,8 +335,6 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
-# fixes some build issues on macOS, see PR #183
-config.set('TAISEI_BUILDCONF_DARWIN_SOURCE', (host_machine.system() == 'darwin'))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
 install_docs = get_option('docs') and host_machine.system() != 'emscripten'

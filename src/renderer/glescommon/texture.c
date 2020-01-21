@@ -13,18 +13,22 @@
 
 #define FMT_R8      { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8      }
 #define FMT_R16     { GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16     }
+#define FMT_R16F    { GL_RED,  GL_FLOAT,          PIXMAP_FORMAT_R32F    }
 #define FMT_R32F    { GL_RED,  GL_FLOAT,          PIXMAP_FORMAT_R32F    }
 
 #define FMT_RG8     { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8     }
 #define FMT_RG16    { GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16    }
+#define FMT_RG16F   { GL_RG,   GL_FLOAT,          PIXMAP_FORMAT_RG32F   }
 #define FMT_RG32F   { GL_RG,   GL_FLOAT,          PIXMAP_FORMAT_RG32F   }
 
 #define FMT_RGB8    { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8    }
 #define FMT_RGB16   { GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16   }
+#define FMT_RGB16F  { GL_RGB,  GL_FLOAT,          PIXMAP_FORMAT_RGB32F  }
 #define FMT_RGB32F  { GL_RGB,  GL_FLOAT,          PIXMAP_FORMAT_RGB32F  }
 
 #define FMT_RGBA8   { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8   }
 #define FMT_RGBA16  { GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16  }
+#define FMT_RGBA16F { GL_RGBA, GL_FLOAT,          PIXMAP_FORMAT_RGBA32F }
 #define FMT_RGBA32F { GL_RGBA, GL_FLOAT,          PIXMAP_FORMAT_RGBA32F }
 
 #define FMT_DEPTH   { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 }
@@ -44,6 +48,11 @@ static GLTextureTypeInfo gles_texformats[] = {
 	[TEX_TYPE_RGB_16]         = MAKEFMT(GL_RGB8,  FMT_RGB8),
 	[TEX_TYPE_RGBA_16]        = MAKEFMT(GL_RGBA8, FMT_RGBA8),
 
+	[TEX_TYPE_R_16_FLOAT]     = MAKEFMT(GL_RGB8,  FMT_RGB8),
+	[TEX_TYPE_RG_16_FLOAT]    = MAKEFMT(GL_RGB8,  FMT_RGB8),
+	[TEX_TYPE_RGB_16_FLOAT]   = MAKEFMT(GL_RGB8,  FMT_RGB8),
+	[TEX_TYPE_RGBA_16_FLOAT]  = MAKEFMT(GL_RGBA8, FMT_RGBA8),
+
 	[TEX_TYPE_R_32_FLOAT]     = MAKEFMT(GL_RGB8,  FMT_RGB8),
 	[TEX_TYPE_RG_32_FLOAT]    = MAKEFMT(GL_RGB8,  FMT_RGB8),
 	[TEX_TYPE_RGB_32_FLOAT]   = MAKEFMT(GL_RGB8,  FMT_RGB8),
@@ -52,6 +61,9 @@ static GLTextureTypeInfo gles_texformats[] = {
 	// WARNING: ANGLE bug(?): texture binding fails if a sized format is used here.
 	[TEX_TYPE_DEPTH_8]        = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
 	[TEX_TYPE_DEPTH_16]       = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_24]       = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_32]       = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
+	[TEX_TYPE_DEPTH_16_FLOAT] = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
 	[TEX_TYPE_DEPTH_32_FLOAT] = MAKEFMT(GL_DEPTH_COMPONENT16, FMT_DEPTH),
 };
 
@@ -74,6 +86,9 @@ void gles_init_texformats_table(void) {
 	if(is_angle) {
 		set_format(TEX_TYPE_DEPTH_8, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
 		set_format(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+		set_format(TEX_TYPE_DEPTH_24, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+		set_format(TEX_TYPE_DEPTH_32, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
+		set_format(TEX_TYPE_DEPTH_16_FLOAT, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
 		set_format(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, FMTSTRUCT(FMT_DEPTH));
 	}
 
@@ -93,9 +108,13 @@ void gles_init_texformats_table(void) {
 		}
 
 		if(have_float32 || have_float16) {
-			set_format(TEX_TYPE_R_32_FLOAT, have_float32 ? GL_R32F : GL_R16F, FMTSTRUCT(FMT_R32F));
+			set_format(TEX_TYPE_R_16_FLOAT,  have_float16 ? GL_R16F  : GL_R32F,  FMTSTRUCT(FMT_R16F));
+			set_format(TEX_TYPE_RG_16_FLOAT, have_float16 ? GL_RG16F : GL_RG32F, FMTSTRUCT(FMT_RG16F));
+			set_format(TEX_TYPE_R_32_FLOAT,  have_float32 ? GL_R32F  : GL_R16F,  FMTSTRUCT(FMT_R32F));
 			set_format(TEX_TYPE_RG_32_FLOAT, have_float32 ? GL_RG32F : GL_RG16F, FMTSTRUCT(FMT_RG32F));
 		} else {
+			gles_texformats[TEX_TYPE_R_16_FLOAT] = gles_texformats[TEX_TYPE_R_16];
+			gles_texformats[TEX_TYPE_RG_16_FLOAT] = gles_texformats[TEX_TYPE_RG_16];
 			gles_texformats[TEX_TYPE_R_32_FLOAT] = gles_texformats[TEX_TYPE_R_16];
 			gles_texformats[TEX_TYPE_RG_32_FLOAT] = gles_texformats[TEX_TYPE_RG_16];
 		}
@@ -106,9 +125,13 @@ void gles_init_texformats_table(void) {
 		}
 
 		if(have_float32 || have_float16) {
-			set_format(TEX_TYPE_R_32_FLOAT, have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
+			set_format(TEX_TYPE_R_16_FLOAT,  have_float16 ? GL_RGBA16F : GL_RGBA32F, FMTSTRUCT(FMT_RGBA16F));
+			set_format(TEX_TYPE_RG_16_FLOAT, have_float16 ? GL_RGBA16F : GL_RGBA32F, FMTSTRUCT(FMT_RGBA16F));
+			set_format(TEX_TYPE_R_32_FLOAT,  have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
 			set_format(TEX_TYPE_RG_32_FLOAT, have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
 		} else {
+			gles_texformats[TEX_TYPE_R_16_FLOAT] = gles_texformats[TEX_TYPE_R_16];
+			gles_texformats[TEX_TYPE_RG_16_FLOAT] = gles_texformats[TEX_TYPE_RG_16];
 			gles_texformats[TEX_TYPE_R_32_FLOAT] = gles_texformats[TEX_TYPE_R_16];
 			gles_texformats[TEX_TYPE_RG_32_FLOAT] = gles_texformats[TEX_TYPE_RG_16];
 		}
@@ -120,14 +143,19 @@ void gles_init_texformats_table(void) {
 	}
 
 	if(have_float32 || have_float16) {
-		set_format(TEX_TYPE_RGB_32_FLOAT, have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
+		set_format(TEX_TYPE_RGB_16_FLOAT,  have_float16 ? GL_RGBA16F : GL_RGBA32F, FMTSTRUCT(FMT_RGBA16F));
+		set_format(TEX_TYPE_RGBA_16_FLOAT, have_float16 ? GL_RGBA16F : GL_RGBA32F, FMTSTRUCT(FMT_RGBA16F));
+		set_format(TEX_TYPE_RGB_32_FLOAT,  have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
 		set_format(TEX_TYPE_RGBA_32_FLOAT, have_float32 ? GL_RGBA32F : GL_RGBA16F, FMTSTRUCT(FMT_RGBA32F));
 	} else {
+		gles_texformats[TEX_TYPE_RGB_16_FLOAT] = gles_texformats[TEX_TYPE_RGBA_16];
+		gles_texformats[TEX_TYPE_RGBA_16_FLOAT] = gles_texformats[TEX_TYPE_RGBA_16];
 		gles_texformats[TEX_TYPE_RGB_32_FLOAT] = gles_texformats[TEX_TYPE_RGBA_16];
 		gles_texformats[TEX_TYPE_RGBA_32_FLOAT] = gles_texformats[TEX_TYPE_RGBA_16];
 	}
 
 	for(uint i = 0; i < sizeof(gles_texformats)/sizeof(*gles_texformats); ++i) {
+		log_debug("fuck %i", i);
 		gles_texformats[i].external_formats[0] = gles_texformats[i].primary_external_format;
 
 		if(!is_gles3) {

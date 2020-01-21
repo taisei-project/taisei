@@ -83,21 +83,25 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 
 GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 	static GLTextureFormatTuple color_formats[] = {
-		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8     },
-		{ GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16    },
-		{ GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32    },
+		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8      },
+		{ GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16     },
+		{ GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32     },
+		{ GL_RED,  GL_FLOAT,          PIXMAP_FORMAT_R32F    },
 
-		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8    },
-		{ GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16   },
-		{ GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32   },
+		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8     },
+		{ GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16    },
+		{ GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32    },
+		{ GL_RG,   GL_FLOAT,          PIXMAP_FORMAT_RG32F   },
 
-		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8   },
-		{ GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16  },
-		{ GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32  },
+		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8    },
+		{ GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16   },
+		{ GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32   },
+		{ GL_RGB,  GL_FLOAT,          PIXMAP_FORMAT_RGB32F  },
 
-		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8  },
-		{ GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16 },
-		{ GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32 },
+		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8   },
+		{ GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16  },
+		{ GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32  },
+		{ GL_RGBA, GL_FLOAT,          PIXMAP_FORMAT_RGBA32F },
 
 		{ 0 }
 	};
@@ -107,6 +111,7 @@ GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8 },
 		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
 		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32 },
+		{ GL_DEPTH_COMPONENT, GL_FLOAT,          PIXMAP_FORMAT_R32F },
 
 		{ 0 }
 	};
@@ -116,19 +121,28 @@ GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 		[TEX_TYPE_RG_8]           = { GL_RG8,    color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
 		[TEX_TYPE_RGB_8]          = { GL_RGB8,   color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
 		[TEX_TYPE_RGBA_8]         = { GL_RGBA8,  color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
-		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT16, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 
 		[TEX_TYPE_R_16]           = { GL_R16,    color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
 		[TEX_TYPE_RG_16]          = { GL_RG16,   color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
 		[TEX_TYPE_RGB_16]         = { GL_RGB16,  color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
 		[TEX_TYPE_RGBA_16]        = { GL_RGBA16, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
-		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT16, depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
 
-		[TEX_TYPE_R_32_FLOAT]     = { GL_R32F,    color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
-		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG32F,   color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
-		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB32F,  color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
-		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA32F, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
-		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT32, depth_formats, { GL_DEPTH_COMPONENT32F, GL_FLOAT, PIXMAP_FORMAT_R32 } },
+		[TEX_TYPE_R_16_FLOAT]     = { GL_R16F,    color_formats, { GL_RED,  GL_FLOAT,  PIXMAP_FORMAT_R32F    } },
+		[TEX_TYPE_RG_16_FLOAT]    = { GL_RG16F,   color_formats, { GL_RG,   GL_FLOAT,  PIXMAP_FORMAT_RG32F   } },
+		[TEX_TYPE_RGB_16_FLOAT]   = { GL_RGB16F,  color_formats, { GL_RGB,  GL_FLOAT,  PIXMAP_FORMAT_RGB32F  } },
+		[TEX_TYPE_RGBA_16_FLOAT]  = { GL_RGBA16F, color_formats, { GL_RGBA, GL_FLOAT,  PIXMAP_FORMAT_RGBA32F } },
+
+		[TEX_TYPE_R_32_FLOAT]     = { GL_R32F,    color_formats, { GL_RED,  GL_FLOAT,  PIXMAP_FORMAT_R32F    } },
+		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG32F,   color_formats, { GL_RG,   GL_FLOAT,  PIXMAP_FORMAT_RG32F   } },
+		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB32F,  color_formats, { GL_RGB,  GL_FLOAT,  PIXMAP_FORMAT_RGB32F  } },
+		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA32F, color_formats, { GL_RGBA, GL_FLOAT,  PIXMAP_FORMAT_RGBA32F } },
+
+		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT16,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
+		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT16,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
+		[TEX_TYPE_DEPTH_24]       = { GL_DEPTH_COMPONENT24,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, PIXMAP_FORMAT_R32 } },
+		[TEX_TYPE_DEPTH_32]       = { GL_DEPTH_COMPONENT32,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, PIXMAP_FORMAT_R32 } },
+		[TEX_TYPE_DEPTH_16_FLOAT] = { GL_DEPTH_COMPONENT32F, depth_formats, { GL_DEPTH_COMPONENT, GL_FLOAT, PIXMAP_FORMAT_R32F } },
+		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT32F, depth_formats, { GL_DEPTH_COMPONENT, GL_FLOAT, PIXMAP_FORMAT_R32F } },
 	};
 
 	assert((uint)type < sizeof(map)/sizeof(*map));
@@ -159,7 +173,7 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 	}
 }
 
-static GLTextureFormatTuple* prepare_pixmap(Texture *tex, const Pixmap *px_in, Pixmap *px_out) {
+static GLTextureFormatTuple *prepare_pixmap(Texture *tex, const Pixmap *px_in, Pixmap *px_out) {
 	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, px_in->format);
 	pixmap_convert_alloc(px_in, px_out, fmt->px_fmt);
 	pixmap_flip_to_origin_inplace(px_out, PIXMAP_ORIGIN_BOTTOMLEFT);
