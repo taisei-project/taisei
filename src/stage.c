@@ -492,11 +492,18 @@ static void stage_logic(void) {
 	process_items();
 	process_lasers();
 	process_projectiles(&global.particles, false);
-	dialog_update(&global.dialog);
+
+	if(global.dialog) {
+		dialog_update(global.dialog);
+
+		if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
+			dialog_page(global.dialog);
+		}
+	}
 
 	if(_stage_should_skip()) {
 		if(dialog_is_active(global.dialog)) {
-			dialog_page(&global.dialog);
+			dialog_page(global.dialog);
 		}
 
 		if(global.boss) {
@@ -602,6 +609,25 @@ void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
 }
 
+TASK(clear_dialog, NO_ARGS) {
+	assert(global.dialog != NULL);
+	// dialog_deinit() should've been called by dialog_end() at this point
+	global.dialog = NULL;
+}
+
+TASK(dialog_fixup_timer, NO_ARGS) {
+	// HACK: remove when global.timer is gone
+	global.timer++;
+}
+
+void stage_begin_dialog(Dialog *d) {
+	assert(global.dialog == NULL);
+	global.dialog = d;
+	dialog_init(d);
+	INVOKE_TASK_WHEN(&d->events.fadeout_began, dialog_fixup_timer);
+	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
+}
+
 static void stage_free(void) {
 	delete_enemies(&global.enemies);
 	delete_enemies(&global.plr.slaves);
@@ -612,7 +638,7 @@ static void stage_free(void) {
 	delete_projectiles(&global.particles);
 
 	if(global.dialog) {
-		dialog_destroy(global.dialog);
+		dialog_deinit(global.dialog);
 		global.dialog = NULL;
 	}
 

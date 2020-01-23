@@ -13,6 +13,6 @@
 
 #include "dialog.h"
 
-extern PlayerDialogProcs dialog_marisa;
+extern PlayerDialogTasks dialog_tasks_marisa;
 
 #endif // IGUARD_dialog_marisa_h
