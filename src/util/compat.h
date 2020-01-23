@@ -232,6 +232,10 @@ typedef cmplx64 cmplx;
 #define attr_nonnull(...) \
 	__attribute__ ((nonnull(__VA_ARGS__)))
 
+// All pointer parameters must not be NULL.
+#define attr_nonnull_all \
+	__attribute__ ((nonnull))
+
 // The return value of this function must not be ignored.
 #define attr_nodiscard \
 	__attribute__ ((warn_unused_result))

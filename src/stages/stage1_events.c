@@ -15,19 +15,19 @@
 
 static Dialog *stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "cirno", "normal", NULL);
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "cirno", "normal", NULL);
 	pm->dialog->stage1_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage1boss"});
+	// dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage1boss"});
 	return d;
 }
 
 static Dialog *stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "cirno", "defeated", "defeated");
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "cirno", "defeated", "defeated");
 	pm->dialog->stage1_post_boss(d);
 	return d;
 }

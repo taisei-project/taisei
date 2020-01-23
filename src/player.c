@@ -1063,7 +1063,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 	switch(type) {
 		case EV_PRESS:
 			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
-				useful = dialog_page(&global.dialog);
+				useful = dialog_page(global.dialog);
 				break;
 			}
 

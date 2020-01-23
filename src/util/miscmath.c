@@ -55,12 +55,12 @@ float fapproach(float v, float t, float d) {
 	return v;
 }
 
-void approach_p(double *v, double t, double d) {
-	*v = approach(*v, t, d);
+double approach_p(double *v, double t, double d) {
+	return *v = approach(*v, t, d);
 }
 
-void fapproach_p(float *v, float t, float d) {
-	*v = fapproach(*v, t, d);
+float fapproach_p(float *v, float t, float d) {
+	return *v = fapproach(*v, t, d);
 }
 
 double approach_asymptotic(double val, double target, double rate, double epsilon) {
@@ -87,16 +87,16 @@ cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon)
 	return val + (target - val) * rate;
 }
 
-void approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
-	*val = approach_asymptotic(*val, target, rate, epsilon);
+double approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
+	return *val = approach_asymptotic(*val, target, rate, epsilon);
 }
 
-void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
-	*val = fapproach_asymptotic(*val, target, rate, epsilon);
+float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
+	return *val = fapproach_asymptotic(*val, target, rate, epsilon);
 }
 
-void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon) {
-	*val = capproach_asymptotic(*val, target, rate, epsilon);
+cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon) {
+	return *val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
 cmplx cnormalize(cmplx c) {
