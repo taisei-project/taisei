@@ -22,6 +22,7 @@ glsl_files = files(
     'fxaa.frag.glsl',
     'fxaa.vert.glsl',
     'glitch.frag.glsl',
+    'glow_apply.frag.glsl',
     'glow_feedback.frag.glsl',
     'graph.frag.glsl',
     'healthbar.vert.glsl',
