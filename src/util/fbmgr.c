@@ -26,7 +26,7 @@ struct ManagedFramebufferGroup {
 };
 
 #define GET_MFB(mfb_data) CASTPTR_ASSUME_ALIGNED((char*)(mfb_data) - offsetof(ManagedFramebuffer, data), ManagedFramebuffer)
-#define GET_DATA(mfb) CASTPTR_ASSUME_ALIGNED((mfb)->data, ManagedFramebufferData)
+#define GET_DATA(mfb) CASTPTR_ASSUME_ALIGNED(&(mfb)->data, ManagedFramebufferData)
 #define GROUPNODE_TO_DATA(gn) CASTPTR_ASSUME_ALIGNED((char*)(gn) - offsetof(ManagedFramebufferData, group_node), ManagedFramebufferData)
 
 static ManagedFramebufferData *framebuffers;
