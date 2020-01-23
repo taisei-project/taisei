@@ -11,12 +11,14 @@
 
 #include "taisei.h"
 
-typedef struct FloatOffset {
-	float x, y;
+typedef union FloatOffset {
+	struct { float x, y; };
+	cmplx32 as_cmplx;
 } FloatOffset;
 
-typedef struct FloatExtent {
-	float w, h;
+typedef union FloatExtent {
+	struct { float w, h; };
+	cmplx32 as_cmplx;
 } FloatExtent;
 
 typedef struct FloatRect {

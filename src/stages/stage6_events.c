@@ -19,19 +19,19 @@ DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
 static Dialog *stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
 	pm->dialog->stage6_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
+	// dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
 	return d;
 }
 
 static Dialog *stage6_dialog_pre_final(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
 	pm->dialog->stage6_pre_final(d);
 	return d;
 }

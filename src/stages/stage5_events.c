@@ -17,28 +17,28 @@ DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
 static Dialog *stage5_dialog_post_midboss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "surprised", NULL);
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "surprised", NULL);
 	pm->dialog->stage5_post_midboss(d);
-	d->actions[d->count - 1].timeout = global.frames + 120;
+	// d->actions[d->count - 1].timeout = global.frames + 120;
 	return d;
 }
 
 static Dialog *stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "iku", "normal", NULL);
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "iku", "normal", NULL);
 	pm->dialog->stage5_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage5boss"});
+	// dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage5boss"});
 	return d;
 }
 
 static Dialog *stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "iku", "defeated", "defeated");
+	Dialog *d = stage_create_dialog();
+	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
+	// dialog_set_char(d, DIALOG_RIGHT, "iku", "defeated", "defeated");
 	pm->dialog->stage5_post_boss(d);
 	return d;
 }

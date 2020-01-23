@@ -492,11 +492,18 @@ static void stage_logic(void) {
 	process_items();
 	process_lasers();
 	process_projectiles(&global.particles, false);
-	dialog_update(&global.dialog);
+
+	if(global.dialog) {
+		dialog_update(global.dialog);
+
+		if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
+			dialog_page(global.dialog);
+		}
+	}
 
 	if(_stage_should_skip()) {
 		if(dialog_is_active(global.dialog)) {
-			dialog_page(&global.dialog);
+			dialog_page(global.dialog);
 		}
 
 		if(global.boss) {
@@ -600,6 +607,21 @@ void stage_clear_hazards_at(cmplx origin, double radius, ClearHazardsFlags flags
 
 void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
+}
+
+TASK(destroy_dialog, NO_ARGS) {
+	assert(global.dialog != NULL);
+	dialog_destroy(global.dialog);
+	global.dialog = NULL;
+}
+
+Dialog *stage_create_dialog(void) {
+	assert(global.dialog == NULL);
+
+	Dialog *d = global.dialog = dialog_create();
+	INVOKE_TASK_WHEN(&d->events.fadeout_ended, destroy_dialog);
+
+	return d;
 }
 
 static void stage_free(void) {
