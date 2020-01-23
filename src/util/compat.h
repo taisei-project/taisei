@@ -103,6 +103,10 @@
 	#endif
 #endif
 
+#ifndef __has_feature
+	#define __has_feature(feature) 0
+#endif
+
 #undef ASSUME
 
 #ifdef __has_builtin
@@ -284,6 +288,10 @@ typedef cmplx64 cmplx;
 
 #ifdef RNG_API_CHECK
 	#define _Generic(ignore, ...) _Generic(0, __VA_ARGS__)
+#endif
+
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+	#define ADDRESS_SANITIZER
 #endif
 
 #endif // IGUARD_util_compat_h
