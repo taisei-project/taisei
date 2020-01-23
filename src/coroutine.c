@@ -11,6 +11,12 @@
 #include "coroutine.h"
 #include "util.h"
 
+#ifdef ADDRESS_SANITIZER
+	#include <sanitizer/asan_interface.h>
+#else
+	#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)0)
+#endif
+
 #define CO_STACK_SIZE (64 * 1024)
 
 // #define EVT_DEBUG
@@ -157,6 +163,10 @@ static void *get_stack(CoTask *task, size_t *sz) {
 	lower += STACK_BUFFER_LOWER;
 	upper -= STACK_BUFFER_UPPER;
 	*sz = upper - lower;
+
+	// ASan doesn't expect us to access stack memory manually, so we have to dodge false positives.
+	ASAN_UNPOISON_MEMORY_REGION(lower, *sz);
+
 	return lower;
 }
 
