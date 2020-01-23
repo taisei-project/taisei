@@ -13,27 +13,26 @@
 #include "global.h"
 #include "stagetext.h"
 #include "stagedraw.h"
+#include "common_tasks.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
-static Dialog *stage6_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
-	pm->dialog->stage6_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
-	return d;
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage6_dialog_pre_final(void) {
+static void stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
-	pm->dialog->stage6_pre_final(d);
-	return d;
+	Stage6PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage6PreBossDialog, pm->dialog->Stage6PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss");
+}
+
+static void stage6_dialog_pre_final(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
 }
 
 static int stage6_hacker(Enemy *e, int t) {
@@ -278,7 +277,7 @@ void elly_intro(Boss *b, int t) {
 	}
 
 	AT(300)
-		global.dialog = stage6_dialog_pre_boss();
+		stage6_dialog_pre_boss();
 }
 
 static int scythe_infinity(Enemy *e, int t) {
@@ -2953,7 +2952,7 @@ Boss* stage6_spawn_elly(cmplx pos) {
 }
 
 static void elly_insert_interboss_dialog(Boss *b, int t) {
-	global.dialog = stage6_dialog_pre_final();
+	stage6_dialog_pre_final();
 }
 
 static void elly_begin_toe(Boss *b, int t) {

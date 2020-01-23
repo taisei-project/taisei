@@ -13,6 +13,6 @@
 
 #include "dialog.h"
 
-extern PlayerDialogProcs dialog_youmu;
+extern PlayerDialogTasks dialog_tasks_youmu;
 
 #endif // IGUARD_dialog_youmu_h

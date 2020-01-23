@@ -50,6 +50,10 @@ DEFINE_EXTERN_TASK(common_call_func) {
 	ARGS.func();
 }
 
+DEFINE_EXTERN_TASK(common_start_bgm) {
+	stage_start_bgm(ARGS.bgm);
+}
+
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
 	double angle;

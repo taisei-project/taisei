@@ -37,6 +37,11 @@ DECLARE_EXTERN_TASK(
 	{ void (*func)(void); }
 );
 
+DECLARE_EXTERN_TASK(
+	common_start_bgm,
+	{ const char *bgm; }
+);
+
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 
 INLINE Rect viewport_bounds(double margin) {

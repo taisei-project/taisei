@@ -11,132 +11,262 @@
 #include "dialog.h"
 #include "global.h"
 
-Dialog *dialog_create(void) {
-	Dialog *d = calloc(1, sizeof(Dialog));
-	d->page_time = global.frames;
-	d->birthtime = global.frames;
-	return d;
+void dialog_init(Dialog *d) {
+	memset(d, 0, sizeof(*d));
+	d->state = DIALOG_STATE_IDLE;
+	d->text.current = &d->text.buffers[0];
+	d->text.fading_out = &d->text.buffers[1];
+	COEVENT_INIT_ARRAY(d->events);
 }
 
-void dialog_set_base(Dialog *d, DialogSide side, const char *sprite) {
-	d->spr_base[side] = sprite ? get_sprite(sprite) : NULL;
-	d->valid_composites &= ~(1 << side);
+void dialog_deinit(Dialog *d) {
+	COEVENT_CANCEL_ARRAY(d->events);
+
+	for(DialogActor *a = d->actors.first; a; a = a->next) {
+		if(a->composite.tex) {
+			r_texture_destroy(a->composite.tex);
+		}
+	}
 }
 
-void dialog_set_base_p(Dialog *d, DialogSide side, Sprite *sprite) {
-	d->spr_base[side] = sprite;
-	d->valid_composites &= ~(1 << side);
+void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide side) {
+	memset(a, 0, sizeof(*a));
+	a->name = name;
+	a->face = "normal";
+	a->side = side;
+	a->target_opacity = 1;
+	a->composite_dirty = true;
+
+	if(side == DIALOG_SIDE_RIGHT) {
+		a->speech_color = *RGB(0.6, 0.6, 1.0);
+	} else {
+		a->speech_color = *RGB(1.0, 1.0, 1.0);
+	}
+
+	alist_append(&d->actors, a);
 }
 
-void dialog_set_face(Dialog *d, DialogSide side, const char *sprite) {
-	d->spr_face[side] = sprite ? get_sprite(sprite) : NULL;
-	d->valid_composites &= ~(1 << side);
+void dialog_actor_set_face(DialogActor *a, const char *face) {
+	log_debug("[%s] %s --> %s", a->name, a->face, face);
+	if(a->face != face) {
+		a->face = face;
+		a->composite_dirty = true;
+	}
 }
 
-void dialog_set_face_p(Dialog *d, DialogSide side, Sprite *sprite) {
-	d->spr_face[side] = sprite;
-	d->valid_composites &= ~(1 << side);
+void dialog_actor_set_variant(DialogActor *a, const char *variant) {
+	log_debug("[%s] %s --> %s", a->name, a->variant, variant);
+	if(a->variant != variant) {
+		a->variant = variant;
+		a->composite_dirty = true;
+	}
 }
 
-void dialog_set_char(Dialog *d, DialogSide side, const char *char_name, const char *char_face, const char *char_variant) {
-	size_t name_len = strlen(char_name);
-	size_t face_len = strlen(char_face);
+void dialog_update(Dialog *d) {
+	if(d->text.current->text) {
+		fapproach_p(&d->text.current->opacity, 1, 1/120.0f);
+	} else {
+		d->text.current->opacity = 0;
+	}
+
+	if(d->text.fading_out->text) {
+		fapproach_p(&d->text.fading_out->opacity, 0, 1/60.0f);
+	} else {
+		d->text.fading_out->opacity = 0;
+	}
+
+	if(
+		d->state == DIALOG_STATE_FADEOUT ||
+		(
+			d->text.current->opacity == 0 &&
+			d->text.fading_out->opacity < 0.25
+		)
+	) {
+		fapproach_asymptotic_p(&d->opacity, 0, 0.1, 1e-3);
+	} else {
+		fapproach_asymptotic_p(&d->opacity, 1, 0.05, 1e-3);
+	}
+
+	for(DialogActor *a = d->actors.first; a; a = a->next) {
+		if(d->state == DIALOG_STATE_FADEOUT) {
+			fapproach_asymptotic_p(&a->opacity, 0, 0.12, 1e-3);
+		} else {
+			fapproach_asymptotic_p(&a->opacity, a->target_opacity, 0.04, 1e-3);
+		}
+		fapproach_asymptotic_p(&a->focus, a->target_focus, 0.12, 1e-3);
+	}
+}
+
+void dialog_skippable_wait(Dialog *d, int timeout) {
+	CoEventSnapshot snap = coevent_snapshot(&d->events.skip_requested);
+
+	assert(d->state == DIALOG_STATE_IDLE);
+	d->state = DIALOG_STATE_WAITING_FOR_SKIP;
+
+	while(timeout > 0) {
+		dialog_update(d);
+
+		--timeout;
+		YIELD;
+
+		if(coevent_poll(&d->events.skip_requested, &snap) != CO_EVENT_PENDING) {
+			log_debug("Skipped with %i remaining", timeout);
+			break;
+		}
+	}
+
+	assert(d->state == DIALOG_STATE_WAITING_FOR_SKIP);
+	d->state = DIALOG_STATE_IDLE;
+
+	if(timeout == 0) {
+		log_debug("Timed out");
+	}
+}
+
+int dialog_util_estimate_wait_timeout_from_text(const char *text) {
+	return 1800;
+}
+
+static void dialog_set_text(Dialog *d, const char *text, const Color *clr) {
+	DialogTextBuffer *temp = d->text.current;
+	d->text.current = d->text.fading_out;
+	d->text.fading_out = temp;
+
+	d->text.current->color = *clr;
+	d->text.current->text = text;
+}
+
+void dialog_focus_actor(Dialog *d, DialogActor *actor) {
+	for(DialogActor *a = d->actors.first; a; a = a->next) {
+		a->target_focus = 0;
+	}
+
+	actor->target_focus = 1;
+
+	// make focused actor drawn on top of everyone else
+	alist_unlink(&d->actors, actor);
+	alist_append(&d->actors, actor);
+}
+
+void dialog_message_ex(Dialog *d, const DialogMessageParams *params) {
+	assume(params->actor != NULL);
+	assume(params->text != NULL);
+
+	log_debug("%s: %s", params->actor->name, params->text);
+
+	dialog_set_text(d, params->text, &params->actor->speech_color);
+	dialog_focus_actor(d, params->actor);
+
+	if(params->implicit_wait) {
+		assume(params->wait_timeout > 0);
+
+		if(params->wait_skippable) {
+			dialog_skippable_wait(d, params->wait_timeout);
+		} else {
+			WAIT(params->wait_timeout);
+		}
+	}
+}
+
+static void _dialog_message(Dialog *d, DialogActor *actor, const char *text, bool skippable, int delay) {
+	DialogMessageParams p = { 0 };
+	p.actor = actor;
+	p.text = text;
+	p.implicit_wait = true;
+	p.wait_skippable = skippable;
+	p.wait_timeout = delay;
+	dialog_message_ex(d, &p);
+}
+
+void dialog_message(Dialog *d, DialogActor *actor, const char *text) {
+	_dialog_message(d, actor, text, true, dialog_util_estimate_wait_timeout_from_text(text));
+}
+
+void dialog_message_unskippable(Dialog *d, DialogActor *actor, const char *text, int delay) {
+	_dialog_message(d, actor, text, false, delay);
+}
+
+void dialog_end(Dialog *d) {
+	d->state = DIALOG_STATE_FADEOUT;
+	coevent_signal(&d->events.fadeout_began);
+
+	for(DialogActor *a = d->actors.first; a; a = a->next) {
+		a->target_opacity = 0;
+	}
+
+	wait_for_fadeout: {
+		if(d->opacity > 0) {
+			YIELD;
+			goto wait_for_fadeout;
+		}
+
+		for(DialogActor *a = d->actors.first; a; a = a->next) {
+			if(a->opacity > 0) {
+				YIELD;
+				goto wait_for_fadeout;
+			}
+		}
+	}
+
+	coevent_signal(&d->events.fadeout_ended);
+	dialog_deinit(d);
+}
+
+static void dialog_actor_update_composite(DialogActor *a) {
+	assume(a->name != NULL);
+	assume(a->face != NULL);
+
+	if(!a->composite_dirty) {
+		return;
+	}
+
+	log_debug("%s (%p) is dirty; face=%s; variant=%s", a->name, (void*)a, a->face, a->variant);
+
+	Sprite *spr_base, *spr_face;
+
+	size_t name_len = strlen(a->name);
+	size_t face_len = strlen(a->face);
 	size_t variant_len;
 
 	size_t lenfull_base = sizeof("dialog/") + name_len - 1;
 	size_t lenfull_face = lenfull_base + sizeof("_face_") + face_len - 1;
 
-	if(char_variant) {
-		variant_len = strlen(char_variant);
+	if(a->variant) {
+		variant_len = strlen(a->variant);
 		lenfull_base += sizeof("_variant_") + variant_len - 1;
 	}
 
 	char buf[imax(lenfull_base, lenfull_face) + 1];
 	char *dst = buf;
-	char *variant_dst;
 	dst = memcpy(dst, "dialog/", sizeof("dialog/") - 1);
-	dst = memcpy(dst + sizeof("dialog/") - 1, char_name, name_len + 1);
+	dst = memcpy(dst + sizeof("dialog/") - 1, a->name, name_len + 1);
 
-	if(char_variant) {
-		variant_dst = dst + name_len;
-	} else {
-		d->spr_base[side] = get_sprite(buf);
+	if(a->variant) {
+		char *tmp = dst;
+		dst = memcpy(dst + name_len, "_variant_", sizeof("_variant_") - 1);
+		dst = memcpy(dst + sizeof("_variant_") - 1, a->variant, variant_len + 1);
+		dst = tmp;
 	}
+
+	spr_base = get_sprite(buf);
+	log_debug("base: %s", buf);
+	assume(spr_base != NULL);
 
 	dst = memcpy(dst + name_len, "_face_", sizeof("_face_") - 1);
-	dst = memcpy(dst + sizeof("_face_") - 1, char_face, face_len + 1);
-	d->spr_face[side] = get_sprite(buf);
+	dst = memcpy(dst + sizeof("_face_") - 1, a->face, face_len + 1);
 
-	if(!char_variant) {
-		return;
+	spr_face = get_sprite(buf);
+	log_debug("face: %s", buf);
+	assume(spr_face != NULL);
+
+	if(a->composite.tex != NULL) {
+		log_debug("destroyed texture at %p", (void*)a->composite.tex);
+		r_texture_destroy(a->composite.tex);
 	}
 
-	dst = memcpy(variant_dst, "_variant_", sizeof("_variant_") - 1);
-	dst = memcpy(dst + sizeof("_variant_") - 1, char_variant, variant_len + 1);
-	d->spr_base[side] = get_sprite(buf);
-
-	d->valid_composites &= ~(1 << side);
-}
-
-static int message_index(Dialog *d, int offset) {
-	int idx = d->pos + offset;
-
-	if(idx >= d->count) {
-		idx = d->count - 1;
-	}
-
-	while(
-		idx >= 0 &&
-		d->actions[idx].type != DIALOG_MSG_LEFT &&
-		d->actions[idx].type != DIALOG_MSG_RIGHT
-	) {
-		--idx;
-	}
-
-	return idx;
-}
-
-DialogAction *dialog_add_action(Dialog *d, const DialogAction *action) {
-	d->actions = realloc(d->actions, (++d->count)*sizeof(DialogAction));
-	d->actions[d->count - 1] = *action;
-	return d->actions + d->count - 1;
-}
-
-static void update_composite(Dialog *d, DialogSide side) {
-	if(d->valid_composites & (1 << side)) {
-		return;
-	}
-
-	Sprite *composite = d->spr_composite + side;
-	Sprite *spr_base = d->spr_base[side];
-	Sprite *spr_face = d->spr_face[side];
-
-	if(composite->tex != NULL) {
-		r_texture_destroy(composite->tex);
-	}
-
-	if(spr_base != NULL) {
-		assert(spr_face != NULL);
-		render_character_portrait(spr_base, spr_face, composite);
-	} else {
-		composite->tex = NULL;
-	}
-
-	d->valid_composites |= (1 << side);
-}
-
-static void update_composites(Dialog *d) {
-	update_composite(d, DIALOG_LEFT);
-	update_composite(d, DIALOG_RIGHT);
-}
-
-void dialog_destroy(Dialog *d) {
-	memset(&d->spr_base, 0, sizeof(d->spr_base));
-	memset(&d->spr_face, 0, sizeof(d->spr_face));
-	d->valid_composites = 0;
-	update_composites(d);
-	free(d->actions);
-	free(d);
+	render_character_portrait(spr_base, spr_face, &a->composite);
+	log_debug("created texture at %p", (void*)a->composite.tex);
+	a->composite_dirty = false;
 }
 
 void dialog_draw(Dialog *dialog) {
@@ -146,11 +276,9 @@ void dialog_draw(Dialog *dialog) {
 
 	float o = dialog->opacity;
 
-	if(o == 0) {
-		return;
+	for(DialogActor *a = dialog->actors.first; a; a = a->next) {
+		dialog_actor_update_composite(a);
 	}
-
-	update_composites(dialog);
 
 	r_state_push();
 	r_state_push();
@@ -164,76 +292,47 @@ void dialog_draw(Dialog *dialog) {
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_width/2.0, 64, 0);
 
-	int cur_idx = message_index(dialog, 0);
-	int pre_idx = message_index(dialog, -1);
-
-	assume(cur_idx >= 0);
-
-	int cur_side = dialog->actions[cur_idx].type;
-	int pre_side = pre_idx >= 0 ? dialog->actions[pre_idx].type : 2;
-
 	Color clr = { 0 };
 
-	const float page_time = 10;
-	float page_alpha = min(global.frames - (dialog->page_time), page_time) / page_time;
-
-	const float page_text_time = 60;
-	float page_text_alpha = min(global.frames - dialog->page_time, page_text_time) / page_text_time;
-
-	int loop_start = 1;
-	int loop_incr = 1;
-
-	if(cur_side == 0) {
-		loop_start = 1;
-		loop_incr = -1;
-	} else {
-		loop_start = 0;
-		loop_incr = 1;
-	}
-
-	for(int i = loop_start; i < 2 && i >= 0; i += loop_incr) {
-		Sprite *portrait = dialog->spr_composite + i;
-
-		if(portrait->tex == NULL) {
+	for(DialogActor *a = dialog->actors.first; a; a = a->next) {
+		if(a->opacity <= 0) {
 			continue;
 		}
+
+		dialog_actor_update_composite(a);
+		Sprite *portrait = &a->composite;
+		assume(portrait->tex != NULL);
 
 		float portrait_w = sprite_padded_width(portrait);
 		float portrait_h = sprite_padded_height(portrait);
 
 		r_mat_mv_push();
 
-		if(i == DIALOG_MSG_LEFT) {
+		if(a->side == DIALOG_SIDE_LEFT) {
 			r_cull(CULL_FRONT);
 			r_mat_mv_scale(-1, 1, 1);
 		} else {
 			r_cull(CULL_BACK);
 		}
 
-		if(o < 1) {
-			r_mat_mv_translate(120 * (1 - o), 0, 0);
+		if(a->opacity < 1) {
+			r_mat_mv_translate(120 * (1 - a->opacity), 0, 0);
 		}
 
-		float dir = (1 - 2 * (i == cur_side));
-		float ofs = 10 * dir;
+		float ofs = 10 * (1 - a->focus);
+		r_mat_mv_translate(ofs, ofs, 0);
+		float brightness = 0.5 + 0.5 * a->focus;
+		clr.r = clr.g = clr.b = brightness;
+		clr.a = 1;
 
-		if(page_alpha < 10 && ((i != pre_side && i == cur_side) || (i == pre_side && i != cur_side))) {
-			r_mat_mv_translate(ofs * page_alpha, ofs * page_alpha, 0);
-			float brightness = min(1.0 - 0.5 * page_alpha * dir, 1);
-			clr.r = clr.g = clr.b = brightness;
-			clr.a = 1;
-		} else {
-			r_mat_mv_translate(ofs, ofs, 0);
-			clr = *RGB(1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5, 1 - (dir > 0) * 0.5);
-		}
+		color_mul_scalar(&clr, a->opacity);
 
-		color_mul_scalar(&clr, o);
-
+		r_flush_sprites();
 		r_draw_sprite(&(SpriteParams) {
 			.blend = BLEND_PREMUL_ALPHA,
 			.color = &clr,
-			.pos.x = (dialog_width - portrait_w) / 2 + 32,
-			.pos.y = VIEWPORT_H - portrait_h / 2,
+			.pos.x = (dialog_width - portrait_w) / 2 + 32 + a->offset.x,
+			.pos.y = VIEWPORT_H - portrait_h / 2 + a->offset.y,
 			.sprite_ptr = portrait,
 		});
 
@@ -242,8 +341,6 @@ void dialog_draw(Dialog *dialog) {
 
 	r_mat_mv_pop();
 	r_state_pop();
-
-	o *= smooth(clamp((global.frames - dialog->birthtime - 10) / 30.0, 0, 1));
 
 	FloatRect dialog_bg_rect = {
 		.extent = { VIEWPORT_W-40, 110 },
@@ -265,27 +362,19 @@ void dialog_draw(Dialog *dialog) {
 	Font *font = get_font("standard");
 
 	r_mat_tex_push();
-	// r_mat_tex_scale(2, 0.2, 0);
-	// r_mat_tex_translate(0, -global.frames/page_text_time, 0);
 
 	dialog_bg_rect.w = VIEWPORT_W * 0.86;
 	dialog_bg_rect.x -= dialog_bg_rect.w * 0.5;
 	dialog_bg_rect.y -= dialog_bg_rect.h * 0.5;
-	// dialog_bg_rect.h = dialog_bg_rect.w;
 
-	if(pre_idx >= 0 && page_text_alpha < 1) {
-		if(pre_side == DIALOG_MSG_RIGHT) {
-			clr = *RGB(0.6, 0.6, 1.0);
-		} else {
-			clr = *RGB(1.0, 1.0, 1.0);
-		}
-
+	if(dialog->text.fading_out->opacity > 0) {
+		clr = dialog->text.fading_out->color;
 		color_mul_scalar(&clr, o);
 
-		text_draw_wrapped(dialog->actions[pre_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
+		text_draw_wrapped(dialog->text.fading_out->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
 			.aux_textures = { get_tex("cell_noise") },
-			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * page_text_alpha)), 1 }},
+			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
@@ -294,24 +383,21 @@ void dialog_draw(Dialog *dialog) {
 		});
 	}
 
-	if(cur_side == DIALOG_MSG_RIGHT) {
-		clr = *RGB(0.6, 0.6, 1.0);
-	} else {
-		clr = *RGB(1.0, 1.0, 1.0);
+	if(dialog->text.current->opacity > 0) {
+		clr = dialog->text.current->color;
+		color_mul_scalar(&clr, o);
+
+		text_draw_wrapped(dialog->text.current->text, dialog_bg_rect.w, &(TextParams) {
+			.shader = "text_dialog",
+			.aux_textures = { get_tex("cell_noise") },
+			.shader_params = &(ShaderCustomParams) {{ o * dialog->text.current->opacity, 0 }},
+			.color = &clr,
+			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
+			.align = ALIGN_CENTER,
+			.font_ptr = font,
+			.overlay_projection = &dialog_bg_rect,
+		});
 	}
-
-	color_mul_scalar(&clr, o);
-
-	text_draw_wrapped(dialog->actions[cur_idx].data, VIEWPORT_W * 0.86, &(TextParams) {
-		.shader = "text_dialog",
-		.aux_textures = { get_tex("cell_noise") },
-		.shader_params = &(ShaderCustomParams) {{ o * page_text_alpha, 0 }},
-		.color = &clr,
-		.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
-		.align = ALIGN_CENTER,
-		.font_ptr = font,
-		.overlay_projection = &dialog_bg_rect,
-	});
 
 	r_mat_tex_pop();
 	r_mat_mv_pop();
@@ -319,96 +405,17 @@ void dialog_draw(Dialog *dialog) {
 	r_state_pop();
 }
 
-bool dialog_page(Dialog **pdialog) {
-	Dialog *d = *pdialog;
-
-	if(!d || d->pos >= d->count) {
-		return false;
+bool dialog_page(Dialog *d) {
+	if(d->state == DIALOG_STATE_WAITING_FOR_SKIP) {
+		coevent_signal(&d->events.skip_requested);
+		return true;
 	}
 
-	int to = d->actions[d->pos].timeout;
-
-	if(to && to > global.frames) {
-		assert(d->actions[d->pos].type == DIALOG_MSG_LEFT || d->actions[d->pos].type == DIALOG_MSG_RIGHT);
-		return false;
-	}
-
-	DialogAction *a = d->actions + d->pos;
-	d->pos++;
-	d->page_time = global.frames;
-
-	if(d->pos >= d->count) {
-		// XXX: maybe this can be handled elsewhere?
-		if(!global.boss)
-			global.timer++;
-	}
-
-	switch(a->type) {
-		case DIALOG_SET_BGM:
-			stage_start_bgm(a->data);
-			break;
-
-		case DIALOG_SET_FACE_RIGHT:
-		case DIALOG_SET_FACE_LEFT: {
-			DialogSide side = (
-				a->type == DIALOG_SET_FACE_RIGHT
-					? DIALOG_RIGHT
-					: DIALOG_LEFT
-			);
-
-			dialog_set_face(d, side, a->data);
-			break;
-		}
-
-		default:
-			break;
-	}
-
-	return true;
-}
-
-void dialog_update(Dialog **d) {
-	if(!*d) {
-		return;
-	}
-
-	if(dialog_is_active(*d)) {
-		while((*d)->pos < (*d)->count) {
-			if(
-				(*d)->actions[(*d)->pos].type != DIALOG_MSG_LEFT &&
-				(*d)->actions[(*d)->pos].type != DIALOG_MSG_RIGHT
-			) {
-				dialog_page(d);
-			} else {
-				int to = (*d)->actions[(*d)->pos].timeout;
-
-				if(
-					(to && to >= global.frames) ||
-					((global.plr.inputflags & INFLAG_SKIP) && global.frames - (*d)->page_time > 3)
-				) {
-					dialog_page(d);
-				}
-
-				break;
-			}
-		}
-	}
-
-	// important to check this again; the dialog_page call may have ended the dialog
-
-	if(dialog_is_active(*d)) {
-		fapproach_asymptotic_p(&(*d)->opacity, 1, 0.05, 1e-3);
-	} else {
-		fapproach_asymptotic_p(&(*d)->opacity, 0, 0.1, 1e-3);
-		if((*d)->opacity == 0) {
-			dialog_destroy(*d);
-			*d = NULL;
-		}
-	}
+	return false;
 }
 
 bool dialog_is_active(Dialog *d) {
-	return d && (d->pos < d->count);
+	return d && d->state != DIALOG_STATE_FADEOUT;
 }
 
 void dialog_preload(void) {
