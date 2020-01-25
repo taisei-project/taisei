@@ -429,18 +429,10 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define THIS_TASK     cotask_box(cotask_active())
 
 #define YIELD         cotask_yield(NULL)
-// #define WAIT(delay)   do { int _delay = (delay); while(_delay-- > 0) YIELD; } while(0)
 #define WAIT(delay)   cotask_wait(delay)
 #define WAIT_EVENT(e) cotask_wait_event((e), NULL)
 #define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die((e), NULL)
-// #define STALL         do { YIELD; } while(1)
 #define STALL         cotask_wait(INT_MAX)
-
-// to use these inside a coroutine, define a BREAK_CONDITION macro and a BREAK label.
-#define CHECK_BREAK   do { if(BREAK_CONDITION) goto BREAK; } while(0)
-#define BYIELD        do { YIELD; CHECK_BREAK; } while(0)
-#define BWAIT(frames) do { WAIT(frames); CHECK_BREAK; } while(0)
-#define BSTALL        do { BYIELD; } while(1)
 
 #define ENT_TYPE(typename, id) \
 	struct typename; \
