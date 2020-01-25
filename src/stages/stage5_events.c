@@ -432,6 +432,9 @@ static Boss *create_iku_mid(void) {
 	// suppress the boss death effects (this triggers the "boss fleeing" case)
 	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
 
+	boss_start_attack(b, b->attacks);
+	b->attacks->starttime = global.frames;  // HACK: thwart attack delay
+
 	return b;
 }
 
