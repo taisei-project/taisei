@@ -154,7 +154,7 @@ bool stage_should_yield(void);
 int stage_yield(void);
 int stage_wait(int delay);
 
-Dialog *stage_create_dialog(void);
+void stage_begin_dialog(Dialog *d) attr_nonnull_all;
 
 #ifdef DEBUG
 void _stage_bookmark(const char *name);

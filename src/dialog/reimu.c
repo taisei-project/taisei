@@ -10,196 +10,242 @@
 
 #include "dialog_macros.h"
 
-#define LEFT_BASE reimu
+/*
+ * Stage 1
+ */
 
-#define RIGHT_BASE cirno
+DIALOG_TASK(reimu, Stage1PreBoss) {
+	// Initialization, must be at the very top.
+	DIALOG_BEGIN(Stage1PreBoss);
 
-DIALOG_SCRIPT(reimu_stage1_pre_boss) {
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(unamused);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(angry);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
+	// Actors start hidden by default.
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(cirno);
+
+	// SHOW() can be used to reveal them.
+	SHOW(reimu);
+
+	// HIDE() can be used to hide them again.
+	//	HIDE(reimu);
+
+	// "normal" is the default face.
+	// FACE(reimu, normal);
+
+	// Let's wait a bit, then change Reimu's expression.
+	// All timings are in frames (60 = 1 sec).
+	WAIT_SKIPPABLE(60);
+	FACE(reimu, unamused);
+
+	// MSG() makes the actor say a line, and then waits an unspecified amount of time (skippable).
+	// The timeout is determined by the dialog_util_estimate_wait_timeout_from_text() function in dialog.c
+	MSG(reimu, "yikes");
+
+	// EVENT()s are handled by stage code.
+	// You can find the list of events per dialogue in dialog_interface.h
+	// All of them should be signaled eventually.
+	EVENT(boss_appears);
+
+	// Wait until the boss slides in.
+	// WAIT() can not be skipped.
+	WAIT(30);
+
+	// MSG() also implies SHOW()
+	MSG(cirno, "9");
+
+	// Titles are not yet implemented, but this should work once they are.
+	// Right now this does nothing.
+	TITLE(cirno, "Cirno", "Ice Fairy of Big Dum Dum");
+
+	WAIT_SKIPPABLE(30);
+
+	// MSG_UNSKIPPABLE() is like MSG(), but can't be skipped and takes an explicit timeout.
+	MSG_UNSKIPPABLE(cirno, 60, "asdfasdfsdfas");
+
+	EVENT(music_changes);
+	MSG(reimu, "omg");
+	FACE(reimu, surprised);
+	MSG(reimu, "wtf");
+
+	// Teardown, must be at the very bottom.
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage1_post_boss) {
-	LEFT_FACE(happy);
-	LEFT("FIXME: Removed due to issue #179");
-	// RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(normal);
-	LEFT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage1PostBoss) {
+	DIALOG_BEGIN(Stage1PostBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(cirno);
+
+	// VARIANT() changes the base body sprite.
+	// Bosses currently only have a "defeated" variant with some clothing damage, to be used in post-battle scenes.
+	// Elly's is called "beaten" and is slightly subdued.
+	VARIANT(cirno, defeated);
+
+	// Bosses also have a "defeated" face to go along with the variant, but all the other faces can be used as well.
+	// It's best to set the face to "defeated" in the beginning of a post-battle dialogue, and change it later if needed.
+	FACE(cirno, defeated);
+
+	SHOW(cirno);
+
+	FACE(reimu, happy);
+	MSG(reimu, "git rekt skrub :^)");
+	MSG(cirno, "fugg");
+	HIDE(cirno);
+	MSG(reimu, "lalala~");
+
+	DIALOG_END();
 }
 
-#undef RIGHT_BASE
-#define RIGHT_BASE hina
+/*
+ * Stage 2
+ */
 
-DIALOG_SCRIPT(reimu_stage2_pre_boss) {
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(surprised);
-	LEFT("FIXME: Removed due to issue #179");
-	LEFT_FACE(puzzled);
-	RIGHT_FACE(concerned);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(unamused);
-	LEFT("FIXME: Removed due to issue #179");
-	LEFT_FACE(surprised);
-	RIGHT_FACE(serious);
-	RIGHT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage2PreBoss) {
+	DIALOG_BEGIN(Stage2PreBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(hina);
+
+	EVENT(boss_appears);
+	EVENT(music_changes);
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage2_post_boss) {
-	LEFT_FACE(sigh);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
-	LEFT_FACE(happy);
-	LEFT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage2PostBoss) {
+	DIALOG_BEGIN(Stage2PostBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(hina);
+	VARIANT(hina, defeated);
+	FACE(hina, defeated);
+
+	DIALOG_END();
 }
 
-#undef RIGHT_BASE
-#define RIGHT_BASE wriggle
+/*
+ * Stage 3
+ */
 
-DIALOG_SCRIPT(reimu_stage3_pre_boss) {
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(calm);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(outraged);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(proud);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(normal);
-	LEFT_FACE(happy);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(proud);
-	RIGHT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage3PreBoss) {
+	DIALOG_BEGIN(Stage3PreBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(wriggle);
+
+	EVENT(boss_appears);
+	EVENT(music_changes);
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage3_post_boss) {
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(outraged_unlit);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(normal);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(defeated);
-	LEFT_FACE(sigh);
-	LEFT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage3PostBoss) {
+	DIALOG_BEGIN(Stage3PostBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(wriggle);
+	VARIANT(wriggle, defeated);
+	FACE(wriggle, defeated);
+
+	DIALOG_END();
 }
 
-#undef RIGHT_BASE
-#define RIGHT_BASE kurumi
+/*
+ * Stage 4
+ */
 
-DIALOG_SCRIPT(reimu_stage4_pre_boss) {
-	// TODO rewrite this
+DIALOG_TASK(reimu, Stage4PreBoss) {
+	DIALOG_BEGIN(Stage4PreBoss);
 
-	LEFT_FACE(surprised);
-	RIGHT_FACE(tsun);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(normal);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(tsun_blush);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(dissatisfied);
-	LEFT_FACE(puzzled);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(tsun);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(unamused);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(kurumi);
+
+	EVENT(boss_appears);
+	EVENT(music_changes);
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage4_post_boss) {
-	// TODO rewrite this
+DIALOG_TASK(reimu, Stage4PostBoss) {
+	DIALOG_BEGIN(Stage4PostBoss);
 
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(tsun_blush);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(dissatisfied);
-	LEFT_FACE(sigh);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(tsun_blush);
-	RIGHT("FIXME: Removed due to issue #179");
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(kurumi);
+	VARIANT(kurumi, defeated);
+	FACE(kurumi, defeated);
+
+	DIALOG_END();
 }
 
-#undef RIGHT_BASE
-#define RIGHT_BASE iku
+/*
+ * Stage 5
+ */
 
-DIALOG_SCRIPT(reimu_stage5_pre_boss) {
-	LEFT_FACE(puzzled);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(serious);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(normal);
-	LEFT_FACE(surprised);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(serious);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(smile);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(unamused);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(eyes_closed);
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(serious);
-	LEFT_FACE(sigh);
-	RIGHT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage5PreBoss) {
+	DIALOG_BEGIN(Stage5PreBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(iku);
+
+	EVENT(boss_appears);
+	EVENT(music_changes);
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage5_post_midboss) {
-	LEFT_FACE(puzzled);
-	LEFT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage5PostMidBoss) {
+	DIALOG_BEGIN(Stage5PostMidBoss);
+
+	ACTOR_LEFT(reimu);
+	FACE(reimu, surprised);
+
+	// should be only one message with a fixed 120-frames timeout
+	MSG_UNSKIPPABLE(reimu, 120, "changeme");
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage5_post_boss) {
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(normal);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(happy);
-	LEFT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage5PostBoss) {
+	DIALOG_BEGIN(Stage5PostBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(iku);
+	VARIANT(iku, defeated);
+	FACE(iku, defeated);
+
+	DIALOG_END();
 }
 
-#undef RIGHT_BASE
-#define RIGHT_BASE elly
+/*
+ * Stage 6
+ */
 
-DIALOG_SCRIPT(reimu_stage6_pre_boss) {
-	LEFT_FACE(puzzled);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(normal);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(sigh);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT_FACE(angry);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(unamused);
-	LEFT("FIXME: Removed due to issue #179");
-	LEFT_FACE(smug);
-	LEFT("FIXME: Removed due to issue #179");
-	RIGHT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage6PreBoss) {
+	DIALOG_BEGIN(Stage6PreBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(elly);
+
+	EVENT(boss_appears);
+	EVENT(music_changes);
+
+	DIALOG_END();
 }
 
-DIALOG_SCRIPT(reimu_stage6_pre_final) {
-	RIGHT_FACE(angry);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(puzzled);
-	RIGHT("FIXME: Removed due to issue #179");
-	LEFT_FACE(surprised);
-	RIGHT_FACE(shouting);
-	RIGHT("FIXME: Removed due to issue #179");
+DIALOG_TASK(reimu, Stage6PreFinal) {
+	DIALOG_BEGIN(Stage6PreFinal);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(elly);
+	VARIANT(elly, beaten);
+	FACE(elly, angry);
+
+	DIALOG_END();
 }
 
-EXPORT_DIALOG_SCRIPT(reimu)
+/*
+ * Register the tasks
+ */
+
+#define EXPORT_DIALOG_TASKS_CHARACTER reimu
+#include "export_dialog_tasks.inc.h"

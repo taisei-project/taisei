@@ -88,7 +88,7 @@ typedef struct PlayerMode {
 	const char *description;
 	const char *spellcard_name;
 	PlayerCharacter *character;
-	PlayerDialogProcs *dialog;
+	PlayerDialogTasks *dialog;
 	ShotModeID shot_mode;
 
 	struct {

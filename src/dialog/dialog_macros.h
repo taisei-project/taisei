@@ -12,49 +12,39 @@
 #include "taisei.h"
 
 #include "dialog.h"
+#include "stage.h"
 
-// NOTE: partial compatibility layer with the old dialog system; to be removed.
+#define DIALOG_BEGIN(_interface) \
+	Dialog dialog; \
+	stage_begin_dialog(&dialog); \
+	_interface##DialogEvents events = { 0 }; \
+	COEVENT_INIT_ARRAY(events); \
+	if(ARGS.out_events) *ARGS.out_events = &events; \
+	YIELD \
 
-#define DIALOG_EVAL(a, b) a b
+#define DIALOG_END() \
+	dialog_end(&dialog); \
+	COEVENT_CANCEL_ARRAY(events)
 
-#define DIALOG_SCRIPT_(name, base_left, base_right) \
-	static void _dialog_##name##_script(Dialog *dialog, DialogActor *a_left, DialogActor *a_right); \
-	TASK(dialog_##name, { Dialog *d; }) { \
-		Dialog *d = ARGS.d; \
-		DialogActor a_left, a_right; \
-		dialog_add_actor(d, &a_left, #base_left, DIALOG_SIDE_LEFT); \
-		dialog_add_actor(d, &a_right, #base_right, DIALOG_SIDE_RIGHT); \
-		_dialog_##name##_script(d, &a_left, &a_right); \
-		dialog_end(d); \
-	} \
-	static void dialog_##name(Dialog *d) { \
-		INVOKE_TASK(dialog_##name, d); \
-	} \
-	static void _dialog_##name##_script(Dialog *dialog, DialogActor *a_left, DialogActor *a_right)
+#define ACTOR(_name, _side) \
+	DialogActor _name; \
+	dialog_add_actor(&dialog, &_name, #_name, _side)
 
-#define DIALOG_SCRIPT(name)\
-	DIALOG_EVAL(DIALOG_SCRIPT_, (name, LEFT_BASE, RIGHT_BASE))
+#define ACTOR_LEFT(_name) ACTOR(_name, DIALOG_SIDE_LEFT)
+#define ACTOR_RIGHT(_name) ACTOR(_name, DIALOG_SIDE_RIGHT)
 
-#define LEFT(text) dialog_message(dialog, a_left, text);
-#define RIGHT(text) dialog_message(dialog, a_right, text);
-#define LEFT_FACE(face) dialog_actor_set_face(a_left, #face);
-#define RIGHT_FACE(face) dialog_actor_set_face(a_right, #face);
+#define MSG(_actor, _text) dialog_message(&dialog, &_actor, _text)
+#define MSG_UNSKIPPABLE(_actor, _delay, _text) dialog_message_unskippable(&dialog, &_actor, _text, _delay)
+#define FACE(_actor, _face) dialog_actor_set_face(&_actor, #_face)
+#define VARIANT(_actor, _variant) dialog_actor_set_face(&_actor, #_variant)
+#define SHOW(_actor) dialog_actor_show(&_actor)
+#define HIDE(_actor) dialog_actor_hide(&_actor)
+#define FOCUS(_actor) dialog_focus_actor(&dialog, &_actor)
+#define WAIT_SKIPPABLE(_delay) dialog_skippable_wait(&dialog, _delay)
+#define EVENT(_name) coevent_signal(&events._name)
+#define TITLE(_actor, _name, _title) log_warn("TITLE(%s, %s, %s) not yet implemented", #_actor, #_name, #_title)
 
-#define EXPORT_DIALOG_SCRIPT(name) \
-	PlayerDialogProcs dialog_##name = { \
-		.stage1_pre_boss = dialog_##name##_stage1_pre_boss, \
-		.stage1_post_boss = dialog_##name##_stage1_post_boss, \
-		.stage2_pre_boss = dialog_##name##_stage2_pre_boss, \
-		.stage2_post_boss = dialog_##name##_stage2_post_boss, \
-		.stage3_pre_boss = dialog_##name##_stage3_pre_boss, \
-		.stage3_post_boss = dialog_##name##_stage3_post_boss, \
-		.stage4_pre_boss = dialog_##name##_stage4_pre_boss, \
-		.stage4_post_boss = dialog_##name##_stage4_post_boss, \
-		.stage5_post_midboss = dialog_##name##_stage5_post_midboss, \
-		.stage5_pre_boss = dialog_##name##_stage5_pre_boss, \
-		.stage5_post_boss = dialog_##name##_stage5_post_boss, \
-		.stage6_pre_boss = dialog_##name##_stage6_pre_boss, \
-		.stage6_pre_final = dialog_##name##_stage6_pre_final, \
-	};
+#define DIALOG_TASK(_protag, _interface) \
+	TASK_WITH_INTERFACE(_protag##_##_interface##Dialog, _interface##Dialog)
 
 #endif // IGUARD_dialog_dialog_macros_h

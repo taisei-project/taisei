@@ -12,27 +12,26 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
+#include "common_tasks.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
-static Dialog *stage3_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = stage_create_dialog();
-	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	// dialog_set_char(d, DIALOG_RIGHT, "wriggle", "normal", NULL);
-	pm->dialog->stage3_pre_boss(d);
-	// dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage3boss"});
-	return d;
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage3_dialog_post_boss(void) {
+static void stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = stage_create_dialog();
-	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	// dialog_set_char(d, DIALOG_RIGHT, "wriggle", "defeated", "defeated");
-	pm->dialog->stage3_post_boss(d);
-	return d;
+	Stage3PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage3PreBossDialog, pm->dialog->Stage3PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage3boss");
+}
+
+static void stage3_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage3PostBossDialog, pm->dialog->Stage3PostBoss);
 }
 
 static int stage3_enterswirl(Enemy *e, int t) {
@@ -1414,7 +1413,7 @@ static void stage3_boss_nonspell3(Boss *boss, int time) {
 
 static void stage3_boss_intro(Boss *boss, int time) {
 	if(time == 110)
-		global.dialog = stage3_dialog_pre_boss();
+		stage3_dialog_pre_boss();
 
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
@@ -1671,7 +1670,7 @@ void stage3_events(void) {
 
 	AT(5400 + midboss_time) {
 		stage_unlock_bgm("stage3boss");
-		global.dialog = stage3_dialog_post_boss();
+		stage3_dialog_post_boss();
 	}
 
 	AT(5405 + midboss_time) {

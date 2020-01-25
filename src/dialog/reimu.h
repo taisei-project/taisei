@@ -13,6 +13,6 @@
 
 #include "dialog.h"
 
-extern PlayerDialogProcs dialog_reimu;
+extern PlayerDialogTasks dialog_tasks_reimu;
 
 #endif // IGUARD_dialog_reimu_h
