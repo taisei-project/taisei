@@ -49,11 +49,6 @@ struct CoTask {
 	koishi_coroutine_t ko;
 	BoxedEntity bound_ent;
 
-	struct {
-		CoTaskFunc func;
-		void *arg;
-	} finalizer;
-
 	CoTask *supertask;
 	ListAnchor subtasks;
 	List subtask_chain;
@@ -303,7 +298,6 @@ void cotask_free(CoTask *task) {
 	task->unique_id = 0;
 	task->supertask = NULL;
 	memset(&task->bound_ent, 0, sizeof(task->bound_ent));
-	memset(&task->finalizer, 0, sizeof(task->finalizer));
 	memset(&task->subtasks, 0, sizeof(task->subtasks));
 	memset(&task->wait, 0, sizeof(task->wait));
 	alist_push(&task_pool, task);
@@ -322,13 +316,6 @@ CoTask *cotask_active(void) {
 }
 
 static void cotask_finalize(CoTask *task) {
-	if(task->finalizer.func) {
-		task->finalizer.func(task->finalizer.arg);
-		#ifdef DEBUG
-		task->finalizer.func = (void*(*)(void*)) 0xDECEA5E;
-		#endif
-	}
-
 	List *node;
 
 	if(task->supertask) {
@@ -569,12 +556,6 @@ EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 
 	task->bound_ent = ENT_BOX(ent);
 	return ent;
-}
-
-void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg) {
-	assert(task->finalizer.func == NULL);
-	task->finalizer.func = finalizer;
-	task->finalizer.arg = arg;
 }
 
 void cotask_enslave(CoTask *slave) {

@@ -94,7 +94,6 @@ CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
-void cotask_set_finalizer(CoTask *task, CoTaskFunc finalizer, void *arg);
 void cotask_enslave(CoTask *slave);
 
 BoxedTask cotask_box(CoTask *task);
@@ -262,46 +261,6 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 /* define a task with extern linkage (needs to be declared first) */
 #define DEFINE_EXTERN_TASK(name) \
 	DEFINE_TASK_EXPLICIT(name, extern)
-
-
-#define DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, linkage) \
-	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
-	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
-	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
-	struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER { char dummy; }; \
-	/* user-defined finalizer function */ \
-	INLINE void COTASKFINALIZER_##name(TASK_ARGS_TYPE(name) *_cotask_args); \
-	/* real finalizer entry point */ \
-	static void *COTASKFINALIZERTHUNK_##name(void *arg) { \
-		COTASKFINALIZER_##name((TASK_ARGS_TYPE(name)*)arg); \
-		return NULL; \
-	} \
-	/* prologue; sets up finalizer before executing task body */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) { \
-		cotask_set_finalizer(cotask_active(), COTASKFINALIZERTHUNK_##name, _cotask_args); \
-	} \
-	/* begin task body definition */ \
-	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
-
-/* define a task that needs a finalizer with static linkage (needs to be declared first) */
-#define DEFINE_TASK_WITH_FINALIZER(name) \
- 	DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, static)
-
-/* define a task that needs a finalizer with static linkage (needs to be declared first) */
-#define DEFINE_EXTERN_TASK_WITH_FINALIZER(name) \
-	DEFINE_TASK_WITH_FINALIZER_EXPLICIT(name, extern)
-
-/* declare and define a task that needs a finalizer with static linkage */
-#define TASK_WITH_FINALIZER(name, argstruct) \
-	DECLARE_TASK(name, argstruct); \
-	DEFINE_TASK_WITH_FINALIZER(name)
-
-/* define the finalizer for a TASK_WITH_FINALIZER */
-#define TASK_FINALIZER(name) \
-	/* error out if using TASK_FINALIZER without TASK_WITH_FINALIZER */ \
-	attr_unused struct COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER COTASK__##name##__not_declared_using_TASK_WITH_FINALIZER; \
-	/* begin finalizer body definition */ \
-	static void COTASKFINALIZER_##name(TASK_ARGS_TYPE(name) *_cotask_args)
 
 
 INLINE BoxedTask _cotask_invoke_helper(CoTask *t, bool is_subtask) {
