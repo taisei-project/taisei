@@ -11,13 +11,22 @@
 #include "dialog.h"
 #include "global.h"
 
-Dialog *dialog_create(void) {
-	Dialog *d = calloc(1, sizeof(Dialog));
+void dialog_init(Dialog *d) {
+	memset(d, 0, sizeof(*d));
 	d->state = DIALOG_STATE_IDLE;
 	d->text.current = &d->text.buffers[0];
 	d->text.fading_out = &d->text.buffers[1];
 	COEVENT_INIT_ARRAY(d->events);
-	return d;
+}
+
+void dialog_deinit(Dialog *d) {
+	COEVENT_CANCEL_ARRAY(d->events);
+
+	for(DialogActor *a = d->actors.first; a; a = a->next) {
+		if(a->composite.tex) {
+			r_texture_destroy(a->composite.tex);
+		}
+	}
 }
 
 void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide side) {
@@ -25,7 +34,7 @@ void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide si
 	a->name = name;
 	a->face = "normal";
 	a->side = side;
-	a->target_opacity = 1;
+	// a->target_opacity = 1;
 	a->composite_dirty = true;
 
 	if(side == DIALOG_SIDE_RIGHT) {
@@ -48,7 +57,25 @@ void dialog_actor_set_variant(DialogActor *a, const char *variant) {
 }
 
 void dialog_update(Dialog *d) {
-	if(d->state == DIALOG_STATE_FADEOUT) {
+	if(d->text.current->text) {
+		fapproach_p(&d->text.current->opacity, 1, 1/120.0f);
+	} else {
+		d->text.current->opacity = 0;
+	}
+
+	if(d->text.fading_out->text) {
+		fapproach_p(&d->text.fading_out->opacity, 0, 1/60.0f);
+	} else {
+		d->text.fading_out->opacity = 0;
+	}
+
+	if(
+		d->state == DIALOG_STATE_FADEOUT ||
+		(
+			d->text.current->opacity == 0 &&
+			d->text.fading_out->opacity < 0.25
+		)
+	) {
 		fapproach_asymptotic_p(&d->opacity, 0, 0.1, 1e-3);
 	} else {
 		fapproach_asymptotic_p(&d->opacity, 1, 0.05, 1e-3);
@@ -62,9 +89,6 @@ void dialog_update(Dialog *d) {
 		}
 		fapproach_asymptotic_p(&a->focus, a->target_focus, 0.12, 1e-3);
 	}
-
-	fapproach_p(&d->text.current->opacity, 1, 1/120.0f);
-	fapproach_p(&d->text.fading_out->opacity, 0, 1/60.0f);
 }
 
 void dialog_skippable_wait(Dialog *d, int timeout) {
@@ -112,6 +136,7 @@ void dialog_focus_actor(Dialog *d, DialogActor *actor) {
 	}
 
 	actor->target_focus = 1;
+	actor->target_opacity = 1;
 
 	// make focused actor drawn on top of everyone else
 	alist_unlink(&d->actors, actor);
@@ -138,14 +163,22 @@ void dialog_message_ex(Dialog *d, const DialogMessageParams *params) {
 	}
 }
 
-void dialog_message(Dialog *d, DialogActor *actor, const char *text) {
+static void _dialog_message(Dialog *d, DialogActor *actor, const char *text, bool skippable, int delay) {
 	DialogMessageParams p = { 0 };
 	p.actor = actor;
 	p.text = text;
 	p.implicit_wait = true;
-	p.wait_skippable = true;
-	p.wait_timeout = dialog_util_estimate_wait_timeout_from_text(text);
+	p.wait_skippable = skippable;
+	p.wait_timeout = delay;
 	dialog_message_ex(d, &p);
+}
+
+void dialog_message(Dialog *d, DialogActor *actor, const char *text) {
+	_dialog_message(d, actor, text, true, dialog_util_estimate_wait_timeout_from_text(text));
+}
+
+void dialog_message_unskippable(Dialog *d, DialogActor *actor, const char *text, int delay) {
+	_dialog_message(d, actor, text, false, delay);
 }
 
 void dialog_end(Dialog *d) {
@@ -171,8 +204,7 @@ void dialog_end(Dialog *d) {
 	}
 
 	coevent_signal(&d->events.fadeout_ended);
-	cotask_cancel(cotask_active());
-	UNREACHABLE;
+	dialog_deinit(d);
 }
 
 static void dialog_actor_update_composite(DialogActor *a) {
@@ -230,18 +262,6 @@ static void dialog_actor_update_composite(DialogActor *a) {
 	render_character_portrait(spr_base, spr_face, &a->composite);
 	log_debug("created texture at %p", (void*)a->composite.tex);
 	a->composite_dirty = false;
-}
-
-void dialog_destroy(Dialog *d) {
-	COEVENT_CANCEL_ARRAY(d->events);
-
-	for(DialogActor *a = d->actors.first; a; a = a->next) {
-		if(a->composite.tex) {
-			r_texture_destroy(a->composite.tex);
-		}
-	}
-
-	free(d);
 }
 
 void dialog_draw(Dialog *dialog) {

@@ -13,23 +13,21 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
-static Dialog *stage1_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = stage_create_dialog();
-	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	// dialog_set_char(d, DIALOG_RIGHT, "cirno", "normal", NULL);
-	pm->dialog->stage1_pre_boss(d);
-	// dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage1boss"});
-	return d;
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage1_dialog_post_boss(void) {
+static void stage1_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = stage_create_dialog();
-	// dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	// dialog_set_char(d, DIALOG_RIGHT, "cirno", "defeated", "defeated");
-	pm->dialog->stage1_post_boss(d);
-	return d;
+	Stage1PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage1PreBossDialog, pm->dialog->Stage1PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage1boss");
+}
+
+static void stage1_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage1PostBossDialog, pm->dialog->Stage1PostBoss);
 }
 
 static Projectile *spawn_stain(cmplx pos, float angle, int to) {
@@ -70,7 +68,7 @@ static void cirno_intro_boss(Boss *c, int time) {
 	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 
 	AT(120)
-		global.dialog = stage1_dialog_pre_boss();
+		stage1_dialog_pre_boss();
 }
 
 static void cirno_iceplosion0(Boss *c, int time) {
@@ -1609,10 +1607,8 @@ TASK(stage_timeline, NO_ARGS) {
 	stage1_bg_disable_snow();
 	WAIT(120);
 
-	global.dialog = stage1_dialog_post_boss();
-	while(dialog_is_active(global.dialog)) {
-		YIELD;
-	}
+	stage1_dialog_post_boss();
+	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);

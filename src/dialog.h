@@ -83,8 +83,11 @@ typedef struct DialogMessageParams {
 	bool wait_skippable;
 } DialogMessageParams;
 
-Dialog *dialog_create(void)
-	attr_returns_allocated;
+void dialog_init(Dialog *d)
+	attr_nonnull_all;
+
+void dialog_deinit(Dialog *d)
+	attr_nonnull_all;
 
 void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide side)
 	attr_nonnull_all;
@@ -107,16 +110,16 @@ int dialog_util_estimate_wait_timeout_from_text(const char *text)
 void dialog_message(Dialog *d, DialogActor *actor, const char *text)
 	attr_nonnull_all;
 
+void dialog_message_unskippable(Dialog *d, DialogActor *actor, const char *text, int delay)
+	attr_nonnull_all;
+
 void dialog_message_ex(Dialog *d, const DialogMessageParams *params)
 	attr_nonnull_all;
 
 void dialog_focus_actor(Dialog *d, DialogActor *actor)
 	attr_nonnull_all;
 
-noreturn void dialog_end(Dialog *d)
-	attr_nonnull_all;
-
-void dialog_destroy(Dialog *d)
+void dialog_end(Dialog *d)
 	attr_nonnull_all;
 
 void dialog_update(Dialog *d)
@@ -131,21 +134,6 @@ bool dialog_is_active(Dialog *d);
 
 void dialog_preload(void);
 
-// FIXME: might not be the best place for this
-typedef struct PlayerDialogProcs {
-	void (*stage1_pre_boss)(Dialog *d);
-	void (*stage1_post_boss)(Dialog *d);
-	void (*stage2_pre_boss)(Dialog *d);
-	void (*stage2_post_boss)(Dialog *d);
-	void (*stage3_pre_boss)(Dialog *d);
-	void (*stage3_post_boss)(Dialog *d);
-	void (*stage4_pre_boss)(Dialog *d);
-	void (*stage4_post_boss)(Dialog *d);
-	void (*stage5_post_midboss)(Dialog *d);
-	void (*stage5_pre_boss)(Dialog *d);
-	void (*stage5_post_boss)(Dialog *d);
-	void (*stage6_pre_boss)(Dialog *d);
-	void (*stage6_pre_final)(Dialog *d);
-} PlayerDialogProcs;
+#include "dialog/dialog_interface.h"
 
 #endif // IGUARD_dialog_h

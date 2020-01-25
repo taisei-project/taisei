@@ -609,19 +609,17 @@ void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
 }
 
-TASK(destroy_dialog, NO_ARGS) {
+TASK(clear_dialog, NO_ARGS) {
 	assert(global.dialog != NULL);
-	dialog_destroy(global.dialog);
+	// dialog_deinit() should've been called by dialog_end() at this point
 	global.dialog = NULL;
 }
 
-Dialog *stage_create_dialog(void) {
+void stage_begin_dialog(Dialog *d) {
 	assert(global.dialog == NULL);
-
-	Dialog *d = global.dialog = dialog_create();
-	INVOKE_TASK_WHEN(&d->events.fadeout_ended, destroy_dialog);
-
-	return d;
+	global.dialog = d;
+	dialog_init(d);
+	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
 }
 
 static void stage_free(void) {
@@ -634,7 +632,7 @@ static void stage_free(void) {
 	delete_projectiles(&global.particles);
 
 	if(global.dialog) {
-		dialog_destroy(global.dialog);
+		dialog_deinit(global.dialog);
 		global.dialog = NULL;
 	}
 
