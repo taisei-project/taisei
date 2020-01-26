@@ -34,7 +34,7 @@ void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide si
 	a->name = name;
 	a->face = "normal";
 	a->side = side;
-	// a->target_opacity = 1;
+	a->target_opacity = 1;
 	a->composite_dirty = true;
 
 	if(side == DIALOG_SIDE_RIGHT) {
@@ -136,7 +136,6 @@ void dialog_focus_actor(Dialog *d, DialogActor *actor) {
 	}
 
 	actor->target_focus = 1;
-	actor->target_opacity = 1;
 
 	// make focused actor drawn on top of everyone else
 	alist_unlink(&d->actors, actor);

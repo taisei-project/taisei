@@ -18,18 +18,19 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	// Initialization, must be at the very top.
 	DIALOG_BEGIN(Stage1PreBoss);
 
-	// Actors start hidden by default.
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(cirno);
 
-	// SHOW() can be used to reveal them.
-	SHOW(reimu);
-
-	// HIDE() can be used to hide them again.
-	//	HIDE(reimu);
+	// Hide cirno for now, to be revealed later.
+	HIDE(cirno);
 
 	// "normal" is the default face.
 	// FACE(reimu, normal);
+
+	// FOCUS() to make an actor stand out.
+	// Focused actors are fully bright and appear in front of the rest.
+	// Only one actor can be focused at a time.
+	FOCUS(reimu);
 
 	// Let's wait a bit, then change Reimu's expression.
 	// All timings are in frames (60 = 1 sec).
@@ -38,18 +39,23 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 
 	// MSG() makes the actor say a line, and then waits an unspecified amount of time (skippable).
 	// The timeout is determined by the dialog_util_estimate_wait_timeout_from_text() function in dialog.c
+	// MSG() also implies FOCUS()
 	MSG(reimu, "yikes");
+
+	MSG(cirno, "I'm saying something, yet I'm invisible! So dramatic!");
 
 	// EVENT()s are handled by stage code.
 	// You can find the list of events per dialogue in dialog_interface.h
 	// All of them should be signaled eventually.
 	EVENT(boss_appears);
 
+	// Reveal Cirno's portrait, while she appears in the game viewport.
+	SHOW(cirno);
+
 	// Wait until the boss slides in.
 	// WAIT() can not be skipped.
 	WAIT(30);
 
-	// MSG() also implies SHOW()
 	MSG(cirno, "9");
 
 	// Titles are not yet implemented, but this should work once they are.
@@ -59,7 +65,7 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	WAIT_SKIPPABLE(30);
 
 	// MSG_UNSKIPPABLE() is like MSG(), but can't be skipped and takes an explicit timeout.
-	MSG_UNSKIPPABLE(cirno, 60, "asdfasdfsdfas");
+	MSG_UNSKIPPABLE(cirno, 300, "You can't skip this one!");
 
 	EVENT(music_changes);
 	MSG(reimu, "omg");
