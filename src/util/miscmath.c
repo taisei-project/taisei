@@ -137,6 +137,18 @@ double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
 
+double pcos(double x) {
+	return 0.5 + 0.5 * cos(x);
+}
+
+float psinf(float x) {
+	return 0.5 + 0.5 * sinf(x);
+}
+
+float pcosf(float x) {
+	return 0.5 + 0.5 * cosf(x);
+}
+
 double min(double a, double b) {
 	return (a < b) ? a : b;
 }
@@ -221,6 +233,14 @@ double sawtooth(double x) {
 
 double triangle(double x) {
 	return 2 * fabs(sawtooth(x)) - 1;
+}
+
+double logistic(double x) {
+	return 1.0 / (1.0 + exp(-x));
+}
+
+float flogistic(float x) {
+	return 1.0f / (1.0f + expf(-x));
 }
 
 uint32_t topow2_u32(uint32_t x) {

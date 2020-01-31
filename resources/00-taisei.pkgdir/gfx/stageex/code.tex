@@ -1,0 +1,10 @@
+
+# Disable mipmaps to reduce artifacts at the seams.
+# Note that some artifacts will still be present, because the linear filter is unaware of how the slices are supposed to wrap.
+mipmaps = 1
+filter_min = linear
+filter_mag = linear
+
+# Nearest-neighbour filter avoids artifacts entirely, but looks worse.
+#filter_min = nearest
+#filter_mag = nearest
