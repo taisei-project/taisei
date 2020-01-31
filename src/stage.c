@@ -123,7 +123,7 @@ void stage_init_array(void) {
 #endif
 
 	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
-	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "totally a good idea to create already", NULL, D_Extra);
+	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
 	end_stages();
 

@@ -17,4 +17,6 @@ void main(void) {
 	float f = clamp((end - z)/(end-start),0.0,1.0);
 
 	fragColor = f*texture(tex, texCoord) + (1.0-f)*fog_color;
+
+//	fragColor = texture(depth, texCoord);
 }

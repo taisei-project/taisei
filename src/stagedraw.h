@@ -37,8 +37,8 @@ void stage_display_clear_screen(const StageClearBonus *bonus);
 void stage_draw_begin_noshake(void);
 void stage_draw_end_noshake(void);
 
-FBPair* stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
-Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
-Framebuffer* stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
+FBPair *stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
+Framebuffer *stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
+Framebuffer *stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 
 #endif // IGUARD_stagedraw_h

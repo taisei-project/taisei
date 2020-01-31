@@ -195,7 +195,7 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
-	a_depth->tex_params.type = TEX_TYPE_DEPTH;
+	a_depth->tex_params.type = TEX_TYPE_DEPTH_32;
 
 	// Foreground: 1 RGB texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGB_16;
@@ -695,10 +695,13 @@ static void finish_3d_scene(FBPair *fbpair) {
 	// as far as I can tell.
 
 	apply_shader_rules((ShaderRule[]) {
+		/*
 		config_get_int(CONFIG_FXAA)
 			? fxaa_rule
 			: copydepth_rule,
 		NULL
+		*/
+		copydepth_rule, NULL
 	}, fbpair);
 }
 
@@ -724,6 +727,11 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 	if(should_draw_stage_bg()) {
 		finish_3d_scene(fbos);
 		apply_shader_rules(shaderrules, fbos);
+
+		// anti-aliasing
+		if(config_get_int(CONFIG_FXAA)) {
+			apply_shader_rules((ShaderRule[]) { fxaa_rule, NULL } , fbos);
+		}
 	}
 
 	if(b && b->current && b->current->draw_rule) {
@@ -1430,11 +1438,13 @@ void stage_draw_bottom_text(void) {
 	Font *font;
 
 #ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d",
+	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d (%d:%02d) ",
 		global.fps.logic.fps,
 		global.fps.render.fps,
 		global.timer,
-		global.frames
+		global.frames,
+		global.frames / 3600,
+		(global.frames % 3600) / 60
 	);
 #else
 	if(get_effective_frameskip() > 1) {
