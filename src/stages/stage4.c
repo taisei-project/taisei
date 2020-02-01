@@ -201,7 +201,7 @@ static void stage4_corridor_draw(vec3 pos) {
 }
 
 static void stage4_start(void) {
-	init_stage3d(&stage_3d_context, 16);
+	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10000;
 	stage_3d_context.cv[2] = 19.7;
@@ -212,10 +212,6 @@ static void stage4_start(void) {
 //  stage_3d_context.cx[2] = 130;
 //  stage_3d_context.cv[1] = 10;
 //  stage_3d_context.crot[0] = 80;
-
-	add_model(&stage_3d_context, stage4_lake_draw, stage4_lake_pos);
-	add_model(&stage_3d_context, stage4_fountain_draw, stage4_fountain_pos);
-	add_model(&stage_3d_context, stage4_corridor_draw, stage4_corridor_pos);
 }
 
 static void stage4_preload(void) {
@@ -260,16 +256,23 @@ static void stage4_preload(void) {
 }
 
 static void stage4_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 static void stage4_draw(void) {
-	set_perspective(&stage_3d_context, 130, 3000);
-	draw_stage3d(&stage_3d_context, 4000);
+	stage3d_set_perspective(&stage_3d_context, 130, 3000);
+
+	Stage3DSegment segs[] = {
+		{ stage4_lake_draw, stage4_lake_pos },
+		{ stage4_fountain_draw, stage4_fountain_pos },
+		{ stage4_corridor_draw, stage4_corridor_pos },
+	};
+
+	stage3d_draw(&stage_3d_context, 4000, ARRAY_SIZE(segs), segs);
 }
 
 static void stage4_update(void) {
-	update_stage3d(&stage_3d_context);
+	stage3d_update(&stage_3d_context);
 
 	if(stage_3d_context.cx[2] >= -1000 && stage_3d_context.cv[2] > 0)
 		stage_3d_context.cv[2] -= 0.17;

@@ -164,12 +164,19 @@ static void stage6_skysphere_draw(vec3 pos) {
 }
 
 static void stage6_draw(void) {
-	set_perspective(&stage_3d_context, 100, 9000);
-	draw_stage3d(&stage_3d_context, 10000);
+	stage3d_set_perspective(&stage_3d_context, 100, 9000);
+
+	Stage3DSegment segs[] = {
+		{ stage6_skysphere_draw, stage6_skysphere_pos },
+		{ stage6_towertop_draw, stage6_towertop_pos },
+		{ stage6_towerwall_draw, stage6_towerwall_pos },
+	};
+
+	stage3d_draw(&stage_3d_context, 10000, ARRAY_SIZE(segs), segs);
 }
 
 static void stage6_update(void) {
-	update_stage3d(&stage_3d_context);
+	stage3d_update(&stage_3d_context);
 
 	if(fall_over) {
 		int t = global.frames - fall_over;
@@ -220,12 +227,8 @@ void start_fall_over(void) { //troll
 static void stage6_start(void) {
 	// TODO: make this background slightly less horribly inefficient
 
-	init_stage3d(&stage_3d_context, 128);
+	stage3d_init(&stage_3d_context, 128);
 	fall_over = 0;
-
-	add_model(&stage_3d_context, stage6_skysphere_draw, stage6_skysphere_pos);
-	add_model(&stage_3d_context, stage6_towertop_draw, stage6_towertop_pos);
-	add_model(&stage_3d_context, stage6_towerwall_draw, stage6_towerwall_pos);
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
@@ -331,7 +334,7 @@ static void stage6_preload(void) {
 }
 
 static void stage6_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 static void stage6_spellpractice_start(void) {

@@ -143,13 +143,11 @@ static bool stage3_glitch(Framebuffer *fb) {
 }
 
 static void stage3_start(void) {
-	init_stage3d(&stage_3d_context, 16);
+	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10;
 	stage_3d_context.crot[0] = -95;
 	stage_3d_context.cv[1] = 10;
-
-	add_model(&stage_3d_context, stage3_bg_tunnel_draw, stage3_bg_pos);
 
 	memset(&stgstate, 0, sizeof(stgstate));
 	stgstate.clr_r = 1.0;
@@ -189,12 +187,12 @@ static void stage3_preload(void) {
 }
 
 static void stage3_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 static void stage3_draw(void) {
-	set_perspective(&stage_3d_context, 300, 5000);
-	draw_stage3d(&stage_3d_context, 7000);
+	stage3d_set_perspective(&stage_3d_context, 300, 5000);
+	stage3d_draw(&stage_3d_context, 7000, 1, (Stage3DSegment[]) { stage3_bg_tunnel_draw, stage3_bg_pos });
 }
 
 static void stage3_update(void) {
@@ -204,7 +202,7 @@ static void stage3_update(void) {
 	stage_3d_context.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
 
 	if(dialog_is_active(global.dialog)) {
-		update_stage3d(&stage_3d_context);
+		stage3d_update(&stage_3d_context);
 		return;
 	}
 
@@ -349,7 +347,7 @@ static void stage3_update(void) {
 		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
 	}
 
-	update_stage3d(&stage_3d_context);
+	stage3d_update(&stage_3d_context);
 }
 
 void scuttle_spellbg(Boss*, int t);
