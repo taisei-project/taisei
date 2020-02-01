@@ -79,46 +79,45 @@ void stage3d_shutdown(Stage3D *s) {
 	free(s->pos_buffer);
 }
 
-uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r) {
-	const float maxrange_squared = maxrange * maxrange;
 
-	vec3 q_minus_p, temp;
-	glm_vec3_sub(q, p, q_minus_p);
-	glm_vec3_mul(q_minus_p, r, temp);
-	const float n = glm_vec3_hadd(temp);
-	const float z = glm_vec3_norm2(r);
-	const float t = n/z;
+// this function generates an array of positions on a line so that all points of
+// at least distance maxrange are contained.
+//
+// The equation of the (infinite) line is
+// 
+//     x = support + direction * n
+//     
+// where n is an integer.
+//
+uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 direction) {
+	vec3 support_to_camera;
+	glm_vec3_sub(camera, support, support_to_camera);
 
-	int mod = 1;
-	int num = t;
+	const float direction_length = glm_vec3_norm(direction);
+	const float projected_cam = glm_vec3_dot(support_to_camera, direction) / (direction_length * direction_length);
+	const int n_closest_to_cam = projected_cam;
+
 	uint size = 0;
 
-	while(size < s3d->pos_buffer_size) {
-		vec3 dif;
-		vec3 r_x_num;
-		glm_vec3_scale(r, num, r_x_num);
-		glm_vec3_sub(q_minus_p, r_x_num, dif);
+	// This is an approximation that does not take into account the distance
+	// of the camera to the line. Can be made exact though.
+	const int nrange = maxrange/direction_length;
 
-		if(glm_vec3_norm2(dif) < maxrange_squared) {
-			glm_vec3_add(p, r_x_num, s3d->pos_buffer[size]);
-			++size;
+	for(int n = n_closest_to_cam - nrange; n <= n_closest_to_cam + nrange; n++) {
+		vec3 extended_direction;
+		glm_vec3_scale(direction, n, extended_direction);
+		
+		assert(size < s3d->pos_buffer_size);
+		glm_vec3_add(support, extended_direction, s3d->pos_buffer[size]);
+		++size;
 
-			if(size == s3d->pos_buffer_size) {
-				s3d->pos_buffer_size *= 2;
-				log_debug("pos_buffer exhausted, reallocating %u -> %u", size, s3d->pos_buffer_size);
-				s3d->pos_buffer = realloc(s3d->pos_buffer, sizeof(vec3) * s3d->pos_buffer_size);
-			}
-		} else if(mod == 1) {
-			mod = -1;
-			num = t;
-		} else {
-			break;
+		if(size == s3d->pos_buffer_size) {
+			s3d->pos_buffer_size *= 2;
+			log_debug("pos_buffer exhausted, reallocating %u -> %u", size, s3d->pos_buffer_size);
+			s3d->pos_buffer = realloc(s3d->pos_buffer, sizeof(vec3) * s3d->pos_buffer_size);
 		}
-
-		num += mod;
 	}
 
-	assert(size < s3d->pos_buffer_size);
 
 	return size;
 }
