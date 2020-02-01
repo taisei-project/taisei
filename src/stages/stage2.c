@@ -158,18 +158,13 @@ static bool stage2_bloom(Framebuffer *fb) {
 }
 
 static void stage2_start(void) {
-	init_stage3d(&stage_3d_context, 16);
+	stage3d_init(&stage_3d_context, 16);
 	stage_3d_context.cx[2] = 1000;
 	stage_3d_context.cx[0] = -850;
 	stage_3d_context.crot[0] = 60;
 	stage_3d_context.crot[2] = -90;
 
 	stage_3d_context.cv[0] = 9;
-
-	add_model(&stage_3d_context, stage2_bg_ground_draw, stage2_bg_pos);
-	add_model(&stage_3d_context, stage2_bg_grass_draw, stage2_bg_grass_pos);
-	add_model(&stage_3d_context, stage2_bg_grass_draw, stage2_bg_grass_pos2);
-	add_model(&stage_3d_context, stage2_bg_leaves_draw, stage2_bg_pos);
 }
 
 static void stage2_preload(void) {
@@ -200,12 +195,20 @@ static void stage2_preload(void) {
 }
 
 static void stage2_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 static void stage2_draw(void) {
-	set_perspective(&stage_3d_context, 500, 5000);
-	draw_stage3d(&stage_3d_context, 7000);
+	stage3d_set_perspective(&stage_3d_context, 500, 5000);
+
+	Stage3DSegment segs[] = {
+		{ stage2_bg_ground_draw, stage2_bg_pos },
+		{ stage2_bg_grass_draw, stage2_bg_grass_pos },
+		{ stage2_bg_grass_draw, stage2_bg_grass_pos2 },
+		{ stage2_bg_leaves_draw, stage2_bg_pos },
+	};
+
+	stage3d_draw(&stage_3d_context, 7000, ARRAY_SIZE(segs), segs);
 }
 
 static void stage2_update(void) {
@@ -218,7 +221,7 @@ static void stage2_update(void) {
 
 	stage_3d_context.crot[2] += min(0.5, -stage_3d_context.crot[2] * 0.02);
 
-	update_stage3d(&stage_3d_context);
+	stage3d_update(&stage_3d_context);
 }
 
 static void stage2_spellpractice_start(void) {

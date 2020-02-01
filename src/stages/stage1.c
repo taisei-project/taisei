@@ -238,28 +238,6 @@ static uint stage1_smoke_pos(Stage3D *s3d, vec3 p, float maxrange) {
 	return linear3dpos(s3d, p, maxrange/2.0, q, r);
 }
 
-static bool stage1_fog(Framebuffer *fb) {
-	r_shader("zbuf_fog");
-	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
-	r_uniform_float("start", 0.0);
-	r_uniform_float("end", 0.8);
-	r_uniform_float("exponent", 3.0);
-	r_uniform_float("sphereness", 0.2);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-	r_shader_standard();
-	return true;
-}
-
-static void stage1_draw(void) {
-	set_perspective(&stage_3d_context, 500, 5000);
-	draw_stage3d(&stage_3d_context, 7000);
-}
-
-static void stage1_update(void) {
-	update_stage3d(&stage_3d_context);
-}
-
 static inline uint32_t floathash(float f) {
 	return (union { uint32_t i; float f; }){ .f = f }.i;
 }
@@ -305,11 +283,37 @@ static void stage1_waterplants_draw(vec3 pos) {
 	r_state_pop();
 }
 
+static bool stage1_fog(Framebuffer *fb) {
+	r_shader("zbuf_fog");
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	r_uniform_vec4("fog_color", 0.8, 0.8, 0.8, 1.0);
+	r_uniform_float("start", 0.0);
+	r_uniform_float("end", 0.8);
+	r_uniform_float("exponent", 3.0);
+	r_uniform_float("sphereness", 0.2);
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	r_shader_standard();
+	return true;
+}
+
+static void stage1_draw(void) {
+	stage3d_set_perspective(&stage_3d_context, 500, 5000);
+
+	Stage3DSegment segs[] = {
+		{ stage1_water_draw, stage1_bg_pos },
+		{ stage1_waterplants_draw, stage1_smoke_pos },
+		{ stage1_smoke_draw, stage1_smoke_pos },
+	};
+
+	stage3d_draw(&stage_3d_context, 7000, ARRAY_SIZE(segs), segs);
+}
+
+static void stage1_update(void) {
+	stage3d_update(&stage_3d_context);
+}
+
 static void stage1_start(void) {
-	init_stage3d(&stage_3d_context, 16);
-	add_model(&stage_3d_context, stage1_water_draw, stage1_bg_pos);
-	add_model(&stage_3d_context, stage1_waterplants_draw, stage1_smoke_pos);
-	add_model(&stage_3d_context, stage1_smoke_draw, stage1_smoke_pos);
+	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.crot[0] = 60;
 	stage_3d_context.cx[2] = 700;
@@ -351,7 +355,7 @@ static void stage1_preload(void) {
 }
 
 static void stage1_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 static void stage1_spellpractice_start(void) {

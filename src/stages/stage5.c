@@ -82,12 +82,12 @@ static void stage5_stairs_draw(vec3 pos) {
 }
 
 static void stage5_draw(void) {
-	set_perspective(&stage_3d_context, 100, 20000);
-	draw_stage3d(&stage_3d_context, 30000);
+	stage3d_set_perspective(&stage_3d_context, 100, 20000);
+	stage3d_draw(&stage_3d_context, 30000, 1, (Stage3DSegment[]) { stage5_stairs_draw, stage5_stairs_pos });
 }
 
 static void stage5_update(void) {
-	update_stage3d(&stage_3d_context);
+	stage3d_update(&stage_3d_context);
 
 	TIMER(&global.timer);
 	float w = 0.005;
@@ -142,8 +142,7 @@ void iku_spell_bg(Boss *b, int t) {
 static void stage5_start(void) {
 	memset(&stagedata, 0, sizeof(stagedata));
 
-	init_stage3d(&stage_3d_context, 16);
-	add_model(&stage_3d_context, stage5_stairs_draw, stage5_stairs_pos);
+	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.crot[0] = 60;
 	stagedata.rotshift = 140;
@@ -184,7 +183,7 @@ static void stage5_preload(void) {
 }
 
 static void stage5_end(void) {
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 void stage5_skip(int t) {

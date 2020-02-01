@@ -199,9 +199,7 @@ static void credits_towerwall_draw(vec3 pos) {
 
 static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
-	init_stage3d(&stage_3d_context, 64);
-
-	add_model(&stage_3d_context, credits_towerwall_draw, stage6_towerwall_pos);
+	stage3d_init(&stage_3d_context, 64);
 
 	stage_3d_context.cx[0] = 0;
 	stage_3d_context.cx[1] = 600;
@@ -347,8 +345,8 @@ static void credits_draw(void) {
 	r_mat_mv_translate(-SCREEN_W/2, 0, 0);
 	r_enable(RCAP_DEPTH_TEST);
 
-	set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
-	draw_stage3d(&stage_3d_context, 10000);
+	stage3d_set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
+	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, stage6_towerwall_pos });
 
 	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);
@@ -410,7 +408,7 @@ static void credits_free(void) {
 	}
 
 	free(credits.entries);
-	free_stage3d(&stage_3d_context);
+	stage3d_shutdown(&stage_3d_context);
 }
 
 void credits_preload(void) {

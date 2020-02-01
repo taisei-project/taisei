@@ -13,45 +13,58 @@
 
 #include "util.h"
 
-typedef struct StageSegment StageSegment;
 typedef struct Stage3D Stage3D;
 
 typedef void (*SegmentDrawRule)(vec3 pos);
 typedef uint (*SegmentPositionRule)(Stage3D *s3d, vec3 q, float maxrange); // returns number of elements written to Stage3D pos_buffer
 
-struct StageSegment {
+typedef struct Stage3DSegment {
 	SegmentDrawRule draw;
 	SegmentPositionRule pos;
-};
+} Stage3DSegment;
+
+typedef union Camera3DRotation {
+	struct { float pitch, yaw, roll; };
+	vec3 v;
+} Camera3DRotation;
+
+typedef struct Camera3D {
+	vec3 pos;
+	vec3 vel;
+	Camera3DRotation rot;
+} Camera3D;
+
+// #define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
+#define STAGE3D_DEPRECATED(...)
 
 struct Stage3D {
-	StageSegment *models;
-	int msize;
+	union {
+		Camera3D cam;
+
+		struct {
+			vec3 cx     STAGE3D_DEPRECATED("Use .cam.pos instead");
+			vec3 cv     STAGE3D_DEPRECATED("Use .cam.vel instead");
+			vec3 crot   STAGE3D_DEPRECATED("Use .cam.rot instead");
+		};
+	};
 
 	vec3 *pos_buffer;
 	uint pos_buffer_size;
-
-	// Camera
-	vec3 cx; // x
-	vec3 cv; // x'
-
-	vec3 crot;
-
-	float projangle;
 };
 
 extern Stage3D stage_3d_context;
 
-void init_stage3d(Stage3D *s, uint pos_buffer_size);
+void stage3d_init(Stage3D *s, uint pos_buffer_size);
+void stage3d_set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh);
+void stage3d_set_perspective(Stage3D *s, float near, float far);
+void stage3d_update(Stage3D *s);
+void stage3d_shutdown(Stage3D *s);
+void stage3d_apply_transforms(Stage3D *s, mat4 mat);
+void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawRule draw_rule, float maxrange);
+void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]);
 
-void add_model(Stage3D *s, SegmentDrawRule draw, SegmentPositionRule pos);
-
-void set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh);
-void set_perspective(Stage3D *s, float near, float far);
-void draw_stage3d(Stage3D *s, float maxrange);
-void update_stage3d(Stage3D *s);
-
-void free_stage3d(Stage3D *s);
+void camera3d_update(Camera3D *cam);
+void camera3d_apply_transforms(Camera3D *cam, mat4 mat);
 
 uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
 uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
