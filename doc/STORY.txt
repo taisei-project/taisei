@@ -49,7 +49,7 @@
 
  [At the Hakurei Shrine]
 
- Three heroines of Gensokyo sat drinking tea on a calm day at the end of summer.
+ Three heroines of Gensōkyō sat drinking tea on a calm day at the end of summer.
  Two of them seemed unsettled, while the third—
 
  Marisa: “What’s got ya both so down? Did I mess up the tea?”
@@ -230,7 +230,7 @@
     A bright bug - or was it insect? - far from her usual stomping grounds.
 
     It seems she's unhappy with the working conditions of bugs and insects
-    around Gensokyo.
+    around Gensōkyō.
 
     Even if you have to break the picket lines, consider negotiating with her
     bretheren later.
@@ -241,7 +241,7 @@
     Species: Vampire
     Field of Study: Phlebotomy
 
-    Vampiric blast from the past. Doesn't she know Gensokyo already has new 
+    Vampiric blast from the past. Doesn't she know Gensōkyō already has new 
     bloodsuckers in town?
 
     Sucking blood is what she's good at, but her current job is a gatekeeper,
