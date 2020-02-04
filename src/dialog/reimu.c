@@ -431,7 +431,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	
 	FACE(iku, serious);
 	MSG(iku, "To get straight to the point, this tower is unlike anything I have seen before.");
-	MSG(iku, "Since word spread through the cloiuds, I’ve learned that the culprit is connected to ’parallel universes.’");
+	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ’parallel universes.’");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "You mean like Otherworlds? That’s not too out of the ordinary these days though.");
