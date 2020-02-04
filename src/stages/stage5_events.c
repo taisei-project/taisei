@@ -1294,6 +1294,7 @@ static Boss* create_iku(void) {
 
 	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
+	boss_start_attack(b, b->attacks);
 	return b;
 }
 

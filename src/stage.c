@@ -615,10 +615,16 @@ TASK(clear_dialog, NO_ARGS) {
 	global.dialog = NULL;
 }
 
+TASK(dialog_fixup_timer, NO_ARGS) {
+	// HACK: remove when global.timer is gone
+	global.timer++;
+}
+
 void stage_begin_dialog(Dialog *d) {
 	assert(global.dialog == NULL);
 	global.dialog = d;
 	dialog_init(d);
+	INVOKE_TASK_WHEN(&d->events.fadeout_began, dialog_fixup_timer);
 	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
 }
 

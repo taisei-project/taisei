@@ -47,13 +47,19 @@ void dialog_add_actor(Dialog *d, DialogActor *a, const char *name, DialogSide si
 }
 
 void dialog_actor_set_face(DialogActor *a, const char *face) {
-	a->face = face;
-	a->composite_dirty = true;
+	log_debug("[%s] %s --> %s", a->name, a->face, face);
+	if(a->face != face) {
+		a->face = face;
+		a->composite_dirty = true;
+	}
 }
 
 void dialog_actor_set_variant(DialogActor *a, const char *variant) {
-	a->variant = variant;
-	a->composite_dirty = true;
+	log_debug("[%s] %s --> %s", a->name, a->variant, variant);
+	if(a->variant != variant) {
+		a->variant = variant;
+		a->composite_dirty = true;
+	}
 }
 
 void dialog_update(Dialog *d) {
@@ -214,7 +220,7 @@ static void dialog_actor_update_composite(DialogActor *a) {
 		return;
 	}
 
-	log_debug("%s (%p) is dirty", a->name, (void*)a);
+	log_debug("%s (%p) is dirty; face=%s; variant=%s", a->name, (void*)a, a->face, a->variant);
 
 	Sprite *spr_base, *spr_face;
 
