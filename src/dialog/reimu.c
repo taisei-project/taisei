@@ -42,7 +42,7 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	// MSG() also implies FOCUS()
 	MSG(reimu, "Unseasonable snow? I wonder if it’s that ’Secret God’ again…");
 
-	MSG(cirno, "’Secret God’?");
+	MSG_UNSKIPPABLE(cirno, 180, "’Secret God’?");
 
 	// EVENT()s are handled by stage code.
 	// You can find the list of events per dialogue in dialog_interface.h
@@ -59,13 +59,13 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	MSG(cirno, "What, are you *that* impressed by my invincible magic?!");
 
 	FACE(reimu, sigh);
-	MSG(reimu, "Right, of course, I completely forgot about you.");
+	MSG(reimu, "Right, of course, I completely forgot about you from before.");
 	MSG(reimu, "I should’ve known.");
 
 	// Titles are not yet implemented, but this should work once they are.
 	// Right now this does nothing.
-	TITLE(cirno, "Cirno", "That One Ice Fairy");
-	MSG(cirno, "Known better than to intrude on my secret hideout!");
+	TITLE(cirno, "Cirno", "The Thermodynamic Ice Fairy");
+	MSG(cirno, "Known better than to intrude on my secret lair!");
 
 	FACE(reimu, normal);
 	MSG(reimu, "Well, if you’re excited, I guess something really is going on.");
@@ -128,12 +128,10 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	MSG(reimu, "Hmm… the mountain is unusually quiet today.");
 	MSG(reimu, "With those annoyingly-talkative yōkai gone, it feels practically deserted.");
 
-	MSG(hina, "Ah yes, it’s Ms. Hakurei.");
 
 	EVENT(boss_appears);
+	MSG_UNSKIPPABLE(hina, 180, "Ah yes, it’s Ms. Hakurei.");
 	SHOW(hina);
-	WAIT(30);
-
 	FACE(hina, normal);
 	MSG(hina, "I thought you might come.");
 	FACE(hina, concerned);
@@ -206,10 +204,10 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	MSG(reimu, "But aside from everyone being whipped up into a frenzy, I can’t see anything abnormal yet.");
 
 	EVENT(boss_appears);
-	WAIT(30);
 	SHOW(wriggle);
 	MSG(wriggle, "Well, to your human eyes, insects may seem ’normal’…");
-	FACE(wriggle, calm);
+	WAIT(60);
+	FACE(wriggle, proud);
 	MSG(wriggle, "… but there was a time when we ruled supreme!");
 	
 	FACE(reimu, puzzled);
@@ -412,9 +410,8 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(reimu, "Or maybe I’m just feeling nauseous with this tower’s constant spinning.");
 
 	EVENT(boss_appears);
+	WAIT(60);
 	SHOW(iku);
-	WAIT(30);
-
 	FACE(iku, normal);
 	MSG(iku, "Perchance it a side effect of the tower’s presence?");
 	
@@ -488,7 +485,6 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	MSG(iku, "It seems your resolve is unbreakable. Very well, then.");
 	MSG(iku, "Allow me to test your resistance to their infuriating machine!");
-	WAIT(60);
 
 	DIALOG_END();
 }
@@ -532,8 +528,6 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 	
 	FACE(iku, normal);
 	MSG(iku, "Good. Keep climbing until you reach the top floor. You will undoubtedly meet her there.");
-	WAIT(60);
-
 
 	DIALOG_END();
 }
@@ -548,11 +542,11 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(elly);
 	HIDE(elly);
-	MSG(elly, "Well, well, well. It seems a rat snuck into our tower.");
 	EVENT(boss_appears);
-	WAIT(30);
+	MSG_UNSKIPPABLE(elly, 180, "Well, well, well. It seems a rat snuck into our tower.");
 	SHOW(elly);
 
+	//FACE(elly, smug);
 	MSG(elly, "How strange. You should’ve lost your mind by now.");
 
 	//FACE(reimu, unsettled);
@@ -576,6 +570,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "I think I would’ve remembered a giant tower that makes people go mad with power!");
 	MSG(reimu, "The least you can do when accusing someone is to tell them what they’ve supposedly done!");
 
+	//FACE(elly, smug);
 	FACE(elly, normal);
 	MSG(elly, "Ah. I see.");
 	MSG(elly, "Fine. I will.");
