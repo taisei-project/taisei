@@ -36,7 +36,7 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 	FACE(marisa, sweat_smile);
 	MSG(marisa, "I was gonna get it done in the fall, but now…");
 
-	TITLE(cirno, "Cirno", "The Thermodynamic Ice Fairy");
+	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
 	MSG(cirno, "No, but I can lend you some ice cream!");
 	EVENT(music_changes);
 	FACE(cirno, angry);
@@ -542,7 +542,6 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "Y’don’t look like a magician after all.");
 	MSG(marisa, "I’m pretty disappointed.");
 	MSG(marisa, "Honestly, this might be the most disappointing incident yet.");
-
 
 	TITLE(elly, "Elly", "The Theoretical Reaper");
 	MSG(elly, "You’re seeking after… magic?");

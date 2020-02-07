@@ -64,7 +64,7 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 
 	// Titles are not yet implemented, but this should work once they are.
 	// Right now this does nothing.
-	TITLE(cirno, "Cirno", "The Thermodynamic Ice Fairy");
+	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
 	MSG(cirno, "Known better than to intrude on my secret lair!");
 
 	FACE(reimu, normal);
