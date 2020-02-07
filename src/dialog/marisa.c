@@ -41,7 +41,7 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 	EVENT(music_changes);
 	FACE(cirno, angry);
 	MSG(cirno, "After I turn YOU into ice cream!");
-	
+
 	FACE(marisa, smug);
 	MSG(marisa, "I prefer shaved ice, myself.");
 
@@ -145,12 +145,12 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(wriggle, 180, "Wait until you see their leader!");
 	SHOW(wriggle);
-	
+
 	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch of questions for sure.");
 
 	MSG(wriggle, "Feel free to go ahead. I’m listening.");
-	
-	MSG(marisa, "Oh, you’re her messenger?"); 
+
+	MSG(marisa, "Oh, you’re her messenger?");
 	FACE(marisa, happy);
 	MSG(marisa, "Mind passin’ somethin’ along?");
 
@@ -162,7 +162,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 
 	FACE(marisa, smug);
 	MSG(marisa, "Great leader? What, did the insects unionize or somethin’?");
-	
+
 	FACE(wriggle, outraged);
 	MSG(wriggle, "No! I told you, I’m the leader! The mastermind!");
 	FACE(wriggle, calm);
@@ -198,7 +198,7 @@ DIALOG_TASK(marisa, Stage3PostBoss) {
 	ACTOR_RIGHT(wriggle);
 	VARIANT(wriggle, defeated);
 	FACE(wriggle, defeated);
-	
+
 	FACE(marisa, smug);
 	MSG(marisa, "Tougher than usual, but not tough enough.");
 	MSG(marisa, "Where’d ya pick up those new moves, anyway?");
@@ -274,7 +274,7 @@ DIALOG_TASK(marisa, Stage4PreBoss) {
 
 	FACE(marisa, normal);
 	MSG(marisa, "Maybe they oughta hire someone with some fashion sense.");
-	
+
 	FACE(kurumi, normal);
 	MSG(kurumi, "That’d be me, then!");
 	MSG(kurumi, "My ideas would surely make a splash, if they’d recognize my talent!");
@@ -331,7 +331,7 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	MSG(marisa, "I’m here to inspect the petticoats in this here mansion.");
 	FACE(marisa, happy);
 	MSG(marisa, "Y’were just lettin’ me in, so I’ll be off, then.");
-	
+
 	FACE(kurumi, normal);
 	MSG(kurumi, "Uh, I kinda doubt that…");
 	FACE(kurumi, defeated);
@@ -342,7 +342,7 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 
 	FACE(marisa, puzzled);
 	MSG(marisa, "’It’? Y’mean the madness everyone’s experiencin’?");
-	
+
 	MSG(kurumi, "N-Nevermind!");
 
 	DIALOG_END();
@@ -376,11 +376,11 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
 	FACE(iku, smile);
-	MSG(iku, "U-um, pardon me. Are you conversing with yourself?"); 
+	MSG(iku, "U-um, pardon me. Are you conversing with yourself?");
 
 	FACE(marisa, normal);
 	MSG(marisa, "Huh? No, I was askin’ ya a question.");
-	
+
 	MSG(iku, "Would that be your theory about this tower, perhaps?");
 
 	MSG(marisa, "It’d make sense though, right?");
@@ -394,7 +394,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	FACE(iku, eyes_closed);
 	MSG(iku, "This tower is affecting people mentally, after all.");
 	MSG(iku, "The technology on display here is beyond our current comprehension.");
-	
+
 	FACE(marisa, surprised);
 	MSG(marisa, "Whoa, so ’yer sayin’ they have enough power for all that? That this is REAL brick?!");
 	FACE(marisa, normal);
@@ -491,7 +491,7 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 	MSG(marisa, "By the way, have ya been hearing that strange voice?");
 
 	MSG(iku, "Strange voice?");
-    
+
 	FACE(marisa, smug);
 	MSG(marisa, "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever.");
 	MSG(marisa, "But I feel just fine!");
@@ -549,9 +549,9 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(elly, angry);
 	MSG(elly, "Hah! You’ll regret wasting your time on such nonsense when you become truly enlightened.");
 	MSG(elly, "Through this, we will avenge all those who have been forgotten by the—");
-	
+
 	MSG(marisa, "Do ya know how boring it is to be a magician in Gensōkyō these days?");
-	
+
 	MSG(elly, "I couldn’t possibly care about—");
 
 	MSG(marisa, "Seriously! Recently it’s just been ’God this’ and ’Otherworld that’.");
@@ -579,7 +579,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(marisa, happy);
 	MSG(marisa, "At least I met Yuuka. Did ya know she ended up givin’ me my trademark spell?");
 	MSG(marisa, "Not right then, and not voluntarily, but—");
-	
+
 	FACE(elly, angry);
 	MSG(elly, "Y-you remember that?! But how—?!");
 	//FACE(elly, smug);

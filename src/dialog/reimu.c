@@ -1,7 +1,7 @@
 /*
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
- * --- 
+ * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
@@ -161,7 +161,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 
 	FACE(reimu, sigh);
 	MSG(reimu, "So annoying…");
-	
+
 
 	DIALOG_END();
 }
@@ -176,7 +176,7 @@ DIALOG_TASK(reimu, Stage2PostBoss) {
 	VARIANT(hina, defeated);
 	FACE(hina, defeated);
 	FACE(reimu, normal);
-	
+
 	MSG(hina, "So I lost… you can keep going then, I suppose.");
 
 	MSG(reimu, "You should know by now that I can handle it. Why are you being so overbearing?");
@@ -209,7 +209,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	WAIT(60);
 	FACE(wriggle, proud);
 	MSG(wriggle, "… but there was a time when we ruled supreme!");
-	
+
 	FACE(reimu, puzzled);
 	MSG(reimu, "Eh? You? Aren’t you a bit far from home?");
 	MSG(reimu, "Besides, ’ruled supreme’? I’ve never heard of insects ruling over Gensōkyō.");
@@ -281,7 +281,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(kurumi);
-	
+
 	HIDE(kurumi);
 
 	FACE(reimu, puzzled);
@@ -316,7 +316,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 	FACE(reimu, sigh);
 	MSG(reimu, "And to think I thought I remembered you from somewhere. Absolutely not.");
 	MSG(reimu, "Just… stop whatever it is you’re doing, at once.");
-	
+
 	FACE(kurumi, dissatisfied);
 	MSG(kurumi, "Once you get some fashion sense, maybe I will!");
 
@@ -331,7 +331,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 
 	FACE(reimu, unamused);
 	MSG(reimu, "T-this is what a shrine maiden wears. It’s a uniform.");
-    
+
 	MSG(kurumi, "Uniform? Are you kidding me?");
 	MSG(kurumi, "I’ve seen a real shrine maiden before, and she didn’t look anything like you!");
 	MSG(kurumi, "What’s with those patterns, anwyays? It’s completely unorthodox!");
@@ -368,7 +368,7 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	MSG(kurumi, "Wait, what happened?");
 
 	MSG(reimu, "What do you mean ’what happened’?");
-	
+
 	FACE(kurumi, normal);
 	MSG(kurumi, "Wait! Aren’t you that girl from a long while back?");
 
@@ -414,7 +414,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	SHOW(iku);
 	FACE(iku, normal);
 	MSG(iku, "Perchance it a side effect of the tower’s presence?");
-	
+
 	MSG(reimu, "What did you attack me for earlier?");
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
@@ -425,7 +425,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	FACE(reimu, normal);
 	MSG(reimu, "Err, right, yes, it has been a while.");
-	
+
 	FACE(iku, serious);
 	MSG(iku, "To get straight to the point, this tower is unlike anything I have seen before.");
 	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ’parallel universes.’");
@@ -445,7 +445,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	FACE(reimu, surprised);
 	MSG(reimu, "It’s moving that fast?!");
-    
+
 	FACE(iku, smile);
 	MSG(iku, "Initially, I had no plans towards interfering. I am not one to take the lead.");
 	FACE(iku, serious);
@@ -513,7 +513,7 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 
 	MSG(iku, "Ah…");
 	MSG(iku, "I was wrong for doubting you.");
-	
+
 	MSG(reimu, "Somehow I don’t feel too satisfied by that.");
 
 	FACE(iku, eyes_closed);
@@ -525,7 +525,7 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 
 	MSG(reimu, "But you’re right. This is bigger than Gensōkyō.");
 	MSG(reimu, "I’ll need to take this seriously.");
-	
+
 	FACE(iku, normal);
 	MSG(iku, "Good. Keep climbing until you reach the top floor. You will undoubtedly meet her there.");
 
@@ -557,7 +557,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	FACE(elly, angry);
 	MSG(elly, "Bold of you to barge into MY tower and give ME orders!");
 	MSG(elly, "I still remember what you did to Lady Kazami and I back then!");
-	
+
 	FACE(reimu, sigh);
 	MSG(reimu, "And what was that, again?");
 	MSG(reimu, "I’m getting a familiar feeling just looking at you, but…");
