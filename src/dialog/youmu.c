@@ -91,7 +91,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
 	MSG(hina, "I've never heard of this 'Lady Yuyuko' you speak of, but I can't let this slide.");
 	FACE(hina, serious);
-	MSG(hina, "You girls such as yourself shouldn't be sent to do such dangerous errands!");
+	MSG(hina, "Young girls such as yourself shouldn't be sent to do such dangerous errands!");
 
 	//FACE(youmu, embarassed);
 	FACE(youmu, eeeeh);
@@ -100,7 +100,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	MSG(youmu, "—dare I say even the best in Gensōkyō—"); 
 
 	FACE(hina, normal);
-	MSG(hina, "Aww… but you look so cute! No what someone like you could be into that.");
+	MSG(hina, "Aww… but you look so cute! No way someone like you could be into that.");
 	MSG(hina, "Are you sure this 'expert swordswoman' thing isn't just some sort of teenage phase?");
 	
 	FACE(youmu, unamused);
@@ -154,7 +154,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	MSG(youmu, "Something is definitely amiss.");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(wriggle, 180, "Amiss?");
+	MSG_UNSKIPPABLE(wriggle, 120, "Amiss?");
 	SHOW(wriggle);
 	MSG(wriggle, "Do you mean the comfortable supply of my breatheren?");
 	
@@ -280,7 +280,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	FACE(youmu, unamused);
 	MSG(youmu, "Didn't you just say you weren't associated with them?");
 
-	MSG(kurumi, "Yeah, but I was lying to see how gullible you are.");
+	MSG(kurumi, "Yeah, but I was lying to see how gullible you were.");
 
 	//FACE(youmu, embarassed);
 	FACE(youmu, sigh);
@@ -338,7 +338,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	FACE(youmu, normal);
 	MSG(youmu, "B-Bring it on! Nothing will stand in my way!");
 	
-	MSG(kurumi, "(Teehee, so gullible.");
+	MSG(kurumi, "(Teehee, so gullible.)");
 
 	DIALOG_END();
 }
@@ -406,9 +406,9 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(youmu, "Overinflated ego? Nonsense.");
 	MSG(youmu, "During my recent battles, I have achieved a meditative state most blademasters only dream of!");
 	//FACE(youmu, chuuni);
-	MSG(youmu, "Through that, I have realized the true form of my previously-incomplete yōkai-vanquishing technique!");
+	MSG(youmu, "Through that, I have realized the true form of my previously-incompleted yōkai-vanquishing technique!");
 
-	MSG(iku, "Is that so? You think that this 'technique' will help you defeat the instigators effortlessly?");
+	MSG(iku, "Is that so? You believe that this 'technique' will help you defeat the instigators effortlessly?");
 
 	FACE(youmu, sigh);
 	MSG(youmu, "More doubt from ignorant skeptics, I see.");
@@ -433,7 +433,7 @@ DIALOG_TASK(youmu, Stage5PostMidBoss) {
 	FACE(youmu, smug);
 
 	// should be only one message with a fixed 120-frames timeout
-	MSG_UNSKIPPABLE(youmu, 180, "Lightning? Hmph. Nothing my sword's can't deflect.");
+	MSG_UNSKIPPABLE(youmu, 180, "Lightning? Hmph. Nothing my swords can't deflect.");
 
 	DIALOG_END();
 }
@@ -513,8 +513,9 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(youmu, "Such an unweildly weapon… for anyone to choose it willingly…");
 	MSG(youmu, "Either you're incredibly skilled, or incredibly foolish.");
 	//FACE(youmu, chuuni);
+	FACE(youmu, happy);
 	MSG(youmu, "I wish to find that out!");
-	MSG(youmu, "After our match, let us meet as colleagues, and discuss our techniques!");
+	MSG(youmu, "After our duel, let us meet as colleagues, and discuss our techniques!");
 
 	FACE(elly, angry);
 	MSG(elly, "I'd only call my apprentices 'colleagues'!");
