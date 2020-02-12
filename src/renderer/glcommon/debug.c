@@ -74,6 +74,11 @@ static void APIENTRY glcommon_debug(
 		lvl = LOG_WARN;
 	}
 
+	if(lvl == LOG_FATAL && glext.version.is_ANGLE && !strcmp(message, "Invalid uniform location")) {
+		// seriously?
+		lvl = LOG_WARN;
+	}
+
 	log_custom(lvl, "[%s, %s, %s, id:%i] %s", strsrc, strtype, strsev, id, message);
 }
 

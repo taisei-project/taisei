@@ -155,7 +155,6 @@ void gles_init_texformats_table(void) {
 	}
 
 	for(uint i = 0; i < sizeof(gles_texformats)/sizeof(*gles_texformats); ++i) {
-		log_debug("fuck %i", i);
 		gles_texformats[i].external_formats[0] = gles_texformats[i].primary_external_format;
 
 		if(!is_gles3) {

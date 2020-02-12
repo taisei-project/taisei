@@ -1,12 +1,17 @@
 #version 330 core
 
 #include "lib/fxaa.glslh"
-#include "interface/standard.glslh"
-
-UNIFORM(1) sampler2D depth;
-VARYING(3) vec4 fxaa_tc;
+#include "interface/fxaa.glslh"
 
 void main(void) {
-    fragColor = vec4(fxaa(tex, fxaa_tc), 1);
-    gl_FragDepth = texture(depth, fxaa_tc.xy).r;
+    fragColor = vec4(fxaa(
+		tex,
+		v_rcpFrame,
+		v_coordNW,
+		v_coordNE,
+		v_coordSW,
+		v_coordSE,
+		v_coordM
+	), 1);
+    gl_FragDepth = texture(depth, v_coordM).r;
 }

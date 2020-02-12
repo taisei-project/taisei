@@ -16,7 +16,7 @@
 
 static Uniform *sampler_uniforms;
 
-Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
+Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
 	return ht_get(&prog->uniforms, uniform_name, NULL);
 }
 
@@ -212,11 +212,13 @@ static void gl33_commit_uniform(Uniform *uniform) {
 	uniform->cache.update_last_idx = 0;
 }
 
-static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
+static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 	Uniform *uniform = value;
 
 	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
 	if(uniform->type == UNIFORM_SAMPLER) {
+		Uniform *size_uniform = uniform->size_uniform;
+
 		for(uint i = 0; i < uniform->array_size; ++i) {
 			Texture *tex = uniform->textures[i];
 
@@ -226,6 +228,14 @@ static void* gl33_sync_uniform(const char *key, void *value, void *arg) {
 
 			GLuint unit = gl33_bind_texture(tex, true);
 			gl33_update_uniform(uniform, i, 1, &unit);
+
+			if(size_uniform) {
+				uint w, h;
+				r_texture_get_size(tex, 0, &w, &h);
+				vec2_noalign size = { w, h };
+				gl33_update_uniform(size_uniform, i, 1, &size);
+				gl33_commit_uniform(size_uniform);
+			}
 		}
 	}
 
@@ -358,6 +368,39 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		log_debug("%s = %i [array elements: %i; size: %zi bytes]", name, loc, uni.array_size, uni.array_size * uni.elem_size);
 	}
 
+	ht_str2ptr_iter_t iter;
+	ht_iter_begin(&prog->uniforms, &iter);
+	while(iter.has_data) {
+		Uniform *u = iter.value;
+
+		if(u->type == UNIFORM_SAMPLER) {
+			const char *sampler_name = iter.key;
+			const char size_suffix[] = "_SIZE";
+			char size_uniform_name[strlen(sampler_name) + sizeof(size_suffix)];
+			snprintf(size_uniform_name, sizeof(size_uniform_name), "%s%s", sampler_name, size_suffix);
+			u->size_uniform = ht_get(&prog->uniforms, size_uniform_name, NULL);
+
+			if(u->size_uniform) {
+				Uniform *size_uniform = u->size_uniform;
+
+				if(size_uniform->type != UNIFORM_VEC2) {
+					log_warn("Size uniform %s has invalid type (should be vec2), ignoring", size_uniform_name);
+					u->size_uniform = NULL;
+				} else if(size_uniform->array_size != u->array_size) {
+					log_warn("Size uniform %s has invalid array size (should be %i), ignoring", size_uniform_name, u->array_size);
+					u->size_uniform = NULL;
+				} else {
+					log_debug("Bound size uniform: %s --> %s", sampler_name, size_uniform_name);
+				}
+
+				assert(u->size_uniform != NULL);  // fix your shader!
+			}
+		}
+
+		ht_iter_next(&iter);
+	}
+	ht_iter_end(&iter);
+
 	return true;
 }
 
@@ -390,7 +433,7 @@ static void print_info_log(GLuint prog) {
 	}
 }
 
-static void* free_uniform(const char *key, void *data, void *arg) {
+static void *free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
 
 	if(uniform->type == UNIFORM_SAMPLER) {
@@ -412,7 +455,7 @@ void gl33_shader_program_destroy(ShaderProgram *prog) {
 	free(prog);
 }
 
-ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
+ShaderProgram *gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
 	ShaderProgram *prog = calloc(1, sizeof(*prog));
 
 	prog->gl_handle = glCreateProgram();
@@ -454,6 +497,6 @@ void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label)
 	glcommon_set_debug_label(prog->debug_label, "Shader program", GL_PROGRAM, prog->gl_handle, label);
 }
 
-const char* gl33_shader_program_get_debug_label(ShaderProgram *prog) {
+const char *gl33_shader_program_get_debug_label(ShaderProgram *prog) {
 	return prog->debug_label;
 }

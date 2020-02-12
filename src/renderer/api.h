@@ -432,6 +432,7 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 void r_init(void);
 void r_post_init(void);
 void r_shutdown(void);
+const char *r_backend_name(void);
 
 r_feature_bits_t r_features(void);
 
