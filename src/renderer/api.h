@@ -807,13 +807,7 @@ ShaderProgram* r_shader_get(const char *name) {
 
 INLINE
 ShaderProgram* r_shader_get_optional(const char *name) {
-	ShaderProgram *prog = get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
-
-	if(!prog) {
-		log_warn("shader program %s could not be loaded", name);
-	}
-
-	return prog;
+	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
 }
 
 INLINE

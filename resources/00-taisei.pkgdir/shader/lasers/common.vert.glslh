@@ -18,7 +18,12 @@ void main(void) {
 	vec2 p = pos_rule(gl_InstanceID * 0.5 + timeshift);
 	vec2 d = p - pos_rule(gl_InstanceID * 0.5 + timeshift - 0.1);
 
-	vec2 pos     = laser_vertex_pos(p, d);
+	float t1 = gl_InstanceID - span / 2;
+	float tail = span / 1.9;
+	float s = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
+	s = pow(s, width_exponent);
+
+	vec2 pos     = laser_vertex_pos(p, d, s);
 	gl_Position  = r_projectionMatrix * r_modelViewMatrix * vec4(pos, 0.0, 1.0);
 	texCoord     = (r_textureMatrix * vec4(texCoordRawIn, 0.0, 1.0)).xy;
 	texCoordRaw  = texCoordRawIn;

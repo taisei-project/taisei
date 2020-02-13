@@ -163,6 +163,8 @@ static void stage5_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_light",
+	NULL);
+	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"lasers/linear",
 		"lasers/accelerated",
 		"lasers/iku_cathode",

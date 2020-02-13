@@ -177,6 +177,10 @@ GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
 	 */
 
 	switch(internal_fmt) {
+		case GL_RED:
+		case GL_RG:
+		case GL_RGB:
+		case GL_RGBA:
 		case GL_R8:
 		case GL_RG8:
 		case GL_RGB8:
@@ -226,6 +230,7 @@ GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
 			}
 			break;
 
+		case GL_DEPTH_COMPONENT:
 		case GL_DEPTH_COMPONENT16:
 		case GL_DEPTH_COMPONENT24:
 			// FIXME: Is there an extension that makes it filterable?
