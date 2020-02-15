@@ -69,11 +69,25 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 
 	struct shobj_load_data *ldata = calloc(1, sizeof(struct shobj_load_data));
 
+	char backend_macro[32] = "BACKEND_";
+	{
+		const char *backend_name = r_backend_name();
+		char *out = backend_macro + sizeof("BACKEND_") - 1;
+		for(const char *in = backend_name; *in;) {
+			*out++ = toupper(*in++);
+		}
+		*out = 0;
+	}
+
 	switch(type->lang) {
 		case SHLANG_GLSL: {
 			GLSLSourceOptions opts = {
 				.version = { 330, GLSL_PROFILE_CORE },
 				.stage = type->stage,
+				.macros = (GLSLMacro[]) {
+					{ backend_macro, "1" },
+					{ NULL, },
+				},
 			};
 
 			if(!glsl_load_source(path, &ldata->source, &opts)) {

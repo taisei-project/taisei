@@ -1,0 +1,17 @@
+
+#ifndef LEGACY_COMPAT_H
+#define LEGACY_COMPAT_H
+
+#define LEGACY
+
+#define textureLod(sampler, uv, lod) texture(sampler, uv)
+// #define textureLodOffset(sampler, uv, lod) texture(sampler, uv)
+#define textureGrad(sampler, uv, dx, dy) texture(sampler, uv)
+
+#define tanh _tanh_compat
+float tanh(float x) {
+	float e2x = exp(2.0 * x);
+	return (e2x - 1.0) / (e2x + 1.0);
+}
+
+#endif

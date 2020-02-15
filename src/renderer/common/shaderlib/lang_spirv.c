@@ -258,7 +258,16 @@ bool _spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDeco
 	}
 
 	if(!glsl_version_supports_instanced_rendering(options->lang->glsl.version)) {
-		SPVCCALL(spvc_compiler_require_extension(compiler, "GL_ARB_draw_instanced"));
+		SPVCCALL(spvc_compiler_add_header_line(compiler,
+			"#ifdef GL_ARB_draw_instanced\n"
+			"#extension GL_ARB_draw_instanced : enable\n"
+			"#endif\n"
+
+			"#ifdef GL_EXT_frag_depth\n"
+			"#extension GL_EXT_frag_depth : enable\n"
+			"#define gl_FragDepth gl_FragDepthEXT\n"
+			"#endif\n"
+		));
 	}
 
 	SPVCCALL(spvc_compiler_create_compiler_options(compiler, &spvc_options));

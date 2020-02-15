@@ -342,9 +342,11 @@ static void stage1_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"blur5",
-		"lasers/linear",
 		"stage1_water",
 		"zbuf_fog",
+	NULL);
+	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
+		"lasers/linear",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",

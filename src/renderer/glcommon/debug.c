@@ -71,6 +71,11 @@ static void APIENTRY glcommon_debug(
 		// HACK: Workaround for an ANGLE bug. Seems like it always reports the original array size for
 		// uniform arrays, even if the arrays has been partially optimized out. Accessing the non-existent
 		// elements then generates a GL_INVALID_OPERATION error, which should be safe to ignore.
+		lvl = LOG_ERROR;
+	}
+
+	if(lvl == LOG_FATAL && glext.version.is_ANGLE && !strcmp(message, "Invalid uniform location")) {
+		// seriously?
 		lvl = LOG_WARN;
 	}
 

@@ -855,6 +855,7 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
 	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
+	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(framebuffers);
 

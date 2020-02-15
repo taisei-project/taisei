@@ -174,6 +174,8 @@ static void stage3_preload(void) {
 		"zbuf_fog",
 		"glitch",
 		"maristar_bombbg",
+	NULL);
+	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"lasers/accelerated",
 		"lasers/sine_expanding",
 	NULL);

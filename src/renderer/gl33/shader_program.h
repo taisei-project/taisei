@@ -34,6 +34,9 @@ struct Uniform {
 	uint location;
 	UniformType type;
 
+	// corresponding _SIZE uniform (for samplers; optional)
+	Uniform *size_uniform;
+
 	struct {
 		// buffer size = elem_size * array_size
 		char *pending;
@@ -46,12 +49,12 @@ struct Uniform {
 
 void gl33_sync_uniforms(ShaderProgram *prog);
 
-ShaderProgram* gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);
+ShaderProgram *gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]);
 void gl33_shader_program_destroy(ShaderProgram *prog);
 void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label);
 const char* gl33_shader_program_get_debug_label(ShaderProgram *prog);
 
-Uniform* gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
+Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
 UniformType gl33_uniform_type(Uniform *uniform);
 void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
 void gl33_unref_texture_from_samplers(Texture *tex);

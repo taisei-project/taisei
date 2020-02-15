@@ -305,6 +305,10 @@ static void stage6_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"baryon_feedback",
+		"stage6_sky",
+		"tower_wall",
+	NULL);
+	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"lasers/accelerated",
 		"lasers/circle",
 		"lasers/elly_toe_fermion",
@@ -314,8 +318,6 @@ static void stage6_preload(void) {
 		"lasers/linear",
 		"lasers/maxwell",
 		"lasers/sine",
-		"stage6_sky",
-		"tower_wall",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",

@@ -14,7 +14,7 @@
 #include "util/sha256.h"
 #include "rwops/all.h"
 
-#define CACHE_VERSION 2
+#define CACHE_VERSION 3
 #define CRC_INIT 0
 
 static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *out_size) {
