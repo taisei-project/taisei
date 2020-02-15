@@ -385,7 +385,7 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	MSG(kurumi, "But then I started feeling werid and kept talking like I had no filter?");
 	MSG(kurumi, "It was kinda liberating but also made me really rude?!");
 
-	MSG(reimu, "(Just another victim…)");
+	MSG(reimu, "(Just another victim…?)");
 	FACE(reimu, normal);
 	MSG(reimu, "Stick around. I want to talk to you after I settle this.");
 
