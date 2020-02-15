@@ -15,7 +15,7 @@ Installation
 Dependencies
 ^^^^^^^^^^^^
 
--  OpenGL >= 3.3 or OpenGL ES >= 3.0
+-  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
 -  SDL2 >= 2.0.6
 -  SDL2_mixer >= 2.0.4
 -  freetype2
@@ -108,8 +108,17 @@ Alternatively, do this to make GLES 3.0 the default backend:
 
     meson configure -Dr_default=gles30
 
-Note that while it's also possible to enable a GLES 2.0 backend, it's currently
-not functional.
+The OpenGL ES 2.0 backend can be enabled similarly, using ``gles20`` instead of
+``gles30``. However, it requires a few extensions to function correctly, most
+notably:
+
+- ``OES_depth_texture`` or ``GL_ANGLE_depth_texture``
+- ``OES_standard_derivatives``
+- ``OES_vertex_array_object``
+- ``EXT_frag_depth``
+- ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
+``NV_instanced_arrays``
+
 
 Where are my replays, screenshots and settings?
 -----------------------------------------------
