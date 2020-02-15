@@ -62,7 +62,7 @@ void bad_ending_marisa(Ending *e) {
 
 	add_ending_entry(e, -1, "A mansion owned by a pompous vampire, housing her friends and lackies.", NULL);
 	add_ending_entry(e, -1, "Marisa was surrounded by stacks of books, hastily flipping through their pages, drinking tea instead of her usual sake.", NULL);
-	
+
 	add_ending_entry(e, -1, "Marisa: \"Hey Patchy, do ya got any more books on Artificin'?\"", NULL);
 	add_ending_entry(e, -1, "Patchouli: \"Yes, but they won't be of any use. That machine is beyond Artificing entirely.'", NULL);
 	add_ending_entry(e, -1, "Marisa: \"Ugh, yer probably right, as usual.\"", NULL);
@@ -70,7 +70,7 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Marisa closed the book and let it slam onto the floor.", NULL);
 	add_ending_entry(e, -1, "Patchouli: \"Mind your manners! That's a very old tome!\"", NULL);
 	add_ending_entry(e, -1, "Marisa: \"It's so irritatin'! I thought I solved everything but now that tower's just sittin' there, 'n the whole Mountain's been quarantined…\"", NULL);
-	
+
 	add_ending_entry(e, -1, "Marisa: \"It just ain't satisfyin', y'know?\"", NULL);
 	add_ending_entry(e, -1, "Flandre: \"I could destroy it! Make it go BOOM!\"", NULL);
 	add_ending_entry(e, -1, "Marisa: \"Gah! Now what did I say about sneakin' up on people, kiddo?\"", NULL);
@@ -106,16 +106,16 @@ void bad_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "But the instigators were nowhere to be found, even after much searching.", NULL);
 
 	add_ending_entry(e, -1, "Yōmu's fearless audacity had dissipated as well, replaced with a sense of loss.", NULL);
-	
+
 	add_ending_entry(e, -1, "Yōmu: \"Thus, I must assume that I have caused their deaths in some way, despite my best efforts.\"", NULL);
 	add_ending_entry(e, -1, "Yōmu: \"That woman, Elly… we knew each other for such a short time, yet her passion and fury affected me so deeply.\"", NULL);
 	add_ending_entry(e, -1, "Yuyuko: \"Hmmmm. I didn't sense her passing through the Netherworld, so I doubt she's truly died.\"", NULL);
-	
+
 	add_ending_entry(e, -1, "Yuyuko: \"Although this 'parallel universes' stuff is all beyond me, hehehe.\"", NULL);
 	add_ending_entry(e, -1, "Yōmu took a knee in front of Yuyuko, her hand on the hilt of her blade, the Hakurōken.", NULL);
 	add_ending_entry(e, -1, "Yōmu: \"Thank you for entertaining your humble servant's odd request, Lady Yuyuko.\"", NULL);
 	add_ending_entry(e, -1, "Yuyuko: \"Oh my, think nothing of it! You did great!\"", NULL);
-	
+
 	add_ending_entry(e, -1, "Yuyuko: \"But since we're in the neighbourhood… do you think the kappa are running one of their famous grill stands?\"", NULL);
 	add_ending_entry(e, -1, "Yuyuko: \"As a celebration for the incident being resolved, perhaps…?\"", NULL);
 	add_ending_entry(e, -1, "Yuyuko: \"We could go on a fun date! And I'm feeling a bit peckish…\"", NULL);
@@ -134,7 +134,7 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "The Tower had powered down, yet the instigators were nowhere to be found.", NULL);
 	add_ending_entry(e, -1, "Reimu returned to her shrine, unsure if she had done anything at all.", NULL);
 	add_ending_entry(e, -1, "The Gods and yōkai of the Mountain shuffled about the shrine quietly, with bated breath.", NULL);
-	
+
 	add_ending_entry(e, -1, "Reimu sighed, and made her announcement.", NULL);
 	add_ending_entry(e, -1, "Reimu: \"Listen up! I stopped the spread of madness, but until further notice, Yōkai Mountain is off limits!\"", NULL);
 
@@ -142,7 +142,7 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "The Moriya Gods were visibly shocked.", NULL);
 	add_ending_entry(e, -1, "The kappa demanded that they be able to fetch their equipment and tend to their hydroponic cucumber farms.", NULL);
 	add_ending_entry(e, -1, "The tengu furiously scribbled down notes, once again as if they'd had the scoop of the century, before realizing what had just been said, and got up in arms too.", NULL);
-	
+
 	add_ending_entry(e, -1, "Once Reimu had managed to placate the crowd, she sat in the back of the Hakurei Shrine, bottle of sake in hand.", NULL);
 	add_ending_entry(e, -1, "She didn't feel like drinking, however. She nursed it without even uncorking it.", NULL);
 
@@ -155,7 +155,7 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Yukari: \"Perhaps I should've gone with you.\"", NULL);
 	add_ending_entry(e, -1, "Reimu: \"Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?\"", NULL);
 	add_ending_entry(e, -1, "Yukari: \"That might be a bit much, even for me, my dear.\"", NULL);
-	
+
 	add_ending_entry(e, -1, "Reimu: \"Whatever that 'madness' thing was, it was getting to me, too. It made me feel frustrated and… lonely?\"", NULL);
 	add_ending_entry(e, -1, "Reimu: \"But why would I feel lonely? It doesn't make any sense.\"", NULL);
 	add_ending_entry(e, -1, "Yukari: \"So, what will you do?\"", NULL);
@@ -197,7 +197,7 @@ void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Marisa: \"Oh c'mon, it's noon somewhere in the infinite multiverse, ain't it?\"", NULL);
 	add_ending_entry(e, -1, "Elly laughed, and went along with it. She needed an excuse for a break anyways.", NULL);
 	add_ending_entry(e, -1, "And so, they drank, and caught up on alternate worlds, strange timelines, and the strangeness of their circumstances.", NULL);
-	
+
 	add_ending_entry(e, -1, "Marisa: \"I mean, 'course ya lost! Don't y'know about Isaac Newton?\"", NULL);
 	add_ending_entry(e, -1, "Elly: \"The famous European mathematician? I studied his works, yes. But what about him?\"", NULL);
 	add_ending_entry(e, -1, "Marisa: \"He was an Alchemist!\"", NULL);
