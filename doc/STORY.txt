@@ -47,7 +47,9 @@
 ■ 1. Incident
 ================================================================================
 
- [At the Hakurei Shrine]
+ [The Hakurei Shrine]
+
+ A shrine located at the border of fantasy and reality.
 
  Three heroines of Gensōkyō sat drinking tea on a calm day at the end of summer.
  Two of them seemed unsettled, while the third—
@@ -56,7 +58,9 @@
 
  Reimu and Yōmu shared a knowing glance.
 
- Reimu: “The tea is fine. I just feel uneasy. I can’t put my finger on it.”
+ Reimu: “The tea’s fine. I just feel weird. I can’t put my finger on it.”
+
+ Yōmu: “Likewise.“
 
  The bells of the shrine tolled outside. Someone had made a donation. A minute
  later, there was another. And another.
@@ -65,14 +69,14 @@
 
  Yōmu: “Isn’t it normally comforting for the shrine to receive donations?”
 
- Normally it *would* be comforting, but in that moment…
+ Reimu: “Normally it *would* be comforting, but…“
 
  Outside the shrine, nearly every resident of Yōkai Mountain, including the
  kappa and some of the tengu, were lined up one after another to make a donation
  - including the Moriya Shrine Gods, Kanako and Suwako. Everyone seemed vaguely
  fearful.
 
- Reimu: “Eh? What's all this, then?”
+ Reimu: “Eh? What’s all this, then?”
 
  Kanako: “We’ve come to ask a favour.”
 
@@ -94,12 +98,12 @@
  Kanako: “Right, but she just won’t stop. I’ve seen her excited, but not like
  this.”
 
- Sumireko: “Hmm. Fascinating.”
+ Sumireko: “Hmm. Quite fascinating.”
 
  Reimu: “Where the heck did *you* come from, Sumi?”
 
  Sumireko: “I couldn’t help overhearing your conversation. Based on my gut
- feeling, and what you've described, the answer is obvious.”
+ feeling, and what you’ve described, the answer is obvious.”
 
  Yōmu: “Is that so? Care to share it with us?”
 
@@ -108,10 +112,10 @@
  indiscriminate it is. Too much knowledge all at once… mm, mm, it can
  potentially be fatal, at least for those with weaker minds.”
 
- Marisa: “Wanna handle it then, Sumi?”
+ Marisa: “Heh, wanna handle it then, Sumi?”
 
  Sumireko: “A-ah, n-no, you all know the lay of the land better, a-after all,
- and with it being so dire—”
+ and with it being such a dire situation—”
 
  Yōmu was distracted by the sight of her mistress, Lady Yuyuko, standing in the
  shade, a fan over her face. She went over to greet her.
@@ -141,7 +145,7 @@
 
     The incredibly particular shrine maiden.
 
-    She's taking a break from her busy novel-reading schedule to take care of an
+    She’s taking a break from her busy novel-reading schedule to take care of an
     incident.
 
     Mostly, she has a vague feeling of sentimentality for a bygone era.
@@ -172,13 +176,13 @@
     The swordswoman of the somewhat-dead.
 
     “While you were playing games, I was studying the blade” … is probably what
-    she'd say.
+    she’d say.
 
     Entirely too serious about everything, and utterly terrified of (half of)
     her own existence.
 
-    Still, she's been given an important mission by Lady Yuyuko. Hopefully she
-    doesn't let it get to her head.
+    Still, she’s been given an important mission by Lady Yuyuko. Hopefully she
+    doesn’t let it get to her head.
 
 
 ================================================================================
@@ -203,7 +207,7 @@
 
     The lovably-foolish ice fairy.
 
-    Perhaps she's a bit unsatisified after her recent duels with secret gods and
+    Perhaps she’s a bit unsatisified after her recent duels with secret gods and
     hellish fairies?
 
     Consider going easy on her.
@@ -219,7 +223,7 @@
     She seems awfully concerned with your health and safety, to the point of
     being quite overbearing.
 
-    You're old enough to decide your own path in life, though.
+    You’re old enough to decide your own path in life, though.
 
 
   ○ Stage 3 Boss
@@ -229,7 +233,7 @@
 
     A bright bug - or was it insect? - far from her usual stomping grounds.
 
-    She feels that Insects have lost their "rightful place" in history.
+    She feels that Insects have lost their “rightful place“ in history.
 
     If she thinks she has a raw evolutionary deal, someone ought to tell
     her about the trilobites…
@@ -240,13 +244,13 @@
     Species: Vampire
     Field of Study: Phlebotomy
 
-    Vampiric blast from the past. Doesn't she know Gensōkyō already has new
+    Vampiric blast from the past. Doesn’t she know Gensōkyō already has new
     bloodsuckers in town?
 
-    Sucking blood is what she's good at, but her current job is a gatekeeper,
+    Sucking blood is what she’s good at, but her current job is a gatekeeper,
     and her true passion is high fashion.
 
-    Everyone's got multiple side-hustles these days…
+    Everyone’s got multiple side-hustles these days…
 
 
   ○ Stage 5 Boss
@@ -260,7 +264,7 @@
     recent times.
 
     Despite being so formal and stuffy, she seems to be the only one who knows
-    what's going on.
+    what’s going on.
 
 
   ○ Stage 6 Boss
