@@ -59,7 +59,7 @@
  Reimu: “The tea is fine. I just feel uneasy. I can’t put my finger on it.”
 
  The bells of the shrine tolled outside. Someone had made a donation. A minute
- later, there was another. And another.  
+ later, there was another. And another.
 
  Reimu: “Something’s definitely not right…”
 
@@ -225,15 +225,14 @@
   ○ Stage 3 Boss
     Name: Wriggle Nightbug
     Species: Insect
-    Field of Study: Socio-Entomology
+    Field of Study: Evolutionary Socio-Entomology
 
     A bright bug - or was it insect? - far from her usual stomping grounds.
 
-    It seems she's unhappy with the working conditions of bugs and insects
-    around Gensōkyō.
+    She feels that Insects have lost their "rightful place" in history.
 
-    Even if you have to break the picket lines, consider negotiating with her
-    bretheren later.
+    If she thinks she has a raw evolutionary deal, someone ought to tell
+    her about the trilobytes…
 
 
   ○ Stage 4 Boss
@@ -241,7 +240,7 @@
     Species: Vampire
     Field of Study: Phlebotomy
 
-    Vampiric blast from the past. Doesn't she know Gensōkyō already has new 
+    Vampiric blast from the past. Doesn't she know Gensōkyō already has new
     bloodsuckers in town?
 
     Sucking blood is what she's good at, but her current job is a gatekeeper,

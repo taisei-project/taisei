@@ -83,6 +83,14 @@ static void credits_fill(void) {
 		"Hosting, packaging, editing,\n"
 		"spiritual guidance"
 	), ENTRY_TIME);
+	
+	credits_add((
+		"Alice D\n"
+		"https://twitter.com/AmyZenunim\n"
+		"https://github.com/starwitch\n\n"
+		"Lead story writer\n"
+		"macOS QA + debugging"
+	), ENTRY_TIME);
 
 	credits_add((
 		"makise-homura\n"
