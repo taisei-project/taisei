@@ -35,14 +35,18 @@ static void gles20_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx
 	void *state;
 	gl33_begin_draw(varr, &state);
 
+	IndexBuffer *ibuf = varr->index_attachment;
+	gles20_ibo_index_t *indices = ibuf->elements + firstidx;
+	assert(indices < ibuf->elements + ibuf->num_elements);
+
 	if(instances) {
 		if(base_instance) {
-			glDrawElementsInstancedBaseInstance(gl_prim, count, GLES20_IBO_GL_DATATYPE, varr->index_attachment->elements, instances, base_instance);
+			glDrawElementsInstancedBaseInstance(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices, instances, base_instance);
 		} else {
-			glDrawElementsInstanced(gl_prim, count, GLES20_IBO_GL_DATATYPE, varr->index_attachment->elements, instances);
+			glDrawElementsInstanced(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices, instances);
 		}
 	} else {
-		glDrawElements(gl_prim, count, GLES20_IBO_GL_DATATYPE, varr->index_attachment->elements);
+		glDrawElements(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices);
 	}
 
 	gl33_end_draw(state);

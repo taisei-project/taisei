@@ -155,7 +155,6 @@ void gles_init_texformats_table(void) {
 	}
 
 	for(uint i = 0; i < sizeof(gles_texformats)/sizeof(*gles_texformats); ++i) {
-		log_debug("fuck %i", i);
 		gles_texformats[i].external_formats[0] = gles_texformats[i].primary_external_format;
 
 		if(!is_gles3) {
@@ -178,6 +177,10 @@ GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
 	 */
 
 	switch(internal_fmt) {
+		case GL_RED:
+		case GL_RG:
+		case GL_RGB:
+		case GL_RGBA:
 		case GL_R8:
 		case GL_RG8:
 		case GL_RGB8:
@@ -227,6 +230,7 @@ GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
 			}
 			break;
 
+		case GL_DEPTH_COMPONENT:
 		case GL_DEPTH_COMPONENT16:
 		case GL_DEPTH_COMPONENT24:
 			// FIXME: Is there an extension that makes it filterable?

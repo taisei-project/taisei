@@ -75,6 +75,10 @@ void r_shutdown(void) {
 	B.shutdown();
 }
 
+const char *r_backend_name(void) {
+	return _r_backend.name;
+}
+
 void r_shader_standard(void) {
 	r_shader_ptr(R.progs.standard);
 }

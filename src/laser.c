@@ -32,6 +32,7 @@ static struct {
 typedef struct LaserInstancedAttribs {
 	float pos[2];
 	float delta[2];
+	float fragment_width;
 } LaserInstancedAttribs;
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
@@ -78,7 +79,8 @@ void lasers_preload(void) {
 
 		// Per-instance attributes (for our own buffer, bound at 1)
 		// pos and delta packed into a single attribute
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),          1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),            1 },
+		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(fragment_width), 1 },
 	};
 
 	#undef VERTEX_OFS
@@ -222,7 +224,6 @@ static void draw_laser_curve_specialized(Laser *l) {
 		return;
 	}
 
-
 	r_shader_ptr(l->shader);
 	r_color(&l->color);
 	r_uniform_sampler("tex", "part/lasercurve");
@@ -271,15 +272,23 @@ static void draw_laser_curve_generic(Laser *l) {
 	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
 	r_vertex_buffer_invalidate(lasers.vbuf);
 
+	float tail = instances / 1.9;
+	float tail_factor = -0.75 / (tail * tail);
+
 	for(uint i = 0; i < instances; ++i) {
 		cmplx pos = l->prule(l, i * 0.5 + timeshift);
 		cmplx delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
+
+		float t1 = i - instances / 2.0;
+		float s = powf(tail_factor * (t1 - tail) * (t1 + tail), l->width_exponent);
 
 		LaserInstancedAttribs attr;
 		attr.pos[0] = creal(pos);
 		attr.pos[1] = cimag(pos);
 		attr.delta[0] = creal(delta);
 		attr.delta[1] = cimag(delta);
+		attr.fragment_width = s;
+
 		SDL_RWwrite(stream, &attr, sizeof(attr), 1);
 	}
 

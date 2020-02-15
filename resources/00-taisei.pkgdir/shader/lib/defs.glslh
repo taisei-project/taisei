@@ -37,4 +37,8 @@
     #define NATIVE_ORIGIN_BOTTOMLEFT
 #endif
 
+#if defined(BACKEND_GLES20)
+    #include "legacy_compat.glslh"
+#endif
+
 #endif

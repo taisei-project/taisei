@@ -168,6 +168,13 @@ GLenum glcommon_texture_base_format(GLenum internal_fmt) {
 		case GL_RGBA8_SNORM: return GL_RGBA;
 		case GL_SRGB8: return GL_RGB;
 		case GL_SRGB8_ALPHA8: return GL_RGBA;
+
+		// GLES2 may use these as internal formats
+		case GL_RED: return GL_RED;
+		case GL_RG: return GL_RG;
+		case GL_RGB: return GL_RGB;
+		case GL_RGBA: return GL_RGBA;
+		case GL_DEPTH_COMPONENT: return GL_DEPTH_COMPONENT;
 	}
 
 	UNREACHABLE;
