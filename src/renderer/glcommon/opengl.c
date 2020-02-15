@@ -37,6 +37,24 @@ struct glext_s glext;
 
 typedef void (*glad_glproc_ptr)(void);
 
+#ifndef STATIC_GLES3
+//
+//	Extension not yet handled by glad
+//
+
+// GL_ANGLE_base_vertex_base_instance
+typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount, GLuint baseInstance);
+static PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC glad_glDrawArraysInstancedBaseInstanceANGLE;
+typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
+static PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE;
+
+static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
+	// shim
+	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
+}
+
+#endif
+
 static const char *const ext_vendor_table[] = {
 	#define TSGL_EXT_VENDOR(v) [_TSGL_EXTVNUM_##v] = #v,
 	TSGL_EXT_VENDORS
@@ -184,6 +202,14 @@ static void glcommon_ext_base_instance(void) {
 		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceEXT))
 	) {
 		log_info("Using GL_EXT_base_instance");
+		return;
+	}
+
+	if((glext.base_instance = glcommon_check_extension("GL_ANGLE_base_vertex_base_instance"))
+		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstanceANGLE))
+		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceANGLE))
+	) {
+		log_info("Using GL_ANGLE_base_vertex_base_instance");
 		return;
 	}
 #endif
@@ -800,6 +826,9 @@ void glcommon_load_functions(void) {
 			log_fatal("Failed to load OpenGL functions");
 		}
 	}
+
+	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawArraysInstancedBaseInstanceANGLE");
+	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 #endif
 }
 
