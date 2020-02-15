@@ -117,7 +117,7 @@ notably:
 - ``OES_vertex_array_object``
 - ``EXT_frag_depth``
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
-``NV_instanced_arrays``
+  ``NV_instanced_arrays``
 
 
 Where are my replays, screenshots and settings?
