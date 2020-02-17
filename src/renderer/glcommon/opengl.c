@@ -716,12 +716,17 @@ static bool glcommon_check_workaround(const char *name, const char *envvar, cons
 }
 
 static const char *detect_slow_sampler_update(void) {
-	// TODO: also detect it for WebGL, and see if it's worth applying with ANGLE.
+	// TODO: also detect it for WebGL, or possibly apply it unconditionally in that case.
 #ifdef __MACOSX__
 	const char *gl_vendor = (const char*)glGetString(GL_VENDOR);
 	const char *gl_renderer = (const char*)glGetString(GL_RENDERER);
 
-	if((strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) && strstr(gl_renderer, "Radeon")) {
+	if(
+		strstr(gl_renderer, "Radeon") && (                                  // This looks like an AMD Radeon card...
+			(strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) ||       // ...and AMD's official driver...
+			(strstr(gl_vendor, "Google") && strstr(gl_renderer, "OpenGL"))  // ...or ANGLE, backed by OpenGL.
+		)
+	) {
 		return "buggy AMD driver on macOS; see https://github.com/taisei-project/taisei/issues/182";
 	}
 #endif
