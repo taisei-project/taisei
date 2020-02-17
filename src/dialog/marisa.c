@@ -104,7 +104,7 @@ DIALOG_TASK(marisa, Stage2PreBoss) {
 
 	EVENT(music_changes);
 	MSG(hina, "And do you know what happens to naughty girls who don’t listen to their elders?");
-	MSG(hina, "They get showered in misforunte for years!");
+	MSG(hina, "They get showered in misfortune for years!");
 
 	DIALOG_END();
 }
