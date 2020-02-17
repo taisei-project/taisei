@@ -190,7 +190,7 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 
 	GLuint prev_pbo = 0;
 
-	gl33_bind_texture(tex, false);
+	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	if(tex->pbo) {
@@ -250,7 +250,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 
 	glGenTextures(1, &tex->gl_handle);
 	snprintf(tex->debug_label, sizeof(tex->debug_label), "Texture #%i", tex->gl_handle);
-	gl33_bind_texture(tex, false);
+	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	tex->type_info = GLVT.texture_type_info(p->type);
@@ -298,14 +298,14 @@ void gl33_texture_get_params(Texture *tex, TextureParams *params) {
 
 void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
 	if(tex->params.filter.min != fmin) {
-		gl33_bind_texture(tex, false);
+		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.min = fmin;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->type_info->internal_fmt));
 	}
 
 	if(tex->params.filter.mag != fmag) {
-		gl33_bind_texture(tex, false);
+		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.mag = fmag;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->type_info->internal_fmt));
@@ -314,14 +314,14 @@ void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilter
 
 void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) {
 	if(tex->params.wrap.s != ws) {
-		gl33_bind_texture(tex, false);
+		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.wrap.s = ws;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(ws));
 	}
 
 	if(tex->params.wrap.t != wt) {
-		gl33_bind_texture(tex, false);
+		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.wrap.t = wt;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(wt));
@@ -329,7 +329,7 @@ void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt)
 }
 
 void gl33_texture_invalidate(Texture *tex) {
-	gl33_bind_texture(tex, false);
+	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	for(uint i = 0; i < tex->params.mipmaps; ++i) {
@@ -358,7 +358,7 @@ void gl33_texture_fill(Texture *tex, uint mipmap, const Pixmap *image) {
 void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image) {
 	assert(mipmap == 0 || tex->params.mipmap_mode != TEX_MIPMAP_AUTO);
 
-	gl33_bind_texture(tex, false);
+	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	Pixmap pix;
@@ -414,7 +414,7 @@ void gl33_texture_prepare(Texture *tex) {
 	if(tex->params.mipmap_mode == TEX_MIPMAP_AUTO && tex->mipmaps_outdated) {
 		log_debug("Generating mipmaps for %s (%u)", tex->debug_label, tex->gl_handle);
 
-		gl33_bind_texture(tex, false);
+		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		glGenerateMipmap(GL_TEXTURE_2D);
 		tex->mipmaps_outdated = false;

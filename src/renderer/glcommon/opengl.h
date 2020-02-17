@@ -114,6 +114,10 @@ struct glext_s {
 		bool is_webgl;
 	} version;
 
+	struct {
+		uchar avoid_sampler_uniform_updates : 1;
+	} issues;
+
 	ext_flag_t base_instance;
 	ext_flag_t clear_texture;
 	ext_flag_t color_buffer_float;

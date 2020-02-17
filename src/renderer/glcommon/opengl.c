@@ -691,6 +691,51 @@ static void detect_broken_intel_driver(void) {
 #endif
 }
 
+static bool glcommon_check_workaround(const char *name, const char *envvar, const char *(*detect)(void)) {
+	int env_setting = env_get_int(envvar, -1);
+	glext.issues.avoid_sampler_uniform_updates = false;
+
+	if(env_setting > 0) {
+		log_warn("Enabled workaround `%s` (forced by environment)", name);
+		return true;
+	}
+
+	if(env_setting == 0) {
+		log_warn("Disabled workaround `%s` (forced by environment)", name);
+		return false;
+	}
+
+	const char *reason = detect();
+	if(reason != NULL) {
+		log_warn("Enabled workaround `%s` (%s)", name, reason);
+		return true;
+	}
+
+	log_info("Workaround `%s` not needed", name);
+	return false;
+}
+
+static const char *detect_slow_sampler_update(void) {
+	// TODO: also detect it for WebGL, and see if it's worth applying with ANGLE.
+#ifdef __MACOSX__
+	const char *gl_vendor = (const char*)glGetString(GL_VENDOR);
+	const char *gl_renderer = (const char*)glGetString(GL_RENDERER);
+
+	if((strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) && strstr(gl_renderer, "Radeon")) {
+		return "buggy AMD driver on macOS; see https://github.com/taisei-project/taisei/issues/182";
+	}
+#endif
+	return NULL;
+}
+
+static void glcommon_check_issues(void) {
+	glext.issues.avoid_sampler_uniform_updates = glcommon_check_workaround(
+		"avoid sampler uniform updates",
+		"TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES",
+		detect_slow_sampler_update
+	);
+}
+
 void glcommon_check_capabilities(void) {
 	memset(&glext, 0, sizeof(glext));
 
@@ -786,6 +831,7 @@ void glcommon_check_capabilities(void) {
 #endif
 
 	glcommon_build_shader_lang_table();
+	glcommon_check_issues();
 }
 
 void glcommon_load_library(void) {

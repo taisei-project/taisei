@@ -35,7 +35,7 @@ GLenum gl33_prim_to_gl_prim(Primitive prim);
 void gl33_begin_draw(VertexArray *varr, void **state);
 void gl33_end_draw(void *state);
 
-uint gl33_bind_texture(Texture *texture, bool for_rendering);
+uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit);
 
 void gl33_bind_vao(GLuint vao);
 void gl33_sync_vao(void);
