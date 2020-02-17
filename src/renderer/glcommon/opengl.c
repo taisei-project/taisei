@@ -52,8 +52,11 @@ static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei c
 	// shim
 	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
 }
-
 #endif
+
+// WEBGL_debug_renderer_info
+const GLenum GL_UNMASKED_VENDOR_WEBGL = 0x9245;
+const GLenum GL_UNMASKED_RENDERER_WEBGL = 0x9246;
 
 static const char *const ext_vendor_table[] = {
 	#define TSGL_EXT_VENDOR(v) [_TSGL_EXTVNUM_##v] = #v,
@@ -619,6 +622,34 @@ static APIENTRY GLvoid shim_glClearDepthf(GLfloat depthval) {
 }
 #endif
 
+static const char *get_unmasked_property(GLenum prop, bool fallback) {
+	const char *val = NULL;
+
+	if(glext.version.is_webgl) {
+		if(glcommon_check_extension("GL_WEBGL_debug_renderer_info")) {
+			GLenum prop_unmasked;
+
+			switch(prop) {
+				case GL_VENDOR:   prop_unmasked = GL_UNMASKED_VENDOR_WEBGL;   break;
+				case GL_RENDERER: prop_unmasked = GL_UNMASKED_RENDERER_WEBGL; break;
+				default: UNREACHABLE;
+			}
+
+			val = (const char*)glGetString(prop_unmasked);
+
+			if(!*val) {
+				val = NULL;
+			}
+		}
+	}
+
+	if(val == NULL && fallback) {
+		val = (const char*)glGetString(prop);
+	}
+
+	return val;
+}
+
 static void detect_broken_intel_driver(void) {
 #ifdef TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK
 	extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -716,10 +747,9 @@ static bool glcommon_check_workaround(const char *name, const char *envvar, cons
 }
 
 static const char *detect_slow_sampler_update(void) {
-	// TODO: also detect it for WebGL, or possibly apply it unconditionally in that case.
 #ifdef __MACOSX__
-	const char *gl_vendor = (const char*)glGetString(GL_VENDOR);
-	const char *gl_renderer = (const char*)glGetString(GL_RENDERER);
+	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
+	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
 
 	if(
 		strstr(gl_renderer, "Radeon") && (                                  // This looks like an AMD Radeon card...
@@ -778,6 +808,14 @@ void glcommon_check_capabilities(void) {
 	log_info("OpenGL version: %s", glv);
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
+
+	if(glext.version.is_webgl) {
+		const char *unmasked_vendor = get_unmasked_property(GL_VENDOR, false);
+		const char *unmasked_renderer = get_unmasked_property(GL_RENDERER, false);
+		log_info("OpenGL unmasked vendor: %s",   unmasked_vendor   ? unmasked_vendor   : "Unknown");
+		log_info("OpenGL unmasked renderer: %s", unmasked_renderer ? unmasked_renderer : "Unknown");
+	}
+
 	log_info("GLSL version: %s", glslv);
 
 	detect_broken_intel_driver();
