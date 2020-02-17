@@ -180,7 +180,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 
 	FACE(marisa, unamused);
 	MSG(marisa, "Okay okay, this is great and all, but I’ve honestly got more important stuff to do.");
-	MSG(marisa, "… and y’don’t got a clue about what’s goin’ on, do ya?");
+	MSG(marisa, "… and ya don’t got a clue about what’s goin’ on, do ya?");
 
 	FACE(wriggle, proud);
 	MSG(wriggle, "Maybe I know more than you think.");
@@ -268,7 +268,7 @@ DIALOG_TASK(marisa, Stage4PreBoss) {
 	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
 	FACE(kurumi, normal);
 	MSG(kurumi, "Yeah, duh?");
-	MSG(kurumi, "Of course, most of it is garbage that only weirdoes like!");
+	MSG(kurumi, "Of course, most of it is garbage that only weirdos like!");
 	FACE(kurumi, dissatisfied);
 	MSG(kurumi, "And don’t EVEN get me started on certain character designs! So gross!");
 
@@ -330,7 +330,7 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	MSG(marisa, "I’m Gensōkyō’s… petticoat inspector.");
 	MSG(marisa, "I’m here to inspect the petticoats in this here mansion.");
 	FACE(marisa, happy);
-	MSG(marisa, "Y’were just lettin’ me in, so I’ll be off, then.");
+	MSG(marisa, "Ya were just lettin’ me in, so I’ll be off, then.");
 
 	FACE(kurumi, normal);
 	MSG(kurumi, "Uh, I kinda doubt that…");
@@ -396,7 +396,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(iku, "The technology on display here is beyond our current comprehension.");
 
 	FACE(marisa, surprised);
-	MSG(marisa, "Whoa, so ’yer sayin’ they have enough power for all that? That this is REAL brick?!");
+	MSG(marisa, "Whoa, so ’yer sayin’ this is REAL brick?!");
 	FACE(marisa, normal);
 	MSG(marisa, "*tap tap*");
 	FACE(marisa, surprised);
@@ -450,7 +450,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	EVENT(music_changes);
 
 	MSG(iku, "Enough!");
-	MSG(iku, "It is said that specifically applied electro-stimulaiton can ease the mind.");
+	MSG(iku, "It is said that specifically applied electro-stimulation can ease the mind.");
 	MSG(iku, "Allow me to put that into practice for you!");
 
 	DIALOG_END();
@@ -577,7 +577,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "At least that time y’were guardin’ some powerful magic thingy I coulda used.");
 	MSG(marisa, "I can’t remember, was that time a bust, too?");
 	FACE(marisa, happy);
-	MSG(marisa, "At least I met Yuuka. Did ya know she ended up givin’ me my trademark spell?");
+	MSG(marisa, "At least I met Yūka. Did ya know she ended up givin’ me my trademark spell?");
 	MSG(marisa, "Not right then, and not voluntarily, but—");
 
 	FACE(elly, angry);
@@ -634,7 +634,7 @@ DIALOG_TASK(marisa, Stage6PreFinal) {
 	FACE(marisa, unamused);
 	MSG(marisa, "Are y’sure ya don’t got a spellbook laying around?! Nothin’ at all?!");
 	MSG(elly, "Are you still on about that?! Fine, see what good it does you!");
-	MSG(elly, "Your pitiful magic is nothing compared to the true nature of reality!");
+	MSG(elly, "Your pitiful magic amounts to nothing against the true nature of reality!");
 
 	DIALOG_END();
 }

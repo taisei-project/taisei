@@ -382,7 +382,7 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	FACE(kurumi, defeated);
 	MSG(kurumi, "(Ugh, her clothes really do suck though…)");
 	MSG(kurumi, "I was supposed to keep people out until my friend completed their plan…");
-	MSG(kurumi, "But then I started feeling werid and kept talking like I had no filter?");
+	MSG(kurumi, "But then I started feeling weird and kept talking like I had no filter?");
 	MSG(kurumi, "It was kinda liberating but also made me really rude?!");
 
 	MSG(reimu, "(Just another victim…?)");
@@ -444,12 +444,12 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(iku, "In Bhava-agra, the Eldest Daughter’s personality has experienced some changes, too.");
 
 	FACE(reimu, surprised);
-	MSG(reimu, "It’s moving that fast?!");
+	MSG(reimu, "It’s spreading that fast?!");
 
 	FACE(iku, smile);
 	MSG(iku, "Initially, I had no plans towards interfering. I am not one to take the lead.");
 	FACE(iku, serious);
-	MSG(iku, "However, the tower’s psychological effects because to intensify, and…");
+	MSG(iku, "However, the tower’s psychological effects began to intensify, and…");
 
 	FACE(reimu, sigh);
 	MSG(reimu, "Do people have that little faith in me…?");
@@ -465,7 +465,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	FACE(iku, smile);
 	MSG(iku, "To be frank, I am not sure whether you are up to the task.");
-	MSG(iku, "You are still relatively composed, yes, but your mental state seems to be deterioriating.");
+	MSG(iku, "You are still relatively composed, yes, but your mental state seems to be deteriorating.");
 
 	FACE(reimu, unamused);
 	MSG(reimu, "I don’t trust anyone else to get this done!");
@@ -608,7 +608,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	//FACE(reimu, unsettled);
 	FACE(reimu, normal);
-	MSG(reimu, "You mean Kazami Yuuka? And I suppose… Alice, too?");
+	MSG(reimu, "You mean Kazami Yūka? And I suppose… Alice, too?");
 	MSG(reimu, "I remember when I first met Alice, she made weird comments like you, too.");
 	FACE(reimu, unamused);
 	MSG(reimu, "But she didn’t go around threatening everyone, did she?!");
@@ -620,13 +620,13 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	FACE(reimu, sigh);
 	MSG(reimu, "Even in Gensōkyō, you can be forgotten, huh?");
 	MSG(reimu, "What a miserable thought. No wonder I felt terrible just seeing this place!");
-	MSG(reimu, "Turn it off, or being forogtten will be the least of your worries!");
+	MSG(reimu, "Turn it off, or being forgotten will be the least of your worries!");
 
 	EVENT(music_changes);
 	FACE(elly, shouting);
 	MSG(elly, "It’s too late for that! Soon, all of Gensōkyō will become enlightened!");
 	MSG(elly, "Don’t you understand, pitiful shrine maiden? Science is an unfathomable power, surpassed by nothing!");
-	MSG(elly, "We will take control of this world at any cost!");
+	MSG(elly, "We will subjugate this world at any cost!");
 
 	DIALOG_END();
 }

@@ -30,13 +30,13 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 
 	FACE(youmu, unamused);
 	MSG(youmu, "I can see you’re quite cold, yes.");
-	MSG(youmu, "I tend to dislike dueling those weaker than myself, so I’d appreciate it if you’s step aside.");
+	MSG(youmu, "I tend to dislike dueling those weaker than myself, so I’d appreciate it if you’d step aside.");
 
 	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
 	MSG(cirno, "Hah! Maybe YOU should step aside, then!");
 
 	FACE(youmu, smug);
-	MSG(youmu, "I suppose it’s a good a time as any to practice my snowflake-destruction technique.");
+	MSG(youmu, "I suppose it’s as good a time as any to practice my snowflake-destruction technique.");
 
 	EVENT(music_changes);
 	FACE(cirno, angry);
@@ -156,7 +156,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(wriggle, 120, "Amiss?");
 	SHOW(wriggle);
-	MSG(wriggle, "Do you mean the comfortable supply of my breatheren?");
+	MSG(wriggle, "Do you mean the comfortable supply of my bretheren?");
 
 	//FACE(youmu, eyes_closed);
 	FACE(youmu, unamused);
@@ -406,7 +406,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(youmu, "Overinflated ego? Nonsense.");
 	MSG(youmu, "During my recent battles, I have achieved a meditative state most blademasters only dream of!");
 	//FACE(youmu, chuuni);
-	MSG(youmu, "Through that, I have realized the true form of my previously-incompleted yōkai-vanquishing technique!");
+	MSG(youmu, "Through that, I have realized the true form of my previously-incomplete yōkai-vanquishing technique!");
 
 	MSG(iku, "Is that so? You believe that this ’technique’ will help you defeat the instigators effortlessly?");
 
@@ -421,7 +421,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(iku, "Ah, I haven’t the time for this nonsense!");
 	MSG(iku, "Insolent humans such as you need rehabilitation! Allow me to administer some onto you!");
 
-	MSG(youmu, "Finally! Witness the sheer strength of my Ryōkaken!");
+	MSG(youmu, "Finally! Witness the sheer strength of my Rōkanken!");
 
 	DIALOG_END();
 }
@@ -510,7 +510,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	FACE(elly, shouting);
 	MSG(elly, "One that we, the ’forgotten’, will reign over!");
 
-	MSG(youmu, "Such an unweildly weapon… for anyone to choose it willingly…");
+	MSG(youmu, "Such an unwieldy weapon… for anyone to choose it willingly…");
 	MSG(youmu, "Either you’re incredibly skilled, or incredibly foolish.");
 	//FACE(youmu, chuuni);
 	FACE(youmu, happy);
@@ -562,7 +562,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 
 	FACE(elly, shouting);
 	MSG(elly, "For I possess the knowledge of science!");
-	MSG(elly, "In a magic-filled world like this, science and ationality cut through opponents with unparalleled precision!");
+	MSG(elly, "In a magic-filled world like this, science and rationality cut through opponents with unparalleled precision!");
 	MSG(elly, "Let’s see what good your swords do you when you fall prey to true enlightenment!");
 
 	DIALOG_END();
