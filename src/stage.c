@@ -24,6 +24,7 @@
 #include "stagedraw.h"
 #include "stageobjects.h"
 #include "eventloop/eventloop.h"
+#include "common_tasks.h"
 
 #ifdef DEBUG
 	#define DPSTEST
@@ -707,6 +708,12 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, get_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
+static void display_bgm_title(void) {
+	char txt[strlen(current_bgm.title) + 6];
+	snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
+	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, get_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+}
+
 void stage_start_bgm(const char *bgm) {
 	char *old_title = NULL;
 
@@ -717,9 +724,11 @@ void stage_start_bgm(const char *bgm) {
 	start_bgm(bgm);
 
 	if(current_bgm.title && current_bgm.started_at >= 0 && (!old_title || strcmp(current_bgm.title, old_title))) {
-		char txt[strlen(current_bgm.title) + 6];
-		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, get_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+		if(dialog_is_active(global.dialog)) {
+			INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
+		} else {
+			display_bgm_title();
+		}
 	}
 
 	free(old_title);
