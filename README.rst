@@ -96,6 +96,21 @@ maintainer’s choice. Alternatively you may want to add
 
 ``install_relative`` is always set when building for Windows.
 
+You can enable debugging options/output for development purposes:
+
+::
+
+    meson configure -Dbuildtype=debug -Db_ndebug=false
+
+
+This option also helps for speeding up build times for debugging:
+
+::
+
+    meson configure -Db_lto=false
+
+**OpenGL ES Support**
+
 The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
 ::
@@ -120,18 +135,17 @@ notably:
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
   ``NV_instanced_arrays``
 
-You can enable debugging options/output for development purposes:
+You'll likely need ANGLE support for OpenGL ES. You'll need to check out the
+`ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
+documentation on how to do that.
+
+Once you've completed compiling it, enable it with:
 
 ::
+    meson -Dinstall_angle=true -Dangle_libegl=/path/to/libEGL.{dll,dylib}
+    -Dangle_libgles=/path/to/libGLESv2.{dll,dylib}
 
-    meson configure -Dbuildtype=debug -Db_ndebug=false
-
-
-This option also helps for speeding up build times for debugging:
-
-::
-
-    meson configure -Db_lto=false
+It'll install automatically with `ninja install` (as mentioned above).
 
 See `here <doc/COMPILING.rst`__ for more information on compiling
 for specific platforms.
