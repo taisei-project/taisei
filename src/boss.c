@@ -1000,6 +1000,7 @@ void process_boss(Boss **pboss) {
 		return;
 	}
 
+	move_update(&boss->pos, &boss->move);
 	aniplayer_update(&boss->ani);
 	update_hud(boss);
 
@@ -1036,8 +1037,6 @@ void process_boss(Boss **pboss) {
 
 		boss_call_rule(boss, time);
 	}
-
-	move_update(&boss->pos, &boss->move);
 
 	if(extra) {
 		float base = 0.2;
