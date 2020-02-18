@@ -5,6 +5,7 @@
 #include "defs.glslh"
 
 const float pi = 3.141592653589793; // as supplied by google
+const float tau = 2 * pi;
 
 vec2 dir(float a) {
     return vec2(cos(a), sin(a));

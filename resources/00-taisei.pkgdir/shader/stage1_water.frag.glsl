@@ -12,8 +12,13 @@ float smoothNoise(vec2 p) {
 	p -= f;
 	f *= f * (3 - f - f);
 
+	// Intel's sin() function breaks down with values over 1e4 (yes, really)
+	// get rid of some bits here w/o sacrificing the nice effect
+	vec4 a = vec4(0, 1, 27, 28) + p.x + p.y * 27;
+	vec4 b = mod(a, tau);
+
 	// WARNING: Some versions of the Windows AMD driver choke on temp_mat = mat2(temp_vec)
-	vec4 temp_vec = fract(sin(vec4(0, 1, 27, 28) + p.x + p.y * 27) * 1e5);
+	vec4 temp_vec = fract(sin(b) * 1e5);
 	mat2 temp_mat = mat2(temp_vec.x, temp_vec.y, temp_vec.z, temp_vec.w);
 
 	return dot(temp_mat * vec2(1 - f.y, f.y), vec2(1 - f.x, f.x));
