@@ -28,6 +28,8 @@
 #include "util/glm.h"
 #include "util/env.h"
 
+// #define GL33_DEBUG_TEXUNITS
+
 typedef struct TextureUnit {
 	LIST_INTERFACE(struct TextureUnit);
 
@@ -502,12 +504,26 @@ static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, bool lock)
 	assert(!unit->tex2d.locked);
 
 	if(unit->tex2d.pending == tex) {
+		if(tex) {
+			tex->binding_unit = unit;
+		}
+
+		if(lock) {
+			unit->tex2d.locked = true;
+		}
+
+		// gl33_relocate_texuint(unit);
 		return;
 	}
 
 	if(unit->tex2d.pending != NULL) {
-		assert(unit->tex2d.pending->binding_unit == unit);
-		unit->tex2d.pending->binding_unit = NULL;
+		// assert(unit->tex2d.pending->binding_unit == unit);
+
+		if(unit->tex2d.pending->binding_unit == unit) {
+			// FIXME: should we search through the units for a matching binding,
+			// just in case another unit had the same texture bound?
+			unit->tex2d.pending->binding_unit = NULL;
+		}
 	}
 
 	unit->tex2d.pending = tex;
@@ -700,9 +716,23 @@ void gl33_sync_blend_mode(void) {
 	}
 }
 
-uint gl33_bind_texture(Texture *texture, bool for_rendering) {
-	if(!texture->binding_unit) {
-		assert(R.texunits.list.first->tex2d.pending != texture);
+uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit) {
+	if(glext.issues.avoid_sampler_uniform_updates && preferred_unit >= 0) {
+		assert(preferred_unit < R.texunits.limit);
+		TextureUnit *u = &R.texunits.array[preferred_unit];
+
+		if(u->tex2d.pending == texture) {
+			u->tex2d.locked |= for_rendering;
+		} else {
+			gl33_set_texunit_binding(u, texture, for_rendering);
+		}
+
+		// In this case the texture may be bound to more than one unit.
+		// This is fine though, and we just always update binding_unit to the
+		// most recent binding.
+		texture->binding_unit = u;
+	} else if(!texture->binding_unit) {
+		// assert(R.texunits.list.first->tex2d.pending != texture);
 
 		if(
 			R.texunits.list.first->tex2d.pending &&

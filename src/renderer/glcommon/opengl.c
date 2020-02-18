@@ -52,8 +52,11 @@ static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei c
 	// shim
 	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
 }
-
 #endif
+
+// WEBGL_debug_renderer_info
+const GLenum GL_UNMASKED_VENDOR_WEBGL = 0x9245;
+const GLenum GL_UNMASKED_RENDERER_WEBGL = 0x9246;
 
 static const char *const ext_vendor_table[] = {
 	#define TSGL_EXT_VENDOR(v) [_TSGL_EXTVNUM_##v] = #v,
@@ -619,6 +622,34 @@ static APIENTRY GLvoid shim_glClearDepthf(GLfloat depthval) {
 }
 #endif
 
+static const char *get_unmasked_property(GLenum prop, bool fallback) {
+	const char *val = NULL;
+
+	if(glext.version.is_webgl) {
+		if(glcommon_check_extension("GL_WEBGL_debug_renderer_info")) {
+			GLenum prop_unmasked;
+
+			switch(prop) {
+				case GL_VENDOR:   prop_unmasked = GL_UNMASKED_VENDOR_WEBGL;   break;
+				case GL_RENDERER: prop_unmasked = GL_UNMASKED_RENDERER_WEBGL; break;
+				default: UNREACHABLE;
+			}
+
+			val = (const char*)glGetString(prop_unmasked);
+
+			if(!*val) {
+				val = NULL;
+			}
+		}
+	}
+
+	if(val == NULL && fallback) {
+		val = (const char*)glGetString(prop);
+	}
+
+	return val;
+}
+
 static void detect_broken_intel_driver(void) {
 #ifdef TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK
 	extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
@@ -691,6 +722,70 @@ static void detect_broken_intel_driver(void) {
 #endif
 }
 
+static bool glcommon_check_workaround(const char *name, const char *envvar, const char *(*detect)(void)) {
+	int env_setting = env_get_int(envvar, -1);
+	glext.issues.avoid_sampler_uniform_updates = false;
+
+	if(env_setting > 0) {
+		log_warn("Enabled workaround `%s` (forced by environment)", name);
+		return true;
+	}
+
+	if(env_setting == 0) {
+		log_warn("Disabled workaround `%s` (forced by environment)", name);
+		return false;
+	}
+
+	const char *reason = detect();
+	if(reason != NULL) {
+		log_warn("Enabled workaround `%s` (%s)", name, reason);
+		return true;
+	}
+
+	log_info("Workaround `%s` not needed", name);
+	return false;
+}
+
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+EM_JS(bool, webgl_is_mac, (void), {
+	try {
+		return !!navigator.platform.match(/mac/i);
+	} catch(e) {
+		// whatever...
+		return false;
+	}
+});
+#endif
+
+static const char *detect_slow_sampler_update(void) {
+#if defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
+	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
+
+	if(
+#if defined(__EMSCRIPTEN__)
+		webgl_is_mac() &&
+#endif
+		strstr(gl_renderer, "Radeon") && (                                  // This looks like an AMD Radeon card...
+			(strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) ||       // ...and AMD's official driver...
+			(strstr(gl_vendor, "Google") && strstr(gl_renderer, "OpenGL"))  // ...or ANGLE, backed by OpenGL.
+		)
+	) {
+		return "buggy AMD driver on macOS; see https://github.com/taisei-project/taisei/issues/182";
+	}
+#endif
+	return NULL;
+}
+
+static void glcommon_check_issues(void) {
+	glext.issues.avoid_sampler_uniform_updates = glcommon_check_workaround(
+		"avoid sampler uniform updates",
+		"TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES",
+		detect_slow_sampler_update
+	);
+}
+
 void glcommon_check_capabilities(void) {
 	memset(&glext, 0, sizeof(glext));
 
@@ -728,6 +823,14 @@ void glcommon_check_capabilities(void) {
 	log_info("OpenGL version: %s", glv);
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
+
+	if(glext.version.is_webgl) {
+		const char *unmasked_vendor = get_unmasked_property(GL_VENDOR, false);
+		const char *unmasked_renderer = get_unmasked_property(GL_RENDERER, false);
+		log_info("OpenGL unmasked vendor: %s",   unmasked_vendor   ? unmasked_vendor   : "Unknown");
+		log_info("OpenGL unmasked renderer: %s", unmasked_renderer ? unmasked_renderer : "Unknown");
+	}
+
 	log_info("GLSL version: %s", glslv);
 
 	detect_broken_intel_driver();
@@ -786,6 +889,7 @@ void glcommon_check_capabilities(void) {
 #endif
 
 	glcommon_build_shader_lang_table();
+	glcommon_check_issues();
 }
 
 void glcommon_load_library(void) {

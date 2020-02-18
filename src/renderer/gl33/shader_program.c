@@ -226,8 +226,14 @@ static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 				continue;
 			}
 
-			GLuint unit = gl33_bind_texture(tex, true);
-			gl33_update_uniform(uniform, i, 1, &unit);
+			if(glext.issues.avoid_sampler_uniform_updates) {
+				int preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
+				attr_unused GLuint unit = gl33_bind_texture(tex, true, preferred_unit);
+				assert(unit == preferred_unit);
+			} else {
+				GLuint unit = gl33_bind_texture(tex, true, -1);
+				gl33_update_uniform(uniform, i, 1, &unit);
+			}
 
 			if(size_uniform) {
 				uint w, h;
@@ -286,6 +292,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 	}
 
 	char name[maxlen];
+	int sampler_binding = 0;
 
 	for(int i = 0; i < unicount; ++i) {
 		GLenum type;
@@ -362,6 +369,20 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		if(uni.type == UNIFORM_SAMPLER) {
 			list_push(&sampler_uniforms, new_uni);
+
+			if(glext.issues.avoid_sampler_uniform_updates) {
+				// Bind each sampler to a different texturing unit.
+				// This way we can change textures by binding them to the right texturing units, and never update the shader's samplers again.
+
+				int payload[new_uni->array_size];
+				assert(sizeof(payload) == new_uni->array_size * new_uni->elem_size);
+
+				for(int j = 0; j < ARRAY_SIZE(payload); ++j) {
+					payload[j] = sampler_binding++;
+				}
+
+				gl33_update_uniform(new_uni, 0, new_uni->array_size, payload);
+			}
 		}
 
 		ht_set(&prog->uniforms, name, new_uni);
