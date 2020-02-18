@@ -24,12 +24,14 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 	FACE(marisa, puzzled);
 	MSG(marisa, "Aw, snow again? I just put away my winter coat.");
 
+	MSG(cirno, "Nice, right?");
 	EVENT(boss_appears);
-	WAIT(60);
+	WAIT(30);
+	WAIT_SKIPPABLE(60);
 
 	SHOW(cirno);
 	FACE(cirno, normal);
-	MSG(cirno, "Nice, right? It’s my snow. I did it!");
+	MSG(cirno, "It’s my snow. I did it!");
 
 	FACE(marisa, normal);
 	MSG(marisa, "Mind if I borrow some money for the drycleanin’ bill?");

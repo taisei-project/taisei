@@ -13,18 +13,6 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
-TASK(boss_appear_stub, NO_ARGS) {
-	log_warn("FIXME");
-}
-
-static void stage1_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Stage1PreBossDialogEvents *e;
-	INVOKE_TASK_INDIRECT(Stage1PreBossDialog, pm->dialog->Stage1PreBoss, &e);
-	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
-	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage1boss");
-}
-
 static void stage1_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage1PostBossDialog, pm->dialog->Stage1PostBoss);
@@ -61,18 +49,9 @@ Boss *stage1_spawn_cirno(cmplx pos) {
 	return cirno;
 }
 
-static void cirno_intro_boss(Boss *c, int time) {
-	if(time < 0)
-		return;
-	TIMER(&time);
-	GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.05);
-
-	AT(120)
-		stage1_dialog_pre_boss();
-}
-
 TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
 	BEGIN_BOSS_ATTACK();
 
 	for(;;) {
@@ -1506,12 +1485,23 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 	e->move = move_asymptotic_simple(ARGS.end_velocity, -1);
 }
 
+TASK(boss_appear, { BoxedBoss boss; }) {
+	Boss *boss = ENT_UNBOX(ARGS.boss);
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
+}
+
 TASK(spawn_boss, NO_ARGS) {
-	STAGE_BOOKMARK_DELAYED(120, boss);
+	STAGE_BOOKMARK(boss);
 
 	Boss *boss = global.boss = stage1_spawn_cirno(-230 + 100.0*I);
 
-	boss_add_attack(boss, AT_Move, "Introduction", 2, 0, cirno_intro_boss, NULL);
+	PlayerMode *pm = global.plr.mode;
+	Stage1PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage1PreBossDialog, pm->dialog->Stage1PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage1boss");
+	WAIT_EVENT(&global.dialog->events.fadeout_began);
+
 	boss_add_attack_task(boss, AT_Normal, "Iceplosion 0", 20, 23000, TASK_INDIRECT(BossAttack, boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage1_spells.boss.crystal_rain, false);
 	boss_add_attack(boss, AT_Normal, "Iceplosion 1", 20, 24000, cirno_iceplosion1, NULL);

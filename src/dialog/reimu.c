@@ -42,19 +42,20 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	// MSG() also implies FOCUS()
 	MSG(reimu, "Unseasonable snow? I wonder if it’s that ’Secret God’ again…");
 
-	MSG_UNSKIPPABLE(cirno, 180, "’Secret God’?");
+	MSG(cirno, "’Secret God’?");
 
 	// EVENT()s are handled by stage code.
 	// You can find the list of events per dialogue in dialog_interface.h
 	// All of them should be signaled eventually.
 	EVENT(boss_appears);
 
-	// Reveal Cirno’s portrait, while she appears in the game viewport.
-	SHOW(cirno);
-
 	// Wait until the boss slides in.
 	// WAIT() can not be skipped.
 	WAIT(30);
+	WAIT_SKIPPABLE(60);
+
+	// Reveal Cirno’s portrait
+	SHOW(cirno);
 
 	MSG(cirno, "What, are you *that* impressed by my invincible magic?!");
 

@@ -24,9 +24,12 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 	FACE(youmu, happy);
 	MSG(youmu, "I suppose falling snow can be as pretty as cherry blossoms…");
 
+	MSG(cirno, "I’m cooler than you, so get off my lake!");
+	FACE(youmu, normal);
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(cirno, 120, "I’m cooler than you, so get off my lake!");
 	SHOW(cirno);
+	WAIT(30);
+	WAIT_SKIPPABLE(60);
 
 	FACE(youmu, unamused);
 	MSG(youmu, "I can see you’re quite cold, yes.");
