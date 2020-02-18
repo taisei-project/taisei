@@ -120,6 +120,22 @@ notably:
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
   ``NV_instanced_arrays``
 
+You can enable debugging options/output for development purposes:
+
+::
+
+    meson configure -Dbuildtype=debug -Db_ndebug=false
+
+
+This option also helps for speeding up build times for debugging:
+
+::
+
+    meson configure -Db_lto=false
+
+See `here <doc/COMPILING.rst`__ for more information on compiling
+for specific platforms.
+
 
 Where are my replays, screenshots and settings?
 -----------------------------------------------
