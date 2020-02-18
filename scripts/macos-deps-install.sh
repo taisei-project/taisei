@@ -51,7 +51,7 @@ brew install meson cmake pkg-config docutils 2>/dev/null
 echo -e "${green}done!${reset}"
 
 echo -en "${white}Installing optional dependencies... ${reset}"
-brew install freetype libzip opusfile libvorbis webp sdl2 spirv-tools 2>/dev/null
+brew install freetype libzip opusfile libvorbis webp sdl2 2>/dev/null
 echo -e "${green}done!${reset}"
 
 
