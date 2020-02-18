@@ -1486,7 +1486,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 					.proto = pp_rice,
 					.pos = e->pos,
 					.color = RGB(0.6, 0.2, 0.7),
-					.move = move_asymptotic_simple(1.5*cexp(I*2*M_PI/n2*i),2),
+					.move = move_asymptotic_simple(1.5*cdir(2*M_PI/n2*i),2),
 				);
 
 				if(global.diff > D_Easy) {
@@ -1494,7 +1494,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 						.proto = pp_rice,
 						.pos = e->pos,
 						.color = RGB(0.6, 0.2, 0.7),
-						.move = move_asymptotic_simple(3*cexp(I*2*M_PI/n2*i), 3.0),
+						.move = move_asymptotic_simple(3*cdir(2*M_PI/n2*i), 3.0),
 					);
 				}
 			}
