@@ -73,6 +73,7 @@
 	TSGL_EXT_VENDOR(NATIVE) \
 	TSGL_EXT_VENDOR(NV) \
 	TSGL_EXT_VENDOR(OES) \
+	TSGL_EXT_VENDOR(WEBGL) \
 
 enum {
 	#define TSGL_EXT_VENDOR(v) _TSGL_EXTVNUM_##v,
@@ -113,6 +114,10 @@ struct glext_s {
 		bool is_ANGLE;
 		bool is_webgl;
 	} version;
+
+	struct {
+		uchar avoid_sampler_uniform_updates : 1;
+	} issues;
 
 	ext_flag_t base_instance;
 	ext_flag_t clear_texture;
