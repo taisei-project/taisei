@@ -755,7 +755,7 @@ EM_JS(bool, webgl_is_mac, (void), {
 		// whatever...
 		return false;
 	}
-});
+})
 #endif
 
 static const char *detect_slow_sampler_update(void) {

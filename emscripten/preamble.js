@@ -27,14 +27,20 @@ function SyncFS(is_load, ccptr) {
     });
 };
 
-Module['preinitializedWebGLContext'] = document.getElementById('canvas').getContext('webgl2', {
-    alpha : false,
-    antialias : false,
-    depth : false,
-    powerPreference : 'high-performance',
-    premultipliedAlpha : true,
-    preserveDrawingBuffer : false,
-    stencil : false,
-});
+Module['preinitializedWebGLContext'] = (function() {
+    var glctx = document.getElementById('canvas').getContext('webgl2', {
+        alpha : false,
+        antialias : false,
+        depth : false,
+        powerPreference : 'high-performance',
+        premultipliedAlpha : true,
+        preserveDrawingBuffer : false,
+        stencil : false,
+    });
 
-// Module['preinitializedWebGLContext'] = WebGLDebugUtils.makeDebugContext(Module['preinitializedWebGLContext']);
+    // This actually enables the extension. Galaxy-brain API right here.
+    glctx.getExtension('WEBGL_debug_renderer_info');
+
+    // glctx = WebGLDebugUtils.makeDebugContext(glctx);
+    return glctx;
+})();
