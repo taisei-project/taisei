@@ -746,12 +746,27 @@ static bool glcommon_check_workaround(const char *name, const char *envvar, cons
 	return false;
 }
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+EM_JS(bool, webgl_is_mac, (void), {
+	try {
+		return !!navigator.platform.match(/mac/i);
+	} catch(e) {
+		// whatever...
+		return false;
+	}
+});
+#endif
+
 static const char *detect_slow_sampler_update(void) {
-#ifdef __MACOSX__
+#if defined(__MACOSX__) || defined(__EMSCRIPTEN__)
 	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
 	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
 
 	if(
+#if defined(__EMSCRIPTEN__)
+		webgl_is_mac() &&
+#endif
 		strstr(gl_renderer, "Radeon") && (                                  // This looks like an AMD Radeon card...
 			(strstr(gl_vendor, "ATI") || strstr(gl_vendor, "AMD")) ||       // ...and AMD's official driver...
 			(strstr(gl_vendor, "Google") && strstr(gl_renderer, "OpenGL"))  // ...or ANGLE, backed by OpenGL.
