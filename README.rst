@@ -135,7 +135,7 @@ notably:
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
   ``NV_instanced_arrays``
 
-You'll likely need ANGLE support for OpenGL ES. You'll need to check out the
+You'll need ANGLE for OpenGL ES on Windows and macOS. You'll need to check out
 `ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
 documentation on how to do that.
 
