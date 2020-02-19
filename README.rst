@@ -90,6 +90,15 @@ Troubleshooting
 If you're having issues with low framerates, sound playback issues, or gamepad
 support, please see the `Troubleshooting Guide <doc/TROUBLESHOOTING.rst>`__.
 
+If you find any other bug not covered in that, please feel free to
+`open up an issue <https://github.com/taisei-project/taisei/issues>`. Please
+give as much information as you can, such as:
+
+    1. OS version (i.e: Windows 10, macOS 10.16, Ubuntu Linux 19.10)
+    2. Hardware (i.e: Intel processor, AMD/NVIDIA graphics card, etc)
+    3. Specific problem you're experiencing
+    4. Logs, screenshots, or how to reproduce the the issue
+
 
 Contact
 -------

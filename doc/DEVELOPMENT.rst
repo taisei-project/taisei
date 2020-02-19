@@ -6,10 +6,10 @@ Taisei Project - Compiling FAQ
 Introduction
 ------------
 
-This document contains some important tips on compiling and developing for 
-specific platforms. 
+This document contains some important tips on compiling and developing for
+specific platforms.
 
-Compiling The Source 
+Compiling The Source
 --------------------
 
 Basic Build Instructions
@@ -89,14 +89,17 @@ It'll install automatically with `ninja install` (as mentioned above).
 See `here <doc/COMPILING.rst>`__ for more information on compiling
 for specific platforms.
 
-Development Options
--------------------
+Development
+-----------
+
+Build Options
+^^^^^^^^^^^^^
 
 You can enable debugging options/output for development purposes:
 
 ::
 
-    meson configure -Dbuildtype=debug -Db_ndebug=false 
+    meson configure -Dbuildtype=debug -Db_ndebug=false
 
 
 This option also helps for speeding up build times:
@@ -110,7 +113,20 @@ For debugging actual gameplay, you can set this option and it will enable cheats
 and other 'fast-forward' options by the pressing keys defined in `src/config.h`.
 
 ::
+
     meson configure -Ddeveloper=true
+
+
+Coding Style
+^^^^^^^^^^^^
+
+In the `*.c` files, tabs are used. In the `meson.build` and `*.py` files, spaces
+are used.
+
+To help you abide by this standard, you should install
+`EditorConfig <https://github.com/editorconfig>`__ for your preferred editor of
+choice, and load in the file found at `.editorconfig` in the root of the
+project.
 
 
 Platform-Specific Tips
@@ -132,7 +148,7 @@ installed:
     apt-get install meson cmake build-essential libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev
 
 
-macOS 
+macOS
 """""
 
 Manual
@@ -145,9 +161,9 @@ On macOS, you need to begin with installing the Xcode Command Line Tools:
     xcode-select --install
 
 There are additional command line tools that you'll need. You can acquire those
-by using `Homebrew <https://brew.sh/>`__. 
+by using `Homebrew <https://brew.sh/>`__.
 
-Follow the instructions for installing Homebrew, and then install the following 
+Follow the instructions for installing Homebrew, and then install the following
 tools:
 
 ::
@@ -161,7 +177,7 @@ times:
 
 ::
 
-    brew install freetype2 libzip opusfile libvorbis webp sdl2 
+    brew install freetype2 libzip opusfile libvorbis webp sdl2
 
 
 You'll also want to set the following environment variables on your shell's
@@ -169,11 +185,11 @@ You'll also want to set the following environment variables on your shell's
 
 ::
 
-   export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig" 
+   export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
 
 
 As of 2020-02-18, you should **not** install the following packages via
-Homebrew, as the versions available do not compile against Taisei correctly. 
+Homebrew, as the versions available do not compile against Taisei correctly.
 If you're having mysterious errors, ensure that they're not installed.
 
 * ``spirv-tools``
