@@ -81,10 +81,10 @@ Once you've compiled ANGLE, enable it with:
     meson -Dinstall_angle=true -Dangle_libegl=/path/to/libEGL.{dll,dylib}
     -Dangle_libgles=/path/to/libGLESv2.{dll,dylib}
 
-Ensure you use the correct file extension for your platform. (`.dll` for
-Windows, `.dylib` for macOS.)
+Ensure you use the correct file extension for your platform. (``.dll`` for
+Windows, ``.dylib`` for macOS.)
 
-It'll install automatically with `ninja install` (as mentioned above).
+It'll install automatically with ``ninja install`` (as mentioned above).
 
 See `here <doc/COMPILING.rst>`__ for more information on compiling
 for specific platforms.
@@ -110,7 +110,8 @@ This option also helps for speeding up build times:
 
 
 For debugging actual gameplay, you can set this option and it will enable cheats
-and other 'fast-forward' options by the pressing keys defined in `src/config.h`.
+and other 'fast-forward' options by the pressing keys defined in
+``src/config.h``.
 
 ::
 
@@ -125,7 +126,7 @@ are used.
 
 To help you abide by this standard, you should install
 `EditorConfig <https://github.com/editorconfig>`__ for your preferred editor of
-choice, and load in the file found at `.editorconfig` in the root of the
+choice, and load in the file found at ``.editorconfig`` in the root of the
 project.
 
 
@@ -207,11 +208,11 @@ Taisei-compatible versions will be pulled in at compile time.
 
 In addition, if you're trying to compile on an older version of macOS
 (e.x: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
-Let `meson` pull in the corrected version for you via subprojects.
+Let ``meson`` pull in the corrected version for you via subprojects.
 
 
 Automatic
 ~~~~~~~~~
 
-To do the above steps automatically, run `scripts/macos-deps-install.sh`.
+To do the above steps automatically, run ``scripts/macos-deps-install.sh``.
 

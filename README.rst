@@ -32,7 +32,7 @@ GitHub, alongside the binaries.
 do not contain the required submodules for compiling the project. This only
 applies to versions v1.3 and above.
 
-If you downloaded Taisei using `git clone`, make sure the submodules are
+If you downloaded Taisei using ``git clone``, make sure the submodules are
 initialized:
 
 ::
@@ -90,9 +90,9 @@ Troubleshooting
 If you're having issues with low framerates, sound playback issues, or gamepad
 support, please see the `Troubleshooting Guide <doc/TROUBLESHOOTING.rst>`__.
 
-If you find any other bug not covered in that, please feel free to
-`open up an issue <https://github.com/taisei-project/taisei/issues>`. Please
-give as much information as you can, such as:
+If you find any other bug not covered in that, feel free to
+`open up an issue <https://github.com/taisei-project/taisei/issues>`__. If you
+do, please give as much information as you can, such as:
 
     1. OS version (i.e: Windows 10, macOS 10.16, Ubuntu Linux 19.10)
     2. Hardware (i.e: Intel processor, AMD/NVIDIA graphics card, etc)

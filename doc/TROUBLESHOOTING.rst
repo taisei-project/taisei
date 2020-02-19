@@ -66,3 +66,15 @@ playing with parameter values of ``pcm.dmixer.slave`` option group in
 ``/etc/asound.conf`` or wherever you have your ALSA configuration.
 Commenting ``period_time``, ``period_size``, ``buffer_size``, ``rate`` may give
 you the first approach to what to do.
+
+
+Framerate Issues on macOS
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are experiencing framerate issues on macOS with AMD graphics cards,
+it's likely due to a
+`known issue <https://github.com/taisei-project/taisei/issues/182>`__. However,
+it should be fixed at this point, but if you still experience it, please
+`open a new issue <https://github.com/taisei-project/taisei/issues/>`__ and tell
+us what make and model of Mac you're experiencing the issue with, as well as any
+logs that might help us.
