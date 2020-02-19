@@ -34,8 +34,11 @@ INLINE MoveParams move_accelerated(cmplx vel, cmplx accel) {
 }
 
 INLINE MoveParams move_asymptotic(cmplx vel0, cmplx vel1, cmplx retention) {
-	// NOTE: retention could be derived by something like: exp(-1 / halflife)
 	return (MoveParams) { vel0, vel1 * (1 - retention), retention };
+}
+
+INLINE MoveParams move_asymptotic_halflife(cmplx vel0, cmplx vel1, double halflife) {
+	return move_asymptotic(vel0, vel1, exp2(-1.0 / halflife));
 }
 
 INLINE MoveParams move_asymptotic_simple(cmplx vel, double boost_factor) {

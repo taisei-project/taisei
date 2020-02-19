@@ -100,7 +100,7 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 				.proto = pp_crystal,
 				.pos = shot_org,
 				.color = RGB(0.3, 0.3, 0.8),
-				.move = move_asymptotic(speed0 * -I * cdir(angle), speed1 * I, exp2(-1 / 30.0)),
+				.move = move_asymptotic_halflife(speed0 * -I * cdir(angle), speed1 * I, 30.0),
 				.max_viewport_dist = 256,
 			);
 			t += WAIT(difficulty_value(3, 3, 1, 1));
