@@ -49,6 +49,12 @@ Boss *stage1_spawn_cirno(cmplx pos) {
 	return cirno;
 }
 
+static void cirno_wander(Boss *boss, real dist, real lower_bound) {
+	Rect bounds = viewport_bounds(64);
+	bounds.bottom = lower_bound;
+	boss->move.attraction_point = common_wander(boss->pos, dist, bounds);
+}
+
 TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
@@ -56,7 +62,7 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 
 	for(;;) {
 		WAIT(20);
-		aniplayer_queue(&boss->ani, "(9)", 1);
+		aniplayer_queue(&boss->ani, "(9)", 3);
 		aniplayer_queue(&boss->ani, "main", 0);
 		play_sound("shot_special1");
 
@@ -85,17 +91,25 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 
 		for(int t = 0, i = 0; t < 60; ++i) {
 			play_loop("shot1_loop");
-			real init_speed = difficulty_value(0.25, 0.5, 0.75, 1.0);
+			real speed0 = difficulty_value(4.0, 6.0, 6.0, 6.0);
+			real speed1 = difficulty_value(3.0, 5.0, 6.0, 8.0);
+			real angle = rng_sreal() * M_PI/8.0;
+			real sign =  1 - 2 * (i & 1);
+			cmplx shot_org = boss->pos - 42*I + 30 * sign;
 			PROJECTILE(
 				.proto = pp_crystal,
-				.pos = boss->pos,
+				.pos = shot_org,
 				.color = RGB(0.3, 0.3, 0.8),
-				.move = move_accelerated(init_speed * rng_dir() + 2*I, 0.002 * cdir(M_PI / 10.0 * (i % 20))),
+				.move = move_asymptotic(speed0 * -I * cdir(angle), speed1 * I, exp2(-1 / 30.0)),
+				.max_viewport_dist = 256,
 			);
 			t += WAIT(difficulty_value(3, 3, 1, 1));
 		}
 
-		WAIT(50);
+		boss->move.attraction = 0.02;
+		WAIT(20);
+		cirno_wander(boss, 60, 200);
+		WAIT(30);
 
 		for(int t = 0, i = 0; t < 150; ++i) {
 			play_sound("shot1");
@@ -115,6 +129,9 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 
 			t += WAIT(difficulty_value(25, 20, 15, 10));
 		}
+
+		boss->move.attraction = 0.04;
+		cirno_wander(boss, 180, 200);
 	}
 }
 
@@ -171,6 +188,10 @@ void cirno_crystal_rain(Boss *c, int time) {
 
 	FROM_TO(400, 500, 1)
 		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.01);
+}
+
+TASK_WITH_INTERFACE(COARGS_boss_nonspell_2, BossAttack) {
+
 }
 
 static void cirno_iceplosion1(Boss *c, int time) {
