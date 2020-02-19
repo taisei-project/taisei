@@ -100,7 +100,7 @@ You can enable debugging options/output for development purposes:
 
 ::
 
-    meson configure -Dbuildtype=debug -Db_ndebug=false
+    meson configure -Dbuildtype=debug -Db_ndebug=false -Ddeveloper=true
 
 
 This option also helps for speeding up build times for debugging:
