@@ -67,9 +67,16 @@ typedef struct Circle {
 	double radius;
 } Circle;
 
-typedef struct Rect {
-	cmplx top_left;
-	cmplx bottom_right;
+typedef union Rect {
+	struct {
+		cmplx top_left;
+		cmplx bottom_right;
+	};
+
+	struct {
+		double left, top;
+		double right, bottom;
+	};
 } Rect;
 
 bool point_in_ellipse(cmplx p, Ellipse e) attr_const;
