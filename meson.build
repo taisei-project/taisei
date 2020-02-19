@@ -382,12 +382,15 @@ if angle_enabled
         egl_filename = '../' + angle_path + 'libEGL.so'
     endif 
 
+    # used in gles.c for determining what libraries to use
     config.set_quoted('TAISEI_BUILDCONF_ANGLE_GLES_PATH', gles_filename )
     config.set_quoted('TAISEI_BUILDCONF_ANGLE_EGL_PATH', egl_filename )
+
+    # installs ANGLE to the paths specified
     install_data(
-      get_option('angle_libgles'),
-      get_option('angle_libegl'),
-      install_dir : angle_path,
+        get_option('angle_libgles'),
+        get_option('angle_libegl'),
+        install_dir : angle_path,
     )
 endif
 
