@@ -350,21 +350,19 @@ if host_machine.system() == 'windows'
         )
     endif
 
-    if angle_enabled
-        install_data(
-            get_option('angle_libgles'),
-            get_option('angle_libegl'),
-            install_dir : join_paths(bindir, 'ANGLE'),
-        )
-    endif
 else
     if install_docs
         install_data('COPYING', install_dir : doc_path)
     endif
 
-    if angle_enabled
-        error('install_angle is only available for Windows targets at the moment')
-    endif
+endif
+
+if angle_enabled
+    install_data(
+	get_option('angle_libgles'),
+	get_option('angle_libegl'),
+	install_dir : join_paths(bindir, 'ANGLE'),
+    )
 endif
 
 systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())

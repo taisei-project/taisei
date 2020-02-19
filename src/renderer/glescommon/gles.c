@@ -14,18 +14,37 @@
 #include "../gl33/gl33.h"
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
-#ifdef TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK
+#ifdef TAISEI_BUILDCONF_HAVE_ANGLE
+	// for loading ANGLE libraries
 	char *basepath = SDL_GetBasePath();
 	size_t basepath_len = strlen(basepath);
-	char buf[basepath_len + 32];
+	char buf[basepath_len + 256];
+
+#ifdef __APPLE__
+	const char *libgles = "libGLESv2.dylib";
+	const char *libegl = "libEGL.dylib";
+	// SDL_GetBasePath() returns Contents/Resources
+	// but we need Contents/MacOS, so go up one dir 
+	snprintf(buf, sizeof(buf), "%s../MacOS/ANGLE/", basepath);
+	basepath_len += sizeof("../MacOS/ANGLE");
+#else
+	// for Windows
+	const char *libgles = "libGLESv2.dll";
+	const char *libegl = "libEGL.dll";
 	snprintf(buf, sizeof(buf), "%sANGLE\\", basepath);
-	SDL_free(basepath);
 	basepath_len += sizeof("ANGLE");
-	strlcpy(buf + basepath_len, "libGLESv2.dll", sizeof(buf) - basepath_len);
+#endif
+
+	SDL_free(basepath);
+
+	strlcpy(buf + basepath_len, libgles, sizeof(buf) - basepath_len);
 	env_set("SDL_VIDEO_GL_DRIVER", buf, false);
-	strlcpy(buf + basepath_len, "libEGL.dll", sizeof(buf) - basepath_len);
+
+	strlcpy(buf + basepath_len, libegl, sizeof(buf) - basepath_len);
 	env_set("SDL_VIDEO_EGL_DRIVER", buf, false);
+
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
+
 #endif
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);
