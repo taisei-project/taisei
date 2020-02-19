@@ -651,7 +651,7 @@ static const char *get_unmasked_property(GLenum prop, bool fallback) {
 }
 
 static void detect_broken_intel_driver(void) {
-#if (defined TAISEI_BUILDCONF_HAVE_ANGLE && defined _WIN32)
+#ifdef TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL
 	extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 	bool is_broken_intel_driver = (
