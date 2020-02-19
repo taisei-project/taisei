@@ -358,21 +358,22 @@ else
 endif
 
 if angle_enabled
-    angle_dir = 'ANGLE' 
+    angle_dir = 'ANGLE'
+
     if host_machine.system() == 'windows'
         angle_path = angle_dir + '\\'
         gles_filename = angle_path + 'libGLESv2.dll'
         egl_filename = angle_path + 'libEGL.dll'
-	# activate the Windows-Intel-ANGLE workaround
-	config.set('TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL', 1)
+        # activate the Windows-Intel-ANGLE workaround
+        config.set('TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL', 1)
     elif host_machine.system() == 'darwin'
         # this is relative to SDL_GetBasePath()
         # easiest way to traverse is to go up one dir
         angle_path = 'MacOS/' + angle_dir + '/'
-	if not macos_app_bundle
+        if not macos_app_bundle
             # if the user decides not to use the app bundle on macOS
             angle_path = 'lib/' + angle_dir + '/'
-	endif
+        endif
         gles_filename = '../' + angle_path + 'libGLESv2.dylib'
         egl_filename = '../' + angle_path + 'libEGL.dylib'
     else
@@ -380,7 +381,7 @@ if angle_enabled
         angle_path = 'lib/' + angle_dir + '/'
         gles_filename = '../' + angle_path + 'libGLESv2.so'
         egl_filename = '../' + angle_path + 'libEGL.so'
-    endif 
+    endif
 
     # used in gles.c for determining what libraries to use
     config.set_quoted('TAISEI_BUILDCONF_ANGLE_GLES_PATH', gles_filename )
