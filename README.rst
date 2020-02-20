@@ -6,12 +6,16 @@ Taisei
 Introduction
 ------------
 
-Taisei Project is an open source clone of the Tōhō Project series. Tōhō is a one-man
-project of shoot-em-up games set in an isolated world full of Japanese folklore.
+Taisei Project is an open source fan-game set in the world of Tōho Project.
+It is a top-down vertical scrolling curtain fire shooting game (STG),
+also known as "danmaku" or "bullet hell."
 
 For gameplay instructions, read `this <doc/GAME.rst>`__.
 
 For the story, read `this <doc/STORY.txt>`__. (Warning: spoilers!)
+
+For more information on Tōhō Project, the series this fan-game is originally
+based on, `click here <https://en.wikipedia.org/wiki/Touhou_Project>`__.
 
 Installation
 ------------
@@ -36,18 +40,18 @@ You can also grab the latest code from git using the following commands:
 
 ::
 
-    git clone https://github.com/taisei-project/taisei
+    git clone --recurse-submodules https://github.com/taisei-project/taisei
 
-Make sure you fetch the submodules as well, as it won't compile without them:
+The ``--recursive-submodules`` option is important as the subprojects are
+necessary to compile the project correctly.
+
+If you want to pull them in manually, be sure to use the following:
 
 ::
 
     cd taisei
     git submodule init
     git submodule update
-
-This step needs to be done just once, and can be skipped if you specified the
-``--recursive`` or ``--recurse-submodules`` option when cloning.
 
 **Important:** You should also run ``git submodule update`` whenever you pull in
 new code, checkout another branch, etc. The ``pull`` and ``checkout`` helper
