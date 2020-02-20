@@ -61,8 +61,11 @@ endforeach
 r_macro = ' '.join(r_macro)
 config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
 config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)
-config.set('TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK',
-    host_machine.system() == 'windows' and
-    enabled_renderers.contains('gles30') and
-    get_option('install_angle')
-)
+
+if angle_enabled
+    if enabled_renderers.contains('gles30') or enabled_renderers.contains('gles20')
+        config.set('TAISEI_BUILDCONF_HAVE_ANGLE', 1)
+    else
+        error('you should enable gles30 and/or gles20 with ANGLE')
+    endif
+endif
