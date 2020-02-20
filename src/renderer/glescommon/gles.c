@@ -14,18 +14,22 @@
 #include "../gl33/gl33.h"
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
-#ifdef TAISEI_BUILDCONF_HAVE_WINDOWS_ANGLE_FALLBACK
+#ifdef TAISEI_BUILDCONF_HAVE_ANGLE
+	// for loading ANGLE libraries
 	char *basepath = SDL_GetBasePath();
-	size_t basepath_len = strlen(basepath);
-	char buf[basepath_len + 32];
-	snprintf(buf, sizeof(buf), "%sANGLE\\", basepath);
-	SDL_free(basepath);
-	basepath_len += sizeof("ANGLE");
-	strlcpy(buf + basepath_len, "libGLESv2.dll", sizeof(buf) - basepath_len);
+	char buf[128];
+	
+	// SDL_*_DRIVER are SDL-specific env vars
+	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_GLES_PATH);
 	env_set("SDL_VIDEO_GL_DRIVER", buf, false);
-	strlcpy(buf + basepath_len, "libEGL.dll", sizeof(buf) - basepath_len);
+
+	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_EGL_PATH);
 	env_set("SDL_VIDEO_EGL_DRIVER", buf, false);
+
+	SDL_free(basepath);
+
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
+
 #endif
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);

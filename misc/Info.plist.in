@@ -22,6 +22,8 @@
     <string>????</string>
     <key>CFBundleVersion</key>
     <string>${VERSION({major}.{minor}.{patch}.{tweak})}</string>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.arcade-games</string>
     <key>NSHumanReadableCopyright</key>
     <string>© 2011-2019, Taisei Project</string>
 </dict>

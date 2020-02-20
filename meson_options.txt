@@ -43,7 +43,7 @@ option(
     'install_angle',
     type : 'boolean',
     value : 'false',
-    description : 'Install pre-built ANGLE libraries. Only makes sense with a GLES backend. Currently only supported on Windows'
+    description : 'Install pre-built ANGLE libraries. Required for Windows/macOS OpenGL ES 2.0/3.0'
 )
 
 option(
