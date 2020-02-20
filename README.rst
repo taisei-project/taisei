@@ -8,7 +8,11 @@ Introduction
 
 Taisei Project is an original open source fan-game set in the world of Tōho
 Project. It is a top-down vertical-scrolling curtain fire shooting game (STG),
-also known as "danmaku" or "bullet hell."
+also known as "danmaku" or "bullet hell," with an original soundtrack,
+character art, and story.
+
+Taisei Project is written in C, with an SDL2/OpenGL renderer. It is available
+for Windows, Linux (x86_64), and macOS.
 
 For gameplay instructions, read `this <doc/GAME.rst>`__.
 
