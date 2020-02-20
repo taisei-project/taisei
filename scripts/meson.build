@@ -149,3 +149,6 @@ check_submodules_command = [python_thunk, check_submodules_script]
 
 em_set_bundle_uuid_script = files('em-set-bundle-uuid.py')
 em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]
+
+fix_path_script = files('unfuck-path.py')
+fix_path_command = [python_thunk, fix_path_script]

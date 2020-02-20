@@ -68,13 +68,13 @@ if install_docs
         )
     endforeach
 
-    if angle_enabled and host_machine.system() == 'windows'
-        bindist_deps += custom_target(f,
+    if angle_enabled
+        bindist_deps += custom_target('LICENSE.ANGLE',
             command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
             input : 'LICENSE.ANGLE',
             output : 'LICENSE.txt',
             install : true,
-            install_dir : join_paths(bindir, 'ANGLE')
+            install_dir : angle_install_path
         )
     endif
 endif

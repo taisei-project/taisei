@@ -9,7 +9,7 @@ charset = utf-8
 indent_style = tab
 # indent_size = 4
 
-[*.{py,html,js,nsi.in,rst}]
+[*.{py,html,js,nsi.in,rst,plist.in}]
 indent_style = space
 indent_size = 4
 

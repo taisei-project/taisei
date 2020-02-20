@@ -22,6 +22,8 @@
     <string>????</string>
     <key>CFBundleVersion</key>
     <string>${VERSION({major}.{minor}.{patch}.{tweak})}</string>
+    <key>SDL_FILESYSTEM_BASE_DIR_TYPE</key>
+    <string>bundle</string>
     <key>LSApplicationCategoryType</key>
     <string>public.app-category.arcade-games</string>
     <key>NSHumanReadableCopyright</key>

@@ -270,9 +270,16 @@ force_relpath_systems = [
 
 if macos_app_bundle
     bundle_dir = 'Taisei.app'
-    datadir = join_paths(bundle_dir, 'Contents', 'Resources')
-    bindir = join_paths(bundle_dir, 'Contents', 'MacOS')
-    config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
+
+    bundle_datadir = join_paths('Contents', 'Resources')
+    bundle_bindir = join_paths('Contents', 'MacOS')
+    bundle_libdir = bundle_bindir
+
+    datadir = join_paths(bundle_dir, bundle_datadir)
+    bindir = join_paths(bundle_dir, bundle_bindir)
+    libdir = join_paths(bundle_dir, bundle_libdir)
+
+    is_relocatable_install = true
 
     # arguments must be strings...
     meson.add_install_script(
@@ -286,48 +293,62 @@ else
     datadir = get_option('datadir')
 
     if force_relpath_systems.contains(host_machine.system())
-        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', true)
+        is_relocatable_install = true
     elif get_option('install_relative') == 'auto'
-        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', prefer_relpath_systems.contains(host_machine.system()))
+        is_relocatable_install = prefer_relpath_systems.contains(host_machine.system())
     else
-        config.set('TAISEI_BUILDCONF_RELATIVE_DATA_PATH', get_option('install_relative') == 'true')
+        is_relocatable_install = (get_option('install_relative') == 'true')
     endif
 
-    if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
+    if is_relocatable_install
         bindir = '.'
+        libdir = '.'
     else
         bindir = get_option('bindir')
+        libdir = get_option('libdir')
     endif
 endif
 
 if get_option('install_freedesktop') == 'auto'
-    install_xdg = not config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
+    install_xdg = not is_relocatable_install
 else
     install_xdg = get_option('install_freedesktop') == 'true'
 endif
 
-if config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH')
+if is_relocatable_install
     data_path = 'data'
     doc_path = '.'  # Meson bug https://github.com/mesonbuild/meson/issues/4295
     xdg_path = 'freedesktop.org'
-
-    # This is relative to SDL_GetBasePath()
-    config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
+    lib_path = '.'
 
     if macos_app_bundle
-        # Actual installation path
-        data_path = join_paths(datadir, data_path)
+        # Relative to SDL_GetBasePath() (bundle root)
+        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(bundle_datadir, data_path))
+        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(bundle_libdir))
 
+        # Make paths prefix-relative for installation
+
+        data_path = join_paths(datadir, data_path)
+        lib_path = libdir
         # I don't know why would you do that, but more power to you
         xdg_path = join_paths(datadir, xdg_path)
+    else
+        # Relative to SDL_GetBasePath() (typically contains the executable)
+        config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
+        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', '.')
     endif
 else
     data_path = join_paths(datadir, 'taisei')
-    config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
+    lib_path = join_paths(libdir, 'taisei')
     doc_path = join_paths(datadir, 'doc', 'taisei')
     xdg_path = datadir
+
+    # Static absolute paths
+    config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(get_option('prefix'), data_path))
+    config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(get_option('prefix'), lib_path))
 endif
 
+config.set('TAISEI_BUILDCONF_RELOCATABLE_INSTALL', is_relocatable_install)
 config.set('TAISEI_BUILDCONF_DEBUG', is_debug_build)
 config.set('TAISEI_BUILDCONF_DEVELOPER', is_developer_build)
 config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
@@ -360,40 +381,69 @@ endif
 if angle_enabled
     angle_dir = 'ANGLE'
 
-    if host_machine.system() == 'windows'
-        angle_path = angle_dir + '\\'
-        gles_filename = angle_path + 'libGLESv2.dll'
-        egl_filename = angle_path + 'libEGL.dll'
-        # activate the Windows-Intel-ANGLE workaround
-        config.set('TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL', 1)
-    elif host_machine.system() == 'darwin'
-        # this is relative to SDL_GetBasePath()
-        # easiest way to traverse is to go up one dir
-        angle_path = 'MacOS/' + angle_dir + '/'
-        if not macos_app_bundle
-            # if the user decides not to use the app bundle on macOS
-            angle_path = 'lib/' + angle_dir + '/'
-        endif
-        gles_filename = '../' + angle_path + 'libGLESv2.dylib'
-        egl_filename = '../' + angle_path + 'libEGL.dylib'
-    else
-        # FIXME: for Linux
-        angle_path = 'lib/' + angle_dir + '/'
-        gles_filename = '../' + angle_path + 'libGLESv2.so'
-        egl_filename = '../' + angle_path + 'libEGL.so'
+    angle_libgles = get_option('angle_libgles')
+    angle_libegl = get_option('angle_libegl')
+
+    libgles_filename = angle_libgles.split('/')[-1]
+    libegl_filename = angle_libegl.split('/')[-1]
+
+    if build_machine.system() == 'windows'
+        # Windows is terrible and has TWO valid path separators
+        libgles_filename = angle_libgles.split('\\')[-1]
+        libegl_filename = angle_libegl.split('\\')[-1]
     endif
 
-    # used in gles.c for determining what libraries to use
-    config.set_quoted('TAISEI_BUILDCONF_ANGLE_GLES_PATH', gles_filename )
-    config.set_quoted('TAISEI_BUILDCONF_ANGLE_EGL_PATH', egl_filename )
+    # Where to install the libs (prefix-relative)
+    # Also used in docs/meson.build to install the license
+    angle_install_path = join_paths(lib_path, angle_dir)
 
-    # installs ANGLE to the paths specified
+    # Where the game should look (either absolute or SDL_GetBasePath()-relative, depending on configuration)
+    angle_config_path = join_paths(config.get_unquoted('TAISEI_BUILDCONF_LIB_PATH'), angle_dir)
+
+    # use ANGLE for gles renderers by default
+    config.set('TAISEI_BUILDCONF_HAVE_ANGLE', true)
+
+    # used in gles.c for determining what libraries to use
+    config.set_quoted('TAISEI_BUILDCONF_ANGLE_GLES_PATH', join_paths(angle_config_path, libgles_filename))
+    config.set_quoted('TAISEI_BUILDCONF_ANGLE_EGL_PATH', join_paths(angle_config_path, libegl_filename))
+
+    if host_machine.system() == 'windows'
+        # Direct Intel iGPU users to the ANGLE fallback on Windows
+        config.set('TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL', true)
+    endif
+
     install_data(
-        get_option('angle_libgles'),
-        get_option('angle_libegl'),
-        install_dir : angle_path,
+        angle_libgles,
+        angle_libegl,
+        install_dir : angle_install_path,
     )
 endif
+
+pathconv_args = ['--escape-backslashes']
+
+if build_machine.system() == 'windows'
+    pathconv_args += '--from-windows'
+endif
+
+if host_machine.system() == 'windows'
+    pathconv_args += '--to-windows'
+endif
+
+foreach pathvar : [
+    'TAISEI_BUILDCONF_ANGLE_EGL_PATH',
+    'TAISEI_BUILDCONF_ANGLE_GLES_PATH',
+    'TAISEI_BUILDCONF_DATA_PATH',
+    'TAISEI_BUILDCONF_LIB_PATH',
+]
+    if config.has(pathvar)
+        p = config.get_unquoted(pathvar)
+        r = run_command(fix_path_command, pathconv_args, p, check : true)
+        assert(r.returncode() == 0, 'path-correction script failed')
+        p = r.stdout()
+        # message('@0@ = @1@'.format(pathvar, p))
+        config.set_quoted(pathvar, p)
+    endif
+endforeach
 
 systype = (have_posix ? 'POSIX (@0@)' : '@0@').format(host_machine.system())
 systype = '@0@, @1@, @2@'.format(systype, host_machine.cpu_family(), host_machine.cpu())
@@ -470,7 +520,7 @@ Summary:
         enable_zip,
         package_data,
 
-        config.get('TAISEI_BUILDCONF_RELATIVE_DATA_PATH'),
+        is_relocatable_install,
         get_option('prefix'),
         # the $ is intentional
         join_paths('$prefix', bindir),
