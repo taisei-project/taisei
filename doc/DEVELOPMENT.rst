@@ -121,7 +121,7 @@ and other 'fast-forward' options by the pressing keys defined in
 Coding Style
 ^^^^^^^^^^^^
 
-In the `*.c` files, tabs are used. In the `meson.build` and `*.py` files, spaces
+In the ``*.c`` files, tabs are used. In the ``meson.build`` and ``*.py`` files, spaces
 are used.
 
 To help you abide by this standard, you should install
