@@ -47,7 +47,7 @@ else
 fi
 
 echo -en "${white}Installing dev tools... ${reset}"
-brew install meson cmake pkg-config docutils python3 2>/dev/null
+brew install meson cmake pkg-config docutils python3 pygments 2>/dev/null
 echo -e "${green}done!${reset}"
 
 echo -en "${white}Installing optional dependencies... ${reset}"
