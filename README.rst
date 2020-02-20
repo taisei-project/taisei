@@ -24,7 +24,7 @@ build for Nintendo Switch (homebrew) also exists (use at your own risk).
 Source Code & Development
 -------------------------
 
-You can obtain the source code from the
+You can obtain the source code of the stable releases from the
 `Releases <https://github.com/taisei-project/taisei/releases>`__ page on
 GitHub, alongside the binaries.
 
@@ -32,11 +32,17 @@ GitHub, alongside the binaries.
 do not contain the required submodules for compiling the project. This only
 applies to versions v1.3 and above.
 
-If you downloaded Taisei using ``git clone``, make sure the submodules are
-initialized:
+You can also grab the latest code from git using the following commands:
 
 ::
 
+    git clone https://github.com/taisei-project/taisei
+
+Make sure you fetch the submodules as well, as it won't compile without them:
+
+::
+
+    cd taisei
     git submodule init
     git submodule update
 
