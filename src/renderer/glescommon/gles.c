@@ -15,11 +15,15 @@
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
-	// for loading ANGLE libraries
+	// Load ANGLE by default by setting up some SDL-specific environment vars.
+	// These are not overwritten if they are already set in the environment, so
+	// you can still override this behavior as usual.
+
+	#ifdef TAISEI_BUILDCONF_RELOCATABLE_INSTALL
+	// In a relocatable build, paths are relative to SDL_GetBasePath
 	char *basepath = SDL_GetBasePath();
-	char buf[128];
-	
-	// SDL_*_DRIVER are SDL-specific env vars
+	char buf[strlen(basepath) + sizeof(TAISEI_BUILDCONF_ANGLE_GLES_PATH) + sizeof(TAISEI_BUILDCONF_ANGLE_EGL_PATH)];
+
 	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_GLES_PATH);
 	env_set("SDL_VIDEO_GL_DRIVER", buf, false);
 
@@ -27,10 +31,14 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	env_set("SDL_VIDEO_EGL_DRIVER", buf, false);
 
 	SDL_free(basepath);
+	#else
+	// Static absolute paths
+	env_set("SDL_VIDEO_GL_DRIVER", TAISEI_BUILDCONF_ANGLE_GLES_PATH, false);
+	env_set("SDL_VIDEO_EGL_DRIVER", TAISEI_BUILDCONF_ANGLE_EGL_PATH, false);
+	#endif
 
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
-
-#endif
+#endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);
 	glcommon_setup_attributes(SDL_GL_CONTEXT_PROFILE_ES, major, minor, 0);

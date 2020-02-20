@@ -14,10 +14,10 @@
 #include "util.h"
 #include "loadpacks.h"
 
-static char* get_default_res_path(void) {
+static char *get_default_res_path(void) {
 	char *res;
 
-#ifdef TAISEI_BUILDCONF_RELATIVE_DATA_PATH
+#ifdef TAISEI_BUILDCONF_RELOCATABLE_INSTALL
 	res = SDL_GetBasePath();
 	strappend(&res, TAISEI_BUILDCONF_DATA_PATH);
 #else

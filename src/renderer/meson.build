@@ -63,9 +63,8 @@ config.set('TAISEI_BUILDCONF_RENDERER_BACKENDS', r_macro)
 config.set_quoted('TAISEI_BUILDCONF_RENDERER_DEFAULT', default_renderer)
 
 if angle_enabled
-    if enabled_renderers.contains('gles30') or enabled_renderers.contains('gles20')
-        config.set('TAISEI_BUILDCONF_HAVE_ANGLE', 1)
-    else
-        error('you should enable gles30 and/or gles20 with ANGLE')
-    endif
+    assert(
+        enabled_renderers.contains('gles30') or enabled_renderers.contains('gles20'),
+        'An OpenGL ES renderer is required to use ANGLE. Enable r_gles30 or r_gles20, or disable install_angle.'
+    )
 endif
