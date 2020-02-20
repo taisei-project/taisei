@@ -53,8 +53,9 @@ The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
     meson configure -Dr_gles30=true -Dshader_transpiler=true
 
-See `here <doc/ENVIRON.rst>`__ for information on how to activate it.
-Alternatively, do this to make GLES 3.0 the default backend:
+See `here <doc/ENVIRON.rst>`__ on how to manually activate it.
+
+To set OpenGL ES 3.0 as the *default* renderer, do:
 
 ::
 
@@ -71,13 +72,15 @@ notably:
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
   ``NV_instanced_arrays``
 
-For Windows and macOS, you will need Google's ANGLE library. You'll need to
-check out `ANGLE <https://github.com/google/angle>`__ and build it first. Refer
-to their documentation on how to do that.
+For Windows and macOS, you will need Google's ANGLE library for both ES 3.0 and
+2.0. You'll need to check out
+`ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
+documentation on how to do that.
 
 Once you've compiled ANGLE, enable it with:
 
 ::
+
     meson -Dinstall_angle=true -Dangle_libegl=/path/to/libEGL.{dll,dylib}
     -Dangle_libgles=/path/to/libGLESv2.{dll,dylib}
 
@@ -85,9 +88,6 @@ Ensure you use the correct file extension for your platform. (``.dll`` for
 Windows, ``.dylib`` for macOS.)
 
 It'll install automatically with ``ninja install`` (as mentioned above).
-
-See `here <doc/COMPILING.rst>`__ for more information on compiling
-for specific platforms.
 
 Development
 -----------
