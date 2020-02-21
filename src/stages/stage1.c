@@ -35,7 +35,7 @@ struct stage1_spells_s stage1_spells = {
 	.boss = {
 		.crystal_rain = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
-			cirno_crystal_rain, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
+			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain)
 		},
 		.snow_halation = {
 			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,

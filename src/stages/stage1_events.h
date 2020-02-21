@@ -21,8 +21,9 @@ void cirno_crystal_blizzard(Boss*, int);
 void cirno_benchmark(Boss*, int);
 
 void stage1_events(void);
-Boss* stage1_spawn_cirno(cmplx pos);
+Boss *stage1_spawn_cirno(cmplx pos);
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_rain, BossAttack);
 
 #endif // IGUARD_stages_stage1_events_h

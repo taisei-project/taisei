@@ -135,59 +135,76 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 	}
 }
 
-void cirno_crystal_rain(Boss *c, int time) {
-	int t = time % 500;
-	TIMER(&t);
+TASK(crystal_rain_drops, NO_ARGS) {
+	const int nshots = difficulty_value(1, 2, 4, 5);
 
-	if(time < 0)
-		return;
-
-	// PLAY_FOR("shot1_loop",0,499);
-
-	if(!(time % 10)) {
+	for(;;) {
 		play_sound("shot2");
-	}
 
-	int hdiff = max(0, (int)global.diff - D_Normal);
-
-	if(rng_chance(0.05 + 0.1 * global.diff)) {
-		RNG_ARRAY(rng, 2);
-		PROJECTILE(
-			.proto = pp_crystal,
-			.pos = vrng_range(rng[0], 0, VIEWPORT_W),
-			.color = RGB(0.2,0.2,0.4),
-			.rule = accelerated,
-			.args = { 1.0*I, 0.01*I + (-0.005+0.005*global.diff) * vrng_sreal(rng[1]) }
-		);
-	}
-
-	AT(100)
-		aniplayer_queue(&c->ani,"(9)",0);
-	AT(400)
-		aniplayer_queue(&c->ani,"main",0);
-	FROM_TO(100, 400, 120-20*global.diff - 10 * hdiff) {
-		float i;
-		bool odd = (hdiff? (_i&1) : 0);
-		float n = (global.diff-1+hdiff*4 + odd)/2.0;
-
-		play_sound("shot_special1");
-		for(i = -n; i <= n; i++) {
+		for(int i = 0; i < nshots; ++i) {
+			RNG_ARRAY(rng, 2);
+			cmplx org = vrng_range(rng[0], 0, VIEWPORT_W);
+			cmplx aim = cnormalize(global.plr.pos - org);
 			PROJECTILE(
-				.proto = odd? pp_plainball : pp_bigball,
-				.pos = c->pos,
-				.color = RGB(0.2,0.2,0.9),
-				.rule = asymptotic,
-				.args = { 2*cexp(I*carg(global.plr.pos-c->pos)+0.3*I*i), 2.3 }
+				.proto = pp_crystal,
+				.pos = org,
+				.color = RGB(0.2,0.2,0.4),
+				.move = move_accelerated(1.0*I, 0.01*aim),
 			);
 		}
+
+		WAIT(10);
+	}
+}
+
+TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+
+	aniplayer_queue(&boss->ani, "(9)", 0);
+	WAIT(10);
+
+	int interval = difficulty_value(100, 80, 50, 20);
+
+	for(int t = 0, round = 0; t < 400; ++round) {
+		bool odd = (global.diff > D_Normal ? (round & 1) : 0);
+		real n = (difficulty_value(1, 2, 6, 11) + odd)/2.0;
+		cmplx org = boss->pos;
+
+		play_sound("shot_special1");
+		for(real i = -n; i <= n; i++) {
+			PROJECTILE(
+				.proto = odd? pp_plainball : pp_bigball,
+				.pos = org,
+				.color = RGB(0.2, 0.2, 0.9),
+				.move = move_asymptotic_simple(2 * cdir(carg(global.plr.pos - org) + 0.3 * i), 2.3),
+			);
+		}
+
+		t += WAIT(interval);
 	}
 
-	GO_AT(c, 20, 70, 1+0.6*I);
-	GO_AT(c, 120, 170, -1+0.2*I);
-	GO_AT(c, 230, 300, -1+0.6*I);
+	aniplayer_queue(&boss->ani, "main", 0);
+}
 
-	FROM_TO(400, 500, 1)
-		GO_TO(c, VIEWPORT_W/2.0 + 100.0*I, 0.01);
+DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
+
+	INVOKE_SUBTASK(crystal_rain_drops);
+
+	for(;;) {
+		WAIT(20);
+		boss->move.attraction_max_speed = 40;
+		boss->move.attraction = 0.01;
+		cirno_wander(boss, 80, 230);
+		WAIT(80);
+		INVOKE_SUBTASK(crystal_rain_cirno_shoot, ENT_BOX(boss));
+		WAIT(100);
+		cirno_wander(boss, 40, 230);
+		WAIT(120);
+		cirno_wander(boss, 40, 230);
+		WAIT(180);
+	}
 }
 
 TASK_WITH_INTERFACE(COARGS_boss_nonspell_2, BossAttack) {
