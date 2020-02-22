@@ -164,7 +164,7 @@ static void stage6_skysphere_draw(vec3 pos) {
 }
 
 static void stage6_draw(void) {
-	stage3d_set_perspective(&stage_3d_context, 100, 9000);
+	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 100, 9000);
 
 	Stage3DSegment segs[] = {
 		{ stage6_skysphere_draw, stage6_skysphere_pos },

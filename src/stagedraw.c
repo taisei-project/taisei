@@ -788,11 +788,7 @@ static void stage_render_bg(StageInfo *stage) {
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
-		// FIXME: These suspicious VIEWPORT_X/Y offsets might be bogus.
-		// I suspect them to be remnants of a past long gone, when the stage framebuffers
-		// were all screen-sized.
 		r_mat_mv_push();
-		r_mat_mv_translate(-(VIEWPORT_X+VIEWPORT_W/2), -(VIEWPORT_Y+VIEWPORT_H/2), 0);
 		r_enable(RCAP_DEPTH_TEST);
 		stage->procs->draw();
 		r_mat_mv_pop();

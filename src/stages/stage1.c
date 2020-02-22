@@ -297,7 +297,7 @@ static bool stage1_fog(Framebuffer *fb) {
 }
 
 static void stage1_draw(void) {
-	stage3d_set_perspective(&stage_3d_context, 500, 5000);
+	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 500, 5000);
 
 	Stage3DSegment segs[] = {
 		{ stage1_water_draw, stage1_bg_pos },

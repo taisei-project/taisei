@@ -21,18 +21,6 @@ void stage3d_init(Stage3D *s, uint pos_buffer_size) {
 	s->pos_buffer = calloc(s->pos_buffer_size, sizeof(vec3));
 }
 
-void stage3d_set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh) {
-	float facw = SCREEN_W/(float)VIEWPORT_W;
-	float fach = SCREEN_H/(float)VIEWPORT_H;
-	r_mat_proj_perspective(M_PI/4, 1, n, f);
-	r_mat_proj_scale(facw, fach, 1);
-	r_mat_proj_translate(vx + vw / 2.0, vy + vh / 2.0, 0);
-}
-
-void stage3d_set_perspective(Stage3D *s, float n, float f) {
-	stage3d_set_perspective_viewport(s, n, f, VIEWPORT_X, VIEWPORT_Y, VIEWPORT_W, VIEWPORT_H);
-}
-
 void camera3d_update(Camera3D *cam) {
 	glm_vec3_add(cam->pos, cam->vel, cam->pos);
 }
@@ -84,9 +72,9 @@ void stage3d_shutdown(Stage3D *s) {
 // at least distance maxrange are contained.
 //
 // The equation of the (infinite) line is
-// 
+//
 //     x = support + direction * n
-//     
+//
 // where n is an integer.
 //
 uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 direction) {
@@ -109,7 +97,7 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 			int n = n_closest_to_cam + dir*r;
 			vec3 extended_direction;
 			glm_vec3_scale(direction, n, extended_direction);
-			
+
 			assert(size < s3d->pos_buffer_size);
 			glm_vec3_add(support, extended_direction, s3d->pos_buffer[size]);
 			++size;
@@ -121,7 +109,6 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 			}
 		}
 	}
-
 
 	return size;
 }

@@ -342,10 +342,11 @@ static void credits_draw(void) {
 	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
 	r_mat_mv_push();
-	r_mat_mv_translate(-SCREEN_W/2, 0, 0);
 	r_enable(RCAP_DEPTH_TEST);
 
-	stage3d_set_perspective_viewport(&stage_3d_context, 100, 9000, 0, 0, SCREEN_W, SCREEN_H);
+	r_mat_proj_perspective(M_PI/3, 0.7f, 100, 9000);
+	r_mat_proj_translate(0, SCREEN_H / 3.0f, 0);
+
 	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, stage6_towerwall_pos });
 
 	r_mat_mv_pop();

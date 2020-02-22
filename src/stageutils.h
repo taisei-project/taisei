@@ -54,9 +54,10 @@ struct Stage3D {
 
 extern Stage3D stage_3d_context;
 
+#define STAGE3D_DEFAULT_FOVY ((float)M_PI / 4.258f)
+#define STAGE3D_DEFAULT_ASPECT ((0.75f * VIEWPORT_W) / VIEWPORT_H)
+
 void stage3d_init(Stage3D *s, uint pos_buffer_size);
-void stage3d_set_perspective_viewport(Stage3D *s, float n, float f, int vx, int vy, int vw, int vh);
-void stage3d_set_perspective(Stage3D *s, float near, float far);
 void stage3d_update(Stage3D *s);
 void stage3d_shutdown(Stage3D *s);
 void stage3d_apply_transforms(Stage3D *s, mat4 mat);
