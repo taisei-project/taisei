@@ -193,7 +193,7 @@ static void stage3_end(void) {
 }
 
 static void stage3_draw(void) {
-	stage3d_set_perspective(&stage_3d_context, 300, 5000);
+	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 300, 5000);
 	stage3d_draw(&stage_3d_context, 7000, 1, (Stage3DSegment[]) { stage3_bg_tunnel_draw, stage3_bg_pos });
 }
 

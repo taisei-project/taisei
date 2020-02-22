@@ -262,7 +262,7 @@ static void stage4_end(void) {
 }
 
 static void stage4_draw(void) {
-	stage3d_set_perspective(&stage_3d_context, 130, 3000);
+	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 130, 3000);
 
 	Stage3DSegment segs[] = {
 		{ stage4_lake_draw, stage4_lake_pos },
