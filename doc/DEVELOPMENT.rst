@@ -249,6 +249,6 @@ modified:
 
 ::
 
-    scripts/gen-atlas.py atlas/overrides atlas resources/00-taisei.pkgdir/gfx
+    ninja gen-atlas-common_ui
 
 That will regenerate the files needed for your new sprites to appear correctly.
