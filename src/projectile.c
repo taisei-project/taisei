@@ -291,7 +291,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	projectile_set_layer(p, args->layer);
 
-	coevent_init(&p->events.killed);
+	COEVENT_INIT_ARRAY(p->events);
 	ent_register(&p->ent, ENT_PROJECTILE);
 
 	// TODO: Maybe allow ACTION_DESTROY here?
@@ -325,6 +325,7 @@ static void *_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
 	Projectile *p = (Projectile*)proj;
 	proj_call_rule(p, EVENT_DEATH);
 	coevent_signal_once(&p->events.killed);
+	COEVENT_CANCEL_ARRAY(p->events);
 	ent_unregister(&p->ent);
 	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, proj));
 	return NULL;
@@ -531,6 +532,7 @@ bool clear_projectile(Projectile *proj, uint flags) {
 
 	proj->type = PROJ_DEAD;
 	proj->clear_flags |= flags;
+	coevent_signal_once(&proj->events.cleared);
 
 	return true;
 }
