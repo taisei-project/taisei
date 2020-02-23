@@ -114,8 +114,7 @@ TASK_WITH_INTERFACE(boss_nonspell_1, BossAttack) {
 		for(int t = 0, i = 0; t < 150; ++i) {
 			play_sound("shot1");
 			float dif = rng_angle();
-			const int num_shots = 20;
-			for(int shot = 0; shot < num_shots; ++shot) {
+			for(int shot = 0; shot < 20; ++shot) {
 				cmplx aim = cdir(M_TAU/8 * shot + dif);
 				real speed = 3.0 + i / 4.0;
 
@@ -352,17 +351,17 @@ TASK_WITH_INTERFACE(boss_nonspell_2, BossAttack) {
 	}
 }
 
-static Color* halation_color(Color *out_clr, float phase) {
+static Color *halation_color(Color *out_clr, float phase) {
 	if(phase < 0.5) {
 		*out_clr = *color_lerp(
-			RGB(0.4, 0.4, 0.75),
-			RGB(0.4, 0.4, 0.3),
+			RGBA(0.4, 0.4, 0.75, 0),
+			RGBA(0.4, 0.4, 0.3, 0),
 			phase * phase
 		);
 	} else {
 		*out_clr = *color_lerp(
-			RGB(0.4, 0.4, 0.3),
-			RGB(1.0, 0.3, 0.2),
+			RGBA(0.4, 0.4, 0.3, 0),
+			RGBA(1.0, 0.3, 0.2, 0),
 			(phase - 0.5) * 2
 		);
 	}
@@ -375,156 +374,141 @@ static void halation_laser(Laser *l, int time) {
 
 	if(time >= 0) {
 		halation_color(&l->color, l->width / cimag(l->args[1]));
-		l->color.a = 0;
 	}
 }
 
-static cmplx halation_calc_orb_pos(cmplx center, float rotation, int proj, int projs) {
-	double f = (double)((proj % projs)+0.5)/projs;
-	return 200 * cexp(I*(rotation + f * 2 * M_PI)) + center;
+TASK(halation_orb_trail, { BoxedProjectile orb; }) {
+	Projectile *orb = TASK_BIND(ARGS.orb);
+
+	for(;;) {
+		spawn_stain(orb->pos, rng_angle(), 20);
+		WAIT(4);
+	}
 }
 
-static int halation_orb(Projectile *p, int time) {
-	if(time < 0) {
-		return ACTION_ACK;
-	}
+TASK(halation_orb, {
+	cmplx pos[4];
+	int activation_time;
+}) {
+	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_plainball,
+		.pos = ARGS.pos[0],
+		.max_viewport_dist = 200,
+		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
+		.move = move_towards(ARGS.pos[2], 0.1),
+	));
 
-	if(!(time % 4)) {
-		spawn_stain(p->pos, global.frames * 15, 20);
-	}
+	halation_color(&orb->color, 0);
 
-	cmplx center = p->args[0];
-	double rotation = p->args[1];
-	int id = creal(p->args[2]);
-	int count = cimag(p->args[2]);
-	int halate_time = creal(p->args[3]);
+	INVOKE_SUBTASK(halation_orb_trail, ENT_BOX(orb));
+	CANCEL_TASK_AFTER(&orb->events.cleared, THIS_TASK);
+
+	int activation_time = ARGS.activation_time;
 	int phase_time = 60;
+	cmplx *pos = ARGS.pos;
 
-	cmplx pos0 = halation_calc_orb_pos(center, rotation, id, count);
-	cmplx pos1 = halation_calc_orb_pos(center, rotation, id + count/2, count);
-	cmplx pos2 = halation_calc_orb_pos(center, rotation, id + count/2 - 1, count);
-	cmplx pos3 = halation_calc_orb_pos(center, rotation, id + count/2 - 2, count);
+	// TODO modernize lasers
 
-	GO_TO(p, pos2, 0.1);
+	WAIT(activation_time);
+	create_laserline_ab(pos[2], pos[3], 15, phase_time * 0.5, phase_time * 2.0, &orb->color);
+	create_laserline_ab(pos[0], pos[2], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
 
-	if(p->type == PROJ_DEAD) {
-		return 1;
+	WAIT(phase_time / 2);
+	play_sound("laser1");
+	WAIT(phase_time / 2);
+	create_laserline_ab(pos[0], pos[1], 12, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+
+	WAIT(phase_time);
+	play_sound("shot1");
+	create_laserline_ab(pos[0], pos[3], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_laserline_ab(pos[1], pos[3], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+
+	WAIT(phase_time);
+	play_sound("shot1");
+	create_laserline_ab(pos[0], pos[1], 12, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_laserline_ab(pos[0], pos[2], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+
+	WAIT(phase_time);
+	play_sound("shot1");
+	play_sound("shot_special1");
+
+	Color colors[] = {
+		// PRECISE colors, VERY important!!!
+		{ 226/255.0, 115/255.0,  45/255.0, 1 },
+		{  54/255.0, 179/255.0, 221/255.0, 1 },
+		{ 140/255.0, 147/255.0, 149/255.0, 1 },
+		{  22/255.0,  96/255.0, 165/255.0, 1 },
+		{ 241/255.0, 197/255.0,  31/255.0, 1 },
+		{ 204/255.0,  53/255.0,  84/255.0, 1 },
+		{ 116/255.0,  71/255.0, 145/255.0, 1 },
+		{  84/255.0, 171/255.0,  72/255.0, 1 },
+		{ 213/255.0,  78/255.0, 141/255.0, 1 },
+	};
+
+	int pcount = sizeof(colors)/sizeof(Color);
+	float rot = rng_angle();
+
+	for(int i = 0; i < pcount; ++i) {
+		PROJECTILE(
+			.proto = pp_crystal,
+			.pos = orb->pos,
+			.color = colors+i,
+			.move = move_asymptotic_simple(cdir(rot + M_PI * 2 * (i + 1.0) / pcount), 3),
+		);
 	}
 
-	if(time == halate_time) {
-		create_laserline_ab(pos2, pos3, 15, phase_time * 0.5, phase_time * 2.0, &p->color);
-		create_laserline_ab(pos0, pos2, 15, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-	} if(time == halate_time + phase_time * 0.5) {
-		play_sound("laser1");
-	} else if(time == halate_time + phase_time) {
-		play_sound("shot1");
-		create_laserline_ab(pos0, pos1, 12, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-	} else if(time == halate_time + phase_time * 2) {
-		play_sound("shot1");
-		create_laserline_ab(pos0, pos3, 15, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-		create_laserline_ab(pos1, pos3, 15, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-	} else if(time == halate_time + phase_time * 3) {
-		play_sound("shot1");
-		create_laserline_ab(pos0, pos1, 12, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-		create_laserline_ab(pos0, pos2, 15, phase_time, phase_time * 1.5, &p->color)->lrule = halation_laser;
-	} else if(time == halate_time + phase_time * 4) {
-		play_sound("shot1");
-		play_sound("shot_special1");
-
-		Color colors[] = {
-			// i *will* revert your commit if you change this, no questions asked.
-			{ 226/255.0, 115/255.0,  45/255.0, 1 },
-			{  54/255.0, 179/255.0, 221/255.0, 1 },
-			{ 140/255.0, 147/255.0, 149/255.0, 1 },
-			{  22/255.0,  96/255.0, 165/255.0, 1 },
-			{ 241/255.0, 197/255.0,  31/255.0, 1 },
-			{ 204/255.0,  53/255.0,  84/255.0, 1 },
-			{ 116/255.0,  71/255.0, 145/255.0, 1 },
-			{  84/255.0, 171/255.0,  72/255.0, 1 },
-			{ 213/255.0,  78/255.0, 141/255.0, 1 },
-		};
-
-		int pcount = sizeof(colors)/sizeof(Color);
-		float rot = rng_angle();
-
-		for(int i = 0; i < pcount; ++i) {
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = p->pos,
-				.color = colors+i,
-				.rule = asymptotic,
-				.args = { cdir(rot + M_PI * 2 * (float)(i+1)/pcount), 3 }
-			);
-		}
-
-		return ACTION_DESTROY;
-	}
-
-	return 1;
+	kill_projectile(orb);
 }
 
-void cirno_snow_halation(Boss *c, int time) {
-	int t = time % 300;
-	TIMER(&t);
-
-	// TODO: get rid of the "static" nonsense already! #ArgsForBossAttacks2017
-	// tfw it's 2018 and still no args
-	// tfw when you then add another static
-	static cmplx center;
-	static float rotation;
-	static int cheater;
-
-	if(time == EVENT_BIRTH)
-		cheater = 0;
-
-	if(time < 0) {
-		return;
+TASK(halation_chase, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	boss->move = move_towards(global.plr.pos, 0.05);
+	for(;;) {
+		aniplayer_queue(&boss->ani, "(9)", 0);
+		boss->move.attraction_point = global.plr.pos;
+		YIELD;
 	}
+}
 
-	if(cheater >= 8) {
-		GO_TO(c, global.plr.pos,0.05);
-		aniplayer_queue(&c->ani,"(9)",0);
-	} else {
-		GO_TO(c, VIEWPORT_W/2.0+100.0*I, 0.05);
-	}
+DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
+	BEGIN_BOSS_ATTACK();
 
-	AT(60) {
+	cmplx center;
+	real rotation = 0;
+	real cage_radius = 200;
+	int cheater = 0;
+
+	const int orbs = difficulty_value(0, 0, 5, 14);
+
+	for(;;) {
+		WAIT(60);
 		center = global.plr.pos;
-		rotation = (M_PI/2.0) * (1 + time / 300);
-		aniplayer_queue(&c->ani,"(9)",0);
-	}
+		rotation += M_PI/2;
 
-	const int interval = 3;
-	const int projs = 10 + 4 * (global.diff - D_Hard);
-
-	FROM_TO_SND("shot1_loop", 60, 60 + interval * (projs/2 - 1), interval) {
-		int halate_time = 35 - _i * interval;
-
-		for(int p = _i*2; p <= _i*2 + 1; ++p) {
-			Color clr;
-			halation_color(&clr, 0);
-			clr.a = 0;
-
-			PROJECTILE(
-				.proto = pp_plainball,
-				.pos = halation_calc_orb_pos(center, rotation, p, projs),
-				.color = &clr,
-				.rule = halation_orb,
-				.args = {
-					center, rotation, p + I * projs, halate_time
-				},
-				.max_viewport_dist = 200,
-				.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
-			);
+		cmplx orb_positions[orbs];
+		for(int i = 0; i < orbs; ++i) {
+			orb_positions[i] = cage_radius * cdir(rotation + (i + 0.5) / orbs * M_TAU) + center;
 		}
-	}
 
-	AT(100 + interval * projs/2) {
-		aniplayer_queue(&c->ani,"main",0);
+		for(int i = 0; i < orbs; ++i) {
+			INVOKE_TASK(halation_orb,
+				.pos = {
+					orb_positions[i],
+					orb_positions[(i + orbs/2) % orbs],
+					orb_positions[(i + orbs/2 - 1) % orbs],
+					orb_positions[(i + orbs/2 - 2) % orbs],
+				},
+				.activation_time = 35 - i
+			);
+			YIELD;
+		}
 
-		if(cabs(global.plr.pos-center)>cabs(halation_calc_orb_pos(0,0,0,projs))) {
-			char *text[] = {
-				"",
+		WAIT(60);
+
+		if(cabs(global.plr.pos - center) > 200) {
+			static char *text[] = {
 				"What are you doing??",
 				"Dodge it properly!",
 				"I bet you can’t do it! Idiot!",
@@ -534,11 +518,16 @@ void cirno_snow_halation(Boss *c, int time) {
 				"You- You Idiootttt!",
 			};
 
-			if(cheater < sizeof(text)/sizeof(text[0])) {
+			if(cheater < ARRAY_SIZE(text)) {
 				stagetext_add(text[cheater], global.boss->pos+100*I, ALIGN_CENTER, get_font("standard"), RGB(1,1,1), 0, 100, 10, 20);
-				cheater++;
+
+				if(++cheater == ARRAY_SIZE(text)) {
+					INVOKE_SUBTASK(halation_chase, ENT_BOX(boss));
+				}
 			}
 		}
+
+		WAIT(240);
 	}
 }
 
