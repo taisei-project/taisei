@@ -97,9 +97,10 @@ struct Projectile {
 	Sprite *sprite;
 	ProjPrototype *proto;
 	MoveParams move;
-	struct {
-		CoEvent killed;
-	} events;
+	COEVENTS_ARRAY(
+		cleared,
+		killed
+	) events;
 	Color color;
 	attr_deprecated("this won't work") ShaderCustomParams shader_params;
 	BlendMode blend;
