@@ -169,7 +169,7 @@ tools:
 
 ::
 
-    brew install meson cmake pkg-config docutils imagemagick pygments python3
+    brew install meson cmake pkg-config docutils imagemagick pygments
 
 
 The following dependencies are technically optional, and can be pulled in at
