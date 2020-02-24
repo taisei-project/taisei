@@ -548,7 +548,7 @@ static void youmu_mirror_bomb_logic(Player *plr) {
 PlayerMode plrmode_youmu_a = {
 	.name = "Soul Reflection",
 	.description = "Your dual nature shall lend you a hand… or a tail.",
-	.spellcard_name = "Soul Sign “Reality-piercing Apparition”",
+	.spellcard_name = "Soul Sign “Reality-Piercing Apparition”",
 	.character = &character_youmu,
 	.dialog = &dialog_tasks_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,
