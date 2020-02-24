@@ -488,7 +488,7 @@ static void youmu_haunting_init(Player *plr) {
 
 PlayerMode plrmode_youmu_b = {
 	.name = "Haunting Revelation",
-	.description = "Ghosts are real, and quite hospitable too. The Netherworld shall welcome your foes, if you choose a good time to send the invitation.",
+	.description = "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you happen to stand in the way of a determined sword-wielding lady…",
 	.spellcard_name = "Aegis Sword “Saigyō Omnidirectional Slash”",
 	.character = &character_youmu,
 	.dialog = &dialog_tasks_youmu,
