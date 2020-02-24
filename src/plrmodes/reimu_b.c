@@ -602,7 +602,7 @@ static void reimu_dream_init(Player *plr) {
 
 PlayerMode plrmode_reimu_b = {
 	.name = "Dream Shaper",
-	.description = "Utilize Non-Euclidean geometry you borrowed from a ’friend,’ and tie the boundaries of space-time into knots as easily as the ribbons in your hair.",
+	.description = "Utilize techniques you borrowed from an eldritch ’friend,’ and tie the boundaries of spacetime into knots as easily as the ribbons in your hair.",
 	.spellcard_name = "Dream Sign “Ethereal Boundary Rupture”",
 	.character = &character_reimu,
 	.dialog = &dialog_tasks_reimu,
