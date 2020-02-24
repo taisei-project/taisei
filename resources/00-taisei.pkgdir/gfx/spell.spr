@@ -2,7 +2,7 @@
 
 texture = atlas_common_ui_0
 region_x = 2
-region_y = 410
+region_y = 46
 region_w = 512
 region_h = 176
 
