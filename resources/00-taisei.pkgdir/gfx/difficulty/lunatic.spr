@@ -3,7 +3,7 @@
 texture = atlas_common_ui_0
 region_x = 2
 region_y = 226
-region_w = 394
+region_w = 393
 region_h = 229
 
 # -- Pasted from the override file --
