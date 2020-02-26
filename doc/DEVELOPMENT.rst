@@ -246,6 +246,7 @@ are used:
 
     Geometry
         Write Materials: DISABLED
+        Triangulate Faces: ENABLED
 
 Music and sound effects are located in ``resources/00-taisei.pkgdir/sfx``.
 
