@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_dialog_interface_h
-#define IGUARD_stages_dialog_interface_h
+#ifndef IGUARD_dialog_dialog_interface_h
+#define IGUARD_dialog_dialog_interface_h
 
 #include "taisei.h"
 
@@ -76,4 +76,4 @@ typedef struct PlayerDialogProcs {
 	void (*stage6_pre_final)(Dialog *d);
 } PlayerDialogProcs;
 
-#endif // IGUARD_stages_dialog_interface_h
+#endif // IGUARD_dialog_dialog_interface_h
