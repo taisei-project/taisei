@@ -27,6 +27,7 @@ static struct {
 	Framebuffer *render_fb;
 	FBPair blur_fb_pair;
 	ManagedFramebufferGroup *mfb_group;
+	bool force_generic;
 } lasers;
 
 typedef struct LaserInstancedAttribs {
@@ -124,6 +125,8 @@ void lasers_preload(void) {
 	lasers.quad_generic.vertex_array = lasers.varr;
 
 	lasers.shader_generic = r_shader_get("laser_generic");
+
+	lasers.force_generic = env_get_int("TAISEI_FORCE_GENERIC_LASER_SHADER", false);
 }
 
 void lasers_free(void) {
@@ -162,6 +165,7 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 	l->next_graze = 0;
 	l->clear_flags = 0;
 	l->unclearable = false;
+	l->collision_active = true;
 
 	l->ent.draw_layer = LAYER_LASER_HIGH;
 	l->ent.draw_func = ent_draw_laser;
@@ -185,9 +189,9 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
-static double laser_graze_width(Laser *l, double *exponent) {
-	*exponent = 0; // l->width_exponent * 0.5;
-	return 5 * sqrt(l->width) + 15;
+static float laser_graze_width(Laser *l, float *exponent) {
+	*exponent = 0; // l->width_exponent * 0.5f;
+	return 5.0f * sqrtf(l->width) + 15.0f;
 }
 
 static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *out_timeshift) {
@@ -219,6 +223,8 @@ static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *o
 static void draw_laser_curve_specialized(Laser *l) {
 	float timeshift;
 	uint instances;
+
+	assert(!lasers.force_generic);
 
 	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
 		return;
@@ -272,22 +278,22 @@ static void draw_laser_curve_generic(Laser *l) {
 	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
 	r_vertex_buffer_invalidate(lasers.vbuf);
 
-	float tail = instances / 1.9;
-	float tail_factor = -0.75 / (tail * tail);
+	float tail = instances / 1.6;
+	float width_factor = -1 / (tail * tail);
 
 	for(uint i = 0; i < instances; ++i) {
 		cmplx pos = l->prule(l, i * 0.5 + timeshift);
 		cmplx delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
 
-		float t1 = i - instances / 2.0;
-		float s = powf(tail_factor * (t1 - tail) * (t1 + tail), l->width_exponent);
+		float mid_ofs = i - instances * 0.5;
+		float w = 0.75f * powf(width_factor * (mid_ofs - tail) * (mid_ofs + tail), l->width_exponent);
 
 		LaserInstancedAttribs attr;
 		attr.pos[0] = creal(pos);
 		attr.pos[1] = cimag(pos);
 		attr.delta[0] = creal(delta);
 		attr.delta[1] = cimag(delta);
-		attr.fragment_width = s;
+		attr.fragment_width = w;
 
 		SDL_RWwrite(stream, &attr, sizeof(attr), 1);
 	}
@@ -298,7 +304,7 @@ static void draw_laser_curve_generic(Laser *l) {
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
-	if(laser->shader) {
+	if(laser->shader && !lasers.force_generic) {
 		draw_laser_curve_specialized(laser);
 	} else {
 		draw_laser_curve_generic(laser);
@@ -412,7 +418,8 @@ void delete_lasers(void) {
 }
 
 bool laser_is_active(Laser *l) {
-	return l->width > 3.0;
+	// return l->width > 3.0;
+	return l->collision_active;
 }
 
 bool laser_is_clearable(Laser *l) {
@@ -485,21 +492,20 @@ void process_lasers(void) {
 	}
 }
 
-static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circle *collision_area, float t, float width_tail_factor, float tail) {
-	float t1 = t - l->timespan / 2;
-	float widthfac_orig = width_tail_factor * (t1 - tail) * (t1 + tail);
-	float widthfac = max(0.25, pow(widthfac_orig, l->width_exponent));
+static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circle *collision_area, float t, float segment_width_factor, float tail) {
+	float mid_ofs = t - l->timespan * 0.5f;
+	float widthfac_orig = segment_width_factor * (mid_ofs - tail) * (mid_ofs + tail);
+	float widthfac = 0.75f * 0.5f * powf(widthfac_orig, l->width_exponent);
 
-	segment->b = l->prule(l, t);
-	collision_area->radius = widthfac * l->width * 0.5 + 1;
+	collision_area->radius = fmaxf(widthfac * l->width - 4.0f, 2.0f);
 
-	if(lineseg_circle_intersect(*segment, *collision_area) >= 0) {
+	if(lineseg_circle_intersect(*segment, *collision_area) >= 0.0f) {
 		return true;
 	}
 
-	if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0) {
-		double exponent;
-		collision_area->radius = laser_graze_width(l, &exponent) * max(0.25, pow(widthfac_orig, exponent));
+	if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0.0f) {
+		float exponent;
+		collision_area->radius = laser_graze_width(l, &exponent) * fmaxf(0.25f, powf(widthfac_orig, exponent));
 		assert(collision_area->radius > 0);
 		float f = lineseg_circle_intersect(*segment, *collision_area);
 
@@ -509,7 +515,6 @@ static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circl
 		}
 	}
 
-	segment->a = segment->b;
 	return false;
 }
 
@@ -530,16 +535,20 @@ static bool laser_collision(Laser *l) {
 	LineSegment segment = { .a = l->prule(l,t) };
 	Circle collision_area = { .origin = global.plr.pos };
 
-	float tail = l->timespan / 1.9;
-	float width_tail_factor = -0.75 / (tail * tail);
+	float tail = l->timespan / 1.6f;
+	float width_factor = -1.0f / (tail * tail);
 
 	for(t += l->collision_step; t <= t_end; t += l->collision_step) {
-		if(laser_collision_segment(l, &segment, &collision_area, t, width_tail_factor, tail)) {
+		segment.b = l->prule(l, t);
+
+		if(laser_collision_segment(l, &segment, &collision_area, t, width_factor, tail)) {
 			return true;
 		}
+
+		segment.a = segment.b;
 	}
 
-	return laser_collision_segment(l, &segment, &collision_area, t_end, width_tail_factor, tail);
+	return laser_collision_segment(l, &segment, &collision_area, t_end, width_factor, tail);
 }
 
 bool laser_intersects_ellipse(Laser *l, Ellipse ellipse) {
@@ -685,31 +694,51 @@ cmplx las_circle(Laser *l, float t) {
 	return l->pos + radius * cexp(I * (t + time_ofs) * turn_speed);
 }
 
-float laser_charge(Laser *l, int t, float charge, float width) {
+void laser_charge(Laser *l, int t, float charge, float width) {
+	float new_width;
+
 	if(t < charge - 10) {
-		return min(2, 2 * t / min(30, charge - 10));
+		new_width = fminf(2.0f, 2.0f * t / fminf(30.0f, charge - 10.0f));
+	} else if(t >= charge - 10.0f && t < l->deathtime - 20.0f) {
+		new_width = fminf(width, 1.7f + width / 20.0f * (t - charge + 10.0f));
+	} else if(t >= l->deathtime - 20.0f) {
+		new_width = fmaxf(0.0f, width - width / 20.0f * (t - l->deathtime + 20.0f));
+	} else {
+		new_width = width;
 	}
 
-	if(t >= charge - 10 && t < l->deathtime - 20) {
-		float w = 1.7 + width/20*(t-charge+10);
-		return w < width ? w : width;
-	}
+	l->width = new_width;
+	l->collision_active = (new_width > width * 0.6f);
+}
 
-	if(t >= l->deathtime - 20) {
-		float w = width - width/20*(t-l->deathtime+20);
-		return w > 0 ? w : 0;
-	}
-
-	return width;
+void laser_make_static(Laser *l) {
+	l->speed = 0;
+	l->timeshift = l->timespan;
 }
 
 void static_laser(Laser *l, int t) {
 	if(t == EVENT_BIRTH) {
 		l->width = 0;
-		l->speed = 0;
-		l->timeshift = l->timespan;
+		l->collision_active = false;
+		laser_make_static(l);
 		return;
 	}
 
-	l->width = laser_charge(l, t, creal(l->args[1]), cimag(l->args[1]));
+	laser_charge(l, t, creal(l->args[1]), cimag(l->args[1]));
+}
+
+DEFINE_EXTERN_TASK(laser_charge) {
+	Laser *l = TASK_BIND(ARGS.laser);
+
+	l->width = 0;
+	l->collision_active = false;
+	laser_make_static(l);
+
+	float target_width = ARGS.target_width;
+	float charge_delay = ARGS.charge_delay;
+
+	for(int t = 0;; ++t) {
+		laser_charge(l, t, charge_delay, target_width);
+		YIELD;
+	}
 }
