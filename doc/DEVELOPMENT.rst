@@ -181,13 +181,6 @@ times:
     brew install freetype2 libzip opusfile libvorbis webp sdl2
 
 
-You'll also want to set the following environment variables on your shell's
-.zshrc or .bash_profile:
-
-::
-
-   export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"
-
 
 As of 2020-02-18, you should **not** install the following packages via
 Homebrew, as the versions available do not compile against Taisei correctly.
@@ -210,6 +203,15 @@ In addition, if you're trying to compile on an older version of macOS
 (e.x: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
 Let ``meson`` pull in the corrected version for you via subprojects.
 
+**NOTE:** While Homebrew's optional dependencies greatly improve compile times,
+if you can't remove packages that give you errors from your system for whatever
+reason, you can force ``meson`` to use its built-in subprojects by using the
+following:
+
+::
+
+    meson --wrap-mode forcefallback
+
 
 Automatic
 ~~~~~~~~~
@@ -228,6 +230,22 @@ danmaku bullets themselves.
 To modify the 3D models, you'll need `Blender <https://blender.org>`__, which is
 free and open source. Look for tutorials on YouTube for how to use it. The
 models themselves are located in ``resources/00-taisei.pkgdir/models``.
+
+Taisei uses ``.obj`` for its 3D models. To export ``.obj`` files from Blender,
+use ``File -> Export -> Wavefront (.obj)``. Ensure that the following settings
+are used:
+
+::
+
+    Include
+        Objects as OBJ Objects: ENABLED
+
+    Transform
+        Forward: Y Forward
+        Up: -Z Up
+
+    Geometry
+        Write Materials: DISABLED
 
 Music and sound effects are located in ``resources/00-taisei.pkgdir/sfx``.
 
