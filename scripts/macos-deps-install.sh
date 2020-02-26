@@ -54,30 +54,5 @@ echo -en "${white}Installing optional dependencies... ${reset}"
 brew install freetype libzip opusfile libvorbis webp sdl2 2>/dev/null
 echo -e "${green}done!${reset}"
 
-
-if ! grep -Eq 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' ~/.zshrc &&
-   ! grep -Eq 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' ~/.bash_profile
-then
-    echo
-    echo -e "${white}Do you want me to append the following to your shell .rc file?${reset}"
-    echo -e "   export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig""
-
-    read -p "[Y/N]: " -n 1 -r
-    echo -e " "
-
-    if [[ $REPLY =~ ^[Yy]$ ]]
-    then
-        if [ -n "`$SHELL -c 'echo $ZSH_VERSION'`" ]; then
-            echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.zshrc
-            echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.zshrc'
-            echo -e "Please run \`source ~/.zshrc\` to activate"
-        elif [ -n "`$SHELL -c 'echo $BASH_VERSION'`" ]; then
-            echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.bash_profile
-            echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.bash_profile'
-            echo -e "Please run \`source ~/.bash_profile\` to activate"
-        fi
-    fi
-fi
-
 echo
 echo -e "Setup complete!"
