@@ -15,13 +15,16 @@ vec2 pos_rule(float t);
 #include "vertex_pos.glslh"
 
 void main(void) {
-	vec2 p = pos_rule(gl_InstanceID * 0.5 + timeshift);
-	vec2 d = p - pos_rule(gl_InstanceID * 0.5 + timeshift - 0.1);
+	float instance = gl_InstanceID;
+	float t = instance * 0.5 + timeshift;
 
-	float t1 = gl_InstanceID - span / 2;
-	float tail = span / 1.9;
-	float s = -0.75 / pow(tail, 2) * (t1 - tail) * (t1 + tail);
-	s = pow(s, width_exponent);
+	vec2 p = pos_rule(t);
+	vec2 d = p - pos_rule(t - 0.1);
+
+	float tail = span / 1.6;
+	float mid_ofs = instance - span * 0.5;
+	float s = -1 / (tail * tail) * (mid_ofs - tail) * (mid_ofs + tail);
+	s = 0.75 * pow(s, width_exponent);
 
 	vec2 pos     = laser_vertex_pos(p, d, s);
 	gl_Position  = r_projectionMatrix * r_modelViewMatrix * vec4(pos, 0.0, 1.0);

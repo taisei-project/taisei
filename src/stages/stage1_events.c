@@ -369,12 +369,28 @@ static Color *halation_color(Color *out_clr, float phase) {
 	return out_clr;
 }
 
-static void halation_laser(Laser *l, int time) {
-	static_laser(l, time);
+TASK(halation_laser_color, { BoxedLaser laser; float max_width; }) {
+	Laser *l = TASK_BIND(ARGS.laser);
+	float max_width = ARGS.max_width;
 
-	if(time >= 0) {
-		halation_color(&l->color, l->width / cimag(l->args[1]));
+	for(;;) {
+		halation_color(&l->color, l->width / max_width);
+		YIELD;
 	}
+}
+
+static Laser *create_halation_laser(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
+	Laser *l;
+
+	if(clr == NULL) {
+		Color c;
+		l = create_laserline_ab(a, b, width, charge, dur, &c);
+		INVOKE_TASK(halation_laser_color, ENT_BOX(l), width);
+	} else {
+		l = create_laserline_ab(a, b, width, charge, dur, clr);
+	}
+
+	return l;
 }
 
 TASK(halation_orb_trail, { BoxedProjectile orb; }) {
@@ -410,23 +426,23 @@ TASK(halation_orb, {
 	// TODO modernize lasers
 
 	WAIT(activation_time);
-	create_laserline_ab(pos[2], pos[3], 15, phase_time * 0.5, phase_time * 2.0, &orb->color);
-	create_laserline_ab(pos[0], pos[2], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_halation_laser(pos[2], pos[3], 15, phase_time * 0.5, phase_time * 2.0, &orb->color);
+	create_halation_laser(pos[0], pos[2], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time / 2);
 	play_sound("laser1");
 	WAIT(phase_time / 2);
-	create_laserline_ab(pos[0], pos[1], 12, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_halation_laser(pos[0], pos[1], 12, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
 	play_sound("shot1");
-	create_laserline_ab(pos[0], pos[3], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
-	create_laserline_ab(pos[1], pos[3], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_halation_laser(pos[0], pos[3], 15, phase_time, phase_time * 1.5, NULL);
+	create_halation_laser(pos[1], pos[3], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
 	play_sound("shot1");
-	create_laserline_ab(pos[0], pos[1], 12, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
-	create_laserline_ab(pos[0], pos[2], 15, phase_time, phase_time * 1.5, &orb->color)->lrule = halation_laser;
+	create_halation_laser(pos[0], pos[1], 12, phase_time, phase_time * 1.5, NULL);
+	create_halation_laser(pos[0], pos[2], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
 	play_sound("shot1");

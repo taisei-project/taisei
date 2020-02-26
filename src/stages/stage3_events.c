@@ -1031,7 +1031,7 @@ static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 		play_sound_ex("laser1", 30, false);
 	}
 
-	l->width = laser_charge(l, time, 90, 10);
+	laser_charge(l, time, 90, 10);
 	l->color = *color_lerp(RGBA(0.2, 0.2, 1, 0), RGBA(1, 0.2, 0.2, 0), time / l->deathtime);
 }
 
@@ -1112,7 +1112,7 @@ static void wriggle_singularity_laser_logic(Laser *l, int time) {
 		play_sound("laser1");
 	}
 
-	l->width = laser_charge(l, time, 150, 10 + 10 * psin(l->args[0] + time / 60.0));
+	laser_charge(l, time, 150, 10 + 10 * psin(l->args[0] + time / 60.0));
 	l->args[3] = time / 10.0;
 	l->args[0] *= cexp(I*(M_PI/500.0) * (0.7 + 0.35 * global.diff));
 
