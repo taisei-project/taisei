@@ -115,6 +115,7 @@ MenuData* create_main_menu(void) {
 	stage_practice_idx = dynarray_indexof(&m->entries, stage_practice_entry);
 	spell_practice_entry = add_menu_entry(m, "Spell Practice", menu_action_enter_spellpractice, NULL);
 	spell_practice_idx = dynarray_indexof(&m->entries, spell_practice_entry);
+	add_menu_entry(m, "Trainer / Assist Mode", menu_action_enter_trainer, NULL);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", menu_action_enter_stagemenu, NULL);
 #endif

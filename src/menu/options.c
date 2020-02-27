@@ -560,10 +560,7 @@ DECLARE_ENTER_FUNC(enter_options_menu_gamepad_controls, create_options_menu_game
 static MenuData* create_options_menu_video(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
 
-static MenuData* create_options_menu_trainer(MenuData *parent);
-DECLARE_ENTER_FUNC(enter_options_menu_trainer, create_options_menu_trainer)
-
-static MenuData* create_options_menu_trainer(MenuData *parent) {
+MenuData* create_options_menu_trainer(void) {
 	MenuData *m = create_options_menu_base("Trainer Mode");
 	OptionBinding *b;
 
@@ -989,9 +986,6 @@ MenuData* create_options_menu(void) {
 	add_menu_entry(m, "Video options…", enter_options_menu_video, NULL);
 	add_menu_entry(m, "Customize controls…", enter_options_menu_controls, NULL);
 	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
-	add_menu_separator(m);
-
-	add_menu_entry(m, "Trainer Mode…", enter_options_menu_trainer, NULL);
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Back", menu_action_close, NULL);

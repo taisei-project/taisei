@@ -43,6 +43,10 @@ void menu_action_enter_spellpractice(MenuData *menu, void *arg) {
 	enter_menu(create_spell_menu(), NO_CALLCHAIN);
 }
 
+void menu_action_enter_trainer(MenuData *menu, void *arg) {
+	enter_menu(create_options_menu_trainer(), NO_CALLCHAIN);
+}
+
 static void stgpract_do_choose_stage(CallChainResult ccr);
 
 void menu_action_enter_stagepractice(MenuData *menu, void *arg) {

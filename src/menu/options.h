@@ -14,6 +14,7 @@
 #include "menu.h"
 
 MenuData* create_options_menu(void);
+MenuData* create_options_menu_trainer(void);
 void draw_options_menu_bg(MenuData*);
 
 #endif // IGUARD_menu_options_h
