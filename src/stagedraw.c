@@ -1296,11 +1296,12 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 
-	if (trainer_enabled()) {
+	// Trainer Mode labels
+	if (trainer_hud_stats_enabled()) {
 		draw_label("Trainer Mode", labels->y.trainer, labels, &stagedraw.hud_text.color.label_trainer);
 		draw_label("Lives:", labels->y.trainer_lives, labels, &stagedraw.hud_text.color.label_trainer_lives);
 		draw_label("Spells:", labels->y.trainer_bombs, labels, &stagedraw.hud_text.color.label_trainer_bombs);
-		draw_label("Hits:", labels->y.trainer_hits, 0, &stagedraw.hud_text.color.label_trainer_hits);
+		draw_label("Hits:", labels->y.trainer_hits, labels, &stagedraw.hud_text.color.label_trainer_hits);
 	}
 
 	r_mat_mv_pop();
@@ -1464,11 +1465,11 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Trainer values
 	// if a mode isn't enabled, but the trainer is, displazy N/A
-	if (trainer_enabled()) {
+	if (trainer_hud_stats_enabled()) {
 		if (trainer_lives_enabled()) {
-			format_huge_num(3, global.tnr.trainer_lives_total, sizeof(buf), buf);
+			format_huge_num(3, global.trainer.total.lives, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_lives},
+				.pos = { 0, labels->y.trainer_lives },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.glyph_callback = {
@@ -1477,20 +1478,18 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 				}
 			});
 		} else {
-			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_lives},
+				.pos = { 0, labels->y.trainer_lives },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
-			r_color4(1, 1, 1, 1.0);
 		}
 
 		if (trainer_bombs_enabled()) {
-			format_huge_num(3, global.tnr.trainer_bombs_total, sizeof(buf), buf);
+			format_huge_num(3, global.trainer.total.bombs, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_bombs},
+				.pos = { 0, labels->y.trainer_bombs },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.glyph_callback = {
@@ -1499,20 +1498,18 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 				}
 			});
 		} else {
-			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_bombs},
+				.pos = { 0, labels->y.trainer_bombs },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
-			r_color4(1, 1, 1, 1.0);
 		}
 
 		if (trainer_invulnerable_enabled()) {
-			format_huge_num(3, global.tnr.trainer_hits_total, sizeof(buf), buf);
+			format_huge_num(3, global.trainer.total.hits, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_hits},
+				.pos = { 0, labels->y.trainer_hits },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.glyph_callback = {
@@ -1521,14 +1518,12 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 				}
 			});
 		} else {
-			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_hits},
+				.pos = { 0, labels->y.trainer_hits },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
-			r_color4(1, 1, 1, 1.0);
 		}
 
 	}
@@ -1546,8 +1541,6 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			.color = RGB(1.0, 0.5, 0.2),
 		});
 	}
-	// Trainer Mode indicator
-	// if trainer mode is enabled, stats are enabled, AND one of the options is enabled
 }
 
 void stage_draw_bottom_text(void) {
@@ -1923,12 +1916,12 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
-		if (trainer_enabled()) {
+	if (trainer_anything_enabled()) {
 		stagetext_table_add_separator(&tbl);
 		stagetext_table_add(&tbl, "Trainer Mode Stats", "Stage");
-		stagetext_table_add_numeric_nonzero(&tbl, "Extra lives", global.tnr.trainer_lives_stage);
-		stagetext_table_add_numeric_nonzero(&tbl, "Extra spellcards", global.tnr.trainer_bombs_stage);
-		stagetext_table_add_numeric_nonzero(&tbl, "Times hit", global.tnr.trainer_hits_stage);
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra lives", global.trainer.stage.lives);
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra spellcards", global.trainer.stage.bombs);
+		stagetext_table_add_numeric_nonzero(&tbl, "Times hit", global.trainer.stage.hits);
 	}
 	stagetext_end_table(&tbl);
 

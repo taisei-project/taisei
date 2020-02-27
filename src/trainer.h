@@ -21,12 +21,15 @@ struct Trainer {
 	} total, stage;
 };
 
-void trainer_init(Trainer *tnr);
-void trainer_append_bomb_event(Trainer *tnr);
-void trainer_append_life_event(Trainer *tnr);
-void trainer_append_hit_event(Trainer *tnr);
+void trainer_init(Trainer *trainer);
+void trainer_reset_stage_counters(Trainer *trainer);
+void trainer_append_bomb_event(Trainer *trainer);
+void trainer_append_life_event(Trainer *trainer);
+void trainer_append_hit_event(Trainer *trainer);
 
 bool trainer_enabled(void);
+bool trainer_hud_stats_enabled(void);
+bool trainer_anything_enabled(void);
 bool trainer_bombs_enabled(void);
 bool trainer_invulnerable_enabled(void);
 bool trainer_lives_enabled(void);
