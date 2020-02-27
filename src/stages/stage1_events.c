@@ -610,65 +610,98 @@ static int cirno_crystal_blizzard_proj(Projectile *p, int time) {
 	return asymptotic(p, time);
 }
 
-void cirno_crystal_blizzard(Boss *c, int time) {
-	int t = time % 700;
-	TIMER(&t);
+TASK(crystal_wall, NO_ARGS) {
+	int num_crystals = difficulty_value(18, 21, 24, 27);
+	real spacing = VIEWPORT_W / (real)(num_crystals - 1);
+	real ofs = rng_real() - 1;
 
-	if(time < 0) {
-		GO_TO(c, VIEWPORT_W/2.0+300*I, 0.1);
-		return;
-	}
-
-	FROM_TO(60, 360, 10) {
+	for(int i = 0; i < 30; ++i) {
 		play_sound("shot1");
-		int i, cnt = 14 + global.diff * 3;
-		for(i = 0; i < cnt; ++i) {
+
+		for(int c = 0; c < num_crystals; ++c) {
+			cmplx accel = 0.02*I + 0.01*I * ((c % 2) ? 1 : -1) * sin((c * 3 + global.frames) / 30.0);
 			PROJECTILE(
 				.proto = pp_crystal,
-				.pos = i*VIEWPORT_W/cnt,
-				.color = i % 2? RGB(0.2,0.2,0.4) : RGB(0.5,0.5,0.5),
-				.rule = accelerated,
-				.args = {
-					0, 0.02*I + 0.01*I * (i % 2? 1 : -1) * sin((i*3+global.frames)/30.0)
-				},
+				.pos = (ofs + c) * spacing + 20,
+				.color = (c % 2) ? RGB(0.2, 0.2, 0.4) : RGB(0.5, 0.5, 0.5),
+				.move = move_accelerated(0, accel),
+				.max_viewport_dist = 16,
 			);
 		}
+
+		WAIT(10);
 	}
+}
 
-	AT(330)
-		aniplayer_queue(&c->ani,"(9)",0);
-	AT(699)
-		aniplayer_queue(&c->ani,"main",0);
-	FROM_TO_SND("shot1_loop",330, 700, 1) {
-		GO_TO(c, global.plr.pos, 0.01);
+TASK(cirno_frostbolt_trail, { BoxedProjectile proj; }) {
+	Projectile *p = TASK_BIND(ARGS.proj);
+	int period = 12;
 
-		if(!(time % (1 + D_Lunatic - global.diff))) {
-			RNG_ARRAY(rng, 2);
-			PROJECTILE(
-				.proto = pp_wave,
-				.pos = c->pos,
-				.color = RGBA(0.2, 0.2, 0.4, 0.0),
-				.rule = cirno_crystal_blizzard_proj,
-				.args = {
-					20 * (0.1 + 0.1 * vrng_sreal(rng[0])) * cexp(I*(carg(global.plr.pos - c->pos) + vrng_sreal(rng[1]) * 0.2)),
-					5
-				},
-			);
-		}
+	WAIT(rng_irange(0, period + 1));
 
-		if(!(time % 7)) {
-			play_sound("shot1");
-			int i, cnt = global.diff - 1;
-			for(i = 0; i < cnt; ++i) {
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = c->pos,
-					.color = RGBA(0.1, 0.1, 0.5, 0.0),
-					.rule = accelerated,
-					.args = { 0, 0.01 * cexp(I*(global.frames/20.0 + 2*i*M_PI/cnt)) },
-				);
+	for(;;) {
+		spawn_stain(p->pos, rng_f32_angle(), 20);
+		WAIT(period);
+	}
+}
+
+TASK(cirno_frostbolt, { cmplx pos; cmplx vel; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_wave,
+		.pos = ARGS.pos,
+		.color = RGBA(0.2, 0.2, 0.4, 0.0),
+		.move = move_asymptotic_simple(ARGS.vel, 5),
+	));
+
+	INVOKE_TASK(cirno_frostbolt_trail, ENT_BOX(p));
+	WAIT(difficulty_value(200, 300, 400, 500));
+	p->move.retention = 1.03;
+}
+
+DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W / 2.0 + 300 * I, 0.1);
+	BEGIN_BOSS_ATTACK();
+
+	int frostbolt_period = difficulty_value(4, 3, 2, 1);
+
+	for(;;) {
+		INVOKE_SUBTASK_DELAYED(60, crystal_wall);
+
+		WAIT(330);
+		aniplayer_queue(&boss->ani, "(9)" ,0);
+		boss->move = move_towards(global.plr.pos, 0.01);
+
+		for(int t = 0; t < 370; ++t) {
+			play_loop("shot1_loop");
+			boss->move.attraction_point = global.plr.pos;
+
+			if(!(t % frostbolt_period)) {
+				cmplx aim = cnormalize(global.plr.pos - boss->pos) * cdir(rng_sreal() * 0.2);
+				cmplx vel = rng_range(0.01, 4) * aim;
+				INVOKE_TASK(cirno_frostbolt, boss->pos, vel);
 			}
+
+			if(!(t % 7)) {
+				play_sound("shot1");
+				int cnt = global.diff - 1;
+				for(int i = 0; i < cnt; ++i) {
+					PROJECTILE(
+						.proto = pp_ball,
+						.pos = boss->pos,
+						.color = RGBA(0.1, 0.1, 0.5, 0.0),
+						.move = move_accelerated(0, 0.01 * cdir(global.frames/20.0 + i*M_TAU/cnt)),
+					);
+				}
+			}
+
+			WAIT(1);
 		}
+
+		boss->move.attraction_point = 0;
+		boss->move.attraction = 0;
+		boss->move.retention = 0.8;
+		aniplayer_queue(&boss->ani, "main" ,0);
 	}
 }
 

@@ -50,7 +50,7 @@ struct stage1_spells_s stage1_spells = {
 
 	.extra.crystal_blizzard = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
-		cirno_crystal_blizzard, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
+		NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard)
 	},
 };
 
