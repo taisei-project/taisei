@@ -81,10 +81,10 @@ static struct {
 		.label_value   = { 0.30, 0.60, 1.00, 1.00 },
 		.label_graze   = { 0.50, 1.00, 0.50, 1.00 },
 		.label_voltage = { 0.80, 0.50, 1.00, 1.00 },
-		.label_trainer = { 0.50, 0.70, 1.00, 1.00 },
-		.label_trainer_lives  = { 0.70, 0.50, 1.00, 1.00 },
-		.label_trainer_bombs  = { 1.00, 0.50, 0.70, 1.00 },
-		.label_trainer_hits   = { 0.50, 1.00, 0.70, 1.00 },
+		.label_trainer = { 0.9, 0.9, 0.9, 1.00 },
+		.label_trainer_lives  = { 1.00, 0.50, 0.90, 1.00 },
+		.label_trainer_bombs  = { 0.40, 0.80, 0.30, 1.00 },
+		.label_trainer_hits   = { 0.50, 0.40, 1.00, 1.00 },
 	}
 };
 
@@ -1177,7 +1177,7 @@ static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf,
 	text_draw(buf, &(TextParams) {
 		.pos = { xpos, ypos },
 		.font = "standard",
-		.align = ALIGN_RIGHT,
+		.align = a,
 		.glyph_callback = {
 			draw_numeric_callback,
 			&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active },
@@ -1296,15 +1296,25 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 
-	// Trainer Mode labels
+	// Trainer Mode HUD display
+	// only display real-time stats if the player wants it
 	if (trainer_hud_stats_enabled()) {
-		draw_label("Trainer Mode", labels->y.trainer, labels, &stagedraw.hud_text.color.label_trainer);
-		draw_label("Lives:", labels->y.trainer_lives, labels, &stagedraw.hud_text.color.label_trainer_lives);
-		draw_label("Spells:", labels->y.trainer_bombs, labels, &stagedraw.hud_text.color.label_trainer_bombs);
+		draw_label("Extra Lives:", labels->y.trainer_lives, labels, &stagedraw.hud_text.color.label_trainer_lives);
+		draw_label("Extra Spells:", labels->y.trainer_bombs, labels, &stagedraw.hud_text.color.label_trainer_bombs);
 		draw_label("Hits:", labels->y.trainer_hits, labels, &stagedraw.hud_text.color.label_trainer_hits);
 	}
-
 	r_mat_mv_pop();
+
+	// if they're actually using Trainer Mode, show tag on the hud
+	if (trainer_anything_enabled()) {
+		font = get_font("big");
+		text_draw("Trainer Mode", &(TextParams) {
+			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
+			.font_ptr = font,
+			.align = ALIGN_CENTER,
+			.color = &stagedraw.hud_text.color.label_trainer,
+		});
+	}
 
 	if(stagedraw.objpool_stats) {
 		stage_draw_hud_objpool_stats(0, 390, HUD_EFFECTIVE_WIDTH);
@@ -1469,9 +1479,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		if (trainer_lives_enabled()) {
 			format_huge_num(3, global.trainer.total.lives, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_lives },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_lives },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.glyph_callback = {
 					draw_numeric_callback,
 					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
@@ -1479,9 +1490,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			});
 		} else {
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_lives },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_lives },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
 		}
@@ -1489,9 +1501,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		if (trainer_bombs_enabled()) {
 			format_huge_num(3, global.trainer.total.bombs, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_bombs },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_bombs },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.glyph_callback = {
 					draw_numeric_callback,
 					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
@@ -1499,9 +1512,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			});
 		} else {
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_bombs },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_bombs },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
 		}
@@ -1509,9 +1523,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		if (trainer_invulnerable_enabled()) {
 			format_huge_num(3, global.trainer.total.hits, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
-				.pos = { 0, labels->y.trainer_hits },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_hits },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.glyph_callback = {
 					draw_numeric_callback,
 					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
@@ -1519,9 +1534,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			});
 		} else {
 			text_draw("N/A", &(TextParams) {
-				.pos = { 0, labels->y.trainer_hits },
+				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_hits },
 				.shader_ptr = stagedraw.hud_text.shader,
 				.font_ptr = font,
+				.align = ALIGN_RIGHT,
 				.color = &stagedraw.hud_text.color.inactive,
 			});
 		}
@@ -1729,11 +1745,12 @@ void stage_draw_hud(void) {
 	labels.y.graze   = label_ypos += label_spacing;
 
 	label_ypos = 350;
-	const float trainer_label_spacing = 20;
-	labels.y.trainer = label_ypos += trainer_label_spacing;
+	const float trainer_label_spacing = 24;
 	labels.y.trainer_lives = label_ypos += trainer_label_spacing;
 	labels.y.trainer_bombs = label_ypos += trainer_label_spacing;
 	labels.y.trainer_hits = label_ypos += trainer_label_spacing;
+
+	labels.y.trainer = label_ypos += trainer_label_spacing;
 
 	r_mat_mv_push();
 	r_mat_mv_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
