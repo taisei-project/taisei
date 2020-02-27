@@ -14,13 +14,11 @@
 typedef struct Trainer Trainer;
 
 struct Trainer {
-	int trainer_lives_stage;
-	int trainer_bombs_stage;
-	int trainer_hits_stage;
-
-	int trainer_lives_total;
-	int trainer_bombs_total;
-	int trainer_hits_total;
+	struct {
+		int lives;
+		int bombs;
+		int hits;
+	} total, stage;
 };
 
 void trainer_init(Trainer *tnr);
