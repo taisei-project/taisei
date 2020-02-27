@@ -67,24 +67,26 @@ bool trainer_no_powerdown_enabled(void) {
 }
 
 void trainer_append_life_event(Trainer *tnr) {
-	// only count extra 'trainer' lives if they've run out
-	// (otherwise they're just playing normally, right?)
+	// count extra lives used
 	tnr->trainer_lives_stage++;
 	tnr->trainer_lives_total++;
 	log_debug("Trainer Mode - Extra Lives Used: %d", tnr->trainer_lives_total);
+	// TODO: capture more advanced stats here
 
 }
 
 void trainer_append_bomb_event(Trainer *tnr) {
+	// count extra bombs used
 	tnr->trainer_bombs_stage++;
 	tnr->trainer_bombs_total++;
 	log_debug("Trainer Mode - Extra Bombs Used: %d", tnr->trainer_bombs_total);
+	// TODO: capture more advanced stats here
 }
 
 void trainer_append_hit_event(Trainer *tnr) {
-	// count the number of times player gets hit
-	// with trainer-invulnerability enabled
+	// count number of times hit with Invulnerability turned on
 	tnr->trainer_hits_stage++;
 	tnr->trainer_hits_total++;
 	log_debug("Trainer Mode - Misses While Invulnerable: %d", tnr->trainer_hits_total);
+	// TODO: capture more advanced stats here
 }
