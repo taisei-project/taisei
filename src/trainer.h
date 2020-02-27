@@ -34,5 +34,6 @@ bool trainer_bombs_enabled(void);
 bool trainer_invulnerable_enabled(void);
 bool trainer_lives_enabled(void);
 bool trainer_no_powerdown_enabled(void);
+bool trainer_focus_dot_enabled(void);
 
 #endif // IGUARD_trainer_h

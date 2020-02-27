@@ -130,6 +130,7 @@
 	CONFIGDEF_INT       (TRAINER_NO_PWRDN,          "trainer_no_pwrdn",                     0) \
 	CONFIGDEF_INT       (TRAINER_BOMBS,             "trainer_bombs",                        0) \
 	CONFIGDEF_INT       (TRAINER_INVULN,            "trainer_invuln",                       0) \
+	CONFIGDEF_INT       (TRAINER_FOCUS_DOT,         "trainer_focus_dot",                    0) \
 	CONFIGDEF_INT       (TRAINER_STATS,             "trainer_stats",                        0) \
 	GPKEYDEFS \
 

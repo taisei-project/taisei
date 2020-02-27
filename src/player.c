@@ -245,7 +245,7 @@ static void ent_draw_player(EntityInterface *ent) {
 		return;
 	}
 
-	if(plr->focus_circle_alpha) {
+	if(plr->focus_circle_alpha || trainer_focus_dot_enabled()) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
@@ -274,7 +274,9 @@ static void player_draw_indicators(EntityInterface *ent) {
 	PlayerIndicators *indicators = ENT_CAST(ent, PlayerIndicators);
 	Player *plr = indicators->plr;
 
-	float focus_opacity = indicators->focus_alpha;
+	//alpha = approach(alpha, (global.plr.inputflags & INFLAG_FOCUS || trainer_focus_dot_enabled()) ? 1 : 0, 1/30.0);
+
+	float focus_opacity = (trainer_focus_dot_enabled() ? 1 : indicators->focus_alpha);
 	int t = global.frames - indicators->focus_time;
 	cmplx32 pos = plr->pos;
 
@@ -646,7 +648,15 @@ static bool player_can_bomb(Player *plr) {
 	// 2. has enough bombs OR Developer God Mode enabled OR Trainer Invulnerability enabled
 	// 3. isn't currently respawning
 
-	return (!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd || trainer_bombs_enabled()) && global.frames >= plr->respawntime);
+	return (
+		!player_is_bomb_active(plr)
+		&& (
+				plr->bombs > 0 ||
+				plr->iddqd ||
+				trainer_bombs_enabled()
+			)
+		&& global.frames >= plr->respawntime
+	);
 }
 
 

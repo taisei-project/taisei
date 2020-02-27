@@ -13,7 +13,6 @@
 #include "global.h"
 #include "stage.h"
 
-
 void trainer_init(Trainer *trainer) {
 	// sets the default values
 	memset(trainer, 0, sizeof(*trainer));
@@ -24,7 +23,15 @@ bool trainer_enabled(void) {
 }
 
 bool trainer_anything_enabled(void) {
-	return (trainer_enabled() && (config_get_int(CONFIG_TRAINER_LIVES) || config_get_int(CONFIG_TRAINER_BOMBS) || config_get_int(CONFIG_TRAINER_INVULN)));
+	return (
+		trainer_enabled()
+		&& (
+				config_get_int(CONFIG_TRAINER_LIVES) ||
+				config_get_int(CONFIG_TRAINER_BOMBS) ||
+				config_get_int(CONFIG_TRAINER_INVULN) ||
+				config_get_int(CONFIG_TRAINER_FOCUS_DOT)
+			)
+	);
 }
 
 bool trainer_hud_stats_enabled(void) {
@@ -47,6 +54,10 @@ bool trainer_lives_enabled(void) {
 
 bool trainer_no_powerdown_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_NO_PWRDN));
+}
+
+bool trainer_focus_dot_enabled(void) {
+	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_FOCUS_DOT));
 }
 
 void trainer_append_life_event(Trainer *trainer) {

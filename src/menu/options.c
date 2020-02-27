@@ -592,6 +592,12 @@ MenuData* create_options_menu_trainer(void) {
 	   bind_onoff(b);
 	   b->pad++;
 
+	add_menu_entry(m, "Always Show Focus Dot", do_nothing,
+		b = bind_option(CONFIG_TRAINER_FOCUS_DOT, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Show Trainer Stats on HUD", do_nothing,
