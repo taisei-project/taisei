@@ -699,7 +699,7 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 
 PlayerMode plrmode_reimu_a = {
 	.name = "Yōkai Buster",
-	.description = "Sometimes it is easier to let your resolve do the aiming.",
+	.description = "The tried-and-true: homing amulets and sharp needles. You don’t have the luxury of time to think about aiming.",
 	.spellcard_name = "Spirit Sign “Fantasy Seal —Burst—”",
 	.character = &character_reimu,
 	.dialog = &dialog_tasks_reimu,
