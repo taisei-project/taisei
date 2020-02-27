@@ -988,7 +988,7 @@ void player_death(Player *plr) {
 
 	if (trainer_invulnerable_enabled()) {
 		trainer_append_hit_event(&global.trainer);
-		play_sound("shot3");
+		play_sound("tick");
 		return;
 	}
 
@@ -1731,6 +1731,7 @@ void player_preload(void) {
 		"graze",
 		"hit0",
 		"hit1",
+		"tick",
 		"powerup",
 		"powersurge_start",
 		"powersurge_end",
