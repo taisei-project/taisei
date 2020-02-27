@@ -398,6 +398,10 @@ static int bind_common_intplus1_set(OptionBinding *b, int v) {
 
 // --- Binding callbacks for individual options --- //
 
+static bool bind_trainer_dependence(void) {
+	return config_get_int(CONFIG_TRAINER_MODE);
+}
+
 static bool bind_resizable_dependence(void) {
 	return video_query_capability(VIDEO_CAP_EXTERNAL_RESIZE) == VIDEO_AVAILABLE;
 }
@@ -555,6 +559,56 @@ DECLARE_ENTER_FUNC(enter_options_menu_gamepad_controls, create_options_menu_game
 
 static MenuData* create_options_menu_video(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
+
+static MenuData* create_options_menu_trainer(MenuData *parent);
+DECLARE_ENTER_FUNC(enter_options_menu_trainer, create_options_menu_trainer)
+
+static MenuData* create_options_menu_trainer(MenuData *parent) {
+	MenuData *m = create_options_menu_base("Trainer Mode");
+	OptionBinding *b;
+
+	add_menu_entry(m, "Trainer Mode", do_nothing,
+		b = bind_option(CONFIG_TRAINER_MODE, bind_common_onoff_get, bind_common_onoff_set)
+	); bind_onoff(b);
+
+	add_menu_entry(m, "Invulnerability", do_nothing,
+		b = bind_option(CONFIG_TRAINER_INVULN, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
+	add_menu_entry(m, "Unlimited Lives", do_nothing,
+		b = bind_option(CONFIG_TRAINER_LIVES, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
+	add_menu_entry(m, "Unlimited Bombs", do_nothing,
+		b = bind_option(CONFIG_TRAINER_BOMBS, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
+	add_menu_entry(m, "No Powerdown When Hit", do_nothing,
+		b = bind_option(CONFIG_TRAINER_NO_PWRDN, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Show Trainer Stats on HUD", do_nothing,
+		b = bind_option(CONFIG_TRAINER_STATS, bind_common_onoff_get, bind_common_onoff_set)
+	); b->dependence = bind_trainer_dependence;
+	   bind_onoff(b);
+	   b->pad++;
+
+	add_menu_separator(m);
+	add_menu_entry(m, "Back", menu_action_close, NULL);
+
+	return m;
+
+}
 
 static MenuData* create_options_menu_video(MenuData *parent) {
 	MenuData *m = create_options_menu_base("Video Options");
@@ -935,6 +989,9 @@ MenuData* create_options_menu(void) {
 	add_menu_entry(m, "Video options…", enter_options_menu_video, NULL);
 	add_menu_entry(m, "Customize controls…", enter_options_menu_controls, NULL);
 	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Trainer Mode…", enter_options_menu_trainer, NULL);
 	add_menu_separator(m);
 
 	add_menu_entry(m, "Back", menu_action_close, NULL);

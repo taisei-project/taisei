@@ -125,6 +125,12 @@
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          0.25) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       0.02) \
+	CONFIGDEF_INT       (TRAINER_MODE,              "trainer_mode",                         0) \
+	CONFIGDEF_INT       (TRAINER_LIVES,             "trainer_lives",                        0) \
+	CONFIGDEF_INT       (TRAINER_NO_PWRDN,          "trainer_no_pwrdn",                     0) \
+	CONFIGDEF_INT       (TRAINER_BOMBS,             "trainer_bombs",                        0) \
+	CONFIGDEF_INT       (TRAINER_INVULN,            "trainer_invuln",                       0) \
+	CONFIGDEF_INT       (TRAINER_STATS,             "trainer_stats",                        0) \
 	GPKEYDEFS \
 
 

@@ -38,6 +38,10 @@ static struct {
 			Color label_value;
 			Color label_graze;
 			Color label_voltage;
+			Color label_trainer;
+			Color label_trainer_lives;
+			Color label_trainer_bombs;
+			Color label_trainer_hits;
 		} color;
 	} hud_text;
 
@@ -77,6 +81,10 @@ static struct {
 		.label_value   = { 0.30, 0.60, 1.00, 1.00 },
 		.label_graze   = { 0.50, 1.00, 0.50, 1.00 },
 		.label_voltage = { 0.80, 0.50, 1.00, 1.00 },
+		.label_trainer = { 0.50, 0.70, 1.00, 1.00 },
+		.label_trainer_lives  = { 0.70, 0.50, 1.00, 1.00 },
+		.label_trainer_bombs  = { 1.00, 0.50, 0.70, 1.00 },
+		.label_trainer_hits   = { 0.50, 1.00, 0.70, 1.00 },
 	}
 };
 
@@ -1232,6 +1240,11 @@ struct labels_s {
 		float value;
 		float voltage;
 		float graze;
+
+		float trainer;
+		float trainer_lives;
+		float trainer_bombs;
+		float trainer_hits;
 	} y;
 
 	struct {
@@ -1282,6 +1295,14 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Value:",       labels->y.value,   labels, &stagedraw.hud_text.color.label_value);
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
+
+	if (trainer_enabled()) {
+		draw_label("Trainer Mode", labels->y.trainer, labels, &stagedraw.hud_text.color.label_trainer);
+		draw_label("Lives:", labels->y.trainer_lives, labels, &stagedraw.hud_text.color.label_trainer_lives);
+		draw_label("Spells:", labels->y.trainer_bombs, labels, &stagedraw.hud_text.color.label_trainer_bombs);
+		draw_label("Hits:", labels->y.trainer_hits, 0, &stagedraw.hud_text.color.label_trainer_hits);
+	}
+
 	r_mat_mv_pop();
 
 	if(stagedraw.objpool_stats) {
@@ -1441,19 +1462,92 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 		}
 	});
 
+	// Trainer values
+	// if a mode isn't enabled, but the trainer is, displazy N/A
+	if (trainer_enabled()) {
+		if (trainer_lives_enabled()) {
+			format_huge_num(3, global.tnr.trainer_lives_total, sizeof(buf), buf);
+			text_draw(buf, &(TextParams) {
+				.pos = { 0, labels->y.trainer_lives},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.glyph_callback = {
+					draw_numeric_callback,
+					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
+				}
+			});
+		} else {
+			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
+			text_draw("N/A", &(TextParams) {
+				.pos = { 0, labels->y.trainer_lives},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.color = &stagedraw.hud_text.color.inactive,
+			});
+			r_color4(1, 1, 1, 1.0);
+		}
+
+		if (trainer_bombs_enabled()) {
+			format_huge_num(3, global.tnr.trainer_bombs_total, sizeof(buf), buf);
+			text_draw(buf, &(TextParams) {
+				.pos = { 0, labels->y.trainer_bombs},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.glyph_callback = {
+					draw_numeric_callback,
+					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
+				}
+			});
+		} else {
+			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
+			text_draw("N/A", &(TextParams) {
+				.pos = { 0, labels->y.trainer_bombs},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.color = &stagedraw.hud_text.color.inactive,
+			});
+			r_color4(1, 1, 1, 1.0);
+		}
+
+		if (trainer_invulnerable_enabled()) {
+			format_huge_num(3, global.tnr.trainer_hits_total, sizeof(buf), buf);
+			text_draw(buf, &(TextParams) {
+				.pos = { 0, labels->y.trainer_hits},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.glyph_callback = {
+					draw_numeric_callback,
+					&(struct glyphcb_state) { &stagedraw.hud_text.color.inactive, &stagedraw.hud_text.color.active  },
+				}
+			});
+		} else {
+			r_color(color_mul_scalar(COLOR_COPY(&labels->lb_baseclr), 0.7));
+			text_draw("N/A", &(TextParams) {
+				.pos = { 0, labels->y.trainer_hits},
+				.shader_ptr = stagedraw.hud_text.shader,
+				.font_ptr = font,
+				.color = &stagedraw.hud_text.color.inactive,
+			});
+			r_color4(1, 1, 1, 1.0);
+		}
+
+	}
+
 	font_set_kerning_enabled(font, kern_saved);
 	r_mat_mv_pop();
 
 	// God Mode indicator
 	if(global.plr.iddqd) {
 		text_draw("God Mode is enabled!", &(TextParams) {
-			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
+			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 500 },
 			.font_ptr = font,
 			.shader_ptr = stagedraw.hud_text.shader,
 			.align = ALIGN_CENTER,
 			.color = RGB(1.0, 0.5, 0.2),
 		});
 	}
+	// Trainer Mode indicator
+	// if trainer mode is enabled, stats are enabled, AND one of the options is enabled
 }
 
 void stage_draw_bottom_text(void) {
@@ -1641,6 +1735,13 @@ void stage_draw_hud(void) {
 	labels.y.voltage = label_ypos += label_spacing;
 	labels.y.graze   = label_ypos += label_spacing;
 
+	label_ypos = 350;
+	const float trainer_label_spacing = 20;
+	labels.y.trainer = label_ypos += trainer_label_spacing;
+	labels.y.trainer_lives = label_ypos += trainer_label_spacing;
+	labels.y.trainer_bombs = label_ypos += trainer_label_spacing;
+	labels.y.trainer_hits = label_ypos += trainer_label_spacing;
+
 	r_mat_mv_push();
 	r_mat_mv_translate(HUD_X_OFFSET + HUD_X_PADDING, 0, 0);
 
@@ -1822,11 +1923,18 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
+		if (trainer_enabled()) {
+		stagetext_table_add_separator(&tbl);
+		stagetext_table_add(&tbl, "Trainer Mode Stats", "Stage");
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra lives", global.tnr.trainer_lives_stage);
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra spellcards", global.tnr.trainer_bombs_stage);
+		stagetext_table_add_numeric_nonzero(&tbl, "Times hit", global.tnr.trainer_hits_stage);
+	}
 	stagetext_end_table(&tbl);
 
 	stagetext_add(
 		"Press Fire to continue",
-		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
+		VIEWPORT_W/2 + VIEWPORT_H*0.8*I,
 		ALIGN_CENTER,
 		get_font("standard"),
 		RGB(1, 0.5, 0),

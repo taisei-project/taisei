@@ -223,6 +223,13 @@ static void stage_start(StageInfo *stage) {
 		global.plr.bombs = PLR_STGPRACTICE_BOMBS;
 	}
 
+	if(trainer_enabled()) {
+		// reset trainer stage stats on new stage
+		global.tnr.trainer_lives_stage = 0;
+		global.tnr.trainer_bombs_stage = 0;
+		global.tnr.trainer_hits_stage = 0;
+	}
+
 	if(global.is_practice_mode) {
 		global.plr.power = config_get_int(CONFIG_PRACTICE_POWER);
 	}
