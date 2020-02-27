@@ -15,7 +15,7 @@
 
 
 void trainer_init(Trainer *tnr) {
-	memset(tnr, 0, sizeof(Trainer));
+	memset(tnr, 0, sizeof(*tnr));
 	// store two sets of values
 	// one is "per stage"
 	// the other is for the entire game session
