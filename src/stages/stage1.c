@@ -41,9 +41,10 @@ struct stage1_spells_s stage1_spells = {
 			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
 			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation)
 		},
-		.icicle_fall = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Fall”", 35, 40000,
-			cirno_icicle_fall, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1
+		.icicle_cascade = {
+			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Cascade”", 40, 40000,
+			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1,
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade)
 		},
 	},
 

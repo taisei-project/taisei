@@ -547,94 +547,49 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 	}
 }
 
-static int cirno_icicles(Projectile *p, int t) {
-	int turn = 60;
+TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_crystal,
+		.pos = ARGS.pos,
+		.color = RGB(0.3, 0.3, 0.9),
+		.move = move_asymptotic(ARGS.vel, 0, 0.9),
+		.max_viewport_dist = 64,
+		.flags = PFLAG_MANUALANGLE,
+	));
 
-	if(t < 0) {
-		if(t == EVENT_BIRTH) {
-			p->angle = carg(p->args[0]);
-		}
+	cmplx v = p->move.velocity;
+	p->angle = carg(v);
 
-		return ACTION_ACK;
-	}
+	WAIT(80);
 
-	if(t < turn) {
-		p->pos += p->args[0]*pow(0.9,t);
-	} else if(t == turn) {
-		p->args[0] = 2.5*cexp(I*(carg(p->args[0])-M_PI/2.0+M_PI*(creal(p->args[0]) > 0)));
-		if(global.diff > D_Normal)
-			p->args[0] += rng_range(0, 0.05);
-		play_sound("redirect");
-		spawn_projectile_highlight_effect(p);
-	} else if(t > turn) {
-		p->pos += p->args[0];
-	}
+	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (creal(v) > 0));
+	p->move = move_asymptotic_simple(v, 2);
+	p->angle = carg(p->move.velocity);
 
-	p->angle = carg(p->args[0]);
-
-	return ACTION_NONE;
+	play_sound("redirect");
+	spawn_projectile_highlight_effect(p);
 }
 
-void cirno_icicle_fall(Boss *c, int time) {
-	int t = time % 400;
-	TIMER(&t);
+DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W / 2.0 + 120.0*I, 0.01);
+	BEGIN_BOSS_ATTACK();
 
-	if(time < 0)
-		return;
+	int icicle_interval = difficulty_value(30, 22, 16, 8);
+	int icicles = 4;
+	real turn = difficulty_value(0.4, 0.4, 0.2, 0.1);
 
-	GO_TO(c, VIEWPORT_W/2.0+120.0*I, 0.01);
+	WAIT(20);
+	aniplayer_queue(&boss->ani, "(9)", 0);
 
-	AT(20)
-		aniplayer_queue(&c->ani,"(9)",0);
-	AT(200)
-		aniplayer_queue(&c->ani,"main",0);
-
-	FROM_TO(20,200,30-3*global.diff) {
+	for(int round = 0;; ++round) {
+		WAIT(icicle_interval);
 		play_sound("shot1");
-		for(float i = 2-0.2*global.diff; i < 5; i+=1./(1+global.diff)) {
-			PROJECTILE(.proto = pp_crystal, .pos = c->pos, .color = RGB(0.3,0.3,0.9), .rule = cirno_icicles, .args = { 6*i*cexp(I*(-0.1+0.1*_i)) });
-			PROJECTILE(.proto = pp_crystal, .pos = c->pos, .color = RGB(0.3,0.3,0.9), .rule = cirno_icicles, .args = { 6*i*cexp(I*(M_PI+0.1-0.1*_i)) });
-		}
-	}
 
-	if(global.diff > D_Easy) {
-		FROM_TO_SND("shot1_loop",120,200,3) {
-			float f = rng_range(0, _i);
-
-			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I-1.5+f),-0.02*I });
-			PROJECTILE(.proto = pp_ball, .pos = c->pos, .color = RGB(0.,0.,0.3), .rule = accelerated, .args = { 0.2*(-2*I+1.5+f),-0.02*I });
-		}
-	}
-
-	if(global.diff > D_Normal) {
-		FROM_TO(300,400,10) {
-			play_sound("shot1");
-			float x = VIEWPORT_W/2+VIEWPORT_W/2*(0.3+_i/10.);
-			float angle1 = rng_range(0, M_PI/10);
-			float angle2 = rng_range(0, M_PI/10);
-			for(float i = 1; i < 5; i++) {
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = x,
-					.color = RGB(0.,0.,0.3),
-					.rule = accelerated,
-					.args = {
-						i*I*0.5*cdir(angle1),
-						0.001*I-(global.diff == D_Lunatic)*0.001*rng_real()
-					}
-				);
-
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = VIEWPORT_W-x,
-					.color = RGB(0.,0.,0.3),
-					.rule = accelerated,
-					.args = {
-						i*I*0.5*cdir(-angle2),
-						0.001*I+(global.diff == D_Lunatic)*0.001*rng_real()
-					}
-				);
-			}
+		for(int i = 0; i < icicles; ++i) {
+			real speed = 8 + 3 * i;
+			INVOKE_TASK(cirno_icicle, boss->pos, speed * cdir(-0.1 + turn * (round - 1)));
+			INVOKE_TASK(cirno_icicle, boss->pos, speed * cdir(+0.1 + turn * (1 - round) + M_PI));
 		}
 	}
 }
@@ -1630,7 +1585,7 @@ TASK(spawn_boss, NO_ARGS) {
 		boss_add_attack_from_info(boss, &stage1_spells.boss.snow_halation, false);
 	}
 
-	boss_add_attack_from_info(boss, &stage1_spells.boss.icicle_fall, false);
+	boss_add_attack_from_info(boss, &stage1_spells.boss.icicle_cascade, false);
 	boss_add_attack_from_info(boss, &stage1_spells.extra.crystal_blizzard, false);
 
 	boss_start_attack(boss, boss->attacks);
