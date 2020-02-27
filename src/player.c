@@ -646,16 +646,14 @@ static bool player_can_bomb(Player *plr) {
 	// 2. has enough bombs OR Developer God Mode enabled OR Trainer Invulnerability enabled
 	// 3. isn't currently respawning
 
-	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd || trainer_bombs_enabled()) && global.frames >= plr->respawntime) {
-		return true;
-	}
-	return false;
+	return (!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd || trainer_bombs_enabled()) && global.frames >= plr->respawntime);
 }
 
 
 static bool player_bomb(Player *plr) {
-	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
+	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
 		return false;
+	}
 
 	int bomb_time = floor(player_property(plr, PLR_PROP_BOMB_TIME));
 
@@ -902,7 +900,6 @@ void player_realdeath(Player *plr) {
 		player_set_power(plr, total_power * 0.7);
 		plr->voltage *= 0.9;
 	} else {
-		// log when "no powerdown" trainer used
 		log_debug("Trainer Mode - No Powerdown Used");
 	}
 

@@ -20,55 +20,33 @@ void trainer_init(Trainer *trainer) {
 }
 
 bool trainer_enabled(void) {
-	if (config_get_int(CONFIG_TRAINER_MODE)) {
-		return true;
-	}
-	return false;
+	return config_get_int(CONFIG_TRAINER_MODE);
 }
 
 bool trainer_anything_enabled(void) {
-	if (trainer_enabled() && (config_get_int(CONFIG_TRAINER_LIVES) || config_get_int(CONFIG_TRAINER_BOMBS) || config_get_int(CONFIG_TRAINER_INVULN))) {
-		return true;
-	}
-	return false;
-
+	return (trainer_enabled() && (config_get_int(CONFIG_TRAINER_LIVES) || config_get_int(CONFIG_TRAINER_BOMBS) || config_get_int(CONFIG_TRAINER_INVULN)));
 }
 
 bool trainer_hud_stats_enabled(void) {
 	// determine whether stats should be displayed on the HUD
 	// used primarily by stagedraw.c
-	if (trainer_enabled() && trainer_anything_enabled() && config_get_int(CONFIG_TRAINER_STATS)) {
-			return true;
-		}
-	return false;
+	return (trainer_enabled() && trainer_anything_enabled() && config_get_int(CONFIG_TRAINER_STATS));
 }
 
 bool trainer_bombs_enabled(void) {
-	if (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_BOMBS)) {
-		return true;
-	}
-	return false;
+	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_BOMBS));
 }
 
 bool trainer_invulnerable_enabled(void) {
-	if (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_INVULN)) {
-		return true;
-	}
-	return false;
+	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_INVULN));
 }
 
 bool trainer_lives_enabled(void) {
-	if (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_LIVES)) {
-		return true;
-	}
-	return false;
+	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_LIVES));
 }
 
 bool trainer_no_powerdown_enabled(void) {
-	if (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_NO_PWRDN)) {
-		return true;
-	}
-	return false;
+	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_NO_PWRDN));
 }
 
 void trainer_append_life_event(Trainer *trainer) {
