@@ -31,7 +31,7 @@ void trainer_init(Trainer *tnr) {
 
 bool trainer_enabled(void) {
     if (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_STATS)) {
-        if (config_get_int(CONFIG_TRAINER_LIVES) || config_get_int(CONFIG_TRAINER_BOMBS) || config_get_int(CONFIG_TRAINER_LIVES)) {
+        if (config_get_int(CONFIG_TRAINER_LIVES) || config_get_int(CONFIG_TRAINER_BOMBS) || config_get_int(CONFIG_TRAINER_INVULN)) {
             return 1;
         }
     }
