@@ -1506,12 +1506,12 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	e->move = move_linear(ARGS.dir);
 }
 
-TASK(burst_swirls, { int count; }) {
+TASK(burst_swirls, { int count; int interval; }) {
 	for(int i = 0; i < ARGS.count; ++i) {
 		tsrand_fill(2);
 		// spawn in a "pitchfork" pattern
 		INVOKE_TASK(burst_swirl, VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 3 * (I + sin(M_PI*global.frames/15.0)));
-		WAIT(10);
+		WAIT(ARGS.interval);
 	}
 
 }
@@ -1521,7 +1521,8 @@ TASK(stage_timeline, NO_ARGS) {
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
 	// 14 swirls that die in an explosion after a second
-	INVOKE_TASK_DELAYED(160, burst_swirls, 14);
+	// timer, command, number of enemies, spawn delay interval
+	INVOKE_TASK_DELAYED(160, burst_swirls, 14, 10);
 }
 
 void stage3_events(void) {
