@@ -1442,20 +1442,101 @@ static Boss* stage3_create_boss(void) {
 	return wriggle;
 }
 
+TASK(kill_enemy, { BoxedEnemy e; }) {
+	// used for when enemies should pop after a preset time
+	Enemy *e = TASK_BIND(ARGS.e);
+	e->hp = ENEMY_KILLED;
+}
+
+TASK(death_burst_1, {BoxedEnemy e; }) {
+	// explode in a hail of bullets
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	float r, g;
+	if(frand() > 0.5) {
+		r = 0.3;
+		g = 1.0;
+	} else {
+		r = 1.0;
+		g = 0.3;
+	}
+
+	int cnt = 24 - (D_Lunatic - global.diff) * 4;
+	for(int i = 0; i < cnt; ++i) {
+		double a = (M_PI * 2.0 * i) / cnt;
+		cmplx dir = cexp(I*a);
+
+		PROJECTILE(
+			.proto = e->args[1]? pp_ball : pp_rice,
+			.pos = e->pos,
+			.color = RGB(r, g, 1.0),
+			.rule = asymptotic,
+			.args = {
+				1.5 * dir,
+				10 - 10 * psin(2 * a + M_PI/2)
+			}
+		);
+	}
+
+}
+
+TASK(burst_swirl, { cmplx pos; cmplx dir; }) {
+	// swirls
+	// fly in, explode when killed or after a preset time
+	//
+	// original command:
+	//create_enemy1c(
+	//		start_position(?) = VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I,
+	//		velocity = 200,
+	//		type = Swirl,
+	//		logic = stage3_enterswirl,
+	//		angle_of_attack(?) = 3 * (I + sin(M_PI*global.frames/15.0))
+	//		);
+
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, Swirl, NULL, 0));
+
+	// drop items when dead
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+		.power = 1,
+	});
+
+	// die after a preset time...
+	INVOKE_TASK_DELAYED(60, kill_enemy, ENT_BOX(e));
+	// ... and explode when they die
+	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e));
+
+	// define what direction they should fly in
+	e->move = move_linear(ARGS.dir);
+
+}
+
+TASK(burst_swirls, { int count; }) {
+	for(int i = 0; i < ARGS.count; ++i) {
+		tsrand_fill(2);
+		// spawn in a "pitchfork" pattern
+		INVOKE_TASK(burst_swirl, VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 3 * (I + sin(M_PI*global.frames/15.0)));
+		WAIT(10);
+	}
+
+}
+
+TASK(stage_timeline, NO_ARGS) {
+	stage_start_bgm("stage3");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+
+	// 14 swirls that die in an explosion after a second
+	INVOKE_TASK_DELAYED(160, burst_swirls, 14);
+}
+
 void stage3_events(void) {
 	TIMER(&global.timer);
 
 	AT(0) {
-		stage_start_bgm("stage3");
-		stage3_skip(env_get("STAGE3_TEST", 0));
-		stage_set_voltage_thresholds(115, 250, 510, 860);
+		INVOKE_TASK(stage_timeline);
 	}
 
-	FROM_TO(160, 300, 10) {
-		tsrand_fill(2);
-		create_enemy1c(VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 200, Swirl, stage3_enterswirl, 3 * (I + sin(M_PI*global.frames/15.0)));
-	}
-
+	// TODO: convert all this
 	AT(360) {
 		create_enemy2c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0+1*I, 600 - 30 * (D_Lunatic - global.diff));
 	}
