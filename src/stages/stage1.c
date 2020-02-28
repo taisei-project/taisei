@@ -435,7 +435,7 @@ static void stage1_update(void) {
 	fapproach_p(&stage1_bg.snow.opacity, stage1_bg.snow.opacity_target, 1.0 / 180.0);
 }
 
-static void stage1_start(void) {
+static void stage1_init_background(void) {
 	stage3d_init(&stage_3d_context, 64);
 
 	FBAttachmentConfig cfg = { 0 };
@@ -461,6 +461,13 @@ static void stage1_start(void) {
 	stage_3d_context.crot[0] = stage1_bg.pitch_target;
 	stage_3d_context.cx[2] = 700;
 	stage_3d_context.cv[1] = 8;
+}
+
+static void stage1_start(void) {
+	stage1_init_background();
+	stage_start_bgm("stage1");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+	INVOKE_TASK(stage1_main);
 }
 
 static void stage1_preload(void) {
@@ -497,7 +504,7 @@ static void stage1_end(void) {
 }
 
 static void stage1_spellpractice_start(void) {
-	stage1_start();
+	stage1_init_background();
 
 	Boss* cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
 	boss_add_attack_from_info(cirno, global.stage->spell, true);
@@ -517,9 +524,6 @@ static void stage1_spellpractice_start(void) {
 	INVOKE_TASK_WHEN(&cirno->events.defeated, common_call_func, stage1_bg_disable_snow);
 }
 
-static void stage1_spellpractice_events(void) {
-}
-
 ShaderRule stage1_shaders[] = { stage1_fog, NULL };
 
 StageProcs stage1_procs = {
@@ -528,7 +532,6 @@ StageProcs stage1_procs = {
 	.end = stage1_end,
 	.draw = stage1_draw,
 	.update = stage1_update,
-	.event = stage1_events,
 	.shader_rules = stage1_shaders,
 	.spellpractice_procs = &stage1_spell_procs,
 };
@@ -539,6 +542,5 @@ StageProcs stage1_spell_procs = {
 	.end = stage1_end,
 	.draw = stage1_draw,
 	.update = stage1_update,
-	.event = stage1_spellpractice_events,
 	.shader_rules = stage1_shaders,
 };

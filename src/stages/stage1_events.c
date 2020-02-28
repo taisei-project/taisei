@@ -1604,13 +1604,7 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_start_attack(boss, boss->attacks);
 }
 
-TASK(stage_timeline, NO_ARGS) {
-	stage_start_bgm("stage1");
-	stage_set_voltage_thresholds(50, 125, 300, 600);
-
-	// INVOKE_TASK(waveshot_fairy, VIEWPORT_W/2, (VIEWPORT_W+VIEWPORT_H*I)*0.5, 0.5*I);
-	// return;
-
+DEFINE_EXTERN_TASK(stage1_main) {
 	INVOKE_TASK_DELAYED(100, burst_fairies_1);
 	INVOKE_TASK_DELAYED(240, burst_fairies_2);
 	INVOKE_TASK_DELAYED(440, sinepass_swirls, 180, 100, 1);
@@ -1705,14 +1699,4 @@ TASK(stage_timeline, NO_ARGS) {
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);
-}
-
-void stage1_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		INVOKE_TASK(stage_timeline);
-	}
-
-	return;
 }
