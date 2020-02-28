@@ -594,22 +594,6 @@ DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
 	}
 }
 
-static int cirno_crystal_blizzard_proj(Projectile *p, int time) {
-	if(time < 0) {
-		return ACTION_ACK;
-	}
-
-	if(!(time % 12)) {
-		spawn_stain(p->pos, global.frames * 15, 20);
-	}
-
-	if(time > 100 + global.diff * 100) {
-		p->args[0] *= 1.03;
-	}
-
-	return asymptotic(p, time);
-}
-
 TASK(crystal_wall, NO_ARGS) {
 	int num_crystals = difficulty_value(18, 21, 24, 27);
 	real spacing = VIEWPORT_W / (real)(num_crystals - 1);
@@ -747,7 +731,7 @@ void cirno_benchmark(Boss* b, int t) {
 }
 
 TASK(burst_fairy, { cmplx pos; cmplx dir; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 700, Fairy, NULL, ARGS.dir));
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 700, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 1,
@@ -778,10 +762,6 @@ TASK(burst_fairy, { cmplx pos; cmplx dir; }) {
 	e->move.attraction = 0;
 	e->move.acceleration = 0.04 * ARGS.dir;
 	e->move.retention = 1;
-
-	for(;;) {
-		YIELD;
-	}
 }
 
 TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; }) {
