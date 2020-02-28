@@ -1448,7 +1448,7 @@ TASK(kill_enemy, { BoxedEnemy e; }) {
 	e->hp = ENEMY_KILLED;
 }
 
-TASK(death_burst_1, {BoxedEnemy e; }) {
+TASK(death_burst_1, { BoxedEnemy e; int shot_type; }) {
 	// explode in a hail of bullets
 	Enemy *e = TASK_BIND(ARGS.e);
 
@@ -1461,26 +1461,22 @@ TASK(death_burst_1, {BoxedEnemy e; }) {
 		g = 0.3;
 	}
 
-	int cnt = 24 - (D_Lunatic - global.diff) * 4;
+	int cnt = difficulty_value(24, 20, 16, 12);
 	for(int i = 0; i < cnt; ++i) {
 		double a = (M_PI * 2.0 * i) / cnt;
-		cmplx dir = cexp(I*a);
+		cmplx dir = cdir(a);
 
 		PROJECTILE(
-			.proto = e->args[1]? pp_ball : pp_rice,
+			.proto = ARGS.shot_type ? pp_ball : pp_rice,
 			.pos = e->pos,
 			.color = RGB(r, g, 1.0),
-			.rule = asymptotic,
-			.args = {
-				1.5 * dir,
-				10 - 10 * psin(2 * a + M_PI/2)
-			}
+			.move = move_asymptotic_simple(1.5 * dir, 10 - 10 * psin(2 * a + M_PI/2)),
 		);
 	}
 
 }
 
-TASK(burst_swirl, { cmplx pos; cmplx dir; }) {
+TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	// swirls
 	// fly in, explode when killed or after a preset time
 	//
@@ -1504,11 +1500,10 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; }) {
 	// die after a preset time...
 	INVOKE_TASK_DELAYED(60, kill_enemy, ENT_BOX(e));
 	// ... and explode when they die
-	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e));
+	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
 
 	// define what direction they should fly in
 	e->move = move_linear(ARGS.dir);
-
 }
 
 TASK(burst_swirls, { int count; }) {
