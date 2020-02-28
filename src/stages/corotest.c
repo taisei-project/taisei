@@ -161,9 +161,9 @@ TASK(punching_bag, NO_ARGS) {
 TASK(stage_main, NO_ARGS) {
 	YIELD;
 
-	stage_wait(30);
+	WAIT(30);
 	log_debug("test 1! %i", global.timer);
-	stage_wait(60);
+	WAIT(60);
 	log_debug("test 2! %i", global.timer);
 
 	INVOKE_TASK(punching_bag);
@@ -172,7 +172,7 @@ TASK(stage_main, NO_ARGS) {
 	for(;;) {
 		INVOKE_TASK(subtask_test_init);
 		INVOKE_TASK_DELAYED(60, test_enemy, 9000, CMPLX(VIEWPORT_W, VIEWPORT_H) * 0.5, 3*I);
-		stage_wait(1000);
+		WAIT(1000);
 	}
 }
 

@@ -798,29 +798,8 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
-inline bool stage_should_yield(void) {
+INLINE bool stage_should_yield(void) {
 	return (global.boss && !boss_is_fleeing(global.boss)) || dialog_is_active(global.dialog);
-}
-
-int stage_yield(void) {
-	int num_yields = 0;
-
-	do {
-		cotask_yield(NULL);
-		++num_yields;
-	} while(stage_should_yield());
-
-	return num_yields;
-}
-
-int stage_wait(int delay) {
-	int num_yields = 0;
-
-	while(delay-- > 0) {
-		num_yields += stage_yield();
-	}
-
-	return num_yields;
 }
 
 static LogicFrameAction stage_logic_frame(void *arg) {

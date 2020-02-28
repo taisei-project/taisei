@@ -1156,7 +1156,7 @@ TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
 		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 + 70,  1 + 0.6*I);
 		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 - 70, -1 + 0.6*I);
-		stage_wait(25);
+		WAIT(25);
 	}
 }
 
@@ -1165,9 +1165,9 @@ TASK(burst_fairies_2, NO_ARGS) {
 	for(int i = 3; i--;) {
 		double ofs = 70 + i * 40;
 		INVOKE_TASK(burst_fairy, ofs,               1 + 0.6*I);
-		stage_wait(15);
+		WAIT(15);
 		INVOKE_TASK(burst_fairy, VIEWPORT_W - ofs, -1 + 0.6*I);
-		stage_wait(15);
+		WAIT(15);
 	}
 }
 
@@ -1175,7 +1175,7 @@ TASK(burst_fairies_3, NO_ARGS) {
 	for(int i = 10; i--;) {
 		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
 		INVOKE_TASK(burst_fairy, pos, rng_sign());
-		stage_wait(60);
+		WAIT(60);
 	}
 }
 
@@ -1188,7 +1188,7 @@ TASK(sinepass_swirls, { int duration; double level; double dir; }) {
 
 	for(int t = 0; t < duration; t += delay) {
 		INVOKE_TASK(sinepass_swirl, pos, 3.5 * dir, 7.0 * I);
-		stage_wait(delay);
+		WAIT(delay);
 	}
 }
 
@@ -1202,20 +1202,20 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 			.exit_time = (global.diff > D_Easy) ? 500 : 240
 		);
 
-		stage_wait(50);
+		WAIT(50);
 	}
 }
 
 TASK(drop_swirls, { int cnt; cmplx pos; cmplx vel; cmplx accel; }) {
 	for(int i = 0; i < ARGS.cnt; ++i) {
 		INVOKE_TASK(drop_swirl, ARGS.pos, ARGS.vel, ARGS.accel);
-		stage_wait(20);
+		WAIT(20);
 	}
 }
 
 TASK(schedule_swirls, NO_ARGS) {
 	INVOKE_TASK(drop_swirls, 25, VIEWPORT_W/3, 2*I, 0.06);
-	stage_wait(400);
+	WAIT(400);
 	INVOKE_TASK(drop_swirls, 25, 200*I, 4, -0.06*I);
 }
 
@@ -1223,17 +1223,17 @@ TASK(circle_fairies_1, NO_ARGS) {
 	for(int i = 0; i < 3; ++i) {
 		for(int j = 0; j < 3; ++j) {
 			INVOKE_TASK(circle_fairy, VIEWPORT_W - 64, VIEWPORT_W/2 - 100 + 200 * I + 128 * j);
-			stage_wait(60);
+			WAIT(60);
 		}
 
-		stage_wait(90);
+		WAIT(90);
 
 		for(int j = 0; j < 3; ++j) {
 			INVOKE_TASK(circle_fairy, 64, VIEWPORT_W/2 + 100 + 200 * I - 128 * j);
-			stage_wait(60);
+			WAIT(60);
 		}
 
-		stage_wait(240);
+		WAIT(240);
 	}
 }
 
