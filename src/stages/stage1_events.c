@@ -1362,11 +1362,20 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 	int size_oscillation = 3;
 	int size_max = size_base + size_oscillation;
 	int burst_interval = difficulty_value(120, 80, 80, 80);
+	int charge_time = 60;
+	burst_interval -= charge_time;
 
 	int flakes_limit = flakes_per_burst * snowflake_bullet_limit(size_max);
 	DECLARE_ENT_ARRAY(Projectile, snowflake_projs, flakes_limit);
 
 	for(int burst = 0;; ++burst) {
+		aniplayer_queue(&boss->ani, "(9)", 0);
+		play_sound("charge_generic");
+		INVOKE_TASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time);
+		WAIT(charge_time);
+		play_sound("shot_special1");
+		aniplayer_queue(&boss->ani, "main", 0);
+
 		double angle_ofs = carg(global.plr.pos - boss->pos);
 		int size = size_base + size_oscillation * sin(burst * 2.21);
 
@@ -1394,6 +1403,26 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 	}
 }
 
+TASK(move_frozen, { BoxedProjectileArray *parray; }) {
+	DECLARE_ENT_ARRAY(Projectile, projs, ARGS.parray->size);
+	ENT_ARRAY_FOREACH(ARGS.parray, Projectile *p, {
+		ENT_ARRAY_ADD(&projs, p);
+	});
+
+	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+		p->color = *RGB(0.9, 0.9, 0.9);
+		p->move.retention = 1 + 0.002 * global.diff * rng_f64();
+		p->move.velocity = 2 * rng_dir();
+		spawn_stain(p->pos, p->angle, 30);
+		spawn_projectile_highlight_effect(p);
+		play_sound_ex("shot2", 0, false);
+
+		if(rng_chance(0.4)) {
+			YIELD;
+		}
+	});
+}
+
 DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	BEGIN_BOSS_ATTACK();
@@ -1401,12 +1430,15 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
+		INVOKE_TASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos);
+		WAIT(40);
+		play_sound("shot_special1");
+
 		int n = global.diff;
 		int nfrog = n*60;
 
 		DECLARE_ENT_ARRAY(Projectile, projs, nfrog);
 
-		WAIT(20);
 		for(int i = 0; i < nfrog/n; i++) {
 			play_loop("shot1_loop");
 
@@ -1442,26 +1474,22 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		});
 
 		WAIT(60);
+
 		double dir = rng_sign();
 		boss->move = (MoveParams){ .velocity = dir*2.7+I, .retention = 0.99, .acceleration = -dir*0.017 };
 
-		aniplayer_queue(&boss->ani,"(9)",0);
+		int charge_time = difficulty_value(85, 80, 75, 70);
+		aniplayer_queue(&boss->ani, "(9)", 0);
+
+		play_sound("charge_generic");
+		INVOKE_TASK(common_charge, +60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
+		INVOKE_TASK(common_charge, -60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
+		WAIT(charge_time);
+		play_sound("shot_special1");
+
+		INVOKE_SUBTASK_DELAYED(120, move_frozen, &projs);
+
 		int d = max(0, global.diff - D_Normal);
-		WAIT(60-5*global.diff);
-
-		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
-			p->color = *RGB(0.9, 0.9, 0.9);
-			p->move.retention = 1 + 0.002 * global.diff * rng_f64();
-			p->move.velocity = 2 * rng_dir();
-			spawn_stain(p->pos, p->angle, 30);
-			spawn_projectile_highlight_effect(p);
-			play_sound_ex("shot2", 0, false);
-
-			if(rng_chance(0.4)) {
-				YIELD;
-			}
-		});
-
 		for(int i = 0; i < 30+10*d; i++) {
 			play_loop("shot1_loop");
 			float r1, r2;
@@ -1489,7 +1517,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		}
 		aniplayer_queue(&boss->ani,"main",0);
 
-		WAIT(40-5*global.diff);
+		WAIT(20-5*global.diff);
 	}
 }
 

@@ -42,6 +42,18 @@ DECLARE_EXTERN_TASK(
 	{ const char *bgm; }
 );
 
+DECLARE_EXTERN_TASK(
+	common_charge,
+	{
+		cmplx pos;
+		const Color *color;
+		int time;
+		BoxedEntity bind_to_entity;
+		const cmplx *anchor;
+		const Color *color_ref;
+	}
+);
+
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 
 INLINE Rect viewport_bounds(double margin) {

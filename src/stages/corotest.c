@@ -156,15 +156,26 @@ TASK(punching_bag, NO_ARGS) {
 		.power = 3,
 		.points = 5,
 	});
+
+	for(;;) {
+		INVOKE_TASK(common_charge,
+			.pos = e->pos,
+			.color = RGBA(1, 0, 0, 0),
+			.time = 60
+		);
+		WAIT(80);
+	}
 }
 
 TASK(stage_main, NO_ARGS) {
 	YIELD;
 
+	/*
 	WAIT(30);
 	log_debug("test 1! %i", global.timer);
 	WAIT(60);
 	log_debug("test 2! %i", global.timer);
+	*/
 
 	INVOKE_TASK(punching_bag);
 	return;
@@ -177,9 +188,26 @@ TASK(stage_main, NO_ARGS) {
 }
 
 static void cotest_begin(void) {
+	corotest_procs.shader_rules = stage1_procs.shader_rules;
+	stage1_procs.begin();
 	INVOKE_TASK(stage_main);
+}
+
+static void cotest_update(void) {
+	stage1_procs.update();
+}
+
+static void cotest_end(void) {
+	stage1_procs.end();
+}
+
+static void cotest_draw(void) {
+	stage1_procs.draw();
 }
 
 StageProcs corotest_procs = {
 	.begin = cotest_begin,
+	.end = cotest_end,
+	.update = cotest_update,
+	.draw = cotest_draw,
 };
