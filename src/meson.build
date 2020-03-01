@@ -273,10 +273,6 @@ if host_machine.system() == 'emscripten'
             get_option('c_args'),
             get_option('c_link_args'),
             em_link_args,
-
-            # Emscripten bug https://github.com/emscripten-core/emscripten/issues/10066
-            '-s', 'WASM_OBJECT_FILES=1',
-
             '-o', '@OUTPUT0@',
         ],
         build_by_default : true,

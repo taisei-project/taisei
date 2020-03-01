@@ -43,7 +43,6 @@ if cc.get_id() == 'emscripten'
 
     if get_option('b_lto')
         emscripten_global_link_args = [
-            '-s', 'WASM_OBJECT_FILES=0',
             '--llvm-lto', '1',
             '-flto',
         ]
