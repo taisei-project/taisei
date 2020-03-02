@@ -48,6 +48,8 @@ typedef struct CurrentBGM {
 	Music *music;
 } CurrentBGM;
 
+typedef uint64_t SoundID;
+
 extern CurrentBGM current_bgm;
 
 void audio_init(void);
@@ -55,11 +57,13 @@ void audio_shutdown(void);
 bool audio_output_works(void);
 void audio_music_set_position(double pos);
 
-void play_sound(const char *name) attr_nonnull(1);
-void play_sound_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
+SoundID play_sound(const char *name) attr_nonnull(1);
+SoundID play_sound_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
 void play_sound_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
 void play_loop(const char *name) attr_nonnull(1);
 void play_ui_sound(const char *name) attr_nonnull(1);
+void stop_sound(SoundID sid);
+void replace_sound(SoundID sid, const char *name) attr_nonnull(2);
 void reset_sounds(void);
 void pause_sounds(void);
 void resume_sounds(void);

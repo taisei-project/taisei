@@ -19,6 +19,8 @@ static bool audio_null_init(void) {
 	return true;
 }
 
+#define FAKE_SOUND_ID ((SoundID)1)
+
 static bool audio_null_music_fade(double fadetime) { return true; }
 static bool audio_null_music_is_paused(void) { return false; }
 static bool audio_null_music_is_playing(void) { return false; }
@@ -31,15 +33,16 @@ static bool audio_null_music_set_position(double pos) { return true; }
 static bool audio_null_music_stop(void) { return true; }
 static bool audio_null_output_works(void) { return false; }
 static bool audio_null_shutdown(void) { return true; }
-static bool audio_null_sound_loop(SoundImpl *impl, AudioBackendSoundGroup group) { return true; }
+static SoundID audio_null_sound_loop(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
 static bool audio_null_sound_pause_all(AudioBackendSoundGroup group) { return true; }
-static bool audio_null_sound_play(SoundImpl *impl, AudioBackendSoundGroup group) { return true; }
-static bool audio_null_sound_play_or_restart(SoundImpl *impl, AudioBackendSoundGroup group) { return true; }
+static SoundID audio_null_sound_play(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
+static SoundID audio_null_sound_play_or_restart(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
 static bool audio_null_sound_resume_all(AudioBackendSoundGroup group) { return true; }
 static bool audio_null_sound_set_global_volume(double gain) { return true; }
 static bool audio_null_sound_set_volume(SoundImpl *snd, double gain) { return true; }
 static bool audio_null_sound_stop_all(AudioBackendSoundGroup group) { return true; }
 static bool audio_null_sound_stop_loop(SoundImpl *impl) { return true; }
+static bool audio_null_sound_stop_id(SoundID sid) { return true; }
 
 static const char* const* audio_null_get_supported_exts(uint *out_numexts) { *out_numexts = 0; return NULL; }
 static MusicImpl* audio_null_music_load(const char *vfspath) { return NULL; }
@@ -77,6 +80,7 @@ AudioBackend _a_backend_null = {
 		.sound_set_volume = audio_null_sound_set_volume,
 		.sound_stop_all = audio_null_sound_stop_all,
 		.sound_stop_loop = audio_null_sound_stop_loop,
+		.sound_stop_id = audio_null_sound_stop_id,
 		.sound_unload = audio_null_sound_unload,
 	}
 };
