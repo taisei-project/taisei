@@ -85,6 +85,14 @@ DEFINE_EXTERN_TASK(common_charge) {
 	real rayfactor = 1.0 / (real)maxtime;
 	float hue_rand = 0.02;
 
+	const char *snd_charge = ARGS.sound.charge;
+	const char *snd_discharge = ARGS.sound.discharge;
+	SoundID charge_snd_id = 0;
+
+	if(snd_charge) {
+		charge_snd_id = play_sound(snd_charge);
+	}
+
 	Color local_color;
 
 	cmplx anchor_null = 0;
@@ -136,6 +144,12 @@ DEFINE_EXTERN_TASK(common_charge) {
 		);
 
 		i += WAIT(delay);
+	}
+
+	if(snd_discharge) {
+		replace_sound(charge_snd_id, snd_discharge);
+	} else {
+		stop_sound(charge_snd_id);
 	}
 
 	local_color = *p_color;

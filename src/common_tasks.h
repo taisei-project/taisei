@@ -51,8 +51,15 @@ DECLARE_EXTERN_TASK(
 		BoxedEntity bind_to_entity;
 		const cmplx *anchor;
 		const Color *color_ref;
+
+		struct {
+			const char *charge;
+			const char *discharge;
+		} sound;
 	}
 );
+
+#define COMMON_CHARGE_SOUNDS { "charge_generic", "discharge" }
 
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 

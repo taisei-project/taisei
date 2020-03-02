@@ -1370,10 +1370,8 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 
 	for(int burst = 0;; ++burst) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
-		play_sound("charge_generic");
-		INVOKE_TASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time);
+		INVOKE_TASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
-		play_sound("shot_special1");
 		aniplayer_queue(&boss->ani, "main", 0);
 
 		double angle_ofs = carg(global.plr.pos - boss->pos);
@@ -1430,9 +1428,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
-		INVOKE_TASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos);
+		INVOKE_TASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(40);
-		play_sound("shot_special1");
 
 		int n = global.diff;
 		int nfrog = n*60;
@@ -1481,11 +1478,9 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		int charge_time = difficulty_value(85, 80, 75, 70);
 		aniplayer_queue(&boss->ani, "(9)", 0);
 
-		play_sound("charge_generic");
-		INVOKE_TASK(common_charge, +60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
-		INVOKE_TASK(common_charge, -60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
+		INVOKE_SUBTASK(common_charge, +60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, -60, RGBA(0.3, 0.4, 0.9, 0), charge_time, .anchor = &boss->pos);
 		WAIT(charge_time);
-		play_sound("shot_special1");
 
 		INVOKE_SUBTASK_DELAYED(120, move_frozen, &projs);
 
