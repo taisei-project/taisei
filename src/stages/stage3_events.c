@@ -14,8 +14,8 @@
 #include "enemy.h"
 #include "common_tasks.h"
 
-PRAGMA(message "Remove when this stage is modernized")
-DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+//PRAGMA(message "Remove when this stage is modernized")
+//DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");
@@ -1506,7 +1506,7 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	e->move = move_linear(ARGS.dir);
 }
 
-TASK(burst_swirls, { int count; int interval; }) {
+TASK(burst_swirls_1, { int count; int interval; }) {
 	for(int i = 0; i < ARGS.count; ++i) {
 		tsrand_fill(2);
 		// spawn in a "pitchfork" pattern
@@ -1516,13 +1516,120 @@ TASK(burst_swirls, { int count; int interval; }) {
 
 }
 
+TASK(little_fairy_1, { cmplx pos; cmplx dir; cmplx danmaku; }) {
+	// little fairy (goes with big fairy)
+	// create_enemy3c(
+	// start_position = [big_fairy_position],
+	// velocity = 900,
+	// type = Fairy,
+	// logic = slave (slavefairy OR slavefairy2),
+	// angle_of_attack = [big_fairy_position] +/- 70 +/- 50 * I,
+	// number_of_shots = [inherited_from_big_fairy],
+	// side(?) = +1 OR -1
+	// );
+
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
+	TIMER(&t)
+
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3);
+	}
+
+	AT(EVENT_BIRTH) {
+		e->alpha = 0;
+	}
+
+	if(t < 120) {
+		GO_TO(e, e->args[0], 0.03)
+	}
+
+	FROM_TO_SND("shot1_loop", 30, 120, 5 - global.diff) {
+		float a = _i * 0.5;
+		cmplx dir = cexp(I*a);
+
+		PROJECTILE(
+			.proto = pp_wave,
+			.pos = e->pos + dir * 10,
+			.color = (_i % 2)? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
+			.rule = accelerated,
+			.args = {
+				dir * 2,
+				dir * -0.035,
+		},
+	);
+
+		if(global.diff > D_Easy && e->args[1]) {
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos + dir * 10,
+				.color = RGB(1.0, 0.6, 0.3),
+				.rule = linear,
+				.args = { dir * (1.0 + 0.5 * sin(a)) }
+			);
+		}
+	}
+
+	if(t >= 120) {
+		e->pos += 3 * e->args[2] + 2.0*I;
+	}
+
+
+}
+
+TASK(little_fairy_2, { cmplx pos; cmplx dir; cmplx danmaku; }) {
+	// little fairy (goes with big fairy)
+	// create_enemy3c(
+	// start_position = [big_fairy_position],
+	// velocity = 900,
+	// type = Fairy,
+	// logic = slave (slavefairy OR slavefairy2),
+	// angle_of_attack = [big_fairy_position] +/- 70 +/- 50 * I,
+	// number_of_shots = [inherited_from_big_fairy],
+	// side(?) = +1 OR -1
+	// );
+
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
+
+}
+
+//TASK(big_fairy_1, { cmplx pos; cmplx dir; }) {
+	//create_enemy2c(
+	//	start_position = VIEWPORT_W/2 + (VIEWPORT_H/3)*I,
+	//	velocity = 10000,
+	//	type = BigFairy,
+	//	logic = stage3_bigfairy,
+	//	angle_of_attack = 0+1*I,
+	//	number_of_shots(?) = 600 - 30 * (D_Lunatic - global.diff)
+	//		);
+//}
+
+TASK(big_fairy_posse_1, { cmplx pos; cmplx velocity; cmplx danmaku; int type; } ) {
+	// big fairy in the middle does nothing
+	// 8 fairies (2 pairs in 4 waves - bottom/top/bottom/top) spawn around her and open fire
+
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, BigFairy, NULL, 0));
+
+
+	for(int i = 0; i < 2; ++i) {
+		TASK(little_fairy_1,
+
+	}
+
+
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
 	// 14 swirls that die in an explosion after a second
 	// timer, command, number of enemies, spawn delay interval
-	INVOKE_TASK_DELAYED(160, burst_swirls, 14, 10);
+	INVOKE_TASK_DELAYED(160, burst_swirls_1, 14, 10);
+
+	// big fairy with 4-8 sub-fairies
+	// TODO: fix '120' danmaku value with difficulty_value()
+	INVOKE_TASK_DELAYED(360, big_fairy_posse_1, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, 120, 0+1*I);
+
 }
 
 void stage3_events(void) {
@@ -1533,9 +1640,9 @@ void stage3_events(void) {
 	}
 
 	// TODO: convert all this
-	AT(360) {
-		create_enemy2c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0+1*I, 600 - 30 * (D_Lunatic - global.diff));
-	}
+	//AT(360) {
+	//	create_enemy2c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0+1*I, 600 - 30 * (D_Lunatic - global.diff));
+	//}
 
 	FROM_TO(600, 800-30*(D_Lunatic-global.diff), 20) {
 		create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, 5+0.95*I);
