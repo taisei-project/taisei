@@ -155,7 +155,7 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
 
 struct BoxedEntity {
-	uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
+	alignas(alignof(void*)) uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
 	uint_fast32_t spawn_id;
 };
 
