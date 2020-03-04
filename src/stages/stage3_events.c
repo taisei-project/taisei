@@ -1516,7 +1516,7 @@ TASK(burst_swirls_1, { int count; int interval; }) {
 
 }
 
-TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; cmplx danmaku_intensity; int danmaku_type; int side; }) {
+TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; int danmaku_intensity; int danmaku_type; int side; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.vel, Fairy, NULL, 0));
 
 	// fade-in
@@ -1530,14 +1530,13 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; cmplx danmaku_inten
 	e->move.attraction_point = ARGS.target_pos;
 
     int shot_interval = 1;
-    int shot_count = difficulty_value(90, 75, 60, 45);
 
 	switch(ARGS.danmaku_type) {
 		case 1:
 			e->move.attraction = 0.05;
 			WAIT(30);
 
-			for (int i = 0; i < shot_count; ++i) {
+			for (int i = 0; i < ARGS.danmaku_intensity; ++i) {
 				float a = global.timer * 0.5;
 				cmplx dir = cdir(a);
 
@@ -1545,7 +1544,7 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; cmplx danmaku_inten
 				PROJECTILE(
 					.proto = pp_wave,
 					.pos = e->pos + dir * 10,
-					.color = (shot_count % 2) ? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
+					.color = (i % 2) ? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
 					.move = move_accelerated(dir, dir * 0.025),
 				);
 
@@ -1569,6 +1568,10 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; cmplx danmaku_inten
 			for (int i = 0; i < 160; ++i) {
 				double a = global.timer/sqrt(global.diff);
 				cmplx dir = cdir(a);
+
+				if (i > 90) {
+					a *= -1;
+				}
 
 				PROJECTILE(
 						.proto = pp_wave,
