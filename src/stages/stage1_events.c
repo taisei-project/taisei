@@ -514,7 +514,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 	real cage_radius = 200;
 	int cheater = 0;
 
-	const int orbs = difficulty_value(0, 0, 5, 14);
+	const int orbs = difficulty_value(0, 0, 10, 14);
 
 	for(;;) {
 		WAIT(60);
@@ -967,9 +967,9 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 
 	e->move = move_accelerated(ARGS.vel, ARGS.accel);
 
-	int shot_interval = difficulty_value(120, 40, 30, 20);
+	int shot_interval = difficulty_value(120, 60, 30, 20);
 
-	WAIT(20);
+	WAIT(difficulty_value(40, 30, 20, 20));
 
 	while(true) {
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
@@ -1057,7 +1057,7 @@ TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	BoxedEnemy be = ENT_BOX(e);
 
 	INVOKE_TASK_DELAYED(75, instantcircle_fairy_shoot, be,
-		.cnt = difficulty_value(22, 24, 26, 28),
+		.cnt = difficulty_value(20, 22, 24, 28),
 		.speed = 1.5,
 		.boost = 2.0
 	);
@@ -1085,8 +1085,8 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 			.proto = pp_thickrice,
 			.pos = ARGS.pos,
 			.color = RGBA(0.0, 0.5 * (1.0 - i / (ARGS.shots - 1.0)), 1.0, 1),
-			// .move = move_asymptotic(-(8-0.1*i) * v, v, 0.8),
-			.move = move_accelerated(-v, 0.02 * v),
+			.move = move_asymptotic(-4 * v, v, 0.9),
+			// .move = move_accelerated(-v, 0.02 * v),
 		);
 
 		WAIT(ARGS.interval);
@@ -1108,7 +1108,14 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	cmplx orig_pos = e->pos;
 	real angle = carg(global.plr.pos - orig_pos);
 	cmplx pos = orig_pos - 24 * cdir(angle);
-	INVOKE_SUBTASK(waveshot, pos, angle, rng_sign() * M_PI/14, 1.0/12.0, 61, 1);
+
+	real spread = difficulty_value(M_PI/20, M_PI/18, M_PI/16, M_PI/14);
+	real interval = difficulty_value(3, 2, 1, 1);
+	real shots = 60 / interval;
+	real frequency = 60 * (1.0/12.0) / shots;
+	shots += 1;
+
+	INVOKE_SUBTASK(waveshot, pos, angle, rng_sign() * spread, frequency, shots, interval);
 
 	WAIT(120);
 
@@ -1135,14 +1142,16 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 
 	WAIT(60);
 
-	int cnt = 60;
+	int cnt = difficulty_value(30, 30, 60, 60);
+	int trails = difficulty_value(0, 2, 3, 4);
+	real speed = difficulty_value(2, 2, 4, 4);
 	real ofs = rng_angle();
 
 	play_sound("shot_special1");
 
 	for(int i = 0; i < cnt; ++i) {
-		cmplx aim = 4 * circle_dir_ofs(i, cnt, ofs);
-		real s = 0.5 + 0.5 * triangle(6.0 * i / (real)cnt);
+		cmplx aim = speed * circle_dir_ofs(i, cnt, ofs);
+		real s = 0.5 + 0.5 * triangle(0.1 * i);
 
 		Color clr;
 
@@ -1164,13 +1173,12 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 			.move = move_asymptotic_simple(aim, 1 + 8 * s),
 		);
 
-		for(int j = 0; j < 4; ++j) {
+		for(int j = 0; j < trails; ++j) {
 			aim *= 0.8;
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = e->pos,
 				.color = &clr,
-				// .move = move_asymptotic_simple(aim * (0.8 - 0.2 * j), 1 + 4 * s),
 				.move = move_asymptotic_simple(aim, 1 + 8 * s),
 			);
 		}
@@ -1583,7 +1591,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 	e->move.retention = 0.9;
 	WAIT(20);
 
-	int interval = difficulty_value(7,6,5,3);
+	int interval = difficulty_value(12, 9, 5, 3);
 	int rounds = 680/interval;
 	for(int k = 0; k < rounds; k++) {
 		play_sound("shot1");
@@ -1707,9 +1715,11 @@ DEFINE_EXTERN_TASK(stage1_main) {
 	INVOKE_TASK_DELAYED(125, circletoss_fairy, VIEWPORT_W+25 + VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
 
 	if(global.diff > D_Normal) {
-		INVOKE_TASK_DELAYED(100, circletoss_fairy,           -25 + 2*VIEWPORT_H/3*I,  1 - 0.5*I, 0.01 * ( 1 - I), 200);
-		INVOKE_TASK_DELAYED(125, circletoss_fairy, VIEWPORT_W+25 + 2*VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
+		INVOKE_TASK_DELAYED(115, circletoss_fairy,           -25 + 2*VIEWPORT_H/3*I,  1 - 0.5*I, 0.01 * ( 1 - I), 200);
+		INVOKE_TASK_DELAYED(140, circletoss_fairy, VIEWPORT_W+25 + 2*VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
 	}
+
+	STAGE_BOOKMARK_DELAYED(200, waveshot-fairies);
 
 	INVOKE_TASK_DELAYED(240, waveshot_fairies, 600);
 	INVOKE_TASK_DELAYED(400, burst_fairies_3);
