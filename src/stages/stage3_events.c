@@ -1498,9 +1498,9 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	});
 
 	// die after a preset time...
-	INVOKE_TASK_DELAYED(60, kill_enemy, ENT_BOX(e));
+	INVOKE_SUBTASK_DELAYED(60, kill_enemy, ENT_BOX(e));
 	// ... and explode when they die
-	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
+	INVOKE_SUBTASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
 
 	// define what direction they should fly in
 	e->move = move_linear(ARGS.dir);
@@ -1510,19 +1510,20 @@ TASK(burst_swirls_1, { int count; int interval; }) {
 	for(int i = 0; i < ARGS.count; ++i) {
 		tsrand_fill(2);
 		// spawn in a "pitchfork" pattern
-		INVOKE_TASK(burst_swirl, VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 3 * (I + sin(M_PI*global.frames/15.0)));
+		INVOKE_SUBTASK(burst_swirl, VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I, 3 * (I + sin(M_PI*global.frames/15.0)));
 		WAIT(ARGS.interval);
 	}
 
 }
 
-TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; int danmaku_intensity; int danmaku_type; int side; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.vel, Fairy, NULL, 0));
+TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_intensity; int danmaku_type; int side; }) {
+	// contains stage3_slavefairy and stage3_slavefairy2
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
 
 	// fade-in
 	e->alpha = 0;
 
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+	INVOKE_SUBTASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
 		.power = 2,
 	});
@@ -1532,6 +1533,7 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; int danmaku_intensi
     int shot_interval = 1;
 
 	switch(ARGS.danmaku_type) {
+
 		case 1:
 			e->move.attraction = 0.05;
 			WAIT(30);
@@ -1561,6 +1563,7 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; int danmaku_intensi
 				play_sound("shot1");
 				WAIT(shot_interval);
 			}
+
 		case 2:
 			e->move.attraction = 0.03;
 			WAIT(30);
@@ -1607,15 +1610,15 @@ TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; int danmaku_intensi
 
 }
 
-TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
+TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
 	// big fairy in the middle does nothing
 	// 8 fairies (2 pairs in 4 waves - bottom/top/bottom/top) spawn around her and open fire
 	// they then fly off-screen
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 10000, BigFairy, NULL, 0));
 
 	e->alpha = 0;
 
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+	INVOKE_SUBTASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
 		.power = 2,
 	});
@@ -1623,12 +1626,12 @@ TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 
 	for(int x = 0; x < 2; ++x) {
 		int danmaku_intensity = difficulty_value(120, 90, 60, 30);
-		// type, HP, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
-		INVOKE_TASK(little_fairy, 900, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_TASK(little_fairy, 900, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		// type, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
+		INVOKE_SUBTASK(little_fairy, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_SUBTASK(little_fairy, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
 		WAIT(100);
-		INVOKE_TASK(little_fairy, 900, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_TASK(little_fairy, 900, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		INVOKE_SUBTASK(little_fairy, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_SUBTASK(little_fairy, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
 		WAIT(200);
 	}
 	WAIT(100);
@@ -1639,7 +1642,7 @@ TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 }
 
 TASK(side_swirls, { } ) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos));
+	//Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos));
 
 }
 
@@ -1652,7 +1655,7 @@ TASK(stage_timeline, NO_ARGS) {
 	INVOKE_TASK_DELAYED(160, burst_swirls_1, 14, 10);
 
 	// big fairy with 4-8 sub-fairies
-	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, 1);
+	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
 
 	INVOKE_TASK_DELAYED(360, side_swirls);
 
