@@ -1641,9 +1641,68 @@ TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
 	e->move.retention = 1;
 }
 
-TASK(side_swirls, { } ) {
-	//Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos));
+TASK(side_swirl_move, { BoxedEnemy e; cmplx p0; cmplx p1; cmplx p2; } ) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	cmplx p0 = ARGS.p0;
+	cmplx p1 = ARGS.p1;
+	cmplx p2 = ARGS.p2;
 
+	log_debug("swirl move: %f+%fi / %f+%fi / %f+%fi", ARGS.p0, ARGS.p1, ARGS.p2);
+
+	for (;;) {
+		e->pos += p0 + p1 * creal(p2);
+		p2 = creal(p2) * cimag(p2) + I * cimag(p2);
+		//e->pos += e->args[0] + e->args[1] * creal(e->args[2]);
+		//e->args[2] = creal(e->args[2]) * cimag(e->args[2]) + I * cimag(e->args[2]);
+		WAIT(1);
+		YIELD;
+	}
+}
+
+TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 50, Swirl, NULL, 0));
+
+	log_debug("swirl: %f+%fi / %f+%fi / %f+%fi", ARGS.p0, ARGS.p1, ARGS.p2);
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 1,
+		.power = 1,
+	});
+
+	INVOKE_TASK(side_swirl_move, ENT_BOX(e), ARGS.p0, ARGS.p1, ARGS.p2);
+
+	int intensity = difficulty_value(4, 3, 2, 1);
+
+	for(int i = 0; i < 5; ++i ) {
+		PROJECTILE(
+				.proto = pp_flea,
+				.pos = e->pos,
+				.color = RGB(0.7, 0.0, 0.5),
+				.move = move_accelerated(2*cdir(carg(global.plr.pos - e->pos)), 0.005*cdir(M_PI*2 * frand()) * intensity),
+		);
+		play_sound("shot1");
+		WAIT(20);
+	}
+
+}
+
+TASK(side_swirls_procession, { cmplx start_pos; int duration; cmplx p0; cmplx p1; cmplx p2; } ) {
+
+	int interval = difficulty_value(50, 48, 46, 44);
+	int rounds = ARGS.duration / interval;
+
+	log_debug("create swirl");
+	log_debug("rounds: %d", rounds);
+
+	log_debug("procession: %f+%fi / %f+%fi / %f+%fi", ARGS.p0, ARGS.p1, ARGS.p2);
+	for(int x = 0; x < rounds; ++x) {
+		cmplx p2 = ARGS.p2;
+		if(!p2) {
+			log_debug("custom swirl");
+			p2 = 5 + (0.93 + 0.01 * x) * I;
+		}
+		INVOKE_TASK(side_swirl, ARGS.start_pos, ARGS.p0, ARGS.p1, p2);
+		WAIT(interval);
+	}
 }
 
 TASK(stage_timeline, NO_ARGS) {
@@ -1657,7 +1716,13 @@ TASK(stage_timeline, NO_ARGS) {
 	// big fairy with 4-8 sub-fairies
 	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
 
-	INVOKE_TASK_DELAYED(360, side_swirls);
+	// timer, type, start pos, duration, path1, path2, path3
+	INVOKE_TASK_DELAYED(600, side_swirls_procession, -20 + 20*I, 200, 5, 1*I, 5+0.95*I);
+
+	INVOKE_TASK_DELAYED(800, side_swirls_procession, -20 + 20*I, 200, 5, 1*I, 0);
+	INVOKE_TASK_DELAYED(820, side_swirls_procession, VIEWPORT_W+20 + 20*I, 200, -5, 1*I, 0);
+
+	INVOKE_TASK_DELAYED(1600, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
 
 }
 
@@ -1671,15 +1736,6 @@ void stage3_events(void) {
 	// TODO: convert all this
 	// take one down, pass it around...
 
-//	FROM_TO(600, 800-30*(D_Lunatic-global.diff), 20) {
-//create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, 5+0.95*I);
-	//}
-
-	FROM_TO(800, 1000-30*(D_Lunatic-global.diff), 20) {
-		cmplx f = 5 + (0.93 + 0.01 * _i) * I;
-		create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, f);
-		create_enemy3c(VIEWPORT_W+20 + 20*I, 50, Swirl, stage3_bitchswirl, -5, 1*I, f);
-	}
 
 	{
 		int cnt = 4;
@@ -1716,10 +1772,6 @@ void stage3_events(void) {
 
 	FROM_TO(1575, 1620, 10) {
 		create_enemy3c(VIEWPORT_W-20 - 20*I, 50, Swirl, stage3_bitchswirl, 5*I, 0, 0);
-	}
-
-	AT(1600) {
-		create_enemy2c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 1, 600 - 30 * (D_Lunatic - global.diff));
 	}
 
 	FROM_TO(1800, 2200, 10) {
