@@ -1483,7 +1483,7 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	// original command:
 	//create_enemy1c(
 	//		start_position(?) = VIEWPORT_W/2 + 20 * anfrand(0) + (VIEWPORT_H/4 + 20 * anfrand(1))*I,
-	//		velocity = 200,
+	//		HP = 200,
 	//		type = Swirl,
 	//		logic = stage3_enterswirl,
 	//		angle_of_attack(?) = 3 * (I + sin(M_PI*global.frames/15.0))
@@ -1611,7 +1611,6 @@ TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 	// big fairy in the middle does nothing
 	// 8 fairies (2 pairs in 4 waves - bottom/top/bottom/top) spawn around her and open fire
 	// they then fly off-screen
-
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, BigFairy, NULL, 0));
 
 	e->alpha = 0;
@@ -1624,7 +1623,7 @@ TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 
 	for(int x = 0; x < 2; ++x) {
 		int danmaku_intensity = difficulty_value(120, 90, 60, 30);
-		// type, velocity, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
+		// type, HP, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
 		INVOKE_TASK(little_fairy, 900, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
 		INVOKE_TASK(little_fairy, 900, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
 		WAIT(100);
@@ -1637,7 +1636,10 @@ TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 	e->move.attraction = 0;
 	e->move.acceleration = 0.02 * I + 0;
 	e->move.retention = 1;
+}
 
+TASK(side_swirls, { } ) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos));
 
 }
 
@@ -1652,6 +1654,8 @@ TASK(stage_timeline, NO_ARGS) {
 	// big fairy with 4-8 sub-fairies
 	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, 1);
 
+	INVOKE_TASK_DELAYED(360, side_swirls);
+
 }
 
 void stage3_events(void) {
@@ -1662,13 +1666,11 @@ void stage3_events(void) {
 	}
 
 	// TODO: convert all this
-	//AT(360) {
-	//	create_enemy2c(VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, BigFairy, stage3_bigfairy, 0+1*I, 600 - 30 * (D_Lunatic - global.diff));
-	//}
+	// take one down, pass it around...
 
-	FROM_TO(600, 800-30*(D_Lunatic-global.diff), 20) {
-		create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, 5+0.95*I);
-	}
+//	FROM_TO(600, 800-30*(D_Lunatic-global.diff), 20) {
+//create_enemy3c(-20 + 20*I, 50, Swirl, stage3_bitchswirl, 5, 1*I, 5+0.95*I);
+	//}
 
 	FROM_TO(800, 1000-30*(D_Lunatic-global.diff), 20) {
 		cmplx f = 5 + (0.93 + 0.01 * _i) * I;
