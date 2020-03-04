@@ -1498,9 +1498,9 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	});
 
 	// die after a preset time...
-	INVOKE_SUBTASK_DELAYED(60, kill_enemy, ENT_BOX(e));
+	INVOKE_TASK_DELAYED(60, kill_enemy, ENT_BOX(e));
 	// ... and explode when they die
-	INVOKE_SUBTASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
+	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
 
 	// define what direction they should fly in
 	e->move = move_linear(ARGS.dir);
@@ -1523,7 +1523,7 @@ TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_intensity; int dan
 	// fade-in
 	e->alpha = 0;
 
-	INVOKE_SUBTASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
 		.power = 2,
 	});
@@ -1618,7 +1618,7 @@ TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
 
 	e->alpha = 0;
 
-	INVOKE_SUBTASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
 		.power = 2,
 	});
@@ -1627,11 +1627,11 @@ TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
 	for(int x = 0; x < 2; ++x) {
 		int danmaku_intensity = difficulty_value(120, 90, 60, 30);
 		// type, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
-		INVOKE_SUBTASK(little_fairy, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_SUBTASK(little_fairy, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
 		WAIT(100);
-		INVOKE_SUBTASK(little_fairy, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_SUBTASK(little_fairy, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
 		WAIT(200);
 	}
 	WAIT(100);
