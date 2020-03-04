@@ -1516,104 +1516,124 @@ TASK(burst_swirls_1, { int count; int interval; }) {
 
 }
 
-TASK(little_fairy_1, { cmplx pos; cmplx dir; cmplx danmaku; }) {
-	// little fairy (goes with big fairy)
-	// create_enemy3c(
-	// start_position = [big_fairy_position],
-	// velocity = 900,
-	// type = Fairy,
-	// logic = slave (slavefairy OR slavefairy2),
-	// angle_of_attack = [big_fairy_position] +/- 70 +/- 50 * I,
-	// number_of_shots = [inherited_from_big_fairy],
-	// side(?) = +1 OR -1
-	// );
+TASK(little_fairy, { cmplx vel; cmplx pos; cmplx target_pos; cmplx danmaku_intensity; int danmaku_type; int side; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.vel, Fairy, NULL, 0));
 
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
-	TIMER(&t)
+	// fade-in
+	e->alpha = 0;
 
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 1, ITEM_POWER, 3);
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 3,
+		.power = 2,
+	});
+
+	e->move.attraction_point = ARGS.target_pos;
+
+    int shot_interval = 1;
+    int shot_count = difficulty_value(90, 75, 60, 45);
+
+	switch(ARGS.danmaku_type) {
+		case 1:
+			e->move.attraction = 0.05;
+			WAIT(30);
+
+			for (int i = 0; i < shot_count; ++i) {
+				float a = global.timer * 0.5;
+				cmplx dir = cdir(a);
+
+				// fire out danmaku in all directions in a spiral-ish pattern
+				PROJECTILE(
+					.proto = pp_wave,
+					.pos = e->pos + dir * 10,
+					.color = (shot_count % 2) ? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
+					.move = move_accelerated(dir, dir * 0.025),
+				);
+
+				// danmaku that only shows up above Easy difficulty
+				if(global.diff > D_Easy) {
+					PROJECTILE(
+						.proto = pp_ball,
+						.pos = e->pos + dir * 10,
+						.color = RGB(1.0, 0.6, 0.3),
+						.move = move_linear(dir * (1.0 + 0.5 * sin(a))),
+					);
+				}
+
+				play_sound("shot1");
+				WAIT(shot_interval);
+			}
+		case 2:
+			e->move.attraction = 0.03;
+			WAIT(30);
+
+			for (int i = 0; i < 160; ++i) {
+				double a = global.timer/sqrt(global.diff);
+				cmplx dir = cdir(a);
+
+				PROJECTILE(
+						.proto = pp_wave,
+						.pos = e->pos,
+						.color = (i & 3) ? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
+						.move = move_linear(2 * dir)
+					);
+				if (global.diff > D_Normal && global.timer % 3 == 0) {
+
+					PROJECTILE(
+							.proto = pp_wave,
+							.pos = e->pos,
+							.color = !(i & 3) ? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
+							.move = move_linear(-2 * dir)
+						);
+
+				}
+
+				play_sound("shot1");
+				WAIT(shot_interval);
+			}
 	}
 
-	AT(EVENT_BIRTH) {
-		e->alpha = 0;
-	}
 
-	if(t < 120) {
-		GO_TO(e, e->args[0], 0.03)
-	}
+	WAIT(60);
 
-	FROM_TO_SND("shot1_loop", 30, 120, 5 - global.diff) {
-		float a = _i * 0.5;
-		cmplx dir = cexp(I*a);
-
-		PROJECTILE(
-			.proto = pp_wave,
-			.pos = e->pos + dir * 10,
-			.color = (_i % 2)? RGB(1.0, 0.3, 0.3) : RGB(0.3, 0.3, 1.0),
-			.rule = accelerated,
-			.args = {
-				dir * 2,
-				dir * -0.035,
-		},
-	);
-
-		if(global.diff > D_Easy && e->args[1]) {
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = e->pos + dir * 10,
-				.color = RGB(1.0, 0.6, 0.3),
-				.rule = linear,
-				.args = { dir * (1.0 + 0.5 * sin(a)) }
-			);
-		}
-	}
-
-	if(t >= 120) {
-		e->pos += 3 * e->args[2] + 2.0*I;
-	}
+	// fly out
+	cmplx exit_accel = 0.02 * I + (ARGS.side * 0.03);
+	e->move.attraction = 0;
+	e->move.acceleration = exit_accel;
+	e->move.retention = 1;
 
 
 }
 
-TASK(little_fairy_2, { cmplx pos; cmplx dir; cmplx danmaku; }) {
-	// little fairy (goes with big fairy)
-	// create_enemy3c(
-	// start_position = [big_fairy_position],
-	// velocity = 900,
-	// type = Fairy,
-	// logic = slave (slavefairy OR slavefairy2),
-	// angle_of_attack = [big_fairy_position] +/- 70 +/- 50 * I,
-	// number_of_shots = [inherited_from_big_fairy],
-	// side(?) = +1 OR -1
-	// );
-
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
-
-}
-
-//TASK(big_fairy_1, { cmplx pos; cmplx dir; }) {
-	//create_enemy2c(
-	//	start_position = VIEWPORT_W/2 + (VIEWPORT_H/3)*I,
-	//	velocity = 10000,
-	//	type = BigFairy,
-	//	logic = stage3_bigfairy,
-	//	angle_of_attack = 0+1*I,
-	//	number_of_shots(?) = 600 - 30 * (D_Lunatic - global.diff)
-	//		);
-//}
-
-TASK(big_fairy_posse_1, { cmplx pos; cmplx velocity; cmplx danmaku; int type; } ) {
+TASK(big_fairy_posse, { cmplx pos; cmplx velocity; int danmaku_type; } ) {
 	// big fairy in the middle does nothing
 	// 8 fairies (2 pairs in 4 waves - bottom/top/bottom/top) spawn around her and open fire
+	// they then fly off-screen
 
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, BigFairy, NULL, 0));
 
+	e->alpha = 0;
 
-	for(int i = 0; i < 2; ++i) {
-		TASK(little_fairy_1,
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 3,
+		.power = 2,
+	});
+	wait(100);
 
+	for(int x = 0; x < 2; ++x) {
+		int danmaku_intensity = difficulty_value(120, 90, 60, 30);
+		// type, velocity, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
+		INVOKE_TASK(little_fairy, 900, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, 900, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		WAIT(100);
+		INVOKE_TASK(little_fairy, 900, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, 900, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		WAIT(200);
 	}
+	WAIT(100);
+
+	e->move.attraction = 0;
+	e->move.acceleration = 0.02 * I + 0;
+	e->move.retention = 1;
 
 
 }
@@ -1627,8 +1647,7 @@ TASK(stage_timeline, NO_ARGS) {
 	INVOKE_TASK_DELAYED(160, burst_swirls_1, 14, 10);
 
 	// big fairy with 4-8 sub-fairies
-	// TODO: fix '120' danmaku value with difficulty_value()
-	INVOKE_TASK_DELAYED(360, big_fairy_posse_1, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, 120, 0+1*I);
+	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 10000, 1);
 
 }
 
