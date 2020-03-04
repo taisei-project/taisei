@@ -156,18 +156,26 @@ TASK(crystal_rain_drops, NO_ARGS) {
 	}
 }
 
-TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; }) {
+TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
+
+	cmplx shot_ofs = -60*I;
 
 	aniplayer_queue(&boss->ani, "(9)", 0);
 	WAIT(10);
+
+	INVOKE_SUBTASK(common_charge, shot_ofs, RGBA(0.3, 0.5, 1, 0), ARGS.charge_time,
+		.anchor = &boss->pos,
+		.sound = COMMON_CHARGE_SOUNDS
+	);
+	WAIT(ARGS.charge_time);
 
 	int interval = difficulty_value(100, 80, 50, 20);
 
 	for(int t = 0, round = 0; t < 400; ++round) {
 		bool odd = (global.diff > D_Normal ? (round & 1) : 0);
 		real n = (difficulty_value(1, 2, 6, 11) + odd)/2.0;
-		cmplx org = boss->pos;
+		cmplx org = boss->pos + shot_ofs;
 
 		play_sound("shot_special1");
 		for(real i = -n; i <= n; i++) {
@@ -196,9 +204,8 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
 		boss->move.attraction_max_speed = 40;
 		boss->move.attraction = 0.01;
 		cirno_wander(boss, 80, 230);
-		WAIT(80);
-		INVOKE_SUBTASK(crystal_rain_cirno_shoot, ENT_BOX(boss));
-		WAIT(100);
+		INVOKE_SUBTASK(crystal_rain_cirno_shoot, ENT_BOX(boss), 80);
+		WAIT(180);
 		cirno_wander(boss, 40, 230);
 		WAIT(120);
 		cirno_wander(boss, 40, 230);
@@ -265,6 +272,17 @@ TASK(cirno_spiralshot, {
 
 	DECLARE_ENT_ARRAY(Projectile, projs, count);
 
+	int fire_delay = 20;
+	int charge_time = 60;
+	int charge_delay = count * interval - charge_time + fire_delay;
+
+	INVOKE_SUBTASK_DELAYED(charge_delay, common_charge,
+		.pos = pos,
+		.color = RGBA(0.3, 0.3, 0.8, 0),
+		.time = charge_time,
+		.sound = COMMON_CHARGE_SOUNDS
+	);
+
 	for(int b = 0; b < count; ++b) {
 		play_loop("shot1_loop");
 
@@ -281,7 +299,7 @@ TASK(cirno_spiralshot, {
 		WAIT(interval);
 	}
 
-	WAIT(20);
+	WAIT(fire_delay);
 	play_sound("shot_special1");
 	play_sound("redirect");
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
@@ -509,6 +527,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 		}
 
 		for(int i = 0; i < orbs; ++i) {
+			play_loop("shot1_loop");
 			INVOKE_TASK(halation_orb,
 				.pos = {
 					orb_positions[i],
@@ -652,9 +671,15 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 	for(;;) {
 		INVOKE_SUBTASK_DELAYED(60, crystal_wall);
 
-		WAIT(330);
+		int charge_time = 120;
+
+		WAIT(330 - charge_time);
 		aniplayer_queue(&boss->ani, "(9)" ,0);
+		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
+		WAIT(charge_time);
+
 		boss->move = move_towards(global.plr.pos, 0.01);
+		boss->move.attraction_max_speed = 128;
 
 		for(int t = 0; t < 370; ++t) {
 			play_loop("shot1_loop");
@@ -1099,7 +1124,14 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 		.points = 8,
 	});
 
-	e->move = move_towards(ARGS.target_pos, 0.04);
+	e->move = move_towards(ARGS.target_pos, 0.06);
+
+	WAIT(40);
+
+	INVOKE_SUBTASK(common_charge, 0, RGBA(1.0, 0, 0.2, 0), 60,
+		.anchor = &e->pos,
+		.sound = COMMON_CHARGE_SOUNDS
+	);
 
 	WAIT(60);
 
@@ -1370,7 +1402,7 @@ TASK_WITH_INTERFACE(icy_storm, BossAttack) {
 
 	for(int burst = 0;; ++burst) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
-		INVOKE_TASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
 		aniplayer_queue(&boss->ani, "main", 0);
 
@@ -1428,7 +1460,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 
-		INVOKE_TASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
+		INVOKE_SUBTASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(40);
 
 		int n = global.diff;
