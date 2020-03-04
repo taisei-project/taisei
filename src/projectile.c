@@ -1157,11 +1157,9 @@ void petal_explosion(int n, cmplx pos) {
 			.sprite = "petal",
 			.pos = pos,
 			.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
-			.rule = asymptotic,
 			.move = move_asymptotic_simple(v, 5),
 			.draw_rule = pdraw_petal_random(),
-			// TODO: maybe remove this noreflect, there shouldn't be a cull mode mess anymore
-			.flags = PFLAG_NOREFLECT | (n % 2 ? 0 : PFLAG_REQUIREDPARTICLE) | PFLAG_MANUALANGLE,
+			.flags = (n % 2 ? 0 : PFLAG_REQUIREDPARTICLE) | PFLAG_MANUALANGLE,
 			.layer = LAYER_PARTICLE_PETAL,
 		);
 	}
