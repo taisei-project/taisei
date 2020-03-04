@@ -44,7 +44,6 @@ atlases = [
     ['gray16',      [preset_png]],
     ['huge',        []],
     ['portraits',   ['--width=4096', '--height=4096']],
-    ['coroutines_temp', []],  # TODO merge this into `common` when coroutines are merged
 ]
 
 atlas_profiles = [
