@@ -295,7 +295,6 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 
 	p->angle = carg(p->args[0]);
 	t -= creal(p->args[2]);
-
 	if(t == 0) {
 		play_sound("redirect");
 		play_sound("shot_special1");
@@ -1442,7 +1441,7 @@ static Boss* stage3_create_boss(void) {
 	return wriggle;
 }
 
-TASK(kill_enemy, { BoxedEnemy e; }) {
+TASK(destroy_enemy, { BoxedEnemy e; }) {
 	// used for when enemies should pop after a preset time
 	Enemy *e = TASK_BIND(ARGS.e);
 	e->hp = ENEMY_KILLED;
@@ -1487,7 +1486,7 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; int shot_type; }) {
 	});
 
 	// die after a preset time...
-	INVOKE_TASK_DELAYED(60, kill_enemy, ENT_BOX(e));
+	INVOKE_TASK_DELAYED(60, destroy_enemy, ENT_BOX(e));
 	// ... and explode when they die
 	INVOKE_TASK_WHEN(&e->events.killed, death_burst_1, ENT_BOX(e), ARGS.shot_type);
 
@@ -1505,7 +1504,7 @@ TASK(burst_swirls_1, { int count; int interval; }) {
 
 }
 
-TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_intensity; int danmaku_type; int side; }) {
+TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_type; int side; }) {
 	// contains stage3_slavefairy and stage3_slavefairy2
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 900, Fairy, NULL, 0));
 
@@ -1520,14 +1519,16 @@ TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_intensity; int dan
 	e->move.attraction_point = ARGS.target_pos;
 
     int shot_interval = 1;
+	int intensity = difficulty_value(90, 70, 50, 30);
 
 	switch(ARGS.danmaku_type) {
 
 		case 1:
+
 			e->move.attraction = 0.05;
 			WAIT(60);
 
-			for (int i = 0; i < ARGS.danmaku_intensity; ++i) {
+			for (int i = 0; i < intensity; ++i) {
 				float a = global.timer * 0.5;
 				cmplx dir = cdir(a);
 
@@ -1594,11 +1595,21 @@ TASK(little_fairy, { cmplx pos; cmplx target_pos; int danmaku_intensity; int dan
 	e->move.attraction = 0;
 	e->move.acceleration = exit_accel;
 	e->move.retention = 1;
-
-
 }
 
-TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
+TASK(little_fairy_line, { int count; cmplx pos; cmplx target_pos; }) {
+
+	for(int i = 0; i < ARGS.count; ++i) {
+		cmplx pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
+		cmplx pos2 = VIEWPORT_W/2+50*(i-ARGS.count/2)+VIEWPORT_H/3*I;
+		// type, start pos, end pos, type, side (not needed?)
+		INVOKE_TASK(little_fairy, pos1, pos2, 2);
+		WAIT(5);
+
+	}
+}
+
+TASK(big_fairy_group, { cmplx pos; int danmaku_type; } ) {
 	// big fairy in the middle does nothing
 	// 8 fairies (2 pairs in 4 waves - bottom/top/bottom/top) spawn around her and open fire
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 10000, BigFairy, NULL, 0));
@@ -1612,13 +1623,12 @@ TASK(big_fairy_posse, { cmplx pos; int danmaku_type; } ) {
 	wait(100);
 
 	for(int x = 0; x < 2; ++x) {
-		int danmaku_intensity = difficulty_value(90, 70, 50, 30);
-		// type, big fairy pos, little fairy pos (relative), danmaku intensity, danmaku type, side of big fairy
-		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 + 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		// type, big fairy pos, little fairy pos (relative), danmaku type, side of big fairy
+		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 + 50 * I, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 + 50 * I, ARGS.danmaku_type, -1);
 		WAIT(100);
-		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, 1);
-		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 - 50 * I, danmaku_intensity, ARGS.danmaku_type, -1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 - 50 * I, ARGS.danmaku_type, 1);
+		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 - 50 * I, ARGS.danmaku_type, -1);
 		WAIT(400);
 	}
 	WAIT(100);
@@ -1637,7 +1647,7 @@ TASK(side_swirl_move, { BoxedEnemy e; cmplx p0; cmplx p1; cmplx p2; } ) {
 	for (;;) {
 		e->pos += p0 + p1 * creal(p2);
 		p2 = creal(p2) * cimag(p2) + I * cimag(p2);
-		//TODO: fix this to use attraction_point
+		// TODO: get rid of this 'wait'
 		WAIT(1);
 		YIELD;
 	}
@@ -1668,12 +1678,11 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 
 }
 
-TASK(side_swirls_procession, { cmplx start_pos; int duration; cmplx p0; cmplx p1; cmplx p2; } ) {
+TASK(side_swirls_procession, { cmplx start_pos; int count; cmplx p0; cmplx p1; cmplx p2; } ) {
 
-	int interval = difficulty_value(50, 48, 46, 44);
-	int rounds = ARGS.duration / interval;
+	int interval = 20;
 
-	for(int x = 0; x < rounds; ++x) {
+	for(int x = 0; x < ARGS.count; ++x) {
 		cmplx p2 = ARGS.p2;
 		if(!p2) {
 			p2 = 5 + (0.93 + 0.01 * x) * I;
@@ -1732,7 +1741,7 @@ TASK(burst_fairy, { cmplx pos; cmplx target_pos; } ) {
 		}
 		WAIT(intensity);
 	}
-	WAIT(100);
+	WAIT(5);
 
 	cmplx exit_accel = 0.02 * I + 0.03;
 	e->move.attraction = 0;
@@ -1740,7 +1749,7 @@ TASK(burst_fairy, { cmplx pos; cmplx target_pos; } ) {
 	e->move.retention = 1;
 }
 
-TASK(burst_fairy_storm, { int count; int step; } ) {
+TASK(burst_fairy_squad, { int count; int step; } ) {
 	// fires a bunch of "lines" of bullets in a starburst pattern
 	// does so after waiting for a short amount of time
 
@@ -1765,26 +1774,192 @@ TASK(burst_fairy_storm, { int count; int step; } ) {
 
 }
 
+
+TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_time; int move_first; }) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
+
+	e->alpha = 0;
+
+	if(ARGS.move_first) {
+		e->move.attraction_point = ARGS.target_pos;
+		e->move.attraction = 0.03;
+		WAIT(100);
+	}
+
+	play_sound("shot_special1");
+	INVOKE_TASK(common_charge, e->pos, RGBA(0.0, 0.5, 1.0, 0.5), ARGS.charge_time, .sound = COMMON_CHARGE_SOUNDS);
+	WAIT(ARGS.charge_time + 20);
+
+	int intensity = difficulty_value(3, 2, 1, 1);
+	int interval = 1;
+	int cnt = 19 - 4 * intensity;
+
+	for(int x = 0; x < cnt; ++x) {
+
+        cmplx aim = (global.plr.pos - e->pos);
+        aim /= cabs(aim);
+        cmplx aim_norm = -cimag(aim) + I*creal(aim);
+
+        int layers = 1 + global.diff;
+        int i = x;
+
+        for(int layer = 0; layer < layers; ++layer) {
+            if(layer&1) {
+                i = cnt - 1 - i;
+            }
+
+            double f = i / (cnt - 1.0);
+            int w = 100 - 20 * layer;
+            cmplx o = e->pos + w * psin(M_PI*f) * aim + aim_norm * w*0.8 * (f - 0.5);
+            cmplx paim = e->pos + (w+1) * aim - o;
+            paim /= cabs(paim);
+
+            PROJECTILE(
+                .proto = pp_wave,
+                .pos = o,
+                .color = color_lerp(RGB(0.0, 0.0, 1.0), RGB(1.0, 0.0, 0.0), f),
+                .rule = stage3_chargefairy_proj,
+                .args = {
+                    paim, 6 + global.diff - layer,
+                    ARGS.charge_time - x
+                },
+            );
+        }
+	}
+
+	e->move = move_linear(ARGS.exit_dir);
+
+}
+
+TASK(charge_fairy_squad_1, { int count; int step; int charge_time; } ) {
+	// squad of small fairies that fire tight groups of "charged shots"
+	// and then fly off screen in random directions
+
+	for(int x = 0; x < ARGS.count; ++x) {
+		int i = x % 4;
+		double span = 300 - 60 * (i/2);
+		cmplx pos = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
+		cmplx exitdir = pos - (VIEWPORT_W+VIEWPORT_H*I)/2;
+		exitdir /= cabs(exitdir);
+		// type, starting_position, target_position, move first
+		INVOKE_TASK(charge_fairy, pos, 0, exitdir, ARGS.charge_time, 0);
+		WAIT(ARGS.step);
+	}
+}
+
+TASK(charge_fairy_squad_2, { int count; cmplx start_pos; cmplx target_pos; cmplx exit_dir; int delay; int charge_time; } ) {
+
+	for(int x = 0; x < ARGS.count; ++x) {
+		INVOKE_TASK(charge_fairy, ARGS.start_pos, ARGS.target_pos, ARGS.exit_dir, ARGS.charge_time, 1);
+		WAIT(ARGS.delay);
+	}
+}
+
+TASK(corner_fairy, { cmplx pos; cmplx p1; cmplx p2; int type; } ) {
+	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 500, Fairy, NULL, 0));
+
+	e->alpha = 0;
+
+	INVOKE_TASK_DELAYED(240, destroy_enemy, ENT_BOX(e));
+
+	e->move.attraction_point = ARGS.p1;
+	e->move.attraction = 0.02;
+	WAIT(100);
+
+	for(int x = 0; x < 100; ++x) {
+		int momentum = 140 + x;
+		log_debug("momentum: %d", momentum);
+		e->move.attraction_point = ARGS.p2;
+		e->move.attraction = 0.025 * min((20 + x) / 42.0, 1);
+
+		int d = 5;
+		if(!(momentum % d)) {
+			int i, cnt = 7*global.diff;
+
+			for(i = 0; i < cnt; ++i) {
+                float c = psin(momentum / 15.0);
+                bool wave = global.diff > D_Easy && ARGS.type;
+
+                PROJECTILE(
+                    .proto = wave ? pp_wave : pp_thickrice,
+                    .pos = e->pos,
+                    .color = ARGS.type
+                            ? RGB(0.5 - c*0.2, 0.3 + c*0.7, 1.0)
+                            : RGB(1.0 - c*0.5, 0.6, 0.5 + c*0.5),
+					.move = move_asymptotic_simple((1.8-0.4*wave*!!(e->args[2]))*cexp(I*((2*i*M_PI/cnt)+carg((VIEWPORT_W+I*VIEWPORT_H)/2 - e->pos))), 1.5),
+                );
+				WAIT(1);
+
+			}
+		}
+
+	}
+
+}
+
+TASK(corner_fairies_1, NO_ARGS) {
+	double offs = -50;
+
+	cmplx p1 = 0+0*I;
+	cmplx p2 = VIEWPORT_W+0*I;
+	cmplx p3 = VIEWPORT_W+VIEWPORT_H*I;
+	cmplx p4 = 0+VIEWPORT_H*I;
+
+	INVOKE_TASK(corner_fairy, p1, p1 - offs - offs*I, p2 + offs - offs*I);
+	INVOKE_TASK(corner_fairy, p2, p2 + offs - offs*I, p3 + offs + offs*I);
+	INVOKE_TASK(corner_fairy, p3, p3 + offs + offs*I, p4 - offs + offs*I);
+	INVOKE_TASK(corner_fairy, p4, p4 - offs + offs*I, p1 - offs - offs*I);
+
+	WAIT(90);
+
+	if(global.diff > D_Normal) {
+		INVOKE_TASK(corner_fairy, p1, p1 - offs*I, p2 + offs);
+		INVOKE_TASK(corner_fairy, p2, p2 + offs, p3 + offs*I);
+		INVOKE_TASK(corner_fairy, p3, p3 + offs*I, p4 - offs);
+		INVOKE_TASK(corner_fairy, p4, p4 - offs, p1 + offs*I);
+	}
+
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
 	// 14 swirls that die in an explosion after a second
 	// timer, command, number of enemies, spawn delay interval
-	INVOKE_TASK_DELAYED(160, burst_swirls_1, 14, 10);
+//	INVOKE_TASK_DELAYED(160, burst_swirls_1, 14, 10);
 
 	// big fairy with 4-8 sub-fairies
-	INVOKE_TASK_DELAYED(360, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
+//	INVOKE_TASK_DELAYED(360, big_fairy_group, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
 
 	// timer, type, start pos, duration, path1, path2, path3
-	INVOKE_TASK_DELAYED(600, side_swirls_procession, -20 + 20*I, 200, 5, 1*I, 5+0.95*I);
+//	INVOKE_TASK_DELAYED(600, side_swirls_procession, -20 + 20*I, 6, 5, 1*I, 5+0.95*I);
 
-	INVOKE_TASK_DELAYED(800, side_swirls_procession, -20 + 20*I, 200, 5, 1*I, 0);
-	INVOKE_TASK_DELAYED(820, side_swirls_procession, VIEWPORT_W+20 + 20*I, 200, -5, 1*I, 0);
+//	INVOKE_TASK_DELAYED(800, side_swirls_procession, -20 + 20*I, 6, 5, 1*I, 0);
+//	INVOKE_TASK_DELAYED(820, side_swirls_procession, VIEWPORT_W+20 + 20*I, 6, -5, 1*I, 0);
 
-	INVOKE_TASK_DELAYED(1030, burst_fairy_storm, 4, 20);
+//	INVOKE_TASK_DELAYED(1030, burst_fairy_squad, 4, 20);
 
-	INVOKE_TASK_DELAYED(1600, big_fairy_posse, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
+	// timer, type, count, delay, charge time
+//	INVOKE_TASK_DELAYED(1200, charge_fairy_squad_1, 6, 60, 30);
+
+//	INVOKE_TASK_DELAYED(1530, side_swirls_procession, 20 - 20*I, 5, 5*I, 0, 0);
+
+//	INVOKE_TASK_DELAYED(1575, side_swirls_procession, VIEWPORT_W-20 - 20*I, 5, 5*I, 0, 0);
+
+//	INVOKE_TASK_DELAYED(1600, big_fairy_group, VIEWPORT_W/2 + (VIEWPORT_H/3)*I, 1);
+
+	// timer, type, count, start pos, end pos
+//	INVOKE_TASK_DELAYED(1800, little_fairy_line, 3);
+
+//	INVOKE_TASK_DELAYED(2000, charge_fairy_squad_2, 3, -20 + (VIEWPORT_H+20)*I, 30 + VIEWPORT_H/2.0*I, -1*I, 60, 30);
+//	INVOKE_TASK_DELAYED(2000, charge_fairy_squad_2, 3, VIEWPORT_W+20 + (VIEWPORT_H+20)*I, VIEWPORT_W-30 + VIEWPORT_H/2.0*I, -1*I, 60, 30);
+
+//	INVOKE_TASK_DELAYED(2400, corner_fairies_1);
+
+	STAGE_BOOKMARK_DELAYED(50, pre-midboss);
+
+
 
 }
 
@@ -1797,80 +1972,7 @@ void stage3_events(void) {
 
 	// TODO: convert all this
 	// take one down, pass it around...
-
-	{
-		int cnt = 6;
-		int step = 60;
-		int start = 1200;
-		FROM_TO(start, start + cnt * step - 1, step) {
-			int i = _i % 4;
-			double span = 300 - 60 * (i/2);
-			cmplx pos = VIEWPORT_W/2 + span * (-0.5 + (i&1)) + (VIEWPORT_H/3 + 100*(i/2))*I;
-
-			cmplx exitdir = pos - (VIEWPORT_W+VIEWPORT_H*I)/2;
-			exitdir /= cabs(exitdir);
-
-			create_enemy3c(pos, 1000, Fairy, stage3_chargefairy, pos, 30, exitdir);
-		}
-	}
-
-	FROM_TO(1530, 1575, 10) {
-		create_enemy3c(20 - 20*I, 50, Swirl, stage3_bitchswirl, 5*I, 0, 0);
-	}
-
-	FROM_TO(1575, 1620, 10) {
-		create_enemy3c(VIEWPORT_W-20 - 20*I, 50, Swirl, stage3_bitchswirl, 5*I, 0, 0);
-	}
-
-	FROM_TO(1800, 2200, 10) {
-		if(global.enemies.first == NULL) {
-			int cnt = 2;
-			for(int i = 0; i <= cnt;i++) {
-				cmplx pos1 = VIEWPORT_W/2+VIEWPORT_W/3*nfrand() + VIEWPORT_H/5*I;
-				cmplx pos2 = VIEWPORT_W/2+50*(i-cnt/2)+VIEWPORT_H/3*I;
-				create_enemy3c(pos1, 700, Fairy, stage3_slavefairy2, pos2, i&1,0.5*(i-cnt/2));
-			}
-		}
-	}
-
-	{
-		int cnt = 3;
-		int step = 60;
-		int start = 2000;
-
-		FROM_TO(start, start + cnt * step - 1, step) {
-			create_enemy3c(-20 + (VIEWPORT_H+20)*I, 1000, Fairy, stage3_chargefairy, 30 + VIEWPORT_H/2.0*I, 60, -1*I);
-			create_enemy3c(VIEWPORT_W+20 + (VIEWPORT_H+20)*I, 1000, Fairy, stage3_chargefairy, VIEWPORT_W-30 + VIEWPORT_H/2.0*I, 60, -1*I);
-		}
-	}
-
-	AT(2400) {
-		double offs = -50;
-
-		cmplx p1 = 0+0*I;
-		cmplx p2 = VIEWPORT_W+0*I;
-		cmplx p3 = VIEWPORT_W+VIEWPORT_H*I;
-		cmplx p4 = 0+VIEWPORT_H*I;
-
-		create_enemy2c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs - offs*I, p2 + offs - offs*I);
-		create_enemy2c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs - offs*I, p3 + offs + offs*I);
-		create_enemy2c(p3, 500, Fairy, stage3_cornerfairy, p3 + offs + offs*I, p4 - offs + offs*I);
-		create_enemy2c(p4, 500, Fairy, stage3_cornerfairy, p4 - offs + offs*I, p1 - offs - offs*I);
-	}
-
-	if(global.diff > D_Normal) AT(2490) {
-		double offs = -50;
-
-		cmplx p1 = VIEWPORT_W/2+0*I;
-		cmplx p2 = VIEWPORT_W+VIEWPORT_H/2*I;
-		cmplx p3 = VIEWPORT_W/2+VIEWPORT_H*I;
-		cmplx p4 = 0+VIEWPORT_H/2*I;
-
-		create_enemy2c(p1, 500, Fairy, stage3_cornerfairy, p1 - offs*I, p2 + offs);
-		create_enemy2c(p2, 500, Fairy, stage3_cornerfairy, p2 + offs,   p3 + offs*I);
-		create_enemy2c(p3, 500, Fairy, stage3_cornerfairy, p3 + offs*I, p4 - offs);
-		create_enemy2c(p4, 500, Fairy, stage3_cornerfairy, p4 - offs,   p1 + offs*I);
-	}
+	//
 
 	int midboss_time = STAGE3_MIDBOSS_TIME;
 
