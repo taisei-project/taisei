@@ -301,7 +301,7 @@ static int stage3_chargefairy_proj(Projectile *p, int t) {
 		spawn_projectile_highlight_effect(p);
 	} else if(t > 0) {
 		p->args[1] *= 0.8;
-		p->pos += p->args[0] * (p->args[1] + 1);
+		//p->move = move_towards(p->args[0] * (p->args[1] + 1));
 	}
 
 	return ACTION_NONE;
@@ -1620,7 +1620,7 @@ TASK(big_fairy_group, { cmplx pos; int danmaku_type; } ) {
 		.points = 3,
 		.power = 2,
 	});
-	wait(100);
+	WAIT(100);
 
 	for(int x = 0; x < 2; ++x) {
 		// type, big fairy pos, little fairy pos (relative), danmaku type, side of big fairy
@@ -1665,7 +1665,7 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 
 	int intensity = difficulty_value(4, 3, 2, 1);
 
-	for(int i = 0; i < 5; ++i ) {
+	for(int i = 0; i < intensity; ++i ) {
 		PROJECTILE(
 				.proto = pp_flea,
 				.pos = e->pos,
@@ -1792,9 +1792,11 @@ TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_tim
 
 	int intensity = difficulty_value(3, 2, 1, 1);
 	int interval = 1;
-	int cnt = 19 - 4 * intensity;
+	int count = 19 - 4 * intensity;
 
-	for(int x = 0; x < cnt; ++x) {
+	DECLARE_ENT_ARRAY(Projectile, projs, 100);
+
+	for(int x = 0; x < count; ++x) {
 
         cmplx aim = (global.plr.pos - e->pos);
         aim /= cabs(aim);
@@ -1805,29 +1807,34 @@ TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_tim
 
         for(int layer = 0; layer < layers; ++layer) {
             if(layer&1) {
-                i = cnt - 1 - i;
+                i = count - 1 - i;
             }
 
-            double f = i / (cnt - 1.0);
+            double f = i / (count - 1.0);
             int w = 100 - 20 * layer;
             cmplx o = e->pos + w * psin(M_PI*f) * aim + aim_norm * w*0.8 * (f - 0.5);
             cmplx paim = e->pos + (w+1) * aim - o;
             paim /= cabs(paim);
 
-            PROJECTILE(
+            ENT_ARRAY_ADD(&projs, PROJECTILE(
                 .proto = pp_wave,
                 .pos = o,
                 .color = color_lerp(RGB(0.0, 0.0, 1.0), RGB(1.0, 0.0, 0.0), f),
-                .rule = stage3_chargefairy_proj,
-                .args = {
-                    paim, 6 + global.diff - layer,
-                    ARGS.charge_time - x
-                },
-            );
-        }
+				.args = {
+					paim, 6 + global.diff - layer,
+				},
+			));
+		}
 	}
 
+	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+		spawn_projectile_highlight_effect(p);
+		p->move = move_linear(p->args[0] * (p->args[1] * 0.2));
+	});
+	WAIT(100);
+
 	e->move = move_linear(ARGS.exit_dir);
+	ENT_ARRAY_CLEAR(&projs);
 
 }
 
@@ -1921,6 +1928,42 @@ TASK(corner_fairies_1, NO_ARGS) {
 
 }
 
+TASK_WITH_INTERFACE(scuttle_intro, BossAttack) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
+}
+
+TASK_WITH_INTERFACE(scuttle_outro, BossAttack) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
+
+//	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
+
+}
+
+TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
+
+
+}
+
+TASK(spawn_midboss, NO_ARGS) {
+
+	STAGE_BOOKMARK_DELAYED(120, midboss);
+
+	Boss *boss = global.boss = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
+	boss_add_attack_task(boss, AT_Move, "Introduction", 1, 0, TASK_INDIRECT(BossAttack, scuttle_intro), NULL);
+//	boss_add_attack_task(boss, AT_Normal, "Lethal Bite", 11, 20000, TASK_INDIRECT(BossAttack, scuttle_lethbite), NULL);
+//	boss_add_attack_from_info(boss, &stage3_spells.mid.deadly_dance, false);
+	boss_add_attack_task(boss, AT_Move, "Runaway", 2, 1, TASK_INDIRECT(BossAttack, scuttle_outro), NULL);
+	boss->zoomcolor = *RGB(0.4, 0.1, 0.4);
+
+	boss_start_attack(boss, boss->attacks);
+
+	WAIT(60);
+
+}
+
 TASK(stage_timeline, NO_ARGS) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
@@ -1941,7 +1984,7 @@ TASK(stage_timeline, NO_ARGS) {
 //	INVOKE_TASK_DELAYED(1030, burst_fairy_squad, 4, 20);
 
 	// timer, type, count, delay, charge time
-//	INVOKE_TASK_DELAYED(1200, charge_fairy_squad_1, 6, 60, 30);
+	INVOKE_TASK_DELAYED(100, charge_fairy_squad_1, 6, 60, 30);
 
 //	INVOKE_TASK_DELAYED(1530, side_swirls_procession, 20 - 20*I, 5, 5*I, 0, 0);
 
@@ -1957,9 +2000,18 @@ TASK(stage_timeline, NO_ARGS) {
 
 //	INVOKE_TASK_DELAYED(2400, corner_fairies_1);
 
-	STAGE_BOOKMARK_DELAYED(50, pre-midboss);
+//	STAGE_BOOKMARK_DELAYED(50, pre-midboss);
 
+//	INVOKE_TASK_DELAYED(150, spawn_midboss);
 
+//	while(!global.boss) YIELD;
+//	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+//	int filler_time = 2180;
+//	int time_ofs = 500 - midboss_time;
+
+//	log_debug("midboss_time = %i; filler_time = %i; time_ofs = %i", midboss_time, filler_time, time_ofs);
+
+//	STAGE_BOOKMARK(post-midboss);
 
 }
 
