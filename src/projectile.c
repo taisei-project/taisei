@@ -1171,6 +1171,7 @@ void projectiles_preload(void) {
 		"sprite_silhouette",
 		defaults_proj.shader,
 		defaults_part.shader,
+		"sprite_default",
 	};
 
 	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);

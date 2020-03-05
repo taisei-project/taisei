@@ -461,7 +461,7 @@ static void reimu_spirit_shot(Player *p) {
 					.args = { -18.0*I*cexp(I*spread) },
 					.type = PROJ_PLAYER,
 					.damage = 60 - 5 * (p->power / 100),
-					.shader = "sprite_default",
+					.shader = "sprite_particle",
 				);
 			}
 		}
@@ -485,7 +485,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.type = PROJ_PLAYER,
 			.damage_type = DMG_PLAYER_SHOT,
 			.damage = cimag(e->args[2]),
-			.shader = "sprite_default",
+			.shader = "sprite_particle",
 		);
 	} else if(!(st % 12)) {
 		cmplx v = -10 * I * cexp(I*cimag(e->args[0]));
@@ -500,7 +500,7 @@ static void reimu_spirit_slave_shot(Enemy *e, int t) {
 			.damage_type = DMG_PLAYER_SHOT,
 			.damage = creal(e->args[2]),
 			// .timeout = 60,
-			.shader = "sprite_default",
+			.shader = "sprite_particle",
 			.scale = REIMU_SPIRIT_HOMING_SCALE,
 			.flags = PFLAG_NOCOLLISIONEFFECT,
 		);

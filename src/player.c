@@ -428,7 +428,7 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
-		.shader = "sprite_silhouette",
+		.shader_ptr = p->shader,
 	});
 }
 
@@ -506,6 +506,7 @@ static void player_powersurge_logic(Player *plr) {
 
 	PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
+		.shader = "sprite_silhouette",
 		.pos = plr->pos,
 		.color = RGBA(1, 1, 1, 0.5),
 		.rule = powersurge_trail,

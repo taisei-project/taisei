@@ -113,6 +113,11 @@ DEFINE_EXTERN_TASK(common_charge) {
 		TASK_BIND(ARGS.bind_to_entity);
 	}
 
+	// This is just about below LAYER_PARTICLE_HIGH
+	// We want it on a separate layer for better sprite batching efficiency,
+	// because these sprites are on a different texture than most.
+	drawlayer_t blast_layer = LAYER_PARTICLE_PETAL | 0x80;
+
 	for(int i = 0; i < maxtime;) {
 		cmplx pos = *pos_anchor + pos_offset;
 		int stage = (5 * i) / maxtime;
@@ -140,7 +145,7 @@ DEFINE_EXTERN_TASK(common_charge) {
 			.flags = PFLAG_NOREFLECT,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
 			.angle = rng_angle(),
-			.layer = LAYER_PARTICLE_HIGH,
+			.layer = blast_layer,
 		);
 
 		i += WAIT(delay);
@@ -164,7 +169,7 @@ DEFINE_EXTERN_TASK(common_charge) {
 		.timeout = 30,
 		.flags = PFLAG_NOREFLECT,
 		.angle = rng_angle(),
-		.layer = LAYER_PARTICLE_HIGH,
+		.layer = blast_layer,
 	);
 }
 
