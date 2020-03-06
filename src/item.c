@@ -142,14 +142,14 @@ Item *create_clear_item(cmplx pos, uint clear_flags) {
 		type = ITEM_VOLTAGE;
 	}
 
-	Item *i = create_item(pos, -10*I + 5*nfrand(), type);
+	Item *i = create_item(pos, -10*I + 5*rng_sreal(), type);
 
 	if(i) {
 		PARTICLE(
 			.sprite = "flare",
 			.pos = pos,
 			.timeout = 30,
-			.draw_rule = Fade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.layer = LAYER_BULLET+1
 		);
 
@@ -251,7 +251,7 @@ void process_items(void) {
 			if(collect_item(item, 1)) {
 				item->pos0 = item->pos;
 				item->birthtime = global.frames;
-				item->v = -20*I + 10*nfrand();
+				item->v = -20*I + 10*rng_sreal();
 			}
 		}
 
@@ -276,7 +276,7 @@ void process_items(void) {
 				item->auto_collect = 0;
 				item->pos0 = item->pos;
 				item->birthtime = global.frames;
-				item->v = -10*I + 5*nfrand();
+				item->v = -10*I + 5*rng_sreal();
 			}
 		}
 
@@ -347,8 +347,11 @@ int collision_item(Item *i) {
 }
 
 static void spawn_item_internal(cmplx pos, ItemType type, float collect_value) {
-	tsrand_fill(2);
-	Item *i = create_item(pos, (12 + 6 * afrand(0)) * (cexp(I*(3*M_PI/2 + anfrand(1)*M_PI/11))) - 3*I, type);
+	cmplx v = rng_range(12, 18);
+	v *= cdir(3*M_PI/2 + rng_sreal() * M_PI/11);
+	v -= 3*I;
+
+	Item *i = create_item(pos, v, type);
 
 	if(i != NULL && collect_value >= 0) {
 		collect_item(i, collect_value);

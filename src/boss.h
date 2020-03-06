@@ -17,8 +17,10 @@
 #include "color.h"
 #include "projectile.h"
 #include "entity.h"
+#include "coroutine.h"
 
 #define BOSS_HURT_RADIUS 16
+#define BOSS_MAX_ATTACKS 24
 
 enum {
 	ATTACK_START_DELAY = 60,
@@ -32,7 +34,9 @@ enum {
 	BOSS_DEATH_DELAY = 120,
 };
 
-struct Boss;
+typedef struct Boss Boss;
+typedef struct Attack Attack;
+typedef struct AttackInfo AttackInfo;
 
 typedef void (*BossRule)(struct Boss*, int time) attr_nonnull(1);
 
@@ -47,7 +51,15 @@ typedef enum AttackType {
 
 #define ATTACK_IS_SPELL(a) ((a) == AT_Spellcard || (a) == AT_SurvivalSpell || (a) == AT_ExtraSpell)
 
-typedef struct AttackInfo {
+DEFINE_TASK_INTERFACE(BossAttack, {
+	BoxedBoss boss;
+	Attack *attack;
+});
+
+typedef TASK_INDIRECT_TYPE(BossAttack) BossAttackTask;
+typedef TASK_IFACE_ARGS_TYPE(BossAttack) BossAttackTaskArgs;
+
+struct AttackInfo {
 	/*
 		HOW TO SET UP THE IDMAP FOR DUMMIES
 
@@ -78,9 +90,12 @@ typedef struct AttackInfo {
 
 	cmplx pos_dest;
 	int bonus_rank;
-} AttackInfo;
 
-typedef struct Attack {
+	// TODO: when we no longer need rule, this shall take its place
+	TASK_INDIRECT_TYPE(BossAttack) task;
+};
+
+struct Attack {
 	char *name;
 
 	AttackType type;
@@ -100,14 +115,21 @@ typedef struct Attack {
 	BossRule rule;
 	BossRule draw_rule;
 
-	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
-} Attack;
+	COEVENTS_ARRAY(
+		initiated,   // before start delay
+		started,     // after start delay
+		finished,    // before end delay
+		completed    // after end delay
+	) events;
 
-typedef struct Boss {
-	ENTITY_INTERFACE_NAMED(struct Boss, ent);
+	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
+};
+
+struct Boss {
+	ENTITY_INTERFACE_NAMED(Boss, ent);
 	cmplx pos;
 
-	Attack *attacks;
+	Attack attacks[BOSS_MAX_ATTACKS];
 	Attack *current;
 
 	char *name;
@@ -126,6 +148,8 @@ typedef struct Boss {
 	int birthtime;
 
 	BossRule global_rule;
+
+	MoveParams move;
 
 	// These are publicly accessible damage multipliers *you* can use to buff your spells.
 	// Just change the numbers. global.shake_view style. 1.0 is the default.
@@ -147,7 +171,9 @@ typedef struct Boss {
 		float plrproximity_opacity;
 		float attack_timer;
 	} hud;
-} Boss;
+
+	COEVENTS_ARRAY(defeated) events;
+};
 
 Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
@@ -159,6 +185,8 @@ void draw_boss_overlay(Boss *boss) attr_nonnull(1);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
 Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+	attr_nonnull(1) attr_returns_nonnull;
+Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
@@ -175,10 +203,16 @@ bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 
 void boss_death(Boss **boss) attr_nonnull(1);
 
+void boss_reset_motion(Boss *boss) attr_nonnull(1);
+
 void boss_preload(void);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
+
+Boss *_init_boss_attack(const BossAttackTaskArgs *restrict args);
+#define INIT_BOSS_ATTACK() _init_boss_attack(&ARGS)
+#define BEGIN_BOSS_ATTACK() WAIT_EVENT_OR_DIE(&ARGS.attack->events.started)
 
 #endif // IGUARD_boss_h

@@ -57,6 +57,23 @@ static void fix_pos0_visual(Enemy *e) {
 	e->pos0_visual = x + y * I;
 }
 
+static inline int enemy_call_logic_rule(Enemy *e, int t) {
+	if(t == EVENT_KILLED) {
+		coevent_signal(&e->events.killed);
+	}
+
+	if(e->logic_rule) {
+		return e->logic_rule(e, t);
+	} else {
+		// TODO: backport unified left/right move animations from the obsolete `newart` branch
+		cmplx v = move_update(&e->pos, &e->move);
+		e->moving = fabs(creal(v)) >= 1;
+		e->dir = creal(v) < 0;
+	}
+
+	return ACTION_NONE;
+}
+
 Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
 				      cmplx a1, cmplx a2, cmplx a3, cmplx a4) {
 	if(IN_DRAW_CODE) {
@@ -90,11 +107,50 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->ent.draw_func = ent_draw_enemy;
 	e->ent.damage_func = ent_damage_enemy;
 
+	coevent_init(&e->events.killed);
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_ENEMY);
 
-	e->logic_rule(e, EVENT_BIRTH);
+	enemy_call_logic_rule(e, EVENT_BIRTH);
 	return e;
+}
+
+static void enemy_death_effect(cmplx pos) {
+	for(int i = 0; i < 10; i++) {
+		RNG_ARRAY(rng, 2);
+		PARTICLE(
+			.sprite = "flare",
+			.pos = pos,
+			.timeout = 10,
+			.rule = linear,
+			.draw_rule = pdraw_timeout_fade(1, 0),
+			.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
+		);
+	}
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 20,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 20,
+		.draw_rule = pdraw_blast(),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
+
+	PARTICLE(
+		.proto = pp_blast,
+		.pos = pos,
+		.timeout = 15,
+		.draw_rule = pdraw_timeout_scalefade(0, rng_f32_range(1, 2), 1, 0),
+		.flags = PFLAG_REQUIREDPARTICLE
+	);
 }
 
 static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
@@ -102,23 +158,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 
 	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE && e->hp != ENEMY_BOMB) {
 		play_sound("enemydeath");
-
-		for(int i = 0; i < 10; i++) {
-			tsrand_fill(2);
-
-			PARTICLE(
-				.sprite = "flare",
-				.pos = e->pos,
-				.timeout = 10,
-				.rule = linear,
-				.draw_rule = Fade,
-				.args = { (3+afrand(0)*10)*cexp(I*afrand(1)*2*M_PI) },
-			);
-		}
-
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 20, .draw_rule = Blast, .flags = PFLAG_REQUIREDPARTICLE);
-		PARTICLE(.proto = pp_blast, .pos = e->pos, .timeout = 15, .draw_rule = GrowFade, .flags = PFLAG_REQUIREDPARTICLE);
+		enemy_death_effect(e->pos);
 
 		for(Projectile *p = global.projs.first; p; p = p->next) {
 			if(p->type == PROJ_ENEMY && !(p->flags & PFLAG_NOCOLLISION) && cabs(p->pos - e->pos) < 64) {
@@ -127,7 +167,8 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		}
 	}
 
-	e->logic_rule(e, EVENT_DEATH);
+	enemy_call_logic_rule(e, EVENT_DEATH);
+	coevent_cancel(&e->events.killed);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
@@ -216,14 +257,16 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 void BigFairy(Enemy *e, int t, bool render) {
 	if(!render) {
 		if(!(t % 5)) {
-			cmplx offset = (frand()-0.5)*30 + (frand()-0.5)*20.0*I;
+			cmplx offset = rng_sreal() * 15;
+			offset += rng_sreal() * 10 * I;
 
 			PARTICLE(
 				.sprite = "smoothdot",
 				.pos = offset,
 				.color = RGBA(0.0, 0.2, 0.3, 0.0),
 				.rule = enemy_flare,
-				.draw_rule = Shrink,
+				.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
+				.angle = M_PI/2,
 				.timeout = 50,
 				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
 			);
@@ -349,12 +392,12 @@ void process_enemies(EnemyList *enemies) {
 		next = enemy->next;
 
 		if(enemy->hp == ENEMY_KILLED) {
-			enemy->logic_rule(enemy, EVENT_KILLED);
+			enemy_call_logic_rule(enemy, EVENT_KILLED);
 			delete_enemy(enemies, enemy);
 			continue;
 		}
 
-		int action = enemy->logic_rule(enemy, global.frames - enemy->birthtime);
+		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
 
 		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < ENEMY_HURT_RADIUS) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });

@@ -13,15 +13,17 @@
 
 #include "boss.h"
 
-void cirno_perfect_freeze(Boss*, int);
-void cirno_crystal_rain(Boss*, int);
-void cirno_snow_halation(Boss*, int);
-void cirno_icicle_fall(Boss*, int);
 void cirno_pfreeze_bg(Boss*, int);
-void cirno_crystal_blizzard(Boss*, int);
 void cirno_benchmark(Boss*, int);
 
-void stage1_events(void);
-Boss* stage1_spawn_cirno(cmplx pos);
+Boss *stage1_spawn_cirno(cmplx pos);
+
+DECLARE_EXTERN_TASK(stage1_main, NO_ARGS);
+
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_rain, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_snow_halation, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_icicle_cascade, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_blizzard, BossAttack);
 
 #endif // IGUARD_stages_stage1_events_h

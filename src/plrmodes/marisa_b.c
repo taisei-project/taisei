@@ -68,15 +68,14 @@ static int marisa_star_projectile(Projectile *p, int t) {
 	p->pos0 = p->pos - p->pos0;
 	p->angle = carg(p->pos0);
 
-	if(t%(2+(int)round(2*frand())) == 0) {
+	if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
 			.color = RGBA(0.5*(1-focus),0,0.5*focus,0),
 			.timeout = 5,
 			.angle = t*0.1,
-			.draw_rule = GrowFade,
-			.args = { 1, 0.4},
+			.draw_rule = pdraw_timeout_scalefade(0, 1.4, 1, 0),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -180,8 +179,7 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.color = color2,
 			.timeout = 10,
 			.angle = t*0.1,
-			.draw_rule = GrowFade,
-			.args = { 1, tb*4},
+			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -192,10 +190,10 @@ static int marisa_star_orbit(Enemy *e, int t) {
 			.pos = e->pos,
 			.color = &color,
 			.rule = marisa_star_orbit_star,
-			.draw_rule = GrowFade,
+			.draw_rule = pdraw_timeout_scalefade(0, 6, 1, 0),
 			.timeout = 150,
 			.flags = PFLAG_NOREFLECT,
-			.args = { -5*dir/cabs(dir), 5 },
+			.args = { -5*dir/cabs(dir) },
 		);
 	}
 
@@ -367,10 +365,10 @@ static void marisa_star_preload(void) {
 
 PlayerMode plrmode_marisa_b = {
 	.name = "Stellar Vortex",
-	.description = "Loads and loads of bullets. Some of them are bound to hit. That's called “homing”, right?",
+	.description = "As many bullets as there are stars in the sky. Some of them are bound to hit. That's called “homing”, right?",
 	.spellcard_name = "Magic Sign “Stellar Vortex”",
 	.character = &character_marisa,
-	.dialog = &dialog_marisa,
+	.dialog = &dialog_tasks_marisa,
 	.shot_mode = PLR_SHOT_MARISA_STAR,
 	.procs = {
 		.property = marisa_star_property,

@@ -92,7 +92,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 		// This is not really an error, but it may result in weird draw order
 		// in some corner cases. If this overflow ever actually occurs, though,
 		// then you've probably got much bigger problems.
-		log_debug("spawn_id just overflowed. You might be spawning stuff waaaay too often");
+		log_warn("spawn_id just overflowed. You might be spawning stuff waaaay too often");
 	}
 
 	if(entities.capacity < entities.num) {
@@ -107,6 +107,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 }
 
 void ent_unregister(EntityInterface *ent) {
+	ent->spawn_id = 0;
 	EntityInterface *sub = entities.array[--entities.num];
 	assert(ent->index <= entities.num);
 	assert(entities.array[ent->index] == ent);
@@ -128,6 +129,10 @@ static int ent_cmp(const void *ptr1, const void *ptr2) {
 	return r;
 }
 
+static inline bool ent_is_drawable(EntityInterface *ent) {
+	return (ent->draw_layer & ~LAYER_LOW_MASK) > LAYER_NODRAW && ent->draw_func;
+}
+
 void ent_draw(EntityPredicate predicate) {
 	call_hooks(&entities.hooks.pre_draw, NULL);
 	qsort(entities.array, entities.num, sizeof(EntityInterface*), ent_cmp);
@@ -137,7 +142,7 @@ void ent_draw(EntityPredicate predicate) {
 			ent->index = _ent - entities.array;
 			assert(entities.array[ent->index] == ent);
 
-			if(ent->draw_func && predicate(ent)) {
+			if(ent_is_drawable(ent) && predicate(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);
@@ -150,7 +155,7 @@ void ent_draw(EntityPredicate predicate) {
 			ent->index = _ent - entities.array;
 			assert(entities.array[ent->index] == ent);
 
-			if(ent->draw_func) {
+			if(ent_is_drawable(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
 				r_state_push();
 				ent->draw_func(ent);
@@ -242,3 +247,32 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg) {
 void ent_unhook_post_draw(EntityDrawHookCallback callback) {
 	remove_hook(&entities.hooks.post_draw, callback);
 }
+
+BoxedEntity _ent_box_Entity(EntityInterface *ent) {
+	BoxedEntity h;
+	h.ent = (uintptr_t)ent;
+	h.spawn_id = ent->spawn_id;
+	return h;
+}
+
+EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
+	EntityInterface *e = (EntityInterface*)box.ent;
+
+	if(e->spawn_id == box.spawn_id) {
+		return e;
+	}
+
+	return NULL;
+}
+
+#define ENT_TYPE(typename, id) \
+	Boxed##typename _ent_box_##typename(struct typename *ent) { \
+		return (Boxed##typename) { .as_generic = _ent_box_Entity(&ent->entity_interface) };\
+	} \
+	struct typename *_ent_unbox_##typename(Boxed##typename box) { \
+		EntityInterface *e = _ent_unbox_Entity(box.as_generic); \
+		return e ? ENT_CAST(e, typename) : NULL; \
+	}
+
+ENT_TYPES
+#undef ENT_TYPE

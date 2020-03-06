@@ -13,24 +13,26 @@
 #include "global.h"
 #include "stagetext.h"
 #include "stagedraw.h"
+#include "common_tasks.h"
 
-static Dialog *stage6_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "normal", NULL);
-	pm->dialog->stage6_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage6boss_phase1"});
-	return d;
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage6_dialog_pre_final(void) {
+static void stage6_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "elly", "angry", "beaten");
-	pm->dialog->stage6_pre_final(d);
-	return d;
+	Stage6PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage6PreBossDialog, pm->dialog->Stage6PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss");
+}
+
+static void stage6_dialog_pre_final(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
 }
 
 static int stage6_hacker(Enemy *e, int t) {
@@ -197,7 +199,8 @@ static int scythe_mid(Enemy *e, int t) {
 	return 1;
 }
 
-static void ScytheTrail(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void ScytheTrail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_mv_rotate(p->angle + (M_PI * 0.5), 0, 0, 1);
@@ -274,7 +277,7 @@ void elly_intro(Boss *b, int t) {
 	}
 
 	AT(300)
-		global.dialog = stage6_dialog_pre_boss();
+		stage6_dialog_pre_boss();
 }
 
 static int scythe_infinity(Enemy *e, int t) {
@@ -1085,14 +1088,6 @@ static int broglie_particle(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	/*
-	if(t == EVENT_BIRTH) {
-		// hidden and no collision detection until scattertime
-		p->type = FakeProj;
-		p->draw = ProjNoDraw;
-	}
-	*/
-
 	if(t < 0) {
 		return ACTION_ACK;
 	}
@@ -1112,7 +1107,7 @@ static int broglie_particle(Projectile *p, int t) {
 		}
 	} else {
 		if(t == scattertime && p->type != PROJ_DEAD) {
-			p->draw_rule = ProjDraw;
+			projectile_set_layer(p, LAYER_BULLET);
 			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
 
 			double angle_ampl = creal(p->args[3]);
@@ -1215,7 +1210,7 @@ static int broglie_charge(Projectile *p, int t) {
 						fast ? 2.0 : 1.5,
 						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
 					},
-					.draw_rule = ProjNoDraw,
+					.layer = LAYER_NODRAW,
 					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION,
 				);
 			}
@@ -2957,7 +2952,7 @@ Boss* stage6_spawn_elly(cmplx pos) {
 }
 
 static void elly_insert_interboss_dialog(Boss *b, int t) {
-	global.dialog = stage6_dialog_pre_final();
+	stage6_dialog_pre_final();
 }
 
 static void elly_begin_toe(Boss *b, int t) {

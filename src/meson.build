@@ -66,7 +66,9 @@ taisei_src = files(
     'cli.c',
     'color.c',
     'color.c',
+    'common_tasks.c',
     'config.c',
+    'coroutine.c',
     'credits.c',
     'dialog.c',
     'difficulty.c',
@@ -84,6 +86,7 @@ taisei_src = files(
     'list.c',
     'log.c',
     'main.c',
+    'move.c',
     'player.c',
     'plrmodes.c',
     'progress.c',
@@ -192,24 +195,28 @@ if host_machine.system() == 'emscripten'
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
+        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
+        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
-        '-s', 'EXPORT_NAME=Taisei',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
-        '-s', 'LZ4=1',
-        '-s', 'MODULARIZE=0',
-        '-s', 'TOTAL_MEMORY=268435456',
-        '-s', 'USE_WEBGL2=1',
-        '-s', 'WASM=1',
-        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
-        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
+        '-s', 'LZ4=1',
+        '-s', 'MAX_WEBGL_VERSION=2',
+        '-s', 'MIN_WEBGL_VERSION=2',
+        '-s', 'MODULARIZE=0',
+        '-s', 'STRICT=1',
+        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'WASM=1',
+        '-lGL',
+        '-legl.js',
         '-lidbfs.js',
-
-        # Try enabling this if unpatched Freetype crashes
-        # '-s', 'EMULATE_FUNCTION_POINTER_CASTS=1',
     ]
+
+    em_link_args += subproject('koishi').get_variable('koishi_external_link_args')
+
+    taisei_c_args += ['-s', 'STRICT=1']
 
     if em_debug
         # em_link_output_suffixes += ['wasm.map']
@@ -229,6 +236,14 @@ if host_machine.system() == 'emscripten'
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
         ]
+    endif
+
+    if get_option('optimization') != '0'
+        em_link_args += ['--closure', '1']
+
+        if em_debug
+            em_link_args += ['-g1']
+        endif
     endif
 
     foreach suffix : em_link_output_suffixes
@@ -252,16 +267,12 @@ if host_machine.system() == 'emscripten'
             cc.cmd_array(),
             taisei.full_path(),
             emscripten_global_link_args,
-            em_bundle_link_args,
             '--pre-js', em_preamble,
+            em_bundle_link_args,
             '--shell-file', em_shell,
             get_option('c_args'),
             get_option('c_link_args'),
             em_link_args,
-
-            # Emscripten bug https://github.com/emscripten-core/emscripten/issues/10066
-            '-s', 'WASM_OBJECT_FILES=1',
-
             '-o', '@OUTPUT0@',
         ],
         build_by_default : true,
@@ -269,6 +280,7 @@ if host_machine.system() == 'emscripten'
         output : em_link_outputs,
         install : true,
         install_dir : bindir,
+        console : true,
     )
 
     bindist_deps += taisei_html

@@ -28,7 +28,7 @@ extern struct stage1_spells_s {
 	struct {
 		AttackInfo crystal_rain;
 		AttackInfo snow_halation;
-		AttackInfo icicle_fall;
+		AttackInfo icicle_cascade;
 	} boss;
 
 	struct {
@@ -41,6 +41,10 @@ extern struct stage1_spells_s {
 
 extern StageProcs stage1_procs;
 extern StageProcs stage1_spell_procs;
+
+void stage1_bg_raise_camera(void);
+void stage1_bg_enable_snow(void);
+void stage1_bg_disable_snow(void);
 
 #ifdef SPELL_BENCHMARK
 extern AttackInfo stage1_spell_benchmark;

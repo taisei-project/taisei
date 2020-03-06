@@ -103,6 +103,10 @@
 	#endif
 #endif
 
+#ifndef __has_feature
+	#define __has_feature(feature) 0
+#endif
+
 #undef ASSUME
 
 #ifdef __has_builtin
@@ -184,35 +188,8 @@ typedef cmplx64 cmplx;
 	typedef struct { alignas(TAISEI_BUILDCONF_MALLOC_ALIGNMENT) char a; } max_align_t;
 #endif
 
-// In case the C11 CMPLX macro is not present, try our best to provide a substitute
-#if !defined CMPLX
-  #undef HAS_BUILTIN_COMPLEX
-
-  #if defined __has_builtin
-    #if __has_builtin(__builtin_complex)
-      #define HAS_BUILTIN_COMPLEX
-    #endif
-  #else
-    #if defined __GNUC__ && defined __GNUC_MINOR__
-      #if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
-        #define HAS_BUILTIN_COMPLEX
-      #endif
-    #endif
-  #endif
-
-  #if defined HAS_BUILTIN_COMPLEX
-    #define CMPLX(re,im) __builtin_complex((double)(re), (double)(im))
-  #elif defined __clang__
-    #define CMPLX(re,im) (__extension__ (_Complex double){(double)(re), (double)(im)})
-  #elif defined _Imaginary_I
-    #define CMPLX(re,im) (_Complex double)((double)(re) + _Imaginary_I * (double)(im))
-  #else
-    #define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
-  #endif
-#elif defined __EMSCRIPTEN__ && defined __clang__
-  // CMPLX from emscripten headers uses the clang-specific syntax without __extension__
-  #pragma clang diagnostic ignored "-Wcomplex-component-init"
-#endif
+// polyfill CMPLX macros
+#include "compat_cmplx.h"
 
 /*
  * Abstract away the nasty GNU attribute syntax.
@@ -254,6 +231,10 @@ typedef cmplx64 cmplx;
 // Function parameters at specified positions must not be NULL.
 #define attr_nonnull(...) \
 	__attribute__ ((nonnull(__VA_ARGS__)))
+
+// All pointer parameters must not be NULL.
+#define attr_nonnull_all \
+	__attribute__ ((nonnull))
 
 // The return value of this function must not be ignored.
 #define attr_nodiscard \
@@ -307,6 +288,14 @@ typedef cmplx64 cmplx;
 	#define atexit nxAtExit
 	#define exit nxExit
 	#define abort nxAbort
+#endif
+
+#ifdef RNG_API_CHECK
+	#define _Generic(ignore, ...) _Generic(0, __VA_ARGS__)
+#endif
+
+#if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
+	#define ADDRESS_SANITIZER
 #endif
 
 #endif // IGUARD_util_compat_h

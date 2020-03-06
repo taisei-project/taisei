@@ -36,7 +36,11 @@ static struct {
 
 #define CREDITS_FADEOUT 180
 
-#define ENTRY_TIME 376
+// ideally, this should be timed so that:
+//      (ENTRY_TIME * numEntries) + (HEADER_TIME * numHeaders) ~= 7190
+#define ENTRY_TIME 412
+#define HEADER_TIME 300
+#define YUKKURI_TIME 200
 
 static void credits_add(char *data, int time);
 
@@ -45,7 +49,7 @@ static void credits_fill(void) {
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
 	// InsideI's bandcamp: https://vnutriya.bandcamp.com/
 
-	credits_add("Taisei Project\nbrought to you by…", 200);
+	credits_add("Taisei Project\nbrought to you by…", HEADER_TIME);
 
 	credits_add((
 		"laochailan\n"
@@ -85,6 +89,27 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
+		"Alice D\n"
+		"https://twitter.com/AmyZenunim\n"
+		"https://github.com/starwitch\n\n"
+		"Lead story writer\n"
+		"macOS QA + debugging"
+	), ENTRY_TIME);
+
+	credits_add((
+		"Adam\n"
+		"https://twitter.com/adam_dnh\n\n"
+		"Dialogue writing (Iku, Elly)"
+	), ENTRY_TIME);
+
+	credits_add((
+		"Haru\n"
+		"https://venusers.tumblr.com/\n"
+		"https://twitter.com/violet_fantasia\n\n"
+		"Dialogue writing (Hina, Kurumi)"
+	), ENTRY_TIME);
+
+	credits_add((
 		"makise-homura\n"
 		"Igor Molchanov\n"
 		"akemi_homura@kurisa.ch\n\n"
@@ -100,7 +125,7 @@ static void credits_fill(void) {
 		"what this guy did"
 	), ENTRY_TIME);
 
-	credits_add("Special Thanks", ENTRY_TIME);
+	credits_add("Special Thanks", HEADER_TIME);
 
 	credits_add((
 		"ZUN\n"
@@ -122,7 +147,7 @@ static void credits_fill(void) {
 		"libwebp\n"                   "https://git.io/WebP\n\n"
 		"FreeType\n"                  "https://freetype.org/\n\n"
 		"Ogg Opus\n"                  "https://www.opus-codec.org/"
-	), 327);
+	), ENTRY_TIME);
 
 	credits_add((
 		"\n"
@@ -131,7 +156,7 @@ static void credits_fill(void) {
 		"Meson build system\n"        "https://mesonbuild.com/\n\n"
 		"Krita\n"                     "https://krita.org/\n\n"
 		"and many other projects"
-	), 327);
+	), ENTRY_TIME);
 
 	credits_add((
 		"…and You!\n"
@@ -147,8 +172,8 @@ static void credits_fill(void) {
 		"https://discord.gg/JEHCMzW"
 	), ENTRY_TIME);
 
-	// Yukkuri Kyouko
-	credits_add("*\nAnd don't forget to take it easy!", 180);
+	// Yukkuri Kyouko!
+	credits_add("*\nAnd don't forget to take it easy!", YUKKURI_TIME);
 }
 
 static void credits_add(char *data, int time) {
@@ -156,9 +181,11 @@ static void credits_add(char *data, int time) {
 	char *c, buf[256];
 	int l = 0, i = 0;
 
+	assert(time > CREDITS_ENTRY_FADEOUT);
+
 	credits.entries = realloc(credits.entries, (++credits.ecount) * sizeof(CreditsEntry));
 	e = &(credits.entries[credits.ecount-1]);
-	e->time = time;
+	e->time = time - CREDITS_ENTRY_FADEOUT;
 	e->lines = 1;
 
 	for(c = data; *c; ++c)
@@ -180,7 +207,7 @@ static void credits_add(char *data, int time) {
 	buf[i] = 0;
 	e->data[l] = malloc(strlen(buf) + 1);
 	strcpy(e->data[l], buf);
-	credits.end += time + CREDITS_ENTRY_FADEOUT;
+	credits.end += time;
 }
 
 static void credits_towerwall_draw(vec3 pos) {
@@ -208,8 +235,13 @@ static void credits_init(void) {
 	global.frames = 0;
 
 	credits_fill();
-	credits.end += 500 + CREDITS_ENTRY_FADEOUT;
-	credits.skipable = progress_times_any_good_ending_achieved() > 0;
+	credits.end += 200 + CREDITS_ENTRY_FADEOUT;
+
+	// Should be >1, because if we get here, that means we have achieved an
+	// ending just now, which this counter includes.
+	// That is unless we're in `taisei --credits`. But in that case, skipping is
+	// presumably not desired anyway.
+	credits.skipable = progress_times_any_ending_achieved() > 1;
 
 	start_bgm("credits");
 }
@@ -255,7 +287,7 @@ static float yukkuri_jump(float t) {
 }
 
 static void credits_draw_entry(CreditsEntry *e) {
-	int time = global.frames - 400;
+	int time = global.frames - 200;
 	float fadein = 1, fadeout = 1;
 
 	for(CreditsEntry *o = credits.entries; o != e; ++o) {
@@ -387,7 +419,7 @@ static void credits_process(void) {
 	stage_3d_context.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
 	stage_3d_context.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
-	FROM_TO(200, 300, 1)
+	FROM_TO(100, 200, 1)
 		credits.panelalpha += 0.01;
 
 	if(global.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {

@@ -17,6 +17,7 @@
 #include "stagetext.h"
 #include "stagedraw.h"
 #include "entity.h"
+#include "util/glm.h"
 
 void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
@@ -427,11 +428,11 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 		.pos = { creal(p->pos), cimag(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
-		.shader = "sprite_silhouette",
+		.shader_ptr = p->shader,
 	});
 }
 
-static void powersurge_trail_draw(Projectile *p, int t) {
+static void powersurge_trail_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(t > 0) {
 		_powersurge_trail_draw(p, t - 0.5, 0.25);
 		_powersurge_trail_draw(p, t, 0.25);
@@ -446,7 +447,6 @@ static int powersurge_trail(Projectile *p, int t) {
 	}
 
 	if(t == EVENT_DEATH) {
-		free(p->sprite);
 		return ACTION_ACK;
 	}
 
@@ -505,7 +505,8 @@ static void player_powersurge_logic(Player *plr) {
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 
 	PARTICLE(
-		.sprite_ptr = memdup(aniplayer_get_frame(&plr->ani), sizeof(Sprite)),
+		.sprite_ptr = aniplayer_get_frame(&plr->ani),
+		.shader = "sprite_silhouette",
 		.pos = plr->pos,
 		.color = RGBA(1, 1, 1, 0.5),
 		.rule = powersurge_trail,
@@ -515,22 +516,24 @@ static void player_powersurge_logic(Player *plr) {
 		.flags = PFLAG_NOREFLECT,
 	);
 
-	if(!(global.frames % 6)) {
+	if(!(global.frames % 6) && plr->powersurge.bonus.discharge_range > 0) {
 		Sprite *spr = get_sprite("part/powersurge_field");
 		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
-		double angle = frand() * 2 * M_PI;
+		double angle = rng_angle();
+
+		assert(scale > 0);
 
 		PARTICLE(
 			.sprite_ptr = spr,
 			.pos = plr->pos,
-			.color = color_mul_scalar(frand() < 0.5 ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
+			.color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
 			.rule = powersurge_charge_particle,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.timeout = 14,
 			.angle = angle,
-			.args = { 0, 0, (1+I)*scale, 0},
 			.layer = LAYER_PLAYER - 1,
 			.flags = PFLAG_NOREFLECT,
+			.scale = scale,
 		);
 
 		PARTICLE(
@@ -538,12 +541,12 @@ static void player_powersurge_logic(Player *plr) {
 			.pos = plr->pos,
 			.color = RGBA(0.5, 0.5, 0.5, 0),
 			.rule = powersurge_charge_particle,
-			.draw_rule = ScaleFade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.timeout = 3,
 			.angle = angle,
-			.args = { 0, 0, (1+I)*scale, 0},
 			.layer = LAYER_PLAYER - 1,
 			.flags = PFLAG_NOREFLECT,
+			.scale = scale,
 		);
 	}
 
@@ -709,12 +712,12 @@ static int powersurge_discharge(Projectile *p, int t) {
 	return ACTION_NONE;
 }
 
-static void powersurge_distortion_draw(Projectile *p, int t) {
+static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
 		return;
 	}
 
-	double radius = p->args[0] * pow(1 - t / p->timeout, 8) * (2 * t / 10.0);
+	double radius = args[0].as_float[0] * pow(1 - t / p->timeout, 8) * (2 * t / 10.0);
 
 	Framebuffer *fb_aux = stage_get_fbpair(FBPAIR_FG_AUX)->front;
 	Framebuffer *fb_main = r_framebuffer_current();
@@ -750,8 +753,10 @@ static void player_powersurge_expired(Player *plr) {
 		.size = 1+I,
 		.pos = plr->pos,
 		.timeout = 60,
-		.draw_rule = powersurge_distortion_draw,
-		.args = { bonus.discharge_range },
+		.draw_rule = {
+			powersurge_distortion_draw,
+			.args[0].as_float = { bonus.discharge_range },
+		},
 		.layer = LAYER_PLAYER,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
@@ -760,10 +765,10 @@ static void player_powersurge_expired(Player *plr) {
 		.sprite_ptr = blast,
 		.pos = plr->pos,
 		.color = RGBA(0.6, 1.0, 4.4, 0.0),
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(2, 0, 1, 0),
 		.timeout = 20,
-		.args = { 0, 0, scale * (2 + 0 * I) },
-		.angle = M_PI*2*frand(),
+		.angle = rng_angle(),
+		.scale = scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOREFLECT,
 	);
 
@@ -774,7 +779,7 @@ static void player_powersurge_expired(Player *plr) {
 	PROJECTILE(
 		.pos = plr->pos,
 		.size = 1+I,
-		.draw_rule = ProjNoDraw,
+		.layer = LAYER_NODRAW,
 		.timeout = 10,
 		.type = PROJ_PLAYER,
 		.rule = powersurge_discharge,
@@ -849,7 +854,7 @@ void player_realdeath(Player *plr) {
 	plr->lives--;
 }
 
-static void player_death_effect_draw_overlay(Projectile *p, int t) {
+static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
@@ -868,37 +873,40 @@ static void player_death_effect_draw_overlay(Projectile *p, int t) {
 	r_state_push();
 }
 
-static void player_death_effect_draw_sprite(Projectile *p, int t) {
+static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = t / p->timeout;
-
 	float stretch_range = 3, sx, sy;
 
-	sx = 0.5 + 0.5 * cos(M_PI * (2 * pow(s, 0.5) + 1));
-	sx = (1 - s) * (1 + (stretch_range - 1) * sx) + s * stretch_range * sx;
-	sy = 1 + pow(s, 3);
+	s = glm_ease_quad_in(s);
+
+	sx = (1 - pow(2 * pow(1 - s, 4) - 1, 4));
+	sx = lerp(1 + (stretch_range - 1) * sx, stretch_range * sx, s);
+	sy = 1 + 2 * (stretch_range - 1) * pow(s, 4);
 
 	if(sx <= 0 || sy <= 0) {
 		return;
 	}
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
-		.pos = { creal(p->pos), cimag(p->pos) },
-		.scale = { .x = sx, .y = sy },
-	});
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	sp.scale.x *= sx;
+	sp.scale.y *= sy;
+	sp.rotation.angle = 0;
+	r_draw_sprite(&sp);
 }
 
 static int player_death_effect(Projectile *p, int t) {
 	if(t < 0) {
 		if(t == EVENT_DEATH) {
 			for(int i = 0; i < 12; ++i) {
+				RNG_ARRAY(R, 4);
 				PARTICLE(
 					.proto = pp_blast,
-					.pos = p->pos + 2 * frand() * cexp(I*M_PI*2*frand()),
+					.pos = p->pos + vrng_range(R[0], 2, 3) * vrng_dir(R[1]),
 					.color = RGBA(0.15, 0.2, 0.5, 0),
-					.timeout = 12 + i + 2 * nfrand(),
-					.draw_rule = GrowFade,
-					.angle = M_PI*2*frand(),
+					.timeout = i + vrng_range(R[2], 10, 14),
+					.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
+					.angle = vrng_angle(R[3]),
 					.flags = PFLAG_NOREFLECT,
 					.layer = LAYER_OVERLAY,
 				);
@@ -919,14 +927,13 @@ void player_death(Player *plr) {
 	play_sound("death");
 
 	for(int i = 0; i < 60; i++) {
-		tsrand_fill(2);
+		RNG_ARRAY(R, 2);
 		PARTICLE(
 			.sprite = "flare",
 			.pos = plr->pos,
-			.rule = linear,
 			.timeout = 40,
-			.draw_rule = Shrink,
-			.args = { (3+afrand(0)*7)*cexp(I*tsrand_a(1)) },
+			.draw_rule = pdraw_timeout_scale(2, 0.01),
+			.move = move_linear(vrng_range(R[0], 3, 10) * vrng_dir(R[1])),
 			.flags = PFLAG_NOREFLECT,
 		);
 	}
@@ -938,9 +945,9 @@ void player_death(Player *plr) {
 		.pos = plr->pos,
 		.color = RGBA(0.5, 0.15, 0.15, 0),
 		.timeout = 35,
-		.draw_rule = GrowFade,
-		.args = { 0, 2.4 },
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.draw_rule = pdraw_timeout_scalefade(0, 3.4, 1, 0),
+		.angle = rng_angle(),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	);
 
 	PARTICLE(
@@ -957,7 +964,7 @@ void player_death(Player *plr) {
 	PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
 		.pos = plr->pos,
-		.timeout = 30,
+		.timeout = 38,
 		.rule = player_death_effect,
 		.draw_rule = player_death_effect_draw_sprite,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
@@ -1058,7 +1065,7 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 	switch(type) {
 		case EV_PRESS:
 			if(dialog_is_active(global.dialog) && (value == KEY_SHOT || value == KEY_BOMB)) {
-				useful = dialog_page(&global.dialog);
+				useful = dialog_page(global.dialog);
 				break;
 			}
 
@@ -1351,16 +1358,14 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 	c->a = 0;
 
 	for(int i = 0; i < effect_intensity; ++i) {
-		tsrand_fill(4);
-
+		RNG_ARRAY(R, 4);
 		PARTICLE(
 			.sprite = "graze",
 			.color = c,
 			.pos = pos,
-			.rule = asymptotic,
-			.timeout = 24 + 5 * afrand(2),
-			.draw_rule = ScaleSquaredFade,
-			.args = { 0.2 * (1+afrand(0)*5)*cexp(I*M_PI*2*afrand(1)), 16 * (1 + 0.5 * anfrand(3)), 1 },
+			.draw_rule = pdraw_timeout_scalefade_exp(1, 0, 1, 0, 2),
+			.move = move_asymptotic_simple(0.2 * vrng_range(R[0], 1, 6) * vrng_dir(R[1]), 16 * (1 + 0.5 * vrng_sreal(R[3]))),
+			.timeout = vrng_range(R[2], 4, 29),
 			.flags = PFLAG_NOREFLECT,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
@@ -1447,7 +1452,7 @@ void player_add_bombs(Player *plr, int bombs) {
 }
 
 static void scoretext_update(StageText *txt, int t, float a) {
-	float r = bits_to_float((uintptr_t)txt->custom.data1);
+	double r = bits_to_double((uintptr_t)txt->custom.data1);
 	txt->pos -= I * cexp(I*r) * a;
 }
 
@@ -1469,7 +1474,7 @@ static StageText *find_scoretext_combination_candidate(cmplx pos, bool is_piv) {
 }
 
 static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv) {
-	float rnd = nfrand();
+	double rnd = rng_f64s();
 
 	StageText *stxt = find_scoretext_combination_candidate(location, is_piv);
 
@@ -1514,7 +1519,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 			timings.delay, timings.lifetime, timings.fadeintime, timings.fadeouttime
 		);
 
-		stxt->custom.data1 = (void*)(uintptr_t)float_to_bits(rnd);
+		stxt->custom.data1 = (void*)(uintptr_t)double_to_bits(rnd);
 		stxt->custom.update = scoretext_update;
 	} else {
 		stxt->color = c;

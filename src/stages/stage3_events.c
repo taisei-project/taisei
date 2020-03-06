@@ -12,24 +12,26 @@
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
+#include "common_tasks.h"
 
-static Dialog *stage3_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "normal", NULL);
-	pm->dialog->stage3_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage3boss"});
-	return d;
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage3_dialog_post_boss(void) {
+static void stage3_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "wriggle", "defeated", "defeated");
-	pm->dialog->stage3_post_boss(d);
-	return d;
+	Stage3PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage3PreBossDialog, pm->dialog->Stage3PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage3boss");
+}
+
+static void stage3_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage3PostBossDialog, pm->dialog->Stage3PostBoss);
 }
 
 static int stage3_enterswirl(Enemy *e, int t) {
@@ -861,7 +863,8 @@ static int wriggle_rocket_laserbullet(Projectile *p, int time) {
 	return 1;
 }
 
-static void wriggle_slave_part_draw(Projectile *p, int t) {
+DEPRECATED_DRAW_RULE
+static void wriggle_slave_part_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float b = 1 - t / (double)p->timeout;
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
@@ -1028,7 +1031,7 @@ static void wriggle_ignite_warnlaser_logic(Laser *l, int time) {
 		play_sound_ex("laser1", 30, false);
 	}
 
-	l->width = laser_charge(l, time, 90, 10);
+	laser_charge(l, time, 90, 10);
 	l->color = *color_lerp(RGBA(0.2, 0.2, 1, 0), RGBA(1, 0.2, 0.2, 0), time / l->deathtime);
 }
 
@@ -1109,7 +1112,7 @@ static void wriggle_singularity_laser_logic(Laser *l, int time) {
 		play_sound("laser1");
 	}
 
-	l->width = laser_charge(l, time, 150, 10 + 10 * psin(l->args[0] + time / 60.0));
+	laser_charge(l, time, 150, 10 + 10 * psin(l->args[0] + time / 60.0));
 	l->args[3] = time / 10.0;
 	l->args[0] *= cexp(I*(M_PI/500.0) * (0.7 + 0.35 * global.diff));
 
@@ -1203,7 +1206,8 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 }
 
-static void wriggle_fstorm_proj_draw(Projectile *p, int time) {
+DEPRECATED_DRAW_RULE
+static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
 	float f = 1-min(time/60.0,1);
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
@@ -1249,7 +1253,7 @@ static int wriggle_fstorm_proj(Projectile *p, int time) {
 		p->args[1] *= 2/cabs(p->args[1]);
 		p->angle = carg(p->args[1]);
 		p->birthtime = global.frames;
-		p->draw_rule = wriggle_fstorm_proj_draw;
+		p->draw_rule = (ProjDrawRule) { wriggle_fstorm_proj_draw };
 		p->sprite = NULL;
 		projectile_set_prototype(p, pp_rice);
 		spawn_projectile_highlight_effect(p);
@@ -1409,7 +1413,7 @@ static void stage3_boss_nonspell3(Boss *boss, int time) {
 
 static void stage3_boss_intro(Boss *boss, int time) {
 	if(time == 110)
-		global.dialog = stage3_dialog_pre_boss();
+		stage3_dialog_pre_boss();
 
 	GO_TO(boss, VIEWPORT_W/2.0 + 100.0*I, 0.03);
 }
@@ -1666,7 +1670,7 @@ void stage3_events(void) {
 
 	AT(5400 + midboss_time) {
 		stage_unlock_bgm("stage3boss");
-		global.dialog = stage3_dialog_post_boss();
+		stage3_dialog_post_boss();
 	}
 
 	AT(5405 + midboss_time) {

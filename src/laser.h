@@ -45,7 +45,8 @@ struct Laser {
 	float collision_step;
 	uint clear_flags;
 
-	bool unclearable;
+	uchar unclearable : 1;
+	uchar collision_active : 1;
 };
 
 #define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)
@@ -56,12 +57,12 @@ struct Laser {
 void lasers_preload(void);
 void lasers_free(void);
 
-Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr);
-Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr);
-
-Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
 void delete_lasers(void);
 void process_lasers(void);
+
+Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr);
+Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr);
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
 
 bool laser_is_active(Laser *l);
 bool laser_is_clearable(Laser *l);
@@ -75,10 +76,18 @@ cmplx las_sine_expanding(Laser *l, float t);
 cmplx las_turning(Laser *l, float t);
 cmplx las_circle(Laser *l, float t);
 
-float laser_charge(Laser *l, int t, float charge, float width);
+void laser_make_static(Laser *l);
+void laser_charge(Laser *l, int t, float charge, float width);
+
 void static_laser(Laser *l, int t);
 
 bool laser_intersects_circle(Laser *l, Circle circle);
 bool laser_intersects_ellipse(Laser *l, Ellipse ellipse);
+
+DECLARE_EXTERN_TASK(laser_charge, {
+	BoxedLaser laser;
+	float charge_delay;
+	float target_width;
+});
 
 #endif // IGUARD_laser_h

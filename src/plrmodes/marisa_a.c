@@ -86,14 +86,14 @@ static void trace_laser(Enemy *e, cmplx vel, float damage) {
 		}
 
 		if(col.type & col_types) {
-			tsrand_fill(3);
+			RNG_ARRAY(R, 3);
 			PARTICLE(
 				.sprite = "flare",
 				.pos = col.location,
 				.rule = linear,
-				.timeout = 3 + 5 * afrand(2),
-				.draw_rule = Shrink,
-				.args = { (2+afrand(0)*6)*cexp(I*M_PI*2*afrand(1)) },
+				.timeout = vrng_range(R[0], 3, 8),
+				.draw_rule = pdraw_timeout_scale(2, 0.01),
+				.args = { vrng_range(R[1], 2, 8) * vrng_dir(R[2]) },
 				.flags = PFLAG_NOREFLECT,
 				.layer = LAYER_PARTICLE_HIGH,
 			);
@@ -315,24 +315,13 @@ static int marisa_laser_renderer(Enemy *renderer, int t) {
 #undef FOR_EACH_SLAVE
 #undef FOR_EACH_REAL_SLAVE
 
-static void marisa_laser_flash_draw(Projectile *p, int t) {
-	Animation *fire = get_ani("fire");
-	AniSequence *seq = get_ani_sequence(fire, "main");
-	Sprite *spr = animation_get_frame(fire, seq, p->birthtime);
-
-	Color *c = color_mul_scalar(COLOR_COPY(&p->color), 1 - t / p->timeout);
-	c->r *= (1 - t / p->timeout);
-
-	cmplx pos = p->pos;
-	pos += p->args[0] * 10;
-
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = spr,
-		.color = c,
-		.pos = { creal(pos), cimag(pos)},
-		.rotation.angle = p->angle + M_PI/2,
-		.scale.both = 0.40,
-	});
+static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	float o = 1 - t / p->timeout;
+	color_mul_scalar(&spbuf.color, o);
+	spbuf.color.r *= o;
+	r_draw_sprite(&sp);
 }
 
 static int marisa_laser_slave(Enemy *e, int t) {
@@ -372,15 +361,21 @@ static int marisa_laser_slave(Enemy *e, int t) {
 		cmplx dir = -cexp(I*(angle*factor + ld->lean + M_PI/2));
 		trace_laser(e, 5 * dir, creal(e->args[1]));
 
+		Animation *fire = get_ani("fire");
+		AniSequence *seq = get_ani_sequence(fire, "main");
+		Sprite *spr = animation_get_frame(fire, seq, global.frames);
+
 		PARTICLE(
+			.sprite_ptr = spr,
 			.size = 1+I,
-			.pos = e->pos,
+			.pos = e->pos + dir * 10,
 			.color = color_mul_scalar(RGBA(2, 0.2, 0.5, 0), 0.2),
 			.rule = linear,
 			.draw_rule = marisa_laser_flash_draw,
 			.timeout = 8,
 			.args = { dir, 0, 0.6 + 0.2*I, },
 			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.scale = 0.4,
 			// .layer = LAYER_PARTICLE_LOW,
 		);
 	}
@@ -471,7 +466,7 @@ static int masterspark(Enemy *e, int t2) {
 	if(t2 < 0)
 		return 1;
 
-	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + nfrand() * 0.005));
+	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + rng_sreal() * 0.005));
 	cmplx diroffset = e->args[0];
 
 	float t = player_get_bomb_progress(&global.plr);
@@ -480,7 +475,7 @@ static int masterspark(Enemy *e, int t2) {
 		global.shake_view = 8 * (1 - t * 4 + 3);
 	} else if(t2 % 2 == 0) {
 		cmplx dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
-		Color *c = HSLA(-t*5.321,1,0.5,0.5*frand());
+		Color *c = HSLA(-t*5.321, 1, 0.5, rng_range(0, 0.5));
 
 		uint flags = PFLAG_NOREFLECT;
 
@@ -494,9 +489,9 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args= { (10 * dir - 10*I)*diroffset, 4 },
-			.angle = nfrand(),
-			.draw_rule = GrowFade,
+			.args= { (10 * dir - 10*I)*diroffset },
+			.angle = rng_angle(),
+			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
 			.flags = flags,
 		);
 		dir = -conj(dir);
@@ -506,21 +501,20 @@ static int masterspark(Enemy *e, int t2) {
 			.color = c,
 			.rule = masterspark_star,
 			.timeout = 50,
-			.args = { (10 * dir - 10*I)*diroffset, 4 },
-			.angle = nfrand(),
-			.draw_rule = GrowFade,
+			.args = { (10 * dir - 10*I)*diroffset },
+			.angle = rng_angle(),
+			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
 			.flags = flags,
 		);
 		PARTICLE(
 			.sprite = "smoke",
 			.pos = global.plr.pos-40*I,
 			.color = HSLA(2*t,1,2,0), //RGBA(0.3, 0.6, 1, 0),
-			.rule = linear,
 			.timeout = 50,
-			.args = { -7*dir + 7*I, 6 },
-			.angle = nfrand(),
-			.draw_rule = GrowFade,
-			.flags = flags,
+			.move = move_linear(-7*dir + 7*I),
+			.angle = rng_angle(),
+			.draw_rule = pdraw_timeout_scalefade(0, 7, 1, 0),
+			.flags = flags | PFLAG_MANUALANGLE,
 		);
 	}
 
@@ -679,10 +673,10 @@ static void marisa_laser_preload(void) {
 
 PlayerMode plrmode_marisa_a = {
 	.name = "Illusion Laser",
-	.description = "Kill it with lasers! Dodging is easy when nobody's firing. Just shoot them in the face, if they have one.",
+	.description = "Magic missiles and lasers — simple and to the point. They’ve never let you down before, so why stop now?",
 	.spellcard_name = "Pure Love “Galactic Spark”",
 	.character = &character_marisa,
-	.dialog = &dialog_marisa,
+	.dialog = &dialog_tasks_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
 		.property = marisa_laser_property,

@@ -55,6 +55,8 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	boss->bomb_damage_multiplier = 1.0;
 	boss->shot_damage_multiplier = 1.0;
 
+	COEVENT_INIT_ARRAY(boss->events);
+
 	return boss;
 }
 
@@ -576,7 +578,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_state_pop();
 }
 
-static void BossGlow(Projectile *p, int t) {
+static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float s = 1.0+t/(double)p->timeout*0.5;
 	float fade = 1 - (1.5 - s);
 	float deform = 5 - 10 * fade * fade;
@@ -595,27 +597,17 @@ static void BossGlow(Projectile *p, int t) {
 	});
 }
 
-static int boss_glow(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free(p->sprite);
-	}
-
-	return linear(p, t);
-}
-
-static Projectile* spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
-	// XXX: memdup is required because the Sprite returned by animation_get_frame is only temporarily valid
+static Projectile *spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	return PARTICLE(
-		.sprite_ptr = memdup(aniplayer_get_frame(&boss->ani), sizeof(Sprite)),
+		.sprite_ptr = aniplayer_get_frame(&boss->ani),
 		// this is in sync with the boss position oscillation
 		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
 		.color = clr,
-		.rule = boss_glow,
-		.draw_rule = BossGlow,
+		.draw_rule = boss_glow_draw,
 		.timeout = timeout,
 		.layer = LAYER_PARTICLE_LOW,
 		.shader = "sprite_silhouette",
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	);
 }
 
@@ -630,13 +622,13 @@ static void spawn_particle_effects(Boss *boss) {
 	if(!(global.frames % 13) && !is_extra) {
 		PARTICLE(
 			.sprite = "smoke",
-			.pos = cexp(I*global.frames),
+			.pos = cdir(global.frames),
 			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
 			.rule = enemy_flare,
 			.timeout = 180,
-			.draw_rule = Shrink,
+			.draw_rule = pdraw_timeout_scale(2, 0.01),
 			.args = { 0, add_ref(boss), },
-			.angle = M_PI * 2 * frand(),
+			.angle = rng_angle(),
 		);
 	}
 
@@ -805,7 +797,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 
 	if(alpha == 0) {
 		lt += 2;
-		alpha = 1 * frand();
+		alpha = rng_real();
 	}
 
 	for(int i = 0; i < cnt; ++i) {
@@ -816,7 +808,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 		float psina = psin(a);
 
 		PARTICLE(
-			.sprite = (frand() < v*0.3 || lt > 1) ? "stain" : "arc",
+			.sprite = (rng_chance(v * 0.3) || lt > 1) ? "stain" : "arc",
 			.pos = boss->pos + dir * (100 + 50 * psin(alpha*global.frames/10.0+2*i)) * alpha,
 			.color = color_mul_scalar(RGBA(
 				1.0 - 0.5 * psina *    v,
@@ -824,10 +816,9 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 				0.5 + 0.5 * psina *    v,
 				0.0
 			), 0.8),
-			.rule = linear,
 			.timeout = 30*lt,
-			.draw_rule = GrowFade,
-			.args = { vel * (1 - 2 * !(global.frames % 10)), 2.5 },
+			.draw_rule = pdraw_timeout_scalefade(0, 3.5, 1, 0),
+			.move = move_linear(vel * (1 - 2 * !(global.frames % 10))),
 		);
 	}
 }
@@ -952,12 +943,18 @@ static int attack_end_delay(Boss *boss) {
 	return delay;
 }
 
+static void boss_call_rule(Boss *boss, int t) {
+	if(boss->current->rule) {
+		boss->current->rule(boss, t);
+	}
+}
+
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
 	boss->current->hp = 0;
 	boss->current->finished = true;
-	boss->current->rule(boss, EVENT_DEATH);
+	boss_call_rule(boss, EVENT_DEATH);
 
 	aniplayer_soft_switch(&boss->ani,"main",0);
 
@@ -992,6 +989,8 @@ void boss_finish_current_attack(Boss *boss) {
 
 	boss->current->endtime = global.frames + attack_end_delay(boss);
 	boss->current->endtime_undelayed = global.frames;
+
+	coevent_signal_once(&boss->current->events.finished);
 }
 
 void process_boss(Boss **pboss) {
@@ -1001,6 +1000,7 @@ void process_boss(Boss **pboss) {
 		return;
 	}
 
+	move_update(&boss->pos, &boss->move);
 	aniplayer_update(&boss->ani);
 	update_hud(boss);
 
@@ -1024,6 +1024,10 @@ void process_boss(Boss **pboss) {
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = boss->current->finished && global.frames >= boss->current->endtime;
 
+	if(time == 0) {
+		coevent_signal_once(&boss->current->events.started);
+	}
+
 	if(!boss->current->endtime) {
 		int remaining = boss->current->timeout - time;
 
@@ -1031,7 +1035,7 @@ void process_boss(Boss **pboss) {
 			play_sound(remaining <= 6*FPS ? "timeout2" : "timeout1");
 		}
 
-		boss->current->rule(boss, time);
+		boss_call_rule(boss, time);
 	}
 
 	if(extra) {
@@ -1095,9 +1099,16 @@ void process_boss(Boss **pboss) {
 		}
 	}
 
-	if(boss_is_dying(boss)) {
+	bool dying = boss_is_dying(boss);
+	bool fleeing = boss_is_fleeing(boss);
+
+	if(dying || fleeing) {
+		coevent_signal_once(&boss->events.defeated);
+	}
+
+	if(dying) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		tsrand_fill(6);
+		RNG_ARRAY(rng, 2);
 
 		Color *clr = RGBA_MUL_ALPHA(0.1 + sin(10*t), 0.1 + cos(10*t), 0.5, t);
 		clr->a = 0;
@@ -1106,13 +1117,11 @@ void process_boss(Boss **pboss) {
 			.sprite = "petal",
 			.pos = boss->pos,
 			.rule = asymptotic,
-			.draw_rule = Petal,
+			.draw_rule = pdraw_petal_random(),
 			.color = clr,
 			.args = {
-				sign(anfrand(5))*(3+t*5*afrand(0))*cexp(I*M_PI*8*t),
+				vrng_sign(rng[0]) * (3 + t * 5 * vrng_real(rng[1])) * cdir(M_PI*8*t),
 				5+I,
-				afrand(2) + afrand(3)*I,
-				afrand(4) + 360.0*I*afrand(1)
 			},
 			.layer = LAYER_PARTICLE_PETAL,
 			.flags = PFLAG_REQUIREDPARTICLE,
@@ -1132,14 +1141,14 @@ void process_boss(Boss **pboss) {
 			}
 
 			for(int i = 0; i < 256; i++) {
-				tsrand_fill(3);
+				RNG_ARRAY(rng, 3);
 				PARTICLE(
 					.sprite = "flare",
 					.pos = boss->pos,
-					.timeout = 60 + 10 * afrand(2),
+					.timeout = vrng_range(rng[2], 60, 70),
 					.rule = linear,
-					.draw_rule = Fade,
-					.args = { (3+afrand(0)*10)*cexp(I*tsrand_a(1)) },
+					.draw_rule = pdraw_timeout_fade(1, 0),
+					.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
 				);
 			}
 
@@ -1147,16 +1156,14 @@ void process_boss(Boss **pboss) {
 				.proto = pp_blast,
 				.pos = boss->pos,
 				.timeout = 60,
-				.args = { 0, 3.0 },
-				.draw_rule = GrowFade,
+				.draw_rule = pdraw_timeout_scalefade(0, 4, 1, 0),
 			);
 
 			PARTICLE(
 				.proto = pp_blast,
 				.pos = boss->pos,
 				.timeout = 70,
-				.args = { 0, 2.5 },
-				.draw_rule = GrowFade,
+				.draw_rule = pdraw_timeout_scalefade(0, 3.5, 1, 0),
 			);
 		}
 
@@ -1180,6 +1187,10 @@ void process_boss(Boss **pboss) {
 
 		log_debug("Current attack [%s] is over", boss->current->name);
 
+		boss_reset_motion(boss);
+		coevent_signal_once(&boss->current->events.completed);
+		COEVENT_CANCEL_ARRAY(boss->current->events);
+
 		for(;;) {
 			if(boss->current == boss->attacks + boss->acount - 1) {
 				// no more attacks, die
@@ -1193,7 +1204,13 @@ void process_boss(Boss **pboss) {
 
 			if(boss->current->type == AT_Immediate) {
 				boss->current->starttime = global.frames;
-				boss->current->rule(boss, EVENT_BIRTH);
+				boss_call_rule(boss, EVENT_BIRTH);
+
+				coevent_signal_once(&boss->current->events.initiated);
+				coevent_signal_once(&boss->current->events.started);
+				coevent_signal_once(&boss->current->events.finished);
+				coevent_signal_once(&boss->current->events.completed);
+				COEVENT_CANCEL_ARRAY(boss->current->events);
 
 				if(dialog_is_active(global.dialog)) {
 					break;
@@ -1203,6 +1220,7 @@ void process_boss(Boss **pboss) {
 			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
+				COEVENT_CANCEL_ARRAY(boss->current->events);
 				continue;
 			}
 
@@ -1212,7 +1230,15 @@ void process_boss(Boss **pboss) {
 	}
 }
 
-static void boss_death_effect_draw_overlay(Projectile *p, int t) {
+void boss_reset_motion(Boss *boss) {
+	boss->move.acceleration = 0;
+	boss->move.attraction = 0;
+	boss->move.attraction_max_speed = 0;
+	boss->move.attraction_point = 0;
+	boss->move.retention = 0.8;
+}
+
+static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
 	FBPair *framebuffers = stage_get_fbpair(FBPAIR_FG);
 	r_framebuffer(framebuffers->front);
 	r_uniform_sampler("noise_tex", "static");
@@ -1266,23 +1292,26 @@ void boss_death(Boss **boss) {
 }
 
 static void free_attack(Attack *a) {
+	COEVENT_CANCEL_ARRAY(a->events);
 	free(a->name);
 }
 
 void free_boss(Boss *boss) {
-	ent_unregister(&boss->ent);
+	COEVENT_CANCEL_ARRAY(boss->events);
 
-	for(int i = 0; i < boss->acount; i++)
+	for(int i = 0; i < boss->acount; i++) {
 		free_attack(&boss->attacks[i]);
+	}
 
+	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);
-	free(boss->attacks);
 	free(boss);
 }
 
 void boss_start_attack(Boss *b, Attack *a) {
+	b->current = a;
 	log_debug("%s", a->name);
 
 	StageInfo *i;
@@ -1302,35 +1331,37 @@ void boss_start_attack(Boss *b, Attack *a) {
 	b->shot_damage_multiplier = 1.0;
 
 	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
-	a->rule(b, EVENT_BIRTH);
+	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
 
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
-			tsrand_fill(4);
+			RNG_ARRAY(rng, 4);
 
 			PARTICLE(
 				.sprite = "stain",
-				.pos = VIEWPORT_W/2 + VIEWPORT_W/4*anfrand(0)+I*VIEWPORT_H/2+I*anfrand(1)*30,
+				.pos = CMPLX(VIEWPORT_W/2 + vrng_sreal(rng[0]) * VIEWPORT_W/4, VIEWPORT_H/2 + vrng_sreal(rng[1]) * 30),
 				.color = RGBA(0.2, 0.3, 0.4, 0.0),
 				.rule = linear,
 				.timeout = 50,
-				.draw_rule = GrowFade,
-				.args = { sign(anfrand(2))*10*(1+afrand(3)) },
+				.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
+				.args = { vrng_sign(rng[2]) * 10 * vrng_range(rng[3], 1, 4) },
 			);
 		}
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+	boss_reset_motion(b);
+	coevent_signal_once(&a->events.initiated);
 }
 
-Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
-	boss->attacks = realloc(boss->attacks, sizeof(Attack)*(++boss->acount));
-	Attack *a = &boss->attacks[boss->acount-1];
-	memset(a, 0, sizeof(Attack));
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+	assert(boss->acount < BOSS_MAX_ATTACKS);
 
-	boss->current = &boss->attacks[0];
+	Attack *a = &boss->attacks[boss->acount];
+	boss->acount += 1;
+	memset(a, 0, sizeof(Attack));
 
 	a->type = type;
 	a->name = strdup(name);
@@ -1344,6 +1375,34 @@ Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	a->starttime = global.frames;
 
+	COEVENT_INIT_ARRAY(a->events);
+
+	return a;
+}
+
+TASK(attack_task_helper, {
+	BossAttackTask task;
+	BossAttackTaskArgs task_args;
+}) {
+	// NOTE: We could do INVOKE_TASK_INDIRECT here, but that's a bit wasteful.
+	// A better idea than both that and this contraption would be to come up
+	// with an INVOKE_TASK_INDIRECT_WHEN.
+	ARGS.task._cotask_BossAttack_thunk(&ARGS.task_args);
+}
+
+static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
+	INVOKE_TASK_WHEN(&a->events.initiated, attack_task_helper,
+		.task = task,
+		.task_args = {
+			.boss = ENT_BOX(boss),
+			.attack = a
+		}
+	);
+}
+
+Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	setup_attack_task(boss, a, task);
 	return a;
 }
 
@@ -1397,7 +1456,18 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
 	a->info = info;
 	boss_set_attack_bonus(a, info->bonus_rank);
+
+	if(info->task._cotask_BossAttack_thunk) {
+		setup_attack_task(boss, a, info->task);
+	}
+
 	return a;
+}
+
+Boss *_init_boss_attack(const BossAttackTaskArgs *restrict args) {
+	Boss *boss = TASK_BIND(args->boss);
+	CANCEL_TASK_AFTER(&args->attack->events.finished, THIS_TASK);
+	return boss;
 }
 
 void boss_preload(void) {

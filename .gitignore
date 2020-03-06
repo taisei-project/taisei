@@ -8,3 +8,6 @@ __pycache__
 *.kdev4
 .kdev4/
 *.kate-swp
+*~
+*-autosave.kra
+*.swp

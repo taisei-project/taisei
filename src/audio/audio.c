@@ -28,9 +28,9 @@ static struct enqueued_sound {
 	bool replace;
 } *sound_queue;
 
-static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
-	if(!audio_output_works()) {
-		return;
+static SoundID play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
+	if(!audio_output_works() || global.frameskip) {
+		return 0;
 	}
 
 	if(delay > 0) {
@@ -40,23 +40,31 @@ static void play_sound_internal(const char *name, bool is_ui, int cooldown, bool
 		s->cooldown = cooldown;
 		s->replace = replace;
 		list_push(&sound_queue, s);
-		return;
+		return 0;
 	}
 
-	if(global.frameskip) {
-		return;
+	if(taisei_is_skip_mode_enabled()) {
+		return 0;
 	}
 
 	Sound *snd = get_sound(name);
 
 	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames)) {
-		return;
+		return 0;
 	}
 
 	snd->lastplayframe = global.frames;
 
-	(replace ? B.sound_play_or_restart : B.sound_play)
-		(snd->impl, is_ui ? SNDGROUP_UI : SNDGROUP_MAIN);
+	AudioBackendSoundGroup group = is_ui ? SNDGROUP_UI : SNDGROUP_MAIN;
+	SoundID sid;
+
+	if(replace) {
+		sid = B.sound_play_or_restart(snd->impl, group);
+	} else {
+		sid = B.sound_play(snd->impl, group);
+	}
+
+	return sid;
 }
 
 static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
@@ -67,18 +75,21 @@ static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
 }
 
 static void* play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
-	play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
+	if(!taisei_is_skip_mode_enabled()) {
+		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
+	}
+
 	free(snd->name);
 	free(list_unlink(queue, snd));
 	return NULL;
 }
 
-void play_sound(const char *name) {
-	play_sound_internal(name, false, 0, false, 0);
+SoundID play_sound(const char *name) {
+	return play_sound_internal(name, false, 0, false, 0);
 }
 
-void play_sound_ex(const char *name, int cooldown, bool replace) {
-	play_sound_internal(name, false, cooldown, replace, 0);
+SoundID play_sound_ex(const char *name, int cooldown, bool replace) {
+	return play_sound_internal(name, false, cooldown, replace, 0);
 }
 
 void play_sound_delayed(const char *name, int cooldown, bool replace, int delay) {
@@ -87,6 +98,17 @@ void play_sound_delayed(const char *name, int cooldown, bool replace, int delay)
 
 void play_ui_sound(const char *name) {
 	play_sound_internal(name, true, 0, true, 0);
+}
+
+void stop_sound(SoundID sid) {
+	if(sid) {
+		B.sound_stop_id(sid);
+	}
+}
+
+void replace_sound(SoundID sid, const char *name) {
+	stop_sound(sid);
+	play_sound(name);
 }
 
 void play_loop(const char *name) {

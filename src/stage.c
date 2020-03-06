@@ -24,6 +24,7 @@
 #include "stagedraw.h"
 #include "stageobjects.h"
 #include "eventloop/eventloop.h"
+#include "common_tasks.h"
 
 #ifdef DEBUG
 	#define DPSTEST
@@ -72,7 +73,7 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 			break;
 		}
 
-		for(AttackInfo *a = s->spell; a->rule; ++a) {
+		for(AttackInfo *a = s->spell; a->name; ++a) {
 			if(!filter(a)) {
 				continue;
 			}
@@ -94,6 +95,8 @@ static bool spellfilter_normal(AttackInfo *spell) {
 static bool spellfilter_extra(AttackInfo *spell) {
 	return spell->type == AT_ExtraSpell;
 }
+
+#include "stages/corotest.h"
 
 void stage_init_array(void) {
 	int spellnum = 0;
@@ -119,6 +122,9 @@ void stage_init_array(void) {
 #ifdef SPELL_BENCHMARK
 	add_spellpractice_stage(stages, &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
 #endif
+
+	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
+	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
 	end_stages();
 
@@ -272,7 +278,7 @@ static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
 }
 
 void stage_pause(void) {
-	if(global.gameover == GAMEOVER_TRANSITIONING) {
+	if(global.gameover == GAMEOVER_TRANSITIONING || taisei_is_skip_mode_enabled()) {
 		return;
 	}
 
@@ -451,6 +457,33 @@ static void stage_input(void) {
 	player_applymovement(&global.plr);
 }
 
+#ifdef DEBUG
+static const char *_skip_to_bookmark;
+bool _skip_to_dialog;
+
+void _stage_bookmark(const char *name) {
+	log_debug("Bookmark [%s] reached at %i", name, global.frames);
+
+	if(_skip_to_bookmark && !strcmp(_skip_to_bookmark, name)) {
+		_skip_to_bookmark = NULL;
+		global.plr.iddqd = false;
+	}
+}
+
+DEFINE_EXTERN_TASK(stage_bookmark) {
+	_stage_bookmark(ARGS.name);
+}
+#endif
+
+static bool _stage_should_skip(void) {
+#ifdef DEBUG
+	if(_skip_to_bookmark || _skip_to_dialog) {
+		return true;
+	}
+#endif
+	return false;
+}
+
 static void stage_logic(void) {
 	player_logic(&global.plr);
 
@@ -460,7 +493,24 @@ static void stage_logic(void) {
 	process_items();
 	process_lasers();
 	process_projectiles(&global.particles, false);
-	dialog_update(&global.dialog);
+
+	if(global.dialog) {
+		dialog_update(global.dialog);
+
+		if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
+			dialog_page(global.dialog);
+		}
+	}
+
+	if(_stage_should_skip()) {
+		if(dialog_is_active(global.dialog)) {
+			dialog_page(global.dialog);
+		}
+
+		if(global.boss) {
+			ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
+		}
+	}
 
 	update_sounds();
 
@@ -550,6 +600,7 @@ static bool ellipse_predicate(EntityInterface *ent, void *varg) {
 		default: UNREACHABLE;
 	}
 }
+
 void stage_clear_hazards_at(cmplx origin, double radius, ClearHazardsFlags flags) {
 	Circle area = { origin, radius };
 	stage_clear_hazards_predicate(proximity_predicate, &area, flags);
@@ -557,6 +608,25 @@ void stage_clear_hazards_at(cmplx origin, double radius, ClearHazardsFlags flags
 
 void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
+}
+
+TASK(clear_dialog, NO_ARGS) {
+	assert(global.dialog != NULL);
+	// dialog_deinit() should've been called by dialog_end() at this point
+	global.dialog = NULL;
+}
+
+TASK(dialog_fixup_timer, NO_ARGS) {
+	// HACK: remove when global.timer is gone
+	global.timer++;
+}
+
+void stage_begin_dialog(Dialog *d) {
+	assert(global.dialog == NULL);
+	global.dialog = d;
+	dialog_init(d);
+	INVOKE_TASK_WHEN(&d->events.fadeout_began, dialog_fixup_timer);
+	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
 }
 
 static void stage_free(void) {
@@ -569,7 +639,7 @@ static void stage_free(void) {
 	delete_projectiles(&global.particles);
 
 	if(global.dialog) {
-		dialog_destroy(global.dialog);
+		dialog_deinit(global.dialog);
 		global.dialog = NULL;
 	}
 
@@ -638,6 +708,12 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, get_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
+static void display_bgm_title(void) {
+	char txt[strlen(current_bgm.title) + 6];
+	snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
+	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, get_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+}
+
 void stage_start_bgm(const char *bgm) {
 	char *old_title = NULL;
 
@@ -648,9 +724,11 @@ void stage_start_bgm(const char *bgm) {
 	start_bgm(bgm);
 
 	if(current_bgm.title && current_bgm.started_at >= 0 && (!old_title || strcmp(current_bgm.title, old_title))) {
-		char txt[strlen(current_bgm.title) + 6];
-		snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, get_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+		if(dialog_is_active(global.dialog)) {
+			INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
+		} else {
+			display_bgm_title();
+		}
 	}
 
 	free(old_title);
@@ -672,14 +750,11 @@ bool stage_is_cleared(void) {
 
 typedef struct StageFrameState {
 	StageInfo *stage;
-	int transition_delay;
-	uint16_t last_replay_fps;
 	CallChain cc;
+	CoSched sched;
+	int transition_delay;
 	int logic_calls;
-
-#ifdef DEBUG
-	bool skip_to_dialog;
-#endif
+	uint16_t last_replay_fps;
 } StageFrameState;
 
 static void stage_update_fps(StageFrameState *fstate) {
@@ -723,6 +798,10 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
+INLINE bool stage_should_yield(void) {
+	return (global.boss && !boss_is_fleeing(global.boss)) || dialog_is_active(global.dialog);
+}
+
 static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
@@ -731,11 +810,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 
 	stage_update_fps(fstate);
 
-	#ifdef DEBUG
-	if(fstate->skip_to_dialog) {
+	if(_stage_should_skip()) {
 		global.plr.iddqd = true;
 	}
-	#endif
 
 	if(global.shake_view > 30) {
 		global.shake_view = 30;
@@ -752,7 +829,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
-		if((!global.boss || boss_is_fleeing(global.boss)) && !dialog_is_active(global.dialog)) {
+		cosched_run_tasks(&fstate->sched);
+
+		if(!stage_should_yield()) {
 			stage->procs->event();
 		}
 
@@ -769,7 +848,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		stage->procs->update();
 	}
 
-	replay_stage_check_desync(global.replay_stage, global.frames, (tsrand() ^ global.plr.points) & 0xFFFF, global.replaymode);
+	replay_stage_check_desync(global.replay_stage, global.frames, (rng_u64() ^ global.plr.points) & 0xFFFF, global.replaymode);
 	stage_logic();
 
 	if(fstate->transition_delay) {
@@ -788,20 +867,18 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return LFRAME_STOP;
 	}
 
-	#ifdef DEBUG
-	if(fstate->skip_to_dialog) {
-		if(dialog_is_active(global.dialog)) {
-			fstate->skip_to_dialog = false;
-			global.plr.iddqd = false;
-		} else {
-			return LFRAME_SKIP;
-		}
+#ifdef DEBUG
+	if(_skip_to_dialog && dialog_is_active(global.dialog)) {
+		_skip_to_dialog = false;
+		global.plr.iddqd = false;
 	}
 
-	if(gamekeypressed(KEY_SKIP)) {
+	taisei_set_skip_mode(_stage_should_skip());
+
+	if(taisei_is_skip_mode_enabled() || gamekeypressed(KEY_SKIP)) {
 		return LFRAME_SKIP;
 	}
-	#endif
+#endif
 
 	if(global.frameskip || (global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP))) {
 		return LFRAME_SKIP;
@@ -814,19 +891,17 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-#if DEBUG
-	if(fstate->skip_to_dialog) {
+	if(_stage_should_skip()) {
 		return RFRAME_DROP;
 	}
-#endif
 
-	tsrand_lock(&global.rand_game);
-	tsrand_switch(&global.rand_visual);
+	rng_lock(&global.rand_game);
+	rng_make_active(&global.rand_visual);
 	BEGIN_DRAW_CODE();
 	stage_draw_scene(stage);
 	END_DRAW_CODE();
-	tsrand_unlock(&global.rand_game);
-	tsrand_switch(&global.rand_game);
+	rng_unlock(&global.rand_game);
+	rng_make_active(&global.rand_game);
 	draw_transition();
 
 	return RFRAME_SWAP;
@@ -834,16 +909,28 @@ static RenderFrameAction stage_render_frame(void *arg) {
 
 static void stage_end_loop(void *ctx);
 
+static void stage_stub_proc(void) { }
+
 void stage_enter(StageInfo *stage, CallChain next) {
 	assert(stage);
 	assert(stage->procs);
-	assert(stage->procs->preload);
-	assert(stage->procs->begin);
-	assert(stage->procs->end);
-	assert(stage->procs->draw);
-	assert(stage->procs->event);
-	assert(stage->procs->update);
-	assert(stage->procs->shader_rules);
+
+	#define STUB_PROC(proc, stub) do {\
+		if(!stage->procs->proc) { \
+			stage->procs->proc = stub; \
+			log_debug(#proc " proc is missing"); \
+		} \
+	} while(0)
+
+	static const ShaderRule shader_rules_stub[1] = { NULL };
+
+	STUB_PROC(preload, stage_stub_proc);
+	STUB_PROC(begin, stage_stub_proc);
+	STUB_PROC(end, stage_stub_proc);
+	STUB_PROC(draw, stage_stub_proc);
+	STUB_PROC(event, stage_stub_proc);
+	STUB_PROC(update, stage_stub_proc);
+	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
 
 	if(global.gameover == GAMEOVER_WIN) {
 		global.gameover = 0;
@@ -861,13 +948,13 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	stage_preload();
 	stage_draw_init();
 
-	tsrand_switch(&global.rand_game);
+	rng_make_active(&global.rand_game);
 	stage_start(stage);
 
 	if(global.replaymode == REPLAY_RECORD) {
 		uint64_t start_time = (uint64_t)time(0);
 		uint64_t seed = makeseed();
-		tsrand_seed_p(&global.rand_game, seed);
+		rng_seed(&global.rand_game, seed);
 
 		global.replay_stage = replay_create_stage(&global.replay, stage, start_time, seed, global.diff, &global.plr);
 
@@ -893,7 +980,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		assert(stg != NULL);
 		assert(stage_get(stg->stage) == stage);
 
-		tsrand_seed_p(&global.rand_game, stg->rng_seed);
+		rng_seed(&global.rand_game, stg->rng_seed);
 
 		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
 		log_debug("Start time: %"PRIu64, stg->start_time);
@@ -905,20 +992,24 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		stg->playpos = 0;
 	}
 
+	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
+	cosched_init(&fstate->sched);
+	cosched_set_invoke_target(&fstate->sched);
+	fstate->stage = stage;
+	fstate->cc = next;
+
+	#ifdef DEBUG
+	_skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
+	_skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
+	taisei_set_skip_mode(_stage_should_skip());
+	#endif
+
 	stage->procs->begin();
 	player_stage_post_init(&global.plr);
 
 	if(global.stage->type != STAGE_SPELL) {
 		display_stage_title(stage);
 	}
-
-	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
-	fstate->stage = stage;
-	fstate->cc = next;
-
-	#ifdef DEBUG
-	fstate->skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
-	#endif
 
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }
@@ -939,12 +1030,15 @@ void stage_end_loop(void* ctx) {
 	stage_draw_shutdown();
 	stage_free();
 	player_free(&global.plr);
-	tsrand_switch(&global.rand_visual);
+	cosched_finish(&s->sched);
+	rng_make_active(&global.rand_visual);
 	free_all_refs();
 	ent_shutdown();
 	stage_objpools_free();
 	stop_sounds();
+
 	taisei_commit_persistent_data();
+	taisei_set_skip_mode(false);
 
 	if(taisei_quit_requested()) {
 		global.gameover = GAMEOVER_ABORT;

@@ -1,21 +1,108 @@
 
-Module['preRun'].push(function() {
-    ENV["TAISEI_NOASYNC"] = "1";
-    ENV["TAISEI_NOUNLOAD"] = "1";
-    ENV["TAISEI_PREFER_SDL_VIDEODRIVERS"] = "emscripten";
-    ENV["TAISEI_RENDERER"] = "gles30";
+function E(id) { return document.getElementById(id); }
 
-    FS.mkdir('/persistent');
-    FS.mount(IDBFS, {}, '/persistent');
+var statusElement = E('status');
+var progressElement = E('progress');
+var spinnerElement = E('spinner');
+var canvasElement = E('canvas');
+var canvasContainerElement = E('canvasContainer');
+var logToggleElement = E('logToggle');
+var logToggleContainerElement = E('logToggleContainer');
+var logContainerElement = E('logContainer');
+var logOutputElement = E('output');
+var dlMessage = statusElement.innerText;
+logToggleElement.checked = false;
 
-    // This function has been removed from Emscripten, but SDL still uses it...
-    Module['Pointer_stringify'] = function(ptr) {
-        return UTF8ToString(ptr);
-    }
+function toggleLog() {
+    logContainerElement.hidden = !logToggleElement.checked;
+    logOutputElement.scrollTop = logOutputElement.scrollHeight;
+}
 
-    Pointer_stringify = Module['Pointer_stringify']
-    window.Pointer_stringify = Module['Pointer_stringify']
+var glContext = canvasElement.getContext('webgl2', {
+    'alpha' : false,
+    'antialias' : false,
+    'depth' : false,
+    'powerPreference' : 'high-performance',
+    'premultipliedAlpha' : true,
+    'preserveDrawingBuffer' : false,
+    'stencil' : false,
 });
+
+// This actually enables the extension. Galaxy-brain API right here.
+glContext.getExtension('WEBGL_debug_renderer_info');
+
+// glContext = WebGLDebugUtils.makeDebugContext(glContext);
+
+canvasElement.addEventListener("webglcontextlost", function(e) {
+    alert('WebGL context lost. You will need to reload the page.');
+    e.preventDefault();
+}, false);
+
+logOutputElement.value = ''; // clear browser cache
+
+Module = {
+    'preRun': [function() {
+        ENV["TAISEI_NOASYNC"] = "1";
+        ENV["TAISEI_NOUNLOAD"] = "1";
+        ENV["TAISEI_PREFER_SDL_VIDEODRIVERS"] = "emscripten";
+        ENV["TAISEI_RENDERER"] = "gles30";
+
+        FS.mkdir('/persistent');
+        FS.mount(IDBFS, {}, '/persistent');
+    }],
+    'postRun': [],
+    'onFirstFrame': function() {
+        canvasContainerElement.hidden = false;
+        logToggleContainerElement.style.display = "inline-block";
+        Module['setStatus']('', true);
+    },
+    'print': function(text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        console.log(text);
+        logOutputElement.value += text + "\n";
+        logOutputElement.scrollTop = logOutputElement.scrollHeight; // focus on bottom
+    },
+    'printErr': function(text) {
+        if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+        console.error(text);
+    },
+    'canvas': canvasElement,
+    'preinitializedWebGLContext': glContext,
+    'setStatus': function(text, force) {
+        var ss = Module['setStatus'];
+        if (!text && !force) return;
+        if (!ss.last) ss.last = { time: Date.now(), text: '' };
+        if (text === ss.last.text) return;
+        var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+        var now = Date.now();
+        if (m && now - ss.last.time < 30) return; // if this is a progress update, skip it if too soon
+        ss.last.time = now;
+        ss.last.text = text;
+        if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+            spinnerElement.hidden = false;
+        } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+            if (!text) spinnerElement.hidden = true;
+        }
+        statusElement.innerText = text.replace(/^Downloading(?: data)?\.\.\./, dlMessage).replace('...', '…');
+        console.log("[STATUS] " + statusElement.innerText);
+    },
+    'totalDependencies': 0,
+    'monitorRunDependencies': function(left) {
+        Module['totalDependencies'] = Math.max(Module['totalDependencies'], left);
+        Module['setStatus'](left ? 'Preparing… (' + (Module['totalDependencies']-left) + '/' + Module['totalDependencies'] + ')' : 'All downloads complete.');
+    }
+};
+
+window.onerror = function(error) {
+    Module['setStatus']('Error: ' + error);
+};
 
 function SyncFS(is_load, ccptr) {
     FS.syncfs(is_load, function(err) {
@@ -25,38 +112,35 @@ function SyncFS(is_load, ccptr) {
             [is_load, err, ccptr]
         );
     });
-};
+}
 
-Module['preinitializedWebGLContext'] = (function() {
-    var glctx = document.getElementById('canvas').getContext('webgl2', {
-        alpha : false,
-        antialias : false,
-        depth : false,
-        powerPreference : 'high-performance',
-        premultipliedAlpha : true,
-        preserveDrawingBuffer : false,
-        stencil : false,
-    });
+(function() {
+    // Try to enable audio playback as soon as possible.
+    // It must happen inside an input event handler.
+    // https://github.com/emscripten-core/emscripten/issues/6511
+    // https://github.com/emscripten-ports/SDL2/issues/57
 
-    // This actually enables the extension. Galaxy-brain API right here.
-    glctx.getExtension('WEBGL_debug_renderer_info');
+    function resumeAudio() {
+        if(
+            typeof Module === 'undefined' ||
+            typeof Module.SDL2 == 'undefined' ||
+            typeof Module.SDL2.audioContext == 'undefined'
+        ) {
+            return;
+        }
 
-    // glctx = WebGLDebugUtils.makeDebugContext(glctx);
-    return glctx;
+        if(Module.SDL2.audioContext.state == 'suspended') {
+            Module.SDL2.audioContext.resume();
+        }
+
+        if(Module.SDL2.audioContext.state == 'running') {
+            canvasElement.removeEventListener('click', resumeAudio);
+            document.removeEventListener('keydown', resumeAudio);
+        }
+    }
+
+    canvasElement.addEventListener('click', resumeAudio);
+    document.addEventListener('keydown', resumeAudio);
 })();
 
-function resumeAudio(e) {
-    if (typeof Module === 'undefined'
-            || typeof Module.SDL2 == 'undefined'
-            || typeof Module.SDL2.audioContext == 'undefined')
-        return;
-    if (Module.SDL2.audioContext.state == 'suspended') {
-        Module.SDL2.audioContext.resume();
-    }
-    if (Module.SDL2.audioContext.state == 'running') {
-            document.getElementById('canvas').removeEventListener('click', resumeAudio);
-            document.removeEventListener('keydown', resumeAudio);
-    }
-}
-document.getElementById('canvas').addEventListener('click', resumeAudio);
-document.addEventListener('keydown', resumeAudio);
+var debug_tables;  // closure may fail on debug builds without this

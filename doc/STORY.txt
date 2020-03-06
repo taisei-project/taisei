@@ -47,29 +47,147 @@
 ■ 1. Incident
 ================================================================================
 
- FIXME: Removed due to issue #179
+ [The Hakurei Shrine]
+
+ A shrine located at the border of fantasy and reality.
+
+ Three heroines of Gensōkyō sat drinking tea on a calm day at the end of summer.
+ Two of them seemed unsettled, while the third—
+
+ Marisa: “What’s got ya both so down? Did I mess up the tea?”
+
+ Reimu and Yōmu shared a knowing glance.
+
+ Reimu: “The tea’s fine. I just feel weird. I can’t put my finger on it.”
+
+ Yōmu: “Likewise.”
+
+ The bells of the shrine tolled outside. Someone had made a donation. A minute
+ later, there was another. And another.
+
+ Reimu: “Something’s definitely not right…”
+
+ Yōmu: “Isn’t it normally comforting for the shrine to receive donations?”
+
+ Reimu: “Normally it *would* be comforting, but…”
+
+ Outside the shrine, nearly every resident of Yōkai Mountain, including the
+ kappa and some of the tengu, were lined up one after another to make a donation
+ - including the Moriya Shrine Gods, Kanako and Suwako. Everyone seemed vaguely
+ fearful.
+
+ Reimu: “Eh? What’s all this, then?”
+
+ Kanako: “We’ve come to ask a favour.”
+
+ Marisa: “What kinda favour?”
+
+ A mysterious force was slowly causing yōkai and humans alike to succumb to an
+ intense feeling of “knowing everything.” It would start with figuring out
+ simple problems that they’d been struggling with, such as a technical issue
+ with a machine or perhaps a eye-catching newspaper headline.
+
+ But as it progressed, they’d become completely enveloped by it, unable to act
+ rationally. Yōkai Mountain was usually protected by the Moriya shrine maiden,
+ Sanae Kochiya, but even she had been carried away into madness.
+
+ Suwako: “Sanae just keeps talking about ‘video game consoles.’”
+
+ Marisa: “Eh? Like those toys you hook up to TVs, the kind you find at Kōrindō?”
+
+ Kanako: “Right, but she just won’t stop. I’ve seen her excited, but not like
+ this.”
+
+ Sumireko: “Hmm. Quite fascinating.”
+
+ Reimu: “Where the heck did *you* come from, Sumi?”
+
+ Sumireko: “I couldn’t help overhearing your conversation. Based on my gut
+ feeling, and what you’ve described, the answer is obvious.”
+
+ Yōmu: “Is that so? Care to share it with us?”
+
+ Sumireko: “Some entity on Yōkai Mountain is emitting a powerful eldritch
+ lunacy, likely in all directions from a singular point, given how
+ indiscriminate it is. Too much knowledge all at once… mm, mm, it can
+ potentially be fatal, at least for those with weaker minds.”
+
+ Marisa: “Heh, wanna handle it then, Sumi?”
+
+ Sumireko: “A-ah, n-no, you all know the lay of the land better, a-after all,
+ and with it being such a dire situation—”
+
+ Yōmu was distracted by the sight of her mistress, Lady Yuyuko, standing in the
+ shade, a fan over her face. She went over to greet her.
+
+ Yōmu: “Lady Yuyuko, why have you—”
+
+ Yuyuko: “The spirits seem drawn to Yōkai Mountain as well, as if they long for
+ something. It’s growing difficult to contain them all…”
+
+ Yōmu: “I see. Shall I investigate as well?”
+
+ Yuyuko: “Please do.”
+
+ Elsewhere at the shrine, the kappa were all gathered around talking intensely
+ in hushed tones, and the tengu were furiously scribbling on their notepads as
+ if they’d just gotten the scoop of their careers. Even here, away from Yōkai
+ Mountain, the effects of the “eldritch lunacy” seemed to persist, and continued
+ to drive everyone mad…
 
 ================================================================================
 ■ 2. Characters
 ================================================================================
 
+  ○ Shrine Maiden of Fantasy ~ Hakurei Reimu
+    Species: Human
+    Area of Study: Literature (Fiction)
 
-  ○ Hakurei Reimu
+    The incredibly particular shrine maiden.
 
-    FIXME: Removed due to issue #179
+    She’s taking a break from her busy novel-reading schedule to take care of an
+    incident.
 
-  ○ Kirisame Marisa
+    Mostly, she has a vague feeling of sentimentality for a bygone era.
 
-    FIXME: Removed due to issue #179
+    Regardless, when the residents of Yōkai Mountain show up sobbing at her
+    door, she has no choice but to put her book down and spring into action.
 
-  ○ Konpaku Yōmu
 
-    FIXME: Removed due to issue #179
+  ○ Unbelievably Ordinary Magician ~ Kirisame Marisa
+    Species: Human
+    Area of Study: Eclecticism
+
+    The confident, hyperactive witch.
+
+    Curious as ever about the limits of magic and the nature of reality, and
+    when she hears about “eldritch lunacy,” her curiosity gets the better of
+    her.
+
+    But maybe this “grimoire” is best left unread?
+
+    Not that a warning like that would stop her anyways. So, off she goes.
+
+
+  ○ Swordswoman Between Worlds ~ Konpaku Yōmu
+    Species: Half-Human, Half-Phantom
+    Area of Study: Fencing
+
+    The swordswoman of the somewhat-dead.
+
+    “While you were playing games, I was studying the blade” … is probably what
+    she’d say.
+
+    Entirely too serious about everything, and utterly terrified of (half of)
+    her own existence.
+
+    Still, she’s been given an important mission by Lady Yuyuko. Hopefully she
+    doesn’t let it get to her head.
+
 
 ================================================================================
 ■ 3. Stages
 ================================================================================
-
 
   ○ Stage 1: Misty Lake
   ○ Stage 2: Walk Along the Border
@@ -78,42 +196,87 @@
   ○ Stage 5: Climbing the Tower of Babel
   ○ Stage 6: Roof of the World
 
-
 ================================================================================
 ■ 4. Bosses
 ================================================================================
 
   ○ Stage 1 Boss
-    Cirno
+    Name: Cirno
+    Species: Fairy
+    Field of Study: Thermodynamic Systems
 
-    FIXME: Removed due to issue #179
+    The lovably-foolish ice fairy.
+
+    Perhaps she’s a bit dissatisfied after her recent duels with secret gods and
+    hellish fairies?
+
+    Consider going easy on her.
 
 
   ○ Stage 2 Boss
-    Kagiyama Hina
+    Name: Kagiyama Hina
+    Species: Pestilence God
+    Field of Study: Gyroscopic Stabilization
 
-    FIXME: Removed due to issue #179
+    Guardian of Yōkai Mountain. Her angular momentum is out of this world!
+
+    She seems awfully concerned with your health and safety, to the point of
+    being quite overbearing.
+
+    You’re old enough to decide your own path in life, though.
 
 
   ○ Stage 3 Boss
-    Wriggle
+    Name: Wriggle Nightbug
+    Species: Insect
+    Field of Study: Evolutionary Socio-Entomology
 
-    FIXME: Removed due to issue #179
+    A bright bug - or was it insect? - far from her usual stomping grounds.
+
+    She feels that Insects have lost their “rightful place” in history.
+
+    If she thinks she has a raw evolutionary deal, someone ought to tell
+    her about the trilobites…
 
 
   ○ Stage 4 Boss
-    Kurumi
+    Name: Kurumi
+    Species: Vampire
+    Field of Study: Phlebotomy
 
-    FIXME: Removed due to issue #179
+    Vampiric blast from the past. Doesn’t she know Gensōkyō already has new
+    bloodsuckers in town?
+
+    Sucking blood is what she’s good at, but her current job is a gatekeeper,
+    and her true passion is high fashion.
+
+    Everyone’s got multiple side-hustles these days…
 
 
   ○ Stage 5 Boss
-    Nagae Iku
+    Name: Nagae Iku
+    Species: Oarfish
+    Field of Study: Meteorology (Fulminology)
 
-    FIXME: Removed due to issue #179
+    Messenger from the clouds, and an amateur meteorologist.
+
+    Seems to have been reading a few too many outdated psychiatry textbooks in
+    recent times.
+
+    Despite being so formal and stuffy, she seems to be the only one who knows
+    what’s going on.
 
 
   ○ Stage 6 Boss
-    Elly
+    Name: Elly
+    Species: Shinigami(?)
+    Field of Study: Theoretical Physics / Forensic Pathology (dual-major)
 
-    FIXME: Removed due to issue #179
+    Slightly upset over being forgotten.
+
+    Has apparently gotten herself a tutor in the “dark art” of theoretical
+    physics. Her side-hustle is megalomania.
+
+    Literally on top of the world, without a care to spare for those beneath
+    her. Try not to let too many stones crush the innocent yōkai below when her
+    Tower of Babel starts to crumble.

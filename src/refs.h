@@ -33,4 +33,6 @@ void del_ref(void *ptr);
 void free_ref(int i);
 void free_all_refs(void);
 
+#define UPDATE_REF(ref, ptr) ((ptr) = REF(ref))
+
 #endif // IGUARD_refs_h

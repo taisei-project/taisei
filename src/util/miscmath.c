@@ -15,7 +15,15 @@ double lerp(double v0, double v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
+float lerpf(float v0, float v1, float f) {
+	return f * (v1 - v0) + v0;
+}
+
 cmplx clerp(cmplx v0, cmplx v1, double f) {
+	return f * (v1 - v0) + v0;
+}
+
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) {
 	return f * (v1 - v0) + v0;
 }
 
@@ -47,12 +55,12 @@ float fapproach(float v, float t, float d) {
 	return v;
 }
 
-void approach_p(double *v, double t, double d) {
-	*v = approach(*v, t, d);
+double approach_p(double *v, double t, double d) {
+	return *v = approach(*v, t, d);
 }
 
-void fapproach_p(float *v, float t, float d) {
-	*v = fapproach(*v, t, d);
+float fapproach_p(float *v, float t, float d) {
+	return *v = fapproach(*v, t, d);
 }
 
 double approach_asymptotic(double val, double target, double rate, double epsilon) {
@@ -79,20 +87,66 @@ cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon)
 	return val + (target - val) * rate;
 }
 
-void approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
-	*val = approach_asymptotic(*val, target, rate, epsilon);
+double approach_asymptotic_p(double *val, double target, double rate, double epsilon) {
+	return *val = approach_asymptotic(*val, target, rate, epsilon);
 }
 
-void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
-	*val = fapproach_asymptotic(*val, target, rate, epsilon);
+float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon) {
+	return *val = fapproach_asymptotic(*val, target, rate, epsilon);
 }
 
-void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon) {
-	*val = capproach_asymptotic(*val, target, rate, epsilon);
+cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon) {
+	return *val = capproach_asymptotic(*val, target, rate, epsilon);
+}
+
+cmplx cnormalize(cmplx c) {
+	return c / cabs(c);
+}
+
+cmplx cclampabs(cmplx c, double maxabs) {
+	double a = cabs(c);
+
+	if(a > maxabs) {
+		return maxabs * c / a;
+	}
+
+	return c;
+}
+
+cmplx cdir(double angle) {
+	// this is faster than cexp(I*angle)
+
+	#ifdef TAISEI_BUILDCONF_HAVE_SINCOS
+	double s, c;
+	sincos(angle, &s, &c);
+	return CMPLX(c, s);
+	#else
+	return CMPLX(cos(angle), sin(angle));
+	#endif
+}
+
+cmplx cwmul(cmplx c0, cmplx c1) {
+	return CMPLX(creal(c0)*creal(c1), cimag(c0)*cimag(c1));
+}
+
+cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) {
+	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
 }
 
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
+}
+
+double pcos(double x) {
+	return 0.5 + 0.5 * cos(x);
+}
+
+float psinf(float x) {
+	return 0.5 + 0.5 * sinf(x);
+}
+
+float pcosf(float x) {
+	return 0.5 + 0.5 * cosf(x);
 }
 
 double min(double a, double b) {
@@ -173,6 +227,22 @@ double swing(double x, double s) {
 	return x * x * ((s + 1) * x + s) / 2 + 1;
 }
 
+double sawtooth(double x) {
+	return 2 * (x - floor(x + 0.5));
+}
+
+double triangle(double x) {
+	return 2 * fabs(sawtooth(x)) - 1;
+}
+
+double logistic(double x) {
+	return 1.0 / (1.0 + exp(-x));
+}
+
+float flogistic(float x) {
+	return 1.0f / (1.0f + expf(-x));
+}
+
 uint32_t topow2_u32(uint32_t x) {
 	x -= 1;
 	x |= (x >> 1);
@@ -212,6 +282,18 @@ float smoothreclamp(float x, float old_min, float old_max, float new_min, float 
 
 float sanitize_scale(float scale) {
 	return max(0.1, scale);
+}
+
+double circle_angle(double index, double max_elements) {
+	return (index * (M_PI * 2.0)) / max_elements;
+}
+
+cmplx circle_dir(double index, double max_elements) {
+	return cdir(circle_angle(index, max_elements));
+}
+
+cmplx circle_dir_ofs(double index, double max_elements, double ofs) {
+	return cdir(circle_angle(index, max_elements) + ofs);
 }
 
 float normpdf(float x, float sigma) {

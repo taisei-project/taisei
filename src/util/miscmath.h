@@ -11,12 +11,15 @@
 
 #include "taisei.h"
 
-#define DEG2RAD (M_PI/180.0)
-#define RAD2DEG (180.0/M_PI)
+#define DEG2RAD (M_PI / 180.0)
+#define RAD2DEG (180.0 / M_PI)
 #define GOLDEN_RATIO 1.618033988749895
+#define M_TAU (M_PI * 2)
 
 double lerp(double v0, double v1, double f) attr_const;
+float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
 uintmax_t umin(uintmax_t, uintmax_t) attr_const;
@@ -29,23 +32,38 @@ double smoothstep(double edge0, double edge1, double x) attr_const;
 double smoothmin(double a, double b, double k);
 double approach(double v, double t, double d) attr_const;
 float fapproach(float v, float t, float d) attr_const;
-void approach_p(double *v, double t, double d);
-void fapproach_p(float *v, float t, float d);
+double approach_p(double *v, double t, double d);
+float fapproach_p(float *v, float t, float d);
 double approach_asymptotic(double val, double target, double rate, double epsilon) attr_const;
 float fapproach_asymptotic(float val, float target, float rate, float epsilon) attr_const;
 cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon) attr_const;
-void approach_asymptotic_p(double *val, double target, double rate, double epsilon);
-void fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
-void capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
+double approach_asymptotic_p(double *val, double target, double rate, double epsilon);
+float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
+cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
+cmplx cnormalize(cmplx c) attr_const;
+cmplx cclampabs(cmplx c, double maxabs) attr_const;
+cmplx cdir(double angle) attr_const;
+cmplx cwmul(cmplx c0, cmplx c1) attr_const;
+cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) attr_const;
 double psin(double) attr_const;
+double pcos(double) attr_const;
+float psinf(float) attr_const;
+float pcosf(float) attr_const;
 int sign(double) attr_const;
 double swing(double x, double s) attr_const;
+double sawtooth(double x) attr_const;
+double triangle(double x) attr_const;
+double logistic(double x) attr_const;
+float flogistic(float x) attr_const;
 uint32_t topow2_u32(uint32_t x) attr_const;
 uint64_t topow2_u64(uint64_t x) attr_const;
 float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 float sanitize_scale(float scale) attr_const;
+double circle_angle(double index, double max_elements) attr_const;
+cmplx circle_dir(double index, double max_elements) attr_const;
+cmplx circle_dir_ofs(double index, double max_elements, double ofs) attr_const;
 uint64_t upow10(uint n) attr_const;
 uint digitcnt(uint64_t x) attr_const;
 float normpdf(float x, float sigma) attr_const;

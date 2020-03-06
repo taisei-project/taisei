@@ -9,5 +9,5 @@ void spriteMain(out vec4 fragColor) {
 		discard;
 	}
 
-	fragColor = (color * texel.g + vec4(texel.b)) * (1 - customParams.r);
+	fragColor = (color * texel.g + vec4(texel.b)) * customParams.r;
 }

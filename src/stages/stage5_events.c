@@ -11,33 +11,31 @@
 #include "stage5_events.h"
 #include "stage5.h"
 #include "global.h"
+#include "common_tasks.h"
 
-static Dialog *stage5_dialog_post_midboss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "surprised", NULL);
-	pm->dialog->stage5_post_midboss(d);
-	d->actions[d->count - 1].timeout = global.frames + 120;
-	return d;
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage5_dialog_pre_boss(void) {
+static void stage5_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "iku", "normal", NULL);
-	pm->dialog->stage5_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage5boss"});
-	return d;
+	Stage5PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage5PreBossDialog, pm->dialog->Stage5PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage5boss");
 }
 
-static Dialog *stage5_dialog_post_boss(void) {
+static void stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "iku", "defeated", "defeated");
-	pm->dialog->stage5_post_boss(d);
-	return d;
+	INVOKE_TASK_INDIRECT(Stage5PostBossDialog, pm->dialog->Stage5PostBoss);
+}
+
+static void stage5_dialog_post_midboss(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage5PostMidBossDialog, pm->dialog->Stage5PostMidBoss);
 }
 
 static int stage5_greeter(Enemy *e, int t) {
@@ -429,6 +427,9 @@ static Boss *create_iku_mid(void) {
 	// suppress the boss death effects (this triggers the "boss fleeing" case)
 	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
 
+	boss_start_attack(b, b->attacks);
+	b->attacks->starttime = global.frames;  // HACK: thwart attack delay
+
 	return b;
 }
 
@@ -502,7 +503,7 @@ static void iku_intro(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
 
 	if(t == 160)
-		global.dialog = stage5_dialog_pre_boss();
+		stage5_dialog_pre_boss();
 }
 
 static void cloud_common(void) {
@@ -1293,6 +1294,7 @@ static Boss* create_iku(void) {
 
 	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
+	boss_start_attack(b, b->attacks);
 	return b;
 }
 
@@ -1353,7 +1355,7 @@ void stage5_events(void) {
 		global.boss = create_iku_mid();
 
 	AT(2920) {
-		global.dialog = stage5_dialog_post_midboss();
+		stage5_dialog_post_midboss();
 
 		// XXX: this shitty hack is needed to force the dialog to not reopen immediately when it's closed with the shot button
 		global.timer++;
@@ -1460,7 +1462,7 @@ void stage5_events(void) {
 
 	AT(6980) {
 		stage_unlock_bgm("stage5boss");
-		global.dialog = stage5_dialog_post_boss();
+		stage5_dialog_post_boss();
 	}
 
 	AT(6985) {

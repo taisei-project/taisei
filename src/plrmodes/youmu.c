@@ -18,7 +18,7 @@ PlayerCharacter character_youmu = {
 	.lower_name = "youmu",
 	.proper_name = "Yōmu",
 	.full_name = "Konpaku Yōmu",
-	.title = "Half-Phantom Girl",
+	.title = "Swordswoman Between Worlds",
 	.dialog_base_sprite_name = "dialog/youmu",
 	.player_sprite_name = "player/youmu",
 	.menu_texture_name = "youmu_bombbg1",
@@ -121,15 +121,6 @@ void youmu_common_bombbg(Player *plr) {
 	capture_frame(bomb_buffer, r_framebuffer_current());
 }
 
-void youmu_common_draw_proj(Projectile *p, const Color *c, float scale) {
-	r_mat_mv_push();
-	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
-	r_mat_mv_scale(scale, scale, 1);
-	ProjDrawCore(p, c);
-	r_mat_mv_pop();
-}
-
 void youmu_common_bomb_buffer_init(void) {
 	FBAttachmentConfig cfg;
 	memset(&cfg, 0, sizeof(cfg));
@@ -141,4 +132,3 @@ void youmu_common_bomb_buffer_init(void) {
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
 	bomb_buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
 }
-

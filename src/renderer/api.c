@@ -18,6 +18,7 @@
 #include "util/graphics.h"
 #include "resource/texture.h"
 #include "resource/sprite.h"
+#include "coroutine.h"
 
 #define B _r_backend.funcs
 
@@ -605,6 +606,7 @@ VsyncMode r_vsync_current(void) {
 }
 
 void r_swap(SDL_Window *window) {
+	coroutines_draw_stats();
 	_r_sprite_batch_end_frame();
 	B.swap(window);
 }

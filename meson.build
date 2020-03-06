@@ -43,7 +43,6 @@ if cc.get_id() == 'emscripten'
 
     if get_option('b_lto')
         emscripten_global_link_args = [
-            '-s', 'WASM_OBJECT_FILES=0',
             '--llvm-lto', '1',
             '-flto',
         ]
@@ -165,10 +164,12 @@ dep_m           = cc.find_library('m', required : false)
 
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
+dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 
 taisei_deps = [
     dep_cglm,
     dep_freetype,
+    dep_koishi,
     dep_m,
     dep_png,
     dep_sdl2,
@@ -248,6 +249,11 @@ config.set('TAISEI_BUILDCONF_HAVE_TIMESPEC', have_timespec)
 config.set('TAISEI_BUILDCONF_HAVE_INT128', cc.sizeof('__int128') == 16)
 config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
+config.set('TAISEI_BUILDCONF_HAVE_SINCOS', cc.has_function('sincos', dependencies : dep_m))
+
+if config.get('TAISEI_BUILDCONF_HAVE_SINCOS')
+    config.set('_GNU_SOURCE', true)
+endif
 
 if host_machine.system() == 'emscripten'
     # Emscripten bug: https://github.com/emscripten-core/emscripten/issues/10072

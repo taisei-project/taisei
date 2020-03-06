@@ -14,6 +14,10 @@
 #include "stage.h"
 #include "enemy.h"
 #include "laser.h"
+#include "common_tasks.h"
+
+PRAGMA(message "Remove when this stage is modernized")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 
 void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);
@@ -23,23 +27,21 @@ void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
 
-static Dialog *stage4_dialog_pre_boss(void) {
-	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "normal", NULL);
-	pm->dialog->stage4_pre_boss(d);
-	dialog_add_action(d, &(DialogAction) { .type = DIALOG_SET_BGM, .data = "stage4boss"});
-	return d;
+TASK(boss_appear_stub, NO_ARGS) {
+	log_warn("FIXME");
 }
 
-static Dialog *stage4_dialog_post_boss(void) {
+static void stage4_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	Dialog *d = dialog_create();
-	dialog_set_char(d, DIALOG_LEFT, pm->character->lower_name, "normal", NULL);
-	dialog_set_char(d, DIALOG_RIGHT, "kurumi", "defeated", "defeated");
-	pm->dialog->stage4_post_boss(d);
-	return d;
+	Stage4PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage4PreBossDialog, pm->dialog->Stage4PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage4boss");
+}
+
+static void stage4_dialog_post_boss(void) {
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage4PostBossDialog, pm->dialog->Stage4PostBoss);
 }
 
 static int stage4_splasher(Enemy *e, int t) {
@@ -640,7 +642,7 @@ static void kurumi_boss_intro(Boss *b, int t) {
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.015);
 
 	AT(120)
-		global.dialog = stage4_dialog_pre_boss();
+		stage4_dialog_pre_boss();
 }
 
 static int splitcard_elly(Projectile *p, int t) {
@@ -1223,7 +1225,8 @@ static int kurumi_extra_bigfairy1(Enemy *e, int time) {
 	return 1;
 }
 
-static void kurumi_extra_drainer_draw(Projectile *p, int time) {
+DEPRECATED_DRAW_RULE
+static void kurumi_extra_drainer_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
 	cmplx org = p->pos;
 	cmplx targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);
@@ -1699,7 +1702,7 @@ void stage4_events(void) {
 
 	AT(5400 + midboss_time) {
 		stage_unlock_bgm("stage4boss");
-		global.dialog = stage4_dialog_post_boss();
+		stage4_dialog_post_boss();
 	}
 
 	AT(5405 + midboss_time) {

@@ -35,11 +35,12 @@ typedef float sample_t;
 #error Audio format not recognized
 #endif
 
-// I needed to add this for supporting loop sounds since Mixer doesn’t remember
-// what channel a sound is playing on.  - laochailan
 
 struct SoundImpl {
 	Mix_Chunk *ch;
+
+	// I needed to add this for supporting loop sounds since Mixer doesn’t remember
+	// what channel a sound is playing on.  - laochailan
 	int loopchan; // channel the sound may be looping on. -1 if not looping
 	int playchan; // channel the sound was last played on (looping does NOT set this). -1 if never played
 };
@@ -50,12 +51,18 @@ struct MusicImpl {
 };
 
 static struct {
-	uchar first;
-	uchar num;
-} groups[2];
+	Mix_Music *next_loop;
+	double next_loop_point;
+	uint32_t play_counter;
+	uint32_t chan_play_ids[AUDIO_CHANNELS];
 
-static Mix_Music *next_loop;
-static double next_loop_point;
+	struct {
+		uchar first;
+		uchar num;
+	} groups[2];
+} mixer;
+
+#define IS_VALID_CHANNEL(chan) ((uint)(chan) < AUDIO_CHANNELS)
 
 static bool audio_sdl2mixer_init(void) {
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
@@ -129,10 +136,10 @@ static bool audio_sdl2mixer_init(void) {
 		log_warn("%i channels not used", unused_channels);
 	}
 
-	groups[UI_CHANNEL_GROUP].first = 0;
-	groups[UI_CHANNEL_GROUP].num = ui_channels;
-	groups[MAIN_CHANNEL_GROUP].first = ui_channels;
-	groups[MAIN_CHANNEL_GROUP].num = main_channels;
+	mixer.groups[UI_CHANNEL_GROUP].first = 0;
+	mixer.groups[UI_CHANNEL_GROUP].num = ui_channels;
+	mixer.groups[MAIN_CHANNEL_GROUP].first = ui_channels;
+	mixer.groups[MAIN_CHANNEL_GROUP].num = main_channels;
 
 	B.sound_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
 	B.music_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
@@ -195,15 +202,15 @@ static void mixer_music_finished(void) {
 	// XXX: there may be a race condition in here
 	// probably should protect next_loop with a mutex
 
-	log_debug("%s stopped playing", next_loop_point ? "Loop" : "Intro");
+	log_debug("%s stopped playing", mixer.next_loop_point ? "Loop" : "Intro");
 
-	if(next_loop) {
-		if(Mix_PlayMusic(next_loop, next_loop_point ? 0 : -1) == -1) {
+	if(mixer.next_loop) {
+		if(Mix_PlayMusic(mixer.next_loop, mixer.next_loop_point ? 0 : -1) == -1) {
 			log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
-		} else if(next_loop_point >= 0) {
-			Mix_SetMusicPosition(next_loop_point);
+		} else if(mixer.next_loop_point >= 0) {
+			Mix_SetMusicPosition(mixer.next_loop_point);
 		} else {
-			next_loop = NULL;
+			mixer.next_loop = NULL;
 		}
 	}
 }
@@ -248,11 +255,11 @@ static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 	Mix_HaltMusic();
 
 	mmus = imus->loop;
-	next_loop_point = imus->loop_point;
+	mixer.next_loop_point = imus->loop_point;
 
-	if(next_loop_point >= 0) {
+	if(mixer.next_loop_point >= 0) {
 		loops = 0;
-		next_loop = imus->loop;
+		mixer.next_loop = imus->loop;
 		Mix_HookMusicFinished(mixer_music_finished);
 	} else {
 		loops = -1;
@@ -270,6 +277,10 @@ static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 
 static bool audio_sdl2mixer_music_set_position(double pos) {
 	Mix_RewindMusic();
+
+	// TODO Handle looping here.
+	// Unfortunately SDL2_Mixer will not tell us the total length of the file,
+	// so a hack is required here.
 
 	if(Mix_SetMusicPosition(pos)) {
 		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
@@ -306,43 +317,71 @@ static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
 	return channel;
 }
 
-static int audio_sdl2mixer_sound_play_on_channel(int chan, SoundImpl *isnd) {
-	chan = Mix_PlayChannel(chan, isnd->ch, 0);
+INLINE SoundID make_sound_id(int chan, uint32_t play_id) {
+	assert(IS_VALID_CHANNEL(chan));
+	return ((uint32_t)chan + 1) | ((uint64_t)play_id << 32ull);
+}
 
-	Mix_UnregisterAllEffects(chan);
-	if(chan < 0) {
-		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
-		return false;
+INLINE void unpack_sound_id(SoundID sid, int *chan, uint32_t *play_id) {
+	int ch = (int)((uint32_t)(sid & 0xffffffff) - 1);
+	assert(IS_VALID_CHANNEL(ch));
+	*chan = ch;
+	*play_id = sid >> 32ull;
+}
+
+INLINE int get_soundid_chan(SoundID sid) {
+	int chan;
+	uint32_t play_id;
+	unpack_sound_id(sid, &chan, &play_id);
+
+	if(mixer.chan_play_ids[chan] == play_id) {
+		return chan;
 	}
 
-	isnd->playchan = chan;
-	return true;
+	return -1;
 }
 
-static bool audio_sdl2mixer_sound_play(SoundImpl *isnd, AudioBackendSoundGroup group) {
-	return audio_sdl2mixer_sound_play_on_channel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd);
+static SoundID play_sound_tracked(uint32_t chan, SoundImpl *isnd, int loops) {
+	assert(IS_VALID_CHANNEL(chan));
+	int actual_chan = Mix_PlayChannel(chan, isnd->ch, loops);
+
+	if(actual_chan < 0) {
+		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
+		return 0;
+	}
+
+	Mix_UnregisterAllEffects(actual_chan);
+
+	if(loops) {
+		isnd->loopchan = actual_chan;
+	} else {
+		isnd->playchan = chan;
+	}
+
+	assert(IS_VALID_CHANNEL(actual_chan));
+	chan = (uint32_t)actual_chan;
+	uint32_t play_id = ++mixer.play_counter;
+	mixer.chan_play_ids[chan] = play_id;
+
+	return make_sound_id(chan, play_id);
 }
 
-static bool audio_sdl2mixer_sound_play_or_restart(SoundImpl *isnd, AudioBackendSoundGroup group) {
+static SoundID audio_sdl2mixer_sound_play(SoundImpl *isnd, AudioBackendSoundGroup group) {
+	return play_sound_tracked(pick_channel(group, MAIN_CHANNEL_GROUP), isnd, 0);
+}
+
+static SoundID audio_sdl2mixer_sound_play_or_restart(SoundImpl *isnd, AudioBackendSoundGroup group) {
 	int chan = isnd->playchan;
 
 	if(chan < 0 || Mix_GetChunk(chan) != isnd->ch) {
 		chan = pick_channel(group, MAIN_CHANNEL_GROUP);
 	}
 
-	return audio_sdl2mixer_sound_play_on_channel(chan, isnd);
+	return play_sound_tracked(chan, isnd, 0);
 }
 
-static bool audio_sdl2mixer_sound_loop(SoundImpl *isnd, AudioBackendSoundGroup group) {
-	isnd->loopchan = Mix_PlayChannel(pick_channel(group, MAIN_CHANNEL_GROUP), isnd->ch, -1);
-	Mix_UnregisterAllEffects(isnd->loopchan);
-
-	if(isnd->loopchan == -1) {
-		log_error("Mix_PlayChannel() failed: %s", Mix_GetError());
-		return false;
-	}
-
-	return true;
+static SoundID audio_sdl2mixer_sound_loop(SoundImpl *isnd, AudioBackendSoundGroup group) {
+	return play_sound_tracked(pick_channel(group, MAIN_CHANNEL_GROUP), isnd, -1);
 }
 
 // XXX: This custom fading effect circumvents https://bugzilla.libsdl.org/show_bug.cgi?id=2904
@@ -367,19 +406,39 @@ static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 	}
 }
 
-static bool audio_sdl2mixer_sound_stop_loop(SoundImpl *isnd) {
-	if(isnd->loopchan == -1) {
+static bool fade_channel(int chan, int fadeout) {
+	assert(IS_VALID_CHANNEL(chan));
+
+	if(mixer.chan_play_ids[chan] == 0) {
 		return false;
 	}
 
 	CustomFadeout *effect = calloc(1, sizeof(CustomFadeout));
 	effect->counter = 0;
-	effect->duration = LOOPFADEOUT*AUDIO_FREQ/1000;
-	Mix_ExpireChannel(isnd->loopchan, LOOPFADEOUT);
-	Mix_RegisterEffect(isnd->loopchan, custom_fadeout_proc, custom_fadeout_free, effect);
+	effect->duration = (fadeout * AUDIO_FREQ) / 1000;
+	Mix_ExpireChannel(chan, fadeout);
+	Mix_RegisterEffect(chan, custom_fadeout_proc, custom_fadeout_free, effect);
+	mixer.chan_play_ids[chan] = 0;
 
 	return true;
+}
 
+static bool audio_sdl2mixer_sound_stop_loop(SoundImpl *isnd) {
+	if(isnd->loopchan < 0) {
+		return false;
+	}
+
+	return fade_channel(isnd->loopchan, LOOPFADEOUT);
+}
+
+static bool audio_sdl2mixer_sound_stop_id(SoundID sid) {
+	int chan = get_soundid_chan(sid);
+
+	if(chan >= 0) {
+		return fade_channel(chan, LOOPFADEOUT * 3);
+	}
+
+	return false;
 }
 
 static bool audio_sdl2mixer_sound_pause_all(AudioBackendSoundGroup group) {
@@ -390,7 +449,7 @@ static bool audio_sdl2mixer_sound_pause_all(AudioBackendSoundGroup group) {
 	} else {
 		// why is there no Mix_PauseGroup?
 
-		for(int i = groups[mixgroup].first; i < groups[mixgroup].first + groups[mixgroup].num; ++i) {
+		for(int i = mixer.groups[mixgroup].first; i < mixer.groups[mixgroup].first + mixer.groups[mixgroup].num; ++i) {
 			Mix_Pause(i);
 		}
 	}
@@ -407,7 +466,7 @@ static bool audio_sdl2mixer_sound_resume_all(AudioBackendSoundGroup group) {
 	} else {
 		// why is there no Mix_ResumeGroup?
 
-		for(int i = groups[mixgroup].first; i < groups[mixgroup].first + groups[mixgroup].num; ++i) {
+		for(int i = mixer.groups[mixgroup].first; i < mixer.groups[mixgroup].first + mixer.groups[mixgroup].num; ++i) {
 			Mix_Resume(i);
 		}
 	}
@@ -629,6 +688,7 @@ AudioBackend _a_backend_sdl2mixer = {
 		.sound_set_volume = audio_sdl2mixer_sound_set_volume,
 		.sound_stop_all = audio_sdl2mixer_sound_stop_all,
 		.sound_stop_loop = audio_sdl2mixer_sound_stop_loop,
+		.sound_stop_id = audio_sdl2mixer_sound_stop_id,
 		.sound_unload = audio_sdl2mixer_sound_unload,
 	}
 };

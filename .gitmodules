@@ -6,3 +6,6 @@
 	path = external/gamecontrollerdb
 	url = https://github.com/taisei-project/SDL_GameControllerDB.git
 	branch = master
+[submodule "external/koishi"]
+	path = external/koishi
+	url = https://github.com/taisei-project/koishi

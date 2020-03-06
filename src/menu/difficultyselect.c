@@ -40,10 +40,10 @@ MenuData* create_difficulty_menu(void) {
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
-	add_menu_entry(m, "“All those bullets confuse me!”\nYou will be stuck here forever", set_difficulty, (void *)D_Easy);
-	add_menu_entry(m, "“Do you even graze?”\nSomewhat challenging", set_difficulty, (void *)D_Normal);
-	add_menu_entry(m, "“Pain is my ally!”\nActually challenging", set_difficulty, (void *)D_Hard);
-	add_menu_entry(m, "“I have no fear.”\nWe never playtested this one", set_difficulty, (void *)D_Lunatic);
+	add_menu_entry(m, "For those just beginning\ntheir academic careers", set_difficulty, (void *)D_Easy);
+	add_menu_entry(m, "All those years of study\nhave finally paid off", set_difficulty, (void *)D_Normal);
+	add_menu_entry(m, "You must really\nlove books", set_difficulty, (void *)D_Hard);
+	add_menu_entry(m, "You either die a student,\nor live long enough to\nbecome a professor", set_difficulty, (void *)D_Lunatic);
 
 	for(int i = 0; i < m->ecount; ++i) {
 		Difficulty d = (Difficulty)(uintptr_t)m->entries[i].arg;

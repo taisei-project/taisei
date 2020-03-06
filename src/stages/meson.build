@@ -12,6 +12,7 @@ stages_src = files(
     'stage5_events.c',
     'stage6.c',
     'stage6_events.c',
+    'extra.c',
 )
 
 if is_developer_build
@@ -19,3 +20,5 @@ if is_developer_build
         'dpstest.c',
     )
 endif
+
+stages_src += files('corotest.c')
