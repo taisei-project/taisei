@@ -18,12 +18,6 @@
  * Helper functions
  */
 
-TASK(destroy_enemy, { BoxedEnemy e; }) {
-	// used for when enemies should pop after a preset time
-	Enemy *e = TASK_BIND(ARGS.e);
-	e->hp = ENEMY_KILLED;
-}
-
 void scuttle_spellbg(Boss *h, int time) {
 	float a = 1.0;
 
@@ -67,6 +61,12 @@ void wriggle_spellbg(Boss *b, int time) {
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_color4(1, 1, 1, 1);
+}
+
+TASK(destroy_enemy, { BoxedEnemy e; }) {
+	// used for when enemies should pop after a preset time
+	Enemy *e = TASK_BIND(ARGS.e);
+	e->hp = ENEMY_KILLED;
 }
 
 /*
@@ -338,7 +338,7 @@ TASK(big_fairy_group, { cmplx pos; int danmaku_type; } ) {
 		WAIT(100);
 		INVOKE_TASK(little_fairy, e->pos, e->pos + 70 - 50 * I, ARGS.danmaku_type, 1);
 		INVOKE_TASK(little_fairy, e->pos, e->pos - 70 - 50 * I, ARGS.danmaku_type, -1);
-		WAIT(400);
+		WAIT(300);
 	}
 	WAIT(100);
 
@@ -722,11 +722,9 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	while(!global.boss) YIELD;
 	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
 
-	WAIT(midboss_time);
+	WAIT(400);
 
 	STAGE_BOOKMARK(post-midboss);
-
-	STAGE_BOOKMARK(post-midboss-filler);
 
 	INVOKE_TASK_DELAYED(100, side_swirls_procession, -20 + (VIEWPORT_H-20)*I, 10, 5, -1*I, 25+0.95*I);
 	INVOKE_TASK_DELAYED(105, side_swirls_procession, VIEWPORT_W+20 + (VIEWPORT_H-20)*I, 10, -5, -1*I, 25+0.95*I);
@@ -752,7 +750,7 @@ DEFINE_EXTERN_TASK(stage3_main) {
 
 	STAGE_BOOKMARK_DELAYED(2800, pre-boss);
 
-	WAIT(3200);
+	WAIT(3000);
 
 	stage_unlock_bgm("stage3boss");
 
@@ -761,8 +759,7 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
 
-	WAIT(120);
-
+	WAIT(240);
 	stage3_dialog_post_boss();
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
