@@ -343,7 +343,6 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	replay_init(&global.replay);
 	global.gameover = 0;
 	player_init(&global.plr);
-	trainer_init(&global.trainer);
 
 	if(ctx->plrmode) {
 		global.plr.mode = ctx->plrmode;

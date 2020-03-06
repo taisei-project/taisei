@@ -227,7 +227,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 
 	Replay *rpy = ictx->replay;
 
-	float sizes[] = { 1.2, 2.2, 0.5, 0.55, 0.55 };
+		float sizes[] = { 1.5, 1.7, 0.5, 0.7, 0.7, 0.75 };
 	int columns = sizeof(sizes)/sizeof(float), i, j;
 	float base_size = (SCREEN_W - 110.0) / columns;
 
@@ -253,9 +253,21 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 			case 1:
 				a = ALIGN_LEFT;
 				strlcpy(tmp, rpy->playername, sizeof(tmp));
+
 				break;
 
-			case 2: {
+			case 2:
+				a = ALIGN_LEFT;
+
+				if(rpy->stages[0].plr_trainer_enabled) {
+					strlcpy(tmp, "Trainer", sizeof(tmp));
+				} else {
+					strlcpy(tmp, "", sizeof(tmp));
+				}
+
+				break;
+
+			case 3:
 				a = ALIGN_RIGHT;
 				PlayerMode *plrmode = plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
 
@@ -266,14 +278,13 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 				}
 
 				break;
-			}
 
-			case 3:
+			case 4:
 				a = ALIGN_CENTER;
 				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
 				break;
 
-			case 4:
+			case 5:
 				a = ALIGN_LEFT;
 				if(rpy->numstages == 1) {
 					StageInfo *stg = stage_get(rpy->stages[0].stage);

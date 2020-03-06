@@ -41,7 +41,6 @@ void player_init(Player *plr) {
 	plr->deathtime = -1;
 	plr->continuetime = -1;
 	plr->mode = plrmode_find(0, 0);
-
 }
 
 void player_stage_pre_init(Player *plr) {
@@ -245,7 +244,7 @@ static void ent_draw_player(EntityInterface *ent) {
 		return;
 	}
 
-	if(plr->focus_circle_alpha || trainer_focus_dot_enabled()) {
+	if(plr->focus_circle_alpha || plr->trainer.settings.dot) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
@@ -653,7 +652,7 @@ static bool player_can_bomb(Player *plr) {
 		&& (
 				plr->bombs > 0 ||
 				plr->iddqd ||
-				trainer_bombs_enabled()
+				plr->trainer.settings.extra_bombs
 			)
 		&& global.frames >= plr->respawntime
 	);
@@ -694,8 +693,8 @@ static bool player_bomb(Player *plr) {
 		}
 
 		if(plr->bombs < 0) {
-			if (trainer_bombs_enabled()) {
-				trainer_append_bomb_event(&global.trainer);
+			if (plr->trainer.settings.extra_bombs) {
+				trainer_append_bomb_event(&plr->trainer);
 			}
 			plr->bombs = 0;
 		}
@@ -903,7 +902,7 @@ void player_realdeath(Player *plr) {
 
 	int total_power = plr->power + plr->power_overflow;
 
-	if (!trainer_no_powerdown_enabled()) {
+	if (!plr->trainer.settings.no_powerdown) {
 		// if "no powerdown" trainer is DISABLED, then powerdown as usual
 		int drop = max(2, (total_power * 0.15) / POWER_VALUE);
 		spawn_items(plr->deathpos, ITEM_POWER, drop);
@@ -916,8 +915,8 @@ void player_realdeath(Player *plr) {
 	plr->bombs = PLR_START_BOMBS;
 	plr->bomb_fragments = 0;
 
-	if (trainer_lives_enabled() && plr->lives < 1) {
-		trainer_append_life_event(&global.trainer);
+	if (plr->trainer.settings.extra_lives && plr->lives < 1) {
+		trainer_append_life_event(&plr->trainer);
 	} else {
 		plr->lives--;
 	}
@@ -993,8 +992,8 @@ void player_death(Player *plr) {
 		return;
 	}
 
-	if (trainer_invulnerable_enabled()) {
-		trainer_append_hit_event(&global.trainer);
+	if (plr->trainer.settings.invulnerable) {
+		trainer_append_hit_event(&plr->trainer);
 		play_sound("tick");
 		return;
 	}

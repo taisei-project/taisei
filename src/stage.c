@@ -224,7 +224,7 @@ static void stage_start(StageInfo *stage) {
 	}
 
 	// reset trainer stage stats on new stage
-	trainer_reset_stage_counters(&global.trainer);
+	trainer_reset_stage_counters(&global.plr.trainer);
 
 	if(global.is_practice_mode) {
 		global.plr.power = config_get_int(CONFIG_PRACTICE_POWER);

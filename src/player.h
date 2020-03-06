@@ -27,6 +27,7 @@
 #include "aniplayer.h"
 #include "resource/animation.h"
 #include "entity.h"
+#include "trainer.h"
 
 enum {
 	PLR_MAX_POWER = 400,
@@ -101,6 +102,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	struct PlayerMode *mode;
 	AniPlayer ani;
 	Sprite bomb_portrait;
+
+	Trainer trainer;
 
 	struct {
 		float positive;

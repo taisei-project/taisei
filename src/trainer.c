@@ -13,52 +13,80 @@
 #include "global.h"
 #include "stage.h"
 
-void trainer_init(Trainer *trainer) {
-	// sets the default values
-	memset(trainer, 0, sizeof(*trainer));
-}
 
-bool trainer_enabled(void) {
-	return config_get_int(CONFIG_TRAINER_MODE);
-}
-
-bool trainer_anything_enabled(void) {
-	return (
-		trainer_enabled()
-		&& (
-				config_get_int(CONFIG_TRAINER_LIVES) ||
-				config_get_int(CONFIG_TRAINER_BOMBS) ||
-				config_get_int(CONFIG_TRAINER_INVULN) ||
-				config_get_int(CONFIG_TRAINER_FOCUS_DOT)
-			)
-	);
-}
-
-bool trainer_hud_stats_enabled(void) {
-	// determine whether stats should be displayed on the HUD
-	// used primarily by stagedraw.c
-	return (trainer_enabled() && trainer_anything_enabled() && config_get_int(CONFIG_TRAINER_STATS));
-}
-
-bool trainer_bombs_enabled(void) {
+static bool trainer_bombs_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_BOMBS));
 }
 
-bool trainer_invulnerable_enabled(void) {
+static bool trainer_invulnerable_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_INVULN));
 }
 
-bool trainer_lives_enabled(void) {
+static bool trainer_lives_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_LIVES));
 }
 
-bool trainer_no_powerdown_enabled(void) {
+static bool trainer_no_powerdown_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_NO_PWRDN));
 }
 
-bool trainer_focus_dot_enabled(void) {
+static bool trainer_focus_dot_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_FOCUS_DOT));
 }
+
+static bool trainer_enabled(void) {
+	return config_get_int(CONFIG_TRAINER_MODE);
+}
+
+bool trainer_check_config(void) {
+	return (
+		trainer_enabled()
+		&& (
+			config_get_int(CONFIG_TRAINER_LIVES) ||
+			config_get_int(CONFIG_TRAINER_BOMBS) ||
+			config_get_int(CONFIG_TRAINER_INVULN) ||
+			config_get_int(CONFIG_TRAINER_FOCUS_DOT)
+		   )
+	   );
+}
+
+static bool trainer_hud_stats_enabled(void) {
+	// determine whether stats should be displayed on the HUD
+	// used primarily by stagedraw.c
+	return (trainer_check_config() && config_get_int(CONFIG_TRAINER_STATS));
+}
+
+bool trainer_anything_enabled(Trainer *trainer) {
+	return (
+			trainer->settings.enabled
+			&& (
+				trainer->settings.dot ||
+				trainer->settings.invulnerable ||
+				trainer->settings.extra_lives ||
+				trainer->settings.extra_bombs ||
+				trainer->settings.no_powerdown
+			   )
+		   );
+}
+
+void trainer_init(Trainer *trainer) {
+	// sets the default values
+	memset(trainer, 0, sizeof(*trainer));
+
+	if (trainer_check_config()) {
+		trainer->settings.enabled = 1;
+		trainer->settings.stats = trainer_hud_stats_enabled();
+
+		trainer->settings.invulnerable = trainer_invulnerable_enabled();
+		trainer->settings.extra_lives = trainer_lives_enabled();
+		trainer->settings.extra_bombs = trainer_bombs_enabled();
+		trainer->settings.no_powerdown = trainer_no_powerdown_enabled();
+		trainer->settings.dot = trainer_focus_dot_enabled();
+	}
+
+}
+
+
 
 void trainer_append_life_event(Trainer *trainer) {
 	// count extra lives used

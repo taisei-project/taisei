@@ -136,8 +136,6 @@ typedef struct {
 
 	StageInfo *stage;
 
-	Trainer trainer;
-
 	uint is_practice_mode : 1;
 	uint is_headless : 1;
 	uint is_replay_verification : 1;

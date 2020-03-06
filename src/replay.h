@@ -54,13 +54,16 @@
 
 	// Taisei v1.3 revision 3: add final score at the end of each stage
 	#define REPLAY_STRUCT_VERSION_TS103000_REV3 12
+
+	// Taisei v1.4 revision 0: trainer mode
+	#define REPLAY_STRUCT_VERSION_TS104000_REV0 13
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV3 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS104000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -129,6 +132,25 @@ typedef struct ReplayStage {
 	// player score at the end of the stage
 	uint64_t plr_points_final;
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
+
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
+	// trainer mode
+	bool plr_trainer_enabled;
+	bool plr_trainer_invulnerable;
+	bool plr_trainer_extra_lives;
+	bool plr_trainer_extra_bombs;
+	bool plr_trainer_no_powerdown;
+	bool plr_trainer_dot;
+	bool plr_trainer_stats;
+
+	uint16_t plr_trainer_total_lives;
+	uint16_t plr_trainer_total_bombs;
+	uint16_t plr_trainer_total_hits;
+
+	uint16_t plr_trainer_stage_lives;
+	uint16_t plr_trainer_stage_bombs;
+	uint16_t plr_trainer_stage_hits;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
 
 	// player input
 	// NOTE: only used to read the number of events from file.

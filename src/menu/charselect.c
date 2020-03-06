@@ -13,6 +13,7 @@
 #include "mainmenu.h"
 #include "common.h"
 #include "global.h"
+#include "trainer.h"
 #include "video.h"
 #include "util/glm.h"
 
@@ -246,6 +247,17 @@ void draw_char_menu(MenuData *menu) {
 			.shader = "text_default",
 			.color = RGBA(o, o, o, o),
 		});
+
+
+		if(trainer_check_config()) {
+			text_draw("Trainer Mode", &(TextParams) {
+				.align = ALIGN_CENTER,
+				.pos = { 20*(1-o), 100 },
+				.font = "big",
+				.shader = "text_default",
+				.color = RGBA(o, o, o, o),
+			});
+		}
 
 		r_mat_mv_pop();
 	});

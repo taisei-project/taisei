@@ -12,6 +12,7 @@
 #include "taisei.h"
 
 #include "enemy.h"
+#include "trainer.h"
 #include "projectile.h"
 #include "player.h"
 #include "ending.h"

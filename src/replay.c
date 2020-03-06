@@ -54,6 +54,23 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 	s->plr_point_item_value = plr->point_item_value;
 	s->plr_inputflags = plr->inputflags;
 
+	s->plr_trainer_enabled = plr->trainer.settings.enabled;
+	s->plr_trainer_stats = plr->trainer.settings.stats;
+
+	s->plr_trainer_invulnerable = plr->trainer.settings.invulnerable;
+	s->plr_trainer_extra_lives = plr->trainer.settings.extra_lives;
+	s->plr_trainer_extra_bombs = plr->trainer.settings.extra_bombs;
+	s->plr_trainer_no_powerdown = plr->trainer.settings.no_powerdown;
+	s->plr_trainer_dot = plr->trainer.settings.dot;
+
+	s->plr_trainer_total_lives = plr->trainer.total.lives;
+	s->plr_trainer_total_bombs = plr->trainer.total.bombs;
+	s->plr_trainer_total_hits = plr->trainer.total.hits;
+
+	s->plr_trainer_stage_lives = plr->trainer.stage.lives;
+	s->plr_trainer_stage_bombs = plr->trainer.stage.bombs;
+	s->plr_trainer_stage_hits = plr->trainer.stage.hits;
+
 	log_debug("Created a new stage %p in replay %p", (void*)s, (void*)rpy);
 	return s;
 }
@@ -73,6 +90,24 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->graze = stg->plr_graze;
 	plr->point_item_value = stg->plr_point_item_value;
 	plr->inputflags = stg->plr_inputflags;
+
+	plr->trainer.settings.enabled = stg->plr_trainer_enabled;
+	plr->trainer.settings.stats = stg->plr_trainer_stats;
+
+	plr->trainer.settings.invulnerable = stg->plr_trainer_invulnerable;
+	plr->trainer.settings.extra_lives = stg->plr_trainer_extra_lives;
+	plr->trainer.settings.extra_bombs = stg->plr_trainer_extra_bombs;
+	plr->trainer.settings.no_powerdown = stg->plr_trainer_no_powerdown;
+	plr->trainer.settings.dot = stg->plr_trainer_dot;
+
+	plr->trainer.total.bombs = stg->plr_trainer_total_bombs;
+	plr->trainer.total.lives = stg->plr_trainer_total_lives;
+	plr->trainer.total.hits = stg->plr_trainer_total_hits;
+
+	plr->trainer.stage.bombs = stg->plr_trainer_stage_bombs;
+	plr->trainer.stage.lives = stg->plr_trainer_stage_lives;
+	plr->trainer.stage.hits = stg->plr_trainer_stage_hits;
+
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
@@ -194,6 +229,24 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 		cs += stg->plr_points_final;
 	}
 
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		cs += stg->plr_trainer_enabled;
+		cs += stg->plr_trainer_stats;
+		cs += stg->plr_trainer_invulnerable;
+		cs += stg->plr_trainer_extra_lives;
+		cs += stg->plr_trainer_extra_bombs;
+		cs += stg->plr_trainer_no_powerdown;
+		cs += stg->plr_trainer_dot;
+
+		cs += stg->plr_trainer_total_lives;
+		cs += stg->plr_trainer_total_bombs;
+		cs += stg->plr_trainer_total_hits;
+
+		cs += stg->plr_trainer_total_bombs;
+		cs += stg->plr_trainer_total_bombs;
+		cs += stg->plr_trainer_total_hits;
+	}
+
 	log_debug("%08x", cs);
 	return cs;
 }
@@ -219,11 +272,30 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_bombs);
 	SDL_WriteLE16(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
+
 	SDL_WriteLE32(file, stg->plr_graze);
 	SDL_WriteLE32(file, stg->plr_point_item_value);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
 		SDL_WriteLE64(file, stg->plr_points_final);
+	}
+
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		SDL_WriteU8(file, stg->plr_trainer_enabled);
+		SDL_WriteU8(file, stg->plr_trainer_stats);
+		SDL_WriteU8(file, stg->plr_trainer_invulnerable);
+		SDL_WriteU8(file, stg->plr_trainer_extra_lives);
+		SDL_WriteU8(file, stg->plr_trainer_extra_bombs);
+		SDL_WriteU8(file, stg->plr_trainer_no_powerdown);
+		SDL_WriteU8(file, stg->plr_trainer_dot);
+
+		SDL_WriteLE16(file, stg->plr_trainer_total_lives);
+		SDL_WriteLE16(file, stg->plr_trainer_total_bombs);
+		SDL_WriteLE16(file, stg->plr_trainer_total_hits);
+
+		SDL_WriteLE16(file, stg->plr_trainer_stage_lives);
+		SDL_WriteLE16(file, stg->plr_trainer_stage_bombs);
+		SDL_WriteLE16(file, stg->plr_trainer_stage_hits);
 	}
 
 	if(stg->events.num_elements > UINT16_MAX) {
@@ -232,6 +304,7 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	}
 
 	SDL_WriteLE16(file, stg->events.num_elements);
+
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
 	return true;
@@ -371,6 +444,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS103000_REV1:
 		case REPLAY_STRUCT_VERSION_TS103000_REV2:
 		case REPLAY_STRUCT_VERSION_TS103000_REV3:
+		case REPLAY_STRUCT_VERSION_TS104000_REV0:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -483,6 +557,24 @@ static bool _replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, co
 
 		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
 			CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
+		}
+
+		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+			CHECKPROP(stg->plr_trainer_enabled = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_stats = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_invulnerable = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_extra_lives = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_extra_bombs = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_no_powerdown = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_trainer_dot = SDL_ReadU8(file), u);
+
+			CHECKPROP(stg->plr_trainer_total_lives = SDL_ReadLE16(file), u);
+			CHECKPROP(stg->plr_trainer_total_bombs = SDL_ReadLE16(file), u);
+			CHECKPROP(stg->plr_trainer_total_hits = SDL_ReadLE16(file), u);
+
+			CHECKPROP(stg->plr_trainer_total_bombs = SDL_ReadLE16(file), u);
+			CHECKPROP(stg->plr_trainer_total_bombs = SDL_ReadLE16(file), u);
+			CHECKPROP(stg->plr_trainer_total_hits = SDL_ReadLE16(file), u);
 		}
 
 		CHECKPROP(stg->num_events = SDL_ReadLE16(file), u);

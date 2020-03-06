@@ -19,6 +19,17 @@ struct Trainer {
 		int bombs;
 		int hits;
 	} total, stage;
+
+	struct {
+		bool enabled;
+		bool dot;
+		bool extra_bombs;
+		bool extra_lives;
+		bool invulnerable;
+		bool no_powerdown;
+
+		bool stats;
+	} settings;
 };
 
 void trainer_init(Trainer *trainer);
@@ -27,13 +38,8 @@ void trainer_append_bomb_event(Trainer *trainer);
 void trainer_append_life_event(Trainer *trainer);
 void trainer_append_hit_event(Trainer *trainer);
 
-bool trainer_enabled(void);
-bool trainer_hud_stats_enabled(void);
-bool trainer_anything_enabled(void);
-bool trainer_bombs_enabled(void);
-bool trainer_invulnerable_enabled(void);
-bool trainer_lives_enabled(void);
-bool trainer_no_powerdown_enabled(void);
-bool trainer_focus_dot_enabled(void);
+bool trainer_anything_enabled(Trainer *trainer);
+
+bool trainer_check_config(void);
 
 #endif // IGUARD_trainer_h

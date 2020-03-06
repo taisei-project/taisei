@@ -1298,7 +1298,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Trainer Mode HUD display
 	// only display real-time stats if the player wants it
-	if (trainer_hud_stats_enabled()) {
+	if (global.plr.trainer.settings.stats) {
 		draw_label("Extra Lives:", labels->y.trainer_lives, labels, &stagedraw.hud_text.color.label_trainer_lives);
 		draw_label("Extra Spells:", labels->y.trainer_bombs, labels, &stagedraw.hud_text.color.label_trainer_bombs);
 		draw_label("Hits:", labels->y.trainer_hits, labels, &stagedraw.hud_text.color.label_trainer_hits);
@@ -1306,7 +1306,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	r_mat_mv_pop();
 
 	// if they're actually using Trainer Mode, show tag on the hud
-	if (trainer_anything_enabled()) {
+	if (trainer_anything_enabled(&global.plr.trainer)) {
 		font = get_font("big");
 		text_draw("Trainer Mode", &(TextParams) {
 			.pos = { HUD_EFFECTIVE_WIDTH * 0.5, 450 },
@@ -1475,9 +1475,9 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 
 	// Trainer values
 	// if a mode isn't enabled, but the trainer is, displazy N/A
-	if (trainer_hud_stats_enabled()) {
-		if (trainer_lives_enabled()) {
-			format_huge_num(3, global.trainer.total.lives, sizeof(buf), buf);
+	if (global.plr.trainer.settings.enabled) {
+		if (global.plr.trainer.settings.extra_lives) {
+			format_huge_num(3, global.plr.trainer.total.lives, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
 				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_lives },
 				.shader_ptr = stagedraw.hud_text.shader,
@@ -1498,8 +1498,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			});
 		}
 
-		if (trainer_bombs_enabled()) {
-			format_huge_num(3, global.trainer.total.bombs, sizeof(buf), buf);
+		if (global.plr.trainer.settings.extra_bombs) {
+			format_huge_num(3, global.plr.trainer.total.bombs, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
 				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_bombs },
 				.shader_ptr = stagedraw.hud_text.shader,
@@ -1520,8 +1520,8 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			});
 		}
 
-		if (trainer_invulnerable_enabled()) {
-			format_huge_num(3, global.trainer.total.hits, sizeof(buf), buf);
+		if (global.plr.trainer.settings.extra_lives) {
+			format_huge_num(3, global.plr.trainer.total.hits, sizeof(buf), buf);
 			text_draw(buf, &(TextParams) {
 				.pos = { HUD_EFFECTIVE_WIDTH * 0.5, labels->y.trainer_hits },
 				.shader_ptr = stagedraw.hud_text.shader,
@@ -1933,12 +1933,12 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
-	if (trainer_anything_enabled()) {
+	if (trainer_anything_enabled(&global.plr.trainer)) {
 		stagetext_table_add_separator(&tbl);
 		stagetext_table_add(&tbl, "Trainer Mode Stats", "Stage");
-		stagetext_table_add_numeric_nonzero(&tbl, "Extra lives", global.trainer.stage.lives);
-		stagetext_table_add_numeric_nonzero(&tbl, "Extra spellcards", global.trainer.stage.bombs);
-		stagetext_table_add_numeric_nonzero(&tbl, "Times hit", global.trainer.stage.hits);
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra lives", global.plr.trainer.stage.lives);
+		stagetext_table_add_numeric_nonzero(&tbl, "Extra spellcards", global.plr.trainer.stage.bombs);
+		stagetext_table_add_numeric_nonzero(&tbl, "Times hit", global.plr.trainer.stage.hits);
 	}
 	stagetext_end_table(&tbl);
 
