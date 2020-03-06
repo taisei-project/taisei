@@ -16,15 +16,18 @@
 void scuttle_spellbg(Boss*, int t);
 void wriggle_spellbg(Boss*, int t);
 
-void scuttle_deadly_dance(Boss*, int t);
 void wriggle_moonlight_rocket(Boss*, int t);
 void wriggle_night_ignite(Boss*, int t);
 void wriggle_firefly_storm(Boss*, int t);
 void wriggle_light_singularity(Boss*, int t);
 
-void stage3_events(void);
 Boss* stage3_spawn_scuttle(cmplx pos);
 Boss* stage3_spawn_wriggle_ex(cmplx pos);
+
+DECLARE_EXTERN_TASK(stage3_main, NO_ARGS);
+
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_deadly_dance, BossAttack);
+
 
 #define STAGE3_MIDBOSS_TIME 1765
 

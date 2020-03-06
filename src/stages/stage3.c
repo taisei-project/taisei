@@ -14,9 +14,8 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-
-PRAGMA(message "Remove when this stage is modernized")
-DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+#include "stagedraw.h"
+#include "common_tasks.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -27,7 +26,7 @@ struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
 			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
-			scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, scuttle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_deadly_dance)
 		},
 	},
 
@@ -145,7 +144,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 	return true;
 }
 
-static void stage3_start(void) {
+static void stage3_init_background(void) {
 	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10;
@@ -158,6 +157,13 @@ static void stage3_start(void) {
 	stgstate.clr_b = 0.5;
 	stgstate.clr_mixfactor = 1.0;
 	stgstate.fog_brightness = 0.5;
+}
+
+static void stage3_start(void) {
+	stage3_init_background();
+	stage_start_bgm("stage3");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+	INVOKE_TASK(stage3_main);
 }
 
 static void stage3_preload(void) {
@@ -358,8 +364,6 @@ static void stage3_update(void) {
 void scuttle_spellbg(Boss*, int t);
 
 static void stage3_spellpractice_start(void) {
-	stage3_start();
-
 	if(global.stage->spell->draw_rule == scuttle_spellbg) {
 		skip_background_anim(stage3_update, 2800, &global.timer, NULL);
 		global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
@@ -392,7 +396,6 @@ StageProcs stage3_procs = {
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.update = stage3_update,
-	.event = stage3_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,
 	.spellpractice_procs = &stage3_spell_procs,
@@ -404,7 +407,6 @@ StageProcs stage3_spell_procs = {
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.update = stage3_update,
-	.event = stage3_spellpractice_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,
 };
