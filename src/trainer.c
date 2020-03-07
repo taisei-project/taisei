@@ -13,7 +13,6 @@
 #include "global.h"
 #include "stage.h"
 
-
 static bool trainer_bombs_enabled(void) {
 	return (config_get_int(CONFIG_TRAINER_MODE) && config_get_int(CONFIG_TRAINER_BOMBS));
 }
@@ -58,15 +57,15 @@ static bool trainer_hud_stats_enabled(void) {
 
 bool trainer_anything_enabled(Trainer *trainer) {
 	return (
-			trainer->settings.enabled
-			&& (
-				trainer->settings.dot ||
-				trainer->settings.invulnerable ||
-				trainer->settings.extra_lives ||
-				trainer->settings.extra_bombs ||
-				trainer->settings.no_powerdown
-			   )
-		   );
+		trainer->settings.enabled
+		&& (
+			trainer->settings.dot ||
+			trainer->settings.invulnerable ||
+			trainer->settings.extra_lives ||
+			trainer->settings.extra_bombs ||
+			trainer->settings.no_powerdown
+		   )
+	   );
 }
 
 void trainer_init(Trainer *trainer) {
@@ -83,10 +82,7 @@ void trainer_init(Trainer *trainer) {
 		trainer->settings.no_powerdown = trainer_no_powerdown_enabled();
 		trainer->settings.dot = trainer_focus_dot_enabled();
 	}
-
 }
-
-
 
 void trainer_append_life_event(Trainer *trainer) {
 	// count extra lives used
@@ -119,4 +115,3 @@ void trainer_reset_stage_counters(Trainer *trainer) {
 	trainer->stage.hits = 0;
 	log_debug("Trainer Mode - Stage Counters Reset");
 }
-
