@@ -90,6 +90,7 @@ taisei_c_args = [
     '-Winit-self',
     '-Wlogical-op',
     '-Wmissing-prototypes',
+    '-Wno-gnu-folding-constant',
     '-Wno-long-long',
     '-Wno-missing-braces',
     '-Wno-typedef-redefinition',

@@ -932,8 +932,8 @@ void glcommon_load_functions(void) {
 		}
 	}
 
-	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawArraysInstancedBaseInstanceANGLE");
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+	glad_glDrawArraysInstancedBaseInstanceANGLE = *(PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC*)(void**)SDL_GL_GetProcAddress("glDrawArraysInstancedBaseInstanceANGLE");
+	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = *(PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC*)(void**)SDL_GL_GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 #endif
 }
 

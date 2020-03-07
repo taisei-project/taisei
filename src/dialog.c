@@ -227,11 +227,12 @@ static void dialog_actor_update_composite(DialogActor *a) {
 	size_t name_len = strlen(a->name);
 	size_t face_len = strlen(a->face);
 	size_t variant_len;
+	bool have_variant = a->variant;
 
 	size_t lenfull_base = sizeof("dialog/") + name_len - 1;
 	size_t lenfull_face = lenfull_base + sizeof("_face_") + face_len - 1;
 
-	if(a->variant) {
+	if(have_variant) {
 		variant_len = strlen(a->variant);
 		lenfull_base += sizeof("_variant_") + variant_len - 1;
 	}
@@ -241,7 +242,7 @@ static void dialog_actor_update_composite(DialogActor *a) {
 	dst = memcpy(dst, "dialog/", sizeof("dialog/") - 1);
 	dst = memcpy(dst + sizeof("dialog/") - 1, a->name, name_len + 1);
 
-	if(a->variant) {
+	if(have_variant) {
 		char *tmp = dst;
 		dst = memcpy(dst + name_len, "_variant_", sizeof("_variant_") - 1);
 		dst = memcpy(dst + sizeof("_variant_") - 1, a->variant, variant_len + 1);
