@@ -329,9 +329,20 @@ INLINE CoTaskData *get_task_data(CoTask *task) {
 	return data;
 }
 
+static void cancel_task_events(CoTaskData *task_data) {
+	// HACK: This allows an entity-bound task to wait for its own "finished"
+	// event. Can be useful to do some cleanup without spawning a separate task
+	// just for that purpose.
+	// It's ok to unbind the entity like that, because when we get here, the
+	// task is about to die anyway.
+	task_data->bound_ent.ent = 0;
+
+	COEVENT_CANCEL_ARRAY(task_data->events);
+}
+
 static void cotask_finalize(CoTask *task) {
 	CoTaskData *task_data = get_task_data(task);
-	COEVENT_CANCEL_ARRAY(task_data->events);
+	cancel_task_events(task_data);
 
 	TASK_DEBUG("Finalizing task %s", task->debug_label);
 
@@ -473,8 +484,9 @@ CoTask *cotask_active(void) {
 static void cotask_force_cancel(CoTask *task) {
 	// WARNING: It's important to finalize first, because if task == active task,
 	// then koishi_kill will not return!
-	cotask_finalize(task);
 	TASK_DEBUG_EVENT(ev);
+	TASK_DEBUG("[%zu] Begin canceling task %s", ev, task->debug_label);
+	cotask_finalize(task);
 	TASK_DEBUG("[%zu] Killing task %s", ev, task->debug_label);
 	koishi_kill(&task->ko, NULL);
 	TASK_DEBUG("[%zu] koishi_kill returned (%s)", ev, task->debug_label);
@@ -550,7 +562,7 @@ static bool cotask_do_wait(CoTaskData *task_data) {
 		}
 
 		case COTASK_WAIT_EVENT: {
-			// TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
+			TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
 
 			CoEventStatus stat = coevent_poll(task_data->wait.event.pevent, &task_data->wait.event.snapshot);
 			if(stat != CO_EVENT_PENDING) {
@@ -816,7 +828,7 @@ static void force_finish_task(CoTask *task) {
 static void pre_finish_task_list(CoTaskList *tasks) {
 	for(CoTask *t = tasks->first; t; t = t->next) {
 		if(t->data) {
-			COEVENT_CANCEL_ARRAY(t->data->events);
+			cancel_task_events(t->data);
 		}
 	}
 }
