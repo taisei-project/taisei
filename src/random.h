@@ -40,9 +40,11 @@ rng_val_t rng_next_p(RandomState *rng) attr_nonnull(1);
 #ifdef DEBUG
 INLINE void rng_lock(RandomState *rng) { rng->locked = true; }
 INLINE void rng_unlock(RandomState *rng) { rng->locked = false; }
+INLINE bool rng_is_locked(RandomState *rng) { return rng->locked; }
 #else
 #define rng_lock(rng) (rng, (void)0)
 #define rng_unlock(rng) (rng, (void)0)
+#define rng_is_locked(rng) (false)
 #endif
 
 // NOTE: if you rename this, also update scripts/upkeep/check-rng-usage.py!

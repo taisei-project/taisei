@@ -73,7 +73,7 @@ void rng_make_active(RandomState *rng) {
 }
 
 rng_val_t rng_next_p(RandomState *rng) {
-	assert(!rng->locked);
+	assert(!rng_is_locked(rng));
 	return (rng_val_t) { xoshiro256plus(rng->state) };
 }
 
