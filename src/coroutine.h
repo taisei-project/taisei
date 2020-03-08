@@ -271,6 +271,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 /* define a task with extern linkage (needs to be declared first) */
 #define DEFINE_EXTERN_TASK(name) \
+	char COTASK_UNUSED_CHECK_##name; \
 	DEFINE_TASK_EXPLICIT(name, extern)
 
 
