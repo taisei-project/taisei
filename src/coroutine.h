@@ -38,7 +38,7 @@ typedef enum CoEventStatus {
 } CoEventStatus;
 
 typedef struct BoxedTask {
-	uintptr_t ptr;
+	alignas(alignof(void*)) uintptr_t ptr;
 	uint32_t unique_id;
 } BoxedTask;
 
@@ -58,8 +58,20 @@ typedef struct CoEventSnapshot {
 	uint16_t num_signaled;
 } CoEventSnapshot;
 
+#define COEVENTS_ARRAY(...) \
+	union { \
+		CoEvent _first_event_; \
+		struct { CoEvent __VA_ARGS__; }; \
+	}
+
+typedef COEVENTS_ARRAY(
+	finished
+) CoTaskEvents;
+
+typedef LIST_ANCHOR(CoTask) CoTaskList;
+
 struct CoSched {
-	LIST_ANCHOR(CoTask) tasks, pending_tasks;
+	CoTaskList tasks, pending_tasks;
 };
 
 typedef struct CoWaitResult {
@@ -94,7 +106,7 @@ CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
-CoEvent *cotask_get_finished_event(CoTask *task);
+CoTaskEvents *cotask_get_events(CoTask *task);
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);
@@ -107,8 +119,6 @@ CoEventSnapshot coevent_snapshot(const CoEvent *evt);
 CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap);
 
 void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*));
-
-#define COEVENTS_ARRAY(...) union { CoEvent _first_event_; struct { CoEvent __VA_ARGS__; }; }
 
 #define COEVENT_ARRAY_ACTION(func, array) (_coevent_array_action(sizeof(array)/sizeof(CoEvent), &((array)._first_event_), func))
 #define COEVENT_INIT_ARRAY(array) COEVENT_ARRAY_ACTION(coevent_init, array)
@@ -379,6 +389,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define INVOKE_SUBTASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(cosched_new_subtask, iface, __VA_ARGS__, ._dummy_1 = 0)
 
 #define THIS_TASK     cotask_box(cotask_active())
+#define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
 
 #define YIELD         cotask_yield(NULL)
 #define WAIT(delay)   cotask_wait(delay)

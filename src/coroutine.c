@@ -85,6 +85,8 @@ struct CoTaskData {
 			} event;
 		};
 	} wait;
+
+	CoTaskEvents events;
 };
 
 typedef struct CoTaskInitData {
@@ -329,6 +331,7 @@ INLINE CoTaskData *get_task_data(CoTask *task) {
 
 static void cotask_finalize(CoTask *task) {
 	CoTaskData *task_data = get_task_data(task);
+	COEVENT_CANCEL_ARRAY(task_data->events);
 
 	TASK_DEBUG("Finalizing task %s", task->debug_label);
 
@@ -392,6 +395,8 @@ static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *i
 	if(master_data) {
 		cotask_enslave(master_data, data);
 	}
+
+	COEVENT_INIT_ARRAY(data->events);
 }
 
 static void *cotask_entry(void *varg) {
@@ -407,6 +412,7 @@ static void *cotask_entry(void *varg) {
 	varg = func(varg);
 
 	TASK_DEBUG("Task %s about to die naturally", task->debug_label);
+	coevent_signal(&data.events.finished);
 	cotask_finalize(task);
 
 	return varg;
@@ -422,6 +428,7 @@ static void *cotask_entry_noyield(void *varg) {
 	// init_data is now invalid
 
 	TASK_DEBUG("Task %s about to die naturally", task->debug_label);
+	coevent_signal(&data.events.finished);
 	cotask_finalize(task);
 
 	return varg;
@@ -512,7 +519,8 @@ CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
 
 	if(
 		evt->unique_id != snap->unique_id ||
-		evt->num_signaled < snap->num_signaled
+		evt->num_signaled < snap->num_signaled ||
+		evt->unique_id == 0
 	) {
 		EVT_DEBUG("Event was canceled");
 		return CO_EVENT_CANCELED;
@@ -542,7 +550,7 @@ static bool cotask_do_wait(CoTaskData *task_data) {
 		}
 
 		case COTASK_WAIT_EVENT: {
-			TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
+			// TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
 
 			CoEventStatus stat = coevent_poll(task_data->wait.event.pevent, &task_data->wait.event.snapshot);
 			if(stat != CO_EVENT_PENDING) {
@@ -633,7 +641,10 @@ static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
 }
 
 CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
-	assert(evt->unique_id > 0);
+	// assert(evt->unique_id > 0);
+	if(evt->unique_id == 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
+	}
 
 	CoTask *task = cotask_active();
 	CoTaskData *task_data = get_task_data(task);
@@ -677,6 +688,11 @@ EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 
 	task_data->bound_ent = ENT_BOX(ent);
 	return ent;
+}
+
+CoTaskEvents *cotask_get_events(CoTask *task) {
+	CoTaskData *task_data = get_task_data(task);
+	return &task_data->events;
 }
 
 void coevent_init(CoEvent *evt) {
@@ -785,24 +801,39 @@ uint cosched_run_tasks(CoSched *sched) {
 }
 
 static void force_finish_task(CoTask *task) {
+	TASK_DEBUG("Finishing task %s", task->debug_label);
+
 	if(task->data) {
+		TASK_DEBUG("Task %s has data, finalizing", task->debug_label);
 		cotask_finalize(task);
+	} else {
+		TASK_DEBUG("Task %s had no data", task->debug_label);
 	}
 
 	cotask_free(task);
 }
 
+static void pre_finish_task_list(CoTaskList *tasks) {
+	for(CoTask *t = tasks->first; t; t = t->next) {
+		if(t->data) {
+			COEVENT_CANCEL_ARRAY(t->data->events);
+		}
+	}
+}
+
+static void finish_task_list(CoTaskList *tasks) {
+	for(CoTask *t; (t = alist_pop(tasks));) {
+		force_finish_task(t);
+	}
+}
+
 void cosched_finish(CoSched *sched) {
-	for(CoTask *t = sched->pending_tasks.first, *next; t; t = next) {
-		next = t->next;
-		force_finish_task(t);
-	}
-
-	for(CoTask *t = sched->tasks.first, *next; t; t = next) {
-		next = t->next;
-		force_finish_task(t);
-	}
-
+	pre_finish_task_list(&sched->tasks);
+	pre_finish_task_list(&sched->pending_tasks);
+	finish_task_list(&sched->tasks);
+	finish_task_list(&sched->pending_tasks);
+	assert(!sched->tasks.first);
+	assert(!sched->pending_tasks.first);
 	memset(sched, 0, sizeof(*sched));
 }
 
@@ -817,7 +848,7 @@ void coroutines_shutdown(void) {
 	}
 }
 
-#ifdef DEBUG
+#ifdef CO_TASK_STATS
 #include "video.h"
 #include "resource/font.h"
 #endif
