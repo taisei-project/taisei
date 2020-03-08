@@ -345,6 +345,7 @@ static void cotask_finalize(CoTask *task) {
 	cancel_task_events(task_data);
 
 	TASK_DEBUG("Finalizing task %s", task->debug_label);
+	TASK_DEBUG("data = %p", (void*)task_data);
 
 	if(task_data->master) {
 		TASK_DEBUG(
@@ -372,7 +373,7 @@ static void cotask_finalize(CoTask *task) {
 
 		TASK_DEBUG(
 			"Canceled slave task %s (of master task %s)",
-				   slave_data->task->debug_label, task->debug_label
+			slave_data->task->debug_label, task->debug_label
 		);
 	}
 
@@ -381,6 +382,7 @@ static void cotask_finalize(CoTask *task) {
 	}
 
 	task->data = NULL;
+	TASK_DEBUG("DONE finalizing task %s", task->debug_label);
 }
 
 static void cotask_enslave(CoTaskData *master_data, CoTaskData *slave_data) {
@@ -709,23 +711,15 @@ CoTaskEvents *cotask_get_events(CoTask *task) {
 
 void coevent_init(CoEvent *evt) {
 	static uint32_t g_uid;
-	*evt = (CoEvent) { .unique_id = ++g_uid };
+	uint32_t uid = ++g_uid;
+	EVT_DEBUG("Init event %p (uid = %u)", (void*)evt, uid);
+	*evt = (CoEvent) { .unique_id = uid };
 	assert(g_uid != 0);
 }
 
-static void coevent_wake_subscribers(CoEvent *evt) {
-	if(!evt->num_subscribers) {
-		return;
-	}
-
-	assert(evt->num_subscribers);
-
-	BoxedTask subs_snapshot[evt->num_subscribers];
-	memcpy(subs_snapshot, evt->subscribers, sizeof(subs_snapshot));
-	evt->num_subscribers = 0;
-
-	for(int i = 0; i < ARRAY_SIZE(subs_snapshot); ++i) {
-		CoTask *task = cotask_unbox(subs_snapshot[i]);
+static void coevent_wake_subscribers(CoEvent *evt, uint num_subs, BoxedTask subs[num_subs]) {
+	for(int i = 0; i < num_subs; ++i) {
+		CoTask *task = cotask_unbox(subs[i]);
 
 		if(task && cotask_status(task) != CO_STATUS_DEAD) {
 			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
@@ -736,8 +730,15 @@ static void coevent_wake_subscribers(CoEvent *evt) {
 
 void coevent_signal(CoEvent *evt) {
 	++evt->num_signaled;
+	EVT_DEBUG("Signal event %p (uid = %u; num_signaled = %u)", (void*)evt, evt->unique_id, evt->num_signaled);
 	assert(evt->num_signaled != 0);
-	coevent_wake_subscribers(evt);
+
+	if(evt->num_subscribers) {
+		BoxedTask subs_snapshot[evt->num_subscribers];
+		memcpy(subs_snapshot, evt->subscribers, sizeof(subs_snapshot));
+		evt->num_subscribers = 0;
+		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
+	}
 }
 
 void coevent_signal_once(CoEvent *evt) {
@@ -746,12 +747,44 @@ void coevent_signal_once(CoEvent *evt) {
 	}
 }
 
-void coevent_cancel(CoEvent* evt) {
-	evt->num_signaled = evt->unique_id = 0;
-	coevent_wake_subscribers(evt);
-	evt->num_subscribers_allocated = 0;
-	free(evt->subscribers);
-	evt->subscribers = NULL;
+void coevent_cancel(CoEvent *evt) {
+	TASK_DEBUG_EVENT(ev);
+
+	if(evt->unique_id == 0) {
+		EVT_DEBUG("[%lu] Event %p already canceled", ev, (void*)evt);
+		return;
+	}
+
+	EVT_DEBUG("[%lu] BEGIN Cancel event %p (uid = %u; num_signaled = %u)", ev,  (void*)evt, evt->unique_id, evt->num_signaled);
+	EVT_DEBUG("[%lu] SUBS = %p", ev,  (void*)evt->subscribers);
+	evt->num_signaled = 0;
+	evt->unique_id = 0;
+
+	if(evt->num_subscribers) {
+		assume(evt->subscribers != NULL);
+		assume(evt->num_subscribers_allocated > 0);
+		BoxedTask subs_snapshot[evt->num_subscribers];
+		memcpy(subs_snapshot, evt->subscribers, sizeof(subs_snapshot));
+		EVT_DEBUG("[%lu] Snapshot %zu subscribers at %p", ev, ARRAY_SIZE(subs_snapshot), (void*)subs_snapshot);
+		evt->num_subscribers = 0;
+		evt->num_subscribers_allocated = 0;
+		EVT_DEBUG("[%lu] FREE (*%p)->subscribers (%p)", ev, (void*)evt, (void*)evt->subscribers);
+		free(evt->subscribers);
+		evt->subscribers = NULL;
+		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
+		// CAUTION: no modifying evt after this point, it may be invalidated
+	} else if(evt->subscribers) {
+		assume(evt->subscribers != NULL);
+		assume(evt->num_subscribers_allocated > 0);
+		evt->num_subscribers_allocated = 0;
+		free(evt->subscribers);
+		evt->subscribers = NULL;
+	} else {
+		assume(evt->num_subscribers_allocated == 0);
+		assume(evt->subscribers == NULL);
+	}
+
+	EVT_DEBUG("[%lu] END Cancel event %p", ev, (void*)evt);
 }
 
 void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*)) {
