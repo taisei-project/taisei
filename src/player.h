@@ -115,6 +115,12 @@ struct Player {
 		PowerSurgeBonus bonus;
 	} powersurge;
 
+	COEVENTS_ARRAY(
+		shoot,
+		inputflags_changed,
+		power_changed
+	) events;
+
 	uint64_t points;
 
 	uint64_t extralife_threshold;
@@ -138,7 +144,9 @@ struct Player {
 	int respawntime;
 	int bombtotaltime;
 
-	int inputflags;
+	uint prev_inputflags;
+	uint inputflags;
+
 	int lastmovesequence; // used for animation
 	int axis_ud;
 	int axis_lr;

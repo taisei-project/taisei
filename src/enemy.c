@@ -355,9 +355,13 @@ bool enemy_in_viewport(Enemy *enemy) {
 		cimag(enemy->pos) <= VIEWPORT_H + s;
 }
 
+void enemy_kill(Enemy *enemy) {
+	enemy->hp = ENEMY_KILLED;
+}
+
 void enemy_kill_all(EnemyList *enemies) {
 	for(Enemy *e = enemies->first; e; e = e->next) {
-		e->hp = ENEMY_KILLED;
+		enemy_kill(e);
 	}
 }
 
