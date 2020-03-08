@@ -12,7 +12,7 @@
 #include "plrmodes.h"
 #include "reimu.h"
 
-#define ORB_RETRACT_TIME 5
+#define ORB_RETRACT_TIME 4
 
 typedef struct ReimuAController {
 	Player *plr;
@@ -50,30 +50,40 @@ static void reimu_spirit_preload(void) {
 	NULL);
 }
 
-static int reimu_spirit_needle(Projectile *p, int t) {
-	int r = linear(p, t);
+TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_needle,
+		.pos = ARGS.pos,
+		.color = RGBA(0.5, 0.5, 0.5, 0.5),
+		.move = move_linear(ARGS.vel),
+		.type = PROJ_PLAYER,
+		.damage_type = DMG_PLAYER_SHOT,
+		.damage = ARGS.damage,
+		.shader_ptr = ARGS.shader,
+	));
 
-	if(t < 0) {
-		return r;
+	Color trail_color = p->color;
+	color_mul(&trail_color, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
+	color_mul_scalar(&trail_color, 0.6);
+	trail_color .a = 0;
+
+	MoveParams trail_move = move_linear(p->move.velocity * 0.8);
+	ProjDrawRule trail_draw = pdraw_timeout_scalefade(0, 2, 1, 0);
+
+	for(;;) {
+		YIELD;
+
+		PARTICLE(
+			.sprite_ptr = p->sprite,
+			.color = &trail_color,
+			.timeout = 12,
+			.pos = p->pos,
+			.move = trail_move,
+			.draw_rule = trail_draw,
+			.layer = LAYER_PARTICLE_LOW,
+			.flags = PFLAG_NOREFLECT,
+		);
 	}
-
-	Color c = p->color;
-	color_mul(&c, RGBA_MUL_ALPHA(0.75, 0.5, 1, 0.5));
-	color_mul_scalar(&c, 0.6);
-	c.a = 0;
-
-	PARTICLE(
-		.sprite_ptr = p->sprite,
-		.color = &c,
-		.timeout = 12,
-		.pos = p->pos,
-		.move = move_linear(p->args[0] * 0.8),
-		.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
-		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT,
-	);
-
-	return r;
 }
 
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
@@ -89,7 +99,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 		.timeout = 12,
 		.pos = p->pos,
 		.angle = p->angle,
-		.move = move_linear(p->args[0] * rng_range(0.6, 1.0) * vfactor),
+		.move = move_linear(p->move.velocity * rng_range(0.6, 1.0) * vfactor),
 		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
@@ -97,85 +107,70 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, doubl
 	);
 }
 
-static int reimu_spirit_homing_impact(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+TASK(reimu_spirit_homing_impact, { BoxedProjectile p; }) {
+	Projectile *ref = NOT_NULL(ENT_UNBOX(ARGS.p));
 
-	Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, global.frames, 1);
-	trail->rule = NULL;
-	trail->timeout = 6;
-	trail->angle = p->angle;
-	trail->ent.draw_layer = LAYER_PLAYER_FOCUS - 1; // TODO: add a layer for "super high" particles?
-	trail->args[2] *= 1.5 * (1 - t/p->timeout);
-	p->angle += 0.2;
-
-	return ACTION_NONE;
-}
-
-static Projectile *reimu_spirit_spawn_homing_impact(Projectile *p, int t) {
-	return PARTICLE(
-		.proto = p->proto,
-		.color = &p->color,
+	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+		.proto = ref->proto,
+		.color = &ref->color,
 		.timeout = 32,
-		.pos = p->pos,
-		.angle = p->angle,
-		.rule = reimu_spirit_homing_impact,
+		.pos = ref->pos,
+		.angle = ref->angle,
+		.angle_delta = 0.2,
 		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_HIGH,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.scale = REIMU_SPIRIT_HOMING_SCALE,
-	);
+	));
+
+	for(int t = global.frames - ref->birthtime;; ++t) {
+		Projectile *trail = reimu_spirit_spawn_ofuda_particle(p, t, 0);
+		trail->timeout = 6;
+		trail->angle = p->angle;
+		trail->ent.draw_layer = LAYER_PLAYER_FOCUS - 1; // TODO: add a layer for "super high" particles?
+		YIELD;
+	}
 }
 
 static inline real reimu_spirit_homing_aimfactor(real t, real maxt) {
-	t = clamp(t, 0, maxt);
-	real q = pow(1 - t / maxt, 3);
+	real q = pow(t / maxt, 3);
 	return 4 * q * (1 - q);
 }
 
-static int reimu_spirit_homing(Projectile *p, int t) {
-	if(t < 0) {
-		if(t == EVENT_DEATH && !global.gameover && projectile_in_viewport(p)) {
-			reimu_spirit_spawn_homing_impact(p, t);
-		}
+TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.proto = pp_ofuda,
+		.pos = ARGS.pos,
+		.color = RGBA(0.7, 0.63, 0.665, 0.7),
+		.move = move_linear(ARGS.vel),
+		.type = PROJ_PLAYER,
+		.damage_type = DMG_PLAYER_SHOT,
+		.damage = ARGS.damage,
+		.shader_ptr = ARGS.shader,
+		.scale = REIMU_SPIRIT_HOMING_SCALE,
+		.flags = PFLAG_NOCOLLISIONEFFECT,
+	));
 
-		return ACTION_ACK;
+	INVOKE_TASK_WHEN(&p->events.killed, reimu_spirit_homing_impact, ENT_BOX(p));
+
+	cmplx target = p->pos + p->move.velocity * hypot(VIEWPORT_W, VIEWPORT_H);
+	real speed = cabs(p->move.velocity);
+	real homing_time = 60;
+
+	for(real t = 0; t < homing_time; ++t) {
+		target = plrutil_homing_target(p->pos, target);
+		cmplx aim = cnormalize(target - p->pos);
+		real s = speed * (0.5 + 0.5 * pow((t + 1) / homing_time, 2));
+		aim *= s * 0.25 * reimu_spirit_homing_aimfactor(t, homing_time);
+		p->move.velocity = s * cnormalize(p->move.velocity + aim);
+		reimu_spirit_spawn_ofuda_particle(p, t, 0.25);
+		YIELD;
 	}
-
-	p->args[3] = plrutil_homing_target(p->pos, p->args[3]);
-	double v = cabs(p->args[0]);
-
-	cmplx aimdir = cexp(I*carg(p->args[3] - p->pos));
-	double aim = reimu_spirit_homing_aimfactor(t, p->args[1]);
-
-	p->args[0] += v * 0.25 * aim * aimdir;
-	p->args[0] = v * cexp(I*carg(p->args[0]));
-	p->angle = carg(p->args[0]);
-
-	double s = 1;// max(pow(2*t/creal(p->args[1]), 2), 0.1); //(0.25 + 0.75 * (1 - aim));
-	p->pos += p->args[0] * s;
-	reimu_spirit_spawn_ofuda_particle(p, t, 0.5);
-
-	return ACTION_NONE;
 }
 
 static Color *reimu_spirit_orb_color(Color *c, int i) {
 	*c = *RGBA((0.2 + (i==0))/1.2, (0.2 + (i==1))/1.2, (0.2 + 1.5*(i==2))/1.2, 0.0);
 	return c;
-}
-
-static int reimu_spirit_bomb_orb_trail(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-	p->angle -= 0.05;
-
-	// p->color = *HSLA(2.0*t/p->timeout, 0.5, 0.5, 0.0);
-
-	return ACTION_NONE;
 }
 
 static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
@@ -188,12 +183,11 @@ static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
 			.color = HSLA(3 * (float)i / count + offset, 1, 0.5, 0),
 			.timeout = 60,
 			.pos = pos,
-			.args = { cdir(2 * M_PI / count * (i + offset)) * 15 },
 			.angle = rng_angle(),
-			.rule = linear,
+			.move = move_linear(cdir(2 * M_PI / count * (i + offset)) * 15),
 			.draw_rule = pdraw_timeout_fade(1, 0),
 			.layer = LAYER_BOSS,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		);
 	}
 }
@@ -370,11 +364,11 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 				.color = HSLA(t/orb->timeout, 0.3, 0.3, 0.0),
 				.pos = trail_pos,
 				.angle = rng_angle(),
+				.angle_delta = -0.05,
 				.timeout = 30,
 				.draw_rule = pdraw_timeout_scalefade(0.4, 0, 1, 0),
-				.rule = reimu_spirit_bomb_orb_trail,
-				.args = { trail_vel },
-				.flags = PFLAG_NOREFLECT,
+				.move = move_linear(trail_vel),
+				.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			);
 		}
 
@@ -524,22 +518,16 @@ TASK(reimu_spirit_slave_needle_shot, {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
-	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, 0.5);
 	real damage = ARGS.damage;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-		PROJECTILE(
-			.proto = pp_needle,
+		INVOKE_TASK(reimu_spirit_needle,
 			.pos = e->pos - 25.0*I,
-			.color = clr,
-			.rule = reimu_spirit_needle,
-			.args = { -20.0*I },
-			.type = PROJ_PLAYER,
-			.damage_type = DMG_PLAYER_SHOT,
+			.vel = -20*I,
 			.damage = damage,
-			.shader_ptr = shader,
+			.shader = shader
 		);
 
 		WAIT(3);
@@ -553,8 +541,6 @@ TASK(reimu_spirit_slave_needle, {
 	real rotation_offset;
 	real shot_damage;
 }) {
-	log_debug("spawn");
-
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_focused_visual));
@@ -586,25 +572,17 @@ TASK(reimu_spirit_slave_homing_shot, {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
-	Color *clr = RGBA_MUL_ALPHA(1, 0.9, 0.95, 0.7);
 	cmplx vel = ARGS.vel;
 	real damage = ARGS.damage;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-		PROJECTILE(
-			.proto = pp_ofuda,
+		INVOKE_TASK(reimu_spirit_homing,
 			.pos = e->pos,
-			.color = clr,
-			.rule = reimu_spirit_homing,
-			.args = { vel, 60, 0, e->pos + vel * VIEWPORT_H * VIEWPORT_W },
-			.type = PROJ_PLAYER,
-			.damage_type = DMG_PLAYER_SHOT,
+			.vel = vel,
 			.damage = damage,
-			.shader_ptr = shader,
-			.scale = REIMU_SPIRIT_HOMING_SCALE,
-			.flags = PFLAG_NOCOLLISIONEFFECT,
+			.shader = shader
 		);
 
 		WAIT(12);
@@ -617,8 +595,6 @@ TASK(reimu_spirit_slave_homing, {
 	cmplx shot_vel;
 	real shot_damage;
 }) {
-	log_debug("spawn");
-
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_unfocused_visual));
@@ -636,24 +612,62 @@ TASK(reimu_spirit_slave_homing, {
 	}
 }
 
-static void reimu_spirit_spawn_slave(ReimuAController *ctrl, cmplx pos, cmplx a0, cmplx a1, cmplx a2, cmplx a3, EnemyVisualRule visual) {
-	// TODO rewrite this and the respawn routine
+static void reimu_spirit_spawn_slaves_unfocused(ReimuAController *ctrl, int power_rank) {
+	real dmg_homing = 100;  // 120 - 12 * power_rank;
+	cmplx sv = -10 * I;
 
-	if(visual == reimu_spirit_yinyang_unfocused_visual) {
-		INVOKE_TASK(reimu_spirit_slave_homing,
-			.ctrl = ctrl,
-			.offset = pos,
-			.shot_vel = -10 * I * cdir(cimag(a0)),
-			.shot_damage = creal(a2)
-		);
-	} else {
-		INVOKE_TASK(reimu_spirit_slave_needle,
-			.ctrl = ctrl,
-			.distance = cimag(a1),
-			.rotation = creal(a1),
-			.rotation_offset = creal(a0),
-			.shot_damage = creal(a2)
-		);
+	switch(power_rank) {
+		case 0:
+			break;
+		case 1:
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv, dmg_homing);
+			break;
+		case 2:
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
+			break;
+		case 3:
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv, dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
+			break;
+		case 4:
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +80, sv * cdir(+M_PI/16), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -80, sv * cdir(-M_PI/16), dmg_homing);
+			break;
+		default:
+			UNREACHABLE;
+	}
+}
+
+static void reimu_spirit_spawn_slaves_focused(ReimuAController *ctrl, int power_rank) {
+	real dmg_needle = 90; // 92 - 10 * power_rank;
+
+	switch(power_rank) {
+		case 0:
+			break;
+		case 1:
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
+			break;
+		case 2:
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_TAU/2, dmg_needle);
+			break;
+		case 3:
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0*M_TAU/3, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 1*M_TAU/3, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 2*M_TAU/3, dmg_needle);
+			break;
+		case 4:
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_PI, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, 0, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, M_PI, dmg_needle);
+			break;
+		default:
+			UNREACHABLE;
 	}
 }
 
@@ -664,42 +678,13 @@ static void reimu_spirit_kill_slaves(ReimuAController *ctrl) {
 static void reimu_spirit_respawn_slaves(ReimuAController *ctrl) {
 	Player *plr = ctrl->plr;
 	int power_rank = plr->power / 100;
-	double dmg_homing = 120 - 12 * power_rank; // every 12 frames
-	double dmg_needle = 92 - 10 * power_rank; // every 3 frames
-	cmplx dmg = dmg_homing + I * dmg_needle;
-	EnemyVisualRule visual;
-
-	if(plr->inputflags & INFLAG_FOCUS) {
-		visual = reimu_spirit_yinyang_focused_visual;
-	} else {
-		visual = reimu_spirit_yinyang_unfocused_visual;
-	}
 
 	reimu_spirit_kill_slaves(ctrl);
 
-	switch(power_rank) {
-		case 0:
-			break;
-		case 1:
-			reimu_spirit_spawn_slave(ctrl, 50.0*I, 0                     , +0.10 + 60*I, dmg, 0, visual);
-			break;
-		case 2:
-			reimu_spirit_spawn_slave(ctrl, +40,    0           +M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, -40,    M_PI        -M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
-			break;
-		case 3:
-			reimu_spirit_spawn_slave(ctrl, 50.0*I, 0*2*M_PI/3            , +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, +40,    1*2*M_PI/3  +M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, -40,    2*2*M_PI/3  -M_PI/24*I, +0.10 + 60*I, dmg, 0, visual);
-			break;
-		case 4:
-			reimu_spirit_spawn_slave(ctrl, +40,    0           +M_PI/32*I, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, -40,    M_PI        -M_PI/32*I, +0.10 + 60*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, +80,    0           +M_PI/16*I, -0.05 + 80*I, dmg, 0, visual);
-			reimu_spirit_spawn_slave(ctrl, -80,    M_PI        -M_PI/16*I, -0.05 + 80*I, dmg, 0, visual);
-			break;
-		default:
-			UNREACHABLE;
+	if(plr->inputflags & INFLAG_FOCUS) {
+		reimu_spirit_spawn_slaves_focused(ctrl, power_rank);
+	} else {
+		reimu_spirit_spawn_slaves_unfocused(ctrl, power_rank);
 	}
 }
 
@@ -730,7 +715,7 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 			reimu_spirit_respawn_slaves(ctrl);
 
 			// "shift-spam" protection - minimum time until next respawn
-			WAIT(10);
+			WAIT(ORB_RETRACT_TIME * 2);
 		}
 	}
 }
