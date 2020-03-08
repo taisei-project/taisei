@@ -340,12 +340,22 @@ static void cancel_task_events(CoTaskData *task_data) {
 	COEVENT_CANCEL_ARRAY(task_data->events);
 }
 
+static void coevent_cleanup_subscribers(CoEvent *evt);
+
 static void cotask_finalize(CoTask *task) {
 	CoTaskData *task_data = get_task_data(task);
 	cancel_task_events(task_data);
 
 	TASK_DEBUG("Finalizing task %s", task->debug_label);
 	TASK_DEBUG("data = %p", (void*)task_data);
+
+	if(task_data->wait.wait_type == COTASK_WAIT_EVENT) {
+		CoEvent *evt = NOT_NULL(task_data->wait.event.pevent);
+
+		if(evt->unique_id == task_data->wait.event.snapshot.unique_id) {
+			coevent_cleanup_subscribers(task_data->wait.event.pevent);
+		}
+	}
 
 	if(task_data->master) {
 		TASK_DEBUG(
@@ -525,27 +535,29 @@ CoEventSnapshot coevent_snapshot(const CoEvent *evt) {
 }
 
 CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
+#if 0
 	EVT_DEBUG("[%p]", (void*)evt);
 	EVT_DEBUG("evt->unique_id     == %u", evt->unique_id);
 	EVT_DEBUG("snap->unique_id    == %u", snap->unique_id);
 	EVT_DEBUG("evt->num_signaled  == %u", evt->num_signaled);
 	EVT_DEBUG("snap->num_signaled == %u", snap->num_signaled);
+#endif
 
 	if(
 		evt->unique_id != snap->unique_id ||
 		evt->num_signaled < snap->num_signaled ||
 		evt->unique_id == 0
 	) {
-		EVT_DEBUG("Event was canceled");
+		EVT_DEBUG("[%p / %u] Event was canceled", (void*)evt, evt->unique_id);
 		return CO_EVENT_CANCELED;
 	}
 
 	if(evt->num_signaled > snap->num_signaled) {
-		EVT_DEBUG("Event was signaled");
+		EVT_DEBUG("[%p / %u] Event was signaled", (void*)evt, evt->unique_id);
 		return CO_EVENT_SIGNALED;
 	}
 
-	EVT_DEBUG("Event hasn't changed; waiting...");
+	// EVT_DEBUG("Event hasn't changed; waiting...");
 	return CO_EVENT_PENDING;
 }
 
@@ -564,7 +576,7 @@ static bool cotask_do_wait(CoTaskData *task_data) {
 		}
 
 		case COTASK_WAIT_EVENT: {
-			TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
+			// TASK_DEBUG("COTASK_WAIT_EVENT in task %s", task_data->task->debug_label);
 
 			CoEventStatus stat = coevent_poll(task_data->wait.event.pevent, &task_data->wait.event.snapshot);
 			if(stat != CO_EVENT_PENDING) {
@@ -636,7 +648,33 @@ int cotask_wait(int delay) {
 	return cotask_wait_init(task_data, COTASK_WAIT_NONE).frames;
 }
 
+static void coevent_cleanup_subscribers(CoEvent *evt) {
+	if(evt->num_subscribers == 0) {
+		return;
+	}
+
+	uint num_subs = evt->num_subscribers;
+	BoxedTask new_subs[num_subs];
+	BoxedTask *p_new_subs = new_subs;
+
+	for(uint i = 0; i < num_subs; ++i) {
+		if(cotask_unbox(evt->subscribers[i])) {
+			*p_new_subs++ = evt->subscribers[i];
+		}
+	}
+
+	num_subs = p_new_subs - new_subs;
+
+	EVT_DEBUG("Event %p num_subscribers %u -> %u", (void*)evt, evt->num_subscribers, num_subs);
+
+	memcpy(evt->subscribers, new_subs, sizeof(new_subs[0]) * num_subs);
+	evt->num_subscribers = num_subs;
+}
+
 static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
+	EVT_DEBUG("Event %p (num_subscribers=%u; num_subscribers_allocated=%u)", (void*)evt, evt->num_subscribers, evt->num_subscribers_allocated);
+	EVT_DEBUG("Subscriber: %s", task->debug_label);
+
 	evt->num_subscribers++;
 	assert(evt->num_subscribers != 0);
 
