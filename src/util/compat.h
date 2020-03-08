@@ -308,6 +308,16 @@ typedef cmplx64 cmplx;
 
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
+#ifdef USE_GNU_EXTENSIONS
+	#define NOT_NULL(expr) (__extension__ ({ \
+		__auto_type _assume_not_null_ptr = (expr); \
+		assume(_assume_not_null_ptr != NULL); \
+		_assume_not_null_ptr; \
+	}))
+#else
+	#define NOT_NULL(expr) (expr)
+#endif
+
 #ifdef __SWITCH__
 	#include "../arch_switch.h"
 	#define atexit nxAtExit
