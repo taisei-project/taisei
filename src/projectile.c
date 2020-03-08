@@ -159,11 +159,13 @@ static inline int proj_call_rule(Projectile *p, int t) {
 			move_update(&p->pos, &p->move);
 		}
 
-		if(!(p->flags & PFLAG_MANUALANGLE)) {
+		if(p->flags & PFLAG_MANUALANGLE) {
+			p->angle += p->angle_delta;
+		} else {
 			cmplx delta_pos = p->pos - p->prevpos;
 
 			if(delta_pos) {
-				p->angle = carg(delta_pos);
+				p->angle = carg(delta_pos) + p->angle_delta;
 			}
 		}
 	}
@@ -257,6 +259,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->birthtime = global.frames;
 	p->pos = p->pos0 = p->prevpos = args->pos;
 	p->angle = args->angle;
+	p->angle_delta = args->angle_delta;
 	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
 	p->shader = args->shader_ptr;

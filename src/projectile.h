@@ -107,6 +107,7 @@ struct Projectile {
 	int birthtime;
 	float damage;
 	float angle;
+	float angle_delta;
 	ProjType type;
 	DamageType damage_type;
 	int max_viewport_dist;
@@ -149,6 +150,7 @@ typedef struct ProjArgs {
 	ProjFlags flags;
 	BlendMode blend;
 	float angle;
+	float angle_delta;
 	float damage;
 	DamageType damage_type;
 	int max_viewport_dist;
