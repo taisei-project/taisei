@@ -914,6 +914,15 @@ void glcommon_unload_library(void) {
 	glcommon_free_shader_lang_table();
 }
 
+static inline void (*load_func(const char *name))(void) {
+	union {
+		void *vp;
+		void (*fp)(void);
+	} c_sucks;
+	c_sucks.vp = SDL_GL_GetProcAddress(name);
+	return c_sucks.fp;
+}
+
 void glcommon_load_functions(void) {
 #ifndef STATIC_GLES3
 	int profile;
@@ -932,8 +941,8 @@ void glcommon_load_functions(void) {
 		}
 	}
 
-	glad_glDrawArraysInstancedBaseInstanceANGLE = *(PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC*)(void**)SDL_GL_GetProcAddress("glDrawArraysInstancedBaseInstanceANGLE");
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = *(PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC*)(void**)SDL_GL_GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)load_func("glDrawArraysInstancedBaseInstanceANGLE");
+	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 #endif
 }
 
