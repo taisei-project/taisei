@@ -37,7 +37,6 @@ void player_stage_pre_init(Player *plr) {
 	plr->deathtime = -1;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
-	plr->prev_inputflags = 0;
 	plrmode_preload(plr->mode);
 }
 

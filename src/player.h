@@ -144,7 +144,6 @@ struct Player {
 	int respawntime;
 	int bombtotaltime;
 
-	uint prev_inputflags;
 	uint inputflags;
 
 	int lastmovesequence; // used for animation
