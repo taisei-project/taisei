@@ -14,8 +14,6 @@
 
 static StageText *textlist = NULL;
 
-#define NUM_PLACEHOLDER "........................"
-
 StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
 	StageText *t = (StageText*)objpool_acquire(stage_object_pools.stagetext);
 	list_append(&textlist, t);
@@ -39,12 +37,11 @@ StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *fon
 }
 
 static void stagetext_numeric_update(StageText *txt, int t, float a) {
-	// snprintf(txt->text, sizeof(NUM_PLACEHOLDER), "%i", (int)((intptr_t)txt->custom.data1 * pow(a, 5)));
-	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(NUM_PLACEHOLDER), txt->text);
+	format_huge_num(0, (uintptr_t)txt->custom.data1 * pow(a, 5), sizeof(txt->text), txt->text);
 }
 
 StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = stagetext_add(NUM_PLACEHOLDER, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
+	StageText *t = stagetext_add(NULL, pos, align, font, clr, delay, lifetime, fadeintime, fadeouttime);
 	t->custom.data1 = (void*)(intptr_t)n;
 	t->custom.update = stagetext_numeric_update;
 	return t;
