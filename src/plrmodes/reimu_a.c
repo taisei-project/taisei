@@ -696,19 +696,14 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 	uint prev_inputflags = 0;
 
 	for(;;) {
-		log_debug("suspend");
 		WAIT_EVENT_OR_DIE(&plr->events.inputflags_changed);
-		log_debug("wake up");
 
 		// focus state changed?
 		while((prev_inputflags ^ plr->inputflags) & INFLAG_FOCUS) {
 			if(plr->slaves.first) {
 				reimu_spirit_kill_slaves(ctrl);
-				log_debug("kill");
 				WAIT(ORB_RETRACT_TIME);
 			}
-
-			log_debug("respawn");
 
 			// important to record these at the time of respawning
 			prev_inputflags = plr->inputflags;
