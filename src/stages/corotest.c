@@ -177,7 +177,7 @@ TASK(stage_main, NO_ARGS) {
 	log_debug("test 2! %i", global.timer);
 	*/
 
-	INVOKE_TASK(punching_bag);
+	// INVOKE_TASK(punching_bag);
 	return;
 
 	for(;;) {
@@ -188,21 +188,21 @@ TASK(stage_main, NO_ARGS) {
 }
 
 static void cotest_begin(void) {
-	corotest_procs.shader_rules = stage1_procs.shader_rules;
-	stage1_procs.begin();
+	// corotest_procs.shader_rules = stage1_procs.shader_rules;
+	// stage1_procs.begin();
 	INVOKE_TASK(stage_main);
 }
 
 static void cotest_update(void) {
-	stage1_procs.update();
+	// stage1_procs.update();
 }
 
 static void cotest_end(void) {
-	stage1_procs.end();
+	// stage1_procs.end();
 }
 
 static void cotest_draw(void) {
-	stage1_procs.draw();
+	// stage1_procs.draw();
 }
 
 StageProcs corotest_procs = {
