@@ -67,7 +67,7 @@ uint32_t utf8_getch(const char **src) attr_nonnull(1);
 
 uint32_t crc32str(uint32_t crc, const char *str);
 
-void format_huge_num(uint digits, uint64_t num, size_t bufsize, char *buf);
+void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]);
 void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_size);
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23

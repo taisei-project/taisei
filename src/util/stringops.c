@@ -409,7 +409,7 @@ uint32_t utf8_getch(const char **src) {
 	return ch;
 }
 
-void format_huge_num(uint digits, uint64_t num, size_t bufsize, char *buf) {
+void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize]) {
 	if(digits == 0) {
 		digits = digitcnt(num);
 	}
