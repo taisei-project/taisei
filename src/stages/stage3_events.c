@@ -196,7 +196,10 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 			.proto = pp_flea,
 			.pos = e->pos,
 			.color = RGB(0.7, 0.0, 0.5),
-			.move = move_accelerated(2*cdir(carg(global.plr.pos - e->pos)), 0.005*cdir(M_PI*2 * rng_real()) * (global.diff > D_Easy)),
+			.move = move_accelerated(
+				2 * cdir(carg(global.plr.pos - e->pos)),
+				0.005 * cdir(M_PI * 2 * rng_real()) * (global.diff > D_Easy)
+			),
 		);
 
 		play_sound("shot1");
@@ -211,10 +214,13 @@ TASK(side_swirls_procession, { cmplx start_pos; int count; cmplx p0; cmplx p1; c
 
 	for(int x = 0; x < ARGS.count; ++x) {
 		cmplx p2 = ARGS.p2;
+
 		if(!p2) {
 			p2 = 5 + (0.93 + 0.01 * x) * I;
 		}
+
 		INVOKE_TASK(side_swirl, ARGS.start_pos, ARGS.p0, ARGS.p1, p2);
+
 		WAIT(interval);
 	}
 }
@@ -466,6 +472,7 @@ TASK(burst_fairy_squad, { int count; int step; } ) {
 
 
 TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_time; int move_first; }) {
+	// charges up some danmaku and then "releases" them
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
 
 	e->alpha = 0;
@@ -521,6 +528,7 @@ TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_tim
 		spawn_projectile_highlight_effect(p);
 		p->move = move_linear(p->args[0] * (p->args[1] * 0.2));
 	});
+
 	WAIT(100);
 
 	e->move = move_linear(ARGS.exit_dir);
@@ -585,7 +593,10 @@ TASK(corner_fairy, { cmplx pos; cmplx p1; cmplx p2; int type; } ) {
 					.color = ARGS.type
 					? RGB(0.5 - c*0.2, 0.3 + c*0.7, 1.0)
 					: RGB(1.0 - c*0.5, 0.6, 0.5 + c*0.5),
-					.move = move_asymptotic_simple( ((1.8 - 0.4 * wave * !!ARGS.p2) * cdir((2 * i * M_PI/cnt) + carg((VIEWPORT_W + I * VIEWPORT_H)/2 - e->pos))), 1.5)
+					.move = move_asymptotic_simple(
+						((1.8 - 0.4 * wave * !!ARGS.p2) * cdir((2 * i * M_PI/cnt) + carg((VIEWPORT_W + I * VIEWPORT_H)/2 - e->pos))),
+						1.5
+					)
 				);
 				WAIT(1);
 			}
