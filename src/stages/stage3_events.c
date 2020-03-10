@@ -148,7 +148,7 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; ProjPrototype *shot_proj; }) {
 	e->move = move_linear(ARGS.dir);
 }
 
-TASK(burst_swirls, { int count; int interval; ProjPrototype *shot_proj }) {
+TASK(burst_swirls, { int count; int interval; ProjPrototype *shot_proj; }) {
 	for(int i = 0; i < ARGS.count; ++i) {
 		// spawn in a "pitchfork" pattern
 		cmplx pos = VIEWPORT_W/2 + 20 * rng_sreal();
@@ -172,7 +172,8 @@ TASK(side_swirl_move, { BoxedEnemy e; cmplx p0; cmplx p1; cmplx p2; } ) {
 	cmplx p2 = ARGS.p2;
 
 	for (;;) {
-		//TODO: what is this even doing
+		// this "move" moves in a kind of "S" shape, horizontally across the screen
+		// TODO: replicate this w/o using `for (;;)`
 		e->move = move_linear(p0 + p1 * creal(p2));
 		p2 = creal(p2) * cimag(p2) + I * cimag(p2);
 		YIELD;
@@ -636,6 +637,7 @@ TASK(corner_fairies, NO_ARGS) {
 TASK_WITH_INTERFACE(scuttle_intro, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	BEGIN_BOSS_ATTACK();
+
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
 }
 
@@ -646,9 +648,79 @@ TASK_WITH_INTERFACE(scuttle_outro, BossAttack) {
 	boss->move = move_towards(VIEWPORT_W/2 - 200.0*I, 0.05);
 }
 
+TASK(scuttle_delaymove, { BoxedBoss boss } ) {
+	Boss *boss = ENT_UNBOX(ARGS.boss);
+
+	WAIT(100);
+	boss->move.attraction_point = VIEWPORT_W/2+VIEWPORT_W/3;
+	boss->move.acceleration = 0.08;
+}
+
 TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	BEGIN_BOSS_ATTACK();
+
+	int intensity = difficulty_value(18, 19, 20, 21);
+	INVOKE_TASK_DELAYED(300, scuttle_delaymove, ENT_BOX(boss));
+
+	for(;;) {
+		DECLARE_ENT_ARRAY(Projectile, projs, 100);
+
+		// fly through Scuttle, wind up on other side in a starburst pattern
+		for(int i = 0; i < intensity; ++i) {
+			cmplx v = (2 - psin((max(3, global.diff + 1) * 2 * M_PI * i / (float)intensity) + i)) * cdir(2 * M_PI / intensity * i);
+			ENT_ARRAY_ADD(&projs, PROJECTILE(
+				.proto = pp_wave,
+				.pos = boss->pos - v * 50,
+				.color = i % 2 ? RGB(0.7, 0.3, 0.0) : RGB(0.3, .7, 0.0),
+				.move = move_asymptotic_simple(v, 2.0)
+			));
+		}
+
+		WAIT(80);
+
+		// halt acceleration for a moment
+		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+			p->move.acceleration = 0;
+		});
+
+		WAIT(30);
+
+		// change direction, fly towards player
+		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+
+			int count = 3;
+
+			// when the shot "releases", add a bunch of particles and some extra bullets
+			for(int i = 0; i < count; ++i) {
+				PARTICLE(
+					.sprite = "smoothdot",
+					.color = RGBA(0.8, 0.6, 0.6, 0),
+					.draw_rule = Shrink,
+					.rule = enemy_flare,
+					.timeout = 100,
+					.args = {
+						cdir(((M_PI * rng_sreal())) * (1 + rng_sreal())),
+						add_ref(p)
+					},
+				);
+
+				float offset = global.frames/15.0;
+				if(global.diff > D_Hard && global.boss) {
+					offset = M_PI + carg(global.plr.pos - global.boss->pos);
+				}
+
+				PROJECTILE(
+					.proto = pp_thickrice,
+					.pos = p->pos,
+					.color = RGB(0.4, 0.3, 1.0),
+					.move = move_linear(-cdir(((i * 2 * M_PI/count + offset)) * (1.0 + (global.diff > D_Normal))))
+				);
+			}
+			spawn_projectile_highlight_effect(p);
+			p->move = move_linear((3 + 2 * global.diff / (float)D_Lunatic) * cdir(carg(global.plr.pos - p->pos)));
+		});
+	}
 }
 
 DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
