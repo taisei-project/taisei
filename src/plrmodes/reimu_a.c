@@ -12,6 +12,15 @@
 #include "plrmodes.h"
 #include "reimu.h"
 
+#define SHOT_FORWARD_DMG 50
+#define SHOT_FORWARD_DELAY 3
+#define SHOT_VOLLEY_DMG 35
+#define SHOT_VOLLEY_DELAY 16
+#define SHOT_SLAVE_HOMING_DMG 150
+#define SHOT_SLAVE_HOMING_DELAY 18
+#define SHOT_SLAVE_NEEDLE_DMG 64
+#define SHOT_SLAVE_NEEDLE_DELAY 3
+
 #define ORB_RETRACT_TIME 4
 
 typedef struct ReimuAController {
@@ -88,7 +97,7 @@ TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 
 #define REIMU_SPIRIT_HOMING_SCALE 0.75
 
-static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, double vfactor) {
+static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real vfactor) {
 	Color *c = HSLA_MUL_ALPHA(t * 0.1, 0.6, 0.7, 0.3);
 	c->a = 0;
 
@@ -201,8 +210,8 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	global.shake_view = 20;
 	global.shake_view_fade = 0.6;
 
-	double damage = 2000;
-	double range = 300;
+	real damage = 2000;
+	real range = 300;
 
 	ent_area_damage(pos, range, &(DamageInfo){damage, DMG_PLAYER_BOMB}, NULL, NULL);
 	stage_clear_hazards_at(pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
@@ -345,7 +354,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 		cmplx target_circle = plr->pos + 10 * sqrt(t) * dir * (1 + 0.1 * sin(0.2 * t));
 		dir *= cdir(0.12);
 
-		double circlestrength = 1.0 / (1 + exp(t - circletime));
+		real circlestrength = 1.0 / (1 + exp(t - circletime));
 
 		target_homing = plrutil_homing_target(orb->pos, target_homing);
 		cmplx homing = target_homing - orb->pos;
@@ -393,7 +402,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 		return;
 	}
 
-	double t = player_get_bomb_progress(p);
+	real t = player_get_bomb_progress(p);
 	float alpha = 0;
 	if(t > 0)
 		alpha = min(1,10*t);
@@ -518,7 +527,6 @@ TASK(reimu_slave_shot_particles, {
 TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl;
 	BoxedEnemy e;
-	real damage;
 }) {
 	Player *plr = ARGS.ctrl->plr;
 	Enemy *e = TASK_BIND(ARGS.e);
@@ -526,8 +534,8 @@ TASK(reimu_spirit_slave_needle_shot, {
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 	Sprite *particle_spr = get_sprite("part/stain");
 
-	real damage = ARGS.damage;
-	real delay = 3;
+	real damage = SHOT_SLAVE_NEEDLE_DMG;
+	real delay = SHOT_SLAVE_NEEDLE_DELAY;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -557,13 +565,12 @@ TASK(reimu_spirit_slave_needle, {
 	real distance;
 	real rotation;
 	real rotation_offset;
-	real shot_damage;
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_focused_visual));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX(e), ARGS.shot_damage);
+	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX(e));
 
 	real dist = ARGS.distance;
 	cmplx offset = dist * cdir(ARGS.rotation_offset);
@@ -584,7 +591,6 @@ TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl;
 	BoxedEnemy e;
 	cmplx vel;
-	real damage;
 }) {
 	Player *plr = ARGS.ctrl->plr;
 	Enemy *e = TASK_BIND(ARGS.e);
@@ -594,8 +600,8 @@ TASK(reimu_spirit_slave_homing_shot, {
 	cmplx vel = ARGS.vel;
 	cmplx pdir = cnormalize(vel);
 
-	real damage = ARGS.damage;
-	real delay = 12;
+	real damage = SHOT_SLAVE_HOMING_DMG;
+	real delay = SHOT_SLAVE_HOMING_DELAY;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -624,13 +630,12 @@ TASK(reimu_spirit_slave_homing, {
 	ReimuAController *ctrl;
 	cmplx offset;
 	cmplx shot_vel;
-	real shot_damage;
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_unfocused_visual));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX(e), ARGS.shot_vel, ARGS.shot_damage);
+	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX(e), ARGS.shot_vel);
 
 	cmplx offset = ARGS.offset;
 	real target_speed = 0.005 * cabs(offset);
@@ -644,29 +649,28 @@ TASK(reimu_spirit_slave_homing, {
 }
 
 static void reimu_spirit_spawn_slaves_unfocused(ReimuAController *ctrl, int power_rank) {
-	real dmg_homing = 100;  // 120 - 12 * power_rank;
 	cmplx sv = -10 * I;
 
 	switch(power_rank) {
 		case 0:
 			break;
 		case 1:
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv, dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv);
 			break;
 		case 2:
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24));
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24));
 			break;
 		case 3:
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv, dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, 50*I, sv);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24));
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24));
 			break;
 		case 4:
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24), dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24), dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +80, sv * cdir(+M_PI/16), dmg_homing);
-			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -80, sv * cdir(-M_PI/16), dmg_homing);
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +40, sv * cdir(+M_PI/24));
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -40, sv * cdir(-M_PI/24));
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, +80, sv * cdir(+M_PI/16));
+			INVOKE_TASK(reimu_spirit_slave_homing, ctrl, -80, sv * cdir(-M_PI/16));
 			break;
 		default:
 			UNREACHABLE;
@@ -674,28 +678,26 @@ static void reimu_spirit_spawn_slaves_unfocused(ReimuAController *ctrl, int powe
 }
 
 static void reimu_spirit_spawn_slaves_focused(ReimuAController *ctrl, int power_rank) {
-	real dmg_needle = 90; // 92 - 10 * power_rank;
-
 	switch(power_rank) {
 		case 0:
 			break;
 		case 1:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
 			break;
 		case 2:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_TAU/2, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_TAU/2);
 			break;
 		case 3:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0*M_TAU/3, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 1*M_TAU/3, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 2*M_TAU/3, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0*M_TAU/3);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 1*M_TAU/3);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 2*M_TAU/3);
 			break;
 		case 4:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_PI, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, 0, dmg_needle);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, M_PI, dmg_needle);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_PI);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, M_PI);
 			break;
 		default:
 			UNREACHABLE;
@@ -771,10 +773,10 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 		INVOKE_TASK(reimu_spirit_ofuda,
 			.pos = plr->pos + 10 * dir - 15.0*I,
 			.vel = -20*I,
-			.damage = 100 - 8 * (plr->power / 100)
+			.damage = SHOT_FORWARD_DMG
 		);
 		dir = -dir;
-		WAIT(3);
+		WAIT(SHOT_FORWARD_DELAY);
 	}
 }
 
@@ -801,7 +803,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
 		int power_rank = plr->power / 100;
-		real damage = 60 - 5 * power_rank;
+		real damage = SHOT_VOLLEY_DMG;
 
 		for(int pwr = 0; pwr <= power_rank; ++pwr) {
 			int delay = 5 * pwr;
@@ -824,7 +826,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 			);
 		}
 
-		WAIT(16);
+		WAIT(SHOT_VOLLEY_DELAY);
 	}
 }
 
@@ -848,7 +850,7 @@ static void reimu_spirit_init(Player *plr) {
 }
 
 static double reimu_spirit_property(Player *plr, PlrProperty prop) {
-	double base_value = reimu_common_property(plr, prop);
+	real base_value = reimu_common_property(plr, prop);
 
 	switch(prop) {
 		case PLR_PROP_SPEED: {
