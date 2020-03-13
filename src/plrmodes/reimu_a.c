@@ -438,41 +438,12 @@ static void reimu_spirit_shot(Player *p) {
 }
 
 static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
-	if(!render && player_should_shoot(&global.plr, true)) {
-		RNG_ARRAY(R, 4);
-		PARTICLE(
-			.sprite = "stain",
-			.color = RGBA(0.5, vrng_range(R[0], 0, 0.25), 0, 0),
-			.timeout = vrng_range(R[1], 8, 10),
-			.pos = e->pos,
-			.angle = vrng_angle(R[3]),
-			.move = move_linear(-I * vrng_range(R[2], 5, 10)),
-			.draw_rule = pdraw_timeout_scalefade(0.25, 0, 1, 0),
-			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
-		);
-	}
-
 	if(render) {
 		reimu_common_draw_yinyang(e, t, RGB(1.0, 0.8, 0.8));
 	}
 }
 
 static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) {
-	if(!render && player_should_shoot(&global.plr, true)) {
-		RNG_ARRAY(R, 4);
-		PARTICLE(
-			.sprite = "stain",
-			.color = RGBA(0.5, 0.125, vrng_range(R[0], 0, 0.25), 0),
-			.timeout = vrng_range(R[1], 8, 10),
-			.pos = e->pos,
-			.args = { -I * vrng_range(R[2], 5, 10), 0, 0.25 + 0*I },
-			.angle = vrng_angle(R[3]),
-			.move = move_linear(-I * vrng_range(R[2], 5, 10)),
-			.draw_rule = pdraw_timeout_scalefade(0.25, 0, 1, 0),
-			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
-		);
-	}
-
 	if(render) {
 		reimu_common_draw_yinyang(e, t, RGB(0.95, 0.75, 1.0));
 	}
@@ -509,6 +480,41 @@ static Enemy *reimu_spirit_create_slave(ReimuAController *ctrl, EnemyVisualRule 
 	return e;
 }
 
+TASK(reimu_slave_shot_particles, {
+	BoxedEnemy e;
+	int num;
+	cmplx dir;
+	Color *color0;
+	Color *color1;
+	Sprite *sprite;
+}) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	Color color0 = *ARGS.color0;
+	Color color1 = *ARGS.color1;
+	int num = ARGS.num;
+	Sprite *sprite = ARGS.sprite;
+	ProjDrawRule draw = pdraw_timeout_scalefade(0.25, 0, 1, 0);
+	cmplx dir = ARGS.dir;
+
+	for(int i = 0; i < num; ++i) {
+		MoveParams move = move_linear(dir * rng_range(5, 10));
+		real timeout = rng_range(8, 10);
+		real angle = rng_angle();
+
+		PARTICLE(
+			.angle = angle,
+			.color = COLOR_COPY(color_lerp(&color0, &color1, rng_f32())),
+			.draw_rule = draw,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
+			.move = move,
+			.pos = e->pos,
+			.sprite_ptr = sprite,
+			.timeout = timeout,
+		);
+		YIELD;
+	}
+}
+
 TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl;
 	BoxedEnemy e;
@@ -518,10 +524,22 @@ TASK(reimu_spirit_slave_needle_shot, {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
+	Sprite *particle_spr = get_sprite("part/stain");
+
 	real damage = ARGS.damage;
+	real delay = 3;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+
+		INVOKE_SUBTASK(reimu_slave_shot_particles,
+			.e = ENT_BOX(e),
+			.color0 = RGBA(0.5, 0, 0, 0),
+			.color1 = RGBA(0.5, 0.25, 0, 0),
+			.num = delay,
+			.dir = -I,
+			.sprite = particle_spr
+		);
 
 		INVOKE_TASK(reimu_spirit_needle,
 			.pos = e->pos - 25.0*I,
@@ -530,7 +548,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 			.shader = shader
 		);
 
-		WAIT(3);
+		WAIT(delay);
 	}
 }
 
@@ -572,11 +590,24 @@ TASK(reimu_spirit_slave_homing_shot, {
 	Enemy *e = TASK_BIND(ARGS.e);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
+	Sprite *particle_spr = get_sprite("part/stain");
 	cmplx vel = ARGS.vel;
+	cmplx pdir = cnormalize(vel);
+
 	real damage = ARGS.damage;
+	real delay = 12;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+
+		INVOKE_SUBTASK(reimu_slave_shot_particles,
+			.e = ENT_BOX(e),
+			.color0 = RGBA(0.5, 0.125, 0, 0),
+			.color1 = RGBA(0.5, 0.125, 0.25, 0),
+			.num = delay,
+			.dir = pdir,
+			.sprite = particle_spr
+		);
 
 		INVOKE_TASK(reimu_spirit_homing,
 			.pos = e->pos,
@@ -585,7 +616,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 			.shader = shader
 		);
 
-		WAIT(12);
+		WAIT(delay);
 	}
 }
 
