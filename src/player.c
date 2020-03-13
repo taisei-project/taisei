@@ -49,6 +49,8 @@ static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dm
 
 static void player_spawn_focus_circle(Player *plr);
 
+DECLARE_TASK(player_logic, { BoxedPlayer plr; });
+
 void player_stage_post_init(Player *plr) {
 	assert(plr->mode != NULL);
 
@@ -61,10 +63,6 @@ void player_stage_post_init(Player *plr) {
 
 	delete_enemies(&global.plr.slaves);
 
-	if(plr->mode->procs.init != NULL) {
-		plr->mode->procs.init(plr);
-	}
-
 	plrchar_make_bomb_portrait(plr->mode->character, &plr->bomb_portrait);
 	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
 
@@ -72,6 +70,14 @@ void player_stage_post_init(Player *plr) {
 	plr->ent.draw_func = ent_draw_player;
 	plr->ent.damage_func = ent_damage_player;
 	ent_register(&plr->ent, ENT_PLAYER);
+
+	COEVENT_INIT_ARRAY(plr->events);
+
+	INVOKE_TASK_DELAYED(1, player_logic, ENT_BOX(plr));
+
+	if(plr->mode->procs.init != NULL) {
+		plr->mode->procs.init(plr);
+	}
 
 	player_spawn_focus_circle(plr);
 
@@ -83,6 +89,8 @@ void player_stage_post_init(Player *plr) {
 }
 
 void player_free(Player *plr) {
+	COEVENT_CANCEL_ARRAY(plr->events);
+
 	if(plr->mode->procs.free) {
 		plr->mode->procs.free(plr);
 	}
@@ -120,7 +128,13 @@ bool player_set_power(Player *plr, short npow) {
 		player_full_power(plr);
 	}
 
-	return (oldpow + oldpow_over) != (plr->power + plr->power_overflow);
+	bool change = (oldpow + oldpow_over) != (plr->power + plr->power_overflow);
+
+	if(change) {
+		coevent_signal(&plr->events.power_changed);
+	}
+
+	return change;
 }
 
 bool player_add_power(Player *plr, short pdelta) {
@@ -553,61 +567,77 @@ static void player_powersurge_logic(Player *plr) {
 	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
 }
 
+DEFINE_TASK(player_logic) {
+	Player *plr = TASK_BIND(ARGS.plr);
+	uint prev_inputflags = 0;
+
+	for(;;) {
+		YIELD;
+
+		if(prev_inputflags != plr->inputflags) {
+			coevent_signal(&plr->events.inputflags_changed);
+			prev_inputflags = plr->inputflags;
+		}
+
+		fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
+
+		if(plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames && plr->lives < 0 && global.replaymode != REPLAY_PLAY) {
+			stage_gameover();
+		}
+
+		if(plr->continuetime == global.frames) {
+			plr->lives = PLR_START_LIVES;
+			plr->bombs = PLR_START_BOMBS;
+			plr->point_item_value = PLR_START_PIV;
+			plr->life_fragments = 0;
+			plr->bomb_fragments = 0;
+			plr->continues_used += 1;
+			player_set_power(plr, 0);
+			stage_clear_hazards(CLEAR_HAZARDS_ALL);
+			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
+		}
+
+		process_enemies(&plr->slaves);
+		aniplayer_update(&plr->ani);
+
+		if(plr->lives < 0) {
+			continue;
+		}
+
+		if(plr->respawntime > global.frames) {
+			double x = PLR_SPAWN_POS_X;
+			double y = lerp(PLR_SPAWN_POS_Y, VIEWPORT_H + 64, smoothstep(0.0, 1.0, (plr->respawntime - global.frames) / (double)PLR_RESPAWN_TIME));
+			plr->pos = CMPLX(x, y);
+			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+			continue;
+		}
+
+		if(player_is_powersurge_active(plr)) {
+			player_powersurge_logic(plr);
+		}
+
+		plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
+		plr->focus_circle.first->pos = plr->pos;
+		process_enemies(&plr->focus_circle);
+
+		if(plr->mode->procs.think) {
+			plr->mode->procs.think(plr);
+		}
+
+		if(player_should_shoot(plr, false)) {
+			coevent_signal(&plr->events.shoot);
+			plr->mode->procs.shot(plr);
+		}
+
+		if(global.frames == plr->deathtime) {
+			player_realdeath(plr);
+		} else if(plr->deathtime > global.frames) {
+			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		}
+	}
+}
+
 void player_logic(Player* plr) {
-	fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
-
-	if(plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames && plr->lives < 0 && global.replaymode != REPLAY_PLAY) {
-		stage_gameover();
-	}
-
-	if(plr->continuetime == global.frames) {
-		plr->lives = PLR_START_LIVES;
-		plr->bombs = PLR_START_BOMBS;
-		plr->point_item_value = PLR_START_PIV;
-		plr->life_fragments = 0;
-		plr->bomb_fragments = 0;
-		plr->continues_used += 1;
-		player_set_power(plr, 0);
-		stage_clear_hazards(CLEAR_HAZARDS_ALL);
-		spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
-	}
-
-	process_enemies(&plr->slaves);
-	aniplayer_update(&plr->ani);
-
-	if(plr->lives < 0) {
-		return;
-	}
-
-	if(plr->respawntime > global.frames) {
-		double x = PLR_SPAWN_POS_X;
-		double y = lerp(PLR_SPAWN_POS_Y, VIEWPORT_H + 64, smoothstep(0.0, 1.0, (plr->respawntime - global.frames) / (double)PLR_RESPAWN_TIME));
-		plr->pos = CMPLX(x, y);
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-		return;
-	}
-
-	if(player_is_powersurge_active(plr)) {
-		player_powersurge_logic(plr);
-	}
-
-	plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
-	plr->focus_circle.first->pos = plr->pos;
-	process_enemies(&plr->focus_circle);
-
-	if(plr->mode->procs.think) {
-		plr->mode->procs.think(plr);
-	}
-
-	if(player_should_shoot(plr, false)) {
-		plr->mode->procs.shot(plr);
-	}
-
-	if(global.frames == plr->deathtime) {
-		player_realdeath(plr);
-	} else if(plr->deathtime > global.frames) {
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-	}
 }
 
 static bool player_bomb(Player *plr) {

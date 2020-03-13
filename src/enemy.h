@@ -91,6 +91,7 @@ void process_enemies(EnemyList *enemies);
 
 bool enemy_is_vulnerable(Enemy *enemy);
 bool enemy_in_viewport(Enemy *enemy);
+void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
 void Fairy(Enemy*, int t, bool render);
