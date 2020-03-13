@@ -45,17 +45,17 @@ void wriggle_spellbg(Boss *b, int time) {
 	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
 	r_color4(1,1,1,0.5);
 	r_blend(r_blend_compose(
-				BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-				BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
-				));
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
+	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_color4(0.5, 0.5, 0.5, 0.0);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	r_blend(r_blend_compose(
-				BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-				BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
-				));
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
+		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
+	));
 	r_color4(1,1,1,0.4);
 	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
 
@@ -73,7 +73,7 @@ TASK(destroy_enemy, { BoxedEnemy e; }) {
  * Bosses
  */
 
-Boss* stage3_spawn_scuttle(cmplx pos) {
+Boss *stage3_spawn_scuttle(cmplx pos) {
 	Boss *scuttle = create_boss("Scuttle", "scuttle", pos);
 	boss_set_portrait(scuttle, get_sprite("dialog/scuttle"), get_sprite("dialog/scuttle_face_normal"));
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
@@ -81,7 +81,7 @@ Boss* stage3_spawn_scuttle(cmplx pos) {
 	return scuttle;
 }
 
-Boss* stage3_spawn_wriggle_ex(cmplx pos) {
+Boss *stage3_spawn_wriggle_ex(cmplx pos) {
 	Boss *wriggle = create_boss("Wriggle EX", "wriggleex", pos);
 	boss_set_portrait(wriggle, get_sprite("dialog/wriggle"), get_sprite("dialog/wriggle_face_proud"));
 	wriggle->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
@@ -116,7 +116,7 @@ TASK(death_burst, { BoxedEnemy e; ProjPrototype *shot_proj; }) {
 
 	int cnt = difficulty_value(24, 20, 16, 12);
 	for(int i = 0; i < cnt; ++i) {
-		double a = (M_PI * 2.0 * i) / cnt;
+		real a = (M_PI * 2.0 * i) / cnt;
 		cmplx dir = cdir(a);
 
 		PROJECTILE(
@@ -133,18 +133,15 @@ TASK(burst_swirl, { cmplx pos; cmplx dir; ProjPrototype *shot_proj; }) {
 	// swirls - fly in, explode when killed or after a preset time
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 200, Swirl, NULL, 0));
 
-	// drop items when dead
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 1,
 		.power = 1,
 	});
 
-	// die after a preset time...
+	// die after preset time
 	INVOKE_TASK_DELAYED(60, destroy_enemy, ENT_BOX(e));
-	// ... and explode when they die
 	INVOKE_TASK_WHEN(&e->events.killed, death_burst, ENT_BOX(e), ARGS.shot_proj);
 
-	// define what direction they should fly in
 	e->move = move_linear(ARGS.dir);
 }
 
@@ -165,22 +162,16 @@ TASK(burst_swirls, { int count; int interval; ProjPrototype *shot_proj; }) {
 // side swirls
 // typically move across a stage in a drive-by fashion
 
-TASK(side_swirl_move, { BoxedEnemy e; cmplx p0; cmplx p1; cmplx p2; } ) {
+TASK(side_swirl_move, { BoxedEnemy e; cmplx vel; cmplx accel; cmplx accel_retention; } ) {
 	Enemy *e = TASK_BIND(ARGS.e);
-	cmplx p0 = ARGS.p0;
-	cmplx p1 = ARGS.p1;
-	cmplx p2 = ARGS.p2;
+	cmplx impulse_vel = ARGS.accel * creal(ARGS.accel_retention);
+	cmplx vel = ARGS.vel;
+	real retention = cimag(ARGS.accel_retention);
 
-	for (;;) {
-		// this "move" moves in a kind of "S" shape, horizontally across the screen
-		// TODO: replicate this w/o using `for (;;)`
-		e->move = move_linear(p0 + p1 * creal(p2));
-		p2 = creal(p2) * cimag(p2) + I * cimag(p2);
-		YIELD;
-	}
+	e->move = move_asymptotic(impulse_vel, vel, retention);
 }
 
-TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
+TASK(side_swirl, { cmplx pos; cmplx vel; cmplx accel; cmplx accel_retention; }) {
 	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 50, Swirl, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
@@ -188,7 +179,7 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 		.power = 1,
 	});
 
-	INVOKE_TASK(side_swirl_move, ENT_BOX(e), ARGS.p0, ARGS.p1, ARGS.p2);
+	INVOKE_TASK(side_swirl_move, ENT_BOX(e), ARGS.vel, ARGS.accel, ARGS.accel_retention);
 
 	int intensity = difficulty_value(4, 3, 2, 1);
 
@@ -198,8 +189,8 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 			.pos = e->pos,
 			.color = RGB(0.7, 0.0, 0.5),
 			.move = move_accelerated(
-				2 * cdir(carg(global.plr.pos - e->pos)),
-				0.005 * cdir(M_PI * 2 * rng_real()) * (global.diff > D_Easy)
+				2 * (cnormalize(global.plr.pos - e->pos)),
+				0.005 * rng_dir() * intensity
 			),
 		);
 
@@ -209,18 +200,18 @@ TASK(side_swirl, { cmplx pos; cmplx p0; cmplx p1; cmplx p2; }) {
 
 }
 
-TASK(side_swirls_procession, { cmplx start_pos; int count; cmplx p0; cmplx p1; cmplx p2; } ) {
+TASK(side_swirls_procession, { cmplx start_pos; int count; cmplx vel; cmplx accel; cmplx accel_retention; } ) {
 
 	int interval = 20;
 
 	for(int x = 0; x < ARGS.count; ++x) {
-		cmplx p2 = ARGS.p2;
+		cmplx retention = ARGS.accel_retention;
 
-		if(!p2) {
-			p2 = 5 + (0.93 + 0.01 * x) * I;
+		if(!retention) {
+			retention = 5 + (0.93 + 0.01 * x) * I;
 		}
 
-		INVOKE_TASK(side_swirl, ARGS.start_pos, ARGS.p0, ARGS.p1, p2);
+		INVOKE_TASK(side_swirl, ARGS.start_pos, ARGS.vel, ARGS.accel, retention);
 
 		WAIT(interval);
 	}
@@ -417,7 +408,7 @@ TASK(burst_fairy, { cmplx pos; cmplx target_pos; } ) {
 
 	int intensity = difficulty_value(4, 3, 2, 1);
 
-	int cnt = 6 + 4 * intensity;
+	int count = 6 + 4 * intensity;
 	for(int p = 0; p < cnt; ++p) {
 		cmplx dir = cdir(M_PI*2*p/cnt);
 		PROJECTILE(
@@ -489,7 +480,6 @@ TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_tim
 	WAIT(ARGS.charge_time + 20);
 
 	int intensity = difficulty_value(3, 2, 1, 1);
-	int interval = 1;
 	int count = 19 - 4 * intensity;
 
 	DECLARE_ENT_ARRAY(Projectile, projs, 100);
@@ -527,7 +517,9 @@ TASK(charge_fairy, { cmplx pos; cmplx target_pos; cmplx exit_dir; int charge_tim
 
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		spawn_projectile_highlight_effect(p);
+		// TODO: get rid of p->args
 		p->move = move_linear(p->args[0] * (p->args[1] * 0.2));
+		// TODO: add sound
 	});
 
 	WAIT(100);
@@ -648,12 +640,11 @@ TASK_WITH_INTERFACE(scuttle_outro, BossAttack) {
 	boss->move = move_towards(VIEWPORT_W/2 - 200.0*I, 0.05);
 }
 
-TASK(scuttle_delaymove, { BoxedBoss boss } ) {
-	Boss *boss = ENT_UNBOX(ARGS.boss);
+TASK(scuttle_delaymove, { BoxedBoss boss; } ) {
+	Boss *boss = TASK_BIND(ARGS.boss);
 
-	WAIT(100);
-	boss->move.attraction_point = VIEWPORT_W/2+VIEWPORT_W/3;
-	boss->move.acceleration = 0.08;
+	boss->move.attraction_point = (VIEWPORT_W/2+200*I)+VIEWPORT_W/3;
+	boss->move.attraction = 0.001;
 }
 
 TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
@@ -661,7 +652,7 @@ TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
 	BEGIN_BOSS_ATTACK();
 
 	int intensity = difficulty_value(18, 19, 20, 21);
-	INVOKE_TASK_DELAYED(300, scuttle_delaymove, ENT_BOX(boss));
+	INVOKE_SUBTASK_DELAYED(400, scuttle_delaymove, ENT_BOX(boss));
 
 	for(;;) {
 		DECLARE_ENT_ARRAY(Projectile, projs, 100);
@@ -695,14 +686,11 @@ TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
 			for(int i = 0; i < count; ++i) {
 				PARTICLE(
 					.sprite = "smoothdot",
+					.pos = p->pos,
 					.color = RGBA(0.8, 0.6, 0.6, 0),
-					.draw_rule = Shrink,
-					.rule = enemy_flare,
 					.timeout = 100,
-					.args = {
-						cdir(((M_PI * rng_sreal())) * (1 + rng_sreal())),
-						add_ref(p)
-					},
+					.draw_rule = pdraw_timeout_scalefade(0, 0.8, 1, 0),
+					.move = move_asymptotic_simple(p->move.velocity + rng_dir(), 0.1)
 				);
 
 				float offset = global.frames/15.0;
@@ -718,20 +706,102 @@ TASK_WITH_INTERFACE(scuttle_lethbite, BossAttack) {
 				);
 			}
 			spawn_projectile_highlight_effect(p);
-			p->move = move_linear((3 + 2 * global.diff / (float)D_Lunatic) * cdir(carg(global.plr.pos - p->pos)));
+			p->move = move_linear((3 + 2 * global.diff / (float)D_Lunatic) * (cnormalize(global.plr.pos - p->pos)));
 		});
 	}
 }
+
 
 DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	BEGIN_BOSS_ATTACK();
 
+	// TODO: this function is a WIP, ignore for now
+
 	aniplayer_queue(&boss->ani, "dance", 0);
+
+	int i;
+
+	//TODO: fix movement
+	//boss->move = move_accelerated(VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03);
+
+	WAIT(30);
+
+	for(int time = 31; time < 1000; ++time) {
+		WAIT(1);
+
+		// TODO: make limit more reasonable
+		DECLARE_ENT_ARRAY(Projectile, projs, 100);
+
+		float angle_ofs = rng_f32() * M_PI * 2;
+		double t = time * 1.5 * (0.4 + 0.3 * global.diff);
+		double moverad = min(160, time/2.7);
+		// TODO: fix movement
+//		boss->move = move_accelerated(VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cdir(M_PI_2 * t/100.0), 0.03);
+
+
+		if(!(time % 70)) {
+			log_debug("by seventy");
+			for(i = 0; i < 15; ++i) {
+				double a = (M_PI/(5 + global.diff) * i * 2);
+				ENT_ARRAY_ADD(&projs, PROJECTILE(
+					.proto = pp_wave,
+					.pos = boss->pos,
+					.color = RGB(0.3, 0.3 + 0.7 * psin((M_PI/(5 + global.diff) * i * 2) * 3 + time/50.0), 0.3),
+					.move = move_accelerated(0, 0.02 * cdir(angle_ofs + a + time/10.0)),
+					.args = { a }
+				));
+			}
+		}
+		if (!(time % 30)) {
+			log_debug("by fifty-seven");
+			ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+				double a = p->args[0];
+				PROJECTILE(
+					.proto = rng_chance(0.5) ? pp_thickrice : pp_rice,
+					.pos = p->pos,
+					.color = RGB(0.3, 0.7 + 0.3 * psin(a/3.0 + t/20.0), 0.3),
+					.move = move_accelerated(0, 0.005 * cdir((M_PI * 2 * sin(a / 5.0 + t / 20.0))))
+				);
+
+			});
+		}
+		if(global.diff > D_Easy && !(time % 35)) {
+			log_debug("easy");
+			int cnt = global.diff * 2;
+			for(i = 0; i < cnt; ++i) {
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = boss->pos,
+					.color = RGB(1.0, 1.0, 0.3),
+					.move = move_asymptotic_simple(
+						(0.5 + 3 * psin(time + M_PI / 3 * 2 * i)) * cdir(angle_ofs + time / 20.0 + M_PI / cnt * i * 2),
+						1.5
+					)
+				);
+			}
+		}
+
+		play_sound("shot1");
+
+		if(!(time % 3)) {
+			log_debug("by three");
+			for(i = -1; i < 2; i += 2) {
+				double c = psin(time/10.0);
+				PROJECTILE(
+					.proto = pp_crystal,
+					.pos = boss->pos,
+					.color = RGBA_MUL_ALPHA(0.3 + c * 0.7, 0.6 - c * 0.3, 0.3, 0.7),
+					.move = move_linear(
+						10 * (cnormalize(global.plr.pos - boss->pos) + (M_PI/4.0 * i * (1 - time / 2500.0)) * (1 - 0.5 * psin(time / 15.0)))
+					)
+				);
+			}
+		}
+	}
 }
 
 TASK(spawn_midboss, NO_ARGS) {
-
 	STAGE_BOOKMARK_DELAYED(120, midboss);
 
 	Boss *boss = global.boss = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
@@ -742,8 +812,6 @@ TASK(spawn_midboss, NO_ARGS) {
 	boss->zoomcolor = *RGB(0.4, 0.1, 0.4);
 
 	boss_start_attack(boss, boss->attacks);
-
-	WAIT(60);
 }
 
 // wriggle
@@ -784,7 +852,7 @@ DEFINE_EXTERN_TASK(stage3_spell_moonlight_rocket) {
 }
 
 TASK(boss_appear, { BoxedBoss boss; }) {
-	Boss *boss = ENT_UNBOX(ARGS.boss);
+	Boss *boss = TASK_BIND(ARGS.boss);
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
 }
 
@@ -803,8 +871,6 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack_task(boss, AT_Normal, "", 11, 35000, TASK_INDIRECT(BossAttack, stage3_spell_boss_nonspell1), NULL);
 
 	boss_start_attack(boss, boss->attacks);
-
-	WAIT(60);
 }
 
 /*
@@ -831,26 +897,26 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	// line of swirls that fly in across the screen in a shifting arc
 	INVOKE_TASK_DELAYED(600, side_swirls_procession,
 		.start_pos = -20 + 20*I,
-		.p0 = 5,
-		.p1 = 1*I,
-		.p2 = 5+0.95*I,
-		.count = 6
+		.count = 6,
+		.vel = 5,
+		.accel = 1*I,
+		.accel_retention = 5+0.95*I
 	);
 
 	INVOKE_TASK_DELAYED(800, side_swirls_procession,
 		.start_pos = -20 + 20*I,
 		.count = 6,
-		.p0 = 5,
-		.p1 = 1*I,
-		.p2 = 0
+		.vel = 5,
+		.accel = 1*I,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(820, side_swirls_procession,
 		.start_pos = VIEWPORT_W+20 + 20*I,
 		.count = 6,
-		.p0 = -5,
-		.p1 = 1*I,
-		.p2 = 0
+		.vel = -5,
+		.accel = 1*I,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(1030, burst_fairy_squad,
@@ -867,17 +933,17 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	INVOKE_TASK_DELAYED(1530, side_swirls_procession,
 		.start_pos = 20 - 20*I,
 		.count = 5,
-		.p0 = 5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = 5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(1575, side_swirls_procession,
 		.start_pos = VIEWPORT_W-20 - 20*I,
 		.count = 5,
-		.p0 = 5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = 5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(1600, big_fairy_group,
@@ -923,17 +989,17 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	INVOKE_TASK_DELAYED(100, side_swirls_procession,
 		.start_pos = -20 + (VIEWPORT_H-20)*I,
 		.count = 10,
-		.p0 = 5,
-		.p1 = -1*I,
-		.p2 = 25+0.95*I
+		.vel = 5,
+		.accel = -1*I,
+		.accel_retention = 25+0.95*I
 	);
 
 	INVOKE_TASK_DELAYED(105, side_swirls_procession,
 		.start_pos = VIEWPORT_W+20 + (VIEWPORT_H-20)*I,
 		.count = 10,
-		.p0 = -5,
-		.p1 = -1*I,
-		.p2 = 25+0.95*I
+		.vel = -5,
+		.accel = -1*I,
+		.accel_retention = 25+0.95*I
 	);
 
 	INVOKE_TASK_DELAYED(250, burst_swirls,
@@ -950,9 +1016,9 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	INVOKE_TASK_DELAYED(500, side_swirls_procession,
 		.start_pos = VIEWPORT_W-20 + (VIEWPORT_H+20)*I,
 		.count = 10,
-		.p0 = -5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = -5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(1000, big_fairy_group,
@@ -974,9 +1040,9 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	INVOKE_TASK_DELAYED(1700, side_swirls_procession,
 		.start_pos = 20 + (VIEWPORT_H+20)*I,
 		.count = 10,
-		.p0 = -5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = -5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(2200, corner_fairies);
@@ -984,17 +1050,17 @@ DEFINE_EXTERN_TASK(stage3_main) {
 	INVOKE_TASK_DELAYED(2300, side_swirls_procession,
 		.start_pos = VIEWPORT_W-20 - 20.0*I,
 		.count = 10,
-		.p0 = 5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = 5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	INVOKE_TASK_DELAYED(2600, side_swirls_procession,
 		.start_pos = 20 + -20.0*I,
 		.count = 10,
-		.p0 = 5*I,
-		.p1 = 0,
-		.p2 = 0
+		.vel = 5*I,
+		.accel = 0,
+		.accel_retention = 0
 	);
 
 	STAGE_BOOKMARK_DELAYED(2800, pre-boss);
