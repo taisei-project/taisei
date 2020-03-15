@@ -413,8 +413,17 @@ static void reimu_spirit_bomb_bg(Player *p) {
 	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }
 
+TASK(reimu_spirit_ofuda_trail, { BoxedProjectile ofuda; }) {
+	Projectile *p = TASK_BIND_UNBOXED(reimu_common_ofuda_swawn_trail(NOT_NULL(ENT_UNBOX(ARGS.ofuda)), NULL));
+
+	for(;;) {
+		p->color.g *= 0.95;
+		YIELD;
+	}
+}
+
 TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; }) {
-	Projectile *ofuda = PROJECTILE(
+	Projectile *ofuda = TASK_BIND_UNBOXED(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
@@ -422,24 +431,11 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; }) {
 		.type = PROJ_PLAYER,
 		.damage = ARGS.damage,
 		.shader = "sprite_particle",
-	);
+	));
 
-	BoxedProjectile b_ofuda = ENT_BOX(ofuda);
-	ProjectileList trails = { 0 };
-
-	int t = 0;
-	while((ofuda = ENT_UNBOX(b_ofuda)) || trails.first) {
-		if(ofuda) {
-			reimu_common_ofuda_swawn_trail(ofuda, &trails);
-		}
-
-		for(Projectile *p = trails.first; p; p = p->next) {
-			p->color.g *= 0.95;
-		}
-
-		process_projectiles(&trails, false);
+	for(int t = 0;; ++t) {
+		INVOKE_TASK(reimu_spirit_ofuda_trail, ENT_BOX(ofuda));
 		YIELD;
-		++t;
 	}
 }
 
@@ -764,7 +760,8 @@ TASK(reimu_spirit_power_handler, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
-	Player *plr = ARGS.ctrl->plr;
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 	real dir = 1;
 
 	for(;;) {
@@ -831,7 +828,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_controller, { BoxedPlayer plr; }) {
-	ReimuAController ctrl;
+	ReimuAController ctrl = { 0 };
 	ctrl.plr = TASK_BIND(ARGS.plr);
 	COEVENT_INIT_ARRAY(ctrl.events);
 
