@@ -69,11 +69,7 @@ void ent_init(void) {
 
 void ent_shutdown(void) {
 	if(entities.num) {
-		log_warn("%u entities were not properly unregistered", entities.num);
-	}
-
-	FOR_EACH_ENT(ent) {
-		ent_unregister(ent);
+		log_fatal_if_debug("%u entities were not properly unregistered, this is a bug!", entities.num);
 	}
 
 	free(entities.array);
