@@ -41,6 +41,12 @@ typedef enum LogLevel {
 	LOG_FAKEFATAL = LOG_FATAL | LOG_NOABORT_BIT,
 } LogLevel;
 
+#ifdef DEBUG
+	#define LOG_FATAL_IF_DEBUG LOG_FATAL
+#else
+	#define LOG_FATAL_IF_DEBUG LOG_ERROR
+#endif
+
 #ifndef LOG_DEFAULT_LEVELS
 	#define LOG_DEFAULT_LEVELS LOG_ALL
 #endif
@@ -129,6 +135,7 @@ void log_set_gui_error_appendix(const char *message);
 #define log_info(...) log_custom(LOG_INFO, __VA_ARGS__)
 #define log_warn(...) log_custom(LOG_WARN, __VA_ARGS__)
 #define log_error(...) log_custom(LOG_ERROR, __VA_ARGS__)
+#define log_fatal_if_debug(...) log_custom(LOG_FATAL_IF_DEBUG, __VA_ARGS__)
 #define log_fatal(...) _do_log(_taisei_log_fatal, LOG_FATAL, __VA_ARGS__)
 
 #define log_sdl_error(lvl, funcname) log_custom(lvl, "%s() failed: %s", funcname, SDL_GetError())
