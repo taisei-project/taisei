@@ -666,6 +666,32 @@ DIALOG_TASK(marisa, Stage6PreFinal) {
 }
 
 /*
+ * Extra Stage
+ */
+
+DIALOG_TASK(marisa, StageExPreBoss) {
+	DIALOG_BEGIN(StageExPreBoss);
+
+	ACTOR_LEFT(marisa);
+	ACTOR_RIGHT(yumemi);
+
+	MSG(yumemi, "Oh. The impossible shrine maiden has arrived.");
+
+	DIALOG_END();
+}
+
+DIALOG_TASK(marisa, StageExPostBoss) {
+	DIALOG_BEGIN(StageExPostBoss);
+
+	ACTOR_LEFT(marisa);
+	ACTOR_RIGHT(yumemi);
+	VARIANT(yumemi, defeated);
+	FACE(yumemi, defeated);
+
+	DIALOG_END();
+}
+
+/*
  * Register the tasks
  */
 

@@ -27,6 +27,8 @@
 	WITHOUT_EVENTS (Stage5PostBoss)                                   \
 	WITH_EVENTS    (Stage6PreBoss,     (boss_appears, music_changes)) \
 	WITHOUT_EVENTS (Stage6PreFinal)                                   \
+	WITH_EVENTS    (StageExPreBoss,    (boss_appears, music_changes)) \
+	WITHOUT_EVENTS (StageExPostBoss)                                  \
 
 
 
