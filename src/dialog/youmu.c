@@ -600,6 +600,30 @@ DIALOG_TASK(youmu, Stage6PreFinal) {
 }
 
 /*
+ * Extra Stage
+ */
+
+DIALOG_TASK(youmu, StageExPreBoss) {
+	DIALOG_BEGIN(StageExPreBoss);
+
+	ACTOR_LEFT(youmu);
+	ACTOR_RIGHT(yumemi);
+
+	DIALOG_END();
+}
+
+DIALOG_TASK(youmu, StageExPostBoss) {
+	DIALOG_BEGIN(StageExPostBoss);
+
+	ACTOR_LEFT(youmu);
+	ACTOR_RIGHT(yumemi);
+	VARIANT(yumemi, defeated);
+	FACE(yumemi, defeated);
+
+	DIALOG_END();
+}
+
+/*
  * Register the tasks
  */
 
