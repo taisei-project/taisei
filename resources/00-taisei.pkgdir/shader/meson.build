@@ -79,6 +79,8 @@ glsl_files = [
     'sprite_silhouette.vert.glsl',
     'sprite_yinyang.frag.glsl',
     'sprite_youmu_myon_shot.frag.glsl',
+    'sprite_yumemi_overlay.frag.glsl',
+    'sprite_yumemi_overlay.vert.glsl',
     'ssr.vert.glsl',
     'ssr_water.frag.glsl',
     'stage1_water.frag.glsl',
