@@ -15,4 +15,7 @@
 
 extern StageProcs extra_procs;
 
+Boss *stagex_spawn_yumemi(cmplx pos);
+void extra_draw_yumemi_portrait_overlay(SpriteParams *sp);
+
 #endif // IGUARD_stages_extra_h
