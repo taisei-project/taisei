@@ -95,13 +95,35 @@ TASK(glider_fairy, {
 	}
 }
 
+Boss *stagex_spawn_yumemi(cmplx pos) {
+	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos);
+	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
+	yumemi->shadowcolor = *RGBA_MUL_ALPHA(0.5, 0.0, 0.22, 1.5);
+	yumemi->glowcolor = *RGB(0.61, 0.0, 0.24);
+	return yumemi;
+}
+
 TASK(stage_main, NO_ARGS) {
 	YIELD;
 
+	// WAIT(3900);
+	STAGE_BOOKMARK(boss);
+
+	global.boss = stagex_spawn_yumemi(VIEWPORT_W/2 + 180*I);
+
+	PlayerMode *pm = global.plr.mode;
+	StageExPreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(StageExPreBossDialog, pm->dialog->StageExPreBoss, &e);
+
+	// INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stagexboss");
+	/*
 	for(int i = 0;;i++) {
 		INVOKE_TASK_DELAYED(60, glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
 		WAIT(50+100*(i&1));
 	}
+	*/
+
+
 }
 
 static struct {
@@ -555,6 +577,22 @@ static bool extra_postprocess_fog(Framebuffer *fb) {
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 	return true;
+}
+
+void extra_draw_yumemi_portrait_overlay(SpriteParams *sp) {
+	sp->sprite = NULL;
+	sp->sprite_ptr = get_sprite("dialog/yumemi_misc_code_mask");
+	sp->shader = NULL;
+	sp->shader_ptr = r_shader_get("sprite_yumemi_overlay");
+	sp->aux_textures[0] = r_texture_get("stageex/code");
+	sp->shader_params = &(ShaderCustomParams) {
+		global.frames / 60.0,
+		draw_data.codetex_aspect[0],
+		draw_data.codetex_aspect[1],
+		draw_data.codetex_num_segments,
+	};
+
+	r_draw_sprite(sp);
 }
 
 static void extra_preload(void) {
