@@ -644,6 +644,129 @@ DIALOG_TASK(reimu, Stage6PreFinal) {
 }
 
 /*
+ * Extra Stage
+ */
+
+#include "stages/extra.h"
+
+DIALOG_TASK(reimu, StageExPreBoss) {
+	DIALOG_BEGIN(StageExPreBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(yumemi);
+	yumemi.draw_dynamic_overlay = extra_draw_yumemi_portrait_overlay;
+
+	MSG(yumemi, "Oh. The impossible shrine maiden has arrived.");
+	EVENT(boss_appears);
+	MSG(yumemi, "Here to set me on the right path, just like in your tall tales?");
+	FACE(reimu, unamused);
+	MSG(reimu, "I get the worst feeling looking at you.");
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Oh? How’s that?");
+	FACE(reimu, sigh);
+	MSG(reimu, "It’s mostly just how miserable you look.");
+	MSG(yumemi, "Do I look especially miserable? Hmm.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "And what would you know about misery, living in this supposed paradise?");
+	FACE(reimu, unamused);
+	MSG(yumemi, "Have the other fairytale creatures hurt your feelings?");
+	FACE(yumemi, normal);
+	FACE(reimu, surprised);
+	MSG(reimu, "*Other* fairytale creatures?");
+	FACE(reimu, unamused);
+	MSG(reimu, "I’m human, you know.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Oh, please. You’re an invincible, flying, magic-wielding shrine maiden—");
+	FACE(yumemi, normal);
+	FACE(reimu, normal);
+	MSG(reimu, "I don’t use magic.");
+	FACE(yumemi, smug);
+	MSG(yumemi, "Hah.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "The world - the real world - is dying, shrine maiden.");
+	MSG(yumemi, "It doesn’t even matter what ‘solution’ you believe in anymore. Nobody contributes anything to society.");
+	FACE(yumemi, sad);
+	MSG(yumemi, "People put their hearts and souls into fantasy worlds, leaving nothing left to build the real world on which they depend to live.");
+	FACE(reimu, puzzled);
+	MSG(reimu, "How’s that Gensōkyō’s problem?");
+	MSG(reimu, "It’s not like we invaded you and put you on that path.");
+	FACE(yumemi, sigh);
+	MSG(yumemi, "If only it were that simple.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "Places like this tempt people into forgetting their real lives. ");
+	FACE(yumemi, sad);
+	MSG(yumemi, "And by abandoning the real world, they doom not just themselves, but everyone around them.");
+	FACE(reimu, normal);
+	MSG(reimu, "People are allowed to have a break from reality.");
+	MSG(reimu, "Haven’t you ever read a book?");
+	FACE(yumemi, surprised);
+	MSG(yumemi, "You mean fiction? I haven’t had a need for it in years.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "It’s a waste of time.");
+	FACE(reimu, surprised);
+	MSG(reimu, "Wow, no wonder you’re so miserable.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Regardless, I will end fantasy as we know it.");
+	FACE(yumemi, normal);
+	FACE(reimu, puzzled);
+	MSG(reimu, "What do you mean ‘end’?");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "I’ve given up trying to save my society");
+	FACE(yumemi, sad);
+	MSG(yumemi, "Even as I introduced this technology to the world, nobody woke up from their dissociative haze. It was as it ever was.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "But at least, with this machine I’ve built, I can erase every so-called ‘Otherworld’ from the fabric of social reality.");
+	FACE(yumemi, normal);
+	FACE(reimu, assertive);
+	MSG(reimu, "People won’t stop day-dreaming just because you tell them to. Fantasy is in people’s hearts and minds.");
+	FACE(reimu, sigh);
+	MSG(reimu, "So, even if you managed to destroy Gensōkyō—");
+	MSG(yumemi, "Youkai, Gods, magicians, flying shrine maidens… it’s all harmful, delusional nonsense.");
+	FACE(reimu, unsettled);
+	MSG(reimu, "So you want genocide?");
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Genocide…? What a harsh word. You’re not real. No one is being killed.");
+	FACE(reimu, surprised);
+	MSG(reimu, "No wonder those two got chills just thinking about you.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Ah, I thought I’d made them both understand my way of thinking, by introducing them to the Grand Unified Theory.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "But in the end, they just betrayed me.");
+	FACE(yumemi, sad);
+	MSG(yumemi, "It makes sense, though. They can’t betray what they are.");
+	FACE(reimu, assertive);
+	MSG(reimu, "It’s hard to keep people on your side when all you do is threaten them, idiot!");
+	MSG(reimu, "Have you tried not being a genocidal maniac?");
+	FACE(yumemi, sigh);
+	MSG(yumemi, "I’m tired, shrine maiden. Too tired to explain my life to a figment of imagination.");
+	FACE(reimu, unamused);
+	MSG(reimu, "Sucks to be you. Don’t make it our problem.");
+	EVENT(music_changes);
+	FACE(yumemi, normal);
+	MSG(yumemi, "Oh, but it’s inherently your problem.");
+	FACE(reimu, unsettled);
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Farewell, shrine maiden. I would say it’s been nice knowing you, but…");
+	FACE(yumemi, sad);
+	MSG(yumemi, "There’s really no way I could’ve known you at all.");
+
+	DIALOG_END();
+}
+
+DIALOG_TASK(reimu, StageExPostBoss) {
+	DIALOG_BEGIN(StageExPostBoss);
+
+	ACTOR_LEFT(reimu);
+	ACTOR_RIGHT(yumemi);
+	yumemi.draw_dynamic_overlay = extra_draw_yumemi_portrait_overlay;
+
+	VARIANT(yumemi, defeated);
+	FACE(yumemi, defeated);
+
+	DIALOG_END();
+}
+
+/*
  * Register the tasks
  */
 
