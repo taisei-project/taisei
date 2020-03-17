@@ -8,6 +8,8 @@ project('taisei', 'c',
 
         'default_library=static',
 
+        'koishi:threadsafe=false',
+
         'libzip:enable_crypto=false',
         'libzip:enable_bzip2=false',
 
