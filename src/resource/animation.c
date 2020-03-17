@@ -288,10 +288,6 @@ void unload_animation(void *vani) {
 	free(ani);
 }
 
-Animation *get_ani(const char *name) {
-	return get_resource(RES_ANIM, name, RESF_DEFAULT)->data;
-}
-
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname) {
 	AniSequence *seq = ht_get(&ani->sequences, seqname, NULL);
 
