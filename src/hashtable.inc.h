@@ -427,8 +427,13 @@ HT_DECLARE_FUNC(void, unlock, (HT_BASETYPE *ht))
  * Retrieve a value associated with [key]. If there is no association, [fallback] will
  * be returned instead.
  */
-HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback))
+HT_DECLARE_FUNC(HT_TYPE(value), get_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback))
 	attr_nonnull(1);
+
+attr_nonnull(1)
+INLINE HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
+	return HT_FUNC(get_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), fallback);
+}
 
 #ifdef HT_THREAD_SAFE
 /*
@@ -436,8 +441,14 @@ HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, H
  *
  * A non-thread-safe version of ht_XXX_get().
  */
-HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback))
+HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback))
 	attr_nonnull(1);
+
+attr_nonnull(1)
+INLINE HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
+	return HT_FUNC(get_unsafe_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), fallback);
+}
+
 #endif // HT_THREAD_SAFE
 
 /*
@@ -448,8 +459,13 @@ HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key)
  *
  * Returns true if an entry is found, false otherwise.
  */
-HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, lookup_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+attr_nonnull(1) attr_nodiscard
+INLINE HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
+	return HT_FUNC(lookup_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), out_value);
+}
 
 #ifdef HT_THREAD_SAFE
 /*
@@ -457,8 +473,14 @@ HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(
  *
  * A non-thread-safe version of ht_XXX_lookup().
  */
-HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, lookup_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+attr_nonnull(1) attr_nodiscard
+INLINE HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
+	return HT_FUNC(lookup_unsafe_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), out_value);
+}
+
 #endif // HT_THREAD_SAFE
 
 /*
@@ -498,8 +520,12 @@ HT_DECLARE_FUNC(bool, set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(val
  * With HT_THREAD_SAFE defined, this is an atomic operation: the algorithm holds
  * a write lock for its whole duration.
  */
-HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, try_set_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+INLINE HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
+	return HT_FUNC(try_set_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), value, value_transform, out_value);
+}
 
 /*
  * bool ht_XXX_unset(ht_XXX_t *ht, ht_XXX_const_key_t key);
@@ -595,12 +621,22 @@ HT_DECLARE_FUNC(void, iter_next, (HT_TYPE(iter) *iter))
 HT_DECLARE_FUNC(void, iter_end, (HT_TYPE(iter) *iter))
 	attr_nonnull(1);
 
+/*
+ * hash_t ht_XXX_hash(ht_XXX_const_key_t key);
+ *
+ * Compute the key's hash, suitable to pass to _prehashed functions.
+ */
+INLINE HT_DECLARE_FUNC(hash_t, hash, (HT_TYPE(const_key) key)) {
+	return HT_FUNC_HASH_KEY(key);
+}
+
 #endif // HT_DECL
 
 /*******************\
  * Implementations *
 \*******************/
 
+// #define HT_IMPL
 #ifdef HT_IMPL
 
 struct HT_TYPE(element) {
@@ -771,8 +807,8 @@ HT_DECLARE_PRIV_FUNC(HT_TYPE(element)*, find_element, (HT_BASETYPE *ht, HT_TYPE(
 	}
 }
 
-HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(HT_TYPE(value), get_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	HT_TYPE(value) value;
 
 	HT_PRIV_FUNC(begin_read)(ht);
@@ -784,15 +820,15 @@ HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, H
 }
 
 #ifdef HT_THREAD_SAFE
-HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
 	return e ? e->value : fallback;
 }
 #endif // HT_THREAD_SAFE
 
-HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(bool, lookup_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	bool found = false;
 
 	HT_PRIV_FUNC(begin_read)(ht);
@@ -812,8 +848,8 @@ HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(
 }
 
 #ifdef HT_THREAD_SAFE
-HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(bool, lookup_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
 
 	if(e != NULL) {
@@ -1082,8 +1118,8 @@ HT_DECLARE_FUNC(bool, set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(val
 	return result;
 }
 
-HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(bool, try_set_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 
 	HT_PRIV_FUNC(begin_write)(ht);
 	bool result = HT_PRIV_FUNC(set)(ht, hash, key, value, value_transform, false, out_value);

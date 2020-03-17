@@ -76,8 +76,9 @@ typedef struct TextParams {
 	Alignment align;
 } TextParams;
 
-Font* get_font(const char *font)
-	attr_nonnull(1);
+INLINE Font *get_font(const char *font) {
+	return get_resource_data(RES_FONT, font, RESF_DEFAULT);
+}
 
 ShaderProgram* text_get_default_shader(void)
 	attr_returns_nonnull;

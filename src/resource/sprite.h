@@ -58,16 +58,19 @@ INLINE FloatOffset sprite_padded_offset(const Sprite *restrict spr) {
 	return o;
 }
 
-char* sprite_path(const char *name);
-void* load_sprite_begin(const char *path, uint flags);
-void* load_sprite_end(void *opaque, const char *path, uint flags);
+char *sprite_path(const char *name);
+void *load_sprite_begin(const char *path, uint flags);
+void *load_sprite_end(void *opaque, const char *path, uint flags);
 bool check_sprite_path(const char *path);
 
 void draw_sprite(float x, float y, const char *name);
 void draw_sprite_p(float x, float y, Sprite *spr);
 
-Sprite* get_sprite(const char *name);
-Sprite* prefix_get_sprite(const char *name, const char *prefix);
+INLINE Sprite *get_sprite(const char *name) {
+	return get_resource_data(RES_SPRITE, name, RESF_DEFAULT | RESF_UNSAFE);
+}
+
+Sprite *prefix_get_sprite(const char *name, const char *prefix);
 
 extern ResourceHandler sprite_res_handler;
 

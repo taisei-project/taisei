@@ -23,13 +23,6 @@ typedef uint32_t hash_t;
 typedef hash_t ht_size_t;
 
 /*
- * htutil_init
- *
- * One-time setup function.
- */
-void htutil_init(void);
-
-/*
  * htutil_hashfunc_uint32
  *
  * Hash function for 32-bit integers
@@ -59,7 +52,25 @@ INLINE hash_t htutil_hashfunc_uint64(uint64_t x) {
  *
  * Hash function for null-terminated strings.
  */
-extern uint32_t (*htutil_hashfunc_string)(uint32_t crc, const char *str);
+INLINE uint32_t htutil_hashfunc_string(const char *str) {
+	// FNV1a hash
+	//
+	// Not looking for '\0' in the for loop because apparently compilers optimize this better.
+	// Both GCC and clang can fold this entire function into a constant with a constant str.
+	// GCC fails that if strlen is not used.
+
+	uint32_t hash = 0x811c9dc5;
+	uint32_t prime = 0x1000193;
+	size_t len = strlen(str);
+
+	for(int i = 0; i < len; ++i) {
+		uint8_t value = str[i];
+		hash = hash ^ value;
+		hash *= prime;
+	}
+
+	return hash;
+}
 
 // Import public declarations for the predefined hashtable types.
 #define HT_DECL

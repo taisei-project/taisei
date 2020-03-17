@@ -106,14 +106,26 @@ void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
 
-Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags);
-void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags);
+
+Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
+void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
+
+attr_nonnull_all
+INLINE Resource *get_resource(ResourceType type, const char *name, ResourceFlags flags) {
+	return _get_resource(type, name, ht_str2ptr_hash(name), flags);
+}
+
+attr_nonnull_all
+INLINE void *get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
+	return _get_resource_data(type, name, ht_str2ptr_hash(name), flags);
+}
+
 void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
 void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
-void* resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg);
+void *resource_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
 
 void resource_util_strip_ext(char *path);
-char* resource_util_basename(const char *prefix, const char *path);
-const char* resource_util_filename(const char *path);
+char *resource_util_basename(const char *prefix, const char *path);
+const char *resource_util_filename(const char *path);
 
 #endif // IGUARD_resource_resource_h

@@ -54,7 +54,7 @@ void gl33_shader_program_destroy(ShaderProgram *prog);
 void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label);
 const char* gl33_shader_program_get_debug_label(ShaderProgram *prog);
 
-Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name);
+Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash);
 UniformType gl33_uniform_type(Uniform *uniform);
 void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
 void gl33_unref_texture_from_samplers(Texture *tex);
