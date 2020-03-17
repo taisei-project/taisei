@@ -98,10 +98,10 @@ static void* valfunc_begin_load_resource(void* arg) {
 	return ires;
 }
 
-static bool try_begin_load_resource(ResourceType type, const char *name, InternalResource **out_ires) {
+static bool try_begin_load_resource(ResourceType type, const char *name, hash_t hash, InternalResource **out_ires) {
 	ResourceHandler *handler = get_handler(type);
 	struct valfunc_arg arg = { type };
-	return ht_try_set(&handler->private.mapping, name, &arg, valfunc_begin_load_resource, (void**)out_ires);
+	return ht_try_set_prehashed(&handler->private.mapping, name, hash, &arg, valfunc_begin_load_resource, (void**)out_ires);
 }
 
 static void load_resource_finish(InternalResource *ires, void *opaque, const char *path, const char *name, char *allocated_path, char *allocated_name, ResourceFlags flags);
@@ -326,21 +326,21 @@ static void load_resource_finish(InternalResource *ires, void *opaque, const cha
 	free(allocated_name);
 }
 
-Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags) {
+Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
 	InternalResource *ires;
 	Resource *res;
 
 	if(flags & RESF_UNSAFE) {
 		// FIXME: I'm not sure we actually need this functionality.
 
-		ires = ht_get_unsafe(&get_handler(type)->private.mapping, name, NULL);
+		ires = ht_get_unsafe_prehashed(&get_handler(type)->private.mapping, name, hash, NULL);
 
 		if(ires != NULL && ires->status == RES_STATUS_LOADED) {
 			return &ires->res;
 		}
 	}
 
-	if(try_begin_load_resource(type, name, &ires)) {
+	if(try_begin_load_resource(type, name, hash, &ires)) {
 		SDL_LockMutex(ires->mutex);
 
 		if(!(flags & RESF_PRELOAD)) {
@@ -379,8 +379,8 @@ Resource* get_resource(ResourceType type, const char *name, ResourceFlags flags)
 	}
 }
 
-void* get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
-	Resource *res = get_resource(type, name, flags);
+void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
+	Resource *res = _get_resource(type, name, hash, flags);
 
 	if(res) {
 		return res->data;
@@ -395,7 +395,7 @@ void preload_resource(ResourceType type, const char *name, ResourceFlags flags) 
 
 	InternalResource *ires;
 
-	if(try_begin_load_resource(type, name, &ires)) {
+	if(try_begin_load_resource(type, name, ht_str2ptr_hash(name), &ires)) {
 		SDL_LockMutex(ires->mutex);
 		load_resource(ires, NULL, name, flags | RESF_PRELOAD, !env_get("TAISEI_NOASYNC", false));
 		SDL_UnlockMutex(ires->mutex);

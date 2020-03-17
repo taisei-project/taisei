@@ -374,8 +374,8 @@ ShaderProgram* r_shader_current(void) {
 	return B.shader_current();
 }
 
-Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
-	return B.shader_uniform(prog, uniform_name);
+Uniform* _r_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash) {
+	return B.shader_uniform(prog, uniform_name, uniform_name_hash);
 }
 
 UniformType r_uniform_type(Uniform *uniform) {
@@ -911,7 +911,7 @@ void _r_uniform_sampler_ptr(const char *uniform, Texture *tex) {
 
 void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) {
 	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
-	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { get_tex(tex) });
+	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { r_texture_get(tex) });
 }
 
 void _r_uniform_sampler(const char *uniform, const char *tex) {
@@ -934,7 +934,7 @@ void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, con
 		const char **vptr = values;
 
 		do {
-			*aptr++ = get_tex(*vptr++);
+			*aptr++ = r_texture_get(*vptr++);
 		} while(aptr < aend);
 
 		B.uniform(uniform, 0, 1, arr);

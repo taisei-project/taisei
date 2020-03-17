@@ -20,8 +20,12 @@
 #define HT_VALUE_TYPE                  void*
 #define HT_FUNC_FREE_KEY(key)          free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
-#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(0, key)
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_KEY_FMT                     "s"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #define HT_VALUE_CONST
 #include "hashtable_incproxy.inc.h"
@@ -36,8 +40,12 @@
 #define HT_VALUE_TYPE                  void*
 #define HT_FUNC_FREE_KEY(key)          free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
-#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(0, key)
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_KEY_FMT                     "s"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #define HT_VALUE_CONST
 #define HT_THREAD_SAFE
@@ -53,8 +61,12 @@
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_FREE_KEY(key)          free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
-#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(0, key)
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_KEY_FMT                     "s"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #include "hashtable_incproxy.inc.h"
 
@@ -68,8 +80,12 @@
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_FREE_KEY(key)          free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
-#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(0, key)
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
+#define HT_KEY_FMT                     "s"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #define HT_THREAD_SAFE
 #include "hashtable_incproxy.inc.h"
@@ -83,6 +99,10 @@
 #define HT_KEY_TYPE                    int64_t
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uint64_t)(key))
+#define HT_KEY_FMT                     PRIi64
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #include "hashtable_incproxy.inc.h"
 
 /*
@@ -94,6 +114,10 @@
 #define HT_KEY_TYPE                    int64_t
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uint64_t)(key))
+#define HT_KEY_FMT                     PRIi64
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_THREAD_SAFE
 #include "hashtable_incproxy.inc.h"
 
@@ -107,6 +131,10 @@
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #include "hashtable_incproxy.inc.h"
 
@@ -120,6 +148,10 @@
 #define HT_VALUE_TYPE                  int64_t
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   PRIi64
+#define HT_VALUE_PRINTABLE(val)        (val)
 #define HT_KEY_CONST
 #define HT_THREAD_SAFE
 #include "hashtable_incproxy.inc.h"
@@ -177,20 +209,35 @@
 #define ht_get(ht, key, default) \
 	_HT_GENERIC(*(ht), get) (ht, key, default)
 
+#define ht_get_prehashed(ht, key, hash, default) \
+	_HT_GENERIC(*(ht), get_prehashed) (ht, key, hash, default)
+
 #define ht_get_unsafe(ht, key, default) \
 	_HT_GENERIC_TS(*(ht), get_unsafe) (ht, key, default)
+
+#define ht_get_unsafe_prehashed(ht, key, hash, default) \
+	_HT_GENERIC_TS(*(ht), get_unsafe_prehashed) (ht, key, hash, default)
 
 #define ht_lookup(ht, key, out_value) \
 	_HT_GENERIC(*(ht), lookup) (ht, key, out_value)
 
+#define ht_lookup_prehashed(ht, key, hash, out_value) \
+	_HT_GENERIC(*(ht), lookup_prehashed) (ht, key, hash, out_value)
+
 #define ht_lookup_unsafe(ht, key, out_value) \
 	_HT_GENERIC_TS(*(ht), lookup_unsafe) (ht, key, out_value)
+
+#define ht_lookup_unsafe_prehashed(ht, key, hash, out_value) \
+	_HT_GENERIC_TS(*(ht), lookup_unsafe_prehashed) (ht, key, hash, out_value)
 
 #define ht_set(ht, key, value) \
 	_HT_GENERIC(*(ht), set) (ht, key, value)
 
 #define ht_try_set(ht, key, value, value_transform, out_value) \
 	_HT_GENERIC(*(ht), try_set) (ht, key, value, value_transform, out_value)
+
+#define ht_try_set_prehashed(ht, key, hash, value, value_transform, out_value) \
+	_HT_GENERIC(*(ht), try_set_prehashed) (ht, key, hash, value, value_transform, out_value)
 
 #define ht_unset(ht, key) \
 	_HT_GENERIC(*(ht), unset) (ht, key)

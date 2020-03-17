@@ -150,11 +150,7 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	return spr;
 }
 
-Sprite* get_sprite(const char *name) {
-	return get_resource(RES_SPRITE, name, RESF_DEFAULT | RESF_UNSAFE)->data;
-}
-
-Sprite* prefix_get_sprite(const char *name, const char *prefix) {
+Sprite *prefix_get_sprite(const char *name, const char *prefix) {
 	uint plen = strlen(prefix);
 	char buf[plen + strlen(name) + 1];
 	strcpy(buf, prefix);

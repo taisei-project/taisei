@@ -212,7 +212,6 @@ int main(int argc, char **argv) {
 	MainContext *ctx = calloc(1, sizeof(*ctx));
 
 	setlocale(LC_ALL, "C");
-	htutil_init();
 	init_log();
 	stage_init_array(); // cli_args depends on this
 

@@ -956,10 +956,6 @@ static inline void adjust_xpos(Font *font, const uint32_t *ucs4text, Alignment a
 	}
 }
 
-Font* get_font(const char *font) {
-	return get_resource_data(RES_FONT, font, RESF_DEFAULT);
-}
-
 ShaderProgram* text_get_default_shader(void) {
 	return globals.default_shader;
 }

@@ -16,8 +16,8 @@
 
 static Uniform *sampler_uniforms;
 
-Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
-	return ht_get(&prog->uniforms, uniform_name, NULL);
+Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash) {
+	return ht_get_prehashed(&prog->uniforms, uniform_name, uniform_name_hash, NULL);
 }
 
 UniformType gl33_uniform_type(Uniform *uniform) {

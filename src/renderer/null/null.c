@@ -55,7 +55,7 @@ static const char* null_shader_program_get_debug_label(ShaderProgram *prog) { re
 static void null_shader(ShaderProgram *prog) { }
 static ShaderProgram* null_shader_current(void) { return (void*)&placeholder; }
 
-static Uniform* null_shader_uniform(ShaderProgram *prog, const char *uniform_name) {
+static Uniform* null_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash) {
 	return NULL;
 }
 
