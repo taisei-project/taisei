@@ -55,7 +55,7 @@ typedef struct RendererFuncs {
 	void (*shader)(ShaderProgram *prog);
 	ShaderProgram* (*shader_current)(void);
 
-	Uniform* (*shader_uniform)(ShaderProgram *prog, const char *uniform_name);
+	Uniform* (*shader_uniform)(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash);
 	void (*uniform)(Uniform *uniform, uint offset, uint count, const void *data);
 	UniformType (*uniform_type)(Uniform *uniform);
 

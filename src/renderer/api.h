@@ -469,7 +469,7 @@ const char* r_shader_program_get_debug_label(ShaderProgram *prog) attr_nonnull(1
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 ShaderProgram* r_shader_current(void) attr_returns_nonnull;
 
-Uniform* r_shader_uniform(ShaderProgram *prog, const char *uniform_name) attr_nonnull(1, 2);
+Uniform* _r_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash_t uniform_name_hash) attr_nonnull(1, 2);
 UniformType r_uniform_type(Uniform *uniform);
 void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data);
 
@@ -815,6 +815,11 @@ Texture* r_texture_get(const char *name) {
 	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE);
 }
 
+attr_deprecated("Use r_texture_get")
+INLINE Texture *get_tex(const char *name) {
+	return r_texture_get(name);
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 
@@ -845,6 +850,11 @@ void r_color3(float r, float g, float b) {
 INLINE attr_nonnull(1)
 void r_shader(const char *prog) {
 	r_shader_ptr(r_shader_get(prog));
+}
+
+INLINE
+Uniform* r_shader_uniform(ShaderProgram *prog, const char *name) {
+	return _r_shader_uniform(r_shader_current(), name, ht_str2ptr_hash(name));
 }
 
 INLINE

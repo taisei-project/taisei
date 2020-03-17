@@ -231,7 +231,7 @@
  * but may improve performance. Must be a power of 2.
  */
 #ifndef HT_MIN_SIZE
-	#define HT_MIN_SIZE 32
+	#define HT_MIN_SIZE 4
 #endif
 
 static_assert((HT_MIN_SIZE & (~HT_MIN_SIZE + 1)) == HT_MIN_SIZE, "HT_MIN_SIZE must be power of two");
@@ -333,10 +333,11 @@ struct HT_TYPE(key_list) {
  * All of these fields are to be considered private.
  */
 struct HT_BASETYPE {
-	HT_TYPE(element) **table;
-	size_t num_elements;
-	size_t table_size;
-	size_t hash_mask;
+	HT_TYPE(element) *elements;
+	ht_size_t num_elements_occupied;
+	ht_size_t num_elements_allocated;
+	ht_size_t max_psl;
+	hash_t hash_mask;
 
 #ifdef HT_THREAD_SAFE
 	struct {
@@ -358,8 +359,8 @@ struct HT_TYPE(iter) {
 	bool has_data;
 
 	struct {
-		size_t bucketnum;
-		HT_TYPE(element) *elem;
+		ht_size_t i;
+		ht_size_t remaining;
 	} private;
 };
 
@@ -426,8 +427,13 @@ HT_DECLARE_FUNC(void, unlock, (HT_BASETYPE *ht))
  * Retrieve a value associated with [key]. If there is no association, [fallback] will
  * be returned instead.
  */
-HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback))
+HT_DECLARE_FUNC(HT_TYPE(value), get_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback))
 	attr_nonnull(1);
+
+attr_nonnull(1)
+INLINE HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
+	return HT_FUNC(get_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), fallback);
+}
 
 #ifdef HT_THREAD_SAFE
 /*
@@ -435,8 +441,14 @@ HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, H
  *
  * A non-thread-safe version of ht_XXX_get().
  */
-HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback))
+HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback))
 	attr_nonnull(1);
+
+attr_nonnull(1)
+INLINE HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
+	return HT_FUNC(get_unsafe_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), fallback);
+}
+
 #endif // HT_THREAD_SAFE
 
 /*
@@ -447,8 +459,13 @@ HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key)
  *
  * Returns true if an entry is found, false otherwise.
  */
-HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, lookup_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+attr_nonnull(1) attr_nodiscard
+INLINE HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
+	return HT_FUNC(lookup_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), out_value);
+}
 
 #ifdef HT_THREAD_SAFE
 /*
@@ -456,8 +473,14 @@ HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(
  *
  * A non-thread-safe version of ht_XXX_lookup().
  */
-HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, lookup_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+attr_nonnull(1) attr_nodiscard
+INLINE HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
+	return HT_FUNC(lookup_unsafe_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), out_value);
+}
+
 #endif // HT_THREAD_SAFE
 
 /*
@@ -497,8 +520,12 @@ HT_DECLARE_FUNC(bool, set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(val
  * With HT_THREAD_SAFE defined, this is an atomic operation: the algorithm holds
  * a write lock for its whole duration.
  */
-HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value))
+HT_DECLARE_FUNC(bool, try_set_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value))
 	attr_nonnull(1) attr_nodiscard;
+
+INLINE HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
+	return HT_FUNC(try_set_prehashed)(ht, key, HT_FUNC_HASH_KEY(key), value, value_transform, out_value);
+}
 
 /*
  * bool ht_XXX_unset(ht_XXX_t *ht, ht_XXX_const_key_t key);
@@ -594,19 +621,64 @@ HT_DECLARE_FUNC(void, iter_next, (HT_TYPE(iter) *iter))
 HT_DECLARE_FUNC(void, iter_end, (HT_TYPE(iter) *iter))
 	attr_nonnull(1);
 
+/*
+ * hash_t ht_XXX_hash(ht_XXX_const_key_t key);
+ *
+ * Compute the key's hash, suitable to pass to _prehashed functions.
+ */
+INLINE HT_DECLARE_FUNC(hash_t, hash, (HT_TYPE(const_key) key)) {
+	return HT_FUNC_HASH_KEY(key);
+}
+
 #endif // HT_DECL
 
 /*******************\
  * Implementations *
 \*******************/
+
+// #define HT_IMPL
 #ifdef HT_IMPL
 
 struct HT_TYPE(element) {
-	LIST_INTERFACE(HT_TYPE(element));
-	HT_TYPE(key) key;
 	HT_TYPE(value) value;
+	HT_TYPE(key) key;
 	hash_t hash;
 };
+
+inline
+HT_DECLARE_PRIV_FUNC(ht_size_t, get_psl, (ht_size_t zero_idx, ht_size_t actual_idx, ht_size_t num_allocated)) {
+	// returns the probe sequence length from zero_idx to actual_idx
+
+	if(actual_idx < zero_idx) {
+		return num_allocated - zero_idx + actual_idx;
+	}
+
+	return actual_idx - zero_idx;
+}
+
+HT_DECLARE_PRIV_FUNC(ht_size_t, get_element_psl, (HT_BASETYPE *ht, HT_TYPE(element) *e)) {
+	return HT_PRIV_FUNC(get_psl)(e->hash & ht->hash_mask, e - ht->elements, ht->num_elements_allocated);
+}
+
+HT_DECLARE_PRIV_FUNC(void, dump, (HT_BASETYPE *ht)) {
+#if 0
+	log_debug(" -- begin dump of hashtable %p --", (void*)ht);
+	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
+		HT_TYPE(element) *e = ht->elements + i;
+
+		if(e->hash & HT_HASH_LIVE_BIT) {
+			ht_size_t psl = HT_PRIV_FUNC(get_element_psl)(ht, e);
+			log_debug("%.4i. 0x%08x    [%"HT_KEY_FMT"]  ==>  [%"HT_VALUE_FMT"]    PSL: %u", i, e->hash, HT_KEY_PRINTABLE(e->key), HT_VALUE_PRINTABLE(e->value), psl);
+			assert(psl <= ht->max_psl);
+		} else {
+			log_debug("%.4i. 0x%08x    -- empty --", i, e->hash);
+		}
+
+	}
+	log_debug("Max PSL: %u", ht->max_psl);
+	log_debug(" -- end dump of hashtable %p --", (void*)ht);
+#endif
+}
 
 HT_DECLARE_PRIV_FUNC(void, begin_write, (HT_BASETYPE *ht)) {
 	#ifdef HT_THREAD_SAFE
@@ -666,12 +738,12 @@ HT_DECLARE_FUNC(void, unlock, (HT_BASETYPE *ht)) {
 #endif // HT_THREAD_SAFE
 
 HT_DECLARE_FUNC(void, create, (HT_BASETYPE *ht)) {
-	size_t size = HT_MIN_SIZE;
+	ht_size_t size = HT_MIN_SIZE;
 
-	ht->table = calloc(size, sizeof(HT_TYPE(element) *));
-	ht->table_size = size;
+	ht->elements = calloc(size, sizeof(*ht->elements));
+	ht->num_elements_allocated = size;
+	ht->num_elements_occupied = 0;
 	ht->hash_mask = size - 1;
-	ht->num_elements = 0;
 
 	#ifdef HT_THREAD_SAFE
 	ht->sync.writing = false;
@@ -687,53 +759,84 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht)) {
 	SDL_DestroyCond(ht->sync.cond);
 	SDL_DestroyMutex(ht->sync.mutex);
 	#endif
-	free(ht->table);
+	free(ht->elements);
 }
 
 HT_DECLARE_PRIV_FUNC(HT_TYPE(element)*, find_element, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash)) {
-	HT_TYPE(element) *elems = ht->table[hash & ht->hash_mask];
+	hash_t hash_mask = ht->hash_mask;
+	ht_size_t i = hash & hash_mask;
+	ht_size_t zero_idx = i;
+	ht_size_t probe_len = 0;
+	ht_size_t max_probe_len = ht->max_psl;
+	hash |= HT_HASH_LIVE_BIT;
 
-	for(HT_TYPE(element) *e = elems; e; e = e->next) {
-		if(hash == e->hash && HT_FUNC_KEYS_EQUAL(key, e->key)) {
+	HT_TYPE(element) *elements = ht->elements;
+
+	// log_debug("%p %08x [%"HT_KEY_FMT"]", (void*)ht, hash, HT_KEY_PRINTABLE(key));
+
+	for(;;) {
+		HT_TYPE(element) *e = elements + i;
+		hash_t e_hash = e->hash;
+		// log_debug("i=%u :: %08x", i, e_hash);
+
+		if(e_hash == hash && HT_FUNC_KEYS_EQUAL(key, e->key)) {
+			// log_debug("found at %u (probe_len = %u)", i, probe_len);
+			assert(probe_len == HT_PRIV_FUNC(get_element_psl)(ht, e));
 			return e;
 		}
-	}
 
-	return NULL;
+		if(!(e_hash & HT_HASH_LIVE_BIT)) {
+			// log_debug("not found (probe_len = %u)", probe_len);
+			return NULL;
+		}
+
+		ht_size_t e_probe_len = HT_PRIV_FUNC(get_element_psl)(ht, e);
+		assert(probe_len == HT_PRIV_FUNC(get_psl)(zero_idx, i, ht->num_elements_allocated));
+
+		if(probe_len > e_probe_len) {
+			// log_debug("[%"HT_KEY_FMT"] probe len at %u lower than current (%u < %u), bailing", HT_KEY_PRINTABLE(key), i, e_probe_len, probe_len);
+			return NULL;
+		}
+
+		if(++probe_len > max_probe_len) {
+			// log_debug("max PSL reached, bailing (%u)", max_probe_len);
+			return NULL;
+		}
+
+		i = (i + 1) & hash_mask;
+	}
 }
 
-HT_DECLARE_FUNC(HT_TYPE(value), get, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
-	HT_TYPE(element) *elem;
+HT_DECLARE_FUNC(HT_TYPE(value), get_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	HT_TYPE(value) value;
 
 	HT_PRIV_FUNC(begin_read)(ht);
-	elem = HT_PRIV_FUNC(find_element)(ht, key, hash);
-	value = elem ? elem->value : fallback;
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	value = e ? e->value : fallback;
 	HT_PRIV_FUNC(end_read)(ht);
 
 	return value;
 }
 
 #ifdef HT_THREAD_SAFE
-HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) fallback)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
-	HT_TYPE(element) *elem = HT_PRIV_FUNC(find_element)(ht, key, hash);
-	return elem ? elem->value : fallback;
+HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) fallback)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	return e ? e->value : fallback;
 }
 #endif // HT_THREAD_SAFE
 
-HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
-	HT_TYPE(element) *elem;
+HT_DECLARE_FUNC(bool, lookup_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 	bool found = false;
 
 	HT_PRIV_FUNC(begin_read)(ht);
-	elem = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
 
-	if(elem != NULL) {
+	if(e != NULL) {
 		if(out_value != NULL) {
-			*out_value = elem->value;
+			*out_value = e->value;
 		}
 
 		found = true;
@@ -745,13 +848,13 @@ HT_DECLARE_FUNC(bool, lookup, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(
 }
 
 #ifdef HT_THREAD_SAFE
-HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
-	HT_TYPE(element) *elem = HT_PRIV_FUNC(find_element)(ht, key, hash);
+HT_DECLARE_FUNC(bool, lookup_unsafe_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
 
-	if(elem != NULL) {
+	if(e != NULL) {
 		if(out_value != NULL) {
-			*out_value = elem->value;
+			*out_value = e->value;
 		}
 
 		return true;
@@ -761,19 +864,18 @@ HT_DECLARE_FUNC(bool, lookup_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key, H
 }
 #endif // HT_THREAD_SAFE
 
-HT_DECLARE_PRIV_FUNC(void*, delete_callback, (List **vlist, List *velem, void *vht)) {
-	HT_TYPE(element) *elem = (HT_TYPE(element) *) velem;
-	HT_FUNC_FREE_KEY(elem->key);
-	free(list_unlink(vlist, velem));
-	return NULL;
-}
-
 HT_DECLARE_PRIV_FUNC(void, unset_all, (HT_BASETYPE *ht)) {
-	for(size_t i = 0; i < ht->table_size; ++i) {
-		list_foreach((ht->table + i), HT_PRIV_FUNC(delete_callback), ht);
-	}
+	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
+		HT_TYPE(element) *e = ht->elements + i;
+		if(e->hash & HT_HASH_LIVE_BIT) {
+			HT_FUNC_FREE_KEY(e->key);
+			e->hash = 0;
 
-	ht->num_elements = 0;
+			if(--ht->num_elements_occupied == 0) {
+				break;
+			}
+		}
+	}
 }
 
 HT_DECLARE_FUNC(void, unset_all, (HT_BASETYPE *ht)) {
@@ -782,19 +884,36 @@ HT_DECLARE_FUNC(void, unset_all, (HT_BASETYPE *ht)) {
 	HT_PRIV_FUNC(end_write)(ht);
 }
 
+HT_DECLARE_PRIV_FUNC(void, unset_with_backshift, (HT_BASETYPE *ht, HT_TYPE(element) *e)) {
+	HT_TYPE(element) *elements = ht->elements;
+	hash_t hash_mask = ht->hash_mask;
+
+	HT_FUNC_FREE_KEY(e->key);
+	--ht->num_elements_occupied;
+
+	ht_size_t idx = e - elements;
+	for(;;) {
+		idx = (idx + 1) & hash_mask;
+		HT_TYPE(element) *next_e = elements + idx;
+
+		if(HT_PRIV_FUNC(get_element_psl)(ht, next_e) < 1) {
+			e->hash = 0;
+			return;
+		}
+
+		*e = *next_e;
+		e = next_e;
+	}
+}
+
 HT_DECLARE_FUNC(bool, unset, (HT_BASETYPE *ht, HT_TYPE(const_key) key)) {
-	HT_TYPE(element) *elem;
 	hash_t hash = HT_FUNC_HASH_KEY(key);
 	bool success = false;
 
 	HT_PRIV_FUNC(begin_write)(ht);
-	elem = HT_PRIV_FUNC(find_element)(ht, key, hash);
-
-	if(elem) {
-		HT_TYPE(element) **elist = ht->table + (hash & ht->hash_mask);
-		HT_FUNC_FREE_KEY(elem->key);
-		free(list_unlink(elist, elem));
-		--ht->num_elements;
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	if(e != NULL) {
+		HT_PRIV_FUNC(unset_with_backshift)(ht, e);
 		success = true;
 	}
 	HT_PRIV_FUNC(end_write)(ht);
@@ -807,23 +926,68 @@ HT_DECLARE_FUNC(void, unset_list, (HT_BASETYPE *ht, const HT_TYPE(key_list) *key
 
 	for(const HT_TYPE(key_list) *i = key_list; i; i = i->next) {
 		hash_t hash = HT_FUNC_HASH_KEY(i->key);
-		HT_TYPE(element) *elem = HT_PRIV_FUNC(find_element)(ht, i->key, hash);
+		HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, i->key, hash);
 
-		if(elem) {
-			HT_TYPE(element) **elist = ht->table + (hash & ht->hash_mask);
-			HT_FUNC_FREE_KEY(elem->key);
-			free(list_unlink(elist, elem));
-			--ht->num_elements;
+		if(e != NULL) {
+			HT_PRIV_FUNC(unset_with_backshift)(ht, e);
 		}
 	}
 
 	HT_PRIV_FUNC(end_write)(ht);
 }
 
+HT_DECLARE_PRIV_FUNC(HT_TYPE(element)*, insert, (
+	HT_TYPE(element) *insertion_elem,
+	HT_TYPE(element) *elements,
+	hash_t hash_mask,
+	ht_size_t *p_max_psl
+)) {
+	HT_TYPE(element) *e, *target = NULL, temp_elem;
+	ht_size_t idx = insertion_elem->hash & hash_mask;
+
+	for(;;) {
+		e = elements + idx;
+
+		if(!(e->hash & HT_HASH_LIVE_BIT)) {
+			*e = *insertion_elem;
+			if(target == NULL) {
+				target = e;
+			}
+
+			ht_size_t psl = HT_PRIV_FUNC(get_psl)(e->hash & hash_mask, idx, hash_mask + 1);
+			if(*p_max_psl < psl) {
+				*p_max_psl = psl;
+			}
+
+			break;
+		}
+
+		ht_size_t e_probe_len = HT_PRIV_FUNC(get_psl)(e->hash & hash_mask, idx, hash_mask + 1);
+		ht_size_t i_probe_len = HT_PRIV_FUNC(get_psl)(insertion_elem->hash & hash_mask, idx, hash_mask + 1);
+
+		if(e_probe_len < i_probe_len) {
+			// log_debug("SWAP %u (%u < %u)", idx, e_probe_len, i_probe_len);
+			temp_elem = *e;
+			*e = *insertion_elem;
+			if(target == NULL) {
+				target = e;
+			}
+			*insertion_elem = temp_elem;
+
+			ht_size_t psl = HT_PRIV_FUNC(get_psl)(e->hash & hash_mask, idx, hash_mask + 1);
+			if(*p_max_psl < psl) {
+				*p_max_psl = psl;
+			}
+		}
+
+		idx = (idx + 1) & hash_mask;
+	}
+
+	return target;
+}
+
 HT_DECLARE_PRIV_FUNC(bool, set, (
 	HT_BASETYPE *ht,
-	HT_TYPE(element) **table,
-	size_t hash_mask,
 	hash_t hash,
 	HT_TYPE(const_key) key,
 	HT_TYPE(value) value,
@@ -831,23 +995,34 @@ HT_DECLARE_PRIV_FUNC(bool, set, (
 	bool allow_overwrite,
 	HT_TYPE(value) *out_value
 )) {
-	size_t idx = hash & hash_mask;
-	HT_TYPE(element) **elems = table + idx, *elem = NULL;
-
-	for(HT_TYPE(element) *e = *elems; e; e = e->next) {
-		if(hash == e->hash && HT_FUNC_KEYS_EQUAL(key, e->key)) {
-			if(!allow_overwrite) {
-				if(out_value != NULL) {
-					*out_value = e->value;
-				}
-
-				return false;
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	if(e) {
+		if(!allow_overwrite) {
+			if(out_value != NULL) {
+				*out_value = e->value;
 			}
 
-			elem = e;
-			break;
+			return false;
 		}
+
+		if(transform_value != NULL) {
+			value = transform_value(value);
+		}
+
+		if(out_value != NULL) {
+			*out_value = value;
+		}
+
+		e->value = value;
+
+		// log_debug("[%"HT_KEY_FMT"] ==> [%"HT_VALUE_FMT"] (replace)", HT_KEY_PRINTABLE(key), HT_VALUE_PRINTABLE(value));
+		return true;
 	}
+
+	// log_debug("[%"HT_KEY_FMT"] ==> [%"HT_VALUE_FMT"]", HT_KEY_PRINTABLE(key), HT_VALUE_PRINTABLE(value));
+
+	// log_debug(" *** BEFORE ***");
+	HT_PRIV_FUNC(dump)(ht);
 
 	if(transform_value != NULL) {
 		value = transform_value(value);
@@ -857,91 +1032,98 @@ HT_DECLARE_PRIV_FUNC(bool, set, (
 		*out_value = value;
 	}
 
-	if(elem == NULL) {
-		elem = malloc(sizeof(*elem));
-		HT_FUNC_COPY_KEY(&elem->key, key);
-		elem->hash = hash; // HT_FUNC_HASH_KEY(elem->key);
-		elem->value = value;
-		list_push(elems, elem);
-		++ht->num_elements;
-		return true;
-	}
+	HT_TYPE(element) insertion_elem;
+	insertion_elem.value = value;
+	HT_FUNC_COPY_KEY(&insertion_elem.key, key);
+	insertion_elem.hash = hash | HT_HASH_LIVE_BIT;
+	e = HT_PRIV_FUNC(insert)(&insertion_elem, ht->elements, ht->hash_mask, &ht->max_psl);
+	assume(e != NULL);
 
-	elem->value = value;
-	return false;
+	++ht->num_elements_occupied;
+
+	// log_debug(" *** AFTER ***");
+	HT_PRIV_FUNC(dump)(ht);
+	// log_debug(" *** END SET ***");
+
+	assert(HT_PRIV_FUNC(find_element)(ht, key, hash) == e);
+	assert(e->value == value);
+	return true;
 }
 
 HT_DECLARE_PRIV_FUNC(void, check_elem_count, (HT_BASETYPE *ht)) {
 	#ifdef DEBUG
-	size_t num_elements = 0;
-	for(size_t i = 0; i < ht->table_size; ++i) {
-		for(HT_TYPE(element) *e = ht->table[i]; e; e = e->next) {
+	ht_size_t num_elements = 0;
+	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
+		if(ht->elements[i].hash & HT_HASH_LIVE_BIT) {
 			++num_elements;
 		}
 	}
-	assert(num_elements == ht->num_elements);
+	assert(num_elements == ht->num_elements_occupied);
 	#endif // DEBUG
 }
 
 HT_DECLARE_PRIV_FUNC(void, resize, (HT_BASETYPE *ht, size_t new_size)) {
-	assert(new_size != ht->table_size);
-	HT_TYPE(element) **new_table = calloc(new_size, sizeof(*new_table));
-	size_t new_hash_mask = new_size - 1;
-	size_t num_elements = ht->num_elements;
+	assert(new_size != ht->num_elements_allocated);
 
+	HT_TYPE(element) *old_elements = ht->elements;
+	ht_size_t old_size = ht->num_elements_allocated;
 	HT_PRIV_FUNC(check_elem_count)(ht);
 
-	for(size_t i = 0; i < ht->table_size; ++i) {
-		for(HT_TYPE(element) *e = ht->table[i]; e; e = e->next) {
-			HT_PRIV_FUNC(set)(ht, new_table, new_hash_mask, e->hash, e->key, e->value, NULL, true, NULL);
+	HT_TYPE(element) *new_elements = calloc(new_size, sizeof(*ht->elements));
+	ht->max_psl = 0;
+
+	for(ht_size_t i = 0; i < old_size; ++i) {
+		HT_TYPE(element) *e = old_elements + i;
+		if(e->hash & HT_HASH_LIVE_BIT) {
+			HT_PRIV_FUNC(insert)(e, new_elements, new_size - 1, &ht->max_psl);
 		}
 	}
 
-	HT_PRIV_FUNC(unset_all)(ht);
-	ht->num_elements = num_elements;
+	ht->elements = new_elements;
+	ht->num_elements_allocated = new_size;
+	ht->hash_mask = new_size - 1;
 
-	free(ht->table);
-	ht->table = new_table;
+	free(old_elements);
 
 	/*
 	log_debug(
 		"Resized hashtable at %p: %"PRIuMAX" -> %"PRIuMAX"",
-		(void*)ht, (uintmax_t)ht->table_size, (uintmax_t)new_size
+		(void*)ht, (uintmax_t)old_size, (uintmax_t)new_size
 	);
 	*/
 
-	ht->table_size = new_size;
-	ht->hash_mask = new_hash_mask;
-
+	HT_PRIV_FUNC(dump)(ht);
 	HT_PRIV_FUNC(check_elem_count)(ht);
+}
+
+HT_DECLARE_PRIV_FUNC(bool, maybe_resize, (HT_BASETYPE *ht)) {
+	if(
+		ht->num_elements_occupied == ht->num_elements_allocated || ht->max_psl > 5
+	) {
+		HT_PRIV_FUNC(resize)(ht, ht->num_elements_allocated * 2);
+		return true;
+	}
+
+	return false;
 }
 
 HT_DECLARE_FUNC(bool, set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value)) {
 	hash_t hash = HT_FUNC_HASH_KEY(key);
 
 	HT_PRIV_FUNC(begin_write)(ht);
-	bool result = HT_PRIV_FUNC(set)(ht, ht->table, ht->hash_mask, hash, key, value, NULL, true, NULL);
-
-	if(ht->num_elements == ht->table_size) {
-		HT_PRIV_FUNC(resize)(ht, ht->table_size * 2);
-		assert(ht->num_elements == ht->table_size / 2);
-	}
+	bool result = HT_PRIV_FUNC(set)(ht, hash, key, value, NULL, true, NULL);
+	HT_PRIV_FUNC(maybe_resize)(ht);
 	HT_PRIV_FUNC(end_write)(ht);
 
 	return result;
 }
 
-HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
-	hash_t hash = HT_FUNC_HASH_KEY(key);
+HT_DECLARE_FUNC(bool, try_set_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) value, HT_TYPE(value) (*value_transform)(HT_TYPE(value)), HT_TYPE(value) *out_value)) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
 
 	HT_PRIV_FUNC(begin_write)(ht);
-	bool result = HT_PRIV_FUNC(set)(ht, ht->table, ht->hash_mask, hash, key, value, value_transform, false, out_value);
-
-	if(ht->num_elements == ht->table_size) {
-		HT_PRIV_FUNC(resize)(ht, ht->table_size * 2);
-		assert(ht->num_elements == ht->table_size / 2);
-	}
-
+	bool result = HT_PRIV_FUNC(set)(ht, hash, key, value, value_transform, false, out_value);
+	HT_PRIV_FUNC(maybe_resize)(ht);
 	HT_PRIV_FUNC(end_write)(ht);
 	return result;
 }
@@ -951,50 +1133,50 @@ HT_DECLARE_FUNC(void*, foreach, (HT_BASETYPE *ht, HT_TYPE(foreach_callback) call
 
 	HT_PRIV_FUNC(begin_read)(ht);
 
-	for(size_t i = 0; i < ht->table_size; ++i) {
-		for(HT_TYPE(element) *e = ht->table[i]; e; e = e->next) {
-			ret = callback(e->key, e->value, arg);
-			if(ret != NULL) {
-				goto end;
+	for(ht_size_t i = 0, remaining = ht->num_elements_occupied; remaining; ++i) {
+		HT_TYPE(element) *e = ht->elements + i;
+		if(e->hash & HT_HASH_LIVE_BIT) {
+			if((ret = callback(e->key, e->value, arg))) {
+				break;
 			}
+			--remaining;
 		}
 	}
 
-end:
 	HT_PRIV_FUNC(end_read)(ht);
 	return ret;
-}
-
-HT_DECLARE_PRIV_FUNC(void, iter_advance, (HT_BASETYPE *ht, HT_TYPE(iter) *iter)) {
-	while(!iter->private.elem) {
-		if(++iter->private.bucketnum == ht->table_size) {
-			iter->has_data = false;
-			return;
-		}
-
-		iter->private.elem = ht->table[iter->private.bucketnum];
-	}
-
-	iter->key = iter->private.elem->key;
-	iter->value = iter->private.elem->value;
 }
 
 HT_DECLARE_FUNC(void, iter_begin, (HT_BASETYPE *ht, HT_TYPE(iter) *iter)) {
 	HT_PRIV_FUNC(begin_read)(ht);
 	memset(iter, 0, sizeof(*iter));
 	iter->hashtable = ht;
-	iter->private.elem = *ht->table;
-	iter->has_data = true;
-	HT_PRIV_FUNC(iter_advance)(ht, iter);
+	iter->private.remaining = ht->num_elements_occupied;
+	iter->has_data = iter->private.remaining;
+	HT_FUNC(iter_next)(iter);
 }
 
 HT_DECLARE_FUNC(void, iter_next, (HT_TYPE(iter) *iter)) {
-	if(!iter->has_data) {
+	HT_BASETYPE *ht = iter->hashtable;
+
+	if(!iter->private.remaining) {
+		iter->has_data = false;
 		return;
 	}
 
-	iter->private.elem = iter->private.elem->next;
-	HT_PRIV_FUNC(iter_advance)(iter->hashtable, iter);
+	for(;;) {
+		ht_size_t i = iter->private.i++;
+		assert(i < ht->num_elements_allocated);
+		HT_TYPE(element) *e = ht->elements + i;
+
+		if(e->hash & HT_HASH_LIVE_BIT) {
+			--iter->private.remaining;
+			iter->key = e->key;
+			iter->value = e->value;
+			return;
+		}
+	}
+
 	return;
 }
 
@@ -1040,3 +1222,7 @@ HT_DECLARE_FUNC(void, iter_end, (HT_TYPE(iter) *iter)) {
 #undef _HT_NAME_INNER2
 #undef _HT_PRIV_NAME_INNER1
 #undef _HT_PRIV_NAME_INNER2
+#undef HT_KEY_FMT
+#undef HT_KEY_PRINTABLE
+#undef HT_VALUE_FMT
+#undef HT_VALUE_PRINTABLE

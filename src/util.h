@@ -22,7 +22,6 @@
 #include "util/kvparser.h"
 #include "util/miscmath.h"
 // #include "util/pngcruft.h"
-#include "util/sse42.h"
 #include "util/stringops.h"
 
 // FIXME: might not be the best place for these

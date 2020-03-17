@@ -291,7 +291,7 @@ typedef cmplx64 cmplx;
 	#define attr_designated_init
 #endif
 
-#define INLINE static inline attr_must_inline __attribute__((gnu_inline, artificial))
+#define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
 #ifdef USE_GNU_EXTENSIONS
 	#define ASSUME_ALIGNED(expr, alignment) (__extension__ ({ \

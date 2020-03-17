@@ -497,19 +497,6 @@ static void *load_texture_end(void *opaque, const char *path, uint flags) {
 	return texture;
 }
 
-Texture *get_tex(const char *name) {
-	return r_texture_get(name);
-}
-
-Texture *prefix_get_tex(const char *name, const char *prefix) {
-	uint plen = strlen(prefix);
-	char buf[plen + strlen(name) + 1];
-	strcpy(buf, prefix);
-	strcpy(buf + plen, name);
-	Texture *tex = get_tex(buf);
-	return tex;
-}
-
 static void free_texture(Texture *tex) {
 	r_texture_destroy(tex);
 }

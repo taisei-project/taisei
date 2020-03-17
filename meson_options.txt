@@ -73,13 +73,6 @@ option(
 )
 
 option(
-    'intel_intrin',
-    type : 'boolean',
-    value : true,
-    description : 'Use some x86-specific intrinsics for optimizations where appropriate (if possible). Note that this is not equivalent to e.g. supplying -march in CFLAGS'
-)
-
-option(
     'debug_opengl',
     type : 'boolean',
     value : true,

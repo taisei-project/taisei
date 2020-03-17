@@ -23,10 +23,6 @@ util_opus_src = files(
     'opuscruft.c',
 )
 
-sse42_src += files(
-    'sse42.c',
-)
-
 if is_developer_build
     util_src += files('debug.c')
 endif
