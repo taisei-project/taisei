@@ -18,6 +18,10 @@
  */
 typedef uint32_t hash_t;
 
+#define HT_HASH_LIVE_BIT ((hash_t)(1) << (sizeof(hash_t) * CHAR_BIT - 1))
+
+typedef hash_t ht_size_t;
+
 /*
  * htutil_init
  *
