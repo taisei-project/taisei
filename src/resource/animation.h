@@ -32,7 +32,10 @@ void* load_animation_begin(const char *filename, uint flags);
 void* load_animation_end(void *opaque, const char *filename, uint flags);
 void unload_animation(void *vani);
 
-Animation *get_ani(const char *name);
+INLINE Animation *get_ani(const char *name) {
+	return get_resource(RES_ANIM, name, RESF_DEFAULT)->data;
+}
+
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname);
 
 // Returns a sprite for the specified frame from an animation sequence named seqname.
