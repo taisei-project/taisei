@@ -661,7 +661,7 @@ HT_DECLARE_PRIV_FUNC(ht_size_t, get_element_psl, (HT_BASETYPE *ht, HT_TYPE(eleme
 }
 
 HT_DECLARE_PRIV_FUNC(void, dump, (HT_BASETYPE *ht)) {
-#ifdef DEBUG
+#if 0
 	log_debug(" -- begin dump of hashtable %p --", (void*)ht);
 	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
 		HT_TYPE(element) *e = ht->elements + i;
