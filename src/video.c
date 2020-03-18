@@ -103,9 +103,6 @@ static void video_add_mode_handler(VideoMode *dmode, uint *mcount, int width, in
 		}
 	}
 
-	log_debug("width: %d", width);
-	log_debug("height: %d", height);
-	log_debug("count: %i", *mcount);
 	dmode = (VideoMode*)realloc(dmode, (++*mcount) * sizeof(VideoMode));
 	dmode[*mcount-1].width  = width;
 	dmode[*mcount-1].height = height;
@@ -728,13 +725,9 @@ void video_init(void) {
 		}
 	}
 
-	log_debug("meow?");
-	log_debug("mcount: %i", video.fs_mcount);
 	// sort it, mainly for the options menu
 	qsort(&video.fs_modes, video.fs_mcount, sizeof(VideoMode *), video_compare_modes);
-	log_debug("bark");
 	qsort(&video.win_modes, video.win_mcount, sizeof(VideoMode *), video_compare_modes);
-	log_debug("meow!");
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
