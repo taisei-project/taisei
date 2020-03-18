@@ -103,7 +103,7 @@ static void video_add_mode_handler(VideoMode **dmode, uint *mcount, int width, i
 		}
 	}
 
-	dmode = (VideoMode**)realloc(dmode, (++*mcount) * sizeof(VideoMode*));
+	dmode = (VideoMode**)realloc(dmode, (++*mcount) * sizeof(VideoMode));
 	dmode[*mcount-1]->width  = width;
 	dmode[*mcount-1]->height = height;
 }
