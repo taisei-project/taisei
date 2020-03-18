@@ -865,7 +865,7 @@ void r_shader(const char *prog) {
 
 INLINE
 Uniform* r_shader_uniform(ShaderProgram *prog, const char *name) {
-	return _r_shader_uniform(r_shader_current(), name, ht_str2ptr_hash(name));
+	return _r_shader_uniform(prog, name, ht_str2ptr_hash(name));
 }
 
 INLINE
