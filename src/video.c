@@ -92,10 +92,10 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 	}
 }
 
-static void video_add_mode_handler(VideoMode *dmode, uint *mcount, int width, int height) {
+static void video_add_mode_handler(VideoMode **dmode, uint *mcount, int width, int height) {
 	if(dmode) {
 		for(uint i = 0; i < *mcount; ++i) {
-			VideoMode *m = dmode + i;
+			VideoMode *m = *(dmode + i);
 
 			if(m->width == width && m->height == height) {
 				return;
@@ -103,16 +103,16 @@ static void video_add_mode_handler(VideoMode *dmode, uint *mcount, int width, in
 		}
 	}
 
-	dmode = (VideoMode*)realloc(dmode, (++*mcount) * sizeof(VideoMode));
-	dmode[*mcount-1].width  = width;
-	dmode[*mcount-1].height = height;
+	dmode = (VideoMode**)realloc(dmode, (++*mcount) * sizeof(VideoMode*));
+	dmode[*mcount-1]->width  = width;
+	dmode[*mcount-1]->height = height;
 }
 
 static void video_add_mode(int width, int height, bool fullscreen) {
 	if(fullscreen) {
-		video_add_mode_handler(video.fs_modes, &video.fs_mcount, width, height);
+		video_add_mode_handler(&video.fs_modes, &video.fs_mcount, width, height);
 	} else {
-		video_add_mode_handler(video.win_modes, &video.win_mcount, width, height);
+		video_add_mode_handler(&video.win_modes, &video.win_mcount, width, height);
 	}
 }
 
