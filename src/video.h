@@ -79,8 +79,8 @@ void video_set_display(uint idx);
 const char *video_display_name(uint id) attr_returns_nonnull;
 Framebuffer *video_get_screen_framebuffer(void);
 VideoBackend video_get_backend(void);
-VideoMode video_get_mode(uint idx);
-uint video_get_num_modes(void);
+VideoMode video_get_mode(uint idx, bool fullscreen);
+uint video_get_num_modes(bool fullscreen);
 VideoMode video_get_current_mode(void);
 
 #endif // IGUARD_video_h
