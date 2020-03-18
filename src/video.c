@@ -19,8 +19,8 @@
 #include "video_postprocess.h"
 
 static struct {
-	VideoMode fs_modes;
-	VideoMode win_modes;
+	VideoMode *fs_modes;
+	VideoMode *win_modes;
 	SDL_Window *window;
 	uint win_mcount;
 	uint fs_mcount;
@@ -110,9 +110,9 @@ static void video_add_mode_handler(VideoMode *dmode, uint *mcount, int width, in
 
 static void video_add_mode(int width, int height, bool fullscreen) {
 	if(fullscreen) {
-		video_add_mode_handler(&video.fs_modes, &video.fs_mcount, width, height);
+		video_add_mode_handler(video.fs_modes, &video.fs_mcount, width, height);
 	} else {
-		video_add_mode_handler(&video.win_modes, &video.win_mcount, width, height);
+		video_add_mode_handler(video.win_modes, &video.win_mcount, width, height);
 	}
 }
 
@@ -726,8 +726,8 @@ void video_init(void) {
 	}
 
 	// sort it, mainly for the options menu
-	qsort(&video.fs_modes, video.fs_mcount, sizeof(VideoMode *), video_compare_modes);
-	qsort(&video.win_modes, video.win_mcount, sizeof(VideoMode *), video_compare_modes);
+	qsort(video.fs_modes, video.fs_mcount, sizeof(VideoMode *), video_compare_modes);
+	qsort(video.win_modes, video.win_mcount, sizeof(VideoMode *), video_compare_modes);
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
@@ -765,8 +765,8 @@ void video_shutdown(void) {
 	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
-	free(&video.win_modes);
-	free(&video.fs_modes);
+	free(video.win_modes);
+	free(video.fs_modes);
 	SDL_VideoQuit();
 }
 
