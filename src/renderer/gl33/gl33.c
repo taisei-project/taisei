@@ -283,7 +283,7 @@ static void gl33_init_context(SDL_Window *window) {
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	GLVT.get_viewport(&R.viewport.default_framebuffer);
 
-	if(glReadBuffer != NULL) {
+	if(HAVE_GL_FUNC(glReadBuffer)) {
 		glReadBuffer(GL_BACK);
 	}
 
@@ -1080,7 +1080,9 @@ static void gl33_swap(SDL_Window *window) {
 	Framebuffer *prev_fb = r_framebuffer_current();
 	r_framebuffer(NULL);
 	gl33_sync_framebuffer();
+#ifndef __EMSCRIPTEN__
 	SDL_GL_SwapWindow(window);
+#endif
 	r_framebuffer(prev_fb);
 
 	gl33_stats_post_frame();

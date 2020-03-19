@@ -121,19 +121,17 @@ function SyncFS(is_load, ccptr) {
     // https://github.com/emscripten-ports/SDL2/issues/57
 
     function resumeAudio() {
-        if(
-            typeof Module === 'undefined' ||
-            typeof Module.SDL2 == 'undefined' ||
-            typeof Module.SDL2.audioContext == 'undefined'
-        ) {
+        var sdl2 = Module['SDL2'];
+
+        if(typeof sdl2 === 'undefined') {
             return;
         }
 
-        if(Module.SDL2.audioContext.state == 'suspended') {
-            Module.SDL2.audioContext.resume();
+        if(sdl2.audioContext.state == 'suspended') {
+            sdl2.audioContext.resume();
         }
 
-        if(Module.SDL2.audioContext.state == 'running') {
+        if(sdl2.audioContext.state == 'running') {
             canvasElement.removeEventListener('click', resumeAudio);
             document.removeEventListener('keydown', resumeAudio);
         }

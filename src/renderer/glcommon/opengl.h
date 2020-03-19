@@ -259,4 +259,10 @@ struct glext_s {
 #undef GLES_ATLEAST
 #define GLES_ATLEAST(mjr, mnr) (glext.version.is_es && GLANY_ATLEAST(mjr, mnr))
 
+#ifdef STATIC_GLESS
+	#define HAVE_GL_FUNC(func) (&(func) != NULL)
+#else
+	#define HAVE_GL_FUNC(func) ((func) != NULL)
+#endif
+
 #endif // IGUARD_renderer_glcommon_opengl_h

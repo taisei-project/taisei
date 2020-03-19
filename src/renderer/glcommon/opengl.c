@@ -94,6 +94,9 @@ static ext_flag_t glcommon_ext_flag(const char *ext) {
 }
 
 ext_flag_t glcommon_check_extension(const char *ext) {
+	assert(*ext != 0);
+	assert(strchr(ext, ' ') == NULL);
+
 	const char *overrides = env_get("TAISEI_GL_EXT_OVERRIDES", "");
 	ext_flag_t flag = glcommon_ext_flag(ext);
 
@@ -118,7 +121,57 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 		}
 	}
 
-	return SDL_GL_ExtensionSupported(ext) ? flag : 0;
+	// SDL_GL_ExtensionSupported is stupid and requires dlopen() with emscripten.
+	// Let's reinvent it!
+
+	// SDL does this
+	if(env_get_int(ext, 1) == 0) {
+		return 0;
+	}
+
+#ifndef STATIC_GLES3
+	if(GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0))
+#endif
+	{
+		GLint num_exts = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, &num_exts);
+		for(GLint i = 0; i < num_exts; ++i) {
+			const char *e = (const char*)glGetStringi(GL_EXTENSIONS, i);
+			if(!strcmp(ext, e)) {
+				return flag;
+			}
+		}
+
+		return 0;
+	}
+
+#ifndef STATIC_GLES3
+	// The legacy way
+	const char *extensions = (const char*)glGetString(GL_EXTENSIONS);
+
+	if(!extensions) {
+		return 0;
+	}
+
+	const char *start = extensions;
+	size_t ext_len = strlen(ext);
+
+	for(;;) {
+		const char *where = strstr(start, ext);
+		if(!where) {
+			return 0;
+		}
+
+		const char *term = where + ext_len;
+
+		if(
+			(where == extensions || where[-1] == ' ') &&
+			(*term == ' ' || *term == ' ')
+		) {
+			return flag;
+		}
+	}
+#endif
 }
 
 ext_flag_t glcommon_require_extension(const char *ext) {
@@ -915,6 +968,16 @@ void glcommon_unload_library(void) {
 	glcommon_free_shader_lang_table();
 }
 
+attr_unused
+static inline void (*load_func(const char *name))(void) {
+	union {
+		void *vp;
+		void (*fp)(void);
+	} c_sucks;
+	c_sucks.vp = SDL_GL_GetProcAddress(name);
+	return c_sucks.fp;
+}
+
 void glcommon_load_functions(void) {
 #ifndef STATIC_GLES3
 	int profile;
@@ -933,8 +996,8 @@ void glcommon_load_functions(void) {
 		}
 	}
 
-	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawArraysInstancedBaseInstanceANGLE");
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)SDL_GL_GetProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)load_func("glDrawArraysInstancedBaseInstanceANGLE");
+	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 #endif
 }
 
