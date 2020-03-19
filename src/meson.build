@@ -193,11 +193,12 @@ if host_machine.system() == 'emscripten'
     taisei_c_args += ['-s', 'STRICT=1']
 
     if em_debug
-        # em_link_output_suffixes += ['wasm.map']
+        em_link_output_suffixes += ['wasm.map']
         em_link_args += [
             '--emrun',
             '--profiling',
-            '-g3',
+            '-g4',
+            '--source-map-base', meson.get_cross_property('source_map_base', 'http://0.0.0.0:6931/'),
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_DEBUG=1',
             '-s', 'GL_ASSERTIONS=1',
@@ -210,13 +211,9 @@ if host_machine.system() == 'emscripten'
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
         ]
-    endif
 
-    if get_option('optimization') != '0'
-        em_link_args += ['--closure', '1']
-
-        if em_debug
-            em_link_args += ['-g1']
+        if get_option('optimization') != '0'
+            em_link_args += ['--closure', '1']
         endif
     endif
 

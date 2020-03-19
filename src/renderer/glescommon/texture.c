@@ -209,6 +209,7 @@ GLTexFormatCapabilities gles_texture_format_caps(GLenum internal_fmt) {
 				caps |= GLTEX_COLOR_RENDERABLE;
 			}
 			// fallthrough
+
 		case GL_RGB16F:
 			if(glext.texture_half_float_linear) {
 				caps |= GLTEX_FILTERABLE;
