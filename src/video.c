@@ -729,11 +729,9 @@ void video_init(void) {
 		}
 	}
 
-	log_debug("goodbye!");
 	// sort it, mainly for the options menu
 	qsort(video.fs_modes.mode, video.fs_modes.mcount, sizeof(VideoMode *), video_compare_modes);
 	qsort(video.win_modes.mode, video.win_modes.mcount, sizeof(VideoMode *), video_compare_modes);
-	log_debug("hello!");
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
