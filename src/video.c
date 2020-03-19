@@ -248,6 +248,8 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
+	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+
 	video_new_window_internal(display, w, h, flags, false);
 	display = video_current_display();
 
@@ -730,8 +732,8 @@ void video_init(void) {
 	}
 
 	// sort it, mainly for the options menu
-	qsort(video.fs_modes.mode, video.fs_modes.mcount, sizeof(VideoMode *), video_compare_modes);
-	qsort(video.win_modes.mode, video.win_modes.mcount, sizeof(VideoMode *), video_compare_modes);
+	qsort(video.fs_modes.mode, video.fs_modes.mcount, sizeof(VideoMode), video_compare_modes);
+	qsort(video.win_modes.mode, video.win_modes.mcount, sizeof(VideoMode), video_compare_modes);
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
