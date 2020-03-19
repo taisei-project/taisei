@@ -10,13 +10,16 @@ project('taisei', 'c',
 
         'koishi:threadsafe=false',
 
-        'libzip:enable_crypto=false',
         'libzip:enable_bzip2=false',
+        'libzip:enable_crypto=false',
+        'libzip:enable_lzma=false',
 
         'sdl2:use_haptic=disabled',
         'sdl2:use_power=disabled',
         'sdl2:use_render=disabled',
         'sdl2:use_sensor=disabled',
+        'sdl2:use_video_offscreen=disabled',
+        'sdl2:use_video_vulkan=disabled',
 
         # You may want to change these for a debug build dir
         'buildtype=release',
