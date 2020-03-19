@@ -106,6 +106,7 @@ CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
 CoTaskEvents *cotask_get_events(CoTask *task);
+void *cotask_malloc(CoTask *task, size_t size) attr_returns_allocated attr_malloc attr_alloc_size(2);
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);
@@ -390,6 +391,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
 #define THIS_TASK     cotask_box(cotask_active())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
+#define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
 
 #define YIELD         cotask_yield(NULL)
 #define WAIT(delay)   cotask_wait(delay)
