@@ -14,9 +14,8 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
-
-PRAGMA(message "Remove when this stage is modernized")
-DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+#include "stagedraw.h"
+#include "common_tasks.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -27,28 +26,28 @@ struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
 			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
-			scuttle_deadly_dance, scuttle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, scuttle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage3_spell_deadly_dance)
 		},
 	},
 
 	.boss = {
 		.moonlight_rocket = {
 			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 40, 40000,
-			wriggle_moonlight_rocket, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, wriggle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage3_spell_moonlight_rocket)
 		},
 		.wriggle_night_ignite = {
 			{10, 11, 12, 13}, AT_Spellcard, "Light Source “Wriggle Night Ignite”", 50, 46000,
-			wriggle_night_ignite, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, wriggle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage3_spell_night_ignite)
 		},
 		.firefly_storm = {
 			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign “Firefly Storm”", 45, 45000,
-			wriggle_firefly_storm, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, wriggle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage3_spell_firefly_storm)
 		},
 	},
 
 	.extra.light_singularity = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign “Light Singularity”", 75, 45000,
-		wriggle_light_singularity, wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			NULL, wriggle_spellbg, VIEWPORT_W/2.0+100*I, 1, TASK_INDIRECT_INIT(BossAttack, stage3_spell_light_singularity)
 	},
 };
 
@@ -145,7 +144,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 	return true;
 }
 
-static void stage3_start(void) {
+static void stage3_init_background(void) {
 	stage3d_init(&stage_3d_context, 16);
 
 	stage_3d_context.cx[2] = -10;
@@ -158,6 +157,13 @@ static void stage3_start(void) {
 	stgstate.clr_b = 0.5;
 	stgstate.clr_mixfactor = 1.0;
 	stgstate.fog_brightness = 0.5;
+}
+
+static void stage3_start(void) {
+	stage3_init_background();
+	stage_start_bgm("stage3");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+	INVOKE_TASK(stage3_main);
 }
 
 static void stage3_preload(void) {
@@ -211,146 +217,9 @@ static void stage3_update(void) {
 		return;
 	}
 
-	FROM_TO(0, 160, 1) {
-		stage_3d_context.cv[1] -= 0.5/2;
-		stgstate.clr_r -= 0.2 / 160.0;
-		stgstate.clr_b -= 0.1 / 160.0;
-	}
-
-	FROM_TO(0, 500, 1)
-		stgstate.fog_exp += 3.0 / 500.0;
-
-	FROM_TO(400, 500, 1) {
-		stgstate.tunnel_avel += 0.005;
-		stage_3d_context.cv[1] -= 0.3/2;
-	}
-
-	FROM_TO(1050, 1150, 1) {
-		stgstate.tunnel_avel -= 0.010;
-		stage_3d_context.cv[1] -= 0.2/2;
-	}
-
-	FROM_TO(1060, 1400, 1) {
-		/*stgstate.clr_r -= 1.0 / 340.0;
-		stgstate.clr_g += 1.0 / 340.0;
-		stgstate.clr_b -= 0.5 / 340.0;*/
-	}
-
-	FROM_TO(1170, 1400, 1)
-		stgstate.tunnel_side += 100.0 / 230.0;
-
-	FROM_TO(1400, 1550, 1) {
-		stage_3d_context.crot[0] -= 3 / 150.0;
-		stgstate.tunnel_updn += 70.0 / 150.0;
-		stgstate.tunnel_avel += 1 / 150.0;
-		stage_3d_context.cv[1] -= 0.2/2;
-	}
-
-	FROM_TO(1570, 1700, 1) {
-		stgstate.tunnel_updn -= 20 / 130.0;
-	}
-
-	FROM_TO(1800, 1850, 1)
-		stgstate.tunnel_avel -= 0.02;
-
-	FROM_TO(1900, 2000, 1) {
-		stgstate.tunnel_avel += 0.013;
-	}
-
-	FROM_TO(2000, 2680, 1) {
-		stgstate.tunnel_side -= 100.0 / 680.0;
-		//stgstate.fog_exp -= 1.0 / 740.0;
-		stage_3d_context.crot[0] += 11 / 680.0;
-	}
-
-	FROM_TO(2680, 2739, 1) {
-		stgstate.fog_exp += 1.0 / 60.0;
-		stage_3d_context.cv[1] += 1.0/2;
-		stgstate.clr_r -= 0.3 / 60.0;
-		stgstate.clr_g += 0.5 / 60.0;
-		stgstate.tunnel_avel -= 0.7 / 60.0;
-		stage_3d_context.crot[0] -= 11 / 60.0;
-	}
-
-	// 2740 - MIDBOSS
-
-	int midboss_time = STAGE3_MIDBOSS_TIME;
-
-	FROM_TO(2900 + midboss_time, 3100 + midboss_time, 1) {
-		stgstate.clr_r += 0.3 / 200.0;
-		stgstate.clr_g -= 0.5 / 200.0;
-		stage_3d_context.cv[1] -= 90 / 200.0/2;
-		stgstate.tunnel_avel -= 1 / 200.0;
-		stgstate.fog_exp -= 1.0 / 200.0;
-		stgstate.clr_b += 0.2 / 200.0;
-	}
-
-	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
-		stgstate.tunnel_avel += 2 / 60.0;
-		stgstate.tunnel_side += 50 / 60.0;
-		stage_3d_context.cx[2] += (-20 - stage_3d_context.cx[2]) * 0.04;
-	}
-
-	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
-		stgstate.tunnel_side += 20 / 60.0;
-		stgstate.tunnel_updn += 40 / 60.0;
-	}
-
-	FROM_TO(3830 + midboss_time, 3950 + midboss_time, 1) {
-		stgstate.tunnel_avel -= 2 / 120.0;
-	}
-
-	FROM_TO(3960 + midboss_time, 4000 + midboss_time, 1) {
-		stgstate.tunnel_avel += 2 / 40.0;
-	}
-
-	FROM_TO(4360 + midboss_time, 4390 + midboss_time, 1) {
-		stgstate.clr_r -= .5 / 30.0;
-	}
-
-	FROM_TO(4390 + midboss_time, 4510 + midboss_time, 1) {
-		stgstate.clr_r += .5 / 120.0;
-		stage_3d_context.cx[2] += (0 - stage_3d_context.cx[2]) * 0.05;
-		stgstate.fog_exp = approach(stgstate.fog_exp, 4, 1/20.0);
-	}
-
-	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
-		stgstate.tunnel_side -= 70 / 1000.0;
-		stgstate.tunnel_updn -= 40 / 1000.0;
-		stgstate.clr_r -= 0.5 / 1000.0;
-		stgstate.clr_b += 0.2 / 1000.0;
-		stage_3d_context.crot[0] += 7 / 1000.0;
-		stgstate.fog_exp -= 1.5 / 1000.0;
-	}
-
-	FROM_TO(5099 + midboss_time, 5299 + midboss_time, 1) {
-		stage_3d_context.cv[1] += 90 / 200.0/2;
-		stgstate.tunnel_avel -= 1.1 / 200.0;
-		stage_3d_context.crot[0] -= 15 / 200.0;
-		stgstate.fog_exp = approach(stgstate.fog_exp, 2.5, 1/50.0);
-	}
-
-	FROM_TO(5200 + midboss_time, 5300 + midboss_time, 1) {
-		stage_3d_context.cx[2] += (-50 - stage_3d_context.cx[2]) * 0.02;
-	}
-
-	// 5300 - BOSS
-
-	FROM_TO(5301 + midboss_time, 5700 + midboss_time, 1) {
-		stgstate.tunnel_avel = (0 - stgstate.tunnel_avel) * 0.02;
-		stage_3d_context.cx[2] += (-500 - stage_3d_context.cx[2]) * 0.02;
-		stage_3d_context.crot[0] += (-180 - stage_3d_context.crot[0]) * 0.004;
-
-		stgstate.clr_mixfactor = approach(stgstate.clr_mixfactor, 0, 1/300.0);
-		stgstate.fog_brightness = approach(stgstate.fog_brightness, 1.0, 1/200.0);
-		stgstate.fog_exp = approach(stgstate.fog_exp, 3, 1/50.0);
-
-		stage_3d_context.cv[1] = approach(stage_3d_context.cv[1], -20, 1/10.0);
-
-		stgstate.clr_r = approach(stgstate.clr_r, 0.6, 1.0/200.0);
-		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
-		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
-	}
+	stage_3d_context.cv[1] -= 0.5/2;
+	stgstate.clr_r -= 0.2 / 160.0;
+	stgstate.clr_b -= 0.1 / 160.0;
 
 	stage3d_update(&stage_3d_context);
 }
@@ -358,8 +227,6 @@ static void stage3_update(void) {
 void scuttle_spellbg(Boss*, int t);
 
 static void stage3_spellpractice_start(void) {
-	stage3_start();
-
 	if(global.stage->spell->draw_rule == scuttle_spellbg) {
 		skip_background_anim(stage3_update, 2800, &global.timer, NULL);
 		global.boss = stage3_spawn_scuttle(BOSS_DEFAULT_SPAWN_POS);
@@ -392,7 +259,6 @@ StageProcs stage3_procs = {
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.update = stage3_update,
-	.event = stage3_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,
 	.spellpractice_procs = &stage3_spell_procs,
@@ -404,7 +270,6 @@ StageProcs stage3_spell_procs = {
 	.end = stage3_end,
 	.draw = stage3_draw,
 	.update = stage3_update,
-	.event = stage3_spellpractice_events,
 	.shader_rules = stage3_shaders,
 	.postprocess_rules = stage3_postprocess,
 };
