@@ -107,7 +107,7 @@ static void stagetext_draw_single(StageText *txt) {
 	params.blend = BLEND_PREMUL_ALPHA;
 	params.shader_ptr = r_shader_get("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
-	params.aux_textures[0] = get_tex("titletransition");
+	params.aux_textures[0] = r_texture_get("titletransition");
 	params.pos.x = creal(txt->pos) + ofs_x;
 	params.pos.y = cimag(txt->pos) + ofs_y;
 	params.color = &txt->color;

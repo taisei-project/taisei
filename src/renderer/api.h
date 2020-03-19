@@ -815,11 +815,6 @@ Texture* r_texture_get(const char *name) {
 	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE);
 }
 
-attr_deprecated("Use r_texture_get")
-INLINE Texture *get_tex(const char *name) {
-	return r_texture_get(name);
-}
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 

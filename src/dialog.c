@@ -201,7 +201,7 @@ void dialog_draw(Dialog *dialog) {
 
 		text_draw_wrapped(dialog->actions[pre_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
 			.shader = "text_dialog",
-			.aux_textures = { get_tex("cell_noise") },
+			.aux_textures = { r_texture_get("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * page_text_alpha)), 1 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
@@ -221,7 +221,7 @@ void dialog_draw(Dialog *dialog) {
 
 	text_draw_wrapped(dialog->actions[cur_idx].msg, VIEWPORT_W * 0.86, &(TextParams) {
 		.shader = "text_dialog",
-		.aux_textures = { get_tex("cell_noise") },
+		.aux_textures = { r_texture_get("cell_noise") },
 		.shader_params = &(ShaderCustomParams) {{ o * page_text_alpha, 0 }},
 		.color = &clr,
 		.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },

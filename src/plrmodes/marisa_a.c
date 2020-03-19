@@ -200,8 +200,8 @@ static void marisa_laser_renderer_visual(Enemy *renderer, int t, bool render) {
 	Uniform *u_clr_freq = r_shader_uniform(shader, "color_freq");
 	Uniform *u_alpha = r_shader_uniform(shader, "alphamod");
 	Uniform *u_length = r_shader_uniform(shader, "laser_length");
-	Texture *tex0 = get_tex("part/marisa_laser0");
-	Texture *tex1 = get_tex("part/marisa_laser1");
+	Texture *tex0 = r_texture_get("part/marisa_laser0");
+	Texture *tex1 = r_texture_get("part/marisa_laser1");
 	FBPair *fbp_aux = stage_get_fbpair(FBPAIR_FG_AUX);
 	Framebuffer *target_fb = r_framebuffer_current();
 
