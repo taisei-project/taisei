@@ -1230,7 +1230,7 @@ static void kurumi_extra_drainer_draw(Projectile *p, int time, ProjDrawRuleArgs 
 	cmplx org = p->pos;
 	cmplx targ = p->args[1];
 	double a = 0.5 * creal(p->args[2]);
-	Texture *tex = get_tex("part/sinewave");
+	Texture *tex = r_texture_get("part/sinewave");
 
 	r_shader_standard();
 

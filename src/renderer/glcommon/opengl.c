@@ -48,6 +48,7 @@ static PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC glad_glDrawArraysInstancedB
 typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
 static PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE;
 
+APIENTRY
 static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
 	// shim
 	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);

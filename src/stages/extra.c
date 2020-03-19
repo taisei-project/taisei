@@ -419,7 +419,7 @@ static void extra_begin(void) {
 	draw_data.codetex_num_segments = strtol(buf, NULL, 0);
 	SDL_RWclose(stream);
 
-	Texture *tex_code = get_tex("stageex/code");
+	Texture *tex_code = r_texture_get("stageex/code");
 	uint w, h;
 	r_texture_get_size(tex_code, 0, &w, &h);
 

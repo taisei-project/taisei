@@ -765,7 +765,7 @@ HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht)) {
 HT_DECLARE_PRIV_FUNC(HT_TYPE(element)*, find_element, (HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash)) {
 	hash_t hash_mask = ht->hash_mask;
 	ht_size_t i = hash & hash_mask;
-	ht_size_t zero_idx = i;
+	ht_size_t attr_unused zero_idx = i;
 	ht_size_t probe_len = 0;
 	ht_size_t max_probe_len = ht->max_psl;
 	hash |= HT_HASH_LIVE_BIT;

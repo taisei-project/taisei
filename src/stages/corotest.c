@@ -13,6 +13,8 @@
 #include "global.h"
 #include "common_tasks.h"
 
+DIAGNOSTIC(ignored "-Wunused-variable")
+
 TASK(laserproj_death, { Projectile *p; }) {
 	spawn_projectile_clear_effect(ARGS.p);
 }

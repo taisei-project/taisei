@@ -42,8 +42,8 @@ INLINE void rng_lock(RandomState *rng) { rng->locked = true; }
 INLINE void rng_unlock(RandomState *rng) { rng->locked = false; }
 INLINE bool rng_is_locked(RandomState *rng) { return rng->locked; }
 #else
-#define rng_lock(rng) (rng, (void)0)
-#define rng_unlock(rng) (rng, (void)0)
+#define rng_lock(rng) ((void)(rng), (void)0)
+#define rng_unlock(rng) ((void)(rng), (void)0)
 #define rng_is_locked(rng) (false)
 #endif
 

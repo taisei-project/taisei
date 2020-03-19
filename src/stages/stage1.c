@@ -303,7 +303,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 
 	Sprite spr = { 0 };
 	spr.w = spr.h = 1;
-	spr.tex = get_tex("stage1/waterplants");
+	spr.tex = r_texture_get("stage1/waterplants");
 	uint tw, th;
 	r_texture_get_size(spr.tex, 0, &tw, &th);
 	spr.tex_area.w = tw * 0.5;
