@@ -166,7 +166,7 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 
 		if(
 			(where == extensions || where[-1] == ' ') &&
-			(*term == ' ' || *term == ' ')
+			(*term == ' ' || *term == '\0')
 		) {
 			return flag;
 		}
