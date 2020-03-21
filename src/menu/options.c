@@ -561,7 +561,7 @@ static MenuData* create_options_menu_video(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_video, create_options_menu_video)
 
 MenuData* create_options_menu_trainer(void) {
-	MenuData *m = create_options_menu_base("Trainer Mode");
+	MenuData *m = create_options_menu_base("Trainer / Assist Mode");
 	OptionBinding *b;
 
 	add_menu_entry(m, "Trainer Mode", do_nothing,
