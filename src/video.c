@@ -126,9 +126,13 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
+static bool video_is_highdpi(void) {
+	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_ALLOW_HIGHDPI;
+}
+
 void video_get_viewport_size(float *width, float *height) {
-	float w = video.current.width;
-	float h = video.current.height;
+	int w, h;
+	SDL_GL_GetDrawableSize(video.window, &w, &h);
 	float r = w / h;
 	if(r > VIDEO_ASPECT_RATIO) {
 		w = h * VIDEO_ASPECT_RATIO;
@@ -142,8 +146,13 @@ void video_get_viewport_size(float *width, float *height) {
 
 void video_get_viewport(FloatRect *vp) {
 	video_get_viewport_size(&vp->w, &vp->h);
-	vp->x = (int)((video.current.width  - vp->w) / 2);
-	vp->y = (int)((video.current.height - vp->h) / 2);
+	if(video_is_highdpi()) {
+		vp->x = (int)(video.current.width  - (vp->w / 2));
+		vp->y = (int)(video.current.height - (vp->h / 2));
+	} else {
+		vp->x = (int)((video.current.width  - vp->w) / 2);
+		vp->y = (int)((video.current.height - vp->h) / 2);
+	}
 }
 
 static void video_set_viewport(void) {
@@ -248,7 +257,9 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+	if(video.backend == VIDEO_BACKEND_COCOA) {
+		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+	}
 
 	video_new_window_internal(display, w, h, flags, false);
 	display = video_current_display();
@@ -683,6 +694,8 @@ void video_init(void) {
 	} else if(!strcmp(driver, "Switch")) {
 		video.backend = VIDEO_BACKEND_SWITCH;
 		video_query_capability = video_query_capability_alwaysfullscreen;
+	} else if(!strcmp(driver, "Cocoa")) {
+		video.backend = VIDEO_BACKEND_COCOA;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
