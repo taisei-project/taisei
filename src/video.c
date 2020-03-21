@@ -30,8 +30,6 @@ static struct {
 	VideoMode intended;
 	VideoMode current;
 	VideoBackend backend;
-	float scale_factor;
-	float dpi;
 } video;
 
 typedef struct ScreenshotTaskData {
@@ -132,24 +130,10 @@ static bool video_highdpi_mode(void) {
 	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_ALLOW_HIGHDPI;
 }
 
-static void video_get_scale_factor(float *w, float *h) {
-	log_debug("dpi: %f, scale factor: %f", video.dpi, video.scale_factor);
-	log_debug("pre scale factor - w: %f, h: %f", *w, *h);
-	log_debug("scale equation: %f", video.dpi / video.scale_factor);
-
-	if(video_highdpi_mode()) {
-		*w = (int)(*w * video.dpi / video.scale_factor);
-		*h = (int)(*h * video.dpi / video.scale_factor);
-		log_debug("display: high dpi mode");
-	}
-
-	log_debug("post scale factor - w: %f, h: %f", *w, *h);
-}
-
 void video_get_viewport_size(float *width, float *height) {
 	float w = video.current.width;
 	float h = video.current.height;
-	float r = (float)w / h;
+	float r = w / h;
 	if(r > VIDEO_ASPECT_RATIO) {
 		w = h * VIDEO_ASPECT_RATIO;
 	} else if(r < VIDEO_ASPECT_RATIO) {
@@ -162,8 +146,15 @@ void video_get_viewport_size(float *width, float *height) {
 
 void video_get_viewport(FloatRect *vp) {
 	video_get_viewport_size(&vp->w, &vp->h);
-	vp->x = (int)(video.current.width  - vp->w);
-	vp->y = (int)(video.current.height - vp->h);
+	if(video_highdpi_mode()) {
+		vp->x = (int)(video.current.width  - vp->w);
+		vp->y = (int)(video.current.height - vp->h);
+		vp->w = (int)(vp->w * 2);
+		vp->h = (int)(vp->h * 2);
+	} else {
+		vp->x = (int)((video.current.width  - vp->w) / 2);
+		vp->y = (int)((video.current.height - vp->h) / 2);
+	}
 	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
 	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
 	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
@@ -172,7 +163,6 @@ void video_get_viewport(FloatRect *vp) {
 static void video_set_viewport(void) {
 	FloatRect vp;
 	video_get_viewport(&vp);
-	video_get_scale_factor(&vp.w, &vp.h);
 	r_framebuffer_viewport_rect(NULL, vp);
 }
 
@@ -694,10 +684,6 @@ void video_init(void) {
 
 	video_query_capability = video_query_capability_generic;
 
-	float dpi;
-	SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
-	video.dpi = dpi;
-
 	if(!strcmp(driver, "x11")) {
 		video.backend = VIDEO_BACKEND_X11;
 	} else if(!strcmp(driver, "emscripten")) {
@@ -718,10 +704,8 @@ void video_init(void) {
 		video_query_capability = video_query_capability_alwaysfullscreen;
 	} else if(!strcmp(driver, "cocoa")) {
 		video.backend = VIDEO_BACKEND_COCOA;
-		video.scale_factor = 147.0f;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
-		video.scale_factor = 192.0f;
 	}
 
 	r_init();
