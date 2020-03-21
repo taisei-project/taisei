@@ -30,6 +30,8 @@ static struct {
 	VideoMode intended;
 	VideoMode current;
 	VideoBackend backend;
+	float scale_factor;
+	float dpi;
 } video;
 
 typedef struct ScreenshotTaskData {
@@ -112,12 +114,12 @@ static void video_add_mode_handler(VideoModeArray *mode_array, int width, int he
 	mode_array->mode[mode_array->mcount-1].height = height;
 }
 
-static void video_add_mode(int width, int height, bool fullscreen) {
-	if(fullscreen) {
-		video_add_mode_handler(&video.fs_modes, width, height);
-	} else {
-		video_add_mode_handler(&video.win_modes, width, height);
-	}
+static void video_add_mode_fullscreen(int width, int height) {
+	video_add_mode_handler(&video.fs_modes, width, height);
+}
+
+static void video_add_mode_windowed(int width, int height) {
+	video_add_mode_handler(&video.win_modes, width, height);
 }
 
 static int video_compare_modes(const void *a, const void *b) {
@@ -126,14 +128,28 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-static bool video_is_highdpi(void) {
+static bool video_highdpi_mode(void) {
 	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_ALLOW_HIGHDPI;
 }
 
+static void video_get_scale_factor(float *w, float *h) {
+	log_debug("dpi: %f, scale factor: %f", video.dpi, video.scale_factor);
+	log_debug("pre scale factor - w: %f, h: %f", *w, *h);
+	log_debug("scale equation: %f", video.dpi / video.scale_factor);
+
+	if(video_highdpi_mode()) {
+		*w = (int)(*w * video.dpi / video.scale_factor);
+		*h = (int)(*h * video.dpi / video.scale_factor);
+		log_debug("display: high dpi mode");
+	}
+
+	log_debug("post scale factor - w: %f, h: %f", *w, *h);
+}
+
 void video_get_viewport_size(float *width, float *height) {
-	int w, h;
-	SDL_GL_GetDrawableSize(video.window, &w, &h);
-	float r = w / h;
+	float w = video.current.width;
+	float h = video.current.height;
+	float r = (float)w / h;
 	if(r > VIDEO_ASPECT_RATIO) {
 		w = h * VIDEO_ASPECT_RATIO;
 	} else if(r < VIDEO_ASPECT_RATIO) {
@@ -146,18 +162,17 @@ void video_get_viewport_size(float *width, float *height) {
 
 void video_get_viewport(FloatRect *vp) {
 	video_get_viewport_size(&vp->w, &vp->h);
-	if(video_is_highdpi()) {
-		vp->x = (int)(video.current.width  - (vp->w / 2));
-		vp->y = (int)(video.current.height - (vp->h / 2));
-	} else {
-		vp->x = (int)((video.current.width  - vp->w) / 2);
-		vp->y = (int)((video.current.height - vp->h) / 2);
-	}
+	vp->x = (int)(video.current.width  - vp->w);
+	vp->y = (int)(video.current.height - vp->h);
+	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
+	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
+	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
 }
 
 static void video_set_viewport(void) {
 	FloatRect vp;
 	video_get_viewport(&vp);
+	video_get_scale_factor(&vp.w, &vp.h);
 	r_framebuffer_viewport_rect(NULL, vp);
 }
 
@@ -257,9 +272,7 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	if(video.backend == VIDEO_BACKEND_COCOA) {
-		flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-	}
+	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 
 	video_new_window_internal(display, w, h, flags, false);
 	display = video_current_display();
@@ -347,6 +360,11 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
+			SDL_SetWindowPosition(
+				video.window,
+				SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+				SDL_WINDOWPOS_CENTERED_DISPLAY(display)
+			);
 		}
 	}
 
@@ -676,6 +694,10 @@ void video_init(void) {
 
 	video_query_capability = video_query_capability_generic;
 
+	float dpi;
+	SDL_GetDisplayDPI(0, NULL, &dpi, NULL);
+	video.dpi = dpi;
+
 	if(!strcmp(driver, "x11")) {
 		video.backend = VIDEO_BACKEND_X11;
 	} else if(!strcmp(driver, "emscripten")) {
@@ -694,10 +716,12 @@ void video_init(void) {
 	} else if(!strcmp(driver, "Switch")) {
 		video.backend = VIDEO_BACKEND_SWITCH;
 		video_query_capability = video_query_capability_alwaysfullscreen;
-	} else if(!strcmp(driver, "Cocoa")) {
+	} else if(!strcmp(driver, "cocoa")) {
 		video.backend = VIDEO_BACKEND_COCOA;
+		video.scale_factor = 147.0f;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
+		video.scale_factor = 192.0f;
 	}
 
 	r_init();
@@ -711,7 +735,7 @@ void video_init(void) {
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
 				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
 			} else {
-				video_add_mode(mode.w, mode.h, true);
+				video_add_mode_fullscreen(mode.w, mode.h);
 				fullscreen_available = true;
 			}
 		}
@@ -735,12 +759,15 @@ void video_init(void) {
 		{1152, 864},
 		{1400, 1050},
 		{1440, 1080},
+		{1600, 1200},
+		{1856, 1392},
+		{1920, 1440},
 		{0, 0},
 	};
 
 	if(video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED) {
 		for(int i = 0; common_modes[i].width; ++i) {
-			video_add_mode(common_modes[i].width, common_modes[i].height, false);
+			video_add_mode_windowed(common_modes[i].width, common_modes[i].height);
 		}
 	}
 

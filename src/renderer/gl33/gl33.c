@@ -1087,13 +1087,11 @@ static void gl33_swap(SDL_Window *window) {
 
 	gl33_stats_post_frame();
 
-	if(glext.version.is_webgl) {
-		// We can't rely on viewport being preserved across frames,
-		// so force the next frame to set one on the first draw call.
-		// The viewport might get updated externally when e.g. going
-		// fullscreen, and we can't catch that in the resize event.
-		memset(&R.viewport.active, 0, sizeof(R.viewport.active));
-	}
+	// We can't rely on viewport being preserved across frames,
+	// so force the next frame to set one on the first draw call.
+	// The viewport might get updated externally when e.g. going
+	// fullscreen, and we can't catch that in the resize event.
+	memset(&R.viewport.active, 0, sizeof(R.viewport.active));
 }
 
 static void gl33_blend(BlendMode mode) {
