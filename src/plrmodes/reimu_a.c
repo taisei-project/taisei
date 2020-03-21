@@ -413,16 +413,7 @@ static void reimu_spirit_bomb_bg(Player *p) {
 	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }
 
-TASK(reimu_spirit_ofuda_trail, { BoxedProjectile ofuda; }) {
-	Projectile *p = TASK_BIND_UNBOXED(reimu_common_ofuda_swawn_trail(NOT_NULL(ENT_UNBOX(ARGS.ofuda)), NULL));
-
-	for(;;) {
-		p->color.g *= 0.95;
-		YIELD;
-	}
-}
-
-TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; }) {
+TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
 	Projectile *ofuda = TASK_BIND_UNBOXED(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
@@ -430,11 +421,11 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; }) {
 		.move = move_linear(ARGS.vel),
 		.type = PROJ_PLAYER,
 		.damage = ARGS.damage,
-		.shader = "sprite_particle",
+		.shader_ptr = ARGS.shader,
 	));
 
 	for(int t = 0;; ++t) {
-		INVOKE_TASK(reimu_spirit_ofuda_trail, ENT_BOX(ofuda));
+		reimu_common_ofuda_swawn_trail(ofuda);
 		YIELD;
 	}
 }
@@ -454,25 +445,9 @@ static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) 
 	}
 }
 
-TASK(reimu_spirit_slave_expire, { ReimuAController *ctrl; BoxedEnemy e; BoxedTask main_task; }) {
-	Enemy *e = TASK_BIND(ARGS.e);
-	Player *plr = ARGS.ctrl->plr;
-	cotask_cancel(cotask_unbox(ARGS.main_task));
-
-	cmplx pos0 = e->pos;
-	real retract_time = ORB_RETRACT_TIME;
-	e->move = (MoveParams) { 0 };
-
-	for(int i = 1; i <= retract_time; ++i) {
-		YIELD;
-		e->pos = clerp(pos0, plr->pos, i / retract_time);
-	}
-
-	delete_enemy(&plr->slaves, e);
-}
-
 static Enemy *reimu_spirit_create_slave(ReimuAController *ctrl, EnemyVisualRule visual) {
 	Player *plr = ctrl->plr;
+
 	Enemy *e = create_enemy_p(
 		&plr->slaves,
 		plr->pos,
@@ -480,8 +455,16 @@ static Enemy *reimu_spirit_create_slave(ReimuAController *ctrl, EnemyVisualRule 
 		visual,
 		NULL, 0, 0, 0, 0
 	);
+
 	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, reimu_spirit_slave_expire, ctrl, ENT_BOX(e), THIS_TASK);
+
+	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, reimu_common_slave_expire,
+		.player = ENT_BOX(plr),
+		.slave = ENT_BOX(e),
+		.slave_main_task = THIS_TASK,
+		.retract_time = ORB_RETRACT_TIME
+	);
+
 	return e;
 }
 
@@ -763,6 +746,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	real dir = 1;
+	ShaderProgram *shader = r_shader_get("sprite_particle");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -770,7 +754,8 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 		INVOKE_TASK(reimu_spirit_ofuda,
 			.pos = plr->pos + 10 * dir - 15.0*I,
 			.vel = -20*I,
-			.damage = SHOT_FORWARD_DMG
+			.damage = SHOT_FORWARD_DMG,
+			.shader = shader
 		);
 		dir = -dir;
 		WAIT(SHOT_FORWARD_DELAY);
@@ -787,7 +772,6 @@ TASK(reimu_spirit_shot_volley_bullet, { Player *plr; cmplx offset; cmplx vel; re
 		.move = move_linear(ARGS.vel),
 		.type = PROJ_PLAYER,
 		.damage = ARGS.damage,
-		.shader = "sprite_particle",
 		.shader_ptr = ARGS.shader,
 	);
 }
@@ -807,7 +791,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 			real spread = M_PI/32 * (1 + 0.35 * pwr);
 
 			INVOKE_SUBTASK_DELAYED(delay, reimu_spirit_shot_volley_bullet,
-				plr,
+				.plr = plr,
 				.offset = -I + 5,
 				.vel = -18 * I * cdir(spread),
 				.damage = damage,
@@ -815,7 +799,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 			);
 
 			INVOKE_SUBTASK_DELAYED(delay, reimu_spirit_shot_volley_bullet,
-				plr,
+				.plr = plr,
 				.offset = -I - 5,
 				.vel = -18 * I * cdir(-spread),
 				.damage = damage,

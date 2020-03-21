@@ -42,9 +42,11 @@ float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon
 cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
 cmplx cnormalize(cmplx c) attr_const;
 cmplx cclampabs(cmplx c, double maxabs) attr_const;
+cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) attr_const;
 cmplx cdir(double angle) attr_const;
 cmplx cwmul(cmplx c0, cmplx c1) attr_const;
 cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) attr_const;
+cmplx cswap(cmplx c) attr_const;
 double psin(double) attr_const;
 double pcos(double) attr_const;
 float psinf(float) attr_const;

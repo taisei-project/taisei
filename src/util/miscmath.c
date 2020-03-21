@@ -113,6 +113,13 @@ cmplx cclampabs(cmplx c, double maxabs) {
 	return c;
 }
 
+cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) {
+	return CMPLX(
+		clamp(creal(c), creal(cmin), creal(cmax)),
+		clamp(cimag(c), cimag(cmin), cimag(cmax))
+	);
+}
+
 cmplx cdir(double angle) {
 	// this is faster than cexp(I*angle)
 
@@ -131,6 +138,10 @@ cmplx cwmul(cmplx c0, cmplx c1) {
 
 cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) {
 	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
+}
+
+cmplx cswap(cmplx c) {
+	return CMPLX(cimag(c), creal(c));
 }
 
 double psin(double x) {
