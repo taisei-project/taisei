@@ -655,6 +655,8 @@ static bool player_bomb(Player *plr) {
 		// player_cancel_powersurge(plr);
 		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
+		coevent_signal(&plr->events.bomb_used);
+
 		plr->mode->procs.bomb(plr);
 		plr->bombs--;
 

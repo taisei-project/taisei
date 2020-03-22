@@ -20,6 +20,14 @@
 #define SHOT_SLAVE_PRE_DELAY 3
 #define SHOT_SLAVE_POST_DELAY 3
 
+#define BOMB_PROJECTILE_DAMAGE 75
+#define BOMB_PROJECTILE_FIRE_DELAY 4
+#define BOMB_PROJECTILE_PERIODIC_AREA_DAMAGE 50
+#define BOMB_PROJECTILE_PERIODIC_AREA_RADIUS (GAP_LENGTH * 0.5)
+#define BOMB_PROJECTILE_PERIODIC_DELAY 3
+#define BOMB_PROJECTILE_IMPACT_AREA_DAMAGE 50
+#define BOMB_PROJECTILE_IMPACT_AREA_RADIUS GAP_LENGTH
+
 #define ORB_RETRACT_TIME 4
 
 #define GAP_LENGTH 128
@@ -32,7 +40,6 @@
 // #define GAP_OFFSET 82
 
 #define NUM_GAPS 4
-#define FOR_EACH_GAP(gap) for(Enemy *gap = global.plr.slaves.first; gap; gap = gap->next) if(gap->logic_rule == reimu_dream_gap)
 
 typedef struct ReimuGap ReimuGap;
 typedef struct ReimuBController ReimuBController;
@@ -64,79 +71,120 @@ typedef struct ReimuBController {
 	real bomb_alpha;
 } ReimuBController;
 
-static int reimu_dream_gap_bomb_projectile(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if(t == EVENT_DEATH) {
-		Sprite *spr = get_sprite("part/blast");
-
-		double range = GAP_LENGTH;
-		double damage = 50;
-
-		PARTICLE(
-			.sprite_ptr = spr,
-			.color = &p->color,
-			.pos = p->pos,
-			.timeout = 20,
-			.draw_rule = pdraw_timeout_scalefade(0, 3 * range / spr->w, 1, 0),
-			.layer = LAYER_BOSS + 2,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		);
-
-		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-	p->angle = carg(p->args[0]);
-
-	if(!(t % 3)) {
-		double range = GAP_LENGTH * 0.5;
-		double damage = 50;
-		// Yes, I know, this is inefficient as hell, but I'm too lazy to write a
-		// stage_clear_hazards_inside_rectangle function.
-		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
-	}
-
-	return ACTION_NONE;
-}
-
 static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = p->sprite,
-		.shader_ptr = p->shader,
-		.color = &p->color,
-		.shader_params = &(ShaderCustomParams) {{ p->opacity }},
-		.pos = { creal(p->pos), cimag(p->pos) },
-		.scale.both = 0.75 * clamp(t / 5.0, 0.1, 1.0),
-	});
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	sp.scale.as_cmplx = 0.75 * clamp(t / 5.0, 0.1, 1.0) * (1 + I);
+	r_draw_sprite(&sp);
 }
 
-static void reimu_dream_gap_bomb(Enemy *e, int t) {
-	if(!(t % 4)) {
-		PROJECTILE(
-			.sprite = "glowball",
-			.size = 32 * (1 + I),
-			.color = HSLA(t/30.0, 0.5, 0.5, 0.5),
-			.pos = e->pos + e->args[0] * GAP_LENGTH * 0.25 * rng_sreal(),
-			.rule = reimu_dream_gap_bomb_projectile,
-			.draw_rule = reimu_dream_gap_bomb_projectile_draw,
-			.type = PROJ_PLAYER,
-			.damage_type = DMG_PLAYER_BOMB,
-			.damage = 75,
-			.args = { -20 * e->pos0 },
-		);
+TASK(reimu_dream_gap_bomb_projectile_impact, { BoxedProjectile p; Sprite *impact_sprite; }) {
+	Projectile *p = TASK_BIND(ARGS.p);
+
+	real range = BOMB_PROJECTILE_IMPACT_AREA_RADIUS;
+	real damage = BOMB_PROJECTILE_IMPACT_AREA_DAMAGE;
+
+	PARTICLE(
+		.angle = rng_angle(),
+		.color = &p->color,
+		.draw_rule = pdraw_timeout_scalefade(0, 3 * range / ARGS.impact_sprite->w, 1, 0),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
+		.layer = LAYER_BOSS + 2,
+		.pos = p->pos,
+		.sprite_ptr = ARGS.impact_sprite,
+		.timeout = 20,
+	);
+
+	stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+	ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
+}
+
+TASK(reimu_dream_gap_bomb_projectile, {
+	cmplx pos;
+	cmplx vel;
+	const Color *color;
+	Sprite *sprite;
+	Sprite *impact_sprite;
+}) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.angle = rng_angle(),
+		.color = ARGS.color,
+		.damage = 75,
+		.damage_type = DMG_PLAYER_BOMB,
+		.draw_rule = reimu_dream_gap_bomb_projectile_draw,
+		.flags = PFLAG_MANUALANGLE,
+		.move = move_linear(ARGS.vel),
+		.pos = ARGS.pos,
+		.size = 32 * (1 + I),
+		.sprite_ptr = ARGS.sprite,
+		.type = PROJ_PLAYER,
+	));
+
+	INVOKE_TASK_WHEN(&p->events.killed, reimu_dream_gap_bomb_projectile_impact,
+		ENT_BOX(p),
+		ARGS.impact_sprite
+	);
+
+	for(;;) {
+		WAIT(BOMB_PROJECTILE_PERIODIC_DELAY);
+		real range = BOMB_PROJECTILE_PERIODIC_AREA_RADIUS;
+		real damage = BOMB_PROJECTILE_PERIODIC_AREA_DAMAGE;
+		stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_BOMB }, NULL, NULL);
+	}
+}
+
+TASK(reimu_dream_bomb_noise, { BoxedPlayer plr; }) {
+	Player *plr = TASK_BIND(ARGS.plr);
+	do {
+		play_sound("boon");
+		WAIT(16);
+	} while(player_is_bomb_active(plr));
+}
+
+TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
+	ReimuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	Sprite *spr_proj = get_sprite("proj/glowball");
+	Sprite *spr_impact = get_sprite("part/blast");
+
+	int t = 0;
+
+	do {
+		Color *pcolor = HSLA(t/30.0, 0.5, 0.5, 0.5);
+
+		for(int i = 0; i < NUM_GAPS; ++i) {
+			ReimuGap *gap = ctrl->gaps.array + i;
+			INVOKE_TASK(reimu_dream_gap_bomb_projectile,
+				.pos = gap->pos + gap->parallel_axis * GAP_LENGTH * 0.25 * rng_sreal(),
+				.vel = -20 * gap->orientation,
+				.color = pcolor,
+				.sprite = spr_proj,
+				.impact_sprite = spr_impact
+			);
+		}
 
 		global.shake_view += 5;
+		t += WAIT(BOMB_PROJECTILE_FIRE_DELAY);
+	} while(player_is_bomb_active(plr));
+}
 
-		if(!(t % 16)) {
-			play_sound("boon");
-		}
+TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
+	ReimuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		play_sound("bomb_marisa_a");
+		INVOKE_TASK(reimu_dream_bomb_noise, ENT_BOX(plr));
+		INVOKE_TASK(reimu_dream_bomb_barrage, ctrl);
 	}
+}
+
+static void reimu_dream_bomb(Player *p) {
+	play_sound("bomb_marisa_a");
+	INVOKE_TASK(reimu_dream_bomb_noise, ENT_BOX(p));
 }
 
 static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real strength) {
@@ -230,11 +278,8 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 	reimu_dream_draw_gap_lights(ctrl, global.frames, ctrl->bomb_alpha * ctrl->bomb_alpha);
 }
 
-static void reimu_dream_bomb(Player *p) {
-	play_sound("bomb_marisa_a");
-}
-
 static void reimu_dream_bomb_bg(Player *p) {
+	// FIXME this needs access to ReimuBController!
 	// float a = gap_renderer->args[0];
 	// reimu_common_bomb_bg(p, a);
 }
@@ -607,6 +652,7 @@ TASK(reimu_dream_controller, { BoxedPlayer plr; }) {
 	INVOKE_SUBTASK(reimu_dream_process_gaps, &ctrl);
 	INVOKE_SUBTASK(reimu_dream_shot_forward, &ctrl);
 	INVOKE_SUBTASK(reimu_dream_power_handler, &ctrl);
+	INVOKE_SUBTASK(reimu_dream_bomb_handler, &ctrl);
 
 	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
 	COEVENT_CANCEL_ARRAY(ctrl.events);
