@@ -55,8 +55,6 @@ void player_stage_post_init(Player *plr) {
 	assert(plr->mode != NULL);
 
 	// ensure the essential callbacks are there. other code tests only for the optional ones
-	assert(plr->mode->procs.shot != NULL);
-	assert(plr->mode->procs.bomb != NULL);
 	assert(plr->mode->procs.property != NULL);
 	assert(plr->mode->character != NULL);
 	assert(plr->mode->dialog != NULL);
@@ -626,7 +624,9 @@ DEFINE_TASK(player_logic) {
 
 		if(player_should_shoot(plr, false)) {
 			coevent_signal(&plr->events.shoot);
-			plr->mode->procs.shot(plr);
+			if(plr->mode->procs.shot) {
+				plr->mode->procs.shot(plr);
+			}
 		}
 
 		if(global.frames == plr->deathtime) {
@@ -657,7 +657,10 @@ static bool player_bomb(Player *plr) {
 
 		coevent_signal(&plr->events.bomb_used);
 
-		plr->mode->procs.bomb(plr);
+		if(plr->mode->procs.bomb) {
+			plr->mode->procs.bomb(plr);
+		}
+
 		plr->bombs--;
 
 		if(plr->deathtime >= global.frames) {

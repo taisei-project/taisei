@@ -51,7 +51,7 @@ struct ReimuGap {
 	cmplx parallel_axis; // normalized, parallel the gap, perpendicular to orientation
 };
 
-typedef struct ReimuBController {
+struct ReimuBController {
 	ENTITY_INTERFACE_NAMED(ReimuBController, gap_renderer);
 	Player *plr;
 	ShaderProgram *yinyang_shader;
@@ -69,7 +69,7 @@ typedef struct ReimuBController {
 	) events;
 
 	real bomb_alpha;
-} ReimuBController;
+};
 
 static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	SpriteParamsBuffer spbuf;
@@ -170,6 +170,16 @@ TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
 	} while(player_is_bomb_active(plr));
 }
 
+TASK(reimu_dream_bomb_background, { ReimuBController *ctrl; }) {
+	ReimuBController *ctrl = ARGS.ctrl;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+
+	do {
+		WAIT_EVENT_OR_DIE(draw_event);
+		reimu_common_bomb_bg(ctrl->plr, ctrl->bomb_alpha);
+	} while(ctrl->bomb_alpha > 0);
+}
+
 TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
@@ -179,12 +189,8 @@ TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
 		play_sound("bomb_marisa_a");
 		INVOKE_TASK(reimu_dream_bomb_noise, ENT_BOX(plr));
 		INVOKE_TASK(reimu_dream_bomb_barrage, ctrl);
+		INVOKE_TASK(reimu_dream_bomb_background, ctrl);
 	}
-}
-
-static void reimu_dream_bomb(Player *p) {
-	play_sound("bomb_marisa_a");
-	INVOKE_TASK(reimu_dream_bomb_noise, ENT_BOX(p));
 }
 
 static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real strength) {
@@ -276,12 +282,6 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 	}
 
 	reimu_dream_draw_gap_lights(ctrl, global.frames, ctrl->bomb_alpha * ctrl->bomb_alpha);
-}
-
-static void reimu_dream_bomb_bg(Player *p) {
-	// FIXME this needs access to ReimuBController!
-	// float a = gap_renderer->args[0];
-	// reimu_common_bomb_bg(p, a);
 }
 
 static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
@@ -703,8 +703,6 @@ PlayerMode plrmode_reimu_b = {
 	.shot_mode = PLR_SHOT_REIMU_DREAM,
 	.procs = {
 		.property = reimu_common_property,
-		.bomb = reimu_dream_bomb,
-		.bombbg = reimu_dream_bomb_bg,
 		.shot = reimu_dream_shot,
 		.init = reimu_dream_init,
 		.preload = reimu_dream_preload,
