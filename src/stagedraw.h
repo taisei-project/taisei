@@ -22,20 +22,28 @@ typedef enum StageFBPair {
 	NUM_FBPAIRS,
 } StageFBPair;
 
+typedef COEVENTS_ARRAY(
+	background_drawn
+) StageDrawEvents;
+
 void stage_draw_pre_init(void);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
+
+StageDrawEvents *stage_get_draw_events(void);
+
 void stage_draw_hud(void);
 void stage_draw_viewport(void);
 void stage_draw_overlay(void);
 void stage_draw_scene(StageInfo *stage);
 void stage_draw_bottom_text(void);
-bool stage_should_draw_particle(Projectile *p);
-
-void stage_display_clear_screen(const StageClearBonus *bonus);
 
 void stage_draw_begin_noshake(void);
 void stage_draw_end_noshake(void);
+
+bool stage_should_draw_particle(Projectile *p);
+
+void stage_display_clear_screen(const StageClearBonus *bonus);
 
 FBPair *stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
 Framebuffer *stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);

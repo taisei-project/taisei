@@ -34,6 +34,8 @@ typedef enum DrawLayer {
 // NOTE: you can bit-or a drawlayer_low_t value with one of the LAYER_x constants
 // for sub-layer ordering.
 
+typedef struct CustomEntity CustomEntity;
+
 #define ENT_TYPES \
 	ENT_TYPE(Projectile, ENT_PROJECTILE) \
 	ENT_TYPE(Laser, ENT_LASER) \
@@ -41,6 +43,7 @@ typedef enum DrawLayer {
 	ENT_TYPE(Boss, ENT_BOSS) \
 	ENT_TYPE(Player, ENT_PLAYER) \
 	ENT_TYPE(Item, ENT_ITEM) \
+	ENT_TYPE(CustomEntity, ENT_CUSTOM) \
 
 typedef enum EntityType {
 	_ENT_TYPE_ENUM_BEGIN,
@@ -111,7 +114,11 @@ struct EntityInterface {
 	ENTITY_INTERFACE_BASE(EntityInterface);
 };
 
-INLINE const char* ent_type_name(EntityType type) {
+struct CustomEntity {
+	ENTITY_INTERFACE(CustomEntity);
+};
+
+INLINE const char *ent_type_name(EntityType type) {
 	switch(type) {
 		#define ENT_TYPE(typename, id) case id: return #id;
 		ENT_TYPES
@@ -123,7 +130,7 @@ INLINE const char* ent_type_name(EntityType type) {
 #define ENT_TYPE_ID(typename) (_ENT_TYPEID_##typename)
 
 #ifdef USE_GNU_EXTENSIONS
-	#define ENT_CAST(ent, typename) (__extension__ ({ \
+	#define _internal_ENT_CAST(ent, typename, ent_type_id) (__extension__ ({ \
 		__auto_type _ent = ent; \
 		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(*(_ent))), \
 			"Expression is not an EntityInterface pointer"); \
@@ -131,14 +138,17 @@ INLINE const char* ent_type_name(EntityType type) {
 			#typename " doesn't implement EntityInterface"); \
 		static_assert(__builtin_offsetof(typename, entity_interface) == 0, \
 			"entity_interface has non-zero offset in " #typename); \
-		IF_DEBUG(if(_ent->type != _ENT_TYPEID_##typename) { \
+		IF_DEBUG(if(_ent->type != ent_type_id) { \
 			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(_ent->type)); \
 		}); \
 		CASTPTR_ASSUME_ALIGNED(_ent, typename); \
 	}))
 #else
-	#define ENT_CAST(ent, typename) CASTPTR_ASSUME_ALIGNED(ent, typename)
+	#define _internal_ENT_CAST(ent, typename, ent_type_id) CASTPTR_ASSUME_ALIGNED(ent, typename)
 #endif
+
+#define ENT_CAST(ent, typename) _internal_ENT_CAST(ent, typename, ENT_TYPE_ID(typename))
+#define ENT_CAST_CUSTOM(ent, typename) _internal_ENT_CAST(ent, typename, _ENT_TYPEID_CustomEntity)
 
 void ent_init(void);
 void ent_shutdown(void);

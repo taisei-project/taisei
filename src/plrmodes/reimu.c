@@ -52,8 +52,17 @@ double reimu_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
-Projectile *reimu_common_ofuda_swawn_trail(Projectile *p, ProjectileList *dest) {
-	return PARTICLE(
+TASK(reimu_ofuda_trail, { BoxedProjectile trail; }) {
+	Projectile *trail = TASK_BIND(ARGS.trail);
+
+	for(;;) {
+		trail->color.g *= 0.95;
+		YIELD;
+	}
+}
+
+Projectile *reimu_common_ofuda_swawn_trail(Projectile *p) {
+	Projectile *trail = PARTICLE(
 		// .sprite_ptr = p->sprite,
 		.sprite_ptr = get_sprite("proj/hghost"),
 		.color = &p->color,
@@ -63,8 +72,11 @@ Projectile *reimu_common_ofuda_swawn_trail(Projectile *p, ProjectileList *dest) 
 		.draw_rule = pdraw_timeout_scalefade(1, 2, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOREFLECT,
-		.dest = dest,
 	);
+
+	// TODO maybe replace this with something better looking and less task-hungry
+	INVOKE_TASK(reimu_ofuda_trail, ENT_BOX(trail));
+	return trail;
 }
 
 void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
@@ -116,4 +128,23 @@ void reimu_common_bomb_buffer_init(void) {
 	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
 	bomb_buffer = stage_add_background_framebuffer("Reimu bomb FB", 0.25, 1, 1, &cfg);
+}
+
+DEFINE_EXTERN_TASK(reimu_common_slave_expire) {
+	Enemy *e = TASK_BIND(ARGS.slave);
+	cotask_cancel(cotask_unbox(ARGS.slave_main_task));
+
+	cmplx pos0 = e->pos;
+	real retract_time = ARGS.retract_time;
+	e->move = (MoveParams) { 0 };
+
+	Player *plr;
+
+	for(int i = 1; i <= retract_time; ++i) {
+		YIELD;
+		plr = NOT_NULL(ENT_UNBOX(ARGS.player));
+		e->pos = clerp(pos0, plr->pos, i / retract_time);
+	}
+
+	delete_enemy(&plr->slaves, e);
 }

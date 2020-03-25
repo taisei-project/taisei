@@ -60,6 +60,8 @@ static struct {
 
 	ManagedFramebufferGroup *mfb_group;
 
+	StageDrawEvents events;
+
 	#ifdef DEBUG
 		Sprite dummy;
 	#endif
@@ -340,9 +342,12 @@ void stage_draw_init(void) {
 	events_register_handler(&(EventHandler) {
 		stage_draw_event, NULL, EPRIO_SYSTEM,
 	});
+
+	COEVENT_INIT_ARRAY(stagedraw.events);
 }
 
 void stage_draw_shutdown(void) {
+	COEVENT_CANCEL_ARRAY(stagedraw.events);
 	events_unregister_handler(stage_draw_event);
 	stage_draw_destroy_framebuffers();
 }
@@ -996,6 +1001,8 @@ void stage_draw_scene(StageInfo *stage) {
 		r_blend(BLEND_NONE);
 		draw_framebuffer_tex(background->front, VIEWPORT_W, VIEWPORT_H);
 		r_state_pop();
+
+		coevent_signal(&stagedraw.events.background_drawn);
 
 		// draw bomb background
 		// FIXME: we need a more flexible and consistent way for entities to hook
@@ -1810,4 +1817,8 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	);
 
 	stagedraw.clear_screen.target_alpha = 1;
+}
+
+StageDrawEvents *stage_get_draw_events(void) {
+	return &stagedraw.events;
 }

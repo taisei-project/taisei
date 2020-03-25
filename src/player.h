@@ -118,7 +118,8 @@ struct Player {
 	COEVENTS_ARRAY(
 		shoot,
 		inputflags_changed,
-		power_changed
+		power_changed,
+		bomb_used
 	) events;
 
 	uint64_t points;
