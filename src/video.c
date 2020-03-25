@@ -711,8 +711,6 @@ void video_init(void) {
 	} else if(!strcmp(driver, "Switch")) {
 		video.backend = VIDEO_BACKEND_SWITCH;
 		video_query_capability = video_query_capability_alwaysfullscreen;
-	} else if(!strcmp(driver, "cocoa")) {
-		video.backend = VIDEO_BACKEND_COCOA;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
