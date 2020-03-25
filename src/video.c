@@ -126,35 +126,44 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-static bool video_highdpi_mode(void) {
-	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_ALLOW_HIGHDPI;
+static FloatExtent video_get_screen_framebuffer_size(void) {
+	int fb_w, fb_h;
+	SDL_GL_GetDrawableSize(video.window, &fb_w, &fb_h);
+	return (FloatExtent) { fb_w, fb_h };
 }
 
-void video_get_viewport_size(float *width, float *height) {
-	float w = video.current.width;
-	float h = video.current.height;
+static FloatExtent video_get_viewport_size_for_framebuffer(FloatExtent framebuffer_size) {
+	float w = framebuffer_size.w;
+	float h = framebuffer_size.h;
 	float r = w / h;
+
 	if(r > VIDEO_ASPECT_RATIO) {
 		w = h * VIDEO_ASPECT_RATIO;
 	} else if(r < VIDEO_ASPECT_RATIO) {
 		h = w / VIDEO_ASPECT_RATIO;
 	}
 
-	*width = w;
-	*height = h;
+	return (FloatExtent) { w, h };
+}
+
+void video_get_viewport_size(float *width, float *height) {
+	FloatExtent fb = video_get_screen_framebuffer_size();
+	FloatExtent vp = video_get_viewport_size_for_framebuffer(fb);
+
+	*width = vp.w;
+	*height = vp.h;
 }
 
 void video_get_viewport(FloatRect *vp) {
-	video_get_viewport_size(&vp->w, &vp->h);
-	if(video_highdpi_mode()) {
-		vp->x = (int)(video.current.width  - vp->w);
-		vp->y = (int)(video.current.height - vp->h);
-		vp->w = (int)(vp->w * 2);
-		vp->h = (int)(vp->h * 2);
-	} else {
-		vp->x = (int)((video.current.width  - vp->w) / 2);
-		vp->y = (int)((video.current.height - vp->h) / 2);
-	}
+	FloatExtent fb = video_get_screen_framebuffer_size();
+
+	// vp->extent aliases vp->w and vp->y; see util/geometry.h
+	vp->extent = video_get_viewport_size_for_framebuffer(fb);
+
+	vp->x = (int)((fb.w - vp->w) * 0.5);
+	vp->y = (int)((fb.h - vp->h) * 0.5);
+
+	// This function can also be changed to return a FloatRect instead
 	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
 	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
 	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
@@ -262,8 +271,6 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
 
-	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-
 	video_new_window_internal(display, w, h, flags, false);
 	display = video_current_display();
 
@@ -350,6 +357,8 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
+			// so the user doesn't have to drag the window back
+			// into the middle of the screen after a resolution change
 			SDL_SetWindowPosition(
 				video.window,
 				SDL_WINDOWPOS_CENTERED_DISPLAY(display),
