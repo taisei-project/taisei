@@ -650,10 +650,10 @@ static bool player_can_bomb(Player *plr) {
 	return (
 		!player_is_bomb_active(plr)
 		&& (
-				plr->bombs > 0 ||
-				plr->iddqd ||
-				plr->trainer.settings.extra_bombs
-			)
+			plr->bombs > 0 ||
+			plr->iddqd ||
+			plr->trainer.settings.extra_bombs
+		)
 		&& global.frames >= plr->respawntime
 	);
 }
