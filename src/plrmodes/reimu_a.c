@@ -11,6 +11,7 @@
 #include "global.h"
 #include "plrmodes.h"
 #include "reimu.h"
+#include "stagedraw.h"
 
 #define SHOT_FORWARD_DMG 50
 #define SHOT_FORWARD_DELAY 3
@@ -385,32 +386,48 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	}
 }
 
-static void reimu_spirit_bomb(Player *p) {
-	int count = 6;
+TASK(reimu_spirit_bomb_background, { ReimuAController *ctrl; }) {
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
-	for(int i = 0; i < count; i++) {
-		INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(p), i, 2*M_PI/count*i);
-	}
+	do {
+		WAIT_EVENT_OR_DIE(draw_event);
 
-	global.shake_view = 4;
-	play_sound("bomb_reimu_a");
-	play_sound("bomb_marisa_b");
+		float t = player_get_bomb_progress(plr);
+		float alpha = 0;
+
+		if(t > 0) {
+			alpha = fminf(1, 10*t);
+		}
+
+		if(t > 0.7) {
+			alpha *= 1 - powf((t - 0.7) / 0.3, 4);
+		}
+
+		reimu_common_bomb_bg(plr, alpha);
+		colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
+	} while(player_is_bomb_active(plr));
 }
 
-static void reimu_spirit_bomb_bg(Player *p) {
-	if(!player_is_bomb_active(p)) {
-		return;
+TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	int orb_count = 6;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		INVOKE_SUBTASK(reimu_spirit_bomb_background, ctrl);
+
+		global.shake_view = 4;
+		play_sound("bomb_reimu_a");
+		play_sound("bomb_marisa_b");
+
+		for(int i = 0; i < orb_count; i++) {
+			INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(plr), i, M_TAU/orb_count*i);
+		}
 	}
-
-	real t = player_get_bomb_progress(p);
-	float alpha = 0;
-	if(t > 0)
-		alpha = min(1,10*t);
-	if(t > 0.7)
-		alpha *= 1-pow((t-0.7)/0.3,4);
-
-	reimu_common_bomb_bg(p, alpha);
-	colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
 }
 
 TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
@@ -428,9 +445,6 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 		reimu_common_ofuda_swawn_trail(ofuda);
 		YIELD;
 	}
-}
-
-static void reimu_spirit_shot(Player *p) {
 }
 
 static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
@@ -820,6 +834,7 @@ TASK(reimu_spirit_controller, { BoxedPlayer plr; }) {
 	INVOKE_SUBTASK(reimu_spirit_power_handler, &ctrl);
 	INVOKE_SUBTASK(reimu_spirit_shot_forward, &ctrl);
 	INVOKE_SUBTASK(reimu_spirit_shot_volley, &ctrl);
+	INVOKE_SUBTASK(reimu_spirit_bomb_handler, &ctrl);
 
 	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
 	COEVENT_CANCEL_ARRAY(ctrl.events);
@@ -859,9 +874,6 @@ PlayerMode plrmode_reimu_a = {
 	.procs = {
 		.property = reimu_spirit_property,
 		.init = reimu_spirit_init,
-		.bomb = reimu_spirit_bomb,
-		.bombbg = reimu_spirit_bomb_bg,
-		.shot = reimu_spirit_shot,
 		.preload = reimu_spirit_preload,
 	},
 };
