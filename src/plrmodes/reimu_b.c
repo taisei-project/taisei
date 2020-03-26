@@ -187,9 +187,9 @@ TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
 		play_sound("bomb_marisa_a");
-		INVOKE_TASK(reimu_dream_bomb_noise, ENT_BOX(plr));
-		INVOKE_TASK(reimu_dream_bomb_barrage, ctrl);
-		INVOKE_TASK(reimu_dream_bomb_background, ctrl);
+		INVOKE_SUBTASK(reimu_dream_bomb_noise, ENT_BOX(plr));
+		INVOKE_SUBTASK(reimu_dream_bomb_barrage, ctrl);
+		INVOKE_SUBTASK(reimu_dream_bomb_background, ctrl);
 	}
 }
 
@@ -357,9 +357,6 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 			--*warp_count;
 		}
 	}
-}
-
-static void reimu_dream_shot(Player *p) {
 }
 
 static void reimu_dream_slave_visual(Enemy *e, int t, bool render) {
@@ -703,7 +700,6 @@ PlayerMode plrmode_reimu_b = {
 	.shot_mode = PLR_SHOT_REIMU_DREAM,
 	.procs = {
 		.property = reimu_common_property,
-		.shot = reimu_dream_shot,
 		.init = reimu_dream_init,
 		.preload = reimu_dream_preload,
 	},
