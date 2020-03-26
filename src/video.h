@@ -45,7 +45,6 @@ typedef enum VideoBackend {
 	VIDEO_BACKEND_KMSDRM,
 	VIDEO_BACKEND_RPI,
 	VIDEO_BACKEND_SWITCH,
-	VIDEO_BACKEND_COCOA,
 } VideoBackend;
 
 typedef enum VideoCapability {
