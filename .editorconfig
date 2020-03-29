@@ -16,3 +16,7 @@ indent_size = 4
 [{meson.build,meson_options.txt}]
 indent_style = space
 indent_size = 4
+
+[*.manifest]
+indent_style = space
+indent_size = 2
