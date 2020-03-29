@@ -82,6 +82,7 @@ typedef struct RendererFuncs {
 	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	uint (*framebuffer_get_attachment_mipmap)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	void (*framebuffer_clear)(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);
+	IntExtent (*framebuffer_get_size)(Framebuffer *framebuffer);
 
 	void (*framebuffer)(Framebuffer *framebuffer);
 	Framebuffer* (*framebuffer_current)(void);

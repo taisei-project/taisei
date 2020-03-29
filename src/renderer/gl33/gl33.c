@@ -111,6 +111,7 @@ static struct {
 	r_feature_bits_t features;
 
 	SDL_GLContext *gl_context;
+	SDL_Window *window;
 
 	#ifdef GL33_DRAW_STATS
 	struct {
@@ -901,6 +902,7 @@ static SDL_Window* gl33_create_window(const char *title, int x, int y, int w, in
 		GLVT.init_context(window);
 	}
 
+	R.window = window;
 	return window;
 }
 
@@ -1050,6 +1052,19 @@ static void gl33_framebuffer_viewport_current(Framebuffer *fb, FloatRect *out_re
 	transform_viewport_origin(fb, out_rect);
 }
 
+static IntExtent gl33_framebuffer_get_size(Framebuffer *fb) {
+	IntExtent fb_size;
+
+	if(fb == NULL) {
+		// TODO: cache this at window creation time and refresh on resize events?
+		SDL_GL_GetDrawableSize(R.window, &fb_size.w, &fb_size.h);
+	} else {
+		fb_size = gl33_framebuffer_get_effective_size(fb);
+	}
+
+	return fb_size;
+}
+
 static void gl33_shader(ShaderProgram *prog) {
 	assert(prog->gl_handle != 0);
 
@@ -1187,6 +1202,7 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.framebuffer_clear = gl33_framebuffer_clear,
+		.framebuffer_get_size = gl33_framebuffer_get_size,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,

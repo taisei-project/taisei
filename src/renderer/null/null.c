@@ -105,6 +105,7 @@ static void null_framebuffer_viewport_current(Framebuffer *framebuffer, FloatRec
 static void null_framebuffer(Framebuffer *framebuffer) { }
 static Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
 static void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }
+static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
 
 static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
 static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
@@ -218,6 +219,7 @@ RendererBackend _r_backend_null = {
 		.framebuffer = null_framebuffer,
 		.framebuffer_current = null_framebuffer_current,
 		.framebuffer_clear = null_framebuffer_clear,
+		.framebuffer_get_size = null_framebuffer_get_size,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_get_debug_label = null_vertex_buffer_get_debug_label,
 		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,

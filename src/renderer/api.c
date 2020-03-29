@@ -501,6 +501,10 @@ void r_framebuffer(Framebuffer *fb) {
 	B.framebuffer(fb);
 }
 
+IntExtent r_framebuffer_get_size(Framebuffer *fb) {
+	return B.framebuffer_get_size(fb);
+}
+
 Framebuffer * r_framebuffer_current(void) {
 	return B.framebuffer_current();
 }

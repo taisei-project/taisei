@@ -680,6 +680,7 @@ void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval);
+IntExtent r_framebuffer_get_size(Framebuffer *fb);
 
 void r_framebuffer(Framebuffer *fb);
 Framebuffer* r_framebuffer_current(void);
