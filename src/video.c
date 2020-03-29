@@ -128,13 +128,11 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-static FloatExtent video_get_screen_framebuffer_size(void) {
-	int fb_w, fb_h;
-	SDL_GL_GetDrawableSize(video.window, &fb_w, &fb_h);
-	return (FloatExtent) { fb_w, fb_h };
+static IntExtent video_get_screen_framebuffer_size(void) {
+	return r_framebuffer_get_size(video_get_screen_framebuffer());
 }
 
-static FloatExtent video_get_viewport_size_for_framebuffer(FloatExtent framebuffer_size) {
+static FloatExtent video_get_viewport_size_for_framebuffer(IntExtent framebuffer_size) {
 	float w = framebuffer_size.w;
 	float h = framebuffer_size.h;
 	float r = w / h;
@@ -149,7 +147,7 @@ static FloatExtent video_get_viewport_size_for_framebuffer(FloatExtent framebuff
 }
 
 void video_get_viewport_size(float *width, float *height) {
-	FloatExtent fb = video_get_screen_framebuffer_size();
+	IntExtent fb = video_get_screen_framebuffer_size();
 	FloatExtent vp = video_get_viewport_size_for_framebuffer(fb);
 
 	*width = vp.w;
@@ -157,9 +155,9 @@ void video_get_viewport_size(float *width, float *height) {
 }
 
 void video_get_viewport(FloatRect *vp) {
-	FloatExtent fb = video_get_screen_framebuffer_size();
+	IntExtent fb = video_get_screen_framebuffer_size();
 
-	// vp->extent aliases vp->w and vp->y; see util/geometry.h
+	// vp->extent aliases vp->w and vp->h; see util/geometry.h
 	vp->extent = video_get_viewport_size_for_framebuffer(fb);
 
 	vp->x = (int)((fb.w - vp->w) * 0.5);
@@ -735,7 +733,7 @@ void video_init(void) {
 				fullscreen_available = true;
 
 				if(has_windowed_modes) {
-					FloatExtent vp = video_get_viewport_size_for_framebuffer((FloatExtent) { mode.w, mode.h });
+					FloatExtent vp = video_get_viewport_size_for_framebuffer((IntExtent) { mode.w, mode.h });
 					video_add_mode_windowed(vp.w, vp.h);
 
 					// the ratio is always constant, so we need to check only 1 dimension

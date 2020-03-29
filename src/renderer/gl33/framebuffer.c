@@ -154,3 +154,33 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, co
 	glClear(glflags);
 	r_framebuffer(fb_saved);
 }
+
+IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
+	// According to the OpenGL wiki:
+	// "The effective size of the FBO is the intersection of all of the sizes of the bound images (ie: the smallest in each dimension)."
+
+	// TODO: do it once in gl33_framebuffer_prepare and cache the result
+
+	IntExtent fb_size = { 0, 0 };
+
+	for(int i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
+		Texture *tex = gl33_framebuffer_get_attachment(framebuffer, i);
+
+		if(tex != NULL) {
+			uint mipmap = framebuffer->attachment_mipmaps[i];
+			uint tex_w, tex_h;
+			gl33_texture_get_size(tex, mipmap, &tex_w, &tex_h);
+			IntExtent tex_size = { tex_w, tex_h };
+
+			if(fb_size.w == 0 && fb_size.h == 0) {
+				fb_size = tex_size;
+			} else if(tex_size.w < fb_size.w) {
+				fb_size.w = tex_size.w;
+			} else if(tex_size.h < fb_size.h) {
+				fb_size.h = tex_size.h;
+			}
+		}
+	}
+
+	return fb_size;
+}
