@@ -95,7 +95,7 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 	}
 }
 
-static void video_add_mode_handler(VideoModeArray *mode_array, int width, int height) {
+static void video_add_mode_handler(VideoModeArray *mode_array, int width, int height, const char *mode_type) {
 	if(mode_array->mode) {
 		for(uint i = 0; i < mode_array->mcount; ++i) {
 			VideoMode *m = mode_array->mode + i;
@@ -110,14 +110,16 @@ static void video_add_mode_handler(VideoModeArray *mode_array, int width, int he
 
 	mode_array->mode[mode_array->mcount-1].width  = width;
 	mode_array->mode[mode_array->mcount-1].height = height;
+
+	log_debug("Add %s mode: %ix%i", mode_type, width, height);
 }
 
 static void video_add_mode_fullscreen(int width, int height) {
-	video_add_mode_handler(&video.fs_modes, width, height);
+	video_add_mode_handler(&video.fs_modes, width, height, "fullscreen");
 }
 
 static void video_add_mode_windowed(int width, int height) {
-	video_add_mode_handler(&video.win_modes, width, height);
+	video_add_mode_handler(&video.win_modes, width, height, "windowed");
 }
 
 static int video_compare_modes(const void *a, const void *b) {
@@ -717,7 +719,10 @@ void video_init(void) {
 
 	r_init();
 
-	// Register all resolutions that are available in fullscreen
+	bool has_windowed_modes = (video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED);
+	FloatExtent largest_fullscreen_viewport = { 0, 0 };
+
+	// Register all resolutions that are available in fullscreen and their corresponding windowed modes.
 	for(int s = 0; s < video_num_displays(); ++s) {
 		log_info("Found display #%i: %s", s, video_display_name(s));
 		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
@@ -728,6 +733,16 @@ void video_init(void) {
 			} else {
 				video_add_mode_fullscreen(mode.w, mode.h);
 				fullscreen_available = true;
+
+				if(has_windowed_modes) {
+					FloatExtent vp = video_get_viewport_size_for_framebuffer((FloatExtent) { mode.w, mode.h });
+					video_add_mode_windowed(vp.w, vp.h);
+
+					// the ratio is always constant, so we need to check only 1 dimension
+					if(vp.w > largest_fullscreen_viewport.w) {
+						largest_fullscreen_viewport = vp;
+					}
+				}
 			}
 		}
 	}
@@ -737,28 +752,24 @@ void video_init(void) {
 		config_set_int(CONFIG_FULLSCREEN, false);
 	}
 
-	// Then, add some common 4:3 modes for the windowed mode if they are not there yet.
-	// This is required for some multihead setups.
-	VideoMode common_modes[] = {
-		{RESX, RESY},
-		{SCREEN_W, SCREEN_H},
+	if(has_windowed_modes) {
+		// Insert some more windowed modes derived from our "ideal" resolution.
+		// This is the resolution that the assets are optimized for.
+		FloatExtent ideal_resolution = { SCREEN_W * 2, SCREEN_H * 2 };
 
-		{640, 480},
-		{800, 600},
-		{1024, 768},
-		{1280, 960},
-		{1152, 864},
-		{1400, 1050},
-		{1440, 1080},
-		{1600, 1200},
-		{1856, 1392},
-		{1920, 1440},
-		{0, 0},
-	};
+		if(largest_fullscreen_viewport.w == 0) {
+			// no way to determine the upper bound; guess it
+			largest_fullscreen_viewport = ideal_resolution;
+		}
 
-	if(video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED) {
-		for(int i = 0; common_modes[i].width; ++i) {
-			video_add_mode_windowed(common_modes[i].width, common_modes[i].height);
+		float scaling_factor = 0.5;
+		float scaling_factor_step = 0.2;
+
+		while(ideal_resolution.w * scaling_factor <= largest_fullscreen_viewport.w) {
+			uint w = ideal_resolution.w * scaling_factor;
+			uint h = ideal_resolution.h * scaling_factor;
+			video_add_mode_windowed(w, h);
+			scaling_factor += scaling_factor_step;
 		}
 	}
 
