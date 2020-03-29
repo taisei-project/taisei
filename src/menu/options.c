@@ -197,14 +197,15 @@ static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 
 // BT_Resolution: super-special binding type for the resolution setting
 static void bind_resolution_update(OptionBinding *bind) {
-	uint nmodes = video_get_num_modes();
+	bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+	uint nmodes = video_get_num_modes(fullscreen);
 	VideoMode cur = video_get_current_mode();
 
 	bind->valrange_min = 0;
 	bind->valrange_max = nmodes - 1;
 
 	for(int i = 0; i < nmodes; ++i) {
-		VideoMode m = video_get_mode(i);
+		VideoMode m = video_get_mode(i, fullscreen);
 		if(m.width == cur.width && m.height == cur.height) {
 			bind->selected = i;
 		}
@@ -394,8 +395,9 @@ static bool bind_fullscreen_dependence(void) {
 }
 
 static int bind_resolution_set(OptionBinding *b, int v) {
+	bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
 	if(v >= 0) {
-		VideoMode m = video_get_mode(v);
+		VideoMode m = video_get_mode(v, fullscreen);
 		config_set_int(CONFIG_VID_WIDTH, m.width);
 		config_set_int(CONFIG_VID_HEIGHT, m.height);
 	}
@@ -430,7 +432,8 @@ static void destroy_options_menu(MenuData *m) {
 
 		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
-				VideoMode mode = video_get_mode(bind->selected);
+				bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+				VideoMode mode = video_get_mode(bind->selected, fullscreen);
 				config_set_int(CONFIG_VID_WIDTH, mode.width);
 				config_set_int(CONFIG_VID_HEIGHT, mode.height);
 				change_vidmode = true;
@@ -1188,7 +1191,8 @@ static void draw_options_menu(MenuData *menu) {
 					if(bind->selected == -1) {
 						m = video_get_current_mode();
 					} else {
-						m = video_get_mode(bind->selected);
+						bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+						m = video_get_mode(bind->selected, fullscreen);
 					}
 
 					w = m.width;

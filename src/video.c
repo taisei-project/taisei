@@ -18,10 +18,15 @@
 #include "taskmanager.h"
 #include "video_postprocess.h"
 
-static struct {
-	VideoMode *modes;
-	SDL_Window *window;
+typedef struct VideoModeArray {
+	VideoMode *mode;
 	uint mcount;
+} VideoModeArray;
+
+static struct {
+	VideoModeArray fs_modes;
+	VideoModeArray win_modes;
+	SDL_Window *window;
 	VideoMode intended;
 	VideoMode current;
 	VideoBackend backend;
@@ -90,10 +95,10 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 	}
 }
 
-static void video_add_mode(int width, int height) {
-	if(video.modes) {
-		for(uint i = 0; i < video.mcount; ++i) {
-			VideoMode *m = video.modes + i;
+static void video_add_mode_handler(VideoModeArray *mode_array, int width, int height) {
+	if(mode_array->mode) {
+		for(uint i = 0; i < mode_array->mcount; ++i) {
+			VideoMode *m = mode_array->mode + i;
 
 			if(m->width == width && m->height == height) {
 				return;
@@ -101,9 +106,18 @@ static void video_add_mode(int width, int height) {
 		}
 	}
 
-	video.modes = (VideoMode*)realloc(video.modes, (++video.mcount) * sizeof(VideoMode));
-	video.modes[video.mcount-1].width  = width;
-	video.modes[video.mcount-1].height = height;
+	mode_array->mode = realloc(mode_array->mode, (++mode_array->mcount) * sizeof(VideoMode));
+
+	mode_array->mode[mode_array->mcount-1].width  = width;
+	mode_array->mode[mode_array->mcount-1].height = height;
+}
+
+static void video_add_mode_fullscreen(int width, int height) {
+	video_add_mode_handler(&video.fs_modes, width, height);
+}
+
+static void video_add_mode_windowed(int width, int height) {
+	video_add_mode_handler(&video.win_modes, width, height);
 }
 
 static int video_compare_modes(const void *a, const void *b) {
@@ -112,9 +126,15 @@ static int video_compare_modes(const void *a, const void *b) {
 	return va->width * va->height - vb->width * vb->height;
 }
 
-void video_get_viewport_size(float *width, float *height) {
-	float w = video.current.width;
-	float h = video.current.height;
+static FloatExtent video_get_screen_framebuffer_size(void) {
+	int fb_w, fb_h;
+	SDL_GL_GetDrawableSize(video.window, &fb_w, &fb_h);
+	return (FloatExtent) { fb_w, fb_h };
+}
+
+static FloatExtent video_get_viewport_size_for_framebuffer(FloatExtent framebuffer_size) {
+	float w = framebuffer_size.w;
+	float h = framebuffer_size.h;
 	float r = w / h;
 
 	if(r > VIDEO_ASPECT_RATIO) {
@@ -123,14 +143,30 @@ void video_get_viewport_size(float *width, float *height) {
 		h = w / VIDEO_ASPECT_RATIO;
 	}
 
-	*width = w;
-	*height = h;
+	return (FloatExtent) { w, h };
+}
+
+void video_get_viewport_size(float *width, float *height) {
+	FloatExtent fb = video_get_screen_framebuffer_size();
+	FloatExtent vp = video_get_viewport_size_for_framebuffer(fb);
+
+	*width = vp.w;
+	*height = vp.h;
 }
 
 void video_get_viewport(FloatRect *vp) {
-	video_get_viewport_size(&vp->w, &vp->h);
-	vp->x = (int)((video.current.width  - vp->w) / 2);
-	vp->y = (int)((video.current.height - vp->h) / 2);
+	FloatExtent fb = video_get_screen_framebuffer_size();
+
+	// vp->extent aliases vp->w and vp->y; see util/geometry.h
+	vp->extent = video_get_viewport_size_for_framebuffer(fb);
+
+	vp->x = (int)((fb.w - vp->w) * 0.5);
+	vp->y = (int)((fb.h - vp->h) * 0.5);
+
+	// This function can also be changed to return a FloatRect instead
+	log_debug("current w/h: %dx%d", video.current.width, video.current.height);
+	log_debug("viewport x/y: %fx%f", vp->x, vp->y);
+	log_debug("viewport w/h: %fx%f", vp->w, vp->h);
 }
 
 static void video_set_viewport(void) {
@@ -321,6 +357,13 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 			return;
 		} else {
 			SDL_SetWindowSize(video.window, w, h);
+			// so the user doesn't have to drag the window back
+			// into the middle of the screen after a resolution change
+			SDL_SetWindowPosition(
+				video.window,
+				SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+				SDL_WINDOWPOS_CENTERED_DISPLAY(display)
+			);
 		}
 	}
 
@@ -683,7 +726,7 @@ void video_init(void) {
 			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
 				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
 			} else {
-				video_add_mode(mode.w, mode.h);
+				video_add_mode_fullscreen(mode.w, mode.h);
 				fullscreen_available = true;
 			}
 		}
@@ -707,17 +750,21 @@ void video_init(void) {
 		{1152, 864},
 		{1400, 1050},
 		{1440, 1080},
+		{1600, 1200},
+		{1856, 1392},
+		{1920, 1440},
 		{0, 0},
 	};
 
 	if(video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED) {
 		for(int i = 0; common_modes[i].width; ++i) {
-			video_add_mode(common_modes[i].width, common_modes[i].height);
+			video_add_mode_windowed(common_modes[i].width, common_modes[i].height);
 		}
 	}
 
 	// sort it, mainly for the options menu
-	qsort(video.modes, video.mcount, sizeof(VideoMode), video_compare_modes);
+	qsort(video.fs_modes.mode, video.fs_modes.mcount, sizeof(VideoMode), video_compare_modes);
+	qsort(video.win_modes.mode, video.win_modes.mcount, sizeof(VideoMode), video_compare_modes);
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
@@ -755,7 +802,8 @@ void video_shutdown(void) {
 	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
-	free(video.modes);
+	free(video.win_modes.mode);
+	free(video.fs_modes.mode);
 	SDL_VideoQuit();
 }
 
@@ -795,13 +843,22 @@ VideoBackend video_get_backend(void) {
 	return video.backend;
 }
 
-VideoMode video_get_mode(uint idx) {
-	assert(idx < video.mcount);
-	return video.modes[idx];
+VideoMode video_get_mode(uint idx, bool fullscreen) {
+	if(fullscreen) {
+		assert(idx < video.fs_modes.mcount);
+		return video.fs_modes.mode[idx];
+	}
+
+	assert(idx < video.win_modes.mcount);
+	return video.win_modes.mode[idx];
 }
 
-uint video_get_num_modes(void) {
-	return video.mcount;
+uint video_get_num_modes(bool fullscreen) {
+	if(fullscreen) {
+		return video.fs_modes.mcount;
+	}
+
+	return video.win_modes.mcount;
 }
 
 VideoMode video_get_current_mode(void) {
