@@ -102,7 +102,7 @@ static void myon_spawn_trail(Enemy *e, int t) {
 	real f = abs(global.plr.focus) / 30.0;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
-	if(player_should_shoot(&global.plr, true)) {
+	if(player_should_shoot(&global.plr)) {
 		RNG_ARRAY(R, 7);
 
 		PARTICLE(
@@ -285,7 +285,7 @@ static int youmu_mirror_myon(Enemy *e, int t) {
 
 	e->args[1] += (e->args[0] - e->args[1]) * 0.5;
 
-	if(player_should_shoot(&global.plr, true)) {
+	if(player_should_shoot(&global.plr)) {
 		int v1 = -10;
 		int v2 = -10;
 

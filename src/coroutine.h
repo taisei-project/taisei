@@ -16,7 +16,7 @@
 
 #include <koishi.h>
 
-// #define CO_TASK_DEBUG
+#define CO_TASK_DEBUG
 
 typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
@@ -417,5 +417,8 @@ ENT_TYPES
 
 #define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
 #define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
+
+#define TASK_BIND_CUSTOM(box, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), ENT_UNBOX(box)), type)
+#define TASK_BIND_UNBOXED_CUSTOM(ent, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), &(ent)->entity_interface), type)
 
 #endif // IGUARD_coroutine_h

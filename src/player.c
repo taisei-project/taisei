@@ -400,12 +400,11 @@ static void player_fail_spell(Player *plr) {
 	}
 }
 
-bool player_should_shoot(Player *plr, bool extra) {
+bool player_should_shoot(Player *plr) {
 	return
 		(plr->inputflags & INFLAG_SHOT) &&
 		!dialog_is_active(global.dialog) &&
-		player_is_alive(&global.plr)
-		/* && (!extra || !player_is_bomb_active(plr)) */;
+		player_is_alive(&global.plr);
 }
 
 void player_placeholder_bomb_logic(Player *plr) {
@@ -622,7 +621,7 @@ DEFINE_TASK(player_logic) {
 			plr->mode->procs.think(plr);
 		}
 
-		if(player_should_shoot(plr, false)) {
+		if(player_should_shoot(plr)) {
 			coevent_signal(&plr->events.shoot);
 			if(plr->mode->procs.shot) {
 				plr->mode->procs.shot(plr);

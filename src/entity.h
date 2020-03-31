@@ -138,7 +138,7 @@ INLINE const char *ent_type_name(EntityType type) {
 			#typename " doesn't implement EntityInterface"); \
 		static_assert(__builtin_offsetof(typename, entity_interface) == 0, \
 			"entity_interface has non-zero offset in " #typename); \
-		IF_DEBUG(if(_ent->type != ent_type_id) { \
+		IF_DEBUG(if(_ent && _ent->type != ent_type_id) { \
 			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(_ent->type)); \
 		}); \
 		CASTPTR_ASSUME_ALIGNED(_ent, typename); \
@@ -227,6 +227,9 @@ INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { retur
 #define ENT_BOX(ent) ENT_UNBOXED_DISPATCH_FUNCTION(_ent_box_, ent)
 #define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
 #define ENT_BOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_box_, _ent_boxed_passthrough_helper_, ent)
+
+#define ENT_BOX_CUSTOM(ent) _ent_box_Entity(&(ent)->entity_interface)
+#define ENT_UNBOX_CUSTOM(box, type) ENT_CAST_CUSTOM(_ent_unbox_Entity(box), type)
 
 typedef struct BoxedEntityArray {
 	BoxedEntity *array;

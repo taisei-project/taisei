@@ -441,7 +441,7 @@ TASK(youmu_orb_shot, { BoxedPlayer plr; }) {
 static void youmu_haunting_shot(Player *plr) {
 	youmu_common_shot(plr);
 
-	if(player_should_shoot(plr, true)) {
+	if(player_should_shoot(plr)) {
 		if(plr->inputflags & INFLAG_FOCUS) {
 			int pwr = plr->power / 100;
 
