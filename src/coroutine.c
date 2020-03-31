@@ -852,11 +852,11 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, bool is_su
 		assert(init_data.master_task_data != NULL);
 	}
 
+	alist_append(&sched->pending_tasks, task);
 	cotask_resume_internal(task, &init_data);
 
 	assert(cotask_status(task) == CO_STATUS_SUSPENDED || cotask_status(task) == CO_STATUS_DEAD);
 
-	alist_append(&sched->pending_tasks, task);
 	return task;
 }
 
@@ -867,18 +867,22 @@ uint cosched_run_tasks(CoSched *sched) {
 
 	uint ran = 0;
 
+	TASK_DEBUG("---------------------------------------------------------------");
 	for(CoTask *t = sched->tasks.first, *next; t; t = next) {
 		next = t->next;
 
 		if(cotask_status(t) == CO_STATUS_DEAD) {
+			TASK_DEBUG("<!> %s", t->debug_label);
 			alist_unlink(&sched->tasks, t);
 			cotask_free(t);
 		} else {
+			TASK_DEBUG(">>> %s", t->debug_label);
 			assert(cotask_status(t) == CO_STATUS_SUSPENDED);
 			cotask_resume(t, NULL);
 			++ran;
 		}
 	}
+	TASK_DEBUG("---------------------------------------------------------------");
 
 	return ran;
 }
