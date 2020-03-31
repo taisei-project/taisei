@@ -302,8 +302,30 @@ static void marisa_laser_show_laser(MarisaAController *ctrl, MarisaLaser *laser)
 	alist_append(&ctrl->lasers, laser);
 }
 
-static void marisa_laser_fade_laser(MarisaAController *ctrl, MarisaLaser *laser) {
+static void marisa_laser_hide_laser(MarisaAController *ctrl, MarisaLaser *laser) {
 	alist_unlink(&ctrl->lasers, laser);
+}
+
+TASK(marisa_laser_fader, {
+	MarisaAController *ctrl;
+	const MarisaLaser *ref_laser;
+}) {
+	MarisaAController *ctrl = ARGS.ctrl;
+	MarisaLaser fader = *ARGS.ref_laser;
+
+	marisa_laser_show_laser(ctrl, &fader);
+
+	while(fader.alpha > 0) {
+		YIELD;
+		approach_p(&fader.alpha, 0, 0.1);
+	}
+
+	marisa_laser_hide_laser(ctrl, &fader);
+}
+
+static void marisa_laser_fade_laser(MarisaAController *ctrl, MarisaLaser *laser) {
+	marisa_laser_hide_laser(ctrl, laser);
+	INVOKE_TASK(marisa_laser_fader, ctrl, laser);
 }
 
 TASK(marisa_laser_slave_shot_cleanup, {
@@ -330,7 +352,7 @@ TASK(marisa_laser_slave_shot, {
 	MarisaLaser *active_laser = NULL;
 	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, marisa_laser_slave_shot_cleanup, ctrl, &active_laser);
 
-	do {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 		assert(player_should_shoot(plr));
 
@@ -371,7 +393,7 @@ TASK(marisa_laser_slave_shot, {
 
 		marisa_laser_fade_laser(ctrl, &laser);
 		active_laser = NULL;
-	} while(slave && slave->alive);
+	}
 }
 
 TASK(marisa_laser_slave, {
@@ -651,29 +673,41 @@ static int masterspark(Enemy *e, int t2) {
 	return 1;
 }
 
-static void marisa_laser_bombbg(Player *plr) {
-	if(!player_is_bomb_active(plr)) {
-		return;
-	}
+TASK(marisa_laser_bomb_background, { MarisaAController *ctrl; }) {
+	MarisaAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
-	float t = player_get_bomb_progress(&global.plr);
-	float fade = 1;
+	do {
+		WAIT_EVENT_OR_DIE(draw_event);
+		float t = player_get_bomb_progress(plr);
+		float fade = 1;
 
-	if(t < 1./6)
-		fade = t*6;
+		if(t < 1./6) {
+			fade = t*6;
+		}
 
-	if(t > 3./4)
-		fade = 1-t*4 + 3;
+		if(t > 3./4) {
+			fade = 1-t*4 + 3;
+		}
 
-	r_color4(0.8 * fade, 0.8 * fade, 0.8 * fade, 0.8 * fade);
-	fill_viewport(sin(t * 0.3), t * 3 * (1 + t * 3), 1, "marisa_bombbg");
-	r_color4(1, 1, 1, 1);
+		r_color4(0.8 * fade, 0.8 * fade, 0.8 * fade, 0.8 * fade);
+		fill_viewport(sin(t * 0.3), t * 3 * (1 + t * 3), 1, "marisa_bombbg");
+		r_color4(1, 1, 1, 1);
+	} while(player_is_bomb_active(plr));
 }
 
-static void marisa_laser_bomb(Player *plr) {
-	play_sound("bomb_marisa_a");
-	Enemy *e = create_enemy_p(&plr->slaves, 0.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
-	e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
+TASK(marisa_laser_bomb_handler, { MarisaAController *ctrl; }) {
+	MarisaAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl);
+		play_sound("bomb_marisa_a");
+		Enemy *e = create_enemy_p(&plr->slaves, 0.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
+		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
+	}
 }
 
 static void marisa_laser_respawn_slaves(MarisaAController *ctrl, int power_rank) {
@@ -749,6 +783,7 @@ TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 	ent_register(&ctrl.laser_renderer, ENT_CUSTOM);
 
 	INVOKE_SUBTASK(marisa_laser_power_handler, &ctrl);
+	INVOKE_SUBTASK(marisa_laser_bomb_handler, &ctrl);
 	INVOKE_SUBTASK(marisa_laser_shot_forward, &ctrl);
 
 	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
@@ -757,13 +792,6 @@ TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 }
 
 static void marisa_laser_init(Player *plr) {
-	/*
-	Enemy *e = create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, marisa_laser_renderer_visual, marisa_laser_renderer, 0, 0, 0, 0);
-	e->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
-	_laser_renderer_ref = add_ref(e);
-	marisa_laser_respawn_slaves(plr, plr->power);
-	*/
-
 	INVOKE_TASK(marisa_laser_controller, ENT_BOX(plr));
 }
 
@@ -827,8 +855,6 @@ PlayerMode plrmode_marisa_a = {
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
 		.property = marisa_laser_property,
-		.bomb = marisa_laser_bomb,
-		.bombbg = marisa_laser_bombbg,
 		.preload = marisa_laser_preload,
 		.init = marisa_laser_init,
 	},
