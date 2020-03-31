@@ -469,67 +469,6 @@ TASK(marisa_laser_slave, {
 	ent_unregister(&slave.ent);
 }
 
-#if 0
-static int marisa_laser_slave(Enemy *e, int t) {
-	if(t == EVENT_BIRTH) {
-		return 1;
-	}
-
-	if(t == EVENT_DEATH) {
-		if(!(global.gameover > 0) && laser_renderer && creal(laser_renderer->args[0])) {
-			spawn_laser_fader(e, laser_renderer->args[0]);
-		}
-
-		MarisaLaserData *ld = REF(e->args[3]);
-		free_ref(e->args[3]);
-		free(ld);
-		return 1;
-	}
-
-	if(t < 0) {
-		return 1;
-	}
-
-	cmplx target_pos = global.plr.pos + (1 - global.plr.focus/30.0)*e->pos0 + (global.plr.focus/30.0)*e->args[0];
-	e->pos += (target_pos - e->pos) * 0.5;
-
-	MarisaLaserData *ld = REF(e->args[3]);
-	cmplx pdelta = e->pos - ld->prev_pos;
-	ld->prev_pos = e->pos;
-	ld->lean += (-0.01 * creal(pdelta) - ld->lean) * 0.2;
-
-	if(player_should_shoot(&global.plr, true)) {
-		float angle = creal(e->args[2]);
-		float f = smoothreclamp(global.plr.focus, 0, 30, 0, 1);
-		f = smoothreclamp(f, 0, 1, 0, 1);
-		float factor = (1.0 + 0.7 * psin(t/15.0)) * -(1-f) * !!angle;
-
-		cmplx dir = -cexp(I*(angle*factor + ld->lean + M_PI/2));
-		trace_laser(e, 5 * dir, creal(e->args[1]));
-
-		Animation *fire = get_ani("fire");
-		AniSequence *seq = get_ani_sequence(fire, "main");
-		Sprite *spr = animation_get_frame(fire, seq, global.frames);
-
-		PARTICLE(
-			.sprite_ptr = spr,
-			.size = 1+I,
-			.pos = e->pos + dir * 10,
-			.color = color_mul_scalar(RGBA(2, 0.2, 0.5, 0), 0.2),
-			.rule = linear,
-			.draw_rule = marisa_laser_flash_draw,
-			.timeout = 8,
-			.args = { dir, 0, 0.6 + 0.2*I, },
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			.scale = 0.4,
-			// .layer = LAYER_PARTICLE_LOW,
-		);
-	}
-
-	return 1;
-}
-#endif
-
 static float masterspark_width(void) {
 	float t = player_get_bomb_progress(&global.plr);
 	float w = 1;
