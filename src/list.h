@@ -92,6 +92,7 @@ List* alist_insert_at_priority_head(ListAnchor *list, List *elem, int prio, List
 List* alist_insert_at_priority_tail(ListAnchor *list, List *elem, int prio, ListPriorityFunc prio_func) attr_hot attr_nonnull(1, 2, 4);
 List* alist_pop(ListAnchor *list) attr_nonnull(1);
 List* alist_unlink(ListAnchor *list, List *elem) attr_nonnull(1, 2);
+void alist_merge_tail(ListAnchor *dest, ListAnchor *src) attr_nonnull(1, 2);
 void* alist_foreach(ListAnchor *list, ListAnchorForeachCallback callback, void *arg) attr_nonnull(1, 2);
 void* alist_callback_free_element(ListAnchor *list, List *elem, void *arg);
 void alist_free_all(ListAnchor *list) attr_nonnull(1);
@@ -178,6 +179,9 @@ ListContainer* list_wrap_container(void *data) attr_returns_allocated;
 
 #define alist_unlink(dest,elem) \
 	(LIST_CAST_RETURN(elem, alist_unlink(LIST_ANCHOR_CAST(dest), LIST_CAST(elem))))
+
+#define alist_merge_tail(dest,src) \
+	alist_merge_tail(LIST_ANCHOR_CAST(dest), LIST_ANCHOR_CAST(src))
 
 #define list_foreach(dest,callback,arg) \
 	list_foreach(LIST_CAST_2(dest), callback, arg)

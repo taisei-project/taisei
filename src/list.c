@@ -317,6 +317,25 @@ List* alist_pop(ListAnchor *list) {
 	return alist_unlink(list, list->first);
 }
 
+#undef alist_merge_tail
+void alist_merge_tail(ListAnchor *dest, ListAnchor *src) {
+	if(src->first) {
+		src->first->prev = dest->last;
+
+		if(dest->last) {
+			assume(dest->first != NULL);
+			dest->last->next = src->first;
+		} else {
+			assume(dest->first == NULL);
+			dest->first = src->first;
+		}
+
+		dest->last = src->last;
+		src->first = NULL;
+		src->last = NULL;
+	}
+}
+
 #undef list_foreach
 void* list_foreach(List **dest, ListForeachCallback callback, void *arg) {
 	void *ret = NULL;
