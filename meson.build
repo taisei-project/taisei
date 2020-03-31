@@ -261,6 +261,8 @@ else
     config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', malloc_alignment > 0)
 endif
 
+config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
+
 prefer_relpath_systems = [
     'windows',
 ]

@@ -81,7 +81,9 @@
 	#define DIAGNOSTIC_GCC(x)
 	#define DIAGNOSTIC_CLANG(x)
 #else
-	#define USE_GNU_EXTENSIONS
+	#ifdef TAISEI_BUILDCONF_USE_GNU_EXTENSIONS
+		#define USE_GNU_EXTENSIONS
+	#endif
 	#define UNREACHABLE __builtin_unreachable()
 
 	#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
