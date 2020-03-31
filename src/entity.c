@@ -84,12 +84,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 	ent->index = entities.num++;
 	ent->spawn_id = ++entities.total_spawns;
 
-	if(ent->spawn_id == 0) {
-		// This is not really an error, but it may result in weird draw order
-		// in some corner cases. If this overflow ever actually occurs, though,
-		// then you've probably got much bigger problems.
-		log_warn("spawn_id just overflowed. You might be spawning stuff waaaay too often");
-	}
+	assert(ent->spawn_id > 0);
 
 	if(entities.capacity < entities.num) {
 		entities.capacity *= 2;
