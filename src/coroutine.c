@@ -861,9 +861,7 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, bool is_su
 }
 
 uint cosched_run_tasks(CoSched *sched) {
-	for(CoTask *t; (t = alist_pop(&sched->pending_tasks));)  {
-		alist_append(&sched->tasks, t);
-	}
+	alist_merge_tail(&sched->tasks, &sched->pending_tasks);
 
 	uint ran = 0;
 
