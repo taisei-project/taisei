@@ -18,9 +18,10 @@
 #define SHOT_FORWARD_DELAY 6
 #define SHOT_LASER_DAMAGE 10
 
-typedef struct MarisaSlave MarisaSlave;
-typedef struct MarisaLaser MarisaLaser;
 typedef struct MarisaAController MarisaAController;
+typedef struct MarisaLaser MarisaLaser;
+typedef struct MarisaSlave MarisaSlave;
+typedef struct MasterSpark MasterSpark;
 
 struct MarisaSlave {
 	ENTITY_INTERFACE_NAMED(MarisaAController, ent);
@@ -40,6 +41,13 @@ struct MarisaLaser {
 		cmplx first;
 		cmplx last;
 	} trace_hit;
+	real alpha;
+};
+
+struct MasterSpark {
+	ENTITY_INTERFACE_NAMED(MarisaAController, ent);
+	cmplx pos;
+	cmplx dir;
 	real alpha;
 };
 
@@ -151,8 +159,8 @@ static void marisa_laser_draw_slave(EntityInterface *ent) {
 	float t = global.frames;
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite = "hakkero",
-		.shader = "sprite_hakkero",
+		.sprite_ptr = slave->sprite,
+		.shader_ptr = slave->shader,
 		.pos.as_cmplx = slave->pos,
 		.rotation.angle = t * 0.05f,
 		.color = color_lerp(RGB(0.2, 0.4, 0.5), RGB(1.0, 1.0, 1.0), 0.25 * powf(psinf(t / 6.0f), 2.0f) * slave->flare_alpha),
@@ -186,7 +194,6 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	MarisaAController *ctrl = ENT_CAST_CUSTOM(ent, MarisaAController);
 	real t = global.frames;
 
-	// float a = creal(renderer->args[0]);
 	ShaderProgram *shader = r_shader_get("marisa_laser");
 	Uniform *u_clr0 = r_shader_uniform(shader, "color0");
 	Uniform *u_clr1 = r_shader_uniform(shader, "color1");
@@ -469,49 +476,39 @@ TASK(marisa_laser_slave, {
 	ent_unregister(&slave.ent);
 }
 
-static float masterspark_width(void) {
-	float t = player_get_bomb_progress(&global.plr);
-	float w = 1;
+static real marisa_laser_masterspark_width(real progress) {
+	real w = 1;
 
-	if(t < 1./6) {
-		w = t*6;
+	if(progress < 1./6) {
+		w = progress * 6;
 		w = pow(w, 1.0/3.0);
 	}
 
-	if(t > 4./5) {
-		w = 1-t*5 + 4;
+	if(progress > 4./5) {
+		w = 1 - progress * 5 + 4;
 		w = pow(w, 5);
 	}
 
 	return w;
 }
 
-static void masterspark_visual(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
-	float fade = masterspark_width();
-
-	marisa_common_masterspark_draw(1, &(MarisaBeamInfo){global.plr.pos - 30 * I, 800 + I * VIEWPORT_H * 1.25, carg(e->args[0]), t}, fade);
+static void marisa_laser_draw_masterspark(EntityInterface *ent) {
+	MasterSpark *ms = ENT_CAST_CUSTOM(ent, MasterSpark);
+	marisa_common_masterspark_draw(1, &(MarisaBeamInfo) {
+		ms->pos,
+		800 + I * VIEWPORT_H * 1.25,
+		carg(ms->dir),
+		global.frames
+	}, ms->alpha);
 }
 
-static int masterspark_star(Projectile *p, int t) {
-	if(t >= 0) {
-		p->args[0] += 0.1*p->args[0]/cabs(p->args[0]);
-		p->angle += 0.1;
-	}
-
-	return linear(p, t);
-}
-
-static void masterspark_damage(Enemy *e) {
+static void marisa_laser_masterspark_damage(MasterSpark *ms) {
 	// lazy inefficient approximation of the beam parabola
 
-	float r = 96 * masterspark_width();
+	float r = 96 * ms->alpha;
 	float growth = 0.25;
-	cmplx v = e->args[0] * cexp(-I*M_PI*0.5);
-	cmplx p = global.plr.pos - 30 * I + r * v;
+	cmplx v = ms->dir * cdir(M_PI * -0.5);
+	cmplx p = ms->pos + v * r;
 
 	Rect vp_rect, seg_rect;
 	vp_rect.top_left = 0;
@@ -537,79 +534,93 @@ static void masterspark_damage(Enemy *e) {
 	// log_debug("%i", iter);
 }
 
-static int masterspark(Enemy *e, int t2) {
-	// FIXME: This may interact badly with other view shake effects...
-	// We need a proper system for this stuff.
+TASK(marisa_laser_masterspark_cleanup, { BoxedEntity ms; }) {
+	MasterSpark *ms = TASK_BIND_CUSTOM(ARGS.ms, MasterSpark);
+	ent_unregister(&ms->ent);
+}
 
-	if(t2 == EVENT_BIRTH) {
+TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
+	MarisaAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	MasterSpark ms = { 0 };
+	ms.dir = 1;
+	ms.ent.draw_func = marisa_laser_draw_masterspark;
+	ms.ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
+	ent_register(&ms.ent, ENT_CUSTOM);
+
+	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, marisa_laser_masterspark_cleanup, ENT_BOX_CUSTOM(&ms));
+
+	int t = 0;
+
+	Sprite *star_spr = get_sprite("part/maristar_orbit");
+	Sprite *smoke_spr = get_sprite("part/smoke");
+
+	do {
+		real bomb_progress = player_get_bomb_progress(plr);
+		ms.alpha = marisa_laser_masterspark_width(bomb_progress);
+		ms.dir *= cdir(0.005 * (creal(plr->velocity) + 2 * rng_sreal()));
+		ms.pos = plr->pos - 30 * I;
+
+		marisa_laser_masterspark_damage(&ms);
+
+		if(bomb_progress >= 3.0/4.0) {
+			global.shake_view = 8 * (1 - bomb_progress * 4 + 3);
+			goto skip_particles;
+		}
+
 		global.shake_view = 8;
-		return 1;
-	} else if(t2 == EVENT_DEATH) {
-		global.shake_view = 0;
-		return 1;
-	}
 
-	if(t2 < 0)
-		return 1;
+		uint pflags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE;
 
-	e->args[0] *= cexp(I*(0.005*creal(global.plr.velocity) + rng_sreal() * 0.005));
-	cmplx diroffset = e->args[0];
+		if(t % 4 == 0) {
+			pflags |= PFLAG_REQUIREDPARTICLE;
+		}
 
-	float t = player_get_bomb_progress(&global.plr);
+		cmplx dir = -cdir(1.5 * sin(t * M_PI * 1.12)) * I;
+		Color *c = HSLA(-bomb_progress * 5.321, 1, 0.5, rng_range(0, 0.5));
+		cmplx pos = plr->pos + 40 * dir;
 
-	if(t >= 3.0/4.0) {
-		global.shake_view = 8 * (1 - t * 4 + 3);
-	} else if(t2 % 2 == 0) {
-		cmplx dir = -cexp(1.5*I*sin(t2*M_PI*1.12))*I;
-		Color *c = HSLA(-t*5.321, 1, 0.5, rng_range(0, 0.5));
-
-		uint flags = PFLAG_NOREFLECT;
-
-		if(t2 % 4 == 0) {
-			flags |= PFLAG_REQUIREDPARTICLE;
+		for(int i = 0; i < 2; ++i) {
+			cmplx v = 10 * (dir - I);
+			PARTICLE(
+				.angle = rng_angle(),
+				.angle_delta = 0.1,
+				.color = c,
+				.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
+				.flags = pflags,
+				.move = move_accelerated(v, 0.1 * cnormalize(v)),
+				.pos = pos,
+				.sprite_ptr = star_spr,
+				.timeout = 50,
+			);
+			dir = -conj(dir);
 		}
 
 		PARTICLE(
-			.sprite = "maristar_orbit",
-			.pos = global.plr.pos+40*dir,
-			.color = c,
-			.rule = masterspark_star,
+			.sprite_ptr = smoke_spr,
+			.pos = plr->pos - 40*I,
+			.color = HSLA(2 * bomb_progress, 1, 2, 0),
 			.timeout = 50,
-			.args= { (10 * dir - 10*I)*diroffset },
-			.angle = rng_angle(),
-			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
-			.flags = flags,
-		);
-		dir = -conj(dir);
-		PARTICLE(
-			.sprite = "maristar_orbit",
-			.pos = global.plr.pos+40*dir,
-			.color = c,
-			.rule = masterspark_star,
-			.timeout = 50,
-			.args = { (10 * dir - 10*I)*diroffset },
-			.angle = rng_angle(),
-			.draw_rule = pdraw_timeout_scalefade(0, 5, 1, 0),
-			.flags = flags,
-		);
-		PARTICLE(
-			.sprite = "smoke",
-			.pos = global.plr.pos-40*I,
-			.color = HSLA(2*t,1,2,0), //RGBA(0.3, 0.6, 1, 0),
-			.timeout = 50,
-			.move = move_linear(-7*dir + 7*I),
+			.move = move_linear(7 * (I - dir)),
 			.angle = rng_angle(),
 			.draw_rule = pdraw_timeout_scalefade(0, 7, 1, 0),
-			.flags = flags | PFLAG_MANUALANGLE,
+			.flags = pflags,
 		);
+
+skip_particles:
+		++t;
+		YIELD;
+	} while(player_is_bomb_active(plr));
+
+	global.shake_view = 0;
+
+	while(ms.alpha > 0) {
+		approach_p(&ms.alpha, 0, 0.2);
+		YIELD;
 	}
 
-	if(t >= 1 || !player_is_bomb_active(&global.plr)) {
-		return ACTION_DESTROY;
-	}
-
-	masterspark_damage(e);
-	return 1;
+	ent_unregister(&ms.ent);
 }
 
 TASK(marisa_laser_bomb_background, { MarisaAController *ctrl; }) {
@@ -642,10 +653,9 @@ TASK(marisa_laser_bomb_handler, { MarisaAController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl);
 		play_sound("bomb_marisa_a");
-		Enemy *e = create_enemy_p(&plr->slaves, 0.0*I, ENEMY_BOMB, masterspark_visual, masterspark, 1,0,0,0);
-		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
+		INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl);
+		INVOKE_SUBTASK(marisa_laser_masterspark, ctrl);
 	}
 }
 
@@ -793,8 +803,8 @@ PlayerMode plrmode_marisa_a = {
 	.dialog = &dialog_tasks_marisa,
 	.shot_mode = PLR_SHOT_MARISA_LASER,
 	.procs = {
-		.property = marisa_laser_property,
-		.preload = marisa_laser_preload,
 		.init = marisa_laser_init,
+		.preload = marisa_laser_preload,
+		.property = marisa_laser_property,
 	},
 };
