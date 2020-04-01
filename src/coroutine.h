@@ -16,7 +16,7 @@
 
 #include <koishi.h>
 
-#define CO_TASK_DEBUG
+// #define CO_TASK_DEBUG
 
 typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
