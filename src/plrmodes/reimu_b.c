@@ -561,7 +561,6 @@ TASK(reimu_dream_ofuda, { ReimuBController *ctrl; cmplx pos; cmplx vel; ShaderPr
 TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	real dir = 1;
 	ShaderProgram *ofuda_shader = r_shader_get("sprite_particle");
 
 	for(;;) {
@@ -582,7 +581,6 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 			}
 		}
 
-		dir = -dir;
 		WAIT(SHOT_FORWARD_DELAY);
 	}
 }

@@ -29,7 +29,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 		e = (Enemy*)REF(p->args[1]);
 	}
 
-	if(e != NULL && !player_should_shoot(&global.plr, true)) {
+	if(e != NULL && !player_should_shoot(&global.plr)) {
 		free_ref(p->args[1]);
 		p->args[1] = -1;
 		e = NULL;
@@ -85,7 +85,7 @@ static int marisa_star_projectile(Projectile *p, int t) {
 
 static int marisa_star_slave(Enemy *e, int t) {
 	for(int i = 0; i < 2; ++i) {
-		if(player_should_shoot(&global.plr, true) && !((global.frames+2*i) % 5)) {
+		if(player_should_shoot(&global.plr) && !((global.frames+2*i) % 5)) {
 			float fac = e->args[0]/M_PI/2;
 			cmplx v = (1-2*i);
 			v = creal(v)/cabs(v);
