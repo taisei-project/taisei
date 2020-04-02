@@ -81,9 +81,9 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
-		"lachs0r\n"
-		"Martin Herkt\n"
-		"lachs0r@hong-mailing.de\n\n"
+		"mia\n"
+		"Mia Herkt\n"
+		"mia@hong-mailing.de\n\n"
 		"Hosting, packaging, editing,\n"
 		"spiritual guidance"
 	), ENTRY_TIME);
