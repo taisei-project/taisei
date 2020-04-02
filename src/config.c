@@ -392,7 +392,7 @@ static void config_upgrade_1(void) {
 	config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
 
 	// this version also changes meaning of the vsync value
-	// previously it was: 0 = on,  1 = off, 2 = adaptive, because lachs0r doesn't know how my absolutely genius options menu works.
+	// previously it was: 0 = on,  1 = off, 2 = adaptive, because mia doesn't know how my absolutely genius options menu works.
 	//         now it is: 0 = off, 1 = on,  2 = adaptive, as it should be.
 }
 
