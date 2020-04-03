@@ -17,11 +17,9 @@
 #include "util/fbmgr.h"
 #include "taskmanager.h"
 #include "video_postprocess.h"
+#include "dynarray.h"
 
-typedef struct VideoModeArray {
-	VideoMode *mode;
-	uint mcount;
-} VideoModeArray;
+typedef DYNAMIC_ARRAY(VideoMode) VideoModeArray;
 
 static struct {
 	VideoModeArray fs_modes;
@@ -96,21 +94,15 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 }
 
 static void video_add_mode_handler(VideoModeArray *mode_array, int width, int height, const char *mode_type) {
-	if(mode_array->mode) {
-		for(uint i = 0; i < mode_array->mcount; ++i) {
-			VideoMode *m = mode_array->mode + i;
+	for(uint i = 0; i < mode_array->num_elements; ++i) {
+		VideoMode *m = mode_array->data + i;
 
-			if(m->width == width && m->height == height) {
-				return;
-			}
+		if(m->width == width && m->height == height) {
+			return;
 		}
 	}
 
-	mode_array->mode = realloc(mode_array->mode, (++mode_array->mcount) * sizeof(VideoMode));
-
-	mode_array->mode[mode_array->mcount-1].width  = width;
-	mode_array->mode[mode_array->mcount-1].height = height;
-
+	*dynarray_append(mode_array) = (VideoMode) { width, height };
 	log_debug("Add %s mode: %ix%i", mode_type, width, height);
 }
 
@@ -717,6 +709,9 @@ void video_init(void) {
 
 	r_init();
 
+	dynarray_ensure_capacity(&video.fs_modes, 16);
+	dynarray_ensure_capacity(&video.win_modes, 16);
+
 	bool has_windowed_modes = (video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED);
 	FloatExtent largest_fullscreen_viewport = { 0, 0 };
 
@@ -771,9 +766,12 @@ void video_init(void) {
 		}
 	}
 
+	dynarray_compact(&video.fs_modes);
+	dynarray_compact(&video.win_modes);
+
 	// sort it, mainly for the options menu
-	qsort(video.fs_modes.mode, video.fs_modes.mcount, sizeof(VideoMode), video_compare_modes);
-	qsort(video.win_modes.mode, video.win_modes.mcount, sizeof(VideoMode), video_compare_modes);
+	dynarray_qsort(&video.fs_modes, video_compare_modes);
+	dynarray_qsort(&video.win_modes, video_compare_modes);
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
@@ -811,8 +809,8 @@ void video_shutdown(void) {
 	events_unregister_handler(video_handle_config_event);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
-	free(video.win_modes.mode);
-	free(video.fs_modes.mode);
+	dynarray_free_data(&video.win_modes);
+	dynarray_free_data(&video.fs_modes);
 	SDL_VideoQuit();
 }
 
@@ -852,22 +850,17 @@ VideoBackend video_get_backend(void) {
 	return video.backend;
 }
 
-VideoMode video_get_mode(uint idx, bool fullscreen) {
-	if(fullscreen) {
-		assert(idx < video.fs_modes.mcount);
-		return video.fs_modes.mode[idx];
-	}
+static VideoModeArray *get_vidmode_array(bool fullscreen) {
+	return fullscreen ? &video.fs_modes : &video.win_modes;
+}
 
-	assert(idx < video.win_modes.mcount);
-	return video.win_modes.mode[idx];
+VideoMode video_get_mode(uint idx, bool fullscreen) {
+	VideoModeArray *a = get_vidmode_array(fullscreen);
+	return dynarray_get(a, idx);
 }
 
 uint video_get_num_modes(bool fullscreen) {
-	if(fullscreen) {
-		return video.fs_modes.mcount;
-	}
-
-	return video.win_modes.mcount;
+	return get_vidmode_array(fullscreen)->num_elements;
 }
 
 VideoMode video_get_current_mode(void) {

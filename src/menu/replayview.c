@@ -170,12 +170,13 @@ static void replayview_draw_submenu_bg(float width, float height, float alpha) {
 static void replayview_draw_messagebox(MenuData* m) {
 	// this context is shared with the parent menu
 	ReplayviewContext *ctx = m->context;
+	MenuEntry *e = dynarray_get_ptr(&m->entries, 0);
 	float alpha = 1 - ctx->sub_fade;
 	float height = font_get_lineskip(get_font("standard")) * 2;
-	float width  = text_width(get_font("standard"), m->entries->name, 0) + 64;
+	float width  = text_width(get_font("standard"), e->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
-	text_draw(m->entries->name, &(TextParams) {
+	text_draw(e->name, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha),
 		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 },
@@ -187,18 +188,16 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	// this context is shared with the parent menu
 	ReplayviewContext *ctx = m->context;
 	float alpha = 1 - ctx->sub_fade;
-	float height = (1+m->ecount) * 20;
+	float height = (1 + m->entries.num_elements) * 20;
 	float width  = 100;
 
 	replayview_draw_submenu_bg(width, height, alpha);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(SCREEN_W*0.5, (SCREEN_H-(m->ecount-1)*20)*0.5, 0);
+	r_mat_mv_translate(SCREEN_W*0.5, (SCREEN_H - (m->entries.num_elements - 1) * 20) * 0.5, 0);
 
-	for(int i = 0; i < m->ecount; ++i) {
-		MenuEntry *e = &(m->entries[i]);
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		float a = e->drawdata;
-
 		Color clr;
 
 		if(e->action == NULL) {
@@ -214,7 +213,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 			.color = &clr,
 			.shader = "text_default",
 		});
-	}
+	});
 
 	r_mat_mv_pop();
 }
@@ -310,10 +309,9 @@ static void replayview_logic(MenuData *m) {
 	if(ctx->submenu) {
 		MenuData *sm = ctx->submenu;
 
-		for(int i = 0; i < sm->ecount; ++i) {
-			MenuEntry *e = sm->entries + i;
+		dynarray_foreach(&sm->entries, int i, MenuEntry *e, {
 			e->drawdata += 0.2 * ((i == sm->cursor) - e->drawdata);
-		}
+		});
 
 		if(sm->state == MS_Dead) {
 			if(ctx->sub_fade == 1.0) {
@@ -396,9 +394,7 @@ static int fill_replayview_menu(MenuData *m) {
 
 	vfs_dir_close(dir);
 
-	if(m->entries) {
-		qsort(m->entries, m->ecount, sizeof(MenuEntry), replayview_cmp);
-	}
+	dynarray_qsort(&m->entries, replayview_cmp);
 
 	return rpys;
 }
@@ -428,11 +424,11 @@ static void replayview_free(MenuData *m) {
 		m->context = NULL;
 	}
 
-	for(int i = 0; i < m->ecount; i++) {
-		if(m->entries[i].action == replayview_run) {
-			replayview_freearg(m->entries[i].arg);
+	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
+		if(e->action == replayview_run) {
+			replayview_freearg(e->arg);
 		}
-	}
+	});
 }
 
 MenuData* create_replayview_menu(void) {

@@ -198,37 +198,30 @@ const char* vfs_dir_read(VFSDir *dir) {
 }
 
 char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(const void*, const void*), bool (*filter)(const char*)) {
-	char **results = NULL;
 	VFSDir *dir = vfs_dir_open(path);
 
 	if(!dir) {
-		return results;
+		return NULL;
 	}
 
-	size_t real_size = 8;
-	results = malloc(sizeof(char*) * real_size);
-	*out_size = 0;
+	DYNAMIC_ARRAY(char*) results = { 0 };
 
 	for(const char *e; (e = vfs_dir_read(dir));) {
 		if(filter && !filter(e)) {
 			continue;
 		}
 
-		results[(*out_size)++] = strdup(e);
-
-		if(*out_size >= real_size) {
-			real_size *= 2;
-			results = realloc(results, sizeof(char*) * real_size);
-		}
+		*dynarray_append(&results) = strdup(e);
 	}
 
 	vfs_dir_close(dir);
 
-	if(*out_size) {
-		qsort(results, *out_size, sizeof(char*), compare);
+	if(results.num_elements) {
+		dynarray_qsort(&results, compare);
 	}
 
-	return results;
+	*out_size = results.num_elements;
+	return results.data;
 }
 
 void vfs_dir_list_free(char **list, size_t size) {

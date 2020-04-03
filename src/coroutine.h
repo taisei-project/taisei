@@ -13,6 +13,7 @@
 
 #include "entity.h"
 #include "util/debug.h"
+#include "dynarray.h"
 
 #include <koishi.h>
 
@@ -46,16 +47,14 @@ typedef struct CoEvent {
 	// ListAnchor subscribers;
 	// FIXME: Is there a better way than a dynamic array?
 	// An intrusive linked list just isn't robust enough.
-	BoxedTask *subscribers;
+	DYNAMIC_ARRAY(BoxedTask) subscribers;
 	uint32_t unique_id;
-	uint16_t num_signaled;
-	uint8_t num_subscribers;
-	uint8_t num_subscribers_allocated;
+	uint32_t num_signaled;
 } CoEvent;
 
 typedef struct CoEventSnapshot {
 	uint32_t unique_id;
-	uint16_t num_signaled;
+	uint32_t num_signaled;
 } CoEventSnapshot;
 
 #define COEVENTS_ARRAY(...) \

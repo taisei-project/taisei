@@ -30,7 +30,7 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
-	for(StageInfo *stg = stages; stg->procs; ++stg) {
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
 		if(stg->type != STAGE_STORY) {
 			break;
 		}
@@ -44,12 +44,12 @@ MenuData* create_stgpract_menu(Difficulty diff) {
 			snprintf(title, sizeof(title), "%s: ???????", stg->title);
 			add_menu_entry(m, title, NULL, NULL);
 		}
-	}
+	});
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	while(!m->entries[m->cursor].action) {
+	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;
 	}
 

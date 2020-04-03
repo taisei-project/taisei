@@ -15,6 +15,7 @@
 #include "resource/model.h"
 #include "renderer/api.h"
 #include "util/glm.h"
+#include "dynarray.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -23,8 +24,7 @@ typedef struct CreditsEntry {
 } CreditsEntry;
 
 static struct {
-	CreditsEntry *entries;
-	int ecount;
+	DYNAMIC_ARRAY(CreditsEntry) entries;
 	float panelalpha;
 	int end;
 	bool skipable;
@@ -48,6 +48,8 @@ static void credits_fill(void) {
 	// In case the shortened URLs break,
 	// Tuck V's YouTube: https://www.youtube.com/channel/UCaw73cuHLnFCSpjOtt_9pyg
 	// InsideI's bandcamp: https://vnutriya.bandcamp.com/
+
+	dynarray_ensure_capacity(&credits.entries, 24);
 
 	credits_add("Taisei Project\nbrought to you by…", HEADER_TIME);
 
@@ -183,8 +185,7 @@ static void credits_add(char *data, int time) {
 
 	assert(time > CREDITS_ENTRY_FADEOUT);
 
-	credits.entries = realloc(credits.entries, (++credits.ecount) * sizeof(CreditsEntry));
-	e = &(credits.entries[credits.ecount-1]);
+	e = dynarray_append(&credits.entries);
 	e->time = time - CREDITS_ENTRY_FADEOUT;
 	e->lines = 1;
 
@@ -290,7 +291,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	int time = global.frames - 200;
 	float fadein = 1, fadeout = 1;
 
-	for(CreditsEntry *o = credits.entries; o != e; ++o) {
+	for(CreditsEntry *o = credits.entries.data; o != e; ++o) {
 		time -= o->time + CREDITS_ENTRY_FADEOUT;
 	}
 
@@ -398,9 +399,9 @@ static void credits_draw(void) {
 
 	r_shader_standard();
 
-	for(int i = 0; i < credits.ecount; ++i) {
-		credits_draw_entry(&(credits.entries[i]));
-	}
+	dynarray_foreach_elem(&credits.entries, CreditsEntry *e, {
+		credits_draw_entry(e);
+	});
 
 	r_mat_mv_pop();
 
@@ -432,15 +433,14 @@ static void credits_process(void) {
 }
 
 static void credits_free(void) {
-	int i, j;
-	for(i = 0; i < credits.ecount; ++i) {
-		CreditsEntry *e = &(credits.entries[i]);
-		for(j = 0; j < e->lines; ++j)
-			free(e->data[j]);
+	dynarray_foreach_elem(&credits.entries, CreditsEntry *e, {
+		for(int i = 0; i < e->lines; ++i) {
+			free(e->data[i]);
+		}
 		free(e->data);
-	}
+	});
 
-	free(credits.entries);
+	dynarray_free_data(&credits.entries);
 	stage3d_shutdown(&stage_3d_context);
 }
 

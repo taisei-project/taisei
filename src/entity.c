@@ -12,6 +12,7 @@
 #include "util.h"
 #include "renderer/api.h"
 #include "global.h"
+#include "dynarray.h"
 
 typedef struct EntityDrawHook EntityDrawHook;
 typedef LIST_ANCHOR(EntityDrawHook) EntityDrawHookList;
@@ -23,9 +24,7 @@ struct EntityDrawHook {
 };
 
 static struct {
-	EntityInterface **array;
-	uint num;
-	uint capacity;
+	DYNAMIC_ARRAY(EntityInterface*) registered;
 	uint32_t total_spawns;
 
 	struct {
@@ -59,20 +58,17 @@ static void call_hooks(EntityDrawHookList *list, EntityInterface *ent) {
 	}
 }
 
-#define FOR_EACH_ENT(ent) for(EntityInterface **_ent = entities.array, *ent = *entities.array; _ent < entities.array + entities.num; ent = *(++_ent))
-
 void ent_init(void) {
 	memset(&entities, 0, sizeof(entities));
-	entities.capacity = 4096;
-	entities.array = calloc(entities.capacity, sizeof(EntityInterface*));
+	dynarray_ensure_capacity(&entities.registered, 1024);
 }
 
 void ent_shutdown(void) {
-	if(entities.num) {
-		log_fatal_if_debug("%u entities were not properly unregistered, this is a bug!", entities.num);
+	if(entities.registered.num_elements) {
+		log_fatal_if_debug("%u entities were not properly unregistered, this is a bug!", entities.registered.num_elements);
 	}
 
-	free(entities.array);
+	dynarray_free_data(&entities.registered);
 
 	assert(entities.hooks.post_draw.first == NULL);
 	assert(entities.hooks.pre_draw.first == NULL);
@@ -81,29 +77,22 @@ void ent_shutdown(void) {
 void ent_register(EntityInterface *ent, EntityType type) {
 	assert(type > _ENT_TYPE_ENUM_BEGIN && type < _ENT_TYPE_ENUM_END);
 	ent->type = type;
-	ent->index = entities.num++;
 	ent->spawn_id = ++entities.total_spawns;
-
-	assert(ent->spawn_id > 0);
-
-	if(entities.capacity < entities.num) {
-		entities.capacity *= 2;
-		entities.array = realloc(entities.array, entities.capacity * sizeof(EntityInterface*));
-	}
-
-	entities.array[ent->index] = ent;
-
-	assert(ent->index < entities.num);
-	assert(entities.array[ent->index] == ent);
+	ent->index = entities.registered.num_elements;
+	assume(ent->spawn_id > 0);
+	*dynarray_append(&entities.registered) = ent;
 }
 
 void ent_unregister(EntityInterface *ent) {
 	ent->spawn_id = 0;
-	EntityInterface *sub = entities.array[--entities.num];
-	assert(ent->index <= entities.num);
-	assert(entities.array[ent->index] == ent);
+
+	// Fast non-order-preserving removal by moving the last element into the removed element's position.
+
+	assert(ent->index < entities.registered.num_elements);
+	assert(dynarray_get(&entities.registered, ent->index) == ent);
+	EntityInterface *sub = entities.registered.data[--entities.registered.num_elements];
+	entities.registered.data[sub->index = ent->index] = sub;
 	del_ref(ent);
-	entities.array[sub->index = ent->index] = sub;
 }
 
 static int ent_cmp(const void *ptr1, const void *ptr2) {
@@ -126,12 +115,12 @@ static inline bool ent_is_drawable(EntityInterface *ent) {
 
 void ent_draw(EntityPredicate predicate) {
 	call_hooks(&entities.hooks.pre_draw, NULL);
-	qsort(entities.array, entities.num, sizeof(EntityInterface*), ent_cmp);
+	dynarray_qsort(&entities.registered, ent_cmp);
 
 	if(predicate) {
-		FOR_EACH_ENT(ent) {
-			ent->index = _ent - entities.array;
-			assert(entities.array[ent->index] == ent);
+		dynarray_foreach(&entities.registered, int i, EntityInterface **pent, {
+			EntityInterface *ent = *pent;
+			ent->index = i;
 
 			if(ent_is_drawable(ent) && predicate(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
@@ -140,11 +129,11 @@ void ent_draw(EntityPredicate predicate) {
 				r_state_pop();
 				call_hooks(&entities.hooks.post_draw, ent);
 			}
-		}
+		});
 	} else {
-		FOR_EACH_ENT(ent) {
-			ent->index = _ent - entities.array;
-			assert(entities.array[ent->index] == ent);
+		dynarray_foreach(&entities.registered, int i, EntityInterface **pent, {
+			EntityInterface *ent = *pent;
+			ent->index = i;
 
 			if(ent_is_drawable(ent)) {
 				call_hooks(&entities.hooks.pre_draw, ent);
@@ -153,7 +142,7 @@ void ent_draw(EntityPredicate predicate) {
 				r_state_pop();
 				call_hooks(&entities.hooks.post_draw, ent);
 			}
-		}
+		});
 	}
 
 	call_hooks(&entities.hooks.post_draw, NULL);

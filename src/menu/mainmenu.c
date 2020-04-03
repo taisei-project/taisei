@@ -32,12 +32,15 @@ void main_menu_update_practice_menus(void) {
 	spell_practice_entry->action = NULL;
 	stage_practice_entry->action = NULL;
 
-	for(StageInfo *stg = stages; stg->procs && (!spell_practice_entry->action || !stage_practice_entry->action); ++stg) {
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
 		if(stg->type == STAGE_SPELL) {
 			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
 
 			if(p && p->unlocked) {
 				spell_practice_entry->action = menu_action_enter_spellpractice;
+				if(stage_practice_entry->action) {
+					break;
+				}
 			}
 		} else if(stg->type == STAGE_STORY) {
 			for(Difficulty d = D_Easy; d <= D_Lunatic; ++d) {
@@ -45,10 +48,13 @@ void main_menu_update_practice_menus(void) {
 
 				if(p && p->unlocked) {
 					stage_practice_entry->action = menu_action_enter_stagepractice;
+					if(spell_practice_entry->action) {
+						break;
+					}
 				}
 			}
 		}
-	}
+	});
 }
 
 static void begin_main_menu(MenuData *m) {
@@ -58,9 +64,9 @@ static void begin_main_menu(MenuData *m) {
 static void update_main_menu(MenuData *menu) {
 	menu->drawdata[1] += 0.1*(menu->cursor-menu->drawdata[1]);
 
-	for(int i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
-	}
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		e->drawdata += 0.2 * ((i == menu->cursor) - e->drawdata);
+	});
 }
 
 attr_unused
@@ -71,7 +77,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 
 	if(te == TE_MENU_ABORT) {
 		play_ui_sound("hit");
-		m->cursor = m->ecount - 1;
+		m->cursor = m->entries.num_elements - 1;
 		hrtime_t t = time_get();
 
 		if(t - last_abort_time < HRTIME_RESOLUTION/5 && last_abort_time > 0) {
@@ -101,10 +107,14 @@ MenuData* create_main_menu(void) {
 	m->draw = draw_main_menu;
 	m->logic = update_main_menu;
 
+	ptrdiff_t stage_practice_idx, spell_practice_idx;
+
 	add_menu_entry(m, "Start Story", start_game, NULL);
 	add_menu_entry(m, "Start Extra", NULL, NULL);
-	add_menu_entry(m, "Stage Practice", menu_action_enter_stagepractice, NULL);
-	add_menu_entry(m, "Spell Practice", menu_action_enter_spellpractice, NULL);
+	stage_practice_entry = add_menu_entry(m, "Stage Practice", menu_action_enter_stagepractice, NULL);
+	stage_practice_idx = dynarray_indexof(&m->entries, stage_practice_entry);
+	spell_practice_entry = add_menu_entry(m, "Spell Practice", menu_action_enter_spellpractice, NULL);
+	spell_practice_idx = dynarray_indexof(&m->entries, spell_practice_entry);
 #ifdef DEBUG
 	add_menu_entry(m, "Select Stage", menu_action_enter_stagemenu, NULL);
 #endif
@@ -116,8 +126,8 @@ MenuData* create_main_menu(void) {
 	m->input = main_menu_input;
 #endif
 
-	stage_practice_entry = m->entries + 2;
-	spell_practice_entry = m->entries + 3;
+	stage_practice_entry = dynarray_get_ptr(&m->entries, stage_practice_idx);
+	spell_practice_entry = dynarray_get_ptr(&m->entries, spell_practice_idx);
 	main_menu_update_practice_menus();
 
 	progress_unlock_bgm("menu");
@@ -161,20 +171,19 @@ void draw_main_menu(MenuData *menu) {
 
 	float o = 0.7;
 
-	for(int i = 0; i < menu->ecount; i++) {
-
-		if(menu->entries[i].action == NULL) {
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		if(e->action == NULL) {
 			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
 		} else {
-			float a = 1 - menu->entries[i].drawdata;
+			float a = 1 - e->drawdata;
 			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
-		text_draw(menu->entries[i].name, &(TextParams) {
-			.pos = { 50-15*menu->entries[i].drawdata, 20*(i-menu->drawdata[1]) },
+		text_draw(e->name, &(TextParams) {
+			.pos = { 50 - 15 * e->drawdata, 20 * (i - menu->drawdata[1]) },
 			.font = "standard",
 		});
-	}
+	});
 
 	r_mat_mv_pop();
 

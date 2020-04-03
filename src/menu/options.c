@@ -85,7 +85,7 @@ static void bind_free(OptionBinding *bind) {
 }
 
 static OptionBinding* bind_get(MenuData *m, int idx) {
-	MenuEntry *e = m->entries + idx;
+	MenuEntry *e = dynarray_get_ptr(&m->entries, idx);
 	return e->arg == m? NULL : e->arg;
 }
 
@@ -235,12 +235,12 @@ static OptionBinding* bind_scale(int cfgentry, float smin, float smax, float ste
 
 // Returns a pointer to the first found binding that blocks input. If none found, returns NULL.
 static OptionBinding* bind_getinputblocking(MenuData *m) {
-	int i;
-	for(i = 0; i < m->ecount; ++i) {
+	dynarray_foreach_idx(&m->entries, int i, {
 		OptionBinding *bind = bind_get(m, i);
-		if(bind && bind->blockinput)
+		if(bind && bind->blockinput) {
 			return bind;
-	}
+		}
+	});
 	return NULL;
 }
 
@@ -423,7 +423,7 @@ typedef struct OptionsMenuContext {
 static void destroy_options_menu(MenuData *m) {
 	bool change_vidmode = false;
 
-	for(int i = 0; i < m->ecount; ++i) {
+	dynarray_foreach_idx(&m->entries, int i, {
 		OptionBinding *bind = bind_get(m, i);
 
 		if(!bind) {
@@ -442,7 +442,7 @@ static void destroy_options_menu(MenuData *m) {
 
 		bind_free(bind);
 		free(bind);
-	}
+	});
 
 	if(change_vidmode) {
 		video_set_mode(
@@ -469,10 +469,7 @@ static void draw_options_menu(MenuData*);
 #define bind_onoff(b) bind_addvalue(b, "on"); bind_addvalue(b, "off")
 
 static bool entry_is_active(MenuData *m, int idx) {
-	assume(idx >= 0);
-	assume(idx < m->ecount);
-
-	MenuEntry *e = m->entries + idx;
+	MenuEntry *e = dynarray_get_ptr(&m->entries, idx);
 
 	if(!e->action) {
 		return false;
@@ -488,11 +485,12 @@ static bool entry_is_active(MenuData *m, int idx) {
 }
 
 static void begin_options_menu(MenuData *m) {
-	for(m->cursor = 0; m->cursor <= m->ecount; ++m->cursor) {
-		if(entry_is_active(m, m->cursor)) {
+	dynarray_foreach_idx(&m->entries, int i, {
+		if(entry_is_active(m, i)) {
+			m->cursor = i;
 			break;
 		}
-	}
+	});
 }
 
 static MenuData* create_options_menu_base(const char *s) {
@@ -936,13 +934,11 @@ static void update_options_menu(MenuData *menu) {
 	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 
-	for(int i = 0; i < menu->ecount; i++) {
-		MenuEntry *e = menu->entries + i;
-
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
 		if(e->name) {
 			e->drawdata += 0.2 * (10*(i == menu->cursor) - e->drawdata);
 		}
-	}
+	});
 }
 
 static void draw_options_menu(MenuData *menu) {
@@ -956,10 +952,9 @@ static void draw_options_menu(MenuData *menu) {
 
 	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
 
-	int i, caption_drawn = 2;
+	int caption_drawn = 2;
 
-	for(i = 0; i < menu->ecount; i++) {
-		MenuEntry *e = menu->entries + i;
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
 		OptionBinding *bind = bind_get(menu, i);
 		Color clr;
 
@@ -1247,7 +1242,7 @@ static void draw_options_menu(MenuData *menu) {
 				}
 			}
 		}
-	}
+	});
 	r_shader_standard();
 	r_mat_mv_pop();
 }
@@ -1257,7 +1252,7 @@ static void draw_options_menu(MenuData *menu) {
 static bool options_vidmode_change_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
 
-	for(int i = 0; i < menu->ecount; ++i) {
+	dynarray_foreach_idx(&menu->entries, int i, {
 		OptionBinding *bind = bind_get(menu, i);
 
 		if(!bind) {
@@ -1278,7 +1273,7 @@ static bool options_vidmode_change_handler(SDL_Event *event, void *arg) {
 			default:
 				break;
 		}
-	}
+	});
 
 	return false;
 }
@@ -1488,12 +1483,12 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 			do {
 				menu->cursor += (type == TE_MENU_CURSOR_UP ? -1 : 1);
 
-				if(menu->cursor >= menu->ecount) {
+				if(menu->cursor >= menu->entries.num_elements) {
 					menu->cursor = 0;
 				}
 
 				if(menu->cursor < 0) {
-					menu->cursor = menu->ecount - 1;
+					menu->cursor = menu->entries.num_elements - 1;
 				}
 
 			} while(!entry_is_active(menu, menu->cursor));
@@ -1557,7 +1552,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 		default: break;
 	}
 
-	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount*(menu->cursor < 0);
+	menu->cursor = (menu->cursor % menu->entries.num_elements) + menu->entries.num_elements * (menu->cursor < 0);
 	return false;
 }
 #undef SHOULD_SKIP

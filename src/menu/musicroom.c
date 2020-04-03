@@ -41,8 +41,9 @@ static void musicroom_logic(MenuData *m) {
 	float prev_selector_w = m->drawdata[1];
 	animate_menu_list(m);
 
-	if(m->entries[m->cursor].arg) {
-		MusicEntryParam *p = m->entries[m->cursor].arg;
+	MenuEntry *cursor_entry = dynarray_get_ptr(&m->entries, m->cursor);
+	if(cursor_entry->arg) {
+		MusicEntryParam *p = cursor_entry->arg;
 		float selector_w = SCREEN_W - 200;
 		m->drawdata[0] = prev_selector_x;
 		m->drawdata[1] = prev_selector_w;
@@ -53,8 +54,7 @@ static void musicroom_logic(MenuData *m) {
 		fapproach_asymptotic_p(&m->drawdata[3], 0, 0.2, 1e-5);
 	}
 
-	for(int i = 0; i < m->ecount; ++i) {
-		MenuEntry *e = m->entries + i;
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		MusicEntryParam *p = e->arg;
 
 		if(p) {
@@ -72,7 +72,7 @@ static void musicroom_logic(MenuData *m) {
 				p->state &= ~MSTATE_PLAYING;
 			}
 		}
-	}
+	});
 }
 
 static void musicroom_draw_item(MenuEntry *e, int i, int cnt) {
@@ -154,8 +154,7 @@ static void musicroom_draw(MenuData *m) {
 	const float text_x = 50;
 	const float text_y = SCREEN_H - comment_height + font_get_lineskip(text_font) * 1.5 + comment_offset;
 
-	for(int i = 0; i < m->ecount; ++i) {
-		MenuEntry *e = m->entries + i;
+	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
 		float a = e->drawdata / 10.0 * comment_alpha;
 
 		if(a < 0.05 || !e->arg) {
@@ -204,7 +203,7 @@ static void musicroom_draw(MenuData *m) {
 				.align = ALIGN_RIGHT,
 			});
 		}
-	}
+	});
 }
 
 static void action_play_bgm(MenuData *m, void *arg) {
@@ -237,9 +236,9 @@ static void add_bgm(MenuData *m, const char *bgm) {
 }
 
 static void musicroom_free(MenuData *m) {
-	for(MenuEntry *e = m->entries; e < m->entries + m->ecount; ++e) {
+	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
 		free(e->arg);
-	}
+	});
 }
 
 MenuData* create_musicroom_menu(void) {
@@ -272,7 +271,7 @@ MenuData* create_musicroom_menu(void) {
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);
 
-	while(!m->entries[m->cursor].action) {
+	while(!dynarray_get(&m->entries, m->cursor).action) {
 		++m->cursor;
 	}
 
