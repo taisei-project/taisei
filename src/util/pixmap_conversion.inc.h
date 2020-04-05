@@ -1,6 +1,6 @@
 
-#define _CONV_IN_IS_FLOAT (_CONV_IN_MAX == 1.0f)
-#define _CONV_OUT_IS_FLOAT (_CONV_OUT_MAX == 1.0f)
+#define _CONV_IN_IS_FLOAT ((float)_CONV_IN_MAX == 1.0f)
+#define _CONV_OUT_IS_FLOAT ((float)_CONV_OUT_MAX == 1.0f)
 
 static void _CONV_FUNCNAME(
 	size_t in_elements,
@@ -26,11 +26,12 @@ static void _CONV_FUNCNAME(
 						fill = (_CONV_OUT_TYPE)round(clamp(*buf_in++, 0, 1) * _CONV_OUT_MAX);
 					}
 				} else if(_CONV_OUT_IS_FLOAT) {
-					fill = *buf_in++ * (1.0f / _CONV_IN_MAX);
+					fill = *buf_in++ * (1.0f / (float)_CONV_IN_MAX);
 				} else if(_CONV_OUT_MAX >= _CONV_IN_MAX) {
 					fill = *buf_in++ * (_CONV_OUT_MAX / _CONV_IN_MAX);
 				} else {
-					fill = (_CONV_OUT_TYPE)round(*buf_in++ * ((float)_CONV_OUT_MAX / _CONV_IN_MAX));
+					// TODO use fixed point math
+					fill = (_CONV_OUT_TYPE)round(*buf_in++ * ((float)_CONV_OUT_MAX / (float)_CONV_IN_MAX));
 				}
 			} else {
 				fill = default_pixel[element];
