@@ -15,15 +15,15 @@
 #include "../glcommon/shaders.h"
 
 bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative) {
-	if(glcommon_shader_lang_table) {
-		for(ShaderLangInfo *l = glcommon_shader_lang_table; l->lang != SHLANG_INVALID; ++l) {
+	if(glcommon_shader_lang_table.data) {
+		dynarray_foreach_elem(&glcommon_shader_lang_table, ShaderLangInfo *l, {
 			if(!memcmp(l, lang, sizeof(*l))) {
 				return true;
 			}
-		}
+		});
 
 		if(out_alternative) {
-			*out_alternative = *glcommon_shader_lang_table;
+			*out_alternative = dynarray_get(&glcommon_shader_lang_table, 0);
 		}
 
 		return false;

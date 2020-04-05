@@ -648,48 +648,26 @@ int cotask_wait(int delay) {
 	return cotask_wait_init(task_data, COTASK_WAIT_NONE).frames;
 }
 
+static bool subscribers_array_predicate(const void *pelem, void *userdata) {
+	return cotask_unbox(*(const BoxedTask*)pelem);
+}
+
 static void coevent_cleanup_subscribers(CoEvent *evt) {
-	if(evt->num_subscribers == 0) {
+	if(evt->subscribers.num_elements == 0) {
 		return;
 	}
 
-	uint num_subs = evt->num_subscribers;
-	BoxedTask new_subs[num_subs];
-	BoxedTask *p_new_subs = new_subs;
-
-	for(uint i = 0; i < num_subs; ++i) {
-		if(cotask_unbox(evt->subscribers[i])) {
-			*p_new_subs++ = evt->subscribers[i];
-		}
-	}
-
-	num_subs = p_new_subs - new_subs;
-
-	EVT_DEBUG("Event %p num_subscribers %u -> %u", (void*)evt, evt->num_subscribers, num_subs);
-
-	memcpy(evt->subscribers, new_subs, sizeof(new_subs[0]) * num_subs);
-	evt->num_subscribers = num_subs;
+	attr_unused uint prev_num_subs = evt->subscribers.num_elements;
+	dynarray_filter(&evt->subscribers, subscribers_array_predicate, NULL);
+	attr_unused uint new_num_subs = evt->subscribers.num_elements;
+	EVT_DEBUG("Event %p num subscribers %u -> %u", (void*)evt, prev_num_subs, new_num_subs);
 }
 
 static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
 	EVT_DEBUG("Event %p (num_subscribers=%u; num_subscribers_allocated=%u)", (void*)evt, evt->num_subscribers, evt->num_subscribers_allocated);
 	EVT_DEBUG("Subscriber: %s", task->debug_label);
 
-	evt->num_subscribers++;
-	assert(evt->num_subscribers != 0);
-
-	if(evt->num_subscribers >= evt->num_subscribers_allocated) {
-		if(!evt->num_subscribers_allocated) {
-			evt->num_subscribers_allocated = 4;
-		} else {
-			evt->num_subscribers_allocated *= 2;
-			assert(evt->num_subscribers_allocated != 0);
-		}
-
-		evt->subscribers = realloc(evt->subscribers, sizeof(*evt->subscribers) * evt->num_subscribers_allocated);
-	}
-
-	evt->subscribers[evt->num_subscribers - 1] = cotask_box(task);
+	*dynarray_append_with_min_capacity(&evt->subscribers, 4) = cotask_box(task);
 }
 
 CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
@@ -771,10 +749,10 @@ void coevent_signal(CoEvent *evt) {
 	EVT_DEBUG("Signal event %p (uid = %u; num_signaled = %u)", (void*)evt, evt->unique_id, evt->num_signaled);
 	assert(evt->num_signaled != 0);
 
-	if(evt->num_subscribers) {
-		BoxedTask subs_snapshot[evt->num_subscribers];
-		memcpy(subs_snapshot, evt->subscribers, sizeof(subs_snapshot));
-		evt->num_subscribers = 0;
+	if(evt->subscribers.num_elements) {
+		BoxedTask subs_snapshot[evt->subscribers.num_elements];
+		memcpy(subs_snapshot, evt->subscribers.data, sizeof(subs_snapshot));
+		evt->subscribers.num_elements = 0;
 		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
 	}
 }
@@ -798,28 +776,14 @@ void coevent_cancel(CoEvent *evt) {
 	evt->num_signaled = 0;
 	evt->unique_id = 0;
 
-	if(evt->num_subscribers) {
-		assume(evt->subscribers != NULL);
-		assume(evt->num_subscribers_allocated > 0);
-		BoxedTask subs_snapshot[evt->num_subscribers];
-		memcpy(subs_snapshot, evt->subscribers, sizeof(subs_snapshot));
-		EVT_DEBUG("[%lu] Snapshot %zu subscribers at %p", ev, ARRAY_SIZE(subs_snapshot), (void*)subs_snapshot);
-		evt->num_subscribers = 0;
-		evt->num_subscribers_allocated = 0;
-		EVT_DEBUG("[%lu] FREE (*%p)->subscribers (%p)", ev, (void*)evt, (void*)evt->subscribers);
-		free(evt->subscribers);
-		evt->subscribers = NULL;
+	if(evt->subscribers.num_elements) {
+		BoxedTask subs_snapshot[evt->subscribers.num_elements];
+		memcpy(subs_snapshot, evt->subscribers.data, sizeof(subs_snapshot));
+		dynarray_free_data(&evt->subscribers);
 		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
 		// CAUTION: no modifying evt after this point, it may be invalidated
-	} else if(evt->subscribers) {
-		assume(evt->subscribers != NULL);
-		assume(evt->num_subscribers_allocated > 0);
-		evt->num_subscribers_allocated = 0;
-		free(evt->subscribers);
-		evt->subscribers = NULL;
 	} else {
-		assume(evt->num_subscribers_allocated == 0);
-		assume(evt->subscribers == NULL);
+		dynarray_free_data(&evt->subscribers);
 	}
 
 	EVT_DEBUG("[%lu] END Cancel event %p", ev, (void*)evt);

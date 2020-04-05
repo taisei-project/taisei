@@ -83,11 +83,13 @@ static void update_char_draw_order(MenuData *menu) {
 }
 
 static void update_char_menu(MenuData *menu) {
-	for(int i = 0; i < menu->ecount; i++) {
-		menu->entries[i].drawdata += 0.05*((menu->cursor != i) - menu->entries[i].drawdata);
-	}
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		e->drawdata += 0.05 * ((menu->cursor != i) - e->drawdata);
+	});
 
-	PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
+	MenuEntry *cursor_entry = dynarray_get_ptr(&menu->entries, menu->cursor);
+
+	PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)cursor_entry->arg);
 	assume(pchar != NULL);
 
 	PlayerMode *m = plrmode_find(pchar->id, SELECTED_SUBSHOT(menu));
@@ -99,7 +101,7 @@ static void update_char_menu(MenuData *menu) {
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
 	fapproach_asymptotic_p(&menu->drawdata[0], SELECTED_SUBSHOT(menu) - PLR_SHOT_A, 0.1, 1e-5);
-	fapproach_asymptotic_p(&menu->drawdata[1], 1 - menu->entries[menu->cursor].drawdata, 0.1, 1e-5);
+	fapproach_asymptotic_p(&menu->drawdata[1], 1 - cursor_entry->drawdata, 0.1, 1e-5);
 	fapproach_asymptotic_p(&menu->drawdata[2], height, 0.1, 1e-5);
 }
 
@@ -156,17 +158,18 @@ void draw_char_menu(MenuData *menu) {
 	};
 
 	assert(menu->cursor < 3);
-	PlayerCharacter *selected_char = plrchar_get((CharacterID)(uintptr_t)menu->entries[menu->cursor].arg);
+	PlayerCharacter *selected_char = plrchar_get((CharacterID)(uintptr_t)dynarray_get(&menu->entries, menu->cursor).arg);
 
 	draw_main_menu_bg(menu, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * menu->drawdata[1]), "menu/mainmenubg", selected_char->menu_texture_name);
 	draw_menu_title(menu, "Select Character");
 
 	CharacterID current_char = 0;
 
-	for(int j = 0; j < menu->ecount; j++) {
+	dynarray_foreach_idx(&menu->entries, int j, {
 		CharacterID i = ctx->char_draw_order[j];
+		MenuEntry *e = dynarray_get_ptr(&menu->entries, i);
 
-		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)menu->entries[i].arg);
+		PlayerCharacter *pchar = plrchar_get((CharacterID)(uintptr_t)e->arg);
 		assert(pchar != NULL);
 		assert(pchar->id == i);
 
@@ -178,8 +181,7 @@ void draw_char_menu(MenuData *menu) {
 			current_char = pchar->id;
 		}
 
-		float o = 1-menu->entries[i].drawdata*2;
-
+		float o = 1 - e->drawdata*2;
 		const char *face;
 
 		if(menu->selected == i) {
@@ -192,7 +194,7 @@ void draw_char_menu(MenuData *menu) {
 			face = facedefs[i][F_UNAMUSED];
 		}
 
-		float pofs = max(0, menu->entries[i].drawdata * 1.5 - 0.5);
+		float pofs = max(0, e->drawdata * 1.5 - 0.5);
 		pofs = glm_ease_back_in(pofs);
 
 		if(i != menu->selected) {
@@ -218,9 +220,9 @@ void draw_char_menu(MenuData *menu) {
 
 		r_mat_mv_push();
 
-		if(menu->entries[i].drawdata != 0) {
-			r_mat_mv_translate(0, -300 * menu->entries[i].drawdata, 0);
-			r_mat_mv_rotate(M_PI * menu->entries[i].drawdata, 1, 0, 0);
+		if(e->drawdata != 0) {
+			r_mat_mv_translate(0, -300 * e->drawdata, 0);
+			r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
 		}
 
 		text_draw(name, &(TextParams) {
@@ -232,8 +234,8 @@ void draw_char_menu(MenuData *menu) {
 
 		r_mat_mv_pop();
 
-		if(menu->entries[i].drawdata) {
-			o = 1-menu->entries[i].drawdata*3;
+		if(e->drawdata) {
+			o = 1 - e->drawdata * 3;
 		} else {
 			o = 1;
 		}
@@ -246,7 +248,7 @@ void draw_char_menu(MenuData *menu) {
 		});
 
 		r_mat_mv_pop();
-	}
+	});
 
 	r_mat_mv_push();
 	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
@@ -303,7 +305,7 @@ void draw_char_menu(MenuData *menu) {
 	r_mat_mv_pop();
 
 	float o = 0.3*sin(menu->frames/20.0)+0.5;
-	o *= 1-menu->entries[menu->cursor].drawdata;
+	o *= 1 - dynarray_get(&menu->entries, menu->cursor).drawdata;
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
@@ -354,11 +356,11 @@ static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 		close_menu(menu);
 	}
 
-	menu->cursor = (menu->cursor % menu->ecount) + menu->ecount * (menu->cursor < 0);
+	menu->cursor = (menu->cursor % menu->entries.num_elements) + menu->entries.num_elements * (menu->cursor < 0);
 	ctx->subshot = (ctx->subshot % NUM_SHOT_MODES_PER_CHARACTER) + NUM_SHOT_MODES_PER_CHARACTER * (ctx->subshot < 0);
 
 	if(menu->cursor != prev_cursor) {
-		if(ctx->prev_selected_char != menu->cursor || menu->entries[menu->cursor].drawdata > 0.95) {
+		if(ctx->prev_selected_char != menu->cursor || dynarray_get(&menu->entries, menu->cursor).drawdata > 0.95) {
 			ctx->prev_selected_char = prev_cursor;
 			update_char_draw_order(menu);
 		}

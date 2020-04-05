@@ -31,14 +31,10 @@
 	#include "stages/dpstest.h"
 #endif
 
-static size_t numstages = 0;
-StageInfo *stages = NULL;
+StageInfoArray stages = { 0 };
 
 static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff) {
-	++numstages;
-	stages = realloc(stages, numstages * sizeof(StageInfo));
-	StageInfo *stg = stages + (numstages - 1);
-	memset(stg, 0, sizeof(StageInfo));
+	StageInfo *stg = dynarray_append(&stages);
 
 	stg->id = id;
 	stg->procs = procs;
@@ -47,10 +43,6 @@ static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char
 	stralloc(&stg->subtitle, subtitle);
 	stg->spell = spell;
 	stg->difficulty = diff;
-}
-
-static void end_stages(void) {
-	add_stage(0, NULL, 0, NULL, NULL, NULL, 0);
 }
 
 static void add_spellpractice_stage(StageInfo *s, AttackInfo *a, int *spellnum, uint16_t spellbits, Difficulty diff) {
@@ -67,7 +59,7 @@ static void add_spellpractice_stage(StageInfo *s, AttackInfo *a, int *spellnum, 
 
 static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
 	for(int i = 0 ;; ++i) {
-		StageInfo *s = stages + i;
+		StageInfo *s = dynarray_get_ptr(&stages, i);
 
 		if(s->type == STAGE_SPELL || !s->spell) {
 			break;
@@ -81,7 +73,9 @@ static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*),
 			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
 				if(a->idmap[diff - D_Easy] >= 0) {
 					add_spellpractice_stage(s, a, spellnum, spellbits, diff);
-					s = stages + i; // stages just got realloc'd, so we must update the pointer
+
+					// stages may have gotten realloc'd, so we must update the pointer
+					s = dynarray_get_ptr(&stages, i);
 				}
 			}
 		}
@@ -120,54 +114,59 @@ void stage_init_array(void) {
 	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
 
 #ifdef SPELL_BENCHMARK
-	add_spellpractice_stage(stages, &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
+	add_spellpractice_stage(dynarray_get_ptr(&stages, 0), &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
 #endif
 
 	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
 	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
-	end_stages();
+	dynarray_compact(&stages);
 
 #ifdef DEBUG
-	for(int i = 0; stages[i].procs; ++i) {
-		if(stages[i].type == STAGE_SPELL && !(stages[i].id & STAGE_SPELL_BIT)) {
-			log_fatal("Spell stage has an ID without the spell bit set: 0x%04x", stages[i].id);
+	dynarray_foreach(&stages, int i, StageInfo *stg, {
+		if(stg->type == STAGE_SPELL && !(stg->id & STAGE_SPELL_BIT)) {
+			log_fatal("Spell stage has an ID without the spell bit set: 0x%04x", stg->id);
 		}
 
-		for(int j = 0; stages[j].procs; ++j) {
-			if(i != j && stages[i].id == stages[j].id) {
-				log_fatal("Duplicate ID %X in stages array, indices: %i, %i", stages[i].id, i, j);
+		dynarray_foreach(&stages, int j, StageInfo *stg2, {
+			if(stg != stg2 && stg->id == stg2->id) {
+				log_fatal("Duplicate ID %X in stages array, indices: %i, %i", stg->id, i, j);
 			}
-		}
-	}
+		});
+	});
 #endif
 }
 
 void stage_free_array(void) {
-	for(StageInfo *stg = stages; stg->procs; ++stg) {
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
 		free(stg->title);
 		free(stg->subtitle);
 		free(stg->progress);
-	}
+	});
 
-	free(stages);
+	dynarray_free_data(&stages);
 }
 
-// NOTE: This returns the stage BY ID, not by the array index!
 StageInfo* stage_get(uint16_t n) {
-	for(StageInfo *stg = stages; stg->procs; ++stg)
-		if(stg->id == n)
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
+		if(stg->id == n) {
 			return stg;
+		}
+	});
+
 	return NULL;
 }
 
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
-	if(!spell)
+	if(!spell) {
 		return NULL;
+	}
 
-	for(StageInfo *stg = stages; stg->procs; ++stg)
-		if(stg->spell == spell && stg->difficulty == diff)
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
+		if(stg->spell == spell && stg->difficulty == diff) {
 			return stg;
+		}
+	});
 
 	return NULL;
 }
@@ -411,18 +410,19 @@ static bool stage_input_handler_replay(SDL_Event *event, void *arg) {
 
 static void replay_input(void) {
 	ReplayStage *s = global.replay_stage;
-	int i;
+	int i = 0;
 
 	events_poll((EventHandler[]){
 		{ .proc = stage_input_handler_replay },
 		{NULL}
 	}, EFLAG_GAME);
 
-	for(i = s->playpos; i < s->numevents; ++i) {
-		ReplayEvent *e = s->events + i;
+	for(i = s->playpos; i < s->events.num_elements; ++i) {
+		ReplayEvent *e = dynarray_get_ptr(&s->events, i);
 
-		if(e->frame != global.frames)
+		if(e->frame != global.frames) {
 			break;
+		}
 
 		switch(e->type) {
 			case EV_OVER:
@@ -520,10 +520,13 @@ static void stage_logic(void) {
 		global.timer++;
 	}
 
-	if(global.replaymode == REPLAY_PLAY &&
-		global.frames == global.replay_stage->events[global.replay_stage->numevents-1].frame - FADE_TIME &&
-		global.gameover != GAMEOVER_TRANSITIONING) {
-		stage_finish(GAMEOVER_DEFEAT);
+	if(global.replaymode == REPLAY_PLAY && global.gameover != GAMEOVER_TRANSITIONING) {
+		ReplayStage *rstg = global.replay_stage;
+		ReplayEvent *last_event = dynarray_get_ptr(&rstg->events, rstg->events.num_elements - 1);
+
+		if(global.frames == last_event->frame - FADE_TIME) {
+			stage_finish(GAMEOVER_DEFEAT);
+		}
 	}
 
 	stagetext_update();
@@ -982,7 +985,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 
 		rng_seed(&global.rand_game, stg->rng_seed);
 
-		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->numevents, stage->title);
+		log_debug("REPLAY_PLAY mode: %d events, stage: \"%s\"", stg->events.num_elements, stage->title);
 		log_debug("Start time: %"PRIu64, stg->start_time);
 		log_debug("Random seed: 0x%"PRIx64, stg->rng_seed);
 

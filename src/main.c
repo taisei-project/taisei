@@ -223,9 +223,9 @@ int main(int argc, char **argv) {
 	}
 
 	if(ctx->cli.type == CLI_DumpStages) {
-		for(StageInfo *stg = stages; stg->procs; ++stg) {
+		dynarray_foreach_elem(&stages, StageInfo *stg, {
 			tsfprintf(stdout, "%X %s: %s\n", stg->id, stg->title, stg->subtitle);
-		}
+		});
 
 		main_quit(ctx, 0);
 	}

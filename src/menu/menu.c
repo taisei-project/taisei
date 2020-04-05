@@ -13,9 +13,7 @@
 #include "video.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
-	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	MenuEntry *e = menu->entries + menu->ecount - 1;
-	memset(e, 0, sizeof(MenuEntry));
+	MenuEntry *e = dynarray_append(&menu->entries);
 
 	stralloc(&e->name, name);
 	e->action = action;
@@ -26,8 +24,7 @@ MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, v
 }
 
 void add_menu_separator(MenuData *menu) {
-	menu->entries = realloc(menu->entries, (++menu->ecount)*sizeof(MenuEntry));
-	memset(menu->entries + menu->ecount - 1, 0, sizeof(MenuEntry));
+	dynarray_append(&menu->entries);
 }
 
 void free_menu(MenuData *menu) {
@@ -35,11 +32,11 @@ void free_menu(MenuData *menu) {
 		return;
 	}
 
-	for(int i = 0; i < menu->ecount; i++) {
-		free(menu->entries[i].name);
-	}
+	dynarray_foreach_elem(&menu->entries, MenuEntry *e, {
+		free(e->name);
+	});
 
-	free(menu->entries);
+	dynarray_free_data(&menu->entries);
 	free(menu);
 }
 
@@ -68,12 +65,16 @@ static void close_menu_finish(MenuData *menu) {
 
 	menu->state = MS_Dead;
 
-	if(menu->selected != -1 && menu->entries[menu->selected].action != NULL) {
-		if(!(menu->flags & MF_Transient)) {
-			menu->state = MS_Normal;
-		}
+	if(menu->selected != -1) {
+		MenuEntry *e = dynarray_get_ptr(&menu->entries, menu->selected);
 
-		menu->entries[menu->selected].action(menu, menu->entries[menu->selected].arg);
+		if(e->action != NULL) {
+			if(!(menu->flags & MF_Transient)) {
+				menu->state = MS_Normal;
+			}
+
+			e->action(menu, e->arg);
+		}
 	}
 
 	if(!was_dead) {
@@ -88,7 +89,7 @@ void close_menu(MenuData *menu) {
 	menu->state = MS_FadeOut;
 
 	if(menu->selected != -1) {
-		trans = menu->entries[menu->selected].transition;
+		trans = dynarray_get(&menu->entries, menu->selected).transition;
 	}
 
 	if(trans) {
@@ -115,24 +116,26 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 		case TE_MENU_CURSOR_DOWN:
 			play_ui_sound("generic_shot");
 			do {
-				if(++menu->cursor >= menu->ecount)
+				if(++menu->cursor >= menu->entries.num_elements) {
 					menu->cursor = 0;
-			} while(menu->entries[menu->cursor].action == NULL);
+				}
+			} while(dynarray_get(&menu->entries, menu->cursor).action == NULL);
 
 			return true;
 
 		case TE_MENU_CURSOR_UP:
 			play_ui_sound("generic_shot");
 			do {
-				if(--menu->cursor < 0)
-					menu->cursor = menu->ecount - 1;
-			} while(menu->entries[menu->cursor].action == NULL);
+				if(--menu->cursor < 0) {
+					menu->cursor = menu->entries.num_elements - 1;
+				}
+			} while(dynarray_get(&menu->entries, menu->cursor).action == NULL);
 
 			return true;
 
 		case TE_MENU_ACCEPT:
 			play_ui_sound("shot_special1");
-			if(menu->entries[menu->cursor].action) {
+			if(dynarray_get(&menu->entries, menu->cursor).action) {
 				menu->selected = menu->cursor;
 				close_menu(menu);
 			}
