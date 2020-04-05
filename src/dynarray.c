@@ -11,7 +11,7 @@
 #include "dynarray.h"
 #include "util.h"
 
-#define DYNARRAY_DEBUG
+// #define DYNARRAY_DEBUG
 
 #ifdef DYNARRAY_DEBUG
 	#undef DYNARRAY_DEBUG
