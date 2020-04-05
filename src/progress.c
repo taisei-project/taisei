@@ -469,7 +469,7 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 				e->num_played = p->num_played;      data->size += sizeof(uint32_t);
 				e->num_cleared = p->num_cleared;    data->size += sizeof(uint32_t);
 
-				list_push(&data->elems, e);
+				(void)list_push(&data->elems, e);
 			}
 		}
 	});
