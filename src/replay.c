@@ -30,8 +30,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 
 	get_system_time(&s->init_time);
 
-	s->capacity = REPLAY_ALLOC_INITIAL;
-	s->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * s->capacity);
+	dynarray_ensure_capacity(&s->events, REPLAY_ALLOC_INITIAL);
 
 	s->stage = stage->id;
 	s->start_time = start_time;
@@ -77,7 +76,7 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
-	free(stage->events);
+	dynarray_free_data(&stage->events);
 	memset(stage, 0, sizeof(ReplayStage));
 }
 
@@ -89,8 +88,7 @@ void replay_destroy_events(Replay *rpy) {
 	if(rpy->stages) {
 		for(int i = 0; i < rpy->numstages; ++i) {
 			ReplayStage *stg = rpy->stages + i;
-			free(stg->events);
-			stg->events = NULL;
+			dynarray_free_data(&stg->events);
 		}
 	}
 }
@@ -116,17 +114,15 @@ void replay_destroy(Replay *rpy) {
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
 	assert(stg != NULL);
 
-	ReplayStage *s = stg;
-	ReplayEvent *e = s->events + s->numevents++;
+	dynarray_size_t old_capacity = stg->events.capacity;
+
+	ReplayEvent *e = dynarray_append(&stg->events);
 	e->frame = frame;
 	e->type = type;
 	e->value = value;
 
-	if(s->numevents >= s->capacity) {
-		log_debug("Replay stage reached its capacity of %d, reallocating", s->capacity);
-		s->capacity *= 2;
-		s->events = (ReplayEvent*)realloc(s->events, sizeof(ReplayEvent) * s->capacity);
-		log_debug("The new capacity is %d", s->capacity);
+	if(stg->events.capacity > old_capacity && stg->events.capacity > UINT16_MAX) {
+		log_error("Too many events in replay; saving WILL FAIL!");
 	}
 
 	if(type == EV_OVER) {
@@ -145,16 +141,12 @@ static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
 }
 
 static bool replay_write_events(Replay *rpy, SDL_RWops *file) {
-	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = rpy->stages + i;
-
-		for(int j = 0; j < stg->numevents; ++j) {
-			ReplayEvent *evt = stg->events + j;
-
+	for(int stgidx = 0; stgidx < rpy->numstages; ++stgidx) {
+		dynarray_foreach_elem(&rpy->stages[stgidx].events, ReplayEvent *evt, {
 			SDL_WriteLE32(file, evt->frame);
 			SDL_WriteU8(file, evt->type);
 			SDL_WriteLE16(file, evt->value);
-		}
+		});
 	}
 
 	return true;
@@ -178,7 +170,12 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 	cs += stg->plr_bombs;
 	cs += stg->plr_bomb_fragments;
 	cs += stg->plr_inputflags;
-	cs += stg->numevents;
+
+	if(!stg->num_events && stg->events.num_elements) {
+		cs += (uint16_t)stg->events.num_elements;
+	} else {
+		cs += stg->num_events;
+	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
 		cs += stg->plr_continues_used;
@@ -229,7 +226,12 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 		SDL_WriteLE64(file, stg->plr_points_final);
 	}
 
-	SDL_WriteLE16(file, stg->numevents);
+	if(stg->events.num_elements > UINT16_MAX) {
+		log_error("Too many events in replay, cannot write this");
+		return false;
+	}
+
+	SDL_WriteLE16(file, stg->events.num_elements);
 	SDL_WriteLE32(file, 1 + ~replay_calc_stageinfo_checksum(stg, version));
 
 	return true;
@@ -398,7 +400,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	return true;
 }
 
-static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
+static bool _replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
 	uint16_t version = rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT;
 
 	replay_read_string(file, &rpy->playername, version);
@@ -483,7 +485,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 			CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
 		}
 
-		CHECKPROP(stg->numevents = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->num_events = SDL_ReadLE16(file), u);
 
 		if(replay_calc_stageinfo_checksum(stg, version) + SDL_ReadLE32(file)) {
 			log_error("%s: Stageinfo is corrupt", source);
@@ -494,25 +496,46 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 	return true;
 }
 
-static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
+static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
+	rpy->playername = NULL;
+	rpy->stages = NULL;
+
+	if(!_replay_read_meta(rpy, file, filesize, source)) {
+		free(rpy->playername);
+		free(rpy->stages);
+		return false;
+	}
+
+	return true;
+}
+
+static bool _replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
 	for(int i = 0; i < rpy->numstages; ++i) {
 		ReplayStage *stg = rpy->stages + i;
 
-		if(!stg->numevents) {
+		if(!stg->num_events) {
 			log_error("%s: No events in stage", source);
 			return false;
 		}
 
-		stg->events = malloc(sizeof(ReplayEvent) * stg->numevents);
-		memset(stg->events, 0, sizeof(ReplayEvent) * stg->numevents);
+		dynarray_ensure_capacity(&stg->events, stg->num_events);
 
-		for(int j = 0; j < stg->numevents; ++j) {
-			ReplayEvent *evt = stg->events + j;
+		for(int j = 0; j < stg->num_events; ++j) {
+			ReplayEvent *evt = dynarray_append(&stg->events);
 
 			CHECKPROP(evt->frame = SDL_ReadLE32(file), u);
 			CHECKPROP(evt->type = SDL_ReadU8(file), u);
 			CHECKPROP(evt->value = SDL_ReadLE16(file), u);
 		}
+	}
+
+	return true;
+}
+
+static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
+	if(!_replay_read_events(rpy, file, filesize, source)) {
+		replay_destroy_events(rpy);
+		return false;
 	}
 
 	return true;
@@ -588,7 +611,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 			}
 
 			for(int i = 0; i < rpy->numstages; ++i) {
-				if(rpy->stages[i].events) {
+				if(rpy->stages->events.data) {
 					log_warn("%s: BUG: Reading events into a replay that already had events, call replay_destroy_events() if this is intended", source);
 					replay_destroy_events(rpy);
 					break;
@@ -614,7 +637,6 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 				SDL_RWclose(vfile);
 			}
 
-			replay_destroy_events(rpy);
 			return false;
 		}
 
@@ -689,10 +711,6 @@ bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 
 	bool result = replay_read(rpy, file, mode, sp);
 
-	if(!result) {
-		replay_destroy(rpy);
-	}
-
 	free(sp);
 	SDL_RWclose(file);
 	return result;
@@ -718,10 +736,6 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 
 	bool result = replay_read(rpy, file, mode, path);
 
-	if(!result) {
-		replay_destroy(rpy);
-	}
-
 	SDL_RWclose(file);
 	return result;
 }
@@ -732,11 +746,8 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events) {
 	replay_destroy(dst);
 	memcpy(dst, src, sizeof(Replay));
 
-	dst->playername = (char*)malloc(strlen(src->playername)+1);
-	strcpy(dst->playername, src->playername);
-
-	dst->stages = (ReplayStage*)malloc(sizeof(ReplayStage) * src->numstages);
-	memcpy(dst->stages, src->stages, sizeof(ReplayStage) * src->numstages);
+	dst->playername = strdup(src->playername);
+	dst->stages = memdup(src->stages, sizeof(*src->stages) * src->numstages);
 
 	for(i = 0; i < src->numstages; ++i) {
 		ReplayStage *s, *d;
@@ -744,11 +755,9 @@ void replay_copy(Replay *dst, Replay *src, bool steal_events) {
 		d = dst->stages + i;
 
 		if(steal_events) {
-			s->events = NULL;
+			memset(&s->events, 0, sizeof(s->events));
 		} else {
-			d->capacity = s->numevents;
-			d->events = (ReplayEvent*)malloc(sizeof(ReplayEvent) * d->capacity);
-			memcpy(d->events, s->events, sizeof(ReplayEvent) * d->capacity);
+			dynarray_set_elements(&d->events, s->events.num_elements, s->events.data);
 		}
 	}
 }

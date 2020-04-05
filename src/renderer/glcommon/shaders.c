@@ -13,36 +13,22 @@
 #include "opengl.h"
 #include "rwops/rwops_autobuf.h"
 
-static size_t num_langs, num_langs_allocated;
-ShaderLangInfo *glcommon_shader_lang_table = NULL;
-
-static ShaderLangInfo* alloc_lang(void) {
-	if(num_langs == num_langs_allocated) {
-		num_langs_allocated *= 2;
-		glcommon_shader_lang_table = realloc(glcommon_shader_lang_table, num_langs_allocated * sizeof(ShaderLangInfo));
-	}
-
-	ShaderLangInfo *lang = glcommon_shader_lang_table + num_langs++;
-	memset(lang, 0, sizeof(*lang));
-	return lang;
-}
+ShaderLangInfoArray glcommon_shader_lang_table = { 0 };
 
 static void add_glsl_version_parsed(GLSLVersion v) {
-	for(ShaderLangInfo *lang = glcommon_shader_lang_table; lang < glcommon_shader_lang_table + num_langs; ++lang) {
-		assert(lang->lang == SHLANG_GLSL);
-
+	dynarray_foreach_elem(&glcommon_shader_lang_table, ShaderLangInfo *lang, {
 		if(!memcmp(&lang->glsl.version, &v, sizeof(v))) {
 			return;
 		}
-	}
+	});
 
-	ShaderLangInfo *lang = alloc_lang();
+	ShaderLangInfo *lang = dynarray_append(&glcommon_shader_lang_table);
 	lang->lang = SHLANG_GLSL;
 	lang->glsl.version = v;
 
 	if(v.profile == GLSL_PROFILE_NONE && v.version >= 330) {
 		v.profile = GLSL_PROFILE_CORE;
-		lang = alloc_lang();
+		lang = dynarray_append(&glcommon_shader_lang_table);
 		lang->lang = SHLANG_GLSL;
 		lang->glsl.version = v;
 	}
@@ -88,8 +74,7 @@ static void glcommon_build_shader_lang_table_fallback(void);
 static void glcommon_build_shader_lang_table_finish(void);
 
 void glcommon_build_shader_lang_table(void) {
-	num_langs_allocated = 8;
-	glcommon_shader_lang_table = calloc(num_langs_allocated, sizeof(ShaderLangInfo));
+	dynarray_ensure_capacity(&glcommon_shader_lang_table, 8);
 
 	// NOTE: The ability to query supported GLSL versions was added in GL 4.3,
 	// but it's not exposed by any extension. This is pretty silly.
@@ -104,7 +89,7 @@ void glcommon_build_shader_lang_table(void) {
 		add_glsl_version((char*)glGetStringi(GL_SHADING_LANGUAGE_VERSION, i));
 	}
 
-	if(num_langs < 1) {
+	if(glcommon_shader_lang_table.num_elements < 1) {
 		glcommon_build_shader_lang_table_fallback();
 	}
 
@@ -186,35 +171,34 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 }
 
 static void glcommon_build_shader_lang_table_finish(void) {
-	if(num_langs > 0) {
-		alloc_lang(); // sentinel for iteration
-
+	if(glcommon_shader_lang_table.num_elements > 0) {
 		char *str;
 		SDL_RWops *abuf = SDL_RWAutoBuffer((void**)&str, 256);
 		SDL_RWprintf(abuf, "Supported GLSL versions: ");
 		char vbuf[32];
 
-		for(ShaderLangInfo *lang = glcommon_shader_lang_table; lang->lang != SHLANG_INVALID; ++lang) {
+		dynarray_foreach(&glcommon_shader_lang_table, int i, ShaderLangInfo *lang, {
 			assert(lang->lang == SHLANG_GLSL);
 
 			glsl_format_version(vbuf, sizeof(vbuf), lang->glsl.version);
 
-			if(lang == glcommon_shader_lang_table) {
+			if(i == 0) {
 				SDL_RWprintf(abuf, "%s", vbuf);
 			} else {
 				SDL_RWprintf(abuf, ", %s", vbuf);
 			}
-		}
+		});
 
 		SDL_WriteU8(abuf, 0);
 		log_info("%s", str);
 		SDL_RWclose(abuf);
+
+		dynarray_compact(&glcommon_shader_lang_table);
 	} else {
 		log_error("Can not determine supported GLSL versions. Looks like the OpenGL implementation is non-conformant. Expect nothing to work.");
 	}
 }
 
 void glcommon_free_shader_lang_table(void) {
-	free(glcommon_shader_lang_table);
-	glcommon_shader_lang_table = NULL;
+	dynarray_free_data(&glcommon_shader_lang_table);
 }

@@ -21,6 +21,7 @@
 #include "util/graphics.h"
 #include "util/rectpack.h"
 #include "video.h"
+#include "dynarray.h"
 
 static void init_fonts(void);
 static void post_init_fonts(void);
@@ -95,13 +96,11 @@ typedef struct Glyph {
 
 struct Font {
 	char *source_path;
-	Glyph *glyphs;
+	DYNAMIC_ARRAY(Glyph) glyphs;
 	FT_Face face;
 	FT_Stroker stroker;
 	long base_face_idx;
 	int base_size;
-	uint glyphs_allocated;
-	uint glyphs_used;
 	ht_int2int_t charcodes_to_glyph_ofs;
 	ht_int2int_t ftindex_to_glyph_ofs;
 	FontMetrics metrics;
@@ -461,21 +460,14 @@ static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss)
 static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
 	// log_debug("Loading glyph 0x%08x", gindex);
 
-	if(++font->glyphs_used == font->glyphs_allocated) {
-		font->glyphs_allocated *= 2;
-		font->glyphs = realloc(font->glyphs, sizeof(Glyph) * font->glyphs_allocated);
-	}
-
-	Glyph *glyph = font->glyphs + font->glyphs_used - 1;
-	memset(glyph, 0, sizeof(*glyph));
-
 	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_NO_BITMAP | FT_LOAD_TARGET_LIGHT);
 
 	if(err) {
 		log_warn("FT_Load_Glyph(%u) failed: %s", gindex, ft_error_str(err));
-		--font->glyphs_used;
 		return NULL;
 	}
+
+	Glyph *glyph = dynarray_append(&font->glyphs);
 
 	glyph->metrics.bearing_x = FT_FLOOR(font->face->glyph->metrics.horiBearingX);
 	glyph->metrics.bearing_y = FT_FLOOR(font->face->glyph->metrics.horiBearingY);
@@ -528,7 +520,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			FT_Done_Glyph(g_fill);
 			FT_Done_Glyph(g_border);
 			FT_Done_Glyph(g_inner);
-			--font->glyphs_used;
+			font->glyphs.num_elements--;
 			return NULL;
 		}
 
@@ -608,7 +600,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			FT_Done_Glyph(g_fill);
 			FT_Done_Glyph(g_border);
 			FT_Done_Glyph(g_inner);
-			--font->glyphs_used;
+			--font->glyphs.num_elements;
 			return NULL;
 		}
 
@@ -635,23 +627,22 @@ static Glyph* get_glyph(Font *fnt, charcode_t cp) {
 		if(ft_index == 0 && cp != UNICODE_UNKNOWN) {
 			log_debug("Font has no glyph for charcode 0x%08lx", cp);
 			glyph = get_glyph(fnt, UNICODE_UNKNOWN);
-			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
+			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
 		} else if(!ht_lookup(&fnt->ftindex_to_glyph_ofs, ft_index, &ofs)) {
 			glyph = load_glyph(fnt, ft_index, &globals.spritesheets);
-			ofs = glyph ? (ptrdiff_t)(glyph - fnt->glyphs) : -1;
+			ofs = glyph ? dynarray_indexof(&fnt->glyphs, glyph) : -1;
 			ht_set(&fnt->ftindex_to_glyph_ofs, ft_index, ofs);
 		}
 
 		ht_set(&fnt->charcodes_to_glyph_ofs, cp, ofs);
 	}
 
-	return ofs < 0 ? NULL : fnt->glyphs + ofs;
+	return ofs < 0 ? NULL : dynarray_get_ptr(&fnt->glyphs, ofs);
 }
 
 attr_nonnull(1)
 static void wipe_glyph_cache(Font *font) {
-	for(uint i = 0; i < font->glyphs_used; ++i) {
-		Glyph *g = font->glyphs + i;
+	dynarray_foreach_elem(&font->glyphs, Glyph *g, {
 		SpriteSheet *ss = g->spritesheet;
 
 		if(ss == NULL) {
@@ -669,12 +660,12 @@ static void wipe_glyph_cache(Font *font) {
 		if(rectpack_is_empty(rp)) {
 			delete_spritesheet(&globals.spritesheets, ss);
 		}
-	}
+	});
 
 	ht_unset_all(&font->charcodes_to_glyph_ofs);
 	ht_unset_all(&font->ftindex_to_glyph_ofs);
 
-	font->glyphs_used = 0;
+	font->glyphs.num_elements = 0;
 }
 
 static void free_font_resources(Font *font) {
@@ -698,7 +689,7 @@ static void free_font_resources(Font *font) {
 	ht_destroy(&font->ftindex_to_glyph_ofs);
 
 	free(font->source_path);
-	free(font->glyphs);
+	dynarray_free_data(&font->glyphs);
 }
 
 void* load_font_begin(const char *path, uint flags) {
@@ -728,8 +719,7 @@ void* load_font_begin(const char *path, uint flags) {
 		return NULL;
 	}
 
-	font.glyphs_allocated = 32;
-	font.glyphs = calloc(font.glyphs_allocated, sizeof(Glyph));
+	dynarray_ensure_capacity(&font.glyphs, 32);
 
 #ifdef DEBUG
 	char *basename = resource_util_basename(FONT_PATH_PREFIX, path);

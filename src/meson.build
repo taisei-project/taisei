@@ -62,6 +62,7 @@ taisei_src = files(
     'credits.c',
     'dialog.c',
     'difficulty.c',
+    'dynarray.c',
     'ending.c',
     'enemy.c',
     'entity.c',

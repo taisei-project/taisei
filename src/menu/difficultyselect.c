@@ -25,9 +25,9 @@ static void set_difficulty(MenuData *m, void *d) {
 static void update_difficulty_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor-menu->drawdata[0])*0.1;
 
-	for(int i = 0; i < menu->ecount; ++i) {
-		menu->entries[i].drawdata += 0.2 * ((i == menu->cursor) - menu->entries[i].drawdata);
-	}
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		e->drawdata += 0.2 * ((i == menu->cursor) - e->drawdata);
+	});
 
 	color_approach(&diff_color, difficulty_color(menu->cursor + D_Easy), 0.1);
 }
@@ -45,14 +45,14 @@ MenuData* create_difficulty_menu(void) {
 	add_menu_entry(m, "“Pain is my ally!”\nActually challenging", set_difficulty, (void *)D_Hard);
 	add_menu_entry(m, "“I have no fear.”\nWe never playtested this one", set_difficulty, (void *)D_Lunatic);
 
-	for(int i = 0; i < m->ecount; ++i) {
-		Difficulty d = (Difficulty)(uintptr_t)m->entries[i].arg;
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+		Difficulty d = (Difficulty)(uintptr_t)e->arg;
 
 		if(d == progress.game_settings.difficulty) {
 			m->cursor = i;
 			break;
 		}
-	}
+	});
 
 	return m;
 }
@@ -80,21 +80,21 @@ void draw_difficulty_menu(MenuData *menu) {
 
 	float amp = menu->cursor/2.;
 	float shake = 0.3*amp*menu->frames;
-	text_draw(menu->entries[menu->cursor].name, &(TextParams) {
+	text_draw(dynarray_get(&menu->entries, menu->cursor).name, &(TextParams) {
 		.pos = { 120+15*menu->drawdata[0]+amp*sin(shake), -12+amp*cos(1.57*shake) },
 	});
 
 	r_shader("sprite_default");
 
-	for(int i = 0; i < menu->ecount; ++i) {
-		float scale = 0.5 + menu->entries[i].drawdata;
+	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
+		float scale = 0.5 + e->drawdata;
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = difficulty_sprite_name(D_Easy + i),
-			.pos = { 0, 240*tanh(0.7*(i-menu->drawdata[0])) },
+			.pos = { 0, 240 * tanh(0.7 * (i - menu->drawdata[0])) },
 			.color = RGBA(scale, scale, scale, scale),
 			.scale.both = scale,
 		});
-	}
+	});
 
 	r_mat_mv_pop();
 	r_state_pop();

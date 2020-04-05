@@ -59,8 +59,7 @@ static void draw_saverpy_menu(MenuData *m) {
 	});
 	r_mat_mv_translate(0, 100, 0);
 
-	for(int i = 0; i < m->ecount; i++) {
-		MenuEntry *e = &(m->entries[i]);
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		assert(e->name != NULL);
 
 		float a = e->drawdata * 0.1;
@@ -80,7 +79,7 @@ static void draw_saverpy_menu(MenuData *m) {
 			.shader = "text_default",
 			.color = &clr,
 		});
-	}
+	});
 
 	r_mat_mv_pop();
 }
@@ -106,10 +105,9 @@ static void saverpy_menu_input(MenuData *menu) {
 static void update_saverpy_menu(MenuData *m) {
 	m->drawdata[0] += (m->cursor - m->drawdata[0])/10.0;
 
-	for(int i = 0; i < m->ecount; i++) {
-		MenuEntry *e = &(m->entries[i]);
-		e->drawdata += 0.2 * (10*(i == m->cursor) - e->drawdata);
-	}
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+		e->drawdata += 0.2 * (10 * (i == m->cursor) - e->drawdata);
+	});
 }
 
 static MenuData* create_saverpy_menu(void) {

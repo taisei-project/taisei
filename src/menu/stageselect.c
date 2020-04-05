@@ -33,16 +33,18 @@ MenuData* create_stage_menu(void) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
-	for(int i = 0; stages[i].procs; ++i) {
-		if(stages[i].difficulty < lastdiff || (stages[i].difficulty == D_Extra && lastdiff != D_Extra) || (stages[i].difficulty && !lastdiff)) {
+	dynarray_foreach_elem(&stages, StageInfo *stg, {
+		Difficulty diff = stg->difficulty;
+
+		if(diff < lastdiff || (diff == D_Extra && lastdiff != D_Extra) || (diff && !lastdiff)) {
 			add_menu_separator(m);
 		}
 
-		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s", stages[i].title, stages[i].subtitle);
-		add_menu_entry(m, title, start_game, &(stages[i]));
+		snprintf(title, STGMENU_MAX_TITLE_LENGTH, "%s: %s", stg->title, stg->subtitle);
+		add_menu_entry(m, title, start_game, stg);
 
-		lastdiff = stages[i].difficulty;
-	}
+		lastdiff = diff;
+	});
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);

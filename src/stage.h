@@ -17,6 +17,7 @@
 #include "difficulty.h"
 #include "util/graphics.h"
 #include "dialog.h"
+#include "dynarray.h"
 
 /* taisei's strange macro language.
  *
@@ -100,7 +101,8 @@ typedef struct StageInfo {
 	StageProgress *progress;
 } StageInfo;
 
-extern StageInfo *stages;
+typedef DYNAMIC_ARRAY(StageInfo) StageInfoArray;
+extern StageInfoArray stages;
 
 typedef struct StageClearBonus {
 	uint64_t base;
@@ -111,7 +113,7 @@ typedef struct StageClearBonus {
 	bool all_clear;
 } StageClearBonus;
 
-StageInfo* stage_get(uint16_t);
+StageInfo* stage_get(uint16_t);  // NOTE: This returns the stage BY ID, not by the array index!
 StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
 
 StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate);

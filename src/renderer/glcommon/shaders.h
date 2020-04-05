@@ -12,8 +12,10 @@
 #include "taisei.h"
 
 #include "../common/shaderlib/shaderlib.h"
+#include "dynarray.h"
 
-extern ShaderLangInfo *glcommon_shader_lang_table;
+typedef DYNAMIC_ARRAY(ShaderLangInfo) ShaderLangInfoArray;
+extern ShaderLangInfoArray glcommon_shader_lang_table;
 
 void glcommon_build_shader_lang_table(void);
 void glcommon_free_shader_lang_table(void);

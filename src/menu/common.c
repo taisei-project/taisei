@@ -39,8 +39,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
 	if(info == NULL) {
 		global.is_practice_mode = false;
-		ctx->current_stage = stages;
-		ctx->restart_stage = stages;
+		ctx->current_stage = ctx->restart_stage = dynarray_get_ptr(&stages, 0);
 	} else {
 		global.is_practice_mode = (info->type != STAGE_EXTRA);
 		ctx->current_stage = info;
@@ -214,9 +213,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
 	ShaderProgram *text_shader = r_shader_get("text_default");
 
-	for(int i = 0; i < m->ecount; ++i) {
-		MenuEntry *e = &(m->entries[i]);
-
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		float p = offset + 20*i;
 
 		if(p < -y-10 || p > SCREEN_H+10)
@@ -236,32 +233,32 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 
 		r_color(&clr);
 
-		if(draw && i < m->ecount-1) {
-			draw(e, i, m->ecount);
+		if(draw && i < m->entries.num_elements-1) {
+			draw(e, i, m->entries.num_elements);
 		} else if(e->name) {
 			text_draw(e->name, &(TextParams) {
 				.pos = { 20 - e->drawdata, 20*i },
 				.shader_ptr = text_shader,
 			});
 		}
-	}
+	});
 
 	r_mat_mv_pop();
 }
 
 void animate_menu_list_entry(MenuData *m, int i) {
-	MenuEntry *e = &(m->entries[i]);
+	MenuEntry *e = dynarray_get_ptr(&m->entries, i);
 	fapproach_asymptotic_p(&e->drawdata, 10 * (i == m->cursor), 0.2, 1e-4);
 }
 
 void animate_menu_list_entries(MenuData *m) {
-	for(int i = 0; i < m->ecount; ++i) {
+	dynarray_foreach_idx(&m->entries, int i, {
 		animate_menu_list_entry(m, i);
-	}
+	});
 }
 
 void animate_menu_list(MenuData *m) {
-	MenuEntry *s = m->entries + m->cursor;
+	MenuEntry *s = dynarray_get_ptr(&m->entries, m->cursor);
 	int w = text_width(get_font("standard"), s->name, 0);
 
 	fapproach_asymptotic_p(&m->drawdata[0], 10 + w * 0.5, 0.1, 1e-5);

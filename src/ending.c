@@ -12,16 +12,16 @@
 #include "global.h"
 #include "video.h"
 #include "progress.h"
+#include "dynarray.h"
 
 typedef struct EndingEntry {
-	char *msg;
+	const char *msg;
 	Sprite *sprite;
 	int time;
 } EndingEntry;
 
 typedef struct Ending {
-	EndingEntry *entries;
-	int count;
+	DYNAMIC_ARRAY(EndingEntry) entries;
 	int duration;
 	int pos;
 	CallChain cc;
@@ -33,18 +33,14 @@ static void track_ending(int ending) {
 }
 
 static void add_ending_entry(Ending *e, int dur, const char *msg, const char *sprite) {
-	EndingEntry *entry;
-	e->entries = realloc(e->entries, (++e->count)*sizeof(EndingEntry));
-	entry = &e->entries[e->count-1];
-
+	EndingEntry *entry = dynarray_append(&e->entries);
 	entry->time = 0;
 
-	if(e->count > 1) {
+	if(e->entries.num_elements > 1) {
 		entry->time = 1<<23; // nobody will ever! find out
 	}
 
-	entry->msg = NULL;
-	stralloc(&entry->msg, msg);
+	entry->msg = msg;
 
 	if(sprite) {
 		entry->sprite = get_sprite(sprite);
@@ -152,6 +148,8 @@ void good_ending_reimu(Ending *e) {
 }
 
 static void init_ending(Ending *e) {
+	dynarray_ensure_capacity(&e->entries, 32);
+
 	if(global.plr.continues_used) {
 		global.plr.mode->character->ending.bad(e);
 	} else {
@@ -159,22 +157,19 @@ static void init_ending(Ending *e) {
 		add_ending_entry(e, 400, "Sorry, extra stage isn’t done yet. ^^", NULL);
 	}
 
-	add_ending_entry(e, 400, "", NULL); // this is important
+	add_ending_entry(e, 400, "", NULL);  // this is important   <-- TODO explain *why* this is important?
 	e->duration = 1<<23;
-}
-
-static void free_ending(Ending *e) {
-	int i;
-	for(i = 0; i < e->count; i++)
-		free(e->entries[i].msg);
-	free(e->entries);
 }
 
 static void ending_draw(Ending *e) {
 	float s, d;
 
-	int t1 = global.frames-e->entries[e->pos].time;
-	int t2 = e->entries[e->pos+1].time-global.frames;
+	EndingEntry *e_this, *e_next;
+	e_this = dynarray_get_ptr(&e->entries, e->pos);
+	e_next = dynarray_get_ptr(&e->entries, e->pos + 1);
+
+	int t1 = global.frames - e_this->time;
+	int t2 = e_next->time - global.frames;
 
 	d = 1.0/ENDING_FADE_TIME;
 
@@ -187,9 +182,9 @@ static void ending_draw(Ending *e) {
 
 	r_color4(s, s, s, s);
 
-	if(e->entries[e->pos].sprite) {
+	if(e_this->sprite) {
 		r_draw_sprite(&(SpriteParams) {
-			.sprite_ptr = e->entries[e->pos].sprite,
+			.sprite_ptr = e_this->sprite,
 			.pos = { SCREEN_W/2, SCREEN_H/2 },
 			.shader = "sprite_default",
 			.color = r_color_current(),
@@ -197,7 +192,7 @@ static void ending_draw(Ending *e) {
 	}
 
 	r_shader("text_default");
-	text_draw_wrapped(e->entries[e->pos].msg, SCREEN_W * 0.85, &(TextParams) {
+	text_draw_wrapped(e_this->msg, SCREEN_W * 0.85, &(TextParams) {
 		.pos = { SCREEN_W/2, VIEWPORT_H*4/5 },
 		.align = ALIGN_CENTER,
 	});
@@ -211,12 +206,17 @@ void ending_preload(void) {
 }
 
 static void ending_advance(Ending *e) {
+	EndingEntry *e_this, *e_next;
+	e_this = dynarray_get_ptr(&e->entries, e->pos);
+	e_next = dynarray_get_ptr(&e->entries, e->pos + 1);
+
 	if(
-		e->pos < e->count-1 &&
-		e->entries[e->pos].time + ENDING_FADE_TIME < global.frames &&
-		global.frames < e->entries[e->pos+1].time - ENDING_FADE_TIME
+		e->pos < e->entries.num_elements - 1 &&
+		e_this->time + ENDING_FADE_TIME < global.frames &&
+		global.frames < e_next->time - ENDING_FADE_TIME
 	) {
-		e->entries[e->pos+1].time = global.frames+(e->pos != e->count-2)*ENDING_FADE_TIME;
+		// TODO find out wtf that last part is for
+		e_next->time = global.frames + (e->pos != e->entries.num_elements - 2) * ENDING_FADE_TIME;
 	}
 }
 
@@ -249,9 +249,9 @@ static LogicFrameAction ending_logic_frame(void *arg) {
 
 	global.frames++;
 
-	if(e->pos < e->count-1 && global.frames >= e->entries[e->pos+1].time) {
+	if(e->pos < e->entries.num_elements - 1 && global.frames >= dynarray_get(&e->entries, e->pos + 1).time) {
 		e->pos++;
-		if(e->pos == e->count-1) {
+		if(e->pos == e->entries.num_elements - 1) {
 			fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
 			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 			e->duration = global.frames+ENDING_FADE_OUT;
@@ -274,8 +274,9 @@ static LogicFrameAction ending_logic_frame(void *arg) {
 static RenderFrameAction ending_render_frame(void *arg) {
 	Ending *e = arg;
 
-	if(e->pos < e->count-1)
+	if(e->pos < e->entries.num_elements - 1) {
 		ending_draw(e);
+	}
 
 	draw_transition();
 	return RFRAME_SWAP;
@@ -284,7 +285,7 @@ static RenderFrameAction ending_render_frame(void *arg) {
 static void ending_loop_end(void *ctx) {
 	Ending *e = ctx;
 	CallChain cc = e->cc;
-	free_ending(e);
+	dynarray_free_data(&e->entries);
 	free(e);
 	progress_unlock_bgm("ending");
 	run_call_chain(&cc, NULL);

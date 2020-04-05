@@ -14,6 +14,7 @@
 #include "transition.h"
 #include "events.h"
 #include "eventloop/eventloop.h"
+#include "dynarray.h"
 
 #define IMENU_BLUR 0.05
 
@@ -53,8 +54,7 @@ struct MenuData {
 	int cursor;
 	int selected;
 
-	MenuEntry *entries;
-	int ecount;
+	DYNAMIC_ARRAY(MenuEntry) entries;
 
 	int frames;
 

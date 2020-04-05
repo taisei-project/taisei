@@ -28,5 +28,6 @@
 #include "log.h"
 #include "vfs/public.h"
 #include "util/consideredharmful.h"
+#include "dynarray.h"
 
 #endif // IGUARD_util_h

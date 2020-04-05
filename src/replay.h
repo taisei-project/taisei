@@ -15,6 +15,7 @@
 #include "player.h"
 #include "version.h"
 #include "util/systime.h"
+#include "dynarray.h"
 
 
 /*
@@ -130,7 +131,9 @@ typedef struct ReplayStage {
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
 
 	// player input
-	uint16_t numevents;
+	// NOTE: only used to read the number of events from file.
+	// Actual numbers of events stored/allocated are tracked by the .events dynamic array.
+	uint16_t num_events;
 
 	// checksum of all of the above -- 2's complement of value returned by replay_calc_stageinfo_checksum()
 	// uint32_t checksum;
@@ -138,12 +141,10 @@ typedef struct ReplayStage {
 	/* END stored fields */
 
 	SystemTime init_time;
-	ReplayEvent *events;
-
-	// events allocated (may be higher than numevents)
-	int capacity;
+	DYNAMIC_ARRAY(ReplayEvent) events;
 
 	// used during playback
+	// TODO separate this from the actual replay data storage
 	int playpos;
 	int fps;
 	uint16_t desync_check;
