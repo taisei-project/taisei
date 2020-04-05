@@ -295,11 +295,6 @@ static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args)
 	r_draw_sprite(&sp);
 }
 
-TASK(marisa_laser_slave_cleanup, { BoxedEntity slave; }) {
-	MarisaSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, MarisaSlave);
-	ent_unregister(&slave->ent);
-}
-
 TASK(marisa_laser_slave_expire, { BoxedEntity slave; }) {
 	MarisaSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, MarisaSlave);
 	slave->alive = false;
@@ -411,21 +406,19 @@ TASK(marisa_laser_slave, {
 }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	MarisaSlave slave = { 0 };
-	slave.shader = r_shader_get("sprite_hakkero");
-	slave.sprite = get_sprite("hakkero");
-	slave.ent.draw_layer = LAYER_PLAYER_SLAVE;
-	slave.ent.draw_func = marisa_laser_draw_slave;
-	slave.pos = plr->pos;
-	slave.alive = true;
-	ent_register(&slave.ent, ENT_CUSTOM);
+	MarisaSlave *slave = TASK_HOST_CUSTOM_ENT(MarisaSlave);
+	slave->alive = true;
+	slave->ent.draw_func = marisa_laser_draw_slave;
+	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	slave->pos = plr->pos;
+	slave->shader = r_shader_get("sprite_hakkero");
+	slave->sprite = get_sprite("hakkero");
 
-	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, marisa_laser_slave_cleanup, ENT_BOX_CUSTOM(&slave));
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, marisa_laser_slave_expire, ENT_BOX_CUSTOM(&slave));
+	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, marisa_laser_slave_expire, ENT_BOX_CUSTOM(slave));
 
 	BoxedTask shot_task = cotask_box(INVOKE_SUBTASK(marisa_laser_slave_shot,
 		.ctrl = ctrl,
-		.slave = ENT_BOX_CUSTOM(&slave)
+		.slave = ENT_BOX_CUSTOM(slave)
 	));
 
 	/*                     unfocused              focused              */
@@ -439,22 +432,22 @@ TASK(marisa_laser_slave, {
 	real epsilon = 1e-5;
 
 	cmplx offset = 0;
-	cmplx prev_pos = slave.pos;
+	cmplx prev_pos = slave->pos;
 
-	while(slave.alive) {
+	while(slave->alive) {
 		bool focused = plr->inputflags & INFLAG_FOCUS;
 
-		approach_asymptotic_p(&slave.shot_angle, shot_angles[focused], formation_switch_rate, epsilon);
+		approach_asymptotic_p(&slave->shot_angle, shot_angles[focused], formation_switch_rate, epsilon);
 		capproach_asymptotic_p(&offset, offsets[focused], formation_switch_rate, epsilon);
 
-		capproach_asymptotic_p(&slave.pos, plr->pos + offset, follow_rate, epsilon);
-		approach_asymptotic_p(&slave.lean, -lean_strength * creal(slave.pos - prev_pos), lean_rate, epsilon);
-		prev_pos = slave.pos;
+		capproach_asymptotic_p(&slave->pos, plr->pos + offset, follow_rate, epsilon);
+		approach_asymptotic_p(&slave->lean, -lean_strength * creal(slave->pos - prev_pos), lean_rate, epsilon);
+		prev_pos = slave->pos;
 
 		if(player_should_shoot(plr)) {
-			approach_asymptotic_p(&slave.flare_alpha, 1.0, 0.2, epsilon);
+			approach_asymptotic_p(&slave->flare_alpha, 1.0, 0.2, epsilon);
 		} else {
-			approach_asymptotic_p(&slave.flare_alpha, 0.0, 0.08, epsilon);
+			approach_asymptotic_p(&slave->flare_alpha, 0.0, 0.08, epsilon);
 		}
 
 		YIELD;
@@ -466,14 +459,12 @@ TASK(marisa_laser_slave, {
 	}
 
 	real retract_time = 4;
-	cmplx pos0 = slave.pos;
+	cmplx pos0 = slave->pos;
 
 	for(int i = 1; i <= retract_time; ++i) {
-		slave.pos = clerp(pos0, plr->pos, i / retract_time);
+		slave->pos = clerp(pos0, plr->pos, i / retract_time);
 		YIELD;
 	}
-
-	ent_unregister(&slave.ent);
 }
 
 static real marisa_laser_masterspark_width(real progress) {
@@ -534,22 +525,14 @@ static void marisa_laser_masterspark_damage(MasterSpark *ms) {
 	// log_debug("%i", iter);
 }
 
-TASK(marisa_laser_masterspark_cleanup, { BoxedEntity ms; }) {
-	MasterSpark *ms = TASK_BIND_CUSTOM(ARGS.ms, MasterSpark);
-	ent_unregister(&ms->ent);
-}
-
 TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	MasterSpark ms = { 0 };
-	ms.dir = 1;
-	ms.ent.draw_func = marisa_laser_draw_masterspark;
-	ms.ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
-	ent_register(&ms.ent, ENT_CUSTOM);
-
-	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, marisa_laser_masterspark_cleanup, ENT_BOX_CUSTOM(&ms));
+	MasterSpark *ms = TASK_HOST_CUSTOM_ENT(MasterSpark);
+	ms->dir = 1;
+	ms->ent.draw_func = marisa_laser_draw_masterspark;
+	ms->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 
 	int t = 0;
 
@@ -558,11 +541,11 @@ TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 
 	do {
 		real bomb_progress = player_get_bomb_progress(plr);
-		ms.alpha = marisa_laser_masterspark_width(bomb_progress);
-		ms.dir *= cdir(0.005 * (creal(plr->velocity) + 2 * rng_sreal()));
-		ms.pos = plr->pos - 30 * I;
+		ms->alpha = marisa_laser_masterspark_width(bomb_progress);
+		ms->dir *= cdir(0.005 * (creal(plr->velocity) + 2 * rng_sreal()));
+		ms->pos = plr->pos - 30 * I;
 
-		marisa_laser_masterspark_damage(&ms);
+		marisa_laser_masterspark_damage(ms);
 
 		if(bomb_progress >= 3.0/4.0) {
 			global.shake_view = 8 * (1 - bomb_progress * 4 + 3);
@@ -615,12 +598,10 @@ skip_particles:
 
 	global.shake_view = 0;
 
-	while(ms.alpha > 0) {
-		approach_p(&ms.alpha, 0, 0.2);
+	while(ms->alpha > 0) {
+		approach_p(&ms->alpha, 0, 0.2);
 		YIELD;
 	}
-
-	ent_unregister(&ms.ent);
 }
 
 TASK(marisa_laser_bomb_background, { MarisaAController *ctrl; }) {
@@ -723,21 +704,18 @@ TASK(marisa_laser_shot_forward, { MarisaAController *ctrl; }) {
 }
 
 TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
-	MarisaAController ctrl = { 0 };
-	ctrl.plr = TASK_BIND(ARGS.plr);
-	COEVENT_INIT_ARRAY(ctrl.events);
+	MarisaAController *ctrl = TASK_HOST_CUSTOM_ENT(MarisaAController);
+	ctrl->plr = TASK_BIND(ARGS.plr);
+	TASK_HOST_EVENTS(ctrl->events);
 
-	ctrl.laser_renderer.draw_func = marisa_laser_draw_lasers;
-	ctrl.laser_renderer.draw_layer = LAYER_PLAYER_FOCUS;
-	ent_register(&ctrl.laser_renderer, ENT_CUSTOM);
+	ctrl->laser_renderer.draw_func = marisa_laser_draw_lasers;
+	ctrl->laser_renderer.draw_layer = LAYER_PLAYER_FOCUS;
 
-	INVOKE_SUBTASK(marisa_laser_power_handler, &ctrl);
-	INVOKE_SUBTASK(marisa_laser_bomb_handler, &ctrl);
-	INVOKE_SUBTASK(marisa_laser_shot_forward, &ctrl);
+	INVOKE_SUBTASK(marisa_laser_power_handler, ctrl);
+	INVOKE_SUBTASK(marisa_laser_bomb_handler, ctrl);
+	INVOKE_SUBTASK(marisa_laser_shot_forward, ctrl);
 
-	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
-	COEVENT_CANCEL_ARRAY(ctrl.events);
-	ent_unregister(&ctrl.laser_renderer);
+	STALL;
 }
 
 static void marisa_laser_init(Player *plr) {
