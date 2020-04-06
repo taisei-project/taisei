@@ -95,12 +95,18 @@ struct CoTaskData {
 		};
 	} wait;
 
+	struct {
+		EntityInterface *ent;
+		CoEvent *events;
+		uint num_events;
+	} hosted;
+
 	CoTaskEvents events;
 
 	struct {
+		CoTaskHeapMemChunk *onheap_alloc_head;
 		char *onstack_alloc_head;
 		alignas(MEM_ALLOC_ALIGNMENT) char onstack_alloc_area[MEM_AREA_SIZE];
-		CoTaskHeapMemChunk *onheap_alloc_head;
 	} mem;
 };
 
@@ -359,10 +365,21 @@ static void coevent_cleanup_subscribers(CoEvent *evt);
 
 static void cotask_finalize(CoTask *task) {
 	CoTaskData *task_data = get_task_data(task);
-	cancel_task_events(task_data);
-
 	TASK_DEBUG("Finalizing task %s", task->debug_label);
 	TASK_DEBUG("data = %p", (void*)task_data);
+
+	cancel_task_events(task_data);
+
+	if(task_data->hosted.ent) {
+		ent_unregister(task_data->hosted.ent);
+		task_data->hosted.ent = NULL;
+	}
+
+	if(task_data->hosted.events) {
+		_coevent_array_action(task_data->hosted.num_events, task_data->hosted.events, coevent_cancel);
+		task_data->hosted.events = NULL;
+		task_data->hosted.num_events = 0;
+	}
 
 	if(task_data->wait.wait_type == COTASK_WAIT_EVENT) {
 		CoEvent *evt = NOT_NULL(task_data->wait.event.pevent);
@@ -672,10 +689,9 @@ int cotask_wait(int delay) {
 	return cotask_wait_init(task_data, COTASK_WAIT_NONE).frames;
 }
 
-void *cotask_malloc(CoTask *task, size_t size) {
+static void *_cotask_malloc(CoTaskData *task_data, size_t size, bool allow_heap_fallback) {
 	assert(size > 0);
 	assert(size < PTRDIFF_MAX);
-	CoTaskData *task_data = get_task_data(task);
 
 	void *mem = NULL;
 	ptrdiff_t available_on_stack = (task_data->mem.onstack_alloc_area + sizeof(task_data->mem.onstack_alloc_area)) - task_data->mem.onstack_alloc_head;
@@ -685,6 +701,10 @@ void *cotask_malloc(CoTask *task, size_t size) {
 		mem = task_data->mem.onstack_alloc_head;
 		task_data->mem.onstack_alloc_head += MEM_ALIGN_SIZE(size);
 	} else {
+		if(!allow_heap_fallback) {
+			UNREACHABLE;
+		}
+
 		log_warn("Requested size=%zu, available=%zi, serving from the heap", size, (ssize_t)available_on_stack);
 		CoTaskHeapMemChunk *chunk = calloc(1, sizeof(*chunk) + size);
 		chunk->next = task_data->mem.onheap_alloc_head;
@@ -693,6 +713,30 @@ void *cotask_malloc(CoTask *task, size_t size) {
 	}
 
 	return ASSUME_ALIGNED(mem, MEM_ALLOC_ALIGNMENT);
+}
+
+void *cotask_malloc(CoTask *task, size_t size) {
+	CoTaskData *task_data = get_task_data(task);
+	return _cotask_malloc(task_data, size, true);
+}
+
+EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType ent_type) {
+	CoTaskData *task_data = get_task_data(task);
+	assume(task_data->hosted.ent == NULL);
+	EntityInterface *ent = _cotask_malloc(task_data, ent_size, false);
+	ent_register(ent, ent_type);
+	task_data->hosted.ent = ent;
+	return ent;
+}
+
+void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events]) {
+	CoTaskData *task_data = get_task_data(task);
+	assume(task_data->hosted.events == NULL);
+	assume(task_data->hosted.num_events == 0);
+	assume(num_events > 0);
+	task_data->hosted.events = events;
+	task_data->hosted.num_events = num_events;
+	_coevent_array_action(num_events, events, coevent_init);
 }
 
 static bool subscribers_array_predicate(const void *pelem, void *userdata) {

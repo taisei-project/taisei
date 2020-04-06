@@ -107,6 +107,8 @@ CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
 CoTaskEvents *cotask_get_events(CoTask *task);
 void *cotask_malloc(CoTask *task, size_t size) attr_returns_allocated attr_malloc attr_alloc_size(2);
+EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType ent_type) attr_nonnull_all attr_returns_allocated;
+void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events]) attr_nonnull_all;
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);
@@ -389,9 +391,15 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define INVOKE_TASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(cosched_new_task, iface, __VA_ARGS__, ._dummy_1 = 0)
 #define INVOKE_SUBTASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(cosched_new_subtask, iface, __VA_ARGS__, ._dummy_1 = 0)
 
-#define THIS_TASK     cotask_box(cotask_active())
+#define THIS_TASK         cotask_box(cotask_active())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
 #define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
+
+#define TASK_HOST_CUSTOM_ENT(ent_struct_type) \
+	ENT_CAST_CUSTOM(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_CUSTOM), ent_struct_type)
+
+#define TASK_HOST_EVENTS(events_array) \
+	cotask_host_events(cotask_active(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
 
 #define YIELD         cotask_yield(NULL)
 #define WAIT(delay)   cotask_wait(delay)
