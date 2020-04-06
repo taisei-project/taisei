@@ -12,6 +12,7 @@
 #include "plrmodes.h"
 #include "reimu.h"
 #include "stagedraw.h"
+#include "common_tasks.h"
 
 #define SHOT_FORWARD_DMG 50
 #define SHOT_FORWARD_DELAY 3
@@ -30,6 +31,16 @@ typedef struct ReimuAController {
 		slaves_expired
 	) events;
 } ReimuAController;
+
+typedef struct ReimuSlave ReimuSlave;
+struct ReimuSlave {
+	ENTITY_INTERFACE_NAMED(ReimuSlave, ent);
+	Sprite *sprite;
+	ShaderProgram *shader;
+	cmplx pos;
+	Color color;
+	uint alive;
+};
 
 static void reimu_spirit_preload(void) {
 	const int flags = RESF_DEFAULT;
@@ -447,50 +458,47 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 	}
 }
 
-static void reimu_spirit_yinyang_focused_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		reimu_common_draw_yinyang(e, t, RGB(1.0, 0.8, 0.8));
-	}
+static void reimu_spirit_draw_slave(EntityInterface *ent) {
+	ReimuSlave *slave = ENT_CAST_CUSTOM(ent, ReimuSlave);
+	r_draw_sprite(&(SpriteParams) {
+		.color = &slave->color,
+		.pos.as_cmplx = slave->pos,
+		.rotation.angle = global.frames * -6 * DEG2RAD,
+		.shader_ptr = slave->shader,
+		.sprite_ptr = slave->sprite,
+	});
 }
 
-static void reimu_spirit_yinyang_unfocused_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		reimu_common_draw_yinyang(e, t, RGB(0.95, 0.75, 1.0));
-	}
-}
 
-static Enemy *reimu_spirit_create_slave(ReimuAController *ctrl, EnemyVisualRule visual) {
+
+static ReimuSlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color *color) {
 	Player *plr = ctrl->plr;
+	ReimuSlave *slave = TASK_HOST_CUSTOM_ENT(ReimuSlave);
+	slave->sprite = get_sprite("yinyang");
+	slave->shader = r_shader_get("sprite_yinyang");
+	slave->pos = plr->pos;
+	slave->color = *color;
+	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	slave->ent.draw_func = reimu_spirit_draw_slave;
+	slave->alive = 1;
 
-	Enemy *e = create_enemy_p(
-		&plr->slaves,
-		plr->pos,
-		ENEMY_IMMUNE,
-		visual,
-		NULL, 0, 0, 0, 0
+	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+		.pflags = &slave->alive,
+		.mask = 0, .set = 0
 	);
 
-	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
-
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, reimu_common_slave_expire,
-		.player = ENT_BOX(plr),
-		.slave = ENT_BOX(e),
-		.slave_main_task = THIS_TASK,
-		.retract_time = ORB_RETRACT_TIME
-	);
-
-	return e;
+	return slave;
 }
 
 TASK(reimu_slave_shot_particles, {
-	BoxedEnemy e;
+	BoxedEntity slave;
 	int num;
 	cmplx dir;
 	Color *color0;
 	Color *color1;
 	Sprite *sprite;
 }) {
-	Enemy *e = TASK_BIND(ARGS.e);
+	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
 	Color color0 = *ARGS.color0;
 	Color color1 = *ARGS.color1;
 	int num = ARGS.num;
@@ -509,7 +517,7 @@ TASK(reimu_slave_shot_particles, {
 			.draw_rule = draw,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.move = move,
-			.pos = e->pos,
+			.pos = slave->pos,
 			.sprite_ptr = sprite,
 			.timeout = timeout,
 		);
@@ -519,10 +527,10 @@ TASK(reimu_slave_shot_particles, {
 
 TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl;
-	BoxedEnemy e;
+	BoxedEntity e;
 }) {
 	Player *plr = ARGS.ctrl->plr;
-	Enemy *e = TASK_BIND(ARGS.e);
+	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.e, ReimuSlave);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 	Sprite *particle_spr = get_sprite("part/stain");
@@ -534,7 +542,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
 		INVOKE_SUBTASK(reimu_slave_shot_particles,
-			.e = ENT_BOX(e),
+			.slave = ENT_BOX_CUSTOM(slave),
 			.color0 = RGBA(0.5, 0, 0, 0),
 			.color1 = RGBA(0.5, 0.25, 0, 0),
 			.num = delay,
@@ -543,7 +551,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 		);
 
 		INVOKE_TASK(reimu_spirit_needle,
-			.pos = e->pos - 25.0*I,
+			.pos = slave->pos - 25.0*I,
 			.vel = -20*I,
 			.damage = damage,
 			.shader = shader
@@ -561,32 +569,35 @@ TASK(reimu_spirit_slave_needle, {
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_focused_visual));
+	ReimuSlave *slave = reimu_spirit_create_slave(ctrl, RGB(1.0, 0.8, 0.8));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX(e));
+	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX_CUSTOM(slave));
 
 	real dist = ARGS.distance;
 	cmplx offset = dist * cdir(ARGS.rotation_offset);
 	cmplx rot = cdir(ARGS.rotation);
 
 	real target_speed = 0.005 * dist;
-	e->move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(plr->pos + offset, 0);
 
-	for(;;) {
-		YIELD;
-		e->move.attraction = approach(e->move.attraction, target_speed, target_speed / 12.0);
-		e->move.attraction_point = plr->pos + offset;
+	do {
+		move.attraction = approach(move.attraction, target_speed, target_speed / 12.0);
+		move.attraction_point = plr->pos + offset;
 		offset *= rot;
-	}
+		move_update(&slave->pos, &move);
+		YIELD;
+	} while(slave->alive);
+
+	plrutil_slave_retract(ENT_BOX(plr), &slave->pos, ORB_RETRACT_TIME);
 }
 
 TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl;
-	BoxedEnemy e;
+	BoxedEntity slave;
 	cmplx vel;
 }) {
 	Player *plr = ARGS.ctrl->plr;
-	Enemy *e = TASK_BIND(ARGS.e);
+	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 	Sprite *particle_spr = get_sprite("part/stain");
@@ -600,7 +611,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
 		INVOKE_SUBTASK(reimu_slave_shot_particles,
-			.e = ENT_BOX(e),
+			.slave = ENT_BOX_CUSTOM(slave),
 			.color0 = RGBA(0.5, 0.125, 0, 0),
 			.color1 = RGBA(0.5, 0.125, 0.25, 0),
 			.num = delay,
@@ -609,7 +620,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 		);
 
 		INVOKE_TASK(reimu_spirit_homing,
-			.pos = e->pos,
+			.pos = slave->pos,
 			.vel = vel,
 			.damage = damage,
 			.shader = shader
@@ -626,19 +637,22 @@ TASK(reimu_spirit_slave_homing, {
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	Enemy *e = TASK_BIND_UNBOXED(reimu_spirit_create_slave(ctrl, reimu_spirit_yinyang_unfocused_visual));
+	ReimuSlave *slave = reimu_spirit_create_slave(ctrl, RGB(0.95, 0.75, 1.0));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX(e), ARGS.shot_vel);
+	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX_CUSTOM(slave), ARGS.shot_vel);
 
 	cmplx offset = ARGS.offset;
 	real target_speed = 0.005 * cabs(offset);
-	e->move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(plr->pos + offset, 0);
 
-	for(;;) {
+	do {
+		move.attraction = approach(move.attraction, target_speed, target_speed / 12.0);
+		move.attraction_point = plr->pos + offset;
+		move_update(&slave->pos, &move);
 		YIELD;
-		e->move.attraction = approach(e->move.attraction, target_speed, target_speed / 12.0);
-		e->move.attraction_point = plr->pos + offset;
-	}
+	} while(slave->alive);
+
+	plrutil_slave_retract(ENT_BOX(plr), &slave->pos, ORB_RETRACT_TIME);
 }
 
 static void reimu_spirit_spawn_slaves_unfocused(ReimuAController *ctrl, int power_rank) {
@@ -726,10 +740,8 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 
 		// focus state changed?
 		while((prev_inputflags ^ plr->inputflags) & INFLAG_FOCUS) {
-			if(plr->slaves.first) {
-				reimu_spirit_kill_slaves(ctrl);
-				WAIT(ORB_RETRACT_TIME);
-			}
+			reimu_spirit_kill_slaves(ctrl);
+			WAIT(ORB_RETRACT_TIME);
 
 			// important to record these at the time of respawning
 			prev_inputflags = plr->inputflags;
@@ -826,18 +838,17 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_controller, { BoxedPlayer plr; }) {
-	ReimuAController ctrl = { 0 };
-	ctrl.plr = TASK_BIND(ARGS.plr);
-	COEVENT_INIT_ARRAY(ctrl.events);
+	ReimuAController *ctrl = TASK_MALLOC(sizeof(ReimuAController));
+	ctrl->plr = TASK_BIND(ARGS.plr);
+	TASK_HOST_EVENTS(ctrl->events);
 
-	INVOKE_SUBTASK(reimu_spirit_focus_handler, &ctrl);
-	INVOKE_SUBTASK(reimu_spirit_power_handler, &ctrl);
-	INVOKE_SUBTASK(reimu_spirit_shot_forward, &ctrl);
-	INVOKE_SUBTASK(reimu_spirit_shot_volley, &ctrl);
-	INVOKE_SUBTASK(reimu_spirit_bomb_handler, &ctrl);
+	INVOKE_SUBTASK(reimu_spirit_focus_handler, ctrl);
+	INVOKE_SUBTASK(reimu_spirit_power_handler, ctrl);
+	INVOKE_SUBTASK(reimu_spirit_shot_forward, ctrl);
+	INVOKE_SUBTASK(reimu_spirit_shot_volley, ctrl);
+	INVOKE_SUBTASK(reimu_spirit_bomb_handler, ctrl);
 
-	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
-	COEVENT_CANCEL_ARRAY(ctrl.events);
+	STALL;
 }
 
 static void reimu_spirit_init(Player *plr) {

@@ -72,4 +72,13 @@ INLINE Rect viewport_bounds(double margin) {
 
 cmplx common_wander(cmplx origin, double dist, Rect bounds);
 
+DECLARE_EXTERN_TASK(
+	common_set_bitflags,
+	{
+		uint *pflags;
+		uint mask;
+		uint set;
+	}
+);
+
 #endif // IGUARD_common_tasks_h

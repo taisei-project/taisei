@@ -243,4 +243,6 @@ void player_preload(void);
 // FIXME: where should this be?
 cmplx plrutil_homing_target(cmplx org, cmplx fallback);
 
+void plrutil_slave_retract(BoxedPlayer bplr, cmplx *pos, real retract_time);
+
 #endif // IGUARD_player_h

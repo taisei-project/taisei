@@ -18,6 +18,8 @@
 #define SHOT_FORWARD_DELAY 6
 #define SHOT_LASER_DAMAGE 10
 
+#define HAKKERO_RETRACT_TIME 4
+
 typedef struct MarisaAController MarisaAController;
 typedef struct MarisaLaser MarisaLaser;
 typedef struct MarisaSlave MarisaSlave;
@@ -453,18 +455,8 @@ TASK(marisa_laser_slave, {
 		YIELD;
 	}
 
-	CoTask *t = cotask_unbox(shot_task);
-	if(t) {
-		cotask_cancel(t);
-	}
-
-	real retract_time = 4;
-	cmplx pos0 = slave->pos;
-
-	for(int i = 1; i <= retract_time; ++i) {
-		slave->pos = clerp(pos0, plr->pos, i / retract_time);
-		YIELD;
-	}
+	CANCEL_TASK(shot_task);
+	plrutil_slave_retract(ENT_BOX(plr), &slave->pos, HAKKERO_RETRACT_TIME);
 }
 
 static real marisa_laser_masterspark_width(real progress) {

@@ -79,17 +79,6 @@ Projectile *reimu_common_ofuda_swawn_trail(Projectile *p) {
 	return trail;
 }
 
-void reimu_common_draw_yinyang(Enemy *e, int t, const Color *c) {
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "yinyang",
-		.shader = "sprite_yinyang",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = global.frames * -6 * DEG2RAD,
-		// .color = rgb(0.95, 0.75, 1.0),
-		.color = c,
-	});
-}
-
 static void capture_frame(Framebuffer *dest, Framebuffer *src) {
 	r_state_push();
 	r_framebuffer(dest);
@@ -128,23 +117,4 @@ void reimu_common_bomb_buffer_init(void) {
 	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
 	bomb_buffer = stage_add_background_framebuffer("Reimu bomb FB", 0.25, 1, 1, &cfg);
-}
-
-DEFINE_EXTERN_TASK(reimu_common_slave_expire) {
-	Enemy *e = TASK_BIND(ARGS.slave);
-	cotask_cancel(cotask_unbox(ARGS.slave_main_task));
-
-	cmplx pos0 = e->pos;
-	real retract_time = ARGS.retract_time;
-	e->move = (MoveParams) { 0 };
-
-	Player *plr;
-
-	for(int i = 1; i <= retract_time; ++i) {
-		YIELD;
-		plr = NOT_NULL(ENT_UNBOX(ARGS.player));
-		e->pos = clerp(pos0, plr->pos, i / retract_time);
-	}
-
-	delete_enemy(&plr->slaves, e);
 }

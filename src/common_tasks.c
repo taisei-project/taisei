@@ -173,6 +173,11 @@ DEFINE_EXTERN_TASK(common_charge) {
 	);
 }
 
+DEFINE_EXTERN_TASK(common_set_bitflags) {
+	assume(ARGS.pflags != NULL);
+	*ARGS.pflags = ((*ARGS.pflags & ARGS.mask) | ARGS.set);
+}
+
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
 	double angle;

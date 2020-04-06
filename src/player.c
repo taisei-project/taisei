@@ -1733,3 +1733,14 @@ cmplx plrutil_homing_target(cmplx org, cmplx fallback) {
 
 	return target;
 }
+
+void plrutil_slave_retract(BoxedPlayer bplr, cmplx *pos, real retract_time) {
+	cmplx pos0 = *pos;
+	Player *plr;
+
+	for(int i = 1; i <= retract_time; ++i) {
+		YIELD;
+		plr = NOT_NULL(ENT_UNBOX(bplr));
+		*pos = clerp(pos0, plr->pos, i / retract_time);
+	}
+}

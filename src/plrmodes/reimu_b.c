@@ -12,6 +12,7 @@
 #include "plrmodes.h"
 #include "reimu.h"
 #include "stagedraw.h"
+#include "common_tasks.h"
 
 #define SHOT_FORWARD_DMG 60
 #define SHOT_FORWARD_DELAY 6
@@ -42,6 +43,7 @@
 #define NUM_GAPS 4
 
 typedef struct ReimuGap ReimuGap;
+typedef struct ReimuSlave ReimuSlave;
 typedef struct ReimuBController ReimuBController;
 
 struct ReimuGap {
@@ -49,6 +51,14 @@ struct ReimuGap {
 	cmplx pos;           // position of the gap's center in viewport space
 	cmplx orientation;   // normalized, points to the side the gap is 'attached' to
 	cmplx parallel_axis; // normalized, parallel the gap, perpendicular to orientation
+};
+
+struct ReimuSlave {
+	ENTITY_INTERFACE_NAMED(ReimuSlave, ent);
+	Sprite *sprite;
+	ShaderProgram *shader;
+	cmplx pos;
+	uint alive;
 };
 
 struct ReimuBController {
@@ -359,20 +369,16 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 	}
 }
 
-static void reimu_dream_slave_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = "yinyang",
-			.shader = "sprite_yinyang",
-			.pos = {
-				creal(e->pos),
-				cimag(e->pos),
-			},
-			.rotation.angle = global.frames * -6 * DEG2RAD,
-			.color = RGB(0.95, 0.75, 1.0),
-			.scale.both = 0.5,
-		});
-	}
+static void reimu_dream_draw_slave(EntityInterface *ent) {
+	ReimuSlave *slave = ENT_CAST_CUSTOM(ent, ReimuSlave);
+	r_draw_sprite(&(SpriteParams) {
+		.sprite_ptr = slave->sprite,
+		.shader_ptr = slave->shader,
+		.pos.as_cmplx = slave->pos,
+		.rotation.angle = global.frames * -6 * DEG2RAD,
+		.color = RGB(0.95, 0.75, 1.0),
+		.scale.both = 0.5,
+	});
 }
 
 TASK(reimu_dream_needle, {
@@ -415,12 +421,12 @@ TASK(reimu_dream_needle, {
 
 TASK(reimu_dream_slave_shot, {
 	ReimuBController *ctrl;
-	BoxedEnemy e;
+	BoxedEntity slave;
 	cmplx vel;
 }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	Enemy *e = TASK_BIND(ARGS.e);
+	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
 	cmplx vel = ARGS.vel;
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 
@@ -429,7 +435,7 @@ TASK(reimu_dream_slave_shot, {
 		WAIT(SHOT_SLAVE_PRE_DELAY);
 		INVOKE_TASK(reimu_dream_needle,
 			.ctrl = ctrl,
-			.pos = e->pos,
+			.pos = slave->pos,
 			.vel = (plr->inputflags & INFLAG_FOCUS) ? cswap(vel) : vel,
 			.shader = shader
 		);
@@ -445,16 +451,17 @@ TASK(reimu_dream_slave, {
 }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy_p(&plr->slaves, 0, ENEMY_IMMUNE, reimu_dream_slave_visual, NULL, 0, 0, 0, 0));
+	ReimuSlave *slave = TASK_HOST_CUSTOM_ENT(ReimuSlave);
+	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
+	slave->ent.draw_func = reimu_dream_draw_slave;
+	slave->sprite = get_sprite("yinyang"),
+	slave->shader = r_shader_get("sprite_yinyang"),
+	slave->pos = plr->pos;
+	slave->alive = 1;
 
-	e->ent.draw_layer = LAYER_PLAYER_SLAVE;
-	e->pos = plr->pos;
-
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, reimu_common_slave_expire,
-		.player = ENT_BOX(plr),
-		.slave = ENT_BOX(e),
-		.slave_main_task = THIS_TASK,
-		.retract_time = ORB_RETRACT_TIME
+	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+		.pflags = &slave->alive,
+		.mask = 0, .set = 0
 	);
 
 	real angle = ARGS.angle_offset + M_PI/2;
@@ -462,17 +469,17 @@ TASK(reimu_dream_slave, {
 
 	INVOKE_SUBTASK(reimu_dream_slave_shot,
 		.ctrl = ctrl,
-		.e = ENT_BOX(e),
+		.slave = ENT_BOX_CUSTOM(slave),
 		.vel = 20 * ARGS.shot_dir
 	);
 
-	for(;;) {
+	do {
 		cmplx ofs = (plr->inputflags & INFLAG_FOCUS) ? cswap(offset) : offset;
 		ofs = cwmul(ofs, cdir(angle));
-		capproach_asymptotic_p(&e->pos, plr->pos + ofs, 0.5, 1e-5);
+		capproach_asymptotic_p(&slave->pos, plr->pos + ofs, 0.5, 1e-5);
 		angle += 0.1;
 		YIELD;
-	}
+	} while(slave->alive);
 }
 
 static void reimu_dream_respawn_slaves(ReimuBController *ctrl, int num_slaves) {
