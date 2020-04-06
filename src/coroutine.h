@@ -374,6 +374,9 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 
+#define CANCEL_TASK(boxed_task) \
+	(boxed_task.ptr ? cotask_cancel(cotask_unbox(boxed_task)) : false)
+
 #define TASK_INDIRECT(iface, task) ( \
 	(void)COTASK_UNUSED_CHECK_##task, \
 	(TASK_INDIRECT_TYPE_ALIAS(task)) { ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
