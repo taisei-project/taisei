@@ -44,6 +44,10 @@ enum {
 	COTASK_WAIT_EVENT,
 };
 
+#define MEM_AREA_SIZE (1 << 12)
+#define MEM_ALLOC_ALIGNMENT alignof(max_align_t)
+#define MEM_ALIGN_SIZE(x) (x + (MEM_ALLOC_ALIGNMENT - 1)) & ~(MEM_ALLOC_ALIGNMENT - 1)
+
 typedef struct CoTaskData CoTaskData;
 
 struct CoTask {
@@ -59,6 +63,11 @@ struct CoTask {
 	char debug_label[256];
 #endif
 };
+
+typedef struct CoTaskHeapMemChunk {
+	struct CoTaskHeapMemChunk *next;
+	alignas(MEM_ALLOC_ALIGNMENT) char data[];
+} CoTaskHeapMemChunk;
 
 struct CoTaskData {
 	LIST_INTERFACE(CoTaskData);
@@ -87,6 +96,12 @@ struct CoTaskData {
 	} wait;
 
 	CoTaskEvents events;
+
+	struct {
+		char *onstack_alloc_head;
+		alignas(MEM_ALLOC_ALIGNMENT) char onstack_alloc_area[MEM_AREA_SIZE];
+		CoTaskHeapMemChunk *onheap_alloc_head;
+	} mem;
 };
 
 typedef struct CoTaskInitData {
@@ -391,6 +406,13 @@ static void cotask_finalize(CoTask *task) {
 		TASK_DEBUG("DONE canceling slave tasks for %s", task->debug_label);
 	}
 
+	CoTaskHeapMemChunk *heap_alloc = task_data->mem.onheap_alloc_head;
+	while(heap_alloc) {
+		CoTaskHeapMemChunk *next = heap_alloc->next;
+		free(heap_alloc);
+		heap_alloc = next;
+	}
+
 	task->data = NULL;
 	TASK_DEBUG("DONE finalizing task %s", task->debug_label);
 }
@@ -413,6 +435,8 @@ static void cotask_finalize(CoTask *task);
 static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *init_data) {
 	task->data = data;
 	data->task = task;
+
+	data->mem.onstack_alloc_head = data->mem.onstack_alloc_area;
 
 	CoTaskData *master_data = init_data->master_task_data;
 	if(master_data) {
@@ -646,6 +670,29 @@ int cotask_wait(int delay) {
 	}
 
 	return cotask_wait_init(task_data, COTASK_WAIT_NONE).frames;
+}
+
+void *cotask_malloc(CoTask *task, size_t size) {
+	assert(size > 0);
+	assert(size < PTRDIFF_MAX);
+	CoTaskData *task_data = get_task_data(task);
+
+	void *mem = NULL;
+	ptrdiff_t available_on_stack = (task_data->mem.onstack_alloc_area + sizeof(task_data->mem.onstack_alloc_area)) - task_data->mem.onstack_alloc_head;
+
+	if(available_on_stack >= (ptrdiff_t)size) {
+		log_debug("Requested size=%zu, available=%zi, serving from the stack", size, (ssize_t)available_on_stack);
+		mem = task_data->mem.onstack_alloc_head;
+		task_data->mem.onstack_alloc_head += MEM_ALIGN_SIZE(size);
+	} else {
+		log_warn("Requested size=%zu, available=%zi, serving from the heap", size, (ssize_t)available_on_stack);
+		CoTaskHeapMemChunk *chunk = calloc(1, sizeof(*chunk) + size);
+		chunk->next = task_data->mem.onheap_alloc_head;
+		task_data->mem.onheap_alloc_head = chunk;
+		mem = chunk->data;
+	}
+
+	return ASSUME_ALIGNED(mem, MEM_ALLOC_ALIGNMENT);
 }
 
 static bool subscribers_array_predicate(const void *pelem, void *userdata) {

@@ -270,6 +270,15 @@ typedef cmplx64 cmplx;
 	#define attr_designated_init
 #endif
 
+// Function returns a pointer that can't alias any other pointer when the function returns.
+// Storage pointed at doesn't contain pointers to any valid objects.
+#define attr_malloc \
+	__attribute__ ((malloc))
+
+// Function returns a pointer to object whose size is specified by the 'size_arg_index'th function argument.
+#define attr_alloc_size(size_arg_index) \
+	__attribute__ ((alloc_size(size_arg_index)))
+
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
 #ifdef USE_GNU_EXTENSIONS
