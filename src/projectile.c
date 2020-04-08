@@ -386,7 +386,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_ENTITY;
 			out_col->entity = &global.plr.ent;
-			out_col->fatal = true;
+			out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 		} else {
 			e_proj.axes = projectile_graze_size(p);
 
@@ -401,7 +401,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
 				out_col->type = PCOL_ENTITY;
 				out_col->entity = &e->ent;
-				out_col->fatal = true;
+				out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 
 				return;
 			}
@@ -411,14 +411,14 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			if(boss_is_vulnerable(global.boss)) {
 				out_col->type = PCOL_ENTITY;
 				out_col->entity = &global.boss->ent;
-				out_col->fatal = true;
+				out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 			}
 		}
 	}
 
 skip_collision:
 
-	if(out_col->type == PCOL_NONE && !projectile_in_viewport(p)) {
+	if(out_col->type == PCOL_NONE && !(p->flags & PFLAG_NOAUTOREMOVE) && !projectile_in_viewport(p)) {
 		out_col->type = PCOL_VOID;
 		out_col->fatal = true;
 	}
@@ -589,7 +589,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 		} else {
 			memset(&col, 0, sizeof(col));
 
-			if(!projectile_in_viewport(proj)) {
+			if(!(proj->flags & PFLAG_NOAUTOREMOVE) && !projectile_in_viewport(proj)) {
 				col.fatal = true;
 			}
 		}
