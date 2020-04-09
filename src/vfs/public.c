@@ -205,6 +205,7 @@ char** vfs_dir_list_sorted(const char *path, size_t *out_size, int (*compare)(co
 	}
 
 	DYNAMIC_ARRAY(char*) results = { 0 };
+	dynarray_ensure_capacity(&results, 2);
 
 	for(const char *e; (e = vfs_dir_read(dir));) {
 		if(filter && !filter(e)) {
