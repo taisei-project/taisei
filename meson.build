@@ -42,24 +42,6 @@ cc = meson.get_compiler('c')
 python3 = import('python3').find_python()
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
-if cc.get_id() == 'emscripten'
-    # emscripten LTO is really tricky
-    # this logic should really be in Meson
-
-    if get_option('b_lto')
-        emscripten_global_link_args = [
-            '--llvm-lto', '1',
-            '-flto',
-        ]
-    else
-        emscripten_global_link_args = []
-    endif
-    add_global_arguments(emscripten_global_link_args, language : 'c', native : false)
-    add_global_arguments(emscripten_global_link_args, language : 'cpp', native : false)
-    add_global_link_arguments(emscripten_global_link_args, language : 'c', native : false)
-    add_global_link_arguments(emscripten_global_link_args, language : 'cpp', native : false)
-endif
-
 subdir('scripts')
 
 config = configuration_data()

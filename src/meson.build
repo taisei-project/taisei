@@ -170,8 +170,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'ALLOW_MEMORY_GROWTH=1',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
-        # NOTE: the _SDL_LoadWAV_RW is an LTO workaround; we don't actually care about that function.
-        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback", "_SDL_LoadWAV_RW"]',
+        '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
@@ -182,7 +181,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'MIN_WEBGL_VERSION=2',
         '-s', 'MODULARIZE=0',
         '-s', 'STRICT=1',
-        '-s', 'TOTAL_MEMORY=268435456',
+        '-s', 'INITIAL_MEMORY=268435456',
         '-s', 'WASM=1',
         '-lGL',
         '-legl.js',
@@ -225,6 +224,8 @@ if host_machine.system() == 'emscripten'
     taisei = executable(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
+        # This fails; see https://github.com/emscripten-core/emscripten/issues/10872
+        # c_pch : 'pch/taisei_pch.h',
         link_args : em_link_args,
         name_suffix : 'bc',
         install : false,
@@ -238,7 +239,6 @@ if host_machine.system() == 'emscripten'
         command : [
             cc.cmd_array(),
             taisei.full_path(),
-            emscripten_global_link_args,
             '--pre-js', em_preamble,
             em_bundle_link_args,
             '--shell-file', em_shell,
