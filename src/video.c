@@ -257,6 +257,8 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
 	uint32_t flags = 0;
 
+	flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+
 	if(fs) {
 		flags |= get_fullscreen_flag();
 	} else if(resizable && video.backend != VIDEO_BACKEND_EMSCRIPTEN) {
