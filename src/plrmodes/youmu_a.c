@@ -14,8 +14,11 @@
 #include "renderer/api.h"
 #include "stagedraw.h"
 
-#define SHOT_FORWARD_DELAY 6
-#define SHOT_FORWARD_DAMAGE 60
+#define SHOT_SELF_DELAY 6
+#define SHOT_SELF_DAMAGE 60
+
+#define SHOT_MYON_HALFDELAY 3
+#define SHOT_MYON_DAMAGE 30
 
 typedef struct YoumuAController YoumuAController;
 typedef struct YoumuMyon YoumuMyon;
@@ -233,8 +236,8 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-		const real dmg_center = 30;
-		const real dmg_side = 30;
+		const real dmg_center = SHOT_MYON_DAMAGE;
+		const real dmg_side = SHOT_MYON_DAMAGE;
 		const real speed = -10;
 		const int power_rank = plr->power / 100;
 
@@ -260,7 +263,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 			}
 		}
 
-		WAIT(3);
+		WAIT(SHOT_MYON_HALFDELAY);
 
 		{
 			myon_proj_color(&clr, myon->focus_factor);
@@ -278,7 +281,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 			}
 		}
 
-		WAIT(3);
+		WAIT(SHOT_MYON_HALFDELAY);
 	}
 }
 
@@ -559,7 +562,7 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 		for(int side = -1; side < 2; side += 2) {
 			cmplx origin = plr->pos + 10*side + 5*I;
 
-			youmu_mirror_self_shot(origin, move_linear(v), SHOT_FORWARD_DAMAGE, shader);
+			youmu_mirror_self_shot(origin, move_linear(v), SHOT_SELF_DAMAGE, shader);
 
 			for(int p = 0; p < power_rank; ++p) {
 				cmplx v2 = -(20 - p) * I * cdir(side * (1 + p) * spread);
@@ -570,12 +573,12 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 						0.2 * v2 * cdir(M_PI * 0.25 * side),
 						v2 * cdir(M_PI * -0.02 * side),
 						5
-					), SHOT_FORWARD_DAMAGE, shader
+					), SHOT_SELF_DAMAGE, shader
 				);
 			}
 		}
 
-		t += WAIT(SHOT_FORWARD_DELAY);
+		t += WAIT(SHOT_SELF_DELAY);
 	}
 
 }
