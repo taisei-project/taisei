@@ -26,12 +26,20 @@ struct YoumuMyon {
 		Sprite *smoke;
 		Sprite *stardust;
 	} sprites;
+
 	cmplx pos;
 	cmplx dir;
 	real focus_factor;
 };
 
 struct YoumuAController {
+	struct {
+		Sprite *arc;
+		Sprite *blast_huge_halo;
+		Sprite *petal;
+		Sprite *stain;
+	} sprites;
+
 	Player *plr;
 	YoumuMyon myon;
 };
@@ -355,13 +363,15 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 }
 
 static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx victim_origin, void *arg) {
+	YoumuAController *ctrl = arg;
+
 	cmplx ofs_dir = rng_dir();
 	victim_origin += ofs_dir * rng_range(0, 15);
 
 	RNG_ARRAY(R, 6);
 
 	PARTICLE(
-		.sprite = "blast_huge_halo",
+		.sprite_ptr = ctrl->sprites.blast_huge_halo,
 		.pos = victim_origin,
 		.color = RGBA(vrng_range(R[0], 0.6, 0.7), 0.8, vrng_range(R[1], 0.7, 0.775), vrng_range(R[2], 0, 0.5)),
 		.timeout = 30,
@@ -379,7 +389,7 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 	RNG_NEXT(R);
 
 	PARTICLE(
-		.sprite = "petal",
+		.sprite_ptr = ctrl->sprites.petal,
 		.pos = victim_origin,
 		.rule = asymptotic,
 		.draw_rule = pdraw_petal_random(),
@@ -392,72 +402,75 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 	);
 }
 
-static int youmu_mirror_bomb_controller(Enemy *e, int t) {
-	if(t == EVENT_DEATH || t == EVENT_BIRTH) {
-		return ACTION_ACK;
+static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx vel, int t, ProjFlags pflags) {
+	if(t >= 240) {
+		return;
 	}
 
-	if(!player_is_bomb_active(&global.plr)) {
-		return ACTION_DESTROY;
-	}
+	PARTICLE(
+		.color = RGBA(0.9, 0.8, 1.0, 0.0),
+		.draw_rule = pdraw_timeout_fade(1, 0),
+		.flags = pflags,
+		.move = move_linear(2 * rng_dir()),
+		.pos = pos,
+		.rule = linear,
+		.sprite_ptr = ctrl->sprites.arc,
+		.timeout = 30,
+	);
 
-	// MYON->pos = e->pos;
-	// cmplx myonpos = MYON->pos;
-	cmplx myonpos = 0;
+	RNG_ARRAY(R, 2);
 
-	e->pos += e->args[0];
-	cmplx aim = (global.plr.pos - e->pos) * 0.01;
-	double accel_max = 1;
+	PARTICLE(
+		.angle = vrng_angle(R[0]),
+		.color = RGBA(0.2, 0.1, 1.0, 0.0),
+		.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
+		.flags = pflags,
+		.move = move_accelerated(
+			-1 * vel * cdir(0.2 * vrng_real(R[1])) / 30,
+			0.1 * vel * I * sin(t/4.0) / 30
+		),
+		.pos = pos,
+		.rule = accelerated,
+		.sprite_ptr = ctrl->sprites.stain,
+		.timeout = 50,
+	);
+}
 
-	if(cabs(aim) > accel_max) {
-		aim *= accel_max / cabs(aim);
-	}
+TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	YoumuMyon *myon = &ctrl->myon;
+	Player *plr = ctrl->plr;
 
-	e->args[0] += aim;
-	e->args[0] *= 1.0 - cabs(global.plr.pos - e->pos) * 0.0001;
+	cmplx vel = -30 * myon->dir;
+	cmplx pos = myon->pos;
 
-	TIMER(&t);
-	FROM_TO(0, 240, 1) {
-		PARTICLE(
-			.sprite = "arc",
-			.pos = e->pos,
-			.rule = linear,
-			.draw_rule = pdraw_timeout_fade(1, 0),
-			.color = RGBA(0.9, 0.8, 1.0, 0.0),
-			.timeout = 30,
-			.args = {
-				2 * rng_dir(),
-			},
-			.flags = _i%2 == 0 ? PFLAG_REQUIREDPARTICLE : 0
-		);
+	ProjFlags pflags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT;
+	int t = 0;
 
-		RNG_ARRAY(R, 2);
+	do {
+		pos += vel;
 
-		PARTICLE(
-			.sprite = "stain",
-			.pos = e->pos,
-			.rule = accelerated,
-			.draw_rule = pdraw_timeout_scalefade(0, 3, 1, 0),
-			.angle = vrng_angle(R[0]),
-			.color = RGBA(0.2, 0.1, 1.0, 0.0),
-			.timeout = 50,
-			.args = {
-				-1*e->args[0]*cdir(0.2*rng_real())/30,
-				0.1*e->args[0]*I*sin(t/4.)/30,
-			},
-			.flags = _i%2 == 0 ? PFLAG_REQUIREDPARTICLE : 0
-		);
-	}
+		cmplx aim = cclampabs((plr->pos - pos) * 0.01, 1);
+		vel += aim;
+		vel *= 1 - cabs(plr->pos - pos) * 0.0001;
 
-	// roughly matches the shader effect
-	float bombtime = player_get_bomb_progress(&global.plr);
-	float envelope = bombtime * (1 - bombtime);
-	float range = 200 / (1 + pow(0.08 / envelope, 5));
+		youmu_mirror_bomb_particles(ctrl, pos, vel, t, pflags);
+		pflags ^= PFLAG_REQUIREDPARTICLE;
 
-	ent_area_damage(myonpos, range, &(DamageInfo) { 200, DMG_PLAYER_BOMB }, youmu_mirror_bomb_damage_callback, e);
-	stage_clear_hazards_at(myonpos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+		// roughly matches the shader effect
+		real bombtime = player_get_bomb_progress(plr);
+		real envelope = bombtime * (1 - bombtime);
+		real range = 200 / (1 + pow(0.08 / envelope, 5));
 
-	return ACTION_NONE;
+		ent_area_damage(pos, range, &(DamageInfo) { 200, DMG_PLAYER_BOMB }, youmu_mirror_bomb_damage_callback, ctrl);
+		stage_clear_hazards_at(pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+
+		myon->pos = pos;
+		myon->dir = cnormalize(vel);
+		++t;
+
+		YIELD;
+	} while(player_is_bomb_active(plr));
 }
 
 TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
@@ -510,10 +523,10 @@ TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		play_sound("bomb_youmu_b");
+		INVOKE_SUBTASK(youmu_mirror_bomb_controller, ctrl);
 		INVOKE_SUBTASK(youmu_mirror_bomb_background, ctrl);
 		INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, ctrl);
-		play_sound("bomb_youmu_b");
-		// create_enemy_p(&plr->slaves, MYON->pos, ENEMY_BOMB, NULL, youmu_mirror_bomb_controller, -cexp(I*carg(MYON->args[0])) * 30, 0, 0, 0);
 	}
 }
 
@@ -549,13 +562,13 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 			youmu_mirror_self_shot(origin, move_linear(v), SHOT_FORWARD_DAMAGE, shader);
 
 			for(int p = 0; p < power_rank; ++p) {
-				cmplx v = -(20 - p) * I * cdir(side * (1 + p) * spread);
+				cmplx v2 = -(20 - p) * I * cdir(side * (1 + p) * spread);
 
 				youmu_mirror_self_shot(
 					origin,
 					move_asymptotic_halflife(
-						0.2 * v * cdir(M_PI * 0.25 * side),
-						v * cdir(M_PI * -0.02 * side),
+						0.2 * v2 * cdir(M_PI * 0.25 * side),
+						v2 * cdir(M_PI * -0.02 * side),
 						5
 					), SHOT_FORWARD_DAMAGE, shader
 				);
@@ -570,6 +583,10 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 TASK(youmu_mirror_controller, { BoxedPlayer plr; }) {
 	YoumuAController *ctrl = TASK_MALLOC(sizeof(*ctrl));
 	ctrl->plr = TASK_BIND(ARGS.plr);
+	ctrl->sprites.arc = get_sprite("part/arc");
+	ctrl->sprites.stain = get_sprite("part/stain");
+	ctrl->sprites.petal = get_sprite("part/petal");
+	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
 
 	INVOKE_SUBTASK(youmu_mirror_shot_forward, ctrl);
 	INVOKE_SUBTASK(youmu_mirror_myon, ctrl);
@@ -587,9 +604,13 @@ static void youmu_mirror_preload(void) {
 	const int flags = RESF_DEFAULT;
 
 	preload_resources(RES_SPRITE, flags,
-		"proj/youmu",
+		"part/arc",
+		"part/blast_huge_halo",
 		"part/myon",
+		"part/petal",
+		"part/stain",
 		"part/stardust",
+		"proj/youmu",
 	NULL);
 
 	preload_resources(RES_TEXTURE, flags,
