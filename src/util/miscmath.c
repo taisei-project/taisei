@@ -100,7 +100,9 @@ cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsil
 }
 
 cmplx cnormalize(cmplx c) {
-	return c / cabs(c);
+	cmplx r = c / sqrt(creal(c)*creal(c) + cimag(c)*cimag(c));
+	// NOTE: clang generates a function call for isnan()...
+	return LIKELY(r == r) ? r : 0;
 }
 
 cmplx cclampabs(cmplx c, double maxabs) {
