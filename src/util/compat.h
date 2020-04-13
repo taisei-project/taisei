@@ -80,6 +80,8 @@
 	#define DIAGNOSTIC(x)
 	#define DIAGNOSTIC_GCC(x)
 	#define DIAGNOSTIC_CLANG(x)
+	#define LIKELY(x) (bool)(x)
+	#define UNLIKELY(x) (bool)(x)
 #else
 	#ifdef TAISEI_BUILDCONF_USE_GNU_EXTENSIONS
 		#define USE_GNU_EXTENSIONS
@@ -95,6 +97,9 @@
 		#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
 		#define DIAGNOSTIC_CLANG(x)
 	#endif
+
+	#define LIKELY(x) __builtin_expect((bool)(x), 1)
+	#define UNLIKELY(x) __builtin_expect((bool)(x), 0)
 #endif
 
 #ifndef __has_attribute
