@@ -439,6 +439,20 @@ static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx
 	);
 }
 
+static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	float nt = 1 - projectile_timeout_factor(p);
+	float s = 1 + (1 - nt);
+	sp.scale.as_cmplx *= s;
+	sp.rotation.angle -= M_PI/2;
+	spbuf.shader_params.vector[0] = -2 * nt * nt;
+	spbuf.color.r *= nt * nt;
+	spbuf.color.g *= nt * nt;
+	spbuf.color.b *= nt;
+	r_draw_sprite(&sp);
+}
+
 TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	YoumuMyon *myon = &ctrl->myon;
@@ -449,6 +463,8 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 
 	ProjFlags pflags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT;
 	int t = 0;
+
+	ShaderProgram *silhouette_shader = r_shader_get("sprite_silhouette");
 
 	do {
 		pos += vel;
@@ -471,6 +487,17 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 		myon->pos = pos;
 		myon->dir = cnormalize(vel);
 		++t;
+
+		PARTICLE(
+			.color = RGBA(0.5, 1, 1, 0),
+			.draw_rule = youmu_mirror_draw_speed_trail,
+			.flags = PFLAG_NOREFLECT,
+			.layer = LAYER_PARTICLE_HIGH,
+			.pos = plr->pos,
+			.shader_ptr = silhouette_shader,
+			.sprite_ptr = aniplayer_get_frame(&plr->ani),
+			.timeout = 15,
+		);
 
 		YIELD;
 	} while(player_is_bomb_active(plr));
@@ -631,6 +658,23 @@ static void youmu_mirror_preload(void) {
 	NULL);
 }
 
+static double youmu_mirror_property(Player *plr, PlrProperty prop) {
+	switch(prop) {
+		case PLR_PROP_SPEED: {
+			double s = youmu_common_property(plr, prop);
+
+			if(player_is_bomb_active(plr)) {
+				s *= 2.0;
+			}
+
+			return s;
+		}
+
+		default:
+			return youmu_common_property(plr, prop);
+	}
+}
+
 PlayerMode plrmode_youmu_a = {
 	.name = "Soul Reflection",
 	.description = "Human and phantom act together towards a singular purpose. Your inner duality shall lend you a hand… or a tail.",
@@ -641,6 +685,6 @@ PlayerMode plrmode_youmu_a = {
 	.procs = {
 		.init = youmu_mirror_init,
 		.preload = youmu_mirror_preload,
-		.property = youmu_common_property,
+		.property = youmu_mirror_property,
 	},
 };
