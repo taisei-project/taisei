@@ -23,7 +23,9 @@ typedef enum StageFBPair {
 } StageFBPair;
 
 typedef COEVENTS_ARRAY(
-	background_drawn
+	background_drawn,
+	postprocess_before_overlay,
+	postprocess_after_overlay
 ) StageDrawEvents;
 
 void stage_draw_pre_init(void);
@@ -46,6 +48,7 @@ bool stage_should_draw_particle(Projectile *p);
 void stage_display_clear_screen(const StageClearBonus *bonus);
 
 FBPair *stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
+FBPair *stage_get_postprocess_fbpair(void) attr_returns_nonnull;
 Framebuffer *stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 Framebuffer *stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 

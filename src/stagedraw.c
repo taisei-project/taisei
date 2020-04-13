@@ -54,6 +54,7 @@ static struct {
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
+	FBPair *current_postprocess_fbpair;
 
 	bool framerate_graphs;
 	bool objpool_stats;
@@ -352,9 +353,13 @@ void stage_draw_shutdown(void) {
 	stage_draw_destroy_framebuffers();
 }
 
-FBPair* stage_get_fbpair(StageFBPair id) {
+FBPair *stage_get_fbpair(StageFBPair id) {
 	assert(id >= 0 && id < NUM_FBPAIRS);
 	return stagedraw.fb_pairs + id;
+}
+
+FBPair *stage_get_postprocess_fbpair(void) {
+	return NOT_NULL(stagedraw.current_postprocess_fbpair);
 }
 
 static void stage_draw_collision_areas(void) {
@@ -1005,8 +1010,7 @@ void stage_draw_scene(StageInfo *stage) {
 		coevent_signal(&stagedraw.events.background_drawn);
 
 		// draw bomb background
-		// FIXME: we need a more flexible and consistent way for entities to hook
-		// into the various stages of scene drawing code.
+		// TODO: remove this; use events
 		if(global.plr.mode->procs.bombbg /*&& player_is_bomb_active(&global.plr)*/) {
 			global.plr.mode->procs.bombbg(&global.plr);
 		}
@@ -1023,7 +1027,12 @@ void stage_draw_scene(StageInfo *stage) {
 	fbpair_swap(foreground);
 	r_blend(BLEND_NONE);
 
+	stagedraw.current_postprocess_fbpair = foreground;
+
+	coevent_signal(&stagedraw.events.postprocess_before_overlay);
+
 	// bomb effects shader if present and player bombing
+	// TODO: remove this; use events
 	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {
 		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
 		apply_shader_rules(rules, foreground);
@@ -1032,6 +1041,8 @@ void stage_draw_scene(StageInfo *stage) {
 	// draw overlay: in-viewport text and HUD elements, etc.
 	// this stuff is not affected by the screen shake effect
 	stage_draw_overlay();
+
+	coevent_signal(&stagedraw.events.postprocess_after_overlay);
 
 	// stage postprocessing
 	apply_shader_rules(global.stage->procs->postprocess_rules, foreground);
@@ -1046,6 +1057,8 @@ void stage_draw_scene(StageInfo *stage) {
 		VIEWPORT_H,
 		NULL
 	);
+
+	stagedraw.current_postprocess_fbpair = NULL;
 
 	// prepare for 2D rendering into the main framebuffer (actual screen)
 	r_framebuffer(video_get_screen_framebuffer());
