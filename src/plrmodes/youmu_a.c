@@ -12,135 +12,128 @@
 #include "plrmodes.h"
 #include "youmu.h"
 #include "renderer/api.h"
+#include "stagedraw.h"
 
-#define MYON (global.plr.slaves.first)
+#define SHOT_FORWARD_DELAY 6
+#define SHOT_FORWARD_DAMAGE 60
+
+typedef struct YoumuAController YoumuAController;
+typedef struct YoumuMyon YoumuMyon;
+
+struct YoumuMyon {
+	struct {
+		Sprite *trail;
+		Sprite *smoke;
+		Sprite *stardust;
+	} sprites;
+	cmplx pos;
+	cmplx dir;
+	real focus_factor;
+};
+
+struct YoumuAController {
+	Player *plr;
+	YoumuMyon myon;
+};
 
 static Color *myon_color(Color *c, float f, float opacity, float alpha) {
-	// *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.2*f*f, a);
 	*c = *RGBA_MUL_ALPHA(0.8+0.2*f, 0.9-0.4*sqrt(f), 1.0-0.35*f*f, opacity);
 	c->a *= alpha;
 	return c;
 }
 
-static int myon_particle_rule(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	myon_color(&p->color, clamp(creal(p->args[3]) + t / p->timeout, 0, 1), 0.5 * (1 - sqrt(t / p->timeout)), 0);
-
-	p->pos += p->args[0];
-	p->angle += 0.03 * (1 - 2 * (p->birthtime & 1));
-
-	return ACTION_NONE;
-}
-
-static cmplx myon_tail_dir(void) {
-	double angle = carg(MYON->args[0]);
-	cmplx dir = cexp(I*(0.1 * sin(global.frames * 0.05) + angle));
-	float f = abs(global.plr.focus) / 30.0;
+static cmplx myon_tail_dir(YoumuMyon *myon) {
+	cmplx dir = myon->dir * cdir(0.1 * sin(global.frames * 0.05));
+	real f = myon->focus_factor;
 	return f * f * dir;
-}
-
-static int myon_flare_particle_rule(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	// wiggle wiggle
-	p->pos += 0.05 * (MYON->pos - p->pos) * cexp(I * sin((t - global.frames * 2) * 0.1) * M_PI/8);
-	p->args[0] = 3 * myon_tail_dir();
-
-	int r = myon_particle_rule(p, t);
-	myon_color(&p->color, creal(p->args[3]), pow(1 - min(1, t / (double)p->timeout), 2), 0.95);
-	return r;
 }
 
 static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float focus_factor = args[0].as_float[0];
-	float scale = args[0].as_float[1];
+	float opacity = args[0].as_float[1];
 
-	float fadein = clamp(t/10.0, 0, 1);
+	float fadein = clamp(t / 10.0, 0, 1);
 	float s = 1 - projectile_timeout_factor(p);
 
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 
-	float a = spbuf.color.r * fadein;
+	float a = opacity * fadein;
 	myon_color(&spbuf.color, focus_factor, a * s * s, 0);
-	sp.scale.as_cmplx *= fadein * (2-s) * scale;
+	sp.scale.as_cmplx *= fadein * (2 - s);
 
 	r_draw_sprite(&sp);
 }
 
-static ProjDrawRule myon_draw_trail(float scale, float focus_factor) {
+static ProjDrawRule myon_draw_trail(float focus_factor, float opacity) {
 	return (ProjDrawRule) {
 		.func = myon_draw_trail_func,
-		.args[0].as_float = { focus_factor, scale },
+		.args[0].as_float = { focus_factor, opacity },
 	};
 }
 
-static void spawn_stardust(cmplx pos, float myon_color_f, int timeout, cmplx v) {
-	RNG_ARRAY(R, 4);
+TASK(youmu_mirror_myon_trail, { YoumuMyon *myon; cmplx pos; }) {
+	YoumuMyon *myon = ARGS.myon;
 
-	PARTICLE(
-		.sprite = "stardust",
-		.pos = pos + vrng_range(R[0], 0, 5) * vrng_dir(R[1]),
-		.draw_rule = myon_draw_trail(vrng_range(R[2], 0.2, 0.3), myon_color_f),
-		.rule = myon_particle_rule,
-		.timeout = timeout,
-		.args = { v, 0, 0, myon_color_f },
-		.angle = vrng_angle(R[3]),
-		.flags = PFLAG_NOREFLECT,
-		.layer = LAYER_PARTICLE_LOW | 1,
-	);
+	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+		.angle = rng_angle(),
+		.draw_rule = pdraw_timeout_scale(2, 0.01),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_PLRSPECIALPARTICLE,
+		.layer = LAYER_PARTICLE_LOW,
+		.move = move_linear(0),
+		.pos = ARGS.pos,
+		.sprite_ptr = myon->sprites.trail,
+		.timeout = 40,
+	));
+
+	p->angle_delta = 0.03 * (1 - 2 * (p->birthtime & 1));
+
+	for(int t = 0;; ++t) {
+		real f = myon->focus_factor;
+		myon_color(&p->color, f, pow(1 - min(1, t / p->timeout), 2), 0.95);
+		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - global.frames * 2) * 0.1) * M_PI/8);
+		p->move.velocity = 3 * myon_tail_dir(myon);
+		YIELD;
+	}
 }
 
-static void myon_spawn_trail(Enemy *e, int t) {
-	cmplx pos = e->pos + 3 * cdir(global.frames * 0.07);
-	cmplx stardust_v = 3 * myon_tail_dir() * cdir(M_PI/16*sin(1.33*t));
-	real f = abs(global.plr.focus) / 30.0;
+static void myon_spawn_trail(YoumuMyon *myon, int t) {
+	cmplx pos = myon->pos + 3 * cdir(global.frames * 0.07);
+	cmplx stardust_v = 3 * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
+	real f = myon->focus_factor;
 	stardust_v = f * stardust_v + (1 - f) * -I;
 
 	if(player_should_shoot(&global.plr)) {
 		RNG_ARRAY(R, 7);
 
 		PARTICLE(
-			.sprite = "smoke",
-			.pos = pos + vrng_range(R[0], 0, 10) * vrng_dir(R[1]),
-			.draw_rule = myon_draw_trail(0.2, f),
-			.rule = myon_particle_rule,
-			.timeout = 60,
-			.args = { 0, -0.2, 0, f },
-			.flags = PFLAG_NOREFLECT,
 			.angle = vrng_angle(R[2]),
-		);
-
-		PARTICLE(
-			.sprite = "flare",
-			.pos = pos + vrng_range(R[3], 0, 5) * vrng_dir(R[4]),
-			.draw_rule = pdraw_timeout_scale(2, 0.01),
-			.rule = myon_particle_rule,
-			.timeout = 10,
-			.args = { 0.5 * vrng_dir(R[5]), 0.2, 0, f },
-			.flags = PFLAG_NOREFLECT,
-			.angle = vrng_angle(R[6]),
+			.angle_delta = 0.03 * (1 - 2 * (global.frames & 1)),
+			.draw_rule = myon_draw_trail(f, 0.7),
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
+			.pos = pos + vrng_range(R[0], 0, 10) * vrng_dir(R[1]),
+			.scale = 0.2,
+			.sprite_ptr = myon->sprites.smoke,
+			.timeout = 30,
 		);
 	}
 
-	PARTICLE(
-		.sprite = "myon",
-		.pos = pos,
-		.rule = myon_flare_particle_rule,
-		.timeout = 40,
-		.args = { f * stardust_v, 0, 0, f },
-		.draw_rule = pdraw_timeout_scale(2, 0.01),
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		.angle = rng_angle(),
-		.layer = LAYER_PARTICLE_LOW,
-	);
+	INVOKE_TASK(youmu_mirror_myon_trail, myon, pos);
 
-	spawn_stardust(pos, f, 60, stardust_v);
+	RNG_ARRAY(R, 4);
+
+	PARTICLE(
+		.angle = vrng_angle(R[3]),
+		.angle_delta = 0.03 * (1 - 2 * (global.frames & 1)),
+		.draw_rule = myon_draw_trail(f, 0.5),
+		.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
+		.layer = LAYER_PARTICLE_LOW | 1,
+		.move = move_linear(stardust_v),
+		.pos = pos + vrng_range(R[0], 0, 5) * vrng_dir(R[1]),
+		.scale = vrng_range(R[2], 0.2, 0.3),
+		.sprite_ptr = myon->sprites.stardust,
+		.timeout = 40,
+	);
 }
 
 static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
@@ -155,233 +148,209 @@ static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&sp);
 }
 
-static int myon_proj(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
+TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr; ShaderProgram *shader; }) {
+	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+		.color = ARGS.clr,
+		.damage = ARGS.dmg,
+		.layer = LAYER_PLAYER_SHOT | 0x10,
+		.move = move_linear(ARGS.vel),
+		.pos = ARGS.pos,
+		.proto = pp_youmu,
+		.shader_ptr = ARGS.shader,
+		.type = PROJ_PLAYER,
+	));
+
+	Color trail_color = p->color;
+	trail_color.a = 0;
+	color_mul_scalar(&trail_color, 0.075);
+
+	Sprite *trail_sprite = get_sprite("part/boss_shadow");
+	MoveParams trail_move = move_linear(ARGS.vel * 0.8);
+
+	for(int t = 1;; ++t) {
+		YIELD;
+
+		// TODO: Optimize this. The trail can be made static, either pre-rendered
+		// or drawn in the projectile's custom draw rule. The opacity change can
+		// live in the draw rule as well. Then a separate task per shot is not needed.
+
+		p->opacity = 1.0f - powf(1.0f - fminf(1.0f, t / 10.0f), 2.0f);
+
+		PARTICLE(
+			.sprite_ptr = trail_sprite,
+			.pos = p->pos,
+			.color = &trail_color,
+			.draw_rule = myon_draw_proj_trail,
+			.timeout = 10,
+			.move = trail_move,
+			.flags = PFLAG_NOREFLECT,
+			.angle = p->angle,
+			.scale = 0.6,
+		);
 	}
-
-	linear(p, t);
-
-	//p->pos = global.plr.slaves->pos - global.plr.slaves->args[0] / cabs(global.plr.slaves->args[0]) * t * cabs(p->args[0]);
-	//p->angle = carg(-global.plr.slaves->args[0]);
-
-	// spawn_stardust(p->pos, multiply_colors(p->color, myon_color(abs(global.plr.focus) / 30.0, 0.1)), 20, p->args[0]*0.1);
-
-	Color *c = COLOR_COPY(&p->color);
-	color_mul_scalar(c, 0.075);
-	c->a = 0;
-
-	PARTICLE(
-		.sprite = "boss_shadow",
-		.pos = p->pos,
-		// .color = derive_color(p->color, CLRMASK_A, rgba(0, 0, 0, 0.075)),
-		.color = c,
-		.draw_rule = myon_draw_proj_trail,
-		.timeout = 10,
-		.move = move_linear(p->args[0]*0.8),
-		.flags = PFLAG_NOREFLECT,
-		.angle = p->angle,
-		.scale = 0.6,
-	);
-
-	p->opacity = 1.0f - powf(1.0f - fminf(1.0f, t / 10.0f), 2.0f);
-
-	return ACTION_NONE;
 }
 
-static Projectile* youmu_mirror_myon_proj(ProjPrototype *proto, cmplx pos, double speed, double angle, double aoffs, double upfactor, float dmg) {
-	cmplx dir = cexp(I*(M_PI/2 + aoffs)) * upfactor + cexp(I * (angle + aoffs)) * (1 - upfactor);
-	dir = dir / cabs(dir);
+static inline void youmu_mirror_myon_proj(cmplx pos, cmplx vel, real dmg, const Color *clr, ShaderProgram *shader) {
+	INVOKE_TASK(youmu_mirror_myon_proj, pos, vel, dmg, clr, shader);
+}
 
-	// float f = ((global.plr.inputflags & INFLAG_FOCUS) == INFLAG_FOCUS);
-	float f = smoothreclamp(abs(global.plr.focus) / 30.0, 0, 1, 0, 1);
-	Color c, intermediate = { 1.0, 1.0, 1.0, 1.0 };
+static void myon_proj_color(Color *clr, real focus_factor) {
+	Color intermediate = { 1.0, 1.0, 1.0, 1.0 };
+	focus_factor = smooth(focus_factor);
 
-	if(f < 0.5) {
-		c = *RGB(0.4, 0.6, 0.6);
+	if(focus_factor < 0.5) {
+		*clr = *RGB(0.4, 0.6, 0.6);
 		color_lerp(
-			&c,
+			clr,
 			&intermediate,
-			f * 2
+			focus_factor * 2
 		);
 	} else {
 		Color mc;
-		c = intermediate;
+		*clr = intermediate;
 		color_lerp(
-			&c,
-			myon_color(&mc, f, 1, 1),
-			(f - 0.5) * 2
+			clr,
+			myon_color(&mc, focus_factor, 1, 1),
+			(focus_factor - 0.5) * 2
 		);
 	}
-
-	return PROJECTILE(
-		.color = &c,
-		.proto = proto,
-		.pos = pos,
-		.rule = myon_proj,
-		.args = { speed*dir },
-		.type = PROJ_PLAYER,
-		.layer = LAYER_PLAYER_SHOT | 0x10,
-		.damage = dmg,
-		.shader = "sprite_youmu_myon_shot",
-	);
 }
 
-static int youmu_mirror_myon(Enemy *e, int t) {
-	if(t == EVENT_BIRTH)
-		e->pos = e->pos0 + global.plr.pos;
-	if(t < 0)
-		return 1;
+TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	YoumuMyon *myon = &ctrl->myon;
+	Player *plr = ctrl->plr;
+	ShaderProgram *shader = r_shader_get("sprite_youmu_myon_shot");
 
-	myon_spawn_trail(e, t);
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-	Player *plr = &global.plr;
-	float rad = cabs(e->pos0);
+		const real dmg_center = 30;
+		const real dmg_side = 30;
+		const real speed = -10;
+		const int power_rank = plr->power / 100;
 
-	double followfactor = 0.1;
-	double nfocus = plr->focus / 30.0;
+		real spread;
+		cmplx forward;
+		Color clr;
 
-	if(plr->inputflags & INFLAG_FOCUS) {
-		e->args[3] = 1;
-	} else if(e->args[3] == 1) {
-		nfocus = 0.0;
-		e->pos0 = -rad * I;
-		followfactor *= 3;
+		{
+			myon_proj_color(&clr, myon->focus_factor);
+			forward = speed * myon->dir;
+			spread = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
 
-		if(plr->inputflags & INFLAGS_MOVE) {
-			e->args[3] = 0;
-		}
-	}
+			youmu_mirror_myon_proj(myon->pos, forward, dmg_center, &clr, shader);
 
-	if(e->args[3] == 0) {
-		if(!(plr->inputflags & INFLAG_SHOT)) {
-			nfocus = 0.0;
-			e->pos0 = -rad * I;
-		} else if(!(plr->inputflags & INFLAG_FOCUS)) {
-			if((plr->inputflags & INFLAGS_MOVE)) {
-				e->pos0 = rad * -plr->lastmovedir;
-			} else {
-				e->pos0 = e->pos - plr->pos;
-				e->pos0 *= rad / cabs(e->pos0);
+			if(power_rank >= 2) {
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+2 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-2 * spread), dmg_side, &clr, shader);
+			}
+
+			if(power_rank >= 4) {
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+4 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-4 * spread), dmg_side, &clr, shader);
 			}
 		}
+
+		WAIT(3);
+
+		{
+			myon_proj_color(&clr, myon->focus_factor);
+			forward = speed * myon->dir;
+			spread = (psin(global.frames * 2.0) * 0.5 + 0.5) * 0.1;
+
+			if(power_rank >= 1) {
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+1 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-1 * spread), dmg_side, &clr, shader);
+			}
+
+			if(power_rank >= 3) {
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(+3 * spread), dmg_side, &clr, shader);
+				youmu_mirror_myon_proj(myon->pos, forward * cdir(-3 * spread), dmg_side, &clr, shader);
+			}
+		}
+
+		WAIT(3);
 	}
-
-	cmplx target = plr->pos + e->pos0;
-	cmplx v = cexp(I*carg(target - e->pos)) * min(10, followfactor * max(0, cabs(target - e->pos) - VIEWPORT_W * 0.5 * nfocus));
-	float s = sign(creal(e->pos) - creal(global.plr.pos));
-
-	if(!s) {
-		s = sign(sin(t/10.0));
-	}
-
-	float rot = clamp(0.005 * cabs(global.plr.pos - e->pos) - M_PI/6, 0, M_PI/8);
-	v *= cexp(I*rot*s);
-	e->pos += v;
-
-	if(!(plr->inputflags & INFLAG_SHOT) || !(plr->inputflags & INFLAG_FOCUS)) {
-		e->args[0] = plr->pos - e->pos;
-	}
-
-	e->args[1] += (e->args[0] - e->args[1]) * 0.5;
-
-	if(player_should_shoot(&global.plr)) {
-		int v1 = -10;
-		int v2 = -10;
-
-		double r1 = (psin(global.frames * 2.0) * 0.5 + 0.5) * 0.1;
-		double r2 = (psin(global.frames * 1.2) * 0.5 + 0.5) * 0.1;
-
-		double a = carg(e->args[0]);
-		double f = smoothreclamp(0.5 + 0.5 * (1.0 - nfocus), 0, 1, 0, 1);
-		double u = 0; // smoothreclamp(1 - nfocus, 0, 1, 0, 1);
-
-		r1 *= f;
-		r2 *= f;
-
-		int p = plr->power / 100;
-		int dmg_center = 180 - rint(160 * (1 - pow(1 - 0.25 * p, 2)));
-		int dmg_side = 41 - 3 * p;
-
-		if(plr->power >= 100 && !((global.frames+0) % 6)) {
-			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a,  r1*1, u, dmg_side);
-			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a, -r1*1, u, dmg_side);
-		}
-
-		if(plr->power >= 200 && !((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a,  r2*2, 0, dmg_side);
-			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, -r2*2, 0, dmg_side);
-		}
-
-		if(plr->power >= 300 && !((global.frames+0) % 6)) {
-			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a,  r1*3, 0, dmg_side);
-			youmu_mirror_myon_proj(pp_youmu,  e->pos, v2, a, -r1*3, 0, dmg_side);
-		}
-
-		if(plr->power >= 400 && !((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a,  r2*4, u, dmg_side);
-			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, -r2*4, u, dmg_side);
-		}
-
-		if(!((global.frames+3) % 6)) {
-			youmu_mirror_myon_proj(pp_youmu, e->pos, v1, a, 0, 0, dmg_center);
-		}
-	}
-
-	return 1;
 }
 
-static int youmu_mirror_self_proj(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	YoumuMyon *myon = &ctrl->myon;
+	Player *plr = ctrl->plr;
 
-	cmplx v0 = p->args[0];
-	cmplx v1 = p->args[1];
-	double f = creal(p->args[2]) ? clamp(t / p->args[2], 0, 1) : 1;
-	cmplx v = v1*f + v0*(1-f);
+	myon->sprites.trail = get_sprite("part/myon");
+	myon->sprites.smoke = get_sprite("part/smoke");
+	myon->sprites.stardust = get_sprite("part/stardust");
 
-	cmplx diff = p->pos0 + v * t - p->pos;
-	p->pos += diff;
-	p->angle = carg(diff ? diff : v);
+	const real distance = 40;
+	const real focus_rate = 1.0/30.0;
 
-	return 1;
-}
+	real focus_factor = 0.0;
+	bool fixed_position = false;
+	cmplx offset_dir = -I;
 
-static Projectile* youmu_mirror_self_shot(Player *plr, cmplx ofs, cmplx vel, float dmg, double turntime) {
-	return PROJECTILE(
-		.proto = pp_youmu,
-		.pos = plr->pos + ofs,
-		.type = PROJ_PLAYER,
-		.damage = dmg,
-		.shader = "sprite_default",
-		.layer = LAYER_PLAYER_SHOT | 0x20,
-		.rule = youmu_mirror_self_proj,
-		.args = {
-			vel*0.2*cexp(I*M_PI*0.5*sign(creal(ofs))), vel, turntime,
-		},
-	);
-}
+	myon->pos = plr->pos;
 
-static void youmu_mirror_shot(Player *plr) {
-	play_loop("generic_shot");
+	INVOKE_SUBTASK(youmu_mirror_myon_shot, ctrl);
 
-	int p = plr->power / 100;
+	for(int t = 0;; ++t) {
+		// yeah i no longer understand most of this either
 
-	if(!(global.frames % 6)) {
-		int dmg = 105 - 10 * p;
-		youmu_mirror_self_shot(plr, +10 - I*20, -20.0*I, dmg, 0);
-		youmu_mirror_self_shot(plr, -10 - I*20, -20.0*I, dmg, 0);
-	}
+		real follow_factor = 0.1;
 
-	if(!((global.frames) % 6)) {
-		for(int i = 0; i < p; ++i) {
-			int dmg = 21;
-			double spread = M_PI/64 * (1 + 0.5 * smoothreclamp(psin(global.frames/10.0), 0, 1, 0, 1));
+		if(plr->inputflags & INFLAG_FOCUS) {
+			fixed_position = true;
+			approach_p(&focus_factor, 1, focus_rate);
+		} else {
+			approach_p(&focus_factor, 0, focus_rate);
 
-			youmu_mirror_self_shot(plr, (+10 + I*10), -(20.0-i)*I*cexp(-I*(1+i)*spread), dmg, 20);
-			youmu_mirror_self_shot(plr, (-10 + I*10), -(20.0-i)*I*cexp(+I*(1+i)*spread), dmg, 20);
+			if(fixed_position) {
+				focus_factor = 0;
+				offset_dir = -I;
+				follow_factor *= 3;
+
+				if(plr->inputflags & INFLAGS_MOVE) {
+					fixed_position = false;
+				}
+			}
 		}
+
+		if(!fixed_position) {
+			if(!(plr->inputflags & INFLAG_SHOT)) {
+				focus_factor = 0;
+				offset_dir = -I;
+			} else if(!(plr->inputflags & INFLAG_FOCUS)) {
+				if(plr->inputflags & INFLAGS_MOVE) {
+					offset_dir = -plr->lastmovedir;
+				} else {
+					offset_dir = cnormalize(myon->pos - plr->pos);
+				}
+			}
+		}
+
+		cmplx target = plr->pos + distance * offset_dir;
+		cmplx v = cnormalize(target - myon->pos) * min(10, follow_factor * max(0, cabs(target - myon->pos) - VIEWPORT_W * 0.5 * focus_factor));
+
+		real s = sign(creal(myon->pos) - creal(plr->pos));
+		if(!s) {
+			s = sign(sin(t / 10.0));
+		}
+
+		real rot = clamp(0.005 * cabs(plr->pos - myon->pos) - M_PI/6, 0, M_PI/8);
+		v *= cdir(rot * s);
+
+		myon->pos += v;
+		myon->focus_factor = focus_factor;
+
+		if(!(plr->inputflags & INFLAG_SHOT) || !(plr->inputflags & INFLAG_FOCUS)) {
+			if(plr->pos != myon->pos) {
+				myon->dir = cnormalize(plr->pos - myon->pos);
+			}
+		}
+
+		myon_spawn_trail(myon, t);
+		YIELD;
 	}
 }
 
@@ -432,8 +401,9 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 		return ACTION_DESTROY;
 	}
 
-	MYON->pos = e->pos;
-	cmplx myonpos = MYON->pos;
+	// MYON->pos = e->pos;
+	// cmplx myonpos = MYON->pos;
+	cmplx myonpos = 0;
 
 	e->pos += e->args[0];
 	cmplx aim = (global.plr.pos - e->pos) * 0.01;
@@ -490,32 +460,127 @@ static int youmu_mirror_bomb_controller(Enemy *e, int t) {
 	return ACTION_NONE;
 }
 
-static bool youmu_mirror_shader(Framebuffer *fb) {
+TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	YoumuMyon *myon = &ctrl->myon;
+	CoEvent *pp_event = &stage_get_draw_events()->postprocess_before_overlay;
+
 	ShaderProgram *shader = r_shader_get("youmua_bomb");
+	Uniform *u_tbomb = r_shader_uniform(shader, "tbomb");
+	Uniform *u_myon = r_shader_uniform(shader, "myon");
+	Uniform *u_fill_overlay = r_shader_uniform(shader, "fill_overlay");
 
-	double t = player_get_bomb_progress(&global.plr);
-	r_shader_ptr(shader);
-	r_uniform_float("tbomb", t);
+	do {
+		WAIT_EVENT_OR_DIE(pp_event);
 
-	cmplx myonpos = MYON->pos;
-	float f = max(0,1 - 10*t);
-	r_uniform_vec2("myon", creal(myonpos)/VIEWPORT_W, 1-cimag(myonpos)/VIEWPORT_H);
-	r_uniform_vec4("fill_overlay", f, f, f, f);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-	r_shader_standard();
+		float t = player_get_bomb_progress(&global.plr);
+		float f = fmaxf(0, 1 - 10 * t);
+		cmplx myonpos = CMPLX(creal(myon->pos)/VIEWPORT_W, 1 - cimag(myon->pos)/VIEWPORT_H);
 
-	return true;
+		FBPair *fbpair = stage_get_postprocess_fbpair();
+		r_framebuffer(fbpair->back);
+
+		r_state_push();
+		r_shader_ptr(shader);
+		r_uniform_float(u_tbomb, t);
+		r_uniform_vec2_complex(u_myon, myonpos);
+		r_uniform_vec4(u_fill_overlay, f, f, f, f);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		r_state_pop();
+
+		fbpair_swap(fbpair);
+	} while(player_is_bomb_active(plr));
 }
 
-static void youmu_mirror_bomb(Player *plr) {
-	play_sound("bomb_youmu_b");
-	create_enemy_p(&plr->slaves, MYON->pos, ENEMY_BOMB, NULL, youmu_mirror_bomb_controller, -cexp(I*carg(MYON->args[0])) * 30, 0, 0, 0);
+TASK(youmu_mirror_bomb_background, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+
+	do {
+		WAIT_EVENT_OR_DIE(draw_event);
+		youmu_common_bombbg(plr);
+	} while(player_is_bomb_active(plr));
+}
+
+TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		INVOKE_SUBTASK(youmu_mirror_bomb_background, ctrl);
+		INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, ctrl);
+		play_sound("bomb_youmu_b");
+		// create_enemy_p(&plr->slaves, MYON->pos, ENEMY_BOMB, NULL, youmu_mirror_bomb_controller, -cexp(I*carg(MYON->args[0])) * 30, 0, 0, 0);
+	}
+}
+
+static inline Projectile *youmu_mirror_self_shot(cmplx pos, MoveParams move, real dmg, ShaderProgram *shader) {
+	return PROJECTILE(
+		.damage = dmg,
+		.layer = LAYER_PLAYER_SHOT | 0x20,
+		.move = move,
+		.pos = pos,
+		.proto = pp_youmu,
+		.shader_ptr = shader,
+		.type = PROJ_PLAYER,
+	);
+}
+
+TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
+	YoumuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	ShaderProgram *shader = r_shader_get("sprite_particle");
+
+	for(int t = 0;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+		play_loop("generic_shot");
+
+		cmplx v = -20 * I;
+		int power_rank = plr->power / 100;
+
+		real spread = M_PI/64 * (1 + 0.5 * psin(t/15.0));
+
+		for(int side = -1; side < 2; side += 2) {
+			cmplx origin = plr->pos + 10*side + 5*I;
+
+			youmu_mirror_self_shot(origin, move_linear(v), SHOT_FORWARD_DAMAGE, shader);
+
+			for(int p = 0; p < power_rank; ++p) {
+				cmplx v = -(20 - p) * I * cdir(side * (1 + p) * spread);
+
+				youmu_mirror_self_shot(
+					origin,
+					move_asymptotic_halflife(
+						0.2 * v * cdir(M_PI * 0.25 * side),
+						v * cdir(M_PI * -0.02 * side),
+						5
+					), SHOT_FORWARD_DAMAGE, shader
+				);
+			}
+		}
+
+		t += WAIT(SHOT_FORWARD_DELAY);
+	}
+
+}
+
+TASK(youmu_mirror_controller, { BoxedPlayer plr; }) {
+	YoumuAController *ctrl = TASK_MALLOC(sizeof(*ctrl));
+	ctrl->plr = TASK_BIND(ARGS.plr);
+
+	INVOKE_SUBTASK(youmu_mirror_shot_forward, ctrl);
+	INVOKE_SUBTASK(youmu_mirror_myon, ctrl);
+	INVOKE_SUBTASK(youmu_mirror_bomb_handler, ctrl);
+
+	STALL;
 }
 
 static void youmu_mirror_init(Player *plr) {
-	Enemy *myon = create_enemy_p(&plr->slaves, 40.0*I, ENEMY_IMMUNE, NULL, youmu_mirror_myon, 0, 0, 0, 0);
-	myon->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	youmu_common_bomb_buffer_init();
+	INVOKE_TASK(youmu_mirror_controller, ENT_BOX(plr));
 }
 
 static void youmu_mirror_preload(void) {
@@ -542,9 +607,6 @@ static void youmu_mirror_preload(void) {
 	NULL);
 }
 
-static void youmu_mirror_bomb_logic(Player *plr) {
-}
-
 PlayerMode plrmode_youmu_a = {
 	.name = "Soul Reflection",
 	.description = "Human and phantom act together towards a singular purpose. Your inner duality shall lend you a hand… or a tail.",
@@ -553,13 +615,8 @@ PlayerMode plrmode_youmu_a = {
 	.dialog = &dialog_tasks_youmu,
 	.shot_mode = PLR_SHOT_YOUMU_MIRROR,
 	.procs = {
-		.property = youmu_common_property,
-		.bomb = youmu_mirror_bomb,
-		.bomb_shader = youmu_mirror_shader,
-		.bombbg = youmu_common_bombbg,
-		.shot = youmu_mirror_shot,
 		.init = youmu_mirror_init,
 		.preload = youmu_mirror_preload,
-		.think = youmu_mirror_bomb_logic,
+		.property = youmu_common_property,
 	},
 };
