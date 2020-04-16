@@ -8,11 +8,14 @@ Introduction
 
 Taisei Project is an original open source fan-game set in the world of Tōho
 Project. It is a top-down vertical-scrolling curtain fire shooting game (STG),
-also known as "danmaku" or "bullet hell," with an original soundtrack,
+also known as a "bullet hell" or "danmaku," with an original soundtrack,
 character art, and story.
 
-Taisei Project is written in C, with an SDL2/OpenGL renderer. It is available
-for Windows, Linux (x86_64), and macOS.
+Taisei Project is highly portable, and is written in C (specifically, C11),
+using SDL2 with an OpenGL renderer. It is officially supported on Windows,
+Linux, macOS, and through WebGL-enabled browsers such as Firefox and
+Chromium-based browsers (Chrome, Edge, etc). It also has experimental native
+support for a number of other operating sytems.
 
 For gameplay instructions, read `this <doc/GAME.rst>`__.
 
@@ -29,16 +32,15 @@ You can find precompiled binaries of the complete game on the
 GitHub, available for Windows (x86/x64), Linux, and macOS. An experimental
 build for Nintendo Switch (homebrew) also exists (use at your own risk).
 
+You can also play our experimental WebGL build through your web browser
+`here <https://play.taisei-project.org/>`__.
+
 Source Code & Development
 -------------------------
 
 You can obtain the source code of the stable releases from the
 `Releases <https://github.com/taisei-project/taisei/releases>`__ page on
 GitHub, alongside the binaries.
-
-**Important:** *do not* grab GitHub's auto-generated source archives, as those
-do not contain the required submodules for compiling the project. This only
-applies to versions v1.3 and above.
 
 You can also grab the latest code from git using the following commands:
 
@@ -61,13 +63,17 @@ If you want to pull them in manually, be sure to use the following:
 new code, checkout another branch, etc. The ``pull`` and ``checkout`` helper
 scripts can do that for you automatically.
 
+**Important:** as of v1.3, you cannot download GitHub's automatically-generated
+source archives, as they don't contain the necessary submodules for compiling
+the game. Make sure you either download the release tarball, or use `git clone`.
+
 For more in-depth development and compiling instructions, see:
 `Development Guide <doc/DEVELOPMENT.rst>`__.
 
 Dependencies
 ^^^^^^^^^^^^
 
--  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
+-  OpenGL >= 3.3, or OpenGL ES >= 3.0, or OpenGL ES >= 2.0 (with extensions)
 -  SDL2 >= 2.0.6
 -  SDL2_mixer >= 2.0.4
 -  freetype2
