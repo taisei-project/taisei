@@ -11,16 +11,10 @@
 
 #include "taisei.h"
 
-// FIXME: This is just for IntRect, which probably should be placed elsewhere.
 #include "util/geometry.h"
-
 #include "renderer/api.h"
 
 #include <SDL.h>
-
-#define WINFLAGS_IS_FULLSCREEN(f)       ((f) & SDL_WINDOW_FULLSCREEN_DESKTOP)
-#define WINFLAGS_IS_FAKE_FULLSCREEN(f)  (WINFLAGS_IS_FULLSCREEN(f) == SDL_WINDOW_FULLSCREEN_DESKTOP)
-#define WINFLAGS_IS_REAL_FULLSCREEN(f)  (WINFLAGS_IS_FULLSCREEN(f) == SDL_WINDOW_FULLSCREEN)
 
 #define WINDOW_TITLE "Taisei Project"
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)
@@ -33,9 +27,18 @@ enum {
 
 #define SCREEN_SIZE { SCREEN_W, SCREEN_H }
 
-typedef struct VideoMode {
-	int width;
-	int height;
+typedef union VideoMode {
+	// NOTE: These really should be floats, since this represents abstract screen coordinates, not pixels.
+	// However, SDL's API expects integers everywhere, so it does not really make sense.
+
+	struct {
+		// TODO: get rid of this and just typedef to IntExtent?
+
+		int width;
+		int height;
+	};
+
+	IntExtent as_int_extent;
 } VideoMode;
 
 typedef enum VideoBackend {
@@ -82,5 +85,6 @@ VideoBackend video_get_backend(void);
 VideoMode video_get_mode(uint idx, bool fullscreen);
 uint video_get_num_modes(bool fullscreen);
 VideoMode video_get_current_mode(void);
+double video_get_scaling_factor(void);
 
 #endif // IGUARD_video_h

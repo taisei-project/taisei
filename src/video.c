@@ -25,19 +25,82 @@ static struct {
 	VideoModeArray fs_modes;
 	VideoModeArray win_modes;
 	SDL_Window *window;
+	VideoPostProcess *postprocess;
 	VideoMode intended;
 	VideoMode current;
 	VideoBackend backend;
+	double scaling_factor;
 } video;
+
+VideoCapabilityState (*video_query_capability)(VideoCapability cap);
 
 typedef struct ScreenshotTaskData {
 	char *dest_path;
 	Pixmap image;
 } ScreenshotTaskData;
 
-static VideoPostProcess *v_postprocess;
+#define VIDEO_MIN_SIZE_FACTOR 0.8
+#define VIDEO_MIN_WIDTH       (int)(SCREEN_W * VIDEO_MIN_SIZE_FACTOR)
+#define VIDEO_MIN_HEIGHT      (int)(SCREEN_H * VIDEO_MIN_SIZE_FACTOR)
 
-VideoCapabilityState (*video_query_capability)(VideoCapability cap);
+/*
+ * BEGIN Conversion between screen-space and pixel-space coordinates (for high-DPI mode)
+ * TODO: figure out how to round these correctly
+ */
+
+attr_unused static inline int coords_val_screen_to_pixels(int screen_coord) {
+	return round(screen_coord * video.scaling_factor);
+}
+
+attr_unused static inline int coords_val_pixels_to_screen(int pixel_coord) {
+	return round(pixel_coord / video.scaling_factor);
+}
+
+attr_unused static inline IntOffset coords_ofs_screen_to_pixels(IntOffset screen_ofs) {
+	IntOffset pixel_ofs;
+	pixel_ofs.x = coords_val_screen_to_pixels(screen_ofs.x);
+	pixel_ofs.y = coords_val_screen_to_pixels(screen_ofs.y);
+	return pixel_ofs;
+}
+
+attr_unused static inline IntOffset coords_ofs_pixels_to_screen(IntOffset pixel_ofs) {
+	IntOffset screen_ofs;
+	screen_ofs.x = coords_val_pixels_to_screen(pixel_ofs.x);
+	screen_ofs.y = coords_val_pixels_to_screen(pixel_ofs.y);
+	return screen_ofs;
+}
+
+attr_unused static inline IntExtent coords_ext_screen_to_pixels(IntExtent screen_ext) {
+	IntExtent pixel_ext;
+	pixel_ext.w = coords_val_screen_to_pixels(screen_ext.w);
+	pixel_ext.h = coords_val_screen_to_pixels(screen_ext.h);
+	return pixel_ext;
+}
+
+attr_unused static inline IntExtent coords_ext_pixels_to_screen(IntExtent pixel_ext) {
+	IntExtent screen_ext;
+	screen_ext.w = coords_val_pixels_to_screen(pixel_ext.w);
+	screen_ext.h = coords_val_pixels_to_screen(pixel_ext.h);
+	return screen_ext;
+}
+
+attr_unused static inline IntRect coords_rect_screen_to_pixels(IntRect screen_rect) {
+	IntRect pixel_rect;
+	pixel_rect.extent = coords_ext_screen_to_pixels(screen_rect.extent);
+	pixel_rect.offset = coords_ofs_screen_to_pixels(screen_rect.offset);
+	return pixel_rect;
+}
+
+attr_unused static inline IntRect coords_rect_pixels_to_screen(IntRect pixel_rect) {
+	IntRect screen_rect;
+	screen_rect.extent = coords_ext_pixels_to_screen(pixel_rect.extent);
+	screen_rect.offset = coords_ofs_pixels_to_screen(pixel_rect.offset);
+	return screen_rect;
+}
+
+/*
+ * END Conversion between screen-space and pixel-space coordinates (for high-DPI mode)
+ */
 
 static VideoCapabilityState video_query_capability_generic(VideoCapability cap) {
 	switch(cap) {
@@ -48,11 +111,7 @@ static VideoCapabilityState video_query_capability_generic(VideoCapability cap) 
 			return video_is_fullscreen() ? VIDEO_CURRENTLY_UNAVAILABLE : VIDEO_AVAILABLE;
 
 		case VIDEO_CAP_CHANGE_RESOLUTION:
-			if(video_is_fullscreen() && config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-				return VIDEO_CURRENTLY_UNAVAILABLE;
-			} else {
-				return VIDEO_AVAILABLE;
-			}
+			return video_is_fullscreen() ? VIDEO_CURRENTLY_UNAVAILABLE : VIDEO_AVAILABLE;
 
 		case VIDEO_CAP_VSYNC_ADAPTIVE:
 			return VIDEO_AVAILABLE;
@@ -93,30 +152,56 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 	}
 }
 
-static void video_add_mode_handler(VideoModeArray *mode_array, int width, int height, const char *mode_type) {
+static void video_add_mode(VideoModeArray *mode_array, IntExtent mode_screen, IntExtent min_screen, IntExtent max_screen, const char *mode_type) {
+	if(
+		(mode_screen.w > max_screen.w && max_screen.w > 0) ||
+		(mode_screen.h > max_screen.h && max_screen.h > 0)
+	) {
+		log_debug("Mode %ix%i rejected: > %ix%i", mode_screen.w, mode_screen.h, max_screen.w, max_screen.h);
+		return;
+	}
+
+	if(
+		mode_screen.w < min_screen.w ||
+		mode_screen.h < min_screen.h
+	) {
+		log_debug("Mode %ix%i rejected: < %ix%i", mode_screen.w, mode_screen.h, min_screen.w, min_screen.h);
+		return;
+	}
+
 	for(uint i = 0; i < mode_array->num_elements; ++i) {
 		VideoMode *m = mode_array->data + i;
 
-		if(m->width == width && m->height == height) {
+		if(m->width == mode_screen.w && m->height == mode_screen.h) {
+			log_debug("Mode %ix%i rejected: already registered", mode_screen.w, mode_screen.h);
 			return;
 		}
 	}
 
-	*dynarray_append(mode_array) = (VideoMode) { width, height };
-	log_debug("Add %s mode: %ix%i", mode_type, width, height);
+	dynarray_append(mode_array)->as_int_extent = mode_screen;
+	log_debug("Add %s mode: %ix%i", mode_type, mode_screen.w, mode_screen.h);
 }
 
-static void video_add_mode_fullscreen(int width, int height) {
-	video_add_mode_handler(&video.fs_modes, width, height, "fullscreen");
+static void video_add_mode_dpi_aware(VideoModeArray *mode_array, IntExtent mode_pix, IntExtent min_screen, IntExtent max_screen, const char *mode_type) {
+	IntExtent mode_screen = coords_ext_pixels_to_screen(mode_pix);
+
+	// Yes, we add both. The pixel-space size is interpreted as screen-space.
+	// Anything too large to fit on the screen is rejected.
+	video_add_mode(mode_array, mode_screen, min_screen, max_screen, mode_type);
+	video_add_mode(mode_array, mode_pix, min_screen, max_screen, mode_type);
 }
 
-static void video_add_mode_windowed(int width, int height) {
-	video_add_mode_handler(&video.win_modes, width, height, "windowed");
+static void video_add_mode_fullscreen(IntExtent mode_pix, IntExtent min_screen, IntExtent max_screen) {
+	video_add_mode_dpi_aware(&video.fs_modes, mode_pix, min_screen, max_screen, "fullscreen");
+}
+
+static void video_add_mode_windowed(IntExtent mode_pix, IntExtent min_screen, IntExtent max_screen) {
+	video_add_mode_dpi_aware(&video.win_modes, mode_pix, min_screen, max_screen, "windowed");
 }
 
 static int video_compare_modes(const void *a, const void *b) {
-	VideoMode *va = (VideoMode*)a;
-	VideoMode *vb = (VideoMode*)b;
+	const VideoMode *va = a;
+	const VideoMode *vb = b;
 	return va->width * va->height - vb->width * vb->height;
 }
 
@@ -136,6 +221,120 @@ static FloatExtent video_get_viewport_size_for_framebuffer(IntExtent framebuffer
 	}
 
 	return (FloatExtent) { w, h };
+}
+
+static IntExtent round_viewport_size(FloatExtent vp) {
+	return (IntExtent) { round(vp.w), round(vp.h) };
+}
+
+static void video_update_mode_lists(void) {
+	video.fs_modes.num_elements = 0;
+	video.win_modes.num_elements = 0;
+
+	dynarray_ensure_capacity(&video.fs_modes, 16);
+	dynarray_ensure_capacity(&video.win_modes, 16);
+
+	bool fullscreen_available = false;
+	bool has_windowed_modes = (video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED);
+	FloatExtent largest_fullscreen_viewport = { 0, 0 };
+
+	IntExtent screenspace_min_size = { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT };
+	screenspace_min_size = coords_ext_pixels_to_screen(screenspace_min_size);
+
+	// Register all resolutions that are available in fullscreen and their corresponding windowed modes.
+	for(int s = 0; s < video_num_displays(); ++s) {
+		log_info("Found display #%i: %s", s, video_display_name(s));
+
+		SDL_DisplayMode desktop_mode;
+		IntExtent screenspace_max_size = { 0 };
+
+		if(SDL_GetDesktopDisplayMode(s, &desktop_mode)) {
+			log_sdl_error(LOG_WARN, "SDL_GetDesktopDisplayMode");
+		} else {
+			log_debug("Desktop mode: %ix%i@%iHz", desktop_mode.w, desktop_mode.h, desktop_mode.refresh_rate);
+			screenspace_max_size.w = desktop_mode.w;
+			screenspace_max_size.h = desktop_mode.h;
+			screenspace_max_size = coords_ext_pixels_to_screen(screenspace_max_size);
+			log_debug("Scaled screen-space bounds: %ix%i", screenspace_max_size.w, screenspace_max_size.h);
+		}
+
+		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
+			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+
+			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
+				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
+			} else {
+				log_debug("Display mode #%i: %ix%i@%iHz", i, mode.w, mode.h, mode.refresh_rate);
+
+				video_add_mode_fullscreen((IntExtent) { mode.w, mode.h }, screenspace_min_size, screenspace_max_size);
+				fullscreen_available = true;
+
+				if(has_windowed_modes) {
+					FloatExtent vp = video_get_viewport_size_for_framebuffer((IntExtent) { mode.w, mode.h });
+					video_add_mode_windowed(round_viewport_size(vp), screenspace_min_size, screenspace_max_size);
+
+					// the ratio is always constant, so we need to check only 1 dimension
+					if(vp.w > largest_fullscreen_viewport.w) {
+						largest_fullscreen_viewport = vp;
+					}
+				}
+			}
+		}
+	}
+
+	if(has_windowed_modes) {
+		// Insert some more windowed modes derived from our "ideal" resolution.
+		// This is the resolution that the assets are optimized for.
+		float ideal_factor = 2;
+		FloatExtent ideal_resolution = { SCREEN_W * ideal_factor, SCREEN_H * ideal_factor };
+
+		if(largest_fullscreen_viewport.w == 0) {
+			// no way to determine the upper bound; guess it
+			largest_fullscreen_viewport = ideal_resolution;
+		}
+
+		IntExtent screenspace_max_size = coords_ext_pixels_to_screen(round_viewport_size(largest_fullscreen_viewport));
+
+		float scaling_factor = 0.5;
+		float scaling_factor_step = 0.2;
+
+		while(ideal_resolution.w * scaling_factor <= largest_fullscreen_viewport.w) {
+			FloatExtent vp = {
+				ideal_resolution.w * scaling_factor,
+				ideal_resolution.h * scaling_factor,
+			};
+			IntExtent pix_vp = round_viewport_size(vp);
+			video_add_mode_windowed(pix_vp, screenspace_min_size, screenspace_max_size);
+			scaling_factor += scaling_factor_step;
+		}
+
+		// Finally add the worst size we will tolerate, in case we haven't already.
+		video_add_mode_windowed((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT }, screenspace_min_size, screenspace_max_size);
+	}
+
+	dynarray_compact(&video.fs_modes);
+	dynarray_compact(&video.win_modes);
+
+	dynarray_qsort(&video.fs_modes, video_compare_modes);
+	dynarray_qsort(&video.win_modes, video_compare_modes);
+
+	if(!fullscreen_available) {
+		log_warn("No available fullscreen modes");
+		config_set_int(CONFIG_FULLSCREEN, false);
+	}
+}
+
+static void video_update_scaling_factor(void) {
+	// NOTE: must query the main framebuffer explicitly here; postprocess buffers may have outdated information.
+	IntExtent main_fb = r_framebuffer_get_size(NULL);
+	assert(main_fb.w > 0);
+	double scaling_factor = (double)main_fb.w / video.current.width;
+
+	if(scaling_factor != video.scaling_factor) {
+		log_debug("Scaling factor updated: %f --> %f", video.scaling_factor, scaling_factor);
+		video.scaling_factor = scaling_factor;
+		video_update_mode_lists();
+	}
 }
 
 void video_get_viewport_size(float *width, float *height) {
@@ -178,45 +377,17 @@ static void video_update_vsync(void) {
 	}
 }
 
-static uint32_t get_fullscreen_flag(void) {
-	if(config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-		return SDL_WINDOW_FULLSCREEN_DESKTOP;
-	} else {
-		return SDL_WINDOW_FULLSCREEN;
-	}
-}
-
-static void video_check_fullscreen_sanity(void) {
-	SDL_DisplayMode mode;
-
-	if(SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(video.window), &mode)) {
-		log_sdl_error(LOG_WARN, "SDL_GetCurrentDisplayMode");
-		return;
-	}
-
-	if(video.current.width != mode.w || video.current.height != mode.h) {
-		log_error("BUG: window is not actually fullscreen after modesetting. Video mode: %ix%i, window size: %ix%i",
-			mode.w, mode.h, video.current.width, video.current.height);
-	}
-}
-
 static void video_update_mode_settings(void) {
 	SDL_ShowCursor(false);
 	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video_set_viewport();
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
-
-	if(video_is_fullscreen() && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-		video_check_fullscreen_sanity();
-	}
 }
 
-static const char* modeflagsstr(uint32_t flags) {
-	if(WINFLAGS_IS_FAKE_FULLSCREEN(flags)) {
-		return "fake fullscreen";
-	} else if(WINFLAGS_IS_REAL_FULLSCREEN(flags)) {
-		return "true fullscreen";
+static const char *modeflagsstr(uint32_t flags) {
+	if(flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+		return "fullscreen";
 	} else if(flags & SDL_WINDOW_RESIZABLE) {
 		return "windowed, resizable";
 	} else {
@@ -241,7 +412,8 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 
 	if(video.window) {
 		SDL_ShowWindow(video.window);
-		SDL_SetWindowMinimumSize(video.window, SCREEN_W / 4, SCREEN_H / 4);
+		IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
+		SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
 		video_update_mode_settings();
 		return;
 	}
@@ -255,10 +427,10 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 }
 
 static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
-	uint32_t flags = 0;
+	uint32_t flags = SDL_WINDOW_ALLOW_HIGHDPI;
 
 	if(fs) {
-		flags |= get_fullscreen_flag();
+		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	} else if(resizable && video.backend != VIDEO_BACKEND_EMSCRIPTEN) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
@@ -278,28 +450,8 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 	SDL_RaiseWindow(video.window);
 }
 
-static bool video_set_display_mode(uint display, uint w, uint h) {
-	SDL_DisplayMode closest, target = { .w = w, .h = h };
-
-	if(!SDL_GetClosestDisplayMode(display, &target, &closest)) {
-		log_error("No available display modes for %ix%i on display %i", w, h, display);
-		return false;
-	}
-
-	if(closest.w != w || closest.h != h) {
-		log_warn("Can't use %ix%i, closest available is %ix%i", w, h, closest.w, closest.h);
-	}
-
-	if(SDL_SetWindowDisplayMode(video.window, &closest)) {
-		log_error("Failed to set display mode for %ix%i on display %i: %s", closest.w, closest.h, display, SDL_GetError());
-		return false;
-	}
-
-	return true;
-}
-
 static void video_set_fullscreen_internal(bool fullscreen) {
-	uint32_t flags = fullscreen ? get_fullscreen_flag() : 0;
+	uint32_t flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
 	events_pause_keyrepeat();
 
 	if(SDL_SetWindowFullscreen(video.window, flags) < 0) {
@@ -333,9 +485,7 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	}
 
 	if(size_changed) {
-		if(fs && !config_get_int(CONFIG_FULLSCREEN_DESKTOP)) {
-			video_set_display_mode(display, w, h);
-		} else if(video.backend == VIDEO_BACKEND_X11) {
+		if(video.backend == VIDEO_BACKEND_X11) {
 			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
 			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
 			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
@@ -387,7 +537,7 @@ void video_set_display(uint idx) {
 	);
 }
 
-static void* video_screenshot_task(void *arg) {
+static void *video_screenshot_task(void *arg) {
 	ScreenshotTaskData *tdata = arg;
 
 	pixmap_convert_inplace_realloc(&tdata->image, PIXMAP_FORMAT_RGB8);
@@ -499,7 +649,7 @@ bool video_is_resizable(void) {
 }
 
 bool video_is_fullscreen(void) {
-	return WINFLAGS_IS_FULLSCREEN(SDL_GetWindowFlags(video.window));
+	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
 }
 
 static void video_init_sdl(void) {
@@ -676,8 +826,6 @@ uint video_current_display(void) {
 }
 
 void video_init(void) {
-	bool fullscreen_available = false;
-
 	video_init_sdl();
 
 	const char *driver = SDL_GetCurrentVideoDriver();
@@ -707,71 +855,9 @@ void video_init(void) {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}
 
+	video.scaling_factor = 0;
+
 	r_init();
-
-	dynarray_ensure_capacity(&video.fs_modes, 16);
-	dynarray_ensure_capacity(&video.win_modes, 16);
-
-	bool has_windowed_modes = (video_query_capability(VIDEO_CAP_FULLSCREEN) != VIDEO_ALWAYS_ENABLED);
-	FloatExtent largest_fullscreen_viewport = { 0, 0 };
-
-	// Register all resolutions that are available in fullscreen and their corresponding windowed modes.
-	for(int s = 0; s < video_num_displays(); ++s) {
-		log_info("Found display #%i: %s", s, video_display_name(s));
-		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
-			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
-
-			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
-				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
-			} else {
-				video_add_mode_fullscreen(mode.w, mode.h);
-				fullscreen_available = true;
-
-				if(has_windowed_modes) {
-					FloatExtent vp = video_get_viewport_size_for_framebuffer((IntExtent) { mode.w, mode.h });
-					video_add_mode_windowed(vp.w, vp.h);
-
-					// the ratio is always constant, so we need to check only 1 dimension
-					if(vp.w > largest_fullscreen_viewport.w) {
-						largest_fullscreen_viewport = vp;
-					}
-				}
-			}
-		}
-	}
-
-	if(!fullscreen_available) {
-		log_warn("No available fullscreen modes");
-		config_set_int(CONFIG_FULLSCREEN, false);
-	}
-
-	if(has_windowed_modes) {
-		// Insert some more windowed modes derived from our "ideal" resolution.
-		// This is the resolution that the assets are optimized for.
-		FloatExtent ideal_resolution = { SCREEN_W * 2, SCREEN_H * 2 };
-
-		if(largest_fullscreen_viewport.w == 0) {
-			// no way to determine the upper bound; guess it
-			largest_fullscreen_viewport = ideal_resolution;
-		}
-
-		float scaling_factor = 0.5;
-		float scaling_factor_step = 0.2;
-
-		while(ideal_resolution.w * scaling_factor <= largest_fullscreen_viewport.w) {
-			uint w = ideal_resolution.w * scaling_factor;
-			uint h = ideal_resolution.h * scaling_factor;
-			video_add_mode_windowed(w, h);
-			scaling_factor += scaling_factor_step;
-		}
-	}
-
-	dynarray_compact(&video.fs_modes);
-	dynarray_compact(&video.win_modes);
-
-	// sort it, mainly for the options menu
-	dynarray_qsort(&video.fs_modes, video_compare_modes);
-	dynarray_qsort(&video.win_modes, video_compare_modes);
 
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
@@ -780,6 +866,8 @@ void video_init(void) {
 		config_get_int(CONFIG_FULLSCREEN),
 		config_get_int(CONFIG_VID_RESIZABLE)
 	);
+
+	video_update_scaling_factor();
 
 	events_register_handler(&(EventHandler) {
 		.proc = video_handle_window_event,
@@ -798,12 +886,12 @@ void video_init(void) {
 
 void video_post_init(void) {
 	fbmgr_init();
-	v_postprocess = video_postprocess_init();
+	video.postprocess = video_postprocess_init();
 	r_framebuffer(video_get_screen_framebuffer());
 }
 
 void video_shutdown(void) {
-	video_postprocess_shutdown(v_postprocess);
+	video_postprocess_shutdown(video.postprocess);
 	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);
 	events_unregister_handler(video_handle_config_event);
@@ -815,11 +903,11 @@ void video_shutdown(void) {
 }
 
 Framebuffer *video_get_screen_framebuffer(void) {
-	return video_postprocess_get_framebuffer(v_postprocess);
+	return video_postprocess_get_framebuffer(video.postprocess);
 }
 
 void video_swap_buffers(void) {
-	Framebuffer *pp_fb = video_postprocess_render(v_postprocess);
+	Framebuffer *pp_fb = video_postprocess_render(video.postprocess);
 
 	if(pp_fb) {
 		r_flush_sprites();
@@ -865,4 +953,8 @@ uint video_get_num_modes(bool fullscreen) {
 
 VideoMode video_get_current_mode(void) {
 	return video.current;
+}
+
+double video_get_scaling_factor(void) {
+	return video.scaling_factor;
 }

@@ -28,6 +28,7 @@ typedef enum BindingType {
 	BT_KeyBinding,
 	BT_StrValue,
 	BT_Resolution,
+	BT_FramebufferResolution,
 	BT_Scale,
 	BT_GamepadKeyBinding,
 	BT_GamepadAxisBinding,
@@ -197,17 +198,27 @@ static OptionBinding* bind_stroption(ConfigIndex cfgentry) {
 
 // BT_Resolution: super-special binding type for the resolution setting
 static void bind_resolution_update(OptionBinding *bind) {
-	bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+	// FIXME This is brittle. The least we could do is to explicitly store whether the currently selected value represents a fullscreen index or windowed.
+
+	bool fullscreen = video_is_fullscreen();
 	uint nmodes = video_get_num_modes(fullscreen);
 	VideoMode cur = video_get_current_mode();
 
+	log_debug("Fullscreen: %i", fullscreen);
+	log_debug("Prev selected: %i", bind->selected);
+
 	bind->valrange_min = 0;
 	bind->valrange_max = nmodes - 1;
+	bind->selected = -1;
+
+	log_debug("nmodes = %i", nmodes);
 
 	for(int i = 0; i < nmodes; ++i) {
 		VideoMode m = video_get_mode(i, fullscreen);
+		log_debug("#%i   %ix%i", i, m.width, m.height);
 		if(m.width == cur.width && m.height == cur.height) {
 			bind->selected = i;
+			log_debug("selected #%i", bind->selected);
 		}
 	}
 }
@@ -217,6 +228,15 @@ static OptionBinding* bind_resolution(void) {
 	bind->type = BT_Resolution;
 	bind->selected = -1;
 	bind_resolution_update(bind);
+	return bind;
+}
+
+// BT_FramebufferResolution: not an actual setting (yet); just display effective resolution in pixels
+// This may be different from BT_Resolution in the high-DPI case
+// (BT_Resolution is a misnomer; it represents the window size in screen-space units)
+static OptionBinding* bind_fb_resolution(void) {
+	OptionBinding *bind = bind_new();
+	bind->type = BT_FramebufferResolution;
 	return bind;
 }
 
@@ -390,12 +410,16 @@ static bool bind_resolution_dependence(void) {
 	return video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE;
 }
 
+static bool bind_fb_resolution_dependence(void) {
+	return false;
+}
+
 static bool bind_fullscreen_dependence(void) {
 	return video_query_capability(VIDEO_CAP_FULLSCREEN) == VIDEO_AVAILABLE;
 }
 
 static int bind_resolution_set(OptionBinding *b, int v) {
-	bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+	bool fullscreen = video_is_fullscreen();
 	if(v >= 0) {
 		VideoMode m = video_get_mode(v, fullscreen);
 		config_set_int(CONFIG_VID_WIDTH, m.width);
@@ -432,7 +456,7 @@ static void destroy_options_menu(MenuData *m) {
 
 		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
-				bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+				bool fullscreen = video_is_fullscreen();
 				VideoMode mode = video_get_mode(bind->selected, fullscreen);
 				config_set_int(CONFIG_VID_WIDTH, mode.width);
 				config_set_int(CONFIG_VID_HEIGHT, mode.height);
@@ -549,6 +573,11 @@ static MenuData* create_options_menu_video(MenuData *parent) {
 		b = bind_resolution()
 	);	b->setter = bind_resolution_set;
 		b->dependence = bind_resolution_dependence;
+
+	add_menu_entry(m, "Renderer resolution", do_nothing,
+		b = bind_fb_resolution()
+	);	b->dependence = bind_fb_resolution_dependence;
+		b->pad++;
 
 	add_menu_entry(m, "Resizable window", do_nothing,
 		b = bind_option(CONFIG_VID_RESIZABLE, bind_common_onoff_get, bind_common_onoff_set)
@@ -1179,21 +1208,33 @@ static void draw_options_menu(MenuData *menu) {
 				}
 
 				case BT_Resolution: {
-					char tmp[16];
+					char tmp[32];
 					int w, h;
 					VideoMode m;
 
 					if(bind->selected == -1) {
 						m = video_get_current_mode();
 					} else {
-						bool fullscreen = config_get_int(CONFIG_FULLSCREEN);
+						bool fullscreen = video_is_fullscreen();
 						m = video_get_mode(bind->selected, fullscreen);
 					}
 
 					w = m.width;
 					h = m.height;
 
-					snprintf(tmp, 16, "%dx%d", w, h);
+					snprintf(tmp, sizeof(tmp), "%dx%d", w, h);
+					text_draw(tmp, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = &clr,
+					});
+					break;
+				}
+
+				case BT_FramebufferResolution: {
+					IntExtent fbsize = r_framebuffer_get_size(video_get_screen_framebuffer());
+					char tmp[32];
+					snprintf(tmp, sizeof(tmp), "%gx  %dx%d", video_get_scaling_factor(), fbsize.w, fbsize.h);
 					text_draw(tmp, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
