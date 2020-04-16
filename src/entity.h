@@ -150,23 +150,44 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
 
 struct BoxedEntity {
-	alignas(alignof(void*)) uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
+	EntityInterface *ent;
 	uint_fast32_t spawn_id;
 };
 
-BoxedEntity _ent_box_Entity(EntityInterface *ent);
-EntityInterface *_ent_unbox_Entity(BoxedEntity box);
+attr_nonnull_all
+INLINE BoxedEntity _ent_box_Entity(EntityInterface *ent) {
+	return (BoxedEntity) { .ent = ent, .spawn_id = ent->spawn_id } ;
+}
+
+INLINE EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
+	EntityInterface *e = box.ent;
+
+	if(e && e->spawn_id == box.spawn_id) {
+		return e;
+	}
+
+	return NULL;
+}
 
 #define ENT_EMIT_BOX_DEFS(typename, ...) \
 	typedef union Boxed##typename { \
 		BoxedEntity as_generic; \
 		struct { \
-			uintptr_t ent; \
+			typename *ent; \
 			uint_fast32_t spawn_id; \
 		}; \
 	} Boxed##typename; \
-	Boxed##typename _ent_box_##typename(typename *ent); \
-	typename *_ent_unbox_##typename(Boxed##typename box); \
+	attr_nonnull_all INLINE Boxed##typename _ent_box_##typename(typename *ent) { \
+		EntityInterface *generic = UNION_CAST(typename*, EntityInterface*, ent); \
+		assert(generic->type == ENT_TYPE_ID(typename)); \
+		return (Boxed##typename) { .as_generic = _ent_box_Entity(generic) }; \
+	} \
+	INLINE typename *_ent_unbox_##typename(Boxed##typename box) { \
+		EntityInterface *generic = _ent_unbox_Entity(box.as_generic); \
+		if(!generic) { return NULL; } \
+		assert(generic->type == ENT_TYPE_ID(typename)); \
+		return UNION_CAST(EntityInterface*, typename*, generic); \
+	} \
 	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; }
 
 ENTITIES(ENT_EMIT_BOX_DEFS,)
