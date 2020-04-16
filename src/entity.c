@@ -245,7 +245,7 @@ EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
 	return NULL;
 }
 
-#define ENT_TYPE(typename, id) \
+#define ENT_EMIT_BOX_FUNCS(typename, id, ...) \
 	Boxed##typename _ent_box_##typename(struct typename *ent) { \
 		return (Boxed##typename) { .as_generic = _ent_box_Entity(&ent->entity_interface) };\
 	} \
@@ -254,5 +254,4 @@ EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
 		return e ? ENT_CAST(e, typename) : NULL; \
 	}
 
-ENT_TYPES
-#undef ENT_TYPE
+CORE_ENT_TYPES(ENT_EMIT_BOX_FUNCS,)

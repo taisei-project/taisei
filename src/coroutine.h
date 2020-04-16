@@ -410,22 +410,21 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die((e), NULL)
 #define STALL         cotask_wait(INT_MAX)
 
-#define ENT_TYPE(typename, id) \
+// first arg of the generated function needs to be the ent, because ENT_UNBOXED_DISPATCH_FUNCTION dispatches on first arg.
+#define _cotask_emit_bindfunc_def(typename, id, ...) \
 	struct typename; \
-	struct typename *_cotask_bind_to_entity_##typename(CoTask *task, struct typename *ent) attr_returns_nonnull attr_returns_max_aligned;
+	struct typename *_cotask_bind_to_entity_##typename(struct typename *ent, CoTask *task) attr_returns_nonnull attr_returns_max_aligned;
 
-ENT_TYPES
-#undef ENT_TYPE
+CORE_ENT_TYPES(_cotask_emit_bindfunc_def,)
 
-#define cotask_bind_to_entity(task, ent) (_Generic((ent), \
-	struct Projectile*: _cotask_bind_to_entity_Projectile, \
-	struct Laser*: _cotask_bind_to_entity_Laser, \
-	struct Enemy*: _cotask_bind_to_entity_Enemy, \
-	struct Boss*: _cotask_bind_to_entity_Boss, \
-	struct Player*: _cotask_bind_to_entity_Player, \
-	struct Item*: _cotask_bind_to_entity_Item, \
-	EntityInterface*: cotask_bind_to_entity \
-)(task, ent))
+INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTask *task) {
+	return (cotask_bind_to_entity)(task, ent);
+}
+
+#undef _cotask_emit_bindfunc_defs
+
+#define cotask_bind_to_entity(task, ent) \
+	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
 #define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
 #define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
