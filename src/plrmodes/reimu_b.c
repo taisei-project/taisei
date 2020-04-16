@@ -112,7 +112,7 @@ TASK(reimu_dream_gap_bomb_projectile, {
 	Sprite *sprite;
 	Sprite *impact_sprite;
 }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.angle = rng_angle(),
 		.color = ARGS.color,
 		.damage = 75,
@@ -384,7 +384,7 @@ TASK(reimu_dream_needle, {
 	ShaderProgram *shader;
 }) {
 	ReimuBController *ctrl = ARGS.ctrl;
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_needle2,
 		.pos = ARGS.pos,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.35),
@@ -542,7 +542,7 @@ TASK(reimu_dream_process_gaps, { ReimuBController *ctrl; }) {
 
 TASK(reimu_dream_ofuda, { ReimuBController *ctrl; cmplx pos; cmplx vel; ShaderProgram *shader; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
-	Projectile *ofuda = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *ofuda = TASK_BIND(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),

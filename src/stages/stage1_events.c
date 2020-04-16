@@ -424,7 +424,7 @@ TASK(halation_orb, {
 	cmplx pos[4];
 	int activation_time;
 }) {
-	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *orb = TASK_BIND(PROJECTILE(
 		.proto = pp_plainball,
 		.pos = ARGS.pos[0],
 		.max_viewport_dist = 200,
@@ -567,7 +567,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 }
 
 TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_crystal,
 		.pos = ARGS.pos,
 		.color = RGB(0.3, 0.3, 0.9),
@@ -649,7 +649,7 @@ TASK(cirno_frostbolt_trail, { BoxedProjectile proj; }) {
 }
 
 TASK(cirno_frostbolt, { cmplx pos; cmplx vel; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_wave,
 		.pos = ARGS.pos,
 		.color = RGBA(0.2, 0.2, 0.4, 0.0),
@@ -756,7 +756,7 @@ void cirno_benchmark(Boss* b, int t) {
 }
 
 TASK(burst_fairy, { cmplx pos; cmplx dir; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 700, Fairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 700, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 1,
@@ -840,7 +840,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 }
 
 TASK(circletoss_fairy, { cmplx pos; cmplx velocity; cmplx exit_accel; int exit_time; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
 
 	e->move = move_linear(ARGS.velocity);
 
@@ -880,7 +880,7 @@ TASK(sinepass_swirl_move, { BoxedEnemy e; cmplx v; cmplx sv; }) {
 }
 
 TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 1,
@@ -910,7 +910,7 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 }
 
 TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1400, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1400, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
@@ -959,7 +959,7 @@ TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
 }
 
 TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 2,
@@ -988,7 +988,7 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 }
 
 TASK(multiburst_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 3,
@@ -1046,7 +1046,7 @@ TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double bo
 }
 
 TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 1200, Fairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1200, Fairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 2,
@@ -1094,7 +1094,7 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 }
 
 TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 4200, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 4200, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 4,
@@ -1125,7 +1125,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 }
 
 TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 6000, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 6000, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 8,
@@ -1579,7 +1579,7 @@ TASK(spawn_midboss, NO_ARGS) {
 }
 
 TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, 16000, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 16000, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.points = 5,

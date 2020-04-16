@@ -86,7 +86,7 @@ static ProjDrawRule myon_draw_trail(float focus_factor, float opacity) {
 TASK(youmu_mirror_myon_trail, { YoumuMyon *myon; cmplx pos; }) {
 	YoumuMyon *myon = ARGS.myon;
 
-	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+	Projectile *p = TASK_BIND(PARTICLE(
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scale(2, 0.01),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_PLRSPECIALPARTICLE,
@@ -160,7 +160,7 @@ static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 }
 
 TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.color = ARGS.clr,
 		.damage = ARGS.dmg,
 		.layer = LAYER_PLAYER_SHOT | 0x10,

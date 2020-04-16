@@ -188,12 +188,14 @@ INLINE EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
 		assert(generic->type == ENT_TYPE_ID(typename)); \
 		return UNION_CAST(EntityInterface*, typename*, generic); \
 	} \
-	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; }
+	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; } \
+	INLINE typename *_ent_unboxed_passthrough_helper_##typename(typename *ent) { return ent; }
 
 ENTITIES(ENT_EMIT_BOX_DEFS,)
 #undef ENT_EMIT_BOX_DEFS
 
 INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { return box; }
+INLINE EntityInterface *_ent_unboxed_passthrough_helper_Entity(EntityInterface *ent) { return ent; }
 
 #define ENT_HANDLE_UNBOXED_DISPATCH(typename, func_prefix) \
 	typename*: func_prefix##typename,
@@ -226,8 +228,10 @@ INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { retur
 	)(MACROHAX_EXPAND(__VA_ARGS__))
 
 #define ENT_BOX(ent) ENT_UNBOXED_DISPATCH_FUNCTION(_ent_box_, ent)
-#define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
 #define ENT_BOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_box_, _ent_boxed_passthrough_helper_, ent)
+
+#define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
+#define ENT_UNBOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_unboxed_passthrough_helper_, _ent_unbox_, ent)
 
 typedef struct BoxedEntityArray {
 	BoxedEntity *array;

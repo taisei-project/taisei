@@ -70,7 +70,7 @@ static void reimu_spirit_preload(void) {
 }
 
 TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_needle,
 		.pos = ARGS.pos,
 		.color = RGBA(0.5, 0.5, 0.5, 0.5),
@@ -129,7 +129,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real 
 TASK(reimu_spirit_homing_impact, { BoxedProjectile p; }) {
 	Projectile *ref = NOT_NULL(ENT_UNBOX(ARGS.p));
 
-	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+	Projectile *p = TASK_BIND(PARTICLE(
 		.proto = ref->proto,
 		.color = &ref->color,
 		.timeout = 32,
@@ -157,7 +157,7 @@ static inline real reimu_spirit_homing_aimfactor(real t, real maxt) {
 }
 
 TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA(0.7, 0.63, 0.665, 0.7),
@@ -327,7 +327,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	int index = ARGS.index;
 
 	Player *plr = ENT_UNBOX(ARGS.plr);
-	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *orb = TASK_BIND(PROJECTILE(
 		.pos = plr->pos,
 		.timeout = 200 + 20 * index,
 		.type = PROJ_PLAYER,
@@ -440,7 +440,7 @@ TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *ofuda = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *ofuda = TASK_BIND(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),

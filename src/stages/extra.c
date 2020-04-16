@@ -66,7 +66,7 @@ TASK(glider_bullet, {
 TASK(glider_fairy, {
 	double hp; cmplx pos; cmplx dir;
 }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(VIEWPORT_W/2-10*I, ARGS.hp, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(VIEWPORT_W/2-10*I, ARGS.hp, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.power = 3,

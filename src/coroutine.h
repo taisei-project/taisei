@@ -426,7 +426,6 @@ INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTa
 #define cotask_bind_to_entity(task, ent) \
 	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
-#define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
-#define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
+#define TASK_BIND(ent_or_box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX_OR_PASSTHROUGH(ent_or_box))
 
 #endif // IGUARD_coroutine_h
