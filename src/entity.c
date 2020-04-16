@@ -37,6 +37,7 @@ static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *
 	EntityDrawHook *hook = calloc(1, sizeof(*hook));
 	hook->callback = cb;
 	hook->arg = arg;
+
 	alist_append(list, hook);
 }
 
@@ -245,13 +246,24 @@ EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
 	return NULL;
 }
 
-#define ENT_EMIT_BOX_FUNCS(typename, id, ...) \
-	Boxed##typename _ent_box_##typename(struct typename *ent) { \
-		return (Boxed##typename) { .as_generic = _ent_box_Entity(&ent->entity_interface) };\
+#define ENT_EMIT_BOX_FUNCS(typename, ...) \
+	Boxed##typename _ent_box_##typename(typename *ent) { \
+		union { \
+			typename *specific; \
+			EntityInterface *generic; \
+		} u = { .specific = ent }; \
+		assert(u.generic->type == ENT_TYPE_ID(typename)); \
+		return (Boxed##typename) { .as_generic = _ent_box_Entity(u.generic) };\
 	} \
-	struct typename *_ent_unbox_##typename(Boxed##typename box) { \
+	typename *_ent_unbox_##typename(Boxed##typename box) { \
 		EntityInterface *e = _ent_unbox_Entity(box.as_generic); \
-		return e ? ENT_CAST(e, typename) : NULL; \
+		if(!e) { return NULL; } \
+		assert(e->type == ENT_TYPE_ID(typename)); \
+		union { \
+			typename *specific; \
+			EntityInterface *generic; \
+		} u = { .generic = e }; \
+		return u.specific; \
 	}
 
-CORE_ENT_TYPES(ENT_EMIT_BOX_FUNCS,)
+ENTITIES(ENT_EMIT_BOX_FUNCS,)

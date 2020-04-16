@@ -16,7 +16,6 @@
 #include "objectpool.h"
 #include "entity.h"
 
-typedef struct Item Item;
 typedef LIST_ANCHOR(Item) ItemList;
 
 typedef enum {
@@ -54,9 +53,7 @@ typedef union ItemCounts {
 	int as_array[ITEM_LAST - ITEM_FIRST];
 } ItemCounts;
 
-struct Item {
-	ENTITY_INTERFACE_NAMED(Item, ent);
-
+DEFINE_ENTITY_TYPE(Item, {
 	int birthtime;
 	int collecttime;
 	cmplx pos;
@@ -67,7 +64,7 @@ struct Item {
 	float pickup_value;
 
 	cmplx v;
-};
+});
 
 Item *create_item(cmplx pos, cmplx v, ItemType type);
 void delete_item(Item *item);

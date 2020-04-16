@@ -67,7 +67,7 @@ void player_stage_post_init(Player *plr) {
 	plr->ent.draw_layer = LAYER_PLAYER;
 	plr->ent.draw_func = ent_draw_player;
 	plr->ent.damage_func = ent_damage_player;
-	ent_register(&plr->ent, ENT_PLAYER);
+	ent_register(&plr->ent, ENT_TYPE_ID(Player));
 
 	COEVENT_INIT_ARRAY(plr->events);
 
@@ -1623,13 +1623,13 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 
 	if(target != NULL) {
 		switch(target->type) {
-			case ENT_ENEMY: {
+			case ENT_TYPE_ID(Enemy): {
 				pos = ENT_CAST(target, Enemy)->pos;
 				player_add_points(&global.plr, damage->amount * 0.5, pos);
 				break;
 			}
 
-			case ENT_BOSS: {
+			case ENT_TYPE_ID(Boss): {
 				pos = ENT_CAST(target, Boss)->pos;
 				player_add_points(&global.plr, damage->amount * 0.2, pos);
 				break;
@@ -1640,7 +1640,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 	}
 
 	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
-		double rate = target->type == ENT_BOSS ? 110 : 256;
+		double rate = target->type == ENT_TYPE_ID(Boss) ? 110 : 256;
 		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate));
 	}
 

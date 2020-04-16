@@ -1030,18 +1030,3 @@ DEFINE_EXTERN_TASK(_cancel_task_helper) {
 		cotask_cancel(task);
 	}
 }
-
-// TODO avoid including these here somehow
-#include <projectile.h>
-#include <laser.h>
-#include <item.h>
-#include <enemy.h>
-#include <boss.h>
-#include <player.h>
-
-#define _cotask_emit_bindfunc_impl(typename, id, ...) \
-	struct typename *_cotask_bind_to_entity_##typename(struct typename *ent, CoTask *task) { \
-		return ENT_CAST((cotask_bind_to_entity)(task, ent ? &ent->entity_interface : NULL), typename); \
-	}
-
-CORE_ENT_TYPES(_cotask_emit_bindfunc_impl,)

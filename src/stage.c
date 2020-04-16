@@ -572,12 +572,12 @@ static bool proximity_predicate(EntityInterface *ent, void *varg) {
 	Circle *area = varg;
 
 	switch(ent->type) {
-		case ENT_PROJECTILE: {
+		case ENT_TYPE_ID(Projectile): {
 			Projectile *p = ENT_CAST(ent, Projectile);
 			return cabs(p->pos - area->origin) < area->radius;
 		}
 
-		case ENT_LASER: {
+		case ENT_TYPE_ID(Laser): {
 			Laser *l = ENT_CAST(ent, Laser);
 			return laser_intersects_circle(l, *area);
 		}
@@ -590,12 +590,12 @@ static bool ellipse_predicate(EntityInterface *ent, void *varg) {
 	Ellipse *e = varg;
 
 	switch(ent->type) {
-		case ENT_PROJECTILE: {
+		case ENT_TYPE_ID(Projectile): {
 			Projectile *p = ENT_CAST(ent, Projectile);
 			return point_in_ellipse(p->pos, *e);
 		}
 
-		case ENT_LASER: {
+		case ENT_TYPE_ID(Laser): {
 			Laser *l = ENT_CAST(ent, Laser);
 			return laser_intersects_ellipse(l, *e);
 		}

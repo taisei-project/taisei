@@ -398,8 +398,8 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
 #define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
 
-#define TASK_HOST_CUSTOM_ENT(ent_struct_type) \
-	ENT_CAST_CUSTOM(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_CUSTOM), ent_struct_type)
+#define TASK_HOST_ENT(ent_struct_type) \
+	ENT_CAST(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)
 
 #define TASK_HOST_EVENTS(events_array) \
 	cotask_host_events(cotask_active(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
@@ -411,25 +411,22 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define STALL         cotask_wait(INT_MAX)
 
 // first arg of the generated function needs to be the ent, because ENT_UNBOXED_DISPATCH_FUNCTION dispatches on first arg.
-#define _cotask_emit_bindfunc_def(typename, id, ...) \
-	struct typename; \
-	struct typename *_cotask_bind_to_entity_##typename(struct typename *ent, CoTask *task) attr_returns_nonnull attr_returns_max_aligned;
+#define _cotask_emit_bindfunc(typename, ...) \
+	INLINE typename *_cotask_bind_to_entity_##typename(typename *ent, CoTask *task) { \
+		return ENT_CAST((cotask_bind_to_entity)(task, ent ? UNION_CAST(typename*, EntityInterface*, ent) : NULL), typename); \
+	}
 
-CORE_ENT_TYPES(_cotask_emit_bindfunc_def,)
+ENTITIES(_cotask_emit_bindfunc,)
+#undef _cotask_emit_bindfunc
 
 INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTask *task) {
 	return (cotask_bind_to_entity)(task, ent);
 }
-
-#undef _cotask_emit_bindfunc_defs
 
 #define cotask_bind_to_entity(task, ent) \
 	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
 #define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
 #define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
-
-#define TASK_BIND_CUSTOM(box, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), ENT_UNBOX(box)), type)
-#define TASK_BIND_UNBOXED_CUSTOM(ent, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), &(ent)->entity_interface), type)
 
 #endif // IGUARD_coroutine_h

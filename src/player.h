@@ -15,6 +15,12 @@
 	#define PLR_DPS_STATS
 #endif
 
+#ifdef PLR_DPS_STATS
+	#define IF_PLR_DPS_STATS(...) __VA_ARGS__
+#else
+	#define IF_PLR_DPS_STATS(...)
+#endif
+
 #include "util.h"
 #include "enemy.h"
 #include "gamepad.h"
@@ -78,8 +84,6 @@ enum {
 	INFLAGS_MOVE = INFLAG_UP | INFLAG_DOWN | INFLAG_LEFT | INFLAG_RIGHT
 };
 
-typedef struct Player Player;
-
 typedef struct PowerSurgeBonus {
 	uint baseline;
 	uint score;
@@ -89,9 +93,7 @@ typedef struct PowerSurgeBonus {
 	float discharge_damage;
 } PowerSurgeBonus;
 
-struct Player {
-	ENTITY_INTERFACE_NAMED(Player, ent);
-
+DEFINE_ENTITY_TYPE(Player, {
 	cmplx pos;
 	cmplx velocity;
 	cmplx deathpos;
@@ -156,11 +158,11 @@ struct Player {
 	bool gamepadmove;
 	bool iddqd;
 
-#ifdef PLR_DPS_STATS
-	int dmglogframe;
-	int dmglog[240];
-#endif
-};
+	IF_PLR_DPS_STATS(
+		int dmglogframe;
+		int dmglog[240];
+	)
+});
 
 // this is used by both player and replay code
 enum {

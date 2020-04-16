@@ -25,11 +25,16 @@
 	#define PROJ_DEBUG
 #endif
 
+#ifdef PROJ_DEBUG
+	#define IF_PROJ_DEBUG(...) __VA_ARGS__
+#else
+	#define IF_PROJ_DEBUG(...)
+#endif
+
 enum {
 	RULE_ARGC = 4
 };
 
-typedef struct Projectile Projectile;
 typedef LIST_ANCHOR(Projectile) ProjectileList;
 typedef LIST_INTERFACE(Projectile) ProjectileListInterface;
 
@@ -84,9 +89,7 @@ typedef enum ProjFlags {
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
 typedef struct ProjPrototype ProjPrototype;
 
-struct Projectile {
-	ENTITY_INTERFACE_NAMED(Projectile, ent);
-
+DEFINE_ENTITY_TYPE(Projectile, {
 	cmplx pos;
 	cmplx pos0;
 	cmplx prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
@@ -127,10 +130,10 @@ struct Projectile {
 	int graze_cooldown;
 	short graze_counter;
 
-#ifdef PROJ_DEBUG
-	DebugInfo debug;
-#endif
-};
+	IF_PROJ_DEBUG(
+		DebugInfo debug;
+	)
+});
 
 typedef struct ProjArgs {
 	ProjPrototype *proto;

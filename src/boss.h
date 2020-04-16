@@ -34,11 +34,10 @@ enum {
 	BOSS_DEATH_DELAY = 120,
 };
 
-typedef struct Boss Boss;
 typedef struct Attack Attack;
 typedef struct AttackInfo AttackInfo;
 
-typedef void (*BossRule)(struct Boss*, int time) attr_nonnull(1);
+typedef void (*BossRule)(Boss*, int time) attr_nonnull(1);
 
 typedef enum AttackType {
 	AT_Normal,
@@ -125,8 +124,7 @@ struct Attack {
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 };
 
-struct Boss {
-	ENTITY_INTERFACE_NAMED(Boss, ent);
+DEFINE_ENTITY_TYPE(Boss, {
 	cmplx pos;
 
 	Attack attacks[BOSS_MAX_ATTACKS];
@@ -173,7 +171,7 @@ struct Boss {
 	} hud;
 
 	COEVENTS_ARRAY(defeated) events;
-};
+});
 
 Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);

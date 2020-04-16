@@ -42,35 +42,31 @@
 
 #define NUM_GAPS 4
 
-typedef struct ReimuGap ReimuGap;
-typedef struct ReimuSlave ReimuSlave;
-typedef struct ReimuBController ReimuBController;
+typedef struct ReimuBGap ReimuBGap;
 
-struct ReimuGap {
-	ReimuGap *link;      // bullets entering this gap will exit from the linked gap
+struct ReimuBGap {
+	ReimuBGap *link;     // bullets entering this gap will exit from the linked gap
 	cmplx pos;           // position of the gap's center in viewport space
 	cmplx orientation;   // normalized, points to the side the gap is 'attached' to
 	cmplx parallel_axis; // normalized, parallel the gap, perpendicular to orientation
 };
 
-struct ReimuSlave {
-	ENTITY_INTERFACE_NAMED(ReimuSlave, ent);
+DEFINE_ENTITY_TYPE(ReimuBSlave, {
 	Sprite *sprite;
 	ShaderProgram *shader;
 	cmplx pos;
 	uint alive;
-};
+});
 
-struct ReimuBController {
-	ENTITY_INTERFACE_NAMED(ReimuBController, gap_renderer);
+DEFINE_ENTITY_TYPE(ReimuBController, {
 	Player *plr;
 	ShaderProgram *yinyang_shader;
 	Sprite *yinyang_sprite;
 
 	union {
-		ReimuGap array[NUM_GAPS];
+		ReimuBGap array[NUM_GAPS];
 		struct {
-			ReimuGap left, top, right, bottom;
+			ReimuBGap left, top, right, bottom;
 		};
 	} gaps;
 
@@ -79,7 +75,7 @@ struct ReimuBController {
 	) events;
 
 	real bomb_alpha;
-};
+});
 
 static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	SpriteParamsBuffer spbuf;
@@ -165,7 +161,7 @@ TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
 		Color *pcolor = HSLA(t/30.0, 0.5, 0.5, 0.5);
 
 		for(int i = 0; i < NUM_GAPS; ++i) {
-			ReimuGap *gap = ctrl->gaps.array + i;
+			ReimuBGap *gap = ctrl->gaps.array + i;
 			INVOKE_TASK(reimu_dream_gap_bomb_projectile,
 				.pos = gap->pos + gap->parallel_axis * GAP_LENGTH * 0.25 * rng_sreal(),
 				.vel = -20 * gap->orientation,
@@ -216,7 +212,7 @@ static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real s
 	real len = GAP_LENGTH * 3 * sqrt(log1p(strength + 1) / 0.693f);
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
-		ReimuGap *gap = ctrl->gaps.array + i;
+		ReimuBGap *gap = ctrl->gaps.array + i;
 		cmplx center = gap->pos - gap->orientation * (len * 0.5 - GAP_WIDTH * 0.6);
 
 		r_mat_mv_push();
@@ -229,14 +225,14 @@ static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real s
 }
 
 static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
-	ReimuBController *ctrl = ENT_CAST_CUSTOM(gap_renderer_ent, ReimuBController);
+	ReimuBController *ctrl = ENT_CAST(gap_renderer_ent, ReimuBController);
 
 	float gaps[NUM_GAPS][2];
 	float angles[NUM_GAPS];
 	int links[NUM_GAPS];
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
-		ReimuGap *gap = ctrl->gaps.array + i;
+		ReimuBGap *gap = ctrl->gaps.array + i;
 		gaps[i][0] = creal(gap->pos);
 		gaps[i][1] = cimag(gap->pos);
 		angles[i] = -carg(gap->orientation);
@@ -284,7 +280,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 	};
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
-		ReimuGap *gap = ctrl->gaps.array + i;
+		ReimuBGap *gap = ctrl->gaps.array + i;
 		yinyang.pos.as_cmplx = gap->pos + gap->parallel_axis * -0.5 * GAP_LENGTH;
 		r_draw_sprite(&yinyang);
 		yinyang.pos.as_cmplx = gap->pos + gap->parallel_axis * +0.5 * GAP_LENGTH;
@@ -327,7 +323,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
-		ReimuGap *gap = ctrl->gaps.array + i;
+		ReimuBGap *gap = ctrl->gaps.array + i;
 		real a = (carg(-gap->orientation) - carg(p->move.velocity));
 
 		if(fabs(a) < M_TAU/3) {
@@ -351,7 +347,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 				fract = 1 - cimag(o - gap_bbox.top_left) / cimag(gap_size);
 			}
 
-			ReimuGap *ngap = gap->link;
+			ReimuBGap *ngap = gap->link;
 			o = ngap->pos + ngap->parallel_axis * GAP_LENGTH * (1 - fract - 0.5);
 
 			reimu_dream_spawn_warp_effect(gap->pos + gap->parallel_axis * GAP_LENGTH * (fract - 0.5), false);
@@ -370,7 +366,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 }
 
 static void reimu_dream_draw_slave(EntityInterface *ent) {
-	ReimuSlave *slave = ENT_CAST_CUSTOM(ent, ReimuSlave);
+	ReimuBSlave *slave = ENT_CAST(ent, ReimuBSlave);
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = slave->sprite,
 		.shader_ptr = slave->shader,
@@ -421,12 +417,12 @@ TASK(reimu_dream_needle, {
 
 TASK(reimu_dream_slave_shot, {
 	ReimuBController *ctrl;
-	BoxedEntity slave;
+	BoxedReimuBSlave slave;
 	cmplx vel;
 }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
+	ReimuBSlave *slave = TASK_BIND(ARGS.slave);
 	cmplx vel = ARGS.vel;
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 
@@ -451,7 +447,7 @@ TASK(reimu_dream_slave, {
 }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ReimuSlave *slave = TASK_HOST_CUSTOM_ENT(ReimuSlave);
+	ReimuBSlave *slave = TASK_HOST_ENT(ReimuBSlave);
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	slave->ent.draw_func = reimu_dream_draw_slave;
 	slave->sprite = get_sprite("yinyang"),
@@ -469,7 +465,7 @@ TASK(reimu_dream_slave, {
 
 	INVOKE_SUBTASK(reimu_dream_slave_shot,
 		.ctrl = ctrl,
-		.slave = ENT_BOX_CUSTOM(slave),
+		.slave = ENT_BOX(slave),
 		.vel = 20 * ARGS.shot_dir
 	);
 
@@ -523,7 +519,7 @@ TASK(reimu_dream_process_gaps, { ReimuBController *ctrl; }) {
 	cmplx ofs_factors = 1 + I;
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
-		ReimuGap *gap = ctrl->gaps.array + i;
+		ReimuBGap *gap = ctrl->gaps.array + i;
 		gap->pos = reimu_dream_gap_pos(vp, ref_pos, gap->orientation, gap->parallel_axis, ofs_factors);
 		gap->pos += (2 * GAP_WIDTH + GAP_OFFSET) * gap->orientation;
 	}
@@ -537,7 +533,7 @@ TASK(reimu_dream_process_gaps, { ReimuBController *ctrl; }) {
 		ofs_factors = 1 + I * !is_focused;  // no extra clamping of vertical gaps if focused
 
 		for(int i = 0; i < NUM_GAPS; ++i) {
-			ReimuGap *gap = ctrl->gaps.array + i;
+			ReimuBGap *gap = ctrl->gaps.array + i;
 			cmplx target_pos = reimu_dream_gap_pos(vp, ref_pos, gap->orientation, gap->parallel_axis, ofs_factors);
 			capproach_asymptotic_p(&gap->pos, target_pos, pos_approach_rate, 1e-5);
 		}
@@ -626,39 +622,36 @@ TASK(reimu_dream_controller_tick, { ReimuBController *ctrl; }) {
 }
 
 TASK(reimu_dream_controller, { BoxedPlayer plr; }) {
-	ReimuBController ctrl = { 0 };
-	ctrl.plr = TASK_BIND(ARGS.plr);
-	COEVENT_INIT_ARRAY(ctrl.events);
+	ReimuBController *ctrl = TASK_HOST_ENT(ReimuBController);
+	ctrl->plr = TASK_BIND(ARGS.plr);
+	TASK_HOST_EVENTS(ctrl->events);
 
-	ctrl.yinyang_shader = r_shader_get("sprite_yinyang");
-	ctrl.yinyang_sprite = get_sprite("yinyang");
+	ctrl->yinyang_shader = r_shader_get("sprite_yinyang");
+	ctrl->yinyang_sprite = get_sprite("yinyang");
 
-	ctrl.gap_renderer.draw_func = reimu_dream_draw_gaps;
-	ctrl.gap_renderer.draw_layer = LAYER_PLAYER_FOCUS;
-	ent_register(&ctrl.gap_renderer, ENT_CUSTOM);
+	ctrl->ent.draw_func = reimu_dream_draw_gaps;
+	ctrl->ent.draw_layer = LAYER_PLAYER_FOCUS;
 
-	ctrl.gaps.left.link = &ctrl.gaps.top;
-	ctrl.gaps.top.link = &ctrl.gaps.left;
-	ctrl.gaps.right.link = &ctrl.gaps.bottom;
-	ctrl.gaps.bottom.link = &ctrl.gaps.right;
+	ctrl->gaps.left.link = &ctrl->gaps.top;
+	ctrl->gaps.top.link = &ctrl->gaps.left;
+	ctrl->gaps.right.link = &ctrl->gaps.bottom;
+	ctrl->gaps.bottom.link = &ctrl->gaps.right;
 
-	ctrl.gaps.left.orientation = -1;
-	ctrl.gaps.right.orientation = 1;
-	ctrl.gaps.top.orientation = -I;
-	ctrl.gaps.bottom.orientation = I;
+	ctrl->gaps.left.orientation = -1;
+	ctrl->gaps.right.orientation = 1;
+	ctrl->gaps.top.orientation = -I;
+	ctrl->gaps.bottom.orientation = I;
 
-	ctrl.gaps.left.parallel_axis = ctrl.gaps.right.parallel_axis = I;
-	ctrl.gaps.top.parallel_axis = ctrl.gaps.bottom.parallel_axis = 1;
+	ctrl->gaps.left.parallel_axis = ctrl->gaps.right.parallel_axis = I;
+	ctrl->gaps.top.parallel_axis = ctrl->gaps.bottom.parallel_axis = 1;
 
-	INVOKE_SUBTASK(reimu_dream_controller_tick, &ctrl);
-	INVOKE_SUBTASK(reimu_dream_process_gaps, &ctrl);
-	INVOKE_SUBTASK(reimu_dream_shot_forward, &ctrl);
-	INVOKE_SUBTASK(reimu_dream_power_handler, &ctrl);
-	INVOKE_SUBTASK(reimu_dream_bomb_handler, &ctrl);
+	INVOKE_SUBTASK(reimu_dream_controller_tick, ctrl);
+	INVOKE_SUBTASK(reimu_dream_process_gaps, ctrl);
+	INVOKE_SUBTASK(reimu_dream_shot_forward, ctrl);
+	INVOKE_SUBTASK(reimu_dream_power_handler, ctrl);
+	INVOKE_SUBTASK(reimu_dream_bomb_handler, ctrl);
 
-	WAIT_EVENT(&TASK_EVENTS(THIS_TASK)->finished);
-	COEVENT_CANCEL_ARRAY(ctrl.events);
-	ent_unregister(&ctrl.gap_renderer);
+	STALL;
 }
 
 static void reimu_dream_init(Player *plr) {

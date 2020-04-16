@@ -91,8 +91,8 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 	}
 
 	switch(ent->type) {
-		case ENT_BOSS: return true;
-		case ENT_ENEMY: {
+		case ENT_TYPE_ID(Boss): return true;
+		case ENT_TYPE_ID(Enemy): {
 			Enemy *e = ENT_CAST(ent, Enemy);
 
 			if(e->hp == ENEMY_BOMB) {
@@ -101,7 +101,7 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 
 			return true;
 		}
-		case ENT_PROJECTILE: {
+		case ENT_TYPE_ID(Projectile): {
 			Projectile *p = ENT_CAST(ent, Projectile);
 
 			if(p->type == PROJ_PARTICLE) {
