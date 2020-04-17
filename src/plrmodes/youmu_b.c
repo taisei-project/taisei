@@ -12,10 +12,34 @@
 #include "plrmodes.h"
 #include "youmu.h"
 #include "util/glm.h"
+#include "stagedraw.h"
 
-static cmplx youmu_homing_target(cmplx org, cmplx fallback) {
-	return plrutil_homing_target(org, fallback);
-}
+#define SHOT_BASIC_DAMAGE 60
+#define SHOT_BASIC_DELAY 6
+
+#define SHOT_HOMING_DAMAGE 120
+#define SHOT_HOMING_DELAY 6
+
+#define SHOT_SPREAD_DAMAGE 40
+#define SHOT_SPREAD_DELAY 12
+
+#define SHOT_ORBS_SPIRIT_DAMAGE 90
+#define SHOT_ORBS_SPIRIT_SPAWN_DELAY 11
+#define SHOT_ORBS_DELAY_BASE 45
+#define SHOT_ORBS_DELAY_PER_POWER -5
+#define SHOT_ORBS_LIFETIME_BASE 100
+#define SHOT_ORBS_LIFETIME_PER_POWER 10
+
+typedef struct YoumuBController {
+	struct {
+		Sprite *blast_huge_halo;
+		Sprite *blast_huge_rays;
+	} sprites;
+	ShaderProgram *shot_shader;
+
+	Player *plr;
+	YoumuBombBGData bomb_bg;
+} YoumuBController;
 
 static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
 	uint32_t tmp = p->ent.spawn_id;
@@ -167,54 +191,86 @@ static int youmu_slash(Enemy *e, int t) {
 	return 1;
 }
 
-static int youmu_asymptotic(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+TASK(youmu_haunting_shot_basic, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 
-	p->angle = carg(p->args[0]);
-	p->args[1] *= 0.8;
-	p->pos += p->args[0] * (p->args[1] + 1);
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+		play_loop("generic_shot");
 
-	youmu_homing_trail(p, cexp(I*p->angle), 5);
-	return 1;
-}
+		cmplx v = -20 * I;
 
-static void youmu_haunting_power_shot(Player *plr, int p) {
-	int d = -2;
-	double spread = 0.5 * (1 + 0.25 * sin(global.frames/10.0));
-	double speed = 8;
+		for(int side = -1; side < 2; side += 2) {
+			cmplx origin = plr->pos + 10*side + 5*I;
+			youmu_common_shot(origin, move_linear(v), SHOT_BASIC_DAMAGE, ctrl->shot_shader);
+		}
 
-	if(2 * plr->power / 100 < p || (global.frames + d * p) % 12) {
-		return;
-	}
-
-	float np = (float)p / (2 * plr->power / 100);
-
-	for(int sign = -1; sign < 2; sign += 2) {
-		cmplx dir = cexp(I*carg(sign*p*spread-speed*I));
-
-		PROJECTILE(
-			.proto = pp_hghost,
-			.pos =  plr->pos,
-			.rule = youmu_asymptotic,
-			.color = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5),
-			.args = { speed * dir * (1 - 0.25 * (1 - np)), 3 * (1 - pow(1 - np, 2)), 60, },
-			.type = PROJ_PLAYER,
-			.damage = 20,
-			.shader = "sprite_default",
-		);
+		WAIT(SHOT_BASIC_DELAY);
 	}
 }
 
-TASK(youmu_homing_shot, { BoxedPlayer plr; }) {
+TASK(youmu_burst_shot, { YoumuBController *ctrl; int num_shots; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	ShaderProgram *shader = ctrl->shot_shader;
+
+	int nshots = ARGS.num_shots;
+	real base_speed = 8;
+
+	for(int shot = 1; shot <= nshots; ++shot) {
+		real np = shot / (real)nshots;
+
+		Color *clr = color_mul_scalar(RGB(0.7 + 0.3 * (1-np), 0.8 + 0.2 * sqrt(1-np), 1.0), 0.5);
+		real spread = 0.5 * (1 + 0.25 * sin(global.frames/10.0));
+		real speed = base_speed * (1 - 0.25 * (1 - np));
+		real boost = 3 * (1 - pow(1 - np, 2));
+
+		for(int side = -1; side < 2; side += 2) {
+			cmplx vel = speed * cnormalize(side * shot * spread - base_speed * I);
+
+			PROJECTILE(
+				.color = clr,
+				.damage = SHOT_SPREAD_DAMAGE,
+				.move = move_asymptotic_simple(vel, boost),
+				.pos = plr->pos,
+				.proto = pp_hghost,
+				.shader_ptr = shader,
+				.type = PROJ_PLAYER,
+			);
+		}
+
+		YIELD;
+	}
+}
+
+TASK(youmu_haunting_shot_spread, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+
+		if(plr->inputflags & INFLAG_FOCUS) {
+			continue;
+		}
+
+		INVOKE_TASK(youmu_burst_shot, ctrl, 2 * plr->power / 100);
+		WAIT(SHOT_SPREAD_DELAY);
+	}
+}
+
+TASK(youmu_homing_shot, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_hghost,
-		.pos = ENT_UNBOX(ARGS.plr)->pos,
+		.pos = plr->pos,
 		.color = RGB(0.75, 0.9, 1),
 		.type = PROJ_PLAYER,
-		.damage = 120,
-		.shader = "sprite_default",
+		.damage = SHOT_HOMING_DAMAGE,
+		.shader_ptr = ctrl->shot_shader,
 	));
 
 	real speed = 10;
@@ -224,7 +280,7 @@ TASK(youmu_homing_shot, { BoxedPlayer plr; }) {
 	cmplx target = VIEWPORT_W * 0.5;
 
 	for(int i = 0; i < 60; ++i) {
-		target = youmu_homing_target(p->pos, target);
+		target = plrutil_homing_target(p->pos, target);
 		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity*10);
 		p->move.velocity += aim_strength * aimdir;
 		p->move.velocity *= speed / cabs(p->move.velocity);
@@ -232,6 +288,22 @@ TASK(youmu_homing_shot, { BoxedPlayer plr; }) {
 
 		youmu_homing_trail(p, 0.5 * p->move.velocity, 12);
 		YIELD;
+	}
+}
+
+TASK(youmu_haunting_shot_homing, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+
+		if(plr->inputflags & INFLAG_FOCUS) {
+			continue;
+		}
+
+		INVOKE_TASK(youmu_homing_shot, ctrl);
+		WAIT(SHOT_HOMING_DELAY);
 	}
 }
 
@@ -256,7 +328,8 @@ static int youmu_orb_homing_spirit_timeout(Projectile *orb) {
 	return orb->timeout - projectile_time(orb);
 }
 
-TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real charge; real damage; real spin; BoxedProjectile orb; }) {
+TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocity; cmplx target; real charge; real damage; real spin; BoxedProjectile orb; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
 	int timeout = youmu_orb_homing_spirit_timeout(ENT_UNBOX(ARGS.orb));
 
 	if(timeout <= 0) {
@@ -270,7 +343,7 @@ TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real ch
 		.type = PROJ_PLAYER,
 		.timeout = timeout,
 		.damage = ARGS.damage,
-		.shader = "sprite_particle",
+		.shader_ptr = ctrl->shot_shader,
 	));
 
 	INVOKE_TASK_AFTER(&p->events.killed, youmu_orb_homing_spirit_expire, ENT_BOX(p));
@@ -304,7 +377,7 @@ TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real ch
 		if(orb) {
 			target = orb->pos;
 		} else {
-			target = youmu_homing_target(p->pos, creal(global.plr.pos) - 128*I);
+			target = plrutil_homing_target(p->pos, creal(global.plr.pos) - 128*I);
 		}
 
 		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity);
@@ -332,8 +405,47 @@ TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real ch
 	}
 }
 
-TASK(youmu_orb_update, { BoxedPlayer plr; BoxedProjectile orb; }) {
-	Player *plr = ENT_UNBOX(ARGS.plr);
+static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
+	PARTICLE(
+		.sprite_ptr = ctrl->sprites.blast_huge_rays,
+		.pos = orb->pos,
+		.timeout = 20,
+		.color = RGBA(0.1, 0.5, 0.1, 0.0),
+		.draw_rule = pdraw_timeout_scalefade_exp(0.01*(1+I), 1, 1, 0, 2),
+		.flags = PFLAG_REQUIREDPARTICLE,
+		.angle = rng_angle(),
+		.layer = LAYER_PARTICLE_LOW,
+	);
+
+	PARTICLE(
+		.sprite_ptr = ctrl->sprites.blast_huge_halo,
+		.pos = orb->pos,
+		.timeout = 30,
+		.color = RGBA(0.1, 0.1, 0.5, 0.0),
+		.draw_rule = pdraw_timeout_scalefade_exp(1, 0.01*(1+I), 1, 0, 2),
+		.flags = PFLAG_REQUIREDPARTICLE,
+		.angle = rng_angle(),
+		.layer = LAYER_PARTICLE_LOW,
+	);
+
+	PARTICLE(
+		.sprite_ptr = ctrl->sprites.blast_huge_halo,
+		.pos = orb->pos,
+		.timeout = 40,
+		.color = RGBA(0.5, 0.1, 0.1, 0.0),
+		.draw_rule = pdraw_timeout_scalefade_exp(0.8, -0.3*(1+I), 1, 0, 2),
+		.flags = PFLAG_REQUIREDPARTICLE,
+		.angle = rng_angle(),
+		.layer = LAYER_PARTICLE_LOW,
+	);
+
+	// TODO sound effect;
+	kill_projectile(orb);
+}
+
+TASK(youmu_orb_update, { YoumuBController *ctrl; BoxedProjectile orb; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 	Projectile *orb = TASK_BIND(ARGS.orb);
 
 	for(;;) {
@@ -343,43 +455,8 @@ TASK(youmu_orb_update, { BoxedPlayer plr; BoxedProjectile orb; }) {
 		orb->scale = 0.5 + 0.5 * tf;
 		orb->angle += 0.2;
 
-		// TODO events for player input?
 		if(!(plr->inputflags & INFLAG_FOCUS)) {
-			PARTICLE(
-				.sprite = "blast_huge_rays",
-				.pos = orb->pos,
-				.timeout = 20,
-				.color = RGBA(0.1, 0.5, 0.1, 0.0),
-				.draw_rule = pdraw_timeout_scalefade_exp(0.01*(1+I), 1, 1, 0, 2),
-				.flags = PFLAG_REQUIREDPARTICLE,
-				.angle = rng_angle(),
-				.layer = LAYER_PARTICLE_LOW,
-			);
-
-			PARTICLE(
-				.sprite = "blast_huge_halo",
-				.pos = orb->pos,
-				.timeout = 30,
-				.color = RGBA(0.1, 0.1, 0.5, 0.0),
-				.draw_rule = pdraw_timeout_scalefade_exp(1, 0.01*(1+I), 1, 0, 2),
-				.flags = PFLAG_REQUIREDPARTICLE,
-				.angle = rng_angle(),
-				.layer = LAYER_PARTICLE_LOW,
-			);
-
-			PARTICLE(
-				.sprite = "blast_huge_halo",
-				.pos = orb->pos,
-				.timeout = 40,
-				.color = RGBA(0.5, 0.1, 0.1, 0.0),
-				.draw_rule = pdraw_timeout_scalefade_exp(0.8, -0.3*(1+I), 1, 0, 2),
-				.flags = PFLAG_REQUIREDPARTICLE,
-				.angle = rng_angle(),
-				.layer = LAYER_PARTICLE_LOW,
-			);
-
-			// TODO sound effect;
-			kill_projectile(orb);
+			youmu_orb_explode(ctrl, orb);
 			break;
 		}
 
@@ -388,7 +465,7 @@ TASK(youmu_orb_update, { BoxedPlayer plr; BoxedProjectile orb; }) {
 }
 
 TASK(youmu_orb_death, { BoxedProjectile orb; BoxedTask control_task; }) {
-	cotask_cancel(cotask_unbox(ARGS.control_task));
+	CANCEL_TASK(ARGS.control_task);
 	Projectile *orb = ENT_UNBOX(ARGS.orb);
 
 	PARTICLE(
@@ -410,59 +487,88 @@ TASK(youmu_orb_death, { BoxedProjectile orb; BoxedTask control_task; }) {
 	);
 }
 
-TASK(youmu_orb_shot, { BoxedPlayer plr; }) {
-	Player *plr = ENT_UNBOX(ARGS.plr);
-	int pwr = plr->power / 100;
+TASK(youmu_orb_shot, { YoumuBController *ctrl; int lifetime; real spirit_damage; int spirit_spawn_delay; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 
 	Projectile *orb = TASK_BIND(PROJECTILE(
 		.proto = pp_youhoming,
 		.pos = plr->pos,
 		.color = RGB(1, 1, 1),
 		.type = PROJ_PLAYER,
-		.damage = 1000,
-		.timeout = 100 + 10 * pwr,
+		.timeout = ARGS.lifetime,
 		.move = move_asymptotic(-30.0*I, -0.7*I, 0.8),
-		.flags = PFLAG_MANUALANGLE,
+		.flags = PFLAG_MANUALANGLE | PFLAG_NOCOLLISION,
 	));
 
-	INVOKE_TASK(youmu_orb_update, ARGS.plr, ENT_BOX(orb));
+	INVOKE_TASK(youmu_orb_update, ctrl, ENT_BOX(orb));
 	INVOKE_TASK_AFTER(&orb->events.killed, youmu_orb_death, ENT_BOX(orb), THIS_TASK);
 
-	real pdmg = 120 - 18 * 4 * (1 - pow(1 - pwr / 4.0, 1.5));
+	real pdmg = ARGS.spirit_damage;
 	cmplx v = 5 * I;
+	int spawn_delay = ARGS.spirit_spawn_delay;
 
 	for(;;) {
-		WAIT(11);
-		INVOKE_TASK(youmu_orb_homing_spirit, orb->pos, v, 0, 0, pdmg,  0.1, ENT_BOX(orb));
-		INVOKE_TASK(youmu_orb_homing_spirit, orb->pos, v, 0, 0, pdmg, -0.1, ENT_BOX(orb));
+		WAIT(spawn_delay);
+		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, 0, 0, pdmg,  0.1, ENT_BOX(orb));
+		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, 0, 0, pdmg, -0.1, ENT_BOX(orb));
 	}
 }
 
-static void youmu_haunting_shot(Player *plr) {
-	youmu_common_shot(plr);
+TASK(youmu_haunting_shot_orbs, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 
-	if(player_should_shoot(plr)) {
-		if(plr->inputflags & INFLAG_FOCUS) {
-			int pwr = plr->power / 100;
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-			if(!(global.frames % (45 - 4 * pwr))) {
-				INVOKE_TASK(youmu_orb_shot, ENT_BOX(plr));
-			}
-		} else {
-			if(!(global.frames % 6)) {
-				INVOKE_TASK(youmu_homing_shot, ENT_BOX(plr));
-			}
-
-			for(int p = 1; p <= 2*PLR_MAX_POWER/100; ++p) {
-				youmu_haunting_power_shot(plr, p);
-			}
+		if(!(plr->inputflags & INFLAG_FOCUS)) {
+			continue;
 		}
+
+		int power_rank = plr->power / 100;
+
+		INVOKE_TASK(youmu_orb_shot,
+			.ctrl = ctrl,
+			.lifetime = SHOT_ORBS_LIFETIME_BASE + power_rank * SHOT_ORBS_LIFETIME_PER_POWER,
+			.spirit_damage = SHOT_ORBS_SPIRIT_DAMAGE,  // 120 - 18 * 4 * (1 - pow(1 - (plr->power / 100) / 4.0, 1.5));
+			.spirit_spawn_delay = SHOT_ORBS_SPIRIT_SPAWN_DELAY
+		);
+
+		WAIT(SHOT_ORBS_DELAY_BASE + power_rank * SHOT_ORBS_DELAY_PER_POWER);
 	}
 }
 
 static void youmu_haunting_bomb(Player *plr) {
 	play_sound("bomb_youmu_b");
 	create_enemy_p(&plr->slaves, global.plr.pos, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
+}
+
+TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+}
+
+TASK(youmu_haunting_controller, { BoxedPlayer plr; }) {
+	YoumuBController *ctrl = TASK_MALLOC(sizeof(*ctrl));
+	ctrl->plr = TASK_BIND(ARGS.plr);
+	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
+	ctrl->sprites.blast_huge_rays = get_sprite("part/blast_huge_rays");
+	ctrl->shot_shader = r_shader_get("sprite_particle");
+
+	youmu_common_init_bomb_background(&ctrl->bomb_bg);
+
+	INVOKE_SUBTASK(youmu_haunting_shot_basic, ctrl);
+	INVOKE_SUBTASK(youmu_haunting_shot_homing, ctrl);
+	INVOKE_SUBTASK(youmu_haunting_shot_spread, ctrl);
+	INVOKE_SUBTASK(youmu_haunting_shot_orbs, ctrl);
+	INVOKE_SUBTASK(youmu_haunting_bomb_handler, ctrl);
+
+	STALL;
+}
+
+static void youmu_haunting_init(Player *plr) {
+	INVOKE_TASK(youmu_haunting_controller, ENT_BOX(plr));
 }
 
 static void youmu_haunting_preload(void) {
@@ -482,10 +588,6 @@ static void youmu_haunting_preload(void) {
 	NULL);
 }
 
-static void youmu_haunting_init(Player *plr) {
-	youmu_common_bomb_buffer_init();
-}
-
 PlayerMode plrmode_youmu_b = {
 	.name = "Haunting Revelation",
 	.description = "Ghosts are real, but they’re nothing to be afraid of. Unless, of course, you happen to stand in the way of a determined sword-wielding lady…",
@@ -496,9 +598,7 @@ PlayerMode plrmode_youmu_b = {
 	.procs = {
 		.property = youmu_common_property,
 		.bomb = youmu_haunting_bomb,
-		.bombbg = youmu_common_bombbg,
 		.init = youmu_haunting_init,
-		.shot = youmu_haunting_shot,
 		.preload = youmu_haunting_preload,
 	},
 };
