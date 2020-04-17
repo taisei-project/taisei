@@ -501,7 +501,7 @@ Projectile* spawn_projectile_collision_effect(Projectile *proj) {
 		.flags = proj->flags | PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_PARTICLE_HIGH,
 		.shader_ptr = proj->shader,
-		.draw_rule = pdraw_timeout_scale(2+I, 0+I),
+		.draw_rule = pdraw_timeout_scale(2+I, 0.0001+I),
 		.angle = proj->angle,
 		// .rule = linear,
 		// .args = { 5*cexp(I*proj->angle) },
