@@ -169,7 +169,7 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 
 	l->ent.draw_layer = LAYER_LASER_HIGH;
 	l->ent.draw_func = ent_draw_laser;
-	ent_register(&l->ent, ENT_LASER);
+	ent_register(&l->ent, ENT_TYPE_ID(Laser));
 
 	if(l->lrule)
 		l->lrule(l, EVENT_BIRTH);
@@ -318,7 +318,7 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 		return;
 	}
 
-	if(ent && ent->type == ENT_LASER) {
+	if(ent && ent->type == ENT_TYPE_ID(Laser)) {
 		if(lasers.saved_fb != NULL) {
 			return;
 		}

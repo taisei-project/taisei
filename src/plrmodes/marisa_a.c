@@ -20,13 +20,9 @@
 
 #define HAKKERO_RETRACT_TIME 4
 
-typedef struct MarisaAController MarisaAController;
-typedef struct MarisaLaser MarisaLaser;
-typedef struct MarisaSlave MarisaSlave;
-typedef struct MasterSpark MasterSpark;
+typedef struct MarisaALaser MarisaALaser;
 
-struct MarisaSlave {
-	ENTITY_INTERFACE_NAMED(MarisaAController, ent);
+DEFINE_ENTITY_TYPE(MarisaASlave, {
 	Sprite *sprite;
 	ShaderProgram *shader;
 	cmplx pos;
@@ -34,10 +30,16 @@ struct MarisaSlave {
 	real shot_angle;
 	real flare_alpha;
 	bool alive;
-};
+});
 
-struct MarisaLaser {
-	LIST_INTERFACE(MarisaLaser);
+DEFINE_ENTITY_TYPE(MarisaAMasterSpark, {
+	cmplx pos;
+	cmplx dir;
+	real alpha;
+});
+
+struct MarisaALaser {
+	LIST_INTERFACE(MarisaALaser);
 	cmplx pos;
 	struct {
 		cmplx first;
@@ -46,25 +48,16 @@ struct MarisaLaser {
 	real alpha;
 };
 
-struct MasterSpark {
-	ENTITY_INTERFACE_NAMED(MarisaAController, ent);
-	cmplx pos;
-	cmplx dir;
-	real alpha;
-};
-
-struct MarisaAController {
-	ENTITY_INTERFACE_NAMED(MarisaAController, laser_renderer);
-
+DEFINE_ENTITY_TYPE(MarisaAController, {
 	Player *plr;
-	LIST_ANCHOR(MarisaLaser) lasers;
+	LIST_ANCHOR(MarisaALaser) lasers;
 
 	COEVENTS_ARRAY(
 		slaves_expired
 	) events;
-};
+});
 
-static void trace_laser(MarisaLaser *laser, cmplx vel, real damage) {
+static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 	ProjCollisionResult col;
 	ProjectileList lproj = { .first = NULL };
 
@@ -111,7 +104,7 @@ static void trace_laser(MarisaLaser *laser, cmplx vel, real damage) {
 				.layer = LAYER_PARTICLE_HIGH,
 			);
 
-			if(col.type == PCOL_ENTITY && col.entity->type == ENT_ENEMY) {
+			if(col.type == PCOL_ENTITY && col.entity->type == ENT_TYPE_ID(Enemy)) {
 				assert(num_enemy_collissions < ARRAY_SIZE(enemy_collisions));
 				if(num_enemy_collissions < ARRAY_SIZE(enemy_collisions)) {
 					c = enemy_collisions + num_enemy_collissions++;
@@ -154,7 +147,7 @@ static float set_alpha_dimmed(Uniform *u_alpha, float a) {
 }
 
 static void marisa_laser_draw_slave(EntityInterface *ent) {
-	MarisaSlave *slave = ENT_CAST_CUSTOM(ent, MarisaSlave);
+	MarisaASlave *slave = ENT_CAST(ent, MarisaASlave);
 
 	ShaderCustomParams shader_params;
 	shader_params.color = *RGBA(0.2, 0.4, 0.5, slave->flare_alpha * 0.75);
@@ -193,7 +186,7 @@ static void draw_laser_beam(cmplx src, cmplx dst, real size, real step, real t, 
 }
 
 static void marisa_laser_draw_lasers(EntityInterface *ent) {
-	MarisaAController *ctrl = ENT_CAST_CUSTOM(ent, MarisaAController);
+	MarisaAController *ctrl = ENT_CAST(ent, MarisaAController);
 	real t = global.frames;
 
 	ShaderProgram *shader = r_shader_get("marisa_laser");
@@ -222,7 +215,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_ONE, BLENDOP_MAX
 	));
 
-	for(MarisaLaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
+	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
 		if(set_alpha(u_alpha, laser->alpha)) {
 			draw_laser_beam(laser->pos, laser->trace_hit.last, 32, 128, -0.02 * t, tex1, u_length);
 		}
@@ -250,7 +243,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	r_uniform_vec4(u_clr0, 0.5, 0.0, 0.0, 0.0);
 	r_uniform_vec4(u_clr1, 1.0, 0.0, 0.0, 0.0);
 
-	for(MarisaLaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
+	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
 		if(set_alpha_dimmed(u_alpha, laser->alpha)) {
 			draw_laser_beam(laser->pos, laser->trace_hit.first, 40, 128, t * -0.12, tex0, u_length);
 		}
@@ -259,7 +252,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	r_uniform_vec4(u_clr0, 2.0, 1.0, 2.0, 0.0);
 	r_uniform_vec4(u_clr1, 0.1, 0.1, 1.0, 0.0);
 
-	for(MarisaLaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
+	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
 		if(set_alpha_dimmed(u_alpha, laser->alpha)) {
 			draw_laser_beam(laser->pos, laser->trace_hit.first, 42, 200, t * -0.03, tex0, u_length);
 		}
@@ -270,7 +263,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 		.shader_ptr = r_shader_get("sprite_default"),
 	};
 
-	for(MarisaLaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
+	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
 		float a = laser->alpha * 0.8f;
 		cmplx spread;
 
@@ -297,25 +290,25 @@ static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args)
 	r_draw_sprite(&sp);
 }
 
-TASK(marisa_laser_slave_expire, { BoxedEntity slave; }) {
-	MarisaSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, MarisaSlave);
+TASK(marisa_laser_slave_expire, { BoxedMarisaASlave slave; }) {
+	MarisaASlave *slave = TASK_BIND(ARGS.slave);
 	slave->alive = false;
 }
 
-static void marisa_laser_show_laser(MarisaAController *ctrl, MarisaLaser *laser) {
+static void marisa_laser_show_laser(MarisaAController *ctrl, MarisaALaser *laser) {
 	alist_append(&ctrl->lasers, laser);
 }
 
-static void marisa_laser_hide_laser(MarisaAController *ctrl, MarisaLaser *laser) {
+static void marisa_laser_hide_laser(MarisaAController *ctrl, MarisaALaser *laser) {
 	alist_unlink(&ctrl->lasers, laser);
 }
 
 TASK(marisa_laser_fader, {
 	MarisaAController *ctrl;
-	const MarisaLaser *ref_laser;
+	const MarisaALaser *ref_laser;
 }) {
 	MarisaAController *ctrl = ARGS.ctrl;
-	MarisaLaser fader = *ARGS.ref_laser;
+	MarisaALaser fader = *ARGS.ref_laser;
 
 	marisa_laser_show_laser(ctrl, &fader);
 
@@ -327,16 +320,16 @@ TASK(marisa_laser_fader, {
 	marisa_laser_hide_laser(ctrl, &fader);
 }
 
-static void marisa_laser_fade_laser(MarisaAController *ctrl, MarisaLaser *laser) {
+static void marisa_laser_fade_laser(MarisaAController *ctrl, MarisaALaser *laser) {
 	marisa_laser_hide_laser(ctrl, laser);
 	INVOKE_TASK(marisa_laser_fader, ctrl, laser);
 }
 
 TASK(marisa_laser_slave_shot_cleanup, {
 	MarisaAController *ctrl;
-	MarisaLaser **active_laser;
+	MarisaALaser **active_laser;
 }) {
-	MarisaLaser *active_laser = *ARGS.active_laser;
+	MarisaALaser *active_laser = *ARGS.active_laser;
 	if(active_laser) {
 		marisa_laser_fade_laser(ARGS.ctrl, active_laser);
 	}
@@ -344,16 +337,16 @@ TASK(marisa_laser_slave_shot_cleanup, {
 
 TASK(marisa_laser_slave_shot, {
 	MarisaAController *ctrl;
-	BoxedEntity slave;
+	BoxedMarisaASlave slave;
 }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	MarisaSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, MarisaSlave);
+	MarisaASlave *slave = TASK_BIND(ARGS.slave);
 
 	Animation *fire_anim = get_ani("fire");
 	AniSequence *fire_anim_seq = get_ani_sequence(fire_anim, "main");
 
-	MarisaLaser *active_laser = NULL;
+	MarisaALaser *active_laser = NULL;
 	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, marisa_laser_slave_shot_cleanup, ctrl, &active_laser);
 
 	for(;;) {
@@ -362,7 +355,7 @@ TASK(marisa_laser_slave_shot, {
 
 		// We started shooting - register a laser for rendering
 
-		MarisaLaser laser = { 0 };
+		MarisaALaser laser = { 0 };
 		marisa_laser_show_laser(ctrl, &laser);
 		active_laser = &laser;
 
@@ -408,7 +401,7 @@ TASK(marisa_laser_slave, {
 }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	MarisaSlave *slave = TASK_HOST_CUSTOM_ENT(MarisaSlave);
+	MarisaASlave *slave = TASK_HOST_ENT(MarisaASlave);
 	slave->alive = true;
 	slave->ent.draw_func = marisa_laser_draw_slave;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
@@ -416,11 +409,11 @@ TASK(marisa_laser_slave, {
 	slave->shader = r_shader_get("sprite_hakkero");
 	slave->sprite = get_sprite("hakkero");
 
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, marisa_laser_slave_expire, ENT_BOX_CUSTOM(slave));
+	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, marisa_laser_slave_expire, ENT_BOX(slave));
 
 	BoxedTask shot_task = cotask_box(INVOKE_SUBTASK(marisa_laser_slave_shot,
 		.ctrl = ctrl,
-		.slave = ENT_BOX_CUSTOM(slave)
+		.slave = ENT_BOX(slave)
 	));
 
 	/*                     unfocused              focused              */
@@ -476,7 +469,7 @@ static real marisa_laser_masterspark_width(real progress) {
 }
 
 static void marisa_laser_draw_masterspark(EntityInterface *ent) {
-	MasterSpark *ms = ENT_CAST_CUSTOM(ent, MasterSpark);
+	MarisaAMasterSpark *ms = ENT_CAST(ent, MarisaAMasterSpark);
 	marisa_common_masterspark_draw(1, &(MarisaBeamInfo) {
 		ms->pos,
 		800 + I * VIEWPORT_H * 1.25,
@@ -485,7 +478,7 @@ static void marisa_laser_draw_masterspark(EntityInterface *ent) {
 	}, ms->alpha);
 }
 
-static void marisa_laser_masterspark_damage(MasterSpark *ms) {
+static void marisa_laser_masterspark_damage(MarisaAMasterSpark *ms) {
 	// lazy inefficient approximation of the beam parabola
 
 	float r = 96 * ms->alpha;
@@ -521,7 +514,7 @@ TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	MasterSpark *ms = TASK_HOST_CUSTOM_ENT(MasterSpark);
+	MarisaAMasterSpark *ms = TASK_HOST_ENT(MarisaAMasterSpark);
 	ms->dir = 1;
 	ms->ent.draw_func = marisa_laser_draw_masterspark;
 	ms->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
@@ -696,12 +689,12 @@ TASK(marisa_laser_shot_forward, { MarisaAController *ctrl; }) {
 }
 
 TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
-	MarisaAController *ctrl = TASK_HOST_CUSTOM_ENT(MarisaAController);
+	MarisaAController *ctrl = TASK_HOST_ENT(MarisaAController);
 	ctrl->plr = TASK_BIND(ARGS.plr);
 	TASK_HOST_EVENTS(ctrl->events);
 
-	ctrl->laser_renderer.draw_func = marisa_laser_draw_lasers;
-	ctrl->laser_renderer.draw_layer = LAYER_PLAYER_FOCUS;
+	ctrl->ent.draw_func = marisa_laser_draw_lasers;
+	ctrl->ent.draw_layer = LAYER_PLAYER_FOCUS;
 
 	INVOKE_SUBTASK(marisa_laser_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_laser_bomb_handler, ctrl);

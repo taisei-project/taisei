@@ -14,6 +14,7 @@
 #include "objectpool.h"
 #include "util/geometry.h"
 #include "util/macrohax.h"
+#include "known_entities.h"
 
 #define LAYER_LOW_BITS 16
 #define LAYER_LOW_MASK ((1 << LAYER_LOW_BITS) - 1)
@@ -34,22 +35,17 @@ typedef enum DrawLayer {
 // NOTE: you can bit-or a drawlayer_low_t value with one of the LAYER_x constants
 // for sub-layer ordering.
 
-typedef struct CustomEntity CustomEntity;
+#define ENT_EMIT_TYPEDEFS(typename, ...) typedef struct typename typename;
+ENTITIES(ENT_EMIT_TYPEDEFS,)
+#undef ENT_EMIT_TYPEDEFS
 
-#define ENT_TYPES \
-	ENT_TYPE(Projectile, ENT_PROJECTILE) \
-	ENT_TYPE(Laser, ENT_LASER) \
-	ENT_TYPE(Enemy, ENT_ENEMY) \
-	ENT_TYPE(Boss, ENT_BOSS) \
-	ENT_TYPE(Player, ENT_PLAYER) \
-	ENT_TYPE(Item, ENT_ITEM) \
-	ENT_TYPE(CustomEntity, ENT_CUSTOM) \
+#define ENT_TYPE_ID(typename) ENT_TYPEID_##typename
 
 typedef enum EntityType {
 	_ENT_TYPE_ENUM_BEGIN,
-	#define ENT_TYPE(typename, id) id, _ENT_TYPEID_##typename = id,
-	ENT_TYPES
-	#undef ENT_TYPE
+	#define ENT_EMIT_ENUMS(typename, ...) ENT_TYPE_ID(typename),
+	ENTITIES(ENT_EMIT_ENUMS,)
+	#undef ENT_EMIT_ENUMS
 	_ENT_TYPE_ENUM_END,
 } EntityType;
 
@@ -91,12 +87,12 @@ typedef void (*EntityAreaDamageCallback)(EntityInterface *ent, cmplx ent_origin,
 
 #define ENTITY_INTERFACE_BASE(typename) struct { \
 	LIST_INTERFACE(typename); \
-	EntityType type; \
 	EntityDrawFunc draw_func; \
 	EntityDamageFunc damage_func; \
 	drawlayer_t draw_layer; \
 	uint32_t spawn_id; \
 	uint index; \
+	EntityType type; \
 }
 
 #define ENTITY_INTERFACE(typename) union { \
@@ -114,41 +110,30 @@ struct EntityInterface {
 	ENTITY_INTERFACE_BASE(EntityInterface);
 };
 
-struct CustomEntity {
-	ENTITY_INTERFACE(CustomEntity);
-};
+#define DEFINE_ENTITY_TYPE(typename, ...) \
+	struct typename { \
+		ENTITY_INTERFACE_NAMED(typename, ent); \
+		struct __VA_ARGS__; \
+	}
 
 INLINE const char *ent_type_name(EntityType type) {
 	switch(type) {
-		#define ENT_TYPE(typename, id) case id: return #id;
-		ENT_TYPES
-		#undef ENT_TYPE
-		default: return "ENT_INVALID";
+		#define ENT_HANDLE_CASE(typename, ...) case ENT_TYPE_ID(typename): return #typename;
+		ENTITIES(ENT_HANDLE_CASE,)
+		#undef ENT_HANDLE_CASE
+		default: return "<INVALID>";
 	}
 }
 
-#define ENT_TYPE_ID(typename) (_ENT_TYPEID_##typename)
-
 #ifdef USE_GNU_EXTENSIONS
-	#define _internal_ENT_CAST(ent, typename, ent_type_id) (__extension__ ({ \
+	#define ENT_CAST(ent, typename) (__extension__ ({ \
 		__auto_type _ent = ent; \
-		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(*(_ent))), \
-			"Expression is not an EntityInterface pointer"); \
-		static_assert(__builtin_types_compatible_p(EntityInterface, __typeof__(((typename){}).entity_interface)), \
-			#typename " doesn't implement EntityInterface"); \
-		static_assert(__builtin_offsetof(typename, entity_interface) == 0, \
-			"entity_interface has non-zero offset in " #typename); \
-		IF_DEBUG(if(_ent && _ent->type != ent_type_id) { \
-			log_fatal("Invalid entity cast from %s to " #typename, ent_type_name(_ent->type)); \
-		}); \
-		CASTPTR_ASSUME_ALIGNED(_ent, typename); \
+		assert(_ent->type == ENT_TYPE_ID(typename)); \
+		UNION_CAST(EntityInterface*, typename*, _ent); \
 	}))
 #else
-	#define _internal_ENT_CAST(ent, typename, ent_type_id) CASTPTR_ASSUME_ALIGNED(ent, typename)
+	#define ENT_CAST(ent, typename) UNION_CAST(EntityInterface*, typename*, (ent));
 #endif
-
-#define ENT_CAST(ent, typename) _internal_ENT_CAST(ent, typename, ENT_TYPE_ID(typename))
-#define ENT_CAST_CUSTOM(ent, typename) _internal_ENT_CAST(ent, typename, _ENT_TYPEID_CustomEntity)
 
 void ent_init(void);
 void ent_shutdown(void);
@@ -165,48 +150,66 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg);
 void ent_unhook_post_draw(EntityDrawHookCallback callback);
 
 struct BoxedEntity {
-	alignas(alignof(void*)) uintptr_t ent;  // not an actual pointer to avert the temptation to use it directly.
+	EntityInterface *ent;
 	uint_fast32_t spawn_id;
 };
 
-BoxedEntity _ent_box_Entity(EntityInterface *ent);
-EntityInterface *_ent_unbox_Entity(BoxedEntity box);
+attr_nonnull_all
+INLINE BoxedEntity _ent_box_Entity(EntityInterface *ent) {
+	return (BoxedEntity) { .ent = ent, .spawn_id = ent->spawn_id } ;
+}
 
-#define ENT_TYPE(typename, id) \
+INLINE EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
+	EntityInterface *e = box.ent;
+
+	if(e && e->spawn_id == box.spawn_id) {
+		return e;
+	}
+
+	return NULL;
+}
+
+#define ENT_EMIT_BOX_DEFS(typename, ...) \
 	typedef union Boxed##typename { \
 		BoxedEntity as_generic; \
 		struct { \
-			uintptr_t ent; \
+			typename *ent; \
 			uint_fast32_t spawn_id; \
 		}; \
 	} Boxed##typename; \
-	struct typename; \
-	Boxed##typename _ent_box_##typename(struct typename *ent); \
-	struct typename *_ent_unbox_##typename(Boxed##typename box); \
-	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; }
+	attr_nonnull_all INLINE Boxed##typename _ent_box_##typename(typename *ent) { \
+		EntityInterface *generic = UNION_CAST(typename*, EntityInterface*, ent); \
+		assert(generic->type == ENT_TYPE_ID(typename)); \
+		return (Boxed##typename) { .as_generic = _ent_box_Entity(generic) }; \
+	} \
+	INLINE typename *_ent_unbox_##typename(Boxed##typename box) { \
+		EntityInterface *generic = _ent_unbox_Entity(box.as_generic); \
+		if(!generic) { return NULL; } \
+		assert(generic->type == ENT_TYPE_ID(typename)); \
+		return UNION_CAST(EntityInterface*, typename*, generic); \
+	} \
+	INLINE Boxed##typename _ent_boxed_passthrough_helper_##typename(Boxed##typename box) { return box; } \
+	INLINE typename *_ent_unboxed_passthrough_helper_##typename(typename *ent) { return ent; }
 
-ENT_TYPES
-#undef ENT_TYPE
+ENTITIES(ENT_EMIT_BOX_DEFS,)
+#undef ENT_EMIT_BOX_DEFS
 
 INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { return box; }
+INLINE EntityInterface *_ent_unboxed_passthrough_helper_Entity(EntityInterface *ent) { return ent; }
+
+#define ENT_HANDLE_UNBOXED_DISPATCH(typename, func_prefix) \
+	typename*: func_prefix##typename,
 
 #define ENT_UNBOXED_DISPATCH_TABLE(func_prefix) \
-	struct Projectile*: func_prefix##Projectile, \
-	struct Laser*: func_prefix##Laser, \
-	struct Enemy*: func_prefix##Enemy, \
-	struct Boss*: func_prefix##Boss, \
-	struct Player*: func_prefix##Player, \
-	struct Item*: func_prefix##Item, \
-	EntityInterface*: func_prefix##Entity \
+	ENTITIES(ENT_HANDLE_UNBOXED_DISPATCH, func_prefix) \
+	EntityInterface*: func_prefix##Entity
+
+#define ENT_HANDLE_BOXED_DISPATCH(typename, func_prefix) \
+	Boxed##typename: func_prefix##typename,
 
 #define ENT_BOXED_DISPATCH_TABLE(func_prefix) \
-	BoxedProjectile: func_prefix##Projectile, \
-	BoxedLaser: func_prefix##Laser, \
-	BoxedEnemy: func_prefix##Enemy, \
-	BoxedBoss: func_prefix##Boss, \
-	BoxedPlayer: func_prefix##Player, \
-	BoxedItem: func_prefix##Item, \
-	BoxedEntity: func_prefix##Entity \
+	ENTITIES(ENT_HANDLE_BOXED_DISPATCH, func_prefix) \
+	BoxedEntity: func_prefix##Entity
 
 #define ENT_UNBOXED_DISPATCH_FUNCTION(func_prefix, ...) \
 	_Generic((MACROHAX_FIRST(__VA_ARGS__)), \
@@ -225,11 +228,10 @@ INLINE BoxedEntity _ent_boxed_passthrough_helper_Entity(BoxedEntity box) { retur
 	)(MACROHAX_EXPAND(__VA_ARGS__))
 
 #define ENT_BOX(ent) ENT_UNBOXED_DISPATCH_FUNCTION(_ent_box_, ent)
-#define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
 #define ENT_BOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_box_, _ent_boxed_passthrough_helper_, ent)
 
-#define ENT_BOX_CUSTOM(ent) _ent_box_Entity(&(ent)->entity_interface)
-#define ENT_UNBOX_CUSTOM(box, type) ENT_CAST_CUSTOM(_ent_unbox_Entity(box), type)
+#define ENT_UNBOX(box) ENT_BOXED_DISPATCH_FUNCTION(_ent_unbox_, box)
+#define ENT_UNBOX_OR_PASSTHROUGH(ent) ENT_MIXED_DISPATCH_FUNCTION(_ent_unboxed_passthrough_helper_, _ent_unbox_, ent)
 
 typedef struct BoxedEntityArray {
 	BoxedEntity *array;
@@ -237,7 +239,7 @@ typedef struct BoxedEntityArray {
 	uint size;
 } BoxedEntityArray;
 
-#define ENT_TYPE(typename, id) \
+#define ENT_EMIT_ARRAY_DEFS(typename, ...) \
 	typedef union Boxed##typename##Array { \
 		BoxedEntityArray as_generic_UNSAFE; \
 		struct { \
@@ -251,8 +253,8 @@ typedef struct BoxedEntityArray {
 		a->array[a->size++] = box; \
 	}
 
-ENT_TYPES
-#undef ENT_TYPE
+ENTITIES(ENT_EMIT_ARRAY_DEFS,)
+#undef ENT_EMIT_ARRAY_DEFS
 
 INLINE void _ent_array_add_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
 	assert(a->size < a->capacity);
@@ -277,22 +279,25 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 #define ENT_ARRAY(_typename, _capacity) \
 	((Boxed##_typename##Array) { .array = (Boxed##_typename[_capacity]) { 0 }, .capacity = (_capacity), .size = 0 })
 
+#define _ent_array_iterator MACROHAX_ADDLINENUM(_ent_array_iterator)
+#define _ent_array_temp MACROHAX_ADDLINENUM(_ent_array_temp)
+
 #define ENT_ARRAY_FOREACH(_array, _var, _block) do { \
-	for(uint MACROHAX_ADDLINENUM(_ent_array_iterator) = 0; MACROHAX_ADDLINENUM(_ent_array_iterator) < (_array)->size; ++MACROHAX_ADDLINENUM(_ent_array_iterator)) { \
-		void *MACROHAX_ADDLINENUM(_ent_array_temp) = ENT_ARRAY_GET((_array), MACROHAX_ADDLINENUM(_ent_array_iterator)); \
-		if(MACROHAX_ADDLINENUM(_ent_array_temp) != NULL) { \
-			_var = MACROHAX_ADDLINENUM(_ent_array_temp); \
+	for(uint _ent_array_iterator = 0; _ent_array_iterator < (_array)->size; ++_ent_array_iterator) { \
+		void *_ent_array_temp = ENT_ARRAY_GET((_array), _ent_array_iterator); \
+		if(_ent_array_temp != NULL) { \
+			_var = _ent_array_temp; \
 			_block \
 		} \
 	} \
 } while(0)
 
 #define ENT_ARRAY_FOREACH_COUNTER(_array, _cntr_var, _ent_var, _block) do { \
-	for(uint MACROHAX_ADDLINENUM(_ent_array_iterator) = 0; MACROHAX_ADDLINENUM(_ent_array_iterator) < (_array)->size; ++MACROHAX_ADDLINENUM(_ent_array_iterator)) { \
-		void *MACROHAX_ADDLINENUM(_ent_array_temp) = ENT_ARRAY_GET((_array), MACROHAX_ADDLINENUM(_ent_array_iterator)); \
-		if(MACROHAX_ADDLINENUM(_ent_array_temp) != NULL) { \
-			_cntr_var = MACROHAX_ADDLINENUM(_ent_array_iterator); \
-			_ent_var = MACROHAX_ADDLINENUM(_ent_array_temp); \
+	for(uint _ent_array_iterator = 0; _ent_array_iterator < (_array)->size; ++_ent_array_iterator) { \
+		void *_ent_array_temp = ENT_ARRAY_GET((_array), _ent_array_iterator); \
+		if(_ent_array_temp != NULL) { \
+			_cntr_var = _ent_array_iterator; \
+			_ent_var = _ent_array_temp; \
 			_block \
 		} \
 	} \

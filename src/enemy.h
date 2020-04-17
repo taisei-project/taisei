@@ -22,12 +22,17 @@
 	#define ENEMY_DEBUG
 #endif
 
+#ifdef ENEMY_DEBUG
+	#define IF_ENEMY_DEBUG(...) __VA_ARGS__
+#else
+	#define IF_ENEMY_DEBUG(...)
+#endif
+
 #define ENEMY_HURT_RADIUS 7
 
-typedef struct Enemy Enemy;
 typedef LIST_ANCHOR(Enemy) EnemyList;
-typedef int (*EnemyLogicRule)(struct Enemy*, int t);
-typedef void (*EnemyVisualRule)(struct Enemy*, int t, bool render);
+typedef int (*EnemyLogicRule)(Enemy*, int t);
+typedef void (*EnemyVisualRule)(Enemy*, int t, bool render);
 
 enum {
 	ENEMY_IMMUNE = -9000,
@@ -35,9 +40,7 @@ enum {
 	ENEMY_KILLED = -9002,
 };
 
-struct Enemy {
-	ENTITY_INTERFACE_NAMED(Enemy, ent);
-
+DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
@@ -64,10 +67,10 @@ struct Enemy {
 
 	bool moving;
 
-#ifdef ENEMY_DEBUG
-	DebugInfo debug;
-#endif
-};
+	IF_ENEMY_DEBUG(
+		DebugInfo debug;
+	)
+});
 
 #define create_enemy4c(p,h,d,l,a1,a2,a3,a4) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,a4)
 #define create_enemy3c(p,h,d,l,a1,a2,a3) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,0)

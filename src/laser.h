@@ -16,15 +16,12 @@
 #include "resource/shader_program.h"
 #include "entity.h"
 
-typedef struct Laser Laser;
 typedef LIST_ANCHOR(Laser) LaserList;
 
 typedef cmplx (*LaserPosRule)(Laser* l, float time);
 typedef void (*LaserLogicRule)(Laser* l, int time);
 
-struct Laser {
-	ENTITY_INTERFACE_NAMED(Laser, ent);
-
+DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	cmplx args[4];
 
@@ -47,7 +44,7 @@ struct Laser {
 
 	uchar unclearable : 1;
 	uchar collision_active : 1;
-};
+});
 
 #define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)
 #define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, 0, 0)

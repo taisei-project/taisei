@@ -21,9 +21,9 @@
 #define SHOT_MYON_DAMAGE 30
 
 typedef struct YoumuAController YoumuAController;
-typedef struct YoumuMyon YoumuMyon;
+typedef struct YoumuAMyon YoumuAMyon;
 
-struct YoumuMyon {
+struct YoumuAMyon {
 	struct {
 		Sprite *trail;
 		Sprite *smoke;
@@ -44,7 +44,7 @@ struct YoumuAController {
 	} sprites;
 
 	Player *plr;
-	YoumuMyon myon;
+	YoumuAMyon myon;
 };
 
 static Color *myon_color(Color *c, float f, float opacity, float alpha) {
@@ -53,7 +53,7 @@ static Color *myon_color(Color *c, float f, float opacity, float alpha) {
 	return c;
 }
 
-static cmplx myon_tail_dir(YoumuMyon *myon) {
+static cmplx myon_tail_dir(YoumuAMyon *myon) {
 	cmplx dir = myon->dir * cdir(0.1 * sin(global.frames * 0.05));
 	real f = myon->focus_factor;
 	return f * f * dir;
@@ -83,10 +83,10 @@ static ProjDrawRule myon_draw_trail(float focus_factor, float opacity) {
 	};
 }
 
-TASK(youmu_mirror_myon_trail, { YoumuMyon *myon; cmplx pos; }) {
-	YoumuMyon *myon = ARGS.myon;
+TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
+	YoumuAMyon *myon = ARGS.myon;
 
-	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+	Projectile *p = TASK_BIND(PARTICLE(
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scale(2, 0.01),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_PLRSPECIALPARTICLE,
@@ -108,7 +108,7 @@ TASK(youmu_mirror_myon_trail, { YoumuMyon *myon; cmplx pos; }) {
 	}
 }
 
-static void myon_spawn_trail(YoumuMyon *myon, int t) {
+static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 	cmplx pos = myon->pos + 3 * cdir(global.frames * 0.07);
 	cmplx stardust_v = 3 * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
 	real f = myon->focus_factor;
@@ -160,7 +160,7 @@ static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 }
 
 TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.color = ARGS.clr,
 		.damage = ARGS.dmg,
 		.layer = LAYER_PLAYER_SHOT | 0x10,
@@ -229,7 +229,7 @@ static void myon_proj_color(Color *clr, real focus_factor) {
 
 TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
-	YoumuMyon *myon = &ctrl->myon;
+	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
 	ShaderProgram *shader = r_shader_get("sprite_youmu_myon_shot");
 
@@ -287,7 +287,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 
 TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
-	YoumuMyon *myon = &ctrl->myon;
+	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
 
 	myon->sprites.trail = get_sprite("part/myon");
@@ -455,7 +455,7 @@ static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs
 
 TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
-	YoumuMyon *myon = &ctrl->myon;
+	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
 
 	cmplx vel = -30 * myon->dir;
@@ -506,7 +506,7 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	YoumuMyon *myon = &ctrl->myon;
+	YoumuAMyon *myon = &ctrl->myon;
 	CoEvent *pp_event = &stage_get_draw_events()->postprocess_before_overlay;
 
 	ShaderProgram *shader = r_shader_get("youmua_bomb");

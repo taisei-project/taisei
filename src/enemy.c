@@ -109,7 +109,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 
 	coevent_init(&e->events.killed);
 	fix_pos0_visual(e);
-	ent_register(&e->ent, ENT_ENEMY);
+	ent_register(&e->ent, ENT_TYPE_ID(Enemy));
 
 	enemy_call_logic_rule(e, EVENT_BIRTH);
 	return e;

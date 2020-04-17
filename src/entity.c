@@ -37,6 +37,7 @@ static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *
 	EntityDrawHook *hook = calloc(1, sizeof(*hook));
 	hook->callback = cb;
 	hook->arg = arg;
+
 	alist_append(list, hook);
 }
 
@@ -227,32 +228,3 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg) {
 void ent_unhook_post_draw(EntityDrawHookCallback callback) {
 	remove_hook(&entities.hooks.post_draw, callback);
 }
-
-BoxedEntity _ent_box_Entity(EntityInterface *ent) {
-	BoxedEntity h;
-	h.ent = (uintptr_t)ent;
-	h.spawn_id = ent->spawn_id;
-	return h;
-}
-
-EntityInterface *_ent_unbox_Entity(BoxedEntity box) {
-	EntityInterface *e = (EntityInterface*)box.ent;
-
-	if(e->spawn_id == box.spawn_id) {
-		return e;
-	}
-
-	return NULL;
-}
-
-#define ENT_TYPE(typename, id) \
-	Boxed##typename _ent_box_##typename(struct typename *ent) { \
-		return (Boxed##typename) { .as_generic = _ent_box_Entity(&ent->entity_interface) };\
-	} \
-	struct typename *_ent_unbox_##typename(Boxed##typename box) { \
-		EntityInterface *e = _ent_unbox_Entity(box.as_generic); \
-		return e ? ENT_CAST(e, typename) : NULL; \
-	}
-
-ENT_TYPES
-#undef ENT_TYPE

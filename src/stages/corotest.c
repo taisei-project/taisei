@@ -79,7 +79,7 @@ TASK(wait_event_test, { BoxedEnemy e; int rounds; int delay; int cnt; int cnt_in
 TASK(test_enemy, {
 	double hp; cmplx pos; cmplx dir;
 }) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, ARGS.hp, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.life_fragment = 1,
@@ -150,7 +150,7 @@ TASK(subtask_test_init, NO_ARGS) {
 }
 
 TASK(punching_bag, NO_ARGS) {
-	Enemy *e = TASK_BIND_UNBOXED(create_enemy1c(0.5*(VIEWPORT_W+VIEWPORT_H*I), 1000, BigFairy, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy1c(0.5*(VIEWPORT_W+VIEWPORT_H*I), 1000, BigFairy, NULL, 0));
 
 	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
 		.life_fragment = 10,

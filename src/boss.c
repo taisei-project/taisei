@@ -47,7 +47,7 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	boss->ent.draw_layer = LAYER_BOSS;
 	boss->ent.draw_func = ent_draw_boss;
 	boss->ent.damage_func = ent_damage_boss;
-	ent_register(&boss->ent, ENT_BOSS);
+	ent_register(&boss->ent, ENT_TYPE_ID(Boss));
 
 	// This is not necessary because the default will be set at the start of every attack.
 	// But who knows. Maybe this will be triggered somewhen. If bosses without attacks start

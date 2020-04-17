@@ -398,8 +398,8 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
 #define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
 
-#define TASK_HOST_CUSTOM_ENT(ent_struct_type) \
-	ENT_CAST_CUSTOM(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_CUSTOM), ent_struct_type)
+#define TASK_HOST_ENT(ent_struct_type) \
+	ENT_CAST(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)
 
 #define TASK_HOST_EVENTS(events_array) \
 	cotask_host_events(cotask_active(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
@@ -410,27 +410,22 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die((e), NULL)
 #define STALL         cotask_wait(INT_MAX)
 
-#define ENT_TYPE(typename, id) \
-	struct typename; \
-	struct typename *_cotask_bind_to_entity_##typename(CoTask *task, struct typename *ent) attr_returns_nonnull attr_returns_max_aligned;
+// first arg of the generated function needs to be the ent, because ENT_UNBOXED_DISPATCH_FUNCTION dispatches on first arg.
+#define _cotask_emit_bindfunc(typename, ...) \
+	INLINE typename *_cotask_bind_to_entity_##typename(typename *ent, CoTask *task) { \
+		return ENT_CAST((cotask_bind_to_entity)(task, ent ? UNION_CAST(typename*, EntityInterface*, ent) : NULL), typename); \
+	}
 
-ENT_TYPES
-#undef ENT_TYPE
+ENTITIES(_cotask_emit_bindfunc,)
+#undef _cotask_emit_bindfunc
 
-#define cotask_bind_to_entity(task, ent) (_Generic((ent), \
-	struct Projectile*: _cotask_bind_to_entity_Projectile, \
-	struct Laser*: _cotask_bind_to_entity_Laser, \
-	struct Enemy*: _cotask_bind_to_entity_Enemy, \
-	struct Boss*: _cotask_bind_to_entity_Boss, \
-	struct Player*: _cotask_bind_to_entity_Player, \
-	struct Item*: _cotask_bind_to_entity_Item, \
-	EntityInterface*: cotask_bind_to_entity \
-)(task, ent))
+INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTask *task) {
+	return (cotask_bind_to_entity)(task, ent);
+}
 
-#define TASK_BIND(box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX(box))
-#define TASK_BIND_UNBOXED(ent) cotask_bind_to_entity(cotask_active(), ent)
+#define cotask_bind_to_entity(task, ent) \
+	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
-#define TASK_BIND_CUSTOM(box, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), ENT_UNBOX(box)), type)
-#define TASK_BIND_UNBOXED_CUSTOM(ent, type) ENT_CAST_CUSTOM((cotask_bind_to_entity)(cotask_active(), &(ent)->entity_interface), type)
+#define TASK_BIND(ent_or_box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX_OR_PASSTHROUGH(ent_or_box))
 
 #endif // IGUARD_coroutine_h

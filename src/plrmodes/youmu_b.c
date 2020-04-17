@@ -208,7 +208,7 @@ static void youmu_haunting_power_shot(Player *plr, int p) {
 }
 
 TASK(youmu_homing_shot, { BoxedPlayer plr; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_hghost,
 		.pos = ENT_UNBOX(ARGS.plr)->pos,
 		.color = RGB(0.75, 0.9, 1),
@@ -263,7 +263,7 @@ TASK(youmu_orb_homing_spirit, { cmplx pos; cmplx velocity; cmplx target; real ch
 		return;
 	}
 
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_hghost,
 		.pos = ARGS.pos,
 		.color = color_mul_scalar(RGB(0.75, 0.9, 1), 0.5),
@@ -414,7 +414,7 @@ TASK(youmu_orb_shot, { BoxedPlayer plr; }) {
 	Player *plr = ENT_UNBOX(ARGS.plr);
 	int pwr = plr->power / 100;
 
-	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *orb = TASK_BIND(PROJECTILE(
 		.proto = pp_youhoming,
 		.pos = plr->pos,
 		.color = RGB(1, 1, 1),

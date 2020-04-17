@@ -32,15 +32,13 @@ typedef struct ReimuAController {
 	) events;
 } ReimuAController;
 
-typedef struct ReimuSlave ReimuSlave;
-struct ReimuSlave {
-	ENTITY_INTERFACE_NAMED(ReimuSlave, ent);
+DEFINE_ENTITY_TYPE(ReimuASlave, {
 	Sprite *sprite;
 	ShaderProgram *shader;
 	cmplx pos;
 	Color color;
 	uint alive;
-};
+});
 
 static void reimu_spirit_preload(void) {
 	const int flags = RESF_DEFAULT;
@@ -72,7 +70,7 @@ static void reimu_spirit_preload(void) {
 }
 
 TASK(reimu_spirit_needle, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_needle,
 		.pos = ARGS.pos,
 		.color = RGBA(0.5, 0.5, 0.5, 0.5),
@@ -131,7 +129,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real 
 TASK(reimu_spirit_homing_impact, { BoxedProjectile p; }) {
 	Projectile *ref = NOT_NULL(ENT_UNBOX(ARGS.p));
 
-	Projectile *p = TASK_BIND_UNBOXED(PARTICLE(
+	Projectile *p = TASK_BIND(PARTICLE(
 		.proto = ref->proto,
 		.color = &ref->color,
 		.timeout = 32,
@@ -159,7 +157,7 @@ static inline real reimu_spirit_homing_aimfactor(real t, real maxt) {
 }
 
 TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *p = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA(0.7, 0.63, 0.665, 0.7),
@@ -329,7 +327,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	int index = ARGS.index;
 
 	Player *plr = ENT_UNBOX(ARGS.plr);
-	Projectile *orb = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *orb = TASK_BIND(PROJECTILE(
 		.pos = plr->pos,
 		.timeout = 200 + 20 * index,
 		.type = PROJ_PLAYER,
@@ -442,7 +440,7 @@ TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *shader; }) {
-	Projectile *ofuda = TASK_BIND_UNBOXED(PROJECTILE(
+	Projectile *ofuda = TASK_BIND(PROJECTILE(
 		.proto = pp_ofuda,
 		.pos = ARGS.pos,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, 0.5),
@@ -459,7 +457,7 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 }
 
 static void reimu_spirit_draw_slave(EntityInterface *ent) {
-	ReimuSlave *slave = ENT_CAST_CUSTOM(ent, ReimuSlave);
+	ReimuASlave *slave = ENT_CAST(ent, ReimuASlave);
 	r_draw_sprite(&(SpriteParams) {
 		.color = &slave->color,
 		.pos.as_cmplx = slave->pos,
@@ -469,11 +467,9 @@ static void reimu_spirit_draw_slave(EntityInterface *ent) {
 	});
 }
 
-
-
-static ReimuSlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color *color) {
+static ReimuASlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color *color) {
 	Player *plr = ctrl->plr;
-	ReimuSlave *slave = TASK_HOST_CUSTOM_ENT(ReimuSlave);
+	ReimuASlave *slave = TASK_HOST_ENT(ReimuASlave);
 	slave->sprite = get_sprite("yinyang");
 	slave->shader = r_shader_get("sprite_yinyang");
 	slave->pos = plr->pos;
@@ -491,14 +487,14 @@ static ReimuSlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color
 }
 
 TASK(reimu_slave_shot_particles, {
-	BoxedEntity slave;
+	BoxedReimuASlave slave;
 	int num;
 	cmplx dir;
 	Color *color0;
 	Color *color1;
 	Sprite *sprite;
 }) {
-	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
+	ReimuASlave *slave = TASK_BIND(ARGS.slave);
 	Color color0 = *ARGS.color0;
 	Color color1 = *ARGS.color1;
 	int num = ARGS.num;
@@ -527,10 +523,10 @@ TASK(reimu_slave_shot_particles, {
 
 TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl;
-	BoxedEntity e;
+	BoxedReimuASlave slave;
 }) {
 	Player *plr = ARGS.ctrl->plr;
-	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.e, ReimuSlave);
+	ReimuASlave *slave = TASK_BIND(ARGS.slave);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 	Sprite *particle_spr = get_sprite("part/stain");
@@ -542,7 +538,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
 		INVOKE_SUBTASK(reimu_slave_shot_particles,
-			.slave = ENT_BOX_CUSTOM(slave),
+			.slave = ENT_BOX(slave),
 			.color0 = RGBA(0.5, 0, 0, 0),
 			.color1 = RGBA(0.5, 0.25, 0, 0),
 			.num = delay,
@@ -569,9 +565,9 @@ TASK(reimu_spirit_slave_needle, {
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ReimuSlave *slave = reimu_spirit_create_slave(ctrl, RGB(1.0, 0.8, 0.8));
+	ReimuASlave *slave = reimu_spirit_create_slave(ctrl, RGB(1.0, 0.8, 0.8));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX_CUSTOM(slave));
+	INVOKE_SUBTASK(reimu_spirit_slave_needle_shot, ctrl, ENT_BOX(slave));
 
 	real dist = ARGS.distance;
 	cmplx offset = dist * cdir(ARGS.rotation_offset);
@@ -593,11 +589,11 @@ TASK(reimu_spirit_slave_needle, {
 
 TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl;
-	BoxedEntity slave;
+	BoxedReimuASlave slave;
 	cmplx vel;
 }) {
 	Player *plr = ARGS.ctrl->plr;
-	ReimuSlave *slave = TASK_BIND_CUSTOM(ARGS.slave, ReimuSlave);
+	ReimuASlave *slave = TASK_BIND(ARGS.slave);
 
 	ShaderProgram *shader = r_shader_get("sprite_particle");
 	Sprite *particle_spr = get_sprite("part/stain");
@@ -611,7 +607,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
 		INVOKE_SUBTASK(reimu_slave_shot_particles,
-			.slave = ENT_BOX_CUSTOM(slave),
+			.slave = ENT_BOX(slave),
 			.color0 = RGBA(0.5, 0.125, 0, 0),
 			.color1 = RGBA(0.5, 0.125, 0.25, 0),
 			.num = delay,
@@ -637,9 +633,9 @@ TASK(reimu_spirit_slave_homing, {
 }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ReimuSlave *slave = reimu_spirit_create_slave(ctrl, RGB(0.95, 0.75, 1.0));
+	ReimuASlave *slave = reimu_spirit_create_slave(ctrl, RGB(0.95, 0.75, 1.0));
 
-	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX_CUSTOM(slave), ARGS.shot_vel);
+	INVOKE_SUBTASK(reimu_spirit_slave_homing_shot, ctrl, ENT_BOX(slave), ARGS.shot_vel);
 
 	cmplx offset = ARGS.offset;
 	real target_speed = 0.005 * cabs(offset);

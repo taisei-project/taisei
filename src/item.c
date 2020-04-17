@@ -125,7 +125,7 @@ Item* create_item(cmplx pos, cmplx v, ItemType type) {
 
 	i->ent.draw_layer = LAYER_ITEM | i->type;
 	i->ent.draw_func = ent_draw_item;
-	ent_register(&i->ent, ENT_ITEM);
+	ent_register(&i->ent, ENT_TYPE_ID(Item));
 
 	return i;
 }

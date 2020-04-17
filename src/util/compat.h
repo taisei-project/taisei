@@ -297,6 +297,10 @@ typedef cmplx64 cmplx;
 	#define ASSUME_ALIGNED(expr, alignment) (expr)
 #endif
 
+#define UNION_CAST(_from_type, _to_type, _expr) \
+	((union { _from_type f; _to_type t; }) { .f = (_expr) }).t
+
+// #define CASTPTR_ASSUME_ALIGNED(expr, type) UNION_CAST(void*, type*, ASSUME_ALIGNED(expr, alignof(type)))
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
 #ifdef USE_GNU_EXTENSIONS

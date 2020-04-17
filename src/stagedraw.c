@@ -595,13 +595,13 @@ static bool powersurge_draw_predicate(EntityInterface *ent) {
 				return true;
 		}
 
-		if(ent->type == ENT_PROJECTILE) {
+		if(ent->type == ENT_TYPE_ID(Projectile)) {
 			Projectile *p = ENT_CAST(ent, Projectile);
 			return p->flags & PFLAG_PLRSPECIALPARTICLE;
 		}
 	}
 
-	if(ent->type == ENT_ITEM) {
+	if(ent->type == ENT_TYPE_ID(Item)) {
 		Item *i = ENT_CAST(ent, Item);
 		return i->type == ITEM_VOLTAGE;
 	}
@@ -841,7 +841,7 @@ bool stage_should_draw_particle(Projectile *p) {
 }
 
 static bool stage_draw_predicate(EntityInterface *ent) {
-	if(ent->type == ENT_PROJECTILE) {
+	if(ent->type == ENT_TYPE_ID(Projectile)) {
 		Projectile *p = ENT_CAST(ent, Projectile);
 
 		if(p->type == PROJ_PARTICLE) {

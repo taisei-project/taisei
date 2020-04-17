@@ -295,7 +295,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	projectile_set_layer(p, args->layer);
 
 	COEVENT_INIT_ARRAY(p->events);
-	ent_register(&p->ent, ENT_PROJECTILE);
+	ent_register(&p->ent, ENT_TYPE_ID(Projectile));
 
 	// TODO: Maybe allow ACTION_DESTROY here?
 	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
