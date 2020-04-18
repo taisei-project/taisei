@@ -30,10 +30,17 @@
 #define SHOT_ORBS_LIFETIME_BASE 100
 #define SHOT_ORBS_LIFETIME_PER_POWER 10
 
+#define BOMB_SLICE_DAMAGE 100
+#define BOMB_SLICE_PERIOD 2
+
 typedef struct YoumuBController {
 	struct {
 		Sprite *blast_huge_halo;
 		Sprite *blast_huge_rays;
+		Sprite *petal;
+		Sprite *smoothdot;
+		Sprite *stardust;
+		Sprite *youmu_slice;
 	} sprites;
 	ShaderProgram *shot_shader;
 
@@ -41,14 +48,14 @@ typedef struct YoumuBController {
 	YoumuBombBGData bomb_bg;
 } YoumuBController;
 
-static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
+static void youmu_homing_trail(YoumuBController *ctrl, Projectile *p, cmplx v, int to) {
 	uint32_t tmp = p->ent.spawn_id;
 	float u = M_PI * 2.0f * (float)(splitmix32(&tmp) / (double)UINT32_MAX);
 
 	RNG_ARRAY(R, 5);
 
 	PARTICLE(
-		.sprite = "stardust",
+		.sprite_ptr = ctrl->sprites.stardust,
 		.pos = p->pos + vrng_range(R[0], 3, 12) * vrng_dir(R[1]),
 		.color = RGBA(0.0, 0.3 * vrng_real(R[2]), 0.3, 0.0),
 		// .draw_rule = pdraw_timeout_fade(1, 0),
@@ -62,7 +69,7 @@ static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
 	);
 
 	PARTICLE(
-		.sprite = "smoothdot",
+		.sprite_ptr = ctrl->sprites.smoothdot,
 		.pos = p->pos,
 		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), &p->color),
 		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*creal(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*cimag(p->pos)/VIEWPORT_H*M_TAU)), 2),
@@ -74,16 +81,20 @@ static void youmu_homing_trail(Projectile *p, cmplx v, int to) {
 }
 
 static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
+	// TODO: pick animation frame based on slice direction?
+	AniPlayer *player_ani = args[0].as_ptr;
+	Sprite *player_frame = aniplayer_get_frame(player_ani);
+
 	float lifetime = p->timeout;
-	float tt = t/lifetime;
-	float f = 0;
+	float tt = t / lifetime;
+	float f = 0.0f;
 
 	if(tt > 0.1) {
-		f = min(1,(tt-0.1)/0.2);
+		f = fminf(1.0f, (tt - 0.1f) / 0.2f);
 	}
 
-	if(tt > 0.5) {
-		f = 1+(tt-0.5)/0.5;
+	if(tt > 0.5f) {
+		f = 1.0f + (tt - 0.5f) / 0.5f;
 	}
 
 	SpriteParamsBuffer spbuf;
@@ -91,104 +102,14 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 	sp.scale.x *= f;
 	r_draw_sprite(&sp);
 
-	float slicelen = 500;
-	cmplx slicepos = p->pos-(tt>0.1)*slicelen*I*cdir(p->angle)*(5*pow(tt-0.1,1.1)-0.5);
+	float slicelen = 500.0f;
+	cmplx slicepos = p->pos - (tt > 0.1f) * slicelen * I*cdir(p->angle) * (5 * powf(tt - 0.1f, 1.1f) - 0.5f);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = aniplayer_get_frame(&global.plr.ani),
-		.pos = { creal(slicepos), cimag(slicepos) },
+		.sprite_ptr = player_frame,
+		.pos.as_cmplx = slicepos,
+		.shader_params = &spbuf.shader_params,
 	});
-}
-
-static int youmu_slice_petal(Projectile *p, int t) {
-	int r = accelerated(p, t);
-
-	if(t >= 0) {
-		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / 40.0));
-	}
-
-	return r;
-}
-
-static int youmu_particle_slice_logic(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	double lifetime = p->timeout;
-	double tt = t/lifetime;
-	double a = 0;
-
-	if(tt > 0.) {
-		a = min(1,(tt-0.)/0.2);
-	}
-	if(tt > 0.5) {
-		a = max(0,1-(tt-0.5)/0.5);
-	}
-
-	p->color = *RGBA(a, a, a, 0);
-
-
-	if(t%5 == 0) {
-		cmplx phase = cdir(p->angle);
-
-		PARTICLE(
-			.sprite = "petal",
-			.pos = p->pos-400*phase,
-			.rule = youmu_slice_petal,
-			.draw_rule = pdraw_petal_random(),
-			.args = {
-				phase,
-				phase*cdir(0.1),
-			},
-			.layer = LAYER_PARTICLE_HIGH | 0x2,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-		);
-	}
-
-	Ellipse e = {
-		.origin = p->pos,
-		.axes = CMPLX(512, 64),
-		.angle = p->angle + M_PI * 0.5,
-	};
-
-	// FIXME: this may still be too slow for lasers in some cases
-	stage_clear_hazards_in_ellipse(e, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
-	ent_area_damage_ellipse(e, &(DamageInfo) { 52, DMG_PLAYER_BOMB }, NULL, NULL);
-
-	return ACTION_NONE;
-}
-
-static void YoumuSlash(Enemy *e, int t, bool render) {
-}
-
-static int youmu_slash(Enemy *e, int t) {
-	if(t > creal(e->args[0]))
-		return ACTION_DESTROY;
-	if(t < 0)
-		return 1;
-
-	if(global.frames - global.plr.recovery > 0) {
-		return ACTION_DESTROY;
-	}
-
-	TIMER(&t);
-	FROM_TO(0,10000,3) {
-		cmplx pos = cexp(I*_i)*(100+10*_i*_i*0.01);
-		PARTICLE(
-			.sprite = "youmu_slice",
-			.color = RGBA(1, 1, 1, 0),
-			.pos = e->pos+pos,
-			.draw_rule = youmu_particle_slice_draw,
-			.rule = youmu_particle_slice_logic,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
-			.timeout = 100,
-			.angle = carg(pos) + M_PI/2,
-			.layer = LAYER_PARTICLE_HIGH | 0x1,
-		);
-	}
-
-	return 1;
 }
 
 TASK(youmu_haunting_shot_basic, { YoumuBController *ctrl; }) {
@@ -286,7 +207,7 @@ TASK(youmu_homing_shot, { YoumuBController *ctrl; }) {
 		p->move.velocity *= speed / cabs(p->move.velocity);
 		aim_strength += aim_strength_accel;
 
-		youmu_homing_trail(p, 0.5 * p->move.velocity, 12);
+		youmu_homing_trail(ctrl, p, 0.5 * p->move.velocity, 12);
 		YIELD;
 	}
 }
@@ -400,7 +321,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 		p->move.velocity = s * cnormalize(p->move.velocity + aim_strength * s * aimdir);
 		approach_asymptotic_p(&speed, speed_target, 0.05, 1e-5);
 
-		youmu_homing_trail(p, 0.5 * p->move.velocity, 12);
+		youmu_homing_trail(ctrl, p, 0.5 * p->move.velocity, 12);
 		YIELD;
 	}
 }
@@ -539,14 +460,102 @@ TASK(youmu_haunting_shot_orbs, { YoumuBController *ctrl; }) {
 	}
 }
 
-static void youmu_haunting_bomb(Player *plr) {
-	play_sound("bomb_youmu_b");
-	create_enemy_p(&plr->slaves, global.plr.pos, ENEMY_BOMB, YoumuSlash, youmu_slash, 280,0,0,0);
+TASK(youmu_haunting_bomb_slice_petal, { YoumuBController *ctrl; cmplx pos; cmplx vel; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Projectile *p = TASK_BIND(PARTICLE(
+		.sprite_ptr = ctrl->sprites.petal,
+		.pos = ARGS.pos,
+		.draw_rule = pdraw_petal_random(),
+		.move = move_accelerated(ARGS.vel, ARGS.vel * cdir(0.1)),
+		.layer = LAYER_PARTICLE_HIGH | 0x2,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+	));
+
+	real transition_time = 40;
+
+	for(real t = 0; t <= transition_time; ++t) {
+		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / transition_time));
+		YIELD;
+	}
+}
+
+TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+
+	Projectile *p = TASK_BIND(PARTICLE(
+		.sprite_ptr = ctrl->sprites.youmu_slice,
+		.color = RGBA(1, 1, 1, 0),
+		.pos = ARGS.pos,
+		.draw_rule = {
+			.func = youmu_particle_slice_draw,
+			.args[0].as_ptr = &ctrl->plr->ani,
+		},
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.timeout = 100,
+		.angle = ARGS.angle,
+		.layer = LAYER_PARTICLE_HIGH | 0x1,
+	));
+
+	cmplx petal_dir = cdir(ARGS.angle);
+
+	for(int t = 0;; ++t) {
+		real lifetime = p->timeout;
+		real tt = t/lifetime;
+		real a = 0;
+
+		if(tt > 0.5) {
+			a = max(0, 1 - (tt - 0.5) / 0.5);
+		} else {
+			a = min(1, tt / 0.2);
+		}
+
+		p->color = *RGBA(a, a, a, 0);
+
+		if(t % 5 == 0) {
+			INVOKE_TASK(youmu_haunting_bomb_slice_petal, ctrl, p->pos - 400 * petal_dir, petal_dir);
+		}
+
+		if(t % BOMB_SLICE_PERIOD == 0) {
+			Ellipse e = {
+				.origin = p->pos,
+				.axes = CMPLX(512, 64),
+				.angle = p->angle + M_PI * 0.5,
+			};
+
+			// FIXME: this may still be too slow for lasers in some cases
+			stage_clear_hazards_in_ellipse(e, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
+			ent_area_damage_ellipse(e, &(DamageInfo) { BOMB_SLICE_DAMAGE, DMG_PLAYER_BOMB }, NULL, NULL);
+		}
+
+		YIELD;
+	}
+}
+
+TASK(youmu_haunting_bomb_controller, { YoumuBController *ctrl; }) {
+	YoumuBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	cmplx origin = plr->pos;
+
+	int i = 0;
+	do {
+		cmplx ofs = cdir(i) * (100 + 10 * i * i * 0.01);
+		real angle = carg(ofs) + M_PI/2;
+		INVOKE_TASK(youmu_haunting_bomb_slice, ctrl, origin + ofs, angle);
+		WAIT(3);
+		++i;
+	} while(player_is_bomb_active(plr));
 }
 
 TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
 	YoumuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		play_sound("bomb_youmu_b");
+		INVOKE_SUBTASK(youmu_haunting_bomb_controller, ctrl);
+		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
+	}
 }
 
 TASK(youmu_haunting_controller, { BoxedPlayer plr; }) {
@@ -554,6 +563,10 @@ TASK(youmu_haunting_controller, { BoxedPlayer plr; }) {
 	ctrl->plr = TASK_BIND(ARGS.plr);
 	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
 	ctrl->sprites.blast_huge_rays = get_sprite("part/blast_huge_rays");
+	ctrl->sprites.petal = get_sprite("part/petal");
+	ctrl->sprites.smoothdot = get_sprite("part/smoothdot");
+	ctrl->sprites.stardust = get_sprite("part/stardust");
+	ctrl->sprites.youmu_slice = get_sprite("part/youmu_slice");
 	ctrl->shot_shader = r_shader_get("sprite_particle");
 
 	youmu_common_init_bomb_background(&ctrl->bomb_bg);
@@ -597,7 +610,6 @@ PlayerMode plrmode_youmu_b = {
 	.shot_mode = PLR_SHOT_YOUMU_HAUNTING,
 	.procs = {
 		.property = youmu_common_property,
-		.bomb = youmu_haunting_bomb,
 		.init = youmu_haunting_init,
 		.preload = youmu_haunting_preload,
 	},
