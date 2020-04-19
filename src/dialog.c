@@ -112,6 +112,8 @@ void dialog_update(Dialog *d) {
 		if(d->title.timeout == 0) {
 			fapproach_asymptotic_p(&d->title.opacity, 0, 0.1, 1e-3);
 		}
+	} else if (d->title.timeout == 0) {
+		d->title.active = false;
 	}
 }
 
@@ -381,6 +383,7 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	if(dialog->title.active) {
+		log_debug("print title");
 		FloatRect title_bg_rect = {
 			.extent = { VIEWPORT_W-300, 60 },
 			.offset = { VIEWPORT_W-125, VIEWPORT_H-170 },
@@ -404,15 +407,11 @@ void dialog_draw(Dialog *dialog) {
 		clr = dialog->text.current->color;
 		color_mul_scalar(&clr, dialog->title.opacity);
 
-		text_draw_wrapped(dialog->title.name, title_bg_rect.w, &(TextParams) {
-			.shader = "text_dialog",
-			.aux_textures = { r_texture_get("cell_noise") },
-			.shader_params = &(ShaderCustomParams) {{ 1, 0 }},
-			.color = &clr,
+		text_draw(dialog->title.name, &(TextParams) {
+			.color = RGB(0.7, 0.7, 0.7),
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
-			.overlay_projection = &title_bg_rect,
 		});
 
 	}
