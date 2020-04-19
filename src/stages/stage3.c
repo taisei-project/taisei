@@ -53,71 +53,50 @@ struct stage3_spells_s stage3_spells = {
 	},
 };
 
-static struct {
-	float clr_r;
-	float clr_g;
-	float clr_b;
-	float clr_mixfactor;
-
-	float fog_exp;
-	float fog_brightness;
-
-	float tunnel_angle;
-	float tunnel_avel;
-	float tunnel_updn;
-	float tunnel_side;
-} stgstate;
-
 static uint stage3_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	//vec3 p = {100 * cos(global.frames / 52.0), 100, 50 * sin(global.frames / 50.0)};
 	vec3 p = {
-		stgstate.tunnel_side * cos(global.frames / 52.0),
 		0,
-		stgstate.tunnel_updn * sin(global.frames / 50.0)
+		0,
+		0,
 	};
-	vec3 r = {0, 3000, 0};
+	// minus sign for drawing order
+	vec3 r = {0, -1000, -500};
 
 	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
-static void stage3_bg_tunnel_draw(vec3 pos) {
-	int n = 6;
-	float r = 300;
-	int i;
+static void stage3_bg_ground_draw(vec3 pos) {
 
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(50,50,50);
 
-	r_uniform_sampler("tex", "stage3/border");
-
-	for(i = 0; i < n; i++) {
-		r_mat_mv_push();
-		r_mat_mv_rotate(M_PI*2.0/n*i + stgstate.tunnel_angle * DEG2RAD, 0, 1, 0);
-		r_mat_mv_translate(0,0,-r);
-		r_mat_mv_scale(2*r/tan((n-2)*M_PI/n), 3000, 1);
-		r_draw_quad();
-		r_mat_mv_pop();
-	}
-
+	r_shader_standard();
+	r_uniform_sampler("tex", "stage3/ground");
+	r_draw_model("stage3/ground");
+	r_uniform_sampler("tex", "stage3/rocks");
+	r_draw_model("stage3/rocks");
 	r_mat_mv_pop();
 }
 
-static bool stage3_tunnel(Framebuffer *fb) {
-	r_shader("tunnel");
-	r_uniform_vec3("color", stgstate.clr_r, stgstate.clr_g, stgstate.clr_b);
-	r_uniform_float("mixfactor", stgstate.clr_mixfactor);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-	r_shader_standard();
-	return true;
+static void stage3_bg_leaves_draw(vec3 pos) {
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_scale(50,50,50);
+	r_mat_mv_translate(0,0,-0.01);
+	r_uniform_sampler("tex", "stage3/leaves");
+	r_draw_model("stage3/leaves");
+
+	r_mat_mv_pop();
 }
 
 static bool stage3_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4("fog_color", stgstate.fog_brightness, stgstate.fog_brightness, stgstate.fog_brightness, 1.0);
-	r_uniform_float("start", 0.2);
-	r_uniform_float("end", 0.8);
-	r_uniform_float("exponent", stgstate.fog_exp/2);
+	r_uniform_vec4("fog_color", 0.5, 0.7, 1, 1.0);
+	r_uniform_float("start", 0.6);
+	r_uniform_float("end", 5);
+	r_uniform_float("exponent", 10);
 	r_uniform_float("sphereness", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
@@ -149,16 +128,11 @@ static bool stage3_glitch(Framebuffer *fb) {
 static void stage3_start(void) {
 	stage3d_init(&stage_3d_context, 16);
 
-	stage_3d_context.cx[2] = -10;
+	stage_3d_context.cx[1] = 800;
 	stage_3d_context.crot[0] = -95;
-	stage_3d_context.cv[1] = 10;
+	stage_3d_context.cv[1] = -5;
+	stage_3d_context.cv[2] = -2.5;
 
-	memset(&stgstate, 0, sizeof(stgstate));
-	stgstate.clr_r = 1.0;
-	stgstate.clr_g = 0.0;
-	stgstate.clr_b = 0.5;
-	stgstate.clr_mixfactor = 1.0;
-	stgstate.fog_brightness = 0.5;
 }
 
 static void stage3_preload(void) {
@@ -168,15 +142,21 @@ static void stage3_preload(void) {
 	portrait_preload_face_sprite("scuttle", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"stage3/border",
+		"stage3/ground",
+		"stage3/rocks",
+		"stage3/leaves",
 		"stage3/spellbg1",
 		"stage3/spellbg2",
 		"stage3/wspellbg",
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
 	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"stage3/ground",
+		"stage3/rocks",
+		"stage3/leaves",
+	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"tunnel",
 		"zbuf_fog",
 		"glitch",
 		"maristar_bombbg",
@@ -199,161 +179,19 @@ static void stage3_end(void) {
 }
 
 static void stage3_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 300, 5000);
-	stage3d_draw(&stage_3d_context, 7000, 1, (Stage3DSegment[]) { stage3_bg_tunnel_draw, stage3_bg_pos });
+	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 30, 3000);
+	stage3d_draw(&stage_3d_context, 6000, 2, (Stage3DSegment[]) { stage3_bg_ground_draw, stage3_bg_pos, stage3_bg_leaves_draw, stage3_bg_pos });
 }
 
 static void stage3_update(void) {
-	TIMER(&global.timer)
-
-	stgstate.tunnel_angle += stgstate.tunnel_avel;
-	stage_3d_context.crot[2] = -(creal(global.plr.pos)-VIEWPORT_W/2)/80.0;
-
 	if(dialog_is_active(global.dialog)) {
 		stage3d_update(&stage_3d_context);
 		return;
 	}
 
-	FROM_TO(0, 160, 1) {
-		stage_3d_context.cv[1] -= 0.5/2;
-		stgstate.clr_r -= 0.2 / 160.0;
-		stgstate.clr_b -= 0.1 / 160.0;
-	}
-
-	FROM_TO(0, 500, 1)
-		stgstate.fog_exp += 3.0 / 500.0;
-
-	FROM_TO(400, 500, 1) {
-		stgstate.tunnel_avel += 0.005;
-		stage_3d_context.cv[1] -= 0.3/2;
-	}
-
-	FROM_TO(1050, 1150, 1) {
-		stgstate.tunnel_avel -= 0.010;
-		stage_3d_context.cv[1] -= 0.2/2;
-	}
-
-	FROM_TO(1060, 1400, 1) {
-		/*stgstate.clr_r -= 1.0 / 340.0;
-		stgstate.clr_g += 1.0 / 340.0;
-		stgstate.clr_b -= 0.5 / 340.0;*/
-	}
-
-	FROM_TO(1170, 1400, 1)
-		stgstate.tunnel_side += 100.0 / 230.0;
-
-	FROM_TO(1400, 1550, 1) {
-		stage_3d_context.crot[0] -= 3 / 150.0;
-		stgstate.tunnel_updn += 70.0 / 150.0;
-		stgstate.tunnel_avel += 1 / 150.0;
-		stage_3d_context.cv[1] -= 0.2/2;
-	}
-
-	FROM_TO(1570, 1700, 1) {
-		stgstate.tunnel_updn -= 20 / 130.0;
-	}
-
-	FROM_TO(1800, 1850, 1)
-		stgstate.tunnel_avel -= 0.02;
-
-	FROM_TO(1900, 2000, 1) {
-		stgstate.tunnel_avel += 0.013;
-	}
-
-	FROM_TO(2000, 2680, 1) {
-		stgstate.tunnel_side -= 100.0 / 680.0;
-		//stgstate.fog_exp -= 1.0 / 740.0;
-		stage_3d_context.crot[0] += 11 / 680.0;
-	}
-
-	FROM_TO(2680, 2739, 1) {
-		stgstate.fog_exp += 1.0 / 60.0;
-		stage_3d_context.cv[1] += 1.0/2;
-		stgstate.clr_r -= 0.3 / 60.0;
-		stgstate.clr_g += 0.5 / 60.0;
-		stgstate.tunnel_avel -= 0.7 / 60.0;
-		stage_3d_context.crot[0] -= 11 / 60.0;
-	}
-
 	// 2740 - MIDBOSS
 
 	int midboss_time = STAGE3_MIDBOSS_TIME;
-
-	FROM_TO(2900 + midboss_time, 3100 + midboss_time, 1) {
-		stgstate.clr_r += 0.3 / 200.0;
-		stgstate.clr_g -= 0.5 / 200.0;
-		stage_3d_context.cv[1] -= 90 / 200.0/2;
-		stgstate.tunnel_avel -= 1 / 200.0;
-		stgstate.fog_exp -= 1.0 / 200.0;
-		stgstate.clr_b += 0.2 / 200.0;
-	}
-
-	FROM_TO(3300 + midboss_time, 3360 + midboss_time, 1) {
-		stgstate.tunnel_avel += 2 / 60.0;
-		stgstate.tunnel_side += 50 / 60.0;
-		stage_3d_context.cx[2] += (-20 - stage_3d_context.cx[2]) * 0.04;
-	}
-
-	FROM_TO(3600 + midboss_time, 3700 + midboss_time, 1) {
-		stgstate.tunnel_side += 20 / 60.0;
-		stgstate.tunnel_updn += 40 / 60.0;
-	}
-
-	FROM_TO(3830 + midboss_time, 3950 + midboss_time, 1) {
-		stgstate.tunnel_avel -= 2 / 120.0;
-	}
-
-	FROM_TO(3960 + midboss_time, 4000 + midboss_time, 1) {
-		stgstate.tunnel_avel += 2 / 40.0;
-	}
-
-	FROM_TO(4360 + midboss_time, 4390 + midboss_time, 1) {
-		stgstate.clr_r -= .5 / 30.0;
-	}
-
-	FROM_TO(4390 + midboss_time, 4510 + midboss_time, 1) {
-		stgstate.clr_r += .5 / 120.0;
-		stage_3d_context.cx[2] += (0 - stage_3d_context.cx[2]) * 0.05;
-		stgstate.fog_exp = approach(stgstate.fog_exp, 4, 1/20.0);
-	}
-
-	FROM_TO(4299 + midboss_time, 5299 + midboss_time, 1) {
-		stgstate.tunnel_side -= 70 / 1000.0;
-		stgstate.tunnel_updn -= 40 / 1000.0;
-		stgstate.clr_r -= 0.5 / 1000.0;
-		stgstate.clr_b += 0.2 / 1000.0;
-		stage_3d_context.crot[0] += 7 / 1000.0;
-		stgstate.fog_exp -= 1.5 / 1000.0;
-	}
-
-	FROM_TO(5099 + midboss_time, 5299 + midboss_time, 1) {
-		stage_3d_context.cv[1] += 90 / 200.0/2;
-		stgstate.tunnel_avel -= 1.1 / 200.0;
-		stage_3d_context.crot[0] -= 15 / 200.0;
-		stgstate.fog_exp = approach(stgstate.fog_exp, 2.5, 1/50.0);
-	}
-
-	FROM_TO(5200 + midboss_time, 5300 + midboss_time, 1) {
-		stage_3d_context.cx[2] += (-50 - stage_3d_context.cx[2]) * 0.02;
-	}
-
-	// 5300 - BOSS
-
-	FROM_TO(5301 + midboss_time, 5700 + midboss_time, 1) {
-		stgstate.tunnel_avel = (0 - stgstate.tunnel_avel) * 0.02;
-		stage_3d_context.cx[2] += (-500 - stage_3d_context.cx[2]) * 0.02;
-		stage_3d_context.crot[0] += (-180 - stage_3d_context.crot[0]) * 0.004;
-
-		stgstate.clr_mixfactor = approach(stgstate.clr_mixfactor, 0, 1/300.0);
-		stgstate.fog_brightness = approach(stgstate.fog_brightness, 1.0, 1/200.0);
-		stgstate.fog_exp = approach(stgstate.fog_exp, 3, 1/50.0);
-
-		stage_3d_context.cv[1] = approach(stage_3d_context.cv[1], -20, 1/10.0);
-
-		stgstate.clr_r = approach(stgstate.clr_r, 0.6, 1.0/200.0);
-		stgstate.clr_g = approach(stgstate.clr_g, 0.3, 1.0/200.0);
-		stgstate.clr_b = approach(stgstate.clr_b, 0.4, 1.0/200.0);
-	}
 
 	stage3d_update(&stage_3d_context);
 }
@@ -386,7 +224,7 @@ void stage3_skip(int t) {
 	audio_music_set_position(global.timer / (double)FPS);
 }
 
-ShaderRule stage3_shaders[] = { stage3_fog, stage3_tunnel, NULL };
+ShaderRule stage3_shaders[] = { stage3_fog, NULL };
 ShaderRule stage3_postprocess[] = { stage3_glitch, NULL };
 
 StageProcs stage3_procs = {
