@@ -383,7 +383,6 @@ void dialog_draw(Dialog *dialog) {
 	}
 
 	if(dialog->title.active) {
-		log_debug("print title");
 		FloatRect title_bg_rect = {
 			.extent = { VIEWPORT_W-300, 60 },
 			.offset = { VIEWPORT_W-125, VIEWPORT_H-170 },
@@ -408,8 +407,9 @@ void dialog_draw(Dialog *dialog) {
 		color_mul_scalar(&clr, dialog->title.opacity);
 
 		text_draw(dialog->title.name, &(TextParams) {
+			.shader = "text_default",
 			.color = RGB(0.7, 0.7, 0.7),
-			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
+			.pos = { VIEWPORT_W/2+60, VIEWPORT_H-200 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
 		});
