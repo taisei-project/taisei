@@ -50,37 +50,34 @@ double youmu_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
-void youmu_common_shot(Player *plr) {
-	play_loop("generic_shot");
-
-	if(!(global.frames % 6)) {
-		Color *c = RGB(1, 1, 1);
-
-		PROJECTILE(
-			.proto = pp_youmu,
-			.pos = plr->pos + 10 - I*20,
-			.color = c,
-			.rule = linear,
-			.args = { -20.0*I },
-			.type = PROJ_PLAYER,
-			.damage = 120,
-			.shader = "sprite_default",
-		);
-
-		PROJECTILE(
-			.proto = pp_youmu,
-			.pos = plr->pos - 10 - I*20,
-			.color = c,
-			.rule = linear,
-			.args = { -20.0*I },
-			.type = PROJ_PLAYER,
-			.damage = 120,
-			.shader = "sprite_default",
-		);
-	}
+Projectile *youmu_common_shot(cmplx pos, MoveParams move, real dmg, ShaderProgram *shader) {
+	return PROJECTILE(
+		.damage = dmg,
+		.layer = LAYER_PLAYER_SHOT | 0x20,
+		.move = move,
+		.pos = pos,
+		.proto = pp_youmu,
+		.shader_ptr = shader,
+		.type = PROJ_PLAYER,
+	);
 }
 
-static Framebuffer *bomb_buffer;
+void youmu_common_init_bomb_background(YoumuBombBGData *bg_data) {
+	FBAttachmentConfig cfg;
+	memset(&cfg, 0, sizeof(cfg));
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.type = TEX_TYPE_RGB;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
+
+	bg_data->buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
+	bg_data->shader = r_shader_get("youmu_bomb_bg");
+	bg_data->uniforms.petals = r_shader_uniform(bg_data->shader, "petals");
+	bg_data->uniforms.time = r_shader_uniform(bg_data->shader, "time");
+	bg_data->texture = r_texture_get("youmu_bombbg1");
+}
 
 static void capture_frame(Framebuffer *dest, Framebuffer *src) {
 	r_state_push();
@@ -92,43 +89,37 @@ static void capture_frame(Framebuffer *dest, Framebuffer *src) {
 	r_state_pop();
 }
 
-void youmu_common_bombbg(Player *plr) {
-	if(!player_is_bomb_active(plr)) {
-		return;
-	}
+DEFINE_EXTERN_TASK(youmu_common_bomb_background) {
+	Player *plr = TASK_BIND(ARGS.plr);
+	YoumuBombBGData *bg_data = ARGS.bg_data;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
-	float t = player_get_bomb_progress(&global.plr);
-	float fade = 1;
+	do {
+		WAIT_EVENT_OR_DIE(draw_event);
 
-	if(t < 1./12)
-		fade = t*12;
+		float t = player_get_bomb_progress(&global.plr);
+		float fade = 1.0f;
 
-	if(t > 1./2)
-		fade = 1-(t-1./2)*2;
+		if(t < 1.0f / 12.0f) {
+			fade = t * 12.0f;
+		}
 
-	if(fade < 0)
-		fade = 0;
+		if(t > 1.0f / 2.0f) {
+			fade = 1-(t-1./2)*2;
+		}
 
-	r_state_push();
-	r_color4(fade, fade, fade, fade);
-	r_shader("youmu_bomb_bg");
-	r_uniform_sampler("petals", "youmu_bombbg1");
-	r_uniform_float("time", t);
+		if(fade < 0.0f) {
+			fade = 0.0f;
+		}
 
-	draw_framebuffer_tex(bomb_buffer, VIEWPORT_W, VIEWPORT_H);
-	r_state_pop();
+		r_state_push();
+		r_color4(fade, fade, fade, fade);
+		r_shader_ptr(bg_data->shader);
+		r_uniform_sampler(bg_data->uniforms.petals, bg_data->texture);
+		r_uniform_float(bg_data->uniforms.time, t);
+		draw_framebuffer_tex(bg_data->buffer, VIEWPORT_W, VIEWPORT_H);
+		r_state_pop();
 
-	capture_frame(bomb_buffer, r_framebuffer_current());
-}
-
-void youmu_common_bomb_buffer_init(void) {
-	FBAttachmentConfig cfg;
-	memset(&cfg, 0, sizeof(cfg));
-	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	cfg.tex_params.type = TEX_TYPE_RGB;
-	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
-	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
-	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	bomb_buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
+		capture_frame(bg_data->buffer, r_framebuffer_current());
+	} while(player_is_bomb_active(plr));
 }

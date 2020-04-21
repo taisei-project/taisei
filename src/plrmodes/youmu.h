@@ -18,9 +18,19 @@
 
 extern PlayerCharacter character_youmu;
 
+typedef struct YoumuBombBGData {
+	Framebuffer *buffer;
+	ShaderProgram *shader;
+	struct {
+		Uniform *petals, *time;
+	} uniforms;
+	Texture *texture;
+} YoumuBombBGData;
+
 double youmu_common_property(Player *plr, PlrProperty prop);
-void youmu_common_shot(Player *plr);
-void youmu_common_bombbg(Player *plr);
-void youmu_common_bomb_buffer_init(void);
+Projectile *youmu_common_shot(cmplx pos, MoveParams move, real dmg, ShaderProgram *shader);
+
+void youmu_common_init_bomb_background(YoumuBombBGData *bg_data);
+DECLARE_EXTERN_TASK(youmu_common_bomb_background, { BoxedPlayer plr; YoumuBombBGData *bg_data; });
 
 #endif // IGUARD_plrmodes_youmu_h

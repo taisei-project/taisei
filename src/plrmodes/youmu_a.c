@@ -45,6 +45,7 @@ struct YoumuAController {
 
 	Player *plr;
 	YoumuAMyon myon;
+	YoumuBombBGData bomb_bg;
 };
 
 static Color *myon_color(Color *c, float f, float opacity, float alpha) {
@@ -536,17 +537,6 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
 	} while(player_is_bomb_active(plr));
 }
 
-TASK(youmu_mirror_bomb_background, { YoumuAController *ctrl; }) {
-	YoumuAController *ctrl = ARGS.ctrl;
-	Player *plr = ctrl->plr;
-	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
-
-	do {
-		WAIT_EVENT_OR_DIE(draw_event);
-		youmu_common_bombbg(plr);
-	} while(player_is_bomb_active(plr));
-}
-
 TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
@@ -555,21 +545,9 @@ TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
 		play_sound("bomb_youmu_b");
 		INVOKE_SUBTASK(youmu_mirror_bomb_controller, ctrl);
-		INVOKE_SUBTASK(youmu_mirror_bomb_background, ctrl);
+		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
 		INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, ctrl);
 	}
-}
-
-static inline Projectile *youmu_mirror_self_shot(cmplx pos, MoveParams move, real dmg, ShaderProgram *shader) {
-	return PROJECTILE(
-		.damage = dmg,
-		.layer = LAYER_PLAYER_SHOT | 0x20,
-		.move = move,
-		.pos = pos,
-		.proto = pp_youmu,
-		.shader_ptr = shader,
-		.type = PROJ_PLAYER,
-	);
 }
 
 TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
@@ -589,12 +567,12 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 		for(int side = -1; side < 2; side += 2) {
 			cmplx origin = plr->pos + 10*side + 5*I;
 
-			youmu_mirror_self_shot(origin, move_linear(v), SHOT_SELF_DAMAGE, shader);
+			youmu_common_shot(origin, move_linear(v), SHOT_SELF_DAMAGE, shader);
 
 			for(int p = 0; p < power_rank; ++p) {
 				cmplx v2 = -(20 - p) * I * cdir(side * (1 + p) * spread);
 
-				youmu_mirror_self_shot(
+				youmu_common_shot(
 					origin,
 					move_asymptotic_halflife(
 						0.2 * v2 * cdir(M_PI * 0.25 * side),
@@ -618,6 +596,8 @@ TASK(youmu_mirror_controller, { BoxedPlayer plr; }) {
 	ctrl->sprites.petal = get_sprite("part/petal");
 	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
 
+	youmu_common_init_bomb_background(&ctrl->bomb_bg);
+
 	INVOKE_SUBTASK(youmu_mirror_shot_forward, ctrl);
 	INVOKE_SUBTASK(youmu_mirror_myon, ctrl);
 	INVOKE_SUBTASK(youmu_mirror_bomb_handler, ctrl);
@@ -626,7 +606,6 @@ TASK(youmu_mirror_controller, { BoxedPlayer plr; }) {
 }
 
 static void youmu_mirror_init(Player *plr) {
-	youmu_common_bomb_buffer_init();
 	INVOKE_TASK(youmu_mirror_controller, ENT_BOX(plr));
 }
 
