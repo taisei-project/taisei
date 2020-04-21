@@ -12,5 +12,6 @@
 #include "taisei.h"
 
 #define ENTITIES_MarisaB(X, ...) \
+	X(MarisaBSlave, __VA_ARGS__) \
 
 #endif // IGUARD_plrmodes_marisa_b_entities_h

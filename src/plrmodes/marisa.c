@@ -50,39 +50,30 @@ double marisa_common_property(Player *plr, PlrProperty prop) {
 	UNREACHABLE;
 }
 
-void marisa_common_shot(Player *plr, float dmg) {
-	play_loop("generic_shot");
+DEFINE_EXTERN_TASK(marisa_common_shot_forward) {
+	Player *plr = TASK_BIND(ARGS.plr);
+	ShaderProgram *bolt_shader = r_shader_get("sprite_particle");
 
-	if(!(global.frames % 6)) {
-		Color *c = RGB(1, 1, 1);
+	real damage = ARGS.damage;
+	int delay = ARGS.delay;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(&plr->events.shoot);
+		play_loop("generic_shot");
 
 		for(int i = -1; i < 2; i += 2) {
 			PROJECTILE(
 				.proto = pp_marisa,
 				.pos = plr->pos + 10 * i - 15.0*I,
-				.color = c,
-				.rule = linear,
-				.args = { -20.0*I },
+				.move = move_linear(-20*I),
 				.type = PROJ_PLAYER,
-				.damage = dmg,
-				.shader = "sprite_default",
+				.damage = damage,
+				.shader_ptr = bolt_shader,
 			);
 		}
-	}
-}
 
-void marisa_common_slave_visual(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
+		WAIT(delay);
 	}
-
-	r_draw_sprite(&(SpriteParams) {
-		.sprite = "hakkero",
-		.shader = "sprite_hakkero",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = t * 0.05,
-		.color = RGB(0.2, 0.4, 0.5),
-	});
 }
 
 static void draw_masterspark_ring(int t, float width) {

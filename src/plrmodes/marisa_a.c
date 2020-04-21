@@ -13,6 +13,7 @@
 #include "marisa.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
+#include "common_tasks.h"
 
 #define SHOT_FORWARD_DAMAGE 100
 #define SHOT_FORWARD_DELAY 6
@@ -29,7 +30,7 @@ DEFINE_ENTITY_TYPE(MarisaASlave, {
 	real lean;
 	real shot_angle;
 	real flare_alpha;
-	bool alive;
+	uint alive;
 });
 
 DEFINE_ENTITY_TYPE(MarisaAMasterSpark, {
@@ -290,11 +291,6 @@ static void marisa_laser_flash_draw(Projectile *p, int t, ProjDrawRuleArgs args)
 	r_draw_sprite(&sp);
 }
 
-TASK(marisa_laser_slave_expire, { BoxedMarisaASlave slave; }) {
-	MarisaASlave *slave = TASK_BIND(ARGS.slave);
-	slave->alive = false;
-}
-
 static void marisa_laser_show_laser(MarisaAController *ctrl, MarisaALaser *laser) {
 	alist_append(&ctrl->lasers, laser);
 }
@@ -402,14 +398,18 @@ TASK(marisa_laser_slave, {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	MarisaASlave *slave = TASK_HOST_ENT(MarisaASlave);
-	slave->alive = true;
+	slave->alive = 1;
 	slave->ent.draw_func = marisa_laser_draw_slave;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	slave->pos = plr->pos;
 	slave->shader = r_shader_get("sprite_hakkero");
 	slave->sprite = get_sprite("hakkero");
 
-	INVOKE_TASK_WHEN(&ctrl->events.slaves_expired, marisa_laser_slave_expire, ENT_BOX(slave));
+	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
+		.pflags = &slave->alive,
+		.mask = 0,
+		.set = 0
+	);
 
 	BoxedTask shot_task = cotask_box(INVOKE_SUBTASK(marisa_laser_slave_shot,
 		.ctrl = ctrl,
@@ -664,30 +664,6 @@ TASK(marisa_laser_power_handler, { MarisaAController *ctrl; }) {
 	}
 }
 
-TASK(marisa_laser_shot_forward, { MarisaAController *ctrl; }) {
-	MarisaAController *ctrl = ARGS.ctrl;
-	Player *plr = ctrl->plr;
-	ShaderProgram *bolt_shader = r_shader_get("sprite_particle");
-
-	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
-
-		for(int i = -1; i < 2; i += 2) {
-			PROJECTILE(
-				.proto = pp_marisa,
-				.pos = plr->pos + 10 * i - 15.0*I,
-				.move = move_linear(-20*I),
-				.type = PROJ_PLAYER,
-				.damage = SHOT_FORWARD_DAMAGE,
-				.shader_ptr = bolt_shader,
-			);
-		}
-
-		WAIT(SHOT_FORWARD_DELAY);
-	}
-}
-
 TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 	MarisaAController *ctrl = TASK_HOST_ENT(MarisaAController);
 	ctrl->plr = TASK_BIND(ARGS.plr);
@@ -698,7 +674,7 @@ TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 
 	INVOKE_SUBTASK(marisa_laser_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_laser_bomb_handler, ctrl);
-	INVOKE_SUBTASK(marisa_laser_shot_forward, ctrl);
+	INVOKE_SUBTASK(marisa_common_shot_forward, ARGS.plr, SHOT_FORWARD_DAMAGE, SHOT_FORWARD_DELAY);
 
 	STALL;
 }
