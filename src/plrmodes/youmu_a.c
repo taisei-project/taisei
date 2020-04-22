@@ -301,6 +301,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	real focus_factor = 0.0;
 	bool fixed_position = false;
 	cmplx offset_dir = -I;
+	cmplx plr_lastmovedir = -offset_dir;
 
 	myon->pos = plr->pos;
 
@@ -308,6 +309,10 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 
 	for(int t = 0;; ++t) {
 		// yeah i no longer understand most of this either
+
+		if(cabs(plr->velocity)) {
+			plr_lastmovedir = cnormalize(plr->velocity);
+		}
 
 		real follow_factor = 0.1;
 
@@ -334,7 +339,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 				offset_dir = -I;
 			} else if(!(plr->inputflags & INFLAG_FOCUS)) {
 				if(plr->inputflags & INFLAGS_MOVE) {
-					offset_dir = -plr->lastmovedir;
+					offset_dir = -plr_lastmovedir;
 				} else {
 					offset_dir = cnormalize(myon->pos - plr->pos);
 				}

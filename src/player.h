@@ -97,7 +97,6 @@ DEFINE_ENTITY_TYPE(Player, {
 	cmplx pos;
 	cmplx velocity;
 	cmplx deathpos;
-	cmplx lastmovedir;
 
 	struct PlayerMode *mode;
 	AniPlayer ani;

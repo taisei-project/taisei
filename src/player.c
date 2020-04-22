@@ -151,13 +151,7 @@ void player_move(Player *plr, cmplx delta) {
 	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
 	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
 	plr->pos = x + y*I;
-	cmplx realdir = plr->pos - lastpos;
-
-	if(cabs(realdir)) {
-		plr->lastmovedir = realdir / cabs(realdir);
-	}
-
-	plr->velocity = realdir;
+	plr->velocity = plr->pos - lastpos;
 }
 
 void player_draw_overlay(Player *plr) {
