@@ -1,3 +1,2 @@
 
-glad_sources += files('glad.c')
-
+glad_sources += files('gl.c')

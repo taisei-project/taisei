@@ -50,8 +50,12 @@
 	#define glClearDepth glClearDepthf
 	#define glClearTexImage glClearTexImageEXT
 #else
-	#include <glad/glad.h>
+	#include <glad/gl.h>
 	#define GL_FUNC(f) (glad_gl##f)
+
+	#ifndef APIENTRY
+		#define APIENTRY GLAD_API_PTR
+	#endif
 #endif
 
 #include "assert.h"
@@ -73,6 +77,7 @@
 	TSGL_EXT_VENDOR(NATIVE) \
 	TSGL_EXT_VENDOR(NV) \
 	TSGL_EXT_VENDOR(OES) \
+	TSGL_EXT_VENDOR(SGIX) \
 	TSGL_EXT_VENDOR(WEBGL) \
 
 enum {
@@ -135,117 +140,6 @@ struct glext_s {
 	ext_flag_t texture_rg;
 	ext_flag_t vertex_array_object;
 	ext_flag_t viewport_array;
-
-	//
-	// debug_output
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLDEBUGMESSAGECONTROLKHRPROC DebugMessageControl;
-	#undef glDebugMessageControl
-	#define glDebugMessageControl (glext.DebugMessageControl)
-
-	PFNGLDEBUGMESSAGECALLBACKKHRPROC DebugMessageCallback;
-	#undef glDebugMessageCallback
-	#define glDebugMessageCallback (glext.DebugMessageCallback)
-
-	PFNGLOBJECTLABELPROC ObjectLabel;
-	#undef glObjectLabel
-	#define glObjectLabel (glext.ObjectLabel)
-#endif
-
-	// instanced_arrays
-
-#ifndef STATIC_GLES3
-	PFNGLDRAWARRAYSINSTANCEDPROC DrawArraysInstanced;
-	#undef glDrawArraysInstanced
-	#define glDrawArraysInstanced (glext.DrawArraysInstanced)
-
-	PFNGLDRAWELEMENTSINSTANCEDPROC DrawElementsInstanced;
-	#undef glDrawElementsInstanced
-	#define glDrawElementsInstanced (glext.DrawElementsInstanced)
-
-	PFNGLVERTEXATTRIBDIVISORPROC VertexAttribDivisor;
-	#undef glVertexAttribDivisor
-	#define glVertexAttribDivisor (glext.VertexAttribDivisor)
-#endif
-
-	//
-	// base_instance
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC DrawArraysInstancedBaseInstance;
-	#undef glDrawArraysInstancedBaseInstance
-	#define glDrawArraysInstancedBaseInstance (glext.DrawArraysInstancedBaseInstance)
-
-	PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEPROC DrawElementsInstancedBaseInstance;
-	#undef glDrawElementsInstancedBaseInstance
-	#define glDrawElementsInstancedBaseInstance (glext.DrawElementsInstancedBaseInstance)
-#endif
-
-	//
-	// draw_buffers
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLDRAWBUFFERSPROC DrawBuffers;
-	#undef glDrawBuffers
-	#define glDrawBuffers (glext.DrawBuffers)
-#endif
-
-	//
-	// clear_texture
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLCLEARTEXIMAGEPROC ClearTexImage;
-	#undef glClearTexImage
-	#define glClearTexImage (glext.ClearTexImage)
-#endif
-
-	/*
-	PFNGLCLEARTEXSUBIMAGEPROC ClearTexSubImage;
-	#undef glClearTexSubImage
-	#define glClearTexSubImage (glext.ClearTexSubImage)
-	*/
-
-	//
-	// 	vertex_array_object
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLBINDVERTEXARRAYPROC BindVertexArray;
-	#undef glBindVertexArray
-	#define glBindVertexArray (glext.BindVertexArray)
-
-	PFNGLDELETEVERTEXARRAYSPROC DeleteVertexArrays;
-	#undef glDeleteVertexArrays
-	#define glDeleteVertexArrays (glext.DeleteVertexArrays)
-
-	PFNGLGENVERTEXARRAYSPROC GenVertexArrays;
-	#undef glGenVertexArrays
-	#define glGenVertexArrays (glext.GenVertexArrays)
-
-	PFNGLISVERTEXARRAYPROC IsVertexArray;
-	#undef glIsVertexArray
-	#define glIsVertexArray (glext.IsVertexArray)
-#endif
-
-	//
-	//	viewport_array
-	//	NOTE: only the subset we actually use is defined here
-	//
-
-#ifndef STATIC_GLES3
-	PFNGLGETFLOATI_VPROC GetFloati_v;
-	#undef glGetFloati_v
-	#define glGetFloati_v (glext.GetFloati_v)
-
-	PFNGLVIEWPORTINDEXEDFVPROC ViewportIndexedfv;
-	#undef glViewportIndexedfv
-	#define glViewportIndexedfv (glext.ViewportIndexedfv)
-#endif
 };
 
 #define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))

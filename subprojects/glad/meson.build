@@ -6,7 +6,6 @@ glad_extensions = [
     'GL_ANGLE_depth_texture',
     'GL_ANGLE_instanced_arrays',
     'GL_ANGLE_translated_shader_source',
-    'GL_APPLE_vertex_array_object',
     'GL_ARB_base_instance',
     'GL_ARB_clear_texture',
     'GL_ARB_debug_output',
@@ -34,6 +33,7 @@ glad_extensions = [
     'GL_NV_draw_instanced',
     'GL_NV_instanced_arrays',
     'GL_NV_pixel_buffer_object',
+    'GL_NV_viewport_array2',
     'GL_OES_depth_texture',
     'GL_OES_texture_float_linear',
     'GL_OES_texture_half_float_linear',
@@ -42,16 +42,16 @@ glad_extensions = [
     'GL_SGIX_depth_texture',
 ]
 
+# NOTE: requires glad2 (beta) https://github.com/Dav1dde/glad/tree/glad2
 glad_program = find_program('glad', required : false)
 
 glad_args = [
-    '--profile', glad_profile,
-    '--api', ','.join(glad_api),
-    '--generator', 'c',
-    '--spec', 'gl',
+    '--api', 'gl:core=3.3,gles2=3.0',
     '--extensions', ','.join(glad_extensions),
-    '--no-loader',
+    '--merge',
     '--out-path', meson.current_source_dir(),
+    'c',
+    '--alias',
 ]
 
 glad_sources = []
