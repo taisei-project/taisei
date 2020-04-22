@@ -55,6 +55,10 @@ typedef struct DialogTextBuffer {
 	float opacity;
 } DialogTextBuffer;
 
+struct title_box {
+	float opacity;
+};
+
 typedef struct Dialog {
 	LIST_ANCHOR(DialogActor) actors;
 
@@ -69,7 +73,8 @@ typedef struct Dialog {
 		const char *text;
 		bool active;
 		int timeout;
-		float opacity;
+		struct title_box box;
+		struct title_box box_text;
 	} title;
 
 	Color title_color;

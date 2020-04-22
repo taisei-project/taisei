@@ -106,14 +106,18 @@ void dialog_update(Dialog *d) {
 
 	if (d->title.active) {
 		if(d->title.timeout > 0) {
-			fapproach_asymptotic_p(&d->title.opacity, 1, 0.05, 1e-3);
+			fapproach_asymptotic_p(&d->title.box.opacity, 1, 0.05, 1e-3);
+			fapproach_asymptotic_p(&d->title.box_text.opacity, 1, 0.05, 1e-3);
 			d->title.timeout--;
 		}
 		if(d->title.timeout == 0) {
-			fapproach_asymptotic_p(&d->title.opacity, 0, 0.1, 1e-3);
+			fapproach_asymptotic_p(&d->title.box.opacity, 0, 0.1, 1e-3);
+			fapproach_asymptotic_p(&d->title.box_text.opacity, 0, 0.1, 1e-3);
+            d->title.box_text.opacity = 0;
 		}
 	} else if (d->title.timeout == 0) {
 		d->title.active = false;
+
 	}
 }
 
@@ -327,7 +331,6 @@ void dialog_draw(Dialog *dialog) {
 		.offset = { VIEWPORT_W/2, VIEWPORT_H-55 },
 	};
 
-
 	r_mat_mv_push();
 	if(dialog->opacity < 1) {
 		r_mat_mv_translate(0, 100 * (1 - dialog->opacity), 0);
@@ -389,10 +392,10 @@ void dialog_draw(Dialog *dialog) {
 		};
 
 		r_mat_mv_push();
-		if(dialog->title.opacity < 1) {
-			r_mat_mv_translate(0, 100 * (1 - dialog->title.opacity), 0);
+		if(dialog->title.box.opacity < 1) {
+			r_mat_mv_translate(0, 100 * (1 - dialog->title.box.opacity), 0);
 		}
-		r_color4(0, 0, 0, 0.8 * dialog->title.opacity);
+		r_color4(0, 0, 0, 0.8 * dialog->title.box.opacity);
 		r_mat_mv_translate(title_bg_rect.x, title_bg_rect.y, 0);
 		r_mat_mv_scale(title_bg_rect.w, title_bg_rect.h, 1);
 		r_shader_standard_notex();
@@ -404,11 +407,11 @@ void dialog_draw(Dialog *dialog) {
 		title_bg_rect.y -= title_bg_rect.h * 0.6;
 
 		clr = dialog->text.current->color;
-		color_mul_scalar(&clr, dialog->title.opacity);
+		color_mul_scalar(&clr, dialog->title.box_text.opacity);
 
 		text_draw(dialog->title.name, &(TextParams) {
 			.shader = "text_default",
-			.color = RGB(0.7, 0.7, 0.7),
+			.color = &clr,
 			.pos = { VIEWPORT_W/2+60, VIEWPORT_H-200 + font_get_lineskip(font) },
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
@@ -445,6 +448,7 @@ void dialog_draw_title(Dialog *dialog, DialogActor *actor, char *name, char *tit
 	dialog->title.text = title;
 	dialog->title.active = true;
 	dialog->title.timeout = 360;
+
 	log_debug("Show Title: %s - %s", name, title);
 
 }
