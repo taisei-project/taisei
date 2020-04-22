@@ -101,7 +101,6 @@ DEFINE_ENTITY_TYPE(Player, {
 
 	struct PlayerMode *mode;
 	AniPlayer ani;
-	EnemyList focus_circle;
 	Sprite bomb_portrait;
 
 	struct {
@@ -136,7 +135,6 @@ DEFINE_ENTITY_TYPE(Player, {
 	int life_fragments;
 	int bomb_fragments;
 	int continues_used;
-	int focus;
 	int power;
 	int power_overflow;
 
@@ -152,6 +150,7 @@ DEFINE_ENTITY_TYPE(Player, {
 	int axis_ud;
 	int axis_lr;
 
+	float focus_circle_alpha;
 	float bomb_cutin_alpha;
 
 	bool gamepadmove;

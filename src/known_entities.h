@@ -17,6 +17,7 @@
 	X(Item, __VA_ARGS__) \
 	X(Laser, __VA_ARGS__) \
 	X(Player, __VA_ARGS__) \
+	X(PlayerIndicators, __VA_ARGS__) \
 	X(Projectile, __VA_ARGS__) \
 
 #include "plrmodes/entities.h"

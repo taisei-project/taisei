@@ -42,7 +42,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 
 	s->plr_points = plr->points;
 	s->plr_continues_used = plr->continues_used;
-	s->plr_focus = plr->focus;
+	// s->plr_focus = plr->focus;  FIXME remove and bump version
 	s->plr_char = plr->mode->character->id;
 	s->plr_shot = plr->mode->shot_mode;
 	s->plr_lives = plr->lives;
@@ -63,7 +63,7 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->continues_used = stg->plr_continues_used;
 	plr->mode = plrmode_find(stg->plr_char, stg->plr_shot);
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
-	plr->focus = stg->plr_focus;
+	// plr->focus = stg->plr_focus;  FIXME remove and bump version
 	plr->lives = stg->plr_lives;
 	plr->life_fragments = stg->plr_life_fragments;
 	plr->bombs = stg->plr_bombs;
@@ -163,7 +163,7 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 	cs += stg->plr_shot;
 	cs += stg->plr_pos_x;
 	cs += stg->plr_pos_y;
-	cs += stg->plr_focus;
+	cs += stg->plr_focus;  // FIXME remove and bump version
 	cs += stg->plr_power;
 	cs += stg->plr_lives;
 	cs += stg->plr_life_fragments;
@@ -212,7 +212,7 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_shot);
 	SDL_WriteLE16(file, stg->plr_pos_x);
 	SDL_WriteLE16(file, stg->plr_pos_y);
-	SDL_WriteU8(file, stg->plr_focus);
+	SDL_WriteU8(file, stg->plr_focus);  // FIXME remove and bump version
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lives);
 	SDL_WriteLE16(file, stg->plr_life_fragments);
@@ -453,7 +453,7 @@ static bool _replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, co
 		CHECKPROP(stg->plr_shot = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
-		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);
+		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);  // FIXME remove and bump version
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_lives = SDL_ReadU8(file), u);
 

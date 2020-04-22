@@ -19,6 +19,17 @@
 #include "entity.h"
 #include "util/glm.h"
 
+DEFINE_ENTITY_TYPE(PlayerIndicators, {
+	Player *plr;
+
+	struct {
+		Sprite *focus;
+	} sprites;
+
+	float focus_alpha;
+	int focus_time;
+});
+
 void player_init(Player *plr) {
 	memset(plr, 0, sizeof(Player));
 	plr->pos = PLR_SPAWN_POS;
@@ -47,9 +58,8 @@ double player_property(Player *plr, PlrProperty prop) {
 static void ent_draw_player(EntityInterface *ent);
 static DamageResult ent_damage_player(EntityInterface *ent, const DamageInfo *dmg);
 
-static void player_spawn_focus_circle(Player *plr);
-
 DECLARE_TASK(player_logic, { BoxedPlayer plr; });
+DECLARE_TASK(player_indicators, { BoxedPlayer plr; });
 
 void player_stage_post_init(Player *plr) {
 	assert(plr->mode != NULL);
@@ -70,12 +80,11 @@ void player_stage_post_init(Player *plr) {
 	COEVENT_INIT_ARRAY(plr->events);
 
 	INVOKE_TASK_DELAYED(1, player_logic, ENT_BOX(plr));
+	INVOKE_TASK_DELAYED(1, player_indicators, ENT_BOX(plr));
 
 	if(plr->mode->procs.init != NULL) {
 		plr->mode->procs.init(plr);
 	}
-
-	player_spawn_focus_circle(plr);
 
 	plr->extralife_threshold = player_next_extralife_threshold(plr->extralives_given);
 
@@ -94,7 +103,6 @@ void player_free(Player *plr) {
 	r_texture_destroy(plr->bomb_portrait.tex);
 	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
-	delete_enemy(&plr->focus_circle, plr->focus_circle.first);
 }
 
 static void player_full_power(Player *plr) {
@@ -241,11 +249,11 @@ static void ent_draw_player(EntityInterface *ent) {
 		return;
 	}
 
-	if(plr->focus) {
+	if(plr->focus_circle_alpha) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
-			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * (clamp(plr->focus, 0, 15) / 15.0)),
+			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
 			.pos = { creal(plr->pos), cimag(plr->pos) },
 		});
 	}
@@ -261,74 +269,54 @@ static void ent_draw_player(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
-		.pos = { creal(plr->pos), cimag(plr->pos) },
+		.pos.as_cmplx = plr->pos,
 		.color = &c,
 	});
 }
 
-static int player_focus_circle_logic(Enemy *e, int t) {
-	if(t < 0) {
-		return ACTION_NONE;
-	}
+static void player_draw_indicators(EntityInterface *ent) {
+	PlayerIndicators *indicators = ENT_CAST(ent, PlayerIndicators);
+	Player *plr = indicators->plr;
 
-	double alpha = creal(e->args[0]);
-
-	if(t <= 1) {
-		alpha = min(0.1, alpha);
-	} else {
-		alpha = approach(alpha, (global.plr.inputflags & INFLAG_FOCUS) ? 1 : 0, 1/30.0);
-	}
-
-	e->args[0] = alpha;
-	return ACTION_NONE;
-}
-
-static void player_focus_circle_visual(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
-	float focus_opacity = creal(e->args[0]);
+	float focus_opacity = indicators->focus_alpha;
+	int t = global.frames - indicators->focus_time;
+	cmplx32 pos = plr->pos;
 
 	if(focus_opacity > 0) {
-		int trans_frames = 12;
-		double trans_factor = 1 - min(trans_frames, t) / (double)trans_frames;
-		double rot_speed = DEG2RAD * global.frames * (1 + 3 * trans_factor);
-		double scale = 1.0 + trans_factor;
+		float trans_frames = 12;
+		float trans_factor = 1.0 - fminf(trans_frames, t) / trans_frames;
+		float rot_speed = DEG2RAD * global.frames * (1.0f + 3.0f * trans_factor);
+		float scale = 1.0f + trans_factor;
 
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = "focus",
+		SpriteParams sp = {
+			.sprite_ptr = indicators->sprites.focus,
 			.rotation.angle = rot_speed,
-			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-			.pos = { creal(e->pos), cimag(e->pos) },
+			.color = RGBA_MUL_ALPHA(1, 1, 1, focus_opacity),
+			.pos.as_cmplx = pos,
 			.scale.both = scale,
-		});
+		};
 
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = "focus",
-			.rotation.angle = rot_speed * -1,
-			.color = RGBA_MUL_ALPHA(1, 1, 1, creal(e->args[0])),
-			.pos = { creal(e->pos), cimag(e->pos) },
-			.scale.both = scale,
-		});
+		r_draw_sprite(&sp);
+		sp.rotation.angle *= -1;
+		r_draw_sprite(&sp);
 	}
 
 	float ps_opacity = 1.0;
 	float ps_fill_factor = 1.0;
 
-	if(player_is_powersurge_active(&global.plr)) {
-		ps_opacity *= clamp((global.frames - global.plr.powersurge.time.activated) / 30.0, 0, 1);
-	} else if(global.plr.powersurge.time.expired == 0) {
+	if(player_is_powersurge_active(plr)) {
+		ps_opacity *= clamp((global.frames - plr->powersurge.time.activated) / 30.0, 0, 1);
+	} else if(plr->powersurge.time.expired == 0) {
 		ps_opacity = 0;
 	} else {
-		ps_opacity *= (1 - clamp((global.frames - global.plr.powersurge.time.expired) / 40.0, 0, 1));
+		ps_opacity *= (1 - clamp((global.frames - plr->powersurge.time.expired) / 40.0, 0, 1));
 		ps_fill_factor = pow(ps_opacity, 2);
 	}
 
 	if(ps_opacity > 0) {
 		r_state_push();
 		r_mat_mv_push();
-		r_mat_mv_translate(creal(e->pos), cimag(e->pos), 0);
+		r_mat_mv_translate(crealf(pos), cimagf(pos), 0);
 		r_mat_mv_scale(140, 140, 0);
 		r_shader("healthbar_radial");
 		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
@@ -336,18 +324,18 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 		r_uniform_vec4_rgba("fillColor",     RGBA(1.5, 0.5, 0.0, 0.75));
 		r_uniform_vec4_rgba("altFillColor",  RGBA(0.0, 0.5, 1.5, 0.75));
 		r_uniform_vec4_rgba("coreFillColor", RGBA(0.8, 0.8, 0.8, 0.25));
-		r_uniform_vec2("fill", global.plr.powersurge.positive * ps_fill_factor, global.plr.powersurge.negative * ps_fill_factor);
+		r_uniform_vec2("fill", plr->powersurge.positive * ps_fill_factor, plr->powersurge.negative * ps_fill_factor);
 		r_uniform_float("opacity", ps_opacity);
 		r_draw_quad();
 		r_mat_mv_pop();
 		r_state_pop();
 
 		char buf[64];
-		format_huge_num(0, global.plr.powersurge.bonus.baseline, sizeof(buf), buf);
+		format_huge_num(0, plr->powersurge.bonus.baseline, sizeof(buf), buf);
 		Font *fnt = get_font("monotiny");
 
-		float x = creal(e->pos);
-		float y = cimag(e->pos) + 80;
+		float x = crealf(pos);
+		float y = cimagf(pos) + 80;
 
 		float text_opacity = ps_opacity * 0.75;
 
@@ -359,7 +347,7 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 			.align = ALIGN_CENTER,
 		});
 
-		snprintf(buf, sizeof(buf), " +%u", global.plr.powersurge.bonus.gain_rate);
+		snprintf(buf, sizeof(buf), " +%u", plr->powersurge.bonus.gain_rate);
 
 		text_draw(buf, &(TextParams) {
 			.shader = "text_hud",
@@ -375,9 +363,31 @@ static void player_focus_circle_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-static void player_spawn_focus_circle(Player *plr) {
-	Enemy *f = create_enemy_p(&plr->focus_circle, 0, ENEMY_IMMUNE, player_focus_circle_visual, player_focus_circle_logic, 0, 0, 0, 0);
-	f->ent.draw_layer = LAYER_PLAYER_FOCUS;
+DEFINE_TASK(player_indicators) {
+	PlayerIndicators *indicators = TASK_HOST_ENT(PlayerIndicators);
+	indicators->plr = TASK_BIND(ARGS.plr);
+	indicators->ent.draw_layer = LAYER_PLAYER_FOCUS;
+	indicators->ent.draw_func = player_draw_indicators;
+	indicators->sprites.focus = get_sprite("focus");
+
+	Player *plr = indicators->plr;
+
+	bool was_focused = false;
+	bool is_focused = false;
+
+	for(;;) {
+		is_focused = (plr->inputflags & INFLAG_FOCUS) && player_is_alive(plr);
+
+		if(is_focused && !was_focused) {
+			indicators->focus_time = global.frames;
+			indicators->focus_alpha = fminf(indicators->focus_alpha, 0.1f);
+		}
+
+		was_focused = is_focused;
+		fapproach_p(&indicators->focus_alpha, is_focused, 1.0f/30.0f);
+
+		YIELD;
+	}
 }
 
 static void player_fail_spell(Player *plr) {
@@ -610,9 +620,7 @@ DEFINE_TASK(player_logic) {
 			player_powersurge_logic(plr);
 		}
 
-		plr->focus = approach(plr->focus, (plr->inputflags & INFLAG_FOCUS) ? 30 : 0, 1);
-		plr->focus_circle.first->pos = plr->pos;
-		process_enemies(&plr->focus_circle);
+		fapproach_p(&plr->focus_circle_alpha, !!(plr->inputflags & INFLAG_FOCUS), 1.0f/15.0f);
 
 		if(plr->mode->procs.think) {
 			plr->mode->procs.think(plr);
@@ -1046,10 +1054,6 @@ static PlrInputFlag key_to_inflag(KeyIndex key) {
 static bool player_updateinputflags(Player *plr, PlrInputFlag flags) {
 	if(flags == plr->inputflags) {
 		return false;
-	}
-
-	if((flags & INFLAG_FOCUS) && !(plr->inputflags & INFLAG_FOCUS)) {
-		plr->focus_circle.first->birthtime = global.frames;
 	}
 
 	plr->inputflags = flags;
