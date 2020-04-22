@@ -87,8 +87,8 @@ static void marisa_star_draw_slave(EntityInterface *ent) {
 }
 
 static Color *marisa_star_slave_projectile_color(Color *c, real focus, real brightener) {
-	static const Color focused   = { 0.3, 0.8, 1.0, 0.2 };
-	static const Color unfocused = { 1.0, 0.8, 0.3, 0.2 };
+	static const Color unfocused = { 0.3, 0.8, 1.0, 0.2 };
+	static const Color focused   = { 1.0, 0.8, 0.3, 0.2 };
 	*c = unfocused;
 	color_lerp(c, &focused, focus);
 	return color_add(c, RGBA(brightener, brightener, brightener, brightener));
@@ -136,8 +136,8 @@ TASK(marisa_star_slave_projectile, {
 
 		real focusfac = 1;
 
-		if(focus > 0) {
-			focusfac = t * 0.015 - 1 / focus;
+		if(focus < 1) {
+			focusfac = t * 0.015 - 1 / (1 - focus);
 			focusfac = tanh(sqrt(fabs(focusfac)));
 		}
 
@@ -156,7 +156,7 @@ TASK(marisa_star_slave_projectile, {
 			PARTICLE(
 				.sprite_ptr = ctrl->sprites.stardust,
 				.pos = next_pos,
-				.color = RGBA(0.5 * (1 - focus), 0, 0.5 * focus, 0),
+				.color = RGBA(0.5 * focus, 0, 0.5 * (1 - focus), 0),
 				.timeout = 5,
 				.angle = rng_angle(),
 				.angle_delta = 0.1 * rng_sreal(),
