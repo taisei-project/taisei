@@ -14,9 +14,12 @@
 #include "renderer/api.h"
 #include "common_tasks.h"
 #include "util/glm.h"
+#include "stagedraw.h"
 
 #define SHOT_FORWARD_DAMAGE 100
 #define SHOT_FORWARD_DELAY 6
+
+#define BOMB_NUM_ORBITERS 5
 
 #define HAKKERO_RETRACT_TIME 6
 
@@ -24,126 +27,28 @@ DEFINE_ENTITY_TYPE(MarisaBSlave, {
 	Sprite *sprite;
 	ShaderProgram *shader;
 	cmplx pos;
-	cmplx ref_pos;  // follows player
 	uint alive;
 });
 
+DEFINE_ENTITY_TYPE(MarisaBOrbiter, {
+	Sprite *sprite;
+	ShaderProgram *shader;
+	cmplx pos;
+	Color color;
+});
+
 typedef struct MarisaBController {
+	struct {
+		Sprite *stardust;
+	} sprites;
+
 	Player *plr;
+	cmplx slave_ref_pos;  // follows player
 
 	COEVENTS_ARRAY(
 		slaves_expired
 	) events;
 } MarisaBController;
-
-static int marisa_star_projectile(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
-		return ACTION_ACK;
-	}
-
-	Enemy *e = NULL;
-
-	if(creal(p->args[1]) >= 0) {
-		e = (Enemy*)REF(p->args[1]);
-	}
-
-	if(e != NULL && !player_should_shoot(&global.plr)) {
-		free_ref(p->args[1]);
-		p->args[1] = -1;
-		e = NULL;
-	}
-
-	if(e == NULL) {
-		p->pos += p->pos0;
-		p->pos0 *= 1.005;
-		p->angle += 0.1;
-		return ACTION_NONE;
-	}
-
-	//float c = 0.3 * psin(t * 0.2);
-	//p->color = *RGB(1 - c, 0.7 + 0.3 * psin(t * 0.1), 0.9 + c/3);
-
-
-	float freq = 0.1;
-
-	double focus = 1 - abs(global.plr.focus) / 30.0;
-
-	double focusfac = 1;
-	if(focus > 0) {
-		focusfac = t*0.015-1/focus;
-		focusfac = tanh(sqrt(fabs(focusfac)));
-	}
-
-	double centerfac = tanh(t/10.); // interpolate between player center and slave center
-	cmplx center = global.plr.pos*(1-centerfac) + e->args[2]*centerfac;
-
-	double brightener = -1/(1+sqrt(0.03*fabs(creal(p->pos-center))));
-	p->color = *RGBA(0.3+(1-focus)*0.7+brightener,0.8+brightener,1.0-(1-focus)*0.7+brightener,0.2+brightener);
-
-	double verticalfac = - 5*t*(1+0.01*t) + 10*t/(0.01*t+1);
-	p->pos0 = p->pos;
-	p->pos = center + focusfac*cbrt(0.1*t)*creal(p->args[0])* 70 * sin(freq*t+cimag(p->args[0])) + I*verticalfac;
-	p->pos0 = p->pos - p->pos0;
-	p->angle = carg(p->pos0);
-
-	if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again
-		PARTICLE(
-			.sprite = "stardust",
-			.pos = p->pos,
-			.color = RGBA(0.5*(1-focus),0,0.5*focus,0),
-			.timeout = 5,
-			.angle = t*0.1,
-			.draw_rule = pdraw_timeout_scalefade(0, 1.4, 1, 0),
-			.flags = PFLAG_NOREFLECT,
-		);
-	}
-
-	return ACTION_NONE;
-}
-
-static int marisa_star_slave(Enemy *e, int t) {
-	for(int i = 0; i < 2; ++i) {
-		if(player_should_shoot(&global.plr) && !((global.frames+2*i) % 5)) {
-			float fac = e->args[0]/M_PI/2;
-			cmplx v = (1-2*i);
-			v = creal(v)/cabs(v);
-			v *= 1-0.9*fac;
-			v -= I*0.04*t*(4-3*fac);
-
-			//v *= cexp(I*i*M_PI/20*sign(v));
-
-			PROJECTILE(
-				.proto = pp_maristar,
-				.pos = e->pos,
-				.color = RGBA(0.3,0.8,1.0,0.6),
-				.rule = marisa_star_projectile,
-				.args = { v, add_ref(e) },
-				.type = PROJ_PLAYER,
-				.damage = e->args[3],
-				.shader = "sprite_default",
-			);
-		}
-	}
-
-	double angle = 0.05*global.frames+e->args[0];
-	if(cos(angle) < 0) {
-		e->ent.draw_layer = LAYER_BACKGROUND;
-	} else {
-		e->ent.draw_layer = LAYER_PLAYER_SLAVE;
-	}
-
-	cmplx d = global.plr.pos-e->args[2];
-	e->args[2] += (2+2*!global.plr.focus)*d/(cabs(d)+2);
-	e->pos = e->args[2] + 80*sin(angle)+45*I;
-
-	return 1;
-}
-
 
 static int marisa_star_orbit_star(Projectile *p, int t) { // XXX: because growfade is the worst
 	if(t >= 0) {
@@ -223,8 +128,6 @@ static int marisa_star_orbit(Enemy *e, int t) {
 	return 1;
 }
 
-
-#define NUM_MARISTAR_SLAVES 5
 static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	if(!render) {
 		return;
@@ -248,14 +151,14 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 	color_mul_scalar(&color, fade);
 
 	if(e->args[0] == 0) {
-		MarisaBeamInfo beams[NUM_MARISTAR_SLAVES];
-		for(int i = 0; i < NUM_MARISTAR_SLAVES; i++) {
-			beams[i].origin = global.plr.pos + (e->pos-global.plr.pos)*cexp(I*2*M_PI/NUM_MARISTAR_SLAVES*i);
+		MarisaBeamInfo beams[BOMB_NUM_ORBITERS];
+		for(int i = 0; i < BOMB_NUM_ORBITERS; i++) {
+			beams[i].origin = global.plr.pos + (e->pos-global.plr.pos)*cexp(I*2*M_PI/BOMB_NUM_ORBITERS*i);
 			beams[i].size = 250*fade+VIEWPORT_H*1.5*I;
-			beams[i].angle = carg(e->pos - global.plr.pos) + M_PI/2 + 2*M_PI/NUM_MARISTAR_SLAVES*i;
+			beams[i].angle = carg(e->pos - global.plr.pos) + M_PI/2 + 2*M_PI/BOMB_NUM_ORBITERS*i;
 			beams[i].t = global.plr.bombtotaltime * tb;
 		}
-		marisa_common_masterspark_draw(NUM_MARISTAR_SLAVES, beams, fade);
+		marisa_common_masterspark_draw(BOMB_NUM_ORBITERS, beams, fade);
 	}
 
 	color.a = 0;
@@ -278,28 +181,11 @@ static void marisa_star_orbit_visual(Enemy *e, int t, bool render) {
 static void marisa_star_bomb(Player *plr) {
 	play_sound("bomb_marisa_b");
 
-	for(int i = 0; i < NUM_MARISTAR_SLAVES; i++) {
-		cmplx dir = cexp(2*I*M_PI/NUM_MARISTAR_SLAVES*i);
+	for(int i = 0; i < BOMB_NUM_ORBITERS; i++) {
+		cmplx dir = cexp(2*I*M_PI/BOMB_NUM_ORBITERS*i);
 		Enemy *e = create_enemy2c(plr->pos, ENEMY_BOMB, marisa_star_orbit_visual, marisa_star_orbit, i ,dir);
 		e->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
 	}
-}
-#undef NUM_MARISTAR_SLAVES
-
-static void marisa_star_bombbg(Player *plr) {
-	if(!player_is_bomb_active(plr)) {
-		return;
-	}
-
-	float t = player_get_bomb_progress(&global.plr);
-
-	ShaderProgram *s = r_shader_get("maristar_bombbg");
-	r_shader_ptr(s);
-	r_uniform_float("t", t);
-	r_uniform_float("decay", 1);
-	r_uniform_vec2("plrpos", creal(global.plr.pos)/VIEWPORT_W, cimag(global.plr.pos)/VIEWPORT_H);
-	fill_viewport(0,0,1,"marisa_bombbg");
-	r_shader_standard();
 }
 
 static void marisa_star_draw_slave(EntityInterface *ent) {
@@ -375,7 +261,7 @@ TASK(marisa_star_slave_projectile, {
 			focusfac = tanh(sqrt(fabs(focusfac)));
 		}
 
-		cmplx center = clerp(plr->pos, slave->ref_pos, tanh(t / 10.0));
+		cmplx center = clerp(plr->pos, ctrl->slave_ref_pos, tanh(t / 10.0));
 
 		real brightener = -1 / (1 + sqrt(0.03 * fabs(creal(p->pos - center))));
 		marisa_star_slave_projectile_color(&p->color, focus, brightener);
@@ -388,7 +274,7 @@ TASK(marisa_star_slave_projectile, {
 
 		if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again
 			PARTICLE(
-				.sprite = "stardust",
+				.sprite_ptr = ctrl->sprites.stardust,
 				.pos = next_pos,
 				.color = RGBA(0.5 * (1 - focus), 0, 0.5 * focus, 0),
 				.timeout = 5,
@@ -453,7 +339,6 @@ TASK(marisa_star_slave, {
 	MarisaBSlave *slave = TASK_HOST_ENT(MarisaBSlave);
 	slave->alive = 1;
 	slave->pos = plr->pos;
-	slave->ref_pos = plr->pos;
 	slave->shader = r_shader_get("sprite_hakkero");
 	slave->sprite = get_sprite("hakkero");
 
@@ -475,16 +360,11 @@ TASK(marisa_star_slave, {
 	real angle_step = 0.05;
 	real angle = angle_step * global.frames + ARGS.phase;
 
-	int t = 0;
-	while(slave->alive) {
-		cmplx pdelta = plr->pos - slave->ref_pos;
-		slave->ref_pos += cclampabs(pdelta, 2 + 2 * !(plr->inputflags & INFLAG_FOCUS));
-		cmplx target_pos = slave->ref_pos + 80 * sin(angle) + 45*I;
+	for(int t = 0; slave->alive; t += WAIT(1)) {
+		cmplx target_pos = ctrl->slave_ref_pos + 80 * sin(angle) + 45*I;
 		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(min(1, (real)t/HAKKERO_RETRACT_TIME)));
 		slave->ent.draw_layer = cos(angle) < 0 ? LAYER_BACKGROUND : LAYER_PLAYER_SLAVE;
 		angle += angle_step;
-		++t;
-		YIELD;
 	}
 
 	CANCEL_TASK(shot_task);
@@ -494,6 +374,7 @@ TASK(marisa_star_slave, {
 static void marisa_star_respawn_slaves(MarisaBController *ctrl, int numslaves) {
 	Player *plr = ctrl->plr;
 	coevent_signal(&ctrl->events.slaves_expired);
+	ctrl->slave_ref_pos = plr->pos;
 
 	real dmg = 56 / sqrt(numslaves);
 
@@ -522,18 +403,129 @@ TASK(marisa_star_power_handler, { MarisaBController *ctrl; }) {
 	}
 }
 
+TASK(marisa_star_orbiter_stars, { MarisaBController *ctrl; BoxedMarisaBOrbiter orbiter; Color *color; }) {
+	MarisaBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	MarisaBOrbiter *orbiter = TASK_BIND(ARGS.orbiter);
+
+	for(int t = 0; t < 300; t += WAIT(10 - t / 30)) {
+		cmplx vel = -5 * cnormalize(orbiter->pos - plr->pos);
+		PARTICLE(
+			.sprite = "maristar_orbit",
+			.pos = orbiter->pos,
+			.color = ARGS.color,
+			.rule = marisa_star_orbit_star,
+			.draw_rule = pdraw_timeout_scalefade(0, 6, 1, 0),
+			.timeout = 150,
+			.flags = PFLAG_NOREFLECT,
+			.args = { vel },
+		);
+	}
+}
+
+TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; Color *color; }) {
+	MarisaBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	MarisaBOrbiter *orbiter = TASK_HOST_ENT(MarisaBOrbiter);
+	orbiter->color = *ARGS.color;
+	orbiter->ent.draw_layer = LAYER_PLAYER_FOCUS - 1;
+
+	Color pcolor;
+
+	BoxedTask stars_task = cotask_box(INVOKE_SUBTASK_DELAYED(1, marisa_star_orbiter_stars,
+		.ctrl = ctrl,
+		.orbiter = ENT_BOX(orbiter),
+		.color = &pcolor
+	));
+
+	for(int t = 0;; t += WAIT(1)) {
+		pcolor = orbiter->color;
+
+		real r = 100 * pow(tanh(t / 20.0), 2);
+		cmplx dir = ARGS.dir * r * cdir(sqrt(1000 + (t * t) * (1 + 0.03 * t)) * 0.04);
+		orbiter->pos = plr->pos + dir;
+
+		real tb = player_get_bomb_progress(plr);
+		real fadetime = 3.0 / 4.0;
+
+		if(tb >= fadetime) {
+			pcolor.a = 1 - (tb - fadetime) / (1 - fadetime);
+			CANCEL_TASK(stars_task);
+			stars_task = (BoxedTask) { 0 };
+		}
+
+		color_mul_alpha(&pcolor);
+		pcolor.a = 0;
+
+		PARTICLE(
+			.sprite_ptr = get_sprite("part/maristar_orbit"),
+			.pos = orbiter->pos,
+			.color = color_mul_scalar(COLOR_COPY(&pcolor), 0.5),
+			.timeout = 10,
+			.angle = t * 0.1,
+			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),
+			.flags = PFLAG_NOREFLECT,
+		);
+	}
+}
+
+TASK(marisa_star_bomb_background, { MarisaBController *ctrl; }) {
+	MarisaBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	ShaderProgram *bg_shader = r_shader_get("maristar_bombbg");
+	Uniform *u_t = r_shader_uniform(bg_shader, "t");
+	Uniform *u_decay = r_shader_uniform(bg_shader, "decay");
+	Uniform *u_plrpos = r_shader_uniform(bg_shader, "plrpos");
+	Texture *bg_tex = r_texture_get("marisa_bombbg");
+
+	do {
+		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->background_drawn);
+
+		r_state_push();
+		r_shader_ptr(bg_shader);
+		r_uniform_float(u_t, player_get_bomb_progress(plr));
+		r_uniform_float(u_decay, 1);
+		r_uniform_vec2_complex(u_plrpos, cwmul(plr->pos, CMPLX(1.0/VIEWPORT_W, 1.0/VIEWPORT_H)));
+		fill_viewport_p(0, 0, 1, 1, 0, bg_tex);
+		r_state_pop();
+	} while(player_is_bomb_active(plr));
+}
+
+TASK(marisa_star_bomb_controller, { MarisaBController *ctrl; }) {
+	MarisaBController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	YIELD;
+
+	for(int i = 0; i < BOMB_NUM_ORBITERS; ++i) {
+		INVOKE_SUBTASK(marisa_star_orbiter,
+			.ctrl = ctrl,
+			.dir = cdir(i * M_TAU / BOMB_NUM_ORBITERS),
+			.color = HSLA(i / (float)BOMB_NUM_ORBITERS, 1, 0.6, 1)
+		);
+	}
+
+	do {
+		global.shake_view = max(8, global.shake_view);
+		player_placeholder_bomb_logic(plr);
+		YIELD;
+	} while(player_is_bomb_active(plr));
+
+	global.shake_view = 0;
+}
+
 TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {
-#if 0
-	MarisaAController *ctrl = ARGS.ctrl;
+	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		play_sound("bomb_marisa_a");
-		INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl);
-		INVOKE_SUBTASK(marisa_laser_masterspark, ctrl);
+		play_sound("bomb_marisa_b");
+		INVOKE_SUBTASK(marisa_star_bomb_background, ctrl);
+		INVOKE_SUBTASK(marisa_star_bomb_controller, ctrl);
 	}
-#endif
 }
 
 TASK(marisa_star_controller, { BoxedPlayer plr; }) {
@@ -541,11 +533,19 @@ TASK(marisa_star_controller, { BoxedPlayer plr; }) {
 	ctrl->plr = TASK_BIND(ARGS.plr);
 	TASK_HOST_EVENTS(ctrl->events);
 
+	ctrl->sprites.stardust = get_sprite("part/stardust");
+
 	INVOKE_SUBTASK(marisa_star_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_star_bomb_handler, ctrl);
 	INVOKE_SUBTASK(marisa_common_shot_forward, ARGS.plr, SHOT_FORWARD_DAMAGE, SHOT_FORWARD_DELAY);
 
-	STALL;
+	ctrl->slave_ref_pos = ctrl->plr->pos;
+
+	for(;;) {
+		cmplx pdelta = ctrl->plr->pos - ctrl->slave_ref_pos;
+		ctrl->slave_ref_pos += cclampabs(pdelta, 2 + 2 * !(ctrl->plr->inputflags & INFLAG_FOCUS));
+		YIELD;
+	}
 }
 
 static void marisa_star_init(Player *plr) {
@@ -605,10 +605,7 @@ PlayerMode plrmode_marisa_b = {
 	.shot_mode = PLR_SHOT_MARISA_STAR,
 	.procs = {
 		.property = marisa_star_property,
-		.bomb = marisa_star_bomb,
-		.bombbg = marisa_star_bombbg,
 		.preload = marisa_star_preload,
 		.init = marisa_star_init,
-		.think = player_placeholder_bomb_logic,
 	},
 };
