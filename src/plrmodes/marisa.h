@@ -19,10 +19,6 @@
 
 extern PlayerCharacter character_marisa;
 
-double marisa_common_property(Player *plr, PlrProperty prop);
-void marisa_common_shot(Player *plr, float dmg);
-void marisa_common_slave_visual(Enemy *e, int t, bool render);
-
 typedef struct MarisaBeamInfo {
 	cmplx origin;
 	cmplx size;
@@ -30,6 +26,13 @@ typedef struct MarisaBeamInfo {
 	int t;
 } MarisaBeamInfo;
 
+double marisa_common_property(Player *plr, PlrProperty prop);
 void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, float alpha);
+
+DECLARE_EXTERN_TASK(marisa_common_shot_forward, {
+	BoxedPlayer plr;
+	real damage;
+	int delay;
+});
 
 #endif // IGUARD_plrmodes_marisa_h
