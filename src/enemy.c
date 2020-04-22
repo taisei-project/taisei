@@ -156,7 +156,7 @@ static void enemy_death_effect(cmplx pos) {
 static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
-	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE && e->hp != ENEMY_BOMB) {
+	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
 		play_sound("enemydeath");
 		enemy_death_effect(e->pos);
 

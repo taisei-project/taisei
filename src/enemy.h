@@ -36,7 +36,6 @@ typedef void (*EnemyVisualRule)(Enemy*, int t, bool render);
 
 enum {
 	ENEMY_IMMUNE = -9000,
-	ENEMY_BOMB = -9001,
 	ENEMY_KILLED = -9002,
 };
 
