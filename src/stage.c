@@ -634,7 +634,6 @@ void stage_begin_dialog(Dialog *d) {
 
 static void stage_free(void) {
 	delete_enemies(&global.enemies);
-	delete_enemies(&global.plr.slaves);
 	delete_items();
 	delete_lasers();
 

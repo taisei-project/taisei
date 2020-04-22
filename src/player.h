@@ -101,7 +101,6 @@ DEFINE_ENTITY_TYPE(Player, {
 
 	struct PlayerMode *mode;
 	AniPlayer ani;
-	EnemyList slaves;
 	EnemyList focus_circle;
 	Sprite bomb_portrait;
 

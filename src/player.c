@@ -59,8 +59,6 @@ void player_stage_post_init(Player *plr) {
 	assert(plr->mode->character != NULL);
 	assert(plr->mode->dialog != NULL);
 
-	delete_enemies(&global.plr.slaves);
-
 	plrchar_make_bomb_portrait(plr->mode->character, &plr->bomb_portrait);
 	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
 
@@ -594,7 +592,6 @@ DEFINE_TASK(player_logic) {
 			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
 		}
 
-		process_enemies(&plr->slaves);
 		aniplayer_update(&plr->ani);
 
 		if(plr->lives < 0) {
