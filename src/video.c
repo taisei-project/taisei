@@ -206,7 +206,7 @@ static int video_compare_modes(const void *a, const void *b) {
 }
 
 static IntExtent video_get_screen_framebuffer_size(void) {
-	return r_framebuffer_get_size(video_get_screen_framebuffer());
+	return r_framebuffer_get_size(NULL);
 }
 
 static FloatExtent video_get_viewport_size_for_framebuffer(IntExtent framebuffer_size) {
