@@ -51,5 +51,6 @@ FBPair *stage_get_fbpair(StageFBPair id) attr_returns_nonnull;
 FBPair *stage_get_postprocess_fbpair(void) attr_returns_nonnull;
 Framebuffer *stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 Framebuffer *stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
+Framebuffer *stage_add_static_framebuffer(const char *label, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 
 #endif // IGUARD_stagedraw_h

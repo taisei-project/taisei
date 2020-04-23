@@ -244,12 +244,19 @@ static Framebuffer *add_custom_framebuffer(
 	return fbmgr_group_framebuffer_create(stagedraw.mfb_group, label, &fbconf);
 }
 
-Framebuffer* stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+Framebuffer *stage_add_foreground_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	return add_custom_framebuffer(label, FBPAIR_FG, scale_worst, scale_best, num_attachments, attachments);
 }
 
-Framebuffer* stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+Framebuffer *stage_add_background_framebuffer(const char *label, float scale_worst, float scale_best, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
 	return add_custom_framebuffer(label, FBPAIR_BG, scale_worst, scale_best, num_attachments, attachments);
+}
+
+Framebuffer *stage_add_static_framebuffer(const char *label, uint num_attachments, FBAttachmentConfig attachments[num_attachments]) {
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = attachments;
+	fbconf.num_attachments = num_attachments;
+	return fbmgr_group_framebuffer_create(stagedraw.mfb_group, label, &fbconf);
 }
 
 static void stage_draw_destroy_framebuffers(void) {

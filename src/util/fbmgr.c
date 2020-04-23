@@ -31,17 +31,21 @@ struct ManagedFramebufferGroup {
 
 static ManagedFramebufferData *framebuffers;
 
-static inline void fbmgr_framebuffer_get_metrics(ManagedFramebuffer *mfb, IntExtent *fb_size, FloatRect *fb_viewport) {
-	ManagedFramebufferData *mfb_data = GET_DATA(mfb);
+static inline void fbmgr_framebuffer_get_metrics(ManagedFramebufferData *mfb_data, IntExtent *fb_size, FloatRect *fb_viewport) {
+	assume(mfb_data->resize_strategy.resize_func != NULL);
 	mfb_data->resize_strategy.resize_func(mfb_data->resize_strategy.userdata, fb_size, fb_viewport);
 }
 
-static void fbmgr_framebuffer_update(ManagedFramebuffer *mfb) {
+static void fbmgr_framebuffer_update(ManagedFramebufferData *mfb_data) {
 	IntExtent fb_size;
 	FloatRect fb_viewport;
-	Framebuffer *fb = mfb->fb;
+	Framebuffer *fb = GET_MFB(mfb_data)->fb;
 
-	fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport);
+	if(mfb_data->resize_strategy.resize_func == NULL) {
+		return;
+	}
+
+	fbmgr_framebuffer_get_metrics(mfb_data, &fb_size, &fb_viewport);
 
 	for(uint i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
 		fbutil_resize_attachment(fb, i, fb_size.w, fb_size.h);
@@ -52,12 +56,11 @@ static void fbmgr_framebuffer_update(ManagedFramebuffer *mfb) {
 
 static void fbmgr_framebuffer_update_all(void) {
 	for(ManagedFramebufferData *d = framebuffers; d; d = d->next) {
-		fbmgr_framebuffer_update(GET_MFB(d));
+		fbmgr_framebuffer_update(d);
 	}
 }
 
 ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const FramebufferConfig *cfg) {
-	assert(cfg->resize_strategy.resize_func != NULL);
 	assert(cfg->attachments != NULL);
 	assert(cfg->num_attachments >= 1);
 
@@ -67,19 +70,30 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 	mfb->fb = r_framebuffer_create();
 	r_framebuffer_set_debug_label(mfb->fb, name);
 
-	FBAttachmentConfig ac[cfg->num_attachments];
-	memcpy(ac, cfg->attachments, sizeof(ac));
-
-	IntExtent fb_size;
 	FloatRect fb_viewport;
-	fbmgr_framebuffer_get_metrics(mfb, &fb_size, &fb_viewport);
 
-	for(int i = 0; i < cfg->num_attachments; ++i) {
-		ac[i].tex_params.width = fb_size.w;
-		ac[i].tex_params.height = fb_size.h;
+	if(data->resize_strategy.resize_func != NULL) {
+		FBAttachmentConfig ac[cfg->num_attachments];
+		memcpy(ac, cfg->attachments, sizeof(ac));
+
+		IntExtent fb_size;
+
+		fbmgr_framebuffer_get_metrics(data, &fb_size, &fb_viewport);
+
+		for(int i = 0; i < cfg->num_attachments; ++i) {
+			ac[i].tex_params.width = fb_size.w;
+			ac[i].tex_params.height = fb_size.h;
+		}
+
+		fbutil_create_attachments(mfb->fb, ARRAY_SIZE(ac), ac);
+	} else {
+		FBAttachmentConfig *ac = cfg->attachments;
+		fb_viewport = (FloatRect) {
+			.extent = { ac[0].tex_params.width, ac[0].tex_params.height }
+		};
+		fbutil_create_attachments(mfb->fb, cfg->num_attachments, cfg->attachments);
 	}
 
-	fbutil_create_attachments(mfb->fb, cfg->num_attachments, ac);
 	r_framebuffer_viewport_rect(mfb->fb, fb_viewport);
 	r_framebuffer_clear(mfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 
@@ -173,4 +187,3 @@ void fbmgr_group_fbpair_create(ManagedFramebufferGroup *group, const char *name,
 	snprintf(buf, sizeof(buf), "%s FB 2", name);
 	fbpair->back = fbmgr_group_framebuffer_create(group, buf, cfg);
 }
-
