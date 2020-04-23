@@ -16,6 +16,7 @@
 #include "log.h"
 #include "stage.h"
 #include "plrmodes.h"
+#include "version.h"
 
 struct TsOption { struct option opt; const char *help; const char *argname;};
 
@@ -67,21 +68,22 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 	snprintf(renderer_list, sizeof(renderer_list), "{%s}", _renderer_list+1);
 
 	struct TsOption taisei_opts[] = {
-		{{"replay", required_argument, 0, 'r'}, "Play a replay from %s", "FILE"},
-		{{"verify-replay", required_argument, 0, 'R'}, "Play a replay from %s in headless mode, crash as soon as it desyncs", "FILE"},
+		{{"replay",             required_argument,  0, 'r'},            "Play a replay from %s", "FILE"},
+		{{"verify-replay",      required_argument,  0, 'R'},            "Play a replay from %s in headless mode, crash as soon as it desyncs", "FILE"},
 #ifdef DEBUG
-		{{"play", no_argument, 0, 'p'}, "Play a specific stage", 0},
-		{{"sid", required_argument, 0, 'i'}, "Select stage by %s", "ID"},
-		{{"diff", required_argument, 0, 'd'}, "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
-		{{"shotmode", required_argument, 0, 's'}, "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
-		{{"dumpstages", no_argument, 0, 'u'}, "Print a list of all stages in the game", 0},
-		{{"vfs-tree", required_argument, 0, 't'}, "Print the virtual filesystem tree starting from %s", "PATH"},
+		{{"play",               no_argument,        0, 'p'},            "Play a specific stage"},
+		{{"sid",                required_argument,  0, 'i'},            "Select stage by %s", "ID"},
+		{{"diff",               required_argument,  0, 'd'},            "Select a difficulty (Easy/Normal/Hard/Lunatic)", "DIFF"},
+		{{"shotmode",           required_argument,  0, 's'},            "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
+		{{"dumpstages",         no_argument,        0, 'u'},            "Print a list of all stages in the game"},
+		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from %s", "PATH"},
 #endif
-		{{"frameskip", optional_argument, 0, 'f'}, "Disable FPS limiter, render only every %s frame", "FRAME"},
-		{{"credits", no_argument, 0, 'c'}, "Show the credits scene and exit"},
-		{{"renderer", required_argument, 0, OPT_RENDERER}, "Choose the rendering backend", renderer_list},
-		{{"help", no_argument, 0, 'h'}, "Display this help"},
-		{{0,0,0,0},0,0}
+		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
+		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
+		{{"renderer",           required_argument,  0, OPT_RENDERER},   "Choose the rendering backend", renderer_list},
+		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
+		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
+		{ 0 }
 	};
 
 	memset(a,0,sizeof(CLIAction));
@@ -131,7 +133,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case '?':
 			print_help(taisei_opts);
 			// a->type = CLI_Quit;
-			exit(1);
+			exit(0);
 			break;
 		case 'r':
 			a->type = CLI_PlayReplay;
@@ -195,6 +197,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case OPT_RENDERER:
 			env_set("TAISEI_RENDERER", optarg, true);
 			break;
+		case 'v':
+			tsfprintf(stdout, "%s %s\n", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
+			exit(0);
 		default:
 			UNREACHABLE;
 		}
