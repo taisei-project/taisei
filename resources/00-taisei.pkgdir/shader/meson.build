@@ -24,6 +24,7 @@ glsl_files = [
     'cutscene.frag.glsl',
     'envmap_reflect.frag.glsl',
     'extra_bg.frag.glsl',
+    'extra_glitch.frag.glsl',
     'extra_tower_apply_mask.frag.glsl',
     'extra_tower_mask.frag.glsl',
     'extra_tower_mask.vert.glsl',
