@@ -17,6 +17,9 @@
 #include "stageutils.h"
 #include "enemy_classes.h"
 
+// TODO separate gameplay stuff
+// BEGIN gameplay
+
 TASK(glider_bullet, {
 	cmplx pos; double dir; double spacing; int interval;
 }) {
@@ -40,7 +43,6 @@ TASK(glider_bullet, {
 			.color = RGBA(0,0,1,1),
 		));
 	}
-
 
 	for(int step = 0;; step++) {
 		int cur_step = step%nstep;
@@ -93,7 +95,7 @@ TASK(glider_fairy, {
 }
 
 /*
- * Obliteration “Infinity Network”
+ * BEGIN Obliteration “Infinity Network”
  *
  * WARNING unfinished crap code!
  */
@@ -359,13 +361,17 @@ TASK(infinity_net, {
 }
 
 TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(infinity_net, ENT_BOX(boss), (VIEWPORT_W+VIEWPORT_H*I)*0.5);
 
 	STALL;
 }
+
+/*
+ * END Obliteration “Infinity Network”
+ */
 
 Boss *stagex_spawn_yumemi(cmplx pos) {
 	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos);
@@ -377,6 +383,8 @@ Boss *stagex_spawn_yumemi(cmplx pos) {
 
 TASK(stage_main) {
 	YIELD;
+
+	goto enemies;
 
 	// WAIT(3900);
 	STAGE_BOOKMARK(boss);
@@ -391,15 +399,18 @@ TASK(stage_main) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stagexboss");
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_start_attack(global.boss, global.boss->attacks);
+	boss_engage(global.boss);
 
 	WAIT_EVENT(&global.boss->events.defeated);
 
+enemies:
 	for(int i = 0;;i++) {
 		INVOKE_TASK_DELAYED(60, glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
 		WAIT(50+100*(i&1));
 	}
 }
+
+// END gameplay
 
 static struct {
 	float plr_yaw;
@@ -414,6 +425,7 @@ static struct {
 
 	struct {
 		Framebuffer *tower_mask;
+		Framebuffer *glitch_mask;
 	} fb;
 
 	float codetex_num_segments;
@@ -615,7 +627,7 @@ static void animate_bg_post_midboss(int anim_time) {
 	}
 }
 
-TASK(animate_bg, NO_ARGS) {
+TASK(animate_bg) {
 	draw_data.fog.exponent = 8;
 	INVOKE_TASK_DELAYED(140, animate_value, &draw_data.fog.opacity, 1.0f, 1.0f/80.0f);
 	INVOKE_TASK_DELAYED(140, animate_value_asymptotic, &draw_data.fog.exponent, 24.0f, 0.004f);
@@ -645,7 +657,7 @@ static void extra_end_3d(void) {
 	stage_3d_context.cam.rot.yaw -= draw_data.plr_yaw;
 }
 
-static void render_mask(Framebuffer *fb) {
+static void render_tower_mask(Framebuffer *fb) {
 	r_state_push();
 	r_mat_proj_push();
 	extra_begin_3d();
@@ -661,6 +673,30 @@ static void render_mask(Framebuffer *fb) {
 
 	extra_end_3d();
 	r_mat_proj_pop();
+	r_state_pop();
+}
+
+static bool glitchmask_draw_predicate(EntityInterface *ent) {
+	switch(ent->type) {
+		case ENT_TYPE_ID(Enemy):
+			return true;
+
+		case ENT_TYPE_ID(Projectile): {
+			Projectile *p = ENT_CAST(ent, Projectile);
+			return p->type == PROJ_PARTICLE && !(p->flags & PFLAG_NOREFLECT);
+		}
+
+		default:
+			return false;
+	}
+}
+
+static void render_glitch_mask(Framebuffer *fb) {
+	r_state_push();
+	r_framebuffer(fb);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_shader("sprite_default");
+	ent_draw(glitchmask_draw_predicate);
 	r_state_pop();
 }
 
@@ -681,9 +717,7 @@ static void set_bg_uniforms(void) {
 	r_uniform_float("time", global.frames / 60.0f);
 }
 
-static void extra_begin(void) {
-	memset(&draw_data, 0, sizeof(draw_data));
-
+static void init_tower_mask_fb(void) {
 	FBAttachmentConfig a[2] = { 0 };
 	a[0].attachment = FRAMEBUFFER_ATTACH_COLOR0;
 	a[0].tex_params.type = TEX_TYPE_RGBA_16;
@@ -704,6 +738,28 @@ static void extra_begin(void) {
 	a[1].tex_params.wrap.t = TEX_WRAP_MIRROR;
 
 	draw_data.fb.tower_mask = stage_add_background_framebuffer("Tower mask", 0.25, 0.5, ARRAY_SIZE(a), a);
+}
+
+static void init_glitch_mask_fb(void) {
+	FBAttachmentConfig a[1] = { 0 };
+	a[0].attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a[0].tex_params.type = TEX_TYPE_RGB_8;
+	a[0].tex_params.filter.min = TEX_FILTER_NEAREST;
+	a[0].tex_params.filter.mag = TEX_FILTER_NEAREST;
+	a[0].tex_params.width = VIEWPORT_W / 30;
+	a[0].tex_params.height = VIEWPORT_H / 20;
+	a[0].tex_params.wrap.s = TEX_WRAP_REPEAT;
+	a[0].tex_params.wrap.t = TEX_WRAP_REPEAT;
+
+	draw_data.fb.glitch_mask = stage_add_static_framebuffer("Glitch mask", ARRAY_SIZE(a), a);
+}
+
+static void extra_begin(void) {
+	memset(&draw_data, 0, sizeof(draw_data));
+
+	init_tower_mask_fb();
+	init_glitch_mask_fb();
+
 	stage3d_init(&stage_3d_context, 16);
 
 	SDL_RWops *stream = vfs_open("res/gfx/stageex/code.num_slices", VFS_MODE_READ);
@@ -787,7 +843,7 @@ static bool extra_postprocess_tower_mask(Framebuffer *fb) {
 	}
 
 	Framebuffer *mask_fb = draw_data.fb.tower_mask;
-	render_mask(mask_fb);
+	render_tower_mask(mask_fb);
 
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
@@ -854,6 +910,30 @@ static bool extra_postprocess_fog(Framebuffer *fb) {
 	return true;
 }
 
+static bool extra_postprocess_glitch(Framebuffer *fb) {
+	Framebuffer *glitch_mask = draw_data.fb.glitch_mask;
+	render_glitch_mask(glitch_mask);
+
+	vec3 t = { 0.143133f, 0.53434f, 0.25332f };
+	glm_vec3_adds(t, global.frames / 60.0f, t);
+
+	r_state_push();
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_blend(BLEND_NONE);
+	r_shader("extra_glitch");
+	r_uniform_vec3_vec("times", t);
+	r_uniform_sampler("mask", r_framebuffer_get_attachment(glitch_mask, FRAMEBUFFER_ATTACH_COLOR0));
+	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+	/*
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_color4(100, 100, 100, 0);
+	draw_framebuffer_tex(glitch_mask, VIEWPORT_W, VIEWPORT_H);
+	*/
+	r_state_pop();
+
+	return true;
+}
+
 void extra_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	sp->sprite = NULL;
 	sp->sprite_ptr = res_sprite("dialog/yumemi_misc_code_mask");
@@ -901,6 +981,10 @@ StageProcs extra_procs = {
 		extra_postprocess_tower_mask,
 		extra_postprocess_copy_depth,
 		extra_postprocess_fog,
+		NULL
+	},
+	.postprocess_rules = (ShaderRule[]) {
+		extra_postprocess_glitch,
 		NULL
 	},
 };
