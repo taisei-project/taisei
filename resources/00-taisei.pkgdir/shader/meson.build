@@ -21,6 +21,7 @@ glsl_files = files(
     'copy_depth.frag.glsl',
     'cutscene.frag.glsl',
     'extra_bg.frag.glsl',
+    'extra_glitch.frag.glsl',
     'extra_tower_apply_mask.frag.glsl',
     'extra_tower_mask.frag.glsl',
     'extra_tower_mask.vert.glsl',
