@@ -290,10 +290,10 @@ def pack_rects_brute_force(rects, bin_size, single_bin):
     ]
 
     algos = []
-    # MaxRects is the slowest algorithm, but the results blow the other two out of the water.
-    # algos += algos_guillotine
+    # MaxRects is the slowest algorithm, but the results blow the other two out of the water (most of the time).
+    algos += algos_guillotine
     algos += algos_maxrects
-    # algos += algos_skyline
+    algos += algos_skyline
 
     sorts = [
         (rectpack.SORT_AREA,  'area'),
@@ -555,7 +555,7 @@ def main(args):
     )
 
     parser.add_argument('--name', '-n',
-        help='Unique identificator for this atlas (used to form the texture name), default is inferred from directory name',
+        help='Unique identifier for this atlas (used to form the texture name), default is inferred from directory name',
         default=None,
         type=str,
     )
