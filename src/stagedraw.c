@@ -492,8 +492,8 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_texture_get_size(spr.tex, 0, &tw, &th);
 
 	r_shader("spellcard_walloftext");
-	r_uniform_float("w", spr.tex_area.w / tw);
-	r_uniform_float("h", spr.tex_area.h / th);
+	r_uniform_float("w", spr.tex_area.w);
+	r_uniform_float("h", spr.tex_area.h);
 	r_uniform_float("ratio", h/w);
 	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);

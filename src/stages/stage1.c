@@ -299,11 +299,9 @@ static void stage1_waterplants_draw(vec3 pos) {
 	Sprite spr = { 0 };
 	spr.w = spr.h = 1;
 	spr.tex = r_texture_get("stage1/waterplants");
-	uint tw, th;
-	r_texture_get_size(spr.tex, 0, &tw, &th);
-	spr.tex_area.w = tw * 0.5;
-	spr.tex_area.h = th;
-	spr.tex_area.x = spr.tex_area.w * tile;
+	spr.tex_area.w = 0.5f;
+	spr.tex_area.h = 1.0f;
+	spr.tex_area.x = 0.5f * tile;
 
 	float a = 0.8;
 	float s = 160 * (1 + 2 * psin(13.12993*pos[1]));

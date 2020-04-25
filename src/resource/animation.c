@@ -28,7 +28,7 @@ ResourceHandler animation_res_handler = {
 	},
 };
 
-char* animation_path(const char *name) {
+char *animation_path(const char *name) {
 	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
 }
 

@@ -58,6 +58,10 @@ INLINE FloatOffset sprite_padded_offset(const Sprite *restrict spr) {
 	return o;
 }
 
+FloatRect sprite_denormalized_tex_coords(const Sprite *restrict spr);
+IntRect sprite_denormalized_int_tex_coords(const Sprite *restrict spr);
+void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc);
+
 char *sprite_path(const char *name);
 void *load_sprite_begin(const char *path, uint flags);
 void *load_sprite_end(void *opaque, const char *path, uint flags);

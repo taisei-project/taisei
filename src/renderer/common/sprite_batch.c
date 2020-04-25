@@ -236,16 +236,7 @@ static void _r_sprite_batch_compute_attribs(
 		attribs.rgba = *params->color;
 	}
 
-	uint tw, th;
-	r_texture_get_size(spr->tex, 0, &tw, &th);
-	float rtw = 1.0f / tw;
-	float rth = 1.0f / th;
-
-	glm_vec4_mul(
-		(vec4) { spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
-		(vec4) {             rtw,             rth,             rtw,             rth },
-		attribs.texrect_vec4
-	);
+	attribs.texrect = spr->tex_area;
 
 	if(params->flip.x) {
 		attribs.texrect.x += attribs.texrect.w;

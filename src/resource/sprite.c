@@ -26,7 +26,7 @@ ResourceHandler sprite_res_handler = {
 	},
 };
 
-char* sprite_path(const char *name) {
+char *sprite_path(const char *name) {
 	char *path = strjoin(SPRITE_PATH_PREFIX, name, SPRITE_EXTENSION, NULL);
 
 	VFSInfo pinfo = vfs_query(path);
@@ -49,7 +49,7 @@ struct sprite_load_state {
 	char *texture_name;
 };
 
-void* load_sprite_begin(const char *path, uint flags) {
+void *load_sprite_begin(const char *path, uint flags) {
 	Sprite *spr = calloc(1, sizeof(Sprite));
 	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
 	state->spr = spr;
@@ -61,6 +61,8 @@ void* load_sprite_begin(const char *path, uint flags) {
 	}
 
 	float ofs_x = 0, ofs_y = 0;
+
+	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
 
 	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
@@ -98,7 +100,7 @@ void* load_sprite_begin(const char *path, uint flags) {
 	return state;
 }
 
-void* load_sprite_end(void *opaque, const char *path, uint flags) {
+void *load_sprite_end(void *opaque, const char *path, uint flags) {
 	struct sprite_load_state *state = opaque;
 
 	if(!state) {
@@ -118,11 +120,9 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 	}
 
 	spr->tex = res->data;
-	uint tw, th;
-	r_texture_get_size(spr->tex, 0, &tw, &th);
 
-	float tex_w_flt = tw;
-	float tex_h_flt = th;
+	char *basename = resource_util_basename(SPRITE_PATH_PREFIX, path);
+	FloatExtent denorm_coords = sprite_denormalized_tex_coords(spr).extent;
 
 	struct infermap {
 		const char *dstname;
@@ -130,14 +130,10 @@ void* load_sprite_end(void *opaque, const char *path, uint flags) {
 		const char *srcname;
 		float *src;
 	} infermap[] = {
-		{ "region width",  &spr->tex_area.w, "texture width",  &tex_w_flt },
-		{ "region height", &spr->tex_area.h, "texture height", &tex_h_flt },
-		{ "sprite width",  &spr->w,          "region width",   &spr->tex_area.w },
-		{ "sprite height", &spr->h,          "region height",  &spr->tex_area.h },
+		{ "sprite width",  &spr->w, "texture region width",  &denorm_coords.w },
+		{ "sprite height", &spr->h, "texture region height", &denorm_coords.h },
 		{ NULL },
 	};
-
-	char *basename = resource_util_basename(SPRITE_PATH_PREFIX, path);
 
 	for(struct infermap *m = infermap; m->dst; ++m) {
 		if(*m->dst <= 0) {
@@ -185,4 +181,36 @@ void draw_sprite(float x, float y, const char *name) {
 
 void draw_sprite_p(float x, float y, Sprite *spr) {
 	draw_sprite_ex(x, y, 1, 1, spr);
+}
+
+FloatRect sprite_denormalized_tex_coords(const Sprite *restrict spr) {
+	Texture *tex = NOT_NULL(spr->tex);
+	uint tex_w, tex_h;
+	r_texture_get_size(tex, 0, &tex_w, &tex_h);
+	FloatRect tc = spr->tex_area;
+	tc.x *= tex_w;
+	tc.y *= tex_h;
+	tc.w *= tex_w;
+	tc.h *= tex_h;
+	return tc;
+}
+
+IntRect sprite_denormalized_int_tex_coords(const Sprite *restrict spr) {
+	FloatRect tc = sprite_denormalized_tex_coords(spr);
+	IntRect itc;
+	itc.x = lroundf(tc.x);
+	itc.y = lroundf(tc.y);
+	itc.w = lroundf(tc.w);
+	itc.h = lroundf(tc.h);
+	return itc;
+}
+
+void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc) {
+	Texture *tex = NOT_NULL(spr->tex);
+	uint tex_w, tex_h;
+	r_texture_get_size(tex, 0, &tex_w, &tex_h);
+	spr->tex_area.x = tc.x / tex_w;
+	spr->tex_area.y = tc.y / tex_h;
+	spr->tex_area.w = tc.w / tex_w;
+	spr->tex_area.h = tc.h / tex_h;
 }

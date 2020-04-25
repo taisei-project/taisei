@@ -190,8 +190,10 @@ void draw_framebuffer_tex(Framebuffer *fb, double width, double height) {
 void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_state_push();
 
-	uint tex_w = s_base->tex_area.extent.w;
-	uint tex_h = s_base->tex_area.extent.h;
+	IntRect itc = sprite_denormalized_int_tex_coords(s_base);
+
+	uint tex_w = itc.w;
+	uint tex_h = itc.h;
 	uint spr_w = s_base->extent.w;
 	uint spr_h = s_base->extent.h;
 
@@ -219,8 +221,8 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	SpriteParams sp = { 0 };
 	sp.sprite_ptr = s_base;
 	sp.blend = BLEND_NONE;
-	sp.pos.x = spr_w / 2.0 - sprite_padded_offset_x(s_base);
-	sp.pos.y = spr_h / 2.0 - sprite_padded_offset_y(s_base);
+	sp.pos.x = spr_w * 0.5f - sprite_padded_offset_x(s_base);
+	sp.pos.y = spr_h * 0.5f - sprite_padded_offset_y(s_base);
 	sp.color = RGBA(1, 1, 1, 1);
 	sp.shader_ptr = r_shader_get("sprite_default"),
 	r_draw_sprite(&sp);
@@ -238,7 +240,7 @@ void render_character_portrait(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	s.tex = ptex;
 	s.extent = s_base->extent;
 	s.padding = s_base->padding;
-	s.tex_area.w = tex_w;
-	s.tex_area.h = tex_h;
+	s.tex_area.w = 1.0f;
+	s.tex_area.h = 1.0f;
 	*s_out = s;
 }

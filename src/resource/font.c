@@ -414,10 +414,13 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 	sprite->tex = ss->tex;
 	sprite->w = pixmap->width;
 	sprite->h = pixmap->height;
-	sprite->tex_area.x = rect_x(sprite_pos);
-	sprite->tex_area.y = rect_y(sprite_pos);
-	sprite->tex_area.w = pixmap->width;
-	sprite->tex_area.h = pixmap->height;
+
+	sprite_set_denormalized_tex_coords(sprite, (FloatRect) {
+		.x = rect_x(sprite_pos),
+		.y = rect_y(sprite_pos),
+		.w = pixmap->width,
+		.h = pixmap->height,
+	});
 
 	++ss->glyphs;
 
@@ -966,15 +969,10 @@ static Font *font_from_params(const TextParams *params) {
 	return font;
 }
 
-static void set_batch_texture(SpriteStateParams *stp, Texture *tex, float *inverse_tex_w, float *inverse_tex_h) {
+static void set_batch_texture(SpriteStateParams *stp, Texture *tex) {
 	if(stp->primary_texture != tex) {
 		stp->primary_texture = tex;
 		r_sprite_batch_prepare_state(stp);
-
-		uint tw, th;
-		r_texture_get_size(tex, 0, &tw, &th);
-		*inverse_tex_w = 1.0f / tw;
-		*inverse_tex_h = 1.0f / th;
 	}
 }
 
@@ -1074,8 +1072,6 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	uint prev_glyph_idx = 0;
 	const uint32_t *tptr = ucs4text;
 
-	float inverse_tex_w, inverse_tex_h;
-
 	while(*tptr) {
 		uint32_t uchar = *tptr++;
 
@@ -1095,7 +1091,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 		if(glyph->sprite.tex != NULL) {
 			Sprite *spr = &glyph->sprite;
-			set_batch_texture(&batch_state_params, spr->tex, &inverse_tex_w, &inverse_tex_h);
+			set_batch_texture(&batch_state_params, spr->tex);
 
 			SpriteInstanceAttribs attribs;
 			attribs.rgba = color;
@@ -1110,11 +1106,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			glm_translate_to(mat_model, (vec3) { g_x, g_y }, attribs.mv_transform);
 			glm_scale(attribs.mv_transform, (vec3) { spr->w, spr->h, 1.0 } );
 
-			glm_vec4_mul(
-				(vec4) { spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
-				(vec4) { inverse_tex_w, inverse_tex_h, inverse_tex_w, inverse_tex_h },
-				attribs.texrect_vec4
-			);
+			attribs.texrect = spr->tex_area;
 
 			// NOTE: Glyphs have their sprite w/h unadjusted for scale.
 			attribs.sprite_size.w = spr->w * iscale;
@@ -1248,8 +1240,8 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_state_pop();
 
 	out_sprite->tex = tex;
-	out_sprite->tex_area.w = bbox_width;
-	out_sprite->tex_area.h = bbox_height;
+	out_sprite->tex_area.w = 1;
+	out_sprite->tex_area.h = 1;
 	out_sprite->tex_area.x = 0;
 	out_sprite->tex_area.y = 0;
 	out_sprite->w = bbox_width / font->metrics.scale;
