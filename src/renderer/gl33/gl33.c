@@ -252,8 +252,18 @@ static void gl41_set_viewport(const FloatRect *vp) {
 static void gl33_init_context(SDL_Window *window) {
 	R.gl_context = SDL_GL_CreateContext(window);
 
+	int gl_profile;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &gl_profile);
+
+	if(!R.gl_context && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
+		log_error("Failed to create OpenGL context: %s", SDL_GetError());
+		log_warn("Attempting to create a fallback context");
+		SDL_GL_ResetAttributes();
+		R.gl_context = SDL_GL_CreateContext(window);
+	}
+
 	if(!R.gl_context) {
-		log_fatal("Could not create the OpenGL context: %s", SDL_GetError());
+		log_fatal("Failed to create OpenGL context: %s", SDL_GetError());
 	}
 
 	glcommon_load_functions();

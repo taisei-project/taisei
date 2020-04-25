@@ -37,7 +37,15 @@
     #define NATIVE_ORIGIN_BOTTOMLEFT
 #endif
 
-#if defined(BACKEND_GLES20)
+#ifdef GL_ES
+    #define GLSL_ATLEAST(v) (0)
+    #define ESSL_ATLEAST(v) (v >= __VERSION__)
+#else
+    #define GLSL_ATLEAST(v) (v >= __VERSION__)
+    #define ESSL_ATLEAST(v) (0)
+#endif
+
+#if !(GLSL_ATLEAST(130) || ESSL_ATLEAST(300))
     #include "legacy_compat.glslh"
 #endif
 
