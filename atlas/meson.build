@@ -44,6 +44,7 @@ atlases = [
     ['gray16',      [preset_png]],
     ['huge',        []],
     ['portraits',   ['--width=4096', '--height=4096']],
+    ['temp_stagex', []],
 ]
 
 atlas_profiles = [
