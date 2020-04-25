@@ -16,6 +16,59 @@
 #include "stagetext.h"
 #include "stageutils.h"
 #include "enemy_classes.h"
+#include "util/glm.h"
+
+static bool stagex_drawing_into_glitchmask(void);
+
+DEFINE_ENTITY_TYPE(YumemiSlave, {
+	struct {
+		Sprite *core, *frame, *outer;
+	} sprites;
+
+	cmplx pos;
+	int spawn_time;
+	float alpha;
+	float rotation_factor;
+});
+
+static void draw_yumemi_slave(EntityInterface *ent) {
+	YumemiSlave *slave = ENT_CAST(ent, YumemiSlave);
+
+	float time = global.frames - slave->spawn_time;
+	float s = slave->rotation_factor;
+	float opacity;
+	float scale;
+
+	if(stagex_drawing_into_glitchmask()) {
+		opacity = lerpf(80.0f, 2.0f, fminf(time / 80.0f, 1.0));
+		scale = 1.1f;
+	} else {
+		opacity = slave->alpha;
+		scale = 1.0f + 6.0f * glm_ease_elast_in(1.0f - slave->alpha);
+	}
+
+	scale *= 0.5f;
+
+	SpriteParams sp = {
+		.pos.as_cmplx = slave->pos,
+		.scale = scale,
+		.color = color_mul_scalar(RGBA(1, 1, 1, 0.5), opacity),
+	};
+
+	sp.sprite_ptr = slave->sprites.frame;
+	sp.rotation.angle = -M_PI/73 * time * s;
+	r_draw_sprite(&sp);
+
+	sp.sprite_ptr = slave->sprites.outer;
+	sp.rotation.angle = +M_PI/73 * time * s;
+	r_draw_sprite(&sp);
+
+	sp.sprite_ptr = slave->sprites.core;
+	sp.rotation.angle = 0;
+	sp.color = color_mul_scalar(RGBA(0.4, 0.4, 0.4, 0.1), opacity);
+	sp.pos.as_cmplx += 3 * cdir(M_PI/72 * time * s);
+	r_draw_sprite(&sp);
+}
 
 // TODO separate gameplay stuff
 // BEGIN gameplay
@@ -373,25 +426,67 @@ TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack) {
  * END Obliteration “Infinity Network”
  */
 
+TASK(yumemi_slave, { BoxedBoss boss; cmplx pos; int type; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+
+	YumemiSlave *slave = TASK_HOST_ENT(YumemiSlave);
+	slave->pos = ARGS.pos;
+	slave->ent.draw_func = draw_yumemi_slave;
+	slave->ent.draw_layer = LAYER_BOSS - 1;
+	slave->spawn_time = global.frames;
+
+	switch(ARGS.type) {
+		case 0:
+			slave->sprites.core = res_sprite("stagex/yumemi_slaves/zero_core");
+			slave->sprites.frame = res_sprite("stagex/yumemi_slaves/zero_frame");
+			slave->sprites.outer = res_sprite("stagex/yumemi_slaves/zero_outer");
+			slave->rotation_factor = 1;
+			break;
+
+		case 1:
+			slave->sprites.core = res_sprite("stagex/yumemi_slaves/one_core");
+			slave->sprites.frame = res_sprite("stagex/yumemi_slaves/one_frame");
+			slave->sprites.outer = res_sprite("stagex/yumemi_slaves/one_outer");
+			slave->rotation_factor = -1;
+			break;
+
+		default: UNREACHABLE;
+	}
+
+	while(fapproach_p(&slave->alpha, 1.0f, 1.0f / 60.0f) < 1) {
+		YIELD;
+	}
+
+	STALL;
+}
+
 Boss *stagex_spawn_yumemi(cmplx pos) {
 	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos);
 	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
 	yumemi->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
 	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
+
+	int slave_delay = 30;
+	INVOKE_TASK_DELAYED(slave_delay,      yumemi_slave, ENT_BOX(yumemi), pos - 120 + 42 * I, 0);
+	INVOKE_TASK_DELAYED(slave_delay + 10, yumemi_slave, ENT_BOX(yumemi), pos + 120 + 42 * I, 1);
+
 	return yumemi;
 }
 
 TASK(stage_main) {
 	YIELD;
 
-	goto enemies;
+	// goto enemies;
 
-	// WAIT(3900);
+	WAIT(3900);
 	STAGE_BOOKMARK(boss);
 
 	global.boss = stagex_spawn_yumemi(VIEWPORT_W/2 + 180*I);
 
-	boss_add_attack_task(global.boss, AT_SurvivalSpell, "Obliteration “Infinity Network”", 90, 80000, TASK_INDIRECT(BossAttack, stagex_spell_infinity_network), NULL);
+	boss_add_attack_task(global.boss, AT_SurvivalSpell, "Obliteration “Infinity Network”",
+		90, 80000, TASK_INDIRECT(BossAttack, stagex_spell_infinity_network), NULL);
+
+	STALL;
 
 	PlayerMode *pm = global.plr.mode;
 	StageExPreBossDialogEvents *e;
@@ -591,6 +686,7 @@ static void animate_bg_midboss(int anim_time) {
 	// stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
 	while(anim_time-- > 0) {
+	// for(;;) {
 		fapproach_p(&camera_shift_rate, 1, 1.0f/120.0f);
 		fapproach_asymptotic_p(&draw_data.plr_influence, 0, 0.01, 1e-4);
 		fapproach_asymptotic_p(&stage_3d_context.cam.vel[2], -64, 0.02, 1e-4);
@@ -676,19 +772,36 @@ static void render_tower_mask(Framebuffer *fb) {
 	r_state_pop();
 }
 
-static bool glitchmask_draw_predicate(EntityInterface *ent) {
+static bool _glitchmask_draw_predicate(EntityInterface *ent) {
 	switch(ent->type) {
 		case ENT_TYPE_ID(Enemy):
 			return true;
-
+/*
 		case ENT_TYPE_ID(Projectile): {
 			Projectile *p = ENT_CAST(ent, Projectile);
 			return p->type == PROJ_PARTICLE && !(p->flags & PFLAG_NOREFLECT);
+		}
+*/
+		case ENT_TYPE_ID(YumemiSlave): {
+			YumemiSlave *slave = ENT_CAST(ent, YumemiSlave);
+			return true;//slave->glitch;
 		}
 
 		default:
 			return false;
 	}
+}
+
+static bool glitchmask_draw_predicate(EntityInterface *ent) {
+	bool wtf = _glitchmask_draw_predicate(ent);
+	if(wtf) {
+		log_debug("DRAW %s", ent_type_name(ent->type));
+	}
+	return wtf;
+}
+
+static bool stagex_drawing_into_glitchmask(void) {
+	return r_framebuffer_current() == draw_data.fb.glitch_mask;
 }
 
 static void render_glitch_mask(Framebuffer *fb) {
