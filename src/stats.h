@@ -15,17 +15,17 @@ typedef struct Stats Stats;
 
 struct Stats {
 	struct {
-		int lives;
-		int bombs;
-		int continues;
+		int lives_used;
+		int bombs_used;
+		int continues_used;
 	} total, stage;
 };
 
 void stats_init(Stats *stats);
 
-void stats_append_life(Stats *stats);
-void stats_append_bomb(Stats *stats);
-void stats_append_continue(Stats *stats);
+void stats_track_life_used(Stats *stats);
+void stats_track_bomb_used(Stats *stats);
+void stats_track_continue_used(Stats *stats);
 
 void stats_stage_reset(Stats *stats);
 

@@ -8,41 +8,38 @@
 
 #include "taisei.h"
 
-#include "config.h"
 
 #include "stats.h"
 
 #include "global.h"
-#include "stage.h"
+#include "log.h"
 
 void stats_init(Stats *stats) {
 	memset(stats, 0, sizeof(*stats));
 }
 
-void stats_append_life(Stats *stats) {
-	stats->total.lives++;
-	stats->stage.lives++;
-	log_debug("lives used (total): %d", stats->total.lives);
-	log_debug("lives used (stage): %d", stats->stage.lives);
+void stats_track_life_used(Stats *stats) {
+	stats->total.lives_used++;
+	stats->stage.lives_used++;
+	log_debug("lives used (total): %d", stats->total.lives_used);
+	log_debug("lives used (stage): %d", stats->stage.lives_used);
 }
 
-void stats_append_bomb(Stats *stats) {
-	stats->total.bombs++;
-	stats->stage.bombs++;
-	log_debug("bombs used (total): %d", stats->total.bombs);
-	log_debug("bombs used (stage): %d", stats->stage.bombs);
+void stats_track_bomb_used(Stats *stats) {
+	stats->total.bombs_used++;
+	stats->stage.bombs_used++;
+	log_debug("bombs used (total): %d", stats->total.bombs_used);
+	log_debug("bombs used (stage): %d", stats->stage.bombs_used);
 }
 
-void stats_append_continue(Stats *stats) {
-	stats->total.continues++;
-	stats->stage.continues++;
-	log_debug("bombs used (total): %d", stats->total.continues);
-	log_debug("bombs used (stage): %d", stats->stage.continues);
+void stats_track_continue_used(Stats *stats) {
+	stats->total.continues_used++;
+	stats->stage.continues_used++;
+	log_debug("bombs used (total): %d", stats->total.continues_used);
+	log_debug("bombs used (stage): %d", stats->stage.continues_used);
 }
 
 void stats_stage_reset(Stats *stats) {
-	stats->stage.lives = 0;
-	stats->stage.bombs = 0;
-	stats->stage.continues = 0;
+	memset(&stats->stage, 0, sizeof(stats->stage));
 	log_debug("statistics reset");
 }

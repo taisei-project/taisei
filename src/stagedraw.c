@@ -1826,7 +1826,7 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 
 	stagetext_add(
 		"Press Fire to continue",
-		VIEWPORT_W/2 + VIEWPORT_H*0.8*I,
+		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
 		ALIGN_CENTER,
 		get_font("standard"),
 		RGB(1, 0.5, 0),

@@ -591,7 +591,7 @@ DEFINE_TASK(player_logic) {
 			plr->point_item_value = PLR_START_PIV;
 			plr->life_fragments = 0;
 			plr->bomb_fragments = 0;
-			stats_append_continue(&plr->stats);
+			stats_track_continue_used(&plr->stats);
 			player_set_power(plr, 0);
 			stage_clear_hazards(CLEAR_HAZARDS_ALL);
 			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
@@ -663,7 +663,7 @@ static bool player_bomb(Player *plr) {
 	}
 
 	if(player_can_bomb(plr)) {
-		stats_append_bomb(&plr->stats);
+		stats_track_bomb_used(&plr->stats);
 		player_fail_spell(plr);
 		// player_cancel_powersurge(plr);
 		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -900,7 +900,7 @@ void player_realdeath(Player *plr) {
 	plr->bomb_fragments = 0;
 	plr->voltage *= 0.9;
 	plr->lives--;
-	stats_append_life(&plr->stats);
+	stats_track_life_used(&plr->stats);
 }
 
 static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {

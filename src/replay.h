@@ -134,12 +134,11 @@ typedef struct ReplayStage {
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
 
 	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
-	uint8_t plr_stats_enabled;
-	uint8_t plr_stats_total_lives;
-	uint8_t plr_stats_stage_lives;
-	uint8_t plr_stats_total_bombs;
-	uint8_t plr_stats_stage_bombs;
-	uint8_t plr_stats_stage_continues;
+	uint8_t plr_stats_total_lives_used;
+	uint8_t plr_stats_stage_lives_used;
+	uint8_t plr_stats_total_bombs_used;
+	uint8_t plr_stats_stage_bombs_used;
+	uint8_t plr_stats_stage_continues_used;
 	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
 
 	// player input
