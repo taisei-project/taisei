@@ -273,9 +273,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 	PlayerIndicators *indicators = ENT_CAST(ent, PlayerIndicators);
 	Player *plr = indicators->plr;
 
-	//alpha = approach(alpha, (global.plr.inputflags & INFLAG_FOCUS || trainer_focus_dot_enabled()) ? 1 : 0, 1/30.0);
-
-	float focus_opacity = (trainer_focus_dot_enabled() ? 1 : indicators->focus_alpha);
+	float focus_opacity = (global.plr.trainer.settings.dot ? 1 : indicators->focus_alpha);
 	int t = global.frames - indicators->focus_time;
 	cmplx32 pos = plr->pos;
 
