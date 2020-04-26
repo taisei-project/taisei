@@ -11,6 +11,7 @@
 #include "menu.h"
 #include "gameovermenu.h"
 #include "ingamemenu.h"
+#include "stats.h"
 #include "global.h"
 
 static void continue_game(MenuData *m, void *arg) {
@@ -20,7 +21,7 @@ static void continue_game(MenuData *m, void *arg) {
 }
 
 static void give_up(MenuData *m, void *arg) {
-	global.gameover = (MAX_CONTINUES - global.plr.continues_used)? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
+	global.gameover = (MAX_CONTINUES - global.plr.stats.total.continues_used) ? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
 MenuData* create_gameover_menu(void) {
@@ -40,9 +41,9 @@ MenuData* create_gameover_menu(void) {
 		m->context = "Game Over";
 
 		char s[64];
-		int c = MAX_CONTINUES - global.plr.continues_used;
+		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
 		snprintf(s, sizeof(s), "Continue (%i)", c);
-		add_menu_entry(m, s, c? continue_game : NULL, NULL);
+		add_menu_entry(m, s, c ? continue_game : NULL, NULL);
 		add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 		add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL)->transition = TransFadeBlack;
 

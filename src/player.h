@@ -25,6 +25,7 @@
 #include "enemy.h"
 #include "gamepad.h"
 #include "aniplayer.h"
+#include "stats.h"
 #include "resource/animation.h"
 #include "entity.h"
 
@@ -102,6 +103,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	AniPlayer ani;
 	Sprite bomb_portrait;
 
+	Stats stats;
+
 	struct {
 		float positive;
 		float negative;
@@ -133,7 +136,6 @@ DEFINE_ENTITY_TYPE(Player, {
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
-	int continues_used;
 	int power;
 	int power_overflow;
 

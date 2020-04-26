@@ -187,16 +187,6 @@ void stagetext_table_add_separator(StageTextTable *tbl) {
 	tbl->pos += I * 0.5 * font_get_lineskip(get_font("standard"));
 }
 
-void stagetext_table_test(void) {
-	StageTextTable tbl;
-	stagetext_begin_table(&tbl, "Test", RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2, 60, 300, 30, 60);
-	stagetext_table_add(&tbl, "foo", "bar");
-	stagetext_table_add(&tbl, "qwerty", "asdfg");
-	stagetext_table_add(&tbl, "top", "kek");
-	stagetext_table_add_separator(&tbl);
-	stagetext_table_add_numeric(&tbl, "Total Score", 9000000);
-	stagetext_end_table(&tbl);
-}
 
 StageText *stagetext_list_head(void) {
 	return textlist;
