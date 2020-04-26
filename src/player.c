@@ -641,12 +641,12 @@ void player_logic(Player* plr) {
 
 static bool player_can_bomb(Player *plr) {
 	return (
-			!player_is_bomb_active(plr)
-			&& (
-				plr->bombs > 0 ||
-				plr->iddqd
-			)
-			&& global.frames >= plr->respawntime
+		!player_is_bomb_active(plr)
+		&& (
+			plr->bombs > 0 ||
+			plr->iddqd
+		)
+		&& global.frames >= plr->respawntime
 	);
 
 }
