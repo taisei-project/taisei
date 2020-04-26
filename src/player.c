@@ -16,6 +16,7 @@
 #include "stage.h"
 #include "stagetext.h"
 #include "stagedraw.h"
+#include "stats.h"
 #include "entity.h"
 #include "util/glm.h"
 
@@ -590,7 +591,7 @@ DEFINE_TASK(player_logic) {
 			plr->point_item_value = PLR_START_PIV;
 			plr->life_fragments = 0;
 			plr->bomb_fragments = 0;
-			plr->continues_used += 1;
+			stats_append_continue(&plr->stats);
 			player_set_power(plr, 0);
 			stage_clear_hazards(CLEAR_HAZARDS_ALL);
 			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
@@ -638,6 +639,19 @@ DEFINE_TASK(player_logic) {
 void player_logic(Player* plr) {
 }
 
+static bool player_can_bomb(Player *plr) {
+	return (
+			!player_is_bomb_active(plr)
+			&& (
+				plr->bombs > 0 ||
+				plr->iddqd
+			)
+			&& global.frames >= plr->respawntime
+	);
+
+}
+
+
 static bool player_bomb(Player *plr) {
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
 		return false;
@@ -648,7 +662,8 @@ static bool player_bomb(Player *plr) {
 		return false;
 	}
 
-	if(!player_is_bomb_active(plr) && (plr->bombs > 0 || plr->iddqd) && global.frames >= plr->respawntime) {
+	if(player_can_bomb(plr)) {
+		stats_append_bomb(&plr->stats);
 		player_fail_spell(plr);
 		// player_cancel_powersurge(plr);
 		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
@@ -885,6 +900,7 @@ void player_realdeath(Player *plr) {
 	plr->bomb_fragments = 0;
 	plr->voltage *= 0.9;
 	plr->lives--;
+	stats_append_life(&plr->stats);
 }
 
 static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {

@@ -886,6 +886,10 @@ MenuData* create_options_menu(void) {
 	add_menu_separator(m);
 #endif
 
+	add_menu_entry(m, "Enable statistics", do_nothing,
+		b = bind_option(CONFIG_STATS_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
+	); bind_onoff(b);
+
 	add_menu_entry(m, "Save replays", do_nothing,
 		b = bind_option(CONFIG_SAVE_RPY, bind_common_onoffplus_get, bind_common_onoffplus_set)
 	);	bind_addvalue(b, "always");

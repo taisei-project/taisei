@@ -41,7 +41,7 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_points = plr->points;
-	s->plr_continues_used = plr->continues_used;
+	s->plr_continues_used = plr->stats.total.continues;
 	// s->plr_focus = plr->focus;  FIXME remove and bump version
 	s->plr_char = plr->mode->character->id;
 	s->plr_shot = plr->mode->shot_mode;
@@ -54,13 +54,15 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 	s->plr_point_item_value = plr->point_item_value;
 	s->plr_inputflags = plr->inputflags;
 
+	s->plr_stats_enabled = plr->stats.settings.enabled;
+
 	log_debug("Created a new stage %p in replay %p", (void*)s, (void*)rpy);
 	return s;
 }
 
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->points = stg->plr_points;
-	plr->continues_used = stg->plr_continues_used;
+	plr->stats.total.continues = stg->plr_continues_used;
 	plr->mode = plrmode_find(stg->plr_char, stg->plr_shot);
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
 	// plr->focus = stg->plr_focus;  FIXME remove and bump version
@@ -73,6 +75,13 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->graze = stg->plr_graze;
 	plr->point_item_value = stg->plr_point_item_value;
 	plr->inputflags = stg->plr_inputflags;
+
+	plr->stats.settings.enabled = REPLAY_GFLAG_STATS;
+	plr->stats.total.lives = stg->plr_stats_total_lives;
+	plr->stats.stage.lives = stg->plr_stats_stage_lives;
+	plr->stats.total.bombs = stg->plr_stats_total_bombs;
+	plr->stats.stage.bombs = stg->plr_stats_stage_bombs;
+	plr->stats.stage.continues = stg->plr_stats_stage_continues;
 }
 
 static void replay_destroy_stage(ReplayStage *stage) {
@@ -194,6 +203,14 @@ static uint32_t replay_calc_stageinfo_checksum(ReplayStage *stg, uint16_t versio
 		cs += stg->plr_points_final;
 	}
 
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		cs += stg->plr_stats_total_lives;
+		cs += stg->plr_stats_stage_lives;
+		cs += stg->plr_stats_total_bombs;
+		cs += stg->plr_stats_stage_bombs;
+		cs += stg->plr_stats_stage_continues;
+	}
+
 	log_debug("%08x", cs);
 	return cs;
 }
@@ -224,6 +241,14 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
 		SDL_WriteLE64(file, stg->plr_points_final);
+	}
+
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		SDL_WriteU8(file, stg->plr_stats_total_lives);
+		SDL_WriteU8(file, stg->plr_stats_stage_lives);
+		SDL_WriteU8(file, stg->plr_stats_total_bombs);
+		SDL_WriteU8(file, stg->plr_stats_stage_bombs);
+		SDL_WriteU8(file, stg->plr_stats_stage_continues);
 	}
 
 	if(stg->events.num_elements > UINT16_MAX) {
@@ -371,6 +396,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS103000_REV1:
 		case REPLAY_STRUCT_VERSION_TS103000_REV2:
 		case REPLAY_STRUCT_VERSION_TS103000_REV3:
+		case REPLAY_STRUCT_VERSION_TS104000_REV0:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -483,6 +509,14 @@ static bool _replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, co
 
 		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
 			CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
+		}
+
+		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+			CHECKPROP(stg->plr_stats_total_lives = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stats_stage_lives = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stats_total_bombs = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stats_stage_bombs = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stats_stage_continues = SDL_ReadU8(file), u);
 		}
 
 		CHECKPROP(stg->num_events = SDL_ReadLE16(file), u);

@@ -214,6 +214,8 @@ static void stage_start(StageInfo *stage) {
 
 	player_stage_pre_init(&global.plr);
 
+	stats_stage_reset(&global.plr.stats);
+
 	if(stage->type == STAGE_SPELL) {
 		global.is_practice_mode = true;
 		global.plr.lives = 0;
@@ -1051,7 +1053,7 @@ void stage_end_loop(void* ctx) {
 }
 
 void stage_unlock_bgm(const char *bgm) {
-	if(global.replaymode != REPLAY_PLAY && !global.plr.continues_used) {
+	if(global.replaymode != REPLAY_PLAY && !global.plr.stats.total.continues) {
 		progress_unlock_bgm(bgm);
 	}
 }

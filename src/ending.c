@@ -328,7 +328,7 @@ void good_ending_reimu(Ending *e) {
 static void init_ending(Ending *e) {
 	dynarray_ensure_capacity(&e->entries, 32);
 
-	if(global.plr.continues_used) {
+	if(global.plr.stats.total.continues) {
 		global.plr.mode->character->ending.bad(e);
 	} else {
 		global.plr.mode->character->ending.good(e);

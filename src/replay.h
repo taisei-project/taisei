@@ -54,13 +54,16 @@
 
 	// Taisei v1.3 revision 3: add final score at the end of each stage
 	#define REPLAY_STRUCT_VERSION_TS103000_REV3 12
+
+	// Taisei v1.4 revision 0: add statistics for player
+	#define REPLAY_STRUCT_VERSION_TS104000_REV0 13
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS103000_REV3 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS104000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -129,6 +132,15 @@ typedef struct ReplayStage {
 	// player score at the end of the stage
 	uint64_t plr_points_final;
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
+
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
+	uint8_t plr_stats_enabled;
+	uint8_t plr_stats_total_lives;
+	uint8_t plr_stats_stage_lives;
+	uint8_t plr_stats_total_bombs;
+	uint8_t plr_stats_stage_bombs;
+	uint8_t plr_stats_stage_continues;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
 
 	// player input
 	// NOTE: only used to read the number of events from file.
@@ -224,6 +236,7 @@ typedef enum ReplayGlobalFlags {
 	REPLAY_GFLAG_CONTINUES          = (1 << 0), // a continue was used in any stage
 	REPLAY_GFLAG_CHEATS             = (1 << 1), // a cheat was used in any stage
 	REPLAY_GFLAG_CLEAR              = (1 << 2), // all stages in the replay were cleared
+	REPLAY_GFLAG_STATS              = (1 << 3), // stats were enabled for this run
 } ReplayGlobalFlags;
 
 typedef enum ReplayStageFlags {

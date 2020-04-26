@@ -1822,11 +1822,18 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
+	if (global.plr.stats.settings.enabled) {
+		log_debug("displaying stats");
+		stagetext_table_add_separator(&tbl);
+		stagetext_table_add(&tbl, "Statistics", "Stage");
+		stagetext_table_add_numeric_nonzero(&tbl, "Lives used", global.plr.stats.stage.lives);
+		stagetext_table_add_numeric_nonzero(&tbl, "Spellcards used", global.plr.stats.stage.bombs);
+	}
 	stagetext_end_table(&tbl);
 
 	stagetext_add(
 		"Press Fire to continue",
-		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
+		VIEWPORT_W/2 + VIEWPORT_H*0.8*I,
 		ALIGN_CENTER,
 		get_font("standard"),
 		RGB(1, 0.5, 0),
