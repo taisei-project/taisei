@@ -107,17 +107,19 @@ void dialog_update(Dialog *d) {
 	if (d->title.active) {
 		if(d->title.timeout > 0) {
 			fapproach_asymptotic_p(&d->title.box.opacity, 1, 0.05, 1e-3);
-			fapproach_asymptotic_p(&d->title.box_text.opacity, 1, 0.05, 1e-3);
+			if(d->title.box.opacity >= 0.9 ) {
+				fapproach_asymptotic_p(&d->title.box_text.opacity, 1, 0.05, 1e-3);
+			}
 			d->title.timeout--;
 		}
-		if(d->title.timeout == 0) {
+		if(d->title.timeout == 0 || d->state == DIALOG_STATE_FADEOUT) {
 			fapproach_asymptotic_p(&d->title.box.opacity, 0, 0.1, 1e-3);
 			fapproach_asymptotic_p(&d->title.box_text.opacity, 0, 0.1, 1e-3);
             d->title.box_text.opacity = 0;
+			d->title.timeout = 0;
 		}
 	} else if (d->title.timeout == 0) {
 		d->title.active = false;
-
 	}
 }
 
@@ -412,7 +414,10 @@ void dialog_draw(Dialog *dialog) {
 		text_draw(dialog->title.name, &(TextParams) {
 			.shader = "text_default",
 			.color = &clr,
-			.pos = { VIEWPORT_W/2+60, VIEWPORT_H-200 + font_get_lineskip(font) },
+			.pos = {
+				title_bg_rect.y-10,
+				title_bg_rect.x+300
+			},
 			.align = ALIGN_CENTER,
 			.font_ptr = font,
 		});
