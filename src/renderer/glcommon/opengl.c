@@ -14,44 +14,34 @@
 #include "debug.h"
 #include "shaders.h"
 
-// undef extension abstraction macros
-#undef glDebugMessageControl
-#undef glDebugMessageCallback
-#undef glObjectLabel
-#undef glDrawArraysInstanced
-#undef glDrawElementsInstanced
-#undef glVertexAttribDivisor
-#undef glDrawArraysInstancedBaseInstance
-#undef glDrawElementsInstancedBaseInstance
-#undef glDrawBuffers
-#undef glClearTexImage
-// #undef glClearTexSubImage
-#undef glBindVertexArray
-#undef glDeleteVertexArrays
-#undef glGenVertexArrays
-#undef glIsVertexArray
-#undef glGetFloati_v
-#undef glViewportIndexedfv
-
-struct glext_s glext;
+struct glext_s glext = { 0 };
 
 typedef void (*glad_glproc_ptr)(void);
 
 #ifndef STATIC_GLES3
 //
-//	Extension not yet handled by glad
+// GL_ANGLE_base_vertex_base_instance is not in the GL registry yet, so we have to load it manually.
 //
-
-// GL_ANGLE_base_vertex_base_instance
-typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount, GLuint baseInstance);
-static PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC glad_glDrawArraysInstancedBaseInstanceANGLE;
-typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
+typedef void (APIENTRY *PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
 static PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE;
 
+//
+// shims
+//
+
 APIENTRY
-static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
-	// shim
+static void shim_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
 	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
+}
+
+APIENTRY
+static void shim_glClearDepth(GLdouble depthval) {
+	glClearDepthf(depthval);
+}
+
+APIENTRY
+static void shim_glClearDepthf(GLfloat depthval) {
+	glClearDepth(depthval);
 }
 #endif
 
@@ -174,6 +164,29 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 #endif
 }
 
+#define EXT_FLAG(flagname) \
+	ext_flag_t *pExtField = &glext.flagname
+
+#define CHECK_CORE(cond) do { \
+	if((cond)) { \
+		*pExtField = TSGL_EXTFLAG_NATIVE; \
+		log_info("Using core functionality"); \
+		return; \
+	} \
+} while(0)
+
+#define CHECK_EXT(extname) do { \
+	if((*pExtField = glcommon_check_extension(#extname))) { \
+		log_info("Using " #extname); \
+		return; \
+	} \
+} while(0)
+
+#define EXT_MISSING() do { \
+	*pExtField = 0; \
+	log_warn("Extension not supported"); \
+} while(0)
+
 ext_flag_t glcommon_require_extension(const char *ext) {
 	ext_flag_t val = glcommon_check_extension(ext);
 
@@ -189,492 +202,222 @@ ext_flag_t glcommon_require_extension(const char *ext) {
 }
 
 static void glcommon_ext_debug_output(void) {
+	EXT_FLAG(debug_output);
+
 #ifndef STATIC_GLES3
-	if(
-		GL_ATLEAST(4, 3)
-		&& (glext.DebugMessageCallback = GL_FUNC(DebugMessageCallback))
-		&& (glext.DebugMessageControl = GL_FUNC(DebugMessageControl))
-		&& (glext.ObjectLabel = GL_FUNC(ObjectLabel))
-	) {
-		glext.debug_output = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	if(glext.version.is_es) {
-		if((glext.debug_output = glcommon_check_extension("GL_KHR_debug"))
-			&& (glext.DebugMessageCallback = GL_FUNC(DebugMessageCallbackKHR))
-			&& (glext.DebugMessageControl = GL_FUNC(DebugMessageControlKHR))
-			&& (glext.ObjectLabel = GL_FUNC(ObjectLabelKHR))
-		) {
-			log_info("Using GL_KHR_debug");
-			return;
+	if(HAVE_GL_FUNC(glDebugMessageCallback) && HAVE_GL_FUNC(glDebugMessageControl)) {
+		if(HAVE_GL_FUNC(glObjectLabel)) {
+			CHECK_CORE(GL_ATLEAST(4, 3));
+			CHECK_EXT(GL_KHR_debug);
 		}
-	} else {
-		if((glext.debug_output = glcommon_check_extension("GL_KHR_debug"))
-			&& (glext.DebugMessageCallback = GL_FUNC(DebugMessageCallback))
-			&& (glext.DebugMessageControl = GL_FUNC(DebugMessageControl))
-			&& (glext.ObjectLabel = GL_FUNC(ObjectLabel))
-		) {
-			log_info("Using GL_KHR_debug");
-			return;
-		}
-	}
 
-	if((glext.debug_output = glcommon_check_extension("GL_ARB_debug_output"))
-		&& (glext.DebugMessageCallback = GL_FUNC(DebugMessageCallbackARB))
-		&& (glext.DebugMessageControl = GL_FUNC(DebugMessageControlARB))
-	) {
-		log_info("Using GL_ARB_debug_output");
-		return;
+		CHECK_EXT(GL_ARB_debug_output);
 	}
 #endif
 
-	glext.debug_output = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_base_instance(void) {
+	EXT_FLAG(base_instance);
+
 #ifndef STATIC_GLES3
 	if(
-		GL_ATLEAST(4, 2)
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstance))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstance))
+		HAVE_GL_FUNC(glDrawArraysInstancedBaseInstance) &&
+		HAVE_GL_FUNC(glDrawElementsInstancedBaseInstance)
 	) {
-		glext.base_instance = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_ARB_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstance))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstance))
-	) {
-		log_info("Using GL_ARB_base_instance");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_EXT_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstanceEXT))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceEXT))
-	) {
-		log_info("Using GL_EXT_base_instance");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_ANGLE_base_vertex_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstanceANGLE))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceANGLE))
-	) {
-		log_info("Using GL_ANGLE_base_vertex_base_instance");
-		return;
+		CHECK_CORE(GL_ATLEAST(4, 2));
+		CHECK_EXT(GL_ARB_base_instance);
+		CHECK_EXT(GL_EXT_base_instance);
+		CHECK_EXT(GL_ANGLE_base_vertex_base_instance);
 	}
 #endif
 
-	glext.base_instance = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_pixel_buffer_object(void) {
+	EXT_FLAG(pixel_buffer_object);
+
 #ifdef STATIC_GLES3
-	glext.pixel_buffer_object = TSGL_EXTFLAG_NATIVE;
-	log_info("Using core functionality");
-	return;
+	CHECK_CORE(1);
 #else
 	// TODO: verify that these requirements are correct
-	if(GL_ATLEAST(2, 0) || GLES_ATLEAST(3, 0)) {
-		glext.pixel_buffer_object = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	const char *exts[] = {
-		"GL_ARB_pixel_buffer_object",
-		"GL_EXT_pixel_buffer_object",
-		"GL_NV_pixel_buffer_object",
-		NULL
-	};
-
-	for(const char **p = exts; *p; ++p) {
-		if((glext.pixel_buffer_object = glcommon_check_extension(*p))) {
-			log_info("Using %s", *p);
-			return;
-		}
-	}
-
-	glext.pixel_buffer_object = 0;
-	log_warn("Extension not supported");
+	CHECK_CORE(GL_ATLEAST(2, 0) || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_ARB_pixel_buffer_object);
+	CHECK_EXT(GL_EXT_pixel_buffer_object);
+	CHECK_EXT(GL_NV_pixel_buffer_object);
+	EXT_MISSING();
 #endif
 }
 
 static void glcommon_ext_depth_texture(void) {
+	EXT_FLAG(depth_texture);
+
 #ifdef STATIC_GLES3
-	glext.depth_texture = TSGL_EXTFLAG_NATIVE;
-	log_info("Using core functionality");
-	return;
+	CHECK_CORE(1);
 #else
 	// TODO: detect this for core OpenGL properly
-	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
-		glext.depth_texture = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	const char *exts[] = {
-		"GL_OES_depth_texture",
-		"GL_ANGLE_depth_texture",
-		NULL
-	};
-
-	for(const char **p = exts; *p; ++p) {
-		if((glext.pixel_buffer_object = glcommon_check_extension(*p))) {
-			log_info("Using %s", *p);
-			return;
-		}
-	}
-
-	glext.depth_texture = 0;
-	log_warn("Extension not supported");
+	CHECK_CORE(!glext.version.is_es || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_OES_depth_texture);
+	CHECK_EXT(GL_ANGLE_depth_texture);
+	CHECK_EXT(GL_SGIX_depth_texture);
+	EXT_MISSING();
 #endif
 }
 
 static void glcommon_ext_instanced_arrays(void) {
+	EXT_FLAG(instanced_arrays);
+
 #ifdef STATIC_GLES3
-	glext.instanced_arrays = TSGL_EXTFLAG_NATIVE;
-	log_info("Using core functionality");
-	return;
+	CHECK_CORE(1);
 #else
 	if(
-		(GL_ATLEAST(3, 3) || GLES_ATLEAST(3, 0))
-		&& (glext.DrawArraysInstanced = GL_FUNC(DrawArraysInstanced))
-		&& (glext.DrawElementsInstanced = GL_FUNC(DrawElementsInstanced))
-		&& (glext.VertexAttribDivisor = GL_FUNC(VertexAttribDivisor))
+		HAVE_GL_FUNC(glDrawArraysInstanced) &&
+		HAVE_GL_FUNC(glDrawElementsInstanced) &&
+		HAVE_GL_FUNC(glVertexAttribDivisor)
 	) {
-		glext.instanced_arrays = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
+		CHECK_CORE(GL_ATLEAST(3, 3) || GLES_ATLEAST(3, 0));
+		CHECK_EXT(GL_ANGLE_instanced_arrays);
+		CHECK_EXT(GL_ARB_instanced_arrays);
+		CHECK_EXT(GL_EXT_instanced_arrays);
+		CHECK_EXT(GL_NV_instanced_arrays);
 	}
 
-	if((glext.instanced_arrays = glcommon_check_extension("GL_ARB_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = GL_FUNC(DrawArraysInstancedARB))
-		&& (glext.DrawElementsInstanced = GL_FUNC(DrawElementsInstancedARB))
-		&& (glext.VertexAttribDivisor = GL_FUNC(VertexAttribDivisorARB))
-	) {
-		log_info("Using GL_ARB_instanced_arrays (GL_ARB_draw_instanced assumed)");
-		return;
-	}
-
-	if((glext.instanced_arrays = glcommon_check_extension("GL_EXT_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = GL_FUNC(DrawArraysInstancedEXT))
-		&& (glext.DrawElementsInstanced = GL_FUNC(DrawElementsInstancedEXT))
-		&& (glext.VertexAttribDivisor = GL_FUNC(VertexAttribDivisorEXT))
-	) {
-		log_info("Using GL_EXT_instanced_arrays");
-		return;
-	}
-
-	if((glext.instanced_arrays = glcommon_check_extension("GL_ANGLE_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = GL_FUNC(DrawArraysInstancedANGLE))
-		&& (glext.DrawElementsInstanced = GL_FUNC(DrawElementsInstancedANGLE))
-		&& (glext.VertexAttribDivisor = GL_FUNC(VertexAttribDivisorANGLE))
-	) {
-		log_info("Using GL_ANGLE_instanced_arrays");
-		return;
-	}
-
-	if((glext.instanced_arrays = glcommon_check_extension("GL_NV_instanced_arrays"))
-		&& (glext.DrawArraysInstanced = GL_FUNC(DrawArraysInstancedNV))
-		&& (glext.DrawElementsInstanced = GL_FUNC(DrawElementsInstancedNV))
-		&& (glext.VertexAttribDivisor = GL_FUNC(VertexAttribDivisorNV))
-	) {
-		log_info("Using GL_NV_instanced_arrays (GL_NV_draw_instanced assumed)");
-		return;
-	}
-
-	glext.instanced_arrays = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 #endif
 }
 
 static void glcommon_ext_draw_buffers(void) {
+	EXT_FLAG(draw_buffers);
+
 #ifdef STATIC_GLES3
-	glext.draw_buffers = TSGL_EXTFLAG_NATIVE;
-	log_info("Using core functionality");
-	return;
+	CHECK_CORE(1);
 #else
-	if(
-		(GL_ATLEAST(2, 0) || GLES_ATLEAST(3, 0))
-		&& (glext.DrawBuffers = GL_FUNC(DrawBuffers))
-	) {
-		glext.draw_buffers = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
+	if(HAVE_GL_FUNC(glDrawBuffers)) {
+		CHECK_CORE(GL_ATLEAST(2, 0) || GLES_ATLEAST(3, 0));
+		CHECK_EXT(GL_ARB_draw_buffers);
+		CHECK_EXT(GL_EXT_draw_buffers);
 	}
 
-	if((glext.instanced_arrays = glcommon_check_extension("GL_ARB_draw_buffers"))
-		&& (glext.DrawBuffers = GL_FUNC(DrawBuffersARB))
-	) {
-		log_info("Using GL_ARB_draw_buffers");
-		return;
-	}
-
-	if((glext.instanced_arrays = glcommon_check_extension("GL_EXT_draw_buffers"))
-		&& (glext.DrawBuffers = GL_FUNC(DrawBuffersEXT))
-	) {
-		log_info("Using GL_EXT_draw_buffers");
-		return;
-	}
-
-	glext.draw_buffers = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 #endif
 }
 
 static void glcommon_ext_texture_filter_anisotropic(void) {
-	if(GL_ATLEAST(4, 6)) {
-		glext.texture_filter_anisotropic = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(texture_filter_anisotropic);
 
-	if((glext.texture_filter_anisotropic = glcommon_check_extension("GL_ARB_texture_filter_anisotropic"))) {
-		log_info("Using ARB_texture_filter_anisotropic");
-		return;
-	}
+	CHECK_CORE(GL_ATLEAST(4, 6));
+	CHECK_EXT(GL_ARB_texture_filter_anisotropic);
+	CHECK_EXT(GL_EXT_texture_filter_anisotropic);
 
-	if((glext.texture_filter_anisotropic = glcommon_check_extension("GL_EXT_texture_filter_anisotropic"))) {
-		log_info("Using EXT_texture_filter_anisotropic");
-		return;
-	}
-
-	glext.texture_filter_anisotropic = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_clear_texture(void) {
-#ifdef STATIC_GLES3
-	if((glext.clear_texture = glcommon_check_extension("GL_EXT_clear_texture"))) {
-		log_info("Using GL_EXT_clear_texture");
-		return;
-	}
-#else
-	if(
-		GL_ATLEAST(4, 4)
-		&& (glext.ClearTexImage = GL_FUNC(ClearTexImage))
-	) {
-		glext.clear_texture = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
+	EXT_FLAG(clear_texture);
+
+	if(HAVE_GL_FUNC(glClearTexImage)) {
+		CHECK_CORE(GL_ATLEAST(4, 4));
+		CHECK_EXT(GL_ARB_clear_texture);
+		CHECK_EXT(GL_EXT_clear_texture);
 	}
 
-	if((glext.clear_texture = glcommon_check_extension("GL_ARB_clear_texture"))
-		&& (glext.ClearTexImage = GL_FUNC(ClearTexImage))
-	) {
-		log_info("Using GL_ARB_clear_texture");
-		return;
-	}
-
-	if((glext.clear_texture = glcommon_check_extension("GL_EXT_clear_texture"))
-		&& (glext.ClearTexImage = GL_FUNC(ClearTexImageEXT))
-	) {
-		log_info("Using GL_EXT_clear_texture");
-		return;
-	}
-#endif
-
-	glext.clear_texture = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_texture_norm16(void) {
-	if(!glext.version.is_es) {
-		glext.texture_norm16 = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(texture_norm16);
 
-	if((glext.texture_norm16 = glcommon_check_extension("GL_EXT_texture_norm16"))) {
-		log_info("Using GL_EXT_texture_norm16");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_EXT_texture_norm16);
 
-	glext.texture_norm16 = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_texture_rg(void) {
-	if(!glext.version.is_es) {
-		glext.texture_rg = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(texture_norm16);
 
-	if((glext.texture_rg = glcommon_check_extension("GL_EXT_texture_rg"))) {
-		log_info("Using GL_EXT_texture_rg");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_EXT_texture_rg);
 
-	glext.texture_rg = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_texture_float_linear(void) {
-	if(!glext.version.is_es) {
-		glext.texture_float_linear = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(texture_float_linear);
 
-	if((glext.texture_float_linear = glcommon_check_extension("GL_OES_texture_float_linear"))) {
-		log_info("Using GL_OES_texture_float_linear");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_OES_texture_float_linear);
 
-	glext.texture_float_linear = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_texture_half_float_linear(void) {
-	if(!glext.version.is_es) {
-		glext.texture_half_float_linear = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(texture_half_float_linear);
 
-	if((glext.texture_half_float_linear = glcommon_check_extension("GL_OES_texture_half_float_linear"))) {
-		log_info("Using GL_OES_texture_half_float_linear");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_OES_texture_half_float_linear);
 
-	glext.texture_half_float_linear = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_color_buffer_float(void) {
-	if(!glext.version.is_es) {
-		glext.color_buffer_float = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(color_buffer_float);
 
-	if((glext.color_buffer_float = glcommon_check_extension("GL_EXT_color_buffer_float"))) {
-		log_info("Using GL_EXT_color_buffer_float");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_EXT_color_buffer_float);
 
-	glext.color_buffer_float = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_float_blend(void) {
-	if(!glext.version.is_es) {
-		glext.float_blend = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
+	EXT_FLAG(float_blend);
 
-	if((glext.float_blend = glcommon_check_extension("GL_EXT_float_blend"))) {
-		log_info("Using GL_EXT_float_blend");
-		return;
-	}
+	CHECK_CORE(!glext.version.is_es);
+	CHECK_EXT(GL_EXT_float_blend);
 
-	glext.float_blend = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
 
 static void glcommon_ext_vertex_array_object(void) {
+	EXT_FLAG(vertex_array_object);
+
 #ifdef STATIC_GLES3
-	glext.vertex_array_object = TSGL_EXTFLAG_NATIVE;
-	log_info("Using core functionality");
-	return;
+	CHECK_CORE(1);
 #else
-	if((GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0))
-		&& (glext.BindVertexArray = GL_FUNC(BindVertexArray))
-		&& (glext.DeleteVertexArrays = GL_FUNC(DeleteVertexArrays))
-		&& (glext.GenVertexArrays = GL_FUNC(GenVertexArrays))
-		&& (glext.IsVertexArray = GL_FUNC(IsVertexArray))
+	if(
+		HAVE_GL_FUNC(glBindVertexArray) &&
+		HAVE_GL_FUNC(glDeleteVertexArrays) &&
+		HAVE_GL_FUNC(glGenVertexArrays) &&
+		HAVE_GL_FUNC(glIsVertexArray)
 	) {
-		glext.vertex_array_object = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
+		CHECK_CORE(GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0));
+		CHECK_EXT(GL_ARB_vertex_array_object);
+		CHECK_EXT(GL_OES_vertex_array_object);
 	}
 
-	if((glext.vertex_array_object = glcommon_check_extension("GL_ARB_vertex_array_object"))
-		&& (glext.BindVertexArray = GL_FUNC(BindVertexArray))
-		&& (glext.DeleteVertexArrays = GL_FUNC(DeleteVertexArrays))
-		&& (glext.GenVertexArrays = GL_FUNC(GenVertexArrays))
-		&& (glext.IsVertexArray = GL_FUNC(IsVertexArray))
-	) {
-		log_info("Using GL_ARB_vertex_array_object");
-		return;
-	}
-
-	if((glext.vertex_array_object = glcommon_check_extension("GL_OES_vertex_array_object"))
-		&& (glext.BindVertexArray = GL_FUNC(BindVertexArrayOES))
-		&& (glext.DeleteVertexArrays = GL_FUNC(DeleteVertexArraysOES))
-		&& (glext.GenVertexArrays = GL_FUNC(GenVertexArraysOES))
-		&& (glext.IsVertexArray = GL_FUNC(IsVertexArrayOES))
-	) {
-		log_info("Using GL_OES_vertex_array_object");
-		return;
-	}
-
-	if((glext.vertex_array_object = glcommon_check_extension("GL_APPLE_vertex_array_object"))
-		&& (glext.BindVertexArray = GL_FUNC(BindVertexArrayAPPLE))
-		&& (glext.DeleteVertexArrays = GL_FUNC(DeleteVertexArraysAPPLE))
-		&& (glext.GenVertexArrays = GL_FUNC(GenVertexArraysAPPLE))
-		&& (glext.IsVertexArray = GL_FUNC(IsVertexArrayAPPLE))
-	) {
-		log_info("Using GL_APPLE_vertex_array_object");
-		return;
-	}
-
-	glext.vertex_array_object = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 #endif
 }
 
 static void glcommon_ext_viewport_array(void) {
+	EXT_FLAG(viewport_array);
+
 #ifndef STATIC_GLES3
-	if((GL_ATLEAST(4, 1))
-		&& (glext.GetFloati_v = GL_FUNC(GetFloati_v))
-		&& (glext.ViewportIndexedfv = GL_FUNC(ViewportIndexedfv))
+	if(
+		HAVE_GL_FUNC(glGetFloati_v) &&
+		HAVE_GL_FUNC(glViewportIndexedfv)
 	) {
-		glext.viewport_array = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	if((glext.viewport_array = glcommon_check_extension("GL_ARB_viewport_array"))
-		&& (glext.GetFloati_v = GL_FUNC(GetFloati_v))
-		&& (glext.ViewportIndexedfv = GL_FUNC(ViewportIndexedfv))
-	) {
-		log_info("Using GL_ARB_viewport_array");
-		return;
-	}
-
-	if((glext.viewport_array = glcommon_check_extension("GL_OES_viewport_array"))
-		&& (glext.GetFloati_v = GL_FUNC(GetFloati_vOES))
-		&& (glext.ViewportIndexedfv = GL_FUNC(ViewportIndexedfvOES))
-	) {
-		log_info("Using GL_OES_viewport_array");
-		return;
+		CHECK_CORE(GL_ATLEAST(4, 1));
+		CHECK_EXT(GL_ARB_viewport_array);
+		CHECK_EXT(GL_OES_viewport_array);
+		CHECK_EXT(GL_NV_viewport_array2);
 	}
 #endif
 
-	glext.viewport_array = 0;
-	log_warn("Extension not supported");
+	EXT_MISSING();
 }
-
-#ifndef STATIC_GLES3
-static APIENTRY GLvoid shim_glClearDepth(GLdouble depthval) {
-	glClearDepthf(depthval);
-}
-
-static APIENTRY GLvoid shim_glClearDepthf(GLfloat depthval) {
-	glClearDepth(depthval);
-}
-#endif
 
 static const char *get_unmasked_property(GLenum prop, bool fallback) {
 	const char *val = NULL;
@@ -773,7 +516,6 @@ static void detect_broken_intel_driver(void) {
 	);
 
 	exit(0);
-
 #endif
 }
 
@@ -842,21 +584,8 @@ static void glcommon_check_issues(void) {
 }
 
 void glcommon_check_capabilities(void) {
-	memset(&glext, 0, sizeof(glext));
-
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
-
-#ifdef STATIC_GLES3
-	GLint major, minor;
-	glGetIntegerv(GL_MAJOR_VERSION, &major);
-	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	glext.version.major = major;
-	glext.version.minor = minor;
-#else
-	glext.version.major = GLVersion.major;
-	glext.version.minor = GLVersion.minor;
-#endif
 
 	if(!glslv) {
 		glslv = "None";
@@ -887,6 +616,10 @@ void glcommon_check_capabilities(void) {
 	}
 
 	log_info("GLSL version: %s", glslv);
+
+	if(!GL_ATLEAST(3, 3) && !GLES_ATLEAST(3, 0)) {
+		log_warn("Unsupported OpenGL version, expect problems");
+	}
 
 	detect_broken_intel_driver();
 
@@ -929,20 +662,6 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_vertex_array_object();
 	glcommon_ext_viewport_array();
 
-	// GLES has only glClearDepthf
-	// Core has only glClearDepth until GL 4.1
-#ifndef STATIC_GLES3
-	assert(glClearDepth || glClearDepthf);
-
-	if(!glClearDepth) {
-		glClearDepth = shim_glClearDepth;
-	}
-
-	if(!glClearDepthf) {
-		glClearDepthf = shim_glClearDepthf;
-	}
-#endif
-
 	glcommon_build_shader_lang_table();
 	glcommon_check_issues();
 }
@@ -969,35 +688,65 @@ void glcommon_unload_library(void) {
 }
 
 attr_unused
-static inline void (*load_func(const char *name))(void) {
+static inline void (*load_gl_func(const char *name))(void) {
 	union {
 		void *vp;
 		void (*fp)(void);
 	} c_sucks;
 	c_sucks.vp = SDL_GL_GetProcAddress(name);
+	// log_debug("%s: %p", name, c_sucks.vp);
 	return c_sucks.fp;
 }
 
 void glcommon_load_functions(void) {
 #ifndef STATIC_GLES3
-	int profile;
+	int profile, version;
 
 	if(SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile) < 0) {
 		log_fatal("SDL_GL_GetAttribute() failed: %s", SDL_GetError());
 	}
 
 	if(profile == SDL_GL_CONTEXT_PROFILE_ES) {
-		if(!gladLoadGLES2Loader(SDL_GL_GetProcAddress)) {
+		if(!(version = gladLoadGLES2(load_gl_func))) {
 			log_fatal("Failed to load OpenGL ES functions");
 		}
 	} else {
-		if(!gladLoadGLLoader(SDL_GL_GetProcAddress)) {
+		if(!(version = gladLoadGL(load_gl_func))) {
 			log_fatal("Failed to load OpenGL functions");
 		}
 	}
 
-	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)load_func("glDrawArraysInstancedBaseInstanceANGLE");
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+	glext.version.major = GLAD_VERSION_MAJOR(version);
+	glext.version.minor = GLAD_VERSION_MINOR(version);
+	log_debug("GLAD reported OpenGL version %i.%i", glext.version.major, glext.version.minor);
+
+	if(!HAVE_GL_FUNC(glDrawArraysInstancedBaseInstance)) {
+		glDrawArraysInstancedBaseInstance = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC)load_gl_func("glDrawArraysInstancedBaseInstanceANGLE");
+	}
+
+	if(!HAVE_GL_FUNC(glDrawElementsInstancedBaseInstance)) {
+		glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_gl_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+		glDrawElementsInstancedBaseInstance = shim_glDrawElementsInstancedBaseInstanceANGLE;
+	}
+
+	// GLES has only glClearDepthf
+	// Core has only glClearDepth until GL 4.1
+
+	if(!HAVE_GL_FUNC(glClearDepth)) {
+		glClearDepth = shim_glClearDepth;
+		assert(HAVE_GL_FUNC(glClearDepthf));
+	}
+
+	if(!HAVE_GL_FUNC(glClearDepthf)) {
+		glClearDepthf = shim_glClearDepthf;
+		assert(HAVE_GL_FUNC(glClearDepth));
+	}
+#else
+	GLint major, minor;
+	glGetIntegerv(GL_MAJOR_VERSION, &major);
+	glGetIntegerv(GL_MINOR_VERSION, &minor);
+	glext.version.major = major;
+	glext.version.minor = minor;
 #endif
 }
 
