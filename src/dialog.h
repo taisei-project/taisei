@@ -55,10 +55,6 @@ typedef struct DialogTextBuffer {
 	float opacity;
 } DialogTextBuffer;
 
-struct title_box {
-	float opacity;
-};
-
 typedef struct Dialog {
 	LIST_ANCHOR(DialogActor) actors;
 
@@ -73,8 +69,9 @@ typedef struct Dialog {
 		const char *text;
 		bool active;
 		int timeout;
-		struct title_box box;
-		struct title_box box_text;
+		struct {
+			float opacity;
+		} box, box_text;
 	} title;
 
 	Color title_color;
@@ -83,7 +80,7 @@ typedef struct Dialog {
 		skip_requested,
 		fadeout_began,
 		fadeout_ended
-	) events, title_events;
+	) events;
 
 	DialogState state;
 
@@ -145,7 +142,7 @@ void dialog_draw(Dialog *d);
 bool dialog_page(Dialog *d)
 	attr_nonnull_all;
 
-void dialog_draw_title(Dialog *d, DialogActor *actor, char *name, char *title);
+void dialog_show_title(Dialog *d, DialogActor *actor, char *name, char *title)
 	attr_nonnull_all;
 
 bool dialog_is_active(Dialog *d);
