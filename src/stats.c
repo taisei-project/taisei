@@ -15,21 +15,9 @@
 #include "global.h"
 #include "stage.h"
 
-static bool stats_are_enabled(void) {
-	log_debug("statistics: %d", config_get_int(CONFIG_STATS_ENABLED));
-	return config_get_int(CONFIG_STATS_ENABLED);
-}
-
 void stats_init(Stats *stats) {
 	memset(stats, 0, sizeof(*stats));
-	if (stats_are_enabled()) {
-		log_debug("statisics enabled for player");
-		stats->settings.enabled = 1;
-		// turn on stats in replays
-		global.replay.flags |= REPLAY_GFLAG_STATS;
-	}
 }
-
 
 void stats_append_life(Stats *stats) {
 	stats->total.lives++;

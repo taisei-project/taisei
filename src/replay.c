@@ -54,8 +54,6 @@ ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_t
 	s->plr_point_item_value = plr->point_item_value;
 	s->plr_inputflags = plr->inputflags;
 
-	s->plr_stats_enabled = plr->stats.settings.enabled;
-
 	log_debug("Created a new stage %p in replay %p", (void*)s, (void*)rpy);
 	return s;
 }
@@ -76,7 +74,6 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->point_item_value = stg->plr_point_item_value;
 	plr->inputflags = stg->plr_inputflags;
 
-	plr->stats.settings.enabled = REPLAY_GFLAG_STATS;
 	plr->stats.total.lives = stg->plr_stats_total_lives;
 	plr->stats.stage.lives = stg->plr_stats_stage_lives;
 	plr->stats.total.bombs = stg->plr_stats_total_bombs;

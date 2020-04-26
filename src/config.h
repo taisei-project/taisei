@@ -125,7 +125,6 @@
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          0.25) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       0.02) \
-	CONFIGDEF_INT       (STATS_ENABLED,             "stats_enabled",                        0) \
 	GPKEYDEFS \
 
 

@@ -236,7 +236,6 @@ typedef enum ReplayGlobalFlags {
 	REPLAY_GFLAG_CONTINUES          = (1 << 0), // a continue was used in any stage
 	REPLAY_GFLAG_CHEATS             = (1 << 1), // a cheat was used in any stage
 	REPLAY_GFLAG_CLEAR              = (1 << 2), // all stages in the replay were cleared
-	REPLAY_GFLAG_STATS              = (1 << 3), // stats were enabled for this run
 } ReplayGlobalFlags;
 
 typedef enum ReplayStageFlags {

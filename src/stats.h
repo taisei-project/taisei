@@ -19,10 +19,6 @@ struct Stats {
 		int bombs;
 		int continues;
 	} total, stage;
-
-	struct {
-		bool enabled;
-	} settings;
 };
 
 void stats_init(Stats *stats);
