@@ -96,11 +96,6 @@ void player_stage_post_init(Player *plr) {
 
 void player_free(Player *plr) {
 	COEVENT_CANCEL_ARRAY(plr->events);
-
-	if(plr->mode->procs.free) {
-		plr->mode->procs.free(plr);
-	}
-
 	r_texture_destroy(plr->bomb_portrait.tex);
 	aniplayer_free(&plr->ani);
 	ent_unregister(&plr->ent);
@@ -114,10 +109,6 @@ static void player_full_power(Player *plr) {
 bool player_set_power(Player *plr, short npow) {
 	int pow_base = clamp(npow, 0, PLR_MAX_POWER);
 	int pow_overflow = clamp(npow - PLR_MAX_POWER, 0, PLR_MAX_POWER_OVERFLOW);
-
-	if(plr->mode->procs.power) {
-		plr->mode->procs.power(plr, pow_base);
-	}
 
 	int oldpow = plr->power;
 	int oldpow_over = plr->power_overflow;
@@ -617,15 +608,8 @@ DEFINE_TASK(player_logic) {
 
 		fapproach_p(&plr->focus_circle_alpha, !!(plr->inputflags & INFLAG_FOCUS), 1.0f/15.0f);
 
-		if(plr->mode->procs.think) {
-			plr->mode->procs.think(plr);
-		}
-
 		if(player_should_shoot(plr)) {
 			coevent_signal(&plr->events.shoot);
-			if(plr->mode->procs.shot) {
-				plr->mode->procs.shot(plr);
-			}
 		}
 
 		if(global.frames == plr->deathtime) {
@@ -634,9 +618,6 @@ DEFINE_TASK(player_logic) {
 			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		}
 	}
-}
-
-void player_logic(Player* plr) {
 }
 
 static bool player_can_bomb(Player *plr) {
@@ -650,7 +631,6 @@ static bool player_can_bomb(Player *plr) {
 	);
 
 }
-
 
 static bool player_bomb(Player *plr) {
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell)
@@ -669,10 +649,6 @@ static bool player_bomb(Player *plr) {
 		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
 		coevent_signal(&plr->events.bomb_used);
-
-		if(plr->mode->procs.bomb) {
-			plr->mode->procs.bomb(plr);
-		}
 
 		plr->bombs--;
 

@@ -1015,12 +1015,6 @@ void stage_draw_scene(StageInfo *stage) {
 		r_state_pop();
 
 		coevent_signal(&stagedraw.events.background_drawn);
-
-		// draw bomb background
-		// TODO: remove this; use events
-		if(global.plr.mode->procs.bombbg /*&& player_is_bomb_active(&global.plr)*/) {
-			global.plr.mode->procs.bombbg(&global.plr);
-		}
 	} else if(!key_nobg) {
 		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
@@ -1037,13 +1031,6 @@ void stage_draw_scene(StageInfo *stage) {
 	stagedraw.current_postprocess_fbpair = foreground;
 
 	coevent_signal(&stagedraw.events.postprocess_before_overlay);
-
-	// bomb effects shader if present and player bombing
-	// TODO: remove this; use events
-	if(global.plr.mode->procs.bomb_shader && player_is_bomb_active(&global.plr)) {
-		ShaderRule rules[] = { global.plr.mode->procs.bomb_shader, NULL };
-		apply_shader_rules(rules, foreground);
-	}
 
 	// draw overlay: in-viewport text and HUD elements, etc.
 	// this stuff is not affected by the screen shake effect

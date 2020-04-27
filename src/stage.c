@@ -487,8 +487,6 @@ static bool _stage_should_skip(void) {
 }
 
 static void stage_logic(void) {
-	player_logic(&global.plr);
-
 	process_boss(&global.boss);
 	process_enemies(&global.enemies);
 	process_projectiles(&global.projs, true);

@@ -193,7 +193,6 @@ void player_stage_post_init(Player *plr);
 void player_free(Player *plr);
 
 void player_draw_overlay(Player *plr);
-void player_logic(Player *plr);
 bool player_should_shoot(Player *plr);
 
 bool player_set_power(Player *plr, short npow);

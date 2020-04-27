@@ -73,11 +73,6 @@ typedef struct PlayerCharacter {
 
 typedef void (*PlayerModeInitProc)(Player *plr);
 typedef void (*PlayerModeFreeProc)(Player *plr);
-typedef void (*PlayerModeThinkProc)(Player *plr);
-typedef void (*PlayerModeShotProc)(Player *plr);
-typedef void (*PlayerModeBombProc)(Player *plr);
-typedef void (*PlayerModeBombBgProc)(Player *plr);
-typedef void (*PlayerModePowerProc)(Player *plr, short npow);
 typedef void (*PlayerModePreloadProc)(void);
 typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 
@@ -91,13 +86,6 @@ typedef struct PlayerMode {
 
 	struct {
 		PlayerModeInitProc init;
-		PlayerModeFreeProc free;
-		PlayerModeThinkProc think;
-		PlayerModeShotProc shot;
-		PlayerModeBombProc bomb;
-		ShaderRule bomb_shader;
-		PlayerModeBombBgProc bombbg;
-		PlayerModePowerProc power;
 		PlayerModePreloadProc preload;
 		PlayerModePropertyProc property;
 	} procs;
