@@ -9,8 +9,24 @@
 #define textureGrad(sampler, uv, dx, dy) texture(sampler, uv)
 
 #define tanh _tanh_compat
+
 float tanh(float x) {
 	float e2x = exp(2.0 * x);
+	return (e2x - 1.0) / (e2x + 1.0);
+}
+
+vec2 tanh(vec2 x) {
+	vec2 e2x = exp(2.0 * x);
+	return (e2x - 1.0) / (e2x + 1.0);
+}
+
+vec3 tanh(vec3 x) {
+	vec3 e2x = exp(2.0 * x);
+	return (e2x - 1.0) / (e2x + 1.0);
+}
+
+vec4 tanh(vec4 x) {
+	vec4 e2x = exp(2.0 * x);
 	return (e2x - 1.0) / (e2x + 1.0);
 }
 
