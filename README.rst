@@ -33,7 +33,7 @@ entites from causing conflicts.
 Tōhō is known for its ensemble cast of characters and amazing soundtracks, and
 has been in production since 1996. Most of the games in the series are STGs, but
 there are also official competitive fighting games, multiple series' of manga,
-and a few novelizations as well. It's independent (also known as "doujin")
+and a few novelizations as well. It's independent (also known as "dōjin")
 and almost entirely produced by a single artist known as ZUN.
 
 For more information on Tōhō Project,
