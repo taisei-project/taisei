@@ -25,7 +25,7 @@ About Tōhō Project
 ^^^^^^^^^^^^^^^^^^
 
 Tōhō Project, the series Taisei Project is based on, is a modern fairytale
-series set in Gensokyo, or the "Land of Fantasy," a pocket dimension hidden away
+series set in Gensōkyō, or the "Land of Fantasy," a pocket dimension hidden away
 in modern-day Japan. It primarily focuses on Japanese folklore and myths,
 starring a ragtag group of mostly-human women who try to keep supernatural
 entites from causing conflicts.
