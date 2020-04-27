@@ -70,8 +70,8 @@ void player_stage_post_init(Player *plr) {
 	assert(plr->mode->character != NULL);
 	assert(plr->mode->dialog != NULL);
 
-	plrchar_make_bomb_portrait(plr->mode->character, &plr->bomb_portrait);
-	aniplayer_create(&plr->ani, get_ani(plr->mode->character->player_sprite_name), "main");
+	plrchar_render_bomb_portrait(plr->mode->character, &plr->bomb_portrait);
+	aniplayer_create(&plr->ani, plrchar_player_anim(plr->mode->character), "main");
 
 	plr->ent.draw_layer = LAYER_PLAYER;
 	plr->ent.draw_func = ent_draw_player;

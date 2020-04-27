@@ -63,8 +63,6 @@ typedef struct PlayerCharacter {
 	const char *proper_name;
 	const char *full_name;
 	const char *title;
-	const char *dialog_base_sprite_name;
-	const char *player_sprite_name;
 	const char *menu_texture_name;
 
 	struct {
@@ -109,15 +107,15 @@ enum {
 	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
 };
 
-PlayerCharacter* plrchar_get(CharacterID id);
+PlayerCharacter *plrchar_get(CharacterID id);
 void plrchar_preload(PlayerCharacter *pc);
-void plrchar_make_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr);
-int plrchar_face_spritename(PlayerCharacter *pc, const char *face, char *buf, size_t bufsize);
-Sprite *plrchar_face_sprite(PlayerCharacter *pc, const char *face);
+void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr);
+int plrchar_player_anim_name(PlayerCharacter *pc, size_t bufsize, char buf[bufsize]);
+Animation *plrchar_player_anim(PlayerCharacter *pc);
 
-PlayerMode* plrmode_find(CharacterID charid, ShotModeID shotid);
+PlayerMode *plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal);
-PlayerMode* plrmode_parse(const char *name);
+PlayerMode *plrmode_parse(const char *name);
 void plrmode_preload(PlayerMode *mode);
 
 double player_property(Player *plr, PlrProperty prop);

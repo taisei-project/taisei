@@ -16,6 +16,7 @@
 #include "global.h"
 #include "resource/model.h"
 #include "stagedraw.h"
+#include "portrait.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
@@ -275,6 +276,10 @@ static void stage6_start(void) {
 }
 
 static void stage6_preload(void) {
+	portrait_preload_base_sprite("elly", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("elly", "normal", RESF_DEFAULT);
+	portrait_preload_base_sprite("elly", "beaten", RESF_DEFAULT);
+	portrait_preload_face_sprite("elly", "shouting", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL,
 		"stage6",
 		"stage6boss_phase1",
@@ -286,7 +291,6 @@ static void stage6_preload(void) {
 		"stage6/towerwall",
 	NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"dialog/elly",
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
 		"part/myon",

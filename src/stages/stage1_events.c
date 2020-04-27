@@ -43,7 +43,7 @@ void cirno_pfreeze_bg(Boss *c, int time) {
 
 Boss *stage1_spawn_cirno(cmplx pos) {
 	Boss *cirno = create_boss("Cirno", "cirno", pos);
-	boss_set_portrait(cirno, get_sprite("dialog/cirno"), get_sprite("dialog/cirno_face_normal"));
+	boss_set_portrait(cirno, "cirno", NULL, "normal");
 	cirno->shadowcolor = *RGBA_MUL_ALPHA(0.6, 0.7, 1.0, 0.25);
 	cirno->glowcolor = *RGB(0.2, 0.35, 0.5);
 	return cirno;

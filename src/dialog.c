@@ -10,6 +10,7 @@
 
 #include "dialog.h"
 #include "global.h"
+#include "portrait.h"
 
 void dialog_init(Dialog *d) {
 	memset(d, 0, sizeof(*d));
@@ -222,50 +223,12 @@ static void dialog_actor_update_composite(DialogActor *a) {
 
 	log_debug("%s (%p) is dirty; face=%s; variant=%s", a->name, (void*)a, a->face, a->variant);
 
-	Sprite *spr_base, *spr_face;
-
-	size_t name_len = strlen(a->name);
-	size_t face_len = strlen(a->face);
-	size_t variant_len;
-	bool have_variant = a->variant;
-
-	size_t lenfull_base = sizeof("dialog/") + name_len - 1;
-	size_t lenfull_face = lenfull_base + sizeof("_face_") + face_len - 1;
-
-	if(have_variant) {
-		variant_len = strlen(a->variant);
-		lenfull_base += sizeof("_variant_") + variant_len - 1;
-	}
-
-	char buf[imax(lenfull_base, lenfull_face) + 1];
-	char *dst = buf;
-	dst = memcpy(dst, "dialog/", sizeof("dialog/") - 1);
-	dst = memcpy(dst + sizeof("dialog/") - 1, a->name, name_len + 1);
-
-	if(have_variant) {
-		char *tmp = dst;
-		dst = memcpy(dst + name_len, "_variant_", sizeof("_variant_") - 1);
-		dst = memcpy(dst + sizeof("_variant_") - 1, a->variant, variant_len + 1);
-		dst = tmp;
-	}
-
-	spr_base = get_sprite(buf);
-	log_debug("base: %s", buf);
-	assume(spr_base != NULL);
-
-	dst = memcpy(dst + name_len, "_face_", sizeof("_face_") - 1);
-	dst = memcpy(dst + sizeof("_face_") - 1, a->face, face_len + 1);
-
-	spr_face = get_sprite(buf);
-	log_debug("face: %s", buf);
-	assume(spr_face != NULL);
-
 	if(a->composite.tex != NULL) {
 		log_debug("destroyed texture at %p", (void*)a->composite.tex);
 		r_texture_destroy(a->composite.tex);
 	}
 
-	render_character_portrait(spr_base, spr_face, &a->composite);
+	portrait_render_byname(a->name, a->variant, a->face, &a->composite);
 	log_debug("created texture at %p", (void*)a->composite.tex);
 	a->composite_dirty = false;
 }

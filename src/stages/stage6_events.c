@@ -2636,7 +2636,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH) {
 		global.shake_view = 10;
-		boss_set_portrait(b, get_sprite("dialog/elly_variant_beaten"), get_sprite("dialog/elly_face_shouting"));
+		boss_set_portrait(b, "elly", "beaten", "shouting");
 		return;
 	}
 
@@ -2946,7 +2946,7 @@ static void elly_global_rule(Boss *b, int time) {
 
 Boss* stage6_spawn_elly(cmplx pos) {
 	Boss *b = create_boss("Elly", "elly", pos);
-	boss_set_portrait(b, get_sprite("dialog/elly"), get_sprite("dialog/elly_face_normal"));
+	boss_set_portrait(b, "elly", NULL, "normal");
 	b->global_rule = elly_global_rule;
 	return b;
 }

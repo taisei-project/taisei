@@ -1269,7 +1269,7 @@ void iku_extra(Boss *b, int t) {
 
 Boss* stage5_spawn_iku(cmplx pos) {
 	Boss *b = create_boss("Nagae Iku", "iku", pos);
-	boss_set_portrait(b, get_sprite("dialog/iku"), get_sprite("dialog/iku_face_normal"));
+	boss_set_portrait(b, "iku", NULL, "normal");
 	b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 	return b;

@@ -8,7 +8,6 @@
 
 #include "taisei.h"
 
-
 #include "stats.h"
 
 #include "global.h"

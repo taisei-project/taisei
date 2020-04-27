@@ -33,7 +33,11 @@
 
 #define WITH_EVENTS(_name, _events) \
 	typedef COEVENTS_ARRAY _events _name##DialogEvents; \
-	DEFINE_TASK_INTERFACE(_name##Dialog, { _name##DialogEvents **out_events; });
+	DEFINE_TASK_INTERFACE(_name##Dialog, { \
+		_name##DialogEvents **out_events; \
+		int called_for_preload; \
+		ResourceFlags preload_rflags; \
+	});
 
 #define WITHOUT_EVENTS(_name) \
 	WITH_EVENTS(_name, (_dummy_fake_event_))
@@ -59,21 +63,14 @@ typedef struct PlayerDialogTasks {
 #undef WITH_EVENTS
 #undef WITHOUT_EVENTS
 
-// FIXME: might not be the best place for this
-typedef struct PlayerDialogProcs {
-	void (*stage1_pre_boss)(Dialog *d);
-	void (*stage1_post_boss)(Dialog *d);
-	void (*stage2_pre_boss)(Dialog *d);
-	void (*stage2_post_boss)(Dialog *d);
-	void (*stage3_pre_boss)(Dialog *d);
-	void (*stage3_post_boss)(Dialog *d);
-	void (*stage4_pre_boss)(Dialog *d);
-	void (*stage4_post_boss)(Dialog *d);
-	void (*stage5_post_midboss)(Dialog *d);
-	void (*stage5_pre_boss)(Dialog *d);
-	void (*stage5_post_boss)(Dialog *d);
-	void (*stage6_pre_boss)(Dialog *d);
-	void (*stage6_pre_final)(Dialog *d);
-} PlayerDialogProcs;
+// FIXME: not used yet, because stage preload procs don't have reliable access to initialized player
+#define DIALOG_PRELOAD(_player, _dialog_name, _preload_rflags) do { \
+	TASK_INDIRECT_TYPE(_dialog_name##Dialog) _dialog_ref = (_player)->mode->dialog->_dialog_name; \
+	TASK_IFACE_ARGS_TYPE(_dialog_name##Dialog) _dialog_args = { \
+		.called_for_preload = 1, \
+		.preload_rflags = (_preload_rflags), \
+	}; \
+	_dialog_ref._cotask_##_dialog_name##Dialog##_thunk(&_dialog_args); \
+} while(0)
 
 #endif // IGUARD_dialog_dialog_interface_h

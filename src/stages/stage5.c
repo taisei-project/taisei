@@ -15,6 +15,7 @@
 #include "stageutils.h"
 #include "global.h"
 #include "resource/model.h"
+#include "portrait.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
@@ -153,9 +154,10 @@ static void stage5_start(void) {
 }
 
 static void stage5_preload(void) {
+	portrait_preload_base_sprite("iku", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("iku", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"dialog/iku",
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
 		"stage5/noise",

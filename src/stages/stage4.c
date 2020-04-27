@@ -16,6 +16,7 @@
 #include "stageutils.h"
 #include "util/glm.h"
 #include "resource/model.h"
+#include "portrait.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
@@ -218,6 +219,8 @@ static void stage4_start(void) {
 }
 
 static void stage4_preload(void) {
+	portrait_preload_base_sprite("kurumi", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("kurumi", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage2/border", // Stage 2 is intentional!
@@ -227,7 +230,6 @@ static void stage4_preload(void) {
 		"stage4/mansion",
 		"stage4/planks",
 		"stage4/wall",
-		"dialog/kurumi",
 	NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is also intentional

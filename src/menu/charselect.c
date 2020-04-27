@@ -15,6 +15,7 @@
 #include "global.h"
 #include "video.h"
 #include "util/glm.h"
+#include "portrait.h"
 
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)
@@ -31,25 +32,25 @@ enum {
 #define FACENAME_LEN 32
 static const char facedefs[NUM_CHARACTERS][NUM_FACES][FACENAME_LEN] = {
 	[PLR_CHAR_REIMU]  = {
-		[F_HAPPY]     = "dialog/reimu_face_happy",
-		[F_NORMAL]    = "dialog/reimu_face_normal",
-		[F_SMUG]      = "dialog/reimu_face_smug",
-		[F_SURPRISED] = "dialog/reimu_face_surprised",
-		[F_UNAMUSED]  = "dialog/reimu_face_unamused",
+		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, happy),
+		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, normal),
+		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, smug),
+		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, surprised),
+		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, unamused),
 	},
 	[PLR_CHAR_MARISA]  = {
-		[F_HAPPY]     = "dialog/marisa_face_happy",
-		[F_NORMAL]    = "dialog/marisa_face_normal",
-		[F_SMUG]      = "dialog/marisa_face_smug",
-		[F_SURPRISED] = "dialog/marisa_face_surprised",
-		[F_UNAMUSED]  = "dialog/marisa_face_unamused",
+		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, happy),
+		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, normal),
+		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, smug),
+		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, surprised),
+		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, unamused),
 	},
 	[PLR_CHAR_YOUMU]  = {
-		[F_HAPPY]     = "dialog/youmu_face_happy",
-		[F_NORMAL]    = "dialog/youmu_face_normal",
-		[F_SMUG]      = "dialog/youmu_face_smug",
-		[F_SURPRISED] = "dialog/youmu_face_surprised",
-		[F_UNAMUSED]  = "dialog/youmu_face_unamused",
+		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, happy),
+		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, normal),
+		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, smug),
+		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, surprised),
+		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, unamused),
 	},
 };
 
@@ -173,7 +174,7 @@ void draw_char_menu(MenuData *menu) {
 		assert(pchar != NULL);
 		assert(pchar->id == i);
 
-		Sprite *spr = get_sprite(pchar->dialog_base_sprite_name);
+		Sprite *spr = portrait_get_base_sprite(pchar->lower_name, NULL);  // TODO cache this
 		const char *name = pchar->full_name;
 		const char *title = pchar->title;
 
@@ -377,6 +378,11 @@ static void char_menu_input(MenuData *menu) {
 }
 
 void preload_char_menu(void) {
+	for(int i = 0; i < NUM_CHARACTERS; ++i) {
+		PlayerCharacter *pchar = plrchar_get(i);
+		portrait_preload_base_sprite(pchar->lower_name, NULL, RESF_PERMANENT);
+	}
+
 	char *p = (char*)facedefs;
 
 	for(int i = 0; i < sizeof(facedefs) / FACENAME_LEN; ++i) {

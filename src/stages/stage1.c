@@ -18,6 +18,7 @@
 #include "resource/model.h"
 #include "util/glm.h"
 #include "common_tasks.h"
+#include "portrait.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
@@ -464,13 +465,15 @@ static void stage1_start(void) {
 }
 
 static void stage1_preload(void) {
+	// DIALOG_PRELOAD(&global.plr, Stage1PreBoss, RESF_DEFAULT);
+	portrait_preload_base_sprite("cirno", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("cirno", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
 		"stage1/waterplants",
-		"dialog/cirno",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"stage1/horizon",

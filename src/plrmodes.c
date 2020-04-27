@@ -11,6 +11,7 @@
 #include "player.h"
 #include "global.h"
 #include "stage.h"
+#include "portrait.h"
 
 #include "plrmodes.h"
 #include "plrmodes/marisa.h"
@@ -32,7 +33,7 @@ static PlayerMode *player_modes[] = {
 	&plrmode_youmu_b,
 };
 
-PlayerCharacter* plrchar_get(CharacterID id) {
+PlayerCharacter *plrchar_get(CharacterID id) {
 	assert((unsigned)id < NUM_CHARACTERS);
 	PlayerCharacter *pc = player_characters[id];
 	assert(pc->id == id);
@@ -40,27 +41,32 @@ PlayerCharacter* plrchar_get(CharacterID id) {
 }
 
 void plrchar_preload(PlayerCharacter *pc) {
-	preload_resource(RES_ANIM, pc->player_sprite_name, RESF_DEFAULT);
-	preload_resource(RES_SPRITE, pc->dialog_base_sprite_name, RESF_DEFAULT);
-}
+	const char *name = pc->lower_name;
+	portrait_preload_base_sprite(name, NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(name, "normal", RESF_DEFAULT);
 
-void plrchar_make_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
-	Sprite *s_base = get_sprite(pc->dialog_base_sprite_name);
-	Sprite *s_face = plrchar_face_sprite(pc, "normal");
-	render_character_portrait(s_base, s_face, out_spr);
-}
-
-int plrchar_face_spritename(PlayerCharacter *pc, const char *face, char *buf, size_t bufsize) {
-	const char *basename = pc->dialog_base_sprite_name;
-	static const char face_suffix[] = "_face_normal";
-	assert(bufsize >= strlen(basename) + sizeof(face_suffix) + 1);
-	return snprintf(buf, bufsize, "%s%s", basename, face_suffix);
-}
-
-Sprite *plrchar_face_sprite(PlayerCharacter *pc, const char *face) {
 	char buf[64];
-	plrchar_face_spritename(pc, face, buf, sizeof(buf));
-	return get_sprite(buf);
+	plrchar_player_anim_name(pc, sizeof(buf), buf);
+	preload_resource(RES_ANIM, buf, RESF_DEFAULT);
+}
+
+void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
+	const char *name = pc->lower_name;
+	Sprite *s_base = portrait_get_base_sprite(name, NULL);
+	Sprite *s_face = portrait_get_face_sprite(name, "normal");
+	portrait_render(s_base, s_face, out_spr);
+}
+
+int plrchar_player_anim_name(PlayerCharacter *pc, size_t bufsize, char buf[bufsize]) {
+	const char *name = pc->lower_name;
+	assert(bufsize >= strlen("player/") + strlen(name) + 1);
+	return snprintf(buf, bufsize, "player/%s", name);
+}
+
+Animation *plrchar_player_anim(PlayerCharacter *pc) {
+	char buf[64];
+	plrchar_player_anim_name(pc, sizeof(buf), buf);
+	return get_ani(buf);
 }
 
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {
@@ -73,7 +79,7 @@ int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {
 	);
 }
 
-PlayerMode* plrmode_find(CharacterID char_id, ShotModeID shot_id) {
+PlayerMode *plrmode_find(CharacterID char_id, ShotModeID shot_id) {
 	for(int i = 0; i < NUM_PLAYER_MODES; ++i) {
 		PlayerMode *mode = player_modes[i];
 
@@ -85,7 +91,7 @@ PlayerMode* plrmode_find(CharacterID char_id, ShotModeID shot_id) {
 	return NULL;
 }
 
-PlayerMode* plrmode_parse(const char *name) {
+PlayerMode *plrmode_parse(const char *name) {
 	CharacterID char_id = (CharacterID)-1;
 	ShotModeID shot_id = (ShotModeID)-1;
 	char buf[strlen(name) + 1];

@@ -554,7 +554,7 @@ static void kurumi_global_rule(Boss *b, int time) {
 
 Boss* stage4_spawn_kurumi(cmplx pos) {
 	Boss* b = create_boss("Kurumi", "kurumi", pos);
-	boss_set_portrait(b, get_sprite("dialog/kurumi"), get_sprite("dialog/kurumi_face_normal"));
+	boss_set_portrait(b, "kurumi", NULL, "normal");
 	b->glowcolor = *RGB(0.5, 0.1, 0.0);
 	b->global_rule = kurumi_global_rule;
 	return b;

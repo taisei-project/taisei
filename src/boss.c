@@ -15,6 +15,7 @@
 #include "stagedraw.h"
 #include "entity.h"
 #include "util/glm.h"
+#include "portrait.h"
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -60,17 +61,18 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	return boss;
 }
 
-void boss_set_portrait(Boss *boss, Sprite *base, Sprite *face) {
+void boss_set_portrait(Boss *boss, const char *name, const char *variant, const char *face) {
 	if(boss->portrait.tex != NULL) {
 		r_texture_destroy(boss->portrait.tex);
 		boss->portrait.tex = NULL;
 	}
 
-	if(base != NULL) {
+	if(name != NULL) {
 		assume(face != NULL);
-		render_character_portrait(base, face, &boss->portrait);
+		portrait_render_byname(name, variant, face, &boss->portrait);
 	} else {
 		assume(face == NULL);
+		assume(variant == NULL);
 	}
 }
 
@@ -1304,7 +1306,7 @@ void free_boss(Boss *boss) {
 	}
 
 	ent_unregister(&boss->ent);
-	boss_set_portrait(boss, NULL, NULL);
+	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);
 	free(boss);

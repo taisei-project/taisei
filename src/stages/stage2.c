@@ -14,6 +14,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
+#include "portrait.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
@@ -171,6 +172,8 @@ static void stage2_start(void) {
 }
 
 static void stage2_preload(void) {
+	portrait_preload_base_sprite("hina", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("hina", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage2/border",
@@ -179,7 +182,6 @@ static void stage2_preload(void) {
 		"stage2/roadstones",
 		"stage2/spellbg1",
 		"stage2/spellbg2",
-		"dialog/hina",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"bloom",

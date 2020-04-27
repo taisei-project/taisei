@@ -15,7 +15,20 @@
  */
 
 DIALOG_TASK(reimu, Stage1PreBoss) {
-	// Initialization, must be at the very top.
+	PRELOAD {
+		PRELOAD_CHAR(reimu) {
+			PRELOAD_FACE(normal);
+			PRELOAD_FACE(unamused);
+			PRELOAD_FACE(sigh);
+		}
+
+		PRELOAD_CHAR(cirno) {
+			PRELOAD_FACE(normal);
+			PRELOAD_FACE(angry);
+		}
+	}
+
+	// Initialization, must be at the very top (after PRELOAD).
 	DIALOG_BEGIN(Stage1PreBoss);
 
 	ACTOR_LEFT(reimu);
@@ -40,9 +53,9 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	// MSG() makes the actor say a line, and then waits an unspecified amount of time (skippable).
 	// The timeout is determined by the dialog_util_estimate_wait_timeout_from_text() function in dialog.c
 	// MSG() also implies FOCUS()
-	MSG(reimu, "Unseasonable snow? I wonder if it’s that ’Secret God’ again…");
+	MSG(reimu, "Unseasonable snow? I wonder if it’s that ‘Secret God’ again…");
 
-	MSG(cirno, "’Secret God’?");
+	MSG(cirno, "‘Secret God’?");
 
 	// EVENT()s are handled by stage code.
 	// You can find the list of events per dialogue in dialog_interface.h

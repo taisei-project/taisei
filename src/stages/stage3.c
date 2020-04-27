@@ -14,6 +14,7 @@
 #include "global.h"
 #include "stage.h"
 #include "stageutils.h"
+#include "portrait.h"
 
 PRAGMA(message "Remove when this stage is modernized")
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
@@ -161,6 +162,10 @@ static void stage3_start(void) {
 }
 
 static void stage3_preload(void) {
+	portrait_preload_base_sprite("wriggle", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("wriggle", "proud", RESF_DEFAULT);
+	portrait_preload_base_sprite("scuttle", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite("scuttle", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage3/border",
@@ -169,8 +174,6 @@ static void stage3_preload(void) {
 		"stage3/wspellbg",
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
-		"dialog/wriggle",
-		"dialog/scuttle",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tunnel",

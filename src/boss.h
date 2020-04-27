@@ -190,7 +190,7 @@ Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
 void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
 
-void boss_set_portrait(Boss *boss, Sprite *base, Sprite *face) attr_nonnull(1);
+void boss_set_portrait(Boss *boss, const char *name, const char *variant, const char *face) attr_nonnull(1);
 
 void boss_start_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
 void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
