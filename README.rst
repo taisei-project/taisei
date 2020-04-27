@@ -6,7 +6,7 @@ Taisei
 Introduction
 ------------
 
-Taisei Project is an original open source fan-game set in the world of Tōho
+Taisei Project is an original open source fan-game set in the world of Tōhō
 Project. It is a top-down vertical-scrolling curtain fire shooting game (STG),
 also known as a "bullet hell" or "danmaku," with an original soundtrack,
 character art, and story.
@@ -21,19 +21,37 @@ For gameplay instructions, read `this <doc/GAME.rst>`__.
 
 For the story, read `this <doc/STORY.txt>`__. (Warning: spoilers!)
 
-For more information on Tōhō Project, the series this fan-game is originally
-based on, `click here <https://en.wikipedia.org/wiki/Touhou_Project>`__.
+About Tōhō Project
+^^^^^^^^^^^^^^^^^^
+
+Tōhō Project, the series Taisei Project is based on, is a modern fairytale
+series set in Gensokyo, or the "Land of Fantasy," a pocket dimension hidden away
+in modern-day Japan. It primarily focuses on Japanese folklore and myths,
+starring a ragtag group of mostly-human women who try to keep supernatural
+entites from causing conflicts.
+
+Tōhō is known for its ensemble cast of characters and amazing soundtracks, and
+has been in production since 1996. Most of the games in the series are STGs, but
+there are also official competitive fighting games, multiple series' of manga,
+and a few novelizations as well. It's independent (also known as "doujin")
+and almost entirely produced by a single artist known as ZUN.
+
+For more information on Tōhō Project,
+`click here <https://en.wikipedia.org/wiki/Touhou_Project>`__.
 
 Installation
 ------------
 
 You can find precompiled binaries of the complete game on the
 `Releases <https://github.com/taisei-project/taisei/releases>`__ page on
-GitHub, available for Windows (x86/x64), Linux, and macOS. An experimental
-build for Nintendo Switch (homebrew) also exists (use at your own risk).
+GitHub, available for Windows (x86/x64), Linux, and macOS.
+
+An experimental build for Nintendo Switch (homebrew) also exists (use at your
+own risk).
 
 You can also play our experimental WebGL build through your web browser
-`here <https://play.taisei-project.org/>`__.
+`here <https://play.taisei-project.org/>`__. (Chromium-based browsers and
+Firefox supported.)
 
 Source Code & Development
 -------------------------
@@ -102,7 +120,6 @@ Taisei stores all data in a platform-specific directory:
 
 This is referred to as the **Storage Directory**. You can set the environment
 variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
-
 
 Troubleshooting
 ---------------
