@@ -39,9 +39,9 @@
 
 #ifdef GL_ES
     #define GLSL_ATLEAST(v) (0)
-    #define ESSL_ATLEAST(v) (v >= __VERSION__)
+    #define ESSL_ATLEAST(v) (__VERSION__ >= v)
 #else
-    #define GLSL_ATLEAST(v) (v >= __VERSION__)
+    #define GLSL_ATLEAST(v) (__VERSION__ >= v)
     #define ESSL_ATLEAST(v) (0)
 #endif
 
