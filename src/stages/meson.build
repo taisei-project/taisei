@@ -1,5 +1,19 @@
 
-stages_src = files(
+stages_src = []
+
+stages = [
+    'stagex'
+]
+
+foreach stage : stages
+    subdir(stage)
+    stages_src += get_variable('@0@_src'.format(stage))
+endforeach
+
+# TODO: reorganize all the remaining stages to use a separate directory and put
+# them into the "stages" array
+
+stages_src += files(
     'stage1.c',
     'stage1_events.c',
     'stage2.c',
@@ -12,7 +26,6 @@ stages_src = files(
     'stage5_events.c',
     'stage6.c',
     'stage6_events.c',
-    'extra.c',
 )
 
 if is_developer_build

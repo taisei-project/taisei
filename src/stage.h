@@ -170,6 +170,6 @@ DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
 #include "stages/stage4.h"
 #include "stages/stage5.h"
 #include "stages/stage6.h"
-#include "stages/extra.h"
+#include "stages/stagex/stagex.h"
 
 #endif // IGUARD_stage_h
