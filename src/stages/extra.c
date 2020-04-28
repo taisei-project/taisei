@@ -463,10 +463,11 @@ TASK(yumemi_slave, { BoxedBoss boss; cmplx pos; int type; }) {
 }
 
 Boss *stagex_spawn_yumemi(cmplx pos) {
-	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos);
+	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos - 400 * I);
 	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
 	yumemi->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
 	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
+	yumemi->move = move_towards(pos, 0.01);
 
 	int slave_delay = 30;
 	INVOKE_TASK_DELAYED(slave_delay,      yumemi_slave, ENT_BOX(yumemi), pos - 120 + 42 * I, 0);
