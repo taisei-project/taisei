@@ -674,8 +674,8 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	r_blend(BLEND_NONE);
 	r_disable(RCAP_DEPTH_TEST);
 
-	cmplx fpos = global.boss->pos;
-	cmplx pos = fpos + 15*cexp(I*global.frames/4.5);
+	cmplx fpos = global.boss->pos;;
+	cmplx pos = fpos + 15 * cdir(global.frames/12.0);
 
 	r_shader("boss_zoom");
 	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
