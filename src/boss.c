@@ -1450,7 +1450,7 @@ static void boss_generic_move(Boss *b, int time) {
 	b->pos = atck->info->pos_dest * f + BOSS_DEFAULT_SPAWN_POS * (1 - f);
 }
 
-Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
+Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	if(move) {
 		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
 	}

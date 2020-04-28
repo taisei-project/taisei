@@ -173,7 +173,7 @@ DEFINE_ENTITY_TYPE(Boss, {
 	COEVENTS_ARRAY(defeated) events;
 });
 
-Boss* create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
+Boss *create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 
@@ -182,11 +182,11 @@ void draw_boss_background(Boss *boss) attr_nonnull(1);
 void draw_boss_overlay(Boss *boss) attr_nonnull(1);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
-Attack* boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
-Attack* boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
+Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
 void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
 
