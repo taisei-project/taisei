@@ -15,7 +15,7 @@
 #include "stages/stage4/stage4.h"
 #include "stages/stage5/stage5.h"
 #include "stages/stage6/stage6.h"
-#include "stages/extra.h"
+#include "stages/stagex/stagex.h"
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 #include "stages/dpstest.h"
@@ -28,7 +28,7 @@ StagesExports stages_exports = {
 	.stage4 = { &stage4_procs, (AttackInfo*)&stage4_spells },
 	.stage5 = { &stage5_procs, (AttackInfo*)&stage5_spells },
 	.stage6 = { &stage6_procs, (AttackInfo*)&stage6_spells },
-	.stagex = { &extra_procs, NULL },
+	.stagex = { &stagex_procs, NULL },
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 	.testing = {
