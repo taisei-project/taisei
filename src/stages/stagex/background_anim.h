@@ -4,18 +4,15 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
-#ifndef IGUARD_stages_extra_h
-#define IGUARD_stages_extra_h
+#ifndef IGUARD_stages_stagex_background_anim_h
+#define IGUARD_stages_stagex_background_anim_h
 
 #include "taisei.h"
 
-#include "stageinfo.h"
+#include "coroutine.h"
 
-extern StageProcs extra_procs;
+DECLARE_EXTERN_TASK(stagex_animate_background, NO_ARGS);
 
-Boss *stagex_spawn_yumemi(cmplx pos);
-void extra_draw_yumemi_portrait_overlay(SpriteParams *sp);
-
-#endif // IGUARD_stages_extra_h
+#endif // IGUARD_stages_stagex_background_anim_h
