@@ -19,9 +19,9 @@ vec3 sampleZoom(vec3 ca) {
 	z = tanh(z);
 	z = sqrt(z);
 
-	vec2 posR = clamp(pos * z.r + blur_orig, 0.005, 0.995);
-	vec2 posG = clamp(pos * z.g + blur_orig, 0.005, 0.995);
-	vec2 posB = clamp(pos * z.b + blur_orig, 0.005, 0.995);
+	vec2 posR = pos * z.r + blur_orig;
+	vec2 posG = pos * z.g + blur_orig;
+	vec2 posB = pos * z.b + blur_orig;
 
 	return vec3(
 		texture(tex, posR).r,
