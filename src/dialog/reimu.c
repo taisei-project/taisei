@@ -647,14 +647,14 @@ DIALOG_TASK(reimu, Stage6PreFinal) {
  * Extra Stage
  */
 
-#include "stages/extra.h"
+#include "stages/stagex/stagex.h"
 
 DIALOG_TASK(reimu, StageExPreBoss) {
 	DIALOG_BEGIN(StageExPreBoss);
 
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(yumemi);
-	yumemi.draw_dynamic_overlay = extra_draw_yumemi_portrait_overlay;
+	yumemi.draw_dynamic_overlay = stagex_draw_yumemi_portrait_overlay;
 
 	MSG(yumemi, "Oh. The impossible shrine maiden has arrived.");
 	EVENT(boss_appears);
@@ -758,7 +758,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(yumemi);
-	yumemi.draw_dynamic_overlay = extra_draw_yumemi_portrait_overlay;
+	yumemi.draw_dynamic_overlay = stagex_draw_yumemi_portrait_overlay;
 
 	VARIANT(yumemi, defeated);
 	FACE(yumemi, defeated);
