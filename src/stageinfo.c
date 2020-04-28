@@ -15,6 +15,7 @@
 #include "stages/stage4/stage4.h"
 #include "stages/stage5/stage5.h"
 #include "stages/stage6/stage6.h"
+#include "stages/stagex/stagex.h"
 #include "stages/stage3.h"
 #include "stages/extra.h"
 
@@ -133,7 +134,7 @@ void stageinfo_init(void) {
 	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
 #endif
 
-	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
+	add_stage(0xC1, &stagex_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
 	dynarray_compact(&stageinfo.stages);
 

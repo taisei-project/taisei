@@ -6,14 +6,13 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_entities_h
-#define IGUARD_stages_entities_h
+#ifndef IGUARD_stages_stagex_timeline_h
+#define IGUARD_stages_stagex_timeline_h
 
 #include "taisei.h"
 
-#include "extra_entities.h"
+#include "coroutine.h"
 
-#define ENTITIES_STAGES(X, ...) \
-	ENTITIES_STAGEX(X, __VA_ARGS__) \
+DECLARE_EXTERN_TASK(stagex_timeline, NO_ARGS);
 
-#endif // IGUARD_stages_entities_h
+#endif // IGUARD_stages_stagex_timeline_h
