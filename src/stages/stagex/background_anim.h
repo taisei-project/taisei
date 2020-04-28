@@ -9,5 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#define ENTITIES_STAGEX(X, ...) \
-	X(YumemiSlave, __VA_ARGS__) \
+#include "coroutine/taskdsl.h"
+
+DECLARE_EXTERN_TASK(stagex_animate_background, NO_ARGS);
