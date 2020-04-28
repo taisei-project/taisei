@@ -6,16 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_extra_h
-#define IGUARD_stages_extra_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageinfo.h"
 
-extern StageProcs extra_procs;
+extern StageProcs stagex_procs;
 
 Boss *stagex_spawn_yumemi(cmplx pos);
-void extra_draw_yumemi_portrait_overlay(SpriteParams *sp);
+void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp);
 
-#endif // IGUARD_stages_extra_h
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
