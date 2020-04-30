@@ -761,12 +761,7 @@ static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
 	*dynarray_append_with_min_capacity(&evt->subscribers, 4) = cotask_box(task);
 }
 
-CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
-	// assert(evt->unique_id > 0);
-	if(evt->unique_id == 0) {
-		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
-	}
-
+static CoWaitResult cotask_wait_event_internal(CoEvent *evt) {
 	CoTask *task = cotask_active();
 	CoTaskData *task_data = get_task_data(task);
 
@@ -783,8 +778,28 @@ CoWaitResult cotask_wait_event(CoEvent *evt, void *arg) {
 	return cotask_wait_init(task_data, COTASK_WAIT_NONE);
 }
 
-CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg) {
-	CoWaitResult wr = cotask_wait_event(evt, arg);
+CoWaitResult cotask_wait_event(CoEvent *evt) {
+	if(evt->unique_id == 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
+	}
+
+	return cotask_wait_event_internal(evt);
+}
+
+CoWaitResult cotask_wait_event_once(CoEvent *evt) {
+	if(evt->unique_id == 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
+	}
+
+	if(evt->num_signaled > 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_SIGNALED };
+	}
+
+	return cotask_wait_event_internal(evt);
+}
+
+CoWaitResult cotask_wait_event_or_die(CoEvent *evt) {
+	CoWaitResult wr = cotask_wait_event(evt);
 
 	if(wr.event_status == CO_EVENT_CANCELED) {
 		cotask_cancel(cotask_active());

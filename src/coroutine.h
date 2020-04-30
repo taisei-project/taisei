@@ -100,8 +100,9 @@ bool cotask_cancel(CoTask *task);
 void *cotask_resume(CoTask *task, void *arg);
 void *cotask_yield(void *arg);
 int cotask_wait(int delay);
-CoWaitResult cotask_wait_event(CoEvent *evt, void *arg);
-CoWaitResult cotask_wait_event_or_die(CoEvent *evt, void *arg);
+CoWaitResult cotask_wait_event(CoEvent *evt);
+CoWaitResult cotask_wait_event_or_die(CoEvent *evt);
+CoWaitResult cotask_wait_event_once(CoEvent *evt);
 CoStatus cotask_status(CoTask *task);
 CoTask *cotask_active(void);
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
@@ -404,11 +405,12 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_HOST_EVENTS(events_array) \
 	cotask_host_events(cotask_active(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
 
-#define YIELD         cotask_yield(NULL)
-#define WAIT(delay)   cotask_wait(delay)
-#define WAIT_EVENT(e) cotask_wait_event((e), NULL)
-#define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die((e), NULL)
-#define STALL         cotask_wait(INT_MAX)
+#define YIELD                cotask_yield(NULL)
+#define WAIT(delay)          cotask_wait(delay)
+#define WAIT_EVENT(e)        cotask_wait_event(e)
+#define WAIT_EVENT_OR_DIE(e) cotask_wait_event_or_die(e)
+#define WAIT_EVENT_ONCE(e)   cotask_wait_event_once(e)
+#define STALL                cotask_wait(INT_MAX)
 
 // first arg of the generated function needs to be the ent, because ENT_UNBOXED_DISPATCH_FUNCTION dispatches on first arg.
 #define _cotask_emit_bindfunc(typename, ...) \
