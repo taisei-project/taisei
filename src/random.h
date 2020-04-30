@@ -117,7 +117,7 @@ int32_t vrng_i32_range(rng_val_t v, int32_t rmin, int32_t rmax) attr_pure;
 #define rng_i32_range(rmin, rmax) vrng_i32_range(rng_next(), rmin, rmax)
 
 #define vrng_irange(v, rmin, rmax) vrng_i32_range(v, rmin, rmax)
-#define rng_irange(rmin, rmax) vrng_range(rng_next(), rmin, rmax)
+#define rng_irange(rmin, rmax) vrng_irange(rng_next(), rmin, rmax)
 
 double vrng_f64_angle(rng_val_t v) attr_pure;
 #define rng_f64_angle() vrng_f64_angle(rng_next())
