@@ -25,7 +25,7 @@ static void draw_yumemi_slave(EntityInterface *ent) {
 	float scale;
 
 	if(stagex_drawing_into_glitchmask()) {
-		opacity = lerpf(80.0f, 2.0f, fminf(time / 80.0f, 1.0));
+		opacity = lerpf(2.0f, 80.0f, slave->glitch_strength);
 		scale = 1.1f;
 	} else {
 		opacity = slave->alpha;
@@ -61,16 +61,9 @@ Boss *stagex_spawn_yumemi(cmplx pos) {
 	yumemi->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
 	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
 	yumemi->move = move_towards(pos, 0.01);
+	yumemi->pos = pos;
 
 	return yumemi;
-}
-
-TASK(yumemi_slave_fadein, { BoxedYumemiSlave slave; }) {
-	YumemiSlave *slave = TASK_BIND(ARGS.slave);
-
-	while(fapproach_p(&slave->alpha, 1.0f, 1.0f / 60.0f) < 1) {
-		YIELD;
-	}
 }
 
 void stagex_init_yumemi_slave(YumemiSlave *slave, cmplx pos, int type) {
@@ -96,14 +89,57 @@ void stagex_init_yumemi_slave(YumemiSlave *slave, cmplx pos, int type) {
 
 		default: UNREACHABLE;
 	}
+}
 
+TASK(yumemi_slave_fadein, { BoxedYumemiSlave slave; }) {
+	YumemiSlave *slave = TASK_BIND(ARGS.slave);
+
+	slave->alpha = 0;
+	slave->glitch_strength = 1;
+
+	while(
+		fapproach_p(&slave->alpha,           1.0f, 1.0f/60.0f) < 0.0f ||
+		fapproach_p(&slave->glitch_strength, 0.0f, 1.0f/80.0f) > 0.0f
+	) {
+		YIELD;
+	}
+}
+
+TASK(yumemi_slave_fader, { BoxedYumemiSlave slave; }) {
+	YumemiSlave *slave = ENT_UNBOX(ARGS.slave);
+
+	if(!slave) {
+		return;
+	}
+
+	YumemiSlave *fader = TASK_HOST_ENT(YumemiSlave);
+
+	fader->ent.draw_func = draw_yumemi_slave;
+	fader->ent.draw_layer = LAYER_BOSS - 1;
+	fader->sprites = slave->sprites;
+	fader->spawn_time = slave->spawn_time;
+	fader->rotation_factor = slave->rotation_factor;
+	fader->alpha = slave->alpha;
+	fader->pos = slave->pos;
+
+	slave = NULL;
+
+	while(fapproach_p(&fader->alpha, 0.0f, 1.0f / 60.0f) < 1) {
+		YIELD;
+	}
 }
 
 YumemiSlave *stagex_host_yumemi_slave(cmplx pos, int type) {
 	YumemiSlave *slave = TASK_HOST_ENT(YumemiSlave);
+	TASK_HOST_EVENTS(slave->events);
 	stagex_init_yumemi_slave(slave, pos, type);
 	INVOKE_TASK(yumemi_slave_fadein, ENT_BOX(slave));
+	INVOKE_TASK_AFTER(&slave->events.despawned, yumemi_slave_fader, ENT_BOX(slave));
 	return slave;
+}
+
+void stagex_despawn_yumemi_slave(YumemiSlave *slave) {
+	coevent_signal_once(&slave->events.despawned);
 }
 
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {

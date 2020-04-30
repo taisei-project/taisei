@@ -658,6 +658,8 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	ACTOR_RIGHT(yumemi);
 	yumemi.draw_dynamic_overlay = stagex_draw_yumemi_portrait_overlay;
 
+// 	goto shortcut;
+
 	MSG(yumemi, "Oh. The impossible shrine maiden has arrived.");
 	EVENT(boss_appears);
 	MSG(yumemi, "Here to set me on the right path, just like in your tall tales?");
@@ -739,6 +741,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(reimu, assertive);
 	MSG(reimu, "It’s hard to keep people on your side when all you do is threaten them, idiot!");
 	MSG(reimu, "Have you tried not being a genocidal maniac?");
+shortcut:
 	FACE(yumemi, sigh);
 	MSG(yumemi, "I’m tired, shrine maiden. Too tired to explain my life to a figment of imagination.");
 	FACE(reimu, unamused);
