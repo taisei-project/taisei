@@ -106,12 +106,7 @@ TASK(yumemi_slave_fadein, { BoxedYumemiSlave slave; }) {
 }
 
 TASK(yumemi_slave_fader, { BoxedYumemiSlave slave; }) {
-	YumemiSlave *slave = ENT_UNBOX(ARGS.slave);
-
-	if(!slave) {
-		return;
-	}
-
+	YumemiSlave *slave = NOT_NULL(ENT_UNBOX(ARGS.slave));
 	YumemiSlave *fader = TASK_HOST_ENT(YumemiSlave);
 
 	fader->ent.draw_func = draw_yumemi_slave;
@@ -121,10 +116,11 @@ TASK(yumemi_slave_fader, { BoxedYumemiSlave slave; }) {
 	fader->rotation_factor = slave->rotation_factor;
 	fader->alpha = slave->alpha;
 	fader->pos = slave->pos;
+	fader->glitch_strength = 1;
 
 	slave = NULL;
 
-	while(fapproach_p(&fader->alpha, 0.0f, 1.0f / 60.0f) < 1) {
+	while(fapproach_p(&fader->alpha, 0.0f, 1.0f / 60.0f) > 0) {
 		YIELD;
 	}
 }
