@@ -370,15 +370,15 @@ static void cotask_finalize(CoTask *task) {
 
 	cancel_task_events(task_data);
 
-	if(task_data->hosted.ent) {
-		ent_unregister(task_data->hosted.ent);
-		task_data->hosted.ent = NULL;
-	}
-
 	if(task_data->hosted.events) {
 		_coevent_array_action(task_data->hosted.num_events, task_data->hosted.events, coevent_cancel);
 		task_data->hosted.events = NULL;
 		task_data->hosted.num_events = 0;
+	}
+
+	if(task_data->hosted.ent) {
+		ent_unregister(task_data->hosted.ent);
+		task_data->hosted.ent = NULL;
 	}
 
 	if(task_data->wait.wait_type == COTASK_WAIT_EVENT) {
