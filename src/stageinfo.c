@@ -115,6 +115,8 @@ void stageinfo_init(void) {
 	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any);
 	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any);
 
+	add_stage(7, &stagex_procs, STAGE_EXTRA, "Extra Stage", "Descent into Madness",    (AttackInfo*)&stagex_spells, D_Extra);
+
 #ifdef DPSTEST
 	add_stage(0x40|0, &stage_dpstest_single_procs, STAGE_SPECIAL, "DPS Test", "Single target",    NULL, D_Normal);
 	add_stage(0x40|1, &stage_dpstest_multi_procs,  STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
@@ -132,8 +134,6 @@ void stageinfo_init(void) {
 #ifdef COROTEST
 	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
 #endif
-
-	add_stage(0xC1, &stagex_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
 	dynarray_compact(&stageinfo.stages);
 
