@@ -185,15 +185,14 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	Boss *boss = stagex_spawn_yumemi(VIEWPORT_W/2 + 180*I);
 	global.boss = boss;
 
-	boss_add_attack_task(boss, AT_Spellcard, "Automaton “Legacy of Sierpiński”", 90, 150000, TASK_INDIRECT(BossAttack, stagex_spell_sierpinski), NULL);
+	boss_add_attack_from_info(boss, &stagex_spells.boss.sierpinski, false);
 	boss_engage(boss);
 	WAIT_EVENT(&boss->events.defeated);
 	return;
 
 	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL);
 
-	boss_add_attack_task(boss, AT_SurvivalSpell, "Obliteration “Infinity Network”",
-		90, 80000, TASK_INDIRECT(BossAttack, stagex_spell_infinity_network), NULL);
+	boss_add_attack_from_info(boss, &stagex_spells.boss.infinity_network, false);
 
 	PlayerMode *pm = global.plr.mode;
 	StageExPreBossDialogEvents *e;
