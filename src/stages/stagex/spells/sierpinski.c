@@ -16,6 +16,35 @@ static int idxmod(int i, int n) {   // TODO move into utils?
 	return (i >= 0) ? i % n : (n + i) % n;
 }
 
+TASK(splitter, {
+	BoxedProjectile cell;
+	int delay;
+	cmplx v;
+	Color *color;
+}) {
+	Projectile *cell = TASK_BIND(ARGS.cell);
+	cmplx v = ARGS.v;
+	Color c = *ARGS.color;
+
+	WAIT(ARGS.delay);
+
+	Projectile *a = PROJECTILE(
+		.proto = pp_ball,
+		.color = &c,
+		.pos = cell->pos,
+		.move = move_asymptotic_halflife(v, v + 2 * cabs(v), 80),
+	);
+
+	Projectile *b = PROJECTILE(
+		.proto = pp_ball,
+		.color = &c,
+		.pos = cell->pos,
+		.move = move_asymptotic_halflife(v, v - 2 * cabs(v), 80),
+	);
+
+	kill_projectile(cell);
+}
+
 DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2 + 120*I, 0.02);
@@ -28,6 +57,14 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 	enum { N = 77 };  // NOTE: must be odd (or it'll halt quickly)
 	bool state[N] = { 0 };
 	state[N/2] = 1;  // initialize with 1 bit in the middle to get a nice Sierpinski triangle pattern
+
+	const float b = 1;
+	Color colors[] = {
+		{ 0.1, 0.25, 1.0, 0.0 },
+		{ 1.0, 0.25, 0.1, 0.0 },
+	};
+	color_mul_scalar(&colors[0], b);
+	color_mul_scalar(&colors[1], b);
 
 	for(;;) {
 		bool next_state[N] = { 0 };
@@ -44,39 +81,18 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 			real p = ((i + 0.5) / N) * VIEWPORT_W;
 			cmplx v = I * 1.0625;
 
+			Projectile *cell = PROJECTILE(
+				.proto = pp_ball,
+				.color = &colors[0],
+				.pos = p,
+				.move = move_linear(v),
+			);
+
 			if(
 				next_state[idxmod(i - 1, N)] ^ next_state[idxmod(i + 1, N)] ^
 				     state[idxmod(i - 1, N)] ^      state[idxmod(i + 1, N)]
 			) {
-				PROJECTILE(
-					.proto = pp_ball,
-					.color = RGBA(0, 0, 1, 0),
-					.pos = p,
-					.move = move_linear(v),
-					.flags = PFLAG_NOCLEAR | PFLAG_NOCLEARBONUS | PFLAG_NOCOLLISION,
-					.opacity = 0.2f,
-				);
-
-				PROJECTILE(
-					.proto = pp_thickrice,
-					.color = RGBA(1, 0, 0, 1),
-					.pos = p,
-					.move = move_asymptotic_halflife(v, v + 2*creal(v * cdir(M_TAU/8)), 200),
-				);
-
-				PROJECTILE(
-					.proto = pp_thickrice,
-					.color = RGBA(1, 0, 0, 1),
-					.pos = p,
-					.move = move_asymptotic_halflife(v, v + 2*creal(v / cdir(M_TAU/8)), 200),
-				);
-			} else {
-				PROJECTILE(
-					.proto = pp_ball,
-					.color = RGBA(0, 0, 1, 0),
-					.pos = p,
-					.move = move_linear(v),
-				);
+				INVOKE_TASK(splitter, ENT_BOX(cell), 160, v, &colors[1]);
 			}
 		}
 
