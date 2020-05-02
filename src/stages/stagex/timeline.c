@@ -184,8 +184,15 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(3900);
 	STAGE_BOOKMARK(boss);
 
+	player_set_power(&global.plr, 400);
+
 	Boss *boss = stagex_spawn_yumemi(VIEWPORT_W/2 + 180*I);
 	global.boss = boss;
+
+	boss_add_attack_task(boss, AT_Spellcard, "Automaton “Legacy of Sierpiński”", 90, 150000, TASK_INDIRECT(BossAttack, stagex_spell_sierpinski), NULL);
+	boss_start_attack(global.boss, boss->attacks);
+	WAIT_EVENT(&boss->events.defeated);
+	return;
 
 	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL, NULL);
 
