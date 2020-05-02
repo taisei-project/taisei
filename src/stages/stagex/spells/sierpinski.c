@@ -28,19 +28,28 @@ TASK(splitter, {
 
 	WAIT(ARGS.delay);
 
-	Projectile *a = PROJECTILE(
+#if 0
+	PROJECTILE(
 		.proto = pp_ball,
 		.color = &c,
 		.pos = cell->pos,
 		.move = move_asymptotic_halflife(v, v + 2 * cabs(v), 80),
 	);
 
-	Projectile *b = PROJECTILE(
+	PROJECTILE(
 		.proto = pp_ball,
 		.color = &c,
 		.pos = cell->pos,
 		.move = move_asymptotic_halflife(v, v - 2 * cabs(v), 80),
 	);
+#else
+	PROJECTILE(
+		.proto = pp_ball,
+		.color = &c,
+		.pos = cell->pos,
+		.move = move_accelerated(v, 0.05 * v),
+	);
+#endif
 
 	kill_projectile(cell);
 }
@@ -90,7 +99,9 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 
 			if(
 				next_state[idxmod(i - 1, N)] ^ next_state[idxmod(i + 1, N)] ^
-				     state[idxmod(i - 1, N)] ^      state[idxmod(i + 1, N)]
+				     state[idxmod(i - 1, N)] ^      state[idxmod(i + 1, N)] ^
+				next_state[idxmod(i - 3, N)] ^ next_state[idxmod(i + 3, N)] ^
+				     state[idxmod(i - 3, N)] ^      state[idxmod(i + 3, N)]
 			) {
 				INVOKE_TASK(splitter, ENT_BOX(cell), 160, v, &colors[1]);
 			}
