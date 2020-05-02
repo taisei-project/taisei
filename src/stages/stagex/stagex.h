@@ -19,5 +19,6 @@ Boss *stagex_spawn_yumemi(cmplx pos);
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp);
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_sierpinski, BossAttack);
 
 #endif // IGUARD_stages_stagex_stagex_h
