@@ -155,3 +155,19 @@ void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 
 	r_draw_sprite(sp);
 }
+
+void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
+	r_state_push();
+	r_shader("yumemi_spellbg_voronoi");
+	r_mat_mv_push();
+	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
+	r_uniform_float("time", global.frames / 60.0f);
+	r_uniform_vec4("color", 0.1, 0.2, 0.05, 0.0);
+	r_draw_quad();
+	r_mat_mv_pop();
+	r_shader_standard();
+	r_blend(BLEND_MOD);
+	fill_viewport(0, time/700.0+0.5, 0, "stageex/bg");
+	r_state_pop();
+}
