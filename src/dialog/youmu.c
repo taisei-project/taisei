@@ -92,19 +92,19 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	MSG(youmu, "You needn’t concern yourself. I’ll be passing through now.");
 
 	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
-	MSG(hina, "I’ve never heard of this ’Lady Yuyuko’ you speak of, but I can’t let this slide.");
+	MSG(hina, "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this slide.");
 	FACE(hina, serious);
 	MSG(hina, "Young girls such as yourself shouldn’t be sent to do such dangerous errands!");
 
 	//FACE(youmu, embarassed);
 	FACE(youmu, eeeeh);
-	MSG(youmu, "’Y-Young girl’?! I’ll have you know that I am an expert swordswoman—");
+	MSG(youmu, "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—");
 	MSG(youmu, "—having mastered my technique over *decades*—");
 	MSG(youmu, "—dare I say even the best in Gensōkyō—");
 
 	FACE(hina, normal);
 	MSG(hina, "Aww… but you look so cute! No way someone like you could be into that.");
-	MSG(hina, "Are you sure this ’expert swordswoman’ thing isn’t just some sort of teenage phase?");
+	MSG(hina, "Are you sure this ‘expert swordswoman’ thing isn’t just some sort of teenage phase?");
 
 	FACE(youmu, unamused);
 	MSG(youmu, "It’s not a PHASE, mo—");
@@ -124,7 +124,7 @@ DIALOG_TASK(youmu, Stage2PostBoss) {
 	VARIANT(hina, defeated);
 	FACE(hina, defeated);
 
-	MSG(hina, "Did you just call me ’mom’…?");
+	MSG(hina, "Did you just call me ‘mom’…?");
 
 	//FACE(youmu, closed-eyes);
 	FACE(youmu, sigh);
@@ -166,7 +166,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	MSG(youmu, "Bugs do not concern me at the moment.");
 
 	FACE(wriggle, outraged);
-	MSG(wriggle, "Oh, so all insects are ’bugs’ now, hmm? I see how it is!");
+	MSG(wriggle, "Oh, so all insects are ‘bugs’ now, hmm? I see how it is!");
 	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
 	MSG(wriggle, "Ever heard of beetles? Flies? It’s about respect, you know!");
 
@@ -274,7 +274,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	//FACE(youmu, closed-eyes);
 	FACE(youmu, relaxed);
 	MSG(youmu, "I see. I have no reason to distrust you.");
-	MSG(youmu, "… what’s an ’80s anime’, though, if I may ask?");
+	MSG(youmu, "… what’s an ‘80s anime’, though, if I may ask?");
 
 	FACE(kurumi, normal);
 	MSG(kurumi, "I don’t know, don’t ask me!");
@@ -311,9 +311,9 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	//FACE(youmu, closed-eyes);
 	FACE(youmu, smug);
 	MSG(youmu, "Despite your inferior technique, I must thank you.");
-	MSG(youmu, "’Dancing’ with you has pleasant stepping-stone on the path to completing my mission.");
+	MSG(youmu, "‘Dancing’ with you has pleasant stepping-stone on the path to completing my mission.");
 	//FACE(youmu, chuuni);
-	MSG(youmu, "Tell your ’employer’ that I am coming for them.");
+	MSG(youmu, "Tell your ‘employer’ that I am coming for them.");
 
 	MSG(kurumi, "(She earnestly talks like a manga anti-hero…)");
 	FACE(kurumi, normal);
@@ -328,7 +328,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	FACE(kurumi, normal);
 	MSG(kurumi, "…?");
 	FACE(kurumi, normal);
-	MSG(kurumi, "… yeah! I thought it was gonna be all ’scientific,’ but then they made it haunted, with ghosts and stuff!");
+	MSG(kurumi, "… yeah! I thought it was gonna be all ‘scientific,’ but then they made it haunted, with ghosts and stuff!");
 
 	FACE(youmu, eeeeh);
 	MSG(youmu, "G-…");
@@ -411,7 +411,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	//FACE(youmu, chuuni);
 	MSG(youmu, "Through that, I have realized the true form of my previously-incomplete yōkai-vanquishing technique!");
 
-	MSG(iku, "Is that so? You believe that this ’technique’ will help you defeat the instigators effortlessly?");
+	MSG(iku, "Is that so? You believe that this ‘technique’ will help you defeat the instigators effortlessly?");
 
 	FACE(youmu, sigh);
 	MSG(youmu, "More doubt from ignorant skeptics, I see.");
@@ -465,7 +465,7 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 
 	MSG(iku, "I-I see.");
 	MSG(iku, "Ascend the staircase. You will find the instigator waiting for you there.");
-	MSG(iku, "Be prepared. The technology she possesses is from a so-called ’parallel universe’.");
+	MSG(iku, "Be prepared. The technology she possesses is from a so-called ‘parallel universe’.");
 	MSG(iku, "It is unlike anything any of us have encountered before. Even I am not sure of its specifics.");
 
 	//FACE(youmu, closed-eyes);
@@ -511,7 +511,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	FACE(elly, angry);
 	MSG(elly, "Now, it will the sigil of a new era of Gensōkyō!");
 	FACE(elly, shouting);
-	MSG(elly, "One that we, the ’forgotten’, will reign over!");
+	MSG(elly, "One that we, the ‘forgotten’, will reign over!");
 
 	MSG(youmu, "Such an unwieldy weapon… for anyone to choose it willingly…");
 	MSG(youmu, "Either you’re incredibly skilled, or incredibly foolish.");
@@ -521,7 +521,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(youmu, "After our duel, let us meet as colleagues, and discuss our techniques!");
 
 	FACE(elly, angry);
-	MSG(elly, "I’d only call my apprentices ’colleagues’!");
+	MSG(elly, "I’d only call my apprentices ‘colleagues’!");
 	MSG(elly, "Your existence means nothing to us! And I’m sure our existence means nothing to you, either!");
 
 	//FACE(youmu, chuuni);
@@ -551,9 +551,9 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 
 	MSG(youmu, "What a tragedy!");
 
-	MSG(elly, "You’re aiming to be the big ’hero’ of this Gensōkyō, aren’t you?");
+	MSG(elly, "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?");
 
-	MSG(youmu, "Naturally! No different than how you wish to be the hero of ’your’ Gensōkyō!");
+	MSG(youmu, "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!");
 	MSG(youmu, "We’re not so different, you and I.");
 
 	FACE(elly, normal);
@@ -605,9 +605,9 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(youmu, normal);
 	MSG(youmu, "Greetings, weary adversary.");
 	FACE(yumemi, surprised);
-	MSG(yumemi, "’Weary’?");
+	MSG(yumemi, "‘Weary’?");
 	FACE(youmu, closed-eyes);
-	MSG(youmu, "’The slings and arrows of outrageous fortune’, perhaps?");
+	MSG(youmu, "‘The slings and arrows of outrageous fortune’, perhaps?");
 	FACE(youmu, smug);
 	MSG(youmu, "Given the ostentatiousness of this contraption we find ourselves in.");
 
@@ -637,7 +637,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	MSG(yumemi, "Your martial art is a pastime of the wealthy.");
 	FACE(youmu, normal);
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "But of course, I’m sure many people fruitlessly ’train’ in virtual reality with those weapons, for absolutely no purpose other than delusions of grandeur.");
+	MSG(yumemi, "But of course, I’m sure many people fruitlessly ‘train’ in virtual reality with those weapons, for absolutely no purpose other than delusions of grandeur.");
 
 	MSG(youmu, "Fine blades such as these are hard to come by for the working class, it’s true.");
 	FACE(youmu, chuuni);
@@ -795,7 +795,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	FACE(youmu, chuuni);
 	MSG(youmu, "Suddenly, I was no longer frightened of my true nature! My fear burned away!");
 	MSG(youmu, "I recognized my talents and beauty as a warrior, fully and earnestly!");
-	MSG(youmu, "The ’destructive madness’ you sought to destroy me with? It only made me stronger!");
+	MSG(youmu, "The ‘destructive madness’ you sought to destroy me with? It only made me stronger!");
 	MSG(youmu, "And it has persisted even with your audacious machine deactivated!");
 
 	FACE(yumemi, surprised);
@@ -826,7 +826,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 
 	FACE(yumemi, sad);
 	MSG(yumemi, "…");
-	MSG(yumemi, "’The outcome of this battle was determined before it began’?");
+	MSG(yumemi, "‘The outcome of this battle was determined before it began’?");
 
 	FACE(youmu, smug);
 	MSG(youmu, "Precisely.");
@@ -835,6 +835,8 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	FACE(youmu, chuuni);
 	MSG(youmu, "Flattery will get you everywhere, my dear.");
 	MSG(yumemi, "After all that effort you put into stealing the Tower from me…");
+	FACE(youmu, normal);
+	//FACE(elly, normal);
 	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A delusional katana-wielding woman with cheesy action-hero one-liners?");
 	MSG(yumemi, "I never did stand a chance, did I?");
 
@@ -845,6 +847,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(yumemi, "Sentence me as you wish. I won’t resist.");
 
 	FACE(youmu, closed-eyes);
+	//FACE(elly, normal);
 	MSG(youmu, "Very well.");
 	FACE(youmu, normal);
 	MSG(youmu, "Allowing you to leave is out of the question. The Tower may continue to drive you mad, and you may come back, with reinforcements.");
@@ -884,7 +887,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(youmu, "… ahem. Yes, there is. I’m well-acquainted with her, oddly enough.");
 	//MSG(elly, "Are you talking about that blonde lady, the one always visiting Lady Yuyuko?");
 	//MSG(elly, "What was her name again?");
-	//MSG(elly, "The eyes she has in her ’gaps’ give me the creeps…");
+	//MSG(elly, "The eyes she has in her ‘gaps’ give me the creeps…");
 
 	FACE(yumemi, surprised);
 	MSG(yumemi, "…?!");

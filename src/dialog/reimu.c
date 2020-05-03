@@ -153,7 +153,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	MSG(hina, "What a troubled girl…");
 
 	FACE(reimu, unamused);
-	MSG(reimu, "So much for ’deserted’…");
+	MSG(reimu, "So much for ‘deserted’…");
 	FACE(reimu, normal);
 	MSG(reimu, "Do you even know what you’re protecting me from this time?");
 
@@ -219,14 +219,14 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 
 	EVENT(boss_appears);
 	SHOW(wriggle);
-	MSG(wriggle, "Well, to your human eyes, insects may seem ’normal’…");
+	MSG(wriggle, "Well, to your human eyes, insects may seem ‘normal’…");
 	WAIT(60);
 	FACE(wriggle, proud);
 	MSG(wriggle, "… but there was a time when we ruled supreme!");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "Eh? You? Aren’t you a bit far from home?");
-	MSG(reimu, "Besides, ’ruled supreme’? I’ve never heard of insects ruling over Gensōkyō.");
+	MSG(reimu, "Besides, ‘ruled supreme’? I’ve never heard of insects ruling over Gensōkyō.");
 
 	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
 
@@ -234,7 +234,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	MSG(wriggle, "Home? But you’ve intruded on my secret lair!");
 
 	FACE(reimu, sigh);
-	MSG(reimu, "Again with the ’secret lair’…");
+	MSG(reimu, "Again with the ‘secret lair’…");
 
 	FACE(wriggle, proud);
 	MSG(wriggle, "Haven’t you heard of the Car—…");
@@ -253,7 +253,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	FACE(reimu, puzzled);
 	MSG(reimu, "Giant insects? But you’re tiny.");
 	FACE(reimu, unamused);
-	MSG(reimu, "And I still don’t know what you mean by ’glory of old.’");
+	MSG(reimu, "And I still don’t know what you mean by ‘glory of old.’");
 
 	EVENT(music_changes);
 
@@ -273,7 +273,7 @@ DIALOG_TASK(reimu, Stage3PostBoss) {
 
 	FACE(reimu, smug);
 	MSG(reimu, "Giant insects roaming Gensōkyō, huh?");
-	MSG(reimu, "Sounds like one of Sanae’s ’nuclear’ experiments…");
+	MSG(reimu, "Sounds like one of Sanae’s ‘nuclear’ experiments…");
 
 	MSG(wriggle, "B-but I saw it clearly… the fate of insectkind…");
 
@@ -321,7 +321,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 
 	FACE(kurumi, normal);
 	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
-	MSG(kurumi, "I have no idea what you mean by ’strange thoughts,’ but I’ll be honest with you…");
+	MSG(kurumi, "I have no idea what you mean by ‘strange thoughts,’ but I’ll be honest with you…");
 	MSG(kurumi, "Your clothing is giving me some strange thoughts!");
 	MSG(kurumi, "Where’d you even get it, the trash?!");
 
@@ -381,7 +381,7 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	MSG(kurumi, "Ouch ouch ouch…");
 	MSG(kurumi, "Wait, what happened?");
 
-	MSG(reimu, "What do you mean ’what happened’?");
+	MSG(reimu, "What do you mean ‘what happened’?");
 
 	FACE(kurumi, normal);
 	MSG(kurumi, "Wait! Aren’t you that girl from a long while back?");
@@ -442,7 +442,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 
 	FACE(iku, serious);
 	MSG(iku, "To get straight to the point, this tower is unlike anything I have seen before.");
-	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ’parallel universes.’");
+	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ‘parallel universes.’");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "You mean like Otherworlds? That’s not too out of the ordinary these days though.");
@@ -450,7 +450,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(reimu, "This feels different though. It’s like the walls are sucking up faith into a void.");
 	MSG(reimu, "I’m surprised the fairies are surviving at all…");
 	FACE(reimu, normal);
-	MSG(reimu, "But what are you doing here? Aren’t you worried about being ’affected’?");
+	MSG(reimu, "But what are you doing here? Aren’t you worried about being ‘affected’?");
 
 	FACE(iku, eyes_closed);
 	MSG(iku, "It is not just the Netherworld and Gensōkyō being affected.");
@@ -594,18 +594,18 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	FACE(reimu, unamused);
 	MSG(reimu, "Somehow, it feels like more of a punishment.");
-	MSG(reimu, "Ever heard of ’ignorance is bliss’?");
+	MSG(reimu, "Ever heard of ‘ignorance is bliss’?");
 	MSG(reimu, "There won’t be anyone to rule over, or whatever, if you make them all go off.");
 
-	MSG(elly, "The Tower of Babel is capable of ’enlightening’ those fortunate to be around it.");
+	MSG(elly, "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around it.");
 	MSG(elly, "Anyone unable to comprehend its brilliance will be driven to madness.");
 	FACE(elly, shouting);
 	MSG(elly, "But the residents of this Gensōkyō mean less than nothing to us! This is simply retribution!");
 
 	//FACE(reimu, unsettled);
 	FACE(reimu, normal);
-	MSG(reimu, "’This’ Gensōkyō…?");
-	MSG(reimu, "’Parallel universes,’ is that it? Like what Iku told me…");
+	MSG(reimu, "‘This’ Gensōkyō…?");
+	MSG(reimu, "‘Parallel universes,’ is that it? Like what Iku told me…");
 
 	FACE(elly, normal);
 	MSG(elly, "Hmm? Is that what this Gensōkyō is?");
@@ -680,7 +680,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "The impossible shrine maiden has finally arrived.");
 	FACE(yumemi, smug);
-	MSG(yumemi, "Here to set me on the ’right path’, protagonist girl?");
+	MSG(yumemi, "Here to set me on the ‘right path’, protagonist girl?");
 	MSG(yumemi, "Just like in all of your other tall tales…");
 
 	FACE(reimu, unsettled);
@@ -726,7 +726,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(yumemi, sad);
 	FACE(reimu, unamused);
 	MSG(yumemi, "People pour their hearts and souls into fantasy, leaving none of that energy, that drive, for the real world.");
-	MSG(yumemi, "People talk of ’solutions’ and ’progress,’ but it’s pointless so long as people wile away their lives in useless places like this.");
+	MSG(yumemi, "People talk of ‘solutions’ and ‘progress,’ but it’s pointless so long as people wile away their lives in useless places like this.");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "How’s that Gensōkyō’s problem?");
@@ -836,7 +836,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(yumemi, "I suppose it really was hopeless all along.");
 
 	FACE(reimu, puzzled);
-	MSG(reimu, "What ’truth’?");
+	MSG(reimu, "What ‘truth’?");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "That this isn’t real.");
@@ -860,7 +860,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(reimu, "No, of course not! Why would you?! You’re too full of yourself to ask anyone about anything!");
 	FACE(reimu, assertive);
 	FACE(yumemi, sad);
-	MSG(reimu, "What, was your big plan to use those ’madness rays’ or whatever it was to make us all ’think ourselves out of existence’?");
+	MSG(reimu, "What, was your big plan to use those ‘madness rays’ or whatever it was to make us all ‘think ourselves out of existence’?");
 
 	MSG(yumemi, "But how—");
 
@@ -910,8 +910,8 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(yumemi, "Finish me off. I won’t resist.");
 
 	FACE(reimu, puzzled);
-	MSG(reimu, "’Finish you off’?");
-	MSG(yumemi, "End my life. I threatened your world with ’genocide’, didn’t I?");
+	MSG(reimu, "‘Finish you off’?");
+	MSG(yumemi, "End my life. I threatened your world with ‘genocide’, didn’t I?");
 	FACE(reimu, unamused);
 	MSG(reimu, "Huh? But who would you even be a martyr for? You don’t have any followers left.");
 
@@ -920,10 +920,10 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	FACE(reimu, sigh);
 	MSG(reimu, "Ugh, I’ll let the Moriya Gods deal with you.");
-	MSG(reimu, "Be prepared to give endless lectures about that ’Grand Unified Whatever’.");
+	MSG(reimu, "Be prepared to give endless lectures about that ‘Grand Unified Whatever’.");
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "The ’Grand Unified Theory’?");
+	MSG(yumemi, "The ‘Grand Unified Theory’?");
 	FACE(reimu, unamused);
 	MSG(yumemi, "That’s… my punishment for all this? To give physics lectures?");
 
