@@ -126,7 +126,7 @@ DIALOG_TASK(youmu, Stage2PostBoss) {
 
 	MSG(hina, "Did you just call me ’mom’…?");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, sigh);
 	MSG(youmu, "I did not.");
 	MSG(youmu, "It must be the madness overcoming you.");
@@ -161,7 +161,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	SHOW(wriggle);
 	MSG(wriggle, "Do you mean the comfortable supply of my bretheren?");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, unamused);
 	MSG(youmu, "Bugs do not concern me at the moment.");
 
@@ -210,7 +210,7 @@ DIALOG_TASK(youmu, Stage3PostBoss) {
 	VARIANT(wriggle, defeated);
 	FACE(wriggle, defeated);
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "Are you aware of the legend of the Tonbokiri?");
 	MSG(youmu, "It was said the blade could cut insects in half simply by them landing on it.");
 	FACE(youmu, smug);
@@ -246,7 +246,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	HIDE(kurumi);
 
 	MSG(youmu, "A-ha, I must be close to the true entrance now.");
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "This tower… I can already feel it…");
 	//FACE(youmu, chuuni);
 	MSG(youmu, "Yes, this is a challenge worthy of my skills! It’ll take everything I’ve got!");
@@ -262,7 +262,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	MSG(kurumi, "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!");
 	MSG(kurumi, "You better remember that!");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "Perhaps I will.");
 	FACE(youmu, normal);
 	MSG(youmu, "Are you an associate of this… mansion-tower’s denizens, then?");
@@ -271,7 +271,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	MSG(kurumi, "No WAY I’d want to associate myself with the folk of this mansion!");
 	MSG(kurumi, "They dress like they’ve fallen out of a bad 80s anime!");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, relaxed);
 	MSG(youmu, "I see. I have no reason to distrust you.");
 	MSG(youmu, "… what’s an ’80s anime’, though, if I may ask?");
@@ -308,7 +308,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	VARIANT(kurumi, defeated);
 	FACE(kurumi, defeated);
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, smug);
 	MSG(youmu, "Despite your inferior technique, I must thank you.");
 	MSG(youmu, "’Dancing’ with you has pleasant stepping-stone on the path to completing my mission.");
@@ -359,7 +359,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(youmu, relaxed);
 	MSG(youmu, "Incredible. Truly astounding.");
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "Yes, the final battle is imminent. I can feel it.");
 	//FACE(youmu, chuuni);
 	MSG(youmu, "It will be a legendary duel, one to go down in the history of Gensōkyō!");
@@ -395,7 +395,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(youmu, normal);
 	MSG(youmu, "Including the heavens, I presume? I see.");
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "Fear not. Gensōkyō is safe in my hands. I will allow nothing to stand in my way.");
 	//FACE(youmu, chuuni);
 	MSG(youmu, "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this incident once and for all!");
@@ -404,7 +404,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(iku, "It seems that the machine has also overinflated your ego, Swordswoman of the Hakugyokurō.");
 	MSG(iku, "Would caution not be prudent in this situation?");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, normal);
 	MSG(youmu, "Overinflated ego? Nonsense.");
 	MSG(youmu, "During my recent battles, I have achieved a meditative state most blademasters only dream of!");
@@ -448,7 +448,7 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 	ACTOR_RIGHT(iku);
 	VARIANT(iku, defeated);
 	FACE(iku, defeated);
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, smug);
 	MSG(youmu, "All according to plan.");
 
@@ -468,7 +468,7 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 	MSG(iku, "Be prepared. The technology she possesses is from a so-called ’parallel universe’.");
 	MSG(iku, "It is unlike anything any of us have encountered before. Even I am not sure of its specifics.");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "Fear not, I will slice her infernal machine in half like an invasive weed.");
 
 	DIALOG_END();
@@ -485,7 +485,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	ACTOR_RIGHT(elly);
 	HIDE(elly);
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, happy);
 	MSG(youmu, "Ah. Ah-hahaha!");
 	MSG(youmu, "Yes. Yes! This is it!");
@@ -503,7 +503,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	TITLE(elly, "Elly", "The Theoretical Reaper");
 	MSG(elly, "Ah, I’m no shinigami, especially not now.");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	FACE(youmu, normal);
 	MSG(youmu, "The scythe is a rather particular weapon, you must understand. Forgive me presumptiveness.");
 
@@ -538,7 +538,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(elly, "We will create a new era of Gensōkyō, where the truly forgotten can live another day!");
 	MSG(elly, "Soon, the residents of this land will be driven mad beyond comprehension, and be ripe to conquer!");
 
-	//FACE(youmu, eyes_closed);
+	//FACE(youmu, closed-eyes);
 	MSG(youmu, "So you wish to avenge fallen comrades… how noble…");
 	MSG(youmu, "I can feel it move me to tears…");
 	MSG(youmu, "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly conflicts with yours!");
@@ -600,6 +600,163 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	ACTOR_LEFT(youmu);
 	ACTOR_RIGHT(yumemi);
 
+	EVENT(boss_appears);
+	SHOW(yumemi);
+	FACE(youmu, normal);
+	MSG(youmu, "Greetings, weary adversary.");
+	FACE(yumemi, surprised);
+	MSG(yumemi, "’Weary’?");
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "’The slings and arrows of outrageous fortune’, perhaps?");
+	FACE(youmu, smug);
+	MSG(youmu, "Given the ostentatiousness of this contraption we find ourselves in.");
+
+	MSG(yumemi, "Outrageous fortune? Perish the thought.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "Hmm…");
+	FACE(yumemi, surprised);
+	MSG(yumemi, "… so the swordswoman has actual katanas…");
+	FACE(yumemi, smug);
+	FACE(youmu, normal);
+	MSG(yumemi, "Hilarious.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "In my time, those swords of yours were banned over two hundred years ago.");
+	MSG(yumemi, "The great machine of war became more detached and brutal ever since the Industrial Revolution. Nobody has any use for them.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Just another relic of human history.");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "Yes, I am aware of the Outside World’s current martial doctrines.");
+	FACE(youmu, chuuni);
+	MSG(youmu, "And I’m glad to hear that you agree, that these are more… elegant weapons, for a more honourable age.");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "…");
+	MSG(yumemi, "(First Shakespeare, and then…)");
+	FACE(yumemi, normal);
+	MSG(yumemi, "Your martial art is a pastime of the wealthy.");
+	FACE(youmu, normal);
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "But of course, I’m sure many people fruitlessly ’train’ in virtual reality with those weapons, for absolutely no purpose other than delusions of grandeur.");
+
+	MSG(youmu, "Fine blades such as these are hard to come by for the working class, it’s true.");
+	FACE(youmu, chuuni);
+	MSG(youmu, "But I am privileged enough to be in the service of Lady Yuyuko, who graciously provides—");
+
+	FACE(youmu, normal);
+	FACE(yumemi, sigh);
+	MSG(yumemi, "Please, stop. I don’t care about any of that. It’s meaningless.");
+
+	FACE(youmu, unamused);
+	MSG(youmu, "Hmph. I was warned of your attitude.");
+	MSG(youmu, "And what I’ve heard is evidently true. You care for nothing and no one.");
+	FACE(youmu, sigh);
+	MSG(youmu, "A hollow husk of a woman, even compared to me.");
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "Excuse me?");
+
+	FACE(youmu, normal);
+	MSG(youmu, "Your expressions, body language, words…");
+	MSG(youmu, "Yes, you’ve lost the spark which gives one meaning in life.");
+
+	FACE(yumemi, normal);
+	MSG(yumemi, "You know nothing about me.");
+	MSG(yumemi, "You exist in an unreal world, living a false life, surrounded by simple and childish delusions about your powers and abilities.");
+
+	FACE(youmu, smug);
+	MSG(youmu, "As opposed to whom? You?");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Y—…");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Yes. Me.");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "I see.");
+
+	FACE(youmu, smug);
+	FACE(yumemi, sigh);
+	MSG(yumemi, "I don’t have the patience to take criticism from the likes of you. I’ll destroy this delusion and be on my way.");
+
+	FACE(youmu, puzzled);
+	MSG(youmu, "How odd. Have the denizens of Gensōkyō given you cause for retribution?");
+
+	FACE(yumemi, normal);
+	FACE(youmu, normal);
+	MSG(yumemi, "That remains to be seen.");
+
+	FACE(youmu, puzzled);
+	MSG(youmu, "Excuse me?");
+
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "It could be this Gensōkyō, or some other Gensōkyō…");
+	FACE(youmu, normal);
+	FACE(yumemi, sigh);
+	MSG(yumemi, "To be honest, I can’t tell the difference anymore.");
+
+	MSG(youmu, "Some… other Gensōkyō?");
+
+	FACE(yumemi, normal);
+	MSG(yumemi, "All of them have a common effect on the real world.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "They lead people astray, into forgetting about…");
+	FACE(youmu, normal);
+	FACE(yumemi, sad);
+	MSG(yumemi, "… ah, I just don’t care anymore.");
+	MSG(yumemi, "It probably won’t change a thing.");
+	FACE(yumemi, sigh);
+	MSG(yumemi, "Perhaps I just wanted to see if this contraption worked, in the end.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "It’s not worth explaining anything else.");
+
+	FACE(youmu, unamused);
+	MSG(youmu, "…");
+	MSG(youmu, "Is that… it?");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "What else were you expecting? A grand vision for the future?");
+	FACE(yumemi, sigh);
+	MSG(yumemi, "Please, I’m past all that.");
+
+	MSG(youmu, "… pathetic!");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Excuse me?");
+
+	MSG(youmu, "Elly had a purpose, a passion! To save her friends, her comrades, and to restore her world!");
+	MSG(youmu, "But you…! You just want an apocalypse! Over something you no longer care for?!");
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "I don’t have anything *left* to care for, so what does it matter?");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "It’s not as if you’re real. You’re a fairytale out of a children’s book.");
+
+	MSG(youmu, "And what could you have possibly lost that would explain this casually genocidal attitude?");
+
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Isn’t it obvious by now?");
+	FACE(yumemi, sad);
+	MSG(yumemi, "Gensōkyō stole away the only person I ever loved.");
+	MSG(yumemi, "And I don’t care which Gensōkyō did it. Not anymore.");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "…");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "…");
+
+	MSG(youmu, "Spirited away, hmm?");
+	FACE(youmu, unamused);
+	MSG(youmu, "And this is how you choose to honour their memory? I see.");
+
+	FACE(youmu, normal);
+	FACE(yumemi, sigh);
+	MSG(yumemi, "No, you don’t. You’re a figment of a weary society’s delusional imagination.");
+	EVENT(music_changes);
+	MSG(yumemi, "I’m tired of explaining myself to the likes of you.");
+	FACE(yumemi, smug);
+	MSG(yumemi, "Let me demonstrate the full power of this technological terror I’ve constructed.");
+
 	DIALOG_END();
 }
 
@@ -610,6 +767,139 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	ACTOR_RIGHT(yumemi);
 	VARIANT(yumemi, defeated);
 	FACE(yumemi, defeated);
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "I yield.");
+	MSG(yumemi, "To think I’ll meet my end to someone like you…");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "An academic such as yourself ought to know that martial arts are a field of study, like any other.");
+	FACE(youmu, chuuni);
+	MSG(youmu, "You lost to a subject matter expert, nothing more.");
+
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "… ugh…");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "With as empty as your heart is, you might be unaware of the gift you’ve given me, weary traveller.");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Gift…? And what’s that…?");
+
+	MSG(youmu, "Before this incident, I was terrified of my own existence.");
+	MSG(youmu, "Between worlds, perpetually troubled by my mortality and immortality…");
+	MSG(youmu, "… my human side, and my phantom side.");
+	FACE(yumemi, normal);
+	FACE(youmu, normal);
+	MSG(youmu, "When I came to this infernal place, something changed within my heart, mind, and soul.");
+	FACE(youmu, chuuni);
+	MSG(youmu, "Suddenly, I was no longer frightened of my true nature! My fear burned away!");
+	MSG(youmu, "I recognized my talents and beauty as a warrior, fully and earnestly!");
+	MSG(youmu, "The ’destructive madness’ you sought to destroy me with? It only made me stronger!");
+	MSG(youmu, "And it has persisted even with your audacious machine deactivated!");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Am I hearing you clearly…? Instead of realizing your unreal nature, you became permanently more confident in yourself?");
+	MSG(youmu, "Indeed. I was as startled as you are at first.");
+
+	FACE(youmu, normal);
+	FACE(yumemi, smug);
+	MSG(yumemi, "Hah. Hahaha. Incredible.");
+
+	FACE(youmu, smug);
+	MSG(youmu, "Empty-hearted retribution will never defeat the will of those who believe in themselves.");
+	FACE(youmu, chuuni);
+	FACE(yumemi, normal);
+	MSG(youmu, "The outcome of this battle was—");
+
+	//EVENT(elly_enters);
+	//MSG(elly, "I’m here, Yōmu! I couldn’t stand the idea of you having to face my mistake alone, and—");
+	//FACE(elly, surprised);
+	//MSG(elly, "…?!");
+	//MSG(elly, "Y-you already defeated her?!");
+
+	FACE(youmu, smug);
+	MSG(youmu, "Fear not, I’ve resolved the situation.");
+	//FACE(elly, normal);
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "Her techniques were powerful and precise, but as I was just saying…");
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "…");
+	MSG(yumemi, "’The outcome of this battle was determined before it began’?");
+
+	FACE(youmu, smug);
+	MSG(youmu, "Precisely.");
+	//FACE(elly, blush);
+	//MSG(elly, "Yōmu, you’re absolutely incredible!");
+	FACE(youmu, chuuni);
+	MSG(youmu, "Flattery will get you everywhere, my dear.");
+	MSG(yumemi, "After all that effort you put into stealing the Tower from me…");
+	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A delusional katana-wielding woman with cheesy action-hero one-liners?");
+	MSG(yumemi, "I never did stand a chance, did I?");
+
+	//FACE(elly, angry);
+	//MSG(elly, "No, I suppose you didn’t.");
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Hah…");
+	MSG(yumemi, "Sentence me as you wish. I won’t resist.");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "Very well.");
+	FACE(youmu, normal);
+	MSG(youmu, "Allowing you to leave is out of the question. The Tower may continue to drive you mad, and you may come back, with reinforcements.");
+	MSG(youmu, "As such, I would order you to power down the tower, and agree to live here in Gensōkyō peacefully. However…");
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "As Elly is one of the most impacted victims, I must ask for her input.");
+	//FACE(elly, normal);
+	//MSG(elly, "…");
+	//MSG(elly, "I know her pain. She’s suffered enough.");
+	//MSG(elly, "I’ll agree to whatever you decide, Yōmu.");
+
+	FACE(youmu, normal);
+	MSG(youmu, "Very well, then.");
+	MSG(youmu, "And so, those are the terms. Will you abide by them, weary traveller?");
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "… you’re not going to…?");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "Take your life? Perish the thought.");
+	FACE(youmu, normal);
+	MSG(youmu, "A human life is too precious and fleeting for such violence.");
+
+	FACE(yumemi, sad);
+	MSG(yumemi, "I… see.");
+	FACE(yumemi, normal);
+	MSG(yumemi, "As I’ll be here for a while, I figure I may as well ask something, if you’ll indulge me.");
+
+	FACE(youmu, puzzled);
+	MSG(youmu, "What is it?");
+
+	MSG(yumemi, "Is there someone here who can manipulate the boundaries of reality?");
+
+	FACE(youmu, eeeeh);
+	MSG(youmu, "…?!");
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "… ahem. Yes, there is. I’m well-acquainted with her, oddly enough.");
+	//MSG(elly, "Are you talking about that blonde lady, the one always visiting Lady Yuyuko?");
+	//MSG(elly, "What was her name again?");
+	//MSG(elly, "The eyes she has in her ’gaps’ give me the creeps…");
+
+	FACE(yumemi, surprised);
+	MSG(yumemi, "…?!");
+	FACE(youmu, eeeeh);
+	MSG(youmu, "S-she is frightening to most people in Gensōkyō, myself included, even in my… improved state.");
+	FACE(youmu, puzzled);
+	MSG(youmu, "Is that who you seek?");
+
+	MSG(yumemi, "I’m not sure. Maybe…");
+
+	FACE(youmu, closed-eyes);
+	MSG(youmu, "Perhaps Lady Yuyuko will grace you with her legendary generosity, and grant you an audience with her… companion.");
+
+	FACE(yumemi, eyes_closed);
+	MSG(yumemi, "Thank you. That’s more than I can ask.");
 
 	DIALOG_END();
 }
