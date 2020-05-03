@@ -13,6 +13,6 @@
 
 #include "coroutine.h"
 
-DECLARE_EXTERN_TASK(stagex_animate_background, NO_ARGS);
+DECLARE_EXTERN_TASK(stagex_animate_background);
 
 #endif // IGUARD_stages_stagex_background_anim_h

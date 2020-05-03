@@ -129,7 +129,7 @@ static void set_bg_uniforms(void) {
 	r_uniform_sampler("background_binary_tex", "stageex/bg_binary");
 	r_uniform_sampler("code_tex", "stageex/code");
 	r_uniform_vec4("code_tex_params",
-				   draw_data->codetex_aspect[0],
+		draw_data->codetex_aspect[0],
 		draw_data->codetex_aspect[1],
 		draw_data->codetex_num_segments,
 		1.0f / draw_data->codetex_num_segments
