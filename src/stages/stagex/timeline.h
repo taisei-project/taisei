@@ -13,6 +13,6 @@
 
 #include "coroutine.h"
 
-DECLARE_EXTERN_TASK(stagex_timeline, NO_ARGS);
+DECLARE_EXTERN_TASK(stagex_timeline);
 
 #endif // IGUARD_stages_stagex_timeline_h
