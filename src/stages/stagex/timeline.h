@@ -11,4 +11,4 @@
 
 #include "coroutine/taskdsl.h"
 
-DECLARE_EXTERN_TASK(stagex_timeline, NO_ARGS);
+DECLARE_EXTERN_TASK(stagex_timeline);
