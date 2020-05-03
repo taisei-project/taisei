@@ -37,4 +37,6 @@ void stagex_despawn_yumemi_slave(YumemiSlave *slave);
 
 Boss *stagex_spawn_yumemi(cmplx pos);
 
+void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time);
+
 #endif // IGUARD_stages_stagex_yumemi_h

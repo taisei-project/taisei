@@ -89,6 +89,7 @@ glsl_files = files(
     'tunnel.frag.glsl',
     'youmu_bomb_bg.frag.glsl',
     'youmua_bomb.frag.glsl',
+    'yumemi_spellbg_voronoi.frag.glsl',
     'zbuf_fog.frag.glsl',
 # @end glsl
 )
