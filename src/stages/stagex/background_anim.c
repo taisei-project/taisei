@@ -12,6 +12,8 @@
 #include "util/glm.h"
 #include "random.h"
 #include "stageutils.h"
+#include "stagetext.h"
+#include "global.h"
 
 TASK(animate_value, { float *val; float target; float rate; }) {
 	while(*ARGS.val != ARGS.target) {
@@ -102,7 +104,7 @@ static void animate_bg_descent(StageXDrawData *draw_data, int anim_time) {
 static void animate_bg_midboss(StageXDrawData *draw_data, int anim_time) {
 	float camera_shift_rate = 0;
 
-	// stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0, 120, 30, 30);
+	stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
 	while(anim_time-- > 0) {
 	// for(;;) {
@@ -124,7 +126,7 @@ static void animate_bg_post_midboss(StageXDrawData *draw_data, int anim_time) {
 	float center_distance = -2200;
 	float camera_shift_rate = 0;
 
-	// stagetext_add("Midboss defeated!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0, 120, 30, 30);
+	stagetext_add("Midboss defeated!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
 	while(anim_time-- > 0) {
 		fapproach_p(&camera_shift_rate, 1, 1.0f/120.0f);
