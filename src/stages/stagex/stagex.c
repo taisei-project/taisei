@@ -26,11 +26,11 @@ struct stagex_spells_s stagex_spells = {
 	.boss = {
 		.infinity_network = {
 			{-1, -1, -1, 1}, AT_SurvivalSpell, "Obliteration “Infinity Network”", 90, 80000,
-			NULL, NULL, VIEWPORT_W/2.0+100.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_infinity_network)
+			NULL, stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+100.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_infinity_network)
 		},
 		.sierpinski = {
 			{-1, -1, -1, 2}, AT_Spellcard, "Automaton “Legacy of Sierpiński”", 90, 150000,
-			NULL, NULL, VIEWPORT_W/2.0+120.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_sierpinski)
+			NULL, stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_sierpinski)
 		},
 	},
 };
