@@ -11,7 +11,7 @@
 
 #include "entity.h"
 #include "resource/sprite.h"
-#include "coroutine.h"
+#include "coroutine/coevent.h"
 
 DEFINE_ENTITY_TYPE(YumemiSlave, {
 	struct {
@@ -34,3 +34,5 @@ YumemiSlave *stagex_host_yumemi_slave(cmplx pos, int type);
 void stagex_despawn_yumemi_slave(YumemiSlave *slave);
 
 Boss *stagex_spawn_yumemi(cmplx pos);
+
+void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time);
