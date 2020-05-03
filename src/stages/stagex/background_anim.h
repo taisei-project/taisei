@@ -11,4 +11,4 @@
 
 #include "coroutine/taskdsl.h"
 
-DECLARE_EXTERN_TASK(stagex_animate_background, NO_ARGS);
+DECLARE_EXTERN_TASK(stagex_animate_background);
