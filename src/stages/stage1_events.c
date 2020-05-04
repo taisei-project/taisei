@@ -1751,7 +1751,7 @@ DEFINE_EXTERN_TASK(stage1_main) {
 	WAIT(2560);
 	INVOKE_TASK(spawn_boss);
 	while(!global.boss) YIELD;
-	WAIT_EVENT(&global.boss->events.defeated);
+	WAIT_EVENT_OR_DIE(&global.boss->events.defeated);
 
 	stage_unlock_bgm("stage1boss");
 
@@ -1760,7 +1760,7 @@ DEFINE_EXTERN_TASK(stage1_main) {
 	WAIT(120);
 
 	stage1_dialog_post_boss();
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT_OR_DIE(&global.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);
