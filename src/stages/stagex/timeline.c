@@ -175,14 +175,17 @@ TASK_WITH_INTERFACE(yumemi_opening, BossAttack) {
 	STALL;
 }
 
+TASK(yumemi_appear, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+}
+
 TASK(boss, { Boss **out_boss; }) {
 	STAGE_BOOKMARK(boss);
 
 	Player *plr = &global.plr;
 	Boss *boss = stagex_spawn_yumemi(5*VIEWPORT_W/4 - 200*I);
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
 	*ARGS.out_boss = global.boss = boss;
-	WAIT(120);
 
 	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.sierpinski, false);
@@ -191,11 +194,20 @@ TASK(boss, { Boss **out_boss; }) {
 	PlayerMode *pm = plr->mode;
 	StageExPreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(StageExPreBossDialog, pm->dialog->StageExPreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, yumemi_appear, ENT_BOX(boss));
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stagexboss");
 	INVOKE_TASK_WHEN(&e->music_changes, yumemi_opening, ENT_BOX(boss), opening_attack);
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
+	WAIT_EVENT_OR_DIE(&global.dialog->events.fadeout_began);
 
 	boss_engage(boss);
+	WAIT_EVENT_OR_DIE(&boss->events.defeated);
+	WAIT(240);
+
+	INVOKE_TASK_INDIRECT(StageExPostBossDialog, pm->dialog->StageExPostBoss);
+	WAIT_EVENT_OR_DIE(&global.dialog->events.fadeout_began);
+
+	WAIT(5);
+	stage_finish(GAMEOVER_SCORESCREEN);
 }
 
 DEFINE_EXTERN_TASK(stagex_timeline) {
@@ -207,7 +219,7 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 
 	Boss *boss;
 	INVOKE_TASK(boss, &boss);
-	WAIT_EVENT(&boss->events.defeated);
+	return;
 
 enemies:
 	for(int i = 0;;i++) {
