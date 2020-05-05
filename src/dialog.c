@@ -88,12 +88,19 @@ void dialog_update(Dialog *d) {
 		fapproach_asymptotic_p(&d->opacity, 1, 0.05, 1e-3);
 	}
 
-	for(DialogActor *a = d->actors.first; a; a = a->next) {
+	const float offset_per_actor = 32;
+	float target_offsets[2] = { 0 };
+
+	for(DialogActor *a = d->actors.last; a; a = a->prev) {
+		fapproach_asymptotic_p(&a->offset.x, target_offsets[a->side], 0.10, 1e-3);
+		target_offsets[a->side] += offset_per_actor;
+
 		if(d->state == DIALOG_STATE_FADEOUT) {
 			fapproach_asymptotic_p(&a->opacity, 0, 0.12, 1e-3);
 		} else {
 			fapproach_asymptotic_p(&a->opacity, a->target_opacity, 0.04, 1e-3);
 		}
+
 		fapproach_asymptotic_p(&a->focus, a->target_focus, 0.12, 1e-3);
 	}
 }
