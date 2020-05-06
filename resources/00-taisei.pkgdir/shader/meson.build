@@ -111,6 +111,7 @@ glsl_files = [
     'youmu_bomb_bg.frag.glsl',
     'youmua_bomb.frag.glsl',
     'yumemi_spellbg_voronoi.frag.glsl',
+    'yumemi_spellbg_voronoi_compose.frag.glsl',
     'zbuf_fog.frag.glsl',
     'zbuf_fog_tonemap.frag.glsl',
 # @end glsl

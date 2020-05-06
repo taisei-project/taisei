@@ -26,6 +26,7 @@ typedef struct StageXDrawData {
 	struct {
 		Framebuffer *tower_mask;
 		Framebuffer *glitch_mask;
+		Framebuffer *spell_background_lq;
 	} fb;
 
 	float codetex_num_segments;
