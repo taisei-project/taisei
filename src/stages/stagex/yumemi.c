@@ -154,8 +154,9 @@ void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	r_draw_sprite(sp);
 }
 
-void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
+static void render_spellbg_mask(Framebuffer *fb) {
 	r_state_push();
+	r_framebuffer(fb);
 	r_blend(BLEND_NONE);
 	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
 	r_shader("yumemi_spellbg_voronoi");
@@ -166,8 +167,19 @@ void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
 	r_uniform_vec4("color", 0.1, 0.2, 0.05, 1.0);
 	r_draw_quad();
 	r_mat_mv_pop();
-	r_shader_standard();
-	r_blend(BLEND_MOD);
+	r_state_pop();
+}
+
+void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+	render_spellbg_mask(draw_data->fb.spell_background_lq);
+
+	r_state_push();
+	r_blend(BLEND_NONE);
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+	r_shader("yumemi_spellbg_voronoi_compose");
+	r_uniform_sampler("tex2", r_framebuffer_get_attachment(draw_data->fb.spell_background_lq, FRAMEBUFFER_ATTACH_COLOR0));
+	// draw_framebuffer_tex(draw_data->fb.spell_background_lq, VIEWPORT_W, VIEWPORT_H);
 	fill_viewport(0, time/700.0+0.5, 0, "stageex/bg");
 	r_state_pop();
 }
