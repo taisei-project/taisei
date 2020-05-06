@@ -100,10 +100,32 @@ static int build_path(int num_offsets, cmplx offsets[num_offsets], int path[num_
 typedef struct InfnetAnimData {
 	BoxedProjectileArray *dots;
 	cmplx *offsets;
+	int *particle_spawn_times;
 	cmplx origin;
 	real radius;
 	int num_dots;
 } InfnetAnimData;
+
+static void emit_particle(InfnetAnimData *infnet, int index, Projectile *dot, Sprite *spr) {
+	if(dot->ent.draw_layer == LAYER_NODRAW) {
+		return;
+	}
+
+	if(global.frames - infnet->particle_spawn_times[index] < 6) {
+		return;
+	}
+
+	PARTICLE(
+		.sprite_ptr = spr,
+		.pos = dot->pos,
+		.color = color_mul_scalar(COLOR_COPY(&dot->color), 0.75),
+		.timeout = 10,
+		.draw_rule = pdraw_timeout_scalefade(0.5, 1, 1, 0),
+		.angle = rng_angle(),
+	);
+
+	infnet->particle_spawn_times[index] = global.frames;
+}
 
 TASK(infnet_lasers, { InfnetAnimData *infnet; }) {
 	InfnetAnimData *infnet = ARGS.infnet;
@@ -115,6 +137,8 @@ TASK(infnet_lasers, { InfnetAnimData *infnet; }) {
 
 	int lasers_spawned = 0;
 	int lasers_alive = 0;
+
+	Sprite *stardust_spr = get_sprite("part/stardust");
 
 	while(!lasers_spawned || lasers_alive) {
 		lasers_alive = 0;
@@ -138,28 +162,8 @@ TASK(infnet_lasers, { InfnetAnimData *infnet; }) {
 				if(l) {
 					l->pos = a->pos;
 					l->args[0] = (b->pos - a->pos) * 0.005;
-
-					if((global.frames - a->birthtime) % 8 == 0) {
-						PARTICLE(
-							.sprite = "stardust",
-							.pos = a->pos,
-							.color = color_mul_scalar(COLOR_COPY(&a->color), 0.5),
-							.timeout = 10,
-							.draw_rule = pdraw_timeout_scalefade(0.5, 1, 1, 0),
-							.angle = rng_angle(),
-						);
-					}
-
-					if((global.frames - b->birthtime) % 8 == 0) {
-						PARTICLE(
-							.sprite = "stardust",
-							.pos = b->pos,
-							.color = color_mul_scalar(COLOR_COPY(&b->color), 0.5),
-							.timeout = 10,
-							.draw_rule = pdraw_timeout_scalefade(0.5, 1, 1, 0),
-							.angle = rng_angle(),
-						);
-					}
+					emit_particle(infnet, index0, a, stardust_spr);
+					emit_particle(infnet, index1, b, stardust_spr);
 
 					// FIXME this optimization is not correct, because sometimes the laser may cross the viewport,
 					// even though both endpoints are invisible. Maybe it's worth detecting this case.
@@ -247,8 +251,12 @@ TASK(infinity_net, {
 
 	DECLARE_ENT_ARRAY(Projectile, dots, num_offsets);
 
+	int particle_spawn_times[num_offsets];
+	memset(particle_spawn_times, 0, sizeof(particle_spawn_times));
+
 	InfnetAnimData infnet;
 	infnet.offsets = offsets;
+	infnet.particle_spawn_times = particle_spawn_times;
 	infnet.num_dots = num_offsets;
 	infnet.origin = ARGS.origin;
 	infnet.dots = &dots;
