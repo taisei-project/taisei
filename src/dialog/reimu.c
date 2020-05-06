@@ -585,7 +585,6 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	MSG(elly, "The Tower of Babel is capable of ‘enlightening’ those fortunate to be around it.");
 	FACE(elly, smug);
-
 	MSG(elly, "Anyone unable to comprehend its brilliance will be driven to madness.");
 	FACE(elly, shouting);
 	MSG(elly, "But the residents of this Gensōkyō mean less than nothing to us! This is simply retribution!");
