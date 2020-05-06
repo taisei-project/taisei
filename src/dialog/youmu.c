@@ -24,27 +24,24 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 	FACE(youmu, happy);
 	MSG(youmu, "I suppose falling snow can be as pretty as cherry blossoms…");
 
-	MSG(cirno, "I’m cooler than you, so get off my lake!");
-	FACE(youmu, normal);
 	EVENT(boss_appears);
+	MSG_UNSKIPPABLE(cirno, 180, "I’m cooler than you, so get off my lake!");
 	SHOW(cirno);
-	WAIT(30);
-	WAIT_SKIPPABLE(60);
 
 	FACE(youmu, unamused);
 	MSG(youmu, "I can see you’re quite cold, yes.");
+	FACE(youmu, smug);
 	MSG(youmu, "I tend to dislike dueling those weaker than myself, so I’d appreciate it if you’d step aside.");
 
 	TITLE(cirno, "Cirno", "Thermodynamic Ice Fairy");
 	MSG(cirno, "Hah! Maybe YOU should step aside, then!");
 
-	FACE(youmu, smug);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "I suppose it’s as good a time as any to practice my snowflake-destruction technique.");
 
 	EVENT(music_changes);
 	FACE(cirno, angry);
 	MSG(cirno, "But if I turn you into a snowflake, you’ll have to chop yourself in half!");
-
 
 	DIALOG_END();
 }
@@ -89,15 +86,16 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	MSG(hina, "And who might you be, dear?");
 
 	MSG(youmu, "Konpaku Yōmu. I am on a mission from Lady Yuyuko to investigate the disturbance.");
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "You needn’t concern yourself. I’ll be passing through now.");
 
 	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
 	MSG(hina, "I’ve never heard of this ‘Lady Yuyuko’ you speak of, but I can’t let this slide.");
+	FACE(youmu, normal);
 	FACE(hina, serious);
 	MSG(hina, "Young girls such as yourself shouldn’t be sent to do such dangerous errands!");
 
-	//FACE(youmu, embarassed);
-	FACE(youmu, eeeeh);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—");
 	MSG(youmu, "—having mastered my technique over *decades*—");
 	MSG(youmu, "—dare I say even the best in Gensōkyō—");
@@ -108,7 +106,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 
 	FACE(youmu, unamused);
 	MSG(youmu, "It’s not a PHASE, mo—");
-	//FACE(youmu, embarassed);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "…!!");
 
 	EVENT(music_changes);
@@ -126,8 +124,7 @@ DIALOG_TASK(youmu, Stage2PostBoss) {
 
 	MSG(hina, "Did you just call me ‘mom’…?");
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, sigh);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "I did not.");
 	MSG(youmu, "It must be the madness overcoming you.");
 	MSG(youmu, "Yes, indeed.");
@@ -161,8 +158,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	SHOW(wriggle);
 	MSG(wriggle, "Do you mean the comfortable supply of my bretheren?");
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, unamused);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Bugs do not concern me at the moment.");
 
 	FACE(wriggle, outraged);
@@ -172,7 +168,9 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 
 	FACE(youmu, normal);
 	MSG(youmu, "Apologies, I meant no disrespect.");
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "I am on a mission from Lady Yuyuko to end whatever is causing the disturbance in this area.");
+	FACE(youmu, normal);
 	MSG(youmu, "Tell me everything you know.");
 
 	FACE(wriggle, proud);
@@ -210,7 +208,7 @@ DIALOG_TASK(youmu, Stage3PostBoss) {
 	VARIANT(wriggle, defeated);
 	FACE(wriggle, defeated);
 
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Are you aware of the legend of the Tonbokiri?");
 	MSG(youmu, "It was said the blade could cut insects in half simply by them landing on it.");
 	FACE(youmu, smug);
@@ -219,9 +217,7 @@ DIALOG_TASK(youmu, Stage3PostBoss) {
 	MSG(wriggle, "That’s not the past I saw…");
 
 	MSG(youmu, "How unfortunate for you.");
-	// for "chuuni," I’m basically thinking about how intense Wolf Yōmu looks in WBaWC
-	// https://i.ytimg.com/vi/aDhavStO540/maxresdefault.jpg
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Fear not. I will end your delusional madness and restore justice and order to the—");
 	FACE(youmu, eeeeh);
 	MSG(youmu, "… ugh, that’s a little much, even for me.");
@@ -246,9 +242,9 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	HIDE(kurumi);
 
 	MSG(youmu, "A-ha, I must be close to the true entrance now.");
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "This tower… I can already feel it…");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Yes, this is a challenge worthy of my skills! It’ll take everything I’ve got!");
 
 	EVENT(boss_appears);
@@ -262,7 +258,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	MSG(kurumi, "Hmph! I’m Kurumi, a lone black rose drowning in a sea of bad taste!");
 	MSG(kurumi, "You better remember that!");
 
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Perhaps I will.");
 	FACE(youmu, normal);
 	MSG(youmu, "Are you an associate of this… mansion-tower’s denizens, then?");
@@ -271,9 +267,9 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	MSG(kurumi, "No WAY I’d want to associate myself with the folk of this mansion!");
 	MSG(kurumi, "They dress like they’ve fallen out of a bad 80s anime!");
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, relaxed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "I see. I have no reason to distrust you.");
+	FACE(youmu, puzzled);
 	MSG(youmu, "… what’s an ‘80s anime’, though, if I may ask?");
 
 	FACE(kurumi, normal);
@@ -285,11 +281,11 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 
 	MSG(kurumi, "Yeah, but I was lying to see how gullible you were.");
 
-	//FACE(youmu, embarassed);
-	FACE(youmu, sigh);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "O-of course. I-I knew that.");
-	MSG(youmu, "I wanted to see if you’d come clean.");
 	FACE(youmu, normal);
+	MSG(youmu, "I wanted to see if you’d come clean.");
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "My true challenge lies beyond you. Step aside.");
 
 	EVENT(music_changes);
@@ -308,11 +304,10 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	VARIANT(kurumi, defeated);
 	FACE(kurumi, defeated);
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, smug);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Despite your inferior technique, I must thank you.");
 	MSG(youmu, "‘Dancing’ with you has pleasant stepping-stone on the path to completing my mission.");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Tell your ‘employer’ that I am coming for them.");
 
 	MSG(kurumi, "(She earnestly talks like a manga anti-hero…)");
@@ -324,8 +319,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	FACE(youmu, unamused);
 	MSG(youmu, "S-… spooky?");
 
-	//FACE(kurumi, puzzled);
-	FACE(kurumi, normal);
+	FACE(kurumi, puzzled);
 	MSG(kurumi, "…?");
 	FACE(kurumi, normal);
 	MSG(kurumi, "… yeah! I thought it was gonna be all ‘scientific,’ but then they made it haunted, with ghosts and stuff!");
@@ -337,8 +331,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	MSG(kurumi, "Scary vengeful ghosts! Trying to kill you, even!");
 	MSG(kurumi, "But surely a strong swordsgirl like yourself could handle it.");
 
-	//FACE(youmu, embarassed);
-	FACE(youmu, normal);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "B-Bring it on! Nothing will stand in my way!");
 
 	MSG(kurumi, "(Teehee, so gullible.)");
@@ -359,9 +352,9 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(youmu, relaxed);
 	MSG(youmu, "Incredible. Truly astounding.");
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Yes, the final battle is imminent. I can feel it.");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "It will be a legendary duel, one to go down in the history of Gensōkyō!");
 
 	EVENT(boss_appears);
@@ -388,6 +381,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	FACE(iku, normal);
 	MSG(iku, "On the contrary, I would say.");
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
+	FACE(youmu, normal);
 	MSG(iku, "I decided to do some research on my own.");
 	MSG(iku, "This tower is controlled by a machine…");
 	FACE(iku, serious);
@@ -395,32 +389,33 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(youmu, normal);
 	MSG(youmu, "Including the heavens, I presume? I see.");
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Fear not. Gensōkyō is safe in my hands. I will allow nothing to stand in my way.");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this incident once and for all!");
 
 	FACE(iku, smile);
 	MSG(iku, "It seems that the machine has also overinflated your ego, Swordswoman of the Hakugyokurō.");
 	MSG(iku, "Would caution not be prudent in this situation?");
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, normal);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Overinflated ego? Nonsense.");
 	MSG(youmu, "During my recent battles, I have achieved a meditative state most blademasters only dream of!");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Through that, I have realized the true form of my previously-incomplete yōkai-vanquishing technique!");
 
 	MSG(iku, "Is that so? You believe that this ‘technique’ will help you defeat the instigators effortlessly?");
 
 	FACE(youmu, sigh);
 	MSG(youmu, "More doubt from ignorant skeptics, I see.");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Shall we duel so that I may demonstrate to your satisfaction?!");
 
 	FACE(iku, serious);
 	MSG(iku, "W-wait, that is not what I meant, I simply—");
+
 	EVENT(music_changes);
+
 	MSG(iku, "Ah, I haven’t the time for this nonsense!");
 	MSG(iku, "Insolent humans such as you need rehabilitation! Allow me to administer some onto you!");
 
@@ -435,7 +430,7 @@ DIALOG_TASK(youmu, Stage5PostMidBoss) {
 	ACTOR_LEFT(youmu);
 	FACE(youmu, smug);
 
-	// should be only one message with a fixed 120-frames timeout
+	// should be only one message with a fixed 180-frames timeout
 	MSG_UNSKIPPABLE(youmu, 180, "Lightning? Hmph. Nothing my swords can’t deflect.");
 
 	DIALOG_END();
@@ -448,8 +443,8 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 	ACTOR_RIGHT(iku);
 	VARIANT(iku, defeated);
 	FACE(iku, defeated);
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, smug);
+
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "All according to plan.");
 
 	MSG(iku, "Your logic is so twisted…");
@@ -459,7 +454,7 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 
 	MSG(youmu, "And perhaps I truly have gone mad. What of it?");
 	MSG(youmu, "My mission is crystal clear:");
-	//FACE(youmu, chuuni);
+	FACE(youmu, chuuni);
 	MSG(youmu, "… to carry out Lady Yuyuko’s mission, and to bring peace to Gensōkyō and all connected realms!");
 	MSG(youmu, "I will not fail!");
 
@@ -468,7 +463,7 @@ DIALOG_TASK(youmu, Stage5PostBoss) {
 	MSG(iku, "Be prepared. The technology she possesses is from a so-called ‘parallel universe’.");
 	MSG(iku, "It is unlike anything any of us have encountered before. Even I am not sure of its specifics.");
 
-	//FACE(youmu, eyes_closed);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Fear not, I will slice her infernal machine in half like an invasive weed.");
 
 	DIALOG_END();
@@ -485,10 +480,12 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	ACTOR_RIGHT(elly);
 	HIDE(elly);
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, happy);
-	MSG(youmu, "Ah. Ah-hahaha!");
+	FACE(youmu, eyes_closed);
+	MSG(youmu, "Ah.");
+	FACE(youmu, chuuni);
+	MSG(youmu, "Ah-hahaha!");
 	MSG(youmu, "Yes. Yes! This is it!");
+	FACE(youmu, happy);
 	MSG(youmu, "This is obviously the area for the final battle!");
 
 	EVENT(boss_appears);
@@ -503,8 +500,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	TITLE(elly, "Elly", "The Theoretical Reaper");
 	MSG(elly, "Ah, I’m no shinigami, especially not now.");
 
-	//FACE(youmu, eyes_closed);
-	FACE(youmu, normal);
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "The scythe is a rather particular weapon, you must understand. Forgive me presumptiveness.");
 
 	MSG(elly, "I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō.");
@@ -515,8 +511,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 
 	MSG(youmu, "Such an unwieldy weapon… for anyone to choose it willingly…");
 	MSG(youmu, "Either you’re incredibly skilled, or incredibly foolish.");
-	//FACE(youmu, chuuni);
-	FACE(youmu, happy);
+	FACE(youmu, chuuni);
 	MSG(youmu, "I wish to find that out!");
 	MSG(youmu, "After our duel, let us meet as colleagues, and discuss our techniques!");
 
@@ -524,31 +519,37 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(elly, "I’d only call my apprentices ‘colleagues’!");
 	MSG(elly, "Your existence means nothing to us! And I’m sure our existence means nothing to you, either!");
 
-	//FACE(youmu, chuuni);
-	FACE(youmu, happy);
+	FACE(youmu, chuuni);
 	MSG(youmu, "On the contrary, scythe-bearer!");
 	MSG(youmu, "You’ve created an impeccable scene for our final confrontation.");
+	FACE(youmu, happy);
 	MSG(youmu, "Truly, one of the best. I applaud you!");
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "But first, please, tell me: what is your mission? What is it you desire?");
+	FACE(youmu, chuuni);
 	MSG(youmu, "For us to share this… intimate moment, I desire to know everything about you.");
 
-	//FACE(elly, tsun_blush);
-	//this face should be similar to Kurumi’s tsun-blush
-	MSG(elly, "T-To avenge our forgotten friends, we plan on subjugating this world!");
+	FACE(elly, blush);
+	MSG(elly, "T-To avenge our forgotten f-friends—");
+	FACE(elly, eyes_closed);
+	MSG(elly, "…");
+	FACE(elly, angry);
+	MSG(elly, "… we plan on subjugating this world!");
 	MSG(elly, "We will create a new era of Gensōkyō, where the truly forgotten can live another day!");
 	MSG(elly, "Soon, the residents of this land will be driven mad beyond comprehension, and be ripe to conquer!");
-
-	//FACE(youmu, eyes_closed);
-	MSG(youmu, "So you wish to avenge fallen comrades… how noble…");
+	FACE(youmu, eyes_closed);
+	MSG(youmu, "So you wish to avenge your fallen compatriots… how noble…");
 	MSG(youmu, "I can feel it move me to tears…");
+	FACE(youmu, chuuni);
 	MSG(youmu, "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly conflicts with yours!");
-	//FACE(youmu, chuuni);
 	MSG(youmu, "I cannot allow you to drive my compatriots mad, or to subjugate my home!");
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "Perhaps, in another time and place, we could have been friends!");
 
 	FACE(elly, angry);
-	MSG(elly, "Being friends with you heartless folk would be a sin! I could never!");
+	MSG(elly, "B-Being friends with you heartless folk would be a sin! I could never!");
 
+	FACE(youmu, chuuni);
 	MSG(youmu, "What a tragedy!");
 
 	MSG(elly, "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?");
@@ -556,7 +557,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(youmu, "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!");
 	MSG(youmu, "We’re not so different, you and I.");
 
-	FACE(elly, normal);
+	FACE(elly, smug);
 	MSG(elly, "Your courage is admirable, I’ll give you that.");
 	FACE(elly, angry);
 	MSG(elly, "But there’s an enormous difference between us, swordswoman.");
@@ -564,6 +565,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	EVENT(music_changes);
 
 	FACE(elly, shouting);
+	FACE(youmu, normal);
 	MSG(elly, "For I possess the knowledge of science!");
 	MSG(elly, "In a magic-filled world like this, science and rationality cut through opponents with unparalleled precision!");
 	MSG(elly, "Let’s see what good your swords do you when you fall prey to true enlightenment!");
@@ -579,8 +581,7 @@ DIALOG_TASK(youmu, Stage6PreFinal) {
 	VARIANT(elly, beaten);
 	FACE(elly, angry);
 
-	//FACE(youmu, chuuni);
-	FACE(youmu, smug);
+	FACE(youmu, chuuni);
 	MSG(youmu, "Impressive! You’ve pushed me to 10% of my true power!");
 
 	MSG(elly, "Your despicable pride will be your downfall!");
@@ -724,7 +725,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Excuse me?");
 
-	MSG(youmu, "Elly had a purpose, a passion! To save her friends, her comrades, and to restore her world!");
+	MSG(youmu, "Elly had a purpose, a passion! To save her friends, and to restore her world!");
 	MSG(youmu, "But you…! You just want an apocalypse! Over something you no longer care for?!");
 
 	FACE(yumemi, sad);
