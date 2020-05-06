@@ -734,7 +734,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Excuse me?");
 
-	MSG(youmu, "Elly had a purpose, a passion! To save her friends, her comrades, and to restore her world!");
+	MSG(youmu, "Elly had a purpose, a passion! To save her friends, and to restore her world!");
 	MSG(youmu, "But you…! You just want an apocalypse! Over something you no longer care for?!");
 
 	FACE(yumemi, sad);
