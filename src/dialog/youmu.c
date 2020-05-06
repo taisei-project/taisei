@@ -95,7 +95,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	FACE(hina, serious);
 	MSG(hina, "Young girls such as yourself shouldn’t be sent to do such dangerous errands!");
 
-	FACE(youmu, embarassed);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "‘Y-Young girl’?! I’ll have you know that I am an expert swordswoman—");
 	MSG(youmu, "—having mastered my technique over *decades*—");
 	MSG(youmu, "—dare I say even the best in Gensōkyō—");
@@ -106,7 +106,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 
 	FACE(youmu, unamused);
 	MSG(youmu, "It’s not a PHASE, mo—");
-	FACE(youmu, embarassed);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "…!!");
 
 	EVENT(music_changes);
@@ -281,7 +281,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 
 	MSG(kurumi, "Yeah, but I was lying to see how gullible you were.");
 
-	FACE(youmu, embarassed);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "O-of course. I-I knew that.");
 	FACE(youmu, normal);
 	MSG(youmu, "I wanted to see if you’d come clean.");
@@ -331,7 +331,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	MSG(kurumi, "Scary vengeful ghosts! Trying to kill you, even!");
 	MSG(kurumi, "But surely a strong swordsgirl like yourself could handle it.");
 
-	FACE(youmu, embarassed);
+	FACE(youmu, embarrassed);
 	MSG(youmu, "B-Bring it on! Nothing will stand in my way!");
 
 	MSG(kurumi, "(Teehee, so gullible.)");
