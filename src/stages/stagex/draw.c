@@ -396,11 +396,26 @@ static void init_glitch_mask_fb(void) {
 	draw_data->fb.glitch_mask = stage_add_static_framebuffer("Glitch mask", ARRAY_SIZE(a), a);
 }
 
+static void init_spellbg_fb(void) {
+	FBAttachmentConfig a[1] = { 0 };
+	a[0].attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a[0].tex_params.type = TEX_TYPE_RGB_8;
+	a[0].tex_params.filter.min = TEX_FILTER_LINEAR;
+	a[0].tex_params.filter.mag = TEX_FILTER_LINEAR;
+	a[0].tex_params.width = VIEWPORT_W / 30;
+	a[0].tex_params.height = VIEWPORT_H / 20;
+	a[0].tex_params.wrap.s = TEX_WRAP_REPEAT;
+	a[0].tex_params.wrap.t = TEX_WRAP_REPEAT;
+
+	draw_data->fb.spell_background_lq = stage_add_background_framebuffer("Extra spell bg", 0.25, 0.5, ARRAY_SIZE(a), a);
+}
+
 void stagex_drawsys_init(void) {
 	draw_data = calloc(1, sizeof(*draw_data));
 
 	init_tower_mask_fb();
 	init_glitch_mask_fb();
+	init_spellbg_fb();
 
 	stage3d_init(&stage_3d_context, 16);
 
