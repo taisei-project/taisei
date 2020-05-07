@@ -373,15 +373,20 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
     packed_images = 0
     rects = []
 
-    for path in src.glob('**/*.*'):
-        if path.is_file() and path.suffix[1:].lower() in texture_formats and path.with_suffix('').suffix != '.alphamap':
-            img = Image.open(path)
-            sprite_name = path.relative_to(src).with_suffix('').as_posix()
-            sprite_config_path = overrides / (get_override_file_name(sprite_name) + '.conf')
-            sprite_configs[sprite_name] = parse_sprite_conf(sprite_config_path)
-            border = get_border(sprite_name)
-            rects.append((img.size[0]+border*2, img.size[1]+border*2, (path, sprite_name)))
-            img.close()
+    def imgfilter(path):
+        return (
+            path.is_file() and path.suffix[1:].lower() in texture_formats and
+            path.with_suffix('').suffix != '.alphamap'
+        )
+
+    for path in sorted(filter(imgfilter, src.glob('**/*.*'))):
+        img = Image.open(path)
+        sprite_name = path.relative_to(src).with_suffix('').as_posix()
+        sprite_config_path = overrides / (get_override_file_name(sprite_name) + '.conf')
+        sprite_configs[sprite_name] = parse_sprite_conf(sprite_config_path)
+        border = get_border(sprite_name)
+        rects.append((img.size[0]+border*2, img.size[1]+border*2, (path, sprite_name)))
+        img.close()
 
     pack_result = pack_rects_brute_force(rects=rects, bin_size=binsize, single_bin=force_single)
 
