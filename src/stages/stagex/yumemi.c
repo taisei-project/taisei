@@ -178,7 +178,7 @@ void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
-	r_shader("multiply2");
+	r_shader("yumemi_spellbg_voronoi_compose");
 	r_uniform_sampler("tex2", r_framebuffer_get_attachment(draw_data->fb.spell_background_lq, FRAMEBUFFER_ATTACH_COLOR0));
 	// draw_framebuffer_tex(draw_data->fb.spell_background_lq, VIEWPORT_W, VIEWPORT_H);
 	fill_viewport(0, time/700.0+0.5, 0, "stageex/bg");
