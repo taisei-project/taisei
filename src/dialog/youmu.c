@@ -538,7 +538,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(elly, "We will create a new era of Gensōkyō, where the truly forgotten can live another day!");
 	MSG(elly, "Soon, the residents of this land will be driven mad beyond comprehension, and be ripe to conquer!");
 	FACE(youmu, eyes_closed);
-	MSG(youmu, "So you wish to avenge fallen comrades… how noble…");
+	MSG(youmu, "So you wish to avenge your fallen compatriots… how noble…");
 	MSG(youmu, "I can feel it move me to tears…");
 	FACE(youmu, chuuni);
 	MSG(youmu, "Alas, my mission, given to me by Lady Yuyuko of the Netherworld, directly conflicts with yours!");
@@ -725,7 +725,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Excuse me?");
 
-	MSG(youmu, "Elly had a purpose, a passion! To save her friends, her comrades, and to restore her world!");
+	MSG(youmu, "Elly had a purpose, a passion! To save her friends, and to restore her world!");
 	MSG(youmu, "But you…! You just want an apocalypse! Over something you no longer care for?!");
 
 	FACE(yumemi, sad);
