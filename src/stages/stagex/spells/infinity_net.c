@@ -136,7 +136,7 @@ TASK(infnet_lasers, { InfnetAnimData *infnet; }) {
 	int lasers_spawned = 0;
 	int lasers_alive = 0;
 
-	Sprite *stardust_spr = get_sprite("part/stardust");
+	Sprite *stardust_spr = res_sprite("part/stardust");
 
 	while(!lasers_spawned || lasers_alive) {
 		lasers_alive = 0;
