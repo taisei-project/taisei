@@ -472,7 +472,7 @@ uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 	return ((uint128_t)x * (uint128_t)multiplier) / divisor;
 #elif defined(TAISEI_BUILDCONF_HAVE_LONG_DOUBLE)
 	#define UMULDIV64_SANITY_CHECK
-	return ((float64x)x * (float64x)multiplier) / (float64x)divisor;
+	return ((long double)x * (long double)multiplier) / (long double)divisor;
 #else
 	return _umuldiv64_slow(x, multiplier, divisor);
 #endif
