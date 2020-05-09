@@ -1048,7 +1048,7 @@ static int kdanmaku_slave(Enemy *e, int t) {
 		return ACTION_DESTROY;
 
 	if(e->args[2] && e->args[1]) {
-		int i, n = 3+max(D_Normal,global.diff);
+		int i, n = 3+imax(D_Normal,global.diff);
 		float speed = 1.5+0.1*global.diff;
 
 		for(i = 0; i < n; i++) {
@@ -1100,8 +1100,8 @@ void kurumi_danmaku(Boss *b, int time) {
 }
 
 static void kurumi_extra_shield_pos(Enemy *e, int time) {
-	double dst = 75 + 100 * max((60 - time) / 60.0, 0);
-	double spd = cimag(e->args[0]) * min(time / 120.0, 1);
+	double dst = 75 + 100 * fmax((60 - time) / 60.0, 0);
+	double spd = cimag(e->args[0]) * fmin(time / 120.0, 1);
 	e->args[0] += spd;
 	e->pos = global.boss->pos + dst * cexp(I*creal(e->args[0]));
 }
@@ -1123,7 +1123,7 @@ static int kurumi_extra_dead_shield_proj(Projectile *p, int time) {
 	p->color = *color_lerp(
 		RGBA(2.0, 0.0, 0.0, 0.0),
 		RGBA(0.2, 0.1, 0.5, 0.0),
-	min(time / 60.0f, 1.0f));
+	fmin(time / 60.0f, 1.0f));
 
 	return asymptotic(p, time);
 }
@@ -1264,9 +1264,9 @@ static int kurumi_extra_drainer(Projectile *p, int time) {
 		if(time > 40 && e->hp > 0) {
 			// TODO: maybe add a special sound for this?
 
-			float drain = min(4, e->hp);
+			float drain = fmin(4, e->hp);
 			ent_damage(&e->ent, &(DamageInfo) { .amount = drain });
-			global.boss->current->hp = min(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
+			global.boss->current->hp = fmin(global.boss->current->maxhp, global.boss->current->hp + drain * 2);
 		}
 	} else {
 		p->args[2] = approach(p->args[2], 0, 0.5);
@@ -1543,13 +1543,13 @@ static int scythe_post_mid(Enemy *e, int t) {
 		return ACTION_DESTROY;
 	}
 
-	double scale = min(1.0, t / 60.0) * (1.0 - clamp((t - (fleetime - 60)) / 60.0, 0.0, 1.0));
+	double scale = fmin(1.0, t / 60.0) * (1.0 - clamp((t - (fleetime - 60)) / 60.0, 0.0, 1.0));
 	double alpha = scale * scale;
 	double spin = (0.2 + 0.2 * (1.0 - alpha)) * 1.5;
 
 	cmplx opos = VIEWPORT_W/2+160*I;
 	double targ = (t-300) * (0.5 + psin(t/300.0));
-	double w = min(0.15, 0.0001*targ);
+	double w = fmin(0.15, 0.0001*targ);
 
 	cmplx pofs = 150*cos(w*targ+M_PI/2.0) + I*80*sin(2*w*targ);
 	pofs += ((VIEWPORT_W/2+VIEWPORT_H/2*I - opos) * (global.diff - D_Easy)) / (D_Lunatic - D_Easy);
@@ -1660,7 +1660,7 @@ void stage4_events(void) {
 
 	AT(3201) {
 		if(global.boss) {
-			global.timer += min(midboss_time, global.frames - global.boss->birthtime) - 1;
+			global.timer += fmin(midboss_time, global.frames - global.boss->birthtime) - 1;
 		}
 	}
 

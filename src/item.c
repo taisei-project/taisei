@@ -197,7 +197,7 @@ static cmplx move_item(Item *i) {
 }
 
 static bool item_out_of_bounds(Item *item) {
-	double margin = max(item_sprite(item->type)->w, item_sprite(item->type)->h);
+	double margin = fmax(item_sprite(item->type)->w, item_sprite(item->type)->h);
 
 	return (
 		creal(item->pos) < -margin ||
@@ -216,7 +216,7 @@ bool collect_item(Item *item, float value) {
 
 	if(item->auto_collect) {
 		item->auto_collect = imax(speed, item->auto_collect);
-		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
+		item->pickup_value = fmax(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
 		item->collecttime = imin(global.frames + delay, item->collecttime);
 	} else {
 		item->auto_collect = speed;

@@ -402,7 +402,7 @@ static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 
 	for(int i = 0; i < len; i++) {
 		e->counter++;
-		data[i]*=1.-min(1,(double)e->counter/(double)e->duration);
+		data[i]*=1.-fmin(1,(double)e->counter/(double)e->duration);
 	}
 }
 

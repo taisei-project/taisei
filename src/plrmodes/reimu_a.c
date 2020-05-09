@@ -263,7 +263,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_FOREACH_COUNTER(&impact_effects, int i, Projectile *p, {
 			float t = (global.frames - p->birthtime) / p->timeout;
-			float attack = min(1, vrng_range(rand[i], 7, 12) * t);
+			float attack = fmin(1, vrng_f32_range(rand[i], 7, 12) * t);
 			float decay = t;
 
 			Color c = base_colors[i];

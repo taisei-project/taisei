@@ -268,7 +268,7 @@ static void update_healthbar(Boss *boss) {
 			float spell_maxhp;
 
 			if(spell->type == AT_SurvivalSpell) {
-				spell_hp = spell_maxhp = max(1, total_maxhp * 0.1);
+				spell_hp = spell_maxhp = fmax(1, total_maxhp * 0.1);
 			} else {
 				spell_hp = spell->hp;
 				spell_maxhp = spell->maxhp;
@@ -288,10 +288,10 @@ static void update_healthbar(Boss *boss) {
 				target_opacity = 0.0;
 			}
 		} else if(total_maxhp > 0) {
-			total_maxhp = max(0.001, total_maxhp);
+			total_maxhp = fmax(0.001, total_maxhp);
 
 			if(total_hp > 0) {
-				total_hp = max(0.001, total_hp);
+				total_hp = fmax(0.001, total_hp);
 			}
 
 			target_fill = total_hp / total_maxhp;
@@ -443,7 +443,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	r_mat_mv_scale(scale,scale,1);
 	r_mat_mv_rotate(glm_ease_quad_out(f) * 2 * M_PI, 0.8, -0.2, 0);
 
-	float spellname_opacity_noplr = opacity_noplr * min(1, warn_progress/0.6);
+	float spellname_opacity_noplr = opacity_noplr * fmin(1, warn_progress/0.6);
 	float spellname_opacity = spellname_opacity_noplr * b->hud.plrproximity_opacity;
 
 	draw_boss_text(ALIGN_RIGHT, strw/2*(1-f), 0, b->current->name, font, color_mul_scalar(RGBA(1, 1, 1, 1), spellname_opacity));
@@ -539,8 +539,8 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_shader("sprite_default");
 
 	float char_in = clamp(a * 1.5, 0, 1);
-	float char_out = min(1, 2 - (2 * a));
-	float char_opacity_in = 0.75 * min(1, a * 5);
+	float char_out = fmin(1, 2 - (2 * a));
+	float char_opacity_in = 0.75 * fmin(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
@@ -564,14 +564,14 @@ static void draw_spell_portrait(Boss *b, int time) {
 			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
-			.scale.both = 1.0 + 0.02 * (min(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+			.scale.both = 1.0 + 0.02 * (fmin(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
 		});
 	}
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = char_spr,
 		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
-		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * fmin(1, char_in * 2) * (1 - fmin(1, (1 - char_out) * 5))),
 		.flip.x = true,
 		.scale.both = 1.0 + 0.1 * (1 - char_out),
 	});
@@ -650,7 +650,7 @@ void draw_boss_background(Boss *boss) {
 
 	if(boss_is_dying(boss)) {
 		float t = (global.frames - boss->current->endtime)/(float)BOSS_DEATH_DELAY + 1;
-		f -= t*(t-0.7)/max(0.01, 1-t);
+		f -= t*(t-0.7)/fmax(0.01, 1-t);
 	}
 
 	r_mat_mv_scale(f, f, 1);
@@ -793,8 +793,8 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 		return;
 	}
 
-	int cnt = 5 * max(1, alpha);
-	alpha = min(2, alpha);
+	int cnt = 5 * fmax(1, alpha);
+	alpha = fmin(2, alpha);
 	int lt = 1;
 
 	if(alpha == 0) {
@@ -806,7 +806,7 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 		float a = i*2*M_PI/cnt + global.frames / 100.0;
 		cmplx dir = cexp(I*(a+global.frames/50.0));
 		cmplx vel = dir * 3;
-		float v = max(0, alpha - 1);
+		float v = fmax(0, alpha - 1);
 		float psina = psin(a);
 
 		PARTICLE(
@@ -875,7 +875,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = a->failtime > 0;
 
-	int time_left = max(0, a->starttime + a->timeout - global.frames);
+	int time_left = fmax(0, a->starttime + a->timeout - global.frames);
 
 	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
@@ -887,7 +887,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 
 	if(bonus->failed) {
 		bonus->time /= 4;
-		bonus->endurance = base * 0.1 * (max(0, a->failtime - a->starttime) / (double)a->timeout);
+		bonus->endurance = base * 0.1 * (fmax(0, a->failtime - a->starttime) / (double)a->timeout);
 	} else if(survival) {
 		bonus->survival = base * (1.0 + 0.02 * (a->timeout / (double)FPS));
 	}
@@ -1047,7 +1047,7 @@ void process_boss(Boss **pboss) {
 
 		if(boss->current->endtime) {
 			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
-			float a = max((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
+			float a = fmax((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
 			if(a < 2) {
 				global.shake_view = 3 * a;
 				boss_rule_extra(boss, a);
@@ -1067,12 +1067,12 @@ void process_boss(Boss **pboss) {
 		} else if(time < 0) {
 			boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
 		} else {
-			float o = min(0, -5 + time/30.0);
-			float q = (time <= 150? 1 - pow(time/250.0, 2) : min(1, time/60.0));
+			float o = fmin(0, -5 + time/30.0);
+			float q = (time <= 150? 1 - pow(time/250.0, 2) : fmin(1, time/60.0));
 
-			boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) * q);
+			boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) * q);
 			if(o) {
-				boss_rule_extra(boss, max(1-time/300.0, base + ampl * s) - o);
+				boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) - o);
 				if(!global.shake_view) {
 					global.shake_view = 5;
 					global.shake_view_fade = 0.9;

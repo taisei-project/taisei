@@ -102,7 +102,7 @@ TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
 
 	for(int t = 0;; ++t) {
 		real f = myon->focus_factor;
-		myon_color(&p->color, f, pow(1 - min(1, t / p->timeout), 2), 0.95);
+		myon_color(&p->color, f, pow(1 - fmin(1, t / p->timeout), 2), 0.95);
 		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - global.frames * 2) * 0.1) * M_PI/8);
 		p->move.velocity = 3 * myon_tail_dir(myon);
 		YIELD;
@@ -151,7 +151,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float time_progress = projectile_timeout_factor(p);
 	float s = 2 * time_progress;
-	float a = min(1, s) * (1 - time_progress);
+	float a = fmin(1, s) * (1 - time_progress);
 
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
@@ -347,7 +347,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 		}
 
 		cmplx target = plr->pos + distance * offset_dir;
-		cmplx v = cnormalize(target - myon->pos) * min(10, follow_factor * max(0, cabs(target - myon->pos) - VIEWPORT_W * 0.5 * focus_factor));
+		cmplx v = cnormalize(target - myon->pos) * fmin(10, follow_factor * fmax(0, cabs(target - myon->pos) - VIEWPORT_W * 0.5 * focus_factor));
 
 		real s = sign(creal(myon->pos) - creal(plr->pos));
 		if(!s) {

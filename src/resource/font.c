@@ -127,7 +127,7 @@ static struct {
 static double global_font_scale(void) {
 	float w, h;
 	video_get_viewport_size(&w, &h);
-	return sanitize_scale(((double)h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
+	return fmax(0.1, ((double)h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
 static void reload_fonts(double quality);
@@ -146,7 +146,7 @@ static bool fonts_event(SDL_Event *event, void *arg) {
 		case TE_CONFIG_UPDATED: {
 			if(event->user.code == CONFIG_TEXT_QUALITY) {
 				ConfigValue *val = event->user.data1;
-				val->f = sanitize_scale(val->f);
+				val->f = fmax(0.1, val->f);
 				reload_fonts(global_font_scale());
 			}
 

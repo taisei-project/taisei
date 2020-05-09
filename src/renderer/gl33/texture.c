@@ -164,11 +164,11 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 		}
 	} else {
 		if(width != NULL) {
-			*width = max(1, floor(tex->params.width / pow(2, mipmap)));
+			*width = umax(1, tex->params.width / (1u << mipmap));
 		}
 
 		if(height != NULL) {
-			*height = max(1, floor(tex->params.height / pow(2, mipmap)));
+			*height = umax(1, tex->params.height / (1u << mipmap));
 		}
 	}
 }
@@ -230,7 +230,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	memcpy(&tex->params, params, sizeof(*params));
 	TextureParams *p = &tex->params;
 
-	uint max_mipmaps = 1 + floor(log2(max(tex->params.width, tex->params.height)));
+	uint max_mipmaps = 1 + floor(log2(umax(tex->params.width, tex->params.height)));  // TODO replace with integer log2
 
 	if(p->mipmaps == 0) {
 		if(p->mipmap_mode == TEX_MIPMAP_AUTO) {

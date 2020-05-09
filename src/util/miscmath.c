@@ -162,14 +162,6 @@ float pcosf(float x) {
 	return 0.5 + 0.5 * cosf(x);
 }
 
-double min(double a, double b) {
-	return (a < b) ? a : b;
-}
-
-double max(double a, double b) {
-	return (a > b) ? a : b;
-}
-
 intmax_t imin(intmax_t a, intmax_t b) {
 	return (a < b) ? a : b;
 }
@@ -291,10 +283,6 @@ float smooth(float x) {
 float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) {
 	x = (x - old_min) / (old_max - old_min);
 	return new_min + (new_max - new_min) * smooth(x);
-}
-
-float sanitize_scale(float scale) {
-	return max(0.1, scale);
 }
 
 double circle_angle(double index, double max_elements) {

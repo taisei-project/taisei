@@ -84,7 +84,7 @@ static int stage2_great_circle(Enemy *e, int t) {
 	}
 
 	AT(210+global.diff*25) {
-		e->hp = min(e->hp,200);
+		e->hp = fmin(e->hp,200);
 		e->args[0] = 2.0*I;
 	}
 
@@ -411,8 +411,8 @@ void hina_amulet(Boss *h, int time) {
 		float f = _i/30.0;
 		cmplx n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
 
-		float speed = 1.0 + 0.75 * max(0, (int)global.diff - D_Normal);
-		float accel = 1.0 + 1.20 * max(0, (int)global.diff - D_Normal);
+		float speed = 1.0 + 0.75 * imax(0, global.diff - D_Normal);
+		float accel = 1.0 + 1.20 * imax(0, global.diff - D_Normal);
 
 		cmplx p = h->pos+30*log(1+_i/2.0)*n;
 
@@ -501,7 +501,7 @@ void hina_bad_pick(Boss *h, int time) {
 		if(global.diff >= D_Hard) {
 			double shift = 0;
 			if(global.diff == D_Lunatic)
-				shift = 0.3*max(0,t-200);
+				shift = 0.3*fmax(0,t-200);
 			for(i = 1; i < SLOTS; i++) {
 				double height = VIEWPORT_H/SLOTS*i+shift;
 				if(height > VIEWPORT_H-40)
@@ -531,7 +531,7 @@ void hina_bad_pick(Boss *h, int time) {
 			if(i == win)
 				continue;
 
-			float cnt = (1+min(D_Normal,global.diff)) * 5;
+			float cnt = (1+imin(D_Normal,global.diff)) * 5;
 			for(j = 0; j < cnt; j++) {
 				cmplx o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
 
@@ -579,13 +579,13 @@ void hina_wheel(Boss *h, int time) {
 		return;
 	}
 
-	FROM_TO_SND("shot1_loop", 0, 400, 5-(int)min(global.diff, D_Normal)) {
+	FROM_TO_SND("shot1_loop", 0, 400, 5-imin(global.diff, D_Normal)) {
 		int i;
 		float speed = 10;
 		if(time > 500)
 			speed = 1+9*exp(-(time-500)/100.0);
 
-		float d = max(0, (int)global.diff - D_Normal);
+		float d = imax(0, global.diff - D_Normal);
 
 		for(i = 1; i < 6+d; i++) {
 			float a = dir * 2*M_PI/(5+d)*(i+(1 + 0.4 * d)*time/100.0+(1 + 0.2 * d)*frand()*time/1700.0);
@@ -621,7 +621,7 @@ static int hina_monty_slave(Enemy *s, int time) {
 		return 1;
 	}
 
-	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(max(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
+	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(fmax(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
 		play_loop("shot1_loop");
 
 		PROJECTILE(
@@ -756,7 +756,7 @@ void hina_monty(Boss *h, int time) {
 		play_sound("laser1");
 	}
 
-	FROM_TO(220, 360 + 60 * max(0, (double)global.diff - D_Easy), 60) {
+	FROM_TO(220, 360 + 60 * imax(0, global.diff - D_Easy), 60) {
 		play_sound("shot_special1");
 
 		float cnt = (2.0+global.diff) * 5;

@@ -729,7 +729,7 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float tex_angle = args[1].as_float[0];
 
 	float opacity = pow(1 - timefactor, 2);
-	opacity = min(1, 1.5 * opacity) * min(1, timefactor * 10);
+	opacity = fmin(1, 1.5 * opacity) * fmin(1, timefactor * 10);
 	opacity *= p->opacity;
 
 	r_mat_tex_push();

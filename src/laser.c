@@ -453,7 +453,7 @@ void process_lasers(void) {
 			bool kill_now = laser->timespan < 5;
 
 			if(!((global.frames - laser->birthtime) % 2) || kill_now) {
-				double t = max(0, (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift);
+				double t = fmax(0, (global.frames - laser->birthtime)*laser->speed - laser->timespan + laser->timeshift);
 				cmplx p = laser->prule(laser, t);
 				double x = creal(p);
 				double y = cimag(p);
@@ -591,7 +591,7 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 cmplx las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/linear");
-		l->collision_step = max(3, l->timespan/10);
+		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
 
@@ -601,7 +601,7 @@ cmplx las_linear(Laser *l, float t) {
 cmplx las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/accelerated");
-		l->collision_step = max(3, l->timespan/10);
+		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
 

@@ -313,7 +313,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	}
 
 	if(time - e->time - CREDITS_ENTRY_FADEIN + ofs > 0) {
-		fadeout = max(0, 1 - (time - e->time - CREDITS_ENTRY_FADEIN + ofs) / CREDITS_ENTRY_FADEOUT);
+		fadeout = fmax(0, 1 - (time - e->time - CREDITS_ENTRY_FADEIN + ofs) / CREDITS_ENTRY_FADEOUT);
 	}
 
 	if(!fadein || !fadeout) {

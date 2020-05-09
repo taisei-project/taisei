@@ -1524,7 +1524,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		INVOKE_SUBTASK_DELAYED(120, move_frozen, &projs);
 
-		int d = max(0, global.diff - D_Normal);
+		int d = imax(0, global.diff - D_Normal);
 		for(int i = 0; i < 30+10*d; i++) {
 			play_loop("shot1_loop");
 			float r1, r2;

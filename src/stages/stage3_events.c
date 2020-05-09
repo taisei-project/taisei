@@ -457,7 +457,7 @@ static int stage3_cornerfairy(Enemy *e, int t) {
 		GO_TO(e, e->args[0], 0.01)
 
 	FROM_TO_SND("shot1_loop", 140, 240, 1) {
-		GO_TO(e, e->args[1], 0.025 * min((t - 120) / 42.0, 1))
+		GO_TO(e, e->args[1], 0.025 * fmin((t - 120) / 42.0, 1))
 		int d = 5; //(D_Lunatic - global.diff + 3);
 		if(!(t % d)) {
 			int i, cnt = 7+global.diff;
@@ -498,7 +498,7 @@ static void scuttle_outro(Boss *boss, int time) {
 		spawn_items(boss->pos, ITEM_POINTS, 10, ITEM_POWER, 10, ITEM_LIFE, 1);
 	}
 
-	boss->pos += pow(max(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
+	boss->pos += pow(fmax(0, time)/30.0, 2) * cexp(I*(3*M_PI/2 + 0.5 * sin(time / 20.0)));
 }
 
 static int scuttle_poison(Projectile *p, int time) {
@@ -596,7 +596,7 @@ static void scuttle_lethbite(Boss *boss, int time) {
 		int cnt = 21 - 1 * (D_Lunatic - global.diff);
 
 		for(i = 0; i < cnt; ++i) {
-			cmplx v = (2 - psin((max(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
+			cmplx v = (2 - psin((fmax(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = boss->pos - v * 50,
@@ -630,7 +630,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 	if(time > 30) {
 		float angle_ofs = frand() * M_PI * 2;
 		double t = time * 1.5 * (0.4 + 0.3 * global.diff);
-		double moverad = min(160, time/2.7);
+		double moverad = fmin(160, time/2.7);
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cexp(I * M_PI_2 * t/100.0), 0.03)
 
 		if(!(time % 70)) {
@@ -1074,10 +1074,10 @@ void wriggle_night_ignite(Boss *boss, int time) {
 		Laser *l1 = create_lasercurve3c(boss->pos, lt, dt, RGBA(b, b, 1.0, 0.0), las_sine_expanding, vel, amp, freq);
 		wriggle_ignite_warnlaser(l1);
 
-		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, RGBA(1.0, b, b, 0.0), las_sine_expanding, vel, amp, freq - 0.002 * min(global.diff, D_Hard));
+		Laser *l2 = create_lasercurve3c(boss->pos, lt * 1.5, dt, RGBA(1.0, b, b, 0.0), las_sine_expanding, vel, amp, freq - 0.002 * fmin(global.diff, D_Hard));
 		wriggle_ignite_warnlaser(l2);
 
-		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, RGBA(b, b, 1.0, 0.0), las_sine_expanding, vel, amp, freq - 0.004 * min(global.diff, D_Hard));
+		Laser *l3 = create_lasercurve3c(boss->pos, lt, dt, RGBA(b, b, 1.0, 0.0), las_sine_expanding, vel, amp, freq - 0.004 * fmin(global.diff, D_Hard));
 		wriggle_ignite_warnlaser(l3);
 
 		for(int i = 0; i < 5 + 15 * dfactor; ++i) {
@@ -1208,7 +1208,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 
 DEPRECATED_DRAW_RULE
 static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
-	float f = 1-min(time/60.0,1);
+	float f = 1-fmin(time/60.0,1);
 	r_mat_mv_push();
 	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
 	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);

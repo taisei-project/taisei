@@ -226,7 +226,7 @@ static void stage2_update(void) {
 		stage_3d_context.cv[1] = approach(stage_3d_context.cv[1], 9, 0.05);
 	}
 
-	stage_3d_context.crot[2] += min(0.5, -stage_3d_context.crot[2] * 0.02);
+	stage_3d_context.crot[2] += fmin(0.5f, -stage_3d_context.crot[2] * 0.02f);
 
 	stage3d_update(&stage_3d_context);
 }

@@ -198,7 +198,7 @@ static void stage6_update(void) {
 		}
 
 		if(t >= 190)
-			stage_3d_context.cx[2] -= max(6, 0.05*(global.frames-fall_over-150));
+			stage_3d_context.cx[2] -= fmax(6, 0.05*(global.frames-fall_over-150));
 
 		FROM_TO(300, 470,1) {
 			stage_3d_context.cx[0] -= 0.01*cos(M_PI/180*stage_3d_context.crot[2]+M_PI/2)*_i;
@@ -210,12 +210,12 @@ static void stage6_update(void) {
 	float w = 0.002;
 	float f = 1, g = 1;
 	if(global.timer > 3273) {
-		f = max(0, f-0.01*(global.timer-3273));
+		f = fmax(0, f-0.01*(global.timer-3273));
 
 	}
 
 	if(global.timer > 3628)
-		g = max(0, g-0.01*(global.timer - 3628));
+		g = fmax(0, g-0.01*(global.timer - 3628));
 
 	stage_3d_context.cx[0] += -230*w*f*sin(w*global.frames-M_PI/2);
 	stage_3d_context.cx[1] += 230*w*f*cos(w*global.frames-M_PI/2);

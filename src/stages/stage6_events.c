@@ -289,12 +289,12 @@ static int scythe_infinity(Enemy *e, int t) {
 	TIMER(&t);
 	FROM_TO(0, 40, 1) {
 		GO_TO(e, VIEWPORT_W/2+200.0*I, 0.01);
-		e->args[2] = min(0.8, creal(e->args[2])+0.0003*t*t);
-		e->args[1] = creal(e->args[1]) + I*min(0.2, cimag(e->args[1])+0.0001*t*t);
+		e->args[2] = fmin(0.8, creal(e->args[2])+0.0003*t*t);
+		e->args[1] = creal(e->args[1]) + I*fmin(0.2, cimag(e->args[1])+0.0001*t*t);
 	}
 
 	FROM_TO_SND("shot1_loop",40, 3000, 1) {
-		float w = min(0.15, 0.0001*(t-40));
+		float w = fmin(0.15, 0.0001*(t-40));
 		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
 
 		PROJECTILE(
@@ -323,7 +323,7 @@ int scythe_reset(Enemy *e, int t) {
 		e->args[1] = fmod(creal(e->args[1]), 2*M_PI) + I*cimag(e->args[1]);
 
 	GO_TO(e, BOSS_DEFAULT_GO_POS, 0.05);
-	e->args[2] = max(0.6, creal(e->args[2])-0.01*t);
+	e->args[2] = fmax(0.6, creal(e->args[2])-0.01*t);
 	e->args[1] += (0.19-creal(e->args[1]))*0.05;
 	e->args[1] = creal(e->args[1]) + I*0.9*cimag(e->args[1]);
 
@@ -991,7 +991,7 @@ static void elly_paradigm_shift(Boss *b, int t) {
 	}
 
 	if(t > 120)
-		global.shake_view = max(0, 16-0.26*(t-120));
+		global.shake_view = fmax(0, 16-0.26*(t-120));
 }
 
 static void set_baryon_rule(EnemyLogicRule r) {
@@ -1099,7 +1099,7 @@ static int broglie_particle(Projectile *p, int t) {
 
 		if(laser) {
 			cmplx oldpos = p->pos;
-			p->pos = laser->prule(laser, min(t, cimag(p->args[1])));
+			p->pos = laser->prule(laser, fmin(t, cimag(p->args[1])));
 
 			if(oldpos != p->pos) {
 				p->angle = carg(p->pos - oldpos);
@@ -1140,7 +1140,7 @@ static void broglie_laser_logic(Laser *l, int t) {
 	}
 
 	int dt = l->timespan * l->speed;
-	float charge = min(1, pow((double)t / dt, 4));
+	float charge = fmin(1, pow((double)t / dt, 4));
 	l->color = *HSLA(hue, 1.0, 0.5 + 0.2 * charge, 0.0);
 	l->width_exponent = 1.0 - 0.5 * charge;
 }
@@ -1391,7 +1391,7 @@ static int baryon_nattack(Enemy *e, int t) {
 #define SAFE_RADIUS_MAX 150
 #define SAFE_RADIUS_SPEED 0.015
 #define SAFE_RADIUS_PHASE 3*M_PI/2
-#define SAFE_RADIUS_PHASE_FUNC(o) ((int)(creal(e->args[2])+0.5) * M_PI/3 + SAFE_RADIUS_PHASE + max(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
+#define SAFE_RADIUS_PHASE_FUNC(o) ((int)(creal(e->args[2])+0.5) * M_PI/3 + SAFE_RADIUS_PHASE + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
 #define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE, 2*M_PI) / (2*M_PI))
 #define SAFE_RADIUS_PHASE_NUM(o) ((int)((SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE) / (2*M_PI)))
 #define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
@@ -1575,8 +1575,8 @@ static int ricci_proj(Projectile *p, int t) {
 	p->angle = carg(p->args[0]);
 	p->prevpos = p->pos;
 
-	float a = 0.5 + 0.5 * max(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
-	a *= min(1, t / 20.0f);
+	float a = 0.5 + 0.5 * fmax(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
+	a *= fmin(1, t / 20.0f);
 
 	/*
 	p->color = derive_color(p->color, CLRMASK_B|CLRMASK_A,
@@ -1822,7 +1822,7 @@ static int baryon_explode(Enemy *e, int t) {
 		free_ref(e->args[1]);
 		petal_explosion(24, e->pos);
 		play_sound("boom");
-		global.shake_view = max(15, global.shake_view);
+		global.shake_view = fmaxf(15, global.shake_view);
 
 		for(uint i = 0; i < 3; ++i) {
 			PARTICLE(
@@ -2084,7 +2084,7 @@ static void elly_baryon_explode(Boss *b, int t) {
 	FROM_TO(0, 200, 1) {
 		// tsrand_fill(2);
 		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-		global.shake_view = max(global.shake_view, 5 * _i / 200.0);
+		global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
 
 		if(_i > 30) {
 			play_loop("charge_generic");
@@ -2136,7 +2136,7 @@ static int elly_toe_boson_effect(Projectile *p, int t) {
 		return ACTION_ACK;
 	}
 
-	p->angle = creal(p->args[3]) * max(0, t) / (double)p->timeout;
+	p->angle = creal(p->args[3]) * fmax(0, t) / (double)p->timeout;
 	return ACTION_NONE;
 }
 
@@ -2352,13 +2352,13 @@ static int elly_toe_fermion(Projectile *p, int t) {
 	thiscolor_additive.a = 0;
 
 	if(t > 0 && t % 5 == 0) {
-		double particle_scale = min(1.0, 0.5 * p->sprite->w / 28.0);
+		double particle_scale = fmin(1.0, 0.5 * p->sprite->w / 28.0);
 
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
 			.color = &thiscolor_additive,
-			.timeout = min(t / 6.0, 10),
+			.timeout = fmin(t / 6.0, 10),
 			.draw_rule = ScaleFade,
 			.args = { 0, 0, particle_scale * (0.5 + 2 * I) },
 			.angle = M_PI*2*frand(),
@@ -2414,7 +2414,7 @@ static int elly_toe_higgs(Projectile *p, int t) {
 
 	int global_time = global.frames - global.boss->current->starttime - HIGGSTIME;
 	int max_time = SYMMETRYTIME - HIGGSTIME;
-	double rotation = 0.5 * M_PI * max(0, (int)global.diff - D_Normal);
+	double rotation = 0.5 * M_PI * fmax(0, (int)global.diff - D_Normal);
 
 	if(global_time > max_time) {
 		global_time = max_time;
@@ -2894,7 +2894,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
 		char texname[33];
 		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
-		float wobble = max(0,t-BREAKTIME)*0.03;
+		float wobble = fmax(0,t-BREAKTIME)*0.03;
 
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = texname,
@@ -2935,7 +2935,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 
 void elly_spellbg_modern_dark(Boss *b, int t) {
 	elly_spellbg_modern(b, t);
-	fade_out(0.75 * min(1, t / 300.0));
+	fade_out(0.75 * fmin(1, t / 300.0));
 }
 
 

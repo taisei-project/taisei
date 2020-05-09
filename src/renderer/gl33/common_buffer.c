@@ -48,8 +48,8 @@ static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t s
 
 	if(total_size > 0) {
 		memcpy(cbuf->cache.buffer + cbuf->offset, data, total_size);
-		cbuf->cache.update_begin = min(cbuf->offset, cbuf->cache.update_begin);
-		cbuf->cache.update_end = max(cbuf->offset + total_size, cbuf->cache.update_end);
+		cbuf->cache.update_begin = umin(cbuf->offset, cbuf->cache.update_begin);
+		cbuf->cache.update_end = umax(cbuf->offset + total_size, cbuf->cache.update_end);
 		cbuf->offset += total_size;
 	}
 
@@ -137,4 +137,3 @@ void gl33_buffer_flush(CommonBuffer *cbuf) {
 	cbuf->cache.update_begin = cbuf->size;
 	cbuf->cache.update_end = 0;
 }
-

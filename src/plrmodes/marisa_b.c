@@ -243,7 +243,7 @@ TASK(marisa_star_slave, {
 
 	for(int t = 0; slave->alive; t += WAIT(1)) {
 		cmplx target_pos = ctrl->slave_ref_pos + 80 * sin(angle) + 45*I;
-		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(min(1, (real)t/HAKKERO_RETRACT_TIME)));
+		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(fmin(1, (real)t/HAKKERO_RETRACT_TIME)));
 		slave->ent.draw_layer = cos(angle) < 0 ? LAYER_BACKGROUND : LAYER_PLAYER_SLAVE;
 		angle += angle_step;
 	}
@@ -436,7 +436,7 @@ TASK(marisa_star_bomb_controller, { MarisaBController *ctrl; }) {
 	}
 
 	do {
-		global.shake_view = max(8, global.shake_view);
+		global.shake_view = fmax(8, global.shake_view);
 		player_placeholder_bomb_logic(plr);
 
 		float tb = player_get_bomb_progress(plr);
