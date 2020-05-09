@@ -11,6 +11,7 @@
 #include "../stagex.h"
 #include "stage.h"
 #include "global.h"
+#include "common_tasks.h"
 
 static int idxmod(int i, int n) {   // TODO move into utils?
 	return (n + i) % n;
@@ -54,30 +55,89 @@ TASK(splitter, {
 	kill_projectile(cell);
 }
 
+static Laser *create_lane_laser(cmplx origin, cmplx dir) {
+	real t = 100;
+
+	cmplx a = origin;
+	cmplx b = origin + dir * hypot(VIEWPORT_W, VIEWPORT_H) * 0.6;
+	cmplx m = (b - a) / t;
+
+	Color *clr = RGBA(0, 0, 0, 0);
+	Laser *l = create_laser(a, t, 1, clr, las_linear, m, 0, 0, 0);
+	laser_make_static(l);
+	l->width = 2;
+	l->collision_active = false;
+	l->ent.draw_layer = LAYER_LASER_LOW;
+
+	return l;
+}
+
 DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 260*I, 0.02);
+	cmplx origin = VIEWPORT_W/2 + 260*I;
+	boss->move = move_towards(origin, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	/*
 	 * Rule 90 automaton with a twist
 	 */
 
-	enum { N = 129 };  // NOTE: must be odd (or it'll halt quickly)
+	enum { N = 65 };  // NOTE: must be odd (or it'll halt quickly)
 	bool state[N] = { 0 };
 	state[N/2] = 1;  // initialize with 1 bit in the middle to get a nice Sierpinski triangle pattern
 
 	const float b = 1;
 	Color colors[] = {
-		{ 0.2, 0.25, 1.0, 0.0 },
+		{ 0.2, 0.25, 1.0, 1.0 },
 		{ 1.0, 0.45, 0.1, 0.0 },
 		{ 1.0, 0.65, 0.1, 0.0 },
 	};
 	color_mul_scalar(&colors[0], b);
 	color_mul_scalar(&colors[1], b);
 
+	DECLARE_ENT_ARRAY(Laser, lasers, N*2);
+	cmplx laser_dirs[N*2];
+	int laser_cooldowns[N*2] = { 0 };
+
+	for(int i = 0; i < lasers.capacity; ++i) {
+		cmplx dir = cdir((i + 0.5) / lasers.capacity * M_TAU + M_PI/2);
+		laser_dirs[i] = dir;
+		ENT_ARRAY_ADD(&lasers, create_lane_laser(origin, dir));
+	}
+
+	real rate = 0.04;
 
 	for(int step = 0;; step++) {
+		real pangle = carg(global.plr.pos - origin);
+		log_debug("%f", pangle);
+
+		ENT_ARRAY_FOREACH_COUNTER(&lasers, int i, Laser *l, {
+			l->deathtime += 3;
+
+			real a = carg(laser_dirs[i]);
+			if(fabs(a - pangle) < 0.05 && !laser_cooldowns[i]) {
+				// color_approach(&l->color, RGBA(0.2, 0.1, 0.05, 0), 0.1);
+				color_lerp(&l->color, RGBA(0.05, 0.01, 0.1, 0), rate);
+				if(fapproach_asymptotic_p(&l->width, 20, rate, 2) == 20) {
+					create_laserline(origin, 40 * laser_dirs[i], 60, 120, RGBA(0.1, 2, 0.2, 0));
+					INVOKE_SUBTASK_DELAYED(40, common_play_sfx, "laser1");
+					laser_cooldowns[i] = 180;
+				}
+			} else {
+				color_approach(&l->color, RGBA(0.3, 0.03, 0.03, 0), 0.1);
+				fapproach_p(&l->width, 3, 0.5);
+
+				if(laser_cooldowns[i]) {
+					laser_cooldowns[i]--;
+				}
+			}
+		});
+
+		if(step % 3) {
+			WAIT(1);
+			continue;
+		}
+
 		bool next_state[N] = { 0 };
 
 		for(int i = 0; i < N; ++i) {
@@ -92,16 +152,17 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 			}
 			sum++;
 
-			cmplx dir = cdir((i + 0.5) / N * M_TAU + M_PI/2+0.0001*step);
+			cmplx dir = cdir((i + 0.5) / N * M_TAU + M_PI/2);
 
-			cmplx v = dir*3;
+			cmplx v = dir;
 
 
 			Projectile *cell = PROJECTILE(
-				.proto = pp_flea,
+				.proto = pp_thickrice,
 				.color = &colors[0],
-				.pos = boss->pos,
-				.move = move_linear(v),
+				.pos = origin - 100 * dir,
+				.move = move_accelerated(v, 0.04 * v),
+				.max_viewport_dist = VIEWPORT_W/2,
 			);
 			/*
 			Projectile *cell2 = PROJECTILE(
@@ -121,6 +182,7 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 			}*/
 		}
 
+#if 0
 		for(int i = 0; i < sqrt(N-sum)/6; i++) {
 			cmplx souldir = rng_dir();
 			if(i%2==0) {
@@ -139,8 +201,9 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 				);
 			}
 		}
+#endif
 
 		memcpy(state, next_state, sizeof(state));
-		WAIT(3);
+		WAIT(1);
 	}
 }
