@@ -85,7 +85,7 @@ def write_sprite_def(dst, texture, region, texture_dimensions, overrides=None):
     update_text_file(dst, text)
 
 
-def write_texture_def(dst, texture, texture_fmt, global_overrides=None, local_overrides=None, have_alphamap=False):
+def write_texture_def(dst, texture, texture_fmt, global_overrides=None, local_overrides=None, alphamap_tex_fmt=None):
     dst.parent.mkdir(exist_ok=True, parents=True)
 
     text = (
@@ -93,8 +93,8 @@ def write_texture_def(dst, texture, texture_fmt, global_overrides=None, local_ov
         f'source = res/gfx/{texture}.{texture_fmt}\n'
     )
 
-    if have_alphamap:
-        text += f'alphamap = res/gfx/{texture}.alphamap.{texture_fmt}\n'
+    if alphamap_tex_fmt is not None:
+        text += f'alphamap = res/gfx/{texture}.alphamap.{alphamap_tex_fmt}\n'
 
     if global_overrides is not None:
         text += f'\n# -- Pasted from the global override file --\n\n{global_overrides.strip()}\n'
@@ -448,10 +448,17 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
 
                 if alphamap_path:
                     if alphamap_composite_cmd is None:
-                        alphamap_composite_cmd = base_composite_cmd.copy() + ['xc:white']
+                        alphamap_composite_cmd = base_composite_cmd.copy() + [
+                            'xc:white',
+                            '-colorspace', 'Gray',
+                        ]
 
                     alphamap_composite_cmd += [
-                        str(alphamap_path), '-geometry', '{:+}{:+}'.format(rect.x + border, rect.y + border), '-composite'
+                        str(alphamap_path),
+                        '-geometry', '{:+}{:+}'.format(rect.x + border, rect.y + border),
+                        '-channel', 'R',
+                        '-separate',
+                        '-composite',
                     ]
 
                 override_path = overrides / get_override_file_name(name)
@@ -478,10 +485,10 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
                 tex_format,
                 texture_global_overrides,
                 texture_local_overrides,
-                have_alphamap=alphamap_composite_cmd is not None
+                alphamap_tex_fmt=None if alphamap_composite_cmd is None else 'png'
             )
 
-            def process(composite_cmd, dstfile):
+            def process(composite_cmd, dstfile, tex_format=tex_format):
                 subprocess.check_call(composite_cmd)
 
                 oldfmt = dstfile.suffix[1:].lower()
@@ -514,7 +521,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
 
             if alphamap_composite_cmd is not None:
                 alphamap_composite_cmd += [str(dstfile_alphamap)]
-                futures.append(executor.submit(lambda: process(alphamap_composite_cmd, dstfile_alphamap)))
+                futures.append(executor.submit(lambda: process(alphamap_composite_cmd, dstfile_alphamap, tex_format='png')))
 
         # Wait for subprocesses to complete.
         wait_for_futures(futures)

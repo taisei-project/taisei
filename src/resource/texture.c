@@ -357,14 +357,14 @@ static void* load_texture_begin(const char *path, uint flags) {
 		}
 	}
 
-	if(!pixmap_load_file(source, &ld.pixmap)) {
+	if(!pixmap_load_file(source, &ld.pixmap, override_format)) {
 		log_error("%s: couldn't load texture image", source);
 		free(source_allocated);
 		free(alphamap_allocated);
 		return NULL;
 	}
 
-	if(alphamap_allocated && !pixmap_load_file(alphamap_allocated, &ld.pixmap_alphamap)) {
+	if(alphamap_allocated && !pixmap_load_file(alphamap_allocated, &ld.pixmap_alphamap, PIXMAP_FORMAT_R8)) {
 		log_error("%s: couldn't load texture alphamap", alphamap_allocated);
 		free(source_allocated);
 		free(alphamap_allocated);

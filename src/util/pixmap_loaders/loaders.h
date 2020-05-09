@@ -17,7 +17,7 @@
 
 typedef struct PixmapLoader {
 	bool (*probe)(SDL_RWops *stream);
-	bool (*load)(SDL_RWops *stream, Pixmap *pixmap);
+	bool (*load)(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format);
 	const char **filename_exts;
 } PixmapLoader;
 

@@ -150,9 +150,9 @@ typedef struct Pixmap {
 	PixmapOrigin origin;
 } Pixmap;
 
-void* pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) attr_returns_allocated;
-void* pixmap_alloc_buffer_for_copy(const Pixmap *src) attr_nonnull(1) attr_returns_allocated;
-void* pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) attr_nonnull(1) attr_returns_allocated;
+void *pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) attr_returns_allocated;
+void *pixmap_alloc_buffer_for_copy(const Pixmap *src) attr_nonnull(1) attr_returns_allocated;
+void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) attr_nonnull(1) attr_returns_allocated;
 
 void pixmap_copy(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_copy_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
@@ -171,11 +171,10 @@ void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) attr_nonnul
 
 size_t pixmap_data_size(const Pixmap *px) attr_nonnull(1);
 
-bool pixmap_load_file(const char *path, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
-bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
-bool pixmap_load_stream_tga(SDL_RWops *stream, Pixmap *dst) attr_nonnull(1, 2) attr_nodiscard;
+bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
+bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
 
 bool pixmap_check_filename(const char *path);
-char* pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
+char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
 #endif // IGUARD_util_pixmap_h

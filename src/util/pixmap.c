@@ -179,7 +179,7 @@ static struct conversion_def* find_conversion(uint depth_in, uint depth_out) {
 	log_fatal("Pixmap conversion for %upbc -> %upbc undefined, please add", depth_in, depth_out);
 }
 
-static void* default_pixel(uint depth) {
+static void *default_pixel(uint depth) {
 	static uint8_t  default_u8[]  = { 0, 0, 0, UINT8_MAX  };
 	static uint16_t default_u16[] = { 0, 0, 0, UINT16_MAX };
 	static uint32_t default_u32[] = { 0, 0, 0, UINT32_MAX };
@@ -194,7 +194,7 @@ static void* default_pixel(uint depth) {
 	}
 }
 
-void* pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) {
+void *pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) {
 	assert(width >= 1);
 	assert(height >= 1);
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
@@ -202,11 +202,11 @@ void* pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) {
 	return calloc(width * height, pixel_size);
 }
 
-void* pixmap_alloc_buffer_for_copy(const Pixmap *src) {
+void *pixmap_alloc_buffer_for_copy(const Pixmap *src) {
 	return pixmap_alloc_buffer(src->format, src->width, src->height);
 }
 
-void* pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) {
+void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) {
 	return pixmap_alloc_buffer(format, src->width, src->height);
 }
 
@@ -339,17 +339,13 @@ void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) {
 	src->origin = origin;
 }
 
-bool pixmap_load_stream_tga(SDL_RWops *stream, Pixmap *dst) {
-	return false;
-}
-
 static PixmapLoader *pixmap_loaders[] = {
 	&pixmap_loader_png,
 	&pixmap_loader_webp,
 	NULL,
 };
 
-static PixmapLoader* pixmap_loader_for_filename(const char *file) {
+static PixmapLoader *pixmap_loader_for_filename(const char *file) {
 	char *ext = strrchr(file, '.');
 
 	if(!ext || !*(++ext)) {
@@ -368,13 +364,13 @@ static PixmapLoader* pixmap_loader_for_filename(const char *file) {
 	return NULL;
 }
 
-bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) {
+bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst, PixmapFormat preferred_format) {
 	for(PixmapLoader **loader = pixmap_loaders; *loader; ++loader) {
 		bool match = (*loader)->probe(stream);
 		SDL_RWseek(stream, 0, RW_SEEK_SET);
 
 		if(match) {
-			return (*loader)->load(stream, dst);
+			return (*loader)->load(stream, dst, preferred_format);
 		}
 	}
 
@@ -382,7 +378,8 @@ bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst) {
 	return false;
 }
 
-bool pixmap_load_file(const char *path, Pixmap *dst) {
+bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) {
+	log_debug("%s   %x", path, preferred_format);
 	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!stream) {
@@ -390,7 +387,7 @@ bool pixmap_load_file(const char *path, Pixmap *dst) {
 		return false;
 	}
 
-	bool result = pixmap_load_stream(stream, dst);
+	bool result = pixmap_load_stream(stream, dst, preferred_format);
 	SDL_RWclose(stream);
 	return result;
 }
@@ -399,7 +396,7 @@ bool pixmap_check_filename(const char *path) {
 	return (bool)pixmap_loader_for_filename(path);
 }
 
-char* pixmap_source_path(const char *prefix, const char *path) {
+char *pixmap_source_path(const char *prefix, const char *path) {
 	char base_path[strlen(prefix) + strlen(path) + 1];
 	strcpy(base_path, prefix);
 	strcpy(base_path + strlen(prefix), path);

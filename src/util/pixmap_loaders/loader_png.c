@@ -20,7 +20,17 @@ static bool px_png_probe(SDL_RWops *stream) {
 	return !memcmp(magic, png_magic, sizeof(magic));
 }
 
-static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap) {
+static inline PixmapLayout clrtype_to_layout(png_byte color_type) {
+	switch(color_type) {
+		case PNG_COLOR_TYPE_RGB:       return PIXMAP_LAYOUT_RGB;
+		case PNG_COLOR_TYPE_RGB_ALPHA: return PIXMAP_LAYOUT_RGBA;
+		case PNG_COLOR_TYPE_GRAY:      return PIXMAP_LAYOUT_R;
+	}
+
+	UNREACHABLE;
+}
+
+static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
 	png_structp png = NULL;
 	png_infop png_info = NULL;
 	const char *volatile error = NULL;
@@ -50,23 +60,26 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap) {
 
 	png_set_alpha_mode(png, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
 
-	if(color_type == PNG_COLOR_TYPE_PALETTE) {
-		png_set_palette_to_rgb(png);
-	}
+	/*
+	 * Expand palette into RGB
+	 * Expand grayscale to full 8 bits
+	 * Expand transparency to full RGBA
+	 */
+	png_set_expand(png);
 
-	if(png_get_valid(png, png_info, PNG_INFO_tRNS)) {
-		png_set_tRNS_to_alpha(png);
-	}
+	// avoid unnecessary back-and-forth conversion
+	bool keep_gray = (
+		color_type == PNG_COLOR_TYPE_GRAY &&
+		PIXMAP_FORMAT_LAYOUT(preferred_format) == PIXMAP_LAYOUT_R
+	);
 
-	if(color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8) {
-		png_set_expand_gray_1_2_4_to_8(png);
-	}
-
-	if(color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+	if(!keep_gray) {
 		png_set_gray_to_rgb(png);
 	}
 
-	png_set_expand(png);
+	if(PIXMAP_FORMAT_DEPTH(preferred_format) == 16) {
+		png_set_expand_16(png);
+	}
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 	png_set_swap(png);
@@ -79,14 +92,17 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap) {
 	color_type = png_get_color_type(png, png_info);
 	bit_depth = png_get_bit_depth(png, png_info);
 
-	assert(color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGBA);
+	assert(
+		(color_type == PNG_COLOR_TYPE_RGB        && channels == 3) ||
+		(color_type == PNG_COLOR_TYPE_RGB_ALPHA  && channels == 4) ||
+		(color_type == PNG_COLOR_TYPE_GRAY       && channels == 1)
+	);
 	assert(bit_depth == 8 || bit_depth == 16);
-	assert(channels == 3 || channels == 4);
 
 	pixmap->width = png_get_image_width(png, png_info);
 	pixmap->height = png_get_image_height(png, png_info);
 	pixmap->format = PIXMAP_MAKE_FORMAT(
-		channels == 3 ? PIXMAP_LAYOUT_RGB : PIXMAP_LAYOUT_RGBA,
+		clrtype_to_layout(color_type),
 		bit_depth
 	);
 

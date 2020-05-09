@@ -9,8 +9,8 @@ resources_gfx_dir = join_paths(resources_pkg_main, 'gfx')
 #   3. Profile-specific
 
 preset_webp = [
-    # Leanify doesn't handle webp (yet?), so skip it.
-    '--no-leanify',
+    # Leanify doesn't handle webp (yet?), but it'll work on alphamaps (they are always png)
+    '--leanify',
     '--format', 'webp',
 ]
 

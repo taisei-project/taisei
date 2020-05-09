@@ -27,7 +27,9 @@ static void _CONV_FUNCNAME(
 					}
 				} else if(_CONV_OUT_IS_FLOAT) {
 					fill = *buf_in++ * (1.0f / (float)_CONV_IN_MAX);
-				} else if(_CONV_OUT_MAX >= _CONV_IN_MAX) {
+				} else if(_CONV_OUT_MAX == _CONV_IN_MAX) {
+					fill = *buf_in++;
+				} else if(_CONV_OUT_MAX > _CONV_IN_MAX) {
 					fill = *buf_in++ * (_CONV_OUT_MAX / _CONV_IN_MAX);
 				} else {
 					// TODO use fixed point math

@@ -49,7 +49,7 @@ static inline const char* webp_error_str(VP8StatusCode code)  {
 	return "Unknown error";
 }
 
-static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap) {
+static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
 	WebPDecoderConfig config;
 	int status = WebPInitDecoderConfig(&config);
 
