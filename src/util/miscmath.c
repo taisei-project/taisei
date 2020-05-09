@@ -23,7 +23,7 @@ cmplx clerp(cmplx v0, cmplx v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
-cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float f) {
+cmplxf clerpf(cmplxf v0, cmplxf v1, float f) {
 	return f * (v1 - v0) + v0;
 }
 
@@ -138,7 +138,7 @@ cmplx cwmul(cmplx c0, cmplx c1) {
 	return CMPLX(creal(c0)*creal(c1), cimag(c0)*cimag(c1));
 }
 
-cmplx32 cwmulf(cmplx32 c0, cmplx32 c1) {
+cmplxf cwmulf(cmplxf c0, cmplxf c1) {
 	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
 }
 

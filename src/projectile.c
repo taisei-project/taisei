@@ -909,7 +909,7 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 	return sp;
 }
 
-static void projectile_draw_sprite(Sprite *s, const Color *clr, float opacity, cmplx32 scale) {
+static void projectile_draw_sprite(Sprite *s, const Color *clr, float opacity, cmplxf scale) {
 	if(opacity <= 0 || crealf(scale) == 0) {
 		return;
 	}
@@ -1056,15 +1056,15 @@ void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
 }
 
 static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
-	cmplx32 scale0 = args[0].as_cmplx;
-	cmplx32 scale1 = args[1].as_cmplx;
+	cmplxf scale0 = args[0].as_cmplx;
+	cmplxf scale1 = args[1].as_cmplx;
 	float opacity0 = args[2].as_float[0];
 	float opacity1 = args[2].as_float[1];
 	float opacity_exp = args[3].as_float[0];
 
 	float timefactor = t / p->timeout;
 
-	cmplx32 scale = clerpf(scale0, scale1, timefactor);
+	cmplxf scale = clerpf(scale0, scale1, timefactor);
 	float opacity = lerpf(opacity0, opacity1, timefactor);
 	opacity = powf(opacity, opacity_exp);
 
@@ -1076,7 +1076,8 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&sp);
 }
 
-ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1, float opacity_exp) {
+ProjDrawRule pdraw_timeout_scalefade_exp(cmplxf scale0,
+	cmplxf scale1, float opacity0, float opacity1, float opacity_exp) {
 	if(cimagf(scale0) == 0) {
 		scale0 = CMPLXF(crealf(scale0), crealf(scale0));
 	}
@@ -1094,11 +1095,12 @@ ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float o
 	};
 }
 
-ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1) {
+ProjDrawRule pdraw_timeout_scalefade(
+	cmplxf scale0, cmplxf scale1, float opacity0, float opacity1) {
 	return pdraw_timeout_scalefade_exp(scale0, scale1, opacity0, opacity1, 1.0f);
 }
 
-ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1) {
+ProjDrawRule pdraw_timeout_scale(cmplxf scale0, cmplxf scale1) {
 	// TODO: specialized code path without fade component
 	return pdraw_timeout_scalefade(scale0, scale1, 1, 1);
 }

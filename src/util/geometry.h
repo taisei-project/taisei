@@ -13,12 +13,12 @@
 
 typedef union FloatOffset {
 	struct { float x, y; };
-	cmplx32 as_cmplx;
+	cmplxf as_cmplx;
 } FloatOffset;
 
 typedef union FloatExtent {
 	struct { float w, h; };
-	cmplx32 as_cmplx;
+	cmplxf as_cmplx;
 } FloatExtent;
 
 typedef struct FloatRect {

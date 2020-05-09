@@ -264,7 +264,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 
 	float focus_opacity = indicators->focus_alpha;
 	int t = global.frames - indicators->focus_time;
-	cmplx32 pos = plr->pos;
+	cmplxf pos = plr->pos;
 
 	if(focus_opacity > 0) {
 		float trans_frames = 12;

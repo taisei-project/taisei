@@ -155,14 +155,11 @@ typedef signed char schar;
 #undef real
 typedef double real;
 
-#undef cmplx32
-typedef _Complex float cmplx32;
-
-#undef cmplx64
-typedef _Complex double cmplx64;
+#undef cmplxf
+typedef _Complex float cmplxf;
 
 #undef cmplx
-typedef cmplx64 cmplx;
+typedef _Complex double cmplx;
 
 // These definitions are common but non-standard, so we provide our own
 #undef M_PI

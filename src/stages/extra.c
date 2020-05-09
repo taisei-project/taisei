@@ -287,7 +287,7 @@ static void animate_bg_midboss(int anim_time) {
 		fapproach_asymptotic_p(&stage_3d_context.cam.rot.pitch, 30, 0.01 * camera_shift_rate, 1e-4);
 
 		float a = glm_rad(stage_3d_context.cam.rot.roll + 67.5);
-		cmplx32 p = cdir(a) * -2200;
+		cmplxf p = cdir(a) * -2200;
 		fapproach_asymptotic_p(&stage_3d_context.cam.pos[0], crealf(p), 0.01 * camera_shift_rate, 1e-4);
 		fapproach_asymptotic_p(&stage_3d_context.cam.pos[1], cimagf(p), 0.01 * camera_shift_rate, 1e-4);
 
@@ -309,7 +309,7 @@ static void animate_bg_post_midboss(int anim_time) {
 		fapproach_asymptotic_p(&stage_3d_context.cam.rot.pitch, -10, 0.01 * camera_shift_rate, 1e-4);
 
 		float a = glm_rad(stage_3d_context.cam.rot.roll + 67.5);
-		cmplx32 p = cdir(a) * center_distance;
+		cmplxf p = cdir(a) * center_distance;
 		fapproach_asymptotic_p(&stage_3d_context.cam.pos[0], crealf(p), 0.01 * camera_shift_rate, 1e-4);
 		fapproach_asymptotic_p(&stage_3d_context.cam.pos[1], cimagf(p), 0.01 * camera_shift_rate, 1e-4);
 

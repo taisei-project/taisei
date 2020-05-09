@@ -315,7 +315,7 @@ TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_FOREACH_COUNTER(&components, int i, Projectile *p, {
 			real t = global.frames - p->birthtime;
-			cmplx32 offset = (10 + pow(t, 0.5)) * cdir(2.0 * M_PI / 3*i + sqrt(1 + t * t / 300));
+			cmplxf offset = (10 + pow(t, 0.5)) * cdir(2.0 * M_PI / 3*i + sqrt(1 + t * t / 300));
 			p->pos = pos + offset;
 		});
 

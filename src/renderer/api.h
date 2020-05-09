@@ -371,7 +371,7 @@ typedef union SpriteScaleParams {
 		float y;
 	};
 
-	cmplx32 as_cmplx;
+	cmplxf as_cmplx;
 } SpriteScaleParams;
 
 typedef struct SpriteRotationParams {

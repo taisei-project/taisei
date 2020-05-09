@@ -44,7 +44,7 @@ typedef bool (*ProjPredicate)(Projectile *p);
 
 typedef union {
 	float as_float[2];
-	cmplx32 as_cmplx;
+	cmplxf as_cmplx;
 	void *as_ptr;
 } ProjDrawRuleArgs[RULE_ARGC];
 
@@ -119,7 +119,7 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	ProjFlags flags;
 	uint clear_flags;
 
-	cmplx32 scale;
+	cmplxf scale;
 	float opacity;
 
 	// XXX: this is in frames of course, but needs to be float
@@ -161,7 +161,7 @@ typedef struct ProjArgs {
 	int max_viewport_dist;
 	drawlayer_t layer;
 
-	cmplx32 scale;
+	cmplxf scale;
 	float opacity;
 
 	// XXX: this is in frames of course, but needs to be float
@@ -248,9 +248,9 @@ void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 
 ProjDrawRule pdraw_basic(void);
-ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1, float opacity_exp);
-ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1);
-ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1);
+ProjDrawRule pdraw_timeout_scalefade_exp(cmplxf scale0, cmplxf scale1, float opacity0, float opacity1, float opacity_exp);
+ProjDrawRule pdraw_timeout_scalefade(cmplxf scale0, cmplxf scale1, float opacity0, float opacity1);
+ProjDrawRule pdraw_timeout_scale(cmplxf scale0, cmplxf scale1);
 ProjDrawRule pdraw_timeout_fade(float opacity0, float opacity1);
 ProjDrawRule pdraw_petal(float rot_angle, vec3 rot_axis);
 ProjDrawRule pdraw_petal_random(void);
