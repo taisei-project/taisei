@@ -152,17 +152,8 @@ typedef unsigned char uchar;
 #undef schar
 typedef signed char schar;
 
-#undef float32
-typedef float float32;
-
-#undef float64
-typedef double float64;
-
-#undef float64x
-typedef long double float64x;
-
 #undef real
-typedef float64 real;
+typedef double real;
 
 #undef cmplx32
 typedef _Complex float cmplx32;

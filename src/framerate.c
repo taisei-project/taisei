@@ -20,7 +20,7 @@ void fpscounter_reset(FPSCounter *fps) {
 		fps->frametimes[i] = frametime;
 	}
 
-	fps->fps = HRTIME_RESOLUTION / (float64x)frametime;
+	fps->fps = HRTIME_RESOLUTION / (long double)frametime;
 	fps->frametime = frametime;
 	fps->last_update_time = time_get();
 }
@@ -38,7 +38,7 @@ void fpscounter_update(FPSCounter *fps) {
 		avg += fps->frametimes[i];
 	}
 
-	fps->fps = HRTIME_RESOLUTION / (avg / (float64x)log_size);
+	fps->fps = HRTIME_RESOLUTION / (avg / (long double)log_size);
 	fps->frametime = avg / log_size;
 	fps->last_update_time = time_get();
 }

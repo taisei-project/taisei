@@ -43,7 +43,7 @@ typedef int (*ProjRule)(Projectile *p, int t);
 typedef bool (*ProjPredicate)(Projectile *p);
 
 typedef union {
-	float32 as_float[2];
+	float as_float[2];
 	cmplx32 as_cmplx;
 	void *as_ptr;
 } ProjDrawRuleArgs[RULE_ARGC];
@@ -120,7 +120,7 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	uint clear_flags;
 
 	cmplx32 scale;
-	float32 opacity;
+	float opacity;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -162,7 +162,7 @@ typedef struct ProjArgs {
 	drawlayer_t layer;
 
 	cmplx32 scale;
-	float32 opacity;
+	float opacity;
 
 	// XXX: this is in frames of course, but needs to be float
 	// to avoid subtle truncation and integer division gotchas.
@@ -248,11 +248,11 @@ void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 
 ProjDrawRule pdraw_basic(void);
-ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1, float32 opacity_exp);
-ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1);
+ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1, float opacity_exp);
+ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1);
 ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1);
-ProjDrawRule pdraw_timeout_fade(float32 opacity0, float32 opacity1);
-ProjDrawRule pdraw_petal(float32 rot_angle, vec3 rot_axis);
+ProjDrawRule pdraw_timeout_fade(float opacity0, float opacity1);
+ProjDrawRule pdraw_petal(float rot_angle, vec3 rot_axis);
 ProjDrawRule pdraw_petal_random(void);
 ProjDrawRule pdraw_blast(void);
 
@@ -265,7 +265,7 @@ void projectiles_preload(void);
 void projectiles_free(void);
 
 cmplx projectile_graze_size(Projectile *p);
-float32 projectile_timeout_factor(Projectile *p);
+float projectile_timeout_factor(Projectile *p);
 int projectile_time(Projectile *p);
 
 SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbuf);

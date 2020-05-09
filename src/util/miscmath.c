@@ -23,7 +23,7 @@ cmplx clerp(cmplx v0, cmplx v1, double f) {
 	return f * (v1 - v0) + v0;
 }
 
-cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) {
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float f) {
 	return f * (v1 - v0) + v0;
 }
 

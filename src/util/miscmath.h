@@ -19,7 +19,7 @@
 double lerp(double v0, double v1, double f) attr_const;
 float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
-cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float32 f) attr_const;
+cmplx32 clerpf(cmplx32 v0, cmplx32 v1, float f) attr_const;
 intmax_t imin(intmax_t, intmax_t) attr_const;
 intmax_t imax(intmax_t, intmax_t) attr_const;
 uintmax_t umin(uintmax_t, uintmax_t) attr_const;

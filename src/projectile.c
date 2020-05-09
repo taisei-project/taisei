@@ -207,7 +207,7 @@ cmplx projectile_graze_size(Projectile *p) {
 	return 0;
 }
 
-float32 projectile_timeout_factor(Projectile *p) {
+float projectile_timeout_factor(Projectile *p) {
 	return p->timeout ? (global.frames - p->birthtime) / p->timeout : 0;
 }
 
@@ -909,7 +909,7 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 	return sp;
 }
 
-static void projectile_draw_sprite(Sprite *s, const Color *clr, float32 opacity, cmplx32 scale) {
+static void projectile_draw_sprite(Sprite *s, const Color *clr, float opacity, cmplx32 scale) {
 	if(opacity <= 0 || crealf(scale) == 0) {
 		return;
 	}
@@ -955,11 +955,11 @@ static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 		args[1].as_float[0],
 	};
 
-	float32 rot_angle = args[1].as_float[1];
-	float32 secondary_scale = args[2].as_float[0];
+	float rot_angle = args[1].as_float[1];
+	float secondary_scale = args[2].as_float[0];
 
-	float32 tf = projectile_timeout_factor(p);
-	float32 opacity = (1.0f - tf) * p->opacity;
+	float tf = projectile_timeout_factor(p);
+	float opacity = (1.0f - tf) * p->opacity;
 
 	if(tf <= 0 || opacity <= 0) {
 		return;
@@ -983,11 +983,11 @@ static void pdraw_blast_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 }
 
 ProjDrawRule pdraw_blast(void) {
-	float32 rot_angle = rng_f32_angle();
-	float32 x = rng_f32();
-	float32 y = rng_f32();
-	float32 z = rng_f32();
-	float32 secondary_scale = rng_f32_range(0.5, 1.5);
+	float rot_angle = rng_f32_angle();
+	float x = rng_f32();
+	float y = rng_f32();
+	float z = rng_f32();
+	float secondary_scale = rng_f32_range(0.5, 1.5);
 
 	vec3 rot_axis = { x, y, z };
 	glm_vec3_normalize(rot_axis);
@@ -1058,14 +1058,14 @@ void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
 static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	cmplx32 scale0 = args[0].as_cmplx;
 	cmplx32 scale1 = args[1].as_cmplx;
-	float32 opacity0 = args[2].as_float[0];
-	float32 opacity1 = args[2].as_float[1];
-	float32 opacity_exp = args[3].as_float[0];
+	float opacity0 = args[2].as_float[0];
+	float opacity1 = args[2].as_float[1];
+	float opacity_exp = args[3].as_float[0];
 
-	float32 timefactor = t / p->timeout;
+	float timefactor = t / p->timeout;
 
 	cmplx32 scale = clerpf(scale0, scale1, timefactor);
-	float32 opacity = lerpf(opacity0, opacity1, timefactor);
+	float opacity = lerpf(opacity0, opacity1, timefactor);
 	opacity = powf(opacity, opacity_exp);
 
 	SpriteParamsBuffer spbuf;
@@ -1076,7 +1076,7 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&sp);
 }
 
-ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1, float32 opacity_exp) {
+ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1, float opacity_exp) {
 	if(cimagf(scale0) == 0) {
 		scale0 = CMPLXF(crealf(scale0), crealf(scale0));
 	}
@@ -1094,7 +1094,7 @@ ProjDrawRule pdraw_timeout_scalefade_exp(cmplx32 scale0, cmplx32 scale1, float32
 	};
 }
 
-ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float32 opacity0, float32 opacity1) {
+ProjDrawRule pdraw_timeout_scalefade(cmplx32 scale0, cmplx32 scale1, float opacity0, float opacity1) {
 	return pdraw_timeout_scalefade_exp(scale0, scale1, opacity0, opacity1, 1.0f);
 }
 
@@ -1103,7 +1103,7 @@ ProjDrawRule pdraw_timeout_scale(cmplx32 scale0, cmplx32 scale1) {
 	return pdraw_timeout_scalefade(scale0, scale1, 1, 1);
 }
 
-ProjDrawRule pdraw_timeout_fade(float32 opacity0, float32 opacity1) {
+ProjDrawRule pdraw_timeout_fade(float opacity0, float opacity1) {
 	// TODO: specialized code path without scale component
 	return pdraw_timeout_scalefade(1+I, 1+I, opacity0, opacity1);
 }
@@ -1115,7 +1115,7 @@ static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 		args[1].as_float[0],
 	};
 
-	float32 rot_angle = args[1].as_float[1];
+	float rot_angle = args[1].as_float[1];
 
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
@@ -1128,11 +1128,11 @@ static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	r_draw_sprite(&sp);
 }
 
-ProjDrawRule pdraw_petal(float32 rot_angle, vec3 rot_axis) {
+ProjDrawRule pdraw_petal(float rot_angle, vec3 rot_axis) {
 	glm_vec3_normalize(rot_axis);
-	float32 x = rot_axis[0];
-	float32 y = rot_axis[1];
-	float32 z = rot_axis[2];
+	float x = rot_axis[0];
+	float y = rot_axis[1];
+	float z = rot_axis[2];
 
 	return (ProjDrawRule) {
 		.func = pdraw_petal_func,
@@ -1142,10 +1142,10 @@ ProjDrawRule pdraw_petal(float32 rot_angle, vec3 rot_axis) {
 }
 
 ProjDrawRule pdraw_petal_random(void) {
-	float32 x = rng_f32();
-	float32 y = rng_f32();
-	float32 z = rng_f32();
-	float32 rot_angle = rng_f32_angle();
+	float x = rng_f32();
+	float y = rng_f32();
+	float z = rng_f32();
+	float rot_angle = rng_f32_angle();
 
 	return pdraw_petal(rot_angle, (vec3) { x, y, z });
 }

@@ -1562,7 +1562,7 @@ void stage_draw_bottom_text(void) {
 
 static void fill_graph(int num_samples, float *samples, FPSCounter *fps) {
 	for(int i = 0; i < num_samples; ++i) {
-		samples[i] = fps->frametimes[i] / (2.0 * (HRTIME_RESOLUTION / (float64x)FPS));
+		samples[i] = fps->frametimes[i] / (2.0 * (HRTIME_RESOLUTION / (long double)FPS));
 
 		if(samples[i] > 1.0) {
 			samples[i] = 1.0;
