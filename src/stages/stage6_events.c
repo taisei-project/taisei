@@ -27,7 +27,7 @@ static void stage6_dialog_pre_boss(void) {
 	Stage6PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage6PreBossDialog, pm->dialog->Stage6PreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
-	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss");
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 }
 
 static void stage6_dialog_pre_final(void) {
