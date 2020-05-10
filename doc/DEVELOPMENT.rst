@@ -15,10 +15,14 @@ Compiling The Source
 Basic Build Instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
+-  C (C11) compiler (``gcc``, ``clang``, etc)
 -  Python >= 3.5
 -  meson >= 0.48.0 (build system; >=0.49.0 recommended)
+-  ninja >= 1.7
 -  docutils
 
+You can optionally install `other dependencies <../README.rst#id5>`__,
+but the build system will pull in everything else you might need otherwise.
 
 To build and install Taisei on \*nix, just follow these steps:
 

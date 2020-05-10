@@ -6,10 +6,14 @@ Taisei
 Introduction
 ------------
 
-Taisei Project is an original open source fan-game set in the world of Tōhō
+About Taisei Project
+^^^^^^^^^^^^^^^^^^^^
+
+Taisei Project is an open source fan-game set in the world of Tōhō
 Project. It is a top-down vertical-scrolling curtain fire shooting game (STG),
 also known as a "bullet hell" or "danmaku," with an original soundtrack,
-character art, and story.
+character art, and story. It is a fast-paced game focused around pattern
+recognition and mastery through practice.
 
 Taisei Project is highly portable, and is written in C (specifically, C11),
 using SDL2 with an OpenGL renderer. It is officially supported on Windows,
@@ -19,25 +23,28 @@ support for a number of other operating sytems.
 
 For gameplay instructions, read `this <doc/GAME.rst>`__.
 
-For the story, read `this <doc/STORY.txt>`__. (Warning: spoilers!)
+For the story, read `this <doc/STORY.txt>`__. (Spoiler warning!)
 
 About Tōhō Project
 ^^^^^^^^^^^^^^^^^^
 
-Tōhō Project, the series Taisei Project is based on, is a modern fairytale
+Tōhō Project, the series Taisei Project is based upon, is a modern fairytale
 series set in Gensōkyō, or the "Land of Fantasy," a pocket dimension hidden away
 in modern-day Japan. It primarily focuses on Japanese folklore and myths,
 starring a ragtag group of mostly-human women who try to keep supernatural
 entites from causing conflicts.
 
-Tōhō is known for its ensemble cast of characters and amazing soundtracks, and
-has been in production since 1996. Most of the games in the series are STGs, but
-there are also official competitive fighting games, multiple series' of manga,
-and a few novelizations as well. It's independent (also known as "dōjin")
-and almost entirely produced by a single artist known as ZUN.
+Tōhō Project is known for its ensemble cast of characters and amazing
+soundtracks. The first game in the series was released in 1996. It's independent
+(more commonly known as "dōjin") and is almost entirely produced by a single
+artist known as ZUN, who authorizes other independent developers to use his
+world and characters to create their own games.
 
 For more information on Tōhō Project,
 `click here <https://en.wikipedia.org/wiki/Touhou_Project>`__.
+
+For more information on dōjin culture,
+`click here <https://en.wikipedia.org/wiki/D%C5%8Djin>`__.
 
 Installation
 ------------
@@ -66,10 +73,10 @@ You can also grab the latest code from git using the following commands:
 
     git clone --recurse-submodules https://github.com/taisei-project/taisei
 
-The ``--recursive-submodules`` option is important as the subprojects are
-necessary to compile the project correctly.
+The ``--recursive-submodules`` option is important as the submodules are
+necessary to compile the project.
 
-If you want to pull them in manually, be sure to use the following:
+If you want to pull them in manually, be sure to run the following:
 
 ::
 
@@ -77,11 +84,11 @@ If you want to pull them in manually, be sure to use the following:
     git submodule init
     git submodule update
 
-**Important:** You should also run ``git submodule update`` whenever you pull in
+You should also run ``git submodule update`` whenever you pull in
 new code, checkout another branch, etc. The ``pull`` and ``checkout`` helper
 scripts can do that for you automatically.
 
-**Important:** as of v1.3, you cannot download GitHub's automatically-generated
+**Important:** As of v1.3, you cannot download GitHub's automatically-generated
 source archives, as they don't contain the necessary submodules for compiling
 the game. Make sure you either download the release tarball, or use `git clone`.
 
@@ -106,6 +113,7 @@ Optional:
 -  OpenSSL (for a better SHA-256 implementation; used in shader cache)
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
+-  ANGLE (for ANGLE support)
 
 
 Replays, Screenshots, and Settings Locations
