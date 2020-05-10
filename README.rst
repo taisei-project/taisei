@@ -92,7 +92,7 @@ scripts can do that for you automatically.
 source archives, as they don't contain the necessary submodules for compiling
 the game. Make sure you either download the release tarball, or use `git clone`.
 
-For more in-depth development and compiling instructions, see:
+For more in-depth development and compiling instructions, see our
 `Development Guide <doc/DEVELOPMENT.rst>`__.
 
 Dependencies

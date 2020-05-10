@@ -21,7 +21,7 @@ Basic Build Instructions
 -  ninja >= 1.7
 -  docutils
 
-You can optionally install `other dependencies <../README.rst#id5>`__,
+You can optionally install `other dependencies <../README.rst#dependencies>`__,
 but the build system will pull in everything else you might need otherwise.
 
 To build and install Taisei on \*nix, just follow these steps:
