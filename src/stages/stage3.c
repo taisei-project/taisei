@@ -76,6 +76,8 @@ static void stage3_bg_ground_draw(vec3 pos) {
 	r_draw_model("stage3/ground");
 	r_uniform_sampler("tex", "stage3/rocks");
 	r_draw_model("stage3/rocks");
+	r_uniform_sampler("tex", "stage3/trees");
+	r_draw_model("stage3/trees");
 	r_mat_mv_pop();
 }
 
@@ -144,6 +146,7 @@ static void stage3_preload(void) {
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/rocks",
+		"stage3/trees",
 		"stage3/leaves",
 		"stage3/spellbg1",
 		"stage3/spellbg2",
@@ -154,6 +157,7 @@ static void stage3_preload(void) {
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/rocks",
+		"stage3/trees",
 		"stage3/leaves",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
@@ -190,8 +194,6 @@ static void stage3_update(void) {
 	}
 
 	// 2740 - MIDBOSS
-
-	int midboss_time = STAGE3_MIDBOSS_TIME;
 
 	stage3d_update(&stage_3d_context);
 }
