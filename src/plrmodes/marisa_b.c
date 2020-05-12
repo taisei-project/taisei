@@ -436,7 +436,7 @@ TASK(marisa_star_bomb_controller, { MarisaBController *ctrl; }) {
 	}
 
 	do {
-		global.shake_view = fmax(8, global.shake_view);
+		stage_shake_view(8);
 		player_placeholder_bomb_logic(plr);
 
 		float tb = player_get_bomb_progress(plr);
@@ -457,8 +457,6 @@ TASK(marisa_star_bomb_controller, { MarisaBController *ctrl; }) {
 		++beams->time;
 		YIELD;
 	} while(player_is_bomb_active(plr));
-
-	global.shake_view = 0;
 }
 
 TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {

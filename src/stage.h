@@ -154,6 +154,9 @@ void stage_unlock_bgm(const char *bgm);
 
 void stage_begin_dialog(Dialog *d) attr_nonnull_all;
 
+void stage_shake_view(float strength);
+float stage_get_view_shake_strength(void);
+
 #ifdef DEBUG
 void _stage_bookmark(const char *name);
 #define STAGE_BOOKMARK(name) _stage_bookmark(#name)
