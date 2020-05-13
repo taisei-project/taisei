@@ -210,7 +210,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			case CLI_PlayReplay:
 			case CLI_VerifyReplay:
 			case CLI_SelectStage:
-				if(stage_get(stageid) == NULL) {
+				if(stageinfo_get_by_id(stageid) == NULL) {
 					log_fatal("Invalid stage id: %X", stageid);
 				}
 				break;

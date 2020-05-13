@@ -15,6 +15,7 @@
 #include "stageselect.h"
 #include "common.h"
 #include "video.h"
+#include "stageinfo.h"
 
 static void draw_stage_menu(MenuData *m) {
 	draw_options_menu_bg(m);
@@ -33,7 +34,9 @@ MenuData* create_stage_menu(void) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
 		Difficulty diff = stg->difficulty;
 
 		if(diff < lastdiff || (diff == D_Extra && lastdiff != D_Extra) || (diff && !lastdiff)) {
@@ -44,7 +47,7 @@ MenuData* create_stage_menu(void) {
 		add_menu_entry(m, title, start_game, stg);
 
 		lastdiff = diff;
-	});
+	}
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);

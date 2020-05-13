@@ -11,9 +11,10 @@
 
 #include "taisei.h"
 
-#include "stage.h"
+#include "stageinfo.h"
 #include "enemy.h"
 #include "stageutils.h"
+#include "util/fbpair.h"
 
 extern struct stage6_spells_s {
 	// this struct must contain only fields of type AttackInfo

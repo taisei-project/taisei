@@ -39,7 +39,7 @@ static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty
 
 	if(info == NULL) {
 		global.is_practice_mode = false;
-		ctx->current_stage = ctx->restart_stage = dynarray_get_ptr(&stages, 0);
+		ctx->current_stage = ctx->restart_stage = stageinfo_get_by_id(1);
 	} else {
 		global.is_practice_mode = (info->type != STAGE_EXTRA);
 		ctx->current_stage = info;

@@ -868,13 +868,13 @@ void replay_play(Replay *rpy, int firstidx, CallChain next) {
 static void replay_do_play(CallChainResult ccr) {
 	ReplayContext *ctx = ccr.ctx;
 	ReplayStage *rstg = NULL;
-	StageInfo *gstg = NULL;
+	StageInfo *stginfo = NULL;
 
 	while(ctx->stage_idx < global.replay.numstages) {
 		rstg = global.replay_stage = global.replay.stages + ctx->stage_idx++;
-		gstg = stage_get(rstg->stage);
+		stginfo = stageinfo_get_by_id(rstg->stage);
 
-		if(!gstg) {
+		if(!stginfo) {
 			log_warn("Invalid stage %X in replay at %i skipped.", rstg->stage, ctx->stage_idx);
 			continue;
 		}
@@ -882,11 +882,11 @@ static void replay_do_play(CallChainResult ccr) {
 		break;
 	}
 
-	if(gstg == NULL) {
+	if(stginfo == NULL) {
 		replay_do_cleanup(ccr);
 	} else {
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
-		stage_enter(gstg, CALLCHAIN(replay_do_post_play, ctx));
+		stage_enter(stginfo, CALLCHAIN(replay_do_post_play, ctx));
 	}
 }
 

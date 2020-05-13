@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "stage.h"
+#include "stageinfo.h"
 
 #if defined(DEBUG) && !defined(SPELL_BENCHMARK)
 #define SPELL_BENCHMARK

@@ -16,6 +16,7 @@
 #include "entity.h"
 #include "util/glm.h"
 #include "portrait.h"
+#include "stages/stage5.h"  // for unlockable bonus BGM
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -110,7 +111,7 @@ static inline bool healthbar_style_is_radial(void) {
 	return config_get_int(CONFIG_HEALTHBAR_STYLE) > 0;
 }
 
-static const Color* boss_healthbar_color(AttackType atype) {
+static const Color *boss_healthbar_color(AttackType atype) {
 	static const Color colors[] = {
 		[AT_Normal]        = { 0.50, 0.50, 0.60, 1.00 },
 		[AT_Move]          = { 1.00, 1.00, 1.00, 1.00 },
@@ -124,11 +125,11 @@ static const Color* boss_healthbar_color(AttackType atype) {
 	return colors + atype;
 }
 
-static StageProgress* get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
+static StageProgress *get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
 	if(!write || (global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY)) {
-		StageInfo *i = stage_get_by_spellcard(a->info, global.diff);
+		StageInfo *i = stageinfo_get_by_spellcard(a->info, global.diff);
 		if(i) {
-			StageProgress *p = stage_get_progress_from_info(i, global.diff, write);
+			StageProgress *p = stageinfo_get_progress(i, global.diff, write);
 
 			if(out_stginfo) {
 				*out_stginfo = i;

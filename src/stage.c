@@ -25,185 +25,7 @@
 #include "stageobjects.h"
 #include "eventloop/eventloop.h"
 #include "common_tasks.h"
-
-#ifdef DEBUG
-	#define DPSTEST
-	#include "stages/dpstest.h"
-#endif
-
-StageInfoArray stages = { 0 };
-
-static void add_stage(uint16_t id, StageProcs *procs, StageType type, const char *title, const char *subtitle, AttackInfo *spell, Difficulty diff) {
-	StageInfo *stg = dynarray_append(&stages);
-
-	stg->id = id;
-	stg->procs = procs;
-	stg->type = type;
-	stralloc(&stg->title, title);
-	stralloc(&stg->subtitle, subtitle);
-	stg->spell = spell;
-	stg->difficulty = diff;
-}
-
-static void add_spellpractice_stage(StageInfo *s, AttackInfo *a, int *spellnum, uint16_t spellbits, Difficulty diff) {
-	uint16_t id = spellbits | a->idmap[diff - D_Easy] | (s->id << 8);
-
-	char *title = strfmt("Spell %d", ++(*spellnum));
-	char *subtitle = strjoin(a->name, " ~ ", difficulty_name(diff), NULL);
-
-	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
-
-	free(title);
-	free(subtitle);
-}
-
-static void add_spellpractice_stages(int *spellnum, bool (*filter)(AttackInfo*), uint16_t spellbits) {
-	for(int i = 0 ;; ++i) {
-		StageInfo *s = dynarray_get_ptr(&stages, i);
-
-		if(s->type == STAGE_SPELL || !s->spell) {
-			break;
-		}
-
-		for(AttackInfo *a = s->spell; a->name; ++a) {
-			if(!filter(a)) {
-				continue;
-			}
-
-			for(Difficulty diff = D_Easy; diff < D_Easy + NUM_SELECTABLE_DIFFICULTIES; ++diff) {
-				if(a->idmap[diff - D_Easy] >= 0) {
-					add_spellpractice_stage(s, a, spellnum, spellbits, diff);
-
-					// stages may have gotten realloc'd, so we must update the pointer
-					s = dynarray_get_ptr(&stages, i);
-				}
-			}
-		}
-	}
-}
-
-static bool spellfilter_normal(AttackInfo *spell) {
-	return spell->type != AT_ExtraSpell;
-}
-
-static bool spellfilter_extra(AttackInfo *spell) {
-	return spell->type == AT_ExtraSpell;
-}
-
-#include "stages/corotest.h"
-
-void stage_init_array(void) {
-	int spellnum = 0;
-
-//	         id  procs          type         title      subtitle                       spells                       diff
-	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  (AttackInfo*)&stage1_spells, D_Any);
-	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       (AttackInfo*)&stage2_spells, D_Any);
-	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", (AttackInfo*)&stage3_spells, D_Any);
-	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           (AttackInfo*)&stage4_spells, D_Any);
-	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any);
-	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any);
-
-#ifdef DPSTEST
-	add_stage(0x40|0, &stage_dpstest_single_procs, STAGE_SPECIAL, "DPS Test", "Single target", NULL, D_Normal);
-	add_stage(0x40|1, &stage_dpstest_multi_procs, STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
-	add_stage(0x40|2, &stage_dpstest_boss_procs, STAGE_SPECIAL, "DPS Test", "Boss", NULL, D_Normal);
-#endif
-
-	// generate spellpractice stages
-	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
-	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
-
-#ifdef SPELL_BENCHMARK
-	add_spellpractice_stage(dynarray_get_ptr(&stages, 0), &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
-#endif
-
-	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
-	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
-
-	dynarray_compact(&stages);
-
-#ifdef DEBUG
-	dynarray_foreach(&stages, int i, StageInfo *stg, {
-		if(stg->type == STAGE_SPELL && !(stg->id & STAGE_SPELL_BIT)) {
-			log_fatal("Spell stage has an ID without the spell bit set: 0x%04x", stg->id);
-		}
-
-		dynarray_foreach(&stages, int j, StageInfo *stg2, {
-			if(stg != stg2 && stg->id == stg2->id) {
-				log_fatal("Duplicate ID %X in stages array, indices: %i, %i", stg->id, i, j);
-			}
-		});
-	});
-#endif
-}
-
-void stage_free_array(void) {
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
-		free(stg->title);
-		free(stg->subtitle);
-		free(stg->progress);
-	});
-
-	dynarray_free_data(&stages);
-}
-
-StageInfo* stage_get(uint16_t n) {
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
-		if(stg->id == n) {
-			return stg;
-		}
-	});
-
-	return NULL;
-}
-
-StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff) {
-	if(!spell) {
-		return NULL;
-	}
-
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
-		if(stg->spell == spell && stg->difficulty == diff) {
-			return stg;
-		}
-	});
-
-	return NULL;
-}
-
-StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, bool allocate) {
-	// D_Any stages will have a separate StageProgress for every selectable difficulty.
-	// Stages with a fixed difficulty setting (spellpractice, extra stage...) obviously get just one and the diff parameter is ignored.
-
-	// This stuff must stay around until progress_save(), which happens on shutdown.
-	// So do NOT try to free any pointers this function returns, that will fuck everything up.
-
-	if(!stage) {
-		return NULL;
-	}
-
-	bool fixed_diff = (stage->difficulty != D_Any);
-
-	if(!fixed_diff && (diff < D_Easy || diff > D_Lunatic)) {
-		return NULL;
-	}
-
-	if(!stage->progress) {
-		if(!allocate) {
-			return NULL;
-		}
-
-		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
-		stage->progress = malloc(allocsize);
-		memset(stage->progress, 0, allocsize);
-	}
-
-	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
-}
-
-StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate) {
-	return stage_get_progress_from_info(stage_get(id), diff, allocate);
-}
+#include "stageinfo.h"
 
 static void stage_start(StageInfo *stage) {
 	global.timer = 0;
@@ -680,7 +502,7 @@ void stage_finish(int gameover) {
 		prev_gameover != GAMEOVER_SCORESCREEN &&
 		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
 	) {
-		StageProgress *p = stage_get_progress_from_info(global.stage, global.diff, true);
+		StageProgress *p = stageinfo_get_progress(global.stage, global.diff, true);
 
 		if(p) {
 			++p->num_cleared;
@@ -775,7 +597,7 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 
 	// FIXME: this is clunky...
 	if(!global.is_practice_mode && stage->type == STAGE_STORY) {
-		StageInfo *next = stage_get(stage->id + 1);
+		StageInfo *next = stageinfo_get_by_id(stage->id + 1);
 
 		if(next == NULL || next->type != STAGE_STORY) {
 			bonus->all_clear = true;
@@ -967,7 +789,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		log_debug("Start time: %"PRIu64, start_time);
 		log_debug("Random seed: 0x%"PRIx64, seed);
 
-		StageProgress *p = stage_get_progress_from_info(stage, global.diff, true);
+		StageProgress *p = stageinfo_get_progress(stage, global.diff, true);
 
 		if(p) {
 			log_debug("You played this stage %u times", p->num_played);
@@ -980,7 +802,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		ReplayStage *stg = global.replay_stage;
 
 		assert(stg != NULL);
-		assert(stage_get(stg->stage) == stage);
+		assert(stageinfo_get_by_id(stg->stage) == stage);
 
 		rng_seed(&global.rand_game, stg->rng_seed);
 

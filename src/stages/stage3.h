@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "stage.h"
+#include "stageinfo.h"
 
 extern struct stage3_spells_s {
 	// this struct must contain only fields of type AttackInfo

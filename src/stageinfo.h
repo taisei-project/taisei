@@ -1,0 +1,72 @@
+/*
+ * This software is licensed under the terms of the MIT License.
+ * See COPYING for further information.
+ * ---
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+*/
+
+#ifndef IGUARD_stageinfo_h
+#define IGUARD_stageinfo_h
+
+#include "taisei.h"
+
+#include "renderer/api.h"
+#include "difficulty.h"
+#include "boss.h"
+#include "progress.h"
+
+typedef void (*StageProc)(void);
+typedef bool (*ShaderRule)(Framebuffer*); // true = drawn to color buffer
+
+// two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
+#define STAGE_SPELL_BIT 0x8000
+#define STAGE_EXTRASPELL_BIT 0x4000
+
+typedef enum StageType {
+	STAGE_STORY = 1,
+	STAGE_EXTRA,
+	STAGE_SPELL,
+	STAGE_SPECIAL,
+} StageType;
+
+typedef struct StageProcs StageProcs;
+struct StageProcs {
+	StageProc begin;
+	StageProc preload;
+	StageProc end;
+	StageProc draw;
+	StageProc event;
+	StageProc update;
+	ShaderRule *shader_rules;
+	ShaderRule *postprocess_rules;
+	StageProcs *spellpractice_procs;
+};
+
+typedef struct StageInfo {
+	uint16_t id; // must match type of ReplayStage.stage in replay.h
+	StageProcs *procs;
+	StageType type;
+	char *title;
+	char *subtitle;
+	AttackInfo *spell;
+	Difficulty difficulty;
+
+	// Do NOT access this directly!
+	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
+	StageProgress *progress;
+} StageInfo;
+
+size_t stageinfo_get_num_stages(void);
+
+StageInfo *stageinfo_get_by_index(size_t index);
+StageInfo *stageinfo_get_by_id(uint16_t id);
+StageInfo *stageinfo_get_by_spellcard(AttackInfo *spell, Difficulty diff);
+
+StageProgress *stageinfo_get_progress(StageInfo *stageinfo, Difficulty diff, bool allocate);
+StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool allocate);
+
+void stageinfo_init(void);
+void stageinfo_shutdown(void);
+
+#endif // IGUARD_stageinfo_h

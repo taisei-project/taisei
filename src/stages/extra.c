@@ -16,6 +16,7 @@
 #include "stagedraw.h"
 #include "resource/model.h"
 #include "stagetext.h"
+#include "stageutils.h"
 
 TASK(glider_bullet, {
 	cmplx pos; double dir; double spacing; int interval;

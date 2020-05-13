@@ -91,6 +91,7 @@ taisei_src = files(
     'replay.c',
     'stage.c',
     'stagedraw.c',
+    'stageinfo.c',
     'stageobjects.c',
     'stagetext.c',
     'stageutils.c',
