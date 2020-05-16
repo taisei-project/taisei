@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "stagex.h"
 #include "yumemi.h"
 #include "draw.h"
 #include "stagex.h"
