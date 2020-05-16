@@ -239,7 +239,7 @@ TASK(infinity_net, {
 	BoxedBoss boss;
 	cmplx origin;
 }) {
-	Boss *boss = TASK_BIND(ARGS.boss);
+	TASK_BIND(ARGS.boss);
 
 	int spawntime = 120;
 	int subdiv = 22;
