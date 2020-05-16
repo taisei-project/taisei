@@ -8,6 +8,7 @@
 
 #include "taisei.h"
 
+#include "stagex.h"
 #include "yumemi.h"
 #include "draw.h"
 #include "stagex.h"
