@@ -368,9 +368,9 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 
 	Boss *boss;
 	INVOKE_TASK(boss, &boss);
-	return;
+	STALL;
 
-enemies:
+attr_unused enemies:
 	for(int i = 0;;i++) {
 		INVOKE_TASK_DELAYED(60, glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
 		WAIT(50+100*(i&1));
