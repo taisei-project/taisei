@@ -153,11 +153,9 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 			sum++;
 
 			cmplx dir = cdir((i + 0.5) / N * M_TAU + M_PI/2);
-
 			cmplx v = dir;
 
-
-			Projectile *cell = PROJECTILE(
+			attr_unused Projectile *cell = PROJECTILE(
 				.proto = pp_thickrice,
 				.color = &colors[0],
 				.pos = origin - 100 * dir,
