@@ -217,8 +217,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	play_sound("boom");
 	play_sound("spellend");
 
-	global.shake_view = 20;
-	global.shake_view_fade = 0.6;
+	stage_shake_view(200);
 
 	real damage = 2000;
 	real range = 300;
@@ -429,7 +428,6 @@ TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
 		INVOKE_SUBTASK(reimu_spirit_bomb_background, ctrl);
 
-		global.shake_view = 4;
 		play_sound("bomb_reimu_a");
 		play_sound("bomb_marisa_b");
 

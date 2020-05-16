@@ -925,7 +925,7 @@ static int scythe_explode(Enemy *e, int t) {
 
 	if(t == 100) {
 		petal_explosion(100, e->pos);
-		global.shake_view = 16;
+		stage_shake_view(16);
 		play_sound("boom");
 
 		scythe_common(e, t);
@@ -990,8 +990,14 @@ static void elly_paradigm_shift(Boss *b, int t) {
 		elly_spawn_baryons(b->pos);
 	}
 
+	/*
 	if(t > 120)
 		global.shake_view = fmax(0, 16-0.26*(t-120));
+	*/
+
+	AT(120) {
+		stage_shake_view(200);
+	}
 }
 
 static void set_baryon_rule(EnemyLogicRule r) {
@@ -1160,8 +1166,7 @@ static int broglie_charge(Projectile *p, int t) {
 		play_sound_ex("laser1", 10, true);
 		play_sound("boom");
 
-		global.shake_view = 5.0;
-		global.shake_view_fade = 0.25;
+		stage_shake_view(20);
 
 		Color clr = p->color;
 		clr.a = 0;
@@ -1747,7 +1752,6 @@ void elly_lhc(Boss *b, int t) {
 		set_baryon_rule(baryon_lhc);
 	AT(EVENT_DEATH) {
 		set_baryon_rule(baryon_reset);
-		global.shake_view_fade=1;
 	}
 
 	FROM_TO(260, 10000, 400) {
@@ -1759,7 +1763,7 @@ void elly_lhc(Boss *b, int t) {
 		int c = 30+10*global.diff;
 		cmplx pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
 
-		global.shake_view = 16;
+		stage_shake_view(160);
 		play_sound("boom");
 
 		for(i = 0; i < c; i++) {
@@ -1810,10 +1814,6 @@ void elly_lhc(Boss *b, int t) {
 			.args = { cexp(2.0*I*_i), 3 },
 		);
 	}
-
-	FROM_TO(300, 10000, 400) {
-		global.shake_view = 0;
-	}
 }
 
 static int baryon_explode(Enemy *e, int t) {
@@ -1822,7 +1822,7 @@ static int baryon_explode(Enemy *e, int t) {
 		free_ref(e->args[1]);
 		petal_explosion(24, e->pos);
 		play_sound("boom");
-		global.shake_view = fmaxf(15, global.shake_view);
+		stage_shake_view(15);
 
 		for(uint i = 0; i < 3; ++i) {
 			PARTICLE(
@@ -2071,8 +2071,6 @@ static void elly_baryon_explode(Boss *b, int t) {
 
 	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 
-	global.shake_view_fade = 0.5;
-
 	AT(20) {
 		set_baryon_rule(baryon_explode);
 	}
@@ -2084,7 +2082,8 @@ static void elly_baryon_explode(Boss *b, int t) {
 	FROM_TO(0, 200, 1) {
 		// tsrand_fill(2);
 		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-		global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
+		// global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
+		stage_shake_view(_i / 200.0f);
 
 		if(_i > 30) {
 			play_loop("charge_generic");
@@ -2093,8 +2092,7 @@ static void elly_baryon_explode(Boss *b, int t) {
 
 	AT(200) {
 		tsrand_fill(2);
-		global.shake_view += 30;
-		global.shake_view_fade = 0.05;
+		stage_shake_view(40);
 		play_sound("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		enemy_kill_all(&global.enemies);
@@ -2635,7 +2633,7 @@ static void elly_toe_laser_logic(Laser *l, int t) {
 //
 void elly_theory(Boss *b, int time) {
 	if(time == EVENT_BIRTH) {
-		global.shake_view = 10;
+		stage_shake_view(50);
 		boss_set_portrait(b, "elly", "beaten", "shouting");
 		return;
 	}
@@ -2650,7 +2648,6 @@ void elly_theory(Boss *b, int time) {
 	AT(0) {
 		assert(cabs(b->pos - ELLY_TOE_TARGET_POS) < 1);
 		b->pos = ELLY_TOE_TARGET_POS;
-		global.shake_view = 0;
 		elly_clap(b,50000);
 	}
 
@@ -2737,16 +2734,14 @@ void elly_theory(Boss *b, int time) {
 
 	AT(fermiontime) {
 		play_sound("charge_generic");
-		global.shake_view=10;
-		global.shake_view_fade=1;
+		stage_shake_view(10);
 	}
 
 	AT(symmetrytime) {
 		play_sound("charge_generic");
 		play_sound("boom");
 		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		global.shake_view=10;
-		global.shake_view_fade=1;
+		stage_shake_view(10);
 
 		PARTICLE(
 			.sprite = "blast",
@@ -2774,16 +2769,14 @@ void elly_theory(Boss *b, int time) {
 	AT(yukawatime) {
 		play_sound("charge_generic");
 		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		global.shake_view=10;
-		global.shake_view_fade=1;
+		stage_shake_view(10);
 	}
 
 	AT(breaktime) {
 		play_sound("charge_generic");
 		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
 		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		global.shake_view=10;
-		global.shake_view_fade=1;
+		stage_shake_view(10);
 	}
 
 	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
@@ -2962,7 +2955,6 @@ static void elly_begin_toe(Boss *b, int t) {
 		start_fall_over();
 		stage_unlock_bgm("stage6boss_phase2");
 		stage_start_bgm("stage6boss_phase3");
-		global.shake_view_fade = 0;
 	}
 }
 

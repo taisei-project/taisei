@@ -46,22 +46,21 @@ static struct {
 		ShaderProgram *copy_depth;
 	} shaders;
 
-	struct {
-		float alpha;
-		float target_alpha;
-	} clear_screen;
-
 	PostprocessShader *viewport_pp;
 	FBPair fb_pairs[NUM_FBPAIRS];
 	FBPair powersurge_fbpair;
 	FBPair *current_postprocess_fbpair;
 
+	ManagedFramebufferGroup *mfb_group;
+	StageDrawEvents events;
+
+	struct {
+		float alpha;
+		float target_alpha;
+	} clear_screen;
+
 	bool framerate_graphs;
 	bool objpool_stats;
-
-	ManagedFramebufferGroup *mfb_group;
-
-	StageDrawEvents events;
 
 	#ifdef DEBUG
 		Sprite dummy;
@@ -906,28 +905,33 @@ static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 }
 
 static inline void begin_viewport_shake(void) {
-	if(global.shake_view) {
+	float s = stage_get_view_shake_strength();
+
+	if(s > 0) {
+// 		s = log1pf(s);
+		s = sqrtf(s);
+
 		r_mat_mv_push();
 		r_mat_mv_translate(
-			global.shake_view * sin(global.frames),
-			global.shake_view * sin(global.frames * 1.1 + 3),
+			s * sin(global.frames),
+			s * sin(global.frames * 1.1 + 3),
 			0
 		);
 		r_mat_mv_scale(
-			1 + 2 * global.shake_view / VIEWPORT_W,
-			1 + 2 * global.shake_view / VIEWPORT_H,
+			1 + 2 * s / VIEWPORT_W,
+			1 + 2 * s / VIEWPORT_H,
 			1
 		);
 		r_mat_mv_translate(
-			-global.shake_view,
-			-global.shake_view,
+			-s,
+			-s,
 			0
 		);
 	}
 }
 
 static inline void end_viewport_shake(void) {
-	if(global.shake_view) {
+	if(stage_get_view_shake_strength() > 0) {
 		r_mat_mv_pop();
 	}
 }
@@ -942,7 +946,7 @@ void stage_draw_begin_noshake(void) {
 	assert(!shake_suppressed);
 	shake_suppressed = 1;
 
-	if(global.shake_view) {
+	if(stage_get_view_shake_strength() > 0) {
 		shake_suppressed = 2;
 		r_mat_mv_push_identity();
 	}
@@ -951,7 +955,7 @@ void stage_draw_begin_noshake(void) {
 void stage_draw_end_noshake(void) {
 	assert(shake_suppressed);
 
-	if(global.shake_view) {
+	if(stage_get_view_shake_strength() > 0) {
 		// make sure shake_view doesn't change in-between the begin/end calls;
 		// that would've been *really* nasty to debug.
 		assert(shake_suppressed == 2);

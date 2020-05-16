@@ -1094,8 +1094,7 @@ static int iku_extra_trigger_bullet(Projectile *p, int t) {
 				.args = { dir, 10 },
 			);
 		}
-		global.shake_view += 5;
-		global.shake_view_fade = 0.2;
+		stage_shake_view(40);
 		aniplayer_hard_switch(&global.boss->ani,"main_mirror",0);
 		play_sound("boom");
 		return ACTION_DESTROY;
@@ -1195,9 +1194,6 @@ static int iku_extra_slave(Enemy *e, int t) {
 				Laser *l;
 				int cnt = 6 + 2 * global.diff, i;
 
-				global.shake_view = 0;
-				global.shake_view_fade = 0.2;
-
 				e->args[2] = 1;
 
 				for(o = global.enemies.first; o; o = o->next) {
@@ -1217,7 +1213,7 @@ static int iku_extra_slave(Enemy *e, int t) {
 					o->args[1] = 0;
 					o->args[2] = 0;
 
-					global.shake_view += 1;
+					stage_shake_view(5);
 				}
 
 				for(l = global.lasers.first; l; l = l->next) {

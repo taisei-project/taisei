@@ -31,7 +31,6 @@ static void stage_start(StageInfo *stage) {
 	global.timer = 0;
 	global.frames = 0;
 	global.gameover = 0;
-	global.shake_view = 0;
 	global.voltage_threshold = 0;
 
 	player_stage_pre_init(&global.plr);
@@ -579,7 +578,10 @@ typedef struct StageFrameState {
 	int transition_delay;
 	int logic_calls;
 	uint16_t last_replay_fps;
+	float view_shake;
 } StageFrameState;
+
+static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
 
 static void stage_update_fps(StageFrameState *fstate) {
 	if(global.replaymode == REPLAY_RECORD) {
@@ -638,17 +640,8 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		global.plr.iddqd = true;
 	}
 
-	if(global.shake_view > 30) {
-		global.shake_view = 30;
-	}
-
-	if(global.shake_view_fade) {
-		global.shake_view -= global.shake_view_fade;
-
-		if(global.shake_view <= 0) {
-			global.shake_view = global.shake_view_fade = 0;
-		}
-	}
+	fapproach_p(&fstate->view_shake, 0, 1);
+	fapproach_asymptotic_p(&fstate->view_shake, 0, 0.05, 1e-2);
 
 	((global.replaymode == REPLAY_PLAY) ? replay_input : stage_input)();
 
@@ -688,6 +681,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	}
 
 	if(global.gameover > 0) {
+		log_warn("RESTART");
 		return LFRAME_STOP;
 	}
 
@@ -822,6 +816,8 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	fstate->stage = stage;
 	fstate->cc = next;
 
+	_current_stage_state = fstate;
+
 	#ifdef DEBUG
 	_skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
 	_skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
@@ -840,6 +836,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 
 void stage_end_loop(void* ctx) {
 	StageFrameState *s = ctx;
+	assert(s == _current_stage_state);
 
 	if(global.replaymode == REPLAY_RECORD) {
 		replay_stage_event(global.replay_stage, global.frames, EV_OVER, 0);
@@ -868,12 +865,29 @@ void stage_end_loop(void* ctx) {
 		global.gameover = GAMEOVER_ABORT;
 	}
 
-	run_call_chain(&s->cc, NULL);
+	_current_stage_state = NULL;
+
+	CallChain cc = s->cc;
 	free(s);
+
+	run_call_chain(&cc, NULL);
 }
 
 void stage_unlock_bgm(const char *bgm) {
 	if(global.replaymode != REPLAY_PLAY && !global.plr.stats.total.continues_used) {
 		progress_unlock_bgm(bgm);
 	}
+}
+
+void stage_shake_view(float strength) {
+	assume(strength >= 0);
+	_current_stage_state->view_shake += strength;
+}
+
+float stage_get_view_shake_strength(void) {
+	if(_current_stage_state) {
+		return _current_stage_state->view_shake;
+	}
+
+	return 0;
 }

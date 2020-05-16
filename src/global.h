@@ -126,9 +126,6 @@ typedef struct {
 	ReplayMode replaymode;
 	ReplayStage *replay_stage;
 
-	float shake_view;
-	float shake_view_fade;
-
 	uint voltage_threshold;
 
 	RandomState rand_game;

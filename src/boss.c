@@ -1050,20 +1050,18 @@ void process_boss(Boss **pboss) {
 			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
 			float a = fmax((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
 			if(a < 2) {
-				global.shake_view = 3 * a;
+				stage_shake_view(3 * a);
 				boss_rule_extra(boss, a);
 				if(a > 1) {
 					boss_rule_extra(boss, a * 0.5);
 					if(a > 1.3) {
-						global.shake_view = 5 * a;
+						stage_shake_view(5 * a);
 						if(a > 1.7)
-							global.shake_view += 2 * a;
+							stage_shake_view(2 * a);
 						boss_rule_extra(boss, 0);
 						boss_rule_extra(boss, 0.1);
 					}
 				}
-			} else {
-				global.shake_view_fade = 0.15;
 			}
 		} else if(time < 0) {
 			boss_rule_extra(boss, 1+time/(float)ATTACK_START_DELAY_EXTRA);
@@ -1074,12 +1072,10 @@ void process_boss(Boss **pboss) {
 			boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) * q);
 			if(o) {
 				boss_rule_extra(boss, fmax(1-time/300.0, base + ampl * s) - o);
-				if(!global.shake_view) {
-					global.shake_view = 5;
-					global.shake_view_fade = 0.9;
-				} else if(o > -0.05) {
-					global.shake_view = 10;
-					global.shake_view_fade = 0.5;
+
+				stage_shake_view(5);
+				if(o > -0.05) {
+					stage_shake_view(10);
 				}
 			}
 		}
@@ -1131,11 +1127,7 @@ void process_boss(Boss **pboss) {
 		);
 
 		if(!extra) {
-			if(t == 1) {
-				global.shake_view_fade = 0.2;
-			} else {
-				global.shake_view = 5 * (t + t*t + t*t*t);
-			}
+			stage_shake_view(5 * (t + t*t + t*t*t));
 		}
 
 		if(t == 1) {
@@ -1277,6 +1269,7 @@ void boss_death(Boss **boss) {
 
 	if(!fleed) {
 		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+		stage_shake_view(100);
 
 		PARTICLE(
 			.pos = (*boss)->pos,

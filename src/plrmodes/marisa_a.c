@@ -533,11 +533,11 @@ TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 		marisa_laser_masterspark_damage(ms);
 
 		if(bomb_progress >= 3.0/4.0) {
-			global.shake_view = 8 * (1 - bomb_progress * 4 + 3);
+			stage_shake_view(8 * (1 - bomb_progress * 4 + 3));
 			goto skip_particles;
 		}
 
-		global.shake_view = 8;
+		stage_shake_view(8);
 
 		uint pflags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE;
 
@@ -580,8 +580,6 @@ skip_particles:
 		++t;
 		YIELD;
 	} while(player_is_bomb_active(plr));
-
-	global.shake_view = 0;
 
 	while(ms->alpha > 0) {
 		approach_p(&ms->alpha, 0, 0.2);

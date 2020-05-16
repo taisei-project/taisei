@@ -171,7 +171,7 @@ TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
 			);
 		}
 
-		global.shake_view += 6;
+		stage_shake_view(4);
 		t += WAIT(BOMB_PROJECTILE_FIRE_DELAY);
 	} while(player_is_bomb_active(plr));
 }
@@ -611,7 +611,7 @@ TASK(reimu_dream_controller_tick, { ReimuBController *ctrl; }) {
 
 	for(;;) {
 		if(player_is_bomb_active(plr)) {
-			global.shake_view_fade = fmax(global.shake_view_fade, 2);
+			stage_shake_view(1);
 			approach_p(&ctrl->bomb_alpha, 1.0, 0.1);
 		} else {
 			approach_p(&ctrl->bomb_alpha, 0.0, 0.025);
