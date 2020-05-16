@@ -31,7 +31,10 @@ MenuData* create_spell_menu(void) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+
 		if(stg->type != STAGE_SPELL) {
 			continue;
 		}
@@ -40,7 +43,8 @@ MenuData* create_spell_menu(void) {
 			add_menu_separator(m);
 		}
 
-		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+		StageProgress *p = stageinfo_get_progress(stg, D_Any, false);
+
 		if(p && p->unlocked) {
 			snprintf(title, sizeof(title), "%s: %s", stg->title, stg->subtitle);
 			add_menu_entry(m, title, start_game, stg);
@@ -50,7 +54,7 @@ MenuData* create_spell_menu(void) {
 		}
 
 		lastdiff = stg->difficulty;
-	});
+	}
 
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);

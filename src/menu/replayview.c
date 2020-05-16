@@ -84,7 +84,7 @@ static void start_replay(MenuData *menu, void *arg) {
 	ReplayStage *stg = rpy->stages + stagenum;
 	char buf[64];
 
-	if(!stage_get(stg->stage)) {
+	if(!stageinfo_get_by_id(stg->stage)) {
 		replay_destroy_events(rpy);
 		snprintf(buf, sizeof(buf), "Can't replay this stage: unknown stage ID %X", stg->stage);
 		replayview_set_submenu(menu, replayview_sub_messagebox(menu, buf));
@@ -119,7 +119,7 @@ static MenuData* replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 	m->context = parent->context;
 
 	for(int i = 0; i < rpy->numstages; ++i) {
-		add_menu_entry(m, stage_get(rpy->stages[i].stage)->title, start_replay, ictx)/*->transition = TransFadeBlack*/;
+		add_menu_entry(m, stageinfo_get_by_id(rpy->stages[i].stage)->title, start_replay, ictx)/*->transition = TransFadeBlack*/;
 	}
 
 	return m;
@@ -276,7 +276,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 			case 4:
 				a = ALIGN_LEFT;
 				if(rpy->numstages == 1) {
-					StageInfo *stg = stage_get(rpy->stages[0].stage);
+					StageInfo *stg = stageinfo_get_by_id(rpy->stages[0].stage);
 
 					if(stg) {
 						snprintf(tmp, sizeof(tmp), "%s", stg->title);

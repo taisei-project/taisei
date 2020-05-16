@@ -47,6 +47,7 @@
 #include "log.h"
 #include "framerate.h"
 #include "renderer/api.h"
+#include "stageinfo.h"
 
 enum {
 	// defaults

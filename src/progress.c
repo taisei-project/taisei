@@ -11,7 +11,7 @@
 #include <zlib.h>
 
 #include "progress.h"
-#include "stage.h"
+#include "stageinfo.h"
 #include "version.h"
 
 /*
@@ -165,7 +165,7 @@ static void progress_read(SDL_RWops *file) {
 		switch(cmd) {
 			case PCMD_UNLOCK_STAGES:
 				while(cur < cmdsize) {
-					StageProgress *p = stage_get_progress(SDL_ReadLE16(vfile), D_Any, true);
+					StageProgress *p = stageinfo_get_progress_by_id(SDL_ReadLE16(vfile), D_Any, true);
 					if(p) {
 						p->unlocked = true;
 					}
@@ -177,11 +177,11 @@ static void progress_read(SDL_RWops *file) {
 				while(cur < cmdsize) {
 					uint16_t stg = SDL_ReadLE16(vfile);
 					uint8_t dflags = SDL_ReadU8(vfile);
-					StageInfo *info = stage_get(stg);
+					StageInfo *info = stageinfo_get_by_id(stg);
 
 					for(uint diff = D_Easy; diff <= D_Lunatic; ++diff) {
 						if(dflags & (uint)pow(2, diff - D_Easy)) {
-							StageProgress *p = stage_get_progress_from_info(info, diff, true);
+							StageProgress *p = stageinfo_get_progress(info, diff, true);
 							if(p) {
 								p->unlocked = true;
 							}
@@ -200,7 +200,7 @@ static void progress_read(SDL_RWops *file) {
 				while(cur < cmdsize) {
 					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
 					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
-					StageProgress *p = stage_get_progress(stg, diff, true);
+					StageProgress *p = stageinfo_get_progress_by_id(stg, diff, true);
 
 					// assert(p != NULL);
 
@@ -315,12 +315,15 @@ typedef struct cmd_writer_t {
 static void progress_prepare_cmd_unlock_stages(size_t *bufsize, void **arg) {
 	int num_unlocked = 0;
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
-		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+		StageProgress *p = stageinfo_get_progress(stg, D_Any, false);
+
 		if(p && p->unlocked) {
 			++num_unlocked;
 		}
-	});
+	}
 
 	if(num_unlocked) {
 		*bufsize += CMD_HEADER_SIZE;
@@ -340,12 +343,15 @@ static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
 	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES);
 	SDL_WriteLE16(vfile, num_unlocked * 2);
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
-		StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+		StageProgress *p = stageinfo_get_progress(stg, D_Any, false);
+
 		if(p && p->unlocked) {
 			SDL_WriteLE16(vfile, stg->id);
 		}
-	});
+	}
 }
 
 //
@@ -355,7 +361,10 @@ static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
 static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize, void **arg) {
 	int num_unlocked = 0;
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+
 		if(stg->difficulty) {
 			continue;
 		}
@@ -363,7 +372,8 @@ static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize
 		bool unlocked = false;
 
 		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
-			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
+			StageProgress *p = stageinfo_get_progress(stg, diff, false);
+
 			if(p && p->unlocked) {
 				unlocked = true;
 			}
@@ -372,7 +382,7 @@ static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize
 		if(unlocked) {
 			++num_unlocked;
 		}
-	});
+	}
 
 	if(num_unlocked) {
 		*bufsize += CMD_HEADER_SIZE;
@@ -392,7 +402,10 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES_WITH_DIFFICULTY);
 	SDL_WriteLE16(vfile, num_unlocked * 3);
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+
 		if(stg->difficulty) {
 			continue;
 		}
@@ -400,7 +413,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 		uint8_t dflags = 0;
 
 		for(Difficulty diff = D_Easy; diff <= D_Lunatic; ++diff) {
-			StageProgress *p = stage_get_progress_from_info(stg, diff, false);
+			StageProgress *p = stageinfo_get_progress(stg, diff, false);
 			if(p && p->unlocked) {
 				dflags |= (uint)pow(2, diff - D_Easy);
 			}
@@ -410,7 +423,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 			SDL_WriteLE16(vfile, stg->id);
 			SDL_WriteU8(vfile, dflags);
 		}
-	});
+	}
 }
 
 //
@@ -448,7 +461,9 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 	struct cmd_stage_playinfo_data *data = malloc(sizeof(struct cmd_stage_playinfo_data));
 	memset(data, 0, sizeof(struct cmd_stage_playinfo_data));
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
 		Difficulty d_first, d_last;
 
 		if(stg->difficulty == D_Any) {
@@ -459,7 +474,7 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 		}
 
 		for(Difficulty d = d_first; d <= d_last; ++d) {
-			StageProgress *p = stage_get_progress_from_info(stg, d, false);
+			StageProgress *p = stageinfo_get_progress(stg, d, false);
 
 			if(p && (p->num_played || p->num_cleared)) {
 				struct cmd_stage_playinfo_data_elem *e = malloc(sizeof(struct cmd_stage_playinfo_data_elem));
@@ -472,7 +487,7 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 				(void)list_push(&data->elems, e);
 			}
 		}
-	});
+	}
 
 	*arg = data;
 

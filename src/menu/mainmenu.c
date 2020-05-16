@@ -32,9 +32,12 @@ void main_menu_update_practice_menus(void) {
 	spell_practice_entry->action = NULL;
 	stage_practice_entry->action = NULL;
 
-	dynarray_foreach_elem(&stages, StageInfo *stg, {
+	int n = stageinfo_get_num_stages();
+	for(int i = 0; i < n; ++i) {
+		StageInfo *stg = stageinfo_get_by_index(i);
+
 		if(stg->type == STAGE_SPELL) {
-			StageProgress *p = stage_get_progress_from_info(stg, D_Any, false);
+			StageProgress *p = stageinfo_get_progress(stg, D_Any, false);
 
 			if(p && p->unlocked) {
 				spell_practice_entry->action = menu_action_enter_spellpractice;
@@ -44,7 +47,7 @@ void main_menu_update_practice_menus(void) {
 			}
 		} else if(stg->type == STAGE_STORY) {
 			for(Difficulty d = D_Easy; d <= D_Lunatic; ++d) {
-				StageProgress *p = stage_get_progress_from_info(stg, d, false);
+				StageProgress *p = stageinfo_get_progress(stg, d, false);
 
 				if(p && p->unlocked) {
 					stage_practice_entry->action = menu_action_enter_stagepractice;
@@ -54,7 +57,7 @@ void main_menu_update_practice_menus(void) {
 				}
 			}
 		}
-	});
+	}
 }
 
 static void begin_main_menu(MenuData *m) {

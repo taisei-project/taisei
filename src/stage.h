@@ -19,6 +19,7 @@
 #include "dialog.h"
 #include "coroutine.h"
 #include "dynarray.h"
+#include "stageinfo.h"
 
 /* taisei's strange macro language.
  *
@@ -60,51 +61,6 @@
 #define FROM_TO_SND(snd,start,end,step) PLAY_FOR(snd,start,end); FROM_TO(start,end,step)
 #define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
 
-typedef void (*StageProc)(void);
-typedef bool (*ShaderRule)(Framebuffer*); // true = drawn to color buffer
-
-// two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
-#define STAGE_SPELL_BIT 0x8000
-#define STAGE_EXTRASPELL_BIT 0x4000
-
-typedef enum StageType {
-	STAGE_STORY = 1,
-	STAGE_EXTRA,
-	STAGE_SPELL,
-	STAGE_SPECIAL,
-} StageType;
-
-typedef struct StageProcs StageProcs;
-
-struct StageProcs {
-	StageProc begin;
-	StageProc preload;
-	StageProc end;
-	StageProc draw;
-	StageProc event;
-	StageProc update;
-	ShaderRule *shader_rules;
-	ShaderRule *postprocess_rules;
-	StageProcs *spellpractice_procs;
-};
-
-typedef struct StageInfo {
-	uint16_t id; // must match type of ReplayStage.stage in replay.h
-	StageProcs *procs;
-	StageType type;
-	char *title;
-	char *subtitle;
-	AttackInfo *spell;
-	Difficulty difficulty;
-
-	// Do NOT access this directly!
-	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
-	StageProgress *progress;
-} StageInfo;
-
-typedef DYNAMIC_ARRAY(StageInfo) StageInfoArray;
-extern StageInfoArray stages;
-
 typedef struct StageClearBonus {
 	uint64_t base;
 	uint64_t lives;
@@ -113,15 +69,6 @@ typedef struct StageClearBonus {
 	uint64_t total;
 	bool all_clear;
 } StageClearBonus;
-
-StageInfo* stage_get(uint16_t);  // NOTE: This returns the stage BY ID, not by the array index!
-StageInfo* stage_get_by_spellcard(AttackInfo *spell, Difficulty diff);
-
-StageProgress* stage_get_progress(uint16_t id, Difficulty diff, bool allocate);
-StageProgress* stage_get_progress_from_info(StageInfo *stage, Difficulty diff, bool allocate);
-
-void stage_init_array(void);
-void stage_free_array(void);
 
 void stage_enter(StageInfo *stage, CallChain next);
 void stage_finish(int gameover);
@@ -163,13 +110,5 @@ DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
 #define STAGE_BOOKMARK(name) ((void)0)
 #define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
 #endif
-
-#include "stages/stage1.h"
-#include "stages/stage2.h"
-#include "stages/stage3.h"
-#include "stages/stage4.h"
-#include "stages/stage5.h"
-#include "stages/stage6.h"
-#include "stages/extra.h"
 
 #endif // IGUARD_stage_h

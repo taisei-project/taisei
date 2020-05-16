@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-#include "stage.h"
+#include "stageinfo.h"
 
 extern StageProcs stage_dpstest_single_procs;
 extern StageProcs stage_dpstest_multi_procs;

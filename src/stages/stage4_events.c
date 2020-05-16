@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "stage4_events.h"
+#include "stage4.h"
 #include "stage6_events.h"
 #include "global.h"
 #include "stage.h"

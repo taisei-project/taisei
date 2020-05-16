@@ -14,7 +14,7 @@
 #include "global.h"
 #include "video.h"
 #include "audio/audio.h"
-#include "stage.h"
+#include "stageinfo.h"
 #include "menu/mainmenu.h"
 #include "menu/savereplay.h"
 #include "gamepad.h"
@@ -45,7 +45,7 @@ static void taisei_shutdown(void) {
 	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
-	stage_free_array();
+	stageinfo_shutdown();
 	config_shutdown();
 	vfs_shutdown();
 	events_shutdown();
@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
 
 	setlocale(LC_ALL, "C");
 	init_log();
-	stage_init_array(); // cli_args depends on this
+	stageinfo_init(); // cli_args depends on this
 
 	// commandline arguments should be parsed as early as possible
 	cli_args(argc, argv, &ctx->cli); // stage_init_array goes first!
@@ -223,9 +223,11 @@ int main(int argc, char **argv) {
 	}
 
 	if(ctx->cli.type == CLI_DumpStages) {
-		dynarray_foreach_elem(&stages, StageInfo *stg, {
+		int n = stageinfo_get_num_stages();
+		for(int i = 0; i < n; ++i) {
+			StageInfo *stg = stageinfo_get_by_index(i);
 			tsfprintf(stdout, "%X %s: %s\n", stg->id, stg->title, stg->subtitle);
-		});
+		}
 
 		main_quit(ctx, 0);
 	}
@@ -373,7 +375,7 @@ static void main_singlestg(MainContext *mctx) {
 	CLIAction *a = &mctx->cli;
 	log_info("Entering stage skip mode: Stage %X", a->stageid);
 
-	StageInfo* stg = stage_get(a->stageid);
+	StageInfo *stg = stageinfo_get_by_id(a->stageid);
 	assert(stg); // properly checked before this
 
 	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
