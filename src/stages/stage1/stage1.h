@@ -6,15 +6,15 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage1_h
-#define IGUARD_stages_stage1_h
+#ifndef IGUARD_stages_stage1_stage1_h
+#define IGUARD_stages_stage1_stage1_h
 
 #include "taisei.h"
 
 #include "stageinfo.h"
 
 #if defined(DEBUG) && !defined(SPELL_BENCHMARK)
-#define SPELL_BENCHMARK
+	#define SPELL_BENCHMARK
 #endif
 
 extern struct stage1_spells_s {
@@ -42,12 +42,8 @@ extern struct stage1_spells_s {
 extern StageProcs stage1_procs;
 extern StageProcs stage1_spell_procs;
 
-void stage1_bg_raise_camera(void);
-void stage1_bg_enable_snow(void);
-void stage1_bg_disable_snow(void);
-
 #ifdef SPELL_BENCHMARK
 extern AttackInfo stage1_spell_benchmark;
 #endif
 
-#endif // IGUARD_stages_stage1_h
+#endif // IGUARD_stages_stage1_stage1_h

@@ -4,84 +4,50 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
 #include "taisei.h"
 
-#include "stage1.h"
-#include "stage1_events.h"
+#include "draw.h"
 
-#include "global.h"
-#include "stage.h"
-#include "stageutils.h"
 #include "stagedraw.h"
-#include "resource/model.h"
+#include "stageutils.h"
+#include "global.h"
 #include "util/glm.h"
-#include "common_tasks.h"
-#include "portrait.h"
 
-/*
- *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
- *  To add, remove, or reorder spells, see this stage's header file.
- */
+static Stage1DrawData *stage1_draw_data;
 
-struct stage1_spells_s stage1_spells = {
-	.mid = {
-		.perfect_freeze = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
-			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze)
-		},
-	},
+Stage1DrawData *stage1_get_draw_data(void) {
+	return NOT_NULL(stage1_draw_data);
+}
 
-	.boss = {
-		.crystal_rain = {
-			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
-			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain)
-		},
-		.snow_halation = {
-			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
-			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation)
-		},
-		.icicle_cascade = {
-			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Cascade”", 40, 40000,
-			NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade)
-		},
-	},
+void stage1_drawsys_init(void) {
+	stage1_draw_data = calloc(1, sizeof(*stage1_draw_data));
+	stage3d_init(&stage_3d_context, 64);
 
-	.extra.crystal_blizzard = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
-		NULL, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I, 1, TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard)
-	},
-};
+	FBAttachmentConfig cfg = { 0 };
+	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
+	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	cfg.tex_params.type = TEX_TYPE_RGBA;
+	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
+	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
 
-static struct {
-	FBPair water_fbpair;
+	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer("Stage 1 water FB 1", 0.2, 0.5, 1, &cfg);
+	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer("Stage 1 water FB 2", 0.2, 0.5, 1, &cfg);
+}
 
-	struct {
-		float near, near_target;
-		float far, far_target;
-	} fog;
+void stage1_drawsys_shutdown(void) {
+	stage3d_shutdown(&stage_3d_context);
+	free(stage1_draw_data);
+	stage1_draw_data = NULL;
+}
 
-	struct {
-		float opacity, opacity_target;
-	} snow;
-
-	float pitch_target;
-} stage1_bg;
-
-#ifdef SPELL_BENCHMARK
-AttackInfo stage1_spell_benchmark = {
-	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling “ベンチマーク”", 40, 40000,
-	cirno_benchmark, cirno_pfreeze_bg, VIEWPORT_W/2.0+100.0*I
-};
-#endif
-
-static bool particle_filter(Projectile *part) {
+static bool reflect_particle_filter(Projectile *part) {
 	return !(part->flags & PFLAG_NOREFLECT) && stage_should_draw_particle(part);
 }
 
-static bool stage1_draw_predicate(EntityInterface *ent) {
+static bool reflect_draw_predicate(EntityInterface *ent) {
 	switch(ent->draw_layer & ~LAYER_LOW_MASK) {
 		case LAYER_PLAYER_SLAVE:
 		case LAYER_PLAYER_FOCUS:
@@ -100,7 +66,7 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 			Projectile *p = ENT_CAST(ent, Projectile);
 
 			if(p->type == PROJ_PARTICLE) {
-				return particle_filter(p);
+				return reflect_particle_filter(p);
 			}
 
 			return false;
@@ -113,6 +79,8 @@ static bool stage1_draw_predicate(EntityInterface *ent) {
 }
 
 static void stage1_water_draw(vec3 pos) {
+	Stage1DrawData *draw_data = stage1_get_draw_data();
+
 	// don't even ask
 
 	r_state_push();
@@ -151,7 +119,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_disable(RCAP_CULL_FACE);
 
 	Framebuffer *bg_fb = r_framebuffer_current();
-	FBPair *fbpair = &stage1_bg.water_fbpair;
+	FBPair *fbpair = &draw_data->water_fbpair;
 	r_framebuffer(fbpair->back);
 	r_mat_proj_push();
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
@@ -167,7 +135,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 	r_shader("sprite_default");
 
-	ent_draw(stage1_draw_predicate);
+	ent_draw(reflect_draw_predicate);
 
 	r_mat_mv_pop();
 
@@ -228,13 +196,13 @@ static void stage1_water_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static uint stage1_bg_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	vec3 q = {0,0,0};
+static uint stage1_water_pos(Stage3D *s3d, vec3 p, float maxrange) {
+	vec3 q = {0, 0, 0};
 	return single3dpos(s3d, p, INFINITY, q);
 }
 
 static void stage1_smoke_draw(vec3 pos) {
-	float d = fabsf(pos[1]-stage_3d_context.cx[1]);
+	float d = fabsf(pos[1] - stage_3d_context.cx[1]);
 
 	float o = ((d-500)*(d-500))/1.5e7;
 	o *= 5 * pow((5000 - d) / 5000, 3);
@@ -269,15 +237,18 @@ static uint stage1_smoke_pos(Stage3D *s3d, vec3 p, float maxrange) {
 }
 
 static bool stage1_fog(Framebuffer *fb) {
+	Stage1DrawData *draw_data = stage1_get_draw_data();
+
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4("fog_color", 0.78, 0.8, 0.85, 1.0);
-	r_uniform_float("start", stage1_bg.fog.near);
-	r_uniform_float("end", stage1_bg.fog.far);
+	r_uniform_float("start", draw_data->fog.near);
+	r_uniform_float("end", draw_data->fog.far);
 	r_uniform_float("exponent", 1.0);
 	r_uniform_float("sphereness", 0.2);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
+
 	return true;
 }
 
@@ -332,8 +303,8 @@ static uint stage1_waterplants_pos(Stage3D *s3d, vec3 p, float maxrange) {
 }
 
 static void stage1_snow_draw(vec3 pos) {
-	float o = stage1_bg.snow.opacity;
-	// float appear_time = 2760;
+	Stage1DrawData *draw_data = stage1_get_draw_data();
+	float o = draw_data->snow.opacity;
 
 	if(o < 1.0f/256.0f) {
 		return;
@@ -354,7 +325,6 @@ static void stage1_snow_draw(vec3 pos) {
 	float height = 1 + sawtooth(h0 + global.frames/240.0);
 
 	o *= pow(1 - 1.5 * clamp(height - 1, 0, 1), 5) * x;
-	// o *= min(1, (global.frames - appear_time) / 180.0);
 
 	if(o < 1.0f/256.0f) {
 		return;
@@ -383,7 +353,6 @@ static void stage1_snow_draw(vec3 pos) {
 	});
 	r_mat_mv_pop();
 	r_state_pop();
-
 }
 
 static uint stage1_snow_pos(Stage3D *s3d, vec3 p, float maxrange) {
@@ -392,23 +361,11 @@ static uint stage1_snow_pos(Stage3D *s3d, vec3 p, float maxrange) {
 	return linear3dpos(s3d, p, maxrange, q, r);
 }
 
-void stage1_bg_raise_camera(void) {
-	stage1_bg.pitch_target = 75;
-}
-
-void stage1_bg_enable_snow(void) {
-	stage1_bg.snow.opacity_target = 1;
-}
-
-void stage1_bg_disable_snow(void) {
-	stage1_bg.snow.opacity_target = 0;
-}
-
-static void stage1_draw(void) {
+void stage1_draw(void) {
 	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 500, 10000);
 
 	Stage3DSegment segs[] = {
-		{ stage1_water_draw, stage1_bg_pos },
+		{ stage1_water_draw, stage1_water_pos },
 		{ stage1_waterplants_draw, stage1_waterplants_pos },
 		{ stage1_snow_draw, stage1_snow_pos },
 		{ stage1_smoke_draw, stage1_smoke_pos },
@@ -417,126 +374,7 @@ static void stage1_draw(void) {
 	stage3d_draw(&stage_3d_context, 10000, ARRAY_SIZE(segs), segs);
 }
 
-static void stage1_update(void) {
-	stage3d_update(&stage_3d_context);
-
-	stage_3d_context.crot[1] = 2 * sin(global.frames/113.0);
-	stage_3d_context.crot[2] = 1 * sin(global.frames/132.0);
-
-	fapproach_asymptotic_p(&stage_3d_context.crot[0], stage1_bg.pitch_target, 0.01, 1e-5);
-	fapproach_asymptotic_p(&stage1_bg.fog.near, stage1_bg.fog.near_target, 0.001, 1e-5);
-	fapproach_asymptotic_p(&stage1_bg.fog.far, stage1_bg.fog.far_target, 0.001, 1e-5);
-	fapproach_p(&stage1_bg.snow.opacity, stage1_bg.snow.opacity_target, 1.0 / 180.0);
-}
-
-static void stage1_init_background(void) {
-	stage3d_init(&stage_3d_context, 64);
-
-	FBAttachmentConfig cfg = { 0 };
-	cfg.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	cfg.tex_params.filter.min = TEX_FILTER_LINEAR;
-	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	cfg.tex_params.type = TEX_TYPE_RGBA;
-	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
-	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
-
-	stage1_bg.water_fbpair.front = stage_add_background_framebuffer("Stage 1 water FB 1", 0.2, 0.5, 1, &cfg);
-	stage1_bg.water_fbpair.back = stage_add_background_framebuffer("Stage 1 water FB 2", 0.2, 0.5, 1, &cfg);
-
-	stage1_bg.fog.near_target = 0.5;
-	stage1_bg.fog.far_target = 1.5;
-	stage1_bg.snow.opacity_target = 0.0;
-	stage1_bg.pitch_target = 60;
-
-	stage1_bg.fog.near = 0.2; // stage1_bg.fog.near_target;
-	stage1_bg.fog.far = 1.0; // stage1_bg.fog.far_target;
-	stage1_bg.snow.opacity = stage1_bg.snow.opacity_target;
-
-	stage_3d_context.crot[0] = stage1_bg.pitch_target;
-	stage_3d_context.cx[2] = 700;
-	stage_3d_context.cv[1] = 8;
-}
-
-static void stage1_start(void) {
-	stage1_init_background();
-	stage_start_bgm("stage1");
-	stage_set_voltage_thresholds(50, 125, 300, 600);
-	INVOKE_TASK(stage1_main);
-}
-
-static void stage1_preload(void) {
-	// DIALOG_PRELOAD(&global.plr, Stage1PreBoss, RESF_DEFAULT);
-	portrait_preload_base_sprite("cirno", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("cirno", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
-		"stage1/cirnobg",
-		"stage1/fog",
-		"stage1/snowlayer",
-		"stage1/waterplants",
-	NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"stage1/horizon",
-	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"blur5",
-		"stage1_water",
-		"zbuf_fog",
-	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/linear",
-	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"boss/cirno",
-	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
-		"laser1",
-	NULL);
-}
-
-static void stage1_end(void) {
-	stage3d_shutdown(&stage_3d_context);
-	memset(&stage1_bg, 0, sizeof(stage1_bg));
-}
-
-static void stage1_spellpractice_start(void) {
-	stage1_init_background();
-
-	Boss *cirno = stage1_spawn_cirno(BOSS_DEFAULT_SPAWN_POS);
-	boss_add_attack_from_info(cirno, global.stage->spell, true);
-	boss_start_attack(cirno, cirno->attacks);
-	global.boss = cirno;
-
-	stage_start_bgm("stage1boss");
-
-	stage1_bg_raise_camera();
-	stage1_bg_enable_snow();
-
-	stage1_bg.fog.near = stage1_bg.fog.near_target;
-	stage1_bg.fog.far = stage1_bg.fog.far_target;
-	stage1_bg.snow.opacity = stage1_bg.snow.opacity_target;
-	stage_3d_context.crot[0] = stage1_bg.pitch_target;
-
-	INVOKE_TASK_WHEN(&cirno->events.defeated, common_call_func, stage1_bg_disable_snow);
-}
-
-ShaderRule stage1_shaders[] = { stage1_fog, NULL };
-
-StageProcs stage1_procs = {
-	.begin = stage1_start,
-	.preload = stage1_preload,
-	.end = stage1_end,
-	.draw = stage1_draw,
-	.update = stage1_update,
-	.shader_rules = stage1_shaders,
-	.spellpractice_procs = &stage1_spell_procs,
-};
-
-StageProcs stage1_spell_procs = {
-	.begin = stage1_spellpractice_start,
-	.preload = stage1_preload,
-	.end = stage1_end,
-	.draw = stage1_draw,
-	.update = stage1_update,
-	.shader_rules = stage1_shaders,
+ShaderRule stage1_bg_effects[] = {
+	stage1_fog,
+	NULL
 };
