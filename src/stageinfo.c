@@ -223,5 +223,11 @@ StageProgress *stageinfo_get_progress(StageInfo *stage, Difficulty diff, bool al
 }
 
 StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool allocate) {
-	return stageinfo_get_progress(stageinfo_get_by_id(id), diff, allocate);
+	StageInfo *info = stageinfo_get_by_id(id);
+
+	if(info != NULL) {
+		return stageinfo_get_progress(info, diff, allocate);
+	}
+
+	return NULL;
 }
