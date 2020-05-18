@@ -22,9 +22,10 @@ TASK(move_frozen, { BoxedProjectileArray *parray; }) {
 	});
 
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
+		cmplx dir = rng_dir();
+		p->move = move_asymptotic_halflife(0, 4 * dir, rng_range(60, 80));
 		p->color = *RGB(0.9, 0.9, 0.9);
-		p->move.retention = 1 + 0.002 * global.diff * rng_f64();
-		p->move.velocity = 2 * rng_dir();
+
 		stage1_spawn_stain(p->pos, p->angle, 30);
 		spawn_projectile_highlight_effect(p);
 		play_sound_ex("shot2", 0, false);
@@ -78,7 +79,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			play_sound("shot_special1");
 
 			p->color = *RGB(0.9, 0.9, 0.9);
-			p->move.retention = 0.8 * rng_dir();
+			p->move.retention = 0.8;
+
 			if(rng_chance(0.2)) {
 				YIELD;
 			}
