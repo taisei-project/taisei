@@ -33,7 +33,7 @@ ResourceHandler texture_res_handler = {
 	},
 };
 
-char* texture_path(const char *name) {
+char *texture_path(const char *name) {
 	char *p = NULL;
 
 	if((p = try_path(TEX_PATH_PREFIX, name, TEX_EXTENSION))) {
@@ -50,11 +50,6 @@ bool check_texture_path(const char *path) {
 
 	return pixmap_check_filename(path);
 }
-
-typedef struct TexLoadData {
-	SDL_Surface *surf;
-	TextureParams params;
-} TexLoadData;
 
 static void parse_filter(const char *val, TextureFilterMode *out, bool allow_mipmaps) {
 	if(!val) {
@@ -262,9 +257,24 @@ typedef struct TextureLoadData {
 	Pixmap pixmap;
 	Pixmap pixmap_alphamap;
 	TextureParams params;
+	struct {
+		// NOTE: not bitfields because we take pointers to these
+		bool linearize;
+		bool multiply_alpha;
+		bool apply_alphamap;
+	} preprocess;
 } TextureLoadData;
 
-static void* load_texture_begin(const char *path, uint flags) {
+static bool is_preprocess_needed(TextureLoadData *ld) {
+	return (
+		ld->preprocess.linearize |
+		ld->preprocess.multiply_alpha |
+		ld->preprocess.apply_alphamap |
+		0
+	);
+}
+
+static void *load_texture_begin(const char *path, uint flags) {
 	const char *source = path;
 	char *source_allocated = NULL;
 	char *alphamap_allocated = NULL;
@@ -286,7 +296,8 @@ static void* load_texture_begin(const char *path, uint flags) {
 			// post-load shader, which will premultiply alpha.
 			// Mipmaps and filtering are basically broken without premultiplied alpha.
 			.mipmap_mode = TEX_MIPMAP_MANUAL,
-		}
+		},
+		.preprocess.multiply_alpha = true,
 	};
 
 	PixmapFormat override_format = 0;
@@ -308,6 +319,8 @@ static void* load_texture_begin(const char *path, uint flags) {
 			{ "format",     .out_str  = &str_format },
 			{ "mipmaps",    .out_int  = (int*)&ld.params.mipmaps },
 			{ "anisotropy", .out_int  = (int*)&ld.params.anisotropy },
+			{ "multiply_alpha", .out_bool = &ld.preprocess.multiply_alpha },
+			{ "linearize",  .out_bool = &ld.preprocess.linearize },
 			{ NULL }
 		})) {
 			free(source_allocated);
@@ -386,9 +399,15 @@ static void* load_texture_begin(const char *path, uint flags) {
 		}
 
 		pixmap_flip_to_origin_inplace(&ld.pixmap_alphamap, org);
+		ld.preprocess.apply_alphamap = true;
 	}
 
 	override_format = override_format ? override_format : ld.pixmap.format;
+
+	if(PIXMAP_FORMAT_LAYOUT(override_format) != PIXMAP_LAYOUT_RGBA) {
+		ld.preprocess.multiply_alpha = false;
+	}
+
 	ld.params.type = pixmap_format_to_texture_type(override_format);
 	log_debug("%s: %d channels, %d bits per channel, %s",
 		path,
@@ -407,7 +426,7 @@ static void* load_texture_begin(const char *path, uint flags) {
 	return memdup(&ld, sizeof(ld));
 }
 
-static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
+static Texture *texture_post_load(TextureLoadData *ld, Texture *tex, Texture *alphamap) {
 	// this is a bit hacky and not very efficient,
 	// but it's still much faster than fixing up the texture on the CPU
 
@@ -426,15 +445,17 @@ static Texture* texture_post_load(Texture *tex, Texture *alphamap) {
 	r_shader("texture_post_load");
 	r_uniform_sampler("tex", tex);
 
+	r_uniform_int("linearize", ld->preprocess.linearize);
+	r_uniform_int("multiply_alpha", ld->preprocess.multiply_alpha);
+	r_uniform_int("apply_alphamap", ld->preprocess.apply_alphamap);
+
 	if(alphamap) {
 		r_uniform_sampler("alphamap", alphamap);
-		r_uniform_int("have_alphamap", 1);
 	} else {
 		// FIXME: even though we aren't going to actually use this sampler, it
 		// must be set to something valid, lest WebGL throw a fit. This should be
 		// worked around in the renderer code, not here.
 		r_uniform_sampler("alphamap", tex);
-		r_uniform_int("have_alphamap", 0);
 	}
 
 	r_mat_mv_push_identity();
@@ -462,6 +483,12 @@ static void *load_texture_end(void *opaque, const char *path, uint flags) {
 		return NULL;
 	}
 
+	bool preprocess_needed = is_preprocess_needed(ld);
+
+	if(!preprocess_needed) {
+		ld->params.mipmap_mode = TEX_MIPMAP_AUTO;
+	}
+
 	char *basename = resource_util_basename(TEX_PATH_PREFIX, path);
 	char namebuf[strlen(basename) + sizeof(" (transient)")];
 	snprintf(namebuf, sizeof(namebuf), "%s (transient)", basename);
@@ -482,13 +509,18 @@ static void *load_texture_end(void *opaque, const char *path, uint flags) {
 		r_texture_set_debug_label(alphamap, buf);
 		r_texture_fill(alphamap, 0, &ld->pixmap_alphamap);
 		free(ld->pixmap_alphamap.data.untyped);
+		assume(ld->preprocess.apply_alphamap);
+		assume(preprocess_needed);
 	}
 
-	free(ld);
+	if(preprocess_needed) {
+		texture = texture_post_load(ld, texture, alphamap);
+	}
 
-	texture = texture_post_load(texture, alphamap);
 	r_texture_set_debug_label(texture, basename);
+
 	free(basename);
+	free(ld);
 
 	if(alphamap) {
 		r_texture_destroy(alphamap);
