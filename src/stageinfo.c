@@ -11,7 +11,7 @@
 #include "stageinfo.h"
 
 #include "stages/stage1/stage1.h"
-#include "stages/stage2.h"
+#include "stages/stage2/stage2.h"
 #include "stages/stage3.h"
 #include "stages/stage4.h"
 #include "stages/stage5.h"

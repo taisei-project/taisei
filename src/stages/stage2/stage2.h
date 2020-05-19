@@ -4,10 +4,10 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
-#ifndef IGUARD_stages_stage2_h
-#define IGUARD_stages_stage2_h
+#ifndef IGUARD_stages_stage2_stage2_h
+#define IGUARD_stages_stage2_stage2_h
 
 #include "taisei.h"
 
@@ -32,6 +32,5 @@ extern struct stage2_spells_s {
 } stage2_spells;
 
 extern StageProcs stage2_procs;
-extern StageProcs stage2_spell_procs;
 
-#endif // IGUARD_stages_stage2_h
+#endif // IGUARD_stages_stage2_stage2_h
