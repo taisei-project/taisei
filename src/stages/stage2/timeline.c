@@ -300,7 +300,7 @@ static Boss *create_wriggle_mid(void) {
 	wriggle_ani_flyin(wriggle);
 
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
-	boss_add_attack(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, wriggle_small_storm, NULL);
+	boss_add_attack_task(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
 	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
 
 	boss_start_attack(wriggle, wriggle->attacks);

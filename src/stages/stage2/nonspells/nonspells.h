@@ -13,8 +13,9 @@
 
 #include "boss.h"
 
-void wriggle_small_storm(Boss *w, int time);
 void hina_cards1(Boss *h, int time);
 void hina_cards2(Boss *h, int time);
+
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_midboss_nonspell_1, BossAttack);
 
 #endif // IGUARD_stages_stage2_nonspells_nonspells_h
