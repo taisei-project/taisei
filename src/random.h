@@ -14,8 +14,7 @@
 #include "util/crap.h"
 #include "util/miscmath.h"
 
-// #define RNG_DEPRECATED attr_deprecated("Use the new rng_ API")
-#define RNG_DEPRECATED
+#define RNG_DEPRECATED attr_deprecated("Use the new rng_ API")
 
 typedef struct RandomState {
 	uint64_t state[4];
