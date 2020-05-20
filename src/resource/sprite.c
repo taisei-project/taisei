@@ -54,6 +54,7 @@ void *load_sprite_begin(const char *path, uint flags) {
 	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
 	state->spr = spr;
 	state->flags = flags;
+	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
 
 	if(check_texture_path(path)) {
 		state->texture_name = resource_util_basename(TEX_PATH_PREFIX, path);
@@ -61,8 +62,6 @@ void *load_sprite_begin(const char *path, uint flags) {
 	}
 
 	float ofs_x = 0, ofs_y = 0;
-
-	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
 
 	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
