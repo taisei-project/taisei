@@ -18,6 +18,55 @@
 #include "global.h"
 #include "common_tasks.h"
 
+TASK(great_circle_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 7500, BigFairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 5,
+		.power = 4,
+	});
+
+	e->move = ARGS.move_enter;
+
+	WAIT(50);
+
+	int step = difficulty_value(5, 4, 4, 3);
+	int duration = difficulty_value(145, 170, 195, 220);
+	real partdist = 0.04*global.diff;
+	real bunchdist = 0.5;
+	int c2 = 5;
+	int shotnum = difficulty_value(5, 5, 7, 7);
+
+	for(int t = 0, bunch = 0; t < duration; t += WAIT(step), ++bunch) {
+		play_sfx_loop("shot1_loop");
+
+		for(int i = 0; i < shotnum; ++i) {
+			cmplx dir = cdir(i * M_TAU / shotnum + partdist * (bunch % c2 - c2/2) + bunchdist * (bunch / c2));
+
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = e->pos + 30 * dir,
+				.color = RGB(0.6, 0.0, 0.3),
+				.move = move_asymptotic_simple(1.5 * dir, bunch % 5),
+			);
+
+			if(global.diff > D_Easy && bunch % 7 == 0) {
+				play_sound("shot1");
+				PROJECTILE(
+					.proto = pp_bigball,
+					.pos = e->pos + 30 * dir,
+					.color = RGB(0.3, 0.0, 0.6),
+					.move = move_linear(1.7 * dir * cdir(0.3 * rng_real())),
+				);
+			}
+		}
+	}
+
+	WAIT(60);
+
+	e->move = ARGS.move_exit;
+}
+
 static int stage2_great_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
@@ -344,7 +393,7 @@ void stage2_events(void) {
 	}
 
 	AT(300) {
-		create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
+		// create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
 	}
 
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
@@ -413,4 +462,14 @@ void stage2_events(void) {
 	AT(5185) {
 		stage_finish(GAMEOVER_SCORESCREEN);
 	}
+}
+
+DEFINE_EXTERN_TASK(stage2_timeline) {
+	YIELD;
+
+	INVOKE_TASK_DELAYED(300, great_circle_fairy,
+		.pos = VIEWPORT_W/2 - 10.0*I,
+		.move_enter = move_towards(VIEWPORT_W/2 + 150.0*I, 0.04),
+		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
+	);
 }

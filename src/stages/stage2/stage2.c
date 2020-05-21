@@ -43,6 +43,7 @@ struct stage2_spells_s stage2_spells = {
 static void stage2_start(void) {
 	stage2_drawsys_init();
 	stage2_bg_init_fullstage();
+	INVOKE_TASK(stage2_timeline);
 }
 
 static void stage2_spellpractice_start(void) {
