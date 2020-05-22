@@ -124,43 +124,38 @@ static int stage2_great_circle(Enemy *e, int t) {
 	return 1;
 }
 
-static int stage2_small_spin_circle(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POINTS, 2);
-		return 1;
-	}
+TASK(redwall_fairy, {
+	cmplx pos;
+	real shot_x_dir;   // FIXME: bad name, but the shot logic is really confusing so not sure what to call this
+	MoveParams move;
+}) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
 
-	if(creal(e->args[0]) < 0)
-		e->dir = 1;
-	else
-		e->dir = 0;
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+	});
 
-	e->pos += e->args[0];
+	e->move = ARGS.move;
 
-	if(t < 100)
-		e->args[0] += 0.0002*(VIEWPORT_W/2+I*VIEWPORT_H/2-e->pos);
+	// likewise, bad name
+	cmplx shot_dir = ARGS.shot_x_dir + 3*I;
 
-	AT(50)
-		e->pos0 = e->pos;
+	WAIT(30);
 
-	FROM_TO(30,80+global.diff*5,5-global.diff/2) {
-		if(_i % 2) {
-			play_sound("shot1");
-		}
+	int duration = difficulty_value(50, 60, 65, 70);
+	int step = difficulty_value(5, 4, 4, 3);
+	real pspeed = difficulty_value(1, 1.65, 2.2, 2.7);
+
+	for(int t = 0; t < duration; t += WAIT(step)) {
+		play_sound("shot1");
 
 		PROJECTILE(
 			.proto = pp_ball,
 			.pos = e->pos,
-			.color = RGB(0.9,0.0,0.3),
-			.rule = linear,
-			.args = {
-				pow(global.diff,0.7)*(conj(e->pos-VIEWPORT_W/2)/100 + ((1-2*e->dir)+3.0*I))
-			}
+			.color = RGB(0.9, 0.0, 0.3),
+			.move = move_linear(pspeed * (conj(e->pos - VIEWPORT_W/2) / 100 + shot_dir)),
 		);
 	}
-
-	return 1;
 }
 
 static int stage2_aim(Enemy *e, int t) {
@@ -392,13 +387,15 @@ void stage2_events(void) {
 		stage_set_voltage_thresholds(75, 175, 400, 720);
 	}
 
+#if 0
 	AT(300) {
-		// create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W/2-10.0*I, 7500, BigFairy, stage2_great_circle, 2.0*I);
 	}
 
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
 		create_enemy1c(VIEWPORT_W*((_i)%2), 1000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
 	}
+#endif
 
 	FROM_TO(850, 1000, 15)
 	create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20.0*I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
@@ -426,8 +423,7 @@ void stage2_events(void) {
 	}
 
 	AT(2300) {
-		create_enemy1c(VIEWPORT_W/4-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
-		create_enemy1c(VIEWPORT_W/4*3-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
+		create_enemy1c(VIEWPORT_W/4-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);		create_enemy1c(VIEWPORT_W/4*3-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
 	}
 
 	AT(2700)
@@ -464,6 +460,20 @@ void stage2_events(void) {
 	}
 }
 
+TASK(redwall_side_fairies, { int num; }) {
+	for(int i = 0; i < ARGS.num; ++i) {
+		real xdir = 1 - 2 * (i % 2);
+
+		INVOKE_TASK(redwall_fairy,
+			.pos = VIEWPORT_W * (i % 2),
+			.shot_x_dir = xdir,
+			.move = move_asymptotic_halflife(2 * xdir + I, 3.65 * xdir + 5*I, 50)
+		);
+
+		WAIT(50);
+	}
+}
+
 DEFINE_EXTERN_TASK(stage2_timeline) {
 	YIELD;
 
@@ -471,5 +481,9 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.pos = VIEWPORT_W/2 - 10.0*I,
 		.move_enter = move_towards(VIEWPORT_W/2 + 150.0*I, 0.04),
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
+	);
+
+	INVOKE_TASK_DELAYED(difficulty_value(600, 550, 500, 450), redwall_side_fairies,
+		.num = difficulty_value(4, 5, 6, 7)
 	);
 }
