@@ -76,13 +76,13 @@ void bad_ending_marisa(Ending *e) {
 
 	add_ending_entry(e, -1, "After finishing tea with the pair of them, Marisa wandered the stacks, looking for inspiration.", NULL);
 
-	add_ending_entry(e, -1, "Suddenly, she tripped on something large and hard, falling on her face.", NULL);
+	add_ending_entry(e, -1, "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling flat on her face.", NULL);
 	add_ending_entry(e, -1, "But, when she looked back at the floor, she didn't see anything except the expertly-organized rows of immaculate bookshelves.", NULL);
-	add_ending_entry(e, -1, "It was then she noticed something cold and flat underneath her hand.", NULL);
-	add_ending_entry(e, -1, "Upon picking it up, she discovered it was actually an ‘Smart Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
+	add_ending_entry(e, -1, "Then, she noticed something cold and flat underneath her hand.", NULL);
+	add_ending_entry(e, -1, "It was a ‘Smart Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
 	add_ending_entry(e, -1, "But this one was far more advanced than anything she’d ever seen.", NULL);
 
-	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take on a solid shape. As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
+	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take solid shapes on command. As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
 	add_ending_entry(e, -1, "Indeed, it was more advanced than anything the Outside World was presently capable of, and not in a style even the Lunarians were known for.", NULL);
 
 	add_ending_entry(e, -1, "Once Marisa worked out how to turn it on, the title of a book appeared on its dim display…", NULL);
