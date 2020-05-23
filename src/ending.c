@@ -65,7 +65,7 @@ void bad_ending_marisa(Ending *e) {
 
 	add_ending_entry(e, -1, "Marisa closed the book and let it slam onto the floor.", NULL);
 	add_ending_entry(e, -1, "Patchouli: “Mind your manners! That’s a very old tome!”", NULL);
-	add_ending_entry(e, -1, "Marisa: “It’s so irritatin’! I thought I solved everything but now that tower’s just sittin’ there, ‘n the whole Mountain’s been quarantined…!”", NULL);
+	add_ending_entry(e, -1, "Marisa: “It’s so irritatin’! I thought I solved everything but now that Tower’s just sittin’ there, ‘n the whole Mountain’s been quarantined…!”", NULL);
 	add_ending_entry(e, -1, "Marisa: “It just ain’t satisfyin’, y’know?”", NULL);
 
 	add_ending_entry(e, -1, "Flandre: “I could destroy it! Make it go BOOM!”", NULL);
@@ -78,15 +78,15 @@ void bad_ending_marisa(Ending *e) {
 
 	add_ending_entry(e, -1, "Suddenly, she felt as if she'd stepped into a pothole, tripping and falling flat on her face.", NULL);
 	add_ending_entry(e, -1, "But, when she looked back at the floor, she didn't see anything except the expertly-organized rows of immaculate bookshelves.", NULL);
-	add_ending_entry(e, -1, "Then, she noticed something cold and flat underneath her hand.", NULL);
+	add_ending_entry(e, -1, "Then, she noticed something cold and thin underneath her hand.", NULL);
 	add_ending_entry(e, -1, "It was a ‘Smart Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
 	add_ending_entry(e, -1, "But this one was far more advanced than anything she’d ever seen.", NULL);
 
 	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take solid shapes on command.", NULL);
-	add_ending_entry(e, -1, "As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
+	add_ending_entry(e, -1, "As she pressed its buttons, it rapidly cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
 	add_ending_entry(e, -1, "Indeed, it was more advanced than anything the Outside World was presently capable of, and not in a style even the Lunarians were known for.", NULL);
 
-	add_ending_entry(e, -1, "Once Marisa worked out how to turn it on, the title of a book appeared on its dim display…", NULL);
+	add_ending_entry(e, -1, "Once Marisa worked out how to make it display something, the title of a book appeared on its dim screen…", NULL);
 	add_ending_entry(e, -1, "‘Practical & Advanced Computational Applications of the Grand Unified Theory’…", NULL);
 	add_ending_entry(e, -1, "… ‘by Usami Renko’", NULL);
 
@@ -116,16 +116,16 @@ void bad_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Yuyuko: “Hmmmm. I didn’t sense her passing through the Netherworld, so I doubt she’s truly died.”", NULL);
 	add_ending_entry(e, -1, "Yuyuko: “Although this ‘parallel universes’ stuff is all beyond me, hehehe.”", NULL);
 
-	add_ending_entry(e, -1, "Yōmu took a knee in front of Yuyuko, her hand on the hilt of her blade, the Hakurōken.", NULL);
+	add_ending_entry(e, -1, "Yōmu took a knee in front of Yuyuko, her hand on the hilt of the Hakurōken, her family's treasured sword.", NULL);
 	add_ending_entry(e, -1, "Yōmu: “Thank you for entertaining your humble servant’s odd request, Lady Yuyuko.”", NULL);
 
 	add_ending_entry(e, -1, "Yuyuko: “Oh my, think nothing of it! You did great!”", NULL);
-	add_ending_entry(e, -1, "Yuyuko: “But since we’re in the neighbourhood… do you think the kappa are running one of their famous grill stands?”", NULL);
+	add_ending_entry(e, -1, "Yuyuko: “But since we’re in the neighbourhood… do you think the kappa are running one of their famous festival grill stands?”", NULL);
 
 	add_ending_entry(e, -1, "Yuyuko: “As a celebration for the incident being resolved, perhaps…?”", NULL);
 	add_ending_entry(e, -1, "Yuyuko: “We could go on a fun date! And I’m feeling a bit peckish…”", NULL);
 
-	add_ending_entry(e, -1, "Nitori’s ‘Gaze Upon The Amazing Tower (from A Safe Distance)’ promotional campaign, to encourage locals to visit Yōkai Mountain again after being scared off by the Tower, was in full swing.", NULL);
+	add_ending_entry(e, -1, "The kappa of Yōkai Mountain were throwing a ‘Gaze Upon The Incredible Tower (From A Safe Distance)’ festival, to encourage human and yōkai tourism after everyone had been scared off by the Tower.", NULL);
 	add_ending_entry(e, -1, "Although, Yōmu found it difficult to enjoy herself, of course.", NULL);
 	add_ending_entry(e, -1, "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was still out there, waiting for their rematch…", NULL);
 
@@ -146,20 +146,20 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Nobody was pleased with that.", NULL);
 	add_ending_entry(e, -1, "The Moriya Gods were visibly shocked.", NULL);
 	add_ending_entry(e, -1, "The kappa demanded that they be able to fetch their equipment and tend to their hydroponic cucumber farms.", NULL);
-	add_ending_entry(e, -1, "The tengu furiously scribbled down notes, once again as if they’d had the scoop of the century, before realizing what had just been said, and got up in arms too.", NULL);
+	add_ending_entry(e, -1, "The tengu furiously scribbled down notes, once again as if they’d had the scoop of the century, before also beginning to make their own demands.", NULL);
 
 	add_ending_entry(e, -1, "Once Reimu had managed to placate the crowd, she sat in the back of the Hakurei Shrine, bottle of sake in hand.", NULL);
-	add_ending_entry(e, -1, "She didn’t feel like drinking, however. She nursed it without even uncorking it.", NULL);
+	add_ending_entry(e, -1, "She didn’t feel like drinking, however. She nursed it without even uncorking it, sighing to herself.", NULL);
 
-	add_ending_entry(e, -1, "Yukari: “A little unsatisfying, isn’t it?”", NULL);
+	add_ending_entry(e, -1, "Yukari: “Oh my, a little dissatisfied, aren't we?”", NULL);
 	add_ending_entry(e, -1, "Reimu was never surprised by Yukari’s sudden appearances anymore.", NULL);
-	add_ending_entry(e, -1, "Ever since she had gained ‘gap’ powers of her own during the Urban Legends Incident, Reimu could feel Yukari’s presence long before she made herself known.", NULL);
+	add_ending_entry(e, -1, "Ever since Reimu had gained ‘gap’ powers of her own during the Urban Legends Incident, she could feel Yukari’s presence long before the ‘gap yōkai’ would make herself known.", NULL);
 
-	add_ending_entry(e, -1, "Yukari: “My oh my, it’s unlike you to stop until everything is business as usual, Reimu.”", NULL);
+	add_ending_entry(e, -1, "Yukari: “It’s unlike you to rest until everything is business as usual, Reimu.”", NULL);
 	add_ending_entry(e, -1, "Yukari: “Depressed?”", NULL);
 
 	add_ending_entry(e, -1, "Reimu: “Yeah. That place sucked.”", NULL);
-	add_ending_entry(e, -1, "Yukari: “Perhaps I should’ve gone with you.”", NULL);
+	add_ending_entry(e, -1, "Yukari: “Perhaps I should’ve gone with you, hmm?”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Huh? Why? Do you wanna gap the whole thing out of Gensōkyō?”", NULL);
 	add_ending_entry(e, -1, "Yukari: “That might be a bit much, even for me, my dear.”", NULL);
 
@@ -170,7 +170,7 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Reimu: “Find a way to get rid of it, eventually. I’m sure there’s an answer somewhere out there…”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Maybe Alice or Yūka know something.”", NULL);
 
-	add_ending_entry(e, -1, "Yukari smiled.", NULL);
+	add_ending_entry(e, -1, "Yukari smiled, leaning her arms against the edge of her gap.", NULL);
 	add_ending_entry(e, -1, "Yukari: “Keep trying until you figure it out, yes?”", NULL);
 
 	add_ending_entry(e, 300, "-BAD END-\nTo unlock the Extra Stage, keep trying to reach the end without using a Continue!", NULL);
@@ -184,12 +184,12 @@ void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Elly and Kurumi were made to scrub the decks of the Moriya Shrine, which had become filthy from the local fairies partying and dueling non-stop during the Incident…", NULL);
 	add_ending_entry(e, -1, "… and from some rapidly-diminishing demonstrations from a newly-formed “political bloc”, the “Insect Party.”", NULL);
 
-	add_ending_entry(e, -1, "Sanae: “—which had a brand new math co-processor letting it have advanced vector graphics processing capabilities. Combined with other improvements, like its DVD drive—", NULL);
-	add_ending_entry(e, -1, "Elly: “Ah, yes, I see. Facinating. Wow. Incredible.”", NULL);
+	add_ending_entry(e, -1, "Sanae: “—which had a brand new proprietary math co-processor enabling advanced vector graphics processing capabilities. Combined with other improvements, such as its DVD drive—", NULL);
+	add_ending_entry(e, -1, "Elly: “Ah, I see. Facinating. Wow. Incredible.”", NULL);
 	add_ending_entry(e, -1, "Kanako: “You two having fun?”", NULL);
 	add_ending_entry(e, -1, "Elly: “… y-yes, ma’am.”", NULL);
 
-	add_ending_entry(e, -1, "Kanako: “Seems like it’s taking a bit more time for the madness to wear off on her. How’s all that ‘knowledge’ working out for you?”", NULL);
+	add_ending_entry(e, -1, "Kanako: “Seems like it’s taking a bit more time for the madness to wear off for her. But hey, how’s all that ‘knowledge’ working out for you, newcomer?”", NULL);
 	add_ending_entry(e, -1, "Sanae: “I remembered way more about retro video game consoles than I wanted to! And now *you’ve* gotta deal with it!”", NULL);
 	add_ending_entry(e, -1, "Elly tried to hold back tears of boredom.", NULL);
 
@@ -229,16 +229,16 @@ void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Marisa: “Yeah! A while ago, I was cookin’ up some especially powerful ones I found in a cave near the one-armed hermit's house…”", NULL);
 	add_ending_entry(e, -1, "Marisa: “And then, BOOM, there was a small explosion!”", NULL);
 	add_ending_entry(e, -1, "Marisa: “Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My lives were flashin’ before my eyes!”", NULL);
-	add_ending_entry(e, -1, "Marisa: “Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and when I saw ya, and I was like, ‘whoa, really?! For real?!’”", NULL);
+	add_ending_entry(e, -1, "Marisa: “Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and when I saw ya, and I was like, ‘Whoa, really?! For real?!’”", NULL);
 
 	add_ending_entry(e, -1, "Elly paused, and then laughed at the ridiculousness of it all.", NULL);
-	add_ending_entry(e, -1, "Elly: “That’s it, then? But I suppose it makes sense in a place like Gensōkyō…”", NULL);
-	add_ending_entry(e, -1, "Elly: “You were such a child when I met you. It’s odd to see you all grown up, even if it’s another you entirely.”", NULL);
+	add_ending_entry(e, -1, "Elly: “That’s it, then? But I suppose in a place like Gensōkyō, that's not even that strange…”", NULL);
+	add_ending_entry(e, -1, "Elly: “… and you were such a child when I met you. It’s odd to see you all grown up, even if it’s another you entirely.”", NULL);
 	add_ending_entry(e, -1, "Marisa: “Yup, humans grow up. I’m completely ordinary, after all.”", NULL);
 
-	add_ending_entry(e, -1, "Some wondered if the Tower would stand out on Gensōkyō’s skyline for eternity.", NULL);
-	add_ending_entry(e, -1, "Some even questioned if its power could be used to serve the greater good.", NULL);
-	add_ending_entry(e, -1, "And a select few considered what they’d do if the Tower were to ever spring to life again…", NULL);
+	add_ending_entry(e, -1, "Many wondered if the Tower would stand out on Gensōkyō’s skyline for eternity as an eyesore.", NULL);
+	add_ending_entry(e, -1, "Some even questioned if its power could be harnessed to serve the greater good.", NULL);
+	add_ending_entry(e, -1, "But for the guardians of Gensōkyō, they would need to be vigilant, lest it suddenly spring to life again…", NULL);
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
 	track_ending(ENDING_GOOD_1);
 }
@@ -250,15 +250,15 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Below, at the not-so-humble Moriya Shrine, two blademasters were exchanging the ways of their craft.", NULL);
 
 	add_ending_entry(e, -1, "Elly: “I’m sure you’re aware that the classic scythe such as this was primarily used by farmers, as a makeshift weapon—”", NULL);
-	add_ending_entry(e, -1, "Yōmu: “Yes, of course. Some of the best martial arts evolved from the practices of common folk—”", NULL);
+	add_ending_entry(e, -1, "Yōmu: “Yes, of course. Many of the most advanced martial arts evolved from the practices of common folk—”", NULL);
 
-	add_ending_entry(e, -1, "After the incident, Elly and Kurumi agreed to set the Tower into a low-power state.", NULL);
-	add_ending_entry(e, -1, "Their dispositions softened considerably, and they apologized profusely for everything they had done.", NULL);
-	add_ending_entry(e, -1, "Although, oddly, Yōmu retained much of the confidence she had gained in the incident, despite the Tower’s presence no longer having any effect…", NULL);
+	add_ending_entry(e, -1, "After the incident, Elly and Kurumi agreed to surrender, and disabled the Tower's ability to cause madness.", NULL);
+	add_ending_entry(e, -1, "Their dispositions softened considerably, once they were no longer under the Tower's effects, and they apologized profusely for everything they had done.", NULL);
+	add_ending_entry(e, -1, "But even as everyone else returned to normal, Konpaku Yōmu retained nearly all of the newfound confidence she had gained in the incident…", NULL);
 
 	add_ending_entry(e, -1, "Elly: “This Gensōkyō is so different compared to my own.”", NULL);
-	add_ending_entry(e, -1, "Yōmu: “What was your Gensōkyō like?”", NULL);
-	add_ending_entry(e, -1, "Elly: “Mostly, a lot smaller. It felt more like a road-side food stand.”", NULL);
+	add_ending_entry(e, -1, "Yōmu: “Oh? What was your Gensōkyō like?”", NULL);
+	add_ending_entry(e, -1, "Elly: “Mostly, a lot smaller. It felt more like a road-side food stand. Nothing to write home about.”", NULL);
 	add_ending_entry(e, -1, "Yōmu: “Hmm, fascinating…”", NULL);
 
 	add_ending_entry(e, -1, "Elly: “Well, I ought to return to my duties at the shrine.”", NULL);
@@ -269,7 +269,7 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Elly: “I know I said this before, but I still feel like a fool.”", NULL);
 	add_ending_entry(e, -1, "Elly: “I was miserable about my home, but that was going too far…”", NULL);
 	add_ending_entry(e, -1, "Elly: “It seems like the one most overcome by madness was myself.”", NULL);
-	add_ending_entry(e, -1, "Elly: “I’m still truly sorry for what I did.”", NULL);
+	add_ending_entry(e, -1, "Elly: “I know everyone here accepted my apology, but I’m still truly sorry for what I did.”", NULL);
 
 	add_ending_entry(e, -1, "Yōmu put a hand on Elly’s shoulder and smiled.", NULL);
 	add_ending_entry(e, -1, "Yōmu: “Your motivations were righteous, even if your methods were not.”", NULL);
@@ -278,13 +278,12 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Yōmu: “Perhaps we could even visit a popular ramen shop nearby. I’m feeling generous, so it shall be my treat!”", NULL);
 
 	add_ending_entry(e, -1, "Elly hesitated, but then happily agreed.", NULL);
-	add_ending_entry(e, -1, "The pair of them had become practically inseparable.", NULL);
-	add_ending_entry(e, -1, "As they spent many evenings dueling, practicing, and drinking merrily, many folks commented on how they had never seen Yōmu so thrilled.", NULL);
+	add_ending_entry(e, -1, "As they spent many evenings dueling, practicing, and drinking merrily, many commented on how they had never seen Yōmu so thrilled.", NULL);
+	add_ending_entry(e, -1, "Truly, the pair of them had become practically inseparable.", NULL);
 
-
-	add_ending_entry(e, -1, "Despite the incident beind resolved, nobody had figured out how to remove the Tower, and most were too anxious to even think about it.", NULL);
-	add_ending_entry(e, -1, "With such an enormous visage, many wondered if the Tower was truly inert like the heroine claimed it to be…", NULL);
-	add_ending_entry(e, -1, "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion discussed details of an ancient future’s past.", NULL);
+	add_ending_entry(e, -1, "Despite the incident being resolved, nobody had figured out how to remove the Tower, and most were too anxious to even think about it.", NULL);
+	add_ending_entry(e, -1, "And with its lingering, menacing visage blighting the skyline, many wondered if the Tower was truly inert and harmless.", NULL);
+	add_ending_entry(e, -1, "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion discussed details of an ancient future’s past…", NULL);
 
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
 	track_ending(ENDING_GOOD_2);
@@ -300,7 +299,7 @@ void good_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Reimu: “I don’t know anything about ‘video games’ either!”", NULL);
 
 	add_ending_entry(e, -1, "The Tower had been shut down, ending the crisis of madness sweeping the land.", NULL);
-	add_ending_entry(e, -1, "Most everyone had returned to normal, although a few odd souls lamented the loss of knowledge.", NULL);
+	add_ending_entry(e, -1, "Nearly everyone had returned to normal, although a few odd souls lamented their loss of knowledge’.", NULL);
 	add_ending_entry(e, -1, "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya Shrine as penance for their actions.", NULL);
 	add_ending_entry(e, -1, "With the occasional odd request from the Moriya Shrine Gods, of course…", NULL);
 
@@ -315,7 +314,6 @@ void good_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Suwako: “Don’t you think she’s cute when she’s like this?”", NULL);
 
 	add_ending_entry(e, -1, "Reimu was spending more time on Yōkai Mountain, claiming she was “keeping watch.”", NULL);
-	add_ending_entry(e, -1, "For some reason, she seemed to have a difficult time settling down from this incident in particular.", NULL);
 	add_ending_entry(e, -1, "Reimu: “Hey, Elly.”", NULL);
 	add_ending_entry(e, -1, "Elly: “Ah, yes? Do you need something from me?”", NULL);
 
@@ -325,14 +323,15 @@ void good_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Elly: “I’m still sad about my own Gensōkyō, but to go that far…”", NULL);
 
 	add_ending_entry(e, -1, "Reimu: “What a weird machine. I wonder what the kappa would think of it.”", NULL);
-	add_ending_entry(e, -1, "Suwako: “The kappa won’t touch the thing. And even Kanako’s talked herself out of it.”", NULL);
+	add_ending_entry(e, -1, "Suwako: “The kappa won’t touch the thing, and even Kanako’s talked herself out of it.”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Still odd how those two were forgotten from Gensōkyō, though…”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Ah, whatever. As long as it stays quiet, it’s not even the weirdest thing in Gensōkyō.”", NULL);
 
-	add_ending_entry(e, -1, "With the odd feeling gone, everyone seemed to relax more than usual.", NULL);
-	add_ending_entry(e, -1, "The Tower of Babel continued to loom over Yōkai Mountain, as life returned to normal.", NULL);
-	add_ending_entry(e, -1, "Even as some grew to accept it, there were frequent mutterings over potentially getting rid of the Tower entirely.", NULL);
-	add_ending_entry(e, -1, "Although, nobody had any clue how, except, perhaps, a certain violet gap yōkai…", NULL);
+	add_ending_entry(e, -1, "With the maddening feelings gone, everyone seemed to relax more than usual.", NULL);
+	add_ending_entry(e, -1, "But for some reason, Reimu seemed to have a difficult time settling down after this incident in particular.", NULL);
+
+	add_ending_entry(e, -1, "Even as some grew to accept the Tower of Babel looming in the skyline, there were frequent mutterings over potentially getting rid of it entirely.", NULL);
+	add_ending_entry(e, -1, "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…", NULL);
 
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
 	track_ending(ENDING_GOOD_3);
