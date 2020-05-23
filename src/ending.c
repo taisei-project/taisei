@@ -82,7 +82,8 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "It was a ‘Smart Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
 	add_ending_entry(e, -1, "But this one was far more advanced than anything she’d ever seen.", NULL);
 
-	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take solid shapes on command. As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
+	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take solid shapes on command.", NULL);
+	add_ending_entry(e, -1, "As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
 	add_ending_entry(e, -1, "Indeed, it was more advanced than anything the Outside World was presently capable of, and not in a style even the Lunarians were known for.", NULL);
 
 	add_ending_entry(e, -1, "Once Marisa worked out how to turn it on, the title of a book appeared on its dim display…", NULL);
