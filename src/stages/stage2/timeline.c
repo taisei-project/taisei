@@ -273,6 +273,31 @@ static int stage2_flea(Enemy *e, int t) {
 	return 1;
 }
 
+TASK(flea_fairy, { cmplx pos; MoveParams move; }) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 500, Fairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 2,
+	});
+
+	e->move = ARGS.move;
+
+	WAIT(10);
+
+	int base_period = difficulty_value(27, 24, 21, 18);
+	int duration = 400;
+
+	for(int t = 0; t < duration; t += WAIT(base_period - t/70)) {
+		play_sound("shot1");
+		PROJECTILE(
+			.proto = pp_flea,
+			.pos = e->pos,
+			.color = RGB(0.3, 0.2, 1),
+			.move = move_asymptotic_simple(1.5 * rng_dir(), 1.5),
+		);
+	}
+}
+
 static int stage2_accel_circle(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_KILLED) {
