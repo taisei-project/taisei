@@ -199,6 +199,52 @@ static int stage2_aim(Enemy *e, int t) {
 	return 1;
 }
 
+TASK(aimshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 500, Fairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.power = 2,
+	});
+
+	e->move = ARGS.move_enter;
+
+	WAIT(42);
+	play_sound("shot1");
+
+	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	int num = difficulty_value(1, 1, 3, 5);
+	real speed1 = difficulty_value(3, 4, 5, 5);
+	real speed2 = difficulty_value(3, 3, 4, 4);
+
+	for(int i = 0; i < num; ++i) {
+		cmplx dir = aim;
+
+		if(num > 1) {
+			dir *= cdir((i / (num - 1.0) - 0.5) * M_TAU/16);
+		}
+
+		PROJECTILE(
+			.proto = pp_plainball,
+			.pos = e->pos,
+			.color = RGB(0.6, 0.0, 0.8),
+			.move = move_asymptotic_simple(speed1 * dir, -1),
+		);
+
+		if(global.diff > D_Easy) {
+			PROJECTILE(
+				.proto = pp_plainball,
+				.pos = e->pos,
+				.color = RGB(0.2, 0.0, 0.1),
+				.move = move_asymptotic_simple(speed2 * dir, 2),
+			);
+		}
+	}
+
+	WAIT(60);
+
+	e->move = ARGS.move_exit;
+}
+
 static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
 	TIMER(&t);
 	AT(EVENT_KILLED) {
@@ -395,10 +441,10 @@ void stage2_events(void) {
 	FROM_TO(650-50*global.diff, 750+25*(4-global.diff), 50) {
 		create_enemy1c(VIEWPORT_W*((_i)%2), 1000, Fairy, stage2_small_spin_circle, 2-4*(_i%2)+1.0*I);
 	}
-#endif
 
 	FROM_TO(850, 1000, 15)
 	create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20.0*I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
+#endif
 
 	FROM_TO(960, 1200, 20)
 	create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
@@ -474,6 +520,21 @@ TASK(redwall_side_fairies, { int num; }) {
 	}
 }
 
+TASK(aimshot_fairies, NO_ARGS) {
+	int num = 10;
+	for(int i = 0; i < num; ++i) {
+		cmplx pos = VIEWPORT_W/2 + 42 * (i - num/2.0) - 20.0*I;
+
+		INVOKE_TASK(aimshot_fairy,
+			.pos = pos,
+			.move_enter = move_towards(pos + 180 * I, 0.03),
+			.move_exit = move_accelerated(0, -0.15*I)
+		);
+
+		WAIT(15);
+	}
+}
+
 DEFINE_EXTERN_TASK(stage2_timeline) {
 	YIELD;
 
@@ -486,4 +547,8 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	INVOKE_TASK_DELAYED(difficulty_value(600, 550, 500, 450), redwall_side_fairies,
 		.num = difficulty_value(4, 5, 6, 7)
 	);
+
+	INVOKE_TASK_DELAYED(750, aimshot_fairies);
+
+	INVOKE_TASK_DELAYED(825, aimshot_fairies);
 }
