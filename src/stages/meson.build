@@ -2,7 +2,7 @@
 stages_src = []
 
 stages = [
-    'stage1'
+    'stage1',
     'stagex'
 ]
 
