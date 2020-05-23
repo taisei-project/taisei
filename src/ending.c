@@ -299,7 +299,7 @@ void good_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Reimu: “I don’t know anything about ‘video games’ either!”", NULL);
 
 	add_ending_entry(e, -1, "The Tower had been shut down, ending the crisis of madness sweeping the land.", NULL);
-	add_ending_entry(e, -1, "Nearly everyone had returned to normal, although a few odd souls lamented their loss of knowledge’.", NULL);
+	add_ending_entry(e, -1, "Nearly everyone had returned to normal, although a few odd souls lamented their loss of ‘knowledge’.", NULL);
 	add_ending_entry(e, -1, "Kurumi and Elly had been conscripted into sweeping the paths of the Moriya Shrine as penance for their actions.", NULL);
 	add_ending_entry(e, -1, "With the occasional odd request from the Moriya Shrine Gods, of course…", NULL);
 
