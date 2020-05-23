@@ -68,20 +68,24 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Marisa: “It’s so irritatin’! I thought I solved everything but now that tower’s just sittin’ there, ‘n the whole Mountain’s been quarantined…!”", NULL);
 	add_ending_entry(e, -1, "Marisa: “It just ain’t satisfyin’, y’know?”", NULL);
 
-	add_ending_entry(e, -1, "Flandre: “I could destroy it, you know.”", NULL);
-	add_ending_entry(e, -1, "Marisa: “Gah! Now what did I say about sneakin’ up on your friends, Flan?”", NULL);
-	add_ending_entry(e, -1, "Flandre: “Sorry, sorry!”", NULL);
+	add_ending_entry(e, -1, "Flandre: “I could destroy it! Make it go BOOM!”", NULL);
+	add_ending_entry(e, -1, "Marisa: “Gah! Now what did I say about sneakin’ up on people, kiddo?”", NULL);
+	add_ending_entry(e, -1, "Flandre: “Sorry!”", NULL);
 	add_ending_entry(e, -1, "Patchouli: “Thank you for the offer, Flandre, but no.”", NULL);
 	add_ending_entry(e, -1, "Flandre: “Awww…”", NULL);
 
 	add_ending_entry(e, -1, "After finishing tea with the pair of them, Marisa wandered the stacks, looking for inspiration.", NULL);
-	add_ending_entry(e, -1, "Somehow, she tripped on her own feet, almost as if something had grabbed her foot, and landed face-first against a particularly hard and sharp-edged book.", NULL);
-	add_ending_entry(e, -1, "Upon picking it up, she noticed it was actually an ‘Intelligent Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
+
+	add_ending_entry(e, -1, "Suddenly, she tripped on something large and hard, falling on her face.", NULL);
+	add_ending_entry(e, -1, "But, when she looked back at the floor, she didn't see anything except the expertly-organized rows of immaculate bookshelves.", NULL);
+	add_ending_entry(e, -1, "It was then she noticed something cold and flat underneath her hand.", NULL);
+	add_ending_entry(e, -1, "Upon picking it up, she discovered it was actually an ‘Smart Device’ of some kind, like those portable computer-phones from the Outside World.", NULL);
 	add_ending_entry(e, -1, "But this one was far more advanced than anything she’d ever seen.", NULL);
 
-	add_ending_entry(e, -1, "It was almost as if it was composed of liquid metal, similar to mercury, but able to take on a solid shape. It cycled through various form factors, such as a book, or a phone.", NULL);
+	add_ending_entry(e, -1, "It was almost as if it was made of liquid metal, like mercury, but able to take on a solid shape. As she pressed its buttons, it cycled through various form factors, such as a thin book, or a handheld phone.", NULL);
 	add_ending_entry(e, -1, "Indeed, it was more advanced than anything the Outside World was presently capable of, and not in a style even the Lunarians were known for.", NULL);
-	add_ending_entry(e, -1, "Finally, Marisa worked out how to turn it on, and the title of a book appeared on its display…", NULL);
+
+	add_ending_entry(e, -1, "Once Marisa worked out how to turn it on, the title of a book appeared on its dim display…", NULL);
 	add_ending_entry(e, -1, "‘Practical & Advanced Computational Applications of the Grand Unified Theory’…", NULL);
 	add_ending_entry(e, -1, "… ‘by Usami Renko’", NULL);
 
