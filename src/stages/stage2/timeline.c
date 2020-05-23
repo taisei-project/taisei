@@ -158,47 +158,6 @@ TASK(redwall_fairy, {
 	}
 }
 
-static int stage2_aim(Enemy *e, int t) {
-	TIMER(&t);
-	AT(EVENT_KILLED) {
-		spawn_items(e->pos, ITEM_POWER, 2);
-		return 1;
-	}
-
-	if(t < 70)
-		e->pos += e->args[0];
-	if(t > 150)
-		e->pos -= e->args[0];
-
-	AT(90) {
-		if(global.diff > D_Normal) {
-			play_sound("shot1");
-			PROJECTILE(
-				.proto = pp_plainball,
-				.pos = e->pos,
-				.color = RGB(0.6,0.0,0.8),
-				.rule = asymptotic,
-				.args = {
-					5*cexp(I*carg(global.plr.pos-e->pos)),
-					-1
-				}
-			);
-
-			PROJECTILE(
-				.proto = pp_plainball,
-				.pos = e->pos,
-				.color = RGB(0.2,0.0,0.1),
-				.rule = linear,
-				.args = {
-					3*cexp(I*carg(global.plr.pos-e->pos))
-				}
-			);
-		}
-	}
-
-	return 1;
-}
-
 TASK(aimshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
 	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 500, Fairy, NULL, 0));
 
