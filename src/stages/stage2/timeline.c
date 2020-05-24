@@ -519,8 +519,42 @@ TASK(aimshot_fairies, NO_ARGS) {
 	}
 }
 
+TASK(boss_appear, { BoxedBoss boss; }) {
+	Boss *boss = ENT_UNBOX(ARGS.boss);
+	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.05);
+
+	aniplayer_queue(&boss->ani, "guruguru", 2);
+	aniplayer_queue(&boss->ani, "main", 0);
+}
+
+TASK(spawn_boss, NO_ARGS) {
+	STAGE_BOOKMARK(boss);
+
+	Boss *boss = global.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
+
+	PlayerMode *pm = global.plr.mode;
+	Stage2PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage2PreBossDialog, pm->dialog->Stage2PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage2boss");
+	WAIT_EVENT(&global.dialog->events.fadeout_began);
+
+	boss_add_attack_task(boss, AT_Normal, "Cards1", 30, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_1), NULL);
+	boss_add_attack_from_info(boss, &stage2_spells.boss.amulet_of_harm, false);
+	boss_add_attack(boss, AT_Normal, "Cards2", 40, 30000, hina_cards2, NULL);
+	boss_add_attack_from_info(boss, &stage2_spells.boss.bad_pick, false);
+	boss_add_attack_from_info(boss, &stage2_spells.boss.wheel_of_fortune, false);
+	boss_add_attack_from_info(boss, &stage2_spells.extra.monty_hall_danmaku, false);
+
+	boss_start_attack(boss, boss->attacks);
+}
+
 DEFINE_EXTERN_TASK(stage2_timeline) {
 	YIELD;
+
+	WAIT(200);
+	INVOKE_TASK(spawn_boss);
+	STALL;
 
 	INVOKE_TASK_DELAYED(300, great_circle_fairy,
 		.pos = VIEWPORT_W/2 - 10.0*I,
