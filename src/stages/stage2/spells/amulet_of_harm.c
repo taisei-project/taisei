@@ -12,35 +12,56 @@
 
 #include "global.h"
 
-void hina_amulet(Boss *h, int time) {
-	int t = time % 200;
+DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(VIEWPORT_W/2 + 200.0*I, 0.02);
+	BEGIN_BOSS_ATTACK();
 
-	if(time < 0)
-		return;
+	ProjPrototype *t0 = pp_ball;
+	ProjPrototype *t1 = global.diff == D_Easy ? t0 : pp_crystal;
 
-	if(time < 100)
-		GO_TO(h, VIEWPORT_W/2 + 200.0*I, 0.02);
+	int cycleduration = 200;
+	int loopduration = cycleduration * (global.diff + 0.5) / (D_Lunatic + 0.5);
 
-	TIMER(&t);
+	real sf = 1.0 / sqrt(0.5 + global.diff);
+	real speed = sf * 2.00 * (1.0 + 0.75 * imax(0, global.diff - D_Normal));
+	real accel = sf * 0.01 * (1.0 + 1.20 * imax(0, global.diff - D_Normal));
 
-	cmplx d = global.plr.pos - h->pos;
-	int loopduration = 200*(global.diff+0.5)/(D_Lunatic+0.5);
-	AT(0) {
-		aniplayer_queue_frames(&h->ani,"guruguru",loopduration);
-	}
-	FROM_TO_SND("shot1_loop", 0,loopduration,1) {
-		float f = _i/30.0;
-		cmplx n = cexp(I*2*M_PI*f+I*carg(d)+0.7*time/200*I)/sqrt(0.5+global.diff);
+	for(int t = 0;;) {
+		int i = 0;
 
-		float speed = 1.0 + 0.75 * imax(0, global.diff - D_Normal);
-		float accel = 1.0 + 1.20 * imax(0, global.diff - D_Normal);
+		aniplayer_soft_switch(&boss->ani, "guruguru", 0);
 
-		cmplx p = h->pos+30*log(1+_i/2.0)*n;
+		while(i < loopduration) {
+			play_sfx_loop("shot1_loop");
 
-		ProjPrototype *t0 = pp_ball;
-		ProjPrototype *t1 = global.diff == D_Easy ? t0 : pp_crystal;
+			real f = i / 30.0;
+			cmplx n = cdir(M_TAU * f + 0.7 * t / 200);
+			n *= cnormalize(global.plr.pos - boss->pos);
 
-		PROJECTILE(.proto = t0, .pos = p, .color = RGB(0.8, 0.0, 0.0), .rule = accelerated, .args = { speed *  2*n*I, accel * -0.01*n });
-		PROJECTILE(.proto = t1, .pos = p, .color = RGB(0.8, 0.0, 0.5), .rule = accelerated, .args = { speed * -2*n*I, accel * -0.01*n });
+			cmplx p = boss->pos + 30 * log(1 + i/2.0) * n;
+
+			PROJECTILE(
+				.proto = t0,
+				.pos = p,
+				.color = RGB(0.8, 0.0, 0.0),
+				.move = move_accelerated(speed * n * I, accel * -n),
+			);
+
+			PROJECTILE(
+				.proto = t1,
+				.pos = p,
+				.color = RGB(0.8, 0.0, 0.5),
+				.move = move_accelerated(speed * -n * I, accel * -n),
+			);
+
+			++t;
+			++i;
+			WAIT(1);
+		}
+
+		aniplayer_soft_switch(&boss->ani, "main", 0);
+
+		WAIT(cycleduration - i);
 	}
 }

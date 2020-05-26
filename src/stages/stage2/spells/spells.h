@@ -13,9 +13,10 @@
 
 #include "boss.h"
 
-void hina_amulet(Boss*, int);
 void hina_bad_pick(Boss*, int);
 void hina_wheel(Boss*, int);
 void hina_monty(Boss*, int);
+
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_amulet_of_harm, BossAttack);
 
 #endif // IGUARD_stages_stage2_spells_spells_h
