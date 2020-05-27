@@ -390,25 +390,6 @@ static void hina_intro(Boss *h, int time) {
 	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
 }
 
-static Boss *create_hina(void) {
-	Boss *hina = stage2_spawn_hina(VIEWPORT_W + 150 + 100.0*I);
-
-	aniplayer_queue(&hina->ani,"main",3);
-	aniplayer_queue(&hina->ani,"guruguru",1);
-	aniplayer_queue(&hina->ani,"main",0);
-
-	boss_add_attack(hina, AT_Move, "Introduction", 2, 0, hina_intro, NULL);
-	boss_add_attack(hina, AT_Normal, "Cards1", 30, 25000, hina_cards1, NULL);
-	boss_add_attack_from_info(hina, &stage2_spells.boss.amulet_of_harm, false);
-	boss_add_attack(hina, AT_Normal, "Cards2", 40, 30000, hina_cards2, NULL);
-	boss_add_attack_from_info(hina, &stage2_spells.boss.bad_pick, false);
-	boss_add_attack_from_info(hina, &stage2_spells.boss.wheel_of_fortune, false);
-	boss_add_attack_from_info(hina, &stage2_spells.extra.monty_hall_danmaku, false);
-
-	boss_start_attack(hina, hina->attacks);
-	return hina;
-}
-
 void stage2_events(void) {
 	TIMER(&global.timer);
 
@@ -477,7 +458,7 @@ void stage2_events(void) {
 
 	AT(5100) {
 		stage_unlock_bgm("stage2");
-		global.boss = create_hina();
+		// global.boss = create_hina();
 	}
 
 	AT(5180) {
@@ -541,7 +522,7 @@ TASK(spawn_boss, NO_ARGS) {
 
 	boss_add_attack_task(boss, AT_Normal, "Cards1", 30, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.amulet_of_harm, false);
-	boss_add_attack(boss, AT_Normal, "Cards2", 40, 30000, hina_cards2, NULL);
+	boss_add_attack_task(boss, AT_Normal, "Cards2", 40, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_2), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.bad_pick, false);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.wheel_of_fortune, false);
 	boss_add_attack_from_info(boss, &stage2_spells.extra.monty_hall_danmaku, false);

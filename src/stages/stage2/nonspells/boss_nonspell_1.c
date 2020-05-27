@@ -13,23 +13,6 @@
 #include "global.h"
 #include "common_tasks.h"
 
-void hina_cards1(Boss *h, int time) {
-	int t = time % 500;
-	TIMER(&t);
-
-	if(time < 0)
-		return;
-
-	AT(0) {
-		aniplayer_queue(&h->ani, "guruguru", 0);
-	}
-	FROM_TO(0, 500, 2-(global.diff > D_Normal)) {
-		play_sfx_ex("shot1", 4, false);
-		PROJECTILE(.proto = pp_card, .pos = h->pos+50*cexp(I*t/10), .color = RGB(0.8,0.0,0.0), .rule = asymptotic, .args = { (1.6+0.4*global.diff)*cexp(I*t/5.0), 3 });
-		PROJECTILE(.proto = pp_card, .pos = h->pos-50*cexp(I*t/10), .color = RGB(0.0,0.0,0.8), .rule = asymptotic, .args = {-(1.6+0.4*global.diff)*cexp(I*t/5.0), 3 });
-	}
-}
-
 TASK(wander, { BoxedBoss boss; }) {
 	Rect wander_bounds = viewport_bounds(80);
 	wander_bounds.bottom = 130;
@@ -52,9 +35,9 @@ DEFINE_EXTERN_TASK(stage2_boss_nonspell_1) {
 
 	aniplayer_queue(&boss->ani, "guruguru", 0);
 
-	int step = difficulty_value(2, 2, 1, 1);
+	int step = difficulty_value(3, 2, 1, 1);
 	real speed0 = difficulty_value(2.0, 2.4, 2.8, 3.2);
-	real speed1 = difficulty_value(0.1, 0.1, 0.1, 0.2);
+	real speed1 = 0.2; // difficulty_value(0.1, 0.1, 0.1, 0.2);
 
 	for(int t = 0;; t += WAIT(step)) {
 		// play_sfx_ex("shot1", 4, false);
@@ -69,7 +52,6 @@ DEFINE_EXTERN_TASK(stage2_boss_nonspell_1) {
 			.proto = pp_card,
 			.pos = boss->pos + ofs,
 			.color = RGB(0.8, 0.0, 0.0),
-			// .move = move_asymptotic_simple(speed0 * dir, 3),
 			.move = move_asymptotic_halflife(speed1 * dir, speed0 * dir * 2, hl),
 		);
 
@@ -77,7 +59,6 @@ DEFINE_EXTERN_TASK(stage2_boss_nonspell_1) {
 			.proto = pp_card,
 			.pos = boss->pos - ofs,
 			.color = RGB(0.0, 0.0, 0.8),
-			// .move = move_asymptotic_simple(speed * -dir, 3),
 			.move = move_asymptotic_halflife(speed0 * -dir, speed1 * -dir, hl),
 		);
 	}
