@@ -290,6 +290,7 @@ static void gl33_init_context(SDL_Window *window) {
 	}
 #endif
 
+	glFrontFace(GL_CW);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	GLVT.get_viewport(&R.viewport.default_framebuffer);

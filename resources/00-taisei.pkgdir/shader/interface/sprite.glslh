@@ -9,24 +9,23 @@
  * Per-vertex attributes
  */
 ATTRIBUTE(0) vec2  vertPos;
-// 1 - vec3 normal (not used)
-ATTRIBUTE(2) vec2  vertTexCoord;
+ATTRIBUTE(1) vec2  vertTexCoord;
 
 /*
  * Per-instance attributes
  */
-ATTRIBUTE(3)   mat4  spriteVMTransform;
+ATTRIBUTE(2)   mat4  spriteVMTransform;
+// 3
 // 4
 // 5
-// 6
-ATTRIBUTE(7)   mat4  spriteTexTransform;
+ATTRIBUTE(6)   mat4  spriteTexTransform;
+// 7
 // 8
 // 9
-// 10
-ATTRIBUTE(11)  vec4  spriteRGBA;
-ATTRIBUTE(12)  vec4  spriteTexRegion;
-ATTRIBUTE(13)  vec2  spriteDimensions;
-ATTRIBUTE(14)  vec4  spriteCustomParams;
+ATTRIBUTE(10)  vec4  spriteRGBA;
+ATTRIBUTE(11)  vec4  spriteTexRegion;
+ATTRIBUTE(12)  vec2  spriteDimensions;
+ATTRIBUTE(13)  vec4  spriteCustomParams;
 #endif
 
 #ifdef FRAG_STAGE

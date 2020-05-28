@@ -74,8 +74,7 @@ void lasers_preload(void) {
 
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),         0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
 
 		// Per-instance attributes (for our own buffer, bound at 1)
@@ -118,7 +117,7 @@ void lasers_preload(void) {
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
 	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
 
-	lasers.quad_generic.indexed = false;
+	lasers.quad_generic.num_indices = 0;
 	lasers.quad_generic.num_vertices = 4;
 	lasers.quad_generic.offset = 0;
 	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;

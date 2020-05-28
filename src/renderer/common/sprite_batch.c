@@ -67,8 +67,7 @@ void _r_sprite_batch_init(void) {
 
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),           0 },
-		{ { 3, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(normal),             0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),           0 },
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),                 0 },
 
 		// Per-instance attributes (for our own sprites buffer, bound at 1)
@@ -107,7 +106,7 @@ void _r_sprite_batch_init(void) {
 	r_vertex_array_attach_vertex_buffer(_r_sprite_batch.varr, r_vertex_buffer_static_models(), 0);
 	r_vertex_array_attach_vertex_buffer(_r_sprite_batch.varr, _r_sprite_batch.vbuf, 1);
 
-	_r_sprite_batch.quad.indexed = false;
+	_r_sprite_batch.quad.num_indices = 0;
 	_r_sprite_batch.quad.num_vertices = 4;
 	_r_sprite_batch.quad.offset = 0;
 	_r_sprite_batch.quad.primitive = PRIM_TRIANGLE_STRIP;
