@@ -612,7 +612,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(youmu, smug);
 	MSG(youmu, "Given the ostentatiousness of this contraption we find ourselves in.");
 
-	MSG(yumemi, "Outrageous fortune? Perish the thought.");
+	MSG(yumemi, "Outrageous fortune? As if.");
 	FACE(yumemi, normal);
 	MSG(yumemi, "Hmm…");
 	FACE(yumemi, surprised);
@@ -621,10 +621,10 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(youmu, normal);
 	MSG(yumemi, "Hilarious.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "In my time, those swords of yours were banned over two hundred years ago.");
-	MSG(yumemi, "The great machine of war became more detached and brutal ever since the Industrial Revolution. Nobody has any use for them.");
+	MSG(yumemi, "When I'm from, those swords of yours were banned over two hundred years ago.");
+	MSG(yumemi, "The machines of war became more detached and brutal ever since the Industrial Revolution.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Just another relic of human history.");
+	MSG(yumemi, "Nobody has any use for swords anymore. They're just another relic of human history.");
 
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "Yes, I am aware of the Outside World’s current martial doctrines.");
@@ -638,7 +638,8 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	MSG(yumemi, "Your martial art is a pastime of the wealthy.");
 	FACE(youmu, normal);
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "But of course, I’m sure many people fruitlessly ‘train’ in virtual reality with those weapons, for absolutely no purpose other than delusions of grandeur.");
+	MSG(yumemi, "But of course, I'm sure you’d fit right in with all of the other delusional idiots training to use those weapons in virtual reality.");
+
 
 	MSG(youmu, "Fine blades such as these are hard to come by for the working class, it’s true.");
 	FACE(youmu, chuuni);
@@ -646,7 +647,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 
 	FACE(youmu, normal);
 	FACE(yumemi, sigh);
-	MSG(yumemi, "Please, stop. I don’t care about any of that. It’s meaningless.");
+	MSG(yumemi, "Please, stop. I don’t care about any of that. It’s nonsense");
 
 	FACE(youmu, unamused);
 	MSG(youmu, "Hmph. I was warned of your attitude.");
@@ -663,7 +664,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 
 	FACE(yumemi, normal);
 	MSG(yumemi, "You know nothing about me.");
-	MSG(yumemi, "You exist in an unreal world, living a false life, surrounded by simple and childish delusions about your powers and abilities.");
+	MSG(yumemi, "You exist in an fake world, living a false life, surrounded by childish delusions about your powers and abilities.");
 
 	FACE(youmu, smug);
 	MSG(youmu, "As opposed to whom? You?");
@@ -678,7 +679,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 
 	FACE(youmu, smug);
 	FACE(yumemi, sigh);
-	MSG(yumemi, "I don’t have the patience to take criticism from the likes of you. I’ll destroy this delusion and be on my way.");
+	MSG(yumemi, "I don’t have to take criticism from the likes of you. I’ll destroy this delusion and be on my way.");
 
 	FACE(youmu, puzzled);
 	MSG(youmu, "How odd. Have the denizens of Gensōkyō given you cause for retribution?");
@@ -694,37 +695,50 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	MSG(yumemi, "It could be this Gensōkyō, or some other Gensōkyō…");
 	FACE(youmu, normal);
 	FACE(yumemi, sigh);
-	MSG(yumemi, "To be honest, I can’t tell the difference anymore.");
+	MSG(yumemi, "To be honest, I can’t tell the difference between them anymore.");
 
+	FACE(youmu, puzzled);
 	MSG(youmu, "Some… other Gensōkyō?");
+	MSG(youmu, "Do you mean to say there are more, beyond the one Elly is from?");
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "All of them have a common effect on the real world.");
+	MSG(yumemi, "Of course. And yet, all of them have a common effect on the real world.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "They lead people astray, into forgetting about…");
+	FACE(youmu, normal);
+	MSG(yumemi, "They tempt people into forgetting about…");
 	FACE(youmu, normal);
 	FACE(yumemi, sad);
-	MSG(yumemi, "… ah, I just don’t care anymore.");
-	MSG(yumemi, "It probably won’t change a thing.");
+	MSG(yumemi, "… ah.");
+	MSG(yumemi, "I just don’t care anymore.");
+	MSG(yumemi, "It won’t change anything.");
 	FACE(yumemi, sigh);
-	MSG(yumemi, "Perhaps I just wanted to see if this contraption worked, in the end.");
+	MSG(yumemi, "Perhaps I just wanted to see if this machine really worked, in the end.");
 	FACE(yumemi, normal);
 	MSG(yumemi, "It’s not worth explaining anything else.");
 
+
+	FACE(youmu, unamused);
+	MSG(youmu, "No, I must ask that you do explain. It was just beginning to get interesting.");
+
+	FACE(yumemi, sigh);
+	MSG(yumemi, "It would be a waste of time, and not only because you aren't real.");
+
 	FACE(youmu, unamused);
 	MSG(youmu, "…");
-	MSG(youmu, "Is that… it?");
+	MSG(youmu, "Is that… it, then?");
 
 	FACE(yumemi, surprised);
 	MSG(yumemi, "What else were you expecting? A grand vision for the future?");
 	FACE(yumemi, sigh);
 	MSG(yumemi, "Please, I’m past all that.");
 
+	FACE(youmu, eyes_closed);
 	MSG(youmu, "… pathetic!");
 
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Excuse me?");
 
+	FACE(youmu, unamused);
 	MSG(youmu, "Elly had a purpose, a passion! To save her friends, and to restore her world!");
 	MSG(youmu, "But you…! You just want an apocalypse! Over something you no longer care for?!");
 
@@ -771,7 +785,6 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 
 	FACE(yumemi, sad);
 	MSG(yumemi, "I yield.");
-	MSG(yumemi, "To think I’ll meet my end to someone like you…");
 
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "An academic such as yourself ought to know that martial arts are a field of study, like any other.");
@@ -782,6 +795,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(yumemi, "… ugh…");
 
 	FACE(youmu, eyes_closed);
+	MSG(youmu, "Your futile mission was not without its benefits.");
 	MSG(youmu, "With as empty as your heart is, you might be unaware of the gift you’ve given me, weary traveller.");
 
 	FACE(yumemi, surprised);
@@ -800,12 +814,15 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(youmu, "And it has persisted even with your audacious machine deactivated!");
 
 	FACE(yumemi, surprised);
-	MSG(yumemi, "Am I hearing you clearly…? Instead of realizing your unreal nature, you became permanently more confident in yourself?");
-	MSG(youmu, "Indeed. I was as startled as you are at first.");
+	MSG(yumemi, "Really…? Instead of realizing your unreal nature, you became permanently more confident in yourself?");
 
+	MSG(youmu, "Indeed. I was as startled as you are at first.");
 	FACE(youmu, normal);
+
 	FACE(yumemi, smug);
-	MSG(yumemi, "Hah. Hahaha. Incredible.");
+	MSG(yumemi, "Hah. Hahaha.");
+	FACE(yumemi, sigh);
+	MSG(yumemi, "Incredible.");
 
 	FACE(youmu, smug);
 	MSG(youmu, "Empty-hearted retribution will never defeat the will of those who believe in themselves.");
@@ -820,7 +837,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(elly, "Y-you already defeated her?!");
 
 	FACE(youmu, smug);
-	MSG(youmu, "Fear not, I’ve resolved the situation.");
+	MSG(youmu, "Fear not, I’ve resolved the incident.");
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "Her techniques were powerful and precise, but as I was just saying…");
 
@@ -830,18 +847,22 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 
 	FACE(youmu, smug);
 	MSG(youmu, "Precisely.");
+
 	FACE(elly, blush);
 	MSG(elly, "Yōmu, you’re absolutely incredible!");
+
 	FACE(youmu, chuuni);
 	MSG(youmu, "Flattery will get you everywhere, my dear.");
 	MSG(yumemi, "After all that effort you put into stealing the Tower from me…");
+
+	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A delusional katana-wielding woman with cheesy action-hero one-liners?");
 	FACE(youmu, normal);
 	FACE(elly, normal);
-	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A delusional katana-wielding woman with cheesy action-hero one-liners?");
 	MSG(yumemi, "I never did stand a chance, did I?");
 
 	FACE(elly, angry);
 	MSG(elly, "No, I suppose you didn’t.");
+
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "Hah…");
 	MSG(yumemi, "Sentence me as you wish. I won’t resist.");
@@ -879,10 +900,10 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(yumemi, "I… see.");
 	MSG(yumemi, "Then, I agree. I’ll turn it all off.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "As I’ll be here for a while, I figure I may as well ask something, if you’ll indulge me.");
+	MSG(yumemi, "As I’ll be here for a while, I figure I may as well ask something, if you’ll humour me.");
 
 	FACE(youmu, puzzled);
-	MSG(youmu, "What is it?");
+	MSG(youmu, "Perhaps I will. What is it?");
 
 	MSG(yumemi, "Is there someone here… who can manipulate the boundaries of reality?");
 
@@ -901,15 +922,14 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	FACE(youmu, eeeeh);
 	MSG(youmu, "S-she is frightening to most people in Gensōkyō, myself included, even in my… improved state.");
 	FACE(youmu, puzzled);
-	MSG(youmu, "Does that appear to be the one you seek?");
+	MSG(youmu, "Does that sound like the one you seek?");
 
 	MSG(yumemi, "I’m not sure. Maybe…");
 
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "Perhaps Lady Yuyuko will grace you with her legendary generosity, and grant you an audience with her… companion.");
-
-	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Thank you. That’s more than I can ask.");
+	FACE(yumemi, sad);
+	MSG(youmu, "A peaceful life, away from the torments of your world, may yet do you some good.");
 
 	DIALOG_END();
 }

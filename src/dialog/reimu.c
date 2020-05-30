@@ -668,7 +668,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	MSG(yumemi, "The impossible shrine maiden has finally arrived.");
 	FACE(yumemi, smug);
 	MSG(yumemi, "Here to set me on the ‘right path’, protagonist girl?");
-	MSG(yumemi, "Just like in all of your other tall tales…");
+	MSG(yumemi, "Just like in all of your other tall tales?");
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "I get the worst feeling looking at you.");
@@ -679,9 +679,10 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(reimu, sigh);
 	MSG(reimu, "It’s mostly just how miserable you look.");
 
-	FACE(yumemi, normal);
-	MSG(yumemi, "Do I look especially miserable? Hmm.");
-
+	FACE(yumemi, surprised);
+	MSG(yumemi, "Oh, I'm so sorry. I'll try to be more cheerful.");
+	FACE(yumemi, smug);
+	MSG(yumemi, "Hah.");
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "And what would you know about misery, living in this fantastical paradise?");
 
@@ -691,15 +692,14 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(yumemi, normal);
 	FACE(reimu, unsettled);
 	MSG(reimu, "*Other* fairytale creatures?");
-
 	FACE(reimu, unamused);
 	MSG(reimu, "I’m human, you know.");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "Oh, please. You’re an invincible, flying, magic-wielding shrine maiden—");
-	FACE(yumemi, normal);
 
 	FACE(reimu, sigh);
+	FACE(yumemi, normal);
 	MSG(reimu, "I don’t use magic.");
 
 	FACE(yumemi, surprised);
@@ -708,12 +708,12 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(reimu, irritated);
 	MSG(yumemi, "Hahaha.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "Perhaps you're unaware, but the world - the real world - is dying, shrine maiden.");
+	MSG(yumemi, "Perhaps you're unaware, but the world - the real world, I mean - is dying, shrine maiden.");
 
 	FACE(yumemi, sad);
 	FACE(reimu, unamused);
 	MSG(yumemi, "People pour their hearts and souls into fantasy, leaving none of that energy, that drive, for the real world.");
-	MSG(yumemi, "People talk of ‘solutions’ and ‘progress,’ but it’s pointless so long as people wile away their lives in useless places like this.");
+	MSG(yumemi, "People talk of ‘solutions’ and ‘progress,’ but it’s pointless when people waste away their lives in useless places like this.");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "How’s that Gensōkyō’s problem?");
@@ -724,7 +724,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	MSG(yumemi, "If only it were that simple.");
 	FACE(yumemi, normal);
 	FACE(reimu, unamused);
-	MSG(yumemi, "Places like this tempt people into forgetting their real lives.");
+	MSG(yumemi, "Places like this are too tempting. It's worse than any addiction, causing them to abandon their bodies, too.");
 	FACE(yumemi, sad);
 	MSG(yumemi, "And by abandoning the real world, they doom not just themselves, but everyone around them.");
 
@@ -734,47 +734,49 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	MSG(reimu, "Haven’t you ever read a book?");
 
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "You mean fiction? I haven’t had a need for it in years.");
+	MSG(yumemi, "You mean fiction? Not in years.");
 	FACE(yumemi, sigh);
 	MSG(yumemi, "It’s a waste of time.");
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "Wow, no wonder you’re so miserable.");
 
-	FACE(yumemi, sad);
-	MSG(yumemi, "Even as I introduced this technology to the world, nobody woke up from their dissociative haze. It was as it ever was.");
+	MSG(yumemi, "Do you see this place we're in, shrine maiden? Do you even know how it was made?");
+	MSG(yumemi, "Whether you believe it or not, this machine should have been able to save the world.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "But at least, with this machine I’ve built, I can erase every so-called ‘Otherworld’ from the fabric of social reality.");
-	FACE(yumemi, normal);
+	MSG(yumemi, "But even when I revealed this technology to the world, nobody woke up from their dissociative haze.");
+	MSG(yumemi, "Nothing changed. And I figured out why.");
+	MSG(yumemi, "It's because of places like this. Why work on the real world when you can pretend to in another?");
 
 	FACE(reimu, assertive);
+	FACE(yumemi, normal);
 	MSG(reimu, "People won’t stop day-dreaming just because you tell them to. Fantasy is in people’s hearts and minds.");
-	FACE(reimu, sigh);
-	MSG(reimu, "So, even if you managed to destroy Gensōkyō—");
 
 	MSG(yumemi, "Yōkai, Gods, magicians, flying shrine maidens…");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "It’s all delusional nonsense.");
+	MSG(yumemi, "It’s all delusional nonsense. And I now have the power to erase it all.");
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "So you want genocide?");
 
 	FACE(yumemi, surprised);
-	MSG(yumemi, "Genocide…? What a harsh word.");
+	MSG(yumemi, "Genocide…? What a nasty word.");
 	FACE(yumemi, normal);
 	FACE(reimu, unamused);
 	MSG(yumemi, "You’re not real. No one is being killed.");
 
 	MSG(reimu, "No wonder those two got freaked out just thinking about you. You’re completely unreasonable.");
+	FACE(reimu, sigh);
+	MSG(reimu, "Anyway, even if you managed to destroy Gensōkyō—");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "Ah, I thought I’d made them both see things my way, by introducing them to the Grand Unified Theory.");
 	FACE(yumemi, normal);
+	FACE(reimu, irritated);
 	MSG(yumemi, "But in the end, they just betrayed me.");
 	FACE(yumemi, sad);
 	MSG(yumemi, "In hindsight, it makes sense, of course. They can’t betray what they are.");
 
-	FACE(reimu, irritated);
 	MSG(reimu, "It’s hard to keep people on your side when all you do is threaten them, idiot!");
 	FACE(reimu, assertive);
 	MSG(reimu, "Have you tried not being a genocidal maniac?");
@@ -782,8 +784,6 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	FACE(yumemi, sigh);
 	MSG(yumemi, "I’m tired, shrine maiden. Too tired to explain my life to a figment of imagination.");
 	FACE(reimu, unamused);
-	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Perhaps I’ve already given up trying to save my society, too.");
 
 	FACE(reimu, assertive);
 	MSG(reimu, "Sucks to be you. Don’t make it our problem.");
@@ -791,10 +791,10 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	EVENT(music_changes);
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? Your very existence is the root of my misery.");
+	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? You existing does nothing but hold humanity back.");
 	FACE(reimu, unsettled);
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Farewell, shrine maiden. I would say it’s been nice knowing you, but…");
+	MSG(yumemi, "Goodbye, shrine maiden. I would say it’s been nice knowing you, but…");
 	FACE(yumemi, sad);
 	MSG(yumemi, "There’s really no way I could’ve known you at all.");
 
@@ -816,14 +816,14 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(reimu, "Finally.");
 
 	FACE(yumemi, sad);
-	MSG(yumemi, "Even with the full computational capacity of this machine, I wasn’t able to calculate a winning trajectory…");
+	MSG(yumemi, "I guess it really was hopeless all along.");
 	FACE(reimu, unsettled);
-	MSG(yumemi, "Nor did any of you succumb to the truth.");
 	FACE(yumemi, sigh);
-	MSG(yumemi, "I suppose it really was hopeless all along.");
+	MSG(yumemi, "And I guess this machine wasn't as impressive as I thought.");
+	MSG(yumemi, "I thought for sure, if you all learned the true nature of your existence…");
 
 	FACE(reimu, puzzled);
-	MSG(reimu, "What ‘truth’?");
+	MSG(reimu, "What ‘true nature’?");
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "That this isn’t real.");
@@ -833,7 +833,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	FACE(reimu, unsettled);
 	MSG(reimu, "That faith and magic don’t exist?");
 	MSG(reimu, "That we’re no different than legends and myths?");
-	MSG(reimu, "That if the barrier separating Gensōkyō from the Outside World were to fall, I’d lose my powers, or worse, and that all yokai would go extinct?");
+	MSG(reimu, "That if the barrier separating Gensōkyō from the Outside World were to fall, I would, at best, lose my powers, and that all yōkai here would go extinct?");
 
 	FACE(reimu, assertive);
 	MSG(reimu, "We knew all of that already! Everyone here does!");
@@ -865,7 +865,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(reimu, "…ugh, it’s that weird word Sumireko keeps using…");
 
 	FACE(reimu, assertive);
-	MSG(reimu, "Y-You just made everyone act even more delusional than they already are!");
+	MSG(reimu, "Y-You just made everyone act even more delusional than they already were!");
 
 	MSG(yumemi, "Sumire…ko?");
 	MSG(yumemi, "Usami Sumireko?");
@@ -881,7 +881,6 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(reimu, "What?! That’s all it took to talk you down?!");
 	FACE(reimu, assertive);
 	MSG(reimu, "That’s infuriatingly random, you know!");
-
 	FACE(reimu, sigh);
 	MSG(reimu, "Maybe I should’ve talked her into it and saved me all this trouble!");
 
@@ -894,11 +893,14 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	FACE(reimu, unamused);
 	MSG(yumemi, "I’ve failed. I accept your punishment.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "Finish me off. I won’t resist.");
+	MSG(yumemi, "Finish me off. Don’t hold back.");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "‘Finish you off’?");
+
+	FACE(yumemi, sad);
 	MSG(yumemi, "End my life. I threatened your world with ‘genocide’, didn’t I?");
+
 	FACE(reimu, unamused);
 	MSG(reimu, "Huh? But who would you even be a martyr for? You don’t have any followers left.");
 
@@ -917,7 +919,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	FACE(reimu, assertive);
 	MSG(reimu, "Do something useful with that big brain of yours for once!");
 	FACE(reimu, irritated);
-	MSG(reimu, "Count yourself lucky that Kanako probably won’t put you on fairy vomit duty!");
+	MSG(reimu, "Count yourself lucky that Kanako probably won’t have you cleaning fairy vomit like your former underlings!");
 
 	DIALOG_END();
 }
