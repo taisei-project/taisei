@@ -40,6 +40,7 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 	MSG(youmu, "I suppose it’s as good a time as any to practice my snowflake-destruction technique.");
 
 	EVENT(music_changes);
+
 	FACE(cirno, angry);
 	MSG(cirno, "But if I turn you into a snowflake, you’ll have to chop yourself in half!");
 
@@ -706,7 +707,6 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(yumemi, eyes_closed);
 	FACE(youmu, normal);
 	MSG(yumemi, "They tempt people into forgetting about…");
-	FACE(youmu, normal);
 	FACE(yumemi, sad);
 	MSG(yumemi, "… ah.");
 	MSG(yumemi, "I just don’t care anymore.");
@@ -715,7 +715,6 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	MSG(yumemi, "Perhaps I just wanted to see if this machine really worked, in the end.");
 	FACE(yumemi, normal);
 	MSG(yumemi, "It’s not worth explaining anything else.");
-
 
 	FACE(youmu, unamused);
 	MSG(youmu, "No, I must ask that you do explain. It was just beginning to get interesting.");
@@ -747,6 +746,7 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "It’s not as if you’re real. You’re a fairytale out of a children’s book.");
 
+	FACE(youmu, puzzled);
 	MSG(youmu, "And what could you have possibly lost that would explain this casually genocidal attitude?");
 
 	FACE(yumemi, eyes_closed);
@@ -767,7 +767,9 @@ DIALOG_TASK(youmu, StageExPreBoss) {
 	FACE(youmu, normal);
 	FACE(yumemi, sigh);
 	MSG(yumemi, "No, you don’t. You’re a figment of a weary society’s delusional imagination.");
+
 	EVENT(music_changes);
+
 	MSG(yumemi, "I’m tired of explaining myself to the likes of you.");
 	FACE(yumemi, smug);
 	MSG(yumemi, "Let me demonstrate the full power of this technological terror I’ve constructed.");

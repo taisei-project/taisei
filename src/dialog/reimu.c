@@ -791,7 +791,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	EVENT(music_changes);
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? You existing does nothing but hold humanity back.");
+	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? Your existence does nothing but hold humanity back.");
 	FACE(reimu, unsettled);
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "Goodbye, shrine maiden. I would say it’s been nice knowing you, but…");
@@ -819,8 +819,8 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	MSG(yumemi, "I guess it really was hopeless all along.");
 	FACE(reimu, unsettled);
 	FACE(yumemi, sigh);
-	MSG(yumemi, "And I guess this machine wasn't as impressive as I thought.");
-	MSG(yumemi, "I thought for sure, if you all learned the true nature of your existence…");
+	MSG(yumemi, "And this machine wasn't as impressive as I thought.");
+	MSG(yumemi, "I thought that, if you all learned the true nature of your existence…");
 
 	FACE(reimu, puzzled);
 	MSG(reimu, "What ‘true nature’?");
@@ -833,15 +833,14 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	FACE(reimu, unsettled);
 	MSG(reimu, "That faith and magic don’t exist?");
 	MSG(reimu, "That we’re no different than legends and myths?");
-	MSG(reimu, "That if the barrier separating Gensōkyō from the Outside World were to fall, I would, at best, lose my powers, and that all yōkai here would go extinct?");
-
 	FACE(reimu, assertive);
+	MSG(reimu, "That if the barrier separating Gensōkyō from the Outside World were to fall, at best, I would lose my powers, and that all yōkai here would go extinct?");
+	FACE(reimu, irritated);
 	MSG(reimu, "We knew all of that already! Everyone here does!");
 
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Are… are you serious? But then, how could you—");
 
-	FACE(reimu, irritated);
 	MSG(reimu, "Outside World humans are so irritating!");
 	MSG(reimu, "Did you even bother talking to anyone when you got here?!");
 	MSG(reimu, "No, of course not! Why would you?! You’re too full of yourself to ask anyone about anything!");
@@ -875,6 +874,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "… You’re right. I’ve been a complete idiot.");
+	FACE(yumemi, sad);
 	MSG(yumemi, "I surrender. I’ll shut everything down.");
 
 	FACE(reimu, puzzled);
@@ -901,7 +901,6 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 	FACE(yumemi, sad);
 	MSG(yumemi, "End my life. I threatened your world with ‘genocide’, didn’t I?");
 
-	FACE(reimu, unamused);
 	MSG(reimu, "Huh? But who would you even be a martyr for? You don’t have any followers left.");
 
 	FACE(yumemi, sad);
@@ -909,6 +908,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	FACE(reimu, sigh);
 	MSG(reimu, "Ugh, I’ll let the Moriya Gods deal with you.");
+	FACE(reimu, unamused);
 	MSG(reimu, "Be prepared to give endless lectures about that ‘Grand Unified Whatever’.");
 
 	FACE(yumemi, normal);
@@ -918,7 +918,6 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	FACE(reimu, assertive);
 	MSG(reimu, "Do something useful with that big brain of yours for once!");
-	FACE(reimu, irritated);
 	MSG(reimu, "Count yourself lucky that Kanako probably won’t have you cleaning fairy vomit like your former underlings!");
 
 	DIALOG_END();

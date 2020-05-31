@@ -702,7 +702,7 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	FACE(yumemi, normal);
 	MSG(yumemi, "I built this machine through the merging of computer science and unified physics.");
 	FACE(yumemi, eyes_closed);
-	MSG(yumemi, "When it was finished, I demonstrated its power public. And yet…");
+	MSG(yumemi, "When it was finished, I demonstrated its power to the public. And yet…");
 	FACE(yumemi, sigh);
 	MSG(yumemi, "… it swayed no-one.");
 	FACE(marisa, normal);
@@ -781,7 +781,7 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	MSG(marisa, "Why not? My sass is legendary.");
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "You’re not real. At best, you’re a figment of delusional minds.");
+	MSG(yumemi, "You’re not real. At best, you’re a figment of a collective delusion.");
 	MSG(yumemi, "People waste their time thinking about ‘Otherworlds’, about Gensōkyō, while everything else crumbles to nothing.");
 	FACE(marisa, normal);
 	MSG(yumemi, "I’m going to give them no other escape than the world they truly live in.");
@@ -862,7 +862,7 @@ DIALOG_TASK(marisa, StageExPostBoss) {
 	FACE(yumemi, surprised);
 	MSG(yumemi, "Computer Science, and now Fractal Geometry…?");
 	FACE(marisa, normal);
-	MSG(yumemi, "How are able to handle any of this without utterly disappearing…?");
+	MSG(yumemi, "How are able to handle the truth without utterly disappearing…?");
 
 	FACE(marisa, inquisitive);
 	MSG(marisa, "Wait, am I supposed to?!");
