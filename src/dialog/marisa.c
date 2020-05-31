@@ -803,10 +803,11 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	FACE(yumemi, smug);
 	MSG(yumemi, "How nice for you. Too bad you're not real.");
 	FACE(yumemi, normal);
-	MSG(yumemi, "But for us mere mortals, well… we evidently can’t resist losing ourselves in places like this.");
+	MSG(yumemi, "For us mere mortals… well, we evidently can’t resist losing ourselves in places like this.");
 
+	FACE(marisa, sweat_smile);
+	MSG(marisa, "‘Mortals’? I really am human, y’know.");
 	FACE(marisa, normal);
-	MSG(marisa, "I really am human, y’know.");
 	MSG(marisa, "And from one human to another, please, turn off the dang madness rays, would ya?");
 
 	EVENT(music_changes);
