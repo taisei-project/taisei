@@ -803,6 +803,7 @@ DIALOG_TASK(marisa, StageExPreBoss) {
 	FACE(yumemi, smug);
 	MSG(yumemi, "How nice for you. Too bad you're not real.");
 	FACE(yumemi, normal);
+	MSG(yumemi, "But for us mere mortals, well… we evidently can’t resist losing ourselves in places like this.");
 
 	FACE(marisa, normal);
 	MSG(marisa, "I really am human, y’know.");

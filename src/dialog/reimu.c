@@ -760,7 +760,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	MSG(reimu, "So you want genocide?");
 
 	FACE(yumemi, surprised);
-	MSG(yumemi, "Genocide…? What a nasty word.");
+	MSG(yumemi, "Genocide…? What a harsh word.");
 	FACE(yumemi, normal);
 	FACE(reimu, unamused);
 	MSG(yumemi, "You’re not real. No one is being killed.");
@@ -791,7 +791,7 @@ DIALOG_TASK(reimu, StageExPreBoss) {
 	EVENT(music_changes);
 
 	FACE(yumemi, normal);
-	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? Your existence does nothing but hold humanity back.");
+	MSG(yumemi, "Oh, but it’s inherently your problem, isn’t it? Your very existence is the root of my misery.");
 	FACE(reimu, unsettled);
 	FACE(yumemi, eyes_closed);
 	MSG(yumemi, "Goodbye, shrine maiden. I would say it’s been nice knowing you, but…");
@@ -918,7 +918,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	FACE(reimu, assertive);
 	MSG(reimu, "Do something useful with that big brain of yours for once!");
-	MSG(reimu, "Count yourself lucky that Kanako probably won’t have you cleaning fairy vomit like your former underlings!");
+	MSG(reimu, "Count yourself lucky that Kanako probably won’t put you on fairy vomit duty!");
 
 	DIALOG_END();
 }

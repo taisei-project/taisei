@@ -857,7 +857,7 @@ DIALOG_TASK(youmu, StageExPostBoss) {
 	MSG(youmu, "Flattery will get you everywhere, my dear.");
 	MSG(yumemi, "After all that effort you put into stealing the Tower from me…");
 
-	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A delusional katana-wielding woman with cheesy action-hero one-liners?");
+	MSG(yumemi, "… that’s all it took for you to give up on your vision, Elly? A deranged sword-wielding girl with cheesy action-hero one-liners?");
 	FACE(youmu, normal);
 	FACE(elly, normal);
 	MSG(yumemi, "I never did stand a chance, did I?");
