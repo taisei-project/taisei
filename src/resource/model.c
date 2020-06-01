@@ -270,22 +270,12 @@ static bool iqm_read_vertex_arrays(const char *fpath, SDL_RWops *rw, uint num_va
 	return ok;
 }
 
-static void swizzle_coords(float coords[3]) {
-	// TODO can we get rid of this?
-	float tmp = coords[0];
-	coords[0] = coords[1];
-	coords[1] = coords[2];
-	coords[2] = tmp;
-}
-
 static bool iqm_read_vert_positions(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
 	for(uint i = 0; i < num_verts; ++i) {
 		if(!read_floats(rw, ARRAY_SIZE(vertices[i].position), vertices[i].position)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
 			return false;
 		}
-
-		swizzle_coords(vertices[i].position);
 	}
 
 	return true;
@@ -310,8 +300,6 @@ static bool iqm_read_vert_normals(const char *fpath, SDL_RWops *rw, uint num_ver
 			log_error("%s: read error: %s", fpath, SDL_GetError());
 			return false;
 		}
-
-		swizzle_coords(vertices[i].normal);
 	}
 
 	return true;
@@ -323,8 +311,6 @@ static bool iqm_read_vert_tangents(const char *fpath, SDL_RWops *rw, uint num_ve
 			log_error("%s: read error: %s", fpath, SDL_GetError());
 			return false;
 		}
-
-		swizzle_coords(vertices[i].tangent);
 	}
 
 	return true;
@@ -434,6 +420,15 @@ static void *load_model_begin(const char *path, uint flags) {
 
 	TRY_SEEK(hdr.ofs_triangles);
 	TRY(iqm_read_triangles(path, rw, hdr.num_triangles, &indices->tri));
+
+	for(uint i = 0; i < hdr.num_triangles * 3; i += 3) {
+		log_debug("Triangle #%i:", i / 3);
+
+		for(int j = 0; j < 3; ++j) {
+			GenericModelVertex *vtx = &vertices[indices->indices[i + j]];
+			log_debug("    pos: (% f, % f, % f)  uv: (% f, % f)", vtx->position[0], vtx->position[1], vtx->position[2], vtx->uv[0], vtx->uv[1]);
+		}
+	}
 
 	ldata = calloc(1, sizeof(*ldata));
 	ldata->vertices = vertices;
