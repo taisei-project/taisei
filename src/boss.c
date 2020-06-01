@@ -838,6 +838,10 @@ bool boss_is_vulnerable(Boss *boss) {
 	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && !boss->current->finished;
 }
 
+bool boss_is_player_collision_active(Boss *boss) {
+	return boss->current && !boss_is_dying(boss) && !boss_is_fleeing(boss);
+}
+
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
@@ -1163,10 +1167,10 @@ void process_boss(Boss **pboss) {
 		}
 
 		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
-	} else {
-		if(cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {
-			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
-		}
+	}
+
+	if(boss_is_player_collision_active(boss) && cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {
+		ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 	}
 
 	#ifdef DEBUG

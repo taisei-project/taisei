@@ -198,6 +198,7 @@ void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
 bool boss_is_dying(Boss *boss) attr_nonnull(1); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
 bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
+bool boss_is_player_collision_active(Boss *boss) attr_nonnull(1);
 
 void boss_death(Boss **boss) attr_nonnull(1);
 

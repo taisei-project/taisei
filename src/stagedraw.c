@@ -429,7 +429,7 @@ static void stage_draw_collision_areas(void) {
 		}
 	}
 
-	if(global.boss && global.boss->current && !dialog_is_active(global.dialog)) {
+	if(global.boss && boss_is_player_collision_active(global.boss)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
 			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
