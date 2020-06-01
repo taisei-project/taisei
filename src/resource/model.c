@@ -421,15 +421,6 @@ static void *load_model_begin(const char *path, uint flags) {
 	TRY_SEEK(hdr.ofs_triangles);
 	TRY(iqm_read_triangles(path, rw, hdr.num_triangles, &indices->tri));
 
-	for(uint i = 0; i < hdr.num_triangles * 3; i += 3) {
-		log_debug("Triangle #%i:", i / 3);
-
-		for(int j = 0; j < 3; ++j) {
-			GenericModelVertex *vtx = &vertices[indices->indices[i + j]];
-			log_debug("    pos: (% f, % f, % f)  uv: (% f, % f)", vtx->position[0], vtx->position[1], vtx->position[2], vtx->uv[0], vtx->uv[1]);
-		}
-	}
-
 	ldata = calloc(1, sizeof(*ldata));
 	ldata->vertices = vertices;
 	ldata->indices = indices->indices;
