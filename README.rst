@@ -17,7 +17,7 @@ Dependencies
 
 -  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
 -  SDL2 >= 2.0.6
--  SDL2_mixer >= 2.0.4
+-  SDL2_mixer > 2.0.4  (Yet unreleased version required; will be pulled as a subproject)
 -  freetype2
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5

@@ -21,6 +21,10 @@ project('taisei', 'c',
         'sdl2:use_video_offscreen=disabled',
         'sdl2:use_video_vulkan=disabled',
 
+        'sdl2_mixer:enable_opus=enabled',
+        'sdl2_mixer:enable_vorbis=disabled',
+        'sdl2_mixer:enable_wav=disabled',
+
         # You may want to change these for a debug build dir
         'buildtype=release',
         'strip=true',
@@ -141,7 +145,7 @@ dep_freetype    = dependency('freetype2',                           required : t
 dep_opusfile    = dependency('opusfile',                            required : false, static : static, fallback : ['opusfile', 'opusfile_dep'])
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.6', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
-dep_sdl2_mixer  = dependency('SDL2_mixer',     version : '>=2.0.4', required : false, static : static, fallback : ['sdl2_mixer', 'sdl2_mixer_dep'])
+dep_sdl2_mixer  = dependency('SDL2_mixer',     version : '>2.0.4',  required : false, static : static, fallback : ['sdl2_mixer', 'sdl2_mixer_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
