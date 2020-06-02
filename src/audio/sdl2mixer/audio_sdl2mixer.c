@@ -198,19 +198,29 @@ static bool audio_sdl2mixer_music_set_global_volume(double gain) {
 	return true;
 }
 
+static int wrap_Mix_SetMusicPosition(double pos) {
+	int error = Mix_SetMusicPosition(pos);
+	if(error) {
+		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
+	}
+	return error;
+}
+
+static int wrap_Mix_PlayMusic(Mix_Music *mus, int loops) {
+	int error = Mix_PlayMusic(mus, loops);
+	if(error) {
+		log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
+	}
+	return error;
+}
+
 static void mixer_music_finished(void) {
-	// XXX: there may be a race condition in here
-	// probably should protect next_loop with a mutex
+	assume(mixer.next_loop != NULL);
+	assume(mixer.next_loop_point >= 0);
 
-	log_debug("%s stopped playing", mixer.next_loop_point ? "Loop" : "Intro");
-
-	if(mixer.next_loop) {
-		if(Mix_PlayMusic(mixer.next_loop, mixer.next_loop_point ? 0 : -1) == -1) {
-			log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
-		} else if(mixer.next_loop_point >= 0) {
-			Mix_SetMusicPosition(mixer.next_loop_point);
-		} else {
-			mixer.next_loop = NULL;
+	if(!wrap_Mix_PlayMusic(mixer.next_loop, 0)) {
+		if(!wrap_Mix_SetMusicPosition(mixer.next_loop_point)){
+			log_debug("Loop restarted from %f", mixer.next_loop_point);
 		}
 	}
 }
@@ -266,13 +276,7 @@ static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 		Mix_HookMusicFinished(NULL);
 	}
 
-	bool result = (Mix_PlayMusic(mmus, loops) != -1);
-
-	if(!result) {
-		log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
-	}
-
-	return result;
+	return !wrap_Mix_PlayMusic(mmus, loops);
 }
 
 static bool audio_sdl2mixer_music_set_position(double pos) {
@@ -291,6 +295,7 @@ static bool audio_sdl2mixer_music_set_position(double pos) {
 }
 
 static bool audio_sdl2mixer_music_set_loop_point(MusicImpl *imus, double pos) {
+	assert(pos >= 0);
 	imus->loop_point = pos;
 	return true;
 }
