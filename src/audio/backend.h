@@ -30,6 +30,7 @@ typedef struct AudioFuncs {
 	bool (*music_set_global_volume)(double gain);
 	bool (*music_set_loop_point)(MusicImpl *mus, double pos);
 	bool (*music_set_position)(double pos);
+	double (*music_get_position)(void);
 	bool (*music_stop)(void);
 	bool (*output_works)(void);
 	bool (*set_sfx_volume)(float gain);

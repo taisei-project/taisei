@@ -30,6 +30,7 @@ static bool audio_null_music_resume(void) { return true; }
 static bool audio_null_music_set_global_volume(double gain) { return true; }
 static bool audio_null_music_set_loop_point(MusicImpl *impl, double pos) { return true; }
 static bool audio_null_music_set_position(double pos) { return true; }
+static double audio_null_music_get_position(void) { return 0; }
 static bool audio_null_music_stop(void) { return true; }
 static bool audio_null_output_works(void) { return false; }
 static bool audio_null_shutdown(void) { return true; }
@@ -66,6 +67,7 @@ AudioBackend _a_backend_null = {
 		.music_set_global_volume = audio_null_music_set_global_volume,
 		.music_set_loop_point = audio_null_music_set_loop_point,
 		.music_set_position = audio_null_music_set_position,
+		.music_get_position = audio_null_music_get_position,
 		.music_stop = audio_null_music_stop,
 		.music_unload = audio_null_music_unload,
 		.output_works = audio_null_output_works,

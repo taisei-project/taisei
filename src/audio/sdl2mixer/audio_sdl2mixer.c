@@ -206,6 +206,14 @@ static int wrap_Mix_SetMusicPosition(double pos) {
 	return error;
 }
 
+static double wrap_Mix_GetMusicPosition(void) {
+	double pos = Mix_GetMusicPosition(NULL);
+	if(pos < 0) {
+		log_error("Mix_GetMusicPosition() failed: %s", Mix_GetError());
+	}
+	return pos;
+}
+
 static double wrap_Mix_MusicDuration(void) {
 	double duration = Mix_MusicDuration(NULL);
 	if(duration < 0) {
@@ -299,6 +307,10 @@ static bool audio_sdl2mixer_music_set_position(double pos) {
 
 	Mix_RewindMusic();
 	return !wrap_Mix_SetMusicPosition(pos);
+}
+
+static double audio_sdl2mixer_music_get_position(void) {
+	return wrap_Mix_GetMusicPosition();
 }
 
 static bool audio_sdl2mixer_music_set_loop_point(MusicImpl *imus, double pos) {
@@ -686,6 +698,7 @@ AudioBackend _a_backend_sdl2mixer = {
 		.music_set_global_volume = audio_sdl2mixer_music_set_global_volume,
 		.music_set_loop_point = audio_sdl2mixer_music_set_loop_point,
 		.music_set_position = audio_sdl2mixer_music_set_position,
+		.music_get_position = audio_sdl2mixer_music_get_position,
 		.music_stop = audio_sdl2mixer_music_stop,
 		.music_unload = audio_sdl2mixer_music_unload,
 		.output_works = audio_sdl2mixer_output_works,
