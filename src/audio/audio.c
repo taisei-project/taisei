@@ -19,7 +19,6 @@
 
 CurrentBGM current_bgm = { .name = NULL };
 
-static char *saved_bgm;
 static ht_str2int_t sfx_volumes;
 
 static struct enqueued_sound {
@@ -207,7 +206,7 @@ static void load_config_files(void) {
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, NULL);
 }
 
-static inline char* get_bgm_title(char *name) {
+static inline char *get_bgm_title(char *name) {
 	MusicMetadata *meta = get_resource_data(RES_BGM_METADATA, name, RESF_OPTIONAL);
 	return meta ? meta->title : NULL;
 }
@@ -253,18 +252,6 @@ void stop_bgm(bool force) {
 
 void fade_bgm(double fadetime) {
 	stop_bgm_internal(false, fadetime);
-}
-
-void save_bgm(void) {
-	// XXX: this is broken
-	stralloc(&saved_bgm, current_bgm.name);
-}
-
-void restore_bgm(void) {
-	// XXX: this is broken
-	start_bgm(saved_bgm);
-	free(saved_bgm);
-	saved_bgm = NULL;
 }
 
 void start_bgm(const char *name) {
