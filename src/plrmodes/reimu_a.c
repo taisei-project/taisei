@@ -328,7 +328,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	Player *plr = ENT_UNBOX(ARGS.plr);
 	Projectile *orb = TASK_BIND(PROJECTILE(
 		.pos = plr->pos,
-		.timeout = 200 + 20 * index,
+		.timeout = 160 + 20 * index,
 		.type = PROJ_PLAYER,
 		.damage = 1000,
 		.damage_type = DMG_PLAYER_BOMB,
@@ -343,7 +343,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 	INVOKE_TASK_WHEN(&orb->events.killed, reimu_spirit_bomb_orb_impact, b_orb);
 	CANCEL_TASK_AFTER(&orb->events.killed, THIS_TASK);
 
-	int circletime = 100 + 20 * index;
+	int circletime = 60 + 20 * index;
 	cmplx target_homing = plr->pos;
 	cmplx dir = cdir(ARGS.angle);
 	cmplx vel = 0;
@@ -854,14 +854,6 @@ static double reimu_spirit_property(Player *plr, PlrProperty prop) {
 	real base_value = reimu_common_property(plr, prop);
 
 	switch(prop) {
-		case PLR_PROP_SPEED: {
-			float p = player_get_bomb_progress(plr);
-
-			if(p < 0.5) {
-				return base_value * p * 2;
-			}
-		}
-
 		// fallthrough
 		default: {
 			return base_value;
