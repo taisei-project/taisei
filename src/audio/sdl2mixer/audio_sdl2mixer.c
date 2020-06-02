@@ -206,6 +206,14 @@ static int wrap_Mix_SetMusicPosition(double pos) {
 	return error;
 }
 
+static double wrap_Mix_MusicDuration(void) {
+	double duration = Mix_MusicDuration(NULL);
+	if(duration < 0) {
+		log_error("Mix_MusicDuration() failed: %s", Mix_GetError());
+	}
+	return duration;
+}
+
 static int wrap_Mix_PlayMusic(Mix_Music *mus, int loops) {
 	int error = Mix_PlayMusic(mus, loops);
 	if(error) {
@@ -280,18 +288,17 @@ static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
 }
 
 static bool audio_sdl2mixer_music_set_position(double pos) {
-	Mix_RewindMusic();
+	double total_duration = wrap_Mix_MusicDuration();
+	double intro_duration = mixer.next_loop_point;
+	assume(intro_duration >= 0);
 
-	// TODO Handle looping here.
-	// Unfortunately SDL2_Mixer will not tell us the total length of the file,
-	// so a hack is required here.
-
-	if(Mix_SetMusicPosition(pos)) {
-		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
-		return false;
+	if(total_duration > 0) {
+		double loop_duration = total_duration - intro_duration;
+		pos = fmod(pos - intro_duration, loop_duration) + intro_duration;
 	}
 
-	return true;
+	Mix_RewindMusic();
+	return !wrap_Mix_SetMusicPosition(pos);
 }
 
 static bool audio_sdl2mixer_music_set_loop_point(MusicImpl *imus, double pos) {
