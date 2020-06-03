@@ -136,7 +136,7 @@ static int taskmgr_thread(void *arg) {
 					SDL_CondBroadcast(task->cond);
 					SDL_UnlockMutex(task->mutex);
 				}
-			} else if(task->status == TASK_CANCELLED) {
+			} else if(task->status == TASK_CANCELLED || task->status == TASK_RUNNING || task->status == TASK_FINISHED) {
 				assert(task->in_queue);
 				task->in_queue = false;
 				(void)SDL_AtomicDecRef(&mgr->numtasks);
@@ -154,17 +154,18 @@ static int taskmgr_thread(void *arg) {
 	return 0;
 }
 
-TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name) {
+TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name) {
 	int numcores = SDL_GetCPUCount();
-	uint maxthreads = numcores * 8;
 
 	if(numcores < 1) {
 		log_warn("SDL_GetCPUCount() returned %i, assuming 1", numcores);
 		numcores = 1;
 	}
 
+	uint maxthreads = numcores * 4;
+
 	if(numthreads == 0) {
-		numthreads = numcores * 4;
+		numthreads = numcores;
 	} else if(numthreads > maxthreads) {
 		log_warn("Number of threads capped to %i (%i requested)", maxthreads, numthreads);
 		numthreads = maxthreads;
@@ -231,7 +232,7 @@ static int task_prio_func(List *ltask) {
 	return ((Task*)ltask)->prio;
 }
 
-Task* taskmgr_submit(TaskManager *mgr, TaskParams params) {
+Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	assert(params.callback != NULL);
 
 	Task *task = calloc(1, sizeof(Task));
@@ -320,6 +321,19 @@ TaskStatus task_status(Task *task) {
 	return result;
 }
 
+static void *task_offload(Task *task) {
+	assert(task->status == TASK_PENDING);
+	task->status = TASK_RUNNING;
+	SDL_UnlockMutex(task->mutex);
+	void *result = task->callback(task->userdata);
+	SDL_LockMutex(task->mutex);
+	assert(!task->disowned);
+	task->status = TASK_FINISHED;
+	task->result = result;
+	SDL_CondBroadcast(task->cond);
+	return result;
+}
+
 bool task_wait(Task *task, void **result) {
 	bool success = false;
 
@@ -336,10 +350,16 @@ bool task_wait(Task *task, void **result) {
 	} else if(task->status == TASK_FINISHED) {
 		success = true;
 		_result = task->result;
-	} else {
+	} else if(task->status == TASK_RUNNING) {
 		SDL_CondWait(task->cond, task->mutex);
 		_result = task->result;
 		success = (task->status == TASK_FINISHED);
+	} else if(task->status == TASK_PENDING) {
+		// fine, i'll do it myself
+		_result = task_offload(task);
+		success = true;
+	} else {
+		UNREACHABLE;
 	}
 
 	SDL_UnlockMutex(task->mutex);
@@ -416,7 +436,7 @@ void taskmgr_global_shutdown(void) {
 	}
 }
 
-Task* taskmgr_global_submit(TaskParams params) {
+Task *taskmgr_global_submit(TaskParams params) {
 	if(g_taskmgr == NULL) {
 		Task *t = calloc(1, sizeof(Task));
 		t->callback = params.callback;

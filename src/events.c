@@ -24,6 +24,7 @@ typedef LIST_ANCHOR(EventHandlerContainer) EventHandlerList;
 static hrtime_t keyrepeat_paused_until;
 static EventHandlerList global_handlers;
 static int global_handlers_lock = 0;
+static DYNAMIC_ARRAY(SDL_Event) deferred_events;
 
 uint32_t sdl_first_user_event;
 
@@ -51,6 +52,7 @@ void events_init(void) {
 
 void events_shutdown(void) {
 	events_unregister_default_handlers();
+	dynarray_free_data(&deferred_events);
 
 #ifdef DEBUG
 	if(global_handlers.first) {
@@ -284,6 +286,12 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 	while(SDL_PollEvent(&event)) {
 		events_invoke_handlers(&event, global_handlers.first, handlers);
 	}
+
+	dynarray_foreach_elem(&deferred_events, SDL_Event *evt, {
+		SDL_PushEvent(evt);
+	});
+
+	deferred_events.num_elements = 0;
 }
 
 void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
@@ -302,6 +310,10 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 	event.user.data2 = data2;
 
 	SDL_PushEvent(&event);
+}
+
+void events_defer(SDL_Event *evt) {
+	*dynarray_append(&deferred_events) = *evt;
 }
 
 void events_pause_keyrepeat(void) {

@@ -11,6 +11,8 @@
 
 #include "taisei.h"
 
+#include "hirestime.h"
+
 typedef enum RenderFrameAction {
 	RFRAME_SWAP,
 	RFRAME_DROP,
@@ -25,6 +27,12 @@ typedef enum LogicFrameAction {
 typedef LogicFrameAction (*LogicFrameFunc)(void *context);
 typedef RenderFrameAction (*RenderFrameFunc)(void *context);
 typedef void (*PostLoopFunc)(void *context);
+
+typedef struct FrameTimes {
+	hrtime_t target;
+	hrtime_t start;
+	hrtime_t next;
+} FrameTimes;
 
 #ifdef DEBUG_CALLCHAIN
 	#include "util/debug.h"
@@ -63,6 +71,8 @@ void eventloop_enter(
 ) attr_nonnull(1, 2, 3);
 
 void eventloop_run(void);
+
+FrameTimes eventloop_get_frame_times(void);
 
 #ifdef DEBUG_CALLCHAIN
 INLINE attr_nonnull(1) void run_call_chain(CallChain *cc, void *result, DebugInfo caller_dbg) {

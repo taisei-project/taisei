@@ -111,5 +111,6 @@ void events_register_handler(EventHandler *handler);
 void events_unregister_handler(EventHandlerProc proc);
 void events_poll(EventHandler *handlers, EventFlags flags);
 void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2);
+void events_defer(SDL_Event *evt);
 
 #endif // IGUARD_events_h

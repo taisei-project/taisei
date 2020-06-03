@@ -62,16 +62,11 @@ FloatRect sprite_denormalized_tex_coords(const Sprite *restrict spr);
 IntRect sprite_denormalized_int_tex_coords(const Sprite *restrict spr);
 void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc);
 
-char *sprite_path(const char *name);
-void *load_sprite_begin(const char *path, uint flags);
-void *load_sprite_end(void *opaque, const char *path, uint flags);
-bool check_sprite_path(const char *path);
-
 void draw_sprite(float x, float y, const char *name);
 void draw_sprite_p(float x, float y, Sprite *spr);
 
 INLINE Sprite *get_sprite(const char *name) {
-	return get_resource_data(RES_SPRITE, name, RESF_DEFAULT | RESF_UNSAFE);
+	return get_resource_data(RES_SPRITE, name, RESF_DEFAULT);
 }
 
 Sprite *prefix_get_sprite(const char *name, const char *prefix);

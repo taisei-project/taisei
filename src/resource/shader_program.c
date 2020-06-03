@@ -12,7 +12,7 @@
 #include "shader_program.h"
 #include "renderer/api.h"
 
-static char* shader_program_path(const char *name) {
+static char *shader_program_path(const char *name) {
 	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);
 }
 
@@ -22,24 +22,26 @@ static bool check_shader_program_path(const char *path) {
 
 struct shprog_load_data {
 	int num_objects;
-	uint load_flags;
 	char *objlist;
 };
 
-static void* load_shader_program_begin(const char *path, uint flags) {
+static void load_shader_program_stage1(ResourceLoadState *st);
+static void load_shader_program_stage2(ResourceLoadState *st);
+
+static void load_shader_program_stage1(ResourceLoadState *st) {
 	struct shprog_load_data ldata;
 	memset(&ldata, 0, sizeof(ldata));
-	ldata.load_flags = flags;
 
 	char *strobjects = NULL;
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]){
 		{ "glsl_objects", .out_str = &strobjects, KVSPEC_DEPRECATED("objects") },
 		{ "objects",      .out_str = &strobjects },
 		{ NULL }
 	})) {
 		free(ldata.objlist);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
 	if(strobjects) {
@@ -49,7 +51,7 @@ static void* load_shader_program_begin(const char *path, uint flags) {
 
 		while((objname = strtok_r(NULL, " \t", &srcptr))) {
 			if(*objname) {
-				preload_resource(RES_SHADER_OBJECT, objname, ldata.load_flags);
+				res_load_dependency(st, RES_SHADER_OBJECT, objname);
 				++ldata.num_objects;
 				strcpy(listptr, objname);
 				listptr += strlen(objname) + 1;
@@ -59,32 +61,28 @@ static void* load_shader_program_begin(const char *path, uint flags) {
 		free(strobjects);
 	}
 
-	if(!ldata.num_objects) {
-		log_error("%s: no shader objects to link", path);
+	if(ldata.num_objects) {
+		res_load_continue_on_main(st, load_shader_program_stage2, memdup(&ldata, sizeof(ldata)));
+	} else {
+		log_error("%s: no shader objects to link", st->path);
 		free(ldata.objlist);
-		return NULL;
+		res_load_failed(st);
 	}
-
-	return memdup(&ldata, sizeof(ldata));
 }
 
-static void* load_shader_program_end(void *opaque, const char *path, uint flags) {
-	if(!opaque) {
-		return NULL;
-	}
-
-	struct shprog_load_data ldata;
-	memcpy(&ldata, opaque, sizeof(ldata));
-	free(opaque);
+static void load_shader_program_stage2(ResourceLoadState *st) {
+	struct shprog_load_data ldata = *(struct shprog_load_data*)NOT_NULL(st->opaque);
+	free(st->opaque);
 
 	ShaderObject *objs[ldata.num_objects];
 	char *objname = ldata.objlist;
 
 	for(int i = 0; i < ldata.num_objects; ++i) {
-		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, ldata.load_flags))) {
-			log_error("%s: couldn't load shader object '%s'", path, objname);
+		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, st->flags))) {
+			log_error("%s: couldn't load shader object '%s'", st->path, objname);
 			free(ldata.objlist);
-			return NULL;
+			res_load_failed(st);
+			return;
 		}
 
 		objname += strlen(objname) + 1;
@@ -94,14 +92,12 @@ static void* load_shader_program_end(void *opaque, const char *path, uint flags)
 	ShaderProgram *prog = r_shader_program_link(ldata.num_objects, objs);
 
 	if(prog) {
-		char *basename = resource_util_basename(SHPROG_PATH_PREFIX, path);
-		r_shader_program_set_debug_label(prog, basename);
-		free(basename);
+		r_shader_program_set_debug_label(prog, st->name);
+		res_load_finished(st, prog);
 	} else {
-		log_error("%s: couldn't link shader program", path);
+		log_error("%s: couldn't link shader program", st->path);
+		res_load_failed(st);
 	}
-
-	return prog;
 }
 
 static void unload_shader_program(void *vprog) {
@@ -116,8 +112,7 @@ ResourceHandler shader_program_res_handler = {
 	.procs = {
 		.find = shader_program_path,
 		.check = check_shader_program_path,
-		.begin_load = load_shader_program_begin,
-		.end_load = load_shader_program_end,
+		.load = load_shader_program_stage1,
 		.unload = unload_shader_program,
 	},
 };

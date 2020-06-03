@@ -27,10 +27,10 @@ static void free_metadata_fields(MusicMetadata *meta) {
 	free(meta->title);
 }
 
-static void *load_bgm_meta_begin(const char *path, uint flags) {
+static void load_bgm_meta(ResourceLoadState *st) {
 	MusicMetadata meta = { 0 };
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
 		{ "artist",     .out_str    = &meta.artist     },
 		{ "title",      .out_str    = &meta.title      },
 		{ "comment",    .out_str    = &meta.comment    },
@@ -38,20 +38,17 @@ static void *load_bgm_meta_begin(const char *path, uint flags) {
 		{ "loop_point", .out_double = &meta.loop_point },
 		{ NULL }
 	})) {
-		log_error("Failed to parse BGM metadata '%s'", path);
+		log_error("Failed to parse BGM metadata '%s'", st->path);
 		free_metadata_fields(&meta);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
 	if(meta.comment) {
 		expand_escape_sequences(meta.comment);
 	}
 
-	return memdup(&meta, sizeof(meta));
-}
-
-static void *load_bgm_meta_end(void *opaque, const char *path, uint flags) {
-	return opaque;
+	res_load_finished(st, memdup(&meta, sizeof(meta)));
 }
 
 static void unload_bgm_meta(void *vmus) {
@@ -68,8 +65,7 @@ ResourceHandler bgm_metadata_res_handler = {
     .procs = {
         .find = bgm_meta_path,
         .check = check_bgm_meta_path,
-        .begin_load = load_bgm_meta_begin,
-        .end_load = load_bgm_meta_end,
+        .load = load_bgm_meta,
         .unload = unload_bgm_meta,
     },
 };

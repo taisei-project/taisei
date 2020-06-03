@@ -12,21 +12,7 @@
 #include "video.h"
 #include "renderer/api.h"
 
-ResourceHandler sprite_res_handler = {
-	.type = RES_SPRITE,
-	.typename = "sprite",
-	.subdir = SPRITE_PATH_PREFIX,
-
-	.procs = {
-		.find = sprite_path,
-		.check = check_sprite_path,
-		.begin_load = load_sprite_begin,
-		.end_load = load_sprite_end,
-		.unload = free,
-	},
-};
-
-char *sprite_path(const char *name) {
+static char *sprite_path(const char *name) {
 	char *path = strjoin(SPRITE_PATH_PREFIX, name, SPRITE_EXTENSION, NULL);
 
 	VFSInfo pinfo = vfs_query(path);
@@ -39,31 +25,35 @@ char *sprite_path(const char *name) {
 	return path;
 }
 
-bool check_sprite_path(const char *path) {
+static bool check_sprite_path(const char *path) {
 	return strendswith(path, SPRITE_EXTENSION) || check_texture_path(path);
 }
 
 struct sprite_load_state {
 	Sprite *spr;
-	uint flags;
 	char *texture_name;
 };
 
-void *load_sprite_begin(const char *path, uint flags) {
+static void load_sprite_stage1(ResourceLoadState *st);
+static void load_sprite_stage2(ResourceLoadState *st);
+
+static void load_sprite_stage1(ResourceLoadState *st) {
 	Sprite *spr = calloc(1, sizeof(Sprite));
 	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
 	state->spr = spr;
-	state->flags = flags;
 	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
 
-	if(check_texture_path(path)) {
-		state->texture_name = resource_util_basename(TEX_PATH_PREFIX, path);
-		return state;
+	if(check_texture_path(st->path)) {
+		state->texture_name = strdup(st->name);
+		// preload_resource(RES_TEXTURE, state->texture_name, st->flags);
+		res_load_dependency(st, RES_TEXTURE, state->texture_name);
+		res_load_continue_after_dependencies(st, load_sprite_stage2, state);
+		return;
 	}
 
 	float ofs_x = 0, ofs_y = 0;
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]) {
+	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
 		{ "region_x",       .out_float = &spr->tex_area.x },
 		{ "region_y",       .out_float = &spr->tex_area.y },
@@ -82,45 +72,42 @@ void *load_sprite_begin(const char *path, uint flags) {
 		free(spr);
 		free(state->texture_name);
 		free(state);
-		log_error("Failed to parse sprite file '%s'", path);
-		return NULL;
+		log_error("Failed to parse sprite file '%s'", st->path);
+		res_load_failed(st);
+		return;
 	}
+
+	if(!state->texture_name) {
+		state->texture_name = strdup(st->name);
+		log_info("%s: inferred texture name from sprite name", state->texture_name);
+	}
+
+	res_load_dependency(st, RES_TEXTURE, state->texture_name);
 
 	spr->padding.left += ofs_x;
 	spr->padding.right -= ofs_x;
 	spr->padding.top += ofs_y;
 	spr->padding.bottom -= ofs_y;
 
-	if(!state->texture_name) {
-		state->texture_name = resource_util_basename(TEX_PATH_PREFIX, path);
-		log_info("%s: inferred texture name from sprite name", state->texture_name);
-	}
-
-	return state;
+	res_load_continue_after_dependencies(st, load_sprite_stage2, state);
+	return;
 }
 
-void *load_sprite_end(void *opaque, const char *path, uint flags) {
-	struct sprite_load_state *state = opaque;
+static void load_sprite_stage2(ResourceLoadState *st) {
+	struct sprite_load_state *state = NOT_NULL(st->opaque);
+	Sprite *spr = NOT_NULL(state->spr);
 
-	if(!state) {
-		return NULL;
-	}
-
-	Sprite *spr = state->spr;
-
-	Resource *res = get_resource(RES_TEXTURE, state->texture_name, flags);
+	spr->tex = get_resource_data(RES_TEXTURE, state->texture_name, st->flags);
 
 	free(state->texture_name);
 	free(state);
 
-	if(res == NULL) {
+	if(spr->tex == NULL) {
 		free(spr);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
-	spr->tex = res->data;
-
-	char *basename = resource_util_basename(SPRITE_PATH_PREFIX, path);
 	FloatExtent denorm_coords = sprite_denormalized_tex_coords(spr).extent;
 
 	struct infermap {
@@ -137,12 +124,11 @@ void *load_sprite_end(void *opaque, const char *path, uint flags) {
 	for(struct infermap *m = infermap; m->dst; ++m) {
 		if(*m->dst <= 0) {
 			*m->dst = *m->src;
-			log_info("%s: inferred %s from %s (%g)", basename, m->dstname, m->srcname, *m->src);
+			log_info("%s: inferred %s from %s (%g)", st->name, m->dstname, m->srcname, *m->src);
 		}
 	}
 
-	free(basename);
-	return spr;
+	res_load_finished(st, spr);
 }
 
 Sprite *prefix_get_sprite(const char *name, const char *prefix) {
@@ -213,3 +199,16 @@ void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc) {
 	spr->tex_area.w = tc.w / tex_w;
 	spr->tex_area.h = tc.h / tex_h;
 }
+
+ResourceHandler sprite_res_handler = {
+	.type = RES_SPRITE,
+	.typename = "sprite",
+	.subdir = SPRITE_PATH_PREFIX,
+
+	.procs = {
+		.find = sprite_path,
+		.check = check_sprite_path,
+		.load = load_sprite_stage1,
+		.unload = free,
+	},
+};

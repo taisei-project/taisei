@@ -173,20 +173,19 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 	}
 }
 
-static GLTextureFormatTuple *prepare_pixmap(Texture *tex, const Pixmap *px_in, Pixmap *px_out) {
-	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, px_in->format);
-	pixmap_convert_alloc(px_in, px_out, fmt->px_fmt);
-	pixmap_flip_to_origin_inplace(px_out, PIXMAP_ORIGIN_BOTTOMLEFT);
-	return fmt;
+PixmapFormat gl33_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
+	return glcommon_find_best_pixformat(type, src_format)->px_fmt;
 }
 
 static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(mipmap < tex->params.mipmaps);
 	assert(image != NULL);
 
-	Pixmap pix;
-	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
-	void *image_data = pix.data.untyped;
+	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, image->format);
+	assert(image->origin == PIXMAP_ORIGIN_BOTTOMLEFT);
+	assert(image->format == fmt->px_fmt);
+
+	void *image_data = image->data.untyped;
 
 	GLuint prev_pbo = 0;
 
@@ -197,7 +196,7 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 		prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_UNPACK);
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, tex->pbo);
 		gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK);
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, pixmap_data_size(&pix), image_data, GL_STREAM_DRAW);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, pixmap_data_size(image), image_data, GL_STREAM_DRAW);
 		image_data = NULL;
 	}
 
@@ -215,8 +214,6 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 		fmt->gl_type,
 		image_data
 	);
-
-	free(pix.data.untyped);
 
 	if(tex->pbo) {
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, prev_pbo);
@@ -361,18 +358,18 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
-	Pixmap pix;
-	GLTextureFormatTuple *fmt = prepare_pixmap(tex, image, &pix);
+	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, image->format);
+	assert(image->origin == PIXMAP_ORIGIN_BOTTOMLEFT);
+	assert(image->format == fmt->px_fmt);
 
 	glTexSubImage2D(
 		GL_TEXTURE_2D, mipmap,
-		x, tex->params.height - y - pix.height, pix.width, pix.height,
+		x, tex->params.height - y - image->height, image->width, image->height,
 		fmt->gl_fmt,
 		fmt->gl_type,
-		pix.data.untyped
+		image->data.untyped
 	);
 
-	free(pix.data.untyped);
 	tex->mipmaps_outdated = true;
 }
 

@@ -14,32 +14,13 @@
 #include "list.h"
 #include "renderer/api.h"
 
-ResourceHandler animation_res_handler = {
-	.type = RES_ANIM,
-	.typename = "animation",
-	.subdir = ANI_PATH_PREFIX,
-
-	.procs = {
-		.find = animation_path,
-		.check = check_animation_path,
-		.begin_load = load_animation_begin,
-		.end_load = load_animation_end,
-		.unload = unload_animation,
-	},
-};
-
-char *animation_path(const char *name) {
+static char *animation_path(const char *name) {
 	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);
 }
 
-bool check_animation_path(const char *path) {
+static bool check_animation_path(const char *path) {
 	return strendswith(path, ANI_EXTENSION);
 }
-
-typedef struct AnimationLoadData {
-	Animation *ani;
-	char *basename;
-} AnimationLoadData;
 
 // See ANIMATION_FORMAT.rst for a documentation of this syntax.
 static bool animation_parse_sequence_spec(AniSequence **seq, int seq_capacity, const char *specstr) {
@@ -191,35 +172,38 @@ static void *free_sequence_callback(const char *key, void *data, void *arg) {
 	return NULL;
 }
 
-void *load_animation_begin(const char *filename, uint flags) {
-	char *basename = resource_util_basename(ANI_PATH_PREFIX, filename);
-	char name[strlen(basename) + 1];
-	strcpy(name, basename);
+static void load_animation_stage1(ResourceLoadState *st);
+static void load_animation_stage2(ResourceLoadState *st);
 
+static void load_animation_stage1(ResourceLoadState *st) {
 	Animation *ani = calloc(1, sizeof(Animation));
 	ht_create(&ani->sequences);
 
-	if(!parse_keyvalue_file_cb(filename, animation_parse_callback, ani)) {
+	if(!parse_keyvalue_file_cb(st->path, animation_parse_callback, ani)) {
 		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 		ht_destroy(&ani->sequences);
 		free(ani);
-		free(basename);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
 	if(ani->sprite_count <= 0) {
-		log_error("Animation sprite count of '%s', must be positive integer", name);
+		log_error("Animation sprite count of '%s', must be positive integer", st->name);
 		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 		ht_destroy(&ani->sequences);
 		free(ani);
-		free(basename);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
-	AnimationLoadData *data = malloc(sizeof(AnimationLoadData));
-	data->ani = ani;
-	data->basename = basename;
-	return data;
+	char buf[strlen(st->name) + sizeof(".frame0000")];
+
+	for(int i = 0; i < ani->sprite_count; ++i) {
+		snprintf(buf, sizeof(buf), "%s.frame%04d", st->name, i);
+		res_load_dependency(st, RES_SPRITE, buf);
+	}
+
+	res_load_continue_after_dependencies(st, load_animation_stage2, ani);
 }
 
 struct anim_remap_state {
@@ -298,30 +282,30 @@ static void *remap_sequence_callback(const char *key, void *value, void *varg) {
 	return NULL;
 }
 
-void *load_animation_end(void *opaque, const char *filename, uint flags) {
-	AnimationLoadData *data = opaque;
+static void unload_animation(void *vani) {
+	Animation *ani = vani;
+	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
+	ht_destroy(&ani->sequences);
+	free(ani->sprites);
+	free(ani->local_sprites);
+	free(ani);
+}
 
-	if(opaque == NULL) {
-		return NULL;
-	}
-
-	Animation *ani = data->ani;
+static void load_animation_stage2(ResourceLoadState *st) {
+	Animation *ani = NOT_NULL(st->opaque);
 	ani->sprites = calloc(ani->sprite_count, sizeof(Sprite*));
 
-	char buf[strlen(data->basename) + sizeof(".frame0000")];
+	char buf[strlen(st->name) + sizeof(".frame0000")];
 
 	for(int i = 0; i < ani->sprite_count; ++i) {
-		snprintf(buf, sizeof(buf), "%s.frame%04d", data->basename, i);
-		Resource *res = get_resource(RES_SPRITE, buf, flags);
+		snprintf(buf, sizeof(buf), "%s.frame%04d", st->name, i);
 
-		if(res == NULL) {
+		if(!(ani->sprites[i] = get_resource_data(RES_SPRITE, buf, st->flags))) {
 			log_error("Animation frame '%s' not found but @sprite_count was %d",buf,ani->sprite_count);
 			unload_animation(ani);
 			ani = NULL;
 			goto done;
 		}
-
-		ani->sprites[i] = res->data;
 	}
 
 	struct anim_remap_state remap_state = { 0 };
@@ -354,19 +338,11 @@ done:
 		ht_destroy(&remap_state.flip_map);
 	}
 
-	free(data->basename);
-	free(data);
-
-	return ani;
-}
-
-void unload_animation(void *vani) {
-	Animation *ani = vani;
-	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
-	ht_destroy(&ani->sequences);
-	free(ani->sprites);
-	free(ani->local_sprites);
-	free(ani);
+	if(ani) {
+		res_load_finished(st, ani);
+	} else {
+		res_load_failed(st);
+	}
 }
 
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname) {
@@ -384,3 +360,16 @@ Sprite *animation_get_frame(Animation *ani, AniSequence *seq, int seqframe) {
 	assert(idx < ani->sprite_count);
 	return ani->sprites[idx];
 }
+
+ResourceHandler animation_res_handler = {
+	.type = RES_ANIM,
+	.typename = "animation",
+	.subdir = ANI_PATH_PREFIX,
+
+	.procs = {
+		.find = animation_path,
+		.check = check_animation_path,
+		.load = load_animation_stage1,
+		.unload = unload_animation,
+	},
+};

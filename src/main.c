@@ -31,8 +31,6 @@ attr_unused
 static void taisei_shutdown(void) {
 	log_info("Shutting down");
 
-	taskmgr_global_shutdown();
-
 	if(!global.is_replay_verification) {
 		config_save();
 		progress_save();
@@ -42,6 +40,7 @@ static void taisei_shutdown(void) {
 
 	free_all_refs();
 	free_resources(true);
+	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();

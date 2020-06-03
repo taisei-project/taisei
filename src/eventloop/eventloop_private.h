@@ -30,13 +30,8 @@ struct LoopFrame {
 extern struct evloop_s {
 	LoopFrame stack[EVLOOP_STACK_SIZE];
 	LoopFrame *stack_ptr;
+	FrameTimes frame_times;
 } evloop;
-
-typedef struct FrameTimes {
-	hrtime_t target;
-	hrtime_t start;
-	hrtime_t next;
-} FrameTimes;
 
 void eventloop_leave(void);
 

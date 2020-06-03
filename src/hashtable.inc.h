@@ -720,7 +720,7 @@ HT_DECLARE_PRIV_FUNC(void, end_read, (HT_BASETYPE *ht)) {
 	SDL_LockMutex(ht->sync.mutex);
 
 	if(!--ht->sync.readers) {
-		SDL_CondSignal(ht->sync.cond);
+		SDL_CondBroadcast(ht->sync.cond);
 	}
 
 	SDL_UnlockMutex(ht->sync.mutex);

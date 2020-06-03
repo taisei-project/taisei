@@ -15,19 +15,8 @@
 #include "resource.h"
 #include "renderer/api.h"
 
-ResourceHandler postprocess_res_handler = {
-	.type = RES_POSTPROCESS,
-	.typename = "postprocessing pipeline",
-	.subdir = PP_PATH_PREFIX,
-
-	.procs = {
-		.find = postprocess_path,
-		.check = check_postprocess_path,
-		.begin_load = load_postprocess_begin,
-		.end_load = load_postprocess_end,
-		.unload = unload_postprocess,
-	},
-};
+#define PP_PATH_PREFIX SHPROG_PATH_PREFIX
+#define PP_EXTENSION ".pp"
 
 typedef struct PostprocessLoadData {
 	PostprocessShader *list;
@@ -242,22 +231,41 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
  *  Glue for resources api
  */
 
-char* postprocess_path(const char *name) {
+static char *postprocess_path(const char *name) {
 	return strjoin(PP_PATH_PREFIX, name, PP_EXTENSION, NULL);
 }
 
-bool check_postprocess_path(const char *path) {
+static bool check_postprocess_path(const char *path) {
 	return strendswith(path, PP_EXTENSION);
 }
 
-void* load_postprocess_begin(const char *path, uint flags) {
-	return (void*)true;
+static void load_postprocess_stage2(ResourceLoadState *st) {
+	PostprocessShader *pp = postprocess_load(st->path, st->flags);
+
+	if(pp) {
+		res_load_finished(st, pp);
+	} else {
+		res_load_failed(st);
+	}
 }
 
-void* load_postprocess_end(void *opaque, const char *path, uint flags) {
-	return postprocess_load(path, flags);
+static void load_postprocess_stage1(ResourceLoadState *st) {
+	res_load_continue_on_main(st, load_postprocess_stage2, NULL);
 }
 
-void unload_postprocess(void *vlist) {
+static void unload_postprocess(void *vlist) {
 	postprocess_unload((PostprocessShader**)&vlist);
 }
+
+ResourceHandler postprocess_res_handler = {
+	.type = RES_POSTPROCESS,
+	.typename = "postprocessing pipeline",
+	.subdir = PP_PATH_PREFIX,
+
+	.procs = {
+		.find = postprocess_path,
+		.check = check_postprocess_path,
+		.load = load_postprocess_stage1,
+		.unload = unload_postprocess,
+	},
+};

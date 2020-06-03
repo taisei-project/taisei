@@ -90,6 +90,7 @@ static void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, 
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
+static PixmapFormat null_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) { return src_format; }
 
 static FloatRect default_fb_viewport;
 
@@ -207,6 +208,7 @@ RendererBackend _r_backend_null = {
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
 		.texture_clear = null_texture_clear,
+		.texture_optimal_pixmap_format_for_type = null_texture_optimal_pixmap_format_for_type,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,

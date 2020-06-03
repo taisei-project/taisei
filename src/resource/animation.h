@@ -26,12 +26,6 @@ typedef struct Animation {
 	int sprite_count;
 } Animation;
 
-char *animation_path(const char *name);
-bool check_animation_path(const char *path);
-void *load_animation_begin(const char *filename, uint flags);
-void *load_animation_end(void *opaque, const char *filename, uint flags);
-void unload_animation(void *vani);
-
 INLINE Animation *get_ani(const char *name) {
 	return get_resource(RES_ANIM, name, RESF_DEFAULT)->data;
 }
