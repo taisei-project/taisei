@@ -149,10 +149,6 @@ static bool iqm_read_header(const char *fpath, SDL_RWops *rw, IQMHeader *hdr) {
 		return false;
 	}
 
-	if(hdr->num_meshes > 1) {
-		log_warn("%s %u meshes in model; only the first one will be used", fpath, hdr->num_meshes);
-	}
-
 	log_debug("%s: IQM version %u; %u meshes; %u tris; %u vertices",
 		fpath,
 		hdr->version,
@@ -424,10 +420,10 @@ static void *load_model_begin(const char *path, uint flags) {
 	ldata = calloc(1, sizeof(*ldata));
 	ldata->vertices = vertices;
 	ldata->indices = indices->indices;
-	ldata->ofs_vertices = meshes[0].first_vertex;
-	ldata->num_vertices = meshes[0].num_vertexes;
-	ldata->ofs_indices = meshes[0].first_triangle * 3;
-	ldata->num_indices = meshes[0].num_triangles * 3;
+	ldata->ofs_vertices = 0;
+	ldata->num_vertices = hdr.num_vertexes;
+	ldata->ofs_indices = 0;
+	ldata->num_indices = hdr.num_triangles * 3;
 
 cleanup:
 	free(meshes);
