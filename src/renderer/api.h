@@ -197,12 +197,9 @@ typedef struct VertexAttribFormat {
 
 typedef struct GenericModelVertex {
 	float position[3];
+	float uv[2];
 	float normal[3];
-
-	struct {
-		float s;
-		float t;
-	} uv;
+	float tangent[4];   // NOTE: bitangent = cross(normal, tangent) * tangent[3]
 } GenericModelVertex;
 
 typedef enum UniformType {
@@ -711,7 +708,7 @@ void r_vertex_array_attach_index_buffer(VertexArray *varr, IndexBuffer *ibuf) at
 IndexBuffer* r_vertex_array_get_index_attachment(VertexArray *varr)  attr_nonnull(1);
 void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 3);
 
-void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], uint indices[num_vertices]);
+void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint indices[num_indices]);
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);

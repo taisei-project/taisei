@@ -12,9 +12,472 @@
 #include "list.h"
 #include "resource.h"
 #include "renderer/api.h"
+#include "iqm.h"
 
-// TODO: Rewrite all of this mess, maybe even consider a different format
-// IQM for instance: http://sauerbraten.org/iqm/
+#define MDL_PATH_PREFIX "res/models/"
+#define MDL_EXTENSION ".iqm"
+
+// arbitrary allocation limits (raise as needed)
+#define MAX_MESHES (1 << 8)
+#define MAX_VERTICES (1 << 24)
+#define MAX_TRIANGLES (1 << 22)
+#define MAX_VERTEX_ARRAYS (1 << 8)
+
+typedef struct ModelLoadData {
+	GenericModelVertex *vertices;
+	uint32_t *indices;
+	uint ofs_vertices, num_vertices;
+	uint ofs_indices, num_indices;
+} ModelLoadData;
+
+#define NUM_REQUIRED_VERTEX_ARRAYS 4
+
+typedef union VertexArrayIndices {
+	struct { int position, texcoord, normal, tangent; };
+	int indices[NUM_REQUIRED_VERTEX_ARRAYS];
+} VertexArrayIndices;
+
+static const char *iqm_va_type_str(uint32_t type) {
+	switch(type) {
+		case IQM_POSITION:      return "position";
+		case IQM_NORMAL:        return "normal";
+		case IQM_TANGENT:       return "tangent";
+		case IQM_TEXCOORD:      return "texcoord";
+		case IQM_BLENDINDEXES:  return "blend indices";
+		case IQM_BLENDWEIGHTS:  return "blend weights";
+		case IQM_COLOR:         return "color";
+		default:                return "unknown";
+	}
+}
+
+static const char *iqm_va_format_str(uint32_t type) {
+	switch(type) {
+		case IQM_BYTE:      return "int8_t";
+		case IQM_UBYTE:     return "uint8_t";
+		case IQM_SHORT:     return "int16_t";
+		case IQM_USHORT:    return "uint16_t";
+		case IQM_INT:       return "int32_t";
+		case IQM_UINT:      return "uint32_t";
+		case IQM_HALF:      return "half";
+		case IQM_FLOAT:     return "float";
+		case IQM_DOUBLE:    return "double";
+		default:            return "unknown";
+	}
+}
+
+static bool read_fields(SDL_RWops *rw, size_t n, uint32_t fields[n]) {
+	if(SDL_RWread(rw, fields, sizeof(fields[0]), n) != n) {
+		return false;
+	}
+
+	for(size_t i = 0; i < n; ++i) {
+		fields[i] = SDL_SwapLE32(fields[i]);
+	}
+
+	return true;
+}
+
+static bool read_floats(SDL_RWops *rw, size_t n, float floats[n]) {
+	uint32_t fields[n];
+
+	if(read_fields(rw, n, fields)) {
+		memcpy(floats, fields, sizeof(fields[0]) * n);
+		return true;
+	}
+
+	return false;
+}
+
+static bool iqm_read_header(const char *fpath, SDL_RWops *rw, IQMHeader *hdr) {
+	if(SDL_RWread(rw, &hdr->magic, sizeof(hdr->magic), 1) != 1) {
+		log_error("%s: read error: %s", fpath, SDL_GetError());
+		return false;
+	}
+
+	if(memcmp(hdr->magic, IQM_MAGIC, sizeof(IQM_MAGIC))) {
+		log_error("%s: not an IQM file (bad magic number)", fpath);
+		return false;
+	}
+
+	if(!read_fields(rw, ARRAY_SIZE(hdr->u32_array), hdr->u32_array)) {
+		log_error("%s: read error: %s", fpath, SDL_GetError());
+		return false;
+	}
+
+	if(hdr->version != IQM_VERSION) {
+		log_error("%s: unsupported IQM version (got %u, expected %u)", fpath, hdr->version, IQM_VERSION);
+		return false;
+	}
+
+	if(hdr->num_meshes < 1) {
+		log_error("%s: no meshes in model", fpath);
+		return false;
+	}
+
+	if(hdr->num_meshes > MAX_MESHES) {
+		log_error("%s too many meshes in model (%u allowed; have %u)", fpath, MAX_MESHES, hdr->num_meshes);
+		return false;
+	}
+
+	if(hdr->num_vertexes < 1) {
+		log_error("%s: no vertices in model", fpath);
+		return false;
+	}
+
+	if(hdr->num_vertexes > MAX_VERTICES) {
+		log_error("%s too many vertices in model (%u allowed; have %u)", fpath, MAX_VERTICES, hdr->num_vertexes);
+		return false;
+	}
+
+	if(hdr->num_triangles < 1) {
+		log_error("%s: no triangles in model", fpath);
+		return false;
+	}
+
+	if(hdr->num_triangles > MAX_TRIANGLES) {
+		log_error("%s too many triangles in model (%u allowed; have %u)", fpath, MAX_TRIANGLES, hdr->num_triangles);
+		return false;
+	}
+
+	if(hdr->num_vertexarrays < NUM_REQUIRED_VERTEX_ARRAYS) {
+		log_error("%s: not enough vertex arrays (%u expected; got %u)", fpath, NUM_REQUIRED_VERTEX_ARRAYS, hdr->num_vertexarrays);
+		return false;
+	}
+
+	if(hdr->num_vertexarrays > MAX_VERTEX_ARRAYS) {
+		log_error("%s too many vertex arrays in model (%u allowed; have %u)", fpath, MAX_VERTEX_ARRAYS, hdr->num_vertexarrays);
+		return false;
+	}
+
+	if(hdr->num_meshes > 1) {
+		log_warn("%s %u meshes in model; only the first one will be used", fpath, hdr->num_meshes);
+	}
+
+	log_debug("%s: IQM version %u; %u meshes; %u tris; %u vertices",
+		fpath,
+		hdr->version,
+		hdr->num_meshes,
+		hdr->num_triangles,
+		hdr->num_vertexes
+	);
+
+	return true;
+}
+
+static bool iqm_read_meshes(const char *fpath, SDL_RWops *rw, uint num_meshes, IQMMesh meshes[num_meshes]) {
+	for(uint i = 0; i < num_meshes; ++i) {
+		if(!read_fields(rw, ARRAY_SIZE(meshes[i].u32_array), meshes[i].u32_array)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+
+		log_debug("Mesh #0: %u tris; %u vertices", meshes[i].num_triangles, meshes[i].num_vertexes);
+	}
+
+	return true;
+}
+
+static bool iqm_read_vertex_arrays(const char *fpath, SDL_RWops *rw, uint num_varrs, IQMVertexArray varrs[num_varrs], VertexArrayIndices *indices) {
+	for(uint i = 0; i < num_varrs; ++i) {
+		IQMVertexArray *va = varrs + i;
+
+		if(!read_fields(rw, ARRAY_SIZE(va->u32_array), va->u32_array)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+
+		log_debug("Vertex array #%u: %s[%u] %s",
+			i,
+			iqm_va_format_str(va->format),
+			va->size,
+			iqm_va_type_str(va->type)
+		);
+
+		int *idx_p;
+		uint32_t expected_size;
+
+		switch(va->type) {
+			case IQM_POSITION:
+				idx_p = &indices->position;
+				expected_size = 3;
+				break;
+
+			case IQM_TEXCOORD:
+				idx_p = &indices->texcoord;
+				expected_size = 2;
+				break;
+
+			case IQM_NORMAL:
+				idx_p = &indices->normal;
+				expected_size = 3;
+				break;
+
+			case IQM_TANGENT:
+				idx_p = &indices->tangent;
+				expected_size = 4;
+				break;
+
+			default:
+				log_warn("%s: vertex array #%i ignored: unhandled type (%s)", fpath, i, iqm_va_type_str(va->type));
+				continue;
+		}
+
+		if(*idx_p > 0) {
+			log_warn("%s: vertex array #%i ignored: already using array #%i for %s data", fpath, i, *idx_p, iqm_va_type_str(va->type));
+			continue;
+		}
+
+		if(va->size != expected_size) {
+			log_warn("%s: vertex array #%i ignored: data size mismatch (expected %u; got %u)", fpath, i, expected_size, va->size);
+			continue;
+		}
+
+		if(va->format != IQM_FLOAT) {
+			log_warn("%s: vertex array #%i ignored: %s data type not supported", fpath, i, iqm_va_format_str(va->format));
+			continue;
+		}
+
+		*idx_p = i;
+
+		log_debug("Using vertex array #%u for %s data",
+			i,
+			iqm_va_type_str(va->type)
+		);
+	}
+
+	bool ok = true;
+
+	if(indices->position < 0) {
+		log_error("%s: no position data", fpath);
+		ok = false;
+	}
+
+	if(indices->texcoord < 0) {
+		log_error("%s: no texcoord data", fpath);
+		ok = false;
+	}
+
+	if(indices->normal < 0) {
+		log_error("%s: no normal data", fpath);
+		ok = false;
+	}
+
+	if(indices->tangent < 0) {
+		log_error("%s: no tangent data", fpath);
+		ok = false;
+	}
+
+	return ok;
+}
+
+static bool iqm_read_vert_positions(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+	for(uint i = 0; i < num_verts; ++i) {
+		if(!read_floats(rw, ARRAY_SIZE(vertices[i].position), vertices[i].position)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool iqm_read_vert_texcoords(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+	for(uint i = 0; i < num_verts; ++i) {
+		if(!read_floats(rw, ARRAY_SIZE(vertices[i].uv), vertices[i].uv)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+
+		vertices[i].uv[1] = 1.0 - vertices[i].uv[1];
+	}
+
+	return true;
+}
+
+static bool iqm_read_vert_normals(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+	for(uint i = 0; i < num_verts; ++i) {
+		if(!read_floats(rw, ARRAY_SIZE(vertices[i].normal), vertices[i].normal)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool iqm_read_vert_tangents(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+	for(uint i = 0; i < num_verts; ++i) {
+		if(!read_floats(rw, ARRAY_SIZE(vertices[i].tangent), vertices[i].tangent)) {
+			log_error("%s: read error: %s", fpath, SDL_GetError());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+static bool iqm_read_triangles(const char *fpath, SDL_RWops *rw, uint num_tris, IQMTriangle triangles[num_tris]) {
+	if(!read_fields(rw, ARRAY_SIZE(triangles->u32_array) * num_tris, triangles->u32_array)) {
+		log_error("%s: read error: %s", fpath, SDL_GetError());
+		return false;
+	}
+
+	return true;
+}
+
+static bool range_is_valid(uint32_t total, uint32_t first, uint32_t num) {
+	if(((uint64_t)first + (uint64_t)num) != (first + num)) {
+		return false;
+	}
+
+	if(first + num > total) {
+		return false;
+	}
+
+	return true;
+}
+
+static void *load_model_begin(const char *path, uint flags) {
+	SDL_RWops *rw = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(!rw) {
+		log_error("VFS error: %s", vfs_get_error());
+		return NULL;
+	}
+
+	ModelLoadData *ldata = NULL;
+	IQMMesh *meshes = NULL;
+	IQMVertexArray *vert_arrays = NULL;
+	GenericModelVertex *vertices = NULL;
+	union { uint32_t indices[3]; IQMTriangle tri; } *indices = NULL;
+
+	#define TRY_SEEK(ofs) \
+		do { \
+			if(SDL_RWseek(rw, ofs, RW_SEEK_SET) < 0) { \
+				log_error("%s: %s", path, SDL_GetError()); \
+				goto fail; \
+			} \
+			assert(SDL_RWtell(rw) == ofs); \
+		} while(0)
+
+	#define TRY(...) \
+		do { \
+			if(!(__VA_ARGS__)) { \
+				goto fail; \
+			} \
+		} while(0)
+
+	IQMHeader hdr;
+	TRY(iqm_read_header(path, rw, &hdr));
+
+	assume(hdr.num_meshes > 0);
+	meshes = calloc(hdr.num_meshes, sizeof(*meshes));
+
+	TRY_SEEK(hdr.ofs_meshes);
+	TRY(iqm_read_meshes(path, rw, hdr.num_meshes, meshes));
+
+	for(uint i = 0; i < hdr.num_meshes; ++i) {
+		IQMMesh *mesh = meshes + i;
+
+		if(!range_is_valid(hdr.num_vertexes, mesh->first_vertex, mesh->num_vertexes)) {
+			log_error("%s: mesh %i: vertices out of range", path, i);
+			goto fail;
+		}
+
+		if(!range_is_valid(hdr.num_triangles, mesh->first_triangle, mesh->num_triangles)) {
+			log_error("%s: mesh %i: triangles out of range", path, i);
+			goto fail;
+		}
+	}
+
+	assume(hdr.num_vertexarrays > 0);
+	vert_arrays = calloc(hdr.num_vertexarrays, sizeof(*vert_arrays));
+
+	TRY_SEEK(hdr.ofs_vertexarrays);
+	VertexArrayIndices va_indices;
+	for(uint i = 0; i < NUM_REQUIRED_VERTEX_ARRAYS; ++i) {
+		va_indices.indices[i] = -1;
+	}
+	TRY(iqm_read_vertex_arrays(path, rw, hdr.num_vertexarrays, vert_arrays, &va_indices));
+
+	assume(hdr.num_vertexes > 0);
+	vertices = calloc(hdr.num_vertexes, sizeof(*vertices));
+
+	TRY_SEEK(vert_arrays[va_indices.position].offset);
+	TRY(iqm_read_vert_positions(path, rw, hdr.num_vertexes, vertices));
+
+	TRY_SEEK(vert_arrays[va_indices.texcoord].offset);
+	TRY(iqm_read_vert_texcoords(path, rw, hdr.num_vertexes, vertices));
+
+	TRY_SEEK(vert_arrays[va_indices.normal].offset);
+	TRY(iqm_read_vert_normals(path, rw, hdr.num_vertexes, vertices));
+
+	TRY_SEEK(vert_arrays[va_indices.tangent].offset);
+	TRY(iqm_read_vert_tangents(path, rw, hdr.num_vertexes, vertices));
+
+	assume(hdr.num_triangles > 0);
+	indices = calloc(hdr.num_triangles, sizeof(*indices));
+
+	TRY_SEEK(hdr.ofs_triangles);
+	TRY(iqm_read_triangles(path, rw, hdr.num_triangles, &indices->tri));
+
+	ldata = calloc(1, sizeof(*ldata));
+	ldata->vertices = vertices;
+	ldata->indices = indices->indices;
+	ldata->ofs_vertices = meshes[0].first_vertex;
+	ldata->num_vertices = meshes[0].num_vertexes;
+	ldata->ofs_indices = meshes[0].first_triangle * 3;
+	ldata->num_indices = meshes[0].num_triangles * 3;
+
+cleanup:
+	free(meshes);
+	free(vert_arrays);
+	SDL_RWclose(rw);
+	return ldata;
+
+fail:
+	free(vertices);
+	free(indices);
+	free(ldata);
+	goto cleanup;
+}
+
+static void *load_model_end(void *opaque, const char *path, uint flags) {
+	ModelLoadData *ldata = opaque;
+
+	if(ldata == NULL) {
+		return NULL;
+	}
+
+	Model *mdl = calloc(1, sizeof(*mdl));
+
+	r_model_add_static(
+		mdl,
+		PRIM_TRIANGLES,
+		ldata->num_vertices,
+		ldata->vertices + ldata->ofs_vertices,
+		ldata->num_indices,
+		ldata->indices + ldata->ofs_indices
+	);
+
+	free(ldata->vertices);
+	free(ldata->indices);
+	free(ldata);
+
+	return mdl;
+}
+
+static char *model_path(const char *name) {
+	return strjoin(MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
+}
+
+static bool check_model_path(const char *path) {
+	return strendswith(path, MDL_EXTENSION);
+}
+
+static void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
+	free(model);
+}
 
 ResourceHandler model_res_handler = {
 	.type = RES_MODEL,
@@ -29,239 +492,3 @@ ResourceHandler model_res_handler = {
 		.unload = unload_model,
 	},
 };
-
-static bool parse_obj(const char *filename, ObjFileData *data);
-static void free_obj(ObjFileData *data);
-
-char* model_path(const char *name) {
-	return strjoin(MDL_PATH_PREFIX, name, MDL_EXTENSION, NULL);
-}
-
-bool check_model_path(const char *path) {
-	return strendswith(path, MDL_EXTENSION);
-}
-
-typedef struct ModelLoadData {
-	GenericModelVertex *verts;
-	uint *indices;
-	uint icount;
-} ModelLoadData;
-
-void* load_model_begin(const char *path, uint flags) {
-	ObjFileData *data = malloc(sizeof(ObjFileData));
-	GenericModelVertex *verts;
-
-	if(!parse_obj(path, data)) {
-		free(data);
-		return NULL;
-	}
-
-	uint *indices = calloc(data->icount, sizeof(uint));
-	uint icount = data->icount;
-
-	verts = calloc(data->icount, sizeof(GenericModelVertex));
-
-#define BADREF(filename,aux,n) { \
-	log_error("OBJ file '%s': Index %d: bad %s index reference\n", filename, n, aux); \
-	goto fail; \
-}
-
-	memset(verts, 0, data->icount*sizeof(GenericModelVertex));
-
-	for(uint i = 0; i < data->icount; i++) {
-		int xi, ni, ti;
-
-		xi = data->indices[i][0]-1;
-		if(xi < 0 || xi >= data->xcount)
-			BADREF(path, "vertex", i);
-
-		memcpy(verts[i].position, data->xs[xi], sizeof(vec3_noalign));
-
-		if(data->tcount) {
-			ti = data->indices[i][1]-1;
-			if(ti < 0 || ti >= data->tcount)
-				BADREF(path, "texcoord", i);
-
-			verts[i].uv.s = data->texcoords[ti][0];
-			verts[i].uv.t = data->texcoords[ti][1];
-		}
-
-		if(data->ncount) {
-			ni = data->indices[i][2]-1;
-			if(ni < 0 || ni >= data->ncount)
-				BADREF(path, "normal", ni);
-
-			memcpy(verts[i].normal, data->normals[ni], sizeof(vec3_noalign));
-		}
-
-		indices[i] = i;
-	}
-
-	free_obj(data);
-	free(data);
-
-#undef BADREF
-
-	ModelLoadData *ldata = malloc(sizeof(ModelLoadData));
-	ldata->verts = verts;
-	ldata->indices = indices;
-	ldata->icount = icount;
-
-	return ldata;
-
-fail:
-	free(indices);
-	free(verts);
-	free_obj(data);
-	free(data);
-	return NULL;
-}
-
-void* load_model_end(void *opaque, const char *path, uint flags) {
-	ModelLoadData *ldata = opaque;
-
-	if(!ldata) {
-		return NULL;
-	}
-
-	Model *model = calloc(1, sizeof(Model));
-	r_model_add_static(model, PRIM_TRIANGLES, ldata->icount, ldata->verts, ldata->indices);
-
-	free(ldata->verts);
-	free(ldata->indices);
-	free(ldata);
-
-	return model;
-}
-
-void unload_model(void *model) { // Does not delete elements from the VBO, so doing this at runtime is leaking VBO space
-	free(model);
-}
-
-static void free_obj(ObjFileData *data) {
-	free(data->xs);
-	free(data->normals);
-	free(data->texcoords);
-	free(data->indices);
-}
-
-static bool parse_obj(const char *filename, ObjFileData *data) {
-	SDL_RWops *rw = vfs_open(filename, VFS_MODE_READ);
-
-	if(!rw) {
-		log_error("VFS error: %s", vfs_get_error());
-		return false;
-	}
-
-	char line[256], *save;
-	vec3_noalign buf;
-	char mode;
-	int linen = 0;
-
-	memset(data, 0, sizeof(ObjFileData));
-
-	while(SDL_RWgets(rw, line, sizeof(line))) {
-		linen++;
-
-		char *first;
-		first = strtok_r(line, " \n", &save);
-
-		if(strcmp(first, "v") == 0)
-			mode = 'v';
-		else if(strcmp(first, "vt") == 0)
-			mode = 't';
-		else if(strcmp(first, "vn") == 0)
-			mode = 'n';
-		else if(strcmp(first, "f") == 0)
-			mode = 'f';
-		else
-			mode = 0;
-
-		if(mode != 0 && mode != 'f') {
-			buf[0] = atof(strtok_r(NULL, " \n", &save));
-			char *wtf = strtok_r(NULL, " \n", &save);
-			buf[1] = atof(wtf);
-			if(mode != 't')
-				buf[2] = atof(strtok_r(NULL, " \n", &save));
-
-			switch(mode) {
-			case 'v':
-				data->xs = realloc(data->xs, sizeof(vec3_noalign)*(++data->xcount));
-				memcpy(data->xs[data->xcount-1], buf, sizeof(vec3_noalign));
-				break;
-			case 't':
-				data->texcoords = realloc(data->texcoords, sizeof(vec3_noalign)*(++data->tcount));
-				memcpy(data->texcoords[data->tcount-1], buf, sizeof(vec3_noalign));
-				break;
-			case 'n':
-				data->normals = realloc(data->normals, sizeof(vec3_noalign)*(++data->ncount));
-				memcpy(data->normals[data->ncount-1], buf, sizeof(vec3_noalign));
-				break;
-			}
-		} else if(mode == 'f') {
-			char *segment, *seg;
-			int j = 0, jj;
-			ivec3_noalign ibuf;
-			memset(ibuf, 0, sizeof(ibuf));
-
-			while((segment = strtok_r(NULL, " \n", &save))) {
-				seg = segment;
-				j++;
-
-				jj = 0;
-				while(jj < 3) {
-					ibuf[jj] = atoi(seg);
-					jj++;
-
-					while(*seg != '\0' && *(++seg) != '/');
-
-					if(*seg == '\0')
-						break;
-					else
-						seg++;
-				}
-
-				if(strstr(segment, "//")) {
-					ibuf[2] = ibuf[1];
-					ibuf[1] = 0;
-				}
-
-				if(jj == 0 || jj > 3 || segment[0] == '/') {
-					log_error("OBJ file '%s:%d': Parsing error: Corrupt face definition", filename, linen);
-					goto fail;
-				}
-
-				data->indices = realloc(data->indices, sizeof(ivec3_noalign)*(++data->icount));
-				memcpy(data->indices[data->icount-1], ibuf, sizeof(ivec3_noalign));
-			}
-
-			if(data->fverts == 0)
-				data->fverts = j;
-
-			if(data->fverts != j) {
-				log_error("OBJ file '%s:%d': Parsing error: face vertex count must stay the same in the whole file", filename, linen);
-				goto fail;
-			}
-
-			if(data->fverts != 3) {
-				log_error("OBJ file '%s:%d': Parsing error: face vertex count must be 3", filename, linen);
-				goto fail;
-			}
-		}
-	}
-
-	SDL_RWclose(rw);
-	return true;
-
-fail:
-	SDL_RWclose(rw);
-	free(data->indices);
-	free(data->normals);
-	free(data->xs);
-	return false;
-}
-
-Model* get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_DEFAULT)->data;
-}
-

@@ -1604,7 +1604,8 @@ static void stage_draw_framerate_graphs(float x, float y, float w, float h) {
 void stage_draw_hud(void) {
 	// Background
 	r_mat_mv_push();
-	r_mat_mv_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+	r_mat_mv_translate(SCREEN_W * 0.5, SCREEN_H * 0.5, 0);
+	r_mat_mv_scale(SCREEN_W, SCREEN_W, 1);
 	r_shader_standard();
 	r_uniform_sampler("tex", "hud");
 	r_draw_model("hud");
