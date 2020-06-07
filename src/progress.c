@@ -179,8 +179,8 @@ static void progress_read(SDL_RWops *file) {
 					uint8_t dflags = SDL_ReadU8(vfile);
 					StageInfo *info = stage_get(stg);
 
-					for(uint diff = D_Easy; diff <= D_Lunatic; ++diff) {
-						if(dflags & (uint)pow(2, diff - D_Easy)) {
+					for(uint diff = D_Easy; diff <= D_Lunatic && info != NULL; ++diff) {
+						if(dflags & (1 << (diff - D_Easy))) {
 							StageProgress *p = stage_get_progress_from_info(info, diff, true);
 							if(p) {
 								p->unlocked = true;
