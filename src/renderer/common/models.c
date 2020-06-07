@@ -20,14 +20,16 @@ static struct {
 } _r_models;
 
 void _r_models_init(void) {
-	VertexAttribFormat fmt[4];
-
-	r_vertex_attrib_format_interleaved(4, (VertexAttribSpec[]) {
+	VertexAttribSpec spec[] = {
 		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // position
 		{ 2, VA_FLOAT, VA_CONVERT_FLOAT }, // texcoord
 		{ 3, VA_FLOAT, VA_CONVERT_FLOAT }, // normal
 		{ 4, VA_FLOAT, VA_CONVERT_FLOAT }, // tangent
-	}, fmt, 0);
+	};
+
+	VertexAttribFormat fmt[ARRAY_SIZE(spec)];
+
+	r_vertex_attrib_format_interleaved(ARRAY_SIZE(spec), spec, fmt, 0);
 
 	GenericModelVertex quad[4] = {
 		{ {  0.5, -0.5,  0.0 }, { 1, 1 }, { 0, 0, 1 }, { 0, 0, 0, 0 } },
@@ -46,7 +48,7 @@ void _r_models_init(void) {
 
 	_r_models.varr = r_vertex_array_create();
 	r_vertex_array_set_debug_label(_r_models.varr, "Static models vertex array");
-	r_vertex_array_layout(_r_models.varr, 3, fmt);
+	r_vertex_array_layout(_r_models.varr, ARRAY_SIZE(fmt), fmt);
 	r_vertex_array_attach_vertex_buffer(_r_models.varr, _r_models.vbuf, 0);
 	r_vertex_array_attach_index_buffer(_r_models.varr, _r_models.ibuf);
 
