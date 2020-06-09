@@ -333,12 +333,17 @@ static bool range_is_valid(uint32_t total, uint32_t first, uint32_t num) {
 	return true;
 }
 
-static void *load_model_begin(const char *path, uint flags) {
+static void load_model_stage1(ResourceLoadState *st);
+static void load_model_stage2(ResourceLoadState *st);
+
+static void load_model_stage1(ResourceLoadState *st) {
+	const char *path = st->path;
 	SDL_RWops *rw = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
 	ModelLoadData *ldata = NULL;
@@ -429,22 +434,25 @@ cleanup:
 	free(meshes);
 	free(vert_arrays);
 	SDL_RWclose(rw);
-	return ldata;
+
+	if(ldata) {
+		res_load_continue_on_main(st, load_model_stage2, ldata);
+	} else {
+		res_load_failed(st);
+	}
+
+	return;
 
 fail:
 	free(vertices);
 	free(indices);
 	free(ldata);
+	ldata = NULL;
 	goto cleanup;
 }
 
-static void *load_model_end(void *opaque, const char *path, uint flags) {
-	ModelLoadData *ldata = opaque;
-
-	if(ldata == NULL) {
-		return NULL;
-	}
-
+static void load_model_stage2(ResourceLoadState *st) {
+	ModelLoadData *ldata = NOT_NULL(st->opaque);
 	Model *mdl = calloc(1, sizeof(*mdl));
 
 	r_model_add_static(
@@ -460,7 +468,7 @@ static void *load_model_end(void *opaque, const char *path, uint flags) {
 	free(ldata->indices);
 	free(ldata);
 
-	return mdl;
+	res_load_finished(st, mdl);
 }
 
 static char *model_path(const char *name) {
@@ -483,8 +491,7 @@ ResourceHandler model_res_handler = {
 	.procs = {
 		.find = model_path,
 		.check = check_model_path,
-		.begin_load = load_model_begin,
-		.end_load = load_model_end,
+		.load = load_model_stage1,
 		.unload = unload_model,
 	},
 };

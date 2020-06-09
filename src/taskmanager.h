@@ -24,7 +24,7 @@ typedef enum TaskStatus {
 	TASK_FINISHED,   /** Task has finished executing and has been removed from the queue */
 } TaskStatus;
 
-typedef void* (*task_func_t)(void *userdata);
+typedef void *(*task_func_t)(void *userdata);
 typedef void (*task_free_func_t)(void *userdata);
 
 /**
@@ -76,7 +76,7 @@ typedef struct TaskParams {
  * On success, returns a pointer to the created TaskManager.
  * On failure, returns NULL.
  */
-TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name)
+TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name)
 	attr_nodiscard attr_returns_max_aligned attr_nonnull(3);
 
 /**
@@ -93,7 +93,7 @@ TaskManager* taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
  *
  * On failure, returns NULL.
  */
-Task* taskmgr_submit(TaskManager *mgr, TaskParams params)
+Task *taskmgr_submit(TaskManager *mgr, TaskParams params)
 	attr_nonnull(1) attr_nodiscard attr_returns_max_aligned;
 
 /**
@@ -124,7 +124,8 @@ void taskmgr_abort(TaskManager *mgr)
 TaskStatus task_status(Task *task);
 
 /**
- * Wait for [task] to complete.
+ * Wait for [task] to complete. If the task is not running yet, it will be removed from the queue and
+ * executed on the current thread instead.
  *
  * On success, returns true and stores the task's return value in [result] (unless [result] is NULL).
  * On failure, returns false; [result] is left untouched.
@@ -176,6 +177,6 @@ void taskmgr_global_shutdown(void);
 /**
  * Submit a task to the global task manager. See `taskmgr_submit`.
  */
-Task* taskmgr_global_submit(TaskParams params);
+Task *taskmgr_global_submit(TaskParams params);
 
 #endif // IGUARD_taskmanager_h

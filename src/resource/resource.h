@@ -32,15 +32,18 @@ typedef enum ResourceFlags {
 	RESF_OPTIONAL = 1,
 	RESF_PERMANENT = 2,
 	RESF_PRELOAD = 4,
-	RESF_UNSAFE = 8,
+
+	RESF_DEFAULT = 0,
 } ResourceFlags;
 
-#define RESF_DEFAULT 0
+typedef struct ResourceLoadState ResourceLoadState;
 
-// Converts a vfs path into an abstract resource name to be used as the hashtable key.
-// This method is optional, the default strategy is to take the path minus the prefix and extension.
-// The returned name must be free()'d.
-typedef char* (*ResourceNameProc)(const char *path);
+struct ResourceLoadState {
+	const char *name;
+	const char *path;
+	void *opaque;
+	ResourceFlags flags;
+};
 
 // Converts an abstract resource name into a vfs path from which a resource with that name could be loaded.
 // The path may not actually exist or be usable. The load function (see below) shall deal with such cases.
@@ -51,15 +54,26 @@ typedef char* (*ResourceFindProc)(const char *name);
 // Tells whether the resource handler should attempt to load a file, specified by a vfs path.
 typedef bool (*ResourceCheckProc)(const char *path);
 
-// Begins loading a resource specified by path.
-// May be called asynchronously.
-// The return value is not interpreted in any way, it's just passed to the corresponding ResourceEndLoadProc later.
-typedef void* (*ResourceBeginLoadProc)(const char *path, uint flags);
+// Begins loading a resource. Called on an unspecified thread.
+// Must call one of the following res_load_* functions before returning to indicate status.
+typedef void (*ResourceLoadProc)(ResourceLoadState *st);
 
-// Finishes loading a resource and returns a pointer to it.
-// Will be called from the main thread only.
-// On failure, must return NULL and not crash the program.
-typedef void* (*ResourceEndLoadProc)(void *opaque, const char *path, uint flags);
+void res_load_failed(ResourceLoadState *st) attr_nonnull(1);
+void res_load_finished(ResourceLoadState *st, void *res) attr_nonnull(1, 2);
+
+// Indicates that loading must continue on the main thread.
+// Schedules callback to be called on the main thread at some point in the future.
+// The callback's load state parameter will contain the opaque pointer passed to this function.
+// If the resource has dependencies, callback will not be called until they finish loading.
+void res_load_continue_on_main(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) attr_nonnull(1, 2);
+
+// Like res_load_continue_on_main, but may be called from a worker thread.
+// Use this to wait for dependencies if nothing needs to be done on the main thread.
+void res_load_continue_after_dependencies(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) attr_nonnull(1, 2);
+
+// Registers another resource as a dependency and schedules it for asynchronous loading.
+// Use with res_load_continue_after_dependencies/res_load_continue_on_main to wait for dependencies.
+void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *name);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);
@@ -80,11 +94,9 @@ typedef struct ResourceHandler {
 	char *subdir;
 
 	struct {
-		ResourceNameProc name;
 		ResourceFindProc find;
 		ResourceCheckProc check;
-		ResourceBeginLoadProc begin_load;
-		ResourceEndLoadProc end_load;
+		ResourceLoadProc load;
 		ResourceUnloadProc unload;
 		ResourceInitProc init;
 		ResourcePostInitProc post_init;
@@ -97,15 +109,14 @@ typedef struct ResourceHandler {
 } ResourceHandler;
 
 typedef struct Resource {
+	void *data;
 	ResourceType type;
 	ResourceFlags flags;
-	void *data;
 } Resource;
 
 void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
-
 
 Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
 void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;

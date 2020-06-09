@@ -30,34 +30,31 @@ static MusicImpl *load_music(const char *path) {
 	return _a_backend.funcs.music_load(path);
 }
 
-static void *load_bgm_begin(const char *path, uint flags) {
+static void load_bgm(ResourceLoadState *st) {
 	Music *mus = calloc(1, sizeof(Music));
 
-	if(strendswith(path, ".bgm")) {
-		char *basename = resource_util_basename(BGM_PATH_PREFIX, path);
-		mus->meta = get_resource_data(RES_BGM_METADATA, basename, flags);
-		free(basename);
+	if(strendswith(st->path, ".bgm")) {
+		mus->meta = get_resource_data(RES_BGM_METADATA, st->name, st->flags);
 
 		if(mus->meta) {
 			mus->impl = load_music(mus->meta->loop_path);
 		}
 	} else {
-		mus->impl = load_music(path);
+		mus->impl = load_music(st->path);
 	}
 
 	if(!mus->impl) {
 		free(mus);
 		mus = NULL;
-		log_error("Failed to load bgm '%s'", path);
-	} else if(mus->meta->loop_point > 0) {
-		_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
+		log_error("Failed to load bgm '%s'", st->path);
+		res_load_failed(st);
+	} else {
+		if(mus->meta && mus->meta->loop_point > 0) {
+			_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
+		}
+
+		res_load_finished(st, mus);
 	}
-
-	return mus;
-}
-
-static void *load_bgm_end(void *opaque, const char *path, uint flags) {
-	return opaque;
 }
 
 static void unload_bgm(void *vmus) {
@@ -74,8 +71,7 @@ ResourceHandler bgm_res_handler = {
     .procs = {
         .find = bgm_path,
         .check = check_bgm_path,
-        .begin_load = load_bgm_begin,
-        .end_load = load_bgm_end,
+        .load = load_bgm,
         .unload = unload_bgm,
     },
 };

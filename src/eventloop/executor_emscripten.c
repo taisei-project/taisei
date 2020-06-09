@@ -14,7 +14,6 @@
 
 #include <emscripten.h>
 
-static FrameTimes frame_times;
 static uint frame_num;
 
 static bool em_handle_resize_event(SDL_Event *event, void *arg);
@@ -28,23 +27,23 @@ static void em_loop_callback(void) {
 		return;
 	}
 
-	if(time_get() < frame_times.next) {
+	if(time_get() < evloop.frame_times.next) {
 		return;
 	}
 
-	frame_times.start = time_get();
-	frame_times.target = frame->frametime;
+	evloop.frame_times.start = time_get();
+	evloop.frame_times.target = frame->frametime;
 
-	frame_times.next += frame_times.target;
-	hrtime_t min_next_time = frame_times.start - 2 * frame_times.target;
+	evloop.frame_times.next += evloop.frame_times.target;
+	hrtime_t min_next_time = evloop.frame_times.start - 2 * evloop.frame_times.target;
 
-	if(min_next_time > frame_times.next) {
-		frame_times.next = min_next_time;
+	if(min_next_time > evloop.frame_times.next) {
+		evloop.frame_times.next = min_next_time;
 	}
 
-	global.fps.busy.last_update_time = frame_times.start;
+	global.fps.busy.last_update_time = evloop.frame_times.start;
 
-	LogicFrameAction lframe_action = handle_logic(&frame, &frame_times);
+	LogicFrameAction lframe_action = handle_logic(&frame, &evloop.frame_times);
 
 	if(!frame || lframe_action == LFRAME_STOP) {
 		return;
@@ -72,7 +71,7 @@ static bool em_handle_resize_event(SDL_Event *event, void *arg) {
 }
 
 void eventloop_run(void) {
-	frame_times.next = time_get();
+	evloop.frame_times.next = time_get();
 	emscripten_set_main_loop(em_loop_callback, 0, false);
 	update_vsync();
 

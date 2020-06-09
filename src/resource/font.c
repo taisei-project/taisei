@@ -26,10 +26,9 @@
 static void init_fonts(void);
 static void post_init_fonts(void);
 static void shutdown_fonts(void);
-static char* font_path(const char*);
+static char *font_path(const char*);
 static bool check_font_path(const char*);
-static void* load_font_begin(const char*, uint);
-static void* load_font_end(void*, const char*, uint);
+static void load_font(ResourceLoadState *st);
 static void unload_font(void*);
 
 ResourceHandler font_res_handler = {
@@ -43,8 +42,7 @@ ResourceHandler font_res_handler = {
 		.shutdown = shutdown_fonts,
 		.find = font_path,
 		.check = check_font_path,
-		.begin_load = load_font_begin,
-		.end_load = load_font_end,
+		.load = load_font,
 		.unload = unload_font,
 	},
 };
@@ -528,7 +526,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		}
 
 		Pixmap px;
-		px.origin = PIXMAP_ORIGIN_TOPLEFT;
+		px.origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 		px.format = PIXMAP_FORMAT_RGB8;
 		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
@@ -537,7 +535,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
 
-		ssize_t fill_ofs_x   =  (g_bm_fill->left    - ref_left);
+		ssize_t fill_ofs_x   =  (g_bm_fill->left   - ref_left);
 		ssize_t fill_ofs_y   = -(g_bm_fill->top    - ref_top);
 		ssize_t border_ofs_x =  (g_bm_border->left - ref_left);
 		ssize_t border_ofs_y = -(g_bm_border->top  - ref_top);
@@ -555,9 +553,9 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				ssize_t inner_coord_x = x - inner_ofs_x;
 				ssize_t inner_coord_y = y - inner_ofs_y;
 
-				ssize_t fill_index = fill_coord_x + fill_coord_y * g_bm_fill->bitmap.pitch;
-				ssize_t border_index = border_coord_x + border_coord_y * g_bm_border->bitmap.pitch;
-				ssize_t inner_index = inner_coord_x + inner_coord_y * g_bm_inner->bitmap.pitch;
+				ssize_t fill_index   = fill_coord_x   + (g_bm_fill->bitmap.rows   - fill_coord_y   - 1) * g_bm_fill->bitmap.pitch;
+				ssize_t border_index = border_coord_x + (g_bm_border->bitmap.rows - border_coord_y - 1) * g_bm_border->bitmap.pitch;
+				ssize_t inner_index  = inner_coord_x  + (g_bm_inner->bitmap.rows  - inner_coord_y  - 1) * g_bm_inner->bitmap.pitch;
 
 				if(
 					fill_coord_x >= 0 && fill_coord_x < g_bm_fill->bitmap.width &&
@@ -586,6 +584,13 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 					p->b = 0;
 				}
 			}
+		}
+
+		PixmapFormat optimal_fmt = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_RGB_8, px.format);
+		pixmap_convert_inplace_realloc(&px, optimal_fmt);
+
+		if(!r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+			pixmap_flip_to_origin_inplace(&px, PIXMAP_ORIGIN_TOPLEFT);
 		}
 
 		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
@@ -695,18 +700,19 @@ static void free_font_resources(Font *font) {
 	dynarray_free_data(&font->glyphs);
 }
 
-void* load_font_begin(const char *path, uint flags) {
+void load_font(ResourceLoadState *st) {
 	Font font;
 	memset(&font, 0, sizeof(font));
 
-	if(!parse_keyvalue_file_with_spec(path, (KVSpec[]){
+	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]){
 		{ "source",  .out_str   = &font.source_path },
 		{ "size",    .out_int   = &font.base_size },
 		{ "face",    .out_long  = &font.base_face_idx },
 		{ NULL }
 	})) {
-		log_error("Failed to parse font file '%s'", path);
-		return NULL;
+		log_error("Failed to parse font file '%s'", st->path);
+		res_load_failed(st);
+		return;
 	}
 
 	ht_create(&font.charcodes_to_glyph_ofs);
@@ -714,28 +720,23 @@ void* load_font_begin(const char *path, uint flags) {
 
 	if(!(font.face = load_font_face(font.source_path, font.base_face_idx))) {
 		free_font_resources(&font);
-		return NULL;
+		res_load_failed(st);
 	}
 
 	if(set_font_size(&font, font.base_size, global_font_scale())) {
 		free_font_resources(&font);
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
 	dynarray_ensure_capacity(&font.glyphs, 32);
 
 #ifdef DEBUG
-	char *basename = resource_util_basename(FONT_PATH_PREFIX, path);
-	strlcpy(font.debug_label, basename, sizeof(font.debug_label));
-	free(basename);
+	strlcpy(font.debug_label, st->name, sizeof(font.debug_label));
 #endif
 
 	font_set_kerning_enabled(&font, true);
-	return memdup(&font, sizeof(font));
-}
-
-void* load_font_end(void *opaque, const char *path, uint flags) {
-	return opaque;
+	res_load_finished(st, memdup(&font, sizeof(font)));
 }
 
 void unload_font(void *vfont) {

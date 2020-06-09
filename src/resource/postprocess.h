@@ -48,25 +48,10 @@ struct PostprocessShaderUniform {
 typedef void (*PostprocessDrawFuncPtr)(Framebuffer *fb, double w, double h);
 typedef void (*PostprocessPrepareFuncPtr)(Framebuffer *fb, ShaderProgram *prog, void *arg);
 
-char* postprocess_path(const char *path);
-
 PostprocessShader* postprocess_load(const char *path, uint flags);
 void postprocess_unload(PostprocessShader **list);
 void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareFuncPtr prepare, PostprocessDrawFuncPtr draw, double width, double height, void *arg);
 
-/*
- *  Glue for resources api
- */
-
-char* postprocess_path(const char *name);
-bool check_postprocess_path(const char *path);
-void* load_postprocess_begin(const char *path, uint flags);
-void* load_postprocess_end(void *opaque, const char *path, uint flags);
-void unload_postprocess(void*);
-
 extern ResourceHandler postprocess_res_handler;
-
-#define PP_PATH_PREFIX SHPROG_PATH_PREFIX
-#define PP_EXTENSION ".pp"
 
 #endif // IGUARD_resource_postprocess_h

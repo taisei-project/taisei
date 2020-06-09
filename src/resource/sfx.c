@@ -22,30 +22,20 @@ static bool check_sound_path(const char *path) {
 	return sfxbgm_check_path(SFX_PATH_PREFIX, path, false);
 }
 
-static void* load_sound_begin(const char *path, uint flags) {
-	SoundImpl *sound = _a_backend.funcs.sound_load(path);
+static void load_sound(ResourceLoadState *st) {
+	SoundImpl *sound = _a_backend.funcs.sound_load(st->path);
 
 	if(!sound) {
-		return NULL;
+		res_load_failed(st);
+		return;
 	}
 
-	assert(strstartswith(path, SFX_PATH_PREFIX));
-	char resname[strlen(path) - sizeof(SFX_PATH_PREFIX) + 2];
-	strcpy(resname, path + sizeof(SFX_PATH_PREFIX) - 1);
-	char *dot = strrchr(resname, '.');
-	assert(dot != NULL);
-	*dot = 0;
-
-	_a_backend.funcs.sound_set_volume(sound, get_default_sfx_volume(resname) / 128.0);
+	_a_backend.funcs.sound_set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
 
 	Sound *snd = calloc(1, sizeof(Sound));
 	snd->impl = sound;
 
-	return snd;
-}
-
-static void* load_sound_end(void *opaque, const char *path, uint flags) {
-	return opaque;
+	res_load_finished(st, snd);
 }
 
 static void unload_sound(void *vsnd) {
@@ -62,8 +52,7 @@ ResourceHandler sfx_res_handler = {
     .procs = {
         .find = sound_path,
         .check = check_sound_path,
-        .begin_load = load_sound_begin,
-        .end_load = load_sound_end,
+        .load = load_sound,
         .unload = unload_sound,
     },
 };

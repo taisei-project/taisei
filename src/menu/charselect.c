@@ -381,6 +381,7 @@ void preload_char_menu(void) {
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
 		PlayerCharacter *pchar = plrchar_get(i);
 		portrait_preload_base_sprite(pchar->lower_name, NULL, RESF_PERMANENT);
+		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
 	}
 
 	char *p = (char*)facedefs;

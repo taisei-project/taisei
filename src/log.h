@@ -119,7 +119,7 @@ void log_set_gui_error_appendix(const char *message);
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
 	#undef UNREACHABLE
-	#define UNREACHABLE log_fatal("This code should never be reached")
+	#define UNREACHABLE log_fatal("This code should never be reached  (%s:%i)", __FILE__, __LINE__)
 #else
 	#define log_debug(...)
 	#define LOG_NO_FILENAMES

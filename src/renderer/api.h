@@ -665,6 +665,7 @@ void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixm
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
+PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
 
 Framebuffer* r_framebuffer_create(void);
 const char* r_framebuffer_get_debug_label(Framebuffer *fb) attr_nonnull(1);
@@ -811,17 +812,17 @@ void r_disable(RendererCapability cap) {
 
 INLINE
 ShaderProgram* r_shader_get(const char *name) {
-	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_DEFAULT | RESF_UNSAFE);
+	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_DEFAULT);
 }
 
 INLINE
 ShaderProgram* r_shader_get_optional(const char *name) {
-	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL | RESF_UNSAFE);
+	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL);
 }
 
 INLINE
 Texture* r_texture_get(const char *name) {
-	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT | RESF_UNSAFE);
+	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT);
 }
 
 #pragma GCC diagnostic push
@@ -873,12 +874,12 @@ void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
 
 INLINE attr_nonnull(1)
 void r_draw_model(const char *model) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), 0, 0);
+	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
 }
 
 INLINE attr_nonnull(1)
 void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_UNSAFE), instances, base_instance);
+	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
 }
 
 INLINE

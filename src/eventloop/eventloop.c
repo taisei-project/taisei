@@ -52,6 +52,10 @@ void eventloop_leave(void) {
 	}
 }
 
+FrameTimes eventloop_get_frame_times(void) {
+	return evloop.frame_times;
+}
+
 LogicFrameAction run_logic_frame(LoopFrame *frame) {
 	assert(frame == evloop.stack_ptr);
 

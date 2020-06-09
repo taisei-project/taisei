@@ -450,6 +450,10 @@ void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }
 
+PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
+	return B.texture_optimal_pixmap_format_for_type(type, src_format);
+}
+
 Framebuffer* r_framebuffer_create(void) {
 	return B.framebuffer_create();
 }

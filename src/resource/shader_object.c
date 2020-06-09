@@ -59,12 +59,16 @@ static bool check_shader_object_path(const char *path) {
 	return strstartswith(path, SHOBJ_PATH_PREFIX) && get_shobj_type(path);
 }
 
-static void* load_shader_object_begin(const char *path, uint flags) {
-	struct shobj_type *type = get_shobj_type(path);
+static void load_shader_object_stage1(ResourceLoadState *st);
+static void load_shader_object_stage2(ResourceLoadState *st);
+
+static void load_shader_object_stage1(ResourceLoadState *st) {
+	struct shobj_type *type = get_shobj_type(st->path);
 
 	if(type == NULL) {
-		log_error("%s: can not determine shading language and/or shader stage from the filename", path);
-		return NULL;
+		log_error("%s: can not determine shading language and/or shader stage from the filename", st->path);
+		res_load_failed(st);
+		return;
 	}
 
 	struct shobj_load_data *ldata = calloc(1, sizeof(struct shobj_load_data));
@@ -90,7 +94,7 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 				},
 			};
 
-			if(!glsl_load_source(path, &ldata->source, &opts)) {
+			if(!glsl_load_source(st->path, &ldata->source, &opts)) {
 				goto fail;
 			}
 
@@ -104,11 +108,11 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 
 	if(!r_shader_language_supported(&ldata->source.lang, &altlang)) {
 		if(altlang.lang == SHLANG_INVALID) {
-			log_error("%s: shading language not supported by backend", path);
+			log_error("%s: shading language not supported by backend", st->path);
 			goto fail;
 		}
 
-		log_warn("%s: shading language not supported by backend, attempting to translate", path);
+		log_warn("%s: shading language not supported by backend, attempting to translate", st->path);
 
 		assert(r_shader_language_supported(&altlang, NULL));
 
@@ -116,11 +120,11 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 		bool result = spirv_transpile(&ldata->source, &newsrc, &(SPIRVTranspileOptions) {
 			.lang = &altlang,
 			.optimization_level = SPIRV_OPTIMIZE_PERFORMANCE,
-			.filename = path,
+			.filename = st->path,
 		});
 
 		if(!result) {
-			log_error("%s: translation failed", path);
+			log_error("%s: translation failed", st->path);
 			goto fail;
 		}
 
@@ -128,34 +132,29 @@ static void* load_shader_object_begin(const char *path, uint flags) {
 		ldata->source = newsrc;
 	}
 
-	return ldata;
+	res_load_continue_on_main(st, load_shader_object_stage2, ldata);
+	return;
 
 fail:
 	shader_free_source(&ldata->source);
 	free(ldata);
-	return NULL;
+	res_load_failed(st);
 }
 
-static void* load_shader_object_end(void *opaque, const char *path, uint flags) {
-	struct shobj_load_data *ldata = opaque;
-
-	if(!ldata) {
-		return NULL;
-	}
+static void load_shader_object_stage2(ResourceLoadState *st) {
+	struct shobj_load_data *ldata = NOT_NULL(st->opaque);
 
 	ShaderObject *shobj = r_shader_object_compile(&ldata->source);
 	shader_free_source(&ldata->source);
+	free(ldata);
 
 	if(shobj) {
-		char *basename = resource_util_basename(SHOBJ_PATH_PREFIX, path);
-		r_shader_object_set_debug_label(shobj, basename);
-		free(basename);
+		r_shader_object_set_debug_label(shobj, st->name);
+		res_load_finished(st, shobj);
 	} else {
-		log_error("%s: failed to compile shader object", path);
+		log_error("%s: failed to compile shader object", st->path);
+		res_load_failed(st);
 	}
-
-	free(ldata);
-	return shobj;
 }
 
 static void unload_shader_object(void *vsha) {
@@ -172,8 +171,7 @@ ResourceHandler shader_object_res_handler = {
 		.shutdown = spirv_shutdown_compiler,
 		.find = shader_object_path,
 		.check = check_shader_object_path,
-		.begin_load = load_shader_object_begin,
-		.end_load = load_shader_object_end,
+		.load = load_shader_object_stage1,
 		.unload = unload_shader_object,
 	},
 };
