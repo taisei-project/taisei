@@ -1019,8 +1019,8 @@ static void draw_options_menu(MenuData *menu) {
 					int val = bind_getvalue(bind);
 
 					if(bind->configentry == CONFIG_PRACTICE_POWER) {
-						Font *fnt_int = get_font("standard");
-						Font *fnt_fract = get_font("small");
+						Font *fnt_int = res_font("standard");
+						Font *fnt_fract = res_font("small");
 
 						draw_fraction(
 							val,
@@ -1036,7 +1036,7 @@ static void draw_options_menu(MenuData *menu) {
 					} else if(bind->values) {
 						for(j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
 							if(j != bind->valrange_max && !bind->displaysingle) {
-								origin -= text_width(get_font("standard"), bind->values[j+1], 0) + 5;
+								origin -= text_width(res_font("standard"), bind->values[j+1], 0) + 5;
 							}
 
 							if(val == j) {

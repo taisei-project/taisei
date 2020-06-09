@@ -256,13 +256,13 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 
 	if(e->lines > 0) {
 		if(*(e->data[0]) == '*') {
-			total += *head = sprite_padded_height(get_sprite("kyoukkuri"));
+			total += *head = sprite_padded_height(res_sprite("kyoukkuri"));
 		} else {
-			total += *head = font_get_lineskip(get_font("big"));
+			total += *head = font_get_lineskip(res_font("big"));
 		}
 
 		if(e->lines > 1) {
-			total += *body += (e->lines - 0.5) * font_get_lineskip(get_font("standard"));
+			total += *body += (e->lines - 0.5) * font_get_lineskip(res_font("standard"));
 		}
 	}
 
@@ -323,7 +323,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	Sprite *yukkuri_spr = NULL;
 
 	if(*e->data[0] == '*') {
-		yukkuri_spr = get_sprite("kyoukkuri");
+		yukkuri_spr = res_sprite("kyoukkuri");
 	}
 
 	r_state_push();
@@ -355,7 +355,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 
 			r_mat_mv_translate(0, halfheight, 0);
 		} else {
-			Font *font = get_font(i ? "standard" : "big");
+			Font *font = res_font(i ? "standard" : "big");
 			r_shader("text_default");
 			text_draw(e->data[i], &(TextParams) {
 				.align = ALIGN_CENTER,

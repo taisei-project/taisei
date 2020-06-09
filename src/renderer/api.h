@@ -16,6 +16,8 @@
 #include "color.h"
 #include "common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
+#include "resource/shader_program.h"
+#include "resource/texture.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;
@@ -810,20 +812,9 @@ void r_disable(RendererCapability cap) {
 	r_capability(cap, false);
 }
 
-INLINE
-ShaderProgram* r_shader_get(const char *name) {
-	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_DEFAULT);
-}
-
-INLINE
-ShaderProgram* r_shader_get_optional(const char *name) {
-	return get_resource_data(RES_SHADER_PROGRAM, name, RESF_OPTIONAL);
-}
-
-INLINE
-Texture* r_texture_get(const char *name) {
-	return get_resource_data(RES_TEXTURE, name, RESF_DEFAULT);
-}
+DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get, res_shader)
+DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get_optional, res_shader_optional)
+DEFINE_DEPRECATED_RESOURCE_GETTER(Texture, r_texture_get, res_texture)
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
@@ -854,7 +845,7 @@ void r_color3(float r, float g, float b) {
 
 INLINE attr_nonnull(1)
 void r_shader(const char *prog) {
-	r_shader_ptr(r_shader_get(prog));
+	r_shader_ptr(res_shader(prog));
 }
 
 INLINE

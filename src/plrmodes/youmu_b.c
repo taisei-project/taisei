@@ -561,13 +561,13 @@ TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
 TASK(youmu_haunting_controller, { BoxedPlayer plr; }) {
 	YoumuBController *ctrl = TASK_MALLOC(sizeof(*ctrl));
 	ctrl->plr = TASK_BIND(ARGS.plr);
-	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
-	ctrl->sprites.blast_huge_rays = get_sprite("part/blast_huge_rays");
-	ctrl->sprites.petal = get_sprite("part/petal");
-	ctrl->sprites.smoothdot = get_sprite("part/smoothdot");
-	ctrl->sprites.stardust = get_sprite("part/stardust");
-	ctrl->sprites.youmu_slice = get_sprite("part/youmu_slice");
-	ctrl->shot_shader = r_shader_get("sprite_particle");
+	ctrl->sprites.blast_huge_halo = res_sprite("part/blast_huge_halo");
+	ctrl->sprites.blast_huge_rays = res_sprite("part/blast_huge_rays");
+	ctrl->sprites.petal = res_sprite("part/petal");
+	ctrl->sprites.smoothdot = res_sprite("part/smoothdot");
+	ctrl->sprites.stardust = res_sprite("part/stardust");
+	ctrl->sprites.youmu_slice = res_sprite("part/youmu_slice");
+	ctrl->shot_shader = res_shader("sprite_particle");
 
 	youmu_common_init_bomb_background(&ctrl->bomb_bg);
 

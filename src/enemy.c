@@ -287,7 +287,7 @@ void BigFairy(Enemy *e, int t, bool render) {
 	});
 
 	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = get_ani("enemy/bigfairy");
+	Animation *ani = res_anim("enemy/bigfairy");
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
@@ -314,7 +314,7 @@ void Fairy(Enemy *e, int t, bool render) {
 	});
 
 	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = get_ani("enemy/fairy");
+	Animation *ani = res_anim("enemy/fairy");
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {

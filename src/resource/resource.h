@@ -139,4 +139,22 @@ void resource_util_strip_ext(char *path);
 char *resource_util_basename(const char *prefix, const char *path);
 const char *resource_util_filename(const char *path);
 
+#define DEFINE_RESOURCE_GETTER(_type, _name, _enum) \
+	attr_nonnull_all attr_returns_nonnull \
+	INLINE _type *_name(const char *resname) { \
+		return get_resource_data(_enum, resname, RESF_DEFAULT); \
+	}
+
+#define DEFINE_OPTIONAL_RESOURCE_GETTER(_type, _name, _enum) \
+	attr_nonnull_all \
+	INLINE _type *_name(const char *resname) { \
+		return get_resource_data(_enum, resname, RESF_OPTIONAL); \
+	}
+
+#define DEFINE_DEPRECATED_RESOURCE_GETTER(_type, _name, _successor) \
+	attr_deprecated("Use " #_successor "() instead") \
+	INLINE _type *_name(const char *resname) { \
+		return _successor(resname); \
+	}
+
 #endif // IGUARD_resource_resource_h

@@ -123,7 +123,7 @@ void lasers_preload(void) {
 	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
 	lasers.quad_generic.vertex_array = lasers.varr;
 
-	lasers.shader_generic = r_shader_get("laser_generic");
+	lasers.shader_generic = res_shader("laser_generic");
 
 	lasers.force_generic = env_get_int("TAISEI_FORCE_GENERIC_LASER_SHADER", false);
 }
@@ -589,7 +589,7 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 
 cmplx las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/linear");
+		l->shader = res_shader_optional("lasers/linear");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -599,7 +599,7 @@ cmplx las_linear(Laser *l, float t) {
 
 cmplx las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/accelerated");
+		l->shader = res_shader_optional("lasers/accelerated");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -612,7 +612,7 @@ cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = s
 	// do we even still need this?
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/weird_sine");
+		l->shader = res_shader_optional("lasers/weird_sine");
 		return 0;
 	}
 
@@ -624,7 +624,7 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/sine");
+		l->shader = res_shader_optional("lasers/sine");
 		return 0;
 	}
 
@@ -643,7 +643,7 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/sine_expanding");
+		l->shader = res_shader_optional("lasers/sine_expanding");
 		return 0;
 	}
 
@@ -661,7 +661,7 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 
 cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/turning");
+		l->shader = res_shader_optional("lasers/turning");
 		return 0;
 	}
 
@@ -681,7 +681,7 @@ cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn be
 
 cmplx las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/circle");
+		l->shader = res_shader_optional("lasers/circle");
 		return 0;
 	}
 

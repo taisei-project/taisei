@@ -29,7 +29,7 @@ int portrait_get_base_sprite_name(const char *charname, const char *variant, siz
 Sprite *portrait_get_base_sprite(const char *charname, const char *variant) {
 	char buf[BUFFER_SIZE];
 	portrait_get_base_sprite_name(charname, variant, sizeof(buf), buf);
-	return get_sprite(buf);
+	return res_sprite(buf);
 }
 
 void portrait_preload_base_sprite(const char *charname, const char *variant, ResourceFlags rflags) {
@@ -45,7 +45,7 @@ int portrait_get_face_sprite_name(const char *charname, const char *face, size_t
 Sprite *portrait_get_face_sprite(const char *charname, const char *face) {
 	char buf[BUFFER_SIZE];
 	portrait_get_face_sprite_name(charname, face, sizeof(buf), buf);
-	return get_sprite(buf);
+	return res_sprite(buf);
 }
 
 void portrait_preload_face_sprite(const char *charname, const char *face, ResourceFlags rflags) {
@@ -91,7 +91,7 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	sp.pos.x = spr_w * 0.5f - sprite_padded_offset_x(s_base);
 	sp.pos.y = spr_h * 0.5f - sprite_padded_offset_y(s_base);
 	sp.color = RGBA(1, 1, 1, 1);
-	sp.shader_ptr = r_shader_get("sprite_default"),
+	sp.shader_ptr = res_shader("sprite_default"),
 	r_draw_sprite(&sp);
 	sp.blend = BLEND_PREMUL_ALPHA;
 	sp.sprite_ptr = s_face;

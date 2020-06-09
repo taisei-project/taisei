@@ -190,15 +190,15 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	MarisaAController *ctrl = ENT_CAST(ent, MarisaAController);
 	real t = global.frames;
 
-	ShaderProgram *shader = r_shader_get("marisa_laser");
+	ShaderProgram *shader = res_shader("marisa_laser");
 	Uniform *u_clr0 = r_shader_uniform(shader, "color0");
 	Uniform *u_clr1 = r_shader_uniform(shader, "color1");
 	Uniform *u_clr_phase = r_shader_uniform(shader, "color_phase");
 	Uniform *u_clr_freq = r_shader_uniform(shader, "color_freq");
 	Uniform *u_alpha = r_shader_uniform(shader, "alphamod");
 	Uniform *u_length = r_shader_uniform(shader, "laser_length");
-	Texture *tex0 = r_texture_get("part/marisa_laser0");
-	Texture *tex1 = r_texture_get("part/marisa_laser1");
+	Texture *tex0 = res_texture("part/marisa_laser0");
+	Texture *tex1 = res_texture("part/marisa_laser1");
 	FBPair *fbp_aux = stage_get_fbpair(FBPAIR_FG_AUX);
 	Framebuffer *target_fb = r_framebuffer_current();
 
@@ -260,8 +260,8 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	}
 
 	SpriteParams sp = {
-		.sprite_ptr = get_sprite("part/smoothdot"),
-		.shader_ptr = r_shader_get("sprite_default"),
+		.sprite_ptr = res_sprite("part/smoothdot"),
+		.shader_ptr = res_shader("sprite_default"),
 	};
 
 	for(MarisaALaser *laser = ctrl->lasers.first; laser; laser = laser->next) {
@@ -339,7 +339,7 @@ TASK(marisa_laser_slave_shot, {
 	Player *plr = ctrl->plr;
 	MarisaASlave *slave = TASK_BIND(ARGS.slave);
 
-	Animation *fire_anim = get_ani("fire");
+	Animation *fire_anim = res_anim("fire");
 	AniSequence *fire_anim_seq = get_ani_sequence(fire_anim, "main");
 
 	MarisaALaser *active_laser = NULL;
@@ -402,8 +402,8 @@ TASK(marisa_laser_slave, {
 	slave->ent.draw_func = marisa_laser_draw_slave;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	slave->pos = plr->pos;
-	slave->shader = r_shader_get("sprite_hakkero");
-	slave->sprite = get_sprite("hakkero");
+	slave->shader = res_shader("sprite_hakkero");
+	slave->sprite = res_sprite("hakkero");
 
 	INVOKE_SUBTASK_WHEN(&ctrl->events.slaves_expired, common_set_bitflags,
 		.pflags = &slave->alive,
@@ -521,8 +521,8 @@ TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 
 	int t = 0;
 
-	Sprite *star_spr = get_sprite("part/maristar_orbit");
-	Sprite *smoke_spr = get_sprite("part/smoke");
+	Sprite *star_spr = res_sprite("part/maristar_orbit");
+	Sprite *smoke_spr = res_sprite("part/smoke");
 
 	do {
 		real bomb_progress = player_get_bomb_progress(plr);

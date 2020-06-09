@@ -65,9 +65,9 @@ void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc);
 void draw_sprite(float x, float y, const char *name);
 void draw_sprite_p(float x, float y, Sprite *spr);
 
-INLINE Sprite *get_sprite(const char *name) {
-	return get_resource_data(RES_SPRITE, name, RESF_DEFAULT);
-}
+DEFINE_RESOURCE_GETTER(Sprite, res_sprite, RES_SPRITE)
+DEFINE_OPTIONAL_RESOURCE_GETTER(Sprite, res_sprite_optional, RES_SPRITE)
+DEFINE_DEPRECATED_RESOURCE_GETTER(Sprite, get_sprite, res_sprite)
 
 Sprite *prefix_get_sprite(const char *name, const char *prefix);
 

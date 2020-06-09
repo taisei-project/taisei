@@ -330,7 +330,7 @@ void dialog_draw(Dialog *dialog) {
 	r_draw_quad();
 	r_mat_mv_pop();
 
-	Font *font = get_font("standard");
+	Font *font = res_font("standard");
 
 	r_mat_tex_push();
 
@@ -344,7 +344,7 @@ void dialog_draw(Dialog *dialog) {
 
 		text_draw_wrapped(dialog->text.fading_out->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
-			.aux_textures = { r_texture_get("cell_noise") },
+			.aux_textures = { res_texture("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * (1.0 - (0.2 + 0.8 * (1 - dialog->text.fading_out->opacity))), 1 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },
@@ -360,7 +360,7 @@ void dialog_draw(Dialog *dialog) {
 
 		text_draw_wrapped(dialog->text.current->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
-			.aux_textures = { r_texture_get("cell_noise") },
+			.aux_textures = { res_texture("cell_noise") },
 			.shader_params = &(ShaderCustomParams) {{ o * dialog->text.current->opacity, 0 }},
 			.color = &clr,
 			.pos = { VIEWPORT_W/2, VIEWPORT_H-110 + font_get_lineskip(font) },

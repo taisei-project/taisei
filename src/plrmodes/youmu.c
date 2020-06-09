@@ -71,10 +71,10 @@ void youmu_common_init_bomb_background(YoumuBombBGData *bg_data) {
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
 
 	bg_data->buffer = stage_add_background_framebuffer("Youmu bomb FB", 0.25, 1, 1, &cfg);
-	bg_data->shader = r_shader_get("youmu_bomb_bg");
+	bg_data->shader = res_shader("youmu_bomb_bg");
 	bg_data->uniforms.petals = r_shader_uniform(bg_data->shader, "petals");
 	bg_data->uniforms.time = r_shader_uniform(bg_data->shader, "time");
-	bg_data->texture = r_texture_get("youmu_bombbg1");
+	bg_data->texture = res_texture("youmu_bombbg1");
 }
 
 static void capture_frame(Framebuffer *dest, Framebuffer *src) {

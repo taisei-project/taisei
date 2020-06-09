@@ -50,7 +50,7 @@ double marisa_common_property(Player *plr, PlrProperty prop) {
 
 DEFINE_EXTERN_TASK(marisa_common_shot_forward) {
 	Player *plr = TASK_BIND(ARGS.plr);
-	ShaderProgram *bolt_shader = r_shader_get("sprite_particle");
+	ShaderProgram *bolt_shader = res_shader("sprite_particle");
 
 	real damage = ARGS.damage;
 	int delay = ARGS.delay;

@@ -144,7 +144,7 @@ static void stage1_water_draw(vec3 pos) {
 
 	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
 
-	ShaderProgram *water_shader = r_shader_get("stage1_water");
+	ShaderProgram *water_shader = res_shader("stage1_water");
 	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
 	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
 	r_uniform_float(r_shader_uniform(water_shader, "wave_offset"), stage_3d_context.cx[1] / 2400.0);
@@ -270,7 +270,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 
 	Sprite spr = { 0 };
 	spr.w = spr.h = 1;
-	spr.tex = r_texture_get("stage1/waterplants");
+	spr.tex = res_texture("stage1/waterplants");
 	spr.tex_area.w = 0.5f;
 	spr.tex_area.h = 1.0f;
 	spr.tex_area.x = 0.5f * tile;

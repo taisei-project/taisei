@@ -54,7 +54,7 @@ static const char* item_indicator_sprite_name(ItemType type) {
 }
 
 static Sprite* item_sprite(ItemType type) {
-	return get_sprite(item_sprite_name(type));
+	return res_sprite(item_sprite_name(type));
 }
 
 static Sprite* item_indicator_sprite(ItemType type) {
@@ -62,7 +62,7 @@ static Sprite* item_indicator_sprite(ItemType type) {
 	if(name == NULL) {
 		return NULL;
 	}
-	return get_sprite(name);
+	return res_sprite(name);
 }
 
 static void ent_draw_item(EntityInterface *ent) {

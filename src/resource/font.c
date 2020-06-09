@@ -960,9 +960,9 @@ static Font *font_from_params(const TextParams *params) {
 
 	if(font == NULL) {
 		if(params->font != NULL) {
-			font = get_font(params->font);
+			font = res_font(params->font);
 		} else {
-			font = get_font("standard");
+			font = res_font("standard");
 		}
 	}
 
@@ -989,7 +989,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	if((batch_state_params.shader = params->shader_ptr) == NULL) {
 		if(params->shader != NULL) {
-			batch_state_params.shader = r_shader_get(params->shader);
+			batch_state_params.shader = res_shader(params->shader);
 		} else {
 			batch_state_params.shader = r_shader_current();
 		}

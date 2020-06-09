@@ -328,15 +328,15 @@ void stage_draw_pre_init(void) {
 
 void stage_draw_init(void) {
 	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
-	stagedraw.hud_text.shader = r_shader_get("text_hud");
-	stagedraw.hud_text.font = get_font("standard");
-	stagedraw.shaders.fxaa = r_shader_get("fxaa");
-	stagedraw.shaders.copy_depth = r_shader_get("copy_depth");
+	stagedraw.hud_text.shader = res_shader("text_hud");
+	stagedraw.hud_text.font = res_font("standard");
+	stagedraw.shaders.fxaa = res_shader("fxaa");
+	stagedraw.shaders.copy_depth = res_shader("copy_depth");
 
 	r_shader_standard();
 
 	#ifdef DEBUG
-	stagedraw.dummy.tex = get_sprite("star")->tex;
+	stagedraw.dummy.tex = res_sprite("star")->tex;
 	stagedraw.dummy.w = 1;
 	stagedraw.dummy.h = 1;
 	#endif
@@ -474,7 +474,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	memcpy(buf, txt, sizeof(buf) - 4);
 	memcpy(buf + sizeof(buf) - 4, " ~ ", 4);
 
-	text_render(buf, get_font("standard"), &spr, &bbox);
+	text_render(buf, res_font("standard"), &spr, &bbox);
 
 	// FIXME: The shader currently assumes that the sprite takes up the entire texture.
 	// If it could handle any arbitrary sprite, then text_render wouldn't have to resize
@@ -1099,8 +1099,8 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstance
 }
 
 static inline void stage_draw_hud_power_value(float xpos, float ypos) {
-	Font *fnt_int = get_font("standard");
-	Font *fnt_fract = get_font("small");
+	Font *fnt_int = res_font("standard");
+	Font *fnt_fract = res_font("small");
 
 	int pw = global.plr.power + global.plr.power_overflow;
 
@@ -1153,7 +1153,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
 	format_huge_num(10, score, bufsize, buf);
 
-	Font *fnt = get_font("standard");
+	Font *fnt = res_font("standard");
 	bool kern_saved = font_get_kerning_enabled(fnt);
 	font_set_kerning_enabled(fnt, false);
 
@@ -1177,7 +1177,7 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
-	Font *font = get_font("monotiny");
+	Font *font = res_font("monotiny");
 
 	ShaderProgram *sh_prev = r_shader_current();
 	r_shader("text_default");
@@ -1296,7 +1296,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	if(labels->x.next_life > 0) {
 		Color *next_clr = color_mul(RGBA(0.5, 0.3, 0.4, 0.5), &labels->lb_baseclr);
 		format_huge_num(0, global.plr.extralife_threshold - global.plr.points, sizeof(buf), buf);
-		font = get_font("small");
+		font = res_font("small");
 
 		text_draw("Next:", &(TextParams) {
 			.pos = { labels->x.next_life + res_text_padding, labels->y.lives + labels->y_ofs.lives_text },
@@ -1322,7 +1322,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	if(labels->x.next_bomb > 0) {
 		Color *next_clr = color_mul(RGBA(0.3, 0.5, 0.3, 0.5), &labels->lb_baseclr);
 		snprintf(buf, sizeof(buf), "%d / %d", global.plr.bomb_fragments, PLR_MAX_BOMB_FRAGMENTS);
-		font = get_font("small");
+		font = res_font("small");
 
 		text_draw("Fragments:", &(TextParams) {
 			.pos = { labels->x.next_bomb + res_text_padding, labels->y.bombs + labels->y_ofs.bombs_text },
@@ -1350,7 +1350,7 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	// Power value
 	stage_draw_hud_power_value(0, labels->y.power);
 
-	font = get_font("standard");
+	font = res_font("standard");
 	kern_saved = font_get_kerning_enabled(font);
 	font_set_kerning_enabled(font, false);
 
@@ -1473,7 +1473,7 @@ void stage_draw_bottom_text(void) {
 	}
 #endif
 
-	font = get_font("monosmall");
+	font = res_font("monosmall");
 
 	text_draw(buf, &(TextParams) {
 		.align = ALIGN_RIGHT,
@@ -1655,10 +1655,10 @@ void stage_draw_hud(void) {
 	// Lives and Bombs
 	if(global.stage->type != STAGE_SPELL) {
 		r_mat_mv_push();
-		r_mat_mv_translate(0, font_get_descent(get_font("standard")), 0);
+		r_mat_mv_translate(0, font_get_descent(res_font("standard")), 0);
 
-		Sprite *spr_life = get_sprite("hud/heart");
-		Sprite *spr_bomb = get_sprite("hud/star");
+		Sprite *spr_life = res_sprite("hud/heart");
+		Sprite *spr_bomb = res_sprite("hud/star");
 
 		float spacing = 1;
 		float pos_lives = HUD_EFFECTIVE_WIDTH - spr_life->w * (PLR_MAX_LIVES - 0.5) - spacing * (PLR_MAX_LIVES - 1);
@@ -1716,7 +1716,7 @@ void stage_draw_hud(void) {
 
 	// Power/Item/Voltage icons
 	r_mat_mv_push();
-	r_mat_mv_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(get_font("standard")) * 0.5 - 1, 0);
+	r_mat_mv_translate(HUD_X_SECONDARY_OFS_ICON, font_get_descent(res_font("standard")) * 0.5 - 1, 0);
 
 	r_draw_sprite(&(SpriteParams) {
 		.pos = { 2, labels.y.power + 2 },
@@ -1771,7 +1771,7 @@ void stage_draw_hud(void) {
 		r_mat_mv_scale(s2, s2, 0);
 		r_color(RGBA_MUL_ALPHA(0.3, 0.6, 0.7, 0.7 * extraspell_alpha));
 
-		Font *font = get_font("big");
+		Font *font = res_font("big");
 
 		// TODO: replace this with a shader
 		text_draw("Voltage        \n    Overdrive!", &(TextParams) { .pos = {  1,  1 }, .font_ptr = font, .align = ALIGN_CENTER });
@@ -1820,7 +1820,7 @@ void stage_display_clear_screen(const StageClearBonus *bonus) {
 		"Press Fire to continue",
 		VIEWPORT_W/2 + VIEWPORT_H*0.7*I,
 		ALIGN_CENTER,
-		get_font("standard"),
+		res_font("standard"),
 		RGB(1, 0.5, 0),
 		tbl.delay,
 		tbl.lifetime,

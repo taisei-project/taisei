@@ -53,7 +53,7 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 
 	if(!args->shader_ptr) {
 		if(args->shader) {
-			args->shader_ptr = r_shader_get(args->shader);
+			args->shader_ptr = res_shader(args->shader);
 		} else {
 			args->shader_ptr = defaults->shader_ptr;
 		}
@@ -859,7 +859,7 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 		v = proj->pos - proj->prevpos;
 	}
 
-	Animation *ani = get_ani("part/bullet_clear");
+	Animation *ani = res_anim("part/bullet_clear");
 	AniSequence *seq = get_ani_sequence(ani, "main");
 
 	Sprite *sprite_ref = animation_get_frame(ani, seq, 0);
@@ -1226,11 +1226,11 @@ void projectiles_preload(void) {
 	ht_create(&shader_sublayer_map);
 
 	for(uint i = 0; i < num_shaders; ++i) {
-		ht_set(&shader_sublayer_map, r_shader_get(shaders[i]), i + 1);
+		ht_set(&shader_sublayer_map, res_shader(shaders[i]), i + 1);
 	}
 
-	defaults_proj.shader_ptr = r_shader_get(defaults_proj.shader);
-	defaults_part.shader_ptr = r_shader_get(defaults_part.shader);
+	defaults_proj.shader_ptr = res_shader(defaults_proj.shader);
+	defaults_part.shader_ptr = res_shader(defaults_part.shader);
 }
 
 void projectiles_free(void) {

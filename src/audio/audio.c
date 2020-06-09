@@ -11,6 +11,8 @@
 #include "audio.h"
 #include "backend.h"
 #include "resource/resource.h"
+#include "resource/bgm.h"
+#include "resource/sfx.h"
 #include "global.h"
 
 #define B (_a_backend.funcs)
@@ -47,7 +49,7 @@ static SoundID play_sound_internal(const char *name, bool is_ui, int cooldown, b
 		return 0;
 	}
 
-	Sound *snd = get_sound(name);
+	Sound *snd = res_sfx(name);
 
 	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames)) {
 		return 0;
@@ -116,7 +118,7 @@ void play_loop(const char *name) {
 		return;
 	}
 
-	Sound *snd = get_sound(name);
+	Sound *snd = res_sfx(name);
 
 	if(!snd) {
 		return;
@@ -181,14 +183,6 @@ void resume_sounds(void) {
 
 void stop_sounds(void) {
 	B.sound_stop_all(SNDGROUP_MAIN);
-}
-
-Sound* get_sound(const char *name) {
-	return get_resource_data(RES_SFX, name, RESF_OPTIONAL);
-}
-
-Music* get_music(const char *name) {
-	return get_resource_data(RES_BGM, name, RESF_OPTIONAL);
 }
 
 static bool store_sfx_volume(const char *key, const char *val, void *data) {
@@ -285,7 +279,7 @@ void start_bgm(const char *name) {
 
 		stralloc(&current_bgm.name, name);
 
-		if((current_bgm.music = get_music(name)) == NULL) {
+		if((current_bgm.music = res_bgm(name)) == NULL) {
 			log_warn("BGM '%s' does not exist", current_bgm.name);
 			stop_bgm(true);
 			free(current_bgm.name);

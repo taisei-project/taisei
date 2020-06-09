@@ -53,8 +53,8 @@ void r_post_init(void) {
 		"standardnotex",
 	NULL);
 
-	R.progs.standard = r_shader_get("standard");
-	R.progs.standardnotex = r_shader_get("standardnotex");
+	R.progs.standard = res_shader("standard");
+	R.progs.standardnotex = res_shader("standardnotex");
 
 	r_shader_ptr(R.progs.standard);
 	r_color4(1, 1, 1, 1);
@@ -919,7 +919,7 @@ void _r_uniform_sampler_ptr(const char *uniform, Texture *tex) {
 
 void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) {
 	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
-	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { r_texture_get(tex) });
+	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { res_texture(tex) });
 }
 
 void _r_uniform_sampler(const char *uniform, const char *tex) {
@@ -942,7 +942,7 @@ void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, con
 		const char **vptr = values;
 
 		do {
-			*aptr++ = r_texture_get(*vptr++);
+			*aptr++ = res_texture(*vptr++);
 		} while(aptr < aend);
 
 		B.uniform(uniform, 0, 1, arr);

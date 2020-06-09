@@ -1015,8 +1015,8 @@ void coroutines_draw_stats(void) {
 	TextParams tp = {
 		.pos = { SCREEN_W },
 		.color = RGB(1, 1, 1),
-		.shader_ptr = r_shader_get("text_default"),
-		.font_ptr = get_font("monotiny"),
+		.shader_ptr = res_shader("text_default"),
+		.font_ptr = res_font("monotiny"),
 		.align = ALIGN_RIGHT,
 	};
 

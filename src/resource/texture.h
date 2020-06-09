@@ -36,4 +36,7 @@ extern ResourceHandler texture_res_handler;
 #define TEX_PATH_PREFIX "res/gfx/"
 #define TEX_EXTENSION ".tex"
 
+DEFINE_RESOURCE_GETTER(Texture, res_texture, RES_TEXTURE)
+DEFINE_OPTIONAL_RESOURCE_GETTER(Texture, res_texture_optional, RES_TEXTURE)
+
 #endif // IGUARD_resource_texture_h

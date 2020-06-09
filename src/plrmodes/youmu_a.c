@@ -176,7 +176,7 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 	trail_color.a = 0;
 	color_mul_scalar(&trail_color, 0.075);
 
-	Sprite *trail_sprite = get_sprite("part/boss_shadow");
+	Sprite *trail_sprite = res_sprite("part/boss_shadow");
 	MoveParams trail_move = move_linear(ARGS.vel * 0.8);
 
 	for(int t = 1;; ++t) {
@@ -232,7 +232,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
-	ShaderProgram *shader = r_shader_get("sprite_youmu_myon_shot");
+	ShaderProgram *shader = res_shader("sprite_youmu_myon_shot");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -291,9 +291,9 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
 
-	myon->sprites.trail = get_sprite("part/myon");
-	myon->sprites.smoke = get_sprite("part/smoke");
-	myon->sprites.stardust = get_sprite("part/stardust");
+	myon->sprites.trail = res_sprite("part/myon");
+	myon->sprites.smoke = res_sprite("part/smoke");
+	myon->sprites.stardust = res_sprite("part/stardust");
 
 	const real distance = 40;
 	const real focus_rate = 1.0/30.0;
@@ -470,7 +470,7 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 	ProjFlags pflags = PFLAG_MANUALANGLE | PFLAG_NOREFLECT;
 	int t = 0;
 
-	ShaderProgram *silhouette_shader = r_shader_get("sprite_silhouette");
+	ShaderProgram *silhouette_shader = res_shader("sprite_silhouette");
 
 	do {
 		pos += vel;
@@ -515,7 +515,7 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
 	YoumuAMyon *myon = &ctrl->myon;
 	CoEvent *pp_event = &stage_get_draw_events()->postprocess_before_overlay;
 
-	ShaderProgram *shader = r_shader_get("youmua_bomb");
+	ShaderProgram *shader = res_shader("youmua_bomb");
 	Uniform *u_tbomb = r_shader_uniform(shader, "tbomb");
 	Uniform *u_myon = r_shader_uniform(shader, "myon");
 	Uniform *u_fill_overlay = r_shader_uniform(shader, "fill_overlay");
@@ -558,7 +558,7 @@ TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ShaderProgram *shader = r_shader_get("sprite_particle");
+	ShaderProgram *shader = res_shader("sprite_particle");
 
 	for(int t = 0;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -596,10 +596,10 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 TASK(youmu_mirror_controller, { BoxedPlayer plr; }) {
 	YoumuAController *ctrl = TASK_MALLOC(sizeof(*ctrl));
 	ctrl->plr = TASK_BIND(ARGS.plr);
-	ctrl->sprites.arc = get_sprite("part/arc");
-	ctrl->sprites.stain = get_sprite("part/stain");
-	ctrl->sprites.petal = get_sprite("part/petal");
-	ctrl->sprites.blast_huge_halo = get_sprite("part/blast_huge_halo");
+	ctrl->sprites.arc = res_sprite("part/arc");
+	ctrl->sprites.stain = res_sprite("part/stain");
+	ctrl->sprites.petal = res_sprite("part/petal");
+	ctrl->sprites.blast_huge_halo = res_sprite("part/blast_huge_halo");
 
 	youmu_common_init_bomb_background(&ctrl->bomb_bg);
 

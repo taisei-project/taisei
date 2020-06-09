@@ -41,7 +41,7 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
 	snprintf(strbuf, sizeof(strbuf), "boss/%s", ani);
-	aniplayer_create(&boss->ani, get_ani(strbuf), "main");
+	aniplayer_create(&boss->ani, res_anim(strbuf), "main");
 
 	boss->birthtime = global.frames;
 	boss->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
@@ -412,7 +412,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 }
 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
-	Font *font = get_font("standard");
+	Font *font = res_font("standard");
 
 	cmplx x0 = VIEWPORT_W/2+I*VIEWPORT_H/3.5;
 	float f = clamp((time - 40.0) / 60.0, 0, 1);
@@ -469,7 +469,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	if(p) {
 		char buf[32];
 		float a = clamp((global.frames - b->current->starttime - 60) / 60.0, 0, 1);
-		font = get_font("small");
+		font = res_font("small");
 
 		float bonus_ofs = 220;
 
@@ -707,7 +707,7 @@ void draw_boss_overlay(Boss *boss) {
 	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
 	if(o > 0) {
-		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, get_font("standard"), RGBA(o, o, o, o));
+		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, res_font("standard"), RGBA(o, o, o, o));
 
 		if(ATTACK_IS_SPELL(boss->current->type)) {
 			int t_portrait, t_spell;
@@ -737,8 +737,8 @@ void draw_boss_overlay(Boss *boss) {
 		color_mul_scalar(&clr_int, o);
 		clr_fract = *RGBA(clr_int.r * 0.5, clr_int.g * 0.5, clr_int.b * 0.5, clr_int.a);
 
-		Font *f_int = get_font("standard");
-		Font *f_fract = get_font("small");
+		Font *f_int = res_font("standard");
+		Font *f_fract = res_font("small");
 		double pos_x, pos_y;
 
 		Alignment align;
@@ -761,7 +761,7 @@ void draw_boss_overlay(Boss *boss) {
 
 		// remaining spells
 		Color *clr = RGBA(0.7 * o, 0.7 * o, 0.7 * o, 0.7 * o);
-		Sprite *star = get_sprite("star");
+		Sprite *star = res_sprite("star");
 		float x = 10 + star->w * 0.5;
 		bool spell_found = false;
 

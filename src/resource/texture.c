@@ -607,7 +607,7 @@ void end_draw_texture(void) {
 }
 
 void fill_viewport(float xoff, float yoff, float ratio, const char *name) {
-	fill_viewport_p(xoff, yoff, ratio, 1, 0, r_texture_get(name));
+	fill_viewport_p(xoff, yoff, ratio, 1, 0, res_texture(name));
 }
 
 void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float angle, Texture *tex) {
@@ -663,7 +663,7 @@ void fill_viewport_p(float xoff, float yoff, float ratio, float aspect, float an
 }
 
 void fill_screen(const char *name) {
-	fill_screen_p(r_texture_get(name));
+	fill_screen_p(res_texture(name));
 }
 
 void fill_screen_p(Texture *tex) {
@@ -697,5 +697,5 @@ void loop_tex_line_p(cmplx a, cmplx b, float w, float t, Texture *texture) {
 }
 
 void loop_tex_line(cmplx a, cmplx b, float w, float t, const char *texture) {
-	loop_tex_line_p(a, b, w, t, r_texture_get(texture));
+	loop_tex_line_p(a, b, w, t, res_texture(texture));
 }

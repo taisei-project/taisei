@@ -66,7 +66,7 @@ int plrchar_player_anim_name(PlayerCharacter *pc, size_t bufsize, char buf[bufsi
 Animation *plrchar_player_anim(PlayerCharacter *pc) {
 	char buf[64];
 	plrchar_player_anim_name(pc, sizeof(buf), buf);
-	return get_ani(buf);
+	return res_anim(buf);
 }
 
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal) {

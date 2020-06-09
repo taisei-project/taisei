@@ -17,4 +17,8 @@ extern ResourceHandler sfx_res_handler;
 
 #define SFX_PATH_PREFIX "res/sfx/"
 
+typedef struct Sound Sound;
+
+DEFINE_OPTIONAL_RESOURCE_GETTER(Sound, res_sfx, RES_SFX)
+
 #endif // IGUARD_resource_sfx_h

@@ -72,8 +72,8 @@ void update_sounds(void); // checks if loops need to be stopped
 
 int get_default_sfx_volume(const char *sfx);
 
-Sound* get_sound(const char *name) attr_nonnull(1);
-Music* get_music(const char *music) attr_nonnull(1);
+DEFINE_DEPRECATED_RESOURCE_GETTER(Sound, get_sound, res_sfx)
+DEFINE_DEPRECATED_RESOURCE_GETTER(Music, get_music, res_bgm)
 
 void start_bgm(const char *name);
 void stop_bgm(bool force);

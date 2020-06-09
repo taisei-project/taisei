@@ -62,7 +62,7 @@ TASK(reimu_ofuda_trail, { BoxedProjectile trail; }) {
 Projectile *reimu_common_ofuda_swawn_trail(Projectile *p) {
 	Projectile *trail = PARTICLE(
 		// .sprite_ptr = p->sprite,
-		.sprite_ptr = get_sprite("proj/hghost"),
+		.sprite_ptr = res_sprite("proj/hghost"),
 		.color = &p->color,
 		.timeout = 12,
 		.pos = p->pos + p->move.velocity * 0.3,

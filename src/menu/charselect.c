@@ -96,7 +96,7 @@ static void update_char_menu(MenuData *menu) {
 	PlayerMode *m = plrmode_find(pchar->id, SELECTED_SUBSHOT(menu));
 	assume(m != NULL);
 
-	Font *font = get_font("standard");
+	Font *font = res_font("standard");
 	char buf[256] = { 0 };
 	text_wrap(font, m->description, DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
@@ -213,7 +213,7 @@ void draw_char_menu(MenuData *menu) {
 		};
 
 		r_draw_sprite(&portrait_params);
-		portrait_params.sprite_ptr = get_sprite(face);
+		portrait_params.sprite_ptr = res_sprite(face);
 		r_draw_sprite(&portrait_params);
 
 		r_mat_mv_push();
@@ -257,7 +257,7 @@ void draw_char_menu(MenuData *menu) {
 	ShotModeID current_subshot = SELECTED_SUBSHOT(menu);
 
 	float f = menu->drawdata[0]-PLR_SHOT_A;
-	float selbg_ofs = 200 + (100-70)*f-20*f - font_get_lineskip(get_font("standard")) * 0.7;
+	float selbg_ofs = 200 + (100-70)*f-20*f - font_get_lineskip(res_font("standard")) * 0.7;
 
 	r_color4(0, 0, 0, 0.5);
 	r_shader_standard_notex();

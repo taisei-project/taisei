@@ -170,7 +170,7 @@ void draw_ingame_menu_bg(MenuData *menu, float f) {
 
 void update_ingame_menu(MenuData *menu) {
 	menu->drawdata[0] += (menu->cursor*35 - menu->drawdata[0])/7.0;
-	menu->drawdata[1] += (text_width(get_font("standard"), dynarray_get(&menu->entries, menu->cursor).name, 0) - menu->drawdata[1])/10.0;
+	menu->drawdata[1] += (text_width(res_font("standard"), dynarray_get(&menu->entries, menu->cursor).name, 0) - menu->drawdata[1])/10.0;
 }
 
 void draw_ingame_menu(MenuData *menu) {

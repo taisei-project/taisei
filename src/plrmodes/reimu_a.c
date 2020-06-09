@@ -197,7 +197,7 @@ static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
 
 	for(int i = 0; i < count; i++) {
 		PARTICLE(
-			.sprite_ptr = get_sprite("proj/glowball"),
+			.sprite_ptr = res_sprite("proj/glowball"),
 			.shader = "sprite_bullet",
 			.color = HSLA(3 * (float)i / count + offset, 1, 0.5, 0),
 			.timeout = 60,
@@ -292,8 +292,8 @@ TASK(reimu_spirit_bomb_orb_visual, { BoxedProjectile orb; }) {
 	Projectile *orb = TASK_BIND(ARGS.orb);
 	DECLARE_ENT_ARRAY(Projectile, components, 3);
 
-	Sprite *glowball = get_sprite("proj/glowball");
-	ShaderProgram *shader = r_shader_get("sprite_bullet");
+	Sprite *glowball = res_sprite("proj/glowball");
+	ShaderProgram *shader = res_shader("sprite_bullet");
 
 	for(int i = 0; i < components.capacity; ++i) {
 		ENT_ARRAY_ADD(&components, PARTICLE(
@@ -377,7 +377,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 			trail_vel *= 3 * circlestrength / cabs(trail_vel);
 
 			PARTICLE(
-				.sprite_ptr = get_sprite("part/stain"),
+				.sprite_ptr = res_sprite("part/stain"),
 				// .color = reimu_spirit_orb_color(&(Color){0}, i),
 				.color = HSLA(t/orb->timeout, 0.3, 0.3, 0.0),
 				.pos = trail_pos,
@@ -468,8 +468,8 @@ static void reimu_spirit_draw_slave(EntityInterface *ent) {
 static ReimuASlave *reimu_spirit_create_slave(ReimuAController *ctrl, const Color *color) {
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_HOST_ENT(ReimuASlave);
-	slave->sprite = get_sprite("yinyang");
-	slave->shader = r_shader_get("sprite_yinyang");
+	slave->sprite = res_sprite("yinyang");
+	slave->shader = res_shader("sprite_yinyang");
 	slave->pos = plr->pos;
 	slave->color = *color;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
@@ -526,8 +526,8 @@ TASK(reimu_spirit_slave_needle_shot, {
 	Player *plr = ARGS.ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
 
-	ShaderProgram *shader = r_shader_get("sprite_particle");
-	Sprite *particle_spr = get_sprite("part/stain");
+	ShaderProgram *shader = res_shader("sprite_particle");
+	Sprite *particle_spr = res_sprite("part/stain");
 
 	real damage = SHOT_SLAVE_NEEDLE_DMG;
 	real delay = SHOT_SLAVE_NEEDLE_DELAY;
@@ -593,8 +593,8 @@ TASK(reimu_spirit_slave_homing_shot, {
 	Player *plr = ARGS.ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
 
-	ShaderProgram *shader = r_shader_get("sprite_particle");
-	Sprite *particle_spr = get_sprite("part/stain");
+	ShaderProgram *shader = res_shader("sprite_particle");
+	Sprite *particle_spr = res_sprite("part/stain");
 	cmplx vel = ARGS.vel;
 	cmplx pdir = cnormalize(vel);
 
@@ -766,7 +766,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	real dir = 1;
-	ShaderProgram *shader = r_shader_get("sprite_particle");
+	ShaderProgram *shader = res_shader("sprite_particle");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -798,7 +798,7 @@ TASK(reimu_spirit_shot_volley_bullet, { Player *plr; cmplx offset; cmplx vel; re
 
 TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 	Player *plr = ARGS.ctrl->plr;
-	ShaderProgram *shader = r_shader_get("sprite_particle");
+	ShaderProgram *shader = res_shader("sprite_particle");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);

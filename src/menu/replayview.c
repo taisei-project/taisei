@@ -172,8 +172,8 @@ static void replayview_draw_messagebox(MenuData* m) {
 	ReplayviewContext *ctx = m->context;
 	MenuEntry *e = dynarray_get_ptr(&m->entries, 0);
 	float alpha = 1 - ctx->sub_fade;
-	float height = font_get_lineskip(get_font("standard")) * 2;
-	float width  = text_width(get_font("standard"), e->name, 0) + 64;
+	float height = font_get_lineskip(res_font("standard")) * 2;
+	float width  = text_width(res_font("standard"), e->name, 0) + 64;
 	replayview_draw_submenu_bg(width, height, alpha);
 
 	text_draw(e->name, &(TextParams) {
@@ -290,8 +290,8 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 		}
 
 		switch(a) {
-			case ALIGN_CENTER: o += csize * 0.5 - text_width(get_font("standard"), tmp, 0) * 0.5; break;
-			case ALIGN_RIGHT:  o += csize - text_width(get_font("standard"), tmp, 0);             break;
+			case ALIGN_CENTER: o += csize * 0.5 - text_width(res_font("standard"), tmp, 0) * 0.5; break;
+			case ALIGN_RIGHT:  o += csize - text_width(res_font("standard"), tmp, 0);             break;
 			default:                                                                              break;
 		}
 

@@ -183,7 +183,7 @@ void start_game_no_difficulty_menu(MenuData *m, void *arg) {
 }
 
 void draw_menu_selector(float x, float y, float w, float h, float t) {
-	Sprite *bg = get_sprite("part/smoke");
+	Sprite *bg = res_sprite("part/smoke");
 	r_mat_mv_push();
 	r_mat_mv_translate(x, y, 0);
 	r_mat_mv_scale(w / bg->w, h / bg->h, 1);
@@ -198,7 +198,7 @@ void draw_menu_selector(float x, float y, float w, float h, float t) {
 
 void draw_menu_title(MenuData *m, const char *title) {
 	text_draw(title, &(TextParams) {
-		.pos = { (text_width(get_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
+		.pos = { (text_width(res_font("big"), title, 0) + 10) * (1.0 - menu_fade(m)), 30 },
 		.align = ALIGN_RIGHT,
 		.font = "big",
 		.color = RGB(1, 1, 1),
@@ -212,7 +212,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 	r_mat_mv_translate(x, y + offset, 0);
 
 	draw_menu_selector(m->drawdata[0], m->drawdata[2], m->drawdata[1], 34, m->frames);
-	ShaderProgram *text_shader = r_shader_get("text_default");
+	ShaderProgram *text_shader = res_shader("text_default");
 
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		float p = offset + 20*i;
@@ -260,7 +260,7 @@ void animate_menu_list_entries(MenuData *m) {
 
 void animate_menu_list(MenuData *m) {
 	MenuEntry *s = dynarray_get_ptr(&m->entries, m->cursor);
-	int w = text_width(get_font("standard"), s->name, 0);
+	int w = text_width(res_font("standard"), s->name, 0);
 
 	fapproach_asymptotic_p(&m->drawdata[0], 10 + w * 0.5, 0.1, 1e-5);
 	fapproach_asymptotic_p(&m->drawdata[1], w * 2, 0.1, 1e-5);

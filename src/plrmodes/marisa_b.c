@@ -180,7 +180,7 @@ TASK(marisa_star_slave_shot, {
 	Player *plr = ctrl->plr;
 	MarisaBSlave *slave = TASK_BIND(ARGS.slave);
 
-	ShaderProgram *shot_shader = r_shader_get("sprite_particle");
+	ShaderProgram *shot_shader = res_shader("sprite_particle");
 	real nphase = ARGS.phase / M_TAU;
 	real damage = SHOT_SLAVE_DAMAGE;
 
@@ -220,8 +220,8 @@ TASK(marisa_star_slave, {
 	MarisaBSlave *slave = TASK_HOST_ENT(MarisaBSlave);
 	slave->alive = 1;
 	slave->pos = plr->pos;
-	slave->shader = r_shader_get("sprite_hakkero");
-	slave->sprite = get_sprite("hakkero");
+	slave->shader = res_shader("sprite_hakkero");
+	slave->sprite = res_sprite("hakkero");
 
 	slave->ent.draw_func = marisa_star_draw_slave;
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
@@ -397,11 +397,11 @@ TASK(marisa_star_bomb_background, { MarisaBController *ctrl; }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	ShaderProgram *bg_shader = r_shader_get("maristar_bombbg");
+	ShaderProgram *bg_shader = res_shader("maristar_bombbg");
 	Uniform *u_t = r_shader_uniform(bg_shader, "t");
 	Uniform *u_decay = r_shader_uniform(bg_shader, "decay");
 	Uniform *u_plrpos = r_shader_uniform(bg_shader, "plrpos");
-	Texture *bg_tex = r_texture_get("marisa_bombbg");
+	Texture *bg_tex = res_texture("marisa_bombbg");
 
 	do {
 		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->background_drawn);
@@ -476,10 +476,10 @@ TASK(marisa_star_controller, { BoxedPlayer plr; }) {
 	ctrl->plr = TASK_BIND(ARGS.plr);
 	TASK_HOST_EVENTS(ctrl->events);
 
-	ctrl->sprites.fairy_circle = get_sprite("fairy_circle");
-	ctrl->sprites.lightningball = get_sprite("part/lightningball");
-	ctrl->sprites.maristar_orbit = get_sprite("part/maristar_orbit");
-	ctrl->sprites.stardust = get_sprite("part/stardust");
+	ctrl->sprites.fairy_circle = res_sprite("fairy_circle");
+	ctrl->sprites.lightningball = res_sprite("part/lightningball");
+	ctrl->sprites.maristar_orbit = res_sprite("part/maristar_orbit");
+	ctrl->sprites.stardust = res_sprite("part/stardust");
 
 	INVOKE_SUBTASK(marisa_star_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_star_bomb_handler, ctrl);

@@ -17,4 +17,8 @@ extern ResourceHandler bgm_res_handler;
 
 #define BGM_PATH_PREFIX "res/bgm/"
 
+typedef struct Music Music;
+
+DEFINE_OPTIONAL_RESOURCE_GETTER(Music, res_bgm, RES_BGM)
+
 #endif // IGUARD_resource_bgm_h

@@ -152,8 +152,8 @@ TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	Sprite *spr_proj = get_sprite("proj/glowball");
-	Sprite *spr_impact = get_sprite("part/blast");
+	Sprite *spr_proj = res_sprite("proj/glowball");
+	Sprite *spr_impact = res_sprite("part/blast");
 
 	int t = 0;
 
@@ -424,7 +424,7 @@ TASK(reimu_dream_slave_shot, {
 	Player *plr = ctrl->plr;
 	ReimuBSlave *slave = TASK_BIND(ARGS.slave);
 	cmplx vel = ARGS.vel;
-	ShaderProgram *shader = r_shader_get("sprite_particle");
+	ShaderProgram *shader = res_shader("sprite_particle");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -450,8 +450,8 @@ TASK(reimu_dream_slave, {
 	ReimuBSlave *slave = TASK_HOST_ENT(ReimuBSlave);
 	slave->ent.draw_layer = LAYER_PLAYER_SLAVE;
 	slave->ent.draw_func = reimu_dream_draw_slave;
-	slave->sprite = get_sprite("yinyang"),
-	slave->shader = r_shader_get("sprite_yinyang"),
+	slave->sprite = res_sprite("yinyang"),
+	slave->shader = res_shader("sprite_yinyang"),
 	slave->pos = plr->pos;
 	slave->alive = 1;
 
@@ -564,7 +564,7 @@ TASK(reimu_dream_ofuda, { ReimuBController *ctrl; cmplx pos; cmplx vel; ShaderPr
 TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	ShaderProgram *ofuda_shader = r_shader_get("sprite_particle");
+	ShaderProgram *ofuda_shader = res_shader("sprite_particle");
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -626,8 +626,8 @@ TASK(reimu_dream_controller, { BoxedPlayer plr; }) {
 	ctrl->plr = TASK_BIND(ARGS.plr);
 	TASK_HOST_EVENTS(ctrl->events);
 
-	ctrl->yinyang_shader = r_shader_get("sprite_yinyang");
-	ctrl->yinyang_sprite = get_sprite("yinyang");
+	ctrl->yinyang_shader = res_shader("sprite_yinyang");
+	ctrl->yinyang_sprite = res_sprite("yinyang");
 
 	ctrl->ent.draw_func = reimu_dream_draw_gaps;
 	ctrl->ent.draw_layer = LAYER_PLAYER_FOCUS;

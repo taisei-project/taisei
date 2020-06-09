@@ -19,4 +19,7 @@ extern ResourceHandler shader_object_res_handler;
 
 #define SHOBJ_PATH_PREFIX "res/shader/"
 
+DEFINE_RESOURCE_GETTER(ShaderObject, res_shader_object, RES_SHADER_OBJECT)
+DEFINE_OPTIONAL_RESOURCE_GETTER(ShaderObject, res_shader_object_optional, RES_SHADER_OBJECT)
+
 #endif // IGUARD_resource_shader_object_h

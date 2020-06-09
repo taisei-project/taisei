@@ -59,7 +59,7 @@ void draw_fragments(const DrawFragmentsParams *params) {
 	static Color prev_back_clr;
 
 	ShaderProgram *prog_saved = r_shader_current();
-	ShaderProgram *prog_wanted = r_shader_get("sprite_circleclipped_indicator");
+	ShaderProgram *prog_wanted = res_shader("sprite_circleclipped_indicator");
 
 	if(memcmp(&prev_back_clr, back_clr, sizeof(prev_back_clr))) {
 		// HACK/FIXME: we can't pass more than 4 floats via custom params, and we don't have auto-flush based on uniforms state, so...

@@ -97,7 +97,7 @@ static void musicroom_draw_item(MenuEntry *e, int i, int cnt) {
 	TextParams tparams = {
 		.pos = { 20 - e->drawdata, 20 * i },
 		.shader_ptr = p->text_shader,
-		.font_ptr = get_font("standard"),
+		.font_ptr = res_font("standard"),
 		.color = &clr,
 	};
 	bool kerning_saved = font_get_kerning_enabled(tparams.font_ptr);
@@ -149,8 +149,8 @@ static void musicroom_draw(MenuData *m) {
 	r_mat_mv_pop();
 	r_state_pop();
 
-	Font *const text_font = get_font("standard");
-	ShaderProgram *const text_shader = r_shader_get("text_default");
+	Font *const text_font = res_font("standard");
+	ShaderProgram *const text_shader = res_shader("text_default");
 	const float text_x = 50;
 	const float text_y = SCREEN_H - comment_height + font_get_lineskip(text_font) * 1.5 + comment_offset;
 
@@ -225,7 +225,7 @@ static void add_bgm(MenuData *m, const char *bgm) {
 	MusicEntryParam *p = calloc(1, sizeof(*p));
 	p->bgm = bgm;
 	p->bgm_meta = meta;
-	p->text_shader = r_shader_get("text_default");
+	p->text_shader = res_shader("text_default");
 
 	if(progress_is_bgm_unlocked(bgm)) {
 		p->state |= MSTATE_UNLOCKED;

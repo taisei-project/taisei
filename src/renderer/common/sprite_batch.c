@@ -268,7 +268,7 @@ INLINE void _r_sprite_batch_process_params(
 
 	if((*sprite = sprite_params->sprite_ptr) == NULL) {
 		assert(sprite_params->sprite != NULL);
-		*sprite = get_sprite(sprite_params->sprite);
+		*sprite = res_sprite(sprite_params->sprite);
 	}
 
 	state_params->primary_texture = (*sprite)->tex;
@@ -281,7 +281,7 @@ INLINE void _r_sprite_batch_process_params(
 
 	if((state_params->shader = sprite_params->shader_ptr) == NULL) {
 		if(sprite_params->shader != NULL) {
-			state_params->shader = r_shader_get(sprite_params->shader);
+			state_params->shader = res_shader(sprite_params->shader);
 		} else {
 			state_params->shader = r_shader_current();
 		}
@@ -411,7 +411,7 @@ void _r_sprite_batch_end_frame(void) {
 		global.fps.render.fps
 	);
 
-	Font *font = get_font("monotiny");
+	Font *font = res_font("monotiny");
 	text_draw(buf, &(TextParams) {
 		.pos = { 0, font_get_lineskip(font) },
 		.font_ptr = font,

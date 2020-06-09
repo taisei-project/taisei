@@ -527,14 +527,14 @@ static void stage_preload(void) {
 }
 
 static void display_stage_title(StageInfo *info) {
-	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 50, 85, 35, 35);
-	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, get_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
+	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 50, 85, 35, 35);
+	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
 static void display_bgm_title(void) {
 	char txt[strlen(current_bgm.title) + 6];
 	snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, get_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
 }
 
 void stage_start_bgm(const char *bgm) {

@@ -279,7 +279,7 @@ static void animate_bg_descent(int anim_time) {
 static void animate_bg_midboss(int anim_time) {
 	float camera_shift_rate = 0;
 
-	stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0, 120, 30, 30);
+	stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
 	while(anim_time-- > 0) {
 		fapproach_p(&camera_shift_rate, 1, 1.0f/120.0f);
@@ -300,7 +300,7 @@ static void animate_bg_post_midboss(int anim_time) {
 	float center_distance = -2200;
 	float camera_shift_rate = 0;
 
-	stagetext_add("Midboss defeated!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0, 120, 30, 30);
+	stagetext_add("Midboss defeated!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
 	while(anim_time-- > 0) {
 		fapproach_p(&camera_shift_rate, 1, 1.0f/120.0f);
@@ -420,7 +420,7 @@ static void extra_begin(void) {
 	draw_data.codetex_num_segments = strtol(buf, NULL, 0);
 	SDL_RWclose(stream);
 
-	Texture *tex_code = r_texture_get("stageex/code");
+	Texture *tex_code = res_texture("stageex/code");
 	uint w, h;
 	r_texture_get_size(tex_code, 0, &w, &h);
 

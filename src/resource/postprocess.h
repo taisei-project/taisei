@@ -54,4 +54,6 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
 
 extern ResourceHandler postprocess_res_handler;
 
+DEFINE_OPTIONAL_RESOURCE_GETTER(PostprocessShader, res_postprocess, RES_POSTPROCESS)
+
 #endif // IGUARD_resource_postprocess_h

@@ -22,9 +22,9 @@ struct Model {
 	Primitive primitive;
 };
 
-INLINE Model *get_model(const char *name) {
-	return get_resource(RES_MODEL, name, RESF_DEFAULT)->data;
-}
+DEFINE_RESOURCE_GETTER(Model, res_model, RES_MODEL)
+DEFINE_OPTIONAL_RESOURCE_GETTER(Model, res_model_optional, RES_MODEL)
+DEFINE_DEPRECATED_RESOURCE_GETTER(Model, get_model, res_model)
 
 extern ResourceHandler model_res_handler;
 

@@ -29,7 +29,7 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 
 	p->sprite = pdata->sprite
 		? pdata->sprite
-		: (pdata->sprite = get_sprite(pdata->sprite_name));
+		: (pdata->sprite = res_sprite(pdata->sprite_name));
 
 	p->size = pdata->size;
 	p->collision_size = pdata->collision_size;

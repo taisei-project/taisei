@@ -136,7 +136,7 @@ Sprite *prefix_get_sprite(const char *name, const char *prefix) {
 	char buf[plen + strlen(name) + 1];
 	strcpy(buf, prefix);
 	strcpy(buf + plen, name);
-	Sprite *spr = get_sprite(buf);
+	Sprite *spr = res_sprite(buf);
 	return spr;
 }
 
@@ -161,7 +161,7 @@ static void draw_sprite_ex(float x, float y, float scale_x, float scale_y, Sprit
 }
 
 void draw_sprite(float x, float y, const char *name) {
-	draw_sprite_p(x, y, get_sprite(name));
+	draw_sprite_p(x, y, res_sprite(name));
 }
 
 void draw_sprite_p(float x, float y, Sprite *spr) {

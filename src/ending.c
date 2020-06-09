@@ -43,7 +43,7 @@ static void add_ending_entry(Ending *e, int dur, const char *msg, const char *sp
 	entry->msg = msg;
 
 	if(sprite) {
-		entry->sprite = get_sprite(sprite);
+		entry->sprite = res_sprite(sprite);
 	} else {
 		entry->sprite = NULL;
 	}

@@ -103,7 +103,7 @@ void player_free(Player *plr) {
 
 static void player_full_power(Player *plr) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
-	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
+	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
 
 bool player_set_power(Player *plr, short npow) {
@@ -196,7 +196,7 @@ void player_draw_overlay(Player *plr) {
 	float spell_x = 128 * (1 - pow(1 - spell_in, 5)) + (VIEWPORT_W + 256) * pow(1 - spell_in, 3);
 	float spell_y = VIEWPORT_H - 128 * sqrt(a);
 
-	Sprite *spell_spr = get_sprite("spell");
+	Sprite *spell_spr = res_sprite("spell");
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = spell_spr,
@@ -205,7 +205,7 @@ void player_draw_overlay(Player *plr) {
 		.scale.both = 3 - 2 * (1 - pow(1 - spell_in, 3)) + 2 * (1 - spell_out),
 	});
 
-	Font *font = get_font("standard");
+	Font *font = res_font("standard");
 
 	r_mat_mv_push();
 	r_mat_mv_translate(spell_x - spell_spr->w * 0.5 + 10, spell_y + 5 - font_get_metrics(font)->descent, 0);
@@ -316,7 +316,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 
 		char buf[64];
 		format_huge_num(0, plr->powersurge.bonus.baseline, sizeof(buf), buf);
-		Font *fnt = get_font("monotiny");
+		Font *fnt = res_font("monotiny");
 
 		float x = crealf(pos);
 		float y = cimagf(pos) + 80;
@@ -352,7 +352,7 @@ DEFINE_TASK(player_indicators) {
 	indicators->plr = TASK_BIND(ARGS.plr);
 	indicators->ent.draw_layer = LAYER_PLAYER_FOCUS;
 	indicators->ent.draw_func = player_draw_indicators;
-	indicators->sprites.focus = get_sprite("focus");
+	indicators->sprites.focus = res_sprite("focus");
 
 	Player *plr = indicators->plr;
 
@@ -520,7 +520,7 @@ static void player_powersurge_logic(Player *plr) {
 	);
 
 	if(!(global.frames % 6) && plr->powersurge.bonus.discharge_range > 0) {
-		Sprite *spr = get_sprite("part/powersurge_field");
+		Sprite *spr = res_sprite("part/powersurge_field");
 		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
 		double angle = rng_angle();
 
@@ -695,7 +695,7 @@ static bool player_powersurge(Player *plr) {
 	play_sound("powersurge_start");
 
 	collect_all_items(1);
-	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, get_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
+	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, res_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
 
 	return true;
 }
@@ -766,7 +766,7 @@ static void player_powersurge_expired(Player *plr) {
 	PowerSurgeBonus bonus;
 	player_powersurge_calc_bonus(plr, &bonus);
 
-	Sprite *blast = get_sprite("part/blast_huge_halo");
+	Sprite *blast = res_sprite("part/blast_huge_halo");
 	float scale = 2 * bonus.discharge_range / blast->w;
 
 	play_sound("powersurge_end");
@@ -1534,7 +1534,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 		}
 
 		stxt = stagetext_add(
-			NULL, location, ALIGN_CENTER, get_font("small"), &c,
+			NULL, location, ALIGN_CENTER, res_font("small"), &c,
 			timings.delay, timings.lifetime, timings.fadeintime, timings.fadeouttime
 		);
 
