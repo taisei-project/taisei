@@ -86,7 +86,7 @@ TASK(spiralshot, {
 	);
 
 	for(int b = 0; b < count; ++b) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 
 		real dist = b * dist_per_bullet;
 		real angle = angle_ofs + b * angle_per_bullet;

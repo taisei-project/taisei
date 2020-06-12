@@ -568,7 +568,7 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		for(int i = -1; i < 2; i += 2) {
 			cmplx shot_dir = i * ((plr->inputflags & INFLAG_FOCUS) ? 1 : I);

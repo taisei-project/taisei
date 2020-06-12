@@ -49,7 +49,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 		WAIT(10);
 
 		for(int t = 0, i = 0; t < 60; ++i) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			real speed0 = difficulty_value(4.0, 6.0, 6.0, 6.0);
 			real speed1 = difficulty_value(3.0, 5.0, 6.0, 8.0);
 			real angle = rng_sreal() * M_PI/8.0;

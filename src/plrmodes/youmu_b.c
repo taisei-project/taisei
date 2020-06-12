@@ -118,7 +118,7 @@ TASK(youmu_haunting_shot_basic, { YoumuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		cmplx v = -20 * I;
 

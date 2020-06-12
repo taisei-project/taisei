@@ -15,52 +15,86 @@
 #include "util.h"
 
 static char *bgm_path(const char *name) {
-	return sfxbgm_make_path(BGM_PATH_PREFIX, name, true);
+	return sfxbgm_make_path(BGM_PATH_PREFIX, name, true, true);
 }
 
 static bool check_bgm_path(const char *path) {
 	return sfxbgm_check_path(BGM_PATH_PREFIX, path, true);
 }
 
-static MusicImpl *load_music(const char *path) {
+static BGM *try_load(const char *path) {
 	if(!path) {
 		return NULL;
 	}
 
-	return _a_backend.funcs.music_load(path);
+	return _a_backend.funcs.bgm_load(path);
 }
 
 static void load_bgm(ResourceLoadState *st) {
-	Music *mus = calloc(1, sizeof(Music));
+	BGM *bgm = NULL;
+	double loop_point = 0;
 
 	if(strendswith(st->path, ".bgm")) {
-		mus->meta = get_resource_data(RES_BGM_METADATA, st->name, st->flags);
+		char *loop_path = NULL;
 
-		if(mus->meta) {
-			mus->impl = load_music(mus->meta->loop_path);
+		if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
+			{ "loop",       .out_str    = &loop_path  },
+			{ "loop_point", .out_double = &loop_point },
+			{ NULL }
+		})) {
+			log_error("Failed to parse BGM metadata '%s'", st->path);
+			free(loop_path);
+			res_load_failed(st);
+			return;
 		}
+
+		if(!loop_path) {
+			loop_path = sfxbgm_make_path(BGM_PATH_PREFIX, st->name, true, false);
+		}
+
+		if(!loop_path) {
+			log_error("Couldn't determine source path for BGM '%s'", st->name);
+			res_load_failed(st);
+			return;
+		}
+
+		bgm = try_load(loop_path);
+		free(loop_path);
 	} else {
-		mus->impl = load_music(st->path);
+		bgm = try_load(st->path);
 	}
 
-	if(!mus->impl) {
-		free(mus);
-		mus = NULL;
+	if(bgm) {
+		_a_backend.funcs.bgm_set_loop_point(bgm, loop_point);
+		res_load_finished(st, bgm);
+	} else {
 		log_error("Failed to load bgm '%s'", st->path);
 		res_load_failed(st);
-	} else {
-		if(mus->meta && mus->meta->loop_point > 0) {
-			_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
-		}
-
-		res_load_finished(st, mus);
 	}
 }
 
-static void unload_bgm(void *vmus) {
-	Music *mus = vmus;
-	_a_backend.funcs.music_unload(mus->impl);
-	free(mus);
+static void unload_bgm(void *vbgm) {
+	_a_backend.funcs.bgm_unload(vbgm);
+}
+
+const char *bgm_get_title(BGM *bgm) {
+	return _a_backend.funcs.object.bgm.get_title(bgm);
+}
+
+const char *bgm_get_artist(BGM *bgm) {
+	return _a_backend.funcs.object.bgm.get_artist(bgm);
+}
+
+const char *bgm_get_comment(BGM *bgm) {
+	return _a_backend.funcs.object.bgm.get_comment(bgm);
+}
+
+double bgm_get_duration(BGM *bgm) {
+	return _a_backend.funcs.object.bgm.get_duration(bgm);
+}
+
+double bgm_get_loop_start(BGM *bgm) {
+	return _a_backend.funcs.object.bgm.get_loop_start(bgm);
 }
 
 ResourceHandler bgm_res_handler = {

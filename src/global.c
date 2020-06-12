@@ -67,9 +67,10 @@ void taisei_commit_persistent_data(void) {
 static bool _skip_mode;
 bool taisei_is_skip_mode_enabled(void) { return _skip_mode; }
 void taisei_set_skip_mode(bool state) {
-	if(_skip_mode && !state && current_bgm.started_at >= 0) {
-		audio_music_set_position((global.frames - current_bgm.started_at) / (double)FPS);
-	}
+#pragma message "FIXME"
+// 	if(_skip_mode && !state && current_bgm.started_at >= 0) {
+// 		audio_music_set_position((global.frames - current_bgm.started_at) / (double)FPS);
+// 	}
 
 	_skip_mode = state;
 }

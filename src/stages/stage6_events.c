@@ -79,7 +79,7 @@ static int stage6_side(Enemy *e, int t) {
 	AT(70) {
 		int i;
 		int c = 15+10*global.diff;
-		play_sound_ex("shot1",4,true);
+		play_sfx_ex("shot1",4,true);
 		for(i = 0; i < c; i++) {
 			PROJECTILE(
 				.proto = (i%2 == 0) ? pp_rice : pp_flea,
@@ -105,7 +105,7 @@ static int wait_proj(Projectile *p, int t) {
 
 	if(t > creal(p->args[1])) {
 		if(t == creal(p->args[1]) + 1) {
-			play_sound_ex("redirect", 4, false);
+			play_sfx_ex("redirect", 4, false);
 			spawn_projectile_highlight_effect(p);
 		}
 
@@ -140,7 +140,7 @@ static int stage6_flowermine(Enemy *e, int t) {
 			},
 			.angle = 0.6*_i,
 		);
-		play_sound("shot1");
+		play_sfx("shot1");
 	}
 
 	return 1;
@@ -191,7 +191,7 @@ static int scythe_mid(Enemy *e, int t) {
 		);
 
 		if(projectile_in_viewport(p)) {
-			play_sound("shot1");
+			play_sfx("shot1");
 		}
 	}
 
@@ -402,7 +402,7 @@ static int scythe_newton(Enemy *e, int t) {
 			) {
 				e->args[3] += 1;
 				//p->args[0] /= 2;
-				play_sound_ex("redirect",4,false);
+				play_sfx_ex("redirect",4,false);
 				p->birthtime=global.frames;
 				p->pos0=p->pos;
 				p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
@@ -473,7 +473,7 @@ void elly_newton(Boss *b, int t) {
 			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
 		);
 
-		play_sound("shot3");
+		play_sfx("shot3");
 	}
 
 	FROM_TO(0, 100000, 20+10*(global.diff>D_Normal)) {
@@ -481,7 +481,7 @@ void elly_newton(Boss *b, int t) {
 		int x, y;
 		float w = global.diff/2.0+1.5;
 
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 
 		for(x = -w; x <= w; x++) {
 			for(y = -w; y <= w; y++) {
@@ -567,7 +567,7 @@ static int kepler_bullet(Projectile *p, int t) {
 		if(global.diff == D_Easy)
 			n=7;
 
-		play_sound("redirect");
+		play_sfx("redirect");
 		if(tier <= 1+(global.diff>D_Hard) && cimag(p->args[1])*(tier+1) < n) {
 			PROJECTILE(
 				.proto = kepler_pick_bullet(tier + 1),
@@ -613,7 +613,7 @@ void elly_kepler(Boss *b, int t) {
 
 	FROM_TO(0, 100000, 20) {
 		int c = 2;
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 		for(int i = 0; i < c; i++) {
 			cmplx n = cexp(I*2*M_PI/c*i+I*0.6*_i);
 
@@ -689,7 +689,7 @@ void elly_maxwell(Boss *b, int t) {
 
 	AT(250) {
 		elly_clap(b,50);
-			play_sound("laser1");
+			play_sfx("laser1");
 
 	}
 	FROM_TO(40, 159, 5) {
@@ -926,7 +926,7 @@ static int scythe_explode(Enemy *e, int t) {
 	if(t == 100) {
 		petal_explosion(100, e->pos);
 		stage_shake_view(16);
-		play_sound("boom");
+		play_sfx("boom");
 
 		scythe_common(e, t);
 		return ACTION_DESTROY;
@@ -962,7 +962,7 @@ static void elly_paradigm_shift(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
 	} else if(t == 0) {
-		play_sound("bossdeath");
+		play_sfx("bossdeath");
 	}
 
 	TIMER(&t);
@@ -976,7 +976,7 @@ static void elly_paradigm_shift(Boss *b, int t) {
 
 	if(global.stage->type != STAGE_SPELL) {
 		AT(80) {
-			fade_bgm(0.5);
+			audio_bgm_stop(0.5);
 		}
 	}
 
@@ -1034,8 +1034,8 @@ static int baryon_eigenstate(Enemy *e, int t) {
 		int i, j;
 		int c = 9;
 
-		play_sound("shot_special1");
-		play_sound_delayed("redirect",4,true,60);
+		play_sfx("shot_special1");
+		play_sfx_delayed("redirect",4,true,60);
 		for(i = 0; i < c; i++) {
 			cmplx n = cexp(2.0*I*_i+I*M_PI/2+I*creal(e->args[2]));
 			for(j = 0; j < 3; j++) {
@@ -1122,7 +1122,7 @@ static int broglie_particle(Projectile *p, int t) {
 			p->angle += angle_ampl * sin(t * angle_freq) * cos(2 * t * angle_freq);
 			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
 
-			play_sound("redirect");
+			play_sfx("redirect");
 		}
 
 		p->angle = carg(p->args[2]);
@@ -1153,7 +1153,7 @@ static void broglie_laser_logic(Laser *l, int t) {
 
 static int broglie_charge(Projectile *p, int t) {
 	if(t == EVENT_BIRTH) {
-		play_sound_ex("shot3", 10, false);
+		play_sfx_ex("shot3", 10, false);
 	}
 
 	if(t < 0) {
@@ -1163,8 +1163,8 @@ static int broglie_charge(Projectile *p, int t) {
 	int firetime = creal(p->args[1]);
 
 	if(t == firetime) {
-		play_sound_ex("laser1", 10, true);
-		play_sound("boom");
+		play_sfx_ex("laser1", 10, true);
+		play_sfx("boom");
 
 		stage_shake_view(20);
 
@@ -1229,7 +1229,7 @@ static int broglie_charge(Projectile *p, int t) {
 		p->pos = o + p->args[0] * 15;
 
 		if(f > 0.1) {
-			play_loop("charge_generic");
+			play_sfx_loop("charge_generic");
 
 			cmplx n = cexp(2.0*I*M_PI*frand());
 			float l = 50*frand()+25;
@@ -1434,7 +1434,7 @@ static int ricci_proj2(Projectile *p, int t) {
 	TIMER(&t);
 
 	AT(EVENT_BIRTH) {
-		play_sound("shot3");
+		play_sfx("shot3");
 	}
 
 	AT(EVENT_DEATH) {
@@ -1445,7 +1445,7 @@ static int ricci_proj2(Projectile *p, int t) {
 		}
 
 		// play_sound_ex("shot3",8, false);
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 
 		double rad = SAFE_RADIUS_MAX * (0.6 - 0.2 * (double)(D_Lunatic - global.diff) / 3);
 
@@ -1666,7 +1666,7 @@ static void elly_baryonattack2(Boss *b, int t) {
 		set_baryon_rule(baryon_reset);
 
 	FROM_TO(100, 100000, 200-5*global.diff) {
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 
 		if(_i % 2) {
 			int cnt = 5;
@@ -1733,7 +1733,7 @@ static int baryon_lhc(Enemy *e, int t) {
 		e->args[3] = 100.0*I+400.0*I*((t/400)&1);
 
 		if(g == 2 || g == 5) {
-			play_sound_delayed("laser1",10,true,200);
+			play_sfx_delayed("laser1",10,true,200);
 
 			Laser *l = create_laser(e->pos, 200, 300, RGBA(0.1+0.9*(g>3), 0, 1-0.9*(g>3), 0), las_linear, lhc_laser_logic, (1-2*(g>3))*VIEWPORT_W*0.005, 200+30.0*I, add_ref(e), 0);
 			l->unclearable = true;
@@ -1764,7 +1764,7 @@ void elly_lhc(Boss *b, int t) {
 		cmplx pos = VIEWPORT_W/2 + 100.0*I+400.0*I*((t/400)&1);
 
 		stage_shake_view(160);
-		play_sound("boom");
+		play_sfx("boom");
 
 		for(i = 0; i < c; i++) {
 			cmplx v = 3*cexp(2.0*I*M_PI*frand());
@@ -1805,7 +1805,7 @@ void elly_lhc(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 100000,7-global.diff) {
-		play_sound_ex("shot2",10,false);
+		play_sfx_ex("shot2",10,false);
 		PROJECTILE(
 			.proto = pp_ball,
 			.pos = b->pos,
@@ -1821,7 +1821,7 @@ static int baryon_explode(Enemy *e, int t) {
 	AT(EVENT_DEATH) {
 		free_ref(e->args[1]);
 		petal_explosion(24, e->pos);
-		play_sound("boom");
+		play_sfx("boom");
 		stage_shake_view(15);
 
 		for(uint i = 0; i < 3; ++i) {
@@ -1989,7 +1989,7 @@ static double saw(double t) {
 static int curvature_slave(Enemy *e, int t) {
 	e->args[0] = -(e->args[1] - global.plr.pos);
 	e->args[1] = global.plr.pos;
-	play_loop("shot1_loop");
+	play_sfx_loop("shot1_loop");
 
 	if(t % (2+(global.diff < D_Hard)) == 0) {
 		tsrand_fill(2);
@@ -2012,7 +2012,7 @@ static int curvature_slave(Enemy *e, int t) {
 	}
 
 	if(global.diff >= D_Hard && !(t%20)) {
-		play_sound_ex("shot2",10,false);
+		play_sfx_ex("shot2",10,false);
 		Projectile *p =PROJECTILE(
 			.proto = pp_bigball,
 			.pos = global.boss->pos,
@@ -2076,7 +2076,7 @@ static void elly_baryon_explode(Boss *b, int t) {
 	}
 
 	AT(42) {
-		fade_bgm(1.0);
+		audio_bgm_stop(1.0);
 	}
 
 	FROM_TO(0, 200, 1) {
@@ -2086,14 +2086,14 @@ static void elly_baryon_explode(Boss *b, int t) {
 		stage_shake_view(_i / 200.0f);
 
 		if(_i > 30) {
-			play_loop("charge_generic");
+			play_sfx_loop("charge_generic");
 		}
 	}
 
 	AT(200) {
 		tsrand_fill(2);
 		stage_shake_view(40);
-		play_sound("boom");
+		play_sfx("boom");
 		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
 		enemy_kill_all(&global.enemies);
 	}
@@ -2185,8 +2185,8 @@ static int elly_toe_boson(Projectile *p, int t) {
 	}
 
 	if(t == activate_time && num_in_trail == 2) {
-		play_sound("shot_special1");
-		play_sound("redirect");
+		play_sfx("shot_special1");
+		play_sfx("redirect");
 
 			PARTICLE(
 				.sprite = "blast",
@@ -2221,7 +2221,7 @@ static int elly_toe_boson(Projectile *p, int t) {
 		p->args[1] = warps_left + warps_initial * I;
 
 		if(num_in_trail == 3) {
-			play_sound_ex("warp", 0, false);
+			play_sfx_ex("warp", 0, false);
 			// play_sound("redirect");
 		}
 
@@ -2370,7 +2370,7 @@ static int elly_toe_fermion(Projectile *p, int t) {
 		if(!p->args[3]) {
 			projectile_set_prototype(p, pp_bigball);
 			p->args[3]=1;
-			play_sound_ex("shot_special1", 5, false);
+			play_sfx_ex("shot_special1", 5, false);
 
 			PARTICLE(
 				.sprite = "blast",
@@ -2673,7 +2673,7 @@ void elly_theory(Boss *b, int time) {
 		}
 
 		FROM_TO_INT(start_time, end_time, cycle_step, cycle_time, step) {
-			play_sound("shot2");
+			play_sfx("shot2");
 
 			int pnum = _ni;
 			int num_warps = 0;
@@ -2712,7 +2712,7 @@ void elly_theory(Boss *b, int time) {
 
 	FROM_TO(fermiontime,yukawatime+250,2) {
 		// play_loop("noise1");
-		play_sound_ex("shot1", 5, false);
+		play_sfx_ex("shot1", 5, false);
 
 		cmplx dest = 100*cexp(I*1*_i);
 		for(int clr = 0; clr < 3; clr++) {
@@ -2733,13 +2733,13 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	AT(fermiontime) {
-		play_sound("charge_generic");
+		play_sfx("charge_generic");
 		stage_shake_view(10);
 	}
 
 	AT(symmetrytime) {
-		play_sound("charge_generic");
-		play_sound("boom");
+		play_sfx("charge_generic");
+		play_sfx("boom");
 		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
 		stage_shake_view(10);
 
@@ -2767,20 +2767,20 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	AT(yukawatime) {
-		play_sound("charge_generic");
+		play_sfx("charge_generic");
 		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
 		stage_shake_view(10);
 	}
 
 	AT(breaktime) {
-		play_sound("charge_generic");
+		play_sfx("charge_generic");
 		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
 		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
 		stage_shake_view(10);
 	}
 
 	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 
 		int arms;
 
@@ -2812,7 +2812,7 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(breaktime,breaktime+10000,100) {
-		play_sound_ex("laser1", 0, true);
+		play_sfx_ex("laser1", 0, true);
 
 		cmplx phase = cexp(2*I*M_PI*frand());
 		int count = 8;
@@ -2828,7 +2828,7 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(breaktime+35, breaktime+10000, 14) {
-		play_sound("redirect");
+		play_sfx("redirect");
 		// play_sound("shot_special1");
 
 		for(int clr = 0; clr < 3; clr++) {

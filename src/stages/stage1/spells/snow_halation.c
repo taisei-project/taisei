@@ -173,7 +173,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 		}
 
 		for(int i = 0; i < orbs; ++i) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			INVOKE_TASK(halation_orb,
 				.pos = {
 					orb_positions[i],

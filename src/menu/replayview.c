@@ -54,7 +54,7 @@ typedef struct {
 } startrpy_arg_t;
 
 static void on_replay_finished(CallChainResult ccr) {
-	start_bgm("menu");
+	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
 
 static void really_start_replay(void *varg) {

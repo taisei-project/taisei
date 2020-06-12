@@ -15,6 +15,7 @@
 #include "global.h"
 #include "list.h"
 #include "util/opuscruft.h"
+#include "sdl2mixer_wrappers.h"
 
 #define B (_a_backend.funcs)
 
@@ -36,7 +37,7 @@ typedef float sample_t;
 #endif
 
 
-struct SoundImpl {
+struct SFXImpl {
 	Mix_Chunk *ch;
 
 	// I needed to add this for supporting loop sounds since Mixer doesn’t remember
@@ -45,14 +46,17 @@ struct SoundImpl {
 	int playchan; // channel the sound was last played on (looping does NOT set this). -1 if never played
 };
 
-struct MusicImpl {
-	Mix_Music *loop;
-	double loop_point;
+struct BGM {
+	Mix_Music *mus;
+	double loop_start;
 };
 
 static struct {
-	Mix_Music *next_loop;
-	double next_loop_point;
+	struct {
+		BGM *current;
+		bool looping;
+	} bgm;
+
 	uint32_t play_counter;
 	uint32_t chan_play_ids[AUDIO_CHANNELS];
 
@@ -63,6 +67,8 @@ static struct {
 } mixer;
 
 #define IS_VALID_CHANNEL(chan) ((uint)(chan) < AUDIO_CHANNELS)
+
+// BEGIN MISC
 
 static bool audio_sdl2mixer_init(void) {
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
@@ -141,8 +147,8 @@ static bool audio_sdl2mixer_init(void) {
 	mixer.groups[MAIN_CHANNEL_GROUP].first = ui_channels;
 	mixer.groups[MAIN_CHANNEL_GROUP].num = main_channels;
 
-	B.sound_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
-	B.music_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
+	B.sfx_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
+	B.bgm_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
 
 	int frequency = 0;
 	uint16_t format = 0;
@@ -188,146 +194,244 @@ static inline int gain_to_mixvol(double gain) {
 	return iclamp(gain * SDL_MIX_MAXVOLUME, 0, SDL_MIX_MAXVOLUME);
 }
 
-static bool audio_sdl2mixer_sound_set_global_volume(double gain) {
+static bool audio_sdl2mixer_sfx_set_global_volume(double gain) {
 	Mix_Volume(-1, gain_to_mixvol(gain));
 	return true;
 }
 
-static bool audio_sdl2mixer_music_set_global_volume(double gain) {
+static bool audio_sdl2mixer_bgm_set_global_volume(double gain) {
 	Mix_VolumeMusic(gain * gain_to_mixvol(gain));
 	return true;
 }
 
-static int wrap_Mix_SetMusicPosition(double pos) {
-	int error = Mix_SetMusicPosition(pos);
-	if(error) {
-		log_error("Mix_SetMusicPosition() failed: %s", Mix_GetError());
-	}
-	return error;
+static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
+	static const char *const exts[] = { ".opus", ".ogg", ".wav" };
+	*numexts = ARRAY_SIZE(exts);
+	return exts;
 }
 
-static double wrap_Mix_GetMusicPosition(void) {
-	double pos = Mix_GetMusicPosition(NULL);
-	if(pos < 0) {
-		log_error("Mix_GetMusicPosition() failed: %s", Mix_GetError());
-	}
-	return pos;
+static inline int calc_fadetime(double sec) {
+	return floor(sec * 1000);
 }
 
-static double wrap_Mix_MusicDuration(void) {
-	double duration = Mix_MusicDuration(NULL);
-	if(duration < 0) {
-		log_error("Mix_MusicDuration() failed: %s", Mix_GetError());
-	}
-	return duration;
-}
+// END MISC
 
-static int wrap_Mix_PlayMusic(Mix_Music *mus, int loops) {
-	int error = Mix_PlayMusic(mus, loops);
-	if(error) {
-		log_error("Mix_PlayMusic() failed: %s", Mix_GetError());
-	}
-	return error;
-}
+// BEGIN BGM
 
-static void mixer_music_finished(void) {
-	assume(mixer.next_loop != NULL);
-	assume(mixer.next_loop_point >= 0);
+static void bgm_loop_handler(void) {
+	BGM *bgm = NOT_NULL(mixer.bgm.current);
+	assert(bgm->loop_start > 0);
 
-	if(!wrap_Mix_PlayMusic(mixer.next_loop, 0)) {
-		if(!wrap_Mix_SetMusicPosition(mixer.next_loop_point)){
-			log_debug("Loop restarted from %f", mixer.next_loop_point);
+	if(!Mix_PlayMusic(bgm->mus, 0)) {
+		if(!Mix_SetMusicPosition(bgm->loop_start)) {
+			log_debug("Loop restarted from %f", bgm->loop_start);
 		}
 	}
 }
 
-static bool audio_sdl2mixer_music_stop(void) {
+static void halt_bgm(void) {
 	Mix_HookMusicFinished(NULL);
 	Mix_HaltMusic();
+	mixer.bgm.current = NULL;
+	mixer.bgm.looping = false;
+}
+
+static bool audio_sdl2mixer_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
+	halt_bgm();
+
+	int loops;
+
+	mixer.bgm.current = bgm;
+	mixer.bgm.looping = loop;
+
+	if(loop) {
+		if(bgm->loop_start > 0) {
+			loops = 0;
+			Mix_HookMusicFinished(bgm_loop_handler);
+		} else if(loop) {
+			loops = -1;
+		}
+	} else {
+		loops = 0;
+	}
+
+	int error;
+
+	if(fadein > 0) {
+		int ms = calc_fadetime(fadein);
+		error = Mix_FadeInMusicPos(bgm->mus, loops, ms, position);
+	} else {
+		error = Mix_PlayMusic(bgm->mus, loops);
+
+		if(!error && position > 0) {
+			error = Mix_SetMusicPosition(position);
+		}
+	}
+
+	if(error) {
+		halt_bgm();
+		return false;
+	}
+
 	return true;
 }
 
-static bool audio_sdl2mixer_music_fade(double fadetime) {
+static bool audio_sdl2mixer_bgm_stop(double fadeout) {
+	if(audio_bgm_status() == BGM_STOPPED) {
+		log_warn("BGM is already stopped");
+		return false;
+	}
+
 	Mix_HookMusicFinished(NULL);
-	Mix_FadeOutMusic(floor(1000 * fadetime));
+	int error;
+
+	if(fadeout > 0) {
+		error = Mix_FadeOutMusic(calc_fadetime(fadeout));
+	} else {
+		error = Mix_HaltMusic();
+	}
+
+	return !error;
+}
+
+static BGMStatus audio_sdl2mixer_bgm_status(void) {
+	log_debug("PLAYING: %i", Mix_PlayingMusic());
+	log_debug("PAUSED: %i", Mix_PausedMusic());
+	log_debug("FADING: %i", Mix_FadingMusic());
+
+	if(Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT) {
+		assume(mixer.bgm.current != NULL);
+
+		if(Mix_PausedMusic()) {
+			assume(mixer.bgm.current != NULL);
+			return BGM_PAUSED;
+		}
+
+		return BGM_PLAYING;
+	}
+
+	return BGM_STOPPED;
+}
+
+static bool audio_sdl2mixer_bgm_looping(void) {
+	if(audio_bgm_status() != BGM_STOPPED) {
+		log_warn("BGM is stopped");
+		return false;
+	}
+
+	return mixer.bgm.looping;
+}
+
+static bool audio_sdl2mixer_bgm_pause(void) {
+	if(audio_bgm_status() != BGM_PLAYING) {
+		log_warn("BGM is not playing");
+		return false;
+	}
+
+	Mix_HookMusicFinished(NULL);
+	Mix_PauseMusic();
+
+	assert(audio_sdl2mixer_bgm_status() == BGM_PAUSED);
+
 	return true;
 }
 
-static bool audio_sdl2mixer_music_is_paused(void) {
-	return Mix_PausedMusic();
-}
+static bool audio_sdl2mixer_bgm_resume(void) {
+	if(audio_bgm_status() != BGM_PAUSED) {
+		log_warn("BGM is not paused");
+		return false;
+	}
 
-static bool audio_sdl2mixer_music_is_playing(void) {
-	return Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT;
-}
+	if(mixer.bgm.looping) {
+		Mix_HookMusicFinished(bgm_loop_handler);
+	} else {
+		Mix_HookMusicFinished(NULL);
+	}
 
-static bool audio_sdl2mixer_music_resume(void) {
-	Mix_HookMusicFinished(mixer_music_finished);
 	Mix_ResumeMusic();
 	return true;
 }
 
-static bool audio_sdl2mixer_music_pause(void) {
-	Mix_HookMusicFinished(NULL);
-	Mix_PauseMusic();
-	return true;
-}
-
-static bool audio_sdl2mixer_music_play(MusicImpl *imus) {
-	Mix_Music *mmus;
-	int loops;
-
-	Mix_HookMusicFinished(NULL);
-	Mix_HaltMusic();
-
-	mmus = imus->loop;
-	mixer.next_loop_point = imus->loop_point;
-
-	if(mixer.next_loop_point >= 0) {
-		loops = 0;
-		mixer.next_loop = imus->loop;
-		Mix_HookMusicFinished(mixer_music_finished);
-	} else {
-		loops = -1;
-		Mix_HookMusicFinished(NULL);
-	}
-
-	return !wrap_Mix_PlayMusic(mmus, loops);
-}
-
-static bool audio_sdl2mixer_music_set_position(double pos) {
-	double total_duration = wrap_Mix_MusicDuration();
-	double intro_duration = mixer.next_loop_point;
-	assume(intro_duration >= 0);
-
-	if(total_duration > 0) {
-		double loop_duration = total_duration - intro_duration;
-		pos = fmod(pos - intro_duration, loop_duration) + intro_duration;
+static double audio_sdl2mixer_bgm_seek(double pos) {
+	if(audio_bgm_status() == BGM_STOPPED) {
+		log_warn("BGM is stopped");
+		return -1;
 	}
 
 	Mix_RewindMusic();
-	return !wrap_Mix_SetMusicPosition(pos);
+
+	if(!Mix_SetMusicPosition(pos)) {
+		return -1;
+	}
+
+	return Mix_GetMusicPosition(NOT_NULL(mixer.bgm.current)->mus);
 }
 
-static double audio_sdl2mixer_music_get_position(void) {
-	return wrap_Mix_GetMusicPosition();
+static double audio_sdl2mixer_bgm_tell(void) {
+	if(audio_bgm_status() == BGM_STOPPED) {
+		log_warn("BGM is stopped");
+		return -1;
+	}
+
+	return Mix_GetMusicPosition(NOT_NULL(mixer.bgm.current)->mus);
 }
 
-static bool audio_sdl2mixer_music_set_loop_point(MusicImpl *imus, double pos) {
+static BGM *audio_sdl2mixer_bgm_current(void) {
+	if(audio_sdl2mixer_bgm_status() == BGM_PLAYING) {
+		return NOT_NULL(mixer.bgm.current);
+	} else {
+		return NULL;
+	}
+}
+
+static bool audio_sdl2mixer_bgm_set_loop_point(BGM *bgm, double pos) {
 	assert(pos >= 0);
-	imus->loop_point = pos;
+	NOT_NULL(bgm)->loop_start = pos;
 	return true;
 }
 
-static int translate_group(AudioBackendSoundGroup group, int defmixgroup) {
+// END BGM
+
+// BEGIN BGM OBJECT
+
+INLINE const char *nullstr(const char *s) {
+	return s && *s ? s : NULL;
+}
+
+static const char *audio_sdl2mixer_obj_bgm_get_title(BGM *bgm) {
+	return nullstr(Mix_GetMusicTitleTag(NOT_NULL(bgm)->mus));
+}
+
+static const char *audio_sdl2mixer_obj_bgm_get_artist(BGM *bgm) {
+	return nullstr(Mix_GetMusicArtistTag(NOT_NULL(bgm)->mus));
+}
+
+static const char *audio_sdl2mixer_obj_bgm_get_comment(BGM *bgm) {
+	// return Mix_GetMusicCommentTag(NOT_NULL(bgm)->mus);
+	return NULL;
+}
+
+static double audio_sdl2mixer_obj_bgm_get_duration(BGM *bgm) {
+	return Mix_MusicDuration(NOT_NULL(bgm)->mus);
+}
+
+static double audio_sdl2mixer_obj_bgm_get_loop_start(BGM *bgm) {
+	return Mix_GetMusicLoopStartTime(NOT_NULL(bgm)->mus);
+}
+
+// END BGM OBJECT
+
+// BEGIN SFX
+
+static int translate_group(AudioBackendSFXGroup group, int defmixgroup) {
 	switch(group) {
-		case SNDGROUP_MAIN: return MAIN_CHANNEL_GROUP;
-		case SNDGROUP_UI:   return UI_CHANNEL_GROUP;
+		case SFXGROUP_MAIN: return MAIN_CHANNEL_GROUP;
+		case SFXGROUP_UI:   return UI_CHANNEL_GROUP;
 		default:            return defmixgroup;
 	}
 }
 
-static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
+static int pick_channel(AudioBackendSFXGroup group, int defmixgroup) {
 	int mixgroup = translate_group(group, MAIN_CHANNEL_GROUP);
 	int channel = -1;
 
@@ -341,19 +445,19 @@ static int pick_channel(AudioBackendSoundGroup group, int defmixgroup) {
 	return channel;
 }
 
-INLINE SoundID make_sound_id(int chan, uint32_t play_id) {
+INLINE SFXPlayID make_sound_id(int chan, uint32_t play_id) {
 	assert(IS_VALID_CHANNEL(chan));
 	return ((uint32_t)chan + 1) | ((uint64_t)play_id << 32ull);
 }
 
-INLINE void unpack_sound_id(SoundID sid, int *chan, uint32_t *play_id) {
+INLINE void unpack_sound_id(SFXPlayID sid, int *chan, uint32_t *play_id) {
 	int ch = (int)((uint32_t)(sid & 0xffffffff) - 1);
 	assert(IS_VALID_CHANNEL(ch));
 	*chan = ch;
 	*play_id = sid >> 32ull;
 }
 
-INLINE int get_soundid_chan(SoundID sid) {
+INLINE int get_soundid_chan(SFXPlayID sid) {
 	int chan;
 	uint32_t play_id;
 	unpack_sound_id(sid, &chan, &play_id);
@@ -365,7 +469,7 @@ INLINE int get_soundid_chan(SoundID sid) {
 	return -1;
 }
 
-static SoundID play_sound_tracked(uint32_t chan, SoundImpl *isnd, int loops) {
+static SFXPlayID play_sound_tracked(uint32_t chan, SFXImpl *isnd, int loops) {
 	assert(IS_VALID_CHANNEL(chan));
 	int actual_chan = Mix_PlayChannel(chan, isnd->ch, loops);
 
@@ -390,11 +494,13 @@ static SoundID play_sound_tracked(uint32_t chan, SoundImpl *isnd, int loops) {
 	return make_sound_id(chan, play_id);
 }
 
-static SoundID audio_sdl2mixer_sound_play(SoundImpl *isnd, AudioBackendSoundGroup group) {
+static SFXPlayID audio_sdl2mixer_sfx_play(
+	SFXImpl *isnd, AudioBackendSFXGroup group) {
 	return play_sound_tracked(pick_channel(group, MAIN_CHANNEL_GROUP), isnd, 0);
 }
 
-static SoundID audio_sdl2mixer_sound_play_or_restart(SoundImpl *isnd, AudioBackendSoundGroup group) {
+static SFXPlayID audio_sdl2mixer_sfx_play_or_restart(
+	SFXImpl *isnd, AudioBackendSFXGroup group) {
 	int chan = isnd->playchan;
 
 	if(chan < 0 || Mix_GetChunk(chan) != isnd->ch) {
@@ -404,7 +510,8 @@ static SoundID audio_sdl2mixer_sound_play_or_restart(SoundImpl *isnd, AudioBacke
 	return play_sound_tracked(chan, isnd, 0);
 }
 
-static SoundID audio_sdl2mixer_sound_loop(SoundImpl *isnd, AudioBackendSoundGroup group) {
+static SFXPlayID audio_sdl2mixer_sfx_loop(
+	SFXImpl *isnd, AudioBackendSFXGroup group) {
 	return play_sound_tracked(pick_channel(group, MAIN_CHANNEL_GROUP), isnd, -1);
 }
 
@@ -447,7 +554,7 @@ static bool fade_channel(int chan, int fadeout) {
 	return true;
 }
 
-static bool audio_sdl2mixer_sound_stop_loop(SoundImpl *isnd) {
+static bool audio_sdl2mixer_sfx_stop_loop(SFXImpl *isnd) {
 	if(isnd->loopchan < 0) {
 		return false;
 	}
@@ -455,7 +562,7 @@ static bool audio_sdl2mixer_sound_stop_loop(SoundImpl *isnd) {
 	return fade_channel(isnd->loopchan, LOOPFADEOUT);
 }
 
-static bool audio_sdl2mixer_sound_stop_id(SoundID sid) {
+static bool audio_sdl2mixer_sfx_stop_id(SFXPlayID sid) {
 	int chan = get_soundid_chan(sid);
 
 	if(chan >= 0) {
@@ -465,7 +572,7 @@ static bool audio_sdl2mixer_sound_stop_id(SoundID sid) {
 	return false;
 }
 
-static bool audio_sdl2mixer_sound_pause_all(AudioBackendSoundGroup group) {
+static bool audio_sdl2mixer_sfx_pause_all(AudioBackendSFXGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -482,7 +589,7 @@ static bool audio_sdl2mixer_sound_pause_all(AudioBackendSoundGroup group) {
 }
 
 
-static bool audio_sdl2mixer_sound_resume_all(AudioBackendSoundGroup group) {
+static bool audio_sdl2mixer_sfx_resume_all(AudioBackendSFXGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -498,7 +605,7 @@ static bool audio_sdl2mixer_sound_resume_all(AudioBackendSoundGroup group) {
 	return true;
 }
 
-static bool audio_sdl2mixer_sound_stop_all(AudioBackendSoundGroup group) {
+static bool audio_sdl2mixer_sfx_stop_all(AudioBackendSFXGroup group) {
 	int mixgroup = translate_group(group, -1);
 
 	if(mixgroup == -1) {
@@ -510,13 +617,16 @@ static bool audio_sdl2mixer_sound_stop_all(AudioBackendSoundGroup group) {
 	return true;
 }
 
-static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
-	static const char *const exts[] = { ".opus", ".ogg", ".wav" };
-	*numexts = ARRAY_SIZE(exts);
-	return exts;
+static bool audio_sdl2mixer_sfx_set_volume(SFXImpl *isnd, double gain) {
+	Mix_VolumeChunk(isnd->ch, gain_to_mixvol(gain));
+	return true;
 }
 
-static MusicImpl *audio_sdl2mixer_music_load(const char *vfspath) {
+// END SFX
+
+// BEGIN LOAD
+
+static BGM *audio_sdl2mixer_bgm_load(const char *vfspath) {
 	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
@@ -531,16 +641,22 @@ static MusicImpl *audio_sdl2mixer_music_load(const char *vfspath) {
 		return NULL;
 	}
 
-	MusicImpl *imus = calloc(1, sizeof(*imus));
-	imus->loop = mus;
+	BGM *bgm = calloc(1, sizeof(*bgm));
+	bgm->mus = mus;
 
 	log_debug("Loaded stream from %s", vfspath);
-	return imus;
+	return bgm;
 }
 
-static void audio_sdl2mixer_music_unload(MusicImpl *imus) {
-	Mix_FreeMusic(imus->loop);
-	free(imus);
+static void audio_sdl2mixer_bgm_unload(BGM *bgm) {
+	// Try to work around an idiotic deadlock in Mix_FreeMusic
+	if(mixer.bgm.current == bgm) {
+		Mix_HaltMusic();
+		mixer.bgm.current = NULL;
+	}
+
+	Mix_FreeMusic(bgm->mus);
+	free(bgm);
 }
 
 static OggOpusFile *try_load_opus(SDL_RWops *rw) {
@@ -632,7 +748,7 @@ static Mix_Chunk *read_opus_chunk(OggOpusFile *opus, const char *vfspath) {
 	return snd;
 }
 
-static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
+static SFXImpl *audio_sdl2mixer_sfx_load(const char *vfspath) {
 	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
@@ -663,7 +779,7 @@ static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 		}
 	}
 
-	SoundImpl *isnd = calloc(1, sizeof(*isnd));
+	SFXImpl *isnd = calloc(1, sizeof(*isnd));
 	isnd->ch = snd;
 	isnd->loopchan = -1;
 	isnd->playchan = -1;
@@ -672,48 +788,55 @@ static SoundImpl *audio_sdl2mixer_sound_load(const char *vfspath) {
 	return isnd;
 }
 
-static void audio_sdl2mixer_sound_unload(SoundImpl *isnd) {
+static void audio_sdl2mixer_sfx_unload(SFXImpl *isnd) {
 	Mix_FreeChunk(isnd->ch);
 	free(isnd);
 }
 
-static bool audio_sdl2mixer_sound_set_volume(SoundImpl *isnd, double gain) {
-	Mix_VolumeChunk(isnd->ch, gain_to_mixvol(gain));
-	return true;
-}
+// END LOAD
 
 AudioBackend _a_backend_sdl2mixer = {
 	.name = "sdl2mixer",
 	.funcs = {
-		.get_supported_music_exts = audio_sdl2mixer_get_supported_exts,
-		.get_supported_sound_exts = audio_sdl2mixer_get_supported_exts,
+		.bgm_current = audio_sdl2mixer_bgm_current,
+		.bgm_load = audio_sdl2mixer_bgm_load,
+		.bgm_looping = audio_sdl2mixer_bgm_looping,
+		.bgm_pause = audio_sdl2mixer_bgm_pause,
+		.bgm_play = audio_sdl2mixer_bgm_play,
+		.bgm_resume = audio_sdl2mixer_bgm_resume,
+		.bgm_seek = audio_sdl2mixer_bgm_seek,
+		.bgm_set_global_volume = audio_sdl2mixer_bgm_set_global_volume,
+		.bgm_set_loop_point = audio_sdl2mixer_bgm_set_loop_point,
+		.bgm_status = audio_sdl2mixer_bgm_status,
+		.bgm_stop = audio_sdl2mixer_bgm_stop,
+		.bgm_tell = audio_sdl2mixer_bgm_tell,
+		.bgm_unload = audio_sdl2mixer_bgm_unload,
+		.get_supported_bgm_exts = audio_sdl2mixer_get_supported_exts,
+		.get_supported_sfx_exts = audio_sdl2mixer_get_supported_exts,
 		.init = audio_sdl2mixer_init,
-		.music_fade = audio_sdl2mixer_music_fade,
-		.music_is_paused = audio_sdl2mixer_music_is_paused,
-		.music_is_playing = audio_sdl2mixer_music_is_playing,
-		.music_load = audio_sdl2mixer_music_load,
-		.music_pause = audio_sdl2mixer_music_pause,
-		.music_play = audio_sdl2mixer_music_play,
-		.music_resume = audio_sdl2mixer_music_resume,
-		.music_set_global_volume = audio_sdl2mixer_music_set_global_volume,
-		.music_set_loop_point = audio_sdl2mixer_music_set_loop_point,
-		.music_set_position = audio_sdl2mixer_music_set_position,
-		.music_get_position = audio_sdl2mixer_music_get_position,
-		.music_stop = audio_sdl2mixer_music_stop,
-		.music_unload = audio_sdl2mixer_music_unload,
 		.output_works = audio_sdl2mixer_output_works,
+		.sfx_load = audio_sdl2mixer_sfx_load,
+		.sfx_loop = audio_sdl2mixer_sfx_loop,
+		.sfx_pause_all = audio_sdl2mixer_sfx_pause_all,
+		.sfx_play = audio_sdl2mixer_sfx_play,
+		.sfx_play_or_restart = audio_sdl2mixer_sfx_play_or_restart,
+		.sfx_resume_all = audio_sdl2mixer_sfx_resume_all,
+		.sfx_set_global_volume = audio_sdl2mixer_sfx_set_global_volume,
+		.sfx_set_volume = audio_sdl2mixer_sfx_set_volume,
+		.sfx_stop_all = audio_sdl2mixer_sfx_stop_all,
+		.sfx_stop_id = audio_sdl2mixer_sfx_stop_id,
+		.sfx_stop_loop = audio_sdl2mixer_sfx_stop_loop,
+		.sfx_unload = audio_sdl2mixer_sfx_unload,
 		.shutdown = audio_sdl2mixer_shutdown,
-		.sound_load = audio_sdl2mixer_sound_load,
-		.sound_loop = audio_sdl2mixer_sound_loop,
-		.sound_pause_all = audio_sdl2mixer_sound_pause_all,
-		.sound_play = audio_sdl2mixer_sound_play,
-		.sound_play_or_restart = audio_sdl2mixer_sound_play_or_restart,
-		.sound_resume_all = audio_sdl2mixer_sound_resume_all,
-		.sound_set_global_volume = audio_sdl2mixer_sound_set_global_volume,
-		.sound_set_volume = audio_sdl2mixer_sound_set_volume,
-		.sound_stop_all = audio_sdl2mixer_sound_stop_all,
-		.sound_stop_loop = audio_sdl2mixer_sound_stop_loop,
-		.sound_stop_id = audio_sdl2mixer_sound_stop_id,
-		.sound_unload = audio_sdl2mixer_sound_unload,
+
+		.object = {
+			.bgm = {
+				.get_title = audio_sdl2mixer_obj_bgm_get_title,
+				.get_artist = audio_sdl2mixer_obj_bgm_get_artist,
+				.get_comment = audio_sdl2mixer_obj_bgm_get_comment,
+				.get_duration = audio_sdl2mixer_obj_bgm_get_duration,
+				.get_loop_start = audio_sdl2mixer_obj_bgm_get_loop_start,
+			},
+		},
 	}
 };

@@ -868,9 +868,9 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 	boss->current->hp -= dmg->amount*factor;
 
 	if(boss->current->hp < boss->current->maxhp * 0.1) {
-		play_loop("hit1");
+		play_sfx_loop("hit1");
 	} else {
-		play_loop("hit0");
+		play_sfx_loop("hit0");
 	}
 
 	return DMG_RESULT_OK;

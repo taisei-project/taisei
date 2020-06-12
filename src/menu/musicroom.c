@@ -10,7 +10,6 @@
 
 #include "musicroom.h"
 #include "resource/resource.h"
-#include "resource/bgm_metadata.h"
 #include "resource/font.h"
 #include "audio/audio.h"
 #include "progress.h"
@@ -30,8 +29,7 @@ enum {
 };
 
 typedef struct MusicEntryParam {
-	MusicMetadata *bgm_meta;
-	const char *bgm;
+	BGM *bgm;
 	ShaderProgram *text_shader;
 	uint8_t state;
 } MusicEntryParam;
@@ -54,6 +52,8 @@ static void musicroom_logic(MenuData *m) {
 		fapproach_asymptotic_p(&m->drawdata[3], 0, 0.2, 1e-5);
 	}
 
+	BGM *current_bgm = audio_bgm_current();
+
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		MusicEntryParam *p = e->arg;
 
@@ -62,11 +62,7 @@ static void musicroom_logic(MenuData *m) {
 				p->state &= ~MSTATE_CONFIRM;
 			}
 
-			if(
-				current_bgm.music &&
-				current_bgm.music->meta &&
-				current_bgm.music->meta == p->bgm_meta
-			) {
+			if(current_bgm && current_bgm == p->bgm) {
 				p->state |= MSTATE_PLAYING;
 			} else {
 				p->state &= ~MSTATE_PLAYING;
@@ -163,7 +159,6 @@ static void musicroom_draw(MenuData *m) {
 
 		const char *comment;
 		MusicEntryParam *p = e->arg;
-		MusicMetadata *meta = p->bgm_meta;
 		Color *clr = RGBA(a, a, a, a);
 
 		if(p->state & MSTATE_CONFIRM) {
@@ -175,9 +170,7 @@ static void musicroom_draw(MenuData *m) {
 			clr->b *= 0.2;
 		} else if(!(p->state & MSTATE_COMMENT_VISIBLE)) {
 			continue;
-		} else if(meta && meta->comment) {
-			comment = meta->comment;
-		} else {
+		} else if(!(comment = bgm_get_comment(p->bgm))) {
 			comment = "\nNo comment available";
 		}
 
@@ -189,19 +182,23 @@ static void musicroom_draw(MenuData *m) {
 			.align = ALIGN_CENTER,
 		});
 
-		if(meta->artist && (p->state & MSTATE_COMMENT_VISIBLE)) {
-			const char *prefix = "— ";
-			char buf[strlen(prefix) + strlen(meta->artist) + 1];
-			strcpy(buf, prefix);
-			strcat(buf, meta->artist);
+		if(p->state & MSTATE_COMMENT_VISIBLE) {
+			const char *artist = bgm_get_artist(p->bgm);
 
-			text_draw(buf, &(TextParams) {
-				.pos = { SCREEN_W - text_x, SCREEN_H + comment_offset - font_get_lineskip(text_font) },
-				.font_ptr = text_font,
-				.shader_ptr = text_shader,
-				.color = RGBA(a, a, a, a),
-				.align = ALIGN_RIGHT,
-			});
+			if(artist) {
+				const char *prefix = "— ";
+				char buf[strlen(prefix) + strlen(artist) + 1];
+				strcpy(buf, prefix);
+				strcat(buf, artist);
+
+				text_draw(buf, &(TextParams) {
+					.pos = { SCREEN_W - text_x, SCREEN_H + comment_offset - font_get_lineskip(text_font) },
+					.font_ptr = text_font,
+					.shader_ptr = text_shader,
+					.color = RGBA(a, a, a, a),
+					.align = ALIGN_RIGHT,
+				});
+			}
 		}
 	});
 }
@@ -212,22 +209,30 @@ static void action_play_bgm(MenuData *m, void *arg) {
 
 	if(p->state & (MSTATE_CONFIRM | MSTATE_UNLOCKED)) {
 		p->state &= ~MSTATE_CONFIRM;
-		preload_resource(RES_BGM, p->bgm, RESF_OPTIONAL);
-		start_bgm(p->bgm);
+		audio_bgm_play(p->bgm, true, 0, 0);
 	} else if (!(p->state & MSTATE_PLAYING)) {
 		p->state |= MSTATE_CONFIRM;
 	}
 }
 
-static void add_bgm(MenuData *m, const char *bgm) {
-	MusicMetadata *meta = get_resource_data(RES_BGM_METADATA, bgm, RESF_OPTIONAL | RESF_PRELOAD);
-	const char *title = (meta && meta->title) ? meta->title : "Unknown track";
+static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
+	if(preload) {
+		preload_resource(RES_BGM, bgm_name, RESF_OPTIONAL);
+		return;
+	}
+
+	BGM *bgm = res_bgm(bgm_name);
+	const char *title = bgm ? bgm_get_title(bgm) : NULL;
+
+	if(!title) {
+		title = "Unknown track";
+	}
+
 	MusicEntryParam *p = calloc(1, sizeof(*p));
 	p->bgm = bgm;
-	p->bgm_meta = meta;
 	p->text_shader = res_shader("text_default");
 
-	if(progress_is_bgm_unlocked(bgm)) {
+	if(progress_is_bgm_unlocked(bgm_name)) {
 		p->state |= MSTATE_UNLOCKED;
 	}
 
@@ -249,25 +254,28 @@ MenuData* create_musicroom_menu(void) {
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
-	add_bgm(m, "menu");
-	add_bgm(m, "stage1");
-	add_bgm(m, "stage1boss");
-	add_bgm(m, "stage2");
-	add_bgm(m, "stage2boss");
-	add_bgm(m, "stage3");
-	add_bgm(m, "stage3boss");
-	add_bgm(m, "scuttle");
-	add_bgm(m, "stage4");
-	add_bgm(m, "stage4boss");
-	add_bgm(m, "stage5");
-	add_bgm(m, "stage5boss");
-	add_bgm(m, "bonus0");
-	add_bgm(m, "stage6");
-	add_bgm(m, "stage6boss_phase1");
-	add_bgm(m, "stage6boss_phase2");
-	add_bgm(m, "stage6boss_phase3");
-	add_bgm(m, "ending");
-	add_bgm(m, "credits");
+	for(int preload = 1; preload >= 0; --preload) {
+		add_bgm(m, "menu", preload);
+		add_bgm(m, "stage1", preload);
+		add_bgm(m, "stage1boss", preload);
+		add_bgm(m, "stage2", preload);
+		add_bgm(m, "stage2boss", preload);
+		add_bgm(m, "stage3", preload);
+		add_bgm(m, "stage3boss", preload);
+		add_bgm(m, "scuttle", preload);
+		add_bgm(m, "stage4", preload);
+		add_bgm(m, "stage4boss", preload);
+		add_bgm(m, "stage5", preload);
+		add_bgm(m, "stage5boss", preload);
+		add_bgm(m, "bonus0", preload);
+		add_bgm(m, "stage6", preload);
+		add_bgm(m, "stage6boss_phase1", preload);
+		add_bgm(m, "stage6boss_phase2", preload);
+		add_bgm(m, "stage6boss_phase3", preload);
+		add_bgm(m, "ending", preload);
+		add_bgm(m, "credits", preload);
+	}
+
 	add_menu_separator(m);
 	add_menu_entry(m, "Back", menu_action_close, NULL);
 

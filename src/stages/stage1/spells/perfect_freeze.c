@@ -52,7 +52,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		DECLARE_ENT_ARRAY(Projectile, projs, nfrog);
 
 		for(int i = 0; i < nfrog/n; i++) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 
 			float r = rng_f32();
 			float g = rng_f32();
@@ -102,7 +102,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		int d = imax(0, global.diff - D_Normal);
 		for(int i = 0; i < 30+10*d; i++) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			float r1, r2;
 
 			if(global.diff > D_Normal) {

@@ -770,7 +770,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 		INVOKE_TASK(reimu_spirit_ofuda,
 			.pos = plr->pos + 10 * dir - 15.0*I,
 			.vel = -20*I,
@@ -783,7 +783,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_shot_volley_bullet, { Player *plr; cmplx offset; cmplx vel; real damage; ShaderProgram *shader; }) {
-	play_loop("generic_shot");
+	play_sfx_loop("generic_shot");
 
 	PROJECTILE(
 		.proto = pp_hakurei_seal,

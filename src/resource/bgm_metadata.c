@@ -20,7 +20,7 @@ static bool check_bgm_meta_path(const char *path) {
 	return strendswith(path, ".bgm") && strstartswith(path, BGM_PATH_PREFIX);
 }
 
-static void free_metadata_fields(MusicMetadata *meta) {
+static void free_metadata_fields(BGMMetadata *meta) {
 	free(meta->artist);
 	free(meta->comment);
 	free(meta->loop_path);
@@ -28,7 +28,7 @@ static void free_metadata_fields(MusicMetadata *meta) {
 }
 
 static void load_bgm_meta(ResourceLoadState *st) {
-	MusicMetadata meta = { 0 };
+	BGMMetadata meta = { 0 };
 
 	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
 		{ "artist",     .out_str    = &meta.artist     },
@@ -52,7 +52,7 @@ static void load_bgm_meta(ResourceLoadState *st) {
 }
 
 static void unload_bgm_meta(void *vmus) {
-	MusicMetadata *meta = vmus;
+	BGMMetadata *meta = vmus;
 	free_metadata_fields(meta);
 	free(meta);
 }

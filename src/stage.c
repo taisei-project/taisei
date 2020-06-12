@@ -56,7 +56,7 @@ static void stage_start(StageInfo *stage) {
 		global.plr.power = PLR_MAX_POWER;
 	}
 
-	reset_sounds();
+	reset_all_sfx();
 }
 
 static bool ingame_menu_interrupts_bgm(void) {
@@ -64,7 +64,7 @@ static bool ingame_menu_interrupts_bgm(void) {
 }
 
 static void stage_fade_bgm(void) {
-	fade_bgm((FPS * FADE_TIME) / 2000.0);
+	audio_bgm_stop((FPS * FADE_TIME) / 2000.0);
 }
 
 static void stage_leave_ingame_menu(CallChainResult ccr) {
@@ -75,14 +75,14 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 	}
 
 	if(global.gameover > 0) {
-		stop_sounds();
+		stop_all_sfx();
 
 		if(ingame_menu_interrupts_bgm() || global.gameover != GAMEOVER_RESTART) {
 			stage_fade_bgm();
 		}
 	} else {
-		resume_sounds();
-		resume_bgm();
+		resume_all_sfx();
+		audio_bgm_resume();
 	}
 
 	CallChain *cc = ccr.ctx;
@@ -92,10 +92,10 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 
 static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
 	if(ingame_menu_interrupts_bgm()) {
-		stop_bgm(false);
+		audio_bgm_pause();
 	}
 
-	pause_sounds();
+	pause_all_sfx();
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, memdup(&next, sizeof(next))));
 }
 
@@ -271,9 +271,33 @@ static void replay_input(void) {
 	player_applymovement(&global.plr);
 }
 
+static void display_bgm_title(void) {
+	BGM *bgm = audio_bgm_current();
+	const char *title = bgm ? bgm_get_title(bgm) : NULL;
+
+	if(title) {
+		char txt[strlen(title) + 6];
+		snprintf(txt, sizeof(txt), "BGM: %s", title);
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+	}
+}
+
+static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
+	BGM *bgm = evt->user.data1;
+
+	if(dialog_is_active(global.dialog)) {
+		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
+	} else {
+		display_bgm_title();
+	}
+
+	return false;
+}
+
 static void stage_input(void) {
 	events_poll((EventHandler[]){
 		{ .proc = stage_input_handler_gameplay },
+		{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
 		{NULL}
 	}, EFLAG_GAME);
 	player_fix_input(&global.plr);
@@ -333,7 +357,7 @@ static void stage_logic(void) {
 		}
 	}
 
-	update_sounds();
+	update_all_sfx();
 
 	global.frames++;
 
@@ -531,13 +555,8 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
-static void display_bgm_title(void) {
-	char txt[strlen(current_bgm.title) + 6];
-	snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
-}
-
 void stage_start_bgm(const char *bgm) {
+#if 0
 	char *old_title = NULL;
 
 	if(current_bgm.title && global.stage->type == STAGE_SPELL) {
@@ -555,6 +574,9 @@ void stage_start_bgm(const char *bgm) {
 	}
 
 	free(old_title);
+#else
+	audio_bgm_play(res_bgm(bgm), true, 0, 0);
+#endif
 }
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
@@ -856,7 +878,7 @@ void stage_end_loop(void* ctx) {
 	free_all_refs();
 	ent_shutdown();
 	stage_objpools_free();
-	stop_sounds();
+	stop_all_sfx();
 
 	taisei_commit_persistent_data();
 	taisei_set_skip_mode(false);

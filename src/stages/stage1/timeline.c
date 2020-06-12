@@ -60,7 +60,7 @@ TASK(circletoss_shoot_circle, { BoxedEnemy e; int duration; int interval; }) {
 	double angle_step = M_TAU / cnt;
 
 	for(int i = 0; i < cnt; ++i) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 		e->move.velocity *= 0.8;
 
 		cmplx aim = cdir(angle_step * i);
@@ -81,7 +81,7 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 
 	while(ARGS.times--) {
 		for(int i = ARGS.duration; i--;) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 
 			double aim_angle = carg(global.plr.pos - e->pos);
 			aim_angle += 0.05 * global.diff * rng_real();
@@ -207,7 +207,7 @@ TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
 				.move = move_asymptotic_simple(aim, i * 0.5),
 			);
 
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			WAIT(shot_interval);
 		}
 
@@ -344,7 +344,7 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 	for(int i = 0; i < ARGS.shots; ++i) {
 		cmplx v = 4 * cdir(ARGS.angle + ARGS.spread * triangle(ARGS.freq * i));
 
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 		PROJECTILE(
 			.proto = pp_thickrice,
 			.pos = ARGS.pos,

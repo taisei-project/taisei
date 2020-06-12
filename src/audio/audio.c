@@ -17,8 +17,6 @@
 
 #define B (_a_backend.funcs)
 
-CurrentBGM current_bgm = { .name = NULL };
-
 static ht_str2int_t sfx_volumes;
 
 static struct enqueued_sound {
@@ -29,7 +27,7 @@ static struct enqueued_sound {
 	bool replace;
 } *sound_queue;
 
-static SoundID play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
+static SFXPlayID play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
 	if(!audio_output_works() || global.frameskip) {
 		return 0;
 	}
@@ -48,21 +46,21 @@ static SoundID play_sound_internal(const char *name, bool is_ui, int cooldown, b
 		return 0;
 	}
 
-	Sound *snd = res_sfx(name);
+	SFX *sfx = res_sfx(name);
 
-	if(!snd || (!is_ui && snd->lastplayframe + 3 + cooldown >= global.frames)) {
+	if(!sfx || (!is_ui && sfx->lastplayframe + 3 + cooldown >= global.frames)) {
 		return 0;
 	}
 
-	snd->lastplayframe = global.frames;
+	sfx->lastplayframe = global.frames;
 
-	AudioBackendSoundGroup group = is_ui ? SNDGROUP_UI : SNDGROUP_MAIN;
-	SoundID sid;
+	AudioBackendSFXGroup group = is_ui ? SFXGROUP_UI : SFXGROUP_MAIN;
+	SFXPlayID sid;
 
 	if(replace) {
-		sid = B.sound_play_or_restart(snd->impl, group);
+		sid = B.sfx_play_or_restart(sfx->impl, group);
 	} else {
-		sid = B.sound_play(snd->impl, group);
+		sid = B.sfx_play(sfx->impl, group);
 	}
 
 	return sid;
@@ -85,82 +83,82 @@ static void* play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_
 	return NULL;
 }
 
-SoundID play_sound(const char *name) {
+SFXPlayID play_sfx(const char *name) {
 	return play_sound_internal(name, false, 0, false, 0);
 }
 
-SoundID play_sound_ex(const char *name, int cooldown, bool replace) {
+SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) {
 	return play_sound_internal(name, false, cooldown, replace, 0);
 }
 
-void play_sound_delayed(const char *name, int cooldown, bool replace, int delay) {
+void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) {
 	play_sound_internal(name, false, cooldown, replace, delay);
 }
 
-void play_ui_sound(const char *name) {
+void play_sfx_ui(const char *name) {
 	play_sound_internal(name, true, 0, true, 0);
 }
 
-void stop_sound(SoundID sid) {
+void stop_sound(SFXPlayID sid) {
 	if(sid) {
-		B.sound_stop_id(sid);
+		B.sfx_stop_id(sid);
 	}
 }
 
-void replace_sound(SoundID sid, const char *name) {
+void replace_sfx(SFXPlayID sid, const char *name) {
 	stop_sound(sid);
-	play_sound(name);
+	play_sfx(name);
 }
 
-void play_loop(const char *name) {
+void play_sfx_loop(const char *name) {
 	if(!audio_output_works() || global.frameskip) {
 		return;
 	}
 
-	Sound *snd = res_sfx(name);
+	SFX *sfx = res_sfx(name);
 
-	if(!snd) {
+	if(!sfx) {
 		return;
 	}
 
-	if(!snd->islooping) {
-		B.sound_loop(snd->impl, SNDGROUP_MAIN);
-		snd->islooping = true;
+	if(!sfx->islooping) {
+		B.sfx_loop(sfx->impl, SFXGROUP_MAIN);
+		sfx->islooping = true;
 	}
 
-	if(snd->islooping == LS_LOOPING) {
-		snd->lastplayframe = global.frames;
+	if(sfx->islooping == LS_LOOPING) {
+		sfx->lastplayframe = global.frames;
 	}
 }
 
 static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
 	bool reset = (intptr_t)arg;
-	Sound *snd = res->data;
+	SFX *sfx = res->data;
 
-	if(snd) {
+	if(sfx) {
 		if(reset) {
-			snd->lastplayframe = 0;
+			sfx->lastplayframe = 0;
 		}
 
-		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
-			B.sound_stop_loop(snd->impl);
-			snd->islooping = LS_FADEOUT;
+		if(sfx->islooping && (global.frames > sfx->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
+			B.sfx_stop_loop(sfx->impl);
+			sfx->islooping = LS_FADEOUT;
 		}
 
-		if(snd->islooping && (global.frames > snd->lastplayframe + LOOPTIMEOUTFRAMES + LOOPFADEOUT*60/1000. || reset)) {
-			snd->islooping = LS_OFF;
+		if(sfx->islooping && (global.frames > sfx->lastplayframe + LOOPTIMEOUTFRAMES + LOOPFADEOUT*60/1000. || reset)) {
+			sfx->islooping = LS_OFF;
 		}
 	}
 
 	return NULL;
 }
 
-void reset_sounds(void) {
+void reset_all_sfx(void) {
 	resource_for_each(RES_SFX, reset_sounds_callback, (void*)true);
 	list_foreach(&sound_queue, discard_enqueued_sound, NULL);
 }
 
-void update_sounds(void) {
+void update_all_sfx(void) {
 	resource_for_each(RES_SFX, reset_sounds_callback, (void*)false);
 
 	for(struct enqueued_sound *s = sound_queue, *next; s; s = next) {
@@ -172,16 +170,16 @@ void update_sounds(void) {
 	}
 }
 
-void pause_sounds(void) {
-	B.sound_pause_all(SNDGROUP_MAIN);
+void pause_all_sfx(void) {
+	B.sfx_pause_all(SFXGROUP_MAIN);
 }
 
-void resume_sounds(void) {
-	B.sound_resume_all(SNDGROUP_MAIN);
+void resume_all_sfx(void) {
+	B.sfx_resume_all(SFXGROUP_MAIN);
 }
 
-void stop_sounds(void) {
-	B.sound_stop_all(SNDGROUP_MAIN);
+void stop_all_sfx(void) {
+	B.sfx_stop_all(SFXGROUP_MAIN);
 }
 
 static bool store_sfx_volume(const char *key, const char *val, void *data) {
@@ -206,106 +204,17 @@ static void load_config_files(void) {
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, NULL);
 }
 
-static inline char *get_bgm_title(char *name) {
-	MusicMetadata *meta = get_resource_data(RES_BGM_METADATA, name, RESF_OPTIONAL);
-	return meta ? meta->title : NULL;
-}
-
 int get_default_sfx_volume(const char *sfx) {
 	return ht_get(&sfx_volumes, sfx, DEFAULT_SFX_VOLUME);
 }
 
-void resume_bgm(void) {
-	start_bgm(current_bgm.name); // In most cases it just unpauses existing music.
-}
-
-static void stop_bgm_internal(bool pause, double fadetime) {
-	if(!current_bgm.name) {
-		return;
-	}
-
-	current_bgm.started_at = -1;
-
-	if(!pause) {
-		stralloc(&current_bgm.name, NULL);
-	}
-
-	if(B.music_is_playing() && !B.music_is_paused()) {
-		if(pause) {
-			B.music_pause();
-			log_debug("BGM paused");
-		} else if(fadetime > 0) {
-			B.music_fade(fadetime);
-			log_debug("BGM fading out");
-		} else {
-			B.music_stop();
-			log_debug("BGM stopped");
-		}
-	} else {
-		log_debug("No BGM was playing");
-	}
-}
-
-void stop_bgm(bool force) {
-	stop_bgm_internal(!force, false);
-}
-
-void fade_bgm(double fadetime) {
-	stop_bgm_internal(false, fadetime);
-}
-
-void start_bgm(const char *name) {
-	if(!name || !*name) {
-		stop_bgm(false);
-		return;
-	}
-
-	// if BGM has changed, change it and start from beginning
-	if(!current_bgm.name || strcmp(name, current_bgm.name)) {
-		B.music_stop();
-
-		stralloc(&current_bgm.name, name);
-
-		if((current_bgm.music = res_bgm(name)) == NULL) {
-			log_warn("BGM '%s' does not exist", current_bgm.name);
-			stop_bgm(true);
-			free(current_bgm.name);
-			current_bgm.name = NULL;
-			return;
-		}
-	}
-
-	if(B.music_is_paused()) {
-		B.music_resume();
-	}
-
-	if(B.music_is_playing()) {
-		return;
-	}
-
-	if(!B.music_play(current_bgm.music->impl)) {
-		return;
-	}
-
-	// Support drawing BGM title in game loop (only when music changed!)
-	if((current_bgm.title = get_bgm_title(current_bgm.name)) != NULL) {
-		current_bgm.started_at = global.frames;
-		// Boss BGM title color may differ from the one at beginning of stage
-		current_bgm.isboss = strendswith(current_bgm.name, "boss");
-	} else {
-		current_bgm.started_at = -1;
-	}
-
-	log_info("Started %s", (current_bgm.title ? current_bgm.title : current_bgm.name));
-}
-
 static bool audio_config_updated(SDL_Event *evt, void *arg) {
 	if(config_get_int(CONFIG_MUTE_AUDIO)) {
-		B.sound_set_global_volume(0.0);
-		B.music_set_global_volume(0.0);
+		B.sfx_set_global_volume(0.0);
+		B.bgm_set_global_volume(0.0);
 	} else {
-		B.sound_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
-		B.music_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
+		B.sfx_set_global_volume(config_get_float(CONFIG_SFX_VOLUME));
+		B.bgm_set_global_volume(config_get_float(CONFIG_BGM_VOLUME));
 	}
 
 	return false;
@@ -330,6 +239,89 @@ bool audio_output_works(void) {
 	return B.output_works();
 }
 
-void audio_music_set_position(double pos) {
-	B.music_set_position(pos);
+double audioutil_loopaware_position(double rt_pos, double duration, double loop_start) {
+	loop_start = clamp(loop_start, 0, duration);
+
+	if(rt_pos < loop_start) {
+		return fmax(0, rt_pos);
+	}
+
+	return fmod(rt_pos - loop_start, duration - loop_start) + loop_start;
+}
+
+bool audio_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
+	BGM *current = B.bgm_current();
+
+	if(current == bgm) {
+		return false;
+	}
+
+	return audio_bgm_play_or_restart(bgm, loop, position, fadein);
+}
+
+bool audio_bgm_play_or_restart(BGM *bgm, bool loop, double position, double fadein) {
+	if(bgm == NULL) {
+		return B.bgm_stop(0);
+	}
+
+	if(B.bgm_play(bgm, loop, position, fadein)) {
+		assert(B.bgm_current() == bgm);
+		events_emit(TE_AUDIO_BGM_STARTED, 0, bgm, NULL);
+		return true;
+	}
+
+	return false;
+}
+
+bool audio_bgm_stop(double fadeout) {
+	return B.bgm_stop(fadeout);
+}
+
+bool audio_bgm_pause(void) {
+	return B.bgm_pause();
+}
+
+bool audio_bgm_resume(void) {
+	return B.bgm_resume();
+}
+
+double audio_bgm_seek(double pos) {
+	return B.bgm_seek(pos);
+}
+
+double audio_bgm_seek_realtime(double rtpos) {
+	BGM *bgm = audio_bgm_current();
+
+	if(bgm == NULL) {
+		log_warn("No BGM is playing");
+		return -1;
+	}
+
+	double seekpos;
+	double duration = bgm_get_duration(bgm);
+
+	if(audio_bgm_looping()) {
+		double loop_start = bgm_get_loop_start(bgm);
+		seekpos = audioutil_loopaware_position(rtpos, duration, loop_start);
+	} else {
+		seekpos = clamp(rtpos, 0, duration);
+	}
+
+	return audio_bgm_seek(seekpos);
+}
+
+double audio_bgm_tell(void) {
+	return B.bgm_tell();
+}
+
+BGMStatus audio_bgm_status(void) {
+	return B.bgm_status();
+}
+
+bool audio_bgm_looping(void) {
+	return B.bgm_looping();
+}
+
+BGM *audio_bgm_current(void) {
+	return B.bgm_current();
 }

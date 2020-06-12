@@ -13,16 +13,4 @@
 
 #include "resource.h"
 
-typedef struct MusicMetadata {
-	char *title;
-	char *artist;
-	char *comment;
-	char *loop_path;
-	double loop_point;
-} MusicMetadata;
-
-extern ResourceHandler bgm_metadata_res_handler;
-
-DEFINE_OPTIONAL_RESOURCE_GETTER(MusicMetadata, res_bgm_metadata, RES_BGM_METADATA)
-
 #endif // IGUARD_resource_bgm_metadata_h

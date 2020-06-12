@@ -34,7 +34,7 @@ TASK(make_snowflake, {
 	int t = 0;
 
 	for(int j = 0; j < ARGS.size; j++) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 
 		for(int i = 0; i < SNOWFLAKE_ARMS; i++) {
 			real ang = M_TAU / SNOWFLAKE_ARMS * i + ARGS.rot_angle;

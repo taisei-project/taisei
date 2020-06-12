@@ -34,7 +34,6 @@ ResourceHandler *_handlers[] = {
 	[RES_ANIM] = &animation_res_handler,
 	[RES_SFX] = &sfx_res_handler,
 	[RES_BGM] = &bgm_res_handler,
-	[RES_BGM_METADATA] = &bgm_metadata_res_handler,
 	[RES_MODEL] = &model_res_handler,
 	[RES_POSTPROCESS] = &postprocess_res_handler,
 	[RES_SPRITE] = &sprite_res_handler,

@@ -193,7 +193,7 @@ static int stage5_laserfairy(Enemy *e, int t) {
 			.rule = accelerated,
 			.args = { fac*4*n, fac*0.05*n }
 		);
-		play_sound_ex("shot_special1", 0, true);
+		play_sfx_ex("shot_special1", 0, true);
 	}
 
 	return 1;
@@ -217,7 +217,7 @@ static int stage5_miner(Enemy *e, int t) {
 			.rule = linear,
 			.args = { cexp(2.0*I*M_PI*afrand(1)) }
 		);
-		play_sound_ex("shot3", 0, false);
+		play_sfx_ex("shot3", 0, false);
 	}
 
 	return 1;
@@ -259,7 +259,7 @@ static int stage5_magnetto(Enemy *e, int t) {
 
 	AT(140) {
 		play_sound("redirect");
-		play_sound_delayed("redirect", 0, false, 180);
+		play_sfx_delayed("redirect", 0, false, 180);
 	}
 
 	FROM_TO(140, 320, 1) {
@@ -361,7 +361,7 @@ static int stage5_explosion(Enemy *e, int t) {
 
 	FROM_TO(500-30*(global.diff-D_Easy), 800, 100-10*global.diff) {
 		create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, RGBA(1, 0.3, 1, 0));
-		play_sound_delayed("laser1", 0, true, 45);
+		play_sfx_delayed("laser1", 0, true, 45);
 	}
 
 	return 1;
@@ -657,7 +657,7 @@ static void iku_bolts2(Boss *b, int time) {
 		aniplayer_queue(&b->ani, flip_laser ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&b->ani, "main", 0);
 		create_lasercurve3c(creal(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0), bolts2_laser, global.plr.pos, flip_laser*2-1, global.diff);
-		play_sound_ex("laser1", 0, false);
+		play_sfx_ex("laser1", 0, false);
 	}
 
 	FROM_TO_SND("shot1_loop", 0, 400, 5-global.diff)
@@ -713,7 +713,7 @@ static int lightning_slave(Enemy *e, int t) {
 					lightning_particle(p->pos + 5 * afrand(0) * cexp(I*M_PI*2*afrand(1)), 0);
 				}
 
-				play_sound_ex("shot3", 0, false);
+				play_sfx_ex("shot3", 0, false);
 				// play_sound_ex("redirect", 0, true);
 			}
 		}
@@ -1070,7 +1070,7 @@ static int iku_extra_trigger_bullet(Projectile *p, int t) {
 		}
 	} else {
 		p->args[2] = approach(creal(p->args[2]), 0, 1);
-		play_loop("charge_generic");
+		play_sfx_loop("charge_generic");
 	}
 
 	if(creal(p->args[2]) == 0) {

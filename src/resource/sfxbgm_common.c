@@ -14,8 +14,8 @@
 
 static const char *const *get_exts(bool isbgm, uint *numexts) {
 	const char *const *exts = (isbgm
-		? _a_backend.funcs.get_supported_music_exts(numexts)
-		: _a_backend.funcs.get_supported_sound_exts(numexts)
+		? _a_backend.funcs.get_supported_bgm_exts(numexts)
+		: _a_backend.funcs.get_supported_sfx_exts(numexts)
 	);
 
 	if(!exts) {
@@ -25,10 +25,10 @@ static const char *const *get_exts(bool isbgm, uint *numexts) {
 	return exts;
 }
 
-char* sfxbgm_make_path(const char *prefix, const char *name, bool isbgm) {
+char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm, bool trymeta) {
 	char *p = NULL;
 
-	if(isbgm && (p = try_path(prefix, name, ".bgm"))) {
+	if(isbgm && trymeta && (p = try_path(prefix, name, ".bgm"))) {
 		return p;
 	}
 

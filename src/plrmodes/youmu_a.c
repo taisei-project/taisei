@@ -562,7 +562,7 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 
 	for(int t = 0;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		cmplx v = -20 * I;
 		int power_rank = plr->power / 100;

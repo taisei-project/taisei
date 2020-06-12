@@ -114,7 +114,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 
 	switch(te) {
 		case TE_MENU_CURSOR_DOWN:
-			play_ui_sound("generic_shot");
+			play_sfx_ui("generic_shot");
 			do {
 				if(++menu->cursor >= menu->entries.num_elements) {
 					menu->cursor = 0;
@@ -124,7 +124,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 			return true;
 
 		case TE_MENU_CURSOR_UP:
-			play_ui_sound("generic_shot");
+			play_sfx_ui("generic_shot");
 			do {
 				if(--menu->cursor < 0) {
 					menu->cursor = menu->entries.num_elements - 1;
@@ -134,7 +134,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 			return true;
 
 		case TE_MENU_ACCEPT:
-			play_ui_sound("shot_special1");
+			play_sfx_ui("shot_special1");
 			if(dynarray_get(&menu->entries, menu->cursor).action) {
 				menu->selected = menu->cursor;
 				close_menu(menu);
@@ -143,7 +143,7 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 			return true;
 
 		case TE_MENU_ABORT:
-			play_ui_sound("hit");
+			play_sfx_ui("hit");
 			if(menu->flags & MF_Abortable) {
 				menu->selected = -1;
 				close_menu(menu);

@@ -45,6 +45,8 @@ typedef enum {
 
 	TE_CLIPBOARD_PASTE,
 
+	TE_AUDIO_BGM_STARTED,
+
 	NUM_TAISEI_EVENTS
 } TaiseiEvent;
 

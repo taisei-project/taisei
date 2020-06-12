@@ -84,7 +84,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 		boss->move.attraction_max_speed = 128;
 
 		for(int t = 0; t < 370; ++t) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			boss->move.attraction_point = global.plr.pos;
 
 			if(!(t % frostbolt_period)) {

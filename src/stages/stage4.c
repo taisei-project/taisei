@@ -310,7 +310,7 @@ static void stage4_spellpractice_events(void) {
 
 void stage4_skip(int t) {
 	skip_background_anim(stage4_update, t, &global.timer, &global.frames);
-	audio_music_set_position(global.timer / (double)FPS);
+	audio_bgm_seek_realtime(global.timer / (double)FPS);
 }
 
 ShaderRule stage4_shaders[] = { stage4_fog, NULL };

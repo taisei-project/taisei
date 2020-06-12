@@ -383,9 +383,9 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 	}
 
 	if(enemy->hp < enemy->spawn_hp * 0.1) {
-		play_loop("hit1");
+		play_sfx_loop("hit1");
 	} else {
-		play_loop("hit0");
+		play_sfx_loop("hit0");
 	}
 
 	return DMG_RESULT_OK;

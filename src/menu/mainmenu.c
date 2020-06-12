@@ -61,7 +61,7 @@ void main_menu_update_practice_menus(void) {
 }
 
 static void begin_main_menu(MenuData *m) {
-	start_bgm("menu");
+	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
 
 static void update_main_menu(MenuData *menu) {
@@ -79,7 +79,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	static hrtime_t last_abort_time = 0;
 
 	if(te == TE_MENU_ABORT) {
-		play_ui_sound("hit");
+		play_sfx_ui("hit");
 		m->cursor = m->entries.num_elements - 1;
 		hrtime_t t = time_get();
 
@@ -134,7 +134,7 @@ MenuData* create_main_menu(void) {
 	main_menu_update_practice_menus();
 
 	progress_unlock_bgm("menu");
-	start_bgm("menu");
+	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 
 	return m;
 }

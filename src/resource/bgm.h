@@ -17,8 +17,14 @@ extern ResourceHandler bgm_res_handler;
 
 #define BGM_PATH_PREFIX "res/bgm/"
 
-typedef struct Music Music;
+typedef struct BGM BGM;
 
-DEFINE_OPTIONAL_RESOURCE_GETTER(Music, res_bgm, RES_BGM)
+DEFINE_OPTIONAL_RESOURCE_GETTER(BGM, res_bgm, RES_BGM)
+
+const char *bgm_get_title(BGM *bgm) attr_nonnull(1);
+const char *bgm_get_artist(BGM *bgm) attr_nonnull(1);
+const char *bgm_get_comment(BGM *bgm) attr_nonnull(1);
+double bgm_get_duration(BGM *bgm) attr_nonnull(1);
+double bgm_get_loop_start(BGM *bgm) attr_nonnull(1);
 
 #endif // IGUARD_resource_bgm_h
