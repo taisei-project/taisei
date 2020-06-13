@@ -14,7 +14,6 @@
 #include "../stream/stream.h"
 #include "../stream/player.h"
 #include "global.h"
-#include "list.h"
 
 #define B (_a_backend.funcs)
 
@@ -24,16 +23,6 @@
 #define UI_CHANNELS 4
 #define UI_CHANNEL_GROUP 0
 #define MAIN_CHANNEL_GROUP 1
-
-#if AUDIO_FORMAT == AUDIO_S16SYS
-typedef int16_t sample_t;
-#define OPUS_READ_SAMPLES_STEREO op_read_stereo
-#elif AUDIO_FORMAT == AUDIO_F32SYS
-typedef float sample_t;
-#define OPUS_READ_SAMPLES_STEREO op_read_float_stereo
-#else
-#error Audio format not recognized
-#endif
 
 struct SFXImpl {
 	Mix_Chunk *ch;
@@ -453,8 +442,8 @@ static void custom_fadeout_free(int chan, void *udata) {
 static void custom_fadeout_proc(int chan, void *stream, int len, void *udata) {
 	CustomFadeout *e = udata;
 
-	sample_t *data = stream;
-	len /= sizeof(sample_t);
+	float *data = stream;
+	len /= sizeof(*data);
 
 	for(int i = 0; i < len; i++) {
 		e->counter++;
