@@ -39,9 +39,7 @@ typedef struct AudioFuncs {
 	BGM *(*bgm_current)(void);
 	bool (*bgm_looping)(void);
 	bool (*bgm_set_global_volume)(double gain);
-	bool (*bgm_set_loop_point)(BGM *bgm, double pos);
 	bool (*output_works)(void);
-	bool (*set_sfx_volume)(float gain);
 	bool (*shutdown)(void);
 	SFXPlayID (*sfx_loop)(SFXImpl *sfx, AudioBackendSFXGroup group);
 	bool (*sfx_pause_all)(AudioBackendSFXGroup group);

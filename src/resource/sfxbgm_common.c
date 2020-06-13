@@ -25,12 +25,8 @@ static const char *const *get_exts(bool isbgm, uint *numexts) {
 	return exts;
 }
 
-char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm, bool trymeta) {
+char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm) {
 	char *p = NULL;
-
-	if(isbgm && trymeta && (p = try_path(prefix, name, ".bgm"))) {
-		return p;
-	}
 
 	uint numexts;
 	const char *const *exts = get_exts(isbgm, &numexts);
@@ -47,10 +43,6 @@ char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm, bool tr
 bool sfxbgm_check_path(const char *prefix, const char *path, bool isbgm) {
 	if(prefix && !strstartswith(path, prefix)) {
 		return false;
-	}
-
-	if(isbgm && strendswith(path, ".bgm")) {
-		return true;
 	}
 
 	uint numexts;

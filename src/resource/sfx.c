@@ -15,7 +15,7 @@
 #include "util.h"
 
 static char *sound_path(const char *name) {
-	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false, true);
+	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false);
 }
 
 static bool check_sound_path(const char *path) {

@@ -11,7 +11,7 @@
 
 #include "taisei.h"
 
-char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm, bool trymeta);
+char *sfxbgm_make_path(const char *prefix, const char *name, bool isbgm);
 bool sfxbgm_check_path(const char *prefix, const char *path, bool isbgm);
 
 #endif // IGUARD_resource_sfxbgm_common_h

@@ -30,7 +30,6 @@ static bool audio_null_bgm_pause(void) { return false; }
 static bool audio_null_bgm_play(BGM *bgm, bool loop, double pos, double fadein) { return false; }
 static bool audio_null_bgm_resume(void) { return false; }
 static bool audio_null_bgm_set_global_volume(double gain) { return false; }
-static bool audio_null_bgm_set_loop_point(BGM *bgm, double pos) { return false; }
 static bool audio_null_bgm_stop(double fadeout) { return false; }
 static bool audio_null_output_works(void) { return false; }
 static bool audio_null_shutdown(void) { return true; }
@@ -68,7 +67,6 @@ AudioBackend _a_backend_null = {
 		.bgm_resume = audio_null_bgm_resume,
 		.bgm_seek = audio_null_bgm_seek,
 		.bgm_set_global_volume = audio_null_bgm_set_global_volume,
-		.bgm_set_loop_point = audio_null_bgm_set_loop_point,
 		.bgm_status = audio_null_bgm_status,
 		.bgm_stop = audio_null_bgm_stop,
 		.bgm_tell = audio_null_bgm_tell,

@@ -300,10 +300,6 @@ static BGM *audio_sdl2mixer_bgm_current(void) {
 	return bgm;
 }
 
-static bool audio_sdl2mixer_bgm_set_loop_point(BGM *bgm, double pos) {
-	return false;
-}
-
 // END BGM
 
 // BEGIN BGM OBJECT
@@ -670,7 +666,6 @@ AudioBackend _a_backend_sdl2mixer = {
 		.bgm_resume = audio_sdl2mixer_bgm_resume,
 		.bgm_seek = audio_sdl2mixer_bgm_seek,
 		.bgm_set_global_volume = audio_sdl2mixer_bgm_set_global_volume,
-		.bgm_set_loop_point = audio_sdl2mixer_bgm_set_loop_point,
 		.bgm_status = audio_sdl2mixer_bgm_status,
 		.bgm_stop = audio_sdl2mixer_bgm_stop,
 		.bgm_tell = audio_sdl2mixer_bgm_tell,
