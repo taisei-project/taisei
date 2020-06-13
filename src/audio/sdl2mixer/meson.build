@@ -3,7 +3,7 @@ a_sdl2mixer_src = files(
     'audio_sdl2mixer.c',
 )
 
-a_sdl2mixer_deps = []
+a_sdl2mixer_deps = ['stream']
 a_sdl2mixer_libdeps = [dep_sdl2_mixer, dep_opusfile]
 
 if get_option('a_sdl2mixer')

@@ -9,13 +9,12 @@
 #include "taisei.h"
 
 #include <SDL_mixer.h>
-#include <opusfile.h>
 
 #include "../backend.h"
+#include "../stream/stream.h"
+#include "../stream/player.h"
 #include "global.h"
 #include "list.h"
-#include "util/opuscruft.h"
-#include "sdl2mixer_wrappers.h"
 
 #define B (_a_backend.funcs)
 
@@ -36,7 +35,6 @@ typedef float sample_t;
 #error Audio format not recognized
 #endif
 
-
 struct SFXImpl {
 	Mix_Chunk *ch;
 
@@ -47,15 +45,13 @@ struct SFXImpl {
 };
 
 struct BGM {
-	Mix_Music *mus;
-	double loop_start;
+	AudioStream stream;
 };
 
+static_assert(offsetof(BGM, stream) == 0, "");
+
 static struct {
-	struct {
-		BGM *current;
-		bool looping;
-	} bgm;
+	StreamPlayer bgm_player;
 
 	uint32_t play_counter;
 	uint32_t chan_play_ids[AUDIO_CHANNELS];
@@ -64,11 +60,29 @@ static struct {
 		uchar first;
 		uchar num;
 	} groups[2];
+
+	AudioStreamSpec spec;
 } mixer;
 
 #define IS_VALID_CHANNEL(chan) ((uint)(chan) < AUDIO_CHANNELS)
 
 // BEGIN MISC
+
+static void SDLCALL audio_sdl2mixer_music_hook(void *player, uint8_t *stream, int len) {
+	// TODO: find out whether SPLAYER_SILENCE_PAD is necessary
+
+	// NOTE: In the past there was a chance, on some especially braindead Windows systems,
+	// that the audio device opened by SDL_mixer would not have the requested sample format.
+	// Our StreamPlayer currently only supports floating point samples, i.e. AUDIO_F32SYS.
+	// Hopefully recent enough SDL and SDL_mixer versions should be able to deal with this
+	// transparently with an internal conversion. If that happens not to be the case, one
+	// solution would be to pipe the StreamPlayer output through another SDL_AudioStream to
+	// convert the samples into whatever format the audio device expects. Though I'm more
+	// inclined to just tell people to use a less shitty OS if this is still a problem.
+	// But patches welcome.
+
+	splayer_process(player, len, stream, SPLAYER_SILENCE_PAD);
+}
 
 static bool audio_sdl2mixer_init(void) {
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
@@ -93,13 +107,13 @@ static bool audio_sdl2mixer_init(void) {
 	if(Mix_OpenAudio(AUDIO_FREQ, AUDIO_FORMAT, 2, config_get_int(CONFIG_MIXER_CHUNKSIZE)) == -1) {
 		log_error("Mix_OpenAudio() failed: %s", Mix_GetError());
 		Mix_Quit();
+		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
 
 	if(!(Mix_Init(MIX_INIT_OPUS) & MIX_INIT_OPUS)) {
 		log_error("Mix_Init() failed: %s", Mix_GetError());
-		Mix_Quit();
-		return false;
+		goto fail;
 	}
 
 	log_info("Using driver '%s'", SDL_GetCurrentAudioDriver());
@@ -108,9 +122,7 @@ static bool audio_sdl2mixer_init(void) {
 
 	if(!channels) {
 		log_error("Unable to allocate any channels");
-		Mix_CloseAudio();
-		Mix_Quit();
-		return false;
+		goto fail;
 	}
 
 	if(channels < AUDIO_CHANNELS) {
@@ -154,6 +166,9 @@ static bool audio_sdl2mixer_init(void) {
 	uint16_t format = 0;
 
 	Mix_QuerySpec(&frequency, &format, &channels);
+	mixer.spec.channels = channels;
+	mixer.spec.sample_format = format;
+	mixer.spec.sample_rate = frequency;
 
 	if(frequency != AUDIO_FREQ || format != AUDIO_FORMAT) {
 		log_warn(
@@ -163,6 +178,13 @@ static bool audio_sdl2mixer_init(void) {
 			AUDIO_FREQ, AUDIO_FORMAT, frequency, format
 		);
 	}
+
+	if(!splayer_init(&mixer.bgm_player, &mixer.spec)) {
+		log_error("splayer_init() failed");
+		goto fail;
+	}
+
+	Mix_HookMusic(audio_sdl2mixer_music_hook, &mixer.bgm_player);
 
 	log_info("Audio subsystem initialized (SDL2_Mixer)");
 
@@ -174,13 +196,22 @@ static bool audio_sdl2mixer_init(void) {
 
 	lv = Mix_Linked_Version();
 	log_info("Using SDL_mixer %u.%u.%u", lv->major, lv->minor, lv->patch);
-	return true;
-}
 
-static bool audio_sdl2mixer_shutdown(void) {
+	return true;
+
+fail:
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+	return false;
+}
+
+static bool audio_sdl2mixer_shutdown(void) {
+	Mix_HookMusic(NULL, NULL);
+	Mix_CloseAudio();
+	Mix_Quit();
+	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+	splayer_shutdown(&mixer.bgm_player);
 
 	log_info("Audio subsystem deinitialized (SDL2_Mixer)");
 	return true;
@@ -194,234 +225,128 @@ static inline int gain_to_mixvol(double gain) {
 	return iclamp(gain * SDL_MIX_MAXVOLUME, 0, SDL_MIX_MAXVOLUME);
 }
 
-static bool audio_sdl2mixer_sfx_set_global_volume(double gain) {
-	Mix_Volume(-1, gain_to_mixvol(gain));
-	return true;
-}
-
-static bool audio_sdl2mixer_bgm_set_global_volume(double gain) {
-	Mix_VolumeMusic(gain * gain_to_mixvol(gain));
-	return true;
-}
-
-static const char *const *audio_sdl2mixer_get_supported_exts(uint *numexts) {
-	static const char *const exts[] = { ".opus", ".ogg", ".wav" };
+static const char *const *audio_sdl2mixer_get_supported_bgm_exts(uint *numexts) {
+	// TODO figure this out dynamically
+	static const char *const exts[] = { ".opus" };
 	*numexts = ARRAY_SIZE(exts);
 	return exts;
 }
 
-static inline int calc_fadetime(double sec) {
-	return floor(sec * 1000);
+static const char *const *audio_sdl2mixer_get_supported_sfx_exts(uint *numexts) {
+	// TODO figure this out dynamically
+	static const char *const exts[] = { ".opus", ".wav" };
+	*numexts = ARRAY_SIZE(exts);
+	return exts;
 }
 
 // END MISC
 
 // BEGIN BGM
 
-static void bgm_loop_handler(void) {
-	BGM *bgm = NOT_NULL(mixer.bgm.current);
-	assert(bgm->loop_start > 0);
-
-	if(!Mix_PlayMusic(bgm->mus, 0)) {
-		if(!Mix_SetMusicPosition(bgm->loop_start)) {
-			log_debug("Loop restarted from %f", bgm->loop_start);
-		}
-	}
+static BGMStatus audio_sdl2mixer_bgm_status(void) {
+	return splayer_util_bgmstatus(&mixer.bgm_player);
 }
 
-static void halt_bgm(void) {
-	Mix_HookMusicFinished(NULL);
-	Mix_HaltMusic();
-	mixer.bgm.current = NULL;
-	mixer.bgm.looping = false;
-}
-
-static bool audio_sdl2mixer_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
-	halt_bgm();
-
-	int loops;
-
-	mixer.bgm.current = bgm;
-	mixer.bgm.looping = loop;
-
-	if(loop) {
-		if(bgm->loop_start > 0) {
-			loops = 0;
-			Mix_HookMusicFinished(bgm_loop_handler);
-		} else if(loop) {
-			loops = -1;
-		}
-	} else {
-		loops = 0;
-	}
-
-	int error;
-
-	if(fadein > 0) {
-		int ms = calc_fadetime(fadein);
-		error = Mix_FadeInMusicPos(bgm->mus, loops, ms, position);
-	} else {
-		error = Mix_PlayMusic(bgm->mus, loops);
-
-		if(!error && position > 0) {
-			error = Mix_SetMusicPosition(position);
-		}
-	}
-
-	if(error) {
-		halt_bgm();
-		return false;
-	}
-
+static bool audio_sdl2mixer_bgm_set_global_volume(double gain) {
+	splayer_lock(&mixer.bgm_player);
+	mixer.bgm_player.gain = gain;
+	splayer_unlock(&mixer.bgm_player);
 	return true;
 }
 
+static bool audio_sdl2mixer_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
+	return splayer_play(&mixer.bgm_player, &bgm->stream, loop, position, fadein);
+}
+
 static bool audio_sdl2mixer_bgm_stop(double fadeout) {
-	if(audio_bgm_status() == BGM_STOPPED) {
+	if(splayer_util_bgmstatus(&mixer.bgm_player) == BGM_STOPPED) {
 		log_warn("BGM is already stopped");
 		return false;
 	}
 
-	Mix_HookMusicFinished(NULL);
-	int error;
-
 	if(fadeout > 0) {
-		error = Mix_FadeOutMusic(calc_fadetime(fadeout));
+		splayer_fadeout(&mixer.bgm_player, fadeout);
 	} else {
-		error = Mix_HaltMusic();
+		splayer_halt(&mixer.bgm_player);
 	}
 
-	return !error;
-}
-
-static BGMStatus audio_sdl2mixer_bgm_status(void) {
-	log_debug("PLAYING: %i", Mix_PlayingMusic());
-	log_debug("PAUSED: %i", Mix_PausedMusic());
-	log_debug("FADING: %i", Mix_FadingMusic());
-
-	if(Mix_PlayingMusic() && Mix_FadingMusic() != MIX_FADING_OUT) {
-		assume(mixer.bgm.current != NULL);
-
-		if(Mix_PausedMusic()) {
-			assume(mixer.bgm.current != NULL);
-			return BGM_PAUSED;
-		}
-
-		return BGM_PLAYING;
-	}
-
-	return BGM_STOPPED;
+	return true;
 }
 
 static bool audio_sdl2mixer_bgm_looping(void) {
-	if(audio_bgm_status() != BGM_STOPPED) {
+	splayer_lock(&mixer.bgm_player);
+
+	if(splayer_util_bgmstatus(&mixer.bgm_player) == BGM_STOPPED) {
 		log_warn("BGM is stopped");
 		return false;
 	}
 
-	return mixer.bgm.looping;
+	bool looping = mixer.bgm_player.looping;
+	splayer_unlock(&mixer.bgm_player);
+
+	return looping;
 }
 
 static bool audio_sdl2mixer_bgm_pause(void) {
-	if(audio_bgm_status() != BGM_PLAYING) {
-		log_warn("BGM is not playing");
-		return false;
-	}
-
-	Mix_HookMusicFinished(NULL);
-	Mix_PauseMusic();
-
-	assert(audio_sdl2mixer_bgm_status() == BGM_PAUSED);
-
-	return true;
+	return splayer_pause(&mixer.bgm_player);
 }
 
 static bool audio_sdl2mixer_bgm_resume(void) {
-	if(audio_bgm_status() != BGM_PAUSED) {
-		log_warn("BGM is not paused");
-		return false;
-	}
-
-	if(mixer.bgm.looping) {
-		Mix_HookMusicFinished(bgm_loop_handler);
-	} else {
-		Mix_HookMusicFinished(NULL);
-	}
-
-	Mix_ResumeMusic();
-	return true;
+	return splayer_resume(&mixer.bgm_player);
 }
 
 static double audio_sdl2mixer_bgm_seek(double pos) {
-	if(audio_bgm_status() == BGM_STOPPED) {
-		log_warn("BGM is stopped");
-		return -1;
-	}
-
-	Mix_RewindMusic();
-
-	if(!Mix_SetMusicPosition(pos)) {
-		return -1;
-	}
-
-	return Mix_GetMusicPosition(NOT_NULL(mixer.bgm.current)->mus);
+	return splayer_seek(&mixer.bgm_player, pos);
 }
 
 static double audio_sdl2mixer_bgm_tell(void) {
-	if(audio_bgm_status() == BGM_STOPPED) {
-		log_warn("BGM is stopped");
-		return -1;
-	}
-
-	return Mix_GetMusicPosition(NOT_NULL(mixer.bgm.current)->mus);
+	return splayer_tell(&mixer.bgm_player);
 }
 
 static BGM *audio_sdl2mixer_bgm_current(void) {
-	if(audio_sdl2mixer_bgm_status() == BGM_PLAYING) {
-		return NOT_NULL(mixer.bgm.current);
-	} else {
-		return NULL;
-	}
+	BGM *bgm;
+	splayer_lock(&mixer.bgm_player);
+	bgm = UNION_CAST(AudioStream*, BGM*, mixer.bgm_player.stream);
+	splayer_unlock(&mixer.bgm_player);
+	return bgm;
 }
 
 static bool audio_sdl2mixer_bgm_set_loop_point(BGM *bgm, double pos) {
-	assert(pos >= 0);
-	NOT_NULL(bgm)->loop_start = pos;
-	return true;
+	return false;
 }
 
 // END BGM
 
 // BEGIN BGM OBJECT
 
-INLINE const char *nullstr(const char *s) {
-	return s && *s ? s : NULL;
-}
-
 static const char *audio_sdl2mixer_obj_bgm_get_title(BGM *bgm) {
-	return nullstr(Mix_GetMusicTitleTag(NOT_NULL(bgm)->mus));
+	return astream_get_meta_tag(&bgm->stream, STREAM_META_TITLE);
 }
 
 static const char *audio_sdl2mixer_obj_bgm_get_artist(BGM *bgm) {
-	return nullstr(Mix_GetMusicArtistTag(NOT_NULL(bgm)->mus));
+	return astream_get_meta_tag(&bgm->stream, STREAM_META_ARTIST);
 }
 
 static const char *audio_sdl2mixer_obj_bgm_get_comment(BGM *bgm) {
-	// return Mix_GetMusicCommentTag(NOT_NULL(bgm)->mus);
-	return NULL;
+	return astream_get_meta_tag(&bgm->stream, STREAM_META_COMMENT);
 }
 
 static double audio_sdl2mixer_obj_bgm_get_duration(BGM *bgm) {
-	return Mix_MusicDuration(NOT_NULL(bgm)->mus);
+	return astream_util_offset_to_time(&bgm->stream, bgm->stream.length);
 }
 
 static double audio_sdl2mixer_obj_bgm_get_loop_start(BGM *bgm) {
-	return Mix_GetMusicLoopStartTime(NOT_NULL(bgm)->mus);
+	return astream_util_offset_to_time(&bgm->stream, bgm->stream.loop_start);
 }
 
 // END BGM OBJECT
 
 // BEGIN SFX
+
+static bool audio_sdl2mixer_sfx_set_global_volume(double gain) {
+	Mix_Volume(-1, gain_to_mixvol(gain));
+	return true;
+}
 
 static int translate_group(AudioBackendSFXGroup group, int defmixgroup) {
 	switch(group) {
@@ -634,101 +559,51 @@ static BGM *audio_sdl2mixer_bgm_load(const char *vfspath) {
 		return NULL;
 	}
 
-	Mix_Music *mus = Mix_LoadMUS_RW(rw, true);
+	BGM *bgm = calloc(1, sizeof(*bgm));
 
-	if(!mus) {
-		log_error("Mix_LoadMUS_RW() failed: %s (%s)", Mix_GetError(), vfspath);
+	if(!astream_open(&bgm->stream, rw, vfspath)) {
+		SDL_RWclose(rw);
+		free(bgm);
 		return NULL;
 	}
-
-	BGM *bgm = calloc(1, sizeof(*bgm));
-	bgm->mus = mus;
 
 	log_debug("Loaded stream from %s", vfspath);
 	return bgm;
 }
 
 static void audio_sdl2mixer_bgm_unload(BGM *bgm) {
-	// Try to work around an idiotic deadlock in Mix_FreeMusic
-	if(mixer.bgm.current == bgm) {
-		Mix_HaltMusic();
-		mixer.bgm.current = NULL;
+	splayer_lock(&mixer.bgm_player);
+	if(mixer.bgm_player.stream == &bgm->stream) {
+		splayer_halt(&mixer.bgm_player);
 	}
+	splayer_unlock(&mixer.bgm_player);
 
-	Mix_FreeMusic(bgm->mus);
+	astream_close(&bgm->stream);
 	free(bgm);
 }
 
-static OggOpusFile *try_load_opus(SDL_RWops *rw) {
-	uint8_t buf[128];
-	SDL_RWread(rw, buf, 1, sizeof(buf));
-	int error = op_test(NULL, buf, sizeof(buf));
+static Mix_Chunk *read_chunk(AudioStream *astream, const char *vfspath) {
+	SDL_AudioStream *pipe = astream_create_sdl_stream(astream, mixer.spec);
 
-	if(error != 0) {
-		log_debug("op_test() failed: %i", error);
-		goto fail;
+	ssize_t read;
+	do {
+		char buf[1 << 13];
+		read = astream_read_into_sdl_stream(astream, pipe, sizeof(buf), buf, 0);
+	} while(read > 0);
+
+	astream_close(astream);
+
+	if(read < 0) {
+		SDL_FreeAudioStream(pipe);
+		return NULL;
 	}
 
-	OggOpusFile *opus = op_open_callbacks(rw, &opusutil_rwops_callbacks, buf, sizeof(buf), &error);
-
-	if(opus == NULL) {
-		log_debug("op_open_callbacks() failed: %i", error);
-		goto fail;
-	}
-
-	return opus;
-
-fail:
-	SDL_RWseek(rw, 0, RW_SEEK_SET);
-	return NULL;
-}
-
-static Mix_Chunk *read_opus_chunk(OggOpusFile *opus, const char *vfspath) {
-	int mix_frequency = 0;
-	int mix_channels;
-	uint16_t mix_format = 0;
-	Mix_QuerySpec(&mix_frequency, &mix_format, &mix_channels);
-
-	SDL_AudioStream *stream = SDL_NewAudioStream(AUDIO_FORMAT, 2, 48000, mix_format, mix_channels, mix_frequency);
-
-	for(;;) {
-		sample_t read_buf[1920];
-		int r = OPUS_READ_SAMPLES_STEREO(opus, read_buf, sizeof(read_buf));
-
-		if(r == OP_HOLE) {
-			continue;
-		}
-
-		if(r < 0) {
-			log_error("Opus decode error %i (%s)", r, vfspath);
-			SDL_FreeAudioStream(stream);
-			op_free(opus);
-			return NULL;
-		}
-
-		if(r == 0) {
-			op_free(opus);
-			SDL_AudioStreamFlush(stream);
-			break;
-		}
-
-		// r is the number of samples read !!PER CHANNEL!!
-		// since we tell Opusfile to downmix to stereo, exactly 2 channels are guaranteed.
-		int read = r * 2;
-
-		if(SDL_AudioStreamPut(stream, read_buf, read * sizeof(*read_buf)) < 0) {
-			log_sdl_error(LOG_ERROR, "SDL_AudioStreamPut");
-			SDL_FreeAudioStream(stream);
-			op_free(opus);
-			return NULL;
-		}
-	}
-
-	int resampled_bytes = SDL_AudioStreamAvailable(stream);
+	SDL_AudioStreamFlush(pipe);
+	int resampled_bytes = SDL_AudioStreamAvailable(pipe);
 
 	if(resampled_bytes <= 0) {
 		log_error("SDL_AudioStream returned no data");
-		SDL_FreeAudioStream(stream);
+		SDL_FreeAudioStream(pipe);
 		return NULL;
 	}
 
@@ -737,8 +612,8 @@ static Mix_Chunk *read_opus_chunk(OggOpusFile *opus, const char *vfspath) {
 
 	uint8_t *pcm = SDL_calloc(1, resampled_bytes);
 
-	SDL_AudioStreamGet(stream, pcm, resampled_bytes);
-	SDL_FreeAudioStream(stream);
+	SDL_AudioStreamGet(pipe, pcm, resampled_bytes);
+	SDL_FreeAudioStream(pipe);
 
 	Mix_Chunk *snd = Mix_QuickLoad_RAW(pcm, resampled_bytes);
 
@@ -757,17 +632,17 @@ static SFXImpl *audio_sdl2mixer_sfx_load(const char *vfspath) {
 	}
 
 	// SDL2_Mixer as of 2.0.4 is too dumb to actually try to load Opus chunks,
-	// even if it was compiled with Opus support (which only works for music apparently /facepalm)
-	// So we'll try to load them via opusfile manually.
+	// even if it was compiled with Opus support (which only works for music apparently /facepalm).
+	// So we'll load them via our custom streaming API.
 
 	Mix_Chunk *snd = NULL;
-	OggOpusFile *opus = try_load_opus(rw);
+	AudioStream stream;
 
-	if(opus) {
-		snd = read_opus_chunk(opus, vfspath);
+	if(astream_open(&stream, rw, vfspath)) {
+		snd = read_chunk(&stream, vfspath);
 
 		if(!snd) {
-			// error message printed by read_opus_chunk
+			// error message printed by read_chunk
 			return NULL;
 		}
 	} else {
@@ -811,8 +686,8 @@ AudioBackend _a_backend_sdl2mixer = {
 		.bgm_stop = audio_sdl2mixer_bgm_stop,
 		.bgm_tell = audio_sdl2mixer_bgm_tell,
 		.bgm_unload = audio_sdl2mixer_bgm_unload,
-		.get_supported_bgm_exts = audio_sdl2mixer_get_supported_exts,
-		.get_supported_sfx_exts = audio_sdl2mixer_get_supported_exts,
+		.get_supported_bgm_exts = audio_sdl2mixer_get_supported_bgm_exts,
+		.get_supported_sfx_exts = audio_sdl2mixer_get_supported_sfx_exts,
 		.init = audio_sdl2mixer_init,
 		.output_works = audio_sdl2mixer_output_works,
 		.sfx_load = audio_sdl2mixer_sfx_load,

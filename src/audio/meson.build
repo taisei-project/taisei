@@ -14,6 +14,7 @@ audio_deps = []
 enabled_audio_backends = []
 
 # NOTE: Order matters here.
+subdir('stream')
 subdir('sdl2mixer')
 subdir('null')
 

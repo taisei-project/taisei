@@ -19,10 +19,6 @@ util_src = files(
     'stringops.c',
 )
 
-util_opus_src = files(
-    'opuscruft.c',
-)
-
 if is_developer_build
     util_src += files('debug.c')
 endif
