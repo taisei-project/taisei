@@ -925,10 +925,10 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	stagetext_table_add_numeric(&tbl, "Total", bonus.total);
 	stagetext_end_table(&tbl);
 
-	play_sound("spellend");
+	play_sfx("spellend");
 
 	if(!bonus.failed) {
-		play_sound("spellclear");
+		play_sfx("spellclear");
 	}
 }
 
@@ -1039,7 +1039,7 @@ void process_boss(Boss **pboss) {
 		int remaining = boss->current->timeout - time;
 
 		if(boss->current->type != AT_Move && remaining <= 11*FPS && remaining > 0 && !(time % FPS)) {
-			play_sound(remaining <= 6*FPS ? "timeout2" : "timeout1");
+			play_sfx(remaining <= 6*FPS ? "timeout2" : "timeout1");
 		}
 
 		boss_call_rule(boss, time);
@@ -1166,7 +1166,7 @@ void process_boss(Boss **pboss) {
 			);
 		}
 
-		play_sound_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
+		play_sfx_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
 	}
 
 	if(boss_is_player_collision_active(boss) && cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {
@@ -1334,7 +1334,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
-		play_sound(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
+		play_sfx(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
 
 		for(int i = 0; i < 10+5*(a->type == AT_ExtraSpell); i++) {
 			RNG_ARRAY(rng, 4);

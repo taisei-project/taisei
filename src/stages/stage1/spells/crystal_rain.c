@@ -19,7 +19,7 @@ TASK(crystal_rain_drops, NO_ARGS) {
 	const int nshots = difficulty_value(1, 2, 4, 5);
 
 	for(;;) {
-		play_sound("shot2");
+		play_sfx("shot2");
 
 		for(int i = 0; i < nshots; ++i) {
 			RNG_ARRAY(rng, 2);
@@ -58,7 +58,7 @@ TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 		real n = (difficulty_value(1, 2, 6, 11) + odd)/2.0;
 		cmplx org = boss->pos + shot_ofs;
 
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 		for(real i = -n; i <= n; i++) {
 			PROJECTILE(
 				.proto = odd? pp_plainball : pp_bigball,

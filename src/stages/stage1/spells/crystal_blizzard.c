@@ -21,7 +21,7 @@ TASK(crystal_wall, NO_ARGS) {
 	real ofs = rng_real() - 1;
 
 	for(int i = 0; i < 30; ++i) {
-		play_sound("shot1");
+		play_sfx("shot1");
 
 		for(int c = 0; c < num_crystals; ++c) {
 			cmplx accel = 0.02*I + 0.01*I * ((c % 2) ? 1 : -1) * sin((c * 3 + global.frames) / 30.0);
@@ -94,7 +94,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 			}
 
 			if(!(t % 7)) {
-				play_sound("shot1");
+				play_sfx("shot1");
 				int cnt = global.diff - 1;
 				for(int i = 0; i < cnt; ++i) {
 					PROJECTILE(

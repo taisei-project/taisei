@@ -32,7 +32,7 @@ TASK(burst_fairy, { cmplx pos; cmplx dir; }) {
 
 	WAIT(60);
 
-	play_sound("shot1");
+	play_sfx("shot1");
 	int n = 1.5 * global.diff - 1;
 
 	for(int i = -n; i <= n; i++) {
@@ -157,7 +157,7 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 	int shot_interval = difficulty_value(120, 40, 30, 20);
 
 	for(;;) {
-		play_sound("shot1");
+		play_sfx("shot1");
 
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		aim *= difficulty_value(2, 2, 2.5, 3);
@@ -239,7 +239,7 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 		cmplx aim = cnormalize(global.plr.pos - e->pos);
 		aim *= 1 + 0.3 * global.diff + rng_real();
 
-		play_sound("shot1");
+		play_sfx("shot1");
 		PROJECTILE(
 			.proto = pp_ball,
 			.pos = e->pos,
@@ -269,7 +269,7 @@ TASK(multiburst_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	int bursts = 4;
 
 	for(int i = 0; i < bursts; ++i) {
-		play_sound("shot1");
+		play_sfx("shot1");
 		int n = global.diff - 1;
 
 		for(int j = -n; j <= n; j++) {
@@ -295,7 +295,7 @@ TASK(multiburst_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 
 TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double boost; }) {
 	Enemy *e = TASK_BIND(ARGS.e);
-	play_sound("shot_special1");
+	play_sfx("shot_special1");
 
 	for(int i = 0; i < ARGS.cnt; ++i) {
 		cmplx vel = ARGS.speed * circle_dir(i, ARGS.cnt);
@@ -411,7 +411,7 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	real speed = difficulty_value(2, 2, 4, 4);
 	real ofs = rng_angle();
 
-	play_sound("shot_special1");
+	play_sfx("shot_special1");
 
 	for(int i = 0; i < cnt; ++i) {
 		cmplx aim = speed * circle_dir_ofs(i, cnt, ofs);
@@ -622,7 +622,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 	int interval = difficulty_value(12, 9, 5, 3);
 	int rounds = 680/interval;
 	for(int k = 0; k < rounds; k++) {
-		play_sound("shot1");
+		play_sfx("shot1");
 
 		float a = M_PI / 30.0 * ((k/7) % 30) + 0.1 * rng_f32();
 		int n = difficulty_value(3,4,4,5);
@@ -637,7 +637,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 		}
 
 		if(k == rounds/2 || k == rounds-1) {
-			play_sound("shot_special1");
+			play_sfx("shot_special1");
 			int n2 = difficulty_value(20, 23, 26, 30);
 			for(int i = 0; i < n2; i++) {
 				PROJECTILE(

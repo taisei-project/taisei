@@ -283,8 +283,6 @@ static void display_bgm_title(void) {
 }
 
 static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
-	BGM *bgm = evt->user.data1;
-
 	if(dialog_is_active(global.dialog)) {
 		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
 	} else {

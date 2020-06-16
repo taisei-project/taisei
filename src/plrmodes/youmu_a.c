@@ -548,7 +548,7 @@ TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		play_sound("bomb_youmu_b");
+		play_sfx("bomb_youmu_b");
 		INVOKE_SUBTASK(youmu_mirror_bomb_controller, ctrl);
 		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
 		INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, ctrl);

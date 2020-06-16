@@ -126,8 +126,8 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 
 		WAIT(65 - 4 * (size_base + size_oscillation - size));
 
-		play_sound("redirect");
-		// play_sound("shot_special1");
+		play_sfx("redirect");
+		// play_sfx("shot_special1");
 
 		ENT_ARRAY_FOREACH(&snowflake_projs, Projectile *p, {
 			spawn_projectile_highlight_effect(p)->opacity = 0.25;

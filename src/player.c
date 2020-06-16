@@ -117,7 +117,7 @@ bool player_set_power(Player *plr, short npow) {
 	plr->power_overflow = pow_overflow;
 
 	if((oldpow + oldpow_over) / 100 < (pow_base + pow_overflow) / 100) {
-		play_sound("powerup");
+		play_sfx("powerup");
 	}
 
 	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
@@ -692,7 +692,7 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.damage_accum = 0;
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
-	play_sound("powersurge_start");
+	play_sfx("powersurge_start");
 
 	collect_all_items(1);
 	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, res_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
@@ -769,7 +769,7 @@ static void player_powersurge_expired(Player *plr) {
 	Sprite *blast = res_sprite("part/blast_huge_halo");
 	float scale = 2 * bonus.discharge_range / blast->w;
 
-	play_sound("powersurge_end");
+	play_sfx("powersurge_end");
 
 	PARTICLE(
 		.size = 1+I,
@@ -947,7 +947,7 @@ void player_death(Player *plr) {
 		return;
 	}
 
-	play_sound("death");
+	play_sfx("death");
 
 	for(int i = 0; i < 60; i++) {
 		RNG_ARRAY(R, 2);
@@ -1369,7 +1369,7 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 	pos = (pos + plr->pos) * 0.5;
 
 	player_add_points(plr, pts, pos);
-	play_sound("graze");
+	play_sfx("graze");
 
 	Color *c = COLOR_COPY(color);
 	color_add(c, RGBA(1, 1, 1, 1));
@@ -1411,13 +1411,13 @@ static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrag
 	*pfrags %= maxfrags;
 
 	if(up) {
-		play_sound(upsnd);
+		play_sfx(upsnd);
 	}
 
 	if(frags) {
 		// FIXME: when we have the extra life/bomb sounds,
 		//        don't play this if upsnd was just played.
-		play_sound(fragsnd);
+		play_sfx(fragsnd);
 	}
 
 	if(*pwhole >= maxwhole) {

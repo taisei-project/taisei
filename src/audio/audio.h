@@ -57,6 +57,8 @@ BGMStatus audio_bgm_status(void);
 bool audio_bgm_looping(void);
 BGM *audio_bgm_current(void);
 
+// TODO modernize sfx API
+
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);
 SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
 void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
