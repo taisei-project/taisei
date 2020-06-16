@@ -132,22 +132,20 @@ size_t splayer_process(StreamPlayer *plr, size_t bufsize, void *buffer, StreamPl
 	stream.samples = buffer;
 
 	if(plr->fade_step) {
-		bool ended = false;
+		int chans = plr->dst_spec.channels;
 
-		for(int i = 0; i < num_samples_filled; ++i) {
-			stream.samples[i] *= gain * plr->fade_gain;
+		for(int i = 0; i < num_samples_filled; i += chans) {
+			for(int chan = 0; chan < chans; ++chan) {
+				stream.samples[i + chan] *= gain * plr->fade_gain;
+			}
 
-			if(fapproach_p(&plr->fade_gain, plr->fade_target, plr->fade_step) == plr->fade_target) {
+			if(plr->fade_step && fapproach_p(&plr->fade_gain, plr->fade_target, plr->fade_step) == plr->fade_target) {
 				plr->fade_step = 0;
 
 				if(plr->fade_target == 0) {
-					ended = true;
+					splayer_stream_ended(plr);
 				}
 			}
-		}
-
-		if(ended) {
-			splayer_stream_ended(plr);
 		}
 	} else {
 		gain *= plr->fade_gain;
@@ -284,6 +282,9 @@ void splayer_halt(StreamPlayer *plr) {
 	plr->stream = NULL;
 	plr->paused = true;
 	plr->looping = false;
+	plr->fade_gain = 0;
+	plr->fade_step = 0;
+	plr->fade_target = 1;
 	splayer_unlock(plr);
 }
 
@@ -352,11 +353,15 @@ fail:
 	return -1;
 }
 
+static bool is_fading_out(StreamPlayer *plr) {
+	return plr->fade_step && plr->fade_target == 0;
+}
+
 BGMStatus splayer_util_bgmstatus(StreamPlayer *plr) {
 	BGMStatus status = BGM_PLAYING;
 	splayer_lock(plr);
 
-	if(!plr->stream) {
+	if(!plr->stream || is_fading_out(plr)) {
 		status = BGM_STOPPED;
 	} else if(plr->paused) {
 		status = BGM_PAUSED;

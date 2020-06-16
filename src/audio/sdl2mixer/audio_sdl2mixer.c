@@ -293,9 +293,13 @@ static double audio_sdl2mixer_bgm_tell(void) {
 }
 
 static BGM *audio_sdl2mixer_bgm_current(void) {
-	BGM *bgm;
+	BGM *bgm = NULL;
 	splayer_lock(&mixer.bgm_player);
-	bgm = UNION_CAST(AudioStream*, BGM*, mixer.bgm_player.stream);
+
+	if(splayer_util_bgmstatus(&mixer.bgm_player) != BGM_STOPPED) {
+		bgm = UNION_CAST(AudioStream*, BGM*, mixer.bgm_player.stream);
+	}
+
 	splayer_unlock(&mixer.bgm_player);
 	return bgm;
 }
