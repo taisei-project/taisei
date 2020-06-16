@@ -19,7 +19,6 @@
 #include "animation.h"
 #include "sfx.h"
 #include "bgm.h"
-#include "bgm_metadata.h"
 #include "shader_object.h"
 #include "shader_program.h"
 #include "model.h"
