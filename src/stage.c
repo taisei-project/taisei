@@ -95,9 +95,10 @@ static void skipstate_handle_bgm_change(void) {
 
 #else
 
-INLINE bool stage_is_skip_mode(void) { return false; }
 INLINE LogicFrameAction skipstate_handle_frame(void) { return LFRAME_WAIT; }
 INLINE void skipstate_handle_bgm_change(void) { }
+INLINE void skipstate_init(void) { }
+INLINE void skipstate_shutdown(void) { }
 
 #endif
 
