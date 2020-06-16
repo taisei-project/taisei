@@ -38,22 +38,42 @@ static void unload_bgm(void *vbgm) {
 }
 
 const char *bgm_get_title(BGM *bgm) {
+	if(!bgm) {
+		return NULL;
+	}
+
 	return _a_backend.funcs.object.bgm.get_title(bgm);
 }
 
 const char *bgm_get_artist(BGM *bgm) {
+	if(!bgm) {
+		return NULL;
+	}
+
 	return _a_backend.funcs.object.bgm.get_artist(bgm);
 }
 
 const char *bgm_get_comment(BGM *bgm) {
+	if(!bgm) {
+		return NULL;
+	}
+
 	return _a_backend.funcs.object.bgm.get_comment(bgm);
 }
 
 double bgm_get_duration(BGM *bgm) {
+	if(!bgm) {
+		return -1;
+	}
+
 	return _a_backend.funcs.object.bgm.get_duration(bgm);
 }
 
 double bgm_get_loop_start(BGM *bgm) {
+	if(!bgm) {
+		return -1;
+	}
+
 	return _a_backend.funcs.object.bgm.get_loop_start(bgm);
 }
 

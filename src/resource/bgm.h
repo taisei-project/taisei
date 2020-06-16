@@ -21,10 +21,10 @@ typedef struct BGM BGM;
 
 DEFINE_OPTIONAL_RESOURCE_GETTER(BGM, res_bgm, RES_BGM)
 
-const char *bgm_get_title(BGM *bgm) attr_nonnull(1);
-const char *bgm_get_artist(BGM *bgm) attr_nonnull(1);
-const char *bgm_get_comment(BGM *bgm) attr_nonnull(1);
-double bgm_get_duration(BGM *bgm) attr_nonnull(1);
-double bgm_get_loop_start(BGM *bgm) attr_nonnull(1);
+const char *bgm_get_title(BGM *bgm);
+const char *bgm_get_artist(BGM *bgm);
+const char *bgm_get_comment(BGM *bgm);
+double bgm_get_duration(BGM *bgm);
+double bgm_get_loop_start(BGM *bgm);
 
 #endif // IGUARD_resource_bgm_h
