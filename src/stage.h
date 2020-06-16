@@ -105,13 +105,19 @@ void stage_shake_view(float strength);
 float stage_get_view_shake_strength(void);
 
 #ifdef DEBUG
-void _stage_bookmark(const char *name);
-#define STAGE_BOOKMARK(name) _stage_bookmark(#name)
-DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
-#define STAGE_BOOKMARK_DELAYED(delay, name) INVOKE_TASK_DELAYED(delay, stage_bookmark, #name)
+#define HAVE_SKIP_MODE
+#endif
+
+#ifdef HAVE_SKIP_MODE
+	void _stage_bookmark(const char *name);
+	#define STAGE_BOOKMARK(name) _stage_bookmark(#name)
+	DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
+	#define STAGE_BOOKMARK_DELAYED(delay, name) INVOKE_TASK_DELAYED(delay, stage_bookmark, #name)
+	bool stage_is_skip_mode(void);
 #else
-#define STAGE_BOOKMARK(name) ((void)0)
-#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
+	#define STAGE_BOOKMARK(name) ((void)0)
+	#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
+	INLINE bool stage_is_skip_mode(void) { return false; }
 #endif
 
 #endif // IGUARD_stage_h

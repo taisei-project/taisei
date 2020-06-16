@@ -21,6 +21,7 @@ typedef enum RenderFrameAction {
 typedef enum LogicFrameAction {
 	LFRAME_WAIT,
 	LFRAME_SKIP,
+	LFRAME_SKIP_ALWAYS,
 	LFRAME_STOP,
 } LogicFrameAction;
 

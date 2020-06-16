@@ -27,8 +27,12 @@ static struct enqueued_sound {
 	bool replace;
 } *sound_queue;
 
+static bool is_skip_mode(void) {
+	return global.frameskip || stage_is_skip_mode();
+}
+
 static SFXPlayID play_sound_internal(const char *name, bool is_ui, int cooldown, bool replace, int delay) {
-	if(!audio_output_works() || global.frameskip) {
+	if(!audio_output_works() || is_skip_mode()) {
 		return 0;
 	}
 
@@ -39,10 +43,6 @@ static SFXPlayID play_sound_internal(const char *name, bool is_ui, int cooldown,
 		s->cooldown = cooldown;
 		s->replace = replace;
 		list_push(&sound_queue, s);
-		return 0;
-	}
-
-	if(taisei_is_skip_mode_enabled()) {
 		return 0;
 	}
 
@@ -74,7 +74,7 @@ static void* discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
 }
 
 static void* play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
-	if(!taisei_is_skip_mode_enabled()) {
+	if(!is_skip_mode()) {
 		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
 	}
 
@@ -111,7 +111,7 @@ void replace_sfx(SFXPlayID sid, const char *name) {
 }
 
 void play_sfx_loop(const char *name) {
-	if(!audio_output_works() || global.frameskip) {
+	if(!audio_output_works() || is_skip_mode()) {
 		return;
 	}
 
