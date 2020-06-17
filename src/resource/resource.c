@@ -351,10 +351,19 @@ retry:
 	return st;
 }
 
+static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
+	return event->type == MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED) && event->user.data1 == vires;
+}
+
 static void unload_resource(InternalResource *ires) {
+	assert(is_main_thread());
+
 	if(wait_for_resource_load(ires, 0) == RES_STATUS_LOADED) {
 		get_handler(ires->res.type)->procs.unload(ires->res.data);
 	}
+
+	SDL_PumpEvents();
+	SDL_FilterEvents(filter_asyncload_event, ires);
 
 	SDL_DestroyCond(ires->cond);
 	SDL_DestroyMutex(ires->mutex);
