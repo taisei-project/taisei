@@ -27,6 +27,10 @@ typedef struct AudioBGMObjectFuncs {
 	double (*get_loop_start)(BGM *bgm);
 } AudioBGMObjectFuncs;
 
+typedef struct AudioSFXObjectFuncs {
+	bool (*set_volume)(SFXImpl *sfx, double vol);
+} AudioSFXObjectFuncs;
+
 typedef struct AudioFuncs {
 	bool (*init)(void);
 	bool (*bgm_play)(BGM *bgm, bool loop, double position, double fadein);
@@ -47,9 +51,8 @@ typedef struct AudioFuncs {
 	SFXPlayID (*sfx_play_or_restart)(SFXImpl *sfx, AudioBackendSFXGroup group);
 	bool (*sfx_resume_all)(AudioBackendSFXGroup group);
 	bool (*sfx_set_global_volume)(double gain);
-	bool (*sfx_set_volume)(SFXImpl *sfx, double vol);
 	bool (*sfx_stop_all)(AudioBackendSFXGroup group);
-	bool (*sfx_stop_loop)(SFXImpl *sfx);
+	bool (*sfx_stop_loop)(SFXImpl *sfx, AudioBackendSFXGroup group);
 	bool (*sfx_stop_id)(SFXPlayID);
 	const char *const *(*get_supported_bgm_exts)(uint *out_numexts);
 	const char *const *(*get_supported_sfx_exts)(uint *out_numexts);
@@ -60,6 +63,7 @@ typedef struct AudioFuncs {
 
 	struct {
 		AudioBGMObjectFuncs bgm;
+		AudioSFXObjectFuncs sfx;
 	} object;
 } AudioFuncs;
 

@@ -97,27 +97,35 @@ static const char *astream_opus_meta(AudioStream *s, AudioStreamMetaTag tag) {
 	return get_opus_tag(of, tag_map[tag]);
 }
 
+static AudioStreamProcs astream_opus_procs = {
+	.free = astream_opus_free,
+	.meta = astream_opus_meta,
+	.read = astream_opus_read,
+	.seek = astream_opus_seek,
+	.tell = astream_opus_tell,
+};
+
 static bool astream_opus_init(AudioStream *stream, OggOpusFile *opus) {
 	if(!op_seekable(opus)) {
 		log_error("Opus stream is not seekable");
 		return false;
 	}
 
-	stream->length = op_pcm_total(opus, -1);
+	ssize_t length = op_pcm_total(opus, -1);
 
-	if(stream->length < 0) {
+	if(length < 0) {
 		log_error("Can't determine length of Opus stream");
 		return false;
 	}
 
-	stream->spec.channels = 2;
-	stream->spec.sample_format = AUDIO_F32SYS;
-	stream->spec.sample_rate = OPUS_SAMPLE_RATE;
-	stream->procs.read = astream_opus_read;
-	stream->procs.seek = astream_opus_seek;
-	stream->procs.tell = astream_opus_tell;
-	stream->procs.meta = astream_opus_meta;
-	stream->procs.free = astream_opus_free;
+	if(length > INT32_MAX) {
+		log_error("Opus stream is too large");
+		return false;
+	}
+
+	stream->length = length;
+	stream->spec = astream_spec(AUDIO_F32SYS, 2, OPUS_SAMPLE_RATE);
+	stream->procs = &astream_opus_procs;
 	stream->opaque = opus;
 
 	const char *loop_tag = get_opus_tag(opus, "LOOPSTART=");

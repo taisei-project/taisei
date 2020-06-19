@@ -12,6 +12,19 @@
 #include "stream_opus.h"
 #include "util.h"
 
+#define PROCS(stream) (*NOT_NULL((stream)->procs))
+#define PROC(stream, proc) (NOT_NULL(PROCS(stream).proc))
+
+AudioStreamSpec astream_spec(SDL_AudioFormat sample_format, uint channels, uint sample_rate) {
+	AudioStreamSpec s;
+	s.sample_format = sample_format;
+	s.channels = channels;
+	s.sample_rate = sample_rate;
+	s.frame_size = channels * (SDL_AUDIO_BITSIZE(sample_format) / CHAR_BIT);
+	assert(s.frame_size > 0);
+	return s;
+}
+
 bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2) {
 	return
 		s1->channels == s2->channels &&
@@ -19,14 +32,14 @@ bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2) {
 		s1->sample_rate == s2->sample_rate;
 }
 
-SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, AudioStreamSpec dest_spec) {
+SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, const AudioStreamSpec *dest_spec) {
 	return SDL_NewAudioStream(
 		source->spec.sample_format,
 		source->spec.channels,
 		source->spec.sample_rate,
-		dest_spec.sample_format,
-		dest_spec.channels,
-		dest_spec.sample_rate
+		dest_spec->sample_format,
+		dest_spec->channels,
+		dest_spec->sample_rate
 	);
 }
 
@@ -43,8 +56,8 @@ bool astream_open(AudioStream *stream, SDL_RWops *rwops, const char *filename) {
 }
 
 void astream_close(AudioStream *stream) {
-	if(stream->procs.free) {
-		stream->procs.free(stream);
+	if(PROCS(stream).free) {
+		PROC(stream, free)(stream);
 	}
 }
 
@@ -63,7 +76,7 @@ ssize_t astream_read(AudioStream *stream, size_t bufsize, void *buffer, AudioStr
 	}
 
 	if(flags & ASTREAM_READ_LOOP) {
-		ssize_t read = NOT_NULL(stream->procs.read)(stream, bufsize, buffer);
+		ssize_t read = PROC(stream, read)(stream, bufsize, buffer);
 
 		if(UNLIKELY(read == 0)) {
 			ssize_t loop_start = stream->loop_start;
@@ -75,13 +88,13 @@ ssize_t astream_read(AudioStream *stream, size_t bufsize, void *buffer, AudioStr
 				return -1;
 			}
 
-			return NOT_NULL(stream->procs.read)(stream, bufsize, buffer);
+			return PROC(stream, read)(stream, bufsize, buffer);
 		}
 
 		return read;
 	}
 
-	return NOT_NULL(stream->procs.read)(stream, bufsize, buffer);
+	return PROC(stream, read)(stream, bufsize, buffer);
 }
 
 ssize_t astream_read_into_sdl_stream(AudioStream *stream, SDL_AudioStream *sdlstream, size_t bufsize, void *buffer, AudioStreamReadFlags flags) {
@@ -104,8 +117,8 @@ ssize_t astream_seek(AudioStream *stream, size_t pos) {
 		return -1;
 	}
 
-	if(LIKELY(stream->procs.seek)) {
-		return stream->procs.seek(stream, pos);
+	if(LIKELY(PROCS(stream).seek)) {
+		return PROC(stream, seek)(stream, pos);
 	}
 
 	log_error("Not implemented");
@@ -113,8 +126,8 @@ ssize_t astream_seek(AudioStream *stream, size_t pos) {
 }
 
 ssize_t astream_tell(AudioStream *stream) {
-	if(LIKELY(stream->procs.tell)) {
-		return stream->procs.tell(stream);
+	if(LIKELY(PROCS(stream).tell)) {
+		return PROC(stream, tell)(stream);
 	}
 
 	log_error("Not implemented");
@@ -122,8 +135,8 @@ ssize_t astream_tell(AudioStream *stream) {
 }
 
 const char *astream_get_meta_tag(AudioStream *stream, AudioStreamMetaTag tag) {
-	if(LIKELY(stream->procs.meta)) {
-		return stream->procs.meta(stream, tag);
+	if(LIKELY(PROCS(stream).meta)) {
+		return PROC(stream, meta)(stream, tag);
 	}
 
 	return NULL;
@@ -135,4 +148,72 @@ ssize_t astream_util_time_to_offset(AudioStream *stream, double t) {
 
 double astream_util_offset_to_time(AudioStream *stream, ssize_t ofs) {
 	return ofs / (double)stream->spec.sample_rate;
+}
+
+bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t buffer_size, void *buffer) {
+	size_t min_size = src->length * spec->frame_size;
+
+	if(min_size > INT32_MAX) {
+		log_error("Stream is too large");
+		return false;
+	}
+
+	assert(buffer_size >= min_size);
+
+	SDL_AudioStream *pipe = NULL;
+	SDL_RWops *rw = SDL_RWFromMem(buffer, min_size);
+
+	if(UNLIKELY(!rw)) {
+		log_sdl_error(LOG_ERROR, "SDL_RWFromMem");
+		goto fail;
+	}
+
+	pipe = astream_create_sdl_stream(src, spec);
+
+	if(UNLIKELY(!pipe)) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateAudioStream");
+		goto fail;
+	}
+
+	for(;;) {
+		char staging[1 << 14];
+
+		ssize_t read = SDL_AudioStreamGet(pipe, staging, sizeof(staging));
+
+		if(UNLIKELY(read < 0)) {
+			log_sdl_error(LOG_ERROR, "SDL_AudioStreamGet");
+			goto fail;
+		}
+
+		if(read > 0) {
+			if(UNLIKELY(SDL_RWwrite(rw, staging, 1, read) < read)) {
+				log_sdl_error(LOG_ERROR, "SDL_RWwrite");
+				goto fail;
+			}
+		}
+
+		read = astream_read_into_sdl_stream(src, pipe, sizeof(staging), staging, 0);
+
+		if(UNLIKELY(read < 0)) {
+			goto fail;
+		}
+
+		if(read == 0) {
+			SDL_AudioStreamFlush(pipe);
+			if(SDL_AudioStreamAvailable(pipe) == 0) {
+				break;
+			}
+		}
+	}
+
+	SDL_FreeAudioStream(pipe);
+	SDL_RWclose(rw);
+	return true;
+
+fail:
+	if(rw) {
+		SDL_RWclose(rw);
+	}
+	SDL_FreeAudioStream(pipe);
+	return false;
 }

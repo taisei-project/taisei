@@ -39,9 +39,8 @@ static SFXPlayID audio_null_sfx_play(SFXImpl *impl, AudioBackendSFXGroup group) 
 static SFXPlayID audio_null_sfx_play_or_restart(SFXImpl *impl, AudioBackendSFXGroup group) { return FAKE_SOUND_ID; }
 static bool audio_null_sfx_resume_all(AudioBackendSFXGroup group) { return true; }
 static bool audio_null_sfx_set_global_volume(double gain) { return true; }
-static bool audio_null_sfx_set_volume(SFXImpl *snd, double gain) { return true; }
 static bool audio_null_sfx_stop_all(AudioBackendSFXGroup group) { return true; }
-static bool audio_null_sfx_stop_loop(SFXImpl *impl) { return true; }
+static bool audio_null_sfx_stop_loop(SFXImpl *impl, AudioBackendSFXGroup group) { return true; }
 static bool audio_null_sfx_stop_id(SFXPlayID sid) { return true; }
 
 static const char* const* audio_null_get_supported_exts(uint *out_numexts) { *out_numexts = 0; return NULL; }
@@ -55,6 +54,8 @@ static const char *audio_null_obj_bgm_get_artist(BGM *bgm) { return NULL; }
 static const char *audio_null_obj_bgm_get_comment(BGM *bgm) { return NULL; }
 static double audio_null_obj_bgm_get_duration(BGM *bgm) { return 1; }
 static double audio_null_obj_bgm_get_loop_start(BGM *bgm) {	return 0; }
+
+static bool audio_null_obj_sfx_set_volume(SFXImpl *impl, double gain) { return true; }
 
 AudioBackend _a_backend_null = {
 	.name = "null",
@@ -82,7 +83,6 @@ AudioBackend _a_backend_null = {
 		.sfx_play_or_restart = audio_null_sfx_play_or_restart,
 		.sfx_resume_all = audio_null_sfx_resume_all,
 		.sfx_set_global_volume = audio_null_sfx_set_global_volume,
-		.sfx_set_volume = audio_null_sfx_set_volume,
 		.sfx_stop_all = audio_null_sfx_stop_all,
 		.sfx_stop_id = audio_null_sfx_stop_id,
 		.sfx_stop_loop = audio_null_sfx_stop_loop,
@@ -96,6 +96,10 @@ AudioBackend _a_backend_null = {
 				.get_comment = audio_null_obj_bgm_get_comment,
 				.get_duration = audio_null_obj_bgm_get_duration,
 				.get_loop_start = audio_null_obj_bgm_get_loop_start,
+			},
+
+			.sfx = {
+				.set_volume = audio_null_obj_sfx_set_volume,
 			},
 		},
 	}

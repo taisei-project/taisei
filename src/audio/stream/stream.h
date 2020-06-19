@@ -32,17 +32,18 @@ struct AudioStreamProcs {
 };
 
 struct AudioStreamSpec {
-	SDL_AudioFormat sample_format;
-	int sample_rate;
-	int channels;
+	SDL_AudioFormat sample_format;  // typedef'd to uint16_t
+	uint16_t channels;
+	uint32_t sample_rate;
+	uint32_t frame_size;
 };
 
 struct AudioStream {
-	AudioStreamProcs procs;
+	AudioStreamProcs *procs;
 	void *opaque;
 	AudioStreamSpec spec;
-	ssize_t length;
-	ssize_t loop_start;
+	int32_t length;
+	int32_t loop_start;
 };
 
 typedef enum AudioStreamReadFlags {
@@ -50,7 +51,6 @@ typedef enum AudioStreamReadFlags {
 	ASTREAM_READ_LOOP = (1 << 1),
 } AudioStreamReadFlags;
 
-SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, AudioStreamSpec dest_spec);
 
 bool astream_open(AudioStream *stream, SDL_RWops *rwops, const char *filename) attr_nonnull_all;
 void astream_close(AudioStream *stream) attr_nonnull_all;
@@ -60,9 +60,13 @@ ssize_t astream_seek(AudioStream *stream, size_t pos) attr_nonnull_all;
 ssize_t astream_tell(AudioStream *stream) attr_nonnull_all;
 const char *astream_get_meta_tag(AudioStream *stream, AudioStreamMetaTag tag) attr_nonnull_all;
 
+SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, const AudioStreamSpec *dest_spec);
+bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t buffer_size, void *buffer);
+
 ssize_t astream_util_time_to_offset(AudioStream *stream, double t) attr_nonnull_all;
 double astream_util_offset_to_time(AudioStream *stream, ssize_t ofs) attr_nonnull_all;
 
+AudioStreamSpec astream_spec(SDL_AudioFormat sample_format, uint channels, uint sample_rate);
 bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2);
 
 #endif // IGUARD_audio_stream_stream_h

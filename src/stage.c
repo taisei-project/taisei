@@ -156,9 +156,10 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 			stage_fade_bgm();
 		}
 	} else {
-		resume_all_sfx();
 		audio_bgm_resume();
 	}
+
+	resume_all_sfx();
 
 	CallChain *cc = ccr.ctx;
 	run_call_chain(cc, NULL);

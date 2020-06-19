@@ -30,7 +30,7 @@ static void load_sound(ResourceLoadState *st) {
 		return;
 	}
 
-	_a_backend.funcs.sfx_set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
+	_a_backend.funcs.object.sfx.set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
 
 	SFX *snd = calloc(1, sizeof(SFX));
 	snd->impl = sound;

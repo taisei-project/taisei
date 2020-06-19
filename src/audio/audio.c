@@ -141,7 +141,7 @@ static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
 		}
 
 		if(sfx->islooping && (global.frames > sfx->lastplayframe + LOOPTIMEOUTFRAMES || reset)) {
-			B.sfx_stop_loop(sfx->impl);
+			B.sfx_stop_loop(sfx->impl, SFXGROUP_MAIN);
 			sfx->islooping = LS_FADEOUT;
 		}
 
