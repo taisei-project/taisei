@@ -118,7 +118,9 @@ static bool init_audio_device(void) {
 	want.freq = AUDIO_FREQ;
 	want.samples = config_get_int(CONFIG_MIXER_CHUNKSIZE);
 
-	mixer.audio_device = SDL_OpenAudioDevice(NULL, false, &want, &have, SDL_AUDIO_ALLOW_ANY_CHANGE);
+	// NOTE: StreamPlayer expects stereo float32 samples.
+	uint allow_changes = SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
+	mixer.audio_device = SDL_OpenAudioDevice(NULL, false, &want, &have, allow_changes);
 
 	if(mixer.audio_device == 0) {
 		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDevice");
@@ -255,7 +257,7 @@ static bool audio_sdl_bgm_set_global_volume(double gain) {
 
 static bool audio_sdl_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
 	lock_audio();
-	bool status = splayer_play(&mixer.players[G_BGM], CHAN_BGM, &bgm->stream, loop, position, fadein);
+	bool status = splayer_play(&mixer.players[G_BGM], CHAN_BGM, &bgm->stream, loop, 1, position, fadein);
 	unlock_audio();
 	return status;
 }
@@ -472,8 +474,7 @@ static SFXPlayID play_sfx_on_channel(SFXImpl *sfx, AudioBackendSFXGroup group, i
 	StaticPCMAudioStream *stream = &mixer.sfx_streams[flat_chan];
 
 	if(astream_pcm_reopen(&stream->astream, &mixer.spec, sfx->pcm_size, sfx->pcm, 0)) {
-		if(splayer_play(plr, chan, &stream->astream, loop, pos, fadein)) {
-			plr->channels[chan].gain = sfx->gain;
+		if(splayer_play(plr, chan, &stream->astream, loop, sfx->gain, pos, fadein)) {
 			id = register_sfx_playback(sfx, loop, g, chan, flat_chan);
 		}
 	}

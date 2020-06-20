@@ -14,15 +14,39 @@
 // #define SPAM(...) log_debug(__VA_ARGS__)
 #define SPAM(...) ((void)0)
 
+typedef float sample_t;
+
+struct stereo_frame {
+	sample_t l, r;
+};
+
+union audio_buffer {
+	uint8_t *bytes;
+	sample_t *samples;
+	struct stereo_frame *frames;
+};
+
 bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *dst_spec) {
 	memset(plr, 0, sizeof(*plr));
+
+	if(dst_spec->sample_format != AUDIO_F32SYS) {
+		log_error("Unsupported audio format: 0x%4x", dst_spec->sample_format);
+		return false;
+	}
+
+	if(dst_spec->channels != 2) {
+		log_error("Unsupported number of audio channels: %i", dst_spec->channels);
+		return false;
+	}
+
+	assert(dst_spec->frame_size == sizeof(struct stereo_frame));
+
 	plr->num_channels = num_channels,
 	plr->channels = calloc(sizeof(*plr->channels), num_channels);
 	plr->dst_spec = *dst_spec;
 
 	for(int i = 0; i < num_channels; ++i) {
 		StreamPlayerChannel *chan = plr->channels + i;
-		chan->fade_target = 1;
 		chan->gain = 1;
 		chan->paused = true;
 		alist_append(&plr->channel_history, chan);
@@ -126,74 +150,66 @@ static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsiz
 	return bufsize - (buf_end - buf);
 }
 
-INLINE int chan_integer_gain(StreamPlayerChannel *pchan, float gain) {
-	return pchan->gain * pchan->fade_gain * gain * SDL_MIX_MAXVOLUME;
-}
-
-void splayer_process(StreamPlayer *plr, size_t bufsize, void *buffer) {
-	/*
-	 * NOTE/FIXME: The SDL wiki has the following to say about SDL_MixAudioFormat:
-	 *
-	 * > Do not use this function for mixing together more than two streams of sample data. The output from repeated
-	 * > application of this function may be distorted by clipping, because there is no accumulator with greater range
-	 * > than the input (not to mention this being an inefficient way of doing it). Use mixing functions from SDL_mixer,
-	 * > OpenAL, or write your own mixer instead.
-	 *
-	 * https://wiki.libsdl.org/SDL_MixAudioFormat
-	 *
-	 * However, SDL_mixer itself uses this function to mix multiple streams, so this appears to be at least somewhat
-	 * inaccurate. That said, it's probably worthwhile to write a more efficient/specialized mixing function that does
-	 * not clip samples.
-	 */
-
+void splayer_process(StreamPlayer *plr, size_t bufsize, void *vbuffer) {
 	if(plr->paused) {
 		return;
 	}
 
 	float gain = plr->gain;
-	size_t frame_size = plr->dst_spec.frame_size;
-	SDL_AudioFormat sample_format = plr->dst_spec.sample_format;
 	int num_channels = plr->num_channels;
+	union audio_buffer out_buffer = { vbuffer };
 
 	for(int i = 0; i < num_channels; ++i) {
-		uint8_t staging_buffer[bufsize];
-		size_t chan_bytes = splayer_process_channel(plr, i, sizeof(staging_buffer), staging_buffer);
+		uint8_t staging_buffer_bytes[bufsize];
+		union audio_buffer staging_buffer = { staging_buffer_bytes };
+		size_t chan_bytes = splayer_process_channel(plr, i, sizeof(staging_buffer_bytes), staging_buffer_bytes);
 
 		if(chan_bytes) {
 			assert(chan_bytes <= bufsize);
-			assert(chan_bytes % frame_size == 0);
+			assert(chan_bytes % sizeof(struct stereo_frame) == 0);
 
 			StreamPlayerChannel *pchan = plr->channels + i;
+			float chan_gain = gain * pchan->gain;
+			uint num_staging_frames = chan_bytes / sizeof(struct stereo_frame);
+			uint fade_steps = pchan->fade.num_steps;
 
-			if(pchan->fade_step) {
-				uint8_t *psrc = staging_buffer;
-				uint8_t *pdst = buffer;
-				uint8_t *pdst_end = pdst + chan_bytes;
+			if(fade_steps) {
+				float fade_step = pchan->fade.step;
+				float fade_gain = pchan->fade.gain;
 
-				do {
-					int igain = chan_integer_gain(pchan, gain);
-					SDL_MixAudioFormat(pdst, psrc, sample_format, frame_size, igain);
-					psrc += frame_size;
-					pdst += frame_size;
+				if(fade_steps > num_staging_frames) {
+					fade_steps = num_staging_frames;
+				}
 
-					if(pchan->fade_step && fapproach_p(&pchan->fade_gain, pchan->fade_target, pchan->fade_step) == pchan->fade_target) {
-						pchan->fade_step = 0;
+				for(uint i = 0; i < fade_steps; ++i) {
+					float g = fade_gain + fade_step * i;
+					staging_buffer.frames[i].l *= g;
+					staging_buffer.frames[i].r *= g;
+				}
 
-						if(pchan->fade_target == 0) {
-							splayer_stream_ended(plr, i);
-						}
+				if((pchan->fade.num_steps -= fade_steps) == 0) {
+					// fade finished
+
+					if(pchan->fade.target == 0) {
+						splayer_stream_ended(plr, i);
+						continue;
 					}
-				} while(pdst < pdst_end);
+
+					pchan->fade.gain = pchan->fade.target;
+					chan_gain *= pchan->fade.gain;
+				} else {
+					pchan->fade.gain += fade_step * fade_steps;
+				}
 			} else {
-				int igain = chan_integer_gain(pchan, gain);
-				SDL_MixAudioFormat(buffer, staging_buffer, plr->dst_spec.sample_format, chan_bytes, igain);
+				chan_gain *= pchan->fade.gain;
+			}
+
+			for(uint i = 0; i < num_staging_frames; ++i) {
+				out_buffer.frames[i].l += staging_buffer.frames[i].l * chan_gain;
+				out_buffer.frames[i].r += staging_buffer.frames[i].r * chan_gain;
 			}
 		}
 	}
-}
-
-static inline float calc_fade_step(StreamPlayer *plr, float fadetime) {
-	return 1 / (fadetime * plr->dst_spec.sample_rate);
 }
 
 static bool splayer_validate_channel(StreamPlayer *plr, int chan) {
@@ -205,7 +221,21 @@ static bool splayer_validate_channel(StreamPlayer *plr, int chan) {
 	return true;
 }
 
-bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, double position, double fadein) {
+static void splayer_set_fade(StreamPlayer *plr, StreamPlayerChannel *pchan, float from, float to, float time) {
+	if(time == 0) {
+		pchan->fade.target = to;
+		pchan->fade.gain = to;
+		pchan->fade.num_steps = 0;
+		pchan->fade.step = 0;
+	} else {
+		pchan->fade.target = to;
+		pchan->fade.gain = from;
+		pchan->fade.num_steps = lroundf(plr->dst_spec.sample_rate * time);
+		pchan->fade.step = (to - from) / pchan->fade.num_steps;
+	}
+}
+
+bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, float gain, double position, double fadein) {
 	if(!splayer_validate_channel(plr, chan)) {
 		return false;
 	}
@@ -225,17 +255,10 @@ bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, d
 	pchan->stream = stream;
 	pchan->looping = loop;
 	pchan->paused = false;
-	pchan->fade_target = 1;
+	pchan->gain = gain;
 
 	splayer_history_move_to_back(plr, pchan);
-
-	if(fadein == 0) {
-		pchan->fade_gain = 1;
-		pchan->fade_step = 0;
-	} else {
-		pchan->fade_gain = 0;
-		pchan->fade_step = calc_fade_step(plr, fadein);
-	}
+	splayer_set_fade(plr, pchan, 0, 1, fadein);
 
 	SPAM("Stream spec: %iHz; %i chans; format=%i",
 		stream->spec.sample_rate,
@@ -327,11 +350,11 @@ void splayer_halt(StreamPlayer *plr, int chan) {
 	pchan->stream = NULL;
 	pchan->paused = true;
 	pchan->looping = false;
-	pchan->fade_gain = 0;
-	pchan->fade_step = 0;
-	pchan->fade_target = 1;
-	pchan->gain = 1;
-
+	pchan->gain = 0;
+	pchan->fade.gain = 0;
+	pchan->fade.step = 0;
+	pchan->fade.num_steps = 0;
+	pchan->fade.target = 0;
 	splayer_history_move_to_front(plr, pchan);
 }
 
@@ -346,8 +369,7 @@ bool splayer_fadeout(StreamPlayer *plr, int chan, double fadeout) {
 	}
 
 	StreamPlayerChannel *pchan = plr->channels + chan;
-	pchan->fade_target = 0;
-	pchan->fade_step = calc_fade_step(plr, fadeout);
+	splayer_set_fade(plr, pchan, pchan->fade.gain, 0, fadeout);
 
 	return true;
 }
@@ -431,7 +453,7 @@ bool splayer_is_looping(StreamPlayer *plr, int chan) {
 }
 
 static bool is_fading_out(StreamPlayerChannel *pchan) {
-	return pchan->fade_step && pchan->fade_target == 0;
+	return pchan->fade.num_steps && pchan->fade.target == 0;
 }
 
 BGMStatus splayer_util_bgmstatus(StreamPlayer *plr, int chan) {
