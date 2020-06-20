@@ -160,7 +160,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
 
 	FACE(hina, normal);
-	MSG(hina, "You should know that Yōkai Mountain is especially dangeorus today.");
+	MSG(hina, "You should know that Yōkai Mountain is especially dangerous today.");
 	FACE(hina, concerned);
 	MSG(hina, "You ought to turn back now, my dear.");
 
