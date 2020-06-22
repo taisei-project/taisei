@@ -219,10 +219,6 @@ static bool audio_sdl_output_works(void) {
 	return SDL_GetAudioDeviceStatus(mixer.audio_device) == SDL_AUDIO_PLAYING;
 }
 
-static inline int gain_to_mixvol(double gain) {
-	return iclamp(gain * SDL_MIX_MAXVOLUME, 0, SDL_MIX_MAXVOLUME);
-}
-
 static const char *const *audio_sdl_get_supported_exts(uint *numexts) {
 	// TODO figure this out dynamically
 	static const char *const exts[] = { ".opus" };
