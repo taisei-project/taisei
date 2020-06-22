@@ -11,6 +11,8 @@
 #include "stream_opus.h"
 #include "util.h"
 
+#include <opusfile.h>
+
 #define OPUS_SAMPLE_RATE 48000
 
 static ssize_t astream_opus_read(AudioStream *s, size_t bufsize, void *buffer) {

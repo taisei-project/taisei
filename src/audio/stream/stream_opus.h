@@ -13,8 +13,6 @@
 
 #include "stream.h"
 
-#include <opusfile.h>
-
 bool astream_opus_open(AudioStream *stream, SDL_RWops *rw);
 
 #endif // IGUARD_audio_stream_stream_opus_h
