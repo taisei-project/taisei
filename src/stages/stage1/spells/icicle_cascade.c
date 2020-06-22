@@ -32,7 +32,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 	p->move = move_asymptotic_simple(v, 2);
 	p->angle = carg(p->move.velocity);
 
-	play_sound("redirect");
+	play_sfx("redirect");
 	spawn_projectile_highlight_effect(p);
 }
 
@@ -50,7 +50,7 @@ DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
 
 	for(int round = 0;; ++round) {
 		WAIT(icicle_interval);
-		play_sound("shot1");
+		play_sfx("shot1");
 
 		for(int i = 0; i < icicles; ++i) {
 			real speed = 8 + 3 * i;

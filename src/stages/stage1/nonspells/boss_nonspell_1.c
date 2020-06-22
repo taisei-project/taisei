@@ -23,7 +23,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 		WAIT(20);
 		aniplayer_queue(&boss->ani, "(9)", 3);
 		aniplayer_queue(&boss->ani, "main", 0);
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 
 		const int num_shots = 5;
 		const int num_projs = difficulty_value(9, 10, 11, 12);
@@ -49,7 +49,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 		WAIT(10);
 
 		for(int t = 0, i = 0; t < 60; ++i) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			real speed0 = difficulty_value(4.0, 6.0, 6.0, 6.0);
 			real speed1 = difficulty_value(3.0, 5.0, 6.0, 8.0);
 			real angle = rng_sreal() * M_PI/8.0;
@@ -71,7 +71,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 		WAIT(30);
 
 		for(int t = 0, i = 0; t < 150; ++i) {
-			play_sound("shot1");
+			play_sfx("shot1");
 			float dif = rng_angle();
 			for(int shot = 0; shot < 20; ++shot) {
 				cmplx aim = cdir(M_TAU/8 * shot + dif);

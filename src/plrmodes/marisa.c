@@ -57,7 +57,7 @@ DEFINE_EXTERN_TASK(marisa_common_shot_forward) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		for(int i = -1; i < 2; i += 2) {
 			PROJECTILE(

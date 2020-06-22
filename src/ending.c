@@ -443,7 +443,7 @@ static LogicFrameAction ending_logic_frame(void *arg) {
 	if(e->pos < e->entries.num_elements - 1 && global.frames >= dynarray_get(&e->entries, e->pos + 1).time) {
 		e->pos++;
 		if(e->pos == e->entries.num_elements - 1) {
-			fade_bgm((FPS * ENDING_FADE_OUT) / 4000.0);
+			audio_bgm_stop((FPS * ENDING_FADE_OUT) / 4000.0);
 			set_transition(TransFadeWhite, ENDING_FADE_OUT, ENDING_FADE_OUT);
 			e->duration = global.frames+ENDING_FADE_OUT;
 		}
@@ -491,7 +491,7 @@ void ending_enter(CallChain next) {
 
 	global.frames = 0;
 	set_ortho(SCREEN_W, SCREEN_H);
-	start_bgm("ending");
+	audio_bgm_play(res_bgm("ending"), true, 0, 0);
 
 	eventloop_enter(e, ending_logic_frame, ending_render_frame, ending_loop_end, FPS);
 }

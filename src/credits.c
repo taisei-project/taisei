@@ -244,7 +244,7 @@ static void credits_init(void) {
 	// presumably not desired anyway.
 	credits.skipable = progress_times_any_ending_achieved() > 1;
 
-	start_bgm("credits");
+	audio_bgm_play(res_bgm("credits"), false, 0, 0);
 }
 
 static double entry_height(CreditsEntry *e, double *head, double *body) {

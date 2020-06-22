@@ -14,7 +14,7 @@
 #include "sfxbgm_common.h"
 #include "util.h"
 
-static char* sound_path(const char *name) {
+static char *sound_path(const char *name) {
 	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false);
 }
 
@@ -23,24 +23,24 @@ static bool check_sound_path(const char *path) {
 }
 
 static void load_sound(ResourceLoadState *st) {
-	SoundImpl *sound = _a_backend.funcs.sound_load(st->path);
+	SFXImpl *sound = _a_backend.funcs.sfx_load(st->path);
 
 	if(!sound) {
 		res_load_failed(st);
 		return;
 	}
 
-	_a_backend.funcs.sound_set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
+	_a_backend.funcs.object.sfx.set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
 
-	Sound *snd = calloc(1, sizeof(Sound));
+	SFX *snd = calloc(1, sizeof(SFX));
 	snd->impl = sound;
 
 	res_load_finished(st, snd);
 }
 
 static void unload_sound(void *vsnd) {
-	Sound *snd = vsnd;
-	_a_backend.funcs.sound_unload(snd->impl);
+	SFX *snd = vsnd;
+	_a_backend.funcs.sfx_unload(snd->impl);
 	free(snd);
 }
 

@@ -171,7 +171,7 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	global.gameover = GAMEOVER_NONE;
 	replay_destroy(&global.replay);
 	main_menu_update_practice_menus();
-	start_bgm("menu");
+	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
 
 void start_game(MenuData *m, void *arg) {

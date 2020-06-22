@@ -1338,7 +1338,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		if(b->type != BT_KeyBinding) {
 			if(esc) {
 				b->blockinput = false;
-				play_ui_sound("hit");
+				play_sfx_ui("hit");
 			}
 
 			return true;
@@ -1352,9 +1352,9 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 			}
 
 			config_set_int(b->configentry, scan);
-			play_ui_sound("shot_special1");
+			play_sfx_ui("shot_special1");
 		} else {
-			play_ui_sound("hit");
+			play_sfx_ui("hit");
 		}
 
 		b->blockinput = false;
@@ -1362,7 +1362,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 	}
 
 	if(t == MAKE_TAISEI_EVENT(TE_MENU_ABORT)) {
-		play_ui_sound("hit");
+		play_sfx_ui("hit");
 		b->blockinput = false;
 		return true;
 	}
@@ -1383,7 +1383,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 
 		if(button == GAMEPAD_BUTTON_BACK || button == GAMEPAD_BUTTON_START) {
 			b->blockinput = false;
-			play_ui_sound("hit");
+			play_sfx_ui("hit");
 			return true;
 		}
 
@@ -1395,7 +1395,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 
 		config_set_int(b->configentry, button);
 		b->blockinput = false;
-		play_ui_sound("shot_special1");
+		play_sfx_ui("shot_special1");
 		return true;
 	}
 
@@ -1465,7 +1465,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		}
 
 		free(text_allocated);
-		play_ui_sound(snd);
+		play_sfx_ui(snd);
 		return true;
 	}
 
@@ -1473,14 +1473,14 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		SDL_Scancode scan = event->key.keysym.scancode;
 
 		if(scan == SDL_SCANCODE_ESCAPE) {
-			play_ui_sound("hit");
+			play_sfx_ui("hit");
 			stralloc(&b->strvalue, config_get_str(b->configentry));
 			b->blockinput = false;
 		} else if(scan == SDL_SCANCODE_RETURN) {
 			if(*b->strvalue) {
-				play_ui_sound("shot_special1");
+				play_sfx_ui("shot_special1");
 			} else {
-				play_ui_sound("hit");
+				play_sfx_ui("hit");
 				stralloc(&b->strvalue, "Player");
 			}
 
@@ -1494,10 +1494,10 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			uint32_t *u = utf8_to_ucs4_alloc(b->strvalue);
 
 			if(*u) {
-				play_ui_sound("generic_shot");
+				play_sfx_ui("generic_shot");
 				*(ucs4chr(u, 0) - 1) = 0;
 			} else {
-				play_ui_sound("hit");
+				play_sfx_ui("hit");
 			}
 
 			free(b->strvalue);
@@ -1519,7 +1519,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 	switch(type) {
 		case TE_MENU_CURSOR_UP:
 		case TE_MENU_CURSOR_DOWN:
-			play_ui_sound("generic_shot");
+			play_sfx_ui("generic_shot");
 			menu->drawdata[3] = 10;
 			do {
 				menu->cursor += (type == TE_MENU_CURSOR_UP ? -1 : 1);
@@ -1537,7 +1537,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 
 		case TE_MENU_CURSOR_LEFT:
 		case TE_MENU_CURSOR_RIGHT:
-			play_ui_sound("generic_shot");
+			play_sfx_ui("generic_shot");
 			bool next = (type == TE_MENU_CURSOR_RIGHT);
 
 			if(bind) {
@@ -1565,7 +1565,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 		break;
 
 		case TE_MENU_ACCEPT:
-			play_ui_sound("shot_special1");
+			play_sfx_ui("shot_special1");
 			menu->selected = menu->cursor;
 
 			if(bind) switch(bind->type) {
@@ -1585,7 +1585,7 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 		break;
 
 		case TE_MENU_ABORT:
-			play_ui_sound("hit");
+			play_sfx_ui("hit");
 			menu->selected = -1;
 			close_menu(menu);
 		break;

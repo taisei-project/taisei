@@ -94,23 +94,23 @@ TASK(halation_orb, {
 	create_halation_laser(pos[0], pos[2], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time / 2);
-	play_sound("laser1");
+	play_sfx("laser1");
 	WAIT(phase_time / 2);
 	create_halation_laser(pos[0], pos[1], 12, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
-	play_sound("shot1");
+	play_sfx("shot1");
 	create_halation_laser(pos[0], pos[3], 15, phase_time, phase_time * 1.5, NULL);
 	create_halation_laser(pos[1], pos[3], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
-	play_sound("shot1");
+	play_sfx("shot1");
 	create_halation_laser(pos[0], pos[1], 12, phase_time, phase_time * 1.5, NULL);
 	create_halation_laser(pos[0], pos[2], 15, phase_time, phase_time * 1.5, NULL);
 
 	WAIT(phase_time);
-	play_sound("shot1");
-	play_sound("shot_special1");
+	play_sfx("shot1");
+	play_sfx("shot_special1");
 
 	Color colors[] = {
 		// PRECISE colors, VERY important!!!
@@ -173,7 +173,7 @@ DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 		}
 
 		for(int i = 0; i < orbs; ++i) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			INVOKE_TASK(halation_orb,
 				.pos = {
 					orb_positions[i],

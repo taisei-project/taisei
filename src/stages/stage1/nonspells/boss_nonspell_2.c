@@ -17,7 +17,7 @@
 
 TASK(snowburst, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	play_sound("shot_special1");
+	play_sfx("shot_special1");
 	aniplayer_queue(&boss->ani, "(9)", 0);
 
 	int rounds = difficulty_value(3, 4, 5, 6);
@@ -86,7 +86,7 @@ TASK(spiralshot, {
 	);
 
 	for(int b = 0; b < count; ++b) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 
 		real dist = b * dist_per_bullet;
 		real angle = angle_ofs + b * angle_per_bullet;
@@ -102,8 +102,8 @@ TASK(spiralshot, {
 	}
 
 	WAIT(fire_delay);
-	play_sound("shot_special1");
-	play_sound("redirect");
+	play_sfx("shot_special1");
+	play_sfx("redirect");
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		spawn_projectile_highlight_effect(p);
 		p->move = move_linear(cdir(p->angle) * ARGS.bullet_speed);
@@ -152,7 +152,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_2) {
 		for(int t = 0, i = 0; t < 150;) {
 			float dif = rng_angle();
 
-			play_sound("shot1");
+			play_sfx("shot1");
 			for(int j = 0; j < 20; ++j) {
 				PROJECTILE(
 					.proto = pp_plainball,

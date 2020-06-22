@@ -143,7 +143,7 @@ TASK(reimu_dream_gap_bomb_projectile, {
 TASK(reimu_dream_bomb_noise, { BoxedPlayer plr; }) {
 	Player *plr = TASK_BIND(ARGS.plr);
 	do {
-		play_sound("boon");
+		play_sfx("boon");
 		WAIT(16);
 	} while(player_is_bomb_active(plr));
 }
@@ -192,7 +192,7 @@ TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		play_sound("bomb_marisa_a");
+		play_sfx("bomb_marisa_a");
 		INVOKE_SUBTASK(reimu_dream_bomb_noise, ENT_BOX(plr));
 		INVOKE_SUBTASK(reimu_dream_bomb_barrage, ctrl);
 		INVOKE_SUBTASK(reimu_dream_bomb_background, ctrl);
@@ -568,7 +568,7 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		for(int i = -1; i < 2; i += 2) {
 			cmplx shot_dir = i * ((plr->inputflags & INFLAG_FOCUS) ? 1 : I);

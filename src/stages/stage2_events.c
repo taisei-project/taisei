@@ -623,7 +623,7 @@ static int hina_monty_slave(Enemy *s, int time) {
 	}
 
 	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(fmax(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 
 		PROJECTILE(
 			.proto = pp_crystal,

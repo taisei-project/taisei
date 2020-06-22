@@ -214,8 +214,8 @@ static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
 TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 	cmplx pos = ENT_UNBOX(ARGS.orb)->pos;
 
-	play_sound("boom");
-	play_sound("spellend");
+	play_sfx("boom");
+	play_sfx("spellend");
 
 	stage_shake_view(200);
 
@@ -357,7 +357,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 		if(t == circletime) {
 			target_homing = global.plr.pos - 256*I;
 			orb->flags &= ~PFLAG_NOCOLLISION;
-			play_sound("redirect");
+			play_sfx("redirect");
 		}
 
 		cmplx target_circle = plr->pos + 10 * sqrt(t) * dir * (1 + 0.1 * sin(0.2 * t));
@@ -428,8 +428,8 @@ TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
 		INVOKE_SUBTASK(reimu_spirit_bomb_background, ctrl);
 
-		play_sound("bomb_reimu_a");
-		play_sound("bomb_marisa_b");
+		play_sfx("bomb_reimu_a");
+		play_sfx("bomb_marisa_b");
 
 		for(int i = 0; i < orb_count; i++) {
 			INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(plr), i, M_TAU/orb_count*i);
@@ -770,7 +770,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 		INVOKE_TASK(reimu_spirit_ofuda,
 			.pos = plr->pos + 10 * dir - 15.0*I,
 			.vel = -20*I,
@@ -783,7 +783,7 @@ TASK(reimu_spirit_shot_forward, { ReimuAController *ctrl; }) {
 }
 
 TASK(reimu_spirit_shot_volley_bullet, { Player *plr; cmplx offset; cmplx vel; real damage; ShaderProgram *shader; }) {
-	play_loop("generic_shot");
+	play_sfx_loop("generic_shot");
 
 	PROJECTILE(
 		.proto = pp_hakurei_seal,

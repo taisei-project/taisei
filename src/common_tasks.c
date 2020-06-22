@@ -87,10 +87,10 @@ DEFINE_EXTERN_TASK(common_charge) {
 
 	const char *snd_charge = ARGS.sound.charge;
 	const char *snd_discharge = ARGS.sound.discharge;
-	SoundID charge_snd_id = 0;
+	SFXPlayID charge_snd_id = 0;
 
 	if(snd_charge) {
-		charge_snd_id = play_sound(snd_charge);
+		charge_snd_id = play_sfx(snd_charge);
 	}
 
 	Color local_color;
@@ -152,7 +152,7 @@ DEFINE_EXTERN_TASK(common_charge) {
 	}
 
 	if(snd_discharge) {
-		replace_sound(charge_snd_id, snd_discharge);
+		replace_sfx(charge_snd_id, snd_discharge);
 	} else {
 		stop_sound(charge_snd_id);
 	}

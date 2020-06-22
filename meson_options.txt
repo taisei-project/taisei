@@ -145,15 +145,15 @@ option(
 option(
     'a_default',
     type : 'combo',
-    choices : ['sdl2mixer', 'null'],
+    choices : ['sdl', 'null'],
     description : 'Which audio backend to use by default'
 )
 
 option(
-    'a_sdl2mixer',
+    'a_sdl',
     type : 'boolean',
     value : true,
-    description : 'Build the SDL2_Mixer audio backend'
+    description : 'Build the SDL audio backend'
 )
 
 option(

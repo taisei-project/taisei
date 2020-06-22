@@ -27,6 +27,81 @@
 #include "common_tasks.h"
 #include "stageinfo.h"
 
+#ifdef HAVE_SKIP_MODE
+
+static struct {
+	const char *skip_to_bookmark;
+	bool skip_to_dialog;
+	bool was_skip_mode;
+	int bgm_start_time;
+	double bgm_start_pos;
+} skip_state;
+
+void _stage_bookmark(const char *name) {
+	log_debug("Bookmark [%s] reached at %i", name, global.frames);
+
+	if(skip_state.skip_to_bookmark && !strcmp(skip_state.skip_to_bookmark, name)) {
+		skip_state.skip_to_bookmark = NULL;
+		global.plr.iddqd = false;
+	}
+}
+
+DEFINE_EXTERN_TASK(stage_bookmark) {
+	_stage_bookmark(ARGS.name);
+}
+
+bool stage_is_skip_mode(void) {
+	return skip_state.skip_to_bookmark || skip_state.skip_to_dialog;
+}
+
+static void skipstate_init(void) {
+	skip_state.skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
+	skip_state.skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
+}
+
+static LogicFrameAction skipstate_handle_frame(void) {
+	if(skip_state.skip_to_dialog && dialog_is_active(global.dialog)) {
+		skip_state.skip_to_dialog = false;
+		global.plr.iddqd = false;
+	}
+
+	bool skip_mode = stage_is_skip_mode();
+
+	if(!skip_mode && skip_state.was_skip_mode) {
+		audio_bgm_seek_realtime(skip_state.bgm_start_pos + (global.frames - skip_state.bgm_start_time) / (double)FPS);
+	}
+
+	skip_state.was_skip_mode = skip_mode;
+
+	if(skip_mode) {
+		return LFRAME_SKIP_ALWAYS;
+	}
+
+	if(gamekeypressed(KEY_SKIP)) {
+		return LFRAME_SKIP;
+	}
+
+	return LFRAME_WAIT;
+}
+
+static void skipstate_shutdown(void) {
+	memset(&skip_state, 0, sizeof(skip_state));
+}
+
+static void skipstate_handle_bgm_change(void) {
+	skip_state.bgm_start_time = global.frames;
+	skip_state.bgm_start_pos = audio_bgm_tell();
+}
+
+#else
+
+INLINE LogicFrameAction skipstate_handle_frame(void) { return LFRAME_WAIT; }
+INLINE void skipstate_handle_bgm_change(void) { }
+INLINE void skipstate_init(void) { }
+INLINE void skipstate_shutdown(void) { }
+
+#endif
+
 static void stage_start(StageInfo *stage) {
 	global.timer = 0;
 	global.frames = 0;
@@ -56,7 +131,7 @@ static void stage_start(StageInfo *stage) {
 		global.plr.power = PLR_MAX_POWER;
 	}
 
-	reset_sounds();
+	reset_all_sfx();
 }
 
 static bool ingame_menu_interrupts_bgm(void) {
@@ -64,7 +139,7 @@ static bool ingame_menu_interrupts_bgm(void) {
 }
 
 static void stage_fade_bgm(void) {
-	fade_bgm((FPS * FADE_TIME) / 2000.0);
+	audio_bgm_stop((FPS * FADE_TIME) / 2000.0);
 }
 
 static void stage_leave_ingame_menu(CallChainResult ccr) {
@@ -75,15 +150,16 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 	}
 
 	if(global.gameover > 0) {
-		stop_sounds();
+		stop_all_sfx();
 
 		if(ingame_menu_interrupts_bgm() || global.gameover != GAMEOVER_RESTART) {
 			stage_fade_bgm();
 		}
 	} else {
-		resume_sounds();
-		resume_bgm();
+		audio_bgm_resume();
 	}
+
+	resume_all_sfx();
 
 	CallChain *cc = ccr.ctx;
 	run_call_chain(cc, NULL);
@@ -92,15 +168,15 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 
 static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
 	if(ingame_menu_interrupts_bgm()) {
-		stop_bgm(false);
+		audio_bgm_pause();
 	}
 
-	pause_sounds();
+	pause_all_sfx();
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, memdup(&next, sizeof(next))));
 }
 
 void stage_pause(void) {
-	if(global.gameover == GAMEOVER_TRANSITIONING || taisei_is_skip_mode_enabled()) {
+	if(global.gameover == GAMEOVER_TRANSITIONING || stage_is_skip_mode()) {
 		return;
 	}
 
@@ -271,40 +347,36 @@ static void replay_input(void) {
 	player_applymovement(&global.plr);
 }
 
+static void display_bgm_title(void) {
+	BGM *bgm = audio_bgm_current();
+	const char *title = bgm ? bgm_get_title(bgm) : NULL;
+
+	if(title) {
+		char txt[strlen(title) + 6];
+		snprintf(txt, sizeof(txt), "BGM: %s", title);
+		stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
+	}
+}
+
+static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
+	if(dialog_is_active(global.dialog)) {
+		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
+	} else {
+		display_bgm_title();
+	}
+
+	skipstate_handle_bgm_change();
+	return false;
+}
+
 static void stage_input(void) {
 	events_poll((EventHandler[]){
 		{ .proc = stage_input_handler_gameplay },
+		{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
 		{NULL}
 	}, EFLAG_GAME);
 	player_fix_input(&global.plr);
 	player_applymovement(&global.plr);
-}
-
-#ifdef DEBUG
-static const char *_skip_to_bookmark;
-bool _skip_to_dialog;
-
-void _stage_bookmark(const char *name) {
-	log_debug("Bookmark [%s] reached at %i", name, global.frames);
-
-	if(_skip_to_bookmark && !strcmp(_skip_to_bookmark, name)) {
-		_skip_to_bookmark = NULL;
-		global.plr.iddqd = false;
-	}
-}
-
-DEFINE_EXTERN_TASK(stage_bookmark) {
-	_stage_bookmark(ARGS.name);
-}
-#endif
-
-static bool _stage_should_skip(void) {
-#ifdef DEBUG
-	if(_skip_to_bookmark || _skip_to_dialog) {
-		return true;
-	}
-#endif
-	return false;
 }
 
 static void stage_logic(void) {
@@ -323,7 +395,7 @@ static void stage_logic(void) {
 		}
 	}
 
-	if(_stage_should_skip()) {
+	if(stage_is_skip_mode()) {
 		if(dialog_is_active(global.dialog)) {
 			dialog_page(global.dialog);
 		}
@@ -333,7 +405,7 @@ static void stage_logic(void) {
 		}
 	}
 
-	update_sounds();
+	update_all_sfx();
 
 	global.frames++;
 
@@ -531,13 +603,8 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
-static void display_bgm_title(void) {
-	char txt[strlen(current_bgm.title) + 6];
-	snprintf(txt, sizeof(txt), "BGM: %s", current_bgm.title);
-	stagetext_add(txt, VIEWPORT_W-15 + I * (VIEWPORT_H-20), ALIGN_RIGHT, res_font("standard"), RGB(1, 1, 1), 30, 180, 35, 35);
-}
-
 void stage_start_bgm(const char *bgm) {
+#if 0
 	char *old_title = NULL;
 
 	if(current_bgm.title && global.stage->type == STAGE_SPELL) {
@@ -555,6 +622,9 @@ void stage_start_bgm(const char *bgm) {
 	}
 
 	free(old_title);
+#else
+	audio_bgm_play(res_bgm(bgm), true, 0, 0);
+#endif
 }
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
@@ -636,7 +706,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 
 	stage_update_fps(fstate);
 
-	if(_stage_should_skip()) {
+	if(stage_is_skip_mode()) {
 		global.plr.iddqd = true;
 	}
 
@@ -685,18 +755,10 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return LFRAME_STOP;
 	}
 
-#ifdef DEBUG
-	if(_skip_to_dialog && dialog_is_active(global.dialog)) {
-		_skip_to_dialog = false;
-		global.plr.iddqd = false;
+	LogicFrameAction skipmode = skipstate_handle_frame();
+	if(skipmode != LFRAME_WAIT) {
+		return skipmode;
 	}
-
-	taisei_set_skip_mode(_stage_should_skip());
-
-	if(taisei_is_skip_mode_enabled() || gamekeypressed(KEY_SKIP)) {
-		return LFRAME_SKIP;
-	}
-#endif
 
 	if(global.frameskip || (global.replaymode == REPLAY_PLAY && gamekeypressed(KEY_SKIP))) {
 		return LFRAME_SKIP;
@@ -709,7 +771,7 @@ static RenderFrameAction stage_render_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	if(_stage_should_skip()) {
+	if(stage_is_skip_mode()) {
 		return RFRAME_DROP;
 	}
 
@@ -818,11 +880,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 
 	_current_stage_state = fstate;
 
-	#ifdef DEBUG
-	_skip_to_dialog = env_get_int("TAISEI_SKIP_TO_DIALOG", 0);
-	_skip_to_bookmark = env_get_string_nonempty("TAISEI_SKIP_TO_BOOKMARK", NULL);
-	taisei_set_skip_mode(_stage_should_skip());
-	#endif
+	skipstate_init();
 
 	stage->procs->begin();
 	player_stage_post_init(&global.plr);
@@ -856,10 +914,10 @@ void stage_end_loop(void* ctx) {
 	free_all_refs();
 	ent_shutdown();
 	stage_objpools_free();
-	stop_sounds();
+	stop_all_sfx();
 
 	taisei_commit_persistent_data();
-	taisei_set_skip_mode(false);
+	skipstate_shutdown();
 
 	if(taisei_quit_requested()) {
 		global.gameover = GAMEOVER_ABORT;

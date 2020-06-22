@@ -28,7 +28,7 @@ TASK(move_frozen, { BoxedProjectileArray *parray; }) {
 
 		stage1_spawn_stain(p->pos, p->angle, 30);
 		spawn_projectile_highlight_effect(p);
-		play_sound_ex("shot2", 0, false);
+		play_sfx_ex("shot2", 0, false);
 
 		if(rng_chance(0.4)) {
 			YIELD;
@@ -52,7 +52,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 		DECLARE_ENT_ARRAY(Projectile, projs, nfrog);
 
 		for(int i = 0; i < nfrog/n; i++) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 
 			float r = rng_f32();
 			float g = rng_f32();
@@ -76,7 +76,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			stage1_spawn_stain(p->pos, p->angle, 30);
 			stage1_spawn_stain(p->pos, p->angle, 30);
 			spawn_projectile_highlight_effect(p);
-			play_sound("shot_special1");
+			play_sfx("shot_special1");
 
 			p->color = *RGB(0.9, 0.9, 0.9);
 			p->move.retention = 0.8;
@@ -102,7 +102,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		int d = imax(0, global.diff - D_Normal);
 		for(int i = 0; i < 30+10*d; i++) {
-			play_loop("shot1_loop");
+			play_sfx_loop("shot1_loop");
 			float r1, r2;
 
 			if(global.diff > D_Normal) {

@@ -22,45 +22,59 @@ static bool check_bgm_path(const char *path) {
 	return sfxbgm_check_path(BGM_PATH_PREFIX, path, true);
 }
 
-static MusicImpl *load_music(const char *path) {
-	if(!path) {
+static void load_bgm(ResourceLoadState *st) {
+	BGM *bgm = _a_backend.funcs.bgm_load(st->path);
+
+	if(bgm) {
+		res_load_finished(st, bgm);
+	} else {
+		log_error("Failed to load bgm '%s'", st->path);
+		res_load_failed(st);
+	}
+}
+
+static void unload_bgm(void *vbgm) {
+	_a_backend.funcs.bgm_unload(vbgm);
+}
+
+const char *bgm_get_title(BGM *bgm) {
+	if(!bgm) {
 		return NULL;
 	}
 
-	return _a_backend.funcs.music_load(path);
+	return _a_backend.funcs.object.bgm.get_title(bgm);
 }
 
-static void load_bgm(ResourceLoadState *st) {
-	Music *mus = calloc(1, sizeof(Music));
-
-	if(strendswith(st->path, ".bgm")) {
-		mus->meta = get_resource_data(RES_BGM_METADATA, st->name, st->flags);
-
-		if(mus->meta) {
-			mus->impl = load_music(mus->meta->loop_path);
-		}
-	} else {
-		mus->impl = load_music(st->path);
+const char *bgm_get_artist(BGM *bgm) {
+	if(!bgm) {
+		return NULL;
 	}
 
-	if(!mus->impl) {
-		free(mus);
-		mus = NULL;
-		log_error("Failed to load bgm '%s'", st->path);
-		res_load_failed(st);
-	} else {
-		if(mus->meta && mus->meta->loop_point > 0) {
-			_a_backend.funcs.music_set_loop_point(mus->impl, mus->meta->loop_point);
-		}
-
-		res_load_finished(st, mus);
-	}
+	return _a_backend.funcs.object.bgm.get_artist(bgm);
 }
 
-static void unload_bgm(void *vmus) {
-	Music *mus = vmus;
-	_a_backend.funcs.music_unload(mus->impl);
-	free(mus);
+const char *bgm_get_comment(BGM *bgm) {
+	if(!bgm) {
+		return NULL;
+	}
+
+	return _a_backend.funcs.object.bgm.get_comment(bgm);
+}
+
+double bgm_get_duration(BGM *bgm) {
+	if(!bgm) {
+		return -1;
+	}
+
+	return _a_backend.funcs.object.bgm.get_duration(bgm);
+}
+
+double bgm_get_loop_start(BGM *bgm) {
+	if(!bgm) {
+		return -1;
+	}
+
+	return _a_backend.funcs.object.bgm.get_loop_start(bgm);
 }
 
 ResourceHandler bgm_res_handler = {

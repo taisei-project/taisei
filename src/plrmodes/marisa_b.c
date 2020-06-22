@@ -465,7 +465,7 @@ TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		play_sound("bomb_marisa_b");
+		play_sfx("bomb_marisa_b");
 		INVOKE_SUBTASK(marisa_star_bomb_background, ctrl);
 		INVOKE_SUBTASK(marisa_star_bomb_controller, ctrl);
 	}

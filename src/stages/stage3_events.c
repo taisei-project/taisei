@@ -623,7 +623,7 @@ void scuttle_deadly_dance(Boss *boss, int time) {
 	AT(0) {
 		aniplayer_queue(&boss->ani, "dance", 0);
 	}
-	play_loop("shot1_loop");
+	play_sfx_loop("shot1_loop");
 
 	FROM_TO(0, 120, 1)
 		GO_TO(boss, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.03)
@@ -1156,7 +1156,7 @@ void wriggle_light_singularity(Boss *boss, int time) {
 	}
 
 	if(time > 120) {
-		play_loop("shot1_loop");
+		play_sfx_loop("shot1_loop");
 	}
 
 	if(time == 0) {

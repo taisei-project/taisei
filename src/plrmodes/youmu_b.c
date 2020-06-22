@@ -118,7 +118,7 @@ TASK(youmu_haunting_shot_basic, { YoumuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
-		play_loop("generic_shot");
+		play_sfx_loop("generic_shot");
 
 		cmplx v = -20 * I;
 
@@ -552,7 +552,7 @@ TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		play_sound("bomb_youmu_b");
+		play_sfx("bomb_youmu_b");
 		INVOKE_SUBTASK(youmu_haunting_bomb_controller, ctrl);
 		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
 	}

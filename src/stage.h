@@ -55,11 +55,11 @@
 
 // This is newest addition to the macro zoo! It allows you to loop a sound like
 // you loop your French- I mean your danmaku code. Nothing strange going on here.
-#define PLAY_FOR(name,start, end) FROM_TO(start,end,2) { play_loop(name); }
+#define PLAY_FOR(name,start, end) FROM_TO(start,end,2) { play_sfx_loop(name); }
 
 // easy to soundify versions of FROM_TO and friends. Note how I made FROM_TO_INT even more complicated!
 #define FROM_TO_SND(snd,start,end,step) PLAY_FOR(snd,start,end); FROM_TO(start,end,step)
-#define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
+#define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_sfx_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
 
 typedef struct StageClearBonus {
 	uint64_t base;
@@ -105,13 +105,19 @@ void stage_shake_view(float strength);
 float stage_get_view_shake_strength(void);
 
 #ifdef DEBUG
-void _stage_bookmark(const char *name);
-#define STAGE_BOOKMARK(name) _stage_bookmark(#name)
-DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
-#define STAGE_BOOKMARK_DELAYED(delay, name) INVOKE_TASK_DELAYED(delay, stage_bookmark, #name)
+#define HAVE_SKIP_MODE
+#endif
+
+#ifdef HAVE_SKIP_MODE
+	void _stage_bookmark(const char *name);
+	#define STAGE_BOOKMARK(name) _stage_bookmark(#name)
+	DECLARE_EXTERN_TASK(stage_bookmark, { const char *name; });
+	#define STAGE_BOOKMARK_DELAYED(delay, name) INVOKE_TASK_DELAYED(delay, stage_bookmark, #name)
+	bool stage_is_skip_mode(void);
 #else
-#define STAGE_BOOKMARK(name) ((void)0)
-#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
+	#define STAGE_BOOKMARK(name) ((void)0)
+	#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
+	INLINE bool stage_is_skip_mode(void) { return false; }
 #endif
 
 #endif // IGUARD_stage_h

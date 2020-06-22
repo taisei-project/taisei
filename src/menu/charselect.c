@@ -335,25 +335,25 @@ static bool char_menu_input_handler(SDL_Event *event, void *arg) {
 	int prev_cursor = menu->cursor;
 
 	if(type == TE_MENU_CURSOR_RIGHT) {
-		play_ui_sound("generic_shot");
+		play_sfx_ui("generic_shot");
 		menu->cursor++;
 	} else if(type == TE_MENU_CURSOR_LEFT) {
-		play_ui_sound("generic_shot");
+		play_sfx_ui("generic_shot");
 		menu->cursor--;
 	} else if(type == TE_MENU_CURSOR_DOWN) {
-		play_ui_sound("generic_shot");
+		play_sfx_ui("generic_shot");
 		ctx->subshot++;
 	} else if(type == TE_MENU_CURSOR_UP) {
-		play_ui_sound("generic_shot");
+		play_sfx_ui("generic_shot");
 		ctx->subshot--;
 	} else if(type == TE_MENU_ACCEPT) {
-		play_ui_sound("shot_special1");
+		play_sfx_ui("shot_special1");
 		menu->selected = menu->cursor;
 		menu->transition_in_time = FADE_TIME * 1.5;
 		menu->transition_out_time = FADE_TIME * 3;
 		close_menu(menu);
 	} else if(type == TE_MENU_ABORT) {
-		play_ui_sound("hit");
+		play_sfx_ui("hit");
 		close_menu(menu);
 	}
 

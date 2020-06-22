@@ -157,7 +157,7 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
-		play_sound("enemydeath");
+		play_sfx("enemydeath");
 		enemy_death_effect(e->pos);
 
 		for(Projectile *p = global.projs.first; p; p = p->next) {
@@ -383,9 +383,9 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 	}
 
 	if(enemy->hp < enemy->spawn_hp * 0.1) {
-		play_loop("hit1");
+		play_sfx_loop("hit1");
 	} else {
-		play_loop("hit0");
+		play_sfx_loop("hit0");
 	}
 
 	return DMG_RESULT_OK;

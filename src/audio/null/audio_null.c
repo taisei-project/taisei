@@ -19,68 +19,88 @@ static bool audio_null_init(void) {
 	return true;
 }
 
-#define FAKE_SOUND_ID ((SoundID)1)
+#define FAKE_SOUND_ID ((SFXPlayID)1)
 
-static bool audio_null_music_fade(double fadetime) { return true; }
-static bool audio_null_music_is_paused(void) { return false; }
-static bool audio_null_music_is_playing(void) { return false; }
-static bool audio_null_music_pause(void) { return true; }
-static bool audio_null_music_play(MusicImpl *impl) { return true; }
-static bool audio_null_music_resume(void) { return true; }
-static bool audio_null_music_set_global_volume(double gain) { return true; }
-static bool audio_null_music_set_loop_point(MusicImpl *impl, double pos) { return true; }
-static bool audio_null_music_set_position(double pos) { return true; }
-static bool audio_null_music_stop(void) { return true; }
+static BGM *audio_null_bgm_current(void) { return NULL; }
+static double audio_null_bgm_seek(double pos) { return -1; }
+static double audio_null_bgm_tell(void) { return -1; }
+static BGMStatus audio_null_bgm_status(void) { return BGM_STOPPED; }
+static bool audio_null_bgm_looping(void) { return false; }
+static bool audio_null_bgm_pause(void) { return false; }
+static bool audio_null_bgm_play(BGM *bgm, bool loop, double pos, double fadein) { return false; }
+static bool audio_null_bgm_resume(void) { return false; }
+static bool audio_null_bgm_set_global_volume(double gain) { return false; }
+static bool audio_null_bgm_stop(double fadeout) { return false; }
 static bool audio_null_output_works(void) { return false; }
 static bool audio_null_shutdown(void) { return true; }
-static SoundID audio_null_sound_loop(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
-static bool audio_null_sound_pause_all(AudioBackendSoundGroup group) { return true; }
-static SoundID audio_null_sound_play(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
-static SoundID audio_null_sound_play_or_restart(SoundImpl *impl, AudioBackendSoundGroup group) { return FAKE_SOUND_ID; }
-static bool audio_null_sound_resume_all(AudioBackendSoundGroup group) { return true; }
-static bool audio_null_sound_set_global_volume(double gain) { return true; }
-static bool audio_null_sound_set_volume(SoundImpl *snd, double gain) { return true; }
-static bool audio_null_sound_stop_all(AudioBackendSoundGroup group) { return true; }
-static bool audio_null_sound_stop_loop(SoundImpl *impl) { return true; }
-static bool audio_null_sound_stop_id(SoundID sid) { return true; }
+static SFXPlayID audio_null_sfx_loop(SFXImpl *impl, AudioBackendSFXGroup group) { return FAKE_SOUND_ID; }
+static bool audio_null_sfx_pause_all(AudioBackendSFXGroup group) { return true; }
+static SFXPlayID audio_null_sfx_play(SFXImpl *impl, AudioBackendSFXGroup group) { return FAKE_SOUND_ID; }
+static SFXPlayID audio_null_sfx_play_or_restart(SFXImpl *impl, AudioBackendSFXGroup group) { return FAKE_SOUND_ID; }
+static bool audio_null_sfx_resume_all(AudioBackendSFXGroup group) { return true; }
+static bool audio_null_sfx_set_global_volume(double gain) { return true; }
+static bool audio_null_sfx_stop_all(AudioBackendSFXGroup group) { return true; }
+static bool audio_null_sfx_stop_loop(SFXImpl *impl, AudioBackendSFXGroup group) { return true; }
+static bool audio_null_sfx_stop_id(SFXPlayID sid) { return true; }
 
 static const char* const* audio_null_get_supported_exts(uint *out_numexts) { *out_numexts = 0; return NULL; }
-static MusicImpl* audio_null_music_load(const char *vfspath) { return NULL; }
-static SoundImpl* audio_null_sound_load(const char *vfspath) { return NULL; }
-static void audio_null_music_unload(MusicImpl *mus) { }
-static void audio_null_sound_unload(SoundImpl *snd) { }
+static BGM *audio_null_bgm_load(const char *vfspath) { return NULL; }
+static SFXImpl *audio_null_sfx_load(const char *vfspath) { return NULL; }
+static void audio_null_bgm_unload(BGM *mus) { }
+static void audio_null_sfx_unload(SFXImpl *snd) { }
+
+static const char *audio_null_obj_bgm_get_title(BGM *bgm) { return NULL; }
+static const char *audio_null_obj_bgm_get_artist(BGM *bgm) { return NULL; }
+static const char *audio_null_obj_bgm_get_comment(BGM *bgm) { return NULL; }
+static double audio_null_obj_bgm_get_duration(BGM *bgm) { return 1; }
+static double audio_null_obj_bgm_get_loop_start(BGM *bgm) {	return 0; }
+
+static bool audio_null_obj_sfx_set_volume(SFXImpl *impl, double gain) { return true; }
 
 AudioBackend _a_backend_null = {
 	.name = "null",
 	.funcs = {
-		.get_supported_music_exts = audio_null_get_supported_exts,
-		.get_supported_sound_exts = audio_null_get_supported_exts,
+		.bgm_current = audio_null_bgm_current,
+		.bgm_load = audio_null_bgm_load,
+		.bgm_looping = audio_null_bgm_looping,
+		.bgm_pause = audio_null_bgm_pause,
+		.bgm_play = audio_null_bgm_play,
+		.bgm_resume = audio_null_bgm_resume,
+		.bgm_seek = audio_null_bgm_seek,
+		.bgm_set_global_volume = audio_null_bgm_set_global_volume,
+		.bgm_status = audio_null_bgm_status,
+		.bgm_stop = audio_null_bgm_stop,
+		.bgm_tell = audio_null_bgm_tell,
+		.bgm_unload = audio_null_bgm_unload,
+		.get_supported_bgm_exts = audio_null_get_supported_exts,
+		.get_supported_sfx_exts = audio_null_get_supported_exts,
 		.init = audio_null_init,
-		.music_fade = audio_null_music_fade,
-		.music_is_paused = audio_null_music_is_paused,
-		.music_is_playing = audio_null_music_is_playing,
-		.music_load = audio_null_music_load,
-		.music_pause = audio_null_music_pause,
-		.music_play = audio_null_music_play,
-		.music_resume = audio_null_music_resume,
-		.music_set_global_volume = audio_null_music_set_global_volume,
-		.music_set_loop_point = audio_null_music_set_loop_point,
-		.music_set_position = audio_null_music_set_position,
-		.music_stop = audio_null_music_stop,
-		.music_unload = audio_null_music_unload,
 		.output_works = audio_null_output_works,
+		.sfx_load = audio_null_sfx_load,
+		.sfx_loop = audio_null_sfx_loop,
+		.sfx_pause_all = audio_null_sfx_pause_all,
+		.sfx_play = audio_null_sfx_play,
+		.sfx_play_or_restart = audio_null_sfx_play_or_restart,
+		.sfx_resume_all = audio_null_sfx_resume_all,
+		.sfx_set_global_volume = audio_null_sfx_set_global_volume,
+		.sfx_stop_all = audio_null_sfx_stop_all,
+		.sfx_stop_id = audio_null_sfx_stop_id,
+		.sfx_stop_loop = audio_null_sfx_stop_loop,
+		.sfx_unload = audio_null_sfx_unload,
 		.shutdown = audio_null_shutdown,
-		.sound_load = audio_null_sound_load,
-		.sound_loop = audio_null_sound_loop,
-		.sound_pause_all = audio_null_sound_pause_all,
-		.sound_play = audio_null_sound_play,
-		.sound_play_or_restart = audio_null_sound_play_or_restart,
-		.sound_resume_all = audio_null_sound_resume_all,
-		.sound_set_global_volume = audio_null_sound_set_global_volume,
-		.sound_set_volume = audio_null_sound_set_volume,
-		.sound_stop_all = audio_null_sound_stop_all,
-		.sound_stop_loop = audio_null_sound_stop_loop,
-		.sound_stop_id = audio_null_sound_stop_id,
-		.sound_unload = audio_null_sound_unload,
+
+		.object = {
+			.bgm = {
+				.get_title = audio_null_obj_bgm_get_title,
+				.get_artist = audio_null_obj_bgm_get_artist,
+				.get_comment = audio_null_obj_bgm_get_comment,
+				.get_duration = audio_null_obj_bgm_get_duration,
+				.get_loop_start = audio_null_obj_bgm_get_loop_start,
+			},
+
+			.sfx = {
+				.set_volume = audio_null_obj_sfx_set_volume,
+			},
+		},
 	}
 };
