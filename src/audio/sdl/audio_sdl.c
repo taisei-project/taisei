@@ -12,9 +12,10 @@
 #include "../stream/stream.h"
 #include "../stream/stream_pcm.h"
 #include "../stream/player.h"
-#include "global.h"
 
-#define B (_a_backend.funcs)
+#include "util.h"
+#include "rwops/rwops_autobuf.h"
+#include "config.h"
 
 #define AUDIO_FREQ 48000
 #define AUDIO_FORMAT AUDIO_F32SYS
