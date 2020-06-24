@@ -274,6 +274,7 @@ MenuData* create_musicroom_menu(void) {
 		add_bgm(m, "stage6boss_phase3", preload);
 		add_bgm(m, "ending", preload);
 		add_bgm(m, "credits", preload);
+		add_bgm(m, "gameover", preload);
 	}
 
 	add_menu_separator(m);

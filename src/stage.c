@@ -27,6 +27,21 @@
 #include "common_tasks.h"
 #include "stageinfo.h"
 
+typedef struct StageFrameState {
+	StageInfo *stage;
+	CallChain cc;
+	CoSched sched;
+	int transition_delay;
+	int logic_calls;
+	uint16_t last_replay_fps;
+	float view_shake;
+} StageFrameState;
+
+static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
+
+#define BGM_FADE_LONG (2.0 * FADE_TIME / (double)FPS)
+#define BGM_FADE_SHORT (FADE_TIME / (double)FPS)
+
 #ifdef HAVE_SKIP_MODE
 
 static struct {
@@ -138,11 +153,42 @@ static bool ingame_menu_interrupts_bgm(void) {
 	return global.stage->type != STAGE_SPELL;
 }
 
-static void stage_fade_bgm(void) {
-	audio_bgm_stop((FPS * FADE_TIME) / 2000.0);
+typedef struct IngameMenuContext {
+	CallChain next;
+	BGM *saved_bgm;
+	double saved_bgm_pos;
+	bool bgm_interrupted;
+} IngameMenuContext;
+
+static void setup_ingame_menu_bgm(IngameMenuContext *ctx, BGM *bgm) {
+	if(ingame_menu_interrupts_bgm()) {
+		ctx->bgm_interrupted = true;
+
+		if(bgm) {
+			ctx->saved_bgm = audio_bgm_current();
+			ctx->saved_bgm_pos = audio_bgm_tell();
+			audio_bgm_play(bgm, true, 0, 1);
+		} else {
+			audio_bgm_pause();
+		}
+	}
+}
+
+static void resume_bgm(IngameMenuContext *ctx) {
+	if(ctx->bgm_interrupted) {
+		if(ctx->saved_bgm) {
+			audio_bgm_play(ctx->saved_bgm, true, ctx->saved_bgm_pos, 0.5);
+			ctx->saved_bgm = NULL;
+		} else {
+			audio_bgm_resume();
+		}
+
+		ctx->bgm_interrupted = false;
+	}
 }
 
 static void stage_leave_ingame_menu(CallChainResult ccr) {
+	IngameMenuContext *ctx = ccr.ctx;
 	MenuData *m = ccr.result;
 
 	if(m->state != MS_Dead) {
@@ -152,27 +198,25 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 	if(global.gameover > 0) {
 		stop_all_sfx();
 
-		if(ingame_menu_interrupts_bgm() || global.gameover != GAMEOVER_RESTART) {
-			stage_fade_bgm();
+		if(ctx->bgm_interrupted) {
+			audio_bgm_stop(global.gameover == GAMEOVER_RESTART ? BGM_FADE_SHORT : BGM_FADE_LONG);
 		}
 	} else {
-		audio_bgm_resume();
+		resume_bgm(ctx);
 	}
 
 	resume_all_sfx();
 
-	CallChain *cc = ccr.ctx;
-	run_call_chain(cc, NULL);
-	free(cc);
+	run_call_chain(&ctx->next, NULL);
+	free(ctx);
 }
 
-static void stage_enter_ingame_menu(MenuData *m, CallChain next) {
-	if(ingame_menu_interrupts_bgm()) {
-		audio_bgm_pause();
-	}
-
+static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
+	IngameMenuContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->next = next;
+	setup_ingame_menu_bgm(ctx, bgm);
 	pause_all_sfx();
-	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, memdup(&next, sizeof(next))));
+	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, ctx));
 }
 
 void stage_pause(void) {
@@ -180,12 +224,13 @@ void stage_pause(void) {
 		return;
 	}
 
-	stage_enter_ingame_menu(
-		(global.replaymode == REPLAY_PLAY
+	MenuData *m = (
+		global.replaymode == REPLAY_PLAY
 			? create_ingame_menu_replay
 			: create_ingame_menu
-		)(), NO_CALLCHAIN
-	);
+	)();
+
+	stage_enter_ingame_menu(m, NULL, NO_CALLCHAIN);
 }
 
 void stage_gameover(void) {
@@ -194,7 +239,14 @@ void stage_gameover(void) {
 		return;
 	}
 
-	stage_enter_ingame_menu(create_gameover_menu(), NO_CALLCHAIN);
+	BGM *bgm = NULL;
+
+	if(ingame_menu_interrupts_bgm()) {
+		bgm = res_bgm("gameover");
+		progress_unlock_bgm("gameover");
+	}
+
+	stage_enter_ingame_menu(create_gameover_menu(), bgm, NO_CALLCHAIN);
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
@@ -565,7 +617,7 @@ void stage_finish(int gameover) {
 	} else {
 		global.gameover = GAMEOVER_TRANSITIONING;
 		set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
-		stage_fade_bgm();
+		audio_bgm_stop(BGM_FADE_LONG);
 	}
 
 	if(
@@ -592,6 +644,7 @@ static void stage_preload(void) {
 	enemies_preload();
 
 	if(global.stage->type != STAGE_SPELL) {
+		preload_resource(RES_BGM, "gameover", RESF_DEFAULT);
 		dialog_preload();
 	}
 
@@ -604,27 +657,7 @@ static void display_stage_title(StageInfo *info) {
 }
 
 void stage_start_bgm(const char *bgm) {
-#if 0
-	char *old_title = NULL;
-
-	if(current_bgm.title && global.stage->type == STAGE_SPELL) {
-		old_title = strdup(current_bgm.title);
-	}
-
-	start_bgm(bgm);
-
-	if(current_bgm.title && current_bgm.started_at >= 0 && (!old_title || strcmp(current_bgm.title, old_title))) {
-		if(dialog_is_active(global.dialog)) {
-			INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
-		} else {
-			display_bgm_title();
-		}
-	}
-
-	free(old_title);
-#else
 	audio_bgm_play(res_bgm(bgm), true, 0, 0);
-#endif
 }
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
@@ -640,18 +673,6 @@ void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunati
 bool stage_is_cleared(void) {
 	return global.gameover == GAMEOVER_SCORESCREEN || global.gameover == GAMEOVER_TRANSITIONING;
 }
-
-typedef struct StageFrameState {
-	StageInfo *stage;
-	CallChain cc;
-	CoSched sched;
-	int transition_delay;
-	int logic_calls;
-	uint16_t last_replay_fps;
-	float view_shake;
-} StageFrameState;
-
-static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
 
 static void stage_update_fps(StageFrameState *fstate) {
 	if(global.replaymode == REPLAY_RECORD) {
@@ -751,7 +772,6 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	}
 
 	if(global.gameover > 0) {
-		log_warn("RESTART");
 		return LFRAME_STOP;
 	}
 
