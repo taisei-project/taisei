@@ -120,7 +120,12 @@ static bool init_audio_device(void) {
 	want.samples = config_get_int(CONFIG_MIXER_CHUNKSIZE);
 
 	// NOTE: StreamPlayer expects stereo float32 samples.
-	uint allow_changes = SDL_AUDIO_ALLOW_FREQUENCY_CHANGE | SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
+	uint allow_changes = SDL_AUDIO_ALLOW_FREQUENCY_CHANGE;
+
+	#ifdef SDL_AUDIO_ALLOW_SAMPLES_CHANGE
+		allow_changes |= SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
+	#endif
+
 	mixer.audio_device = SDL_OpenAudioDevice(NULL, false, &want, &have, allow_changes);
 
 	if(mixer.audio_device == 0) {
