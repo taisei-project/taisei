@@ -19,5 +19,6 @@ void hina_cards2(Boss *h, int time);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_midboss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_boss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_boss_nonspell_2, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_boss_nonspell_3, BossAttack);
 
 #endif // IGUARD_stages_stage2_nonspells_nonspells_h
