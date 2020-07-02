@@ -1436,11 +1436,11 @@ void player_add_bomb_fragments(Player *plr, int frags) {
 }
 
 void player_add_lives(Player *plr, int lives) {
-	player_add_life_fragments(plr, PLR_MAX_LIFE_FRAGMENTS);
+	player_add_life_fragments(plr, PLR_MAX_LIFE_FRAGMENTS * lives);
 }
 
 void player_add_bombs(Player *plr, int bombs) {
-	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS);
+	player_add_bomb_fragments(plr, PLR_MAX_BOMB_FRAGMENTS * bombs);
 }
 
 static void scoretext_update(StageText *txt, int t, float a) {
