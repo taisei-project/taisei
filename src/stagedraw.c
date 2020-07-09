@@ -419,11 +419,13 @@ static void stage_draw_collision_areas(void) {
 	}
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->hp > ENEMY_IMMUNE && e->alpha >= 1.0) {
+		float hurt_radius = enemy_get_hurt_radius(e);
+
+		if(hurt_radius > 0) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = &stagedraw.dummy,
 				.pos = { creal(e->pos), cimag(e->pos) },
-				.scale = { .x = ENEMY_HURT_RADIUS * 2, .y = ENEMY_HURT_RADIUS * 2 },
+				.scale = { .x = hurt_radius * 2, .y = hurt_radius * 2 },
 				.blend = BLEND_ALPHA,
 			});
 		}

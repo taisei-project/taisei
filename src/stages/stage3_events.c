@@ -75,7 +75,7 @@ static int stage3_enterswirl(Enemy *e, int t) {
 	}
 
 	AT(60) {
-		e->hp = ENEMY_KILLED;
+		enemy_kill(e);
 	}
 
 	e->pos += e->args[0];
@@ -404,8 +404,9 @@ static int stage3_bigfairy(Enemy *e, int t) {
 		create_enemy3c(e->pos, 900, Fairy, slave, e->pos - 70 - 50 * I, e->args[0], -1);
 	}
 
-	AT(creal(e->args[1]))
-		e->hp = ENEMY_KILLED;
+	AT(creal(e->args[1])) {
+		enemy_kill(e);
+	}
 
 	return 0;
 }

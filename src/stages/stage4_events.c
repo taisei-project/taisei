@@ -1337,8 +1337,8 @@ static int kurumi_extra_fairy(Enemy *e, int t) {
 		return 1;
 	}
 
-	if(e->hp == ENEMY_IMMUNE && t > 50)
-		e->hp = 500;
+	if(e->flags & EFLAG_NO_AUTOKILL && t > 50)
+		e->flags &= ~EFLAG_NO_AUTOKILL;
 
 	if(creal(e->args[0]-e->pos) != 0)
 		e->moving = true;
@@ -1458,7 +1458,8 @@ void kurumi_extra(Boss *b, int time) {
 			if(direction)
 				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
 			// immune so they don’t get killed while they are still offscreen.
-			create_enemy3c(pos-300*(1-2*direction),ENEMY_IMMUNE,kurumi_extra_fairy_visual,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
+			Enemy *fairy = create_enemy3c(pos-300*(1-2*direction),500,kurumi_extra_fairy_visual,kurumi_extra_fairy,pos,100+20*i+100*(1.1-0.05*global.diff)*I,direction);
+			fairy->flags |= EFLAG_NO_AUTOKILL;
 		}
 
 		// XXX: maybe add a special sound for this?

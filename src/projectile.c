@@ -398,7 +398,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		}
 	} else if(p->type == PROJ_PLAYER) {
 		for(Enemy *e = global.enemies.first; e; e = e->next) {
-			if(e->hp != ENEMY_IMMUNE && cabs(e->pos - p->pos) < 30) {
+			if(!(e->flags & EFLAG_NO_HIT) && cabs(e->pos - p->pos) < e->hit_radius) {
 				out_col->type = PCOL_ENTITY;
 				out_col->entity = &e->ent;
 				out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);

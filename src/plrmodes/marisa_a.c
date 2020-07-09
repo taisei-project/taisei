@@ -78,7 +78,7 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 
 	struct enemy_col {
 		Enemy *enemy;
-		int original_hp;
+		EnemyFlag original_flags;
 	} enemy_collisions[64] = { 0 };  // 64 collisions ought to be enough for everyone
 
 	int num_enemy_collissions = 0;
@@ -105,31 +105,35 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 				.layer = LAYER_PARTICLE_HIGH,
 			);
 
+			col.fatal = false;
+
 			if(col.type == PCOL_ENTITY && col.entity->type == ENT_TYPE_ID(Enemy)) {
 				assert(num_enemy_collissions < ARRAY_SIZE(enemy_collisions));
 				if(num_enemy_collissions < ARRAY_SIZE(enemy_collisions)) {
+					Enemy *e = ENT_CAST(col.entity, Enemy);
 					c = enemy_collisions + num_enemy_collissions++;
-					c->enemy = ENT_CAST(col.entity, Enemy);
+					c->enemy = e;
+					if(e->flags & EFLAG_IMPENETRABLE) {
+						col.fatal = true;
+					}
 				}
 			} else {
 				col_types &= ~col.type;
 			}
-
-			col.fatal = false;
 		}
 
 		apply_projectile_collision(&lproj, lproj.first, &col);
 
 		if(c) {
-			c->original_hp = (ENT_CAST(col.entity, Enemy))->hp;
-			(ENT_CAST(col.entity, Enemy))->hp = ENEMY_IMMUNE;
+			c->original_flags = (ENT_CAST(col.entity, Enemy))->flags;
+			(ENT_CAST(col.entity, Enemy))->flags |= EFLAG_NO_HIT;
 		}
 	}
 
 	assume(num_enemy_collissions < ARRAY_SIZE(enemy_collisions));
 
 	for(int i = 0; i < num_enemy_collissions; ++i) {
-		enemy_collisions[i].enemy->hp = enemy_collisions[i].original_hp;
+		enemy_collisions[i].enemy->flags = enemy_collisions[i].original_flags;
 	}
 
 	laser->trace_hit.last = col.location;

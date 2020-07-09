@@ -1704,7 +1704,7 @@ cmplx plrutil_homing_target(cmplx org, cmplx fallback) {
 	}
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->hp == ENEMY_IMMUNE) {
+		if(!enemy_is_targetable(e)) {
 			continue;
 		}
 

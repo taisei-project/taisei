@@ -34,13 +34,13 @@ static void ent_draw_enemy(EntityInterface *ent);
 static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *dmg);
 
 static void fix_pos0_visual(Enemy *e) {
+	if(e->flags & EFLAG_NO_VISUAL_CORRECTION) {
+		return;
+	}
+
 	double x = creal(e->pos0_visual);
 	double y = cimag(e->pos0_visual);
 	double ofs = 21;
-
-	if(e->hp == ENEMY_IMMUNE) {
-		return;
-	}
 
 	if(x <= 0 && x > -ofs) {
 		x = -ofs;
@@ -95,6 +95,12 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->hp = hp;
 	e->alpha = 1.0;
 
+	e->flags = 0;
+
+	if(e->hp == _internal_ENEMY_IMMUNE) {
+		e->flags |= EFLAGS_GHOST;
+	}
+
 	e->logic_rule = logic_rule;
 	e->visual_rule = visual_rule;
 
@@ -102,6 +108,9 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->args[1] = a2;
 	e->args[2] = a3;
 	e->args[3] = a4;
+
+	e->hurt_radius = 7;
+	e->hit_radius = 30;
 
 	e->ent.draw_layer = LAYER_ENEMY;
 	e->ent.draw_func = ent_draw_enemy;
@@ -156,7 +165,7 @@ static void enemy_death_effect(cmplx pos) {
 static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
-	if(e->hp <= 0 && e->hp != ENEMY_IMMUNE) {
+	if(e->hp <= 0 && !(e->flags & EFLAG_NO_DEATH_EXPLOSION)) {
 		play_sfx("enemydeath");
 		enemy_death_effect(e->pos);
 
@@ -184,9 +193,13 @@ void delete_enemies(EnemyList *enemies) {
 }
 
 static cmplx enemy_visual_pos(Enemy *enemy) {
+	if(enemy->flags & EFLAG_NO_VISUAL_CORRECTION) {
+		return enemy->pos;
+	}
+
 	double t = (global.frames - enemy->birthtime) / 30.0;
 
-	if(t >= 1 || enemy->hp == ENEMY_IMMUNE) {
+	if(t >= 1) {
 		return enemy->pos;
 	}
 
@@ -338,11 +351,11 @@ void Swirl(Enemy *e, int t, bool render) {
 }
 
 bool enemy_is_vulnerable(Enemy *enemy) {
-	if(enemy->hp <= ENEMY_IMMUNE) {
-		return false;
-	}
+	return !(enemy->flags & EFLAG_INVULNERABLE);
+}
 
-	return true;
+bool enemy_is_targetable(Enemy *enemy) {
+	return !(enemy->flags & EFLAG_NO_HIT);
 }
 
 bool enemy_in_viewport(Enemy *enemy) {
@@ -356,7 +369,8 @@ bool enemy_in_viewport(Enemy *enemy) {
 }
 
 void enemy_kill(Enemy *enemy) {
-	enemy->hp = ENEMY_KILLED;
+	enemy->flags |= EFLAG_KILLED | EFLAG_NO_HIT | EFLAG_NO_HURT | EFLAG_INVULNERABLE;
+	enemy->hp = 0;
 }
 
 void enemy_kill_all(EnemyList *enemies) {
@@ -375,7 +389,7 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 	enemy->hp -= dmg->amount;
 
 	if(enemy->hp <= 0) {
-		enemy->hp = ENEMY_KILLED;
+		enemy_kill(enemy);
 
 		if(dmg->type == DMG_PLAYER_DISCHARGE) {
 			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)imax(1, enemy->spawn_hp / 100));
@@ -391,11 +405,25 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 	return DMG_RESULT_OK;
 }
 
+float enemy_get_hurt_radius(Enemy *enemy) {
+	if(enemy->flags & EFLAG_NO_HURT || enemy->alpha < 1.0f) {
+		return 0;
+	} else {
+		return enemy->hurt_radius;
+	}
+}
+
+static bool should_auto_kill(Enemy *enemy) {
+	return
+		(enemy->hp <= 0 && enemy->hp != _internal_ENEMY_IMMUNE) ||
+		(!(enemy->flags & EFLAG_NO_AUTOKILL) && !enemy_in_viewport(enemy));
+}
+
 void process_enemies(EnemyList *enemies) {
 	for(Enemy *enemy = enemies->first, *next; enemy; enemy = next) {
 		next = enemy->next;
 
-		if(enemy->hp == ENEMY_KILLED) {
+		if(enemy->flags & EFLAG_KILLED) {
 			enemy_call_logic_rule(enemy, EVENT_KILLED);
 			delete_enemy(enemies, enemy);
 			continue;
@@ -403,13 +431,15 @@ void process_enemies(EnemyList *enemies) {
 
 		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
 
-		if(enemy->hp > ENEMY_IMMUNE && enemy->alpha >= 1.0 && cabs(enemy->pos - global.plr.pos) < ENEMY_HURT_RADIUS) {
+		float hurt_radius = enemy_get_hurt_radius(enemy);
+
+		if(hurt_radius > 0 && cabs(enemy->pos - global.plr.pos) < hurt_radius) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 
 		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
 
-		if((enemy->hp > ENEMY_IMMUNE && (!enemy_in_viewport(enemy) || enemy->hp <= 0)) || action == ACTION_DESTROY) {
+		if(action == ACTION_DESTROY || should_auto_kill(enemy)) {
 			delete_enemy(enemies, enemy);
 			continue;
 		}
