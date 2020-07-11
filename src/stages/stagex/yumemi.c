@@ -17,6 +17,34 @@
 #include "util/glm.h"
 #include "global.h"
 
+#define BOMBSHIELD_RADIUS 128
+
+DEFINE_ENTITY_TYPE(BossShield, {
+	cmplx pos;
+	Boss *boss;
+	BoxedEnemy hitbox;
+	float alpha;
+
+	ShaderProgram *shader;
+
+	Texture *grid_tex;
+	Texture *code_tex;
+	Texture *shell_tex;
+
+	vec2 grid_aspect;
+	vec2 code_aspect;
+
+	struct {
+		Uniform *alpha;
+		Uniform *time;
+		Uniform *code_tex;
+		Uniform *grid_tex;
+		Uniform *shell_tex;
+		Uniform *code_aspect;
+		Uniform *grid_aspect;
+	} uniforms;
+});
+
 static void draw_yumemi_slave(EntityInterface *ent) {
 	YumemiSlave *slave = ENT_CAST(ent, YumemiSlave);
 
@@ -56,6 +84,136 @@ static void draw_yumemi_slave(EntityInterface *ent) {
 	r_draw_sprite(&sp);
 }
 
+static void bombshield_draw(EntityInterface *ent) {
+	BossShield *shield = ENT_CAST(ent, BossShield);
+	float alpha = shield->alpha;
+
+	if(alpha <= 0) {
+		return;
+	}
+
+	float size = BOMBSHIELD_RADIUS * 2 * (2.0 - 1.0 * glm_ease_quad_out(alpha));
+
+	r_shader_ptr(shield->shader);
+
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(shield->pos), cimag(shield->pos), 0);
+
+	if(stagex_drawing_into_glitchmask()) {
+		float x = rng_f32s() * 16;
+		float y = rng_f32s() * 16;
+		r_mat_mv_translate(x, y, 0);
+	}
+
+	r_mat_mv_scale(size, size, 1);
+	r_uniform_float(shield->uniforms.alpha, alpha);
+	r_uniform_float(shield->uniforms.time, global.frames / 60.0 * 0.2);
+	r_uniform_sampler(shield->uniforms.code_tex, shield->code_tex);
+	r_uniform_sampler(shield->uniforms.grid_tex, shield->grid_tex);
+	r_uniform_sampler(shield->uniforms.shell_tex, shield->shell_tex);
+	r_uniform_vec2_vec(shield->uniforms.code_aspect, shield->code_aspect);
+	r_uniform_vec2_vec(shield->uniforms.grid_aspect, shield->grid_aspect);
+	r_draw_quad();
+	r_mat_mv_pop();
+}
+
+static bool is_bombshield_actiev(BossShield *shield) {
+	Boss *boss = NOT_NULL(shield->boss);
+	return
+		boss_is_vulnerable(boss) &&
+		player_is_bomb_active(&global.plr) &&
+		boss->current && boss->current->type == AT_Spellcard &&
+		1;
+}
+
+static Enemy *get_bombshield_hitbox(BossShield *shield) {
+	Enemy *hitbox = ENT_UNBOX(shield->hitbox);
+
+	if(is_bombshield_actiev(shield)) {
+		if(!hitbox) {
+			hitbox = create_enemy_p(&global.enemies, 0, 1, NULL, NULL, 0, 0, 0, 0);
+			hitbox->flags = (
+				EFLAG_IMPENETRABLE |
+				EFLAG_INVULNERABLE |
+				EFLAG_NO_AUTOKILL |
+				EFLAG_NO_DEATH_EXPLOSION |
+				EFLAG_NO_HURT |
+				EFLAG_NO_VISUAL_CORRECTION |
+				0
+			);
+			hitbox->hit_radius = BOMBSHIELD_RADIUS;
+			shield->hitbox = ENT_BOX(hitbox);
+		}
+	} else {
+		if(hitbox) {
+			enemy_kill(hitbox);
+			hitbox = shield->hitbox.ent = NULL;
+		}
+	}
+
+	return hitbox;
+}
+
+TASK(yumemi_bombshield_expire, { BoxedBossShield shield; }) {
+	BossShield *shield = TASK_BIND(ARGS.shield);
+	Enemy *hitbox = ENT_UNBOX(shield->hitbox);
+
+	if(hitbox) {
+		enemy_kill(hitbox);
+		shield->hitbox.ent = NULL;
+	}
+}
+
+TASK(yumemi_bombshield_controller, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	BossShield *shield = TASK_HOST_ENT(BossShield);
+
+	shield->boss = boss;
+	shield->ent.draw_func = bombshield_draw;
+	shield->ent.draw_layer = LAYER_BOSS | 0x10;
+
+	shield->shader = res_shader("bombshield");
+	shield->grid_tex = res_texture("stagex/hex_tiles");
+	shield->code_tex = res_texture("stagex/bg_binary");
+	shield->shell_tex = res_texture("stagex/bg");
+
+	uint w, h;
+
+	r_texture_get_size(shield->grid_tex, 0, &w, &h);
+	shield->grid_aspect[0] = 512.0f / (float)w;
+	shield->grid_aspect[1] = 512.0f / (float)h;
+
+	r_texture_get_size(shield->code_tex, 0, &w, &h);
+	shield->code_aspect[0] = 256.0f / (float)w;
+	shield->code_aspect[1] = 256.0f / (float)h;
+
+	shield->uniforms.alpha = r_shader_uniform(shield->shader, "alpha");
+	shield->uniforms.time = r_shader_uniform(shield->shader, "time");
+	shield->uniforms.code_tex = r_shader_uniform(shield->shader, "code_tex");
+	shield->uniforms.grid_tex = r_shader_uniform(shield->shader, "grid_tex");
+	shield->uniforms.shell_tex = r_shader_uniform(shield->shader, "shell_tex");
+	shield->uniforms.code_aspect = r_shader_uniform(shield->shader, "code_aspect");
+	shield->uniforms.grid_aspect = r_shader_uniform(shield->shader, "grid_aspect");
+
+	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, yumemi_bombshield_expire, ENT_BOX(shield));
+
+	for(;;YIELD) {
+		shield->pos = boss->pos;
+		Enemy *hitbox = get_bombshield_hitbox(shield);
+
+		if(hitbox) {
+			hitbox->pos = shield->pos;
+			boss->bomb_damage_multiplier = 0;
+			boss->shot_damage_multiplier = 0;
+			fapproach_p(&shield->alpha, 1.0f, 1.0/30.0f);
+		} else {
+			boss->bomb_damage_multiplier = 1;
+			boss->shot_damage_multiplier = 1;
+			fapproach_p(&shield->alpha, 0.0f, 1.0/15.0f);
+		}
+	}
+}
+
 Boss *stagex_spawn_yumemi(cmplx pos) {
 	Boss *yumemi = create_boss("Okazaki Yumemi", "yumemi", pos - 400 * I);
 	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
@@ -63,6 +221,8 @@ Boss *stagex_spawn_yumemi(cmplx pos) {
 	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
 	yumemi->move = move_towards(pos, 0.01);
 	yumemi->pos = pos;
+
+	INVOKE_TASK(yumemi_bombshield_controller, ENT_BOX(yumemi));
 
 	return yumemi;
 }

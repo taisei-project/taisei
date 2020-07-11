@@ -15,7 +15,7 @@
 #include "stage4/entities.h"
 #include "stage5/entities.h"
 #include "stage6/entities.h"
-#include "extra_entities.h"
+#include "stagex/entities.h"
 
 #define ENTITIES_STAGES(X, ...) \
 	ENTITIES_STAGE1(X, __VA_ARGS__) \
