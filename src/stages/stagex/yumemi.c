@@ -74,16 +74,16 @@ void stagex_init_yumemi_slave(YumemiSlave *slave, cmplx pos, int type) {
 
 	switch(type) {
 		case 0:
-			slave->sprites.core = get_sprite("stagex/yumemi_slaves/zero_core");
-			slave->sprites.frame = get_sprite("stagex/yumemi_slaves/zero_frame");
-			slave->sprites.outer = get_sprite("stagex/yumemi_slaves/zero_outer");
+			slave->sprites.core = res_sprite("stagex/yumemi_slaves/zero_core");
+			slave->sprites.frame = res_sprite("stagex/yumemi_slaves/zero_frame");
+			slave->sprites.outer = res_sprite("stagex/yumemi_slaves/zero_outer");
 			slave->rotation_factor = 1;
 			break;
 
 		case 1:
-			slave->sprites.core = get_sprite("stagex/yumemi_slaves/one_core");
-			slave->sprites.frame = get_sprite("stagex/yumemi_slaves/one_frame");
-			slave->sprites.outer = get_sprite("stagex/yumemi_slaves/one_outer");
+			slave->sprites.core = res_sprite("stagex/yumemi_slaves/one_core");
+			slave->sprites.frame = res_sprite("stagex/yumemi_slaves/one_frame");
+			slave->sprites.outer = res_sprite("stagex/yumemi_slaves/one_outer");
 			slave->rotation_factor = -1;
 			break;
 
@@ -142,10 +142,10 @@ void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
 	sp->sprite = NULL;
-	sp->sprite_ptr = get_sprite("dialog/yumemi_misc_code_mask");
+	sp->sprite_ptr = res_sprite("dialog/yumemi_misc_code_mask");
 	sp->shader = NULL;
-	sp->shader_ptr = r_shader_get("sprite_yumemi_overlay");
-	sp->aux_textures[0] = r_texture_get("stageex/code");
+	sp->shader_ptr = res_shader("sprite_yumemi_overlay");
+	sp->aux_textures[0] = res_texture("stagex/code");
 	sp->shader_params = &(ShaderCustomParams) {
 		global.frames / 60.0,
 		draw_data->codetex_aspect[0],
@@ -182,6 +182,6 @@ void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
 	r_shader("yumemi_spellbg_voronoi_compose");
 	r_uniform_sampler("tex2", r_framebuffer_get_attachment(draw_data->fb.spell_background_lq, FRAMEBUFFER_ATTACH_COLOR0));
 	// draw_framebuffer_tex(draw_data->fb.spell_background_lq, VIEWPORT_W, VIEWPORT_H);
-	fill_viewport(0, time/700.0+0.5, 0, "stageex/bg");
+	fill_viewport(0, time/700.0+0.5, 0, "stagex/bg");
 	r_state_pop();
 }
