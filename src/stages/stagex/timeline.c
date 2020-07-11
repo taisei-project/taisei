@@ -116,7 +116,7 @@ TASK(boss, { Boss **out_boss; }) {
 	INVOKE_TASK_INDIRECT(StageExPreBossDialog, pm->dialog->StageExPreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, yumemi_appear, ENT_BOX(boss));
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stagexboss");
-	INVOKE_TASK_WHEN(&e->music_changes, yumemi_opening, ENT_BOX(boss), opening_attack);
+	INVOKE_TASK_WHEN(&e->music_changes, stagex_boss_nonspell_1, ENT_BOX(boss), opening_attack);
 	WAIT_EVENT_OR_DIE(&global.dialog->events.fadeout_began);
 #else
 	player_set_power(plr, PLR_MAX_POWER_EFFECTIVE);

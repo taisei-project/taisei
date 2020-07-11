@@ -146,7 +146,7 @@ void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
 	sp->sprite_ptr = res_sprite("dialog/yumemi_misc_code_mask");
 	sp->shader = NULL;
 	sp->shader_ptr = res_shader("sprite_yumemi_overlay");
-	sp->aux_textures[0] = res_texture("stageex/code");
+	sp->aux_textures[0] = res_texture("stagex/code");
 	sp->shader_params = &(ShaderCustomParams) {
 		global.frames / 60.0,
 		draw_data->codetex_aspect[0],
@@ -183,6 +183,6 @@ void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
 	r_shader("yumemi_spellbg_voronoi_compose");
 	r_uniform_sampler("tex2", r_framebuffer_get_attachment(draw_data->fb.spell_background_lq, FRAMEBUFFER_ATTACH_COLOR0));
 	// draw_framebuffer_tex(draw_data->fb.spell_background_lq, VIEWPORT_W, VIEWPORT_H);
-	fill_viewport(0, time/700.0+0.5, 0, "stageex/bg");
+	fill_viewport(0, time/700.0+0.5, 0, "stagex/bg");
 	r_state_pop();
 }

@@ -66,10 +66,10 @@ static void stagex_end(void) {
 static void stagex_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"cell_noise",
-		"stageex/bg",
-		"stageex/bg_binary",
-		"stageex/code",
-		"stageex/dissolve_mask",
+		"stagex/bg",
+		"stagex/bg_binary",
+		"stagex/code",
+		"stagex/dissolve_mask",
 	NULL);
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"copy_depth",

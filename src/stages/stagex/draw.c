@@ -98,7 +98,7 @@ static void bg_tower_draw(vec3 pos, bool is_mask) {
 		r_mat_tex_scale(tex_scale_x, tex_scale_y, 0);
 		r_shader("extra_tower_mask");
 		r_uniform_sampler("tex", "cell_noise");
-		r_uniform_sampler("tex2", "stageex/dissolve_mask");
+		r_uniform_sampler("tex2", "stagex/dissolve_mask");
 		r_uniform_float("time", global.frames/60.0f + phase * M_PI * 2.0f);
 		r_uniform_float("dissolve", draw_data->tower_partial_dissolution * draw_data->tower_partial_dissolution);
 		r_draw_model("tower_alt_uv");
@@ -125,9 +125,9 @@ static void bg_tower_draw_mask(vec3 pos) {
 }
 
 static void set_bg_uniforms(void) {
-	r_uniform_sampler("background_tex", "stageex/bg");
-	r_uniform_sampler("background_binary_tex", "stageex/bg_binary");
-	r_uniform_sampler("code_tex", "stageex/code");
+	r_uniform_sampler("background_tex", "stagex/bg");
+	r_uniform_sampler("background_binary_tex", "stagex/bg_binary");
+	r_uniform_sampler("code_tex", "stagex/code");
 	r_uniform_vec4("code_tex_params",
 		draw_data->codetex_aspect[0],
 		draw_data->codetex_aspect[1],
@@ -419,7 +419,7 @@ void stagex_drawsys_init(void) {
 
 	stage3d_init(&stage_3d_context, 16);
 
-	SDL_RWops *stream = vfs_open("res/gfx/stageex/code.num_slices", VFS_MODE_READ);
+	SDL_RWops *stream = vfs_open("res/gfx/stagex/code.num_slices", VFS_MODE_READ);
 
 	if(!stream) {
 		log_fatal("VFS error: %s", vfs_get_error());
@@ -430,7 +430,7 @@ void stagex_drawsys_init(void) {
 	draw_data->codetex_num_segments = strtol(buf, NULL, 0);
 	SDL_RWclose(stream);
 
-	Texture *tex_code = res_texture("stageex/code");
+	Texture *tex_code = res_texture("stagex/code");
 	uint w, h;
 	r_texture_get_size(tex_code, 0, &w, &h);
 
