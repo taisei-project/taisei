@@ -55,7 +55,7 @@ vec4 sample_background(
 	code_uv.y += t * 0.2;
 
 	vec4 background = texture(sampler_bg, bg_uv);
-	vec4 background_binary = texture(sampler_bg_binary, bg_binary_uv);
+	float background_binary = texture(sampler_bg_binary, bg_binary_uv).r;
 	vec4 code = sample_code(sampler_code, code_tex_params, code_uv) * r;
 
 	background = background * background_binary;
