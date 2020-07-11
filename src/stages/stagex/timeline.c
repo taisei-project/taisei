@@ -107,7 +107,7 @@ TASK(boss, { Boss **out_boss; }) {
 	Boss *boss = stagex_spawn_yumemi(5*VIEWPORT_W/4 - 200*I);
 	*ARGS.out_boss = global.boss = boss;
 
-#if 0
+#if 1
 	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL, NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.sierpinski, false);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.infinity_network, false);
