@@ -15,6 +15,7 @@ glsl_files = files(
     'blur25.frag.glsl',
     'blur5.frag.glsl',
     'blur9.frag.glsl',
+    'bombshield.frag.glsl',
     'boss_death.frag.glsl',
     'boss_zoom.frag.glsl',
     'circle_distort.frag.glsl',
