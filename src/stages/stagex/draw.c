@@ -285,6 +285,7 @@ static bool glitchmask_draw_predicate(EntityInterface *ent) {
 	switch(ent->type) {
 		case ENT_TYPE_ID(Enemy):
 		case ENT_TYPE_ID(YumemiSlave):
+// 		case ENT_TYPE_ID(BossShield):
 			return true;
 
 		default:
