@@ -645,13 +645,14 @@ static SFXImpl *audio_sdl_sfx_load(const char *vfspath) {
 		return NULL;
 	}
 
-	size_t pcm_size = stream.length * mixer.spec.frame_size;
+	ssize_t pcm_size = astream_util_resampled_buffer_size(&stream, &mixer.spec);
 
-	if(pcm_size > INT32_MAX) {
-		log_error("Stream is too large");
+	if(pcm_size < 0) {
 		astream_close(&stream);
 		return NULL;
 	}
+
+	assert(pcm_size <= INT32_MAX);
 
 	SFXImpl *isnd = calloc(1, sizeof(*isnd) + pcm_size);
 

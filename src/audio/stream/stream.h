@@ -69,4 +69,6 @@ double astream_util_offset_to_time(AudioStream *stream, ssize_t ofs) attr_nonnul
 AudioStreamSpec astream_spec(SDL_AudioFormat sample_format, uint channels, uint sample_rate);
 bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2);
 
+ssize_t astream_util_resampled_buffer_size(const AudioStream *src, const AudioStreamSpec *spec);
+
 #endif // IGUARD_audio_stream_stream_h

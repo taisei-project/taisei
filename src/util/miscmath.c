@@ -491,3 +491,7 @@ uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 	return _umuldiv64(x, multiplier, divisor);
 #endif
 }
+
+uint64_t uceildiv64(uint64_t x, uint64_t y) {
+	return x / y + (x % y != 0);
+}

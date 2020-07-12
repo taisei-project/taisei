@@ -150,18 +150,33 @@ double astream_util_offset_to_time(AudioStream *stream, ssize_t ofs) {
 	return ofs / (double)stream->spec.sample_rate;
 }
 
-bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t buffer_size, void *buffer) {
-	size_t min_size = src->length * spec->frame_size;
+ssize_t astream_util_resampled_buffer_size(const AudioStream *src, const AudioStreamSpec *spec) {
+	uint64_t size = src->length * spec->frame_size;
 
-	if(min_size > INT32_MAX) {
-		log_error("Stream is too large");
-		return false;
+	if(size > INT32_MAX) {
+		log_error("Source stream is too large");
+		return -1;
 	}
 
-	assert(buffer_size >= min_size);
+	if(spec->sample_rate != src->spec.sample_rate) {
+		size = uceildiv64(size * spec->sample_rate, src->spec.sample_rate);
+
+		if(size > INT32_MAX) {
+			log_error("Resampled stream is too large");
+			return -1;
+		}
+
+		size = (size / spec->frame_size) * spec->frame_size;
+	}
+
+	return size;
+}
+
+bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t buffer_size, void *buffer) {
+	assert(buffer_size >= astream_util_resampled_buffer_size(src, spec));
 
 	SDL_AudioStream *pipe = NULL;
-	SDL_RWops *rw = SDL_RWFromMem(buffer, min_size);
+	SDL_RWops *rw = SDL_RWFromMem(buffer, buffer_size);
 
 	if(UNLIKELY(!rw)) {
 		log_sdl_error(LOG_ERROR, "SDL_RWFromMem");
