@@ -6,57 +6,34 @@ Taisei
 Introduction
 ------------
 
-Taisei is an open clone of the Tōhō Project series. Tōhō is a one-man project of
-shoot-em-up games set in an isolated world full of Japanese folklore.
+Taisei Project is an open source clone of the Tōhō Project series. Tōhō is a one-man
+project of shoot-em-up games set in an isolated world full of Japanese folklore.
+
+For gameplay instructions, read `this <doc/GAME.rst>`__.
+
+For the story, read `this <doc/STORY.txt>`__. (Warning: spoilers!)
 
 Installation
 ------------
 
-Dependencies
-^^^^^^^^^^^^
+You can find precompiled binaries of the complete game on the
+`Releases <https://github.com/taisei-project/taisei/releases>`__ page on
+GitHub, available for Windows (x86/x64), Linux, and macOS. An experimental
+build for Nintendo Switch (homebrew) also exists (use at your own risk).
 
--  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
--  SDL2 >= 2.0.6
--  freetype2
--  libpng >= 1.5.0
--  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  libzip >= 1.2
--  opusfile
--  zlib
+Source Code & Development
+-------------------------
 
-Optional:
+You can obtain the source code from the
+`Releases <https://github.com/taisei-project/taisei/releases>`__ page on
+GitHub, alongside the binaries.
 
--  OpenSSL (for a better SHA-256 implementation; used in shader cache)
--  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
--  libshaderc (for OpenGL ES backends)
--  GameMode headers (Linux only; for automatic `GameMode
-   <https://github.com/FeralInteractive/gamemode>`__ integration)
+**Important:** *do not* grab GitHub's auto-generated source archives, as those
+do not contain the required submodules for compiling the project. This only
+applies to versions v1.3 and above.
 
-Build-only dependencies
-^^^^^^^^^^^^^^^^^^^^^^^
-
--  Python >= 3.5
--  meson >= 0.48.0 (build system; >=0.49.0 recommended)
-
-Optional:
-
--  docutils (for documentation)
-
-Obtaining the source code
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Stable releases
-"""""""""""""""
-
-You can find the source tarballs at the
-`Releases <https://github.com/taisei-project/taisei/releases>`__ section on
-Github. **Do not** grab Github's auto-generated source archives, those do not
-contain the required submodules. This only applies for versions v1.3 and above.
-
-Latest code from git
-""""""""""""""""""""
-
-If you cloned Taisei from git, make sure the submodules are initialized:
+If you downloaded Taisei using `git clone`, make sure the submodules are
+initialized:
 
 ::
 
@@ -70,89 +47,31 @@ This step needs to be done just once, and can be skipped if you specified the
 new code, checkout another branch, etc. The ``pull`` and ``checkout`` helper
 scripts can do that for you automatically.
 
-Compiling from source
-^^^^^^^^^^^^^^^^^^^^^
+For more in-depth development and compiling instructions, see:
+`Development Guide <doc/DEVELOPMENT.rst>`__.
 
-To build and install Taisei on \*nix, just follow these steps:
+Dependencies
+^^^^^^^^^^^^
 
-::
+-  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
+-  SDL2 >= 2.0.6
+-  SDL2_mixer >= 2.0.4
+-  freetype2
+-  libpng >= 1.5.0
+-  libwebpdecoder >= 0.5 or libwebp >= 0.5
+-  libzip >= 1.2
+-  opusfile
+-  zlib
 
-    cd /path/to/taisei/source
-    mkdir build
-    cd build
-    meson --prefix=$yourprefix ..
-    ninja
-    ninja install
+Optional:
 
-This will install game data to ``$prefix/share/taisei/`` and build this
-path *statically* into the executable. This might be a package
-maintainer’s choice. Alternatively you may want to add
-``-Dinstall_relative=true`` to get a relative structure like
-
-::
-
-    $prefix/taisei
-    $prefix/data/
-
-``install_relative`` is always set when building for Windows.
-
-You can enable debugging options/output for development purposes:
-
-::
-
-    meson configure -Dbuildtype=debug -Db_ndebug=false -Ddeveloper=true
+-  OpenSSL (for a better SHA-256 implementation; used in shader cache)
+-  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
+-  libshaderc (for OpenGL ES backends)
 
 
-This option also helps for speeding up build times for debugging:
-
-::
-
-    meson configure -Db_lto=false
-
-**OpenGL ES Support**
-
-The OpenGL ES 3.0 backend is not built by default. To enable it, do:
-
-::
-
-    meson configure -Dr_gles30=true -Dshader_transpiler=true
-
-See `here <doc/ENVIRON.rst>`__ for information on how to activate it.
-Alternatively, do this to make GLES 3.0 the default backend:
-
-::
-
-    meson configure -Dr_default=gles30
-
-The OpenGL ES 2.0 backend can be enabled similarly, using ``gles20`` instead of
-``gles30``. However, it requires a few extensions to function correctly, most
-notably:
-
-- ``OES_depth_texture`` or ``GL_ANGLE_depth_texture``
-- ``OES_standard_derivatives``
-- ``OES_vertex_array_object``
-- ``EXT_frag_depth``
-- ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
-  ``NV_instanced_arrays``
-
-You'll need ANGLE for OpenGL ES on Windows and macOS. You'll need to check out
-`ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
-documentation on how to do that.
-
-Once you've completed compiling it, enable it with:
-
-::
-    meson -Dinstall_angle=true -Dangle_libegl=/path/to/libEGL.{dll,dylib}
-    -Dangle_libgles=/path/to/libGLESv2.{dll,dylib}
-
-It'll install automatically with `ninja install` (as mentioned above).
-
-See `here <doc/COMPILING.rst`__ for more information on compiling
-for specific platforms.
-
-
-Where are my replays, screenshots and settings?
------------------------------------------------
+Replays, Screenshots, and Settings Locations
+--------------------------------------------
 
 Taisei stores all data in a platform-specific directory:
 
@@ -164,74 +83,13 @@ Taisei stores all data in a platform-specific directory:
 This is referred to as the **Storage Directory**. You can set the environment
 variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
 
-Game controller support
------------------------
-
-Taisei uses SDL2's unified GameController API. This allows us to correctly
-support any device that SDL recognizes by default, while treating all of them
-the same way. This also means that if your device is not supported by SDL, you
-will not be able to use it unless you provide a custom mapping. If your
-controller is listed in the settings menu, then you're fine. If not, read on.
-
-An example mapping string looks like this:
-
-::
-
-    03000000ba2200002010000001010000,Jess Technology USB Game Controller,a:b2,b:b1,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:,leftshoulder:b4,lefttrigger:b6,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:b7,rightx:a3,righty:a2,start:b9,x:b3,y:b0,
-
-There are a few ways to generate a custom mapping:
-
--  You can use the
-   `controllermap <https://aur.archlinux.org/packages/controllermap>`__ utility,
-   which `comes with SDL source code
-   <https://hg.libsdl.org/SDL/file/68a767ae3a88/test/controllermap.c>`__.
--  If you use Steam, you can configure your controller there. Then you can add
-   Taisei as a non-Steam game; run it from Steam and everything should *just
-   work™*. In case you don't want to do that, find ``config/config.vdf`` in your
-   Steam installation directory, and look for the ``SDL_GamepadBind`` variable.
-   It contains a list of SDL mappings separated by line breaks.
--  You can also try the `SDL2 Gamepad Tool by General Arcade
-   <http://www.generalarcade.com/gamepadtool/>`__. This program is free to use,
-   but not open source.
--  Finally, you can try to write a mapping by hand. You will probably have to
-   refer to the SDL documentation. See `gamecontrollerdb.txt
-   <misc/gamecontrollerdb/gamecontrollerdb.txt>`__ for some more examples.
-
-Once you have your mapping, there are two ways to make Taisei use it:
-
--  Create a file named ``gamecontrollerdb.txt`` where your config, replays and
-   screenshots are, and put each mapping on a new line.
--  Put your mappings in the environment variable ``SDL_GAMECONTROLLERCONFIG``,
-   also separated by line breaks. Other games that use the GameController API
-   will also pick them up.
-
-When you're done, please consider contributing your mappings to
-`SDL <https://libsdl.org/>`__,
-`SDL_GameControllerDB <https://github.com/gabomdq/SDL_GameControllerDB>`__,
-and `us <https://github.com/taisei-project/SDL_GameControllerDB>`__, so
-that other people can benefit from your work.
-
-Also note that we currently only handle input from analog axes and digital
-buttons. Hats, analog buttons, and anything more exotic will not work, unless
-remapped.
 
 Troubleshooting
 ---------------
 
-Sound problems (Linux)
-^^^^^^^^^^^^^^^^^^^^^^
+If you're having issues with low framerates, sound playback issues, or gamepad
+support, please see the `Troubleshooting Guide <doc/TROUBLESHOOTING.rst>`__.
 
-If your sound becomes glitchy, and you encounter lot of console messages like:
-
-::
-
-    ALSA lib pcm.c:7234:(snd_pcm_recover) underrun occurred
-
-it seems like you possibly have broken ALSA configuration. This may be fixed by
-playing with parameter values of ``pcm.dmixer.slave`` option group in
-``/etc/asound.conf`` or wherever you have your ALSA configuration.
-Commenting ``period_time``, ``period_size``, ``buffer_size``, ``rate`` may give
-you the first approach to what to do.
 
 Contact
 -------

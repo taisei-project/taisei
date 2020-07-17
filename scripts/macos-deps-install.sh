@@ -37,17 +37,17 @@ else
     echo -en "${white}Installing Homebrew... ${reset}"
 
     if brew --version | grep -q 'Homebrew'; then
-	echo -e "${green}done!${reset}"
+        echo -e "${green}done!${reset}"
     else
-	echo -e "${red}failed?!${reset}"
-	echo -e "Please investigate while Homebrew failed to install before proceeding!"
-	exit 1
+        echo -e "${red}failed?!${reset}"
+        echo -e "Please investigate while Homebrew failed to install before proceeding!"
+        exit 1
     fi
 
 fi
 
 echo -en "${white}Installing dev tools... ${reset}"
-brew install meson cmake pkg-config docutils 2>/dev/null
+brew install meson cmake pkg-config docutils python3 2>/dev/null
 echo -e "${green}done!${reset}"
 
 echo -en "${white}Installing optional dependencies... ${reset}"
@@ -56,7 +56,7 @@ echo -e "${green}done!${reset}"
 
 
 if ! grep -Eq 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' ~/.zshrc &&
-    ! grep -Eq 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' ~/.bash_profile
+   ! grep -Eq 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' ~/.bash_profile
 then
     echo
     echo -e "${white}Do you want me to append the following to your shell .rc file?${reset}"
@@ -64,17 +64,18 @@ then
 
     read -p "[Y/N]: " -n 1 -r
     echo -e " "
+
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
-	if [ -n "`$SHELL -c 'echo $ZSH_VERSION'`" ]; then
-	    echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.zshrc
-	    echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.zshrc'
-	    echo -e "Please run \`source ~/.zshrc\` to activate"
-	elif [ -n "`$SHELL -c 'echo $BASH_VERSION'`" ]; then
-	    echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.bash_profile
-	    echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.bash_profile'
-	    echo -e "Please run \`source ~/.bash_profile\` to activate"
-	fi
+        if [ -n "`$SHELL -c 'echo $ZSH_VERSION'`" ]; then
+            echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.zshrc
+            echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.zshrc'
+            echo -e "Please run \`source ~/.zshrc\` to activate"
+        elif [ -n "`$SHELL -c 'echo $BASH_VERSION'`" ]; then
+            echo 'export PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig"' >> ~/.bash_profile
+            echo -e 'Exported PKG_CONFIG_PATH="/usr/local/opt/openssl@1.1/lib/pkgconfig to ~/.bash_profile'
+            echo -e "Please run \`source ~/.bash_profile\` to activate"
+        fi
     fi
 fi
 
