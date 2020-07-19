@@ -13,8 +13,10 @@
 #include "vfs/public.h"
 #include "assert.h"
 #include "stringops.h"
+#include "rwops/rwops_autobuf.h"
+#include "util/crap.h"
 
-char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
+char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	char c, *ptr = buf, *end = buf + bufsize - 1;
 	assert(end > ptr);
 
@@ -36,7 +38,7 @@ char* SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	return buf;
 }
 
-char* SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) {
+char *SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) {
 	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
 	assert(end >= ptr);
 
@@ -85,7 +87,7 @@ void tsfprintf(FILE *out, const char *restrict fmt, ...) {
 	va_end(args);
 }
 
-char* try_path(const char *prefix, const char *name, const char *ext) {
+char *try_path(const char *prefix, const char *name, const char *ext) {
 	char *p = strjoin(prefix, name, ext, NULL);
 
 	if(vfs_query(p).exists) {
@@ -94,4 +96,84 @@ char* try_path(const char *prefix, const char *name, const char *ext) {
 
 	free(p);
 	return NULL;
+}
+
+static void *SDL_RWreadAll_known_size(SDL_RWops *rwops, size_t file_size, size_t *out_size) {
+	char *start = malloc(file_size);
+	char *end = start + file_size;
+	char *pbuf = start;
+
+	assert(end >= start);
+
+	for(;;) {
+		size_t read = SDL_RWread(rwops, pbuf, 1, end - pbuf);
+		assert(read <= end - pbuf);
+
+		if(read == 0) {
+			*out_size = pbuf - start;
+			return start;
+		}
+
+		pbuf += read;
+	}
+}
+
+void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
+	ssize_t file_size = SDL_RWsize(rwops);
+
+	if(file_size >= 0) {
+		if(max_size && file_size > max_size) {
+			SDL_SetError("File is too large (%zu bytes; max is %zu)", file_size, max_size);
+			return NULL;
+		}
+
+		size_t sz;
+		void *result = SDL_RWreadAll_known_size(rwops, file_size, &sz);
+
+		if(result) {
+			*out_size = sz;
+		}
+
+		return result;
+	}
+
+	static const size_t chunk_size = BUFSIZ;
+
+	void *buf;
+	SDL_RWops *autobuf = NOT_NULL(SDL_RWAutoBuffer(&buf, chunk_size));
+	void *chunk = NOT_NULL(malloc(chunk_size));
+
+	size_t total_size = 0;
+
+	for(;;) {
+		size_t read = SDL_RWread(rwops, chunk, 1, chunk_size);
+
+		if(read == 0) {
+			free(chunk);
+			SDL_RWclose(rwops);
+			buf = memdup(buf, total_size);
+			SDL_RWclose(autobuf);
+			*out_size = total_size;
+			return buf;
+		}
+
+		size_t write = SDL_RWwrite(autobuf, chunk, 1, chunk_size);
+
+		if(UNLIKELY(write != read)) {
+			free(chunk);
+			SDL_RWclose(rwops);
+			SDL_RWclose(autobuf);
+			return NULL;
+		}
+
+		total_size += write;
+
+		if(max_size && UNLIKELY(total_size > max_size)) {
+			SDL_SetError("File is too large (%zu bytes read so far; max is %zu)", total_size, max_size);
+			free(chunk);
+			SDL_RWclose(rwops);
+			SDL_RWclose(autobuf);
+			return NULL;
+		}
+	}
 }

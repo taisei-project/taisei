@@ -67,11 +67,13 @@
 #endif
 
 #define TSGL_EXT_VENDORS \
+	TSGL_EXT_VENDOR(3DFX) \
 	TSGL_EXT_VENDOR(AMD) \
 	TSGL_EXT_VENDOR(ANGLE) \
 	TSGL_EXT_VENDOR(APPLE) \
 	TSGL_EXT_VENDOR(ARB) \
 	TSGL_EXT_VENDOR(EXT) \
+	TSGL_EXT_VENDOR(IMG) \
 	TSGL_EXT_VENDOR(KHR) \
 	TSGL_EXT_VENDOR(MESA) \
 	TSGL_EXT_VENDOR(NATIVE) \
@@ -139,6 +141,27 @@ struct glext_s {
 	ext_flag_t texture_rg;
 	ext_flag_t vertex_array_object;
 	ext_flag_t viewport_array;
+
+	struct {
+		ext_flag_t r8_srgb;
+		ext_flag_t rg8_srgb;
+		ext_flag_t rgb8_rgba8_srgb;
+		ext_flag_t astc;
+		ext_flag_t atc;
+		ext_flag_t bptc;
+		ext_flag_t etc1;
+		ext_flag_t etc1_srgb;
+		ext_flag_t etc2_eac;
+		ext_flag_t etc2_eac_srgb;
+		ext_flag_t fxt1;
+		ext_flag_t pvrtc2;
+		ext_flag_t pvrtc;
+		ext_flag_t pvrtc_srgb;
+		ext_flag_t rgtc;
+		ext_flag_t s3tc_dx1;
+		ext_flag_t s3tc_dx5;
+		ext_flag_t s3tc_srgb;
+	} tex_format;
 };
 
 #define GL_VERSION_INT(mjr, mnr) (((mjr) << 8) + (mnr))

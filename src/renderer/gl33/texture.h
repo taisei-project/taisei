@@ -27,7 +27,7 @@ typedef struct Texture {
 	char debug_label[R_DEBUG_LABEL_SIZE];
 } TextureImpl;
 
-Texture* gl33_texture_create(const TextureParams *params);
+Texture *gl33_texture_create(const TextureParams *params);
 void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height);
 void gl33_texture_get_params(Texture *tex, TextureParams *params);
 const char *gl33_texture_get_debug_label(Texture *tex);
@@ -42,6 +42,7 @@ void gl33_texture_taint(Texture *tex);
 void gl44_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
+bool gl33_texture_type_supported(TextureType type, TextureFlags flags);
 PixmapFormat gl33_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
 
 GLTextureTypeInfo *gl33_texture_type_info(TextureType type);

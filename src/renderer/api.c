@@ -391,6 +391,7 @@ void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count
 }
 
 Texture* r_texture_create(const TextureParams *params) {
+	assert(r_texture_type_supported(params->type, params->flags));
 	return B.texture_create(params);
 }
 
@@ -448,6 +449,10 @@ void r_texture_clear(Texture *tex, const Color *clr) {
 
 void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
+}
+
+bool r_texture_type_supported(TextureType type, TextureFlags flags) {
+	return B.texture_type_supported(type, flags);
 }
 
 PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {

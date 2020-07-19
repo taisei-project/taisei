@@ -185,7 +185,7 @@ static void init_fonts(void) {
 		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
 		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
 		.type   = TEX_TYPE_RGBA,
-		.stream = true,
+		.flags  = TEX_FLAG_STREAM,
 		.width  = 1024,
 		.height = 1024,
 	});

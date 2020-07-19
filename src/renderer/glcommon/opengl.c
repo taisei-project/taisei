@@ -390,6 +390,176 @@ static void glcommon_ext_viewport_array(void) {
 	EXT_MISSING();
 }
 
+static void glcommon_ext_texture_format_r8_srgb(void) {
+	EXT_FLAG(tex_format.r8_srgb);
+
+	CHECK_EXT(GL_EXT_texture_sRGB_R8);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rg8_srgb(void) {
+	EXT_FLAG(tex_format.rg8_srgb);
+
+	CHECK_EXT(GL_EXT_texture_sRGB_RG8);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rgb8_rgba8_srgb(void) {
+	EXT_FLAG(tex_format.rgb8_rgba8_srgb);
+
+	CHECK_CORE(GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_EXT_texture_sRGB);
+	CHECK_EXT(GL_EXT_sRGB);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_dx1(void) {
+	EXT_FLAG(tex_format.s3tc_dx1);
+
+	CHECK_EXT(GL_EXT_texture_compression_s3tc);
+	CHECK_EXT(GL_NV_texture_compression_s3tc);
+	CHECK_EXT(GL_EXT_texture_compression_dxt1);
+	CHECK_EXT(GL_ANGLE_texture_compression_dxt1);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_dx5(void) {
+	EXT_FLAG(tex_format.s3tc_dx5);
+
+	CHECK_EXT(GL_EXT_texture_compression_s3tc);
+	CHECK_EXT(GL_NV_texture_compression_s3tc);
+	CHECK_EXT(GL_ANGLE_texture_compression_dxt5);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_srgb(void) {
+	EXT_FLAG(tex_format.s3tc_dx5);
+
+	if(glext.tex_format.s3tc_dx1 || glext.tex_format.s3tc_dx5) {
+		CHECK_EXT(GL_EXT_texture_sRGB);
+		CHECK_EXT(GL_EXT_texture_compression_s3tc_srgb);
+		CHECK_EXT(GL_NV_sRGB_formats);
+	}
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rgtc(void) {
+	EXT_FLAG(tex_format.rgtc);
+
+	CHECK_CORE(GL_ATLEAST(3, 0));
+	CHECK_EXT(GL_EXT_texture_compression_rgtc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc1(void) {
+	EXT_FLAG(tex_format.etc1);
+
+	CHECK_EXT(GL_OES_compressed_ETC1_RGB8_texture);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc1_srgb(void) {
+	EXT_FLAG(tex_format.etc1);
+
+	if(glext.tex_format.etc1) {
+		CHECK_EXT(GL_NV_sRGB_formats);
+	}
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc2_eac(void) {
+	EXT_FLAG(tex_format.etc2_eac);
+
+	CHECK_CORE(GL_ATLEAST(4, 3) || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_OES_compressed_ETC2_RGBA8_texture);
+	CHECK_EXT(GL_ARB_ES3_compatibility);
+
+	// FIXME: maybe don't just assume R11/RG11 are supported as well?
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc2_eac_srgb(void) {
+	EXT_FLAG(tex_format.etc2_eac);
+
+	CHECK_CORE(GL_ATLEAST(4, 3) || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_OES_compressed_ETC2_sRGB8_alpha8_texture);
+	CHECK_EXT(GL_ARB_ES3_compatibility);
+
+	// FIXME: maybe don't just assume R11/RG11 are supported as well?
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_bptc(void) {
+	EXT_FLAG(tex_format.bptc);
+
+	CHECK_CORE(GL_ATLEAST(4, 2));
+	CHECK_EXT(GL_ARB_texture_compression_bptc);
+	CHECK_EXT(GL_EXT_texture_compression_bptc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc(void) {
+	EXT_FLAG(tex_format.pvrtc);
+
+	CHECK_EXT(GL_IMG_texture_compression_pvrtc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc2(void) {
+	EXT_FLAG(tex_format.pvrtc2);
+
+	CHECK_EXT(GL_IMG_texture_compression_pvrtc2);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc_srgb(void) {
+	EXT_FLAG(tex_format.pvrtc2);
+
+	CHECK_EXT(GL_EXT_pvrtc_sRGB);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_astc(void) {
+	EXT_FLAG(tex_format.astc);
+
+	CHECK_CORE(GLES_ATLEAST(3, 2));
+	CHECK_EXT(GL_KHR_texture_compression_astc_ldr);
+	CHECK_EXT(GL_OES_texture_compression_astc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_atc(void) {
+	EXT_FLAG(tex_format.atc);
+
+	CHECK_EXT(GL_AMD_compressed_ATC_texture);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_fxt1(void) {
+	EXT_FLAG(tex_format.fxt1);
+
+	CHECK_EXT(GL_3DFX_texture_compression_FXT1);
+
+	EXT_MISSING();
+}
+
 static const char *get_unmasked_property(GLenum prop, bool fallback) {
 	const char *val = NULL;
 
@@ -554,6 +724,40 @@ static void glcommon_check_issues(void) {
 	);
 }
 
+static const char *compressed_fmt_name(GLenum fmt) {
+	switch(fmt) {
+		#define F(f) case f: return #f;
+		// GL_EXT_texture_compression_s3tc; GL_NV_texture_compression_s3tc; GL_EXT_texture_compression_dxt1
+		F(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+		// GL_EXT_texture_compression_s3tc; GL_NV_texture_compression_s3tc; GL_ANGLE_texture_compression_dxt5
+		F(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
+		// GL_EXT_texture_compression_rgtc;
+		F(GL_COMPRESSED_RED_RGTC1)
+		F(GL_COMPRESSED_RG_RGTC2)
+		// GL_OES_compressed_ETC1_RGB8_texture
+		F(GL_ETC1_RGB8_OES)
+		// GL_ARB_ES3_compatibility
+		F(GL_COMPRESSED_RGBA8_ETC2_EAC)
+		F(GL_COMPRESSED_R11_EAC)
+		F(GL_COMPRESSED_RG11_EAC)
+		// ARB_texture_compression_bptc; EXT_texture_compression_bptc
+		F(GL_COMPRESSED_RGBA_BPTC_UNORM_ARB)
+		// GL_IMG_texture_compression_pvrtc
+		F(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG)
+		F(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
+		// GL_KHR_texture_compression_astc_ldr
+		F(GL_COMPRESSED_RGBA_ASTC_4x4_KHR)
+		// GL_AMD_compressed_ATC_texture
+		F(GL_ATC_RGB_AMD)
+		F(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
+		// GL_3DFX_texture_compression_FXT1
+		F(GL_COMPRESSED_RGB_FXT1_3DFX)
+		// GL_IMG_texture_compression_pvrtc2
+		F(GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
+		default: return NULL;
+	}
+}
+
 void glcommon_check_capabilities(void) {
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
@@ -631,6 +835,25 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_texture_rg();
 	glcommon_ext_vertex_array_object();
 	glcommon_ext_viewport_array();
+
+	glcommon_ext_texture_format_r8_srgb();
+	glcommon_ext_texture_format_rg8_srgb();
+	glcommon_ext_texture_format_rgb8_rgba8_srgb();
+	glcommon_ext_texture_format_s3tc_dx1();
+	glcommon_ext_texture_format_s3tc_dx5();
+	glcommon_ext_texture_format_s3tc_srgb();
+	glcommon_ext_texture_format_rgtc();
+	glcommon_ext_texture_format_etc1();
+	glcommon_ext_texture_format_etc1_srgb();
+	glcommon_ext_texture_format_etc2_eac();
+	glcommon_ext_texture_format_etc2_eac_srgb();
+	glcommon_ext_texture_format_bptc();
+	glcommon_ext_texture_format_pvrtc();
+	glcommon_ext_texture_format_pvrtc2();
+	glcommon_ext_texture_format_pvrtc_srgb();
+	glcommon_ext_texture_format_astc();
+	glcommon_ext_texture_format_atc();
+	glcommon_ext_texture_format_fxt1();
 
 	glcommon_build_shader_lang_table();
 	glcommon_check_issues();

@@ -1183,6 +1183,7 @@ RendererBackend _r_backend_gl33 = {
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
 		.texture_clear = gl33_texture_clear,
+		.texture_type_supported = gl33_texture_type_supported,
 		.texture_optimal_pixmap_format_for_type = gl33_texture_optimal_pixmap_format_for_type,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,

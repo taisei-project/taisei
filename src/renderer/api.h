@@ -56,41 +56,68 @@ typedef enum RendererCapability {
 
 typedef uint_fast8_t r_capability_bits_t;
 
+enum {
+	TEX_TYPE_COMPRESSED_BIT = 0x8000,
+};
+
+#define TEX_TYPES_UNCOMPRESSED(X, ...) \
+	/* NOTE: whichever is placed first here is considered the "default" where applicable. */ \
+	X(RGBA_8, __VA_ARGS__) \
+	X(RGB_8, __VA_ARGS__) \
+	X(RG_8, __VA_ARGS__) \
+	X(R_8, __VA_ARGS__) \
+	X(RGBA_16, __VA_ARGS__) \
+	X(RGB_16, __VA_ARGS__) \
+	X(RG_16, __VA_ARGS__) \
+	X(R_16, __VA_ARGS__) \
+	X(RGBA_16_FLOAT, __VA_ARGS__) \
+	X(RGB_16_FLOAT, __VA_ARGS__) \
+	X(RG_16_FLOAT, __VA_ARGS__) \
+	X(R_16_FLOAT, __VA_ARGS__) \
+	X(RGBA_32_FLOAT, __VA_ARGS__) \
+	X(RGB_32_FLOAT, __VA_ARGS__) \
+	X(RG_32_FLOAT, __VA_ARGS__) \
+	X(R_32_FLOAT, __VA_ARGS__) \
+	X(DEPTH_8, __VA_ARGS__) \
+	X(DEPTH_16, __VA_ARGS__) \
+	X(DEPTH_24, __VA_ARGS__) \
+	X(DEPTH_32, __VA_ARGS__) \
+	X(DEPTH_16_FLOAT, __VA_ARGS__) \
+	X(DEPTH_32_FLOAT, __VA_ARGS__) \
+
+#define TEX_TYPES_HANDLE_COMPRESSED(comp, layout, X, ...) \
+	X(COMPRESSED_##comp, __VA_ARGS__)
+
+#define TEX_TYPES_COMPRESSED(X, ...) \
+	PIXMAP_COMPRESSION_FORMATS(TEX_TYPES_HANDLE_COMPRESSED, X, __VA_ARGS__)
+
+#define TEX_TYPES(X, ...) \
+	TEX_TYPES_UNCOMPRESSED(X, __VA_ARGS__) \
+	TEX_TYPES_COMPRESSED(X, __VA_ARGS__) \
+
 typedef enum TextureType {
-	// NOTE: whichever is placed first here is considered the "default" where applicable.
-	TEX_TYPE_RGBA_8,
-	TEX_TYPE_RGB_8,
-	TEX_TYPE_RG_8,
-	TEX_TYPE_R_8,
+	TEX_TYPE_INVALID = -1,
 
-	TEX_TYPE_RGBA_16,
-	TEX_TYPE_RGB_16,
-	TEX_TYPE_RG_16,
-	TEX_TYPE_R_16,
+	#define DECLARE_TEX_UNCOMPRESSED_TYPE(type, ...) \
+		TEX_TYPE_##type,
+	TEX_TYPES_UNCOMPRESSED(DECLARE_TEX_UNCOMPRESSED_TYPE,)
+	#undef DECLARE_TEX_UNCOMPRESSED_TYPE
 
-	TEX_TYPE_RGBA_16_FLOAT,
-	TEX_TYPE_RGB_16_FLOAT,
-	TEX_TYPE_RG_16_FLOAT,
-	TEX_TYPE_R_16_FLOAT,
+	#define DECLARE_TEX_COMPRESSED_TYPE(fmt, ...) \
+		TEX_TYPE_COMPRESSED_##fmt = PIXMAP_COMPRESSION_##fmt | TEX_TYPE_COMPRESSED_BIT,
+	PIXMAP_COMPRESSION_FORMATS(DECLARE_TEX_COMPRESSED_TYPE,)
+	#undef DECLARE_TEX_COMPRESSED_TYPE
 
-	TEX_TYPE_RGBA_32_FLOAT,
-	TEX_TYPE_RGB_32_FLOAT,
-	TEX_TYPE_RG_32_FLOAT,
-	TEX_TYPE_R_32_FLOAT,
-
-	TEX_TYPE_DEPTH_8,
-	TEX_TYPE_DEPTH_16,
-	TEX_TYPE_DEPTH_24,
-	TEX_TYPE_DEPTH_32,
-	TEX_TYPE_DEPTH_16_FLOAT,
-	TEX_TYPE_DEPTH_32_FLOAT,
-
-	TEX_TYPE_RGBA = TEX_TYPE_RGBA_8,
-	TEX_TYPE_RGB = TEX_TYPE_RGB_8,
-	TEX_TYPE_RG = TEX_TYPE_RG_8,
 	TEX_TYPE_R = TEX_TYPE_R_8,
-	TEX_TYPE_DEPTH = TEX_TYPE_DEPTH_8,
+	TEX_TYPE_RG = TEX_TYPE_RG_8,
+	TEX_TYPE_RGB = TEX_TYPE_RGB_8,
+	TEX_TYPE_RGBA = TEX_TYPE_RGBA_8,
+	TEX_TYPE_DEPTH = TEX_TYPE_DEPTH_16,
 } TextureType;
+
+#define TEX_TYPE_IS_COMPRESSED(type)         ((bool)((type) & TEX_TYPE_COMPRESSED_BIT))
+#define TEX_TYPE_TO_COMPRESSION_FORMAT(type) ((PixmapCompression)((type) & ~TEX_TYPE_COMPRESSED_BIT))
+#define COMPRESSION_FORMAT_TO_TEX_TYPE(cfmt) ((TextureType)((cfmt) | TEX_TYPE_COMPRESSED_BIT))
 
 typedef enum TextureFilterMode {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
@@ -114,12 +141,25 @@ typedef enum TextureMipmapMode {
 	TEX_MIPMAP_AUTO,
 } TextureMipmapMode;
 
+typedef enum TextureFlags {
+	// NOTE: this can be later expanded to include intended usage flags, e.g. "render target", "filterable", etc.
+	TEX_FLAG_SRGB = (1 << 0),
+	TEX_FLAG_STREAM = (1 << 1),
+} TextureFlags;
+
 enum {
 	TEX_ANISOTROPY_DEFAULT = 1,
 	// TEX_MIPMAPS_MAX = ((uint)(-1)),
 	// pedantic out-of-range warning
 	#define TEX_MIPMAPS_MAX ((uint)(-1))
 };
+
+typedef union TextureSwizzleMask {
+	char rgba[4];
+	struct {
+		char r, g, b, a;
+	};
+} TextureSwizzleMask;
 
 typedef struct TextureParams {
 	uint width;
@@ -136,10 +176,12 @@ typedef struct TextureParams {
 		TextureWrapMode t;
 	} wrap;
 
+	TextureSwizzleMask swizzle;
+
 	uint anisotropy;
 	uint mipmaps;
 	TextureMipmapMode mipmap_mode;
-	bool stream;
+	TextureFlags flags;
 } attr_designated_init TextureParams;
 
 typedef enum FramebufferAttachment {
@@ -667,6 +709,7 @@ void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixm
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
+bool r_texture_type_supported(TextureType type, TextureFlags flags);
 PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
 
 Framebuffer* r_framebuffer_create(void);

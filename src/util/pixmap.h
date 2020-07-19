@@ -25,45 +25,137 @@ typedef enum PixmapOrigin {
 	PIXMAP_ORIGIN_BOTTOMLEFT,
 } PixmapOrigin;
 
+#define PIXMAP_COMPRESSION_FORMATS(X, ...) \
+	X(ETC1_RGB, RGB, __VA_ARGS__) \
+	X(ETC2_RGBA, RGBA, __VA_ARGS__) \
+	X(BC1_RGB, RGB, __VA_ARGS__) \
+	X(BC3_RGBA, RGBA, __VA_ARGS__) \
+	X(BC4_R, R, __VA_ARGS__) \
+	X(BC5_RG, RG, __VA_ARGS__) \
+	X(BC7_RGBA, RGBA, __VA_ARGS__) \
+	X(PVRTC1_4_RGB, RGB, __VA_ARGS__) \
+	X(PVRTC1_4_RGBA, RGBA, __VA_ARGS__) \
+	X(ASTC_4x4_RGBA, RGBA, __VA_ARGS__) \
+	X(ATC_RGB, RGB, __VA_ARGS__) \
+	X(ATC_RGBA, RGBA, __VA_ARGS__) \
+	X(PVRTC2_4_RGB, RGB, __VA_ARGS__) \
+	X(PVRTC2_4_RGBA, RGBA, __VA_ARGS__) \
+	X(ETC2_EAC_R11, R, __VA_ARGS__) \
+	X(ETC2_EAC_RG11, RG, __VA_ARGS__) \
+	X(FXT1_RGB, RGB, __VA_ARGS__) \
+
+typedef enum PixmapCompression {
+	#define DEFINE_PIXMAP_COMPRESSION(cformat, ...) \
+		PIXMAP_COMPRESSION_##cformat,
+	PIXMAP_COMPRESSION_FORMATS(DEFINE_PIXMAP_COMPRESSION,)
+	#undef DEFINE_PIXMAP_COMPRESSION
+} PixmapCompression;
+
 enum {
 	PIXMAP_FLOAT_BIT = 0x80,
+	PIXMAP_COMPRESSED_BIT = 0x8000,
+
+	PIXMAP_FLAG_BITS = PIXMAP_FLOAT_BIT | PIXMAP_COMPRESSED_BIT,
 };
 
-#define PIXMAP_MAKE_FORMAT(layout, depth) (((depth) >> 3) | ((layout) << 8))
-#define PIXMAP_FORMAT_LAYOUT(format) ((format) >> 8)
-#define PIXMAP_FORMAT_DEPTH(format) (((format) & ~PIXMAP_FLOAT_BIT & 0xff) << 3)
-#define PIXMAP_FORMAT_PIXEL_SIZE(format) ((PIXMAP_FORMAT_DEPTH(format) >> 3) * PIXMAP_FORMAT_LAYOUT(format))
-#define PIXMAP_FORMAT_IS_FLOAT(format) ((bool)((format) & PIXMAP_FLOAT_BIT))
+#define PIXMAP_MAKE_FORMAT(layout, depth) \
+	(((layout) << 8) | (depth))
+
+#define PIXMAP_MAKE_FLOAT_FORMAT(layout, depth) \
+	(PIXMAP_MAKE_FORMAT(layout, depth) | PIXMAP_FLOAT_BIT)
+
+#define PIXMAP_MAKE_COMPRESSED_FORMAT(layout, compression) \
+	(PIXMAP_MAKE_FORMAT(layout, compression) | PIXMAP_COMPRESSED_BIT)
+
+#define _impl_pixmap_format_is_compressed(fmt) \
+	((fmt) & PIXMAP_COMPRESSED_BIT)
+#define _impl_pixmap_format_is_float(fmt) \
+	((fmt) & PIXMAP_FLOAT_BIT)
+#define _impl_pixmap_format_layout(fmt) \
+	((fmt) & ~PIXMAP_FLAG_BITS) >> 8
+#define _impl_pixmap_format_depth(fmt) \
+	((fmt) & ~PIXMAP_FLAG_BITS & 0xff)
+#define _impl_pixmap_format_compression(fmt) \
+	((fmt) & ~PIXMAP_FLAG_BITS & 0xff)
+#define _impl_pixmap_format_pixel_size(fmt) \
+	((_impl_pixmap_format_depth(fmt) >> 3) * _impl_pixmap_format_layout(fmt))
 
 typedef enum PixmapFormat {
 	PIXMAP_FORMAT_R8      = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_R,     8),
 	PIXMAP_FORMAT_R16     = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_R,    16),
 	PIXMAP_FORMAT_R32     = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_R,    32),
 
-	PIXMAP_FORMAT_R16F    = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_R,    16) | PIXMAP_FLOAT_BIT,
-	PIXMAP_FORMAT_R32F    = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_R,    32) | PIXMAP_FLOAT_BIT,
+	PIXMAP_FORMAT_R16F    = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_R,    16),
+	PIXMAP_FORMAT_R32F    = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_R,    32),
 
 	PIXMAP_FORMAT_RG8     = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RG,    8),
 	PIXMAP_FORMAT_RG16    = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RG,   16),
 	PIXMAP_FORMAT_RG32    = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RG,   32),
 
-	PIXMAP_FORMAT_RG16F   = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RG,   16) | PIXMAP_FLOAT_BIT,
-	PIXMAP_FORMAT_RG32F   = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RG,   32) | PIXMAP_FLOAT_BIT,
+	PIXMAP_FORMAT_RG16F   = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RG,   16),
+	PIXMAP_FORMAT_RG32F   = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RG,   32),
 
 	PIXMAP_FORMAT_RGB8    = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGB,   8),
 	PIXMAP_FORMAT_RGB16   = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGB,  16),
 	PIXMAP_FORMAT_RGB32   = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGB,  32),
 
-	PIXMAP_FORMAT_RGB16F  = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGB,  16) | PIXMAP_FLOAT_BIT,
-	PIXMAP_FORMAT_RGB32F  = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGB,  32) | PIXMAP_FLOAT_BIT,
+	PIXMAP_FORMAT_RGB16F  = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RGB,  16),
+	PIXMAP_FORMAT_RGB32F  = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RGB,  32),
 
 	PIXMAP_FORMAT_RGBA8   = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGBA,  8),
 	PIXMAP_FORMAT_RGBA16  = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGBA, 16),
 	PIXMAP_FORMAT_RGBA32  = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGBA, 32),
 
-	PIXMAP_FORMAT_RGBA16F = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGBA, 16) | PIXMAP_FLOAT_BIT,
-	PIXMAP_FORMAT_RGBA32F = PIXMAP_MAKE_FORMAT(PIXMAP_LAYOUT_RGBA, 32) | PIXMAP_FLOAT_BIT,
+	PIXMAP_FORMAT_RGBA16F = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RGBA, 16),
+	PIXMAP_FORMAT_RGBA32F = PIXMAP_MAKE_FLOAT_FORMAT(PIXMAP_LAYOUT_RGBA, 32),
+
+	#define DEFINE_PIXMAP_COMPRESSED_FORMAT(cformat, layout, ...) \
+		PIXMAP_FORMAT_##cformat = PIXMAP_MAKE_COMPRESSED_FORMAT(PIXMAP_LAYOUT_##layout, PIXMAP_COMPRESSION_##cformat),
+	PIXMAP_COMPRESSION_FORMATS(DEFINE_PIXMAP_COMPRESSED_FORMAT,)
+	#undef DEFINE_PIXMAP_COMPRESSION
 } PixmapFormat;
+
+// sanity check
+static_assert_nomsg(_impl_pixmap_format_layout(PIXMAP_FORMAT_ETC2_EAC_RG11) == PIXMAP_LAYOUT_RG);
+static_assert_nomsg(_impl_pixmap_format_compression(PIXMAP_FORMAT_ASTC_4x4_RGBA) == PIXMAP_COMPRESSION_ASTC_4x4_RGBA);
+static_assert_nomsg(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB16F) == 16);
+static_assert_nomsg(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB8) == 8);
+static_assert_nomsg(_impl_pixmap_format_layout(PIXMAP_FORMAT_RGB8) == PIXMAP_LAYOUT_RGB);
+
+INLINE bool pixmap_format_is_compressed(PixmapFormat fmt) {
+	return _impl_pixmap_format_is_compressed(fmt);
+}
+
+INLINE bool pixmap_format_is_float(PixmapFormat fmt) {
+	assert(!pixmap_format_is_compressed(fmt));
+	return _impl_pixmap_format_is_float(fmt);
+}
+
+INLINE PixmapLayout pixmap_format_layout(PixmapFormat fmt) {
+	return _impl_pixmap_format_layout(fmt);
+}
+
+INLINE uint pixmap_format_depth(PixmapFormat fmt) {
+	assert(!pixmap_format_is_compressed(fmt));
+	return _impl_pixmap_format_depth(fmt);
+}
+
+INLINE PixmapCompression pixmap_format_compression(PixmapFormat fmt) {
+	assert(pixmap_format_is_compressed(fmt));
+	return _impl_pixmap_format_compression(fmt);
+}
+
+INLINE uint pixmap_format_pixel_size(PixmapFormat fmt) {
+	assert(!pixmap_format_is_compressed(fmt));
+	return _impl_pixmap_format_pixel_size(fmt);
+}
+
+// TODO deprecate?
+#define PIXMAP_FORMAT_LAYOUT(format) (pixmap_format_layout(format))
+#define PIXMAP_FORMAT_DEPTH(format) (pixmap_format_depth(format))
+#define PIXMAP_FORMAT_PIXEL_SIZE(format) (pixmap_format_pixel_size(format))
+#define PIXMAP_FORMAT_IS_FLOAT(format) (pixmap_format_is_float(format))
+#define PIXMAP_FORMAT_IS_COMPRESSED(format) (pixmap_format_is_compressed(format))
 
 #define PIXMAP_PIXEL_STRUCT_R(type) union { \
 	type values[1]; \

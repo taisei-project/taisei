@@ -81,7 +81,7 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 	return map[mode];
 }
 
-GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
+GLTextureTypeInfo *gl33_texture_type_info(TextureType type) {
 	static GLTextureFormatTuple color_formats[] = {
 		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8      },
 		{ GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16     },
@@ -149,6 +149,25 @@ GLTextureTypeInfo* gl33_texture_type_info(TextureType type) {
 	return map + type;
 }
 
+bool gl33_texture_type_supported(TextureType type, TextureFlags flags) {
+	// TODO: integrate this into the texture_type_info mechanism somehow
+
+	bool srgb = flags & TEX_FLAG_SRGB;
+
+	if(TEX_TYPE_IS_COMPRESSED(type)) {
+		PixmapCompression comp = TEX_TYPE_TO_COMPRESSION_FORMAT(type);
+		return (srgb ? glcommon_compression_to_gl_format : glcommon_compression_to_gl_format_srgb)(comp) != GL_NONE;
+	}
+
+	if(srgb) {
+		GLTextureTypeInfo *type_info = GLVT.texture_type_info(type);
+		return glcommon_uncompressed_format_to_srgb_format(type_info->internal_fmt) != GL_NONE;
+	}
+
+	// uncompressed, non-sRGB texture - we always claim to support these, even if implemented as a fallback.
+	return true;
+}
+
 void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height) {
 	if(mipmap >= tex->params.mipmaps) {
 		mipmap = tex->params.mipmaps - 1;
@@ -175,6 +194,26 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 
 PixmapFormat gl33_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
 	return glcommon_find_best_pixformat(type, src_format)->px_fmt;
+}
+
+static GLenum gl33_get_texture_internal_format(Texture *tex) {
+	GLenum ifmt = tex->type_info->internal_fmt;
+
+	if(tex->params.flags & TEX_FLAG_SRGB) {
+		GLenum ifmt_srgb = glcommon_uncompressed_format_to_srgb_format(ifmt);
+		assert(ifmt_srgb != GL_NONE);
+
+		// If built without assertions, try to recover "gracefully"
+		// The colorspace will be obviously wrong, but at least the game won't crash.
+
+		if(ifmt_srgb == GL_NONE) {
+			log_error("No sRGB format available for OpenGL texture format 0x%04x", ifmt);
+		} else {
+			ifmt = ifmt_srgb;
+		}
+	}
+
+	return ifmt;
 }
 
 static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
@@ -206,7 +245,7 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		mipmap,
-		tex->type_info->internal_fmt,
+		gl33_get_texture_internal_format(tex),
 		width,
 		height,
 		0,
@@ -222,6 +261,39 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	tex->mipmaps_outdated = true;
 }
 
+static void apply_swizzle(GLenum param, char val) {
+	GLenum swizzle_val;
+
+	switch(val) {
+		case 'r': swizzle_val = GL_RED;   break;
+		case 'g': swizzle_val = GL_GREEN; break;
+		case 'b': swizzle_val = GL_BLUE;  break;
+		case 'a': swizzle_val = GL_ALPHA; break;
+		case '0': swizzle_val = GL_ZERO;  break;
+		case '1': swizzle_val = GL_ONE;   break;
+		case 0: {
+			switch(param) {
+				case GL_TEXTURE_SWIZZLE_R: swizzle_val = GL_RED;   break;
+				case GL_TEXTURE_SWIZZLE_G: swizzle_val = GL_GREEN; break;
+				case GL_TEXTURE_SWIZZLE_B: swizzle_val = GL_BLUE;  break;
+				case GL_TEXTURE_SWIZZLE_A: swizzle_val = GL_ALPHA; break;
+				default: UNREACHABLE;
+			}
+			break;
+		}
+		default: UNREACHABLE;
+	}
+
+	glTexParameteri(GL_TEXTURE_2D, param, swizzle_val);
+}
+
+static void apply_swizzle_mask(TextureSwizzleMask *mask) {
+	apply_swizzle(GL_TEXTURE_SWIZZLE_R, mask->r);
+	apply_swizzle(GL_TEXTURE_SWIZZLE_G, mask->g);
+	apply_swizzle(GL_TEXTURE_SWIZZLE_B, mask->b);
+	apply_swizzle(GL_TEXTURE_SWIZZLE_A, mask->a);
+}
+
 Texture* gl33_texture_create(const TextureParams *params) {
 	Texture *tex = calloc(1, sizeof(Texture));
 	memcpy(&tex->params, params, sizeof(*params));
@@ -229,9 +301,16 @@ Texture* gl33_texture_create(const TextureParams *params) {
 
 	uint max_mipmaps = 1 + floor(log2(umax(tex->params.width, tex->params.height)));  // TODO replace with integer log2
 
+	if(TEX_TYPE_IS_COMPRESSED(params->type)) {
+		log_fatal("Implement me!");
+	}
+
 	if(p->mipmaps == 0) {
 		if(p->mipmap_mode == TEX_MIPMAP_AUTO) {
 			p->mipmaps = TEX_MIPMAPS_MAX;
+			if(p->flags & TEX_FLAG_SRGB) {
+				log_warn("FIXME: sRGB textures may not support automatic mipmap generation; please write a fallback!");
+			}
 		} else {
 			p->mipmaps = 1;
 		}
@@ -251,11 +330,14 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
 	tex->type_info = GLVT.texture_type_info(p->type);
+	GLenum internal_fmt = gl33_get_texture_internal_format(tex);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(p->wrap.s));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, tex->type_info->internal_fmt));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, tex->type_info->internal_fmt));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, internal_fmt));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, internal_fmt));
+
+	apply_swizzle_mask(&tex->params.swizzle);
 
 	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
@@ -265,7 +347,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p->anisotropy);
 	}
 
-	if(p->stream && glext.pixel_buffer_object) {
+	if((p->flags & TEX_FLAG_STREAM) && glext.pixel_buffer_object) {
 		glGenBuffers(1, &tex->pbo);
 	}
 
@@ -276,7 +358,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 		glTexImage2D(
 			GL_TEXTURE_2D,
 			i,
-			tex->type_info->internal_fmt,
+			internal_fmt,
 			width,
 			height,
 			0,
@@ -294,18 +376,20 @@ void gl33_texture_get_params(Texture *tex, TextureParams *params) {
 }
 
 void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
+	GLenum internal_fmt = gl33_get_texture_internal_format(tex);
+
 	if(tex->params.filter.min != fmin) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.min = fmin;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->type_info->internal_fmt));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, internal_fmt));
 	}
 
 	if(tex->params.filter.mag != fmag) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.mag = fmag;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->type_info->internal_fmt));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, internal_fmt));
 	}
 }
 
@@ -336,7 +420,7 @@ void gl33_texture_invalidate(Texture *tex) {
 		glTexImage2D(
 			GL_TEXTURE_2D,
 			i,
-			tex->type_info->internal_fmt,
+			gl33_get_texture_internal_format(tex),
 			width,
 			height,
 			0,

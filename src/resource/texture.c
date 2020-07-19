@@ -15,6 +15,8 @@
 #include "renderer/api.h"
 #include "util/pixmap.h"
 
+#include <basisu_transcoder_c_api.h>
+
 static void load_texture_stage1(ResourceLoadState *st);
 static void load_texture_stage2(ResourceLoadState *st);
 static void free_texture(Texture *tex);
@@ -31,6 +33,58 @@ ResourceHandler texture_res_handler = {
 		.unload = (ResourceUnloadProc)free_texture,
 	},
 };
+
+static void basist_tls_destructor(void *tc) {
+	basist_transcoder_destroy(NOT_NULL(tc));
+}
+
+static basist_transcoder *get_basis_transcoder() {
+	static SDL_SpinLock lock;
+	static SDL_TLSID tls;
+	static basist_transcoder *fallback;
+
+	if(UNLIKELY(fallback)) {
+		return fallback;
+	}
+
+	if(UNLIKELY(!tls)) {
+		SDL_AtomicLock(&lock);
+		if(!tls) {
+			tls = SDL_TLSCreate();
+		}
+		SDL_AtomicUnlock(&lock);
+	}
+
+	basist_transcoder *tc;
+
+	if(LIKELY(tls)) {
+		tc = SDL_TLSGet(tls);
+	} else {
+		tc = fallback;
+	}
+
+	if(LIKELY(tc)) {
+		return tc;
+	}
+
+	tc = basist_transcoder_create();
+
+	if(UNLIKELY(tc == NULL)) {
+		log_error("basist_transcoder_create() failed");
+		return NULL;
+	}
+
+	log_debug("Created Basis Universal transcoder %p for thread %p", (void*)tc, (void*)SDL_ThreadID());
+
+	if(LIKELY(tls)) {
+		SDL_TLSSet(tls, tc, basist_tls_destructor);
+	} else {
+		// this leaks; i don't care
+		fallback = tc;
+	}
+
+	return tc;
+}
 
 char *texture_path(const char *name) {
 	char *p = NULL;
@@ -255,6 +309,10 @@ static bool parse_format(const char *val, PixmapFormat *out) {
 typedef struct TextureLoadData {
 	Pixmap pixmap;
 	Pixmap pixmap_alphamap;
+
+	uint num_mipmaps;
+	Pixmap *mipmaps;
+
 	TextureParams params;
 	struct {
 		// NOTE: not bitfields because we take pointers to these
@@ -273,6 +331,16 @@ static bool is_preprocess_needed(TextureLoadData *ld) {
 	);
 }
 
+static const char *texture_type_name(TextureType type) {
+	switch(type) {
+		#define HANDLE_TYPE(type, ...) \
+			case TEX_TYPE_##type: return #type;
+		TEX_TYPES(HANDLE_TYPE,)
+		#undef HANDLE_TYPE
+		default: UNREACHABLE;
+	}
+}
+
 static void dump_pixmap_format(ResourceLoadState *st, PixmapFormat fmt, const char *context) {
 	log_debug("%s: %s: %d channels, %d bits per channel, %s",
 		st->path, context,
@@ -281,6 +349,160 @@ static void dump_pixmap_format(ResourceLoadState *st, PixmapFormat fmt, const ch
 		PIXMAP_FORMAT_IS_FLOAT(fmt) ? "float" : "uint"
 	);
 }
+
+static const char *get_basis_source_format_name(basist_source_format sfmt) {
+	switch(sfmt) {
+		case BASIST_SOURCE_ETC1S: return "ETC1S";
+		case BASIST_SOURCE_UASTC4x4: return "UASTC";
+		default: return "(unknown)";
+	}
+}
+
+struct basis_size_info {
+	uint32_t num_blocks;
+	uint32_t block_size;
+};
+
+static struct basis_size_info get_basis_transcoded_size_info(basist_transcoder *tc, uint32_t image, uint32_t level, basist_texture_format format) {
+	struct basis_size_info size_info = { 0 };
+
+	if((uint)format >= BASIST_NUM_FORMATS) {
+		log_error("Invalid format %u", format);
+	}
+
+	basist_source_format src_format = basist_transcoder_get_source_format(tc);
+
+	if(!basist_is_format_supported(format, src_format)) {
+		log_error("Can't transcode from %s into %s", get_basis_source_format_name(src_format), basist_get_format_name(format));
+		return size_info;
+	}
+
+	basist_image_level_desc ldesc;
+
+	if(!basist_transcoder_get_image_level_desc(tc, image, level, &ldesc)) {
+		log_error("basist_transcoder_get_image_level_desc() failed");
+		return size_info;
+	}
+
+	if(basist_is_format_uncompressed(format)) {
+		size_info.block_size = basist_get_uncompressed_bytes_per_pixel(format);
+		size_info.num_blocks = ldesc.orig_width * ldesc.orig_height;
+		return size_info;
+	}
+
+	// NOTE: there's a caveat for PVRTC1 textures, but we don't care about them
+	size_info.block_size = basist_get_bytes_per_block_or_pixel(format);
+	size_info.num_blocks = ldesc.total_blocks;
+	return size_info;
+}
+
+static void pack_RA8_to_RG8(Pixmap *pixmap) {
+	assert(pixmap->format == PIXMAP_FORMAT_RGBA8);
+
+	uint32_t num_pixels = pixmap->width * pixmap->height;
+	PixelRG8 *rg = calloc(num_pixels, PIXMAP_FORMAT_PIXEL_SIZE(PIXMAP_FORMAT_RG8));
+	PixelRGBA8 *rgba = pixmap->data.rgba8;
+
+	#pragma omp simd safelen(32)
+	for(uint32_t i = 0; i < num_pixels; ++i) {
+		rg[i].r = rgba[i].r;
+		rg[i].g = rgba[i].a;
+	}
+
+	free(pixmap->data.rgba8);
+	pixmap->data.rg8 = rg;
+	pixmap->format = PIXMAP_FORMAT_RG8;
+}
+
+static TextureType correct_texture_type_for_sRGB(TextureType orig_type, TextureFlags tex_flags) {
+	// Assumed to be handled elsewhere
+	assert(!TEX_TYPE_IS_COMPRESSED(orig_type));
+
+	TextureType type = orig_type;
+
+	static const TextureType promotion_chain[] = {
+		// NOTE: float and 16-bit textures don't really make sense for sRGB data, so they are disabled here.
+		TEX_TYPE_R_8,
+// 		TEX_TYPE_R_16,
+// 		TEX_TYPE_R_16_FLOAT,
+// 		TEX_TYPE_R_32_FLOAT,
+		TEX_TYPE_RG_8,
+// 		TEX_TYPE_RG_16,
+// 		TEX_TYPE_RG_16_FLOAT,
+// 		TEX_TYPE_RG_32_FLOAT,
+		TEX_TYPE_RGB_8,
+// 		TEX_TYPE_RGB_16,
+// 		TEX_TYPE_RGB_16_FLOAT,
+// 		TEX_TYPE_RGB_32_FLOAT,
+		TEX_TYPE_RGBA_8,
+// 		TEX_TYPE_RGBA_16,
+// 		TEX_TYPE_RGBA_16_FLOAT,
+// 		TEX_TYPE_RGBA_32_FLOAT,
+	};
+
+	bool found = false;
+
+	for(int i = 0; i < ARRAY_SIZE(promotion_chain); ++i) {
+		log_debug("iter #%i: orig_type = %s; type = %s; promotion_chain[i] = %s",
+			i,
+			texture_type_name(orig_type),
+			texture_type_name(type),
+			texture_type_name(promotion_chain[i])
+		);
+		if(promotion_chain[i] == type) {
+			found = true;
+			if(r_texture_type_supported(type, tex_flags | TEX_FLAG_SRGB)) {
+				log_debug("Found sRGB-compatible type for texture: %s -> %s", texture_type_name(orig_type), texture_type_name(type));
+				return type;
+			}
+		} else if(found && i < ARRAY_SIZE(promotion_chain) - 1) {
+			type = promotion_chain[i + 1];
+		}
+	}
+
+	log_warn("No sRGB-compatible type exists for texture type %s; converting to linear color space", texture_type_name(orig_type));
+	return TEX_TYPE_INVALID;
+}
+
+static void apply_uncompressed_format(TextureLoadData *ld, PixmapFormat prefer_pixmap_fmt) {
+	ld->params.type = pixmap_format_to_texture_type(prefer_pixmap_fmt);
+
+	if(ld->preprocess.linearize) {
+		TextureType srgb_type = correct_texture_type_for_sRGB(ld->params.type, ld->params.flags);
+		if(srgb_type != TEX_TYPE_INVALID) {
+			ld->params.type = srgb_type;
+			ld->params.flags |= TEX_FLAG_SRGB;
+			ld->preprocess.linearize = false;
+		}
+	}
+}
+
+static void prepare_pixmaps(Pixmap *pm_main, Pixmap *pm_alphamap, TextureType tex_type, PixmapFormat override_format) {
+	PixmapOrigin org = r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
+	PixmapFormat optimal_format = r_texture_optimal_pixmap_format_for_type(tex_type, override_format);
+
+// 	dump_pixmap_format(st, ld.pixmap.format, "source format");
+// 	dump_pixmap_format(st, override_format, "intended format");
+// 	dump_pixmap_format(st, optimal_format, "optimal format");
+
+	pixmap_convert_inplace_realloc(pm_main, optimal_format);
+	pixmap_flip_to_origin_inplace(pm_main, org);
+
+	if(pm_alphamap && pm_alphamap->data.untyped) {
+		PixmapFormat alphamap_format = 0;
+
+		if(PIXMAP_FORMAT_DEPTH(pm_alphamap->format) > 8) {
+			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_16, pm_alphamap->format);
+		} else {
+			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_8, pm_alphamap->format);
+		}
+
+		pixmap_convert_inplace_realloc(pm_alphamap, alphamap_format);
+		pixmap_flip_to_origin_inplace(pm_alphamap, org);
+	}
+}
+
+static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, const char *source, bool is_normalmap, PixmapFormat override_format);
 
 static void load_texture_stage1(ResourceLoadState *st) {
 	const char *source = st->path;
@@ -309,6 +531,7 @@ static void load_texture_stage1(ResourceLoadState *st) {
 	};
 
 	PixmapFormat override_format = 0;
+	bool is_normalmap = false;
 
 	if(strendswith(st->path, TEX_EXTENSION)) {
 		char *str_filter_min = NULL;
@@ -329,6 +552,7 @@ static void load_texture_stage1(ResourceLoadState *st) {
 			{ "anisotropy", .out_int  = (int*)&ld.params.anisotropy },
 			{ "multiply_alpha", .out_bool = &ld.preprocess.multiply_alpha },
 			{ "linearize",  .out_bool = &ld.preprocess.linearize },
+			{ "is_normalmap", .out_bool = &is_normalmap },
 			{ NULL }
 		})) {
 			free(source_allocated);
@@ -378,6 +602,14 @@ static void load_texture_stage1(ResourceLoadState *st) {
 		}
 	}
 
+	if(strendswith(source, ".basis")) {
+		free(alphamap_allocated);
+		alphamap_allocated = NULL;
+		load_texture_basisu(st, &ld, source, is_normalmap, override_format);
+		free(source_allocated);
+		return;
+	}
+
 	if(!pixmap_load_file(source, &ld.pixmap, override_format)) {
 		log_error("%s: couldn't load texture image", source);
 		free(source_allocated);
@@ -397,30 +629,11 @@ static void load_texture_stage1(ResourceLoadState *st) {
 	free(source_allocated);
 	free(alphamap_allocated);
 
-	PixmapOrigin org = r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
-
 	override_format = override_format ? override_format : ld.pixmap.format;
-	ld.params.type = pixmap_format_to_texture_type(override_format);
-	PixmapFormat optimal_format = r_texture_optimal_pixmap_format_for_type(ld.params.type, ld.pixmap.format);
-
-	dump_pixmap_format(st, ld.pixmap.format, "source format");
-	dump_pixmap_format(st, override_format, "intended format");
-	dump_pixmap_format(st, optimal_format, "optimal format");
-
-	pixmap_convert_inplace_realloc(&ld.pixmap, optimal_format);
-	pixmap_flip_to_origin_inplace(&ld.pixmap, org);
+	apply_uncompressed_format(&ld, override_format);
+	prepare_pixmaps(&ld.pixmap, &ld.pixmap_alphamap, ld.params.type, override_format);
 
 	if(ld.pixmap_alphamap.data.untyped) {
-		PixmapFormat alphamap_format = 0;
-
-		if(PIXMAP_FORMAT_DEPTH(ld.pixmap_alphamap.format) > 8) {
-			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_16, ld.pixmap_alphamap.format);
-		} else {
-			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_8, ld.pixmap_alphamap.format);
-		}
-
-		pixmap_convert_inplace_realloc(&ld.pixmap_alphamap, alphamap_format);
-		pixmap_flip_to_origin_inplace(&ld.pixmap_alphamap, org);
 		ld.preprocess.apply_alphamap = true;
 	}
 
@@ -436,6 +649,176 @@ static void load_texture_stage1(ResourceLoadState *st) {
 	ld.params.height = ld.pixmap.height;
 
 	res_load_continue_on_main(st, load_texture_stage2, memdup(&ld, sizeof(ld)));
+}
+
+static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, const char *source, bool is_normalmap, PixmapFormat override_format) {
+	basist_transcoder *tc = get_basis_transcoder();
+	basist_transcode_level_params p = { 0 };
+	void *filebuf = NULL;
+
+	if(!tc) {
+		goto fail;
+	}
+
+	SDL_RWops *rw_in = vfs_open(source, VFS_MODE_READ);
+
+	if(!rw_in) {
+		log_error("VFS error: %s", vfs_get_error());
+		goto fail;
+	}
+
+	size_t filesize;
+	filebuf = SDL_RWreadAll(rw_in, &filesize, INT32_MAX);
+	SDL_RWclose(rw_in);
+
+	if(!filebuf) {
+		log_error("%s: read error: %s", source, SDL_GetError());
+		goto fail;
+	}
+
+	basist_file_info file_info = { 0 };
+	basist_transcoder_set_data(tc, (basist_data) { .data = filebuf, .size = filesize });
+
+	uint32_t total_images = basist_transcoder_get_total_images(tc);
+
+	if(total_images < 1) {
+		log_error("%s: no images in texture", source);
+		goto fail;
+	}
+
+	if(total_images > 1) {
+		log_warn("%s: %u images in texture; only the first will be used", source, total_images);
+	}
+
+	uint32_t total_levels = basist_transcoder_get_total_image_levels(tc, 0);
+
+	if(total_levels < 1) {
+		log_error("%s: no levels in image", source);
+		goto fail;
+	}
+
+	#define TRY(func, ...) \
+		if(!(func(__VA_ARGS__))) { \
+			log_error("%s: " #func "() failed", source); \
+			goto fail; \
+		}
+
+	TRY(basist_transcoder_get_file_info, tc, &file_info);
+
+	log_debug("Version: %u", file_info.version);
+	log_debug("Header size: %u", file_info.total_header_size);
+	log_debug("Source format: %u", file_info.source_format);
+	log_debug("ETC1S: %u", file_info.etc1s);
+	log_debug("Y-flipped: %u", file_info.y_flipped);
+	log_debug("Total images: %u", file_info.total_images);
+	log_debug("Total slices: %u", file_info.total_slices);
+
+	basist_image_info image_info;
+	TRY(basist_transcoder_get_image_info, tc, 0, &image_info);
+
+	log_debug("Size: %ux%u", image_info.width, image_info.height);
+	log_debug("Original size: %ux%u", image_info.orig_width, image_info.orig_height);
+
+	basist_init_transcode_level_params(&p);
+	p.format = BASIST_FORMAT_RGBA32;
+	p.image_index = 0;
+
+	ld->num_mipmaps = image_info.total_levels - 1;
+
+	ld->params.mipmaps = image_info.total_levels;
+	ld->params.mipmap_mode = TEX_MIPMAP_MANUAL;
+
+	ld->params.width = image_info.orig_width;
+	ld->params.height = image_info.orig_height;
+
+	if(ld->num_mipmaps) {
+		ld->mipmaps = calloc(ld->num_mipmaps, sizeof(*ld->mipmaps));
+	} else {
+		ld->mipmaps = NULL;
+	}
+
+	override_format = override_format ? override_format : PIXMAP_FORMAT_RGBA8;
+	apply_uncompressed_format(ld, override_format);
+
+	TRY(basist_transcoder_start_transcoding, tc);
+
+	for(uint i = 0; i < image_info.total_levels; ++i) {
+		Pixmap *out_pixmap = i ? &ld->mipmaps[i - 1] : &ld->pixmap;
+		p.level_index = i;
+
+		basist_image_level_desc level_desc;
+		TRY(basist_transcoder_get_image_level_desc, tc, p.image_index, p.level_index, &level_desc);
+
+		struct basis_size_info size_info = get_basis_transcoded_size_info(tc, p.image_index, p.level_index, p.format);
+
+		if(size_info.block_size == 0) {
+			goto fail;
+		}
+
+		log_debug("Level %i [%ix%i] : %i * %i = %i", i, level_desc.orig_width, level_desc.orig_height, size_info.num_blocks, size_info.block_size, size_info.num_blocks * size_info.block_size);
+
+		p.output_blocks = calloc(size_info.num_blocks, size_info.block_size);
+		p.output_blocks_size = size_info.num_blocks;
+
+		TRY(basist_transcoder_transcode_image_level, tc, &p);
+
+		out_pixmap->data.untyped = p.output_blocks;
+		p.output_blocks = NULL;
+
+		out_pixmap->format = PIXMAP_FORMAT_RGBA8;
+		out_pixmap->width = level_desc.orig_width;
+		out_pixmap->height = level_desc.orig_height;
+		out_pixmap->origin = PIXMAP_ORIGIN_TOPLEFT;
+
+#if 0
+		if(is_normalmap) {
+			pack_RA8_to_RG8(&ld->pixmap);
+		}
+#endif
+
+		prepare_pixmaps(out_pixmap, NULL, ld->params.type, override_format);
+	}
+
+	TRY(basist_transcoder_stop_transcoding, tc);
+
+	if(is_normalmap) {
+		// pack_RA8_to_RG8(&ld->pixmap);
+		ld->params.swizzle = (TextureSwizzleMask) { "ra01" };
+	}
+
+	ld->preprocess.multiply_alpha = 0;
+	ld->preprocess.apply_alphamap = 0;
+	ld->preprocess.linearize = 0;
+
+	res_load_continue_on_main(st, load_texture_stage2, memdup(ld, sizeof(*ld)));
+
+cleanup:
+	free(p.output_blocks);
+
+	if(tc) {
+		if(basist_transcoder_get_ready_to_transcode(tc)) {
+			basist_transcoder_stop_transcoding(tc);
+		}
+
+		basist_transcoder_set_data(tc, (basist_data) { 0 });
+	}
+
+	free(filebuf);
+
+	return;
+
+fail:
+	if(ld->mipmaps) {
+		for(uint i = 0; i < ld->num_mipmaps; ++i) {
+			free(ld->mipmaps[i].data.untyped);
+		}
+
+		free(ld->mipmaps);
+		ld->mipmaps = NULL;
+	}
+
+	res_load_failed(st);
+	goto cleanup;
 }
 
 static Texture *texture_post_load(TextureLoadData *ld, Texture *tex, Texture *alphamap) {
@@ -492,16 +875,33 @@ static void load_texture_stage2(ResourceLoadState *st) {
 	TextureLoadData *ld = NOT_NULL(st->opaque);
 	bool preprocess_needed = is_preprocess_needed(ld);
 
-	if(!preprocess_needed) {
+	if(ld->mipmaps) {
+		assume(!preprocess_needed);
+		assume(ld->pixmap_alphamap.data.untyped == NULL);
+		assert(ld->params.mipmap_mode == TEX_MIPMAP_MANUAL);
+	} else if(!preprocess_needed) {
 		ld->params.mipmap_mode = TEX_MIPMAP_AUTO;
 	}
 
-	char namebuf[strlen(st->name) + sizeof(" (transient)")];
-	snprintf(namebuf, sizeof(namebuf), "%s (transient)", st->name);
 	Texture *texture = r_texture_create(&ld->params);
-	r_texture_set_debug_label(texture, namebuf);
+
+	if(preprocess_needed) {
+		char namebuf[strlen(st->name) + sizeof(" (transient)")];
+		snprintf(namebuf, sizeof(namebuf), "%s (transient)", st->name);
+		r_texture_set_debug_label(texture, namebuf);
+	} else {
+		r_texture_set_debug_label(texture, st->name);
+	}
+
 	r_texture_fill(texture, 0, &ld->pixmap);
 	free(ld->pixmap.data.untyped);
+
+	for(uint i = 0; i < ld->num_mipmaps; ++i) {
+		r_texture_fill(texture, i + 1, &ld->mipmaps[i]);
+		free(ld->mipmaps[i].data.untyped);
+	}
+
+	free(ld->mipmaps);
 
 	Texture *alphamap = NULL;
 
@@ -521,9 +921,8 @@ static void load_texture_stage2(ResourceLoadState *st) {
 
 	if(preprocess_needed) {
 		texture = texture_post_load(ld, texture, alphamap);
+		r_texture_set_debug_label(texture, st->name);
 	}
-
-	r_texture_set_debug_label(texture, st->name);
 
 	free(ld);
 
