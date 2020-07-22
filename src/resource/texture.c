@@ -866,6 +866,7 @@ static Texture *texture_post_load(TextureLoadData *ld, Texture *tex, Texture *al
 	r_uniform_int("linearize", ld->preprocess.linearize);
 	r_uniform_int("multiply_alpha", ld->preprocess.multiply_alpha);
 	r_uniform_int("apply_alphamap", ld->preprocess.apply_alphamap);
+	r_uniform_int("write_srgb", (params.flags & TEX_FLAG_SRGB) == TEX_FLAG_SRGB);
 
 	if(alphamap) {
 		r_uniform_sampler("alphamap", alphamap);
