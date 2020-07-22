@@ -90,7 +90,16 @@ static void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, 
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
-static PixmapFormat null_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) { return src_format; }
+static bool null_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	if(result) {
+		result->optimal_pixmap_format = pxfmt;
+		result->optimal_pixmap_origin = pxorigin;
+		result->supplied_pixmap_format_supported = true;
+		result->supplied_pixmap_origin_supported = true;
+	}
+
+	return true;
+}
 
 static FloatRect default_fb_viewport;
 
@@ -208,7 +217,7 @@ RendererBackend _r_backend_null = {
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
 		.texture_clear = null_texture_clear,
-		.texture_optimal_pixmap_format_for_type = null_texture_optimal_pixmap_format_for_type,
+		.texture_type_query = null_texture_type_query,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,

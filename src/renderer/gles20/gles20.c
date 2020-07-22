@@ -10,7 +10,6 @@
 
 #include "gles20.h"
 #include "../glescommon/gles.h"
-#include "../glescommon/texture.h"
 #include "../gl33/gl33.h"
 #include "../gl33/vertex_array.h"
 #include "index_buffer.h"
@@ -74,8 +73,6 @@ RendererBackend _r_backend_gles20 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gles_texture_type_info,
-			.texture_format_caps = gles_texture_format_caps,
 			.init_context = gles20_init_context,
 		}
 	},

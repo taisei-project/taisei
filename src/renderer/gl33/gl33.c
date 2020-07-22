@@ -1183,8 +1183,7 @@ RendererBackend _r_backend_gl33 = {
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
 		.texture_clear = gl33_texture_clear,
-		.texture_type_supported = gl33_texture_type_supported,
-		.texture_optimal_pixmap_format_for_type = gl33_texture_optimal_pixmap_format_for_type,
+		.texture_type_query = gl33_texture_type_query,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
@@ -1228,8 +1227,6 @@ RendererBackend _r_backend_gl33 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gl33_texture_type_info,
-			.texture_format_caps = gl33_texture_format_caps,
 			.init_context = gl33_init_context,
 		}
 	},

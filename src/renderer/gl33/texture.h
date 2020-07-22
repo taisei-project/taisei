@@ -18,7 +18,7 @@
 #include "../glcommon/vtable.h"
 
 typedef struct Texture {
-	GLTextureTypeInfo *type_info;
+	GLTextureFormatInfo *fmt_info;
 	TextureUnit *binding_unit;
 	GLuint gl_handle;
 	GLuint pbo;
@@ -42,10 +42,6 @@ void gl33_texture_taint(Texture *tex);
 void gl44_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
-bool gl33_texture_type_supported(TextureType type, TextureFlags flags);
-PixmapFormat gl33_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
-
-GLTextureTypeInfo *gl33_texture_type_info(TextureType type);
-GLTexFormatCapabilities gl33_texture_format_caps(GLenum internal_fmt);
+bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 
 #endif // IGUARD_renderer_gl33_texture_h

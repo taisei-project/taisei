@@ -269,4 +269,6 @@ bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst, PixmapFormat preferred_f
 bool pixmap_check_filename(const char *path);
 char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
+const char *pixmap_format_name(PixmapFormat fmt);
+
 #endif // IGUARD_util_pixmap_h

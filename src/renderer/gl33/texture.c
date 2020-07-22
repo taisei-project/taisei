@@ -28,7 +28,7 @@ static GLenum linear_to_nearest(GLenum filter) {
 	}
 }
 
-static GLuint r_filter_to_gl_filter(TextureFilterMode mode, GLenum for_format) {
+static GLuint r_filter_to_gl_filter(TextureFilterMode mode, GLTextureFormatInfo *fmt_info) {
 	static GLuint map[] = {
 		[TEX_FILTER_LINEAR]  = GL_LINEAR,
 		[TEX_FILTER_LINEAR_MIPMAP_NEAREST]  = GL_LINEAR_MIPMAP_NEAREST,
@@ -40,34 +40,12 @@ static GLuint r_filter_to_gl_filter(TextureFilterMode mode, GLenum for_format) {
 
 	assert((uint)mode < sizeof(map)/sizeof(*map));
 	GLenum filter = map[mode];
-	GLenum alt_filter = linear_to_nearest(filter);
 
-	if(alt_filter != GL_NONE && !(GLVT.texture_format_caps(for_format) & GLTEX_FILTERABLE)) {
-		filter = alt_filter;
+	if(fmt_info->flags & GLTEX_FILTERABLE) {
+		return filter;
 	}
 
-	return filter;
-}
-
-GLTexFormatCapabilities gl33_texture_format_caps(GLenum internal_fmt) {
-	GLTexFormatCapabilities caps = 0;
-
-	GLenum base_fmt = glcommon_texture_base_format(internal_fmt);
-
-	switch(base_fmt) {
-		case GL_RED:
-		case GL_RG:
-		case GL_RGB:
-		case GL_RGBA:
-			caps |= GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE;
-			break;
-
-		case GL_DEPTH_COMPONENT:
-			caps |= GLTEX_DEPTH_RENDERABLE | GLTEX_FILTERABLE;
-			break;
-	}
-
-	return caps;
+	return linear_to_nearest(filter);
 }
 
 static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
@@ -81,90 +59,59 @@ static GLuint r_wrap_to_gl_wrap(TextureWrapMode mode) {
 	return map[mode];
 }
 
-GLTextureTypeInfo *gl33_texture_type_info(TextureType type) {
-	static GLTextureFormatTuple color_formats[] = {
-		{ GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8      },
-		{ GL_RED,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16     },
-		{ GL_RED,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32     },
-		{ GL_RED,  GL_FLOAT,          PIXMAP_FORMAT_R32F    },
+typedef struct FormatFilterFlags {
+	GLTextureFormatFlags require, reject;
+} FormatFilterFlags;
 
-		{ GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8     },
-		{ GL_RG,   GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RG16    },
-		{ GL_RG,   GL_UNSIGNED_INT,   PIXMAP_FORMAT_RG32    },
-		{ GL_RG,   GL_FLOAT,          PIXMAP_FORMAT_RG32F   },
-
-		{ GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8    },
-		{ GL_RGB,  GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGB16   },
-		{ GL_RGB,  GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGB32   },
-		{ GL_RGB,  GL_FLOAT,          PIXMAP_FORMAT_RGB32F  },
-
-		{ GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8   },
-		{ GL_RGBA, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_RGBA16  },
-		{ GL_RGBA, GL_UNSIGNED_INT,   PIXMAP_FORMAT_RGBA32  },
-		{ GL_RGBA, GL_FLOAT,          PIXMAP_FORMAT_RGBA32F },
-
-		{ 0 }
-	};
-
-	// XXX: I'm not sure about this. Perhaps it's better to not support depth texture uploading at all?
-	static GLTextureFormatTuple depth_formats[] = {
-		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8 },
-		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 },
-		{ GL_DEPTH_COMPONENT, GL_UNSIGNED_INT,   PIXMAP_FORMAT_R32 },
-		{ GL_DEPTH_COMPONENT, GL_FLOAT,          PIXMAP_FORMAT_R32F },
-
-		{ 0 }
-	};
-
-	static GLTextureTypeInfo map[] = {
-		[TEX_TYPE_R_8]            = { GL_R8,     color_formats, { GL_RED,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_R8    } },
-		[TEX_TYPE_RG_8]           = { GL_RG8,    color_formats, { GL_RG,   GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RG8   } },
-		[TEX_TYPE_RGB_8]          = { GL_RGB8,   color_formats, { GL_RGB,  GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGB8  } },
-		[TEX_TYPE_RGBA_8]         = { GL_RGBA8,  color_formats, { GL_RGBA, GL_UNSIGNED_BYTE,  PIXMAP_FORMAT_RGBA8 } },
-
-		[TEX_TYPE_R_16]           = { GL_R16,    color_formats, { GL_RED,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_R16    } },
-		[TEX_TYPE_RG_16]          = { GL_RG16,   color_formats, { GL_RG,   GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RG16   } },
-		[TEX_TYPE_RGB_16]         = { GL_RGB16,  color_formats, { GL_RGB,  GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGB16  } },
-		[TEX_TYPE_RGBA_16]        = { GL_RGBA16, color_formats, { GL_RGBA, GL_UNSIGNED_SHORT,  PIXMAP_FORMAT_RGBA16 } },
-
-		[TEX_TYPE_R_16_FLOAT]     = { GL_R16F,    color_formats, { GL_RED,  GL_FLOAT,  PIXMAP_FORMAT_R32F    } },
-		[TEX_TYPE_RG_16_FLOAT]    = { GL_RG16F,   color_formats, { GL_RG,   GL_FLOAT,  PIXMAP_FORMAT_RG32F   } },
-		[TEX_TYPE_RGB_16_FLOAT]   = { GL_RGB16F,  color_formats, { GL_RGB,  GL_FLOAT,  PIXMAP_FORMAT_RGB32F  } },
-		[TEX_TYPE_RGBA_16_FLOAT]  = { GL_RGBA16F, color_formats, { GL_RGBA, GL_FLOAT,  PIXMAP_FORMAT_RGBA32F } },
-
-		[TEX_TYPE_R_32_FLOAT]     = { GL_R32F,    color_formats, { GL_RED,  GL_FLOAT,  PIXMAP_FORMAT_R32F    } },
-		[TEX_TYPE_RG_32_FLOAT]    = { GL_RG32F,   color_formats, { GL_RG,   GL_FLOAT,  PIXMAP_FORMAT_RG32F   } },
-		[TEX_TYPE_RGB_32_FLOAT]   = { GL_RGB32F,  color_formats, { GL_RGB,  GL_FLOAT,  PIXMAP_FORMAT_RGB32F  } },
-		[TEX_TYPE_RGBA_32_FLOAT]  = { GL_RGBA32F, color_formats, { GL_RGBA, GL_FLOAT,  PIXMAP_FORMAT_RGBA32F } },
-
-		[TEX_TYPE_DEPTH_8]        = { GL_DEPTH_COMPONENT16,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
-		[TEX_TYPE_DEPTH_16]       = { GL_DEPTH_COMPONENT16,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT, PIXMAP_FORMAT_R16 } },
-		[TEX_TYPE_DEPTH_24]       = { GL_DEPTH_COMPONENT24,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, PIXMAP_FORMAT_R32 } },
-		[TEX_TYPE_DEPTH_32]       = { GL_DEPTH_COMPONENT32,  depth_formats, { GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, PIXMAP_FORMAT_R32 } },
-		[TEX_TYPE_DEPTH_16_FLOAT] = { GL_DEPTH_COMPONENT32F, depth_formats, { GL_DEPTH_COMPONENT, GL_FLOAT, PIXMAP_FORMAT_R32F } },
-		[TEX_TYPE_DEPTH_32_FLOAT] = { GL_DEPTH_COMPONENT32F, depth_formats, { GL_DEPTH_COMPONENT, GL_FLOAT, PIXMAP_FORMAT_R32F } },
-	};
-
-	assert((uint)type < sizeof(map)/sizeof(*map));
-	return map + type;
-}
-
-bool gl33_texture_type_supported(TextureType type, TextureFlags flags) {
-	// TODO: integrate this into the texture_type_info mechanism somehow
-
-	bool srgb = flags & TEX_FLAG_SRGB;
+static FormatFilterFlags make_format_filter_flags(TextureType type, TextureFlags flags) {
+	FormatFilterFlags ff = { 0 };
 
 	if(TEX_TYPE_IS_COMPRESSED(type)) {
-		PixmapCompression comp = TEX_TYPE_TO_COMPRESSION_FORMAT(type);
-		return (srgb ? glcommon_compression_to_gl_format : glcommon_compression_to_gl_format_srgb)(comp) != GL_NONE;
+		ff.require |= GLTEX_COMPRESSED;
+	} else {
+		ff.reject |= GLTEX_COMPRESSED;
+		if(TEX_TYPE_IS_DEPTH(type)) {
+			ff.require |= GLTEX_DEPTH_RENDERABLE;
+		} else {
+			ff.require |= GLTEX_COLOR_RENDERABLE | GLTEX_BLENDABLE;
+		}
 	}
 
-	if(srgb) {
-		GLTextureTypeInfo *type_info = GLVT.texture_type_info(type);
-		return glcommon_uncompressed_format_to_srgb_format(type_info->internal_fmt) != GL_NONE;
+	if(flags & TEX_FLAG_SRGB) {
+		ff.require |= GLTEX_SRGB;
+	} else {
+		ff.reject |= GLTEX_SRGB;
 	}
 
-	// uncompressed, non-sRGB texture - we always claim to support these, even if implemented as a fallback.
+	return ff;
+}
+
+static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
+	FormatFilterFlags ff = make_format_filter_flags(type, flags);
+	GLTextureFormatInfo *fmt_info = glcommon_match_format(type, ff.require, ff.reject);
+	return fmt_info;
+}
+
+static void gl33_texture_type_query_fmtinfo(GLTextureFormatInfo *fmt_info, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	result->optimal_pixmap_format = fmt_info->transfer_format.pixmap_format;
+	result->optimal_pixmap_origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+
+	// TODO: Perhaps allow suboptimal transfer formats on non-GLES, as we did previously.
+	result->supplied_pixmap_format_supported = (pxfmt == result->optimal_pixmap_format);
+	result->supplied_pixmap_origin_supported = (pxorigin == result->optimal_pixmap_origin);
+}
+
+bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	GLTextureFormatInfo *fmt_info = pick_format(type, flags);
+
+	if(fmt_info == NULL) {
+		return false;
+	}
+
+	if(result) {
+		gl33_texture_type_query_fmtinfo(fmt_info, pxfmt, pxorigin, result);
+	}
+
 	return true;
 }
 
@@ -192,37 +139,15 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 	}
 }
 
-PixmapFormat gl33_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
-	return glcommon_find_best_pixformat(type, src_format)->px_fmt;
-}
-
-static GLenum gl33_get_texture_internal_format(Texture *tex) {
-	GLenum ifmt = tex->type_info->internal_fmt;
-
-	if(tex->params.flags & TEX_FLAG_SRGB) {
-		GLenum ifmt_srgb = glcommon_uncompressed_format_to_srgb_format(ifmt);
-		assert(ifmt_srgb != GL_NONE);
-
-		// If built without assertions, try to recover "gracefully"
-		// The colorspace will be obviously wrong, but at least the game won't crash.
-
-		if(ifmt_srgb == GL_NONE) {
-			log_error("No sRGB format available for OpenGL texture format 0x%04x", ifmt);
-		} else {
-			ifmt = ifmt_srgb;
-		}
-	}
-
-	return ifmt;
-}
-
 static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(mipmap < tex->params.mipmaps);
 	assert(image != NULL);
 
-	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, image->format);
-	assert(image->origin == PIXMAP_ORIGIN_BOTTOMLEFT);
-	assert(image->format == fmt->px_fmt);
+	TextureTypeQueryResult qr;
+	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, image->origin, &qr);
+	assert(qr.supplied_pixmap_format_supported);
+	assert(qr.supplied_pixmap_origin_supported);
+	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
 	void *image_data = image->data.untyped;
 
@@ -245,12 +170,12 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	glTexImage2D(
 		GL_TEXTURE_2D,
 		mipmap,
-		gl33_get_texture_internal_format(tex),
+		tex->fmt_info->internal_format,
 		width,
 		height,
 		0,
-		fmt->gl_fmt,
-		fmt->gl_type,
+		xfer->gl_format,
+		xfer->gl_type,
 		image_data
 	);
 
@@ -329,13 +254,18 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
-	tex->type_info = GLVT.texture_type_info(p->type);
-	GLenum internal_fmt = gl33_get_texture_internal_format(tex);
+	tex->fmt_info = pick_format(params->type, params->flags);
+
+	if(!tex->fmt_info) {
+		log_fatal("Failed to match GL format for texture type 0x%04x with flags 0x%04x", params->type, params->flags);
+	}
+
+	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(p->wrap.s));
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, internal_fmt));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, internal_fmt));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, tex->fmt_info));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, tex->fmt_info));
 
 	apply_swizzle_mask(&tex->params.swizzle);
 
@@ -358,12 +288,12 @@ Texture* gl33_texture_create(const TextureParams *params) {
 		glTexImage2D(
 			GL_TEXTURE_2D,
 			i,
-			internal_fmt,
+			tex->fmt_info->internal_format,
 			width,
 			height,
 			0,
-			tex->type_info->primary_external_format.gl_fmt,
-			tex->type_info->primary_external_format.gl_type,
+			xfer->gl_format,
+			xfer->gl_type,
 			NULL
 		);
 	}
@@ -376,20 +306,18 @@ void gl33_texture_get_params(Texture *tex, TextureParams *params) {
 }
 
 void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) {
-	GLenum internal_fmt = gl33_get_texture_internal_format(tex);
-
 	if(tex->params.filter.min != fmin) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.min = fmin;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, internal_fmt));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->fmt_info));
 	}
 
 	if(tex->params.filter.mag != fmag) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.mag = fmag;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, internal_fmt));
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->fmt_info));
 	}
 }
 
@@ -420,12 +348,12 @@ void gl33_texture_invalidate(Texture *tex) {
 		glTexImage2D(
 			GL_TEXTURE_2D,
 			i,
-			gl33_get_texture_internal_format(tex),
+			tex->fmt_info->internal_format,
 			width,
 			height,
 			0,
-			tex->type_info->primary_external_format.gl_fmt,
-			tex->type_info->primary_external_format.gl_type,
+			tex->fmt_info->transfer_format.gl_format,
+			tex->fmt_info->transfer_format.gl_type,
 			NULL
 		);
 	}
@@ -442,15 +370,17 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
-	GLTextureFormatTuple *fmt = glcommon_find_best_pixformat(tex->params.type, image->format);
-	assert(image->origin == PIXMAP_ORIGIN_BOTTOMLEFT);
-	assert(image->format == fmt->px_fmt);
+	TextureTypeQueryResult qr;
+	gl33_texture_type_query_fmtinfo(tex->fmt_info, image->format, image->origin, &qr);
+	assert(qr.supplied_pixmap_format_supported);
+	assert(qr.supplied_pixmap_origin_supported);
+	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
 	glTexSubImage2D(
 		GL_TEXTURE_2D, mipmap,
 		x, tex->params.height - y - image->height, image->width, image->height,
-		fmt->gl_fmt,
-		fmt->gl_type,
+		xfer->gl_format,
+		xfer->gl_type,
 		image->data.untyped
 	);
 

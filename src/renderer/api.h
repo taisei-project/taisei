@@ -118,6 +118,7 @@ typedef enum TextureType {
 #define TEX_TYPE_IS_COMPRESSED(type)         ((bool)((type) & TEX_TYPE_COMPRESSED_BIT))
 #define TEX_TYPE_TO_COMPRESSION_FORMAT(type) ((PixmapCompression)((type) & ~TEX_TYPE_COMPRESSED_BIT))
 #define COMPRESSION_FORMAT_TO_TEX_TYPE(cfmt) ((TextureType)((cfmt) | TEX_TYPE_COMPRESSED_BIT))
+#define TEX_TYPE_IS_DEPTH(type)              ((type) >= TEX_TYPE_DEPTH_8 && (type) <= TEX_TYPE_DEPTH_32_FLOAT)
 
 typedef enum TextureFilterMode {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
@@ -183,6 +184,13 @@ typedef struct TextureParams {
 	TextureMipmapMode mipmap_mode;
 	TextureFlags flags;
 } attr_designated_init TextureParams;
+
+typedef struct TextureTypeQueryResult {
+	PixmapFormat optimal_pixmap_format;
+	PixmapOrigin optimal_pixmap_origin;
+	bool supplied_pixmap_format_supported;
+	bool supplied_pixmap_origin_supported;
+} TextureTypeQueryResult;
 
 typedef enum FramebufferAttachment {
 	FRAMEBUFFER_ATTACH_DEPTH,
@@ -709,8 +717,8 @@ void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixm
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
-bool r_texture_type_supported(TextureType type, TextureFlags flags);
-PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) attr_nodiscard;
+const char *r_texture_type_name(TextureType type);
 
 Framebuffer* r_framebuffer_create(void);
 const char* r_framebuffer_get_debug_label(Framebuffer *fb) attr_nonnull(1);

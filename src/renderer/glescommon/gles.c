@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "gles.h"
-#include "texture.h"
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
 
@@ -47,7 +46,6 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 
 void gles_init_context(SDL_Window *w) {
 	GLVT_OF(_r_backend_gl33).init_context(w);
-	gles_init_texformats_table();
 }
 
 bool gles_screenshot(Pixmap *out) {

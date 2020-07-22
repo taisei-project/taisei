@@ -331,16 +331,6 @@ static bool is_preprocess_needed(TextureLoadData *ld) {
 	);
 }
 
-static const char *texture_type_name(TextureType type) {
-	switch(type) {
-		#define HANDLE_TYPE(type, ...) \
-			case TEX_TYPE_##type: return #type;
-		TEX_TYPES(HANDLE_TYPE,)
-		#undef HANDLE_TYPE
-		default: UNREACHABLE;
-	}
-}
-
 static void dump_pixmap_format(ResourceLoadState *st, PixmapFormat fmt, const char *context) {
 	log_debug("%s: %s: %d channels, %d bits per channel, %s",
 		st->path, context,
@@ -414,6 +404,7 @@ static void pack_RA8_to_RG8(Pixmap *pixmap) {
 	pixmap->format = PIXMAP_FORMAT_RG8;
 }
 
+#if 0
 static TextureType correct_texture_type_for_sRGB(TextureType orig_type, TextureFlags tex_flags) {
 	// Assumed to be handled elsewhere
 	assert(!TEX_TYPE_IS_COMPRESSED(orig_type));
@@ -445,14 +436,14 @@ static TextureType correct_texture_type_for_sRGB(TextureType orig_type, TextureF
 	for(int i = 0; i < ARRAY_SIZE(promotion_chain); ++i) {
 		log_debug("iter #%i: orig_type = %s; type = %s; promotion_chain[i] = %s",
 			i,
-			texture_type_name(orig_type),
-			texture_type_name(type),
-			texture_type_name(promotion_chain[i])
+			r_texture_type_name(orig_type),
+			r_texture_type_name(type),
+			r_texture_type_name(promotion_chain[i])
 		);
 		if(promotion_chain[i] == type) {
 			found = true;
 			if(r_texture_type_supported(type, tex_flags | TEX_FLAG_SRGB)) {
-				log_debug("Found sRGB-compatible type for texture: %s -> %s", texture_type_name(orig_type), texture_type_name(type));
+				log_debug("Found sRGB-compatible type for texture: %s -> %s", r_texture_type_name(orig_type), r_texture_type_name(type));
 				return type;
 			}
 		} else if(found && i < ARRAY_SIZE(promotion_chain) - 1) {
@@ -460,45 +451,59 @@ static TextureType correct_texture_type_for_sRGB(TextureType orig_type, TextureF
 		}
 	}
 
-	log_warn("No sRGB-compatible type exists for texture type %s; converting to linear color space", texture_type_name(orig_type));
+	log_warn("No sRGB-compatible type exists for texture type %s; converting to linear color space", r_texture_type_name(orig_type));
 	return TEX_TYPE_INVALID;
 }
+#endif
 
-static void apply_uncompressed_format(TextureLoadData *ld, PixmapFormat prefer_pixmap_fmt) {
-	ld->params.type = pixmap_format_to_texture_type(prefer_pixmap_fmt);
+static bool apply_uncompressed_format(TextureLoadData *ld, PixmapFormat fmt, const char *source) {
+	ld->params.type = pixmap_format_to_texture_type(fmt);
+
+	TextureTypeQueryResult qr;
+	bool type_supported = r_texture_type_query(ld->params.type, ld->params.flags, ld->pixmap.format, ld->pixmap.origin, &qr);
+
+	if(!type_supported && (ld->params.flags & TEX_FLAG_SRGB)) {
+		ld->params.flags &= ~TEX_FLAG_SRGB;
+		ld->preprocess.linearize = true;
+		type_supported = r_texture_type_query(ld->params.type, ld->params.flags, ld->pixmap.format, ld->pixmap.origin, &qr);
+	}
+
+	if(!type_supported) {
+		log_error("%s: texture type not supported", source);
+		return false;
+	}
 
 	if(ld->preprocess.linearize) {
-		TextureType srgb_type = correct_texture_type_for_sRGB(ld->params.type, ld->params.flags);
-		if(srgb_type != TEX_TYPE_INVALID) {
-			ld->params.type = srgb_type;
-			ld->params.flags |= TEX_FLAG_SRGB;
-			ld->preprocess.linearize = false;
-		}
+		log_warn("%s: not native sRGB support; will convert texture into linear colorspace", source);
 	}
+
+	return true;
 }
 
-static void prepare_pixmaps(Pixmap *pm_main, Pixmap *pm_alphamap, TextureType tex_type, PixmapFormat override_format) {
-	PixmapOrigin org = r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN) ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
-	PixmapFormat optimal_format = r_texture_optimal_pixmap_format_for_type(tex_type, override_format);
+static void prepare_pixmaps(Pixmap *pm_main, Pixmap *pm_alphamap, TextureType tex_type, TextureFlags tex_flags) {
+	TextureTypeQueryResult qr;
+	if(!r_texture_type_query(tex_type, tex_flags, pm_main->format, pm_main->origin, &qr)) {
+		UNREACHABLE;
+	}
 
-// 	dump_pixmap_format(st, ld.pixmap.format, "source format");
-// 	dump_pixmap_format(st, override_format, "intended format");
-// 	dump_pixmap_format(st, optimal_format, "optimal format");
-
-	pixmap_convert_inplace_realloc(pm_main, optimal_format);
-	pixmap_flip_to_origin_inplace(pm_main, org);
+	pixmap_convert_inplace_realloc(pm_main, qr.optimal_pixmap_format);
+	pixmap_flip_to_origin_inplace(pm_main, qr.optimal_pixmap_origin);
 
 	if(pm_alphamap && pm_alphamap->data.untyped) {
-		PixmapFormat alphamap_format = 0;
+		TextureType alphamap_type;
 
 		if(PIXMAP_FORMAT_DEPTH(pm_alphamap->format) > 8) {
-			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_16, pm_alphamap->format);
+			alphamap_type = TEX_TYPE_R_16;
 		} else {
-			alphamap_format = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_R_8, pm_alphamap->format);
+			alphamap_type = TEX_TYPE_R_8;
 		}
 
-		pixmap_convert_inplace_realloc(pm_alphamap, alphamap_format);
-		pixmap_flip_to_origin_inplace(pm_alphamap, org);
+		if(!r_texture_type_query(alphamap_type, 0, pm_alphamap->format, pm_alphamap->origin, &qr)) {
+			UNREACHABLE;
+		}
+
+		pixmap_convert_inplace_realloc(pm_alphamap, qr.optimal_pixmap_format);
+		pixmap_flip_to_origin_inplace(pm_alphamap, qr.optimal_pixmap_origin);
 	}
 }
 
@@ -532,6 +537,7 @@ static void load_texture_stage1(ResourceLoadState *st) {
 
 	PixmapFormat override_format = 0;
 	bool is_normalmap = false;
+	bool want_srgb = false;
 
 	if(strendswith(st->path, TEX_EXTENSION)) {
 		char *str_filter_min = NULL;
@@ -551,7 +557,7 @@ static void load_texture_stage1(ResourceLoadState *st) {
 			{ "mipmaps",    .out_int  = (int*)&ld.params.mipmaps },
 			{ "anisotropy", .out_int  = (int*)&ld.params.anisotropy },
 			{ "multiply_alpha", .out_bool = &ld.preprocess.multiply_alpha },
-			{ "linearize",  .out_bool = &ld.preprocess.linearize },
+			{ "linearize",  .out_bool = &want_srgb },
 			{ "is_normalmap", .out_bool = &is_normalmap },
 			{ NULL }
 		})) {
@@ -602,6 +608,12 @@ static void load_texture_stage1(ResourceLoadState *st) {
 		}
 	}
 
+	if(want_srgb) {
+		ld.params.flags |= TEX_FLAG_SRGB;
+	}
+
+	assert(!ld.preprocess.linearize);
+
 	if(strendswith(source, ".basis")) {
 		free(alphamap_allocated);
 		alphamap_allocated = NULL;
@@ -620,18 +632,26 @@ static void load_texture_stage1(ResourceLoadState *st) {
 
 	if(alphamap_allocated && !pixmap_load_file(alphamap_allocated, &ld.pixmap_alphamap, PIXMAP_FORMAT_R8)) {
 		log_error("%s: couldn't load texture alphamap", alphamap_allocated);
+		free(ld.pixmap.data.untyped);
 		free(source_allocated);
 		free(alphamap_allocated);
 		res_load_failed(st);
 		return;
 	}
 
+	override_format = override_format ? override_format : ld.pixmap.format;
+	bool apply_format_ok = apply_uncompressed_format(&ld, override_format, source);
 	free(source_allocated);
 	free(alphamap_allocated);
 
-	override_format = override_format ? override_format : ld.pixmap.format;
-	apply_uncompressed_format(&ld, override_format);
-	prepare_pixmaps(&ld.pixmap, &ld.pixmap_alphamap, ld.params.type, override_format);
+	if(!apply_format_ok) {
+		free(ld.pixmap.data.untyped);
+		free(ld.pixmap_alphamap.data.untyped);
+		res_load_failed(st);
+		return;
+	}
+
+	prepare_pixmaps(&ld.pixmap, &ld.pixmap_alphamap, ld.params.type, ld.params.flags);
 
 	if(ld.pixmap_alphamap.data.untyped) {
 		ld.preprocess.apply_alphamap = true;
@@ -738,7 +758,10 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 	}
 
 	override_format = override_format ? override_format : PIXMAP_FORMAT_RGBA8;
-	apply_uncompressed_format(ld, override_format);
+
+	if(!apply_uncompressed_format(ld, override_format, source)) {
+		goto fail;
+	}
 
 	TRY(basist_transcoder_start_transcoding, tc);
 
@@ -776,7 +799,7 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 		}
 #endif
 
-		prepare_pixmaps(out_pixmap, NULL, ld->params.type, override_format);
+		prepare_pixmaps(out_pixmap, NULL, ld->params.type, ld->params.flags);
 	}
 
 	TRY(basist_transcoder_stop_transcoding, tc);
@@ -788,7 +811,7 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 
 	ld->preprocess.multiply_alpha = 0;
 	ld->preprocess.apply_alphamap = 0;
-	ld->preprocess.linearize = 0;
+// 	ld->preprocess.linearize = 0;
 
 	res_load_continue_on_main(st, load_texture_stage2, memdup(ld, sizeof(*ld)));
 

@@ -71,8 +71,7 @@ typedef struct RendererFuncs {
 	void (*texture_fill)(Texture *tex, uint mipmap, const Pixmap *image_data);
 	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data);
 	void (*texture_clear)(Texture *tex, const Color *clr);
-	bool (*texture_type_supported)(TextureType type, TextureFlags flags);
-	PixmapFormat (*texture_optimal_pixmap_format_for_type)(TextureType type, PixmapFormat src_format);
+	bool (*texture_type_query)(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 
 	Framebuffer* (*framebuffer_create)(void);
 	const char* (*framebuffer_get_debug_label)(Framebuffer *framebuffer);

@@ -391,7 +391,7 @@ void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count
 }
 
 Texture* r_texture_create(const TextureParams *params) {
-	assert(r_texture_type_supported(params->type, params->flags));
+	assert(r_texture_type_query(params->type, params->flags, 0, 0, NULL));
 	return B.texture_create(params);
 }
 
@@ -451,12 +451,18 @@ void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }
 
-bool r_texture_type_supported(TextureType type, TextureFlags flags) {
-	return B.texture_type_supported(type, flags);
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	return B.texture_type_query(type, flags, pxfmt, pxorigin, result);
 }
 
-PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
-	return B.texture_optimal_pixmap_format_for_type(type, src_format);
+const char *r_texture_type_name(TextureType type) {
+	switch(type) {
+		#define HANDLE_TYPE(type, ...) \
+		case TEX_TYPE_##type: return #type;
+		TEX_TYPES(HANDLE_TYPE,)
+		#undef HANDLE_TYPE
+		default: UNREACHABLE;
+	}
 }
 
 Framebuffer* r_framebuffer_create(void) {

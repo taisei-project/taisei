@@ -16,6 +16,7 @@ util_src = files(
     'pixmap.c',
     'pngcruft.c',
     'rectpack.c',
+    'strbuf.c',
     'stringops.c',
 )
 
