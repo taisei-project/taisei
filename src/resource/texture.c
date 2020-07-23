@@ -791,7 +791,7 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 		out_pixmap->format = PIXMAP_FORMAT_RGBA8;
 		out_pixmap->width = level_desc.orig_width;
 		out_pixmap->height = level_desc.orig_height;
-		out_pixmap->origin = PIXMAP_ORIGIN_TOPLEFT;
+		out_pixmap->origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
 
 #if 0
 		if(is_normalmap) {
