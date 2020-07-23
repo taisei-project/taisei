@@ -539,6 +539,7 @@ static void glcommon_ext_texture_format_pvrtc(void) {
 	EXT_FLAG(tex_format.pvrtc);
 
 	CHECK_EXT(GL_IMG_texture_compression_pvrtc);
+	CHECK_EXT(GL_WEBGL_compressed_texture_pvrtc);
 
 	EXT_MISSING();
 }
