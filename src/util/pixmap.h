@@ -13,6 +13,8 @@
 
 #include <SDL.h>
 
+#define PIXMAP_BUFFER_MAX_SIZE INT32_MAX
+
 typedef enum PixmapLayout {
 	PIXMAP_LAYOUT_R = 1,
 	PIXMAP_LAYOUT_RG,
@@ -236,15 +238,16 @@ typedef struct Pixmap {
 		PixelRGBA32F *rgba32f;
 	} data;
 
-	size_t width;
-	size_t height;
+	uint32_t width;
+	uint32_t height;
+	uint32_t data_size;
 	PixmapFormat format;
 	PixmapOrigin origin;
 } Pixmap;
 
-void *pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) attr_returns_allocated;
-void *pixmap_alloc_buffer_for_copy(const Pixmap *src) attr_nonnull(1) attr_returns_allocated;
-void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) attr_nonnull(1) attr_returns_allocated;
+void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, uint32_t *out_bufsize) attr_returns_allocated;
+void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) attr_nonnull(1) attr_returns_allocated;
+void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format, uint32_t *out_bufsize) attr_nonnull(1) attr_returns_allocated;
 
 void pixmap_copy(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_copy_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
@@ -260,8 +263,6 @@ void pixmap_flip_y_inplace(Pixmap *src) attr_nonnull(1);
 void pixmap_flip_to_origin(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) attr_nonnull(1, 2);
 void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) attr_nonnull(1, 2);
 void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) attr_nonnull(1);
-
-size_t pixmap_data_size(const Pixmap *px) attr_nonnull(1);
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
 bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;

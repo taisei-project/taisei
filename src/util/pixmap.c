@@ -194,20 +194,33 @@ static void *default_pixel(uint depth) {
 	}
 }
 
-void *pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) {
+static uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height) {
+	uint64_t s = (uint64_t)width * (uint64_t)height * (uint64_t)PIXMAP_FORMAT_PIXEL_SIZE(format);
+	assert(s <= PIXMAP_BUFFER_MAX_SIZE);
+	return s;
+}
+
+void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, uint32_t *out_bufsize) {
 	assert(width >= 1);
 	assert(height >= 1);
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
 	assert(pixel_size >= 1);
-	return calloc(width * height, pixel_size);
+
+	uint32_t s = pixmap_data_size(format, width, height);
+
+	if(out_bufsize) {
+		*out_bufsize = s;
+	}
+
+	return calloc(1, s);
 }
 
-void *pixmap_alloc_buffer_for_copy(const Pixmap *src) {
-	return pixmap_alloc_buffer(src->format, src->width, src->height);
+void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) {
+	return pixmap_alloc_buffer(src->format, src->width, src->height, out_bufsize);
 }
 
-void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) {
-	return pixmap_alloc_buffer(format, src->width, src->height);
+void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format, uint32_t *out_bufsize) {
+	return pixmap_alloc_buffer(format, src->width, src->height, out_bufsize);
 }
 
 static void pixmap_copy_meta(const Pixmap *src, Pixmap *dst) {
@@ -247,7 +260,7 @@ void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
 }
 
 void pixmap_convert_alloc(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
-	dst->data.untyped = pixmap_alloc_buffer_for_conversion(src, format);
+	dst->data.untyped = pixmap_alloc_buffer_for_conversion(src, format, &dst->data_size);
 	pixmap_convert(src, dst, format);
 }
 
@@ -268,17 +281,20 @@ void pixmap_convert_inplace_realloc(Pixmap *src, PixmapFormat format) {
 
 void pixmap_copy(const Pixmap *src, Pixmap *dst) {
 	assert(dst->data.untyped != NULL);
+	assert(src->data_size > 0);
+	assert(dst->data_size >= src->data_size);
+
+	if(!pixmap_format_is_compressed(src->format)) {
+		assert(src->data_size == pixmap_data_size(src->format, src->width, src->height));
+	}
+
 	pixmap_copy_meta(src, dst);
-	memcpy(dst->data.untyped, src->data.untyped, pixmap_data_size(src));
+	memcpy(dst->data.untyped, src->data.untyped, src->data_size);
 }
 
 void pixmap_copy_alloc(const Pixmap *src, Pixmap *dst) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_copy(src, dst);
-}
-
-size_t pixmap_data_size(const Pixmap *px) {
-	return px->width * px->height * PIXMAP_FORMAT_PIXEL_SIZE(px->format);
 }
 
 void pixmap_flip_y(const Pixmap *src, Pixmap *dst) {
@@ -297,7 +313,7 @@ void pixmap_flip_y(const Pixmap *src, Pixmap *dst) {
 }
 
 void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_flip_y(src, dst);
 }
 
@@ -326,7 +342,7 @@ void pixmap_flip_to_origin(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) 
 }
 
 void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_flip_to_origin(src, dst, origin);
 }
 

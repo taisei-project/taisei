@@ -1132,7 +1132,7 @@ static bool gl33_screenshot(Pixmap *out) {
 	out->height = vp->h;
 	out->format = PIXMAP_FORMAT_RGB8;
 	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
 	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
 	return true;
 }

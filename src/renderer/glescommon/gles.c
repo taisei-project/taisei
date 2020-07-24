@@ -55,7 +55,7 @@ bool gles_screenshot(Pixmap *out) {
 	out->height = vp.h;
 	out->format = PIXMAP_FORMAT_RGBA8;
 	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
 	glReadPixels(vp.x, vp.y, vp.w, vp.h, GL_RGBA, GL_UNSIGNED_BYTE, out->data.untyped);
 	return true;
 }

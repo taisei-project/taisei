@@ -534,7 +534,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		px.format = PIXMAP_FORMAT_RGB8;
 		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
-		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px);
+		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
 
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
@@ -603,7 +603,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 
 		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
 			log_error(
-				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %zux%zu; max spritesheet size: %ux%u)",
+				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
 				gindex,
 				px.width + 2 * GLYPH_SPRITE_PADDING,
 				px.height + 2 * GLYPH_SPRITE_PADDING,

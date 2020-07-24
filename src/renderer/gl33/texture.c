@@ -160,24 +160,42 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 		prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_UNPACK);
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, tex->pbo);
 		gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK);
-		glBufferData(GL_PIXEL_UNPACK_BUFFER, pixmap_data_size(image), image_data, GL_STREAM_DRAW);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, image->data_size, image_data, GL_STREAM_DRAW);
 		image_data = NULL;
 	}
 
 	uint width, height;
 	gl33_texture_get_size(tex, mipmap, &width, &height);
 
-	glTexImage2D(
-		GL_TEXTURE_2D,
-		mipmap,
-		tex->fmt_info->internal_format,
-		width,
-		height,
-		0,
-		xfer->gl_format,
-		xfer->gl_type,
-		image_data
-	);
+	assert(width == image->width);
+	assert(height == image->height);
+
+	log_debug("SET (%s): w=%u  h=%u  size=%u", tex->debug_label, width, height, image->data_size);
+
+	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
+		glCompressedTexImage2D(
+			GL_TEXTURE_2D,
+			mipmap,
+			tex->fmt_info->internal_format,
+			width,
+			height,
+			0,
+			image->data_size,
+			image_data
+		);
+	} else {
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			mipmap,
+			tex->fmt_info->internal_format,
+			width,
+			height,
+			0,
+			xfer->gl_format,
+			xfer->gl_type,
+			image_data
+		);
+	}
 
 	if(tex->pbo) {
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_UNPACK, prev_pbo);
@@ -225,10 +243,6 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	TextureParams *p = &tex->params;
 
 	uint max_mipmaps = 1 + floor(log2(umax(tex->params.width, tex->params.height)));  // TODO replace with integer log2
-
-	if(TEX_TYPE_IS_COMPRESSED(params->type)) {
-		log_fatal("Implement me!");
-	}
 
 	if(p->mipmaps == 0) {
 		if(p->mipmap_mode == TEX_MIPMAP_AUTO) {
@@ -285,17 +299,32 @@ Texture* gl33_texture_create(const TextureParams *params) {
 		uint width, height;
 		gl33_texture_get_size(tex, i, &width, &height);
 
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			i,
-			tex->fmt_info->internal_format,
-			width,
-			height,
-			0,
-			xfer->gl_format,
-			xfer->gl_type,
-			NULL
-		);
+		if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
+#if 0
+			glCompressedTexImage2D(
+				GL_TEXTURE_2D,
+				i,
+				tex->fmt_info->internal_format,
+				width,
+				height,
+				0,
+				0,
+				NULL
+			);
+#endif
+		} else {
+			glTexImage2D(
+				GL_TEXTURE_2D,
+				i,
+				tex->fmt_info->internal_format,
+				width,
+				height,
+				0,
+				xfer->gl_format,
+				xfer->gl_type,
+				NULL
+			);
+		}
 	}
 
 	return tex;
@@ -338,6 +367,11 @@ void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt)
 }
 
 void gl33_texture_invalidate(Texture *tex) {
+	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
+		log_debug("TODO/FIXME: invalidate not implemented for compressed textures");
+		return;
+	}
+
 	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
@@ -376,13 +410,23 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 	assert(qr.supplied_pixmap_origin_supported);
 	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
-	glTexSubImage2D(
-		GL_TEXTURE_2D, mipmap,
-		x, tex->params.height - y - image->height, image->width, image->height,
-		xfer->gl_format,
-		xfer->gl_type,
-		image->data.untyped
-	);
+	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
+		glCompressedTexSubImage2D(
+			GL_TEXTURE_2D, mipmap,
+			x, tex->params.height - y - image->height, image->width, image->height,
+			tex->fmt_info->internal_format,
+			image->data_size,
+			image->data.untyped
+		);
+	} else {
+		glTexSubImage2D(
+			GL_TEXTURE_2D, mipmap,
+			x, tex->params.height - y - image->height, image->width, image->height,
+			xfer->gl_format,
+			xfer->gl_type,
+			image->data.untyped
+		);
+	}
 
 	tex->mipmaps_outdated = true;
 }

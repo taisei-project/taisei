@@ -184,9 +184,15 @@ static void parse_wrap(const char *val, TextureWrapMode *out) {
 }
 
 static TextureType pixmap_format_to_texture_type(PixmapFormat fmt) {
-	PixmapLayout layout = PIXMAP_FORMAT_LAYOUT(fmt);
-	uint depth = PIXMAP_FORMAT_DEPTH(fmt);
-	bool is_float = PIXMAP_FORMAT_IS_FLOAT(fmt);
+	if(pixmap_format_is_compressed(fmt)) {
+		TextureType t = pixmap_format_compression(fmt) | TEX_TYPE_COMPRESSED_BIT;
+		assert(r_texture_type_name(t) != NULL);
+		return t;
+	}
+
+	PixmapLayout layout = pixmap_format_layout(fmt);
+	uint depth = pixmap_format_depth(fmt);
+	bool is_float = pixmap_format_is_float(fmt);
 
 	if(is_float) {
 		switch(depth) {
@@ -353,36 +359,41 @@ struct basis_size_info {
 	uint32_t block_size;
 };
 
-static struct basis_size_info get_basis_transcoded_size_info(basist_transcoder *tc, uint32_t image, uint32_t level, basist_texture_format format) {
+static struct basis_size_info get_basis_transcoded_size_info(basist_transcoder *tc, uint32_t image, uint32_t level, basist_texture_format format, const char *source) {
 	struct basis_size_info size_info = { 0 };
 
 	if((uint)format >= BASIST_NUM_FORMATS) {
-		log_error("Invalid format %u", format);
+		log_error("%s: Invalid basisu format 0x%04x", source, format);
 	}
 
 	basist_source_format src_format = basist_transcoder_get_source_format(tc);
 
 	if(!basist_is_format_supported(format, src_format)) {
-		log_error("Can't transcode from %s into %s", get_basis_source_format_name(src_format), basist_get_format_name(format));
+		log_error("%s: Can't transcode from %s into %s", source, get_basis_source_format_name(src_format), basist_get_format_name(format));
 		return size_info;
 	}
 
 	basist_image_level_desc ldesc;
 
 	if(!basist_transcoder_get_image_level_desc(tc, image, level, &ldesc)) {
-		log_error("basist_transcoder_get_image_level_desc() failed");
+		log_error("%s: basist_transcoder_get_image_level_desc() failed", source);
 		return size_info;
 	}
 
 	if(basist_is_format_uncompressed(format)) {
 		size_info.block_size = basist_get_uncompressed_bytes_per_pixel(format);
 		size_info.num_blocks = ldesc.orig_width * ldesc.orig_height;
-		return size_info;
+	} else {
+		// NOTE: there's a caveat for PVRTC1 textures, but we don't care about them
+		size_info.block_size = basist_get_bytes_per_block_or_pixel(format);
+		size_info.num_blocks = ldesc.total_blocks;
 	}
 
-	// NOTE: there's a caveat for PVRTC1 textures, but we don't care about them
-	size_info.block_size = basist_get_bytes_per_block_or_pixel(format);
-	size_info.num_blocks = ldesc.total_blocks;
+	if(size_info.num_blocks > PIXMAP_BUFFER_MAX_SIZE / size_info.block_size) {
+		log_error("%s: Image is too large", source);
+		memset(&size_info, 0, sizeof(size_info));
+	}
+
 	return size_info;
 }
 
@@ -404,80 +415,151 @@ static void pack_RA8_to_RG8(Pixmap *pixmap) {
 	pixmap->format = PIXMAP_FORMAT_RG8;
 }
 
-#if 0
-static TextureType correct_texture_type_for_sRGB(TextureType orig_type, TextureFlags tex_flags) {
-	// Assumed to be handled elsewhere
-	assert(!TEX_TYPE_IS_COMPRESSED(orig_type));
-
-	TextureType type = orig_type;
-
-	static const TextureType promotion_chain[] = {
-		// NOTE: float and 16-bit textures don't really make sense for sRGB data, so they are disabled here.
-		TEX_TYPE_R_8,
-// 		TEX_TYPE_R_16,
-// 		TEX_TYPE_R_16_FLOAT,
-// 		TEX_TYPE_R_32_FLOAT,
-		TEX_TYPE_RG_8,
-// 		TEX_TYPE_RG_16,
-// 		TEX_TYPE_RG_16_FLOAT,
-// 		TEX_TYPE_RG_32_FLOAT,
-		TEX_TYPE_RGB_8,
-// 		TEX_TYPE_RGB_16,
-// 		TEX_TYPE_RGB_16_FLOAT,
-// 		TEX_TYPE_RGB_32_FLOAT,
-		TEX_TYPE_RGBA_8,
-// 		TEX_TYPE_RGBA_16,
-// 		TEX_TYPE_RGBA_16_FLOAT,
-// 		TEX_TYPE_RGBA_32_FLOAT,
-	};
-
-	bool found = false;
-
-	for(int i = 0; i < ARRAY_SIZE(promotion_chain); ++i) {
-		log_debug("iter #%i: orig_type = %s; type = %s; promotion_chain[i] = %s",
-			i,
-			r_texture_type_name(orig_type),
-			r_texture_type_name(type),
-			r_texture_type_name(promotion_chain[i])
-		);
-		if(promotion_chain[i] == type) {
-			found = true;
-			if(r_texture_type_supported(type, tex_flags | TEX_FLAG_SRGB)) {
-				log_debug("Found sRGB-compatible type for texture: %s -> %s", r_texture_type_name(orig_type), r_texture_type_name(type));
-				return type;
-			}
-		} else if(found && i < ARRAY_SIZE(promotion_chain) - 1) {
-			type = promotion_chain[i + 1];
-		}
+static basist_texture_format compfmt_pixmap_to_basist(PixmapFormat fmt) {
+	switch(fmt) {
+		#define HANDLE(comp, layout, ...) \
+			case PIXMAP_FORMAT_##comp: return BASIST_FORMAT_##comp;
+		PIXMAP_COMPRESSION_FORMATS(HANDLE,)
+		#undef HANDLE
+		default: UNREACHABLE;
 	}
-
-	log_warn("No sRGB-compatible type exists for texture type %s; converting to linear color space", r_texture_type_name(orig_type));
-	return TEX_TYPE_INVALID;
 }
-#endif
 
-static bool apply_uncompressed_format(TextureLoadData *ld, PixmapFormat fmt, const char *source) {
-	ld->params.type = pixmap_format_to_texture_type(fmt);
-
+static bool try_apply_texture_type(
+	TextureLoadData *ld,
+	TextureType tex_type,
+	PixmapFormat px_fmt,
+	PixmapOrigin px_org,
+	bool srgb_fallback,
+	TextureTypeQueryResult *out_qr
+) {
 	TextureTypeQueryResult qr;
-	bool type_supported = r_texture_type_query(ld->params.type, ld->params.flags, ld->pixmap.format, ld->pixmap.origin, &qr);
+	bool type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, px_org, &qr);
 
-	if(!type_supported && (ld->params.flags & TEX_FLAG_SRGB)) {
+	if(!type_supported && (ld->params.flags & TEX_FLAG_SRGB) && srgb_fallback) {
 		ld->params.flags &= ~TEX_FLAG_SRGB;
 		ld->preprocess.linearize = true;
-		type_supported = r_texture_type_query(ld->params.type, ld->params.flags, ld->pixmap.format, ld->pixmap.origin, &qr);
+		type_supported = r_texture_type_query(tex_type, ld->params.flags, px_fmt, px_org, &qr);
 	}
 
-	if(!type_supported) {
-		log_error("%s: texture type not supported", source);
+	if(type_supported) {
+		ld->params.type = tex_type;
+
+		if(out_qr) {
+			*out_qr = qr;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+static bool apply_uncompressed_format(
+	TextureLoadData *ld,
+	TextureType tex_type,
+	PixmapFormat px_fmt,
+	PixmapOrigin px_org,
+	const char *source,
+	TextureTypeQueryResult *out_qr
+) {
+	assert(!TEX_TYPE_IS_COMPRESSED(tex_type));
+	bool ok = try_apply_texture_type(ld, tex_type, px_fmt, px_org, true, out_qr);
+
+	if(!ok) {
+		log_error("%s: texture type %s not supported", source, r_texture_type_name(tex_type));
 		return false;
 	}
 
 	if(ld->preprocess.linearize) {
-		log_warn("%s: not native sRGB support; will convert texture into linear colorspace", source);
+		log_warn("%s: no native sRGB support; will convert texture into linear colorspace", source);
 	}
 
 	return true;
+}
+
+static PixmapFormat pick_and_apply_compressed_format(
+	TextureLoadData *ld,
+	int channels,
+	basist_source_format basis_source_fmt,
+	PixmapOrigin org,
+	PixmapFormat fallback_format,
+	const char *source,
+	TextureTypeQueryResult *out_qr
+) {
+	static const PixmapFormat fmt_prio[] = {
+		// TODO: this needs some explanation (and refinement)
+		PIXMAP_FORMAT_BC4_R,
+		PIXMAP_FORMAT_ETC2_EAC_R11,
+		PIXMAP_FORMAT_BC5_RG,
+		PIXMAP_FORMAT_ETC2_EAC_RG11,
+		PIXMAP_FORMAT_BC1_RGB,
+		PIXMAP_FORMAT_PVRTC2_4_RGB,
+		PIXMAP_FORMAT_PVRTC1_4_RGB,
+		PIXMAP_FORMAT_ATC_RGB,
+		PIXMAP_FORMAT_FXT1_RGB,
+		PIXMAP_FORMAT_ETC1_RGB,
+		PIXMAP_FORMAT_BC7_RGBA,
+		PIXMAP_FORMAT_PVRTC2_4_RGBA,
+		PIXMAP_FORMAT_PVRTC1_4_RGBA,
+		PIXMAP_FORMAT_ETC2_RGBA,
+		PIXMAP_FORMAT_ASTC_4x4_RGBA,
+	};
+
+	TextureTypeQueryResult qr;
+
+	for(int i = 0; i < ARRAY_SIZE(fmt_prio); ++i) {
+		log_debug("Try %s", pixmap_format_name(fmt_prio[i]));
+
+		int fmt_chans = pixmap_format_layout(fmt_prio[i]);
+		if(fmt_chans < channels) {
+			log_debug("Skip: not enough channels (%i < %i)", fmt_chans, channels);
+			continue;
+		}
+
+		basist_texture_format basist_fmt = compfmt_pixmap_to_basist(fmt_prio[i]);
+		if(!basist_is_format_supported(basist_fmt, basis_source_fmt)) {
+			log_debug("Skip: can't transcode into this format");
+			continue;
+		}
+
+		TextureType tex_type = pixmap_format_to_texture_type(fmt_prio[i]);
+		if(!try_apply_texture_type(ld, tex_type, fmt_prio[i], org, false, &qr)) {
+			log_debug("Skip: format not supported by renderer");
+			continue;
+		}
+
+		if(!qr.supplied_pixmap_origin_supported) {
+			log_debug("Skip: supplied origin not supported; flipping not implemented");
+			continue;
+		}
+
+		assert(qr.supplied_pixmap_format_supported);
+
+		ld->params.type = tex_type;
+
+		if(out_qr) {
+			*out_qr = qr;
+		}
+
+		return fmt_prio[i];
+	}
+
+	log_warn("%s: No suitable compression format available; falling back to uncompressed RGBA", source);
+
+	TextureType tex_type = pixmap_format_to_texture_type(fallback_format);
+	if(apply_uncompressed_format(ld, tex_type, PIXMAP_FORMAT_RGBA8, org, source, &qr)) {
+		if(out_qr) {
+			*out_qr = qr;
+		}
+
+		assert(qr.supplied_pixmap_format_supported);
+		assert(qr.supplied_pixmap_origin_supported);
+
+		return qr.optimal_pixmap_format;
+	}
+
+	return 0;
 }
 
 static void prepare_pixmaps(Pixmap *pm_main, Pixmap *pm_alphamap, TextureType tex_type, TextureFlags tex_flags) {
@@ -640,7 +722,8 @@ static void load_texture_stage1(ResourceLoadState *st) {
 	}
 
 	override_format = override_format ? override_format : ld.pixmap.format;
-	bool apply_format_ok = apply_uncompressed_format(&ld, override_format, source);
+	TextureType tex_type = pixmap_format_to_texture_type(override_format);
+	bool apply_format_ok = apply_uncompressed_format(&ld, tex_type, ld.pixmap.format, ld.pixmap.origin, source, NULL);
 	free(source_allocated);
 	free(alphamap_allocated);
 
@@ -671,7 +754,7 @@ static void load_texture_stage1(ResourceLoadState *st) {
 	res_load_continue_on_main(st, load_texture_stage2, memdup(&ld, sizeof(ld)));
 }
 
-static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, const char *source, bool is_normalmap, PixmapFormat override_format) {
+static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, const char *source, bool is_normalmap, PixmapFormat fallback_format) {
 	basist_transcoder *tc = get_basis_transcoder();
 	basist_transcode_level_params p = { 0 };
 	void *filebuf = NULL;
@@ -739,8 +822,45 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 	log_debug("Size: %ux%u", image_info.width, image_info.height);
 	log_debug("Original size: %ux%u", image_info.orig_width, image_info.orig_height);
 
+	PixmapOrigin px_origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
+	int needed_channels;
+
+	if(is_normalmap) {
+		needed_channels = 2;
+	} else {
+		needed_channels = 3 + file_info.has_alpha_slices;
+	}
+
+	fallback_format = fallback_format ? fallback_format : PIXMAP_FORMAT_RGBA8;
+	TextureTypeQueryResult qr = { 0 };
+
+	PixmapFormat choosen_format = pick_and_apply_compressed_format(
+		ld,
+		needed_channels,
+		file_info.source_format,
+		px_origin,
+		fallback_format,
+		source,
+		&qr
+	);
+
+	if(!choosen_format) {
+		log_error("%s: Could not choose texture format", source);
+		goto fail;
+	}
+
 	basist_init_transcode_level_params(&p);
-	p.format = BASIST_FORMAT_RGBA32;
+
+	PixmapFormat decode_format;
+
+	if(pixmap_format_is_compressed(choosen_format)) {
+		decode_format = choosen_format;
+		p.format = compfmt_pixmap_to_basist(choosen_format);
+	} else {
+		decode_format = PIXMAP_FORMAT_RGBA8;
+		p.format = BASIST_FORMAT_RGBA32;
+	}
+
 	p.image_index = 0;
 
 	ld->num_mipmaps = image_info.total_levels - 1;
@@ -757,12 +877,6 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 		ld->mipmaps = NULL;
 	}
 
-	override_format = override_format ? override_format : PIXMAP_FORMAT_RGBA8;
-
-	if(!apply_uncompressed_format(ld, override_format, source)) {
-		goto fail;
-	}
-
 	TRY(basist_transcoder_start_transcoding, tc);
 
 	for(uint i = 0; i < image_info.total_levels; ++i) {
@@ -772,7 +886,7 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 		basist_image_level_desc level_desc;
 		TRY(basist_transcoder_get_image_level_desc, tc, p.image_index, p.level_index, &level_desc);
 
-		struct basis_size_info size_info = get_basis_transcoded_size_info(tc, p.image_index, p.level_index, p.format);
+		struct basis_size_info size_info = get_basis_transcoded_size_info(tc, p.image_index, p.level_index, p.format, source);
 
 		if(size_info.block_size == 0) {
 			goto fail;
@@ -785,13 +899,14 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 
 		TRY(basist_transcoder_transcode_image_level, tc, &p);
 
+		out_pixmap->data_size = size_info.num_blocks * size_info.block_size;
 		out_pixmap->data.untyped = p.output_blocks;
 		p.output_blocks = NULL;
 
-		out_pixmap->format = PIXMAP_FORMAT_RGBA8;
+		out_pixmap->format = decode_format;
 		out_pixmap->width = level_desc.orig_width;
 		out_pixmap->height = level_desc.orig_height;
-		out_pixmap->origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
+		out_pixmap->origin = px_origin;
 
 #if 0
 		if(is_normalmap) {
@@ -804,9 +919,9 @@ static void load_texture_basisu(ResourceLoadState *st, TextureLoadData *ld, cons
 
 	TRY(basist_transcoder_stop_transcoding, tc);
 
-	if(is_normalmap) {
+	if(is_normalmap && pixmap_format_layout(ld->pixmap.format) == PIXMAP_LAYOUT_RGBA) {
 		// pack_RA8_to_RG8(&ld->pixmap);
-		ld->params.swizzle = (TextureSwizzleMask) { "ra01" };
+		ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
 	}
 
 	ld->preprocess.multiply_alpha = 0;

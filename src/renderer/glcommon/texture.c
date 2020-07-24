@@ -144,7 +144,7 @@ void glcommon_init_texture_formats(void) {
 		(log_debug("ADD: " #__VA_ARGS__), *dynarray_append(&g_formats) = (GLTextureFormatInfo) { __VA_ARGS__ })
 
 	#define ADD_COMPRESSED(comp, basefmt, ifmt, flags) \
-		ADD(TEX_TYPE_COMPRESSED_##comp, basefmt, ifmt, XFER_COMPRESSED(comp), flags, 0)
+		ADD(TEX_TYPE_COMPRESSED_##comp, basefmt, ifmt, { basefmt, GL_BYTE, PIXMAP_FORMAT_##comp }, flags, 0)
 
 	if(is_gles2) {
 		ADD(TEX_TYPE_RGBA, GL_RGBA, GL_RGBA, XFER_RGBA8, f_clr_common, 8 * 4);
@@ -263,12 +263,12 @@ void glcommon_init_texture_formats(void) {
 		ADD_COMPRESSED(ETC2_EAC_R11, GL_RED, GL_COMPRESSED_R11_EAC, f_compressed);
 		ADD_COMPRESSED(ETC2_EAC_RG11, GL_RG, GL_COMPRESSED_RG11_EAC, f_compressed);
 
-		// NOTE: ETC1 is backwards compatible with ETC1
-		ADD_COMPRESSED(ETC1_RGB, GL_RGBA, GL_COMPRESSED_RGBA8_ETC2_EAC, f_compressed);
+		// NOTE: ETC2 is backwards compatible with ETC1
+		ADD_COMPRESSED(ETC1_RGB, GL_RGB, GL_COMPRESSED_RGB8_ETC2, f_compressed);
 
 		if(glext.tex_format.etc2_eac_srgb) {
 			ADD_COMPRESSED(ETC2_RGBA, GL_RGBA, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC, f_compressed_srgb);
-			ADD_COMPRESSED(ETC1_RGB, GL_RGBA, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC, f_compressed_srgb);
+			ADD_COMPRESSED(ETC1_RGB, GL_RGB, GL_COMPRESSED_SRGB8_ETC2, f_compressed_srgb);
 		}
 	}
 
@@ -425,16 +425,6 @@ static int textype_bits_per_pixel(TextureType type) {
 GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormatFlags require_flags, GLTextureFormatFlags forbid_flags) {
 	assert((require_flags & forbid_flags) == 0);
 
-	{
-		GLTextureFormatInfo *i = find_format(tex_type, require_flags, forbid_flags);
-		if(i) {
-			return i;
-		}
-	}
-
-	int ideal_chans = textype_num_chans(tex_type);
-	int ideal_bits = textype_bits_per_pixel(tex_type);
-	int ideal_bpc_score = (ideal_bits << 4) / ideal_chans;
 	bool compressed = TEX_TYPE_IS_COMPRESSED(tex_type);
 
 	if(compressed) {
@@ -442,6 +432,16 @@ GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormat
 	} else {
 		assume(forbid_flags & GLTEX_COMPRESSED);
 	}
+
+	GLTextureFormatInfo *exact_match = find_format(tex_type, require_flags, forbid_flags);
+
+	if(exact_match || compressed) {
+		return exact_match;
+	}
+
+	int ideal_chans = textype_num_chans(tex_type);
+	int ideal_bits = textype_bits_per_pixel(tex_type);
+	int ideal_bpc_score = (ideal_bits << 4) / ideal_chans;
 
 	GLTextureFormatInfo *best = NULL;
 	int best_fitness = 0;
