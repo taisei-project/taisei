@@ -16,9 +16,6 @@
 
 typedef struct Texture Texture;
 
-char *texture_path(const char *name);
-bool check_texture_path(const char *path);
-
 void begin_draw_texture(FloatRect dest, FloatRect frag, Texture *tex);
 void end_draw_texture(void);
 

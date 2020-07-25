@@ -465,6 +465,60 @@ const char *r_texture_type_name(TextureType type) {
 	}
 }
 
+TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt) {
+	if(pixmap_format_is_compressed(fmt)) {
+		TextureType t = pixmap_format_compression(fmt) | TEX_TYPE_COMPRESSED_BIT;
+		assert(r_texture_type_name(t) != NULL);
+		return t;
+	}
+
+	PixmapLayout layout = pixmap_format_layout(fmt);
+	uint depth = pixmap_format_depth(fmt);
+	bool is_float = pixmap_format_is_float(fmt);
+
+	if(is_float) {
+		switch(depth) {
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			case 32: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_32_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_32_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_32_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_32_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			default: UNREACHABLE;
+		}
+	} else {
+		switch(depth) {
+			case 8: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_8;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_8;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_8;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_8;
+				default: UNREACHABLE;
+			}
+
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16;
+				default: UNREACHABLE;
+			}
+
+			default: UNREACHABLE;
+		}
+	}
+}
+
 Framebuffer* r_framebuffer_create(void) {
 	return B.framebuffer_create();
 }
