@@ -17,9 +17,21 @@ BASISU_TAISEI_SRGB = (1 << 2)
 BASISU_TAISEI_NORMALMAP = (1 << 3)
 
 
-def run(cmd):
-    print('[subprocess]   ' + repr(cmd))
-    return subprocess.check_call(cmd)
+def format_cmd(cmd):
+    s = []
+
+    for a in [str(x) for x in cmd]:
+        if repr(a) != f"'{a}'" or ' ' in a:
+            a = repr(a)
+        s.append(a)
+
+    return ' '.join(s)
+
+
+def run(args, cmd):
+    print('RUN:  ' + format_cmd(cmd))
+    if not args.dry_run:
+        subprocess.check_call(cmd)
 
 
 def preprocess(args, tempdir):
@@ -67,7 +79,7 @@ def preprocess(args, tempdir):
     if cmd[-1] != args.input or args.input.suffix != '.png':
         dst = tempdir / 'preprocessed.png'
         cmd += [dst]
-        run(cmd)
+        run(args, cmd)
         return dst
 
     return args.input
@@ -77,7 +89,6 @@ def process(args):
     with TemporaryDirectory() as tempdir:
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
-        print(img)
 
         cmd = [
             args.basisu,
@@ -126,22 +137,45 @@ def process(args):
         if args.uastc:
             cmd += ['-uastc']
 
-            if args.fast:
-                cmd += ['-uastc_level', '1']
-            else:
-                cmd += ['-uastc_level', '3', '-uastc_rdo_q', '4']
+            profiles = {
+                'slow': [
+                    '-uastc_level', '3',
+                    '-uastc_rdo_q', '4',
+                ],
+                'fast': [
+                    '-uastc_level', '1',
+                ],
+                'incredibly_slow': [
+                    '-uastc_level', '4',
+                    '-uastc_rdo_q', '4',
+                ],
+            }
         else:
-            if not args.fast:
-                cmd += ['-comp_level', '4', '-q', '255']
+            profiles = {
+                'slow': [
+                    '-comp_level', '4',
+                    '-q', '255'
+                ],
+                'fast': [],
+                'incredibly_slow': [
+                    '-comp_level', '5',
+                    '-max_endpoints', '16128',
+                    '-max_selectors', '16128',
+                    '-no_selector_rdo',
+                    '-no_endpoint_rdo',
+                ],
+            }
+
+        cmd += profiles[args.profile]
 
         """
         if args.basisu_args is not None:
             cmd += args.basisu_args
         """
 
-        run(cmd)
+        run(args, cmd)
 
-        if args.uastc:
+        if args.uastc and not args.dry_run:
             print('\nNOTE: UASTC textures must be additionally compressed with a general-purpose lossless algorithm!')
 
 
@@ -294,10 +328,26 @@ def main(args):
         default=True,
     )
 
+    parser.add_argument('--slow',
+        dest='profile',
+        help='compress slowly, emphasize quality (default)',
+        action='store_const',
+        const='slow',
+        default='slow',
+    )
+
     parser.add_argument('--fast',
-        help='compress much faster (lower quality and/or larger size)',
-        action='store_true',
-        default=False,
+        dest='profile',
+        help='compress much faster, significantly lower quality',
+        action='store_const',
+        const='fast',
+    )
+
+    parser.add_argument('--incredibly-slow',
+        dest='profile',
+        help='takes forever, maximum quality',
+        action='store_const',
+        const='incredibly_slow',
     )
 
     parser.add_argument('--etc1s',
@@ -310,6 +360,11 @@ def main(args):
     parser.add_argument('--uastc',
         dest='uastc',
         help='encode to UASTC: large size, high quality',
+        action='store_true',
+    )
+
+    parser.add_argument('--dry-run',
+        help='do nothing, print commands that would have been run',
         action='store_true',
     )
 
