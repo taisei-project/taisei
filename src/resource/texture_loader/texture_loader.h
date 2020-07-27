@@ -34,8 +34,6 @@ typedef struct TextureLoadData {
 	// NOTE: Despite being a PixmapFormat, this is also used to pick a proper TextureType later. Irrelevant for compressed textures, unless decompression fallback is used.
 	PixmapFormat preferred_format;
 
-	bool is_normalmap;
-
 	const char *tex_src_path;
 	const char *alphamap_src_path;
 	char *tex_src_path_allocated;

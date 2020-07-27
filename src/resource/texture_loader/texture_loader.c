@@ -387,7 +387,6 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			{ "anisotropy",     .out_int  = (int*)&ld->params.anisotropy },
 			{ "multiply_alpha", .out_bool = &ld->preprocess.multiply_alpha },
 			{ "linearize",      .out_bool = &want_srgb },
-			{ "is_normalmap",   .out_bool = &ld->is_normalmap },
 			{ NULL }
 		})) {
 			texture_loader_failed(ld);

@@ -13,6 +13,17 @@
 
 #include <basisu_transcoder_c_api.h>
 
+enum {
+	BASISU_TAISEI_ID = 0x52656900,
+	BASISU_TAISEI_CHANNELS_R = 0,
+	BASISU_TAISEI_CHANNELS_RG = 1,
+	BASISU_TAISEI_CHANNELS_RGB = 2,
+	BASISU_TAISEI_CHANNELS_RGBA = 3,
+	BASISU_TAISEI_CHANNELS_MASK = 0x3,
+	BASISU_TAISEI_SRGB = (1 << 2),
+	BASISU_TAISEI_NORMALMAP = (1 << 3),
+};
+
 struct basis_size_info {
 	uint32_t num_blocks;
 	uint32_t block_size;
@@ -170,7 +181,7 @@ static struct basis_size_info texture_loader_basisu_get_transcoded_size_info(
 
 static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 	TextureLoadData *ld,
-	int channels,
+	uint32_t taisei_meta,
 	basist_source_format basis_source_fmt,
 	PixmapOrigin org,
 	PixmapFormat fallback_format,
@@ -178,37 +189,71 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 ) {
 	const char *ctx = ld->st->name;
 
-	static const PixmapFormat fmt_prio[] = {
-		// TODO: this needs some explanation (and refinement)
-		PIXMAP_FORMAT_BC4_R,
-		PIXMAP_FORMAT_ETC2_EAC_R11,
-		PIXMAP_FORMAT_BC5_RG,
-		PIXMAP_FORMAT_ETC2_EAC_RG11,
-		PIXMAP_FORMAT_BC1_RGB,
-		PIXMAP_FORMAT_PVRTC2_4_RGB,
-		PIXMAP_FORMAT_PVRTC1_4_RGB,
-		PIXMAP_FORMAT_ATC_RGB,
-		PIXMAP_FORMAT_FXT1_RGB,
-		PIXMAP_FORMAT_ETC1_RGB,
-		PIXMAP_FORMAT_BC7_RGBA,
-		PIXMAP_FORMAT_PVRTC2_4_RGBA,
-		PIXMAP_FORMAT_PVRTC1_4_RGBA,
-		PIXMAP_FORMAT_ETC2_RGBA,
-		PIXMAP_FORMAT_ASTC_4x4_RGBA,
+	static int fmt_prio[4][BASIST_NUM_FORMATS] = {
+		// TODO: this needs some explanation
+		[BASISU_TAISEI_CHANNELS_R] = {
+			PIXMAP_FORMAT_BC4_R,
+			PIXMAP_FORMAT_BC5_RG,
+			PIXMAP_FORMAT_BC1_RGB,
+			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_PVRTC2_4_RGB,
+			PIXMAP_FORMAT_PVRTC2_4_RGBA,
+			// PIXMAP_FORMAT_PVRTC1_4_RGB,
+			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ATC_RGB,
+			PIXMAP_FORMAT_FXT1_RGB,
+			PIXMAP_FORMAT_ETC2_EAC_R11,
+			PIXMAP_FORMAT_ETC2_EAC_RG11,
+			PIXMAP_FORMAT_ETC1_RGB,
+			PIXMAP_FORMAT_ETC2_RGBA,
+			PIXMAP_FORMAT_ASTC_4x4_RGBA,
+			0,
+		},
+		[BASISU_TAISEI_CHANNELS_RG] = {
+			PIXMAP_FORMAT_BC5_RG,
+			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_PVRTC2_4_RGBA,
+			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ETC2_EAC_RG11,
+			PIXMAP_FORMAT_ETC2_RGBA,
+			PIXMAP_FORMAT_ASTC_4x4_RGBA,
+			0,
+		},
+		[BASISU_TAISEI_CHANNELS_RGB] = {
+			PIXMAP_FORMAT_BC1_RGB,
+			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_PVRTC2_4_RGB,
+			PIXMAP_FORMAT_PVRTC2_4_RGBA,
+			// PIXMAP_FORMAT_PVRTC1_4_RGB,
+			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ATC_RGB,
+			PIXMAP_FORMAT_FXT1_RGB,
+			PIXMAP_FORMAT_ETC1_RGB,
+			PIXMAP_FORMAT_ETC2_RGBA,
+			PIXMAP_FORMAT_ASTC_4x4_RGBA,
+			0,
+		},
+		[BASISU_TAISEI_CHANNELS_RGBA] = {
+			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_PVRTC2_4_RGBA,
+			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ETC2_RGBA,
+			PIXMAP_FORMAT_ASTC_4x4_RGBA,
+			0,
+		},
 	};
+
+	uint chan_idx = taisei_meta & BASISU_TAISEI_CHANNELS_MASK;
+	assert(chan_idx < ARRAY_SIZE(fmt_prio));
 
 	TextureTypeQueryResult qr;
 
-	for(int i = 0; i < ARRAY_SIZE(fmt_prio); ++i) {
-		log_debug("%s: Try %s", ctx, pixmap_format_name(fmt_prio[i]));
+	for(int *pfmt = fmt_prio[chan_idx]; *pfmt; ++pfmt) {
+		PixmapFormat px_fmt = *pfmt;
+		basist_texture_format basist_fmt = compfmt_pixmap_to_basist(px_fmt);
 
-		int fmt_chans = pixmap_format_layout(fmt_prio[i]);
-		if(fmt_chans < channels) {
-			log_debug("%s: Skip: not enough channels (%i < %i)", ctx, fmt_chans, channels);
-			continue;
-		}
+		log_debug("%s: Try %s", ctx, pixmap_format_name(px_fmt));
 
-		basist_texture_format basist_fmt = compfmt_pixmap_to_basist(fmt_prio[i]);
 		if(!basist_is_format_supported(basist_fmt, basis_source_fmt)) {
 			log_debug("%s: Skip: can't transcode from %s into %s",
 				ctx,
@@ -219,14 +264,14 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			continue;
 		}
 
-		TextureType tex_type = r_texture_type_from_pixmap_format(fmt_prio[i]);
-		if(!texture_loader_try_set_texture_type(ld, tex_type, fmt_prio[i], org, false, &qr)) {
-			log_debug("Skip: texture type %s not supported by renderer", r_texture_type_name(tex_type));
+		TextureType tex_type = r_texture_type_from_pixmap_format(px_fmt);
+		if(!texture_loader_try_set_texture_type(ld, tex_type, px_fmt, org, false, &qr)) {
+			log_debug("%s: Skip: texture type %s not supported by renderer", ctx, r_texture_type_name(tex_type));
 			continue;
 		}
 
 		if(!qr.supplied_pixmap_origin_supported) {
-			log_debug("Skip: supplied origin not supported; flipping not implemented");
+			log_debug("%s: Skip: supplied origin not supported; flipping not implemented", ctx);
 			continue;
 		}
 
@@ -238,7 +283,7 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			*out_qr = qr;
 		}
 
-		return fmt_prio[i];
+		return px_fmt;
 	}
 
 	log_warn("%s: No suitable compression format available; falling back to uncompressed RGBA", ctx);
@@ -328,6 +373,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	log_debug("Total images: %u", file_info.total_images);
 	log_debug("Total slices: %u", file_info.total_slices);
 	log_debug("Has alpha slices: %u", file_info.has_alpha_slices);
+	log_debug("Userdata0: 0x%08x", file_info.userdata.userdata[0]);
+	log_debug("Userdata1: 0x%08x", file_info.userdata.userdata[1]);
 
 	if(file_info.tex_type != BASIST_TYPE_2D) {
 		log_error("%s: Unsupported Basis Universal texture type %s",
@@ -360,16 +407,27 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		return;
 	}
 
-	PixmapOrigin px_origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
-	int needed_channels;
+	uint32_t taisei_meta = file_info.userdata.userdata[0];
 
-	// TODO: refine this to be more strict and honor usage hints in basis userdata; remove ld->is_normalmap
-	if(ld->is_normalmap) {
-		needed_channels = 2;
-	} else {
-		needed_channels = 3 + file_info.has_alpha_slices;
+	if((file_info.userdata.userdata[1] & 0xFFFFFF00) != BASISU_TAISEI_ID) {
+		log_warn("%s: No Taisei metadata in Basis Universal texture", ctx);
+
+		if(file_info.has_alpha_slices) {
+			taisei_meta = BASISU_TAISEI_CHANNELS_RGBA;
+		} else {
+			taisei_meta = BASISU_TAISEI_CHANNELS_RGB;
+		}
+
+		assert(0);
 	}
 
+	if(taisei_meta & BASISU_TAISEI_SRGB) {
+		ld->params.flags |= TEX_FLAG_SRGB;
+	} else {
+		ld->params.flags &= ~TEX_FLAG_SRGB;
+	}
+
+	PixmapOrigin px_origin = file_info.y_flipped ? PIXMAP_ORIGIN_BOTTOMLEFT : PIXMAP_ORIGIN_TOPLEFT;
 	PixmapFormat px_fallback_format = PIXMAP_FORMAT_RGBA8;
 	basist_texture_format basis_fallback_format = BASIST_FORMAT_RGBA32;
 
@@ -377,7 +435,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	PixmapFormat choosen_format = texture_loader_basisu_pick_and_apply_compressed_format(
 		ld,
-		needed_channels,
+		taisei_meta,
 		file_info.source_format,
 		px_origin,
 		ld->preferred_format ? ld->preferred_format : px_fallback_format,
@@ -481,10 +539,41 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	TRY(basist_transcoder_stop_transcoding, bld.tc);
 
-	if(ld->is_normalmap && pixmap_format_layout(ld->pixmap.format) == PIXMAP_LAYOUT_RGBA) {
-		// NOTE: Using the green channel ensures best precision,
+	PixmapLayout channels = pixmap_format_layout(ld->pixmap.format);
+
+	switch(taisei_meta & BASISU_TAISEI_CHANNELS_MASK) {
+		// NOTE: Using the green channel for monochrome data ensures best precision,
 		// because color endpoints are stored as RGB565 in some formats.
-		ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
+
+		case BASISU_TAISEI_CHANNELS_R:
+			if(channels == PIXMAP_LAYOUT_R) {
+				ld->params.swizzle = (TextureSwizzleMask) { "rrr1" };
+			} else {
+				ld->params.swizzle = (TextureSwizzleMask) { "ggg1" };
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RG:
+			if(channels == PIXMAP_LAYOUT_RGBA) {
+				ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
+			} else {
+				assert(channels == PIXMAP_LAYOUT_RG);
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RGB:
+			if(channels == PIXMAP_LAYOUT_RGBA) {
+				ld->params.swizzle = (TextureSwizzleMask) { "rgb1" };
+			} else {
+				assert(channels == PIXMAP_LAYOUT_RGB);
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RGBA:
+			break;
+
+		default:
+			UNREACHABLE;
 	}
 
 	// These are expected to be pre-applied if needed
