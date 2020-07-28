@@ -546,11 +546,6 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			size_info.num_blocks * size_info.block_size
 		);
 
-		if(!transcoding_started) {
-			TRY(basist_transcoder_start_transcoding, bld.tc);
-			transcoding_started = true;
-		}
-
 		uint32_t data_size = size_info.num_blocks * size_info.block_size;
 
 		if(!texture_loader_basisu_load_cached(
@@ -562,6 +557,11 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			data_size,
 			out_pixmap
 		)) {
+			if(!transcoding_started) {
+				TRY(basist_transcoder_start_transcoding, bld.tc);
+				transcoding_started = true;
+			}
+
 			out_pixmap->data_size = data_size;
 			out_pixmap->data.untyped = calloc(1, out_pixmap->data_size);
 			p.output_blocks = out_pixmap->data.untyped;
@@ -575,20 +575,6 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			out_pixmap->origin = px_origin;
 
 			texture_loader_basisu_cache(basis_hash, &p, &level_desc, out_pixmap);
-
-			free(out_pixmap->data.untyped);
-			out_pixmap->data.untyped = NULL;
-			if(!texture_loader_basisu_load_cached(
-				basis_hash,
-				&p,
-				&level_desc,
-				px_decode_format,
-				px_origin,
-				data_size,
-				out_pixmap
-			)) {
-				log_fatal("FUCK");
-			}
 		}
 
 		if(is_uncompressed_fallback) {
