@@ -12,7 +12,7 @@
 #include "taisei.h"
 
 #include "opengl.h"
-#include "util/pixmap.h"
+#include "pixmap/pixmap.h"
 #include "../api.h"
 
 typedef enum GLTextureFormatFlags {

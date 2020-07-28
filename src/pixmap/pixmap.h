@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_pixmap_h
-#define IGUARD_util_pixmap_h
+#ifndef IGUARD_pixmap_pixmap_h
+#define IGUARD_pixmap_pixmap_h
 
 #include "taisei.h"
 
@@ -272,4 +272,4 @@ char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
 const char *pixmap_format_name(PixmapFormat fmt);
 
-#endif // IGUARD_util_pixmap_h
+#endif // IGUARD_pixmap_pixmap_h

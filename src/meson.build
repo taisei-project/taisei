@@ -123,6 +123,7 @@ subdir('audio')
 subdir('dialog')
 subdir('eventloop')
 subdir('menu')
+subdir('pixmap')
 subdir('plrmodes')
 subdir('renderer')
 subdir('resource')
@@ -138,6 +139,7 @@ taisei_src += [
     dialog_src,
     eventloop_src,
     menu_src,
+    pixmap_src,
     plrmodes_src,
     renderer_src,
     resource_src,

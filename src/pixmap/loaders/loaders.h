@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_pixmap_loaders_loaders_h
-#define IGUARD_util_pixmap_loaders_loaders_h
+#ifndef IGUARD_pixmap_loaders_loaders_h
+#define IGUARD_pixmap_loaders_loaders_h
 
 #include "taisei.h"
 
@@ -24,4 +24,4 @@ typedef struct PixmapLoader {
 extern PixmapLoader pixmap_loader_png;
 extern PixmapLoader pixmap_loader_webp;
 
-#endif // IGUARD_util_pixmap_loaders_loaders_h
+#endif // IGUARD_pixmap_loaders_loaders_h

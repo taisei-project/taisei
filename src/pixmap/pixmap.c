@@ -9,8 +9,8 @@
 #include "taisei.h"
 
 #include "pixmap.h"
+#include "loaders/loaders.h"
 #include "util.h"
-#include "pixmap_loaders/loaders.h"
 
 // NOTE: this is pretty stupid and not at all optimized, patches welcome
 

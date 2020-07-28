@@ -12,7 +12,7 @@
 #include "taisei.h"
 
 #include "util.h"
-#include "util/pixmap.h"
+#include "pixmap/pixmap.h"
 #include "color.h"
 #include "common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
