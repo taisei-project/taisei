@@ -10,6 +10,7 @@
 
 #include "basisu_cache.h"
 #include "pixmap/serialize.h"
+#include "rwops/rwops_zlib.h"
 
 #include <basisu_transcoder_c_api.h>
 
@@ -71,6 +72,8 @@ bool texture_loader_basisu_load_cached(
 		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
+
+	rw = SDL_RWWrapZReader(rw, 1 << 20, true);
 
 	bool deserialize_ok = pixmap_deserialize(rw, out_pixmap);
 	SDL_RWclose(rw);
@@ -172,6 +175,8 @@ bool texture_loader_basisu_cache(
 		log_error("VFS error: %s", vfs_get_error());
 		return false;
 	}
+
+	rw = SDL_RWWrapZWriter(rw, 1 << 20, true);
 
 	bool serialize_ok = pixmap_serialize(rw, pixmap);
 	SDL_RWclose(rw);
