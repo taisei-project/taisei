@@ -8,10 +8,15 @@
 
 #include "taisei.h"
 
-#include "texture_loader_basisu.h"
+#include "basisu.h"
+#include "basisu_cache.h"
 #include "util/io.h"
+#include "rwops/rwops_sha256.h"
 
 #include <basisu_transcoder_c_api.h>
+
+// NOTE: sha256sum + hyphen + base16 64-bit file size
+#define BASISU_HASH_SIZE (SHA256_HEXDIGEST_SIZE + 17)
 
 enum {
 	BASISU_TAISEI_ID = 0x52656900,
@@ -326,6 +331,25 @@ static void texture_loader_basisu_failed(TextureLoadData *ld, struct basisu_load
 	texture_loader_failed(ld);
 }
 
+static char *read_basis_file(SDL_RWops *rw, size_t *file_size, size_t hash_size, char hash[hash_size]) {
+	assert(hash_size >= BASISU_HASH_SIZE);
+
+	SHA256State *sha256 = sha256_new();
+	rw = SDL_RWWrapSHA256(rw, sha256, false);
+	char *buf = SDL_RWreadAll(rw, file_size, INT32_MAX);
+	SDL_RWclose(rw);
+
+	uint8_t raw_hash[SHA256_BLOCK_SIZE];
+	sha256_final(sha256, raw_hash, sizeof(raw_hash));
+	sha256_free(sha256);
+	hexdigest(raw_hash, sizeof(raw_hash), hash, hash_size);
+
+	assert(hash[SHA256_HEXDIGEST_SIZE - 1] == 0);
+	snprintf(&hash[SHA256_HEXDIGEST_SIZE - 1], BASISU_HASH_SIZE - SHA256_HEXDIGEST_SIZE, "-%zx", *file_size);
+
+	return buf;
+}
+
 void texture_loader_basisu(TextureLoadData *ld) {
 	struct basisu_load_data bld = { 0 };
 
@@ -344,7 +368,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	}
 
 	size_t filesize;
-	bld.filebuf = SDL_RWreadAll(rw_in, &filesize, INT32_MAX);
+	char basis_hash[BASISU_HASH_SIZE];
+	bld.filebuf = read_basis_file(rw_in, &filesize, sizeof(basis_hash), basis_hash);
 	SDL_RWclose(rw_in);
 
 	if(!bld.filebuf) {
@@ -359,6 +384,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			texture_loader_basisu_failed(ld, &bld); \
 			return; \
 		}
+
+	assert(!basist_transcoder_get_ready_to_transcode(bld.tc));
 
 	basist_transcoder_set_data(bld.tc, (basist_data) { .data = bld.filebuf, .size = filesize });
 	log_info("%s: Loaded Basis Universal data from %s", ctx, basis_file);
@@ -482,7 +509,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		ld->mipmaps = NULL;
 	}
 
-	TRY(basist_transcoder_start_transcoding, bld.tc);
+	bool transcoding_started = false;
+
 
 	for(uint i = 0; i < image_info.total_levels; ++i) {
 		Pixmap *out_pixmap = i ? &ld->mipmaps[i - 1] : &ld->pixmap;
@@ -507,26 +535,52 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			size_info.num_blocks * size_info.block_size
 		);
 
-		out_pixmap->data_size = size_info.num_blocks * size_info.block_size;
-		out_pixmap->data.untyped = calloc(1, out_pixmap->data_size);
-		p.output_blocks = out_pixmap->data.untyped;
-		p.output_blocks_size = size_info.num_blocks;
+		if(!transcoding_started) {
+			TRY(basist_transcoder_start_transcoding, bld.tc);
+			transcoding_started = true;
+		}
 
-		TRY(basist_transcoder_transcode_image_level, bld.tc, &p);
+		uint32_t data_size = size_info.num_blocks * size_info.block_size;
 
-		out_pixmap->format = px_decode_format;
-		out_pixmap->width = level_desc.orig_width;
-		out_pixmap->height = level_desc.orig_height;
-		out_pixmap->origin = px_origin;
+		if(!texture_loader_basisu_load_cached(
+			basis_hash,
+			&p,
+			&level_desc,
+			px_decode_format,
+			px_origin,
+			data_size,
+			out_pixmap
+		)) {
+			out_pixmap->data_size = data_size;
+			out_pixmap->data.untyped = calloc(1, out_pixmap->data_size);
+			p.output_blocks = out_pixmap->data.untyped;
+			p.output_blocks_size = size_info.num_blocks;
+
+			TRY(basist_transcoder_transcode_image_level, bld.tc, &p);
+
+			out_pixmap->format = px_decode_format;
+			out_pixmap->width = level_desc.orig_width;
+			out_pixmap->height = level_desc.orig_height;
+			out_pixmap->origin = px_origin;
+
+			texture_loader_basisu_cache(basis_hash, &p, &level_desc, out_pixmap);
+
+			free(out_pixmap->data.untyped);
+			out_pixmap->data.untyped = NULL;
+			if(!texture_loader_basisu_load_cached(
+				basis_hash,
+				&p,
+				&level_desc,
+				px_decode_format,
+				px_origin,
+				data_size,
+				out_pixmap
+			)) {
+				log_fatal("FUCK");
+			}
+		}
 
 		if(is_uncompressed_fallback) {
-			#if 0
-			// TODO: use this if renderer doesn't support swizzles (fucking WebGL)
-			if(is_normalmap) {
-				pack_GA8_to_RG8(&ld->pixmap);
-			}
-			#endif
-
 			// NOTE: it doesn't hurt to call this in the compressed case as well,
 			// but it's effectively a no-op with a redundant texture type query.
 

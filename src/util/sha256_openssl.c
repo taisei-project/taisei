@@ -17,7 +17,7 @@ struct SHA256State {
 	SHA256_CTX context;
 };
 
-SHA256State* sha256_new(void) {
+SHA256State *sha256_new(void) {
 	SHA256State *st = calloc(1, sizeof(*st));
 	SHA256_Init(&st->context);
 	return st;
@@ -45,8 +45,8 @@ void sha256_digest(const uint8_t *data, size_t len, uint8_t hash[SHA256_BLOCK_SI
 	SHA256_Final(hash, &ctx);
 }
 
-void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_BLOCK_SIZE*2+1], size_t hashlen) {
-	assert(hashlen >= SHA256_BLOCK_SIZE * 2 + 1);
+void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_HEXDIGEST_SIZE], size_t hashlen) {
+	assert(hashlen >= SHA256_HEXDIGEST_SIZE);
 
 	uint8_t digest[SHA256_BLOCK_SIZE];
 	sha256_digest(data, len, digest, sizeof(digest));

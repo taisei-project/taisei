@@ -11,16 +11,19 @@
 
 #include "taisei.h"
 
-#define SHA256_BLOCK_SIZE 32
+enum {
+	SHA256_BLOCK_SIZE = 32,
+	SHA256_HEXDIGEST_SIZE = SHA256_BLOCK_SIZE * 2 + 1,
+};
 
 typedef struct SHA256State SHA256State;
 
-SHA256State* sha256_new(void) attr_returns_allocated;
+SHA256State *sha256_new(void) attr_returns_allocated;
 void sha256_update(SHA256State *state, const uint8_t *data, size_t len) attr_nonnull(1, 2);
 void sha256_final(SHA256State *state, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen) attr_nonnull(1, 2);
 void sha256_free(SHA256State *state);
 
 void sha256_digest(const uint8_t *data, size_t len, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen);
-void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_BLOCK_SIZE*2+1], size_t hashlen);
+void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_HEXDIGEST_SIZE], size_t hashlen);
 
 #endif // IGUARD_util_sha256_h

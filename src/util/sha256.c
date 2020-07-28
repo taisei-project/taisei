@@ -119,7 +119,7 @@ static void sha256_init(SHA256State *ctx)
 	ctx->state[7] = 0x5be0cd19;
 }
 
-SHA256State* sha256_new(void) {
+SHA256State *sha256_new(void) {
 	SHA256State *ctx = calloc(1, sizeof(*ctx));
 	sha256_init(ctx);
 	return ctx;
@@ -129,8 +129,7 @@ void sha256_free(SHA256State *ctx) {
 	free(ctx);
 }
 
-void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len)
-{
+void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len) {
 	sha256_word_t i;
 
 	for (i = 0; i < len; ++i) {
@@ -144,8 +143,7 @@ void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len)
 	}
 }
 
-void sha256_final(SHA256State *ctx, sha256_byte_t hash[], size_t hashlen)
-{
+void sha256_final(SHA256State *ctx, sha256_byte_t hash[], size_t hashlen) {
 	assert(hashlen >= SHA256_BLOCK_SIZE);
 
 	sha256_word_t i;
@@ -201,8 +199,8 @@ void sha256_digest(const uint8_t *data, size_t len, uint8_t hash[SHA256_BLOCK_SI
 	sha256_final(&ctx, hash, hashlen);
 }
 
-void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_BLOCK_SIZE*2+1], size_t hashlen) {
-	assert(hashlen >= SHA256_BLOCK_SIZE * 2 + 1);
+void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_HEXDIGEST_SIZE], size_t hashlen) {
+	assert(hashlen >= SHA256_HEXDIGEST_SIZE);
 
 	uint8_t digest[SHA256_BLOCK_SIZE];
 	sha256_digest(data, len, digest, sizeof(digest));

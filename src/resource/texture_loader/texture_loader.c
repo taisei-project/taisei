@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "texture_loader.h"
-#include "texture_loader_basisu.h"
+#include "basisu.h"
 
 void texture_loader_cleanup_stage1(TextureLoadData *ld) {
 	free(ld->tex_src_path_allocated);

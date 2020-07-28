@@ -1,6 +1,7 @@
 
 pixmap_src = files(
     'pixmap.c',
+    'serialize.c',
 )
 
 subdir('loaders')

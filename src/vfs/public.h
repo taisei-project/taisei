@@ -48,6 +48,7 @@ VFSInfo vfs_query(const char *path);
 
 bool vfs_mkdir(const char *path);
 void vfs_mkdir_required(const char *path);
+bool vfs_mkparents(const char *path);
 
 bool vfs_mount_alias(const char *dst, const char *src);
 bool vfs_unmount(const char *path);

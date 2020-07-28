@@ -195,17 +195,16 @@ static void *default_pixel(uint depth) {
 }
 
 static uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height) {
-	uint64_t s = (uint64_t)width * (uint64_t)height * (uint64_t)PIXMAP_FORMAT_PIXEL_SIZE(format);
+	assert(width >= 1);
+	assert(height >= 1);
+	uint64_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
+	assert(pixel_size >= 1);
+	uint64_t s = (uint64_t)width * (uint64_t)height * pixel_size;
 	assert(s <= PIXMAP_BUFFER_MAX_SIZE);
 	return s;
 }
 
 void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, uint32_t *out_bufsize) {
-	assert(width >= 1);
-	assert(height >= 1);
-	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
-	assert(pixel_size >= 1);
-
 	uint32_t s = pixmap_data_size(format, width, height);
 
 	if(out_bufsize) {
