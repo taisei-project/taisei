@@ -30,11 +30,11 @@ static bool texture_loader_basisu_make_cache_path(
 ) {
 	int len = snprintf(
 		buf, bufsize,
-		"cache/textures/basisu-%s/%u_%u_%u_%x",
+		"cache/textures/basisu-%s/%u_%u_%s_%x",
 		basisu_hash,
 		tc_params->image_index,
 		tc_params->level_index,
-		tc_params->format,
+		basist_get_format_name(tc_params->format),
 		tc_params->decode_flags
 	);
 
