@@ -492,16 +492,19 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		is_uncompressed_fallback = true;
 	}
 
+	uint mip_bias = 0;
+	mip_bias = umin(0, image_info.total_levels - 1);
+
 	// NOTE: the 0th mip level is stored in ld->pixmap
 	// ld->mipmaps and ld->num_mipmaps are for extra mip levels
-	ld->num_mipmaps = image_info.total_levels - 1;
+	ld->num_mipmaps = image_info.total_levels - 1 - mip_bias;
 
 	// But in TextureParams, the mipmap count includes the 0th level
-	ld->params.mipmaps = image_info.total_levels;
+	ld->params.mipmaps = image_info.total_levels - mip_bias;
 	ld->params.mipmap_mode = TEX_MIPMAP_MANUAL;
 
-	ld->params.width = image_info.orig_width;
-	ld->params.height = image_info.orig_height;
+	// ld->params.width = image_info.orig_width;
+	// ld->params.height = image_info.orig_height;
 
 	if(ld->num_mipmaps) {
 		ld->mipmaps = calloc(ld->num_mipmaps, sizeof(*ld->mipmaps));
@@ -511,13 +514,21 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	bool transcoding_started = false;
 
-
-	for(uint i = 0; i < image_info.total_levels; ++i) {
-		Pixmap *out_pixmap = i ? &ld->mipmaps[i - 1] : &ld->pixmap;
+	for(uint i = mip_bias; i < image_info.total_levels; ++i) {
 		p.level_index = i;
 
 		basist_image_level_desc level_desc;
 		TRY(basist_transcoder_get_image_level_desc, bld.tc, p.image_index, p.level_index, &level_desc);
+
+		Pixmap *out_pixmap = NULL;
+
+		if(i > mip_bias) {
+			out_pixmap = &ld->mipmaps[i - 1 - mip_bias];
+		} else {
+			out_pixmap = &ld->pixmap;
+			ld->params.width = level_desc.orig_width;
+			ld->params.height = level_desc.orig_height;
+		}
 
 		struct basis_size_info size_info = texture_loader_basisu_get_transcoded_size_info(
 			ld, bld.tc, p.image_index, p.level_index, p.format
