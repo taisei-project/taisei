@@ -492,8 +492,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		is_uncompressed_fallback = true;
 	}
 
-	uint mip_bias = 0;
-	mip_bias = umin(0, image_info.total_levels - 1);
+	int mip_bias = env_get_int("TAISEI_BASISU_MIP_BIAS", 0);
+	mip_bias = iclamp(mip_bias, 0, image_info.total_levels - 1);
 
 	// NOTE: the 0th mip level is stored in ld->pixmap
 	// ld->mipmaps and ld->num_mipmaps are for extra mip levels
