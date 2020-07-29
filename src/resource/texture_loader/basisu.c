@@ -195,7 +195,45 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 	const char *ctx = ld->st->name;
 
 	static int fmt_prio[4][BASIST_NUM_FORMATS] = {
-		// TODO: this needs some explanation
+		/*
+		 * NOTE: Some key considerations:
+		 *
+		 *   - This priority assumes source textures are in ETC1S format, not UASTC.
+		 *
+		 *   - ETC formats are the fastest to transcode to, because ETC1S is essentially a ETC1/ETC2 subset.
+		 *
+		 *   - ETC formats are usually not supported by desktop GPUs.
+		 *
+		 *   - Desktop OpenGL usually exposes ETC support as part of the ARB_ES3_compatibility extension.
+		 *
+		 *   - ETC on desktop is usually emulated as an uncompressed format. Uploading ETC textures in this case is
+		 *     INCREDIBLY SLOW, at least in Mesa, because the GL driver is forced to decompress them on the main thread,
+		 *     sequentially. This completely negates the transcoding speed advantage of ETC.
+		 *
+		 *   - There is no reliable way in OpenGL to query whether a compressed format is emulated or not.
+		 *
+		 *   - ASTC is also rarely available on the desktop. It's required by ES 3.2, but not by ARB_ES3_2_compatibility.
+		 *     Despite this, ASTC support is still often emulated on desktop GL. However, ASTC uploads appear to be much
+		 *     faster than ETC ones (on Mesa).
+		 *
+		 *   - S3TC (which covers BC1, BC4, BC5) is near-universal on desktop and almost-nonexistent on mobile. BC7 (also
+		 *     known as BPTC) is not as widespread, but the situation is similar.
+		 *
+		 *   - Despite emulated ASTC being much faster to upload on desktop, I've placed it below ETC in the priority
+		 *     lists. This is because on the desktop, one of the BC* formats will be picked 99% of the time anyway, and
+		 *     if not, then ASTC is unlikely to be available either. On mobile, ETC has an advantage because of its fast  *      *     transcode speed, lower bitrate, and lossless transcoding.
+		 *
+		 *   - ATC and FXT1 are old and obscure. ATC appears to have some presence on mobile. FXT1 is effectively Intel-
+		 *     only. Both are not expected to be emulated.
+		 *
+		 *   - PVRTC is mostly limited to Apple's mobile devices, and also is not expected to be emulated.
+		 *
+		 *   - PVRTC1 requires textures to be power-of-two quads, is slow to transcode to, and is generally inferior to
+		 *     PVRTC2.
+		 *
+		 *   - I have been unable to test PVRTC1, PVRTC2, ATC, and FXT1 so far.
+		 */
+
 		[BASISU_TAISEI_CHANNELS_R] = {
 			PIXMAP_FORMAT_BC4_R,
 			PIXMAP_FORMAT_BC5_RG,
@@ -215,6 +253,10 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			0,
 		},
 		[BASISU_TAISEI_CHANNELS_RG] = {
+			// NOTE: most (all?) RGB formats are unsuitable for normalmaps/non-color data due to "crosstalk" between the
+			// channels. RG formats are specifically meant for this, but RGBA formats also work. In the RGBA case we
+			// use the color part for the R channel and the alpha part for the G channel, and use a swizzle mask to
+			// transparently correct sampling.
 			PIXMAP_FORMAT_BC5_RG,
 			PIXMAP_FORMAT_BC7_RGBA,
 			PIXMAP_FORMAT_PVRTC2_4_RGBA,
