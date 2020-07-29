@@ -150,6 +150,8 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 		) {
 			return flag;
 		}
+
+		start = term;
 	}
 #endif
 }
