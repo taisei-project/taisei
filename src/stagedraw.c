@@ -197,7 +197,7 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
-	a_depth->tex_params.type = TEX_TYPE_DEPTH_32;
+	a_depth->tex_params.type = TEX_TYPE_DEPTH;
 
 	// Foreground: 1 RGB texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGB_16;
