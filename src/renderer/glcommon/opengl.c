@@ -751,40 +751,6 @@ static void glcommon_check_issues(void) {
 	);
 }
 
-static const char *compressed_fmt_name(GLenum fmt) {
-	switch(fmt) {
-		#define F(f) case f: return #f;
-		// GL_EXT_texture_compression_s3tc; GL_NV_texture_compression_s3tc; GL_EXT_texture_compression_dxt1
-		F(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-		// GL_EXT_texture_compression_s3tc; GL_NV_texture_compression_s3tc; GL_ANGLE_texture_compression_dxt5
-		F(GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-		// GL_EXT_texture_compression_rgtc;
-		F(GL_COMPRESSED_RED_RGTC1)
-		F(GL_COMPRESSED_RG_RGTC2)
-		// GL_OES_compressed_ETC1_RGB8_texture
-		F(GL_ETC1_RGB8_OES)
-		// GL_ARB_ES3_compatibility
-		F(GL_COMPRESSED_RGBA8_ETC2_EAC)
-		F(GL_COMPRESSED_R11_EAC)
-		F(GL_COMPRESSED_RG11_EAC)
-		// ARB_texture_compression_bptc; EXT_texture_compression_bptc
-		F(GL_COMPRESSED_RGBA_BPTC_UNORM_ARB)
-		// GL_IMG_texture_compression_pvrtc
-		F(GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG)
-		F(GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG)
-		// GL_KHR_texture_compression_astc_ldr
-		F(GL_COMPRESSED_RGBA_ASTC_4x4_KHR)
-		// GL_AMD_compressed_ATC_texture
-		F(GL_ATC_RGB_AMD)
-		F(GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD)
-		// GL_3DFX_texture_compression_FXT1
-		F(GL_COMPRESSED_RGB_FXT1_3DFX)
-		// GL_IMG_texture_compression_pvrtc2
-		F(GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
-		default: return NULL;
-	}
-}
-
 void glcommon_check_capabilities(void) {
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
