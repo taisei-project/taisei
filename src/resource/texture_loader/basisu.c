@@ -216,8 +216,10 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 		 *     Despite this, ASTC support is still often emulated on desktop GL. However, ASTC uploads appear to be much
 		 *     faster than ETC ones (on Mesa).
 		 *
-		 *   - S3TC (which covers BC1, BC4, BC5) is near-universal on desktop and almost-nonexistent on mobile. BC7 (also
-		 *     known as BPTC) is not as widespread, but the situation is similar.
+		 *   - S3TC (which covers BC1, BC3, BC4, BC5) is near-universal on desktop and almost-nonexistent on mobile. BC7
+		 *     (also known as BPTC) is not as widespread, but the situation is similar.
+		 *
+		 *   - BC7/BPTC preserves quality better than BC1 and BC3, at the cost of being a bit larger.
 		 *
 		 *   - Despite emulated ASTC being much faster to upload on desktop, I've placed it below ETC in the priority
 		 *     lists. This is because on the desktop, one of the BC* formats will be picked 99% of the time anyway, and
@@ -237,13 +239,15 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 		[BASISU_TAISEI_CHANNELS_R] = {
 			PIXMAP_FORMAT_BC4_R,
 			PIXMAP_FORMAT_BC5_RG,
-			PIXMAP_FORMAT_BC1_RGB,
 			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_BC1_RGB,
+			PIXMAP_FORMAT_BC3_RGBA,
 			PIXMAP_FORMAT_PVRTC2_4_RGB,
 			PIXMAP_FORMAT_PVRTC2_4_RGBA,
 			// PIXMAP_FORMAT_PVRTC1_4_RGB,
 			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
 			PIXMAP_FORMAT_ATC_RGB,
+			PIXMAP_FORMAT_ATC_RGBA,
 			PIXMAP_FORMAT_FXT1_RGB,
 			PIXMAP_FORMAT_ETC2_EAC_R11,
 			PIXMAP_FORMAT_ETC2_EAC_RG11,
@@ -259,21 +263,25 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			// transparently correct sampling.
 			PIXMAP_FORMAT_BC5_RG,
 			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_BC3_RGBA,
 			PIXMAP_FORMAT_PVRTC2_4_RGBA,
 			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ATC_RGBA,
 			PIXMAP_FORMAT_ETC2_EAC_RG11,
 			PIXMAP_FORMAT_ETC2_RGBA,
 			PIXMAP_FORMAT_ASTC_4x4_RGBA,
 			0,
 		},
 		[BASISU_TAISEI_CHANNELS_RGB] = {
-			PIXMAP_FORMAT_BC1_RGB,
 			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_BC1_RGB,
+			PIXMAP_FORMAT_BC3_RGBA,
 			PIXMAP_FORMAT_PVRTC2_4_RGB,
 			PIXMAP_FORMAT_PVRTC2_4_RGBA,
 			// PIXMAP_FORMAT_PVRTC1_4_RGB,
 			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
 			PIXMAP_FORMAT_ATC_RGB,
+			PIXMAP_FORMAT_ATC_RGBA,
 			PIXMAP_FORMAT_FXT1_RGB,
 			PIXMAP_FORMAT_ETC1_RGB,
 			PIXMAP_FORMAT_ETC2_RGBA,
@@ -282,8 +290,10 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 		},
 		[BASISU_TAISEI_CHANNELS_RGBA] = {
 			PIXMAP_FORMAT_BC7_RGBA,
+			PIXMAP_FORMAT_BC3_RGBA,
 			PIXMAP_FORMAT_PVRTC2_4_RGBA,
 			// PIXMAP_FORMAT_PVRTC1_4_RGBA,
+			PIXMAP_FORMAT_ATC_RGBA,
 			PIXMAP_FORMAT_ETC2_RGBA,
 			PIXMAP_FORMAT_ASTC_4x4_RGBA,
 			0,
