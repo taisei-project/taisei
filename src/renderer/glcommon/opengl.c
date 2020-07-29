@@ -505,6 +505,7 @@ static void glcommon_ext_texture_format_etc2_eac(void) {
 	CHECK_CORE(GL_ATLEAST(4, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
 	CHECK_EXT(GL_OES_compressed_ETC2_RGBA8_texture);
 	CHECK_EXT(GL_ARB_ES3_compatibility);
+	CHECK_EXT(GL_ANGLE_compressed_texture_etc);
 	CHECK_EXT(GL_WEBGL_compressed_texture_etc);
 
 	// FIXME: maybe don't just assume R11/RG11 are supported as well?
