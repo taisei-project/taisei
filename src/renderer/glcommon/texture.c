@@ -39,6 +39,7 @@
 
 static DYNAMIC_ARRAY(GLTextureFormatInfo) g_formats;
 
+attr_unused
 static void dump_tex_flags(StringBuffer *buf, GLTextureFormatFlags flags) {
 	const char *prefix = "";
 
@@ -55,12 +56,14 @@ static void dump_tex_flags(StringBuffer *buf, GLTextureFormatFlags flags) {
 	HANDLE_FLAG(GLTEX_BLENDABLE)
 	HANDLE_FLAG(GLTEX_SRGB)
 	HANDLE_FLAG(GLTEX_COMPRESSED)
+	HANDLE_FLAG(GLTEX_FLOAT)
 
 	if(flags) {
 		strbuf_printf(buf, "%s0x%04x", prefix, flags);
 	}
 }
 
+attr_unused
 static void dump_fmt_info(StringBuffer *buf, const GLTextureFormatInfo *fmt_info) {
 	strbuf_printf(buf, "(GLTextureFormatInfo) { ");
 		strbuf_printf(buf, ".intended_type_mapping = %s, ", r_texture_type_name(fmt_info->intended_type_mapping));
@@ -106,8 +109,8 @@ void glcommon_init_texture_formats(void) {
 	// NOTE: in GLES, RGB formats are typically not color-renderable, **except** GL_RGB/GL_RGB8
 	GLTextureFormatFlags f_clr_rgb = GLTEX_FILTERABLE | GLTEX_BLENDABLE;
 
-	GLTextureFormatFlags f_clr_float16 = GLTEX_BLENDABLE;
-	GLTextureFormatFlags f_clr_float32 = 0;
+	GLTextureFormatFlags f_clr_float16 = GLTEX_FLOAT | GLTEX_BLENDABLE;
+	GLTextureFormatFlags f_clr_float32 = GLTEX_FLOAT;
 
 	GLTextureFormatFlags f_compressed = GLTEX_FILTERABLE | GLTEX_BLENDABLE | GLTEX_COMPRESSED;
 	GLTextureFormatFlags f_compressed_srgb = f_compressed | GLTEX_SRGB;
@@ -162,11 +165,11 @@ void glcommon_init_texture_formats(void) {
 				// ANGLE BUG: sized depth formats mysteriously fail. Might've been fixed by now; don't care to check.
 				ADD(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, XFER_DEPTH16, f_depth, 16);
 				ADD(TEX_TYPE_DEPTH_24, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, XFER_DEPTH24, f_depth, 24);
-				ADD(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, XFER_DEPTH32F, f_depth, 32);
+				ADD(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, XFER_DEPTH32F, f_depth | GLTEX_FLOAT, 32);
 			} else {
 				ADD(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, XFER_DEPTH16, f_depth, 16);
 				ADD(TEX_TYPE_DEPTH_24, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT24, XFER_DEPTH24, f_depth, 24);
-				ADD(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, XFER_DEPTH32F, f_depth, 32);
+				ADD(TEX_TYPE_DEPTH_32_FLOAT, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT32F, XFER_DEPTH32F, f_depth | GLTEX_FLOAT, 32);
 			}
 		}
 	}
@@ -338,8 +341,8 @@ static GLTextureFormatInfo *find_first(TextureType tex_type) {
 	return fmt_info;
 }
 
-static GLTextureFormatInfo *find_format(TextureType tex_type, GLTextureFormatFlags require_flags, GLTextureFormatFlags forbid_flags) {
-	GLTextureFormatInfo *fmt_info = find_first(tex_type);
+static GLTextureFormatInfo *find_exact(const GLTextureFormatMatchConfig *cfg) {
+	GLTextureFormatInfo *fmt_info = find_first(cfg->intended_type);
 
 	if(fmt_info == NULL) {
 		return NULL;
@@ -347,16 +350,19 @@ static GLTextureFormatInfo *find_format(TextureType tex_type, GLTextureFormatFla
 
 	GLTextureFormatInfo *end = g_formats.data + g_formats.num_elements;
 
+	uint good_flags = cfg->flags.required | cfg->flags.desirable;
+	uint bad_flags = cfg->flags.forbidden | cfg->flags.undesirable;
+
 	do {
 		if(
-			(fmt_info->flags & require_flags) == require_flags &&
-			(fmt_info->flags & forbid_flags)  == 0
+			(fmt_info->flags & good_flags) == good_flags &&
+			(fmt_info->flags & bad_flags)  == 0
 		) {
 			return fmt_info;
 		}
 
 		++fmt_info;
-	} while(fmt_info < end && fmt_info->intended_type_mapping == tex_type);
+	} while(fmt_info < end && fmt_info->intended_type_mapping == cfg->intended_type);
 
 	return NULL;
 }
@@ -422,65 +428,100 @@ static int textype_bits_per_pixel(TextureType type) {
 	return map[idx];
 }
 
-GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormatFlags require_flags, GLTextureFormatFlags forbid_flags) {
-	assert((require_flags & forbid_flags) == 0);
+GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg) {
+	assert(((cfg->flags.required | cfg->flags.desirable) & (cfg->flags.forbidden | cfg->flags.undesirable)) == 0);
 
-	bool compressed = TEX_TYPE_IS_COMPRESSED(tex_type);
+#if 0
+	#define FMATCH_DBG(...) __VA_ARGS__
+	#define FMATCH_DBG_PRINT(...) log_debug(__VA_ARGS__)
+	#define FMATCH_DBG_PUT(...) strbuf_printf(&dbg_buf, __VA_ARGS__)
+	#define FMATCH_DBG_FLUSH() do { FMATCH_DBG_PRINT("%s", dbg_buf.start); strbuf_clear(&dbg_buf); } while(0)
+#else
+	#define FMATCH_DBG(...)
+	#define FMATCH_DBG_PRINT(...) ((void)0)
+	#define FMATCH_DBG_PUT(...) ((void)0)
+	#define FMATCH_DBG_FLUSH() ((void)0)
+#endif
+
+	FMATCH_DBG(
+		StringBuffer dbg_buf = { 0 };
+		FMATCH_DBG_PRINT("Type: %s", r_texture_type_name(cfg->intended_type));
+		FMATCH_DBG_PUT("Required flags:    "); dump_tex_flags(&dbg_buf, cfg->flags.required); FMATCH_DBG_FLUSH();
+		FMATCH_DBG_PUT("Forbidden flags:   "); dump_tex_flags(&dbg_buf, cfg->flags.forbidden); FMATCH_DBG_FLUSH();
+		FMATCH_DBG_PUT("Desirable flags:   "); dump_tex_flags(&dbg_buf, cfg->flags.desirable); FMATCH_DBG_FLUSH();
+		FMATCH_DBG_PUT("Undesirable flags: "); dump_tex_flags(&dbg_buf, cfg->flags.undesirable); FMATCH_DBG_FLUSH();
+		strbuf_free(&dbg_buf);
+	)
+
+	bool compressed = TEX_TYPE_IS_COMPRESSED(cfg->intended_type);
 
 	if(compressed) {
-		assume(require_flags & GLTEX_COMPRESSED);
+		assume(cfg->flags.required & GLTEX_COMPRESSED);
 	} else {
-		assume(forbid_flags & GLTEX_COMPRESSED);
+		assume(cfg->flags.forbidden & GLTEX_COMPRESSED);
 	}
 
-	GLTextureFormatInfo *exact_match = find_format(tex_type, require_flags, forbid_flags);
+	GLTextureFormatInfo *exact_match = find_exact(cfg);
+
+#if 0
+	// forced fuzzy matching test
+	if(!compressed) exact_match = NULL;
+#endif
 
 	if(exact_match || compressed) {
+		FMATCH_DBG(
+			if(exact_match) {
+				FMATCH_DBG_PUT("EXACT MATCH %s: ", r_texture_type_name(cfg->intended_type));
+				dump_fmt_info(&dbg_buf, exact_match);
+				FMATCH_DBG_FLUSH();
+			} else {
+				FMATCH_DBG_PRINT("NO MATCH FOR %s!", r_texture_type_name(cfg->intended_type));
+			}
+
+			strbuf_free(&dbg_buf);
+		)
+
 		return exact_match;
 	}
 
-	int ideal_chans = textype_num_chans(tex_type);
-	int ideal_bits = textype_bits_per_pixel(tex_type);
+	int ideal_chans = textype_num_chans(cfg->intended_type);
+	int ideal_bits = textype_bits_per_pixel(cfg->intended_type);
 	int ideal_bpc_score = (ideal_bits << 4) / ideal_chans;
 
 	GLTextureFormatInfo *best = NULL;
-	int best_fitness = 0;
+	uint32_t best_fitness = 0;
 
-	StringBuffer buf = { 0 };
-	#define LOGBUF(...) strbuf_printf(&buf, __VA_ARGS__)
-	#define LOGBUF_FLUSH() do { log_debug("%s", buf.start); strbuf_clear(&buf); } while(0)
+	dynarray_foreach(&g_formats, attr_unused int i, GLTextureFormatInfo *fmt_info, {
+		FMATCH_DBG_PRINT("ITER #%i", i);
 
-	dynarray_foreach(&g_formats, int i, GLTextureFormatInfo *fmt_info, {
-		log_debug("ITER #%i", i);
+		FMATCH_DBG(
+			FMATCH_DBG_PUT("CONSIDER: ");
+			dump_fmt_info(&dbg_buf, fmt_info);
+			FMATCH_DBG_FLUSH();
+		)
 
-		LOGBUF("CONSIDER: ");
-		dump_fmt_info(&buf, fmt_info);
-		LOGBUF_FLUSH();
-
-		if((fmt_info->flags & require_flags) != require_flags) {
-			LOGBUF("REJECT: missing flags: ");
-			dump_tex_flags(&buf, require_flags & ~(fmt_info->flags & require_flags));
-			LOGBUF_FLUSH();
+		if((fmt_info->flags & cfg->flags.required) != cfg->flags.required) {
+			FMATCH_DBG(
+				FMATCH_DBG_PUT("REJECT: missing flags: ");
+				dump_tex_flags(&dbg_buf, cfg->flags.required & ~(fmt_info->flags & cfg->flags.required));
+				FMATCH_DBG_FLUSH();
+			)
 			continue;
 		}
 
-		if((fmt_info->flags & forbid_flags) != 0) {
-			LOGBUF("REJECT: forbidden flags: ");
-			dump_tex_flags(&buf, fmt_info->flags & forbid_flags);
-			LOGBUF_FLUSH();
-			continue;
-		}
-
-		assert(fmt_info->intended_type_mapping != tex_type);
-
-		if(compressed) {
+		if((fmt_info->flags & cfg->flags.forbidden) != 0) {
+			FMATCH_DBG(
+				FMATCH_DBG_PUT("REJECT: forbidden flags: ");
+				dump_tex_flags(&dbg_buf, fmt_info->flags & cfg->flags.forbidden);
+				FMATCH_DBG_FLUSH();
+			)
 			continue;
 		}
 
 		int fmt_chans = glfmt_num_chans(fmt_info->base_format);
 
 		if(fmt_chans < ideal_chans) {
-			log_debug("REJECT: intended type match");
+			FMATCH_DBG_PRINT("REJECT: too few channels (%i < %i)", fmt_chans, ideal_chans);
 			continue;
 		}
 
@@ -488,7 +529,7 @@ GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormat
 		int bpc_score = (fmt_bits << 4) / fmt_chans;
 		int excess_chans = fmt_chans - ideal_chans;
 
-		int fitness = ((5 - excess_chans) << 10);
+		uint32_t fitness = ((5 - excess_chans) << 10);
 
 		if(bpc_score >= ideal_bpc_score) {
 			fitness += (1 << 13) - (fmt_bits - ideal_bits);
@@ -496,23 +537,28 @@ GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormat
 			fitness += bpc_score;
 		}
 
+		fitness |= (uint32_t)(0x80 - (2*popcnt32(cfg->flags.undesirable)) + popcnt32(cfg->flags.desirable)) << 24;
+
 		if(fitness > best_fitness) {
-			log_debug("BEST: fitness = %i; prev best = %i", fitness, best_fitness);
+			FMATCH_DBG_PRINT("BEST: fitness = %i; prev best = %i", fitness, best_fitness);
 			best = fmt_info;
 			best_fitness = fitness;
 		} else {
-			log_debug("WEAK: fitness = %i; best = %i", fitness, best_fitness);
+			FMATCH_DBG_PRINT("WEAK: fitness = %i; best = %i", fitness, best_fitness);
 		}
 	});
 
-	if(best) {
-		LOGBUF("PICK: ");
-		dump_fmt_info(&buf, best);
-		LOGBUF_FLUSH();
-	} else {
-		log_debug("NO MATCH!");
-	}
+	FMATCH_DBG(
+		if(best) {
+			FMATCH_DBG_PUT("PICK FOR %s: ", r_texture_type_name(cfg->intended_type));
+			dump_fmt_info(&dbg_buf, best);
+			FMATCH_DBG_FLUSH();
+		} else {
+			FMATCH_DBG_PRINT("NO MATCH FOR %s!", r_texture_type_name(cfg->intended_type));
+		}
 
-	strbuf_free(&buf);
+		strbuf_free(&dbg_buf);
+	)
+
 	return best;
 }

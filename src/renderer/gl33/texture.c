@@ -63,32 +63,51 @@ typedef struct FormatFilterFlags {
 	GLTextureFormatFlags require, reject;
 } FormatFilterFlags;
 
-static FormatFilterFlags make_format_filter_flags(TextureType type, TextureFlags flags) {
-	FormatFilterFlags ff = { 0 };
+static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
+	GLTextureFormatMatchConfig cfg = { 0 };
+
+	cfg.intended_type = type;
+	cfg.flags.desirable |= GLTEX_FILTERABLE;
 
 	if(TEX_TYPE_IS_COMPRESSED(type)) {
-		ff.require |= GLTEX_COMPRESSED;
+		cfg.flags.required |= GLTEX_COMPRESSED;
 	} else {
-		ff.reject |= GLTEX_COMPRESSED;
+		cfg.flags.forbidden |= GLTEX_COMPRESSED;
 		if(TEX_TYPE_IS_DEPTH(type)) {
-			ff.require |= GLTEX_DEPTH_RENDERABLE;
+			cfg.flags.required |= GLTEX_DEPTH_RENDERABLE;
 		} else {
-			ff.require |= GLTEX_COLOR_RENDERABLE | GLTEX_BLENDABLE;
+			cfg.flags.required |= GLTEX_COLOR_RENDERABLE | GLTEX_BLENDABLE;
 		}
 	}
 
-	if(flags & TEX_FLAG_SRGB) {
-		ff.require |= GLTEX_SRGB;
-	} else {
-		ff.reject |= GLTEX_SRGB;
+	if(!TEX_TYPE_IS_DEPTH(type)) {
+		if(flags & TEX_FLAG_SRGB) {
+			cfg.flags.required |= GLTEX_SRGB;
+		} else {
+			cfg.flags.forbidden |= GLTEX_SRGB;
+		}
 	}
 
-	return ff;
-}
+	switch(type) {
+		case TEX_TYPE_RGBA_16_FLOAT:
+		case TEX_TYPE_RGB_16_FLOAT:
+		case TEX_TYPE_RG_16_FLOAT:
+		case TEX_TYPE_R_16_FLOAT:
+		case TEX_TYPE_RGBA_32_FLOAT:
+		case TEX_TYPE_RGB_32_FLOAT:
+		case TEX_TYPE_RG_32_FLOAT:
+		case TEX_TYPE_R_32_FLOAT:
+		case TEX_TYPE_DEPTH_16_FLOAT:
+		case TEX_TYPE_DEPTH_32_FLOAT:
+			cfg.flags.required |= GLTEX_FLOAT;
+			break;
 
-static GLTextureFormatInfo *pick_format(TextureType type, TextureFlags flags) {
-	FormatFilterFlags ff = make_format_filter_flags(type, flags);
-	GLTextureFormatInfo *fmt_info = glcommon_match_format(type, ff.require, ff.reject);
+		default:
+			cfg.flags.undesirable |= GLTEX_FLOAT;
+			break;
+	}
+
+	GLTextureFormatInfo *fmt_info = glcommon_match_format(&cfg);
 	return fmt_info;
 }
 
@@ -169,8 +188,6 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 
 	assert(width == image->width);
 	assert(height == image->height);
-
-	log_debug("SET (%s): w=%u  h=%u  size=%u", tex->debug_label, width, height, image->data_size);
 
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		glCompressedTexImage2D(

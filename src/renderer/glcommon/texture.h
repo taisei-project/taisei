@@ -22,6 +22,7 @@ typedef enum GLTextureFormatFlags {
 	GLTEX_BLENDABLE        = (1 << 3),
 	GLTEX_SRGB             = (1 << 4),
 	GLTEX_COMPRESSED       = (1 << 5),
+	GLTEX_FLOAT            = (1 << 6),
 } GLTextureFormatFlags;
 
 typedef struct GLTextureTransferFormatInfo {
@@ -39,9 +40,19 @@ typedef struct GLTextureFormatInfo {
 	uchar bits_per_pixel;
 } GLTextureFormatInfo;
 
+typedef struct GLTextureFormatMatchConfig {
+	TextureType intended_type;
+	struct {
+		GLTextureFormatFlags required;
+		GLTextureFormatFlags forbidden;
+		GLTextureFormatFlags desirable;
+		GLTextureFormatFlags undesirable;
+	} flags;
+} GLTextureFormatMatchConfig;
+
 void glcommon_init_texture_formats(void);
 void glcommon_free_texture_formats(void);
 
-GLTextureFormatInfo *glcommon_match_format(TextureType tex_type, GLTextureFormatFlags require_flags, GLTextureFormatFlags forbid_flags);
+GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg);
 
 #endif // IGUARD_renderer_glcommon_texture_h
