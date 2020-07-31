@@ -89,13 +89,7 @@ void _r_sprite_batch_init(void) {
 	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
-	uint capacity;
-
-	if(r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-		capacity = 1 << 15;
-	} else {
-		capacity = 1 << 11;
-	}
+	uint capacity = 1 << 11;
 
 	_r_sprite_batch.vbuf = r_vertex_buffer_create(sz_attr * capacity, NULL);
 	r_vertex_buffer_set_debug_label(_r_sprite_batch.vbuf, "Sprite batch vertex buffer");
@@ -165,22 +159,8 @@ void r_flush_sprites(void) {
 		r_cull(_r_sprite_batch.cull_mode);
 	}
 
-	if(_r_sprite_batch.renderer_features & r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-		r_draw_model_ptr(&_r_sprite_batch.quad, pending, _r_sprite_batch.base_instance);
-		_r_sprite_batch.base_instance += pending;
-
-		SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
-		size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
-
-		if(remaining < SIZEOF_SPRITE_ATTRIBS) {
-			// log_debug("Invalidating after %u sprites", _r_sprite_batch.base_instance);
-			r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
-			_r_sprite_batch.base_instance = 0;
-		}
-	} else {
-		r_draw_model_ptr(&_r_sprite_batch.quad, pending, 0);
-		r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
-	}
+	r_draw_model_ptr(&_r_sprite_batch.quad, pending, 0);
+	r_vertex_buffer_invalidate(_r_sprite_batch.vbuf);
 
 	r_mat_proj_pop();
 	r_state_pop();
@@ -365,11 +345,7 @@ static SDL_RWops *_r_sprite_batch_prepare_buffer(void) {
 
 	if(remaining < SIZEOF_SPRITE_ATTRIBS) {
 		// TODO: maybe it is better to grow the buffer instead?
-
-		if(!r_supports(RFEAT_DRAW_INSTANCED_BASE_INSTANCE)) {
-			log_warn("Vertex buffer exhausted (%zu needed for next sprite, %zu remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, remaining);
-		}
-
+		log_warn("Vertex buffer exhausted (%zu needed for next sprite, %zu remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, remaining);
 		r_flush_sprites();
 	}
 

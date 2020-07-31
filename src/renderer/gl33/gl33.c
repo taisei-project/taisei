@@ -292,10 +292,6 @@ static void gl33_init_context(SDL_Window *window) {
 
 	if(glext.instanced_arrays) {
 		R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED);
-
-		if(glext.base_instance) {
-			R.features |= r_feature_bit(RFEAT_DRAW_INSTANCED_BASE_INSTANCE);
-		}
 	}
 
 	if(glext.depth_texture) {
@@ -985,21 +981,14 @@ void gl33_end_draw(void *state) {
 
 static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
+	assert(base_instance == 0);
 	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
 
 	void *state;
 	gl33_begin_draw(varr, &state);
 
 	if(instances) {
-		if(base_instance) {
-		#ifdef STATIC_GLES3
-			log_fatal("base_instance is not supported");
-		#else
-			glDrawArraysInstancedBaseInstance(gl_prim, firstvert, count, instances, base_instance);
-		#endif
-		} else {
-			glDrawArraysInstanced(gl_prim, firstvert, count, instances);
-		}
+		glDrawArraysInstanced(gl_prim, firstvert, count, instances);
 	} else {
 		glDrawArrays(gl_prim, firstvert, count);
 	}
@@ -1009,6 +998,7 @@ static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint co
 
 static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
+	assert(base_instance == 0);
 	assert(varr->index_attachment != NULL);
 	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
 
@@ -1018,15 +1008,7 @@ static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, 
 	uintptr_t iofs = firstidx * sizeof(gl33_ibo_index_t);
 
 	if(instances) {
-		if(base_instance) {
-		#ifdef STATIC_GLES3
-			log_fatal("base_instance is not supported");
-		#else
-			glDrawElementsInstancedBaseInstance(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances, base_instance);
-		#endif
-		} else {
-			glDrawElementsInstanced(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances);
-		}
+		glDrawElementsInstanced(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances);
 	} else {
 		glDrawElements(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs);
 	}

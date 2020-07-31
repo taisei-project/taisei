@@ -29,6 +29,7 @@ static void gles20_init_context(SDL_Window *w) {
 
 static void gles20_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
+	assert(base_instance == 0);
 	assert(varr->index_attachment != NULL);
 	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
 
@@ -40,11 +41,7 @@ static void gles20_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx
 	assert(indices < ibuf->elements + ibuf->num_elements);
 
 	if(instances) {
-		if(base_instance) {
-			glDrawElementsInstancedBaseInstance(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices, instances, base_instance);
-		} else {
-			glDrawElementsInstanced(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices, instances);
-		}
+		glDrawElementsInstanced(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices, instances);
 	} else {
 		glDrawElements(gl_prim, count, GLES20_IBO_GL_DATATYPE, indices);
 	}

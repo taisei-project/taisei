@@ -37,24 +37,6 @@ struct glext_s glext;
 
 typedef void (*glad_glproc_ptr)(void);
 
-#ifndef STATIC_GLES3
-//
-//	Extension not yet handled by glad
-//
-
-// GL_ANGLE_base_vertex_base_instance
-typedef void (APIENTRYP PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount, GLuint baseInstance);
-static PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC glad_glDrawArraysInstancedBaseInstanceANGLE;
-typedef void (APIENTRYP PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
-static PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE;
-
-APIENTRY
-static void glad_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
-	// shim
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
-}
-#endif
-
 // WEBGL_debug_renderer_info
 const GLenum GL_UNMASKED_VENDOR_WEBGL = 0x9245;
 const GLenum GL_UNMASKED_RENDERER_WEBGL = 0x9246;
@@ -232,47 +214,6 @@ static void glcommon_ext_debug_output(void) {
 #endif
 
 	glext.debug_output = 0;
-	log_warn("Extension not supported");
-}
-
-static void glcommon_ext_base_instance(void) {
-#ifndef STATIC_GLES3
-	if(
-		GL_ATLEAST(4, 2)
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstance))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstance))
-	) {
-		glext.base_instance = TSGL_EXTFLAG_NATIVE;
-		log_info("Using core functionality");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_ARB_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstance))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstance))
-	) {
-		log_info("Using GL_ARB_base_instance");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_EXT_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstanceEXT))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceEXT))
-	) {
-		log_info("Using GL_EXT_base_instance");
-		return;
-	}
-
-	if((glext.base_instance = glcommon_check_extension("GL_ANGLE_base_vertex_base_instance"))
-		&& (glext.DrawArraysInstancedBaseInstance = GL_FUNC(DrawArraysInstancedBaseInstanceANGLE))
-		&& (glext.DrawElementsInstancedBaseInstance = GL_FUNC(DrawElementsInstancedBaseInstanceANGLE))
-	) {
-		log_info("Using GL_ANGLE_base_vertex_base_instance");
-		return;
-	}
-#endif
-
-	glext.base_instance = 0;
 	log_warn("Extension not supported");
 }
 
@@ -913,7 +854,6 @@ void glcommon_check_capabilities(void) {
 		SDL_RWclose(writer);
 	}
 
-	glcommon_ext_base_instance();
 	glcommon_ext_clear_texture();
 	glcommon_ext_color_buffer_float();
 	glcommon_ext_debug_output();
@@ -996,9 +936,6 @@ void glcommon_load_functions(void) {
 			log_fatal("Failed to load OpenGL functions");
 		}
 	}
-
-	glad_glDrawArraysInstancedBaseInstanceANGLE = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEANGLEPROC)load_func("glDrawArraysInstancedBaseInstanceANGLE");
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 #endif
 }
 
