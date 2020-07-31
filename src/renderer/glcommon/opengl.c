@@ -20,19 +20,8 @@ typedef void (*glad_glproc_ptr)(void);
 
 #ifndef STATIC_GLES3
 //
-// GL_ANGLE_base_vertex_base_instance is not in the GL registry yet, so we have to load it manually.
-//
-typedef void (APIENTRY *PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLint basevertex, GLuint baseinstance);
-static PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE;
-
-//
 // shims
 //
-
-APIENTRY
-static void shim_glDrawElementsInstancedBaseInstanceANGLE(GLenum mode, GLsizei count, GLenum type, const void *indices, GLsizei instancecount, GLuint baseinstance) {
-	glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(mode, count, type, indices, instancecount, 0, baseinstance);
-}
 
 APIENTRY
 static void shim_glClearDepth(GLdouble depthval) {
@@ -212,24 +201,6 @@ static void glcommon_ext_debug_output(void) {
 		}
 
 		CHECK_EXT(GL_ARB_debug_output);
-	}
-#endif
-
-	EXT_MISSING();
-}
-
-static void glcommon_ext_base_instance(void) {
-	EXT_FLAG(base_instance);
-
-#ifndef STATIC_GLES3
-	if(
-		HAVE_GL_FUNC(glDrawArraysInstancedBaseInstance) &&
-		HAVE_GL_FUNC(glDrawElementsInstancedBaseInstance)
-	) {
-		CHECK_CORE(GL_ATLEAST(4, 2));
-		CHECK_EXT(GL_ARB_base_instance);
-		CHECK_EXT(GL_EXT_base_instance);
-		CHECK_EXT(GL_ANGLE_base_vertex_base_instance);
 	}
 #endif
 
@@ -645,7 +616,6 @@ void glcommon_check_capabilities(void) {
 		SDL_RWclose(writer);
 	}
 
-	glcommon_ext_base_instance();
 	glcommon_ext_clear_texture();
 	glcommon_ext_color_buffer_float();
 	glcommon_ext_debug_output();
@@ -719,15 +689,6 @@ void glcommon_load_functions(void) {
 	glext.version.major = GLAD_VERSION_MAJOR(version);
 	glext.version.minor = GLAD_VERSION_MINOR(version);
 	log_debug("GLAD reported OpenGL version %i.%i", glext.version.major, glext.version.minor);
-
-	if(!HAVE_GL_FUNC(glDrawArraysInstancedBaseInstance)) {
-		glDrawArraysInstancedBaseInstance = (PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC)load_gl_func("glDrawArraysInstancedBaseInstanceANGLE");
-	}
-
-	if(!HAVE_GL_FUNC(glDrawElementsInstancedBaseInstance)) {
-		glad_glDrawElementsInstancedBaseVertexBaseInstanceANGLE = (PFNGLDRAWELEMENTSINSTANCEDBASEVERTEXBASEINSTANCEANGLEPROC)load_gl_func("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
-		glDrawElementsInstancedBaseInstance = shim_glDrawElementsInstancedBaseInstanceANGLE;
-	}
 
 	// GLES has only glClearDepthf
 	// Core has only glClearDepth until GL 4.1
