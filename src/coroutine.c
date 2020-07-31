@@ -133,7 +133,9 @@ static struct {
 #define STAT_VAL_SET(name, value) ((cotask_stats.name) = (value))
 
 // enable stack usage tracking (loose)
+#ifndef _WIN32
 #define CO_TASK_STATS_STACK
+#endif
 
 #else // CO_TASK_STATS
 
