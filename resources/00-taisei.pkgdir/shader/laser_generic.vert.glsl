@@ -2,15 +2,7 @@
 
 #include "lib/render_context.glslh"
 #include "lib/util.glslh"
-#include "interface/standard.glslh"
-
-ATTRIBUTE(3) vec4 instance_pos_delta;
-ATTRIBUTE(4) float instance_width;
-
-UNIFORM(1) float timeshift;
-UNIFORM(2) float width;
-UNIFORM(3) float width_exponent;
-UNIFORM(4) int span;
+#include "interface/laser.glslh"
 
 #include "lasers/vertex_pos.glslh"
 

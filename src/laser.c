@@ -240,7 +240,7 @@ static void draw_laser_curve_specialized(Laser *l) {
 	r_uniform_int("span", instances);
 
 #if 1
-	r_draw_quad_instanced(instances);
+	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
 #else
 	double graze_exp;
 
@@ -248,13 +248,13 @@ static void draw_laser_curve_specialized(Laser *l) {
 	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_float("width", 2 * laser_graze_width(l, &graze_exp));
 	r_uniform_float("width_exponent", graze_exp);
-	r_draw_quad_instanced(instances);
+	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
 
 	r_color(&l->color);
 	r_uniform_sampler("tex", "part/lasercurve");
 	r_uniform_float("width", l->width);
 	r_uniform_float("width_exponent", l->width_exponent);
-	r_draw_quad_instanced(instances);
+	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
 #endif
 }
 

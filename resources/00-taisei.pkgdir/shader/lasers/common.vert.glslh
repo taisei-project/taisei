@@ -1,14 +1,7 @@
 
 #include "../lib/render_context.glslh"
 #include "../lib/util.glslh"
-#include "../interface/standard.glslh"
-
-UNIFORM(1) vec2 origin;
-UNIFORM(2) float timeshift;
-UNIFORM(3) float width;
-UNIFORM(4) float width_exponent;
-UNIFORM(5) int span;
-UNIFORM(6) vec2 args[4];
+#include "../interface/laser.glslh"
 
 vec2 pos_rule(float t);
 
