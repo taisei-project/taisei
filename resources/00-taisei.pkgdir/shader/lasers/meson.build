@@ -15,6 +15,8 @@ glsl_files = files(
     'elly_toe_gluon.vert.glsl',
     'elly_toe_higgs.vert.glsl',
     'elly_toe_photon.vert.glsl',
+    'generic.frag.glsl',
+    'generic.vert.glsl',
     'iku_cathode.vert.glsl',
     'iku_lightning.vert.glsl',
     'linear.vert.glsl',

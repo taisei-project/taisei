@@ -1,1 +1,1 @@
-objects = lasers/elly_toe_photon.vert standard.frag
+objects = lasers/elly_toe_photon.vert lasers/geenric.frag

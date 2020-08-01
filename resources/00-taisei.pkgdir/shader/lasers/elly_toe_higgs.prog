@@ -1,1 +1,1 @@
-objects = lasers/elly_toe_higgs.vert standard.frag
+objects = lasers/elly_toe_higgs.vert lasers/geenric.frag

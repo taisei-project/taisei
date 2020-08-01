@@ -1,1 +1,1 @@
-objects = lasers/accelerated.vert standard.frag
+objects = lasers/accelerated.vert lasers/geenric.frag

@@ -63,7 +63,7 @@ void lasers_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"blur25",
 		"blur5",
-		"laser_generic",
+		"lasers/generic",
 	NULL);
 
 	size_t sz_vert = sizeof(GenericModelVertex);
@@ -123,7 +123,7 @@ void lasers_preload(void) {
 	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
 	lasers.quad_generic.vertex_array = lasers.varr;
 
-	lasers.shader_generic = res_shader("laser_generic");
+	lasers.shader_generic = res_shader("lasers/generic");
 
 	lasers.force_generic = env_get_int("TAISEI_FORCE_GENERIC_LASER_SHADER", false);
 }
