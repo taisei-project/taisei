@@ -313,6 +313,10 @@ static void gl33_init_context(SDL_Window *window) {
 		R.features |= r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS);
 	}
 
+	if(glext.texture_swizzle) {
+		R.features |= r_feature_bit(RFEAT_TEXTURE_SWIZZLE);
+	}
+
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
 
 	if(glext.clear_texture) {

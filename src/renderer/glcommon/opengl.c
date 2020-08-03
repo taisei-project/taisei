@@ -318,6 +318,16 @@ static void glcommon_ext_texture_rg(void) {
 	EXT_MISSING();
 }
 
+static void glcommon_ext_texture_swizzle(void) {
+	EXT_FLAG(texture_swizzle);
+
+	CHECK_CORE(GL_ATLEAST(3, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
+	CHECK_EXT(GL_ARB_texture_swizzle);
+	CHECK_EXT(GL_EXT_texture_swizzle);
+
+	EXT_MISSING();
+}
+
 static void glcommon_ext_texture_float(void) {
 	EXT_FLAG(texture_float);
 
@@ -831,6 +841,7 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_texture_half_float_linear();
 	glcommon_ext_texture_norm16();
 	glcommon_ext_texture_rg();
+	glcommon_ext_texture_swizzle();
 	glcommon_ext_vertex_array_object();
 	glcommon_ext_viewport_array();
 

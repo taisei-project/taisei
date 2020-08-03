@@ -222,29 +222,33 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 }
 
 static void apply_swizzle(GLenum param, char val) {
-	GLenum swizzle_val;
+	GLenum swizzle_val, default_val;
 
-	switch(val) {
-		case 'r': swizzle_val = GL_RED;   break;
-		case 'g': swizzle_val = GL_GREEN; break;
-		case 'b': swizzle_val = GL_BLUE;  break;
-		case 'a': swizzle_val = GL_ALPHA; break;
-		case '0': swizzle_val = GL_ZERO;  break;
-		case '1': swizzle_val = GL_ONE;   break;
-		case 0: {
-			switch(param) {
-				case GL_TEXTURE_SWIZZLE_R: swizzle_val = GL_RED;   break;
-				case GL_TEXTURE_SWIZZLE_G: swizzle_val = GL_GREEN; break;
-				case GL_TEXTURE_SWIZZLE_B: swizzle_val = GL_BLUE;  break;
-				case GL_TEXTURE_SWIZZLE_A: swizzle_val = GL_ALPHA; break;
-				default: UNREACHABLE;
-			}
-			break;
-		}
+	switch(param) {
+		case GL_TEXTURE_SWIZZLE_R: default_val = GL_RED;   break;
+		case GL_TEXTURE_SWIZZLE_G: default_val = GL_GREEN; break;
+		case GL_TEXTURE_SWIZZLE_B: default_val = GL_BLUE;  break;
+		case GL_TEXTURE_SWIZZLE_A: default_val = GL_ALPHA; break;
 		default: UNREACHABLE;
 	}
 
-	glTexParameteri(GL_TEXTURE_2D, param, swizzle_val);
+	switch(val) {
+		case 'r': swizzle_val = GL_RED;      break;
+		case 'g': swizzle_val = GL_GREEN;    break;
+		case 'b': swizzle_val = GL_BLUE;     break;
+		case 'a': swizzle_val = GL_ALPHA;    break;
+		case '0': swizzle_val = GL_ZERO;     break;
+		case '1': swizzle_val = GL_ONE;      break;
+		case  0 : swizzle_val = default_val; break;
+		default: UNREACHABLE;
+	}
+
+	if(glext.texture_swizzle) {
+		assert(r_supports(RFEAT_TEXTURE_SWIZZLE));
+		glTexParameteri(GL_TEXTURE_2D, param, swizzle_val);
+	} else if(default_val != swizzle_val) {
+		log_warn("Texture swizzle mask differs from default; not supported in this OpenGL version!");
+	}
 }
 
 static void apply_swizzle_mask(TextureSwizzleMask *mask) {
