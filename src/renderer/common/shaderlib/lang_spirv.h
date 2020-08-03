@@ -34,6 +34,7 @@ typedef struct SPIRVCompileOptions {
 	SPIRVOptimizationLevel optimization_level;
 	bool debug_info;
 	const char *filename;
+	ShaderMacro *macros;
 } SPIRVCompileOptions;
 
 typedef struct SPIRVDecompileOptions {

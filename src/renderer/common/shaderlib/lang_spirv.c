@@ -110,6 +110,12 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 		shaderc_compile_options_set_generate_debug_info(opts);
 	}
 
+	if(options->macros) {
+		for(ShaderMacro *m = options->macros; m->name; ++m) {
+			shaderc_compile_options_add_macro_definition(opts, m->name, strlen(m->name), m->value, strlen(m->value));
+		}
+	}
+
 	const char *filename = options->filename ? options->filename : "<main>";
 
 	shaderc_compilation_result_t result = shaderc_compile_into_spv(

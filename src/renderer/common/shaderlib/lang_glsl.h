@@ -25,11 +25,6 @@ typedef struct GLSLVersion {
 	GLSLProfile profile;
 } GLSLVersion;
 
-typedef struct GLSLMacro {
-	const char *name;
-	const char *value;
-} GLSLMacro;
-
 typedef struct ShaderLangInfoGLSL {
 	GLSLVersion version;
 } ShaderLangInfoGLSL;
@@ -48,7 +43,7 @@ typedef struct GLSLSourceOptions {
 	GLSLVersion version;
 	ShaderStage stage;
 	bool force_version;
-	GLSLMacro *macros;
+	ShaderMacro *macros;
 } GLSLSourceOptions;
 
 bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);

@@ -62,6 +62,82 @@ static bool check_shader_object_path(const char *path) {
 static void load_shader_object_stage1(ResourceLoadState *st);
 static void load_shader_object_stage2(ResourceLoadState *st);
 
+#if 0
+static bool load_shader_source(
+	const char *path,
+	ShaderSource *out,
+	const struct shobj_type *type,
+	ShaderLangInfo *transpile_target
+) {
+	char backend_macro[32] = "BACKEND_";
+	{
+		const char *backend_name = r_backend_name();
+		char *out = backend_macro + sizeof("BACKEND_") - 1;
+		for(const char *in = backend_name; *in;) {
+			*out++ = toupper(*in++);
+		}
+		*out = 0;
+	}
+
+	char macro_buf[32];
+	char *macro_buf_p = macro_buf;
+
+	switch(type->lang) {
+		case SHLANG_GLSL: {
+			ShaderMacro macros[16];
+			int i = 0;
+
+			#define ADD_MACRO(...) \
+				(assert(i < ARRAY_SIZE(macros)), macros[i++] = (GLSLMacro) { __VA_ARGS__ })
+
+			#define ADD_MACRO_DYNAMIC(name, ...) do { \
+				attr_unused int remaining = macro_buf_p - macro_buf; \
+				int len = snprintf(macro_buf_p, remaining, __VA_ARGS__); \
+				assert(len >= 0); \
+				ADD_MACRO(name, macro_buf_p); \
+				macro_buf_p += len + 1; \
+				assert(macro_buf_p < macro_buf + ARRAY_SIZE(macro_buf)); \
+			} while(0)
+
+			#define ADD_MACRO_BOOL(name, value) \
+				ADD_MACRO(name, (value) ? "1" : "0")
+
+			ADD_MACRO_BOOL(backend_macro, true);
+
+			if(transpile_target) {
+				ADD_MACRO_DYNAMIC("LANG_GLSL", "%d", SHLANG_GLSL);
+				ADD_MACRO_DYNAMIC("LANG_SPIRV", "%d", SHLANG_SPIRV);
+				ADD_MACRO_DYNAMIC("TRANSPILE_TARGET", "%d", transpile_target->lang);
+
+				switch(transpile_target->lang) {
+					case SHLANG_GLSL:
+						ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_GLSL_VERSION", "%d", transpile_target->glsl.version.version);
+						ADD_MACRO_BOOL("TRANSPILE_TARGET_GLSL_ES", transpile_target->glsl.version.profile == GLSL_PROFILE_ES);
+						break;
+
+					case SHLANG_SPIRV:
+						break;
+
+					default: UNREACHABLE;
+				}
+			}
+
+			ADD_MACRO(NULL);
+
+			GLSLSourceOptions opts = {
+				.version = { 330, GLSL_PROFILE_CORE },
+				.stage = type->stage,
+				.macros = macros,
+			};
+
+			return glsl_load_source(path, out, &opts);
+		}
+
+		default: UNREACHABLE;
+	}
+}
+#endif
+
 static void load_shader_object_stage1(ResourceLoadState *st) {
 	struct shobj_type *type = get_shobj_type(st->path);
 
@@ -83,15 +159,17 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 		*out = 0;
 	}
 
+	ShaderMacro macros[] = {
+		{ backend_macro, "1" },
+		{ NULL, },
+	};
+
 	switch(type->lang) {
 		case SHLANG_GLSL: {
 			GLSLSourceOptions opts = {
 				.version = { 330, GLSL_PROFILE_CORE },
 				.stage = type->stage,
-				.macros = (GLSLMacro[]) {
-					{ backend_macro, "1" },
-					{ NULL, },
-				},
+				.macros = macros,
 			};
 
 			if(!glsl_load_source(st->path, &ldata->source, &opts)) {

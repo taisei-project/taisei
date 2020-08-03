@@ -33,8 +33,6 @@ vec3 fxaa(
 	vec2 coordSE,
 	vec2 coordM
 ) {
-// BUG: spirv-cross emits a switch statement for this code, which is illegal until GLSL 130
-#if GLSL_ATLEAST(130) || ESSL_ATLEAST(100)
     vec3 rgbNW = textureLod(tex, coordNW, 0).rgb;
     vec3 rgbNE = textureLod(tex, coordNE, 0).rgb;
     vec3 rgbSW = textureLod(tex, coordSW, 0).rgb;
@@ -80,9 +78,6 @@ vec3 fxaa(
     }
 
     return rgbB;
-#else
-    return textureLod(tex, coordM, 0).rgb;
-#endif
 }
 
 #endif

@@ -69,7 +69,7 @@ static void glsl_write_header(GLSLFileParseState *fstate) {
 	);
 
 	if(fstate->global->options->macros) {
-		for(GLSLMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
+		for(ShaderMacro *macro = fstate->global->options->macros; macro->name; ++macro) {
 			SDL_RWprintf(fstate->global->dest, "#define %s %s\n", macro->name, macro->value);
 		}
 	}
@@ -297,7 +297,7 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 	return result;
 }
 
-static inline const char* profile_suffix(GLSLVersion version) {
+static inline const char *profile_suffix(GLSLVersion version) {
 	if(version.version == 100) {
 		return "";
 	}

@@ -12,7 +12,13 @@
 #include "lang_spirv_private.h"
 #include "util.h"
 
-static bool shader_cache_entry_name(const ShaderLangInfo *lang, ShaderStage stage, SPIRVOptimizationLevel optlvl, char *buf, size_t bufsize) {
+static bool shader_cache_entry_name(
+	const ShaderLangInfo *lang,
+	ShaderStage stage,
+	SPIRVOptimizationLevel optlvl,
+	size_t bufsize,
+	char buf[bufsize]
+) {
 	// TODO: somehow get rid of this ugly optlvl parameter and generalize external metadata?
 
 	switch(lang->lang) {
@@ -27,7 +33,7 @@ static bool shader_cache_entry_name(const ShaderLangInfo *lang, ShaderStage stag
 		}
 
 		default: {
-			log_warn("Unhandled shading language id=%u", lang->lang);
+			log_error("Unhandled shading language id=%u", lang->lang);
 			return false;
 		}
 	}
@@ -42,11 +48,11 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 	target_lang.lang = SHLANG_SPIRV;
 	target_lang.spirv.target = options->target;
 
-	if(!shader_cache_entry_name(&target_lang, in->stage, options->optimization_level, name, sizeof(name))) {
+	if(!shader_cache_entry_name(&target_lang, in->stage, options->optimization_level, sizeof(name), name)) {
 		return _spirv_compile(in, out, options);
 	}
 
-	if(!shader_cache_hash(in, hash, sizeof(hash))) {
+	if(!shader_cache_hash(in, options->macros, sizeof(hash), hash)) {
 		return _spirv_compile(in, out, options);
 	}
 
@@ -73,11 +79,11 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {
 	char name[256], hash[SHADER_CACHE_HASH_BUFSIZE];
 
-	if(!shader_cache_entry_name(options->lang, in->stage, 0, name, sizeof(name))) {
+	if(!shader_cache_entry_name(options->lang, in->stage, 0, sizeof(name), name)) {
 		return _spirv_decompile(in, out, options);
 	}
 
-	if(!shader_cache_hash(in, hash, sizeof(hash))) {
+	if(!shader_cache_hash(in, NULL, sizeof(hash), hash)) {
 		return _spirv_decompile(in, out, options);
 	}
 
@@ -124,10 +130,55 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 		}
 	}
 
+	char macro_buf[32];
+	char *macro_buf_p = macro_buf;
+	char *macro_buf_end = macro_buf + ARRAY_SIZE(macro_buf);
+	ShaderMacro macros[16];
+	int i = 0;
+
+	#define ADD_MACRO(...) do { \
+		assert(i < ARRAY_SIZE(macros)); \
+		macros[i++] = (ShaderMacro) { __VA_ARGS__ }; \
+		if(macros[i-1].name) { \
+			log_debug("#define %s %s", macros[i-1].name, macros[i-1].value); \
+		} \
+	} while(0)
+
+	#define ADD_MACRO_DYNAMIC(name, ...) do { \
+		attr_unused int remaining = macro_buf_end - macro_buf_p; \
+		int len = snprintf(macro_buf_p, remaining, __VA_ARGS__); \
+		assert(len >= 0); \
+		ADD_MACRO(name, macro_buf_p); \
+		macro_buf_p += len + 1; \
+		assert(macro_buf_p < macro_buf_end); \
+	} while(0)
+
+	#define ADD_MACRO_BOOL(name, value) \
+		ADD_MACRO(name, (value) ? "1" : "0")
+
+	ADD_MACRO_DYNAMIC("LANG_GLSL", "%d", SHLANG_GLSL);
+	ADD_MACRO_DYNAMIC("LANG_SPIRV", "%d", SHLANG_SPIRV);
+	ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_LANG", "%d", options->lang->lang);
+
+	switch(options->lang->lang) {
+		case SHLANG_GLSL:
+			ADD_MACRO_BOOL("TRANSPILE_TARGET_GLSL_ES", options->lang->glsl.version.profile == GLSL_PROFILE_ES);
+			ADD_MACRO_DYNAMIC("TRANSPILE_TARGET_GLSL_VERSION", "%d", options->lang->glsl.version.version);
+			break;
+
+		case SHLANG_SPIRV:
+			break;
+
+		default: UNREACHABLE;
+	}
+
+	ADD_MACRO(NULL);
+
 	result = spirv_compile(in, &spirv, &(SPIRVCompileOptions) {
 		.target = SPIRV_TARGET_OPENGL_450, // TODO: specify this in the shader
 		.optimization_level = options->optimization_level,
 		.filename = options->filename,
+		.macros = macros,
 
 		// Preserve names of declarations.
 		// This can be vital for shader interface matching.

@@ -7,7 +7,7 @@
 #endif
 
 #if defined(SPIRV)
-	#extension GL_ARB_separate_shader_objects : require
+    #extension GL_ARB_separate_shader_objects : require
 #endif
 
 #define LOC(l) layout(location = l)
@@ -37,16 +37,12 @@
     #define NATIVE_ORIGIN_BOTTOMLEFT
 #endif
 
-#ifdef GL_ES
-    #define GLSL_ATLEAST(v) (0)
-    #define ESSL_ATLEAST(v) (__VERSION__ >= v)
-#else
-    #define GLSL_ATLEAST(v) (__VERSION__ >= v)
-    #define ESSL_ATLEAST(v) (0)
-#endif
-
-#if !(GLSL_ATLEAST(130) || ESSL_ATLEAST(300))
-    #include "legacy_compat.glslh"
+#ifdef TRANSPILE_TARGET_LANG
+    #if TRANSPILE_TARGET_LANG == LANG_GLSL
+        #if (TRANSPILE_TARGET_GLSL_ES && TRANSPILE_TARGET_GLSL_VERSION < 300) || (!(TRANSPILE_TARGET_GLSL_ES) && TRANSPILE_TARGET_GLSL_VERSION < 130)
+            #include "legacy_compat.glslh"
+        #endif
+    #endif
 #endif
 
 #endif

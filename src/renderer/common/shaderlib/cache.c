@@ -14,10 +14,10 @@
 #include "util/sha256.h"
 #include "rwops/all.h"
 
-#define CACHE_VERSION 3
+#define CACHE_VERSION 4
 #define CRC_INIT 0
 
-static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *out_size) {
+static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const ShaderMacro *macros, size_t *out_size) {
 	uint8_t *buf, *result = NULL;
 	uint32_t crc = CRC_INIT;
 
@@ -28,6 +28,44 @@ static uint8_t* shader_cache_construct_entry(const ShaderSource *src, size_t *ou
 	SDL_WriteU8(dest, CACHE_VERSION);
 	SDL_WriteU8(dest, src->stage);
 	SDL_WriteU8(dest, src->lang.lang);
+
+	if(macros) {
+		uint num_macros = 0;
+
+		for(const ShaderMacro *m = macros; m->name; ++m) {
+			++num_macros;
+		}
+
+		if(num_macros > 255) {
+			log_error("Too many macros (%i)", num_macros);
+			goto fail;
+		}
+
+		SDL_WriteU8(dest, num_macros);
+
+		for(const ShaderMacro *m = macros; m->name; ++m) {
+			size_t name_len = strlen(m->name);
+			size_t value_len = strlen(m->value);
+
+			if(name_len > 255) {
+				log_error("Macro name is too long (%zu): %s", name_len, m->name);
+				goto fail;
+			}
+
+			if(value_len > 255) {
+				log_error("Macro value is too long (%zu): %s", name_len, m->name);
+				goto fail;
+			}
+
+			SDL_WriteU8(dest, name_len);
+			SDL_RWwrite(dest, m->name, name_len, 1);
+
+			SDL_WriteU8(dest, value_len);
+			SDL_RWwrite(dest, m->value, value_len, 1);
+		}
+	} else {
+		SDL_WriteU8(dest, 0);
+	}
 
 	switch(src->lang.lang) {
 		case SHLANG_GLSL: {
@@ -110,6 +148,11 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 
 	memset(&out_src->lang, 0, sizeof(out_src->lang));
 	out_src->lang.lang = SDL_ReadU8(s);
+
+	if(SDL_ReadU8(s) > 0) {
+		log_error("Cache entry contains macros, this is not implemented");
+		goto fail;
+	}
 
 	switch(out_src->lang.lang) {
 		case SHLANG_GLSL: {
@@ -212,7 +255,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 
 bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src) {
 	size_t entry_size;
-	uint8_t *entry = shader_cache_construct_entry(src, &entry_size);
+	uint8_t *entry = shader_cache_construct_entry(src, NULL, &entry_size);
 
 	if(entry != NULL) {
 		shader_cache_set_raw(hash, key, entry, entry_size);
@@ -224,11 +267,11 @@ bool shader_cache_set(const char *hash, const char *key, const ShaderSource *src
 	return false;
 }
 
-bool shader_cache_hash(const ShaderSource *src, char *out_buf, size_t bufsize) {
-	assert(bufsize >= SHADER_CACHE_HASH_BUFSIZE);
+bool shader_cache_hash(const ShaderSource *src, const ShaderMacro *macros, size_t buf_size, char out_buf[buf_size]) {
+	assert(buf_size >= SHADER_CACHE_HASH_BUFSIZE);
 
 	size_t entry_size;
-	uint8_t *entry = shader_cache_construct_entry(src, &entry_size);
+	uint8_t *entry = shader_cache_construct_entry(src, macros, &entry_size);
 
 	if(entry == NULL) {
 		return false;
@@ -236,8 +279,8 @@ bool shader_cache_hash(const ShaderSource *src, char *out_buf, size_t bufsize) {
 
 	const size_t sha_size = SHA256_BLOCK_SIZE*2;
 
-	sha256_hexdigest(entry, entry_size, out_buf, bufsize);
-	snprintf(out_buf + sha_size, bufsize - sha_size, "-%08zu", entry_size);
+	sha256_hexdigest(entry, entry_size, out_buf, buf_size);
+	snprintf(out_buf + sha_size, buf_size - sha_size, "-%zx", entry_size);
 
 	// shader_cache_set_raw(out_buf, "orig", entry, entry_size);
 

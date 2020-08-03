@@ -23,6 +23,11 @@ typedef enum ShaderLanguage {
 	SHLANG_SPIRV,
 } ShaderLanguage;
 
+typedef struct ShaderMacro {
+	const char *name;
+	const char *value;
+} ShaderMacro;
+
 typedef struct ShaderSource ShaderSource;
 typedef struct ShaderLangInfo ShaderLangInfo;
 typedef union ShaderSourceMeta ShaderSourceMeta;
