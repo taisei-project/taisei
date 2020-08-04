@@ -92,7 +92,6 @@ void glcommon_init_texture_formats(void) {
 	const bool is_gles = glext.version.is_es;
 	const bool is_gles3 = GLES_ATLEAST(3, 0);
 	const bool is_gles2 = !is_gles3 && GLES_ATLEAST(2, 0);
-	const bool is_angle = glext.version.is_ANGLE;
 	const bool have_rg = glext.texture_rg;
 	const bool have_uint16 = glext.texture_norm16;
 	const bool have_float16 = glext.texture_half_float;
@@ -303,6 +302,21 @@ void glcommon_init_texture_formats(void) {
 
 	dynarray_compact(&g_formats);
 	dynarray_qsort(&g_formats, gl_format_cmp);
+
+	if(is_gles2) {
+		dynarray_foreach_elem(&g_formats, GLTextureFormatInfo *fmt_info, {
+			if(!(fmt_info->flags & GLTEX_COMPRESSED)) {
+				GLenum basefmt = fmt_info->base_format;
+				if(fmt_info->flags & GLTEX_SRGB) {
+					switch(basefmt) {
+						case GL_RGB: basefmt = GL_SRGB; break;
+						case GL_RGBA: basefmt = GL_SRGB_ALPHA; break;
+					}
+				}
+				fmt_info->internal_format = basefmt;
+			}
+		});
+	}
 }
 
 void glcommon_free_texture_formats(void) {
