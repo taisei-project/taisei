@@ -121,7 +121,7 @@ void log_set_gui_error_appendix(const char *message);
 	#undef UNREACHABLE
 	#define UNREACHABLE log_fatal("This code should never be reached  (%s:%i)", __FILE__, __LINE__)
 #else
-	#define log_debug(...)
+	#define log_debug(...) ((void)0)
 	#define LOG_NO_FILENAMES
 #endif
 

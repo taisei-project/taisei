@@ -22,6 +22,37 @@
 	#include <GLES3/gl32.h>
 	#include <GLES2/gl2ext.h>
 
+	// XXX: Workaround for https://github.com/emscripten-core/emscripten/issues/11801
+	#ifndef GL_EXT_texture_compression_rgtc
+	#define GL_EXT_texture_compression_rgtc 1
+	#define GL_COMPRESSED_RED_RGTC1_EXT       0x8DBB
+	#define GL_COMPRESSED_SIGNED_RED_RGTC1_EXT 0x8DBC
+	#define GL_COMPRESSED_RED_GREEN_RGTC2_EXT 0x8DBD
+	#define GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT 0x8DBE
+	#endif /* GL_EXT_texture_compression_rgtc */
+
+	#ifndef GL_EXT_texture_compression_bptc
+	#define GL_EXT_texture_compression_bptc 1
+	#define GL_COMPRESSED_RGBA_BPTC_UNORM_EXT 0x8E8C
+	#define GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT 0x8E8D
+	#define GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT 0x8E8E
+	#define GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT 0x8E8F
+	#endif /* GL_EXT_texture_compression_bptc */
+
+	#ifndef GL_EXT_texture_compression_s3tc_srgb
+	#define GL_EXT_texture_compression_s3tc_srgb 1
+	#define GL_COMPRESSED_SRGB_S3TC_DXT1_EXT  0x8C4C
+	#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT 0x8C4D
+	#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT 0x8C4E
+	#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT 0x8C4F
+	#endif /* GL_EXT_texture_compression_s3tc_srgb */
+
+	#ifndef GL_3DFX_texture_compression_FXT1
+	#define GL_3DFX_texture_compression_FXT1 1
+	#define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
+	#define GL_COMPRESSED_RGBA_FXT1_3DFX      0x86B1
+	#endif /* GL_3DFX_texture_compression_FXT1 */
+
 	typedef PFNGLOBJECTLABELKHRPROC PFNGLOBJECTLABELPROC;
 	typedef PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEEXTPROC PFNGLDRAWARRAYSINSTANCEDBASEINSTANCEPROC;
 	typedef PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEEXTPROC PFNGLDRAWELEMENTSINSTANCEDBASEINSTANCEPROC;
@@ -46,6 +77,10 @@
 	#define GL_RGBA16 GL_RGBA16_EXT
 	#define GL_RGBA16_SNORM GL_RGBA16_SNORM_EXT
 	#define GL_TEXTURE_MAX_ANISOTROPY GL_TEXTURE_MAX_ANISOTROPY_EXT
+	#define GL_COMPRESSED_RED_RGTC1 GL_COMPRESSED_RED_RGTC1_EXT
+	#define GL_COMPRESSED_RG_RGTC2 GL_COMPRESSED_RED_GREEN_RGTC2_EXT
+	#define GL_COMPRESSED_RGBA_BPTC_UNORM_ARB GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
+	#define GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT
 
 	#define glClearDepth glClearDepthf
 	#define glClearTexImage glClearTexImageEXT

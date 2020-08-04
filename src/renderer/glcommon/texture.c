@@ -298,6 +298,7 @@ void glcommon_init_texture_formats(void) {
 
 	if(glext.tex_format.fxt1) {
 		ADD_COMPRESSED(FXT1_RGB, GL_RGB, GL_COMPRESSED_RGB_FXT1_3DFX, f_compressed);
+
 	}
 
 	dynarray_compact(&g_formats);
@@ -309,8 +310,8 @@ void glcommon_init_texture_formats(void) {
 				GLenum basefmt = fmt_info->base_format;
 				if(fmt_info->flags & GLTEX_SRGB) {
 					switch(basefmt) {
-						case GL_RGB: basefmt = GL_SRGB; break;
-						case GL_RGBA: basefmt = GL_SRGB_ALPHA; break;
+						case GL_RGB: basefmt = GL_SRGB_EXT; break;
+						case GL_RGBA: basefmt = GL_SRGB_ALPHA_EXT; break;
 					}
 				}
 				fmt_info->internal_format = basefmt;
