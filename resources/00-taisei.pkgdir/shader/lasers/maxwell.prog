@@ -1,1 +1,1 @@
-objects = lasers/maxwell.vert lasers/geenric.frag
+objects = lasers/maxwell.vert lasers/generic.frag

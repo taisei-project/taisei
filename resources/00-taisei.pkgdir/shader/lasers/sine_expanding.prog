@@ -1,1 +1,1 @@
-objects = lasers/sine_expanding.vert lasers/geenric.frag
+objects = lasers/sine_expanding.vert lasers/generic.frag

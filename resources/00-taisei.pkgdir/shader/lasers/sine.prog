@@ -1,1 +1,1 @@
-objects = lasers/sine.vert lasers/geenric.frag
+objects = lasers/sine.vert lasers/generic.frag
