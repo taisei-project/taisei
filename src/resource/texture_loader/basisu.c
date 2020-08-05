@@ -114,24 +114,6 @@ static basist_texture_format compfmt_pixmap_to_basist(PixmapFormat fmt) {
 	}
 }
 
-static void pack_GA8_to_RG8(Pixmap *pixmap) {
-	assert(pixmap->format == PIXMAP_FORMAT_RGBA8);
-
-	uint32_t num_pixels = pixmap->width * pixmap->height;
-	PixelRG8 *rg = calloc(num_pixels, PIXMAP_FORMAT_PIXEL_SIZE(PIXMAP_FORMAT_RG8));
-	PixelRGBA8 *rgba = pixmap->data.rgba8;
-
-	#pragma omp simd safelen(32)
-	for(uint32_t i = 0; i < num_pixels; ++i) {
-		rg[i].r = rgba[i].g;
-		rg[i].g = rgba[i].a;
-	}
-
-	free(pixmap->data.rgba8);
-	pixmap->data.rg8 = rg;
-	pixmap->format = PIXMAP_FORMAT_RG8;
-}
-
 static struct basis_size_info texture_loader_basisu_get_transcoded_size_info(
 	TextureLoadData *ld,
 	basist_transcoder *tc,

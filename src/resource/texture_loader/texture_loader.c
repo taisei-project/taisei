@@ -486,21 +486,6 @@ void texture_loader_stage1(ResourceLoadState *st) {
 	texture_loader_continue(ld);
 }
 
-static TextureFilterMode remove_mips_from_filter(TextureFilterMode filter) {
-	switch(filter) {
-		case TEX_FILTER_LINEAR_MIPMAP_LINEAR:
-		case TEX_FILTER_LINEAR_MIPMAP_NEAREST:
-			return TEX_FILTER_LINEAR;
-
-		case TEX_FILTER_NEAREST_MIPMAP_LINEAR:
-		case TEX_FILTER_NEAREST_MIPMAP_NEAREST:
-			return TEX_FILTER_NEAREST;
-
-		default:
-			return filter;
-	}
-}
-
 void texture_loader_continue(TextureLoadData *ld) {
 	texture_loader_cleanup_stage1(ld);
 	bool preprocess_needed = is_preprocess_needed(ld);
