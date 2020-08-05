@@ -331,13 +331,13 @@ static int gl_format_cmp(const void *a, const void *b) {
 }
 
 static int gl_format_search_cmp(const void *vkey, const void *velem) {
-	TextureType key = (uintptr_t)vkey;
+	const TextureType *key = vkey;
 	const GLTextureFormatInfo *elem = velem;
-	return key - elem->intended_type_mapping;
+	return *key - elem->intended_type_mapping;
 }
 
 static GLTextureFormatInfo *find_first(TextureType tex_type) {
-	GLTextureFormatInfo *fmt_info = bsearch((void*)tex_type, g_formats.data, g_formats.num_elements, sizeof(*g_formats.data), gl_format_search_cmp);
+	GLTextureFormatInfo *fmt_info = bsearch(&tex_type, g_formats.data, g_formats.num_elements, sizeof(*g_formats.data), gl_format_search_cmp);
 
 	if(fmt_info) {
 		assert(fmt_info->intended_type_mapping == tex_type);
