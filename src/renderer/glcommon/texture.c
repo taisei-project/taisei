@@ -143,7 +143,7 @@ void glcommon_init_texture_formats(void) {
 	}
 
 	#define ADD(...) \
-		(log_debug("ADD: " #__VA_ARGS__), *dynarray_append(&g_formats) = (GLTextureFormatInfo) { __VA_ARGS__ })
+		(*dynarray_append(&g_formats) = (GLTextureFormatInfo) { __VA_ARGS__ })
 
 	#define ADD_COMPRESSED(comp, basefmt, ifmt, flags) \
 		ADD(TEX_TYPE_COMPRESSED_##comp, basefmt, ifmt, { basefmt, GL_BYTE, PIXMAP_FORMAT_##comp }, flags, 0)

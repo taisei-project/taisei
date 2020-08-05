@@ -84,7 +84,7 @@ static basist_transcoder *texture_loader_basisu_get_transcoder(void) {
 		return NULL;
 	}
 
-	log_debug("Created Basis Universal transcoder %p for thread %p", (void*)tc, (void*)SDL_ThreadID());
+	BASISU_DEBUG("Created Basis Universal transcoder %p for thread %p", (void*)tc, (void*)SDL_ThreadID());
 
 	if(LIKELY(tls)) {
 		SDL_TLSSet(tls, tc, texture_loader_basisu_tls_destructor);
@@ -291,10 +291,10 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 		PixmapFormat px_fmt = *pfmt;
 		basist_texture_format basist_fmt = compfmt_pixmap_to_basist(px_fmt);
 
-		log_debug("%s: Try %s", ctx, pixmap_format_name(px_fmt));
+		BASISU_DEBUG("%s: Try %s", ctx, pixmap_format_name(px_fmt));
 
 		if(!basist_is_format_supported(basist_fmt, basis_source_fmt)) {
-			log_debug("%s: Skip: can't transcode from %s into %s",
+			BASISU_DEBUG("%s: Skip: can't transcode from %s into %s",
 				ctx,
 				get_basis_source_format_name(basis_source_fmt),
 				basist_get_format_name(basist_fmt)
@@ -305,12 +305,12 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 
 		TextureType tex_type = r_texture_type_from_pixmap_format(px_fmt);
 		if(!texture_loader_try_set_texture_type(ld, tex_type, px_fmt, org, false, &qr)) {
-			log_debug("%s: Skip: texture type %s not supported by renderer", ctx, r_texture_type_name(tex_type));
+			BASISU_DEBUG("%s: Skip: texture type %s not supported by renderer", ctx, r_texture_type_name(tex_type));
 			continue;
 		}
 
 		if(!qr.supplied_pixmap_origin_supported) {
-			log_debug("%s: Skip: supplied origin not supported; flipping not implemented", ctx);
+			BASISU_DEBUG("%s: Skip: supplied origin not supported; flipping not implemented", ctx);
 			continue;
 		}
 
@@ -427,15 +427,15 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	basist_file_info file_info = { 0 };
 	TRY(basist_transcoder_get_file_info, bld.tc, &file_info);
 
-	log_debug("Version: %u", file_info.version);
-	log_debug("Header size: %u", file_info.total_header_size);
-	log_debug("Source format: %s", get_basis_source_format_name(file_info.source_format));
-	log_debug("Y-flipped: %u", file_info.y_flipped);
-	log_debug("Total images: %u", file_info.total_images);
-	log_debug("Total slices: %u", file_info.total_slices);
-	log_debug("Has alpha slices: %u", file_info.has_alpha_slices);
-	log_debug("Userdata0: 0x%08x", file_info.userdata.userdata[0]);
-	log_debug("Userdata1: 0x%08x", file_info.userdata.userdata[1]);
+	BASISU_DEBUG("Version: %u", file_info.version);
+	BASISU_DEBUG("Header size: %u", file_info.total_header_size);
+	BASISU_DEBUG("Source format: %s", get_basis_source_format_name(file_info.source_format));
+	BASISU_DEBUG("Y-flipped: %u", file_info.y_flipped);
+	BASISU_DEBUG("Total images: %u", file_info.total_images);
+	BASISU_DEBUG("Total slices: %u", file_info.total_slices);
+	BASISU_DEBUG("Has alpha slices: %u", file_info.has_alpha_slices);
+	BASISU_DEBUG("Userdata0: 0x%08x", file_info.userdata.userdata[0]);
+	BASISU_DEBUG("Userdata1: 0x%08x", file_info.userdata.userdata[1]);
 
 	if(file_info.tex_type != BASIST_TYPE_2D) {
 		log_error("%s: Unsupported Basis Universal texture type %s",
@@ -459,8 +459,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	basist_image_info image_info;
 	TRY(basist_transcoder_get_image_info, bld.tc, image_idx, &image_info);
 
-	log_debug("Size: %ux%u", image_info.width, image_info.height);
-	log_debug("Original size: %ux%u", image_info.orig_width, image_info.orig_height);
+	BASISU_DEBUG("Size: %ux%u", image_info.width, image_info.height);
+	BASISU_DEBUG("Original size: %ux%u", image_info.orig_width, image_info.orig_height);
 
 	if(image_info.total_levels < 1) {
 		log_error("%s: No levels in image %u in Basis Universal texture", ctx, image_idx);
@@ -573,7 +573,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 			return;
 		}
 
-		log_debug("Level %i [%ix%i] : %i * %i = %i",
+		BASISU_DEBUG("Level %i [%ix%i] : %i * %i = %i",
 			i,
 			level_desc.orig_width, level_desc.orig_height,
 			size_info.num_blocks, size_info.block_size,

@@ -62,7 +62,7 @@ bool texture_loader_basisu_load_cached(
 	}
 
 	if(!vfs_query(path).exists) {
-		log_debug("%s not found", path);
+		BASISU_DEBUG("%s not found", path);
 		return false;
 	}
 
@@ -143,7 +143,7 @@ bool texture_loader_basisu_load_cached(
 		goto bad_entry;
 	}
 
-	log_debug("Loaded cache entry from %s", path);
+	BASISU_DEBUG("Loaded cache entry from %s", path);
 	return true;
 
 bad_entry:
@@ -186,7 +186,7 @@ bool texture_loader_basisu_cache(
 		return false;
 	}
 
-	log_debug("Cached pixmap at %s", path);
+	BASISU_DEBUG("Cached pixmap at %s", path);
 
 	return true;
 }

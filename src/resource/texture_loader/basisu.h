@@ -13,6 +13,16 @@
 
 #include "texture_loader.h"
 
+// #define BASISU_DEBUG
+
+#ifdef BASISU_DEBUG
+	#undef BASISU_DEBUG
+	#define BASISU_DEBUG(...) log_debug(__VA_ARGS__)
+#else
+	#undef BASISU_DEBUG
+	#define BASISU_DEBUG(...) ((void)0)
+#endif
+
 char *texture_loader_basisu_try_path(const char *basename);
 bool texture_loader_basisu_check_path(const char *path);
 void texture_loader_basisu(TextureLoadData *ld);
