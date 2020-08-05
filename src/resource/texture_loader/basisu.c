@@ -19,14 +19,15 @@
 #define BASISU_HASH_SIZE (SHA256_HEXDIGEST_SIZE + 17)
 
 enum {
-	BASISU_TAISEI_ID = 0x52656900,
-	BASISU_TAISEI_CHANNELS_R = 0,
-	BASISU_TAISEI_CHANNELS_RG = 1,
-	BASISU_TAISEI_CHANNELS_RGB = 2,
+	BASISU_TAISEI_ID            = 0x52656900,
+	BASISU_TAISEI_CHANNELS_R    = 0,
+	BASISU_TAISEI_CHANNELS_RG   = 1,
+	BASISU_TAISEI_CHANNELS_RGB  = 2,
 	BASISU_TAISEI_CHANNELS_RGBA = 3,
 	BASISU_TAISEI_CHANNELS_MASK = 0x3,
-	BASISU_TAISEI_SRGB = (1 << 2),
-	BASISU_TAISEI_NORMALMAP = (1 << 3),
+	BASISU_TAISEI_SRGB          = (BASISU_TAISEI_CHANNELS_MASK + 1) << 0,
+	BASISU_TAISEI_NORMALMAP     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 1,
+	BASISU_TAISEI_GRAYALPHA     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 2,
 };
 
 struct basis_size_info {
@@ -640,9 +641,16 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 		case BASISU_TAISEI_CHANNELS_RG:
 			if(channels == PIXMAP_LAYOUT_RGBA) {
-				ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
+				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
+					ld->params.swizzle = (TextureSwizzleMask) { "ggga" };
+				} else {
+					ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
+				}
 			} else {
 				assert(channels == PIXMAP_LAYOUT_RG);
+				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
+					ld->params.swizzle = (TextureSwizzleMask) { "rrrg" };
+				}
 			}
 			break;
 

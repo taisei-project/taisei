@@ -11,10 +11,16 @@ from tempfile import TemporaryDirectory
 import argparse
 import subprocess
 
-BASISU_TAISEI_ID = 0x52656900
+BASISU_TAISEI_ID            = 0x52656900
+BASISU_TAISEI_CHANNELS      = ('r', 'rg', 'rgb', 'rgba', 'gray-alpha')
 BASISU_TAISEI_CHANNELS_MASK = 0x3
-BASISU_TAISEI_SRGB = (1 << 2)
-BASISU_TAISEI_NORMALMAP = (1 << 3)
+BASISU_TAISEI_SRGB          = (BASISU_TAISEI_CHANNELS_MASK + 1) << 0
+BASISU_TAISEI_NORMALMAP     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 1
+BASISU_TAISEI_GRAYALPHA     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 2
+
+
+def channels_have_alpha(chans):
+    return chans in ('rgba', 'gray-alpha')
 
 
 def format_cmd(cmd):
@@ -41,7 +47,12 @@ def preprocess(args, tempdir):
         args.input
     ]
 
-    if args.channels == 'rgba':
+    if args.channels == 'gray-alpha':
+        cmd += [
+            '-colorspace', 'gray'
+        ]
+
+    if channels_have_alpha(args.channels):
         if args.multiply_alpha:
             cmd += [
                 '(',
@@ -76,7 +87,7 @@ def preprocess(args, tempdir):
             '-colorspace', 'gray'
         ]
 
-    if cmd[-1] != args.input or args.input.suffix != '.png':
+    if cmd[-1] != args.input or args.input.suffix not in ('.png', '.jpg'):
         dst = tempdir / 'preprocessed.png'
         cmd += [dst]
         run(args, cmd)
@@ -96,8 +107,11 @@ def process(args):
             '-output_file', args.output,
         ]
 
-        taisei_flags = ('r', 'rg', 'rgb', 'rgba').index(args.channels)
-        assert taisei_flags == taisei_flags & BASISU_TAISEI_CHANNELS_MASK
+        if args.channels == 'gray-alpha':
+            taisei_flags = BASISU_TAISEI_CHANNELS.index('rg') | BASISU_TAISEI_GRAYALPHA
+        else:
+            taisei_flags = BASISU_TAISEI_CHANNELS.index(args.channels)
+            assert taisei_flags == taisei_flags & BASISU_TAISEI_CHANNELS_MASK
 
         if args.y_flip:
             cmd += ['-y_flip']
@@ -126,7 +140,7 @@ def process(args):
         if args.channels == 'rg':
             cmd += ['-separate_rg_to_color_alpha']
 
-        if args.channels != 'rgba':
+        if not channels_have_alpha(args.channels):
             cmd += ['-no_alpha']
 
         cmd += [
@@ -259,16 +273,15 @@ def main(args):
         action='store_true',
     )
 
-    channels_choices = ('r', 'rg', 'rgb', 'rgba')
     channels_default = 'rgb'
 
     parser.add_argument('-c', '--channels',
         help=f'which input channels must be preserved (default: {channels_default})',
         default=channels_default,
-        choices=channels_choices,
+        choices=BASISU_TAISEI_CHANNELS,
     )
 
-    for ch in channels_choices:
+    for ch in BASISU_TAISEI_CHANNELS:
         parser.add_argument(f'--{ch}',
             dest='channels',
             help=f'alias for --channels={ch}{" (default)" if ch == channels_default else ""}',
@@ -378,7 +391,7 @@ def main(args):
 
     args = parser.parse_args(args[1:])
 
-    if args.channels == 'rgba' and args.alphamap and args.alphamap_path is None:
+    if channels_have_alpha(args.channels) and args.alphamap and args.alphamap_path is None:
         try:
             for s in image_suffixes:
                 p = args.input.with_suffix(f'.alphamap{s}')
