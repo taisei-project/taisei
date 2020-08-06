@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 
 import argparse
 import subprocess
+import sys
 
 BASISU_TAISEI_ID            = 0x52656900
 BASISU_TAISEI_CHANNELS      = ('r', 'rg', 'rgb', 'rgba', 'gray-alpha')
@@ -38,6 +39,11 @@ def run(args, cmd):
     print('RUN:  ' + format_cmd(cmd))
     if not args.dry_run:
         subprocess.check_call(cmd)
+
+
+def image_size(img_path):
+    o = subprocess.check_output(['convert', img_path, '-print', '%wx%h', 'null:'])
+    return tuple(int(d) for d in o.strip().decode('utf8').split('x'))
 
 
 def preprocess(args, tempdir):
@@ -97,6 +103,12 @@ def preprocess(args, tempdir):
 
 
 def process(args):
+    width, height = image_size(args.input)
+
+    if width % 4 != 0 or height % 4 != 0:
+        print(f'{args.input}: image dimensions are not multiples of 4 ({width}x{height})', file=sys.stderr)
+        exit(1)
+
     with TemporaryDirectory() as tempdir:
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
