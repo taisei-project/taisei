@@ -7,10 +7,9 @@ Basis Universal
 Intro
 -----
 
-Basis Universal is a GPU texture compression system with ability to transcode images into a wide variety of formats at
-runtime from a single source. You can read more about it `here <https://github.com/taisei-project/basis_universal>`__.
-This document explains how to author Basis Universal (``.basis``) textures for Taisei, and highlights limitations and
-caveats of our Basis support.
+`Basis Universal <https://github.com/taisei-project/basis_universal>`__ is a GPU texture compression system with ability
+to transcode images into a wide variety of formats at runtime from a single source. This document explains how to author
+Basis Universal (``.basis``) textures for Taisei, and highlights limitations and caveats of our Basis support.
 
 First-time setup
 ----------------
@@ -32,8 +31,11 @@ Verify that the encoder is working by running ``basisu``. It should print a long
 found, make sure ``~/.local/bin`` is in your ``PATH``, or choose another directory that is.
 
 The optimization options in ``meson setup`` are optional but highly recommended, as the encoding process can be quite
-slow. It's also possible to use the upstream encoder, which may be packaged by your distribution. However, this is not
-recommended. As of 2020-08-06, the upstream encoder is missing some important performance optimizations; see
+slow.
+
+It's also possible to use `the upstream encoder <https://github.com/BinomialLLC/basis_universal>`__, which may be
+packaged by your distribution. However, this is not recommended. As of 2020-08-06, the upstream encoder is missing some
+important performance optimizations; see
 `BinomialLLC/basis_universal#105 <https://github.com/BinomialLLC/basis_universal/pull/105>`__
 `BinomialLLC/basis_universal#112 <https://github.com/BinomialLLC/basis_universal/pull/112>`__
 `BinomialLLC/basis_universal#113 <https://github.com/BinomialLLC/basis_universal/pull/113>`__.
@@ -113,6 +115,23 @@ For a complete list of options and their default values, see
 
 Encoding details
 ----------------
+
+Encoding modes
+~~~~~~~~~~~~~~
+
+Basis Universal supports two very different encoding modes: ETC1S and UASTC. The primary difference between the two is
+the size/quality trade-off.
+
+ETC1S is the default mode. It offers medium/low quality and excellent compression.
+
+UASTC has significantly higher quality, but much larger file sizes. UASTC-encoded Basis files must also be additionally
+compressed with an LZ-based scheme, such as deflate (zlib). Zopfli-compressed UASTC files are roughly 4 times as large
+as their ETC1S equivalents (including mipmaps), comparable to the source file stored with lossless PNG or WebP
+compression.
+
+Although UASTC should theoretically work, it has not been well tested with Taisei yet. The ``mkbasis`` wrapper also does
+not apply LZ compression to UASTC files automatically yet, and Taisei wouldn't pick them up either (unless they are
+stored compressed inside of a ``.zip`` package). If you want to use UASTC nonetheless, pass ``--uastc`` to ``mkbasis``.
 
 *TODO*
 
