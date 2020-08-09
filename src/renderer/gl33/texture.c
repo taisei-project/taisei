@@ -263,13 +263,14 @@ Texture* gl33_texture_create(const TextureParams *params) {
 	memcpy(&tex->params, params, sizeof(*params));
 	TextureParams *p = &tex->params;
 
-	uint max_mipmaps = 1 + floor(log2(umax(tex->params.width, tex->params.height)));  // TODO replace with integer log2
+	uint max_mipmaps = r_texture_util_max_num_miplevels(p->width, p->height);
+	assert(max_mipmaps > 0);
 
 	if(p->mipmaps == 0) {
 		if(p->mipmap_mode == TEX_MIPMAP_AUTO) {
 			p->mipmaps = TEX_MIPMAPS_MAX;
 			if(p->flags & TEX_FLAG_SRGB) {
-				log_warn("FIXME: sRGB textures may not support automatic mipmap generation; please write a fallback!");
+				log_fatal_if_debug("FIXME: sRGB textures may not support automatic mipmap generation; please write a fallback!");
 			}
 		} else {
 			p->mipmaps = 1;
@@ -278,6 +279,12 @@ Texture* gl33_texture_create(const TextureParams *params) {
 
 	if(p->mipmaps == TEX_MIPMAPS_MAX || p->mipmaps > max_mipmaps) {
 		p->mipmaps = max_mipmaps;
+	}
+
+	bool partial_mipmaps_ok = r_supports(RFEAT_PARTIAL_MIPMAPS);
+
+	if(!partial_mipmaps_ok && p->mipmap_mode == TEX_MIPMAP_MANUAL && p->mipmaps > 1 && p->mipmaps < max_mipmaps) {
+		log_fatal_if_debug("Partial mipmaps not supported in this OpenGL version");
 	}
 
 	if(p->anisotropy == 0) {
@@ -304,7 +311,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 
 	apply_swizzle_mask(&tex->params.swizzle);
 
-	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
+	if(partial_mipmaps_ok) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
 	}
 
@@ -321,18 +328,7 @@ Texture* gl33_texture_create(const TextureParams *params) {
 		gl33_texture_get_size(tex, i, &width, &height);
 
 		if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
-#if 0
-			glCompressedTexImage2D(
-				GL_TEXTURE_2D,
-				i,
-				tex->fmt_info->internal_format,
-				width,
-				height,
-				0,
-				0,
-				NULL
-			);
-#endif
+			// XXX: can't pre-allocate this without ARB_texture_storage or equivalent
 		} else {
 			glTexImage2D(
 				GL_TEXTURE_2D,

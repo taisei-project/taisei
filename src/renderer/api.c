@@ -519,6 +519,11 @@ TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt) {
 	}
 }
 
+uint r_texture_util_max_num_miplevels(uint width, uint height) {
+	uint dim = umax(width, height);
+	return dim > 0 ? 1 + floor(log2(dim)) : 0;  // TODO replace with integer log2
+}
+
 Framebuffer* r_framebuffer_create(void) {
 	return B.framebuffer_create();
 }

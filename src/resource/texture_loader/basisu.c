@@ -527,8 +527,42 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		is_uncompressed_fallback = true;
 	}
 
+	if(!is_uncompressed_fallback) {
+		/*
+		* NOTE: We assume the renderer wants all mip levels of compressed textures to have dimensions divisible by 4
+		* (if dimension > 2). This is true for most (all?) BC[1-7] implementations in GLES, but other formats and/or
+		* renderers may have more lax requirements (core GL with ARB_texture_compression_{s3tc,bptc} in particular),
+		* or even stricter requirements.
+		*
+		* TODO: Add a renderer API to query such requirements on a per-format basis, and use it here.
+		*/
+
+		for(uint i = 1; i < image_info.total_levels; ++i) {
+			basist_image_level_desc level_desc;
+			TRY(basist_transcoder_get_image_level_desc, bld.tc, p.image_index, i, &level_desc);
+
+			if(
+				(level_desc.orig_width  > 2 && level_desc.orig_width  % 4) ||
+				(level_desc.orig_height > 2 && level_desc.orig_height % 4)
+			) {
+				log_warn("%s: Mip level %i dimensions are not multiples of 4 (%ix%i); number of levels reduced %i -> %i",
+					ctx, i, level_desc.orig_width, level_desc.orig_height, image_info.total_levels, i
+				);
+				image_info.total_levels = i;
+				break;
+			}
+		}
+	}
+
 	int mip_bias = env_get_int("TAISEI_BASISU_MIP_BIAS", 0);
 	mip_bias = iclamp(mip_bias, 0, image_info.total_levels - 1);
+
+	{
+		int max_levels = env_get("TAISEI_BASISU_MAX_MIP_LEVELS", 0);
+		if(max_levels > 0) {
+			image_info.total_levels = iclamp(image_info.total_levels, 1, mip_bias + max_levels);
+		}
+	}
 
 	// NOTE: the 0th mip level is stored in ld->pixmap
 	// ld->mipmaps and ld->num_mipmaps are for extra mip levels
@@ -536,10 +570,34 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	// But in TextureParams, the mipmap count includes the 0th level
 	ld->params.mipmaps = image_info.total_levels - mip_bias;
+
 	ld->params.mipmap_mode = TEX_MIPMAP_MANUAL;
 
-	// ld->params.width = image_info.orig_width;
-	// ld->params.height = image_info.orig_height;
+	uint max_mips = r_texture_util_max_num_miplevels(image_info.orig_width, image_info.orig_height);
+
+	if(
+		ld->params.mipmaps > 1 &&
+		ld->params.mipmaps < max_mips &&
+		!r_supports(RFEAT_PARTIAL_MIPMAPS)
+	) {
+		log_warn(
+			"%s: Texture has partial mipmaps (%i levels out of %i), but the renderer doesn't support this. "
+			"Mipmapping will be disabled for this texture",
+			ctx, ld->params.mipmaps, max_mips
+		);
+
+		ld->num_mipmaps = 0;
+		ld->params.mipmaps = 1;
+
+		// TODO: In case of decompression fallback, we could switch to auto-generated mipmaps here instead.
+		// Untested code follows:
+#if 0
+		if(is_uncompressed_fallback) {
+			ld->num_mipmaps = max_mips;
+			ld->params.mipmap_mode = TEX_MIPMAP_AUTO;
+		}
+#endif
+	}
 
 	if(ld->num_mipmaps) {
 		ld->mipmaps = calloc(ld->num_mipmaps, sizeof(*ld->mipmaps));
@@ -549,7 +607,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	bool transcoding_started = false;
 
-	for(uint i = mip_bias; i < image_info.total_levels; ++i) {
+	for(uint i = mip_bias; i < ld->params.mipmaps + mip_bias; ++i) {
 		p.level_index = i;
 
 		basist_image_level_desc level_desc;

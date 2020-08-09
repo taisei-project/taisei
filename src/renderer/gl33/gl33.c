@@ -317,6 +317,10 @@ static void gl33_init_context(SDL_Window *window) {
 		R.features |= r_feature_bit(RFEAT_TEXTURE_SWIZZLE);
 	}
 
+	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
+		R.features |= r_feature_bit(RFEAT_PARTIAL_MIPMAPS);
+	}
+
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
 
 	if(glext.clear_texture) {

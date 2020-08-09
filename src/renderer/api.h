@@ -41,6 +41,7 @@ typedef enum RendererFeature {
 	RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS,
 	RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN,
 	RFEAT_TEXTURE_SWIZZLE,
+	RFEAT_PARTIAL_MIPMAPS,
 
 	NUM_RFEATS,
 } RendererFeature;
@@ -722,6 +723,8 @@ void r_texture_destroy(Texture *tex) attr_nonnull(1);
 bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) attr_nodiscard;
 const char *r_texture_type_name(TextureType type);
 TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt);
+
+uint r_texture_util_max_num_miplevels(uint width, uint height);
 
 Framebuffer* r_framebuffer_create(void);
 const char* r_framebuffer_get_debug_label(Framebuffer *fb) attr_nonnull(1);
