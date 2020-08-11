@@ -140,7 +140,6 @@ static bool init_audio_device(void) {
 			"Sound may be distorted.",
 		   want.freq, want.format, have.freq, have.format
 		);
-		abort();
 	}
 
 	mixer.spec = astream_spec(have.format, have.channels, have.freq);
