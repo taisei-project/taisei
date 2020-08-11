@@ -93,6 +93,14 @@
 	#endif
 #endif
 
+#ifndef GL_ANGLE_request_extension
+#define GL_ANGLE_request_extension 1
+#define GL_REQUESTABLE_EXTENSIONS_ANGLE 0x93A8
+#define GL_NUM_REQUESTABLE_EXTENSIONS_ANGLE 0x93A9
+typedef void (APIENTRY *PFNGLREQUESTEXTENSIONANGLEPROC) (const GLchar *name);
+typedef void (APIENTRY *PFNGLDISABLEEXTENSIONANGLEPROC) (const GLchar *name);
+#endif /* GL_ANGLE_request_extension */
+
 #include "assert.h"
 
 // NOTE: The ability to query supported GLSL versions was added in GL 4.3,

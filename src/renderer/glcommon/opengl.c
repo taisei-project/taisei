@@ -764,6 +764,8 @@ static void glcommon_check_issues(void) {
 	);
 }
 
+static inline void (*load_gl_func(const char *name))(void);
+
 void glcommon_check_capabilities(void) {
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
@@ -811,6 +813,28 @@ void glcommon_check_capabilities(void) {
 	}
 
 	detect_broken_intel_driver();
+
+#ifndef STATIC_GLES3
+	if(glcommon_check_extension("GL_ANGLE_request_extension")) {
+		PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE = (PFNGLREQUESTEXTENSIONANGLEPROC)load_gl_func("glRequestExtensionANGLE");
+		assert(glRequestExtensionANGLE != NULL);
+
+		const char *src_string = (const char*)glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE);
+		char exts[strlen(src_string) + 1];
+		char *extsptr = exts, *ext;
+		memcpy(exts, src_string, sizeof(exts));
+
+		log_info("Requestable extensions: %s", src_string);
+
+		while((ext = strtok_r(NULL, " ", &extsptr))) {
+			if(!ext || !*ext || !env_get(ext, true)) {
+				continue;
+			}
+
+			glRequestExtensionANGLE(ext);
+		}
+	}
+#endif
 
 	// XXX: this is the legacy way, maybe we shouldn't try this first
 	const char *exts = (const char*)glGetString(GL_EXTENSIONS);
