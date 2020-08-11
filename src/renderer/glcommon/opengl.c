@@ -528,7 +528,7 @@ static void glcommon_ext_texture_format_etc2_eac(void) {
 static void glcommon_ext_texture_format_etc2_eac_srgb(void) {
 	EXT_FLAG(tex_format.etc2_eac_srgb);
 
-	CHECK_CORE(GL_ATLEAST(4, 3) || GLES_ATLEAST(3, 0));
+	CHECK_CORE(GL_ATLEAST(4, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
 	CHECK_EXT(GL_OES_compressed_ETC2_sRGB8_alpha8_texture);
 	CHECK_EXT(GL_ARB_ES3_compatibility);
 	CHECK_EXT(GL_WEBGL_compressed_texture_etc);
@@ -783,6 +783,14 @@ void glcommon_check_capabilities(void) {
 	if(glext.version.is_es) {
 		glext.version.is_ANGLE = strstr(glv, "(ANGLE ");
 		glext.version.is_webgl = strstr(glv, "(WebGL ");
+	}
+
+	if(!glext.version.is_webgl) {
+		glext.version.is_webgl = glcommon_check_extension("GL_ANGLE_webgl_compatibility");
+	}
+
+	if(glext.version.is_webgl) {
+		log_info("WebGL compatibility mode");
 	}
 
 	log_info("OpenGL version: %s", glv);

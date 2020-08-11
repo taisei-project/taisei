@@ -541,11 +541,33 @@ void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, Framebuffe
 }
 
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
-	return B.framebuffer_get_attachment(fb, attachment);
+	return B.framebuffer_query_attachment(fb, attachment).texture;
 }
 
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) {
-	return B.framebuffer_get_attachment_mipmap(fb, attachment);
+	return B.framebuffer_query_attachment(fb, attachment).miplevel;
+}
+
+void r_framebuffer_set_output_attachment(Framebuffer *fb, uint output, FramebufferAttachment attachment) {
+	FramebufferAttachment temp[FRAMEBUFFER_MAX_OUTPUTS];
+	assert(output < FRAMEBUFFER_MAX_OUTPUTS);
+	temp[output] = attachment;
+	B.framebuffer_outputs(fb, temp, 1 << output);
+}
+
+FramebufferAttachment r_framebuffer_get_output_attachment(Framebuffer *fb, uint output) {
+	FramebufferAttachment temp[FRAMEBUFFER_MAX_OUTPUTS];
+	assert(output < FRAMEBUFFER_MAX_OUTPUTS);
+	B.framebuffer_outputs(fb, temp, 0x00);
+	return temp[output];
+}
+
+void r_framebuffer_set_output_attachments(Framebuffer *fb, const FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]) {
+	B.framebuffer_outputs(fb, (FramebufferAttachment*)config, 0xff);
+}
+
+void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]) {
+	B.framebuffer_outputs(fb, config, 0x00);
 }
 
 void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
