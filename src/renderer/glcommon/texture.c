@@ -315,6 +315,7 @@ void glcommon_init_texture_formats(void) {
 					}
 				}
 				fmt_info->internal_format = basefmt;
+				fmt_info->transfer_format.gl_format = basefmt;
 			}
 		});
 	}
