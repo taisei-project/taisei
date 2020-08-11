@@ -245,6 +245,13 @@ typedef struct Pixmap {
 	PixmapOrigin origin;
 } Pixmap;
 
+typedef union SwizzleMask {
+	char rgba[4];
+	struct {
+		char r, g, b, a;
+	};
+} SwizzleMask;
+
 void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, uint32_t *out_bufsize) attr_returns_allocated;
 void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) attr_nonnull(1) attr_returns_allocated;
 void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format, uint32_t *out_bufsize) attr_nonnull(1) attr_returns_allocated;
@@ -255,6 +262,8 @@ void pixmap_copy_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) attr_nonnull(1, 2);
 void pixmap_convert_alloc(const Pixmap *src, Pixmap *dst, PixmapFormat format) attr_nonnull(1, 2);
 void pixmap_convert_inplace_realloc(Pixmap *src, PixmapFormat format);
+
+void pixmap_swizzle_inplace(Pixmap *px, SwizzleMask swizzle);
 
 void pixmap_flip_y(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
 void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) attr_nonnull(1, 2);
@@ -271,5 +280,9 @@ bool pixmap_check_filename(const char *path);
 char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
 const char *pixmap_format_name(PixmapFormat fmt);
+
+SwizzleMask swizzle_canonize(SwizzleMask sw_in);
+bool swizzle_is_valid(SwizzleMask sw);
+bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels);
 
 #endif // IGUARD_pixmap_pixmap_h

@@ -192,6 +192,20 @@ double clamp(double f, double lower, double upper) {
 	return f;
 }
 
+float clampf(float f, float lower, float upper) {
+	assert(lower <= upper);
+
+	if(f < lower) {
+		return lower;
+	}
+
+	if(f > upper) {
+		return upper;
+	}
+
+	return f;
+}
+
 intmax_t iclamp(intmax_t f, intmax_t lower, intmax_t upper) {
 	assert(lower <= upper);
 

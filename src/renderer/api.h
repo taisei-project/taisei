@@ -157,13 +157,6 @@ enum {
 	#define TEX_MIPMAPS_MAX ((uint)(-1))
 };
 
-typedef union TextureSwizzleMask {
-	char rgba[4];
-	struct {
-		char r, g, b, a;
-	};
-} TextureSwizzleMask;
-
 typedef struct TextureParams {
 	uint width;
 	uint height;
@@ -179,7 +172,7 @@ typedef struct TextureParams {
 		TextureWrapMode t;
 	} wrap;
 
-	TextureSwizzleMask swizzle;
+	SwizzleMask swizzle;
 
 	uint anisotropy;
 	uint mipmaps;

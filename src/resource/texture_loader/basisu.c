@@ -176,6 +176,12 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 	TextureTypeQueryResult *out_qr
 ) {
 	const char *ctx = ld->st->name;
+	TextureTypeQueryResult qr;
+
+	if(env_get("TAISEI_BASISU_FORCE_UNCOMPRESSED", false)) {
+		log_info("%s: Uncompressed fallback forced by environment", ctx);
+		goto uncompressed;
+	}
 
 	static int fmt_prio[4][BASIST_NUM_FORMATS] = {
 		/*
@@ -286,7 +292,7 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 	uint chan_idx = taisei_meta & BASISU_TAISEI_CHANNELS_MASK;
 	assert(chan_idx < ARRAY_SIZE(fmt_prio));
 
-	TextureTypeQueryResult qr;
+	bool swizzle_supported = r_supports(RFEAT_TEXTURE_SWIZZLE);
 
 	for(int *pfmt = fmt_prio[chan_idx]; *pfmt; ++pfmt) {
 		PixmapFormat px_fmt = *pfmt;
@@ -302,6 +308,22 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			);
 
 			continue;
+		}
+
+		if(chan_idx == BASISU_TAISEI_CHANNELS_RG && !swizzle_supported) {
+			uint nchans = pixmap_format_layout(px_fmt);
+
+			if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
+				if(nchans == 2) {
+					BASISU_DEBUG("%s: Skip: can't swizzle RG01 into RRRG", ctx);
+					continue;
+				}
+			} else {
+				if(nchans == 4) {
+					BASISU_DEBUG("%s: Skip: can't swizzle RGBA into GA01", ctx);
+					continue;
+				}
+			}
 		}
 
 		TextureType tex_type = r_texture_type_from_pixmap_format(px_fmt);
@@ -323,10 +345,14 @@ static PixmapFormat texture_loader_basisu_pick_and_apply_compressed_format(
 			*out_qr = qr;
 		}
 
+		log_info("%s: Transcoding into %s", ctx, basist_get_format_name(basist_fmt));
 		return px_fmt;
 	}
 
 	log_warn("%s: No suitable compression format available; falling back to uncompressed RGBA", ctx);
+
+uncompressed:
+	(void)0;  // C is dumb
 
 	TextureType tex_type = r_texture_type_from_pixmap_format(fallback_format);
 	if(texture_loader_set_texture_type_uncompressed(ld, tex_type, PIXMAP_FORMAT_RGBA8, org, &qr)) {
@@ -383,6 +409,52 @@ static char *read_basis_file(SDL_RWops *rw, size_t *file_size, size_t hash_size,
 	snprintf(&hash[SHA256_HEXDIGEST_SIZE - 1], BASISU_HASH_SIZE - SHA256_HEXDIGEST_SIZE, "-%zx", *file_size);
 
 	return buf;
+}
+
+static void texture_loader_basisu_set_swizzle(TextureLoadData *ld, PixmapFormat fmt, uint32_t taisei_meta) {
+	PixmapLayout channels = pixmap_format_layout(fmt);
+
+	switch(taisei_meta & BASISU_TAISEI_CHANNELS_MASK) {
+		// NOTE: Using the green channel for monochrome data ensures best precision,
+		// because color endpoints are stored as RGB565 in some formats.
+
+		case BASISU_TAISEI_CHANNELS_R:
+			if(channels == PIXMAP_LAYOUT_R) {
+				ld->params.swizzle = (SwizzleMask) { "rrr1" };
+			} else {
+				ld->params.swizzle = (SwizzleMask) { "ggg1" };
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RG:
+			if(channels == PIXMAP_LAYOUT_RGBA) {
+				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
+					ld->params.swizzle = (SwizzleMask) { "ggga" };
+				} else {
+					ld->params.swizzle = (SwizzleMask) { "ga01" };
+				}
+			} else {
+				assert(channels == PIXMAP_LAYOUT_RG);
+				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
+					ld->params.swizzle = (SwizzleMask) { "rrrg" };
+				}
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RGB:
+			if(channels == PIXMAP_LAYOUT_RGBA) {
+				ld->params.swizzle = (SwizzleMask) { "rgb1" };
+			} else {
+				assert(channels == PIXMAP_LAYOUT_RGB);
+			}
+			break;
+
+		case BASISU_TAISEI_CHANNELS_RGBA:
+			break;
+
+		default:
+			UNREACHABLE;
+	}
 }
 
 void texture_loader_basisu(TextureLoadData *ld) {
@@ -605,6 +677,9 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		ld->mipmaps = NULL;
 	}
 
+	texture_loader_basisu_set_swizzle(ld, px_decode_format, taisei_meta);
+
+	bool swizzle_supported = r_supports(RFEAT_TEXTURE_SWIZZLE);
 	bool transcoding_started = false;
 
 	for(uint i = mip_bias; i < ld->params.mipmaps + mip_bias; ++i) {
@@ -671,6 +746,11 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		}
 
 		if(is_uncompressed_fallback) {
+			// TODO: maybe cache the swizzle result?
+			if(!swizzle_supported) {
+				pixmap_swizzle_inplace(out_pixmap, ld->params.swizzle);
+			}
+
 			// NOTE: it doesn't hurt to call this in the compressed case as well,
 			// but it's effectively a no-op with a redundant texture type query.
 
@@ -681,51 +761,11 @@ void texture_loader_basisu(TextureLoadData *ld) {
 		}
 	}
 
-	TRY(basist_transcoder_stop_transcoding, bld.tc);
-
-	PixmapLayout channels = pixmap_format_layout(ld->pixmap.format);
-
-	switch(taisei_meta & BASISU_TAISEI_CHANNELS_MASK) {
-		// NOTE: Using the green channel for monochrome data ensures best precision,
-		// because color endpoints are stored as RGB565 in some formats.
-
-		case BASISU_TAISEI_CHANNELS_R:
-			if(channels == PIXMAP_LAYOUT_R) {
-				ld->params.swizzle = (TextureSwizzleMask) { "rrr1" };
-			} else {
-				ld->params.swizzle = (TextureSwizzleMask) { "ggg1" };
-			}
-			break;
-
-		case BASISU_TAISEI_CHANNELS_RG:
-			if(channels == PIXMAP_LAYOUT_RGBA) {
-				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
-					ld->params.swizzle = (TextureSwizzleMask) { "ggga" };
-				} else {
-					ld->params.swizzle = (TextureSwizzleMask) { "ga01" };
-				}
-			} else {
-				assert(channels == PIXMAP_LAYOUT_RG);
-				if(taisei_meta & BASISU_TAISEI_GRAYALPHA) {
-					ld->params.swizzle = (TextureSwizzleMask) { "rrrg" };
-				}
-			}
-			break;
-
-		case BASISU_TAISEI_CHANNELS_RGB:
-			if(channels == PIXMAP_LAYOUT_RGBA) {
-				ld->params.swizzle = (TextureSwizzleMask) { "rgb1" };
-			} else {
-				assert(channels == PIXMAP_LAYOUT_RGB);
-			}
-			break;
-
-		case BASISU_TAISEI_CHANNELS_RGBA:
-			break;
-
-		default:
-			UNREACHABLE;
+	if(is_uncompressed_fallback && !swizzle_supported) {
+		ld->params.swizzle = (SwizzleMask) { "rgba" };
 	}
+
+	TRY(basist_transcoder_stop_transcoding, bld.tc);
 
 	// These are expected to be pre-applied if needed
 	ld->preprocess.multiply_alpha = 0;

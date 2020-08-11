@@ -134,7 +134,7 @@ typedef void (*convfunc_t)(
 	size_t num_pixels,
 	void *vbuf_in,
 	void *vbuf_out,
-	void *default_pixel
+	int swizzle[4]
 );
 
 #define CONV(in, in_depth, out, out_depth) { convert_##in##_to_##out, in_depth, out_depth }
@@ -177,21 +177,6 @@ static struct conversion_def* find_conversion(uint depth_in, uint depth_out) {
 	}
 
 	log_fatal("Pixmap conversion for %upbc -> %upbc undefined, please add", depth_in, depth_out);
-}
-
-static void *default_pixel(uint depth) {
-	static uint8_t  default_u8[]  = { 0, 0, 0, UINT8_MAX  };
-	static uint16_t default_u16[] = { 0, 0, 0, UINT16_MAX };
-	static uint32_t default_u32[] = { 0, 0, 0, UINT32_MAX };
-	static float    default_f32[] = { 0, 0, 0, 1.0f       };
-
-	switch(depth) {
-		case 8:  return default_u8;
-		case 16: return default_u16;
-		case 32: return default_u32;
-		case 32 | DEPTH_FLOAT_BIT: return default_f32;
-		default: UNREACHABLE;
-	}
 }
 
 static uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height) {
@@ -254,7 +239,45 @@ void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
 		num_pixels,
 		src->data.untyped,
 		dst->data.untyped,
-		default_pixel(PIXMAP_FORMAT_DEPTH(dst->format) | (PIXMAP_FORMAT_IS_FLOAT(dst->format) * DEPTH_FLOAT_BIT))
+		NULL
+	);
+}
+
+static int swizzle_idx(char s) {
+	switch(s) {
+		case 'r': return 0;
+		case 'g': return 1;
+		case 'b': return 2;
+		case 'a': return 3;
+		case '0': return 4;
+		case '1': return 5;
+		default: UNREACHABLE;
+	}
+}
+
+void pixmap_swizzle_inplace(Pixmap *px, SwizzleMask swizzle) {
+	uint channels = pixmap_format_layout(px->format);
+	swizzle = swizzle_canonize(swizzle);
+
+	if(!swizzle_is_significant(swizzle, channels)) {
+		return;
+	}
+
+	uint cvt_id = pixmap_format_depth(px->format) | (pixmap_format_is_float(px->format) * DEPTH_FLOAT_BIT);
+	struct conversion_def *cv = find_conversion(cvt_id, cvt_id);
+
+	cv->func(
+		channels,
+		channels,
+		px->width * px->height,
+		px->data.untyped,
+		px->data.untyped,
+		(int[]) {
+			swizzle_idx(swizzle.r),
+			swizzle_idx(swizzle.g),
+			swizzle_idx(swizzle.b),
+			swizzle_idx(swizzle.a),
+		}
 	);
 }
 
@@ -471,4 +494,47 @@ const char *pixmap_format_name(PixmapFormat fmt) {
 
 		default: return NULL;
 	}
+}
+
+SwizzleMask swizzle_canonize(SwizzleMask sw_in) {
+	SwizzleMask sw_out;
+	sw_out.r = sw_in.r ? sw_in.r : 'r';
+	sw_out.g = sw_in.g ? sw_in.g : 'g';
+	sw_out.b = sw_in.b ? sw_in.b : 'b';
+	sw_out.a = sw_in.a ? sw_in.a : 'a';
+	assert(swizzle_is_valid(sw_out));
+	return sw_out;
+}
+
+static bool swizzle_component_is_valid(char c) {
+	switch(c) {
+		case 'r': case 'g': case 'b': case 'a': case '0': case '1':
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+bool swizzle_is_valid(SwizzleMask sw) {
+	for(int i = 0; i < 4; ++i) {
+		if(!swizzle_component_is_valid(sw.rgba[i])) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels) {
+	assert(num_significant_channels <= 4);
+
+	for(uint i = 0; i < num_significant_channels; ++i) {
+		assert(swizzle_component_is_valid(sw.rgba[i]));
+		if(sw.rgba[i] != "rgba"[i]) {
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -26,6 +26,7 @@ uintmax_t umin(uintmax_t, uintmax_t) attr_const;
 uintmax_t umax(uintmax_t, uintmax_t) attr_const;
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double clamp(double, double, double) attr_const;
+float clampf(float, float, float) attr_const;
 double smoothstep(double edge0, double edge1, double x) attr_const;
 double smoothmin(double a, double b, double k);
 double approach(double v, double t, double d) attr_const;

@@ -251,7 +251,7 @@ static void apply_swizzle(GLenum param, char val) {
 	}
 }
 
-static void apply_swizzle_mask(TextureSwizzleMask *mask) {
+static void apply_swizzle_mask(SwizzleMask *mask) {
 	apply_swizzle(GL_TEXTURE_SWIZZLE_R, mask->r);
 	apply_swizzle(GL_TEXTURE_SWIZZLE_G, mask->g);
 	apply_swizzle(GL_TEXTURE_SWIZZLE_B, mask->b);
