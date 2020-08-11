@@ -25,7 +25,7 @@ if host_machine.system() == 'emscripten'
         'gfx/*.spr',
         'gfx/*.tex',
         'fonts/*.font',
-        'models/*.obj',
+        'models/*.iqm',
 
         # We don't want to include the shader sources here, we're going to translate them first.
         'shader/*.prog'
