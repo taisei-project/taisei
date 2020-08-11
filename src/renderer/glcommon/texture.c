@@ -98,8 +98,6 @@ void glcommon_init_texture_formats(void) {
 	const bool have_float32 = glext.texture_float;
 	const bool have_depth_tex = glext.depth_texture;
 
-	assert(have_rg);
-
 	// TODO: optionally utilize ARB_internalformat_query2 to query actual properties of each format
 
 	GLTextureFormatFlags f_clr_common = GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE | GLTEX_BLENDABLE;
