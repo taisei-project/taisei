@@ -28,10 +28,19 @@ var glContext = canvasElement.getContext('webgl2', {
     'stencil' : false,
 });
 
-// This actually enables the extension. Galaxy-brain API right here.
-glContext.getExtension('WEBGL_debug_renderer_info');
+if(!glContext) {
+    throw "Could not create a WebGL 2 context";
+}
 
 // glContext = WebGLDebugUtils.makeDebugContext(glContext);
+
+// WebGL extensions have to be explicitly enabled to make the functionality available.
+// Note that Emscripten will always report all *supported* extensions in GL_EXTENSIONS,
+// regardless of whether they are enabled or not. This is non-conformant from the GLES
+// perspective. The easiest way to fix that is to enable all of them here.
+glContext.getSupportedExtensions().forEach(function(ext) {
+    glContext.getExtension(ext);
+});
 
 canvasElement.addEventListener("webglcontextlost", function(e) {
     alert('WebGL context lost. You will need to reload the page.');
