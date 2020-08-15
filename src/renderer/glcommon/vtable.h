@@ -15,15 +15,9 @@
 #include "../common/backend.h"
 #include "texture.h"
 
-typedef enum GLTexFormatCapabilities {
-	GLTEX_COLOR_RENDERABLE,
-	GLTEX_DEPTH_RENDERABLE,
-	GLTEX_FILTERABLE,
-} GLTexFormatCapabilities;
-
 typedef struct GLVTable {
-	GLTextureTypeInfo* (*texture_type_info)(TextureType type);
-	GLTexFormatCapabilities (*texture_format_caps)(GLenum internal_fmt);
+// 	GLTextureTypeInfo* (*texture_type_info)(TextureType type);
+// 	GLTexFormatCapabilities (*texture_format_caps)(GLenum internal_fmt);
 	void (*init_context)(SDL_Window *window);
 	void (*get_viewport)(FloatRect *vp);
 	void (*set_viewport)(const FloatRect *vp);

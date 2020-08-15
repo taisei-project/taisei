@@ -148,11 +148,13 @@ dep_crypto      = dependency('libcrypto',                           required : f
 
 dep_m           = cc.find_library('m', required : false)
 
+dep_basisu_transcoder = subproject('basis_universal').get_variable('basisu_transcoder_dep')
 dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
 dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 
 taisei_deps = [
+    dep_basisu_transcoder,
     dep_cglm,
     dep_freetype,
     dep_koishi,
@@ -252,6 +254,8 @@ else
 endif
 
 config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
+config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
+config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 
 prefer_relpath_systems = [
     'windows',

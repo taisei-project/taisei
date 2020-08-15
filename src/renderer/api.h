@@ -12,7 +12,7 @@
 #include "taisei.h"
 
 #include "util.h"
-#include "util/pixmap.h"
+#include "pixmap/pixmap.h"
 #include "color.h"
 #include "common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
@@ -40,6 +40,8 @@ typedef enum RendererFeature {
 	RFEAT_DEPTH_TEXTURE,
 	RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS,
 	RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN,
+	RFEAT_TEXTURE_SWIZZLE,
+	RFEAT_PARTIAL_MIPMAPS,
 
 	NUM_RFEATS,
 } RendererFeature;
@@ -56,41 +58,69 @@ typedef enum RendererCapability {
 
 typedef uint_fast8_t r_capability_bits_t;
 
+enum {
+	TEX_TYPE_COMPRESSED_BIT = 0x8000,
+};
+
+#define TEX_TYPES_UNCOMPRESSED(X, ...) \
+	/* NOTE: whichever is placed first here is considered the "default" where applicable. */ \
+	X(RGBA_8, __VA_ARGS__) \
+	X(RGB_8, __VA_ARGS__) \
+	X(RG_8, __VA_ARGS__) \
+	X(R_8, __VA_ARGS__) \
+	X(RGBA_16, __VA_ARGS__) \
+	X(RGB_16, __VA_ARGS__) \
+	X(RG_16, __VA_ARGS__) \
+	X(R_16, __VA_ARGS__) \
+	X(RGBA_16_FLOAT, __VA_ARGS__) \
+	X(RGB_16_FLOAT, __VA_ARGS__) \
+	X(RG_16_FLOAT, __VA_ARGS__) \
+	X(R_16_FLOAT, __VA_ARGS__) \
+	X(RGBA_32_FLOAT, __VA_ARGS__) \
+	X(RGB_32_FLOAT, __VA_ARGS__) \
+	X(RG_32_FLOAT, __VA_ARGS__) \
+	X(R_32_FLOAT, __VA_ARGS__) \
+	X(DEPTH_8, __VA_ARGS__) \
+	X(DEPTH_16, __VA_ARGS__) \
+	X(DEPTH_24, __VA_ARGS__) \
+	X(DEPTH_32, __VA_ARGS__) \
+	X(DEPTH_16_FLOAT, __VA_ARGS__) \
+	X(DEPTH_32_FLOAT, __VA_ARGS__) \
+
+#define TEX_TYPES_HANDLE_COMPRESSED(comp, layout, X, ...) \
+	X(COMPRESSED_##comp, __VA_ARGS__)
+
+#define TEX_TYPES_COMPRESSED(X, ...) \
+	PIXMAP_COMPRESSION_FORMATS(TEX_TYPES_HANDLE_COMPRESSED, X, __VA_ARGS__)
+
+#define TEX_TYPES(X, ...) \
+	TEX_TYPES_UNCOMPRESSED(X, __VA_ARGS__) \
+	TEX_TYPES_COMPRESSED(X, __VA_ARGS__) \
+
 typedef enum TextureType {
-	// NOTE: whichever is placed first here is considered the "default" where applicable.
-	TEX_TYPE_RGBA_8,
-	TEX_TYPE_RGB_8,
-	TEX_TYPE_RG_8,
-	TEX_TYPE_R_8,
+	TEX_TYPE_INVALID = -1,
 
-	TEX_TYPE_RGBA_16,
-	TEX_TYPE_RGB_16,
-	TEX_TYPE_RG_16,
-	TEX_TYPE_R_16,
+	#define DECLARE_TEX_UNCOMPRESSED_TYPE(type, ...) \
+		TEX_TYPE_##type,
+	TEX_TYPES_UNCOMPRESSED(DECLARE_TEX_UNCOMPRESSED_TYPE,)
+	#undef DECLARE_TEX_UNCOMPRESSED_TYPE
 
-	TEX_TYPE_RGBA_16_FLOAT,
-	TEX_TYPE_RGB_16_FLOAT,
-	TEX_TYPE_RG_16_FLOAT,
-	TEX_TYPE_R_16_FLOAT,
+	#define DECLARE_TEX_COMPRESSED_TYPE(fmt, ...) \
+		TEX_TYPE_COMPRESSED_##fmt = PIXMAP_COMPRESSION_##fmt | TEX_TYPE_COMPRESSED_BIT,
+	PIXMAP_COMPRESSION_FORMATS(DECLARE_TEX_COMPRESSED_TYPE,)
+	#undef DECLARE_TEX_COMPRESSED_TYPE
 
-	TEX_TYPE_RGBA_32_FLOAT,
-	TEX_TYPE_RGB_32_FLOAT,
-	TEX_TYPE_RG_32_FLOAT,
-	TEX_TYPE_R_32_FLOAT,
-
-	TEX_TYPE_DEPTH_8,
-	TEX_TYPE_DEPTH_16,
-	TEX_TYPE_DEPTH_24,
-	TEX_TYPE_DEPTH_32,
-	TEX_TYPE_DEPTH_16_FLOAT,
-	TEX_TYPE_DEPTH_32_FLOAT,
-
-	TEX_TYPE_RGBA = TEX_TYPE_RGBA_8,
-	TEX_TYPE_RGB = TEX_TYPE_RGB_8,
-	TEX_TYPE_RG = TEX_TYPE_RG_8,
 	TEX_TYPE_R = TEX_TYPE_R_8,
-	TEX_TYPE_DEPTH = TEX_TYPE_DEPTH_8,
+	TEX_TYPE_RG = TEX_TYPE_RG_8,
+	TEX_TYPE_RGB = TEX_TYPE_RGB_8,
+	TEX_TYPE_RGBA = TEX_TYPE_RGBA_8,
+	TEX_TYPE_DEPTH = TEX_TYPE_DEPTH_24,
 } TextureType;
+
+#define TEX_TYPE_IS_COMPRESSED(type)         ((bool)((type) & TEX_TYPE_COMPRESSED_BIT))
+#define TEX_TYPE_TO_COMPRESSION_FORMAT(type) ((PixmapCompression)((type) & ~TEX_TYPE_COMPRESSED_BIT))
+#define COMPRESSION_FORMAT_TO_TEX_TYPE(cfmt) ((TextureType)((cfmt) | TEX_TYPE_COMPRESSED_BIT))
+#define TEX_TYPE_IS_DEPTH(type)              ((type) >= TEX_TYPE_DEPTH_8 && (type) <= TEX_TYPE_DEPTH_32_FLOAT)
 
 typedef enum TextureFilterMode {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
@@ -114,6 +144,12 @@ typedef enum TextureMipmapMode {
 	TEX_MIPMAP_AUTO,
 } TextureMipmapMode;
 
+typedef enum TextureFlags {
+	// NOTE: this can be later expanded to include intended usage flags, e.g. "render target", "filterable", etc.
+	TEX_FLAG_SRGB = (1 << 0),
+	TEX_FLAG_STREAM = (1 << 1),
+} TextureFlags;
+
 enum {
 	TEX_ANISOTROPY_DEFAULT = 1,
 	// TEX_MIPMAPS_MAX = ((uint)(-1)),
@@ -136,11 +172,20 @@ typedef struct TextureParams {
 		TextureWrapMode t;
 	} wrap;
 
+	SwizzleMask swizzle;
+
 	uint anisotropy;
 	uint mipmaps;
 	TextureMipmapMode mipmap_mode;
-	bool stream;
+	TextureFlags flags;
 } attr_designated_init TextureParams;
+
+typedef struct TextureTypeQueryResult {
+	PixmapFormat optimal_pixmap_format;
+	PixmapOrigin optimal_pixmap_origin;
+	bool supplied_pixmap_format_supported;
+	bool supplied_pixmap_origin_supported;
+} TextureTypeQueryResult;
 
 typedef enum FramebufferAttachment {
 	FRAMEBUFFER_ATTACH_DEPTH,
@@ -151,7 +196,12 @@ typedef enum FramebufferAttachment {
 
 	FRAMEBUFFER_MAX_COLOR_ATTACHMENTS = 4,
 	FRAMEBUFFER_MAX_ATTACHMENTS = FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
+	FRAMEBUFFER_ATTACH_NONE = -1,
 } FramebufferAttachment;
+
+enum {
+	FRAMEBUFFER_MAX_OUTPUTS = FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
+};
 
 typedef enum Primitive {
 	PRIM_POINTS,
@@ -667,7 +717,12 @@ void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixm
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
-PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format);
+
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) attr_nodiscard;
+const char *r_texture_type_name(TextureType type);
+TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt);
+
+uint r_texture_util_max_num_miplevels(uint width, uint height);
 
 Framebuffer* r_framebuffer_create(void);
 const char* r_framebuffer_get_debug_label(Framebuffer *fb) attr_nonnull(1);
@@ -675,6 +730,10 @@ void r_framebuffer_set_debug_label(Framebuffer *fb, const char* label) attr_nonn
 void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, FramebufferAttachment attachment) attr_nonnull(1);
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) attr_nonnull(1);
+void r_framebuffer_set_output_attachment(Framebuffer *fb, uint output, FramebufferAttachment attachment);
+FramebufferAttachment r_framebuffer_get_output_attachment(Framebuffer *fb, uint output);
+void r_framebuffer_set_output_attachments(Framebuffer *fb, const FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]);
+void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]);
 void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h);
 void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);

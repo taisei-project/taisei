@@ -22,10 +22,14 @@ static GLuint r_attachment_to_gl_attachment[] = {
 
 static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == FRAMEBUFFER_MAX_ATTACHMENTS, "");
 
-Framebuffer* gl33_framebuffer_create(void) {
+Framebuffer *gl33_framebuffer_create(void) {
 	Framebuffer *fb = calloc(1, sizeof(Framebuffer));
 	glGenFramebuffers(1, &fb->gl_fbo);
 	snprintf(fb->debug_label, sizeof(fb->debug_label), "FBO #%i", fb->gl_fbo);
+
+	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+		fb->output_mapping[i] = FRAMEBUFFER_ATTACH_COLOR0 + i;
+	}
 
 	// According to the GL spec, the FBO is only actually created when it's first bound.
 	// Let's make sure this happens as early as possible.
@@ -37,7 +41,7 @@ Framebuffer* gl33_framebuffer_create(void) {
 	return fb;
 }
 
-attr_unused static inline char* attachment_str(FramebufferAttachment a) {
+attr_unused static inline char *attachment_str(FramebufferAttachment a) {
 	#define A(x) case x: return #x;
 	switch(a) {
 		A(FRAMEBUFFER_ATTACH_COLOR0)
@@ -53,12 +57,13 @@ attr_unused static inline char* attachment_str(FramebufferAttachment a) {
 void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) {
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
 	assert(!tex || mipmap < tex->params.mipmaps);
+	assert(tex || mipmap == 0);
 
 	GLuint gl_tex = tex ? tex->gl_handle : 0;
 	Framebuffer *prev_fb = r_framebuffer_current();
 
-	// make sure gl33_sync_framebuffer doesn't call gl33_framebuffer_initialize here
-	framebuffer->initialized = true;
+	// gl33_sync_framebuffer will call gl33_framebuffer_prepare; we don't want it to touch draw buffers yet.
+	framebuffer->draw_buffers_dirty = false;
 
 	r_framebuffer(framebuffer);
 	gl33_sync_framebuffer();
@@ -69,7 +74,7 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 	framebuffer->attachment_mipmaps[attachment] = mipmap;
 
 	// need to update draw buffers
-	framebuffer->initialized = false;
+	framebuffer->draw_buffers_dirty = false;
 
 	IF_DEBUG(if(tex) {
 		log_debug("%s %s = %s (%ux%u mip %u)", framebuffer->debug_label, attachment_str(attachment), tex->debug_label, tex->params.width, tex->params.height, mipmap);
@@ -78,14 +83,35 @@ void gl33_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap
 	});
 }
 
-Texture* gl33_framebuffer_get_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
+FramebufferAttachmentQueryResult gl33_framebuffer_query_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) {
 	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-	return framebuffer->attachments[attachment];
+	return (FramebufferAttachmentQueryResult) {
+		.texture = framebuffer->attachments[attachment],
+		.miplevel = framebuffer->attachment_mipmaps[attachment],
+	};
 }
 
-uint gl33_framebuffer_get_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) {
-	assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-	return framebuffer->attachment_mipmaps[attachment];
+void gl33_framebuffer_outputs(
+	Framebuffer *framebuffer,
+	FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS],
+	uint8_t write_mask
+) {
+	if(write_mask == 0x00) {
+		memcpy(config, framebuffer->output_mapping, sizeof(framebuffer->output_mapping));
+		return;
+	}
+
+	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+		if(write_mask & (1 << i) && config[i] != framebuffer->output_mapping[i]) {
+			if(config[i] != FRAMEBUFFER_ATTACH_NONE) {
+				assert(config[i] >= FRAMEBUFFER_ATTACH_COLOR0);
+				assert(config[i] < FRAMEBUFFER_ATTACH_COLOR0 + FRAMEBUFFER_MAX_COLOR_ATTACHMENTS);
+			}
+
+			framebuffer->output_mapping[i] = config[i];
+			framebuffer->draw_buffers_dirty = true;
+		}
+	}
 }
 
 void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
@@ -103,24 +129,28 @@ void gl33_framebuffer_taint(Framebuffer *framebuffer) {
 }
 
 void gl33_framebuffer_prepare(Framebuffer *framebuffer) {
-	if(!framebuffer->initialized) {
+	if(framebuffer->draw_buffers_dirty) {
 		// NOTE: this framebuffer is guaranteed to be bound at this point
 
 		if(glext.draw_buffers) {
-			GLenum drawbufs[FRAMEBUFFER_MAX_COLOR_ATTACHMENTS];
+			GLenum drawbufs[FRAMEBUFFER_MAX_OUTPUTS];
 
-			for(int i = 0; i < FRAMEBUFFER_MAX_COLOR_ATTACHMENTS; ++i) {
-				if(framebuffer->attachments[FRAMEBUFFER_ATTACH_COLOR0 + i] != NULL) {
-					drawbufs[i] = GL_COLOR_ATTACHMENT0 + i;
-				} else {
+			for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+				FramebufferAttachment a = framebuffer->output_mapping[i];
+
+				if(a == FRAMEBUFFER_ATTACH_NONE || framebuffer->attachments[a] == NULL) {
 					drawbufs[i] = GL_NONE;
+				} else {
+					drawbufs[i] = GL_COLOR_ATTACHMENT0 + (a - FRAMEBUFFER_ATTACH_COLOR0);
 				}
 			}
 
-			glDrawBuffers(FRAMEBUFFER_MAX_COLOR_ATTACHMENTS, drawbufs);
+			glDrawBuffers(FRAMEBUFFER_MAX_OUTPUTS, drawbufs);
+		} else {
+			// TODO: maybe simulate this by modifying framebuffer attachments?
 		}
 
-		framebuffer->initialized = true;
+		framebuffer->draw_buffers_dirty = false;
 	}
 }
 
@@ -128,7 +158,7 @@ void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label) {
 	glcommon_set_debug_label(fb->debug_label, "FBO", GL_FRAMEBUFFER, fb->gl_fbo, label);
 }
 
-const char* gl33_framebuffer_get_debug_label(Framebuffer* fb) {
+const char *gl33_framebuffer_get_debug_label(Framebuffer* fb) {
 	return fb->debug_label;
 }
 
@@ -164,7 +194,7 @@ IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
 	IntExtent fb_size = { 0, 0 };
 
 	for(int i = 0; i < FRAMEBUFFER_MAX_ATTACHMENTS; ++i) {
-		Texture *tex = gl33_framebuffer_get_attachment(framebuffer, i);
+		Texture *tex = framebuffer->attachments[i];
 
 		if(tex != NULL) {
 			uint mipmap = framebuffer->attachment_mipmaps[i];

@@ -9,8 +9,8 @@
 #include "taisei.h"
 
 #include "pixmap.h"
+#include "loaders/loaders.h"
 #include "util.h"
-#include "pixmap_loaders/loaders.h"
 
 // NOTE: this is pretty stupid and not at all optimized, patches welcome
 
@@ -134,7 +134,7 @@ typedef void (*convfunc_t)(
 	size_t num_pixels,
 	void *vbuf_in,
 	void *vbuf_out,
-	void *default_pixel
+	int swizzle[4]
 );
 
 #define CONV(in, in_depth, out, out_depth) { convert_##in##_to_##out, in_depth, out_depth }
@@ -179,35 +179,32 @@ static struct conversion_def* find_conversion(uint depth_in, uint depth_out) {
 	log_fatal("Pixmap conversion for %upbc -> %upbc undefined, please add", depth_in, depth_out);
 }
 
-static void *default_pixel(uint depth) {
-	static uint8_t  default_u8[]  = { 0, 0, 0, UINT8_MAX  };
-	static uint16_t default_u16[] = { 0, 0, 0, UINT16_MAX };
-	static uint32_t default_u32[] = { 0, 0, 0, UINT32_MAX };
-	static float    default_f32[] = { 0, 0, 0, 1.0f       };
-
-	switch(depth) {
-		case 8:  return default_u8;
-		case 16: return default_u16;
-		case 32: return default_u32;
-		case 32 | DEPTH_FLOAT_BIT: return default_f32;
-		default: UNREACHABLE;
-	}
-}
-
-void *pixmap_alloc_buffer(PixmapFormat format, size_t width, size_t height) {
+static uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height) {
 	assert(width >= 1);
 	assert(height >= 1);
-	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
+	uint64_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(format);
 	assert(pixel_size >= 1);
-	return calloc(width * height, pixel_size);
+	uint64_t s = (uint64_t)width * (uint64_t)height * pixel_size;
+	assert(s <= PIXMAP_BUFFER_MAX_SIZE);
+	return s;
 }
 
-void *pixmap_alloc_buffer_for_copy(const Pixmap *src) {
-	return pixmap_alloc_buffer(src->format, src->width, src->height);
+void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, uint32_t *out_bufsize) {
+	uint32_t s = pixmap_data_size(format, width, height);
+
+	if(out_bufsize) {
+		*out_bufsize = s;
+	}
+
+	return calloc(1, s);
 }
 
-void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format) {
-	return pixmap_alloc_buffer(format, src->width, src->height);
+void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) {
+	return pixmap_alloc_buffer(src->format, src->width, src->height, out_bufsize);
+}
+
+void *pixmap_alloc_buffer_for_conversion(const Pixmap *src, PixmapFormat format, uint32_t *out_bufsize) {
+	return pixmap_alloc_buffer(format, src->width, src->height, out_bufsize);
 }
 
 static void pixmap_copy_meta(const Pixmap *src, Pixmap *dst) {
@@ -242,12 +239,50 @@ void pixmap_convert(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
 		num_pixels,
 		src->data.untyped,
 		dst->data.untyped,
-		default_pixel(PIXMAP_FORMAT_DEPTH(dst->format) | (PIXMAP_FORMAT_IS_FLOAT(dst->format) * DEPTH_FLOAT_BIT))
+		NULL
+	);
+}
+
+static int swizzle_idx(char s) {
+	switch(s) {
+		case 'r': return 0;
+		case 'g': return 1;
+		case 'b': return 2;
+		case 'a': return 3;
+		case '0': return 4;
+		case '1': return 5;
+		default: UNREACHABLE;
+	}
+}
+
+void pixmap_swizzle_inplace(Pixmap *px, SwizzleMask swizzle) {
+	uint channels = pixmap_format_layout(px->format);
+	swizzle = swizzle_canonize(swizzle);
+
+	if(!swizzle_is_significant(swizzle, channels)) {
+		return;
+	}
+
+	uint cvt_id = pixmap_format_depth(px->format) | (pixmap_format_is_float(px->format) * DEPTH_FLOAT_BIT);
+	struct conversion_def *cv = find_conversion(cvt_id, cvt_id);
+
+	cv->func(
+		channels,
+		channels,
+		px->width * px->height,
+		px->data.untyped,
+		px->data.untyped,
+		(int[]) {
+			swizzle_idx(swizzle.r),
+			swizzle_idx(swizzle.g),
+			swizzle_idx(swizzle.b),
+			swizzle_idx(swizzle.a),
+		}
 	);
 }
 
 void pixmap_convert_alloc(const Pixmap *src, Pixmap *dst, PixmapFormat format) {
-	dst->data.untyped = pixmap_alloc_buffer_for_conversion(src, format);
+	dst->data.untyped = pixmap_alloc_buffer_for_conversion(src, format, &dst->data_size);
 	pixmap_convert(src, dst, format);
 }
 
@@ -268,17 +303,20 @@ void pixmap_convert_inplace_realloc(Pixmap *src, PixmapFormat format) {
 
 void pixmap_copy(const Pixmap *src, Pixmap *dst) {
 	assert(dst->data.untyped != NULL);
+	assert(src->data_size > 0);
+	assert(dst->data_size >= src->data_size);
+
+	if(!pixmap_format_is_compressed(src->format)) {
+		assert(src->data_size == pixmap_data_size(src->format, src->width, src->height));
+	}
+
 	pixmap_copy_meta(src, dst);
-	memcpy(dst->data.untyped, src->data.untyped, pixmap_data_size(src));
+	memcpy(dst->data.untyped, src->data.untyped, src->data_size);
 }
 
 void pixmap_copy_alloc(const Pixmap *src, Pixmap *dst) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_copy(src, dst);
-}
-
-size_t pixmap_data_size(const Pixmap *px) {
-	return px->width * px->height * PIXMAP_FORMAT_PIXEL_SIZE(px->format);
 }
 
 void pixmap_flip_y(const Pixmap *src, Pixmap *dst) {
@@ -297,7 +335,7 @@ void pixmap_flip_y(const Pixmap *src, Pixmap *dst) {
 }
 
 void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_flip_y(src, dst);
 }
 
@@ -326,7 +364,7 @@ void pixmap_flip_to_origin(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) 
 }
 
 void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin origin) {
-	dst->data.untyped = pixmap_alloc_buffer_for_copy(src);
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(src, &dst->data_size);
 	pixmap_flip_to_origin(src, dst, origin);
 }
 
@@ -427,4 +465,76 @@ char *pixmap_source_path(const char *prefix, const char *path) {
 	}
 
 	return NULL;
+}
+
+const char *pixmap_format_name(PixmapFormat fmt) {
+	switch(fmt) {
+		#define HANDLE(f) case f: return #f
+		HANDLE(PIXMAP_FORMAT_R8);
+		HANDLE(PIXMAP_FORMAT_R16);
+		HANDLE(PIXMAP_FORMAT_R16F);
+		HANDLE(PIXMAP_FORMAT_R32F);
+		HANDLE(PIXMAP_FORMAT_RG8);
+		HANDLE(PIXMAP_FORMAT_RG16);
+		HANDLE(PIXMAP_FORMAT_RG16F);
+		HANDLE(PIXMAP_FORMAT_RG32F);
+		HANDLE(PIXMAP_FORMAT_RGB8);
+		HANDLE(PIXMAP_FORMAT_RGB16);
+		HANDLE(PIXMAP_FORMAT_RGB16F);
+		HANDLE(PIXMAP_FORMAT_RGB32F);
+		HANDLE(PIXMAP_FORMAT_RGBA8);
+		HANDLE(PIXMAP_FORMAT_RGBA16);
+		HANDLE(PIXMAP_FORMAT_RGBA16F);
+		HANDLE(PIXMAP_FORMAT_RGBA32F);
+
+		#define HANDLE_COMPRESSED(comp, layout, ...) HANDLE(PIXMAP_FORMAT_##comp);
+		PIXMAP_COMPRESSION_FORMATS(HANDLE_COMPRESSED,)
+		#undef HANDLE_COMPRESSED
+		#undef HANDLE
+
+		default: return NULL;
+	}
+}
+
+SwizzleMask swizzle_canonize(SwizzleMask sw_in) {
+	SwizzleMask sw_out;
+	sw_out.r = sw_in.r ? sw_in.r : 'r';
+	sw_out.g = sw_in.g ? sw_in.g : 'g';
+	sw_out.b = sw_in.b ? sw_in.b : 'b';
+	sw_out.a = sw_in.a ? sw_in.a : 'a';
+	assert(swizzle_is_valid(sw_out));
+	return sw_out;
+}
+
+static bool swizzle_component_is_valid(char c) {
+	switch(c) {
+		case 'r': case 'g': case 'b': case 'a': case '0': case '1':
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+bool swizzle_is_valid(SwizzleMask sw) {
+	for(int i = 0; i < 4; ++i) {
+		if(!swizzle_component_is_valid(sw.rgba[i])) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels) {
+	assert(num_significant_channels <= 4);
+
+	for(uint i = 0; i < num_significant_channels; ++i) {
+		assert(swizzle_component_is_valid(sw.rgba[i]));
+		if(sw.rgba[i] != "rgba"[i]) {
+			return true;
+		}
+	}
+
+	return false;
 }

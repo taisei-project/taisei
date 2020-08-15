@@ -391,6 +391,7 @@ void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count
 }
 
 Texture* r_texture_create(const TextureParams *params) {
+	assert(r_texture_type_query(params->type, params->flags, 0, 0, NULL));
 	return B.texture_create(params);
 }
 
@@ -450,8 +451,77 @@ void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
 }
 
-PixmapFormat r_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) {
-	return B.texture_optimal_pixmap_format_for_type(type, src_format);
+bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	return B.texture_type_query(type, flags, pxfmt, pxorigin, result);
+}
+
+const char *r_texture_type_name(TextureType type) {
+	switch(type) {
+		#define HANDLE_TYPE(type, ...) \
+		case TEX_TYPE_##type: return #type;
+		TEX_TYPES(HANDLE_TYPE,)
+		#undef HANDLE_TYPE
+		default: UNREACHABLE;
+	}
+}
+
+TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt) {
+	if(pixmap_format_is_compressed(fmt)) {
+		TextureType t = pixmap_format_compression(fmt) | TEX_TYPE_COMPRESSED_BIT;
+		assert(r_texture_type_name(t) != NULL);
+		return t;
+	}
+
+	PixmapLayout layout = pixmap_format_layout(fmt);
+	uint depth = pixmap_format_depth(fmt);
+	bool is_float = pixmap_format_is_float(fmt);
+
+	if(is_float) {
+		switch(depth) {
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			case 32: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_32_FLOAT;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_32_FLOAT;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_32_FLOAT;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_32_FLOAT;
+				default: UNREACHABLE;
+			}
+
+			default: UNREACHABLE;
+		}
+	} else {
+		switch(depth) {
+			case 8: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_8;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_8;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_8;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_8;
+				default: UNREACHABLE;
+			}
+
+			case 16: switch(layout) {
+				case PIXMAP_LAYOUT_R:    return TEX_TYPE_R_16;
+				case PIXMAP_LAYOUT_RG:   return TEX_TYPE_RG_16;
+				case PIXMAP_LAYOUT_RGB:  return TEX_TYPE_RGB_16;
+				case PIXMAP_LAYOUT_RGBA: return TEX_TYPE_RGBA_16;
+				default: UNREACHABLE;
+			}
+
+			default: UNREACHABLE;
+		}
+	}
+}
+
+uint r_texture_util_max_num_miplevels(uint width, uint height) {
+	uint dim = umax(width, height);
+	return dim > 0 ? 1 + floor(log2(dim)) : 0;  // TODO replace with integer log2
 }
 
 Framebuffer* r_framebuffer_create(void) {
@@ -471,11 +541,33 @@ void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, Framebuffe
 }
 
 Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
-	return B.framebuffer_get_attachment(fb, attachment);
+	return B.framebuffer_query_attachment(fb, attachment).texture;
 }
 
 uint r_framebuffer_get_attachment_mipmap(Framebuffer *fb, FramebufferAttachment attachment) {
-	return B.framebuffer_get_attachment_mipmap(fb, attachment);
+	return B.framebuffer_query_attachment(fb, attachment).miplevel;
+}
+
+void r_framebuffer_set_output_attachment(Framebuffer *fb, uint output, FramebufferAttachment attachment) {
+	FramebufferAttachment temp[FRAMEBUFFER_MAX_OUTPUTS];
+	assert(output < FRAMEBUFFER_MAX_OUTPUTS);
+	temp[output] = attachment;
+	B.framebuffer_outputs(fb, temp, 1 << output);
+}
+
+FramebufferAttachment r_framebuffer_get_output_attachment(Framebuffer *fb, uint output) {
+	FramebufferAttachment temp[FRAMEBUFFER_MAX_OUTPUTS];
+	assert(output < FRAMEBUFFER_MAX_OUTPUTS);
+	B.framebuffer_outputs(fb, temp, 0x00);
+	return temp[output];
+}
+
+void r_framebuffer_set_output_attachments(Framebuffer *fb, const FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]) {
+	B.framebuffer_outputs(fb, (FramebufferAttachment*)config, 0xff);
+}
+
+void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS]) {
+	B.framebuffer_outputs(fb, config, 0x00);
 }
 
 void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {

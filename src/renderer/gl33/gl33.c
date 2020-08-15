@@ -313,6 +313,14 @@ static void gl33_init_context(SDL_Window *window) {
 		R.features |= r_feature_bit(RFEAT_FRAMEBUFFER_MULTIPLE_OUTPUTS);
 	}
 
+	if(glext.texture_swizzle) {
+		R.features |= r_feature_bit(RFEAT_TEXTURE_SWIZZLE);
+	}
+
+	if(!glext.version.is_es || GLES_ATLEAST(3, 0)) {
+		R.features |= r_feature_bit(RFEAT_PARTIAL_MIPMAPS);
+	}
+
 	R.features |= r_feature_bit(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN);
 
 	if(glext.clear_texture) {
@@ -1132,7 +1140,7 @@ static bool gl33_screenshot(Pixmap *out) {
 	out->height = vp->h;
 	out->format = PIXMAP_FORMAT_RGB8;
 	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out);
+	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
 	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
 	return true;
 }
@@ -1183,14 +1191,14 @@ RendererBackend _r_backend_gl33 = {
 		.texture_fill = gl33_texture_fill,
 		.texture_fill_region = gl33_texture_fill_region,
 		.texture_clear = gl33_texture_clear,
-		.texture_optimal_pixmap_format_for_type = gl33_texture_optimal_pixmap_format_for_type,
+		.texture_type_query = gl33_texture_type_query,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,
 		.framebuffer_get_debug_label = gl33_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = gl33_framebuffer_set_debug_label,
-		.framebuffer_get_attachment = gl33_framebuffer_get_attachment,
-		.framebuffer_get_attachment_mipmap = gl33_framebuffer_get_attachment_mipmap,
+		.framebuffer_query_attachment = gl33_framebuffer_query_attachment,
+		.framebuffer_outputs = gl33_framebuffer_outputs,
 		.framebuffer_viewport = gl33_framebuffer_viewport,
 		.framebuffer_viewport_current = gl33_framebuffer_viewport_current,
 		.framebuffer = gl33_framebuffer,
@@ -1227,8 +1235,6 @@ RendererBackend _r_backend_gl33 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gl33_texture_type_info,
-			.texture_format_caps = gl33_texture_format_caps,
 			.init_context = gl33_init_context,
 		}
 	},

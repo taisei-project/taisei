@@ -19,14 +19,14 @@ static char *sprite_path(const char *name) {
 
 	if(!pinfo.exists) {
 		free(path);
-		return texture_path(name);
+		return texture_res_handler.procs.find(name);;
 	}
 
 	return path;
 }
 
 static bool check_sprite_path(const char *path) {
-	return strendswith(path, SPRITE_EXTENSION) || check_texture_path(path);
+	return strendswith(path, SPRITE_EXTENSION) || texture_res_handler.procs.check(path);
 }
 
 struct sprite_load_state {
@@ -43,7 +43,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 	state->spr = spr;
 	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
 
-	if(check_texture_path(st->path)) {
+	if(texture_res_handler.procs.check(st->path)) {
 		state->texture_name = strdup(st->name);
 		// preload_resource(RES_TEXTURE, state->texture_name, st->flags);
 		res_load_dependency(st, RES_TEXTURE, state->texture_name);

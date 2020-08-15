@@ -17,6 +17,7 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 #undef static_assert
 
 #define static_assert _Static_assert
+#define static_assert_nomsg(x) static_assert(x, #x)
 
 #if defined(NDEBUG) || defined(__EMSCRIPTEN__)
 	#define TRAP() abort()

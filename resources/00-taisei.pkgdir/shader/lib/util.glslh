@@ -84,6 +84,12 @@ vec3 hueShift(vec3 c, float s) {
     return hsv2rgb(hsv);
 }
 
+vec3 sample_normalmap(sampler2D src, vec2 uv) {
+    vec2 xy = texture(src, uv).rg * 2 - 1;
+    float z = sqrt(1 - xy.x * xy.x - xy.y * xy.y);
+    return vec3(xy, z);
+}
+
 float flip_topleft_to_native(float x) {
 #ifdef NATIVE_ORIGIN_BOTTOMLEFT
     return 1 - x;

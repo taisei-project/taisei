@@ -197,7 +197,7 @@ static void stage_draw_setup_framebuffers(void) {
 	memcpy(&a_color->tex_params, &tex_common, sizeof(tex_common));
 	memcpy(&a_depth->tex_params, &tex_common, sizeof(tex_common));
 
-	a_depth->tex_params.type = TEX_TYPE_DEPTH_32;
+	a_depth->tex_params.type = TEX_TYPE_DEPTH;
 
 	// Foreground: 1 RGB texture per FB
 	a_color->tex_params.type = TEX_TYPE_RGB_16;
@@ -584,7 +584,18 @@ static bool copydepth_rule(Framebuffer *fb) {
 	r_depth_func(DEPTH_ALWAYS);
 	r_blend(BLEND_NONE);
 	r_shader_ptr(stagedraw.shaders.copy_depth);
+
+	Framebuffer *target_fb = r_framebuffer_current();
+	FramebufferAttachment prev_outputs[FRAMEBUFFER_MAX_OUTPUTS];
+	FramebufferAttachment outputs[FRAMEBUFFER_MAX_OUTPUTS];
+	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+		outputs[i] = FRAMEBUFFER_ATTACH_NONE;
+	}
+
+	r_framebuffer_get_output_attachments(target_fb, prev_outputs);
+	r_framebuffer_set_output_attachments(target_fb, outputs);
 	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
+	r_framebuffer_set_output_attachments(target_fb, prev_outputs);
 	r_state_pop();
 
 	return false;

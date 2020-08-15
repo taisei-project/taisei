@@ -120,6 +120,16 @@
 	#if __has_builtin(__builtin_assume)
 		#define ASSUME(x) __builtin_assume(x)
 	#endif
+
+	#if __has_builtin(__builtin_popcount)
+		#undef TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT
+		#define TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT 1
+	#endif
+
+	#if __has_builtin(__builtin_popcountll)
+		#undef TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL
+		#define TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL 1
+	#endif
 #endif
 
 #if !defined(ASSUME) && defined(__GNUC__)

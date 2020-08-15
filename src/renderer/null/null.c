@@ -90,7 +90,16 @@ static void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, 
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
-static PixmapFormat null_texture_optimal_pixmap_format_for_type(TextureType type, PixmapFormat src_format) { return src_format; }
+static bool null_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {
+	if(result) {
+		result->optimal_pixmap_format = pxfmt;
+		result->optimal_pixmap_origin = pxorigin;
+		result->supplied_pixmap_format_supported = true;
+		result->supplied_pixmap_origin_supported = true;
+	}
+
+	return true;
+}
 
 static FloatRect default_fb_viewport;
 
@@ -98,8 +107,19 @@ static Framebuffer* null_framebuffer_create(void) { return (void*)&placeholder; 
 static void null_framebuffer_set_debug_label(Framebuffer *fb, const char *label) { }
 static const char* null_framebuffer_get_debug_label(Framebuffer *fb) { return "null framebuffer"; }
 static void null_framebuffer_attach(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment) { }
-static Texture* null_framebuffer_attachment(Framebuffer *framebuffer, FramebufferAttachment attachment) { return (void*)&placeholder; }
-static uint null_framebuffer_attachment_mipmap(Framebuffer *framebuffer, FramebufferAttachment attachment) { return 0; }
+static FramebufferAttachmentQueryResult null_framebuffer_query_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
+	return (FramebufferAttachmentQueryResult) {
+		.texture = (void*)&placeholder,
+		.miplevel = 0,
+	};
+}
+static void null_framebuffer_outputs(Framebuffer *fb, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS], uint8_t write_mask) {
+	if(write_mask == 0x00) {
+		for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
+			config[i] = FRAMEBUFFER_ATTACH_COLOR0 + i;
+		}
+	}
+}
 static void null_framebuffer_destroy(Framebuffer *framebuffer) { }
 static void null_framebuffer_viewport(Framebuffer *framebuffer, FloatRect vp) { }
 static void null_framebuffer_viewport_current(Framebuffer *framebuffer, FloatRect *vp) { *vp = default_fb_viewport; }
@@ -208,14 +228,14 @@ RendererBackend _r_backend_null = {
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
 		.texture_clear = null_texture_clear,
-		.texture_optimal_pixmap_format_for_type = null_texture_optimal_pixmap_format_for_type,
+		.texture_type_query = null_texture_type_query,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,
 		.framebuffer_destroy = null_framebuffer_destroy,
 		.framebuffer_attach = null_framebuffer_attach,
-		.framebuffer_get_attachment = null_framebuffer_attachment,
-		.framebuffer_get_attachment_mipmap = null_framebuffer_attachment_mipmap,
+		.framebuffer_query_attachment = null_framebuffer_query_attachment,
+		.framebuffer_outputs = null_framebuffer_outputs,
 		.framebuffer_viewport = null_framebuffer_viewport,
 		.framebuffer_viewport_current = null_framebuffer_viewport_current,
 		.framebuffer = null_framebuffer,

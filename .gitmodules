@@ -8,4 +8,8 @@
 	branch = master
 [submodule "external/koishi"]
 	path = external/koishi
-	url = https://github.com/taisei-project/koishi
+	url = https://github.com/taisei-project/koishi.git
+[submodule "external/basis_universal"]
+	path = external/basis_universal
+	url = https://github.com/taisei-project/basis_universal.git
+	branch = taisei

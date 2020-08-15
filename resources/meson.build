@@ -16,6 +16,7 @@ if host_machine.system() == 'emscripten'
     em_bundle_gfx_patterns = [
         'gfx/*.png',
         'gfx/*.webp',
+        'gfx/*.basis',
         'fonts/*.ttf',
         'fonts/*.otf',
     ]
@@ -66,13 +67,15 @@ foreach pkg : packages
             assert(glob_result.returncode() == 0, 'Glob script failed')
 
             foreach file : glob_result.stdout().strip().split('\n')
-                fpath = join_paths(meson.current_source_dir(), pkg_pkgdir, file)
+                if file != ''
+                    fpath = join_paths(meson.current_source_dir(), pkg_pkgdir, file)
 
-                set_variable(var_files, get_variable(var_files) + [fpath])
+                    set_variable(var_files, get_variable(var_files) + [fpath])
 
-                set_variable(var_packer_args, get_variable(var_packer_args) + [
-                    '--preload', '@0@@@1@/@2@'.format(fpath, em_data_prefix, file)
-                ])
+                    set_variable(var_packer_args, get_variable(var_packer_args) + [
+                        '--preload', '@0@@@1@/@2@'.format(fpath, em_data_prefix, file)
+                    ])
+                endif
             endforeach
         endforeach
     elif package_data

@@ -98,18 +98,18 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(pixmap->format);
 
-	if(pixmap->height > ((size_t)-1)/(pixmap->width * pixel_size)) {
+	if(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / (pixmap->width * pixel_size)) {
 		WebPIDelete(idec);
 		log_error("The image is too large");
 		return false;
 	}
 
-	pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap);
+	pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap, &pixmap->data_size);
 
 	config.output.is_external_memory = true;
 	config.output.colorspace = features.has_alpha ? MODE_RGBA : MODE_RGB;
 	config.output.u.RGBA.rgba = pixmap->data.untyped;
-	config.output.u.RGBA.size = pixmap_data_size(pixmap);
+	config.output.u.RGBA.size = pixmap->data_size;
 	config.output.u.RGBA.stride = pixel_size * pixmap->width;
 
 	do {

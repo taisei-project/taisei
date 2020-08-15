@@ -26,6 +26,7 @@ uintmax_t umin(uintmax_t, uintmax_t) attr_const;
 uintmax_t umax(uintmax_t, uintmax_t) attr_const;
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double clamp(double, double, double) attr_const;
+float clampf(float, float, float) attr_const;
 double smoothstep(double edge0, double edge1, double x) attr_const;
 double smoothmin(double a, double b, double k);
 double approach(double v, double t, double d) attr_const;
@@ -67,7 +68,9 @@ uint64_t upow10(uint n) attr_const;
 uint digitcnt(uint64_t x) attr_const;
 float normpdf(float x, float sigma) attr_const;
 void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) attr_nonnull(3);
-uint64_t uceildiv64(uint64_t x, uint64_t y);
+uint64_t uceildiv64(uint64_t x, uint64_t y) attr_const;
+int popcnt32(uint32_t) attr_const;
+int popcnt64(uint64_t) attr_const;
 
 // Compute (a*b)/c with 128-bit intermediate precision.
 // If the final result would not fit into 64 bits, the return value is undefined.

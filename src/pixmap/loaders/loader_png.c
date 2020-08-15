@@ -8,9 +8,9 @@
 
 #include "taisei.h"
 
-#include "util.h"
 #include "loaders.h"
-#include "../pngcruft.h"
+#include "util.h"
+#include "util/pngcruft.h"
 
 static uchar png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -112,12 +112,12 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferre
 
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(pixmap->format);
 
-	if(pixmap->height > PNG_SIZE_MAX/(pixmap->width * pixel_size)) {
+	if(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / (pixmap->width * pixel_size)) {
 		error = "The image is too large";
 		goto done;
 	}
 
-	png_bytep buffer = pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap);
+	png_bytep buffer = pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap, &pixmap->data_size);
 
 	for(int pass = 0; pass < num_passes; ++pass) {
 		for(int row = pixmap->height - 1; row >= 0; --row) {

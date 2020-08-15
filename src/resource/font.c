@@ -185,7 +185,7 @@ static void init_fonts(void) {
 		.filter = { TEX_FILTER_LINEAR, TEX_FILTER_LINEAR },
 		.wrap   = { TEX_WRAP_CLAMP, TEX_WRAP_CLAMP },
 		.type   = TEX_TYPE_RGBA,
-		.stream = true,
+		.flags  = TEX_FLAG_STREAM,
 		.width  = 1024,
 		.height = 1024,
 	});
@@ -352,6 +352,9 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 #define SS_WIDTH 1024
 #define SS_HEIGHT 1024
 
+#define SS_TEXTURE_TYPE TEX_TYPE_RGB_8
+#define SS_TEXTURE_FLAGS 0
+
 static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
 	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
@@ -359,7 +362,8 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	ss->tex = r_texture_create(&(TextureParams) {
 		.width = SS_WIDTH,
 		.height = SS_HEIGHT,
-		.type = TEX_TYPE_RGB_8,
+		.type = SS_TEXTURE_TYPE,
+		.flags = SS_TEXTURE_FLAGS,
 		.filter.mag = TEX_FILTER_LINEAR,
 		.filter.min = TEX_FILTER_LINEAR,
 		.wrap.s = TEX_WRAP_CLAMP,
@@ -530,7 +534,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		px.format = PIXMAP_FORMAT_RGB8;
 		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
 		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
-		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px);
+		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
 
 		int ref_left = g_bm_border->left;
 		int ref_top = g_bm_border->top;
@@ -586,16 +590,20 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			}
 		}
 
-		PixmapFormat optimal_fmt = r_texture_optimal_pixmap_format_for_type(TEX_TYPE_RGB_8, px.format);
-		pixmap_convert_inplace_realloc(&px, optimal_fmt);
+		TextureTypeQueryResult qr = { 0 };
 
-		if(!r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-			pixmap_flip_to_origin_inplace(&px, PIXMAP_ORIGIN_TOPLEFT);
+		// TODO: Only query this once on init.
+		if(r_texture_type_query(SS_TEXTURE_TYPE, SS_TEXTURE_FLAGS, px.format, px.origin, &qr)) {
+			pixmap_convert_inplace_realloc(&px, qr.optimal_pixmap_format);
+			pixmap_flip_to_origin_inplace(&px, qr.optimal_pixmap_origin);
+		} else {
+			log_error("Texture query failed!");
+			assert(0);
 		}
 
 		if(!add_glyph_to_spritesheets(glyph, &px, spritesheets)) {
-			log_warn(
-				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %zux%zu; max spritesheet size: %ux%u)",
+			log_error(
+				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
 				gindex,
 				px.width + 2 * GLYPH_SPRITE_PADDING,
 				px.height + 2 * GLYPH_SPRITE_PADDING,

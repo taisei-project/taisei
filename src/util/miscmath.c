@@ -192,6 +192,20 @@ double clamp(double f, double lower, double upper) {
 	return f;
 }
 
+float clampf(float f, float lower, float upper) {
+	assert(lower <= upper);
+
+	if(f < lower) {
+		return lower;
+	}
+
+	if(f > upper) {
+		return upper;
+	}
+
+	return f;
+}
+
 intmax_t iclamp(intmax_t f, intmax_t lower, intmax_t upper) {
 	assert(lower <= upper);
 
@@ -494,4 +508,23 @@ uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 
 uint64_t uceildiv64(uint64_t x, uint64_t y) {
 	return x / y + (x % y != 0);
+}
+
+int popcnt32(uint32_t x) {
+	#if TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT
+	return __builtin_popcount(x);
+	#else
+	return popcnt64(x);
+	#endif
+}
+
+int popcnt64(uint64_t x) {
+	#if TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL
+	return __builtin_popcountll(x);
+	#else
+	x -= (x >> 1) & 0x5555555555555555;
+	x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+	x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
+	return (x * 0x0101010101010101) >> 56;
+	#endif
 }

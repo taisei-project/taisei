@@ -13,6 +13,11 @@
 
 #include "../api.h"
 
+typedef struct FramebufferAttachmentQueryResult {
+	Texture *texture;
+	uint miplevel;
+} FramebufferAttachmentQueryResult;
+
 typedef struct RendererFuncs {
 	void (*init)(void);
 	void (*post_init)(void);
@@ -71,7 +76,7 @@ typedef struct RendererFuncs {
 	void (*texture_fill)(Texture *tex, uint mipmap, const Pixmap *image_data);
 	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data);
 	void (*texture_clear)(Texture *tex, const Color *clr);
-	PixmapFormat (*texture_optimal_pixmap_format_for_type)(TextureType type, PixmapFormat src_format);
+	bool (*texture_type_query)(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 
 	Framebuffer* (*framebuffer_create)(void);
 	const char* (*framebuffer_get_debug_label)(Framebuffer *framebuffer);
@@ -80,8 +85,8 @@ typedef struct RendererFuncs {
 	void (*framebuffer_attach)(Framebuffer *framebuffer, Texture *tex, uint mipmap, FramebufferAttachment attachment);
 	void (*framebuffer_viewport)(Framebuffer *framebuffer, FloatRect vp);
 	void (*framebuffer_viewport_current)(Framebuffer *framebuffer, FloatRect *vp);
-	Texture* (*framebuffer_get_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
-	uint (*framebuffer_get_attachment_mipmap)(Framebuffer *framebuffer, FramebufferAttachment attachment);
+	FramebufferAttachmentQueryResult (*framebuffer_query_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
+	void (*framebuffer_outputs)(Framebuffer *framebuffer, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS], uint8_t write_mask);
 	void (*framebuffer_clear)(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);
 	IntExtent (*framebuffer_get_size)(Framebuffer *framebuffer);
 

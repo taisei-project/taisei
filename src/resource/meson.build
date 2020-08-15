@@ -13,3 +13,6 @@ resource_src = files(
     'sprite.c',
     'texture.c',
 )
+
+subdir('texture_loader')
+resource_src += resource_texload_src

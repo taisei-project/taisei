@@ -10,7 +10,6 @@
 
 #include "gles30.h"
 #include "../glescommon/gles.h"
-#include "../glescommon/texture.h"
 
 static void gles30_init(void) {
 	gles_init(&_r_backend_gles30, 3, 0);
@@ -24,8 +23,6 @@ RendererBackend _r_backend_gles30 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
-			.texture_type_info = gles_texture_type_info,
-			.texture_format_caps = gles_texture_format_caps,
 			.init_context = gles_init_context,
 		}
 	},

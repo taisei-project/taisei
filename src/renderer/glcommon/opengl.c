@@ -13,6 +13,7 @@
 #include "opengl.h"
 #include "debug.h"
 #include "shaders.h"
+#include "texture.h"
 
 struct glext_s glext = { 0 };
 
@@ -149,6 +150,8 @@ ext_flag_t glcommon_check_extension(const char *ext) {
 		) {
 			return flag;
 		}
+
+		start = term;
 	}
 #endif
 }
@@ -307,10 +310,38 @@ static void glcommon_ext_texture_norm16(void) {
 }
 
 static void glcommon_ext_texture_rg(void) {
-	EXT_FLAG(texture_norm16);
+	EXT_FLAG(texture_rg);
 
 	CHECK_CORE(!glext.version.is_es);
 	CHECK_EXT(GL_EXT_texture_rg);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_swizzle(void) {
+	EXT_FLAG(texture_swizzle);
+
+	CHECK_CORE(GL_ATLEAST(3, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
+	CHECK_EXT(GL_ARB_texture_swizzle);
+	CHECK_EXT(GL_EXT_texture_swizzle);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_float(void) {
+	EXT_FLAG(texture_float);
+
+	CHECK_CORE(!glext.version.is_es || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_OES_texture_float);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_half_float(void) {
+	EXT_FLAG(texture_half_float);
+
+	CHECK_CORE(!glext.version.is_es || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_OES_texture_half_float);
 
 	EXT_MISSING();
 }
@@ -386,6 +417,185 @@ static void glcommon_ext_viewport_array(void) {
 		CHECK_EXT(GL_NV_viewport_array2);
 	}
 #endif
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_r8_srgb(void) {
+	EXT_FLAG(tex_format.r8_srgb);
+
+	CHECK_EXT(GL_EXT_texture_sRGB_R8);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rg8_srgb(void) {
+	EXT_FLAG(tex_format.rg8_srgb);
+
+	CHECK_EXT(GL_EXT_texture_sRGB_RG8);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rgb8_rgba8_srgb(void) {
+	EXT_FLAG(tex_format.rgb8_rgba8_srgb);
+
+	CHECK_CORE(GL_ATLEAST(3, 0) || GLES_ATLEAST(3, 0));
+	CHECK_EXT(GL_EXT_texture_sRGB);
+	CHECK_EXT(GL_EXT_sRGB);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_dx1(void) {
+	EXT_FLAG(tex_format.s3tc_dx1);
+
+	CHECK_EXT(GL_EXT_texture_compression_s3tc);
+	CHECK_EXT(GL_NV_texture_compression_s3tc);
+	CHECK_EXT(GL_EXT_texture_compression_dxt1);
+	CHECK_EXT(GL_ANGLE_texture_compression_dxt1);
+	CHECK_EXT(GL_WEBGL_compressed_texture_s3tc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_dx5(void) {
+	EXT_FLAG(tex_format.s3tc_dx5);
+
+	CHECK_EXT(GL_EXT_texture_compression_s3tc);
+	CHECK_EXT(GL_NV_texture_compression_s3tc);
+	CHECK_EXT(GL_ANGLE_texture_compression_dxt5);
+	CHECK_EXT(GL_WEBGL_compressed_texture_s3tc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_s3tc_srgb(void) {
+	EXT_FLAG(tex_format.s3tc_srgb);
+
+	if(glext.tex_format.s3tc_dx1 || glext.tex_format.s3tc_dx5) {
+		CHECK_EXT(GL_EXT_texture_sRGB);
+		CHECK_EXT(GL_EXT_texture_compression_s3tc_srgb);
+		CHECK_EXT(GL_NV_sRGB_formats);
+		CHECK_EXT(GL_WEBGL_compressed_texture_s3tc_srgb);
+	}
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_rgtc(void) {
+	EXT_FLAG(tex_format.rgtc);
+
+	CHECK_CORE(GL_ATLEAST(3, 0));
+	CHECK_EXT(GL_EXT_texture_compression_rgtc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc1(void) {
+	EXT_FLAG(tex_format.etc1);
+
+	CHECK_EXT(GL_OES_compressed_ETC1_RGB8_texture);
+	CHECK_EXT(GL_WEBGL_compressed_texture_etc1);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc1_srgb(void) {
+	EXT_FLAG(tex_format.etc1_srgb);
+
+	if(glext.tex_format.etc1) {
+		CHECK_EXT(GL_NV_sRGB_formats);
+	}
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc2_eac(void) {
+	EXT_FLAG(tex_format.etc2_eac);
+
+	CHECK_CORE(GL_ATLEAST(4, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
+	CHECK_EXT(GL_OES_compressed_ETC2_RGBA8_texture);
+	CHECK_EXT(GL_ARB_ES3_compatibility);
+	CHECK_EXT(GL_ANGLE_compressed_texture_etc);
+	CHECK_EXT(GL_WEBGL_compressed_texture_etc);
+
+	// FIXME: maybe don't just assume R11/RG11 are supported as well?
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_etc2_eac_srgb(void) {
+	EXT_FLAG(tex_format.etc2_eac_srgb);
+
+	CHECK_CORE(GL_ATLEAST(4, 3) || (GLES_ATLEAST(3, 0) && !glext.version.is_webgl));
+	CHECK_EXT(GL_OES_compressed_ETC2_sRGB8_alpha8_texture);
+	CHECK_EXT(GL_ARB_ES3_compatibility);
+	CHECK_EXT(GL_WEBGL_compressed_texture_etc);
+
+	// FIXME: maybe don't just assume R11/RG11 are supported as well?
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_bptc(void) {
+	EXT_FLAG(tex_format.bptc);
+
+	CHECK_CORE(GL_ATLEAST(4, 2));
+	CHECK_EXT(GL_ARB_texture_compression_bptc);
+	CHECK_EXT(GL_EXT_texture_compression_bptc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc(void) {
+	EXT_FLAG(tex_format.pvrtc);
+
+	CHECK_EXT(GL_IMG_texture_compression_pvrtc);
+	CHECK_EXT(GL_WEBGL_compressed_texture_pvrtc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc2(void) {
+	EXT_FLAG(tex_format.pvrtc2);
+
+	CHECK_EXT(GL_IMG_texture_compression_pvrtc2);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_pvrtc_srgb(void) {
+	EXT_FLAG(tex_format.pvrtc_srgb);
+
+	CHECK_EXT(GL_EXT_pvrtc_sRGB);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_astc(void) {
+	EXT_FLAG(tex_format.astc);
+
+	CHECK_CORE(GLES_ATLEAST(3, 2));
+	CHECK_EXT(GL_KHR_texture_compression_astc_ldr);
+	CHECK_EXT(GL_OES_texture_compression_astc);
+	CHECK_EXT(GL_WEBGL_compressed_texture_astc);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_atc(void) {
+	EXT_FLAG(tex_format.atc);
+
+	CHECK_EXT(GL_AMD_compressed_ATC_texture);
+
+	EXT_MISSING();
+}
+
+static void glcommon_ext_texture_format_fxt1(void) {
+	EXT_FLAG(tex_format.fxt1);
+
+	CHECK_EXT(GL_3DFX_texture_compression_FXT1);
 
 	EXT_MISSING();
 }
@@ -554,6 +764,8 @@ static void glcommon_check_issues(void) {
 	);
 }
 
+static inline void (*load_gl_func(const char *name))(void);
+
 void glcommon_check_capabilities(void) {
 	const char *glslv = (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
 	const char *glv = (const char*)glGetString(GL_VERSION);
@@ -575,6 +787,14 @@ void glcommon_check_capabilities(void) {
 		glext.version.is_webgl = strstr(glv, "(WebGL ");
 	}
 
+	if(!glext.version.is_webgl) {
+		glext.version.is_webgl = glcommon_check_extension("GL_ANGLE_webgl_compatibility");
+	}
+
+	if(glext.version.is_webgl) {
+		log_info("WebGL compatibility mode");
+	}
+
 	log_info("OpenGL version: %s", glv);
 	log_info("OpenGL vendor: %s", (const char*)glGetString(GL_VENDOR));
 	log_info("OpenGL renderer: %s", (const char*)glGetString(GL_RENDERER));
@@ -593,6 +813,28 @@ void glcommon_check_capabilities(void) {
 	}
 
 	detect_broken_intel_driver();
+
+#ifndef STATIC_GLES3
+	if(glcommon_check_extension("GL_ANGLE_request_extension")) {
+		PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE = (PFNGLREQUESTEXTENSIONANGLEPROC)load_gl_func("glRequestExtensionANGLE");
+		assert(glRequestExtensionANGLE != NULL);
+
+		const char *src_string = (const char*)glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE);
+		char exts[strlen(src_string) + 1];
+		char *extsptr = exts, *ext;
+		memcpy(exts, src_string, sizeof(exts));
+
+		log_info("Requestable extensions: %s", src_string);
+
+		while((ext = strtok_r(NULL, " ", &extsptr))) {
+			if(!ext || !*ext || !env_get(ext, true)) {
+				continue;
+			}
+
+			glRequestExtensionANGLE(ext);
+		}
+	}
+#endif
 
 	// XXX: this is the legacy way, maybe we shouldn't try this first
 	const char *exts = (const char*)glGetString(GL_EXTENSIONS);
@@ -625,14 +867,37 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_texture_filter_anisotropic();
+	glcommon_ext_texture_float();
 	glcommon_ext_texture_float_linear();
+	glcommon_ext_texture_half_float();
 	glcommon_ext_texture_half_float_linear();
 	glcommon_ext_texture_norm16();
 	glcommon_ext_texture_rg();
+	glcommon_ext_texture_swizzle();
 	glcommon_ext_vertex_array_object();
 	glcommon_ext_viewport_array();
 
+	glcommon_ext_texture_format_r8_srgb();
+	glcommon_ext_texture_format_rg8_srgb();
+	glcommon_ext_texture_format_rgb8_rgba8_srgb();
+	glcommon_ext_texture_format_s3tc_dx1();
+	glcommon_ext_texture_format_s3tc_dx5();
+	glcommon_ext_texture_format_s3tc_srgb();
+	glcommon_ext_texture_format_rgtc();
+	glcommon_ext_texture_format_etc1();
+	glcommon_ext_texture_format_etc1_srgb();
+	glcommon_ext_texture_format_etc2_eac();
+	glcommon_ext_texture_format_etc2_eac_srgb();
+	glcommon_ext_texture_format_bptc();
+	glcommon_ext_texture_format_pvrtc();
+	glcommon_ext_texture_format_pvrtc2();
+	glcommon_ext_texture_format_pvrtc_srgb();
+	glcommon_ext_texture_format_astc();
+	glcommon_ext_texture_format_atc();
+	glcommon_ext_texture_format_fxt1();
+
 	glcommon_build_shader_lang_table();
+	glcommon_init_texture_formats();
 	glcommon_check_issues();
 }
 
@@ -655,6 +920,7 @@ void glcommon_unload_library(void) {
 	SDL_GL_UnloadLibrary();
 #endif
 	glcommon_free_shader_lang_table();
+	glcommon_free_texture_formats();
 }
 
 attr_unused
