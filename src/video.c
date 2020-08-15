@@ -334,6 +334,9 @@ static void video_update_scaling_factor(void) {
 		log_debug("Scaling factor updated: %f --> %f", video.scaling_factor, scaling_factor);
 		video.scaling_factor = scaling_factor;
 		video_update_mode_lists();
+
+		IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
+		SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
 	}
 }
 
@@ -412,8 +415,12 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 
 	if(video.window) {
 		SDL_ShowWindow(video.window);
-		IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
-		SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
+
+		if(video.scaling_factor != 0) {
+			IntExtent min_size = coords_ext_pixels_to_screen((IntExtent) { VIDEO_MIN_WIDTH, VIDEO_MIN_HEIGHT });
+			SDL_SetWindowMinimumSize(video.window, min_size.w, min_size.h);
+		}
+
 		video_update_mode_settings();
 		return;
 	}
