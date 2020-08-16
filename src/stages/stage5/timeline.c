@@ -587,3 +587,4 @@ void stage5_events(void) {
 		stage_finish(GAMEOVER_SCORESCREEN);
 	}
 }
+

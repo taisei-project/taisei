@@ -49,7 +49,6 @@ struct stage5_spells_s stage5_spells = {
 	},
 };
 
-
 static void stage5_start(void) {
 	stage5_drawsys_init();
 }
