@@ -111,7 +111,6 @@ static int stage5_lightburst(Enemy *e, int t) {
     return 1;
 }
 
-
 static int stage5_swirl(Enemy *e, int t) {
     TIMER(&t);
     AT(EVENT_KILLED) {
@@ -227,7 +226,54 @@ static int stage5_miner(Enemy *e, int t) {
     return 1;
 }
 
-static Boss* stage5_spawn_iku_boss(void) {
+static void iku_intro(Boss *b, int t) {
+	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
+
+	if(t == 160)
+		stage5_dialog_pre_boss();
+}
+
+static void iku_mid_intro(Boss *b, int t) {
+	TIMER(&t);
+
+	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
+
+	FROM_TO(90, 110, 10) {
+		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, iku_explosion, -2-0.5*_i+I*_i, _i == 1,1);
+	}
+
+	AT(960)
+		enemy_kill_all(&global.enemies);
+}
+
+Boss* stage5_spawn_iku(cmplx pos) {
+    Boss *b = create_boss("Nagae Iku", "iku", pos);
+    boss_set_portrait(b, "iku", NULL, "normal");
+    b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
+    b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
+    return b;
+}
+
+static void midboss_dummy(Boss *b, int t) { }
+
+static Boss *stage5_spawn_midboss(void) {
+    Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
+    b->glowcolor = *RGB(0.2, 0.4, 0.5);
+    b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
+
+    Attack *a = boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
+    boss_set_attack_bonus(a, 5);
+
+    // suppress the boss death effects (this triggers the "boss fleeing" case)
+    boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
+
+    boss_start_attack(b, b->attacks);
+    b->attacks->starttime = global.frames;  // HACK: thwart attack delay
+
+    return b;
+}
+
+static Boss* stage5_spawn_boss(void) {
     Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
 
     boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
@@ -305,8 +351,6 @@ static int stage5_magnetto(Enemy *e, int t) {
     return 1;
 }
 
-
-
 static int stage5_lightburst2(Enemy *e, int t) {
     TIMER(&t);
     AT(EVENT_KILLED) {
@@ -373,8 +417,6 @@ static int stage5_superbullet(Enemy *e, int t) {
     return 1;
 }
 
-
-
 void stage5_events(void) {
 	TIMER(&global.timer);
 
@@ -428,7 +470,7 @@ void stage5_events(void) {
 	}
 
 	AT(2900)
-		global.boss = stage5_spawn_iku_mid();
+		global.boss = stage5_spawn_midboss();
 
 	AT(2920) {
 		stage5_dialog_post_midboss();
@@ -533,7 +575,7 @@ void stage5_events(void) {
 
 	AT(6960) {
 		stage_unlock_bgm("stage5");
-		global.boss = stage5_spawn_iku_boss();
+		global.boss = stage5_spawn_boss();
 	}
 
 	AT(6980) {

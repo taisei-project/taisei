@@ -14,5 +14,6 @@
 #include "boss.h"
 
 void stage5_events(void);
+Boss* stage5_spawn_iku(cmplx);
 
 #endif // IGUARD_stages_stage5_timeline_h

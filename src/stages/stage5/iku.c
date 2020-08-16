@@ -63,25 +63,6 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-static void midboss_dummy(Boss *b, int t) { }
-
-Boss *stage5_spawn_iku_mid(void) {
-	Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
-	b->glowcolor = *RGB(0.2, 0.4, 0.5);
-	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
-
-	Attack *a = boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
-	boss_set_attack_bonus(a, 5);
-
-	// suppress the boss death effects (this triggers the "boss fleeing" case)
-	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
-
-	boss_start_attack(b, b->attacks);
-	b->attacks->starttime = global.frames;  // HACK: thwart attack delay
-
-	return b;
-}
-
 static void cloud_common(void) {
 	tsrand_fill(4);
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
@@ -837,7 +818,7 @@ void iku_extra(Boss *b, int t) {
 	}
 }
 
-static int stage5_explosion(Enemy *e, int t) {
+int iku_explosion(Enemy *e, int t) {
     TIMER(&t)
     AT(EVENT_KILLED) {
         spawn_items(e->pos,
@@ -909,30 +890,5 @@ static int stage5_explosion(Enemy *e, int t) {
     }
 
     return 1;
-}
-
-void iku_intro(Boss *b, int t) {
-	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
-}
-
-void iku_mid_intro(Boss *b, int t) {
-    TIMER(&t);
-
-    b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
-
-    FROM_TO(90, 110, 10) {
-        create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
-    }
-
-    AT(960)
-        enemy_kill_all(&global.enemies);
-}
-
-Boss* stage5_spawn_iku(cmplx pos) {
-	Boss *b = create_boss("Nagae Iku", "iku", pos);
-	boss_set_portrait(b, "iku", NULL, "normal");
-	b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
-	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
-	return b;
 }
 

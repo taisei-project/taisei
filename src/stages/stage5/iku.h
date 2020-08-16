@@ -13,8 +13,6 @@
 
 #include "boss.h"
 
-void iku_intro(Boss*, int);
-void iku_mid_intro(Boss*, int);
 void iku_bolts(Boss*, int);
 void iku_bolts2(Boss*, int);
 void iku_bolts3(Boss*, int);
@@ -28,8 +26,6 @@ void iku_slave_visual(Enemy*, int, bool);
 void iku_extra_slave_visual(Enemy*, int, bool);
 
 void lightning_particle(cmplx, int);
-
-Boss* stage5_spawn_iku(cmplx pos);
-Boss* stage5_spawn_iku_mid(void);
+int iku_explosion(Enemy*, int);
 
 #endif // IGUARD_stages_stage5_iku_h
