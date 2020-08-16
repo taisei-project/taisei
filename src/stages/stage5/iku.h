@@ -16,16 +16,14 @@
 void iku_bolts(Boss*, int);
 void iku_bolts2(Boss*, int);
 void iku_bolts3(Boss*, int);
-void iku_atmospheric(Boss*, int);
-void iku_lightning(Boss*, int);
-void iku_cathode(Boss*, int);
-void iku_induction(Boss*, int);
-void iku_extra(Boss*, int);
+int induction_bullet(Projectile*, int);
+int zigzag_bullet(Projectile*, int);
+cmplx cathode_laser(Laser*, float);
 
+int lightning_slave(Enemy*, int);
 void iku_slave_visual(Enemy*, int, bool);
-void iku_extra_slave_visual(Enemy*, int, bool);
 
 void lightning_particle(cmplx, int);
-int iku_explosion(Enemy*, int);
+void cloud_common(void);
 
 #endif // IGUARD_stages_stage5_iku_h

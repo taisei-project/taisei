@@ -20,210 +20,210 @@
 #include "common_tasks.h"
 
 TASK(boss_appear_stub, NO_ARGS) {
-    log_warn("FIXME");
+	log_warn("FIXME");
 }
 
 static void stage5_dialog_pre_boss(void) {
-    PlayerMode *pm = global.plr.mode;
-    Stage5PreBossDialogEvents *e;
-    INVOKE_TASK_INDIRECT(Stage5PreBossDialog, pm->dialog->Stage5PreBoss, &e);
-    INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
-    INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage5boss");
+	PlayerMode *pm = global.plr.mode;
+	Stage5PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage5PreBossDialog, pm->dialog->Stage5PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear_stub);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage5boss");
 }
 
 static void stage5_dialog_post_boss(void) {
-    PlayerMode *pm = global.plr.mode;
-    INVOKE_TASK_INDIRECT(Stage5PostBossDialog, pm->dialog->Stage5PostBoss);
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage5PostBossDialog, pm->dialog->Stage5PostBoss);
 }
 
 static void stage5_dialog_post_midboss(void) {
-    PlayerMode *pm = global.plr.mode;
-    INVOKE_TASK_INDIRECT(Stage5PostMidBossDialog, pm->dialog->Stage5PostMidBoss);
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage5PostMidBossDialog, pm->dialog->Stage5PostMidBoss);
 }
 
 static int stage5_greeter(Enemy *e, int t) {
-    TIMER(&t)
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 2);
-        return 1;
-    }
+	TIMER(&t)
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 2, ITEM_POWER, 2);
+		return 1;
+	}
 
-    e->moving = true;
-    e->dir = creal(e->args[0]) < 0;
+	e->moving = true;
+	e->dir = creal(e->args[0]) < 0;
 
-    FROM_TO(0, 50, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 50, 0.05);
-    }
+	FROM_TO(0, 50, 1) {
+		GO_TO(e, e->pos0 + e->args[0] * 50, 0.05);
+	}
 
-    if(t > 200)
-        e->pos += e->args[0];
+	if(t > 200)
+		e->pos += e->args[0];
 
-    FROM_TO(80, 180, 20) {
-        for(int i = -(int)global.diff; i <= (int)global.diff; i++) {
-            PROJECTILE(
-                .proto = pp_bullet,
-                .pos = e->pos,
-                .color = RGB(0.0, 0.0, 1.0),
-                .rule = asymptotic,
-                .args = {
-                    (3.5+(global.diff == D_Lunatic))*cexp(I*carg(global.plr.pos-e->pos) + 0.06*I*i),
-                    5
-                }
-            );
-        }
+	FROM_TO(80, 180, 20) {
+		for(int i = -(int)global.diff; i <= (int)global.diff; i++) {
+			PROJECTILE(
+				.proto = pp_bullet,
+				.pos = e->pos,
+				.color = RGB(0.0, 0.0, 1.0),
+				.rule = asymptotic,
+				.args = {
+					(3.5+(global.diff == D_Lunatic))*cexp(I*carg(global.plr.pos-e->pos) + 0.06*I*i),
+					5
+				}
+			);
+		}
 
-        play_sound("shot1");
-    }
+		play_sound("shot1");
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_lightburst(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 2);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 2);
+		return 1;
+	}
 
-    FROM_TO(0, 70, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
-    }
+	FROM_TO(0, 70, 1) {
+		GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
+	}
 
-    if(t > 200)
-        e->pos += e->args[0];
+	if(t > 200)
+		e->pos += e->args[0];
 
-    FROM_TO_SND("shot1_loop", 20, 300, 5) {
-        int c = 5+global.diff;
-        for(int i = 0; i < c; i++) {
-            cmplx n = cexp(I*carg(global.plr.pos) + 2.0*I*M_PI/c*i);
-            PROJECTILE(
-                .proto = pp_ball,
-                .pos = e->pos + 50*n*cexp(-0.4*I*_i*global.diff),
-                .color = RGB(0.3, 0, 0.7),
-                .rule = asymptotic,
-                .args = { 3*n, 3 }
-            );
-        }
+	FROM_TO_SND("shot1_loop", 20, 300, 5) {
+		int c = 5+global.diff;
+		for(int i = 0; i < c; i++) {
+			cmplx n = cexp(I*carg(global.plr.pos) + 2.0*I*M_PI/c*i);
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos + 50*n*cexp(-0.4*I*_i*global.diff),
+				.color = RGB(0.3, 0, 0.7),
+				.rule = asymptotic,
+				.args = { 3*n, 3 }
+			);
+		}
 
-        play_sound("shot2");
-    }
+		play_sound("shot2");
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_swirl(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 1);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 1);
+		return 1;
+	}
 
-    if(t > creal(e->args[1]) && t < cimag(e->args[1]))
-        e->args[0] *= e->args[2];
+	if(t > creal(e->args[1]) && t < cimag(e->args[1]))
+		e->args[0] *= e->args[2];
 
-    e->pos += e->args[0];
+	e->pos += e->args[0];
 
-    FROM_TO(0, 400, 26-global.diff*4) {
-        for(int i = 1; i >= -1; i -= 2) {
-            PROJECTILE(
-                .proto = pp_bullet,
-                .pos = e->pos,
-                .color = RGB(0.3, 0.4, 0.5),
-                .rule = asymptotic,
-                .args = { i*2*e->args[0]*I/cabs(e->args[0]), 3 }
-            );
-        }
+	FROM_TO(0, 400, 26-global.diff*4) {
+		for(int i = 1; i >= -1; i -= 2) {
+			PROJECTILE(
+				.proto = pp_bullet,
+				.pos = e->pos,
+				.color = RGB(0.3, 0.4, 0.5),
+				.rule = asymptotic,
+				.args = { i*2*e->args[0]*I/cabs(e->args[0]), 3 }
+			);
+		}
 
-        play_sound("shot1");
-    }
+		play_sound("shot1");
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_limiter(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
+		return 1;
+	}
 
-    e->pos += e->args[0];
+	e->pos += e->args[0];
 
-    FROM_TO_SND("shot1_loop", 0, 1200, 3) {
-        uint f = PFLAG_NOSPAWNFADE;
-        double base_angle = carg(global.plr.pos - e->pos);
+	FROM_TO_SND("shot1_loop", 0, 1200, 3) {
+		uint f = PFLAG_NOSPAWNFADE;
+		double base_angle = carg(global.plr.pos - e->pos);
 
-        for(int i = 1; i >= -1; i -= 2) {
-            double a = i * 0.2 - 0.1 * (global.diff / 4) + i * 3.0 / (_i + 1);
-            cmplx aim = cexp(I * (base_angle + a));
+		for(int i = 1; i >= -1; i -= 2) {
+			double a = i * 0.2 - 0.1 * (global.diff / 4) + i * 3.0 / (_i + 1);
+			cmplx aim = cexp(I * (base_angle + a));
 
-            PROJECTILE(
-                .proto = pp_rice,
-                .pos = e->pos,
-                .color = RGB(0.5,0.1,0.2),
-                .rule = asymptotic,
-                .args = { 10*aim, 2 },
-                .flags = f,
-            );
-        }
-    }
+			PROJECTILE(
+				.proto = pp_rice,
+				.pos = e->pos,
+				.color = RGB(0.5,0.1,0.2),
+				.rule = asymptotic,
+				.args = { 10*aim, 2 },
+				.flags = f,
+			);
+		}
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_laserfairy(Enemy *e, int t) {
-    TIMER(&t)
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
-        return 1;
-    }
+	TIMER(&t)
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
+		return 1;
+	}
 
-    FROM_TO(0, 100, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 100, 0.05);
-    }
+	FROM_TO(0, 100, 1) {
+		GO_TO(e, e->pos0 + e->args[0] * 100, 0.05);
+	}
 
-    if(t > 700)
-        e->pos -= e->args[0];
+	if(t > 700)
+		e->pos -= e->args[0];
 
-    FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
-        cmplx n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
-        float fac = (0.5+0.2*global.diff);
-        create_lasercurve2c(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0), las_accel, fac*4*n, fac*0.05*n);
-        PROJECTILE(
-            .proto = pp_plainball,
-            .pos = e->pos,
-            .color = RGBA(0.7, 0.3, 1, 0),
-            .rule = accelerated,
-            .args = { fac*4*n, fac*0.05*n }
-        );
-        play_sfx_ex("shot_special1", 0, true);
-    }
+	FROM_TO(100, 700, (7-global.diff)*(1+(int)creal(e->args[1]))) {
+		cmplx n = cexp(I*carg(global.plr.pos-e->pos)+(0.2-0.02*global.diff)*I*_i);
+		float fac = (0.5+0.2*global.diff);
+		create_lasercurve2c(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0), las_accel, fac*4*n, fac*0.05*n);
+		PROJECTILE(
+			.proto = pp_plainball,
+			.pos = e->pos,
+			.color = RGBA(0.7, 0.3, 1, 0),
+			.rule = accelerated,
+			.args = { fac*4*n, fac*0.05*n }
+		);
+		play_sfx_ex("shot_special1", 0, true);
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_miner(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 2);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 2);
+		return 1;
+	}
 
-    e->pos += e->args[0];
+	e->pos += e->args[0];
 
-    FROM_TO(0, 600, 5-global.diff/2) {
-        tsrand_fill(2);
-        PROJECTILE(
-            .proto = pp_rice,
-            .pos = e->pos + 20*cexp(2.0*I*M_PI*afrand(0)),
-            .color = RGB(0,0,cabs(e->args[0])),
-            .rule = linear,
-            .args = { cexp(2.0*I*M_PI*afrand(1)) }
-        );
-        play_sfx_ex("shot3", 0, false);
-    }
+	FROM_TO(0, 600, 5-global.diff/2) {
+		tsrand_fill(2);
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = e->pos + 20*cexp(2.0*I*M_PI*afrand(0)),
+			.color = RGB(0,0,cabs(e->args[0])),
+			.rule = linear,
+			.args = { cexp(2.0*I*M_PI*afrand(1)) }
+		);
+		play_sfx_ex("shot3", 0, false);
+	}
 
-    return 1;
+	return 1;
 }
 
 static void iku_intro(Boss *b, int t) {
@@ -247,174 +247,174 @@ static void iku_mid_intro(Boss *b, int t) {
 }
 
 Boss* stage5_spawn_iku(cmplx pos) {
-    Boss *b = create_boss("Nagae Iku", "iku", pos);
-    boss_set_portrait(b, "iku", NULL, "normal");
-    b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
-    b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
-    return b;
+	Boss *b = create_boss("Nagae Iku", "iku", pos);
+	boss_set_portrait(b, "iku", NULL, "normal");
+	b->glowcolor = *RGBA_MUL_ALPHA(0.2, 0.4, 0.5, 0.5);
+	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
+	return b;
 }
 
 static void midboss_dummy(Boss *b, int t) { }
 
 static Boss *stage5_spawn_midboss(void) {
-    Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
-    b->glowcolor = *RGB(0.2, 0.4, 0.5);
-    b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
+	Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
+	b->glowcolor = *RGB(0.2, 0.4, 0.5);
+	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
 
-    Attack *a = boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
-    boss_set_attack_bonus(a, 5);
+	Attack *a = boss_add_attack(b, AT_SurvivalSpell, "Discharge Bombs", 16, 10, iku_mid_intro, NULL);
+	boss_set_attack_bonus(a, 5);
 
-    // suppress the boss death effects (this triggers the "boss fleeing" case)
-    boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
+	// suppress the boss death effects (this triggers the "boss fleeing" case)
+	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
 
-    boss_start_attack(b, b->attacks);
-    b->attacks->starttime = global.frames;  // HACK: thwart attack delay
+	boss_start_attack(b, b->attacks);
+	b->attacks->starttime = global.frames;	// HACK: thwart attack delay
 
-    return b;
+	return b;
 }
 
 static Boss* stage5_spawn_boss(void) {
-    Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
+	Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
 
-    boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
-    boss_add_attack(b, AT_Normal, "Bolts1", 40, 24000, iku_bolts, NULL);
-    boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
-    boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
-    boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
-    boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
+	boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
+	boss_add_attack(b, AT_Normal, "Bolts1", 40, 24000, iku_bolts, NULL);
+	boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
+	boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
+	boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
+	boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
 
-    if(global.diff < D_Hard) {
-        boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
-    } else {
-        boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
-    }
-    boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
+	if(global.diff < D_Hard) {
+		boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
+	} else {
+		boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
+	}
+	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
 
-    boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
+	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
-    boss_start_attack(b, b->attacks);
-    return b;
+	boss_start_attack(b, b->attacks);
+	return b;
 }
 
 static int stage5_magnetto(Enemy *e, int t) {
-    TIMER(&t);
+	TIMER(&t);
 
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
-        return 1;
-    }
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 5, ITEM_POWER, 5);
+		return 1;
+	}
 
-    if(t < 0) {
-        return 1;
-    }
+	if(t < 0) {
+		return 1;
+	}
 
-    cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
-    lightning_particle(e->pos + 3*offset, t);
+	cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
+	lightning_particle(e->pos + 3*offset, t);
 
-    FROM_TO(0, 70, 1) {
-        GO_TO(e, e->args[0], 0.1);
-    }
+	FROM_TO(0, 70, 1) {
+		GO_TO(e, e->args[0], 0.1);
+	}
 
-    AT(140) {
-        play_sound("redirect");
-        play_sfx_delayed("redirect", 0, false, 180);
-    }
+	AT(140) {
+		play_sound("redirect");
+		play_sfx_delayed("redirect", 0, false, 180);
+	}
 
-    FROM_TO(140, 320, 1) {
-        e->pos += 3 * cexp(I*(carg(e->args[1] - e->pos) + M_PI/2));
-        GO_TO(e, e->args[1], pow((t - 140) / 300.0, 3));
-    }
+	FROM_TO(140, 320, 1) {
+		e->pos += 3 * cexp(I*(carg(e->args[1] - e->pos) + M_PI/2));
+		GO_TO(e, e->args[1], pow((t - 140) / 300.0, 3));
+	}
 
-    FROM_TO_SND("shot1_loop", 140, 280, 1 + 2 * (1 + D_Lunatic - global.diff)) {
-        // complex dir = cexp(I*carg(global.plr.pos - e->pos));
+	FROM_TO_SND("shot1_loop", 140, 280, 1 + 2 * (1 + D_Lunatic - global.diff)) {
+		// complex dir = cexp(I*carg(global.plr.pos - e->pos));
 
-        for(int i = 0; i < 2 - (global.diff == D_Easy); ++i) {
-            cmplx dir = cexp(I*(M_PI*i + M_PI/8*sin(2*(t-140)/70.0 * M_PI) + carg(e->args[1] - e->pos)));
+		for(int i = 0; i < 2 - (global.diff == D_Easy); ++i) {
+			cmplx dir = cexp(I*(M_PI*i + M_PI/8*sin(2*(t-140)/70.0 * M_PI) + carg(e->args[1] - e->pos)));
 
-            PROJECTILE(
-                .proto = pp_ball,
-                .pos = e->pos,
-                .color = RGBA(0.1 + 0.5 * pow((t - 140) / 140.0, 2), 0.0, 0.8, 0.0),
-                .rule = accelerated,
-                .args = {
-                    (-2 + (global.diff == D_Hard)) * dir,
-                    0.02 * dir * (!i || global.diff != D_Lunatic),
-                },
-            );
-        }
-    }
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = RGBA(0.1 + 0.5 * pow((t - 140) / 140.0, 2), 0.0, 0.8, 0.0),
+				.rule = accelerated,
+				.args = {
+					(-2 + (global.diff == D_Hard)) * dir,
+					0.02 * dir * (!i || global.diff != D_Lunatic),
+				},
+			);
+		}
+	}
 
-    AT(380) {
-        return ACTION_DESTROY;
-    }
+	AT(380) {
+		return ACTION_DESTROY;
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_lightburst2(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 4);
+		return 1;
+	}
 
-    FROM_TO(0, 70, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
-    }
+	FROM_TO(0, 70, 1) {
+		GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
+	}
 
-    if(t > 200)
-        e->pos += e->args[0];
+	if(t > 200)
+		e->pos += e->args[0];
 
-    FROM_TO_SND("shot1_loop", 20, 170, 5) {
-        int i;
-        int c = 4+global.diff-(global.diff==D_Easy);
-        for(i = 0; i < c; i++) {
-            tsrand_fill(2);
-            cmplx n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
-            PROJECTILE(
-                .proto = pp_bigball,
-                .pos = e->pos + 50*n*cexp(-1.0*I*_i*global.diff),
-                .color = RGB(0.3, 0, 0.7+0.3*(_i&1)),
-                .rule = asymptotic,
-                .args = {
-                    2.5*n+0.25*global.diff*afrand(0)*cexp(2.0*I*M_PI*afrand(1)),
-                    3
-                }
-            );
-        }
+	FROM_TO_SND("shot1_loop", 20, 170, 5) {
+		int i;
+		int c = 4+global.diff-(global.diff==D_Easy);
+		for(i = 0; i < c; i++) {
+			tsrand_fill(2);
+			cmplx n = cexp(I*carg(global.plr.pos-e->pos) + 2.0*I*M_PI/c*i);
+			PROJECTILE(
+				.proto = pp_bigball,
+				.pos = e->pos + 50*n*cexp(-1.0*I*_i*global.diff),
+				.color = RGB(0.3, 0, 0.7+0.3*(_i&1)),
+				.rule = asymptotic,
+				.args = {
+					2.5*n+0.25*global.diff*afrand(0)*cexp(2.0*I*M_PI*afrand(1)),
+					3
+				}
+			);
+		}
 
-        play_sound("shot2");
-    }
+		play_sound("shot2");
+	}
 
-    return 1;
+	return 1;
 }
 
 static int stage5_superbullet(Enemy *e, int t) {
-    TIMER(&t);
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3);
-        return 1;
-    }
+	TIMER(&t);
+	AT(EVENT_KILLED) {
+		spawn_items(e->pos, ITEM_POINTS, 4, ITEM_POWER, 3);
+		return 1;
+	}
 
-    FROM_TO(0, 70, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
-    }
+	FROM_TO(0, 70, 1) {
+		GO_TO(e, e->pos0 + e->args[0] * 70, 0.05);
+	}
 
-    FROM_TO(60, 200, 1) {
-        cmplx n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
-        PROJECTILE(
-            .proto = pp_bullet,
-            .pos = e->pos + 50*n,
-            .color = RGB(0.6, 0, 0),
-            .rule = asymptotic,
-            .args = { 2*n, 10 }
-        );
-        play_sound("shot1");
-    }
+	FROM_TO(60, 200, 1) {
+		cmplx n = cexp(I*M_PI*sin(_i/(8.0+global.diff)+frand()*0.1)+I*carg(global.plr.pos-e->pos));
+		PROJECTILE(
+			.proto = pp_bullet,
+			.pos = e->pos + 50*n,
+			.color = RGB(0.6, 0, 0),
+			.rule = asymptotic,
+			.args = { 2*n, 10 }
+		);
+		play_sound("shot1");
+	}
 
-    FROM_TO(260, 400, 1)
-        e->pos -= e->args[0];
-    return 1;
+	FROM_TO(260, 400, 1)
+		e->pos -= e->args[0];
+	return 1;
 }
 
 void stage5_events(void) {
@@ -541,7 +541,7 @@ void stage5_events(void) {
 
 	AT(5500) {
 		create_enemy1c(VIEWPORT_W+20 + VIEWPORT_H*0.6*I, 2000, BigFairy, stage5_lightburst, -2*I - 2);
-		create_enemy1c(          -20 + VIEWPORT_H*0.6*I, 2000, BigFairy, stage5_lightburst, -2*I + 2);
+		create_enemy1c(			 -20 + VIEWPORT_H*0.6*I, 2000, BigFairy, stage5_lightburst, -2*I + 2);
 	}
 
 	AT(5600) {
@@ -554,10 +554,10 @@ void stage5_events(void) {
 		double ofs = 42*2;
 
 		FROM_TO(5620, 5620 + step*cnt-1, step) {
-			cmplx src1 = -ofs/4               + (-ofs/4 +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx src1 = -ofs/4				  + (-ofs/4 +	   _i	 * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 			cmplx src2 = (VIEWPORT_W + ofs/4) + (-ofs/4 + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			cmplx dst1 = ofs                  + ( ofs   +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs   + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst1 = ofs				  + ( ofs	+	   _i	 * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs	+ (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 
 			create_enemy2c(src1, 2000, Swirl, stage5_magnetto, dst1, dst2);
 			create_enemy2c(src2, 2000, Swirl, stage5_magnetto, dst2, dst1);

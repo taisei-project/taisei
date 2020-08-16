@@ -14,6 +14,5 @@
 #include "coroutine.h"
 
 void stage5_update(void);
-//DECLARE_EXTERN_TASK(animate_bg, NO_ARGS);
 
 #endif // IGUARD_stages_stage5_background_anim_h
