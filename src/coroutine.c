@@ -17,7 +17,11 @@
 	#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)0)
 #endif
 
-#define CO_STACK_SIZE (64 * 1024)
+#ifdef __EMSCRIPTEN__
+	#define CO_STACK_SIZE (64 * 1024)
+#else
+	#define CO_STACK_SIZE (256 * 1024)
+#endif
 
 // #define EVT_DEBUG
 
