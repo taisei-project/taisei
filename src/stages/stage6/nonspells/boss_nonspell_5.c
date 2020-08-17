@@ -14,34 +14,34 @@
 #include "global.h"
 
 void elly_baryon_explode(Boss *b, int t) {
-    TIMER(&t);
+	TIMER(&t);
 
-    GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
+	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.05);
 
-    AT(20) {
-        set_baryon_rule(baryon_explode);
-    }
+	AT(20) {
+		set_baryon_rule(baryon_explode);
+	}
 
-    AT(42) {
-        audio_bgm_stop(1.0);
-    }
+	AT(42) {
+		audio_bgm_stop(1.0);
+	}
 
-    FROM_TO(0, 200, 1) {
-        // tsrand_fill(2);
-        // petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-        // global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
-        stage_shake_view(_i / 200.0f);
+	FROM_TO(0, 200, 1) {
+		// tsrand_fill(2);
+		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		// global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
+		stage_shake_view(_i / 200.0f);
 
-        if(_i > 30) {
-            play_sfx_loop("charge_generic");
-        }
-    }
+		if(_i > 30) {
+			play_sfx_loop("charge_generic");
+		}
+	}
 
-    AT(200) {
-        tsrand_fill(2);
-        stage_shake_view(40);
-        play_sfx("boom");
-        petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-        enemy_kill_all(&global.enemies);
-    }
+	AT(200) {
+		tsrand_fill(2);
+		stage_shake_view(40);
+		play_sfx("boom");
+		petal_explosion(100, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
+		enemy_kill_all(&global.enemies);
+	}
 }

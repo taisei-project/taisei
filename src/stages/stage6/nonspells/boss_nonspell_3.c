@@ -15,43 +15,43 @@
 #include "global.h"
 
 void elly_paradigm_shift(Boss *b, int t) {
-    if(global.stage->type == STAGE_SPELL) {
-        GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
-    } else if(t == 0) {
-        play_sfx("bossdeath");
-    }
+	if(global.stage->type == STAGE_SPELL) {
+		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)
+	} else if(t == 0) {
+		play_sfx("bossdeath");
+	}
 
-    TIMER(&t);
+	TIMER(&t);
 
-    AT(0) {
-        Enemy *scythe = find_scythe();
-        scythe->birthtime = global.frames;
-        scythe->logic_rule = scythe_explode;
-        elly_clap(b,150);
-    }
+	AT(0) {
+		Enemy *scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_explode;
+		elly_clap(b,150);
+	}
 
-    if(global.stage->type != STAGE_SPELL) {
-        AT(80) {
-            audio_bgm_stop(0.5);
-        }
-    }
+	if(global.stage->type != STAGE_SPELL) {
+		AT(80) {
+			audio_bgm_stop(0.5);
+		}
+	}
 
-    AT(100) {
-        if(global.stage->type != STAGE_SPELL) {
-            stage_unlock_bgm("stage6boss_phase1");
-            stage_start_bgm("stage6boss_phase2");
-            stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 120, 10, 30);
-        }
+	AT(100) {
+		if(global.stage->type != STAGE_SPELL) {
+			stage_unlock_bgm("stage6boss_phase1");
+			stage_start_bgm("stage6boss_phase2");
+			stagetext_add("Paradigm Shift!", VIEWPORT_W/2+I*(VIEWPORT_H/2+64), ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 120, 10, 30);
+		}
 
-        elly_spawn_baryons(b->pos);
-    }
+		elly_spawn_baryons(b->pos);
+	}
 
-    /*
-    if(t > 120)
-        global.shake_view = fmax(0, 16-0.26*(t-120));
-    */
+	/*
+	if(t > 120)
+		global.shake_view = fmax(0, 16-0.26*(t-120));
+	*/
 
-    AT(120) {
-        stage_shake_view(200);
-    }
+	AT(120) {
+		stage_shake_view(200);
+	}
 }

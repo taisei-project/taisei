@@ -14,38 +14,38 @@
 #include "stageinfo.h"
 
 extern struct stage6_spells_s {
-    // this struct must contain only fields of type AttackInfo
-    // order of fields affects the visual spellstage number, but not its real internal ID
+	// this struct must contain only fields of type AttackInfo
+	// order of fields affects the visual spellstage number, but not its real internal ID
 
-    union {
-        AttackInfo scythe_first;
-        struct {
-            AttackInfo occams_razor;
-            AttackInfo orbital_clockwork;
-            AttackInfo wave_theory;
-        } scythe;
-    };
+	union {
+		AttackInfo scythe_first;
+		struct {
+			AttackInfo occams_razor;
+			AttackInfo orbital_clockwork;
+			AttackInfo wave_theory;
+		} scythe;
+	};
 
-    union {
-        AttackInfo baryon_first;
-        struct {
-            AttackInfo many_world_interpretation;
-            AttackInfo wave_particle_duality;
-            AttackInfo spacetime_curvature;
-            AttackInfo higgs_boson_uncovered;
-        } baryon;
-    };
+	union {
+		AttackInfo baryon_first;
+		struct {
+			AttackInfo many_world_interpretation;
+			AttackInfo wave_particle_duality;
+			AttackInfo spacetime_curvature;
+			AttackInfo higgs_boson_uncovered;
+		} baryon;
+	};
 
-    struct {
-        AttackInfo curvature_domination;
-    } extra;
+	struct {
+		AttackInfo curvature_domination;
+	} extra;
 
-    struct {
-        AttackInfo theory_of_everything;
-    } final;
+	struct {
+		AttackInfo theory_of_everything;
+	} final;
 
-    // required for iteration
-    AttackInfo null;
+	// required for iteration
+	AttackInfo null;
 } stage6_spells;
 
 void start_fall_over(void);

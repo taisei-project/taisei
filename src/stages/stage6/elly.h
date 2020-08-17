@@ -21,7 +21,6 @@ int scythe_infinity(Enemy*, int);
 int scythe_explode(Enemy*, int);
 void elly_clap(Boss*, int);
 void elly_spawn_baryons(cmplx);
-void elly_global_rule(Boss*, int);
 
 void set_baryon_rule(EnemyLogicRule);
 void baryon(Enemy*, int, bool);

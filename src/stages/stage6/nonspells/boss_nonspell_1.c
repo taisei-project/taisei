@@ -14,21 +14,21 @@
 #include "global.h"
 
 void elly_frequency(Boss *b, int t) {
-    TIMER(&t);
-    Enemy *scythe;
+	TIMER(&t);
+	Enemy *scythe;
 
-    AT(EVENT_BIRTH) {
-        scythe = find_scythe();
-        aniplayer_queue(&b->ani, "snipsnip", 0);
-        scythe->birthtime = global.frames;
-        scythe->logic_rule = scythe_infinity;
-        scythe->args[0] = 2;
-    }
+	AT(EVENT_BIRTH) {
+		scythe = find_scythe();
+		aniplayer_queue(&b->ani, "snipsnip", 0);
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_infinity;
+		scythe->args[0] = 2;
+	}
 
-    AT(EVENT_DEATH) {
-        scythe = find_scythe();
-        scythe->birthtime = global.frames;
-        scythe->logic_rule = scythe_reset;
-        scythe->args[0] = 0;
-    }
+	AT(EVENT_DEATH) {
+		scythe = find_scythe();
+		scythe->birthtime = global.frames;
+		scythe->logic_rule = scythe_reset;
+		scythe->args[0] = 0;
+	}
 }

@@ -43,6 +43,7 @@ void elly_spellbg_toe(Boss*, int);
 void elly_spellbg_modern_dark(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
 void elly_spellbg_classic(Boss*, int);
+void elly_global_rule(Boss*, int);
 
 // this hackery is needed for spell practice
 #define STG6_SPELL_NEEDS_SCYTHE(s) ((s) >= &stage6_spells.scythe_first && ((s) - &stage6_spells.scythe_first) < sizeof(stage6_spells.scythe)/sizeof(AttackInfo))
