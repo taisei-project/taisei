@@ -32,6 +32,7 @@ typedef struct Stage6DrawData {
 } Stage6DrawData;
 
 void baryon_center_draw(Enemy*, int, bool);
+void baryon(Enemy*, int, bool);
 
 extern ShaderRule stage6_bg_effects[];
 extern ShaderRule stage6_postprocess[];
@@ -44,9 +45,5 @@ void elly_spellbg_modern_dark(Boss*, int);
 void elly_spellbg_modern(Boss*, int);
 void elly_spellbg_classic(Boss*, int);
 void elly_global_rule(Boss*, int);
-
-// this hackery is needed for spell practice
-#define STG6_SPELL_NEEDS_SCYTHE(s) ((s) >= &stage6_spells.scythe_first && ((s) - &stage6_spells.scythe_first) < sizeof(stage6_spells.scythe)/sizeof(AttackInfo))
-#define STG6_SPELL_NEEDS_BARYON(s) ((s) >= &stage6_spells.baryon_first && ((s) - &stage6_spells.baryon_first) < sizeof(stage6_spells.baryon)/sizeof(AttackInfo)+1)
 
 #endif // IGUARD_stages_stage6_stage6_h

@@ -11,6 +11,7 @@
 #include "spells.h"
 #include "../elly.h"
 #include "../extra.h"
+#include "../draw.h"
 
 #include "common_tasks.h"
 #include "global.h"

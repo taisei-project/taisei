@@ -272,7 +272,7 @@ void elly_spawn_baryons(cmplx pos) {
 	Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
 
 	for(i = 0; i < 6; i++) {
-		e = create_enemy3c(pos, ENEMY_IMMUNE, baryon_center_draw, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
+		e = create_enemy3c(pos, ENEMY_IMMUNE, baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
 		e->ent.draw_layer = LAYER_BACKGROUND;
 
 		if(i == 0) {
@@ -292,6 +292,7 @@ void elly_spawn_baryons(cmplx pos) {
 
 void set_baryon_rule(EnemyLogicRule r) {
 	Enemy *e;
+
 	for(e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == baryon) {
 			e->birthtime = global.frames;
@@ -300,7 +301,7 @@ void set_baryon_rule(EnemyLogicRule r) {
 	}
 }
 
-int baryon_reset(Enemy *baryon, int t) {
+int baryon_reset(Enemy* baryon, int t) {
 	if(t < 0) {
 		return 1;
 	}

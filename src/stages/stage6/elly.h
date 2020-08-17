@@ -23,7 +23,6 @@ void elly_clap(Boss*, int);
 void elly_spawn_baryons(cmplx);
 
 void set_baryon_rule(EnemyLogicRule);
-void baryon(Enemy*, int, bool);
 int baryon_reset(Enemy*, int);
 int baryon_nattack(Enemy*, int);
 int baryon_explode(Enemy*, int);
