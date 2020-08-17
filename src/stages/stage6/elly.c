@@ -8,6 +8,7 @@
 
 #include "taisei.h"
 
+#include "global.h"
 #include "elly.h"
 #include "stage6.h"
 #include "extra.h"
