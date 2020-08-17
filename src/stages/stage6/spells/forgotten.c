@@ -12,7 +12,6 @@
 #include "../elly.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static int baryon_curvature(Enemy *e, int t) {
 	int num = creal(e->args[2])+0.5;

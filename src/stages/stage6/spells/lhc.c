@@ -12,7 +12,6 @@
 #include "../elly.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static void lhc_laser_logic(Laser *l, int t) {
 	Enemy *e;

@@ -12,7 +12,6 @@
 #include "../elly.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static int scythe_kepler(Enemy *e, int t) {
 	if(t < 0) {

@@ -24,11 +24,9 @@ enum {
 };
 
 typedef struct Stage6DrawData {
-
 	struct {
 		float position[3*NUM_STARS];
 	} stars;
-
 } Stage6DrawData;
 
 void baryon_center_draw(Enemy*, int, bool);
@@ -46,4 +44,4 @@ void elly_spellbg_modern(Boss*, int);
 void elly_spellbg_classic(Boss*, int);
 void elly_global_rule(Boss*, int);
 
-#endif // IGUARD_stages_stage6_stage6_h
+#endif // IGUARD_stages_stage6_draw_h

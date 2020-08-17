@@ -38,4 +38,4 @@ Enemy* find_scythe(void);
 
 Color* boson_color(Color*, int, int);
 
-#endif // IGUARD_stages_stage6_elly
+#endif // IGUARD_stages_stage6_elly_h

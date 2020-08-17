@@ -13,7 +13,6 @@
 #include "../draw.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static int eigenstate_proj(Projectile *p, int t) {
 	if(t < 0) {

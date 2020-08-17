@@ -13,7 +13,6 @@
 #include "../elly.h"
 #include "stagetext.h"
 #include "common_tasks.h"
-#include "global.h"
 
 static bool elly_toe_its_yukawatime(cmplx pos) {
 	int t = global.frames-global.boss->current->starttime;

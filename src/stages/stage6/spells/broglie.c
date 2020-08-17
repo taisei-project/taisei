@@ -14,7 +14,6 @@
 #include "../draw.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static int baryon_broglie(Enemy *e, int t) {
 	if(t < 0) {

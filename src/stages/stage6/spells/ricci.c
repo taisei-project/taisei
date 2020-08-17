@@ -12,7 +12,6 @@
 #include "../elly.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 /* !!! You are entering Akari danmaku code !!! */
 #define SAFE_RADIUS_DELAY 300

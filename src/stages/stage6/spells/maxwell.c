@@ -12,7 +12,6 @@
 #include "../elly.h"
 
 #include "common_tasks.h"
-#include "global.h"
 
 static cmplx maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
