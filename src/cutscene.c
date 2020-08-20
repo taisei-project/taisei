@@ -35,14 +35,14 @@ typedef struct CutscenePhase {
 	CutscenePhaseTextEntry text_entries[MAX_TEXT_ENTRIES];
 } CutscenePhase;
 
-#define SKIP_DELAY 5
+#define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
 #define AUTO_ADVANCE_TIME_MID_SCENE   FPS * 20
 #define AUTO_ADVANCE_TIME_CROSS_SCENE FPS * 180
 
 #define COLOR_NARRATOR { 0.955, 0.934, 0.745, 1 }
 #define COLOR_REIMU    { 0.955, 0.550, 0.500, 1 }
-#define COLOR_YUKARI   { 0.550, 0.500, 0.950, 1 }
+#define COLOR_YUKARI   { 0.750, 0.600, 0.950, 1 }
 
 #define T_NARRATOR(text) { CTT_NARRATION, NULL, text, COLOR_NARRATOR }
 #define T_SPEECH(speaker, text, color) { CTT_DIALOGUE, speaker, "“" text "”", color }
@@ -191,8 +191,22 @@ static void reset_timers(CutsceneState *st) {
 	log_debug("st->advance_timer = %i", st->advance_timer);
 }
 
+static bool skip_text_animation(CutsceneState *st) {
+	bool animation_skipped = false;
+
+	for(CutsceneTextVisual *tv = st->text_visuals.first; tv; tv = tv->next) {
+		if(tv->target_alpha > 0 && tv->alpha < tv->target_alpha * 0.6) {
+			tv->alpha = tv->target_alpha;
+			animation_skipped = true;
+		}
+	}
+
+	return animation_skipped;
+}
+
 static void cutscene_advance(CutsceneState *st) {
 	if(st->skip_timer > 0) {
+		log_debug("Skip too soon");
 		return;
 	}
 
@@ -200,6 +214,11 @@ static void cutscene_advance(CutsceneState *st) {
 		if(st->text_entry == NULL) {
 			st->text_entry = &st->phase->text_entries[0];
 		} else if((++st->text_entry)->text == NULL) {
+			if(skip_text_animation(st)) {
+				--st->text_entry;
+				return;
+			}
+
 			st->text_entry = NULL;
 			clear_text(st);
 
@@ -212,6 +231,7 @@ static void cutscene_advance(CutsceneState *st) {
 
 		if(st->text_entry && st->text_entry->text) {
 			CutsceneTextVisual *tv = calloc(1, sizeof(*tv));
+			tv->alpha = 0.1;
 			tv->target_alpha = 1;
 			tv->entry = st->text_entry;
 			alist_append(&st->text_visuals, tv);
@@ -252,26 +272,26 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 	}
 
 	if(st->bg_state.fade_out) {
-		if(fapproach_p(&st->bg_state.alpha, 0, 1/40.0f) == 0) {
+		if(fapproach_p(&st->bg_state.alpha, 0, 1/80.0f) == 0) {
 			st->bg_state.scene = st->bg_state.next_scene;
 			st->bg_state.next_scene = NULL;
 			st->bg_state.fade_out = false;
 		}
 	} else if(st->bg_state.scene != NULL) {
-		fapproach_p(&st->bg_state.alpha, 1, 1/60.0f);
+		fapproach_p(&st->bg_state.alpha, 1, 1/80.0f);
 	}
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first, *next; tv; tv = next) {
 		next = tv->next;
 
-		float rate = 0.1;
+		float rate = 1/120.0f;
 
 		if(tv->target_alpha > 0 && st->text_entry != tv->entry) {
 			// if we skipped past this one and it's still fading in, speed it up
 			rate *= 5;
 		}
 
-		if(fapproach_asymptotic_p(&tv->alpha, tv->target_alpha, rate, 1e-4) == 0) {
+		if(fapproach_p(&tv->alpha, tv->target_alpha, rate) == 0) {
 			free(alist_unlink(&st->text_visuals, tv));
 		}
 	}
@@ -339,7 +359,6 @@ static void draw_text(CutsceneState *st) {
 	float width = SCREEN_W - 2 * offset_x;
 	float speaker_width = width * 0.1;
 	float height = lines * font_get_lineskip(font);
-	float opacity = 1;
 
 	float x = offset_x, y = offset_y;
 
@@ -350,22 +369,23 @@ static void draw_text(CutsceneState *st) {
 
 	r_state_push();
 
+	ShaderCustomParams cparams = { 0 };
+
 	TextParams p = {
 		.shader_ptr = res_shader("text_cutscene"),
 		.aux_textures = { res_texture("cell_noise") },
-		.shader_params = &(ShaderCustomParams) {{ (1.0 - (0.2 + 0.8 * (1 - opacity))), 0 }},
-// 		.color = RGBA(0.8, 0.9, 0.5, 1),
-// 		.color = HSLA(0.15, 0.7, 0.85, 1),
+		.shader_params = &cparams,
 		.pos = { x, y },
 		.align = ALIGN_LEFT,
 		.font_ptr = font,
-// 		.overlay_projection = &textbox,
+		.overlay_projection = &textbox,
 	};
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first; tv; tv = tv->next) {
 		const CutscenePhaseTextEntry *e = tv->entry;
 
-		p.color = color_mul_scalar(COLOR_COPY(&e->color), tv->alpha * tv->alpha);
+		p.color = &e->color;
+		cparams.vector[0] = tv->alpha;
 
 		if(e->type == CTT_CENTERED) {
 			draw_center_text(tv, e, p);
@@ -373,8 +393,8 @@ static void draw_text(CutsceneState *st) {
 		}
 
 		float w = width;
-		p.pos.x = x * tv->alpha;
-		p.pos.y = y * tv->alpha;
+		p.pos.x = x;
+		p.pos.y = y;
 
 		if(e->header != NULL) {
 			float ofs = 8;
@@ -390,7 +410,7 @@ static void draw_text(CutsceneState *st) {
 		text_wrap(font, e->text, w, buf, sizeof(buf));
 		text_draw(buf, &p);
 
-		y += text_height(font, buf, 0) * tv->alpha;
+		y += text_height(font, buf, 0) * glm_ease_quad_in(fminf(3 * tv->alpha, 1));
 	}
 
 	r_state_pop();

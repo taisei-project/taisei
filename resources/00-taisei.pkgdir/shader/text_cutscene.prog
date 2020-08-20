@@ -1,2 +1,2 @@
 
-objects = text_default.vert text_cutscene.frag
+objects = text_dialog.vert text_cutscene.frag
