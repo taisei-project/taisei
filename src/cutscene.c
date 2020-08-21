@@ -13,6 +13,7 @@
 #include "color.h"
 #include "global.h"
 #include "video.h"
+#include "util/fbmgr.h"
 
 #define MAX_TEXT_ENTRIES 6
 
@@ -113,17 +114,13 @@ static CutscenePhase test_cutscene[] = {
 		{ 0 },
 	}},
 #endif
-	{ "", {
+	{ "cutscenes/reimu_bad/02", {
 		T_CENTERED("- Bad End -", "Try to reach the end without using a Continue!"),
 		{ 0 },
 	}},
 
 	{ NULL },
 };
-
-typedef struct CutsceneTextState {
-	float alpha;
-} CutsceneTextState;
 
 typedef struct CutsceneBGState {
 	Texture *scene;
@@ -146,6 +143,10 @@ typedef struct CutsceneState {
 
 	CutsceneBGState bg_state;
 	LIST_ANCHOR(CutsceneTextVisual) text_visuals;
+
+	ManagedFramebufferGroup *mfb_group;
+	Framebuffer *text_fb;
+	FBPair erase_mask_fbpair;
 
 	int skip_timer;
 	int advance_timer;
@@ -301,8 +302,9 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 
 #include "util/glm.h"
 
-static void draw_background(CutsceneState *st) {
+static void draw_background(CutsceneState *st, Texture *erase_mask) {
 	r_state_push();
+	r_blend(BLEND_NONE);
 	r_mat_mv_push();
 	r_mat_mv_scale(SCREEN_W, SCREEN_H, 1);
 	r_mat_mv_translate(0.5, 0.5, 0);
@@ -327,6 +329,7 @@ static void draw_background(CutsceneState *st) {
 
 	r_uniform_sampler("noise_tex", "cell_noise");
 	r_uniform_sampler("paper_tex", "cutscenes/paper");
+	r_uniform_sampler("erase_mask_tex", erase_mask);
 	r_uniform_float("distort_strength", 0.01);
 
 	r_draw_quad();
@@ -420,8 +423,43 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 	CutsceneState *st = ctx;
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
 	set_ortho(SCREEN_W, SCREEN_H);
-	draw_background(st);
+
+	r_state_push();
+
+	r_framebuffer(st->text_fb);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
 	draw_text(st);
+
+	r_shader_standard();
+	r_blend(BLEND_NONE);
+
+	r_framebuffer(st->erase_mask_fbpair.back);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
+	fbpair_swap(&st->erase_mask_fbpair);
+
+	FloatRect mask_vp;
+	r_framebuffer_viewport_current(st->erase_mask_fbpair.back, &mask_vp);
+	r_shader("blur9");
+	r_uniform_vec2("blur_resolution", mask_vp.w, mask_vp.h);
+
+	r_framebuffer(st->erase_mask_fbpair.back);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_uniform_vec2("blur_direction", 1, 0);
+	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
+	fbpair_swap(&st->erase_mask_fbpair);
+
+	r_framebuffer(st->erase_mask_fbpair.back);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_uniform_vec2("blur_direction", 0, 1);
+	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
+	fbpair_swap(&st->erase_mask_fbpair);
+
+	r_state_pop();
+
+	draw_background(st, r_framebuffer_get_attachment(st->erase_mask_fbpair.front, FRAMEBUFFER_ATTACH_COLOR0));
+	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
+
 	return RFRAME_SWAP;
 }
 
@@ -432,6 +470,8 @@ static void cutscene_end_loop(void *ctx) {
 		next = tv->next;
 		free(tv);
 	}
+
+	fbmgr_group_destroy(st->mfb_group);
 
 	CallChain cc = st->cc;
 	free(st);
@@ -446,12 +486,49 @@ static void cutscene_preload(CutscenePhase phases[]) {
 	}
 }
 
+static void resize_fb(void *userdata, IntExtent *out_dimensions, FloatRect *out_viewport) {
+	float w, h;
+	video_get_viewport_size(&w, &h);
+
+	out_dimensions->w = w;
+	out_dimensions->h = h;
+
+	out_viewport->w = w;
+	out_viewport->h = h;
+	out_viewport->x = 0;
+	out_viewport->y = 0;
+}
+
 static CutsceneState *cutscene_state_new(CutscenePhase phases[]) {
 	cutscene_preload(phases);
 	CutsceneState *st = calloc(1, sizeof(*st));
 	st->phase = &phases[0];
 	switch_bg(st, st->phase->background);
 	reset_timers(st);
+
+	st->mfb_group = fbmgr_group_create();
+
+	FBAttachmentConfig a = { 0 };
+	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a.tex_params.type = TEX_TYPE_RGBA_8;
+	a.tex_params.filter.min = TEX_FILTER_LINEAR;
+	a.tex_params.filter.mag = TEX_FILTER_LINEAR;
+	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
+	a.tex_params.wrap.s = TEX_WRAP_MIRROR;
+
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = &a;
+	fbconf.num_attachments = 1;
+	fbconf.resize_strategy.resize_func = resize_fb;
+
+	st->text_fb = fbmgr_group_framebuffer_create(st->mfb_group, "Cutscene text", &fbconf);
+
+	fbconf.resize_strategy.resize_func = NULL;
+	a.tex_params.width = SCREEN_W / 4;
+	a.tex_params.height= SCREEN_H / 4;
+	a.tex_params.type = TEX_TYPE_RGBA_8;
+	fbmgr_group_fbpair_create(st->mfb_group, "Cutscene erase mask", &fbconf, &st->erase_mask_fbpair);
+
 	return st;
 }
 

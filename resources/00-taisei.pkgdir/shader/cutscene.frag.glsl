@@ -6,8 +6,9 @@
 
 UNIFORM(1) sampler2D noise_tex;
 UNIFORM(2) sampler2D paper_tex;
-UNIFORM(3) float distort_strength = 0.01;
-UNIFORM(4) vec2 thresholds;
+UNIFORM(3) sampler2D erase_mask_tex;
+UNIFORM(4) float distort_strength = 0.01;
+UNIFORM(5) vec2 thresholds;
 
 float render_fademap(vec2 uv, vec2 distort) {
 	// Technically this could be pre-rendered, but 8 bits of precision is not enough,
@@ -33,13 +34,18 @@ float project_drawing(float drawing, float fademap, float grainmap) {
 
 void main(void) {
 	vec4 paper = texture(paper_tex, texCoord);
-	vec2 distort = vec2(paper.g - 0.5, paper.r - 0.5) * distort_strength;
+	vec2 distort_offset = vec2(-0.7, -0.75);  // NOTE: tuned for the paper texture
+	vec2 distort = (vec2(paper.g, paper.r) + distort_offset) * distort_strength;
 
 	float fademap = render_fademap(texCoord, distort);
 	fragColor = vec4(vec3(fademap), 1);
 	fragColor.gb = mod(fragColor.gb, vec2(2.0));
 
 	float drawing = texture(tex, texCoord + distort).r;
+
+	float erase_mask = texture(erase_mask_tex, texCoord + distort * 10).a;
+	erase_mask = smoothstep(0, 0.3, erase_mask * (paper.b + 1));
+	drawing = min(1, drawing + erase_mask);
 
 	vec2 fade_thresholds = pow(thresholds, 1 / vec2(paper.b));
 	fademap = smoothstep(fade_thresholds.x, fade_thresholds.y, fademap);
