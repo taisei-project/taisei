@@ -617,7 +617,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "But I’m already mad with knowledge! Why do ya think I drink all the time?!");
 	MSG(marisa, "My mind’s always racin’ with this ‘n that…");
 	MSG(marisa, "Y’think this is any different than how I usually live?! Get over y’erself!");
-	FACE(marisa, inquistive);
+	FACE(marisa, inquisitive);
 	MSG(marisa, "Now, I gotta ask… y’don’t got a secret library anywhere?");
 	MSG(marisa, "A single bookshelf?");
 	MSG(marisa, "I’ll event take a few loose scribbled notes—");
