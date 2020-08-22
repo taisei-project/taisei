@@ -207,19 +207,11 @@ static int ricci_proj(Projectile *p, int t) {
 	float a = 0.5 + 0.5 * fmax(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
 	a *= fmin(1, t / 20.0f);
 
-	/*
-	p->color = derive_color(p->color, CLRMASK_B|CLRMASK_A,
-		rgba(0, 0, cabs(shift)/20.0, a)
-	);
-	*/
-
 	p->color.r = 0.5;
 	p->color.g = 0;
 	p->color.b = cabs(shift)/20.0;
 	p->color.a = 0;
-	// HACK: default bullet shader multiplies final color by (1 - param[0]).
-	// This is currently the only way to influence the white part, sadly.
-	p->shader_params.vector[0] = (1 - a);
+	p->opacity = a;
 
 	return ACTION_NONE;
 }

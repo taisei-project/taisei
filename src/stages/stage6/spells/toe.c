@@ -668,7 +668,6 @@ void elly_theory(Boss *b, int time) {
 	}
 
 	FROM_TO(fermiontime,yukawatime+250,2) {
-		// play_loop("noise1");
 		play_sfx_ex("shot1", 5, false);
 
 		cmplx dest = 100*cexp(I*1*_i);
@@ -786,7 +785,6 @@ void elly_theory(Boss *b, int time) {
 
 	FROM_TO(breaktime+35, breaktime+10000, 14) {
 		play_sfx("redirect");
-		// play_sound("shot_special1");
 
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE(

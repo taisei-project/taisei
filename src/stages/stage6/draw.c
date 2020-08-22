@@ -186,20 +186,6 @@ void baryon(Enemy *e, int t, bool render) {
 		// the center piece draws the nodes; applying the postprocessing effect is easier this way.
 		return;
 	}
-
-	/*
-	if(!(t % 10) && global.boss && cabs(e->pos - global.boss->pos) > 2) {
-		PARTICLE(
-			.sprite = "stain",
-			.size = 100*(1+I),
-			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = RGBA(0, 0.4, 0.3, 0.0),
-			.draw_rule = Fade,
-			.timeout = 20,
-			.angle = 2*M_PI*frand(),
-		);
-	}
-	*/
 }
 
 static void draw_baryons(Enemy *bcenter, int t) {
@@ -248,23 +234,6 @@ static void draw_baryons(Enemy *bcenter, int t) {
 
 void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 	if(!render) {
-		/*
-		complex p = e->pos+40*frand()*cexp(2.0*I*M_PI*frand());
-
-		PARTICLE("flare", p, RGBA(0.0, 1.0, 1.0, 0.0),
-			.draw_rule = GrowFade,
-			.rule = linear,
-			.timeout = 50,
-			.args = { 1-I },
-		);
-
-		PARTICLE("stain", p, RGBA(0.0, 0.5, 0.1, 0.0),
-			.draw_rule = Fade,
-			.timeout = 50,
-			.angle = 2*M_PI*frand(),
-		);
-		*/
-
 		return;
 	}
 
@@ -284,7 +253,6 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 	r_framebuffer(stage6_draw_data->baryon.aux_fb);
 	r_blend(BLEND_NONE);
 	r_uniform_vec2("blur_direction", 1, 0);
-	// r_uniform_float("hue_shift", 0.04 * sin(global.frames/30.0));
 	r_uniform_float("hue_shift", 0.01);
 	r_color4(0.95, 0.88, 0.9, 0.5);
 
@@ -297,9 +265,6 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 	r_color4(1, 1, 1, 1);
 	draw_framebuffer_tex(stage6_draw_data->baryon.aux_fb, VIEWPORT_W, VIEWPORT_H);
 
-	// r_blend(BLEND_PREMUL_ALPHA);
-	// r_shader("sprite_default");
-	// draw_baryons(e, t);
 	r_state_pop();
 	stage_draw_end_noshake();
 
@@ -322,7 +287,7 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 
 	for(Enemy *e = global.enemies.first; e; e = e->next) {
 		if(e->visual_rule == baryon) {
-			cmplx p = e->pos;//+10*frand()*cexp(2.0*I*M_PI*frand());
+			cmplx p = e->pos; //+10*frand()*cexp(2.0*I*M_PI*frand());
 
 			r_draw_sprite(&(SpriteParams) {
 				.sprite = "part/myon",

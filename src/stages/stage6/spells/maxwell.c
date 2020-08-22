@@ -43,9 +43,9 @@ void elly_maxwell(Boss *b, int t) {
 
 	AT(250) {
 		elly_clap(b,50);
-			play_sfx("laser1");
-
+		play_sfx("laser1");
 	}
+
 	FROM_TO(40, 159, 5) {
 		create_laser(b->pos, 200, 10000, RGBA(0, 0.2, 1, 0.0), maxwell_laser, maxwell_laser_logic, cexp(2.0*I*M_PI/24*_i)*VIEWPORT_H*0.005, 200+15.0*I, 0, 0);
 	}

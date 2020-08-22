@@ -45,11 +45,6 @@ void elly_paradigm_shift(Boss *b, int t) {
 		elly_spawn_baryons(b->pos);
 	}
 
-	/*
-	if(t > 120)
-		global.shake_view = fmax(0, 16-0.26*(t-120));
-	*/
-
 	AT(120) {
 		stage_shake_view(200);
 	}

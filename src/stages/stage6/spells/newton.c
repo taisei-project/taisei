@@ -56,13 +56,6 @@ static int scythe_newton(Enemy *e, int t) {
 		}
 	}
 
-	/*
-	FROM_TO(100, 10000, 5-global.diff/2) {
-		if(cabs(global.plr.pos-e->pos) > 50)
-			PROJECTILE("rice", e->pos, RGB(0.3, 1, 0.8), linear, { I });
-	}
-	*/
-
 	scythe_common(e, t);
 	return 1;
 }
