@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../elly.h"
 
 #include "common_tasks.h"
 
@@ -259,17 +258,5 @@ void elly_ricci(Boss *b, int t) {
 	}
 }
 
-#undef SAFE_RADIUS
-#undef SAFE_RADIUS_DELAY
-#undef SAFE_RADIUS_BASE
-#undef SAFE_RADIUS_STRETCH
-#undef SAFE_RADIUS_MIN
-#undef SAFE_RADIUS_MAX
-#undef SAFE_RADIUS_SPEED
-#undef SAFE_RADIUS_PHASE
-#undef SAFE_RADIUS_PHASE_FUNC
-#undef SAFE_RADIUS_PHASE_NORMALIZED
-#undef SAFE_RADIUS_PHASE_NUM
 /* Thank you for visiting Akari danmaku code (tm) */
-
 

@@ -10,8 +10,15 @@
 #define IGUARD_stages_stage6_elly_h
 
 #include "taisei.h"
+
 #include "enemy.h"
 #include "boss.h"
+
+#define FERMIONTIME 1000
+#define HIGGSTIME 1700
+#define YUKAWATIME 2200
+#define SYMMETRYTIME (HIGGSTIME+200)
+#define BREAKTIME (YUKAWATIME+400)
 
 void scythe_common(Enemy*, int t);
 void scythe_draw(Enemy*, int, bool);

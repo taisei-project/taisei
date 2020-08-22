@@ -14,16 +14,12 @@
 #include "stageutils.h"
 #include "global.h"
 #include "util/glm.h"
-#include "extra.h"
 
 static Stage6DrawData *stage6_draw_data;
 
 Stage6DrawData *stage6_get_draw_data(void) {
 	return NOT_NULL(stage6_draw_data);
 }
-
-Framebuffer *baryon_aux_fb;
-FBPair baryon_fbpair;
 
 void stage6_drawsys_init(void) {
 	stage6_draw_data = calloc(1, sizeof(*stage6_draw_data));
@@ -32,7 +28,7 @@ void stage6_drawsys_init(void) {
 	// TODO: make this background slightly less horribly inefficient
 
 	stage3d_init(&stage_3d_context, 128);
-	fall_over = 0;
+	stage6_draw_data->fall_over.frames = 0;
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		float x,y,z,r;
@@ -70,9 +66,9 @@ void stage6_drawsys_init(void) {
 	cfg.tex_params.filter.mag = TEX_FILTER_LINEAR;
 	cfg.tex_params.wrap.s = TEX_WRAP_MIRROR;
 	cfg.tex_params.wrap.t = TEX_WRAP_MIRROR;
-	baryon_fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
-	baryon_fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
-	baryon_aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
+	stage6_draw_data->baryon.fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
+	stage6_draw_data->baryon.fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
+	stage6_draw_data->baryon.aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
 }
 
 void stage6_drawsys_shutdown(void) {
@@ -285,21 +281,21 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 	r_uniform_float("hue_shift", 0);
 	r_uniform_float("time", t/60.0);
 
-	r_framebuffer(baryon_aux_fb);
+	r_framebuffer(stage6_draw_data->baryon.aux_fb);
 	r_blend(BLEND_NONE);
 	r_uniform_vec2("blur_direction", 1, 0);
 	// r_uniform_float("hue_shift", 0.04 * sin(global.frames/30.0));
 	r_uniform_float("hue_shift", 0.01);
 	r_color4(0.95, 0.88, 0.9, 0.5);
 
-	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+	draw_framebuffer_tex(stage6_draw_data->baryon.fbpair.front, VIEWPORT_W, VIEWPORT_H);
 
-	fbpair_swap(&baryon_fbpair);
+	fbpair_swap(&stage6_draw_data->baryon.fbpair);
 
-	r_framebuffer(baryon_fbpair.back);
+	r_framebuffer(stage6_draw_data->baryon.fbpair.back);
 	r_uniform_vec2("blur_direction", 0, 1);
 	r_color4(1, 1, 1, 1);
-	draw_framebuffer_tex(baryon_aux_fb, VIEWPORT_W, VIEWPORT_H);
+	draw_framebuffer_tex(stage6_draw_data->baryon.aux_fb, VIEWPORT_W, VIEWPORT_H);
 
 	// r_blend(BLEND_PREMUL_ALPHA);
 	// r_shader("sprite_default");
@@ -313,14 +309,14 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 	stage_draw_begin_noshake();
 
 	r_shader_standard();
-	fbpair_swap(&baryon_fbpair);
+	fbpair_swap(&stage6_draw_data->baryon.fbpair);
 	r_color4(0.7, 0.7, 0.7, 0.7);
-	draw_framebuffer_tex(baryon_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+	draw_framebuffer_tex(stage6_draw_data->baryon.fbpair.front, VIEWPORT_W, VIEWPORT_H);
 
 	stage_draw_end_noshake();
 
 	r_color4(1, 1, 1, 1);
-	r_framebuffer(baryon_fbpair.front);
+	r_framebuffer(stage6_draw_data->baryon.fbpair.front);
 	r_shader("sprite_default");
 	draw_baryons(bcenter, t);
 
@@ -337,56 +333,6 @@ void baryon_center_draw(Enemy *bcenter, int t, bool render) {
 			});
 		}
 	}
-}
-
-void elly_spellbg_toe(Boss *b, int t) {
-	r_shader("sprite_default");
-
-	r_draw_sprite(&(SpriteParams) {
-		.pos = { VIEWPORT_W/2, VIEWPORT_H/2 },
-		.scale.both = 0.75 + 0.0005 * t,
-		.rotation.angle = t * 0.1 * DEG2RAD,
-		.sprite = "stage6/spellbg_toe",
-		.color = RGB(0.6, 0.6, 0.6),
-	});
-
-	float positions[][2] = {
-		{-160,0},
-		{0,0},
-		{0,100},
-		{0,200},
-		{0,300},
-	};
-
-	int delays[] = {
-		-20,
-		0,
-		FERMIONTIME,
-		HIGGSTIME,
-		YUKAWATIME,
-	};
-
-	int count = sizeof(delays)/sizeof(int);
-	for(int i = 0; i < count; i++) {
-		if(t<delays[i])
-			break;
-
-		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
-		char texname[33];
-		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
-		float wobble = fmax(0,t-BREAKTIME)*0.03;
-
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = texname,
-			.pos = {
-				VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,
-				VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,
-			},
-		});
-	}
-
-	r_color4(1, 1, 1, 1);
-	r_shader_standard();
 }
 
 void elly_spellbg_classic(Boss *b, int t) {

@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../elly.h"
 
 #include "common_tasks.h"
 

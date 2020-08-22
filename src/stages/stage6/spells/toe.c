@@ -9,10 +9,91 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../extra.h"
-#include "../elly.h"
 #include "stagetext.h"
 #include "common_tasks.h"
+
+#define LASER_EXTENT (4+1.5*global.diff-D_Normal)
+#define LASER_LENGTH 60
+
+void elly_spellbg_toe(Boss *b, int t) {
+	r_shader("sprite_default");
+
+	r_draw_sprite(&(SpriteParams) {
+		.pos = { VIEWPORT_W/2, VIEWPORT_H/2 },
+		.scale.both = 0.75 + 0.0005 * t,
+		.rotation.angle = t * 0.1 * DEG2RAD,
+		.sprite = "stage6/spellbg_toe",
+		.color = RGB(0.6, 0.6, 0.6),
+	});
+
+	float positions[][2] = {
+		{-160,0},
+		{0,0},
+		{0,100},
+		{0,200},
+		{0,300},
+	};
+
+	int delays[] = {
+		-20,
+		0,
+		FERMIONTIME,
+		HIGGSTIME,
+		YUKAWATIME,
+	};
+
+	int count = sizeof(delays)/sizeof(int);
+	for(int i = 0; i < count; i++) {
+		if(t<delays[i])
+			break;
+
+		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5*clamp((t-delays[i])*0.1,0,1)));
+		char texname[33];
+		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
+		float wobble = fmax(0,t-BREAKTIME)*0.03;
+
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = texname,
+			.pos = {
+				VIEWPORT_W/2+positions[i][0]+cos(wobble+i)*wobble,
+				VIEWPORT_H/2-150+positions[i][1]+sin(i+wobble)*wobble,
+			},
+		});
+	}
+
+	r_color4(1, 1, 1, 1);
+	r_shader_standard();
+}
+
+static cmplx wrap_around(cmplx *pos) {
+	// This function only works approximately. If more than one of these conditions are true,
+	// dir has to correspond to the wall that was passed first for the
+	// current preview display to work.
+	//
+	// with some clever geometry this could be either fixed here or in the
+	// preview calculation, but the spell as it is currently seems to work
+	// perfectly with this simplified version.
+
+	cmplx dir = 0;
+	if(creal(*pos) < -10) {
+		*pos += VIEWPORT_W;
+		dir += -1;
+	}
+	if(creal(*pos) > VIEWPORT_W+10) {
+		*pos -= VIEWPORT_W;
+		dir += 1;
+	}
+	if(cimag(*pos) < -10) {
+		*pos += I*VIEWPORT_H;
+		dir += -I;
+	}
+	if(cimag(*pos) > VIEWPORT_H+10) {
+		*pos -= I*VIEWPORT_H;
+		dir += I;
+	}
+
+	return dir;
+}
 
 static int elly_toe_boson_effect(Projectile *p, int t) {
 	if(t < 0) {

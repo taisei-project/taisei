@@ -36,7 +36,7 @@ static int baryon_explode(Enemy *e, int t) {
 
 		PARTICLE(
 			.sprite = "blast_huge_halo",
-						.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
+			.pos = e->pos + cexp(4*frand() + I*M_PI*frand()*2),
 			.color = RGBA(0.2 + frand() * 0.1, 0.6 + 0.4 * frand(), 0.5 + 0.5 * frand(), 0),
 			.timeout = 500 + 24 * frand() + 5,
 			.draw_rule = ScaleFade,

@@ -9,10 +9,16 @@
 #ifndef IGUARD_stages_stage6_spells_spells_h
 #define IGUARD_stages_stage6_spells_spells_h
 
-#include "stages/stage6/elly.h"
 #include "taisei.h"
 
 #include "boss.h"
+
+#include "stages/stage6/draw.h"
+#include "stages/stage6/elly.h"
+
+#define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)
+
+void elly_spellbg_toe(Boss*, int);
 
 void elly_curvature(Boss*, int);
 void elly_lhc(Boss*, int);

@@ -16,7 +16,6 @@
 #include "spells/spells.h"
 #include "nonspells/nonspells.h"
 #include "timeline.h"
-#include "extra.h"
 
 #include "global.h"
 #include "portrait.h"
@@ -153,10 +152,6 @@ static void stage6_start(void) {
 
 static void stage6_end(void) {
 	stage6_drawsys_shutdown();
-}
-
-void start_fall_over(void) { //troll
-	fall_over = global.frames;
 }
 
 static void stage6_spellpractice_start(void) {

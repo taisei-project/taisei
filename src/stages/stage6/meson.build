@@ -3,7 +3,6 @@ stage6_src = files(
 	'background_anim.c',
 	'elly.c',
 	'draw.c',
-	'extra.c',
 	'stage6.c',
 	'timeline.c',
 	'nonspells/boss_nonspell_1.c',

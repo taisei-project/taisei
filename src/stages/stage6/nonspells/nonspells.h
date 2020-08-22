@@ -13,6 +13,8 @@
 
 #include "boss.h"
 
+#include "stages/stage6/elly.h"
+
 void elly_frequency(Boss*, int);
 void elly_frequency2(Boss*, int);
 void elly_paradigm_shift(Boss*, int);

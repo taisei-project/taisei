@@ -11,7 +11,6 @@
 #include "global.h"
 #include "elly.h"
 #include "stage6.h"
-#include "extra.h"
 #include "draw.h"
 
 #include "common_tasks.h"

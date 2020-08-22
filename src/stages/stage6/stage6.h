@@ -48,8 +48,6 @@ extern struct stage6_spells_s {
 	AttackInfo null;
 } stage6_spells;
 
-void start_fall_over(void);
-
 extern StageProcs stage6_procs;
 extern StageProcs stage6_spell_procs;
 

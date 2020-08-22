@@ -9,7 +9,6 @@
 #include "taisei.h"
 
 #include "nonspells.h"
-#include "../elly.h"
 
 #include "global.h"
 

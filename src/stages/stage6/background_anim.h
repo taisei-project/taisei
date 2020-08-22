@@ -13,6 +13,7 @@
 
 #include "coroutine.h"
 
+void start_fall_over(void);
 void stage6_update(void);
 
 #endif // IGUARD_stages_stage6_background_anim_h

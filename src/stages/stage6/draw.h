@@ -15,19 +15,32 @@
 #include "stagedraw.h"
 #include "stageutils.h"
 
-void stage6_drawsys_init(void);
-void stage6_drawsys_shutdown(void);
-void stage6_draw(void);
-
 enum {
 	NUM_STARS = 200
 };
 
 typedef struct Stage6DrawData {
+
 	struct {
 		float position[3*NUM_STARS];
 	} stars;
+
+	struct {
+		int frames;
+	} fall_over;
+
+	struct {
+		Framebuffer *aux_fb;
+		FBPair fbpair;
+	} baryon;
+
 } Stage6DrawData;
+
+Stage6DrawData* stage6_get_draw_data(void);
+
+void stage6_drawsys_init(void);
+void stage6_drawsys_shutdown(void);
+void stage6_draw(void);
 
 void baryon_center_draw(Enemy*, int, bool);
 void baryon(Enemy*, int, bool);

@@ -9,11 +9,10 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../elly.h"
-#include "../extra.h"
-#include "../draw.h"
 
 #include "common_tasks.h"
+
+#define BROGLIE_PERIOD (420 - 30 * global.diff)
 
 static int broglie_particle(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
