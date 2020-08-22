@@ -9,9 +9,6 @@
 #include "taisei.h"
 
 #include "nonspells.h"
-#include "../iku.h"
-
-#include "global.h"
 
 int iku_explosion(Enemy *e, int t) {
 	TIMER(&t)

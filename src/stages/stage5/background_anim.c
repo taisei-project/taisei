@@ -8,10 +8,12 @@
 
 #include "taisei.h"
 
+#include "global.h"
+
 #include "background_anim.h"
+
 #include "draw.h"
 
-#include "global.h"
 #include "stageutils.h"
 
 void stage5_update(void) {

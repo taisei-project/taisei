@@ -9,10 +9,6 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../iku.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 void iku_induction(Boss *b, int t) {
 	// thwarf safespots

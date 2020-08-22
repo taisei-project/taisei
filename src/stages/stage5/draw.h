@@ -11,7 +11,6 @@
 
 #include "taisei.h"
 
-#include "util/fbpair.h"
 #include "stagedraw.h"
 
 typedef struct Stage5DrawData {

@@ -9,10 +9,17 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../iku.h"
 
-#include "common_tasks.h"
-#include "global.h"
+static cmplx cathode_laser(Laser *l, float t) {
+	if(t == EVENT_BIRTH) {
+		l->shader = r_shader_get_optional("lasers/iku_cathode");
+		return 0;
+	}
+
+	l->args[1] = I*cimag(l->args[1]);
+
+	return l->pos + l->args[0]*t*cexp(l->args[1]*t);
+}
 
 void iku_cathode(Boss *b, int t) {
 	GO_TO(b, VIEWPORT_W/2+200.0*I, 0.02);

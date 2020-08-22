@@ -13,17 +13,12 @@
 
 #include "boss.h"
 
-void iku_bolts(Boss*, int);
-void iku_bolts2(Boss*, int);
-void iku_bolts3(Boss*, int);
-int induction_bullet(Projectile*, int);
-int zigzag_bullet(Projectile*, int);
-cmplx cathode_laser(Laser*, float);
-
-int lightning_slave(Enemy*, int);
 void iku_slave_visual(Enemy*, int, bool);
 
 void lightning_particle(cmplx, int);
+
+int induction_bullet(Projectile*, int);
+
 void cloud_common(void);
 
 #endif // IGUARD_stages_stage5_iku_h

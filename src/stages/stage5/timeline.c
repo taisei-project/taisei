@@ -10,14 +10,7 @@
 
 #include "timeline.h"
 #include "stage5.h"
-#include "iku.h"
-#include "spells/spells.h"
 #include "nonspells/nonspells.h"
-#include "background_anim.h"
-
-#include "global.h"
-#include "stagetext.h"
-#include "common_tasks.h"
 
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");

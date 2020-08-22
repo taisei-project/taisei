@@ -9,10 +9,11 @@
 #ifndef IGUARD_stages_stage5_spells_spells_h
 #define IGUARD_stages_stage5_spells_spells_h
 
-#include "stages/stage5/iku.h"
 #include "taisei.h"
 
-#include "boss.h"
+#include "common_tasks.h"
+
+#include "stages/stage5/iku.h"
 
 void iku_atmospheric(Boss *, int);
 void iku_lightning(Boss *, int);

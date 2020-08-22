@@ -9,10 +9,68 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../iku.h"
 
-#include "common_tasks.h"
-#include "global.h"
+static int zigzag_bullet(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	int l = 50;
+	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
+
+	if(t%2 == 0) {
+		PARTICLE(
+			.sprite = "lightningball",
+			.pos = p->pos,
+			.color = RGBA(0.1, 0.1, 0.6, 0.0),
+			.timeout = 15,
+			.draw_rule = Fade,
+		);
+	}
+
+	return ACTION_NONE;
+}
+
+static int lightning_slave(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+	if(t > 200)
+		return ACTION_DESTROY;
+
+	TIMER(&t);
+
+	e->pos += e->args[0];
+
+	FROM_TO(0,200,20)
+		e->args[0] *= cexp(I * (0.25 + 0.25 * frand() * M_PI));
+
+	FROM_TO(0, 200, 3)
+		if(cabs(e->pos-global.plr.pos) > 60) {
+			Color *clr = RGBA(1-1/(1+0.01*_i), 0.5-0.01*_i, 1, 0);
+
+			Projectile *p = PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos,
+				.color = clr,
+				.rule = asymptotic,
+				.args = {
+					0.75*e->args[0]/cabs(e->args[0])*I,
+					10
+				},
+			);
+
+			if(projectile_in_viewport(p)) {
+				for(int i = 0; i < 3; ++i) {
+					tsrand_fill(2);
+					lightning_particle(p->pos + 5 * afrand(0) * cexp(I*M_PI*2*afrand(1)), 0);
+				}
+
+				play_sfx_ex("shot3", 0, false);
+			}
+		}
+
+	return 1;
+}
 
 void iku_lightning(Boss *b, int time) {
 	int t = time % 141;

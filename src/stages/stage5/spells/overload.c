@@ -10,11 +10,6 @@
 #include "taisei.h"
 
 #include "spells.h"
-#include "../iku.h"
-
-#include "common_tasks.h"
-#include "global.h"
-
 
 static Enemy* iku_overload_find_next_slave(cmplx from, double playerbias) {
 	Enemy *nearest = NULL, *e;

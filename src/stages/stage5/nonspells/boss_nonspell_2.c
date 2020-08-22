@@ -9,9 +9,6 @@
 #include "taisei.h"
 
 #include "nonspells.h"
-#include "../iku.h"
-
-#include "global.h"
 
 static cmplx bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {

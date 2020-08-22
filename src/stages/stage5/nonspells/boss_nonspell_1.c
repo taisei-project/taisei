@@ -9,9 +9,6 @@
 #include "taisei.h"
 
 #include "nonspells.h"
-#include "../iku.h"
-
-#include "global.h"
 
 void iku_bolts(Boss *b, int time) {
 	int t = time % 400;

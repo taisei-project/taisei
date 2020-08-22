@@ -85,69 +85,6 @@ void cloud_common(void) {
 	);
 }
 
-int lightning_slave(Enemy *e, int t) {
-	if(t < 0)
-		return 1;
-	if(t > 200)
-		return ACTION_DESTROY;
-
-	TIMER(&t);
-
-	e->pos += e->args[0];
-
-	FROM_TO(0,200,20)
-		e->args[0] *= cexp(I * (0.25 + 0.25 * frand() * M_PI));
-
-	FROM_TO(0, 200, 3)
-		if(cabs(e->pos-global.plr.pos) > 60) {
-			Color *clr = RGBA(1-1/(1+0.01*_i), 0.5-0.01*_i, 1, 0);
-
-			Projectile *p = PROJECTILE(
-				.proto = pp_wave,
-				.pos = e->pos,
-				.color = clr,
-				.rule = asymptotic,
-				.args = {
-					0.75*e->args[0]/cabs(e->args[0])*I,
-					10
-				},
-			);
-
-			if(projectile_in_viewport(p)) {
-				for(int i = 0; i < 3; ++i) {
-					tsrand_fill(2);
-					lightning_particle(p->pos + 5 * afrand(0) * cexp(I*M_PI*2*afrand(1)), 0);
-				}
-
-				play_sfx_ex("shot3", 0, false);
-				// play_sound_ex("redirect", 0, true);
-			}
-		}
-
-	return 1;
-}
-
-int zigzag_bullet(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	int l = 50;
-	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
-
-	if(t%2 == 0) {
-		PARTICLE(
-			.sprite = "lightningball",
-			.pos = p->pos,
-			.color = RGBA(0.1, 0.1, 0.6, 0.0),
-			.timeout = 15,
-			.draw_rule = Fade,
-		);
-	}
-
-	return ACTION_NONE;
-}
-
 static cmplx induction_bullet_traj(Projectile *p, float t) {
 	return p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
 }
@@ -175,16 +112,5 @@ int induction_bullet(Projectile *p, int time) {
 
 	p->angle = carg(p->args[0]*cexp(p->args[1]*t)*(1+p->args[1]*t));
 	return 1;
-}
-
-cmplx cathode_laser(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		l->shader = r_shader_get_optional("lasers/iku_cathode");
-		return 0;
-	}
-
-	l->args[1] = I*cimag(l->args[1]);
-
-	return l->pos + l->args[0]*t*cexp(l->args[1]*t);
 }
 

@@ -8,12 +8,11 @@
 
 #include "taisei.h"
 
+#include "global.h"
+
 #include "draw.h"
 
-#include "stagedraw.h"
 #include "stageutils.h"
-#include "global.h"
-#include "util/glm.h"
 
 static Stage5DrawData *stage5_draw_data;
 

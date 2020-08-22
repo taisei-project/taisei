@@ -9,10 +9,11 @@
 #ifndef IGUARD_stages_stage5_nonspells_nonspells_h
 #define IGUARD_stages_stage5_nonspells_nonspells_h
 
-#include "stages/stage5/iku.h"
 #include "taisei.h"
 
-#include "boss.h"
+#include "common_tasks.h"
+
+#include "stages/stage5/iku.h"
 
 void iku_bolts(Boss*, int);
 void iku_bolts2(Boss*, int);
