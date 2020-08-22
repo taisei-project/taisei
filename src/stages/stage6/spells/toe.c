@@ -14,6 +14,320 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
+static int elly_toe_boson_effect(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	p->angle = creal(p->args[3]) * fmax(0, t) / (double)p->timeout;
+	return ACTION_NONE;
+}
+
+static Color* boson_color(Color *out_clr, int pos, int warps) {
+	float f = pos / 3.0;
+	*out_clr = *HSL((warps-0.3*(1-f))/3.0, 1+f, 0.5);
+	return out_clr;
+}
+
+static int elly_toe_boson(Projectile *p, int t) {
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	p->angle = carg(p->args[0]);
+
+	int activate_time = creal(p->args[2]);
+	int num_in_trail = cimag(p->args[2]);
+	assert(activate_time >= 0);
+
+	Color thiscolor_additive = p->color;
+	thiscolor_additive.a = 0;
+
+	if(t < activate_time) {
+		float fract = clamp(2 * (t+1) / (float)activate_time, 0, 1);
+
+		float a = 0.1;
+		float x = fract;
+		float modulate = sin(x * M_PI) * (0.5 + cos(x * M_PI));
+		fract = (pow(a, x) - 1) / (a - 1);
+		fract *= (1 + (1 - x) * modulate);
+
+		p->pos = p->args[3] * fract + p->pos0 * (1 - fract);
+
+		if(t % 3 == 0) {
+			PARTICLE(
+				.sprite = "smoothdot",
+				.pos = p->pos,
+				.color = &thiscolor_additive,
+				.rule = linear,
+				.timeout = 10,
+				.draw_rule = Fade,
+				.args = { 0, p->args[0] },
+			);
+		}
+
+		return ACTION_NONE;
+	}
+
+	if(t == activate_time && num_in_trail == 2) {
+		play_sfx("shot_special1");
+		play_sfx("redirect");
+
+			PARTICLE(
+				.sprite = "blast",
+				.pos = p->pos,
+				.color = HSLA(carg(p->args[0]),0.5,0.5,0),
+				.rule = elly_toe_boson_effect,
+				.draw_rule = ScaleFade,
+				.timeout = 60,
+				.args = {
+					0,
+					p->args[0] * 1.0,
+					0. + 1.0 * I,
+					M_PI*2*frand(),
+				},
+				.angle = 0,
+				.flags = PFLAG_REQUIREDPARTICLE,
+			);
+	}
+
+	p->pos += p->args[0];
+	cmplx prev_pos = p->pos;
+	int warps_left = creal(p->args[1]);
+	int warps_initial = cimag(p->args[1]);
+
+	if(wrap_around(&p->pos) != 0) {
+		p->prevpos = p->pos; // don't lerp
+
+		if(warps_left-- < 1) {
+			return ACTION_DESTROY;
+		}
+
+		p->args[1] = warps_left + warps_initial * I;
+
+		if(num_in_trail == 3) {
+			play_sfx_ex("warp", 0, false);
+			// play_sound("redirect");
+		}
+
+		PARTICLE(
+			.sprite = "myon",
+			.pos = prev_pos,
+			.color = &thiscolor_additive,
+			.timeout = 50,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, 5.00 },
+			.angle = M_PI*2*frand(),
+		);
+
+		PARTICLE(
+			.sprite = "stardust",
+			.pos = prev_pos,
+			.color = &thiscolor_additive,
+			.timeout = 60,
+			.draw_rule = ScaleFade,
+			.args = { 0, 0, 2 * I },
+			.angle = M_PI*2*frand(),
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		boson_color(&p->color, num_in_trail, warps_initial - warps_left);
+		thiscolor_additive = p->color;
+		thiscolor_additive.a = 0;
+
+		PARTICLE(
+			.sprite = "stardust",
+			.pos = p->pos,
+			.color = &thiscolor_additive,
+			.rule = elly_toe_boson_effect,
+			.draw_rule = ScaleFade,
+			.timeout = 30,
+			.args = { 0, p->args[0] * 2, 2 * I, M_PI*2*frand() },
+			.angle = 0,
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+	}
+
+	float tLookahead = 40;
+	cmplx posLookahead = p->pos+p->args[0]*tLookahead;
+	cmplx dir = wrap_around(&posLookahead);
+	if(dir != 0 && t%3 == 0 && warps_left > 0) {
+		cmplx pos0 = posLookahead - VIEWPORT_W/2*(1-creal(dir))-I*VIEWPORT_H/2*(1-cimag(dir));
+
+		// Re [a b^*] behaves like the 2D vector scalar product
+		float tOvershoot = creal(pos0*conj(dir))/creal(p->args[0]*conj(dir));
+		posLookahead -= p->args[0]*tOvershoot;
+
+		Color *clr = boson_color(&(Color){0}, num_in_trail, warps_initial - warps_left + 1);
+		clr->a = 0;
+
+		PARTICLE(
+			.sprite = "smoothdot",
+			.pos = posLookahead,
+			.color = clr,
+			.timeout = 10,
+			.rule = linear,
+			.draw_rule = Fade,
+			.args = { p->args[0] },
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+	}
+
+	return ACTION_NONE;
+}
+
+static cmplx elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
+	int type = creal(l->args[1]+0.5);
+
+	if(t == EVENT_BIRTH) {
+		switch(type) {
+		case 0:
+			l->shader = r_shader_get_optional("lasers/elly_toe_fermion");
+			l->color = *RGBA(0.4, 0.4, 1.0, 0.0);
+			break;
+		case 1:
+			l->shader = r_shader_get_optional("lasers/elly_toe_photon");
+			l->color = *RGBA(1.0, 0.4, 0.4, 0.0);
+			break;
+		case 2:
+			l->shader = r_shader_get_optional("lasers/elly_toe_gluon");
+			l->color = *RGBA(0.4, 1.0, 0.4, 0.0);
+			break;
+		case 3:
+			l->shader = r_shader_get_optional("lasers/elly_toe_higgs");
+			l->color = *RGBA(1.0, 0.4, 1.0, 0.0);
+			break;
+		default:
+			log_fatal("Unknown Elly laser type.");
+		}
+		return 0;
+	}
+
+	double width = creal(l->args[2]);
+	switch(type) {
+	case 0:
+		return l->pos+l->args[0]*t;
+	case 1:
+		return l->pos+l->args[0]*(t+width*I*sin(t/width));
+	case 2:
+		return l->pos+l->args[0]*(t+width*(0.6*(cos(3*t/width)-1)+I*sin(3*t/width)));
+	case 3:
+		return l->pos+l->args[0]*(t+floor(t/width)*width);
+	}
+
+	return 0;
+}
+
+static int elly_toe_laser_particle_rule(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[3]);
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	Laser *l = REF(p->args[3]);
+
+	if(!l) {
+		return ACTION_DESTROY;
+	}
+
+	p->pos = l->prule(l, 0);
+
+	return ACTION_NONE;
+}
+
+static void elly_toe_laser_particle(Laser *l, cmplx origin) {
+	Color *c = color_mul(COLOR_COPY(&l->color), &l->color);
+	c->a = 0;
+
+	PARTICLE(
+		.sprite = "stardust",
+		.pos = origin,
+		.color = c,
+		.rule = elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.timeout = 30,
+		.args = { 0, 0, 1.5 * I, add_ref(l) },
+		.angle = M_PI*2*frand(),
+	);
+
+	PARTICLE(
+		.sprite = "stain",
+		.pos = origin,
+		.color = color_mul_scalar(COLOR_COPY(c),0.5),
+		.rule = elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.timeout = 20,
+		.args = { 0, 0, 1 * I, add_ref(l) },
+		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+
+	PARTICLE(
+		.sprite = "smoothdot",
+		.pos = origin,
+		.color = c,
+		.rule = elly_toe_laser_particle_rule,
+		.draw_rule = ScaleFade,
+		.timeout = 40,
+		.args = { 0, 0, 1, add_ref(l) },
+		.angle = M_PI*2*frand(),
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+}
+
+static void elly_toe_laser_logic(Laser *l, int t) {
+	if(t == l->deathtime) {
+		static const int transfer[][4] = {
+			{1, 0, 0, 0},
+			{0,-1,-1, 3},
+			{0,-1, 2, 3},
+			{0, 3, 3, 1}
+		};
+
+		cmplx newpos = l->prule(l,t);
+		if(creal(newpos) < 0 || cimag(newpos) < 0 || creal(newpos) > VIEWPORT_W || cimag(newpos) > VIEWPORT_H)
+			return;
+
+		int newtype, newtype2;
+		do {
+			newtype = 3.999999*frand();
+			newtype2 = transfer[(int)(creal(l->args[1])+0.5)][newtype];
+			// actually in this case, gluons are also always possible
+			if(newtype2 == 1 && frand() > 0.5) {
+				newtype = 2;
+			}
+
+			// I removed type 3 because i can’t draw dotted lines and it would be too difficult either way
+		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
+
+		cmplx origin = l->prule(l,t);
+		cmplx newdir = cexp(0.3*I);
+
+		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]*newdir,
+			newtype,
+			LASER_EXTENT,
+			0
+		);
+
+		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
+			elly_toe_laser_pos,elly_toe_laser_logic,
+			l->args[0]/newdir,
+			newtype2,
+			LASER_EXTENT,
+			0
+		);
+
+		elly_toe_laser_particle(l1, origin);
+		elly_toe_laser_particle(l2, origin);
+	}
+	l->pos+=I*0.2;
+}
+
 static bool elly_toe_its_yukawatime(cmplx pos) {
 	int t = global.frames-global.boss->current->starttime;
 
@@ -141,49 +455,6 @@ static int elly_toe_higgs(Projectile *p, int t) {
 
 	return ACTION_NONE;
 }
-
-static cmplx elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
-	int type = creal(l->args[1]+0.5);
-
-	if(t == EVENT_BIRTH) {
-		switch(type) {
-		case 0:
-			l->shader = r_shader_get_optional("lasers/elly_toe_fermion");
-			l->color = *RGBA(0.4, 0.4, 1.0, 0.0);
-			break;
-		case 1:
-			l->shader = r_shader_get_optional("lasers/elly_toe_photon");
-			l->color = *RGBA(1.0, 0.4, 0.4, 0.0);
-			break;
-		case 2:
-			l->shader = r_shader_get_optional("lasers/elly_toe_gluon");
-			l->color = *RGBA(0.4, 1.0, 0.4, 0.0);
-			break;
-		case 3:
-			l->shader = r_shader_get_optional("lasers/elly_toe_higgs");
-			l->color = *RGBA(1.0, 0.4, 1.0, 0.0);
-			break;
-		default:
-			log_fatal("Unknown Elly laser type.");
-		}
-		return 0;
-	}
-
-	double width = creal(l->args[2]);
-	switch(type) {
-	case 0:
-		return l->pos+l->args[0]*t;
-	case 1:
-		return l->pos+l->args[0]*(t+width*I*sin(t/width));
-	case 2:
-		return l->pos+l->args[0]*(t+width*(0.6*(cos(3*t/width)-1)+I*sin(3*t/width)));
-	case 3:
-		return l->pos+l->args[0]*(t+floor(t/width)*width);
-	}
-
-	return 0;
-}
-
 
 // This spell contains some obscure (and some less obscure) physics references.
 // However the first priority was good looks and playability, so most of the

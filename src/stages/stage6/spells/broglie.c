@@ -15,6 +15,170 @@
 
 #include "common_tasks.h"
 
+static int broglie_particle(Projectile *p, int t) {
+	if(t == EVENT_DEATH) {
+		free_ref(p->args[0]);
+		return ACTION_ACK;
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	int scattertime = creal(p->args[1]);
+
+	if(t < scattertime) {
+		Laser *laser = (Laser*)REF(p->args[0]);
+
+		if(laser) {
+			cmplx oldpos = p->pos;
+			p->pos = laser->prule(laser, fmin(t, cimag(p->args[1])));
+
+			if(oldpos != p->pos) {
+				p->angle = carg(p->pos - oldpos);
+			}
+		}
+	} else {
+		if(t == scattertime && p->type != PROJ_DEAD) {
+			projectile_set_layer(p, LAYER_BULLET);
+			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
+
+			double angle_ampl = creal(p->args[3]);
+			double angle_freq = cimag(p->args[3]);
+
+			p->angle += angle_ampl * sin(t * angle_freq) * cos(2 * t * angle_freq);
+			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
+
+			play_sfx("redirect");
+		}
+
+		p->angle = carg(p->args[2]);
+		p->pos = p->pos + p->args[2];
+	}
+
+	return 1;
+}
+
+static void broglie_laser_logic(Laser *l, int t) {
+	double hue = cimag(l->args[3]);
+
+	if(t == EVENT_BIRTH) {
+		l->color = *HSLA(hue, 1.0, 0.5, 0.0);
+	}
+
+	if(t < 0) {
+		return;
+	}
+
+	int dt = l->timespan * l->speed;
+	float charge = fmin(1, pow((double)t / dt, 4));
+	l->color = *HSLA(hue, 1.0, 0.5 + 0.2 * charge, 0.0);
+	l->width_exponent = 1.0 - 0.5 * charge;
+}
+
+
+static int broglie_charge(Projectile *p, int t) {
+	if(t == EVENT_BIRTH) {
+		play_sfx_ex("shot3", 10, false);
+	}
+
+	if(t < 0) {
+		return ACTION_ACK;
+	}
+
+	int firetime = creal(p->args[1]);
+
+	if(t == firetime) {
+		play_sfx_ex("laser1", 10, true);
+		play_sfx("boom");
+
+		stage_shake_view(20);
+
+		Color clr = p->color;
+		clr.a = 0;
+
+		PARTICLE(
+			.sprite = "blast",
+			.pos = p->pos,
+			.color = &clr,
+			.timeout = 35,
+			.draw_rule = GrowFade,
+			.args = { 0, 2.4 },
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+		int attack_num = creal(p->args[2]);
+		double hue = creal(p->args[3]);
+
+		p->pos -= p->args[0] * 15;
+		cmplx aim = cexp(I*p->angle);
+
+		double s_ampl = 30 + 2 * attack_num;
+		double s_freq = 0.10 + 0.01 * attack_num;
+
+		for(int lnum = 0; lnum < 2; ++lnum) {
+			Laser *l = create_lasercurve4c(p->pos, 75, 100, RGBA(1, 1, 1, 0), las_sine,
+				5*aim, s_ampl, s_freq, lnum * M_PI +
+				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
+
+			l->width = 20;
+			l->lrule = broglie_laser_logic;
+
+			int pnum = 0;
+			double inc = pow(1.10 - 0.10 * (global.diff - D_Easy), 2);
+
+			for(double ofs = 0; ofs < l->deathtime; ofs += inc, ++pnum) {
+				bool fast = global.diff == D_Easy || pnum & 1;
+
+				PROJECTILE(
+					.proto = fast ? pp_thickrice : pp_rice,
+					.pos = l->prule(l, ofs),
+					.color = HSLA(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5, 0.0),
+					.rule = broglie_particle,
+					.args = {
+						add_ref(l),
+						I*ofs + l->timespan + ofs - 10,
+						fast ? 2.0 : 1.5,
+						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
+					},
+					.layer = LAYER_NODRAW,
+					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION,
+				);
+			}
+		}
+
+		return ACTION_DESTROY;
+	} else {
+		float f = pow(clamp((140 - (firetime - t)) / 90.0, 0, 1), 8);
+		cmplx o = p->pos - p->args[0] * 15;
+		p->args[0] *= cexp(I*M_PI*0.2*f);
+		p->pos = o + p->args[0] * 15;
+
+		if(f > 0.1) {
+			play_sfx_loop("charge_generic");
+
+			cmplx n = cexp(2.0*I*M_PI*frand());
+			float l = 50*frand()+25;
+			float s = 4+f;
+
+			Color *clr = color_lerp(RGB(1, 1, 1), &p->color, clamp((1 - f * 0.5), 0.0, 1.0));
+			clr->a = 0;
+
+			PARTICLE(
+				.sprite = "flare",
+				.pos = p->pos+l*n,
+				.color = clr,
+				.draw_rule = Fade,
+				.rule = linear,
+				.timeout = l/s,
+				.args = { -s*n },
+			);
+		}
+	}
+
+	return ACTION_NONE;
+}
+
 static int baryon_broglie(Enemy *e, int t) {
 	if(t < 0) {
 		return 1;

@@ -13,6 +13,32 @@
 
 #include "global.h"
 
+static int baryon_nattack(Enemy *e, int t) {
+	if(t < 0)
+		return 1;
+
+	TIMER(&t);
+
+	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006*I);
+
+	FROM_TO_SND("shot1_loop",30, 10000, (7 - global.diff)) {
+		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
+		float ca = a + t/60.0f;
+		PROJECTILE(
+			.proto = pp_ball,
+			.pos = e->pos+40*cexp(I*a),
+			.color = RGB(cos(ca), sin(ca), cos(ca+2.1)),
+			.rule = asymptotic,
+			.args = {
+				(1+0.2*global.diff)*cexp(I*a),
+				3
+			}
+		);
+	}
+
+	return 1;
+}
+
 void elly_baryonattack(Boss *b, int t) {
 	TIMER(&t);
 	AT(0)
