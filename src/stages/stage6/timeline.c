@@ -10,14 +10,12 @@
 
 #include "timeline.h"
 #include "stage6.h"
-#include "elly.h"
 #include "draw.h"
-#include "spells/spells.h"
-#include "nonspells/nonspells.h"
 #include "background_anim.h"
 
-#include "global.h"
-#include "stagetext.h"
+#include "elly.h"
+#include "nonspells/nonspells.h"
+
 #include "common_tasks.h"
 
 PRAGMA(message "Remove when this stage is modernized")
@@ -233,7 +231,6 @@ void stage6_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage6");
-		// skip_background_anim(&stage_3d_context, stage_get(6)->procs->update, 3800, &global.timer, &global.frames);
 		stage_set_voltage_thresholds(380, 670, 1100, 1500);
 	}
 

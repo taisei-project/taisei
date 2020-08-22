@@ -9,9 +9,6 @@
 #include "taisei.h"
 
 #include "nonspells.h"
-#include "../elly.h"
-
-#include "global.h"
 
 static int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
@@ -86,18 +83,7 @@ static int baryon_explode(Enemy *e, int t) {
 			.angle = frand() * 2 * M_PI,
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
-	}/* else {
-		PARTICLE(
-			.sprite = "smoke",
-			.pos = e->pos+10*frand()*cexp(2.0*I*M_PI*frand()),
-			.color = RGBA(0.2 * frand(), 0.5, 0.4 * frand(), 0.1 * frand()),
-			.rule = asymptotic,
-			.draw_rule = ScaleFade,
-			.args = { cexp(I*2*M_PI*frand()) * (1 + t/300.0), (1 + t / 200.0), (1 + 0.5*I) * (t / 200.0) },
-			.timeout = 60,
-			.layer = LAYER_PARTICLE_HIGH | 0x40,
-		);
-	}*/
+	}
 
 	if(t > 120 && frand() < (t - 120) / 300.0) {
 		e->hp = 0;
@@ -121,9 +107,6 @@ void elly_baryon_explode(Boss *b, int t) {
 	}
 
 	FROM_TO(0, 200, 1) {
-		// tsrand_fill(2);
-		// petal_explosion(1, b->pos + 100*afrand(0)*cexp(2.0*I*M_PI*afrand(1)));
-		// global.shake_view = fmaxf(global.shake_view, 5 * _i / 200.0f);
 		stage_shake_view(_i / 200.0f);
 
 		if(_i > 30) {

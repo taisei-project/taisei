@@ -10,10 +10,7 @@
 
 #include "global.h"
 #include "elly.h"
-#include "stage6.h"
 #include "draw.h"
-
-#include "common_tasks.h"
 
 void scythe_common(Enemy *e, int t) {
 	e->args[1] += cimag(e->args[1]);

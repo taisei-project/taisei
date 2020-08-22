@@ -10,8 +10,6 @@
 
 #include "nonspells.h"
 
-#include "global.h"
-
 static int baryon_nattack(Enemy *e, int t) {
 	if(t < 0)
 		return 1;

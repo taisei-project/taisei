@@ -14,10 +14,8 @@
 #include "background_anim.h"
 #include "elly.h"
 #include "spells/spells.h"
-#include "nonspells/nonspells.h"
 #include "timeline.h"
 
-#include "global.h"
 #include "portrait.h"
 #include "common_tasks.h"
 

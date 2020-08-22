@@ -10,10 +10,7 @@
 
 #include "draw.h"
 
-#include "stagedraw.h"
-#include "stageutils.h"
 #include "global.h"
-#include "util/glm.h"
 
 static Stage6DrawData *stage6_draw_data;
 

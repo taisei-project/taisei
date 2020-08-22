@@ -10,8 +10,6 @@
 
 #include "nonspells.h"
 
-#include "global.h"
-
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
 

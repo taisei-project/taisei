@@ -11,6 +11,8 @@
 
 #include "taisei.h"
 
+#include "global.h"
+
 #include "boss.h"
 
 #include "stages/stage6/elly.h"
