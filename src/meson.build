@@ -62,7 +62,6 @@ taisei_src = files(
     'config.c',
     'coroutine.c',
     'credits.c',
-    'cutscene.c',
     'dialog.c',
     'difficulty.c',
     'dynarray.c',
@@ -122,6 +121,7 @@ if host_machine.system() == 'nx'
 endif
 
 subdir('audio')
+subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
 subdir('menu')
@@ -138,6 +138,7 @@ configure_file(configuration : config, output : 'build_config.h')
 
 taisei_src += [
     audio_src,
+    cutscenes_src,
     dialog_src,
     eventloop_src,
     menu_src,

@@ -6,13 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_cutscene_h
-#define IGUARD_cutscene_h
-
 #include "taisei.h"
 
-#include "eventloop/eventloop.h"
+#include "scenes.h"
 
-void cutscene_enter(CallChain next);
-
-#endif // IGUARD_cutscene_h
+CutscenePhase *g_cutscenes[NUM_CUTSCENE_IDS] = {
+	[CUTSCENE_ID_REIMU_BAD_END] = (CutscenePhase[]) {
+		#include "reimu_bad_end.inc.h"
+	},
+};
