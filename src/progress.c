@@ -58,6 +58,9 @@
 		- PCMD_UNLOCK_BGMS
 			Unlocks BGMs in the music room
 
+		- PCMD_UNLOCK_CUTSCENES
+			Unlocks cutscenes in the cutscenes menu
+
 */
 
 /*
@@ -254,6 +257,12 @@ static void progress_read(SDL_RWops *file) {
 			case PCMD_UNLOCK_BGMS:
 				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint64_t))) {
 					progress.unlocked_bgms |= SDL_ReadLE64(vfile);
+				}
+				break;
+
+			case PCMD_UNLOCK_CUTSCENES:
+				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint64_t))) {
+					progress.unlocked_cutscenes |= SDL_ReadLE64(vfile);
 				}
 				break;
 
@@ -607,6 +616,20 @@ static void progress_write_cmd_unlock_bgms(SDL_RWops *vfile, void **arg) {
 }
 
 //
+//  PCMD_UNLOCK_CUTSCENES
+//
+
+static void progress_prepare_cmd_unlock_cutscenes(size_t *bufsize, void **arg) {
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
+}
+
+static void progress_write_cmd_unlock_cutscenes(SDL_RWops *vfile, void **arg) {
+	SDL_WriteU8(vfile, PCMD_UNLOCK_BGMS);
+	SDL_WriteLE16(vfile, sizeof(uint64_t));
+	SDL_WriteLE64(vfile, progress.unlocked_cutscenes);
+}
+
+//
 //  Copy unhandled commands from the original file
 //
 
@@ -652,6 +675,7 @@ static void progress_write(SDL_RWops *file) {
 		{progress_prepare_cmd_game_settings, progress_write_cmd_game_settings, NULL},
 		// {progress_prepare_cmd_test, progress_write_cmd_test, NULL},
 		{progress_prepare_cmd_unlock_bgms, progress_write_cmd_unlock_bgms, NULL},
+		{progress_prepare_cmd_unlock_cutscenes, progress_write_cmd_unlock_cutscenes, NULL},
 		{progress_prepare_cmd_unknown, progress_write_cmd_unknown, NULL},
 		{NULL}
 	};
@@ -712,6 +736,12 @@ static void progress_unlock_all(void) {
 }
 #endif
 
+static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
+	if(progress.achieved_endings[ending] > 0) {
+		progress_unlock_cutscene(cutscene);
+	}
+}
+
 void progress_load(void) {
 	memset(&progress, 0, sizeof(GlobalProgress));
 
@@ -736,6 +766,14 @@ void progress_load(void) {
 
 	progress_read(file);
 	SDL_RWclose(file);
+
+	// Fixup old saves
+	fix_ending_cutscene(ENDING_BAD_REIMU,   CUTSCENE_ID_REIMU_BAD_END);
+	fix_ending_cutscene(ENDING_GOOD_REIMU,  CUTSCENE_ID_REIMU_GOOD_END);
+	fix_ending_cutscene(ENDING_BAD_MARISA,  CUTSCENE_ID_MARISA_BAD_END);
+	fix_ending_cutscene(ENDING_GOOD_MARISA, CUTSCENE_ID_MARISA_GOOD_END);
+	fix_ending_cutscene(ENDING_BAD_YOUMU,   CUTSCENE_ID_YOUMU_BAD_END);
+	fix_ending_cutscene(ENDING_GOOD_YOUMU,  CUTSCENE_ID_YOUMU_GOOD_END);
 }
 
 void progress_save(void) {
@@ -824,4 +862,16 @@ bool progress_is_bgm_unlocked(const char *name) {
 
 void progress_unlock_bgm(const char *name) {
 	progress.unlocked_bgms |= progress_bgm_bit(progress_bgm_id(name));
+}
+
+static inline uint64_t progress_cutscene_bit(CutsceneID id) {
+	return (UINT64_C(1) << id);
+}
+
+bool progress_is_cutscene_unlocked(CutsceneID id) {
+	return progress.unlocked_cutscenes & progress_cutscene_bit(id);
+}
+
+void progress_unlock_cutscene(CutsceneID id) {
+	progress.unlocked_cutscenes |= progress_cutscene_bit(id);
 }

@@ -14,6 +14,7 @@
 #include <SDL.h>
 
 #include "ending.h"
+#include "cutscenes/cutscene.h"
 
 #define PROGRESS_FILE "storage/progress.dat"
 #define PROGRESS_MAXFILESIZE 4096
@@ -33,6 +34,7 @@ typedef enum ProgfileCommand {
 	PCMD_GAME_SETTINGS                     = 0x05,
 	PCMD_GAME_VERSION                      = 0x06,
 	PCMD_UNLOCK_BGMS                       = 0x07,
+	PCMD_UNLOCK_CUTSCENES                  = 0x08,
 } ProgfileCommand;
 
 typedef struct StageProgress {
@@ -75,6 +77,7 @@ typedef struct GlobalProgress {
 	uint32_t hiscore;
 	uint32_t achieved_endings[NUM_ENDINGS];
 	uint64_t unlocked_bgms;
+	uint64_t unlocked_cutscenes;
 	struct UnknownCmd *unknown;
 
 	struct {
@@ -95,5 +98,8 @@ uint32_t progress_times_any_good_ending_achieved(void);
 
 bool progress_is_bgm_unlocked(const char *name);
 void progress_unlock_bgm(const char *name);
+
+bool progress_is_cutscene_unlocked(CutsceneID id);
+void progress_unlock_cutscene(CutsceneID id);
 
 #endif // IGUARD_progress_h

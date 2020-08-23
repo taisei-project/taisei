@@ -17,6 +17,7 @@
 #include "global.h"
 #include "video.h"
 #include "util/fbmgr.h"
+#include "progress.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
@@ -434,6 +435,7 @@ static CutsceneState *cutscene_state_new(CutscenePhase phases[]) {
 }
 
 void cutscene_enter(CallChain next, CutsceneID id) {
+	progress_unlock_cutscene(id);
 	CutsceneState *st = cutscene_state_new(g_cutscenes[id]);
 	st->cc = next;
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);

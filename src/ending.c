@@ -91,7 +91,7 @@ void bad_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "… ‘by Usami Renko’", NULL);
 
 	add_ending_entry(e, 300, "-BAD END-\nTo unlock the Extra Stage, keep trying to reach the end without using a Continue!", NULL);
-	track_ending(ENDING_BAD_1);
+	track_ending(ENDING_BAD_MARISA);
 }
 
 void bad_ending_youmu(Ending *e) {
@@ -130,7 +130,7 @@ void bad_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Somewhere, somehow, she hoped the furiously righteous scythe-bearer was still out there, waiting for their rematch…", NULL);
 
 	add_ending_entry(e, 300, "-BAD END-\nTo unlock the Extra Stage, keep trying to reach the end without using a Continue!", NULL);
-	track_ending(ENDING_BAD_2);
+	track_ending(ENDING_BAD_YOUMU);
 }
 
 void bad_ending_reimu(Ending *e) {
@@ -171,7 +171,7 @@ void bad_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Yukari leaned against the edge of her gap and smiled.", NULL);
 	add_ending_entry(e, -1, "Yukari: “Glad to hear it. It's your duty, after all.”", NULL);
 	add_ending_entry(e, 300, "-BAD END-\nTo unlock the Extra Stage, keep trying to reach the end without using a Continue!", NULL);
-	track_ending(ENDING_BAD_3);
+	track_ending(ENDING_BAD_REIMU);
 }
 
 void good_ending_marisa(Ending *e) {
@@ -239,7 +239,7 @@ void good_ending_marisa(Ending *e) {
 	add_ending_entry(e, -1, "Others questioned if its power could be harnessed to serve the greater good.", NULL);
 	add_ending_entry(e, -1, "But for the guardians of Gensōkyō, they would need to be vigilant, lest it suddenly spring to life again…", NULL);
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
-	track_ending(ENDING_GOOD_1);
+	track_ending(ENDING_GOOD_MARISA);
 }
 
 void good_ending_youmu(Ending *e) {
@@ -285,7 +285,7 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Meanwhile, in the Netherworld, a certain gap yōkai and her ghostly companion discussed details of an ancient future’s past…", NULL);
 
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
-	track_ending(ENDING_GOOD_2);
+	track_ending(ENDING_GOOD_YOUMU);
 }
 
 void good_ending_reimu(Ending *e) {
@@ -333,7 +333,7 @@ void good_ending_reimu(Ending *e) {
 	add_ending_entry(e, -1, "Although, nobody had any clue how, except, perhaps, a certain ‘gap yōkai’…", NULL);
 
 	add_ending_entry(e, 300, "-GOOD ENDING-\nOne Credit Clear Achieved!\nExtra Stage has been unlocked! Do you have what it takes to face the true nature of reality?", NULL);
-	track_ending(ENDING_GOOD_3);
+	track_ending(ENDING_GOOD_REIMU);
 }
 
 static void init_ending(Ending *e) {
