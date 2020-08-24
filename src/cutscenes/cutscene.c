@@ -18,6 +18,7 @@
 #include "video.h"
 #include "util/fbmgr.h"
 #include "progress.h"
+#include "audio/audio.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
@@ -380,8 +381,8 @@ static void cutscene_end_loop(void *ctx) {
 	run_call_chain(&cc, NULL);
 }
 
-static void cutscene_preload(CutscenePhase phases[]) {
-	for(CutscenePhase *p = phases; p->background; ++p) {
+static void cutscene_preload(const CutscenePhase phases[]) {
+	for(const CutscenePhase *p = phases; p->background; ++p) {
 		if(*p->background) {
 			preload_resource(RES_TEXTURE, p->background, RESF_DEFAULT);
 		}
@@ -401,7 +402,7 @@ static void resize_fb(void *userdata, IntExtent *out_dimensions, FloatRect *out_
 	out_viewport->y = 0;
 }
 
-static CutsceneState *cutscene_state_new(CutscenePhase phases[]) {
+static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	cutscene_preload(phases);
 	CutsceneState *st = calloc(1, sizeof(*st));
 	st->phase = &phases[0];
@@ -436,7 +437,9 @@ static CutsceneState *cutscene_state_new(CutscenePhase phases[]) {
 
 void cutscene_enter(CallChain next, CutsceneID id) {
 	progress_unlock_cutscene(id);
-	CutsceneState *st = cutscene_state_new(g_cutscenes[id]);
+	const Cutscene *cs = g_cutscenes + id;
+	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
+	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }

@@ -39,6 +39,12 @@ typedef struct CutscenePhase {
 	CutscenePhaseTextEntry text_entries[CUTSCENE_PHASE_MAX_TEXT_ENTRIES];
 } CutscenePhase;
 
+typedef struct Cutscene {
+	const char *name;
+	const char *bgm;
+	const CutscenePhase *phases;
+} Cutscene;
+
 /*
  * Helper macros for cutscene construction
  */

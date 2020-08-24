@@ -14,6 +14,6 @@
 #include "cutscene.h"
 #include "scene_impl.h"
 
-extern CutscenePhase *g_cutscenes[NUM_CUTSCENE_IDS];
+extern const Cutscene g_cutscenes[NUM_CUTSCENE_IDS];
 
 #endif // IGUARD_cutscenes_scenes_h

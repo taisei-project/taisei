@@ -10,8 +10,8 @@
 
 #include "scenes.h"
 
-CutscenePhase *g_cutscenes[NUM_CUTSCENE_IDS] = {
-	[CUTSCENE_ID_REIMU_BAD_END] = (CutscenePhase[]) {
+Cutscene const g_cutscenes[NUM_CUTSCENE_IDS] = {
+	[CUTSCENE_ID_REIMU_BAD_END] = {
 		#include "reimu_bad_end.inc.h"
 	},
 };
