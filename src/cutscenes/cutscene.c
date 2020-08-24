@@ -12,23 +12,28 @@
 #include "scene_impl.h"
 #include "scenes.h"
 
-#include "renderer/api.h"
+#include "audio/audio.h"
 #include "color.h"
 #include "global.h"
-#include "video.h"
-#include "util/fbmgr.h"
 #include "progress.h"
-#include "audio/audio.h"
+#include "renderer/api.h"
+#include "util/fbmgr.h"
+#include "util/glm.h"
+#include "video.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
 #define AUTO_ADVANCE_TIME_MID_SCENE   FPS * 20
 #define AUTO_ADVANCE_TIME_CROSS_SCENE FPS * 180
 
+// TODO maybe make transitions configurable?
+#define CUTSCENE_FADE_OUT 200
+
 typedef struct CutsceneBGState {
 	Texture *scene;
 	Texture *next_scene;
 	float alpha;
+	float transition_rate;
 	bool fade_out;
 } CutsceneBGState;
 
@@ -53,6 +58,7 @@ typedef struct CutsceneState {
 
 	int skip_timer;
 	int advance_timer;
+	int fadeout_timer;
 } CutsceneState;
 
 static void clear_text(CutsceneState *st) {
@@ -108,6 +114,16 @@ static bool skip_text_animation(CutsceneState *st) {
 	return animation_skipped;
 }
 
+static void begin_fadeout(CutsceneState *st) {
+	const int fade_frames = CUTSCENE_FADE_OUT;
+	audio_bgm_stop((FPS * fade_frames) / 4000.0);
+	set_transition(TransFadeBlack, fade_frames, fade_frames);
+	st->fadeout_timer = fade_frames;
+	st->bg_state.next_scene = NULL;
+	st->bg_state.fade_out = true;
+	st->bg_state.transition_rate = 1.0f / fade_frames;
+}
+
 static void cutscene_advance(CutsceneState *st) {
 	if(st->skip_timer > 0) {
 		log_debug("Skip too soon");
@@ -128,6 +144,7 @@ static void cutscene_advance(CutsceneState *st) {
 
 			if((++st->phase)->background == NULL) {
 				st->phase = NULL;
+				begin_fadeout(st);
 			} else {
 				switch_bg(st, st->phase->background);
 			}
@@ -158,6 +175,7 @@ static bool cutscene_event(SDL_Event *evt, void *ctx) {
 static LogicFrameAction cutscene_logic_frame(void *ctx) {
 	CutsceneState *st = ctx;
 
+	update_transition();
 	events_poll((EventHandler[]) {
 		{ .proc = cutscene_event, .arg = st, .priority = EPRIO_NORMAL },
 		{ NULL },
@@ -176,13 +194,13 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 	}
 
 	if(st->bg_state.fade_out) {
-		if(fapproach_p(&st->bg_state.alpha, 0, 1/80.0f) == 0) {
+		if(fapproach_p(&st->bg_state.alpha, 0, st->bg_state.transition_rate) == 0) {
 			st->bg_state.scene = st->bg_state.next_scene;
 			st->bg_state.next_scene = NULL;
 			st->bg_state.fade_out = false;
 		}
 	} else if(st->bg_state.scene != NULL) {
-		fapproach_p(&st->bg_state.alpha, 1, 1/80.0f);
+		fapproach_p(&st->bg_state.alpha, 1, st->bg_state.transition_rate);
 	}
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first, *next; tv; tv = next) {
@@ -200,10 +218,14 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 		}
 	}
 
+	if(st->fadeout_timer > 0) {
+		if(!(--st->fadeout_timer)) {
+			return LFRAME_STOP;
+		}
+	}
+
 	return LFRAME_WAIT;
 }
-
-#include "util/glm.h"
 
 static void draw_background(CutsceneState *st, Texture *erase_mask) {
 	r_state_push();
@@ -363,6 +385,8 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 	draw_background(st, r_framebuffer_get_attachment(st->erase_mask_fbpair.front, FRAMEBUFFER_ATTACH_COLOR0));
 	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
 
+	draw_transition();
+
 	return RFRAME_SWAP;
 }
 
@@ -440,6 +464,7 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	const Cutscene *cs = g_cutscenes + id;
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
+	st->bg_state.transition_rate = 1/80.0f;
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }
