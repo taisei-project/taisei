@@ -1019,6 +1019,10 @@ void coroutines_shutdown(void) {
 
 void coroutines_draw_stats(void) {
 #ifdef CO_TASK_STATS
+	if(STAT_VAL(num_tasks_in_use) == 0 && STAT_VAL(num_switches_this_frame) == 0) {
+		return;
+	}
+
 	static char buf[128];
 
 	TextParams tp = {
