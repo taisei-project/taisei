@@ -14,6 +14,8 @@
 #include "resource/sprite.h"
 #include "resource/model.h"
 
+#define SPRITE_BATCH_STATS 0
+
 #ifndef SPRITE_BATCH_STATS
 #ifdef DEBUG
 	#define SPRITE_BATCH_STATS 1
@@ -55,9 +57,9 @@ static struct SpriteBatchState {
 } _r_sprite_batch;
 
 void _r_sprite_batch_init(void) {
-	#ifdef DEBUG
+#if SPRITE_BATCH_STATS
 	preload_resource(RES_FONT, "monotiny", RESF_PERMANENT);
-	#endif
+#endif
 
 	size_t sz_vert = sizeof(GenericModelVertex);
 	size_t sz_attr = SIZEOF_SPRITE_ATTRIBS;
