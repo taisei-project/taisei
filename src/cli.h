@@ -28,6 +28,7 @@ typedef enum {
 typedef struct CLIAction CLIAction;
 struct CLIAction {
 	CLIActionType type;
+	bool force_intro;
 	int stageid;
 	int diff;
 	int frameskip;
