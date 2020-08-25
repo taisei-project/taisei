@@ -50,15 +50,8 @@ struct stage5_spells_s stage5_spells = {
 };
 
 
-//stage5
 static void stage5_start(void) {
-    memset(&stagedata, 0, sizeof(stagedata));
-
-    stage3d_init(&stage_3d_context, 16);
-
-    stage_3d_context.crot[0] = 60;
-    stagedata.rotshift = 140;
-    stagedata.rad = 2800;
+	stage5_drawsys_init();
 }
 
 static void stage5_preload(void) {
@@ -98,24 +91,11 @@ static void stage5_preload(void) {
 }
 
 static void stage5_end(void) {
-    stage3d_shutdown(&stage_3d_context);
-}
-
-void stage5_skip(int t) {
-    skip_background_anim(stage5_update, t, &global.timer, &global.frames);
-
-    int mskip = global.timer;
-
-    if(mskip > 2900) {
-        mskip += 1100;
-    }
-
-    audio_bgm_seek_realtime(mskip / (double)FPS);
+	stage5_drawsys_shutdown();
 }
 
 static void stage5_spellpractice_start(void) {
     stage5_start();
-    skip_background_anim(stage5_update, 6960, &global.timer, NULL);
 
     global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
     boss_add_attack_from_info(global.boss, global.stage->spell, true);

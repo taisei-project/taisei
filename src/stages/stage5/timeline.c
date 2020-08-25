@@ -227,19 +227,27 @@ static int stage5_miner(Enemy *e, int t) {
     return 1;
 }
 
-static void lightning_particle(cmplx pos, int t) {
-    if(!(t % 5)) {
-        char *part = frand() > 0.5 ? "lightning0" : "lightning1";
-        PARTICLE(
-            .sprite = part,
-            .pos = pos,
-            .color = RGBA(1.0, 1.0, 1.0, 0.0),
-            .timeout = 20,
-            .draw_rule = Fade,
-            .flags = PFLAG_REQUIREDPARTICLE,
-            .angle = frand()*2*M_PI,
-        );
+static Boss* stage5_spawn_iku_boss(void) {
+    Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
+
+    boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
+    boss_add_attack(b, AT_Normal, "Bolts1", 40, 24000, iku_bolts, NULL);
+    boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
+    boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
+    boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
+    boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
+
+    if(global.diff < D_Hard) {
+        boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
+    } else {
+        boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
     }
+    boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
+
+    boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
+
+    boss_start_attack(b, b->attacks);
+    return b;
 }
 
 static int stage5_magnetto(Enemy *e, int t) {
@@ -298,79 +306,6 @@ static int stage5_magnetto(Enemy *e, int t) {
 }
 
 
-static int stage5_explosion(Enemy *e, int t) {
-    TIMER(&t)
-    AT(EVENT_KILLED) {
-        spawn_items(e->pos,
-            ITEM_POINTS, 5,
-            ITEM_POWER, 5,
-            ITEM_LIFE, creal(e->args[1])
-        );
-
-        PARTICLE(
-            .sprite = "blast_huge_rays",
-            .color = color_add(RGBA(0, 0.2 + 0.5 * frand(), 0.5 + 0.5 * frand(), 0.0), RGBA(1, 1, 1, 0)),
-            .pos = e->pos,
-            .timeout = 60 + 10 * frand(),
-            .draw_rule = ScaleFade,
-            .args = { 0, 0, (0 + 3*I) * (1 + 0.2 * frand()) },
-            .angle = frand() * 2 * M_PI,
-            .layer = LAYER_PARTICLE_HIGH | 0x42,
-            .flags = PFLAG_REQUIREDPARTICLE,
-        );
-
-        PARTICLE(
-            .sprite = "blast_huge_halo",
-            .pos = e->pos,
-            .color = RGBA(0.3 * frand(), 0.3 * frand(), 1.0, 0),
-            .timeout = 200 + 24 * frand(),
-            .draw_rule = ScaleFade,
-            .args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
-            .layer = LAYER_PARTICLE_HIGH | 0x41,
-            .angle = frand() * 2 * M_PI,
-            .flags = PFLAG_REQUIREDPARTICLE,
-        );
-
-        play_sound("boom");
-        return 1;
-    }
-
-    FROM_TO(0, 80, 1) {
-        GO_TO(e, e->pos0 + e->args[0] * 80, 0.05);
-    }
-
-    FROM_TO(90, 300, 7-global.diff) {
-        PROJECTILE(
-            .proto = pp_soul,
-            .pos = e->pos,
-            .color = RGBA(0, 0, 1, 0),
-            .rule = asymptotic,
-            .args = { 4*cexp(0.5*I*_i), 3 }
-        );
-        play_sound("shot_special1");
-    }
-
-    FROM_TO(200, 720, 6-global.diff) {
-        for(int i = 1; i >= -1; i -= 2) {
-            PROJECTILE(
-                .proto = pp_rice,
-                .pos = e->pos,
-                .color = RGB(1,0,0),
-                .rule = asymptotic,
-                .args = { i*2*cexp(-0.3*I*_i+frand()*I), 3 }
-            );
-        }
-
-        play_sound("shot3");
-    }
-
-    FROM_TO(500-30*(global.diff-D_Easy), 800, 100-10*global.diff) {
-        create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, RGBA(1, 0.3, 1, 0));
-        play_sfx_delayed("laser1", 0, true, 45);
-    }
-
-    return 1;
-}
 
 static int stage5_lightburst2(Enemy *e, int t) {
     TIMER(&t);
@@ -445,7 +380,6 @@ void stage5_events(void) {
 
 	AT(0) {
 		stage_start_bgm("stage5");
-		stage5_skip(env_get("STAGE5_TEST", 0));
 		stage_set_voltage_thresholds(255, 480, 860, 1250);
 	}
 
@@ -494,7 +428,7 @@ void stage5_events(void) {
 	}
 
 	AT(2900)
-		global.boss = create_iku_mid();
+		global.boss = stage5_spawn_iku_mid();
 
 	AT(2920) {
 		stage5_dialog_post_midboss();
@@ -599,7 +533,7 @@ void stage5_events(void) {
 
 	AT(6960) {
 		stage_unlock_bgm("stage5");
-		global.boss = create_iku();
+		global.boss = stage5_spawn_iku_boss();
 	}
 
 	AT(6980) {

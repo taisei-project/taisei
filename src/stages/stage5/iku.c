@@ -1,4 +1,35 @@
-static void iku_slave_visual(Enemy *e, int t, bool render) {
+/*
+ * This software is licensed under the terms of the MIT License.
+ * See COPYING for further information.
+ * ---
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+ */
+
+#include "taisei.h"
+
+#include "iku.h"
+
+#include "stage5.h"
+
+#include "common_tasks.h"
+
+void lightning_particle(cmplx pos, int t) {
+    if(!(t % 5)) {
+        char *part = frand() > 0.5 ? "lightning0" : "lightning1";
+        PARTICLE(
+            .sprite = part,
+            .pos = pos,
+            .color = RGBA(1.0, 1.0, 1.0, 0.0),
+            .timeout = 20,
+            .draw_rule = Fade,
+            .flags = PFLAG_REQUIREDPARTICLE,
+            .angle = frand()*2*M_PI,
+        );
+    }
+}
+
+void iku_slave_visual(Enemy *e, int t, bool render) {
 	if(render) {
 		return;
 	}
@@ -32,22 +63,9 @@ static void iku_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-static void iku_mid_intro(Boss *b, int t) {
-	TIMER(&t);
-
-	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
-
-	FROM_TO(90, 110, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
-	}
-
-	AT(960)
-		enemy_kill_all(&global.enemies);
-}
-
 static void midboss_dummy(Boss *b, int t) { }
 
-static Boss *create_iku_mid(void) {
+Boss *stage5_spawn_iku_mid(void) {
 	Boss *b = create_boss("Bombs?", "iku_mid", VIEWPORT_W+800.0*I);
 	b->glowcolor = *RGB(0.2, 0.4, 0.5);
 	b->shadowcolor = *RGBA_MUL_ALPHA(0.65, 0.2, 0.75, 0.5);
@@ -86,7 +104,7 @@ static void cloud_common(void) {
 	);
 }
 
-static void iku_bolts(Boss *b, int time) {
+void iku_bolts(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -195,7 +213,7 @@ static cmplx bolts2_laser(Laser *l, float t) {
 	return creal(l->args[0])+I*cimag(l->pos) + sign(cimag(l->args[0]-l->pos))*0.06*I*t*t + (20+4*diff)*sin(t*0.025*diff+creal(l->args[0]))*l->args[1];
 }
 
-static void iku_bolts2(Boss *b, int time) {
+void iku_bolts2(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -382,7 +400,7 @@ void iku_lightning(Boss *b, int time) {
 	}
 }
 
-static void iku_bolts3(Boss *b, int time) {
+void iku_bolts3(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);
 
@@ -553,8 +571,6 @@ void iku_induction(Boss *b, int t) {
 	}
 }
 
-void iku_spell_bg(Boss *b, int t);
-
 static Enemy* iku_extra_find_next_slave(cmplx from, double playerbias) {
 	Enemy *nearest = NULL, *e;
 	double dist, mindist = INFINITY;
@@ -577,7 +593,7 @@ static Enemy* iku_extra_find_next_slave(cmplx from, double playerbias) {
 	return nearest;
 }
 
-static void iku_extra_slave_visual(Enemy *e, int t, bool render) {
+void iku_extra_slave_visual(Enemy *e, int t, bool render) {
 	iku_slave_visual(e, t, render);
 
 	if(render) {
@@ -821,6 +837,97 @@ void iku_extra(Boss *b, int t) {
 	}
 }
 
+static int stage5_explosion(Enemy *e, int t) {
+    TIMER(&t)
+    AT(EVENT_KILLED) {
+        spawn_items(e->pos,
+            ITEM_POINTS, 5,
+            ITEM_POWER, 5,
+            ITEM_LIFE, creal(e->args[1])
+        );
+
+        PARTICLE(
+            .sprite = "blast_huge_rays",
+            .color = color_add(RGBA(0, 0.2 + 0.5 * frand(), 0.5 + 0.5 * frand(), 0.0), RGBA(1, 1, 1, 0)),
+            .pos = e->pos,
+            .timeout = 60 + 10 * frand(),
+            .draw_rule = ScaleFade,
+            .args = { 0, 0, (0 + 3*I) * (1 + 0.2 * frand()) },
+            .angle = frand() * 2 * M_PI,
+            .layer = LAYER_PARTICLE_HIGH | 0x42,
+            .flags = PFLAG_REQUIREDPARTICLE,
+        );
+
+        PARTICLE(
+            .sprite = "blast_huge_halo",
+            .pos = e->pos,
+            .color = RGBA(0.3 * frand(), 0.3 * frand(), 1.0, 0),
+            .timeout = 200 + 24 * frand(),
+            .draw_rule = ScaleFade,
+            .args = { 0, 0, (0.25 + 2.5*I) * (1 + 0.2 * frand()) },
+            .layer = LAYER_PARTICLE_HIGH | 0x41,
+            .angle = frand() * 2 * M_PI,
+            .flags = PFLAG_REQUIREDPARTICLE,
+        );
+
+        play_sound("boom");
+        return 1;
+    }
+
+    FROM_TO(0, 80, 1) {
+        GO_TO(e, e->pos0 + e->args[0] * 80, 0.05);
+    }
+
+    FROM_TO(90, 300, 7-global.diff) {
+        PROJECTILE(
+            .proto = pp_soul,
+            .pos = e->pos,
+            .color = RGBA(0, 0, 1, 0),
+            .rule = asymptotic,
+            .args = { 4*cexp(0.5*I*_i), 3 }
+        );
+        play_sound("shot_special1");
+    }
+
+    FROM_TO(200, 720, 6-global.diff) {
+        for(int i = 1; i >= -1; i -= 2) {
+            PROJECTILE(
+                .proto = pp_rice,
+                .pos = e->pos,
+                .color = RGB(1,0,0),
+                .rule = asymptotic,
+                .args = { i*2*cexp(-0.3*I*_i+frand()*I), 3 }
+            );
+        }
+
+        play_sound("shot3");
+    }
+
+    FROM_TO(500-30*(global.diff-D_Easy), 800, 100-10*global.diff) {
+        create_laserline(e->pos, 10*cexp(I*carg(global.plr.pos-e->pos)+0.04*I*(1-2*frand())), 60, 120, RGBA(1, 0.3, 1, 0));
+        play_sfx_delayed("laser1", 0, true, 45);
+    }
+
+    return 1;
+}
+
+void iku_intro(Boss *b, int t) {
+	GO_TO(b, VIEWPORT_W/2+240.0*I, 0.015);
+}
+
+void iku_mid_intro(Boss *b, int t) {
+    TIMER(&t);
+
+    b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
+
+    FROM_TO(90, 110, 10) {
+        create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, stage5_explosion, -2-0.5*_i+I*_i, _i == 1,1);
+    }
+
+    AT(960)
+        enemy_kill_all(&global.enemies);
+}
+
 Boss* stage5_spawn_iku(cmplx pos) {
 	Boss *b = create_boss("Nagae Iku", "iku", pos);
 	boss_set_portrait(b, "iku", NULL, "normal");
@@ -829,25 +936,3 @@ Boss* stage5_spawn_iku(cmplx pos) {
 	return b;
 }
 
-static Boss* create_iku(void) {
-	Boss *b = stage5_spawn_iku(VIEWPORT_W/2-200.0*I);
-
-	boss_add_attack(b, AT_Move, "Introduction", 4, 0, iku_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Bolts1", 40, 24000, iku_bolts, NULL);
-	boss_add_attack_from_info(b, &stage5_spells.boss.atmospheric_discharge, false);
-	boss_add_attack(b, AT_Normal, "Bolts2", 45, 27000, iku_bolts2, NULL);
-	boss_add_attack_from_info(b, &stage5_spells.boss.artificial_lightning, false);
-	boss_add_attack(b, AT_Normal, "Bolts3", 50, 30000, iku_bolts3, NULL);
-
-	if(global.diff < D_Hard) {
-		boss_add_attack_from_info(b, &stage5_spells.boss.induction_field, false);
-	} else {
-		boss_add_attack_from_info(b, &stage5_spells.boss.inductive_resonance, false);
-	}
-	boss_add_attack_from_info(b, &stage5_spells.boss.natural_cathode, false);
-
-	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
-
-	boss_start_attack(b, b->attacks);
-	return b;
-}

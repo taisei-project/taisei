@@ -4,6 +4,7 @@ stages_src = []
 stages = [
     'stage1',
     'stage2',
+    'stage5'
     'stage6'
 ]
 
@@ -20,8 +21,6 @@ stages_src += files(
     'stage3_events.c',
     'stage4.c',
     'stage4_events.c',
-    'stage5.c',
-    'stage5_events.c',
     'extra.c',
 )
 
