@@ -11,6 +11,8 @@
 #include "coroutine.h"
 #include "util.h"
 
+// TODO refactor this intro a few smaller files under coroutine/
+
 #ifdef ADDRESS_SANITIZER
 	#include <sanitizer/asan_interface.h>
 #else
@@ -138,7 +140,8 @@ static struct {
 
 // enable stack usage tracking (loose)
 #ifndef _WIN32
-#define CO_TASK_STATS_STACK
+// NOTE: disabled by default because of heavy performance overhead under ASan
+// #define CO_TASK_STATS_STACK
 #endif
 
 #else // CO_TASK_STATS
@@ -1029,11 +1032,20 @@ void coroutines_draw_stats(void) {
 	float ls = font_get_lineskip(tp.font_ptr);
 
 	tp.pos.y += ls;
+
+#ifdef CO_TASK_STATS_STACK
 	snprintf(buf, sizeof(buf), "Peak stack: %zukb    Tasks: %4zu / %4zu ",
 		STAT_VAL(peak_stack_usage) / 1024,
 		STAT_VAL(num_tasks_in_use),
 		STAT_VAL(num_tasks_allocated)
 	);
+#else
+	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ",
+		STAT_VAL(num_tasks_in_use),
+		STAT_VAL(num_tasks_allocated)
+	);
+#endif
+
 	text_draw(buf, &tp);
 
 	tp.pos.y += ls;
