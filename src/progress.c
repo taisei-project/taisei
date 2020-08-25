@@ -624,7 +624,7 @@ static void progress_prepare_cmd_unlock_cutscenes(size_t *bufsize, void **arg) {
 }
 
 static void progress_write_cmd_unlock_cutscenes(SDL_RWops *vfile, void **arg) {
-	SDL_WriteU8(vfile, PCMD_UNLOCK_BGMS);
+	SDL_WriteU8(vfile, PCMD_UNLOCK_CUTSCENES);
 	SDL_WriteLE16(vfile, sizeof(uint64_t));
 	SDL_WriteLE64(vfile, progress.unlocked_cutscenes);
 }
