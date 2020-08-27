@@ -60,6 +60,12 @@ typedef struct Cutscene {
 
 // Add new actors here
 #define T_REIMU(text)       T_SPEECH("Reimu",       text, { 0.955, 0.550, 0.500, 1 })
+#define T_MARISA(text)      T_SPEECH("Marisa",      text, { 1.000, 0.843, 0.216, 1 })
+#define T_YOUMU(text)       T_SPEECH("Yōmu",        text, { 0.490, 0.803, 0.725, 1 })
 #define T_YUKARI(text)      T_SPEECH("Yukari",      text, { 0.750, 0.600, 0.950, 1 })
+#define T_KANAKO(text)      T_SPEECH("Kanako",      text, { 0.600, 0.700, 0.950, 1 })
+#define T_SUWAKO(text)      T_SPEECH("Suwako",      text, { 0.515, 0.685, 0.375, 1 })
+#define T_SUMIREKO(text)    T_SPEECH("Sumireko",    text, { 0.700, 0.500, 0.830, 1 })
+#define T_YUYUKO(text)      T_SPEECH("Yuyuko",      text, { 0.900, 0.600, 0.900, 1 })
 
 #endif // IGUARD_cutscenes_scene_impl_h
