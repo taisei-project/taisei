@@ -11,6 +11,7 @@
 #include "spells.h"
 
 #include "global.h"
+#include "common_tasks.h"
 
 #define SLOTS 5
 
@@ -86,16 +87,45 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 	int balls_per_slot = difficulty_value(15, 15, 20, 25);
 
 	for(int t = 0;;) {
-		boss->move.attraction_point = pick_boss_position();
 		t += WAIT(100);
 		INVOKE_SUBTASK(walls, 400);
-		t += WAIT(90);
+		t += WAIT(30);
+
+		int win;
+		int plr_slot = slot_of_position(global.plr.pos);
+
+		do {
+			win = rng_irange(0, SLOTS);
+		} while(win == plr_slot && global.diff > D_Easy);
+
+		for(int i = 0; i < SLOTS; i++) {
+			if(i == win) {
+				continue;
+			}
+
+			INVOKE_SUBTASK(common_charge,
+				.pos = VIEWPORT_W / (real)SLOTS * (i + 0.5),
+				.color = RGBA(1.0, 0.1, 0.1, 0),
+				.time = 65,
+				.sound = COMMON_CHARGE_SOUNDS
+			);
+
+			if(i == plr_slot && global.diff > D_Normal) {
+				INVOKE_SUBTASK(common_charge,
+					.pos = VIEWPORT_W / (real)SLOTS * (i + 0.5) + VIEWPORT_H*I,
+					.color = RGBA(0.2, 0.2, 1.0, 0),
+					.time = 65,
+					.sound = COMMON_CHARGE_SOUNDS
+				);
+			}
+		}
+
+		t += WAIT(60);
 		aniplayer_queue(&boss->ani, "guruguru", 2);
 		aniplayer_queue(&boss->ani, "main", 0);
 		t += WAIT(10);
 
 		play_sfx("shot_special1");
-		int win = rng_irange(0, SLOTS);
 
 		for(int i = 0; i < SLOTS; i++) {
 			if(i == win) {
@@ -110,8 +140,26 @@ DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 					.target_slot = i
 				);
 			}
+
+			if(i == plr_slot && global.diff > D_Normal) {
+				for(int j = 0; j < balls_per_slot; j++) {
+					Projectile *p = PROJECTILE(
+						.proto = pp_ball,
+						.pos = VIEWPORT_W / (real)SLOTS * (i + 0.1 + 0.8 * j / (balls_per_slot - 1.0)) + VIEWPORT_H*I,
+						.color = RGBA(0.2, 0.2, 0.7, 0.0),
+						.move = move_accelerated(0, 0),
+					);
+
+					INVOKE_TASK(common_move,
+						.ent = ENT_BOX(p).as_generic,
+						.pos = &p->move.acceleration,
+						.move_params = move_linear(0.000001 * (rng_sreal() - I * (1 + psin(i + j + t))))
+					);
+				}
+			}
 		}
 
 		t += WAIT(300);
+		boss->move.attraction_point = pick_boss_position();
 	}
 }
