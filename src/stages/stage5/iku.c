@@ -63,7 +63,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-void iku_nonspell_cloud_common(void) {
+void iku_nonspell_spawn_cloud(void) {
 	tsrand_fill(4);
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
 

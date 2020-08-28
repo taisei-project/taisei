@@ -14,7 +14,7 @@
 #include "boss.h"
 
 void iku_slave_visual(Enemy*, int, bool);
-void iku_nonspell_cloud_common(void);
+void iku_nonspell_spawn_cloud(void);
 void iku_lightning_particle(cmplx, int);
 
 int iku_induction_bullet(Projectile*, int);
