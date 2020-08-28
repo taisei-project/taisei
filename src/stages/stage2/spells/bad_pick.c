@@ -14,96 +14,104 @@
 
 #define SLOTS 5
 
-static int bad_pick_bullet(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-	p->args[0] += p->args[1];
-
-	// reflection
-	int slot = (int)(creal(p->pos)/(VIEWPORT_W/SLOTS)+1)-1; // correct rounding for slot == -1
-	int targetslot = creal(p->args[2])+0.5;
-	if(slot != targetslot)
-		p->args[0] = copysign(creal(p->args[0]),targetslot-slot)+I*cimag(p->args[0]);
-
-	return ACTION_NONE;
+static int slot_of_position(cmplx pos) {
+	return (int)(creal(pos) / (VIEWPORT_W / SLOTS) + 1) - 1;  // correct rounding for slot == -1
 }
 
-void hina_bad_pick(Boss *h, int time) {
-	int t = time % 500;
-	int i, j;
+TASK(bad_pick_bullet, { cmplx pos; cmplx vel; cmplx accel; int target_slot; }) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_ball,
+		.pos = ARGS.pos,
+		.color = RGBA(0.7, 0.0, 0.0, 0.0),
+		.move = move_accelerated(ARGS.vel, ARGS.accel),
+	));
 
-	TIMER(&t);
+	for(;;YIELD) {
+		// reflection
+		int slot = slot_of_position(p->pos);
 
-	if(time < 0)
-		return;
+		if(slot != ARGS.target_slot) {
+			p->move.velocity = copysign(creal(p->move.velocity), ARGS.target_slot - slot) + I*cimag(p->move.velocity);
+		}
+	}
+}
 
-	GO_TO(h, VIEWPORT_W/SLOTS*((113*(time/500))%SLOTS+0.5)+ 100.0*I, 0.02);
+static cmplx pick_boss_position(void) {
+	return VIEWPORT_W/SLOTS * (rng_irange(0, SLOTS) + 0.5) + 100 * I;
+}
 
-	FROM_TO(100, 500, 5) {
-		play_sound_ex("shot1", 4, false);
+TASK(walls, { int duration; }) {
+	for(int t = 0; t < ARGS.duration; t += WAIT(5)) {
+		play_sfx_loop("shot1_loop");
 
-		for(i = 1; i < SLOTS; i++) {
+		for(int i = 1; i < SLOTS; i++) {
 			PROJECTILE(
 				.proto = pp_crystal,
-				.pos = VIEWPORT_W/SLOTS*i,
-				.color = RGB(0.5,0,0.6),
-				.rule = linear,
-				.args = { 7.0*I }
+				.pos = VIEWPORT_W / SLOTS * i,
+				.color = RGB(0.5, 0, 0.6),
+				.move = move_linear(7*I),
 			);
 		}
 
 		if(global.diff >= D_Hard) {
-			double shift = 0;
-			if(global.diff == D_Lunatic)
-				shift = 0.3*fmax(0,t-200);
-			for(i = 1; i < SLOTS; i++) {
-				double height = VIEWPORT_H/SLOTS*i+shift;
-				if(height > VIEWPORT_H-40)
-					height -= VIEWPORT_H-40;
+			real shift = 0;
+
+			if(global.diff == D_Lunatic) {
+				shift = 0.3 * fmax(0, t - 100);
+			}
+
+			for(int i = 1; i < SLOTS; i++) {
+				real height = VIEWPORT_H / SLOTS * i + shift;
+
+				if(height > VIEWPORT_H - 40) {
+					height -= VIEWPORT_H -40;
+				}
 
 				PROJECTILE(
 					.proto = pp_crystal,
-					.pos = (i&1)*VIEWPORT_W+I*height,
-					.color = RGB(0.5,0,0.6),
-					.rule = linear,
-					.args = { 5.0*(1-2*(i&1)) }
+					.pos = (i & 1) * VIEWPORT_W + I * height,
+					.color = RGB(0.5, 0, 0.6),
+					.move = move_linear(5.0 * (1 - 2 * (i & 1))),
 				);
 			}
 		}
 	}
+}
 
-	AT(190) {
-		aniplayer_queue(&h->ani,"guruguru",2);
-		aniplayer_queue(&h->ani,"main",0);
-	}
+DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
+	Boss *boss = INIT_BOSS_ATTACK();
+	boss->move = move_towards(pick_boss_position(), 0.02);
+	BEGIN_BOSS_ATTACK();
 
-	AT(200) {
-		play_sound("shot_special1");
+	int balls_per_slot = difficulty_value(15, 15, 20, 25);
 
-		int win = tsrand()%SLOTS;
-		for(i = 0; i < SLOTS; i++) {
-			if(i == win)
+	for(int t = 0;;) {
+		boss->move.attraction_point = pick_boss_position();
+		t += WAIT(100);
+		INVOKE_SUBTASK(walls, 400);
+		t += WAIT(90);
+		aniplayer_queue(&boss->ani, "guruguru", 2);
+		aniplayer_queue(&boss->ani, "main", 0);
+		t += WAIT(10);
+
+		play_sfx("shot_special1");
+		int win = rng_irange(0, SLOTS);
+
+		for(int i = 0; i < SLOTS; i++) {
+			if(i == win) {
 				continue;
+			}
 
-			float cnt = (1+imin(D_Normal,global.diff)) * 5;
-			for(j = 0; j < cnt; j++) {
-				cmplx o = VIEWPORT_W/SLOTS*(i + j/(cnt-1));
-
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = o,
-					.color = RGBA(0.7, 0.0, 0.0, 0.0),
-					.rule = bad_pick_bullet,
-					.args = {
-						0,
-						0.005*nfrand() + 0.005*I * (1 + psin(i + j + global.frames)),
-						i
-					},
+			for(int j = 0; j < balls_per_slot; j++) {
+				INVOKE_TASK(bad_pick_bullet,
+					.pos = VIEWPORT_W / (real)SLOTS * (i + 0.1 + 0.8 * j / (balls_per_slot - 1.0)),
+					.vel = 0,
+					.accel = 0.005 * (rng_sreal() + I * (1 + psin(i + j + t))),
+					.target_slot = i
 				);
 			}
 		}
+
+		t += WAIT(300);
 	}
 }

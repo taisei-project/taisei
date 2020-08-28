@@ -27,7 +27,8 @@ struct stage2_spells_s stage2_spells = {
 		},
 		.bad_pick = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 60, 43200,
-			hina_bad_pick, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+			NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+			TASK_INDIRECT_INIT(BossAttack, stage2_spell_bad_pick),
 		},
 		.wheel_of_fortune = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 50, 32000,
