@@ -15,7 +15,7 @@ void iku_bolts3(Boss *b, int time) {
 	TIMER(&t);
 
 	FROM_TO(0, 400, 2) {
-		cloud_common();
+		iku_nonspell_cloud_common();
 	}
 
 	FROM_TO(60, 400, 60) {

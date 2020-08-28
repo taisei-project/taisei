@@ -39,7 +39,7 @@ void iku_cathode(Boss *b, int t) {
 				.proto = pp_bigball,
 				.pos = b->pos,
 				.color = RGBA(0.2, 0.4, 1.0, 0.0),
-				.rule = induction_bullet,
+				.rule = iku_induction_bullet,
 				.args = {
 					speedmod*2*cexp(2.0*I*M_PI*frand()),
 					speedmod*0.01*I*(1-2*(_i&1)),

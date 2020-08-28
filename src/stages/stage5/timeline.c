@@ -11,6 +11,7 @@
 #include "timeline.h"
 #include "stage5.h"
 #include "nonspells/nonspells.h"
+#include "nonspells/survival.h"
 
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");
@@ -226,19 +227,6 @@ static void iku_intro(Boss *b, int t) {
 		stage5_dialog_pre_boss();
 }
 
-static void iku_mid_intro(Boss *b, int t) {
-	TIMER(&t);
-
-	b->pos += -1-7.0*I+10*t*(cimag(b->pos)<-200);
-
-	FROM_TO(90, 110, 10) {
-		create_enemy3c(b->pos, ENEMY_IMMUNE, iku_slave_visual, iku_explosion, -2-0.5*_i+I*_i, _i == 1,1);
-	}
-
-	AT(960)
-		enemy_kill_all(&global.enemies);
-}
-
 Boss* stage5_spawn_iku(cmplx pos) {
 	Boss *b = create_boss("Nagae Iku", "iku", pos);
 	boss_set_portrait(b, "iku", NULL, "normal");
@@ -302,7 +290,7 @@ static int stage5_magnetto(Enemy *e, int t) {
 	}
 
 	cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
-	lightning_particle(e->pos + 3*offset, t);
+	iku_lightning_particle(e->pos + 3*offset, t);
 
 	FROM_TO(0, 70, 1) {
 		GO_TO(e, e->args[0], 0.1);
@@ -468,7 +456,7 @@ void stage5_events(void) {
 	AT(2920) {
 		stage5_dialog_post_midboss();
 
-		// XXX: this shitty hack is needed to force the dialog to not reopen immediately when it's closed with the shot button
+		// TODO: determine if this hack is still required with the new dialogue system
 		global.timer++;
 	}
 
@@ -547,10 +535,10 @@ void stage5_events(void) {
 		double ofs = 42*2;
 
 		FROM_TO(5620, 5620 + step*cnt-1, step) {
-			cmplx src1 = -ofs/4				  + (-ofs/4 +	   _i	 * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx src1 = -ofs/4               + (-ofs/4 +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 			cmplx src2 = (VIEWPORT_W + ofs/4) + (-ofs/4 + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			cmplx dst1 = ofs				  + ( ofs	+	   _i	 * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
-			cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs	+ (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst1 = ofs                  + ( ofs   +      _i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+			cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs   + (cnt-_i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 
 			create_enemy2c(src1, 2000, Swirl, stage5_magnetto, dst1, dst2);
 			create_enemy2c(src2, 2000, Swirl, stage5_magnetto, dst2, dst1);

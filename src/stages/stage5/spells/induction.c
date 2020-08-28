@@ -42,7 +42,7 @@ void iku_induction(Boss *b, int t) {
 					.proto = pp_ball,
 					.pos = b->pos,
 					.color = clr,
-					.rule = induction_bullet,
+					.rule = iku_induction_bullet,
 					.args = {
 						2*cexp(2.0*I*M_PI/c*i+I*M_PI/2+I*shift),
 						(0.01+0.001*global.diff)*I*(1-2*j)+a

@@ -14,11 +14,10 @@
 #include "boss.h"
 
 void iku_slave_visual(Enemy*, int, bool);
+void iku_nonspell_cloud_common(void);
+void iku_lightning_particle(cmplx, int);
 
-void lightning_particle(cmplx, int);
+int iku_induction_bullet(Projectile*, int);
 
-int induction_bullet(Projectile*, int);
-
-void cloud_common(void);
 
 #endif // IGUARD_stages_stage5_iku_h

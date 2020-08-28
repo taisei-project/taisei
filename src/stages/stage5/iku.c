@@ -14,7 +14,7 @@
 
 #include "common_tasks.h"
 
-void lightning_particle(cmplx pos, int t) {
+void iku_lightning_particle(cmplx pos, int t) {
 	if(!(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";
 		PARTICLE(
@@ -37,7 +37,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 	cmplx offset = (frand()-0.5)*10 + (frand()-0.5)*10.0*I;
 
 	if(e->args[2] && !(t % 5)) {
-		lightning_particle(e->pos + 3*offset, t);
+		iku_lightning_particle(e->pos + 3*offset, t);
 	}
 
 	if(!(t % 3)) {
@@ -63,7 +63,7 @@ void iku_slave_visual(Enemy *e, int t, bool render) {
 	}
 }
 
-void cloud_common(void) {
+void iku_nonspell_cloud_common(void) {
 	tsrand_fill(4);
 	float v = (afrand(2)+afrand(3))*0.5+1.0;
 
@@ -89,7 +89,7 @@ static cmplx induction_bullet_traj(Projectile *p, float t) {
 	return p->pos0 + p->args[0]*t*cexp(p->args[1]*t);
 }
 
-int induction_bullet(Projectile *p, int time) {
+int iku_induction_bullet(Projectile *p, int time) {
 	if(time < 0) {
 		return ACTION_ACK;
 	}

@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage5_nonspells_nonspells_h
-#define IGUARD_stages_stage5_nonspells_nonspells_h
+#ifndef IGUARD_stages_stage5_nonspells_survival_h
+#define IGUARD_stages_stage5_nonspells_survival_h
 
 #include "taisei.h"
 
@@ -15,8 +15,6 @@
 
 #include "stages/stage5/iku.h"
 
-void iku_bolts(Boss*, int);
-void iku_bolts2(Boss*, int);
-void iku_bolts3(Boss*, int);
+void iku_mid_intro(Boss *b, int t);
 
-#endif // IGUARD_stages_stage5_nonspells_nonspells_h
+#endif // IGUARD_stages_stage5_nonspells_survival_h

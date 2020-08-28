@@ -103,9 +103,6 @@ static void stage5_spellpractice_start(void) {
 	stage_start_bgm("stage5boss");
 }
 
-static void stage5_spellpractice_events(void) {
-}
-
 ShaderRule stage5_shaders[] = { NULL };
 
 StageProcs stage5_procs = {
@@ -125,6 +122,5 @@ StageProcs stage5_spell_procs = {
 	.end = stage5_end,
 	.draw = stage5_draw,
 	.update = stage5_update,
-	.event = stage5_spellpractice_events,
 	.shader_rules = stage5_shaders,
 };

@@ -32,7 +32,7 @@ void iku_bolts2(Boss *b, int time) {
 	}
 
 	FROM_TO(0, 400, 2) {
-		cloud_common();
+		iku_nonspell_cloud_common();
 	}
 
 	FROM_TO(0, 400, 60) {
