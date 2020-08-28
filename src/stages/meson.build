@@ -4,7 +4,7 @@ stages_src = []
 stages = [
     'stage1',
     'stage2',
-    'stage5'
+    'stage5',
     'stage6'
 ]
 
