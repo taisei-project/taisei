@@ -16,7 +16,7 @@
 #include "entity.h"
 #include "util/glm.h"
 #include "portrait.h"
-#include "stages/stage5.h"  // for unlockable bonus BGM
+#include "stages/stage5/stage5.h"  // for unlockable bonus BGM
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
