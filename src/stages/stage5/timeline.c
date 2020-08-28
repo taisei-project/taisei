@@ -11,7 +11,7 @@
 #include "timeline.h"
 #include "stage5.h"
 #include "nonspells/nonspells.h"
-#include "nonspells/survival.h"
+#include "spells/spells.h"
 
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");
