@@ -10,7 +10,7 @@
 
 #include "credits.h"
 #include "global.h"
-#include "stages/stage6.h"
+#include "stages/stage6/draw.h"
 #include "video.h"
 #include "resource/model.h"
 #include "renderer/api.h"

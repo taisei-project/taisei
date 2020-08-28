@@ -6,15 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage6_h
-#define IGUARD_stages_stage6_h
+#ifndef IGUARD_stages_stage6_stage6_h
+#define IGUARD_stages_stage6_stage6_h
 
 #include "taisei.h"
 
 #include "stageinfo.h"
-#include "enemy.h"
-#include "stageutils.h"
-#include "util/fbpair.h"
 
 extern struct stage6_spells_s {
 	// this struct must contain only fields of type AttackInfo
@@ -51,19 +48,11 @@ extern struct stage6_spells_s {
 	AttackInfo null;
 } stage6_spells;
 
+extern StageProcs stage6_procs;
+extern StageProcs stage6_spell_procs;
+
 // this hackery is needed for spell practice
 #define STG6_SPELL_NEEDS_SCYTHE(s) ((s) >= &stage6_spells.scythe_first && ((s) - &stage6_spells.scythe_first) < sizeof(stage6_spells.scythe)/sizeof(AttackInfo))
 #define STG6_SPELL_NEEDS_BARYON(s) ((s) >= &stage6_spells.baryon_first && ((s) - &stage6_spells.baryon_first) < sizeof(stage6_spells.baryon)/sizeof(AttackInfo)+1)
 
-extern StageProcs stage6_procs;
-extern StageProcs stage6_spell_procs;
-
-extern FBPair baryon_fbpair;
-extern Framebuffer *baryon_aux_fb;
-
-void start_fall_over(void);
-
-uint stage6_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange);
-void stage6_towerwall_draw(vec3 pos);
-
-#endif // IGUARD_stages_stage6_h
+#endif // IGUARD_stages_stage6_stage6_h

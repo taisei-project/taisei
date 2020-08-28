@@ -9,8 +9,8 @@
 #include "taisei.h"
 
 #include "stage4_events.h"
+#include "stage6/elly.h"
 #include "stage4.h"
-#include "stage6_events.h"
 #include "global.h"
 #include "stage.h"
 #include "enemy.h"
@@ -1668,7 +1668,7 @@ void stage4_events(void) {
 
 	FROM_TO(3201, 3201 + midboss_time - 1, 1) {
 		if(!global.enemies.first) {
-			create_enemy4c(VIEWPORT_W/2+160.0*I, ENEMY_IMMUNE, Scythe, scythe_post_mid, 0, 1+0.2*I, 0+1*I, 3201 + midboss_time - global.timer);
+			create_enemy4c(VIEWPORT_W/2+160.0*I, ENEMY_IMMUNE, scythe_draw, scythe_post_mid, 0, 1+0.2*I, 0+1*I, 3201 + midboss_time - global.timer);
 		}
 	}
 
