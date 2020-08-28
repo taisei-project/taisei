@@ -20,11 +20,9 @@ Stage6DrawData *stage6_get_draw_data(void) {
 
 void stage6_drawsys_init(void) {
 	stage6_draw_data = calloc(1, sizeof(*stage6_draw_data));
-	stage3d_init(&stage_3d_context, 16);
-
 	// TODO: make this background slightly less horribly inefficient
-
 	stage3d_init(&stage_3d_context, 128);
+
 	stage6_draw_data->fall_over.frames = 0;
 
 	for(int i = 0; i < NUM_STARS; i++) {
