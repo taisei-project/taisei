@@ -8,10 +8,9 @@
 
 #include "taisei.h"
 
-#include "global.h"
-
 #include "draw.h"
 
+#include "global.h"
 #include "stageutils.h"
 
 static Stage5DrawData *stage5_draw_data;
@@ -85,4 +84,3 @@ void iku_spell_bg(Boss *b, int t) {
 	r_color4(opacity, opacity, opacity, opacity);
 	fill_viewport(0, 300, 1, "stage5/spell_lightning");
 }
-
