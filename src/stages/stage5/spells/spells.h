@@ -20,5 +20,6 @@ void iku_lightning(Boss *, int);
 void iku_induction(Boss *, int);
 void iku_cathode(Boss *, int);
 void iku_overload(Boss *, int);
+void iku_mid_intro(Boss *, int t);
 
 #endif // IGUARD_stages_stage5_spells_spells_h

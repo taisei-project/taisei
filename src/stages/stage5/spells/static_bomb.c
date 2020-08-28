@@ -8,9 +8,9 @@
 
 #include "taisei.h"
 
-#include "survival.h"
+#include "spells.h"
 
-int iku_explosion(Enemy *e, int t) {
+static int iku_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {
 		spawn_items(e->pos,

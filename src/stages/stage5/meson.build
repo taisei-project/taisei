@@ -7,7 +7,7 @@ stage5_src = files(
 	'nonspells/boss_nonspell_1.c',
 	'nonspells/boss_nonspell_2.c',
 	'nonspells/boss_nonspell_3.c',
-	'nonspells/midboss_survival_1.c',
+    'spells/static_bomb.c',
 	'spells/atmospheric_discharge.c',
 	'spells/artificial_lightning.c',
 	'spells/induction.c',
