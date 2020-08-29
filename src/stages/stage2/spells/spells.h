@@ -13,10 +13,9 @@
 
 #include "boss.h"
 
-void hina_monty(Boss*, int);
-
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_amulet_of_harm, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_wheel_of_fortune, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_bad_pick, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_monty_hall_danmaku, BossAttack);
 
 #endif // IGUARD_stages_stage2_spells_spells_h

@@ -39,7 +39,8 @@ struct stage2_spells_s stage2_spells = {
 
 	.extra.monty_hall_danmaku = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign “Monty Hall Danmaku”", 60, 60000,
-		hina_monty, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+		NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+		TASK_INDIRECT_INIT(BossAttack, stage2_spell_monty_hall_danmaku),
 	},
 };
 
