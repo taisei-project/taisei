@@ -531,13 +531,13 @@ static bool laser_collision(Laser *l) {
 		t = 0;
 	}
 
-	LineSegment segment = { .a = l->prule(l,t) };
+	LineSegment segment = { .a = l->prule(l, t) };
 	Circle collision_area = { .origin = global.plr.pos };
 
 	float tail = l->timespan / 1.6f;
 	float width_factor = -1.0f / (tail * tail);
 
-	for(t += l->collision_step; t <= t_end; t += l->collision_step) {
+	for(t += l->collision_step; t < t_end; t += l->collision_step) {
 		segment.b = l->prule(l, t);
 
 		if(laser_collision_segment(l, &segment, &collision_area, t, width_factor, tail)) {
@@ -547,6 +547,7 @@ static bool laser_collision(Laser *l) {
 		segment.a = segment.b;
 	}
 
+	segment.b = l->prule(l, t_end);
 	return laser_collision_segment(l, &segment, &collision_area, t_end, width_factor, tail);
 }
 
@@ -564,7 +565,7 @@ bool laser_intersects_ellipse(Laser *l, Ellipse ellipse) {
 
 	LineSegment segment = { .a = l->prule(l, t) };
 
-	for(t += l->collision_step; t <= t_end; t += l->collision_step) {
+	for(t += l->collision_step; t < t_end; t += l->collision_step) {
 		segment.b = l->prule(l, t);
 
 		if(lineseg_ellipse_intersect(segment, ellipse)) {
