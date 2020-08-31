@@ -19,5 +19,4 @@ void iku_lightning_particle(cmplx, int);
 
 int iku_induction_bullet(Projectile*, int);
 
-
 #endif // IGUARD_stages_stage5_iku_h
