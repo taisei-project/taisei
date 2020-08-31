@@ -15,6 +15,11 @@ vec3 sampleZoom(vec3 ca) {
 	vec2 posProportional = pos * vec2(1, ratio);
 
 	vec3 z = ca * vec3(length(posProportional) / blur_rad);
+
+	if(all(greaterThan(z, vec3(1.26)))) {
+		return texture(tex, texCoordRaw).rgb;
+	}
+
 	z = 1.5 * z * z * z;
 	z = tanh(z);
 	z = sqrt(z);
