@@ -109,6 +109,7 @@ if host_machine.system() == 'nx'
                 '--exclude', '**/meson.build',
             ],
             output : shader_pkg_zip,
+            depends : essl_targets,
             depfile : '@0@.d'.format(shader_pkg_zip),
             install : true,
             install_dir : data_path,
