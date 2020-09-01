@@ -9,14 +9,17 @@
 
 #include "arch_switch.h"
 
-#include <switch/runtime/devices/socket.h>
-#include <switch/runtime/nxlink.h>
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
+#include <switch/services/ssl.h>
+#include <switch/runtime/devices/socket.h>
+#include <switch/runtime/nxlink.h>
 
 #define NX_LOG_FMT(fmt, ...) tsfprintf(stdout, "[NX] " fmt "\n", ##__VA_ARGS__)
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);env_set_string(name, val, true)
+
+uint32_t __nx_fs_num_sessions = 1;
 
 static nxAtExitFn g_nxAtExitFn = NULL;
 static char g_programDir[FS_MAX_PATH] = {0};
@@ -58,7 +61,10 @@ void userAppInit(void) {
 	NX_SETENV("EGL_LOG_LEVEL", "debug");
 	NX_SETENV("MESA_VERBOSE", "all");
 	NX_SETENV("MESA_DEBUG", "1");
+	NX_SETENV("MESA_INFO", "1");
+	NX_SETENV("MESA_GLSL", "errors");
 	NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
+	NX_SETENV("LIBGL_DEBUG", "verbose");
 
 	// enable shader debugging in Nouveau:
 	NX_SETENV("NV50_PROG_OPTIMIZE", "0");
@@ -72,11 +78,6 @@ void userAppInit(void) {
 
 attr_used
 void userAppExit(void) {
-	if(g_nxAtExitFn != NULL) {
-		NX_LOG("calling exit callback");
-		g_nxAtExitFn();
-		g_nxAtExitFn = NULL;
-	}
 	socketExit();
 	appletUnlockExit();
 }
@@ -93,6 +94,12 @@ int nxAtExit(nxAtExitFn fn) {
 void __attribute__((weak)) noreturn __libnx_exit(int rc);
 
 void noreturn nxExit(int rc) {
+	if(g_nxAtExitFn != NULL) {
+		NX_LOG("calling exit callback");
+		g_nxAtExitFn();
+		g_nxAtExitFn = NULL;
+	}
+
 	__libnx_exit(rc);
 }
 
