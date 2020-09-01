@@ -78,11 +78,6 @@ void userAppInit(void) {
 
 attr_used
 void userAppExit(void) {
-	if(g_nxAtExitFn != NULL) {
-		NX_LOG("calling exit callback");
-		g_nxAtExitFn();
-		g_nxAtExitFn = NULL;
-	}
 	socketExit();
 	appletUnlockExit();
 }
@@ -99,6 +94,12 @@ int nxAtExit(nxAtExitFn fn) {
 void __attribute__((weak)) noreturn __libnx_exit(int rc);
 
 void noreturn nxExit(int rc) {
+	if(g_nxAtExitFn != NULL) {
+		NX_LOG("calling exit callback");
+		g_nxAtExitFn();
+		g_nxAtExitFn = NULL;
+	}
+
 	__libnx_exit(rc);
 }
 
