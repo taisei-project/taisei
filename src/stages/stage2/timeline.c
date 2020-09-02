@@ -51,7 +51,7 @@ TASK(great_circle_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exi
 			);
 
 			if(global.diff > D_Easy && bunch % 7 == 0) {
-				play_sound("shot1");
+				play_sfx("shot1");
 				PROJECTILE(
 					.proto = pp_bigball,
 					.pos = e->pos + 30 * dir,
@@ -147,7 +147,7 @@ TASK(redwall_fairy, {
 	real pspeed = difficulty_value(1, 1.65, 2.2, 2.7);
 
 	for(int t = 0; t < duration; t += WAIT(step)) {
-		play_sound("shot1");
+		play_sfx("shot1");
 
 		PROJECTILE(
 			.proto = pp_ball,
@@ -168,7 +168,7 @@ TASK(aimshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; })
 	e->move = ARGS.move_enter;
 
 	WAIT(42);
-	play_sound("shot1");
+	play_sfx("shot1");
 
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
 	int num = difficulty_value(1, 1, 3, 5);
@@ -202,6 +202,65 @@ TASK(aimshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; })
 	WAIT(60);
 
 	e->move = ARGS.move_exit;
+}
+
+TASK(rotate_velocity, {
+	MoveParams *move;
+	real delta_angle;
+	int duration;
+}) {
+	for(int i = 0; i < ARGS.duration; ++i, YIELD) {
+		ARGS.move->velocity *= cdir(ARGS.delta_angle);
+	}
+}
+
+TASK(turning_fairy, {
+	cmplx pos;
+	real speed;
+	real angle0;
+	real angle1;
+	int turn_delay;
+	int turn_duration;
+}) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 600, Fairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.power = 1,
+		.points = 1
+	});
+
+	e->move = move_linear(cdir(ARGS.angle0) * ARGS.speed);
+	INVOKE_SUBTASK_DELAYED(ARGS.turn_delay, rotate_velocity,
+		.move = &e->move,
+		.delta_angle = (ARGS.angle1 - ARGS.angle0) / ARGS.turn_duration,
+		.duration = ARGS.turn_duration
+  	);
+
+	WAIT(10);
+
+	int period = difficulty_value(60, 40, 20, 15);
+
+	for(int t = 0;; t += WAIT(period)) {
+		play_sfx_ex("shot1", 5, false);
+		cmplx shot_normal = 3 * cnormalize(e->move.velocity);
+		cmplx shot_org = e->pos + e->move.velocity * 4;
+
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = shot_org,
+			.color = RGB(0.9, 0.0, 0.9),
+			.move = move_asymptotic_simple(shot_normal*I, 3),
+		);
+
+		PROJECTILE(
+			.proto = pp_rice,
+			.pos = shot_org,
+			.color = RGB(0.9, 0.0, 0.9),
+			.move = move_asymptotic_simple(shot_normal/I, 3),
+		);
+	}
+
+	STALL;
 }
 
 static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
@@ -288,7 +347,7 @@ TASK(flea_fairy, { cmplx pos; MoveParams move; }) {
 	int duration = 400;
 
 	for(int t = 0; t < duration; t += WAIT(base_period - t/70)) {
-		play_sound("shot1");
+		play_sfx("shot1");
 		PROJECTILE(
 			.proto = pp_flea,
 			.pos = e->pos,
@@ -391,6 +450,7 @@ static void hina_intro(Boss *h, int time) {
 }
 
 void stage2_events(void) {
+	return;
 	TIMER(&global.timer);
 
 	AT(0) {
@@ -409,13 +469,13 @@ void stage2_events(void) {
 
 	FROM_TO(850, 1000, 15)
 	create_enemy1c(VIEWPORT_W/2+25*(_i-5)-20.0*I, 200, Fairy, stage2_aim, (2+frand()*0.3)*I);
-#endif
 
 	FROM_TO(960, 1200, 20)
 	create_enemy3c(VIEWPORT_W-80+(VIEWPORT_H+20)*I, 200, Fairy, stage2_sidebox_trail, 3 - 0.5*M_PI*I, -0.02, 90);
 
 	FROM_TO(1140, 1400, 20)
 	create_enemy3c(200-20.0*I, 200, Fairy, stage2_sidebox_trail, 3+0.5*I*M_PI, -0.05, 70);
+#endif
 
 	AT(1300)
 	create_enemy1c(150-10.0*I, 4000, BigFairy, stage2_great_circle, 2.5*I);
@@ -454,7 +514,8 @@ void stage2_events(void) {
 	create_enemy1c(VIEWPORT_W*(0.1+0.8*frand())-10.0*I, 150, Fairy, stage2_flea, 2.5*I);
 
 	FROM_TO(4000, 4600, 100+100*(global.diff<D_Hard))
-	create_enemy1c(VIEWPORT_W*(0.5+0.1*sqrt(_i)*(1-2*(_i&1)))-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
+	create_enemy1c(VIEWPORT_W*(0.5+0.1*sqrt(_i)*(1-2*(_i&1)))-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);	STALL;
+
 
 	AT(5100) {
 		stage_unlock_bgm("stage2");
@@ -500,6 +561,40 @@ TASK(aimshot_fairies, NO_ARGS) {
 	}
 }
 
+TASK(turning_fairies_bottom_right, NO_ARGS) {
+	int num = 12;
+
+	for(int i = 0; i < num; ++i) {
+		INVOKE_TASK(turning_fairy,
+			.pos = VIEWPORT_W-80+(VIEWPORT_H+20)*I,
+			.speed = 3,
+			.angle0 = -0.5*M_PI,
+			.angle1 = -M_PI,
+			.turn_delay = 90,
+			.turn_duration = 80
+		);
+
+		WAIT(20);
+	}
+}
+
+TASK(turning_fairies_top_left, NO_ARGS) {
+	int num = 13;
+
+	for(int i = 0; i < num; ++i) {
+		INVOKE_TASK(turning_fairy,
+			.pos = 200-20.0*I,
+			.speed = 3,
+			.angle0 = 0.5*M_PI,
+			.angle1 = -M_PI,
+			.turn_delay = 70,
+			.turn_duration = 120
+		);
+
+		WAIT(20);
+	}
+}
+
 TASK(boss_appear, { BoxedBoss boss; }) {
 	Boss *boss = ENT_UNBOX(ARGS.boss);
 	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.05);
@@ -534,9 +629,8 @@ TASK(spawn_boss, NO_ARGS) {
 DEFINE_EXTERN_TASK(stage2_timeline) {
 	YIELD;
 
-	WAIT(200);
-	INVOKE_TASK(spawn_boss);
-	STALL;
+// 	WAIT(200);
+// 	INVOKE_TASK(spawn_boss);
 
 	INVOKE_TASK_DELAYED(300, great_circle_fairy,
 		.pos = VIEWPORT_W/2 - 10.0*I,
@@ -551,4 +645,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	INVOKE_TASK_DELAYED(750, aimshot_fairies);
 
 	INVOKE_TASK_DELAYED(825, aimshot_fairies);
+
+	INVOKE_TASK_DELAYED(900, turning_fairies_bottom_right);
+	INVOKE_TASK_DELAYED(1120, turning_fairies_top_left);
 }
