@@ -209,9 +209,10 @@ TASK(rotate_velocity, {
 	real delta_angle;
 	int duration;
 }) {
-	for(int i = 0; i < ARGS.duration; ++i, YIELD) {
-		ARGS.move->velocity *= cdir(ARGS.delta_angle);
-	}
+	cmplx r = cdir(ARGS.delta_angle);
+	ARGS.move->retention *= r;
+	WAIT(ARGS.duration);
+	ARGS.move->retention /= r;
 }
 
 TASK(turning_fairy, {
