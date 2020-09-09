@@ -18,6 +18,195 @@
 #include "global.h"
 #include "common_tasks.h"
 
+TASK(spinshot_fairy_attack_spawn_projs, {
+	BoxedEnemy e;
+	BoxedProjectileArray *projs;
+	cmplx *proj_origins;
+	int spawn_period;
+	cmplx initial_offset;
+	const Color *color;
+}) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	int count = ARGS.projs->capacity;
+
+	cmplx ofs = ARGS.initial_offset;
+	cmplx r = cdir(2*M_PI/count);
+
+	for(int i = 0; i < count; ++i) {
+		play_sfx_loop("shot1_loop");
+
+		cmplx o = e->pos;
+		ARGS.proj_origins[i] = o;
+
+		ENT_ARRAY_ADD(ARGS.projs, PROJECTILE(
+			.proto = pp_wave,
+			.color = ARGS.color,
+			.pos = o,
+			.move = move_towards(o + ofs, 0.1),
+			.max_viewport_dist = 128,
+		));
+
+		ofs *= r;
+		WAIT(ARGS.spawn_period);
+	}
+}
+
+TASK(spinshot_fairy_attack, {
+	BoxedEnemy e;
+	int count;
+	int spawn_period;
+	int activate_time;
+	cmplx initial_offset;
+	cmplx activated_vel_multiplier;
+	cmplx activated_accel_multiplier;
+	cmplx activated_retention_multiplier;
+	const Color *color;
+}) {
+	int count = ARGS.count;
+	Color color = *ARGS.color;
+
+	DECLARE_ENT_ARRAY(Projectile, projs, count);
+	cmplx proj_origins[count];
+
+	BoxedTask spawner_task = cotask_box(
+		INVOKE_SUBTASK(spinshot_fairy_attack_spawn_projs,
+			ARGS.e,
+			&projs,
+			proj_origins,
+			ARGS.spawn_period,
+			ARGS.initial_offset,
+			&color
+		)
+	);
+
+	cmplx ref_pos;
+	Enemy *e;
+
+	for(int t = 0; t < ARGS.activate_time; ++t, YIELD) {
+		int live_count = 0;
+		e = ENT_UNBOX(ARGS.e);
+
+		if(e) {
+			ref_pos = e->pos;
+		}
+
+		ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
+			cmplx ofs = ref_pos - proj_origins[i];
+			proj_origins[i] += ofs;
+			p->pos += ofs;
+ 			p->move.attraction_point += ofs;
+			++live_count;
+		});
+
+ 		if(live_count == 0) {
+			CoTask *spawner_task_unboxed = cotask_unbox(spawner_task);
+			if(!spawner_task_unboxed || cotask_status(spawner_task_unboxed) == CO_STATUS_DEAD) {
+				log_debug("spawner is dead and no live projectiles, quitting");
+				return;
+			}
+ 		}
+	}
+
+	log_debug("ACTIVATE!");
+	int live_count = 0;
+
+	ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
+		spawn_projectile_highlight_effect(p);
+		cmplx dir = cdir(p->angle);
+		p->move = move_accelerated(dir * ARGS.activated_vel_multiplier, dir * ARGS.activated_accel_multiplier);
+		p->move.retention *= ARGS.activated_retention_multiplier;
+		++live_count;
+	});
+
+	if(live_count == 0) {
+		return;
+	}
+
+	play_sfx("redirect");
+
+	for(;live_count > 0; YIELD) {
+		live_count = 0;
+		ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
+			if(capproach_asymptotic_p(&p->move.retention, 1, 0.02, 1e-3) != 1) {
+				++live_count;
+			}
+		});
+	}
+}
+
+TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 3000, BigFairy, NULL, 0));
+
+	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
+		.points = 5,
+		.power = 4,
+	});
+
+	e->move = ARGS.move_enter;
+
+	int count = 14;
+	int charge_time = 60;
+	int spawn_period = charge_time / count + (charge_time % count != 0);
+	charge_time = count * spawn_period;
+
+	int activate_delay = 42;
+	charge_time += activate_delay;
+
+	int waves = 10;
+	int wave_period = 1;
+
+	INVOKE_SUBTASK(common_charge,
+		.time = charge_time + waves * wave_period,
+		.anchor = &e->pos,
+		.color = RGBA(1.0, 0.1, 0.1, 0.0),
+		.sound = COMMON_CHARGE_SOUNDS
+	);
+
+	INVOKE_SUBTASK_DELAYED(5, common_charge,
+		.time = charge_time + waves * wave_period,
+		.anchor = &e->pos,
+		.color = RGBA(0.1, 0.1, 1.0, 0.0)
+	);
+
+	cmplx dir = rng_dir();
+
+	for(int i = 0; i < waves; ++i, WAIT(wave_period)) {
+		play_sfx_loop("shot1_loop");
+
+		INVOKE_TASK(spinshot_fairy_attack,
+			.e = ENT_BOX(e),
+			.count = count,
+			.spawn_period = spawn_period,
+			.activate_time = charge_time + 2 * (10 - i) + 14,
+			.initial_offset = (24 + 10 * i) * dir,
+			.activated_vel_multiplier = -3,
+			.activated_accel_multiplier = 0.05*I,
+			.activated_retention_multiplier = cdir(0.1),
+			.color = RGBA(1.0, 0, 0, 0.5)
+		);
+
+		INVOKE_TASK(spinshot_fairy_attack,
+			.e = ENT_BOX(e),
+			.count = count,
+			.spawn_period = spawn_period,
+			.activate_time = charge_time + 2 * (10 - i),
+			.initial_offset = (24 + 10 * i) / dir,
+			.activated_vel_multiplier = 3,
+			.activated_accel_multiplier = 0.05/I,
+			.activated_retention_multiplier = cdir(-0.1),
+			.color = RGBA(0.0, 0, 1.0, 0.5)
+		);
+
+		dir *= cdir(0.3);
+	}
+
+	WAIT(charge_time + 120);
+
+	e->move = ARGS.move_exit;
+
+	STALL;
+}
+
 TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
 	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 7500, BigFairy, NULL, 0));
 
@@ -478,19 +667,23 @@ static Boss *create_wriggle_mid(void) {
 
 	boss_add_attack(wriggle, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
 	boss_add_attack_task(wriggle, AT_Normal, "Small Bug Storm", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
-	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);;
+	boss_add_attack(wriggle, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);
 
 	boss_start_attack(wriggle, wriggle->attacks);
 	return wriggle;
 }
 
-static void hina_intro(Boss *h, int time) {
-	TIMER(&time);
+TASK(spawn_midboss, NO_ARGS) {
+	STAGE_BOOKMARK(midboss);
 
-	AT(100)
-	stage2_dialog_pre_boss();
+	Boss *boss = global.boss = stage2_spawn_wriggle(VIEWPORT_W + 150 - 30.0*I);
+	wriggle_ani_flyin(boss);
 
-	GO_TO(h, VIEWPORT_W/2 + 100.0*I, 0.05);
+	boss_add_attack(boss, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
+	boss_add_attack_task(boss, AT_Normal, "", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
+	boss_add_attack(boss, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);
+
+	boss_start_attack(boss, boss->attacks);
 }
 
 void stage2_events(void) {
@@ -540,10 +733,9 @@ void stage2_events(void) {
 		create_enemy1c(VIEWPORT_W/4-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
 		create_enemy1c(VIEWPORT_W/4*3-10.0*I, 2000, BigFairy, stage2_accel_circle, 2.0*I);
 	}
-#endif
 
 	AT(2700)
-	global.boss = create_wriggle_mid();
+		global.boss = create_wriggle_mid();
 
 	FROM_TO(2900, 3400, 50) {
 		if(global.diff > D_Normal)
@@ -574,6 +766,7 @@ void stage2_events(void) {
 	AT(5185) {
 		stage_finish(GAMEOVER_SCORESCREEN);
 	}
+#endif
 }
 
 TASK(redwall_side_fairies, { int num; }) {
@@ -584,6 +777,26 @@ TASK(redwall_side_fairies, { int num; }) {
 			.pos = VIEWPORT_W * (i % 2),
 			.shot_x_dir = xdir,
 			.move = move_asymptotic_halflife(2 * xdir + I, 3.65 * xdir + 5*I, 50)
+		);
+
+		WAIT(50);
+	}
+}
+
+TASK(redwall_side_fairies_2, { int num; }) {
+	for(int i = 0; i < ARGS.num; ++i) {
+		real xdir = 1 - 2 * (i % 2);
+
+		INVOKE_TASK(redwall_fairy,
+			.pos = VIEWPORT_H*0.5*I,
+			.shot_x_dir = 1,
+			.move = move_asymptotic_halflife(2 - 0.5*I, 3.65 - 2.5*I, 50)
+		);
+
+		INVOKE_TASK_DELAYED(20, redwall_fairy,
+			.pos = VIEWPORT_W + VIEWPORT_H*0.5*I,
+			.shot_x_dir = -xdir,
+			.move = move_asymptotic_halflife(-2 - 0.5*I, -3.65 - 2.5*I, 50)
 		);
 
 		WAIT(50);
@@ -789,4 +1002,100 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	INVOKE_TASK_DELAYED(2300, redwall_side_fairies,
 		.num = 7
 	);
+
+	WAIT(2700);
+	INVOKE_TASK(spawn_midboss);
+	int midboss_time = WAIT_EVENT(&global.boss->events.defeated).frames;
+	int filler_time = 1900;
+	int time_ofs = 0 - midboss_time;
+
+	STAGE_BOOKMARK(post-midboss);
+	log_debug("midboss time: %i", midboss_time);
+
+	filler_time -= WAIT(300 - midboss_time);
+
+	for(int t = 0; t < 1400; t += 60) {
+		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy,
+			.pos = VIEWPORT_W-60 + (VIEWPORT_H+20)*I,
+			.vel = 3 / I,
+			.turn_angle = -M_PI/2,
+			.turn_delay = 80,
+			.turn_duration = 120
+		);
+
+		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy,
+			.pos = 60 + (VIEWPORT_H+20)*I,
+			.vel = 3 / I,
+			.turn_angle = M_PI/2,
+			.turn_delay = 80,
+			.turn_duration = 120
+		);
+	}
+
+	STAGE_BOOKMARK_DELAYED(1100 + time_ofs, post-midboss-ideal);
+
+	INVOKE_TASK_DELAYED(1360 + time_ofs, spinshot_fairy,
+		.pos = VIEWPORT_W/2,
+		.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+		.move_exit = move_accelerated(0, 0.1*I)
+	);
+
+	for(int i = 0; i < 10; ++i) {
+		INVOKE_TASK_DELAYED(1560 + time_ofs + i * 30, flea_swirl,
+			.pos = -15 + 30*I,
+			.vel = 2,
+			.turn_angle = M_PI,
+			.turn_delay = (VIEWPORT_W - 96)/4,
+			.turn_duration = 60
+		);
+	}
+
+	INVOKE_TASK_DELAYED(1660 + time_ofs, starcaller_fairy,
+		.pos = VIEWPORT_W - 150 - 10.0*I,
+		.move_enter = move_towards(VIEWPORT_W - 150 + 160.0*I, 0.04),
+		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
+	);
+
+	WAIT(filler_time - midboss_time);
+	STAGE_BOOKMARK(post-midboss-filler);
+
+	INVOKE_TASK(aimshot_fairies);
+
+	INVOKE_TASK_DELAYED(150, redwall_side_fairies_2,
+		.num = 5
+	);
+
+	INVOKE_TASK_DELAYED(300, aimshot_fairies);
+
+	INVOKE_TASK_DELAYED(420, spinshot_fairy,
+		.pos = 0,
+		.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+		.move_exit = move_accelerated(0, 0.1*I)
+	);
+
+	INVOKE_TASK_DELAYED(480, spinshot_fairy,
+		.pos = VIEWPORT_W,
+		.move_enter = move_towards(2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
+	);
+
+	STAGE_BOOKMARK_DELAYED(720, pre-boss-spam);
+
+	for(int i = 0; i < 4; ++i) {
+		INVOKE_TASK_DELAYED(720 + 60 * i, aimshot_fairies);
+	}
+
+	WAIT(1160);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL);
+	INVOKE_TASK(spawn_boss);
+	WAIT_EVENT(&global.boss->events.defeated);
+
+	stage_unlock_bgm("stage2boss");
+
+	WAIT(240);
+	stage2_dialog_post_boss();
+	WAIT_EVENT(&global.dialog->events.fadeout_began);
+
+	WAIT(5);
+	stage_finish(GAMEOVER_SCORESCREEN);
 }
