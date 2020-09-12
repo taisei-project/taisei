@@ -511,7 +511,7 @@ uint64_t uceildiv64(uint64_t x, uint64_t y) {
 }
 
 int popcnt32(uint32_t x) {
-	#if TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT
+	#ifdef TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT
 	return __builtin_popcount(x);
 	#else
 	return popcnt64(x);
@@ -519,7 +519,7 @@ int popcnt32(uint32_t x) {
 }
 
 int popcnt64(uint64_t x) {
-	#if TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL
+	#ifdef TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL
 	return __builtin_popcountll(x);
 	#else
 	x -= (x >> 1) & 0x5555555555555555;
