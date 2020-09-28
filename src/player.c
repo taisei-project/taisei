@@ -1366,7 +1366,7 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 		plr->graze = PLR_MAX_GRAZE;
 	}
 
-	pos = (pos + plr->pos) * 0.5;
+	pos = clerp(pos, plr->pos, 0.5);
 
 	player_add_points(plr, pts, pos);
 	play_sfx("graze");
@@ -1393,6 +1393,20 @@ void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const C
 	}
 
 	spawn_items(pos, ITEM_POWER_MINI, 1);
+}
+
+void player_try_enemy_collision(Player *plr, Circle enemy, int *graze_timer, const Color *graze_color) {
+	real dist2 = cabs2(enemy.origin - plr->pos);
+
+	if(dist2 < enemy.radius * enemy.radius && player_is_vulnerable(plr)) {
+		ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
+	} else if(global.frames >= *graze_timer) {
+		real graze_radius = enemy.radius + 24 * sqrt(enemy.radius);
+		if(dist2 < graze_radius * graze_radius) {
+			player_graze(plr, enemy.origin, 7, 5, graze_color);
+			*graze_timer = global.frames + 4;
+		}
+	}
 }
 
 static void player_add_fragments(Player *plr, int frags, int *pwhole, int *pfrags, int maxfrags, int maxwhole, const char *fragsnd, const char *upsnd, int score_per_excess) {

@@ -79,6 +79,7 @@ DEFINE_ENTITY_TYPE(Enemy, {
 
 	int birthtime;
 	int dir;
+	int next_graze;
 
 	float spawn_hp;
 	float hp;
