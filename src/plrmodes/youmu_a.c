@@ -304,6 +304,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	cmplx plr_lastmovedir = -offset_dir;
 
 	myon->pos = plr->pos;
+	myon->dir = I;
 
 	INVOKE_SUBTASK(youmu_mirror_myon_shot, ctrl);
 
@@ -340,7 +341,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 			} else if(!(plr->inputflags & INFLAG_FOCUS)) {
 				if(plr->inputflags & INFLAGS_MOVE) {
 					offset_dir = -plr_lastmovedir;
-				} else {
+				} else if(myon->pos != plr->pos) {
 					offset_dir = cnormalize(myon->pos - plr->pos);
 				}
 			}
