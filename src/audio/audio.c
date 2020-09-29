@@ -17,15 +17,18 @@
 
 #define B (_a_backend.funcs)
 
-static ht_str2int_t sfx_volumes;
-
-static struct enqueued_sound {
+struct enqueued_sound {
 	LIST_INTERFACE(struct enqueued_sound);
 	char *name;
 	int time;
 	int cooldown;
 	bool replace;
-} *sound_queue;
+};
+
+static struct {
+	ht_str2int_t sfx_volumes;
+	struct enqueued_sound *sound_queue;
+} audio;
 
 static bool is_skip_mode(void) {
 	return global.frameskip || stage_is_skip_mode();
@@ -42,7 +45,7 @@ static SFXPlayID play_sound_internal(const char *name, bool is_ui, int cooldown,
 		s->name = strdup(name);
 		s->cooldown = cooldown;
 		s->replace = replace;
-		list_push(&sound_queue, s);
+		list_push(&audio.sound_queue, s);
 		return 0;
 	}
 
@@ -155,17 +158,17 @@ static void* reset_sounds_callback(const char *name, Resource *res, void *arg) {
 
 void reset_all_sfx(void) {
 	resource_for_each(RES_SFX, reset_sounds_callback, (void*)true);
-	list_foreach(&sound_queue, discard_enqueued_sound, NULL);
+	list_foreach(&audio.sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_all_sfx(void) {
 	resource_for_each(RES_SFX, reset_sounds_callback, (void*)false);
 
-	for(struct enqueued_sound *s = sound_queue, *next; s; s = next) {
+	for(struct enqueued_sound *s = audio.sound_queue, *next; s; s = next) {
 		next = (struct enqueued_sound*)s->next;
 
 		if(s->time <= global.frames) {
-			play_enqueued_sound(&sound_queue, s, NULL);
+			play_enqueued_sound(&audio.sound_queue, s, NULL);
 		}
 	}
 }
@@ -193,19 +196,19 @@ static bool store_sfx_volume(const char *key, const char *val, void *data) {
 	log_debug("Default volume for %s is now %i", key, vol);
 
 	if(vol != DEFAULT_SFX_VOLUME) {
-		ht_set(&sfx_volumes, key, vol);
+		ht_set(&audio.sfx_volumes, key, vol);
 	}
 
 	return true;
 }
 
 static void load_config_files(void) {
-	ht_create(&sfx_volumes);
+	ht_create(&audio.sfx_volumes);
 	parse_keyvalue_file_cb(SFX_PATH_PREFIX "volumes.conf", store_sfx_volume, NULL);
 }
 
 int get_default_sfx_volume(const char *sfx) {
-	return ht_get(&sfx_volumes, sfx, DEFAULT_SFX_VOLUME);
+	return ht_get(&audio.sfx_volumes, sfx, DEFAULT_SFX_VOLUME);
 }
 
 static bool audio_config_updated(SDL_Event *evt, void *arg) {
@@ -232,7 +235,7 @@ void audio_init(void) {
 void audio_shutdown(void) {
 	events_unregister_handler(audio_config_updated);
 	B.shutdown();
-	ht_destroy(&sfx_volumes);
+	ht_destroy(&audio.sfx_volumes);
 }
 
 bool audio_output_works(void) {
