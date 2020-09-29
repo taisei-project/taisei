@@ -251,7 +251,12 @@ typedef struct BoxedEntityArray {
 	INLINE void _ent_array_add_##typename(Boxed##typename box, Boxed##typename##Array *a) { \
 		assert(a->size < a->capacity); \
 		a->array[a->size++] = box; \
+	} \
+	INLINE void _ent_array_compact_##typename(Boxed##typename##Array *a) { \
+		_ent_array_compact_Entity(&a->as_generic_UNSAFE); \
 	}
+
+void _ent_array_compact_Entity(BoxedEntityArray *a);
 
 ENTITIES(ENT_EMIT_ARRAY_DEFS,)
 #undef ENT_EMIT_ARRAY_DEFS
@@ -268,6 +273,10 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 #define ENT_ARRAY_ADD(_array, _ent) ENT_BOXED_DISPATCH_FUNCTION(_ent_array_add_, ENT_BOX_OR_PASSTHROUGH(_ent), _array)
 #define ENT_ARRAY_GET_BOXED(_array, _index) ((_array)->array[_index])
 #define ENT_ARRAY_GET(_array, _index) ENT_UNBOX(ENT_ARRAY_GET_BOXED(_array, _index))
+#define ENT_ARRAY_COMPACT(_array) \
+	_Generic((_array)->array[0], \
+		ENT_BOXED_DISPATCH_TABLE(_ent_array_compact_) \
+	)(_array)
 
 #define DECLARE_ENT_ARRAY(_ent_type, _name, _capacity) \
 	Boxed##_ent_type##Array _name; \

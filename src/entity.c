@@ -228,3 +228,14 @@ void ent_hook_post_draw(EntityDrawHookCallback callback, void *arg) {
 void ent_unhook_post_draw(EntityDrawHookCallback callback) {
 	remove_hook(&entities.hooks.post_draw, callback);
 }
+
+void _ent_array_compact_Entity(BoxedEntityArray *a) {
+	for(int i = 0; i < a->size; ++i) {
+		while(ENT_UNBOX(a->array[i]) == NULL) {
+			if(i >= --a->size) {
+				return;
+			}
+			memmove(a->array + i, a->array + i + 1, (a->size - i) * sizeof(a->array[0]));
+		}
+	}
+}
