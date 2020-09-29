@@ -656,8 +656,12 @@ static void display_stage_title(StageInfo *info) {
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
 
+TASK(start_bgm, { BGM *bgm; }) {
+	audio_bgm_play(ARGS.bgm, true, 0, 0);
+}
+
 void stage_start_bgm(const char *bgm) {
-	audio_bgm_play(res_bgm(bgm), true, 0, 0);
+	INVOKE_TASK_DELAYED(1, start_bgm, res_bgm(bgm));
 }
 
 void stage_set_voltage_thresholds(uint easy, uint normal, uint hard, uint lunatic) {
