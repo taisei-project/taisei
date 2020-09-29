@@ -31,6 +31,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (creal(v) > 0));
 	p->move = move_asymptotic_simple(v, 2);
 	p->angle = carg(p->move.velocity);
+	p->color = *RGB(0.5, 0.5, 0.5);
 
 	play_sfx("redirect");
 	spawn_projectile_highlight_effect(p);
@@ -54,8 +55,10 @@ DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
 
 		for(int i = 0; i < icicles; ++i) {
 			real speed = 8 + 3 * i;
-			INVOKE_TASK(cirno_icicle, boss->pos, speed * cdir(-0.1 + turn * (round - 1)));
-			INVOKE_TASK(cirno_icicle, boss->pos, speed * cdir(+0.1 + turn * (1 - round) + M_PI));
+			cmplx o1 = 28 - 42 * I;
+			cmplx o2 = -conj(o1);
+			INVOKE_TASK(cirno_icicle, boss->pos + o1, speed * cdir(-0.1 + turn * (round - 1)));
+			INVOKE_TASK(cirno_icicle, boss->pos + o2, speed * cdir(+0.1 + turn * (1 - round) + M_PI));
 		}
 	}
 }
