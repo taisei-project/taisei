@@ -113,13 +113,27 @@ DEFINE_EXTERN_TASK(common_charge) {
 		TASK_BIND(ARGS.bind_to_entity);
 	}
 
+	DECLARE_ENT_ARRAY(Projectile, particles, 256);
+
 	// This is just about below LAYER_PARTICLE_HIGH
 	// We want it on a separate layer for better sprite batching efficiency,
 	// because these sprites are on a different texture than most.
 	drawlayer_t blast_layer = LAYER_PARTICLE_PETAL | 0x80;
 
-	for(int i = 0; i < maxtime;) {
+	for(int i = 0; i < maxtime; ++i, YIELD) {
 		cmplx pos = *pos_anchor + pos_offset;
+
+		ENT_ARRAY_COMPACT(&particles);
+		ENT_ARRAY_FOREACH(&particles, Projectile *p, {
+			p->move.attraction_point = pos;
+		});
+
+		if(i % delay) {
+			continue;
+		}
+
+		log_debug("pos: %f, %f", creal(pos), cimag(pos));
+
 		int stage = (5 * i) / maxtime;
 		real sdist = dist * glm_ease_quad_out((stage + 1) / 6.0);
 
@@ -127,7 +141,8 @@ DEFINE_EXTERN_TASK(common_charge) {
 			Color color = *p_color;
 			randomize_hue(&color, hue_rand);
 			color_lerp(&color, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-			spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &color);
+			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &color);
+			ENT_ARRAY_ADD(&particles, p);
 			color_mul_scalar(&color, 0.2);
 		}
 
@@ -136,19 +151,18 @@ DEFINE_EXTERN_TASK(common_charge) {
 		color_lerp(&color, RGBA(1, 1, 1, 0), rng_real() * 0.2);
 		color_mul_scalar(&color, 0.5);
 
-		PARTICLE(
+		ENT_ARRAY_ADD(&particles, PARTICLE(
 			.sprite = "blast_huge_rays",
 			.color = &color,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
+			.move = move_towards(pos, 0.1),
 			.timeout = 30,
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
 			.angle = rng_angle(),
 			.layer = blast_layer,
-		);
-
-		i += WAIT(delay);
+		));
 	}
 
 	if(snd_discharge) {
@@ -161,16 +175,26 @@ DEFINE_EXTERN_TASK(common_charge) {
 	randomize_hue(&local_color, hue_rand);
 	color_mul_scalar(&local_color, 2.0);
 
+	cmplx pos = *pos_anchor + pos_offset;
+
 	PARTICLE(
 		.sprite = "blast_huge_halo",
 		.color = &local_color,
-		.pos = *pos_anchor + pos_offset,
+		.pos = pos,
 		.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 		.timeout = 30,
 		.flags = PFLAG_NOREFLECT,
 		.angle = rng_angle(),
 		.layer = blast_layer,
 	);
+
+	ENT_ARRAY_FOREACH(&particles, Projectile *p, {
+		if(!(p->flags & PFLAG_MANUALANGLE)) {
+			p->move.attraction = 0;
+			p->move.acceleration += cnormalize(p->pos - pos);
+			p->move.retention = 0.8;
+		}
+	});
 }
 
 DEFINE_EXTERN_TASK(common_set_bitflags) {
