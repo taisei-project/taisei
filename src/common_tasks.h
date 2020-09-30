@@ -42,6 +42,10 @@ DECLARE_EXTERN_TASK(
 	{ const char *bgm; }
 );
 
+#define COMMON_CHARGE_SOUND_CHARGE "charge_generic"
+#define COMMON_CHARGE_SOUND_DISCHARGE "discharge"
+#define COMMON_CHARGE_SOUNDS { COMMON_CHARGE_SOUND_CHARGE, COMMON_CHARGE_SOUND_DISCHARGE }
+
 DECLARE_EXTERN_TASK(
 	common_charge,
 	{
@@ -59,7 +63,20 @@ DECLARE_EXTERN_TASK(
 	}
 );
 
-#define COMMON_CHARGE_SOUNDS { "charge_generic", "discharge" }
+int common_charge(int time, const cmplx *anchor, cmplx offset, const Color *color)
+	attr_nonnull(2, 4);
+
+int common_charge_static(int time, cmplx pos, const Color *color)
+	attr_nonnull(3);
+
+int common_charge_custom(
+	int time,
+	const cmplx *anchor,
+	cmplx offset,
+	const Color *color,
+	const char *snd_charge,
+	const char *snd_discharge
+) attr_nonnull(4);
 
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp);
 

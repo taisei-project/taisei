@@ -78,41 +78,19 @@ static void randomize_hue(Color *clr, float r) {
 	*clr = *HSLA(h, s, l, a);
 }
 
-DEFINE_EXTERN_TASK(common_charge) {
+static int common_charge_impl(
+	int time,
+	const cmplx *anchor,
+	cmplx offset,
+	const Color *color,
+	const char *snd_charge,
+	const char *snd_discharge
+) {
 	real dist = 256;
 	int delay = 3;
-	int maxtime = ARGS.time;
-	real rayfactor = 1.0 / (real)maxtime;
+	real rayfactor = 1.0 / time;
 	float hue_rand = 0.02;
-
-	const char *snd_charge = ARGS.sound.charge;
-	const char *snd_discharge = ARGS.sound.discharge;
-	SFXPlayID charge_snd_id = 0;
-
-	if(snd_charge) {
-		charge_snd_id = play_sfx(snd_charge);
-	}
-
-	Color local_color;
-
-	cmplx anchor_null = 0;
-	cmplx pos_offset = ARGS.pos;
-	const cmplx *pos_anchor = ARGS.anchor;
-	if(!pos_anchor) {
-		pos_anchor = &anchor_null;
-	}
-
-	const Color *p_color = ARGS.color_ref;
-	if(!p_color) {
-		assert(ARGS.color != NULL);
-		local_color = *ARGS.color;
-		p_color = &local_color;
-	}
-
-	if(ARGS.bind_to_entity.ent) {
-		TASK_BIND(ARGS.bind_to_entity);
-	}
-
+	SFXPlayID charge_snd_id = snd_charge ? play_sfx(snd_charge) : 0;
 	DECLARE_ENT_ARRAY(Projectile, particles, 256);
 
 	// This is just about below LAYER_PARTICLE_HIGH
@@ -120,8 +98,10 @@ DEFINE_EXTERN_TASK(common_charge) {
 	// because these sprites are on a different texture than most.
 	drawlayer_t blast_layer = LAYER_PARTICLE_PETAL | 0x80;
 
-	for(int i = 0; i < maxtime; ++i, YIELD) {
-		cmplx pos = *pos_anchor + pos_offset;
+	int wait_time = 0;
+
+	for(int i = 0; i < time; ++i, wait_time += WAIT(1)) {
+		cmplx pos = *anchor + offset;
 
 		ENT_ARRAY_COMPACT(&particles);
 		ENT_ARRAY_FOREACH(&particles, Projectile *p, {
@@ -132,28 +112,26 @@ DEFINE_EXTERN_TASK(common_charge) {
 			continue;
 		}
 
-		log_debug("pos: %f, %f", creal(pos), cimag(pos));
-
-		int stage = (5 * i) / maxtime;
+		int stage = (5 * i) / time;
 		real sdist = dist * glm_ease_quad_out((stage + 1) / 6.0);
 
 		for(int j = 0; j < stage + 1; ++j) {
-			Color color = *p_color;
-			randomize_hue(&color, hue_rand);
-			color_lerp(&color, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &color);
+			Color c = *color;
+			randomize_hue(&c, hue_rand);
+			color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
+			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &c);
 			ENT_ARRAY_ADD(&particles, p);
-			color_mul_scalar(&color, 0.2);
+			color_mul_scalar(&c, 0.2);
 		}
 
-		Color color = *p_color;
-		randomize_hue(&color, hue_rand);
-		color_lerp(&color, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-		color_mul_scalar(&color, 0.5);
+		Color c = *color;
+		randomize_hue(&c, hue_rand);
+		color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
+		color_mul_scalar(&c, 0.5);
 
 		ENT_ARRAY_ADD(&particles, PARTICLE(
 			.sprite = "blast_huge_rays",
-			.color = &color,
+			.color = &c,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 			.move = move_towards(pos, 0.1),
@@ -171,15 +149,15 @@ DEFINE_EXTERN_TASK(common_charge) {
 		stop_sound(charge_snd_id);
 	}
 
-	local_color = *p_color;
-	randomize_hue(&local_color, hue_rand);
-	color_mul_scalar(&local_color, 2.0);
+	Color c = *color;
+	randomize_hue(&c, hue_rand);
+	color_mul_scalar(&c, 2.0);
 
-	cmplx pos = *pos_anchor + pos_offset;
+	cmplx pos = *anchor + offset;
 
 	PARTICLE(
 		.sprite = "blast_huge_halo",
-		.color = &local_color,
+		.color = &c,
 		.pos = pos,
 		.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 		.timeout = 30,
@@ -195,6 +173,60 @@ DEFINE_EXTERN_TASK(common_charge) {
 			p->move.retention = 0.8;
 		}
 	});
+
+	assert(time == wait_time);
+	return wait_time;
+}
+
+int common_charge(int time, const cmplx *anchor, cmplx offset, const Color *color) {
+	return common_charge_impl(time, anchor, offset, color, COMMON_CHARGE_SOUND_CHARGE, COMMON_CHARGE_SOUND_DISCHARGE);
+}
+
+int common_charge_static(int time, cmplx pos, const Color *color) {
+	cmplx anchor = 0;
+	return common_charge_impl(time, &anchor, pos, color, COMMON_CHARGE_SOUND_CHARGE, COMMON_CHARGE_SOUND_DISCHARGE);
+}
+
+int common_charge_custom(
+	int time,
+	const cmplx *anchor,
+	cmplx offset,
+	const Color *color,
+	const char *snd_charge,
+	const char *snd_discharge
+) {
+	cmplx local_anchor = 0;
+	anchor = anchor ? anchor : &local_anchor;
+	return common_charge_impl(
+		time,
+		anchor,
+		offset,
+		color,
+		snd_charge,
+		snd_discharge
+	);
+}
+
+DEFINE_EXTERN_TASK(common_charge) {
+	Color local_color;
+	const Color *p_color = ARGS.color_ref;
+	if(!p_color) {
+		local_color = *NOT_NULL(ARGS.color);
+		p_color = &local_color;
+	}
+
+	if(ARGS.bind_to_entity.ent) {
+		TASK_BIND(ARGS.bind_to_entity);
+	}
+
+	common_charge_custom(
+		ARGS.time,
+		ARGS.anchor,
+		ARGS.pos,
+		p_color,
+		ARGS.sound.charge,
+		ARGS.sound.discharge
+	);
 }
 
 DEFINE_EXTERN_TASK(common_set_bitflags) {
