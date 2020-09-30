@@ -39,6 +39,8 @@ cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon)
 double approach_asymptotic_p(double *val, double target, double rate, double epsilon);
 float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
 cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
+double cabs2(cmplx c) attr_const;
+float cabs2f(cmplxf c) attr_const;
 cmplx cnormalize(cmplx c) attr_const;
 cmplx cclampabs(cmplx c, double maxabs) attr_const;
 cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) attr_const;

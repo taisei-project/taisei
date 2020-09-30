@@ -99,6 +99,14 @@ cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsil
 	return *val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
+double cabs2(cmplx c) {
+	return creal(c)*creal(c) + cimag(c)*cimag(c);
+}
+
+float cabs2f(cmplxf c) {
+	return crealf(c)*crealf(c) + cimagf(c)*cimagf(c);
+}
+
 cmplx cnormalize(cmplx c) {
 	cmplx r = c / sqrt(creal(c)*creal(c) + cimag(c)*cimag(c));
 	// NOTE: clang generates a function call for isnan()...
