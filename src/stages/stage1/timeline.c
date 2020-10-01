@@ -692,9 +692,9 @@ TASK(spawn_boss, NO_ARGS) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage1boss");
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_add_attack_task(boss, AT_Normal, "Iceplosion 0", 20, 23000, TASK_INDIRECT(BossAttack, stage1_boss_nonspell_1), NULL);
+	boss_add_attack_task(boss, AT_Normal, "Iceplosion 0", 20, 26000, TASK_INDIRECT(BossAttack, stage1_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage1_spells.boss.crystal_rain, false);
-	boss_add_attack_task(boss, AT_Normal, "Iceplosion 1", 20, 24000, TASK_INDIRECT(BossAttack, stage1_boss_nonspell_2), NULL);
+	boss_add_attack_task(boss, AT_Normal, "Iceplosion 1", 20, 30000, TASK_INDIRECT(BossAttack, stage1_boss_nonspell_2), NULL);
 
 	if(global.diff > D_Normal) {
 		boss_add_attack_from_info(boss, &stage1_spells.boss.snow_halation, false);
