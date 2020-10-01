@@ -310,24 +310,19 @@ void BigFairy(Enemy *e, int t, bool render) {
 	});
 }
 
-void Fairy(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
+static void draw_fairy(Enemy *e, Animation *ani, Sprite *circle, int t) {
 	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
 	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
 
 	r_draw_sprite(&(SpriteParams) {
 		.color = clr,
-		.sprite = "fairy_circle",
+		.sprite_ptr = circle,
 		.pos = { creal(e->pos), cimag(e->pos) },
 		.rotation.angle = global.frames * 10 * DEG2RAD,
 		.scale.both = s,
 	});
 
 	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = res_anim("enemy/fairy");
 	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
 
 	r_draw_sprite(&(SpriteParams) {
@@ -335,6 +330,18 @@ void Fairy(Enemy *e, int t, bool render) {
 		.sprite_ptr = spr,
 		.pos = { creal(e->pos), cimag(e->pos) },
 	});
+}
+
+void FairyBlue(Enemy *e, int t, bool render) {
+	if(render) {
+		draw_fairy(e, res_anim("enemy/fairy_blue"), res_sprite("fairy_circle"), t);
+	}
+}
+
+void FairyRed(Enemy *e, int t, bool render) {
+	if(render) {
+		draw_fairy(e, res_anim("enemy/fairy_red"), res_sprite("fairy_circle_red"), t);
+	}
 }
 
 void Swirl(Enemy *e, int t, bool render) {
@@ -452,12 +459,14 @@ void process_enemies(EnemyList *enemies) {
 
 void enemies_preload(void) {
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"enemy/fairy",
+		"enemy/fairy_blue",
+		"enemy/fairy_red",
 		"enemy/bigfairy",
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
+		"fairy_circle_red",
 		"enemy/swirl",
 	NULL);
 

@@ -123,7 +123,9 @@ float enemy_get_hurt_radius(Enemy *enemy);
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
-void Fairy(Enemy*, int t, bool render);
+void FairyBlue(Enemy*, int t, bool render);
+void FairyRed(Enemy*, int t, bool render);
+#define Fairy FairyBlue
 void Swirl(Enemy*, int t, bool render);
 void BigFairy(Enemy*, int t, bool render);
 
