@@ -54,15 +54,15 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 
 	// MSG_UNSKIPPABLE() is like MSG(), but can’t be skipped and takes an explicit timeout.
 	// Wait until the boss slides in.
-	MSG_UNSKIPPABLE(cirno, 180, "‘Secret God’?");
+	MSG_UNSKIPPABLE(cirno, 180, "Did you just call me a ‘God’?");
 
 	// Reveal Cirno’s portrait
 	SHOW(cirno);
-	MSG(cirno, "What, are you *that* impressed by my invincible magic?!");
+	MSG(cirno, "What, are you *that* impressed by my incredible magic?!");
 
 	FACE(reimu, sigh);
 	MSG(reimu, "Right, of course, I completely forgot about you from before.");
-	MSG(reimu, "I should’ve known.");
+	MSG(reimu, "Should’ve known.");
 
 	// Titles are not yet implemented, but this should work once they are.
 	// Right now this does nothing.
@@ -70,7 +70,7 @@ DIALOG_TASK(reimu, Stage1PreBoss) {
 	MSG(cirno, "Known better than to intrude on my secret lair!");
 
 	FACE(reimu, normal);
-	MSG(reimu, "Well, if you’re excited, I guess something really is going on.");
+	MSG(reimu, "Well, if *you’re* excited, I guess something really is going on.");
 	MSG(reimu, "I’d ask if you’d just let me through, but…");
 
 	EVENT(music_changes);
@@ -116,13 +116,15 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	HIDE(hina);
 	WAIT_SKIPPABLE(60);
 
-	FACE(reimu, unamused);
-	MSG(reimu, "Hmm… the mountain is unusually quiet today.");
-	MSG(reimu, "With those annoyingly-talkative yōkai gone, it feels practically deserted.");
+	FACE(reimu, normal);
+	MSG(reimu, "With those talkative kappa gone, the mountain feels practically deserted.");
+	FACE(reimu, sigh);
+	MSG(reimu, "It’s almost like I miss them.");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(hina, 180, "Ah yes, it’s Ms. Hakurei.");
+	MSG_UNSKIPPABLE(hina, 180, "Ah, it’s Ms. Hakurei.");
 	SHOW(hina);
+	FACE(reimu, normal);
 	FACE(hina, normal);
 	MSG(hina, "I thought you might come.");
 	FACE(hina, concerned);
@@ -137,7 +139,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	TITLE(hina, "Kagiyama Hina", "Gyroscopic Pestilence God");
 
 	FACE(hina, normal);
-	MSG(hina, "You should know that Yōkai Mountain is especially dangerous today.");
+	MSG(hina, "A bright girl like you should know that Yōkai Mountain is especially dangerous today.");
 	FACE(hina, concerned);
 	MSG(hina, "You ought to turn back now, my dear.");
 
@@ -148,7 +150,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 
 	EVENT(music_changes);
 
-	MSG(hina, "Dear, I’m certain I know better than the mountain Gods.");
+	MSG(hina, "In this instance, I’m sure I know better than the mountain Gods.");
 	MSG(hina, "If you do not turn back immediately, I’ll have to repel you by force.");
 
 	FACE(reimu, sigh);
@@ -191,8 +193,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	ACTOR_RIGHT(wriggle);
 	HIDE(wriggle);
 	FACE(reimu, normal);
-	MSG(reimu, "Ugh, what an unsettling feeling. It’s giving me the creeps.");
-	MSG(reimu, "But aside from everyone being whipped up into a frenzy, I can’t see anything abnormal yet.");
+	MSG(reimu, "Aside from everyone being whipped up into a frenzy, I can’t see anything abnormal yet.");
 
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(wriggle, 180, "Well, to your human eyes, insects may seem ‘normal’…");
@@ -206,7 +207,6 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	MSG(reimu, "Besides, ‘ruled supreme’? I’ve never heard of insects ruling over Gensōkyō.");
 
 	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
-
 	FACE(wriggle, outraged);
 	MSG(wriggle, "Home? But you’ve intruded on my secret lair!");
 
@@ -218,7 +218,7 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	MSG(wriggle, "Carb—…");
 	FACE(reimu, puzzled);
 	MSG(wriggle, "That period of history?");
-	MSG(wriggle, "It was the greatest time, everyone should’ve heard of it!");
+	MSG(wriggle, "It was the greatest time, everyone should’ve heard of it by now!");
 
 	MSG(reimu, "Seems pretty far-fetched to me, honestly. But you yōkai are always coming up with the craziest theories…");
 
@@ -250,7 +250,7 @@ DIALOG_TASK(reimu, Stage3PostBoss) {
 
 	FACE(reimu, smug);
 	MSG(reimu, "Giant insects roaming Gensōkyō, huh?");
-	MSG(reimu, "Sounds like one of Sanae’s ‘nuclear’ experiments…");
+	MSG(reimu, "Sounds like one of Sanae’s ‘nuclear’ experiments.");
 
 	MSG(wriggle, "B-but I saw it clearly… the fate of insectkind…");
 
@@ -298,16 +298,16 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 
 	FACE(kurumi, normal);
 	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
-	MSG(kurumi, "I have no idea what you mean by ‘strange thoughts,’ but I’ll be honest with you…");
+	MSG(kurumi, "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with you…");
 	MSG(kurumi, "Your clothing is giving me some strange thoughts!");
-	MSG(kurumi, "Where’d you even get it, the trash?!");
+	MSG(kurumi, "Where’d you even get that outfit?! For real!");
 
 	FACE(reimu, unamused);
 	MSG(reimu, "Ugh, another prissy mansion-dweller.");
 	FACE(reimu, sigh);
-	MSG(reimu, "And to think I thought I remembered you from somewhere. Absolutely not.");
+	MSG(reimu, "I thought I remembered you from somewhere, but no. Absolutely not.");
 	FACE(reimu, assertive);
-	MSG(reimu, "Just… stop whatever it is you’re doing, at once.");
+	MSG(reimu, "Just… stop whatever it is you’re doing, right now.");
 
 	FACE(kurumi, dissatisfied);
 	MSG(kurumi, "Once you get some fashion sense, maybe I will!");
@@ -315,7 +315,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 	FACE(reimu, unamused);
 	MSG(reimu, "… so you *are* behind this, huh?");
 	FACE(reimu, sigh);
-	MSG(reimu, "Haven’t you ever seen a shrine maiden before?");
+	MSG(reimu, "Besides, haven’t you ever seen a shrine maiden before?");
 
 	FACE(kurumi, normal);
 	MSG(kurumi, "You’re a shrine maiden?");
@@ -328,12 +328,14 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 	MSG(kurumi, "Uniform? Are you kidding me?");
 	MSG(kurumi, "I’ve seen a real shrine maiden before, and she didn’t look anything like you!");
 	MSG(kurumi, "What’s with those patterns, anwyays? It’s completely unorthodox!");
+	MSG(kurumi, "It’s not even using the right type of fabric! Get out of here, fake-maiden!");
 
 	FACE(reimu, irritated);
 	MSG(reimu, "… ARGH!");
 	FACE(reimu, outraged);
-	MSG(reimu, "Listen! It’s HARD to find clothes I can wear every day on the job!");
-	MSG(reimu, "It has to fit a certain style! And only a few fabrics feel good to wear!");
+	MSG(reimu, "Listen!! It’s HARD to find clothes I can wear every day on the job!");
+	MSG(reimu, "It has to fit a certain style!");
+	MSG(reimu, "And only a few fabrics feel good to wear!");
 	MSG(reimu, "I can’t stand scratchy wool or slippery silk!");
 	MSG(reimu, "Everything else feels terrible again my skin—");
 	FACE(reimu, irritated);
@@ -356,16 +358,18 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	VARIANT(kurumi, defeated);
 	FACE(kurumi, defeated);
 
-	FACE(reimu, unamused);
+	FACE(reimu, irritated);
 	MSG(reimu, "That’s what you get for insulting my outfit like that.");
 
 	MSG(kurumi, "Ouch ouch ouch…");
-	MSG(kurumi, "Wait, what happened?");
+	MSG(kurumi, "W-wait, what happened?");
 
 	MSG(reimu, "What do you mean ‘what happened’?");
 
+	MSG(kurumi, "(M-maybe if I fake having amnesia… yeah, that’s it…!)");
 	FACE(kurumi, normal);
-	MSG(kurumi, "Wait! Aren’t you that girl from a long while back?");
+	MSG(kurumi, "O-oof, my head! Ow! How did I even get here???");
+	MSG(kurumi, "W-wait! Aren’t you that girl from a long while back?");
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "I don’t remember you at all? It’s just that unsettling feeling again…");
@@ -374,11 +378,8 @@ DIALOG_TASK(reimu, Stage4PostBoss) {
 	MSG(reimu, "It’s annoying, whatever it is. Make it stop, or tell me how to make it stop.");
 
 	FACE(kurumi, defeated);
+	MSG(kurumi, "Huh? I-I don’t know! I barely remember anything!");
 	MSG(kurumi, "(Ugh, her clothes really do suck though…)");
-	MSG(kurumi, "I was supposed to keep people out until my friend completed their plan…");
-	FACE(reimu, puzzled);
-	MSG(kurumi, "But then I started feeling weird and kept talking like I had no filter?");
-	MSG(kurumi, "It was kinda liberating but also made me really rude?!");
 
 	MSG(reimu, "(Just another victim…?)");
 	FACE(reimu, normal);
@@ -407,31 +408,31 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	WAIT(60);
 	SHOW(iku);
 	FACE(iku, normal);
-	MSG(iku, "Perchance it a side effect of the tower’s presence?");
+	MSG(iku, "Or perchance it a side effect of the tower’s mere presence?");
 
-	MSG(reimu, "What did you attack me for earlier?");
+	MSG(reimu, "Oh, it's you. Why did you attack me earlier, anyway?");
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
 	FACE(iku, smile);
 	MSG(iku, "Ah, apologies. It must have been friendly fire.");
 	FACE(iku, eyes_closed);
 	MSG(iku, "Things are quite hectic here. I beg your understanding.");
-	MSG(iku, "It has been a while, has it not?");
+	MSG(iku, "But it has been a while, has it not?");
 
 	FACE(reimu, normal);
-	MSG(reimu, "Err, right, yes, it has been a while.");
+	MSG(reimu, "Err, right, yes, it has been a while. Nice to see you again.");
 
 	FACE(iku, serious);
 	MSG(iku, "To get straight to the point, this tower is unlike anything I have seen before.");
 	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ‘parallel universes.’");
 
 	FACE(reimu, puzzled);
-	MSG(reimu, "You mean like Otherworlds? That’s not too out of the ordinary these days though.");
+	MSG(reimu, "You mean like Otherworlds? But that’s not too out of the ordinary these days.");
 	FACE(reimu, unsettled);
 	MSG(reimu, "This feels different though. It’s like the walls are sucking up faith into a void.");
 	MSG(reimu, "I’m surprised the fairies are surviving at all…");
 	FACE(reimu, normal);
-	MSG(reimu, "But what are you doing here? Aren’t you worried about being ‘affected’?");
+	MSG(reimu, "But what are you even doing here?");
 
 	FACE(iku, eyes_closed);
 	MSG(iku, "It is not just the Netherworld and Gensōkyō being affected.");
@@ -442,13 +443,13 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(reimu, "It’s spreading that fast?!");
 
 	FACE(iku, smile);
-	MSG(iku, "Initially, I had no plans towards interfering. I am not one to take the lead.");
+	MSG(iku, "Initially, I had no plans towards interfering.");
 	FACE(reimu, normal);
 	FACE(iku, serious);
-	MSG(iku, "However, the tower’s psychological effects began to intensify, and…");
+	MSG(iku, "However, the tower’s psychological effects began to intensify, and I began to fear that nobody would take charge.");
 
 	FACE(reimu, sigh);
-	MSG(reimu, "Do people have that little faith in me…?");
+	MSG(reimu, "(Do people have this little faith in me…?)");
 
 	FACE(iku, eyes_closed);
 	MSG(iku, "As more minds began to fall prey, I considered a theory…");
@@ -458,14 +459,14 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(iku, "That may be why you feel a sense of dread about the place.");
 
 	FACE(reimu, normal);
-	MSG(reimu, "Well, that settles it. Where’s the owner of this place?");
+	MSG(reimu, "Well, that settles it. Where’s the owner, then?");
 
 	FACE(iku, smile);
 	MSG(iku, "To be frank, I am not sure whether you are up to the task.");
 	MSG(iku, "You are still relatively composed, yes, but your mental state seems to be deteriorating.");
 
 	FACE(reimu, irritated);
-	MSG(reimu, "I don’t trust anyone else to get this done!");
+	MSG(reimu, "Deteriorating? But I just got here!");
 
 	EVENT(music_changes);
 	MSG(iku, "You are still so worrisome. You ought to go home before you lose yourself.");
@@ -480,7 +481,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	FACE(reimu, assertive);
 	MSG(reimu, "I’m going to give everyone a reason to have faith in me!");
 
-	MSG(iku, "It seems your resolve is unbreakable. Very well, then.");
+	MSG(iku, "It seems your resolve is unwavering. Very well, then.");
 	MSG(iku, "Allow me to test your resistance to their infuriating machine!");
 
 	DIALOG_END();
@@ -507,7 +508,7 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 	FACE(iku, defeated);
 
 	MSG(iku, "Ah…");
-	MSG(iku, "I was wrong for doubting you.");
+	MSG(iku, "I was wrong for doubting you, I suppose.");
 
 	FACE(reimu, unamused);
 	MSG(reimu, "Somehow I don’t feel too satisfied by that.");
@@ -525,7 +526,8 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 	MSG(reimu, "I’ll need to take this seriously.");
 
 	FACE(iku, normal);
-	MSG(iku, "Good. Keep climbing until you reach the top floor. You will undoubtedly meet her there.");
+	MSG(iku, "Good.");
+	MSG(iku, "Keep climbing until you reach the top floor. You will undoubtedly meet her there.");
 
 	DIALOG_END();
 }
@@ -541,14 +543,14 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	ACTOR_RIGHT(elly);
 	HIDE(elly);
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(elly, 180, "Well, well, well. It seems a rat snuck into our tower.");
+	MSG_UNSKIPPABLE(elly, 180, "Well, well, well. It seems a low-life snuck into our tower.");
 	SHOW(elly);
 
 	FACE(elly, smug);
 	MSG(elly, "How strange. You should’ve lost your mind by now.");
 
 	FACE(reimu, unsettled);
-	MSG(reimu, "I don’t really care why you’re doing this, just turn it off.");
+	MSG(reimu, "Just turn it off already.");
 
 	TITLE(elly, "Elly", "The Theoretical Reaper");
 	FACE(elly, angry);
@@ -573,7 +575,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	FACE(reimu, unamused);
 	MSG(elly, "This tower is a recent invention. Its mere existence is revolutionary in several scientific fields.");
 	MSG(elly, "The folks of this Gensōkyō ought to have been thankful for its vast scientific knowledge…");
-	MSG(elly, "But alas, we had other plans.");
+	MSG(elly, "But alas, we have other plans.");
 
 	FACE(reimu, unamused);
 	MSG(reimu, "Somehow, it feels like more of a punishment.");
@@ -588,10 +590,10 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "‘This’ Gensōkyō…?");
-	MSG(reimu, "‘Parallel universes,’ is that it? Like what Iku told me…");
+	MSG(reimu, "‘Parallel universes’, is that it?");
 
 	FACE(elly, normal);
-	MSG(elly, "Hmm? Is that what this Gensōkyō is?");
+	MSG(elly, "Hmm? Is that what you think this Gensōkyō is?");
 
 	FACE(reimu, irritated);
 	MSG(reimu, "You tell me! You’re the megalomaniac!");
@@ -599,7 +601,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "Do you hate me because some other Reimu did something? Is that it?");
 	MSG(reimu, "But then what does that have to do with any of us?!");
 	FACE(reimu, irritated);
-	MSG(reimu, "For a scientist, you’re not making a whole lot of sense!");
+	MSG(reimu, "For a ‘scientist’, you’re not making a whole lot of sense!");
 
 	FACE(elly, angry);
 	MSG(elly, "Perhaps you’ve simply forgotten, like you have of the rest of us!");
@@ -608,9 +610,9 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "You mean Kazami Yūka? And I suppose… Alice, too?");
-	MSG(reimu, "I remember when I first met Alice, she made weird comments like you, too.");
+	MSG(reimu, "I remember when I first met Alice, and she said weird things too, just like you are now.");
 	FACE(reimu, unamused);
-	MSG(reimu, "But she didn’t go around threatening everyone, did she?!");
+	MSG(reimu, "But she didn’t go around threatening everyone!");
 
 	FACE(elly, angry);
 	MSG(elly, "We weren’t as lucky! And as reparations, we will take control of this Gensōkyō!");
@@ -620,14 +622,14 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "Even in Gensōkyō, you can be forgotten, huh?");
 	MSG(reimu, "What a miserable thought. No wonder I felt terrible just seeing this place!");
 	FACE(reimu, assertive);
-	MSG(reimu, "Turn it off, or being forgotten will be the least of your worries!");
+	MSG(reimu, "Turn it off, or being forgotten won’t!");
 
 	EVENT(music_changes);
 	FACE(elly, shouting);
 	MSG(elly, "It’s too late for that! Soon, all of Gensōkyō will become enlightened!");
 	FACE(reimu, unsettled);
 	MSG(elly, "Don’t you understand, pitiful shrine maiden? Science is an unfathomable power, surpassed by nothing!");
-	MSG(elly, "We will subjugate this world at any cost!");
+	MSG(elly, "We won't be forgotten by this world, at any cost!");
 
 	DIALOG_END();
 }
@@ -640,7 +642,7 @@ DIALOG_TASK(reimu, Stage6PreFinal) {
 	VARIANT(elly, beaten);
 	FACE(elly, shouting);
 	FACE(reimu, assertive);
-	MSG(reimu, "Is that it? Are you finally done?!");
+	MSG(reimu, "Is that it? Are you finally done?");
 	MSG(elly, "Y-you think this is over?! The time of reckoning is upon you!");
 	MSG(elly, "Gaze upon the ultimate truth of the universe, and tremble!");
 
