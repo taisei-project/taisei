@@ -410,7 +410,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	FACE(iku, normal);
 	MSG(iku, "Or perchance it a side effect of the tower’s mere presence?");
 
-	MSG(reimu, "Oh, it's you. Why did you attack me earlier, anyway?");
+	MSG(reimu, "Oh, it’s you. Why did you attack me earlier, anyway?");
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
 	FACE(iku, smile);
@@ -629,7 +629,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(elly, "It’s too late for that! Soon, all of Gensōkyō will become enlightened!");
 	FACE(reimu, unsettled);
 	MSG(elly, "Don’t you understand, pitiful shrine maiden? Science is an unfathomable power, surpassed by nothing!");
-	MSG(elly, "We won't be forgotten by this world, at any cost!");
+	MSG(elly, "We won’t be forgotten by this world, at any cost!");
 
 	DIALOG_END();
 }

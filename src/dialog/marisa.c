@@ -148,7 +148,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	MSG_UNSKIPPABLE(wriggle, 180, "Wait ‘til you see their leader!");
 	SHOW(wriggle);
 
-	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch'a questions for sure.");
+	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure.");
 
 	MSG(wriggle, "Feel free to go ahead. I’m listening.");
 
@@ -498,7 +498,7 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 	MSG(marisa, "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?");
 	FACE(iku, normal);
 	FACE(marisa, normal);
-	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones, and that's plenty advanced, so I should be fine.");
+	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones, and that’s plenty advanced, so I should be fine.");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "By the way, have ya been hearing that strange voice?");
 
@@ -618,7 +618,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(marisa, inquisitive);
 	MSG(marisa, "Now, I gotta ask… ya really, seriously don’t got a secret library anywhere?");
 	MSG(marisa, "A single bookshelf?! A few loose scribbled notes?!");
-	MSG(marisa, "Heck, I'll even take one of those little screens with all those ‘Pee Dee Effs’ on it! They hurt my dang eyes, but—");
+	MSG(marisa, "Heck, I’ll even take one of those little screens with all those ‘Pee Dee Effs’ on it! They hurt my dang eyes, but—");
 
 	FACE(elly, eyes_closed);
 	MSG(elly, "Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you any longer!");
