@@ -328,7 +328,9 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	MSG(marisa, "… but since when do I care about scientific facts?");
 
 	MSG(kurumi, "W-wait, what was I doing again?");
-	MSG(kurumi, "(And didn’t I see this nerdy looking girl before…?)");
+	MSG(kurumi, "(Y-yeah, that’s it, play it off as amnesia…");
+	MSG(kurumi, "Uuu, I don’t remember anything at all!!");
+	MSG(kurumi, "(But, hmm… haven’t I seen this nerdy-looking girl before…?)");
 
 	FACE(marisa, normal);
 	MSG(marisa, "Ah, sorry, sorry. I think ya slipped ‘n hit your head.");
@@ -340,14 +342,12 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	FACE(kurumi, normal);
 	MSG(kurumi, "Uh, I kinda doubt that…");
 	FACE(kurumi, defeated);
+	MSG(kurumi, "Not that I can stop you, anyways…");
 	FACE(marisa, normal);
-	MSG(kurumi, "Uuu—… the residents of this Gensōkyō were supposed to be kept ‘occupied’!");
-	MSG(kurumi, "I didn’t sign up to get beaten like this!");
-	MSG(kurumi, "Then gain, I was acting pretty weird, too…");
-	MSG(kurumi, "Oh no, was it getting to me too?!");
+	MSG(kurumi, "Ugh, I didn’t sign up to get beaten like this!");
 
 	FACE(marisa, puzzled);
-	MSG(marisa, "‘It’? Y’mean the madness everyone’s experiencin’?");
+	MSG(marisa, "‘Sign up’? I thought you didn’t remember anything.");
 
 	FACE(kurumi, tsun_blush);
 	MSG(kurumi, "N-Nevermind!");
