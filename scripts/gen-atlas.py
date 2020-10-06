@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import re
 import functools
+import itertools
 
 from pathlib import (
     Path,
@@ -22,6 +23,7 @@ from contextlib import (
 
 from concurrent.futures import (
     ThreadPoolExecutor,
+    ProcessPoolExecutor,
 )
 
 from PIL import (
@@ -160,18 +162,17 @@ def find_alphamap(basepath):
 @functools.total_ordering
 class PackResult:
     def __init__(self, packer, rects):
-        self.packer = packer
-        self.num_bins = 0
-        self.num_images_packed = 0
-
-        for bin in packer:
-            self.num_bins += 1
-            self.num_images_packed += len(bin)
+        self.bins = list(packer)
+        self.num_images_packed = sum(map(len, self.bins))
 
         self.success = self.num_images_packed == len(rects)
         assert(self.num_images_packed <= len(rects))
 
         self.total_area = self._calculate_total_area()
+
+    @property
+    def num_bins(self):
+        return len(self.bins)
 
     def __repr__(self):
         return f'PackResult(num_bins={self.num_bins}, num_images_packed={self.num_images_packed}, total_area={self.total_area}, success={self.success})'
@@ -195,7 +196,7 @@ class PackResult:
         return (xmax - xmin) * (ymax - ymin)
 
     def _calculate_total_area(self):
-        return sum(self._calculate_bin_area(bin) for bin in self.packer)
+        return sum(self._calculate_bin_area(bin) for bin in self.bins)
 
     def __eq__(self, other):
         return (
@@ -256,42 +257,80 @@ def pack_rects(rects, bin_size, packer_factory, single_bin):
     return PackResult(packer, rects)
 
 
+def bruteforcer_pack(params):
+    import rectpack
+    global subprocess_args
+    rects = subprocess_args['rects']
+    bin_size = subprocess_args['bin_size']
+    single_bin = subprocess_args['single_bin']
+
+    algo_class, (sort_func, sort_name) = params
+    algo_class = getattr(rectpack, algo_class)
+    sort_func = getattr(rectpack, sort_func)
+
+    def packer_factory(algo_class=algo_class, sort_func=sort_func):
+        return rectpack.newPacker(
+            rotation=False,   # No rotation support in Taisei yet
+            pack_algo=algo_class,
+            sort_algo=sort_func,
+            bin_algo=rectpack.PackingBin.BFF,
+        )
+
+    result = pack_rects(
+        rects=rects,
+        packer_factory=packer_factory,
+        bin_size=bin_size,
+        single_bin=single_bin
+    )
+
+    return result
+
+
+def bruteforcer_init(rects, bin_size, single_bin):
+    global subprocess_args
+    subprocess_args = {
+        'rects': rects,
+        'bin_size': bin_size,
+        'single_bin': single_bin,
+    }
+
+
 def pack_rects_brute_force(rects, bin_size, single_bin):
     algos_guillotine = [
-        rectpack.GuillotineBafLas,
-        rectpack.GuillotineBafLlas,
-        rectpack.GuillotineBafMaxas,
-        rectpack.GuillotineBafMinas,
-        rectpack.GuillotineBafSas,
-        rectpack.GuillotineBafSlas,
-        rectpack.GuillotineBlsfLas,
-        rectpack.GuillotineBlsfLlas,
-        rectpack.GuillotineBlsfMaxas,
-        rectpack.GuillotineBlsfMinas,
-        rectpack.GuillotineBlsfSas,
-        rectpack.GuillotineBlsfSlas,
-        rectpack.GuillotineBssfLas,
-        rectpack.GuillotineBssfLlas,
-        rectpack.GuillotineBssfMaxas,
-        rectpack.GuillotineBssfMinas,
-        rectpack.GuillotineBssfSas,
-        rectpack.GuillotineBssfSlas,
+        'GuillotineBafLas',
+        'GuillotineBafLlas',
+        'GuillotineBafMaxas',
+        'GuillotineBafMinas',
+        'GuillotineBafSas',
+        'GuillotineBafSlas',
+        'GuillotineBlsfLas',
+        'GuillotineBlsfLlas',
+        'GuillotineBlsfMaxas',
+        'GuillotineBlsfMinas',
+        'GuillotineBlsfSas',
+        'GuillotineBlsfSlas',
+        'GuillotineBssfLas',
+        'GuillotineBssfLlas',
+        'GuillotineBssfMaxas',
+        'GuillotineBssfMinas',
+        'GuillotineBssfSas',
+        'GuillotineBssfSlas',
     ]
 
     algos_maxrects = [
-        rectpack.MaxRectsBaf,
-        rectpack.MaxRectsBl,
-        rectpack.MaxRectsBlsf,
-        rectpack.MaxRectsBssf,
+        'MaxRectsBaf',
+        'MaxRectsBl',
+        'MaxRectsBlsf',
+        'MaxRectsBssf',
     ]
 
     algos_skyline = [
-        rectpack.SkylineBl,
-        rectpack.SkylineBlWm,
-        rectpack.SkylineMwf,
-        rectpack.SkylineMwfWm,
-        rectpack.SkylineMwfl,
-        rectpack.SkylineMwflWm,
+        'SkylineBl',
+        'SkylineBlWm',
+        'SkylineMwf',
+        'SkylineMwfWm',
+        'SkylineMwfl',
+        'SkylineMwflWm',
     ]
 
     algos = []
@@ -301,13 +340,13 @@ def pack_rects_brute_force(rects, bin_size, single_bin):
     algos += algos_skyline
 
     sorts = [
-        (rectpack.SORT_AREA,  'area'),
-        (rectpack.SORT_DIFF,  'difference'),
-        (rectpack.SORT_LSIDE, 'longest-side'),
-        (rectpack.SORT_NONE,  'no'),
-        (rectpack.SORT_PERI,  'perimeter'),
-        (rectpack.SORT_RATIO, 'ratio'),
-        (rectpack.SORT_SSIDE, 'shortest-side'),
+        ('SORT_AREA',  'area'),
+        ('SORT_DIFF',  'difference'),
+        ('SORT_LSIDE', 'longest-side'),
+        ('SORT_NONE',  'no'),
+        ('SORT_PERI',  'perimeter'),
+        ('SORT_RATIO', 'ratio'),
+        ('SORT_SSIDE', 'shortest-side'),
     ]
 
     best = None
@@ -316,24 +355,13 @@ def pack_rects_brute_force(rects, bin_size, single_bin):
     def verbose(*msg):
         print('[bruteforce]', *msg)
 
-    for algo_class in algos:
-        for sort_func, sort_name in sorts:
-            verbose(f'Trying {algo_class.__name__} with {sort_name} sort...')
+    with ProcessPoolExecutor(initializer=bruteforcer_init, initargs=(rects, bin_size, single_bin)) as ex:
+        variants = tuple(itertools.product(algos, sorts))
+        results = zip(variants, ex.map(bruteforcer_pack, variants, chunksize=4))
+        print('results', results)
 
-            def packer_factory(algo_class=algo_class, sort_func=sort_func):
-                return rectpack.newPacker(
-                    rotation=False,   # No rotation support in Taisei yet
-                    pack_algo=algo_class,
-                    sort_algo=sort_func,
-                    bin_algo=rectpack.PackingBin.BFF,
-                )
-
-            result = pack_rects(
-                rects=rects,
-                packer_factory=packer_factory,
-                bin_size=bin_size,
-                single_bin=single_bin
-            )
+        for (algo_class, (sort_func, sort_name)), result in results:
+            verbose(f'Trying {algo_class} with {sort_name} sort...')
 
             if best is None or result < best:
                 verbose(f'\tResult: {result} (best yet)')
@@ -343,7 +371,7 @@ def pack_rects_brute_force(rects, bin_size, single_bin):
                 verbose(f'\tResult: {result}')
 
     verbose('*' * 64)
-    verbose(f'WINNER: {best_algos[0].__name__} with {best_algos[1]} sort')
+    verbose(f'WINNER: {best_algos[0]} with {best_algos[1]} sort')
     verbose(f'\tBest result: {best}')
     verbose('*' * 64)
     return best
@@ -406,7 +434,7 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
         # Yeah I'm too lazy to use Popen properly
         executor = stack.enter_context(ThreadPoolExecutor())
 
-        for i, bin in enumerate(pack_result.packer):
+        for i, bin in enumerate(pack_result.bins):
             textureid = f'atlas_{atlasname}_{i}'
             # dstfile = temp_dst / f'{textureid}.{tex_format}'
             # NOTE: we always save PNG first and convert with an external tool later if needed.
