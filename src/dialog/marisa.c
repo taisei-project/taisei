@@ -184,11 +184,11 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	MSG(marisa, "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff to do.");
 	MSG(marisa, "… and ya don’t got a clue about what’s goin’ on, do ya?");
 
+	EVENT(music_changes);
 	FACE(wriggle, proud);
 	MSG(wriggle, "Maybe I know more than you think.");
 	FACE(wriggle, outraged);
 	MSG(wriggle, "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!");
-	EVENT(music_changes);
 
 	DIALOG_END();
 }
@@ -367,7 +367,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	HIDE(iku);
 
 	FACE(marisa, inquisitive);
-	MSG(marisa, "This place is fascinatin’! Is this space-time magic?!");
+	MSG(marisa, "This place is fascinatin’!");
 	MSG(marisa, "What kinda energy source would they even use for this?!");
 	MSG(marisa, "I gotta tell Patchy!");
 
@@ -376,8 +376,8 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	SHOW(iku);
 	MSG(iku, "Regardless, I’m surprised to see you here. How have you been?");
 
-	MSG(marisa, "What textbook do ya figure this’d be in…?");
-	MSG(marisa, "Hmm… probably a major illusion of some kind…");
+	MSG(marisa, "What grimoire would this be in…?");
+	MSG(marisa, "Hmm… probably a major illusion of some kind…?");
 	MSG(marisa, "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…");
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
@@ -393,16 +393,15 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	FACE(marisa, inquisitive);
 	MSG(marisa, "It appeared outta nowhere. If it were real brick, the air displacement alone woulda caused a huge noise…");
 	MSG(marisa, "And it’d take so much power, too.");
-	MSG(marisa, "Definitely a major illusion.");
+	MSG(marisa, "Definitely a major illusion, then.");
 
-	MSG(iku, "I feel as though you are underestimating her.");
+	MSG(iku, "I feel as though the premise of your theory is flawed, unfortunately.");
 	FACE(iku, eyes_closed);
 	FACE(marisa, normal);
-	MSG(iku, "This tower is affecting people mentally, after all.");
 	MSG(iku, "The technology on display here is beyond our current comprehension.");
 
 	FACE(marisa, surprised);
-	MSG(marisa, "Whoa, so yer sayin’ this is REAL brick?!");
+	MSG(marisa, "Technology? Whoa, so yer sayin’ this is REAL brick?!");
 	FACE(marisa, normal);
 	MSG(marisa, "*tap tap*");
 	FACE(marisa, surprised);
@@ -418,7 +417,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(iku, "She is relying on complex machinery, and likely advanced computational—");
 
 	MSG(marisa, "But then, what’s the power source?");
-	MSG(marisa, "Not even nuclear fusion could power somethin’ like this!");
+	MSG(marisa, "Not even nuclear fusion could sustain somethin’ like this!");
 
 	FACE(iku, smile);
 	MSG(iku, "I-I am not sure of its exact mechanics—");
@@ -433,7 +432,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(marisa, "Yeah, the owner! Upstairs, right?");
 
 	FACE(iku, serious);
-	MSG(iku, "You are clearly being affected by the current situation. I should not divulge any further information.");
+	MSG(iku, "Perhaps the thin atmosphere at this elevation has gotten to your head. I should not divulge any further information, for your own protection.");
 
 	FACE(marisa, happy);
 	MSG(marisa, "What’s her name?");
@@ -498,7 +497,7 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 	MSG(marisa, "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?");
 	FACE(iku, normal);
 	FACE(marisa, normal);
-	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones, and that’s plenty advanced, so I should be fine.");
+	MSG(marisa, "Ah well, I know how to operate one of those Smart Phones, and that’s plenty advanced, so I should be fine.");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "By the way, have ya been hearing that strange voice?");
 
@@ -581,6 +580,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "‘Maybe I could get a new trump-card outta this’ is what I thought.");
 	FACE(marisa, unamused);
 	MSG(marisa, "But obviously yer a shinigami or somethin’. And I didn’t see a library…");
+	MSG(marisa, "I guess that oarfish from before was right.");
 	MSG(marisa, "Master Spark’s good ‘n all, but it’ll only get me so far in life…");
 
 	FACE(elly, eyes_closed);
@@ -591,7 +591,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(elly, shouting);
 	MSG(elly, "Are you just trying to mock me like you did the first time we met?!");
 
-	MSG(marisa, "At least that time ya were guardin’ some powerful magic thingy I coulda used.");
+	MSG(marisa, "At least that time ya were guardin’ some powerful thingy I coulda used.");
 	MSG(marisa, "I’m tryin’ to remember, was that time a bust, too?");
 	FACE(marisa, happy);
 	MSG(marisa, "At least I met Yūka, right? Did ya know she ended up givin’ me my trademark spell?");
@@ -601,7 +601,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(elly, "Y-you remember that?! But how—?!");
 	MSG(elly, "… ugh, nevermind! It’s not as if you could possibly grasp the Tower’s true power.");
 	FACE(elly, smug);
-	MSG(elly, "After all, I can already sense your feeble mind succumbing to its effects!");
+	MSG(elly, "After all, I can already sense your feeble mind succumbing to its might!");
 
 	FACE(marisa, unamused);
 	MSG(marisa, "Eh? I’m not depressed or anythin’. I’m just disappointed.");
@@ -618,7 +618,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(marisa, inquisitive);
 	MSG(marisa, "Now, I gotta ask… ya really, seriously don’t got a secret library anywhere?");
 	MSG(marisa, "A single bookshelf?! A few loose scribbled notes?!");
-	MSG(marisa, "Heck, I’ll even take one of those little screens with all those ‘Pee Dee Effs’ on it! They hurt my dang eyes, but—");
+	MSG(marisa, "Heck, I’ll even take one of those little glowy tablet thingies with all those ‘Pee Dee Effs’ on ‘em! They hurt my dang eyes, but—");
 
 	FACE(elly, eyes_closed);
 	MSG(elly, "Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you any longer!");
@@ -630,7 +630,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(elly, "There’s no force in this world that would make me turn back now!");
 	EVENT(music_changes);
 	FACE(elly, smug);
-	MSG(elly, "Someone as ‘ordinary’ as you getting in our way is impressive, however. I’ll give you that much.");
+	MSG(elly, "Someone as ‘ordinary’ as you getting in our way is impressive, I’ll give you that much.");
 	FACE(elly, angry);
 	MSG(elly, "But there’s no place for sorcery in our enlightened vision of Gensōkyō!");
 	FACE(elly, shouting);

@@ -117,7 +117,7 @@ DIALOG_TASK(reimu, Stage2PreBoss) {
 	WAIT_SKIPPABLE(60);
 
 	FACE(reimu, normal);
-	MSG(reimu, "With those talkative kappa gone, the mountain feels practically deserted.");
+	MSG(reimu, "With those loudmouthed kappa gone, the mountain feels practically deserted.");
 	FACE(reimu, sigh);
 	MSG(reimu, "It’s almost like I miss them.");
 
@@ -300,7 +300,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 	TITLE(kurumi, "Kurumi", "High-Society Phlebotomist");
 	MSG(kurumi, "I have no idea what you mean by ‘strange thoughts’, but I’ll be honest with you…");
 	MSG(kurumi, "Your clothing is giving me some strange thoughts!");
-	MSG(kurumi, "Where’d you even get that outfit?! For real!");
+	MSG(kurumi, "Where’d you even get that outfit?! Dumpster diving?! For real!");
 
 	FACE(reimu, unamused);
 	MSG(reimu, "Ugh, another prissy mansion-dweller.");
@@ -427,7 +427,7 @@ DIALOG_TASK(reimu, Stage5PreBoss) {
 	MSG(iku, "Since word spread through the clouds, I’ve learned that the culprit is connected to ‘parallel universes.’");
 
 	FACE(reimu, puzzled);
-	MSG(reimu, "You mean like Otherworlds? But that’s not too out of the ordinary these days.");
+	MSG(reimu, "You mean like Otherworlds? That’s not too out of the ordinary these days.");
 	FACE(reimu, unsettled);
 	MSG(reimu, "This feels different though. It’s like the walls are sucking up faith into a void.");
 	MSG(reimu, "I’m surprised the fairies are surviving at all…");
@@ -527,7 +527,7 @@ DIALOG_TASK(reimu, Stage5PostBoss) {
 
 	FACE(iku, normal);
 	MSG(iku, "Good.");
-	MSG(iku, "Keep climbing until you reach the top floor. You will undoubtedly meet her there.");
+	MSG(iku, "Keep climbing until you reach the top floor. You will undoubtedly meet the instigator there.");
 
 	DIALOG_END();
 }
@@ -543,7 +543,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	ACTOR_RIGHT(elly);
 	HIDE(elly);
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(elly, 180, "Well, well, well. It seems a low-life snuck into our tower.");
+	MSG_UNSKIPPABLE(elly, 180, "Well, well, well. It seems a rat trespassed on our domain.");
 	SHOW(elly);
 
 	FACE(elly, smug);
@@ -551,6 +551,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 
 	FACE(reimu, unsettled);
 	MSG(reimu, "Just turn it off already.");
+	MSG(reimu, "I’m not in the mood to argue, so don’t push me!");
 
 	TITLE(elly, "Elly", "The Theoretical Reaper");
 	FACE(elly, angry);
@@ -622,7 +623,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "Even in Gensōkyō, you can be forgotten, huh?");
 	MSG(reimu, "What a miserable thought. No wonder I felt terrible just seeing this place!");
 	FACE(reimu, assertive);
-	MSG(reimu, "Turn it off, or being forgotten won’t!");
+	MSG(reimu, "Turn it off, or being forgotten won’t be the only thing you have to worry about!");
 
 	EVENT(music_changes);
 	FACE(elly, shouting);

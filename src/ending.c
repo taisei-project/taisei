@@ -251,9 +251,9 @@ void good_ending_youmu(Ending *e) {
 	add_ending_entry(e, -1, "Elly: “I’m sure you’re aware that the classic scythe such as this was primarily used by farmers, as a makeshift weapon—”", NULL);
 	add_ending_entry(e, -1, "Yōmu: “Yes, of course. Many of the most advanced martial arts evolved from the practices of common folk—”", NULL);
 
-	add_ending_entry(e, -1, "After the incident, Elly and Kurumi agreed to surrender, and disabled the Tower's ability to cause madness.", NULL);
-	add_ending_entry(e, -1, "Their dispositions softened considerably, once they were no longer under the Tower's effects, and they apologized profusely for everything they had done.", NULL);
-	add_ending_entry(e, -1, "But even as everyone else returned to normal, Konpaku Yōmu retained nearly all of the newfound confidence she had gained in the incident…", NULL);
+	add_ending_entry(e, -1, "After the incident, Elly and Kurumi agreed to surrender, and disabled the Tower's ability to ‘enlighten’.", NULL);
+	add_ending_entry(e, -1, "Their dispositions softened considerably, and they apologized profusely for everything they had done.", NULL);
+	add_ending_entry(e, -1, "But even as everyone else returned to their usual selves, it seemed that Konpaku Yōmu had retained nearly all of the newfound confidence she had gained during the incident…", NULL);
 
 	add_ending_entry(e, -1, "Elly: “This Gensōkyō is so different compared to my own.”", NULL);
 	add_ending_entry(e, -1, "Yōmu: “Oh? What was your Gensōkyō like?”", NULL);
@@ -318,11 +318,11 @@ void good_ending_reimu(Ending *e) {
 
 	add_ending_entry(e, -1, "Reimu: “I’m surprised you’re still not pissed off at everyone. Not even a little bit.”", NULL);
 	add_ending_entry(e, -1, "Reimu: “You were shouting like a dictator up there.”", NULL);
-	add_ending_entry(e, -1, "Elly: “It seems that the Tower's effects got to me, in the end. I thought I was stronger than it, but…”", NULL);
+	add_ending_entry(e, -1, "Elly: “It seems that the Tower's influence got to me, in the end. I thought I was stronger than that, but…”", NULL);
 	add_ending_entry(e, -1, "Elly: “Of course, I’m still sad about my own Gensōkyō, but to go that far…”", NULL);
 
 	add_ending_entry(e, -1, "Reimu: “What a weird machine. I wonder what the kappa would think of it.”", NULL);
-	add_ending_entry(e, -1, "Suwako: “The kappa won’t touch the thing, and even Kanako’s talked herself out of it.”", NULL);
+	add_ending_entry(e, -1, "Suwako: “The kappa won’t touch the thing, and even Kanako has talked herself out of it.”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Still odd how those two were forgotten from Gensōkyō, though…”", NULL);
 	add_ending_entry(e, -1, "Reimu: “Ah, whatever. As long as it stays quiet.”", NULL);
 

@@ -177,7 +177,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	FACE(wriggle, proud);
 	MSG(wriggle, "Oh, I understand now.");
 	FACE(wriggle, calm);
-	MSG(wriggle, "The power wielded of an army of giant insects would surely raise some concerns.");
+	MSG(wriggle, "The power wielded by an army of giant insects would surely raise some concerns.");
 	FACE(wriggle, proud);
 	MSG(wriggle, "Simply put, we want to restore our rightful place in history!");
 	MSG(wriggle, "It’s only natural that the lower inhabitants of the mountain would get nervous in the face of our natural dominance.");
@@ -309,7 +309,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "Despite your inferior technique, I must thank you.");
-	MSG(youmu, "‘Dancing’ with you has pleasant distraction on the path to completing my mission.");
+	MSG(youmu, "‘Dancing’ with you has been a pleasant distraction on the path to completing my mission.");
 	FACE(youmu, chuuni);
 	MSG(youmu, "Tell your ‘leader’ that I am coming for them.");
 
@@ -358,7 +358,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	FACE(youmu, eyes_closed);
 	MSG(youmu, "Yes, the final battle approaches. I can feel it.");
 	FACE(youmu, chuuni);
-	MSG(youmu, "Will be a legendary duel? One to go down in the history of Gensōkyō?!");
+	MSG(youmu, "Will it be a legendary duel? One to go down in the history of Gensōkyō?!");
 
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(iku, 180, "Oh, the gardener from the Netherworld?");
@@ -379,7 +379,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 
 	FACE(youmu, unamused);
 	MSG(youmu, "Hmph. Perhaps we have become too predictable.");
-	MSG(youmu, "I am here to settle this matter. You needn’t concern yourself with it any longer.");
+	MSG(youmu, "I am here to settle this matter. You need not concern yourself with it any longer.");
 
 	FACE(iku, normal);
 	MSG(iku, "On the contrary, I would say.");
