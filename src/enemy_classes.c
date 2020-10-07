@@ -14,10 +14,10 @@
 #include "coroutine.h"
 
 #define ECLASS_HP_SWIRL         100
-#define ECLASS_HP_FAIRY         500
-#define ECLASS_HP_BIG_FAIRY     1500
-#define ECLASS_HP_HUGE_FAIRY    5600
-#define ECLASS_HP_SUPER_FAIRY   15000
+#define ECLASS_HP_FAIRY         400
+#define ECLASS_HP_BIG_FAIRY     2000
+#define ECLASS_HP_HUGE_FAIRY    8000
+#define ECLASS_HP_SUPER_FAIRY   28000
 
 TASK(fairy_circle, {
 	BoxedEnemy e;
