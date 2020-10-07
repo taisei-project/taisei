@@ -59,7 +59,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			float b = rng_f32();
 
 			for(int j = 0; j < n; j++) {
-				float speed = rng_range(1.0f, 5.0f + 0.5f * global.diff);
+				real speed = rng_range(1, difficulty_value(0, 0, 5, 5.5));
 
 				ENT_ARRAY_ADD(&projs, PROJECTILE(
 					.proto = pp_ball,
@@ -88,7 +88,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		WAIT(60);
 
-		double dir = rng_sign();
+		real dir = rng_sign();
 		boss->move = (MoveParams){ .velocity = dir*2.7+I, .retention = 0.99, .acceleration = -dir*0.017 };
 
 		int charge_time = difficulty_value(85, 80, 75, 70);
@@ -100,34 +100,28 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 		INVOKE_SUBTASK_DELAYED(120, move_frozen, &projs);
 
-		int d = imax(0, global.diff - D_Normal);
-		for(int i = 0; i < 30+10*d; i++) {
+		int cnt = difficulty_value(0, 0, 30, 50);
+		for(int i = 0; i < cnt; i++) {
 			play_sfx_loop("shot1_loop");
-			float r1, r2;
-
-			if(global.diff > D_Normal) {
-				r1 = sin(i/M_PI*5.3) * cos(2*i/M_PI*5.3);
-				r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
-			} else {
-				r1 = rng_f32();
-				r2 = rng_f32();
-			}
+			real r1 = sin(i/M_PI*5.3) * cos(2*i/M_PI*5.3);
+			real r2 = cos(i/M_PI*5.3) * sin(2*i/M_PI*5.3);
 
 			cmplx aim = cnormalize(global.plr.pos - boss->pos);
-			float speed = 2+0.2*global.diff;
+			real speed = 2 + 0.2 * global.diff;
 
 			for(int sign = -1; sign <= 1; sign += 2) {
 				PROJECTILE(
 					.proto = pp_rice,
 					.pos = boss->pos + sign*60,
 					.color = RGB(0.3, 0.4, 0.9),
-					.move = move_asymptotic_simple(speed*aim*cdir(0.5*(sign > 0 ? r1 : r2)), 2.5+(global.diff>D_Normal)*0.1*sign*I),
+					.move = move_asymptotic_simple(speed*aim*cdir(0.5*(sign > 0 ? r1 : r2)), 2.5+0.1*sign*I),
 				);
 			}
-			WAIT(6-global.diff/2);
+
+			WAIT(difficulty_value(5, 5, 5, 4));
 		}
 		aniplayer_queue(&boss->ani,"main",0);
 
-		WAIT(20-5*global.diff);
+		WAIT(difficulty_value(5, 5, 5, 0));
 	}
 }
