@@ -18,15 +18,10 @@
 #include "global.h"
 #include "stagetext.h"
 #include "common_tasks.h"
+#include "enemy_classes.h"
 
-TASK(burst_fairy, { cmplx pos; cmplx target_pos; cmplx escape_dir; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 700, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 1,
-		.power = 1,
-	});
-
+TASK(burst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_dir; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
 	e->move = move_towards(ARGS.target_pos, 0.03);
 
 	WAIT(difficulty_value(120, 60, 60, 60));
@@ -48,7 +43,7 @@ TASK(burst_fairy, { cmplx pos; cmplx target_pos; cmplx escape_dir; }) {
 	WAIT(1);
 
 	e->move.attraction = 0;
-	e->move.acceleration = 0.04 * ARGS.escape_dir;
+	e->move.acceleration = 0.04 * ARGS.exit_dir;
 	e->move.retention = 1;
 }
 
@@ -103,14 +98,8 @@ TASK(circletoss_shoot_toss, { BoxedEnemy e; int times; int duration; int period;
 }
 
 TASK(circletoss_fairy, { cmplx pos; cmplx velocity; cmplx exit_accel; int exit_time; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1500, BigFairy, NULL, 0));
-
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1)));
 	e->move = move_linear(ARGS.velocity);
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 2,
-		.power = 1,
-	});
 
 	ARGS.exit_time -= WAIT(difficulty_value(80, 60, 60, 60));
 
@@ -145,12 +134,7 @@ TASK(sinepass_swirl_move, { BoxedEnemy e; cmplx v; cmplx sv; }) {
 }
 
 TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 1,
-	});
-
+	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1)));
 	INVOKE_TASK(sinepass_swirl_move, ENT_BOX(e), ARGS.vel, ARGS.svel);
 
 	WAIT(difficulty_value(40, 20, 15, 10));
@@ -175,12 +159,7 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 }
 
 TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1400, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 3,
-		.power = 2,
-	});
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 2)));
 
 	e->move.attraction = 0.005;
 	e->move.retention = 0.8;
@@ -224,12 +203,7 @@ TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
 }
 
 TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 100, Swirl, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 2,
-	});
-
+	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 2)));
 	e->move = move_accelerated(ARGS.vel, ARGS.accel);
 
 	int shot_interval = difficulty_value(120, 60, 30, 20);
@@ -252,14 +226,8 @@ TASK(drop_swirl, { cmplx pos; cmplx vel; cmplx accel; }) {
 	}
 }
 
-TASK(multiburst_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 3,
-		.power = 2,
-	});
-
+TASK(multiburst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_accel; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
 	e->move = move_towards(ARGS.target_pos, 0.05);
 
 	WAIT(difficulty_value(120, 60, 60, 60));
@@ -309,13 +277,7 @@ TASK(instantcircle_fairy_shoot, { BoxedEnemy e; int cnt; double speed; double bo
 }
 
 TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1200, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 2,
-		.power = 4,
-	});
-
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 	e->move = move_towards(ARGS.target_pos, 0.04);
 	BoxedEnemy be = ENT_BOX(e);
 
@@ -357,13 +319,7 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 }
 
 TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 4200, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 4,
-		.power = 2,
-	});
-
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 	e->move = move_towards(ARGS.target_pos, 0.03);
 
 	WAIT(120);
@@ -388,12 +344,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 }
 
 TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 6000, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 8,
-	});
-
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 8)));
 	e->move = move_towards(ARGS.target_pos, 0.06);
 
 	WAIT(40);
@@ -457,19 +408,46 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 // opening. projectile bursts
 TASK(burst_fairies_1, NO_ARGS) {
 	for(int i = 3; i--;) {
-		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 + 70, VIEWPORT_W/2 + 70 + (120 + 42 * i)*I,  1 + 0.6*I);
-		INVOKE_TASK(burst_fairy, VIEWPORT_W/2 - 70, VIEWPORT_W/2 - 70 + (120 + 42 * i)*I, -1 + 0.6*I);
+		INVOKE_TASK(burst_fairy,
+			.e = espawn_fairy_blue_box(VIEWPORT_W/2 + 70, ITEMS(.points = 1)),
+			.target_pos = VIEWPORT_W/2 + 70 + (120 + 42 * i)*I,
+			.exit_dir = 1 + 0.6*I
+		);
+		INVOKE_TASK(burst_fairy,
+			.e = espawn_fairy_red_box(VIEWPORT_W/2 - 70, ITEMS(.power = 1)),
+			.target_pos = VIEWPORT_W/2 - 70 + (120 + 42 * i)*I,
+			.exit_dir = -1 + 0.6*I
+		);
 		WAIT(25);
 	}
 }
 
-// more bursts. fairies move / \ like
+// more bursts. fairies move \ / like
 TASK(burst_fairies_2, NO_ARGS) {
 	for(int i = 3; i--;) {
 		real ofs = 70 + i * 40;
-		INVOKE_TASK(burst_fairy, ofs,              ofs              + 120*I,  1 + 0.6*I);
+
+		EnemySpawner s0, s1;
+		ItemCounts i0, i1;
+
+		if(i & 1) {
+			s0 = espawn_fairy_red;
+			i0 = *ITEMS(.power = 1);
+			s1 = espawn_fairy_blue;
+			i1 = *ITEMS(.points = 1);
+		} else {
+			s0 = espawn_fairy_blue;
+			i0 = *ITEMS(.points = 1);
+			s1 = espawn_fairy_red;
+			i1 = *ITEMS(.power = 1);
+		}
+
+		cmplx p0 = ofs;
+		cmplx p1 = VIEWPORT_W - ofs;
+
+		INVOKE_TASK(burst_fairy, ENT_BOX(s0(p0, &i0)), p0 + 120*I, 0.6*I + 1);
 		WAIT(15);
-		INVOKE_TASK(burst_fairy, VIEWPORT_W - ofs, VIEWPORT_W - ofs + 120*I, -1 + 0.6*I);
+		INVOKE_TASK(burst_fairy, ENT_BOX(s1(p1, &i1)), p1 + 120*I, 0.6*I - 1);
 		WAIT(15);
 	}
 }
@@ -477,7 +455,12 @@ TASK(burst_fairies_2, NO_ARGS) {
 TASK(burst_fairies_3, NO_ARGS) {
 	for(int i = 10; i--;) {
 		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
-		INVOKE_TASK(burst_fairy, pos, pos + 120*I, rng_sign());
+		INVOKE_TASK(burst_fairy,
+			(i & 1)
+				? espawn_fairy_blue_box(pos, ITEMS(.points = 1))
+				: espawn_fairy_red_box(pos, ITEMS(.power = 1)),
+			pos + 120*I, rng_sign()
+		);
 		WAIT(60);
 	}
 }
@@ -551,7 +534,15 @@ TASK(multiburst_fairies_1, NO_ARGS) {
 			cmplx pos = rng_range(0, VIEWPORT_W);
 			cmplx target_pos = 64 + 64 * col + I * (64 * row + 100);
 			cmplx exit_accel = 0.02 * I + 0.03;
-			INVOKE_TASK(multiburst_fairy, pos, target_pos, exit_accel);
+			Enemy *e;
+
+			if(row & 1) {
+				e = espawn_fairy_red(pos, ITEMS(.power = 2));
+			} else {
+				e = espawn_fairy_blue(pos, ITEMS(.points = 3));
+			}
+
+			INVOKE_TASK(multiburst_fairy, ENT_BOX(e), target_pos, exit_accel);
 
 			WAIT(col_interval);
 		}
@@ -618,12 +609,7 @@ TASK(spawn_midboss, NO_ARGS) {
 }
 
 TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 16000, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 5,
-		.power = 5,
-	});
+	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(.points = 5, .power = 6)));
 
 	e->move = move_linear(ARGS.velocity);
 	WAIT(60);
