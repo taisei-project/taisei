@@ -50,8 +50,8 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 
 		for(int t = 0, i = 0; t < 60; ++i) {
 			play_sfx_loop("shot1_loop");
-			real speed0 = difficulty_value(4.0, 6.0, 6.0, 6.0);
-			real speed1 = difficulty_value(3.0, 5.0, 6.0, 8.0);
+			real speed0 = difficulty_value(4.0, 5.0, 6.0, 6.0);
+			real speed1 = difficulty_value(3.0, 4.0, 6.0, 8.0);
 			real angle = rng_sreal() * M_PI/8.0;
 			real sign =  1 - 2 * (i & 1);
 			cmplx shot_org = boss->pos - 42*I + 30 * sign;
@@ -85,7 +85,7 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 				);
 			}
 
-			t += WAIT(difficulty_value(25, 20, 15, 10));
+			t += WAIT(difficulty_value(25, 25, 15, 10));
 		}
 
 		boss->move.attraction = 0.04;

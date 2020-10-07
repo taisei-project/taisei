@@ -101,7 +101,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 	int size_base = 5;
 	int size_oscillation = 3;
 	int size_max = size_base + size_oscillation;
-	int burst_interval = difficulty_value(200, 80, 80, 80);
+	int burst_interval = difficulty_value(200, 120, 80, 80);
 	int charge_time = difficulty_value(80, 60, 60, 60);
 	int split_delay = difficulty_value(85, 75, 65, 65);
 	burst_interval -= charge_time;

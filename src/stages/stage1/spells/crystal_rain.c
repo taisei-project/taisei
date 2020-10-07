@@ -17,6 +17,7 @@
 
 TASK(crystal_rain_drops, NO_ARGS) {
 	const int nshots = difficulty_value(1, 2, 4, 5);
+	const real accel_rate = difficulty_value(0.001, 0.001, 0.01, 0.01);
 
 	for(;;) {
 		play_sfx("shot2");
@@ -28,8 +29,8 @@ TASK(crystal_rain_drops, NO_ARGS) {
 			PROJECTILE(
 				.proto = pp_crystal,
 				.pos = org,
-				.color = RGB(0.2,0.2,0.4),
-				.move = move_accelerated(1.0*I, 0.01*aim),
+				.color = RGB(0.2, 0.2, 0.4),
+				.move = move_accelerated(I, accel_rate * aim),
 			);
 		}
 
