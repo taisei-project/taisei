@@ -42,9 +42,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
-
-		INVOKE_SUBTASK(common_charge, 0, RGBA(1.0, 0.5, 0.0, 0), 40, .anchor = &boss->pos, .sound = COMMON_CHARGE_SOUNDS);
-		WAIT(40);
+		common_charge(40, &boss->pos, 0, RGBA(1.0, 0.5, 0.0, 0));
 
 		int n = global.diff;
 		int nfrog = n*60;
