@@ -14,6 +14,8 @@
 #include "enemy.h"
 #include "item.h"
 
+typedef Enemy *(*EnemySpawner)(cmplx pos, const ItemCounts *item_drops);
+
 Enemy *espawn_swirl(cmplx pos, const ItemCounts *item_drops);
 Enemy *espawn_fairy_blue(cmplx pos, const ItemCounts *item_drops);
 Enemy *espawn_fairy_red(cmplx pos, const ItemCounts *item_drops);
