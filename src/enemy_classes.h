@@ -1,0 +1,45 @@
+/*
+ * This software is licensed under the terms of the MIT License.
+ * See COPYING for further information.
+ * ---
+ * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+*/
+
+#ifndef IGUARD_enemy_classes_h
+#define IGUARD_enemy_classes_h
+
+#include "taisei.h"
+
+#include "enemy.h"
+#include "item.h"
+
+typedef Enemy *(*EnemySpawner)(cmplx pos, const ItemCounts *item_drops);
+
+Enemy *espawn_swirl(cmplx pos, const ItemCounts *item_drops);
+Enemy *espawn_fairy_blue(cmplx pos, const ItemCounts *item_drops);
+Enemy *espawn_fairy_red(cmplx pos, const ItemCounts *item_drops);
+Enemy *espawn_big_fairy(cmplx pos, const ItemCounts *item_drops);
+Enemy *espawn_huge_fairy(cmplx pos, const ItemCounts *item_drops);
+Enemy *espawn_super_fairy(cmplx pos, const ItemCounts *item_drops);
+
+#ifdef ENEMY_DEBUG
+	#define WRAP_ENEMY_SPAWNER(spawner, ...) \
+		_enemy_attach_dbginfo((spawner)(__VA_ARGS__), _DEBUG_INFO_PTR_)
+
+	#define espawn_swirl(...)           WRAP_ENEMY_SPAWNER(espawn_swirl, __VA_ARGS__)
+	#define espawn_fairy_blue(...)      WRAP_ENEMY_SPAWNER(espawn_fairy_blue, __VA_ARGS__)
+	#define espawn_fairy_red(...)       WRAP_ENEMY_SPAWNER(espawn_fairy_red, __VA_ARGS__)
+	#define espawn_big_fairy(...)       WRAP_ENEMY_SPAWNER(espawn_big_fairy, __VA_ARGS__)
+	#define espawn_huge_fairy(...)      WRAP_ENEMY_SPAWNER(espawn_huge_fairy, __VA_ARGS__)
+	#define espawn_super_fairy(...)     WRAP_ENEMY_SPAWNER(espawn_super_fairy, __VA_ARGS__)
+#endif
+
+#define espawn_swirl_box(...)           ENT_BOX(espawn_swirl(__VA_ARGS__))
+#define espawn_fairy_blue_box(...)      ENT_BOX(espawn_fairy_blue(__VA_ARGS__))
+#define espawn_fairy_red_box(...)       ENT_BOX(espawn_fairy_red(__VA_ARGS__))
+#define espawn_big_fairy_box(...)       ENT_BOX(espawn_big_fairy(__VA_ARGS__))
+#define espawn_huge_fairy_box(...)      ENT_BOX(espawn_huge_fairy(__VA_ARGS__))
+#define espawn_super_fairy_box(...)     ENT_BOX(espawn_super_fairy(__VA_ARGS__))
+
+#endif // IGUARD_enemy_classes_h

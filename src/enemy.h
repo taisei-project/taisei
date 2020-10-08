@@ -106,7 +106,7 @@ Enemy *create_enemy_p(
 );
 
 #ifdef ENEMY_DEBUG
-	Enemy* _enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
+	Enemy *_enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
 	#define create_enemy_p(...) _enemy_attach_dbginfo(create_enemy_p(__VA_ARGS__), _DEBUG_INFO_PTR_)
 #endif
 
@@ -119,15 +119,16 @@ bool enemy_is_vulnerable(Enemy *enemy);
 bool enemy_is_targetable(Enemy *enemy);
 bool enemy_in_viewport(Enemy *enemy);
 float enemy_get_hurt_radius(Enemy *enemy);
+cmplx enemy_visual_pos(Enemy *enemy);
 
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
-void Fairy(Enemy*, int t, bool render);
-void Swirl(Enemy*, int t, bool render);
-void BigFairy(Enemy*, int t, bool render);
+void Fairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
+void Swirl(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
+void BigFairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
 
-int enemy_flare(Projectile *p, int t);
+int enemy_flare(Projectile *p, int t) attr_deprecated("Use tasks");
 
 void enemies_preload(void);
 

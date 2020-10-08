@@ -23,7 +23,7 @@
 #endif
 
 #ifdef DEBUG
-Enemy* _enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
+Enemy *_enemy_attach_dbginfo(Enemy *e, DebugInfo *dbg) {
 	memcpy(&e->debug, dbg, sizeof(DebugInfo));
 	set_debug_info(dbg);
 	return e;
@@ -192,7 +192,7 @@ void delete_enemies(EnemyList *enemies) {
 	alist_foreach(enemies, _delete_enemy, NULL);
 }
 
-static cmplx enemy_visual_pos(Enemy *enemy) {
+cmplx enemy_visual_pos(Enemy *enemy) {
 	if(enemy->flags & EFLAG_NO_VISUAL_CORRECTION) {
 		return enemy->pos;
 	}
@@ -246,12 +246,6 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 
 	Enemy *owner = REF(p->args[1]);
 
-	/*
-	if(REF(p->args[1]) == NULL) {
-		return ACTION_DESTROY;
-	}
-	*/
-
 	int result = ACTION_NONE;
 
 	if(t == EVENT_BIRTH) {
@@ -265,89 +259,6 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 
 	p->pos = p->pos0 + p->args[3] + p->args[0]*t;
 	return result;
-}
-
-void BigFairy(Enemy *e, int t, bool render) {
-	if(!render) {
-		if(!(t % 5)) {
-			cmplx offset = rng_sreal() * 15;
-			offset += rng_sreal() * 10 * I;
-
-			PARTICLE(
-				.sprite = "smoothdot",
-				.pos = offset,
-				.color = RGBA(0.0, 0.2, 0.3, 0.0),
-				.rule = enemy_flare,
-				.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
-				.angle = M_PI/2,
-				.timeout = 50,
-				.args = { (-50.0*I-offset)/50.0, add_ref(e) },
-			);
-		}
-
-		return;
-	}
-
-	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = clr,
-		.sprite = "fairy_circle",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = global.frames * 10 * DEG2RAD,
-		.scale.both = s,
-	});
-
-	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = res_anim("enemy/bigfairy");
-	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = clr,
-		.sprite_ptr = spr,
-		.pos = { creal(e->pos), cimag(e->pos) },
-	});
-}
-
-void Fairy(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
-	float s = sin((float)(global.frames-e->birthtime)/10.f)/6 + 0.8;
-	Color *clr = RGBA_MUL_ALPHA(1, 1, 1, e->alpha);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = clr,
-		.sprite = "fairy_circle",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = global.frames * 10 * DEG2RAD,
-		.scale.both = s,
-	});
-
-	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Animation *ani = res_anim("enemy/fairy");
-	Sprite *spr = animation_get_frame(ani,get_ani_sequence(ani, seqname),global.frames);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = clr,
-		.sprite_ptr = spr,
-		.pos = { creal(e->pos), cimag(e->pos) },
-	});
-}
-
-void Swirl(Enemy *e, int t, bool render) {
-	if(!render) {
-		return;
-	}
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA_MUL_ALPHA(1, 1, 1, e->alpha),
-		.sprite = "enemy/swirl",
-		.pos = { creal(e->pos), cimag(e->pos) },
-		.rotation.angle = t * 10 * DEG2RAD,
-	});
 }
 
 bool enemy_is_vulnerable(Enemy *enemy) {
@@ -452,12 +363,17 @@ void process_enemies(EnemyList *enemies) {
 
 void enemies_preload(void) {
 	preload_resources(RES_ANIM, RESF_DEFAULT,
-		"enemy/fairy",
+		"enemy/fairy_blue",
+		"enemy/fairy_red",
 		"enemy/bigfairy",
+		"enemy/hugefairy",
+		"enemy/superfairy",
 	NULL);
 
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
+		"fairy_circle_red",
+		"fairy_circle_big_and_mean",
 		"enemy/swirl",
 	NULL);
 

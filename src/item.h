@@ -53,6 +53,8 @@ typedef union ItemCounts {
 	int as_array[ITEM_LAST - ITEM_FIRST];
 } ItemCounts;
 
+#define ITEMS(...) (&(const ItemCounts) { __VA_ARGS__ })
+
 DEFINE_ENTITY_TYPE(Item, {
 	int birthtime;
 	int collecttime;

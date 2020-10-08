@@ -1,0 +1,5 @@
+@sprite_count = 4
+
+main = d15 0 1
+left = m d15 2 3
+right = d15 2 3
