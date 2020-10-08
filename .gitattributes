@@ -1,1 +1,6 @@
+*.c diff=cpp
+*.h diff=cpp
 *.h linguist-language=C
+/resources/*.pkgdir/gfx/**/*.spr linguist-generated
+/subprojects/glad/include/**/*.h linguist-generated
+/subprojects/glad/src/**/*.c linguist-generated
