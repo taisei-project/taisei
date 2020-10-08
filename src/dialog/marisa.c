@@ -497,7 +497,7 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 	MSG(marisa, "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?");
 	FACE(iku, normal);
 	FACE(marisa, normal);
-	MSG(marisa, "Ah well, I know how to operate one of those Smart Phones, and that’s plenty advanced, so I should be fine.");
+	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones, and that’s plenty advanced, so I should be fine.");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "By the way, have ya been hearing that strange voice?");
 

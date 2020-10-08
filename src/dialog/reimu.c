@@ -623,7 +623,7 @@ DIALOG_TASK(reimu, Stage6PreBoss) {
 	MSG(reimu, "Even in Gensōkyō, you can be forgotten, huh?");
 	MSG(reimu, "What a miserable thought. No wonder I felt terrible just seeing this place!");
 	FACE(reimu, assertive);
-	MSG(reimu, "Turn it off, or being forgotten won’t be the only thing you have to worry about!");
+	MSG(reimu, "Turn it off, or being forgotten will be the least of your worries!");
 
 	EVENT(music_changes);
 	FACE(elly, shouting);
