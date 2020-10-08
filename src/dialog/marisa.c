@@ -23,6 +23,8 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 
 	FACE(marisa, puzzled);
 	MSG(marisa, "Aw, snow again? I just put away my winter coat.");
+	FACE(marisa, sweat_smile);
+	MSG(marisa, "…even though it’s half-way through summer already.");
 
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(cirno, 180, "Nice, right?");
@@ -121,7 +123,7 @@ DIALOG_TASK(marisa, Stage2PostBoss) {
 	MSG(marisa, "It’s kinda annoyin’, honestly.");
 
 	MSG(hina, "H-how mean…");
-	MSG(hina, "Don’t you see I was just trying to keep you safe?");
+	MSG(hina, "Don’t you see I was just trying to keep you safe…?");
 
 	MSG(marisa, "Oi, don’t get all motherly on me now.");
 	MSG(marisa, "I’ve had enough of that for a lifetime.");
@@ -143,10 +145,10 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	MSG(marisa, "Everyone’s more reckless today. What gives?");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(wriggle, 180, "Wait until you see their leader!");
+	MSG_UNSKIPPABLE(wriggle, 180, "Wait ‘til you see their leader!");
 	SHOW(wriggle);
 
-	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch of questions for sure.");
+	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure.");
 
 	MSG(wriggle, "Feel free to go ahead. I’m listening.");
 
@@ -156,7 +158,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 
 	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
 	FACE(wriggle, outraged);
-	MSG(wriggle, "Um, OBVIOUSLY, I’m not the messenger!");
+	MSG(wriggle, "Um, OBVIOUSLY I’m not the messenger!");
 	FACE(wriggle, proud);
 	MSG(wriggle, "Yeah, I’m the great leader of Insectkind!");
 
@@ -170,7 +172,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 
 	FACE(marisa, normal);
 	MSG(marisa, "Hmm, guess I forgot.");
-	MSG(marisa, "What’s your deal, anyways?");
+	MSG(marisa, "What’s yer deal, anyways?");
 
 	MSG(wriggle, "We insects have three demands:");
 	MSG(wriggle, "First: say nay to insect spray!");
@@ -179,14 +181,14 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	MSG(wriggle, "Fourth—");
 
 	FACE(marisa, unamused);
-	MSG(marisa, "Okay okay, this is great and all, but I’ve honestly got more important stuff to do.");
+	MSG(marisa, "Okay okay, this is great ‘n all, but I’ve honestly got more important stuff to do.");
 	MSG(marisa, "… and ya don’t got a clue about what’s goin’ on, do ya?");
 
+	EVENT(music_changes);
 	FACE(wriggle, proud);
 	MSG(wriggle, "Maybe I know more than you think.");
 	FACE(wriggle, outraged);
-	MSG(wriggle, "Just nothing I’d tell an usurper of Insectkind’s glory!");
-	EVENT(music_changes);
+	MSG(wriggle, "But it’s NOTHING I’d tell an usurper of Insectkind’s glory!");
 
 	DIALOG_END();
 }
@@ -209,7 +211,7 @@ DIALOG_TASK(marisa, Stage3PostBoss) {
 	FACE(marisa, puzzled);
 	MSG(marisa, "‘Glorious insect past’? ‘Carbs’?");
 	FACE(marisa, normal);
-	MSG(marisa, "Oh, ya must mean the Carboniferous Period. With the giant bugs and all that.");
+	MSG(marisa, "Oh, ya must mean the Carboniferous Period. With the giant bugs ‘n all that.");
 	MSG(marisa, "I remember that doctor in the bamboo forest goin’ off about it once.");
 	MSG(marisa, "Only time I’d seen her so excited…");
 
@@ -326,10 +328,12 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	MSG(marisa, "… but since when do I care about scientific facts?");
 
 	MSG(kurumi, "W-wait, what was I doing again?");
-	MSG(kurumi, "(And didn’t I see this nerdy looking girl before…?)");
+	MSG(kurumi, "(Y-yeah, that’s it, play it off as amnesia…");
+	MSG(kurumi, "Uuu, I don’t remember anything at all!!");
+	MSG(kurumi, "(But, hmm… haven’t I seen this nerdy-looking girl before…?)");
 
 	FACE(marisa, normal);
-	MSG(marisa, "Ah, sorry, sorry. I think ya slipped and hit your head.");
+	MSG(marisa, "Ah, sorry, sorry. I think ya slipped ‘n hit your head.");
 	MSG(marisa, "I’m Gensōkyō’s… petticoat inspector.");
 	MSG(marisa, "I’m here to inspect the petticoats in this here mansion.");
 	FACE(marisa, happy);
@@ -338,14 +342,12 @@ DIALOG_TASK(marisa, Stage4PostBoss) {
 	FACE(kurumi, normal);
 	MSG(kurumi, "Uh, I kinda doubt that…");
 	FACE(kurumi, defeated);
+	MSG(kurumi, "Not that I can stop you, anyways…");
 	FACE(marisa, normal);
-	MSG(kurumi, "Uuu—… the residents of this Gensōkyō were supposed to be kept ‘occupied’!");
-	MSG(kurumi, "I didn’t sign up to get beaten like this!");
-	MSG(kurumi, "Then gain, I was acting pretty weird, too…");
-	MSG(kurumi, "Oh no, was it getting to me too?!");
+	MSG(kurumi, "Ugh, I didn’t sign up to get beaten like this!");
 
 	FACE(marisa, puzzled);
-	MSG(marisa, "‘It’? Y’mean the madness everyone’s experiencin’?");
+	MSG(marisa, "‘Sign up’? I thought you didn’t remember anything.");
 
 	FACE(kurumi, tsun_blush);
 	MSG(kurumi, "N-Nevermind!");
@@ -365,18 +367,18 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	HIDE(iku);
 
 	FACE(marisa, inquisitive);
-	MSG(marisa, "This place is fascinatin’! Is this space-time magic?");
-	MSG(marisa, "What kinda energy source would they even use for this?");
+	MSG(marisa, "This place is fascinatin’!");
+	MSG(marisa, "What kinda energy source would they even use for this?!");
 	MSG(marisa, "I gotta tell Patchy!");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(iku, 180, "I would not recommend getting too enamoured, witch.");
+	MSG_UNSKIPPABLE(iku, 180, "I would not recommend getting too enamoured, young witch.");
 	SHOW(iku);
 	MSG(iku, "Regardless, I’m surprised to see you here. How have you been?");
 
-	MSG(marisa, "What textbook do ya figure this’d be in…?");
-	MSG(marisa, "Hmm… probably a major illusion of some kind…");
-	MSG(marisa, "That’d be easier than making the bricks weightless, and it’s a good disguise…");
+	MSG(marisa, "What grimoire would this be in…?");
+	MSG(marisa, "Hmm… probably a major illusion of some kind…?");
+	MSG(marisa, "That’d be easier than making the bricks weightless, ‘n it’s a good disguise…");
 
 	TITLE(iku, "Nagae Iku", "Fulminologist of the Heavens");
 	FACE(iku, smile);
@@ -391,21 +393,19 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	FACE(marisa, inquisitive);
 	MSG(marisa, "It appeared outta nowhere. If it were real brick, the air displacement alone woulda caused a huge noise…");
 	MSG(marisa, "And it’d take so much power, too.");
-	FACE(marisa, smug);
-	MSG(marisa, "Definitely a major illusion.");
+	MSG(marisa, "Definitely a major illusion, then.");
 
-	MSG(iku, "I feel as though you are underestimating her.");
+	MSG(iku, "I feel as though the premise of your theory is flawed, unfortunately.");
 	FACE(iku, eyes_closed);
 	FACE(marisa, normal);
-	MSG(iku, "This tower is affecting people mentally, after all.");
 	MSG(iku, "The technology on display here is beyond our current comprehension.");
 
 	FACE(marisa, surprised);
-	MSG(marisa, "Whoa, so ‘yer sayin’ this is REAL brick?!");
+	MSG(marisa, "Technology? Whoa, so yer sayin’ this is REAL brick?!");
 	FACE(marisa, normal);
 	MSG(marisa, "*tap tap*");
 	FACE(marisa, surprised);
-	MSG(marisa, "Dang, it’s so cold it’s almost creepy, like it was suckin’ magic right outta my fingers.");
+	MSG(marisa, "It’s so cold it’s almost creepy, like it was suckin’ magic right outta my fingers.");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "But that means the tower… has corporeal form?!");
 	MSG(marisa, "Dang! Now I GOTTA meet the owner!");
@@ -414,10 +414,10 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	FACE(iku, smile);
 	MSG(iku, "S-she does not use grimoires, or magic.");
 	FACE(iku, serious);
-	MSG(iku, "She is relying on complex machinery from another world entirely.");
+	MSG(iku, "She is relying on complex machinery, and likely advanced computational—");
 
 	MSG(marisa, "But then, what’s the power source?");
-	MSG(marisa, "Not even fusion could power somethin’ like this!");
+	MSG(marisa, "Not even nuclear fusion could sustain somethin’ like this!");
 
 	FACE(iku, smile);
 	MSG(iku, "I-I am not sure of its exact mechanics—");
@@ -426,18 +426,18 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(marisa, "Where’d y’say she was?");
 
 	FACE(iku, normal);
-	MSG(iku, "You mean… the owner?");
+	MSG(iku, "You mean…?");
 
 	FACE(marisa, inquisitive);
-	MSG(marisa, "Yeah! Upstairs, right?");
+	MSG(marisa, "Yeah, the owner! Upstairs, right?");
 
 	FACE(iku, serious);
-	MSG(iku, "You are clearly affected by these surroundings. I should not divulge any further information.");
+	MSG(iku, "Perhaps the thin atmosphere at this elevation has gotten to your head. I should not divulge any further information, for your own protection.");
 
 	FACE(marisa, happy);
 	MSG(marisa, "What’s her name?");
 
-	MSG(iku, "Why are you not listening to me? You are clearly not thinking straight!");
+	MSG(iku, "Why are you not listening to me? You are not thinking straight!");
 
 	FACE(marisa, inquisitive);
 	MSG(marisa, "Do ya got any tips on talkin’ to her, maybe make her loosen up a bit?");
@@ -445,14 +445,14 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(marisa, "I don’t wanna blow my chance.");
 
 	FACE(iku, smile);
-	MSG(iku, "I am trying to spare your mind, yet all you can do is talk over me. Be more considerate.");
-	MSG(iku, "I had expectations that you would be able to think clearly and resolve this incident, but it seems—");
+	MSG(iku, "I am trying to spare you further peril, yet all you can do is talk over me. Be more considerate.");
+	MSG(iku, "I had expectations that you would be able to approach this with a clear head and resolve this incident, but it seems—");
 
 	FACE(marisa, normal);
 	MSG(marisa, "Ah, ah, I see. I’ll have to turn on the ol’ Kirisame charm.");
 	FACE(marisa, smug);
 	FACE(iku, serious);
-	MSG(marisa, "I get it.");
+	MSG(marisa, "I get it, I get it.");
 	MSG(marisa, "Haven’t done ‘femme fatale’ in a while, but…");
 
 	EVENT(music_changes);
@@ -470,7 +470,7 @@ DIALOG_TASK(marisa, Stage5PostMidBoss) {
 	ACTOR_LEFT(marisa);
 	FACE(marisa, surprised);
 
-	// should be only one message with a fixed 180-frames timeout
+	// should be only one message with a fixed 180-frame (3 second) timeout
 	MSG_UNSKIPPABLE(marisa, 180, "So this place runs on electricity, eh? Hmm…");
 
 	DIALOG_END();
@@ -487,17 +487,17 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 	FACE(marisa, normal);
 	MSG(marisa, "Oof, I hope that didn’t make my hair too frizzy.");
 	FACE(marisa, happy);
-	MSG(marisa, "For my big first impression and all.");
+	MSG(marisa, "Y’know, for my big first impression ‘n all.");
 
 	FACE(iku, eyes_closed);
 	MSG(iku, "F-For the last time, she’ll have nothing to teach you…");
-	MSG(iku, "Her powers rely on technology, and the scientific method. Of that much I am sure.");
+	MSG(iku, "Her powers rely on technology and the scientific method. Of that much I am sure.");
 
 	FACE(marisa, unamused);
-	MSG(marisa, "The one time Sanae’s not around to translate all the sciencey stuff, eh?");
+	MSG(marisa, "The one time Sanae’s not around to geek out about all the sciencey stuff, eh?");
 	FACE(iku, normal);
 	FACE(marisa, normal);
-	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones so I should be fine.");
+	MSG(marisa, "Ah well, I know how to operate one of those Intelligent Phones, and that’s plenty advanced, so I should be fine.");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "By the way, have ya been hearing that strange voice?");
 
@@ -505,10 +505,7 @@ DIALOG_TASK(marisa, Stage5PostBoss) {
 
 	FACE(marisa, smug);
 	MSG(marisa, "Yeah, it keeps tellin’ me that I’m not thinkin’ straight or whatever.");
-	FACE(marisa, happy);
-	MSG(marisa, "But I feel just fine!");
-	FACE(marisa, normal);
-	MSG(marisa, "Probably just those weird madness rays tryin’ to get to me.");
+	MSG(marisa, "Probably just those weird madness rays tryin’ to get me.");
 
 	FACE(iku, eyes_closed);
 	MSG(iku, "Ugh, you fool.");
@@ -554,15 +551,15 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(elly, "… w-what is it?");
 
 	FACE(marisa, unamused);
-	MSG(marisa, "Y’don’t look like a magician after all.");
+	MSG(marisa, "Ya don’t look like a magician after all.");
 	MSG(marisa, "I’m pretty disappointed.");
 	MSG(marisa, "Honestly, this might be the most disappointing incident yet.");
 
 	TITLE(elly, "Elly", "The Theoretical Reaper");
-	MSG(elly, "You’re seeking after… magic?");
+	MSG(elly, "You’re after… magic?");
 	FACE(elly, smug);
-	MSG(elly, "Hah! You’ll regret wasting your time on such nonsense when you become truly enlightened.");
-	MSG(elly, "Through this, we will avenge all those who have been forgotten by the—");
+	MSG(elly, "Hah! You’ll regret wasting your time on such nonsense.");
+	MSG(elly, "Nothing will stand against our path of vengeance for those who have been forgotten by the—");
 
 	MSG(marisa, "Do ya know how boring it is to be a magician in Gensōkyō these days?");
 
@@ -572,18 +569,19 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(marisa, "Seriously! Recently it’s just been ‘God this’ and ‘Otherworld that’.");
 	MSG(marisa, "Reimu’s been pickin’ up some sweet skills, but me? Nothin’!");
 	MSG(marisa, "Gods use magic too, but they’re like her! They don’t need books!");
-	MSG(marisa, "But I do! So I end up empty handed, every dang time.");
+	MSG(marisa, "But I do! And I end up empty handed every dang time!");
 
 	FACE(elly, angry);
-	MSG(elly, "I SAID I don’t CARE about your stupid little magi—");
+	MSG(elly, "I SAID I don’t CARE about your stupid little sorc—");
 
-	MSG(marisa, "I saw this place and I was all, ‘Whoa! Is this all enchantments and stuff?!’");
+	MSG(marisa, "I saw this place ‘n I was all, ‘Whoa! Is this all enchantments ‘n stuff?!’");
 	FACE(marisa, inquisitive);
 	MSG(marisa, "I got really excited!");
-	MSG(marisa, "‘Maybe I could get a new trump-card outta this!’ is what I thought.");
+	MSG(marisa, "‘Maybe I could get a new trump-card outta this’ is what I thought.");
 	FACE(marisa, unamused);
-	MSG(marisa, "But obviously ‘yer a shinigami or somethin’. And I didn’t see a library…");
-	MSG(marisa, "Master Spark’s good and all, but it’ll only get me so far in life…");
+	MSG(marisa, "But obviously yer a shinigami or somethin’. And I didn’t see a library…");
+	MSG(marisa, "I guess that oarfish from before was right.");
+	MSG(marisa, "Master Spark’s good ‘n all, but it’ll only get me so far in life…");
 
 	FACE(elly, eyes_closed);
 	MSG(elly, "…");
@@ -593,17 +591,17 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(elly, shouting);
 	MSG(elly, "Are you just trying to mock me like you did the first time we met?!");
 
-	MSG(marisa, "At least that time y’were guardin’ some powerful magic thingy I coulda used.");
-	MSG(marisa, "I can’t remember, was that time a bust, too?");
+	MSG(marisa, "At least that time ya were guardin’ some powerful thingy I coulda used.");
+	MSG(marisa, "I’m tryin’ to remember, was that time a bust, too?");
 	FACE(marisa, happy);
 	MSG(marisa, "At least I met Yūka, right? Did ya know she ended up givin’ me my trademark spell?");
-	MSG(marisa, "Not right then, and not voluntarily, but—");
+	MSG(marisa, "Not right then, ‘n not voluntarily, but—");
 
 	FACE(elly, angry);
 	MSG(elly, "Y-you remember that?! But how—?!");
+	MSG(elly, "… ugh, nevermind! It’s not as if you could possibly grasp the Tower’s true power.");
 	FACE(elly, smug);
-	MSG(elly, "… nevermind. It’s not as if you could possibly grasp the true power of this place.");
-	MSG(elly, "I can already sense your feeble mind succumbing to its effects!");
+	MSG(elly, "After all, I can already sense your feeble mind succumbing to its might!");
 
 	FACE(marisa, unamused);
 	MSG(marisa, "Eh? I’m not depressed or anythin’. I’m just disappointed.");
@@ -616,24 +614,23 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	FACE(marisa, surprised);
 	MSG(marisa, "But I’m already mad with knowledge! Why do ya think I drink all the time?!");
 	MSG(marisa, "My mind’s always racin’ with this ‘n that…");
-	MSG(marisa, "Y’think this is any different than how I usually live?! Get over y’erself!");
+	MSG(marisa, "Ya think this is any different than how I usually live?! Get over y’erself!");
 	FACE(marisa, inquisitive);
-	MSG(marisa, "Now, I gotta ask… y’don’t got a secret library anywhere?");
-	MSG(marisa, "A single bookshelf?");
-	MSG(marisa, "I’ll event take a few loose scribbled notes—");
+	MSG(marisa, "Now, I gotta ask… ya really, seriously don’t got a secret library anywhere?");
+	MSG(marisa, "A single bookshelf?! A few loose scribbled notes?!");
+	MSG(marisa, "Heck, I’ll even take one of those little glowy tablet thingies with all those ‘Pee Dee Effs’ on ‘em! They hurt my dang eyes, but—");
 
 	FACE(elly, eyes_closed);
-	MSG(elly, "Since you’re OBVIOUSLY treating this as a joke, I REFUSE To speak with you any longer!");
+	MSG(elly, "Since you’re OBVIOUSLY treating this as a joke, I REFUSE to speak with you any longer!");
 
 	FACE(marisa, happy);
 	MSG(marisa, "Oh c’mon, wanna catch up on old times?");
-	FACE(marisa, normal);
-	MSG(marisa, "Just turn the madness-whatever off and we’ll go out for sake.");
+	MSG(marisa, "Turn the madness-whatever off ‘n we’ll go out for drinks! There’s this nice new bar in town with a cute—");
 
 	MSG(elly, "There’s no force in this world that would make me turn back now!");
 	EVENT(music_changes);
 	FACE(elly, smug);
-	MSG(elly, "Someone as ordinary as you getting in our way is impressive, however, I’ll give you that much.");
+	MSG(elly, "Someone as ‘ordinary’ as you getting in our way is impressive, I’ll give you that much.");
 	FACE(elly, angry);
 	MSG(elly, "But there’s no place for sorcery in our enlightened vision of Gensōkyō!");
 	FACE(elly, shouting);
@@ -650,7 +647,7 @@ DIALOG_TASK(marisa, Stage6PreFinal) {
 	VARIANT(elly, beaten);
 	FACE(elly, angry);
 	FACE(marisa, unamused);
-	MSG(marisa, "Are y’sure ya don’t got a spellbook laying around?! Nothin’ at all?!");
+	MSG(marisa, "Are ya sure ya don’t got a spellbook laying around?! Nothin’ at all?!");
 	MSG(elly, "Are you still on about that?! Fine, see what good it does you!");
 	FACE(elly, shouting);
 	MSG(elly, "Your pitiful magic amounts to nothing against the true nature of reality!");
