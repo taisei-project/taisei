@@ -47,6 +47,8 @@ struct stage2_spells_s stage2_spells = {
 static void stage2_start(void) {
 	stage2_drawsys_init();
 	stage2_bg_init_fullstage();
+	stage_start_bgm("stage2");
+	stage_set_voltage_thresholds(75, 175, 400, 720);
 	INVOKE_TASK(stage2_timeline);
 }
 
@@ -101,7 +103,6 @@ StageProcs stage2_procs = {
 	.preload = stage2_preload,
 	.end = stage2_end,
 	.draw = stage2_draw,
-	.event = stage2_events,
 	.shader_rules = stage2_bg_effects,
 	.spellpractice_procs = &(StageProcs) {
 		.begin = stage2_spellpractice_start,
