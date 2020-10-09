@@ -17,6 +17,7 @@
 #include "stage.h"
 #include "global.h"
 #include "common_tasks.h"
+#include "enemy_classes.h"
 
 TASK(spinshot_fairy_attack_spawn_projs, {
 	BoxedEnemy e;
@@ -110,7 +111,7 @@ TASK(spinshot_fairy_attack, {
 	log_debug("ACTIVATE!");
 	int live_count = 0;
 
-	ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
+	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		spawn_projectile_highlight_effect(p);
 		cmplx dir = cdir(p->angle);
 		p->move = move_accelerated(dir * ARGS.activated_vel_multiplier, dir * ARGS.activated_accel_multiplier);
@@ -126,7 +127,7 @@ TASK(spinshot_fairy_attack, {
 
 	for(;live_count > 0; YIELD) {
 		live_count = 0;
-		ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
+		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 			if(capproach_asymptotic_p(&p->move.retention, 1, 0.02, 1e-3) != 1) {
 				++live_count;
 			}
@@ -135,13 +136,7 @@ TASK(spinshot_fairy_attack, {
 }
 
 TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 3000, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 5,
-		.power = 4,
-	});
-
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
 	e->move = ARGS.move_enter;
 
 	int count = 14;
@@ -208,13 +203,7 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 }
 
 TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 7500, BigFairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 5,
-		.power = 4,
-	});
-
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 5, .power = 5)));
 	e->move = ARGS.move_enter;
 
 	int charge_time = 60;
@@ -352,12 +341,7 @@ TASK(redwall_fairy, {
 	real shot_x_dir;   // FIXME: bad name, but the shot logic is really confusing so not sure what to call this
 	MoveParams move;
 }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1000, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 2,
-	});
-
+	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 2)));
 	e->move = ARGS.move;
 
 	// likewise, bad name
@@ -381,13 +365,8 @@ TASK(redwall_fairy, {
 	}
 }
 
-TASK(aimshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 500, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.power = 2,
-	});
-
+TASK(aimshot_fairy, { BoxedEnemy e; MoveParams move_enter; MoveParams move_exit; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
 	e->move = ARGS.move_enter;
 
 	WAIT(42);
@@ -448,19 +427,13 @@ static void set_turning_motion(Enemy *e, cmplx v, real turn_angle, int turn_dela
 }
 
 TASK(turning_fairy, {
-	cmplx pos;
+	BoxedEnemy e;
 	cmplx vel;
 	real turn_angle;
 	int turn_delay;
 	int turn_duration;
 }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 600, Fairy, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.power = 1,
-		.points = 1
-	});
-
+	Enemy *e = TASK_BIND(ARGS.e);
 	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
 
 	WAIT(10);
@@ -488,6 +461,38 @@ TASK(turning_fairy, {
 	}
 
 	STALL;
+}
+
+TASK(turning_fairy_red, {
+	cmplx pos;
+	cmplx vel;
+	real turn_angle;
+	int turn_delay;
+	int turn_duration;
+}) {
+	INVOKE_TASK(turning_fairy,
+		.e = espawn_fairy_red_box(ARGS.pos, ITEMS(.power = 1)),
+		.vel = 3 / I,
+		.turn_angle = M_PI/2,
+		.turn_delay = 80,
+		.turn_duration = 120
+	);
+}
+
+TASK(turning_fairy_blue, {
+	cmplx pos;
+	cmplx vel;
+	real turn_angle;
+	int turn_delay;
+	int turn_duration;
+}) {
+	INVOKE_TASK(turning_fairy,
+		.e = espawn_fairy_blue_box(ARGS.pos, ITEMS(.points = 1)),
+		.vel = 3 / I,
+		.turn_angle = M_PI/2,
+		.turn_delay = 80,
+		.turn_duration = 120
+	);
 }
 
 static int stage2_sidebox_trail(Enemy *e, int t) { // creal(a[0]): velocity, cimag(a[0]): angle, a[1]: d angle/dt, a[2]: time of acceleration
@@ -566,12 +571,7 @@ TASK(flea_swirl, {
 	int turn_delay;
 	int turn_duration;
 }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 400, Swirl, NULL, 0));
-
-	INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, {
-		.points = 2,
-	});
-
+	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 2)));
 	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
 
 	WAIT(10);
@@ -803,22 +803,31 @@ TASK(redwall_side_fairies_2, { int num; }) {
 	}
 }
 
-TASK(aimshot_fairies, NO_ARGS) {
+static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
 	int num = 8;
 	for(int i = 0; i < num; ++i) {
 		cmplx pos = VIEWPORT_W/2 + 42 * (i - num/2.0) - 20.0*I;
 
 		INVOKE_TASK(aimshot_fairy,
-			.pos = pos,
+			.e = ENT_BOX(spawner(pos, items)),
 			.move_enter = move_towards(pos + 180 * I, 0.03),
 			.move_exit = move_accelerated(0, -0.15*I)
 		);
 
 		WAIT(15);
 	}
+
 }
 
-TASK(turning_fairies, {
+TASK(aimshot_fairies_blue, NO_ARGS) {
+	aimshot_fairies(espawn_fairy_blue, ITEMS(.points = 2));
+}
+
+TASK(aimshot_fairies_red, NO_ARGS) {
+	aimshot_fairies(espawn_fairy_red, ITEMS(.power = 2));
+}
+
+DEFINE_TASK_INTERFACE(turning_fairies, {
 	int num;
 	int spawn_period;
 	cmplx pos;
@@ -826,19 +835,33 @@ TASK(turning_fairies, {
 	real turn_angle;
 	int turn_delay;
 	int turn_duration;
-}) {
-	int num = ARGS.num;
-	int delay = ARGS.spawn_period;
+});
+
+static void turning_fairies(
+	EnemySpawner spawner,
+	const ItemCounts *items,
+	const TASK_IFACE_ARGS_TYPE(turning_fairies) *args
+) {
+	int num = args->num;
+	int delay = args->spawn_period;
 
 	for(int i = 0; i < num; ++i, WAIT(delay)) {
 		INVOKE_TASK(turning_fairy,
-			.pos = ARGS.pos,
-			.vel = ARGS.vel,
-			.turn_angle = ARGS.turn_angle,
-			.turn_delay = ARGS.turn_delay,
-			.turn_duration = ARGS.turn_duration
+			.e = ENT_BOX(spawner(args->pos, items)),
+			.vel = args->vel,
+			.turn_angle = args->turn_angle,
+			.turn_delay = args->turn_delay,
+			.turn_duration = args->turn_duration
 		);
 	}
+}
+
+TASK_WITH_INTERFACE(turning_fairies_red, turning_fairies) {
+	turning_fairies(espawn_fairy_red, ITEMS(.power = 1), &ARGS);
+}
+
+TASK_WITH_INTERFACE(turning_fairies_blue, turning_fairies) {
+	turning_fairies(espawn_fairy_blue, ITEMS(.points = 1), &ARGS);
 }
 
 TASK(flea_swirls, {
@@ -913,11 +936,11 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.num = difficulty_value(4, 5, 6, 7)
 	);
 
-	INVOKE_TASK_DELAYED(750, aimshot_fairies);
+	INVOKE_TASK_DELAYED(750, aimshot_fairies_blue);
 
-	INVOKE_TASK_DELAYED(825, aimshot_fairies);
+	INVOKE_TASK_DELAYED(825, aimshot_fairies_red);
 
-	INVOKE_TASK_DELAYED(900, turning_fairies,
+	INVOKE_TASK_DELAYED(900, turning_fairies_red,
 		.num = 12,
 		.spawn_period = 20,
 		.pos = VIEWPORT_W-80 + (VIEWPORT_H+20)*I,
@@ -927,7 +950,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.turn_duration = 80
 	);
 
-	INVOKE_TASK_DELAYED(1120, turning_fairies,
+	INVOKE_TASK_DELAYED(1120, turning_fairies_blue,
 		.num = 13,
 		.spawn_period = 20,
 		.pos = 200 - 20.0*I,
@@ -949,7 +972,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
-	INVOKE_TASK_DELAYED(1600, turning_fairies,
+	INVOKE_TASK_DELAYED(1600, turning_fairies_blue,
 		.num = 13,
 		.spawn_period = 20,
 		.pos = 200 - 20.0*I,
@@ -979,7 +1002,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(1950, post-flea);
 
-	INVOKE_TASK_DELAYED(1950, turning_fairies,
+	INVOKE_TASK_DELAYED(1950, turning_fairies_red,
 		.num = 9,
 		.spawn_period = 60,
 		.pos = VIEWPORT_W-40 + (VIEWPORT_H+20)*I,
@@ -989,7 +1012,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.turn_duration = 90
 	);
 
-	INVOKE_TASK_DELAYED(1950, turning_fairies,
+	INVOKE_TASK_DELAYED(1950, turning_fairies_blue,
 		.num = 9,
 		.spawn_period = 60,
 		.pos = 40 + (VIEWPORT_H+20)*I,
@@ -1015,7 +1038,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	filler_time -= WAIT(300 - midboss_time);
 
 	for(int t = 0; t < 1400; t += 60) {
-		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy,
+		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy_blue,
 			.pos = VIEWPORT_W-60 + (VIEWPORT_H+20)*I,
 			.vel = 3 / I,
 			.turn_angle = -M_PI/2,
@@ -1023,7 +1046,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 			.turn_duration = 120
 		);
 
-		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy,
+		INVOKE_TASK_DELAYED(t + time_ofs, turning_fairy_red,
 			.pos = 60 + (VIEWPORT_H+20)*I,
 			.vel = 3 / I,
 			.turn_angle = M_PI/2,
@@ -1059,13 +1082,13 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-midboss-filler);
 
-	INVOKE_TASK(aimshot_fairies);
+	INVOKE_TASK(aimshot_fairies_blue);
 
 	INVOKE_TASK_DELAYED(150, redwall_side_fairies_2,
 		.num = 5
 	);
 
-	INVOKE_TASK_DELAYED(300, aimshot_fairies);
+	INVOKE_TASK_DELAYED(300, aimshot_fairies_red);
 
 	INVOKE_TASK_DELAYED(420, spinshot_fairy,
 		.pos = 0,
@@ -1082,7 +1105,11 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	STAGE_BOOKMARK_DELAYED(720, pre-boss-spam);
 
 	for(int i = 0; i < 4; ++i) {
-		INVOKE_TASK_DELAYED(720 + 60 * i, aimshot_fairies);
+		if(i & 1) {
+			INVOKE_TASK_DELAYED(720 + 60 * i, aimshot_fairies_blue);
+		} else {
+			INVOKE_TASK_DELAYED(720 + 60 * i, aimshot_fairies_red);
+		}
 	}
 
 	WAIT(1160);
