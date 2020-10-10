@@ -344,10 +344,10 @@ static CoTask *cotask_new_internal(CoTaskFunc entry_point) {
 
 static void *cotask_resume_internal(CoTask *task, void *arg) {
 	TASK_DEBUG_EVENT(ev);
-	// TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
+	TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
 	STAT_VAL_ADD(num_switches_this_frame, 1);
 	arg = koishi_resume(&task->ko, arg);
-	// TASK_DEBUG("[%zu] koishi_resume returned (%s)", ev, task->debug_label);
+	TASK_DEBUG("[%zu] koishi_resume returned (%s)", ev, task->debug_label);
 	return arg;
 }
 
@@ -764,7 +764,7 @@ static void coevent_cleanup_subscribers(CoEvent *evt) {
 }
 
 static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
-	EVT_DEBUG("Event %p (num_subscribers=%u; num_subscribers_allocated=%u)", (void*)evt, evt->num_subscribers, evt->num_subscribers_allocated);
+	EVT_DEBUG("Event %p (num=%u; capacity=%u)", (void*)evt, evt->subscribers.num_elements, evt->subscribers.capacity);
 	EVT_DEBUG("Subscriber: %s", task->debug_label);
 
 	*dynarray_append_with_min_capacity(&evt->subscribers, 4) = cotask_box(task);
@@ -887,7 +887,7 @@ void coevent_cancel(CoEvent *evt) {
 	}
 
 	EVT_DEBUG("[%lu] BEGIN Cancel event %p (uid = %u; num_signaled = %u)", ev,  (void*)evt, evt->unique_id, evt->num_signaled);
-	EVT_DEBUG("[%lu] SUBS = %p", ev,  (void*)evt->subscribers);
+	EVT_DEBUG("[%lu] SUBS = %p", ev,  (void*)evt->subscribers.data);
 	evt->num_signaled = 0;
 	evt->unique_id = 0;
 
@@ -977,12 +977,57 @@ static void force_finish_task(CoTask *task) {
 	cotask_free(task);
 }
 
-static void pre_finish_task_list(CoTaskList *tasks) {
+typedef ht_ptr2int_t events_hashset;
+
+static uint gather_blocking_events(CoTaskList *tasks, events_hashset *events) {
+	uint n = 0;
+
 	for(CoTask *t = tasks->first; t; t = t->next) {
-		if(t->data) {
-			cancel_task_events(t->data);
+		if(!t->data) {
+			continue;
+		}
+
+		CoTaskData *tdata = t->data;
+
+		if(tdata->wait.wait_type != COTASK_WAIT_EVENT) {
+			continue;
+		}
+
+		CoEvent *e = tdata->wait.event.pevent;
+
+		if(e->unique_id != tdata->wait.event.snapshot.unique_id) {
+			// event not valid? (probably should not happen)
+			continue;
+		}
+
+		ht_set(events, e, e->unique_id);
+		++n;
+	}
+
+	return n;
+}
+
+static void cancel_blocking_events(CoSched *sched) {
+	events_hashset events;
+	ht_create(&events);
+
+	gather_blocking_events(&sched->tasks, &events);
+	gather_blocking_events(&sched->pending_tasks, &events);
+
+	ht_ptr2int_iter_t iter;
+	ht_iter_begin(&events, &iter);
+
+	for(;iter.has_data; ht_iter_next(&iter)) {
+		CoEvent *e = iter.key;
+		if(e->unique_id == iter.value) {
+			// NOTE: wakes subscribers, which may cancel/invalidate other events before we do.
+			// This is why we snapshot unique_id.
+			// We assume that the memory backing *e is safe to access, however.
+			coevent_cancel(e);
 		}
 	}
+
+	ht_destroy(&events);
 }
 
 static void finish_task_list(CoTaskList *tasks) {
@@ -992,8 +1037,9 @@ static void finish_task_list(CoTaskList *tasks) {
 }
 
 void cosched_finish(CoSched *sched) {
-	pre_finish_task_list(&sched->tasks);
-	pre_finish_task_list(&sched->pending_tasks);
+	// First cancel all events that have any tasks waiting on them.
+	// This will wake those tasks, so they can do any necessary cleanup.
+	cancel_blocking_events(sched);
 	finish_task_list(&sched->tasks);
 	finish_task_list(&sched->pending_tasks);
 	assert(!sched->tasks.first);

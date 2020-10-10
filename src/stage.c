@@ -931,12 +931,12 @@ void stage_end_loop(void* ctx) {
 
 	s->stage->procs->end();
 	stage_draw_shutdown();
+	cosched_finish(&s->sched);
 	stage_free();
 	player_free(&global.plr);
-	cosched_finish(&s->sched);
-	rng_make_active(&global.rand_visual);
 	free_all_refs();
 	ent_shutdown();
+	rng_make_active(&global.rand_visual);
 	stage_objpools_free();
 	stop_all_sfx();
 
