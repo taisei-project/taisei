@@ -108,7 +108,6 @@ TASK(spinshot_fairy_attack, {
  		}
 	}
 
-	log_debug("ACTIVATE!");
 	int live_count = 0;
 
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
@@ -814,13 +813,15 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-midboss-filler);
 
-	INVOKE_TASK(aimshot_fairies_blue);
+	INVOKE_TASK(aimshot_fairies_red);
 
 	INVOKE_TASK_DELAYED(150, redwall_side_fairies_2,
 		.num = 5
 	);
 
-	INVOKE_TASK_DELAYED(300, aimshot_fairies_red);
+	INVOKE_TASK_DELAYED(300, aimshot_fairies_blue);
+
+	STAGE_BOOKMARK_DELAYED(400, twin-spinshots);
 
 	INVOKE_TASK_DELAYED(420, spinshot_fairy,
 		.pos = 0,
