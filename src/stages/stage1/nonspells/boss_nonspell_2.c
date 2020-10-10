@@ -21,7 +21,7 @@ TASK(snowburst, { BoxedBoss boss; }) {
 	aniplayer_queue(&boss->ani, "(9)", 0);
 
 	int rounds = difficulty_value(3, 4, 5, 6);
-	int shots_per_round = difficulty_value(4, 5, 6, 7);
+	int shots_per_round = difficulty_value(4, 4, 6, 7);
 	real spread = difficulty_value(0.13, 0.16, 0.19, 0.22);
 
 	real angle_ofs = carg(global.plr.pos - boss->pos);
@@ -121,8 +121,8 @@ DEFINE_EXTERN_TASK(stage1_boss_nonspell_2) {
 		INVOKE_SUBTASK(snowburst, ENT_BOX(boss));
 		WAIT(20);
 
-		int spiral_bullets = difficulty_value(40, 80, 100, 100);
-		int turns = difficulty_value(8, 4, 4, 5);
+		int spiral_bullets = difficulty_value(40, 60, 100, 100);
+		int turns = difficulty_value(8, 6, 4, 5);
 		int interval = difficulty_value(2, 1, 1, 1);
 		real bullet_speed = difficulty_value(2, 3, 3, 4.5);
 

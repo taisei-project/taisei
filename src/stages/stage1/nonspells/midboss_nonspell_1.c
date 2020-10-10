@@ -101,8 +101,9 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 	int size_base = 5;
 	int size_oscillation = 3;
 	int size_max = size_base + size_oscillation;
-	int burst_interval = difficulty_value(120, 80, 80, 80);
-	int charge_time = 60;
+	int burst_interval = difficulty_value(200, 120, 80, 80);
+	int charge_time = difficulty_value(80, 60, 60, 60);
+	int split_delay = difficulty_value(85, 75, 65, 65);
 	burst_interval -= charge_time;
 
 	int flakes_limit = flakes_per_burst * snowflake_bullet_limit(size_max);
@@ -110,8 +111,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 
 	for(int burst = 0;; ++burst) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
-		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0, 0.5, 1.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
-		WAIT(charge_time);
+		common_charge_static(charge_time, boss->pos, RGBA(0, 0.5, 1.0, 0.0));
 		aniplayer_queue(&boss->ani, "main", 0);
 
 		real angle_ofs = carg(global.plr.pos - boss->pos);
@@ -124,7 +124,7 @@ DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 			WAIT(flake_spawn_interval);
 		}
 
-		WAIT(65 - 4 * (size_base + size_oscillation - size));
+		WAIT(split_delay - 4 * (size_base + size_oscillation - size));
 
 		play_sfx("redirect");
 		// play_sfx("shot_special1");
