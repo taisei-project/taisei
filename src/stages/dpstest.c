@@ -11,97 +11,86 @@
 #include "dpstest.h"
 #include "global.h"
 #include "enemy.h"
+#include "enemy_classes.h"
 
-#define DPSTEST_HP 90000
-
-static void dpstest_stub_proc(void) { }
-
-static int dpstest_dummy(Enemy *e, int t) {
-	e->hp = DPSTEST_HP;
-
-	if(t > 0) {
-		e->pos += e->args[0];
-	}
-
-	return ACTION_NONE;
-}
-
-static void stage_dpstest_single_events(void) {
-	TIMER(&global.timer);
-
-	AT(0) {
-		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_H/3*I, DPSTEST_HP, BigFairy, dpstest_dummy, 0);
+TASK(single_fairy, NO_ARGS) {
+	for(;;) {
+		Enemy *e = espawn_super_fairy(VIEWPORT_W/2, ITEMS(.points = 10));
+		e->move = move_towards(BOSS_DEFAULT_GO_POS, 0.025);
+		WAIT_EVENT(&e->events.killed);
 	}
 }
 
-static void stage_dpstest_multi_events(void) {
-	TIMER(&global.timer);
+static void dpstest_single(void) {
+	INVOKE_TASK(single_fairy);
+}
 
-	AT(0) {
-		create_enemy1c(VIEWPORT_W/2 + VIEWPORT_H/3*I, DPSTEST_HP, BigFairy, dpstest_dummy, 0);
-		create_enemy1c(-64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, DPSTEST_HP, Fairy, dpstest_dummy, 0);
-		create_enemy1c(+64 + VIEWPORT_W/2 + VIEWPORT_H/3*I, DPSTEST_HP, Fairy, dpstest_dummy, 0);
-	}
+TASK(circling_fairy, { EnemySpawner spawner; cmplx circle_orig; cmplx circle_ofs; }) {
+	WAIT(20);
 
-	if(!(global.timer % 16)) {
-		create_enemy1c(-16 + VIEWPORT_H/5*I, DPSTEST_HP, Swirl, dpstest_dummy,  4);
-	}
+	Enemy *e = TASK_BIND(ARGS.spawner(VIEWPORT_W/2, NULL));
 
-	if(!((global.timer + 8) % 16)) {
-		create_enemy1c(VIEWPORT_W+16 + (VIEWPORT_H/5 - 32)*I, DPSTEST_HP, Swirl, dpstest_dummy, -4);
+	cmplx org = ARGS.circle_orig;
+	cmplx ofs = ARGS.circle_ofs;
+
+	e->move = move_towards(0, 0.025);
+
+	INVOKE_TASK_AFTER(&e->events.killed, circling_fairy, ARGS.spawner, org, ofs);
+
+	for(;;YIELD) {
+		e->move.attraction_point = org + ofs * cdir(global.frames * 0.02);
 	}
 }
 
-static void stage_dpstest_boss_rule(Boss *b, int t) {
-	if(t >= 0) {
-		double x = pow((b->current->maxhp - b->current->hp) / b->current->maxhp, 0.75) * b->current->maxhp;
-		b->current->hp = clamp(b->current->hp + x * 0.0025, b->current->maxhp * 0.05, b->current->maxhp);
-	}
+static void dpstest_multi(void) {
+	EnemySpawner spawners[] = {
+		espawn_fairy_blue,
+		espawn_fairy_red,
+		espawn_big_fairy,
+		espawn_huge_fairy,
+		espawn_super_fairy,
+	};
 
-#if 0
-	if(!(t % 500)) {
-		create_laserline_ab(VIEWPORT_W/3, VIEWPORT_W/3+VIEWPORT_H*I, 10 + 20 * frand(), 20, 500, RGBA(2, 0, 0, 0))->unclearable = true;
+	for(int i = 0; i < ARRAY_SIZE(spawners); ++i) {
+		INVOKE_TASK(circling_fairy,
+			spawners[i], VIEWPORT_W/2 + I*VIEWPORT_H/3,
+			128 * cdir(i * M_TAU / ARRAY_SIZE(spawners))
+		);
 	}
-#endif
 }
 
-static void stage_dpstest_boss_events(void) {
-	TIMER(&global.timer);
+TASK_WITH_INTERFACE(boss_regen, BossAttack) {
+	INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
 
-	AT(0) {
-		global.boss = create_boss("Baka", "cirno", BOSS_DEFAULT_GO_POS);
-		boss_add_attack(global.boss, AT_Move, "", 1, DPSTEST_HP, stage_dpstest_boss_rule, NULL);
-		boss_add_attack(global.boss, AT_Spellcard, "Masochism ~ Eternal Torment", 5184000, DPSTEST_HP, stage_dpstest_boss_rule, NULL);
-		boss_start_attack(global.boss, global.boss->attacks);
+	Attack *a = ARGS.attack;
+
+	for(;;YIELD) {
+		real x = pow((a->maxhp - a->hp) / a->maxhp, 0.75) * a->maxhp;
+		a->hp = clamp(a->hp + x * 0.0025, a->maxhp * 0.05, a->maxhp);
 	}
+}
+
+static void dpstest_boss(void) {
+	global.boss = create_boss("Baka", "cirno", BOSS_DEFAULT_GO_POS);
+	boss_add_attack_task(
+		global.boss, AT_Spellcard, "Masochism “Eternal Torment”",
+		5184000, 90000, TASK_INDIRECT(BossAttack, boss_regen), NULL
+	);
+	boss_start_attack(global.boss, global.boss->attacks);
 }
 
 StageProcs stage_dpstest_single_procs = {
-	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
-	.end = dpstest_stub_proc,
-	.draw = dpstest_stub_proc,
-	.update = dpstest_stub_proc,
-	.event = stage_dpstest_single_events,
+	.begin = dpstest_single,
 	.shader_rules = (ShaderRule[]) { NULL },
 };
 
 StageProcs stage_dpstest_multi_procs = {
-	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
-	.end = dpstest_stub_proc,
-	.draw = dpstest_stub_proc,
-	.update = dpstest_stub_proc,
-	.event = stage_dpstest_multi_events,
+	.begin = dpstest_multi,
 	.shader_rules = (ShaderRule[]) { NULL },
 };
 
 StageProcs stage_dpstest_boss_procs = {
-	.begin = dpstest_stub_proc,
-	.preload = dpstest_stub_proc,
-	.end = dpstest_stub_proc,
-	.draw = dpstest_stub_proc,
-	.update = dpstest_stub_proc,
-	.event = stage_dpstest_boss_events,
+	.begin = dpstest_boss,
 	.shader_rules = (ShaderRule[]) { NULL },
 };
