@@ -415,10 +415,10 @@ TASK(turning_fairy_red, {
 }) {
 	INVOKE_TASK(turning_fairy,
 		.e = espawn_fairy_red_box(ARGS.pos, ITEMS(.power = 1)),
-		.vel = 3 / I,
-		.turn_angle = M_PI/2,
-		.turn_delay = 80,
-		.turn_duration = 120
+		.vel = ARGS.vel,
+		.turn_angle = ARGS.turn_angle,
+		.turn_delay = ARGS.turn_delay,
+		.turn_duration = ARGS.turn_duration
 	);
 }
 
@@ -431,10 +431,10 @@ TASK(turning_fairy_blue, {
 }) {
 	INVOKE_TASK(turning_fairy,
 		.e = espawn_fairy_blue_box(ARGS.pos, ITEMS(.points = 1)),
-		.vel = 3 / I,
-		.turn_angle = M_PI/2,
-		.turn_delay = 80,
-		.turn_duration = 120
+		.vel = ARGS.vel,
+		.turn_angle = ARGS.turn_angle,
+		.turn_delay = ARGS.turn_delay,
+		.turn_duration = ARGS.turn_duration
 	);
 }
 
