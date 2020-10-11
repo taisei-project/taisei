@@ -94,6 +94,9 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 	// draw nearest to closest
 	for(int r = 0; r <= nrange; r++) {
 		for(int dir = -1; dir <= 1; dir += 2) {
+			if(r == 0 && dir > 0) {
+				continue;
+			}
 			int n = n_closest_to_cam + dir*r;
 			vec3 extended_direction;
 			glm_vec3_scale(direction, n, extended_direction);
