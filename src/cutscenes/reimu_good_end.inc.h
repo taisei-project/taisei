@@ -31,7 +31,7 @@
 	}},
 	{ "cutscenes/reimu_good/02", {
 		T_ELLY("O-oh dear… are you sure you’re well, ma’am?"),
-		T_SUWAKO("Heh heh, don’t worry, thisis as normal as it gets for Kanako."),
+		T_SUWAKO("Heh heh, don’t worry, this is as normal as it gets for Kanako."),
 		T_ELLY("‘Normal’? Really?"),
 		T_SUWAKO("Kanako is a green energy fanatic. Don’t you think she’s cute when she’s like this?"),
 		{ 0 },
