@@ -73,5 +73,6 @@
 		T_NARRATOR("Although, nobody had any clue how, except, perhaps, a certain violet-tinged gap yōkai…"),
 		{ 0 },
 	}},
+	{ NULL }
 }
 
