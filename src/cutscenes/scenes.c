@@ -14,8 +14,10 @@ Cutscene const g_cutscenes[NUM_CUTSCENE_IDS] = {
 	[CUTSCENE_ID_INTRO] = {
 		#include "intro.inc.h"
 	},
-
 	[CUTSCENE_ID_REIMU_BAD_END] = {
 		#include "reimu_bad_end.inc.h"
+	},
+	[CUTSCENE_ID_REIMU_GOOD_END] = {
+		#include "reimu_good_end.inc.h"
 	},
 };

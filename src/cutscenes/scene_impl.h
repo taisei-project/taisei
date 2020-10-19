@@ -65,7 +65,13 @@ typedef struct Cutscene {
 #define T_YUKARI(text)      T_SPEECH("Yukari",      text, { 0.750, 0.600, 0.950, 1 })
 #define T_KANAKO(text)      T_SPEECH("Kanako",      text, { 0.600, 0.700, 0.950, 1 })
 #define T_SUWAKO(text)      T_SPEECH("Suwako",      text, { 0.515, 0.685, 0.375, 1 })
+#define T_SANAE(text)       T_SPEECH("Sanae",       text, { 0.350, 0.650, 0.660, 1 })
 #define T_SUMIREKO(text)    T_SPEECH("Sumireko",    text, { 0.700, 0.500, 0.830, 1 })
 #define T_YUYUKO(text)      T_SPEECH("Yuyuko",      text, { 0.900, 0.600, 0.900, 1 })
+#define T_ELLY(text)        T_SPEECH("Elly",        text, { 0.800, 0.530, 0.525, 1 })
+#define T_KURUMI(text)      T_SPEECH("Kurumi",      text, { 0.900, 0.800, 0.470, 1 })
+#define T_REMILIA(text)     T_SPEECH("Remilia",     text, { 0.900, 0.100, 0.100, 1 })
+#define T_FLANDRE(text)     T_SPEECH("Flandre",     text, { 1.000, 0.600, 0.600, 1 })
+#define T_PATCHOULI(text)   T_SPEECH("Patchouli",   text, { 0.700, 0.600, 1.000, 1 })
 
 #endif // IGUARD_cutscenes_scene_impl_h
