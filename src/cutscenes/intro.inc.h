@@ -29,7 +29,7 @@
 		T_REIMU("Normally it *would* be comforting, but…"),
 		{ 0 },
 	}},
-	{ "cutscenes/opening/01", {
+	{ "cutscenes/reimu_bad/01", {
 		T_NARRATOR("Outside the shrine, nearly every resident of Yōkai Mountain were lined up one after another to make a donation - including the Moriya Shrine Gods, Kanako and Suwako."),
 		T_NARRATOR("Everyone seemed vaguely fearful."),
 		{ 0 },
