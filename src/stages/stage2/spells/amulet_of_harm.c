@@ -11,57 +11,210 @@
 #include "spells.h"
 
 #include "global.h"
+#include "common_tasks.h"
+
+TASK(amulet_hitbox, { BoxedProjectile core; }) {
+	Projectile *core = NOT_NULL(ENT_UNBOX(ARGS.core));
+	Enemy *hitbox = create_enemy_p(&global.enemies, core->pos, 2000, NULL, NULL, 0, 0, 0, 0);
+	hitbox->hurt_radius = 0;
+	hitbox->hit_radius = (creal(core->collision_size) + cimag(core->collision_size));
+	hitbox->flags |= EFLAG_NO_AUTOKILL;
+
+	BoxedProjectile bcore = ENT_BOX(core);
+	BoxedEnemy bhitbox = ENT_BOX(hitbox);
+
+	for(;;YIELD) {
+		core = ENT_UNBOX(bcore);
+		hitbox = ENT_UNBOX(bhitbox);
+
+		if(hitbox && hitbox->flags & EFLAG_KILLED) {
+			hitbox = NULL;
+		}
+
+		if(core) {
+			if(hitbox) {
+				hitbox->pos = core->pos;
+			} else {
+				clear_projectile(core, CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
+				break;
+			}
+		} else {
+			if(hitbox) {
+				enemy_kill(hitbox);
+			}
+
+			break;
+		}
+	}
+}
+
+TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
+	Projectile *p = TASK_BIND(ARGS.p);
+	cmplx ov = p->move.velocity;
+	p->move = ARGS.move;
+	p->move.velocity += ov;
+}
+
+TASK(spinner_shot, { BoxedProjectile p; BoxedProjectile core; }) {
+	Projectile *p = TASK_BIND(ARGS.p);
+	Projectile *core;
+
+	WAIT(120);
+
+	for(;(core = ENT_UNBOX(ARGS.core)); WAIT(120)) {
+		play_sfx("shot_special1");
+
+		int cnt = 24;
+		for(int i = 0; i < cnt; ++i) {
+			cmplx ca = circle_dir(i, cnt);
+			cmplx o = p->pos + 42 * ca;
+			cmplx aim = cnormalize(o - core->pos);
+
+			Projectile *c = PROJECTILE(
+				.proto = pp_crystal,
+				.pos = p->pos,
+				.color = RGB(0.2 + 0.8 * tanh(cabs2(o - core->pos) / 4200), 0.2, 1.0),
+				.max_viewport_dist = p->max_viewport_dist,
+				.move = move_towards(o, 0.02),
+			);
+
+			INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * 0.085));
+		}
+	}
+}
+
+TASK(amulet, {
+	cmplx pos;
+	MoveParams move;
+}) {
+	Projectile *core = TASK_BIND(PROJECTILE(
+		.proto = pp_bigball,
+		.color = RGB(0.2, 0.8, 0.2),
+		.pos = ARGS.pos,
+		.move = ARGS.move,
+		.flags = PFLAG_NOCLEAR,
+		.timeout = 600,
+	));
+
+	int num_spinners = 4;
+	real spinner_ofs = 32;
+	cmplx spin = cdir(M_PI/8);
+
+	INVOKE_TASK(amulet_hitbox, ENT_BOX(core));
+
+	DECLARE_ENT_ARRAY(Projectile, spinners, num_spinners);
+	cmplx spinner_offsets[num_spinners];
+
+	cmplx init_orientation = cnormalize(core->move.velocity);
+
+	for(int i = 0; i < num_spinners; ++i) {
+		spinner_offsets[i] = spinner_ofs * cdir(i * M_TAU / num_spinners) * init_orientation;
+
+		Projectile *p = PROJECTILE(
+			.proto = pp_ball,
+			.pos = core->pos,
+			.color = RGB(0.8, 0.2, 1.0),
+			.max_viewport_dist = spinner_ofs * 2,
+			.flags = PFLAG_NOCLEAR,
+		);
+
+		INVOKE_TASK(spinner_shot, ENT_BOX(p), ENT_BOX(core));
+		INVOKE_TASK_AFTER(&core->events.killed, common_kill_projectile, ENT_BOX(p));
+		ENT_ARRAY_ADD(&spinners, p);
+	}
+
+	for(;;YIELD) {
+		ENT_ARRAY_FOREACH_COUNTER(&spinners, int i, Projectile *p, {
+			p->pos = core->pos + spinner_offsets[i];
+			spinner_offsets[i] *= spin;
+		});
+
+		real s = approach_asymptotic(carg(spin), -M_PI/32, 0.02, 1e-5);
+		spin = cabs(spin) * cdir(s);
+	}
+}
+
+static void fan_burst_side(cmplx o, cmplx ofs, real x) {
+	PROJECTILE(
+		.pos = o + ofs,
+		.color = RGB(0, 0, 1),
+		.proto = pp_flea,
+		.timeout = 30,
+	);
+
+	int cnt = 5;
+	real sat = 0.75;
+
+	for(int i = 0; i < 3; ++i) {
+		real s = 3 + 0.3 * i;
+
+		PROJECTILE(
+			.pos = o + ofs,
+			.color = RGB(sat * 1, sat * 0.25 * i / (cnt - 1.0), 0),
+			.proto = pp_card,
+			.move = move_asymptotic_simple(s * I*cnormalize(ofs) * cdir(x * (i+1) * -0.3), 3 - 0.1 * i),
+		);
+
+		PROJECTILE(
+			.pos = o + ofs,
+			.color = RGB(0, sat * 0.25 * i / (cnt - 1.0), sat * 1),
+			.proto = pp_card,
+			.move = move_asymptotic_simple(s * cnormalize(ofs)/I * cdir(x * (i+1) * 0.3), 3 - 0.1 * i),
+		);
+	}
+}
+
+TASK(fan_burst, { Boss *boss; }) {
+	for(int burst = 0; burst < 2; ++burst) {
+		int cnt = 30;
+		for(int i = 0; i < cnt; ++i, WAIT(3)) {
+			play_sfx_loop("shot1_loop");
+
+			cmplx o = 32;
+			real u = 32;
+
+			real x = i / (cnt - 1.0);
+
+			o += sin(4 * -x * M_PI) * u;
+			o += cos(4 * -x * 1.23 * M_PI) * I * u;
+
+			fan_burst_side(ARGS.boss->pos, o, x);
+			fan_burst_side(ARGS.boss->pos, -conj(o), x);
+		}
+
+		WAIT(30);
+	}
+}
 
 DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	boss->move = move_towards(VIEWPORT_W/2 + 200.0*I, 0.02);
 	BEGIN_BOSS_ATTACK();
 
-	ProjPrototype *t0 = pp_ball;
-	ProjPrototype *t1 = global.diff == D_Easy ? t0 : pp_crystal;
+	Rect wander_bounds = viewport_bounds(64);
+	wander_bounds.bottom = VIEWPORT_H * 0.5;
 
-	int cycleduration = 200;
-	int loopduration = cycleduration * (global.diff + 0.5) / (D_Lunatic + 0.5);
+	for(;;) {
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.5, wander_bounds);
 
-	real sf = 1.0 / sqrt(0.5 + global.diff);
-	real speed = sf * 2.00 * (1.0 + 0.75 * imax(0, global.diff - D_Normal));
-	real accel = sf * 0.01 * (1.0 + 1.20 * imax(0, global.diff - D_Normal));
+		WAIT(20);
 
-	for(int t = 0;;) {
-		int i = 0;
+		int cnt = 3;
+		real arange = M_PI/3;
 
-		aniplayer_soft_switch(&boss->ani, "guruguru", 0);
+		for(int i = 0; i < cnt; ++i) {
+			real s = 4 * fmax(2, log1p(cabs(boss->move.velocity)));
+			cmplx dir = cnormalize(-boss->move.velocity) * cdir(arange * (i / (cnt - 1.0) - 0.5));
 
-		while(i < loopduration) {
-			play_sfx_loop("shot1_loop");
-
-			real f = i / 30.0;
-			cmplx n = cdir(M_TAU * f + 0.7 * t / 200);
-			n *= cnormalize(global.plr.pos - boss->pos);
-
-			cmplx p = boss->pos + 30 * log(1 + i/2.0) * n;
-
-			PROJECTILE(
-				.proto = t0,
-				.pos = p,
-				.color = RGB(0.8, 0.0, 0.0),
-				.move = move_accelerated(speed * n * I, accel * -n),
-			);
-
-			PROJECTILE(
-				.proto = t1,
-				.pos = p,
-				.color = RGB(0.8, 0.0, 0.5),
-				.move = move_accelerated(speed * -n * I, accel * -n),
-			);
-
-			++t;
-			++i;
-			WAIT(1);
+			play_sfx("redirect");
+			INVOKE_TASK(amulet, boss->pos, move_asymptotic_halflife(s * dir, 0, 12));
+			WAIT(15);
 		}
 
-		aniplayer_soft_switch(&boss->ani, "main", 0);
-
-		WAIT(cycleduration - i);
+		WAIT(60);
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.4, wander_bounds);
+		play_sfx("shot_special1");
+		INVOKE_SUBTASK(fan_burst, boss);
+		WAIT(120);
 	}
 }

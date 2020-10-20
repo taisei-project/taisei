@@ -98,4 +98,11 @@ DECLARE_EXTERN_TASK(
 	}
 );
 
+DECLARE_EXTERN_TASK(
+	common_kill_projectile,
+	{
+		BoxedProjectile proj;
+	}
+);
+
 #endif // IGUARD_common_tasks_h
