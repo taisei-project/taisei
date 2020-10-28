@@ -13,41 +13,6 @@
 #include "global.h"
 #include "common_tasks.h"
 
-TASK(amulet_hitbox, { BoxedProjectile core; }) {
-	Projectile *core = NOT_NULL(ENT_UNBOX(ARGS.core));
-	Enemy *hitbox = create_enemy_p(&global.enemies, core->pos, 2000, NULL, NULL, 0, 0, 0, 0);
-	hitbox->hurt_radius = 0;
-	hitbox->hit_radius = (creal(core->collision_size) + cimag(core->collision_size));
-	hitbox->flags |= EFLAG_NO_AUTOKILL;
-
-	BoxedProjectile bcore = ENT_BOX(core);
-	BoxedEnemy bhitbox = ENT_BOX(hitbox);
-
-	for(;;YIELD) {
-		core = ENT_UNBOX(bcore);
-		hitbox = ENT_UNBOX(bhitbox);
-
-		if(hitbox && hitbox->flags & EFLAG_KILLED) {
-			hitbox = NULL;
-		}
-
-		if(core) {
-			if(hitbox) {
-				hitbox->pos = core->pos;
-			} else {
-				clear_projectile(core, CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
-				break;
-			}
-		} else {
-			if(hitbox) {
-				enemy_kill(hitbox);
-			}
-
-			break;
-		}
-	}
-}
-
 TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 	cmplx ov = p->move.velocity;
@@ -55,52 +20,67 @@ TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	p->move.velocity += ov;
 }
 
-TASK(spinner_shot, { BoxedProjectile p; BoxedProjectile core; }) {
-	Projectile *p = TASK_BIND(ARGS.p);
-	Projectile *core;
+static void amulet_visual(Enemy *e, int t, bool render) {
+	if(render) {
+		r_draw_sprite(&(SpriteParams) {
+			.color = RGBA(2, 1, 1, 0),
+			.sprite = "fairy_circle_big",
+			.pos.as_cmplx = e->pos,
+			.rotation.angle = t * 5 * DEG2RAD,
+		});
 
-	WAIT(120);
+		r_draw_sprite(&(SpriteParams) {
+			.sprite = "enemy/swirl",
+			.pos.as_cmplx = e->pos,
+			.rotation.angle = t * -10 * DEG2RAD,
+		});
+	}
+}
 
-	for(;(core = ENT_UNBOX(ARGS.core)); WAIT(120)) {
-		play_sfx("shot_special1");
+TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; }) {
+	Enemy *core = TASK_BIND(ARGS.core);
 
-		int cnt = 24;
-		for(int i = 0; i < cnt; ++i) {
-			cmplx ca = circle_dir(i, cnt);
-			cmplx o = p->pos + 42 * ca;
-			cmplx aim = cnormalize(o - core->pos);
+	for(;;) {
+		WAIT(60);
+		common_charge(60, &core->pos, 0, RGBA(0.6, 0.2, 0.5, 0));
 
-			Projectile *c = PROJECTILE(
-				.proto = pp_crystal,
-				.pos = p->pos,
-				.color = RGB(0.2 + 0.8 * tanh(cabs2(o - core->pos) / 4200), 0.2, 1.0),
-				.max_viewport_dist = p->max_viewport_dist,
-				.move = move_towards(o, 0.02),
-			);
+		ENT_ARRAY_FOREACH(ARGS.spinners, Projectile *p, {
+			int cnt = 24;
+			for(int i = 0; i < cnt; ++i) {
+				cmplx ca = circle_dir(i, cnt);
+				cmplx o = p->pos + 42 * ca;
+				cmplx aim = cnormalize(o - core->pos);
 
-			INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * 0.085));
-		}
+				Projectile *c = PROJECTILE(
+					.proto = pp_crystal,
+					.pos = p->pos,
+					.color = RGB(0.2 + 0.8 * tanh(cabs2(o - core->pos) / 4200), 0.2, 1.0),
+					.max_viewport_dist = p->max_viewport_dist,
+					.move = move_towards(o, 0.02),
+				);
+
+				INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * 0.085));
+			}
+		});
 	}
 }
 
 TASK(amulet, {
 	cmplx pos;
 	MoveParams move;
+	CoEvent *death_event;
 }) {
-	Projectile *core = TASK_BIND(PROJECTILE(
-		.proto = pp_bigball,
-		.color = RGB(0.2, 0.8, 0.2),
-		.pos = ARGS.pos,
-		.move = ARGS.move,
-		.flags = PFLAG_NOCLEAR,
-		.timeout = 600,
-	));
+	Enemy *core = create_enemy_p(&global.enemies, ARGS.pos, 2000, amulet_visual, NULL, 0, 0, 0, 0);
+	core->hurt_radius = 18;
+	core->hit_radius = 36;
+	core->flags |= EFLAG_NO_VISUAL_CORRECTION;
+	core->move = ARGS.move;
+
+	INVOKE_TASK_AFTER(NOT_NULL(ARGS.death_event), common_kill_enemy, ENT_BOX(core));
 
 	int num_spinners = 4;
 	real spinner_ofs = 32;
 	cmplx spin = cdir(M_PI/8);
-
-	INVOKE_TASK(amulet_hitbox, ENT_BOX(core));
 
 	DECLARE_ENT_ARRAY(Projectile, spinners, num_spinners);
 	cmplx spinner_offsets[num_spinners];
@@ -118,16 +98,25 @@ TASK(amulet, {
 			.flags = PFLAG_NOCLEAR,
 		);
 
-		INVOKE_TASK(spinner_shot, ENT_BOX(p), ENT_BOX(core));
 		INVOKE_TASK_AFTER(&core->events.killed, common_kill_projectile, ENT_BOX(p));
 		ENT_ARRAY_ADD(&spinners, p);
 	}
 
+	INVOKE_SUBTASK(amulet_fire_spinners, ENT_BOX(core), &spinners);
+
 	for(;;YIELD) {
+		int live = 0;
+
 		ENT_ARRAY_FOREACH_COUNTER(&spinners, int i, Projectile *p, {
 			p->pos = core->pos + spinner_offsets[i];
 			spinner_offsets[i] *= spin;
+			++live;
 		});
+
+		if(!live) {
+			enemy_kill(core);
+			return;
+		}
 
 		real s = approach_asymptotic(carg(spin), -M_PI/32, 0.02, 1e-5);
 		spin = cabs(spin) * cdir(s);
@@ -135,17 +124,10 @@ TASK(amulet, {
 }
 
 static void fan_burst_side(cmplx o, cmplx ofs, real x) {
-	PROJECTILE(
-		.pos = o + ofs,
-		.color = RGB(0, 0, 1),
-		.proto = pp_flea,
-		.timeout = 30,
-	);
-
-	int cnt = 5;
+	int cnt = 3;
 	real sat = 0.75;
 
-	for(int i = 0; i < 3; ++i) {
+	for(int i = 0; i < cnt; ++i) {
 		real s = 3 + 0.3 * i;
 
 		PROJECTILE(
@@ -192,10 +174,11 @@ DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 	BEGIN_BOSS_ATTACK();
 
 	Rect wander_bounds = viewport_bounds(64);
-	wander_bounds.bottom = VIEWPORT_H * 0.5;
+	wander_bounds.top += 64;
+	wander_bounds.bottom = VIEWPORT_H * 0.4;
 
 	for(;;) {
-		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.5, wander_bounds);
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.3, wander_bounds);
 
 		WAIT(20);
 
@@ -207,12 +190,12 @@ DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 			cmplx dir = cnormalize(-boss->move.velocity) * cdir(arange * (i / (cnt - 1.0) - 0.5));
 
 			play_sfx("redirect");
-			INVOKE_TASK(amulet, boss->pos, move_asymptotic_halflife(s * dir, 0, 12));
+			INVOKE_TASK(amulet, boss->pos, move_asymptotic_halflife(s * dir, 0, 12), &ARGS.attack->events.finished);
 			WAIT(15);
 		}
 
 		WAIT(60);
-		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.4, wander_bounds);
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.25, wander_bounds);
 		play_sfx("shot_special1");
 		INVOKE_SUBTASK(fan_burst, boss);
 		WAIT(120);

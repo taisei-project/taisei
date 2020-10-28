@@ -105,4 +105,11 @@ DECLARE_EXTERN_TASK(
 	}
 );
 
+DECLARE_EXTERN_TASK(
+	common_kill_enemy,
+	{
+		BoxedEnemy enemy;
+	}
+);
+
 #endif // IGUARD_common_tasks_h
