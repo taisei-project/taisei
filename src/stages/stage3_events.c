@@ -722,7 +722,7 @@ void wriggle_spellbg(Boss *b, int time) {
 	));
 	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(0.5, 0.5, 0.5, 0.0);
+	r_color4(0.12/2, 0.23/2, 0.29/2, 0.0);
 	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
 	r_blend(r_blend_compose(
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
