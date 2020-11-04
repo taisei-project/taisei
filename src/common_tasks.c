@@ -55,18 +55,48 @@ DEFINE_EXTERN_TASK(common_start_bgm) {
 	stage_start_bgm(ARGS.bgm);
 }
 
-static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *clr) {
+// This is just about below LAYER_PARTICLE_HIGH
+// We want it on a separate layer for better sprite batching efficiency,
+// because these sprites are on a different texture than most.
+#define CHARGE_BLAST_LAYER (LAYER_PARTICLE_PETAL | 0x80)
+
+static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
+	real scale = power * rng_range(0.7, 1);
+	real opacity = power * rng_range(0.5, 0.8);
+	cmplx pos = target + rng_dir() * 16 * power;
+	MoveParams move = move_asymptotic_simple(0.5 * rng_dir(), 3);
+	real angle = rng_angle();
+	int timeout = rng_irange(30, 60);
+
+	return PARTICLE(
+		.sprite = "smoke",
+		.pos = pos,
+		.draw_rule = pdraw_timeout_scalefade_exp(0.01, scale, opacity, 0, 2),
+		.move = move,
+		.timeout = timeout,
+		.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
+		.angle = angle,
+		// FIXME: inefficient batching because part/blast_huge_rays and part/smoke occupy different atlases,
+		// but it looks better when they're intermixed...
+		.layer = CHARGE_BLAST_LAYER,
+	);
+}
+
+static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *clr, real power) {
 	cmplx pos = target + rng_dir() * dist;
+	MoveParams move = move_towards(target, rng_range(0.1, 0.2) + 0.05 * power);
+	move.retention = 0.25 * cdir(1.5 * rng_sign());
+
+	spawn_charge_particle_smoke(target, power);
 
 	return PARTICLE(
 		.sprite = "graze",
 		.color = clr,
 		.pos = pos,
-		.draw_rule = pdraw_timeout_scalefade(2, 0.1*(1+I), 0, 1),
-		.move = move_towards(target, rng_range(0.12, 0.16)),
-		.timeout = 30,
-		// .scale = 0.5+1.5*I,
-		.flags = PFLAG_NOREFLECT,
+		.draw_rule = pdraw_timeout_scalefade(2, 0.05, 0, 1),
+		.move = move,
+		.timeout = rng_irange(25, 35),
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_PARTICLE_HIGH,
 	);
 }
@@ -93,11 +123,6 @@ static int common_charge_impl(
 	SFXPlayID charge_snd_id = snd_charge ? play_sfx(snd_charge) : 0;
 	DECLARE_ENT_ARRAY(Projectile, particles, 256);
 
-	// This is just about below LAYER_PARTICLE_HIGH
-	// We want it on a separate layer for better sprite batching efficiency,
-	// because these sprites are on a different texture than most.
-	drawlayer_t blast_layer = LAYER_PARTICLE_PETAL | 0x80;
-
 	int wait_time = 0;
 
 	for(int i = 0; i < time; ++i, wait_time += WAIT(1)) {
@@ -113,13 +138,15 @@ static int common_charge_impl(
 		}
 
 		int stage = (5 * i) / time;
-		real sdist = dist * glm_ease_quad_out((stage + 1) / 6.0);
+		int nparts = stage + 1;
+		real power = (stage + 1) / 6.0;
+		real sdist = dist * glm_ease_quad_out(power);
 
-		for(int j = 0; j < stage + 1; ++j) {
+		for(int j = 0; j < nparts; ++j) {
 			Color c = *color;
 			randomize_hue(&c, hue_rand);
 			color_lerp(&c, RGBA(1, 1, 1, 0), rng_real() * 0.2);
-			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &c);
+			Projectile *p = spawn_charge_particle(pos, sdist * (1 + 0.1 * rng_sreal()), &c, power);
 			ENT_ARRAY_ADD(&particles, p);
 			color_mul_scalar(&c, 0.2);
 		}
@@ -139,7 +166,7 @@ static int common_charge_impl(
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
 			.angle = rng_angle(),
-			.layer = blast_layer,
+			.layer = CHARGE_BLAST_LAYER,
 		));
 	}
 
@@ -163,7 +190,7 @@ static int common_charge_impl(
 		.timeout = 30,
 		.flags = PFLAG_NOREFLECT,
 		.angle = rng_angle(),
-		.layer = blast_layer,
+		.layer = CHARGE_BLAST_LAYER,
 	);
 
 	ENT_ARRAY_FOREACH(&particles, Projectile *p, {
