@@ -55,11 +55,6 @@ DEFINE_EXTERN_TASK(common_start_bgm) {
 	stage_start_bgm(ARGS.bgm);
 }
 
-// This is just about below LAYER_PARTICLE_HIGH
-// We want it on a separate layer for better sprite batching efficiency,
-// because these sprites are on a different texture than most.
-#define CHARGE_BLAST_LAYER (LAYER_PARTICLE_PETAL | 0x80)
-
 static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
 	real scale = power * rng_range(0.7, 1);
 	real opacity = power * rng_range(0.5, 0.8);
@@ -76,9 +71,7 @@ static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
 		.timeout = timeout,
 		.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		.angle = angle,
-		// FIXME: inefficient batching because part/blast_huge_rays and part/smoke occupy different atlases,
-		// but it looks better when they're intermixed...
-		.layer = CHARGE_BLAST_LAYER,
+		.layer = LAYER_PARTICLE_HIGH,
 	);
 }
 
@@ -166,7 +159,7 @@ static int common_charge_impl(
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
 			.angle = rng_angle(),
-			.layer = CHARGE_BLAST_LAYER,
+			.layer = LAYER_PARTICLE_HIGH,
 		));
 	}
 
@@ -190,7 +183,7 @@ static int common_charge_impl(
 		.timeout = 30,
 		.flags = PFLAG_NOREFLECT,
 		.angle = rng_angle(),
-		.layer = CHARGE_BLAST_LAYER,
+		.layer = LAYER_PARTICLE_HIGH,
 	);
 
 	ENT_ARRAY_FOREACH(&particles, Projectile *p, {
