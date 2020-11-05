@@ -728,26 +728,24 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float sy = args[0].as_float[1];
 	float tex_angle = args[1].as_float[0];
 
-	float opacity = pow(1 - timefactor, 2);
+	float opacity = pow(1 - timefactor, 3);
 	opacity = fmin(1, 1.5 * opacity) * fmin(1, timefactor * 10);
 	opacity *= p->opacity;
 
-	r_mat_tex_push();
-	r_mat_tex_translate(0.5, 0.5, 0);
-	r_mat_tex_rotate(tex_angle, 0, 0, 1);
-	r_mat_tex_translate(-0.5, -0.5, 0);
+	r_mat_mv_push();
+	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_rotate(p->angle + M_PI * 0.5, 0, 0, 1);
+	r_mat_mv_scale(sx, sy, 1);
+	r_mat_mv_rotate(tex_angle, 0, 0, 1);
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = p->sprite,
 		.shader_ptr = p->shader,
 		.shader_params = &(ShaderCustomParams) {{ opacity }},
 		.color = &p->color,
-		.scale = { .x = sx, .y = sy },
-		.rotation.angle = p->angle + M_PI * 0.5,
-		.pos = { creal(p->pos), cimag(p->pos) }
 	});
 
-	r_mat_tex_pop();
+	r_mat_mv_pop();
 }
 
 static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, bool flare) {
@@ -787,14 +785,14 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 		);
 	}
 
-	sx = pow((1.5 * p->sprite->w + 0.5 * p->sprite->h) * 0.5, 0.65);
-	sy = pow((1.5 * p->sprite->h + 0.5 * p->sprite->w) * 0.5, 0.65);
-	clr.a = 0.2;
+	sx = pow(p->sprite->w, 0.75) * (1 + 0.02 * rng_real());
+	sy = pow(p->sprite->h, 0.75) * (1 + 0.02 * rng_real());
+	clr.a = 0.0;
 
 	RNG_ARRAY(R, 5);
 
 	return PARTICLE(
-		.sprite = "bullet_cloud",
+		.sprite = "bullet_flare",
 		.size = p->size * 4.5,
 		.shader = "sprite_bullet",
 		.layer = LAYER_PARTICLE_HIGH | 0x80,
@@ -804,7 +802,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 			.args[1].as_float = vrng_angle(R[0]),
 		},
 		.angle = p->angle,
-		.pos = p->pos + vrng_range(R[1], 0, 5) * vrng_dir(R[2]),
+		.pos = p->pos + vrng_range(R[1], 0, 2) * vrng_dir(R[2]),
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.timeout = vrng_range(R[3], 30, 34),
 		.color = &clr,
@@ -1194,7 +1192,7 @@ void projectiles_preload(void) {
 	// some of these are ubiquitous, but some only appear in very specific parts.
 	preload_resources(RES_SPRITE, RESF_PERMANENT,
 		"part/blast",
-		"part/bullet_cloud",
+		"part/bullet_flare",
 		"part/flare",
 		"part/graze",
 		"part/lightning0",
