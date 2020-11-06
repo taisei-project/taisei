@@ -631,12 +631,6 @@ static void texture_loader_stage2(ResourceLoadState *st) {
 		r_texture_set_debug_label(texture, st->name);
 	}
 
-	if(!strcmp(st->name, "atlas_common_0")) {
-		assert(preprocess_needed);
-		assert(ld->params.mipmap_mode == TEX_MIPMAP_AUTO);
-		assert(ld->params.mipmaps == TEX_MIPMAPS_MAX);
-	}
-
 	texture_loader_cleanup(ld);
 
 	if(alphamap) {
