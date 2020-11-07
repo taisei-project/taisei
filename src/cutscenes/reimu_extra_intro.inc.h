@@ -22,7 +22,7 @@
 	{ "cutscenes/reimu_extra/01", {
 		T_YUKARI("My oh my, passing the time at rival shrines, are we?"),
 		T_REIMU("Guard duty."),
-		T_YUKARI("Hm? Not trust enough of Ms. Kochiya to—"),
+		T_YUKARI("Hm? Not trusting enough of Ms. Kochiya to—"),
 		T_REIMU("No."),
 		{ 0 },
 	}},
@@ -67,13 +67,13 @@
 	{ "cutscenes/reimu_extra/02", {
 		T_KURUMI("Y-you left me a note that said, ‘Kurumi, go close off the mansion module so the fairies stop playing inside of it'!"),
 		T_KURUMI("So I did!!"),
-		T_ELLY("I didn’t leave you any such note! This isn’t even my handwriting! You *know* I have a hard time with stroke order-—"),
+		T_ELLY("I didn’t leave you any such note! This isn’t even my handwriting! You *know* I have a hard time with stroke order—"),
 		T_REIMU("Okay, excuse me, but what does this have to do with anything?"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
 		T_ELLY("I… I kinda stole it from someone."),
-		T_REIMU("What does that have to do with anything?"),
+		T_REIMU("That doesn't answer my question."),
 		T_ELLY("She’s… still trapped in there. I thought I'd sealed her away, though!"),
 		T_ELLY("There’s no way she should've been able to escape that!"),
 		{ 0 },
@@ -87,10 +87,10 @@
 		T_REIMU("Alright, okay, she’s a big scary monster. I had a feeling something like this might happen…"),
 		T_YUKARI("Before you go, Reimu…"),
 		T_REIMU("Huh? What now? Want to come with?"),
-		T_YUKARI("You do care very deeply about Gensōkyō, and everyone within it, don’t you?"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
+		T_YUKARI("You do care very deeply about Gensōkyō, and everyone within it, don’t you?"),
 		T_YUKARI("Even those who fundamenally threaten us. You even give the nastiest yōkai a chance at redemption."),
 		T_YUKARI("I admire that in you."),
 		{ 0 },

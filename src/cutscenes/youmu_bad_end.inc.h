@@ -36,14 +36,14 @@
 	}},
 	{ "cutscenes/youmu_bad/02", {
 		T_YOUMU("Thank you for humouring your humble servant’s odd request, Lady Yuyuko."),
-		T_YOUMU("Oh my, think nothing of it! You did great!"),
-		T_YOUMU("But, hey, since we're in the neighbourhood… do you think those little kappa are running one of their famous grill stands?"),
-		T_YOUMU("We could go on a fun date! And I’m feeling a bit pecking, besides…"),
+		T_YUYUKO("Oh my, think nothing of it! You did great!"),
+		T_YUYUKO("But, hey, since we're in the neighbourhood… do you think those cute little kappa are running one of their famous grill stands?"),
+		T_YUYUKO("We could go on a fun date! And I’m feeling a bit pecking, besides…"),
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_bad/02", {
 		T_NARRATOR("The kappa were running a ‘Gaze Upon The Amazing Tower (From A Safe Distance)’ promotional campaign to reinvigorate tourism to Yōkai Mountain."),
-		T_NARRATOR("Although, Yōmu found it quite difficult to enjoy herself."),
+		T_NARRATOR("Although, despite the festivities, Yōmu found it quite difficult to enjoy herself."),
 		T_NARRATOR("Somewhere, somehow, she hoped the furious, passionate scythe-bearer was out there somewhere, waiting for their glorious rematch…"),
 		{ 0 },
 	}},

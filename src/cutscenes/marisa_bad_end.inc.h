@@ -1,5 +1,5 @@
 
-.name = "Marisa Extra Intro",
+.name = "Marisa Bad End",
 .bgm = "ending",
 
 .phases = (CutscenePhase[]) {
@@ -48,7 +48,7 @@
 		T_NARRATOR("— by Usami Renko"),
 		{ 0 },
 	}},
-	{ "cutscenes/reimu_bad/02", {
+	{ "cutscenes/marisa_bad/02", {
 		T_CENTERED("— Bad End —", "Try to reach the end without using a Continue!"),
 		{ 0 },
 	}},

@@ -6,6 +6,9 @@
 	{ "cutscenes/locations/moriya", {
 		T_NARRATOR("— The Moriya Shrine"),
 		T_NARRATOR("A workaholic shrine at the top of of Yōkai Mountain."),
+		{ 0 },
+	}},
+	{ "cutscenes/locations/moriya", {
 		T_NARRATOR("Once defeated, the instigators agreed to turn off the ‘Tower of Babel'."),
 		T_NARRATOR("Elly and Kurumi were made to scrub the decks of the Moriya Shrine…"),
 		T_NARRATOR("… which had become filthy from the local fairies partying non-stop, and some ‘political demonstrations’ by the newly-formed ‘Insect Party'."),
@@ -71,7 +74,7 @@
 		T_ELLY("I have to ask though… how did you remember me?"),
 		T_MARISA("Oh, that’s easy."),
 		T_MARISA("Mushrooms!"),
-		T_ELLY("Mush… rooms? You mean mycelium?"),
+		T_ELLY("Mush… rooms? As in, mycelium?"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
