@@ -38,7 +38,7 @@
 	}},
 	{ "cutscenes/marisa_good/01", {
 		T_ELLY("Isn’t it a little early for that?"),
-		T_MARISA("Oh c'mon, it’s noon somewhere in the infinite multiverse, ain’t it?"),
+		T_MARISA("Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"),
 		{ 0 },
 	}},
 	{ "cutscenes/locations/moriya", {
@@ -95,7 +95,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_CENTERED("- Good End -", "Extra Stage unlocked!"),
+		T_CENTERED("— Good End —", "Extra Stage unlocked!"),
 		{ 0 },
 	}},
 	{ NULL }

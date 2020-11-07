@@ -24,7 +24,7 @@
 	}},
 	{ "cutscenes/reimu_good/02", {
 		T_KANAKO("I can’t believe it! Is nuclear fusion really that simple?!"),
-		T_ELLY("Y-Yes, it’s just a matter of changing that coefficient there, and shaping the magnetic containment field using-"),
+		T_ELLY("Y-Yes, it’s just a matter of changing that coefficient there, and shaping the magnetic containment field using—"),
 		T_KANAKO("Of course! I was such a fool! I can’t believe I ever bothered attempting to harness the Yatagarasu!"),
 		T_KANAKO("Finally, I have the final key to modernizing Gensōkyō, and preventing the energy crisis!"),
 		{ 0 },
