@@ -1,5 +1,5 @@
 
-.name = "Reimu Good Ending",
+.name = "Reimu Good End",
 .bgm = "ending",
 
 .phases = (CutscenePhase[]) {
@@ -26,7 +26,7 @@
 		T_KANAKO("I can’t believe it! Is nuclear fusion really that simple?!"),
 		T_ELLY("Y-Yes, it’s just a matter of changing that coefficient there, and shaping the magnetic containment field using-"),
 		T_KANAKO("Of course! I was such a fool! I can’t believe I ever bothered attempting to harness the Yatagarasu!"),
-		T_KANAKO("Finally, I have the final key to modernizing Gensokyo, and preventing the energy crisis!"),
+		T_KANAKO("Finally, I have the final key to modernizing Gensōkyō, and preventing the energy crisis!"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_good/02", {
@@ -50,14 +50,14 @@
 	}},
 	{ "cutscenes/reimu_good/03", {
 		T_ELLY("In the end, it seems the Tower got to me, too."),
-		T_ELLY("I’m still sad about my own Gensokyo, but to go that far…"),
+		T_ELLY("I’m still sad about my own Gensōkyō, but to go that far…"),
 		{ 0 },
 	}},
 
 	{ "cutscenes/reimu_good/03", {
 		T_REIMU("What a weird machine. I wonder what the kappa think about it."),
 		T_SUWAKO("The kappa won’t touch the thing. Even Kanako has her reservations."),
-		T_REIMU("Still, it’s odd how there were forgotten yōkai from another Gensokyo…"),
+		T_REIMU("Still, it’s odd how there were forgotten yōkai from another Gensōkyō…"),
 		T_REIMU("Ah, whatever. As long as it stays quiet, that Tower isn’t even the weirdest thing to arrive in this place."),
 		{ 0 },
 	}},

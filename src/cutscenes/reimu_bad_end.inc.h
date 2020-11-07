@@ -1,5 +1,5 @@
 
-.name = "Reimu Bad Ending",
+.name = "Reimu Bad End",
 .bgm = "ending",
 
 .phases = (CutscenePhase[]) {
