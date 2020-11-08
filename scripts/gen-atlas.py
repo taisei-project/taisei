@@ -64,6 +64,14 @@ class ConfigSyntaxError(Exception):
     pass
 
 
+def ceildiv(x, y):
+    return x // y + int(x % y != 0)
+
+
+def align_size(size, alignment=4):
+    return tuple(ceildiv(x, alignment) * alignment for x in size)
+
+
 def write_sprite_def(dst, texture, region, texture_dimensions, overrides=None):
     dst.parent.mkdir(exist_ok=True, parents=True)
 
@@ -159,6 +167,29 @@ def find_alphamap(basepath):
             return mpath
 
 
+def get_bin_occupied_bounds(bin):
+    xmin, xmax, ymin, ymax = 0xffffffffffffffff, 0, 0xffffffffffffffff, 0
+
+    for rect in bin:
+        if rect.bottom < ymin:
+            ymin = rect.bottom
+
+        if rect.top > ymax:
+            ymax = rect.top
+
+        if rect.left < xmin:
+            xmin = rect.left
+
+        if rect.right > xmax:
+            xmax = rect.right
+
+    w = xmax - xmin
+    h = ymax - ymin
+    w, h = align_size((w, h))
+
+    return rectpack.geometry.Rectangle(xmin, ymin, w, h)
+
+
 @functools.total_ordering
 class PackResult:
     def __init__(self, packer, rects):
@@ -177,26 +208,8 @@ class PackResult:
     def __repr__(self):
         return f'PackResult(num_bins={self.num_bins}, num_images_packed={self.num_images_packed}, total_area={self.total_area}, success={self.success})'
 
-    def _calculate_bin_area(self, bin):
-        xmin, xmax, ymin, ymax = 0xffffffffffffffff, 0, 0xffffffffffffffff, 0
-
-        for rect in bin:
-            for x in (rect.x, rect.x + rect.width):
-                if x < xmin:
-                    xmin = x
-                if x > xmax:
-                    xmax = x
-
-            for y in (rect.y, rect.y + rect.height):
-                if y < ymin:
-                    ymin = y
-                if y > ymax:
-                    ymax = y
-
-        return (xmax - xmin) * (ymax - ymin)
-
     def _calculate_total_area(self):
-        return sum(self._calculate_bin_area(bin) for bin in self.bins)
+        return sum(get_bin_occupied_bounds(bin).area() for bin in self.bins)
 
     def __eq__(self, other):
         return (
@@ -444,17 +457,13 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
 
             dstfile_meta = temp_dst / f'{textureid}.tex'
 
-            actual_size = [0, 0]
-
             if crop:
-                for rect in bin:
-                    if rect.x + rect.width > actual_size[0]:
-                        actual_size[0] = rect.x + rect.width
-
-                    if rect.y + rect.height > actual_size[1]:
-                        actual_size[1] = rect.y + rect.height
+                occupied_bounds = get_bin_occupied_bounds(bin)
+                actual_size = (occupied_bounds.width, occupied_bounds.height)
+                bin_offset = (-occupied_bounds.x, -occupied_bounds.y)
             else:
                 actual_size = (bin.width, bin.height)
+                bin_offset = (0, 0)
 
             base_composite_cmd = [
                 'convert',
@@ -466,6 +475,8 @@ def gen_atlas(overrides, src, dst, binsize, atlasname, tex_format=texture_format
             alphamap_composite_cmd = None
 
             for rect in bin:
+                rect.move(rect.x + bin_offset[0], rect.y + bin_offset[1])
+
                 img_path, name = rect.rid
                 border = get_border(name)
                 alphamap_path = find_alphamap(img_path)
@@ -671,7 +682,7 @@ def main(args):
         args.overrides_dir,
         args.source_dir,
         args.dest_dir,
-        (args.width, args.height),
+        align_size((args.width, args.height)),
         tex_format=args.format,
         atlasname=args.name,
         border=args.border,
