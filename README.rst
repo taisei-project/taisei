@@ -16,6 +16,7 @@ Dependencies
 ^^^^^^^^^^^^
 
 -  OpenGL >= 3.3 or OpenGL ES >= 3.0 or OpenGL ES >= 2.0 (with some extensions)
+-  `cglm <https://github.com/recp/cglm>`__ >= 0.7.8
 -  SDL2 >= 2.0.6
 -  SDL2_mixer >= 2.0.4
 -  freetype2

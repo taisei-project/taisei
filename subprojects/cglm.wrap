@@ -1,0 +1,5 @@
+[wrap-git]
+directory=cglm
+url=https://github.com/taisei-project/cglm.git
+push-url=git@github.com:taisei-project/cglm.git
+revision=taisei-0.8.0
