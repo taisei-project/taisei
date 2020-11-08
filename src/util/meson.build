@@ -53,3 +53,9 @@ else
     # No have_posix check, it might just work.
     util_src += files('platform_posix.c')
 endif
+
+if dep_gamemode.found()
+    util_src += files('gamemode.c')
+else
+    util_src += files('gamemode_stub.c')
+endif

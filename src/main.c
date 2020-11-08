@@ -26,6 +26,7 @@
 #include "credits.h"
 #include "taskmanager.h"
 #include "coroutine.h"
+#include "util/gamemode.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -38,6 +39,7 @@ static void taisei_shutdown(void) {
 
 	progress_unload();
 
+	gamemode_shutdown();
 	free_all_refs();
 	free_resources(true);
 	taskmgr_global_shutdown();
@@ -281,6 +283,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 
 	init_sdl();
 	taskmgr_global_init();
+	gamemode_init();
 	time_init();
 	init_global(&ctx->cli);
 	events_init();
