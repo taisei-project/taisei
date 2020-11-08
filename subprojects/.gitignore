@@ -1,6 +1,7 @@
 SPIRV-Cross
 SPIRV-Headers
 SPIRV-Tools
+cglm
 crossc
 freetype
 glslang

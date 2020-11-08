@@ -17,17 +17,10 @@
 
 #include "util.h"
 
-#define TAISEI_USE_GLM_CALLS
-
-#ifdef TAISEI_USE_GLM_CALLS
-    #include <cglm/call.h>
-    #include <cglm/glm2call.h>
-#else
-    PRAGMA(GCC diagnostic push)
-    PRAGMA(GCC diagnostic ignored "-Wdeprecated-declarations")
-    #include <cglm/cglm.h>
-    PRAGMA(GCC diagnostic pop)
-#endif
+DIAGNOSTIC(push)
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+#include <cglm/cglm.h>
+DIAGNOSTIC(pop)
 
 typedef float (*glm_ease_t)(float);
 

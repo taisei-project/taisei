@@ -10,6 +10,9 @@ project('taisei', 'c',
 
         'koishi:threadsafe=false',
 
+        'cglm:install=false',
+        'cglm:build_tests=false',
+
         'libzip:bzip2=disabled',
         'libzip:lzma=disabled',
         'libzip:zstd=enabled',
@@ -154,13 +157,13 @@ dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : f
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_zstd        = dependency('libzstd',        version : '>=1.3.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
 dep_zip         = dependency('libzip',         version : '>=1.7',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
+dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  static : static, fallback : ['cglm', 'cglm_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 dep_gamemode    = dependency('gamemode',                            required : false, static : static)
 
 dep_m           = cc.find_library('m', required : false)
 
 dep_basisu_transcoder = subproject('basis_universal').get_variable('basisu_transcoder_dep')
-dep_cglm        = subproject('cglm').get_variable('cglm_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
 dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 
