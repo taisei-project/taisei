@@ -232,13 +232,9 @@ if host_machine.system() == 'emscripten'
     )
 
     taisei_html = custom_target(em_link_outputs[0],
-        # NOTE: Unfortunately we can't just put 'taisei' directly into the command array.
-        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
-        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
-
         command : [
             meson.get_compiler('cpp').cmd_array(),
-            taisei.full_path(),
+            taisei,
             '--pre-js', em_preamble,
             em_bundle_link_args,
             '--shell-file', em_shell,
@@ -249,7 +245,6 @@ if host_machine.system() == 'emscripten'
             '-o', '@OUTPUT0@',
         ],
         build_by_default : true,
-        depends : [taisei],
         output : em_link_outputs,
         install : true,
         install_dir : bindir,
