@@ -162,24 +162,27 @@ if host_machine.system() == 'emscripten'
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
+    em_common_args = [
+        '-s', 'STRICT=1',
+    ]
     em_link_args = [
         '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-s', 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=["$autoResumeAudioContext"]',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
-        '-s', 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=["$autoResumeAudioContext"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
+        '-s', 'INITIAL_MEMORY=268435456',
+        '-s', 'LLD_REPORT_UNDEFINED',
         '-s', 'LZ4=1',
         '-s', 'MAX_WEBGL_VERSION=2',
         '-s', 'MIN_WEBGL_VERSION=2',
         '-s', 'MODULARIZE=0',
-        '-s', 'STRICT=1',
-        '-s', 'INITIAL_MEMORY=268435456',
         '-s', 'WASM=1',
         '-lGL',
         '-legl.js',
@@ -217,14 +220,15 @@ if host_machine.system() == 'emscripten'
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
 
-    taisei = executable(taisei_basename, taisei_src, version_deps,
+    libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
-        c_args : taisei_c_args,
-        # This fails; see https://github.com/emscripten-core/emscripten/issues/10872
-        # c_pch : 'pch/taisei_pch.h',
-        link_args : em_link_args,
-        name_suffix : 'bc',
+        c_pch : 'pch/taisei_pch.h',
+        c_args : [em_common_args, taisei_c_args],
         install : false,
+    )
+
+    taisei = static_library(taisei_basename + '-full',
+        link_whole : libtaisei,
     )
 
     taisei_html = custom_target(em_link_outputs[0],
@@ -233,13 +237,14 @@ if host_machine.system() == 'emscripten'
         # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
 
         command : [
-            cc.cmd_array(),
+            meson.get_compiler('cpp').cmd_array(),
             taisei.full_path(),
             '--pre-js', em_preamble,
             em_bundle_link_args,
             '--shell-file', em_shell,
             get_option('c_args'),
             get_option('c_link_args'),
+            em_common_args,
             em_link_args,
             '-o', '@OUTPUT0@',
         ],

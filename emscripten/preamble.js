@@ -13,7 +13,7 @@ var logOutputElement = E('output');
 var dlMessage = statusElement.innerText;
 logToggleElement.checked = false;
 
-function toggleLog() {
+window['toggleLog'] = function toggleLog() {
     logContainerElement.hidden = !logToggleElement.checked;
     logOutputElement.scrollTop = logOutputElement.scrollHeight;
 }
