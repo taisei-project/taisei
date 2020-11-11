@@ -138,8 +138,8 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
 	e->move = ARGS.move_enter;
 
-	int count = 14;
-	int charge_time = 60;
+	int count = difficulty_value(8, 10, 12, 14);
+	int charge_time = difficulty_value(100, 80, 60, 60);
 	int spawn_period = charge_time / count + (charge_time % count != 0);
 	charge_time = count * spawn_period;
 
@@ -205,34 +205,27 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit;
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 5, .power = 5)));
 	e->move = ARGS.move_enter;
 
-	int charge_time = 60;
+	int charge_time = difficulty_value(120, 80, 60, 60);
+	common_charge(charge_time, &e->pos, 0, RGBA(0.5, 0.2, 1.0, 0.0));
 
-	INVOKE_SUBTASK(common_charge,
-		.time = charge_time,
-		.anchor = &e->pos,
-		.color = RGBA(0.5, 0.2, 1.0, 0.0),
-		.sound = COMMON_CHARGE_SOUNDS
-	);
-
-	WAIT(charge_time);
-
-	int step = difficulty_value(25, 20, 20, 15);
-	int duration = difficulty_value(145, 170, 195, 220);
+	int step = difficulty_value(60, 40, 40, 30);
+	int interstep = difficulty_value(25, 20, 20, 15);
+	int arcshots = difficulty_value(10, 10, 12, 14);
+	int num_bursts = difficulty_value(4, 8, 12, 16);
 	int endpoints = 5;
-	int arcshots = 14;
 	int totalshots = endpoints * (1 + arcshots);
 
 	cmplx rotate_per_shot = cdir(2*M_PI/totalshots);
-	cmplx rotate_per_bunch = cdir(M_PI/endpoints);
+	cmplx rotate_per_burst = cdir(M_PI/endpoints);
 	cmplx dir = rng_dir();
 
 	real boostfactor = 2;
-	real speed = 2.5;
+	real speed = difficulty_value(2.0, 2.0, 2.5, 2.5);
 	real initial_offset = 8;
 
-	for(int t = 0, bunch = 0; t < duration; t += WAIT(step), ++bunch) {
+	for(int burst = 0; burst < num_bursts; ++burst) {
 		play_sfx("shot_special1");
-		bool inward = bunch & 1;
+		bool inward = burst & 1;
 
 		for(int i = 0; i < endpoints; ++i) {
 			MoveParams move_ball = move_asymptotic_simple(speed * dir, inward ? 0 : boostfactor);
@@ -266,11 +259,8 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit;
 			}
 		}
 
-		dir *= rotate_per_bunch;
-
-		if(inward) {
-			WAIT(step);
-		}
+		dir *= rotate_per_burst;
+		WAIT(inward ? step : interstep);
 	}
 
 	WAIT(60);
@@ -291,9 +281,9 @@ TASK(redwall_fairy, {
 
 	WAIT(30);
 
-	int duration = difficulty_value(50, 60, 65, 70);
+	int duration = difficulty_value(42, 60, 65, 70);
 	int step = difficulty_value(5, 4, 4, 3);
-	real pspeed = difficulty_value(1, 1.65, 2.2, 2.7);
+	real pspeed = difficulty_value(2, 2, 2.2, 2.7);
 
 	for(int t = 0; t < duration; t += WAIT(step)) {
 		play_sfx("shot3");
@@ -540,7 +530,9 @@ TASK(redwall_side_fairies_2, { int num; }) {
 }
 
 static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
-	int num = 8;
+	int num = difficulty_value(6, 7, 8, 8);
+	int period = difficulty_value(20, 18, 15, 15);
+
 	for(int i = 0; i < num; ++i) {
 		cmplx pos = VIEWPORT_W/2 + 42 * (i - num/2.0) - 20.0*I;
 
@@ -550,7 +542,7 @@ static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
 			.move_exit = move_accelerated(0, -0.15*I)
 		);
 
-		WAIT(15);
+		WAIT(period);
 	}
 
 }
@@ -823,17 +815,25 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(400, twin-spinshots);
 
-	INVOKE_TASK_DELAYED(420, spinshot_fairy,
-		.pos = 0,
-		.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
-		.move_exit = move_accelerated(0, 0.1*I)
-	);
+	if(global.diff > D_Easy) {
+		INVOKE_TASK_DELAYED(420, spinshot_fairy,
+			.pos = 0,
+			.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_exit = move_accelerated(0, 0.1*I)
+		);
 
-	INVOKE_TASK_DELAYED(480, spinshot_fairy,
-		.pos = VIEWPORT_W,
-		.move_enter = move_towards(2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
-		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
-	);
+		INVOKE_TASK_DELAYED(480, spinshot_fairy,
+			.pos = VIEWPORT_W,
+			.move_enter = move_towards(2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_exit = move_accelerated(0, 0.1*I)
+		);
+	} else {
+		INVOKE_TASK_DELAYED(420, spinshot_fairy,
+			.pos = VIEWPORT_W/2,
+			.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+			.move_exit = move_accelerated(0, 0.1*I)
+		);
+	}
 
 	STAGE_BOOKMARK_DELAYED(720, pre-boss-spam);
 
