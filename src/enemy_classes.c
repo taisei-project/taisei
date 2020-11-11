@@ -152,7 +152,7 @@ static void visual_huge_fairy(Enemy *e, int t, bool render) {
 
 static void visual_super_fairy(Enemy *e, int t, bool render) {
 	if(render) {
-		draw_fairy(e, t, res_anim("enemy/bigfairy"));
+		draw_fairy(e, t, res_anim("enemy/superfairy"));
 	}
 }
 
