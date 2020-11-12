@@ -204,10 +204,13 @@ DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 			WAIT(15);
 		}
 
-		WAIT(60);
+		WAIT(40);
+		aniplayer_soft_switch(&boss->ani, "guruguru", 0);
+		WAIT(20);
 		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.25, wander_bounds);
 		play_sfx("shot_special1");
 		INVOKE_SUBTASK(fan_burst, boss);
 		WAIT(120);
+		aniplayer_soft_switch(&boss->ani, "main", 0);
 	}
 }
