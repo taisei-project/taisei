@@ -40,12 +40,16 @@ static void amulet_visual(Enemy *e, int t, bool render) {
 TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; }) {
 	Enemy *core = TASK_BIND(ARGS.core);
 
-	for(;;) {
+	int nshots = difficulty_value(1, 1, 3, 69);
+	int charge_time = difficulty_value(90, 75, 60, 60);
+	real accel = difficulty_value(0.05, 0.06, 0.085, 0.085);
+
+	for(int i = 0; i < nshots; ++i) {
 		WAIT(60);
-		common_charge(60, &core->pos, 0, RGBA(0.6, 0.2, 0.5, 0));
+		common_charge(charge_time, &core->pos, 0, RGBA(0.6, 0.2, 0.5, 0));
 
 		ENT_ARRAY_FOREACH(ARGS.spinners, Projectile *p, {
-			int cnt = 24;
+			int cnt = difficulty_value(12, 16, 22, 24);
 			for(int i = 0; i < cnt; ++i) {
 				cmplx ca = circle_dir(i, cnt);
 				cmplx o = p->pos + 42 * ca;
@@ -59,10 +63,13 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 					.move = move_towards(o, 0.02),
 				);
 
-				INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * 0.085));
+				INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * accel));
 			}
 		});
 	}
+
+	WAIT(60);
+	enemy_kill(core);
 }
 
 TASK(amulet, {
@@ -78,7 +85,7 @@ TASK(amulet, {
 
 	INVOKE_TASK_AFTER(NOT_NULL(ARGS.death_event), common_kill_enemy, ENT_BOX(core));
 
-	int num_spinners = 4;
+	int num_spinners = difficulty_value(2, 3, 4, 4);
 	real spinner_ofs = 32;
 	cmplx spin = cdir(M_PI/8);
 
@@ -124,11 +131,12 @@ TASK(amulet, {
 }
 
 static void fan_burst_side(cmplx o, cmplx ofs, real x) {
-	int cnt = 3;
+	int cnt = difficulty_value(2, 3, 3, 3);
+	real speed = difficulty_value(2, 2.5, 3, 3);
 	real sat = 0.75;
 
 	for(int i = 0; i < cnt; ++i) {
-		real s = 3 + 0.3 * i;
+		real s = speed * (1 + 0.1 * i);
 
 		PROJECTILE(
 			.pos = o + ofs,
@@ -147,7 +155,9 @@ static void fan_burst_side(cmplx o, cmplx ofs, real x) {
 }
 
 TASK(fan_burst, { Boss *boss; }) {
-	for(int burst = 0; burst < 2; ++burst) {
+	int nbursts = difficulty_value(1, 1, 2, 2);
+
+	for(int burst = 0; burst < nbursts; ++burst) {
 		int cnt = 30;
 		for(int i = 0; i < cnt; ++i, WAIT(3)) {
 			play_sfx_loop("shot1_loop");
