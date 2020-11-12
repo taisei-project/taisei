@@ -74,7 +74,7 @@ DEFINE_EXTERN_TASK(stage2_spell_wheel_of_fortune) {
 
 	real spin_dir = rng_sign();
 	int duration = 600;
-	int overlap = 60;
+	int overlap = difficulty_value(-60, 40, 60, 60);
 
 	for(;;WAIT(duration - overlap)) {
 		INVOKE_SUBTASK(wheel, ENT_BOX(boss), spin_dir, duration);
