@@ -122,7 +122,7 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Select Stage", menu_action_enter_stagemenu, NULL);
 #endif
 	add_menu_entry(m, "Replays", menu_action_enter_replayview, NULL);
-	add_menu_entry(m, "Music Room", menu_action_enter_musicroom, NULL);
+	add_menu_entry(m, "Media Room", menu_action_enter_media, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
 #ifndef __EMSCRIPTEN__
 	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;

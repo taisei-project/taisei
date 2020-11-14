@@ -1,6 +1,6 @@
 
-.name = "Reimu Extra Intro",
-.bgm = "ending",
+.name = "Reimu (Extra Stage Intro)",
+.bgm = "intro",
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/moriya", {

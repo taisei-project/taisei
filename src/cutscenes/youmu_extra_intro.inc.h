@@ -1,6 +1,6 @@
 
-.name = "Yōmu Extra Intro",
-.bgm = "ending",
+.name = "Yōmu (Extra Stage Intro)",
+.bgm = "intro",
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/netherworld", {

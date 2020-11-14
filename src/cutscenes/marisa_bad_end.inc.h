@@ -1,5 +1,5 @@
 
-.name = "Marisa Bad End",
+.name = "Marisa (Bad Ending)",
 .bgm = "ending",
 
 .phases = (CutscenePhase[]) {

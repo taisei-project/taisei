@@ -1,6 +1,6 @@
 
-.name = "Marisa Extra Intro",
-.bgm = "ending",
+.name = "Marisa (Extra Stage Intro)",
+.bgm = "intro",
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/sdm", {
