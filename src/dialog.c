@@ -335,12 +335,10 @@ void dialog_draw(Dialog *dialog) {
 
 	r_mat_mv_push();
 
-	float opacity = dialog->opacity;
-
-	if(opacity < 1) {
-		r_mat_mv_translate(0, 100 * (1 - opacity), 0);
+	if(dialog->opacity < 1) {
+		r_mat_mv_translate(0, 100 * (1 - dialog->opacity), 0);
 	}
-	r_color4(0, 0, 0, 0.8 * opacity);
+	r_color4(0, 0, 0, 0.8 * dialog->opacity);
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_bg_rect.x, dialog_bg_rect.y, 0);
 	r_mat_mv_scale(dialog_bg_rect.w, dialog_bg_rect.h, 1);
@@ -360,7 +358,7 @@ void dialog_draw(Dialog *dialog) {
 
 	if(dialog->text.fading_out->opacity > 0) {
 		clr = dialog->text.fading_out->color;
-		color_mul_scalar(&clr, opacity);
+		color_mul_scalar(&clr, dialog->opacity);
 
 		text_draw_wrapped(dialog->text.fading_out->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
@@ -376,7 +374,7 @@ void dialog_draw(Dialog *dialog) {
 
 	if(dialog->text.current->opacity > 0) {
 		clr = dialog->text.current->color;
-		color_mul_scalar(&clr, opacity);
+		color_mul_scalar(&clr, dialog->opacity);
 
 		text_draw_wrapped(dialog->text.current->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
