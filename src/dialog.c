@@ -115,7 +115,7 @@ void dialog_update(Dialog *d) {
 		if(d->title.timeout == 0 || d->state == DIALOG_STATE_FADEOUT) {
 			fapproach_asymptotic_p(&d->title.box.opacity, 0, 0.1, 1e-3);
 			fapproach_asymptotic_p(&d->title.box_text.opacity, 0, 0.1, 1e-3);
-            d->title.box_text.opacity = 0;
+			d->title.box_text.opacity = 0;
 			d->title.timeout = 0;
 		}
 	} else if (d->title.timeout == 0) {
@@ -334,10 +334,13 @@ void dialog_draw(Dialog *dialog) {
 	};
 
 	r_mat_mv_push();
-	if(dialog->opacity < 1) {
-		r_mat_mv_translate(0, 100 * (1 - dialog->opacity), 0);
+
+	float opacity = dialog->opacity;
+
+	if(opacity < 1) {
+		r_mat_mv_translate(0, 100 * (1 - opacity), 0);
 	}
-	r_color4(0, 0, 0, 0.8 * dialog->opacity);
+	r_color4(0, 0, 0, 0.8 * opacity);
 	r_mat_mv_push();
 	r_mat_mv_translate(dialog_bg_rect.x, dialog_bg_rect.y, 0);
 	r_mat_mv_scale(dialog_bg_rect.w, dialog_bg_rect.h, 1);
@@ -357,7 +360,7 @@ void dialog_draw(Dialog *dialog) {
 
 	if(dialog->text.fading_out->opacity > 0) {
 		clr = dialog->text.fading_out->color;
-		color_mul_scalar(&clr, dialog->opacity);
+		color_mul_scalar(&clr, opacity);
 
 		text_draw_wrapped(dialog->text.fading_out->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
@@ -373,7 +376,7 @@ void dialog_draw(Dialog *dialog) {
 
 	if(dialog->text.current->opacity > 0) {
 		clr = dialog->text.current->color;
-		color_mul_scalar(&clr, dialog->opacity);
+		color_mul_scalar(&clr, opacity);
 
 		text_draw_wrapped(dialog->text.current->text, dialog_bg_rect.w, &(TextParams) {
 			.shader = "text_dialog",
@@ -448,12 +451,11 @@ void dialog_preload(void) {
 	preload_resource(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
 }
 
-void dialog_draw_title(Dialog *dialog, DialogActor *actor, char *name, char *title) {
+void dialog_show_title(Dialog *dialog, DialogActor *actor, char *name, char *title) {
 	dialog->title.name = name;
 	dialog->title.text = title;
 	dialog->title.active = true;
 	dialog->title.timeout = 360;
 
-	log_debug("Show Title: %s - %s", name, title);
-
+	log_debug("%s - %s", name, title);
 }
