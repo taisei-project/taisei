@@ -6,11 +6,13 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "cutscenes/cutscene.h"
 #include "taisei.h"
 
 #include "global.h"
 #include "plrmodes.h"
 #include "reimu.h"
+#include "progress.h"
 #include "stagedraw.h"
 
 static Framebuffer *bomb_buffer;
@@ -23,8 +25,8 @@ PlayerCharacter character_reimu = {
 	.title = "Shrine Maiden of Fantasy",
 	.menu_texture_name = "reimubg",
 	.ending = {
-		.good = good_ending_reimu,
-		.bad = bad_ending_reimu,
+		.good = CUTSCENE_ID_REIMU_GOOD_END, ENDING_GOOD_REIMU,
+		.bad = CUTSCENE_ID_REIMU_BAD_END, ENDING_BAD_REIMU,
 	},
 };
 

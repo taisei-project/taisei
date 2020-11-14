@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "progress.h"
 #include "taisei.h"
 
 #include "common.h"
@@ -13,8 +14,8 @@
 #include "menu.h"
 #include "savereplay.h"
 #include "difficultyselect.h"
+#include "cutscenes/cutscene.h"
 #include "charselect.h"
-#include "ending.h"
 #include "credits.h"
 #include "mainmenu.h"
 #include "video.h"
@@ -140,7 +141,6 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 			CallChain cc;
 
 			if(global.gameover == GAMEOVER_WIN) {
-				ending_preload();
 				credits_preload();
 				cc = CALLCHAIN(start_game_do_show_ending, ctx);
 			} else {
@@ -155,7 +155,18 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 }
 
 static void start_game_do_show_ending(CallChainResult ccr) {
-	ending_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx));
+	Player *plr = &global.plr;
+	PlayerCharacter *character = plr->mode->character;
+	PlrCharEndingCutscene *ec_id;
+
+	if (plr->stats.total.continues_used) {
+		ec_id = &character->ending.bad;
+	} else {
+		ec_id = &character->ending.good;
+	}
+
+	progress_track_ending(ec_id->ending_id);
+	cutscene_enter(CALLCHAIN(start_game_do_show_credits, ccr.ctx), ec_id->cutscene_id);
 }
 
 static void start_game_do_show_credits(CallChainResult ccr) {

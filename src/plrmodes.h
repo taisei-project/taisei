@@ -14,7 +14,7 @@
 #include "enemy.h"
 #include "projectile.h"
 #include "player.h"
-#include "ending.h"
+#include "cutscenes/cutscene.h"
 #include "stage.h"
 #include "dialog.h"
 
@@ -55,7 +55,10 @@ typedef enum {
 	PLR_PROP_DEATHBOMB_WINDOW,   // how much time the player has to recover with a bomb if they died in this frame (frames)
 } PlrProperty;
 
-typedef void (*PlrCharEndingProc)(Ending *e);
+typedef struct PlrCharEndingCutscene {
+	CutsceneID cutscene_id;
+	EndingID ending_id;
+} PlrCharEndingCutscene;
 
 typedef struct PlayerCharacter {
 	CharacterID id;
@@ -66,8 +69,8 @@ typedef struct PlayerCharacter {
 	const char *menu_texture_name;
 
 	struct {
-		PlrCharEndingProc good;
-		PlrCharEndingProc bad;
+		PlrCharEndingCutscene good;
+		PlrCharEndingCutscene bad;
 	} ending;
 } PlayerCharacter;
 

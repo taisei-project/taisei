@@ -65,7 +65,6 @@ taisei_src = files(
     'dialog.c',
     'difficulty.c',
     'dynarray.c',
-    'ending.c',
     'enemy.c',
     'enemy_classes.c',
     'entity.c',

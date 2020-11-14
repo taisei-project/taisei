@@ -13,7 +13,6 @@
 
 #include <SDL.h>
 
-#include "ending.h"
 #include "cutscenes/cutscene.h"
 
 #define PROGRESS_FILE "storage/progress.dat"
@@ -75,7 +74,7 @@ struct UnknownCmd;
 
 typedef struct GlobalProgress {
 	uint32_t hiscore;
-	uint32_t achieved_endings[NUM_ENDINGS];
+	uint32_t achieved_endings[NUM_CUTSCENE_IDS];
 	uint64_t unlocked_bgms;
 	uint64_t unlocked_cutscenes;
 	struct UnknownCmd *unknown;
@@ -86,6 +85,29 @@ typedef struct GlobalProgress {
 		uint8_t shotmode;
 	} game_settings;
 } GlobalProgress;
+
+
+typedef enum EndingID {
+	// WARNING: Reordering this will break current progress files.
+
+	ENDING_BAD_MARISA,
+	ENDING_BAD_YOUMU,
+	ENDING_GOOD_MARISA,
+	ENDING_GOOD_YOUMU,
+	ENDING_BAD_REIMU,
+	ENDING_GOOD_REIMU,
+	NUM_ENDINGS,
+} EndingID;
+
+#define GOOD_ENDINGS \
+	ENDING(ENDING_GOOD_MARISA) \
+	ENDING(ENDING_GOOD_YOUMU) \
+	ENDING(ENDING_GOOD_REIMU) \
+
+#define BAD_ENDINGS \
+	ENDING(ENDING_BAD_MARISA) \
+	ENDING(ENDING_BAD_YOUMU) \
+	ENDING(ENDING_BAD_REIMU) \
 
 extern GlobalProgress progress;
 
@@ -99,6 +121,7 @@ uint32_t progress_times_any_good_ending_achieved(void);
 bool progress_is_bgm_unlocked(const char *name);
 void progress_unlock_bgm(const char *name);
 
+void progress_track_ending(EndingID id);
 bool progress_is_cutscene_unlocked(CutsceneID id);
 void progress_unlock_cutscene(CutsceneID id);
 

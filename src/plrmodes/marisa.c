@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "cutscenes/cutscene.h"
+#include "progress.h"
 #include "taisei.h"
 
 #include "global.h"
@@ -21,8 +23,8 @@ PlayerCharacter character_marisa = {
 	.title = "Unbelievably Ordinary Magician",
 	.menu_texture_name = "marisa_bombbg",
 	.ending = {
-		.good = good_ending_marisa,
-		.bad = bad_ending_marisa,
+		.good = CUTSCENE_ID_MARISA_GOOD_END, ENDING_GOOD_MARISA,
+		.bad = CUTSCENE_ID_MARISA_BAD_END, ENDING_BAD_MARISA,
 	},
 };
 

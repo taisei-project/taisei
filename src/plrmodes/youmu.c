@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "cutscenes/cutscene.h"
+#include "progress.h"
 #include "taisei.h"
 
 #include "global.h"
@@ -21,8 +23,8 @@ PlayerCharacter character_youmu = {
 	.title = "Swordswoman Between Worlds",
 	.menu_texture_name = "youmu_bombbg1",
 	.ending = {
-		.good = good_ending_youmu,
-		.bad = bad_ending_youmu,
+		.good = CUTSCENE_ID_YOUMU_GOOD_END, ENDING_GOOD_YOUMU,
+		.bad = CUTSCENE_ID_YOUMU_BAD_END, ENDING_BAD_YOUMU,
 	},
 };
 
