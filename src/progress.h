@@ -72,21 +72,6 @@ typedef enum ProgressBGMID {
 
 struct UnknownCmd;
 
-typedef struct GlobalProgress {
-	uint32_t hiscore;
-	uint32_t achieved_endings[NUM_CUTSCENE_IDS];
-	uint64_t unlocked_bgms;
-	uint64_t unlocked_cutscenes;
-	struct UnknownCmd *unknown;
-
-	struct {
-		uint8_t difficulty;
-		uint8_t character;
-		uint8_t shotmode;
-	} game_settings;
-} GlobalProgress;
-
-
 typedef enum EndingID {
 	// WARNING: Reordering this will break current progress files.
 
@@ -102,12 +87,28 @@ typedef enum EndingID {
 #define GOOD_ENDINGS \
 	ENDING(ENDING_GOOD_MARISA) \
 	ENDING(ENDING_GOOD_YOUMU) \
-	ENDING(ENDING_GOOD_REIMU) \
+	ENDING(ENDING_GOOD_REIMU)
 
 #define BAD_ENDINGS \
 	ENDING(ENDING_BAD_MARISA) \
 	ENDING(ENDING_BAD_YOUMU) \
-	ENDING(ENDING_BAD_REIMU) \
+	ENDING(ENDING_BAD_REIMU)
+
+typedef struct GlobalProgress {
+	uint32_t hiscore;
+	uint32_t achieved_endings[NUM_ENDINGS];
+	uint64_t unlocked_bgms;
+	uint64_t unlocked_cutscenes;
+	struct UnknownCmd *unknown;
+
+	struct {
+		uint8_t difficulty;
+		uint8_t character;
+		uint8_t shotmode;
+	} game_settings;
+} GlobalProgress;
+
+
 
 extern GlobalProgress progress;
 

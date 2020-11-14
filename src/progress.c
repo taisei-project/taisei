@@ -224,7 +224,7 @@ static void progress_read(SDL_RWops *file) {
 					uint8_t ending = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
 					uint32_t num_achieved = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
 
-					if(ending < NUM_CUTSCENE_IDS) {
+					if(ending < NUM_ENDINGS) {
 						progress.achieved_endings[ending] = num_achieved;
 					} else {
 						log_warn("Invalid ending %u ignored", ending);
@@ -535,7 +535,7 @@ static void progress_prepare_cmd_endings(size_t *bufsize, void **arg) {
 	int n = 0;
 	*arg = 0;
 
-	for(int i = 0; i < NUM_CUTSCENE_IDS; ++i) {
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
 		if(progress.achieved_endings[i]) {
 			++n;
 		}
@@ -558,7 +558,7 @@ static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
 	SDL_WriteU8(vfile, PCMD_ENDINGS);
 	SDL_WriteLE16(vfile, sz);
 
-	for(int i = 0; i < NUM_CUTSCENE_IDS; ++i) {
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
 		if(progress.achieved_endings[i]) {
 			SDL_WriteU8(vfile, i);
 			SDL_WriteLE32(vfile, progress.achieved_endings[i]);
@@ -809,7 +809,7 @@ void progress_track_ending(EndingID id) {
 uint32_t progress_times_any_ending_achieved(void) {
 	uint x = 0;
 
-	for(uint i = 0; i < NUM_CUTSCENE_IDS; ++i) {
+	for(uint i = 0; i < NUM_ENDINGS; ++i) {
 		x += progress.achieved_endings[i];
 	}
 

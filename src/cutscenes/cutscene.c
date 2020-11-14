@@ -471,6 +471,7 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 		return;
 	}
 
+	log_info("Playing cutscene ID: #%i", id);
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
 	st->bg_state.transition_rate = 1/80.0f;
