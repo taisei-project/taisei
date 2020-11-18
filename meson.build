@@ -145,6 +145,7 @@ dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : f
 dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
+dep_gamemode    = dependency('gamemode',                            required : false, static : static)
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -157,6 +158,7 @@ taisei_deps = [
     dep_basisu_transcoder,
     dep_cglm,
     dep_freetype,
+    dep_gamemode,
     dep_koishi,
     dep_m,
     dep_png,
