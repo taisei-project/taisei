@@ -200,6 +200,16 @@ Timing
    cases. ``TAISEI_FRAMELIMITER_SLEEP``, ``TAISEI_FRAMELIMITER_COMPENSATE``,
    and the ``frameskip`` setting have no effect in this mode.
 
+Miscellaneous
+~~~~~~~~~~~~~
+
+**TAISEI_GAMEMODE**
+   | Default: ``1``
+   | *Linux only*
+
+   If ``1``, enables automatic integration with Feral Interactive's GameMode
+   daemon. Only meaningful for GameMode-enabled builds.
+
 Logging
 ~~~~~~~
 

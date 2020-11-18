@@ -60,3 +60,9 @@ endif
 
 subdir('pixmap_loaders')
 util_src += pixmap_loaders_src
+
+if dep_gamemode.found()
+    util_src += files('gamemode.c')
+else
+    util_src += files('gamemode_stub.c')
+endif

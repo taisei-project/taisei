@@ -30,6 +30,8 @@ Optional:
 -  OpenSSL (for a better SHA-256 implementation; used in shader cache)
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
+-  GameMode headers (Linux only; for automatic `GameMode
+   <https://github.com/FeralInteractive/gamemode>`__ integration)
 
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
