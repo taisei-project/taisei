@@ -801,7 +801,7 @@ void progress_unload(void) {
 
 void progress_track_ending(EndingID id) {
 
-	log_info("Ending ID tracked: #%i", id);
+	log_debug("Ending ID tracked: #%i", id);
 	assert((uint)id < NUM_ENDINGS);
 	progress.achieved_endings[id]++;
 }

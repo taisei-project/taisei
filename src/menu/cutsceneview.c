@@ -34,7 +34,7 @@ static void cutscene_player(MenuData *m, void *arg) {
 	cutscene_enter(CALLCHAIN(restart_menu_bgm, NULL), cutscene_id);
 }
 
-MenuData* create_cutsceneview_menu(void) {
+MenuData *create_cutsceneview_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_cutsceneview_menu;

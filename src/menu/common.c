@@ -6,7 +6,6 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "progress.h"
 #include "taisei.h"
 
 #include "common.h"
@@ -18,6 +17,7 @@
 #include "charselect.h"
 #include "credits.h"
 #include "mainmenu.h"
+#include "progress.h"
 #include "video.h"
 
 typedef struct StartGameContext {
