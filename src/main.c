@@ -27,6 +27,7 @@
 #include "taskmanager.h"
 #include "coroutine.h"
 #include "util/gamemode.h"
+#include "cutscenes/cutscene.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -322,6 +323,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 
 	if(ctx->cli.type == CLI_SelectStage) {
 		main_singlestg(ctx);
+		return;
+	}
+
+	if(ctx->cli.type == CLI_Cutscene) {
+		cutscene_enter(CALLCHAIN(main_cleanup, ctx), ctx->cli.cutscene);
+		eventloop_run();
 		return;
 	}
 #endif

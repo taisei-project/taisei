@@ -22,15 +22,17 @@ typedef enum {
 	CLI_DumpVFSTree,
 	CLI_Quit,
 	CLI_Credits,
+	CLI_Cutscene,
 } CLIActionType;
 
 typedef struct CLIAction CLIAction;
 struct CLIAction {
 	CLIActionType type;
-	char *filename;
 	int stageid;
 	int diff;
 	int frameskip;
+	CutsceneID cutscene;
+	char *filename;
 	PlayerMode *plrmode;
 };
 

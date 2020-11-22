@@ -460,8 +460,17 @@ static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 }
 
 void cutscene_enter(CallChain next, CutsceneID id) {
+	assert((uint)id < NUM_CUTSCENE_IDS);
+
 	progress_unlock_cutscene(id);
 	const Cutscene *cs = g_cutscenes + id;
+
+	if(cs->phases == NULL) {
+		log_error("Cutscene %i not implemented!", id);
+		run_call_chain(&next, NULL);
+		return;
+	}
+
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
 	st->bg_state.transition_rate = 1/80.0f;
