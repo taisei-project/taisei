@@ -23,6 +23,11 @@ typedef struct Logger {
 	uint levels;
 } Logger;
 
+typedef struct QueuedLogEntry {
+	LIST_INTERFACE(struct QueuedLogEntry);
+	LogEntry e;
+} QueuedLogEntry;
+
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
@@ -31,6 +36,14 @@ static struct {
 	size_t fmt_buf_size;
 	SDL_mutex *mutex;
 	uint enabled_log_levels;
+
+	struct {
+		SDL_Thread *thread;
+		SDL_mutex *mutex;
+		SDL_cond *cond;
+		LIST_ANCHOR(QueuedLogEntry) queue;
+		bool alive;
+	} queue;
 
 #ifdef LOG_FATAL_MSGBOX
 	char *err_appendix;
@@ -139,6 +152,52 @@ static void add_debug_info(char **buf) {
 	});
 }
 
+static void log_dispatch(LogEntry *entry) {
+	for(Logger *l = logging.outputs; l; l = l->next) {
+		if(l->levels & entry->level) {
+			size_t slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, entry);
+
+			if(slen >= logging.fmt_buf_size) {
+				{
+					char tmp[strlen(logging.fmt_buf1) + 1];
+					strcpy(tmp, logging.fmt_buf1);
+					realloc_buffers(slen + 1);
+					strcpy(logging.fmt_buf1, tmp);
+				}
+
+				entry->message = logging.fmt_buf1;
+
+				attr_unused int old_slen = slen;
+				slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, entry);
+				assert_nolog(old_slen == slen);
+			}
+
+			assert_nolog(slen >= 0);
+
+			if(logging.fmt_buf_size < slen) {
+				slen = logging.fmt_buf_size;
+			}
+
+			SDL_RWwrite(l->out, logging.fmt_buf2, 1, slen);
+		}
+	}
+}
+
+static void log_dispatch_async(LogEntry *entry) {
+	for(Logger *l = logging.outputs; l; l = l->next) {
+		if(l->levels & entry->level) {
+			QueuedLogEntry *qle = calloc(1, sizeof( *qle));
+			memcpy(&qle->e, entry, sizeof(*entry));
+			SDL_LockMutex(logging.queue.mutex);
+			alist_append(&logging.queue.queue, qle);
+			SDL_CondSignal(logging.queue.cond);
+			SDL_UnlockMutex(logging.queue.mutex);
+			break;
+		}
+	}
+
+}
+
 static void log_internal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, va_list args) {
 	assert(fmt[strlen(fmt)-1] != '\n');
 
@@ -178,30 +237,10 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.time = SDL_GetTicks(),
 	};
 
-	for(Logger *l = logging.outputs; l; l = l->next) {
-		if(l->levels & lvl) {
-			slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, &entry);
-
-			if(slen >= logging.fmt_buf_size) {
-				char *tmp = strdup(logging.fmt_buf1);
-				realloc_buffers(slen + 1);
-				strcpy(logging.fmt_buf1, tmp);
-				free(tmp);
-				entry.message = logging.fmt_buf1;
-
-				attr_unused int old_slen = slen;
-				slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, &entry);
-				assert_nolog(old_slen == slen);
-			}
-
-			assert_nolog(slen >= 0);
-
-			if(logging.fmt_buf_size < slen) {
-				slen = logging.fmt_buf_size;
-			}
-
-			SDL_RWwrite(l->out, logging.fmt_buf2, 1, slen);
-		}
+	if(logging.queue.thread) {
+		log_dispatch_async(&entry);
+	} else {
+		log_dispatch(&entry);
 	}
 
 	if((lvl & LOG_FATAL) && !noabort) {
@@ -229,7 +268,7 @@ void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *filename,
 	log_abort(NULL);
 }
 
-static void* delete_logger(List **loggers, List *logger, void *arg) {
+static void *delete_logger(List **loggers, List *logger, void *arg) {
 	Logger *l = (Logger*)logger;
 
 	if(l->formatter.free != NULL) {
@@ -248,13 +287,74 @@ static void* delete_logger(List **loggers, List *logger, void *arg) {
 	return NULL;
 }
 
+static int log_queue_thread(void *a) {
+	SDL_mutex *mtx = logging.queue.mutex;
+	SDL_cond *cond = logging.queue.cond;
+
+	SDL_LockMutex(mtx);
+
+	for(;;) {
+		SDL_CondWait(cond, mtx);
+		QueuedLogEntry *qle;
+
+		while((qle = alist_pop(&logging.queue.queue))) {
+			SDL_UnlockMutex(mtx);
+			log_dispatch(&qle->e);
+			free(qle);
+			SDL_LockMutex(mtx);
+		}
+
+		if(!logging.queue.alive) {
+			break;
+		}
+	}
+
+	SDL_UnlockMutex(mtx);
+	return 0;
+}
+
+static void log_queue_init(void) {
+	if(!env_get("TAISEI_LOG_ASYNC", true)) {
+		return;
+	}
+
+	if(!(logging.queue.cond = SDL_CreateCond())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateCond");
+		return;
+	}
+
+	if(!(logging.queue.mutex = SDL_CreateMutex())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateMutex");
+		return;
+	}
+
+	if(!(logging.queue.thread = SDL_CreateThread(log_queue_thread, "Log queue", NULL))) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateThread");
+		return;
+	}
+
+	logging.queue.alive = true;
+}
+
+static void log_queue_shutdown(void) {
+	SDL_LockMutex(logging.queue.mutex);
+	logging.queue.alive = false;
+	SDL_CondSignal(logging.queue.cond);
+	SDL_UnlockMutex(logging.queue.mutex);
+	SDL_WaitThread(logging.queue.thread, NULL);
+	SDL_DestroyMutex(logging.queue.mutex);
+	SDL_DestroyCond(logging.queue.cond);
+}
+
 void log_init(LogLevel lvls) {
 	logging.enabled_log_levels = lvls;
 	logging.mutex = SDL_CreateMutex();
 	realloc_buffers(INIT_BUF_SIZE);
+	log_queue_init();
 }
 
 void log_shutdown(void) {
+	log_queue_shutdown();
 	list_foreach(&logging.outputs, delete_logger, NULL);
 	SDL_DestroyMutex(logging.mutex);
 	free(logging.fmt_buf1);
