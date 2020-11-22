@@ -19,6 +19,11 @@
 #include "cutscenes/scenes.h"
 #include "progress.h"
 
+typedef struct CutsceneEntryParam {
+	char *name;
+	int *id;
+} CutsceneEntryParam;
+
 static void draw_cutsceneview_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Cutscene Viewer");
@@ -30,11 +35,8 @@ static void restart_menu_bgm(CallChainResult ccr) {
 }
 
 static void cutscene_player(MenuData *m, void *arg) {
-	CutsceneID *cutscene_id = arg;
-	assume(cutscene_id != NULL);
-
-	CallChainResult ccr;
-	cutscene_enter(CALLCHAIN(restart_menu_bgm, ccr.ctx), *cutscene_id);
+	CutsceneID cutscene_id = (uintptr_t)arg;
+	cutscene_enter(CALLCHAIN(restart_menu_bgm, NULL), cutscene_id);
 }
 
 MenuData* create_cutsceneview_menu(void) {
@@ -45,11 +47,10 @@ MenuData* create_cutsceneview_menu(void) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
-	add_menu_entry(m, "Intro", cutscene_player, 0);
-	for(int id = 1; id < NUM_CUTSCENE_IDS; id++) {
+	for(uintptr_t id = 0; id < NUM_CUTSCENE_IDS; id++) {
 		if(progress_is_cutscene_unlocked(id)) {
 			const Cutscene *cs = g_cutscenes + id;
-			add_menu_entry(m, cs->name, cutscene_player, id);
+			add_menu_entry(m, cs->name, cutscene_player, (void*)id);
 		} else {
 			add_menu_entry(m, "(Locked)", NULL, NULL);
 		}
