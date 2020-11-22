@@ -6,10 +6,10 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "eventloop/eventloop.h"
-#include "menu/menu.h"
 #include "taisei.h"
 
+#include "eventloop/eventloop.h"
+#include "menu/menu.h"
 #include "cutsceneview.h"
 #include "common.h"
 #include "options.h"

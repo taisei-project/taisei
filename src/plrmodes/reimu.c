@@ -6,13 +6,11 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "cutscenes/cutscene.h"
 #include "taisei.h"
 
 #include "global.h"
 #include "plrmodes.h"
 #include "reimu.h"
-#include "progress.h"
 #include "stagedraw.h"
 
 static Framebuffer *bomb_buffer;

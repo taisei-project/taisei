@@ -6,8 +6,6 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "cutscenes/cutscene.h"
-#include "progress.h"
 #include "taisei.h"
 
 #include "global.h"
