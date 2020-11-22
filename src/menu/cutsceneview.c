@@ -19,11 +19,6 @@
 #include "cutscenes/scenes.h"
 #include "progress.h"
 
-typedef struct CutsceneEntryParam {
-	char *name;
-	int *id;
-} CutsceneEntryParam;
-
 static void draw_cutsceneview_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Cutscene Viewer");
