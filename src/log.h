@@ -13,6 +13,8 @@
 
 #include <SDL.h>
 
+#include "util/strbuf.h"
+
 enum {
 	_LOG_DEBUG_ID,
 	_LOG_INFO_ID,
@@ -97,7 +99,7 @@ typedef struct LogEntry {
 typedef struct FormatterObj FormatterObj;
 
 struct FormatterObj {
-	int (*format)(FormatterObj *self, char *buf, size_t buf_size, LogEntry *entry);
+	int (*format)(FormatterObj *self, StringBuffer *buffer, LogEntry *entry);
 	void (*free)(FormatterObj *self);
 	void *data;
 };

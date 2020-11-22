@@ -56,7 +56,10 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 
 void strbuf_clear(StringBuffer *strbuf) {
 	strbuf->pos = strbuf->start;
-	*strbuf->pos = 0;
+
+	if(strbuf->start) {
+		*strbuf->pos = 0;
+	}
 }
 
 void strbuf_free(StringBuffer *strbuf) {
