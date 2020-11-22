@@ -480,6 +480,6 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 }
 
 const char *cutscene_get_name(CutsceneID id) {
-	const Cutscene *cs = g_cutscenes + id;
-	return cs->name;
+	assert((uint)id < NUM_CUTSCENE_IDS);
+	return g_cutscenes[id].name;
 }

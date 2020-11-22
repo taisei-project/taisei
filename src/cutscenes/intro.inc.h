@@ -4,15 +4,15 @@
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/hakurei", {
-		T_NARRATOR("— The Hakurei Shrine\n"),
-		T_NARRATOR("The shrine at the border of fantasy and reality.\n"),
+		T_NARRATOR("— The Hakurei Shrine"),
+		T_NARRATOR("The shrine at the border of fantasy and reality."),
 		T_NARRATOR("Three heroines of Gensōkyō sat drinking tea on a calm day at the end of summer."),
 		T_NARRATOR("Two of them seemed unsettled, while the third—"),
 		{ 0 },
 	}},
 	{ "cutscenes/opening/01", {
 		T_MARISA("What’s got ya both so down? Did I mess up the tea?"),
-		T_NARRATOR("\nReimu and Yōmu shared a knowing glance.\n"),
+		T_NARRATOR("Reimu and Yōmu shared a knowing glance."),
 		T_REIMU("The tea’s fine. I just feel weird. I can’t put my finger on it."),
 		T_YOUMU("Likewise."),
 		{ 0 },
@@ -20,7 +20,7 @@
 	{ "cutscenes/opening/01", {
 		T_NARRATOR("The bells of the shrine tolled outside. Someone had made a donation."),
 		T_NARRATOR("A minute later, there was another."),
-		T_NARRATOR("And another.\n"),
+		T_NARRATOR("And another."),
 		{ 0 },
 	}},
 	{ "cutscenes/opening/01", {
@@ -42,7 +42,7 @@
 	}},
 	{ "cutscenes/opening/02", {
 		T_NARRATOR("A mysterious force was slowly causing yōkai and humans alike to succumb to an intense feeling of “knowing everything.”"),
-		T_NARRATOR("It would start with figuring out simple problems that they’d been struggling with, such as a technical issue with a machine or perhaps a eye-catching newspaper headline.\n"),
+		T_NARRATOR("It would start with figuring out simple problems that they’d been struggling with, such as a technical issue with a machine or perhaps a eye-catching newspaper headline."),
 		T_NARRATOR("But as it progressed, they’d become completely enveloped by it, unable to act rationally."),
 		T_NARRATOR("Yōkai Mountain was usually protected by the Moriya shrine maiden, Sanae Kochiya, but even she had been carried away into madness."),
 		{ 0 },
@@ -68,16 +68,17 @@
 		{ 0 },
 	}},
 	{ "cutscenes/opening/04", {
-		T_NARRATOR("Yōmu was distracted by the sight of her mistress standing in the shade, a fan over her face. She went over to greet her."),
-		T_YOUMU("Lady Yuyuko, why have you—"),
-		T_YUYUKO("The spirits seem drawn to Yōkai Mountain as well, as if they long for something. It’s growing difficult to contain them all…"),
+		T_NARRATOR("Yōmu finally spotted Lady Yuyuko in the crowd from Yōkai Mountain, and rushed to greet her."),
+		T_YOUMU("Lady Yuyuko, why have you—?"),
+		T_YUYUKO("The spirits seem drawn to Yōkai Mountain as well, as if they long for something. It’s growing difficult to placate them all…"),
 		T_YOUMU("I see. Shall I investigate as well?"),
 		T_YUYUKO("Please do."),
 		{ 0 },
 	}},
 	{ "cutscenes/locations/hakurei", {
-		T_NARRATOR("Elsewhere at the shrine, the kappa were all gathered around talking intensely in hushed tones, and the tengu were furiously scribbling on their notepads as if they’d just gotten the scoop of their careers.\n"),
-		T_NARRATOR("Even here, away from Yōkai Mountain, the effects of the “eldritch lunacy” seemed to persist, and continued to drive everyone mad…"),
+		T_NARRATOR("Elsewhere at the shrine, the kappa were all huddled into a group, talking intensely in hushed tones…"),
+		T_NARRATOR("And the tengu were furiously scribbling on their notepads, as if they’d just gotten the scoop of their careers."),
+		T_NARRATOR("Even here, away from Yōkai Mountain, the effects of the so-called ‘eldritch lunacy’ seemed to be reaching everyone…"),
 		{ 0 },
 	}},
 	{ NULL }

@@ -44,7 +44,7 @@
 	{ "cutscenes/marisa_extra/01", {
 		T_REMILIA("Forgive the young witch, she’s such a spoil-sport at times."),
 		T_KURUMI("Mm, indeed~."),
-		T_MARISA("Ugh, and after I said y'all were cool…"),
+		T_MARISA("Ugh, and after I said y’all were cool…"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/01", {
@@ -70,7 +70,7 @@
 	}},
 	{ "cutscenes/marisa_extra/02", {
 		T_KURUMI("Y-you saw me back there, right?! You were there! I didn’t do anything!"),
-		T_MARISA("Hey, nobody's accusin’ ya of anythin'. All ya did was shut a door, right? To keep the fairies out?"),
+		T_MARISA("Hey, nobody's accusin’ ya of anythin’. All ya did was shut a door, right? To keep the fairies out?"),
 		T_KURUMI("Y-yeah! But… but maybe it’s like that phrase? ‘One door closes, another opens'?"),
 		T_MARISA("What do ya mean?"),
 		{ 0 },
@@ -81,7 +81,7 @@
 	}},
 	{ "cutscenes/marisa_extra/02", {
 		T_KURUMI("Oh no…"),
-		T_MARISA("Well c’mon, spit it out. ‘s not like we'll hold it against ya if ya messed up. We'll just go back, get the kappa, and—"),
+		T_MARISA("Well c’mon, spit it out. ‘s not like we’ll hold it against ya if ya messed up. We’ll just go back, get the kappa, and—"),
 		T_KURUMI("Hey, um, uh, maybe you should check it out?"),
 		T_KURUMI("Like, alone? Because I'd just get in your way?"),
 		{ 0 },

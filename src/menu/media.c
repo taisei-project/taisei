@@ -31,8 +31,6 @@ static void draw_media_menu(MenuData *m) {
 }
 
 MenuData *create_media_menu(void) {
-//	char title[128];
-
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_media_menu;
