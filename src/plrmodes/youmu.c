@@ -21,8 +21,8 @@ PlayerCharacter character_youmu = {
 	.title = "Swordswoman Between Worlds",
 	.menu_texture_name = "youmu_bombbg1",
 	.ending = {
-		.good = CUTSCENE_ID_YOUMU_GOOD_END, ENDING_GOOD_YOUMU,
-		.bad = CUTSCENE_ID_YOUMU_BAD_END, ENDING_BAD_YOUMU,
+		.good = { CUTSCENE_ID_YOUMU_GOOD_END, ENDING_GOOD_YOUMU },
+		.bad = { CUTSCENE_ID_YOUMU_BAD_END, ENDING_BAD_YOUMU },
 	},
 };
 

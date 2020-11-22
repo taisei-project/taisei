@@ -13,6 +13,6 @@
 
 #include "menu.h"
 
-MenuData* create_media_menu(void);
+MenuData *create_media_menu(void);
 
 #endif // IGUARD_menu_media_h

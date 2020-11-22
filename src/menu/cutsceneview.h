@@ -13,6 +13,6 @@
 
 #include "menu.h"
 
-MenuData* create_cutsceneview_menu(void);
+MenuData *create_cutsceneview_menu(void);
 
 #endif // IGUARD_menu_cutsceneview_h

@@ -478,3 +478,8 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }
+
+const char *cutscene_get_name(CutsceneID id) {
+	const Cutscene *cs = g_cutscenes + id;
+	return cs->name;
+}

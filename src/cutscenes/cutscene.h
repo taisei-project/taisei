@@ -33,5 +33,6 @@ typedef enum CutsceneID {
 } CutsceneID;
 
 void cutscene_enter(CallChain next, CutsceneID id);
+const char *cutscene_get_name(CutsceneID id);
 
 #endif // IGUARD_cutscenes_cutscene_h

@@ -16,7 +16,6 @@
 #include "global.h"
 #include "video.h"
 #include "cutscenes/cutscene.h"
-#include "cutscenes/scenes.h"
 #include "progress.h"
 
 static void draw_cutsceneview_menu(MenuData *m) {
@@ -44,8 +43,8 @@ MenuData *create_cutsceneview_menu(void) {
 
 	for(uintptr_t id = 0; id < NUM_CUTSCENE_IDS; id++) {
 		if(progress_is_cutscene_unlocked(id)) {
-			const Cutscene *cs = g_cutscenes + id;
-			add_menu_entry(m, cs->name, cutscene_player, (void*)id);
+			const char *name = cutscene_get_name(id);
+			add_menu_entry(m, name, cutscene_player, (void*)id);
 		} else {
 			add_menu_entry(m, "(Locked)", NULL, NULL);
 		}
