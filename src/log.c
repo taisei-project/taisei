@@ -33,7 +33,6 @@ typedef struct QueuedLogEntry {
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
-	size_t fmt_buf_size;
 	SDL_mutex *mutex;
 	uint enabled_log_levels;
 
@@ -49,6 +48,8 @@ static struct {
 		LIST_ANCHOR(QueuedLogEntry) queue;
 		int shutdown;
 	} queue;
+
+	bool initialized;
 
 #ifdef LOG_FATAL_MSGBOX
 	char *err_appendix;
@@ -92,6 +93,8 @@ static const char* level_prefix(LogLevel lvl) { INDEX_MAP(level_prefix_map, lvl)
 static const char* level_name(LogLevel lvl) { INDEX_MAP(level_name_map, lvl) }
 attr_unused static const char* level_ansi_style_code(LogLevel lvl) { INDEX_MAP(level_ansi_style_map, lvl) }
 
+static void log_queue_shutdown(bool force_sync);
+
 noreturn static void log_abort(const char *msg) {
 #ifdef LOG_FATAL_MSGBOX
 	static const char *const title = "Taisei: fatal error";
@@ -109,6 +112,7 @@ noreturn static void log_abort(const char *msg) {
 	}
 #endif
 
+	log_queue_shutdown(true);
 	log_shutdown();
 
 	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
@@ -160,7 +164,7 @@ static void log_dispatch_async(LogEntry *entry) {
 			qle->e.message = qle->message;
 			SDL_LockMutex(logging.queue.mutex);
 			alist_append(&logging.queue.queue, qle);
-			SDL_CondSignal(logging.queue.cond);
+			SDL_CondBroadcast(logging.queue.cond);
 			SDL_UnlockMutex(logging.queue.mutex);
 			break;
 		}
@@ -268,6 +272,8 @@ static int log_queue_thread(void *a) {
 			SDL_LockMutex(mtx);
 		}
 
+		SDL_CondBroadcast(cond);
+
 		if(logging.queue.shutdown) {
 			break;
 		}
@@ -298,24 +304,33 @@ static void log_queue_init(void) {
 	}
 }
 
-static void log_queue_shutdown(void) {
+static void log_queue_shutdown(bool force_sync) {
+	if(!logging.queue.thread) {
+		return;
+	}
+
 	SDL_LockMutex(logging.queue.mutex);
-	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) ? 2 : 1;
-	SDL_CondSignal(logging.queue.cond);
+	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
+	SDL_CondBroadcast(logging.queue.cond);
 	SDL_UnlockMutex(logging.queue.mutex);
 	SDL_WaitThread(logging.queue.thread, NULL);
+	logging.queue.thread = NULL;
 	SDL_DestroyMutex(logging.queue.mutex);
+	logging.queue.mutex = NULL;
 	SDL_DestroyCond(logging.queue.cond);
+	logging.queue.cond = NULL;
 }
 
 void log_init(LogLevel lvls) {
 	logging.enabled_log_levels = lvls;
 	logging.mutex = SDL_CreateMutex();
 	log_queue_init();
+	logging.initialized = true;
 }
 
 void log_shutdown(void) {
-	log_queue_shutdown();
+	logging.initialized = false;
+	log_queue_shutdown(false);
 	list_foreach(&logging.outputs, delete_logger, NULL);
 	SDL_DestroyMutex(logging.mutex);
 	strbuf_free(&logging.buffers.pre_format);
@@ -328,8 +343,16 @@ void log_shutdown(void) {
 	memset(&logging, 0, sizeof(logging));
 }
 
+void log_sync(void) {
+	SDL_LockMutex(logging.queue.mutex);
+ 	while(logging.queue.queue.first) {
+		SDL_CondWait(logging.queue.cond, logging.queue.mutex);
+	}
+	SDL_UnlockMutex(logging.queue.mutex);
+}
+
 bool log_initialized(void) {
-	return logging.fmt_buf_size > 0;
+	return logging.initialized;
 }
 
 void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) {

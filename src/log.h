@@ -117,6 +117,7 @@ void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
 bool log_initialized(void) attr_nodiscard;
 void log_set_gui_error_appendix(const char *message);
+void log_sync(void);
 
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
