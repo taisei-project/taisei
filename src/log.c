@@ -144,7 +144,7 @@ static void log_dispatch(LogEntry *entry) {
 		if(l->levels & entry->level) {
 			strbuf_clear(fmt_buf);
 			size_t slen = l->formatter.format(&l->formatter, fmt_buf, entry);
-			assert(fmt_buf->buf_size >= slen);
+			assert_nolog(fmt_buf->buf_size >= slen);
 			SDL_RWwrite(l->out, fmt_buf->start, 1, slen);
 		}
 	}
