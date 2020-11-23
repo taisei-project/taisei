@@ -47,7 +47,7 @@ static struct {
 		SDL_mutex *mutex;
 		SDL_cond *cond;
 		LIST_ANCHOR(QueuedLogEntry) queue;
-		bool alive;
+		int shutdown;
 	} queue;
 
 #ifdef LOG_FATAL_MSGBOX
@@ -261,14 +261,14 @@ static int log_queue_thread(void *a) {
 		SDL_CondWait(cond, mtx);
 		QueuedLogEntry *qle;
 
-		while((qle = alist_pop(&logging.queue.queue))) {
+		while((qle = alist_pop(&logging.queue.queue)) && logging.queue.shutdown < 2) {
 			SDL_UnlockMutex(mtx);
 			log_dispatch(&qle->e);
 			free(qle);
 			SDL_LockMutex(mtx);
 		}
 
-		if(!logging.queue.alive) {
+		if(logging.queue.shutdown) {
 			break;
 		}
 	}
@@ -296,13 +296,11 @@ static void log_queue_init(void) {
 		log_sdl_error(LOG_ERROR, "SDL_CreateThread");
 		return;
 	}
-
-	logging.queue.alive = true;
 }
 
 static void log_queue_shutdown(void) {
 	SDL_LockMutex(logging.queue.mutex);
-	logging.queue.alive = false;
+	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) ? 2 : 1;
 	SDL_CondSignal(logging.queue.cond);
 	SDL_UnlockMutex(logging.queue.mutex);
 	SDL_WaitThread(logging.queue.thread, NULL);
