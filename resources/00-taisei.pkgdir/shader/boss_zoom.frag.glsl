@@ -15,24 +15,27 @@ vec3 sampleZoom(vec3 ca) {
 	vec2 posProportional = pos * vec2(1, ratio);
 
 	vec3 z = ca * vec3(length(posProportional) / blur_rad);
+	vec3 result;
 
 	if(all(greaterThan(z, vec3(1.26)))) {
-		return texture(tex, texCoordRaw).rgb;
+		result = texture(tex, texCoordRaw).rgb;
+	} else {
+		z = 1.5 * z * z * z;
+		z = tanh(z);
+		z = sqrt(z);
+
+		vec2 posR = pos * z.r + blur_orig;
+		vec2 posG = pos * z.g + blur_orig;
+		vec2 posB = pos * z.b + blur_orig;
+
+		result = vec3(
+			texture(tex, posR).r,
+			texture(tex, posG).g,
+			texture(tex, posB).b
+		);
 	}
 
-	z = 1.5 * z * z * z;
-	z = tanh(z);
-	z = sqrt(z);
-
-	vec2 posR = pos * z.r + blur_orig;
-	vec2 posG = pos * z.g + blur_orig;
-	vec2 posB = pos * z.b + blur_orig;
-
-	return vec3(
-		texture(tex, posR).r,
-		texture(tex, posG).g,
-		texture(tex, posB).b
-	);
+	return result;
 }
 
 vec3 getCA(float f) {

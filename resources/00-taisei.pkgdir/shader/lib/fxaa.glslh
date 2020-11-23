@@ -73,11 +73,15 @@ vec3 fxaa(
 
     float lumaB = dot(rgbB, luma);
 
+    vec3 result;
+
     if((lumaB < lumaMin) || (lumaB > lumaMax)) {
-        return rgbA;
+        result = rgbA;
+    } else {
+        result = rgbB;
     }
 
-    return rgbB;
+    return result;
 }
 
 #endif

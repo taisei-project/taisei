@@ -42,48 +42,48 @@ void main(void) {
 
 	#ifdef BBOX_TEST
 	float gap_bbox = max(gap_size.x, gap_size.y);
-
-	if(!any(bvec4(
+	if(any(bvec4(
 		posInBBox(frag_loc, gaps[0], gap_bbox),
 		posInBBox(frag_loc, gaps[1], gap_bbox),
 		posInBBox(frag_loc, gaps[2], gap_bbox),
 		posInBBox(frag_loc, gaps[3], gap_bbox)
-	))) {
-		#ifdef BBOX_TEST_DEBUG
-		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-		#endif
-		return;
-	}
+	)))
 	#endif
+	{
+		float t = time * 6;
+		const float mag = 0.5;
+		const float pmag = 0.123;
+		frag_loc.x += mag * sin(t);
+		frag_loc.y += mag * sin(t *  1.22 - frag_loc.x * pmag);
+		frag_loc.x += mag * sin(t * -1.36 - frag_loc.y * pmag);
+		frag_loc.y += mag * sin(t * -1.29 - frag_loc.x * pmag);
+		frag_loc.x += mag * sin(t *  1.35 - frag_loc.y * pmag);
 
-	float t = time * 6;
-	const float mag = 0.5;
-	const float pmag = 0.123;
-	frag_loc.x += mag * sin(t);
-	frag_loc.y += mag * sin(t *  1.22 - frag_loc.x * pmag);
-	frag_loc.x += mag * sin(t * -1.36 - frag_loc.y * pmag);
-	frag_loc.y += mag * sin(t * -1.29 - frag_loc.x * pmag);
-	frag_loc.x += mag * sin(t *  1.35 - frag_loc.y * pmag);
+		// This used to be a loop, but unfortunately ANGLE miscompiles it for the D3D backend.
+		drawGap(fragColor, frag_loc, 0);
+		drawGap(fragColor, frag_loc, 1);
+		drawGap(fragColor, frag_loc, 2);
+		drawGap(fragColor, frag_loc, 3);
 
-	// This used to be a loop, but unfortunately ANGLE miscompiles it for the D3D backend.
-	drawGap(fragColor, frag_loc, 0);
-	drawGap(fragColor, frag_loc, 1);
-	drawGap(fragColor, frag_loc, 2);
-	drawGap(fragColor, frag_loc, 3);
+		#ifdef DRAW_LINKS
+		for(int i = 0; i < NUM_GAPS; ++i) {
+			vec2 gap = gaps[i];
+			float gap_angle = gap_angles[i];
+			int link = gap_links[i];
 
-	#ifdef DRAW_LINKS
-	for(int i = 0; i < NUM_GAPS; ++i) {
-		vec2 gap = gaps[i];
-		float gap_angle = gap_angles[i];
-		int link = gap_links[i];
+			vec2 next_gap = gaps[link];
+			float next_gap_angle = gap_angles[link];
 
-		vec2 next_gap = gaps[link];
-		float next_gap_angle = gap_angles[link];
+			vec2 l = texCoord * viewport;
+			l.y = viewport.y - l.y;
 
-		vec2 l = texCoord * viewport;
-		l.y = viewport.y - l.y;
-
-		fragColor = mix(fragColor, vec4(float(i&1), i/float(NUM_GAPS-1), 1-i/float(NUM_GAPS-1), 1), line_segment(l, gap, next_gap, 1));
+			fragColor = mix(fragColor, vec4(float(i&1), i/float(NUM_GAPS-1), 1-i/float(NUM_GAPS-1), 1), line_segment(l, gap, next_gap, 1));
+		}
+		#endif
+	}
+	#if defined(BBOX_TEST) && defined(BBOX_TEST_DEBUG)
+	else {
+		fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 	#endif
 }
