@@ -8,5 +8,8 @@ layout(location = 0) uniform sampler2D tex;
 layout(location = 1) uniform vec4 color;
 
 void main(void) {
-    outColor = texture(tex, texCoord) * color;
+	// https://github.com/KhronosGroup/glslang/issues/2206
+    float foo = 42;
+    foo = smoothstep(0, 1, foo);
+    outColor = texture(tex, texCoord) * color * foo;
 }

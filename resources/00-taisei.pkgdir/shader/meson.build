@@ -169,30 +169,29 @@ if validate_glsl != 'false'
 
         if test_result.returncode() == 0
             glslc_args += '-Werror'
-            validate_glsl = true
         else
             glslc_args += '-std=430core'
             warning('glslc does not support GL_ARB_explicit_uniform_location, forcing shader version to 430core as a workaround.\n\n@0@'.format(test_result.stderr()))
+        endif
 
-            test_result = run_command(glslc_command,
-                glslc_args,
-                glslc_frag_args,
-                glslc_test_basic_file,
-                '-o', '-',
-                capture : false
-            )
+        test_result = run_command(glslc_command,
+            glslc_args,
+            glslc_frag_args,
+            glslc_test_basic_file,
+            '-o', '-',
+            capture : false
+        )
 
-            if test_result.returncode() == 0
-                validate_glsl = true
+        if test_result.returncode() == 0
+            validate_glsl = true
+        else
+            warning(test_result.stderr())
+
+            if validate_glsl == 'auto'
+                warning('Basic glslc test failed, you probably have a broken/incompatible version. GLSL validation will be disabled.')
+                validate_glsl = false
             else
-                warning(test_result.stderr())
-
-                if validate_glsl == 'auto'
-                    warning('glslc test failed, you probably have an incompatible version. GLSL validation will be disabled.')
-                    validate_glsl = false
-                else
-                    error('glslc test failed, you probably have an incompatible version.')
-                endif
+                error('Basic glslc test failed, you probably have a broken/incompatible version.')
             endif
         endif
     else
