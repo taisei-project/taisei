@@ -246,17 +246,45 @@ The levels
 The variables
 ^^^^^^^^^^^^^
 
--  **TAISEI_LOGLVLS_CONSOLE**: controls what goes to the console, both
-   ``stdout`` and ``stderr``. Defaults to *All* (``+a``). This is a
-   master switch for the two variables below:
+**TAISEI_LOGLVLS_CONSOLE**
+   | Default: ``+a`` *(All)*
 
-   -  **TAISEI_LOGLVLS_STDOUT**: controls what goes to standard output.
-      Defaults to *Debug and Info* (``+di``).
-   -  **TAISEI_LOGLVLS_STDERR**: controls what goes to standard error.
-      Defaults to *Warning, Error, and Fatal* (``+wef``).
+   Controls what log levels may go to the console. This acts as a master
+   switch for **TAISEI_LOGLVLS_STDOUT** and **TAISEI_LOGLVLS_STDERR**.
 
--  **TAISEI_LOGLVLS_FILE**: controls what goes into the log file
-   (``{storage directory}/log.txt``). Defaults to *All* (``+a``).
+**TAISEI_LOGLVLS_STDOUT**
+   | Default: ``+di`` *(Debug, Info)*
+
+   Controls what log levels go to standard output. Log levels that are
+   disabled by **TAISEI_LOGLVLS_CONSOLE** are ignored.
+
+**TAISEI_LOGLVLS_STDERR**
+   | Default: ``+wef`` *(Warning, Error, Fatal)*
+
+   Controls what log levels go to standard error. Log levels that are
+   disabled by **TAISEI_LOGLVLS_CONSOLE** are ignored.
+
+**TAISEI_LOGLVLS_FILE**
+   | Default: ``+a`` *(All)*
+
+   Controls what log levels go to the log file
+   (``{storage directory}/log.txt``).
+
+**TAISEI_LOG_ASYNC**
+   | Default: ``1``
+
+   If ``1``, log messages are written asynchronously from a background
+   thread. This mostly benefits platforms where writing to the console
+   or files is very slow (such as Windows). You may want to disable this
+   when debugging.
+
+**TAISEI_LOG_ASYNC_FAST_SHUTDOWN**
+   | Default: ``0``
+
+   If ``1``, don't wait for the whole log queue to be written when
+   shutting down. This will make the game quit faster if log writing is
+   slow, at the expense of log integrity. Ignored if ``TAISEI_LOG_ASYNC``
+   is disabled.
 
 Examples
 ^^^^^^^^
