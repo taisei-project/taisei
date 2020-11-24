@@ -18,8 +18,8 @@
 #define SHOT_FORWARD_DELAY 3
 #define SHOT_VOLLEY_DMG 35
 #define SHOT_VOLLEY_DELAY 16
-#define SHOT_SLAVE_HOMING_DMG 150
-#define SHOT_SLAVE_HOMING_DELAY 18
+#define SHOT_SLAVE_HOMING_DMG 175
+#define SHOT_SLAVE_HOMING_DELAY 21
 #define SHOT_SLAVE_NEEDLE_DMG 64
 #define SHOT_SLAVE_NEEDLE_DELAY 3
 
@@ -27,6 +27,8 @@
 
 typedef struct ReimuAController {
 	Player *plr;
+	int last_homing_fire_time;
+	int last_needle_fire_time;
 	COEVENTS_ARRAY(
 		slaves_expired
 	) events;
@@ -523,8 +525,10 @@ TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl;
 	BoxedReimuASlave slave;
 }) {
-	Player *plr = ARGS.ctrl->plr;
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
+	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -550,6 +554,9 @@ TASK(reimu_spirit_slave_needle_shot, {
 			.damage = damage,
 			.shader = shader
 		);
+
+		ctrl->last_needle_fire_time = global.frames;
+		ctrl->last_homing_fire_time = imax(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
 
 		WAIT(delay);
 	}
@@ -590,8 +597,10 @@ TASK(reimu_spirit_slave_homing_shot, {
 	BoxedReimuASlave slave;
 	cmplx vel;
 }) {
-	Player *plr = ARGS.ctrl->plr;
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
+	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -599,7 +608,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 	cmplx pdir = cnormalize(vel);
 
 	real damage = SHOT_SLAVE_HOMING_DMG;
-	real delay = SHOT_SLAVE_HOMING_DELAY;
+	int delay = SHOT_SLAVE_HOMING_DELAY;
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
@@ -619,6 +628,8 @@ TASK(reimu_spirit_slave_homing_shot, {
 			.damage = damage,
 			.shader = shader
 		);
+
+		ctrl->last_homing_fire_time = global.frames;
 
 		WAIT(delay);
 	}
@@ -650,7 +661,7 @@ TASK(reimu_spirit_slave_homing, {
 }
 
 static void reimu_spirit_spawn_slaves_unfocused(ReimuAController *ctrl, int power_rank) {
-	cmplx sv = -10 * I;
+	cmplx sv = -8 * I;
 
 	switch(power_rank) {
 		case 0:
@@ -683,22 +694,22 @@ static void reimu_spirit_spawn_slaves_focused(ReimuAController *ctrl, int power_
 		case 0:
 			break;
 		case 1:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 0);
 			break;
 		case 2:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_TAU/2);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, M_TAU/2);
 			break;
 		case 3:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0*M_TAU/3);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 1*M_TAU/3);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 2*M_TAU/3);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 0*M_TAU/3);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 1*M_TAU/3);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 2*M_TAU/3);
 			break;
 		case 4:
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, 0);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 60, 0.10, M_PI);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, 0);
-			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 80, -0.05, M_PI);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 52, 0.12, M_PI);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 78, -0.06, 0);
+			INVOKE_TASK(reimu_spirit_slave_needle, ctrl, 78, -0.06, M_PI);
 			break;
 		default:
 			UNREACHABLE;
@@ -735,7 +746,7 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 		// focus state changed?
 		while((prev_inputflags ^ plr->inputflags) & INFLAG_FOCUS) {
 			reimu_spirit_kill_slaves(ctrl);
-			WAIT(ORB_RETRACT_TIME);
+			WAIT(ORB_RETRACT_TIME * 2);
 
 			// important to record these at the time of respawning
 			prev_inputflags = plr->inputflags;
