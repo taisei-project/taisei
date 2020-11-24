@@ -14,6 +14,7 @@
 #include "log.h"
 #include "util.h"
 #include "list.h"
+#include "util/strbuf.h"
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -23,14 +24,32 @@ typedef struct Logger {
 	uint levels;
 } Logger;
 
+typedef struct QueuedLogEntry {
+	LIST_INTERFACE(struct QueuedLogEntry);
+	LogEntry e;
+	char message[];
+} QueuedLogEntry;
+
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
-	char *fmt_buf1;
-	char *fmt_buf2;
-	size_t fmt_buf_size;
 	SDL_mutex *mutex;
 	uint enabled_log_levels;
+
+	struct {
+		StringBuffer pre_format;
+		StringBuffer format;
+	} buffers;
+
+	struct {
+		SDL_Thread *thread;
+		SDL_mutex *mutex;
+		SDL_cond *cond;
+		LIST_ANCHOR(QueuedLogEntry) queue;
+		int shutdown;
+	} queue;
+
+	bool initialized;
 
 #ifdef LOG_FATAL_MSGBOX
 	char *err_appendix;
@@ -74,6 +93,8 @@ static const char* level_prefix(LogLevel lvl) { INDEX_MAP(level_prefix_map, lvl)
 static const char* level_name(LogLevel lvl) { INDEX_MAP(level_name_map, lvl) }
 attr_unused static const char* level_ansi_style_code(LogLevel lvl) { INDEX_MAP(level_ansi_style_map, lvl) }
 
+static void log_queue_shutdown(bool force_sync);
+
 noreturn static void log_abort(const char *msg) {
 #ifdef LOG_FATAL_MSGBOX
 	static const char *const title = "Taisei: fatal error";
@@ -91,6 +112,7 @@ noreturn static void log_abort(const char *msg) {
 	}
 #endif
 
+	log_queue_shutdown(true);
 	log_shutdown();
 
 	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
@@ -103,40 +125,50 @@ void log_set_gui_error_appendix(const char *message) {
 #endif
 }
 
-static void realloc_buffers(size_t min_size) {
-	min_size = topow2_u64(min_size);
-
-	if(min_size > MAX_BUF_SIZE) {
-		min_size = MAX_BUF_SIZE;
-	}
-
-	if(logging.fmt_buf_size >= min_size) {
-		return;
-	}
-
-	logging.fmt_buf1 = realloc(logging.fmt_buf1, min_size);
-	logging.fmt_buf2 = realloc(logging.fmt_buf2, min_size);
-	logging.fmt_buf_size = min_size;
-}
-
-static void add_debug_info(char **buf) {
+static void add_debug_info(StringBuffer *buf) {
 	IF_DEBUG({
 		DebugInfo *debug_info = get_debug_info();
 		DebugInfo *debug_meta = get_debug_meta();
 
-		char *dbg = strfmt(
-			"%s\n\n\n"
+		strbuf_printf(buf,
+			"\n\n\n"
 			"Debug info: %s:%i:%s\n"
 			"Debug info set at: %s:%i:%s\n"
 			"Note: debug info may not be relevant to this issue\n",
-			*buf,
 			debug_info->file, debug_info->line, debug_info->func,
 			debug_meta->file, debug_meta->line, debug_meta->func
 		);
-
-		free(*buf);
-		*buf = dbg;
 	});
+}
+
+static void log_dispatch(LogEntry *entry) {
+	StringBuffer *fmt_buf = &logging.buffers.format;
+
+	for(Logger *l = logging.outputs; l; l = l->next) {
+		if(l->levels & entry->level) {
+			strbuf_clear(fmt_buf);
+			size_t slen = l->formatter.format(&l->formatter, fmt_buf, entry);
+			assert_nolog(fmt_buf->buf_size >= slen);
+			SDL_RWwrite(l->out, fmt_buf->start, 1, slen);
+		}
+	}
+}
+
+static void log_dispatch_async(LogEntry *entry) {
+	for(Logger *l = logging.outputs; l; l = l->next) {
+		if(l->levels & entry->level) {
+			size_t msg_len = strlen(entry->message);
+			QueuedLogEntry *qle = calloc(1, sizeof(*qle) + msg_len + 1);
+			memcpy(&qle->e, entry, sizeof(*entry));
+			memcpy(qle->message, entry->message, msg_len);
+			qle->e.message = qle->message;
+			SDL_LockMutex(logging.queue.mutex);
+			alist_append(&logging.queue.queue, qle);
+			SDL_CondBroadcast(logging.queue.cond);
+			SDL_UnlockMutex(logging.queue.mutex);
+			break;
+		}
+	}
 }
 
 static void log_internal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, va_list args) {
@@ -151,26 +183,21 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 
 	SDL_LockMutex(logging.mutex);
 
+	StringBuffer *buf = &logging.buffers.pre_format;
+	strbuf_clear(buf);
+
 	va_list args_copy;
 	va_copy(args_copy, args);
-	int slen = vsnprintf(logging.fmt_buf1, logging.fmt_buf_size, fmt, args_copy);
+	int slen = strbuf_vprintf(buf, fmt, args_copy);
 	va_end(args_copy);
-
-	if(slen >= logging.fmt_buf_size) {
-		realloc_buffers(slen + 1);
-		va_copy(args_copy, args);
-		slen = vsnprintf(logging.fmt_buf1, logging.fmt_buf_size, fmt, args_copy);
-		va_end(args_copy);
-	}
-
 	assert_nolog(slen >= 0);
 
 	if(lvl & LOG_FATAL) {
-		add_debug_info(&logging.fmt_buf1);
+		add_debug_info(buf);
 	}
 
 	LogEntry entry = {
-		.message = logging.fmt_buf1,
+		.message = buf->start,
 		.file = filename,
 		.func = funcname,
 		.line = line,
@@ -178,30 +205,10 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.time = SDL_GetTicks(),
 	};
 
-	for(Logger *l = logging.outputs; l; l = l->next) {
-		if(l->levels & lvl) {
-			slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, &entry);
-
-			if(slen >= logging.fmt_buf_size) {
-				char *tmp = strdup(logging.fmt_buf1);
-				realloc_buffers(slen + 1);
-				strcpy(logging.fmt_buf1, tmp);
-				free(tmp);
-				entry.message = logging.fmt_buf1;
-
-				attr_unused int old_slen = slen;
-				slen = l->formatter.format(&l->formatter, logging.fmt_buf2, logging.fmt_buf_size, &entry);
-				assert_nolog(old_slen == slen);
-			}
-
-			assert_nolog(slen >= 0);
-
-			if(logging.fmt_buf_size < slen) {
-				slen = logging.fmt_buf_size;
-			}
-
-			SDL_RWwrite(l->out, logging.fmt_buf2, 1, slen);
-		}
+	if(logging.queue.thread) {
+		log_dispatch_async(&entry);
+	} else {
+		log_dispatch(&entry);
 	}
 
 	if((lvl & LOG_FATAL) && !noabort) {
@@ -229,7 +236,7 @@ void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *filename,
 	log_abort(NULL);
 }
 
-static void* delete_logger(List **loggers, List *logger, void *arg) {
+static void *delete_logger(List **loggers, List *logger, void *arg) {
 	Logger *l = (Logger*)logger;
 
 	if(l->formatter.free != NULL) {
@@ -248,17 +255,86 @@ static void* delete_logger(List **loggers, List *logger, void *arg) {
 	return NULL;
 }
 
+static int log_queue_thread(void *a) {
+	SDL_mutex *mtx = logging.queue.mutex;
+	SDL_cond *cond = logging.queue.cond;
+
+	SDL_LockMutex(mtx);
+
+	for(;;) {
+		SDL_CondWait(cond, mtx);
+		QueuedLogEntry *qle;
+
+		while((qle = alist_pop(&logging.queue.queue)) && logging.queue.shutdown < 2) {
+			SDL_UnlockMutex(mtx);
+			log_dispatch(&qle->e);
+			free(qle);
+			SDL_LockMutex(mtx);
+		}
+
+		SDL_CondBroadcast(cond);
+
+		if(logging.queue.shutdown) {
+			break;
+		}
+	}
+
+	SDL_UnlockMutex(mtx);
+	return 0;
+}
+
+static void log_queue_init(void) {
+	if(!env_get("TAISEI_LOG_ASYNC", true)) {
+		return;
+	}
+
+	if(!(logging.queue.cond = SDL_CreateCond())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateCond");
+		return;
+	}
+
+	if(!(logging.queue.mutex = SDL_CreateMutex())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateMutex");
+		return;
+	}
+
+	if(!(logging.queue.thread = SDL_CreateThread(log_queue_thread, "Log queue", NULL))) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateThread");
+		return;
+	}
+}
+
+static void log_queue_shutdown(bool force_sync) {
+	if(!logging.queue.thread) {
+		return;
+	}
+
+	SDL_LockMutex(logging.queue.mutex);
+	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
+	SDL_CondBroadcast(logging.queue.cond);
+	SDL_UnlockMutex(logging.queue.mutex);
+	SDL_WaitThread(logging.queue.thread, NULL);
+	logging.queue.thread = NULL;
+	SDL_DestroyMutex(logging.queue.mutex);
+	logging.queue.mutex = NULL;
+	SDL_DestroyCond(logging.queue.cond);
+	logging.queue.cond = NULL;
+}
+
 void log_init(LogLevel lvls) {
 	logging.enabled_log_levels = lvls;
 	logging.mutex = SDL_CreateMutex();
-	realloc_buffers(INIT_BUF_SIZE);
+	log_queue_init();
+	logging.initialized = true;
 }
 
 void log_shutdown(void) {
+	logging.initialized = false;
+	log_queue_shutdown(false);
 	list_foreach(&logging.outputs, delete_logger, NULL);
 	SDL_DestroyMutex(logging.mutex);
-	free(logging.fmt_buf1);
-	free(logging.fmt_buf2);
+	strbuf_free(&logging.buffers.pre_format);
+	strbuf_free(&logging.buffers.format);
 
 #ifdef LOG_FATAL_MSGBOX
 	free(logging.err_appendix);
@@ -267,8 +343,16 @@ void log_shutdown(void) {
 	memset(&logging, 0, sizeof(logging));
 }
 
+void log_sync(void) {
+	SDL_LockMutex(logging.queue.mutex);
+ 	while(logging.queue.queue.first) {
+		SDL_CondWait(logging.queue.cond, logging.queue.mutex);
+	}
+	SDL_UnlockMutex(logging.queue.mutex);
+}
+
 bool log_initialized(void) {
-	return logging.fmt_buf_size > 0;
+	return logging.initialized;
 }
 
 void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) {
@@ -327,16 +411,9 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
 	return lvls;
 }
 
-static void ensure_newline(char *buf, size_t buf_size, size_t output_size) {
-	if(output_size >= buf_size) {
-		*(strrchr(buf, '\0') - 1) = '\n';
-	}
-}
-
-static int log_fmtconsole_format_ansi(FormatterObj *obj, char *buf, size_t buf_size, LogEntry *entry) {
-	int r = snprintf(
+static int log_fmtconsole_format_ansi(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
+	return strbuf_printf(
 		buf,
-		buf_size,
 		"\x1b[1;30m%-9d %s%s\x1b[1;30m: \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
 		entry->time,
 		level_ansi_style_code(entry->level),
@@ -344,22 +421,17 @@ static int log_fmtconsole_format_ansi(FormatterObj *obj, char *buf, size_t buf_s
 		entry->func,
 		entry->message
 	);
-	ensure_newline(buf, buf_size, r);
-	return r;
 }
 
-static int log_fmtconsole_format_plain(FormatterObj *obj, char *buf, size_t buf_size, LogEntry *entry) {
-	int r = snprintf(
+static int log_fmtconsole_format_plain(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
+	return strbuf_printf(
 		buf,
-		buf_size,
 		"%-9d %s: %s: %s\n",
 		entry->time,
 		level_prefix(entry->level),
 		entry->func,
 		entry->message
 	);
-	ensure_newline(buf, buf_size, r);
-	return r;
 }
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
@@ -391,18 +463,15 @@ void log_formatter_console(FormatterObj *obj, const SDL_RWops *output) {
 	}
 }
 
-static int log_fmtfile_format(FormatterObj *obj, char *buf, size_t buf_size, LogEntry *entry) {
-	int r = snprintf(
+static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
+	return strbuf_printf(
 		buf,
-		buf_size,
 		"%d  %s  %s: %s\n",
 		entry->time,
 		level_name(entry->level),
 		entry->func,
 		entry->message
 	);
-	ensure_newline(buf, buf_size, r);
-	return r;
 }
 
 void log_formatter_file(FormatterObj *obj, const SDL_RWops *output) {

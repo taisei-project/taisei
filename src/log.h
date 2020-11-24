@@ -13,6 +13,8 @@
 
 #include <SDL.h>
 
+#include "util/strbuf.h"
+
 enum {
 	_LOG_DEBUG_ID,
 	_LOG_INFO_ID,
@@ -97,7 +99,7 @@ typedef struct LogEntry {
 typedef struct FormatterObj FormatterObj;
 
 struct FormatterObj {
-	int (*format)(FormatterObj *self, char *buf, size_t buf_size, LogEntry *entry);
+	int (*format)(FormatterObj *self, StringBuffer *buffer, LogEntry *entry);
 	void (*free)(FormatterObj *self);
 	void *data;
 };
@@ -115,6 +117,7 @@ void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
 bool log_initialized(void) attr_nodiscard;
 void log_set_gui_error_appendix(const char *message);
+void log_sync(void);
 
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
