@@ -453,10 +453,6 @@ TASK(flea_swirl, {
 	}
 }
 
-TASK(boss_appear_stub, NO_ARGS) {
-	log_warn("FIXME");
-}
-
 static void stage2_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
 	INVOKE_TASK_INDIRECT(Stage2PostBossDialog, pm->dialog->Stage2PostBoss);
