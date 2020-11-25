@@ -847,14 +847,21 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 	float factor;
 
-	if(boss->current && ATTACK_IS_SPELL(boss->current->type) && global.frames - boss->current->starttime < 120) {
-		factor = 0.0;
-	} else if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
+	if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
 		factor = boss->shot_damage_multiplier;
 	} else if(dmg->type == DMG_PLAYER_BOMB) {
 		factor = boss->bomb_damage_multiplier;
 	} else {
-		factor = 1.0;
+		factor = 1.0f;
+	}
+
+	int min_damage_time = 60;
+	int max_damage_time = 300;
+	int pattern_time = global.frames - boss->current->starttime;
+
+	if(pattern_time < max_damage_time) {
+		float span = max_damage_time - min_damage_time;
+		factor = clampf((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
 	}
 
 	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {
