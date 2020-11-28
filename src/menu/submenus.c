@@ -15,7 +15,7 @@
 #include "spellpractice.h"
 #include "stagepractice.h"
 #include "difficultyselect.h"
-#include "musicroom.h"
+#include "media.h"
 #include "global.h"
 #include "submenus.h"
 
@@ -58,6 +58,6 @@ static void stgpract_do_choose_stage(CallChainResult ccr) {
 	}
 }
 
-void menu_action_enter_musicroom(MenuData *menu, void *arg) {
-	enter_menu(create_musicroom_menu(), NO_CALLCHAIN);
+void menu_action_enter_media(MenuData *menu, void *arg) {
+	enter_menu(create_media_menu(), NO_CALLCHAIN);
 }

@@ -2,10 +2,12 @@
 menu_src = files(
     'charselect.c',
     'common.c',
+    'cutsceneview.c',
     'difficultyselect.c',
     'gameovermenu.c',
     'ingamemenu.c',
     'mainmenu.c',
+    'media.c',
     'menu.c',
     'musicroom.c',
     'options.c',

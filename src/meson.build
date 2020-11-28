@@ -65,7 +65,6 @@ taisei_src = files(
     'dialog.c',
     'difficulty.c',
     'dynarray.c',
-    'ending.c',
     'enemy.c',
     'enemy_classes.c',
     'entity.c',
@@ -121,6 +120,7 @@ if host_machine.system() == 'nx'
 endif
 
 subdir('audio')
+subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
 subdir('menu')
@@ -137,6 +137,7 @@ configure_file(configuration : config, output : 'build_config.h')
 
 taisei_src += [
     audio_src,
+    cutscenes_src,
     dialog_src,
     eventloop_src,
     menu_src,

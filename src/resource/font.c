@@ -322,7 +322,7 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 		return err;
 	}
 
-	FT_Stroker_Set(fnt->stroker, FT_MulFix(1 * 64, fixed_scale), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+	FT_Stroker_Set(fnt->stroker, FT_MulFix(1.5 * 64, fixed_scale), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 
 	// Based on SDL_ttf
 	FT_Face face = fnt->face;

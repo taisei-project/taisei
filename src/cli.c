@@ -17,11 +17,16 @@
 #include "stage.h"
 #include "plrmodes.h"
 #include "version.h"
+#include "cutscenes/cutscene.h"
+#include "cutscenes/scenes.h"
 
 struct TsOption { struct option opt; const char *help; const char *argname;};
 
 enum {
 	OPT_RENDERER = INT_MIN,
+	OPT_CUTSCENE,
+	OPT_CUTSCENE_LIST,
+	OPT_FORCE_INTRO,
 };
 
 static void print_help(struct TsOption* opts) {
@@ -77,6 +82,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"shotmode",           required_argument,  0, 's'},            "Select a shotmode (marisaA/youmuA/marisaB/youmuB)", "SMODE"},
 		{{"dumpstages",         no_argument,        0, 'u'},            "Print a list of all stages in the game"},
 		{{"vfs-tree",           required_argument,  0, 't'},            "Print the virtual filesystem tree starting from %s", "PATH"},
+		{{"cutscene",           required_argument,  0, OPT_CUTSCENE},   "Play cutscene by numeric %s and exit", "ID"},
+		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
+		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
 #endif
 		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
@@ -86,7 +94,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{ 0 }
 	};
 
-	memset(a,0,sizeof(CLIAction));
+	memset(a, 0, sizeof(*a));
 
 	int nopts = sizeof(taisei_opts)/sizeof(taisei_opts[0]);
 	struct option opts[nopts];
@@ -196,6 +204,25 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			break;
 		case OPT_RENDERER:
 			env_set("TAISEI_RENDERER", optarg, true);
+			break;
+		case OPT_CUTSCENE:
+			a->type = CLI_Cutscene;
+			a->cutscene = strtol(optarg, &endptr, 16);
+
+			if(!*optarg || endptr == optarg || (uint)a->cutscene >= NUM_CUTSCENE_IDS) {
+				log_fatal("Invalid cutscene ID '%s'", optarg);
+			}
+
+			break;
+		case OPT_CUTSCENE_LIST:
+			for(CutsceneID i = 0; i < NUM_CUTSCENE_IDS; ++i) {
+				const Cutscene *cs = g_cutscenes + i;
+				tsfprintf(stdout, "%2d : %s\n", i, cs->phases ? cs->name : "!! UNIMPLEMENTED !!");
+			}
+
+			exit(0);
+		case OPT_FORCE_INTRO:
+			a->force_intro = true;
 			break;
 		case 'v':
 			tsfprintf(stdout, "%s %s\n", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);

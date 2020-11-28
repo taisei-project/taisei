@@ -27,6 +27,7 @@
 #include "taskmanager.h"
 #include "coroutine.h"
 #include "util/gamemode.h"
+#include "cutscenes/cutscene.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -186,6 +187,7 @@ typedef struct MainContext {
 } MainContext;
 
 static void main_post_vfsinit(CallChainResult ccr);
+static void main_mainmenu(CallChainResult ccr);
 static void main_singlestg(MainContext *mctx) attr_unused;
 static void main_replay(MainContext *mctx);
 static noreturn void main_vfstree(CallChainResult ccr);
@@ -324,8 +326,25 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		main_singlestg(ctx);
 		return;
 	}
+
+	if(ctx->cli.type == CLI_Cutscene) {
+		cutscene_enter(CALLCHAIN(main_cleanup, ctx), ctx->cli.cutscene);
+		eventloop_run();
+		return;
+	}
 #endif
 
+	if(!progress_is_cutscene_unlocked(CUTSCENE_ID_INTRO) || ctx->cli.force_intro) {
+		cutscene_enter(CALLCHAIN(main_mainmenu, ctx), CUTSCENE_ID_INTRO);
+		eventloop_run();
+		return;
+	}
+
+	main_mainmenu(ccr);
+}
+
+static void main_mainmenu(CallChainResult ccr) {
+	MainContext *ctx = ccr.ctx;
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 	eventloop_run();
 }
