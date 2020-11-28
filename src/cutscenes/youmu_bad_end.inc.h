@@ -10,8 +10,8 @@
 	}},
 	{ "cutscenes/locations/tower", {
 		T_NARRATOR("At the foot of the Tower that now imposed itself on Gensōkyō’s skyline…"),
-		T_NARRATOR("…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, stood over a makeshift grave, praying."),
-		T_NARRATOR("No, she hadn’t murdered her opponent. It was a little more troubling than that…"),
+		T_NARRATOR("…the greatest swordswoman of Gensōkyō and the Netherworld, Konpaku Yōmu, stood over a makeshift grave, praying.\n"),
+		T_NARRATOR("No, she hadn’t murdered her opponent. It was, perhaps, a little more troubling than that…"),
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_bad/01", {
@@ -29,8 +29,8 @@
 		{ 0 },
 	}},
 	{ "cutscenes/locations/tower", {
-		T_NARRATOR("The Tower had ceased functioning, returning the land and yōkai around it to some semblance of status quo."),
-		T_NARRATOR("But the instigators were nowhere to be found. It was as if they had never existed."),
+		T_NARRATOR("The Tower had ceased functioning, returning the land and yōkai around it to some semblance of status quo.\n"),
+		T_NARRATOR("But the instigators were nowhere to be found. It was as if they had never existed.\n"),
 		T_NARRATOR("Yōmu's newfound fearlessness had been tempered as well, replaced with a sense of loss."),
 		{ 0 },
 	}},
@@ -43,8 +43,8 @@
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_bad/02", {
-		T_NARRATOR("The kappa of Yōkai Mountain were throwing a ‘Gaze Upon The Incredible Tower (From A Safe Distance)’ festival, to encourage human and yōkai tourism after everyone had been scared off by the Tower."),
-		T_NARRATOR("Although, Yōmu found it difficult to enjoy herself, of course."),
+		T_NARRATOR("The kappa of Yōkai Mountain were throwing a ‘Gaze Upon The Incredible Tower (From A Safe Distance)’ festival, to encourage human and yōkai tourism after everyone had been scared off by the Tower.\n"),
+		T_NARRATOR("Although, Yōmu found it difficult to enjoy herself, of course.\n"),
 		T_NARRATOR("Somewhere, somehow, she hoped the furiously righteous scythe-bearer was still out there, waiting for their rematch…"),
 		{ 0 },
 	}},

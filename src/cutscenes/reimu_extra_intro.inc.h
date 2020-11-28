@@ -15,7 +15,7 @@
 	}},
 	{ "cutscenes/reimu_extra/01", {
 		T_NARRATOR("Suddenly, Yukari slid in through one of her gaps."),
-		T_NARRATOR("As usual, Reimu could feel her presence right away."),
+		T_NARRATOR("As usual, Reimu could feel her presence right away.\n"),
 		T_NARRATOR("Unexpectedly, Ran and Chen were also in tow, taking positions behind her with solemn, silent expressions."),
 		{ 0 },
 	}},
@@ -28,10 +28,7 @@
 	}},
 	{ "cutscenes/reimu_extra/01", {
 		T_YUKARI("*giggle* I see."),
-		{ 0 },
-	}},
-	{ "cutscenes/reimu_extra/01", {
-		T_NARRATOR("It was then that Elly came running up the steps of the Moriya Shrine, breathlessly, clad in a Moriya shrine maiden uniform."),
+		T_NARRATOR("\nAs if on cue, Elly came running up the steps of the Moriya Shrine, breathlessly, clad in a Moriya shrine maiden uniform.\n"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
@@ -41,10 +38,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
-		T_NARRATOR("Elly brought out some kind of small communicator device. It projected an image into the air, like an illusion."),
-		{ 0 },
-	}},
-	{ "cutscenes/reimu_extra/02", {
+		T_NARRATOR("Elly brought out some kind of small communicator device. It projected an image into the air, like an illusion.\n"),
 		T_ELLY("It’s the Tower! It’s spinning back up!"),
 		T_REIMU("Spinning? It looks completely stationary from here."),
 		T_ELLY("No! I mean it’s powering up, charging up! Whatever! It’s turning back on!!"),
@@ -72,14 +66,14 @@
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
-		T_ELLY("I… I kinda stole it from someone."),
+		T_ELLY("I… I may have stolen it from someone."),
 		T_REIMU("That doesn't answer my question."),
 		T_ELLY("She’s… still trapped in there. I thought I'd sealed her away, though!"),
 		T_ELLY("There’s no way she should've been able to escape that!"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
-		T_NARRATOR("Elly and Kurumi got chilled expressions on their faces, falling completely silent."),
+		T_NARRATOR("Elly and Kurumi got chilled expressions on their faces, falling completely silent.\n"),
 		T_NARRATOR("Reimu closed her book and sighed."),
 		{ 0 },
 	}},
@@ -98,10 +92,10 @@
 	{ "cutscenes/reimu_extra/02", {
 		T_REIMU("Ehhhh? Why are you being so sincere? It’s freaking me out."),
 		T_REIMU("Even you think I’m a huge softie, huh? How disappointing…"),
+		T_NARRATOR("\nYukari remained silent, responding only with a gentle smile."),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_extra/02", {
-		T_NARRATOR("Yukari remained silent, responding only with a gentle smile."),
 		T_NARRATOR("In the distance, the Tower of Babel began to emit a low, eerie rumble, as Reimu flew off to meet her next challenge…"),
 		{ 0 },
 	}},

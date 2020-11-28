@@ -4,12 +4,12 @@
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/sdm", {
-		T_NARRATOR("— The Scarlet Devil Mansion"),
-		T_NARRATOR("A peculiar western mansion in an eastern wonderland."),
-		T_NARRATOR("A nervous witch sat flipping through endless stacks of books, drinking tea instead of her usual sake…"),
+		T_NARRATOR("— The Scarlet Devil Mansion\n"),
+		T_NARRATOR("A peculiar western mansion in an eastern wonderland.\n"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_bad/01", {
+		T_NARRATOR("A nervous witch sat flipping through endless stacks of books, drinking tea instead of her usual sake…\n"),
 		T_MARISA("Hey Patchy, do ya got any more books on Magitech?"),
 		T_PATCHOULI("Yes, but I doubt they’ll be of much use. That machine is beyond that subject entirely."),
 		T_MARISA("Ugh, yer probably right, as usual."),
@@ -31,21 +31,21 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_bad/02", {
-		T_NARRATOR("After having tea with the pair of them, Marisa wandered the stacks, looking for inspiration."),
-		T_NARRATOR("Suddenly, she felt as if she'd stepped into a pothole, tripping and falling flat on her face."),
-		T_NARRATOR("When she looked back at the floor, she didn’t see anything except the expertly-organized rows of immaculate bookshelves."),
+		T_NARRATOR("After having tea with the pair of them, Marisa wandered the stacks, looking for inspiration.\n"),
+		T_NARRATOR("Suddenly, she felt as if she'd stepped into a pothole, tripping and falling flat on her face.\n"),
+		T_NARRATOR("When she looked back at the floor, she didn’t see anything except the expertly-organized rows of immaculate bookshelves.\n"),
 		T_NARRATOR("Then, she noticed something cold and thin underneath her hand."),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_bad/02", {
-		T_NARRATOR("After some time, she realized it was a ‘Smart Device’ of some kind, like a handheld computer."),
-		T_NARRATOR("This one was far more advanced than any she'd seen from the Outside World, including that young occultist’s phone."),
-		T_NARRATOR("It behaved both as a solid and a liquid, able to rapidly change shapes by applying pressure to certain sides, into different form factors: a phone, a book, a digital typewriter with a keyboard…"),
+		T_NARRATOR("After some time, she realized it was a ‘Smart Device’ of some kind, like a handheld computer.\n"),
+		T_NARRATOR("This one was far more advanced than any she'd seen from the Outside World, including that young occultist’s phone.\n"),
+		T_NARRATOR("It behaved both as a solid and a liquid, able to rapidly change shapes by applying pressure to certain sides, into different form factors: a phone, a book, a digital typewriter with a keyboard…\n"),
 		T_NARRATOR("Once Marisa worked out how to make it display something, the title of a book appeared on its dim screen…"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_bad/02", {
-		T_NARRATOR("Practical & Advanced Computational Applications of the Grand Unified Theory"),
+		T_NARRATOR("Practical & Advanced Computational Applications of the Grand Unified Theory\n\n"),
 		T_NARRATOR("— by Usami Renko"),
 		{ 0 },
 	}},

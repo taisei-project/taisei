@@ -4,7 +4,7 @@
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/sdm", {
-		T_NARRATOR("— The Scarlet Devil Mansion"),
+		T_NARRATOR("— The Scarlet Devil Mansion\n"),
 		T_NARRATOR("A haunted western mansion in an eastern wonderland."),
 		{ 0 },
 	}},
@@ -22,8 +22,8 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/01", {
-		T_NARRATOR("Marisa had just finished accompanying Kurumi to do some ‘service’ on the Tower of Babel."),
-		T_NARRATOR("Kurumi and Remilia, the mistress of the mansion, were loudly gossiping amongst themselves off to the side of the library, laughing cheerfully over… tea?"),
+		T_NARRATOR("Marisa had just finished accompanying Kurumi to do some ‘service’ on the Tower of Babel.\n"),
+		T_NARRATOR("Kurumi and Remilia, the mistress of the mansion, were loudly gossiping amongst themselves off to the side of the library, laughing cheerfully over… tea?\n"),
 		T_NARRATOR("Marisa hoped it was tea, at least."),
 		{ 0 },
 	}},
@@ -54,11 +54,8 @@
 	{ "cutscenes/marisa_extra/02", {
 		T_MARISA("Huh? What’s that?"),
 		T_PATCHOULI("Perhaps the fairy maids are remodeling upstairs?"),
-		{ 0 },
-	}},
-	{ "cutscenes/marisa_extra/02", {
-		T_NARRATOR("The mansion began to shake intense, as if down to its very foundation, before ceasing entirely, as quickly as it began."),
-		T_NARRATOR("A eerie siren could then be heard blaring in the distance outside the mansion."),
+		T_NARRATOR("\nThe mansion began to shake intense, as if down to its very foundation, before ceasing entirely, as quickly as it started.\n"),
+		T_NARRATOR("Before the dust had a chance to settle, an eerie, long siren began blaring in the distance outside the mansion."),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/02", {
@@ -92,7 +89,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_extra/02", {
-		T_NARRATOR("Marisa grinned and magically summoned her broom, mounting it deftly, and shooting right out of an open window in a flash."),
+		T_NARRATOR("Marisa grinned and magically summoned her broom, mounting it deftly, and shooting right out of an open window in a flash.\n"),
 		T_NARRATOR("Her sights were set on the Tower that loomed and rumbled on the top of Yōkai Mountain…"),
 		{ 0 },
 	}},

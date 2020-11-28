@@ -4,13 +4,13 @@
 
 .phases = (CutscenePhase[]) {
 	{ "cutscenes/locations/moriya", {
-		T_NARRATOR("— The Moriya Shrine"),
+		T_NARRATOR("— The Moriya Shrine\n"),
 		T_NARRATOR("A workaholic shrine at the top of of Yōkai Mountain."),
 		{ 0 },
 	}},
 	{ "cutscenes/locations/moriya", {
-		T_NARRATOR("Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’."),
-		T_NARRATOR("Elly and Kurumi were made to scrub the decks of the Moriya Shrine…"),
+		T_NARRATOR("Once defeated, the newcomers agreed to turn off their ‘Tower of Babel’.\n"),
+		T_NARRATOR("Elly and Kurumi were made to scrub the floors of the Moriya Shrine…\n"),
 		T_NARRATOR("… which had become filthy from the local fairies partying non-stop, and some ‘political demonstrations’ by the newly-formed ‘Insect Party’."),
 		{ 0 },
 	}},
@@ -24,12 +24,12 @@
 	{ "cutscenes/locations/moriya", {
 		T_KANAKO("Seems like it’s taking a bit more time for the madness to wear off for her. How’s all that ‘knowledge’ working out for you, newcomer?"),
 		T_SANAE("I remembered way more about retro video game consoles than I wanted to! And now *you’ve* gotta deal with it!"),
-        T_NARRATOR("Elly nodded and smiled politely, trying to hold back tears of boredom."),
+        T_NARRATOR("\nElly nodded and smiled politely, trying to hold back tears of boredom."),
 		{ 0 },
 	}},
 	{ "cutscenes/locations/moriya", {
-        T_NARRATOR("In the end, the newcomers seemed to calm down once the effects of the Tower had worn off, just like everyone else in Gensōkyō."),
-        T_NARRATOR("During an early afternoon, Marisa arrived with a picnic basket and a grin on her face."),
+		T_NARRATOR("In the end, the newcomers seemed to calm down once the effects of the Tower had worn off, just like everyone else in Gensōkyō.\n"),
+		T_NARRATOR("During an early afternoon, Marisa arrived with a picnic basket and a grin on her face."),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/01", {
@@ -42,11 +42,8 @@
 	{ "cutscenes/marisa_good/01", {
 		T_ELLY("Isn’t it a little early for that?"),
 		T_MARISA("Oh c’mon, it’s noon somewhere in the infinite multiverse, ain’t it?"),
-		{ 0 },
-	}},
-	{ "cutscenes/locations/moriya", {
-		T_NARRATOR("Elly laughed. She wanted an excuse for a break anyways."),
-		T_NARRATOR("And so, they drank, and caught up on alternate worlds, uncanny timelines, and the strangeness of their circumstances."),
+		T_NARRATOR("\nElly laughed. She wanted an excuse for a break anyways.\n"),
+		T_NARRATOR("And so, they drank, and caught up on alternate worlds, uncanny timelines, and the strangeness of their circumstances.\n"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
@@ -92,8 +89,8 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_NARRATOR("Many residents of Gensokyo wondered if the Tower would be a blight on the skyline for all eternity"),
-		T_NARRATOR("Others questioned if its power could be harnessed to serve the greater good."),
+		T_NARRATOR("Many residents of Gensokyo wondered if the Tower would be a blight on the skyline for all eternity.\n"),
+		T_NARRATOR("Others questioned if its power could be harnessed to serve the greater good.\n"),
 		T_NARRATOR("But for the guardians of Gensōkyō, they would need to be vigilant, lest it suddenly spring to life again…"),
 		{ 0 },
 	}},

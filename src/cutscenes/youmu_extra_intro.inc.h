@@ -9,17 +9,14 @@
 		{ 0 },
 	}},
 	{ "cutscenes/locations/netherworld", {
-		T_NARRATOR("The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel between the sakura trees of the ethereal realm."),
-		T_NARRATOR("The swordswoman was showing the scythe-bearer one of her favourite past-times: the mid-air bisecting sakura petals."),
+		T_NARRATOR("The blademasters, Konpaku Yōmu and Elly, were enjoying a twilight duel between the sakura trees of the ethereal realm.\n"),
+		T_NARRATOR("The swordswoman was showing the scythe-bearer one of her favourite past-times: the mid-air bisecting sakura petals.\n"),
 		T_NARRATOR("Yōmu was quite proud of herself, and Elly equally as impressed."),
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_extra/01", {
-		T_NARRATOR("During their merriment, there was an interruption, as Elly fished some small device out of her dress pocket."),
-		T_NARRATOR("It was a communication device of some sort that seemed to be vibrating vigorously, projecting an illusion into the air…"),
-		{ 0 },
-	}},
-	{ "cutscenes/youmu_extra/01", {
+		T_NARRATOR("During their merriment, there was an interruption, as Elly fished some small device out of her dress pocket.\n"),
+		T_NARRATOR("It was a communication device of some sort that seemed to be vibrating vigorously, projecting an illusion into the air…\n"),
 		T_NARRATOR("Elly's expression suddenly ran cold."),
 		{ 0 },
 	}},
@@ -36,25 +33,16 @@
 		T_ELLY("The one who rescued me, but also manipulated me. The one I… ‘liberated’ the Tower from."),
 		{ 0 },
 	}},
-	{ "cutscenes/youmu_extra/01", {
-		T_NARRATOR("Yōmu took a deep breath, sheathed her swords, and sighed."),
-		{ 0 },
-	}},
 	{ "cutscenes/youmu_extra/02", {
+		T_NARRATOR("Yōmu took a deep breath, sheathed her swords, and sighed.\n"),
 		T_YOUMU("I see. So, she’s arrived on her own after all."),
 		T_ELLY("I-I thought she would be imprisoned forever, until we were ready! But somehow, somehow she’s—"),
 		T_ELLY("… she’s freed herself from her prison, and she no doubt intends to finish what she started."),
-		{ 0 },
-	}},
-	{ "cutscenes/youmu_extra/02", {
 		T_YOUMU("I see. Then it appears we no longer possess the luxury of time."),
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_extra/02", {
-		T_NARRATOR("Yōmu took Elly's hands between her own, grinning confidently."),
-		{ 0 },
-	}},
-	{ "cutscenes/youmu_extra/02", {
+		T_NARRATOR("Yōmu took Elly's hands between her own, grinning confidently.\n"),
 		T_YOUMU("Elly! Let’s face her now, together!"),
 		T_ELLY("I-I… I thought we'd have more time! It’s too soon!"),
 		T_ELLY("I’m worried the machine will influence me again! I can’t put you at risk again, and I can’t go with you!"),
@@ -69,7 +57,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_extra/02", {
-		T_NARRATOR("Elly couldn’t help but laugh, despite her fears."),
+		T_NARRATOR("Elly couldn’t help but laugh, despite her fears.\n"),
 		T_NARRATOR("After bidding Elly and Lady Yuyuko farewell, Yōmu returned to Gensōkyō, and headed towards the infernal Tower, as it began to shake and groan with impending doom…"),
 		{ 0 },
 	}},
