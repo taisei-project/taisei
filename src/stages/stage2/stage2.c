@@ -22,27 +22,34 @@ struct stage2_spells_s stage2_spells = {
 	.boss = {
 		.amulet_of_harm = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 50, 50000,
-			hina_amulet, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+			NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+			TASK_INDIRECT_INIT(BossAttack, stage2_spell_amulet_of_harm),
 		},
 		.bad_pick = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Lottery Sign “Bad Pick”", 60, 43200,
-			hina_bad_pick, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+			NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+			TASK_INDIRECT_INIT(BossAttack, stage2_spell_bad_pick),
 		},
 		.wheel_of_fortune = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Lottery Sign “Wheel of Fortune”", 50, 32000,
-			hina_wheel, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+			NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+			TASK_INDIRECT_INIT(BossAttack, stage2_spell_wheel_of_fortune),
 		},
 	},
 
 	.extra.monty_hall_danmaku = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lottery Sign “Monty Hall Danmaku”", 60, 60000,
-		hina_monty, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2
+		NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
+		TASK_INDIRECT_INIT(BossAttack, stage2_spell_monty_hall_danmaku),
 	},
 };
 
 static void stage2_start(void) {
 	stage2_drawsys_init();
 	stage2_bg_init_fullstage();
+	stage_start_bgm("stage2");
+	stage_set_voltage_thresholds(75, 175, 400, 720);
+	INVOKE_TASK(stage2_timeline);
 }
 
 static void stage2_spellpractice_start(void) {
@@ -96,7 +103,6 @@ StageProcs stage2_procs = {
 	.preload = stage2_preload,
 	.end = stage2_end,
 	.draw = stage2_draw,
-	.event = stage2_events,
 	.shader_rules = stage2_bg_effects,
 	.spellpractice_procs = &(StageProcs) {
 		.begin = stage2_spellpractice_start,

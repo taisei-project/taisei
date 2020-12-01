@@ -254,6 +254,14 @@ DEFINE_EXTERN_TASK(common_set_bitflags) {
 	*ARGS.pflags = ((*ARGS.pflags & ARGS.mask) | ARGS.set);
 }
 
+DEFINE_EXTERN_TASK(common_kill_projectile) {
+	kill_projectile(TASK_BIND(ARGS.proj));
+}
+
+DEFINE_EXTERN_TASK(common_kill_enemy) {
+	enemy_kill(TASK_BIND(ARGS.enemy));
+}
+
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
 	double angle;

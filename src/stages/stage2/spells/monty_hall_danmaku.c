@@ -11,239 +11,198 @@
 #include "spells.h"
 
 #include "global.h"
+#include "common_tasks.h"
 
-static int timeout_deadproj_linear(Projectile *p, int time) {
-	// TODO: maybe add a "clear on timeout" flag?
+#define NUM_SLOTS 3
+#define SLOT_WIDTH (VIEWPORT_W / (real)NUM_SLOTS)
 
-	if(time < 0) {
-		return ACTION_ACK;
-	}
+static void goat_bullets(
+	int slot,
+	int t,
+	int cnt,
+	bool top,
+	ProjFlags flags,
+	BoxedProjectileArray *array
+) {
+	for(int i = 0; i < cnt; i++) {
+		cmplx o = !top*VIEWPORT_H*I + SLOT_WIDTH * (slot + i/(cnt - 1.0));
+		cmplx a = 0.007 * (sin((M_PI * 4 * i / (cnt - 1))) * 0.1 * global.diff - I * (1 + psin(i + t)));
 
-	if(time > creal(p->args[0])) {
-		p->type = PROJ_DEAD;
-	}
+		if(top) {
+			a *= -0.5;
+		}
 
-	p->pos += p->args[1];
-	p->angle = carg(p->args[1]);
-	return ACTION_NONE;
-}
-
-static int hina_monty_slave(Enemy *s, int time) {
-	if(time < 0) {
-		return 1;
-	}
-
-	if(time > 60 && time < 720-140 + 20*(global.diff-D_Lunatic) && !(time % (int)(fmax(2 + (global.diff < D_Normal), (120 - 0.5 * time))))) {
-		play_sfx_loop("shot1_loop");
-
-		PROJECTILE(
-			.proto = pp_crystal,
-			.pos = s->pos,
-			.color = RGB(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
-			.rule = asymptotic,
-			.args = {
-				5*I + 1 * (sin(time) + I * cos(time)),
-				4
-			}
+		Projectile *p = PROJECTILE(
+			.proto = pp_ball,
+			.pos = o,
+			.color = top ? RGBA(0, 0, 0.7, 0) : RGBA(0.7, 0, 0, 0),
+			.move = move_accelerated(a, a),
+			.flags = flags,
 		);
 
-		if(global.diff > D_Easy) {
-			PROJECTILE(
-				.proto = pp_crystal,
-				.pos = s->pos,
-				.color = RGB(0.5 + 0.5 * psin(time*0.2), 0.3, 1.0 - 0.5 * psin(time*0.2)),
-				.rule = timeout_deadproj_linear,
-				.args = {
-					500,
-					-0.5*I + 1 * (sin(time) + I * cos(time))
-				}
-			);
+		if(array) {
+			ENT_ARRAY_ADD(array, p);
 		}
 	}
-
-	return 1;
 }
 
-static void hina_monty_slave_visual(Enemy *s, int time, bool render) {
-	Swirl(s, time, render);
+TASK(goat, { int slot; CoEvent *activation_event; }) {
+	int cnt = difficulty_value(15, 20, 25, 30);
+	int slot = ARGS.slot;
+	int charge_time = 60;
+	int period = 60;
+	int timeout = 300;
 
-	if(!render) {
-		return;
+	bool top_enabled = global.diff > D_Hard;
+
+	INVOKE_SUBTASK(common_charge,
+		.pos = SLOT_WIDTH * (slot + 0.5) + VIEWPORT_H*I,
+		.color = RGBA(1.0, 0.2, 0.2, 0),
+		.time = charge_time,
+		.sound = COMMON_CHARGE_SOUNDS
+	);
+
+	if(top_enabled) {
+		INVOKE_SUBTASK(common_charge,
+			.pos = SLOT_WIDTH * (slot + 0.5),
+			.color = RGBA(0.2, 0.2, 1.0, 0),
+			.time = charge_time,
+			.sound = COMMON_CHARGE_SOUNDS
+		);
 	}
 
-	Sprite *soul = get_sprite("proj/soul");
-	double scale = fabs(swing(clamp(time / 60.0, 0, 1), 3)) * 1.25;
+	WAIT(charge_time);
+	play_sfx("shot_special1");
 
-	Color *clr1 = RGBA(1.0, 0.0, 0.0, 0.0);
-	Color *clr2 = RGBA(0.0, 0.0, 1.0, 0.0);
-	Color *clr3 = RGBA(psin(time*0.05), 0.0, 1.0 - psin(time*0.05), 0.0);
+	DECLARE_ENT_ARRAY(Projectile, initial_bullets_bottom, cnt);
+	DECLARE_ENT_ARRAY(Projectile, initial_bullets_top, cnt);
 
-	r_mat_mv_push();
-	r_mat_mv_translate(creal(s->pos), cimag(s->pos), 0);
-	r_shader("sprite_bullet");
+	goat_bullets(slot, 0, cnt, false, PFLAG_NOMOVE, &initial_bullets_bottom);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = soul,
-		.rotation.angle = time * DEG2RAD,
-		.scale.x = scale * (0.6 + 0.6 * psin(time*0.1)),
-		.scale.y = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
-		.color = clr1,
+	if(top_enabled) {
+		goat_bullets(slot, period, cnt, true, PFLAG_NOMOVE, &initial_bullets_top);
+	}
+
+	WAIT_EVENT(ARGS.activation_event);
+
+	int t = 0;
+
+	play_sfx("redirect");
+	ENT_ARRAY_FOREACH(&initial_bullets_bottom, Projectile *p, {
+		p->flags &= ~PFLAG_NOMOVE;
 	});
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = soul,
-		.rotation.angle = time * DEG2RAD,
-		.scale.x = scale * (0.7 + 0.5 * psin(time*0.1 + M_PI)),
-		.scale.y = scale * (0.6 + 0.6 * psin(time*0.1)),
-		.color = clr2,
-	});
+	t += WAIT(period);
 
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = soul,
-		.rotation.angle = -time * DEG2RAD,
-		.scale.both = scale,
-		.color = clr3,
-	});
+	if(top_enabled) {
+		play_sfx("redirect");
+		ENT_ARRAY_FOREACH(&initial_bullets_top, Projectile *p, {
+			p->flags &= ~PFLAG_NOMOVE;
+		});
 
-	r_mat_mv_pop();
+		t += WAIT(period);
+	}
+
+	for(bool top = false; t < timeout; t += WAIT(period), top = !top) {
+		play_sfx("shot_special1");
+		goat_bullets(slot, t, cnt, top && top_enabled, 0, NULL);
+	}
 }
 
-void hina_monty(Boss *h, int time) {
-	int t = time % 720;
-	TIMER(&t);
+TASK(cards, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
 
-	static short slave_pos, bad_pos, good_pos, plr_pos;
-	static int cwidth = VIEWPORT_W / 3.0;
-	static cmplx targetpos;
+	int cnt = 10;
+	int period = 30;
+	int period_reduction = global.diff;
+	real side = rng_sign();
+	real w = SLOT_WIDTH * 0.5 * difficulty_value(1.1, 1.25, 1.5, 1.5);
+	real ofs = (SLOT_WIDTH * 0.5 - w);
 
-	if(time == EVENT_DEATH) {
-		enemy_kill_all(&global.enemies);
-		return;
+	for(int t = 0; t < 360;) {
+		for(int i = 0; i < cnt; ++i) {
+			play_sfx("shot3");
+			cmplx o = creal(boss->pos) + side * (ofs + (w*i)/cnt) + I*cimag(boss->pos);
+			PROJECTILE(
+				.proto = pp_card,
+				.pos = o,
+				.color = RGB(1.0, 0.0, 1.0),
+				.move = move_accelerated(-3*I, 0.06*I),
+			);
+			t += WAIT(1);
+		}
+
+		side = -side;
+		t += WAIT(period);
+		period = imax(1, period - period_reduction);
 	}
+}
 
-	if(time < 0) {
-		targetpos = VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I;
-		return;
-	}
+DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
+	Boss *boss = INIT_BOSS_ATTACK();
 
-	AT(0) {
-		plr_pos = creal(global.plr.pos) / cwidth;
-		bad_pos = tsrand() % 3;
-		do good_pos = tsrand() % 3; while(good_pos == bad_pos);
+	COEVENTS_ARRAY(goat_trigger) events;
+	TASK_HOST_EVENTS(events);
 
-		play_sound("laser1");
+	boss->move = move_towards(VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I, 0.06);
+	BEGIN_BOSS_ATTACK();
+
+	int plr_slot;
+	int goat1_slot;
+	int goat2_slot;
+	int win_slot;
+
+	for(;;) {
+		boss->move.attraction_point = VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I;
+
+		goat1_slot = rng_irange(0, 3);
+		do {
+			win_slot = rng_irange(0, 3);
+		} while(win_slot == goat1_slot);
+
+		goat2_slot = 0;
+		while(goat2_slot == win_slot || goat2_slot == goat1_slot) {
+			goat2_slot++;
+		}
+		assert(goat2_slot < 3);
 
 		for(int i = 0; i < 2; ++i) {
-			int x = cwidth * (1 + i);
-			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0))->unclearable = true;
-			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 240, 600, RGBA(1.0, 0.3, 1.0, 0.0))->unclearable = true;
+			real x = SLOT_WIDTH * (1 + i);
+// 			play_sfx("laser1");
+// 			create_laserline_ab(x, x + VIEWPORT_H*I, 15, 30, 60, RGBA(0.3, 1.0, 1.0, 0.0))->unclearable = true;
+			create_laserline_ab(x, x + VIEWPORT_H*I, 20, 250, 600, RGBA(1.0, 0.3, 1.0, 0.0))->unclearable = true;
 		}
 
-		enemy_kill_all(&global.enemies);
-	}
+		WAIT(90);
+		plr_slot = creal(global.plr.pos) / SLOT_WIDTH;
 
-	AT(120) {
-		do slave_pos = tsrand() % 3; while(slave_pos == plr_pos || slave_pos == good_pos);
-		while(bad_pos == slave_pos || bad_pos == good_pos) bad_pos = tsrand() % 3;
-
-		cmplx o = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I;
-
-		play_sound("laser1");
-		create_laserline_ab(h->pos, o, 15, 30, 60, RGBA(1.0, 0.3, 0.3, 0.0));
-		aniplayer_queue(&h->ani,"guruguru",1);
-		aniplayer_queue(&h->ani,"main",0);
-	}
-
-	AT(140) {
-		play_sound("shot_special1");
-		create_enemy4c(cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I - 200.0*I, ENEMY_IMMUNE, hina_monty_slave_visual, hina_monty_slave, 0, 0, 0, 1);
-	}
-
-	AT(190) {
-		targetpos = cwidth * (0.5 + good_pos) + VIEWPORT_H/2.0*I - 200.0*I;
-	}
-
-	AT(240) {
-		// main laser barrier activation
-		play_sound("laser1");
-	}
-
-	FROM_TO(220, 360 + 60 * imax(0, global.diff - D_Easy), 60) {
-		play_sound("shot_special1");
-
-		float cnt = (2.0+global.diff) * 5;
-		for(int i = 0; i < cnt; i++) {
-			bool top = ((global.diff > D_Hard) && (_i % 2));
-			cmplx o = !top*VIEWPORT_H*I + cwidth*(bad_pos + i/(double)(cnt - 1));
-
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = o,
-				.color = top ? RGBA(0, 0, 0.7, 0) : RGBA(0.7, 0, 0, 0),
-				.rule = accelerated,
-				.args = {
-					0,
-					(top ? -0.5 : 1) * 0.004 * (sin((M_PI * 4 * i / (cnt - 1)))*0.1*global.diff - I*(1 + psin(i + global.frames)))
-				},
-			);
-		}
-	}
-
-	{
-		const int step = 2;
-		const int cnt = 10;
-		const int burst_dur = (cnt - 1) * step;
-		const int cycle_dur = burst_dur+10*(D_Hard-global.diff);
-		const int start = 210;
-		const int end = 540;
-		const int ncycles = (end - start) / cycle_dur;
-
-		AT(start) {
-			aniplayer_queue_frames(&h->ani,"guruguru",end-start);
-			aniplayer_queue(&h->ani,"main",0);
+		// goat1_slot is the one that we will reveal
+		if(goat1_slot == plr_slot) {
+			goat1_slot = goat2_slot;
+			goat2_slot = plr_slot;
 		}
 
-		FROM_TO_INT(start, start + cycle_dur * ncycles - 1, cycle_dur, burst_dur, step) {
-			play_sound("shot1");
+		aniplayer_queue(&boss->ani, "guruguru", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
+		INVOKE_SUBTASK(goat, goat1_slot, &events.goat_trigger);
 
-			double p = _ni / (double)(cnt-1);
-			double c = p;
-			double m = 0.60 + 0.01 * global.diff;
+		WAIT(140);
+		INVOKE_SUBTASK(goat, goat2_slot, &events.goat_trigger);
+		boss->move.attraction_point = SLOT_WIDTH * (0.5 + win_slot) + VIEWPORT_H/2.0*I - 200.0*I;
+		plr_slot = creal(global.plr.pos) / SLOT_WIDTH;
 
-			p *= m;
-			if(_i % 2) {
-				p = 1.0 - p;
-			}
+		play_sfx("laser1");
 
-			cmplx o = cwidth * (p + 0.5/(cnt-1) - 0.5) + h->pos;
+		WAIT(61);
+		coevent_signal(&events.goat_trigger);
 
-			if(global.diff > D_Normal) {
-				PROJECTILE(
-					.proto = pp_card,
-					.pos = o,
-					.color = RGB(c * 0.8, 0, (1 - c) * 0.8),
-					.rule = accelerated,
-					.args = { -2.5*I, 0.05*I }
-				);
-			} else {
-				PROJECTILE(
-					.proto = pp_card,
-					.pos = o,
-					.color = RGB(c * 0.8, 0, (1 - c) * 0.8),
-					.rule = linear,
-					.args = { 2.5*I }
-				);
-			}
-		}
+		INVOKE_SUBTASK(common_drop_items, &boss->pos, {
+			.power = 10,
+			.points = 10,
+		});
+
+		INVOKE_SUBTASK(cards, ENT_BOX(boss));
+
+		WAIT(400);
 	}
-
-	FROM_TO(240, 390, 5) {
-		create_item(VIEWPORT_H*I + cwidth*(good_pos + frand()), -50.0*I, _i % 2 ? ITEM_POINTS : ITEM_POWER);
-	}
-
-	AT(600) {
-		targetpos = cwidth * (0.5 + slave_pos) + VIEWPORT_H/2.0*I;
-	}
-
-	GO_TO(h, targetpos, 0.06);
 }

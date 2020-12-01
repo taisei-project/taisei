@@ -16,5 +16,6 @@
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_midboss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_boss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_boss_nonspell_2, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_boss_nonspell_3, BossAttack);
 
 #endif // IGUARD_stages_stage1_nonspells_nonspells_h

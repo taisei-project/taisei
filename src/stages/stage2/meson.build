@@ -5,6 +5,7 @@ stage2_src = files(
     'hina.c',
     'nonspells/boss_nonspell_1.c',
     'nonspells/boss_nonspell_2.c',
+    'nonspells/boss_nonspell_3.c',
     'nonspells/midboss_nonspell_1.c',
     'spells/amulet_of_harm.c',
     'spells/bad_pick.c',

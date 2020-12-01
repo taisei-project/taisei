@@ -11,6 +11,8 @@
 
 #include "taisei.h"
 
-void stage2_events(void);
+#include "coroutine.h"
+
+DECLARE_EXTERN_TASK(stage2_timeline, NO_ARGS);
 
 #endif // IGUARD_stages_stage2_timeline_h
