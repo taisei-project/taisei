@@ -162,6 +162,16 @@ Video and OpenGL
 
    Displays some statistics about usage of in-game objects.
 
+**TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES**
+   | Default: unset 
+
+   Some AMD graphics cards (especially on macOS) will choke out unless a
+   specific workaround is implemented to allow uniform samplers to function
+   "correctly."
+
+   ``0`` to disable, ``1`` to enable. Automatically toggled in code based on
+   reported graphics card at launch.
+
 Timing
 ~~~~~~
 
