@@ -22,5 +22,7 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags)
 char vfs_get_syspath_separator(void);
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path);
 char *vfs_syspath_normalize_inplace(char *path);
+void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child);
+char *vfs_syspath_join_alloc(const char *parent, const char *child);
 
 #endif // IGUARD_vfs_syspath_public_h
