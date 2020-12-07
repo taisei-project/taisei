@@ -11,7 +11,7 @@
 #include "private.h"
 #include "syspath.h"
 
-char* vfs_path_normalize(const char *path, char *out) {
+char *vfs_path_normalize(const char *path, char *out) {
 	const char *p = path;
 	char *o = out;
 	char *last_sep = out - 1;
@@ -50,11 +50,11 @@ char* vfs_path_normalize(const char *path, char *out) {
 	return out;
 }
 
-char* vfs_path_normalize_alloc(const char *path) {
+char *vfs_path_normalize_alloc(const char *path) {
 	return vfs_path_normalize(path, strdup(path));
 }
 
-char* vfs_path_normalize_inplace(char *path) {
+char *vfs_path_normalize_inplace(char *path) {
 	char buf[strlen(path)+1];
 	strcpy(buf, path);
 	vfs_path_normalize(path, buf);
@@ -130,4 +130,10 @@ char* vfs_syspath_normalize_inplace(char *path) {
 	vfs_syspath_normalize(buf, sizeof(buf), path);
 	strcpy(path, buf);
 	return path;
+}
+
+char *vfs_syspath_join_alloc(const char *parent, const char *child) {
+	char buf[strlen(parent) + strlen(child) + 2];
+	vfs_syspath_join(buf, sizeof(buf), parent, child);
+	return strdup(buf);
 }

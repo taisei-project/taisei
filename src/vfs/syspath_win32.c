@@ -248,6 +248,33 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 	}
 }
 
+static bool is_absolute(const char *path, size_t len) {
+	// starts with drive letter or path separator?
+	return
+		(len >= 1 && strchr(vfs_syspath_separators, path[0])) ||
+		(len >= 2 && path[1] == ':' && isalpha(path[0]));
+}
+
+void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child) {
+	size_t l_parent = strlen(parent);
+	size_t l_child = strlen(child);
+	char sep = vfs_get_syspath_separator();
+	assert(bufsize >= l_parent + l_child + 2);
+
+	if(is_absolute(child, l_child)) {
+		memcpy(buf, child, l_child + 1);
+	} else {
+		memcpy(buf, parent, l_parent);
+		buf += l_parent;
+
+		if(l_parent && !strchr(vfs_syspath_separators, parent[l_parent - 1])) {
+			*buf++ = sep;
+		}
+
+		memcpy(buf, child, l_child + 1);
+	}
+}
+
 static bool vfs_syspath_validate(char *path) {
 	char *c = strchr(path, ':');
 

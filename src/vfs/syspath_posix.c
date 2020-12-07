@@ -154,6 +154,26 @@ void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 	}
 }
 
+void vfs_syspath_join(char *buf, size_t bufsize, const char *parent, const char *child) {
+	size_t l_parent = strlen(parent);
+	size_t l_child = strlen(child);
+	char sep = vfs_get_syspath_separator();
+	assert(bufsize >= l_parent + l_child + 2);
+
+	if(child[0] == sep) {
+		memcpy(buf, child, l_child + 1);
+	} else {
+		memcpy(buf, parent, l_parent);
+		buf += l_parent;
+
+		if(l_parent && parent[l_parent - 1] != sep) {
+			*buf++ = sep;
+		}
+
+		memcpy(buf, child, l_child + 1);
+	}
+}
+
 static void vfs_syspath_init_internal(VFSNode *node, char *path) {
 	vfs_syspath_normalize_inplace(path);
 	node->funcs = &vfs_funcs_syspath;
