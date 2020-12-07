@@ -48,3 +48,6 @@ else
         'sync_noop.c',
     )
 endif
+
+subdir('platform_paths')
+vfs_src += vfs_platform_paths_src
