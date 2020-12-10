@@ -158,13 +158,13 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 }
 
 TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 2)));
+	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 2)));
 
 	e->move.attraction = 0.005;
 	e->move.retention = 0.8;
 	e->move.attraction_point = ARGS.target_pos;
 
-	WAIT(120);
+	WAIT(60);
 
 	int shot_interval = 2;
 	int shot_count = difficulty_value(10, 10, 20, 25);
