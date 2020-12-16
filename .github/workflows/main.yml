@@ -1,26 +1,37 @@
-name: setup-ninja
+name: taisei-build-test
 
 on:
   push:
-    branches:
-      - automations
+    paths:
+      - "**.c"
+      - "**.h"
   pull_request:
+    paths:
+      - "**.h"
+      - "**.h"
 
 jobs:
-  test:
-    name: test
-    runs-on: ${{ matrix.image }}
-
-    strategy:
-      matrix:
-        image: [ 'windows-latest', 'ubuntu-latest', 'macos-latest' ]
-        version: [ '1.9.0', '1.10.0' ]
-
+  linux:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-node@v1
-      - uses: ./
-        with:
-          version: '${{ matrix.version }}'
-      - shell: bash
-        run: '[ "$(ninja --version)" == "${{ matrix.version }}" ]'
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: apt install meson cmake build-essential libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev
+    - run: git submodule update --init --recursive
+    - run: mkdir build
+    - run: cd build && meson configure -Dinstall_relative=true -Dbuildtype=debug -Db_ndebug=false -Db_lto=false -Dstrip=false -Ddeveloper=true && ninja
+
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: brew install gcc meson cmake pkg-config docutils imagemagick pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
+    - run: git submodule update --init --recursive
+    - run: mkdir build
+    - run: cd build && meson configure -Dinstall_relative=true -Dbuildtype=debug -Db_ndebug=false -Db_lto=false -Dstrip=false -Ddeveloper=true && ninja
+
