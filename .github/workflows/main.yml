@@ -1,0 +1,26 @@
+name: setup-ninja
+
+on:
+  push:
+    branches:
+      - automations
+  pull_request:
+
+jobs:
+  test:
+    name: test
+    runs-on: ${{ matrix.image }}
+
+    strategy:
+      matrix:
+        image: [ 'windows-latest', 'ubuntu-latest', 'macos-latest' ]
+        version: [ '1.9.0', '1.10.0' ]
+
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+      - uses: ./
+        with:
+          version: '${{ matrix.version }}'
+      - shell: bash
+        run: '[ "$(ninja --version)" == "${{ matrix.version }}" ]'
