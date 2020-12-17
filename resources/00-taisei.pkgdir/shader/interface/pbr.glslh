@@ -1,0 +1,10 @@
+#ifndef I_PBR_H
+#define I_PBR_H
+
+#include "standard.glslh"
+
+VARYING(3) vec3 pos;
+VARYING(4) vec3 tangent;
+VARYING(5) vec3 bitangent;
+
+#endif

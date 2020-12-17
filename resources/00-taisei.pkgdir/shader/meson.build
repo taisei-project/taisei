@@ -37,6 +37,8 @@ glsl_files = files(
     'maristar_bombbg.frag.glsl',
     'masterspark.frag.glsl',
     'max_to_alpha.frag.glsl',
+    'pbr.frag.glsl',
+    'pbr.vert.glsl',
     'player_death.frag.glsl',
     'powersurge_effect.frag.glsl',
     'powersurge_feedback.frag.glsl',
