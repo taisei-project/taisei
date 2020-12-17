@@ -38,7 +38,7 @@ void _r_models_init(void) {
 		{ { -0.5,  0.5,  0.0 }, { 0, 0 }, { 0, 0, 1 }, { 0, 0, 0, 0 } },
 	};
 
-	const size_t max_vertices = 8192;
+	const size_t max_vertices = 100000;
 
 	_r_models.vbuf = r_vertex_buffer_create(max_vertices * sizeof(GenericModelVertex), NULL);
 	r_vertex_buffer_set_debug_label(_r_models.vbuf, "Static models vertex buffer");
