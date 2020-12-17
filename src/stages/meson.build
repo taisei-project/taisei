@@ -4,8 +4,9 @@ stages_src = []
 stages = [
     'stage1',
     'stage2',
+    'stage4',
     'stage5',
-    'stage6'
+    'stage6',
 ]
 
 foreach stage : stages
@@ -19,8 +20,6 @@ endforeach
 stages_src += files(
     'stage3.c',
     'stage3_events.c',
-    'stage4.c',
-    'stage4_events.c',
     'extra.c',
 )
 
