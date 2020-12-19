@@ -60,6 +60,11 @@ void main(void) {
 	vec3 tbn_normal = sample_normalmap(normal_map, texCoord);
 	vec3 ambient = texture(ambient_map, texCoord).rgb;
 
+	float alpha = texture(roughness_map,texCoord).a;
+	if(alpha < 0.3) {
+		discard;
+	}
+
 	vec3 n = normalize(mat3(normalize(tangent), normalize(bitangent), normalize(normal))*tbn_normal);
 	vec3 v = normalize(-pos);
 
@@ -95,5 +100,5 @@ void main(void) {
 	color = color / (color + vec3(1.0));
 	color = pow(color, vec3(1.0/2.2));
 
-	fragColor = vec4(color, 1)*texture(roughness_map,texCoord).a;
+	fragColor = vec4(color, 1)*alpha;
 }
