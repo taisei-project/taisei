@@ -351,7 +351,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		uni.cache.update_first_idx = uni.array_size;
 
 		if(glext.version.is_webgl) {
-			// Some browsers are pendatic about getting a null in GLctx.getUniform(),
+			// Some browsers are pedantic about getting a null in GLctx.getUniform(),
 			// so we'd have to be very careful and query each array index with
 			// glGetUniformLocation in order to avoid an exception. Which is too much
 			// hassle, so instead here's a hack that fills initial cache state with
