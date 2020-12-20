@@ -50,15 +50,19 @@ void main(void) {
 
 	float n = warpedNoise(uv * 4);
 
-	float duv = dFdx(uv.x);
-	float bump  = dFdx(n)/duv*0.05;
-	float bump2 = dFdy(n)/duv*0.05;
+	vec2 duvdx = dFdx(uv);
+	vec2 duvdy = dFdy(uv);
+	mat2 duvdxy = mat2(duvdx,duvdy);
 
-	bump  = bump  * bump  * 0.5;
-	bump2 = bump2 * bump2 * 0.5;
+	float dndx = dFdx(n);
+	float dndy = dFdy(n);
+
+	vec2 dnduv = inverse(duvdxy)*vec2(dndx,dndy)*0.15; 
+	vec2 dnduv2 = dnduv * dnduv * 0.5;
+
 
 	uv = flip_native_to_bottomleft(texCoord);
-	uv += 0.25 * vec2(bump, bump2);
+	uv += 0.25 * dnduv2;
 	uv = flip_bottomleft_to_native(uv);
 
 	vec4 reflection = texture(tex, uv);
@@ -66,5 +70,5 @@ void main(void) {
 	reflection = reflection * reflection_color * 0.5;
 	vec4 surface = alphaCompose(water_color, reflection);
 
-	fragColor = mix(surface, wave_color, (bump2 - bump * 0.25) * 0.05);
+	fragColor = mix(surface, wave_color, max((dnduv2.y-dnduv2.x*0.25),0) * 0.10);
 }
