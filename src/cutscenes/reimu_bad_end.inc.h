@@ -23,7 +23,7 @@
 		T_NARRATOR("The tengu furiously scribbled down notes, once again as if they’d had the scoop of the century, before also beginning to make their own demands.\n"),
 		{ 0 },
 	}},
-	{ "cutscenes/location/hakurei", {
+	{ "cutscenes/locations/hakurei", {
 		T_NARRATOR("Once Reimu had managed to placate the crowd, she sat in the back of the Hakurei Shrine, bottle of sake in hand.\n"),
 		T_NARRATOR("She didn’t feel like drinking, however. She nursed it without even uncorking it, sighing to herself."),
 		{ 0 },
