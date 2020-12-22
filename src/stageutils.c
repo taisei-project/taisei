@@ -91,7 +91,7 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 	// of the camera to the line. Can be made exact though.
 	const int nrange = maxrange/sqrt(direction_length2);
 
-	// draw nearest to closest
+	// draw furthest to closest
 	for(int r = 0; r <= nrange; r++) {
 		for(int dir = -1; dir <= 1; dir += 2) {
 			if(r == 0 && dir > 0) {
