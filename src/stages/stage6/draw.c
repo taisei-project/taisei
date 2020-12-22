@@ -42,6 +42,10 @@ void stage6_drawsys_init(void) {
 		stage6_draw_data->stars.position[3*i+2] = z/r;
 	}
 
+	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
+	stage_3d_context.cam.near = 100;
+	stage_3d_context.cam.far = 9000;
+
 	stage_3d_context.cx[1] = -230;
 	stage_3d_context.crot[0] = 90;
 	stage_3d_context.crot[2] = -40;
@@ -154,8 +158,6 @@ static void stage6_skysphere_draw(vec3 pos) {
 }
 
 void stage6_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 100, 9000);
-
 	Stage3DSegment segs[] = {
 		{ stage6_skysphere_draw, stage6_skysphere_pos },
 		{ stage6_towertop_draw, stage6_towertop_pos },
@@ -322,5 +324,3 @@ void elly_global_rule(Boss *b, int time) {
 	global.boss->glowcolor = *HSL(time/120.0, 1.0, 0.25);
 	global.boss->shadowcolor = *HSLA_MUL_ALPHA((time+20)/120.0, 1.0, 0.25, 0.5);
 }
-
-

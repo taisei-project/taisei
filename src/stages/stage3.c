@@ -259,7 +259,6 @@ static void stage3_end(void) {
 }
 
 static void stage3_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, VIEWPORT_W/(real)VIEWPORT_H, 1, 60);
 	stage3d_draw(&stage_3d_context, 120, 2, (Stage3DSegment[]) { stage3_bg_ground_draw, stage3_bg_pos, stage3_bg_leaves_draw, stage3_bg_pos });
 }
 

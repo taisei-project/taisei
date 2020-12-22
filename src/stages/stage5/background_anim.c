@@ -15,6 +15,10 @@
 #include "stageutils.h"
 
 void stage5_update(void) {
+	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
+	stage_3d_context.cam.near = 100;
+	stage_3d_context.cam.far = 20000;
+
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 
 	TIMER(&global.timer);

@@ -130,8 +130,6 @@ static bool stage2_bloom(Framebuffer *fb) {
 }
 
 void stage2_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 500, 5000);
-
 	Stage3DSegment segs[] = {
 		{ stage2_bg_ground_draw, stage2_bg_pos },
 		{ stage2_bg_grass_draw, stage2_bg_grass_pos },
@@ -144,6 +142,10 @@ void stage2_draw(void) {
 
 void stage2_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 16);
+	stage_3d_context.cam.fovy = STAGE3D_DEFAULT_FOVY;
+	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT;  // FIXME
+	stage_3d_context.cam.near = 500;
+	stage_3d_context.cam.far = 5000;
 }
 
 void stage2_drawsys_shutdown(void) {
