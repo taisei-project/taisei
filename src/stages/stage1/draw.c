@@ -147,7 +147,7 @@ static void stage1_water_draw(vec3 pos) {
 	ShaderProgram *water_shader = res_shader("stage1_water");
 	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
 	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
-	r_uniform_float(r_shader_uniform(water_shader, "wave_offset"), stage_3d_context.cx[1] / 2400.0);
+	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, stage_3d_context.cx[1] / 2400.0);
 
 	if(pp_quality > 1) {
 		r_shader("blur5");
