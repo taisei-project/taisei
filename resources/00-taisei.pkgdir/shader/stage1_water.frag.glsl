@@ -5,7 +5,7 @@
 
 UNIFORM(1) float time;
 UNIFORM(2) vec4 water_color;
-UNIFORM(3) float wave_offset;
+UNIFORM(3) vec2 wave_offset;
 
 const vec4 reflection_color = vec4(0.5, 0.8, 0.8, 1.0);
 const vec4 wave_color = vec4(0.8, 0.8, 1.0, 1.0);
@@ -46,7 +46,7 @@ float warpedNoise(vec2 p) {
 }
 
 void main(void) {
-	vec2 uv = flip_native_to_bottomleft(texCoord - vec2(0, wave_offset)) * rot(-pi/4);
+	vec2 uv = flip_native_to_bottomleft(texCoord - wave_offset) * rot(-pi/4);
 
 	float n = warpedNoise(uv * 4);
 
@@ -57,7 +57,7 @@ void main(void) {
 	float dndx = dFdx(n);
 	float dndy = dFdy(n);
 
-	vec2 dnduv = inverse(duvdxy)*vec2(dndx,dndy)*0.15; 
+	vec2 dnduv = inverse(duvdxy)*vec2(dndx,dndy)*0.15;
 	vec2 dnduv2 = dnduv * dnduv * 0.5;
 
 
