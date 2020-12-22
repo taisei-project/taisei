@@ -76,6 +76,7 @@ void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegme
 void camera3d_init(Camera3D *cam);
 void camera3d_update(Camera3D *cam);
 void camera3d_apply_transforms(Camera3D *cam, mat4 mat);
+void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest);
 
 uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
 uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
