@@ -17,8 +17,17 @@ Stage3D stage_3d_context;
 
 void stage3d_init(Stage3D *s, uint pos_buffer_size) {
 	memset(s, 0, sizeof(*s));
+	camera3d_init(&s->cam);
 	s->pos_buffer_size = pos_buffer_size;
 	s->pos_buffer = calloc(s->pos_buffer_size, sizeof(vec3));
+}
+
+void camera3d_init(Camera3D *cam) {
+	memset(cam, 0, sizeof(*cam));
+	cam->fovy = STAGE3D_DEFAULT_FOVY;
+	cam->aspect = VIEWPORT_W/(real)VIEWPORT_H;
+	cam->near = STAGE3D_DEFAULT_NEAR;
+	cam->far = STAGE3D_DEFAULT_FAR;
 }
 
 void camera3d_update(Camera3D *cam) {
@@ -54,6 +63,8 @@ void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawR
 void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]) {
 	r_mat_mv_push();
 	stage3d_apply_transforms(s, *r_mat_mv_current_ptr());
+
+	r_mat_proj_perspective(s->cam.fovy, s->cam.aspect, s->cam.near, s->cam.far);
 
 	for(uint i = 0; i < nsegments; ++i) {
 		const Stage3DSegment *seg = segments + i;

@@ -229,6 +229,12 @@ static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	stage3d_init(&stage_3d_context, 64);
 
+	stage_3d_context.cam.fovy = M_PI/3; // FIXME
+	stage_3d_context.cam.aspect = 0.7f; // FIXME
+	stage_3d_context.cam.near = 100;
+	stage_3d_context.cam.far = 9000;
+
+
 	stage_3d_context.cx[0] = 0;
 	stage_3d_context.cx[1] = 600;
 	stage_3d_context.crot[0] = 0;
@@ -377,7 +383,6 @@ static void credits_draw(void) {
 	r_mat_mv_push();
 	r_enable(RCAP_DEPTH_TEST);
 
-	r_mat_proj_perspective(M_PI/3, 0.7f, 100, 9000);
 	r_mat_proj_translate(0, SCREEN_H / 3.0f, 0);
 
 	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, stage6_towerwall_pos });

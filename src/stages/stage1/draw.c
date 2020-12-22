@@ -362,8 +362,6 @@ static uint stage1_snow_pos(Stage3D *s3d, vec3 p, float maxrange) {
 }
 
 void stage1_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 500, 10000);
-
 	Stage3DSegment segs[] = {
 		{ stage1_water_draw, stage1_water_pos },
 		{ stage1_waterplants_draw, stage1_waterplants_pos },

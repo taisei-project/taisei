@@ -165,8 +165,6 @@ static void stage4_corridor_draw(vec3 pos) {
 }
 
 void stage4_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, VIEWPORT_W/(double)VIEWPORT_H, 1, 300);
-
 	Stage3DSegment segs[] = {
 		{ stage4_lake_draw, stage4_lake_pos },
 		{ stage4_corridor_draw, stage4_corridor_pos },

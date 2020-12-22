@@ -21,6 +21,8 @@ TASK(update_stage_3d, NO_ARGS) {
 }
 
 TASK(animate_bg_fullstage, NO_ARGS) {
+	stage_3d_context.cam.far = 300;
+
 	stage_3d_context.cam.pos[2] = -1.8;
 	stage_3d_context.cam.pos[1] = -30;
 	stage_3d_context.cam.rot.v[0] = 80;

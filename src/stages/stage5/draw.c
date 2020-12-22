@@ -58,7 +58,6 @@ static void stage5_stairs_draw(vec3 pos) {
 }
 
 void stage5_draw(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 100, 20000);
 	stage3d_draw(&stage_3d_context, 30000, 1, (Stage3DSegment[]) { stage5_stairs_draw, stage5_stairs_pos });
 }
 
