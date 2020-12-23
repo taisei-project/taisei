@@ -347,3 +347,26 @@ That will regenerate the files needed for your new sprites to appear correctly.
 
 *Generally speaking*, Taisei prefers ``.webp`` as the final product, but can
 convert ``.png`` into ``.webp`` using the above ``ninja gen-atlas*`` commands.
+
+Compiling Issues
+----------------
+
+* `-Wunused-variable` - if you get an error compiling your code, but you're 100%
+sure that you've actually used the variable, chances are you're using that
+variable in an `assert()` and are compiling with `clang`.
+
+`clang` won't recognize that the variable is actually being used in an `assert()`.
+
+You can use the macro `attr_unused` to bypass that warning. This:
+
+::
+
+    int x = 0;
+    assert(x == 0);
+
+Becomes this:
+
+::
+
+    attr_unused int x = 0;
+    assert(x == 0);
