@@ -610,7 +610,7 @@ TASK(flea_swirls, {
 }
 
 TASK(boss_appear, { BoxedBoss boss; }) {
-	Boss *boss = ENT_UNBOX(ARGS.boss);
+	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
 	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.05);
 
 	aniplayer_queue(&boss->ani, "guruguru", 2);
