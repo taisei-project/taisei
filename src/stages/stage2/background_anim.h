@@ -14,4 +14,6 @@
 void stage2_bg_init_fullstage(void);
 void stage2_bg_init_spellpractice(void);
 
+void stage2_bg_engage_hina_mode(void);
+
 #endif // IGUARD_stages_stage2_background_anim_h

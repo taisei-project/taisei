@@ -13,6 +13,7 @@
 #include "hina.h"
 #include "nonspells/nonspells.h"
 #include "stage2.h"
+#include "background_anim.h"
 
 #include "stage.h"
 #include "global.h"
@@ -840,7 +841,9 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		}
 	}
 
-	WAIT(1160);
+	WAIT(860);
+	stage2_bg_engage_hina_mode();
+	WAIT(300);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	INVOKE_TASK(spawn_boss);
 	WAIT_EVENT(&global.boss->events.defeated);

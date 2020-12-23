@@ -15,29 +15,59 @@
 #include "global.h"
 #include "util/glm.h"
 
-static void stage2_bg_setup_pbr_lighting() {
+static Stage2DrawData *stage2_draw_data;
+
+Stage2DrawData *stage2_get_draw_data(void) {
+	return NOT_NULL(stage2_draw_data);
+}
+
+#define STAGE2_MAX_LIGHTS 4
+static void stage2_bg_setup_pbr_lighting(int max_lights) {
 	Camera3D *cam = &stage_3d_context.cam;
 
-	vec3 r;
-	camera3d_unprojected_ray(&stage_3d_context.cam, global.plr.pos,r);
-
-	real t = (1-cam->pos[2])/r[2];
-	glm_vec3_scale(r, t, r);
-
-	vec3 light_pos[] = {
+	vec3 light_pos[STAGE2_MAX_LIGHTS] = {
 		{100,cam->pos[1]-100,100},
 		{0, 0, 0},
+		{0, 0, 0},
+		{0, 0, 0},
 	};
-	glm_vec3_add(cam->pos, r, light_pos[1]);
+
+	vec3 light_colors[ARRAY_SIZE(light_pos)] = {
+		{50000,50000,50000},
+		{1, 0, 30},
+		{1, 0, 30},
+		{1, 0, 30},
+	};
+
+	Stage2DrawData *draw_data = stage2_get_draw_data();
+
+	if(global.boss && draw_data->hina_lights > 0) {
+		vec3 r;
+		camera3d_unprojected_ray(&stage_3d_context.cam, global.boss->pos, r);
+
+		real t = (0.1-cam->pos[2])/r[2];
+		glm_vec3_scale(r, t, r);
+
+		vec3 hina_center;
+		glm_vec3_add(cam->pos, r, hina_center);
+
+		int hina_light_count = 3;
+		for(int i = 0; i < hina_light_count; i++) {
+			real angle = 2 * M_PI / hina_light_count * i + global.frames/(real)FPS;
+			vec3 offset = {cos(angle), sin(angle)};
+			glm_vec3_scale(offset, 4+sin(3*angle), offset);
+			glm_vec3_add(hina_center, offset, light_pos[1+i]);
+
+			glm_vec3_scale(light_colors[1+i], draw_data->hina_lights, light_colors[1+i]);
+		}
+	} else {
+		max_lights = 1;
+	}
+
 
 	mat4 camera_trans;
 	glm_mat4_identity(camera_trans);
 	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
-	vec3 light_colors[] = {
-		{50000,50000,50000},
-		{10, 0, 0},
-	};
 
 	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
 	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
@@ -47,7 +77,8 @@ static void stage2_bg_setup_pbr_lighting() {
 
 	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	r_uniform_int("light_count", 2);
+	int light_count = imin(max_lights, ARRAY_SIZE(light_pos));
+	r_uniform_int("light_count", light_count);
 
 
 	r_uniform_vec3("ambient_color",0.5,0.5,0.5);
@@ -67,7 +98,7 @@ static void stage2_bg_branch_draw(vec3 pos) {
 
 
 	r_shader("pbr");
-	stage2_bg_setup_pbr_lighting();
+	stage2_bg_setup_pbr_lighting(1);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage2/branch_diffuse");
@@ -99,7 +130,7 @@ static void stage2_bg_grass_draw(vec3 pos) {
 	r_mat_mv_scale(2, 2, 2);
 
 	r_shader("pbr");
-	stage2_bg_setup_pbr_lighting();
+	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage2/grass_diffuse");
@@ -132,7 +163,7 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
 	r_shader("pbr");
-	stage2_bg_setup_pbr_lighting();
+	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage2/ground_diffuse");
@@ -157,8 +188,6 @@ static void stage2_bg_ground_draw(vec3 pos) {
 
 
 	r_mat_mv_pop();
-
-
 	r_state_pop();
 }
 
@@ -220,7 +249,7 @@ static uint stage2_bg_grass_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 static bool stage2_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4("fog_color", 0.5, 0.6, 0.9, 1.0);
+	r_uniform_vec4_rgba("fog_color", &stage2_get_draw_data()->fog.color);
 	r_uniform_float("start", 0.2);
 	r_uniform_float("end", 3.8);
 	r_uniform_float("exponent", 3.0);
@@ -246,10 +275,12 @@ void stage2_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 16);
 	stage_3d_context.cam.near = 1;
 	stage_3d_context.cam.far = 60;
+	stage2_draw_data = calloc(1, sizeof(*stage2_draw_data));
 }
 
 void stage2_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
+	free(stage2_draw_data);
 }
 
 ShaderRule stage2_bg_effects[] = {
