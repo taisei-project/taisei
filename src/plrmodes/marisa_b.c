@@ -104,9 +104,12 @@ TASK(marisa_star_slave_projectile, {
 }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
+	MarisaBSlave *slave = ENT_UNBOX(ARGS.slave);
 
-	if(!ENT_UNBOX(ARGS.slave)->alive || !player_should_shoot(plr)) {
-		return;
+	if(slave) {
+		if(!slave->alive || !player_should_shoot(plr)) {
+			return;
+		}
 	}
 
 	Projectile *p = TASK_BIND(PROJECTILE(
@@ -126,7 +129,7 @@ TASK(marisa_star_slave_projectile, {
 	cmplx next_pos = p->pos;
 
 	for(int t = 0;; ++t) {
-		MarisaBSlave *slave = ENT_UNBOX(ARGS.slave);
+		slave = ENT_UNBOX(ARGS.slave);
 
 		if(slave == NULL || !slave->alive || !player_should_shoot(plr)) {
 			break;

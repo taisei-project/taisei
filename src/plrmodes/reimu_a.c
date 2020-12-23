@@ -214,7 +214,7 @@ static void reimu_spirit_bomb_impact_balls(cmplx pos, int count) {
 }
 
 TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
-	cmplx pos = ENT_UNBOX(ARGS.orb)->pos;
+	cmplx pos = NOT_NULL(ENT_UNBOX(ARGS.orb))->pos;
 
 	play_sfx("boom");
 	play_sfx("spellend");
