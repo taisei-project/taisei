@@ -67,30 +67,53 @@ static uint stage3_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage3_bg_setup_pbr_lighting(void) {
-	cmplx boss_dist = 10000*I;
+	Camera3D *cam = &stage_3d_context.cam;
+	vec3 light_pos[] = {
+		{0,0,10000},
+		{0,0,0},
+	};
+
 	if(global.boss) {
-		boss_dist = global.boss->pos-(VIEWPORT_W+VIEWPORT_H/2*I)*0.5;
+		vec3 r;
+		cmplx bpos = global.boss->pos;
+		if(cimag(bpos) < 0) { // to make the light (dis)appear continuously
+			bpos = creal(bpos) + I*pow(fabs(cimag(bpos))*0.1,2)*cimag(bpos);
+		}
+		camera3d_unprojected_ray(cam,bpos,r);
+		glm_vec3_scale(r, 9, r);
+		glm_vec3_add(cam->pos, r, light_pos[0]);
 	}
 
-	vec3 light_pos[] = {
-		{creal(boss_dist)*0.02, stage_3d_context.cam.pos[1]+11-0.1*cimag(boss_dist), stage_3d_context.cam.pos[2]+4-0.1*cimag(boss_dist)},
-	};
+	vec3 r;
+	camera3d_unprojected_ray(cam,global.plr.pos,r);
+	glm_vec3_scale(r, 5, r);
+	glm_vec3_add(cam->pos, r, light_pos[1]);
+
+
 
 	mat4 camera_trans;
 	glm_mat4_identity(camera_trans);
 	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
 
 	vec3 light_colors[] = {
-		{10, 42, 30},
+		{10, 42, 30}, // TODO animate me
+		{10,10,10},
 	};
+	if(global.frames > 6000) { // wriggle
+		light_colors[0][0] = 20;
+		light_colors[0][1] = 10;
+		light_colors[0][2] = 40;
+	}
 
-	vec3 cam_light_positions[1];
-	glm_mat4_mulv3(camera_trans, light_pos[0], 1, cam_light_positions[0]);
+	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
+	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
+		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
+	}
 
 
 	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	r_uniform_int("light_count", 1);
+	r_uniform_int("light_count", ARRAY_SIZE(light_pos));
 
 	real f = 1/(1+global.frames/1000.);
 	r_uniform_vec3("ambient_color",f,f,sqrt(f));
