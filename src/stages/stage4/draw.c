@@ -42,9 +42,15 @@ static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 static void stage4_lake_draw(vec3 pos) {
 	vec3 light_pos[] = {
-		{0, stage_3d_context.cam.pos[1]+3, stage_3d_context.cam.pos[2]-0.8},
+		{0,0,0},
 		{0, 25, 3}
 	};
+	
+	vec3 r;
+	Camera3D *cam = &stage_3d_context.cam;
+	camera3d_unprojected_ray(cam, global.plr.pos, r);
+	glm_vec3_scale(r, 4, r);
+	glm_vec3_add(cam->pos, r, light_pos[0]);
 
 	mat4 camera_trans;
 	glm_mat4_identity(camera_trans);
@@ -55,13 +61,14 @@ static void stage4_lake_draw(vec3 pos) {
 	r_shader("pbr");
 
 	vec3 light_colors[] = {
-		{1, 22, 22},
+		{10,10,10},
 		{4, 20, 22},
 	};
 
-	vec3 cam_light_positions[2];
-	glm_mat4_mulv3(camera_trans, light_pos[0], 1, cam_light_positions[0]);
-	glm_mat4_mulv3(camera_trans, light_pos[1], 1, cam_light_positions[1]);
+	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
+	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) { 
+		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
+	}
 
 
 	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
