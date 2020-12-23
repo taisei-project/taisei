@@ -25,6 +25,14 @@
 	#endif
 #endif
 
+#if defined __clang__
+	// On these platforms CMPLX is defined without __extension__, causing warning spam
+	#if defined __EMSCRIPTEN__ || defined __APPLE__
+		#undef CMPLX
+		#undef CMPLXF
+	#endif
+#endif
+
 // In case the C11 CMPLX macro is not present, try our best to provide a substitute
 
 #if !defined CMPLX
@@ -37,9 +45,6 @@
 	#else
 		#define CMPLX(re,im) (_Complex double)((double)(re) + _Complex_I * (double)(im))
 	#endif
-#elif defined __EMSCRIPTEN__ && defined __clang__
-	// CMPLX from emscripten headers uses the clang-specific syntax without __extension__
-	#pragma clang diagnostic ignored "-Wcomplex-component-init"
 #endif
 
 // same for CMPLXF
@@ -54,9 +59,6 @@
 	#else
 		#define CMPLXF(re,im) (_Complex float)((float)(re) + _Complex_I * (float)(im))
 	#endif
-#elif defined __EMSCRIPTEN__ && defined __clang__
-	// CMPLXF from emscripten headers uses the clang-specific syntax without __extension__
-	#pragma clang diagnostic ignored "-Wcomplex-component-init"
 #endif
 
 #endif // IGUARD_util_compat_cmplx_h
