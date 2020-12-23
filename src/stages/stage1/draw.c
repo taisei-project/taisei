@@ -320,18 +320,12 @@ static void stage1_snow_draw(vec3 pos) {
 	float h1 = floathash(pos[1]+1) / (double)UINT32_MAX;
 	float h2 = floathash(pos[1]+2) / (double)UINT32_MAX;
 
-	float height = 1 + sawtooth(h0 + global.frames/240.0);
+	float height = 1 + sawtooth(h0 + global.frames/280.0);
 
 	o *= pow(1 - 1.5 * clamp(height - 1, 0, 1), 5) * x;
 
 	if(o < 1.0f/256.0f) {
 		return;
-	}
-
-	if(height > 1) {
-		height = 1;
-	} else {
-		height = glm_ease_quad_in(height);
 	}
 
 	if(o > 1) {
