@@ -188,7 +188,7 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 
 	va_list args_copy;
 	va_copy(args_copy, args);
-	int slen = strbuf_vprintf(buf, fmt, args_copy);
+	attr_unused int slen = strbuf_vprintf(buf, fmt, args_copy);
 	va_end(args_copy);
 	assert_nolog(slen >= 0);
 

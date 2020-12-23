@@ -93,7 +93,7 @@ static const char *astream_opus_meta(AudioStream *s, AudioStreamMetaTag tag) {
 		[STREAM_META_COMMENT] = "DESCRIPTION=",
 	};
 
-	uint idx = tag;
+	attr_unused uint idx = tag;
 	assert(idx < ARRAY_SIZE(tag_map));
 
 	return get_opus_tag(of, tag_map[tag]);

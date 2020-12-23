@@ -88,7 +88,7 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferre
 	int num_passes = png_set_interlace_handling(png);
 	png_read_update_info(png, png_info);
 
-	png_byte channels = png_get_channels(png, png_info);
+	attr_unused png_byte channels = png_get_channels(png, png_info);
 	color_type = png_get_color_type(png, png_info);
 	bit_depth = png_get_bit_depth(png, png_info);
 
