@@ -11,7 +11,11 @@
 
 #include "taisei.h"
 
+// libzip on clang creates useless noise
+DIAGNOSTIC_CLANG(push)
+DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
 #include <zip.h>
+DIAGNOSTIC_CLANG(pop)
 
 #include "private.h"
 #include "hashtable.h"
