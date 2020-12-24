@@ -29,7 +29,7 @@ project('taisei', 'c',
     ]
 )
 
-minimum_recommended_meson_version = '0.49.0'
+minimum_recommended_meson_version = '0.53.0'
 
 if meson.version().version_compare('<@0@'.format(minimum_recommended_meson_version))
     warning('Old Meson version detected. Try upgrading to at least @0@ if the build fails.'.format(minimum_recommended_meson_version))

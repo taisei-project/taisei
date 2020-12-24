@@ -36,7 +36,7 @@ Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 -  Python >= 3.5
--  meson >= 0.48.0 (build system; >=0.49.0 recommended)
+-  meson >= 0.53.0
 
 Optional:
 

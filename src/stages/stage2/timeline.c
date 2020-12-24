@@ -80,9 +80,16 @@ TASK(spinshot_fairy_attack, {
 		)
 	);
 
+	cmplx ref_pos = NOT_NULL(ENT_UNBOX(ARGS.e))->pos;
+	Enemy *e;
+
 	for(int t = 0; t < ARGS.activate_time; ++t, YIELD) {
 		int live_count = 0;
-		cmplx ref_pos = NOT_NULL(ENT_UNBOX(ARGS.e))->pos;
+		e = ENT_UNBOX(ARGS.e);
+
+		if(e) {
+			ref_pos = e->pos;
+		}
 
 		ENT_ARRAY_FOREACH_COUNTER(&projs, int i, Projectile *p, {
 			cmplx ofs = ref_pos - proj_origins[i];
