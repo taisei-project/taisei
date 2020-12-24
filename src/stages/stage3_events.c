@@ -250,7 +250,7 @@ static int stage3_burstfairy(Enemy *e, int t) {
 
 	charge_effect(e, t, bursttime);
 
-	FROM_TO_SND("shot1_loop", bursttime, bursttime + burstspan, step) {
+	FROM_TO_SND("shot1_loop", bursttime, bursttime + burstspan * step - 1, step) {
 		double phase = (t - bursttime) / (double)burstspan;
 		cmplx dir = cexp(I*M_PI*phase);
 

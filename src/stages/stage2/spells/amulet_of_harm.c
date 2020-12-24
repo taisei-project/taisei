@@ -50,8 +50,8 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 
 		ENT_ARRAY_FOREACH(ARGS.spinners, Projectile *p, {
 			int cnt = difficulty_value(12, 16, 22, 24);
-			for(int i = 0; i < cnt; ++i) {
-				cmplx ca = circle_dir(i, cnt);
+			for(int x = 0; x < cnt; ++x) {
+				cmplx ca = circle_dir(x, cnt);
 				cmplx o = p->pos + 42 * ca;
 				cmplx aim = cnormalize(o - core->pos);
 

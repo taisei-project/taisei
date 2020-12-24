@@ -40,7 +40,6 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
 
-		va_list args_copy;
 		va_copy(args_copy, args);
 		size_required = vsnprintf(strbuf->pos, size_available, format, args_copy);
 		va_end(args_copy);
