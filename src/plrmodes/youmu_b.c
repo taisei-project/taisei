@@ -246,10 +246,8 @@ TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
 }
 
 static int youmu_orb_homing_spirit_timeout(Projectile *orb) {
-	if(orb) {
-		return orb->timeout - projectile_time(orb);
-	}
-	return 0;
+	assume(orb != NULL);
+	return orb->timeout - projectile_time(orb);
 }
 
 TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocity; cmplx target; real charge; real damage; real spin; BoxedProjectile orb; }) {
