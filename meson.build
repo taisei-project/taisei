@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.4-dev',
-    meson_version : '>=0.48.0',
+    meson_version : '>=0.53.0',
     default_options : [
         # Should really be c11, but gnu11 is a safer default because everything is terrible.
         'c_std=gnu11',
@@ -39,7 +39,7 @@ is_debug_build = get_option('debug')
 is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
 
 cc = meson.get_compiler('c')
-python3 = import('python3').find_python()
+python = import('python').find_installation()
 macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
 subdir('scripts')
@@ -85,6 +85,7 @@ taisei_c_args = [
     '-Wparentheses',
     '-Wshadow=compatible-local',
     '-Wsometimes-uninitialized',
+    '-Wstrict-overflow=0',
     '-Wstrict-prototypes',
     '-Wtype-limits',
     '-Wunneeded-internal-declaration',
@@ -283,7 +284,7 @@ if macos_app_bundle
 
     # arguments must be strings...
     meson.add_install_script(
-        python3.path(),
+        python.path(),
         join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
         ':'.join(meson.get_cross_property('macos_lib_path', [])),
         ':'.join(meson.get_cross_property('macos_tool_path', [])),

@@ -104,12 +104,10 @@ TASK(marisa_star_slave_projectile, {
 }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	MarisaBSlave *slave = ENT_UNBOX(ARGS.slave);
+	MarisaBSlave *slave = NOT_NULL(ENT_UNBOX(ARGS.slave));
 
-	if(slave) {
-		if(!slave->alive || !player_should_shoot(plr)) {
-			return;
-		}
+	if(!slave->alive || !player_should_shoot(plr)) {
+		return;
 	}
 
 	Projectile *p = TASK_BIND(PROJECTILE(
