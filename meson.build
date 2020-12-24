@@ -29,12 +29,6 @@ project('taisei', 'c',
     ]
 )
 
-minimum_recommended_meson_version = '0.53.0'
-
-if meson.version().version_compare('<@0@'.format(minimum_recommended_meson_version))
-    warning('Old Meson version detected. Try upgrading to at least @0@ if the build fails.'.format(minimum_recommended_meson_version))
-endif
-
 is_debug_build = get_option('debug')
 is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
 
