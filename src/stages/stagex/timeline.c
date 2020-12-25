@@ -93,6 +93,138 @@ TASK(glider_fairy, {
 	}
 }
 
+TASK(aimgrind_fairy, {
+	cmplx pos;
+}) {
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, NULL));
+	cmplx v = CMPLX(1-2*(creal(ARGS.pos)<VIEWPORT_W/2), 1);
+
+	for(int i = 0; i < 30; i++) {
+		for(int k = 0; k < 2; k++) {
+			cmplx d = global.plr.pos-e->pos;
+			cmplx aim = cnormalize(d);
+			real r = cabs(d)*(0.6-0.2*k);
+			real v0 = 6;
+			real phi = acos(1-0.5*v0*v0/r/r);
+			for(int j = -1; j <= 1; j+=2) {
+				PROJECTILE(
+					.pos = e->pos,
+					.proto = pp_bullet,
+					.color = RGBA(0.1,0.4,1,1),
+					.move = {-v0*j*aim*I,0,cdir(phi*j)},
+					.timeout = M_PI/phi,
+				);
+			}
+			PROJECTILE(
+				.pos = e->pos,
+				.proto = pp_ball,
+				.color = RGBA(0.8,0.1,0.5,1),
+				.move = move_asymptotic(0, aim*5*cdir(0.3*sin(i)),0.1),
+			);
+		}
+		WAIT(10);
+
+	}
+	e->move = move_linear(v);
+
+}
+
+TASK(rocket_proj, { cmplx pos; cmplx dir; }) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.pos = ARGS.pos,
+		.proto = pp_bigball,
+		.color = RGBA(0,0.2,1,0.0),
+		.move = move_accelerated(0,0.2*ARGS.dir)
+	));
+	real phase = rng_angle();
+	real period = rng_range(0.2,0.5);
+	for(int i = 0; ; i++) {
+		PROJECTILE(
+			.pos = p->pos,
+			.proto = pp_bullet,
+			.color = RGBA(0.1,0.2,0.9,1.0),
+			.move = move_accelerated(0,0.01*cdir(period*i+phase)),
+		);
+		YIELD;
+	}
+}
+
+
+TASK(rocket_fairy, { cmplx pos; }) {
+	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, NULL));
+
+	e->move = move_linear(0.5*I);
+
+	cmplx aim = rng_dir();
+	int rockets = 3;
+	for(int i = 0; i < rockets; i++) {
+		INVOKE_TASK(rocket_proj, e->pos, aim*cdir(M_TAU/rockets*i));
+		WAIT(10);
+	}
+}
+
+TASK(ngoner_proj, { cmplx pos; cmplx target; int stop_time; int laser_time; cmplx laser_vel; }) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.pos = ARGS.pos,
+		.proto = pp_bullet,
+		.color = RGBA(0,0.2,1,0.0),
+		.move = move_linear(ARGS.target/ARGS.stop_time)
+	));
+	WAIT(ARGS.stop_time);
+	p->move = move_stop(0.5);
+
+	WAIT(ARGS.laser_time-ARGS.stop_time);
+	p->move = move_linear(ARGS.laser_vel);
+
+	PROJECTILE(
+		.pos = p->pos,
+		.proto = pp_ball,
+		.color = RGBA(0.1,0.9,1,0.0),
+		.move = move_linear(2*cnormalize(ARGS.target)),
+	);
+}
+
+TASK(ngoner_laser, { cmplx pos; cmplx dir; }) {
+	create_lasercurve1c(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), las_linear, ARGS.dir);
+	create_lasercurve1c(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), las_linear, -ARGS.dir);
+}
+
+TASK(ngoner_fairy, { cmplx pos; }) {
+	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, NULL));
+
+	cmplx rot = rng_dir();
+
+	int corners = 6;
+	int projs_per_site = 11;
+	int assembly_time = 10;
+	real site_length = 70;
+
+	real b = site_length / 2 * tan(M_PI* (0.5 - 1.0 / corners));
+
+	int laser_time = corners*projs_per_site + assembly_time + 10;
+
+	for(int i = 0; i < corners; i++) {
+		cmplx offset = rot*b*cdir(M_TAU/corners*i);
+		INVOKE_TASK_DELAYED(laser_time, ngoner_laser, e->pos + offset, 5*I*cnormalize(offset));
+	}
+
+	for(int s = 0; s < projs_per_site; s++) {
+		for(int i = 0; i < corners; i++) {
+			real phase = M_TAU/corners*(s/(real)projs_per_site-0.5);
+			real radius = b/cos(phase);
+			cmplx target = rot*radius*cdir(phase+M_TAU/corners*i);
+
+			int laser_delay = laser_time + 2*abs(s-projs_per_site/2) - i - s*corners;
+			cmplx laser_vel = rot*3.5*cdir(M_TAU/corners*i+0.06*(s-projs_per_site/2.0));
+
+
+			INVOKE_TASK(ngoner_proj, e->pos, target, assembly_time, laser_delay, laser_vel);
+			YIELD;
+		}
+	}
+	e->move = move_linear(I);
+}
+
 TASK(yumemi_appear, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
@@ -108,7 +240,7 @@ TASK(boss, { Boss **out_boss; }) {
 	*ARGS.out_boss = global.boss = boss;
 
 #if 1
-	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL, NULL);
+	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.sierpinski, false);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.infinity_network, false);
 
@@ -143,7 +275,7 @@ TASK(boss, { Boss **out_boss; }) {
 DEFINE_EXTERN_TASK(stagex_timeline) {
 	YIELD;
 
-	// goto enemies;
+	goto enemies;
 
 	// WAIT(3900);
 	stagex_get_draw_data()->tower_global_dissolution = 1;
@@ -154,8 +286,28 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 
 // attr_unused
 enemies:
+	for(int i = 0; i < 20; i++) {
+		real rx = rng_range(-1,1)*100;
+		real ry = rng_range(-1,1)*50;
+		INVOKE_TASK(rocket_fairy, CMPLX(VIEWPORT_W*0.5+rx, VIEWPORT_H*0.3+ry));
+		WAIT(100);
+	}
+	WAIT(400);
+	for(int i = 0; i < 20; i++) {
+		real rx = rng_range(-1,1)*100;
+		real ry = rng_range(-1,1)*50;
+		INVOKE_TASK(aimgrind_fairy, CMPLX(VIEWPORT_W*0.5+rx, VIEWPORT_H*0.3+ry));
+		WAIT(200);
+	}
+	WAIT(200);
+	for(int i = 0; i < 20; i++) {
+		real rx = rng_range(-1,1)*100;
+		real ry = rng_range(-1,1)*50;
+		INVOKE_TASK(ngoner_fairy, CMPLX(VIEWPORT_W*0.5+rx, VIEWPORT_H*0.3+ry));
+		WAIT(70);
+	}
 	for(int i = 0;;i++) {
-		INVOKE_TASK_DELAYED(60, glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
+		INVOKE_TASK(glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
 		WAIT(50+100*(i&1));
 	}
 }
