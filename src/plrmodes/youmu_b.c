@@ -229,7 +229,7 @@ TASK(youmu_haunting_shot_homing, { YoumuBController *ctrl; }) {
 }
 
 TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
-	Projectile *p = ENT_UNBOX(ARGS.p);
+	Projectile *p = NOT_NULL(ENT_UNBOX(ARGS.p));
 
 	PARTICLE(
 		.sprite_ptr = p->sprite,
@@ -246,6 +246,7 @@ TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
 }
 
 static int youmu_orb_homing_spirit_timeout(Projectile *orb) {
+	assume(orb != NULL);
 	return orb->timeout - projectile_time(orb);
 }
 
@@ -387,7 +388,7 @@ TASK(youmu_orb_update, { YoumuBController *ctrl; BoxedProjectile orb; }) {
 
 TASK(youmu_orb_death, { BoxedProjectile orb; BoxedTask control_task; }) {
 	CANCEL_TASK(ARGS.control_task);
-	Projectile *orb = ENT_UNBOX(ARGS.orb);
+	Projectile *orb = NOT_NULL(ENT_UNBOX(ARGS.orb));
 
 	PARTICLE(
 		.proto = pp_blast,

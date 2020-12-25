@@ -23,7 +23,7 @@ if host_machine.system() == 'windows'
 elif xdg_systems.contains(host_machine.system())
     vfs_platform_paths_src += files('cache_xdg.c')
 elif host_machine.system() == 'darwin'
-    add_languages('objc', native : false)
+    add_languages('objc')
     taisei_deps += dependency('appleframeworks', modules : 'foundation')
     vfs_platform_paths_src += files('cache_apple.m')
 else

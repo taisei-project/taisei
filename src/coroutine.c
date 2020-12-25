@@ -146,8 +146,8 @@ static struct {
 
 #else // CO_TASK_STATS
 
-#define STAT_VAL(name) (0)
-#define STAT_VAL_SET(name, value) (0)
+#define STAT_VAL(name) ((void)0)
+#define STAT_VAL_SET(name, value) ((void)0)
 
 #endif // CO_TASK_STATS
 

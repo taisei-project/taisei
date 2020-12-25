@@ -317,20 +317,22 @@ static void load_animation_stage2(ResourceLoadState *st) {
 		ani = NULL;
 	}
 
-	if(ani->sprite_count != prev_sprite_count) {
-		// remapping generated new flipped sprites - add them to our sprites array
+	if(ani) {
+		if(ani->sprite_count != prev_sprite_count) {
+			// remapping generated new flipped sprites - add them to our sprites array
 
-		assume(ani->sprite_count > prev_sprite_count);
-		assume(remap_state.num_flipped_sprites == ani->sprite_count - prev_sprite_count);
-		assume(ani->local_sprites != NULL);
-		ani->sprites = realloc(ani->sprites, sizeof(*ani->sprites) * ani->sprite_count);
+			assume(ani->sprite_count > prev_sprite_count);
+			assume(remap_state.num_flipped_sprites == ani->sprite_count - prev_sprite_count);
+			assume(ani->local_sprites != NULL);
+			ani->sprites = realloc(ani->sprites, sizeof(*ani->sprites) * ani->sprite_count);
 
-		for(int i = 0; i < remap_state.num_flipped_sprites; ++i) {
-			ani->sprites[prev_sprite_count + i] = ani->local_sprites + i;
+			for(int i = 0; i < remap_state.num_flipped_sprites; ++i) {
+				ani->sprites[prev_sprite_count + i] = ani->local_sprites + i;
+			}
+		} else {
+			assert(remap_state.num_flipped_sprites == 0);
+			assert(ani->local_sprites == NULL);
 		}
-	} else {
-		assert(remap_state.num_flipped_sprites == 0);
-		assert(ani->local_sprites == NULL);
 	}
 
 done:
