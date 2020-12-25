@@ -4,15 +4,16 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
-#ifndef IGUARD_stages_extra_h
-#define IGUARD_stages_extra_h
+#ifndef IGUARD_stages_entities_h
+#define IGUARD_stages_entities_h
 
 #include "taisei.h"
 
-#include "stageinfo.h"
+#include "stagex/entities.h"
 
-extern StageProcs extra_procs;
+#define ENTITIES_STAGES(X, ...) \
+	ENTITIES_STAGEX(X, __VA_ARGS__) \
 
-#endif // IGUARD_stages_extra_h
+#endif // IGUARD_stages_entities_h

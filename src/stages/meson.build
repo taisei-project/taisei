@@ -5,7 +5,8 @@ stages = [
     'stage1',
     'stage2',
     'stage5',
-    'stage6'
+    'stage6',
+    'stagex',
 ]
 
 foreach stage : stages
@@ -21,7 +22,6 @@ stages_src += files(
     'stage3_events.c',
     'stage4.c',
     'stage4_events.c',
-    'extra.c',
 )
 
 if is_developer_build
