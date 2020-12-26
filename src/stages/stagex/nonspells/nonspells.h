@@ -13,6 +13,8 @@
 
 #include "boss.h"
 
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_midboss_nonspell_1, BossAttack);
+
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_boss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_boss_nonspell_2, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_boss_nonspell_3, BossAttack);
