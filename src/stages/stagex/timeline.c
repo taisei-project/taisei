@@ -220,6 +220,73 @@ TASK(ngoner_fairy, { cmplx pos; }) {
 	e->move = move_linear(I);
 }
 
+static Boss *stagex_spawn_scuttle(cmplx pos0) {
+	Boss *scuttle = create_boss("Scutƫle", "scuttle", pos0);
+	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
+	scuttle->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
+	scuttle->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
+
+	return scuttle;
+}
+
+TASK(scuttle_appear, { cmplx pos; }) {
+	STAGE_BOOKMARK(midboss);
+	Boss *boss = global.boss = TASK_BIND(stagex_spawn_scuttle(ARGS.pos));
+
+	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL, NULL);
+
+	boss_start_attack(boss, boss->attacks);
+	INVOKE_TASK(stagex_midboss_nonspell_1, ENT_BOX(boss), opening_attack);
+
+}
+
+TASK(scuttleproj_appear, NO_ARGS) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.pos = VIEWPORT_W/2,
+		.proto = pp_soul,
+		.color = RGBA(0,0.2,1,0),
+		.move = move_towards(global.plr.pos, 0.015),
+		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
+		.max_viewport_dist = 10000, // how to do this properly?
+	));
+	WAIT(20);
+
+	int num_spots = 32;
+	for(int i = 0; i < 400; i++) {
+		int spot = rng_range(0,num_spots);
+		cmplx offset = cdir(M_TAU/num_spots*spot);
+		real clr = rng_range(0,1);
+
+		cmplx vel = 2*rng_dir();
+		PROJECTILE(
+			.pos = p->pos + 50*offset,
+			.proto = pp_bullet,
+			.color = RGBA(clr,0.2,1,0),
+			.flags = PFLAG_MANUALANGLE,
+			.angle = carg(offset),
+			.move = move_linear(vel),
+			.timeout = rng_range(20,60),
+		);
+		YIELD;
+		p->move.attraction_point = global.plr.pos;
+
+		if(i % 5 == 0) {
+			if(rng_chance(0.2)) {
+				p->sprite = res_sprite("proj/bigball");
+				p->pos += 30*rng_dir();
+			} else {
+				p->sprite = res_sprite("proj/soul");
+			}
+		}
+	}
+	p->timeout = 1; // what is the proper way?
+	//p->flags ^= PFLAG_NOCLEAR;
+
+	INVOKE_TASK(scuttle_appear, p->pos);
+}
+		
+		
+
 TASK(yumemi_appear, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
@@ -301,8 +368,11 @@ enemies:
 		INVOKE_TASK(ngoner_fairy, CMPLX(VIEWPORT_W*0.5+rx, VIEWPORT_H*0.3+ry));
 		WAIT(70);
 	}
-	for(int i = 0;;i++) {
+
+	for(int i = 0; i < 4;i++) {
 		INVOKE_TASK(glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
-		WAIT(50+100*(i&1));
+		WAIT(140);
 	}
+	INVOKE_TASK(scuttleproj_appear);
+	STALL;
 }
