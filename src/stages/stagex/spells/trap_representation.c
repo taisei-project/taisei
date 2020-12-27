@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include "nonspells.h"
+#include "../stagex.h"
 #include "global.h"
 #include "common_tasks.h"
 
@@ -32,16 +32,15 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	AniSequence *seq = get_ani_sequence(ani, "fly");
  	r_draw_sprite(&(SpriteParams){
 	 	.shader = "sprite_default",
-	 	.pos_as_cmplx = p->pos,
-	 	.scale_as_cmplx = p->scale),
+	 	.pos.as_cmplx = p->pos,
+	 	.scale.as_cmplx = p->scale,
 	 	.sprite_ptr = animation_get_frame(ani, seq, global.frames),
 	 	.color = &p->color,
 	 	.rotation.angle = p->angle+M_PI/2,
-	 	.rotation.vector = {0, 0, 1}
  	});
 }
 
-DEFINE_EXTERN_TASK(stagex_midboss_nonspell_1) {
+DEFINE_EXTERN_TASK(stagex_spell_trap_representation) {
 	Boss *boss = INIT_BOSS_ATTACK();
 	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
 	BEGIN_BOSS_ATTACK();
