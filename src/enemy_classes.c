@@ -58,21 +58,36 @@ TASK(fairy_flame_emitter, {
 	Sprite *spr = res_sprite("part/smoothdot");
 	WAIT(rng_irange(0, period) + 1);
 
-	for(;;WAIT(period)) {
-		cmplx offset = rng_sreal() * 12;
-		offset += rng_sreal() * 10 * I;
+	DECLARE_ENT_ARRAY(Projectile, parts, 16);
+	cmplx old_pos = e->pos;
+	YIELD;
 
-		PARTICLE(
-			.sprite_ptr = spr,
-			.pos = e->pos + offset,
-			.color = &ARGS.color,
-			.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
-			.angle = M_PI/2,
-			.timeout = 50,
-			.move = move_linear((-50.0*I-offset)/50.0 + 0.65 * e->move.velocity),
-			.flags = PFLAG_MANUALANGLE,
-			.layer = LAYER_PARTICLE_MID,
-		);
+	for(int t = 0;; ++t, YIELD) {
+		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
+			p->move.attraction_point += e->pos - old_pos - I + rng_sreal() * 0.5;
+		});
+
+		ENT_ARRAY_COMPACT(&parts);
+
+		old_pos = e->pos;
+
+		if(!(t % period)) {
+			cmplx offset = rng_sreal() * 8;
+			offset += rng_sreal() * 10 * I;
+			cmplx spawn_pos = e->pos + offset;
+
+			ENT_ARRAY_ADD(&parts, PARTICLE(
+				.sprite_ptr = spr,
+				.pos = spawn_pos,
+				.color = &ARGS.color,
+				.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
+				.angle = M_PI/2 + rng_sreal() * M_PI/16,
+				.timeout = 50,
+				.move = move_towards(spawn_pos, 0.3),
+				.flags = PFLAG_MANUALANGLE,
+				.layer = LAYER_PARTICLE_MID,
+			));
+		}
 	}
 }
 
@@ -86,21 +101,37 @@ TASK(fairy_stardust_emitter, {
 	Sprite *spr = res_sprite("part/stardust");
 	WAIT(rng_irange(0, period) + 1);
 
-	for(;;WAIT(period)) {
-		cmplx offset = rng_sreal() * 12;
-		offset += rng_sreal() * 10 * I;
+	DECLARE_ENT_ARRAY(Projectile, parts, 32);
+	cmplx old_pos = e->pos;
+	YIELD;
 
-		PARTICLE(
-			.sprite_ptr = spr,
-			.pos = e->pos + offset,
-			.color = &ARGS.color,
-			.draw_rule = pdraw_timeout_scalefade_exp(0.1 * (1+I), 2 * (1+I), 1, 0, 2),
-			.angle = rng_angle(),
-			.timeout = 180,
-			.move = move_linear(0.65 * e->move.velocity),
-			.flags = PFLAG_MANUALANGLE,
-			.layer = LAYER_PARTICLE_MID,
-		);
+	for(int t = 0;; ++t, YIELD) {
+		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
+			p->move.attraction_point += e->pos - old_pos;
+		});
+
+		ENT_ARRAY_COMPACT(&parts);
+
+		old_pos = e->pos;
+
+
+		if(!(t % period)) {
+			cmplx offset = rng_sreal() * 12;
+			offset += rng_sreal() * 10 * I;
+			cmplx pos = e->pos + offset;
+
+			ENT_ARRAY_ADD(&parts, PARTICLE(
+				.sprite_ptr = spr,
+				.pos = pos,
+				.color = &ARGS.color,
+				.draw_rule = pdraw_timeout_scalefade_exp(0.1 * (1+I), 2 * (1+I), 1, 0, 2),
+				.angle = rng_angle(),
+				.timeout = 180,
+				.move = move_towards(pos, 0.18 + 0.01 * rng_sreal()),
+				.flags = PFLAG_MANUALANGLE,
+				.layer = LAYER_PARTICLE_MID,
+			));
+		}
 	}
 }
 
