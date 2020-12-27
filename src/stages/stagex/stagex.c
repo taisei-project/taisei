@@ -23,6 +23,14 @@
  */
 
 struct stagex_spells_s stagex_spells = {
+	.midboss = {
+		.trap_representation = {
+			{-1, -1, -1, 3}, AT_Spellcard, "6.2.6.1p5 “Trap Representation”", 60, 20000, NULL, stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_trap_representation)
+		},
+		.fork_bomb = {
+			{-1, -1, -1, 4}, AT_Spellcard, "Proliferation “Fork bomb”", 60, 20000, NULL, stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_trap_representation)
+		},
+	},
 	.boss = {
 		.infinity_network = {
 			{-1, -1, -1, 1}, AT_SurvivalSpell, "Obliteration “Infinity Network”", 90, 80000,
