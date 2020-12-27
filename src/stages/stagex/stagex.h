@@ -19,6 +19,11 @@ extern struct stagex_spells_s {
 	// order of fields affects the visual spellstage number, but not its real internal ID
 
 	struct {
+		AttackInfo trap_representation;
+		AttackInfo fork_bomb;
+	} midboss;
+
+	struct {
 		AttackInfo infinity_network;
 		AttackInfo sierpinski;
 	} boss;
@@ -29,6 +34,9 @@ extern struct stagex_spells_s {
 
 Boss *stagex_spawn_yumemi(cmplx pos);
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp);
+
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_trap_representation, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_fork_bomb, BossAttack);
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_sierpinski, BossAttack);
