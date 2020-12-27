@@ -13,7 +13,6 @@
 
 #include "boss.h"
 
-void kurumi_spell_bg(Boss*, int);
 void kurumi_slaveburst(Boss*, int);
 void kurumi_redspike(Boss*, int);
 void kurumi_aniwall(Boss*, int);
