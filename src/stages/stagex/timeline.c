@@ -238,10 +238,8 @@ TASK(scuttle_appear, { cmplx pos; }) {
 	STAGE_BOOKMARK(midboss);
 	Boss *boss = global.boss = TASK_BIND(stagex_spawn_scuttle(ARGS.pos));
 
-	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL, NULL);
-
+	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, TASK_INDIRECT(BossAttack, stagex_midboss_nonspell_1), NULL);
 	boss_start_attack(boss, boss->attacks);
-	INVOKE_TASK(stagex_midboss_nonspell_1, ENT_BOX(boss), opening_attack);
 
 }
 
@@ -251,8 +249,7 @@ TASK(scuttleproj_appear, NO_ARGS) {
 		.proto = pp_soul,
 		.color = RGBA(0,0.2,1,0),
 		.move = move_towards(global.plr.pos, 0.015),
-		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
-		.max_viewport_dist = 10000, // how to do this properly?
+		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION | PFLAG_NOAUTOREMOVE,
 	));
 	WAIT(20);
 
@@ -284,8 +281,7 @@ TASK(scuttleproj_appear, NO_ARGS) {
 			}
 		}
 	}
-	p->timeout = 1; // what is the proper way?
-	//p->flags ^= PFLAG_NOCLEAR;
+	kill_projectile(p);
 
 	INVOKE_TASK(scuttle_appear, p->pos);
 }
