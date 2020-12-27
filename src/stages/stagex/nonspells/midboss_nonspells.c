@@ -32,9 +32,8 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	AniSequence *seq = get_ani_sequence(ani, "fly");
  	r_draw_sprite(&(SpriteParams){
 	 	.shader = "sprite_default",
-	 	.pos.x = creal(p->pos),
-	 	.pos.y = cimag(p->pos),
-	 	.scale = {creal(p->scale), cimag(p->scale)},
+	 	.pos_as_cmplx = p->pos,
+	 	.scale_as_cmplx = p->scale),
 	 	.sprite_ptr = animation_get_frame(ani, seq, global.frames),
 	 	.color = &p->color,
 	 	.rotation.angle = p->angle+M_PI/2,
