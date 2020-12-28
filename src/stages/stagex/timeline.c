@@ -239,6 +239,7 @@ TASK(scuttle_appear, { cmplx pos; }) {
 	Boss *boss = global.boss = TASK_BIND(stagex_spawn_scuttle(ARGS.pos));
 
 	boss_add_attack_from_info(boss, &stagex_spells.midboss.trap_representation, false);
+	boss_add_attack_from_info(boss, &stagex_spells.midboss.fork_bomb, false);
 	boss_start_attack(boss, boss->attacks);
 
 }
