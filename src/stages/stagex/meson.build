@@ -4,6 +4,7 @@ stagex_src = files(
     'draw.c',
     'nonspells/boss_nonspells.c',
     'spells/trap_representation.c',
+    'spells/fork_bomb.c',
     'spells/infinity_net.c',
     'spells/sierpinski.c',
     'stagex.c',
