@@ -115,6 +115,11 @@ static void start_game_do_enter_stage(CallChainResult ccr) {
 	if(prev_menu && prev_menu->state == MS_Dead) {
 		assert(prev_menu == ctx->char_menu);
 		ctx->char_menu = NULL;
+
+		if(!ctx->diff_menu) {
+			start_game_do_cleanup(ccr);
+		}
+
 		return;
 	}
 
