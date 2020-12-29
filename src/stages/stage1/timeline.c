@@ -318,14 +318,15 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 }
 
 TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
-	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
+	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 	e->move = move_towards(ARGS.target_pos, 0.03);
 
-	WAIT(120);
+	WAIT(60);
 
-	cmplx orig_pos = e->pos;
-	real angle = carg(global.plr.pos - orig_pos);
-	cmplx pos = orig_pos - 24 * cdir(angle);
+	real angle = carg(global.plr.pos - e->pos);
+	cmplx ofs = -24 * cdir(angle);
+
+	common_charge(60, &e->pos, ofs, RGBA(0.0, 0.25, 0.5, 0));
 
 	real spread = difficulty_value(M_PI/20, M_PI/18, M_PI/16, M_PI/14);
 	real interval = difficulty_value(3, 2, 1, 1);
@@ -333,7 +334,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	real frequency = 60 * (1.0/12.0) / shots;
 	shots += 1;
 
-	INVOKE_SUBTASK(waveshot, pos, angle, rng_sign() * spread, frequency, shots, interval);
+	INVOKE_SUBTASK(waveshot, e->pos + ofs, angle, rng_sign() * spread, frequency, shots, interval);
 
 	WAIT(120);
 
@@ -481,7 +482,7 @@ TASK(circletoss_fairies_1, NO_ARGS) {
 			.exit_time = (global.diff > D_Easy) ? 500 : 240
 		);
 
-		WAIT(50);
+		WAIT(250);
 	}
 }
 
@@ -554,7 +555,7 @@ TASK(instantcircle_fairies, { int duration; int seq_ofs; }) {
 		log_debug("i = %i; x=%f, y=%f", i, xofs[i % ARRAY_SIZE(xofs)], yofs[i % ARRAY_SIZE(yofs)]);
 
 		real x = VIEWPORT_W/2 + 205 * xofs[i % ARRAY_SIZE(xofs)];
-		real y = VIEWPORT_H/2 + 120 * yofs[i % ARRAY_SIZE(yofs)];
+		real y = VIEWPORT_H/2 + 100 * yofs[i % ARRAY_SIZE(yofs)];
 		INVOKE_TASK(instantcircle_fairy, x, x+y*I, 0.2 * I);
 		WAIT(interval);
 	}
@@ -746,6 +747,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 
 	INVOKE_TASK_DELAYED(240, waveshot_fairies, 600);
 	INVOKE_TASK_DELAYED(400, burst_fairies_3);
+	INVOKE_TASK_DELAYED(430, burst_fairies_3);
 
 	STAGE_BOOKMARK_DELAYED(1000, post-midboss-filler-2);
 
