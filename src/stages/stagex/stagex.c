@@ -42,6 +42,10 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_sierpinski),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.mem_copy = {
+			{-1, -1, -1, 5}, AT_Spellcard, "Memory “Deepest Copy”", 90, 150000,
+			NULL, stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_mem_copy)
+		},
 	},
 };
 
