@@ -28,6 +28,7 @@ extern struct stagex_spells_s {
 	struct {
 		AttackInfo infinity_network;
 		AttackInfo sierpinski;
+		AttackInfo mem_copy;
 	} boss;
 
 	// required for iteration
@@ -42,5 +43,6 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_fork_bomb, BossAttack);
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_sierpinski, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_mem_copy, BossAttack);
 
 #endif // IGUARD_stages_stagex_stagex_h
