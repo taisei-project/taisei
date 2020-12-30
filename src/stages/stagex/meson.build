@@ -7,6 +7,7 @@ stagex_src = files(
     'spells/fork_bomb.c',
     'spells/infinity_net.c',
     'spells/sierpinski.c',
+    'spells/mem_copy.c',
     'stagex.c',
     'timeline.c',
     'yumemi.c',
