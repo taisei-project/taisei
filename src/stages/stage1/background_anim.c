@@ -65,6 +65,9 @@ void stage1_bg_init_fullstage(void) {
 	stage_3d_context.cam.near = 500;
 	stage_3d_context.cam.far = 10000;
 
+	// WARNING: Don't touch this unless know exactly what you're doing.
+	// The water positioning black magic doesn't look right without this stretching.
+	stage_3d_context.cam.aspect = (0.75f * VIEWPORT_W) / VIEWPORT_H;
 
 	INVOKE_TASK(animate_bg, draw_data);
 }

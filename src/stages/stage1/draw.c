@@ -163,8 +163,7 @@ static void stage1_water_draw(vec3 pos) {
 	}
 
 	if(pp_quality == 1) {
-		r_shader("stage1_water");
-		r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+		r_shader_ptr(water_shader);
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 		fbpair_swap(fbpair);
 	}
@@ -177,8 +176,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_framebuffer(bg_fb);
 
 	if(pp_quality > 1) {
-		r_shader("stage1_water");
-		r_uniform_float("time", 0.5 * global.frames / (float)FPS);
+		r_shader_ptr(water_shader);
 	} else {
 		r_shader_standard();
 	}
