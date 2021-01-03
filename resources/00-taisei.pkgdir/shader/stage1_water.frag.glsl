@@ -46,7 +46,7 @@ float warpedNoise(vec2 p) {
 }
 
 void main(void) {
-	vec2 uv = flip_native_to_bottomleft(texCoord - wave_offset) * rot(-pi/4);
+	vec2 uv = flip_native_to_bottomleft(texCoord - wave_offset);
 
 	float n = warpedNoise(uv * 4);
 
@@ -59,7 +59,6 @@ void main(void) {
 
 	vec2 dnduv = inverse(duvdxy)*vec2(dndx,dndy)*0.15;
 	vec2 dnduv2 = dnduv * dnduv * 0.5;
-
 
 	uv = flip_native_to_bottomleft(texCoord);
 	uv += 0.25 * dnduv2;
