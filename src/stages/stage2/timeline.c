@@ -368,9 +368,8 @@ TASK(turning_fairy, {
 	Enemy *e = TASK_BIND(ARGS.e);
 	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
 
-	WAIT(10);
-
-	int period = difficulty_value(60, 40, 20, 15);
+	int period = difficulty_value(70, 50, 24, 16);
+	WAIT(7 + period/2);
 
 	for(int t = 0;; t += WAIT(period)) {
 		play_sfx_ex("shot1", 5, false);
@@ -437,10 +436,10 @@ TASK(flea_swirl, {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 2)));
 	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
 
-	WAIT(10);
-
 	int base_period = difficulty_value(27, 24, 21, 18);
 	int duration = 400;
+
+	WAIT(10 + base_period);
 
 	for(int t = 0; t < duration; t += WAIT(base_period - t/70)) {
 		play_sfx("shot2");
@@ -448,7 +447,7 @@ TASK(flea_swirl, {
 			.proto = pp_flea,
 			.pos = e->pos,
 			.color = RGB(0.3, 0.2, 1),
-			.move = move_asymptotic_simple(1.5 * I * cdir(rng_sreal()*M_PI/16), 1.5),
+			.move = move_asymptotic_simple(1.5 * I * cdir(rng_sreal()*M_PI/17), 1.5),
 		);
 	}
 }
@@ -631,7 +630,7 @@ TASK(spawn_boss, NO_ARGS) {
 
 	boss_add_attack_task(boss, AT_Normal, "Cards1", 60, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.amulet_of_harm, false);
-	boss_add_attack_task(boss, AT_Normal, "Cards2", 60, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_2), NULL);
+	boss_add_attack_task(boss, AT_Normal, "Cards2", 60, 20000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_2), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.bad_pick, false);
 	boss_add_attack_task(boss, AT_Normal, "Cards3", 60, 45000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_3), NULL);
 	boss_add_attack_from_info(boss, &stage2_spells.boss.wheel_of_fortune, false);
@@ -811,7 +810,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(400, twin-spinshots);
 
-	if(global.diff > D_Easy) {
+	if(global.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(420, spinshot_fairy,
 			.pos = 0,
 			.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),

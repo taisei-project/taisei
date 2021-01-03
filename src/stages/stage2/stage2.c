@@ -21,7 +21,7 @@
 struct stage2_spells_s stage2_spells = {
 	.boss = {
 		.amulet_of_harm = {
-			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 50, 50000,
+			{ 0,  1,  2,  3}, AT_Spellcard, "Shard “Amulet of Harm”", 50, 42000,
 			NULL, stage2_draw_hina_spellbg, BOSS_DEFAULT_GO_POS, 2,
 			TASK_INDIRECT_INIT(BossAttack, stage2_spell_amulet_of_harm),
 		},

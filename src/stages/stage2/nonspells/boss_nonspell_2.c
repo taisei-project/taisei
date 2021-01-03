@@ -20,9 +20,12 @@ TASK(speen, { BoxedBoss boss; }) {
 	boss->move = (MoveParams) { 0 };
 	cmplx opos = boss->pos;
 
+	real trate = difficulty_value(0.6, 0.8, 0.9, 1.0);
+
 	for(int t = 0;; t += WAIT(1)) {
-		cmplx target = VIEWPORT_W/2 + 150*I + cwmul(cdir(t*M_TAU/150), 200 + 42*I);
-		boss->pos = clerp(opos, target, smoothmin(t / 300.0, 1.0, 0.5));
+		real phase = t * trate;
+		cmplx target = VIEWPORT_W/2 + 150*I + cwmul(cdir(phase*M_TAU/150), 200 + 42*I);
+		boss->pos = clerp(opos, target, smoothmin(phase / 300.0, 1.0, 0.5));
 	}
 }
 
@@ -72,7 +75,7 @@ DEFINE_EXTERN_TASK(stage2_boss_nonspell_2) {
 	INVOKE_SUBTASK_DELAYED(150, balls, ENT_BOX(boss));
 
 	int step = difficulty_value(3, 2, 1, 1);
-	real speed0 = difficulty_value(2.0, 2.4, 2.8, 3.2);
+	real speed0 = difficulty_value(1.5, 2.0, 2.8, 3.2);
 	real speed1 = 0.2; // difficulty_value(0.1, 0.1, 0.1, 0.2);
 
 	for(int t = 0;; t += WAIT(step)) {
