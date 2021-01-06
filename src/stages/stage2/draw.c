@@ -23,6 +23,8 @@ Stage2DrawData *stage2_get_draw_data(void) {
 
 #define STAGE2_MAX_LIGHTS 4
 static void stage2_bg_setup_pbr_lighting(int max_lights) {
+	// FIXME: Instead of calling this for each segment, maybe set up the lighting once for the whole scene?
+
 	Camera3D *cam = &stage_3d_context.cam;
 
 	vec3 light_pos[STAGE2_MAX_LIGHTS] = {
@@ -84,18 +86,20 @@ static void stage2_bg_setup_pbr_lighting(int max_lights) {
 	r_uniform_vec3("ambient_color",0.5,0.5,0.5);
 }
 
+static void stage2_branch_mv_transform(vec3 pos) {
+	float f1 = sinf(12123.0f * pos[1] * pos[1]);
+	float f2 = cosf(2340.0f * f1 * f1);
+	float f3 = cosf(2469.0f * f2 * f2);
+
+	r_mat_mv_translate(pos[0] - f3 * f3, pos[1] + f2, pos[2] + 0.5f * f1);
+	r_mat_mv_rotate(-M_PI/2.0f + 0.4f * f1, 0, 0.05f * f3, 1);
+}
+
 static void stage2_bg_branch_draw(vec3 pos) {
 	r_state_push();
 
-	real f1 = sin(12123*pos[1]*pos[1]);
-	real f2 = cos(2340*f1*f1);
-	real f3 = cos(2469*f2*f2);
-
 	r_mat_mv_push();
-	r_mat_mv_translate(pos[0]-f3*f3, pos[1]+f2, pos[2]+0.5*f1);
-
-	r_mat_mv_rotate(-M_PI/2+0.4*f1, 0, 0.05*f3, 1);
-
+	stage2_branch_mv_transform(pos);
 
 	r_shader("pbr");
 	stage2_bg_setup_pbr_lighting(1);
@@ -106,6 +110,23 @@ static void stage2_bg_branch_draw(vec3 pos) {
 	r_uniform_sampler("normal_map", "stage2/branch_normal");
 	r_uniform_sampler("ambient_map", "stage2/branch_ambient");
 	r_draw_model("stage2/branch");
+	r_mat_mv_pop();
+
+	r_state_pop();
+}
+
+static void stage2_bg_leaves_draw(vec3 pos) {
+	r_state_push();
+
+// 	r_disable(RCAP_DEPTH_WRITE);
+
+	r_mat_mv_push();
+	stage2_branch_mv_transform(pos);
+
+	r_shader("pbr");
+	stage2_bg_setup_pbr_lighting(1);
+
+	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage2/leaves_diffuse");
 	r_uniform_sampler("roughness_map", "stage2/leaves_roughness");
 	r_uniform_sampler("normal_map", "stage2/leaves_normal");
@@ -113,16 +134,15 @@ static void stage2_bg_branch_draw(vec3 pos) {
 	r_draw_model("stage2/leaves");
 	r_mat_mv_pop();
 
-
 	r_state_pop();
 }
 
 static void stage2_bg_grass_draw(vec3 pos) {
 	r_state_push();
 
-	real f1 = sin(123*pos[1]*pos[1]);
-	real f2 = cos(234350*f1*f1);
-	real f3 = cos(24269*f2*f2);
+	float f1 = sinf(123.0f * pos[1] * pos[1]);
+	float f2 = cosf(234350.0f * f1 * f1);
+	float f3 = cosf(24269.0f * f2 * f2);
 
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0]-f3*f3, pos[1]+f2, pos[2]);
@@ -140,7 +160,7 @@ static void stage2_bg_grass_draw(vec3 pos) {
 	r_uniform_vec3("ambient_color", 0.4, 0.4, 0.4);
 
 	r_disable(RCAP_CULL_FACE);
-	r_disable(RCAP_DEPTH_WRITE);
+// 	r_disable(RCAP_DEPTH_WRITE);
 
 	int n = 3;
 	for(int i = 0; i < n; i++) {
@@ -166,26 +186,38 @@ static void stage2_bg_ground_draw(vec3 pos) {
 	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
 
 	r_uniform_float("metallic", 0);
-	r_uniform_sampler("tex", "stage2/ground_diffuse");
-	r_uniform_sampler("roughness_map", "stage2/ground_roughness");
-	r_uniform_sampler("normal_map", "stage2/ground_normal");
-	r_uniform_sampler("ambient_map", "stage2/ground_ambient");
-	r_draw_model("stage2/ground");
-
 	r_uniform_sampler("tex", "stage2/rocks_diffuse");
 	r_uniform_sampler("roughness_map", "stage2/rocks_roughness");
 	r_uniform_sampler("normal_map", "stage2/rocks_normal");
 	r_uniform_sampler("ambient_map", "stage2/rocks_ambient");
 	r_draw_model("stage2/rocks");
 
+	r_uniform_sampler("tex", "stage2/ground_diffuse");
+	r_uniform_sampler("roughness_map", "stage2/ground_roughness");
+	r_uniform_sampler("normal_map", "stage2/ground_normal");
+	r_uniform_sampler("ambient_map", "stage2/ground_ambient");
+	r_draw_model("stage2/ground");
+
+	r_mat_mv_pop();
+	r_state_pop();
+}
+
+static void stage2_bg_ground_grass_draw(vec3 pos) {
+	r_state_push();
+
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+
+	r_shader("pbr");
+	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
+
+	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage2/grass_diffuse");
 	r_uniform_sampler("roughness_map", "stage2/grass_roughness");
 	r_uniform_sampler("normal_map", "stage2/grass_normal");
 	r_uniform_sampler("ambient_map", "stage2/grass_ambient");
 	r_uniform_vec3("ambient_color", 0.4, 0.4, 0.4);
 	r_draw_model("stage2/grass");
-
-
 
 	r_mat_mv_pop();
 	r_state_pop();
@@ -261,11 +293,13 @@ static bool stage2_fog(Framebuffer *fb) {
 
 void stage2_draw(void) {
 	Stage3DSegment segs[] = {
+		{ stage2_bg_branch_draw, stage2_bg_branch_pos },
 		{ stage2_bg_ground_draw, stage2_bg_pos},
 		{ stage2_bg_water_draw, stage2_bg_water_pos},
 		{ stage2_bg_water_draw, stage2_bg_water_start_pos},
+		{ stage2_bg_leaves_draw, stage2_bg_branch_pos },
 		{ stage2_bg_grass_draw, stage2_bg_grass_pos },
-		{ stage2_bg_branch_draw, stage2_bg_branch_pos },
+		{ stage2_bg_ground_grass_draw, stage2_bg_pos },
 	};
 
 	stage3d_draw(&stage_3d_context, 25, ARRAY_SIZE(segs), segs);
