@@ -103,7 +103,7 @@ void glcommon_init_texture_formats(void) {
 	GLTextureFormatFlags f_clr_common = GLTEX_COLOR_RENDERABLE | GLTEX_FILTERABLE | GLTEX_BLENDABLE;
 	GLTextureFormatFlags f_depth = GLTEX_DEPTH_RENDERABLE;
 
-	// NOTE: in GLES, RGB formats are typically not color-renderable, **except** GL_RGB/GL_RGB8
+	// NOTE: RGB formats are not expected to be color-renderable
 	GLTextureFormatFlags f_clr_rgb = GLTEX_FILTERABLE | GLTEX_BLENDABLE;
 
 	GLTextureFormatFlags f_clr_float16 = GLTEX_FLOAT | GLTEX_BLENDABLE;
@@ -133,8 +133,6 @@ void glcommon_init_texture_formats(void) {
 	}
 
 	if(!is_gles) {
-		f_clr_rgb |= GLTEX_COLOR_RENDERABLE;
-
 		// FIXME: Is there a GLES extension that makes it filterable?
 		// It seems to work on Mesa and ANGLE at least.
 		f_depth |= GLTEX_FILTERABLE;
@@ -155,7 +153,7 @@ void glcommon_init_texture_formats(void) {
 		}
 	} else {
 		ADD(TEX_TYPE_RGBA, GL_RGBA, GL_RGBA8, XFER_RGBA8, f_clr_common, 8 * 4);
-		ADD(TEX_TYPE_RGB, GL_RGB, GL_RGB8, XFER_RGB8, f_clr_common, 8 * 3);
+		ADD(TEX_TYPE_RGB, GL_RGB, GL_RGB8, XFER_RGB8, f_clr_rgb, 8 * 3);
 
 		if(have_depth_tex) {
 			ADD(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT16, XFER_DEPTH16, f_depth, 16);
