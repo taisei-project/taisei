@@ -262,6 +262,17 @@ static void glcommon_ext_instanced_arrays(void) {
 #endif
 }
 
+static void glcommon_ext_internalformat_query2(void) {
+	EXT_FLAG(internalformat_query2);
+
+#ifndef STATIC_GLES3
+	CHECK_CORE(GL_ATLEAST(4, 3));
+	CHECK_EXT(GL_ARB_internalformat_query2);
+#endif
+
+	EXT_MISSING();
+}
+
 static void glcommon_ext_draw_buffers(void) {
 	EXT_FLAG(draw_buffers);
 
@@ -865,6 +876,7 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_draw_buffers();
 	glcommon_ext_float_blend();
 	glcommon_ext_instanced_arrays();
+	glcommon_ext_internalformat_query2();
 	glcommon_ext_pixel_buffer_object();
 	glcommon_ext_texture_filter_anisotropic();
 	glcommon_ext_texture_float();

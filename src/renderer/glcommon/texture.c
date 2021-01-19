@@ -43,6 +43,11 @@ attr_unused
 static void dump_tex_flags(StringBuffer *buf, GLTextureFormatFlags flags) {
 	const char *prefix = "";
 
+	if(!flags) {
+		strbuf_printf(buf, "0");
+		return;
+	}
+
 	#define HANDLE_FLAG(flag) \
 		if(flags & flag) { \
 			strbuf_printf(buf, "%s" #flag, prefix); \
@@ -88,6 +93,101 @@ static void dump_fmt_info(StringBuffer *buf, const GLTextureFormatInfo *fmt_info
 
 static int gl_format_cmp(const void *a, const void *b);
 
+#ifndef STATIC_GLES3
+static GLint64 query_gl_format(GLuint fmt, GLenum pname) {
+	GLint64 result = 0;
+	glGetInternalformati64v(GL_TEXTURE_2D,
+		fmt, pname,
+		sizeof(result), &result);
+	return result;
+}
+#endif
+
+static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
+#ifndef STATIC_GLES3
+	if(!glext.internalformat_query2) {
+#endif
+		GLTextureFormatInfo *entry = dynarray_append(&g_formats);
+		*entry = *fmt;
+		return entry;
+#ifndef STATIC_GLES3
+	}
+
+	GLint64 supported = query_gl_format(fmt->internal_format, GL_INTERNALFORMAT_SUPPORTED);
+	StringBuffer buf = { 0 };
+
+	dump_fmt_info(&buf, fmt);
+	log_debug("??? TRY: %s", buf.start);
+
+	if(!supported) {
+		log_debug("Internal format 0x%x not supported", fmt->internal_format);
+		strbuf_free(&buf);
+		return NULL;
+	}
+
+	GLenum ifmt = fmt->internal_format;
+
+	GLint64 clr_renderable = query_gl_format(ifmt, GL_COLOR_RENDERABLE);
+	GLint64 depth_renderable = query_gl_format(ifmt, GL_DEPTH_RENDERABLE);
+	GLint64 fb_renderable = query_gl_format(ifmt, GL_FRAMEBUFFER_RENDERABLE);
+	GLint64 filterable  = query_gl_format(ifmt, GL_FILTER);
+	GLint64 blendable = query_gl_format(ifmt, GL_FRAMEBUFFER_BLEND);
+	GLint64 encoding = query_gl_format(ifmt, GL_COLOR_ENCODING);
+
+	GLTextureFormatInfo *entry = dynarray_append(&g_formats);
+	*entry = *fmt;
+
+	entry->flags &= ~(
+		GLTEX_COLOR_RENDERABLE |
+		GLTEX_DEPTH_RENDERABLE |
+		GLTEX_FILTERABLE |
+		GLTEX_BLENDABLE |
+		GLTEX_SRGB
+	);
+
+	if(fb_renderable != GL_NONE) {
+		// TODO: Warn on GL_CAVEAT_SUPPORT? Or maybe just reject it?
+
+		if(clr_renderable) {
+			entry->flags |= GLTEX_COLOR_RENDERABLE;
+		}
+
+		if(depth_renderable) {
+			entry->flags |= GLTEX_DEPTH_RENDERABLE;
+		}
+	}
+
+	if(filterable) {
+		entry->flags |= GLTEX_FILTERABLE;
+	}
+
+	if(blendable != GL_NONE) {
+		// TODO: Warn on GL_CAVEAT_SUPPORT? Or maybe just reject it?
+		entry->flags |= GLTEX_BLENDABLE;
+	}
+
+	if(encoding == GL_SRGB) {
+		entry->flags |= GLTEX_SRGB;
+	}
+
+	if(entry->flags != fmt->flags) {
+		strbuf_clear(&buf);
+		dump_tex_flags(&buf, entry->flags);
+		log_debug("FLAGS CHANGED: %s", buf.start);
+		strbuf_clear(&buf);
+		dump_tex_flags(&buf, fmt->flags);
+		log_debug("          OLD: %s", buf.start);
+	}
+
+	strbuf_clear(&buf);
+	dump_fmt_info(&buf, entry);
+	log_debug("+++ ADD: %s", buf.start);
+	strbuf_free(&buf);
+	return entry;
+
+#endif // !STATIC_GLES3
+}
+
 void glcommon_init_texture_formats(void) {
 	const bool is_gles = glext.version.is_es;
 	const bool is_gles3 = GLES_ATLEAST(3, 0);
@@ -104,12 +204,12 @@ void glcommon_init_texture_formats(void) {
 	GLTextureFormatFlags f_depth = GLTEX_DEPTH_RENDERABLE;
 
 	// NOTE: RGB formats are not expected to be color-renderable
-	GLTextureFormatFlags f_clr_rgb = GLTEX_FILTERABLE | GLTEX_BLENDABLE;
+	GLTextureFormatFlags f_clr_rgb = GLTEX_FILTERABLE;
 
 	GLTextureFormatFlags f_clr_float16 = GLTEX_FLOAT | GLTEX_BLENDABLE;
 	GLTextureFormatFlags f_clr_float32 = GLTEX_FLOAT;
 
-	GLTextureFormatFlags f_compressed = GLTEX_FILTERABLE | GLTEX_BLENDABLE | GLTEX_COMPRESSED;
+	GLTextureFormatFlags f_compressed = GLTEX_FILTERABLE | GLTEX_COMPRESSED;
 	GLTextureFormatFlags f_compressed_srgb = f_compressed | GLTEX_SRGB;
 
 	if(glext.float_blend) {
@@ -132,21 +232,15 @@ void glcommon_init_texture_formats(void) {
 		f_clr_float32 |= GLTEX_COLOR_RENDERABLE;
 	}
 
-	if(!is_gles) {
-		// FIXME: Is there a GLES extension that makes it filterable?
-		// It seems to work on Mesa and ANGLE at least.
-		f_depth |= GLTEX_FILTERABLE;
-	}
-
 	#define ADD(...) \
-		(*dynarray_append(&g_formats) = (GLTextureFormatInfo) { __VA_ARGS__ })
+		(add_texture_format(&(GLTextureFormatInfo) { __VA_ARGS__ }))
 
 	#define ADD_COMPRESSED(comp, basefmt, ifmt, flags) \
 		ADD(TEX_TYPE_COMPRESSED_##comp, basefmt, ifmt, { basefmt, GL_BYTE, PIXMAP_FORMAT_##comp }, flags, 0)
 
 	if(is_gles2) {
 		ADD(TEX_TYPE_RGBA, GL_RGBA, GL_RGBA, XFER_RGBA8, f_clr_common, 8 * 4);
-		ADD(TEX_TYPE_RGB, GL_RGB, GL_RGB, XFER_RGB8, f_clr_common, 8 * 3);
+		ADD(TEX_TYPE_RGB, GL_RGB, GL_RGB, XFER_RGB8, f_clr_rgb, 8 * 3);
 
 		if(have_depth_tex) {
 			ADD(TEX_TYPE_DEPTH_16, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, XFER_DEPTH16, f_depth, 16);
@@ -198,16 +292,16 @@ void glcommon_init_texture_formats(void) {
 	}
 
 	if(glext.tex_format.r8_srgb) {
-		ADD(TEX_TYPE_R_8, GL_RED, GL_SR8_EXT, XFER_R8, f_clr_common | GLTEX_SRGB, 8 * 1);
+		ADD(TEX_TYPE_R_8, GL_RED, GL_SR8_EXT, XFER_R8, GLTEX_FILTERABLE | GLTEX_SRGB, 8 * 1);
 	}
 
 	if(glext.tex_format.rg8_srgb) {
-		ADD(TEX_TYPE_RG_8, GL_RG, GL_SRG8_EXT, XFER_RG8, f_clr_common | GLTEX_SRGB, 8 * 2);
+		ADD(TEX_TYPE_RG_8, GL_RG, GL_SRG8_EXT, XFER_RG8, GLTEX_FILTERABLE | GLTEX_SRGB, 8 * 2);
 	}
 
 	if(glext.tex_format.rgb8_rgba8_srgb) {
-		ADD(TEX_TYPE_RGBA_8, GL_RGBA, GL_SRGB8_ALPHA8, XFER_RGBA8, f_clr_common | GLTEX_SRGB, 8 * 4);
 		ADD(TEX_TYPE_RGB_8, GL_RGB, GL_SRGB8, XFER_RGB8, f_clr_rgb | GLTEX_SRGB, 8 * 3);
+		ADD(TEX_TYPE_RGBA_8, GL_RGBA, GL_SRGB8_ALPHA8, XFER_RGBA8, f_clr_common | GLTEX_SRGB, 8 * 4);
 	}
 
 	if(glext.tex_format.astc) {

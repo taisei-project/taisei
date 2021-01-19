@@ -23,6 +23,7 @@ typedef enum GLTextureFormatFlags {
 	GLTEX_SRGB             = (1 << 4),
 	GLTEX_COMPRESSED       = (1 << 5),
 	GLTEX_FLOAT            = (1 << 6),
+// 	GLTEX_MIPMAP           = (1 << 7),  TODO
 } GLTextureFormatFlags;
 
 typedef struct GLTextureTransferFormatInfo {

@@ -17,6 +17,7 @@ glad_extensions = [
     'GL_ARB_draw_buffers',
     'GL_ARB_draw_instanced',
     'GL_ARB_instanced_arrays',
+    'GL_ARB_internalformat_query2',
     'GL_ARB_pixel_buffer_object',
     'GL_ARB_texture_compression_bptc',
     'GL_ARB_texture_compression_rgtc',

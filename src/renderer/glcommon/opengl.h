@@ -176,6 +176,7 @@ struct glext_s {
 	ext_flag_t draw_buffers;
 	ext_flag_t float_blend;
 	ext_flag_t instanced_arrays;
+	ext_flag_t internalformat_query2;
 	ext_flag_t pixel_buffer_object;
 	ext_flag_t texture_filter_anisotropic;
 	ext_flag_t texture_float;
