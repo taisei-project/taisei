@@ -189,7 +189,6 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 }
 
 void glcommon_init_texture_formats(void) {
-	const bool is_gles = glext.version.is_es;
 	const bool is_gles3 = GLES_ATLEAST(3, 0);
 	const bool is_gles2 = !is_gles3 && GLES_ATLEAST(2, 0);
 	const bool have_rg = glext.texture_rg;
