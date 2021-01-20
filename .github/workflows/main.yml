@@ -40,7 +40,7 @@ jobs:
       run: pip install meson ninja
 
     - name: Install Build Tools (apt)
-      run: sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev
+      run: sudo apt update && sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev
 
     - name: Configure - Step 1 (Meson)
       run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Db_pch=false
