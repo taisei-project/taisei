@@ -101,6 +101,10 @@ static void randomize_hue(Color *clr, float r) {
 	*clr = *HSLA(h, s, l, a);
 }
 
+TASK(charge_sound_stopper, { SFXPlayID id; }) {
+	stop_sound(ARGS.id);
+}
+
 static int common_charge_impl(
 	int time,
 	const cmplx *anchor,
@@ -115,6 +119,12 @@ static int common_charge_impl(
 	float hue_rand = 0.02;
 	SFXPlayID charge_snd_id = snd_charge ? play_sfx(snd_charge) : 0;
 	DECLARE_ENT_ARRAY(Projectile, particles, 256);
+
+	BoxedTask snd_stopper_task = { 0 };
+
+	if(charge_snd_id) {
+		snd_stopper_task = cotask_box(INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, charge_sound_stopper, charge_snd_id));
+	}
 
 	int wait_time = 0;
 
@@ -162,6 +172,8 @@ static int common_charge_impl(
 			.layer = LAYER_PARTICLE_HIGH,
 		));
 	}
+
+	CANCEL_TASK(snd_stopper_task);
 
 	if(snd_discharge) {
 		replace_sfx(charge_snd_id, snd_discharge);
