@@ -1,0 +1,12 @@
+
+#ifndef PBR_H
+#define PBR_H
+
+#define PBR_MAX_LIGHTS 6
+
+struct PointLight {
+	vec3 dir;		// vector from lit fragment to light, not normalized
+	vec3 color;
+};
+
+#endif

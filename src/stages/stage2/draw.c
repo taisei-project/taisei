@@ -66,22 +66,15 @@ static void stage2_bg_setup_pbr_lighting(int max_lights) {
 		max_lights = 1;
 	}
 
-
 	mat4 camera_trans;
 	glm_mat4_identity(camera_trans);
 	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
 
-	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
-	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
-		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
-	}
-
-
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
+	r_uniform_mat4("camera_transform", camera_trans);
+	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
 	int light_count = imin(max_lights, ARRAY_SIZE(light_pos));
 	r_uniform_int("light_count", light_count);
-
 
 	r_uniform_vec3("ambient_color",0.5,0.5,0.5);
 }

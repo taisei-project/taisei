@@ -4,18 +4,6 @@
 #include "lib/render_context.glslh"
 #include "interface/pbr.glslh"
 
-UNIFORM(1) sampler2D roughness_map;
-UNIFORM(2) sampler2D normal_map;
-UNIFORM(3) sampler2D ambient_map;
-UNIFORM(4) float metallic;
-UNIFORM(5) int light_count;
-UNIFORM(6) vec3 ambient_color; // modulates ambient map
-#define MAX_LIGHT_COUNT 6
-
-UNIFORM(7) vec3 light_positions[MAX_LIGHT_COUNT];
-UNIFORM(13) vec3 light_colors[MAX_LIGHT_COUNT]; // layout-id also depends on MAX_LIGHT_COUNT
-
-
 // taken from https://learnopengl.com/PBR/Lighting
 float distribution_ggx(float ndoth, float roughness) {
 	float a = roughness*roughness;
@@ -79,11 +67,11 @@ void main(void) {
 
 	vec3 Lo = vec3(0.0);
 	for(int i = 0; i < light_count; ++i) {
-		vec3 cam_to_light = light_positions[i] - pos;
+		PointLight light = point_lights[i];
 
-		vec3 l = normalize(cam_to_light);
+		vec3 l = normalize(light.dir);
 		vec3 h = normalize(v + l);
-		vec3 radiance = light_colors[i] / dot(cam_to_light, cam_to_light);
+		vec3 radiance = light.color / dot(light.dir, light.dir);
 
 		float NdotL = max(dot(n, l), 0.0);
 		float NdotH = max(dot(n, h), 0.0);

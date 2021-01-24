@@ -2,9 +2,21 @@
 #define I_PBR_H
 
 #include "standard.glslh"
+#include "../lib/pbr.glslh"
+
+UNIFORM(1) mat4 camera_transform;
+UNIFORM(2) sampler2D roughness_map;
+UNIFORM(3) sampler2D normal_map;
+UNIFORM(4) sampler2D ambient_map;
+UNIFORM(5) float metallic;
+UNIFORM(6) int light_count;
+UNIFORM(7) vec3 ambient_color; // modulates ambient map
+UNIFORM(8) vec3 light_positions[PBR_MAX_LIGHTS];
+UNIFORM(14) vec3 light_colors[PBR_MAX_LIGHTS]; // layout-id also depends on PBR_MAX_LIGHTS
 
 VARYING(3) vec3 pos;
 VARYING(4) vec3 tangent;
 VARYING(5) vec3 bitangent;
+VARYING(6) PointLight point_lights[PBR_MAX_LIGHTS];
 
 #endif

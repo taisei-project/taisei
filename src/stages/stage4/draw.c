@@ -52,10 +52,6 @@ static void stage4_lake_draw(vec3 pos) {
 	glm_vec3_scale(r, 4, r);
 	glm_vec3_add(cam->pos, r, light_pos[0]);
 
-	mat4 camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	r_shader("pbr");
@@ -65,13 +61,12 @@ static void stage4_lake_draw(vec3 pos) {
 		{4, 20, 22},
 	};
 
-	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
-	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
-		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
-	}
+	mat4 camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
 
-
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
+	r_uniform_mat4("camera_transform", camera_trans);
+	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
 	r_uniform_int("light_count", 2);
 
@@ -81,7 +76,6 @@ static void stage4_lake_draw(vec3 pos) {
 	r_uniform_sampler("normal_map", "stage4/ground_normal");
 	r_uniform_sampler("ambient_map", "stage4/ground_ambient");
 	r_uniform_vec3("ambient_color", 1, 1, 1);
-
 
 	r_draw_model("stage4/ground");
 
@@ -127,7 +121,6 @@ static void stage4_corridor_draw(vec3 pos) {
 	glm_mat4_identity(camera_trans);
 	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
 
-
 	vec3 light_colors[] = {
 		{1, 20, 20},
 		{1, 20, 20},
@@ -137,10 +130,7 @@ static void stage4_corridor_draw(vec3 pos) {
 		{1, 20, 20},
 	};
 
-	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
 	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
-		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
-
 		real t = global.frames*0.02;
 		real mod1 = cos(13095434*light_pos[i][1]);
 		real mod2 = sin(1242435*light_pos[i][0]*light_pos[i][1]);
@@ -149,16 +139,15 @@ static void stage4_corridor_draw(vec3 pos) {
 		glm_vec3_scale(light_colors[i],0.6+0.4*f, light_colors[i]);
 	}
 
-
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	//r_mat_mv_rotate(pos[1]/2000, 0, 1, 0);
 	r_shader("pbr");
 
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
+	r_uniform_mat4("camera_transform", camera_trans);
+	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
 	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
 	r_uniform_int("light_count", ARRAY_SIZE(light_pos));
-
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage4/corridor_diffuse");
