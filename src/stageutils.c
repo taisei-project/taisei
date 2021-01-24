@@ -64,7 +64,7 @@ void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
 // to a thing happening in the viewport.
 //
 // Actually, glm implements most of what is needed for this. Nice!
-// 
+//
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
 	vec3 p = {creal(pos), cimag(pos),1};
@@ -77,7 +77,7 @@ void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 	glm_unproject(p, mpersp, viewport, dest);
 	glm_vec3_normalize(dest);
 }
-	
+
 
 void stage3d_apply_transforms(Stage3D *s, mat4 mat) {
 	camera3d_apply_transforms(&s->cam, mat);
@@ -94,8 +94,7 @@ void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawR
 void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]) {
 	r_mat_mv_push();
 	stage3d_apply_transforms(s, *r_mat_mv_current_ptr());
-
-	r_mat_proj_perspective(s->cam.fovy, s->cam.aspect, s->cam.near, s->cam.far);
+	r_mat_proj_push_perspective(s->cam.fovy, s->cam.aspect, s->cam.near, s->cam.far);
 
 	for(uint i = 0; i < nsegments; ++i) {
 		const Stage3DSegment *seg = segments + i;
@@ -103,6 +102,7 @@ void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegme
 	}
 
 	r_mat_mv_pop();
+	r_mat_proj_pop();
 }
 
 void stage3d_shutdown(Stage3D *s) {
