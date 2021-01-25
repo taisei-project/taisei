@@ -2,11 +2,104 @@
 #ifndef PBR_H
 #define PBR_H
 
+#include "util.glslh"
+
 #define PBR_MAX_LIGHTS 6
 
 struct PointLight {
 	vec3 dir;		// vector from lit fragment to light, not normalized
 	vec3 color;
 };
+
+struct PBRParams {
+	vec3 albedo;
+	vec3 normal;
+	float roughness;
+	float metallic;
+	vec3 fragPos;
+};
+
+struct PBRState {
+	PBRParams params;
+	vec3 V;	// fragment to view (normalized)
+	vec3 N; // fragment normal
+	float NdotV;
+	vec3 F0;
+};
+
+PBRState PBR(PBRParams p) {
+	PBRState st;
+	st.params = p;
+	st.N = p.normal;
+	st.V = normalize(-p.fragPos);
+	st.NdotV = max(dot(st.N, st.V), 0.0);
+	st.F0 = mix(vec3(0.04), p.albedo, p.metallic);
+	return st;
+}
+
+float PBR_DistributionGGX(float NdotH, float roughness) {
+	float a = roughness * roughness;
+	float a2 = a * a;
+	float NdotH2 = NdotH * NdotH;
+
+	float num = a2;
+	float denom = NdotH2 * (a2 - 1.0) + 1.0;
+	denom = pi * denom * denom;
+
+	return num / denom;
+}
+
+float PBR_GeometrySchlickGGX(float NdotV, float k) {
+	return NdotV / mix(NdotV, 1, k);
+}
+
+float PBR_GeometrySmith(float NdotV, float NdotL, float roughness) {
+	float r = roughness + 1.0;
+	float k = r * r * 0.125;
+
+	return PBR_GeometrySchlickGGX(NdotL, k) * PBR_GeometrySchlickGGX(NdotV, k);
+}
+
+vec3 PBR_FresnelSchlick(float cosTheta, vec3 F0) {
+	float x = 1.0 - cosTheta;
+	float x2 = x * x;
+	float x5 = x2 * x2 * x;
+
+    return mix(vec3(x5), vec3(1.0), F0);
+}
+
+vec3 PBR_PointLight(PBRState st, PointLight light) {
+	vec3 Lo = vec3(0.0);
+
+	vec3 L = normalize(light.dir);
+	vec3 H = normalize(st.V + L);
+	vec3 radiance = light.color / dot(light.dir, light.dir);
+
+	float NdotL = max(dot(st.N, L), 0.0);
+	float NdotH = max(dot(st.N, H), 0.0);
+	float HdotV = max(dot(H, st.V), 0.0);
+	float NdotV = st.NdotV;
+
+	float NDF = PBR_DistributionGGX(NdotH, st.params.roughness);
+	float G = PBR_GeometrySmith(NdotV, NdotL, st.params.roughness);
+	vec3 F = PBR_FresnelSchlick(HdotV, st.F0);
+
+	vec3 kS = F;
+	vec3 kD = (1.0 - kS) * (1.0 - st.params.metallic);
+
+	vec3 diffuse = kD * st.params.albedo / pi;
+	vec3 specular = (NDF * G * kS) / max(4.0 * NdotV * NdotL, 0.001);
+
+	return (diffuse + specular) * radiance * NdotL;
+}
+
+vec3 PBR_TonemapReinhard(vec3 color) {
+	return color / (color + 1.0);
+}
+
+vec3 PBR_GammaCorrect(vec3 color) {
+	// Approximate linear->sRGB conversion
+	return pow(color, vec3(1.0/2.2));
+}
 
 #endif

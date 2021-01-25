@@ -1,47 +1,7 @@
 #version 330 core
 
-#include "lib/util.glslh"
 #include "lib/render_context.glslh"
 #include "interface/pbr.glslh"
-
-// taken from https://learnopengl.com/PBR/Lighting
-float distribution_ggx(float ndoth, float roughness) {
-	float a = roughness*roughness;
-
-	float a2 = a*a;
-	float ndoth2 = ndoth*ndoth;
-
-	float num = a2;
-	float denom = ndoth2 * (a2 - 1.0) + 1.0;
-	denom = pi * denom * denom;
-
-	return num / denom;
-}
-
-float geometry_schlick_ggx(float ndotv, float roughness) {
-	float r = (roughness + 1.0);
-	float k = r * r * 0.125;
-
-	float num   = ndotv;
-	float denom = mix(ndotv, 1, k);
-
-	return num / denom;
-}
-
-float geometry_smith(float ndotv, float ndotl, float roughness) {
-	float ggx2 = geometry_schlick_ggx(ndotv, roughness);
-	float ggx1 = geometry_schlick_ggx(ndotl, roughness);
-
-	return ggx1 * ggx2;
-}
-
-vec3 fresnel_schlick(float cosTheta, vec3 F0) {
-	float x = 1.0 - cosTheta;
-	float x2 = (x * x);
-	float x5 = x2 * x2 * x;
-
-    return mix(vec3(x5), vec3(1.0), F0);
-}
 
 void main(void) {
 	vec4 roughness_sample = texture(roughness_map, texCoord);
@@ -51,51 +11,27 @@ void main(void) {
 		discard;
 	}
 
-	vec3 albedo = (r_color * texture(tex, texCoord)).rgb;
-	float roughness = roughness_sample.r;
-	vec3 tbn_normal = sample_normalmap(normal_map, texCoord);
 	vec3 ambient = texture(ambient_map, texCoord).rgb;
+	vec3 tbn_normal = sample_normalmap(normal_map, texCoord);
+	mat3 tbn = mat3(normalize(tangent), normalize(bitangent), normalize(normal));
 
-	vec3 n = normalize(mat3(normalize(tangent), normalize(bitangent), normalize(normal))*tbn_normal);
-	vec3 v = normalize(-pos);
-	float NdotV = max(dot(n, v), 0.0);
+	PBRParams p;
+	p.fragPos = pos;
+	p.albedo = r_color.rgb * texture(tex, texCoord).rgb;
+	p.roughness = roughness_sample.r;
+	p.metallic = metallic;
+	p.normal = normalize(tbn * tbn_normal);
 
-	vec3 F0 = mix(vec3(0.04), albedo, metallic);
-
-	float one_minus_metallic = 1.0 - metallic;
-	const float inverse_pi = 1.0 / pi;
+	PBRState pbr = PBR(p);
 
 	vec3 Lo = vec3(0.0);
 	for(int i = 0; i < light_count; ++i) {
-		PointLight light = point_lights[i];
-
-		vec3 l = normalize(light.dir);
-		vec3 h = normalize(v + l);
-		vec3 radiance = light.color / dot(light.dir, light.dir);
-
-		float NdotL = max(dot(n, l), 0.0);
-		float NdotH = max(dot(n, h), 0.0);
-		float HdotV = max(dot(h, v), 0.0);
-
-		float NDF = distribution_ggx(NdotH, roughness);
-		float G = geometry_smith(NdotV, NdotL, roughness);
-		vec3 F = fresnel_schlick(HdotV, F0);
-
-		vec3 kS = F;
-		vec3 kD = (1.0 - kS) * one_minus_metallic;
-
-		vec3 numerator = NDF * G * F;
-		float denominator = 4.0 * NdotV * NdotL;
-		vec3 specular = numerator / max(denominator, 0.001);
-
-		Lo += (kD * albedo * inverse_pi + specular) * radiance * NdotL;
+		Lo += PBR_PointLight(pbr, point_lights[i]);
 	}
 
-	//vec3 ambient = vec3(0.03) * albedo * ao;
-	vec3 color = ambient_color*ambient + Lo;
+	vec3 color = ambient * ambient_color + Lo;
+	color = PBR_TonemapReinhard(color);
+	color = PBR_GammaCorrect(color);
 
-	color = color / (color + vec3(1.0));
-	color = pow(color, vec3(1.0/2.2));
-
-	fragColor = vec4(color, 1)*alpha;
+	fragColor = vec4(color, 1) * alpha;
 }
