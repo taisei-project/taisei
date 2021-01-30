@@ -12,19 +12,7 @@
 #include "draw.h"
 
 #include "stageutils.h"
-#include "util/glm.h"
-
-// merge with stage2 version?
-TASK(easing_animate, { float *val; float to; int time; glm_ease_t ease; }) {
-    float from = *ARGS.val;
-    float scale = ARGS.to - from;
-    float ftime = ARGS.time;
-
-    for(int t = 0; t < ARGS.time;t++) {
-        YIELD;
-        *ARGS.val = from + scale * ARGS.ease(t / ftime);
-    }
-}
+#include "common_tasks.h"
 
 TASK(update_stage_3d, NO_ARGS) {
 	for(;;) {
@@ -44,16 +32,16 @@ TASK(animate_bg_fullstage, NO_ARGS) {
 	cam->vel[2] = 0.008;
 
 	WAIT(400);
-	INVOKE_TASK(easing_animate,&cam->vel[1], 0.013, 200, glm_ease_sine_inout);
-	INVOKE_TASK(easing_animate,&cam->vel[2], 0.0, 200, glm_ease_quad_out);
+	INVOKE_TASK(common_easing_animate,&cam->vel[1], 0.013, 200, glm_ease_sine_inout);
+	INVOKE_TASK(common_easing_animate,&cam->vel[2], 0.0, 200, glm_ease_quad_out);
 	WAIT(800);
-	INVOKE_TASK(easing_animate,&cam->pos[2], 4, 400, glm_ease_quad_inout);
+	INVOKE_TASK(common_easing_animate,&cam->pos[2], 4, 400, glm_ease_quad_inout);
 	WAIT(1200);
-	INVOKE_TASK(easing_animate,&cam->pos[2], 3, 400, glm_ease_quad_inout);
+	INVOKE_TASK(common_easing_animate,&cam->pos[2], 3, 400, glm_ease_quad_inout);
 	WAIT(100);
-	INVOKE_TASK(easing_animate,&cam->pos[2], 4, 400, glm_ease_quad_inout);
+	INVOKE_TASK(common_easing_animate,&cam->pos[2], 4, 400, glm_ease_quad_inout);
 	WAIT(300);
-	INVOKE_TASK(easing_animate,&cam->vel[1], 0.06, 200, glm_ease_quad_in);
+	INVOKE_TASK(common_easing_animate,&cam->vel[1], 0.06, 200, glm_ease_quad_in);
 }
 
 void stage4_bg_init_fullstage() {

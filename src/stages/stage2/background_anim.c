@@ -13,18 +13,8 @@
 
 #include "stageutils.h"
 #include "coroutine.h"
+#include "common_tasks.h"
 #include "util/glm.h"
-
-TASK(easing_animate, { float *val; float to; int time; glm_ease_t ease; }) {
-    float from = *ARGS.val;
-    float scale = ARGS.to - from;
-    float ftime = ARGS.time;
-
-    for(int t = 0; t < ARGS.time;t++) {
-        YIELD;
-        *ARGS.val = from + scale * ARGS.ease(t / ftime);
-    }
-}
 
 TASK(animate_hina_mode, NO_ARGS) {
 	Stage2DrawData *draw_data = stage2_get_draw_data();
@@ -58,15 +48,15 @@ TASK(animate_bg_fullstage, NO_ARGS) {
 
 	real dur = 600;
 	glm_ease_t func = glm_ease_quad_inout;
-	INVOKE_TASK(easing_animate,&cam->rot.v[0], 40, dur, glm_ease_quad_out);
-	INVOKE_TASK(easing_animate,&cam->rot.v[2], -2.5f, dur, glm_ease_quad_out);
-	INVOKE_TASK(easing_animate,&cam->pos[0], 0, dur, func);
-	INVOKE_TASK(easing_animate,&cam->vel[1], 0.05f, dur, func);
+	INVOKE_TASK(common_easing_animate,&cam->rot.v[0], 40, dur, glm_ease_quad_out);
+	INVOKE_TASK(common_easing_animate,&cam->rot.v[2], -2.5f, dur, glm_ease_quad_out);
+	INVOKE_TASK(common_easing_animate,&cam->pos[0], 0, dur, func);
+	INVOKE_TASK(common_easing_animate,&cam->vel[1], 0.05f, dur, func);
 
-	INVOKE_TASK(easing_animate, &cam->rot.v[0], 40, dur, glm_ease_quad_out);
-	INVOKE_TASK(easing_animate, &cam->rot.v[2], -2.5f, dur, glm_ease_quad_out);
-	INVOKE_TASK(easing_animate, &cam->pos[0], 0, dur, func);
-	INVOKE_TASK(easing_animate, &cam->vel[1], 0.05f, dur, func);
+	INVOKE_TASK(common_easing_animate, &cam->rot.v[0], 40, dur, glm_ease_quad_out);
+	INVOKE_TASK(common_easing_animate, &cam->rot.v[2], -2.5f, dur, glm_ease_quad_out);
+	INVOKE_TASK(common_easing_animate, &cam->pos[0], 0, dur, func);
+	INVOKE_TASK(common_easing_animate, &cam->vel[1], 0.05f, dur, func);
 
 	for(;;) {
 		YIELD;

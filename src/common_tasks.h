@@ -16,6 +16,7 @@
 #include "move.h"
 #include "entity.h"
 #include "global.h"
+#include "util/glm.h"
 
 DECLARE_EXTERN_TASK(
 	common_drop_items,
@@ -112,6 +113,16 @@ DECLARE_EXTERN_TASK(
 	common_kill_enemy,
 	{
 		BoxedEnemy enemy;
+	}
+);
+
+DECLARE_EXTERN_TASK(
+	common_easing_animate,
+	{ 
+		float *value;
+		float to;
+		int duration;
+		glm_ease_t ease;
 	}
 );
 
