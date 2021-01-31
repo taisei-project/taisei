@@ -145,7 +145,7 @@ static void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sp
 
 	begin_draw_texture(
 		(FloatRect){ x + o.x * scale_x, y + o.y * scale_y, spr->w * scale_x, spr->h * scale_y },
-		(FloatRect){ spr->tex_area.x, spr->tex_area.y, spr->tex_area.w, spr->tex_area.h },
+		sprite_denormalized_tex_coords(spr),
 		spr->tex
 	);
 }

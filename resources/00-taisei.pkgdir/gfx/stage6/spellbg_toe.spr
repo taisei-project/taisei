@@ -2,8 +2,8 @@
 texture = stage6/spellbg_toe
 region_x = 0
 region_y = 0
-region_w = 3200
-region_h = 3200
+region_w = 1
+region_h = 1
 w = 800
 h = 800
 
