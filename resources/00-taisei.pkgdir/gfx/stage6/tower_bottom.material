@@ -1,0 +1,8 @@
+
+ambient_map = stage6/tower_bottom_ambient
+ao_map = stage6/tower_bottom_ao
+depth_map = stage6/tower_bottom_depth
+depth_scale = 0.0025
+diffuse_map = stage6/tower_bottom_diffuse
+normal_map = stage6/tower_bottom_normal
+roughness_map = stage6/tower_bottom_roughness

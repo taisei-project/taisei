@@ -1,0 +1,7 @@
+
+ambient_color = 0 0 0
+ao_map = stage6/spires_ao
+diffuse_color = 1 1 1
+metallic = 1
+normal_map = stage6/spires_normal
+roughness_map = stage6/spires_roughness

@@ -225,6 +225,21 @@ static void credits_towerwall_draw(vec3 pos) {
 	r_shader_standard();
 }
 
+static uint credits_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
+	vec3 p = {0, 0, -220};
+	vec3 r = {0, 0, 300};
+
+	uint num = linear3dpos(s3d, pos, maxrange, p, r);
+
+	for(uint i = 0; i < num; ++i) {
+		if(s3d->pos_buffer[i][2] > 0) {
+			s3d->pos_buffer[i][1] = -90000;
+		}
+	}
+
+	return num;
+}
+
 static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
 	stage3d_init(&stage_3d_context, 64);
@@ -385,7 +400,7 @@ static void credits_draw(void) {
 
 	r_mat_proj_translate(0, SCREEN_H / 3.0f, 0);
 
-	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, stage6_towerwall_pos });
+	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, credits_towerwall_pos });
 
 	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);

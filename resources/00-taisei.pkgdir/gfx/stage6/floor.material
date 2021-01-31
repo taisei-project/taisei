@@ -1,0 +1,7 @@
+
+ambient_color = 0 0 0
+ao_map = stage6/floor_ao
+diffuse_color = 1 1 1
+metallic = 1
+normal_map = stage6/floor_normal
+roughness = 0

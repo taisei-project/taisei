@@ -200,6 +200,7 @@ vec3 PBR_EnvironmentLight(
 	return l * st.params.mat.ambient_occlusion;
 }
 
+
 vec3 PBR_TonemapReinhard(vec3 color) {
 	return color / (color + 1.0);
 }

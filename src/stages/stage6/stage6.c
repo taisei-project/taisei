@@ -88,8 +88,7 @@ static void stage6_preload(void) {
 		"stage6boss_phase3",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"stage6/towertop",
-		"stage6/towerwall",
+		"stage6/sky",
 	NULL);
 	preload_resources(RES_SPRITE, RESF_DEFAULT,
 		"part/blast_huge_halo",
@@ -113,16 +112,32 @@ static void stage6_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"baryon_feedback",
+		"calabi-yau-quintic",
+		"envmap_reflect",
+		"pbr",
 		"stage6_sky",
-		"tower_wall",
+		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",
 	NULL);
+	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+		"stage6/floor",
+		"stage6/rim",
+		"stage6/spires",
+		"stage6/stairs",
+		"stage6/tower",
+		"stage6/tower_bottom",
+	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
-		"towerwall",
-		"towertop",
-		"skysphere",
+		"cube",
+		"stage6/calabi-yau-quintic",
+		"stage6/floor",
+		"stage6/rim",
+		"stage6/spires",
+		"stage6/stairs",
+		"stage6/tower",
+		"stage6/tower_bottom",
 	NULL);
 	preload_resources(RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
 		"warp",
@@ -134,6 +149,7 @@ static void stage6_preload(void) {
 
 static void stage6_start(void) {
 	stage6_drawsys_init();
+	stage6_bg_init_fullstage();
 }
 
 static void stage6_end(void) {
@@ -142,7 +158,7 @@ static void stage6_end(void) {
 
 static void stage6_spellpractice_start(void) {
 	stage6_start();
-	skip_background_anim(stage6_update, 3800, &global.timer, &global.frames);
+	stage6_bg_init_spellpractice();
 
 	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 	AttackInfo *s = global.stage->spell;
@@ -154,8 +170,7 @@ static void stage6_spellpractice_start(void) {
 		elly_spawn_baryons(global.boss->pos);
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
-		start_fall_over();
-		skip_background_anim(stage6_update, 300, &global.timer, &global.frames);
+		stage6_bg_start_fall_over();
 		stage_start_bgm("stage6boss_phase3");
 	} else {
 		stage_start_bgm("stage6boss_phase2");
@@ -171,16 +186,13 @@ static void stage6_spellpractice_events(void) {
 	}
 }
 
-ShaderRule stage6_shaders[] = { NULL };
-
 StageProcs stage6_procs = {
 	.begin = stage6_start,
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.update = stage6_update,
 	.event = stage6_events,
-	.shader_rules = stage6_shaders,
+	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
 
@@ -189,7 +201,6 @@ StageProcs stage6_spell_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.update = stage6_update,
 	.event = stage6_spellpractice_events,
-	.shader_rules = stage6_shaders,
+	.shader_rules = stage6_bg_effects,
 };

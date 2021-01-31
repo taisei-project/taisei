@@ -1,0 +1,8 @@
+
+ambient_map = stage6/rim_ambient
+ao_map = stage6/rim_ao
+depth_map = stage6/rim_depth
+depth_scale = 0.0025
+diffuse_map = stage6/rim_diffuse
+normal_map = stage6/rim_normal
+roughness_map = stage6/rim_roughness
