@@ -18,6 +18,8 @@ glsl_files = files(
     'blur9.frag.glsl',
     'boss_death.frag.glsl',
     'boss_zoom.frag.glsl',
+    'calabi-yau-quintic.frag.glsl',
+    'calabi-yau-quintic.vert.glsl',
     'circle_distort.frag.glsl',
     'copy_depth.frag.glsl',
     'cutscene.frag.glsl',
