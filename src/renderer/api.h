@@ -547,7 +547,7 @@ void _r_uniform_ptr_float_array(Uniform *uniform, uint offset, uint count, float
 void _r_uniform_float_array(const char *uniform, uint offset, uint count, float elements[count]) attr_nonnull(1, 4);
 #define r_uniform_float_array(uniform, ...) _R_UNIFORM_GENERIC(float_array, uniform, __VA_ARGS__)
 
-void _r_uniform_ptr_vec2(Uniform *uniform, float x, float y) attr_nonnull(1);
+void _r_uniform_ptr_vec2(Uniform *uniform, float x, float y);
 void _r_uniform_vec2(const char *uniform, float x, float y) attr_nonnull(1);
 #define r_uniform_vec2(uniform, ...) _R_UNIFORM_GENERIC(vec2, uniform, __VA_ARGS__)
 

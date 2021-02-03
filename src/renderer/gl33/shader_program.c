@@ -151,18 +151,22 @@ static struct {
 	[UNIFORM_MAT4]    = { uset_mat4,  uget_mat4 },
 };
 
-typedef struct MagicalUniform {
+typedef struct MagicUniformSpec {
 	const char *name;
 	const char *typename;
 	UniformType type;
-} MagicalUniform;
+} MagicUniformSpec;
 
-static MagicalUniform magical_unfiroms[] = {
-	{ "r_modelViewMatrix",  "mat4", UNIFORM_MAT4 },
-	{ "r_projectionMatrix", "mat4", UNIFORM_MAT4 },
-	{ "r_textureMatrix",    "mat4", UNIFORM_MAT4 },
-	{ "r_color",            "vec4", UNIFORM_VEC4 },
+static MagicUniformSpec magic_unfiroms[] = {
+	[UMAGIC_MATRIX_MV]       = { "r_modelViewMatrix",     "mat4", UNIFORM_MAT4 },
+	[UMAGIC_MATRIX_PROJ]     = { "r_projectionMatrix",    "mat4", UNIFORM_MAT4 },
+	[UMAGIC_MATRIX_TEX]      = { "r_textureMatrix",       "mat4", UNIFORM_MAT4 },
+	[UMAGIC_COLOR]           = { "r_color",               "vec4", UNIFORM_VEC4 },
+	[UMAGIC_VIEWPORT]        = { "r_viewport",            "vec4", UNIFORM_VEC4 },
+	[UMAGIC_COLOR_OUT_SIZES] = { "r_colorOutputSizes[0]", "vec2", UNIFORM_VEC2 },
+	[UMAGIC_DEPTH_OUT_SIZE]  = { "r_depthOutputSize",     "vec2", UNIFORM_VEC2 },
 };
+static_assert_nomsg(ARRAY_SIZE(magic_unfiroms) == NUM_MAGIC_UNIFORMS);
 
 static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	// these are validated properly in gl33_uniform
@@ -325,13 +329,22 @@ static bool cache_uniforms(ShaderProgram *prog) {
 				continue;
 		}
 
-		for(int j = 0; j < sizeof(magical_unfiroms)/sizeof(MagicalUniform); ++j) {
-			MagicalUniform *m = magical_unfiroms + j;
+		MagicUniformIndex magic_index = UMAGIC_INVALID;
 
-			if(!strcmp(name, m->name) && uni.type != m->type) {
-				log_error("Magical uniform '%s' must be of type '%s'", name, m->typename);
+		for(int j = 0; j < ARRAY_SIZE(magic_unfiroms); ++j) {
+			MagicUniformSpec *m = magic_unfiroms + j;
+
+			if(strcmp(name, m->name)) {
+				continue;
+			}
+
+			if(uni.type != m->type) {
+				log_error("Magic uniform '%s' must be of type '%s'", name, m->typename);
 				return false;
 			}
+
+			magic_index = j;
+			break;
 		}
 
 		const UniformTypeInfo *typeinfo = r_uniform_type_info(uni.type);
@@ -383,6 +396,12 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 				gl33_update_uniform(new_uni, 0, new_uni->array_size, payload);
 			}
+		}
+
+		if(magic_index != UMAGIC_INVALID) {
+			assume((uint)magic_index < ARRAY_SIZE(prog->magic_uniforms));
+			assert(prog->magic_uniforms[magic_index] == NULL);
+			prog->magic_uniforms[magic_index] = new_uni;
 		}
 
 		ht_set(&prog->uniforms, name, new_uni);

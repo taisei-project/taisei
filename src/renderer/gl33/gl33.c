@@ -383,17 +383,93 @@ static void gl33_sync_viewport(void) {
 	}
 }
 
+static IntExtent gl33_get_default_framebuffer_size(void) {
+	IntExtent s;
+	// TODO: cache this at window creation time and refresh on resize events?
+	SDL_GL_GetDrawableSize(R.window, &s.w, &s.h);
+	return s;
+}
+
+static void gl33_get_output_size(Framebuffer *fb, FramebufferAttachment a, vec2_noalign out) {
+	if(a == FRAMEBUFFER_ATTACH_NONE) {
+		out[0] = 0;
+		out[1] = 0;
+		return;
+	}
+
+	FramebufferAttachmentQueryResult q = gl33_framebuffer_query_attachment(fb, a);
+
+	if(q.texture == NULL) {
+		out[0] = 0;
+		out[1] = 0;
+		return;
+	}
+
+	uint w, h;
+	gl33_texture_get_size(q.texture, q.miplevel, &w, &h);
+	out[0] = w;
+	out[1] = h;
+}
+
+static void gl33_sync_magic_uniforms(void) {
+	ShaderProgram *shader = NOT_NULL(R.progs.active);
+	Framebuffer *fb = R.framebuffer.active;
+	Uniform **u = shader->magic_uniforms;
+
+	r_uniform_mat4(u[UMAGIC_MATRIX_MV], *_r_matrices.modelview.head);
+	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], *_r_matrices.projection.head);
+	r_uniform_mat4(u[UMAGIC_MATRIX_TEX], *_r_matrices.texture.head);
+	r_uniform_vec4_rgba(u[UMAGIC_COLOR], &R.color);
+	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], &R.viewport.active.x);
+
+	int num_color_out;
+
+	if(u[UMAGIC_COLOR_OUT_SIZES]) {
+		num_color_out = iclamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
+	} else {
+		num_color_out = 0;
+	}
+
+	if(fb) {
+		if(num_color_out > 0) {
+			vec2_noalign out[num_color_out];
+
+			for(int i = 0; i < num_color_out; ++i) {
+				gl33_get_output_size(fb, fb->output_mapping[i], out[i]);
+			}
+
+			r_uniform_vec2_array(u[UMAGIC_COLOR_OUT_SIZES], 0, num_color_out, out);
+		}
+
+		if(u[UMAGIC_DEPTH_OUT_SIZE]) {
+			vec2_noalign out;
+			gl33_get_output_size(fb, FRAMEBUFFER_ATTACH_DEPTH, out);
+			r_uniform_vec2_vec(u[UMAGIC_DEPTH_OUT_SIZE], out);
+		}
+	} else {   // default framebuffer
+		// TODO: Maybe figure out whether we have the depth buffer?
+		// We don't request one for the default framebuffer, so pretend it's not there.
+		r_uniform_vec2(u[UMAGIC_DEPTH_OUT_SIZE], 0, 0);
+
+		if(num_color_out > 0) {
+			IntExtent fb_size = gl33_get_default_framebuffer_size();
+			vec2 out[num_color_out];
+			out[0][0] = fb_size.w;
+			out[0][1] = fb_size.h;
+			memset(out + 1, 0, sizeof(out) - sizeof(out[0]));
+			r_uniform_vec2_array(u[UMAGIC_COLOR_OUT_SIZES], 0, num_color_out, out);
+		}
+	}
+}
+
 static void gl33_sync_state(void) {
 	gl33_sync_capabilities();
+	gl33_sync_framebuffer();
 	gl33_sync_shader();
-	r_uniform_mat4("r_modelViewMatrix", *_r_matrices.modelview.head);
-	r_uniform_mat4("r_projectionMatrix", *_r_matrices.projection.head);
-	r_uniform_mat4("r_textureMatrix", *_r_matrices.texture.head);
-	r_uniform_vec4_rgba("r_color", &R.color);
+	gl33_sync_viewport();
+	gl33_sync_magic_uniforms();
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits(true);
-	gl33_sync_framebuffer();
-	gl33_sync_viewport();
 	gl33_sync_vao();
 	gl33_sync_blend_mode();
 
@@ -1057,8 +1133,7 @@ static IntExtent gl33_framebuffer_get_size(Framebuffer *fb) {
 	IntExtent fb_size;
 
 	if(fb == NULL) {
-		// TODO: cache this at window creation time and refresh on resize events?
-		SDL_GL_GetDrawableSize(R.window, &fb_size.w, &fb_size.h);
+		fb_size = gl33_get_default_framebuffer_size();
 	} else {
 		fb_size = gl33_framebuffer_get_effective_size(fb);
 	}
