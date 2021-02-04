@@ -10,4 +10,5 @@
 #include "taisei.h"
 
 #define ENTITIES_STAGE3(X, ...) \
+	X(WriggleSlave, __VA_ARGS__) \
 	END_OF_ENTITIES
