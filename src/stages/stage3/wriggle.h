@@ -39,4 +39,5 @@ DECLARE_EXTERN_TASK(wriggle_slave_follow, {
 	BoxedBoss boss;
 	real rot_speed;
 	real rot_initial;
+	cmplx *out_dir;
 });
