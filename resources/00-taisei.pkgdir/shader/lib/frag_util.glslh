@@ -1,0 +1,19 @@
+#ifndef FRAG_UTIL_H
+#define FRAG_UTIL_H
+
+// dFduv computes the gradient of the function f(u,v) with respect to uv.
+// By contrast, vec2(dFdx(f), dFdy(f)) would be the gradient of f(x,y) with
+// respect to the fragment coordinates x and y. 
+vec2 dFduv(float f, vec2 uv) {
+	vec2 duvdx = dFdx(uv);
+	vec2 duvdy = dFdy(uv);
+	mat2 duvdxy = mat2(duvdx,duvdy);
+
+	float dfdx = dFdx(f);
+	float dfdy = dFdy(f);
+
+	vec2 dfduv = inverse(duvdxy)*vec2(dfdx,dfdy);
+	return dfduv;
+}
+
+#endif

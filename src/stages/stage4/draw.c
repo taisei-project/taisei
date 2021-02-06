@@ -35,6 +35,51 @@ static bool stage4_fog(Framebuffer *fb) {
 	return true;
 }
 
+static bool should_draw_water(void) {
+	return stage_3d_context.cam.pos[1] < 0 && config_get_int(CONFIG_POSTPROCESS) > 1;
+}
+
+static bool stage4_water(Framebuffer *fb) {
+	if(!should_draw_water()) {
+		return false;
+	}
+
+	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_mat_proj_push_perspective(stage_3d_context.cam.fovy, stage_3d_context.cam.aspect, stage_3d_context.cam.near, stage_3d_context.cam.far);
+	r_state_push();
+	r_mat_mv_push();
+	stage3d_apply_transforms(&stage_3d_context, *r_mat_mv_current_ptr());
+	r_mat_mv_translate(0, 3, -0.6);
+	r_enable(RCAP_DEPTH_TEST);
+
+	r_mat_mv_scale(20,-20,10);
+	r_shader("ssr_water");
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
+	r_uniform_sampler("tex", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_COLOR0));
+	r_uniform_float("time", global.frames * 0.002);
+	r_uniform_vec2("wave_offset", -global.frames * 0.0005, 0);
+	r_color4(0, 0.01, 0.01, 1);
+	r_draw_quad();
+
+	r_mat_mv_pop();
+	r_state_pop();
+	r_mat_proj_pop();
+
+	return true;
+}
+
+static bool stage4_water_composite(Framebuffer *reflections) {
+	if(!should_draw_water()) {
+		return false;
+	}
+
+	r_shader("alpha_discard");
+	r_blend(BLEND_NONE);
+	r_uniform_float("threshold", 1);
+	draw_framebuffer_tex(reflections, VIEWPORT_W, VIEWPORT_H);
+	return true;
+}
+
 static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = {0, 0, 0};
 	return single3dpos(s3d, pos, maxrange, p);
@@ -153,6 +198,8 @@ void stage4_drawsys_shutdown(void) {
 }
 
 ShaderRule stage4_bg_effects[] = {
+	stage4_water,
+	stage4_water_composite,
 	stage4_fog,
 	NULL,
 };

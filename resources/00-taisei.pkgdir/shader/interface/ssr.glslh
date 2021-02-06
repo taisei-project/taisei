@@ -1,0 +1,13 @@
+#ifndef I_SSR_H
+#define I_SSR_H
+
+#include "standard.glslh"
+UNIFORM(1) sampler2D depth;
+UNIFORM(2) float time;
+UNIFORM(3) vec2 wave_offset;
+
+VARYING(3) vec3 pos;
+VARYING(4) vec3 tangent;
+VARYING(5) vec3 bitangent;
+
+#endif

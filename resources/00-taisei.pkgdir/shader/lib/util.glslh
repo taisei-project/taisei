@@ -142,4 +142,26 @@ vec2 flip_native_to_bottomleft(vec2 v) {
     return v;
 }
 
+/*
+ * Adapted from https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl
+ */
+
+const float SRGB_ALPHA = 0.055;
+
+float srgb_to_linear(float channel) {
+	if(channel <= 0.04045) {
+		return channel / 12.92;
+	} else {
+		return pow((channel + SRGB_ALPHA) / (1.0 + SRGB_ALPHA), 2.4);
+	}
+}
+
+float linear_to_srgb(float channel) {
+	if(channel <= 0.0031308) {
+		return 12.92 * channel;
+	} else {
+		return (1.0 + SRGB_ALPHA) * pow(channel, 1.0/2.4) - SRGB_ALPHA;
+	}
+}
+
 #endif
