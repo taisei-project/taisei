@@ -845,6 +845,14 @@ bool boss_is_player_collision_active(Boss *boss) {
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
+	if(
+		!boss_is_vulnerable(boss) ||
+		dmg->type == DMG_ENEMY_SHOT ||
+		dmg->type == DMG_ENEMY_COLLISION
+	) {
+		return DMG_RESULT_IMMUNE;
+	}
+
 	float factor;
 
 	if(dmg->type == DMG_PLAYER_SHOT || dmg->type == DMG_PLAYER_DISCHARGE) {
@@ -857,14 +865,14 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 	int min_damage_time = 60;
 	int max_damage_time = 300;
-	int pattern_time = global.frames - boss->current->starttime;
+	int pattern_time = global.frames - NOT_NULL(boss->current)->starttime;
 
 	if(pattern_time < max_damage_time) {
 		float span = max_damage_time - min_damage_time;
 		factor = clampf((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
 	}
 
-	if(!boss_is_vulnerable(boss) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION || factor == 0) {
+	if(factor == 0) {
 		return DMG_RESULT_IMMUNE;
 	}
 
@@ -872,7 +880,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		boss->lastdamageframe = global.frames;
 	}
 
-	boss->current->hp -= dmg->amount*factor;
+	boss->current->hp -= dmg->amount * factor;
 
 	if(boss->current->hp < boss->current->maxhp * 0.1) {
 		play_sfx_loop("hit1");
