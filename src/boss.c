@@ -33,7 +33,7 @@ typedef struct SpellBonus {
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
-Boss* create_boss(char *name, char *ani, cmplx pos) {
+Boss *create_boss(char *name, char *ani, cmplx pos) {
 	Boss *boss = calloc(1, sizeof(Boss));
 
 	boss->name = strdup(name);
@@ -44,6 +44,7 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	aniplayer_create(&boss->ani, res_anim(strbuf), "main");
 
 	boss->birthtime = global.frames;
+	boss->next_graze = global.frames;
 	boss->zoomcolor = *RGBA(0.1, 0.2, 0.3, 1.0);
 
 	boss->ent.draw_layer = LAYER_BOSS;
@@ -1182,6 +1183,15 @@ void process_boss(Boss **pboss) {
 		}
 
 		play_sfx_ex("bossdeath", BOSS_DEATH_DELAY * 2, false);
+	}
+
+	if(boss_is_player_collision_active(boss)) {
+		player_try_enemy_collision(
+			&global.plr,
+			(Circle) { boss->pos, BOSS_HURT_RADIUS },
+			&boss->next_graze,
+			&boss->glowcolor
+		);
 	}
 
 	if(boss_is_player_collision_active(boss) && cabs(boss->pos - global.plr.pos) < BOSS_HURT_RADIUS) {

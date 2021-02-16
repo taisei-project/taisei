@@ -87,6 +87,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->dir = 0;
 
 	e->birthtime = global.frames;
+	e->next_graze = global.frames;
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
@@ -162,7 +163,7 @@ static void enemy_death_effect(cmplx pos) {
 	);
 }
 
-static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
+static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && !(e->flags & EFLAG_NO_DEATH_EXPLOSION)) {
@@ -342,10 +343,14 @@ void process_enemies(EnemyList *enemies) {
 
 		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
 
-		float hurt_radius = enemy_get_hurt_radius(enemy);
-
-		if(hurt_radius > 0 && cabs(enemy->pos - global.plr.pos) < hurt_radius) {
-			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
+		real hurt_radius = enemy_get_hurt_radius(enemy);
+		if(hurt_radius > 0) {
+			player_try_enemy_collision(
+				&global.plr,
+				(Circle) { enemy->pos, hurt_radius },
+				&enemy->next_graze,
+				RGBA(1, 0.3 * rng_real(), 0, 0)
+			);
 		}
 
 		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);

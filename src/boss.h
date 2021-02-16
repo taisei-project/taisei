@@ -144,6 +144,7 @@ DEFINE_ENTITY_TYPE(Boss, {
 	int failed_spells;
 	int lastdamageframe; // used to make the boss blink on damage taken
 	int birthtime;
+	int next_graze;
 
 	BossRule global_rule;
 

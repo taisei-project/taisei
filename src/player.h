@@ -203,6 +203,7 @@ void player_move(Player*, cmplx delta);
 void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color);
+void player_try_enemy_collision(Player *plr, Circle enemy, int *graze_timer, const Color *graze_color);
 
 void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
 bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
