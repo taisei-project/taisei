@@ -79,7 +79,8 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 		args->color = defaults->color;
 	}
 
-	if(!args->max_viewport_dist && (args->type == PROJ_PARTICLE || args->type == PROJ_PLAYER)) {
+	if(!args->max_viewport_dist && args->type == PROJ_PARTICLE) {
+		// TODO consider a saner value?
 		args->max_viewport_dist = 300;
 	}
 

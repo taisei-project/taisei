@@ -266,6 +266,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 		.timeout = timeout,
 		.damage = ARGS.damage,
 		.shader_ptr = ctrl->shot_shader,
+		.flags = PFLAG_NOAUTOREMOVE
 	));
 
 	INVOKE_TASK_AFTER(&p->events.killed, youmu_orb_homing_spirit_expire, ENT_BOX(p));
@@ -309,7 +310,9 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 
 		if(aim_peaked) {
 			if(!orb) {
-				approach_p(&aim_strength, 0.00, 0.001);
+				if(approach_p(&aim_strength, 0.00, 0.001) == 0) {
+					p->flags &= ~PFLAG_NOAUTOREMOVE;
+				}
 			}
 		} else {
 			approach_p(&aim_strength, 0.1, 0.02);
@@ -420,7 +423,7 @@ TASK(youmu_orb_shot, { YoumuBController *ctrl; int lifetime; real spirit_damage;
 		.type = PROJ_PLAYER,
 		.timeout = ARGS.lifetime,
 		.move = move_asymptotic(-30.0*I, -0.7*I, 0.8),
-		.flags = PFLAG_MANUALANGLE | PFLAG_NOCOLLISION,
+		.flags = PFLAG_MANUALANGLE | PFLAG_NOCOLLISION | PFLAG_NOAUTOREMOVE,
 	));
 
 	INVOKE_TASK(youmu_orb_update, ctrl, ENT_BOX(orb));

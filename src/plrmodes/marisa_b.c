@@ -117,6 +117,7 @@ TASK(marisa_star_slave_projectile, {
 		.type = PROJ_PLAYER,
 		.damage = ARGS.damage,
 		.shader_ptr = ARGS.shader,
+		.max_viewport_dist = 128,
 	));
 
 	real freq = 0.1;

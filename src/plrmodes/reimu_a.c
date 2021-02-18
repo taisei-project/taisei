@@ -169,7 +169,7 @@ TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 		.damage = ARGS.damage,
 		.shader_ptr = ARGS.shader,
 		.scale = REIMU_SPIRIT_HOMING_SCALE,
-		.flags = PFLAG_NOCOLLISIONEFFECT,
+		.flags = PFLAG_NOCOLLISIONEFFECT | PFLAG_NOAUTOREMOVE,
 	));
 
 	INVOKE_TASK_WHEN(&p->events.killed, reimu_spirit_homing_impact, ENT_BOX(p));
@@ -187,6 +187,8 @@ TASK(reimu_spirit_homing, { cmplx pos; cmplx vel; real damage; ShaderProgram *sh
 		reimu_spirit_spawn_ofuda_particle(p, t, 0.25);
 		YIELD;
 	}
+
+	p->flags &= ~PFLAG_NOAUTOREMOVE;
 }
 
 static Color *reimu_spirit_orb_color(Color *c, int i) {
@@ -336,7 +338,7 @@ TASK(reimu_spirit_bomb_orb, { BoxedPlayer plr; int index; real angle; }) {
 		.damage_type = DMG_PLAYER_BOMB,
 		.size = 10 * (1+I),
 		.layer = LAYER_NODRAW,
-		.flags = PFLAG_NOREFLECT | PFLAG_NOCOLLISION | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_NOCOLLISION | PFLAG_NOMOVE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
 	));
 
 	BoxedProjectile b_orb = ENT_BOX(orb);

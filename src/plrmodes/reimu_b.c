@@ -87,6 +87,11 @@ static void reimu_dream_gap_bomb_projectile_draw(Projectile *p, int t, ProjDrawR
 TASK(reimu_dream_gap_bomb_projectile_impact, { BoxedProjectile p; Sprite *impact_sprite; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 
+	if(p->collision && p->collision->type == PCOL_VOID) {
+		// Auto-removed out of bounds; don't explode.
+		return;
+	}
+
 	real range = BOMB_PROJECTILE_IMPACT_AREA_RADIUS;
 	real damage = BOMB_PROJECTILE_IMPACT_AREA_DAMAGE;
 
@@ -124,6 +129,7 @@ TASK(reimu_dream_gap_bomb_projectile, {
 		.size = 32 * (1 + I),
 		.sprite_ptr = ARGS.sprite,
 		.type = PROJ_PLAYER,
+		.max_viewport_dist = BOMB_PROJECTILE_PERIODIC_AREA_RADIUS
 	));
 
 	INVOKE_TASK_WHEN(&p->events.killed, reimu_dream_gap_bomb_projectile_impact,
