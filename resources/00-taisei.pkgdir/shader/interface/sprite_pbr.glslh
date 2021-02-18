@@ -1,0 +1,27 @@
+
+#ifndef I_SPRITE_PBR_H
+#define I_SPRITE_PBR_H
+
+#include "sprite.glslh"
+#include "../lib/pbr.glslh"
+
+#define tex_diffuse    tex
+#define tex_ambient    tex_aux[0]
+#define tex_normal     tex_aux[1]
+#define tex_roughness  tex_aux[2]
+
+UNIFORM(1) mat4 camera_transform;
+UNIFORM(2) int light_count;
+UNIFORM(3) vec3 light_positions[PBR_MAX_LIGHTS];
+UNIFORM(9) vec3 light_colors[PBR_MAX_LIGHTS]; // layout-id also depends on PBR_MAX_LIGHTS
+
+VARYING(7)  vec3  pos;
+VARYING(8)  vec3  normal;
+VARYING(9)  vec3  tangent;
+VARYING(10) vec3  bitangent;
+VARYING(11) PointLight point_lights[PBR_MAX_LIGHTS];
+
+// customParams.rgb = ambient color
+// customParams.a   = metallicity
+
+#endif

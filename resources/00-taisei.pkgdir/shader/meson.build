@@ -61,6 +61,8 @@ glsl_files = files(
     'sprite_hakkero.vert.glsl',
     'sprite_negative.frag.glsl',
     'sprite_particle.frag.glsl',
+    'sprite_pbr.frag.glsl',
+    'sprite_pbr.vert.glsl',
     'sprite_silhouette.frag.glsl',
     'sprite_silhouette.vert.glsl',
     'sprite_yinyang.frag.glsl',
