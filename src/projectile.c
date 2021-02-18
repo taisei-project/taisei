@@ -324,22 +324,29 @@ Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *call
 }
 #endif
 
-static void *_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
-	Projectile *p = (Projectile*)proj;
+static void signal_event_with_collision_result(Projectile *p, CoEvent *evt, ProjCollisionResult *col) {
+	assert(p->collision == NULL);
+	p->collision = col;
+	coevent_signal(evt);
+	assert(p->collision == col);
+	p->collision = NULL;
+}
+
+static void delete_projectile(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
 	proj_call_rule(p, EVENT_DEATH);
-	coevent_signal_once(&p->events.killed);
+	signal_event_with_collision_result(p, &p->events.killed, col);
 	COEVENT_CANCEL_ARRAY(p->events);
 	ent_unregister(&p->ent);
-	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, proj));
+	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, p));
+}
+
+static void *foreach_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {
+	delete_projectile((ProjectileList*)projlist, (Projectile*)proj, arg);
 	return NULL;
 }
 
-static void delete_projectile(ProjectileList *projlist, Projectile *proj) {
-	_delete_projectile((ListAnchor*)projlist, (List*)proj, NULL);
-}
-
 void delete_projectiles(ProjectileList *projlist) {
-	alist_foreach(projlist, _delete_projectile, NULL);
+	alist_foreach(projlist, foreach_delete_projectile, NULL);
 }
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
@@ -425,6 +432,8 @@ skip_collision:
 }
 
 void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
+	signal_event_with_collision_result(p, &p->events.collision, col);
+
 	switch(col->type) {
 		case PCOL_NONE:
 		case PCOL_VOID:
@@ -450,7 +459,7 @@ void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCol
 	}
 
 	if(col->fatal) {
-		delete_projectile(projlist, p);
+		delete_projectile(projlist, p, col);
 	}
 }
 
@@ -484,7 +493,7 @@ bool projectile_in_viewport(Projectile *proj) {
 		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
-Projectile* spawn_projectile_collision_effect(Projectile *proj) {
+Projectile *spawn_projectile_collision_effect(Projectile *proj) {
 	if(proj->flags & PFLAG_NOCOLLISIONEFFECT) {
 		return NULL;
 	}
@@ -517,7 +526,8 @@ static void really_clear_projectile(ProjectileList *projlist, Projectile *proj) 
 		create_clear_item(proj->pos, proj->clear_flags);
 	}
 
-	delete_projectile(projlist, proj);
+	// TODO: synthetic collision type for clears?
+	delete_projectile(projlist, proj, NULL);
 }
 
 bool clear_projectile(Projectile *proj, uint flags) {
@@ -540,9 +550,10 @@ bool clear_projectile(Projectile *proj, uint flags) {
 	return true;
 }
 
-void kill_projectile(Projectile* proj) {
+void kill_projectile(Projectile *proj) {
 	proj->flags |= PFLAG_INTERNAL_DEAD | PFLAG_NOCOLLISION | PFLAG_NOCLEAR;
 	proj->ent.draw_layer = LAYER_NODRAW;
+	assert(proj->collision == NULL);
 	// WARNING: must be done last, an event handler may cancel the task this function is running in!
 	coevent_signal_once(&proj->events.killed);
 }
@@ -558,7 +569,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 		proj->prevpos = proj->pos;
 
 		if(proj->flags & PFLAG_INTERNAL_DEAD) {
-			delete_projectile(projlist, proj);
+			delete_projectile(projlist, proj, NULL);
 			continue;
 		}
 

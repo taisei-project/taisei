@@ -86,6 +86,21 @@ typedef enum ProjFlags {
 	PFLAG_NOSPAWNEFFECTS = PFLAG_NOSPAWNFADE | PFLAG_NOSPAWNFLARE,
 } ProjFlags;
 
+typedef enum ProjCollisionType {
+	PCOL_NONE                = 0,
+	PCOL_ENTITY              = (1 << 0),
+	PCOL_PLAYER_GRAZE        = (1 << 1),
+	PCOL_VOID                = (1 << 2),
+} ProjCollisionType;
+
+typedef struct ProjCollisionResult {
+	ProjCollisionType type;
+	bool fatal; // for the projectile
+	cmplx location;
+	DamageInfo damage;
+	EntityInterface *entity;
+} ProjCollisionResult;
+
 // FIXME: prototype stuff awkwardly shoved in this header because of dependency cycles.
 typedef struct ProjPrototype ProjPrototype;
 
@@ -101,8 +116,28 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	ShaderProgram *shader;
 	Sprite *sprite;
 	ProjPrototype *proto;
+
+	/*
+	 * This field is usually NULL except during handling of "collision" and "killed" events.
+	 *
+	 * "Collision" events are run before the collision result is applied, so they may modify this
+	 * struct to affect the outcome.
+	 *
+	 * "Killed" events are run after the collision has happened, and thus shouldn't write to this
+	 * field.
+	 *
+	 * Note that this may be NULL during "killed" events or cancelled "collision" events.
+	 * In the former case this usually means the projectile was killed manually.
+	 *
+	 * Out of bounds auto-removals are considered collisions with "void" (PCOL_VOID).
+	 *
+	 * The pointer becomes invalid as soon as the event handler yields.
+	*/
+	ProjCollisionResult *collision;
+
 	MoveParams move;
 	COEVENTS_ARRAY(
+		collision,
 		cleared,
 		killed
 	) events;
@@ -184,21 +219,6 @@ struct ProjPrototype {
 #include "projectile_prototypes/all.inc.h"
 
 #define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
-
-typedef enum ProjCollisionType {
-	PCOL_NONE                = 0,
-	PCOL_ENTITY              = (1 << 0),
-	PCOL_PLAYER_GRAZE        = (1 << 1),
-	PCOL_VOID                = (1 << 2),
-} ProjCollisionType;
-
-typedef struct ProjCollisionResult {
-	ProjCollisionType type;
-	bool fatal; // for the projectile
-	cmplx location;
-	DamageInfo damage;
-	EntityInterface *entity;
-} ProjCollisionResult;
 
 Projectile* create_projectile(ProjArgs *args);
 Projectile* create_particle(ProjArgs *args);
