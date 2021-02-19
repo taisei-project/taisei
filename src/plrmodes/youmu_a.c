@@ -401,13 +401,12 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 	PARTICLE(
 		.sprite_ptr = ctrl->sprites.petal,
 		.pos = victim_origin,
-		.rule = asymptotic,
 		.draw_rule = pdraw_petal_random(),
 		.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
-		.args = {
+		.move = move_asymptotic_simple(
 			vrng_sign(R[0]) * vrng_range(R[1], 3, 3 + 5 * t) * cdir(M_PI*8*t),
-			5+I,
-		},
+			5+I
+		),
 		.layer = LAYER_PARTICLE_PETAL,
 	);
 }
@@ -423,7 +422,6 @@ static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx
 		.flags = pflags,
 		.move = move_linear(2 * rng_dir()),
 		.pos = pos,
-		.rule = linear,
 		.sprite_ptr = ctrl->sprites.arc,
 		.timeout = 30,
 	);
@@ -440,7 +438,6 @@ static void youmu_mirror_bomb_particles(YoumuAController *ctrl, cmplx pos, cmplx
 			0.1 * vel * I * sin(t/4.0) / 30
 		),
 		.pos = pos,
-		.rule = accelerated,
 		.sprite_ptr = ctrl->sprites.stain,
 		.timeout = 50,
 	);
