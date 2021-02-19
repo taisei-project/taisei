@@ -33,7 +33,9 @@ typedef struct SpellBonus {
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
-Boss* create_boss(char *name, char *ani, cmplx pos) {
+DECLARE_TASK(boss_particles, { BoxedBoss boss; });
+
+Boss *create_boss(char *name, char *ani, cmplx pos) {
 	Boss *boss = calloc(1, sizeof(Boss));
 
 	boss->name = strdup(name);
@@ -58,6 +60,7 @@ Boss* create_boss(char *name, char *ani, cmplx pos) {
 	boss->shot_damage_multiplier = 1.0;
 
 	COEVENT_INIT_ARRAY(boss->events);
+	INVOKE_TASK(boss_particles, ENT_BOX(boss));
 
 	return boss;
 }
@@ -614,31 +617,42 @@ static Projectile *spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	);
 }
 
-static void spawn_particle_effects(Boss *boss) {
-	Color *glowcolor = &boss->glowcolor;
-	Color *shadowcolor = &boss->shadowcolor;
+DEFINE_TASK(boss_particles) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	DECLARE_ENT_ARRAY(Projectile, smoke_parts, 16);
 
-	Attack *cur = boss->current;
-	bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
-	bool is_extra = cur && cur->type == AT_ExtraSpell && global.frames >= cur->starttime;
+	cmplx prev_pos = boss->pos;
 
-	if(!(global.frames % 13) && !is_extra) {
-		PARTICLE(
-			.sprite = "smoke",
-			.pos = cdir(global.frames),
-			.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
-			.rule = enemy_flare,
-			.timeout = 180,
-			.draw_rule = pdraw_timeout_scale(2, 0.01),
-			.args = { 0, add_ref(boss), },
-			.angle = rng_angle(),
-		);
-	}
+	for(;;YIELD) {
+		ENT_ARRAY_FOREACH(&smoke_parts, Projectile *p, {
+			p->pos += boss->pos - prev_pos;
+		});
+		prev_pos = boss->pos;
 
-	if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
-		float glowstr = 0.5;
-		float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
-		spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
+		Color *glowcolor = &boss->glowcolor;
+		Color *shadowcolor = &boss->shadowcolor;
+
+		Attack *cur = boss->current;
+		bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
+		bool is_extra = cur && cur->type == AT_ExtraSpell && global.frames >= cur->starttime;
+
+		if(!(global.frames % 13) && !is_extra) {
+			ENT_ARRAY_COMPACT(&smoke_parts);
+			ENT_ARRAY_ADD(&smoke_parts, PARTICLE(
+				.sprite = "smoke",
+				.pos = cdir(global.frames) + boss->pos,
+				.color = RGBA(shadowcolor->r, shadowcolor->g, shadowcolor->b, 0.0),
+				.timeout = 180,
+				.draw_rule = pdraw_timeout_scale(2, 0.01),
+				.angle = rng_angle(),
+			));
+		}
+
+		if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
+			float glowstr = 0.5;
+			float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
+			spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
+		}
 	}
 }
 
@@ -1029,8 +1043,6 @@ void process_boss(Boss **pboss) {
 	if(boss->global_rule) {
 		boss->global_rule(boss, global.frames - boss->birthtime);
 	}
-
-	spawn_particle_effects(boss);
 
 	if(!boss->current || dialog_is_active(global.dialog)) {
 		return;
