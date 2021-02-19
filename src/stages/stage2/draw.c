@@ -142,25 +142,35 @@ static void stage2_bg_grass_draw(vec3 pos) {
 	r_mat_mv_rotate(-M_PI/2 * 1.2, 1, 0, 0);
 	r_mat_mv_scale(2, 2, 2);
 
-	r_shader("pbr");
-	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
+	ShaderProgram *sprite_shader = res_shader("sprite_pbr");
 
-	r_uniform_float("metallic", 0);
-	r_uniform_sampler("tex", "stage2/grass_diffuse");
-	r_uniform_sampler("roughness_map", "stage2/grass_roughness");
-	r_uniform_sampler("normal_map", "stage2/grass_normal");
-	r_uniform_sampler("ambient_map", "stage2/grass_ambient");
-	r_uniform_vec3("ambient_color", 0.4, 0.4, 0.4);
+	r_shader_ptr(sprite_shader);
+	stage2_bg_setup_pbr_lighting(STAGE2_MAX_LIGHTS);
 
 	r_disable(RCAP_CULL_FACE);
 // 	r_disable(RCAP_DEPTH_WRITE);
+
+	Sprite grass = { 0 };
+	grass.tex = res_texture("stage2/grass_diffuse");
+	grass.extent.as_cmplx = 1 + I;
+	grass.tex_area.extent.as_cmplx = 1 + I;
+
+	SpriteParams sp = { 0 };
+	sp.sprite_ptr = &grass;
+	sp.color = RGB(1, 1, 1);
+	// ambient color and metallicity
+	sp.shader_params = &(ShaderCustomParams) {{ 0.4, 0.4, 0.4, 0 }};
+	sp.shader_ptr = sprite_shader;
+	sp.aux_textures[0] = res_texture("stage2/grass_ambient");
+	sp.aux_textures[1] = res_texture("stage2/grass_normal");
+	sp.aux_textures[2] = res_texture("stage2/grass_roughness");
 
 	int n = 3;
 	for(int i = 0; i < n; i++) {
 		r_mat_mv_push();
 		r_mat_mv_rotate(M_PI*(i-n/2)/n*0.6,0,1,0);
 		r_mat_mv_translate((i-n/2)*0.2*f1,0,0);
-		r_draw_quad();
+		r_draw_sprite(&sp);
 		r_mat_mv_pop();
 	}
 
