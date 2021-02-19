@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static cmplx cathode_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->shader = r_shader_get_optional("lasers/iku_cathode");

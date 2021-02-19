@@ -13,6 +13,7 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 static Projectile *vapor_particle(cmplx pos, const Color *clr) {
 	return PARTICLE(

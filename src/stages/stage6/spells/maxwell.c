@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static cmplx maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;

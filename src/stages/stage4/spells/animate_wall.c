@@ -13,6 +13,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int aniwall_bullet(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;

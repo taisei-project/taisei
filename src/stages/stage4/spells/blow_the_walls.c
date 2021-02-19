@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int blowwall_slave(Enemy *e, int t) {
 	float re, im;
 

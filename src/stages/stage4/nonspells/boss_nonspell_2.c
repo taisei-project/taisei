@@ -13,6 +13,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void kurumi_breaker(Boss *b, int time) {
 	int t = time % 400;
 	int i;

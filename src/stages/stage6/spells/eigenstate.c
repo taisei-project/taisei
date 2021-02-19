@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int eigenstate_proj(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;

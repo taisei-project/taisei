@@ -11,6 +11,8 @@
 #include "nonspells.h"
 #include "stagetext.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void elly_paradigm_shift(Boss *b, int t) {
 	if(global.stage->type == STAGE_SPELL) {
 		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1)

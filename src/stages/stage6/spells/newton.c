@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);

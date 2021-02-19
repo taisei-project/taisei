@@ -21,6 +21,10 @@
 #include "dynarray.h"
 #include "stageinfo.h"
 
+#define MODERNIZE_THIS_FILE_AND_REMOVE_ME \
+	PRAGMA(message "This file needs to be modernized") \
+	DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 /* taisei's strange macro language.
  *
  * sorry, I guess it is bad style, but I hardcode everything and in that case

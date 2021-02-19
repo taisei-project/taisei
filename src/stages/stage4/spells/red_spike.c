@@ -13,6 +13,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int kurumi_spikeslave(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_BIRTH)

@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int baryon_curvature(Enemy *e, int t) {
 	int num = creal(e->args[2])+0.5;
 	int odd = num&1;

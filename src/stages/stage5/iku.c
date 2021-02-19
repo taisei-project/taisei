@@ -14,6 +14,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void iku_lightning_particle(cmplx pos, int t) {
 	if(!(t % 5)) {
 		char *part = frand() > 0.5 ? "lightning0" : "lightning1";

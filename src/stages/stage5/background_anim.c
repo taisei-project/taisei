@@ -14,6 +14,8 @@
 #include "global.h"
 #include "stageutils.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void stage5_update(void) {
 	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
 	stage_3d_context.cam.near = 100;

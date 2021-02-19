@@ -22,8 +22,7 @@
 #include "common_tasks.h"
 #include "../stage6/elly.h"
 
-PRAGMA(message "Remove when this stage is modernized")
-DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");

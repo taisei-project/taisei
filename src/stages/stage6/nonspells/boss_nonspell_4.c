@@ -10,6 +10,8 @@
 
 #include "nonspells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int baryon_nattack(Enemy *e, int t) {
 	if(t < 0)
 		return 1;

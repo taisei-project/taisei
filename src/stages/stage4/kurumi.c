@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static void kurumi_global_rule(Boss *b, int time) {
 	// FIXME: avoid running this every frame!
 

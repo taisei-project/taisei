@@ -19,8 +19,7 @@
 #include "portrait.h"
 #include "common_tasks.h"
 
-PRAGMA(message "Remove when this stage is modernized")
-DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.

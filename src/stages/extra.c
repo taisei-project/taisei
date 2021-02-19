@@ -18,6 +18,8 @@
 #include "stagetext.h"
 #include "stageutils.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 TASK(glider_bullet, {
 	cmplx pos; double dir; double spacing; int interval;
 }) {

@@ -13,6 +13,8 @@
 #include "global.h"
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 DIAGNOSTIC(ignored "-Wunused-variable")
 
 TASK(laserproj_death, { Projectile *p; }) {

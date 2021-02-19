@@ -13,6 +13,7 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 static void kurumi_extra_shield_pos(Enemy *e, int time) {
 	double dst = 75 + 100 * fmax((60 - time) / 60.0, 0);

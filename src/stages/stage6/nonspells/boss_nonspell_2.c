@@ -10,6 +10,8 @@
 
 #include "nonspells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
 

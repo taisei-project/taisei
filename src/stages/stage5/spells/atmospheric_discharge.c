@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void iku_atmospheric(Boss *b, int time) {
 	if(time < 0) {
 		GO_TO(b, VIEWPORT_W/2+200.0*I, 0.06);

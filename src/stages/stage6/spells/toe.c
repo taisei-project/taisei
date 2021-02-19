@@ -12,6 +12,8 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 #define LASER_EXTENT (4+1.5*global.diff-D_Normal)
 #define LASER_LENGTH 60
 

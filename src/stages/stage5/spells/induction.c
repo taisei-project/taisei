@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void iku_induction(Boss *b, int t) {
 	// thwarf safespots
 	cmplx ofs = global.diff > D_Normal ? 10*I : 0;

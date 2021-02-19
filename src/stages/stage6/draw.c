@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static Stage6DrawData *stage6_draw_data;
 
 Stage6DrawData *stage6_get_draw_data(void) {

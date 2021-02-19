@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int iku_explosion(Enemy *e, int t) {
 	TIMER(&t)
 	AT(EVENT_KILLED) {

@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static void lhc_laser_logic(Laser *l, int t) {
 	Enemy *e;
 

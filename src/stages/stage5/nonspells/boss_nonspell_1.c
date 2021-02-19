@@ -10,6 +10,8 @@
 
 #include "nonspells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void iku_bolts(Boss *b, int time) {
 	int t = time % 400;
 	TIMER(&t);

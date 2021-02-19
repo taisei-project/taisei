@@ -12,6 +12,8 @@
 
 #include "common_tasks.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 /* !!! You are entering Akari danmaku code !!! */
 #define SAFE_RADIUS_DELAY 300
 #define SAFE_RADIUS_BASE 100

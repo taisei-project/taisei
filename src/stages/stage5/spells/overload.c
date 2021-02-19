@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static Enemy* iku_overload_find_next_slave(cmplx from, double playerbias) {
 	Enemy *nearest = NULL, *e;
 	double dist, mindist = INFINITY;

@@ -13,6 +13,8 @@
 #include "nonspells/nonspells.h"
 #include "spells/spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 TASK(boss_appear_stub, NO_ARGS) {
 	log_warn("FIXME");
 }

@@ -10,6 +10,8 @@
 
 #include "nonspells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int baryon_explode(Enemy *e, int t) {
 	TIMER(&t);
 	AT(EVENT_DEATH) {

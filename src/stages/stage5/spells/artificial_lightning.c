@@ -10,6 +10,8 @@
 
 #include "spells.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static int zigzag_bullet(Projectile *p, int t) {
 	if(t < 0) {
 		return ACTION_ACK;

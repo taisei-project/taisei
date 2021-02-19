@@ -12,6 +12,8 @@
 #include "elly.h"
 #include "draw.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void scythe_common(Enemy *e, int t) {
 	e->args[1] += cimag(e->args[1]);
 }
