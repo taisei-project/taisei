@@ -15,6 +15,9 @@
  * NOTE: if you're here to attempt fixing any of this braindeath, better just delete the file and start over
  */
 
+PRAGMA(message "Delete this file when no users left")
+DIAGNOSTIC(ignored "-Wdeprecated-declarations")
+
 void *_FREEREF;
 
 #ifdef DEBUG

@@ -20,15 +20,18 @@ typedef struct {
 	int refs;
 } Reference;
 
+#define DEPRECATED_REFS \
+	attr_deprecated("Use tasks and boxed entities instead")
+
 typedef struct {
-	Reference *ptrs;
+	Reference *ptrs DEPRECATED_REFS;
 	int count;
 } RefArray;
 
 extern void *_FREEREF;
 #define FREEREF &_FREEREF
 #define REF(p) (global.refs.ptrs[(int)(p)].ptr)
-int add_ref(void *ptr);
+int add_ref(void *ptr) DEPRECATED_REFS;
 void del_ref(void *ptr);
 void free_ref(int i);
 void free_all_refs(void);
