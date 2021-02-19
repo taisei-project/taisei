@@ -34,8 +34,8 @@ TASK(balls, { BoxedBoss boss; }) {
 
 	for(;;) {
 		WAIT(75);
-		play_sound("shot_special1");
-		play_sound("redirect");
+		play_sfx("shot_special1");
+		play_sfx("redirect");
 
 		cmplx aim = cnormalize(global.plr.pos - boss->pos);
 

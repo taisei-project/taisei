@@ -71,7 +71,7 @@ TASK(scatter_bugs, { BoxedProjectileArray *bugs; }) {
 		}
 
 		if(i % p == 0) {
-			play_sound("redirect");
+			play_sfx("redirect");
 			YIELD;
 		}
 	}
@@ -124,7 +124,7 @@ DEFINE_EXTERN_TASK(stage2_midboss_nonspell_1) {
 		ENT_ARRAY_CLEAR(&bugs);
 		WAIT(30);
 
-		play_sound("shot_special1");
+		play_sfx("shot_special1");
 
 		int n = 20;
 		int m = difficulty_value(1, 3, 4, 5);
