@@ -67,7 +67,6 @@ static void uget_vec4(Uniform *uniform, uint count, void *data) {
 	}
 }
 
-
 static void uset_int(Uniform *uniform, uint offset, uint count, const void *data) {
 	glUniform1iv(uniform->location + offset, count, (int*)data);
 }
@@ -179,7 +178,7 @@ static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const
 	assert(idx_last < uniform->array_size);
 	assert(idx_first <= idx_last);
 
-	memcpy(uniform->cache.pending + offset, data, count * uniform->elem_size);
+	memcpy(uniform->cache.pending + offset * uniform->elem_size, data, count * uniform->elem_size);
 
 	if(idx_first < uniform->cache.update_first_idx) {
 		uniform->cache.update_first_idx = idx_first;
