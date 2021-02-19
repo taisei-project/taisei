@@ -179,8 +179,8 @@ typedef struct ProjArgs {
 	ShaderProgram *shader_ptr;
 	attr_deprecated("this won't work") const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
-	ProjRule rule;
-	cmplx args[RULE_ARGC];
+	attr_deprecated("Use .move and/or tasks instead") ProjRule rule;
+	attr_deprecated("Use .move and/or tasks instead") cmplx args[RULE_ARGC];
 	ProjDrawRule draw_rule;
 	cmplx pos;
 	cmplx size; // affects default draw order, out-of-viewport culling, and grazing
