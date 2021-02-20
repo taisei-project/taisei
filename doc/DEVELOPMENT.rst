@@ -17,8 +17,8 @@ Basic Build Instructions
 
 -  C (C11) compiler (``gcc``, ``clang``, etc)
 -  Python >= 3.5
--  meson >= 0.48.0 (build system; >=0.49.0 recommended)
--  ninja >= 1.7
+-  meson >= 0.53.0
+-  ninja >= 1.10.0
 -  docutils
 
 You can optionally install `other dependencies <../README.rst#dependencies>`__,
@@ -36,12 +36,8 @@ To build and install Taisei on \*nix:
 
 ::
 
-    cd /path/to/taisei/source
-    mkdir build
-    cd build
-    meson --prefix=$TAISEI_PREFIX # configures the build directory
-    ninja # compiles the code
-    ninja install # installs the binary and assets
+    cd taisei/
+    make all # sets up, compiles, and installs Taisei
 
 
 Development
@@ -53,7 +49,7 @@ Build Options
 Game Data Path
 """"""""""""""
 
-When compiling with ``--prefix=$TAISEI_PREFIX``, game file data will be
+When compiling with ``TAISEI_PREFIX`` set, game file data will be
 installed to ``$TAISEI_PREFIX/share/taisei/``, and this path will be built
 *statically* into the executable. You can decide whether or not you want this
 based on your own preferences. Alternatively, you can install game data
@@ -61,7 +57,7 @@ relatively as well:
 
 ::
 
-  meson configure -Dinstall_relative=true
+    make setup/install-relative
 
 Which will cause save game data to be installed to:
 
@@ -70,7 +66,7 @@ Which will cause save game data to be installed to:
     $TAISEI_PREFIX/taisei/
     $TAISEI_PREFIX/data/
 
-Note that ``install_relative`` is always set when building for Windows.
+Note that ``install relative`` is always set when building for Windows.
 
 Debugging
 """""""""
@@ -79,7 +75,7 @@ You can enable debugging options/output for development purposes:
 
 ::
 
-    meson configure -Dbuildtype=debug -Db_ndebug=false
+    make setup/debug
 
 
 Faster Builds
@@ -90,7 +86,7 @@ theoretical reduction in performance with these options:
 
 ::
 
-    meson configure -Db_lto=false -Dstrip=false
+    make setup/build-speed
 
 
 Developer Mode
@@ -102,7 +98,7 @@ and other 'fast-forward' options by the pressing keys defined in
 
 ::
 
-    meson configure -Ddeveloper=true
+    make setup/developer
 
 Stack Trace Debugging
 """""""""""""""""""""
@@ -112,7 +108,7 @@ This is useful for debugging crashes in the game. It uses
 
 ::
 
-    meson configure -Db_sanitize=address,undefined
+    make setup/debug-asan
 
 Depending on your platform, you may need to specify the specific library binary
 to use to launch ASan appropriately. Using macOS as an example:
@@ -121,47 +117,40 @@ to use to launch ASan appropriately. Using macOS as an example:
 
     export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
-And then launch Taisei's binary from the command line:
+The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
+version of XCode. If it fails to launch for you, ensure that the version number
+is correct by browsing to the parent directory of ``../clang``.
+
+Then, you can launch Taisei's binary from the command line (using macOS as an example):
 
 ::
 
     /path/to/Taisei.app/Contents/MacOS/Taisei
 
-The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
-version of XCode. If it fails to launch for you, ensure that the version number
-is correct.
-
-Deprecation Errors
-""""""""""""""""""
-
-You can force deprecation warnings to become errors with the following option.
-
-Useful for making sure your code is using best-practices.
-
-::
-
-    meson configure -Dwerror=true -Ddeprecation_warnings=no-error
-
 
 OpenGL ES Support (Optional)
 """"""""""""""""""""""""""""
+
+3.0
+'''
+
 
 The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
 ::
 
-    meson configure -Dr_gles30=true -Dshader_transpiler=true
+    make setup/gles/30
 
-See `here <doc/ENVIRON.rst>`__ on how to manually activate it.
+2.0
+'''
 
-To set OpenGL ES 3.0 as the *default* renderer, do:
+An experimental OpenGL ES 2.0 backend can be enabled similarly, using:
 
 ::
 
-    meson configure -Dr_default=gles30
+    make setup/gles/20
 
-The OpenGL ES 2.0 backend can be enabled similarly, using ``gles20`` instead of
-``gles30``. However, it requires a few extensions to be present on your system
+However, GLES 2.0 requires a few extensions to be present on your system
 to function correctly, most notably:
 
 - ``OES_depth_texture`` or ``GL_ANGLE_depth_texture``
@@ -170,6 +159,9 @@ to function correctly, most notably:
 - ``EXT_frag_depth``
 - ``EXT_instanced_arrays`` or ``ANGLE_instanced_arrays`` or
   ``NV_instanced_arrays``
+
+ANGLE (Windows/macOS)
+'''''''''''''''''''''
 
 For Windows and macOS, you will need Google's ANGLE library for both ES 3.0 and
 2.0. You'll need to check out
@@ -180,13 +172,16 @@ Once you've compiled ANGLE, enable it with:
 
 ::
 
-    meson -Dinstall_angle=true -Dangle_libegl=/path/to/libEGL.{dll,dylib}
-    -Dangle_libgles=/path/to/libGLESv2.{dll,dylib}
+    export LIBGLES=/path/to/libGLESv2.{dll,dylib}
+    export LIBEGL=/path/to/libEGL.{dll,dylib}
+    make setup/gles/angle
+    make compile
+    make install
 
 Ensure you use the correct file extension for your platform. (``.dll`` for
 Windows, ``.dylib`` for macOS.)
 
-It'll install automatically with ``ninja install`` (as mentioned above).
+This will copy the file over into the package itself.
 
 Coding Style
 ^^^^^^^^^^^^
@@ -268,7 +263,7 @@ following option:
 
 ::
 
-    meson --wrap-mode forcefallback
+    make setup/fallback
 
 Windows
 """""""
