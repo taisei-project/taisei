@@ -704,24 +704,6 @@ bool player_is_alive(Player *plr) {
 	return plr->deathtime < global.frames && global.frames >= plr->respawntime;
 }
 
-static int powersurge_discharge(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	// double damage = creal(p->args[0]) / p->timeout;
-	double range = cimag(p->args[0]);
-
-	// ent_area_damage(p->pos, range, &(DamageInfo) { damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
-	stage_clear_hazards_at(p->pos, range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
-
-	return ACTION_NONE;
-}
-
 static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	if(config_get_int(CONFIG_POSTPROCESS) < 1) {
 		return;
@@ -746,6 +728,12 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 	stage_draw_begin_noshake();
 	draw_framebuffer_tex(fb_aux, VIEWPORT_W, VIEWPORT_H);
 	stage_draw_end_noshake();
+}
+
+TASK(powersurge_discharge_clearhazards, { cmplx pos; real range; int timeout; }) {
+	for(int t = 0; t < ARGS.timeout; ++t, YIELD) {
+		stage_clear_hazards_at(ARGS.pos, ARGS.range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
+	}
 }
 
 static void player_powersurge_expired(Player *plr) {
@@ -784,18 +772,8 @@ static void player_powersurge_expired(Player *plr) {
 
 	player_add_points(&global.plr, bonus.score, plr->pos);
 	ent_area_damage(plr->pos, bonus.discharge_range, &(DamageInfo) { bonus.discharge_damage, DMG_PLAYER_DISCHARGE }, NULL, NULL);
-	// stage_clear_hazards_at(plr->pos, bonus.discharge_range, CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW | CLEAR_HAZARDS_SPAWN_VOLTAGE);
 
-	PROJECTILE(
-		.pos = plr->pos,
-		.size = 1+I,
-		.layer = LAYER_NODRAW,
-		.timeout = 10,
-		.type = PROJ_PLAYER,
-		.rule = powersurge_discharge,
-		.args = { CMPLX(bonus.discharge_damage, bonus.discharge_range) },
-		.flags = PFLAG_NOCOLLISION,
-	);
+	INVOKE_TASK(powersurge_discharge_clearhazards, plr->pos, bonus.discharge_range, 10);
 
 	log_debug(
 		"Power Surge expired at %i (duration: %i); baseline = %u; score = %u; discharge = %g, dmg = %g, range = %g",
