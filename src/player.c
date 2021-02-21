@@ -444,20 +444,70 @@ static void powersurge_trail_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	}
 }
 
-static int powersurge_trail(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
+TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
+	Player *plr = TASK_BIND(ARGS.plr);
+
+	DECLARE_ENT_ARRAY(Projectile, trails, 32);
+	DECLARE_ENT_ARRAY(Projectile, fields, 4);
+
+	ShaderProgram *trail_shader = res_shader("sprite_silhouette");
+	Sprite *field_sprite = res_sprite("part/powersurge_field");
+
+	for(int t = 0; player_is_powersurge_active(plr); ++t, YIELD) {
+		ENT_ARRAY_COMPACT(&trails);
+		ENT_ARRAY_ADD(&trails, PARTICLE(
+			.sprite_ptr = aniplayer_get_frame(&plr->ani),
+			.shader_ptr = trail_shader,
+			.pos = plr->pos,
+			.color = RGBA(1, 1, 1, 0.5),
+			.draw_rule = powersurge_trail_draw,
+			.move = move_towards(plr->pos, 0),
+			.timeout = 15,
+			.layer = LAYER_PARTICLE_HIGH,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
+		));
+
+		if(t % 6 == 0 && plr->powersurge.bonus.discharge_range > 0) {
+			real scale = 2 * plr->powersurge.bonus.discharge_range / field_sprite->w;
+			real angle = rng_angle();
+			Color *color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25);
+
+			ENT_ARRAY_COMPACT(&fields);
+
+			ENT_ARRAY_ADD(&fields, PARTICLE(
+				.sprite_ptr = field_sprite,
+				.pos = plr->pos,
+				.color = color,
+				.draw_rule = pdraw_timeout_fade(1, 0),
+				.timeout = 14,
+				.angle = angle,
+				.layer = LAYER_PLAYER - 1,
+				.flags = PFLAG_NOREFLECT | PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE,
+				.scale = scale,
+			));
+
+			ENT_ARRAY_ADD(&fields, PARTICLE(
+				.sprite_ptr = field_sprite,
+				.pos = plr->pos,
+				.color = RGBA(0.5, 0.5, 0.5, 0),
+				.draw_rule = pdraw_timeout_fade(1, 0),
+				.timeout = 3,
+				.angle = angle,
+				.layer = LAYER_PLAYER - 1,
+				.flags = PFLAG_NOREFLECT | PFLAG_NOMOVE,
+				.scale = scale,
+			));
+		}
+
+		ENT_ARRAY_FOREACH(&trails, Projectile *p, {
+			p->move.attraction_point = plr->pos;
+			p->move.attraction = 1 - (global.frames - p->birthtime) / p->timeout;
+		});
+
+		ENT_ARRAY_FOREACH(&fields, Projectile *p, {
+			p->pos = plr->pos;
+		});
 	}
-
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	cmplx v = (global.plr.pos - p->pos) * 0.05;
-	p->args[0] += (v - p->args[0]) * (1 - t / p->timeout);
-	p->pos += p->args[0];
-
-	return ACTION_NONE;
 }
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
@@ -467,24 +517,6 @@ void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
 	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
 	b->discharge_range = 1.2 * b->discharge_power;
 	b->discharge_damage = 10 * pow(b->discharge_power, 1.1);
-}
-
-static int powersurge_charge_particle(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	Player *plr = &global.plr;
-
-	if(player_is_alive(plr)) {
-		p->pos = plr->pos;
-	}
-
-	return ACTION_NONE;
 }
 
 static void player_powersurge_logic(Player *plr) {
@@ -506,52 +538,6 @@ static void player_powersurge_logic(Player *plr) {
 	}
 
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
-
-	PARTICLE(
-		.sprite_ptr = aniplayer_get_frame(&plr->ani),
-		.shader = "sprite_silhouette",
-		.pos = plr->pos,
-		.color = RGBA(1, 1, 1, 0.5),
-		.rule = powersurge_trail,
-		.draw_rule = powersurge_trail_draw,
-		.timeout = 15,
-		.layer = LAYER_PARTICLE_HIGH,
-		.flags = PFLAG_NOREFLECT,
-	);
-
-	if(!(global.frames % 6) && plr->powersurge.bonus.discharge_range > 0) {
-		Sprite *spr = res_sprite("part/powersurge_field");
-		double scale = 2 * plr->powersurge.bonus.discharge_range / spr->w;
-		double angle = rng_angle();
-
-		assert(scale > 0);
-
-		PARTICLE(
-			.sprite_ptr = spr,
-			.pos = plr->pos,
-			.color = color_mul_scalar(rng_bool() ? RGBA(1.5, 0.5, 0.0, 0.1) : RGBA(0.0, 0.5, 1.5, 0.1), 0.25),
-			.rule = powersurge_charge_particle,
-			.draw_rule = pdraw_timeout_fade(1, 0),
-			.timeout = 14,
-			.angle = angle,
-			.layer = LAYER_PLAYER - 1,
-			.flags = PFLAG_NOREFLECT,
-			.scale = scale,
-		);
-
-		PARTICLE(
-			.sprite_ptr = spr,
-			.pos = plr->pos,
-			.color = RGBA(0.5, 0.5, 0.5, 0),
-			.rule = powersurge_charge_particle,
-			.draw_rule = pdraw_timeout_fade(1, 0),
-			.timeout = 3,
-			.angle = angle,
-			.layer = LAYER_PLAYER - 1,
-			.flags = PFLAG_NOREFLECT,
-			.scale = scale,
-		);
-	}
 
 	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
 }
@@ -696,6 +682,8 @@ static bool player_powersurge(Player *plr) {
 
 	collect_all_items(1);
 	stagetext_add("Power Surge!", plr->pos - 64 * I, ALIGN_CENTER, res_font("standard"), RGBA(0.75, 0.75, 0.75, 0.75), 0, 45, 10, 20);
+
+	INVOKE_TASK(powersurge_player_particles, ENT_BOX(plr));
 
 	return true;
 }
