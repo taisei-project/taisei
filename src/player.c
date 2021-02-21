@@ -884,28 +884,20 @@ static void player_death_effect_draw_sprite(Projectile *p, int t, ProjDrawRuleAr
 	r_draw_sprite(&sp);
 }
 
-static int player_death_effect(Projectile *p, int t) {
-	if(t < 0) {
-		if(t == EVENT_DEATH) {
-			for(int i = 0; i < 12; ++i) {
-				RNG_ARRAY(R, 4);
-				PARTICLE(
-					.proto = pp_blast,
-					.pos = p->pos + vrng_range(R[0], 2, 3) * vrng_dir(R[1]),
-					.color = RGBA(0.15, 0.2, 0.5, 0),
-					.timeout = i + vrng_range(R[2], 10, 14),
-					.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-					.angle = vrng_angle(R[3]),
-					.flags = PFLAG_NOREFLECT,
-					.layer = LAYER_OVERLAY,
-				);
-			}
-		}
-
-		return ACTION_ACK;
+TASK(player_death_blastspam, { cmplx pos; }) {
+	for(int i = 0; i < 12; ++i) {
+		RNG_ARRAY(R, 4);
+		PARTICLE(
+			.proto = pp_blast,
+			.pos = ARGS.pos + vrng_range(R[0], 2, 3) * vrng_dir(R[1]),
+			.color = RGBA(0.15, 0.2, 0.5, 0),
+			.timeout = i + vrng_range(R[2], 10, 14),
+			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
+			.angle = vrng_angle(R[3]),
+			.flags = PFLAG_NOREFLECT,
+			.layer = LAYER_OVERLAY,
+		);
 	}
-
-	return ACTION_NONE;
 }
 
 void player_death(Player *plr) {
@@ -950,15 +942,16 @@ void player_death(Player *plr) {
 		.shader = "player_death",
 	);
 
-	PARTICLE(
+	Projectile *p = PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&plr->ani),
 		.pos = plr->pos,
 		.timeout = 38,
-		.rule = player_death_effect,
 		.draw_rule = player_death_effect_draw_sprite,
 		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_PLAYER_FOCUS, // LAYER_OVERLAY | 1,
 	);
+
+	INVOKE_TASK_AFTER(&p->events.killed, player_death_blastspam, p->pos);
 
 	plr->deathtime = global.frames + floor(player_property(plr, PLR_PROP_DEATHBOMB_WINDOW));
 
