@@ -68,8 +68,8 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 		.size = 28*(1+I),
 		.type = PROJ_PLAYER,
 		.damage = damage,
-		.rule = linear,
-		.args = { vel },
+		.flags = PFLAG_NOSPAWNFLARE,
+		.move = move_linear(vel),
 	);
 
 	bool first_found = false;
@@ -97,10 +97,9 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 			PARTICLE(
 				.sprite = "flare",
 				.pos = col.location,
-				.rule = linear,
+				.move = move_linear(vrng_range(R[1], 2, 8) * vrng_dir(R[2])),
 				.timeout = vrng_range(R[0], 3, 8),
 				.draw_rule = pdraw_timeout_scale(2, 0.01),
-				.args = { vrng_range(R[1], 2, 8) * vrng_dir(R[2]) },
 				.flags = PFLAG_NOREFLECT,
 				.layer = LAYER_PARTICLE_HIGH,
 			);
@@ -375,10 +374,9 @@ TASK(marisa_laser_slave_shot, {
 				.size = 1+I,
 				.pos = laser.pos + dir * 10,
 				.color = color_mul_scalar(RGBA(2, 0.2, 0.5, 0), 0.2),
-				.rule = linear,
 				.draw_rule = marisa_laser_flash_draw,
+				.move = move_linear(dir),
 				.timeout = 8,
-				.args = { dir, 0, 0.6 + 0.2*I, },
 				.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
 				.scale = 0.4,
 			);

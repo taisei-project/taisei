@@ -627,7 +627,7 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 	int t;
 
 	for(t = timeofs; p; ++t) {
-		int action = p->rule(p, t);
+		int action = proj_call_rule(p, t);
 		calc_projectile_collision(p, out_col);
 
 		if(out_col->type & stopflags || action == ACTION_DESTROY) {
