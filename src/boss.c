@@ -1146,13 +1146,12 @@ void process_boss(Boss **pboss) {
 		PARTICLE(
 			.sprite = "petal",
 			.pos = boss->pos,
-			.rule = asymptotic,
 			.draw_rule = pdraw_petal_random(),
 			.color = clr,
-			.args = {
+			.move = move_asymptotic_simple(
 				vrng_sign(rng[0]) * (3 + t * 5 * vrng_real(rng[1])) * cdir(M_PI*8*t),
-				5+I,
-			},
+				5
+			),
 			.layer = LAYER_PARTICLE_PETAL,
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
@@ -1172,9 +1171,8 @@ void process_boss(Boss **pboss) {
 					.sprite = "flare",
 					.pos = boss->pos,
 					.timeout = vrng_range(rng[2], 60, 70),
-					.rule = linear,
 					.draw_rule = pdraw_timeout_fade(1, 0),
-					.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
+					.move = move_linear(vrng_range(rng[0], 3, 13) * vrng_dir(rng[1])),
 				);
 			}
 
@@ -1370,10 +1368,9 @@ void boss_start_attack(Boss *b, Attack *a) {
 				.sprite = "stain",
 				.pos = CMPLX(VIEWPORT_W/2 + vrng_sreal(rng[0]) * VIEWPORT_W/4, VIEWPORT_H/2 + vrng_sreal(rng[1]) * 30),
 				.color = RGBA(0.2, 0.3, 0.4, 0.0),
-				.rule = linear,
 				.timeout = 50,
 				.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-				.args = { vrng_sign(rng[2]) * 10 * vrng_range(rng[3], 1, 4) },
+				.move = move_linear(vrng_sign(rng[2]) * 10 * vrng_range(rng[3], 1, 4)),
 			);
 		}
 	}

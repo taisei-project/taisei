@@ -34,9 +34,8 @@ void stage1_spell_benchmark_proc(Boss *b, int t) {
 			.proto = pp_ball,
 			.pos = x,
 			.color = RGB(0.1, 0.1, 0.5),
-			.rule = linear,
-			.args = { speed*I },
 			.flags = PFLAG_NOGRAZE,
+			.move = move_linear(speed*I),
 		);
 
 		if(rng_chance(0.1)) {
