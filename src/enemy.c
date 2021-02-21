@@ -131,9 +131,8 @@ static void enemy_death_effect(cmplx pos) {
 			.sprite = "flare",
 			.pos = pos,
 			.timeout = 10,
-			.rule = linear,
 			.draw_rule = pdraw_timeout_fade(1, 0),
-			.args = { vrng_range(rng[0], 3, 13) * vrng_dir(rng[1]) },
+			.move = move_linear(vrng_range(rng[0], 3, 13) * vrng_dir(rng[1])),
 		);
 	}
 
