@@ -13,6 +13,8 @@
 #include "global.h"
 #include "stageutils.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 static Stage5DrawData *stage5_draw_data;
 
 Stage5DrawData *stage5_get_draw_data(void) {

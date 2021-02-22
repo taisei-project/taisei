@@ -14,6 +14,8 @@
 #include "global.h"
 #include "stageutils.h"
 
+MODERNIZE_THIS_FILE_AND_REMOVE_ME
+
 void start_fall_over(void) { //troll
 	Stage6DrawData *draw_data = stage6_get_draw_data();
 	draw_data->fall_over.frames = global.frames;
