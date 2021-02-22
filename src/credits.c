@@ -235,9 +235,9 @@ static void credits_init(void) {
 	stage_3d_context.cam.far = 9000;
 
 
-	stage_3d_context.cx[0] = 0;
-	stage_3d_context.cx[1] = 600;
-	stage_3d_context.crot[0] = 0;
+	stage_3d_context.cam.pos[0] = 0;
+	stage_3d_context.cam.pos[1] = 600;
+	stage_3d_context.cam.rot.v[0] = 0;
 
 	global.frames = 0;
 
@@ -421,9 +421,9 @@ static void credits_finish(void *arg) {
 static void credits_process(void) {
 	TIMER(&global.frames);
 
-	stage_3d_context.cx[2] = 200 - global.frames * 50;
-	stage_3d_context.cx[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	stage_3d_context.cx[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
+	stage_3d_context.cam.pos[2] = 200 - global.frames * 50;
+	stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
+	stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
 	FROM_TO(100, 200, 1)
 		credits.panelalpha += 0.01;
