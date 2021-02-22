@@ -142,7 +142,6 @@ DEFINE_ENTITY_TYPE(Projectile, {
 		killed
 	) events;
 	Color color;
-	attr_deprecated("this won't work") ShaderCustomParams shader_params;
 	BlendMode blend;
 	int birthtime;
 	float damage;
@@ -177,7 +176,6 @@ typedef struct ProjArgs {
 	Sprite *sprite_ptr;
 	const char *shader;
 	ShaderProgram *shader_ptr;
-	attr_deprecated("this won't work") const ShaderCustomParams *shader_params;
 	ProjectileList *dest;
 	attr_deprecated("Use .move and/or tasks instead") ProjRule rule;
 	attr_deprecated("Use .move and/or tasks instead") cmplx args[RULE_ARGC];
