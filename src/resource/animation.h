@@ -28,7 +28,6 @@ typedef struct Animation {
 
 DEFINE_RESOURCE_GETTER(Animation, res_anim, RES_ANIM)
 DEFINE_OPTIONAL_RESOURCE_GETTER(Animation, res_anim_optional, RES_ANIM)
-DEFINE_DEPRECATED_RESOURCE_GETTER(Animation, get_ani, res_anim)
 
 AniSequence *get_ani_sequence(Animation *ani, const char *seqname);
 
