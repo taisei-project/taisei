@@ -41,8 +41,7 @@ typedef struct Camera3D {
 
 } Camera3D;
 
-// #define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
-#define STAGE3D_DEPRECATED(...)
+#define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
 
 struct Stage3D {
 	union {
