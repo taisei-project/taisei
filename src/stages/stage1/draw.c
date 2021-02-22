@@ -86,7 +86,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_state_push();
 
 	r_mat_mv_push();
-	r_mat_mv_translate(0, stage_3d_context.cx[1] + 500, 0);
+	r_mat_mv_translate(0, stage_3d_context.cam.pos[1] + 500, 0);
 	r_mat_mv_rotate(M_PI, 1, 0, 0);
 
 	static const Color water_color = { 0, 0.08, 0.08, 1 };
@@ -125,7 +125,7 @@ static void stage1_water_draw(vec3 pos) {
 	set_ortho(VIEWPORT_W, VIEWPORT_H);
 	r_mat_mv_push_identity();
 
-	float hack = (stage_3d_context.crot[0] - 60) / 15.0;
+	float hack = (stage_3d_context.cam.rot.v[0] - 60) / 15.0;
 
 	float z = glm_lerp(0.75, 0.8, hack);
 	float zo = glm_lerp(-0.05, -0.3, hack);
@@ -147,7 +147,7 @@ static void stage1_water_draw(vec3 pos) {
 	ShaderProgram *water_shader = res_shader("stage1_water");
 	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
 	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
-	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, stage_3d_context.cx[1] / 2400.0);
+	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, stage_3d_context.cam.pos[1] / 2400.0);
 
 	if(pp_quality > 1) {
 		r_shader("blur5");
@@ -200,7 +200,7 @@ static uint stage1_water_pos(Stage3D *s3d, vec3 p, float maxrange) {
 }
 
 static void stage1_smoke_draw(vec3 pos) {
-	float d = fabsf(pos[1] - stage_3d_context.cx[1]);
+	float d = fabsf(pos[1] - stage_3d_context.cam.pos[1]);
 
 	float o = ((d-500)*(d-500))/1.5e7;
 	o *= 5 * pow((5000 - d) / 5000, 3);
@@ -308,7 +308,7 @@ static void stage1_snow_draw(vec3 pos) {
 		return;
 	}
 
-	float d = fabsf(pos[1] - stage_3d_context.cx[1]);
+	float d = fabsf(pos[1] - stage_3d_context.cam.pos[1]);
 
 	if(fabsf(d) < 500) {
 		return;
