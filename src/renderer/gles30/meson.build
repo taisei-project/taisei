@@ -8,6 +8,3 @@ r_gles30_libdeps = r_glescommon_libdeps
 
 config.set('TAISEI_BUILDCONF_RENDERER_STATIC_GLES30', static_gles30)
 
-if static_gles30
-    r_gles30_libdeps += [dependency('glesv2'), dependency('egl')]
-endif
