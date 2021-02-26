@@ -16,9 +16,4 @@ void main(void) {
 	texRegion = spriteTexRegion;
 	dimensions = spriteDimensions;
 	customParams = spriteCustomParams;
-
-	for(int i = 0; i < light_count; ++i) {
-		point_lights[i].dir = (camera_transform * vec4(light_positions[i], 1.0)).xyz - pos;
-		point_lights[i].color = light_colors[i];
-	}
 }

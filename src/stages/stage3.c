@@ -67,9 +67,10 @@ static uint stage3_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 static void stage3_bg_setup_pbr_lighting(void) {
 	Camera3D *cam = &stage_3d_context.cam;
-	vec3 light_pos[] = {
-		{0,0,10000},
-		{0,0,0},
+	PointLight3D lights[] = {
+		// TODO animate colors
+		{ { 0, 0, 10000 }, { 10, 42, 30 } },
+		{ { 0, 0, 0     }, { 10, 10, 10 } },
 	};
 
 	if(global.boss) {
@@ -80,39 +81,21 @@ static void stage3_bg_setup_pbr_lighting(void) {
 		}
 		camera3d_unprojected_ray(cam,bpos,r);
 		glm_vec3_scale(r, 9, r);
-		glm_vec3_add(cam->pos, r, light_pos[0]);
+		glm_vec3_add(cam->pos, r, lights[0].pos);
 	}
 
 	vec3 r;
-	camera3d_unprojected_ray(cam,global.plr.pos,r);
+	camera3d_unprojected_ray(cam, global.plr.pos,r);
 	glm_vec3_scale(r, 5, r);
-	glm_vec3_add(cam->pos, r, light_pos[1]);
+	glm_vec3_add(cam->pos, r, lights[1].pos);
 
-
-
-	mat4 camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
-	vec3 light_colors[] = {
-		{10, 42, 30}, // TODO animate me
-		{10,10,10},
-	};
 	if(global.frames > 6000) { // wriggle
-		light_colors[0][0] = 20;
-		light_colors[0][1] = 10;
-		light_colors[0][2] = 40;
+		lights[0].radiance[0] = 20;
+		lights[0].radiance[1] = 10;
+		lights[0].radiance[2] = 40;
 	}
 
-	vec3 cam_light_positions[ARRAY_SIZE(light_pos)];
-	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
-		glm_mat4_mulv3(camera_trans, light_pos[i], 1, cam_light_positions[i]);
-	}
-
-
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(cam_light_positions), cam_light_positions);
-	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	r_uniform_int("light_count", ARRAY_SIZE(light_pos));
+	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
 
 	real f = 1/(1+global.frames/1000.);
 	r_uniform_vec3("ambient_color",f,f,sqrt(f));

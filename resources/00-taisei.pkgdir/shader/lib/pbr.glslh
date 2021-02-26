@@ -4,10 +4,11 @@
 
 #include "util.glslh"
 
+// NOTE: should match STAGE3D_MAX_LIGHTS in stageutils.h
 #define PBR_MAX_LIGHTS 6
 
 struct PointLight {
-	vec3 dir;		// vector from lit fragment to light, not normalized
+	vec3 pos;		// camera-relative
 	vec3 color;
 };
 
@@ -71,9 +72,10 @@ vec3 PBR_FresnelSchlick(float cosTheta, vec3 F0) {
 vec3 PBR_PointLight(PBRState st, PointLight light) {
 	vec3 Lo = vec3(0.0);
 
-	vec3 L = normalize(light.dir);
+	vec3 ldir = light.pos - st.params.fragPos;
+	vec3 L = normalize(ldir);
 	vec3 H = normalize(st.V + L);
-	vec3 radiance = light.color / dot(light.dir, light.dir);
+	vec3 radiance = light.color / dot(ldir, ldir);
 
 	float NdotL = max(dot(st.N, L), 0.0);
 	float NdotH = max(dot(st.N, H), 0.0);

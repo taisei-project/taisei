@@ -41,34 +41,22 @@ static uint stage4_lake_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 }
 
 static void stage4_lake_draw(vec3 pos) {
-	vec3 light_pos[] = {
-		{0,0,0},
-		{0, 25, 3}
+	PointLight3D lights[] = {
+		{ { 0,  0, 0 },  { 3,  4,  5 } },
+		{ { 0, 25, 3 },  { 4, 20, 22 } },
 	};
 
 	vec3 r;
 	Camera3D *cam = &stage_3d_context.cam;
 	camera3d_unprojected_ray(cam, global.plr.pos, r);
 	glm_vec3_scale(r, 4, r);
-	glm_vec3_add(cam->pos, r, light_pos[0]);
+	glm_vec3_add(cam->pos, r, lights[0].pos);
 
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	r_shader("pbr");
 
-	vec3 light_colors[] = {
-		{3, 4, 5},
-		{4, 20, 22},
-	};
-
-	mat4 camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
-	r_uniform_mat4("camera_transform", camera_trans);
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
-	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	r_uniform_int("light_count", 2);
+	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage4/ground_diffuse");
@@ -108,35 +96,22 @@ static uint stage4_corridor_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 static void stage4_corridor_draw(vec3 pos) {
 	real xoff = 3;
 	real zoff = 1.3;
-	vec3 light_pos[] = {
-		{-xoff, pos[1], pos[2]+zoff},
-		{xoff, pos[1], pos[2]+zoff},
-		{-xoff, pos[1]-10, pos[2]+zoff},
-		{xoff, pos[1]-10, pos[2]+zoff},
-		{-xoff, pos[1]+10, pos[2]+zoff},
-		{xoff, pos[1]+10, pos[2]+zoff},
+	PointLight3D lights[] = {
+		{ { -xoff, pos[1],    pos[2]+zoff }, { 1, 20, 20 } },
+		{ {  xoff, pos[1],    pos[2]+zoff }, { 1, 20, 20 } },
+		{ { -xoff, pos[1]-10, pos[2]+zoff }, { 1, 20, 20 } },
+		{ {  xoff, pos[1]-10, pos[2]+zoff }, { 1, 20, 20 } },
+		{ { -xoff, pos[1]+10, pos[2]+zoff }, { 1, 20, 20 } },
+		{ {  xoff, pos[1]+10, pos[2]+zoff }, { 1, 20, 20 } },
 	};
 
-	mat4 camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
-	vec3 light_colors[] = {
-		{1, 20, 20},
-		{1, 20, 20},
-		{1, 20, 20},
-		{1, 20, 20},
-		{1, 20, 20},
-		{1, 20, 20},
-	};
-
-	for(int i = 0; i < ARRAY_SIZE(light_pos); i++) {
+	for(int i = 0; i < ARRAY_SIZE(lights); i++) {
 		real t = global.frames*0.02;
-		real mod1 = cos(13095434*light_pos[i][1]);
-		real mod2 = sin(1242435*light_pos[i][0]*light_pos[i][1]);
+		real mod1 = cos(13095434*lights[i].pos[1]);
+		real mod2 = sin(1242435*lights[i].pos[0]*lights[i].pos[1]);
 
 		double f = (sin((1+mod1)*t) + sin((2.35+mod2)*t+mod1) + sin((3.1257+mod1*mod2)*t+mod2))/3;
-		glm_vec3_scale(light_colors[i],0.6+0.4*f, light_colors[i]);
+		glm_vec3_scale(lights[i].radiance,0.6+0.4*f, lights[i].radiance);
 	}
 
 	r_mat_mv_push();
@@ -144,10 +119,7 @@ static void stage4_corridor_draw(vec3 pos) {
 	//r_mat_mv_rotate(pos[1]/2000, 0, 1, 0);
 	r_shader("pbr");
 
-	r_uniform_mat4("camera_transform", camera_trans);
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
-	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	r_uniform_int("light_count", ARRAY_SIZE(light_pos));
+	camera3d_set_point_light_uniforms(&stage_3d_context.cam, ARRAY_SIZE(lights), lights);
 
 	r_uniform_float("metallic", 0);
 	r_uniform_sampler("tex", "stage4/corridor_diffuse");

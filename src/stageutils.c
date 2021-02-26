@@ -48,6 +48,10 @@ void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
 	glm_translate(mat, trans);
 }
 
+void stage3d_apply_transforms(Stage3D *s, mat4 mat) {
+	camera3d_apply_transforms(&s->cam, mat);
+}
+
 // The author that brought you linear3dpos and that one function
 // that calculates the closest point to a line segment proudly presents:
 //
@@ -79,8 +83,42 @@ void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 }
 
 
-void stage3d_apply_transforms(Stage3D *s, mat4 mat) {
-	camera3d_apply_transforms(&s->cam, mat);
+void camera3d_fill_point_light_uniform_vectors(
+	Camera3D *cam,
+	uint num_lights,
+	PointLight3D lights[num_lights],
+	vec3 out_lpos[num_lights],
+	vec3 out_lrad[num_lights]
+) {
+	assume(num_lights <= STAGE3D_MAX_LIGHTS);
+
+	// TODO: persist matrix in Camera3D struct
+	mat4 camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(cam, camera_trans);
+
+	for(int i = 0; i < num_lights; ++i) {
+		glm_mat4_mulv3(camera_trans, lights[i].pos, 1, out_lpos[i]);
+		glm_vec3_copy(lights[i].radiance, out_lrad[i]);
+	}
+}
+
+void camera3d_set_point_light_uniforms(
+	Camera3D *cam,
+	uint num_lights,
+	PointLight3D lights[num_lights]
+) {
+	if(UNLIKELY(num_lights == 0)) {
+		return;
+	}
+
+	vec3 lpos[num_lights];
+	vec3 lrad[num_lights];
+	camera3d_fill_point_light_uniform_vectors(cam, num_lights, lights, lpos, lrad);
+
+	r_uniform_vec3_array("light_positions[0]", 0, num_lights, lpos);
+	r_uniform_vec3_array("light_colors[0]", 0, num_lights, lrad);
+	r_uniform_int("light_count", num_lights);
 }
 
 void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawRule draw_rule, float maxrange) {

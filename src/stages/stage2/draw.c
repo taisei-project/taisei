@@ -27,25 +27,18 @@ static void stage2_bg_setup_pbr_lighting(int max_lights) {
 
 	Camera3D *cam = &stage_3d_context.cam;
 
-	vec3 light_pos[STAGE2_MAX_LIGHTS] = {
-		{100,cam->pos[1]-100,100},
-		{0, 0, 0},
-		{0, 0, 0},
-		{0, 0, 0},
-	};
-
-	vec3 light_colors[ARRAY_SIZE(light_pos)] = {
-		{50000,50000,50000},
-		{1, 0, 30},
-		{1, 0, 30},
-		{1, 0, 30},
+	PointLight3D lights[STAGE2_MAX_LIGHTS] = {
+		{ { 100, cam->pos[1] - 100, 100 }, { 50000, 50000, 50000 } },
+		{ { 0, 0, 0 }, { 1, 0, 30 } },
+		{ { 0, 0, 0 }, { 1, 0, 30 } },
+		{ { 0, 0, 0 }, { 1, 0, 30 } },
 	};
 
 	Stage2DrawData *draw_data = stage2_get_draw_data();
 
 	if(global.boss && draw_data->hina_lights > 0) {
 		vec3 r;
-		camera3d_unprojected_ray(&stage_3d_context.cam, global.boss->pos, r);
+		camera3d_unprojected_ray(cam, global.boss->pos, r);
 
 		real t = (0.1-cam->pos[2])/r[2];
 		glm_vec3_scale(r, t, r);
@@ -58,25 +51,15 @@ static void stage2_bg_setup_pbr_lighting(int max_lights) {
 			real angle = 2 * M_PI / hina_light_count * i + global.frames/(real)FPS;
 			vec3 offset = {cos(angle), sin(angle)};
 			glm_vec3_scale(offset, 4+sin(3*angle), offset);
-			glm_vec3_add(hina_center, offset, light_pos[1+i]);
-
-			glm_vec3_scale(light_colors[1+i], draw_data->hina_lights, light_colors[1+i]);
+			glm_vec3_add(hina_center, offset, lights[1+i].pos);
+			glm_vec3_scale(lights[1+i].radiance, draw_data->hina_lights, lights[1+i].radiance);
 		}
 	} else {
 		max_lights = 1;
 	}
 
-	mat4 camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-
-	r_uniform_mat4("camera_transform", camera_trans);
-	r_uniform_vec3_array("light_positions[0]", 0, ARRAY_SIZE(light_pos), light_pos);
-	r_uniform_vec3_array("light_colors[0]", 0, ARRAY_SIZE(light_colors), light_colors);
-	int light_count = imin(max_lights, ARRAY_SIZE(light_pos));
-	r_uniform_int("light_count", light_count);
-
-	r_uniform_vec3("ambient_color",0.5,0.5,0.5);
+	camera3d_set_point_light_uniforms(cam, imin(max_lights, ARRAY_SIZE(lights)), lights);
+	r_uniform_vec3("ambient_color", 0.5, 0.5, 0.5);
 }
 
 static void stage2_branch_mv_transform(vec3 pos) {

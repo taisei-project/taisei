@@ -26,7 +26,7 @@ void main(void) {
 
 	vec3 Lo = vec3(0.0);
 	for(int i = 0; i < light_count; ++i) {
-		Lo += PBR_PointLight(pbr, point_lights[i]);
+		Lo += PBR_PointLight(pbr, PointLight(light_positions[i], light_colors[i]));
 	}
 
 	vec3 color = ambient * ambient_color + Lo;

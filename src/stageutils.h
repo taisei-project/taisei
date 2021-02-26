@@ -41,6 +41,14 @@ typedef struct Camera3D {
 
 } Camera3D;
 
+typedef struct PointLight3D {
+	vec3 pos;
+	vec3 radiance;
+} PointLight3D;
+
+// NOTE: should match PBR_MAX_LIGHTS in lib/pbr.glslh
+#define STAGE3D_MAX_LIGHTS 6
+
 #define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
 
 struct Stage3D {
@@ -72,10 +80,24 @@ void stage3d_apply_transforms(Stage3D *s, mat4 mat);
 void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawRule draw_rule, float maxrange);
 void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]);
 
-void camera3d_init(Camera3D *cam);
-void camera3d_update(Camera3D *cam);
-void camera3d_apply_transforms(Camera3D *cam, mat4 mat);
-void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest);
+void camera3d_init(Camera3D *cam) attr_nonnull(1);
+void camera3d_update(Camera3D *cam) attr_nonnull(1);
+void camera3d_apply_transforms(Camera3D *cam, mat4 mat) attr_nonnull(1, 2);
+void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) attr_nonnull(1, 3);
+
+void camera3d_set_point_light_uniforms(
+	Camera3D *cam,
+	uint num_lights,
+	PointLight3D lights[num_lights]
+) attr_nonnull(1, 3);
+
+void camera3d_fill_point_light_uniform_vectors(
+	Camera3D *cam,
+	uint num_lights,
+	PointLight3D lights[num_lights],
+	vec3 out_lpos[num_lights],
+	vec3 out_lrad[num_lights]
+) attr_nonnull(1, 3, 4);
 
 uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
 uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
