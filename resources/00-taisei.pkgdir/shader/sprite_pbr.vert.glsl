@@ -11,9 +11,6 @@ void main(void) {
 
 	gl_Position = r_projectionMatrix * vec4(pos, 1.0);
 	texCoord = uv_to_region(spriteTexRegion, vertTexCoord);
-	texCoordRaw = vertTexCoord;
-	texCoordOverlay = (spriteTexTransform * vec4(vertTexCoord, 0.0, 1.0)).xy;
-	texRegion = spriteTexRegion;
-	dimensions = spriteDimensions;
+	color = spriteRGBA;
 	customParams = spriteCustomParams;
 }
