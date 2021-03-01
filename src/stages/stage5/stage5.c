@@ -52,6 +52,10 @@ struct stage5_spells_s stage5_spells = {
 static void stage5_start(void) {
 	stage5_drawsys_init();
 	stage5_bg_init_fullstage();
+	stage_start_bgm("stage5");
+	stage_set_voltage_thresholds(255, 480, 860, 1250);
+
+	INVOKE_TASK(stage5_timeline);
 }
 
 static void stage5_preload(void) {
