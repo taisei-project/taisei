@@ -165,26 +165,33 @@ def process(args):
 
             profiles = {
                 'slow': [
+                    '-mip_slow',
                     '-uastc_level', '3',
-                    '-uastc_rdo_q', '4',
                 ],
                 'fast': [
+                    '-mip_fast',
                     '-uastc_level', '1',
                 ],
                 'incredibly_slow': [
+                    '-mip_slow',
                     '-uastc_level', '4',
-                    '-uastc_rdo_q', '4',
                 ],
             }
         else:
             profiles = {
                 'slow': [
-                    '-comp_level', '4',
+                    '-mip_slow',
+                    # FIXME: raised from 4 due to
+                    # https://github.com/BinomialLLC/basis_universal/issues/205
+                    '-comp_level', '5',
                     '-q', '255'
                 ],
-                'fast': [],
+                'fast': [
+                    '-mip_fast',
+                ],
                 'incredibly_slow': [
-                    '-comp_level', '5',
+                    '-mip_slow',
+                    '-comp_level', '6',
                     '-max_endpoints', '16128',
                     '-max_selectors', '16128',
                     '-no_selector_rdo',
