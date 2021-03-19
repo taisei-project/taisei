@@ -30,6 +30,10 @@ static int rwsha256_close(SDL_RWops *rw) {
 }
 
 static int64_t rwsha256_seek(SDL_RWops *rw, int64_t offset, int whence) {
+	if(!offset && whence == RW_SEEK_CUR) {
+		return SDL_RWseek(DATA(rw)->src, offset, whence);
+	}
+
 	SDL_SetError("Stream is not seekable");
 	return -1;
 }
@@ -47,7 +51,7 @@ static void rwsha256_update_sha256(SDL_RWops *rw, const void *data, size_t size,
 
 static size_t rwsha256_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 	size_t result = SDL_RWread(DATA(rw)->src, ptr, size, maxnum);
-	rwsha256_update_sha256(rw, ptr, size, maxnum);
+	rwsha256_update_sha256(rw, ptr, size, result);
 	return result;
 }
 
