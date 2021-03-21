@@ -14,7 +14,7 @@
 #include "rwops_zlib.h"
 #include "util.h"
 
-#define MIN_CHUNK_SIZE 8
+#define MIN_CHUNK_SIZE 1024
 
 #define ZDATA(rw) ((ZData*)((rw)->hidden.unknown.data1))
 #define TYPENAME(rw) (ZDATA(rw)->type == TYPE_DEFLATE ? "a deflate" : "an inflate")
