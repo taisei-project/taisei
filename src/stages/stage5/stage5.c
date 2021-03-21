@@ -117,7 +117,6 @@ StageProcs stage5_procs = {
 	.preload = stage5_preload,
 	.end = stage5_end,
 	.draw = stage5_draw,
-	.event = stage5_events,
 	.shader_rules = stage5_bg_effects,
 	.spellpractice_procs = &stage5_spell_procs,
 };
