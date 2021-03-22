@@ -17,6 +17,7 @@
 #include "rwops_segment.h"
 #include "rwops_sha256.h"
 #include "rwops_zlib.h"
+#include "rwops_zstd.h"
 
 #ifdef TAISEI_BUILDCONF_USE_ZIP
 #include "rwops_zipfile.h"

@@ -7,6 +7,7 @@ rwops_src = files(
     'rwops_segment.c',
     'rwops_sha256.c',
     'rwops_zlib.c',
+    'rwops_zstd.c',
 )
 
 if taisei_deps.contains(dep_zip)
