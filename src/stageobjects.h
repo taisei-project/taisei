@@ -21,6 +21,7 @@ typedef struct StageObjectPools {
 			ObjectPool *enemies;
 			ObjectPool *lasers;
 			ObjectPool *stagetext;
+			ObjectPool *bosses;
 		};
 
 		ObjectPool *first;

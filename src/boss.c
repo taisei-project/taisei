@@ -17,6 +17,7 @@
 #include "util/glm.h"
 #include "portrait.h"
 #include "stages/stage5/stage5.h"  // for unlockable bonus BGM
+#include "stageobjects.h"
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -36,7 +37,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
 
 Boss *create_boss(char *name, char *ani, cmplx pos) {
-	Boss *boss = calloc(1, sizeof(Boss));
+	Boss *boss = objpool_acquire(stage_object_pools.bosses);
 
 	boss->name = strdup(name);
 	boss->pos = pos;
@@ -1332,7 +1333,7 @@ void free_boss(Boss *boss) {
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	free(boss->name);
-	free(boss);
+	objpool_release(stage_object_pools.bosses, boss);
 }
 
 void boss_start_attack(Boss *b, Attack *a) {

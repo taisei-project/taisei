@@ -14,6 +14,7 @@
 #include "enemy.h"
 #include "laser.h"
 #include "stagetext.h"
+#include "boss.h"
 #include "aniplayer.h"
 
 #define MAX_projectiles             2048
@@ -21,6 +22,7 @@
 #define MAX_enemies                 64
 #define MAX_lasers                  64
 #define MAX_stagetext               1024
+#define MAX_bosses                  1
 
 #define OBJECT_POOLS \
 	OBJECT_POOL(Projectile, projectiles) \
@@ -28,6 +30,7 @@
 	OBJECT_POOL(Enemy, enemies) \
 	OBJECT_POOL(Laser, lasers) \
 	OBJECT_POOL(StageText, stagetext) \
+	OBJECT_POOL(Boss, bosses) \
 
 StageObjectPools stage_object_pools;
 
