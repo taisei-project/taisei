@@ -13,7 +13,7 @@
 
 DEFINE_ENTITY_TYPE(IkuSlave, {
 	struct {
-		Sprite *circle, *particle;
+		Sprite *lightning0, *lightning1, *particle;
 	} sprites;
 
 	cmplx pos;
@@ -36,4 +36,9 @@ void iku_lightning_particle(cmplx, int);
 int iku_induction_bullet(Projectile*, int);
 
 Boss *stage5_spawn_iku(cmplx pos);
+
+DECLARE_EXTERN_TASK(iku_slave_move, {
+	BoxedIkuSlave slave;
+	MoveParams move;
+});
 
