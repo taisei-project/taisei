@@ -318,7 +318,3 @@ SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
 
 	return rw;
 }
-
-z_stream* SDL_RWGetZStream(SDL_RWops *rw) {
-	return ZDATA(rw)->stream;
-}

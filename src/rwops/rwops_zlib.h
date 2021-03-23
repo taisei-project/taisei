@@ -12,10 +12,8 @@
 #include "taisei.h"
 
 #include <SDL.h>
-#include <zlib.h>
 
-SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose);
-SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose);
-z_stream* SDL_RWGetZStream(SDL_RWops *src);
+SDL_RWops *SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose);
+SDL_RWops *SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_zlib_h

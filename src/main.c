@@ -10,6 +10,7 @@
 
 #include <locale.h>
 #include <png.h>
+#include <zlib.h>
 
 #include "global.h"
 #include "video.h"
