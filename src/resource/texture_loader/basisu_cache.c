@@ -73,7 +73,7 @@ bool texture_loader_basisu_load_cached(
 		return false;
 	}
 
-	rw = SDL_RWWrapZReader(rw, 1 << 20, true);
+	rw = SDL_RWWrapZlibReader(rw, 1 << 20, true);
 
 	bool deserialize_ok = pixmap_deserialize(rw, out_pixmap);
 	SDL_RWclose(rw);
@@ -176,7 +176,7 @@ bool texture_loader_basisu_cache(
 		return false;
 	}
 
-	rw = SDL_RWWrapZWriter(rw, 1 << 20, true);
+	rw = SDL_RWWrapZlibWriter(rw, RW_DEFLATE_LEVEL_DEFAULT, 1 << 20, true);
 
 	bool serialize_ok = pixmap_serialize(rw, pixmap);
 	SDL_RWclose(rw);

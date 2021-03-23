@@ -221,7 +221,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 		return false;
 	}
 
-	stream = SDL_RWWrapZReader(stream, BUFSIZ, true);
+	stream = SDL_RWWrapZlibReader(stream, BUFSIZ, true);
 	bool result = shader_cache_load_entry(stream, entry);
 	SDL_RWclose(stream);
 
@@ -244,7 +244,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 		return false;
 	}
 
-	out = SDL_RWWrapZWriter(out, BUFSIZ, true);
+	out = SDL_RWWrapZlibWriter(out, RW_DEFLATE_LEVEL_DEFAULT, BUFSIZ, true);
 	assert(out != NULL);
 
 	SDL_RWwrite(out, entry, entry_size, 1);

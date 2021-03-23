@@ -12,6 +12,7 @@
 #include <zlib.h>
 
 #include "rwops_zlib.h"
+#include "rwops_util.h"
 #include "util.h"
 
 #define MIN_CHUNK_SIZE 1024
@@ -47,6 +48,7 @@ typedef struct ZData {
 		// inflate
 		struct {
 			size_t buffer_fillsize;
+			int64_t uncompressed_size;
 		};
 	};
 
@@ -55,7 +57,8 @@ typedef struct ZData {
 		TYPE_INFLATE,
 	} type;
 
-	size_t pos;
+	int window_bits;
+	int64_t pos;
 	z_stream *stream;
 
 	SDL_RWops *wrapped;
@@ -71,6 +74,12 @@ static int64_t common_seek(SDL_RWops *rw, int64_t offset, int whence) {
 }
 
 static int64_t common_size(SDL_RWops *rw) {
+	ZData *z = ZDATA(rw);
+
+	if(z->type == TYPE_INFLATE && z->uncompressed_size >= 0) {
+		return z->uncompressed_size;
+	}
+
 	return SDL_SetError("Can't get size of %s stream", TYPENAME(rw));
 }
 
@@ -106,7 +115,7 @@ static int common_close(SDL_RWops *rw) {
 	return 0;
 }
 
-static SDL_RWops* common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclose) {
+static SDL_RWops *common_alloc(SDL_RWops *wrapped, size_t bufsize, bool autoclose) {
 	SDL_RWops *rw = SDL_AllocRW();
 
 	if(!rw) {
@@ -257,6 +266,7 @@ static size_t inflate_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum)
 			default:
 				PRINT("inflate error: %i\n", ret);
 				SDL_SetError("inflate error: %i", ret);
+				log_debug("%s", SDL_GetError());
 				ret = Z_STREAM_END;
 				break;
 		}
@@ -273,29 +283,10 @@ static size_t inflate_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 	return 0;
 }
 
-SDL_RWops* SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
-	if(!src) {
-		return NULL;
-	}
-
-	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
-
-	if(!rw) {
-		return NULL;
-	}
-
-	rw->read = inflate_read;
-	rw->write = inflate_write;
-
-	ZData *z = ZDATA(rw);
-	z->type = TYPE_INFLATE;
-
-	inflateInit(ZDATA(rw)->stream);
-
-	return rw;
-}
-
-SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
+static SDL_RWops *wrap_writer(
+	SDL_RWops *src, size_t bufsize, bool autoclose,
+	int clevel, int window_bits
+) {
 	if(!src) {
 		return NULL;
 	}
@@ -313,8 +304,126 @@ SDL_RWops* SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose) {
 	z->type = TYPE_DEFLATE;
 	z->buffer_aux_size = z->buffer_size;
 	z->buffer_aux = calloc(1, z->buffer_aux_size);
+	z->window_bits = window_bits;
 
-	deflateInit(z->stream, Z_DEFAULT_COMPRESSION);
+	if(clevel >= 0) {
+		clevel = iclamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
+	}
+
+	int status = deflateInit2(
+		z->stream,
+		clevel,
+		Z_DEFLATED,
+		window_bits,
+		8,
+		Z_DEFAULT_STRATEGY
+	);
+
+	if(status != Z_OK) {
+		SDL_SetError("deflateInit2() failed: %i", status);
+		SDL_RWclose(rw);
+		return NULL;
+	}
 
 	return rw;
+}
+
+static int inflate_reopen(SDL_RWops *rw) {
+	ZData *z = ZDATA(rw);
+
+	int64_t srcpos = SDL_RWseek(z->wrapped, 0, RW_SEEK_SET);
+
+	if(srcpos < 0) {
+		return srcpos;
+	}
+
+	assert(srcpos == 0);
+
+	z->pos = 0;
+	z->buffer_ptr = z->buffer;
+	z->buffer_fillsize = 0;
+
+	int status = inflateReset2(z->stream, z->window_bits);
+
+	if(status != Z_OK) {
+		return SDL_SetError("inflateReset2() failed: %i", status);
+	}
+
+	return 0;
+}
+
+static int64_t inflate_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
+	ZData *z = ZDATA(rw);
+
+	if(!offset && whence == RW_SEEK_CUR) {
+		return ZDATA(rw)->pos;
+	}
+
+	char buf[1024];
+
+	return rwutil_seek_emulated(
+		rw, offset, whence,
+		&z->pos, inflate_reopen, sizeof(buf), buf
+	);
+}
+
+static SDL_RWops *wrap_reader(
+	SDL_RWops *src, size_t bufsize, bool autoclose,
+	int64_t uncompressed_size, int window_bits, bool emulate_seek
+) {
+	if(!src) {
+		return NULL;
+	}
+
+	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
+
+	if(!rw) {
+		return NULL;
+	}
+
+	rw->read = inflate_read;
+	rw->write = inflate_write;
+
+	ZData *z = ZDATA(rw);
+	z->type = TYPE_INFLATE;
+	z->window_bits = window_bits;
+	z->uncompressed_size = uncompressed_size;
+
+	int status = inflateInit2(z->stream, window_bits);
+
+	if(status != Z_OK) {
+		SDL_SetError("inflateInit2() failed: %i", status);
+		SDL_RWclose(rw);
+		return NULL;
+	}
+
+	if(emulate_seek) {
+		rw->seek = inflate_seek_emulated;
+	}
+
+	return rw;
+}
+
+SDL_RWops *SDL_RWWrapZlibReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	return wrap_reader(src, bufsize, autoclose, -1, 15, false);
+}
+
+SDL_RWops *SDL_RWWrapZlibReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose) {
+	return wrap_reader(src, bufsize, autoclose, uncompressed_size, 15, true);
+}
+
+SDL_RWops *SDL_RWWrapInflateReader(SDL_RWops *src, size_t bufsize, bool autoclose) {
+	return wrap_reader(src, bufsize, autoclose, -1, 15, false);
+}
+
+SDL_RWops *SDL_RWWrapInflateReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose) {
+	return wrap_reader(src, bufsize, autoclose, uncompressed_size, -15, true);
+}
+
+SDL_RWops *SDL_RWWrapZlibWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose) {
+	return wrap_writer(src, bufsize, autoclose, clevel, -15);
+}
+
+SDL_RWops *SDL_RWWrapDeflateWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose) {
+	return wrap_writer(src, bufsize, autoclose, clevel, -15);
 }

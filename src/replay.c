@@ -293,7 +293,9 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 
 	if(compression) {
 		abuf = SDL_RWAutoBuffer(&buf, 64);
-		vfile = SDL_RWWrapZWriter(abuf, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+		vfile = SDL_RWWrapZlibWriter(
+			abuf, RW_DEFLATE_LEVEL_DEFAULT, REPLAY_COMPRESSION_CHUNK_SIZE, false
+		);
 	}
 
 	replay_write_string(vfile, config_get_str(CONFIG_PLAYERNAME), base_version);
@@ -318,7 +320,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
 		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
 		SDL_RWclose(abuf);
-		vfile = SDL_RWWrapZWriter(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+		vfile = SDL_RWWrapZlibWriter(file, RW_DEFLATE_LEVEL_DEFAULT, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 	}
 
 	bool events_ok = replay_write_events(rpy, vfile);
@@ -613,8 +615,12 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 				return false;
 			}
 
-			vfile = SDL_RWWrapZReader(SDL_RWWrapSegment(file, ofs, rpy->fileoffset, false),
-									  REPLAY_COMPRESSION_CHUNK_SIZE, true);
+			vfile = SDL_RWWrapZlibReader(
+				SDL_RWWrapSegment(file, ofs, rpy->fileoffset, false),
+				REPLAY_COMPRESSION_CHUNK_SIZE,
+				true
+			);
+
 			filesize = -1;
 			compression = true;
 		}
@@ -658,7 +664,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 		bool compression = false;
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
-			vfile = SDL_RWWrapZReader(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+			vfile = SDL_RWWrapZlibReader(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
 			filesize = -1;
 			compression = true;
 		}

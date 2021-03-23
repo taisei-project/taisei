@@ -13,7 +13,17 @@
 
 #include <SDL.h>
 
-SDL_RWops *SDL_RWWrapZReader(SDL_RWops *src, size_t bufsize, bool autoclose);
-SDL_RWops *SDL_RWWrapZWriter(SDL_RWops *src, size_t bufsize, bool autoclose);
+#define RW_DEFLATE_LEVEL_DEFAULT -1
+
+SDL_RWops *SDL_RWWrapZlibReader(SDL_RWops *src, size_t bufsize, bool autoclose);
+SDL_RWops *SDL_RWWrapZlibWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose);
+
+// For raw deflate streams
+SDL_RWops *SDL_RWWrapInflateReader(SDL_RWops *src, size_t bufsize, bool autoclose);
+SDL_RWops *SDL_RWWrapDeflateWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose);
+
+// NOTE: uses inefficient emulation to implement seeking. Source must be seekable as well.
+SDL_RWops *SDL_RWWrapZlibReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose);
+SDL_RWops *SDL_RWWrapInflateReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_zlib_h
