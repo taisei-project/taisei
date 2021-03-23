@@ -723,6 +723,12 @@ void load_font(ResourceLoadState *st) {
 		return;
 	}
 
+	if(!font.source_path) {
+		log_error("%s: No source path specified", st->path);
+		res_load_failed(st);
+		return;
+	}
+
 	ht_create(&font.charcodes_to_glyph_ofs);
 	ht_create(&font.ftindex_to_glyph_ofs);
 
