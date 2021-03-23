@@ -88,7 +88,7 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 
 	VFSZipPathData *zdata = node->data1;
 
-	if(mode & VFS_MODE_SEEKABLE && !zdata->seekable) {
+	if(mode & VFS_MODE_SEEKABLE && zdata->compression != ZIP_CM_STORE) {
 		char *repr = vfs_node_repr(node, true);
 		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", repr);
 		free(repr);
@@ -115,6 +115,7 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
 	zdata->zipnode = zipnode;
 	zdata->index = idx;
 	zdata->size = -1;
+	zdata->compression = ZIP_CM_STORE;
 	node->data1 = zdata;
 
 	zdata->info.exists = true;
@@ -134,7 +135,7 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
 		}
 
 		if(zstat.valid & ZIP_STAT_COMP_METHOD) {
-			zdata->seekable = (zstat.comp_method == ZIP_CM_STORE);
+			zdata->compression = zstat.comp_method;
 		}
 	}
 

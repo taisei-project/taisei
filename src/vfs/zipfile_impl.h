@@ -52,7 +52,7 @@ typedef struct VFSZipPathData {
 	uint64_t index;
 	ssize_t size;
 	VFSInfo info;
-	bool seekable;
+	uint16_t compression;
 } VFSZipPathData;
 
 void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx);

@@ -207,7 +207,7 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 	rw->read = ziprw_read;
 	rw->write = ziprw_write;
 
-	if(pdata->seekable) {
+	if(pdata->compression == ZIP_CM_STORE) {
 		rw->seek = ziprw_seek;
 	} else {
 		rw->seek = ziprw_seek_emulated;
