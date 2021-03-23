@@ -354,11 +354,6 @@ static int inflate_reopen(SDL_RWops *rw) {
 
 static int64_t inflate_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
 	ZData *z = ZDATA(rw);
-
-	if(!offset && whence == RW_SEEK_CUR) {
-		return ZDATA(rw)->pos;
-	}
-
 	char buf[1024];
 
 	return rwutil_seek_emulated(
