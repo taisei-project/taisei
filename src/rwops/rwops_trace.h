@@ -13,6 +13,6 @@
 
 #include <SDL.h>
 
-SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose);
+SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_trace_h

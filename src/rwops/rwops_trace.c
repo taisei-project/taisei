@@ -12,37 +12,48 @@
 #include "util.h"
 
 #define TRACE_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
-#define TRACE_AUTOCLOSE(rw) ((bool)((rw)->hidden.unknown.data2))
+#define TRACE_TDATA(rw) ((TData*)((rw)->hidden.unknown.data2))
+#define TRACE_AUTOCLOSE(rw) (TRACE_TDATA(rw)->autoclose)
+#define TRACE_TAG(rw) (TRACE_TDATA(rw)->tag)
+
+#define TRACE(rw, fmt, ...) \
+	log_debug("[%lx :: %p :: %s] " fmt, SDL_ThreadID(), (void*)(rw), TRACE_TAG(rw), __VA_ARGS__)
+
+typedef struct TData {
+	bool autoclose;
+	char tag[];
+} TData;
 
 static int trace_close(SDL_RWops *rw) {
 	int ret = 0;
 
 	if(TRACE_AUTOCLOSE(rw)) {
 		ret = SDL_RWclose(TRACE_SOURCE(rw));
-		log_debug("[%lx :: %p] close() = %i", SDL_ThreadID(), (void*)rw, ret);
+		TRACE(rw, "close() = %i", ret);
 	}
 
+	TRACE(rw, "closed %i", ret);
+	free(rw->hidden.unknown.data2);
 	SDL_FreeRW(rw);
-	log_debug("[%lx :: %p] closed", SDL_ThreadID(), (void*)rw);
 	return ret;
 }
 
 static int64_t trace_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	int64_t p = SDL_RWseek(TRACE_SOURCE(rw), offset, whence);
-	log_debug("[%lx :: %p] seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, SDL_ThreadID(), (void*)rw, offset, whence, p);
+	TRACE(rw, "seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, offset, whence, p);
 	return p;
 }
 
 static int64_t trace_size(SDL_RWops *rw) {
 	int64_t s = SDL_RWsize(TRACE_SOURCE(rw));
-	log_debug("[%lx :: %p] size() = %"PRIi64, SDL_ThreadID(), (void*)rw, s);
+	TRACE(rw, "size() = %"PRIi64, s);
 	return s;
 }
 
 static size_t trace_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 	size_t r = SDL_RWread(TRACE_SOURCE(rw), ptr, size, maxnum);
-	log_debug("[%lx :: %p] read(dest=%p; size=%zu; num=%zu) = %zu", SDL_ThreadID(), (void*)rw, ptr, size, maxnum, r);
-	log_debug("[%lx :: %p] `--> %"PRIi64, SDL_ThreadID(), (void*)rw, SDL_RWtell(TRACE_SOURCE(rw)));
+	TRACE(rw, "read(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, r);
+	TRACE(rw, "`--> %"PRIi64, SDL_RWtell(TRACE_SOURCE(rw)));
 
 	if(size > 0 && maxnum > 0 && r == 0) {
 		// abort();
@@ -53,11 +64,11 @@ static size_t trace_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 
 static size_t trace_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
 	size_t w = SDL_RWwrite(TRACE_SOURCE(rw), ptr, size, maxnum);
-	log_debug("[%lx :: %p] write(dest=%p; size=%zu; num=%zu) = %zu", SDL_ThreadID(), (void*)rw, ptr, size, maxnum, w);
+	TRACE(rw, "write(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, w);
 	return w;
 }
 
-SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose) {
+SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose) {
 	if(!src) {
 		return NULL;
 	}
@@ -65,8 +76,12 @@ SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose) {
 	SDL_RWops *rw = SDL_AllocRW();
 	memset(rw, 0, sizeof(SDL_RWops));
 
+	TData *tdata = calloc(1, sizeof(*tdata) + strlen(tag) + 1);
+	tdata->autoclose = autoclose;
+	strcpy(tdata->tag, tag);
+
 	rw->hidden.unknown.data1 = src;
-	rw->hidden.unknown.data2 = (void*)(intptr_t)autoclose;
+	rw->hidden.unknown.data2 = tdata;
 	rw->type = SDL_RWOPS_UNKNOWN;
 
 	rw->size = trace_size;
@@ -75,6 +90,6 @@ SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, bool autoclose) {
 	rw->read = trace_read;
 	rw->write = trace_write;
 
-	log_debug("[%lx :: %p] opened; src=%p", SDL_ThreadID(), (void*)rw, (void*)src);
+	TRACE(rw, "opened; src=%p", (void*)src);
 	return rw;
 }
