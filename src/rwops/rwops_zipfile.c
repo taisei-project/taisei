@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "rwops_zipfile.h"
+#include "rwops_util.h"
 #include "util.h"
 
 typedef struct ZipRWData {
@@ -81,60 +82,32 @@ static int64_t ziprw_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	return -1;
 }
 
-static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
+static int rwzip_reopen(SDL_RWops *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 	VFSZipPathData *pdata = rw->hidden.unknown.data2;
+
+	log_debug("Reopening %s", zip_get_name(ZTLS(pdata)->zip, pdata->index, ZIP_FL_ENC_RAW));
+
+	zip_fclose(rwdata->file);
+	rwdata->file = ziprw_open(pdata);
+	rwdata->pos = 0;
+
+	return rwdata->file ? 0 : -1;
+}
+
+static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
+	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
 	if(!ziprw_get_zipfile(rw)) {
 		return -1;
 	}
 
-	ssize_t new_pos;
-	ssize_t sz = SDL_RWsize(rw);
+	char buf[1024];
 
-	switch(whence) {
-		case RW_SEEK_SET: new_pos = offset; break;
-		case RW_SEEK_CUR: new_pos = rwdata->pos + offset; break;
-		case RW_SEEK_END:
-			if(sz < 0) {
-				return sz;
-			}
-
-			new_pos = sz - offset;
-			break;
-
-		default: UNREACHABLE;
-	}
-
-	if(new_pos < 0 || new_pos > sz) {
-		SDL_SetError("Seek offset out of range");
-		return -1;
-	}
-
-	if(new_pos > rwdata->pos) {
-		const size_t chunk_size = 4096;
-		do {
-			size_t read_size = imin(new_pos - rwdata->pos, chunk_size);
-			uint8_t chunk[read_size];
-			size_t actual_read_size = SDL_RWread(rw, chunk, 1, read_size);
-
-			assert(actual_read_size <= read_size);
-
-			if(actual_read_size < read_size) {
-				break;
-			}
-		} while(new_pos > rwdata->pos);
-	} else if(new_pos < rwdata->pos) {
-		zip_fclose(rwdata->file);
-		rwdata->file = ziprw_open(pdata);
-		rwdata->pos = 0;
-		int64_t s = ziprw_seek_emulated(rw, new_pos, RW_SEEK_SET);
-		assert(s == new_pos);
-		assert(s == rwdata->pos);
-		return s;
-	}
-
-	return rwdata->pos;
+	return rwutil_seek_emulated(
+		rw, offset, whence,
+		&rwdata->pos, rwzip_reopen, sizeof(buf), buf
+	);
 }
 
 static int64_t ziprw_size(SDL_RWops *rw) {

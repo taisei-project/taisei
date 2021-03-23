@@ -6,6 +6,7 @@ rwops_src = files(
     'rwops_ro.c',
     'rwops_segment.c',
     'rwops_sha256.c',
+    'rwops_util.c',
     'rwops_zlib.c',
     'rwops_zstd.c',
 )
