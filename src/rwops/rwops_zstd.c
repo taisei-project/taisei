@@ -9,13 +9,14 @@
 #include "taisei.h"
 
 #include "rwops_zstd.h"
+#include "rwops_util.h"
 #include "util.h"
 
 #include <zstd.h>
 
 typedef struct ZstdData {
 	SDL_RWops *wrapped;
-	size_t pos;
+	int64_t pos;
 
 	union {
 		struct {
@@ -30,6 +31,7 @@ typedef struct ZstdData {
 			ZSTD_inBuffer in_buffer;
 			size_t in_buffer_alloc_size;
 			size_t next_read_size;
+			int64_t uncompressed_size;
 		} reader;
 	};
 
@@ -46,8 +48,12 @@ static int64_t rwzstd_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	return SDL_SetError("Can't seek in a zstd stream");
 }
 
-static int64_t rwzstd_size(SDL_RWops *rw) {
+static int64_t rwzstd_size_invalid(SDL_RWops *rw) {
 	return SDL_SetError("Can't get size of a zstd stream");
+}
+
+static int64_t rwzstd_size(SDL_RWops *rw) {
+	return ZDATA(rw)->reader.uncompressed_size;
 }
 
 static int rwzstd_close(SDL_RWops *rw) {
@@ -84,7 +90,7 @@ static SDL_RWops *rwzstd_alloc(SDL_RWops *wrapped, bool autoclose) {
 
 	rw->type = SDL_RWOPS_UNKNOWN;
 	rw->seek = rwzstd_seek;
-	rw->size = rwzstd_size;
+	rw->size = rwzstd_size_invalid;
 
 	ZstdData *z = calloc(1, sizeof(ZstdData));
 	z->wrapped = wrapped;
@@ -204,6 +210,54 @@ SDL_RWops *SDL_RWWrapZstdReader(SDL_RWops *src, bool autoclose) {
 	z->reader.in_buffer_alloc_size = imax(z->reader.next_read_size, 16384);
 	z->reader.in_buffer.src = calloc(1, z->reader.in_buffer_alloc_size);
 	z->reader.next_read_size = z->reader.in_buffer_alloc_size;
+
+	return rw;
+}
+
+static int rwzstd_reopen(SDL_RWops *rw) {
+	ZstdData *z = ZDATA(rw);
+
+	int64_t srcpos = SDL_RWseek(z->wrapped, 0, RW_SEEK_SET);
+
+	if(srcpos < 0) {
+		return srcpos;
+	}
+
+	assert(srcpos == 0);
+
+	z->pos = 0;
+	z->reader.in_buffer.pos = 0;
+	z->reader.in_buffer.size = 0;
+	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
+
+	return 0;
+}
+
+static int64_t rwzstd_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
+	ZstdData *z = ZDATA(rw);
+	char buf[1024];
+
+	return rwutil_seek_emulated(
+		rw, offset, whence,
+		&z->pos, rwzstd_reopen, sizeof(buf), buf
+	);
+}
+
+SDL_RWops *SDL_RWWrapZstdReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, bool autoclose) {
+	SDL_RWops *rw = SDL_RWWrapZstdReader(src, autoclose);
+
+	if(!rw) {
+		return NULL;
+	}
+
+	ZstdData *z = ZDATA(rw);
+
+	if(uncompressed_size >= 0) {
+		rw->size = rwzstd_size;
+		z->reader.uncompressed_size = uncompressed_size;
+	}
+
+	rw->seek = rwzstd_seek_emulated;
 
 	return rw;
 }

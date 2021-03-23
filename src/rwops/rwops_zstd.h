@@ -18,4 +18,7 @@
 SDL_RWops *SDL_RWWrapZstdReader(SDL_RWops *src, bool autoclose);
 SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose);
 
+// NOTE: uses inefficient emulation to implement seeking. Source must be seekable as well.
+SDL_RWops *SDL_RWWrapZstdReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, bool autoclose);
+
 #endif // IGUARD_rwops_rwops_zstd_h
