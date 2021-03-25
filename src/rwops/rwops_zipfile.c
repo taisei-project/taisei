@@ -10,24 +10,37 @@
 
 #include "rwops_zipfile.h"
 #include "rwops_util.h"
+#include "rwops_zstd.h"
 #include "util.h"
+
+#define FORCE_MANUAL_DECOMPRESSION (0)
+
+#if FORCE_MANUAL_DECOMPRESSION
+	#include "rwops_zlib.h"
+#endif
 
 typedef struct ZipRWData {
 	VFSNode *node;
 	zip_file_t *file;
 	int64_t pos;
+	int64_t size;
+	zip_flags_t open_flags;
 } ZipRWData;
 
 #define ZTLS(pdata) vfs_zipfile_get_tls((pdata)->zipnode, true)
 
-static zip_file_t *ziprw_open(VFSZipPathData *pdata) {
-	zip_file_t *zipfile = zip_fopen_index(ZTLS(pdata)->zip, pdata->index, 0);
+static int ziprw_reopen(SDL_RWops *rw) {
+	ZipRWData *rwdata = rw->hidden.unknown.data1;
+	VFSZipPathData *pdata = rw->hidden.unknown.data2;
 
-	if(!zipfile) {
-		SDL_SetError("ZIP error: %s", zip_error_strerror(&ZTLS(pdata)->error));
+	if(rwdata->file) {
+		zip_fclose(rwdata->file);
 	}
 
-	return zipfile;
+	rwdata->file = zip_fopen_index(ZTLS(pdata)->zip, pdata->index, rwdata->open_flags);
+	rwdata->pos = 0;
+
+	return rwdata->file ? 0 : -1;
 }
 
 static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
@@ -39,11 +52,9 @@ static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
 	if(!vfs_zipfile_get_tls((pdata)->zipnode, false) && rwdata->file) {
 		zip_fclose(rwdata->file);
 		rwdata->file = NULL;
-		rwdata->pos = 0;
 	}
 
-	if(!rwdata->file) {
-		rwdata->file = ziprw_open(pdata);
+	if(!rwdata->file && ziprw_reopen(rw) >= 0) {
 		SDL_RWseek(rw, pos, RW_SEEK_SET);
 	}
 
@@ -82,19 +93,6 @@ static int64_t ziprw_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	return -1;
 }
 
-static int rwzip_reopen(SDL_RWops *rw) {
-	ZipRWData *rwdata = rw->hidden.unknown.data1;
-	VFSZipPathData *pdata = rw->hidden.unknown.data2;
-
-	log_debug("Reopening %s", zip_get_name(ZTLS(pdata)->zip, pdata->index, ZIP_FL_ENC_RAW));
-
-	zip_fclose(rwdata->file);
-	rwdata->file = ziprw_open(pdata);
-	rwdata->pos = 0;
-
-	return rwdata->file ? 0 : -1;
-}
-
 static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
@@ -106,24 +104,22 @@ static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
 
 	return rwutil_seek_emulated(
 		rw, offset, whence,
-		&rwdata->pos, rwzip_reopen, sizeof(buf), buf
+		&rwdata->pos, ziprw_reopen, sizeof(buf), buf
 	);
 }
 
 static int64_t ziprw_size(SDL_RWops *rw) {
-	VFSZipPathData *pdata = rw->hidden.unknown.data2;
+	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
-	if(pdata->size < 0) {
-		SDL_SetError("zip_stat_index() failed");
-		return -1;
+	if(rwdata->size < 0) {
+		return SDL_SetError("zip_stat_index() failed");
 	}
 
-	return pdata->size;
+	return rwdata->size;
 }
 
 static size_t ziprw_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
-	VFSZipPathData *pdata = rw->hidden.unknown.data2;
 
 libzip_sucks:
 
@@ -146,7 +142,7 @@ libzip_sucks:
 		return 0;
 	}
 
-	if(read_size > 0 && bytes_read == 0 && rw->seek == ziprw_seek && zip_ftell(rwdata->file) < pdata->size) {
+	if(read_size > 0 && bytes_read == 0 && rw->seek == ziprw_seek && zip_ftell(rwdata->file) < rwdata->size) {
 		log_debug("libzip BUG: EOF flag not cleared after seek, reopening file");
 		zip_fclose(rwdata->file);
 		rwdata->file = NULL;
@@ -168,6 +164,7 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 
 	ZipRWData *rwdata = calloc(1, sizeof(*rwdata));
 	rwdata->node = znode;
+	rwdata->size = pdata->size;
 
 	vfs_incref(znode);
 
@@ -180,11 +177,43 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 	rw->read = ziprw_read;
 	rw->write = ziprw_write;
 
+	DIAGNOSTIC(push)
+	DIAGNOSTIC(ignored "-Wunreachable-code")
+
 	if(pdata->compression == ZIP_CM_STORE) {
 		rw->seek = ziprw_seek;
-	} else {
+	} else if(
+		!FORCE_MANUAL_DECOMPRESSION &&
+		zip_compression_method_supported(pdata->compression, false)
+	) {
 		rw->seek = ziprw_seek_emulated;
+	} else {
+		rw->seek = ziprw_seek;
+		rwdata->size = pdata->compressed_size;
+		rwdata->open_flags = ZIP_FL_COMPRESSED;
+
+		switch(pdata->compression) {
+			#if FORCE_MANUAL_DECOMPRESSION
+			case ZIP_CM_DEFLATE:
+				rw = SDL_RWWrapInflateReaderSeekable(rw, pdata->size, imin(4096, pdata->size), true);
+				break;
+			#endif
+
+			case ZIP_CM_ZSTD: {
+				rw = SDL_RWWrapZstdReaderSeekable(rw, pdata->size, true);
+				break;
+			}
+
+			default: {
+				char *fname = vfs_node_repr(znode, true);
+				SDL_SetError("%s: unsupported compression method: %i", fname, pdata->compression);
+				SDL_RWclose(rw);
+				return NULL;
+			}
+		}
 	}
+
+	DIAGNOSTIC(pop)
 
 	return rw;
 }

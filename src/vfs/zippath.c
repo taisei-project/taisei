@@ -115,6 +115,7 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
 	zdata->zipnode = zipnode;
 	zdata->index = idx;
 	zdata->size = -1;
+	zdata->compressed_size = -1;
 	zdata->compression = ZIP_CM_STORE;
 	node->data1 = zdata;
 
@@ -132,6 +133,10 @@ void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
 	} else {
 		if(zstat.valid & ZIP_STAT_SIZE) {
 			zdata->size = zstat.size;
+		}
+
+		if(zstat.valid & ZIP_STAT_COMP_SIZE) {
+			zdata->compressed_size = zstat.comp_size;
 		}
 
 		if(zstat.valid & ZIP_STAT_COMP_METHOD) {

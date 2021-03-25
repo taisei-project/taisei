@@ -17,6 +17,10 @@ DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
 #include <zip.h>
 DIAGNOSTIC_CLANG(pop)
 
+#ifndef ZIP_CM_ZSTD
+	#define ZIP_CM_ZSTD 93
+#endif
+
 #include "private.h"
 #include "hashtable.h"
 
@@ -51,6 +55,7 @@ typedef struct VFSZipPathData {
 	VFSNode *zipnode;
 	uint64_t index;
 	ssize_t size;
+	ssize_t compressed_size;
 	VFSInfo info;
 	uint16_t compression;
 } VFSZipPathData;

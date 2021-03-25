@@ -20,7 +20,7 @@ Dependencies
 -  freetype2
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  libzip >= 1.2
+-  libzip >= 1.7
 -  libzstd >= 1.3.0
 -  opusfile
 -  zlib
