@@ -416,7 +416,7 @@ SDL_RWops *SDL_RWWrapInflateReaderSeekable(SDL_RWops *src, int64_t uncompressed_
 }
 
 SDL_RWops *SDL_RWWrapZlibWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose) {
-	return wrap_writer(src, bufsize, autoclose, clevel, -15);
+	return wrap_writer(src, bufsize, autoclose, clevel, 15);
 }
 
 SDL_RWops *SDL_RWWrapDeflateWriter(SDL_RWops *src, int clevel, size_t bufsize, bool autoclose) {
