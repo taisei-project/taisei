@@ -157,13 +157,15 @@ static size_t rwzstd_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) 
 	};
 	ZSTD_DStream *stream = NOT_NULL(z->reader.stream);
 
-	while(out.pos < out.size) {
+	bool have_input = true;
+
+	while(out.pos < out.size && have_input) {
 		if(in->size - in->pos < z->reader.next_read_size) {
 			rwzstd_reader_fill_in_buffer(z, z->reader.next_read_size);
 
 			if(in->size - in->pos < z->reader.next_read_size) {
 				// end of stream
-				break;
+				have_input = false;
 			}
 		}
 
