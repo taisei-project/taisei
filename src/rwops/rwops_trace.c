@@ -19,6 +19,9 @@
 #define TRACE(rw, fmt, ...) \
 	log_debug("[%lx :: %p :: %s] " fmt, SDL_ThreadID(), (void*)(rw), TRACE_TAG(rw), __VA_ARGS__)
 
+#define TRACE_ERR(rw) \
+	TRACE((rw), "Error: %s", SDL_GetError())
+
 typedef struct TData {
 	bool autoclose;
 	char tag[];
@@ -30,6 +33,10 @@ static int trace_close(SDL_RWops *rw) {
 	if(TRACE_AUTOCLOSE(rw)) {
 		ret = SDL_RWclose(TRACE_SOURCE(rw));
 		TRACE(rw, "close() = %i", ret);
+
+		if(ret < 0) {
+			TRACE_ERR(rw);
+		}
 	}
 
 	TRACE(rw, "closed %i", ret);
@@ -41,12 +48,18 @@ static int trace_close(SDL_RWops *rw) {
 static int64_t trace_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	int64_t p = SDL_RWseek(TRACE_SOURCE(rw), offset, whence);
 	TRACE(rw, "seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, offset, whence, p);
+	if(p < 0) {
+		TRACE_ERR(rw);
+	}
 	return p;
 }
 
 static int64_t trace_size(SDL_RWops *rw) {
 	int64_t s = SDL_RWsize(TRACE_SOURCE(rw));
 	TRACE(rw, "size() = %"PRIi64, s);
+	if(s < 0) {
+		TRACE_ERR(rw);
+	}
 	return s;
 }
 
@@ -55,8 +68,8 @@ static size_t trace_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 	TRACE(rw, "read(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, r);
 	TRACE(rw, "`--> %"PRIi64, SDL_RWtell(TRACE_SOURCE(rw)));
 
-	if(size > 0 && maxnum > 0 && r == 0) {
-		// abort();
+	if(r < size * maxnum) {
+		TRACE_ERR(rw);
 	}
 
 	return r;
@@ -65,6 +78,11 @@ static size_t trace_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 static size_t trace_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
 	size_t w = SDL_RWwrite(TRACE_SOURCE(rw), ptr, size, maxnum);
 	TRACE(rw, "write(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, w);
+
+	if(w < size * maxnum) {
+		TRACE_ERR(rw);
+	}
+
 	return w;
 }
 
