@@ -10,6 +10,7 @@
 
 #include "syspath.h"
 #include "readonly_wrapper.h"
+#include "decompress_wrapper.h"
 
 static void striptrailing(char *p, char **pend) {
 	while(*pend > p && strchr(vfs_syspath_separators, *(*pend - 1))) {
@@ -64,6 +65,12 @@ bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
 		vfs_set_error("Can't create directory: %s", vfs_get_error());
 		vfs_decref(rdir);
 		return false;
+	}
+
+	if(flags & VFS_SYSPATH_MOUNT_DECOMPRESSVIEW) {
+		VFSNode *rdir_decomp = vfs_decomp_wrap(rdir);
+		vfs_decref(rdir);
+		rdir = rdir_decomp;
 	}
 
 	if(flags & VFS_SYSPATH_MOUNT_READONLY) {

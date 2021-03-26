@@ -48,10 +48,10 @@ void vfs_setup(CallChain next) {
 		{ "storage",      storage_path,        false,         false,         VFS_SYSPATH_MOUNT_MKDIR },
 
 		// system-wide directory, contains all of the game assets
-		{ "resdirs",      res_path,            true,          true,          VFS_SYSPATH_MOUNT_READONLY },
+		{ "resdirs",      res_path,            true,          true,          VFS_SYSPATH_MOUNT_READONLY | VFS_SYSPATH_MOUNT_DECOMPRESSVIEW },
 
 		// subpath of storage, files here override the global assets
-		{ "resdirs",      local_res_path,      true,          false,         VFS_SYSPATH_MOUNT_MKDIR | VFS_SYSPATH_MOUNT_READONLY },
+		{ "resdirs",      local_res_path,      true,          false,         VFS_SYSPATH_MOUNT_MKDIR | VFS_SYSPATH_MOUNT_READONLY | VFS_SYSPATH_MOUNT_DECOMPRESSVIEW },
 
 		// per-user directory, to contain various cached resources to speed up loading times
 		{ "cache",        cache_path,          false,         false,         VFS_SYSPATH_MOUNT_MKDIR },

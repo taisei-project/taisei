@@ -36,7 +36,7 @@ static inline void vfs_setup_fixedpaths_onsync(CallChainResult ccr, VfsSetupFixe
 
 	vfs_create_union_mountpoint("/res");
 
-	if(!vfs_mount_syspath("/res-dir", paths->res_path, VFS_SYSPATH_MOUNT_READONLY)) {
+	if(!vfs_mount_syspath("/res-dir", paths->res_path, VFS_SYSPATH_MOUNT_READONLY | VFS_SYSPATH_MOUNT_DECOMPRESSVIEW)) {
 		log_fatal("Failed to mount '%s': %s", paths->res_path, vfs_get_error());
 	}
 

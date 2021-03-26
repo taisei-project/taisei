@@ -1,5 +1,6 @@
 
 vfs_src = files(
+    'decompress_wrapper.c',
     'loadpacks.c',
     'nodeapi.c',
     'pathutil.c',
