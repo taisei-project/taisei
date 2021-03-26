@@ -335,7 +335,8 @@ static size_t rwzstd_write(SDL_RWops *rw, const void *data_in, size_t size, size
 	size_t in_free = z->writer.in_buffer_alloc_size - in->size;
 
 	if(UNLIKELY(in_free < wsize)) {
-		in->src = realloc(in_root, z->writer.in_buffer_alloc_size + (wsize - in_free));
+		in_root = realloc(in_root, z->writer.in_buffer_alloc_size + (wsize - in_free));
+		in->src = in_root;
 	}
 
 	memcpy(in_root + in->size, data_in, wsize);
