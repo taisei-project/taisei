@@ -31,4 +31,10 @@ void strbuf_clear(StringBuffer *strbuf)
 void strbuf_free(StringBuffer *strbuf)
 	attr_nonnull(1);
 
+void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize])
+	attr_nonnull(1, 3);
+
+void strbuf_cat(StringBuffer *strbuf, const char *str)
+	attr_nonnull(1, 2);
+
 #endif // IGUARD_util_strbuf_h
