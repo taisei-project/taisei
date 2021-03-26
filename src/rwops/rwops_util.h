@@ -45,5 +45,4 @@ int64_t rwutil_seek_emulated(SDL_RWops *rw, int64_t offset, int whence, int64_t 
  */
 int64_t rwutil_seek_emulated_abs(SDL_RWops *rw, int64_t new_pos, int64_t *pos, rwutil_reopen_func reopen, size_t readbuf_size, void *readbuf) attr_nonnull_all attr_nodiscard;
 
-
 #endif // IGUARD_rwops_rwops_util_h

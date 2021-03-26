@@ -252,14 +252,39 @@ SDL_RWops *SDL_RWWrapZstdReaderSeekable(SDL_RWops *src, int64_t uncompressed_siz
 		return NULL;
 	}
 
+	rw->seek = rwzstd_seek_emulated;
 	ZstdData *z = ZDATA(rw);
+
+	if(uncompressed_size < 0) {
+		// Try to get it from the zstd frame header.
+		// This won't work correctly for multi-frame content.
+		// The content size may also not be present in the header.
+
+		size_t psize = z->reader.in_buffer.size;
+		size_t header_size = 24;  // a bit larger than ZSTD_FRAMEHEADERSIZE_MAX from private API
+		rwzstd_reader_fill_in_buffer(z, header_size);
+		z->reader.next_read_size -= z->reader.in_buffer.size - psize;
+
+		ZSTD_inBuffer *in = &z->reader.in_buffer;
+		uint8_t *h = (uint8_t*)in->src + in->pos;
+
+		unsigned long long fcs = ZSTD_getFrameContentSize(h, in->size - in->pos);
+
+		if(fcs == ZSTD_CONTENTSIZE_ERROR) {
+			log_error("Error getting frame content size from zstd stream");
+		} else if(fcs == ZSTD_CONTENTSIZE_UNKNOWN) {
+			log_warn("zstd frame content size is unknown");
+		} else if(fcs > INT64_MAX) {
+			log_warn("zstd frame content size is too large");
+		} else {
+			uncompressed_size = fcs;
+		}
+	}
 
 	if(uncompressed_size >= 0) {
 		rw->size = rwzstd_size;
 		z->reader.uncompressed_size = uncompressed_size;
 	}
-
-	rw->seek = rwzstd_seek_emulated;
 
 	return rw;
 }
