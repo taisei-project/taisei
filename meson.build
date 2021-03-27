@@ -14,6 +14,19 @@ project('taisei', 'c',
         'libzip:enable_crypto=false',
         'libzip:enable_lzma=false',
 
+        'libzstd:install_headers=false',
+        'libzstd:install_libraries=false',
+        'libzstd:install_pkgconfig=false',
+        'libzstd:legacy_level=0',
+        'libzstd:debug_level=0',
+        'libzstd:bin_programs=false',
+        'libzstd:bin_tests=false',
+        'libzstd:bin_contrib=false',
+        'libzstd:zlib=disabled',
+        'libzstd:lzma=disabled',
+        'libzstd:lz4=disabled',
+        'libzstd:multi_thread=disabled',
+
         'sdl2:use_haptic=disabled',
         'sdl2:use_power=disabled',
         'sdl2:use_render=disabled',
@@ -141,7 +154,7 @@ dep_zip         = dependency('libzip',         version : '>=1.2',   required : f
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 dep_gamemode    = dependency('gamemode',                            required : false, static : static)
-dep_zstd        = dependency('libzstd',        version : '>=1.3.0', required : true,  static : static)
+dep_zstd        = dependency('libzstd',        version : '>=1.3.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
 
 dep_m           = cc.find_library('m', required : false)
 

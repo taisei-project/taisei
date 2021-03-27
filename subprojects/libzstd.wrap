@@ -1,0 +1,5 @@
+[wrap-git]
+directory=libzstd
+url=https://github.com/taisei-project/zstd.git
+push-url=git@github.com:taisei-project/zstd.git
+revision=meson-1.4.9
