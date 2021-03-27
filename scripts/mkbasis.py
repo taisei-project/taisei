@@ -113,10 +113,17 @@ def process(args):
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
 
+        basis_output = args.output
+        zst_output = None
+
+        if basis_output.suffix == '.zst':
+            zst_output = basis_output
+            basis_output = tempdir / basis_output.with_suffix('').name
+
         cmd = [
             args.basisu,
             '-file', img,
-            '-output_file', args.output,
+            '-output_file', basis_output,
         ]
 
         if args.channels == 'gray-alpha':
@@ -208,7 +215,17 @@ def process(args):
 
         run(args, cmd)
 
-        if args.uastc and not args.dry_run:
+        if zst_output:
+            cmd = [
+                'zstd',
+                '-v',
+                '-19',
+                basis_output,
+                '-o', zst_output,
+            ]
+            run(args, cmd)
+
+        if args.uastc and not args.dry_run and not zst_output:
             print('\nNOTE: UASTC textures must be additionally compressed with a general-purpose lossless algorithm!')
 
 
@@ -237,7 +254,7 @@ def main(args):
     )
 
     parser.add_argument('-o', '--output',
-        help='the output .basis file',
+        help='the output .basis file; if ends in .zst it will be compressed with Zstandard',
         type=Path,
     )
 
@@ -391,7 +408,7 @@ def main(args):
 
     parser.add_argument('--uastc',
         dest='uastc',
-        help='encode to UASTC: large size, high quality',
+        help='encode to UASTC: large size, high quality; will output to .basis.zst by default',
         action='store_true',
     )
 
@@ -423,7 +440,10 @@ def main(args):
         args.alphamap = args.alphamap_path is not None
 
     if args.output is None:
-        args.output = args.input.with_suffix('.basis')
+        suffix = '.basis'
+        if args.uastc:
+            suffix += '.zst'
+        args.output = args.input.with_suffix(suffix)
 
     if not args.srgb:
         args.srgb_sampling = args.force_srgb_sampling
