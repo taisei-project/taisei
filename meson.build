@@ -150,7 +150,7 @@ dep_png         = dependency('libpng',         version : '>=1.5',   required : t
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.6', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
-dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
+dep_zip         = dependency('libzip',         version : '>=1.7',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 dep_gamemode    = dependency('gamemode',                            required : false, static : static)
