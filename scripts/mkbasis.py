@@ -219,6 +219,7 @@ def process(args):
             cmd = [
                 'zstd',
                 '-v',
+                '-f',
                 '-19',
                 basis_output,
                 '-o', zst_output,
