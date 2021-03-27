@@ -168,7 +168,10 @@ def process(args):
         ]
 
         if args.uastc:
-            cmd += ['-uastc']
+            cmd += [
+                '-uastc',
+                '-uastc_rdo_l', '1',
+            ]
 
             profiles = {
                 'slow': [
@@ -182,6 +185,7 @@ def process(args):
                 'incredibly_slow': [
                     '-mip_slow',
                     '-uastc_level', '4',
+                    '-uastc_rdo_d', '8192',
                 ],
             }
         else:
