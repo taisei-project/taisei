@@ -90,6 +90,7 @@ foreach pkg : packages
             depfile : '@0@.d'.format(pkg_zip),
             install : true,
             install_dir : data_path,
+            console : true,
         )
     else
         glob_result = run_command(glob_command, pkg_path, '**/meson.build')
@@ -116,6 +117,7 @@ if host_machine.system() == 'nx'
             depfile : '@0@.d'.format(shader_pkg_zip),
             install : true,
             install_dir : data_path,
+            console : true,
         )
     else
         glob_result = run_command(glob_command, shaders_build_dir, '**/*.spv', '**/meson.build')
