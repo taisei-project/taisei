@@ -36,8 +36,8 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install Meson/Ninja (Pip)
-      run: pip install meson ninja
+    - name: Install Build Tools (pip)
+      run: pip install meson ninja zstandard
 
     - name: Install Build Tools (apt)
       run: sudo apt update && sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
@@ -81,6 +81,9 @@ jobs:
 
     - name: Install Build Tools (brew)
       run: brew install gcc meson pkg-config docutils pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
+
+    - name: Install Build Tools (pip)
+      run: pip install zstandard
 
     - name: Configure - Step 1 (Meson)
       run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Db_pch=false
