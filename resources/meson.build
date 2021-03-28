@@ -17,6 +17,7 @@ if host_machine.system() == 'emscripten'
         'gfx/*.png',
         'gfx/*.webp',
         'gfx/*.basis',
+        'gfx/*.basis.zst',
         'fonts/*.ttf',
         'fonts/*.otf',
     ]
