@@ -13,3 +13,6 @@
 	path = external/basis_universal
 	url = https://github.com/taisei-project/basis_universal.git
 	branch = taisei
+[submodule "external/python-zipfile-zstd"]
+	path = external/python-zipfile-zstd
+	url = https://github.com/taisei-project/python-zipfile-zstd
