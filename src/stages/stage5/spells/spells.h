@@ -19,8 +19,5 @@ void iku_induction(Boss *, int);
 void iku_cathode(Boss *, int);
 void iku_overload(Boss *, int);
 
-
-void iku_mid_intro(Boss *, int t);
-
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_midboss_iku_explosion, BossAttack);
 
