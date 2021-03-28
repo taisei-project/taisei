@@ -12,7 +12,9 @@
 
 #include "util.h"
 #include "util/sha256.h"
-#include "rwops/all.h"
+#include "rwops/rwops_crc32.h"
+#include "rwops/rwops_autobuf.h"
+#include "rwops/rwops_zstd.h"
 
 #define CACHE_VERSION 4
 #define CRC_INIT 0
@@ -221,7 +223,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 		return false;
 	}
 
-	stream = SDL_RWWrapZlibReader(stream, BUFSIZ, true);
+	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, true));
 	bool result = shader_cache_load_entry(stream, entry);
 	SDL_RWclose(stream);
 
@@ -244,9 +246,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 		return false;
 	}
 
-	out = SDL_RWWrapZlibWriter(out, RW_DEFLATE_LEVEL_DEFAULT, BUFSIZ, true);
-	assert(out != NULL);
-
+	out = NOT_NULL(SDL_RWWrapZstdWriter(out, RW_ZSTD_LEVEL_DEFAULT, true));
 	SDL_RWwrite(out, entry, entry_size, 1);
 	SDL_RWclose(out);
 
