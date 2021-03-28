@@ -9,45 +9,73 @@ Introduction
 This document contains some important tips on compiling and developing for
 specific platforms.
 
-Compiling The Source
---------------------
-
 Basic Build Instructions
-^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------
+
+Taisei's general dependencies are as follows:
 
 -  C (C11) compiler (``gcc``, ``clang``, etc)
 -  Python >= 3.5
 -  meson >= 0.53.0
 -  ninja >= 1.10.0
 -  docutils
+-  make (optional)
 
 You can optionally install `other dependencies <../README.rst#dependencies>`__,
 but the build system will pull in everything else you might need otherwise.
 
-First, you'll want to set up a prefix for where the game's binaries  will be
+First, you'll need to checkout the repository. You can do that with the
+following:
+
+.. code:: sh
+
+   git clone https://github.com/taisei-project/taisei.git
+   cd taisei/
+   git submodule update --init --recursive
+
+Ensure that the ``git submodule`` or Taisei will not build, as it will be
+missing many of the dependencies its needs to compile.
+
+Next, you'll want to set up a prefix for where the game's binaries will be
 installed. For starting out development, you're better off installing it to
 your HOME directory.
 
-::
+.. code:: sh
 
-    export TAISEI_PREFIX=/home/$user/bin
+    export TAISEI_PREFIX=/home/{your_username}/bin
 
-To build and install Taisei on \*nix:
+To build and install Taisei on \*nix, there are two options: you can use the
+``Makefile`` or you can run the commands directly, depending on your
+preferences.
 
-::
+To use the `Makefile`:
+
+.. code:: sh
 
     cd taisei/
     make all # sets up, compiles, and installs Taisei
 
+This is equivalent to:
+
+.. code:: sh
+
+   meson setup build/ --wrap-mode=nofallback -Ddeprecation_warnings=no-error -Dwerror=true --prefix=$TAISEI_PREFIX
+   meson compile -C build/
+   meson install -C build/
+
+This will set up your build environment, compile the game, and install it to
+the ``/home/{your_username}/bin`` directory you specified earlier. You can then
+run the game by executing the `taisei` binary in that directory (or running the
+``Taisei.app`` for macOS).
 
 Development
 -----------
 
 Build Options
-^^^^^^^^^^^^^
+"""""""""""""
 
 Game Data Path
-""""""""""""""
+''''''''''''''
 
 When compiling with ``TAISEI_PREFIX`` set, game file data will be
 installed to ``$TAISEI_PREFIX/share/taisei/``, and this path will be built
@@ -55,13 +83,19 @@ installed to ``$TAISEI_PREFIX/share/taisei/``, and this path will be built
 based on your own preferences. Alternatively, you can install game data
 relatively as well:
 
-::
+.. code:: sh
 
     make setup/install-relative
 
+Or:
+
+.. code:: sh
+
+   meson configure build/ -Dinstall_relative=true
+
 Which will cause save game data to be installed to:
 
-::
+.. code:: sh
 
     $TAISEI_PREFIX/taisei/
     $TAISEI_PREFIX/data/
@@ -69,51 +103,73 @@ Which will cause save game data to be installed to:
 Note that ``install relative`` is always set when building for Windows.
 
 Debugging
-"""""""""
+'''''''''
 
 You can enable debugging options/output for development purposes:
 
-::
+.. code:: sh
 
     make setup/debug
 
+Or:
+
+.. code:: sh
+
+    meson configure build/ -Dbuildtype=debug -Db_ndebug=false
 
 Faster Builds
-"""""""""""""
+'''''''''''''
 
 This option also helps for speeding up build times, although there is a
 theoretical reduction in performance with these options:
 
-::
+.. code:: sh
 
-    make setup/build-speed
+    make setup/fastbuild
 
+Or:
+
+.. code:: sh
+
+    meson configure build/ -Db_lto=false -Dstrip=false
 
 Developer Mode
-""""""""""""""
+''''''''''''''
 
 For debugging actual gameplay, you can set this option and it will enable cheats
 and other 'fast-forward' options by the pressing keys defined in
 ``src/config.h``.
 
-::
+.. code:: sh
 
     make setup/developer
 
+Or:
+
+.. code:: sh
+
+   meson config build/ -Ddeveloper=true
+
 Stack Trace Debugging
-"""""""""""""""""""""
+'''''''''''''''''''''
 
 This is useful for debugging crashes in the game. It uses
 `AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>__`:
 
-::
+.. code:: sh
 
     make setup/debug-asan
+
+Or:
+
+.. code:: sh
+
+   meson configure build/ -Db_sanitize=address,undefined
 
 Depending on your platform, you may need to specify the specific library binary
 to use to launch ASan appropriately. Using macOS as an example:
 
-::
+.. code:: sh
 
     export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
@@ -121,9 +177,10 @@ The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
 version of XCode. If it fails to launch for you, ensure that the version number
 is correct by browsing to the parent directory of ``../clang``.
 
-Then, you can launch Taisei's binary from the command line (using macOS as an example):
+Then, you can launch Taisei's binary from the command line (using macOS as an
+example):
 
-::
+.. code:: sh
 
     /path/to/Taisei.app/Contents/MacOS/Taisei
 
@@ -137,18 +194,30 @@ OpenGL ES Support (Optional)
 
 The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
-::
+.. code:: sh
 
     make setup/gles/30
+
+Or:
+
+.. code:: sh
+
+    meson configure build/ -Dr_gles30=true -Dshader_transpiler=true -Dr_default=gles30
 
 2.0
 '''
 
 An experimental OpenGL ES 2.0 backend can be enabled similarly, using:
 
-::
+.. code:: sh
 
     make setup/gles/20
+
+Or:
+
+.. code:: sh
+
+   meson configure build/ -Dr_gles20=true -Dshader_transpiler=true -Dr_default=gles20
 
 However, GLES 2.0 requires a few extensions to be present on your system
 to function correctly, most notably:
@@ -170,13 +239,19 @@ documentation on how to do that.
 
 Once you've compiled ANGLE, enable it with:
 
-::
+.. code:: sh
 
     export LIBGLES=/path/to/libGLESv2.{dll,dylib}
     export LIBEGL=/path/to/libEGL.{dll,dylib}
     make setup/gles/angle
-    make compile
-    make install
+
+Or:
+
+.. code:: sh
+
+    export LIBGLES=/path/to/libGLESv2.{dll,dylib}
+    export LIBEGL=/path/to/libEGL.{dll,dylib}
+    meson configure build/ -Dinstall_angle=true -Dangle_libgles=$LIBGLES -Dangle_libegl=$LIBEGL
 
 Ensure you use the correct file extension for your platform. (``.dll`` for
 Windows, ``.dylib`` for macOS.)
@@ -184,18 +259,32 @@ Windows, ``.dylib`` for macOS.)
 This will copy the file over into the package itself.
 
 Coding Style
-^^^^^^^^^^^^
+------------
 
 In the ``*.c`` files, tabs are used. In the ``meson.build`` and ``*.py`` files,
-spaces are used.
+spaces are used. It's a bit inconsistent, but it's the style that was chosen at
+the beginning, and one we're probably going to stick with.
 
 To help you abide by this standard, you should install
 `EditorConfig <https://github.com/editorconfig>`__ for your preferred editor of
 choice, and load in the file found at ``.editorconfig`` in the root of the
 project.
 
+Specifics
+"""""""""
+
+In general, things like ``for`` loops should have no spaces between the ``for`` and opening brace (``(``). For example:
+
+.. code:: c
+
+   # correct
+   for(int i = 0; i < 10; i++) { log_debug(i); }
+
+   # incorrect
+   for (int i = 0; i < 10; i++) { log_debug(i); }
+
 Platform-Specific Tips
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 Linux (Debian/Ubuntu)
 """""""""""""""""""""
@@ -203,17 +292,24 @@ Linux (Debian/Ubuntu)
 On an apt-based system (Debian/Ubuntu), ensure you have build dependencies
 installed:
 
-::
+.. code:: sh
 
     apt-get install meson cmake build-essential
-    apt-get install libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev
+    apt-get install libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev
+
+If your distribution of Linux uses Wayland as its default window server, ensure
+that Wayland deps are installed:
+
+.. code:: sh
+
+    apt-get install libwayland-dev
 
 macOS
 """""
 
 On macOS, you need to begin with installing the Xcode Command Line Tools:
 
-::
+.. code:: sh
 
     xcode-select --install
 
@@ -223,7 +319,7 @@ by using `Homebrew <https://brew.sh/>`__.
 Follow the instructions for installing Homebrew, and then install the following
 tools:
 
-::
+.. code:: sh
 
     brew install meson cmake pkg-config docutils imagemagick pygments
 
@@ -231,7 +327,7 @@ The following dependencies are technically optional, and can be pulled in at
 build-time, but you're better off installing them yourself to reduce compile
 times:
 
-::
+.. code:: sh
 
     brew install freetype2 libzip opusfile libvorbis webp sdl2
 
@@ -245,10 +341,9 @@ If you're having mysterious errors, ensure that they're not installed.
 
 Remove them with:
 
-::
+.. code:: sh
 
     brew remove spirv-tools spirv-cross sdl2_mixer
-
 
 Taisei-compatible versions are bundled and will be pulled in at compile time.
 
@@ -261,87 +356,29 @@ if you can't remove packages that give you errors from your system for whatever
 reason, you can force ``meson`` to use its built-in subprojects by using the
 following option:
 
-::
+.. code:: sh
 
     make setup/fallback
+
+Or:
+
+.. code:: sh
+
+   meson configure build/ --wrap-mode=forcefallback
 
 Windows
 """""""
 
 While the game itself officially supports Windows, building the project
 directly on Windows is a bit difficult to set up due to the radically different
-tooling required.
+tooling required for a native Windows build environment.
 
 However, you can still compile on a Windows-based computer by leveraging Windows
 10's
 `Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>__`
-to cross-compile to Windows.
-
-Graphical Assets
-----------------
-
-Taisei's GFX library is made up of a collection of sprites, shaders, and a few
-3D models. The 3D models are almost exclusively used for background scenery
-(and a few other places, like the HUD), while the sprites are used in everything
-from UI elements, character portraits, to the
-danmaku bullets themselves.
-
-To modify the 3D models, you'll need `Blender <https://blender.org>`__, which is
-free and open source. Look for tutorials on YouTube for how to use it. The
-models themselves are located in ``resources/00-taisei.pkgdir/models``.
-
-Taisei uses ``.obj`` for its 3D models. To export ``.obj`` files from Blender,
-use ``File -> Export -> Wavefront (.obj)``. Ensure that the following settings
-are used:
-
-::
-
-    Include
-        Objects as OBJ Objects: ENABLED
-
-    Transform
-        Forward: Y Forward
-        Up: -Z Up
-
-    Geometry
-        Write Materials: DISABLED
-        Triangulate Faces: ENABLED
-
-Music and sound effects are located in ``resources/00-taisei.pkgdir/sfx``.
-
-For sprites, any image editor will do. Sprites are located in ``atlas``.
-However, to have sprites properly appear in Taisei, you'll need a few packages
-and tools first to rebuild the atlas so the game can load them properly.
-
-You'll need ``rectpack`` and ``pillow`` from ``Python PIP``:
-
-::
-
-    pip3 install rectpack pillow
-
-You'll also need to download (and/or compile) and install
-`Leanify <https://github.com/JayXon/Leanify>`__.
-
-You'll need to run one of the following commands to regenerate the ``atlas``
-once the sprites have been modified. Pay attention to which directory you've
-made your changes in (such as ``common_ui``) and use the appropriate command.`
-
-::
-
-    ninja gen-atlas-common_ui
-    ninja gen-atlas-common
-    ninja gen-atlas-portraits
-
-Or, to regenerate *everything*:
-
-::
-
-    ninja gen-atlases
-
-That will regenerate the files needed for your new sprites to appear correctly.
-
-*Generally speaking*, Taisei prefers ``.webp`` as the final product, but can
-convert ``.png`` into ``.webp`` using the above ``ninja gen-atlas*`` commands.
+to cross-compile to Windows. Ironically enough, compiling for Windows on Linux
+ends up being easier and more consistent than trying to compile with Windows's
+native toolset.
 
 Compiling Issues
 ----------------
@@ -354,14 +391,14 @@ variable in an `assert()` and are compiling with `clang`.
 
 You can use the macro `attr_unused` to bypass that warning. This:
 
-::
+.. code:: c
 
     int x = 0;
     assert(x == 0);
 
 Becomes this:
 
-::
+.. code:: c
 
     attr_unused int x = 0;
     assert(x == 0);

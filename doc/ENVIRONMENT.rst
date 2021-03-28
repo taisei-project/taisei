@@ -1,5 +1,5 @@
-Taisei Project – Environment Variables
-======================================
+Environment Variables
+=====================
 
 .. contents::
 
@@ -163,7 +163,7 @@ Video and OpenGL
    Displays some statistics about usage of in-game objects.
 
 **TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES**
-   | Default: unset 
+   | Default: unset
 
    Some AMD graphics cards (especially on macOS) will choke out unless a
    specific workaround is implemented to allow uniform samplers to function
