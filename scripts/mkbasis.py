@@ -224,7 +224,8 @@ def process(args):
                 'zstd',
                 '-v',
                 '-f',
-                '-19',
+                '--ultra',
+                '-22',
                 basis_output,
                 '-o', zst_output,
             ]
