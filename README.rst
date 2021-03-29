@@ -36,7 +36,7 @@ Optional:
 Build-only dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^
 
--  Python >= 3.5
+-  Python >= 3.7
 -  meson >= 0.53.0
 -  [python-zstandard](https://github.com/indygreg/python-zstandard)
 
