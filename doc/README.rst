@@ -8,6 +8,8 @@ Development
 
 * [DEVELOPMENT.rst](./DEVELOPMENT.rst) - how to set up your build environment,
   compile Taisei, and develop things with it
+* [MATH.rst](./MATH.rst) - how to use complex numbers within Taisei for game
+  logic
 * [ENVIRONMENT.rst](./ENVIRONMENT.rst) - various environment variables built
   into Taisei to modify its core settings, when run from the command line
 
