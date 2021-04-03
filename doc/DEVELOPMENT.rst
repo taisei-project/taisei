@@ -59,14 +59,29 @@ This is equivalent to:
 
 .. code:: sh
 
-   meson setup build/ --wrap-mode=nofallback -Ddeprecation_warnings=no-error -Dwerror=true --prefix=$TAISEI_PREFIX
+   meson setup build/ --prefix=$TAISEI_PREFIX -Dwerror=true -Ddeprecation_warnings=no-error
    meson compile -C build/
    meson install -C build/
 
-This will set up your build environment, compile the game, and install it to
-the ``/home/{your_username}/bin`` directory you specified earlier. You can then
-run the game by executing the `taisei` binary in that directory (or running the
-``Taisei.app`` for macOS).
+There are a bunch of different arguments attached to the ``setup`` command.
+Here's an explanation of what they do:
+
+- ``--prefix=$TAISEI_PREFIX`` installs Taisei to the prefix you specified in
+  the previous step.
+- ``-Dwerror=true`` makes compilation **hard fail** on ``Warnings`` put out by
+  the compiler. This can be a bit of a pain, but a lot of the time the warnings
+  are there for a good reason, so we treat them as errors. As an example, it
+  can detect potential null-pointer errors under certain conditions.
+- ``-Ddeprecation_warnings=no-error`` turns off those warnings-as-errors for
+  deprecation warnings specifically, as some system libraries (such as OpenGL
+  on macOS) may have deprecation warnings for things not related to Taisei's
+  code.
+
+
+These commands will set up your build environment, compile the game, and
+install it to the ``/home/{your_username}/bin`` directory you specified
+earlier. You can then run the game by executing the `taisei` binary in that
+directory (or running the ``Taisei.app`` for macOS).
 
 Development
 -----------
@@ -261,6 +276,9 @@ This will copy the file over into the package itself.
 Coding Style
 ------------
 
+Tabs/Spaces
+"""""""""""
+
 In the ``*.c`` files, tabs are used. In the ``meson.build`` and ``*.py`` files,
 spaces are used. It's a bit inconsistent, but it's the style that was chosen at
 the beginning, and one we're probably going to stick with.
@@ -270,18 +288,19 @@ To help you abide by this standard, you should install
 choice, and load in the file found at ``.editorconfig`` in the root of the
 project.
 
-Specifics
+For Loops
 """""""""
 
 In general, things like ``for`` loops should have no spaces between the ``for`` and opening brace (``(``). For example:
 
 .. code:: c
 
+   # incorrect
+   for (int i = 0; i < 10; i++) { log_debug(i); }
+
    # correct
    for(int i = 0; i < 10; i++) { log_debug(i); }
 
-   # incorrect
-   for (int i = 0; i < 10; i++) { log_debug(i); }
 
 Platform-Specific Tips
 ----------------------
@@ -383,7 +402,10 @@ native toolset.
 Compiling Issues
 ----------------
 
-* `-Wunused-variable` - if you get an error compiling your code, but you're 100%
+-Wunused-variable
+"""""""""""""""""
+
+If you get an error compiling your code, but you're 100%
 sure that you've actually used the variable, chances are you're using that
 variable in an `assert()` and are compiling with `clang`.
 
