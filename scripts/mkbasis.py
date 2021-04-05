@@ -170,8 +170,10 @@ def process(args):
         if args.uastc:
             cmd += [
                 '-uastc',
-                '-uastc_rdo_l', '1',
             ]
+
+            if args.uastc_rdo > 0:
+                cmd += ['-uastc_rdo_l', str(args.uastc_rdo)]
 
             profiles = {
                 'slow': [
@@ -416,6 +418,14 @@ def main(args):
         dest='uastc',
         help='encode to UASTC: large size, high quality; will output to .basis.zst by default',
         action='store_true',
+    )
+
+    parser.add_argument('--uastc-rdo',
+        dest='uastc_rdo',
+        help='enable Rate Distortion Optimization to improve LZ compression; larger value = worse quality/better compression; try 0.25 - 5.0 (default: 1.0)',
+        default=1.0,
+        metavar='LEVEL',
+        type=float
     )
 
     parser.add_argument('--dry-run',
