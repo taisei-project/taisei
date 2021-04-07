@@ -13,7 +13,7 @@
 
 DEFINE_ENTITY_TYPE(IkuSlave, {
 	struct {
-		Sprite *lightning0, *lightning1, *cloud;
+		Sprite *lightning0, *lightning1, *cloud, *dot;
 	} sprites;
 
 	cmplx pos;
@@ -31,9 +31,19 @@ DECLARE_EXTERN_TASK(iku_slave_move, {
 	MoveParams move;
 });
 
+DECLARE_EXTERN_TASK(iku_induction_bullet, {
+	BoxedProjectile p;
+	cmplx m1;
+	cmplx m2;
+	int mode;
+});
+
+DECLARE_EXTERN_TASK(iku_spawn_clouds, NO_ARGS);
+
 void stage5_init_iku_slave(IkuSlave *slave, cmplx pos);
 void iku_nonspell_spawn_cloud(void);
 void iku_lightning_particle(cmplx);
+int iku_induction_bullet(Projectile *p, int time);
 
 Boss *stage5_spawn_iku(cmplx pos);
 IkuSlave *stage5_midboss_slave(cmplx pos);
