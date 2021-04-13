@@ -14,25 +14,12 @@
 #include "stagedraw.h"
 
 typedef struct Stage5DrawData {
-
-	struct {
-		float exponent;
-		float brightness;
-	} fog;
-
-	struct {
-		float r;
-		float g;
-		float b;
-		float mixfactor;
-	} color;
-
 	struct {
 		float light_strength;
+		float light_pos;
 
-		float rotshift;
-		float omega;
 		float rad;
+		float zoffset;
 	} stairs;
 
 } Stage5DrawData;
@@ -46,6 +33,5 @@ void iku_spell_bg(Boss *b, int t);
 Stage5DrawData *stage5_get_draw_data(void);
 
 extern ShaderRule stage5_bg_effects[];
-extern ShaderRule stage5_postprocess[];
 
 #endif // IGUARD_stages_stage5_draw_h
