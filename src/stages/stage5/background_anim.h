@@ -11,4 +11,8 @@
 
 #include "coroutine.h"
 
-void stage5_update(void);
+void stage5_bg_raise_lightning(void);
+void stage5_bg_lower_camera(void);
+
+void stage5_bg_init_fullstage(void);
+void stage5_bg_init_spellpractice(void);
