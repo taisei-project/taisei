@@ -22,13 +22,6 @@ struct VideoPostProcess {
 	int frames;
 };
 
-static void video_postprocess_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
-	float w, h;
-	video_get_viewport_size(&w, &h);
-	*fb_size = (IntExtent) { w, h };
-	*fb_viewport = (FloatRect) { 0, 0, w, h };
-}
-
 VideoPostProcess *video_postprocess_init(void) {
 	PostprocessShader *pps = get_resource_data(RES_POSTPROCESS, "global", RESF_OPTIONAL | RESF_PERMANENT | RESF_PRELOAD);
 
@@ -54,7 +47,7 @@ VideoPostProcess *video_postprocess_init(void) {
 	FramebufferConfig fbconf = { 0 };
 	fbconf.num_attachments = 1;
 	fbconf.attachments = &a;
-	fbconf.resize_strategy.resize_func = video_postprocess_resize_strategy;
+	fbconf.resize_strategy.resize_func = fbmgr_resize_strategy_screensized;
 
 	fbmgr_group_fbpair_create(vpp->mfb_group, "Global postprocess", &fbconf, &vpp->framebuffers);
 	return vpp;

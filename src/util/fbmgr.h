@@ -60,4 +60,10 @@ Framebuffer *fbmgr_group_framebuffer_create(ManagedFramebufferGroup *group, cons
 void fbmgr_group_fbpair_create(ManagedFramebufferGroup *group, const char *name, const FramebufferConfig *cfg, FBPair *fbpair)
 	attr_nonnull(1, 2, 3, 4);
 
+// For use as FramebufferConfig.resize_func.resize_func
+// Configures the framebuffer to be as large as the main framebuffer, minus the letterboxing
+// (as in video_get_viewport_size())
+// Requires no cleanup
+void fbmgr_resize_strategy_screensized(void *ignored, IntExtent *out_dimensions, FloatRect *out_viewport);
+
 #endif // IGUARD_util_fbmgr_h

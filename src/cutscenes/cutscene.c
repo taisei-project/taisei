@@ -413,19 +413,6 @@ static void cutscene_preload(const CutscenePhase phases[]) {
 	}
 }
 
-static void resize_fb(void *userdata, IntExtent *out_dimensions, FloatRect *out_viewport) {
-	float w, h;
-	video_get_viewport_size(&w, &h);
-
-	out_dimensions->w = w;
-	out_dimensions->h = h;
-
-	out_viewport->w = w;
-	out_viewport->h = h;
-	out_viewport->x = 0;
-	out_viewport->y = 0;
-}
-
 static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	cutscene_preload(phases);
 	CutsceneState *st = calloc(1, sizeof(*st));
@@ -446,7 +433,7 @@ static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	FramebufferConfig fbconf = { 0 };
 	fbconf.attachments = &a;
 	fbconf.num_attachments = 1;
-	fbconf.resize_strategy.resize_func = resize_fb;
+	fbconf.resize_strategy.resize_func = fbmgr_resize_strategy_screensized;
 
 	st->text_fb = fbmgr_group_framebuffer_create(st->mfb_group, "Cutscene text", &fbconf);
 

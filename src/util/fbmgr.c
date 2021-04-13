@@ -12,6 +12,7 @@
 #include "list.h"
 #include "events.h"
 #include "config.h"
+#include "video.h"
 
 typedef struct ManagedFramebufferData ManagedFramebufferData;
 
@@ -186,4 +187,11 @@ void fbmgr_group_fbpair_create(ManagedFramebufferGroup *group, const char *name,
 	fbpair->front = fbmgr_group_framebuffer_create(group, buf, cfg);
 	snprintf(buf, sizeof(buf), "%s FB 2", name);
 	fbpair->back = fbmgr_group_framebuffer_create(group, buf, cfg);
+}
+
+void fbmgr_resize_strategy_screensized(void *ignored, IntExtent *out_dimensions, FloatRect *out_viewport) {
+	float w, h;
+	video_get_viewport_size(&w, &h);
+	*out_dimensions = (IntExtent) { w, h };
+	*out_viewport = (FloatRect) { 0, 0, w, h };
 }
