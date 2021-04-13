@@ -296,7 +296,7 @@ static void video_update_mode_lists(void) {
 		IntExtent screenspace_max_size = coords_ext_pixels_to_screen(round_viewport_size(largest_fullscreen_viewport));
 
 		float scaling_factor = 0.5;
-		float scaling_factor_step = 0.2;
+		float scaling_factor_step = 0.25;
 
 		while(ideal_resolution.w * scaling_factor <= largest_fullscreen_viewport.w) {
 			FloatExtent vp = {
