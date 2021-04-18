@@ -7,7 +7,7 @@
 UNIFORM(1) sampler2D noise_tex;
 UNIFORM(2) sampler2D paper_tex;
 UNIFORM(3) sampler2D erase_mask_tex;
-UNIFORM(4) float distort_strength = 0.01;
+UNIFORM(4) float distort_strength;
 UNIFORM(5) vec2 thresholds;
 
 float render_fademap(vec2 uv, vec2 distort) {
