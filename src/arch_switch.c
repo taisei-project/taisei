@@ -9,6 +9,7 @@
 
 #include "arch_switch.h"
 
+#include <unistd.h>
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
 #include <switch/services/ssl.h>
