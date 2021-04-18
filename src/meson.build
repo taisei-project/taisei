@@ -169,6 +169,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
         '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=["$autoResumeAudioContext"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
