@@ -23,7 +23,7 @@ on:
 jobs:
   linux-test-build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-21.04
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -37,10 +37,10 @@ jobs:
         python-version: '3.x'
 
     - name: Install Build Tools (pip)
-      run: pip install meson pip zstandard
+      run: pip install zstandard
 
     - name: Install Build Tools (apt)
-      run: sudo apt update && sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
+      run: sudo apt update && sudo apt install meson build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
 
     - name: Configure - Step 1 (Meson)
       run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback --force-fallback-for=cglm build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Db_pch=false
