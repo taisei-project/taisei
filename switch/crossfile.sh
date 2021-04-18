@@ -20,6 +20,9 @@ function bin_path() {
 
 ADDITIONAL_LINK_FLAGS="-specs=$DEVKITPRO/libnx/switch.specs"
 
+# Revert upstream MSYS2 support mitigation
+CPPFLAGS="$(echo "$CPPFLAGS" | sed "s/-I /-I/g")"
+
 cat <<DOCEND
 [binaries]
 c = '$(bin_path gcc)'
