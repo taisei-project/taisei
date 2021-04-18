@@ -151,7 +151,7 @@ static = get_option('static') or ['emscripten', 'nx'].contains(host_machine.syst
 
 dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.6', required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
+dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
