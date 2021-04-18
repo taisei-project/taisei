@@ -17,9 +17,7 @@ DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
 #include <zip.h>
 DIAGNOSTIC_CLANG(pop)
 
-#ifndef ZIP_CM_ZSTD
-	#define ZIP_CM_ZSTD 93
-#endif
+#include "util/libzip_compat.h"
 
 #include "private.h"
 #include "hashtable.h"

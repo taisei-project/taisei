@@ -156,7 +156,7 @@ dep_webp        = dependency('libwebp',        version : '>=0.5',   required : t
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
 dep_zstd        = dependency('libzstd',        version : '>=1.3.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
-dep_zip         = dependency('libzip',         version : '>=1.7',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
+dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  static : static, fallback : ['cglm', 'cglm_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 dep_gamemode    = dependency('gamemode',                            required : false, static : static)
@@ -272,6 +272,10 @@ endif
 config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
+
+config.set('TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED',
+    enable_zip and cc.has_function('zip_compression_method_supported', dependencies : dep_zip)
+)
 
 prefer_relpath_systems = [
     'windows',

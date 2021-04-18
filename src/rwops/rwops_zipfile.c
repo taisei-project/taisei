@@ -11,7 +11,9 @@
 #include "rwops_zipfile.h"
 #include "rwops_util.h"
 #include "rwops_zstd.h"
+
 #include "util.h"
+#include "util/libzip_compat.h"
 
 #define FORCE_MANUAL_DECOMPRESSION (0)
 
