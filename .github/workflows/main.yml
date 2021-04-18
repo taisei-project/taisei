@@ -37,7 +37,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install Build Tools (pip)
-      run: pip install meson pip zstandard
+      run: pip install meson ninja zstandard
 
     - name: Install Build Tools (apt)
       run: sudo apt update && sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
