@@ -10,7 +10,7 @@ project('taisei', 'c',
 
         'libzip:bzip2=disabled',
         'libzip:lzma=disabled',
-        'libzip:zstd=enabled',
+        'libzip:zstd=disabled',
         'libzip:enable_crypto=false',
 
         'sdl2:use_haptic=disabled',
