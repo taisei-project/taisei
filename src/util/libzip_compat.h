@@ -16,7 +16,7 @@
 #ifndef TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED
 
 #define zip_compression_method_supported _taisei_zip_compression_method_supported
-static int _taisei_zip_compression_method_supported(zip_int32_t method, int compress) {
+attr_unused static int zip_compression_method_supported(zip_int32_t method, int compress) {
 	// assume bare minimum
 	return (method == ZIP_CM_DEFLATE || method == ZIP_CM_STORE);
 }
