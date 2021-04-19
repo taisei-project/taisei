@@ -145,7 +145,6 @@ dep_webp        = dependency('libwebp',        version : '>=0.5',   required : t
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
 dep_zip         = dependency('libzip',         version : '>=1.2',   required : false, static : static, fallback : ['libzip', 'libzip_dep'])
 dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
-dep_zstd        = dependency('libzstd',        version : '>=1.3.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
 dep_crypto      = dependency('libcrypto',                           required : false, static : static)
 dep_gamemode    = dependency('gamemode',                            required : false, static : static)
 
