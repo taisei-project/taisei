@@ -273,9 +273,17 @@ config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 
-config.set('TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED',
-    enable_zip and cc.has_function('zip_compression_method_supported', dependencies : dep_zip)
-)
+if enable_zip and dep_zip.found()
+    if dep_zip.type_name() == 'internal'
+        have_zip_compression_method_supported = dep_zip.version().version_compare('>=1.7.0')
+    else
+        have_zip_compression_method_supported = cc.has_function('zip_compression_method_supported', dependencies : dep_zip)
+    endif
+else
+    have_zip_compression_method_supported = false
+endif
+
+config.set('TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED', have_zip_compression_method_supported)
 
 prefer_relpath_systems = [
     'windows',
