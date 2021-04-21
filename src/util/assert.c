@@ -22,3 +22,12 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 		tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed\n", file, line, func, cond);
 	}
 }
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+void _emscripten_trap(void) {
+	(__extension__ EM_ASM({
+		throw new Error("You just activated my trap card!");
+	}));
+}
+#endif

@@ -178,7 +178,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
         '-s', 'EXPORTED_FUNCTIONS=["_main", "_vfs_sync_callback"]',
-        '-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["ccall"]',
+        '-s', 'EXPORTED_RUNTIME_METHODS=["ccall"]',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
@@ -192,6 +192,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'WASM=1',
         '-s', 'LLD_REPORT_UNDEFINED',
         '-lGL',
+        '-lgl',
         '-legl.js',
         '-lidbfs.js',
     ]
@@ -205,7 +206,8 @@ if host_machine.system() == 'emscripten'
         em_link_args += [
             '--emrun',
             '--profiling',
-            '-g4',
+            '-g3',
+            '-gsource-map',
             '--source-map-base', meson.get_cross_property('source_map_base', 'http://0.0.0.0:6931/'),
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_DEBUG=1',
