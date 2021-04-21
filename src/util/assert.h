@@ -18,7 +18,10 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 
 #define static_assert _Static_assert
 
-#if defined(NDEBUG) || defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__)
+	void _emscripten_trap(void);
+	#define TRAP() _emscripten_trap()
+#elif defined(NDEBUG)
 	#define TRAP() abort()
 #elif defined(__clang__)
 	#define TRAP() __builtin_debugtrap()

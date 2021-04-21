@@ -79,6 +79,7 @@ taisei_c_args = [
     '-Wlogical-op',
     '-Wmissing-prototypes',
     '-Wno-gnu-folding-constant',
+    '-Wno-ignored-optimization-argument',
     '-Wno-implicit-fallthrough',
     '-Wno-long-long',
     '-Wno-missing-braces',
