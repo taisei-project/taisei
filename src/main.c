@@ -341,13 +341,13 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		return;
 	}
 
-	main_mainmenu(ccr);
+	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
+	eventloop_run();
 }
 
 static void main_mainmenu(CallChainResult ccr) {
 	MainContext *ctx = ccr.ctx;
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
-	eventloop_run();
 }
 
 typedef struct SingleStageContext {
