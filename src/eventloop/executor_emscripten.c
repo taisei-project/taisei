@@ -84,3 +84,10 @@ void eventloop_run(void) {
 		Module['onFirstFrame']();
 	}));
 }
+
+// Workaround for SDL linkage errors.
+// We don't actually care about these functions so stub them out.
+__attribute__((weak))
+void emscripten_sleep(unsigned int ms) { }
+__attribute__((weak))
+void emscripten_sleep_with_yield(unsigned int ms) { }
