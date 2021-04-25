@@ -2,4 +2,4 @@
 directory=glslang
 url=https://github.com/taisei-project/glslang.git
 push-url=git@github.com:taisei-project/glslang.git
-revision=meson-8.13.3559
+revision=meson-11.2.0
