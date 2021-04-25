@@ -2,4 +2,4 @@
 directory=SPIRV-Headers
 url=https://github.com/taisei-project/SPIRV-Headers.git
 push-url=git@github.com:taisei-project/SPIRV-Headers.git
-revision=meson-1.5.1.37
+revision=meson-1.5.4

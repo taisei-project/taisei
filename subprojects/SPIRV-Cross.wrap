@@ -2,4 +2,4 @@
 directory=SPIRV-Cross
 url=https://github.com/taisei-project/SPIRV-Cross.git
 push-url=git@github.com:taisei-project/SPIRV-Cross.git
-revision=meson-2020.02.26
+revision=meson-2021.01.15
