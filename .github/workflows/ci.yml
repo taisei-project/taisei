@@ -47,17 +47,18 @@ jobs:
         sudo apt install -y -qq build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
         pip install meson ninja zstandard
 
+    # TODO: turn -Dwerror back on when build is fixed
     - name: Configure (Meson)
       run: |
-        meson setup \
-        --prefix=$(pwd)/build-release \
-        --wrap-mode=nofallback \
-        -Db_lto=false \
-        -Dstrip=false \
-        -Ddeprecation_warnings=no-error \
-        -Dwerror=false \ # TODO: turn -Dwerror back on when build is fixed
-        -Dbasis_universal:werror=false \
-        -Db_pch=false
+        meson setup build/ \
+          --prefix=$(pwd)/build-release \
+          --wrap-mode=nofallback \
+          -Db_lto=false \
+          -Dstrip=false \
+          -Ddeprecation_warnings=no-error \
+          -Dwerror=false \
+          -Dbasis_universal:werror=false \
+          -Db_pch=false
 
     - name: Build & Install (Meson)
       run: |
@@ -101,15 +102,15 @@ jobs:
 
     - name: Configure (Meson)
       run: |
-        meson setup \
-        --prefix=$(pwd)/build-release \
-        --wrap-mode=nofallback \
-        -Db_lto=false \
-        -Dstrip=false \
-        -Ddeprecation_warnings=no-error \
-        -Dwerror=true \
-        -Dbasis_universal:werror=false \
-        -Db_pch=false \
+        meson setup build/ \
+          --prefix=$(pwd)/build-release \
+          --wrap-mode=nofallback \
+          -Db_lto=false \
+          -Dstrip=false \
+          -Ddeprecation_warnings=no-error \
+          -Dwerror=true \
+          -Dbasis_universal:werror=false \
+          -Db_pch=false
 
     - name: Build & Install (Meson)
       run: |
@@ -152,10 +153,10 @@ jobs:
 
     - name: Configure Taisei (Meson)
       run: |
-        meson setup \
+        meson setup build/ \
           --prefix=$(pwd)/build-release \
           --wrap-mode=forcefallback \
-          -Db_lto=false
+          -Db_lto=false \
           -Dstrip=false \
           -Ddeprecation_warnings=no-error \
           -Dwerror=false \
