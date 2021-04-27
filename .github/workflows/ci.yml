@@ -51,7 +51,7 @@ jobs:
       run: |
         meson setup \
         --prefix=$(pwd)/build-release \
-        --wrap-mode=no-fallback \
+        --wrap-mode=nofallback \
         -Db_lto=false \
         -Dstrip=false \
         -Ddeprecation_warnings=no-error \
@@ -103,7 +103,7 @@ jobs:
       run: |
         meson setup \
         --prefix=$(pwd)/build-release \
-        --wrap-mode=no-fallback \
+        --wrap-mode=nofallback \
         -Db_lto=false \
         -Dstrip=false \
         -Ddeprecation_warnings=no-error \
@@ -154,7 +154,7 @@ jobs:
       run: |
         meson setup \
           --prefix=$(pwd)/build-release \
-          --wrap-mode=forceballback \
+          --wrap-mode=forcefallback \
           -Db_lto=false
           -Dstrip=false \
           -Ddeprecation_warnings=no-error \
