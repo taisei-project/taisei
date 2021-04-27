@@ -21,118 +21,155 @@ on:
       - "**.build"
 
 jobs:
-  linux-test-build:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+  linux-release:
     runs-on: ubuntu-20.04
     steps:
+    - name: Set Tag
+      id: vars
+      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
+
+    - name: Set Version in Env
+      run: echo "taisei_version=Taisei-$($(pwd)/scripts/version.py)" >> $GITHUB_ENV
+
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: "recursive"
+
     - name: Install Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (Pip)
-      run: pip install meson ninja zstandard
-
-    - name: Install Build Tools (Apt)
-      run: sudo apt update && sudo apt install -y -qq build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
-
-    - name: Checkout Code
-      uses: actions/checkout@v2
-      with:
-        submodules: "recursive"
+    - name: Install Build Tools (apt)
+      run: |
+        sudo apt update
+        sudo apt install -y -qq build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
+        pip install meson ninja zstandard
 
     - name: Configure (Meson)
-      run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback --force-fallback-for=cglm build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=false -Dbasis_universal:werror=false -Db_pch=false # TODO: turn -Dwerror back on when build is fixed
+      run: |
+        meson setup \
+        --prefix=$(pwd)/build-release \
+        --wrap-mode=no-fallback \
+        -Db_lto=false \
+        -Dstrip=false \
+        -Ddeprecation_warnings=no-error \
+        -Dwerror=false \ # TODO: turn -Dwerror back on when build is fixed
+        -Dbasis_universal:werror=false \
+        -Db_pch=false
 
-    - name: Build (Ninja)
-      run: meson compile -C build/
+    - name: Build & Install (Meson)
+      run: |
+        meson compile -C build/
+        meson install -C build/
 
-    - name: Install (Meson)
-      run: meson install -C build/
-
-    - name: Test (Taisei)
-      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
+    - name: Run Test (Taisei)
+      run: $(pwd)/build-release/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
-        name: taisei_linux_fail.log
+        name: taisei_linux_release.log
         path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
 
-  macos-test-build:
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+  macos-release:
     runs-on: macos-10.15
     steps:
+    - name: Set Tag
+      id: vars
+      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
+
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: "recursive"
+
     - name: Set Up Build Environment
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (Homebrew)
-      run: brew install gcc meson pkg-config docutils pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
-
-    - name: Install Build Tools (Python)
-      run: pip install zstandard
-
-    - name: Checkout Code
-      uses: actions/checkout@v2
-      with:
-        submodules: "recursive"
+    - name: Install Build Tools (brew)
+      run: |
+        brew install gcc meson pkg-config docutils pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
+        pip install zstandard
 
     - name: Configure (Meson)
-      run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback --force-fallback-for=cglm build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Dbasis_universal:werror=false -Db_pch=false
+      run: |
+        meson setup \
+        --prefix=$(pwd)/build-release \
+        --wrap-mode=no-fallback \
+        -Db_lto=false \
+        -Dstrip=false \
+        -Ddeprecation_warnings=no-error \
+        -Dwerror=true \
+        -Dbasis_universal:werror=false \
+        -Db_pch=false \
 
-    - name: Build (Meson)
-      run: meson compile -C build/
-
-    - name: Install (Meson)
-      run: meson install -C build/
+    - name: Build & Install (Meson)
+      run: |
+        meson compile -C build/
+        meson install -C build/
 
     - name: Run Test (Taisei)
-      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
+      run: $(pwd)/build-release/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
-        name: taisei_macos_fail.log
+        name: taisei_macos_release.log
         path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
 
-  windows-test-build:
+  windows-release:
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20210423
-    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
+    - name: Set tag in env (Set Tag)
+      id: vars
+      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
+
     - name: Install tools (Apt)
-      run: apt update && apt install -y -qq software-properties-common && add-apt-repository ppa:git-core/ppa -y && apt install -y -qq python3-docutils python3-pip git
+      run: |
+        apt update
+        apt install -y -qq software-properties-common
+        add-apt-repository ppa:git-core/ppa -y
+        apt install -y -qq python3-docutils python3-pip git nsis
+        pip3 install meson==0.55.3 ninja zstandard
 
     - name: Checkout Code (Git)
       uses: actions/checkout@v2
       with:
         submodules: "recursive"
 
-    - name: Set Up Tools (Meson)
-      run: pip3 install meson==0.55.3 ninja zstandard
+    - name: Configure Taisei (Meson)
+      run: |
+        meson setup \
+          --prefix=$(pwd)/build-release \
+          --wrap-mode=forceballback \
+          -Db_lto=false
+          -Dstrip=false \
+          -Ddeprecation_warnings=no-error \
+          -Dwerror=false \
+          -Db_pch=false \
+          --cross-file misc/llvm-mingw-x86_64
 
-    - name: Configure (Meson)
-      run: meson setup --prefix=$(pwd)/build-test --wrap-mode=forcefallback build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=false -Db_pch=false --cross-file misc/llvm-mingw-x86_64
-
-    - name: Build (Meson)
-      run: meson compile -C build/
-
-    - name: Install (Meson)
-      run: meson install -C build/
+    - name: Build & Install (Meson)
+      run: |
+        meson compile -C build/
+        meson install -C build/
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
-        name: taisei_windows_fail.log
+        name: taisei_windows_release.log
         path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
