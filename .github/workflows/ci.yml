@@ -53,6 +53,7 @@ jobs:
         meson setup build/ \
           --prefix=$(pwd)/build-release \
           --wrap-mode=nofallback \
+          --force-fallback-for=cglm \
           -Db_lto=false \
           -Dstrip=false \
           -Ddeprecation_warnings=no-error \
@@ -104,6 +105,7 @@ jobs:
       run: |
         meson setup build/ \
           --prefix=$(pwd)/build-release \
+          --force-fallback-for=cglm \
           --wrap-mode=nofallback \
           -Db_lto=false \
           -Dstrip=false \
