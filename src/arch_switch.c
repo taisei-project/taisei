@@ -49,8 +49,9 @@ void userAppInit(void) {
 	NX_LOG("stderr -> stdout");
 	nxlinkStdio();
 	NX_LOG("nxlink enabled");
-	NX_SETENV("TAISEI_NOASYNC", "1");
 #endif
+
+	NX_SETENV("TAISEI_NOASYNC", "1");
 
 	appletInitializeGamePlayRecording();
 	appletSetGamePlayRecordingState(1);
