@@ -707,7 +707,8 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 
 	if(bonus->all_clear) {
 		bonus->base += global.plr.point_item_value * 100;
-		bonus->graze = global.plr.graze * (global.plr.point_item_value / 10);
+		// TODO redesign this
+		// bonus->graze = global.plr.graze * (global.plr.point_item_value / 10);
 	}
 
 	bonus->voltage = imax(0, (int)global.plr.voltage - (int)global.voltage_threshold) * (global.plr.point_item_value / 25);
@@ -715,7 +716,7 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 
 	// TODO: maybe a difficulty multiplier?
 
-	bonus->total = bonus->base + bonus->voltage + bonus->lives;
+	bonus->total = bonus->base + bonus->voltage + bonus->lives + bonus->graze;
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
