@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import shlex
 import os
+from sys import platform
 
 
 def main(args):
@@ -28,12 +29,34 @@ def main(args):
     args = parser.parse_args(args[1:])
 
     with temp_install(args.build_dir) as install_path:
-        (install_path / 'Applications').symlink_to('/Applications')
+        # for compiling on Darwin as 'genisoimage' doesn't exist
+        # uses 'create-dmg' (brew install create-dmg)
+        if platform == "darwin":
+            command = shlex.split(' \
+                create-dmg \
+                --volname "Taisei" \
+                --volicon "Taisei.app/Contents/Resources/Taisei.icns" \
+                --window-pos 200 120 \
+                --window-size 550 480 \
+                --icon-size 64 \
+                --icon "Taisei.app" 100 50 \
+                --icon "README.txt" 50 200 \
+                --icon "STORY.txt" 200 200 \
+                --icon "GAME.html" 350 200 \
+                --icon "COPYING" 125 350 \
+                --icon "ENVIRON.html" 275 350 \
+                --hide-extension "Taisei.app" \
+                --app-drop-link 300 50') + [
+                args.output,
+                str(install_path),
+            ]
+        else:
+            (install_path / 'Applications').symlink_to('/Applications')
 
-        command = shlex.split('genisoimage -V Taisei -D -R -apple -no-pad -o') + [
-            args.output,
-            str(install_path),
-        ]
+            command = shlex.split('genisoimage -V Taisei -D -R -apple -no-pad -o') + [
+                args.output,
+                str(install_path),
+            ]
 
         subprocess.check_call(command, cwd=str(install_path))
 
