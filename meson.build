@@ -253,6 +253,7 @@ else
 endif
 
 config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
+config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 
 prefer_relpath_systems = [
     'windows',
