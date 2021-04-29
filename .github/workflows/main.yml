@@ -61,7 +61,6 @@ jobs:
     - name: Configure (Meson)
       run: |
         meson setup build/ \
-          --verbose \
           --prefix=$(pwd)/build-test \
           --native-file scripts/ci/linux-x86_64-build-test-ci.ini
 
@@ -120,7 +119,6 @@ jobs:
     - name: Configure (Meson)
       run: |
         meson setup build/ \
-        --verbose \
         --native-file scripts/ci/macos-x86_64-build-test-ci.ini \
         --prefix=$(pwd)/build-test
 
@@ -171,7 +169,6 @@ jobs:
     - name: Configure Taisei (Meson)
       run: |
         meson setup build/ \
-          --verbose \
           --prefix=$(pwd)/build-test \
           --cross-file scripts/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
 
