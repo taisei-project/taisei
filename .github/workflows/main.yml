@@ -67,7 +67,7 @@ jobs:
     - name: Build & Install
       run: |
         meson compile -C build/ --verbose
-        meson install -C build/ --verbose
+        meson install -C build/
 
     - name: Run Test
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
@@ -125,7 +125,7 @@ jobs:
     - name: Build & Install
       run: |
         meson compile -C build/ --verbose
-        meson install -C build/ --verbose
+        meson install -C build/
 
     - name: Run Test
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
@@ -175,7 +175,7 @@ jobs:
     - name: Build & Install
       run: |
         meson compile -C build/ --verbose
-        meson install -C build/ --verbose
+        meson install -C build/
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
