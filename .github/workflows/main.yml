@@ -37,8 +37,8 @@ jobs:
 
     - name: Install Build Tools (apt)
       run: |
-        apt update
-        apt install -y -qq \
+        sudo apt update
+        sudo apt install -y -qq \
         build-essential \
         libsdl2-dev \
         libogg-dev \
