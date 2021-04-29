@@ -24,17 +24,10 @@ jobs:
   linux-release:
     runs-on: ubuntu-20.04
     steps:
-    - name: Set Tag
-      id: vars
-      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
-
-    - name: Set Version in Env
-      run: echo "taisei_version=Taisei-$($(pwd)/scripts/version.py)" >> $GITHUB_ENV
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:
-        submodules: "recursive"
+        submodules: 'recursive'
 
     - name: Install Python
       uses: actions/setup-python@v2
@@ -52,21 +45,14 @@ jobs:
       run: |
         meson setup build/ \
           --prefix=$(pwd)/build-release \
-          --wrap-mode=nofallback \
-          --force-fallback-for=cglm \
-          -Db_lto=false \
-          -Dstrip=false \
-          -Ddeprecation_warnings=no-error \
-          -Dwerror=false \
-          -Dbasis_universal:werror=false \
-          -Db_pch=false
+          --native-file scripts/linux-x86_64-build-test-ci.ini
 
-    - name: Build & Install (Meson)
+    - name: Build & Install
       run: |
         meson compile -C build/
         meson install -C build/
 
-    - name: Run Test (Taisei)
+    - name: Run Test
       run: $(pwd)/build-release/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
@@ -82,21 +68,17 @@ jobs:
   macos-release:
     runs-on: macos-10.15
     steps:
-    - name: Set Tag
-      id: vars
-      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:
-        submodules: "recursive"
+        submodules: 'recursive'
 
     - name: Set Up Build Environment
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (brew)
+    - name: Install Build Tools
       run: |
         brew install gcc meson pkg-config docutils pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
         pip install zstandard
@@ -104,22 +86,15 @@ jobs:
     - name: Configure (Meson)
       run: |
         meson setup build/ \
-          --prefix=$(pwd)/build-release \
-          --force-fallback-for=cglm \
-          --wrap-mode=nofallback \
-          -Db_lto=false \
-          -Dstrip=false \
-          -Ddeprecation_warnings=no-error \
-          -Dwerror=true \
-          -Dbasis_universal:werror=false \
-          -Db_pch=false
+        --native-file scripts/ci/macos-x86_64-build-test-ci.ini \
+        --prefix=$(pwd)/build-release
 
-    - name: Build & Install (Meson)
+    - name: Build & Install
       run: |
         meson compile -C build/
         meson install -C build/
 
-    - name: Run Test (Taisei)
+    - name: Run Test
       run: $(pwd)/build-release/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
@@ -136,10 +111,6 @@ jobs:
     runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
-    - name: Set tag in env (Set Tag)
-      id: vars
-      run: echo ::set-output name=gitref::Taisei-${GITHUB_REF#refs/*/}
-
     - name: Install tools (Apt)
       run: |
         apt update
@@ -151,21 +122,15 @@ jobs:
     - name: Checkout Code (Git)
       uses: actions/checkout@v2
       with:
-        submodules: "recursive"
+        submodules: 'recursive'
 
     - name: Configure Taisei (Meson)
       run: |
         meson setup build/ \
           --prefix=$(pwd)/build-release \
-          --wrap-mode=forcefallback \
-          -Db_lto=false \
-          -Dstrip=false \
-          -Ddeprecation_warnings=no-error \
-          -Dwerror=false \
-          -Db_pch=false \
-          --cross-file misc/llvm-mingw-x86_64
+          --cross-file scripts/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
 
-    - name: Build & Install (Meson)
+    - name: Build & Install
       run: |
         meson compile -C build/
         meson install -C build/
