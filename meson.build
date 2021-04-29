@@ -8,6 +8,7 @@ project('taisei', 'c',
 
         'default_library=static',
 
+        'cglm:werror=false',
         'cglm:install=false',
         'cglm:build_tests=false',
 
