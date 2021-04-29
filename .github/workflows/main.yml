@@ -23,6 +23,7 @@ on:
 jobs:
   linux-release:
     runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -45,7 +46,7 @@ jobs:
       run: |
         meson setup build/ \
           --prefix=$(pwd)/build-release \
-          --native-file scripts/linux-x86_64-build-test-ci.ini
+          --native-file scripts/ci/linux-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
@@ -67,6 +68,7 @@ jobs:
 
   macos-release:
     runs-on: macos-10.15
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -109,6 +111,7 @@ jobs:
 
   windows-release:
     runs-on: ubuntu-20.04
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
     - name: Install tools (Apt)
