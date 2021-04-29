@@ -45,8 +45,7 @@ def main(args):
                 --icon "COPYING" 125 350
                 --icon "ENVIRON.html" 275 350
                 --hide-extension "Taisei.app"
-                --app-drop-link 300 50
-                {0} {1}'''.format(args.output, str(install_path)))
+                --app-drop-link 300 50''') + [args.output, str(install_path)]
         else:
             (install_path / 'Applications').symlink_to('/Applications')
 
