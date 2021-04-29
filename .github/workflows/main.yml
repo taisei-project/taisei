@@ -21,9 +21,9 @@ on:
       - "**.build"
 
 jobs:
-  linux-release:
-    runs-on: ubuntu-20.04
+  linux-test-build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -66,9 +66,9 @@ jobs:
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
 
-  macos-release:
-    runs-on: macos-10.15
+  macos-test-build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: macos-10.15
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -109,9 +109,9 @@ jobs:
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
 
-  windows-release:
-    runs-on: ubuntu-20.04
+  windows-test-build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
     - name: Install tools (Apt)
