@@ -10,6 +10,7 @@ project('taisei', 'c',
 
         'koishi:threadsafe=false',
 
+        'cglm:werror=false',
         'cglm:install=false',
         'cglm:build_tests=false',
 
