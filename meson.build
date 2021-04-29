@@ -274,6 +274,7 @@ endif
 config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
+config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 
 if enable_zip and dep_zip.found()
     if dep_zip.type_name() == 'internal'
