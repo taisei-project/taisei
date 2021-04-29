@@ -53,7 +53,7 @@ jobs:
         libzstd-dev
         # pip
         pip install \
-        meson \
+        meson==0.55.3 \
         ninja \
         zstandard
 
@@ -61,13 +61,14 @@ jobs:
     - name: Configure (Meson)
       run: |
         meson setup build/ \
+          --verbose \
           --prefix=$(pwd)/build-test \
           --native-file scripts/ci/linux-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
-        meson compile -C build/
-        meson install -C build/
+        meson compile -C build/ --verbose
+        meson install -C build/ --verbose
 
     - name: Run Test
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
@@ -100,7 +101,6 @@ jobs:
       run: |
         brew install \
         gcc \
-        meson \
         pkg-config \
         docutils \
         pygments \
@@ -112,18 +112,22 @@ jobs:
         sdl2 \
         ninja
         # pip
-        pip install zstandard
+        pip install \
+        meson==0.55.3 \
+        ninja \
+        zstandard
 
     - name: Configure (Meson)
       run: |
         meson setup build/ \
+        --verbose \
         --native-file scripts/ci/macos-x86_64-build-test-ci.ini \
         --prefix=$(pwd)/build-test
 
     - name: Build & Install
       run: |
-        meson compile -C build/
-        meson install -C build/
+        meson compile -C build/ --verbose
+        meson install -C build/ --verbose
 
     - name: Run Test
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
@@ -167,13 +171,14 @@ jobs:
     - name: Configure Taisei (Meson)
       run: |
         meson setup build/ \
+          --verbose \
           --prefix=$(pwd)/build-test \
           --cross-file scripts/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
-        meson compile -C build/
-        meson install -C build/
+        meson compile -C build/ --verbose
+        meson install -C build/ --verbose
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
