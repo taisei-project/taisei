@@ -69,17 +69,17 @@ static const char *const ext_vendor_table[] = {
 
 attr_nonnull_all
 static ext_flag_t glcommon_ext_flag(const char *ext) {
-	assert(ext != NULL);
+	const char *ext_orig = ext;
 	ext = strchr(ext, '_');
 
 	if(ext == NULL) {
-		log_fatal("Bad extension string: %s", ext);
+		log_fatal("Bad extension string: %s", ext_orig);
 	}
 
 	const char *sep = strchr(++ext, '_');
 
 	if(sep == NULL) {
-		log_fatal("Bad extension string: %s", ext);
+		log_fatal("Bad extension string: %s", ext_orig);
 	}
 
 	char vendor[sep - ext + 1];
@@ -91,7 +91,7 @@ static ext_flag_t glcommon_ext_flag(const char *ext) {
 		}
 	}
 
-	log_fatal("Unknown vendor '%s' in extension string %s", vendor, ext);
+	log_fatal("Unknown vendor '%s' in extension string %s", vendor, ext_orig);
 }
 
 ext_flag_t glcommon_check_extension(const char *ext) {
