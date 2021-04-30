@@ -47,6 +47,7 @@ static const char *const ext_vendor_table[] = {
 	NULL,
 };
 
+attr_nonnull_all
 static ext_flag_t glcommon_ext_flag(const char *ext) {
 	assert(ext != NULL);
 	ext = strchr(ext, '_');
