@@ -150,6 +150,10 @@ static void stage6_preload(void) {
 static void stage6_start(void) {
 	stage6_drawsys_init();
 	stage6_bg_init_fullstage();
+	stage_start_bgm("stage6");
+	stage_set_voltage_thresholds(380, 670, 1100, 1500);
+
+	INVOKE_TASK(stage6_timeline);
 }
 
 static void stage6_end(void) {
@@ -181,6 +185,7 @@ static void stage6_spellpractice_start(void) {
 }
 
 static void stage6_spellpractice_events(void) {
+	// XXX: whaaat
 	if(!global.boss) {
 		enemy_kill_all(&global.enemies);
 	}
