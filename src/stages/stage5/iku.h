@@ -24,7 +24,7 @@ DEFINE_ENTITY_TYPE(IkuSlave, {
 	COEVENTS_ARRAY(
 		despawned,
 		killed,
-		collission
+		collision
 	) events;
 
 });
