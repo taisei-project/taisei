@@ -80,11 +80,10 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
 	BEGIN_BOSS_ATTACK();
 
 	INVOKE_SUBTASK(crystal_rain_drops);
+	boss->move = move_towards_power(boss->pos, 0.1, 0.5);
 
 	for(;;) {
 		WAIT(20);
-		boss->move.attraction_max_speed = 40;
-		boss->move.attraction = 0.01;
 		stage1_cirno_wander(boss, 80, 230);
 		INVOKE_SUBTASK(crystal_rain_cirno_shoot, ENT_BOX(boss), 80);
 		WAIT(180);

@@ -19,7 +19,7 @@ typedef struct MoveParams {
 	cmplx velocity, acceleration, retention;
 	cmplx attraction;
 	cmplx attraction_point;
-	double attraction_max_speed;
+	real attraction_exponent;
 } MoveParams;
 
 cmplx move_update(cmplx *restrict pos, MoveParams *restrict params);
@@ -51,6 +51,15 @@ INLINE MoveParams move_towards(cmplx target, cmplx attraction) {
 	return (MoveParams) {
 		.attraction = attraction,
 		.attraction_point = target,
+		.attraction_exponent = 1
+	};
+}
+
+INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real exponent) {
+	return (MoveParams) {
+		.attraction = attraction,
+		.attraction_point = target,
+		.attraction_exponent = exponent
 	};
 }
 

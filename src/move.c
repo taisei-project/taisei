@@ -20,11 +20,7 @@ cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
 	if(p->attraction) {
 		cmplx av = p->attraction_point - *pos;
 
-		if(p->attraction_max_speed) {
-			av = cclampabs(av, p->attraction_max_speed);
-		}
-
-		p->velocity += p->attraction * av;
+		p->velocity += p->attraction * cnormalize(av) * pow(cabs(av), p->attraction_exponent);
 	}
 
 	return v;

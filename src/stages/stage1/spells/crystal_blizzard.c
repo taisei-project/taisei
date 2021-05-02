@@ -80,8 +80,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
 
-		boss->move = move_towards(global.plr.pos, 0.01);
-		boss->move.attraction_max_speed = 128;
+		boss->move = move_towards_power(global.plr.pos, 1, 0.1);
 
 		for(int t = 0; t < 370; ++t) {
 			play_sfx_loop("shot1_loop");
