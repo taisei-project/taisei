@@ -57,14 +57,32 @@ static void fix_pos0_visual(Enemy *e) {
 	e->pos0_visual = x + y * I;
 }
 
+static inline void _signal_event_with_damage_info(Enemy *e, CoEvent *evt, DamageInfo *dmg, void (*sigfunc)(CoEvent*)) {
+	assert(e->damage_info == NULL);
+	e->damage_info = dmg;
+	sigfunc(evt);
+	assert(e->damage_info == dmg);
+	e->damage_info = NULL;
+}
+
+static void signal_event_with_damage_info(Enemy *e, CoEvent *evt, DamageInfo *dmg) {
+	_signal_event_with_damage_info(e, evt, dmg, coevent_signal);
+}
+
+static void signal_event_once_with_damage_info(Enemy *e, CoEvent *evt, DamageInfo *dmg) {
+	_signal_event_with_damage_info(e, evt, dmg, coevent_signal_once);
+}
+
 static inline int enemy_call_logic_rule(Enemy *e, int t) {
+	assert(e->damage_info == NULL);
+
 	if(t == EVENT_KILLED) {
-		coevent_signal(&e->events.killed);
+		signal_event_once_with_damage_info(e, &e->events.killed, NULL);
 	}
 
 	if(e->logic_rule) {
 		return e->logic_rule(e, t);
-	} else {
+	} else if(t >= 0) {
 		// TODO: backport unified left/right move animations from the obsolete `newart` branch
 		cmplx v = move_update(&e->pos, &e->move);
 		e->moving = fabs(creal(v)) >= 1;
@@ -116,7 +134,7 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->ent.draw_func = ent_draw_enemy;
 	e->ent.damage_func = ent_damage_enemy;
 
-	coevent_init(&e->events.killed);
+	COEVENT_INIT_ARRAY(e->events);
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_TYPE_ID(Enemy));
 
@@ -161,7 +179,7 @@ static void enemy_death_effect(cmplx pos) {
 	);
 }
 
-static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
+static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	Enemy *e = (Enemy*)enemy;
 
 	if(e->hp <= 0 && !(e->flags & EFLAG_NO_DEATH_EXPLOSION)) {
@@ -175,8 +193,8 @@ static void* _delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 		}
 	}
 
+	COEVENT_CANCEL_ARRAY(e->events);
 	enemy_call_logic_rule(e, EVENT_DEATH);
-	coevent_cancel(&e->events.killed);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
@@ -279,6 +297,7 @@ bool enemy_in_viewport(Enemy *enemy) {
 }
 
 void enemy_kill(Enemy *enemy) {
+	signal_event_once_with_damage_info(enemy, &enemy->events.killed, NULL);
 	enemy->flags |= EFLAG_KILLED | EFLAG_NO_HIT | EFLAG_NO_HURT | EFLAG_INVULNERABLE;
 	enemy->hp = 0;
 }
@@ -292,16 +311,29 @@ void enemy_kill_all(EnemyList *enemies) {
 static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *dmg) {
 	Enemy *enemy = ENT_CAST(ienemy, Enemy);
 
-	if(!enemy_is_vulnerable(enemy) || dmg->type == DMG_ENEMY_SHOT || dmg->type == DMG_ENEMY_COLLISION) {
+	if(UNLIKELY(enemy->flags & EFLAG_KILLED)) {
+		return DMG_RESULT_INAPPLICABLE;
+	}
+
+	DamageInfo ndmg = *dmg;
+	signal_event_with_damage_info(enemy, &enemy->events.predamage, &ndmg);
+
+	if(
+		!enemy_is_vulnerable(enemy) ||
+		ndmg.type == DMG_ENEMY_SHOT ||
+		ndmg.type == DMG_ENEMY_COLLISION
+	) {
 		return DMG_RESULT_IMMUNE;
 	}
 
-	enemy->hp -= dmg->amount;
+	enemy->hp -= ndmg.amount;
+	signal_event_with_damage_info(enemy, &enemy->events.damaged, &ndmg);
 
 	if(enemy->hp <= 0) {
+		signal_event_once_with_damage_info(enemy, &enemy->events.killed, &ndmg);
 		enemy_kill(enemy);
 
-		if(dmg->type == DMG_PLAYER_DISCHARGE) {
+		if(ndmg.type == DMG_PLAYER_DISCHARGE) {
 			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)imax(1, enemy->spawn_hp / 100));
 		}
 	}
