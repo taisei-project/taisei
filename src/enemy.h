@@ -71,9 +71,35 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	EnemyLogicRule logic_rule;
 	EnemyVisualRule visual_rule;
 
-	struct {
-		CoEvent killed;
-	} events;
+	COEVENTS_ARRAY(
+		predamage,
+		damaged,
+		killed
+	) events;
+
+	/*
+	 * This field is usually NULL except during handling of "predamage", "damaged", and "killed"
+	 * events.
+	 *
+	 * "Predamage" events are run any time something attempts to damage the enemy, before the
+	 * damage is applied. The event handler may modify the DamageInfo struct to affect the outcome.
+	 *
+	 * "Damaged" events are run after the damage has been applied. Immunities are not considered
+	 * successful applications. `damage_info` describes the damage that has been applied.
+	 *
+	 * If after the "damaged" event health drops to 0 or lower, the "killed" event is signaled and
+	 * the enemy is marked for removal. `damage_info` describes the cause of death.
+	 *
+	 * The "damaged" event is also signaled when an enemy is killed through non-damage means, such
+	 * as calling `enemy_kill()` directly. In that case, `damage_info` is NULL. This does NOT happen
+	 * if the enemy is auto-removed due to going out of bounds - if you want to catch that case,
+	 * watch for a cancelled "killed" event.
+	 *
+	 * `damage_info` is also NULL when handling a cancelled event of any type.
+	 *
+	 * The pointer becomes invalid as soon as the event handler yields.
+	 */
+	DamageInfo *damage_info;
 
 	EnemyFlag flags;
 
