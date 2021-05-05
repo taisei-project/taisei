@@ -160,9 +160,8 @@ TASK(sinepass_swirl, { cmplx pos; cmplx vel; cmplx svel; }) {
 TASK(circle_fairy, { cmplx pos; cmplx target_pos; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 2)));
 
-	e->move.attraction = 0.005;
+	e->move = move_towards(ARGS.target_pos, 0.005);
 	e->move.retention = 0.8;
-	e->move.attraction_point = ARGS.target_pos;
 
 	WAIT(60);
 
