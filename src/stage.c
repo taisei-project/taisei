@@ -422,11 +422,19 @@ static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
 }
 
 static void stage_input(void) {
-	events_poll((EventHandler[]){
-		{ .proc = stage_input_handler_gameplay },
-		{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
-		{NULL}
-	}, EFLAG_GAME);
+	if(stage_is_skip_mode()) {
+		events_poll((EventHandler[]){
+			{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
+			{NULL}
+		}, EFLAG_NOPUMP);
+	} else {
+		events_poll((EventHandler[]){
+			{ .proc = stage_input_handler_gameplay },
+			{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
+			{NULL}
+		}, EFLAG_GAME);
+	}
+
 	player_fix_input(&global.plr);
 	player_applymovement(&global.plr);
 }
@@ -631,6 +639,11 @@ void stage_finish(int gameover) {
 			++p->num_cleared;
 			log_debug("Stage cleared %u times now", p->num_cleared);
 		}
+	}
+
+	if(gameover == GAMEOVER_SCORESCREEN && stage_is_skip_mode()) {
+		// don't get stuck in an infinite loop
+		taisei_quit();
 	}
 }
 

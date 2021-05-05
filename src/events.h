@@ -51,32 +51,34 @@ typedef enum {
 } TaiseiEvent;
 
 typedef enum {
-	EPRIO_DEFAULT = 0,
-
 	// from highest to lowest
 	// feel free to add new prios as needed, just don't randomly reorder stuff
 
-	EPRIO_SYSTEM,       // for events not associated with user input
+	EPRIO_SYSTEM = -4,  // for events not associated with user input
 	EPRIO_TRANSLATION,  // for translating raw input events into higher level Taisei events
 	EPRIO_CAPTURE,      // for capturing raw user input before it's further processed
 	EPRIO_HOTKEYS,      // for global keybindings
 	EPRIO_NORMAL,       // for everything else
 
-	NUM_EPRIOS
+	EPRIO_DEFAULT = EPRIO_NORMAL,
+	EPRIO_FIRST = EPRIO_SYSTEM,
+	EPRIO_LAST = EPRIO_NORMAL,
+	NUM_EPRIOS = EPRIO_LAST - EPRIO_FIRST + 1,
 } EventPriority;
+
+static_assert_nomsg(EPRIO_DEFAULT == 0);
 
 typedef enum {
 	EFLAG_MENU = (1 << 0),
 	EFLAG_GAME = (1 << 1),
 	EFLAG_TEXT = (1 << 2),
+	EFLAG_NOPUMP = (1 << 3),
 } EventFlags;
 
 typedef enum {
 	INDEV_KEYBOARD,
 	INDEV_GAMEPAD,
 } InputDevice;
-
-#define EPRIO_DEFAULT_REMAP EPRIO_NORMAL
 
 // if the this returns true, the event won't be passed down to lower priority handlers
 typedef bool (*EventHandlerProc)(SDL_Event *event, void *arg);

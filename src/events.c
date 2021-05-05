@@ -14,22 +14,17 @@
 #include "video.h"
 #include "gamepad.h"
 
-typedef struct EventHandlerContainer {
-	LIST_INTERFACE(struct EventHandlerContainer);
-	EventHandler *handler;
-} EventHandlerContainer;
-
-typedef LIST_ANCHOR(EventHandlerContainer) EventHandlerList;
-
 static hrtime_t keyrepeat_paused_until;
-static EventHandlerList global_handlers;
 static int global_handlers_lock = 0;
+static DYNAMIC_ARRAY(EventHandler) global_handlers;
 static DYNAMIC_ARRAY(SDL_Event) deferred_events;
 
 uint32_t sdl_first_user_event;
 
 static void events_register_default_handlers(void);
 static void events_unregister_default_handlers(void);
+
+#define MAX_ACTIVE_HANDLERS 32
 
 /*
  *  Public API
@@ -55,14 +50,12 @@ void events_shutdown(void) {
 	dynarray_free_data(&deferred_events);
 
 #ifdef DEBUG
-	if(global_handlers.first) {
-		log_warn(
-			"Someone didn't unregister their handler. "
-			"Clean up after yourself, I'm not your personal maid. "
-			"Hint: ASan or valgrind can probably determine the culprit."
-		);
-	}
+	dynarray_foreach_elem(&global_handlers, EventHandler *h, {
+		log_warn("Global event handler was not unregistered: %p", UNION_CAST(EventHandlerProc, void*, h->proc));
+	});
 #endif
+
+	dynarray_free_data(&global_handlers);
 }
 
 static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
@@ -77,182 +70,38 @@ static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
 	return false;
 }
 
-static int handler_container_prio_func(List *h) {
-	return ((EventHandlerContainer*)h)->handler->priority;
-}
-
-static EventPriority real_priority(EventPriority prio) {
-	if(prio == EPRIO_DEFAULT) {
-		return EPRIO_DEFAULT_REMAP;
-	}
-
-	assert(prio < NUM_EPRIOS);
-	return prio;
-}
-
-static EventHandlerContainer* ehandler_wrap_container(EventHandler *handler) {
-	EventHandlerContainer *c = calloc(1, sizeof(*c));
-	c->handler = handler;
-	return c;
-}
-
-typedef struct EventHandlerSortHelper {
-	EventHandler *handler;
-	uint idx;
-} EventHandlerSortHelper;
-
-static int ehandler_sort_cmp(const void *a, const void *b) {
-	const EventHandlerSortHelper *h0 = a;
-	const EventHandlerSortHelper *h1 = b;
-
-	EventPriority p0 = real_priority(h0->handler->priority);
-	EventPriority p1 = real_priority(h1->handler->priority);
-
-	int diff = (p0 > p1) - (p1 > p0);
-
-	if(diff == 0) {
-		// stabilize sort
-		diff = (h0->idx > h1->idx) - (h1->idx > h0->idx);
-	}
-
-	assert(diff != 0);
-	return diff;
-}
-
-static bool _events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
-	// invoke handlers from two sources (a list and an array) in the correct order according to priority
-	// list items take precedence
-	//
-	// assumptions:
-	//      h_list is sorted by priority
-	//      h_array is in arbitrary order and terminated with a NULL-proc entry
-
-	bool result = false;
-
-	if(h_list && !h_array) {
-		// case 1 (simplest): we have a list and no custom handlers
-
-		for(EventHandlerContainer *c = h_list; c; c = c->next) {
-			if(c->handler->_private.removal_pending) {
-				continue;
-			}
-
-			if((result = events_invoke_handler(event, c->handler))) {
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	if(h_list && h_array) {
-		// case 2 (suboptimal): we have both a list and a disordered array; need to do some actual work
-		// if you want to optimize this be my guest
-		uint cnt = 0, idx =0;
-
-		for(EventHandlerContainer *c = h_list; c; c = c->next) {
-			++cnt;
-		}
-
-		for(EventHandler *h = h_array; h->proc; ++h) {
-			++cnt;
-		}
-
-		EventHandlerSortHelper merged[cnt];
-
-		for(EventHandlerContainer *c = h_list; c; c = c->next, ++idx) {
-			merged[idx].handler = c->handler;
-			merged[idx].idx = idx;
-		}
-
-		for(EventHandler *h = h_array; h->proc; ++h, ++idx) {
-			merged[idx].handler = h;
-			merged[idx].idx = idx;
-		}
-
-		qsort(merged, cnt, sizeof(*merged), ehandler_sort_cmp);
-
-		for(int i = 0; i < cnt; ++i) {
-			EventHandler *e = merged[i].handler;
-
-			if(e->_private.removal_pending) {
-				continue;
-			}
-
-			if((result = events_invoke_handler(event, e))) {
-				break;
-			}
-		}
-	}
-
-	if(!h_list && h_array) {
-		// case 3 (unlikely): we don't have a list for some reason (no global handlers?), but there are custom handlers
-
-		for(EventHandler *h = h_array; h->proc; ++h) {
-			if((result = events_invoke_handler(event, h))) {
-				break;
-			}
-		}
-
-		return result;
-	}
-
-	// case 4 (unlikely): huh? okay then
-	return result;
-}
-
-static bool events_invoke_handlers(SDL_Event *event, EventHandlerContainer *h_list, EventHandler *h_array) {
-	++global_handlers_lock;
-	bool result = _events_invoke_handlers(event, h_list, h_array);
-
-	if(--global_handlers_lock == 0) {
-		for(EventHandlerContainer *c = global_handlers.first, *next; c; c = next) {
-			next = c->next;
-
-			if(c->handler->_private.removal_pending) {
-				free(c->handler);
-				free(alist_unlink(&global_handlers, c));
-			}
-		}
-	}
-
-	return result;
+static inline int prio_index(EventPriority prio) {
+	return prio - EPRIO_FIRST;
 }
 
 void events_register_handler(EventHandler *handler) {
 	assert(handler->proc != NULL);
-	EventHandler *handler_alloc = malloc(sizeof(EventHandler));
-	memcpy(handler_alloc, handler, sizeof(EventHandler));
+	assert(handler->priority >= EPRIO_FIRST);
+	assert(handler->priority <= EPRIO_LAST);
 
-	if(handler_alloc->priority == EPRIO_DEFAULT) {
-		handler_alloc->priority = EPRIO_DEFAULT_REMAP;
-	}
+	*dynarray_append(&global_handlers) = *handler;
 
-	assert(handler_alloc->priority > EPRIO_DEFAULT);
-	alist_insert_at_priority_tail(
-		&global_handlers,
-		ehandler_wrap_container(handler_alloc),
-		handler_alloc->priority,
-		handler_container_prio_func
-	);
+	// don't bother sorting, since most of the time we will need to re-sort it
+	// together with local handlers when polling
+}
+
+static bool hfilter_remove_pending(const void *pelem, void *ignored) {
+	const EventHandler *h = pelem;
+	return !h->_private.removal_pending;
 }
 
 void events_unregister_handler(EventHandlerProc proc) {
-	for(EventHandlerContainer *c = global_handlers.first, *next; c; c = next) {
-		EventHandler *h = c->handler;
-		next = c->next;
-
+	dynarray_foreach_elem(&global_handlers, EventHandler *h, {
 		if(h->proc == proc) {
-			if(global_handlers_lock) {
-				assert(global_handlers_lock > 0);
-				c->handler->_private.removal_pending = true;
-				return;
-			}
-
-			free(c->handler);
-			free(alist_unlink(&global_handlers, c));
-			return;
+			h->_private.removal_pending = true;
+			break;
 		}
+	});
+
+	if(global_handlers_lock) {
+		assert(global_handlers_lock > 0);
+	} else {
+		dynarray_filter(&global_handlers, hfilter_remove_pending, NULL);
 	}
 }
 
@@ -278,17 +127,103 @@ static void events_apply_flags(EventFlags flags) {
 	}
 }
 
+static int enqueue_event_handlers(int max, EventHandler *queue[max], EventHandler local_handlers[]) {
+	// counting sort!
+
+	int cnt = 0;
+	int pcount[NUM_EPRIOS] = { 0 };
+	EventHandler *temp[max];
+
+	assert(global_handlers.num_elements <= max);
+
+	dynarray_foreach_elem(&global_handlers, EventHandler *h, {
+		++pcount[prio_index(h->priority)];
+		temp[cnt++] = h;
+	});
+
+	if(local_handlers) {
+		for(EventHandler *h = local_handlers; h->proc; ++h) {
+			int pidx = prio_index(h->priority);
+			assert((uint)pidx < ARRAY_SIZE(pcount));
+			++pcount[pidx];
+			temp[cnt++] = h;
+			assert(cnt < max);
+		}
+	}
+
+	for(int i = 0, total = 0; i < NUM_EPRIOS; ++i) {
+		int t = total;
+		total += pcount[i];
+		pcount[i] = t;
+	}
+
+	for(int i = 0; i < cnt; ++i) {
+		EventHandler *h = temp[i];
+		int p = prio_index(h->priority);
+		queue[pcount[p]] = h;
+		++pcount[p];
+	}
+
+	return cnt;
+}
+
+static void push_event(SDL_Event *e) {
+	/*
+	 * NOTE: The SDL_PushEvent() function is a wrapper around SDL_PeepEvents that also sets the
+	 * timestamp field and calls the event filter function and event watchers. We don't use any of
+	 * that, and setting the timestamp involves an expensive system call, so avoid it.
+	 */
+	if(UNLIKELY(SDL_PeepEvents(e, 1, SDL_ADDEVENT, 0, 0) <= 0)) {
+		log_sdl_error(LOG_ERROR, "SDL_PeepEvents");
+	}
+}
+
 void events_poll(EventHandler *handlers, EventFlags flags) {
-	SDL_Event event;
 	events_apply_flags(flags);
 	events_emit(TE_FRAME, 0, NULL, NULL);
 
-	while(SDL_PollEvent(&event)) {
-		events_invoke_handlers(&event, global_handlers.first, handlers);
+	++global_handlers_lock;
+
+	EventHandler *hqueue[MAX_ACTIVE_HANDLERS];
+	int hqueue_size = enqueue_event_handlers(ARRAY_SIZE(hqueue), hqueue, handlers);
+
+	for(;;) {
+		if(!(flags & EFLAG_NOPUMP)) {
+			SDL_PumpEvents();
+		}
+
+		SDL_Event events[8];
+		int nevents = SDL_PeepEvents(events, ARRAY_SIZE(events), SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+
+		if(UNLIKELY(nevents < 0)) {
+			log_sdl_error(LOG_ERROR, "SDL_PeepEvents");
+		}
+
+		if(nevents == 0) {
+			break;
+		}
+
+		for(SDL_Event *e = events, *end = events + nevents; e < end; ++e) {
+			for(int i = 0; i < hqueue_size; ++i) {
+				EventHandler *h = NOT_NULL(hqueue[i]);
+
+				if(h->_private.removal_pending) {
+					continue;
+				}
+
+				if(events_invoke_handler(e, h)) {
+					break;
+				}
+			}
+		}
+	}
+
+	if(--global_handlers_lock == 0) {
+		dynarray_filter(&global_handlers, hfilter_remove_pending, NULL);
 	}
 
 	dynarray_foreach_elem(&deferred_events, SDL_Event *evt, {
-		SDL_PushEvent(evt);
+		push_event(evt);
 	});
 
 	deferred_events.num_elements = 0;
@@ -309,7 +244,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 	event.user.data1 = data1;
 	event.user.data2 = data2;
 
-	SDL_PushEvent(&event);
+	push_event(&event);
 }
 
 void events_defer(SDL_Event *evt) {

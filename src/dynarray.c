@@ -90,7 +90,3 @@ void _dynarray_filter(dynarray_size_t sizeof_element, DynamicArray *darr, dynarr
 		p += sizeof_element;
 	}
 }
-
-#if 0
-
-#endif

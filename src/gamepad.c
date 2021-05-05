@@ -287,7 +287,14 @@ bool gamepad_update_devices(void) {
 	return true;
 }
 
+static inline void set_events_state(int state) {
+	SDL_JoystickEventState(state);
+	SDL_GameControllerEventState(state);
+}
+
 void gamepad_init(void) {
+	set_events_state(SDL_IGNORE);
+
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED) || gamepad.initialized) {
 		return;
 	}
@@ -309,7 +316,7 @@ void gamepad_init(void) {
 		.priority = EPRIO_TRANSLATION,
 	});
 
-	SDL_GameControllerEventState(SDL_ENABLE);
+	set_events_state(SDL_ENABLE);
 }
 
 void gamepad_shutdown(void) {
@@ -330,7 +337,7 @@ void gamepad_shutdown(void) {
 
 	free(gamepad.devices);
 
-	SDL_GameControllerEventState(SDL_IGNORE);
+	set_events_state(SDL_IGNORE);
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 
 	memset(&gamepad, 0, sizeof(gamepad));
