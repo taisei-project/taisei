@@ -193,6 +193,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'LLD_REPORT_UNDEFINED',
         '-lGL',
         '-lgl',
+        '-lwebgl.js',
         '-legl.js',
         '-lidbfs.js',
     ]
