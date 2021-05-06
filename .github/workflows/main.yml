@@ -38,31 +38,30 @@ jobs:
     - name: Install Build Tools (apt)
       run: |
         sudo apt update
-        sudo apt install -y -qq \
-        build-essential \
-        libsdl2-dev \
-        libogg-dev \
-        libopusfile-dev \
-        libpng-dev \
-        libzip-dev \
-        libx11-dev \
-        libwayland-dev \
-        python3-docutils \
-        libwebp-dev \
-        libfreetype6-dev \
-        libzstd-dev
-        # pip
-        pip install \
-        meson==0.55.3 \
-        ninja \
-        zstandard
+        sudo apt install -y -qq
+          build-essential
+          libsdl2-dev
+          libogg-dev
+          libopusfile-dev
+          libpng-dev
+          libzip-dev
+          libx11-dev
+          libwayland-dev
+          python3-docutils
+          libwebp-dev
+          libfreetype6-dev
+          libzstd-dev
+        pip install
+          meson==0.55.3
+          ninja
+          zstandard
 
     # TODO: turn -Dwerror back on when build is fixed
     - name: Configure (Meson)
       run: |
-        meson setup build/ \
-          --prefix=$(pwd)/build-test \
-          --native-file scripts/ci/linux-x86_64-build-test-ci.ini
+        meson setup build/
+          --prefix=$(pwd)/build-test
+          --native-file misc/ci/linux-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
@@ -70,7 +69,7 @@ jobs:
         meson install -C build/
 
     - name: Run Test
-      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
+      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
@@ -98,28 +97,27 @@ jobs:
 
     - name: Install Build Tools
       run: |
-        brew install \
-        gcc \
-        pkg-config \
-        docutils \
-        pygments \
-        freetype2 \
-        libzip \
-        opusfile \
-        libvorbis \
-        webp \
-        sdl2 \
-        ninja
-        # pip
-        pip install \
-        meson==0.55.3 \
-        ninja \
-        zstandard
+        brew install
+          gcc
+          pkg-config
+          docutils
+          pygments
+          freetype2
+          libzip
+          opusfile
+          libvorbis
+          webp
+          sdl2
+          ninja
+        pip install
+          meson==0.55.3
+          ninja
+          zstandard
 
     - name: Configure (Meson)
       run: |
         meson setup build/ \
-        --native-file scripts/ci/macos-x86_64-build-test-ci.ini \
+        --native-file misc/ci/macos-x86_64-build-test-ci.ini \
         --prefix=$(pwd)/build-test
 
     - name: Build & Install
@@ -128,7 +126,7 @@ jobs:
         meson install -C build/
 
     - name: Run Test
-      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
+      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
@@ -150,16 +148,15 @@ jobs:
         apt update
         apt install -y -qq software-properties-common
         add-apt-repository ppa:git-core/ppa -y
-        apt install -y -qq \
-        python3-docutils \
-        python3-pip \
-        git \
-        nsis
-        # pip
-        pip3 install \
-        meson==0.55.3 \
-        ninja \
-        zstandard
+        apt install -y -qq
+          python3-docutils
+          python3-pip
+          git
+          nsis
+        pip3 install
+          meson==0.55.3
+          ninja
+          zstandard
 
     - name: Checkout Code (Git)
       uses: actions/checkout@v2
@@ -168,9 +165,9 @@ jobs:
 
     - name: Configure Taisei (Meson)
       run: |
-        meson setup build/ \
-          --prefix=$(pwd)/build-test \
-          --cross-file scripts/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
+        meson setup build/
+          --prefix=$(pwd)/build-test
+          --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
