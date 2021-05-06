@@ -85,6 +85,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"cutscene",           required_argument,  0, OPT_CUTSCENE},   "Play cutscene by numeric %s and exit", "ID"},
 		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
 		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
+		{{"skip-to-bookmark",   required_argument,  0, 'b'},            "Fast-forward stage to a specific STAGE_BOOKMARK call"},
 #endif
 		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
@@ -223,6 +224,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			exit(0);
 		case OPT_FORCE_INTRO:
 			a->force_intro = true;
+			break;
+		case 'b':
+			env_set("TAISEI_SKIP_TO_BOOKMARK", optarg, true);
 			break;
 		case 'v':
 			tsfprintf(stdout, "%s %s\n", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
