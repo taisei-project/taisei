@@ -435,7 +435,26 @@ static void glcommon_ext_texture_norm16(void) {
 		return;
 	}
 
-	if((glext.texture_norm16 = glcommon_check_extension("GL_EXT_texture_norm16"))) {
+	/*
+	 * Quote from the WEBGL_EXT_texture_norm16 spec
+	 * (https://www.khronos.org/registry/webgl/extensions/EXT_texture_norm16/):
+	 *
+	 * This extension provides a set of new 16-bit signed normalized and unsigned normalized fixed
+	 * point texture, renderbuffer and texture buffer formats. The 16-bit normalized fixed point
+	 * types R16_EXT, RG16_EXT and RGBA16_EXT become available as color-renderable formats.
+	 * Renderbuffers can be created in these formats. These and textures created with type =
+	 * UNSIGNED_SHORT, which will have one of these internal formats, can be attached to
+	 * framebuffer object color attachments for rendering.
+	 *
+	 * The wording suggests that both renderbuffers and textures can be attached to a framebuffer
+	 * object. However, Chromium/ANGLE seems to violate the spec here and does not permit textures.
+	 *
+	 * Exclude WebGL to be safe.
+	 */
+	if(
+		!glext.version.is_webgl &&
+		(glext.texture_norm16 = glcommon_check_extension("GL_EXT_texture_norm16"))
+	) {
 		log_info("Using GL_EXT_texture_norm16");
 		return;
 	}
