@@ -40,29 +40,29 @@ jobs:
         sudo apt update
 
         sudo apt install -y -qq
-          build-essential
-          libsdl2-dev
-          libogg-dev
-          libopusfile-dev
-          libpng-dev
-          libzip-dev
-          libx11-dev
-          libwayland-dev
-          python3-docutils
-          libwebp-dev
-          libfreetype6-dev
-          libzstd-dev
+        build-essential
+        libsdl2-dev
+        libogg-dev
+        libopusfile-dev
+        libpng-dev
+        libzip-dev
+        libx11-dev
+        libwayland-dev
+        python3-docutils
+        libwebp-dev
+        libfreetype6-dev
+        libzstd-dev
 
         pip install
-          meson==0.55.3
-          ninja
-          zstandard
+        meson==0.55.3
+        ninja
+        zstandard
 
     - name: Configure (Meson)
       run: >
         meson setup build/
-          --prefix=$(pwd)/build-test
-          --native-file misc/ci/linux-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+        --native-file misc/ci/linux-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
@@ -99,28 +99,28 @@ jobs:
     - name: Install Build Tools
       run: >
         brew install
-          gcc
-          pkg-config
-          docutils
-          pygments
-          freetype2
-          libzip
-          opusfile
-          libvorbis
-          webp
-          sdl2
-          ninja
+        gcc
+        pkg-config
+        docutils
+        pygments
+        freetype2
+        libzip
+        opusfile
+        libvorbis
+        webp
+        sdl2
+        ninja
 
         pip install
-          meson==0.55.3
-          ninja
-          zstandard
+        meson==0.55.3
+        ninja
+        zstandard
 
     - name: Configure (Meson)
       run: >
         meson setup build/
-          --native-file misc/ci/macos-x86_64-build-test-ci.ini
-          --prefix=$(pwd)/build-test
+        --native-file misc/ci/macos-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
     - name: Build & Install
       run: |
@@ -154,15 +154,15 @@ jobs:
         add-apt-repository ppa:git-core/ppa -y
 
         apt install -y -qq
-          python3-docutils
-          python3-pip
-          git
-          nsis
+        python3-docutils
+        python3-pip
+        git
+        nsis
 
         pip3 install
-          meson==0.55.3
-          ninja
-          zstandard
+        meson==0.55.3
+        ninja
+        zstandard
 
     - name: Checkout Code (Git)
       uses: actions/checkout@v2
@@ -170,10 +170,10 @@ jobs:
         submodules: 'recursive'
 
     - name: Configure Taisei (Meson)
-      run: |
+      run: >
         meson setup build/
-          --prefix=$(pwd)/build-test
-          --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+        --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
 
     - name: Build & Install
       run: |
