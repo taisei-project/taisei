@@ -36,8 +36,9 @@ jobs:
         python-version: '3.x'
 
     - name: Install Build Tools (apt)
-      run: |
+      run: >
         sudo apt update
+
         sudo apt install -y -qq
           build-essential
           libsdl2-dev
@@ -51,14 +52,14 @@ jobs:
           libwebp-dev
           libfreetype6-dev
           libzstd-dev
+
         pip install
           meson==0.55.3
           ninja
           zstandard
 
-    # TODO: turn -Dwerror back on when build is fixed
     - name: Configure (Meson)
-      run: |
+      run: >
         meson setup build/
           --prefix=$(pwd)/build-test
           --native-file misc/ci/linux-x86_64-build-test-ci.ini
@@ -96,7 +97,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install Build Tools
-      run: |
+      run: >
         brew install
           gcc
           pkg-config
@@ -109,16 +110,17 @@ jobs:
           webp
           sdl2
           ninja
+
         pip install
           meson==0.55.3
           ninja
           zstandard
 
     - name: Configure (Meson)
-      run: |
-        meson setup build/ \
-        --native-file misc/ci/macos-x86_64-build-test-ci.ini \
-        --prefix=$(pwd)/build-test
+      run: >
+        meson setup build/
+          --native-file misc/ci/macos-x86_64-build-test-ci.ini
+          --prefix=$(pwd)/build-test
 
     - name: Build & Install
       run: |
@@ -144,15 +146,19 @@ jobs:
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
     - name: Install tools (Apt)
-      run: |
+      run: >
         apt update
+
         apt install -y -qq software-properties-common
+
         add-apt-repository ppa:git-core/ppa -y
+
         apt install -y -qq
           python3-docutils
           python3-pip
           git
           nsis
+
         pip3 install
           meson==0.55.3
           ninja
