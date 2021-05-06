@@ -12,15 +12,17 @@
 #include "random.h"
 #include "util/glm.h"
 
-DEFINE_EXTERN_TASK(common_drop_items) {
-	cmplx p = *ARGS.pos;
-
+void common_drop_items(cmplx pos, const ItemCounts *items) {
 	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
-		for(int j = ARGS.items.as_array[i]; j; --j) {
-			spawn_item(p, i + ITEM_FIRST);
+		for(int j = items->as_array[i]; j; --j) {
+			spawn_item(pos, i + ITEM_FIRST);
 			WAIT(2);
 		}
 	}
+}
+
+DEFINE_EXTERN_TASK(common_drop_items) {
+	common_drop_items(*ARGS.pos, &ARGS.items);
 }
 
 void common_move_loop(cmplx *restrict pos, MoveParams *restrict mp) {

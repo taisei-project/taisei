@@ -63,6 +63,9 @@ DECLARE_EXTERN_TASK(
 	}
 );
 
+void common_drop_items(cmplx pos, const ItemCounts *items)
+	attr_nonnull(2);
+
 int common_charge(int time, const cmplx *anchor, cmplx offset, const Color *color)
 	attr_nonnull(2, 4);
 

@@ -192,11 +192,19 @@ void Swirl(Enemy *e, int t, bool r) { visual_swirl(e, t, r); }
 void Fairy(Enemy *e, int t, bool r) { visual_fairy_blue(e, t, r); }
 void BigFairy(Enemy *e, int t, bool r) { visual_big_fairy(e, t, r); }
 
+TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	if(e->damage_info && DAMAGETYPE_IS_PLAYER(e->damage_info->type)) {
+		common_drop_items(e->pos, &ARGS.items);
+	}
+}
+
 static Enemy *spawn(cmplx pos, const ItemCounts *item_drops, real hp, EnemyVisualRule visual) {
 	Enemy *e = create_enemy_p(&global.enemies, pos, hp, visual, NULL, 0, 0, 0, 0);
 
 	if(item_drops) {
-		INVOKE_TASK_WHEN(&e->events.killed, common_drop_items, &e->pos, *item_drops);
+		INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, ENT_BOX(e), *item_drops);
 	}
 
 	return e;
