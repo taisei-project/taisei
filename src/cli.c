@@ -165,10 +165,19 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			break;
 		case 'd':
 			a->diff = D_Any;
+
 			for(int i = D_Easy ; i <= NUM_SELECTABLE_DIFFICULTIES; i++) {
 				if(strcasecmp(optarg, difficulty_name(i)) == 0) {
 					a->diff = i;
 					break;
+				}
+			}
+
+			if(a->diff == D_Any) {
+				char *end;
+				int dval = strtol(optarg, &end, 10);
+				if(dval >= D_Easy && dval <= D_Lunatic && end == optarg + strlen(optarg)) {
+					a->diff = dval;
 				}
 			}
 
