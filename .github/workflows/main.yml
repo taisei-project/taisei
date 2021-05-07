@@ -27,42 +27,60 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
-
-    - name: Checkout Submodules
-      run: git submodule update --init --recursive
+      with:
+        submodules: 'recursive'
 
     - name: Install Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (pip)
-      run: pip install meson ninja zstandard
-
     - name: Install Build Tools (apt)
-      run: sudo apt update && sudo apt install build-essential libsdl2-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev libwayland-dev python3-docutils libwebp-dev libfreetype6-dev libzstd-dev
+      run: >
+        sudo apt update
 
-    - name: Configure - Step 1 (Meson)
-      run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback --force-fallback-for=cglm build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Dbasis_universal:werror=false -Db_pch=false
+        sudo apt install -y -qq
+        build-essential
+        libsdl2-dev
+        libogg-dev
+        libopusfile-dev
+        libpng-dev
+        libzip-dev
+        libx11-dev
+        libwayland-dev
+        python3-docutils
+        libwebp-dev
+        libfreetype6-dev
+        libzstd-dev
 
-    - name: Build - Step 2 (Ninja)
-      run: meson compile -C build/
+        pip install
+        meson==0.55.3
+        ninja
+        zstandard
 
-    - name: Install - Step 3 (Meson)
-      run: meson install -C build/
+    - name: Configure (Meson)
+      run: >
+        meson setup build/
+        --prefix=$(pwd)/build-test
+        --native-file misc/ci/linux-x86_64-build-test-ci.ini
 
-    - name: Run - Step 4 (Taisei)
-      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/tests/test-replay.tsr
+    - name: Build & Install
+      run: |
+        meson compile -C build/ --verbose
+        meson install -C build/
+
+    - name: Run Test
+      run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
         name: taisei_linux_fail_log
         path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
 
   macos-test-build:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
@@ -70,39 +88,101 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
-
-    - name: Checkout Submodules
-      run: git submodule update --init --recursive
+      with:
+        submodules: 'recursive'
 
     - name: Set Up Build Environment
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (brew)
-      run: brew install gcc meson pkg-config docutils pygments freetype2 libzip opusfile libvorbis webp sdl2 ninja
+    - name: Install Build Tools
+      run: >
+        brew install
+        gcc
+        pkg-config
+        docutils
+        pygments
+        freetype2
+        libzip
+        opusfile
+        libvorbis
+        webp
+        sdl2
+        ninja
 
-    - name: Install Build Tools (pip)
-      run: pip install zstandard
+        pip install
+        meson==0.55.3
+        ninja
+        zstandard
 
-    - name: Configure - Step 1 (Meson)
-      run: meson setup --prefix=$(pwd)/build-test --wrap-mode=nofallback --force-fallback-for=cglm build/ -Db_lto=false -Dstrip=false -Ddeprecation_warnings=no-error -Dwerror=true -Dbasis_universal:werror=false -Db_pch=false
+    - name: Configure (Meson)
+      run: >
+        meson setup build/
+        --native-file misc/ci/macos-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
-    - name: Build - Step 2 (Ninja)
-      run: meson compile -C build/
+    - name: Build & Install
+      run: |
+        meson compile -C build/ --verbose
+        meson install -C build/
 
-    - name: Install - Step 3 (Meson)
-      run: meson install -C build/
-
-    - name: Run - Step 4 (Taisei)
-      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/tests/test-replay.tsr
+    - name: Run Test
+      run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: 0
         TAISEI_PRELOAD_REQUIRED: 1
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
-      if: failure()
       with:
         name: taisei_macos_fail_log
         path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
+
+  windows-test-build:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
+    steps:
+    - name: Install tools (Apt)
+      run: >
+        apt update
+
+        apt install -y -qq software-properties-common
+
+        add-apt-repository ppa:git-core/ppa -y
+
+        apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+        nsis
+
+        pip3 install
+        meson==0.55.3
+        ninja
+        zstandard
+
+    - name: Checkout Code (Git)
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Configure Taisei (Meson)
+      run: >
+        meson setup build/
+        --prefix=$(pwd)/build-test
+        --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
+
+    - name: Build & Install
+      run: |
+        meson compile -C build/ --verbose
+        meson install -C build/
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_windows_fail_log
+        path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
