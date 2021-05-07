@@ -4,15 +4,16 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
-#ifndef IGUARD_stages_stage5_timeline_h
-#define IGUARD_stages_stage5_timeline_h
+#ifndef IGUARD_stages_entities_h
+#define IGUARD_stages_entities_h
 
 #include "taisei.h"
 
-#include "boss.h"
+#include "stage5/entities.h"
 
-DECLARE_EXTERN_TASK(stage5_timeline, NO_ARGS);
+#define ENTITIES_STAGES(X, ...) \
+	ENTITIES_STAGE5(X, __VA_ARGS__) \
 
-#endif // IGUARD_stages_stage5_timeline_h
+#endif // IGUARD_stages_entities_h
