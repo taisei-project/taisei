@@ -1,4 +1,4 @@
-name: taisei-build-tests
+name: Taisei Test Builds (CI)
 on:
   push:
     branches:
@@ -20,8 +20,16 @@ on:
       - "**.yaml"
       - "**.build"
 
+# TODO: use later version when it releases
+env:
+  EM_VERSION: '2.0.19'
+  EM_CACHE_FOLDER: 'emsdk'
+  TAISEI_NOPRELOAD: 0
+  TAISEI_PRELOAD_REQUIRED: 1
+
 jobs:
   linux-test-build:
+    name: Linux Test Build (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -54,7 +62,7 @@ jobs:
         libzstd-dev
 
         pip install
-        meson==0.55.3
+        meson==0.56.2
         ninja
         zstandard
 
@@ -72,8 +80,8 @@ jobs:
     - name: Run Test
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
-        TAISEI_NOPRELOAD: 0
-        TAISEI_PRELOAD_REQUIRED: 1
+        TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
+        TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
@@ -83,6 +91,7 @@ jobs:
         if-no-files-found: warn
 
   macos-test-build:
+    name: macOS Test Build (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: macos-10.15
     steps:
@@ -112,7 +121,7 @@ jobs:
         ninja
 
         pip install
-        meson==0.55.3
+        meson==0.56.2
         ninja
         zstandard
 
@@ -130,8 +139,8 @@ jobs:
     - name: Run Test
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
-        TAISEI_NOPRELOAD: 0
-        TAISEI_PRELOAD_REQUIRED: 1
+        TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
+        TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
@@ -141,6 +150,7 @@ jobs:
         if-no-files-found: warn
 
   windows-test-build:
+    name: Windows Test Build (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
@@ -160,7 +170,7 @@ jobs:
         nsis
 
         pip3 install
-        meson==0.55.3
+        meson==0.56.2
         ninja
         zstandard
 
@@ -184,5 +194,80 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: taisei_windows_fail_log
+        path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
+
+  emscripten-test-build:
+    name: Emscripten Test Build (WebGL)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Set Up Build Environment
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Build Tools
+      run: >
+        sudo apt update
+
+        sudo apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+
+        pip install
+        meson==0.56.2
+        ninja
+        zstandard
+
+    - name: Pull cached emsdk
+      id: cache-emsdk
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.EM_CACHE_FOLDER }}
+        key: ${{ env.EM_VERSION }}-${{ runner.os }}
+
+    - name: Install emsdk
+      if: steps.cache-emsdk.outputs.cache-hit != 'true'
+      run: |
+        rm -rf emsdk/
+        git clone https://github.com/emscripten-core/emsdk.git
+        emsdk/emsdk install ${{ env.EM_VERSION }}
+        emsdk/emsdk activate ${{ env.EM_VERSION }}
+
+    - name: Verify emsdk
+      run: |
+        source emsdk/emsdk_env.sh
+        emcc -v
+
+    - name: Configure (Meson)
+      run: >
+        source emsdk/emsdk_env.sh
+
+        meson setup build/
+        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+
+        meson configure
+        -Dbuild.cpp_std=gnu++14
+        build/
+
+    - name: Build
+      run: |
+        source emsdk/emsdk_env.sh
+        # run twice due to a header race condition with SPIRV-Tools
+        meson compile txz -C build/ --verbose || true
+        meson compile txz -C build/ --verbose
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_emscripten_build_log
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
