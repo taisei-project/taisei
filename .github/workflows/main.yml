@@ -20,7 +20,7 @@ on:
       - "**.yaml"
       - "**.build"
 
-# TODO: use later version when it releases
+# TODO: use later fixed version of emscripten when it releases
 env:
   EM_VERSION: '2.0.19'
   EM_CACHE_FOLDER: 'emsdk'
@@ -45,7 +45,7 @@ jobs:
 
     - name: Install Build Tools (apt)
       run: >
-        sudo apt update
+        sudo apt update || true
 
         sudo apt install -y -qq
         build-essential
@@ -157,7 +157,7 @@ jobs:
     steps:
     - name: Install tools (Apt)
       run: >
-        apt update
+        apt update || true
 
         apt install -y -qq software-properties-common
 
@@ -214,7 +214,7 @@ jobs:
 
     - name: Install Build Tools
       run: >
-        sudo apt update
+        sudo apt update || true
 
         sudo apt install -y -qq
         python3-docutils
@@ -245,12 +245,17 @@ jobs:
       run: |
         source emsdk/emsdk_env.sh
         emcc -v
+        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$(pwd)/emsdk/upstream/emscripten/'
+        EOF
 
     - name: Configure (Meson)
       run: >
         source emsdk/emsdk_env.sh
 
         meson setup build/
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -262,8 +267,8 @@ jobs:
       run: |
         source emsdk/emsdk_env.sh
         # run twice due to a header race condition with SPIRV-Tools
-        meson compile txz -C build/ --verbose || true
-        meson compile txz -C build/ --verbose
+        meson compile tar -C build/ --verbose || true
+        meson compile tar -C build/ --verbose
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
