@@ -174,7 +174,7 @@ jobs:
         ninja
         zstandard
 
-    - name: Checkout Code (Git)
+    - name: Checkout Code
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
@@ -383,5 +383,36 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: taisei_emscripten_latest_build_log
+        path: build/meson-logs/meson-log.txt
+
+  switch-test-build:
+    name: Switch (ARM64)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    container: taiseiproject/switch-toolkit:20210520
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Configure
+      run: >
+        switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
+
+        meson setup build/
+        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --prefix=$(pwd)/build-test
+
+    - name: Build
+      run: >
+        meson compile -C build/ --verbose
+        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --prefix=$(pwd)/build-test
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_switch_build_log
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
