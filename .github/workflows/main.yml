@@ -66,13 +66,13 @@ jobs:
         ninja
         zstandard
 
-    - name: Configure (Meson)
+    - name: Configure
       run: >
         meson setup build/
-        --prefix=$(pwd)/build-test
         --native-file misc/ci/linux-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -125,13 +125,13 @@ jobs:
         ninja
         zstandard
 
-    - name: Configure (Meson)
+    - name: Configure
       run: >
         meson setup build/
         --native-file misc/ci/macos-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -182,10 +182,10 @@ jobs:
     - name: Configure Taisei (Meson)
       run: >
         meson setup build/
-        --prefix=$(pwd)/build-test
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -250,7 +250,7 @@ jobs:
         toolchain = '$(pwd)/emsdk/upstream/emscripten/'
         EOF
 
-    - name: Configure (Meson)
+    - name: Configure
       run: >
         source emsdk/emsdk_env.sh
 
@@ -274,5 +274,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: taisei_emscripten_build_log
-        path: build/meson-logs/meson-log.txt
+        path: build/emscripten/meson-logs/meson-log.txt
         if-no-files-found: warn
