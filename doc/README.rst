@@ -12,6 +12,8 @@ Development
   logic
 * `ENVIRONMENT.rst <./ENVIRONMENT.rst>`__ - various environment variables built
   into Taisei to modify its core settings, when run from the command line
+* `CI.rst <./CI.rst>`__ - details on the automatic builds performed with
+  GitHub Actions and Docker
 
 Graphics
 --------
