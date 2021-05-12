@@ -1,4 +1,4 @@
-name: Taisei Test Builds (CI)
+name: Taisei Test Build (CI)
 on:
   push:
     branches:
@@ -29,7 +29,7 @@ env:
 
 jobs:
   linux-test-build:
-    name: Linux Test Build (x64)
+    name: Linux Test (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -43,7 +43,7 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (apt)
+    - name: Install Tools
       run: >
         sudo apt update || true
 
@@ -77,7 +77,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Run Test
+    - name: Test (Taisei)
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -91,7 +91,7 @@ jobs:
         if-no-files-found: warn
 
   macos-test-build:
-    name: macOS Test Build (x64)
+    name: macOS Test (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: macos-10.15
     steps:
@@ -100,12 +100,12 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Set Up Build Environment
+    - name: Install Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools
+    - name: Install Tools
       run: >
         brew install
         gcc
@@ -136,7 +136,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Run Test
+    - name: Test (Taisei)
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -150,12 +150,12 @@ jobs:
         if-no-files-found: warn
 
   windows-test-build:
-    name: Windows Test Build (x64)
+    name: Windows Test (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
-    - name: Install tools (Apt)
+    - name: Install Tools
       run: >
         apt update || true
 
@@ -198,7 +198,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-test-build:
-    name: Emscripten Test Build (WebGL)
+    name: Emscripten Test (WebGL)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -207,12 +207,12 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Set Up Build Environment
+    - name: Install Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools
+    - name: Install Tools
       run: >
         sudo apt update || true
 
@@ -266,7 +266,7 @@ jobs:
     - name: Build
       run: |
         source emsdk/emsdk_env.sh
-        # run twice due to a header race condition with SPIRV-Tools
+        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
         meson compile tar -C build/ --verbose || true
         meson compile tar -C build/ --verbose
 
