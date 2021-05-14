@@ -860,6 +860,10 @@ static void coevent_wake_subscribers(CoEvent *evt, uint num_subs, BoxedTask subs
 }
 
 void coevent_signal(CoEvent *evt) {
+	if(UNLIKELY(evt->unique_id == 0)) {
+		return;
+	}
+
 	++evt->num_signaled;
 	EVT_DEBUG("Signal event %p (uid = %u; num_signaled = %u)", (void*)evt, evt->unique_id, evt->num_signaled);
 	assert(evt->num_signaled != 0);
@@ -888,7 +892,6 @@ void coevent_cancel(CoEvent *evt) {
 
 	EVT_DEBUG("[%lu] BEGIN Cancel event %p (uid = %u; num_signaled = %u)", ev,  (void*)evt, evt->unique_id, evt->num_signaled);
 	EVT_DEBUG("[%lu] SUBS = %p", ev,  (void*)evt->subscribers.data);
-	evt->num_signaled = 0;
 	evt->unique_id = 0;
 
 	if(evt->subscribers.num_elements) {
