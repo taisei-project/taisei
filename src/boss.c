@@ -191,10 +191,6 @@ static bool boss_attack_is_final(Boss *boss, Attack *a) {
 	return boss_get_final_attack(boss) == a;
 }
 
-static bool attack_is_over(Attack *a) {
-	return a->hp <= 0 && global.frames > a->endtime;
-}
-
 static void update_healthbar(Boss *boss) {
 	bool radial = healthbar_style_is_radial();
 	bool player_nearby = radial && cabs(boss->pos - global.plr.pos) < 128;
@@ -202,20 +198,6 @@ static void update_healthbar(Boss *boss) {
 	float target_opacity = 1.0;
 	float target_fill = 0.0;
 	float target_altfill = 0.0;
-
-	if(
-		boss_is_dying(boss) ||
-		boss_is_fleeing(boss) ||
-		!boss->current ||
-		boss->current->type == AT_Move ||
-		dialog_is_active(global.dialog)
-	) {
-		target_opacity = 0.0;
-	}
-
-	if(player_nearby) {
-		target_opacity *= 0.25;
-	}
 
 	Attack *a_prev = NULL;
 	Attack *a_cur = NULL;
@@ -238,16 +220,24 @@ static void update_healthbar(Boss *boss) {
 			continue;
 		}
 
-		if(attack_is_over(a)) {
+		if(a->hp <= 0 && attack_has_finished(a)) {
 			a_prev = a;
 		}
 	}
 
-	/*
-	log_debug("prev = %s", a_prev ? a_prev->name : NULL);
-	log_debug("cur = %s", a_cur ? a_cur->name : NULL);
-	log_debug("next = %s", a_next ? a_next->name : NULL);
-	*/
+	if(
+		boss_is_dying(boss) ||
+		boss_is_fleeing(boss) ||
+		!a_cur ||
+		a_cur->type == AT_Move ||
+		dialog_is_active(global.dialog)
+	) {
+		target_opacity = 0.0;
+	}
+
+	if(player_nearby) {
+		target_opacity *= 0.25;
+	}
 
 	if(a_cur != NULL) {
 		float total_maxhp = 0, total_hp = 0;
@@ -311,7 +301,10 @@ static void update_healthbar(Boss *boss) {
 
 	fapproach_asymptotic_p(&boss->healthbar.opacity, target_opacity, opacity_update_speed, 1e-3);
 
-	if(boss_is_vulnerable(boss) || (a_cur && a_cur->type == AT_SurvivalSpell && global.frames - a_cur->starttime > 0)) {
+	if(
+		boss_is_vulnerable(boss) ||
+		(a_cur && a_cur->type == AT_SurvivalSpell && attack_has_started(a_cur))
+	) {
 		update_speed *= (1 + 4 * pow(1 - target_fill, 2));
 	}
 
@@ -336,7 +329,7 @@ static void update_hud(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(!boss->current || !ATTACK_IS_SPELL(boss->current->type) || boss->current->finished) {
+	if(!boss->current || !ATTACK_IS_SPELL(boss->current->type) || attack_has_finished(boss->current)) {
 		target_spell_opacity = 0.0;
 	}
 
@@ -344,7 +337,7 @@ static void update_hud(Boss *boss) {
 		target_plrproximity_opacity = 0.25;
 	}
 
-	if(boss->current && !boss->current->finished && boss->current->type != AT_Move) {
+	if(boss->current && !attack_has_finished(boss->current) && boss->current->type != AT_Move) {
 		int frames = boss->current->timeout + imin(0, boss->current->starttime - global.frames);
 		boss->hud.attack_timer = clamp((frames)/(double)FPS, 0, 99.999);
 	}
@@ -439,7 +432,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	bool cullcap_saved = r_capability_current(RCAP_CULL_FACE);
 	r_disable(RCAP_CULL_FACE);
 
-	int delay = b->current->type == AT_ExtraSpell ? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY;
+	int delay = attacktype_start_delay(b->current->type);
 	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
 
 	r_mat_mv_push();
@@ -634,8 +627,8 @@ DEFINE_TASK(boss_particles) {
 		Color *shadowcolor = &boss->shadowcolor;
 
 		Attack *cur = boss->current;
-		bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !cur->endtime;
-		bool is_extra = cur && cur->type == AT_ExtraSpell && global.frames >= cur->starttime;
+		bool is_spell = cur && ATTACK_IS_SPELL(cur->type) && !attack_has_finished(cur);
+		bool is_extra = cur && cur->type == AT_ExtraSpell && attack_has_started(cur);
 
 		if(!(global.frames % 13) && !is_extra) {
 			ENT_ARRAY_COMPACT(&smoke_parts);
@@ -715,7 +708,11 @@ void draw_boss_overlay(Boss *boss) {
 		return;
 	}
 
-	if(boss->current->type == AT_Move && global.frames - boss->current->starttime > 0 && boss_attack_is_final(boss, boss->current)) {
+	if(
+		boss->current->type == AT_Move &&
+		attack_has_started(boss->current) &&
+		boss_attack_is_final(boss, boss->current)
+	) {
 		return;
 	}
 
@@ -727,12 +724,7 @@ void draw_boss_overlay(Boss *boss) {
 		if(ATTACK_IS_SPELL(boss->current->type)) {
 			int t_portrait, t_spell;
 			t_portrait = t_spell = global.frames - boss->current->starttime;
-
-			if(boss->current->type == AT_ExtraSpell) {
-				t_portrait += ATTACK_START_DELAY_EXTRA;
-			} else {
-				t_portrait += ATTACK_START_DELAY;
-			}
+			t_portrait += attacktype_start_delay(boss->current->type);
 
 			draw_spell_portrait(boss, t_portrait);
 			draw_spell_name(boss, t_spell, radial_style);
@@ -842,18 +834,32 @@ static void boss_rule_extra(Boss *boss, float alpha) {
 }
 
 bool boss_is_dying(Boss *boss) {
-	return boss->current && boss->current->endtime && boss->current->type != AT_Move && boss_attack_is_final(boss, boss->current);
+	return
+		boss->current &&
+		attack_has_finished(boss->current) &&
+		boss->current->type != AT_Move &&
+		boss_attack_is_final(boss, boss->current);
 }
 
 bool boss_is_fleeing(Boss *boss) {
-	return boss->current && boss->current->type == AT_Move && boss_attack_is_final(boss, boss->current);
+	return
+		boss->current &&
+		boss->current->type == AT_Move &&
+		boss_attack_is_final(boss, boss->current);
 }
 
 bool boss_is_vulnerable(Boss *boss) {
-	return boss->current && boss->current->type != AT_Move && boss->current->type != AT_SurvivalSpell && !boss->current->finished;
+	Attack *atk = boss->current;
+
+	return
+		atk &&
+		atk->type != AT_Move &&
+		atk->type != AT_SurvivalSpell &&
+		!attack_has_finished(atk);
 }
 
 bool boss_is_player_collision_active(Boss *boss) {
+	// TODO: possibly only enable if attack_is_active()?
 	return boss->current && !boss_is_dying(boss) && !boss_is_fleeing(boss);
 }
 
@@ -908,9 +914,9 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
-	bonus->failed = a->failtime > 0;
+	bonus->failed = attack_was_failed(a);
 
-	int time_left = fmax(0, a->starttime + a->timeout - global.frames);
+	int time_left = iclamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
 
 	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);
@@ -962,22 +968,29 @@ static void boss_give_spell_bonus(Boss *boss, Attack *a, Player *plr) {
 	}
 }
 
+int attacktype_start_delay(AttackType t) {
+	switch(t) {
+		case AT_ExtraSpell: return ATTACK_START_DELAY_EXTRA;
+		default: return ATTACK_START_DELAY;
+	}
+}
+
+int attacktype_end_delay(AttackType t) {
+	switch(t) {
+		case AT_Spellcard:      return ATTACK_END_DELAY_SPELL;
+		case AT_SurvivalSpell:  return ATTACK_END_DELAY_SURV;
+		case AT_ExtraSpell:     return ATTACK_END_DELAY_EXTRA;
+		case AT_Move:           return ATTACK_END_DELAY_MOVE;
+		default:                return ATTACK_END_DELAY;
+	}
+}
+
 static int attack_end_delay(Boss *boss) {
 	if(boss_attack_is_final(boss, boss->current)) {
 		return BOSS_DEATH_DELAY;
 	}
 
-	int delay = 0;
-
-	switch(boss->current->type) {
-		case AT_Spellcard:      delay = ATTACK_END_DELAY_SPELL; break;
-		case AT_SurvivalSpell:  delay = ATTACK_END_DELAY_SURV;  break;
-		case AT_ExtraSpell:     delay = ATTACK_END_DELAY_EXTRA; break;
-		case AT_Move:           delay = ATTACK_END_DELAY_MOVE;  break;
-		default:                delay = ATTACK_END_DELAY;       break;
-	}
-
-	return delay;
+	return attacktype_end_delay(boss->current->type);
 }
 
 static void boss_call_rule(Boss *boss, int t) {
@@ -990,7 +1003,6 @@ void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
 	boss->current->hp = 0;
-	boss->current->finished = true;
 	boss_call_rule(boss, EVENT_DEATH);
 
 	aniplayer_soft_switch(&boss->ani,"main",0);
@@ -1002,7 +1014,7 @@ void boss_finish_current_attack(Boss *boss) {
 	if(ATTACK_IS_SPELL(t)) {
 		boss_give_spell_bonus(boss, boss->current, &global.plr);
 
-		if(!boss->current->failtime) {
+		if(!attack_was_failed(boss->current)) {
 			StageProgress *p = get_spellstage_progress(boss->current, NULL, true);
 
 			if(p) {
@@ -1020,7 +1032,7 @@ void boss_finish_current_attack(Boss *boss) {
 		spawn_items(boss->pos,
 			ITEM_POWER,  14,
 			ITEM_POINTS, 12,
-			ITEM_BOMB_FRAGMENT, (boss->current->failtime ? 0 : 1)
+			ITEM_BOMB_FRAGMENT, (attack_was_failed(boss->current) ? 0 : 1)
 		);
 	}
 
@@ -1050,20 +1062,20 @@ void process_boss(Boss **pboss) {
 	}
 
 	if(boss->current->type == AT_Immediate) {
-		boss->current->finished = true;
 		boss->current->endtime = global.frames;
 		boss->current->endtime_undelayed = global.frames;
+		coevent_signal_once(&boss->current->events.finished);
 	}
 
 	int time = global.frames - boss->current->starttime;
 	bool extra = boss->current->type == AT_ExtraSpell;
-	bool over = boss->current->finished && global.frames >= boss->current->endtime;
+	bool over = attack_has_finished(boss->current) && global.frames >= boss->current->endtime;
 
 	if(time == 0) {
 		coevent_signal_once(&boss->current->events.started);
 	}
 
-	if(!boss->current->endtime) {
+	if(!attack_has_finished(boss->current)) {
 		int remaining = boss->current->timeout - time;
 
 		if(boss->current->type != AT_Move && remaining <= 11*FPS && remaining > 0 && !(time % FPS)) {
@@ -1078,7 +1090,7 @@ void process_boss(Boss **pboss) {
 		float ampl = 0.2;
 		float s = sin(time / 90.0 + M_PI*1.2);
 
-		if(boss->current->endtime) {
+		if(attack_has_finished(boss->current)) {
 			float p = (boss->current->endtime - global.frames)/(float)ATTACK_END_DELAY_EXTRA;
 			float a = fmax((base + ampl * s) * p * 0.5, 5 * pow(1 - p, 3));
 			if(a < 2) {
@@ -1116,7 +1128,7 @@ void process_boss(Boss **pboss) {
 	bool timedout = time > boss->current->timeout;
 
 	if((boss->current->type != AT_Move && boss->current->hp <= 0) || timedout) {
-		if(!boss->current->endtime) {
+		if(!attack_has_finished(boss->current)) {
 			if(timedout && boss->current->type != AT_SurvivalSpell) {
 				boss->current->failtime = global.frames;
 			}
@@ -1206,7 +1218,11 @@ void process_boss(Boss **pboss) {
 	#endif
 
 	if(over) {
-		if(global.stage->type == STAGE_SPELL && boss->current->type != AT_Move && boss->current->failtime) {
+		if(
+			global.stage->type == STAGE_SPELL &&
+			boss->current->type != AT_Move &&
+			attack_was_failed(boss->current)
+		) {
 			stage_gameover();
 		}
 
@@ -1352,7 +1368,7 @@ void boss_start_attack(Boss *b, Attack *a) {
 	b->bomb_damage_multiplier = 1.0;
 	b->shot_damage_multiplier = 1.0;
 
-	a->starttime = global.frames + (a->type == AT_ExtraSpell? ATTACK_START_DELAY_EXTRA : ATTACK_START_DELAY);
+	a->starttime = global.frames + attacktype_start_delay(a->type);
 	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
@@ -1393,8 +1409,6 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 
 	a->rule = rule;
 	a->draw_rule = draw_rule;
-
-	a->starttime = global.frames;
 
 	COEVENT_INIT_ARRAY(a->events);
 

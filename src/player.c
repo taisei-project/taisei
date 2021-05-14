@@ -375,13 +375,15 @@ DEFINE_TASK(player_indicators) {
 }
 
 static void player_fail_spell(Player *plr) {
-	if( !global.boss ||
-		!global.boss->current ||
-		global.boss->current->finished ||
-		global.boss->current->failtime ||
-		global.boss->current->starttime >= global.frames ||
-		global.stage->type == STAGE_SPELL
-	) {
+	Boss *boss = global.boss;
+
+	if(!boss || global.stage->type == STAGE_SPELL) {
+		return;
+	}
+
+	Attack *atk = boss->current;
+
+	if(!atk || !attack_is_active(atk) || attack_was_failed(atk)) {
 		return;
 	}
 

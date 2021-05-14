@@ -100,16 +100,14 @@ struct Attack {
 	AttackType type;
 
 	int starttime;
-	int timeout;
 	int endtime;
 	int endtime_undelayed;
+	int failtime;
+	int timeout;
 
 	float bonus_base;
 	float maxhp;
 	float hp;
-
-	bool finished;
-	int failtime;
 
 	BossRule rule;
 	BossRule draw_rule;
@@ -123,6 +121,22 @@ struct Attack {
 
 	AttackInfo *info; // NULL for attacks created directly through boss_add_attack
 };
+
+static inline bool attack_has_started(const Attack *atk) {
+	return atk->events.started.num_signaled;
+}
+
+static inline bool attack_has_finished(const Attack *atk) {
+	return atk->events.finished.num_signaled;
+}
+
+static inline bool attack_was_failed(const Attack *atk) {
+	return atk->failtime > 0;
+}
+
+static inline bool attack_is_active(const Attack *atk) {
+	return attack_has_started(atk) && !attack_has_finished(atk);
+}
 
 DEFINE_ENTITY_TYPE(Boss, {
 	cmplx pos;
@@ -213,5 +227,8 @@ void boss_preload(void);
 Boss *init_boss_attack_task(BoxedBoss boss, Attack *attack);
 #define INIT_BOSS_ATTACK() init_boss_attack_task(ARGS.boss, ARGS.attack)
 #define BEGIN_BOSS_ATTACK() WAIT_EVENT_OR_DIE(&ARGS.attack->events.started)
+
+int attacktype_start_delay(AttackType t) attr_const;
+int attacktype_end_delay(AttackType t) attr_const;
 
 #endif // IGUARD_boss_h

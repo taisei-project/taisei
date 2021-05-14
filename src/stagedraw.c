@@ -24,6 +24,9 @@
 	#define OBJPOOLSTATS_DEFAULT 0
 #endif
 
+#define SPELL_INTRO_DURATION 120
+#define SPELL_INTRO_TIME_FACTOR 0.8
+
 static struct {
 	struct {
 		ShaderProgram *shader;
@@ -519,7 +522,7 @@ static void draw_spellbg(int t) {
 	float scale = 1;
 
 	if(t < 0) {
-		scale = 1.0 - t/(float)ATTACK_START_DELAY;
+		scale = 1.0 - t/attacktype_start_delay(b->current->type);
 	}
 
 	r_draw_sprite(&(SpriteParams) {
@@ -535,12 +538,7 @@ static void draw_spellbg(int t) {
 static void draw_spellbg_overlay(int t) {
 	Boss *b = global.boss;
 
-	float delay = ATTACK_START_DELAY;
-
-	if(b->current->type == AT_ExtraSpell) {
-		delay = ATTACK_START_DELAY_EXTRA;
-	}
-
+	float delay = attacktype_start_delay(b->current->type);
 	float f = (ATTACK_START_DELAY - t) / (delay + ATTACK_START_DELAY);
 
 	if(f > 0) {
@@ -552,16 +550,10 @@ static inline bool should_draw_stage_bg(void) {
 	if(!global.boss || !global.boss->current)
 		return true;
 
-	int render_delay = 1.25*ATTACK_START_DELAY; // hand tuned... not ideal
-	if(global.boss->current->type == AT_ExtraSpell)
-		render_delay = 0;
-
 	return (
-		!global.boss
-		|| !global.boss->current
-		|| !global.boss->current->draw_rule
-		|| global.boss->current->endtime
-		|| (global.frames - global.boss->current->starttime) < render_delay
+		!global.boss->current->draw_rule
+		|| !attack_is_active(global.boss->current)
+		|| global.frames - global.boss->current->starttime < SPELL_INTRO_DURATION
 	);
 }
 
@@ -763,11 +755,12 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 		}
 	}
 
-	if(b && b->current && b->current->draw_rule) {
+	if(b && b->current && b->current->draw_rule && b->current->starttime > 0) {
 		int t = global.frames - b->current->starttime;
+		int delay = attacktype_start_delay(b->current->type);
 
-		bool trans_intro = t < ATTACK_START_DELAY;
-		bool trans_outro = b->current->endtime;
+		bool trans_intro = t + delay < SPELL_INTRO_DURATION;
+		bool trans_outro = attack_has_finished(b->current);
 
 		if(!trans_intro && !trans_outro) {
 			draw_full_spellbg(t, fbos);
@@ -781,21 +774,12 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 
 			cmplx pos = b->pos;
 			float ratio = (float)VIEWPORT_H/VIEWPORT_W;
-			float delay;
 
 			if(trans_intro) {
-				float duration = ATTACK_START_DELAY_EXTRA;
-
-				if(b->current->type == AT_ExtraSpell) {
-					delay = ATTACK_START_DELAY_EXTRA;
-				} else {
-					delay = ATTACK_START_DELAY;
-				}
-
 				r_shader("spellcard_intro");
 				r_uniform_float("ratio", ratio);
 				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
-				r_uniform_float("t", (t + delay) / duration);
+				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
 				int tn = global.frames - b->current->endtime;
 				delay = b->current->endtime - b->current->endtime_undelayed;
@@ -803,7 +787,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
 				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
-				r_uniform_float("t", fmax(0, tn / delay + 1));
+				r_uniform_float("t", fmax(0, tn / (float)delay + 1));
 			}
 
 			r_blend(BLEND_PREMUL_ALPHA);
@@ -1655,7 +1639,15 @@ void stage_draw_hud(void) {
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
 		extraspell_fadein  = fmin(1, -fmin(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
-		float fadeout = global.boss->current->finished * (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+
+		float fadeout;
+
+		if(attack_has_finished(global.boss->current)) {
+			fadeout = (1 - (global.boss->current->endtime - global.frames) / (float)ATTACK_END_DELAY_EXTRA) / 0.74;
+		} else {
+			fadeout = 0;
+		}
+
 		float fade = fmax(extraspell_fadein, fadeout);
 		extraspell_alpha = 1 - fade;
 	}
