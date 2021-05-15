@@ -21,7 +21,7 @@
 
 typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
-typedef void *(*CoTaskFunc)(void *arg);
+typedef void *(*CoTaskFunc)(void *arg, size_t argsize);
 
 // target for the INVOKE_TASK macro
 extern CoSched *_cosched_global;
@@ -94,7 +94,6 @@ void coroutines_init(void);
 void coroutines_shutdown(void);
 void coroutines_draw_stats(void);
 
-CoTask *cotask_new(CoTaskFunc func);
 void cotask_free(CoTask *task);
 bool cotask_cancel(CoTask *task);
 void *cotask_resume(CoTask *task, void *arg);
@@ -128,9 +127,11 @@ void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*));
 #define COEVENT_CANCEL_ARRAY(array) COEVENT_ARRAY_ACTION(coevent_cancel, array)
 
 void cosched_init(CoSched *sched);
-CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, bool is_subtask, CoTaskDebugInfo debug);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
-#define cosched_new_task(sched, func, arg, debug_label) _cosched_new_task(sched, func, arg, false, COTASK_DEBUG_INFO(debug_label))
-#define cosched_new_subtask(sched, func, arg, debug_label) _cosched_new_task(sched, func, arg, true, COTASK_DEBUG_INFO(debug_label))
+CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug);  // creates and runs the task, schedules it for resume on cosched_run_tasks if it's still alive
+#define cosched_new_task(sched, func, arg, arg_size, debug_label) \
+	_cosched_new_task(sched, func, arg, arg_size, false, COTASK_DEBUG_INFO(debug_label))
+#define cosched_new_subtask(sched, func, arg, arg_size, debug_label) \
+	_cosched_new_task(sched, func, arg, arg_size, true, COTASK_DEBUG_INFO(debug_label))
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
 void cosched_finish(CoSched *sched);
 
@@ -150,7 +151,22 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 #define DEFINE_TASK_INTERFACE(iface, argstruct) \
 	typedef TASK_ARGS_STRUCT(argstruct) TASK_IFACE_ARGS_TYPE(iface); \
-	typedef struct { void *(*_cotask_##iface##_thunk)(void*); } TASK_INDIRECT_TYPE(iface)  /* require semicolon */
+	typedef struct { \
+		CoTaskFunc _cotask_##iface##_thunk; \
+	} TASK_INDIRECT_TYPE(iface)  /* require semicolon */
+
+#define DEFINE_TASK_INTERFACE_WITH_BASE(iface, ibase, argstruct) \
+	typedef struct { \
+		TASK_IFACE_ARGS_TYPE(ibase) base; \
+		TASK_ARGS_STRUCT(argstruct); \
+	} TASK_IFACE_ARGS_TYPE(iface); \
+	typedef struct { \
+		union { \
+			TASK_INDIRECT_TYPE(ibase) base; \
+			CoTaskFunc _cotask_##iface##_thunk; \
+			CoTaskFunc _cotask_##ibase##_thunk; \
+		}; \
+	} TASK_INDIRECT_TYPE(iface)  /* require semicolon */\
 
 #define TASK_INDIRECT_TYPE_ALIAS(task) TASK_IFACE_NAME(task, HANDLEALIAS)
 
@@ -173,21 +189,32 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	/* user-defined type of args struct */ \
 	typedef argstype TASK_ARGS_TYPE(name); \
 	/* type of internal args struct for INVOKE_TASK_DELAYED */ \
-	struct TASK_ARGSDELAY_NAME(name) { TASK_ARGS_TYPE(name) real_args; int delay; }; \
+	struct TASK_ARGSDELAY_NAME(name) { \
+		int delay; \
+		/* NOTE: this must be last for interface inheritance to work! */ \
+		TASK_ARGS_TYPE(name) real_args; \
+	}; \
 	/* type of internal args struct for INVOKE_TASK_WHEN */ \
-	struct TASK_ARGSCOND_NAME(name) { TASK_ARGS_TYPE(name) real_args; CoEvent *event; bool unconditional; }; \
+	struct TASK_ARGSCOND_NAME(name) { \
+		CoEvent *event; \
+		bool unconditional; \
+		/* NOTE: this must be last for interface inheritance to work! */ \
+		TASK_ARGS_TYPE(name) real_args; \
+	}; \
 	/* task entry point for INVOKE_TASK */ \
-	attr_unused linkage void *COTASKTHUNK_##name(void *arg); \
+	attr_unused linkage void *COTASKTHUNK_##name(void *arg, size_t arg_size); \
 	/* task entry point for INVOKE_TASK_DELAYED */ \
-	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg); \
+	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg, size_t arg_size); \
 	/* task entry point for INVOKE_TASK_WHEN and INVOKE_TASK_AFTER */ \
-	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) /* require semicolon */ \
+	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg, size_t arg_size) /* require semicolon */ \
 
 #define TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
 	/* task entry point for INVOKE_TASK */ \
-	attr_unused linkage void *COTASKTHUNK_##name(void *arg) { \
+	attr_unused linkage void *COTASKTHUNK_##name(void *arg, size_t arg_size) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
-		TASK_ARGS_TYPE(name) args_copy = *(TASK_ARGS_TYPE(name)*)arg; \
+		TASK_ARGS_TYPE(name) args_copy = { 0 }; \
+		assume(sizeof(args_copy) >= arg_size); \
+		memcpy(&args_copy, arg, arg_size); \
 		/* call prologue */ \
 		COTASKPROLOGUE_##name(&args_copy); \
 		/* call body */ \
@@ -196,9 +223,11 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		return NULL; \
 	} \
 	/* task entry point for INVOKE_TASK_DELAYED */ \
-	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg) { \
+	attr_unused linkage void *COTASKTHUNKDELAY_##name(void *arg, size_t arg_size) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
-		TASK_ARGSDELAY(name) args_copy = *(TASK_ARGSDELAY(name)*)arg; \
+		TASK_ARGSDELAY(name) args_copy = { 0 }; \
+		assume(sizeof(args_copy) >= arg_size); \
+		memcpy(&args_copy, arg, arg_size); \
 		/* if delay is negative, bail out early */ \
 		if(args_copy.delay < 0) return NULL; \
 		/* wait out the delay */ \
@@ -211,9 +240,11 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		return NULL; \
 	} \
 	/* task entry point for INVOKE_TASK_WHEN and INVOKE_TASK_AFTER */ \
-	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg) { \
+	attr_unused linkage void *COTASKTHUNKCOND_##name(void *arg, size_t arg_size) { \
 		/* copy args to our coroutine stack so that they're valid after caller returns */ \
-		TASK_ARGSCOND(name) args_copy = *(TASK_ARGSCOND(name)*)arg; \
+		TASK_ARGSCOND(name) args_copy = { 0 }; \
+		assume(sizeof(args_copy) >= arg_size); \
+		memcpy(&args_copy, arg, arg_size); \
 		/* wait for event, and if it wasn't canceled (or if we want to run unconditionally)... */ \
 		if(WAIT_EVENT(args_copy.event).event_status == CO_EVENT_SIGNALED || args_copy.unconditional) { \
 			/* call prologue */ \
@@ -297,13 +328,19 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  * Other INVOKE_ macros with a _SUBTASK version behave analogously.
  */
 
-#define INVOKE_TASK(...) _internal_INVOKE_TASK(cosched_new_task, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK(...) _internal_INVOKE_TASK(cosched_new_subtask, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK(...) \
+	_internal_INVOKE_TASK(cosched_new_task, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK(...) \
+	_internal_INVOKE_TASK(cosched_new_subtask, __VA_ARGS__, ._dummy_1 = 0)
 
 #define _internal_INVOKE_TASK(task_constructor, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	task_constructor(_cosched_global, COTASKTHUNK_##name, \
-		(&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ }), #name \
+	task_constructor( \
+		_cosched_global, \
+		COTASKTHUNK_##name, \
+		(&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ }), \
+		sizeof(TASK_ARGS_TYPE(name)), \
+		#name \
 	) \
 )
 
@@ -320,13 +357,22 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  * negative, so there's some overhead).
  */
 
-#define INVOKE_TASK_DELAYED(_delay, ...) _internal_INVOKE_TASK_DELAYED(cosched_new_task, _delay, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_DELAYED(_delay, ...) _internal_INVOKE_TASK_DELAYED(cosched_new_subtask, _delay, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_DELAYED(_delay, ...) \
+	_internal_INVOKE_TASK_DELAYED(cosched_new_task, _delay, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_DELAYED(_delay, ...) \
+	_internal_INVOKE_TASK_DELAYED(cosched_new_subtask, _delay, __VA_ARGS__, ._dummy_1 = 0)
 
 #define _internal_INVOKE_TASK_DELAYED(task_constructor, _delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	task_constructor(_cosched_global, COTASKTHUNKDELAY_##name, \
-		(&(TASK_ARGSDELAY(name)) { .real_args = { __VA_ARGS__ }, .delay = (_delay) }), #name \
+	task_constructor( \
+		_cosched_global, \
+		COTASKTHUNKDELAY_##name, \
+		(&(TASK_ARGSDELAY(name)) { \
+			.real_args = { __VA_ARGS__ }, \
+			.delay = (_delay) \
+		}), \
+		sizeof(TASK_ARGSDELAY(name)), \
+		#name \
 	) \
 )
 
@@ -344,16 +390,28 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  * <event> is a pointer to a CoEvent struct.
  */
 
-#define INVOKE_TASK_WHEN(_event, ...) _internal_INVOKE_TASK_ON_EVENT(cosched_new_task, false, _event, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_WHEN(_event, ...) _internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, false, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_WHEN(_event, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(cosched_new_task, false, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_WHEN(_event, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, false, _event, __VA_ARGS__, ._dummy_1 = 0)
 
-#define INVOKE_TASK_AFTER(_event, ...) _internal_INVOKE_TASK_ON_EVENT(cosched_new_task, true, _event, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_AFTER(_event, ...) _internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, true, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_AFTER(_event, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(cosched_new_task, true, _event, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_AFTER(_event, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, true, _event, __VA_ARGS__, ._dummy_1 = 0)
 
 #define _internal_INVOKE_TASK_ON_EVENT(task_constructor, is_unconditional, _event, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
-	task_constructor(_cosched_global, COTASKTHUNKCOND_##name, \
-		(&(TASK_ARGSCOND(name)) { .real_args = { __VA_ARGS__ }, .event = (_event), .unconditional = is_unconditional }), #name \
+	task_constructor( \
+		_cosched_global, \
+		COTASKTHUNKCOND_##name, \
+		(&(TASK_ARGSCOND(name)) { \
+			.real_args = { __VA_ARGS__ }, \
+			.event = (_event), \
+			.unconditional = is_unconditional \
+		}), \
+		sizeof(TASK_ARGSCOND(name)), \
+		#name \
 	) \
 )
 
@@ -387,13 +445,19 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 	{ ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
 
 #define INVOKE_TASK_INDIRECT_(task_constructor, iface, taskhandle, ...) ( \
-	task_constructor(_cosched_global, taskhandle._cotask_##iface##_thunk, \
-		(&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ }), "<indirect>" \
+	task_constructor( \
+		_cosched_global, \
+		taskhandle._cotask_##iface##_thunk, \
+		(&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ }), \
+		sizeof(TASK_IFACE_ARGS_TYPE(iface)), \
+		"<indirect:"#iface">" \
 	) \
 )
 
-#define INVOKE_TASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(cosched_new_task, iface, __VA_ARGS__, ._dummy_1 = 0)
-#define INVOKE_SUBTASK_INDIRECT(iface, ...) INVOKE_TASK_INDIRECT_(cosched_new_subtask, iface, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_TASK_INDIRECT(iface, ...) \
+	INVOKE_TASK_INDIRECT_(cosched_new_task, iface, __VA_ARGS__, ._dummy_1 = 0)
+#define INVOKE_SUBTASK_INDIRECT(iface, ...) \
+	INVOKE_TASK_INDIRECT_(cosched_new_subtask, iface, __VA_ARGS__, ._dummy_1 = 0)
 
 #define THIS_TASK         cotask_box(cotask_active())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))

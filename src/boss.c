@@ -1408,7 +1408,7 @@ TASK(attack_task_helper, {
 	// NOTE: We could do INVOKE_TASK_INDIRECT here, but that's a bit wasteful.
 	// A better idea than both that and this contraption would be to come up
 	// with an INVOKE_TASK_INDIRECT_WHEN.
-	ARGS.task._cotask_BossAttack_thunk(&ARGS.task_args);
+	ARGS.task._cotask_BossAttack_thunk(&ARGS.task_args, sizeof(ARGS.task_args));
 }
 
 static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {

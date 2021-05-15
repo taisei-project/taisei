@@ -120,6 +120,7 @@ typedef struct CoTaskInitData {
 	CoTask *task;
 	CoTaskFunc func;
 	void *func_arg;
+	size_t func_arg_size;
 	CoTaskData *master_task_data;
 } CoTaskInitData;
 
@@ -306,7 +307,7 @@ CoTask *cotask_unbox(BoxedTask box) {
 	return NULL;
 }
 
-static CoTask *cotask_new_internal(CoTaskFunc entry_point) {
+static CoTask *cotask_new_internal(koishi_entrypoint_t entry_point) {
 	CoTask *task;
 	STAT_VAL_ADD(num_tasks_in_use, 1);
 
@@ -477,27 +478,8 @@ static void *cotask_entry(void *varg) {
 	CoTaskInitData *init_data = varg;
 	CoTask *task = init_data->task;
 	cotask_entry_setup(task, &data, init_data);
-	CoTaskFunc func = init_data->func;
 
-	varg = cotask_yield(NULL);
-	// init_data is now invalid
-
-	varg = func(varg);
-
-	TASK_DEBUG("Task %s about to die naturally", task->debug_label);
-	coevent_signal(&data.events.finished);
-	cotask_finalize(task);
-
-	return varg;
-}
-
-static void *cotask_entry_noyield(void *varg) {
-	CoTaskData data = { 0 };
-	CoTaskInitData *init_data = varg;
-	CoTask *task = init_data->task;
-	cotask_entry_setup(task, &data, init_data);
-
-	varg = init_data->func(init_data->func_arg);
+	varg = init_data->func(init_data->func_arg, init_data->func_arg_size);
 	// init_data is now invalid
 
 	TASK_DEBUG("Task %s about to die naturally", task->debug_label);
@@ -505,16 +487,6 @@ static void *cotask_entry_noyield(void *varg) {
 	cotask_finalize(task);
 
 	return varg;
-}
-
-CoTask *cotask_new(CoTaskFunc func) {
-	CoTask *task = cotask_new_internal(cotask_entry);
-	CoTaskInitData init_data = { 0 };
-	init_data.task = task;
-	init_data.func = func;
-	cotask_resume_internal(task, &init_data);
-	assert(task->data != NULL);
-	return task;
 }
 
 void cotask_free(CoTask *task) {
@@ -917,8 +889,8 @@ void cosched_init(CoSched *sched) {
 	memset(sched, 0, sizeof(*sched));
 }
 
-CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, bool is_subtask, CoTaskDebugInfo debug) {
-	CoTask *task = cotask_new_internal(cotask_entry_noyield);
+CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
+	CoTask *task = cotask_new_internal( cotask_entry );
 
 #ifdef CO_TASK_DEBUG
 	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);
@@ -928,6 +900,7 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, bool is_su
 	init_data.task = task;
 	init_data.func = func;
 	init_data.func_arg = arg;
+	init_data.func_arg_size = arg_size;
 
 	if(is_subtask) {
 		init_data.master_task_data = get_task_data(cotask_active());
