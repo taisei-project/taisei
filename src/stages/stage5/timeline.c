@@ -250,7 +250,7 @@ static Boss *stage5_spawn_midboss(void) {
 	// suppress the boss death effects (this triggers the "boss fleeing" case)
 	boss_add_attack(b, AT_Move, "", 0, 0, midboss_dummy, NULL);
 
-	boss_start_attack(b, b->attacks);
+	boss_engage(b);
 	b->attacks->starttime = global.frames;	// HACK: thwart attack delay
 
 	return b;
@@ -275,7 +275,7 @@ static Boss* stage5_spawn_boss(void) {
 
 	boss_add_attack_from_info(b, &stage5_spells.extra.overload, false);
 
-	boss_start_attack(b, b->attacks);
+	boss_engage(b);
 	return b;
 }
 

@@ -751,7 +751,7 @@ static Boss* stage3_create_midboss(void) {
 	boss_add_attack(scuttle, AT_Move, "Runaway", 2, 1, scuttle_outro, NULL);
 	scuttle->zoomcolor = *RGB(0.4, 0.1, 0.4);
 
-	boss_start_attack(scuttle, scuttle->attacks);
+	boss_engage(scuttle);
 	return scuttle;
 }
 
@@ -1439,7 +1439,7 @@ static Boss* stage3_create_boss(void) {
 	boss_add_attack_from_info(wriggle, &stage3_spells.boss.firefly_storm, false);
 	boss_add_attack_from_info(wriggle, &stage3_spells.extra.light_singularity, false);
 
-	boss_start_attack(wriggle, wriggle->attacks);
+	boss_engage(wriggle);
 	return wriggle;
 }
 

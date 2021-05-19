@@ -595,7 +595,7 @@ TASK(spawn_midboss, NO_ARGS) {
 	}
 	boss_add_attack_task(boss, AT_Move, "Flee", 2, 0, TASK_INDIRECT(BossAttack, midboss_flee), NULL);
 
-	boss_start_attack(boss, boss->attacks);
+	boss_engage(boss);
 
 	WAIT(60);
 	stage1_bg_enable_snow();
@@ -684,7 +684,7 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack_from_info(boss, &stage1_spells.boss.icicle_cascade, false);
 	boss_add_attack_from_info(boss, &stage1_spells.extra.crystal_blizzard, false);
 
-	boss_start_attack(boss, boss->attacks);
+	boss_engage(boss);
 }
 
 static void stage1_dialog_post_boss(void) {

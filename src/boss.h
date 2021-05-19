@@ -178,6 +178,9 @@ DEFINE_ENTITY_TYPE(Boss, {
 	} healthbar;
 
 	struct {
+		Attack *a_prev;
+		Attack *a_cur;
+		Attack *a_next;
 		float global_opacity;
 		float spell_opacity;
 		float plrproximity_opacity;
@@ -206,7 +209,8 @@ void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
 
 void boss_set_portrait(Boss *boss, const char *name, const char *variant, const char *face) attr_nonnull(1);
 
-void boss_start_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
+void boss_engage(Boss *b) attr_nonnull(1);
+void boss_start_next_attack(Boss *b, Attack *a) attr_nonnull(1, 2);
 void boss_finish_current_attack(Boss *boss) attr_nonnull(1);
 
 bool boss_is_dying(Boss *boss) attr_nonnull(1); // true if the last attack is over but the BOSS_DEATH_DELAY has not elapsed.
@@ -224,9 +228,10 @@ void boss_preload(void);
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
 
-Boss *init_boss_attack_task(BoxedBoss boss, Attack *attack);
-#define INIT_BOSS_ATTACK() init_boss_attack_task(ARGS.boss, ARGS.attack)
-#define BEGIN_BOSS_ATTACK() WAIT_EVENT_OR_DIE(&ARGS.attack->events.started)
+Boss *_init_boss_attack_task(BoxedBoss boss, Attack *attack);
+void _begin_boss_attack_task(BoxedBoss boss, Attack *attack);
+#define INIT_BOSS_ATTACK() _init_boss_attack_task(ARGS.boss, ARGS.attack)
+#define BEGIN_BOSS_ATTACK() _begin_boss_attack_task(ARGS.boss, ARGS.attack)
 
 int attacktype_start_delay(AttackType t) attr_const;
 int attacktype_end_delay(AttackType t) attr_const;

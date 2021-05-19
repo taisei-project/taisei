@@ -77,7 +77,7 @@ static void stage4_spellpractice_start(void) {
 
 	global.boss = stage4_spawn_kurumi(BOSS_DEFAULT_SPAWN_POS);
 	boss_add_attack_from_info(global.boss, global.stage->spell, true);
-	boss_start_attack(global.boss, global.boss->attacks);
+	boss_engage(global.boss);
 
 	stage_start_bgm("stage4boss");
 }

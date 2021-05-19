@@ -220,7 +220,7 @@ static Boss* create_elly(void) {
 	boss_add_attack(b, AT_Immediate, "Final dialog", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
-	boss_start_attack(b, b->attacks);
+	boss_engage(b);
 
 	return b;
 }

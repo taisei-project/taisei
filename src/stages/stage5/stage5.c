@@ -98,7 +98,7 @@ static void stage5_spellpractice_start(void) {
 
 	global.boss = stage5_spawn_iku(BOSS_DEFAULT_SPAWN_POS);
 	boss_add_attack_from_info(global.boss, global.stage->spell, true);
-	boss_start_attack(global.boss, global.boss->attacks);
+	boss_engage(global.boss);
 
 	stage_start_bgm("stage5boss");
 }

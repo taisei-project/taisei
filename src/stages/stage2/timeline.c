@@ -488,7 +488,7 @@ TASK(spawn_midboss, NO_ARGS) {
 	boss_add_attack_task(boss, AT_Normal, "", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
 	boss_add_attack(boss, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);
 
-	boss_start_attack(boss, boss->attacks);
+	boss_engage(boss);
 }
 
 TASK(redwall_side_fairies, { int num; }) {
@@ -637,7 +637,7 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack_from_info(boss, &stage2_spells.boss.wheel_of_fortune, false);
 	boss_add_attack_from_info(boss, &stage2_spells.extra.monty_hall_danmaku, false);
 
-	boss_start_attack(boss, boss->attacks);
+	boss_engage(boss);
 }
 
 DEFINE_EXTERN_TASK(stage2_timeline) {

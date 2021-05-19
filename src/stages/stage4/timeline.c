@@ -363,7 +363,7 @@ static Boss *create_kurumi_mid(void) {
 		boss_add_attack_from_info(b, &stage4_spells.mid.red_spike, false);
 	}
 	boss_add_attack(b, AT_Move, "Outro", 2, 1, kurumi_outro, NULL);
-	boss_start_attack(b, b->attacks);
+	boss_engage(b);
 	return b;
 }
 
@@ -451,7 +451,7 @@ static Boss *create_kurumi(void) {
 	boss_add_attack_from_info(b, &stage4_spells.boss.bloody_danmaku, false);
 	boss_add_attack_from_info(b, &stage4_spells.boss.blow_the_walls, false);
 	boss_add_attack_from_info(b, &stage4_spells.extra.vlads_army, false);
-	boss_start_attack(b, b->attacks);
+	boss_engage(b);
 
 	return b;
 }

@@ -173,7 +173,7 @@ static void stage6_spellpractice_start(void) {
 	}
 
 	boss_add_attack_from_info(global.boss, global.stage->spell, true);
-	boss_start_attack(global.boss, global.boss->attacks);
+	boss_engage(global.boss);
 }
 
 static void stage6_spellpractice_events(void) {

@@ -191,6 +191,41 @@ static bool boss_attack_is_final(Boss *boss, Attack *a) {
 	return boss_get_final_attack(boss) == a;
 }
 
+static void update_hud_attack_ptrs(Boss *boss) {
+	boss->hud.a_cur = NULL;
+	boss->hud.a_next = NULL;
+	boss->hud.a_prev = NULL;
+
+	for(Attack *a = boss->attacks, *a_end = boss->attacks + boss->acount; a < a_end; ++a) {
+		if(boss_should_skip_attack(boss, a) || a->type == AT_Move) {
+			continue;
+		}
+
+		if(boss->hud.a_cur != NULL) {
+			boss->hud.a_next = a;
+			break;
+		}
+
+		if(a == boss->current) {
+			boss->hud.a_cur = boss->current;
+			continue;
+		}
+
+		if(a->hp <= 0 && attack_has_finished(a)) {
+			if(boss->current == NULL) {
+				boss->hud.a_prev = boss->hud.a_cur;
+				boss->hud.a_cur = a;
+			} else {
+				boss->hud.a_prev = a;
+			}
+		}
+	}
+
+// 	log_debug("prev = %s", boss->hud.a_prev ? boss->hud.a_prev->name : NULL);
+// 	log_debug("cur  = %s", boss->hud.a_cur  ? boss->hud.a_cur->name  : NULL);
+// 	log_debug("next = %s", boss->hud.a_next ? boss->hud.a_next->name : NULL);
+}
+
 static void update_healthbar(Boss *boss) {
 	bool radial = healthbar_style_is_radial();
 	bool player_nearby = radial && cabs(boss->pos - global.plr.pos) < 128;
@@ -199,31 +234,9 @@ static void update_healthbar(Boss *boss) {
 	float target_fill = 0.0;
 	float target_altfill = 0.0;
 
-	Attack *a_prev = NULL;
-	Attack *a_cur = NULL;
-	Attack *a_next = NULL;
-
-	for(uint i = 0; i < boss->acount; ++i) {
-		Attack *a = boss->attacks + i;
-
-		if(boss_should_skip_attack(boss, a) || a->type == AT_Move) {
-			continue;
-		}
-
-		if(a_cur != NULL) {
-			a_next = a;
-			break;
-		}
-
-		if(a == boss->current) {
-			a_cur = boss->current;
-			continue;
-		}
-
-		if(a->hp <= 0 && attack_has_finished(a)) {
-			a_prev = a;
-		}
-	}
+	Attack *a_prev = boss->hud.a_prev;
+	Attack *a_cur = boss->hud.a_cur;
+	Attack *a_next = boss->hud.a_next;
 
 	if(
 		boss_is_dying(boss) ||
@@ -313,6 +326,7 @@ static void update_healthbar(Boss *boss) {
 }
 
 static void update_hud(Boss *boss) {
+	update_hud_attack_ptrs(boss);
 	update_healthbar(boss);
 
 	float update_speed = 0.1;
@@ -704,24 +718,12 @@ void draw_boss_overlay(Boss *boss) {
 		draw_linear_healthbar(boss);
 	}
 
-	if(!boss->current) {
-		return;
-	}
-
-	if(
-		boss->current->type == AT_Move &&
-		attack_has_started(boss->current) &&
-		boss_attack_is_final(boss, boss->current)
-	) {
-		return;
-	}
-
 	float o = boss->hud.global_opacity * boss->hud.plrproximity_opacity;
 
 	if(o > 0) {
 		draw_boss_text(ALIGN_LEFT, 10, 20 + 8 * !radial_style, boss->name, res_font("standard"), RGBA(o, o, o, o));
 
-		if(ATTACK_IS_SPELL(boss->current->type)) {
+		if(boss->current && ATTACK_IS_SPELL(boss->current->type)) {
 			int t_portrait, t_spell;
 			t_portrait = t_spell = global.frames - boss->current->starttime;
 			t_portrait += attacktype_start_delay(boss->current->type);
@@ -772,7 +774,7 @@ void draw_boss_overlay(Boss *boss) {
 		float x = 10 + star->w * 0.5;
 		bool spell_found = false;
 
-		for(Attack *a = boss->current; a && a < boss->attacks + boss->acount; ++a) {
+		for(Attack *a = boss->hud.a_cur, *a_end = boss->attacks + boss->acount; a && a < a_end; ++a) {
 			if(
 				ATTACK_IS_SPELL(a->type) &&
 				(a->type != AT_ExtraSpell) &&
@@ -1039,8 +1041,11 @@ void boss_finish_current_attack(Boss *boss) {
 	boss->current->endtime = global.frames + attack_end_delay(boss);
 	boss->current->endtime_undelayed = global.frames;
 
+	boss_reset_motion(boss);
 	coevent_signal_once(&boss->current->events.finished);
 }
+
+static void boss_schedule_next_attack(Boss *b, Attack *a);
 
 void process_boss(Boss **pboss) {
 	Boss *boss = *pboss;
@@ -1265,7 +1270,9 @@ void process_boss(Boss **pboss) {
 				continue;
 			}
 
-			boss_start_attack(boss, boss->current);
+			Attack *next = boss->current;
+			boss->current = NULL;
+			boss_schedule_next_attack(boss, next);
 			break;
 		}
 	}
@@ -1348,9 +1355,24 @@ void free_boss(Boss *boss) {
 	objpool_release(stage_object_pools.bosses, boss);
 }
 
-void boss_start_attack(Boss *b, Attack *a) {
+static void boss_schedule_next_attack(Boss *b, Attack *a) {
+	assert(b->current == NULL);
+	assert(!a->events.initiated.num_signaled);
+	log_debug("[%i] %s", global.frames, a->name);
+	coevent_signal_once(&a->events.initiated);
+}
+
+void boss_engage(Boss *b) {
+	boss_schedule_next_attack(b, b->attacks);
+}
+
+void boss_start_next_attack(Boss *b, Attack *a) {
+	assert(b->current == NULL);
+	assert(a->events.initiated.num_signaled > 0);
+	assert(a->events.started.num_signaled == 0);
+
 	b->current = a;
-	log_debug("%s", a->name);
+	log_debug("[%i] %s", global.frames, a->name);
 
 	StageInfo *i;
 	StageProgress *p = get_spellstage_progress(a, &i, true);
@@ -1389,11 +1411,9 @@ void boss_start_attack(Boss *b, Attack *a) {
 	}
 
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
-	boss_reset_motion(b);
-	coevent_signal_once(&a->events.initiated);
 }
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
 	assert(boss->acount < BOSS_MAX_ATTACKS);
 
 	Attack *a = &boss->attacks[boss->acount];
@@ -1436,9 +1456,31 @@ static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
 }
 
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
-	Attack *a = boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
 	setup_attack_task(boss, a, task);
 	return a;
+}
+
+TASK_WITH_INTERFACE(legacy_attack_helper, BossAttack) {
+	INIT_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK();
+}
+
+static void setup_legacy_attack(Boss *boss, Attack *atk) {
+	if(!atk->rule) {
+		return;
+	}
+
+	INVOKE_TASK_WHEN(&atk->events.initiated, legacy_attack_helper,
+		.boss = ENT_BOX(boss),
+		.attack = atk
+	);
+}
+
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+	Attack *atk = _boss_add_attack(boss, type, name, timeout, hp, rule, draw_rule);
+	setup_legacy_attack(boss, atk);
+	return atk;
 }
 
 void boss_set_attack_bonus(Attack *a, int rank) {
@@ -1488,21 +1530,37 @@ Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
 	}
 
-	Attack *a = boss_add_attack(boss, info->type, info->name, info->timeout, info->hp, info->rule, info->draw_rule);
+	Attack *a = _boss_add_attack(
+		boss,
+		info->type,
+		info->name,
+		info->timeout,
+		info->hp,
+		info->rule,
+		info->draw_rule
+	);
+
 	a->info = info;
 	boss_set_attack_bonus(a, info->bonus_rank);
 
 	if(info->task._cotask_BossAttack_thunk) {
 		setup_attack_task(boss, a, info->task);
+	} else {
+		setup_legacy_attack(boss, a);
 	}
 
 	return a;
 }
 
-Boss *init_boss_attack_task(BoxedBoss boss, Attack *attack) {
+Boss *_init_boss_attack_task(BoxedBoss boss, Attack *attack) {
 	Boss *pboss = TASK_BIND(boss);
 	CANCEL_TASK_AFTER(&attack->events.finished, THIS_TASK);
 	return pboss;
+}
+
+void _begin_boss_attack_task(BoxedBoss boss, Attack *attack) {
+	boss_start_next_attack(NOT_NULL(ENT_UNBOX(boss)), attack);
+	WAIT_EVENT_OR_DIE(&attack->events.started);
 }
 
 void boss_preload(void) {

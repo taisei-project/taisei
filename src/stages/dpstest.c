@@ -77,7 +77,7 @@ static void dpstest_boss(void) {
 		global.boss, AT_Spellcard, "Masochism “Eternal Torment”",
 		5184000, 90000, TASK_INDIRECT(BossAttack, boss_regen), NULL
 	);
-	boss_start_attack(global.boss, global.boss->attacks);
+	boss_engage(global.boss);
 }
 
 StageProcs stage_dpstest_single_procs = {
