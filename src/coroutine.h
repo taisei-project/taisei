@@ -197,9 +197,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 #define TASK_COMMON_PRIVATE_DECLARATIONS(name) \
 	/* user-defined task body */ \
-	static void COTASK_##name(TASK_ARGS_TYPE(name) *_cotask_args); \
-	/* called from the entry points before task body (inlined, hopefully) */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) /* require semicolon */ \
+	static void COTASK_##name(TASK_ARGS_TYPE(name) *_cotask_args) /* require semicolon */
 
 #define TASK_COMMON_DECLARATIONS(name, argstype, handletype, linkage) \
 	/* produce warning if the task is never used */ \
@@ -235,8 +233,6 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		TASK_ARGS_TYPE(name) args_copy = { 0 }; \
 		assume(sizeof(args_copy) >= arg_size); \
 		memcpy(&args_copy, arg, arg_size); \
-		/* call prologue */ \
-		COTASKPROLOGUE_##name(&args_copy); \
 		/* call body */ \
 		COTASK_##name(&args_copy); \
 		/* exit coroutine */ \
@@ -252,8 +248,6 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		if(args_copy.delay < 0) return NULL; \
 		/* wait out the delay */ \
 		WAIT(args_copy.delay); \
-		/* call prologue */ \
-		COTASKPROLOGUE_##name(&args_copy.real_args); \
 		/* call body */ \
 		COTASK_##name(&args_copy.real_args); \
 		/* exit coroutine */ \
@@ -267,8 +261,6 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		memcpy(&args_copy, arg, arg_size); \
 		/* wait for event, and if it wasn't canceled (or if we want to run unconditionally)... */ \
 		if(WAIT_EVENT(args_copy.event).event_status == CO_EVENT_SIGNALED || args_copy.unconditional) { \
-			/* call prologue */ \
-			COTASKPROLOGUE_##name(&args_copy.real_args); \
 			/* call body */ \
 			COTASK_##name(&args_copy.real_args); \
 		} \
@@ -286,8 +278,6 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 #define DEFINE_TASK_EXPLICIT(name, linkage) \
 	TASK_COMMON_PRIVATE_DECLARATIONS(name); \
 	TASK_COMMON_THUNK_DEFINITIONS(name, linkage) \
-	/* empty prologue */ \
-	INLINE void COTASKPROLOGUE_##name(TASK_ARGS_TYPE(name) *_cotask_args) { } \
 	/* begin task body definition */ \
 	TASK_COMMON_BEGIN_BODY_DEFINITION(name, linkage)
 
