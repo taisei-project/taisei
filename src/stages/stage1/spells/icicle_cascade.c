@@ -38,9 +38,9 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_icicle_cascade) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W / 2.0 + 120.0*I, 0.01);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int icicle_interval = difficulty_value(30, 22, 16, 8);
 	int icicles = 4;

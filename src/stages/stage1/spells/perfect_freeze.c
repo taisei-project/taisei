@@ -37,8 +37,8 @@ TASK(move_frozen, { BoxedProjectileArray *parray; }) {
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	for(int run = 1;;run++) {
 		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);

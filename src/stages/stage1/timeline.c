@@ -572,14 +572,14 @@ TASK(waveshot_fairies, { int duration; }) {
 }
 
 TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2.0 + 200.0*I, 0.035);
 }
 
 TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(-250 + 30 * I, 0.02);
 }
 

@@ -163,9 +163,9 @@ static void random_move(Boss *boss) {
 }
 
 DEFINE_EXTERN_TASK(stage2_boss_nonspell_3) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	real dir_sign = rng_sign();
 

@@ -60,8 +60,8 @@ static void dpstest_multi(void) {
 }
 
 TASK_WITH_INTERFACE(boss_regen, BossAttack) {
-	INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Attack *a = ARGS.attack;
 

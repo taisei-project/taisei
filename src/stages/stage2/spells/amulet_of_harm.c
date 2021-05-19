@@ -179,9 +179,9 @@ TASK(fan_burst, { Boss *boss; }) {
 }
 
 DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2 + 200.0*I, 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect wander_bounds = viewport_bounds(64);
 	wander_bounds.top += 64;

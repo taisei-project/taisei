@@ -90,9 +90,9 @@ static void wriggle_anim_end_charge(Boss *boss) {
 DEFINE_EXTERN_TASK(stage2_midboss_nonspell_1) {
 	STAGE_BOOKMARK(non1);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	DECLARE_ENT_ARRAY(Projectile, bugs, 512);
 

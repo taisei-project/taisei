@@ -139,13 +139,13 @@ TASK(cards, { BoxedBoss boss; }) {
 }
 
 DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 
 	COEVENTS_ARRAY(goat_trigger) events;
 	TASK_HOST_EVENTS(events);
 
 	boss->move = move_towards(VIEWPORT_W/2.0 + VIEWPORT_H/2.0 * I, 0.06);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int plr_slot;
 	int goat1_slot;

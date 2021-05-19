@@ -57,6 +57,7 @@ DEFINE_TASK_INTERFACE(BossAttack, {
 
 typedef TASK_INDIRECT_TYPE(BossAttack) BossAttackTask;
 typedef TASK_IFACE_ARGS_TYPE(BossAttack) BossAttackTaskArgs;
+typedef TASK_IFACE_ARGS_SIZED_PTR_TYPE(BossAttack) BossAttackTaskCustomArgs;
 
 struct AttackInfo {
 	/*
@@ -203,7 +204,9 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
-Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move)
+Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move)
+	attr_nonnull(1, 2) attr_returns_nonnull;
+Attack *boss_add_attack_from_info_with_args(Boss *boss, AttackInfo *info, BossAttackTaskCustomArgs args)
 	attr_nonnull(1, 2) attr_returns_nonnull;
 void boss_set_attack_bonus(Attack *a, int rank) attr_nonnull(1);
 
@@ -228,10 +231,12 @@ void boss_preload(void);
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)
 #define BOSS_NOMOVE (-3142-39942.0*I)
 
-Boss *_init_boss_attack_task(BoxedBoss boss, Attack *attack);
-void _begin_boss_attack_task(BoxedBoss boss, Attack *attack);
-#define INIT_BOSS_ATTACK() _init_boss_attack_task(ARGS.boss, ARGS.attack)
-#define BEGIN_BOSS_ATTACK() _begin_boss_attack_task(ARGS.boss, ARGS.attack)
+Boss *_init_boss_attack_task(const BossAttackTaskArgs *args)
+	attr_nonnull_all attr_returns_nonnull;
+void _begin_boss_attack_task(const BossAttackTaskArgs *args)
+	attr_nonnull_all;
+#define INIT_BOSS_ATTACK(_args) _init_boss_attack_task(_args)
+#define BEGIN_BOSS_ATTACK(_args) _begin_boss_attack_task(_args)
 
 int attacktype_start_delay(AttackType t) attr_const;
 int attacktype_end_delay(AttackType t) attr_const;

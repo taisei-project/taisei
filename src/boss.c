@@ -1435,13 +1435,64 @@ static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float t
 	return a;
 }
 
+static Attack *_boss_add_attack_from_info(Boss *boss, AttackInfo *info){
+	Attack *a = _boss_add_attack(
+		boss,
+		info->type,
+		info->name,
+		info->timeout,
+		info->hp,
+		info->rule,
+		info->draw_rule
+	);
+
+	a->info = info;
+	boss_set_attack_bonus(a, info->bonus_rank);
+
+	return a;
+}
+
+TASK(attack_task_helper_custom, {
+	CoEvent *evt;
+	BossAttackTask task;
+	BossAttackTaskArgs *task_args;
+	size_t task_args_size;
+	BossAttackTaskArgs task_args_header;
+}) {
+	size_t args_size = ARGS.task_args_size;
+	BossAttackTaskArgs *orig_args = NOT_NULL(ARGS.task_args);
+	char *args = TASK_MALLOC(args_size);
+	size_t header_ofs = sizeof(ARGS.task_args_header);
+	assume(args_size >= header_ofs);
+
+	memcpy(args, &ARGS.task_args_header, sizeof(ARGS.task_args_header));
+	memcpy(args + header_ofs, (char*)orig_args + header_ofs, args_size - header_ofs);
+
+	WAIT_EVENT_OR_DIE(ARGS.evt);
+
+	ARGS.task._cotask_BossAttack_thunk(args, args_size);
+}
+
+static void setup_attack_task_with_custom_args(
+	Boss *boss, Attack *a, BossAttackTask task,
+	BossAttackTaskArgs *args, size_t args_size
+) {
+	INVOKE_TASK(attack_task_helper_custom,
+		.evt = &a->events.initiated,
+		.task = task,
+		.task_args = args,
+		.task_args_size = args_size,
+		.task_args_header = {
+			.boss = ENT_BOX(boss),
+			.attack = a
+		}
+	);
+}
+
 TASK(attack_task_helper, {
 	BossAttackTask task;
 	BossAttackTaskArgs task_args;
 }) {
-	// NOTE: We could do INVOKE_TASK_INDIRECT here, but that's a bit wasteful.
-	// A better idea than both that and this contraption would be to come up
-	// with an INVOKE_TASK_INDIRECT_WHEN.
 	ARGS.task._cotask_BossAttack_thunk(&ARGS.task_args, sizeof(ARGS.task_args));
 }
 
@@ -1462,8 +1513,8 @@ Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float time
 }
 
 TASK_WITH_INTERFACE(legacy_attack_helper, BossAttack) {
-	INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 }
 
 static void setup_legacy_attack(Boss *boss, Attack *atk) {
@@ -1525,23 +1576,12 @@ static void boss_generic_move(Boss *b, int time) {
 	b->pos = atck->info->pos_dest * f + BOSS_DEFAULT_SPAWN_POS * (1 - f);
 }
 
-Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
+Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move) {
 	if(move) {
 		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
 	}
 
-	Attack *a = _boss_add_attack(
-		boss,
-		info->type,
-		info->name,
-		info->timeout,
-		info->hp,
-		info->rule,
-		info->draw_rule
-	);
-
-	a->info = info;
-	boss_set_attack_bonus(a, info->bonus_rank);
+	Attack *a = _boss_add_attack_from_info(boss, info);
 
 	if(info->task._cotask_BossAttack_thunk) {
 		setup_attack_task(boss, a, info->task);
@@ -1552,15 +1592,24 @@ Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, char move) {
 	return a;
 }
 
-Boss *_init_boss_attack_task(BoxedBoss boss, Attack *attack) {
-	Boss *pboss = TASK_BIND(boss);
-	CANCEL_TASK_AFTER(&attack->events.finished, THIS_TASK);
+Attack *boss_add_attack_from_info_with_args(
+	Boss *boss, AttackInfo *info, BossAttackTaskCustomArgs args
+) {
+	Attack *a = _boss_add_attack_from_info(boss, info);
+	assume(info->task._cotask_BossAttack_thunk != NULL);
+	setup_attack_task_with_custom_args(boss, a, info->task, args.ptr, args.size);
+	return a;
+}
+
+Boss *_init_boss_attack_task(const BossAttackTaskArgs *args) {
+	Boss *pboss = TASK_BIND(args->boss);
+	CANCEL_TASK_AFTER(&args->attack->events.finished, THIS_TASK);
 	return pboss;
 }
 
-void _begin_boss_attack_task(BoxedBoss boss, Attack *attack) {
-	boss_start_next_attack(NOT_NULL(ENT_UNBOX(boss)), attack);
-	WAIT_EVENT_OR_DIE(&attack->events.started);
+void _begin_boss_attack_task(const BossAttackTaskArgs *args) {
+	boss_start_next_attack(NOT_NULL(ENT_UNBOX(args->boss)), args->attack);
+	WAIT_EVENT_OR_DIE(&args->attack->events.started);
 }
 
 void boss_preload(void) {

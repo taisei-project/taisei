@@ -76,8 +76,8 @@ TASK(crystal_rain_cirno_shoot, { BoxedBoss boss; int charge_time; }) {
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(crystal_rain_drops);
 	boss->move = move_towards_power(boss->pos, 0.1, 0.5);

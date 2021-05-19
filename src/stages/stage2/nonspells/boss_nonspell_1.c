@@ -28,8 +28,8 @@ TASK(wander, { BoxedBoss boss; }) {
 DEFINE_EXTERN_TASK(stage2_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);
 
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK_DELAYED(420, wander, ENT_BOX(boss));
 

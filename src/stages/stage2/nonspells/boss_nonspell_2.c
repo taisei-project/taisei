@@ -67,9 +67,9 @@ TASK(balls, { BoxedBoss boss; }) {
 DEFINE_EXTERN_TASK(stage2_boss_nonspell_2) {
 	STAGE_BOOKMARK(boss-non2);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2 + 100*I, 0.01);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(speen, ENT_BOX(boss));
 	INVOKE_SUBTASK_DELAYED(150, balls, ENT_BOX(boss));

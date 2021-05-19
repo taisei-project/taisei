@@ -64,9 +64,9 @@ TASK(cirno_frostbolt, { cmplx pos; cmplx vel; }) {
 }
 
 DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W / 2.0 + 300 * I, 0.1);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int frostbolt_period = difficulty_value(4, 3, 2, 1);
 
