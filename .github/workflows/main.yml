@@ -22,6 +22,7 @@ on:
 
 env:
   EM_VERSION: '2.0.21'
+  EM_VERSION_EXPERIMENTAL: 'latest'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -197,7 +198,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-test-build:
-    name: Emscripten Test (Pinned Version) (WebGL)
+    name: "Emscripten Test (emsdk: stable) (WebGL)"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -272,14 +273,15 @@ jobs:
     - name: Upload Log
       uses: actions/upload-artifact@v2
       with:
-        name: taisei_emscripten_pinned_build_log
-        path: build/emscripten/meson-logs/meson-log.txt
+        name: taisei_emscripten_stable_build_log
+        path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
 
   emscripten-test-build-latest:
-    name: Emscripten Test (Latest Version) (WebGL)
+    name: "Emscripten Test (emsdk: experimental) (WebGL)"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
+    continue-on-error: true
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -310,7 +312,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
-        key: latest-${{ runner.os }}
+        key: ${{ env.EM_VERSION_EXPERIMENTAL }}-${{ runner.os }}
 
     - name: Install emsdk
       run: |
@@ -319,8 +321,8 @@ jobs:
         else
           bash -c "cd emsdk; git pull"
         fi
-        emsdk/emsdk install latest || true
-        emsdk/emsdk activate latest
+        emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
+        emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
 
     - name: Verify emsdk
       run: |
@@ -346,6 +348,7 @@ jobs:
 
     - name: Build
       run: |
+        # this build is allowed to fail
         source emsdk/emsdk_env.sh
         # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
         meson compile tar -C build/ --verbose || true
@@ -354,6 +357,6 @@ jobs:
     - name: Upload Log
       uses: actions/upload-artifact@v2
       with:
-        name: taisei_emscripten_latest_build_log
-        path: build/emscripten/meson-logs/meson-log.txt
+        name: taisei_emscripten_experimental_build_log
+        path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
