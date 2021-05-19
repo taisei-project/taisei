@@ -197,7 +197,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-test-build:
-    name: Emscripten Test (WebGL)
+    name: Emscripten Test (Pinned Version) (WebGL)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -272,6 +272,88 @@ jobs:
     - name: Upload Log
       uses: actions/upload-artifact@v2
       with:
-        name: taisei_emscripten_build_log
+        name: taisei_emscripten_pinned_build_log
+        path: build/emscripten/meson-logs/meson-log.txt
+        if-no-files-found: warn
+
+  emscripten-test-build-latest:
+    name: Emscripten Test (Latest Version) (WebGL)
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Tools
+      run: >
+        sudo apt update || true
+
+        sudo apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+
+        pip install
+        meson==0.56.2
+        ninja
+        zstandard
+
+    - name: Pull cached emsdk
+      id: cache-emsdk
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.EM_CACHE_FOLDER }}
+        key: latest-${{ runner.os }}
+
+    - name: Install emsdk
+      run: |
+        if [[ ! -d ./emsdk ]]; then
+          git clone https://github.com/emscripten-core/emsdk.git
+        else
+          bash -c "cd emsdk; git pull"
+        fi
+        emsdk/emsdk install latest || true
+        emsdk/emsdk activate latest
+
+    - name: Verify emsdk
+      run: |
+        source emsdk/emsdk_env.sh
+        emcc -v
+        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$(pwd)/emsdk/upstream/emscripten/'
+        EOF
+
+    - name: Configure
+      run: >
+        source emsdk/emsdk_env.sh
+
+        meson setup build/
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
+        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+
+        meson configure
+        -Dbuild.cpp_std=gnu++14
+        build/
+
+    - name: Build
+      run: |
+        source emsdk/emsdk_env.sh
+        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
+        meson compile tar -C build/ --verbose || true
+        meson compile tar -C build/ --verbose
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_emscripten_latest_build_log
         path: build/emscripten/meson-logs/meson-log.txt
         if-no-files-found: warn
