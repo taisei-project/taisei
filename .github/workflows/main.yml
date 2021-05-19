@@ -20,9 +20,8 @@ on:
       - "**.yaml"
       - "**.build"
 
-# TODO: use later fixed version of emscripten when it releases
 env:
-  EM_VERSION: '2.0.19'
+  EM_VERSION: '2.0.21'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
