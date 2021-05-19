@@ -147,10 +147,21 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 #define TASK_IFACE_NAME(iface, suffix) COTASKIFACE_##iface##_##suffix
 #define TASK_IFACE_ARGS_TYPE(iface) TASK_IFACE_NAME(iface, ARGS)
+#define TASK_IFACE_ARGS_SIZED_PTR_TYPE(iface) TASK_IFACE_NAME(iface, ARGS_SPTR)
 #define TASK_INDIRECT_TYPE(iface) TASK_IFACE_NAME(iface, HANDLE)
+
+#define TASK_IFACE_SARGS(iface, ...) \
+	((TASK_IFACE_ARGS_SIZED_PTR_TYPE(iface)) { \
+		.size = sizeof(TASK_IFACE_ARGS_TYPE(iface)), \
+		.ptr = (&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ }) \
+	})
 
 #define DEFINE_TASK_INTERFACE(iface, argstruct) \
 	typedef TASK_ARGS_STRUCT(argstruct) TASK_IFACE_ARGS_TYPE(iface); \
+	typedef struct { \
+		TASK_IFACE_ARGS_TYPE(iface) *ptr; \
+		size_t size; \
+	} TASK_IFACE_ARGS_SIZED_PTR_TYPE(iface); \
 	typedef struct { \
 		CoTaskFunc _cotask_##iface##_thunk; \
 	} TASK_INDIRECT_TYPE(iface)  /* require semicolon */
@@ -160,6 +171,15 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 		TASK_IFACE_ARGS_TYPE(ibase) base; \
 		TASK_ARGS_STRUCT(argstruct); \
 	} TASK_IFACE_ARGS_TYPE(iface); \
+	typedef struct { \
+		union { \
+			TASK_IFACE_ARGS_SIZED_PTR_TYPE(ibase) base; \
+			struct { \
+				TASK_IFACE_ARGS_TYPE(iface) *ptr; \
+				size_t size; \
+			}; \
+		}; \
+	} TASK_IFACE_ARGS_SIZED_PTR_TYPE(iface); \
 	typedef struct { \
 		union { \
 			TASK_INDIRECT_TYPE(ibase) base; \
