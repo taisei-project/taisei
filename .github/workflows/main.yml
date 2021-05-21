@@ -227,14 +227,14 @@ jobs:
         ninja
         zstandard
 
-    - name: Pull cached emsdk
+    - name: Fetch Cached Emscripten SDK
       id: cache-emsdk
       uses: actions/cache@v2
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
 
-    - name: Install emsdk
+    - name: Install Emscripten SDK
       if: steps.cache-emsdk.outputs.cache-hit != 'true'
       run: |
         rm -rf emsdk/
@@ -242,7 +242,7 @@ jobs:
         emsdk/emsdk install ${{ env.EM_VERSION }}
         emsdk/emsdk activate ${{ env.EM_VERSION }}
 
-    - name: Verify emsdk
+    - name: Verify Emscripten SDK
       run: |
         source emsdk/emsdk_env.sh
         emcc -v
@@ -308,14 +308,14 @@ jobs:
         ninja
         zstandard
 
-    - name: Pull cached emsdk
+    - name: Fetch Cached Emscripten SDK
       id: cache-emsdk
       uses: actions/cache@v2
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION_EXPERIMENTAL }}-${{ runner.os }}
 
-    - name: Install emsdk
+    - name: Install Emscripten SDK
       run: |
         if [[ ! -d ./emsdk ]]; then
           git clone https://github.com/emscripten-core/emsdk.git
@@ -325,7 +325,7 @@ jobs:
         emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
         emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
 
-    - name: Verify emsdk
+    - name: Verify Emscripten SDK
       run: |
         source emsdk/emsdk_env.sh
         emcc -v
