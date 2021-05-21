@@ -308,20 +308,9 @@ jobs:
         ninja
         zstandard
 
-    - name: Fetch Cached Emscripten SDK
-      id: cache-emsdk
-      uses: actions/cache@v2
-      with:
-        path: ${{ env.EM_CACHE_FOLDER }}
-        key: ${{ env.EM_VERSION_EXPERIMENTAL }}-${{ runner.os }}
-
     - name: Install Emscripten SDK
       run: |
-        if [[ ! -d ./emsdk ]]; then
-          git clone https://github.com/emscripten-core/emsdk.git
-        else
-          bash -c "cd emsdk; git fetch --all; git reset --hard origin/main"
-        fi
+        git clone https://github.com/emscripten-core/emsdk.git
         emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
         emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
 
