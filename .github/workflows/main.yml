@@ -1,11 +1,11 @@
-name: Taisei Test Build (CI)
+name: Test Builds
 on:
   push:
     branches:
       - master
-      - v1.*
+      - v*.*
     tags:
-      - v1.*
+      - v*.*
     paths:
       - "**.c"
       - "**.h"
@@ -24,12 +24,13 @@ env:
   EM_VERSION: '2.0.21'
   EM_VERSION_EXPERIMENTAL: 'latest'
   EM_CACHE_FOLDER: 'emsdk'
+  MESON_VERSION: '0.56.2'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
 
 jobs:
   linux-test-build:
-    name: Linux Test (x64)
+    name: Linux (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -45,7 +46,7 @@ jobs:
 
     - name: Install Tools
       run: >
-        sudo apt update || true
+        sudo apt update || true # debian cache is not atomic and can sometimes fail
 
         sudo apt install -y -qq
         build-essential
@@ -62,7 +63,7 @@ jobs:
         libzstd-dev
 
         pip install
-        meson==0.56.2
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -77,7 +78,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Test (Taisei)
+    - name: (Taisei)
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -91,7 +92,7 @@ jobs:
         if-no-files-found: warn
 
   macos-test-build:
-    name: macOS Test (x64)
+    name: macOS (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: macos-10.15
     steps:
@@ -121,7 +122,7 @@ jobs:
         ninja
 
         pip install
-        meson==0.56.2
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -136,7 +137,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: Test (Taisei)
+    - name: (Taisei)
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -150,7 +151,7 @@ jobs:
         if-no-files-found: warn
 
   windows-test-build:
-    name: Windows Test (x64)
+    name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
@@ -170,7 +171,7 @@ jobs:
         nsis
 
         pip3 install
-        meson==0.56.2
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -198,7 +199,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-test-build:
-    name: "Emscripten Test (emsdk: stable) (WebGL)"
+    name: "Emscripten (emsdk: stable)"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -222,7 +223,7 @@ jobs:
         git
 
         pip install
-        meson==0.56.2
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -247,7 +248,7 @@ jobs:
         emcc -v
         tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
         [constants]
-        toolchain = '$(pwd)/emsdk/upstream/emscripten/'
+        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
         EOF
 
     - name: Configure
@@ -278,7 +279,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-test-build-latest:
-    name: "Emscripten Test (emsdk: experimental) (WebGL)"
+    name: "Emscripten (emsdk: latest)"
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     continue-on-error: true
@@ -303,7 +304,7 @@ jobs:
         git
 
         pip install
-        meson==0.56.2
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -319,7 +320,7 @@ jobs:
         if [[ ! -d ./emsdk ]]; then
           git clone https://github.com/emscripten-core/emsdk.git
         else
-          bash -c "cd emsdk; git pull"
+          bash -c "cd emsdk; git fetch --all; git reset --hard origin/master"
         fi
         emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
         emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
@@ -330,7 +331,7 @@ jobs:
         emcc -v
         tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
         [constants]
-        toolchain = '$(pwd)/emsdk/upstream/emscripten/'
+        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
         EOF
 
     - name: Configure
