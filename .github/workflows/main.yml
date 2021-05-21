@@ -405,10 +405,7 @@ jobs:
         --prefix=$(pwd)/build-test
 
     - name: Build
-      run: >
-        meson compile -C build/ --verbose
-        --cross-file=misc/ci/switch-crossfile-ci.ini
-        --prefix=$(pwd)/build-test
+      run: meson compile -C build/ --verbose
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
