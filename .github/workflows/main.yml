@@ -21,10 +21,9 @@ on:
       - "**.build"
 
 env:
-  EM_VERSION: '2.0.21'
-  EM_VERSION_EXPERIMENTAL: 'latest'
-  EM_CACHE_FOLDER: 'emsdk'
   MESON_VERSION: '0.56.2'
+  EM_VERSION: '2.0.21'
+  EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
 
@@ -228,14 +227,14 @@ jobs:
         zstandard
 
     - name: Fetch Cached Emscripten SDK
-      id: cache-emsdk
+      id: emsdk-cache
       uses: actions/cache@v2
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
 
     - name: Install Emscripten SDK
-      if: steps.cache-emsdk.outputs.cache-hit != 'true'
+      if: steps.emsdk-cache.outputs.cache-hit != 'true'
       run: |
         rm -rf emsdk/
         git clone https://github.com/emscripten-core/emsdk.git
@@ -284,17 +283,40 @@ jobs:
     runs-on: ubuntu-20.04
     continue-on-error: true
     steps:
+    - name: Get Latest Emscripten SDK Tag
+      id: emsdk-tag
+      run: >
+        git clone https://github.com/emscripten-core/emsdk.git
+
+        git --git-dir=emsdk/.git fetch --tags
+
+        export EM_LATEST_TAG=$(git --git-dir=emsdk/.git describe --abbrev=0 --tags)
+
+        echo EM_LATEST_TAG=$EM_LATEST_TAG >> $GITHUB_ENV
+
+        if [[ $EM_LATEST_TAG != ${{ env.EM_VERSION }} ]]; then
+          echo "Versions differ (stable: $EM_LATEST_TAG, latest: ${{ env.EM_VERSION }}), running test build";
+          echo '::set-output name=run::true';
+        else
+          echo "Same tag as in stable build (stable: $EM_LATEST_TAG, latest: ${{ env.EM_VERSION }}), skipping";
+        fi # only run if version is different
+
+        rm -rf emsdk # cleanup
+
     - name: Checkout Code
+      if: steps.emsdk-tag.outputs.run == 'true'
       uses: actions/checkout@v2
       with:
         submodules: 'recursive'
 
     - name: Install Python
+      if: steps.emsdk-tag.outputs.run == 'true'
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
     - name: Install Tools
+      if: steps.emsdk-tag.outputs.run == 'true'
       run: >
         sudo apt update || true
 
@@ -308,13 +330,23 @@ jobs:
         ninja
         zstandard
 
+    - name: Fetch Cached Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true'
+      id: emsdk-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.EM_CACHE_FOLDER }}
+        key: ${{ env.EM_LATEST_TAG }}-${{ runner.os }}
+
     - name: Install Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true' && steps.emsdk-cache.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/emscripten-core/emsdk.git
-        emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
-        emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
+        emsdk/emsdk install ${{ env.EM_LATEST_TAG }} || true
+        emsdk/emsdk activate ${{ env.EM_LATEST_TAG }}
 
     - name: Verify Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true'
       run: |
         source emsdk/emsdk_env.sh
         emcc -v
@@ -324,6 +356,7 @@ jobs:
         EOF
 
     - name: Configure
+      if: steps.emsdk-tag.outputs.run == 'true'
       run: >
         source emsdk/emsdk_env.sh
 
@@ -337,6 +370,7 @@ jobs:
         build/
 
     - name: Build
+      if: steps.emsdk-tag.outputs.run == 'true'
       run: |
         # this build is allowed to fail
         source emsdk/emsdk_env.sh
@@ -345,8 +379,9 @@ jobs:
         meson compile tar -C build/ --verbose
 
     - name: Upload Log
+      if: steps.emsdk-tag.outputs.run == 'true'
       uses: actions/upload-artifact@v2
       with:
-        name: taisei_emscripten_experimental_build_log
+        name: taisei_emscripten_latest_build_log
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
