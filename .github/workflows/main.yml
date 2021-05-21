@@ -78,7 +78,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: (Taisei)
+    - name: Run Test
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -137,7 +137,7 @@ jobs:
         meson compile -C build/ --verbose
         meson install -C build/
 
-    - name: (Taisei)
+    - name: Run Test
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
@@ -320,7 +320,7 @@ jobs:
         if [[ ! -d ./emsdk ]]; then
           git clone https://github.com/emscripten-core/emsdk.git
         else
-          bash -c "cd emsdk; git fetch --all; git reset --hard origin/master"
+          bash -c "cd emsdk; git fetch --all; git reset --hard origin/main"
         fi
         emsdk/emsdk install ${{ env.EM_VERSION_EXPERIMENTAL }} || true
         emsdk/emsdk activate ${{ env.EM_VERSION_EXPERIMENTAL }}
