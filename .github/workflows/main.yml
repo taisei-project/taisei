@@ -1,11 +1,11 @@
-name: taisei-build-tests
+name: Test Builds
 on:
   push:
     branches:
       - master
-      - v1.*
+      - v*.*
     tags:
-      - v1.*
+      - v*.*
     paths:
       - "**.c"
       - "**.h"
@@ -20,8 +20,16 @@ on:
       - "**.yaml"
       - "**.build"
 
+env:
+  MESON_VERSION: '0.56.2'
+  EM_VERSION: '2.0.21'
+  EM_CACHE_FOLDER: 'emsdk'
+  TAISEI_NOPRELOAD: 0
+  TAISEI_PRELOAD_REQUIRED: 1
+
 jobs:
   linux-test-build:
+    name: Linux (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     steps:
@@ -35,9 +43,9 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools (apt)
+    - name: Install Tools
       run: >
-        sudo apt update
+        sudo apt update || true # debian cache is not atomic and can sometimes fail
 
         sudo apt install -y -qq
         build-essential
@@ -54,17 +62,17 @@ jobs:
         libzstd-dev
 
         pip install
-        meson==0.55.3
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
-    - name: Configure (Meson)
+    - name: Configure
       run: >
         meson setup build/
-        --prefix=$(pwd)/build-test
         --native-file misc/ci/linux-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -72,8 +80,8 @@ jobs:
     - name: Run Test
       run: $(pwd)/build-test/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
-        TAISEI_NOPRELOAD: 0
-        TAISEI_PRELOAD_REQUIRED: 1
+        TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
+        TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
@@ -83,6 +91,7 @@ jobs:
         if-no-files-found: warn
 
   macos-test-build:
+    name: macOS (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: macos-10.15
     steps:
@@ -91,12 +100,12 @@ jobs:
       with:
         submodules: 'recursive'
 
-    - name: Set Up Build Environment
+    - name: Install Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
 
-    - name: Install Build Tools
+    - name: Install Tools
       run: >
         brew install
         gcc
@@ -112,17 +121,17 @@ jobs:
         ninja
 
         pip install
-        meson==0.55.3
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
-    - name: Configure (Meson)
+    - name: Configure
       run: >
         meson setup build/
         --native-file misc/ci/macos-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -130,8 +139,8 @@ jobs:
     - name: Run Test
       run: $(pwd)/build-test/Taisei.app/Contents/MacOS/Taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
-        TAISEI_NOPRELOAD: 0
-        TAISEI_PRELOAD_REQUIRED: 1
+        TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
+        TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
@@ -141,13 +150,14 @@ jobs:
         if-no-files-found: warn
 
   windows-test-build:
+    name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
     container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
     steps:
-    - name: Install tools (Apt)
+    - name: Install Tools
       run: >
-        apt update
+        apt update || true
 
         apt install -y -qq software-properties-common
 
@@ -160,7 +170,7 @@ jobs:
         nsis
 
         pip3 install
-        meson==0.55.3
+        meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
 
@@ -172,10 +182,10 @@ jobs:
     - name: Configure Taisei (Meson)
       run: >
         meson setup build/
-        --prefix=$(pwd)/build-test
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
+        --prefix=$(pwd)/build-test
 
-    - name: Build & Install
+    - name: Build
       run: |
         meson compile -C build/ --verbose
         meson install -C build/
@@ -184,5 +194,194 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: taisei_windows_fail_log
+        path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
+
+  emscripten-test-build:
+    name: "Emscripten (emsdk: stable)"
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Tools
+      run: >
+        sudo apt update || true
+
+        sudo apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+
+        pip install
+        meson==${{ env.MESON_VERSION }}
+        ninja
+        zstandard
+
+    - name: Fetch Cached Emscripten SDK
+      id: emsdk-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.EM_CACHE_FOLDER }}
+        key: ${{ env.EM_VERSION }}-${{ runner.os }}
+
+    - name: Install Emscripten SDK
+      if: steps.emsdk-cache.outputs.cache-hit != 'true'
+      run: |
+        rm -rf emsdk/
+        git clone https://github.com/emscripten-core/emsdk.git
+        emsdk/emsdk install ${{ env.EM_VERSION }}
+        emsdk/emsdk activate ${{ env.EM_VERSION }}
+
+    - name: Verify Emscripten SDK
+      run: |
+        source emsdk/emsdk_env.sh
+        emcc -v
+        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
+        EOF
+
+    - name: Configure
+      run: >
+        source emsdk/emsdk_env.sh
+
+        meson setup build/
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
+        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+
+        meson configure
+        -Dbuild.cpp_std=gnu++14
+        build/
+
+    - name: Build
+      run: |
+        source emsdk/emsdk_env.sh
+        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
+        meson compile tar -C build/ --verbose || true
+        meson compile tar -C build/ --verbose
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_emscripten_stable_build_log
+        path: build/meson-logs/meson-log.txt
+        if-no-files-found: warn
+
+  emscripten-test-build-latest:
+    name: "Emscripten (emsdk: latest)"
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-20.04
+    continue-on-error: true
+    steps:
+    - name: Get Latest Emscripten SDK Tag
+      id: emsdk-tag
+      run: >
+        git clone https://github.com/emscripten-core/emsdk.git
+
+        git --git-dir=emsdk/.git fetch --tags
+
+        export EM_LATEST_TAG=$(git --git-dir=emsdk/.git describe --abbrev=0 --tags)
+
+        echo EM_LATEST_TAG=$EM_LATEST_TAG >> $GITHUB_ENV
+
+        if [[ $EM_LATEST_TAG != ${{ env.EM_VERSION }} ]]; then
+          echo "Versions differ (stable: $EM_LATEST_TAG, latest: ${{ env.EM_VERSION }}), running test build";
+          echo '::set-output name=run::true';
+        else
+          echo "Same tag as in stable build (stable: $EM_LATEST_TAG, latest: ${{ env.EM_VERSION }}), skipping";
+        fi # only run if version is different
+
+        rm -rf emsdk # cleanup
+
+    - name: Checkout Code
+      if: steps.emsdk-tag.outputs.run == 'true'
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install Python
+      if: steps.emsdk-tag.outputs.run == 'true'
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Tools
+      if: steps.emsdk-tag.outputs.run == 'true'
+      run: >
+        sudo apt update || true
+
+        sudo apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+
+        pip install
+        meson==${{ env.MESON_VERSION }}
+        ninja
+        zstandard
+
+    - name: Fetch Cached Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true'
+      id: emsdk-cache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.EM_CACHE_FOLDER }}
+        key: ${{ env.EM_LATEST_TAG }}-${{ runner.os }}
+
+    - name: Install Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true' && steps.emsdk-cache.outputs.cache-hit != 'true'
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git
+        emsdk/emsdk install ${{ env.EM_LATEST_TAG }} || true
+        emsdk/emsdk activate ${{ env.EM_LATEST_TAG }}
+
+    - name: Verify Emscripten SDK
+      if: steps.emsdk-tag.outputs.run == 'true'
+      run: |
+        source emsdk/emsdk_env.sh
+        emcc -v
+        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
+        EOF
+
+    - name: Configure
+      if: steps.emsdk-tag.outputs.run == 'true'
+      run: >
+        source emsdk/emsdk_env.sh
+
+        meson setup build/
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
+        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+
+        meson configure
+        -Dbuild.cpp_std=gnu++14
+        build/
+
+    - name: Build
+      if: steps.emsdk-tag.outputs.run == 'true'
+      run: |
+        # this build is allowed to fail
+        source emsdk/emsdk_env.sh
+        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
+        meson compile tar -C build/ --verbose || true
+        meson compile tar -C build/ --verbose
+
+    - name: Upload Log
+      if: steps.emsdk-tag.outputs.run == 'true'
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_emscripten_latest_build_log
         path: build/meson-logs/meson-log.txt
         if-no-files-found: warn
