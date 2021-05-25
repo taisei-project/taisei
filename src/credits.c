@@ -14,6 +14,7 @@
 #include "video.h"
 #include "resource/model.h"
 #include "renderer/api.h"
+#include "util/fbmgr.h"
 #include "util/glm.h"
 #include "dynarray.h"
 
@@ -29,6 +30,9 @@ static struct {
 	int end;
 	bool skipable;
 	CallChain cc;
+
+	ManagedFramebufferGroup *mfb_group;
+	Framebuffer *fb;
 } credits;
 
 #define CREDITS_ENTRY_FADEIN 200.0
@@ -211,48 +215,109 @@ static void credits_add(char *data, int time) {
 	credits.end += time;
 }
 
+static void credits_skysphere_draw(vec3 pos) {
+	r_state_push();
+	r_disable(RCAP_DEPTH_TEST);
+	r_shader("stage6_sky");
+	r_uniform_sampler("tex", "stage6/sky");
+
+	r_mat_mv_push();
+	r_mat_mv_translate_v(stage_3d_context.cam.pos);
+	r_mat_mv_scale(50, 50, 50);
+	r_draw_model("skysphere");
+	r_mat_mv_pop();
+	r_enable(RCAP_DEPTH_TEST);
+	r_state_pop();
+}
+
+static void credits_bg_setup_pbr_lighting(void) {
+	Camera3D *cam = &stage_3d_context.cam;
+
+	PointLight3D lights[] = {
+		{ {0, 100, 100}, { 1000, 1000, 1000 } },
+	};
+
+	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
+	r_uniform_vec3("ambient_color", 1, 1, 1);
+}
+
 static void credits_towerwall_draw(vec3 pos) {
-	r_shader("tower_wall");
-	r_uniform_sampler("tex", "stage6/towerwall");
-	r_uniform_float("lendiv", 2800.0 + 300.0 * sin(global.frames / 77.7));
+	r_state_push();
+	r_shader("pbr");
+	r_enable(RCAP_DEPTH_TEST);
+	credits_bg_setup_pbr_lighting();
+
+	r_uniform_sampler("tex", "credits/tower_diffuse");
+	r_uniform_sampler("roughness_map", "credits/tower_roughness");
+	r_uniform_sampler("normal_map", "credits/tower_normal");
+	r_uniform_sampler("ambient_map", "credits/tower_ambient");
 
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-	r_mat_mv_scale(30,30,30);
-	r_draw_model("towerwall");
-	r_mat_mv_pop();
+	r_mat_mv_scale(1,1,1);
+	r_draw_model("credits/tower");
 
-	r_shader_standard();
+	r_shader("envmap_reflect");
+	r_uniform_sampler("tex", "stage6/sky");
+
+	mat4 camera_trans, inv_camera_trans;
+	glm_mat4_identity(camera_trans);
+	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
+	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
+	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
+
+	r_draw_model("credits/metal_columns");
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
-static uint credits_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {0, 0, -220};
-	vec3 r = {0, 0, 300};
+static void resize_fb(void *userdata, IntExtent *out_dimensions, FloatRect *out_viewport) {
+	float w, h;
+	video_get_viewport_size(&w, &h);
 
-	uint num = linear3dpos(s3d, pos, maxrange, p, r);
+	out_dimensions->w = w;
+	out_dimensions->h = h;
 
-	for(uint i = 0; i < num; ++i) {
-		if(s3d->pos_buffer[i][2] > 0) {
-			s3d->pos_buffer[i][1] = -90000;
-		}
-	}
-
-	return num;
+	out_viewport->w = w;
+	out_viewport->h = h;
+	out_viewport->x = 0;
+	out_viewport->y = 0;
 }
 
 static void credits_init(void) {
 	memset(&credits, 0, sizeof(credits));
-	stage3d_init(&stage_3d_context, 64);
+	stage3d_init(&stage_3d_context, 32);
 
-	stage_3d_context.cam.fovy = M_PI/3; // FIXME
-	stage_3d_context.cam.aspect = 0.7f; // FIXME
-	stage_3d_context.cam.near = 100;
-	stage_3d_context.cam.far = 9000;
+	FBAttachmentConfig a[2];
+	memset(a, 0, sizeof(a));
 
+	for(int i = 0; i < ARRAY_SIZE(a); i++) {
+		a[i].tex_params.filter.min = TEX_FILTER_LINEAR;
+		a[i].tex_params.filter.mag = TEX_FILTER_LINEAR;
+		a[i].tex_params.wrap.s = TEX_WRAP_MIRROR;
+		a[i].tex_params.wrap.s = TEX_WRAP_MIRROR;
+	}
+
+	a[0].attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	a[0].tex_params.type = TEX_TYPE_RGBA_8;
+	a[1].attachment = FRAMEBUFFER_ATTACH_DEPTH;
+	a[1].tex_params.type = TEX_TYPE_DEPTH;
+
+	FramebufferConfig fbconf = { 0 };
+	fbconf.attachments = a;
+	fbconf.num_attachments = ARRAY_SIZE(a);
+	fbconf.resize_strategy.resize_func = resize_fb;
+
+	credits.mfb_group = fbmgr_group_create();
+	credits.fb = fbmgr_group_framebuffer_create(credits.mfb_group, "BG", &fbconf);
+
+	stage_3d_context.cam.far = 1000;
 
 	stage_3d_context.cam.pos[0] = 0;
-	stage_3d_context.cam.pos[1] = 600;
-	stage_3d_context.cam.rot.v[0] = 0;
+	stage_3d_context.cam.pos[1] = -19;
+	stage_3d_context.cam.vel[2] = -0.5;
+	stage_3d_context.cam.rot.v[0] = 30;
+	stage_3d_context.cam.rot.v[2] = -20;
 
 	global.frames = 0;
 
@@ -391,16 +456,34 @@ static void credits_draw_entry(CreditsEntry *e) {
 	r_state_pop();
 }
 
+static uint credits_towerwall_pos(Stage3D *s3d, vec3 pos, float maxrange) {
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 0, 25};
+
+	uint num = linear3dpos(s3d, pos, maxrange, p, r);
+
+	return num;
+}
+
+static uint credits_skysphere_pos(Stage3D *s3d, vec3 pos, float maxrange) {
+	return single3dpos(s3d, pos, maxrange, s3d->cam.pos);
+}
+
 static void credits_draw(void) {
 	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
-	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
+//	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
+
 
 	r_mat_mv_push();
+
+	r_state_push();
+	r_framebuffer(credits.fb);
+	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+
 	r_enable(RCAP_DEPTH_TEST);
-
-	r_mat_proj_translate(0, SCREEN_H / 3.0f, 0);
-
-	stage3d_draw(&stage_3d_context, 10000, 1, (Stage3DSegment[]) { credits_towerwall_draw, credits_towerwall_pos });
+	stage3d_draw(&stage_3d_context, 500, 2, (Stage3DSegment[]) { credits_skysphere_draw, credits_skysphere_pos, credits_towerwall_draw, credits_towerwall_pos });
+	r_state_pop();
+	draw_framebuffer_tex(credits.fb, SCREEN_W, SCREEN_H);
 
 	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);
@@ -436,9 +519,11 @@ static void credits_finish(void *arg) {
 static void credits_process(void) {
 	TIMER(&global.frames);
 
-	stage_3d_context.cam.pos[2] = 200 - global.frames * 50;
-	stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
-	stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
+	stage3d_update(&stage_3d_context);
+
+	//stage_3d_context.cam.pos[2] = 10-0.1*global.frames;
+	//stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
+	//stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
 	FROM_TO(100, 200, 1)
 		credits.panelalpha += 0.01;
@@ -453,6 +538,8 @@ static void credits_process(void) {
 }
 
 static void credits_free(void) {
+	fbmgr_group_destroy(credits.mfb_group);
+
 	dynarray_foreach_elem(&credits.entries, CreditsEntry *e, {
 		for(int i = 0; i < e->lines; ++i) {
 			free(e->data[i]);
@@ -466,11 +553,24 @@ static void credits_free(void) {
 
 void credits_preload(void) {
 	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resource(RES_SHADER_PROGRAM, "tower_wall", RESF_DEFAULT);
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"pbr",
+		"envmap_reflect",
+		"stage6_sky",
+	NULL);
 	preload_resource(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"stage6/towerwall",
 		"loading",  // for transition
+		"stage6/sky",
+		"credits/tower_ambient",
+		"credits/tower_diffuse",
+		"credits/tower_normal",
+		"credits/tower_roughness",
+	NULL);
+	preload_resources(RES_MODEL, RESF_DEFAULT,
+		"credits/tower",
+		"credits/metal_columns",
+		"skysphere",
 	NULL);
 }
 
