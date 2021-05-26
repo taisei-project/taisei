@@ -48,7 +48,7 @@ To build and install Taisei on \*nix, there are two options: you can use the
 ``Makefile`` or you can run the commands directly, depending on your
 preferences.
 
-To use the `Makefile`:
+To use the ``Makefile``:
 
 .. code:: sh
 
@@ -80,7 +80,7 @@ Here's an explanation of what they do:
 
 These commands will set up your build environment, compile the game, and
 install it to the ``/home/{your_username}/bin`` directory you specified
-earlier. You can then run the game by executing the `taisei` binary in that
+earlier. You can then run the game by executing the ``taisei`` binary in that
 directory (or running the ``Taisei.app`` for macOS).
 
 Development
@@ -169,7 +169,7 @@ Stack Trace Debugging
 '''''''''''''''''''''
 
 This is useful for debugging crashes in the game. It uses
-`AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>__`:
+`AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__:
 
 .. code:: sh
 
@@ -205,7 +205,6 @@ OpenGL ES Support (Optional)
 
 3.0
 '''
-
 
 The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
@@ -247,6 +246,11 @@ to function correctly, most notably:
 ANGLE (Windows/macOS)
 '''''''''''''''''''''
 
+ANGLE support is semi-optional for macOS, and *mandatory* for Windows. Due to
+long-standing OpenGL bugs on Windows, it's required so that Taisei runs
+correctly on as many GPU configurations as possible. macOS runs fine with the
+standard OpenGL 3.3 backend, but requires ANGLE for GL ES 3.0 support.
+
 For Windows and macOS, you will need Google's ANGLE library for both ES 3.0 and
 2.0. You'll need to check out
 `ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
@@ -271,7 +275,8 @@ Or:
 Ensure you use the correct file extension for your platform. (``.dll`` for
 Windows, ``.dylib`` for macOS.)
 
-This will copy the file over into the package itself.
+``meson`` will copy those files over into the package itself when packaging with
+``ninja zip`` or ``ninja dmg``.
 
 Coding Style
 ------------
@@ -323,6 +328,13 @@ that Wayland deps are installed:
 
     apt-get install libwayland-dev
 
+For packaging, your best bet is ``.zip``. Invoke ``ninja`` to package a
+``.zip``:
+
+.. code:: sh
+
+   ninja zip -C build/
+
 macOS
 """""
 
@@ -367,7 +379,7 @@ Remove them with:
 Taisei-compatible versions are bundled and will be pulled in at compile time.
 
 In addition, if you're trying to compile on an older version of macOS
-(e.x: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
+(i.e: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
 Let ``meson`` pull in the corrected version for you via subprojects.
 
 **NOTE:** While Homebrew's optional dependencies greatly improve compile times,
@@ -385,6 +397,21 @@ Or:
 
    meson configure build/ --wrap-mode=forcefallback
 
+Optionally, if you're on macOS and compiling for macOS, you can to install
+`create-dmg <https://github.com/create-dmg/create-dmg>`__, which will allow
+you to have nicer-looking macOS ``.dmg`` files for distribution:
+
+.. code:: sh
+
+    brew install create-dmg
+
+You can create a ``.dmg`` on either Linux or macOS (although with ``create-dmg``
+on macOS, the macOS-produced ``.dmg`` will look nicer):
+
+.. code:: sh
+
+   ninja dmg -C build/
+
 Windows
 """""""
 
@@ -394,10 +421,27 @@ tooling required for a native Windows build environment.
 
 However, you can still compile on a Windows-based computer by leveraging Windows
 10's
-`Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>__`
+`Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
 to cross-compile to Windows. Ironically enough, compiling for Windows on Linux
 ends up being easier and more consistent than trying to compile with Windows's
 native toolset.
+
+Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to
+achieve cross-compiling on Windows. We also have a ``meson`` machine file
+located at ``misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini`` to go with
+that toolchain. In general, you'll need the following tools for compiling Taisei
+for Windows on Linux:
+
+-   ``llvm-mingw``
+-   `nsis <https://nsis.sourceforge.io/Main_Page>`__ >= 3.0
+
+On macOS, you're probably better off using Docker and the
+`Docker container <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that
+``llvm-mingw`` provides, and installing ``nsis`` on top of it. Refer to
+``misc/ci/Dockerfile.windows`` for more insight.
+
+Additionally, on Windows, you'll need to make sure you have *ANGLE support*
+enabled, as previously mentioned.
 
 Compiling Issues
 ----------------
@@ -405,13 +449,14 @@ Compiling Issues
 -Wunused-variable
 """""""""""""""""
 
-If you get an error compiling your code, but you're 100%
-sure that you've actually used the variable, chances are you're using that
-variable in an `assert()` and are compiling with `clang`.
+If you get an error compiling your code, but you're 100% sure that you've
+actually used the variable, chances are you're using that variable in an
+``assert()`` and are compiling with ``clang``.
 
-`clang` won't recognize that the variable is actually being used in an `assert()`.
+``clang`` won't recognize that the variable is actually being used in an
+``assert()``.
 
-You can use the macro `attr_unused` to bypass that warning. This:
+You can use the macro ``attr_unused`` to bypass that warning. This:
 
 .. code:: c
 
