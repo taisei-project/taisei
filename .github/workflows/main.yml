@@ -292,7 +292,6 @@ jobs:
 
         echo EM_LATEST_TAG=$EM_LATEST_TAG >> $GITHUB_ENV
 
-        # only run if version is different
         if [[ $EM_LATEST_TAG != ${{ env.EM_VERSION }} ]]; then
           echo "Versions differ (latest: $EM_LATEST_TAG, stable: ${{ env.EM_VERSION }}), running test build";
           echo '::set-output name=run::true';
