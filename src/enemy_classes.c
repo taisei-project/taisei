@@ -116,18 +116,17 @@ TASK(fairy_stardust_emitter, {
 
 
 		if(!(t % period)) {
-			cmplx offset = rng_sreal() * 12;
-			offset += rng_sreal() * 10 * I;
-			cmplx pos = e->pos + offset;
+			RNG_ARRAY(rng, 4);
+			cmplx pos = e->pos + vrng_sreal(rng[0]) * 12 + vrng_sreal(rng[1]) * 10 * I;
 
 			ENT_ARRAY_ADD(&parts, PARTICLE(
 				.sprite_ptr = spr,
 				.pos = pos,
 				.color = &ARGS.color,
 				.draw_rule = pdraw_timeout_scalefade_exp(0.1 * (1+I), 2 * (1+I), 1, 0, 2),
-				.angle = rng_angle(),
+				.angle = vrng_angle(rng[0]),
 				.timeout = 180,
-				.move = move_towards(pos, 0.18 + 0.01 * rng_sreal()),
+				.move = move_towards(pos, 0.18 + 0.01 * vrng_sreal(rng[1])),
 				.flags = PFLAG_MANUALANGLE,
 				.layer = LAYER_PARTICLE_MID,
 			));
