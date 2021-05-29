@@ -95,7 +95,7 @@ static int taskmgr_thread(void *arg) {
 		SDL_UnlockMutex(mgr->mutex);
 	} while(!running && !aborted);
 
-	while(running && !aborted) {
+	while(!aborted) {
 		SDL_LockMutex(mgr->mutex);
 		Task *task = alist_pop(&mgr->queue);
 
@@ -148,6 +148,8 @@ static int taskmgr_thread(void *arg) {
 			} else {
 				UNREACHABLE;
 			}
+		} else if(!running) {
+			break;
 		}
 	}
 
