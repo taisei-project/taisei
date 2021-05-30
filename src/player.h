@@ -28,6 +28,8 @@
 #include "stats.h"
 #include "resource/animation.h"
 #include "entity.h"
+#include "replay/state.h"
+#include "replay/eventcodes.h"
 
 enum {
 	PLR_MAX_POWER = 400,
@@ -165,18 +167,10 @@ DEFINE_ENTITY_TYPE(Player, {
 	)
 });
 
-// this is used by both player and replay code
-enum {
-	EV_PRESS,
-	EV_RELEASE,
-	EV_OVER, // replay-only
-	EV_AXIS_LR,
-	EV_AXIS_UD,
-	EV_CHECK_DESYNC, // replay-only
-	EV_FPS, // replay-only
-	EV_INFLAGS,
-	EV_CONTINUE,
-};
+typedef enum PlayerEventResult {
+	PLREVT_USEFUL = (1 << 0),
+	PLREVT_CHEAT = (1 << 1),
+} PlayerEventResult;
 
 // This is called first before we even enter stage_loop.
 // It's also called right before syncing player state from a replay stage struct, if a replay is being watched or recorded, before every stage.
@@ -206,10 +200,15 @@ void player_realdeath(Player*);
 void player_death(Player*);
 void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color);
 
-void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat);
-bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value);
+PlayerEventResult player_event(
+	Player *plr,
+	ReplayState *rpy_in,
+	ReplayState *rpy_out,
+	ReplayEventCode type,
+	uint16_t value
+) attr_nonnull(1);
+void player_fix_input(Player *plr, ReplayState *rpy_out);
 void player_applymovement(Player* plr);
-void player_fix_input(Player *plr);
 
 void player_add_life_fragments(Player *plr, int frags);
 void player_add_bomb_fragments(Player *plr, int frags);

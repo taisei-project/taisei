@@ -19,6 +19,8 @@
 #include "stats.h"
 #include "entity.h"
 #include "util/glm.h"
+#include "replay/stage.h"
+#include "replay/struct.h"
 
 DEFINE_ENTITY_TYPE(PlayerIndicators, {
 	Player *plr;
@@ -562,7 +564,10 @@ DEFINE_TASK(player_logic) {
 
 		fapproach_p(&plr->bomb_cutin_alpha, 0, 1/200.0);
 
-		if(plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames && plr->lives < 0 && global.replaymode != REPLAY_PLAY) {
+		if(
+			plr->respawntime - PLR_RESPAWN_TIME/2 == global.frames &&
+			plr->lives < 0 && global.replay.input.replay == NULL
+		) {
 			stage_gameover();
 		}
 
@@ -1055,10 +1060,15 @@ static bool player_set_axis(int *aptr, uint16_t value) {
 	return true;
 }
 
-void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, bool *out_cheat) {
+PlayerEventResult player_event(
+	Player *plr,
+	ReplayState *rpy_in,
+	ReplayState *rpy_out,
+	ReplayEventCode type,
+	uint16_t value
+) {
 	bool useful = true;
 	bool cheat = false;
-	bool is_replay = global.replaymode == REPLAY_PLAY;
 
 	switch(type) {
 		case EV_PRESS:
@@ -1137,65 +1147,60 @@ void player_event(Player *plr, uint8_t type, uint16_t value, bool *out_useful, b
 			break;
 	}
 
-	if(is_replay) {
+	if(rpy_in && rpy_in->stage) {
+		assert(rpy_in->mode == REPLAY_PLAY);
+
 		if(!useful) {
-			log_warn("Useless event in replay: [%i:%02x:%04x]", global.frames, type, value);
+			log_warn("Replay input: useless event: [%i:%02x:%04x]", global.frames, type, value);
 		}
 
 		if(cheat) {
-			log_warn("Cheat event in replay: [%i:%02x:%04x]", global.frames, type, value);
+			log_warn("Replay input: Cheat event: [%i:%02x:%04x]", global.frames, type, value);
 
-			if( !(global.replay.flags           & REPLAY_GFLAG_CHEATS) ||
-				!(global.replay_stage->flags    & REPLAY_SFLAG_CHEATS)) {
+			if( !(rpy_in->replay->flags   & REPLAY_GFLAG_CHEATS) ||
+				!(rpy_in->stage->flags    & REPLAY_SFLAG_CHEATS)) {
 				log_warn("...but this replay was NOT properly cheat-flagged! Not cool, not cool at all");
 			}
 		}
 
 		if(type == EV_CONTINUE && (
-			!(global.replay.flags           & REPLAY_GFLAG_CONTINUES) ||
-			!(global.replay_stage->flags    & REPLAY_SFLAG_CONTINUES))) {
-			log_warn("Continue event in replay: [%i:%02x:%04x], but this replay was not properly continue-flagged", global.frames, type, value);
+			!(rpy_in->replay->flags   & REPLAY_GFLAG_CONTINUES) ||
+			!(rpy_in->stage->flags    & REPLAY_SFLAG_CONTINUES))) {
+			log_warn("Replay input: Continue event [%i:%02x:%04x], but this replay was not properly continue-flagged", global.frames, type, value);
 		}
 	}
 
-	if(out_useful) {
-		*out_useful = useful;
+	if(rpy_out && rpy_out->stage) {
+		assert(rpy_out->mode == REPLAY_RECORD);
+
+		if(useful) {
+			replay_stage_event(rpy_out->stage, global.frames, type, value);
+
+			if(type == EV_CONTINUE) {
+				rpy_out->replay->flags |= REPLAY_GFLAG_CONTINUES;
+				rpy_out->stage->flags  |= REPLAY_SFLAG_CONTINUES;
+			}
+
+			if(cheat) {
+				rpy_out->replay->flags |= REPLAY_GFLAG_CHEATS;
+				rpy_out->stage->flags  |= REPLAY_SFLAG_CHEATS;
+			}
+		} else {
+			log_debug("Replay output: Useless event discarded: [%i:%02x:%04x]", global.frames, type, value);
+		}
 	}
 
-	if(out_cheat) {
-		*out_cheat = cheat;
-	}
-}
-
-bool player_event_with_replay(Player *plr, uint8_t type, uint16_t value) {
-	bool useful, cheat;
-	assert(global.replaymode == REPLAY_RECORD);
-
-	if(config_get_int(CONFIG_SHOT_INVERTED) && value == KEY_SHOT && (type == EV_PRESS || type == EV_RELEASE)) {
-		type = type == EV_PRESS ? EV_RELEASE : EV_PRESS;
-	}
-
-	player_event(plr, type, value, &useful, &cheat);
+	PlayerEventResult res = 0;
 
 	if(useful) {
-		replay_stage_event(global.replay_stage, global.frames, type, value);
-
-		if(type == EV_CONTINUE) {
-			global.replay.flags |= REPLAY_GFLAG_CONTINUES;
-			global.replay_stage->flags |= REPLAY_SFLAG_CONTINUES;
-		}
-
-		if(cheat) {
-			global.replay.flags |= REPLAY_GFLAG_CHEATS;
-			global.replay_stage->flags |= REPLAY_SFLAG_CHEATS;
-		}
-
-		return true;
-	} else {
-		log_debug("Useless event discarded: [%i:%02x:%04x]", global.frames, type, value);
+		res |= PLREVT_USEFUL;
 	}
 
-	return false;
+	if(cheat) {
+		res |= PLREVT_CHEAT;
+	}
+
+	return res;
 }
 
 // free-axis movement
@@ -1297,7 +1302,7 @@ void player_applymovement(Player *plr) {
 		player_move(&global.plr, direction);
 }
 
-void player_fix_input(Player *plr) {
+void player_fix_input(Player *plr, ReplayState *rpy_out) {
 	// correct input state to account for any events we might have missed,
 	// usually because the pause menu ate them up
 
@@ -1324,18 +1329,18 @@ void player_fix_input(Player *plr) {
 	}
 
 	if(newflags != plr->inputflags) {
-		player_event_with_replay(plr, EV_INFLAGS, newflags);
+		player_event(plr, NULL, rpy_out, EV_INFLAGS, newflags);
 	}
 
 	int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
 	int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
 
 	if(plr->axis_lr != axis_lr) {
-		player_event_with_replay(plr, EV_AXIS_LR, axis_lr);
+		player_event(plr, NULL, rpy_out, EV_AXIS_LR, axis_lr);
 	}
 
 	if(plr->axis_ud != axis_ud) {
-		player_event_with_replay(plr, EV_AXIS_UD, axis_ud);
+		player_event(plr, NULL, rpy_out, EV_AXIS_UD, axis_ud);
 	}
 }
 

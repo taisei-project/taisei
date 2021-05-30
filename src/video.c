@@ -18,6 +18,7 @@
 #include "taskmanager.h"
 #include "video_postprocess.h"
 #include "dynarray.h"
+#include "version.h"
 
 typedef DYNAMIC_ARRAY(VideoMode) VideoModeArray;
 

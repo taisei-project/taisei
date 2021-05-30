@@ -11,11 +11,12 @@
 #include "savereplay.h"
 #include "mainmenu.h"
 #include "global.h"
-#include "replay.h"
+#include "replay/struct.h"
 #include "plrmodes.h"
 #include "common.h"
 #include "video.h"
 
+attr_nonnull_all
 static void do_save_replay(Replay *rpy) {
 	char strtime[FILENAME_TIMESTAMP_MIN_BUF_SIZE], *name;
 	char prepr[16], drepr[16];
@@ -34,12 +35,19 @@ static void do_save_replay(Replay *rpy) {
 		name = strfmt("taisei_%s_stg%X_%s_%s", strtime, stg->stage, prepr, drepr);
 	}
 
-	replay_save(rpy, name);
+	if(rpy->playername) {
+		replay_save(rpy, name);
+	} else {
+		rpy->playername = config_get_str(CONFIG_PLAYERNAME);
+		replay_save(rpy, name);
+		rpy->playername = NULL;
+	}
+
 	free(name);
 }
 
 static void save_rpy(MenuData *menu, void *a) {
-	do_save_replay(&global.replay);
+	do_save_replay(a);
 }
 
 static void draw_saverpy_menu(MenuData *m) {
@@ -110,7 +118,7 @@ static void update_saverpy_menu(MenuData *m) {
 	});
 }
 
-static MenuData* create_saverpy_menu(void) {
+static MenuData* create_saverpy_menu(Replay *rpy) {
 	MenuData *m = alloc_menu();
 
 	m->input = saverpy_menu_input;
@@ -118,25 +126,23 @@ static MenuData* create_saverpy_menu(void) {
 	m->logic = update_saverpy_menu;
 	m->flags = MF_Transient;
 
-	add_menu_entry(m, "Yes", save_rpy, NULL);
+	add_menu_entry(m, "Yes", save_rpy, rpy);
 	add_menu_entry(m, "No", menu_action_close, NULL);
 
 	return m;
 }
 
-void ask_save_replay(CallChain next) {
-	assert(global.replay_stage != NULL);
-
+void ask_save_replay(Replay *rpy, CallChain next) {
 	switch(config_get_int(CONFIG_SAVE_RPY)) {
 		case 1:
-			do_save_replay(&global.replay);
+			do_save_replay(rpy);
 			// fallthrough
 		case 0:
 			run_call_chain(&next, NULL);
 			break;
 
 		case 2:
-			enter_menu(create_saverpy_menu(), next);
+			enter_menu(create_saverpy_menu(rpy), next);
 			break;
 	}
 }

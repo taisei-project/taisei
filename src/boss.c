@@ -130,7 +130,7 @@ static const Color *boss_healthbar_color(AttackType atype) {
 }
 
 static StageProgress *get_spellstage_progress(Attack *a, StageInfo **out_stginfo, bool write) {
-	if(!write || (global.replaymode == REPLAY_RECORD && global.stage->type == STAGE_STORY)) {
+	if(!write || (global.replay.input.replay == NULL && global.stage->type == STAGE_STORY)) {
 		StageInfo *i = stageinfo_get_by_spellcard(a->info, global.diff);
 		if(i) {
 			StageProgress *p = stageinfo_get_progress(i, global.diff, write);

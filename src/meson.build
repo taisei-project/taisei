@@ -88,7 +88,6 @@ taisei_src = files(
     'projectile_prototypes.c',
     'random.c',
     'refs.c',
-    'replay.c',
     'stage.c',
     'stagedraw.c',
     'stageinfo.c',
@@ -127,6 +126,7 @@ subdir('menu')
 subdir('pixmap')
 subdir('plrmodes')
 subdir('renderer')
+subdir('replay')
 subdir('resource')
 subdir('rwops')
 subdir('stages')
@@ -144,6 +144,7 @@ taisei_src += [
     pixmap_src,
     plrmodes_src,
     renderer_src,
+    replay_src,
     resource_src,
     rwops_src,
     stages_src,

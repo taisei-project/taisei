@@ -16,6 +16,8 @@
 #include "plrmodes.h"
 #include "video.h"
 #include "common.h"
+#include "replay/state.h"
+#include "replay/struct.h"
 
 // Type of MenuData.context
 typedef struct ReplayviewContext {
@@ -148,7 +150,7 @@ static void replayview_run(MenuData *menu, void *arg) {
 
 static void replayview_freearg(void *a) {
 	ReplayviewItemContext *ctx = a;
-	replay_destroy(ctx->replay);
+	replay_reset(ctx->replay);
 	free(ctx->replay);
 	free(ctx->replayname);
 	free(ctx);

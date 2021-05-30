@@ -15,6 +15,7 @@
 #include "resource/postprocess.h"
 #include "entity.h"
 #include "util/fbmgr.h"
+#include "replay/struct.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1
@@ -1478,11 +1479,13 @@ void stage_draw_bottom_text(void) {
 		.font_ptr = font,
 	});
 
-	if(global.replaymode == REPLAY_PLAY) {
+	if(global.replay.input.replay != NULL) {
+		ReplayState *rst = &global.replay.input;
+
 		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
-		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", global.replay.playername, global.replay_stage->fps);
+		snprintf(buf, sizeof(buf), "Replay: %s (%i fps)", rst->replay->playername, rst->play.fps);
 		int x = 0, y = SCREEN_H - 0.5 * text_height(font, buf, 0);
 
 		x += text_draw(buf, &(TextParams) {
@@ -1491,8 +1494,8 @@ void stage_draw_bottom_text(void) {
 			.color = &stagedraw.hud_text.color.inactive,
 		});
 
-		if(global.replay_stage->desynced) {
-			strlcpy(buf, " (DESYNCED)", sizeof(buf));
+		if(rst->play.desync_frame >= 0) {
+			snprintf(buf, sizeof(buf), " (DESYNCED near frame #%i)", rst->play.desync_frame);
 
 			text_draw(buf, &(TextParams) {
 				.pos = { x, y },

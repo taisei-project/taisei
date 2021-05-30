@@ -29,6 +29,7 @@
 #include "coroutine.h"
 #include "util/gamemode.h"
 #include "cutscenes/cutscene.h"
+#include "replay/struct.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -195,7 +196,7 @@ static noreturn void main_vfstree(CallChainResult ccr);
 
 static noreturn void main_quit(MainContext *ctx, int status) {
 	free_cli_action(&ctx->cli);
-	replay_destroy(&ctx->replay);
+	replay_reset(&ctx->replay);
 	free(ctx);
 	exit(status);
 }
@@ -362,9 +363,11 @@ static void main_singlestg_cleanup(CallChainResult ccr);
 
 static void main_singlestg_begin_game(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
+	MainContext *mctx = ctx->mctx;
 
-	global.replay_stage = NULL;
-	replay_init(&global.replay);
+	replay_reset(&mctx->replay);
+	replay_state_init_record(&global.replay.output, &mctx->replay);
+	replay_state_deinit(&global.replay.input);
 	global.gameover = 0;
 	player_init(&global.plr);
 	stats_init(&global.plr.stats);
@@ -377,18 +380,20 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 }
 
 static void main_singlestg_end_game(CallChainResult ccr) {
+	SingleStageContext *ctx = ccr.ctx;
+	MainContext *mctx = ctx->mctx;
+
 	if(global.gameover == GAMEOVER_RESTART) {
-		replay_destroy(&global.replay);
+		replay_reset(&mctx->replay);
 		main_singlestg_begin_game(ccr);
 	} else {
-		ask_save_replay(CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
+		ask_save_replay(&mctx->replay, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
 	}
 }
 
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
-	replay_destroy(&global.replay);
 	free(ccr.ctx);
 	main_quit(mctx, 0);
 }
@@ -423,7 +428,6 @@ static void main_singlestg(MainContext *mctx) {
 
 static void main_replay(MainContext *mctx) {
 	replay_play(&mctx->replay, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
-	replay_destroy(&mctx->replay); // replay_play makes a copy
 	eventloop_run();
 }
 

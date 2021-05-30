@@ -4,19 +4,16 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
-#ifndef IGUARD_replay_h
-#define IGUARD_replay_h
+#ifndef IGUARD_replay_struct_h
+#define IGUARD_replay_struct_h
 
 #include "taisei.h"
 
-#include "stage.h"
-#include "player.h"
 #include "version.h"
 #include "util/systime.h"
 #include "dynarray.h"
-
 
 /*
  *  All stored fields in the Replay* structures are in the order in which they appear in the file.
@@ -71,11 +68,7 @@
 #define REPLAY_EXTENSION "tsr"
 #define REPLAY_USELESS_BYTE 0x69
 
-#define REPLAY_WRITE_DESYNC_CHECKS
-
-#ifdef DEBUG
-	// #define REPLAY_LOAD_DEBUG
-#endif
+#define REPLAY_MAGIC_HEADER_SIZE (sizeof((uint8_t[])REPLAY_MAGIC_HEADER))
 
 typedef struct ReplayEvent {
 	/* BEGIN stored fields */
@@ -153,13 +146,6 @@ typedef struct ReplayStage {
 
 	SystemTime init_time;
 	DYNAMIC_ARRAY(ReplayEvent) events;
-
-	// used during playback
-	// TODO separate this from the actual replay data storage
-	int playpos;
-	int fps;
-	uint16_t desync_check;
-	bool desynced;
 } ReplayStage;
 
 typedef struct Replay {
@@ -218,18 +204,6 @@ typedef struct Replay {
 	/* END stored fields */
 } Replay;
 
-typedef enum {
-	REPLAY_RECORD,
-	REPLAY_PLAY
-} ReplayMode;
-
-typedef enum ReplayReadMode {
-	// bitflags
-	REPLAY_READ_META = 1,
-	REPLAY_READ_EVENTS = 2,
-	REPLAY_READ_ALL = 3, // includes the other two
-} ReplayReadMode;
-
 typedef enum ReplayGlobalFlags {
 	_REPLAY_GFLAG_NULL,
 	REPLAY_GFLAG_CONTINUES          = (1 << 0), // a continue was used in any stage
@@ -244,27 +218,4 @@ typedef enum ReplayStageFlags {
 	REPLAY_SFLAG_CLEAR              = (1 << 2), // this stage was cleared
 } ReplayStageFlags;
 
-void replay_init(Replay *rpy);
-ReplayStage* replay_create_stage(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr);
-
-void replay_destroy(Replay *rpy);
-void replay_destroy_events(Replay *rpy);
-
-void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value);
-void replay_stage_check_desync(ReplayStage *stg, int time, uint16_t check, ReplayMode mode);
-void replay_stage_sync_player_state(ReplayStage *stg, Player *plr);
-
-bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version);
-bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source);
-
-bool replay_save(Replay *rpy, const char *name);
-bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode);
-bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode);
-
-void replay_copy(Replay *dst, Replay *src, bool steal_events);
-
-void replay_play(Replay *rpy, int firstidx, CallChain next);
-
-int replay_find_stage_idx(Replay *rpy, uint8_t stageid);
-
-#endif // IGUARD_replay_h
+#endif // IGUARD_replay_struct_h

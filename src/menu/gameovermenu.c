@@ -16,8 +16,7 @@
 
 static void continue_game(MenuData *m, void *arg) {
 	log_info("The game is being continued...");
-	assert(global.replaymode == REPLAY_RECORD);
-	player_event_with_replay(&global.plr, EV_CONTINUE, 0);
+	player_event(&global.plr, &global.replay.input, &global.replay.output, EV_CONTINUE, 0);
 }
 
 static void give_up(MenuData *m, void *arg) {

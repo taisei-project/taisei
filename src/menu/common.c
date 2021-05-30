@@ -19,12 +19,15 @@
 #include "mainmenu.h"
 #include "progress.h"
 #include "video.h"
+#include "replay/struct.h"
+#include "replay/state.h"
 
 typedef struct StartGameContext {
 	StageInfo *restart_stage;
 	StageInfo *current_stage;
 	MenuData *diff_menu;
 	MenuData *char_menu;
+	Replay replay;
 	Difficulty difficulty;
 } StartGameContext;
 
@@ -88,9 +91,8 @@ static void reset_game(StartGameContext *ctx) {
 	ctx->current_stage = ctx->restart_stage;
 
 	global.gameover = GAMEOVER_NONE;
-	global.replay_stage = NULL;
-	replay_destroy(&global.replay);
-	replay_init(&global.replay);
+	replay_reset(&ctx->replay);
+	replay_state_init_record(&global.replay.output, &ctx->replay);
 	player_init(&global.plr);
 	stats_init(&global.plr.stats);
 	global.plr.mode = plrmode_find(
@@ -152,10 +154,10 @@ static void start_game_do_leave_stage(CallChainResult ccr) {
 				cc = CALLCHAIN(start_game_do_cleanup, ctx);
 			}
 
-			ask_save_replay(cc);
+			ask_save_replay(&ctx->replay, cc);
 		}
 	} else {
-		ask_save_replay(CALLCHAIN(start_game_do_cleanup, ctx));
+		ask_save_replay(&ctx->replay, CALLCHAIN(start_game_do_cleanup, ctx));
 	}
 }
 
@@ -180,12 +182,12 @@ static void start_game_do_show_credits(CallChainResult ccr) {
 
 static void start_game_do_cleanup(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
+	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
 	free(ctx);
 	free_resources(false);
-	global.replay_stage = NULL;
 	global.gameover = GAMEOVER_NONE;
-	replay_destroy(&global.replay);
+	replay_state_deinit(&global.replay.output);
 	main_menu_update_practice_menus();
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }

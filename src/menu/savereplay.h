@@ -13,7 +13,9 @@
 
 #include "menu.h"
 #include "eventloop/eventloop.h"
+#include "replay/replay.h"
 
-void ask_save_replay(CallChain next);
+void ask_save_replay(Replay *rpy, CallChain next)
+	attr_nonnull(1);
 
 #endif // IGUARD_menu_savereplay_h

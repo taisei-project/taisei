@@ -19,9 +19,6 @@ void init_global(CLIAction *cli) {
 	rng_init(&global.rand_visual, time(0));
 	rng_make_active(&global.rand_visual);
 
-	memset(&global.replay, 0, sizeof(Replay));
-
-	global.replaymode = REPLAY_RECORD;
 	global.frameskip = cli->frameskip;
 
 	if(cli->type == CLI_VerifyReplay) {

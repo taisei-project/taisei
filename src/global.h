@@ -35,7 +35,7 @@
 #include "refs.h"
 #include "config.h"
 #include "resource/resource.h"
-#include "replay.h"
+#include "replay/state.h"
 #include "random.h"
 #include "events.h"
 #include "difficulty.h"
@@ -122,9 +122,9 @@ typedef struct {
 		FPSCounter busy;
 	} fps;
 
-	Replay replay;
-	ReplayMode replaymode;
-	ReplayStage *replay_stage;
+	struct {
+		ReplayState input, output;
+	} replay;
 
 	uint voltage_threshold;
 
