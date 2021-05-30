@@ -73,6 +73,11 @@
 
 #define PRAGMA(p) _Pragma(#p)
 
+#ifdef RNG_API_CHECK
+	#undef TAISEI_BUILDCONF_USE_GNU_EXTENSIONS
+	#undef USE_GNU_EXTENSIONS
+#endif
+
 #ifndef __GNUC__ // clang defines this too
 	#define __attribute__(...)
 	#define __extension__
