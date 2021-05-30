@@ -46,6 +46,12 @@ def package_dmg(install_path, destination):
 def main(args):
     parser = argparse.ArgumentParser(description='Generate a .dmg package for macOS.', prog=args[0])
 
+    parser.add_argument('--release',
+        help='Generate release files',
+        dest='release',
+        action='store_true',
+    )
+
     parser.add_argument('output',
         help='The destination .dmg file',
     )
