@@ -90,7 +90,7 @@ def preprocess(cmd_json):
 
 def main(args):
     import argparse
-    parser = argparse.ArgumentParser(description='Update build defintions to include all GLSL files.', prog=args[0])
+    parser = argparse.ArgumentParser(description='Check source code for suspicious RNG API usage.', prog=args[0])
     add_common_args(parser)
 
     args = parser.parse_args(args[1:])
