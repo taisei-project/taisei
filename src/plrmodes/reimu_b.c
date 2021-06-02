@@ -330,7 +330,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
 		ReimuBGap *gap = ctrl->gaps.array + i;
-		real a = (carg(-gap->orientation) - carg(p->move.velocity));
+		real a = carg(-gap->orientation/p->move.velocity);
 
 		if(fabs(a) < M_TAU/3) {
 			continue;
@@ -359,11 +359,10 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 			reimu_dream_spawn_warp_effect(gap->pos + gap->parallel_axis * GAP_LENGTH * (fract - 0.5), false);
 			reimu_dream_spawn_warp_effect(o, true);
 
-			cmplx new_vel = -cabs(p->move.velocity) * ngap->orientation;
-			real angle_diff = carg(new_vel) - carg(p->move.velocity);
+			cmplx new_vel = cabs(p->move.velocity) * -ngap->orientation;
 
-			p->move.velocity *= cdir(angle_diff);
-			p->move.acceleration *= cdir(angle_diff);
+			p->move.acceleration *= cnormalize(new_vel/p->move.velocity);
+			p->move.velocity = new_vel;
 			p->pos = o - p->move.velocity;
 
 			--*warp_count;
@@ -578,7 +577,7 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 
 		for(int i = -1; i < 2; i += 2) {
 			cmplx shot_dir = i * ((plr->inputflags & INFLAG_FOCUS) ? 1 : I);
-			cmplx spread_dir = shot_dir * cexp(I*M_PI*0.5);
+			cmplx spread_dir = shot_dir * I;
 
 			for(int j = -1; j < 2; j += 2) {
 				INVOKE_TASK(reimu_dream_ofuda,
