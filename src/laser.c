@@ -502,7 +502,7 @@ static inline bool laser_collision_segment(Laser *l, LineSegment *segment, Circl
 		return true;
 	}
 
-	if(global.frames >= l->next_graze && global.frames - abs(global.plr.recovery) > 0.0f) {
+	if(global.frames >= l->next_graze) {
 		float exponent;
 		collision_area->radius = laser_graze_width(l, &exponent) * fmaxf(0.25f, powf(widthfac_orig, exponent));
 		assert(collision_area->radius > 0);
