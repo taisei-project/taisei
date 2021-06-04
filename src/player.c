@@ -40,12 +40,16 @@ void player_init(Player *plr) {
 	plr->power = 100;
 	plr->deathtime = -1;
 	plr->continuetime = -1;
+	plr->bomb_triggertime = -1;
+	plr->bomb_endtime = 0;
 	plr->mode = plrmode_find(0, 0);
 }
 
 void player_stage_pre_init(Player *plr) {
-	plr->recovery = 0;
+	plr->recoverytime = 0;
 	plr->respawntime = 0;
+	plr->bomb_triggertime = -1;
+	plr->bomb_endtime = 0;
 	plr->deathtime = -1;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
@@ -651,8 +655,8 @@ static bool player_bomb(Player *plr) {
 			plr->bombs = 0;
 		}
 
-		plr->bombtotaltime = bomb_time;
-		plr->recovery = global.frames + plr->bombtotaltime;
+		plr->bomb_triggertime = global.frames;
+		plr->bomb_endtime = plr->bomb_triggertime + bomb_time;
 		plr->bomb_cutin_alpha = 1;
 
 		assert(player_is_alive(plr));
@@ -690,16 +694,24 @@ static bool player_powersurge(Player *plr) {
 	return true;
 }
 
+bool player_is_recovering(Player *plr) {
+	return global.frames < plr->recoverytime;
+}
+
 bool player_is_powersurge_active(Player *plr) {
 	return plr->powersurge.positive > plr->powersurge.negative;
 }
 
 bool player_is_bomb_active(Player *plr) {
-	return global.frames - plr->recovery < 0;
+	return global.frames < plr->bomb_endtime;
 }
 
 bool player_is_vulnerable(Player *plr) {
-	return global.frames - abs(plr->recovery) >= 0 && !plr->iddqd && player_is_alive(plr);
+	return
+		player_is_alive(plr) &&
+		!player_is_recovering(plr) &&
+		!player_is_bomb_active(plr) &&
+		!plr->iddqd;
 }
 
 bool player_is_alive(Player *plr) {
@@ -814,16 +826,22 @@ double player_get_bomb_progress(Player *plr) {
 		return 1;
 	}
 
-	int end_time = plr->recovery;
-	return (plr->bombtotaltime - (end_time - global.frames))/(double)plr->bombtotaltime;
+	int begin = plr->bomb_triggertime;
+	int end = plr->bomb_endtime;
+	assert(begin <= end);
+	real bomb_time = end - begin;
+	return (bomb_time - (end - global.frames)) / bomb_time;
 }
 
 void player_realdeath(Player *plr) {
-	plr->respawntime = global.frames + PLR_RESPAWN_TIME;
+	int deathtime = plr->deathtime;
+	assert(global.frames == deathtime);
+
+	plr->respawntime = deathtime + PLR_RESPAWN_TIME;
+	plr->recoverytime = deathtime + PLR_RECOVERY_TIME;
 	plr->inputflags &= ~INFLAGS_MOVE;
 	plr->deathpos = plr->pos;
 	plr->pos = VIEWPORT_W/2 + VIEWPORT_H*I+30.0*I;
-	plr->recovery = -(plr->respawntime + 150);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	player_fail_spell(plr);
 

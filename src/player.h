@@ -56,6 +56,7 @@ enum {
 	PLR_POWERSURGE_POWERCOST = 200,
 
 	PLR_RESPAWN_TIME = 60,
+	PLR_RECOVERY_TIME = 210,
 };
 
 #define PLR_SPAWN_POS_X (VIEWPORT_W * 0.5)
@@ -140,10 +141,11 @@ DEFINE_ENTITY_TYPE(Player, {
 	int power_overflow;
 
 	int continuetime;
-	int recovery;
-	int deathtime;
-	int respawntime;
-	int bombtotaltime;
+	int deathtime;          /* time of hit + deathbomb window */
+	int respawntime;        /* end of respawn animation; control returns to player */
+	int recoverytime;       /* end of post-death i-frames */
+	int bomb_triggertime;   /* time when the bomb was triggered */
+	int bomb_endtime;       /* time when the bomb i-frames end */
 
 	uint inputflags;
 
@@ -224,6 +226,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 void player_cancel_powersurge(Player *plr);
 void player_placeholder_bomb_logic(Player *plr);
 
+bool player_is_recovering(Player *plr);
 bool player_is_bomb_active(Player *plr);
 bool player_is_powersurge_active(Player *plr);
 bool player_is_vulnerable(Player *plr);
