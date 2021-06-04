@@ -29,6 +29,7 @@ extern CoSched *_cosched_global;
 typedef enum CoStatus {
 	CO_STATUS_SUSPENDED = KOISHI_SUSPENDED,
 	CO_STATUS_RUNNING   = KOISHI_RUNNING,
+	CO_STATUS_IDLE      = KOISHI_IDLE,
 	CO_STATUS_DEAD      = KOISHI_DEAD,
 } CoStatus;
 
