@@ -48,6 +48,7 @@ enum {
 	COTASK_WAIT_NONE,
 	COTASK_WAIT_DELAY,
 	COTASK_WAIT_EVENT,
+	COTASK_WAIT_SUBTASKS,
 };
 
 #define MEM_AREA_SIZE (1 << 12)
@@ -680,6 +681,14 @@ static bool cotask_do_wait(CoTaskData *task_data) {
 
 			break;
 		}
+
+		case COTASK_WAIT_SUBTASKS: {
+			if(task_data->slaves.first == NULL) {
+				return false;
+			}
+
+			break;
+		}
 	}
 
 	task_data->wait.result.frames++;
@@ -733,6 +742,20 @@ int cotask_wait(int delay) {
 
 	cotask_wait_init(task_data, COTASK_WAIT_DELAY);
 	task_data->wait.delay.remaining = delay;
+
+	if(cotask_do_wait(task_data)) {
+		cotask_yield(NULL);
+	}
+
+	return cotask_wait_init(task_data, COTASK_WAIT_NONE).frames;
+}
+
+int cotask_wait_subtasks(void) {
+	CoTask *task = cotask_active();
+	CoTaskData *task_data = get_task_data(task);
+	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
+
+	cotask_wait_init(task_data, COTASK_WAIT_SUBTASKS);
 
 	if(cotask_do_wait(task_data)) {
 		cotask_yield(NULL);
