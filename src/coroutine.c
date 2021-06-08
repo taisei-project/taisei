@@ -84,10 +84,12 @@ struct CoTaskData {
 	LIST_ANCHOR(CoTaskData) slaves;  // AKA subtasks
 
 	BoxedEntity bound_ent;
+	CoTaskEvents events;
+
+	bool finalizing;
 
 	struct {
 		CoWaitResult result;
-		char wait_type;
 
 		union {
 			struct {
@@ -99,6 +101,8 @@ struct CoTaskData {
 				CoEventSnapshot snapshot;
 			} event;
 		};
+
+		uint wait_type;
 	} wait;
 
 	struct {
@@ -106,8 +110,6 @@ struct CoTaskData {
 		CoEvent *events;
 		uint num_events;
 	} hosted;
-
-	CoTaskEvents events;
 
 	struct {
 		CoTaskHeapMemChunk *onheap_alloc_head;
@@ -125,6 +127,7 @@ typedef struct CoTaskInitData {
 } CoTaskInitData;
 
 static LIST_ANCHOR(CoTask) task_pool;
+static koishi_coroutine_t *co_main;
 
 CoSched *_cosched_global;
 
@@ -290,6 +293,11 @@ static void estimate_stack_usage(CoTask *task) { }
 
 #endif // CO_TASK_STATS_STACK
 
+attr_nonnull_all attr_returns_nonnull
+INLINE CoTask *cotask_from_koishi_coroutine(koishi_coroutine_t *co) {
+	return CASTPTR_ASSUME_ALIGNED((char*)co - offsetof(CoTask, ko), CoTask);
+}
+
 BoxedTask cotask_box(CoTask *task) {
 	return (BoxedTask) {
 		.ptr = (uintptr_t)task,
@@ -373,10 +381,20 @@ static void cancel_task_events(CoTaskData *task_data) {
 
 static void coevent_cleanup_subscribers(CoEvent *evt);
 
-static void cotask_finalize(CoTask *task) {
+static bool cotask_finalize(CoTask *task) {
 	CoTaskData *task_data = get_task_data(task);
-	TASK_DEBUG("Finalizing task %s", task->debug_label);
-	TASK_DEBUG("data = %p", (void*)task_data);
+
+	TASK_DEBUG_EVENT(ev);
+
+	if(task_data->finalizing) {
+		TASK_DEBUG("[%zu] Already finalizing task %s", ev, task->debug_label);
+		return false;
+	}
+
+	task_data->finalizing = true;
+
+	TASK_DEBUG("[%zu] Finalizing task %s", ev, task->debug_label);
+	TASK_DEBUG("[%zu] data = %p", ev, (void*)task_data);
 
 	cancel_task_events(task_data);
 
@@ -391,6 +409,16 @@ static void cotask_finalize(CoTask *task) {
 		task_data->hosted.ent = NULL;
 	}
 
+	if(task_data->master) {
+		TASK_DEBUG(
+			"[%zu] Slave task %s detaching from master %s", ev,
+			 task->debug_label, task_data->master->task->debug_label
+		);
+
+		alist_unlink(&task_data->master->slaves, task_data);
+		task_data->master = NULL;
+	}
+
 	if(task_data->wait.wait_type == COTASK_WAIT_EVENT) {
 		CoEvent *evt = NOT_NULL(task_data->wait.event.pevent);
 
@@ -399,38 +427,30 @@ static void cotask_finalize(CoTask *task) {
 		}
 	}
 
-	if(task_data->master) {
-		TASK_DEBUG(
-			"Slave task %s detaching from master %s",
-			 task->debug_label, task_data->master->task->debug_label
-		);
-
-		alist_unlink(&task_data->master->slaves, task_data);
-		task_data->master = NULL;
-	}
+	task_data->wait.wait_type = COTASK_WAIT_NONE;
 
 	attr_unused bool had_slaves = false;
 
 	if(task_data->slaves.first) {
 		had_slaves = true;
-		TASK_DEBUG("Canceling slave tasks for %s...", task->debug_label);
+		TASK_DEBUG("[%zu] Canceling slave tasks for %s...", ev, task->debug_label);
 	}
 
 	for(CoTaskData *slave_data; (slave_data = alist_pop(&task_data->slaves));) {
-		TASK_DEBUG("... %s", slave_data->task->debug_label);
+		TASK_DEBUG("[%zu] ... %s", ev, slave_data->task->debug_label);
 
 		assume(slave_data->master == task_data);
 		slave_data->master = NULL;
 		cotask_cancel(slave_data->task);
 
 		TASK_DEBUG(
-			"Canceled slave task %s (of master task %s)",
+			"[%zu] Canceled slave task %s (of master task %s)", ev,
 			slave_data->task->debug_label, task->debug_label
 		);
 	}
 
 	if(had_slaves) {
-		TASK_DEBUG("DONE canceling slave tasks for %s", task->debug_label);
+		TASK_DEBUG("[%zu] DONE canceling slave tasks for %s", ev, task->debug_label);
 	}
 
 	CoTaskHeapMemChunk *heap_alloc = task_data->mem.onheap_alloc_head;
@@ -441,7 +461,9 @@ static void cotask_finalize(CoTask *task) {
 	}
 
 	task->data = NULL;
-	TASK_DEBUG("DONE finalizing task %s", task->debug_label);
+	TASK_DEBUG("[%zu] DONE finalizing task %s", ev, task->debug_label);
+
+	return true;
 }
 
 static void cotask_enslave(CoTaskData *master_data, CoTaskData *slave_data) {
@@ -456,8 +478,6 @@ static void cotask_enslave(CoTaskData *master_data, CoTaskData *slave_data) {
 		slave_data->task->debug_label, master_data->task->debug_label
 	);
 }
-
-static void cotask_finalize(CoTask *task);
 
 static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *init_data) {
 	task->data = data;
@@ -512,28 +532,79 @@ void cotask_free(CoTask *task) {
 }
 
 CoTask *cotask_active(void) {
-	return CASTPTR_ASSUME_ALIGNED((char*)koishi_active() - offsetof(CoTask, ko), CoTask);
+	koishi_coroutine_t *co = koishi_active();
+	assert(co != co_main);
+	return cotask_from_koishi_coroutine(co);
 }
 
-static void cotask_force_cancel(CoTask *task) {
-	// WARNING: It's important to finalize first, because if task == active task,
-	// then koishi_kill will not return!
+static void cotask_unsafe_cancel(CoTask *task) {
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Begin canceling task %s", ev, task->debug_label);
-	cotask_finalize(task);
-	TASK_DEBUG("[%zu] Killing task %s", ev, task->debug_label);
-	koishi_kill(&task->ko, NULL);
-	TASK_DEBUG("[%zu] koishi_kill returned (%s)", ev, task->debug_label);
-	assert(cotask_status(task) == CO_STATUS_DEAD);
+
+	if(!cotask_finalize(task)) {
+		TASK_DEBUG("[%zu] Can't cancel task %s (already finalizing)", ev, task->debug_label);
+		return;
+	}
+
+	// could have been killed in finalizer indirectly…
+	if(cotask_status(task) != CO_STATUS_DEAD) {
+		TASK_DEBUG("[%zu] Killing task %s", ev, task->debug_label);
+		koishi_kill(&task->ko, NULL);
+		TASK_DEBUG("[%zu] koishi_kill returned (%s)", ev, task->debug_label);
+		assert(cotask_status(task) == CO_STATUS_DEAD);
+	}
+
+	TASK_DEBUG("[%zu] End canceling task %s", ev, task->debug_label);
+}
+
+static void *cotask_cancel_in_safe_context(void *a);
+
+static void cotask_force_cancel(CoTask *task) {
+	koishi_coroutine_t *ctx = koishi_active();
+
+	if(ctx == &task->ko || ctx == co_main) {
+		// It is safe to run the finalizer in the task's own context and in main.
+		// In the former case, we prevent a finalizing task from being cancelled
+		// while its finalizer is running.
+		// In the later case, the main context simply can not be cancelled ever.
+
+		cotask_unsafe_cancel(task);
+		// NOTE: this kills task->ko, so it'll only return in case ctx == co_main
+		return;
+	}
+
+	// Finalizing a task from another task's context is not safe, because the
+	// finalizer-executing task may be cancelled by event handlers triggered by the
+	// finalizer. The easiest way to get around this is to run the finalizer in
+	// another, private context that user code has no reference to, and therefore
+	// can't cancel.
+
+	// We'll create a lightweight coroutine for this purpose that does not use
+	// CoTaskData, since we don't need any of the 'advanced' features for this.
+	// This also means we don't need to cotask_finalize it.
+
+	CoTask *cancel_task = cotask_new_internal(cotask_cancel_in_safe_context);
+
+	// This is basically just koishi_resume + some logging when built with CO_TASK_DEBUG.
+	// We can't use normal cotask_resume here, since we don't have CoTaskData.
+	cotask_resume_internal(cancel_task, task);
+
+	cotask_free(cancel_task);
+}
+
+static void *cotask_cancel_in_safe_context(void *arg) {
+	CoTask *victim = arg;
+	cotask_unsafe_cancel(victim);
+	return NULL;
 }
 
 bool cotask_cancel(CoTask *task) {
-	if(cotask_status(task) != CO_STATUS_DEAD) {
-		cotask_force_cancel(task);
-		return true;
+	if(cotask_status(task) == CO_STATUS_DEAD) {
+		return false;
 	}
 
-	return false;
+	cotask_force_cancel(task);
+	return true;
 }
 
 static void *cotask_force_resume(CoTask *task, void *arg) {
@@ -890,7 +961,7 @@ void cosched_init(CoSched *sched) {
 }
 
 CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
-	CoTask *task = cotask_new_internal( cotask_entry );
+	CoTask *task = cotask_new_internal(cotask_entry);
 
 #ifdef CO_TASK_DEBUG
 	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);
@@ -1024,7 +1095,7 @@ void cosched_finish(CoSched *sched) {
 }
 
 void coroutines_init(void) {
-
+	co_main = koishi_active();
 }
 
 void coroutines_shutdown(void) {
