@@ -610,7 +610,7 @@ static void *cotask_cancel_in_safe_context(void *arg) {
 }
 
 bool cotask_cancel(CoTask *task) {
-	if(cotask_status(task) == CO_STATUS_DEAD) {
+	if(!task || cotask_status(task) == CO_STATUS_DEAD) {
 		return false;
 	}
 
