@@ -638,8 +638,6 @@ static bool player_bomb(Player *plr) {
 		// player_cancel_powersurge(plr);
 		// stage_clear_hazards(CLEAR_HAZARDS_ALL);
 
-		coevent_signal(&plr->events.bomb_used);
-
 		plr->bombs--;
 
 		if(plr->deathtime >= global.frames) {
@@ -661,6 +659,8 @@ static bool player_bomb(Player *plr) {
 
 		assert(player_is_alive(plr));
 		collect_all_items(1);
+
+		coevent_signal(&plr->events.bomb_used);
 		return true;
 	}
 
