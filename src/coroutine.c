@@ -309,6 +309,16 @@ BoxedTask cotask_box(CoTask *task) {
 CoTask *cotask_unbox(BoxedTask box) {
 	CoTask *task = (void*)box.ptr;
 
+	if(task && task->unique_id == box.unique_id) {
+		return task;
+	}
+
+	return NULL;
+}
+
+static CoTask *cotask_unbox_notnull(BoxedTask box) {
+	CoTask *task = NOT_NULL((void*)box.ptr);
+
 	if(task->unique_id == box.unique_id) {
 		return task;
 	}
@@ -815,7 +825,7 @@ void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events
 }
 
 static bool subscribers_array_predicate(const void *pelem, void *userdata) {
-	return cotask_unbox(*(const BoxedTask*)pelem);
+	return cotask_unbox_notnull(*(const BoxedTask*)pelem);
 }
 
 static void coevent_cleanup_subscribers(CoEvent *evt) {
@@ -916,7 +926,7 @@ void coevent_init(CoEvent *evt) {
 
 static void coevent_wake_subscribers(CoEvent *evt, uint num_subs, BoxedTask subs[num_subs]) {
 	for(int i = 0; i < num_subs; ++i) {
-		CoTask *task = cotask_unbox(subs[i]);
+		CoTask *task = cotask_unbox_notnull(subs[i]);
 
 		if(task && cotask_status(task) != CO_STATUS_DEAD) {
 			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
