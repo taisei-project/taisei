@@ -146,23 +146,35 @@ TASK(reimu_dream_gap_bomb_projectile, {
 	}
 }
 
-TASK(reimu_dream_bomb_noise, { BoxedPlayer plr; }) {
-	Player *plr = TASK_BIND(ARGS.plr);
-	do {
+TASK(reimu_dream_bomb_noise, NO_ARGS) {
+	for(;;WAIT(16)) {
 		play_sfx("boon");
-		WAIT(16);
-	} while(player_is_bomb_active(plr));
+	}
 }
 
-TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
+TASK(reimu_dream_bomb_background, { ReimuBController *ctrl; }) {
+	ReimuBController *ctrl = ARGS.ctrl;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(draw_event);
+		reimu_common_bomb_bg(ctrl->plr, ctrl->bomb_alpha);
+	}
+}
+
+TASK(reimu_dream_bomb, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
+
+	BoxedTask noise_task = cotask_box(INVOKE_SUBTASK(reimu_dream_bomb_noise));
+	INVOKE_SUBTASK(reimu_dream_bomb_background, ctrl);
 
 	Sprite *spr_proj = res_sprite("proj/glowball");
 	Sprite *spr_impact = res_sprite("part/blast");
 
-	int t = 0;
+	YIELD;
 
+	int t = 0;
 	do {
 		Color *pcolor = HSLA(t/30.0, 0.5, 0.5, 0.5);
 
@@ -180,28 +192,26 @@ TASK(reimu_dream_bomb_barrage, { ReimuBController *ctrl; }) {
 		stage_shake_view(4);
 		t += WAIT(BOMB_PROJECTILE_FIRE_DELAY);
 	} while(player_is_bomb_active(plr));
-}
 
-TASK(reimu_dream_bomb_background, { ReimuBController *ctrl; }) {
-	ReimuBController *ctrl = ARGS.ctrl;
-	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+	CANCEL_TASK(noise_task);
 
-	do {
-		WAIT_EVENT_OR_DIE(draw_event);
-		reimu_common_bomb_bg(ctrl->plr, ctrl->bomb_alpha);
-	} while(ctrl->bomb_alpha > 0);
+	while(ctrl->bomb_alpha > 0) {
+		// keep bg renderer alive
+		YIELD;
+	}
 }
 
 TASK(reimu_dream_bomb_handler, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
+	BoxedTask bomb_task = { 0 };
+
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		CANCEL_TASK(bomb_task);
 		play_sfx("bomb_marisa_a");
-		INVOKE_SUBTASK(reimu_dream_bomb_noise, ENT_BOX(plr));
-		INVOKE_SUBTASK(reimu_dream_bomb_barrage, ctrl);
-		INVOKE_SUBTASK(reimu_dream_bomb_background, ctrl);
+		bomb_task = cotask_box(INVOKE_SUBTASK(reimu_dream_bomb, ctrl));
 	}
 }
 

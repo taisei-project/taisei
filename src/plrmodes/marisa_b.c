@@ -405,7 +405,7 @@ TASK(marisa_star_bomb_background, { MarisaBController *ctrl; }) {
 	Uniform *u_plrpos = r_shader_uniform(bg_shader, "plrpos");
 	Texture *bg_tex = res_texture("marisa_bombbg");
 
-	do {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(&stage_get_draw_events()->background_drawn);
 
 		r_state_push();
@@ -415,12 +415,14 @@ TASK(marisa_star_bomb_background, { MarisaBController *ctrl; }) {
 		r_uniform_vec2_complex(u_plrpos, cwmul(plr->pos, CMPLX(1.0/VIEWPORT_W, 1.0/VIEWPORT_H)));
 		fill_viewport_p(0, 0, 1, 1, 0, bg_tex);
 		r_state_pop();
-	} while(player_is_bomb_active(plr));
+	}
 }
 
-TASK(marisa_star_bomb_controller, { MarisaBController *ctrl; }) {
+TASK(marisa_star_bomb, { MarisaBController *ctrl; }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
+
+	INVOKE_SUBTASK(marisa_star_bomb_background, ctrl);
 
 	YIELD;
 
@@ -465,11 +467,13 @@ TASK(marisa_star_bomb_handler, { MarisaBController *ctrl; }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
+	BoxedTask bomb_task = { 0 };
+
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		CANCEL_TASK(bomb_task);
 		play_sfx("bomb_marisa_b");
-		INVOKE_SUBTASK(marisa_star_bomb_background, ctrl);
-		INVOKE_SUBTASK(marisa_star_bomb_controller, ctrl);
+		bomb_task = cotask_box(INVOKE_SUBTASK(marisa_star_bomb, ctrl));
 	}
 }
 

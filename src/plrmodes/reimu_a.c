@@ -403,41 +403,58 @@ TASK(reimu_spirit_bomb_background, { ReimuAController *ctrl; }) {
 	Player *plr = ctrl->plr;
 	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
-	do {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(draw_event);
 
 		float t = player_get_bomb_progress(plr);
-		float alpha = 0;
+
+		if(t >= 1) {
+			break;
+		}
+
+		float alpha = 0.0f;
 
 		if(t > 0) {
-			alpha = fminf(1, 10*t);
+			alpha = fminf(1.0f, 10.0f * t);
 		}
 
 		if(t > 0.7) {
-			alpha *= 1 - powf((t - 0.7) / 0.3, 4);
+			alpha *= 1.0f - powf((t - 0.7f) / 0.3f, 4.0f);
 		}
 
 		reimu_common_bomb_bg(plr, alpha);
-		colorfill(0, 0.05 * alpha, 0.1 * alpha, alpha * 0.5);
-	} while(player_is_bomb_active(plr));
+		colorfill(0.0f, 0.05f * alpha, 0.1f * alpha, alpha * 0.5f);
+	}
+}
+
+TASK(reimu_spirit_bomb, { ReimuAController *ctrl; }) {
+	ReimuAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+
+	INVOKE_SUBTASK(reimu_spirit_bomb_background, ctrl);
+	YIELD;
+
+	const int orb_count = 6;
+	for(int i = 0; i < orb_count; i++) {
+		INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(plr), i, M_TAU/orb_count*i);
+	}
+
+	// keep bg renderer alive
+	WAIT(plr->bomb_endtime - global.frames);
 }
 
 TASK(reimu_spirit_bomb_handler, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
-	int orb_count = 6;
+	BoxedTask bomb_task = { 0 };
 
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
-		INVOKE_SUBTASK(reimu_spirit_bomb_background, ctrl);
-
 		play_sfx("bomb_reimu_a");
 		play_sfx("bomb_marisa_b");
-
-		for(int i = 0; i < orb_count; i++) {
-			INVOKE_TASK_DELAYED(1, reimu_spirit_bomb_orb, ENT_BOX(plr), i, M_TAU/orb_count*i);
-		}
+		CANCEL_TASK(bomb_task);
+		bomb_task = cotask_box(INVOKE_SUBTASK(reimu_spirit_bomb, ctrl));
 	}
 }
 

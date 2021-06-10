@@ -457,10 +457,44 @@ static void youmu_mirror_draw_speed_trail(Projectile *p, int t, ProjDrawRuleArgs
 	r_draw_sprite(&sp);
 }
 
-TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
+TASK(youmu_mirror_bomb_postprocess, { YoumuAMyon *myon; }) {
+	YoumuAMyon *myon = ARGS.myon;
+	CoEvent *pp_event = &stage_get_draw_events()->postprocess_before_overlay;
+
+	ShaderProgram *shader = res_shader("youmua_bomb");
+	Uniform *u_tbomb = r_shader_uniform(shader, "tbomb");
+	Uniform *u_myon = r_shader_uniform(shader, "myon");
+	Uniform *u_fill_overlay = r_shader_uniform(shader, "fill_overlay");
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(pp_event);
+
+		float t = player_get_bomb_progress(&global.plr);
+		float f = fmaxf(0, 1 - 10 * t);
+		cmplx myonpos = CMPLX(creal(myon->pos)/VIEWPORT_W, 1 - cimag(myon->pos)/VIEWPORT_H);
+
+		FBPair *fbpair = stage_get_postprocess_fbpair();
+		r_framebuffer(fbpair->back);
+
+		r_state_push();
+		r_shader_ptr(shader);
+		r_uniform_float(u_tbomb, t);
+		r_uniform_vec2_complex(u_myon, myonpos);
+		r_uniform_vec4(u_fill_overlay, f, f, f, f);
+		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
+		r_state_pop();
+
+		fbpair_swap(fbpair);
+	}
+}
+
+TASK(youmu_mirror_bomb, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	YoumuAMyon *myon = &ctrl->myon;
 	Player *plr = ctrl->plr;
+
+	INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
+	INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, myon);
 
 	cmplx vel = -30 * myon->dir;
 	cmplx pos = myon->pos;
@@ -469,6 +503,8 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 	int t = 0;
 
 	ShaderProgram *silhouette_shader = res_shader("sprite_silhouette");
+
+	YIELD;
 
 	do {
 		pos += vel;
@@ -507,49 +543,17 @@ TASK(youmu_mirror_bomb_controller, { YoumuAController *ctrl; }) {
 	} while(player_is_bomb_active(plr));
 }
 
-TASK(youmu_mirror_bomb_postprocess, { YoumuAController *ctrl; }) {
-	YoumuAController *ctrl = ARGS.ctrl;
-	Player *plr = ctrl->plr;
-	YoumuAMyon *myon = &ctrl->myon;
-	CoEvent *pp_event = &stage_get_draw_events()->postprocess_before_overlay;
-
-	ShaderProgram *shader = res_shader("youmua_bomb");
-	Uniform *u_tbomb = r_shader_uniform(shader, "tbomb");
-	Uniform *u_myon = r_shader_uniform(shader, "myon");
-	Uniform *u_fill_overlay = r_shader_uniform(shader, "fill_overlay");
-
-	do {
-		WAIT_EVENT_OR_DIE(pp_event);
-
-		float t = player_get_bomb_progress(&global.plr);
-		float f = fmaxf(0, 1 - 10 * t);
-		cmplx myonpos = CMPLX(creal(myon->pos)/VIEWPORT_W, 1 - cimag(myon->pos)/VIEWPORT_H);
-
-		FBPair *fbpair = stage_get_postprocess_fbpair();
-		r_framebuffer(fbpair->back);
-
-		r_state_push();
-		r_shader_ptr(shader);
-		r_uniform_float(u_tbomb, t);
-		r_uniform_vec2_complex(u_myon, myonpos);
-		r_uniform_vec4(u_fill_overlay, f, f, f, f);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-		r_state_pop();
-
-		fbpair_swap(fbpair);
-	} while(player_is_bomb_active(plr));
-}
-
 TASK(youmu_mirror_bomb_handler, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
+	BoxedTask bomb_task = { 0 };
+
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		CANCEL_TASK(bomb_task);
 		play_sfx("bomb_youmu_b");
-		INVOKE_SUBTASK(youmu_mirror_bomb_controller, ctrl);
-		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
-		INVOKE_SUBTASK(youmu_mirror_bomb_postprocess, ctrl);
+		bomb_task = cotask_box(INVOKE_SUBTASK(youmu_mirror_bomb, ctrl));
 	}
 }
 

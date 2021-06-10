@@ -512,7 +512,36 @@ static void marisa_laser_masterspark_damage(MarisaAMasterSpark *ms) {
 	// log_debug("%i", iter);
 }
 
-TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
+TASK(marisa_laser_bomb_background, { MarisaAController *ctrl; }) {
+	MarisaAController *ctrl = ARGS.ctrl;
+	Player *plr = ctrl->plr;
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+
+	for(;;) {
+		WAIT_EVENT_OR_DIE(draw_event);
+		float t = player_get_bomb_progress(plr);
+		float fade = 1;
+
+		if(t < 1.0f / 6.0f) {
+			fade = t * 6.0f;
+		}
+
+		if(t > 3.0f / 4.0f) {
+			fade = 1.0f - t * 4.0f + 3.0f;
+		}
+
+		if(fade <= 0.0f) {
+			break;
+		}
+
+		r_state_push();
+		r_color4(0.8f * fade, 0.8f * fade, 0.8f * fade, 0.8f * fade);
+		fill_viewport(sinf(t * 0.3f), t * 3.0f * (1.0f + t * 3.0f), 1.0f, "marisa_bombbg");
+		r_state_pop();
+	};
+}
+
+TASK(marisa_laser_bomb_masterspark, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
@@ -525,6 +554,10 @@ TASK(marisa_laser_masterspark, { MarisaAController *ctrl; }) {
 
 	Sprite *star_spr = res_sprite("part/maristar_orbit");
 	Sprite *smoke_spr = res_sprite("part/smoke");
+
+	BoxedTask bg_task = cotask_box(INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl));
+
+	YIELD;
 
 	do {
 		real bomb_progress = player_get_bomb_progress(plr);
@@ -583,45 +616,26 @@ skip_particles:
 		YIELD;
 	} while(player_is_bomb_active(plr));
 
+	// should have faded out by now, but just in case…
+	CANCEL_TASK(bg_task);
+
 	while(ms->alpha > 0) {
 		approach_p(&ms->alpha, 0, 0.2);
 		YIELD;
 	}
 }
 
-TASK(marisa_laser_bomb_background, { MarisaAController *ctrl; }) {
-	MarisaAController *ctrl = ARGS.ctrl;
-	Player *plr = ctrl->plr;
-	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
-
-	do {
-		WAIT_EVENT_OR_DIE(draw_event);
-		float t = player_get_bomb_progress(plr);
-		float fade = 1;
-
-		if(t < 1./6) {
-			fade = t*6;
-		}
-
-		if(t > 3./4) {
-			fade = 1-t*4 + 3;
-		}
-
-		r_color4(0.8 * fade, 0.8 * fade, 0.8 * fade, 0.8 * fade);
-		fill_viewport(sin(t * 0.3), t * 3 * (1 + t * 3), 1, "marisa_bombbg");
-		r_color4(1, 1, 1, 1);
-	} while(player_is_bomb_active(plr));
-}
-
 TASK(marisa_laser_bomb_handler, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
+	BoxedTask bomb_task = { 0 };
+
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		CANCEL_TASK(bomb_task);
 		play_sfx("bomb_marisa_a");
-		INVOKE_SUBTASK(marisa_laser_bomb_background, ctrl);
-		INVOKE_SUBTASK(marisa_laser_masterspark, ctrl);
+		bomb_task = cotask_box(INVOKE_SUBTASK(marisa_laser_bomb_masterspark, ctrl));
 	}
 }
 

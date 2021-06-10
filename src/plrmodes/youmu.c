@@ -92,7 +92,7 @@ DEFINE_EXTERN_TASK(youmu_common_bomb_background) {
 	YoumuBombBGData *bg_data = ARGS.bg_data;
 	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
-	do {
+	for(;;) {
 		WAIT_EVENT_OR_DIE(draw_event);
 
 		float t = player_get_bomb_progress(&global.plr);
@@ -119,5 +119,5 @@ DEFINE_EXTERN_TASK(youmu_common_bomb_background) {
 		r_state_pop();
 
 		capture_frame(bg_data->buffer, r_framebuffer_current());
-	} while(player_is_bomb_active(plr));
+	}
 }

@@ -535,10 +535,14 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 	}
 }
 
-TASK(youmu_haunting_bomb_controller, { YoumuBController *ctrl; }) {
+TASK(youmu_haunting_bomb, { YoumuBController *ctrl; }) {
 	YoumuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	cmplx origin = plr->pos;
+
+	INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
+
+	YIELD;
 
 	int i = 0;
 	do {
@@ -554,11 +558,13 @@ TASK(youmu_haunting_bomb_handler, { YoumuBController *ctrl; }) {
 	YoumuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 
+	BoxedTask bomb_task = { 0 };
+
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.bomb_used);
+		CANCEL_TASK(bomb_task);
 		play_sfx("bomb_youmu_b");
-		INVOKE_SUBTASK(youmu_haunting_bomb_controller, ctrl);
-		INVOKE_SUBTASK(youmu_common_bomb_background, ENT_BOX(plr), &ctrl->bomb_bg);
+		bomb_task = cotask_box(INVOKE_SUBTASK(youmu_haunting_bomb, ctrl));
 	}
 }
 
