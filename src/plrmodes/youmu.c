@@ -88,7 +88,6 @@ static void capture_frame(Framebuffer *dest, Framebuffer *src) {
 }
 
 DEFINE_EXTERN_TASK(youmu_common_bomb_background) {
-	Player *plr = TASK_BIND(ARGS.plr);
 	YoumuBombBGData *bg_data = ARGS.bg_data;
 	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
 
