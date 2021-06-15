@@ -148,14 +148,14 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			break;
 		case 'r':
 			a->type = CLI_PlayReplay;
-			a->filename = strdup(optarg);
+			stralloc(&a->filename, optarg);
 			break;
 		case 'R':
 			a->type = CLI_VerifyReplay;
-			a->filename = strdup(optarg);
+			stralloc(&a->filename, optarg);
 			break;
 		case OPT_REREPLAY:
-			a->out_replay = strdup(optarg);
+			stralloc(&a->out_replay, optarg);
 			env_set("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", 1, false);
 			break;
 		case 'p':
@@ -213,7 +213,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			break;
 		case 't':
 			a->type = CLI_DumpVFSTree,
-			a->filename = strdup(optarg ? optarg : "");
+			stralloc(&a->filename, optarg ? optarg : "");
 			break;
 		case 'c':
 			a->type = CLI_Credits;
