@@ -785,7 +785,11 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		replay_stage_event(global.replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
 	}
 
-	if(rpsync == REPLAY_SYNC_FAIL && global.is_replay_verification) {
+	if(
+		rpsync == REPLAY_SYNC_FAIL &&
+		global.is_replay_verification &&
+		!global.replay.output.stage
+	) {
 		exit(1);
 	}
 

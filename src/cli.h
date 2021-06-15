@@ -34,6 +34,7 @@ struct CLIAction {
 	int frameskip;
 	CutsceneID cutscene;
 	char *filename;
+	char *out_replay;
 	PlayerMode *plrmode;
 };
 

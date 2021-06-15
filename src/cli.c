@@ -20,13 +20,14 @@
 #include "cutscenes/cutscene.h"
 #include "cutscenes/scenes.h"
 
-struct TsOption { struct option opt; const char *help; const char *argname;};
+struct TsOption { struct option opt; const char *help; const char *argname; };
 
 enum {
 	OPT_RENDERER = INT_MIN,
 	OPT_CUTSCENE,
 	OPT_CUTSCENE_LIST,
 	OPT_FORCE_INTRO,
+	OPT_REREPLAY,
 };
 
 static void print_help(struct TsOption* opts) {
@@ -74,7 +75,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	struct TsOption taisei_opts[] = {
 		{{"replay",             required_argument,  0, 'r'},            "Play a replay from %s", "FILE"},
-		{{"verify-replay",      required_argument,  0, 'R'},            "Play a replay from %s in headless mode, crash as soon as it desyncs", "FILE"},
+		{{"verify-replay",      required_argument,  0, 'R'},            "Play a replay from %s in headless mode, crash as soon as it desyncs unless --rereplay is used", "FILE"},
+		{{"rereplay",           required_argument,  0, OPT_REREPLAY},   "Re-record replay into %s; specify input with -r or -R", "OUTFILE"},
 #ifdef DEBUG
 		{{"play",               no_argument,        0, 'p'},            "Play a specific stage"},
 		{{"sid",                required_argument,  0, 'i'},            "Select stage by %s", "ID"},
@@ -97,7 +99,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	memset(a, 0, sizeof(*a));
 
-	int nopts = sizeof(taisei_opts)/sizeof(taisei_opts[0]);
+	int nopts = ARRAY_SIZE(taisei_opts);
 	struct option opts[nopts];
 	char optc[2*nopts+1];
 	char *ptr = optc;
@@ -151,6 +153,10 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 'R':
 			a->type = CLI_VerifyReplay;
 			a->filename = strdup(optarg);
+			break;
+		case OPT_REREPLAY:
+			a->out_replay = strdup(optarg);
+			env_set("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", 1, false);
 			break;
 		case 'p':
 			a->type = CLI_SelectStage;
@@ -271,8 +277,13 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 
 	a->stageid = stageid;
 
-	if(a->type == CLI_SelectStage && !stageid)
+	if(a->type == CLI_SelectStage && !stageid) {
 		log_fatal("StageSelect mode, but no stage id was given");
+	}
+
+	if(a->out_replay && a->type != CLI_PlayReplay && a->type != CLI_VerifyReplay) {
+		log_fatal("--rereplay requires --replay or --verify-replay");
+	}
 
 	return 0;
 }
@@ -280,4 +291,6 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 void free_cli_action(CLIAction *a) {
 	free(a->filename);
 	a->filename = NULL;
+	free(a->out_replay);
+	a->out_replay = NULL;
 }

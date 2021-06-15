@@ -183,7 +183,9 @@ static void log_version(void) {
 
 typedef struct MainContext {
 	CLIAction cli;
-	Replay replay;
+	Replay *replay_in;
+	Replay *replay_out;
+	SDL_RWops *replay_out_stream;
 	int replay_idx;
 	uchar headless : 1;
 } MainContext;
@@ -194,9 +196,40 @@ static void main_singlestg(MainContext *mctx) attr_unused;
 static void main_replay(MainContext *mctx);
 static noreturn void main_vfstree(CallChainResult ccr);
 
+static void cleanup_replay(Replay **rpy) {
+	if(*rpy) {
+		replay_reset(*rpy);
+		free(*rpy);
+		*rpy = NULL;
+	}
+}
+
+static Replay *alloc_replay(void) {
+	return calloc(1, sizeof(Replay));
+}
+
 static noreturn void main_quit(MainContext *ctx, int status) {
 	free_cli_action(&ctx->cli);
-	replay_reset(&ctx->replay);
+
+	cleanup_replay(&ctx->replay_in);
+
+	if(ctx->replay_out_stream) {
+		if(ctx->replay_out) {
+			if(!replay_write(
+				ctx->replay_out,
+				ctx->replay_out_stream,
+				REPLAY_STRUCT_VERSION_WRITE
+			)) {
+				log_fatal("replay_write() failed");
+			}
+		}
+
+		SDL_RWclose(ctx->replay_out_stream);
+		ctx->replay_out_stream = NULL;
+	}
+
+	cleanup_replay(&ctx->replay_out);
+
 	free(ctx);
 	exit(status);
 }
@@ -238,11 +271,13 @@ int main(int argc, char **argv) {
 	}
 
 	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
-		if(!replay_load_syspath(&ctx->replay, ctx->cli.filename, REPLAY_READ_ALL)) {
+		ctx->replay_in = alloc_replay();
+
+		if(!replay_load_syspath(ctx->replay_in, ctx->cli.filename, REPLAY_READ_ALL)) {
 			main_quit(ctx, 1);
 		}
 
-		ctx->replay_idx = ctx->cli.stageid ? replay_find_stage_idx(&ctx->replay, ctx->cli.stageid) : 0;
+		ctx->replay_idx = ctx->cli.stageid ? replay_find_stage_idx(ctx->replay_in, ctx->cli.stageid) : 0;
 
 		if(ctx->replay_idx < 0) {
 			main_quit(ctx, 1);
@@ -250,6 +285,16 @@ int main(int argc, char **argv) {
 
 		if(ctx->cli.type == CLI_VerifyReplay) {
 			ctx->headless = true;
+		}
+
+		if(ctx->cli.out_replay != NULL) {
+			ctx->replay_out_stream = SDL_RWFromFile(ctx->cli.out_replay, "wb");
+
+			if(!ctx->replay_out_stream) {
+				log_sdl_error(LOG_FATAL, "SDL_RWFromFile");
+			}
+
+			ctx->replay_out = alloc_replay();
 		}
 	} else if(ctx->cli.type == CLI_DumpVFSTree) {
 		vfs_setup(CALLCHAIN(main_vfstree, ctx));
@@ -365,8 +410,9 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
 
-	replay_reset(&mctx->replay);
-	replay_state_init_record(&global.replay.output, &mctx->replay);
+	mctx->replay_out = alloc_replay();
+	replay_reset(mctx->replay_out);
+	replay_state_init_record(&global.replay.output, mctx->replay_out);
 	replay_state_deinit(&global.replay.input);
 	global.gameover = 0;
 	player_init(&global.plr);
@@ -384,10 +430,10 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 	MainContext *mctx = ctx->mctx;
 
 	if(global.gameover == GAMEOVER_RESTART) {
-		replay_reset(&mctx->replay);
+		replay_reset(mctx->replay_out);
 		main_singlestg_begin_game(ccr);
 	} else {
-		ask_save_replay(&mctx->replay, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
+		ask_save_replay(mctx->replay_out, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
 	}
 }
 
@@ -427,7 +473,12 @@ static void main_singlestg(MainContext *mctx) {
 }
 
 static void main_replay(MainContext *mctx) {
-	replay_play(&mctx->replay, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
+	if(mctx->replay_out) {
+		replay_state_init_record(&global.replay.output, mctx->replay_out);
+		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
+	}
+
+	replay_play(mctx->replay_in, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
 	eventloop_run();
 }
 
