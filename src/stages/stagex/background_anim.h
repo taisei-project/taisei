@@ -9,6 +9,4 @@
 #pragma once
 #include "taisei.h"
 
-#include "coroutine/taskdsl.h"
-
-DECLARE_EXTERN_TASK(stagex_animate_background);
+void stagex_bg_init_fullstage(void);
