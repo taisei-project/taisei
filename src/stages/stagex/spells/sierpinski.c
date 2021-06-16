@@ -17,6 +17,7 @@ static int idxmod(int i, int n) {   // TODO move into utils?
 	return (n + i) % n;
 }
 
+attr_unused // TODO: remove me
 TASK(splitter, {
 	BoxedProjectile cell;
 	int delay;

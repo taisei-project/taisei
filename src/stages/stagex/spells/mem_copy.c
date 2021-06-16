@@ -75,11 +75,11 @@ static void cell_apply_dir_xy(int x, int y, CellDirection dir, int *nx, int *ny)
 		break;
 	}
 }
-	
+
 static int cell_apply_dir(int cell, CellDirection dir) {
 	int x, y;
 	cell_split_idx(cell, &x, &y);
-	
+
 	int nx =-1, ny=-1;
 	cell_apply_dir_xy(x, y, dir, &nx, &ny);
 
@@ -126,7 +126,7 @@ static cmplx cell_topleft(int cell) {
 	int cx, cy;
 	cell_split_idx(cell, &cx, &cy);
 
-	return CMPLX(cx*creal(CELL_SIZE), cy*cimag(CELL_SIZE)); 
+	return CMPLX(cx*creal(CELL_SIZE), cy*cimag(CELL_SIZE));
 }
 
 TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_dir; }) {
@@ -137,7 +137,7 @@ TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_
 	cmplx topleft = cell_topleft(ARGS.idx);
 
 	assert(ARGS.missing >= 0);
-	
+
 	for(int y = 0; y < CELL_H; y++) {
 		for(int x = 0; x < CELL_W; x++) {
 			if(y*CELL_W+x == ARGS.missing) {
@@ -209,7 +209,7 @@ TASK(clearing_laser_rect, { int start_cell; int end_cell; int start_delay; int m
 	for(int i = 0; i < 4; i++) {
 		Laser *l = create_laserline_ab(positions[i], positions[i+1], lwidth, ARGS.collide ? ARGS.start_delay : (ARGS.start_delay+ARGS.move_duration), dur, ARGS.color);
 		l->unclearable = true;
-		
+
 		ENT_ARRAY_ADD(&lasers, l);
 	}
 	WAIT(ARGS.start_delay);
@@ -224,14 +224,14 @@ TASK(clearing_laser_rect, { int start_cell; int end_cell; int start_delay; int m
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	COEVENTS_ARRAY(destroy[CELLS_W*CELLS_H]) cell_events;
 	TASK_HOST_EVENTS(cell_events);
 
 	int cell_gaps[CELLS_W*CELLS_H];
-	
+
 	for(int i = 0; i < ARRAY_SIZE(cell_gaps); i++) {
 		cell_gaps[i] = -1;
 	}
@@ -254,7 +254,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		WAIT(60);
 		clear_dir = 0;
 		coevent_signal(&cell_events.destroy[plr_cell]);
-		
+
 		clear_dir = cell_find_expansion_dir(plr_cell);
 		int start_delay = 40;
 		int end_delay = 240;
@@ -273,7 +273,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		int dest_cell = cell_apply_dir(plr_cell, clear_dir);
 		coevent_signal(&cell_events.destroy[dest_cell]);
 		cell_gaps[dest_cell] = -1;
-		
+
 		boss->move = move_towards(CMPLX(creal(cell_topleft(dest_cell)+CELL_SIZE*0.5), 100), 0.01);
 		WAIT(CLEAR_TIME);
 
@@ -281,7 +281,7 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		do {
 			src_cell = rng_irange(0, CELLS_W*CELLS_H);
 		} while(cell_gaps[src_cell] == -1);
-		
+
 		INVOKE_SUBTASK(clearing_laser_rect,
 			       .start_cell = dest_cell,
 			       .end_cell = src_cell,
@@ -295,10 +295,10 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		WAIT(240);
 
 		cell_gaps[dest_cell] = cell_gaps[src_cell];
-		INVOKE_SUBTASK(spawn_cell, dest_cell, cell_gaps[dest_cell], &cell_events.destroy[dest_cell], &clear_dir); 
+		INVOKE_SUBTASK(spawn_cell, dest_cell, cell_gaps[dest_cell], &cell_events.destroy[dest_cell], &clear_dir);
 		if(step == 0) {
 			cell_gaps[plr_cell] = cell_gaps[src_cell];
-			INVOKE_SUBTASK(spawn_cell, plr_cell, cell_gaps[plr_cell], &cell_events.destroy[plr_cell], &clear_dir); 
+			INVOKE_SUBTASK(spawn_cell, plr_cell, cell_gaps[plr_cell], &cell_events.destroy[plr_cell], &clear_dir);
 		}
 		plr_cell = find_player_cell();
 		WAIT(120);
