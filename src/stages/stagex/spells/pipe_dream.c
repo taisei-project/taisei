@@ -13,8 +13,8 @@
 #include "common_tasks.h"
 
 TASK(animate_radii, { real *radius_inner; real *radius_outer; }) {
-	*radius_inner = 100;
-	*radius_outer = 200;
+	*ARGS.radius_inner = 100;
+	*ARGS.radius_outer = 200;
 
 	// TODO when animate easing from pbr_bg is somehow merged
 }
@@ -50,14 +50,14 @@ TASK(pipe_conversions, { BoxedBoss bbox; BoxedProjectileArray *projs; }) {
 			}
 		});
 		YIELD;
-	}			
-	
+	}
+
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_pipe_dream) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int enough = 1000;
 	DECLARE_ENT_ARRAY(Projectile, projs, enough);

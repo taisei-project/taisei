@@ -25,10 +25,14 @@
 struct stagex_spells_s stagex_spells = {
 	.midboss = {
 		.trap_representation = {
-			{-1, -1, -1, 3}, AT_Spellcard, "6.2.6.1p5 “Trap Representation”", 60, 20000, NULL, stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_trap_representation)
+			{-1, -1, -1, 3}, AT_Spellcard, "6.2.6.1p5 “Trap Representation”", 60, 20000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_trap_representation),
+			stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
 		},
 		.fork_bomb = {
-			{-1, -1, -1, 4}, AT_Spellcard, "IEEE 1003.1-1988 “fork()”", 60, 20000, NULL, stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_fork_bomb)
+			{-1, -1, -1, 4}, AT_Spellcard, "IEEE 1003.1-1988 “fork()”", 60, 20000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_fork_bomb),
+			stagex_draw_yumemi_spellbg_voronoi, CMPLX(VIEWPORT_W/2,VIEWPORT_H/2), 7,
 		},
 	},
 	.boss = {
@@ -44,19 +48,21 @@ struct stagex_spells_s stagex_spells = {
 		},
 		.mem_copy = {
 			{-1, -1, -1, 5}, AT_Spellcard, "Memory “Block-wise Copy”", 90, 150000,
-			NULL, stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_mem_copy)
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_mem_copy),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
 		.pipe_dream = {
 			{-1, -1, -1, 6}, AT_Spellcard, "Philosophy “Pipe Dream”", 90, 150000,
-			NULL, stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7, TASK_INDIRECT_INIT(BossAttack, stagex_spell_pipe_dream)
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_pipe_dream),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
 	},
 };
 
 static void stagex_begin(void) {
 	stagex_drawsys_init();
+	stagex_bg_init_fullstage();
 
-	INVOKE_TASK(stagex_animate_background);
 	INVOKE_TASK(stagex_timeline);
 }
 

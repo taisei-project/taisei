@@ -41,7 +41,7 @@ static void animate_bg_intro(StageXDrawData *draw_data) {
 	float transition = 0.0;
 	float t = 0.0;
 
-	stage_3d_context.cam.pos[2] = 2*STAGEX_BG_SEGMENT_PERIOD/3;
+	stage_3d_context.cam.pos[2] = 2.0 * STAGEX_BG_SEGMENT_PERIOD/3;
 	stage_3d_context.cam.rot.pitch = 40;
 	stage_3d_context.cam.rot.roll = 10;
 
@@ -147,9 +147,9 @@ static void animate_bg_post_midboss(StageXDrawData *draw_data, int anim_time) {
 	}
 }
 
-DEFINE_EXTERN_TASK(stagex_animate_background) {
-	StageXDrawData *draw_data = stagex_get_draw_data();
-	draw_data->fog.exponent = 8;
+TASK(animate_bg, { StageXDrawData *draw_data; }) {
+	StageXDrawData *draw_data = ARGS.draw_data;
+	draw_data->fog.exponent = 4;
 	INVOKE_TASK_DELAYED(140, animate_value, &draw_data->fog.opacity, 1.0f, 1.0f/80.0f);
 	INVOKE_TASK_DELAYED(140, animate_value_asymptotic, &draw_data->fog.exponent, 24.0f, 0.004f);
 	INVOKE_TASK(animate_value, &draw_data->plr_influence, 1.0f, 1.0f/120.0f);
@@ -165,4 +165,14 @@ DEFINE_EXTERN_TASK(stagex_animate_background) {
 	INVOKE_TASK(animate_value, &draw_data->tower_global_dissolution, 1.0f, 1.0f/180.0f);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[0], 0, 0.02, 1e-4);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[1], 0, 0.02, 1e-4);
+}
+
+void stagex_bg_init_fullstage(void) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+
+	stage_3d_context.cam.aspect = STAGE3D_DEFAULT_ASPECT; // FIXME
+	stage_3d_context.cam.near = 2000;
+	stage_3d_context.cam.far = 30000;
+
+	INVOKE_TASK(animate_bg, draw_data);
 }
