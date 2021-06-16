@@ -24,7 +24,7 @@ static void spawn_circle(cmplx pos, real phase, real radius, int count, real col
 		);
 	}
 }
-		
+
 static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *ani = res_anim("boss/wriggle");
 	AniSequence *seq = get_ani_sequence(ani, "fly");
@@ -39,9 +39,9 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_trap_representation) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
-	BEGIN_BOSS_ATTACK();
 
 	real radius = 200;
 	int count = 20;
@@ -56,7 +56,7 @@ DEFINE_EXTERN_TASK(stagex_spell_trap_representation) {
 			}
 			for(int i = 0; i < c; i++) {
 				play_sfx("shot1");
-				spawn_circle(global.plr.pos, 0, radius, count, 4*120/n); 
+				spawn_circle(global.plr.pos, 0, radius, count, 4*120/n);
 				WAIT(120/c);
 			}
 		}
@@ -72,7 +72,7 @@ DEFINE_EXTERN_TASK(stagex_spell_trap_representation) {
 			);
 		}
 		boss->pos = CMPLX(VIEWPORT_W*rng_real(), -300);
-		
+
 		WAIT(60);
 	}
 }
