@@ -107,7 +107,7 @@ static void bg_tower_draw(vec3 pos, bool is_mask) {
 		r_uniform_sampler("tex", "stage5/tower");
 		r_uniform_vec3("lightvec", 0, 0, 0);
 		r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
-		r_uniform_float("strength", 0);
+		r_uniform_float("strength", 0.5);
 		r_draw_model("tower");
 	}
 
@@ -413,11 +413,11 @@ static void init_spellbg_fb(void) {
 void stagex_drawsys_init(void) {
 	draw_data = calloc(1, sizeof(*draw_data));
 
+	stage3d_init(&stage_3d_context, 16);
+
 	init_tower_mask_fb();
 	init_glitch_mask_fb();
 	init_spellbg_fb();
-
-	stage3d_init(&stage_3d_context, 16);
 
 	SDL_RWops *stream = vfs_open("res/gfx/stagex/code.num_slices", VFS_MODE_READ);
 
