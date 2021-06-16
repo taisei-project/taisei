@@ -25,6 +25,7 @@ static void draw_scuttle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
  	});
 }
 
+attr_unused // TODO: remove me
 TASK(scuttle_proj_death, { cmplx pos; real angle; }) {
 	int count = 10;
 	for(int i = 0; i < count; i++) {
@@ -38,8 +39,6 @@ TASK(scuttle_proj_death, { cmplx pos; real angle; }) {
 		);
 	}
 }
-
-
 
 #define FORK_GRID_SIZE 7
 
@@ -63,7 +62,7 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 			.move = move_linear(vel),
 		);
 	}*/
-		
+
 
 	//WAIT(ARGS.split_time);
 
@@ -73,7 +72,7 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 
 		cmplx nvel = I*ARGS.vel;
 		cmplx ndirection = I*ARGS.direction;
-		
+
 		int ngx1 = ARGS.gx + creal(ndirection);
 		int ngy1 = ARGS.gy + cimag(ndirection);
 		play_sfx("shot1");
@@ -120,9 +119,9 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 
 
 DEFINE_EXTERN_TASK(stagex_spell_fork_bomb) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int split_time = 30;
 
@@ -130,7 +129,7 @@ DEFINE_EXTERN_TASK(stagex_spell_fork_bomb) {
 
 	real spacing = 100;
 
-	
+
 	for(int i = 0;; i++) {
 		memset(fork_grid, 0, sizeof(fork_grid));
 

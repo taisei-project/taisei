@@ -281,8 +281,8 @@ TASK(infinity_net, {
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_infinity_network) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(infinity_net, ENT_BOX(boss), (VIEWPORT_W+VIEWPORT_H*I)*0.5);
 

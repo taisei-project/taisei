@@ -16,6 +16,7 @@ static int idxmod(int i, int n) {   // TODO move into utils?
 	return (n + i) % n;
 }
 
+attr_unused // TODO: remove me
 TASK(splitter, {
 	BoxedProjectile cell;
 	int delay;
@@ -72,10 +73,10 @@ static Laser *create_lane_laser(cmplx origin, cmplx dir) {
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	cmplx origin = VIEWPORT_W/2 + 260*I;
 	boss->move = move_towards(origin, 0.02);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	/*
 	 * Rule 90 automaton with a twist

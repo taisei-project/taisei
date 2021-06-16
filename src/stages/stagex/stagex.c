@@ -53,8 +53,8 @@ struct stagex_spells_s stagex_spells = {
 
 static void stagex_begin(void) {
 	stagex_drawsys_init();
+	stagex_bg_init_fullstage();
 
-	INVOKE_TASK(stagex_animate_background);
 	INVOKE_TASK(stagex_timeline);
 }
 
@@ -67,7 +67,7 @@ static void stagex_spellpractice_begin(void) {
 
 	Boss *boss = stagex_spawn_yumemi(BOSS_DEFAULT_SPAWN_POS);
 	boss_add_attack_from_info(boss, global.stage->spell, true);
-	boss_start_attack(boss, boss->attacks);
+	boss_engage(boss);
 	global.boss = boss;
 
 	stage_start_bgm("stagexboss");

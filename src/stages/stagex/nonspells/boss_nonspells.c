@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
+#include "boss.h"
 #include "taisei.h"
 
 #include "nonspells.h"
@@ -172,7 +173,9 @@ TASK(yumemi_opening_slave, {
 DEFINE_EXTERN_TASK(stagex_boss_nonspell_1) {
 	STAGE_BOOKMARK(non1);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+
 	CoEvent *sync_event = &ARGS.attack->events.started;
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
@@ -192,8 +195,6 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_1) {
 
 	WAIT_EVENT_ONCE(&ARGS.attack->events.initiated);
 	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
-
-	STALL;
 }
 
 TASK(yumemi_non2_slave, {
@@ -221,7 +222,8 @@ TASK(yumemi_non2_slave, {
 DEFINE_EXTERN_TASK(stagex_boss_nonspell_2) {
 	STAGE_BOOKMARK(non2);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	CoEvent *sync_event = &ARGS.attack->events.started;
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
@@ -268,7 +270,8 @@ TASK(yumemi_non3_slave, {
 DEFINE_EXTERN_TASK(stagex_boss_nonspell_3) {
 	STAGE_BOOKMARK(non3);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	CoEvent *sync_event = &ARGS.attack->events.started;
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
@@ -312,7 +315,8 @@ TASK(yumemi_non4_slave, {
 DEFINE_EXTERN_TASK(stagex_boss_nonspell_4) {
 	STAGE_BOOKMARK(non4);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	CoEvent *sync_event = &ARGS.attack->events.started;
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
@@ -377,7 +381,8 @@ TASK(yumemi_non5_slave, {
 DEFINE_EXTERN_TASK(stagex_boss_nonspell_5) {
 	STAGE_BOOKMARK(non5);
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	CoEvent *sync_event = &ARGS.attack->events.started;
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
@@ -456,9 +461,9 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_6) {
 	STAGE_BOOKMARK(non6);
 
 #if 0
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
-	BEGIN_BOSS_ATTACK();
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	cmplx c = (VIEWPORT_W + VIEWPORT_H*I) * 0.5;
 	real dist = 180;
@@ -476,8 +481,9 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_6) {
 	STALL;
 #endif
 
-	Boss *boss = INIT_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	CoEvent *sync_event = &ARGS.attack->events.started;
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	cmplx p = VIEWPORT_W/2 + 100*I;
 	real xofs = 140;

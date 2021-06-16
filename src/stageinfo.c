@@ -16,8 +16,8 @@
 #include "stages/stage5/stage5.h"
 #include "stages/stage6/stage6.h"
 #include "stages/stagex/stagex.h"
+
 #include "stages/stage3.h"
-#include "stages/extra.h"
 
 #ifdef DEBUG
 	#define DPSTEST
