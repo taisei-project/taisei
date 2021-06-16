@@ -11,9 +11,6 @@
 
 #include "stageinfo.h"
 
-extern StageProcs stagex_procs;
-extern StageProcs stagex_spell_procs;
-
 extern struct stagex_spells_s {
 	// this struct must contain only fields of type AttackInfo
 	// order of fields affects the visual spellstage number, but not its real internal ID
@@ -33,6 +30,9 @@ extern struct stagex_spells_s {
 	// required for iteration
 	AttackInfo null;
 } stagex_spells;
+
+extern StageProcs stagex_procs;
+extern StageProcs stagex_spell_procs;
 
 Boss *stagex_spawn_yumemi(cmplx pos);
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp);
