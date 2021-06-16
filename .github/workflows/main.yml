@@ -264,8 +264,6 @@ jobs:
     - name: Build
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
-        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
-        meson compile tar -C build/ --verbose || true
         meson compile tar -C build/ --verbose
 
     - name: Upload Log
@@ -372,8 +370,6 @@ jobs:
       run: |
         # this build is allowed to fail
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
-        # TODO: SPIRV-Tools has a race condition where it sometimes fails, fix that
-        meson compile tar -C build/ --verbose || true
         meson compile tar -C build/ --verbose
 
     - name: Upload Log
