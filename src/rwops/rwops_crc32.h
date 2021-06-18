@@ -13,6 +13,6 @@
 
 #include <SDL.h>
 
-SDL_RWops* SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose);
+SDL_RWops *SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_crc32_h

@@ -296,6 +296,7 @@ static void load_animation_stage2(ResourceLoadState *st) {
 	ani->sprites = calloc(ani->sprite_count, sizeof(Sprite*));
 
 	char buf[strlen(st->name) + sizeof(".frame0000")];
+	struct anim_remap_state remap_state = { 0 };
 
 	for(int i = 0; i < ani->sprite_count; ++i) {
 		snprintf(buf, sizeof(buf), "%s.frame%04d", st->name, i);
@@ -308,7 +309,6 @@ static void load_animation_stage2(ResourceLoadState *st) {
 		}
 	}
 
-	struct anim_remap_state remap_state = { 0 };
 	remap_state.ani = ani;
 	int prev_sprite_count = ani->sprite_count;
 

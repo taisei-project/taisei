@@ -141,7 +141,7 @@ const char *resource_util_filename(const char *path);
 #define DEFINE_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all attr_returns_nonnull \
 	INLINE _type *_name(const char *resname) { \
-		return get_resource_data(_enum, resname, RESF_DEFAULT); \
+		return NOT_NULL(get_resource_data(_enum, resname, RESF_DEFAULT)); \
 	}
 
 #define DEFINE_OPTIONAL_RESOURCE_GETTER(_type, _name, _enum) \

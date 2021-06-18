@@ -20,6 +20,8 @@ void shader_free_source(ShaderSource *src) {
 	}
 
 	free(src->content);
+	src->content = NULL;
+	src->content_size = 0;
 }
 
 bool shader_lang_supports_uniform_locations(const ShaderLangInfo *lang) {

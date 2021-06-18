@@ -39,12 +39,17 @@ static size_t dummy_write(SDL_RWops *rw, const void *ptr, size_t size, size_t ma
 	return SDL_RWwrite(DUMMY_SOURCE(rw), ptr, size, maxnum);
 }
 
-SDL_RWops* SDL_RWWrapDummy(SDL_RWops *src, bool autoclose) {
-	if(!src) {
+SDL_RWops *SDL_RWWrapDummy(SDL_RWops *src, bool autoclose) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = SDL_AllocRW();
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	rw->hidden.unknown.data1 = src;

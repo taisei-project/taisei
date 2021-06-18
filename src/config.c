@@ -204,10 +204,11 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	}
 
 	ConfigValue oldv = { 0 };
-	config_copy_value(e->type, &oldv, e->val);
-	config_copy_value(e->type, &e->val, v);
+	ConfigEntryType ctype = e->type;
+	config_copy_value(ctype, &oldv, e->val);
+	config_copy_value(ctype, &e->val, v);
 	events_emit(TE_CONFIG_UPDATED, idx, &e->val, &oldv);
-	config_free_value(e->type, &oldv);
+	config_free_value(ctype, &oldv);
 }
 
 int config_set_int(ConfigIndex idx, int val) {

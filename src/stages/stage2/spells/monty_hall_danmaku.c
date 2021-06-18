@@ -189,7 +189,6 @@ DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
 		WAIT(140);
 		INVOKE_SUBTASK(goat, goat2_slot, &events.goat_trigger);
 		boss->move.attraction_point = SLOT_WIDTH * (0.5 + win_slot) + VIEWPORT_H/2.0*I - 200.0*I;
-		plr_slot = creal(global.plr.pos) / SLOT_WIDTH;
 
 		play_sfx("laser1");
 

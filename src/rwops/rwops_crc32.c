@@ -70,8 +70,17 @@ static size_t rwcrc32_write(SDL_RWops *rw, const void *ptr, size_t size, size_t 
 	return SDL_RWwrite(DATA(rw)->src, ptr, size, maxnum);
 }
 
-SDL_RWops* SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose) {
+SDL_RWops *SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose) {
+	if(UNLIKELY(!src)) {
+		return NULL;
+	}
+
 	SDL_RWops *rw = SDL_AllocRW();
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	rw->type = SDL_RWOPS_UNKNOWN;

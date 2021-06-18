@@ -27,6 +27,11 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 	SDL_RWops *crcbuf = SDL_RWWrapCRC32(abuf, &crc, false);
 	SDL_RWops *dest = crcbuf;
 
+	if(UNLIKELY(!crcbuf)) {
+		log_sdl_error(LOG_ERROR, "SDL_RWWrapCRC32");
+		return NULL;
+	}
+
 	SDL_WriteU8(dest, CACHE_VERSION);
 	SDL_WriteU8(dest, src->stage);
 	SDL_WriteU8(dest, src->lang.lang);

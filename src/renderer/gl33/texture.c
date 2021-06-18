@@ -139,6 +139,8 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 		mipmap = tex->params.mipmaps - 1;
 	}
 
+	assert(mipmap < 32);
+
 	if(mipmap == 0) {
 		if(width != NULL) {
 			*width = tex->params.width;

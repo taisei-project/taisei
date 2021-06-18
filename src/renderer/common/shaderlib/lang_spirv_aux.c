@@ -56,9 +56,7 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 		return _spirv_compile(in, out, options);
 	}
 
-	bool result;
-
-	if((result = shader_cache_get(hash, name, out))) {
+	if(shader_cache_get(hash, name, out)) {
 		if(
 			!memcmp(&target_lang, &out->lang, sizeof(ShaderLangInfo)) &&
 			out->stage == in->stage
@@ -69,11 +67,12 @@ bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompile
 		log_warn("Invalid cache entry ignored");
 	}
 
-	if((result = _spirv_compile(in, out, options))) {
+	if(_spirv_compile(in, out, options)) {
 		shader_cache_set(hash, name, out);
+		return true;
 	}
 
-	return result;
+	return false;
 }
 
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) {

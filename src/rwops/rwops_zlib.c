@@ -287,13 +287,13 @@ static SDL_RWops *wrap_writer(
 	SDL_RWops *src, size_t bufsize, bool autoclose,
 	int clevel, int window_bits
 ) {
-	if(!src) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
-	if(!rw) {
+	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 
@@ -366,13 +366,13 @@ static SDL_RWops *wrap_reader(
 	SDL_RWops *src, size_t bufsize, bool autoclose,
 	int64_t uncompressed_size, int window_bits, bool emulate_seek
 ) {
-	if(!src) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = common_alloc(src, bufsize, autoclose);
 
-	if(!rw) {
+	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 
@@ -386,7 +386,7 @@ static SDL_RWops *wrap_reader(
 
 	int status = inflateInit2(z->stream, window_bits);
 
-	if(status != Z_OK) {
+	if(UNLIKELY(status != Z_OK)) {
 		SDL_SetError("inflateInit2() failed: %i", status);
 		SDL_RWclose(rw);
 		return NULL;

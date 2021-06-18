@@ -29,6 +29,8 @@ void _dynarray_free_data(dynarray_size_t sizeof_element, DynamicArray *darr) {
 }
 
 INLINE void _dynarray_resize(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t capacity) {
+	assert(sizeof_element > 0);
+	assert(capacity > 0);
 	DYNARRAY_DEBUG(darr, "capacity change: %u --> %u", darr->capacity, capacity);
 	darr->capacity = capacity;
 	darr->data = realloc(darr->data, sizeof_element * capacity);
@@ -64,7 +66,17 @@ dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeo
 
 void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) {
 	if(darr->capacity > darr->num_elements) {
-		_dynarray_resize(sizeof_element, darr, darr->num_elements);
+		dynarray_size_t newsize = darr->num_elements;
+
+		if(UNLIKELY(newsize < 1)) {
+			newsize = 1;
+
+			if(UNLIKELY(darr->capacity) == newsize) {
+				return;
+			}
+		}
+
+		_dynarray_resize(sizeof_element, darr, newsize);
 	}
 }
 

@@ -626,7 +626,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs) {
 	int t;
 
-	for(t = timeofs; p; ++t) {
+	for(t = timeofs;; ++t) {
 		int action = proj_call_rule(p, t);
 		calc_projectile_collision(p, out_col);
 

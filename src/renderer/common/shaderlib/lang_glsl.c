@@ -369,6 +369,7 @@ void glsl_free_source(ShaderSource *src) {
 	}
 
 	free(m->attributes);
+	m->attributes = NULL;
 }
 
 bool glsl_version_supports_instanced_rendering(GLSLVersion v) {

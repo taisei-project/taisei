@@ -56,7 +56,6 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferre
 	png_read_info(png, png_info);
 
 	png_byte color_type = png_get_color_type(png, png_info);
-	png_byte bit_depth = png_get_bit_depth(png, png_info);
 
 	png_set_alpha_mode(png, PNG_ALPHA_PNG, PNG_DEFAULT_sRGB);
 
@@ -90,7 +89,7 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferre
 
 	attr_unused png_byte channels = png_get_channels(png, png_info);
 	color_type = png_get_color_type(png, png_info);
-	bit_depth = png_get_bit_depth(png, png_info);
+	png_byte bit_depth = png_get_bit_depth(png, png_info);
 
 	assert(
 		(color_type == PNG_COLOR_TYPE_RGB        && channels == 3) ||

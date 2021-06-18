@@ -147,7 +147,7 @@ void r_flush_sprites(void) {
 	r_state_push();
 	r_mat_proj_push_premade(_r_sprite_batch.projection);
 
-	r_shader_ptr(_r_sprite_batch.shader);
+	r_shader_ptr(NOT_NULL(_r_sprite_batch.shader));
 	r_uniform_sampler("tex", _r_sprite_batch.primary_texture);
 	r_uniform_sampler_array("tex_aux[0]", 0, R_NUM_SPRITE_AUX_TEXTURES, _r_sprite_batch.aux_textures);
 	r_framebuffer(_r_sprite_batch.framebuffer);
@@ -251,8 +251,7 @@ INLINE void _r_sprite_batch_process_params(
 	assert(!(sprite_params->sprite && sprite_params->sprite_ptr));
 
 	if((*sprite = sprite_params->sprite_ptr) == NULL) {
-		assert(sprite_params->sprite != NULL);
-		*sprite = res_sprite(sprite_params->sprite);
+		*sprite = res_sprite(NOT_NULL(sprite_params->sprite));
 	}
 
 	state_params->primary_texture = (*sprite)->tex;
@@ -286,6 +285,8 @@ void r_sprite_batch_prepare_state(const SpriteStateParams *stp) {
 			_r_sprite_batch.aux_textures[i] = aux_tex;
 		}
 	}
+
+	assume(stp->shader != NULL);
 
 	if(stp->shader != _r_sprite_batch.shader) {
 		r_flush_sprites();

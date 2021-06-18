@@ -250,7 +250,7 @@ static int youmu_orb_homing_spirit_timeout(Projectile *orb) {
 	return orb->timeout - projectile_time(orb);
 }
 
-TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocity; cmplx target; real charge; real damage; real spin; BoxedProjectile orb; }) {
+TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocity; real damage; real spin; BoxedProjectile orb; }) {
 	YoumuBController *ctrl = ARGS.ctrl;
 	int timeout = youmu_orb_homing_spirit_timeout(ENT_UNBOX(ARGS.orb));
 
@@ -276,7 +276,6 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 	real aim_strength = -0.1;
 	p->move = move_accelerated(ARGS.velocity, -0.06 * ARGS.velocity);
 	p->move.retention = cdir(ARGS.spin);
-	cmplx target = ARGS.target;
 
 	bool aim_peaked = false;
 	bool orb_died = false;
@@ -296,6 +295,8 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 				speed *= 1.2;
 			}
 		}
+
+		cmplx target;
 
 		if(orb) {
 			target = orb->pos;
@@ -435,8 +436,8 @@ TASK(youmu_orb_shot, { YoumuBController *ctrl; int lifetime; real spirit_damage;
 
 	for(;;) {
 		WAIT(spawn_delay);
-		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, 0, 0, pdmg,  0.1, ENT_BOX(orb));
-		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, 0, 0, pdmg, -0.1, ENT_BOX(orb));
+		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, pdmg,  0.1, ENT_BOX(orb));
+		INVOKE_TASK(youmu_orb_homing_spirit, ctrl, orb->pos, v, pdmg, -0.1, ENT_BOX(orb));
 	}
 }
 

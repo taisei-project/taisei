@@ -11,6 +11,14 @@
 
 #include "taisei.h"
 
+#if __has_attribute(analyzer_noreturn)
+	#define attr_analyzer_noreturn \
+		__attribute__ ((analyzer_noreturn))
+#else
+	#define attr_analyzer_noreturn
+#endif
+
+attr_analyzer_noreturn
 void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
 
 #undef assert

@@ -383,13 +383,13 @@ static int rwzstd_writer_close(SDL_RWops *rw) {
 }
 
 SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose) {
-	if(!src) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = rwzstd_alloc(src, autoclose);
 
-	if(!rw) {
+	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 
@@ -404,7 +404,7 @@ SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose) {
 	z->writer.in_buffer_alloc_size = ZSTD_CStreamInSize();
 	z->writer.in_buffer.src = calloc(1, z->writer.in_buffer_alloc_size);
 
-	if(clevel < ZSTD_minCLevel() || clevel > ZSTD_maxCLevel()) {
+	if(UNLIKELY(clevel < ZSTD_minCLevel() || clevel > ZSTD_maxCLevel())) {
 		log_warn("Invalid compression level %i", clevel);
 		clevel = RW_ZSTD_LEVEL_DEFAULT;
 		assert(0);

@@ -80,7 +80,7 @@ static size_t auto_write(SDL_RWops *rw, const void *ptr, size_t size, size_t max
 SDL_RWops *SDL_RWAutoBuffer(void **ptr, size_t initsize) {
 	SDL_RWops *rw = SDL_AllocRW();
 
-	if(!rw) {
+	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 

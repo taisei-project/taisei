@@ -719,6 +719,7 @@ void load_font(ResourceLoadState *st) {
 		{ NULL }
 	})) {
 		log_error("Failed to parse font file '%s'", st->path);
+		free(font.source_path);
 		res_load_failed(st);
 		return;
 	}

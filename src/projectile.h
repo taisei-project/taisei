@@ -218,11 +218,12 @@ struct ProjPrototype {
 
 #define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
 
-Projectile* create_projectile(ProjArgs *args);
-Projectile* create_particle(ProjArgs *args);
+Projectile *create_projectile(ProjArgs *args) attr_nonnull_all attr_returns_allocated;
+Projectile *create_particle(ProjArgs *args) attr_nonnull_all attr_returns_allocated;
 
 #ifdef PROJ_DEBUG
-	Projectile* _proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *callsite_str);
+	Projectile *_proj_attach_dbginfo(Projectile *p, DebugInfo *dbg, const char *callsite_str)
+		attr_nonnull_all;
 	#define _PROJ_WRAP_SPAWN(p) _proj_attach_dbginfo((p), _DEBUG_INFO_PTR_, #p)
 #else
 	#define _PROJ_WRAP_SPAWN(p) (p)
@@ -233,24 +234,24 @@ Projectile* create_particle(ProjArgs *args);
 #define PROJECTILE(...) _PROJ_GENERIC_SPAWN(create_projectile, __VA_ARGS__)
 #define PARTICLE(...) _PROJ_GENERIC_SPAWN(create_particle, __VA_ARGS__)
 
-void delete_projectiles(ProjectileList *projlist);
+void delete_projectiles(ProjectileList *projlist) attr_nonnull_all;
 
-void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col);
-void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col);
-int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs);
-bool projectile_in_viewport(Projectile *proj);
-void process_projectiles(ProjectileList *projlist, bool collision);
-bool projectile_is_clearable(Projectile *p);
+void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) attr_nonnull_all;
+void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) attr_nonnull_all;
+int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs) attr_nonnull_all;
+bool projectile_in_viewport(Projectile *proj) attr_nonnull_all;
+void process_projectiles(ProjectileList *projlist, bool collision) attr_nonnull_all;
+bool projectile_is_clearable(Projectile *p) attr_nonnull_all;
 
-Projectile* spawn_projectile_collision_effect(Projectile *proj);
-Projectile* spawn_projectile_clear_effect(Projectile *proj);
-Projectile* spawn_projectile_highlight_effect(Projectile *proj);
+Projectile *spawn_projectile_collision_effect(Projectile *proj) attr_nonnull_all;
+Projectile *spawn_projectile_clear_effect(Projectile *proj) attr_nonnull_all;
+Projectile *spawn_projectile_highlight_effect(Projectile *proj) attr_nonnull_all;
 
-void projectile_set_prototype(Projectile *p, ProjPrototype *proto);
-void projectile_set_layer(Projectile *p, drawlayer_t layer);
+void projectile_set_prototype(Projectile *p, ProjPrototype *proto) attr_nonnull(1);
+void projectile_set_layer(Projectile *p, drawlayer_t layer) attr_nonnull_all;
 
-bool clear_projectile(Projectile *proj, uint flags);
-void kill_projectile(Projectile *proj);
+bool clear_projectile(Projectile *proj, uint flags) attr_nonnull_all;
+void kill_projectile(Projectile *proj) attr_nonnull_all;
 
 int linear(Projectile *p, int t);
 int accelerated(Projectile *p, int t);

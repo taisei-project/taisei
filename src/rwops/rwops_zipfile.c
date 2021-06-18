@@ -125,20 +125,24 @@ static size_t ziprw_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
 
 libzip_sucks:
 
-	if(!ziprw_get_zipfile(rw)) {
+	if(UNLIKELY(!ziprw_get_zipfile(rw))) {
 		return 0;
 	}
 
 	size_t read_size = size * maxnum;
 
-	if(size != 0 && read_size / size != maxnum) {
+	if(UNLIKELY(read_size == 0)) {
+		return 0;
+	}
+
+	if(UNLIKELY(read_size / size != maxnum)) {
 		SDL_SetError("Read size is too large");
 		return 0;
 	}
 
 	zip_int64_t bytes_read = zip_fread(rwdata->file, ptr, read_size);
 
-	if(bytes_read < 0) {
+	if(UNLIKELY(bytes_read < 0)) {
 		SDL_SetError("ZIP error: %s", zip_error_strerror(zip_file_get_error(rwdata->file)));
 		log_debug("ZIP error: %s", zip_error_strerror(zip_file_get_error(rwdata->file)));
 		return 0;
@@ -162,6 +166,11 @@ static size_t ziprw_write(SDL_RWops *rw, const void *ptr, size_t size, size_t ma
 
 SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 	SDL_RWops *rw = SDL_AllocRW();
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	ZipRWData *rwdata = calloc(1, sizeof(*rwdata));

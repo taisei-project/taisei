@@ -87,11 +87,16 @@ static size_t trace_write(SDL_RWops *rw, const void *ptr, size_t size, size_t ma
 }
 
 SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose) {
-	if(!src) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = SDL_AllocRW();
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	TData *tdata = calloc(1, sizeof(*tdata) + strlen(tag) + 1);

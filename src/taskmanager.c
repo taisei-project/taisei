@@ -111,8 +111,6 @@ static int taskmgr_thread(void *arg) {
 		if(task != NULL) {
 			SDL_LockMutex(task->mutex);
 
-			bool task_disowned = task->disowned;
-
 			if(aborted && task->status == TASK_PENDING) {
 				task->status = TASK_CANCELLED;
 			}
@@ -128,7 +126,7 @@ static int taskmgr_thread(void *arg) {
 				task->in_queue = false;
 				(void)SDL_AtomicDecRef(&mgr->numtasks);
 
-				if((task_disowned = task->disowned)) {
+				if(task->disowned) {
 					SDL_UnlockMutex(task->mutex);
 					task_free(task);
 				} else {
@@ -140,6 +138,7 @@ static int taskmgr_thread(void *arg) {
 				assert(task->in_queue);
 				task->in_queue = false;
 				(void)SDL_AtomicDecRef(&mgr->numtasks);
+				bool task_disowned = task->disowned;
 				SDL_UnlockMutex(task->mutex);
 
 				if(task_disowned) {

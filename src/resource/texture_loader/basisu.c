@@ -397,8 +397,18 @@ static char *read_basis_file(SDL_RWops *rw, size_t *file_size, size_t hash_size,
 
 	SHA256State *sha256 = sha256_new();
 	rw = SDL_RWWrapSHA256(rw, sha256, false);
-	char *buf = SDL_RWreadAll(rw, file_size, INT32_MAX);
-	SDL_RWclose(rw);
+	char *buf = NULL;
+
+	if(LIKELY(rw)) {
+		buf = SDL_RWreadAll(rw, file_size, INT32_MAX);
+		SDL_RWclose(rw);
+	}
+
+	if(UNLIKELY(!buf)) {
+		*file_size = 0;
+		sha256_free(sha256);
+		return NULL;
+	}
 
 	uint8_t raw_hash[SHA256_BLOCK_SIZE];
 	sha256_final(sha256, raw_hash, sizeof(raw_hash));
@@ -462,6 +472,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	if(!(bld.tc = texture_loader_basisu_get_transcoder())) {
 		texture_loader_basisu_failed(ld, &bld);
+		return;
 	}
 
 	const char *ctx = ld->st->name;
@@ -479,7 +490,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	bld.filebuf = read_basis_file(rw_in, &filesize, sizeof(basis_hash), basis_hash);
 	SDL_RWclose(rw_in);
 
-	if(!bld.filebuf) {
+	if(UNLIKELY(!bld.filebuf)) {
 		log_error("%s: Read error: %s", ld->tex_src_path, SDL_GetError());
 		texture_loader_basisu_failed(ld, &bld);
 		return;

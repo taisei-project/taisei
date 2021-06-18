@@ -39,7 +39,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 		{ "objects",      .out_str = &strobjects },
 		{ NULL }
 	})) {
-		free(ldata.objlist);
+		free(strobjects);
 		res_load_failed(st);
 		return;
 	}

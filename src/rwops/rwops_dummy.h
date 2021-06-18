@@ -13,6 +13,6 @@
 
 #include <SDL.h>
 
-SDL_RWops* SDL_RWWrapDummy(SDL_RWops *src, bool autoclose);
+SDL_RWops *SDL_RWWrapDummy(SDL_RWops *src, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_dummy_h

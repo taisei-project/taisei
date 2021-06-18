@@ -15,6 +15,6 @@
 
 #include "vfs/zipfile_impl.h"
 
-SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata);
+SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) attr_nonnull_all;
 
 #endif // IGUARD_rwops_rwops_zipfile_h

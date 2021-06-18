@@ -61,7 +61,16 @@ static size_t rwsha256_write(SDL_RWops *rw, const void *ptr, size_t size, size_t
 }
 
 SDL_RWops *SDL_RWWrapSHA256(SDL_RWops *src, SHA256State *sha256, bool autoclose) {
+	if(UNLIKELY(!src)) {
+		return NULL;
+	}
+
 	SDL_RWops *rw = SDL_AllocRW();
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	rw->type = SDL_RWOPS_UNKNOWN;

@@ -13,6 +13,6 @@
 
 #include <SDL.h>
 
-SDL_RWops* SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose);
+SDL_RWops *SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose);
 
 #endif // IGUARD_rwops_rwops_segment_h

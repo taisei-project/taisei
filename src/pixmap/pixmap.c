@@ -326,6 +326,10 @@ void pixmap_flip_y(const Pixmap *src, Pixmap *dst) {
 	size_t rows = src->height;
 	size_t row_length = src->width * PIXMAP_FORMAT_PIXEL_SIZE(src->format);
 
+	if(UNLIKELY(row_length == 0)) {
+		return;
+	}
+
 	char *cdst = dst->data.untyped;
 	const char *csrc = src->data.untyped;
 
@@ -342,6 +346,11 @@ void pixmap_flip_y_alloc(const Pixmap *src, Pixmap *dst) {
 void pixmap_flip_y_inplace(Pixmap *src) {
 	size_t rows = src->height;
 	size_t row_length = src->width * PIXMAP_FORMAT_PIXEL_SIZE(src->format);
+
+	if(UNLIKELY(row_length == 0)) {
+		return;
+	}
+
 	char *data = src->data.untyped;
 	char swap_buffer[row_length];
 

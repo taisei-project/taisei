@@ -53,7 +53,7 @@ AniQueueEntry *aniplayer_queue(AniPlayer *plr, const char *seqname, int loops) {
 	if(loops < 0)
 		log_fatal("Negative number of loops passed: %d",loops);
 	s->sequence = get_ani_sequence(plr->ani,seqname);
-	
+
 	s->duration = loops*s->sequence->length;
 
 	return s;

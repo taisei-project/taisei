@@ -1609,7 +1609,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 	}
 
 	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
-		double rate = target->type == ENT_TYPE_ID(Boss) ? 110 : 256;
+		double rate = NOT_NULL(target)->type == ENT_TYPE_ID(Boss) ? 110 : 256;
 		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate));
 	}
 

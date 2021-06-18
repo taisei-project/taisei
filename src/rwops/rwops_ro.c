@@ -17,11 +17,16 @@ static size_t ro_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnu
 }
 
 SDL_RWops *SDL_RWWrapReadOnly(SDL_RWops *src, bool autoclose) {
-	if(!src) {
+	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	SDL_RWops *rw = SDL_RWWrapDummy(src, autoclose);
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
 	rw->write = ro_write;
 
 	return rw;
