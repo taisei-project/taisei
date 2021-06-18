@@ -282,7 +282,6 @@ int vfs_dir_list_order_descending(const void *a, const void *b) {
 void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg), void *arg) {
 	char npath[strlen(path) + 1];
 	vfs_path_normalize(path, npath);
-	strip_trailing_slashes(npath);
 
 	VFSDir *dir = vfs_dir_open(npath);
 	void *result = NULL;

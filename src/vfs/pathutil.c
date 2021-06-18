@@ -17,6 +17,8 @@ char *vfs_path_normalize(const char *path, char *out) {
 	char *last_sep = out - 1;
 	char *path_end = strchr(path, 0);
 
+	#define IS_SEP_OR_NUL(chr) (VFS_IS_PATH_SEPARATOR(chr) || (chr == '\0'))
+
 	while(p < path_end) {
 		if(VFS_IS_PATH_SEPARATOR(*p)) {
 			if(o > out && !VFS_IS_PATH_SEPARATOR(o[-1])) {
@@ -27,13 +29,13 @@ char *vfs_path_normalize(const char *path, char *out) {
 			do {
 				++p;
 			} while(p < path_end && VFS_IS_PATH_SEPARATOR(*p));
-		} else if(*p == '.' && VFS_IS_PATH_SEPARATOR(p[1])) {
+		} else if(*p == '.' && IS_SEP_OR_NUL(p[1])) {
 			p += 2;
-		} else if(!strncmp(p, "..", 2) && VFS_IS_PATH_SEPARATOR(p[2])) {
+		} else if(p + 1 < path_end && !strncmp(p, "..", 2) && IS_SEP_OR_NUL(p[2])) {
 			if(last_sep >= out) {
 				do {
 					--last_sep;
-				} while(!VFS_IS_PATH_SEPARATOR(*last_sep) && last_sep >= out);
+				} while(last_sep >= out && !VFS_IS_PATH_SEPARATOR(*last_sep));
 
 				o = last_sep-- + 1;
 			}
@@ -44,9 +46,18 @@ char *vfs_path_normalize(const char *path, char *out) {
 		}
 	}
 
+	#undef IS_SEP_OR_NUL
+
+	// remove trailing slash
+	if(o > out && VFS_IS_PATH_SEPARATOR(o[-1])) {
+		--o;
+		assert(o == out || !VFS_IS_PATH_SEPARATOR(o[-1]));
+	}
+
 	*o = 0;
 
-	// log_debug("[%s] --> [%s]", path, out);
+// 	log_debug("[%s] --> [%s]", path, out);
+
 	return out;
 }
 
@@ -124,7 +135,7 @@ void vfs_path_root_prefix(char *path) {
 	}
 }
 
-char* vfs_syspath_normalize_inplace(char *path) {
+char *vfs_syspath_normalize_inplace(char *path) {
 	char buf[strlen(path)+1];
 	strcpy(buf, path);
 	vfs_syspath_normalize(buf, sizeof(buf), path);

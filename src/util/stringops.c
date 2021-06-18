@@ -144,11 +144,6 @@ char* strftimealloc(const char *fmt, const struct tm *timeinfo) {
 	};
 }
 
-void strip_trailing_slashes(char *buf) {
-	for(char *c = buf + strlen(buf) - 1; c >= buf && (*c == '/' || *c == '\\'); c--)
-		*c = 0;
-}
-
 char* strappend(char **dst, char *src) {
 	if(!*dst) {
 		return *dst = strdup(src);

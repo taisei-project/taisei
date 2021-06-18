@@ -294,15 +294,7 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 	for(zip_int64_t i = 0; i < num; ++i) {
 		const char *original = zip_get_name(tls->zip, i, 0);
 		char normalized[strlen(original) + 1];
-
 		vfs_path_normalize(original, normalized);
-
-		if(*normalized) {
-			char *c = strchr(normalized, 0) - 1;
-			if(*c == '/') {
-				*c = 0;
-			}
-		}
 
 		if(strcmp(original, normalized)) {
 			ht_set(&zdata->pathmap, normalized, i);

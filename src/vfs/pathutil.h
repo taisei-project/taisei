@@ -19,9 +19,9 @@
 
 static_assert(sizeof(VFS_PATH_SEPARATOR_STR) == 2, "No more than one VFS path separator, please");
 
-char* vfs_path_normalize(const char *path, char *out);
-char* vfs_path_normalize_alloc(const char *path);
-char* vfs_path_normalize_inplace(char *path);
+char *vfs_path_normalize(const char *path, char *out);
+char *vfs_path_normalize_alloc(const char *path);
+char *vfs_path_normalize_inplace(char *path);
 void vfs_path_split_left(char *path, char **lpath, char **rpath);
 void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
