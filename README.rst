@@ -168,9 +168,6 @@ variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
 Troubleshooting
 ---------------
 
-If you're having issues with low framerates, sound playback issues, or gamepad
-support, please see the `Troubleshooting Guide <doc/TROUBLESHOOTING.rst>`__.
-
 If you find any other bug not covered in that, feel free to
 `open up an issue <https://github.com/taisei-project/taisei/issues>`__.
 
