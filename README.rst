@@ -15,11 +15,16 @@ also known as a "bullet hell" or "danmaku," with an original soundtrack,
 character art, and story. It is a fast-paced game focused around pattern
 recognition and mastery through practice.
 
-Taisei Project is highly portable, and is written in C (specifically, C11),
-using SDL2 with an OpenGL renderer. It is officially supported on Windows,
-Linux, macOS, and through WebGL-enabled browsers such as Firefox and
-Chromium-based browsers (Chrome, Edge, etc). It can also be compiled for a
-number of other operating systems.
+Taisei is _not_ a "clone" of Tōhō, and tells an original story with its own
+music, art, gameplay mechanics, and codebase. While some familiarity with Tōhō
+is helpful, the gameplay can be enjoyed on its own without prior knowledge of
+the series.
+
+Taisei Project is highly portable, and is written in C11, using SDL2 with an
+OpenGL renderer. It is officially supported on Windows, Linux, macOS, and
+through WebGL-enabled browsers such as Firefox and Chromium-based browsers
+(Chrome, Edge, etc). It can also be compiled for a number of other operating
+systems.
 
 For gameplay instructions, read `this <doc/GAME.rst>`__.
 
@@ -28,15 +33,10 @@ For the story, read `this <doc/STORY.txt>`__. (Spoiler warning!)
 About Tōhō Project
 ^^^^^^^^^^^^^^^^^^
 
-Tōhō Project, the series Taisei Project is based upon, is a modern fairytale
-series set in Gensōkyō, or the "Land of Fantasy," a pocket dimension hidden away
-in modern-day Japan. It primarily focuses on Japanese folklore and myths,
-starring a ragtag group of women who keep the peace among all of the
-supernatural inhabitants.
-
-Tōhō Project is known for its ensemble cast of characters and memorable
-soundtracks. It is an indie series (also called "doujin" in Japanese) produced,
-by and large by a single artist known as ZUN, and has a
+Tōhō Project is an indie game series (also known as "doujin" in Japanese)
+known for its ensemble cast of characters and memorable soundtracks.
+It is an indie series (also called "doujin" in Japanese) produced by and large
+by a single artist known as ZUN, and has a
 `permissive license <https://en.touhouwiki.net/wiki/Touhou_Wiki:Copyrights#Copyright_status.2FTerms_of_Use_of_the_Touhou_Project>`__
 which allows for indie derivative works such as Taisei Project to legally exist.
 
@@ -63,61 +63,87 @@ Firefox supported.)
 Source Code & Development
 -------------------------
 
-**Important:** As of v1.3, you cannot download GitHub's automatically-generated
-source archives, as they don't contain the necessary submodules for compiling
-the game. Make sure you either download the release tarball, or use `git clone`.
+Basic Dependencies
+^^^^^^^^^^^^^^^^^^
+
+Run-Time Dependencies
+_____________________
+
+Required
+********
+
+-  OpenGL >= 3.3, or OpenGL ES >= 3.0
+-  SDL2 >= 2.0.10
+-  libpng >= 1.5.0
+-  libwebpdecoder >= 0.5 or libwebp >= 0.5
+-  libzip >= 1.5.0 (>= 1.7.0 recommended)
+-  libzstd >= 1.4.0
+-  freetype2
+-  opusfile
+-  zlib
+
+Optional
+********
+
+-  OpenSSL (for a better SHA-256 implementation; used in shader cache)
+-  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
+-  libshaderc (for OpenGL ES backends)
+-  `ANGLE <https://github.com/google/angle>`__ (for ANGLE support, useful for Windows builds)
+-  GameMode headers (Linux only; for automatic `GameMode
+   <https://github.com/FeralInteractive/gamemode>`__ integration)
+
+Build-Time Dependenices
+_______________________
+
+-  Python >= 3.6
+-  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
+-  meson >= 0.56.0
+-  ``gcc`` or ``clang``
+
+Obtaining Source Code
+^^^^^^^^^^^^^^^^^^^^^
 
 You can obtain the source code of the stable releases from the
 `Releases <https://github.com/taisei-project/taisei/releases>`__ page on
-GitHub, alongside the binaries.
+GitHub, alongside the binaries. (Note that you **MUST** use the releases page,
+as the ``Download ZIP`` link on the main repo _does not_ include all the code
+necessary to build the game.)
 
 You can also grab the latest code from git using the following commands:
 
 ::
 
-    git clone --recurse-submodules https://github.com/taisei-project/taisei
+    git clone https://github.com/taisei-project/taisei
+    cd taisei
+    git submodule update --init --recursive
 
-The ``--recursive-submodules`` option is important as the submodules are
-necessary to compile the project.
+You should also run ``git submodule update`` whenever you pull in
+new code, checkout another branch, or perform any ``git`` actions. The ``pull``
+and ``checkout`` helper scripts can do that for you automatically.
 
-If you want to pull them in manually, be sure to run the following:
+**Important:** Again, make sure you download the source code from either the
+``releases`` page _or_ using ``git clone``. The ``Download ZIP`` link _will not
+work!_
+
+Compiling Source Code
+^^^^^^^^^^^^^^^^^^^^^
+
+Currently, we recommend building Taisei on a *nix or macOS-based system.
+
+While Taisei is highly configurable, the easiest way to compile the code for
+your host machine is:
 
 ::
 
-    cd taisei
-    git submodule init
-    git submodule update
+    meson setup build/
+    meson compile -C build/
+    meson install -C build/
 
-You should also run ``git submodule update`` whenever you pull in
-new code, checkout another branch, etc. The ``pull`` and ``checkout`` helper
-scripts can do that for you automatically.
+You can also package the game into a ``.zip`` archive.
 
-For more in-depth development and compiling instructions, see our
-`Development Guide <doc/DEVELOPMENT.rst>`__.
+::
 
-Basic Dependencies
-^^^^^^^^^^^^^^^^^^
-
--  OpenGL >= 3.3, or OpenGL ES >= 3.0, or OpenGL ES >= 2.0 (with extensions)
--  SDL2 >= 2.0.10
--  Python >= 3.6
--  meson >= 0.56.0
--  freetype2
--  libpng >= 1.5.0
--  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  libzip >= 1.5.0 (>= 1.7.0 recommended)
--  libzstd >= 1.4.0
--  opusfile
--  zlib
-
-Optional:
-
--  OpenSSL (for a better SHA-256 implementation; used in shader cache)
--  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
--  libshaderc (for OpenGL ES backends)
--  ANGLE (for ANGLE support, required for Windows)
--  GameMode headers (Linux only; for automatic `GameMode
-   <https://github.com/FeralInteractive/gamemode>`__ integration)
+    ninja zip -C build/
 
 
 Replays, Screenshots, and Settings Locations
