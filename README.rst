@@ -1,5 +1,9 @@
-Taisei
-======
+Taisei Project
+==============
+
+.. image:: misc/icons/taisei.ico
+   :width: 150
+   :alt: Taisei Project icon
 
 .. contents::
 
