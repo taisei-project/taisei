@@ -15,7 +15,7 @@ also known as a "bullet hell" or "danmaku," with an original soundtrack,
 character art, and story. It is a fast-paced game focused around pattern
 recognition and mastery through practice.
 
-Taisei is _not_ a "clone" of Tōhō, and tells an original story with its own
+Taisei is *not* a "clone" of Tōhō, and tells an original story with its own
 music, art, gameplay mechanics, and codebase. While some familiarity with Tōhō
 is helpful, the gameplay can be enjoyed on its own without prior knowledge of
 the series.
@@ -106,7 +106,7 @@ Obtaining Source Code
 You can obtain the source code of the stable releases from the
 `Releases <https://github.com/taisei-project/taisei/releases>`__ page on
 GitHub, alongside the binaries. (Note that you **MUST** use the releases page,
-as the ``Download ZIP`` link on the main repo _does not_ include all the code
+as the ``Download ZIP`` link on the main repo *does not* include all the code
 necessary to build the game.)
 
 You can also grab the latest code from git using the following commands:
@@ -122,8 +122,8 @@ new code, checkout another branch, or perform any ``git`` actions. The ``pull``
 and ``checkout`` helper scripts can do that for you automatically.
 
 **Important:** Again, make sure you download the source code from either the
-``releases`` page _or_ using ``git clone``. The ``Download ZIP`` link _will not
-work!_
+``releases`` page *or* using ``git clone``. The ``Download ZIP`` link *will not
+work!*
 
 Compiling Source Code
 ^^^^^^^^^^^^^^^^^^^^^
