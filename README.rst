@@ -13,10 +13,11 @@ Introduction
 About Taisei Project
 ^^^^^^^^^^^^^^^^^^^^
 
-Taisei Project is an open source fan-game set in the world of Tōhō
-Project. It is a top-down vertical-scrolling curtain fire shooting game (STG),
-also known as a "bullet hell" or "danmaku. It is a fast-paced game focused
-around pattern recognition and mastery through practice.
+Taisei Project is an open source fan-game set in the world of
+`Tōhō Project <https://en.wikipedia.org/wiki/Touhou_Project>`__.
+It is a top-down vertical-scrolling curtain fire shooting game (STG), also known
+as a "bullet hell" or "danmaku. It is a fast-paced game focused around pattern
+recognition and mastery through practice.
 
 Taisei Project is highly portable, and is written in C11, using SDL2 with an
 OpenGL renderer. It is officially supported on Windows, Linux, macOS, and
@@ -24,15 +25,10 @@ through WebGL-enabled browsers such as Firefox and Chromium-based browsers
 (Chrome, Edge, etc). It can also be compiled for a number of other operating
 systems.
 
-Taisei is *not* a "clone" of Tōhō, and tells an original story with its own
-music, art, gameplay mechanics, and codebase. While some familiarity with Tōhō
-is helpful, the gameplay can be enjoyed on its own without prior knowledge of
-the series.
-
-For gameplay instructions, read `this <doc/GAME.rst>`__.
-
 For gameplay screenshots, see
 `our website <https://taisei-project.org/media>`__.
+
+For gameplay instructions, read `this <doc/GAME.rst>`__.
 
 For the story, read `this <doc/STORY.txt>`__. (Spoiler warning!)
 
@@ -41,13 +37,14 @@ About Tōhō Project
 
 Tōhō Project is an indie game series (also known as "doujin" in Japanese)
 known for its ensemble cast of characters and memorable soundtracks.
-It is an indie series (also called "doujin" in Japanese) produced by and large
-by a single artist known as ZUN, and has a
+It is produced by and large by a single artist known as ZUN, and has a
 `permissive license <https://en.touhouwiki.net/wiki/Touhou_Wiki:Copyrights#Copyright_status.2FTerms_of_Use_of_the_Touhou_Project>`__
 which allows for indie derivative works such as Taisei Project to legally exist.
 
-For more information on Tōhō Project,
-`click here <https://en.wikipedia.org/wiki/Touhou_Project>`__.
+Taisei is *not* a "clone" of Tōhō, and tells an original story with its own
+music, art, gameplay mechanics, and codebase. While some familiarity with Tōhō
+is helpful, the gameplay can be enjoyed on its own without prior knowledge of
+the series.
 
 For more information on dōjin culture,
 `click here <https://en.wikipedia.org/wiki/D%C5%8Djin>`__.
@@ -128,13 +125,13 @@ new code, checkout another branch, or perform any ``git`` actions. The ``pull``
 and ``checkout`` helper scripts can do that for you automatically.
 
 **Important:** Again, make sure you download the source code from either the
-``releases`` page *or* using ``git clone``. The ``Download ZIP`` link *will not
+``Releases`` page *or* using ``git clone``. The ``Download ZIP`` link *will not
 work!*
 
 Compiling Source Code
 ^^^^^^^^^^^^^^^^^^^^^
 
-Currently, we recommend building Taisei on a *nix or macOS-based system.
+Currently, we recommend building Taisei on a \*nix or macOS-based system.
 
 While Taisei is highly configurable, the easiest way to compile the code for
 your host machine is:
@@ -168,8 +165,9 @@ variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
 Troubleshooting
 ---------------
 
-If you find any other bug not covered in that, feel free to
-`open up an issue <https://github.com/taisei-project/taisei/issues>`__.
+Feel free to
+`open up an issue <https://github.com/taisei-project/taisei/issues>`__ if you
+run into any issues with compiling or running Taisei.
 
 Contact
 -------
