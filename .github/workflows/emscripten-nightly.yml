@@ -14,6 +14,7 @@ on:
 
 env:
   MESON_VERSION: '0.56.2'
+  EM_VERSION: 'tot'
   EM_CACHE_FOLDER: 'emsdk'
 
 jobs:
@@ -22,19 +23,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]') && ${{ github.event.workflow_run.conclusion == 'success' }}"
     runs-on: ubuntu-20.04
     steps:
-    - name: Get Latest Emscripten SDK Tag
-      id: emsdk-tag
-      run: >
-        git clone https://github.com/emscripten-core/emsdk.git
-
-        git --git-dir=${{ env.EM_CACHE_FOLDER }}/.git fetch --tags
-
-        export EM_LATEST_TAG=$(git --git-dir=${{ env.EM_CACHE_FOLDER }}/.git describe --abbrev=0 --tags)
-
-        echo EM_LATEST_TAG=$EM_LATEST_TAG >> $GITHUB_ENV
-
-        rm -rf ./${{ env.EM_CACHE_FOLDER }} # cleanup
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:
@@ -58,13 +46,6 @@ jobs:
         meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
-
-    - name: Fetch Cached Emscripten SDK
-      id: emsdk-cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ env.EM_CACHE_FOLDER }}
-        key: ${{ env.EM_LATEST_TAG }}-${{ runner.os }}
 
     - name: Install Emscripten SDK
       if: steps.emsdk-cache.outputs.cache-hit != 'true'
