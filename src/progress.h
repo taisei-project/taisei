@@ -49,6 +49,7 @@ typedef enum ProgressBGMID {
 	PBGM_BONUS1,  // Scuttle theme
 	PBGM_GAMEOVER,
 	PBGM_INTRO,
+	PBGM_STAGEX_BOSS,
 } ProgressBGMID;
 
 typedef struct GlobalProgress {
