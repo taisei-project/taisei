@@ -1035,6 +1035,7 @@ static ProgressBGMID progress_bgm_id(const char *bgm) {
 		[PBGM_BONUS1]       = "scuttle",
 		[PBGM_GAMEOVER]     = "gameover",
 		[PBGM_INTRO]        = "intro",
+		[PBGM_STAGEX_BOSS]  = "stagexboss",
 	};
 
 	for(int i = 0; i < ARRAY_SIZE(map); ++i) {
