@@ -297,17 +297,16 @@ TASK(spawn_boss) {
 	Boss *boss = global.boss = stagex_spawn_yumemi(5*VIEWPORT_W/4 - 200*I);
 	PlayerMode *pm = global.plr.mode;
 
-	//Attack *opening_attack = boss_add_attack_task(boss, AT_Normal, "Opening", 60, 40000, TASK_INDIRECT(BossAttack, yumemi_opener), NULL);
+	Attack *opening_attack = boss_add_attack(boss, AT_Normal, "Opening", 60, 40000, NULL);
 	StageExPreBossDialogEvents *e;
 
 	INVOKE_TASK_INDIRECT(StageExPreBossDialog, pm->dialog->StageExPreBoss, &e);
 	INVOKE_TASK_WHEN(&e->boss_appears, yumemi_appear, ENT_BOX(boss));
-	//INVOKE_TASK_WHEN(&e->music_changes, stagex_boss_nonspell_1, ENT_BOX(boss), opening_attack);
+	INVOKE_TASK_WHEN(&e->music_changes, stagex_boss_nonspell_1, ENT_BOX(boss), opening_attack);
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stagexboss");
 
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
- 	boss_add_attack_task(boss, AT_Normal, "non1", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.sierpinski, false);
  	boss_add_attack_task(boss, AT_Normal, "non2", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_2), NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.infinity_network, false);
