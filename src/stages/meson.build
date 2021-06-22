@@ -4,6 +4,7 @@ stages_src = []
 stages = [
     'stage1',
     'stage2',
+    'stage3',
     'stage4',
     'stage5',
     'stage6',
@@ -18,8 +19,6 @@ endforeach
 # them into the "stages" array
 
 stages_src += files(
-    'stage3.c',
-    'stage3_events.c',
     'extra.c',
 )
 
