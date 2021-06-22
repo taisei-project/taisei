@@ -65,7 +65,7 @@ TASK(glider_bullet, {
 }
 
 TASK(glider_fairy, {
-	real hp; cmplx pos; cmplx dir;
+	cmplx pos; cmplx dir;
 }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(VIEWPORT_W/2-10*I, ITEMS(
 		.power = 3,
@@ -336,7 +336,7 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 		INVOKE_TASK_DELAYED(1500+i*70, ngoner_fairy, CMPLX(VIEWPORT_W*0.5+rx, VIEWPORT_H*0.3+ry));
 	}
 	for(int i = 0; i < 4;i++) {
-		INVOKE_TASK_DELAYED(2000+i*100, glider_fairy, 2000, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
+		INVOKE_TASK_DELAYED(2000+i*100, glider_fairy, CMPLX(VIEWPORT_W*(i&1), VIEWPORT_H*0.5), 3*I);
 		WAIT(140);
 	}
 
