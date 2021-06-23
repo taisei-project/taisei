@@ -315,13 +315,13 @@ cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 }
 
 DEFINE_EXTERN_TASK(common_easing_animate) {
-    float from = *ARGS.value;
-    float scale = ARGS.to - from;
-    float ftime = ARGS.duration;
+	float from = *ARGS.value;
+	float scale = ARGS.to - from;
+	float ftime = ARGS.duration;
 
-    for(int t = 0; t < ARGS.duration;t++) {
-        YIELD;
-        *ARGS.value = from + scale * ARGS.ease(t / ftime);
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+		*ARGS.value = from + scale * ARGS.ease(t / ftime);
     }
 }
 
