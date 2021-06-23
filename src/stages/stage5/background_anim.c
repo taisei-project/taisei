@@ -15,17 +15,15 @@
 #include "stageutils.h"
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 TASK(stage5_bg_update, NO_ARGS) {
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 
 	Camera3D *cam = &stage_3d_context.cam;
-	float vel = -0.01/3.7;
+	float vel = -0.015/3.7;
 	for(int i = 0;; i++) {
 		float r = stage5_draw_data->stairs.rad;
 		stage3d_update(&stage_3d_context);
-		cam->rot.v[2] = 180/M_PI*vel*i-210;
+		cam->rot.v[2] = 180/M_PI*vel*i + stage5_draw_data->stairs.roffset;
 		cam->pos[0] = r*cos(vel*i);
 		cam->pos[1] = r*sin(vel*i);
 
@@ -51,7 +49,18 @@ void stage5_bg_init_fullstage(void) {
 }
 
 void stage5_bg_init_spellpractice(void) {
-	stage5_bg_init_fullstage();
+	Camera3D *cam = &stage_3d_context.cam;
+	cam->pos[0] = 0;
+	cam->pos[1] = 2.5;
+	cam->rot.v[0] = 45;
+	cam->fovy = STAGE3D_DEFAULT_FOVY*1.5;
+
+	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
+	stage5_draw_data->stairs.roffset = -90;
+	stage5_draw_data->stairs.zoffset = 5;
+	stage5_draw_data->stairs.rad = -3;
+
+	INVOKE_TASK(stage5_bg_update);
 }
 
 void stage5_bg_raise_lightning(void) {
@@ -80,14 +89,20 @@ void stage5_bg_lower_camera(void) {
 	);
 	INVOKE_TASK_DELAYED(60,common_easing_animate,
 		    .value = &stage5_draw_data->stairs.rad,
-		    .to = 0,
+		    .to = -3,
 		    .duration = 600,
 		    .ease = glm_ease_quad_inout
 	);
 	INVOKE_TASK_DELAYED(60, common_easing_animate,
 		    .value = &stage_3d_context.cam.rot.v[0],
-		    .to = 40,
+		    .to = 45,
 		    .duration = 700,
+		    .ease = glm_ease_quad_inout
+	);
+	INVOKE_TASK_DELAYED(120, common_easing_animate,
+		    .value = &stage5_draw_data->stairs.roffset,
+		    .to = -90,
+		    .duration = 400,
 		    .ease = glm_ease_quad_inout
 	);
 }

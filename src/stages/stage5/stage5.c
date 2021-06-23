@@ -84,7 +84,7 @@ static void stage5_preload(void) {
 		"stage5/wall",
 		"stage5/metal",
 	NULL);
-	
+
 	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"pbr",
 		"zbuf_fog",

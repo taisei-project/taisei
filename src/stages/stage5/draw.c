@@ -29,7 +29,8 @@ void stage5_drawsys_init(void) {
 	stage5_draw_data->stairs.light_pos = -200;
 
 	stage5_draw_data->stairs.rad = 3.7;
-	stage5_draw_data->stairs.zoffset = 2.6;
+	stage5_draw_data->stairs.zoffset = 3.2;
+	stage5_draw_data->stairs.roffset = -210;
 }
 
 void stage5_drawsys_shutdown(void) {

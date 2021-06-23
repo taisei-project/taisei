@@ -20,6 +20,7 @@ typedef struct Stage5DrawData {
 
 		float rad;
 		float zoffset;
+		float roffset;
 	} stairs;
 
 } Stage5DrawData;
