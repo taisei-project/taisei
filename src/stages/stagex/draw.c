@@ -51,6 +51,29 @@ static bool should_draw_tower_postprocess(void) {
  * BEGIN background render
  */
 
+
+static void stagex_bg_setup_pbr_lighting(void) {
+	Camera3D *cam = &stage_3d_context.cam;
+	StageXDrawData *draw_data = stagex_get_draw_data();
+
+	float p = 300;
+	float f = 10000 * draw_data->fog.opacity;
+
+	Color c = draw_data->fog.color;
+	color_mul_scalar(&c, f);
+
+	PointLight3D lights[] = {
+		{ { cam->pos[0], cam->pos[1], cam->pos[2] }, { 0.9*p, 0.8*p, p } },
+		{ { cam->pos[0], cam->pos[1], cam->pos[2] + 60}, { c.r, c.g, c.b } },
+	};
+
+	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
+
+	float a = 0;
+	r_uniform_vec3("ambient_color", a, a, a);
+}
+
+
 static void bg_begin_3d(void) {
 	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 1700, STAGEX_BG_MAX_RANGE);
 	stage_3d_context.cam.rot.pitch += draw_data->plr_pitch;
@@ -63,6 +86,7 @@ static void bg_end_3d(void) {
 }
 
 static uint bg_tower_pos(Stage3D *s3d, vec3 pos, float maxrange) {
+#if 0
 	vec3 p = { 0, 0, 0 };
 	vec3 r = { 0, 0, STAGEX_BG_SEGMENT_PERIOD };
 
@@ -75,13 +99,51 @@ static uint bg_tower_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	}
 
 	return pnum;
+#else
+	vec3 p = {0, 0, 0};
+	vec3 r = {0, 0, STAGEX_BG_SEGMENT_PERIOD};
+
+	return linear3dpos(s3d, pos, maxrange, p, r);
+#endif
+}
+
+static void draw_tower(vec3 pos) {
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+
+	r_shader("pbr");
+	stagex_bg_setup_pbr_lighting();
+
+	r_uniform_float("metallic", 0);
+	r_uniform_sampler("tex", "stage5/stairs_diffuse");
+	r_uniform_sampler("roughness_map", "stage5/stairs_roughness");
+	r_uniform_sampler("normal_map", "stage5/stairs_normal");
+	r_uniform_sampler("ambient_map", "stage5/stairs_ambient");
+	r_draw_model("stage5/stairs");
+
+	r_uniform_sampler("tex", "stage5/wall_diffuse");
+	r_uniform_sampler("roughness_map", "stage5/wall_roughness");
+	r_uniform_sampler("normal_map", "stage5/wall_normal");
+	r_uniform_sampler("ambient_map", "stage5/wall_ambient");
+	r_draw_model("stage5/wall");
+
+	r_uniform_float("metallic", 1);
+	r_uniform_vec3("ambient_color",0,0,0);
+	r_uniform_sampler("tex", "stage5/metal_diffuse");
+	r_uniform_sampler("roughness_map", "stage5/metal_roughness");
+	r_uniform_sampler("normal_map", "stage5/metal_normal");
+	r_draw_model("stage5/metal");
+
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void bg_tower_draw(vec3 pos, bool is_mask) {
 	r_state_push();
 	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-	r_mat_mv_scale(300,300,300);
+// 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+// 	r_mat_mv_scale(300,300,300);
 
 	if(is_mask) {
 		uint32_t tmp = float_to_bits(pos[2]);
@@ -103,12 +165,13 @@ static void bg_tower_draw(vec3 pos, bool is_mask) {
 		r_draw_model("tower_alt_uv");
 		r_mat_tex_pop();
 	} else {
-		r_shader("tower_light");
-		r_uniform_sampler("tex", "stage5/tower");
-		r_uniform_vec3("lightvec", 0, 0, 0);
-		r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
-		r_uniform_float("strength", 0.5);
-		r_draw_model("tower");
+// 		r_shader("tower_light");
+// 		r_uniform_sampler("tex", "stage5/tower");
+// 		r_uniform_vec3("lightvec", 0, 0, 0);
+// 		r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
+// 		r_uniform_float("strength", 0.5);
+// 		r_draw_model("tower");
+		draw_tower(pos);
 	}
 
 	r_mat_mv_pop();
@@ -234,28 +297,11 @@ static bool bg_effect_fog(Framebuffer *fb) {
 		return false;
 	}
 
-	r_shader("zbuf_fog");
-	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-
-	float t = global.frames/15.0f;
-
-	Color c;
-	c.r = psin(t);
-	c.g = 0.25f * c.r * powf(pcosf(t), 1.25f);
-	c.b = c.r * c.g;
-
-	float w = 1.0f - sqrtf(erff(8.0f * c.g));
-	w = lerpf(1.0f, w, draw_data->fog.red_flash_intensity);
-	c.b += w*w*w*w*w;
-
-	c.r = lerpf(c.r, 1.0f, w);
-	c.g = lerpf(c.g, 1.0f, w);
-	c.b = lerpf(c.b, 1.0f, w);
-	c.a = 1.0f;
-
-	color_lerp(&c, RGBA(1, 1, 1, 1), 0.2);
+	Color c = draw_data->fog.color;
 	color_mul_scalar(&c, draw_data->fog.opacity);
 
+	r_shader("zbuf_fog");
+	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4_rgba("fog_color", &c);
 	r_uniform_float("start", 0.0);
 	r_uniform_float("end", 1.0);
@@ -267,8 +313,8 @@ static bool bg_effect_fog(Framebuffer *fb) {
 }
 
 ShaderRule stagex_bg_effects[] = {
-	bg_effect_tower_mask,
-	bg_effect_copy_depth,
+// 	bg_effect_tower_mask,
+// 	bg_effect_copy_depth,
 	bg_effect_fog,
 	NULL
 };
@@ -414,6 +460,7 @@ void stagex_drawsys_init(void) {
 	draw_data = calloc(1, sizeof(*draw_data));
 
 	stage3d_init(&stage_3d_context, 16);
+	stage_3d_context.cam.far = 128;
 
 	init_tower_mask_fb();
 	init_glitch_mask_fb();
