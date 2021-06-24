@@ -18,9 +18,11 @@ typedef struct StageXDrawData {
 	float plr_influence;
 
 	struct {
+		Color color;
 		float red_flash_intensity;
 		float opacity;
 		float exponent;
+		float t;
 	} fog;
 
 	struct {
@@ -48,5 +50,5 @@ void stagex_draw_background(void);
 extern ShaderRule stagex_bg_effects[];
 extern ShaderRule stagex_postprocess_effects[];
 
-#define STAGEX_BG_SEGMENT_PERIOD 6000
-#define STAGEX_BG_MAX_RANGE (32 * STAGEX_BG_SEGMENT_PERIOD)
+#define STAGEX_BG_SEGMENT_PERIOD 11.2
+#define STAGEX_BG_MAX_RANGE (64 * STAGEX_BG_SEGMENT_PERIOD)
