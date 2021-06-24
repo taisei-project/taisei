@@ -58,7 +58,7 @@ static void stagex_begin(void) {
 	stagex_drawsys_init();
 	stagex_bg_init_fullstage();
 
-	INVOKE_TASK(stagex_timeline);
+// 	INVOKE_TASK(stagex_timeline);
 }
 
 static void stagex_spellpractice_begin(void) {
@@ -83,6 +83,17 @@ static void stagex_end(void) {
 static void stagex_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"cell_noise",
+		"stage5/metal_diffuse",
+		"stage5/metal_normal",
+		"stage5/metal_roughness",
+		"stage5/stairs_ambient",
+		"stage5/stairs_diffuse",
+		"stage5/stairs_normal",
+		"stage5/stairs_roughness",
+		"stage5/wall_ambient",
+		"stage5/wall_diffuse",
+		"stage5/wall_normal",
+		"stage5/wall_roughness",
 		"stagex/bg",
 		"stagex/bg_binary",
 		"stagex/code",
@@ -96,7 +107,9 @@ static void stagex_preload(ResourceGroup *rg) {
 		"zbuf_fog",
 	NULL);
 	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
-		"tower",
+		"stage5/metal",
+		"stage5/stairs",
+		"stage5/wall",
 		"tower_alt_uv",
 	NULL);
 }
