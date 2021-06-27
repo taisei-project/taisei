@@ -431,12 +431,12 @@ void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) {
 	B.texture_set_wrap(tex, ws, wt);
 }
 
-void r_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) {
-	B.texture_fill(tex, mipmap, image_data);
+void r_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data) {
+	B.texture_fill(tex, mipmap, layer, image_data);
 }
 
-void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) {
-	B.texture_fill_region(tex, mipmap, x, y, image_data);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) {
+	B.texture_fill_region(tex, mipmap, layer, x, y, image_data);
 }
 
 void r_texture_invalidate(Texture *tex) {

@@ -22,6 +22,7 @@ typedef struct Texture {
 	TextureUnit *binding_unit;
 	GLuint gl_handle;
 	GLuint pbo;
+	GLenum bind_target;
 	TextureParams params;
 	bool mipmaps_outdated;
 	char debug_label[R_DEBUG_LABEL_SIZE];
@@ -35,8 +36,8 @@ void gl33_texture_set_debug_label(Texture *tex, const char *label);
 void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag);
 void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 void gl33_texture_invalidate(Texture *tex);
-void gl33_texture_fill(Texture *tex, uint mipmap, const Pixmap *image);
-void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image);
+void gl33_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image);
+void gl33_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image);
 void gl33_texture_prepare(Texture *tex);
 void gl33_texture_taint(Texture *tex);
 void gl44_texture_clear(Texture *tex, const Color *clr);

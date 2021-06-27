@@ -122,6 +122,12 @@ typedef enum TextureType {
 #define COMPRESSION_FORMAT_TO_TEX_TYPE(cfmt) ((TextureType)((cfmt) | TEX_TYPE_COMPRESSED_BIT))
 #define TEX_TYPE_IS_DEPTH(type)              ((type) >= TEX_TYPE_DEPTH_8 && (type) <= TEX_TYPE_DEPTH_32_FLOAT)
 
+typedef enum TextureClass {
+	// NOTE: whichever is placed first here is considered the "default" where applicable.
+	TEXTURE_CLASS_2D,
+	TEXTURE_CLASS_CUBEMAP,
+} TextureClass;
+
 typedef enum TextureFilterMode {
 	// NOTE: whichever is placed first here is considered the "default" where applicable.
 	TEX_FILTER_LINEAR,
@@ -157,10 +163,21 @@ enum {
 	#define TEX_MIPMAPS_MAX ((uint)(-1))
 };
 
+typedef enum CubemapFace {
+	CUBEMAP_FACE_POS_X,
+	CUBEMAP_FACE_NEG_X,
+	CUBEMAP_FACE_POS_Y,
+	CUBEMAP_FACE_NEG_Y,
+	CUBEMAP_FACE_POS_Z,
+	CUBEMAP_FACE_NEG_Z,
+} CubemapFace;
+
 typedef struct TextureParams {
 	uint width;
 	uint height;
+	uint layers;
 	TextureType type;
+	TextureClass class;
 
 	struct {
 		TextureFilterMode mag;
@@ -712,8 +729,8 @@ const char* r_texture_get_debug_label(Texture *tex) attr_nonnull(1);
 void r_texture_set_debug_label(Texture *tex, const char *label) attr_nonnull(1);
 void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) attr_nonnull(1);
 void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) attr_nonnull(1);
-void r_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) attr_nonnull(1, 3);
-void r_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) attr_nonnull(1, 5);
+void r_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data) attr_nonnull(1, 4);
+void r_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) attr_nonnull(1, 6);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);

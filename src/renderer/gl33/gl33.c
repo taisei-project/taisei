@@ -33,12 +33,11 @@
 typedef struct TextureUnit {
 	LIST_INTERFACE(struct TextureUnit);
 
-	struct {
-		GLuint gl_handle;
-		Texture *active;
-		Texture *pending;
-		bool locked;
-	} tex2d;
+	Texture *active;
+	Texture *pending;
+	GLuint gl_handle;
+	GLenum bind_target;
+	bool locked;
 } TextureUnit;
 
 #define TU_INDEX(unit) ((ptrdiff_t)((unit) - R.texunits.array))
@@ -299,6 +298,12 @@ static void gl33_init_context(SDL_Window *window) {
 		glReadBuffer(GL_BACK);
 	}
 
+#ifndef STATIC_GLES3
+	if(glext.seamless_cubemap) {
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	}
+#endif
+
 	R.viewport.active = R.viewport.default_framebuffer;
 
 	if(glext.instanced_arrays) {
@@ -532,16 +537,16 @@ static void gl33_activate_texunit(TextureUnit *unit) {
 }
 
 static int gl33_texunit_priority(TextureUnit *u) {
-	if(u->tex2d.locked) {
-		assert(u->tex2d.pending);
+	if(u->locked) {
+		assert(u->pending);
 		return 3;
 	}
 
-	if(u->tex2d.pending) {
+	if(u->pending) {
 		return 2;
 	}
 
-	if(u->tex2d.active) {
+	if(u->active) {
 		return 1;
 	}
 
@@ -566,9 +571,15 @@ attr_unused static void gl33_dump_texunits(void) {
 
 	for(TextureUnit *u = R.texunits.list.first; u; u = u->next) {
 		char buf1[128], buf2[128];
-		texture_str(u->tex2d.active, buf1, sizeof(buf1));
-		texture_str(u->tex2d.pending, buf2, sizeof(buf2));
-		log_debug("[Unit %u | %i] bound: %s; pending: %s", (uint)TU_INDEX(u), gl33_texunit_priority(u), buf1, buf2);
+		texture_str(u->active, buf1, sizeof(buf1));
+		texture_str(u->pending, buf2, sizeof(buf2));
+		log_debug("[Unit %u | %i | 0x%x] bound: %s; pending: %s",
+			(uint)TU_INDEX(u),
+			gl33_texunit_priority(u),
+			u->bind_target,
+			buf1,
+			buf2
+		);
 	}
 
 	log_debug("=== END DUMP ===");
@@ -593,82 +604,100 @@ static void gl33_relocate_texuint(TextureUnit *unit) {
 
 attr_nonnull(1)
 static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, bool lock) {
-	assert(!unit->tex2d.locked);
+	assert(!unit->locked);
 
-	if(unit->tex2d.pending == tex) {
+	if(unit->pending == tex) {
 		if(tex) {
 			tex->binding_unit = unit;
 		}
 
 		if(lock) {
-			unit->tex2d.locked = true;
+			unit->locked = true;
 		}
 
 		// gl33_relocate_texuint(unit);
 		return;
 	}
 
-	if(unit->tex2d.pending != NULL) {
+	if(unit->pending != NULL) {
 		// assert(unit->tex2d.pending->binding_unit == unit);
 
-		if(unit->tex2d.pending->binding_unit == unit) {
+		if(unit->pending->binding_unit == unit) {
 			// FIXME: should we search through the units for a matching binding,
 			// just in case another unit had the same texture bound?
-			unit->tex2d.pending->binding_unit = NULL;
+			unit->pending->binding_unit = NULL;
 		}
 	}
 
-	unit->tex2d.pending = tex;
+	unit->pending = tex;
 
 	if(tex) {
 		tex->binding_unit = unit;
 	}
 
 	if(lock) {
-		unit->tex2d.locked = true;
+		unit->locked = true;
 	}
 
 	gl33_relocate_texuint(unit);
 }
 
+static void gl33_bind_handle_to_texunit(TextureUnit *u, GLenum target, GLuint handle) {
+	/*
+	 * For hysterical raisins, OpenGL texturing units can technically have multiple textures bound
+	 * to them — one for each target. However, a single texturing unit can not be accessed by two
+	 * samplers of a distinct type from a shader, making this "feature" virtually useless.
+	 *
+	 * Therefore we maintain only 1 kind of texture per unit here.
+	 */
+
+	if(target != u->bind_target && u->bind_target != 0) {
+		// If changing target, clear the old binding.
+		// Probably not strictly necessary, but safer and more debuggable.
+		glBindTexture(u->bind_target, 0);
+		u->bind_target = target;
+	}
+
+	glBindTexture(target, handle);
+	u->gl_handle = handle;
+}
+
 void gl33_sync_texunit(TextureUnit *unit, bool prepare_rendering, bool ensure_active) {
-	Texture *tex = unit->tex2d.pending;
+	Texture *tex = unit->pending;
 
 #ifdef GL33_DEBUG_TEXUNITS
-	if(unit->tex2d.pending != unit->tex2d.active) {
+	if(unit->pending != unit->active) {
 		attr_unused char buf1[128], buf2[128];
-		texture_str(unit->tex2d.active, buf1, sizeof(buf1));
-		texture_str(unit->tex2d.pending, buf2, sizeof(buf2));
+		texture_str(unit->active, buf1, sizeof(buf1));
+		texture_str(unit->pending, buf2, sizeof(buf2));
 		log_debug("[Unit %u] %s ===> %s", (uint)TU_INDEX(unit), buf1, buf2);
 	}
 #endif
 
 	if(tex == NULL) {
-		if(unit->tex2d.gl_handle != 0) {
+		if(unit->gl_handle != 0) {
 			gl33_activate_texunit(unit);
-			glBindTexture(GL_TEXTURE_2D, 0);
-			unit->tex2d.gl_handle = 0;
-			unit->tex2d.active = NULL;
+			gl33_bind_handle_to_texunit(unit, unit->bind_target, 0);
+			unit->active = NULL;
 			gl33_relocate_texuint(unit);
 		}
-	} else if(unit->tex2d.gl_handle != tex->gl_handle) {
+	} else if(unit->gl_handle != tex->gl_handle) {
 		gl33_activate_texunit(unit);
-		glBindTexture(GL_TEXTURE_2D, tex->gl_handle);
-		unit->tex2d.gl_handle = tex->gl_handle;
+		gl33_bind_handle_to_texunit(unit, tex->bind_target, tex->gl_handle);
 
-		if(unit->tex2d.active == NULL) {
-			unit->tex2d.active = tex;
+		bool need_relocate = unit->active == NULL;
+		unit->active = tex;
+
+		if(need_relocate) {
 			gl33_relocate_texuint(unit);
-		} else {
-			unit->tex2d.active = tex;
 		}
 	} else if(ensure_active) {
 		gl33_activate_texunit(unit);
 	}
 
-	if(prepare_rendering && unit->tex2d.active != NULL) {
-		gl33_texture_prepare(unit->tex2d.active);
-		unit->tex2d.locked = false;
+	if(prepare_rendering && unit->active != NULL) {
+		gl33_texture_prepare(unit->active);
+		unit->locked = false;
 	}
 }
 
@@ -813,8 +842,8 @@ uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit)
 		assert(preferred_unit < R.texunits.limit);
 		TextureUnit *u = &R.texunits.array[preferred_unit];
 
-		if(u->tex2d.pending == texture) {
-			u->tex2d.locked |= for_rendering;
+		if(u->pending == texture) {
+			u->locked |= for_rendering;
 		} else {
 			gl33_set_texunit_binding(u, texture, for_rendering);
 		}
@@ -827,19 +856,19 @@ uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit)
 		// assert(R.texunits.list.first->tex2d.pending != texture);
 
 		if(
-			R.texunits.list.first->tex2d.pending &&
-			R.texunits.list.first->tex2d.pending != R.texunits.list.first->tex2d.active
+			R.texunits.list.first->pending &&
+			R.texunits.list.first->pending != R.texunits.list.first->active
 		) {
 			log_warn("Ran out of texturing units, expect rendering errors!");
 		}
 
 		gl33_set_texunit_binding(R.texunits.list.first, texture, for_rendering);
 	} else /* if(for_rendering) */ {
-		texture->binding_unit->tex2d.locked |= for_rendering;
+		texture->binding_unit->locked |= for_rendering;
 		gl33_relocate_texuint(texture->binding_unit);
 	}
 
-	assert(texture->binding_unit->tex2d.pending == texture);
+	assert(texture->binding_unit->pending == texture);
 	return TU_INDEX(texture->binding_unit);
 }
 
@@ -866,19 +895,19 @@ void gl33_texture_deleted(Texture *tex) {
 	for(TextureUnit *unit = R.texunits.array; unit < R.texunits.array + R.texunits.limit; ++unit) {
 		bool bump = false;
 
-		if(unit->tex2d.pending == tex) {
-			unit->tex2d.pending = NULL;
-			unit->tex2d.locked = false;
+		if(unit->pending == tex) {
+			unit->pending = NULL;
+			unit->locked = false;
 			bump = true;
 		}
 
-		if(unit->tex2d.active == tex) {
-			assert(unit->tex2d.gl_handle == tex->gl_handle);
-			unit->tex2d.active = NULL;
-			unit->tex2d.gl_handle = 0;
+		if(unit->active == tex) {
+			assert(unit->gl_handle == tex->gl_handle);
+			unit->active = NULL;
+			unit->gl_handle = 0;
 			bump = true;
 		} else {
-			assert(unit->tex2d.gl_handle != tex->gl_handle);
+			assert(unit->gl_handle != tex->gl_handle);
 		}
 
 		if(bump) {

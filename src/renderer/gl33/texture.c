@@ -14,6 +14,17 @@
 #include "gl33.h"
 #include "../glcommon/debug.h"
 
+static GLenum class_to_gltarget(TextureClass cls) {
+	switch(cls) {
+		case TEXTURE_CLASS_2D:
+			return GL_TEXTURE_2D;
+		case TEXTURE_CLASS_CUBEMAP:
+			return GL_TEXTURE_CUBE_MAP;
+		default:
+			UNREACHABLE;
+	}
+}
+
 static GLenum linear_to_nearest(GLenum filter) {
 	switch(filter) {
 		case GL_LINEAR:
@@ -160,7 +171,32 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 	}
 }
 
-static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
+static GLenum target_from_class_and_layer(TextureClass cls, uint layer) {
+	GLenum target = class_to_gltarget(cls);
+
+	if(target == GL_TEXTURE_CUBE_MAP) {
+		static GLenum facemap[] = {
+			[CUBEMAP_FACE_POS_X] = GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+			[CUBEMAP_FACE_NEG_X] = GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+
+			// NOTE: apaprently these are swapped in OpenGL…
+			[CUBEMAP_FACE_POS_Y] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+			[CUBEMAP_FACE_NEG_Y] = GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+
+			[CUBEMAP_FACE_POS_Z] = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+			[CUBEMAP_FACE_NEG_Z] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		};
+		static_assert_nomsg(ARRAY_SIZE(facemap) == 6);
+		assert(layer < ARRAY_SIZE(facemap));
+		return facemap[layer];
+	} else if(target == GL_TEXTURE_2D) {
+		assert(layer == 0);
+	}
+
+	return target;
+}
+
+static void gl33_texture_set(Texture *tex, uint mipmap, uint layer, const Pixmap *image) {
 	assert(mipmap < tex->params.mipmaps);
 	assert(image != NULL);
 
@@ -191,11 +227,14 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	assert(width == image->width);
 	assert(height == image->height);
 
+	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
+	GLenum ifmt = tex->fmt_info->internal_format;
+
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		glCompressedTexImage2D(
-			GL_TEXTURE_2D,
+			gl_target,
 			mipmap,
-			tex->fmt_info->internal_format,
+			ifmt,
 			width,
 			height,
 			0,
@@ -203,15 +242,17 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 			image_data
 		);
 	} else {
+		GLenum xfmt = xfer->gl_format;
+		GLenum xtype = xfer->gl_type;
 		glTexImage2D(
-			GL_TEXTURE_2D,
+			gl_target,
 			mipmap,
 			tex->fmt_info->internal_format,
 			width,
 			height,
 			0,
-			xfer->gl_format,
-			xfer->gl_type,
+			xfmt,
+			xtype,
 			image_data
 		);
 	}
@@ -223,7 +264,7 @@ static void gl33_texture_set(Texture *tex, uint mipmap, const Pixmap *image) {
 	tex->mipmaps_outdated = true;
 }
 
-static void apply_swizzle(GLenum param, char val) {
+static void apply_swizzle(GLenum gl_target, GLenum param, char val) {
 	GLenum swizzle_val, default_val;
 
 	switch(param) {
@@ -247,23 +288,48 @@ static void apply_swizzle(GLenum param, char val) {
 
 	if(glext.texture_swizzle) {
 		assert(r_supports(RFEAT_TEXTURE_SWIZZLE));
-		glTexParameteri(GL_TEXTURE_2D, param, swizzle_val);
+		glTexParameteri(gl_target, param, swizzle_val);
 	} else if(default_val != swizzle_val) {
 		log_warn("Texture swizzle mask differs from default; not supported in this OpenGL version!");
 	}
 }
 
-static void apply_swizzle_mask(SwizzleMask *mask) {
-	apply_swizzle(GL_TEXTURE_SWIZZLE_R, mask->r);
-	apply_swizzle(GL_TEXTURE_SWIZZLE_G, mask->g);
-	apply_swizzle(GL_TEXTURE_SWIZZLE_B, mask->b);
-	apply_swizzle(GL_TEXTURE_SWIZZLE_A, mask->a);
+static void apply_swizzle_mask(GLenum gl_target, SwizzleMask *mask) {
+	apply_swizzle(gl_target, GL_TEXTURE_SWIZZLE_R, mask->r);
+	apply_swizzle(gl_target, GL_TEXTURE_SWIZZLE_G, mask->g);
+	apply_swizzle(gl_target, GL_TEXTURE_SWIZZLE_B, mask->b);
+	apply_swizzle(gl_target, GL_TEXTURE_SWIZZLE_A, mask->a);
 }
 
-Texture* gl33_texture_create(const TextureParams *params) {
+Texture *gl33_texture_create(const TextureParams *params) {
 	Texture *tex = calloc(1, sizeof(Texture));
 	memcpy(&tex->params, params, sizeof(*params));
 	TextureParams *p = &tex->params;
+
+	TextureClass cls = p->class;
+	GLenum gl_target = class_to_gltarget(p->class);
+	tex->bind_target = gl_target;
+
+	uint required_layers;
+
+	switch(cls) {
+		case TEXTURE_CLASS_2D:      required_layers = 1; break;
+		case TEXTURE_CLASS_CUBEMAP: required_layers = 6; break;
+		default: UNREACHABLE;
+	}
+
+	if(p->layers == 0) {
+		p->layers = required_layers;
+	}
+
+	assert(p->layers == required_layers);
+
+	assert(p->width > 0);
+	assert(p->height > 0);
+
+	if(cls == TEXTURE_CLASS_CUBEMAP) {
+		assert(p->width == p->height);
+	}
 
 	uint max_mipmaps = r_texture_util_max_num_miplevels(p->width, p->height);
 	assert(max_mipmaps > 0);
@@ -306,43 +372,44 @@ Texture* gl33_texture_create(const TextureParams *params) {
 
 	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(p->wrap.s));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, tex->fmt_info));
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, tex->fmt_info));
+	glTexParameteri(gl_target, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(p->wrap.s));
+	glTexParameteri(gl_target, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(p->wrap.t));
+	glTexParameteri(gl_target, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(p->filter.min, tex->fmt_info));
+	glTexParameteri(gl_target, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(p->filter.mag, tex->fmt_info));
 
-	apply_swizzle_mask(&tex->params.swizzle);
+	apply_swizzle_mask(gl_target, &tex->params.swizzle);
 
 	if(partial_mipmaps_ok) {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
+		glTexParameteri(gl_target, GL_TEXTURE_MAX_LEVEL, p->mipmaps - 1);
 	}
 
 	if(glext.texture_filter_anisotropic) {
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, p->anisotropy);
+		glTexParameteri(gl_target, GL_TEXTURE_MAX_ANISOTROPY, p->anisotropy);
 	}
 
 	if((p->flags & TEX_FLAG_STREAM) && glext.pixel_buffer_object) {
 		glGenBuffers(1, &tex->pbo);
 	}
 
+	GLenum ifmt = tex->fmt_info->internal_format;
+	GLenum xfmt = xfer->gl_format;
+	GLenum xtype = xfer->gl_type;
+
 	for(uint i = 0; i < p->mipmaps; ++i) {
-		uint width, height;
-		gl33_texture_get_size(tex, i, &width, &height);
+		uint w, h;
+		gl33_texture_get_size(tex, i, &w, &h);
 
 		if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 			// XXX: can't pre-allocate this without ARB_texture_storage or equivalent
+		} else if(cls == TEXTURE_CLASS_CUBEMAP) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, i, ifmt, w, h, 0, xfmt, xtype, NULL);
 		} else {
-			glTexImage2D(
-				GL_TEXTURE_2D,
-				i,
-				tex->fmt_info->internal_format,
-				width,
-				height,
-				0,
-				xfer->gl_format,
-				xfer->gl_type,
-				NULL
-			);
+			glTexImage2D(gl_target, i, ifmt, w, h, 0, xfmt, xtype, NULL);
 		}
 	}
 
@@ -358,14 +425,14 @@ void gl33_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilter
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.min = fmin;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->fmt_info));
+		glTexParameteri(tex->bind_target, GL_TEXTURE_MIN_FILTER, r_filter_to_gl_filter(fmin, tex->fmt_info));
 	}
 
 	if(tex->params.filter.mag != fmag) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.filter.mag = fmag;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->fmt_info));
+		glTexParameteri(tex->bind_target, GL_TEXTURE_MAG_FILTER, r_filter_to_gl_filter(fmag, tex->fmt_info));
 	}
 }
 
@@ -374,14 +441,14 @@ void gl33_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt)
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.wrap.s = ws;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(ws));
+		glTexParameteri(tex->bind_target, GL_TEXTURE_WRAP_S, r_wrap_to_gl_wrap(ws));
 	}
 
 	if(tex->params.wrap.t != wt) {
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
 		tex->params.wrap.t = wt;
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(wt));
+		glTexParameteri(tex->bind_target, GL_TEXTURE_WRAP_T, r_wrap_to_gl_wrap(wt));
 	}
 }
 
@@ -394,30 +461,33 @@ void gl33_texture_invalidate(Texture *tex) {
 	gl33_bind_texture(tex, false, -1);
 	gl33_sync_texunit(tex->binding_unit, false, true);
 
-	for(uint i = 0; i < tex->params.mipmaps; ++i) {
-		uint width, height;
-		gl33_texture_get_size(tex, i, &width, &height);
+	GLenum ifmt = tex->fmt_info->internal_format;
+	GLenum xfmt = tex->fmt_info->transfer_format.gl_format;
+	GLenum xtype = tex->fmt_info->transfer_format.gl_type;
 
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			i,
-			tex->fmt_info->internal_format,
-			width,
-			height,
-			0,
-			tex->fmt_info->transfer_format.gl_format,
-			tex->fmt_info->transfer_format.gl_type,
-			NULL
-		);
+	for(uint i = 0; i < tex->params.mipmaps; ++i) {
+		uint w, h;
+		gl33_texture_get_size(tex, i, &w, &h );
+
+		if(tex->params.class == TEXTURE_CLASS_CUBEMAP) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+		} else {
+			glTexImage2D(tex->bind_target, i, ifmt, w, h, 0, xfmt, xtype, NULL);
+		}
 	}
 }
 
-void gl33_texture_fill(Texture *tex, uint mipmap, const Pixmap *image) {
+void gl33_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image) {
 	assert(mipmap == 0 || tex->params.mipmap_mode != TEX_MIPMAP_AUTO);
-	gl33_texture_set(tex, mipmap, image);
+	gl33_texture_set(tex, mipmap, layer, image);
 }
 
-void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image) {
+void gl33_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image) {
 	assert(mipmap == 0 || tex->params.mipmap_mode != TEX_MIPMAP_AUTO);
 
 	gl33_bind_texture(tex, false, -1);
@@ -429,9 +499,11 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 	assert(qr.supplied_pixmap_origin_supported);
 	GLTextureTransferFormatInfo *xfer = &tex->fmt_info->transfer_format;
 
+	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
+
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		glCompressedTexSubImage2D(
-			GL_TEXTURE_2D, mipmap,
+			gl_target, mipmap,
 			x, tex->params.height - y - image->height, image->width, image->height,
 			tex->fmt_info->internal_format,
 			image->data_size,
@@ -439,7 +511,7 @@ void gl33_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const P
 		);
 	} else {
 		glTexSubImage2D(
-			GL_TEXTURE_2D, mipmap,
+			gl_target, mipmap,
 			x, tex->params.height - y - image->height, image->width, image->height,
 			xfer->gl_format,
 			xfer->gl_type,
@@ -454,6 +526,7 @@ void gl44_texture_clear(Texture *tex, const Color *clr) {
 #ifdef STATIC_GLES3
 	UNREACHABLE;
 #else
+	assert(tex->params.class == TEXTURE_CLASS_2D);
 	for(int i = 0; i < tex->params.mipmaps; ++i) {
 		glClearTexImage(tex->gl_handle, i, GL_RGBA, GL_FLOAT, &clr->r);
 	}
@@ -461,6 +534,7 @@ void gl44_texture_clear(Texture *tex, const Color *clr) {
 }
 
 void gl33_texture_clear(Texture *tex, const Color *clr) {
+	assert(tex->params.class == TEXTURE_CLASS_2D);
 	// TODO: maybe find a more efficient method
 	Framebuffer *temp_fb = r_framebuffer_create();
 	r_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
@@ -490,12 +564,12 @@ void gl33_texture_prepare(Texture *tex) {
 
 		gl33_bind_texture(tex, false, -1);
 		gl33_sync_texunit(tex->binding_unit, false, true);
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap(tex->bind_target);
 		tex->mipmaps_outdated = false;
 	}
 }
 
-const char* gl33_texture_get_debug_label(Texture *tex) {
+const char *gl33_texture_get_debug_label(Texture *tex) {
 	return tex->debug_label;
 }
 

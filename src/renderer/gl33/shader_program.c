@@ -311,17 +311,18 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		}
 
 		switch(type) {
-			case GL_FLOAT:      uni.type = UNIFORM_FLOAT;   break;
-			case GL_FLOAT_VEC2: uni.type = UNIFORM_VEC2;    break;
-			case GL_FLOAT_VEC3: uni.type = UNIFORM_VEC3;    break;
-			case GL_FLOAT_VEC4: uni.type = UNIFORM_VEC4;    break;
-			case GL_INT:        uni.type = UNIFORM_INT;     break;
-			case GL_INT_VEC2:   uni.type = UNIFORM_IVEC2;   break;
-			case GL_INT_VEC3:   uni.type = UNIFORM_IVEC3;   break;
-			case GL_INT_VEC4:   uni.type = UNIFORM_IVEC4;   break;
-			case GL_SAMPLER_2D: uni.type = UNIFORM_SAMPLER; break;
-			case GL_FLOAT_MAT3: uni.type = UNIFORM_MAT3;    break;
-			case GL_FLOAT_MAT4: uni.type = UNIFORM_MAT4;    break;
+			case GL_FLOAT:        uni.type = UNIFORM_FLOAT;   break;
+			case GL_FLOAT_VEC2:   uni.type = UNIFORM_VEC2;    break;
+			case GL_FLOAT_VEC3:   uni.type = UNIFORM_VEC3;    break;
+			case GL_FLOAT_VEC4:   uni.type = UNIFORM_VEC4;    break;
+			case GL_INT:          uni.type = UNIFORM_INT;     break;
+			case GL_INT_VEC2:     uni.type = UNIFORM_IVEC2;   break;
+			case GL_INT_VEC3:     uni.type = UNIFORM_IVEC3;   break;
+			case GL_INT_VEC4:     uni.type = UNIFORM_IVEC4;   break;
+			case GL_SAMPLER_2D:   uni.type = UNIFORM_SAMPLER; break;
+			case GL_SAMPLER_CUBE: uni.type = UNIFORM_SAMPLER; break;
+			case GL_FLOAT_MAT3:   uni.type = UNIFORM_MAT3;    break;
+			case GL_FLOAT_MAT4:   uni.type = UNIFORM_MAT4;    break;
 
 			default:
 				log_warn("Uniform '%s' is of an unsupported type 0x%04x and will be ignored.", name, type);
