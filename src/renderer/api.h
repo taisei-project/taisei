@@ -878,6 +878,12 @@ DEFINE_DEPRECATED_RESOURCE_GETTER(Texture, r_texture_get, res_texture)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 
+/*
+ * FIXME: These sometimes trip false positives in ASan (stack use after scope) with clang;
+ * possibly only in unoptimized builds.
+ */
+#if 0
+
 INLINE void r_mat_mv_translate(float x, float y, float z) { r_mat_mv_translate_v((vec3) { x, y, z }); }
 INLINE void r_mat_proj_translate(float x, float y, float z) { r_mat_proj_translate_v((vec3) { x, y, z }); }
 INLINE void r_mat_tex_translate(float x, float y, float z) { r_mat_tex_translate_v((vec3) { x, y, z }); }
@@ -889,6 +895,22 @@ INLINE void r_mat_tex_rotate(float angle, float nx, float ny, float nz) { r_mat_
 INLINE void r_mat_mv_scale(float sx, float sy, float sz) { r_mat_mv_scale_v((vec3) { sx, sy, sz }); }
 INLINE void r_mat_proj_scale(float sx, float sy, float sz) { r_mat_proj_scale_v((vec3) { sx, sy, sz }); }
 INLINE void r_mat_tex_scale(float sx, float sy, float sz) { r_mat_tex_scale_v((vec3) { sx, sy, sz }); }
+
+#else
+
+#define r_mat_mv_translate(x, y, z)   r_mat_mv_translate_v((vec3) { (x), (y), (z) })
+#define r_mat_proj_translate(x, y, z) r_mat_proj_translate_v((vec3) { (x), (y), (z) })
+#define r_mat_tex_translate(x, y, z)  r_mat_tex_translate_v((vec3) { (x), (y), (z) })
+
+#define r_mat_mv_scale(x, y, z)       r_mat_mv_scale_v((vec3) { (x), (y), (z) })
+#define r_mat_proj_scale(x, y, z)     r_mat_proj_scale_v((vec3) { (x), (y), (z) })
+#define r_mat_tex_scale(x, y, z)      r_mat_tex_scale_v((vec3) { (x), (y), (z) })
+
+#define r_mat_mv_rotate(a, x, y, z)   r_mat_mv_rotate_v((a), (vec3) { (x), (y), (z) })
+#define r_mat_proj_rotate(a, x, y, z) r_mat_proj_rotate_v((a), (vec3) { (x), (y), (z) })
+#define r_mat_tex_rotate(a, x, y, z)  r_mat_tex_rotate_v((a), (vec3) { (x), (y), (z) })
+
+#endif
 
 #pragma GCC diagnostic pop
 
