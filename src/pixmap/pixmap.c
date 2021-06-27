@@ -452,7 +452,7 @@ char *pixmap_source_path(const char *prefix, const char *path) {
 		return strdup(base_path);
 	}
 
-	char *dot = strrchr(path, '.');
+	char *dot = strrchr(base_path, '.');
 
 	if(dot) {
 		*dot = 0;
