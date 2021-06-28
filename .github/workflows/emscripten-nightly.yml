@@ -51,8 +51,8 @@ jobs:
       if: steps.emsdk-cache.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/emscripten-core/emsdk.git ${{ env.EM_CACHE_FOLDER }}
-        ${{ env.EM_CACHE_FOLDER }}/emsdk install ${{ env.EM_LATEST_TAG }} || true
-        ${{ env.EM_CACHE_FOLDER }}/emsdk activate ${{ env.EM_LATEST_TAG }}
+        ${{ env.EM_CACHE_FOLDER }}/emsdk install ${{ env.EM_VERSION }} || true
+        ${{ env.EM_CACHE_FOLDER }}/emsdk activate ${{ env.EM_VERSION }}
 
     - name: Verify Emscripten SDK
       run: |
