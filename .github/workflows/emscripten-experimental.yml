@@ -1,4 +1,4 @@
-name: 'Emscripten (Experimental)'
+name: 'Test Build (Emscripten Experimental)'
 on:
   workflow_dispatch:
   workflow_run:
@@ -10,13 +10,6 @@ on:
   schedule:
     # run every friday at 20:00
     - cron: '0 20 * * 5'
-  pull_request:
-    paths:
-      - "**.c"
-      - "**.h"
-      - "**.yml"
-      - "**.yaml"
-      - "**.build"
 
 env:
   MESON_VERSION: '0.56.2'
@@ -25,7 +18,7 @@ env:
 
 jobs:
   emscripten-weekly-latest:
-    name: 'Emscripten (emsdk: latest)'
+    name: 'Emscripten'
     if: "!contains(github.event.head_commit.message, '[skip ci]') && ${{ github.event.workflow_run.conclusion == 'success' }}"
     runs-on: ubuntu-20.04
     continue-on-error: true
