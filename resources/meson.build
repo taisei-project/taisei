@@ -163,6 +163,7 @@ if host_machine.system() == 'emscripten'
                 '--js-output=@0@'.format(out_loader),  # No, this one does not accept "--js-output foobar.js"
                 '--use-preload-cache',
                 '--from-emcc',
+                '--no-node',
                 get_variable(var_packer_args)
             ],
             output : data_name,
