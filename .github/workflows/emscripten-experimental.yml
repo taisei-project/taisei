@@ -1,16 +1,22 @@
-name: 'Emscripten Weekly (Latest)'
+name: 'Emscripten (Experimental)'
 on:
   workflow_dispatch:
   workflow_run:
-    workflows:
-      - Test Builds
-    branches:
-      - master
+    workflows: ["Test Builds"]
+    branches: [master]
     types:
       - completed
+      - requested
   schedule:
     # run every friday at 20:00
     - cron: '0 20 * * 5'
+  pull_request:
+    paths:
+      - "**.c"
+      - "**.h"
+      - "**.yml"
+      - "**.yaml"
+      - "**.build"
 
 env:
   MESON_VERSION: '0.56.2'
@@ -22,6 +28,7 @@ jobs:
     name: 'Emscripten (emsdk: latest)'
     if: "!contains(github.event.head_commit.message, '[skip ci]') && ${{ github.event.workflow_run.conclusion == 'success' }}"
     runs-on: ubuntu-20.04
+    continue-on-error: true
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -48,7 +55,6 @@ jobs:
         zstandard
 
     - name: Install Emscripten SDK
-      if: steps.emsdk-cache.outputs.cache-hit != 'true'
       run: |
         git clone https://github.com/emscripten-core/emsdk.git ${{ env.EM_CACHE_FOLDER }}
         ${{ env.EM_CACHE_FOLDER }}/emsdk install ${{ env.EM_VERSION }} || true
@@ -80,6 +86,7 @@ jobs:
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         meson compile tar -C build/ --verbose
+        ninja zip -C build/
 
     - name: Upload Log
       uses: actions/upload-artifact@v2
