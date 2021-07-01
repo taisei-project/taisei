@@ -175,6 +175,7 @@ if host_machine.system() == 'emscripten'
     em_link_args = [
         '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
+        '-s', 'ALLOW_UNIMPLEMENTED_SYSCALLS=1',
         '-s', 'DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=["$autoResumeAudioContext"]',
         '-s', 'ENVIRONMENT=web',
         '-s', 'EXIT_RUNTIME=0',
