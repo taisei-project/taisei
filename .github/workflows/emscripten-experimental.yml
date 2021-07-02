@@ -1,0 +1,88 @@
+name: 'Test Build (Emscripten Experimental)'
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Test Builds"]
+    branches: [master]
+    types:
+      - completed
+      - requested
+  schedule:
+    # run every friday at 20:00
+    - cron: '0 20 * * 5'
+
+env:
+  MESON_VERSION: '0.56.2'
+  EM_VERSION: 'tot'
+  EM_CACHE_FOLDER: 'emsdk'
+
+jobs:
+  emscripten-weekly-latest:
+    name: 'Emscripten'
+    if: "!contains(github.event.head_commit.message, '[skip ci]') && ${{ github.event.workflow_run.conclusion == 'success' }}"
+    runs-on: ubuntu-20.04
+    continue-on-error: true
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - name: Install Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Tools
+      run: >
+        sudo apt update || true
+
+        sudo apt install -y -qq
+        python3-docutils
+        python3-pip
+        git
+
+        pip install
+        meson==${{ env.MESON_VERSION }}
+        ninja
+        zstandard
+
+    - name: Install Emscripten SDK
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git ${{ env.EM_CACHE_FOLDER }}
+        ${{ env.EM_CACHE_FOLDER }}/emsdk install ${{ env.EM_VERSION }} || true
+        ${{ env.EM_CACHE_FOLDER }}/emsdk activate ${{ env.EM_VERSION }}
+
+    - name: Verify Emscripten SDK
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        emcc -v
+        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
+        EOF
+
+    - name: Configure
+      run: >
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+
+        meson setup build/
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
+        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --prefix=$(pwd)/build-test
+
+        meson configure
+        -Dbuild.cpp_std=gnu++14
+        build/
+
+    - name: Build
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        meson compile tar -C build/ --verbose
+        ninja zip -C build/
+
+    - name: Upload Log
+      uses: actions/upload-artifact@v2
+      with:
+        name: taisei_emscripten_latest_build_log
+        path: build/meson-logs/meson-log.txt
