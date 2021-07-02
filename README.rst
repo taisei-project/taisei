@@ -102,7 +102,7 @@ _______________________
 
 -  Python >= 3.6
 -  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
--  meson >= 0.56.0
+-  meson >= 0.53.0
 -  ``gcc`` or ``clang``
 
 Obtaining Source Code
