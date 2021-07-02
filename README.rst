@@ -77,6 +77,7 @@ Required
 
 -  OpenGL >= 3.3, or OpenGL ES >= 3.0
 -  SDL2 >= 2.0.10
+-  cglm >= 0.7.8
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
 -  libzip >= 1.5.0 (>= 1.7.0 recommended)
@@ -91,9 +92,10 @@ Optional
 -  OpenSSL (for a better SHA-256 implementation; used in shader cache)
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
--  `ANGLE <https://github.com/google/angle>`__ (for ANGLE support, useful for Windows builds)
--  GameMode headers (Linux only; for automatic `GameMode
-   <https://github.com/FeralInteractive/gamemode>`__ integration)
+-  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
+   flaky/non-existent OpenGL support, such as Windows)
+-  GameMode headers (Linux only; for automatic
+   `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
 
 Build-Time Dependenices
 _______________________
@@ -106,32 +108,35 @@ _______________________
 Obtaining Source Code
 ^^^^^^^^^^^^^^^^^^^^^
 
-You can obtain the source code of the stable releases from the
-`Releases <https://github.com/taisei-project/taisei/releases>`__ page on
-GitHub, alongside the binaries. (Note that you **MUST** use the releases page,
-as the ``Download ZIP`` link on the main repo *does not* include all the code
-necessary to build the game.)
+Source
+______
 
-You can also grab the latest code from git using the following commands:
+We recommend fetching the source code using ``git``:
 
 ::
 
-    git clone https://github.com/taisei-project/taisei
-    cd taisei
-    git submodule update --init --recursive
+    git clone --recurse-submodules https://github.com/taisei-project/taisei
 
 You should also run ``git submodule update`` whenever you pull in
-new code, checkout another branch, or perform any ``git`` actions. The ``pull``
-and ``checkout`` helper scripts can do that for you automatically.
+new code, checkout another branch, or perform any ``git`` actions. The ``./pull``
+and ``./checkout`` helper scripts can do that for you automatically.
 
-**Important:** Again, make sure you download the source code from either the
-``Releases`` page *or* using ``git clone``. The ``Download ZIP`` link *will not
-work!*
+Archive
+_______
+
+⚠️ **NOTE**: Due to the way GitHub packages source code, the ``Download ZIP``
+link on the main repo *does not work*.
+
+This is due to the fact that GitHub does not package submodules alongside source
+code when it automatically generates ``.zip`` files. We've instead created those
+archives manually, and you **MUST** download the archive from
+`Releases <https://github.com/taisei-project/taisei/releases>`__ page.
 
 Compiling Source Code
 ^^^^^^^^^^^^^^^^^^^^^
 
-Currently, we recommend building Taisei on a \*nix or macOS-based system.
+Currently, we recommend building Taisei on a POSIX-like system (Linux, macOS,
+etc).
 
 While Taisei is highly configurable, the easiest way to compile the code for
 your host machine is:
@@ -141,13 +146,6 @@ your host machine is:
     meson setup build/
     meson compile -C build/
     meson install -C build/
-
-You can also package the game into a ``.zip`` archive.
-
-::
-
-    ninja zip -C build/
-
 
 Replays, Screenshots, and Settings Locations
 --------------------------------------------
