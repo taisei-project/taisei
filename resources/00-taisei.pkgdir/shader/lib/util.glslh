@@ -142,6 +142,12 @@ vec2 flip_native_to_bottomleft(vec2 v) {
     return v;
 }
 
+vec2 equirectMapCoord(vec3 v) {
+	float phi = atan(v.y, v.x);
+	float theta = acos(v.z / length(v));
+	return vec2(0.5 + phi / tau, 1 - theta / pi);
+}
+
 vec3 fixCubeCoord(vec3 v) {
 	return v.xzy * vec3(1, -1, 1);
 }
