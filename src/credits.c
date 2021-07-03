@@ -218,13 +218,14 @@ static void credits_add(char *data, int time) {
 static void credits_skysphere_draw(vec3 pos) {
 	r_state_push();
 	r_disable(RCAP_DEPTH_TEST);
+	r_cull(CULL_FRONT);
 	r_shader("stage6_sky");
-	r_uniform_sampler("tex", "stage6/sky");
+	r_uniform_sampler("skybox", "stage6/sky");
 
 	r_mat_mv_push();
 	r_mat_mv_translate_v(stage_3d_context.cam.pos);
 	r_mat_mv_scale(50, 50, 50);
-	r_draw_model("skysphere");
+	r_draw_model("cube");
 	r_mat_mv_pop();
 	r_enable(RCAP_DEPTH_TEST);
 	r_state_pop();
@@ -258,7 +259,7 @@ static void credits_towerwall_draw(vec3 pos) {
 	r_draw_model("credits/tower");
 
 	r_shader("envmap_reflect");
-	r_uniform_sampler("tex", "stage6/sky");
+	r_uniform_sampler("envmap", "stage6/sky");
 
 	mat4 camera_trans, inv_camera_trans;
 	glm_mat4_identity(camera_trans);
@@ -568,9 +569,9 @@ void credits_preload(void) {
 		"credits/tower_roughness",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
-		"credits/tower",
 		"credits/metal_columns",
-		"skysphere",
+		"credits/tower",
+		"cube",
 	NULL);
 }
 

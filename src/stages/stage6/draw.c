@@ -129,7 +129,7 @@ static void stage6_towertop_draw(vec3 pos) {
 	r_draw_model("stage6/spires");
 
 	r_shader("envmap_reflect");
-	r_uniform_sampler("tex", "stage6/sky");
+	r_uniform_sampler("envmap", "stage6/sky");
 
 	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
 
@@ -159,13 +159,14 @@ static void stage6_skysphere_draw(vec3 pos) {
 	r_state_push();
 
 	r_disable(RCAP_DEPTH_TEST);
+	r_cull(CULL_FRONT);
 	r_shader("stage6_sky");
-	r_uniform_sampler("tex", "stage6/sky");
+	r_uniform_sampler("skybox", "stage6/sky");
 
 	r_mat_mv_push();
 	r_mat_mv_translate_v(stage_3d_context.cam.pos);
 	r_mat_mv_scale(50, 50, 50);
-	r_draw_model("skysphere");
+	r_draw_model("cube");
 
 	r_shader("sprite_default");
 
@@ -196,6 +197,11 @@ static void stage6_skysphere_draw(vec3 pos) {
 
 void stage6_draw(void) {
 	Stage3DSegment segs[] = {
+		/*
+		 * TODO: Render the skybox last, so that most of it can be
+		 * rejected by the depth test. This doesn't work right now
+		 * for some reason.
+		 */
 		{ stage6_skysphere_draw, stage6_skysphere_pos },
 		{ stage6_towertop_draw, stage6_towertop_pos },
 	};
