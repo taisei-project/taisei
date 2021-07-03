@@ -3,7 +3,7 @@
 #include "lib/render_context.glslh"
 #include "interface/pbr.glslh"
 
-UNIFORM(20) sampler2D envmap;
+UNIFORM(20) samplerCube envmap;
 UNIFORM(21) mat4 inv_camera_transform;
 
 void main(void) {
@@ -35,10 +35,9 @@ void main(void) {
 	vec3 color = ambient * ambient_color + Lo;
 
 	vec3 reflected_ray = mat3(inv_camera_transform) * reflect(pos, p.normal);
-	vec2 texCoord = equirectMapCoord(reflected_ray);
-
-	float r = 1 - p.roughness;
-	color += (r * r) * texture(envmap, texCoord).rgb * mix(vec3(0.5), p.albedo, p.metallic);
+	vec3 reflection = texture(envmap, fixCubeCoord(reflected_ray)).rgb;
+	float r = (1 - p.roughness);
+	color += (r * r) * reflection * mix(vec3(0.5), p.albedo, p.metallic);
 
 	color = PBR_TonemapReinhard(color);
 	color = PBR_GammaCorrect(color);
