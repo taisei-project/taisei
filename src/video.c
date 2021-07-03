@@ -525,6 +525,10 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	}
 }
 
+SDL_Window *video_get_window(void) {
+	return video.window;
+}
+
 void video_set_fullscreen(bool fullscreen) {
 	video_set_mode(
 		SDL_GetWindowDisplayIndex(video.window),

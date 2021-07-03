@@ -86,5 +86,6 @@ VideoMode video_get_mode(uint idx, bool fullscreen);
 uint video_get_num_modes(bool fullscreen);
 VideoMode video_get_current_mode(void);
 double video_get_scaling_factor(void);
+SDL_Window *video_get_window(void);
 
 #endif // IGUARD_video_h
