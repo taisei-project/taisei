@@ -100,10 +100,11 @@ Optional
 Build-Time Dependenices
 _______________________
 
+-  ``gcc`` or ``clang``
+-  meson >= 0.53.0
 -  Python >= 3.6
 -  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
--  meson >= 0.53.0
--  ``gcc`` or ``clang``
+-  `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
 
 Obtaining Source Code
 ^^^^^^^^^^^^^^^^^^^^^
