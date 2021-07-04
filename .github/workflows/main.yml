@@ -10,6 +10,7 @@ on:
       - "**.yml"
       - "**.yaml"
       - "**.build"
+      - "**.ini"
   pull_request:
     paths:
       - "**.c"
@@ -17,6 +18,7 @@ on:
       - "**.yml"
       - "**.yaml"
       - "**.build"
+      - "**.ini"
 
 env:
   MESON_VERSION: '0.56.2'
@@ -240,21 +242,25 @@ jobs:
         ${{ env.EM_CACHE_FOLDER }}/emsdk activate ${{ env.EM_VERSION }}
 
     - name: Verify Emscripten SDK
-      run: |
+      run: >
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+
         emcc -v
-        tee misc/ci/emscripten-ephemeral-ci.ini <<EOF >/dev/null
-        [constants]
-        toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
-        EOF
+
+        sed -i
+        "s+toolchain = ''+toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'+g"
+        misc/ci/emscripten-build-ci.ini
+
+        echo "Emscripten Machine File:"
+
+        cat misc/ci/emscripten-build-ci.ini
 
     - name: Configure
       run: >
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/
-        --cross-file misc/ci/emscripten-ephemeral-ci.ini
-        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --cross-file misc/ci/emscripten-build-ci.ini
         --prefix=$(pwd)/build-test
 
         meson configure
