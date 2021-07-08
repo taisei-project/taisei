@@ -14,6 +14,7 @@
 #include "coroutine.h"
 #include "util/glm.h"
 #include "video.h"
+#include "entity.h"
 
 #define CAMCTRL_MOVE_SPEED      0.1
 // for scroll wheel move speed adjustment
@@ -67,6 +68,15 @@ static bool wheel_event(SDL_Event *e, void *a) {
 	return false;
 }
 
+static void nodraw(EntityInterface *ent) { }
+
+static void predraw(EntityInterface *ent, void *a) {
+	if(ent) {
+		// super lame hack to hide everything
+		ent->draw_func = nodraw;
+	}
+}
+
 TASK(camera_control, { Camera3D *cam; }) {
 	Camera3D *cam = ARGS.cam;
 
@@ -86,6 +96,8 @@ TASK(camera_control, { Camera3D *cam; }) {
 	events_register_handler(
 		&(EventHandler) { .proc = wheel_event, .arg = &move_speed, .event_type = SDL_MOUSEWHEEL }
 	);
+
+	ent_hook_pre_draw(predraw, NULL);
 
 	Font *fnt = res_font("monotiny");
 	StageText *txt = stagetext_add(
