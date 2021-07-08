@@ -256,7 +256,7 @@ jobs:
 
         meson setup build/
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
-        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --cross-file misc/ci/emscripten-build-ci.ini
         --prefix=$(pwd)/build-test
 
         meson configure
