@@ -6,10 +6,9 @@ on:
     branches: [master]
     types:
       - completed
-      - requested
   schedule:
-    # run every friday at 20:00
-    - cron: '0 20 * * 5'
+    # run every thursday at 10:00
+    - cron: '0 10 * * 4'
 
 env:
   MESON_VERSION: '0.56.2'
@@ -68,7 +67,7 @@ jobs:
 
         meson setup build/
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
-        --cross-file misc/ci/emscripten-build-test-ci.ini
+        --cross-file misc/ci/emscripten-build-ci.ini
         --prefix=$(pwd)/build-test
 
         meson configure
