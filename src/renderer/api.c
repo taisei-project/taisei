@@ -178,17 +178,18 @@ void r_blend_unpack(BlendMode mode, UnpackedBlendMode *dest) {
 
 const UniformTypeInfo* r_uniform_type_info(UniformType type) {
 	static UniformTypeInfo uniform_typemap[] = {
-		[UNIFORM_FLOAT]   = {  1, sizeof(float) },
-		[UNIFORM_VEC2]    = {  2, sizeof(float) },
-		[UNIFORM_VEC3]    = {  3, sizeof(float) },
-		[UNIFORM_VEC4]    = {  4, sizeof(float) },
-		[UNIFORM_INT]     = {  1, sizeof(int)   },
-		[UNIFORM_IVEC2]   = {  2, sizeof(int)   },
-		[UNIFORM_IVEC3]   = {  3, sizeof(int)   },
-		[UNIFORM_IVEC4]   = {  4, sizeof(int)   },
-		[UNIFORM_SAMPLER] = {  1, sizeof(void*) },
-		[UNIFORM_MAT3]    = {  9, sizeof(float) },
-		[UNIFORM_MAT4]    = { 16, sizeof(float) },
+		[UNIFORM_FLOAT]        = {  1, sizeof(float) },
+		[UNIFORM_VEC2]         = {  2, sizeof(float) },
+		[UNIFORM_VEC3]         = {  3, sizeof(float) },
+		[UNIFORM_VEC4]         = {  4, sizeof(float) },
+		[UNIFORM_INT]          = {  1, sizeof(int)   },
+		[UNIFORM_IVEC2]        = {  2, sizeof(int)   },
+		[UNIFORM_IVEC3]        = {  3, sizeof(int)   },
+		[UNIFORM_IVEC4]        = {  4, sizeof(int)   },
+		[UNIFORM_SAMPLER_2D]   = {  1, sizeof(void*) },
+		[UNIFORM_SAMPLER_CUBE] = {  1, sizeof(void*) },
+		[UNIFORM_MAT3]         = {  9, sizeof(float) },
+		[UNIFORM_MAT4]         = { 16, sizeof(float) },
 	};
 
 	assert((uint)type < sizeof(uniform_typemap)/sizeof(UniformTypeInfo));
@@ -717,7 +718,20 @@ bool r_screenshot(Pixmap *out) {
 
 // uniforms garbage; hope your compiler is smart enough to inline most of this
 
-#define ASSERT_UTYPE(uniform, type) do { if(uniform) assert(r_uniform_type(uniform) == type); } while(0)
+// TODO: verify sampler-to-texture type consistency?
+
+#define ASSERT_UTYPE(uniform, type) do { \
+	if(uniform) { \
+		assert(r_uniform_type(uniform) == type); \
+	} \
+} while(0)
+
+#define ASSERT_UTYPE_SAMPLER(uniform) do { \
+	if(uniform) { \
+		attr_unused UniformType _utype = r_uniform_type(uniform); \
+		assert(UNIFORM_TYPE_IS_SAMPLER(_utype)); \
+	} \
+} while(0)
 
 void r_uniform_ptr_unsafe(Uniform *uniform, uint offset, uint count, void *data) {
 	if(uniform) B.uniform(uniform, offset, count, data);
@@ -1001,7 +1015,7 @@ void _r_uniform_ivec4_array(const char *uniform, uint offset, uint count, ivec4_
 }
 
 void _r_uniform_ptr_sampler_ptr(Uniform *uniform, Texture *tex) {
-	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	ASSERT_UTYPE_SAMPLER(uniform);
 	if(uniform) B.uniform(uniform, 0, 1, &tex);
 }
 
@@ -1010,7 +1024,7 @@ void _r_uniform_sampler_ptr(const char *uniform, Texture *tex) {
 }
 
 void _r_uniform_ptr_sampler(Uniform *uniform, const char *tex) {
-	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	ASSERT_UTYPE_SAMPLER(uniform);
 	if(uniform) B.uniform(uniform, 0, 1, (Texture*[]) { res_texture(tex) });
 }
 
@@ -1019,7 +1033,7 @@ void _r_uniform_sampler(const char *uniform, const char *tex) {
 }
 
 void _r_uniform_ptr_sampler_array_ptr(Uniform *uniform, uint offset, uint count, Texture *values[count]) {
-	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	ASSERT_UTYPE_SAMPLER(uniform);
 	if(uniform && count) B.uniform(uniform, offset, count, values);
 }
 
@@ -1028,7 +1042,7 @@ void _r_uniform_sampler_array_ptr(const char *uniform, uint offset, uint count, 
 }
 
 void _r_uniform_ptr_sampler_array(Uniform *uniform, uint offset, uint count, const char *values[count]) {
-	ASSERT_UTYPE(uniform, UNIFORM_SAMPLER);
+	ASSERT_UTYPE_SAMPLER(uniform);
 	if(uniform && count) {
 		Texture *arr[count], **aptr = arr, **aend = aptr + count;
 		const char **vptr = values;

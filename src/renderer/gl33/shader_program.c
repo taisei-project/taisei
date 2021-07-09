@@ -11,6 +11,7 @@
 #include "gl33.h"
 #include "shader_program.h"
 #include "shader_object.h"
+#include "texture.h"
 #include "../glcommon/debug.h"
 #include "../api.h"
 
@@ -136,18 +137,19 @@ static void uget_mat4(Uniform *uniform, uint count, void *data) {
 static struct {
 	void (*setter)(Uniform *uniform, uint offset, uint count, const void *data);
 	void (*getter)(Uniform *uniform, uint count, void *data);
-} type_to_accessors[] = {
-	[UNIFORM_FLOAT]   = { uset_float, uget_float },
-	[UNIFORM_VEC2]    = { uset_vec2,  uget_vec2 },
-	[UNIFORM_VEC3]    = { uset_vec3,  uget_vec3 },
-	[UNIFORM_VEC4]    = { uset_vec4,  uget_vec4 },
-	[UNIFORM_INT]     = { uset_int,   uget_int },
-	[UNIFORM_IVEC2]   = { uset_ivec2, uget_ivec2 },
-	[UNIFORM_IVEC3]   = { uset_ivec3, uget_ivec3 },
-	[UNIFORM_IVEC4]   = { uset_ivec4, uget_ivec4 },
-	[UNIFORM_SAMPLER] = { uset_int,   uget_int },
-	[UNIFORM_MAT3]    = { uset_mat3,  uget_mat3 },
-	[UNIFORM_MAT4]    = { uset_mat4,  uget_mat4 },
+} type_to_accessors[]      = {
+	[UNIFORM_FLOAT]        = { uset_float, uget_float },
+	[UNIFORM_VEC2]         = { uset_vec2,  uget_vec2 },
+	[UNIFORM_VEC3]         = { uset_vec3,  uget_vec3 },
+	[UNIFORM_VEC4]         = { uset_vec4,  uget_vec4 },
+	[UNIFORM_INT]          = { uset_int,   uget_int },
+	[UNIFORM_IVEC2]        = { uset_ivec2, uget_ivec2 },
+	[UNIFORM_IVEC3]        = { uset_ivec3, uget_ivec3 },
+	[UNIFORM_IVEC4]        = { uset_ivec4, uget_ivec4 },
+	[UNIFORM_SAMPLER_2D]   = { uset_int,   uget_int },
+	[UNIFORM_SAMPLER_CUBE] = { uset_int,   uget_int },
+	[UNIFORM_MAT3]         = { uset_mat3,  uget_mat3 },
+	[UNIFORM_MAT4]         = { uset_mat4,  uget_mat4 },
 };
 
 typedef struct MagicUniformSpec {
@@ -219,28 +221,27 @@ static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 	Uniform *uniform = value;
 
 	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
-	if(uniform->type == UNIFORM_SAMPLER) {
+	if(UNIFORM_TYPE_IS_SAMPLER(uniform->type)) {
 		Uniform *size_uniform = uniform->size_uniform;
 
 		for(uint i = 0; i < uniform->array_size; ++i) {
 			Texture *tex = uniform->textures[i];
+			GLuint preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
+			GLuint unit = gl33_bind_texture(tex, true, preferred_unit);
 
-			if(tex == NULL) {
-				continue;
-			}
-
-			if(glext.issues.avoid_sampler_uniform_updates) {
-				int preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
-				attr_unused GLuint unit = gl33_bind_texture(tex, true, preferred_unit);
-				assert(unit == preferred_unit);
-			} else {
-				GLuint unit = gl33_bind_texture(tex, true, -1);
+			if(unit != preferred_unit) {
 				gl33_update_uniform(uniform, i, 1, &unit);
 			}
 
 			if(size_uniform) {
 				uint w, h;
-				r_texture_get_size(tex, 0, &w, &h);
+
+				if(tex) {
+					r_texture_get_size(tex, 0, &w, &h);
+				} else {
+					w = h = 0;
+				}
+
 				vec2_noalign size = { w, h };
 				gl33_update_uniform(size_uniform, i, 1, &size);
 				gl33_commit_uniform(size_uniform);
@@ -273,8 +274,15 @@ void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	}
 
 	// special case: for sampler uniforms, data is an array of Texture pointers that we'll have to bind later.
-	if(uniform->type == UNIFORM_SAMPLER) {
+	if(UNIFORM_TYPE_IS_SAMPLER(uniform->type)) {
 		Texture **textures = (Texture**)data;
+
+		for(uint i = 0; i < count; ++i) {
+			if(textures[i]) {
+				assert(gl33_texture_sampler_compatible(textures[i], uniform->type));
+			}
+		}
+
 		memcpy(uniform->textures + offset, textures, sizeof(Texture*) * count);
 	} else {
 		gl33_update_uniform(uniform, offset, count, data);
@@ -311,18 +319,18 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		}
 
 		switch(type) {
-			case GL_FLOAT:        uni.type = UNIFORM_FLOAT;   break;
-			case GL_FLOAT_VEC2:   uni.type = UNIFORM_VEC2;    break;
-			case GL_FLOAT_VEC3:   uni.type = UNIFORM_VEC3;    break;
-			case GL_FLOAT_VEC4:   uni.type = UNIFORM_VEC4;    break;
-			case GL_INT:          uni.type = UNIFORM_INT;     break;
-			case GL_INT_VEC2:     uni.type = UNIFORM_IVEC2;   break;
-			case GL_INT_VEC3:     uni.type = UNIFORM_IVEC3;   break;
-			case GL_INT_VEC4:     uni.type = UNIFORM_IVEC4;   break;
-			case GL_SAMPLER_2D:   uni.type = UNIFORM_SAMPLER; break;
-			case GL_SAMPLER_CUBE: uni.type = UNIFORM_SAMPLER; break;
-			case GL_FLOAT_MAT3:   uni.type = UNIFORM_MAT3;    break;
-			case GL_FLOAT_MAT4:   uni.type = UNIFORM_MAT4;    break;
+			case GL_FLOAT:        uni.type = UNIFORM_FLOAT;        break;
+			case GL_FLOAT_VEC2:   uni.type = UNIFORM_VEC2;         break;
+			case GL_FLOAT_VEC3:   uni.type = UNIFORM_VEC3;         break;
+			case GL_FLOAT_VEC4:   uni.type = UNIFORM_VEC4;         break;
+			case GL_INT:          uni.type = UNIFORM_INT;          break;
+			case GL_INT_VEC2:     uni.type = UNIFORM_IVEC2;        break;
+			case GL_INT_VEC3:     uni.type = UNIFORM_IVEC3;        break;
+			case GL_INT_VEC4:     uni.type = UNIFORM_IVEC4;        break;
+			case GL_SAMPLER_2D:   uni.type = UNIFORM_SAMPLER_2D;   break;
+			case GL_SAMPLER_CUBE: uni.type = UNIFORM_SAMPLER_CUBE; break;
+			case GL_FLOAT_MAT3:   uni.type = UNIFORM_MAT3;         break;
+			case GL_FLOAT_MAT4:   uni.type = UNIFORM_MAT4;         break;
 
 			default:
 				log_warn("Uniform '%s' is of an unsupported type 0x%04x and will be ignored.", name, type);
@@ -352,9 +360,9 @@ static bool cache_uniforms(ShaderProgram *prog) {
 		uni.location = loc;
 		uni.array_size = size;
 
-		if(uni.type == UNIFORM_SAMPLER) {
+		if(UNIFORM_TYPE_IS_SAMPLER(uni.type)) {
 			uni.elem_size = sizeof(GLint);
-			uni.textures = calloc(uni.array_size, sizeof(Texture*));
+			uni.textures = calloc(uni.array_size, sizeof(*uni.textures));
 		} else {
 			uni.elem_size = typeinfo->element_size * typeinfo->elements;
 		}
@@ -380,7 +388,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		Uniform *new_uni = memdup(&uni, sizeof(uni));
 
-		if(uni.type == UNIFORM_SAMPLER) {
+		if(UNIFORM_TYPE_IS_SAMPLER(uni.type)) {
 			list_push(&sampler_uniforms, new_uni);
 
 			if(glext.issues.avoid_sampler_uniform_updates) {
@@ -413,7 +421,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 	while(iter.has_data) {
 		Uniform *u = iter.value;
 
-		if(u->type == UNIFORM_SAMPLER) {
+		if(UNIFORM_TYPE_IS_SAMPLER(u->type)) {
 			const char *sampler_name = iter.key;
 			const char size_suffix[] = "_SIZE";
 			char size_uniform_name[strlen(sampler_name) + sizeof(size_suffix)];
@@ -446,7 +454,7 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 void gl33_unref_texture_from_samplers(Texture *tex) {
 	for(Uniform *u = sampler_uniforms; u; u = u->next) {
-		assert(u->type == UNIFORM_SAMPLER);
+		assert(UNIFORM_TYPE_IS_SAMPLER(u->type));
 		assert(u->textures != NULL);
 
 		for(Texture **slot = u->textures; slot < u->textures + u->array_size; ++slot) {
@@ -476,7 +484,7 @@ static void print_info_log(GLuint prog) {
 static void *free_uniform(const char *key, void *data, void *arg) {
 	Uniform *uniform = data;
 
-	if(uniform->type == UNIFORM_SAMPLER) {
+	if(UNIFORM_TYPE_IS_SAMPLER(uniform->type)) {
 		list_unlink(&sampler_uniforms, uniform);
 	}
 
