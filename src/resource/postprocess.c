@@ -67,7 +67,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	UniformType type = r_uniform_type(uni);
 	const UniformTypeInfo *type_info = r_uniform_type_info(type);
 
-	if(type == UNIFORM_SAMPLER) {
+	if(UNIFORM_TYPE_IS_SAMPLER(type)) {
 		Texture *tex = get_resource_data(RES_TEXTURE, value, ldata->resflags);
 
 		if(tex) {

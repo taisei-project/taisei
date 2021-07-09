@@ -576,3 +576,18 @@ const char *gl33_texture_get_debug_label(Texture *tex) {
 void gl33_texture_set_debug_label(Texture *tex, const char *label) {
 	glcommon_set_debug_label(tex->debug_label, "Texture", GL_TEXTURE, tex->gl_handle, label);
 }
+
+bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type) {
+	assert(UNIFORM_TYPE_IS_SAMPLER(sampler_type));
+
+	switch(tex->bind_target) {
+		case GL_TEXTURE_2D:
+			return sampler_type == UNIFORM_SAMPLER_2D;
+
+		case GL_TEXTURE_CUBE_MAP:
+			return sampler_type == UNIFORM_SAMPLER_CUBE;
+
+		default:
+			UNREACHABLE;
+	}
+}

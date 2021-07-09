@@ -280,11 +280,15 @@ typedef enum UniformType {
 	UNIFORM_IVEC2,
 	UNIFORM_IVEC3,
 	UNIFORM_IVEC4,
-	UNIFORM_SAMPLER,
+	UNIFORM_SAMPLER_2D,
+	UNIFORM_SAMPLER_CUBE,
 	UNIFORM_MAT3,
 	UNIFORM_MAT4,
 	UNIFORM_UNKNOWN,
 } UniformType;
+
+#define UNIFORM_TYPE_IS_SAMPLER(ut) \
+	((ut) == UNIFORM_SAMPLER_2D || (ut) == UNIFORM_SAMPLER_CUBE)
 
 typedef struct UniformTypeInfo {
 	// Refers to vector elements, not array elements.

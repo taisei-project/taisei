@@ -44,5 +44,6 @@ void gl44_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_clear(Texture *tex, const Color *clr);
 void gl33_texture_destroy(Texture *tex);
 bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
+bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type);
 
 #endif // IGUARD_renderer_gl33_texture_h
