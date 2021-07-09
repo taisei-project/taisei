@@ -35,7 +35,27 @@ GLenum gl33_prim_to_gl_prim(Primitive prim);
 void gl33_begin_draw(VertexArray *varr, void **state);
 void gl33_end_draw(void *state);
 
-uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit);
+// Allocates an OpenGL texturing unit for `texture`.
+// `texture->binding_unit` is set to point to the gl33 TextureUnit struct.
+// The texture will become bound to the unit on next state sync.
+// To force a sync, call gl33_sync_texunit(texture->binding_unit, ...) next.
+//
+// `texture` may be NULL, in which case a unit with empty binding will be choosen.
+//
+// If `lock_target` is not 0, the unit becomes "locked", so that subsequent calls to
+// gl33_bind_texture can not clobber it. The lock remains active until gl33_sync_texunit
+// is called with prepare_rendering=true, which normally happens before every draw call.
+//
+// The non-0 value of `lock_target` must be a valid texture target, like TEXTURE_2D.
+// If `texture` is not NULL, then `lock_target` must be equal to `texture->binding_target`.
+// Distinct values are useful with NULL textures: gl33_bind_texture will always distinct samplers
+// for distinct lock_target values.
+//
+// If `preferred_unit` is >= 0, it suggests which texturing unit to choose. This is a mere hint,
+// it is not guaranteed to be honored.
+//
+// Returns the numeric ID of the choosen texturing unit.
+uint gl33_bind_texture(Texture *texture, GLuint lock_target, int preferred_unit);
 
 void gl33_bind_vao(GLuint vao);
 void gl33_sync_vao(void);
