@@ -38,8 +38,8 @@ typedef struct TextureUnit {
 	Texture *pending;
 	GLuint gl_handle;
 	GLenum bind_target;
+	GLenum locked_for_target;
 	int old_prio;
-	bool locked;
 } TextureUnit;
 
 #define TU_INDEX(unit) ((ptrdiff_t)((unit) - R.texunits.array))
@@ -541,7 +541,7 @@ static void gl33_activate_texunit(TextureUnit *unit) {
 }
 
 static int gl33_texunit_priority(TextureUnit *u) {
-	if(u->locked) {
+	if(u->locked_for_target) {
 		return 3;
 	}
 
@@ -573,10 +573,11 @@ attr_unused static void gl33_dump_texunit(TextureUnit *u) {
 	char buf1[128], buf2[128];
 	texture_str(u->active, buf1, sizeof(buf1));
 	texture_str(u->pending, buf2, sizeof(buf2));
-	log_debug("[Unit %u | prio=%i | target=0x%x] bound: %s; pending: %s",
+	log_debug("[Unit %u | prio=%i | target=0x%x | lock=0x%x] bound: %s; pending: %s",
 		(uint)TU_INDEX(u),
 		gl33_texunit_priority(u),
 		u->bind_target,
+		u->locked_for_target,
 		buf1,
 		buf2
 	);
@@ -618,16 +619,20 @@ static void gl33_relocate_texuint(TextureUnit *unit) {
 }
 
 attr_nonnull(1)
-static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, bool lock) {
-	assert(!unit->locked);
+static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, GLuint lock_target) {
+	assert(!unit->locked_for_target);
+
+	if(tex && lock_target) {
+		assert(tex->bind_target == lock_target);
+	}
 
 	if(unit->pending == tex) {
 		if(tex) {
 			tex->binding_unit = unit;
 		}
 
-		if(lock) {
-			unit->locked = true;
+		if(lock_target) {
+			unit->locked_for_target = lock_target;
 		}
 
 		gl33_relocate_texuint(unit);
@@ -650,8 +655,8 @@ static void gl33_set_texunit_binding(TextureUnit *unit, Texture *tex, bool lock)
 		tex->binding_unit = unit;
 	}
 
-	if(lock) {
-		unit->locked = true;
+	if(lock_target) {
+		unit->locked_for_target = lock_target;
 	}
 
 	gl33_relocate_texuint(unit);
@@ -675,7 +680,6 @@ static void gl33_bind_handle_to_texunit(TextureUnit *u, GLenum target, GLuint ha
 
 	if(target != u->bind_target && u->bind_target != 0) {
 		// If changing target, clear the old binding.
-		// Probably not strictly necessary, but safer and more debuggable.
 		glBindTexture(u->bind_target, 0);
 
 #ifdef GL33_DRAW_STATS
@@ -731,12 +735,13 @@ void gl33_sync_texunit(TextureUnit *unit, bool prepare_rendering, bool ensure_ac
 			gl33_texture_prepare(unit->active);
 		}
 
-		unit->locked = false;
+		unit->locked_for_target = 0;
 		gl33_relocate_texuint(unit);
 	}
 }
 
 void gl33_sync_texunits(bool prepare_rendering) {
+// 	gl33_dump_texunits();
 	for(TextureUnit *u = R.texunits.array; u < R.texunits.array + R.texunits.limit; ++u) {
 		gl33_sync_texunit(u, prepare_rendering, false);
 	}
@@ -882,19 +887,22 @@ static TextureUnit *gl33_get_free_texunit(void) {
 		log_warn("Ran out of texturing units, expect rendering errors!");
 	}
 
-	assert(!u->locked);
+	assert(!u->locked_for_target);
 	return u;
 }
 
-uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit) {
-	if(UNLIKELY(texture == NULL)) {
+uint gl33_bind_texture(Texture *texture, GLuint lock_target, int preferred_unit) {
+	if(texture == NULL) {
 		TextureUnit *unit = NULL;
 
 		if(preferred_unit >= 0) {
 			assert(preferred_unit < R.texunits.limit);
 			unit = &R.texunits.array[preferred_unit];
 
-			if(unit->pending != NULL && unit->locked) {
+			if(
+				unit->locked_for_target &&
+				(unit->pending != NULL || unit->locked_for_target != lock_target)
+			) {
 				// someone else already took this unit for rendering
 				unit = NULL;
 			}
@@ -905,24 +913,30 @@ uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit)
 			unit = gl33_get_free_texunit();
 		}
 
-		if(unit->locked) {
+		if(unit->locked_for_target) {
 			gl33_relocate_texuint(unit);
 		} else {
-			gl33_set_texunit_binding(unit, NULL, for_rendering);
+			gl33_set_texunit_binding(unit, NULL, lock_target);
 		}
 
 		assert(unit->pending == NULL);
 		return TU_INDEX(unit);
 	}
 
+	assert(!lock_target || lock_target == texture->bind_target);
+
 	if(glext.issues.avoid_sampler_uniform_updates && preferred_unit >= 0) {
 		assert(preferred_unit < R.texunits.limit);
 		TextureUnit *u = &R.texunits.array[preferred_unit];
 
 		if(u->pending == texture) {
-			u->locked |= for_rendering;
+			if(!u->locked_for_target) {
+				u->locked_for_target = lock_target;
+			} else {
+				assert(u->locked_for_target == lock_target);
+			}
 		} else {
-			gl33_set_texunit_binding(u, texture, for_rendering);
+			gl33_set_texunit_binding(u, texture, lock_target);
 		}
 
 		// In this case the texture may be bound to more than one unit.
@@ -930,9 +944,12 @@ uint gl33_bind_texture(Texture *texture, bool for_rendering, int preferred_unit)
 		// most recent binding.
 		texture->binding_unit = u;
 	} else if(!texture->binding_unit) {
-		gl33_set_texunit_binding(gl33_get_free_texunit(), texture, for_rendering);
+		gl33_set_texunit_binding(gl33_get_free_texunit(), texture, lock_target);
 	} else /* if(for_rendering) */ {
-		texture->binding_unit->locked |= for_rendering;
+		if(!texture->binding_unit->locked_for_target) {
+			texture->binding_unit->locked_for_target = lock_target;
+		}
+
 		gl33_relocate_texuint(texture->binding_unit);
 	}
 
@@ -965,7 +982,7 @@ void gl33_texture_deleted(Texture *tex) {
 
 		if(unit->pending == tex) {
 			unit->pending = NULL;
-			unit->locked = false;
+			unit->locked_for_target = 0;
 			bump = true;
 		}
 

@@ -217,17 +217,30 @@ static void gl33_commit_uniform(Uniform *uniform) {
 	uniform->cache.update_last_idx = 0;
 }
 
+static GLuint get_texture_target(Texture *tex, UniformType utype) {
+	if(tex) {
+		return tex->bind_target;
+	}
+
+	switch(utype) {
+		case UNIFORM_SAMPLER_2D:    return GL_TEXTURE_2D;
+		case UNIFORM_SAMPLER_CUBE:  return GL_TEXTURE_CUBE_MAP;
+		default: UNREACHABLE;
+	}
+}
+
 static void *gl33_sync_uniform(const char *key, void *value, void *arg) {
 	Uniform *uniform = value;
 
 	// special case: for sampler uniforms, we have to construct the actual data from the texture pointers array.
-	if(UNIFORM_TYPE_IS_SAMPLER(uniform->type)) {
+	UniformType utype = uniform->type;
+	if(UNIFORM_TYPE_IS_SAMPLER(utype)) {
 		Uniform *size_uniform = uniform->size_uniform;
 
 		for(uint i = 0; i < uniform->array_size; ++i) {
 			Texture *tex = uniform->textures[i];
 			GLuint preferred_unit = CASTPTR_ASSUME_ALIGNED(uniform->cache.pending, int)[i];
-			GLuint unit = gl33_bind_texture(tex, true, preferred_unit);
+			GLuint unit = gl33_bind_texture(tex, get_texture_target(tex, utype), preferred_unit);
 
 			if(unit != preferred_unit) {
 				gl33_update_uniform(uniform, i, 1, &unit);
