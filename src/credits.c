@@ -33,6 +33,12 @@ static struct {
 
 	ManagedFramebufferGroup *mfb_group;
 	Framebuffer *fb;
+
+	struct {
+		PBRModel tower;
+	} models;
+
+	Texture *env_map;
 } credits;
 
 #define CREDITS_ENTRY_FADEIN 200.0
@@ -231,43 +237,39 @@ static void credits_skysphere_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static void credits_bg_setup_pbr_lighting(void) {
-	Camera3D *cam = &stage_3d_context.cam;
-
+static void credits_bg_setup_pbr_lighting(Camera3D *cam) {
 	PointLight3D lights[] = {
 		{ {0, 100, 100}, { 1000, 1000, 1000 } },
 	};
 
 	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
-	r_uniform_vec3("ambient_color", 1, 1, 1);
+}
+
+static void credits_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
+	credits_bg_setup_pbr_lighting(cam);
+	glm_vec3_broadcast(1.0f, env->ambient_color);
+	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
+	env->environment_map = credits.env_map;
 }
 
 static void credits_towerwall_draw(vec3 pos) {
 	r_state_push();
 	r_shader("pbr");
 	r_enable(RCAP_DEPTH_TEST);
-	credits_bg_setup_pbr_lighting();
-
-	r_uniform_sampler("tex", "credits/tower_diffuse");
-	r_uniform_sampler("roughness_map", "credits/tower_roughness");
-	r_uniform_sampler("normal_map", "credits/tower_normal");
-	r_uniform_sampler("ambient_map", "credits/tower_ambient");
 
 	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-	r_mat_mv_scale(1,1,1);
-	r_draw_model("credits/tower");
+	r_mat_mv_translate_v(pos);
+
+	PBREnvironment env = { 0 };
+	credits_bg_setup_pbr_env(&stage_3d_context.cam, &env);
+
+	pbr_draw_model(&credits.models.tower, &env);
 
 	r_shader("envmap_reflect");
-	r_uniform_sampler("envmap", "stage6/sky");
-
-	mat4 camera_trans, inv_camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
-	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
-
+	r_uniform_sampler("envmap", env.environment_map);
+	r_uniform_mat4("inv_camera_transform", env.cam_inverse_transform);
 	r_draw_model("credits/metal_columns");
+
 	r_mat_mv_pop();
 	r_state_pop();
 }
@@ -321,6 +323,9 @@ static void credits_init(void) {
 	stage_3d_context.cam.rot.v[2] = -20;
 
 	global.frames = 0;
+
+	credits.env_map = res_texture("stage6/sky");
+	pbr_load_model(&credits.models.tower, "credits/tower", "credits/tower");
 
 	credits_fill();
 	credits.end += 200 + CREDITS_ENTRY_FADEOUT;
@@ -563,10 +568,9 @@ void credits_preload(void) {
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
 		"loading",  // for transition
 		"stage6/sky",
-		"credits/tower_ambient",
-		"credits/tower_diffuse",
-		"credits/tower_normal",
-		"credits/tower_roughness",
+	NULL);
+	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+		"credits/tower",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"credits/metal_columns",

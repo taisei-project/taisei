@@ -31,6 +31,10 @@ void stage5_drawsys_init(void) {
 	stage5_draw_data->stairs.rad = 3.7;
 	stage5_draw_data->stairs.zoffset = 3.2;
 	stage5_draw_data->stairs.roffset = -210;
+
+	pbr_load_model(&stage5_draw_data->models.metal,  "stage5/metal",  "stage5/metal");
+	pbr_load_model(&stage5_draw_data->models.stairs, "stage5/stairs", "stage5/stairs");
+	pbr_load_model(&stage5_draw_data->models.wall,   "stage5/wall",   "stage5/wall");
 }
 
 void stage5_drawsys_shutdown(void) {
@@ -46,9 +50,7 @@ static uint stage5_stairs_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	return linear3dpos(s3d, pos, maxrange, p, r);
 }
 
-static void stage5_bg_setup_pbr_lighting(void) {
-	Camera3D *cam = &stage_3d_context.cam;
-
+static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
 	PointLight3D lights[] = {
 		{ { 1.2 * cam->pos[0], 1.2 * cam->pos[1], cam->pos[2] - 0.2 }, { 235*0.4, 104*0.4, 32*0.4 } },
 		{ { 0, 0, cam->pos[2] - 1}, { 0.2, 0, 13.2 } },
@@ -63,9 +65,11 @@ static void stage5_bg_setup_pbr_lighting(void) {
 	glm_vec3_scale(lights[4].radiance, light_strength, lights[4].radiance);
 
 	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
+}
 
-	float a = 0.1f + light_strength;
-	r_uniform_vec3("ambient_color", a, a, a);
+static void stage5_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
+	stage5_bg_setup_pbr_lighting(cam);
+	glm_vec3_broadcast(0.1f + stage5_draw_data->stairs.light_strength, env->ambient_color);
 }
 
 static void stage5_stairs_draw(vec3 pos) {
@@ -74,27 +78,13 @@ static void stage5_stairs_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
 	r_shader("pbr");
-	stage5_bg_setup_pbr_lighting();
 
-	r_uniform_float("metallic", 0);
-	r_uniform_sampler("tex", "stage5/stairs_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/stairs_roughness");
-	r_uniform_sampler("normal_map", "stage5/stairs_normal");
-	r_uniform_sampler("ambient_map", "stage5/stairs_ambient");
-	r_draw_model("stage5/stairs");
+	PBREnvironment env = { 0 };
+	stage5_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
-	r_uniform_sampler("tex", "stage5/wall_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/wall_roughness");
-	r_uniform_sampler("normal_map", "stage5/wall_normal");
-	r_uniform_sampler("ambient_map", "stage5/wall_ambient");
-	r_draw_model("stage5/wall");
-
-	r_uniform_float("metallic", 1);
-	r_uniform_vec3("ambient_color",0,0,0);
-	r_uniform_sampler("tex", "stage5/metal_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/metal_roughness");
-	r_uniform_sampler("normal_map", "stage5/metal_normal");
-	r_draw_model("stage5/metal");
+	pbr_draw_model(&stage5_draw_data->models.stairs, &env);
+	pbr_draw_model(&stage5_draw_data->models.wall, &env);
+	pbr_draw_model(&stage5_draw_data->models.metal, &env);
 
 	r_mat_mv_pop();
 	r_state_pop();

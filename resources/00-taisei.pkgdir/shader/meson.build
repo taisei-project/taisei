@@ -43,7 +43,6 @@ glsl_files = files(
     'max_to_alpha.frag.glsl',
     'pbr.frag.glsl',
     'pbr.vert.glsl',
-    'pbr_envmap.frag.glsl',
     'player_death.frag.glsl',
     'powersurge_effect.frag.glsl',
     'powersurge_feedback.frag.glsl',

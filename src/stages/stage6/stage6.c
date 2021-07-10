@@ -131,11 +131,11 @@ static void stage6_preload(void) {
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"baryon_feedback",
-		"stage6_sky",
 		"calabi-yau-quintic",
-		"zbuf_fog",
 		"envmap_reflect",
-		"pbr_envmap",
+		"pbr",
+		"stage6_sky",
+		"zbuf_fog",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
 		"lasers/accelerated",
@@ -150,6 +150,13 @@ static void stage6_preload(void) {
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",
+	NULL);
+	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+		"stage6/rim",
+		"stage6/spires",
+		"stage6/stairs",
+		"stage6/tower",
+		"stage6/tower_bottom",
 	NULL);
 	preload_resources(RES_MODEL, RESF_DEFAULT,
 		"cube",

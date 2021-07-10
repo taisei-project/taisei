@@ -12,6 +12,7 @@
 
 #include "global.h"
 #include "util/glm.h"
+#include "resource/model.h"
 
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
@@ -54,6 +55,16 @@ void stage6_drawsys_init(void) {
 	stage6_draw_data->baryon.fbpair.front = stage_add_background_framebuffer("Baryon FB 1", 0.25, 0.5, 1, &cfg);
 	stage6_draw_data->baryon.fbpair.back = stage_add_background_framebuffer("Baryon FB 2", 0.25, 0.5, 1, &cfg);
 	stage6_draw_data->baryon.aux_fb = stage_add_background_framebuffer("Baryon FB AUX", 0.25, 0.5, 1, &cfg);
+
+	stage6_draw_data->envmap = res_texture("stage6/sky");
+	stage6_draw_data->models.calabi_yau_quintic = res_model("stage6/calabi-yau-quintic");
+	stage6_draw_data->models.top_plate = res_model("stage6/top_plate");
+
+	pbr_load_model(&stage6_draw_data->models.rim,          "stage6/rim",          "stage6/rim");
+	pbr_load_model(&stage6_draw_data->models.spires,       "stage6/spires",       "stage6/spires");
+	pbr_load_model(&stage6_draw_data->models.stairs,       "stage6/stairs",       "stage6/stairs");
+	pbr_load_model(&stage6_draw_data->models.tower,        "stage6/tower",        "stage6/tower");
+	pbr_load_model(&stage6_draw_data->models.tower_bottom, "stage6/tower_bottom", "stage6/tower_bottom");
 }
 
 void stage6_drawsys_shutdown(void) {
@@ -62,15 +73,20 @@ void stage6_drawsys_shutdown(void) {
 	stage6_draw_data = NULL;
 }
 
-static void stage6_bg_setup_pbr_lighting(void) {
-	Camera3D *cam = &stage_3d_context.cam;
-
+static void stage6_bg_setup_pbr_lighting(Camera3D *cam) {
 	PointLight3D lights[] = {
 		{ { 0, 10, 100 }, { 10000, 10000, 10000 } },
 	};
 
 	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
 	r_uniform_vec3("ambient_color", 1, 1, 1);
+}
+
+static void stage6_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
+	stage6_bg_setup_pbr_lighting(cam);
+	glm_vec3_broadcast(1.0f, env->ambient_color);
+	env->environment_map = stage6_draw_data->envmap;
+	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 }
 
 static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -81,60 +97,24 @@ static uint stage6_towertop_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 static void stage6_towertop_draw(vec3 pos) {
 	r_state_push();
 	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
+	r_mat_mv_translate_v(pos);
 
-	r_shader("pbr_envmap");
-	stage6_bg_setup_pbr_lighting();
-	r_uniform_sampler("envmap", "stage6/sky");
+	r_shader("pbr");
 
-	mat4 camera_trans, inv_camera_trans;
-	glm_mat4_identity(camera_trans);
-	camera3d_apply_transforms(&stage_3d_context.cam, camera_trans);
-	glm_mat4_inv_fast(camera_trans, inv_camera_trans);
-	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
+	PBREnvironment env = { 0 };
+	stage6_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
-	r_uniform_float("metallic", 1);
-	//r_color(RGBA(0.1, 0.1, 0.1, 1));
-	r_uniform_sampler("tex", "stage6/stairs_diffuse");
-	r_uniform_sampler("roughness_map", "stage6/stairs_roughness");
-	r_uniform_sampler("normal_map", "stage6/stairs_normal");
-	r_uniform_sampler("ambient_map", "stage6/stairs_ambient");
-	r_draw_model("stage6/stairs");
-	r_uniform_float("metallic", 0);
-
-	r_uniform_sampler("tex", "stage6/tower_diffuse");
-	r_uniform_sampler("roughness_map", "stage6/tower_roughness");
-	r_uniform_sampler("normal_map", "stage6/tower_normal");
-	r_uniform_sampler("ambient_map", "stage6/tower_ambient");
-	r_draw_model("stage6/tower");
-
-	// optimize: draw tower bottom only after falling off the tower
-	r_uniform_sampler("tex", "stage6/tower_bottom_diffuse");
-	r_uniform_sampler("roughness_map", "stage6/tower_bottom_roughness");
-	r_uniform_sampler("normal_map", "stage6/tower_bottom_normal");
-	r_uniform_sampler("ambient_map", "stage6/tower_bottom_ambient");
-	r_draw_model("stage6/tower_bottom");
-
-	r_uniform_sampler("tex", "stage6/rim_diffuse");
-	r_uniform_sampler("roughness_map", "stage6/rim_roughness");
-	r_uniform_sampler("normal_map", "stage6/rim_normal");
-	r_uniform_sampler("ambient_map", "stage6/rim_ambient");
-	//r_uniform_vec3("ambient_color", 0, 0, 0);
-	r_draw_model("stage6/rim");
-
-	r_uniform_sampler("tex", "stage6/spires_diffuse");
-	r_uniform_sampler("roughness_map", "stage6/spires_roughness");
-	r_uniform_sampler("normal_map", "stage6/spires_normal");
-	r_uniform_vec3("ambient_color", 0, 0, 0);
-	r_draw_model("stage6/spires");
+	pbr_draw_model(&stage6_draw_data->models.stairs, &env);
+	pbr_draw_model(&stage6_draw_data->models.tower, &env);
+	// TODO optimize: draw tower bottom only after falling off the tower
+	pbr_draw_model(&stage6_draw_data->models.tower_bottom, &env);
+	pbr_draw_model(&stage6_draw_data->models.rim, &env);
+	pbr_draw_model(&stage6_draw_data->models.spires, &env);
 
 	r_shader("envmap_reflect");
 	r_uniform_sampler("envmap", "stage6/sky");
-
-	r_uniform_mat4("inv_camera_transform", inv_camera_trans);
-
-
-	r_draw_model("stage6/top_plate");
+	r_uniform_mat4("inv_camera_transform", env.cam_inverse_transform);
+	r_draw_model_ptr(stage6_draw_data->models.top_plate, 0, 0);
 
 	r_disable(RCAP_CULL_FACE);
 	//r_disable(RCAP_DEPTH_WRITE);
@@ -145,7 +125,7 @@ static void stage6_towertop_draw(vec3 pos) {
 	//r_mat_mv_rotate(-global.frames*0.03, 0, 0, 1);
 	r_mat_mv_rotate(global.frames*0.01, 0, 1, 0);
 	r_uniform_float("alpha", global.frames*0.03);
-	r_draw_model("stage6/calabi-yau-quintic");
+	r_draw_model_ptr(stage6_draw_data->models.calabi_yau_quintic, 0, 0);
 	r_mat_mv_pop();
 	r_state_pop();
 }

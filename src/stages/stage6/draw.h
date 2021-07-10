@@ -20,7 +20,6 @@ enum {
 };
 
 typedef struct Stage6DrawData {
-
 	struct {
 		vec3 position[NUM_STARS];
 	} stars;
@@ -35,6 +34,19 @@ typedef struct Stage6DrawData {
 		FBPair fbpair;
 	} baryon;
 
+	struct {
+		PBRModel rim;
+		PBRModel spires;
+		PBRModel stairs;
+		PBRModel tower;
+		PBRModel tower_bottom;
+
+		// these don't use pbr materials
+		Model *calabi_yau_quintic;
+		Model *top_plate;
+	} models;
+
+	Texture *envmap;
 } Stage6DrawData;
 
 extern ShaderRule stage6_bg_effects[];
