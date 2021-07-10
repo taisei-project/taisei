@@ -30,8 +30,6 @@ TASK(stage6_bg_fall_over, NO_ARGS) {
 }
 
 void stage6_bg_start_fall_over(void) {
-	Stage6DrawData *draw_data = stage6_get_draw_data();
-
 	INVOKE_TASK(stage6_bg_fall_over);
 }
 

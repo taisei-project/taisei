@@ -29,20 +29,18 @@ void stage6_drawsys_init(void) {
 
 
 	for(int i = 0; i < NUM_STARS; i++) {
-		float x,y,z,r;
+		vec3 p = { 0 };
 
-		x = y = z = 0;
 		for(int c = 0; c < 10; c++) {
-			x += nfrand();
-			y += nfrand();
-			z += nfrand();
+			p[0] += rng_f32s();
+			p[1] += rng_f32s();
+			p[2] += rng_f32s();
 		} // now x,y,z are approximately gaussian
-		vec3 p = {x, y, z};
+
 		// normalize them and it’s evenly distributed on a sphere
 		glm_vec3_normalize(p);
 		glm_vec3_copy(p, stage6_draw_data->stars.position[i]);
 	}
-
 
 	FBAttachmentConfig cfg;
 	memset(&cfg, 0, sizeof(cfg));
@@ -190,7 +188,7 @@ void stage6_draw(void) {
 }
 
 static void draw_baryon_connector(cmplx a, cmplx b) {
-	Sprite *spr = get_sprite("stage6/baryon_connector");
+	Sprite *spr = res_sprite("stage6/baryon_connector");
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = spr,
 		.pos = { creal(a + b) * 0.5, cimag(a + b) * 0.5 },
