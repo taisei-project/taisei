@@ -60,6 +60,9 @@
 	// far/near pointers are obviously very relevant for modern CPUs and totally deserve their very own, unprefixed keywords!
 	#undef near
 	#undef far
+
+	// fixup other random name clashes
+	#define mouse_event _taisei_mouse_event
 #endif
 
 // This macro should be provided by stddef.h, but in practice it sometimes is not.
