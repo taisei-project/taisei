@@ -22,6 +22,7 @@ typedef enum ResourceType {
 	RES_POSTPROCESS,
 	RES_SPRITE,
 	RES_FONT,
+	RES_MATERIAL,
 	RES_NUMTYPES,
 } ResourceType;
 

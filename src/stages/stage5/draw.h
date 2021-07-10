@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "stagedraw.h"
+#include "stageutils.h"
 
 typedef struct Stage5DrawData {
 
@@ -33,6 +34,11 @@ typedef struct Stage5DrawData {
 		float rad;
 	} stairs;
 
+	struct {
+		PBRModel metal;
+		PBRModel stairs;
+		PBRModel wall;
+	} models;
 } Stage5DrawData;
 
 void stage5_drawsys_init(void);

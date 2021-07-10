@@ -18,7 +18,6 @@ enum {
 };
 
 typedef struct Stage6DrawData {
-
 	struct {
 		float position[3*NUM_STARS];
 	} stars;
@@ -32,6 +31,19 @@ typedef struct Stage6DrawData {
 		FBPair fbpair;
 	} baryon;
 
+	struct {
+		PBRModel rim;
+		PBRModel spires;
+		PBRModel stairs;
+		PBRModel tower;
+		PBRModel tower_bottom;
+
+		// these don't use pbr materials
+		Model *calabi_yau_quintic;
+		Model *top_plate;
+	} models;
+
+	Texture *envmap;
 } Stage6DrawData;
 
 Stage6DrawData* stage6_get_draw_data(void);
