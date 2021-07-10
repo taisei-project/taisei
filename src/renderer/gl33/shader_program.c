@@ -291,7 +291,9 @@ void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 		Texture **textures = (Texture**)data;
 
 		for(uint i = 0; i < count; ++i) {
-			assert(gl33_texture_sampler_compatible(textures[i], uniform->type));
+			if(textures[i]) {
+				assert(gl33_texture_sampler_compatible(textures[i], uniform->type));
+			}
 		}
 
 		memcpy(uniform->textures + offset, textures, sizeof(Texture*) * count);
