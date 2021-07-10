@@ -29,6 +29,8 @@ typedef struct Stage5DrawData {
 		PBRModel stairs;
 		PBRModel wall;
 	} models;
+
+	Texture *env_map;
 } Stage5DrawData;
 
 void stage5_drawsys_init(void);

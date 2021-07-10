@@ -13,6 +13,7 @@
 #include "global.h"
 #include "stageutils.h"
 #include "util/glm.h"
+#include "resource/model.h"
 
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
@@ -35,6 +36,8 @@ void stage5_drawsys_init(void) {
 	pbr_load_model(&stage5_draw_data->models.metal,  "stage5/metal",  "stage5/metal");
 	pbr_load_model(&stage5_draw_data->models.stairs, "stage5/stairs", "stage5/stairs");
 	pbr_load_model(&stage5_draw_data->models.wall,   "stage5/wall",   "stage5/wall");
+
+	stage5_draw_data->env_map = res_texture("stage5/envmap");
 }
 
 void stage5_drawsys_shutdown(void) {
@@ -69,7 +72,9 @@ static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
 
 static void stage5_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
 	stage5_bg_setup_pbr_lighting(cam);
-	glm_vec3_broadcast(0.1f + stage5_draw_data->stairs.light_strength, env->ambient_color);
+	glm_vec3_broadcast(1.0f + stage5_draw_data->stairs.light_strength, env->ambient_color);
+	env->environment_map = stage5_draw_data->env_map;
+	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 }
 
 static void stage5_stairs_draw(vec3 pos) {
