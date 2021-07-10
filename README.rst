@@ -124,8 +124,10 @@ Taisei stores all data in a platform-specific directory:
 This is referred to as the **Storage Directory**. You can set the environment
 variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
 
-Troubleshooting
----------------
+Development & Troubleshooting
+-----------------------------
+
+We have extended developer documentation available `here <./doc/README.rst>`__.
 
 Documentation for many topics, including development and game controller
 support, can be found in our `docs section <./doc/README.rst>`__.
