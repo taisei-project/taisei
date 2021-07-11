@@ -73,8 +73,8 @@ typedef struct RendererFuncs {
 	void (*texture_set_wrap)(Texture *tex, TextureWrapMode ws, TextureWrapMode wt);
 	void (*texture_destroy)(Texture *tex);
 	void (*texture_invalidate)(Texture *tex);
-	void (*texture_fill)(Texture *tex, uint mipmap, const Pixmap *image_data);
-	void (*texture_fill_region)(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data);
+	void (*texture_fill)(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data);
+	void (*texture_fill_region)(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data);
 	void (*texture_clear)(Texture *tex, const Color *clr);
 	bool (*texture_type_query)(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 

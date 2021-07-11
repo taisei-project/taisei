@@ -178,6 +178,7 @@ struct glext_s {
 	ext_flag_t instanced_arrays;
 	ext_flag_t internalformat_query2;
 	ext_flag_t pixel_buffer_object;
+	ext_flag_t seamless_cubemap;
 	ext_flag_t texture_filter_anisotropic;
 	ext_flag_t texture_float;
 	ext_flag_t texture_float_linear;

@@ -15,12 +15,18 @@
 #include "resource/resource.h"
 #include "resource/texture.h"
 
-typedef struct TextureLoadData {
-	Pixmap pixmap;
-	Pixmap pixmap_alphamap;
+typedef struct TextureLoadCubemap {
+	Pixmap faces[6];
+} TextureLoadCubemap;
 
-	uint num_mipmaps;
-	Pixmap *mipmaps;
+typedef struct TextureLoadData {
+	Pixmap alphamap;
+
+	union {
+		Pixmap *pixmaps;
+		TextureLoadCubemap *cubemaps;
+	};
+	uint num_pixmaps;
 
 	TextureParams params;
 
@@ -34,10 +40,11 @@ typedef struct TextureLoadData {
 	// NOTE: Despite being a PixmapFormat, this is also used to pick a proper TextureType later. Irrelevant for compressed textures, unless decompression fallback is used.
 	PixmapFormat preferred_format;
 
-	const char *tex_src_path;
-	const char *alphamap_src_path;
-	char *tex_src_path_allocated;
-	char *alphamap_src_path_allocated;
+	struct {
+		char *main;
+		char *alphamap;
+		char *cubemap[6];
+	} src_paths;
 
 	ResourceLoadState *st;
 } TextureLoadData;

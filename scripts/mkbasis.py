@@ -7,6 +7,7 @@ from taiseilib.common import (
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from dataclasses import dataclass
 
 import argparse
 import subprocess
@@ -18,6 +19,20 @@ BASISU_TAISEI_CHANNELS_MASK = 0x3
 BASISU_TAISEI_SRGB          = (BASISU_TAISEI_CHANNELS_MASK + 1) << 0
 BASISU_TAISEI_NORMALMAP     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 1
 BASISU_TAISEI_GRAYALPHA     = (BASISU_TAISEI_CHANNELS_MASK + 1) << 2
+
+
+class MkbasisInputError(RuntimeError):
+    pass
+
+
+@dataclass
+class Cubemap:
+    px: Path
+    nx: Path
+    py: Path
+    ny: Path
+    pz: Path
+    nz: Path
 
 
 def channels_have_alpha(chans):
@@ -42,7 +57,7 @@ def run(args, cmd):
 
 
 def image_size(img_path):
-    o = subprocess.check_output(['convert', img_path, '-print', '%wx%h', 'null:'])
+    o = subprocess.check_output(['convert', img_path, '-ping', '-print', '%wx%h', 'null:'])
     return tuple(int(d) for d in o.strip().decode('utf8').split('x'))
 
 
@@ -93,7 +108,7 @@ def preprocess(args, tempdir):
             '-colorspace', 'gray'
         ]
 
-    if cmd[-1] != args.input or args.input.suffix not in ('.png', '.jpg'):
+    if cmd[-1] != args.input or args.input.suffix.lower() not in ('.png', '.jpg'):
         dst = tempdir / 'preprocessed.png'
         cmd += [dst]
         run(args, cmd)
@@ -102,16 +117,58 @@ def preprocess(args, tempdir):
     return args.input
 
 
+def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
+    import py360convert
+    import numpy as np
+    from PIL import Image
+
+    tempdir = tempdir / 'cubemap'
+    tempdir.mkdir()
+
+    with Image.open(equirect) as equirect_img:
+        equirect_array = np.array(equirect_img)
+
+    # HACK: py360convert flips these faces for some reason; apply corrections
+    transforms = {
+        'U': np.flipud,
+        'R': np.fliplr,
+        'B': np.fliplr,
+    }
+
+    faces = {}
+
+    for face, array in py360convert.e2c(equirect_array, cube_side, cube_format='dict').items():
+        with Image.fromarray(transforms.get(face, lambda x: x)(array)) as img:
+            faces[face] = tempdir / (face + equirect.suffix)
+            img.save(faces[face])
+
+    cubemap = Cubemap(
+        px=faces['R'],
+        nx=faces['L'],
+        py=faces['U'],
+        ny=faces['D'],
+        pz=faces['F'],
+        nz=faces['B'],
+    )
+
+    return cubemap
+
 def process(args):
     width, height = image_size(args.input)
 
-    if width % 4 != 0 or height % 4 != 0:
-        print(f'{args.input}: image dimensions are not multiples of 4 ({width}x{height})', file=sys.stderr)
-        exit(1)
+    if args.equirect_cubemap:
+        if width != 2 * height or height % 8 != 0:
+            raise MkbasisInputError(f'bad equirectangular map dimensions ({width}x{height}): must be multiples of 8 and have 2:1 aspect ratio')
+    elif width % 4 != 0 or height % 4 != 0:
+        raise MkbasisInputError(f'image dimensions are not multiples of 4 ({width}x{height})')
 
     with TemporaryDirectory() as tempdir:
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
+        cubemap = None
+
+        if args.equirect_cubemap:
+            cubemap = equirect_to_cubemap(args, img, width, height, height // 2, tempdir)
 
         basis_output = args.output
         zst_output = None
@@ -122,9 +179,23 @@ def process(args):
 
         cmd = [
             args.basisu,
-            '-file', img,
             '-output_file', basis_output,
         ]
+
+        if cubemap is None:
+            cmd += [
+                '-file', img
+            ]
+        else:
+            cmd += [
+                '-tex_type', 'cubemap',
+                '-file', cubemap.px,
+                '-file', cubemap.nx,
+                '-file', cubemap.py,
+                '-file', cubemap.ny,
+                '-file', cubemap.pz,
+                '-file', cubemap.nz,
+            ]
 
         if args.channels == 'gray-alpha':
             taisei_flags = BASISU_TAISEI_CHANNELS.index('rg') | BASISU_TAISEI_GRAYALPHA
@@ -155,6 +226,10 @@ def process(args):
 
             if args.normal:
                 cmd += ['-mip_scale', '0.5']
+
+            if cubemap is not None:
+                # TODO: expose this as a separate setting?
+                cmd += ['-mip_clamp']
 
         if args.channels == 'rg':
             cmd += ['-separate_rg_to_color_alpha']
@@ -428,6 +503,12 @@ def main(args):
         type=float
     )
 
+    parser.add_argument('--equirect-cubemap',
+        dest='equirect_cubemap',
+        help='treat input as an equirectangular map and convert it into a cubemap',
+        action='store_true',
+    )
+
     parser.add_argument('--dry-run',
         help='do nothing, print commands that would have been run',
         action='store_true',
@@ -465,7 +546,10 @@ def main(args):
         args.srgb_sampling = args.force_srgb_sampling
 
     # print(args)
-    process(args)
+    try:
+        process(args)
+    except MkbasisInputError as e:
+        print(f'{args.input}: {str(e)}', file=sys.stderr)
 
 
 if __name__ == '__main__':

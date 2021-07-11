@@ -406,7 +406,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 
 	r_texture_fill_region(
 		ss->tex,
-		0,
+		0, 0,
 		rect_x(sprite_pos),
 		rect_y(sprite_pos),
 		pixmap

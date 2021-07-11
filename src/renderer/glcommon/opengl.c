@@ -226,6 +226,20 @@ static void glcommon_ext_pixel_buffer_object(void) {
 #endif
 }
 
+static void glcommon_ext_seamless_cubemap(void) {
+	EXT_FLAG(seamless_cubemap);
+
+#ifndef STATIC_GLES3
+	// NOTE: GLES3 seems to provide seamless sampling by default,
+	// but it must be glEnabled in plain OpenGL, which is what this extension is about.
+
+	CHECK_CORE(GL_ATLEAST(3, 2));
+	CHECK_EXT(GL_ARB_seamless_cube_map);
+#endif
+
+	EXT_MISSING();
+}
+
 static void glcommon_ext_depth_texture(void) {
 	EXT_FLAG(depth_texture);
 
@@ -898,6 +912,7 @@ void glcommon_check_capabilities(void) {
 	glcommon_ext_instanced_arrays();
 	glcommon_ext_internalformat_query2();
 	glcommon_ext_pixel_buffer_object();
+	glcommon_ext_seamless_cubemap();
 	glcommon_ext_texture_filter_anisotropic();
 	glcommon_ext_texture_float();
 	glcommon_ext_texture_float_linear();

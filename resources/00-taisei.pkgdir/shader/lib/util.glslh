@@ -142,6 +142,10 @@ vec2 flip_native_to_bottomleft(vec2 v) {
     return v;
 }
 
+vec3 fixCubeCoord(vec3 v) {
+	return v.xzy * vec3(1, -1, 1);
+}
+
 /*
  * Adapted from https://github.com/tobspr/GLSL-Color-Spaces/blob/master/ColorSpaces.inc.glsl
  */

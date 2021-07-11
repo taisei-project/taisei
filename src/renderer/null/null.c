@@ -85,8 +85,8 @@ static void null_texture_set_debug_label(Texture *tex, const char *label) { }
 static const char* null_texture_get_debug_label(Texture *tex) { return "null texture"; }
 static void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMode fmag) { }
 static void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
-static void null_texture_fill(Texture *tex, uint mipmap, const Pixmap *image_data) { }
-static void null_texture_fill_region(Texture *tex, uint mipmap, uint x, uint y, const Pixmap *image_data) { }
+static void null_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data) { }
+static void null_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) { }
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
