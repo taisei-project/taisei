@@ -984,8 +984,13 @@ static void gl33_shutdown(void) {
 	SDL_GL_DeleteContext(R.gl_context);
 }
 
-static SDL_Window* gl33_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
+static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
 	SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_OPENGL);
+
+	if(!window) {
+		log_sdl_error(LOG_FATAL, "SDL_CreateWindow");
+		return NULL;
+	}
 
 	if(R.gl_context) {
 		SDL_GL_MakeCurrent(window, R.gl_context);
