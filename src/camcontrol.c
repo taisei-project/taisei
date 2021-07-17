@@ -68,6 +68,16 @@ static bool wheel_event(SDL_Event *e, void *a) {
 	return false;
 }
 
+static bool focus_gained_event(SDL_Event *e, void *a) {
+	SDL_SetWindowGrab(a, true);
+	SDL_CaptureMouse(true);
+}
+
+static bool focus_lost_event(SDL_Event *e, void *a) {
+	SDL_SetWindowGrab(a, false);
+	SDL_CaptureMouse(false);
+}
+
 static void nodraw(EntityInterface *ent) { }
 
 static void predraw(EntityInterface *ent, void *a) {
@@ -95,6 +105,14 @@ TASK(camera_control, { Camera3D *cam; }) {
 
 	events_register_handler(
 		&(EventHandler) { .proc = wheel_event, .arg = &move_speed, .event_type = SDL_MOUSEWHEEL }
+	);
+
+	events_register_handler(
+		&(EventHandler) { .proc = focus_gained_event, .arg = w, .event_type = SDL_WINDOWEVENT_FOCUS_GAINED }
+	);
+
+	events_register_handler(
+		&(EventHandler) { .proc = focus_lost_event, .arg = w, .event_type = SDL_WINDOWEVENT_FOCUS_LOST }
 	);
 
 	ent_hook_pre_draw(predraw, NULL);
