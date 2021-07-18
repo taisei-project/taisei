@@ -121,7 +121,6 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 }
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
-	assert(rpy != NULL);
 	assert(rpy->stages != NULL);
 
 	for(int i = 0; i < rpy->numstages; ++i) {

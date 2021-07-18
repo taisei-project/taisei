@@ -356,8 +356,6 @@ void delete_projectiles(ProjectileList *projlist) {
 }
 
 void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
-	assert(out_col != NULL);
-
 	out_col->type = PCOL_NONE;
 	out_col->entity = NULL;
 	out_col->fatal = false;

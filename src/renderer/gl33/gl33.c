@@ -429,7 +429,7 @@ static void gl33_sync_magic_uniforms(void) {
 	r_uniform_mat4(u[UMAGIC_MATRIX_PROJ], *_r_matrices.projection.head);
 	r_uniform_mat4(u[UMAGIC_MATRIX_TEX], *_r_matrices.texture.head);
 	r_uniform_vec4_rgba(u[UMAGIC_COLOR], &R.color);
-	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], &R.viewport.active.x);
+	r_uniform_vec4_vec(u[UMAGIC_VIEWPORT], (float*)&R.viewport.active);
 
 	int num_color_out;
 

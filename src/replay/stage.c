@@ -74,8 +74,6 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 }
 
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
-	assert(stg != NULL);
-
 	dynarray_size_t old_capacity = stg->events.capacity;
 
 	ReplayEvent *e = dynarray_append(&stg->events);
