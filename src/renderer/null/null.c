@@ -87,6 +87,7 @@ static void null_texture_set_filter(Texture *tex, TextureFilterMode fmin, Textur
 static void null_texture_set_wrap(Texture *tex, TextureWrapMode fmin, TextureWrapMode fmag) { }
 static void null_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data) { }
 static void null_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) { }
+static bool null_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) { return false; }
 static void null_texture_invalidate(Texture *tex) { }
 static void null_texture_destroy(Texture *tex) { }
 static void null_texture_clear(Texture *tex, const Color *color) { }
@@ -227,6 +228,7 @@ RendererBackend _r_backend_null = {
 		.texture_invalidate = null_texture_invalidate,
 		.texture_fill = null_texture_fill,
 		.texture_fill_region = null_texture_fill_region,
+		.texture_dump = null_texture_dump,
 		.texture_clear = null_texture_clear,
 		.texture_type_query = null_texture_type_query,
 		.framebuffer_create = null_framebuffer_create,

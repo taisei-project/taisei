@@ -735,6 +735,7 @@ void r_texture_set_filter(Texture *tex, TextureFilterMode fmin, TextureFilterMod
 void r_texture_set_wrap(Texture *tex, TextureWrapMode ws, TextureWrapMode wt) attr_nonnull(1);
 void r_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_data) attr_nonnull(1, 4);
 void r_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) attr_nonnull(1, 6);
+bool r_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) attr_nonnull(1, 4);
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);

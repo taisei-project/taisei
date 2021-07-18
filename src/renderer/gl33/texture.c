@@ -591,3 +591,30 @@ bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type) {
 			UNREACHABLE;
 	}
 }
+
+bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
+	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
+		// TODO
+		return false;
+	}
+
+	GLenum gl_target = target_from_class_and_layer(tex->params.class, layer);
+	gl33_texture_get_size(tex, mipmap, &dst->width, &dst->height);
+
+	dst->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
+	dst->format = tex->fmt_info->transfer_format.pixmap_format;
+	dst->data.untyped = pixmap_alloc_buffer_for_copy(dst, &dst->data_size);
+
+	gl33_bind_texture(tex, 0, -1);
+	gl33_sync_texunit(tex->binding_unit, false, true);
+
+	glGetTexImage(
+		gl_target,
+		mipmap,
+		tex->fmt_info->transfer_format.gl_format,
+		tex->fmt_info->transfer_format.gl_type,
+		dst->data.untyped
+	);
+
+	return true;
+}

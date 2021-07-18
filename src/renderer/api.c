@@ -391,7 +391,7 @@ void r_draw_indexed(VertexArray* varr, Primitive prim, uint firstidx, uint count
 	B.draw_indexed(varr, prim, firstidx, count, instances, base_instance);
 }
 
-Texture* r_texture_create(const TextureParams *params) {
+Texture *r_texture_create(const TextureParams *params) {
 	assert(r_texture_type_query(params->type, params->flags, 0, 0, NULL));
 	return B.texture_create(params);
 }
@@ -438,6 +438,10 @@ void r_texture_fill(Texture *tex, uint mipmap, uint layer, const Pixmap *image_d
 
 void r_texture_fill_region(Texture *tex, uint mipmap, uint layer, uint x, uint y, const Pixmap *image_data) {
 	B.texture_fill_region(tex, mipmap, layer, x, y, image_data);
+}
+
+bool r_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
+	return B.texture_dump(tex, mipmap, layer, dst);
 }
 
 void r_texture_invalidate(Texture *tex) {
@@ -541,7 +545,7 @@ void r_framebuffer_attach(Framebuffer *fb, Texture *tex, uint mipmap, Framebuffe
 	B.framebuffer_attach(fb, tex, mipmap, attachment);
 }
 
-Texture* r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
+Texture *r_framebuffer_get_attachment(Framebuffer *fb, FramebufferAttachment attachment) {
 	return B.framebuffer_query_attachment(fb, attachment).texture;
 }
 
