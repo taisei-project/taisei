@@ -168,6 +168,9 @@ static void px_png_save_apply_conversions(
 	}
 }
 
+DIAGNOSTIC_GCC(push)
+DIAGNOSTIC_GCC(ignored "-Wclobbered")
+
 static bool px_png_save(
 	SDL_RWops *stream, const Pixmap *src_pixmap, const PixmapSaveOptions *base_opts
 ) {
@@ -278,6 +281,8 @@ done:
 
 	return !error;
 }
+
+DIAGNOSTIC_GCC(pop)
 
 PixmapFileFormatHandler pixmap_fileformat_png = {
 	.probe = px_png_probe,
