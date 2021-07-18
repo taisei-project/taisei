@@ -71,11 +71,13 @@ static bool wheel_event(SDL_Event *e, void *a) {
 static bool focus_gained_event(SDL_Event *e, void *a) {
 	SDL_SetWindowGrab(a, true);
 	SDL_CaptureMouse(true);
+	return false;
 }
 
 static bool focus_lost_event(SDL_Event *e, void *a) {
 	SDL_SetWindowGrab(a, false);
 	SDL_CaptureMouse(false);
+	return false;
 }
 
 static void nodraw(EntityInterface *ent) { }
