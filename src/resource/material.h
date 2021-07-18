@@ -17,11 +17,13 @@ typedef struct PBRMaterial {
 	Texture *normal_map;
 	Texture *ambient_map;
 	Texture *roughness_map;
+	Texture *depth_map;
 
 	vec3 diffuse_color;
 	vec3 ambient_color;
 	float roughness_value;
 	float metallic_value;
+	float depth_scale;
 } PBRMaterial;
 
 extern ResourceHandler material_res_handler;

@@ -159,7 +159,14 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 		flags |= PBR_FEATURE_AMBIENT_MAP;
 	}
 
+	if(m->depth_map && m->depth_scale) {
+		r_uniform_sampler("depth_map", m->depth_map);
+		r_uniform_float("depth_scale", m->depth_scale);
+		flags |= PBR_FEATURE_DEPTH_MAP;
+	}
+
 	if(env->environment_map) {
+		r_uniform_sampler("ibl_brdf_lut", "ibl_brdf_lut");
 		r_uniform_sampler("environment_map", env->environment_map);
 		r_uniform_mat4("inv_camera_transform", (vec4*)env->cam_inverse_transform);
 		flags |= PBR_FEATURE_ENVIRONMENT_MAP;

@@ -44,9 +44,10 @@ struct mat_load_data {
 			char *normal_map;
 			char *ambient_map;
 			char *roughness_map;
+			char *depth_map;
 		};
 
-		char *maps[4];
+		char *maps[5];
 	};
 };
 
@@ -68,6 +69,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		.ambient_color = { 1, 1, 1 },
 		.roughness_value = 1,
 		.metallic_value = 0,
+		.depth_scale = 0,
 	};
 
 	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
@@ -75,10 +77,13 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{ "normal_map",       .out_str = &ld->normal_map },
 		{ "ambient_map",      .out_str = &ld->ambient_map },
 		{ "roughness_map",    .out_str = &ld->roughness_map },
+		{ "depth_map",        .out_str = &ld->depth_map },
 		{ "diffuse_color",    .callback = kvparser_vec3, .callback_data = ld->mat->diffuse_color },
 		{ "ambient_color",    .callback = kvparser_vec3, .callback_data = ld->mat->ambient_color },
 		{ "roughness",        .out_float = &ld->mat->roughness_value },
 		{ "metallic",         .out_float = &ld->mat->metallic_value },
+		{ "depth_scale",      .out_float = &ld->mat->depth_scale },
+		{ NULL },
 	})) {
 		free_mat_load_data(ld);
 		log_error("Failed to parse material file '%s'", st->path);
@@ -113,6 +118,7 @@ static void material_load_stage2(ResourceLoadState *st) {
 	LOADMAP(normal);
 	LOADMAP(ambient);
 	LOADMAP(roughness);
+	LOADMAP(depth);
 
 	res_load_finished(st, ld->mat);
 	free_mat_load_data(ld);
