@@ -8,14 +8,14 @@
 
 #include "taisei.h"
 
-#include "loaders.h"
+#include "fileformats.h"
 #include "util.h"
 #include "util/pngcruft.h"
 
-static uchar png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+static const uint8_t png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
 static bool px_png_probe(SDL_RWops *stream) {
-	uchar magic[sizeof(png_magic)] = { 0 };
+	uint8_t magic[sizeof(png_magic)] = { 0 };
 	SDL_RWread(stream, magic, sizeof(magic), 1);
 	return !memcmp(magic, png_magic, sizeof(magic));
 }
@@ -109,7 +109,7 @@ static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferre
 	// the GL backend. This is just a slight optimization, not a hard dependency.
 	pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 
-	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(pixmap->format);
+	size_t pixel_size = pixmap_format_pixel_size(pixmap->format);
 
 	if(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / (pixmap->width * pixel_size)) {
 		error = "The image is too large";
@@ -143,8 +143,146 @@ done:
 	return true;
 }
 
-PixmapLoader pixmap_loader_png = {
+static void px_png_save_apply_conversions(
+	const Pixmap *src_pixmap, Pixmap *dst_pixmap
+) {
+	PixmapLayout fmt_layout = pixmap_format_layout(src_pixmap->format);
+	PixmapLayout fmt_depth = pixmap_format_layout(src_pixmap->format);
+
+	if(fmt_depth > 16) {
+		fmt_depth = 16;
+	} else if(fmt_depth < 16) {
+		fmt_depth = 8;
+	}
+
+	if(fmt_layout == PIXMAP_LAYOUT_RG) {
+		fmt_layout = PIXMAP_LAYOUT_RGB;
+	}
+
+	PixmapFormat fmt = PIXMAP_MAKE_FORMAT(fmt_layout, fmt_depth);
+
+	if(fmt == src_pixmap->format) {
+		*dst_pixmap = *src_pixmap;
+	} else {
+		pixmap_convert_alloc(src_pixmap, dst_pixmap, fmt);
+	}
+}
+
+static bool px_png_save(
+	SDL_RWops *stream, const Pixmap *src_pixmap, const PixmapSaveOptions *base_opts
+) {
+	if(
+		pixmap_format_is_compressed(src_pixmap->format) ||
+		pixmap_format_is_float(src_pixmap->format)
+	) {
+		log_error("Can't write %s image to PNG", pixmap_format_name(src_pixmap->format));
+		return false;
+	}
+
+	const PixmapPNGSaveOptions *opts, default_opts = PIXMAP_DEFAULT_PNG_SAVE_OPTIONS;
+	opts = &default_opts;
+
+	if(
+		base_opts &&
+		base_opts->file_format == PIXMAP_FILEFORMAT_PNG &&
+		base_opts->struct_size > sizeof(*base_opts)
+	) {
+		assert(base_opts->struct_size == sizeof(*opts));
+		opts = UNION_CAST(const PixmapSaveOptions*, const PixmapPNGSaveOptions*, base_opts);
+	}
+
+	const char *error = NULL;
+	png_structp png;
+	png_infop info_ptr;
+
+	Pixmap px = { 0 };
+
+	png = pngutil_create_write_struct();
+
+	if(png == NULL) {
+		error = "pngutil_create_write_struct() failed";
+		goto done;
+	}
+
+	info_ptr = png_create_info_struct(png);
+
+	if(info_ptr == NULL) {
+		error = "png_create_info_struct() failed";
+		goto done;
+	}
+
+	if(setjmp(png_jmpbuf(png))) {
+		error = "PNG error";
+		goto done;
+	}
+
+	px_png_save_apply_conversions(src_pixmap, &px);
+
+	size_t pixel_size = pixmap_format_pixel_size(px.format);
+
+	uint png_color;
+	switch(pixmap_format_layout(px.format)) {
+		case PIXMAP_LAYOUT_R:    png_color = PNG_COLOR_TYPE_GRAY; break;
+		case PIXMAP_LAYOUT_RGB:  png_color = PNG_COLOR_TYPE_RGB;  break;
+		case PIXMAP_LAYOUT_RGBA: png_color = PNG_COLOR_TYPE_RGBA; break;
+		default: UNREACHABLE;
+	}
+
+	pngutil_init_rwops_write(png, stream);
+
+	png_set_IHDR(
+		png, info_ptr,
+		px.width, px.height, pixmap_format_depth(px.format),
+		png_color,
+		PNG_INTERLACE_NONE,
+		PNG_COMPRESSION_TYPE_DEFAULT,
+		PNG_FILTER_TYPE_DEFAULT
+	);
+
+	if(opts->zlib_compression_level >= 0) {
+		png_set_compression_level(png, opts->zlib_compression_level);
+	}
+
+	png_write_info(png, info_ptr);
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	if(pixmap_format_depth(px.format) > 8) {
+		png_set_swap(png);
+	}
+#endif
+
+	if(px.origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
+		for(int row = px.height - 1; row >= 0; --row) {
+			png_write_row(png, px.data.r8->values + row * px.width * pixel_size);
+		}
+	} else {
+		for(int row = 0; row < px.height; ++row) {
+			png_write_row(png, px.data.r8->values + row * px.width * pixel_size);
+		}
+	}
+
+	png_write_end(png, info_ptr);
+
+done:
+	if(error) {
+		log_error("%s", error);
+	}
+
+	if(px.data.untyped != src_pixmap->data.untyped) {
+		free(px.data.untyped);
+	}
+
+	if(png != NULL) {
+		png_destroy_write_struct(&png, info_ptr ? &info_ptr : NULL);
+	}
+
+	return !error;
+}
+
+PixmapFileFormatHandler pixmap_fileformat_png = {
 	.probe = px_png_probe,
 	.load = px_png_load,
-	.filename_exts = (const char*[]){ "png", NULL },
+	.save = px_png_save,
+	.filename_exts = (const char*[]) { "png", NULL },
+	.name = "PNG",
 };

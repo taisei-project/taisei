@@ -8,8 +8,6 @@
 
 #include "taisei.h"
 
-#include <png.h>
-
 #include "global.h"
 #include "video.h"
 #include "renderer/api.h"
@@ -553,77 +551,18 @@ static void *video_screenshot_task(void *arg) {
 	ScreenshotTaskData *tdata = arg;
 
 	pixmap_convert_inplace_realloc(&tdata->image, PIXMAP_FORMAT_RGB8);
-	pixmap_flip_to_origin_inplace(&tdata->image, PIXMAP_ORIGIN_BOTTOMLEFT);
 
-	uint width = tdata->image.width;
-	uint height = tdata->image.height;
-	uint8_t *pixels = tdata->image.data.untyped;
+	PixmapPNGSaveOptions opts = PIXMAP_DEFAULT_PNG_SAVE_OPTIONS;
+	opts.zlib_compression_level = 9;
 
-	SDL_RWops *output = vfs_open(tdata->dest_path, VFS_MODE_WRITE);
+	bool ok = pixmap_save_file(tdata->dest_path, &tdata->image, &opts.base);
 
-	if(!output) {
-		log_error("VFS error: %s", vfs_get_error());
-		return NULL;
+	if(LIKELY(ok)) {
+		char *syspath = vfs_repr(tdata->dest_path, true);
+		log_info("Saved screenshot as %s", syspath);
+		free(syspath);
 	}
 
-	char *syspath = vfs_repr(tdata->dest_path, true);
-	log_info("Saving screenshot as %s", syspath);
-	free(syspath);
-
-	const char *error = NULL;
-	png_structp png_ptr;
-	png_infop info_ptr;
-
-	png_byte *volatile row_pointers[height];
-	memset((void*)row_pointers, 0, sizeof(row_pointers));
-
-	png_ptr = pngutil_create_write_struct();
-
-	if(png_ptr == NULL) {
-		error = "pngutil_create_write_struct() failed";
-		goto done;
-	}
-
-	info_ptr = png_create_info_struct(png_ptr);
-
-	if(info_ptr == NULL) {
-		error = "png_create_info_struct() failed";
-		goto done;
-	}
-
-	if(setjmp(png_jmpbuf(png_ptr))) {
-		error = "PNG error";
-		goto done;
-	}
-
-	png_set_IHDR(
-		png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGB,
-		PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT
-	);
-
-	for(int y = 0; y < height; y++) {
-		row_pointers[y] = png_malloc(png_ptr, width * 3);
-		memcpy(row_pointers[y], pixels + width * 3 * (height - 1 - y), width * 3);
-	}
-
-	pngutil_init_rwops_write(png_ptr, output);
-	png_set_rows(png_ptr, info_ptr, (void*)row_pointers);
-	png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-
-done:
-	if(error) {
-		log_error("Couldn't save screenshot: %s", error);
-	}
-
-	for(int y = 0; y < height; y++) {
-		png_free(png_ptr, row_pointers[y]);
-	}
-
-	if(png_ptr != NULL) {
-		png_destroy_write_struct(&png_ptr, info_ptr ? &info_ptr : NULL);
-	}
-
-	SDL_RWclose(output);
 	return NULL;
 }
 

@@ -8,15 +8,24 @@
 
 #include "taisei.h"
 
-#include "serialize.h"
-
+#include "fileformats.h"
 #include "rwops/rwops_crc32.h"
 #include "util.h"
 
-static const uint8_t pxs_magic[] = { 0xe2, 0x99, 0xa5, 0x52, 0x65, 0x69, 0x6d, 0x75 };
-#define PXS_CRC32_INIT 42069
+enum {
+	PXI_VERSION = 1,
+	PXI_CRC32_INIT = 42069,
+};
 
-bool pixmap_serialize(SDL_RWops *stream, const Pixmap *pixmap) {
+static const uint8_t pxi_magic[] = { 0xe2, 0x99, 0xa5, 0x52, 0x65, 0x69, 0x6d, 0x75 };
+
+static bool px_internal_probe(SDL_RWops *stream) {
+	uint8_t magic[sizeof(pxi_magic)] = { 0 };
+	SDL_RWread(stream, magic, sizeof(magic), 1);
+	return !memcmp(magic, pxi_magic, sizeof(magic));
+}
+
+static bool px_internal_save(SDL_RWops *stream, const Pixmap *pixmap, const PixmapSaveOptions *opts) {
 	SDL_RWops *cstream = NULL;
 
 	#define CHECK_WRITE(expr, expected_size) \
@@ -32,10 +41,10 @@ bool pixmap_serialize(SDL_RWops *stream, const Pixmap *pixmap) {
 	#define W_U16(stream, val) CHECK_WRITE(SDL_WriteLE16(stream, val), sizeof(uint16_t))
 	#define W_U8(stream, val)  CHECK_WRITE(SDL_WriteU8(stream, val), sizeof(uint8_t))
 
-	W_BYTES(stream, pxs_magic, sizeof(pxs_magic));
-	W_U16(stream, PIXMAP_SERIALIZED_VERSION);
+	W_BYTES(stream, pxi_magic, sizeof(pxi_magic));
+	W_U16(stream, PXI_VERSION);
 
-	uint32_t crc32 = PXS_CRC32_INIT;
+	uint32_t crc32 = PXI_CRC32_INIT;
 	cstream = NOT_NULL(SDL_RWWrapCRC32(stream, &crc32, false));
 
 	W_U32(cstream, pixmap->width);
@@ -60,26 +69,26 @@ fail:
 	return false;
 }
 
-bool pixmap_deserialize(SDL_RWops *stream, Pixmap *pixmap) {
+static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
 	assume(pixmap->data.untyped == NULL);
 
 	SDL_RWops *cstream = NULL;
 
-	uint8_t magic[sizeof(pxs_magic)] = { 0 };
+	uint8_t magic[sizeof(pxi_magic)] = { 0 };
 	SDL_RWread(stream, magic, 1, sizeof(magic));
 
-	if(memcmp(magic, pxs_magic, sizeof(magic))) {
+	if(memcmp(magic, pxi_magic, sizeof(magic))) {
 		log_error("Bad magic header");
 		return false;
 	}
 
 	uint16_t version = SDL_ReadLE16(stream);
-	if(version != PIXMAP_SERIALIZED_VERSION) {
-		log_error("Bad version %u; expected %u", version, PIXMAP_SERIALIZED_VERSION);
+	if(version != PXI_VERSION) {
+		log_error("Bad version %u; expected %u", version, PXI_VERSION);
 		return false;
 	}
 
-	uint32_t crc32 = PXS_CRC32_INIT;
+	uint32_t crc32 = PXI_CRC32_INIT;
 	cstream = NOT_NULL(SDL_RWWrapCRC32(stream, &crc32, false));
 
 	// TODO validate and verify consistency of data_size/width/height/format
@@ -135,3 +144,11 @@ fail:
 
 	return false;
 }
+
+PixmapFileFormatHandler pixmap_fileformat_internal = {
+	.probe = px_internal_probe,
+	.save = px_internal_save,
+	.load = px_internal_load,
+	.filename_exts = (const char*[]) { NULL },
+	.name = "Taisei internal",
+};

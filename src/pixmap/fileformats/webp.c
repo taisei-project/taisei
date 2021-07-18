@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "util.h"
-#include "loaders.h"
+#include "fileformats.h"
 
 #include <webp/decode.h>
 
@@ -130,8 +130,9 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 	return pixmap->data.untyped != NULL;
 }
 
-PixmapLoader pixmap_loader_webp = {
+PixmapFileFormatHandler pixmap_fileformat_webp = {
 	.probe = px_webp_probe,
 	.load = px_webp_load,
-	.filename_exts = (const char*[]){ "webp", NULL },
+	.filename_exts = (const char*[]) { "webp", NULL },
+	.name = "WebP",
 };

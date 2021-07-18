@@ -15,6 +15,40 @@
 
 #define PIXMAP_BUFFER_MAX_SIZE INT32_MAX
 
+typedef enum PixmapFileFormat {
+	PIXMAP_FILEFORMAT_AUTO = -1,
+
+	// NOTE: these are probed from first to last
+	PIXMAP_FILEFORMAT_WEBP,
+	PIXMAP_FILEFORMAT_PNG,
+	PIXMAP_FILEFORMAT_INTERNAL,
+
+	PIXMAP_NUM_FILEFORMATS
+} PixmapFileFormat;
+
+typedef struct PixmapSaveOptions {
+	PixmapFileFormat file_format;
+	size_t struct_size;
+} PixmapSaveOptions;
+
+#define PIXMAP_DEFAULT_SAVE_OPTIONS \
+	{ \
+		.file_format = PIXMAP_FILEFORMAT_AUTO, \
+		.struct_size = sizeof(PixmapSaveOptions), \
+	}
+
+typedef struct PixmapPNGSaveOptions {
+	PixmapSaveOptions base;
+	int zlib_compression_level;
+} PixmapPNGSaveOptions;
+
+#define PIXMAP_DEFAULT_PNG_SAVE_OPTIONS \
+	{ \
+		.base.file_format = PIXMAP_FILEFORMAT_PNG, \
+		.base.struct_size = sizeof(PixmapPNGSaveOptions), \
+		.zlib_compression_level = -1, \
+	}
+
 typedef enum PixmapLayout {
 	PIXMAP_LAYOUT_R = 1,
 	PIXMAP_LAYOUT_RG,
@@ -274,12 +308,16 @@ void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin or
 void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) attr_nonnull(1);
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
-bool pixmap_load_stream(SDL_RWops *stream, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
+bool pixmap_load_stream(SDL_RWops *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 3) attr_nodiscard;
+
+bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2);
+bool pixmap_save_stream(SDL_RWops *stream, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2, 3);
 
 bool pixmap_check_filename(const char *path);
 char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;
 
 const char *pixmap_format_name(PixmapFormat fmt);
+uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height);
 
 SwizzleMask swizzle_canonize(SwizzleMask sw_in);
 bool swizzle_is_valid(SwizzleMask sw);

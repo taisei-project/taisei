@@ -9,7 +9,7 @@
 #include "taisei.h"
 
 #include "basisu_cache.h"
-#include "pixmap/serialize.h"
+#include "pixmap/pixmap.h"
 #include "rwops/rwops_zstd.h"
 
 #include <basisu_transcoder_c_api.h>
@@ -75,7 +75,7 @@ bool texture_loader_basisu_load_cached(
 
 	rw = SDL_RWWrapZstdReader(rw, true);
 
-	bool deserialize_ok = pixmap_deserialize(rw, out_pixmap);
+	bool deserialize_ok = pixmap_load_stream(rw, PIXMAP_FILEFORMAT_INTERNAL, out_pixmap, 0);
 	SDL_RWclose(rw);
 
 	if(!deserialize_ok) {
@@ -178,7 +178,9 @@ bool texture_loader_basisu_cache(
 
 	rw = SDL_RWWrapZstdWriter(rw, RW_ZSTD_LEVEL_DEFAULT, true);
 
-	bool serialize_ok = pixmap_serialize(rw, pixmap);
+	PixmapSaveOptions opts = PIXMAP_DEFAULT_SAVE_OPTIONS;
+	opts.file_format = PIXMAP_FILEFORMAT_INTERNAL;
+	bool serialize_ok = pixmap_save_stream(rw, pixmap, &opts);
 	SDL_RWclose(rw);
 
 	if(!serialize_ok) {
