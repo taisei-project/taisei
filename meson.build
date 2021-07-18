@@ -65,6 +65,7 @@ taisei_c_args = [
     '-Werror=assume',
     '-Werror=implicit-function-declaration',
     '-Werror=incompatible-pointer-types',
+    '-Werror=return-type',
 
     #
     # Keep the rest sorted
