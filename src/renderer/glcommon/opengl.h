@@ -223,7 +223,7 @@ struct glext_s {
 #undef GLES_ATLEAST
 #define GLES_ATLEAST(mjr, mnr) (glext.version.is_es && GLANY_ATLEAST(mjr, mnr))
 
-#ifdef STATIC_GLESS
+#ifdef STATIC_GLES3
 	#define HAVE_GL_FUNC(func) (&(func) != NULL)
 #else
 	#define HAVE_GL_FUNC(func) ((func) != NULL)

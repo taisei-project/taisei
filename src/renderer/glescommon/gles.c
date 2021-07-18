@@ -59,3 +59,10 @@ bool gles_screenshot(Pixmap *out) {
 	glReadPixels(vp.x, vp.y, vp.w, vp.h, GL_RGBA, GL_UNSIGNED_BYTE, out->data.untyped);
 	return true;
 }
+
+bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
+	// No glGetTexImage in GLES
+	// TODO maybe set up a transient framebuffer to read from?
+	log_warn("FIXME: not implemented");
+	return false;
+}

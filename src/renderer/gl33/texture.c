@@ -593,6 +593,9 @@ bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type) {
 }
 
 bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
+#ifdef STATIC_GLES3
+	UNREACHABLE;
+#else
 	if(tex->fmt_info->flags & GLTEX_COMPRESSED) {
 		// TODO
 		return false;
@@ -617,4 +620,5 @@ bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 	);
 
 	return true;
+#endif
 }

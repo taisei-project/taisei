@@ -59,6 +59,7 @@ RendererBackend _r_backend_gles20 = {
 	.name = "gles20",
 	.funcs = {
 		.init = gles20_init,
+		.texture_dump = gles_texture_dump,
 		.screenshot = gles_screenshot,
 		.index_buffer_create = gles20_index_buffer_create,
 		.index_buffer_get_capacity = gles20_index_buffer_get_capacity,

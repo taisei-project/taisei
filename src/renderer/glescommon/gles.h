@@ -16,5 +16,6 @@
 void gles_init(RendererBackend *gles_backend, int major, int minor);
 void gles_init_context(SDL_Window *w);
 bool gles_screenshot(Pixmap *out);
+bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
 
 #endif // IGUARD_renderer_glescommon_gles_h
