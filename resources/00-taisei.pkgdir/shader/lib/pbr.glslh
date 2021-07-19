@@ -27,7 +27,13 @@ struct PBRState {
 	vec3 N; // fragment normal
 	float NdotV;
 	vec3 F0;
+	float roughness2;
+	float roughness4;
+	float geometryKfactor;
+	float geometryNdotVDenomTerm;
 };
+
+float PBR_GeometrySchlickGGXDenom(float NdotV, float k);
 
 PBRState PBR(PBRParams p) {
 	PBRState st;
@@ -36,33 +42,45 @@ PBRState PBR(PBRParams p) {
 	st.V = normalize(-p.fragPos);
 	st.NdotV = max(dot(st.N, st.V), 0.0);
 	st.F0 = mix(vec3(0.04), p.albedo, p.metallic);
+	st.roughness2 = p.roughness * p.roughness;
+	st.roughness4 = st.roughness2 * st.roughness2;
+	// st.geometryKfactor = st.roughness2 * 0.5;
+	st.geometryKfactor = (p.roughness + 1) * 0.125;
+	st.geometryNdotVDenomTerm = PBR_GeometrySchlickGGXDenom(st.NdotV, st.geometryKfactor);
 	return st;
 }
 
-float PBR_DistributionGGX(float NdotH, float roughness) {
-	float a = roughness * roughness;
-	float a2 = a * a;
+vec2 PBR_DistributionGGXFraction(float NdotH, float a2) {
+	// float a = roughness * roughness;
+	// float a2 = a * a;
 	float NdotH2 = NdotH * NdotH;
 
 	float num = a2;
 	float denom = NdotH2 * (a2 - 1.0) + 1.0;
 	denom = pi * denom * denom;
 
-	return num / denom;
+	return vec2(num, denom);
+}
+
+float PBR_DistributionGGX(float NdotH, float a2) {
+	vec2 d = PBR_DistributionGGXFraction(NdotH, a2);
+	return d.x / d.y;
+}
+
+float PBR_GeometrySchlickGGXDenom(float NdotV, float k) {
+	return mix(NdotV, 1, k);
 }
 
 float PBR_GeometrySchlickGGX(float NdotV, float k) {
-	return NdotV / mix(NdotV, 1, k);
+	return NdotV / PBR_GeometrySchlickGGXDenom(NdotV, k);
 }
 
-float PBR_GeometrySmith(float NdotV, float NdotL, float roughness) {
-	// NOTE: if you mess with this function, you should also regenerate the ibl_brdf_lut texture
+float PBR_GeometrySmithDenom(float NdotV, float NdotL, float k) {
+	return PBR_GeometrySchlickGGXDenom(NdotL, k) * PBR_GeometrySchlickGGXDenom(NdotV, k);
+}
 
-	float k = (roughness * roughness) * 0.5;
-// 	float r = roughness + 1.0;
-// 	float k = r * r * 0.125;
-
-	return PBR_GeometrySchlickGGX(NdotL, k) * PBR_GeometrySchlickGGX(NdotV, k);
+float PBR_GeometrySmith(float NdotV, float NdotL, float k) {
+	return NdotV * NdotL / PBR_GeometrySmithDenom(NdotV, NdotL, k);
 }
 
 vec3 PBR_FresnelSchlick(float cosTheta, vec3 F0) {
@@ -94,8 +112,12 @@ vec3 PBR_PointLight(PBRState st, PointLight light) {
 	float HdotV = max(dot(H, st.V), 0.0);
 	float NdotV = st.NdotV;
 
-	float NDF = PBR_DistributionGGX(NdotH, st.params.roughness);
-	float G = PBR_GeometrySmith(NdotV, NdotL, st.params.roughness);
+#if 0
+	/*
+	 * Unoptimized version of this function, for reference
+	 */
+	float NDF = PBR_DistributionGGX(NdotH, st.roughness4);
+	float G = PBR_GeometrySmith(NdotV, NdotL, st.geometryKfactor);
 	vec3 F = PBR_FresnelSchlick(HdotV, st.F0);
 
 	vec3 kS = F;
@@ -103,8 +125,23 @@ vec3 PBR_PointLight(PBRState st, PointLight light) {
 
 	vec3 diffuse = kD * st.params.albedo / pi;
 	vec3 specular = (NDF * G * kS) / max(4.0 * NdotV * NdotL, 0.001);
+	vec3 combined = diffuse + specular;
 
-	return (diffuse + specular) * radiance * NdotL;
+	return combined * radiance * NdotL;
+#else
+	/*
+	 * Optimized version
+	 */
+	vec2 NDF = PBR_DistributionGGXFraction(NdotH, st.roughness4);
+	vec3 F = PBR_FresnelSchlick(HdotV, st.F0);
+	float Gdenom = st.geometryNdotVDenomTerm * PBR_GeometrySchlickGGXDenom(NdotL, st.geometryKfactor);
+
+	vec3 diffuse = mix(0.3183098861837907, 0, st.params.metallic) * st.params.albedo;
+	vec3 specular = vec3(NDF.x / (4 * Gdenom * NDF.y));
+	vec3 combined = mix(diffuse, specular, F);
+
+	return combined * radiance * NdotL;
+#endif
 }
 
 vec3 PBR_ReflectionRay(PBRState st) {
