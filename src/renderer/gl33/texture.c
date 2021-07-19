@@ -35,7 +35,7 @@ static GLenum linear_to_nearest(GLenum filter) {
 			return GL_NEAREST_MIPMAP_NEAREST;
 
 		default:
-			return GL_NONE;
+			return filter;
 	}
 }
 
