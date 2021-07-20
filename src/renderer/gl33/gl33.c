@@ -731,7 +731,7 @@ void gl33_sync_texunit(TextureUnit *unit, bool prepare_rendering, bool ensure_ac
 	}
 
 	if(prepare_rendering) {
-		if(unit->active != NULL) {
+		if(unit->active != NULL && unit->locked_for_target) {
 			gl33_texture_prepare(unit->active);
 		}
 
