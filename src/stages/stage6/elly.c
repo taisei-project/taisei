@@ -12,11 +12,7 @@
 #include "elly.h"
 #include "draw.h"
 
-Scythe scythe_create(cmplx pos) {
-	return (Scythe){ .pos = pos, .scale = 1 };
-}
-
-static void scythe_particles(Scythe *s) {
+static void scythe_particles(EllyScythe *s) {
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/scythe"),
 		.pos = s->pos+I*6*sin(global.frames/25.0),
@@ -38,12 +34,20 @@ static void scythe_particles(Scythe *s) {
 	);
 }
 
-DEFINE_EXTERN_TASK(scythe_update_loop) {
-	for(;; YIELD) {
-		scythe_particles(ARGS.scythe);
-		move_update(&ARGS.scythe->pos, &ARGS.scythe->move);
-		ARGS.scythe->angle += ARGS.scythe->angular_velocity;
+DEFINE_EXTERN_TASK(scythe_visuals, { BoxedEllyScythe scythe; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	for (;;) {
+		scythe_particles(scythe);
+		YIELD;
 	}
+}
+
+
+void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
+	scythe->pos = pos;
+	scythe->scale = 1;
+	INVOKE_TASK(scythe_visuals, ENT_BOX(scythe));
 }
 
 void scythe_draw(Enemy *e, int t, bool render) {
