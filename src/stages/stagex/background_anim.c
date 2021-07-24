@@ -77,14 +77,16 @@ static void animate_bg_intro(StageXDrawData *draw_data) {
 	}
 }
 
-static void animate_bg_descent(StageXDrawData *draw_data, int anim_time) {
+static void animate_bg_descent(StageXDrawData *draw_data, CoEvent *stop_condition) {
 	const float max_dist = 1.5f;
 	const float max_spin = RAD2DEG*0.01f;
 	float dist = 0.0f;
 	float target_dist = 0.0f;
 	float spin = 0.0f;
 
-	for(float a = 0; anim_time > 0; a += 0.01, --anim_time) {
+	CoEventSnapshot snap = coevent_snapshot(stop_condition);
+
+	for(float a = 0; coevent_poll(stop_condition, &snap) == CO_EVENT_PENDING; a += 0.01) {
 		float r = smoothmin(dist, max_dist, max_dist * 0.5);
 
 		stage_3d_context.cam.pos[0] =  r * cos(a);
@@ -104,12 +106,14 @@ static void animate_bg_descent(StageXDrawData *draw_data, int anim_time) {
 	}
 }
 
-static void animate_bg_midboss(StageXDrawData *draw_data, int anim_time) {
+static void animate_bg_midboss(StageXDrawData *draw_data, CoEvent *stop_condition) {
 	float camera_shift_rate = 0;
 
 	// stagetext_add("Midboss time!", CMPLX(VIEWPORT_W, VIEWPORT_H)/2, ALIGN_CENTER, res_font("big"), RGB(1,1,1), 0, 120, 30, 30);
 
-	while(anim_time-- > 0) {
+	CoEventSnapshot snap = coevent_snapshot(stop_condition);
+
+	while(coevent_poll(stop_condition, &snap) == CO_EVENT_PENDING) {
 	// for(;;) {
 		fapproach_p(&camera_shift_rate, 1, 1.0f/120.0f);
 		fapproach_asymptotic_p(&draw_data->plr_influence, 0, 0.01, 1e-4);
@@ -150,7 +154,7 @@ static void animate_bg_post_midboss(StageXDrawData *draw_data, int anim_time) {
 TASK(animate_light, { StageXDrawData *draw_data; }) {
 	StageXDrawData *draw_data = ARGS.draw_data;
 
-	float rate = 1.0f/15.0f;
+	float rate = 1.0f/20.0f;
 
 	for(;;) {
 		Color c;
@@ -160,14 +164,15 @@ TASK(animate_light, { StageXDrawData *draw_data; }) {
 
 		float w = 1.0f - sqrtf(erff(8.0f * c.g));
 		w = lerpf(1.0f, w, draw_data->fog.red_flash_intensity);
-		c.b += w*w*w*w*w;
+// 		c.b += w*w*w*w*w;
 
-		c.r = lerpf(c.r, 1.0f, w);
-		c.g = lerpf(c.g, 1.0f, w);
-		c.b = lerpf(c.b, 1.0f, w);
+		float b = 0.1;
+		c.r = lerpf(c.r, 0.3f*b, w);
+		c.g = lerpf(c.g, 0.1f*b, w);
+		c.b = lerpf(c.b, 0.8f*b, w);
 		c.a = 1.0f;
 
-		color_lerp(&c, RGBA(1, 1, 1, 1), 0.2);
+// 		color_lerp(&c, RGBA(1, 1, 1, 1), 0.2);
 		draw_data->fog.color = c;
 
 		YIELD;
@@ -182,20 +187,29 @@ TASK(animate_bg, { StageXDrawData *draw_data; }) {
 	INVOKE_TASK(animate_light, draw_data);
 
 	INVOKE_TASK_DELAYED(140, animate_value, &draw_data->fog.opacity, 1.0f, 1.0f/80.0f);
-	INVOKE_TASK_DELAYED(140, animate_value_asymptotic, &draw_data->fog.exponent, 24.0f, 0.004f);
+	INVOKE_TASK_DELAYED(140, animate_value_asymptotic, &draw_data->fog.exponent, 42.0f, 0.004f);
 	INVOKE_TASK(animate_value, &draw_data->plr_influence, 1.0f, 1.0f/120.0f);
 	animate_bg_intro(draw_data);
 	INVOKE_TASK_DELAYED(520, animate_value, &draw_data->fog.red_flash_intensity, 1.0f, 1.0f/320.0f);
 	INVOKE_TASK_DELAYED(200, animate_value, &stage_3d_context.cam.vel[2], -0.56f, 0.002f);
-	animate_bg_descent(draw_data, 60 * 20);
-	animate_bg_midboss(draw_data, 60 * 10);
+	animate_bg_descent(draw_data, &draw_data->events.next_phase);
+	animate_bg_midboss(draw_data, &draw_data->events.next_phase);
 	animate_bg_post_midboss(draw_data, 60 * 7);
-	INVOKE_TASK_DELAYED(120, animate_value, &draw_data->tower_partial_dissolution, 1.0f, 1.0f/600.0f);
-	animate_bg_descent(draw_data, 60 * 20);
+	animate_bg_descent(draw_data, &draw_data->events.next_phase);
 	INVOKE_TASK(animate_value_asymptotic, &draw_data->fog.exponent, 8.0f, 0.01f);
 	INVOKE_TASK(animate_value, &draw_data->tower_global_dissolution, 1.0f, 1.0f/180.0f);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[0], 0, 0.02, 1e-4);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[1], 0, 0.02, 1e-4);
+}
+
+void stagex_bg_trigger_next_phase(void) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+	coevent_signal(&draw_data->events.next_phase);
+}
+
+void stagex_bg_trigger_tower_dissolve(void) {
+	StageXDrawData *draw_data = stagex_get_draw_data();
+	INVOKE_TASK(animate_value, &draw_data->tower_partial_dissolution, 1.0f, 1.0f/600.0f);
 }
 
 void stagex_bg_init_fullstage(void) {

@@ -12,12 +12,15 @@
 #include "yumemi.h"
 #include "stagex.h"
 #include "draw.h"
+#include "background_anim.h"
 #include "nonspells/nonspells.h"
 
 #include "stage.h"
 #include "global.h"
 #include "common_tasks.h"
 #include "enemy_classes.h"
+
+#define BPM168_4BEATS 86
 
 static void stagex_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;
@@ -249,17 +252,20 @@ TASK(scuttle_appear, { cmplx pos; }) {
 }
 
 TASK(scuttleproj_appear) {
+	STAGE_BOOKMARK(scuttleproj);
+
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.pos = VIEWPORT_W/2,
 		.proto = pp_soul,
 		.color = RGBA(0,0.2,1,0),
-		.move = move_towards(global.plr.pos, 0.015),
+		.move = move_towards(global.plr.pos, 0.01),
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION | PFLAG_NOAUTOREMOVE,
 	));
+
 	WAIT(20);
 
 	int num_spots = 32;
-	for(int i = 0; i < 400; i++) {
+	for(int i = 0; i < BPM168_4BEATS * 3; i++) {
 		int spot = rng_range(0,num_spots);
 		cmplx offset = cdir(M_TAU/num_spots*spot);
 		real clr = rng_range(0,1);
@@ -325,6 +331,7 @@ TASK(spawn_boss) {
 	boss_engage(boss);
 }
 
+#if 0
 DEFINE_EXTERN_TASK(stagex_timeline) {
 	for(int i = 0; i < 20; i++) {
 		real rx = rng_range(-1,1)*100;
@@ -362,6 +369,166 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(240);
 	stagex_dialog_post_boss();
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
+
+	WAIT(5);
+	stage_finish(GAMEOVER_SCORESCREEN);
+}
+#endif
+
+TASK(rotate_velocity, {
+	MoveParams *move;
+	real angle;
+	int duration;
+}) {
+	cmplx r = cdir(ARGS.angle / ARGS.duration);
+	ARGS.move->retention *= r;
+	WAIT(ARGS.duration);
+	ARGS.move->retention /= r;
+}
+
+static void set_turning_motion(Enemy *e, cmplx v, real turn_angle, int turn_delay, int turn_duration) {
+	e->move = move_linear(v);
+	INVOKE_SUBTASK_DELAYED(turn_delay, rotate_velocity,
+		.move = &e->move,
+		.angle = turn_angle,
+		.duration = turn_duration
+  	);
+}
+
+TASK(midswirl, {
+	cmplx pos;
+	cmplx vel;
+	real turn_angle;
+	int turn_delay;
+	int turn_duration;
+}) {
+	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 1)));
+	set_turning_motion(e, ARGS.vel, ARGS.turn_angle, ARGS.turn_delay, ARGS.turn_duration);
+
+	for(;;WAIT(6)) {
+// 		play_sfx("shot1");
+
+		cmplx aim = cnormalize(global.plr.pos - e->pos);
+
+		PROJECTILE(
+			.pos = e->pos,
+			.proto = pp_ball,
+			.color = RGB(0, 0, 1),
+			.move = move_asymptotic_simple(aim * 5, 6),
+		);
+	}
+
+	STALL;
+}
+
+TASK(midswirls, {
+	int count;
+	cmplx pos;
+	cmplx vel;
+	real turn_angle;
+	int turn_delay;
+	int turn_duration;
+}) {
+	for(int i = 0; i < ARGS.count; ++i, WAIT(12)) {
+		INVOKE_TASK(midswirl,
+			.pos = ARGS.pos,
+			.vel = ARGS.vel,
+			.turn_angle = ARGS.turn_angle,
+			.turn_delay = ARGS.turn_delay,
+			.turn_duration = ARGS.turn_duration
+		);
+	}
+}
+
+static int midboss_section(void) {
+	int t = 0;
+
+	STAGE_BOOKMARK(midboss);
+	stagex_bg_trigger_next_phase();
+	t += WAIT(BPM168_4BEATS * 1.25);
+	play_sfx("shot_special1");
+
+	INVOKE_TASK(midswirls,
+		.count = 8,
+		.pos = 0 + 64*I,
+		.vel = 8,
+		.turn_angle = M_PI,
+		.turn_delay = 20,
+		.turn_duration = 30
+	);
+
+	t += WAIT(BPM168_4BEATS);
+
+	INVOKE_TASK(midswirls,
+		.count = 8,
+		.pos = VIEWPORT_W + 64*I,
+		.vel = -8,
+		.turn_angle = -M_PI,
+		.turn_delay = 20,
+		.turn_duration = 30
+	);
+
+	t += WAIT(BPM168_4BEATS);
+
+	INVOKE_TASK(midswirls,
+		.count = 8,
+		.pos = 0 + 260*I,
+		.vel = 8,
+		.turn_angle = 3*M_PI/2,
+		.turn_delay = 20,
+		.turn_duration = 30
+	);
+
+	INVOKE_TASK(midswirls,
+		.count = 8,
+		.pos = VIEWPORT_W + 260*I,
+		.vel = -8,
+		.turn_angle = -3*M_PI/2,
+		.turn_delay = 20,
+		.turn_duration = 30
+	);
+
+	t += WAIT(BPM168_4BEATS * 2);
+
+	INVOKE_TASK(scuttleproj_appear);
+	INVOKE_TASK(ngoner_fairy, 140 + 140 * I);
+	t += WAIT(BPM168_4BEATS);
+	INVOKE_TASK(ngoner_fairy, VIEWPORT_W - 140 + 140 * I);
+	t += WAIT(BPM168_4BEATS);
+	while(!global.boss) {
+		++t;
+		YIELD;
+	}
+	log_debug("midboss spawn: %i", t);
+	t += WAIT_EVENT_OR_DIE(&NOT_NULL(global.boss)->events.defeated).frames;
+	log_debug("midboss defeat: %i", t);
+	STAGE_BOOKMARK(post-midboss);
+
+	return t;
+}
+
+DEFINE_EXTERN_TASK(stagex_timeline) {
+	WAIT(5762);
+	int midboss_time = midboss_section();
+	stagex_bg_trigger_next_phase();
+	WAIT(4140 - midboss_time);
+	stagex_bg_trigger_tower_dissolve();
+	STAGE_BOOKMARK(post-midboss-filler);
+	WAIT(BPM168_4BEATS * 24);
+	stagex_bg_trigger_next_phase();
+
+	STAGE_BOOKMARK(pre-boss);
+	WAIT(BPM168_4BEATS * 3);
+
+	INVOKE_TASK(spawn_boss);
+	while(!global.boss) YIELD;
+	WAIT_EVENT_OR_DIE(&global.boss->events.defeated);
+
+	stage_unlock_bgm("stagexboss");
+
+	WAIT(240);
+	stagex_dialog_post_boss();
+	WAIT_EVENT_OR_DIE(&global.dialog->events.fadeout_began);
 
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);

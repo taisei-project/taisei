@@ -13,6 +13,7 @@
 
 #include "renderer/api.h"
 #include "stagedraw.h"
+#include "stageutils.h"
 
 typedef struct StageXDrawData {
 	float plr_yaw;
@@ -33,11 +34,21 @@ typedef struct StageXDrawData {
 		Framebuffer *spell_background_lq;
 	} fb;
 
+	struct {
+		PBRModel metal;
+		PBRModel stairs;
+		PBRModel wall;
+	} models;
+
+	Texture *env_map;
+
 	float codetex_num_segments;
 	float codetex_aspect[2];
 	float tower_global_dissolution;
 	float tower_partial_dissolution;
 	float tower_spin;
+
+	COEVENTS_ARRAY(next_phase) events;
 } StageXDrawData;
 
 void stagex_drawsys_init(void);
