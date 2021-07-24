@@ -2,23 +2,9 @@
  * This software is licensed under the terms of the MIT License.
  * See COPYING for further information.
  * ---
-<<<<<<< HEAD
  * Copyright (c) 2011-2024, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
-
-||||||| parent of 93f0d49c5 (attempt to rebase Yumemi branch - several things don't work, but the broad strokes are there, and the level 'plays')
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-=======
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
-*/
-
-#include "boss.h"
->>>>>>> 93f0d49c5 (attempt to rebase Yumemi branch - several things don't work, but the broad strokes are there, and the level 'plays')
 
 #include "nonspells.h"
 
