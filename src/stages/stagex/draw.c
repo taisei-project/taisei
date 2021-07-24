@@ -17,6 +17,7 @@
 #include "stagedraw.h"
 #include "util/glm.h"
 #include "coroutine.h"
+#include "resource/model.h"
 
 static StageXDrawData *draw_data;
 
@@ -52,31 +53,54 @@ static bool should_draw_tower_postprocess(void) {
  * BEGIN background render
  */
 
+static void lightwave(Camera3D *cam, PointLight3D *light, float t) {
+	float s = -sawtooth(t);
+	float a = 1.0f - s * s;
+	a = smoothstep(0.0, 1.0, a);
+	a = smoothstep(0.0, 1.0, a);
 
-static void stagex_bg_setup_pbr_lighting(void) {
-	Camera3D *cam = &stage_3d_context.cam;
+	glm_vec3_scale(light->pos, s, light->pos);
+	glm_vec3_add(light->pos, cam->pos, light->pos);
+	glm_vec3_scale(light->radiance, a, light->radiance);
+}
+
+static void stagex_bg_setup_pbr_lighting(Camera3D *cam) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
-	float p = 300;
+	float p = 100;
 	float f = 10000 * draw_data->fog.opacity;
 
 	Color c = draw_data->fog.color;
 	color_mul_scalar(&c, f);
 
+	float l = 500;
+
 	PointLight3D lights[] = {
-		{ { cam->pos[0], cam->pos[1], cam->pos[2] }, { 0.9*p, 0.8*p, p } },
-		{ { cam->pos[0], cam->pos[1], cam->pos[2] + 60}, { c.r, c.g, c.b } },
+		{ { cam->pos[0], cam->pos[1], cam->pos[2] }, { 0.8, 0.5, 1.0 } },
+		{ { 0, 0, STAGEX_BG_MAX_RANGE/6 }, { l, l/4, 0 } },
 	};
 
-	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
+	lightwave(cam, lights+1, draw_data->fog.t / M_TAU + 0.1f);
 
-	float a = 0;
-	r_uniform_vec3("ambient_color", a, a, a);
+	glm_vec3_scale(lights[0].radiance, p, lights[0].radiance);
+	glm_vec3_scale(lights[1].radiance, draw_data->fog.red_flash_intensity, lights[1].radiance);
+
+	vec3 r;
+	camera3d_unprojected_ray(cam, global.plr.pos, r);
+	glm_vec3_scale(r, 2, r);
+	glm_vec3_add(lights[0].pos, r, lights[0].pos);
+
+	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
 }
 
+static void stagex_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
+	stagex_bg_setup_pbr_lighting(cam);
+	env->environment_map = draw_data->env_map;
+// 	glm_vec3_broadcast(0.1, env->ambient_color);
+	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
+}
 
 static void bg_begin_3d(void) {
-	r_mat_proj_perspective(STAGE3D_DEFAULT_FOVY, STAGE3D_DEFAULT_ASPECT, 1700, STAGEX_BG_MAX_RANGE);
 	stage_3d_context.cam.rot.pitch += draw_data->plr_pitch;
 	stage_3d_context.cam.rot.yaw += draw_data->plr_yaw;
 }
@@ -87,104 +111,66 @@ static void bg_end_3d(void) {
 }
 
 static uint bg_tower_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-#if 0
 	vec3 p = { 0, 0, 0 };
 	vec3 r = { 0, 0, STAGEX_BG_SEGMENT_PERIOD };
-
-	maxrange /= 2;
-
-	uint pnum = linear3dpos(s3d, pos, maxrange, p, r);
-
-	for(uint i = 0; i < pnum; ++i) {
-		stage_3d_context.pos_buffer[i][2] -= maxrange - r[2];
-	}
-
-	return pnum;
-#else
-	vec3 p = {0, 0, 0};
-	vec3 r = {0, 0, STAGEX_BG_SEGMENT_PERIOD};
-
 	return linear3dpos(s3d, pos, maxrange, p, r);
-#endif
-}
-
-static void draw_tower(vec3 pos) {
-	r_state_push();
-	r_mat_mv_push();
-	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-
-	r_shader("pbr");
-	stagex_bg_setup_pbr_lighting();
-
-	r_uniform_float("metallic", 0);
-	r_uniform_sampler("tex", "stage5/stairs_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/stairs_roughness");
-	r_uniform_sampler("normal_map", "stage5/stairs_normal");
-	r_uniform_sampler("ambient_map", "stage5/stairs_ambient");
-	r_draw_model("stage5/stairs");
-
-	r_uniform_sampler("tex", "stage5/wall_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/wall_roughness");
-	r_uniform_sampler("normal_map", "stage5/wall_normal");
-	r_uniform_sampler("ambient_map", "stage5/wall_ambient");
-	r_draw_model("stage5/wall");
-
-	r_uniform_float("metallic", 1);
-	r_uniform_vec3("ambient_color",0,0,0);
-	r_uniform_sampler("tex", "stage5/metal_diffuse");
-	r_uniform_sampler("roughness_map", "stage5/metal_roughness");
-	r_uniform_sampler("normal_map", "stage5/metal_normal");
-	r_draw_model("stage5/metal");
-
-	r_mat_mv_pop();
-	r_state_pop();
-}
-
-static void bg_tower_draw(vec3 pos, bool is_mask) {
-	r_state_push();
-	r_mat_mv_push();
-// 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
-// 	r_mat_mv_scale(300,300,300);
-
-	if(is_mask) {
-		uint32_t tmp = float_to_bits(pos[2]);
-		float tex_ofs_x = fsplitmix(&tmp);
-		float tex_ofs_y = fsplitmix(&tmp);
-		float tex_rot = fsplitmix(&tmp);
-		float tex_scale_x = 0.7 + fsplitmix(&tmp) * 0.4;
-		float tex_scale_y = 0.7 + fsplitmix(&tmp) * 0.4;
-		float phase = fsplitmix(&tmp);
-		r_mat_tex_push();
-		r_mat_tex_translate(tex_ofs_x, tex_ofs_y, 0);
-		r_mat_tex_rotate(tex_rot * M_PI * 2, 0, 0, 1);
-		r_mat_tex_scale(tex_scale_x, tex_scale_y, 0);
-		r_shader("extra_tower_mask");
-		r_uniform_sampler("tex", "cell_noise");
-		r_uniform_sampler("tex2", "stagex/dissolve_mask");
-		r_uniform_float("time", global.frames/60.0f + phase * M_PI * 2.0f);
-		r_uniform_float("dissolve", draw_data->tower_partial_dissolution * draw_data->tower_partial_dissolution);
-		r_draw_model("tower_alt_uv");
-		r_mat_tex_pop();
-	} else {
-// 		r_shader("tower_light");
-// 		r_uniform_sampler("tex", "stage5/tower");
-// 		r_uniform_vec3("lightvec", 0, 0, 0);
-// 		r_uniform_vec4("color", 0.1, 0.1, 0.5, 1);
-// 		r_uniform_float("strength", 0.5);
-// 		r_draw_model("tower");
-		draw_tower(pos);
-	}
-
-	r_mat_mv_pop();
-	r_state_pop();
 }
 
 static void bg_tower_draw_solid(vec3 pos) {
-	bg_tower_draw(pos, false);
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_translate_v(pos);
+
+	r_shader("pbr");
+
+	PBREnvironment env = { 0 };
+	stagex_bg_setup_pbr_env(&stage_3d_context.cam, &env);
+
+	pbr_draw_model(&draw_data->models.metal, &env);
+	pbr_draw_model(&draw_data->models.stairs, &env);
+	pbr_draw_model(&draw_data->models.wall, &env);
+
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void bg_tower_draw_mask(vec3 pos) {
-	bg_tower_draw(pos, true);
+	r_state_push();
+	r_mat_mv_push();
+	r_mat_mv_translate_v(pos);
+
+	uint32_t tmp = float_to_bits(pos[2]);
+	float tex_ofs_x = fsplitmix(&tmp);
+	float tex_ofs_y = fsplitmix(&tmp);
+	float tex_rot = fsplitmix(&tmp);
+	float tex_scale_x = 0.7 + fsplitmix(&tmp) * 0.4;
+	float tex_scale_y = 0.7 + fsplitmix(&tmp) * 0.4;
+	float phase = fsplitmix(&tmp);
+	r_mat_tex_push();
+	r_mat_tex_translate(tex_ofs_x, tex_ofs_y, 0);
+	r_mat_tex_rotate(tex_rot * M_PI * 2, 0, 0, 1);
+	r_mat_tex_scale(tex_scale_x, tex_scale_y, 0);
+	r_shader("extra_tower_mask");
+	r_uniform_sampler("tex_noise", "cell_noise");
+	r_uniform_sampler("tex_mask", "stagex/dissolve_mask");
+	r_uniform_float("time", global.frames/60.0f + phase * M_PI * 2.0f);
+	r_uniform_float("dissolve", draw_data->tower_partial_dissolution * draw_data->tower_partial_dissolution);
+
+	mat4 inv, w;
+	camera3d_apply_inverse_transforms(&stage_3d_context.cam, inv);
+	glm_mat4_mul(inv, *r_mat_mv_current_ptr(), w);
+	r_uniform_mat4("world_from_model", w);
+
+	r_uniform_sampler("tex_mod", NOT_NULL(draw_data->models.metal.mat->roughness_map));
+	r_draw_model_ptr(draw_data->models.metal.mdl, 0, 0);
+	r_uniform_sampler("tex_mod", NOT_NULL(draw_data->models.stairs.mat->roughness_map));
+	r_draw_model_ptr(draw_data->models.stairs.mdl, 0, 0);
+	r_uniform_sampler("tex_mod", NOT_NULL(draw_data->models.wall.mat->roughness_map));
+	r_draw_model_ptr(draw_data->models.wall.mdl, 0, 0);
+
+	r_mat_tex_pop();
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 static void set_bg_uniforms(void) {
@@ -213,6 +199,7 @@ void stagex_draw_background(void) {
 		};
 
 		stage3d_draw(&stage_3d_context, STAGEX_BG_MAX_RANGE, ARRAY_SIZE(segs), segs);
+
 		bg_end_3d();
 	} else {
 		r_state_push();
@@ -241,18 +228,19 @@ void stagex_draw_background(void) {
 static void render_tower_mask(Framebuffer *fb) {
 	r_state_push();
 	r_mat_proj_push();
-	bg_begin_3d();
 	r_enable(RCAP_DEPTH_TEST);
 
 	r_framebuffer(fb);
 	r_clear(CLEAR_ALL, RGBA(1, 1, 1, draw_data->tower_global_dissolution), 1);
 
-	r_mat_mv_push();
-	stage3d_apply_transforms(&stage_3d_context, *r_mat_mv_current_ptr());
-	stage3d_draw_segment(&stage_3d_context, bg_tower_pos, bg_tower_draw_mask, STAGEX_BG_MAX_RANGE);
-	r_mat_mv_pop();
+	bg_begin_3d();
+	Stage3DSegment segs[] = {
+		{ bg_tower_draw_mask, bg_tower_pos },
+	};
 
+	stage3d_draw(&stage_3d_context, STAGEX_BG_MAX_RANGE, ARRAY_SIZE(segs), segs);
 	bg_end_3d();
+
 	r_mat_proj_pop();
 	r_state_pop();
 }
@@ -264,6 +252,8 @@ static bool bg_effect_tower_mask(Framebuffer *fb) {
 
 	Framebuffer *mask_fb = draw_data->fb.tower_mask;
 	render_tower_mask(mask_fb);
+
+	r_blend(BLEND_NONE);
 
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
@@ -314,8 +304,8 @@ static bool bg_effect_fog(Framebuffer *fb) {
 }
 
 ShaderRule stagex_bg_effects[] = {
-// 	bg_effect_tower_mask,
-// 	bg_effect_copy_depth,
+	bg_effect_tower_mask,
+	bg_effect_copy_depth,
 	bg_effect_fog,
 	NULL
 };
@@ -363,11 +353,6 @@ static bool postprocess_glitch(Framebuffer *fb) {
 	r_uniform_vec3_vec("times", t);
 	r_uniform_sampler("mask", r_framebuffer_get_attachment(glitch_mask, FRAMEBUFFER_ATTACH_COLOR0));
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-	/*
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(100, 100, 100, 0);
-	draw_framebuffer_tex(glitch_mask, VIEWPORT_W, VIEWPORT_H);
-	*/
 	r_state_pop();
 
 	return true;
@@ -390,8 +375,9 @@ TASK(update_camera) {
 	for(;;) {
 		stage3d_update(&stage_3d_context);
 		stage_3d_context.cam.rot.roll += draw_data->tower_spin;
-		float yaw   = 10.0f * (crealf(global.plr.pos) / VIEWPORT_W - 0.5f) * draw_data->plr_influence;
-		float pitch = 10.0f * (cimagf(global.plr.pos) / VIEWPORT_H - 0.5f) * draw_data->plr_influence;
+		float p = draw_data->plr_influence;
+		float yaw   = 10.0f * (crealf(global.plr.pos) / VIEWPORT_W - 0.5f) * p;
+		float pitch = 10.0f * (cimagf(global.plr.pos) / VIEWPORT_H - 0.5f) * p;
 		fapproach_asymptotic_p(&draw_data->plr_yaw,   yaw,   0.03, 1e-4);
 		fapproach_asymptotic_p(&draw_data->plr_pitch, pitch, 0.03, 1e-4);
 		YIELD;
@@ -490,10 +476,19 @@ void stagex_drawsys_init(void) {
 	draw_data->codetex_aspect[0] = 1;
 	draw_data->codetex_aspect[1] = 0.5/(seg_aspect/viewport_aspect);
 
+	pbr_load_model(&draw_data->models.metal,  "stage5/metal",  "stage5/metal");
+	pbr_load_model(&draw_data->models.stairs, "stage5/stairs", "stage5/stairs");
+	pbr_load_model(&draw_data->models.wall,   "stage5/wall",   "stage5/wall");
+
+	draw_data->env_map = res_texture("stage5/envmap");
+
+	COEVENT_INIT_ARRAY(draw_data->events);
+
 	INVOKE_TASK(update_camera);
 }
 
 void stagex_drawsys_shutdown(void) {
+	COEVENT_CANCEL_ARRAY(draw_data->events);
 	free(draw_data);
 	draw_data = NULL;
 	stage3d_shutdown(&stage_3d_context);

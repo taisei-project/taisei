@@ -14,5 +14,7 @@
 #include "coroutine.h"
 
 void stagex_bg_init_fullstage(void);
+void stagex_bg_trigger_next_phase(void);
+void stagex_bg_trigger_tower_dissolve(void);
 
 #endif // IGUARD_stages_stagex_background_anim_h
