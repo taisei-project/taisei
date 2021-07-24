@@ -60,7 +60,7 @@ void camera3d_apply_inverse_transforms(Camera3D *cam, mat4 mat) {
 	mat4 temp;
 	glm_mat4_identity(temp);
 	camera3d_apply_transforms(cam, temp);
-	glm_mat4_inv_fast(temp, mat);
+	glm_mat4_inv_precise(temp, mat);
 }
 
 void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
