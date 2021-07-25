@@ -1601,6 +1601,15 @@ Attack *boss_add_attack_from_info_with_args(
 	return a;
 }
 
+Attack *boss_add_attack_task_with_args(
+	Boss *boss, AttackType type, char *name, float timeout, int hp,
+	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args
+) {
+	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	setup_attack_task_with_custom_args(boss, a, task, args.ptr, args.size);
+	return a;
+}
+
 Boss *_init_boss_attack_task(const BossAttackTaskArgs *args) {
 	Boss *pboss = TASK_BIND(args->boss);
 	CANCEL_TASK_AFTER(&args->attack->events.finished, THIS_TASK);

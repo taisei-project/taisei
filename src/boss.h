@@ -204,6 +204,10 @@ Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, 
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
+Attack *boss_add_attack_task_with_args(
+	Boss *boss, AttackType type, char *name, float timeout, int hp,
+	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args)
+	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move)
 	attr_nonnull(1, 2) attr_returns_nonnull;
 Attack *boss_add_attack_from_info_with_args(Boss *boss, AttackInfo *info, BossAttackTaskCustomArgs args)
