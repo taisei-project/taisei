@@ -16,6 +16,12 @@
 
 #define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)
 
+DEFINE_TASK_INTERFACE_WITH_BASE(ScytheAttack, BossAttack, {
+	BoxedEllyScythe scythe;
+});
+typedef TASK_IFACE_ARGS_TYPE(ScytheAttack) ScytheAttackTaskArgs;
+Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args);
+
 void elly_spellbg_toe(Boss*, int);
 
 void elly_curvature(Boss*, int);

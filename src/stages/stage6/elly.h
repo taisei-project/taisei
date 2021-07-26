@@ -22,22 +22,23 @@ Boss* stage6_spawn_elly(cmplx pos);
 
 DEFINE_ENTITY_TYPE(EllyScythe, {
     cmplx pos;
-    float angle;
+    real angle;
     float scale;
 
-    // optional, if you want to detect when the thing despawns
-    /*COEVENTS_ARRAY(
+    MoveParams move;
+
+    COEVENTS_ARRAY(
         despawned
-    ) events;*/
+    ) events;
 });
 
-Scythe scythe_create(cmplx pos);
-// Make sure this task only runs as long as the pointer is valid.
-DECLARE_EXTERN_TASK(scythe_update_loop, { Scythe *scythe; });
+EllyScythe *stage6_host_elly_scythe(cmplx pos);
 
-DECLARE_EXTERN_TASK(scythe_visuals, { BoxedEllyScythe scythe; });
+// duration < 0 means infinite duration
+DECLARE_EXTERN_TASK(stage6_elly_scythe_spin, { BoxedEllyScythe scythe; real angular_velocity; int duration; });
+
+	
 void scythe_draw(Enemy *, int, bool);
-
 void scythe_common(Enemy*, int);
 int scythe_reset(Enemy*, int);
 int scythe_infinity(Enemy*, int);

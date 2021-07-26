@@ -11,6 +11,14 @@
 #include "global.h"
 #include "elly.h"
 #include "draw.h"
+#include "spells/spells.h"
+
+Boss* stage6_spawn_elly(cmplx pos) {
+	Boss *b = create_boss("Elly", "elly", pos);
+	boss_set_portrait(b, "elly", NULL, "normal");
+	b->global_rule = elly_global_rule;
+	return b;
+}
 
 static void scythe_particles(EllyScythe *s) {
 	PARTICLE(
@@ -34,7 +42,7 @@ static void scythe_particles(EllyScythe *s) {
 	);
 }
 
-DEFINE_EXTERN_TASK(scythe_visuals, { BoxedEllyScythe scythe; }) {
+TASK(scythe_visuals, { BoxedEllyScythe scythe; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 
 	for (;;) {
@@ -43,6 +51,14 @@ DEFINE_EXTERN_TASK(scythe_visuals, { BoxedEllyScythe scythe; }) {
 	}
 }
 
+TASK(scythe_update, { BoxedEllyScythe scythe; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	for (;;) {
+		move_update(&scythe->pos, &scythe->move);
+		YIELD;
+	}
+}
 
 void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	scythe->pos = pos;
@@ -50,7 +66,32 @@ void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	INVOKE_TASK(scythe_visuals, ENT_BOX(scythe));
 }
 
-void scythe_draw(Enemy *e, int t, bool render) {
+Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args) {
+	if(ENT_UNBOX(args->scythe) == NULL) {
+	//	args->scythe = ENT_BOX();
+	}
+
+	return INIT_BOSS_ATTACK(&args->base);
+}
+
+
+EllyScythe *stage6_host_elly_scythe(cmplx pos) {
+	EllyScythe *scythe = TASK_HOST_ENT(EllyScythe);
+	TASK_HOST_EVENTS(scythe->events);
+	stage6_init_elly_scythe(scythe, pos);
+	return scythe;
+}
+
+DEFINE_EXTERN_TASK(stage6_elly_scythe_spin) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+	for(int i = 0; i != ARGS.duration; i++) {
+		scythe->angle += ARGS.angular_velocity;
+		YIELD;
+	}
+}
+
+// REMOVE
+void scythe_draw(Enemy *e, int, bool) {
 }
 
 // REMOVE

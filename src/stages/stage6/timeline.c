@@ -15,6 +15,7 @@
 #include "enemy_classes.h"
 
 #include "elly.h"
+#include "spells/spells.h"
 #include "nonspells/nonspells.h"
 
 #include "common_tasks.h"
@@ -114,17 +115,18 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 	}
 }
 
-TASK(scythe_mid_aimshot, { Scythe *scythe; }) {
+TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 	for(int i = 0;; i++, WAIT(2)) {
-		cmplx dir = cdir(ARGS.scythe->angular_velocity * i);
+		cmplx dir = cdir(scythe->angle);
 
 		real speed = difficulty_value(0.01, 0.02, 0.03, 0.04);
 
 		Projectile *p = PROJECTILE(
 			.proto = pp_ball,
-			.pos = ARGS.scythe->pos + 80 * dir,
+			.pos = scythe->pos + 80 * dir,
 			.color = RGBA(0, 0.2, 0.5, 0.0),
-			.move = move_accelerated(dir, speed * cnormalize(global.plr.pos - ARGS.scythe->pos - 80 * dir))
+			.move = move_accelerated(dir, speed * cnormalize(global.plr.pos - scythe->pos - 80 * dir))
 		);
 
 		if(projectile_in_viewport(p)) {
@@ -136,24 +138,25 @@ TASK(scythe_mid_aimshot, { Scythe *scythe; }) {
 
 TASK(scythe_mid, { cmplx pos; }) {
 	STAGE_BOOKMARK(scythe-mid);
-	Scythe s = scythe_create(ARGS.pos);
-	INVOKE_SUBTASK(scythe_update_loop, &s);
+	EllyScythe *s = stage6_host_elly_scythe(ARGS.pos);
+	INVOKE_SUBTASK(stage6_elly_scythe_spin, ENT_BOX(s),
+		       .angular_velocity = 0.2,
+		       .duration = -1);
 
 	real scythe_speed = difficulty_value(5, 4, 2, 1);
 
-	s.move = move_accelerated(scythe_speed, - 0.005 * I);
-	s.angular_velocity = 0.2;
+	s->move = move_accelerated(scythe_speed, - 0.005 * I);
 
 	if(global.diff > D_Normal) {
-		INVOKE_SUBTASK(scythe_mid_aimshot, .scythe = &s);
+		INVOKE_SUBTASK(scythe_mid_aimshot, ENT_BOX(s));
 	}
 	
 	for(int i = 0; i < 300; i++, YIELD) {
 		play_sfx_loop("shot1_loop");
-		cmplx dir = cdir(s.angular_velocity * i);
+		cmplx dir = cdir(s->angle);
 		Projectile *p = PROJECTILE(
 			.proto = pp_bigball,
-			.pos = s.pos + 80 * dir,
+			.pos = s->pos + 80 * dir,
 			.color = RGBA(0.2, 0.5 - 0.5 * cimag(dir), 0.5 + 0.5 * creal(dir), 0.0),
 		);
 
@@ -181,35 +184,18 @@ static int scythe_intro(Enemy *e, int t) {
 	scythe_common(e, t);
 	return 1;
 }
+*/
+TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
+	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 
-static void elly_intro(Boss *b, int t) {
-	TIMER(&t);
+	EllyScythe *scythe = ENT_UNBOX(ARGS.scythe);
 
-	if(global.stage->type == STAGE_SPELL) {
-		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.1);
+	WAIT(200);
 
-		AT(0) {
-			create_enemy3c(VIEWPORT_W+200.0*I, ENEMY_IMMUNE, scythe_draw, scythe_intro, 0, 1+0.2*I, 1);
-		}
-
-		return;
-	}
-
-	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.01);
-
-	AT(200) {
-		create_enemy3c(VIEWPORT_W+200+200.0*I, ENEMY_IMMUNE, scythe_draw, scythe_intro, 0, 1+0.2*I, 1);
-	}
-
-	AT(300)
-		stage6_dialog_pre_boss();
-}*/
-
-Boss* stage6_spawn_elly(cmplx pos) {
-	Boss *b = create_boss("Elly", "elly", pos);
-	boss_set_portrait(b, "elly", NULL, "normal");
-	b->global_rule = elly_global_rule;
-	return b;
+	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	
 }
 /*
 static void elly_insert_interboss_dialog(Boss *b, int t) {
@@ -234,15 +220,29 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 }
 
 TASK_WITH_INTERFACE(elly_goto_center, BossAttack) {
-	Boss *boss = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 }
+
+TASK(host_scythe, { cmplx pos; BoxedEllyScythe *out_scythe; }) {
+	EllyScythe *scythe = stage6_host_elly_scythe(ARGS.pos);
+	*ARGS.out_scythe = ENT_BOX(scythe);
+	WAIT_EVENT(&scythe->events.despawned);
+}
+
 
 TASK(spawn_boss, NO_ARGS) {
 	STAGE_BOOKMARK(boss);
 
-	Boss *boss = global.boss = stage6_spawn_elly(VIEWPORT_W + 180 + 100.0*I);
+	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
+
+	BoxedEllyScythe scythe_ref;
+	BoxedTask scythe_task = cotask_box(INVOKE_SUBTASK(host_scythe, VIEWPORT_W+100+200*I, &scythe_ref));
+
+	ScytheAttackTaskArgs scythe_args = TASK_IFACE_SARGS(ScytheAttack,
+	  .scythe = scythe_ref
+	);
 
 	PlayerMode *pm = global.plr.mode;
 	Stage6PreBossDialogEvents *e;
@@ -251,22 +251,9 @@ TASK(spawn_boss, NO_ARGS) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_add_attack_task(boss, AT_Normal, "Cards1", 60, 30000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_1), NULL);
-	boss_add_attack_from_info(boss, &stage2_spells.boss.amulet_of_harm, false);
-	boss_add_attack_task(boss, AT_Normal, "Cards2", 60, 20000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_2), NULL);
-	boss_add_attack_from_info(boss, &stage2_spells.boss.bad_pick, false);
-	boss_add_attack_task(boss, AT_Normal, "Cards3", 60, 45000, TASK_INDIRECT(BossAttack, stage2_boss_nonspell_3), NULL);
-	boss_add_attack_from_info(boss, &stage2_spells.boss.wheel_of_fortune, false);
-	boss_add_attack_from_info(boss, &stage2_spells.extra.monty_hall_danmaku, false);
-
-	boss_start_attack(boss, boss->attacks);
-}
-
-static Boss* create_elly(void) {
-	Boss *b = stage6_spawn_elly(-200.0*I);
-
-	boss_add_attack(b, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-	boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);
+	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 60, 30000, TASK_INDIRECT(ScytheAttack, elly_intro), NULL, &scythe_args);
+	//boss_add_attack(boss, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
+	/*boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.occams_razor, false);
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
@@ -283,10 +270,9 @@ static Boss* create_elly(void) {
 	boss_add_attack(b, AT_Move, "Move to center", 4, 0, elly_goto_center, NULL);
 	boss_add_attack(b, AT_Immediate, "Final dialog", 0, 0, elly_insert_interboss_dialog, NULL);
 	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
-	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);
-	boss_engage(b);
+	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);*/
+	boss_engage(boss);
 
-	return b;
 }
 
 DEFINE_EXTERN_TASK(stage6_timeline) {
