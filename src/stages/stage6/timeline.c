@@ -190,11 +190,14 @@ TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 
-	EllyScythe *scythe = ENT_UNBOX(ARGS.scythe);
+	log_warn("hello");
+	assert(ARGS.scythe.ent != NULL);
+	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
 
 	WAIT(200);
 
 	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	STALL;
 	
 }
 /*
@@ -238,9 +241,9 @@ TASK(spawn_boss, NO_ARGS) {
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
 
 	BoxedEllyScythe scythe_ref;
-	BoxedTask scythe_task = cotask_box(INVOKE_SUBTASK(host_scythe, VIEWPORT_W+100+200*I, &scythe_ref));
+	INVOKE_SUBTASK(host_scythe, VIEWPORT_W+100+200*I, &scythe_ref);
 
-	ScytheAttackTaskArgs scythe_args = TASK_IFACE_SARGS(ScytheAttack,
+	TASK_IFACE_ARGS_SIZED_PTR_TYPE(ScytheAttack) scythe_args = TASK_IFACE_SARGS(ScytheAttack,
 	  .scythe = scythe_ref
 	);
 
@@ -251,7 +254,7 @@ TASK(spawn_boss, NO_ARGS) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 60, 30000, TASK_INDIRECT(ScytheAttack, elly_intro), NULL, &scythe_args);
+	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 60, 30000, TASK_INDIRECT(ScytheAttack, elly_intro).base, NULL, scythe_args.base);
 	//boss_add_attack(boss, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
 	/*boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.occams_razor, false);

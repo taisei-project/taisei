@@ -60,7 +60,7 @@ TASK(scythe_update, { BoxedEllyScythe scythe; }) {
 	}
 }
 
-void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
+static void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	scythe->pos = pos;
 	scythe->scale = 1;
 	INVOKE_TASK(scythe_visuals, ENT_BOX(scythe));
@@ -91,7 +91,7 @@ DEFINE_EXTERN_TASK(stage6_elly_scythe_spin) {
 }
 
 // REMOVE
-void scythe_draw(Enemy *e, int, bool) {
+void scythe_draw(Enemy *, int, bool) {
 }
 
 // REMOVE
