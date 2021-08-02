@@ -62,13 +62,15 @@ TASK(scythe_update, { BoxedEllyScythe scythe; }) {
 
 static void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	scythe->pos = pos;
-	scythe->scale = 1;
+	scythe->scale = 0.7;
 	INVOKE_TASK(scythe_visuals, ENT_BOX(scythe));
+	INVOKE_TASK(scythe_update, ENT_BOX(scythe));
 }
 
 Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args) {
 	if(ENT_UNBOX(args->scythe) == NULL) {
-	//	args->scythe = ENT_BOX();
+		Boss *b = NOT_NULL(ENT_UNBOX(args->base.boss));
+		args->scythe = ENT_BOX(stage6_host_elly_scythe(b->pos));
 	}
 
 	return INIT_BOSS_ATTACK(&args->base);
@@ -86,6 +88,41 @@ DEFINE_EXTERN_TASK(stage6_elly_scythe_spin) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 	for(int i = 0; i != ARGS.duration; i++) {
 		scythe->angle += ARGS.angular_velocity;
+		YIELD;
+	}
+}
+
+DEFINE_EXTERN_TASK(stage6_elly_scythe_nonspell) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	cmplx center = VIEWPORT_W/2.0 + 200.0 * I;
+
+	scythe->move = move_towards(center, 0.1);
+	WAIT(40);
+	scythe->move.retention = 0.9;
+
+	for(int t = 0;; t++) {
+		play_sfx_loop("shot1_loop");
+
+		real theta = 0.01 * t * (1 + 0.001 * t) + M_PI/2;
+		scythe->pos = center + 200 * cos(theta) * (1 + sin(theta) * I) / (1 + pow(sin(theta), 2));
+
+		scythe->angle = 0.2 * t * (1 + 0*0.001 * t);
+
+		cmplx dir = cdir(scythe->angle);
+		real vel = difficulty_value(1.4, 1.8, 2.2, 2.6);
+		
+		cmplx color_dir = cdir(3 * theta);
+
+		if(t > 50) {
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = scythe->pos + 60 * dir * cdir(1.2),
+				.color = RGB(creal(color_dir), cimag(color_dir), creal(color_dir * cdir(2.1))),
+				.move = move_accelerated(0, 0.01 *vel * dir),
+			);
+		}
+
 		YIELD;
 	}
 }
@@ -119,38 +156,7 @@ int wait_proj(Projectile *p, int t) {
 }
 
 
-int scythe_infinity(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 1;
-	}
 
-	TIMER(&t);
-	FROM_TO(0, 40, 1) {
-		GO_TO(e, VIEWPORT_W/2+200.0*I, 0.01);
-		e->args[2] = fmin(0.8, creal(e->args[2])+0.0003*t*t);
-		e->args[1] = creal(e->args[1]) + I*fmin(0.2, cimag(e->args[1])+0.0001*t*t);
-	}
-
-	FROM_TO_SND("shot1_loop",40, 3000, 1) {
-		float w = fmin(0.15, 0.0001*(t-40));
-		e->pos = VIEWPORT_W/2 + 200.0*I + 200*cos(w*(t-40)+M_PI/2.0) + I*80*sin(creal(e->args[0])*w*(t-40));
-
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = e->pos+80*cexp(I*creal(e->args[1])),
-			.color = RGB(cos(creal(e->args[1])), sin(creal(e->args[1])), cos(creal(e->args[1])+2.1)),
-			.rule = asymptotic,
-			.args = {
-				(1+0.4*global.diff)*cexp(I*creal(e->args[1])),
-				3 + 0.2 * global.diff
-			}
-		);
-	}
-
-	scythe_common(e, t);
-	return 1;
-}
 
 int scythe_reset(Enemy *e, int t) {
 	if(t < 0) {

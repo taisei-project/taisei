@@ -14,7 +14,7 @@ MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 void elly_frequency2(Boss *b, int t) {
 	TIMER(&t);
-
+/*
 	AT(0) {
 		Enemy *scythe = find_scythe();
 		aniplayer_queue(&b->ani, "snipsnip", 0);
@@ -39,5 +39,5 @@ void elly_frequency2(Boss *b, int t) {
 			.rule = asymptotic,
 			.args = { 2*n/cabs(n), 3 }
 		);
-	}
+	}*/
 }

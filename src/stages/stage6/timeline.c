@@ -190,11 +190,7 @@ TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 
-	log_warn("hello");
-	assert(ARGS.scythe.ent != NULL);
 	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
-
-	WAIT(200);
 
 	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 	STALL;
@@ -254,10 +250,10 @@ TASK(spawn_boss, NO_ARGS) {
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 60, 30000, TASK_INDIRECT(ScytheAttack, elly_intro).base, NULL, scythe_args.base);
-	//boss_add_attack(boss, AT_Move, "Catch the Scythe", 6, 0, elly_intro, NULL);
-	/*boss_add_attack(b, AT_Normal, "Frequency", 40, 50000, elly_frequency, NULL);
-	boss_add_attack_from_info(b, &stage6_spells.scythe.occams_razor, false);
+	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 5, 30000, TASK_INDIRECT(ScytheAttack, elly_intro).base, NULL, scythe_args.base);
+	boss_add_attack_task_with_args(boss, AT_Normal, "Frequency", 40, 50000, TASK_INDIRECT(ScytheAttack, stage6_boss_nonspell_1).base, NULL, scythe_args.base);
+	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.occams_razor, scythe_args.base);
+	/*
 	boss_add_attack(b, AT_Normal, "Frequency2", 40, 50000, elly_frequency2, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.orbital_clockwork, false);
 	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
@@ -275,6 +271,8 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack(b, AT_Move, "ToE transition", 7, 0, elly_begin_toe, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);*/
 	boss_engage(boss);
+	WAIT_EVENT(&global.boss->events.defeated);
+	AWAIT_SUBTASKS;
 
 }
 

@@ -34,9 +34,17 @@ DEFINE_ENTITY_TYPE(EllyScythe, {
 
 EllyScythe *stage6_host_elly_scythe(cmplx pos);
 
+DEFINE_TASK_INTERFACE_WITH_BASE(ScytheAttack, BossAttack, {
+	BoxedEllyScythe scythe;
+});
+typedef TASK_IFACE_ARGS_TYPE(ScytheAttack) ScytheAttackTaskArgs;
+Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args);
+
+
 // duration < 0 means infinite duration
 DECLARE_EXTERN_TASK(stage6_elly_scythe_spin, { BoxedEllyScythe scythe; real angular_velocity; int duration; });
 
+DECLARE_EXTERN_TASK(stage6_elly_scythe_nonspell, { BoxedEllyScythe scythe; });
 	
 void scythe_draw(Enemy *, int, bool);
 void scythe_common(Enemy*, int);

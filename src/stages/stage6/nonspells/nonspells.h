@@ -15,6 +15,8 @@
 
 #include "stages/stage6/elly.h"
 
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_1, ScytheAttack);
+
 void elly_frequency(Boss*, int);
 void elly_frequency2(Boss*, int);
 void elly_paradigm_shift(Boss*, int);

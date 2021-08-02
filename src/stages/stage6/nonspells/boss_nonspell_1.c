@@ -9,25 +9,13 @@
 #include "taisei.h"
 
 #include "nonspells.h"
+#include "../elly.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+DEFINE_EXTERN_TASK(stage6_boss_nonspell_1) {
+	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
 
-void elly_frequency(Boss *b, int t) {
-	TIMER(&t);
-	Enemy *scythe;
+	INVOKE_SUBTASK(stage6_elly_scythe_nonspell, ARGS.scythe);
 
-	AT(EVENT_BIRTH) {
-		scythe = find_scythe();
-		aniplayer_queue(&b->ani, "snipsnip", 0);
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_infinity;
-		scythe->args[0] = 2;
-	}
-
-	AT(EVENT_DEATH) {
-		scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_reset;
-		scythe->args[0] = 0;
-	}
+	STALL;
 }

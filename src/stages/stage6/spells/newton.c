@@ -14,6 +14,7 @@
 
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
+
 static int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
@@ -72,21 +73,35 @@ static int newton_apple(Projectile *p, int t) {
 	return r;
 }
 
-void elly_newton(Boss *b, int t) {
-	TIMER(&t);
+TASK(newton_spawn_square, { cmplx pos; cmplx dir; real width; int count; real speed; }) {
 
-	AT(0) {
-		Enemy *scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_newton;
-		elly_clap(b,100);
-	}
+	int delay = round(ARGS.width / (ARGS.count-1) / ARGS.speed);
+	for(int i = 0; i < ARGS.count; i++) {
+		for(int j = 0; j < ARGS.count; j++) {
+			real x = ARGS.width * (-0.5 + j / (real) (ARGS.count-1));
 
-	AT(EVENT_DEATH) {
-		Enemy *scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_reset;
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = ARGS.pos + x * ARGS.dir * I,
+				.color = RGB(0, 0.5, 1),
+				.move = move_accelerated(ARGS.speed * ARGS.dir, 0*0.01*I),
+				.max_viewport_dist = VIEWPORT_H,
+
+			);
+		}
+		WAIT(delay);
 	}
+	
+}
+
+DEFINE_EXTERN_TASK(stage6_spell_newton) {
+	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+
+	//INVOKE_SUBTASK(scythe_newton, ARGS.scythe);
+
+	/*int start_delay = difficulty_value(210, 150, 90, 30);
+	WAIT(start_delay);
 
 	FROM_TO(30 + 60 * (D_Lunatic - global.diff), 10000000, 30 - 6 * global.diff) {
 		Sprite *apple = get_sprite("proj/apple");
@@ -112,26 +127,25 @@ void elly_newton(Boss *b, int t) {
 		);
 
 		play_sfx("shot3");
-	}
+	}*/
 
-	FROM_TO(0, 100000, 20+10*(global.diff>D_Normal)) {
-		float a = 2.7*_i+carg(global.plr.pos-b->pos);
-		int x, y;
-		float w = global.diff/2.0+1.5;
+	int rows = 5;
+	real width = VIEWPORT_H / (real)rows;
 
-		play_sfx("shot_special1");
-
-		for(x = -w; x <= w; x++) {
-			for(y = -w; y <= w; y++) {
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = b->pos+(x+I*y)*25*cexp(I*a),
-					.color = RGB(0, 0.5, 1),
-					.rule = linear,
-					.args = { (2+(_i==0))*cexp(I*a) }
-				);
-			}
+	for(int i = 0;; i++) {
+		real y = width * (0.5 + i);
+		
+		for(int s = -1; s <= 1; s += 2) {
+			cmplx dir = cdir(i) * I;
+			cmplx pos = boss->pos + 0* dir;
+			INVOKE_SUBTASK(newton_spawn_square, pos, -s*dir,
+				       .width = width,
+				       .count = 6,
+				       .speed = 3
+			);
 		}
+
+		WAIT(20);
 	}
 }
 
