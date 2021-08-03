@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import argparse
 import subprocess
 import sys
+import shlex
 
 BASISU_TAISEI_ID            = 0x52656900
 BASISU_TAISEI_CHANNELS      = ('r', 'rg', 'rgb', 'rgba', 'gray-alpha')
@@ -66,7 +67,7 @@ def preprocess(args, tempdir):
         'convert',
         '-verbose',
         args.input
-    ]
+    ] + args.preprocess
 
     if args.channels == 'gray-alpha':
         cmd += [
@@ -107,6 +108,8 @@ def preprocess(args, tempdir):
             '-separate',
             '-colorspace', 'gray'
         ]
+
+    cmd += args.preprocess_late
 
     if cmd[-1] != args.input or args.input.suffix.lower() not in ('.png', '.jpg'):
         dst = tempdir / 'preprocessed.png'
@@ -288,11 +291,7 @@ def process(args):
             }
 
         cmd += profiles[args.profile]
-
-        """
-        if args.basisu_args is not None:
-            cmd += args.basisu_args
-        """
+        cmd += args.basisu_args
 
         run(args, cmd)
 
@@ -509,18 +508,34 @@ def main(args):
         action='store_true',
     )
 
+    parser.add_argument('--preprocess',
+        dest='preprocess',
+        metavar='IMAGEMAGICK_ARGS',
+        help='preprocess input with these ImageMagick commands before doing anything',
+        type=shlex.split,
+        default=[],
+    )
+
+    parser.add_argument('--preprocess-late',
+        dest='preprocess_late',
+        metavar='IMAGEMAGICK_ARGS',
+        help='preprocess input with these ImageMagick commands after applying internal preprocessing',
+        type=shlex.split,
+        default=[],
+    )
+
+    parser.add_argument('--basisu-args',
+        dest='basisu_args',
+        help='pass arguments through to the encoder',
+        type=shlex.split,
+        default=[],
+    )
+
     parser.add_argument('--dry-run',
         help='do nothing, print commands that would have been run',
         action='store_true',
     )
 
-    # FIXME this doesn't work properly (goddamn argparse)
-    """
-    parser.add_argument('--basisu-args',
-        help='pass remaining args through to the encoder',
-        nargs='*',
-    )
-    """
 
     args = parser.parse_args(args[1:])
 
@@ -544,6 +559,9 @@ def main(args):
 
     if not args.srgb:
         args.srgb_sampling = args.force_srgb_sampling
+
+    if args.normal and args.uastc:
+        args.channels = 'rgb'
 
     # print(args)
     try:
