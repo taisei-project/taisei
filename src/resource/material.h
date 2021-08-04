@@ -18,6 +18,7 @@ typedef struct PBRMaterial {
 	Texture *ambient_map;
 	Texture *roughness_map;
 	Texture *depth_map;
+	Texture *ao_map;
 
 	vec3 diffuse_color;
 	vec3 ambient_color;

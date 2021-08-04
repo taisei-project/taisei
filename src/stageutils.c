@@ -172,6 +172,11 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 		flags |= PBR_FEATURE_ENVIRONMENT_MAP;
 	}
 
+	if(m->ao_map) {
+		r_uniform_sampler("ao_map", m->ao_map);
+		flags |= PBR_FEATURE_AO_MAP;
+	}
+
 	vec4 diffuseRGB_metallicA;
 	glm_vec3_copy((float*)m->diffuse_color, diffuseRGB_metallicA);
 	diffuseRGB_metallicA[3] = m->metallic_value;

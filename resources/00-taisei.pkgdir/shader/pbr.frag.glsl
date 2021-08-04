@@ -14,12 +14,6 @@ void main(void) {
 	if(bool(features_mask & PBR_FEATURE_DEPTH_MAP)) {
 		vec3 vdir = normalize(transpose(tbn) * -pos);
 		uv = parallaxOcclusionMap(depth_map, depth_scale, uv, vdir);
-
-		/*
-		if(uv.x > 1.0 || uv.y > 1.0 || uv.x < 0.0 || uv.y < 0.0) {
-			discard;
-		}
-		*/
 	}
 
 	if(bool(features_mask & PBR_FEATURE_ROUGHNESS_MAP)) {
@@ -73,7 +67,13 @@ void main(void) {
 	}
 
 	if(bool(features_mask & PBR_FEATURE_ENVIRONMENT_MAP)) {
-		color += PBR_EnvironmentLight(pbr, ibl_brdf_lut, environment_map);
+		vec3 envLight = PBR_EnvironmentLight(pbr, ibl_brdf_lut, environment_map);
+
+		if(bool(features_mask & PBR_FEATURE_AO_MAP)) {
+			envLight *= texture(ao_map, uv).r;
+		}
+
+		color += envLight;
 	}
 
 	color = PBR_TonemapReinhard(color);

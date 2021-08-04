@@ -55,6 +55,7 @@ typedef struct PointLight3D {
 #define PBR_FEATURE_ROUGHNESS_MAP       8
 #define PBR_FEATURE_ENVIRONMENT_MAP    16
 #define PBR_FEATURE_DEPTH_MAP          32
+#define PBR_FEATURE_AO_MAP             64
 
 typedef struct PBREnvironment {
 	mat4 cam_inverse_transform;

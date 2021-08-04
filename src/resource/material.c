@@ -45,9 +45,10 @@ struct mat_load_data {
 			char *ambient_map;
 			char *roughness_map;
 			char *depth_map;
+			char *ao_map;
 		};
 
-		char *maps[5];
+		char *maps[6];
 	};
 };
 
@@ -78,6 +79,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{ "ambient_map",      .out_str = &ld->ambient_map },
 		{ "roughness_map",    .out_str = &ld->roughness_map },
 		{ "depth_map",        .out_str = &ld->depth_map },
+		{ "ao_map",           .out_str = &ld->ao_map },
 		{ "diffuse_color",    .callback = kvparser_vec3, .callback_data = ld->mat->diffuse_color },
 		{ "ambient_color",    .callback = kvparser_vec3, .callback_data = ld->mat->ambient_color },
 		{ "roughness",        .out_float = &ld->mat->roughness_value },
@@ -119,6 +121,7 @@ static void material_load_stage2(ResourceLoadState *st) {
 	LOADMAP(ambient);
 	LOADMAP(roughness);
 	LOADMAP(depth);
+	LOADMAP(ao);
 
 	res_load_finished(st, ld->mat);
 	free_mat_load_data(ld);
