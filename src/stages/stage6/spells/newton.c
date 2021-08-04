@@ -15,7 +15,7 @@
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 
-static int scythe_newton(Enemy *e, int t) {
+/*static int scythe_newton(Enemy *e, int t) {
 	if(t < 0) {
 		scythe_common(e, t);
 		return 1;
@@ -63,7 +63,7 @@ static int scythe_newton(Enemy *e, int t) {
 	return 1;
 }
 
-static int newton_apple(Projectile *p, int t) {
+*/static int newton_apple(Projectile *p, int t) {
 	int r = accelerated(p, t);
 
 	if(t >= 0) {
@@ -73,32 +73,87 @@ static int newton_apple(Projectile *p, int t) {
 	return r;
 }
 
-TASK(newton_spawn_square, { cmplx pos; cmplx dir; real width; int count; real speed; }) {
+TASK(newton_spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; real width; int count; real speed; }) {
 
 	int delay = round(ARGS.width / (ARGS.count-1) / ARGS.speed);
 	for(int i = 0; i < ARGS.count; i++) {
 		for(int j = 0; j < ARGS.count; j++) {
 			real x = ARGS.width * (-0.5 + j / (real) (ARGS.count-1));
 
-			PROJECTILE(
+			ENT_ARRAY_ADD(ARGS.projectiles, PROJECTILE(
 				.proto = pp_ball,
 				.pos = ARGS.pos + x * ARGS.dir * I,
 				.color = RGB(0, 0.5, 1),
 				.move = move_accelerated(ARGS.speed * ARGS.dir, 0*0.01*I),
-				.max_viewport_dist = VIEWPORT_H,
-
-			);
+			));
 		}
+		play_sfx("shot2");
 		WAIT(delay);
 	}
 	
+}
+
+TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	real radius = 300;
+
+	real speed = 0.01;
+	int steps = M_TAU/speed;
+
+	for(int n = 1;; n++) {
+		for(int i = 0; i < steps; i++) {
+			real t = M_TAU/steps*i;
+
+			Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
+			
+			scythe->pos = boss->pos + radius * sin(n*t) * cdir(t) * I;
+			YIELD;
+		}
+	}
+
+}
+
+TASK(newton_scythed_proj, { BoxedProjectile proj; }) {
+	Projectile *p = TASK_BIND(ARGS.proj);
+	p->move.velocity = 0;
+	cmplx aim = cnormalize(global.plr.pos - p->pos);
+	play_sfx("redirect");
+	p->move.retention = 1;
+	p->move.acceleration = 0.01 * aim;
+}
+
+TASK(newton_scythe, { BoxedEllyScythe scythe; BoxedBoss boss; BoxedProjectileArray *projectiles; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	INVOKE_SUBTASK(newton_scythe_movement, ARGS.scythe, ARGS.boss);
+
+	real effect_radius = 30;
+
+	for(;;) {
+		ENT_ARRAY_FOREACH(ARGS.projectiles, Projectile *p, {
+			real distance = cabs(p->pos - scythe->pos);
+			if(distance < effect_radius && p->color.r != 1.0) {
+				p->color.r = 1.0;
+				INVOKE_TASK(newton_scythed_proj, ENT_BOX(p));
+			}
+		});
+
+		ENT_ARRAY_COMPACT(ARGS.projectiles);
+
+		YIELD;
+	}
 }
 
 DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
-	//INVOKE_SUBTASK(scythe_newton, ARGS.scythe);
+	int proj_count = 1024;
+	DECLARE_ENT_ARRAY(Projectile, projectiles, proj_count);
+
+	INVOKE_SUBTASK(newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
+	INVOKE_SUBTASK(stage6_elly_scythe_spin, ARGS.scythe, 0.5, -1);
 
 	/*int start_delay = difficulty_value(210, 150, 90, 30);
 	WAIT(start_delay);
@@ -130,18 +185,18 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	}*/
 
 	int rows = 5;
-	real width = VIEWPORT_H / (real)rows;
+	real width = 100;
 
 	for(int i = 0;; i++) {
 		real y = width * (0.5 + i);
 		
 		for(int s = -1; s <= 1; s += 2) {
-			cmplx dir = cdir(i) * I;
-			cmplx pos = boss->pos + 0* dir;
-			INVOKE_SUBTASK(newton_spawn_square, pos, -s*dir,
+			cmplx dir = cdir((5*M_PI/6+0.1)*i) * I;
+			cmplx pos = boss->pos + 100* dir;
+			INVOKE_SUBTASK(newton_spawn_square, &projectiles, pos, -s*dir,
 				       .width = width,
-				       .count = 6,
-				       .speed = 3
+				       .count = 5,
+				       .speed = 2
 			);
 		}
 
