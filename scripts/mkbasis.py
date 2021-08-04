@@ -14,6 +14,9 @@ import subprocess
 import sys
 import shlex
 
+import numpy as np
+from PIL import Image
+
 BASISU_TAISEI_ID            = 0x52656900
 BASISU_TAISEI_CHANNELS      = ('r', 'rg', 'rgb', 'rgba', 'gray-alpha')
 BASISU_TAISEI_CHANNELS_MASK = 0x3
@@ -115,6 +118,10 @@ def preprocess(args, tempdir):
         dst = tempdir / 'preprocessed.png'
         cmd += [dst]
         run(args, cmd)
+
+        if args.normal:
+            dst = renormalize(args, dst, tempdir)
+
         return dst
 
     return args.input
@@ -122,8 +129,6 @@ def preprocess(args, tempdir):
 
 def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
     import py360convert
-    import numpy as np
-    from PIL import Image
 
     tempdir = tempdir / 'cubemap'
     tempdir.mkdir()
@@ -155,6 +160,34 @@ def equirect_to_cubemap(args, equirect, width, height, cube_side, tempdir):
     )
 
     return cubemap
+
+
+def renormalize(args, normalmap, tempdir):
+    output = tempdir / 'renormalized.png'
+    print(f'RENORM:  {normalmap} --> {output}')
+
+    if args.dry_run:
+        return output
+
+    with Image.open(normalmap) as normalmap_img:
+        if normalmap_img.mode != 'RGB':
+            normalmap_img = normalmap_img.convert('RGB')
+        a = np.array(normalmap_img)
+
+    w, h, chans = a.shape
+    assert chans == 3
+    a = a.reshape(w * h, chans)
+    a = (a / 127.5 - 1).T
+    a /= np.linalg.norm(a, axis=0)
+    a = np.round((a.T + 1) * 127.5)
+    a = a.reshape(w, h, chans)
+    a = a.astype('uint8')
+
+    with Image.fromarray(a) as img:
+        img.save(output)
+
+    return output
+
 
 def process(args):
     width, height = image_size(args.input)
