@@ -73,7 +73,7 @@ MODERNIZE_THIS_FILE_AND_REMOVE_ME
 	return r;
 }
 
-TASK(newton_spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; real width; int count; real speed; }) {
+TASK(spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; real width; int count; real speed; }) {
 
 	int delay = round(ARGS.width / (ARGS.count-1) / ARGS.speed);
 	for(int i = 0; i < ARGS.count; i++) {
@@ -93,6 +93,22 @@ TASK(newton_spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx 
 	
 }
 
+static void spawn_apples(cmplx pos) {
+	int apple_count = difficulty_value(0, 5, 7, 10);
+	real offset_angle = rng_angle();
+
+	for(int i = 0; i < apple_count; i++) {
+		cmplx dir = cdir(M_TAU / apple_count * i + offset_angle);
+		PROJECTILE(
+			.pos = pos,
+			.proto = pp_apple,
+			.move = move_accelerated(dir, 0.03*dir),
+			.color = RGB(1.0, 0.5, 0),
+			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
+		);
+	}	
+}
+
 TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 
@@ -101,26 +117,34 @@ TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 	real speed = 0.01;
 	int steps = M_TAU/speed;
 
-	for(int n = 1;; n++) {
+
+
+	for(int n = 2;; n++) {
 		for(int i = 0; i < steps; i++) {
 			real t = M_TAU/steps*i;
 
+
 			Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
+			
+			if(i % (steps/(2*n)) == 0) {
+				spawn_apples(boss->pos);
+			}
 			
 			scythe->pos = boss->pos + radius * sin(n*t) * cdir(t) * I;
 			YIELD;
 		}
 	}
-
 }
 
 TASK(newton_scythed_proj, { BoxedProjectile proj; }) {
 	Projectile *p = TASK_BIND(ARGS.proj);
-	p->move.velocity = 0;
 	cmplx aim = cnormalize(global.plr.pos - p->pos);
 	play_sfx("redirect");
-	p->move.retention = 1;
-	p->move.acceleration = 0.01 * aim;
+
+	real acceleration = difficulty_value(0.015, 0.02, 0.03, 0.04);
+	
+	p->move.velocity = 0;
+	p->move.acceleration = acceleration * aim;
 }
 
 TASK(newton_scythe, { BoxedEllyScythe scythe; BoxedBoss boss; BoxedProjectileArray *projectiles; }) {
@@ -155,52 +179,23 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	INVOKE_SUBTASK(newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
 	INVOKE_SUBTASK(stage6_elly_scythe_spin, ARGS.scythe, 0.5, -1);
 
-	/*int start_delay = difficulty_value(210, 150, 90, 30);
-	WAIT(start_delay);
-
-	FROM_TO(30 + 60 * (D_Lunatic - global.diff), 10000000, 30 - 6 * global.diff) {
-		Sprite *apple = get_sprite("proj/apple");
-		Color c;
-
-		switch(tsrand() % 3) {
-			case 0: c = *RGB(0.8, 0.0, 0.1); break;
-			case 1: c = *RGB(0.4, 0.6, 0.0); break;
-			case 2: c = *RGB(0.8, 0.6, 0.0); break;
-		}
-
-		cmplx apple_pos = clamp(creal(global.plr.pos) + nfrand() * 64, apple->w*0.5, VIEWPORT_W - apple->w*0.5);
-
-		PROJECTILE(
-			.pos = apple_pos,
-			.proto = pp_apple,
-			.rule = newton_apple,
-			.args = {
-				0, 0.05*I, M_PI*2*frand()
-			},
-			.color = &c,
-			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
-		);
-
-		play_sfx("shot3");
-	}*/
-
-	int rows = 5;
 	real width = 100;
+	int bullets_per_side = 5;
+
+	real square_speed = difficulty_value(2, 2.3, 2.6, 3);
 
 	for(int i = 0;; i++) {
-		real y = width * (0.5 + i);
-		
 		for(int s = -1; s <= 1; s += 2) {
 			cmplx dir = cdir((5*M_PI/6+0.1)*i) * I;
 			cmplx pos = boss->pos + 100* dir;
-			INVOKE_SUBTASK(newton_spawn_square, &projectiles, pos, -s*dir,
+			INVOKE_SUBTASK(spawn_square, &projectiles, pos, -s*dir,
 				       .width = width,
-				       .count = 5,
-				       .speed = 2
+				       .count = bullets_per_side,
+				       .speed = square_speed
 			);
 		}
 
-		WAIT(20);
+		WAIT(20*(2/square_speed));
 	}
 }
 
