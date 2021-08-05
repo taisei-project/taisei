@@ -1,5 +1,5 @@
-Taisei Project - Compiling FAQ
-==============================
+Taisei Project - Development FAQ
+================================
 
 .. contents::
 
@@ -16,11 +16,11 @@ Taisei's general dependencies are as follows:
 
 -  C (C11) compiler (``gcc``, ``clang``, etc)
 -  Python >= 3.5
--  meson >= 0.53.0
+-  meson >= 0.53.0 (0.56.2 recommended)
 -  ninja >= 1.10.0
 -  docutils
 
-You can optionally install `other dependencies <../README.rst#dependencies>`__,
+You can optionally install `other dependencies <#Platform-Specific_Tips>`__,
 but the build system will pull in everything else you might need otherwise.
 
 First, you'll need to checkout the repository. You can do that with the
@@ -32,8 +32,9 @@ following:
    cd taisei/
    git submodule update --init --recursive
 
-Ensure that the ``git submodule`` or Taisei will not build, as it will be
-missing many of the dependencies its needs to compile.
+The ``git submodule update --init --recursive`` line is absolutely necessary,
+or Taisei will not build, as it will be missing many of the dependencies its
+needs to compile.
 
 Next, you'll want to set up a prefix for where the game's binaries will be
 installed. For starting out development, you're better off installing it to
@@ -41,7 +42,12 @@ your HOME directory.
 
 .. code:: sh
 
-    export TAISEI_PREFIX=/home/{your_username}/bin
+   # on Linux
+   export TAISEI_PREFIX=/home/{your_username}/bin
+
+   # or macOS
+   export TAISEI_PREFIX=/Users/{your_username}/bin
+
 
 To build and install Taisei on \*nix:
 
@@ -66,9 +72,9 @@ Here's an explanation of what they do:
   code.
 
 These commands will set up your build environment, compile the game, and
-install it to the ``/home/{your_username}/bin`` directory you specified
-earlier. You can then run the game by executing the ``taisei`` binary in that
-directory (or running the ``Taisei.app`` for macOS).
+install it to the ``*/bin`` directory you specified earlier. You can then run
+the game by executing the ``taisei`` binary in that directory (or running the
+``Taisei.app`` for macOS).
 
 Development
 -----------
@@ -93,10 +99,10 @@ Which will cause save game data to be installed to:
 
 .. code:: sh
 
-    $TAISEI_PREFIX/taisei/
-    $TAISEI_PREFIX/data/
+   $TAISEI_PREFIX/taisei/
+   $TAISEI_PREFIX/data/
 
-Note that ``install relative`` is always set when building for Windows.
+Note that ``install_relative`` is always set when building for Windows.
 
 Debugging
 '''''''''
@@ -115,7 +121,7 @@ theoretical reduction in performance with these options:
 
 .. code:: sh
 
-    meson configure build/ -Db_lto=false -Dstrip=false
+   meson configure build/ -Db_lto=false -Dstrip=false
 
 Developer Mode
 ''''''''''''''
@@ -143,7 +149,7 @@ to use to launch ASan appropriately. Using macOS as an example:
 
 .. code:: sh
 
-    export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+   export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
 The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
 version of XCode. If it fails to launch for you, ensure that the version number
@@ -154,7 +160,7 @@ example):
 
 .. code:: sh
 
-    /path/to/Taisei.app/Contents/MacOS/Taisei
+   /path/to/Taisei.app/Contents/MacOS/Taisei
 
 
 OpenGL ES Support (Optional)
@@ -167,7 +173,7 @@ The OpenGL ES 3.0 backend is not built by default. To enable it, do:
 
 .. code:: sh
 
-    meson configure build/ -Dr_gles30=true -Dshader_transpiler=true -Dr_default=gles30
+   meson configure build/ -Dr_gles30=true -Dshader_transpiler=true -Dr_default=gles30
 
 2.0
 '''
@@ -205,9 +211,9 @@ Once you've compiled ANGLE, enable it with:
 
 .. code:: sh
 
-    export LIBGLES=/path/to/libGLESv2.{dll,dylib}
-    export LIBEGL=/path/to/libEGL.{dll,dylib}
-    meson configure build/ -Dinstall_angle=true -Dangle_libgles=$LIBGLES -Dangle_libegl=$LIBEGL
+   export LIBGLES=/path/to/libGLESv2.{dll,dylib}
+   export LIBEGL=/path/to/libEGL.{dll,dylib}
+   meson configure build/ -Dinstall_angle=true -Dangle_libgles=$LIBGLES -Dangle_libegl=$LIBEGL
 
 Ensure you use the correct file extension for your platform. (``.dll`` for
 Windows, ``.dylib`` for macOS.)
@@ -243,7 +249,6 @@ In general, things like ``for`` loops should have no spaces between the ``for`` 
    # correct
    for(int i = 0; i < 10; i++) { log_debug(i); }
 
-
 Platform-Specific Tips
 ----------------------
 
@@ -255,15 +260,15 @@ installed:
 
 .. code:: sh
 
-    apt-get install meson cmake build-essential
-    apt-get install libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev
+   apt-get install meson cmake build-essential
+   apt-get install libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev
 
 If your distribution of Linux uses Wayland as its default window server, ensure
 that Wayland deps are installed:
 
 .. code:: sh
 
-    apt-get install libwayland-dev
+   apt-get install libwayland-dev
 
 For packaging, your best bet is ``.zip``. Invoke ``ninja`` to package a
 ``.zip``:
@@ -279,7 +284,7 @@ On macOS, you need to begin with installing the Xcode Command Line Tools:
 
 .. code:: sh
 
-    xcode-select --install
+   xcode-select --install
 
 There are additional command line tools that you'll need. You can acquire those
 by using `Homebrew <https://brew.sh/>`__.
@@ -289,7 +294,7 @@ tools:
 
 .. code:: sh
 
-    brew install meson cmake pkg-config docutils imagemagick pygments
+   brew install meson cmake pkg-config docutils imagemagick pygments
 
 The following dependencies are technically optional, and can be pulled in at
 build-time, but you're better off installing them yourself to reduce compile
@@ -297,9 +302,9 @@ times:
 
 .. code:: sh
 
-    brew install freetype2 libzip opusfile libvorbis webp sdl2
+   brew install freetype2 libzip opusfile libvorbis webp sdl2
 
-As of 2020-02-18, you should **not** install the following packages via
+As of 2021-08-05, you should **not** install the following packages via
 Homebrew, as the versions available do not compile against Taisei correctly.
 If you're having mysterious errors, ensure that they're not installed.
 
@@ -311,7 +316,7 @@ Remove them with:
 
 .. code:: sh
 
-    brew remove spirv-tools spirv-cross sdl2_mixer
+   brew remove spirv-tools spirv-cross sdl2_mixer
 
 Taisei-compatible versions are bundled and will be pulled in at compile time.
 
@@ -334,7 +339,7 @@ you to have nicer-looking macOS ``.dmg`` files for distribution:
 
 .. code:: sh
 
-    brew install create-dmg
+   brew install create-dmg
 
 You can create a ``.dmg`` on either Linux or macOS (although with ``create-dmg``
 on macOS, the macOS-produced ``.dmg`` will look nicer):
@@ -363,8 +368,8 @@ located at ``misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini`` to go with
 that toolchain. In general, you'll need the following tools for compiling Taisei
 for Windows on Linux:
 
--   ``llvm-mingw``
--   `nsis <https://nsis.sourceforge.io/Main_Page>`__ >= 3.0
+- ``llvm-mingw``
+- `nsis <https://nsis.sourceforge.io/Main_Page>`__ >= 3.0
 
 On macOS, you're probably better off using Docker and the
 `Docker container <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that
@@ -391,12 +396,12 @@ You can use the macro ``attr_unused`` to bypass that warning. This:
 
 .. code:: c
 
-    int x = 0;
-    assert(x == 0);
+   int x = 0;
+   assert(x == 0);
 
 Becomes this:
 
 .. code:: c
 
-    attr_unused int x = 0;
-    assert(x == 0);
+   attr_unused int x = 0;
+   assert(x == 0);
