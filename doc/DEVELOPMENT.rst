@@ -20,7 +20,7 @@ Taisei's general dependencies are as follows:
 -  ninja >= 1.10.0
 -  docutils
 
-You can optionally install `other dependencies <#Platform-Specific_Tips>`__,
+You can optionally install `other dependencies <#platform-specific-tips>`__,
 but the build system will pull in everything else you might need otherwise.
 
 First, you'll need to checkout the repository. You can do that with the
