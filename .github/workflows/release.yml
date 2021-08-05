@@ -9,7 +9,7 @@ on:
 
 env:
   MESON_VERSION: '0.56.2'
-  EM_VERSION: '2.0.25'
+  EM_VERSION: '2.0.26'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -330,23 +330,15 @@ jobs:
 
     - name: Set Build Env
       id: vars
-      run: >
+      run: |
         git fetch --force --tags
-
         echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-
-        sed -i
-        -e "s+libegl_path = ''+libegl_path = \'$(pwd)/angle-compiled/dll/x64/libEGL.dll\'+g"
-        -e "s+libgles_path = ''+libgles_path = '$(pwd)/angle-compiled/dll/x64/libGLESv2.dll'+g"
-        misc/ci/windows-llvm_mingw-x86_64-build-release.ini
-
-        echo "Windows (x64) Release Machine File:"
-
-        cat misc/ci/windows-llvm_mingw-x86_64-build-release.ini
 
     - name: Configure
       run: >
         meson setup build/windows
+        -Dangle_libegl=$(pwd)/angle-compiled/dll/x64/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/dll/x64/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -443,24 +435,16 @@ jobs:
 
     - name: Set Build Env
       id: vars
-      run: >
+      run: |
         git fetch --force --tags
-
         echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-
-        sed -i
-        -e "s+libegl_path = ''+libegl_path = '$(pwd)/angle-compiled/dll/x86/libEGL.dll'+g"
-        -e "s+libgles_path = ''+libgles_path = '$(pwd)/angle-compiled/dll/x86/libGLESv2.dll'+g"
-        misc/ci/windows-llvm_mingw-x86-build-release.ini
-
-        echo "Windows (x86) Release Machine File:"
-
-        cat misc/ci/windows-llvm_mingw-x86-build-release.ini
 
     - name: Configure
       run: >
         meson setup build/windows
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
+        -Dangle_libegl=$(pwd)/angle-compiled/dll/x86/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/dll/x86/libGLESv2.dll
         --prefix=$(pwd)/build-release
 
     - name: Build
@@ -567,8 +551,8 @@ jobs:
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/emscripten
-        --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
+        --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
         -Drelease_files=true
 
