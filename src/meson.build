@@ -242,7 +242,7 @@ if host_machine.system() == 'emscripten'
     libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_pch : 'pch/taisei_pch.h',
-        c_args : [em_common_args, taisei_c_args],
+        c_args : [em_common_args, taisei_c_args, '-s', 'DEFAULT_TO_CXX=0'],
         install : false,
     )
 
