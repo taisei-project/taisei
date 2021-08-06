@@ -18,8 +18,8 @@ void main(void) {
 
 	float t = s.y;
 
-	float bFactor = smoothstep( 0, 8, d      );
-	float hFactor = smoothstep( 2, 9, d + 0.8);
+	float bFactor = smoothstep( 0, 6, d      );
+	float hFactor = smoothstep( 2, 7, d + 0.8);
 	float gFactor = smoothstep(-min(4, laser_width), 8, d + 2);
 
 	hFactor = hFactor * hFactor;
