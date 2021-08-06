@@ -49,7 +49,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_bad/02", {
-		T_CENTERED("— Bad End —", "To unlock the Extra Stage, keep trying to reach the end without using a Continue!"),
+		T_CENTERED("— Bad End —", "Try to reach the end without using a Continue!"),
 		{ 0 },
 	}},
 	{ NULL }

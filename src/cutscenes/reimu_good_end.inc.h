@@ -10,13 +10,13 @@
 	}},
 	{ "cutscenes/reimu_good/01", {
 		T_REIMU("Listen, Sanae, I don’t know what a ‘speedrun’ is, and I really don’t care!"),
-		T_SANAE("You’re such a stick in the mud, Reimu! You’re such a stick in the mud, Reimu! Listen, you like resolving incidents as quickly as possible, right?"),
+		T_SANAE("You’re such a stick in the mud, Reimu! Listen, you like resolving incidents as quickly as possible, right?"),
 		T_SANAE("It’s like that, except with video games!"),
 		T_REIMU("I don’t know anything about ‘video games’, either!"),
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_good/01", {
-		T_NARRATOR("The Tower had been shut down, ending the crisis of madness sweeping land.\n"),
+		T_NARRATOR("The Tower had been shut down, ending the crisis of madness sweeping the land.\n"),
 		T_NARRATOR("Nearly everyone had returned to normal, although a few odd souls lamented their loss of ‘knowledge’.\n"),
 		T_NARRATOR("Kurumi and Elly had been conscripted into sweeping the paths of the Moriya Shrine as penance for their actions.\n"),
 		T_NARRATOR("With the occasional odd request from the Moriya Shrine Gods, of course…"),

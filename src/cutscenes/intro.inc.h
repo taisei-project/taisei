@@ -7,7 +7,7 @@
 		T_NARRATOR("— The Hakurei Shrine\n"),
 		T_NARRATOR("The shrine at the border of fantasy and reality.\n"),
 		T_NARRATOR("Three heroines of Gensōkyō sat drinking tea on a calm day at the end of summer.\n"),
-		T_NARRATOR("Two of them seemed unsettled, while the third—"),
+		T_NARRATOR("There was something unsettling in the air—"),
 		{ 0 },
 	}},
 	{ "cutscenes/opening/01", {
@@ -30,7 +30,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/reimu_bad/01", {
-		T_NARRATOR("Outside the shrine, nearly every resident of Yōkai Mountain were lined up one after another to make a donation - including the Moriya Shrine Gods, Kanako and Suwako.\n"),
+		T_NARRATOR("Outside the shrine, nearly every resident of Yōkai Mountain was lined up one after another.\n"),
 		T_NARRATOR("Everyone seemed vaguely fearful."),
 		{ 0 },
 	}},
@@ -42,9 +42,9 @@
 	}},
 	{ "cutscenes/opening/02", {
 		T_NARRATOR("A mysterious force was slowly causing yōkai and humans alike to succumb to an intense feeling of “knowing everything.”\n"),
-		T_NARRATOR("It would start with figuring out simple problems that they’d been struggling with, such as a technical issue with a machine or perhaps a eye-catching newspaper headline.\n"),
-		T_NARRATOR("But as it progressed, they’d become completely enveloped by it, unable to act rationally.\n"),
-		T_NARRATOR("Yōkai Mountain was usually protected by the Moriya shrine maiden, Sanae Kochiya, but even she had been carried away into madness."),
+		T_NARRATOR("It would start with figuring out trivial problems that they’d been struggling with - a technical issue with a machine, or coming up with the perfect newspaper headline.\n"),
+		T_NARRATOR("But as it progressed, they’d become completely enthralled by it, unable to act rationally.\n"),
+		T_NARRATOR("Yōkai Mountain was usually protected by the Moriya shrine maiden, but even she had been carried away into madness."),
 		{ 0 },
 	}},
 	{ "cutscenes/opening/02", {

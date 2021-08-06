@@ -47,7 +47,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_MARISA("I mean, ‘course ya lost. Mathematics has always been linked with magic. Don’t ya know about Issac Newton?"),
+		T_MARISA("I mean, ‘course ya lost. Mathematics has always had a soft spot for magic. Don’t ya know about Isaac Newton?"),
 		T_ELLY("The famous European mathematician? I studied his works, yes. But what about him?"),
 		T_MARISA("He was an Alchemist!"),
 		T_ELLY("He was a… what?!"),
@@ -75,7 +75,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_MARISA("Yeah! A while ago, I was cookin’ up some especially powerful ones I found in a cave near the one-armed hermit's house…"),
+		T_MARISA("Yeah! A while ago, I was cookin’ up some especially powerful ones I found in a cave near the one-armed hermit’s house…"),
 		T_MARISA("And then, BOOM, there was a small explosion!"),
 		T_MARISA("Before I knew it was seein’ all sorts’a ‘versions’ of myself out there. My lives were flashin’ before my eyes!"),
 		T_MARISA("Anyway, took me a bit, but I kinda remembered that vampire girl Kurumi, and when I saw ya, and I was like, ‘Whoa, really?! For real?!’"),
@@ -83,13 +83,13 @@
 	}},
 	{ "cutscenes/marisa_good/02", {
 		T_ELLY("That’s ridiculous. You’re ridiculous."),
-		T_ELLY("But I suppose in a place like Gensōkyō, that's not even that strange…"),
+		T_ELLY("But I suppose in a place like Gensōkyō, that’s not even that strange…"),
 		T_ELLY("… and you were such a child when I met you. It’s odd to see you all grown up, even if it’s another you entirely."),
 		T_MARISA("I’ll have you know that I’m not a day wiser! Gahaha!"),
 		{ 0 },
 	}},
 	{ "cutscenes/marisa_good/02", {
-		T_NARRATOR("Many residents of Gensokyo wondered if the Tower would be a blight on the skyline for all eternity.\n"),
+		T_NARRATOR("Many residents of Gensōkyō wondered if the Tower would be a blight on the skyline for all eternity.\n"),
 		T_NARRATOR("Others questioned if its power could be harnessed to serve the greater good.\n"),
 		T_NARRATOR("But for the guardians of Gensōkyō, they would need to be vigilant, lest it suddenly spring to life again…"),
 		{ 0 },

@@ -317,7 +317,7 @@ DIALOG_TASK(youmu, Stage4PostBoss) {
 	FACE(kurumi, normal);
 	MSG(kurumi, "Oh, okay then!");
 	FACE(kurumi, defeated);
-	MSG(kurumi, "I’m sick of guarding this creepy spooky mansion anyways.");
+	MSG(kurumi, "I’m sick of guarding this creepy, spooky mansion anyways.");
 
 	FACE(youmu, unamused);
 	MSG(youmu, "S-… spooky?");
@@ -398,7 +398,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(youmu, "Konpaku Yōmu, the greatest swordswoman to live and die, will settle this incident once and for all!");
 
 	FACE(iku, smile);
-	MSG(iku, "It seems that the machine has also overinflated your ego, Swordswoman of the Hakugyokurō.");
+	MSG(iku, "It seems that the machine has also overinflated your ego, Swordswoman of Hakugyokurō.");
 	MSG(iku, "Would caution not be prudent in this situation?");
 
 	FACE(youmu, eyes_closed);
@@ -508,7 +508,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 
 	MSG(elly, "I see. I used to rely on this scythe as a gatekeeper, in the real Gensōkyō.");
 	FACE(elly, angry);
-	MSG(elly, "Now, it will the sigil of a new era!");
+	MSG(elly, "Now, it will be the sigil of a new era!");
 	FACE(elly, shouting);
 	MSG(elly, "One that we, the ‘forgotten’, will reign over!");
 
