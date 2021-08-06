@@ -25,7 +25,9 @@ DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	cmplx args[4];
 
-	ShaderProgram *shader;
+	// NOTE: in the future we may reuse this to customize the SDF application shader
+	ShaderProgram *shader  attr_deprecated("Specialized shape shaders are no longer supported");
+
 	LaserPosRule prule;
 	LaserLogicRule lrule;
 

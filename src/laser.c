@@ -18,22 +18,41 @@
 #include "util/fbmgr.h"
 #include "video.h"
 
+// Should be set slightly larger than the
+// negated lowest distance threshold value in the sdf_apply shader
+#define SDF_RANGE 4.01
+
 static struct {
 	VertexArray *varr;
 	VertexBuffer *vbuf;
-	ShaderProgram *shader_generic;
-	Model quad_generic;
-	Framebuffer *saved_fb;
-	Framebuffer *render_fb;
-	FBPair blur_fb_pair;
-	ManagedFramebufferGroup *mfb_group;
-	bool force_generic;
+	Model quad;
+
+	struct {
+		ShaderProgram *sdf_generate;
+		ShaderProgram *sdf_apply;
+	} shaders;
+
+	struct {
+		Framebuffer *saved;
+		Framebuffer *sdf;
+		Framebuffer *render;
+		ManagedFramebufferGroup *group;
+		FBPair blur;
+	} fb;
 } lasers;
 
 typedef struct LaserInstancedAttribs {
-	float pos[2];
-	float delta[2];
-	float fragment_width;
+	struct {
+		cmplxf a, b;
+	} pos;
+
+	struct {
+		float a, b;
+	} width;
+
+	struct {
+		float a ,b;
+	} time;
 } LaserInstancedAttribs;
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
@@ -63,7 +82,8 @@ void lasers_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"blur25",
 		"blur5",
-		"lasers/generic",
+		"lasers/sdf_apply",
+		"lasers/sdf_generate",
 	NULL);
 
 	size_t sz_vert = sizeof(GenericModelVertex);
@@ -75,12 +95,11 @@ void lasers_preload(void) {
 	VertexAttribFormat fmt[] = {
 		// Per-vertex attributes (for the static models buffer, bound at 0)
 		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
 
 		// Per-instance attributes (for our own buffer, bound at 1)
-		// pos and delta packed into a single attribute
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),            1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(fragment_width), 1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),          1 },
+		// width and time packed into a single vec4 attribute
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(width),        1 },
 	};
 
 	#undef VERTEX_OFS
@@ -98,7 +117,6 @@ void lasers_preload(void) {
 
 	FBAttachmentConfig aconf = { 0 };
 	aconf.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	aconf.tex_params.type = TEX_TYPE_RGBA_8;
 	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
 	aconf.tex_params.filter.mag = TEX_FILTER_LINEAR;
 	aconf.tex_params.wrap.s = TEX_WRAP_MIRROR;
@@ -109,27 +127,29 @@ void lasers_preload(void) {
 	fbconf.num_attachments = 1;
 	fbconf.resize_strategy.resize_func = lasers_fb_resize_strategy;
 
-	lasers.mfb_group = fbmgr_group_create();
-	lasers.render_fb = fbmgr_group_framebuffer_create(lasers.mfb_group, "Lasers render FB", &fbconf);
+	lasers.fb.group = fbmgr_group_create();
+	aconf.tex_params.type = TEX_TYPE_RG_16_FLOAT;
+	lasers.fb.sdf = fbmgr_group_framebuffer_create(lasers.fb.group, "Lasers SDF FB", &fbconf);
+	aconf.tex_params.type = TEX_TYPE_RGBA_8;
+	lasers.fb.render = fbmgr_group_framebuffer_create(lasers.fb.group, "Lasers render FB", &fbconf);
 	fbconf.resize_strategy.userdata = (void*)(uintptr_t)true;
-	fbmgr_group_fbpair_create(lasers.mfb_group, "Lasers blur", &fbconf, &lasers.blur_fb_pair);
+	fbmgr_group_fbpair_create(lasers.fb.group, "Lasers blur", &fbconf, &lasers.fb.blur);
 
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
 	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
 
-	lasers.quad_generic.num_indices = 0;
-	lasers.quad_generic.num_vertices = 4;
-	lasers.quad_generic.offset = 0;
-	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
-	lasers.quad_generic.vertex_array = lasers.varr;
+	lasers.quad.num_indices = 0;
+	lasers.quad.num_vertices = 4;
+	lasers.quad.offset = 0;
+	lasers.quad.primitive = PRIM_TRIANGLE_STRIP;
+	lasers.quad.vertex_array = lasers.varr;
 
-	lasers.shader_generic = res_shader("lasers/generic");
-
-	lasers.force_generic = env_get_int("TAISEI_FORCE_GENERIC_LASER_SHADER", false);
+	lasers.shaders.sdf_generate = res_shader("lasers/sdf_generate");
+	lasers.shaders.sdf_apply = res_shader("lasers/sdf_apply");
 }
 
 void lasers_free(void) {
-	fbmgr_group_destroy(lasers.mfb_group);
+	fbmgr_group_destroy(lasers.fb.group);
 	r_vertex_array_destroy(lasers.varr);
 	r_vertex_buffer_destroy(lasers.vbuf);
 	ent_unhook_pre_draw(lasers_ent_predraw_hook);
@@ -155,7 +175,6 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 	l->prule = prule;
 	l->lrule = lrule;
 
-	l->shader = NULL;
 	l->collision_step = 1;
 	l->width = 10;
 	l->width_exponent = 1.0;
@@ -219,98 +238,220 @@ static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *o
 	return true;
 }
 
-static void draw_laser_curve_specialized(Laser *l) {
-	float timeshift;
-	uint instances;
-
-	assert(!lasers.force_generic);
-
-	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
-		return;
-	}
-
-	r_shader_ptr(l->shader);
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_vec2_complex("origin", l->pos);
-	r_uniform_vec2_array_complex("args[0]", 0, 4, l->args);
-	r_uniform_float("timeshift", timeshift);
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_uniform_int("span", instances);
-
-#if 1
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-#else
-	double graze_exp;
-
-	r_color(RGBA(0, 0, 0.2, 0.2));
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("width", 2 * laser_graze_width(l, &graze_exp));
-	r_uniform_float("width_exponent", graze_exp);
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-#endif
+static float calc_sample_width(
+	Laser *l, float sample, float half_samples, float width_factor, float tail
+) {
+	float mid_ofs = sample - half_samples;
+	return 0.75f * l->width * powf(
+		width_factor * (mid_ofs - tail) * (mid_ofs + tail),
+		l->width_exponent
+	);
 }
 
 static void draw_laser_curve_generic(Laser *l) {
 	float timeshift;
-	uint instances;
+	uint samples;
 
-	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
+	if(!draw_laser_instanced_prepare(l, &samples, &timeshift)) {
 		return;
 	}
 
-	r_shader_ptr(lasers.shader_generic);
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("timeshift", timeshift);
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_uniform_int("span", instances);
+	// PASS 1: build the signed distance field
+
+	r_state_push();
+
+	r_framebuffer(lasers.fb.sdf);
+	r_clear(CLEAR_COLOR, RGBA(SDF_RANGE, 0, 0, 0), 1);
+	r_blend(BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
+	));
+	r_shader_ptr(lasers.shaders.sdf_generate);
+	r_uniform_float("sdf_range", SDF_RANGE);
 
 	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
 	r_vertex_buffer_invalidate(lasers.vbuf);
 
-	float tail = instances / 1.6;
+	// Precomputed magic parameters for width calculation
+	float half_samples = samples * 0.5;
+	float tail = samples / 1.6;
 	float width_factor = -1 / (tail * tail);
 
-	for(uint i = 0; i < instances; ++i) {
-		cmplx pos = l->prule(l, i * 0.5 + timeshift);
-		cmplx delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
+	// Maximum value of `1 - cos(angle)` between two curve segments to reduce to straight lines
+	const float thres_angular = 1e-4;
+	// Maximum laser-time sample difference between two segment points (for width interpolation)
+	const float thres_temporal = samples / 16.0;
+	// These values should be kept as high as possible without introducing artifacts.
 
-		float mid_ofs = i - instances * 0.5;
-		float w = 0.75f * powf(width_factor * (mid_ofs - tail) * (mid_ofs + tail), l->width_exponent);
+	// Time step between samples
+	// FIXME currently hardcoded, do not change. draw_laser_instanced_prepare should be adjusted
+	// to take this into account.
+	const float tstep = 0.5;
 
-		LaserInstancedAttribs attr;
-		attr.pos[0] = creal(pos);
-		attr.pos[1] = cimag(pos);
-		attr.delta[0] = creal(delta);
-		attr.delta[1] = cimag(delta);
-		attr.fragment_width = w;
+	// Number of segments generated
+	int segments = 0;
 
-		SDL_RWwrite(stream, &attr, sizeof(attr), 1);
+	// Time value of current sample
+	float t = timeshift;
+
+	// Time value of last included sample
+	float t0 = t;
+
+	// Points of the current line segment
+	// Begin constructing at t0
+	cmplxf a, b;
+	a = l->prule(l, t0);
+
+	// Width value of the last included sample
+	// Initialized to the width at t0
+	float w0 = calc_sample_width(l, 0, half_samples, width_factor, tail);
+
+	// Already sampled the first point, so shift
+	t += tstep;
+
+	// Vector from A to B of the last included segment, and its squared length.
+	cmplxf v0;
+	float v0_abs2;
+
+	// FIXME: we have to initialize these with something sane…
+	// but this method always causes the second sample to be skipped.
+	v0 = l->prule(l, t) - a;
+	v0_abs2 = cabs2f(v0);
+
+	float viewmargin = l->width/2;
+	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
+	viewbounds.w += viewmargin * 2;
+	viewbounds.h += viewmargin * 2;
+	viewbounds.x -= viewmargin;
+	viewbounds.y -= viewmargin;
+
+	FloatOffset top_left, bottom_right;
+	top_left.as_cmplx = a;
+	bottom_right.as_cmplx = a;
+
+	for(uint i = 1; i < samples; ++i, t += tstep) {
+		cmplxf b = l->prule(l, t);
+
+		if(i < samples - 1 && (t - t0) < thres_temporal) {
+			cmplxf v1 = b - a;
+
+			// dot(a, b) == |a|*|b|*cos(theta)
+			float dot = cdotf(v0, v1);
+			float norm = sqrtf(v0_abs2 * cabs2f(v1));
+
+			if(norm == 0.0f) {
+				// degenerate case
+				continue;
+			}
+
+			float cosTheta = dot / norm;
+			float d = 1.0f - fabsf(cosTheta);
+
+			if(d < thres_angular) {
+				continue;
+			}
+		}
+
+		float w = calc_sample_width(l, i, half_samples, width_factor, tail);
+
+		float xa = crealf(a);
+		float ya = cimagf(a);
+		float xb = crealf(b);
+		float yb = cimagf(b);
+
+#if 1
+		bool visible =
+			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
+			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
+#else
+		bool visible = true;
+#endif
+
+		if(visible) {
+			LaserInstancedAttribs attr = {
+				.pos   = {   a,  b },
+				.width = {  w0,  w },
+				.time  = { -t0, -t },
+			};
+
+			SDL_RWwrite(stream, &attr, sizeof(attr), 1);
+			++segments;
+
+			top_left.x     = fminf(    top_left.x, fminf(xa, xb));
+			top_left.y     = fminf(    top_left.y, fminf(ya, yb));
+			bottom_right.x = fmaxf(bottom_right.x, fmaxf(xa, xb));
+			bottom_right.y = fmaxf(bottom_right.y, fmaxf(ya, yb));
+		}
+
+		t0 = t;
+		w0 = w;
+		v0 = b - a;
+		v0_abs2 = cabs2f(v0);
+		a = b;
 	}
 
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
+	if(!segments) {
+		// laser is completely outside the viewport, no need to render anything
+		r_state_pop();
+		return;
+	}
+
+	r_draw_model_ptr(&lasers.quad, segments, 0);
+	r_state_pop();
+
+	// PASS 2: color the curve using the generated SDF
+
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_shader_ptr(lasers.shaders.sdf_apply);
+	r_uniform_float("laser_width", l->width);
+	r_color4(l->color.r, l->color.g, l->color.b, 0);
+
+	float aabb_margin = SDF_RANGE + l->width * 0.5f;
+	top_left.as_cmplx -= aabb_margin * (1.0f + I);
+	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
+
+	top_left.x = fmaxf(0, top_left.x);
+	top_left.y = fmaxf(0, top_left.y);
+	bottom_right.x = fminf(VIEWPORT_W, bottom_right.x);
+	bottom_right.y = fminf(VIEWPORT_H, bottom_right.y);
+	cmplxf aabb_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
+	cmplxf aabb_size = bottom_right.as_cmplx - top_left.as_cmplx;
+
+	FloatRect aabb;
+	aabb.offset.as_cmplx = aabb_midpoint;
+	aabb.extent.as_cmplx = aabb_size;
+
+	// begin_draw_texture is an "amazing" API:
+	// the destination offset is interpreted as a midpoint,
+	// but the texture fragment offset is interpreted as a top-left corner…
+	FloatRect frag = aabb;
+	frag.offset.as_cmplx -= aabb.extent.as_cmplx * 0.5;
+
+	begin_draw_texture(
+		aabb, frag,
+		r_framebuffer_get_attachment(lasers.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0)
+	);
+	r_draw_quad();
+	end_draw_texture();
+
+#if 0
+	lasers.quad_generic.primitive = PRIM_LINE_STRIP;
+	float A = 0.5;
+	r_color4(A, 0, A, A);
+	r_shader("lasers/dummy");
+	r_draw_model_ptr(&lasers.quad_generic, segments, 0);
+	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
+#endif
 }
 
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
-
-	if(laser->shader && !lasers.force_generic) {
-		draw_laser_curve_specialized(laser);
-	} else {
-		draw_laser_curve_generic(laser);
-	}
+	draw_laser_curve_generic(laser);
 }
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
+	// TODO revisit this. With the new renderer we don't need this much blurring anymore
+
 	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
 
 	if(pp_quality < 1) {
@@ -318,23 +459,23 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 	}
 
 	if(ent && ent->type == ENT_TYPE_ID(Laser)) {
-		if(lasers.saved_fb != NULL) {
+		if(lasers.fb.saved != NULL) {
 			return;
 		}
 
-		lasers.saved_fb = r_framebuffer_current();
-		r_framebuffer(lasers.render_fb);
+		lasers.fb.saved = r_framebuffer_current();
+		r_framebuffer(lasers.fb.render);
 		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	} else {
-		if(lasers.saved_fb == NULL) {
+		if(lasers.fb.saved == NULL) {
 			return;
 		}
 
-		FBPair *fbpair = &lasers.blur_fb_pair;
+		FBPair *fbpair = &lasers.fb.blur;
 
 		stage_draw_begin_noshake();
 
-		r_framebuffer(lasers.saved_fb);
+		r_framebuffer(lasers.fb.saved);
 		r_state_push();
 		r_blend(BLEND_NONE);
 
@@ -346,7 +487,7 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 
 			r_framebuffer(fbpair->back);
 			r_uniform_vec2("blur_direction", 1, 0);
-			draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+			draw_framebuffer_tex(lasers.fb.render, VIEWPORT_W, VIEWPORT_H);
 
 			fbpair_swap(fbpair);
 
@@ -356,7 +497,7 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 
 			fbpair_swap(fbpair);
 
-			r_framebuffer(lasers.saved_fb);
+			r_framebuffer(lasers.fb.saved);
 			r_blend(BLEND_PREMUL_ALPHA);
 			r_shader_standard();
 			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
@@ -369,7 +510,7 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 
 		r_framebuffer(fbpair->back);
 		r_uniform_vec2("blur_direction", 1, 0);
-		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
+		draw_framebuffer_tex(lasers.fb.render, VIEWPORT_W, VIEWPORT_H);
 
 		fbpair_swap(fbpair);
 
@@ -379,14 +520,15 @@ static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
 
 		fbpair_swap(fbpair);
 
-		r_framebuffer(lasers.saved_fb);
+		r_framebuffer(lasers.fb.saved);
 		r_blend(BLEND_PREMUL_ALPHA);
 		r_shader_standard();
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_state_pop();
+
 		stage_draw_end_noshake();
-		lasers.saved_fb = NULL;
+		lasers.fb.saved = NULL;
 	}
 }
 
@@ -397,11 +539,12 @@ static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg) {
 	}
 }
 
-static void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
+static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 
-	if(l->lrule)
+	if(l->lrule) {
 		l->lrule(l, EVENT_DEATH);
+	}
 
 	ent_unregister(&l->ent);
 	objpool_release(stage_object_pools.lasers, alist_unlink(lasers, laser));
@@ -590,7 +733,6 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 
 cmplx las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/linear");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -600,7 +742,6 @@ cmplx las_linear(Laser *l, float t) {
 
 cmplx las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/accelerated");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -613,7 +754,6 @@ cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = s
 	// do we even still need this?
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/weird_sine");
 		return 0;
 	}
 
@@ -625,7 +765,6 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/sine");
 		return 0;
 	}
 
@@ -644,7 +783,6 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/sine_expanding");
 		return 0;
 	}
 
@@ -662,7 +800,6 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 
 cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/turning");
 		return 0;
 	}
 
@@ -682,7 +819,6 @@ cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn be
 
 cmplx las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/circle");
 		return 0;
 	}
 
