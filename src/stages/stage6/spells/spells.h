@@ -17,16 +17,15 @@
 #define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_newton, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_kepler, ScytheAttack);
 
 void elly_spellbg_toe(Boss*, int);
 
 void elly_curvature(Boss*, int);
 void elly_lhc(Boss*, int);
 void elly_eigenstate(Boss*, int);
-void elly_newton(Boss*, int);
 void elly_eigenstate(Boss*, int);
 void elly_broglie(Boss*, int);
 void elly_maxwell(Boss*, int);
-void elly_kepler(Boss*, int);
 void elly_ricci(Boss*, int);
 void elly_theory(Boss*, int);

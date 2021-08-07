@@ -10,34 +10,27 @@
 
 #include "nonspells.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+DEFINE_EXTERN_TASK(stage6_boss_nonspell_2) {
+	STAGE_BOOKMARK(boss-non2);
 
-void elly_frequency2(Boss *b, int t) {
-	TIMER(&t);
-/*
-	AT(0) {
-		Enemy *scythe = find_scythe();
-		aniplayer_queue(&b->ani, "snipsnip", 0);
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_infinity;
-		scythe->args[0] = 4;
-	}
+	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+	aniplayer_queue(&boss->ani, "snipsnip", 0);
 
-	AT(EVENT_DEATH) {
-		Enemy *scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_reset;
-		scythe->args[0] = 0;
-	}
+	INVOKE_SUBTASK(stage6_elly_scythe_nonspell, ARGS.scythe);
 
-	FROM_TO_SND("shot1_loop",0, 2000, 3-global.diff/2) {
-		cmplx n = sin(t*0.12*global.diff)*cexp(t*0.02*I*global.diff);
+	int interval = difficulty_value(3, 3, 2, 2);
+	
+	for(int t = 1;; t++) {
+		cmplx dir = sin(t * 0.35) * cdir(t*0.02);
+
 		PROJECTILE(
 			.proto = pp_plainball,
-			.pos = b->pos+80*n,
+			.pos = boss->pos + 50 * dir,
 			.color = RGB(0,0,0.7),
-			.rule = asymptotic,
-			.args = { 2*n/cabs(n), 3 }
+			.move = move_asymptotic_simple(2*cnormalize(dir), 3)
 		);
-	}*/
+
+		WAIT(interval);
+	}
 }

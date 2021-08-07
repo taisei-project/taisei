@@ -12,7 +12,9 @@
 #include "../elly.h"
 
 DEFINE_EXTERN_TASK(stage6_boss_nonspell_1) {
-	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	STAGE_BOOKMARK(boss-non1);
+
+	stage6_elly_init_scythe_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
 	INVOKE_SUBTASK(stage6_elly_scythe_nonspell, ARGS.scythe);

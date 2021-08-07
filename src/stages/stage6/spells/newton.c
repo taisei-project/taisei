@@ -12,67 +12,6 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
-
-/*static int scythe_newton(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 1;
-	}
-
-	TIMER(&t);
-
-	FROM_TO(0, 100, 1)
-		e->pos -= 0.2*I*_i;
-
-	AT(100) {
-		e->args[1] = 0.2*I;
-//		e->args[2] = 1;
-	}
-
-	FROM_TO(100, 10000, 1) {
-		e->pos = VIEWPORT_W/2+I*VIEWPORT_H/2 + 400*cos(_i*0.04)*cexp(I*_i*0.01);
-	}
-
-
-	FROM_TO(100, 10000, 3) {
-		Projectile *p;
-		for(p = global.projs.first; p; p = p->next) {
-			if(
-				p->type == PROJ_ENEMY &&
-				cabs(p->pos-e->pos) < 50 &&
-				cabs(global.plr.pos-e->pos) > 50 &&
-				p->args[2] == 0 &&
-				p->sprite != get_sprite("proj/apple")
-			) {
-				e->args[3] += 1;
-				//p->args[0] /= 2;
-				play_sfx_ex("redirect",4,false);
-				p->birthtime=global.frames;
-				p->pos0=p->pos;
-				p->args[0] = (2+0.125*global.diff)*cexp(I*2*M_PI*frand());
-				p->color = *RGBA_MUL_ALPHA(frand(), 0, 1, 0.8);
-				p->args[2] = 1;
-				spawn_projectile_highlight_effect(p);
-			}
-		}
-	}
-
-	scythe_common(e, t);
-	return 1;
-}
-
-*/static int newton_apple(Projectile *p, int t) {
-	int r = accelerated(p, t);
-
-	if(t >= 0) {
-		p->angle += M_PI/16 * sin(creal(p->args[2]) + t / 30.0);
-	}
-
-	return r;
-}
-
 TASK(spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; real width; int count; real speed; }) {
 
 	int delay = round(ARGS.width / (ARGS.count-1) / ARGS.speed);
@@ -186,8 +125,8 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 
 	for(int i = 0;; i++) {
 		for(int s = -1; s <= 1; s += 2) {
-			cmplx dir = cdir((5*M_PI/6+0.1)*i) * I;
-			cmplx pos = boss->pos + 100* dir;
+			cmplx dir = cdir((5 * M_PI / 6 + 0.1) * i) * I;
+			cmplx pos = boss->pos + 100 * dir;
 			INVOKE_SUBTASK(spawn_square, &projectiles, pos, -s*dir,
 				       .width = width,
 				       .count = bullets_per_side,

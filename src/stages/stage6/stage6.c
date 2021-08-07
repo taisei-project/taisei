@@ -34,7 +34,7 @@ struct stage6_spells_s stage6_spells = {
 		},
 		.orbital_clockwork = {
 			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 50, 60000,
-			elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
+			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_kepler),
 		},
 		.wave_theory = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 30, 25000,
