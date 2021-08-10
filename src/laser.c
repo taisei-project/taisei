@@ -427,12 +427,28 @@ static void draw_laser_curve_generic(Laser *l) {
 	FloatRect frag = aabb;
 	frag.offset.as_cmplx -= aabb.extent.as_cmplx * 0.5;
 
-	begin_draw_texture(
-		aabb, frag,
-		r_framebuffer_get_attachment(lasers.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0)
-	);
+	Texture *tex = r_framebuffer_get_attachment(lasers.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
+	r_uniform_sampler("tex", tex);
+
+	float tw = VIEWPORT_W;
+	float th = VIEWPORT_H;
+
+	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
+		frag.y = th - frag.y - frag.h;
+	}
+
+	float tx = frag.x/tw, ty = frag.y/th;
+	float sx = frag.w/tw, sy = frag.h/th;
+
+	r_mat_tex_push();
+	r_mat_tex_translate(tx, ty, 0);
+	r_mat_tex_scale(sx, sy, 1);
+	r_mat_mv_push();
+	r_mat_mv_translate(aabb.offset.x, aabb.offset.y, 0);
+	r_mat_mv_scale(aabb.extent.w, aabb.extent.h, 1);
 	r_draw_quad();
-	end_draw_texture();
+	r_mat_mv_pop();
+	r_mat_tex_pop();
 
 #if 0
 	lasers.quad_generic.primitive = PRIM_LINE_STRIP;
