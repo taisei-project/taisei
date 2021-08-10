@@ -1,7 +1,7 @@
 #version 330 core
 
 #include "../lib/render_context.glslh"
-#include "../interface/laser.glslh"
+#include "../interface/laser_pass1.glslh"
 
 // Uneven capsule SDF derivation by Inigo Quilez
 // https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm

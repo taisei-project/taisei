@@ -2,7 +2,7 @@
 
 #include "../lib/render_context.glslh"
 #include "../lib/util.glslh"
-#include "../interface/laser.glslh"
+#include "../interface/laser_pass1.glslh"
 
 void main(void) {
 	vec2 a = instance_posAB.xy;

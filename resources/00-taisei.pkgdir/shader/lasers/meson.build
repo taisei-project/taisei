@@ -10,6 +10,7 @@
 glsl_files = files(
 # @begin glsl
     'sdf_apply.frag.glsl',
+    'sdf_apply.vert.glsl',
     'sdf_generate.frag.glsl',
     'sdf_generate.vert.glsl',
 # @end glsl

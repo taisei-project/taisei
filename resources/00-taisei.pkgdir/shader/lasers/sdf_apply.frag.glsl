@@ -2,19 +2,19 @@
 
 #include "../lib/render_context.glslh"
 #include "../lib/util.glslh"
-#include "../interface/standard.glslh"
-
-#define SDF_RANGE 16.0
-
-UNIFORM(1) float laser_width;
+#include "../interface/laser_pass2.glslh"
 
 void main(void) {
 	vec2 s = texture(tex, texCoord).xy;
-	float d = -s.x;
 
-	if(d < -4) {
+	if(s.x >= 4) {
 		discard;
 	}
+
+	float d = -s.x;
+
+	vec3 laser_color = color_width.rgb;
+	float laser_width = color_width.a;
 
 	float t = s.y;
 
@@ -25,8 +25,8 @@ void main(void) {
 	hFactor = hFactor * hFactor;
 	gFactor = gFactor * gFactor;
 
-	vec3 color = (bFactor + gFactor) * r_color.rgb + hFactor;
-	// color *= r_color.a;
+	vec3 color = (bFactor + gFactor) * laser_color + hFactor;
+	// color *= laser_color.a;
 
 	// test using the time dimension
 	// color = hueShift(color, t * 0.001);

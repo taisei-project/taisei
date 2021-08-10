@@ -16,16 +16,28 @@
 #include "renderer/api.h"
 #include "resource/model.h"
 #include "util/fbmgr.h"
+#include "util/glm.h"
 #include "video.h"
 
 // Should be set slightly larger than the
 // negated lowest distance threshold value in the sdf_apply shader
 #define SDF_RANGE 4.01
 
+#define TILES_X 8
+#define TILES_Y 7
+// Maximum number of lasers that can be rendered "at once",
+// i.e. in one SDF generation pass followed by one coloring pass.
+#define TILES_MAX (TILES_X * TILES_Y)
+
+#define SEGMENTS_MAX 512
+
 static struct {
-	VertexArray *varr;
-	VertexBuffer *vbuf;
-	Model quad;
+	struct {
+		VertexArray *va;
+		VertexBuffer *vb;
+		SDL_RWops *vb_stream;
+		Model quad;
+	} pass1, pass2;
 
 	struct {
 		ShaderProgram *sdf_generate;
@@ -35,47 +47,152 @@ static struct {
 	struct {
 		Framebuffer *saved;
 		Framebuffer *sdf;
-		Framebuffer *render;
 		ManagedFramebufferGroup *group;
-		FBPair blur;
 	} fb;
+
+	struct {
+		LIST_ANCHOR(LaserRenderData) batch;
+		int free_tile;
+		int rendered_lasers;
+		bool pass1_state_ready;
+		bool drawing_lasers;
+	} render_state;
 } lasers;
 
-typedef struct LaserInstancedAttribs {
-	struct {
-		cmplxf a, b;
-	} pos;
+#define LASER_FROM_RENDERDATA(rd) \
+	UNION_CAST(char*, Laser*, \
+		UNION_CAST(LaserRenderData*, char*, (rd)) - offsetof(Laser, _renderdata))
 
-	struct {
-		float a, b;
-	} width;
+typedef struct LaserInstancedAttribsPass1 {
+	union {
+		struct { cmplxf a, b; } pos;
+		float attr0[4];
+	};
 
-	struct {
-		float a ,b;
-	} time;
-} LaserInstancedAttribs;
+	union {
+		struct {
+			struct { float a, b; } width;
+			struct { float a, b; } time;
+		};
+		float attr1[4];
+	};
+} LaserInstancedAttribsPass1;
+
+typedef struct LaserInstancedAttribsPass2 {
+	union {
+		FloatRect bbox;
+		float attr0[4];
+	};
+
+	union {
+		struct {
+			Color3 color;
+			float width;
+		};
+		float attr1[4];
+	};
+
+	union {
+		FloatOffset texture_ofs;
+		float attr2[2];
+	};
+} LaserInstancedAttribsPass2;
 
 static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
 static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
 
-static void lasers_fb_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
+static void lasers_sdf_fb_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
 	float w, h;
 	float vid_vp_w, vid_vp_h;
 	video_get_viewport_size(&vid_vp_w, &vid_vp_h);
 
-	bool is_blur_fb = (bool)(uintptr_t)userdata;
-
 	float q = config_get_float(CONFIG_FG_QUALITY);
 
-	if(!is_blur_fb && config_get_int(CONFIG_POSTPROCESS) > 1) {
-		q *= 2;
-	}
+	float wfactor = fminf(1.0f, vid_vp_w / SCREEN_W);
+	float hfactor = fminf(1.0f, vid_vp_h / SCREEN_H);
 
-	w = floorf(fmin(1.0, vid_vp_w / SCREEN_W) * VIEWPORT_W) * q;
-	h = floorf(fmin(1.0, vid_vp_h / SCREEN_H) * VIEWPORT_H) * q;
+	float wbase = VIEWPORT_W * TILES_X;
+	float hbase = VIEWPORT_H * TILES_Y;
+
+	w = floorf(wfactor * wbase) * q;
+	h = floorf(hfactor * hbase) * q;
 
 	*fb_size = (IntExtent) { w, h };
 	*fb_viewport = (FloatRect) { 0, 0, w, h };
+}
+
+static void create_pass1_resources(void) {
+	size_t sz_vert = sizeof(GenericModelVertex);
+	size_t sz_attr = sizeof(LaserInstancedAttribsPass1);
+
+	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,         attr)
+	#define INSTANCE_OFS(attr) offsetof(LaserInstancedAttribsPass1, attr)
+
+	VertexAttribFormat fmt[] = {
+		// Per-vertex attributes (for the static models buffer, bound at 0)
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position), 0 },
+
+		// Per-instance attributes (for our streaming buffer, bound at 1)
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(attr0),  1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(attr1),  1 },
+	};
+
+	#undef VERTEX_OFS
+	#undef INSTANCE_OFS
+
+	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * SEGMENTS_MAX, NULL);
+	r_vertex_buffer_set_debug_label(vb, "Lasers VB pass 1");
+
+	VertexArray *va = r_vertex_array_create();
+	r_vertex_array_set_debug_label(va, "Lasers VA pass 1");
+	r_vertex_array_attach_vertex_buffer(va, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_vertex_buffer(va, vb, 1);
+	r_vertex_array_layout(va, ARRAY_SIZE(fmt), fmt);
+
+	lasers.pass1.va = va;
+	lasers.pass1.vb = vb;
+	lasers.pass1.vb_stream = r_vertex_buffer_get_stream(vb);
+
+	lasers.pass1.quad = *r_model_get_quad();
+	lasers.pass1.quad.vertex_array = va;
+}
+
+static void create_pass2_resources(void) {
+	size_t sz_vert = sizeof(GenericModelVertex);
+	size_t sz_attr = sizeof(LaserInstancedAttribsPass2);
+
+	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,         attr)
+	#define INSTANCE_OFS(attr) offsetof(LaserInstancedAttribsPass2, attr)
+
+	VertexAttribFormat fmt[] = {
+		// Per-vertex attributes (for the static models buffer, bound at 0)
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position), 0 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),       0 },
+
+		// Per-instance attributes (for our streaming buffer, bound at 1)
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(attr0),  1 },
+		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(attr1),  1 },
+		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(attr2),  1 },
+	};
+
+	#undef VERTEX_OFS
+	#undef INSTANCE_OFS
+
+	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * TILES_MAX, NULL);
+	r_vertex_buffer_set_debug_label(vb, "Lasers VB pass 2");
+
+	VertexArray *va = r_vertex_array_create();
+	r_vertex_array_set_debug_label(va, "Lasers VA pass 2");
+	r_vertex_array_attach_vertex_buffer(va, r_vertex_buffer_static_models(), 0);
+	r_vertex_array_attach_vertex_buffer(va, vb, 1);
+	r_vertex_array_layout(va, ARRAY_SIZE(fmt), fmt);
+
+	lasers.pass2.va = va;
+	lasers.pass2.vb = vb;
+	lasers.pass2.vb_stream = r_vertex_buffer_get_stream(vb);
+
+	lasers.pass2.quad = *r_model_get_quad();
+	lasers.pass2.quad.vertex_array = va;
 }
 
 void lasers_preload(void) {
@@ -86,37 +203,12 @@ void lasers_preload(void) {
 		"lasers/sdf_generate",
 	NULL);
 
-	size_t sz_vert = sizeof(GenericModelVertex);
-	size_t sz_attr = sizeof(LaserInstancedAttribs);
-
-	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
-	#define INSTANCE_OFS(attr) offsetof(LaserInstancedAttribs, attr)
-
-	VertexAttribFormat fmt[] = {
-		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
-
-		// Per-instance attributes (for our own buffer, bound at 1)
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),          1 },
-		// width and time packed into a single vec4 attribute
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(width),        1 },
-	};
-
-	#undef VERTEX_OFS
-	#undef INSTANCE_OFS
-
-	lasers.vbuf = r_vertex_buffer_create(sizeof(LaserInstancedAttribs) * 4096, NULL);
-	r_vertex_buffer_set_debug_label(lasers.vbuf, "Lasers vertex buffer");
-
-	lasers.varr = r_vertex_array_create();
-	r_vertex_array_set_debug_label(lasers.varr, "Lasers vertex array");
-	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-	r_vertex_array_attach_vertex_buffer(lasers.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_vertex_buffer(lasers.varr, lasers.vbuf, 1);
-	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
+	create_pass1_resources();
+	create_pass2_resources();
 
 	FBAttachmentConfig aconf = { 0 };
 	aconf.attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	aconf.tex_params.type = TEX_TYPE_RG_16_FLOAT;
 	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
 	aconf.tex_params.filter.mag = TEX_FILTER_LINEAR;
 	aconf.tex_params.wrap.s = TEX_WRAP_MIRROR;
@@ -125,24 +217,13 @@ void lasers_preload(void) {
 	FramebufferConfig fbconf = { 0 };
 	fbconf.attachments = &aconf;
 	fbconf.num_attachments = 1;
-	fbconf.resize_strategy.resize_func = lasers_fb_resize_strategy;
+	fbconf.resize_strategy.resize_func = lasers_sdf_fb_resize_strategy;
 
 	lasers.fb.group = fbmgr_group_create();
-	aconf.tex_params.type = TEX_TYPE_RG_16_FLOAT;
 	lasers.fb.sdf = fbmgr_group_framebuffer_create(lasers.fb.group, "Lasers SDF FB", &fbconf);
-	aconf.tex_params.type = TEX_TYPE_RGBA_8;
-	lasers.fb.render = fbmgr_group_framebuffer_create(lasers.fb.group, "Lasers render FB", &fbconf);
-	fbconf.resize_strategy.userdata = (void*)(uintptr_t)true;
-	fbmgr_group_fbpair_create(lasers.fb.group, "Lasers blur", &fbconf, &lasers.fb.blur);
 
 	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
 	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
-
-	lasers.quad.num_indices = 0;
-	lasers.quad.num_vertices = 4;
-	lasers.quad.offset = 0;
-	lasers.quad.primitive = PRIM_TRIANGLE_STRIP;
-	lasers.quad.vertex_array = lasers.varr;
 
 	lasers.shaders.sdf_generate = res_shader("lasers/sdf_generate");
 	lasers.shaders.sdf_apply = res_shader("lasers/sdf_apply");
@@ -150,8 +231,10 @@ void lasers_preload(void) {
 
 void lasers_free(void) {
 	fbmgr_group_destroy(lasers.fb.group);
-	r_vertex_array_destroy(lasers.varr);
-	r_vertex_buffer_destroy(lasers.vbuf);
+	r_vertex_array_destroy(lasers.pass1.va);
+	r_vertex_array_destroy(lasers.pass2.va);
+	r_vertex_buffer_destroy(lasers.pass1.vb);
+	r_vertex_buffer_destroy(lasers.pass2.vb);
 	ent_unhook_pre_draw(lasers_ent_predraw_hook);
 	ent_unhook_post_draw(lasers_ent_postdraw_hook);
 }
@@ -212,6 +295,17 @@ static float laser_graze_width(Laser *l, float *exponent) {
 	return 5.0f * sqrtf(l->width) + 15.0f;
 }
 
+static void draw_laser_prepare_state_pass1(void) {
+	r_framebuffer(lasers.fb.sdf);
+	r_clear(CLEAR_COLOR, RGBA(SDF_RANGE, 0, 0, 0), 1);
+	r_blend(BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
+	));
+	r_shader_ptr(lasers.shaders.sdf_generate);
+	r_uniform_float("sdf_range", SDF_RANGE);
+}
+
 static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *out_timeshift) {
 	float t;
 	int c;
@@ -248,29 +342,15 @@ static float calc_sample_width(
 	);
 }
 
-static void draw_laser_curve_generic(Laser *l) {
+static int draw_laser_pass1_build(Laser *l) {
 	float timeshift;
 	uint samples;
 
 	if(!draw_laser_instanced_prepare(l, &samples, &timeshift)) {
-		return;
+		return 0;
 	}
 
 	// PASS 1: build the signed distance field
-
-	r_state_push();
-
-	r_framebuffer(lasers.fb.sdf);
-	r_clear(CLEAR_COLOR, RGBA(SDF_RANGE, 0, 0, 0), 1);
-	r_blend(BLENDMODE_COMPOSE(
-		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
-	));
-	r_shader_ptr(lasers.shaders.sdf_generate);
-	r_uniform_float("sdf_range", SDF_RANGE);
-
-	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
-	r_vertex_buffer_invalidate(lasers.vbuf);
 
 	// Precomputed magic parameters for width calculation
 	float half_samples = samples * 0.5;
@@ -318,10 +398,10 @@ static void draw_laser_curve_generic(Laser *l) {
 	v0 = l->prule(l, t) - a;
 	v0_abs2 = cabs2f(v0);
 
-	float viewmargin = l->width/2;
+	float viewmargin = l->width * 0.5f;
 	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
-	viewbounds.w += viewmargin * 2;
-	viewbounds.h += viewmargin * 2;
+	viewbounds.w += viewmargin * 2.0f;
+	viewbounds.h += viewmargin * 2.0f;
 	viewbounds.x -= viewmargin;
 	viewbounds.y -= viewmargin;
 
@@ -359,22 +439,18 @@ static void draw_laser_curve_generic(Laser *l) {
 		float xb = crealf(b);
 		float yb = cimagf(b);
 
-#if 1
 		bool visible =
 			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
 			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
-#else
-		bool visible = true;
-#endif
 
 		if(visible) {
-			LaserInstancedAttribs attr = {
+			LaserInstancedAttribsPass1 attr = {
 				.pos   = {   a,  b },
 				.width = {  w0,  w },
 				.time  = { -t0, -t },
 			};
 
-			SDL_RWwrite(stream, &attr, sizeof(attr), 1);
+			SDL_RWwrite(lasers.pass1.vb_stream, &attr, sizeof(attr), 1);
 			++segments;
 
 			top_left.x     = fminf(    top_left.x, fminf(xa, xb));
@@ -390,22 +466,6 @@ static void draw_laser_curve_generic(Laser *l) {
 		a = b;
 	}
 
-	if(!segments) {
-		// laser is completely outside the viewport, no need to render anything
-		r_state_pop();
-		return;
-	}
-
-	r_draw_model_ptr(&lasers.quad, segments, 0);
-	r_state_pop();
-
-	// PASS 2: color the curve using the generated SDF
-
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_shader_ptr(lasers.shaders.sdf_apply);
-	r_uniform_float("laser_width", l->width);
-	r_color4(l->color.r, l->color.g, l->color.b, 0);
-
 	float aabb_margin = SDF_RANGE + l->width * 0.5f;
 	top_left.as_cmplx -= aabb_margin * (1.0f + I);
 	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
@@ -414,137 +474,145 @@ static void draw_laser_curve_generic(Laser *l) {
 	top_left.y = fmaxf(0, top_left.y);
 	bottom_right.x = fminf(VIEWPORT_W, bottom_right.x);
 	bottom_right.y = fminf(VIEWPORT_H, bottom_right.y);
-	cmplxf aabb_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
-	cmplxf aabb_size = bottom_right.as_cmplx - top_left.as_cmplx;
 
-	FloatRect aabb;
-	aabb.offset.as_cmplx = aabb_midpoint;
-	aabb.extent.as_cmplx = aabb_size;
+	l->_renderdata.bbox.top_left = top_left;
+	l->_renderdata.bbox.bottom_right = bottom_right;
+	return segments;
+}
 
-	// begin_draw_texture is an "amazing" API:
-	// the destination offset is interpreted as a midpoint,
-	// but the texture fragment offset is interpreted as a top-left corner…
-	FloatRect frag = aabb;
-	frag.offset.as_cmplx -= aabb.extent.as_cmplx * 0.5;
+static void draw_laser_pass1_render(Laser *l, int segments) {
+	Framebuffer *fb = r_framebuffer_current();
+	FloatRect vp_orig;
+	r_framebuffer_viewport_current(fb, &vp_orig);
+	FloatRect vp = vp_orig;
+	int sx = l->_renderdata.tile % TILES_X;
+	int sy = l->_renderdata.tile / TILES_X;
+	vp.w /= TILES_X;
+	vp.h /= TILES_Y;
+	vp.x = sx * vp.w;
+	vp.y = sy * vp.h;
+	r_framebuffer_viewport_rect(fb, vp);
+	r_draw_model_ptr(&lasers.pass1.quad, segments, 0);
+	r_vertex_buffer_invalidate(lasers.pass1.vb);
+	r_framebuffer_viewport_rect(fb, vp_orig);
+}
 
+static void draw_laser_prepare_state_pass2(void) {
 	Texture *tex = r_framebuffer_get_attachment(lasers.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
+	r_shader_ptr(lasers.shaders.sdf_apply);
 	r_uniform_sampler("tex", tex);
+	r_uniform_vec2("texsize", VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
+	r_blend(BLEND_PREMUL_ALPHA);
+}
 
-	float tw = VIEWPORT_W;
-	float th = VIEWPORT_H;
+static void draw_laser_pass2(Laser *l) {
+	// PASS 2: color the curve using the generated SDF
 
-	if(r_supports(RFEAT_TEXTURE_BOTTOMLEFT_ORIGIN)) {
-		frag.y = th - frag.y - frag.h;
+	FloatOffset top_left = l->_renderdata.bbox.top_left;
+	FloatOffset bottom_right = l->_renderdata.bbox.bottom_right;
+	cmplxf bbox_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
+	cmplxf bbox_size = bottom_right.as_cmplx - top_left.as_cmplx;
+
+	FloatRect bbox;
+	bbox.offset.as_cmplx = bbox_midpoint;
+	bbox.extent.as_cmplx = bbox_size;
+
+	FloatRect frag = bbox;
+	frag.offset.as_cmplx -= bbox.extent.as_cmplx * 0.5;
+	frag.x += VIEWPORT_W * (l->_renderdata.tile % TILES_X);
+	frag.y += VIEWPORT_H * (l->_renderdata.tile / TILES_X);
+
+	LaserInstancedAttribsPass2 attrs = {
+		.bbox = bbox,
+		.texture_ofs = frag.offset,
+		.color = l->color.color3,
+		.width = l->width,
+	};
+
+	SDL_RWwrite(lasers.pass2.vb_stream, &attrs, sizeof(attrs), 1);
+}
+
+static void draw_lasers_pass2(void) {
+	if(!lasers.render_state.batch.first) {
+		return;
 	}
 
-	float tx = frag.x/tw, ty = frag.y/th;
-	float sx = frag.w/tw, sy = frag.h/th;
+	r_state_push();
+	r_framebuffer(lasers.fb.saved);
+	draw_laser_prepare_state_pass2();
 
-	r_mat_tex_push();
-	r_mat_tex_translate(tx, ty, 0);
-	r_mat_tex_scale(sx, sy, 1);
-	r_mat_mv_push();
-	r_mat_mv_translate(aabb.offset.x, aabb.offset.y, 0);
-	r_mat_mv_scale(aabb.extent.w, aabb.extent.h, 1);
-	r_draw_quad();
-	r_mat_mv_pop();
-	r_mat_tex_pop();
+	int instances = 0;
 
-#if 0
-	lasers.quad_generic.primitive = PRIM_LINE_STRIP;
-	float A = 0.5;
-	r_color4(A, 0, A, A);
-	r_shader("lasers/dummy");
-	r_draw_model_ptr(&lasers.quad_generic, segments, 0);
-	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
-#endif
+	for(;;) {
+		LaserRenderData *rd = lasers.render_state.batch.last;
+
+		if(rd == NULL) {
+			break;
+		}
+
+		alist_unlink(&lasers.render_state.batch, rd);
+		Laser *l = LASER_FROM_RENDERDATA(rd);
+		draw_laser_pass2(l);
+		++instances;
+	}
+
+	assert(instances > 0);
+	r_draw_model_ptr(&lasers.pass2.quad, instances, 0);
+	r_vertex_buffer_invalidate(lasers.pass2.vb);
+
+	r_state_pop();
+
+	lasers.render_state.rendered_lasers += instances;
+	lasers.render_state.pass1_state_ready = false;
+	lasers.render_state.free_tile = 0;
+	assert(lasers.render_state.batch.first == NULL);
 }
 
 static void ent_draw_laser(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
-	draw_laser_curve_generic(laser);
-}
 
-static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
-	// TODO revisit this. With the new renderer we don't need this much blurring anymore
+	int segments = draw_laser_pass1_build(laser);
 
-	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
-
-	if(pp_quality < 1) {
+	if(segments <= 0) {
 		return;
 	}
 
-	if(ent && ent->type == ENT_TYPE_ID(Laser)) {
-		if(lasers.fb.saved != NULL) {
-			return;
-		}
+	if(lasers.render_state.free_tile == TILES_MAX) {
+		draw_lasers_pass2();
+	}
 
-		lasers.fb.saved = r_framebuffer_current();
-		r_framebuffer(lasers.fb.render);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
-	} else {
-		if(lasers.fb.saved == NULL) {
-			return;
-		}
+	assert(lasers.render_state.free_tile < TILES_MAX);
+	laser->_renderdata.tile = lasers.render_state.free_tile++;
+	alist_push(&lasers.render_state.batch, &laser->_renderdata);
 
-		FBPair *fbpair = &lasers.fb.blur;
-
-		stage_draw_begin_noshake();
-
-		r_framebuffer(lasers.fb.saved);
-		r_state_push();
-		r_blend(BLEND_NONE);
-
-		if(pp_quality > 1) {
-			// Ambient glow pass (large kernel)
-
-			r_shader("blur25");
-			r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-
-			r_framebuffer(fbpair->back);
-			r_uniform_vec2("blur_direction", 1, 0);
-			draw_framebuffer_tex(lasers.fb.render, VIEWPORT_W, VIEWPORT_H);
-
-			fbpair_swap(fbpair);
-
-			r_framebuffer(fbpair->back);
-			r_uniform_vec2("blur_direction", 0, 1);
-			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
-			fbpair_swap(fbpair);
-
-			r_framebuffer(lasers.fb.saved);
-			r_blend(BLEND_PREMUL_ALPHA);
-			r_shader_standard();
-			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-			r_blend(BLEND_NONE);
-		}
-
-		// Smoothed laser curves pass (small kernel)
-		r_shader("blur5");
-		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-
-		r_framebuffer(fbpair->back);
-		r_uniform_vec2("blur_direction", 1, 0);
-		draw_framebuffer_tex(lasers.fb.render, VIEWPORT_W, VIEWPORT_H);
-
-		fbpair_swap(fbpair);
-
-		r_framebuffer(fbpair->back);
-		r_uniform_vec2("blur_direction", 0, 1);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
-		fbpair_swap(fbpair);
-
-		r_framebuffer(lasers.fb.saved);
-		r_blend(BLEND_PREMUL_ALPHA);
-		r_shader_standard();
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
+	if(!lasers.render_state.pass1_state_ready) {
+		// Pop out of entity-wide state into lasers-wide state
 		r_state_pop();
 
-		stage_draw_end_noshake();
-		lasers.fb.saved = NULL;
+		draw_laser_prepare_state_pass1();
+		lasers.render_state.pass1_state_ready = true;
+
+		// Push new entity-wide state; entity draw loop will pop it
+		r_state_push();
+	}
+
+	draw_laser_pass1_render(laser, segments);
+}
+
+static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
+	if(ent && ent->type == ENT_TYPE_ID(Laser)) {
+		if(!lasers.render_state.drawing_lasers) {
+			lasers.fb.saved = r_framebuffer_current();
+			r_state_push();
+			lasers.render_state.drawing_lasers = true;
+		}
+	} else {
+		if(lasers.render_state.drawing_lasers) {
+			r_state_pop();
+			lasers.render_state.drawing_lasers = false;
+		}
+
+		draw_lasers_pass2();
 	}
 }
 

@@ -1,1 +1,1 @@
-objects = standard.vert lasers/sdf_apply.frag
+objects = lasers/sdf_apply.vert lasers/sdf_apply.frag

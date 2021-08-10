@@ -21,6 +21,18 @@ typedef LIST_ANCHOR(Laser) LaserList;
 typedef cmplx (*LaserPosRule)(Laser* l, float time);
 typedef void (*LaserLogicRule)(Laser* l, int time);
 
+typedef struct LaserRenderData LaserRenderData;
+struct LaserRenderData {
+	// NOTE: this struct is considered private
+
+	LIST_INTERFACE(LaserRenderData);
+	int tile;
+
+	struct {
+		FloatOffset top_left, bottom_right;
+	} bbox;
+};
+
 DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	cmplx args[4];
@@ -30,6 +42,8 @@ DEFINE_ENTITY_TYPE(Laser, {
 
 	LaserPosRule prule;
 	LaserLogicRule lrule;
+
+	LaserRenderData _renderdata;
 
 	Color color;
 
