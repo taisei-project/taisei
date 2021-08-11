@@ -13,8 +13,16 @@
 
 #include "util.h"
 
-typedef struct Color {
-	float r, g, b, a;
+typedef union Color3 {
+	struct { float r, g, b; };
+	vec3_noalign rgb;
+} Color3;
+
+typedef union Color {
+	struct { float r, g, b, a; };
+	vec4_noalign rgba;
+	vec3_noalign rgb;
+	Color3 color3;
 } Color;
 
 /*
