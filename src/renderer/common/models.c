@@ -103,7 +103,7 @@ void r_draw_quad_instanced(uint instances) {
 	r_draw_model_ptr(&_r_models.quad, instances, 0);
 }
 
-void r_draw_model_ptr(Model *model, uint instances, uint base_instance) {
+void r_draw_model_ptr(const Model *model, uint instances, uint base_instance) {
 	if(model->num_indices) {
 		r_draw_indexed(
 			model->vertex_array,
@@ -121,4 +121,8 @@ void r_draw_model_ptr(Model *model, uint instances, uint base_instance) {
 			base_instance
 		);
 	}
+}
+
+const Model *r_model_get_quad(void) {
+	return &_r_models.quad;
 }

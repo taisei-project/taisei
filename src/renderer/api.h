@@ -793,6 +793,7 @@ IndexBuffer* r_vertex_array_get_index_attachment(VertexArray *varr)  attr_nonnul
 void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 3);
 
 void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint indices[num_indices]);
+const Model *r_model_get_quad(void) attr_returns_nonnull;
 
 void r_vsync(VsyncMode mode);
 VsyncMode r_vsync_current(void);
@@ -853,7 +854,7 @@ void r_state_pop(void);
 
 void r_draw_quad(void);
 void r_draw_quad_instanced(uint instances);
-void r_draw_model_ptr(Model *model, uint instances, uint base_instance) attr_nonnull(1);
+void r_draw_model_ptr(const Model *model, uint instances, uint base_instance) attr_nonnull(1);
 void r_draw_sprite(const SpriteParams *params) attr_nonnull(1);
 
 void r_sprite_batch_prepare_state(const SpriteStateParams *stp);
