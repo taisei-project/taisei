@@ -338,7 +338,6 @@ if macos_app_bundle
         ':'.join(meson.get_cross_property('macos_tool_path', [])),
         meson.get_cross_property('macos_tool_prefix', ''),
     )
-
 else
     datadir = get_option('datadir')
 
