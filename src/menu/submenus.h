@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_submenus_h
-#define IGUARD_menu_submenus_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -19,5 +17,3 @@ void menu_action_enter_replayview(MenuData *menu, void *arg);
 void menu_action_enter_spellpractice(MenuData *menu, void *arg);
 void menu_action_enter_stagepractice(MenuData *menu, void *arg);
 void menu_action_enter_media(MenuData *menu, void *arg);
-
-#endif // IGUARD_menu_submenus_h

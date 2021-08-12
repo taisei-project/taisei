@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage4_kurumi_h
-#define IGUARD_stages_stage4_kurumi_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -18,5 +16,3 @@ void kurumi_slave_visual(Enemy *e, int t, bool render);
 void kurumi_slave_static_visual(Enemy *e, int t, bool render);
 int kurumi_splitcard(Projectile *p, int t);
 void kurumi_spell_bg(Boss*, int);
-
-#endif // IGUARD_stages_stage4_kurumi_h

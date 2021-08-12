@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_audio_stream_stream_opus_h
-#define IGUARD_audio_stream_stream_opus_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stream.h"
 
 bool astream_opus_open(AudioStream *stream, SDL_RWops *rw);
-
-#endif // IGUARD_audio_stream_stream_opus_h

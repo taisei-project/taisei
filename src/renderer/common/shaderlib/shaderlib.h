@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_shaderlib_shaderlib_h
-#define IGUARD_renderer_common_shaderlib_shaderlib_h
-
+#pragma once
 #include "taisei.h"
 
 #include "defs.h"
@@ -41,5 +39,3 @@ struct ShaderSource {
 void shader_free_source(ShaderSource *src);
 bool shader_lang_supports_uniform_locations(const ShaderLangInfo *lang) attr_nonnull(1);
 bool shader_lang_supports_attribute_locations(const ShaderLangInfo *lang) attr_nonnull(1);
-
-#endif // IGUARD_renderer_common_shaderlib_shaderlib_h

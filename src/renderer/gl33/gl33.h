@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_gl33_h
-#define IGUARD_renderer_gl33_gl33_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -86,5 +84,3 @@ void gl33_framebuffer_deleted(Framebuffer *fb);
 void gl33_shader_deleted(ShaderProgram *prog);
 
 extern RendererBackend _r_backend_gl33;
-
-#endif // IGUARD_renderer_gl33_gl33_h

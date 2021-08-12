@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_objectpool_h
-#define IGUARD_objectpool_h
-
+#pragma once
 #include "taisei.h"
 
 #include "list.h"
@@ -49,5 +47,3 @@ void objpool_memtest(ObjectPool *pool, void *object) attr_nonnull(1, 2);
 #else
 #define objpool_memtest(pool, object) ((void)(pool), (void)(object))
 #endif
-
-#endif // IGUARD_objectpool_h

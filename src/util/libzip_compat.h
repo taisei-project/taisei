@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_libzip_compat_h
-#define IGUARD_util_libzip_compat_h
-
+#pragma once
 #include "taisei.h"
 
 #include <zip.h>
@@ -26,5 +24,3 @@ attr_unused static int zip_compression_method_supported(zip_int32_t method, int 
 #ifndef ZIP_CM_ZSTD
 #define ZIP_CM_ZSTD 93
 #endif
-
-#endif // IGUARD_util_libzip_compat_h

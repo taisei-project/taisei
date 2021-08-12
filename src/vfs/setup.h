@@ -7,9 +7,7 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#ifndef IGUARD_vfs_setup_h
-#define IGUARD_vfs_setup_h
-
+#pragma once
 #include "taisei.h"
 
 #include "public.h"
@@ -59,5 +57,3 @@ static inline void vfs_setup_fixedpaths_onsync(CallChainResult ccr, VfsSetupFixe
 	run_call_chain(next, NULL);
 	free(next);
 }
-
-#endif // IGUARD_vfs_setup_h

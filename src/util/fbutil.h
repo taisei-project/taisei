@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_fbutil_h
-#define IGUARD_util_fbutil_h
-
+#pragma once
 #include "taisei.h"
 
 #include "renderer/api.h"
@@ -21,5 +19,3 @@ typedef struct FBAttachmentConfig {
 void fbutil_create_attachments(Framebuffer *fb, uint num_attachments, FBAttachmentConfig attachments[num_attachments]);
 void fbutil_destroy_attachments(Framebuffer *fb);
 void fbutil_resize_attachment(Framebuffer *fb, FramebufferAttachment attachment, uint width, uint height);
-
-#endif // IGUARD_util_fbutil_h

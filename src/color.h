@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_color_h
-#define IGUARD_color_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -95,5 +93,3 @@ bool color_equals(const Color *clr, const Color *clr2)
 
 char* color_str(const Color *clr)
 	attr_nonnull(1) attr_returns_allocated;
-
-#endif // IGUARD_color_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_entities_h
-#define IGUARD_stages_entities_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stage1/entities.h"
@@ -25,5 +23,3 @@
 	ENTITIES_STAGE4(X, __VA_ARGS__) \
 	ENTITIES_STAGE5(X, __VA_ARGS__) \
 	ENTITIES_STAGE6(X, __VA_ARGS__) \
-
-#endif // IGUARD_stages_entities_h

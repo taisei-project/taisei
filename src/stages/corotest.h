@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_corotest_h
-#define IGUARD_stages_corotest_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageinfo.h"
 
 extern StageProcs corotest_procs;
-
-#endif // IGUARD_stages_corotest_h

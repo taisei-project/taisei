@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_hashtable_h
-#define IGUARD_hashtable_h
-
+#pragma once
 #include "taisei.h"
 
 /*
@@ -78,5 +76,3 @@ INLINE uint32_t htutil_hashfunc_string(const char *str) {
 
 // NOTE: For the hashtable API, see hashtable.inc.h
 // NOTE: For type-generic wrappers around the API, see hashtable_predefs.inc.h
-
-#endif // IGUARD_hashtable_h

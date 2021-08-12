@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_vertex_buffer_h
-#define IGUARD_renderer_gl33_vertex_buffer_h
-
+#pragma once
 #include "taisei.h"
 
 #include "common_buffer.h"
@@ -24,5 +22,3 @@ void gl33_vertex_buffer_destroy(VertexBuffer *vbuf);
 void gl33_vertex_buffer_invalidate(VertexBuffer *vbuf);
 SDL_RWops* gl33_vertex_buffer_get_stream(VertexBuffer *vbuf);
 void gl33_vertex_buffer_flush(VertexBuffer *vbuf);
-
-#endif // IGUARD_renderer_gl33_vertex_buffer_h

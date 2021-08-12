@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_stringops_h
-#define IGUARD_util_stringops_h
-
+#pragma once
 #include "taisei.h"
 
 #include <time.h>
@@ -69,5 +67,3 @@ void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_si
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
-
-#endif // IGUARD_util_stringops_h

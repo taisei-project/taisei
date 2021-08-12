@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_spellpractice_h
-#define IGUARD_menu_spellpractice_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
 
 MenuData* create_spell_menu(void);
-
-#endif // IGUARD_menu_spellpractice_h

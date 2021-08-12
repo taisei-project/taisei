@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_replay_struct_h
-#define IGUARD_replay_struct_h
-
+#pragma once
 #include "taisei.h"
 
 #include "version.h"
@@ -217,5 +215,3 @@ typedef enum ReplayStageFlags {
 	REPLAY_SFLAG_CHEATS             = (1 << 1), // a cheat was used in this stage
 	REPLAY_SFLAG_CLEAR              = (1 << 2), // this stage was cleared
 } ReplayStageFlags;
-
-#endif // IGUARD_replay_struct_h

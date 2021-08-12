@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_coroutine_h
-#define IGUARD_coroutine_h
-
+#pragma once
 #include "taisei.h"
 
 #include "entity.h"
@@ -519,5 +517,3 @@ INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTa
 	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
 #define TASK_BIND(ent_or_box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX_OR_PASSTHROUGH(ent_or_box))
-
-#endif // IGUARD_coroutine_h

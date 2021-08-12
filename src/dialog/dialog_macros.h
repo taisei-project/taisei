@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_dialog_dialog_macros_h
-#define IGUARD_dialog_dialog_macros_h
-
+#pragma once
 #include "taisei.h"
 
 #include "dialog.h"
@@ -67,5 +65,3 @@
 
 #define PRELOAD_FACE(face) \
 	portrait_preload_face_sprite(_charname, #face, ARGS.preload_rflags)
-
-#endif // IGUARD_dialog_dialog_macros_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_portrait_h
-#define IGUARD_portrait_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource/sprite.h"
@@ -46,5 +44,3 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out)
 
 void portrait_render_byname(const char *charname, const char *variant, const char *face, Sprite *s_out)
 	attr_nonnull(1, 3, 4);
-
-#endif // IGUARD_portrait_h

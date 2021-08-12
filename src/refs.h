@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_refs_h
-#define IGUARD_refs_h
-
+#pragma once
 #include "taisei.h"
 
 /*
@@ -37,5 +35,3 @@ void free_ref(int i);
 void free_all_refs(void);
 
 #define UPDATE_REF(ref, ptr) ((ptr) = REF(ref))
-
-#endif // IGUARD_refs_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_glcommon_debug_h
-#define IGUARD_renderer_glcommon_debug_h
-
+#pragma once
 #include "taisei.h"
 
 #include "opengl.h"
@@ -18,5 +16,3 @@ void glcommon_debug_enable(void);
 void glcommon_set_debug_label(char *label_storage, const char *kind_name, GLenum gl_enum, GLuint gl_handle, const char *label);
 void glcommon_set_debug_label_local(char *label_storage, const char *kind_name, GLuint gl_handle, const char *label);
 void glcommon_set_debug_label_gl(GLenum identifier, GLuint name, const char *label);
-
-#endif // IGUARD_renderer_glcommon_debug_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_vfs_public_h
-#define IGUARD_vfs_public_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -74,5 +72,3 @@ void vfs_shutdown(void);
 const char* vfs_get_error(void) attr_returns_nonnull;
 
 void vfs_sync(VFSSyncMode mode, CallChain next);
-
-#endif // IGUARD_vfs_public_h

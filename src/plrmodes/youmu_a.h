@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_plrmodes_youmu_a_h
-#define IGUARD_plrmodes_youmu_a_h
-
+#pragma once
 #include "taisei.h"
 
 #include "plrmodes.h"
 
 extern PlayerMode plrmode_youmu_a;
-
-#endif // IGUARD_plrmodes_youmu_a_h

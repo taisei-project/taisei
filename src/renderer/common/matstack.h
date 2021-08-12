@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_matstack_h
-#define IGUARD_renderer_common_matstack_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -64,5 +62,3 @@ typedef struct MatrixStates {
 extern MatrixStates _r_matrices;
 
 void _r_mat_init(void);
-
-#endif // IGUARD_renderer_common_matstack_h

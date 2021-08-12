@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_replay_eventcodes_h
-#define IGUARD_replay_eventcodes_h
-
+#pragma once
 #include "taisei.h"
 
 // NOTE: these are tightly coupled with player and stage systems
@@ -23,5 +21,3 @@ typedef enum ReplayEventCode {
 	EV_INFLAGS          = 0x07,
 	EV_CONTINUE         = 0x08,
 } ReplayEventCode;
-
-#endif // IGUARD_replay_eventcodes_h

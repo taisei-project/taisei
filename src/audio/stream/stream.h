@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_audio_stream_stream_h
-#define IGUARD_audio_stream_stream_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL_audio.h>
@@ -70,5 +68,3 @@ AudioStreamSpec astream_spec(SDL_AudioFormat sample_format, uint channels, uint 
 bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2);
 
 ssize_t astream_util_resampled_buffer_size(const AudioStream *src, const AudioStreamSpec *spec);
-
-#endif // IGUARD_audio_stream_stream_h

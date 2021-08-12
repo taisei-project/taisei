@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_shaderlib_lang_spirv_h
-#define IGUARD_renderer_common_shaderlib_lang_spirv_h
-
+#pragma once
 #include "taisei.h"
 
 #include "defs.h"
@@ -53,5 +51,3 @@ void spirv_shutdown_compiler(void);
 bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTranspileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) attr_nonnull(1, 2, 3);
 bool spirv_decompile(const ShaderSource *in, ShaderSource *out, const SPIRVDecompileOptions *options) attr_nonnull(1, 2, 3);
-
-#endif // IGUARD_renderer_common_shaderlib_lang_spirv_h

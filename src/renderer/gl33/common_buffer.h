@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_common_buffer_h
-#define IGUARD_renderer_gl33_common_buffer_h
-
+#pragma once
 #include "taisei.h"
 
 #include "opengl.h"
@@ -73,5 +71,3 @@ void gl33_buffer_flush(CommonBuffer *cbuf);
 		gl33_bind_buffer(_tempbind_bindidx, _tempbind_buf_saved); \
 	} \
 } while(0)
-
-#endif // IGUARD_renderer_gl33_common_buffer_h

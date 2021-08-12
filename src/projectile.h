@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_projectile_h
-#define IGUARD_projectile_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -290,5 +288,3 @@ float projectile_timeout_factor(Projectile *p);
 int projectile_time(Projectile *p);
 
 SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbuf);
-
-#endif // IGUARD_projectile_h

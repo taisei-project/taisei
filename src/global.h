@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_global_h
-#define IGUARD_global_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -148,5 +146,3 @@ void taisei_commit_persistent_data(void);
 
 // XXX: Move this somewhere?
 bool gamekeypressed(KeyIndex key);
-
-#endif // IGUARD_global_h

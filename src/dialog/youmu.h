@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_dialog_youmu_h
-#define IGUARD_dialog_youmu_h
-
+#pragma once
 #include "taisei.h"
 
 #include "dialog.h"
 
 extern PlayerDialogTasks dialog_tasks_youmu;
-
-#endif // IGUARD_dialog_youmu_h

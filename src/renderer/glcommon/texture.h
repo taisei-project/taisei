@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_glcommon_texture_h
-#define IGUARD_renderer_glcommon_texture_h
-
+#pragma once
 #include "taisei.h"
 
 #include "opengl.h"
@@ -55,5 +53,3 @@ void glcommon_init_texture_formats(void);
 void glcommon_free_texture_formats(void);
 
 GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg);
-
-#endif // IGUARD_renderer_glcommon_texture_h

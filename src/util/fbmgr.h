@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_fbmgr_h
-#define IGUARD_util_fbmgr_h
-
+#pragma once
 #include "taisei.h"
 
 #include "renderer/api.h"
@@ -65,5 +63,3 @@ void fbmgr_group_fbpair_create(ManagedFramebufferGroup *group, const char *name,
 // (as in video_get_viewport_size())
 // Requires no cleanup
 void fbmgr_resize_strategy_screensized(void *ignored, IntExtent *out_dimensions, FloatRect *out_viewport);
-
-#endif // IGUARD_util_fbmgr_h

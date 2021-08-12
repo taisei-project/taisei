@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_crap_h
-#define IGUARD_util_crap_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -46,5 +44,3 @@ INLINE double bits_to_double(uint64_t i) {
 extern SDL_threadID main_thread_id;
 
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
-
-#endif // IGUARD_util_crap_h

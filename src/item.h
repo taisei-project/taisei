@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_item_h
-#define IGUARD_item_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -104,5 +102,3 @@ void items_preload(void);
 
 #define ITEM_MAX_VALUE 1.0
 #define ITEM_MIN_VALUE 0.1
-
-#endif // IGUARD_item_h

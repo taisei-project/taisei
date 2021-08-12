@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_resource_animation_h
-#define IGUARD_resource_animation_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource.h"
@@ -49,5 +47,3 @@ extern ResourceHandler animation_res_handler;
 
 #define ANI_PATH_PREFIX TEX_PATH_PREFIX
 #define ANI_EXTENSION ".ani"
-
-#endif // IGUARD_resource_animation_h

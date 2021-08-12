@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_texture_h
-#define IGUARD_renderer_gl33_texture_h
-
+#pragma once
 #include "taisei.h"
 
 #include "gl33.h"
@@ -46,5 +44,3 @@ void gl33_texture_destroy(Texture *tex);
 bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type) attr_nonnull(1);
 bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
-
-#endif // IGUARD_renderer_gl33_texture_h

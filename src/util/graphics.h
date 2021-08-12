@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_graphics_h
-#define IGUARD_util_graphics_h
-
+#pragma once
 #include "taisei.h"
 
 #include "fbpair.h"
@@ -53,5 +51,3 @@ void draw_fragments(const DrawFragmentsParams *params);
 double draw_fraction(double value, Alignment a, double pos_x, double pos_y, Font *f_int, Font *f_fract, const Color *c_int, const Color *c_fract, bool zero_pad);
 void draw_framebuffer_tex(Framebuffer *fb, double width, double height);
 void draw_framebuffer_attachment(Framebuffer *fb, double width, double height, FramebufferAttachment attachment);
-
-#endif // IGUARD_util_graphics_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_progress_h
-#define IGUARD_progress_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -125,5 +123,3 @@ void progress_unlock_bgm(const char *name);
 void progress_track_ending(EndingID id);
 bool progress_is_cutscene_unlocked(CutsceneID id);
 void progress_unlock_cutscene(CutsceneID id);
-
-#endif // IGUARD_progress_h

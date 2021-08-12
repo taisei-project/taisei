@@ -6,12 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_laser_h
-#define IGUARD_laser_h
-
+#pragma once
 #include "taisei.h"
 
 // TODO remove this stub header
 #include "lasers/laser.h"
-
-#endif // IGUARD_laser_h

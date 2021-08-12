@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_debug_h
-#define IGUARD_util_debug_h
-
+#pragma once
 #include "taisei.h"
 
 #ifdef DEBUG
@@ -36,5 +34,3 @@
 	#define END_DRAW_CODE()
 	#define IN_DRAW_CODE (0)
 #endif
-
-#endif // IGUARD_util_debug_h

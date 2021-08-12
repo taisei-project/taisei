@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_audio_backend_h
-#define IGUARD_audio_backend_h
-
+#pragma once
 #include "taisei.h"
 
 #include "audio.h"
@@ -76,5 +74,3 @@ typedef struct AudioBackend {
 extern AudioBackend _a_backend;
 
 bool audio_backend_init(void);
-
-#endif // IGUARD_audio_backend_h

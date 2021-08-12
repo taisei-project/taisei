@@ -6,14 +6,10 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_difficultyselect_h
-#define IGUARD_menu_difficultyselect_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
 
 MenuData* create_difficulty_menu(void);
 void draw_difficulty_menu(MenuData *m);
-
-#endif // IGUARD_menu_difficultyselect_h

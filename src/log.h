@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_log_h
-#define IGUARD_log_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -152,5 +150,3 @@ void _taisei_log(LogLevel lvl, const char *funcname, const char *filename, uint 
 
 noreturn void _taisei_log_fatal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, ...)
 	attr_printf(5, 6);
-
-#endif // IGUARD_log_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_sha256_h
-#define IGUARD_util_sha256_h
-
+#pragma once
 #include "taisei.h"
 
 enum {
@@ -25,5 +23,3 @@ void sha256_free(SHA256State *state);
 
 void sha256_digest(const uint8_t *data, size_t len, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen);
 void sha256_hexdigest(const uint8_t *data, size_t len, char hash[SHA256_HEXDIGEST_SIZE], size_t hashlen);
-
-#endif // IGUARD_util_sha256_h

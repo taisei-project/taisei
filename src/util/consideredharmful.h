@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_consideredharmful_h
-#define IGUARD_util_consideredharmful_h
-
+#pragma once
 #include "taisei.h"
 
 #include <stdio.h>
@@ -76,5 +74,3 @@ attr_deprecated("Use tsrand_seed instead")
 void srand(uint);
 
 PRAGMA(GCC diagnostic pop)
-
-#endif // IGUARD_util_consideredharmful_h

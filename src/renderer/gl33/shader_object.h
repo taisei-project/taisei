@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_shader_object_h
-#define IGUARD_renderer_gl33_shader_object_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource/shader_object.h"
@@ -28,5 +26,3 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source);
 void gl33_shader_object_destroy(ShaderObject *shobj);
 void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label);
 const char* gl33_shader_object_get_debug_label(ShaderObject *shobj);
-
-#endif // IGUARD_renderer_gl33_shader_object_h

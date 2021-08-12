@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_transition_h
-#define IGUARD_transition_h
-
+#pragma once
 #include "taisei.h"
 
 typedef struct Transition Transition;
@@ -51,5 +49,3 @@ void set_transition(TransitionRule rule, int dur1, int dur2);
 void set_transition_callback(TransitionRule rule, int dur1, int dur2, TransitionCallback cb, void *arg);
 void draw_transition(void);
 void update_transition(void);
-
-#endif // IGUARD_transition_h

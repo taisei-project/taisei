@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_config_h
-#define IGUARD_config_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL_keycode.h>
@@ -236,5 +234,3 @@ void config_save(void);
 int config_set_int(ConfigIndex idx, int val);
 double config_set_float(ConfigIndex idx, double val);
 char* config_set_str(ConfigIndex idx, const char *val) attr_nonnull(2) attr_returns_nonnull;
-
-#endif // IGUARD_config_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_glescommon_gles_h
-#define IGUARD_renderer_glescommon_gles_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../glcommon/vtable.h"
@@ -17,5 +15,3 @@ void gles_init(RendererBackend *gles_backend, int major, int minor);
 void gles_init_context(SDL_Window *w);
 bool gles_screenshot(Pixmap *out);
 bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
-
-#endif // IGUARD_renderer_glescommon_gles_h

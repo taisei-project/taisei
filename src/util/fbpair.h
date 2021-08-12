@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_fbpair_h
-#define IGUARD_util_fbpair_h
-
+#pragma once
 #include "taisei.h"
 
 #include "fbutil.h"
@@ -33,5 +31,3 @@ void fbpair_destroy(FBPair *pair) attr_nonnull(1);
 void fbpair_swap(FBPair *pair) attr_nonnull(1);
 void fbpair_viewport(FBPair *pair, float x, float y, float w, float h) attr_nonnull(1);
 void fbpair_viewport_rect(FBPair *pair, FloatRect vp) attr_nonnull(1);
-
-#endif // IGUARD_util_fbpair_h

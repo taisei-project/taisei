@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage1_stage1_h
-#define IGUARD_stages_stage1_stage1_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageinfo.h"
@@ -45,5 +43,3 @@ extern StageProcs stage1_spell_procs;
 #ifdef SPELL_BENCHMARK
 extern AttackInfo stage1_spell_benchmark;
 #endif
-
-#endif // IGUARD_stages_stage1_stage1_h

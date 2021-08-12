@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_ingamemenu_h
-#define IGUARD_menu_ingamemenu_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -22,5 +20,3 @@ MenuData* create_ingame_menu_replay(void);
 void update_ingame_menu(MenuData *menu);
 
 void restart_game(MenuData *m, void *arg);
-
-#endif // IGUARD_menu_ingamemenu_h

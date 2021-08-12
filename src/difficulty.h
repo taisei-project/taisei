@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_difficulty_h
-#define IGUARD_difficulty_h
-
+#pragma once
 #include "taisei.h"
 
 #include "color.h"
@@ -37,5 +35,3 @@ void difficulty_preload(void);
 
 double difficulty_value(double easy, double normal, double hard, double lunatic)
 	attr_pure;
-
-#endif // IGUARD_difficulty_h

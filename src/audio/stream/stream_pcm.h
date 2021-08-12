@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_audio_stream_stream_pcm_h
-#define IGUARD_audio_stream_stream_pcm_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stream.h"
@@ -32,5 +30,3 @@ bool astream_pcm_reopen(AudioStream *stream, const AudioStreamSpec *spec, size_t
 
 void astream_pcm_static_init(StaticPCMAudioStream *stream)
 	attr_nonnull_all;
-
-#endif // IGUARD_audio_stream_stream_pcm_h

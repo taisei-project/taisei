@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_gamepad_h
-#define IGUARD_gamepad_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -133,5 +131,3 @@ int gamepad_denormalize_axis_value(double val);
 #define GAMEPAD_AXIS_MAX_VALUE 32767
 #define GAMEPAD_AXIS_MIN_VALUE -32768
 #define AXISVAL sign
-
-#endif // IGUARD_gamepad_h

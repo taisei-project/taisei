@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_strbuf_h
-#define IGUARD_util_strbuf_h
-
+#pragma once
 #include "taisei.h"
 
 #include <stdarg.h>
@@ -36,5 +34,3 @@ void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize
 
 void strbuf_cat(StringBuffer *strbuf, const char *str)
 	attr_nonnull(1, 2);
-
-#endif // IGUARD_util_strbuf_h

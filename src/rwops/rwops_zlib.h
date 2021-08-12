@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_rwops_rwops_zlib_h
-#define IGUARD_rwops_rwops_zlib_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -25,5 +23,3 @@ SDL_RWops *SDL_RWWrapDeflateWriter(SDL_RWops *src, int clevel, size_t bufsize, b
 // NOTE: uses inefficient emulation to implement seeking. Source must be seekable as well.
 SDL_RWops *SDL_RWWrapZlibReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose);
 SDL_RWops *SDL_RWWrapInflateReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, size_t bufsize, bool autoclose);
-
-#endif // IGUARD_rwops_rwops_zlib_h

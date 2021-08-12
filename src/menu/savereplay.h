@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_savereplay_h
-#define IGUARD_menu_savereplay_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -17,5 +15,3 @@
 
 void ask_save_replay(Replay *rpy, CallChain next)
 	attr_nonnull(1);
-
-#endif // IGUARD_menu_savereplay_h

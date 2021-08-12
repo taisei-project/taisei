@@ -6,11 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_plrmodes_youmu_a_entities_h
-#define IGUARD_plrmodes_youmu_a_entities_h
-
+#pragma once
 #include "taisei.h"
 
 #define ENTITIES_YoumuA(X, ...) \
-
-#endif // IGUARD_plrmodes_youmu_a_entities_h

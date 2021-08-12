@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stats_h
-#define IGUARD_stats_h
-
+#pragma once
 #include "taisei.h"
 
 typedef struct Stats Stats;
@@ -28,5 +26,3 @@ void stats_track_bomb_used(Stats *stats);
 void stats_track_continue_used(Stats *stats);
 
 void stats_stage_reset(Stats *stats);
-
-#endif // IGUARD_stats_h

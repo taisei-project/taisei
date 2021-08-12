@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_entity_h
-#define IGUARD_entity_h
-
+#pragma once
 #include "taisei.h"
 
 #include "objectpool.h"
@@ -309,5 +307,3 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 } while(0)
 
 #define ENT_ARRAY_CLEAR(_array) ((_array)->size = 0)
-
-#endif // IGUARD_entity_h

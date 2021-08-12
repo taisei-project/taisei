@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage1_draw_h
-#define IGUARD_stages_stage1_draw_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util/fbpair.h"
@@ -38,5 +36,3 @@ Stage1DrawData *stage1_get_draw_data(void)
 void stage1_draw(void);
 
 extern ShaderRule stage1_bg_effects[];
-
-#endif // IGUARD_stages_stage1_draw_h

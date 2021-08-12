@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_cutscenes_cutscene_h
-#define IGUARD_cutscenes_cutscene_h
-
+#pragma once
 #include "taisei.h"
 
 #include "eventloop/eventloop.h"
@@ -34,5 +32,3 @@ typedef enum CutsceneID {
 
 void cutscene_enter(CallChain next, CutsceneID id);
 const char *cutscene_get_name(CutsceneID id);
-
-#endif // IGUARD_cutscenes_cutscene_h

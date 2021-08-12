@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_env_h
-#define IGUARD_util_env_h
-
+#pragma once
 #include "taisei.h"
 
 const char *env_get_string(const char *var, const char *fallback)
@@ -65,5 +63,3 @@ void env_set_double(const char *var, double val, bool override)
 		double      : env_set_double, \
 		float       : env_set_double \
 	)(var, val, override))
-
-#endif // IGUARD_util_env_h

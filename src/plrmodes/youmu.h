@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_plrmodes_youmu_h
-#define IGUARD_plrmodes_youmu_h
-
+#pragma once
 #include "taisei.h"
 
 #include "plrmodes.h"
@@ -32,5 +30,3 @@ Projectile *youmu_common_shot(cmplx pos, MoveParams move, real dmg, ShaderProgra
 
 void youmu_common_init_bomb_background(YoumuBombBGData *bg_data);
 DECLARE_EXTERN_TASK(youmu_common_bomb_background, { BoxedPlayer plr; YoumuBombBGData *bg_data; });
-
-#endif // IGUARD_plrmodes_youmu_h

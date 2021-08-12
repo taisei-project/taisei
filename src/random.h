@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_random_h
-#define IGUARD_random_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util/crap.h"
@@ -171,5 +169,3 @@ double _anfrand(int idx, const char *file, uint line) RNG_DEPRECATED;
 #define anfrand(idx) _anfrand(idx, __FILE__, __LINE__)
 
 #define TSRAND_ARRAY_LIMIT 16
-
-#endif // IGUARD_random_h

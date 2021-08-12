@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_framerate_h
-#define IGUARD_framerate_h
-
+#pragma once
 #include "taisei.h"
 
 #include "hirestime.h"
@@ -23,5 +21,3 @@ typedef struct {
 uint32_t get_effective_frameskip(void);
 void fpscounter_reset(FPSCounter *fps);
 void fpscounter_update(FPSCounter *fps);
-
-#endif // IGUARD_framerate_h

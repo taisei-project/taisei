@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stageutils_h
-#define IGUARD_stageutils_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -103,5 +101,3 @@ uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
 uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
 
 void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);
-
-#endif // IGUARD_stageutils_h

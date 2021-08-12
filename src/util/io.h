@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_io_h
-#define IGUARD_util_io_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -23,5 +21,3 @@ void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) attr_no
 void tsfprintf(FILE *out, const char *restrict fmt, ...) attr_printf(2, 3);
 
 char *try_path(const char *prefix, const char *name, const char *ext);
-
-#endif // IGUARD_util_io_h

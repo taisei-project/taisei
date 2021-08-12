@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_macrohax_h
-#define IGUARD_util_macrohax_h
-
+#pragma once
 #include "taisei.h"
 
 #define MACROHAX_FIRST_(f, ...) f
@@ -61,6 +59,3 @@
 // Expands to baseN, where N is 0 if the argument list is empty, 1 otherwise.
 #define MACROHAX_OVERLOAD_HASARGS(base, ...) \
 	MACROHAX_CONCAT(base, MACROHAX_HASARGS(__VA_ARGS__))
-
-
-#endif // IGUARD_util_macrohax_h

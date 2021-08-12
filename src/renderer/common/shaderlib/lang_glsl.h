@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_shaderlib_lang_glsl_h
-#define IGUARD_renderer_common_shaderlib_lang_glsl_h
-
+#pragma once
 #include "taisei.h"
 
 #include "defs.h"
@@ -51,5 +49,3 @@ char *glsl_parse_version(const char *str, GLSLVersion *out_version) attr_nonnull
 int glsl_format_version(char *buf, size_t bufsize, GLSLVersion version) attr_nonnull(1);
 void glsl_free_source(ShaderSource *src) attr_nonnull(1);
 bool glsl_version_supports_instanced_rendering(GLSLVersion v);
-
-#endif // IGUARD_renderer_common_shaderlib_lang_glsl_h

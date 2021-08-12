@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_vertex_array_h
-#define IGUARD_renderer_gl33_vertex_array_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -39,5 +37,3 @@ VertexBuffer* gl33_vertex_array_get_vertex_attachment(VertexArray *varr, uint at
 IndexBuffer* gl33_vertex_array_get_index_attachment(VertexArray *varr);
 void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]);
 void gl33_vertex_array_flush_buffers(VertexArray *varr);
-
-#endif // IGUARD_renderer_gl33_vertex_array_h

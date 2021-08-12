@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_glm_h
-#define IGUARD_util_glm_h
-
+#pragma once
 #include "taisei.h"
 
 // This is a wrapper header to include cglm the "right way".
@@ -27,5 +25,3 @@ typedef float (*glm_ease_t)(float);
 INLINE float glm_ease_apply(glm_ease_t ease, float f) {
 	return ease ? ease(f) : f;
 }
-
-#endif // IGUARD_util_glm_h

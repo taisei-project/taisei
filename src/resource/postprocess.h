@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_resource_postprocess_h
-#define IGUARD_resource_postprocess_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource.h"
@@ -55,5 +53,3 @@ void postprocess(PostprocessShader *ppshaders, FBPair *fbos, PostprocessPrepareF
 extern ResourceHandler postprocess_res_handler;
 
 DEFINE_OPTIONAL_RESOURCE_GETTER(PostprocessShader, res_postprocess, RES_POSTPROCESS)
-
-#endif // IGUARD_resource_postprocess_h

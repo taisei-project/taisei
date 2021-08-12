@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_replay_replay_h
-#define IGUARD_replay_replay_h
-
+#pragma once
 #include "taisei.h"
 
 #include "eventloop/eventloop.h"
@@ -46,5 +44,3 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) att
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) attr_nonnull_all;
 
 void replay_play(Replay *rpy, int firstidx, CallChain next) attr_nonnull_all;
-
-#endif // IGUARD_replay_replay_h

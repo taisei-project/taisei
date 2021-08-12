@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_rwops_rwops_zstd_h
-#define IGUARD_rwops_rwops_zstd_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -20,5 +18,3 @@ SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose);
 
 // NOTE: uses inefficient emulation to implement seeking. Source must be seekable as well.
 SDL_RWops *SDL_RWWrapZstdReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, bool autoclose);
-
-#endif // IGUARD_rwops_rwops_zstd_h

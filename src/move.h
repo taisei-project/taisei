@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_move_h
-#define IGUARD_move_h
-
+#pragma once
 #include "taisei.h"
 
 /*
@@ -66,5 +64,3 @@ INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real expone
 INLINE MoveParams move_stop(cmplx retention) {
 	return (MoveParams) { .retention = retention };
 }
-
-#endif // IGUARD_move_h

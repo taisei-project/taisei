@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_systime_h
-#define IGUARD_util_systime_h
-
+#pragma once
 #include "taisei.h"
 
 #include <time.h>
@@ -23,5 +21,3 @@ typedef struct SystemTime {
 #endif
 
 void get_system_time(SystemTime *time) attr_nonnull(1);
-
-#endif // IGUARD_util_systime_h

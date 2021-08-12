@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_state_h
-#define IGUARD_renderer_common_state_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -62,5 +60,3 @@ void _r_state_touch_framebuffer(void);
 
 void _r_state_init(void);
 void _r_state_shutdown(void);
-
-#endif // IGUARD_renderer_common_state_h

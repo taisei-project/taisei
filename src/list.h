@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_list_h
-#define IGUARD_list_h
-
+#pragma once
 #include "taisei.h"
 
 #if TAISEI_BUILDCONF_MALLOC_ALIGNMENT < 16
@@ -188,5 +186,3 @@ ListContainer* list_wrap_container(void *data) attr_returns_allocated;
 
 #define alist_free_all(dest) \
 	alist_free_all(LIST_ANCHOR_CAST(dest))
-
-#endif // IGUARD_list_h

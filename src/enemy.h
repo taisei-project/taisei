@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_enemy_h
-#define IGUARD_enemy_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -157,5 +155,3 @@ void BigFairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API f
 int enemy_flare(Projectile *p, int t) attr_deprecated("Use tasks");
 
 void enemies_preload(void);
-
-#endif // IGUARD_enemy_h

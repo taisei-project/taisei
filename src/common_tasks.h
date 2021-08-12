@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_common_tasks_h
-#define IGUARD_common_tasks_h
-
+#pragma once
 #include "taisei.h"
 
 #include "coroutine.h"
@@ -125,5 +123,3 @@ DECLARE_EXTERN_TASK(
 		glm_ease_t ease;
 	}
 );
-
-#endif // IGUARD_common_tasks_h

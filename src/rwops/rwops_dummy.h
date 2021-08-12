@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_rwops_rwops_dummy_h
-#define IGUARD_rwops_rwops_dummy_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
 
 SDL_RWops *SDL_RWWrapDummy(SDL_RWops *src, bool autoclose);
-
-#endif // IGUARD_rwops_rwops_dummy_h

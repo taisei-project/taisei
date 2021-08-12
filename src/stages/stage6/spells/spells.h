@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage6_spells_spells_h
-#define IGUARD_stages_stage6_spells_spells_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -30,5 +28,3 @@ void elly_maxwell(Boss*, int);
 void elly_kepler(Boss*, int);
 void elly_ricci(Boss*, int);
 void elly_theory(Boss*, int);
-
-#endif // IGUARD_stages_stage6_spells_spells_h

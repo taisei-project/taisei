@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stage_h
-#define IGUARD_stage_h
-
+#pragma once
 #include "taisei.h"
 
 #include "projectile.h"
@@ -123,5 +121,3 @@ float stage_get_view_shake_strength(void);
 	#define STAGE_BOOKMARK_DELAYED(delay, name) ((void)0)
 	INLINE bool stage_is_skip_mode(void) { return false; }
 #endif
-
-#endif // IGUARD_stage_h

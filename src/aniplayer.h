@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_aniplayer_h
-#define IGUARD_aniplayer_h
-
+#pragma once
 #include "taisei.h"
 
 // In principle, playing an animation does not require any state, just a call to
@@ -107,5 +105,3 @@ AniQueueEntry *aniplayer_queue_frames(AniPlayer *plr, const char *seqname, int m
 // the rest of the game which just uses global.frames as a counter). So you
 // need to call this function once per frame to make an animation move.
 void aniplayer_update(AniPlayer *plr) attr_nonnull(1);
-
-#endif // IGUARD_aniplayer_h

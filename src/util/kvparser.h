@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_kvparser_h
-#define IGUARD_util_kvparser_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -46,5 +44,3 @@ bool parse_bool(const char *str, bool fallback) attr_nonnull(1);
 bool kvparser_deprecation(const char *key, const char *val, void *data);
 
 #define KVSPEC_DEPRECATED(new) .callback = kvparser_deprecation, .callback_data = (new)
-
-#endif // IGUARD_util_kvparser_h

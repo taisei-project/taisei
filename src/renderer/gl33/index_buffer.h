@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_index_buffer_h
-#define IGUARD_renderer_gl33_index_buffer_h
-
+#pragma once
 #include "taisei.h"
 
 #include "common_buffer.h"
@@ -33,5 +31,3 @@ void gl33_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num
 void gl33_index_buffer_destroy(IndexBuffer *ibuf);
 void gl33_index_buffer_flush(IndexBuffer *ibuf);
 void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao);
-
-#endif // IGUARD_renderer_gl33_index_buffer_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage1_spells_spells_h
-#define IGUARD_stages_stage1_spells_spells_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -20,5 +18,3 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_icicle_cascade, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_blizzard, BossAttack);
 
 void stage1_spell_benchmark_proc(Boss *b, int t);
-
-#endif // IGUARD_stages_stage1_spells_spells_h

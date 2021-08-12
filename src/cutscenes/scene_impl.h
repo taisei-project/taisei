@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_cutscenes_scene_impl_h
-#define IGUARD_cutscenes_scene_impl_h
-
+#pragma once
 #include "taisei.h"
 
 #include "color.h"
@@ -73,5 +71,3 @@ typedef struct Cutscene {
 #define T_REMILIA(text)     T_SPEECH("Remilia",     text, { 0.900, 0.100, 0.100, 1 })
 #define T_FLANDRE(text)     T_SPEECH("Flandre",     text, { 1.000, 0.600, 0.600, 1 })
 #define T_PATCHOULI(text)   T_SPEECH("Patchouli",   text, { 0.700, 0.600, 1.000, 1 })
-
-#endif // IGUARD_cutscenes_scene_impl_h

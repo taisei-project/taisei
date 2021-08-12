@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_pixmap_pixmap_h
-#define IGUARD_pixmap_pixmap_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -322,5 +320,3 @@ uint32_t pixmap_data_size(PixmapFormat format, uint32_t width, uint32_t height);
 SwizzleMask swizzle_canonize(SwizzleMask sw_in);
 bool swizzle_is_valid(SwizzleMask sw);
 bool swizzle_is_significant(SwizzleMask sw, uint num_significant_channels);
-
-#endif // IGUARD_pixmap_pixmap_h

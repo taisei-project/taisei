@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_h
-#define IGUARD_util_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util/assert.h"
@@ -29,5 +27,3 @@
 #include "vfs/public.h"
 #include "util/consideredharmful.h"
 #include "dynarray.h"
-
-#endif // IGUARD_util_h

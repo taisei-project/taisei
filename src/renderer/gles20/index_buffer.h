@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gles20_index_buffer_h
-#define IGUARD_renderer_gles20_index_buffer_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../glcommon/opengl.h"
@@ -34,5 +32,3 @@ size_t gles20_index_buffer_get_offset(IndexBuffer *ibuf);
 void gles20_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]);
 void gles20_index_buffer_destroy(IndexBuffer *ibuf);
 void gles20_index_buffer_flush(IndexBuffer *ibuf);
-
-#endif // IGUARD_renderer_gles20_index_buffer_h

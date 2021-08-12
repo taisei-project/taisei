@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_plrmodes_h
-#define IGUARD_plrmodes_h
-
+#pragma once
 #include "taisei.h"
 
 #include "enemy.h"
@@ -110,5 +108,3 @@ PlayerMode *plrmode_parse(const char *name);
 void plrmode_preload(PlayerMode *mode);
 
 double player_property(Player *plr, PlrProperty prop);
-
-#endif // IGUARD_plrmodes_h

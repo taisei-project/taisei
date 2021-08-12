@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_vfs_private_h
-#define IGUARD_vfs_private_h
-
+#pragma once
 #include "taisei.h"
 
 /*
@@ -71,5 +69,3 @@ SDL_RWops* vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) at
 
 void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
 void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);
-
-#endif // IGUARD_vfs_private_h

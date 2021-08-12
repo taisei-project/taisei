@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage3_spells_spells_h
-#define IGUARD_stages_stage3_spells_spells_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -18,5 +16,3 @@ void wriggle_moonlight_rocket(Boss*, int t);
 void wriggle_night_ignite(Boss*, int t);
 void wriggle_firefly_storm(Boss*, int t);
 void wriggle_light_singularity(Boss*, int t);
-
-#endif // IGUARD_stages_stage3_spells_spells_h

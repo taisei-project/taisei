@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_eventloop_eventloop_h
-#define IGUARD_eventloop_eventloop_h
-
+#pragma once
 #include "taisei.h"
 
 #include "hirestime.h"
@@ -98,5 +96,3 @@ INLINE attr_nonnull(1) void run_call_chain(CallChain *cc, void *result) {
 	}
 }
 #endif
-
-#endif // IGUARD_eventloop_eventloop_h

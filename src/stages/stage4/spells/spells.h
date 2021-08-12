@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage4_spells_spells_h
-#define IGUARD_stages_stage4_spells_spells_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -19,5 +17,3 @@ void kurumi_aniwall(Boss*, int);
 void kurumi_blowwall(Boss*, int);
 void kurumi_danmaku(Boss*, int);
 void kurumi_extra(Boss*, int);
-
-#endif // IGUARD_stages_stage4_spells_spells_h

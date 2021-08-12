@@ -31,6 +31,8 @@ copyright_comment_default_copyrights = r"""
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 """
 
+use_pragma_once = True
+
 guard_prefix = 'IGUARD_'
 guard_chars = 'A-Za-z0-9_'
 
@@ -76,13 +78,20 @@ class Janitor:
         return f'{guard_prefix}{badchar_regex.sub("_", str(relpath))}'
 
     def get_guard_template(self, guard):
-        return (
-            r'\n\n'
-            rf'#ifndef {guard}\n'
-            rf'#define {guard}\n\n'
-            r'\1\n\n'
-            rf'#endif // {guard}\n'
-        )
+        if use_pragma_once:
+            return (
+                r'\n\n'
+                rf'#pragma once\n'
+                r'\1\n'
+            )
+        else:
+            return (
+                r'\n\n'
+                rf'#ifndef {guard}\n'
+                rf'#define {guard}\n\n'
+                r'\1\n\n'
+                rf'#endif // {guard}\n'
+            )
 
     def transform_include_guards(self, text, path):
         guard = self.get_guard_name(path)

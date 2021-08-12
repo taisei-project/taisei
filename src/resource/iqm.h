@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_resource_iqm_h
-#define IGUARD_resource_iqm_h
-
+#pragma once
 #include "taisei.h"
 
 /*
@@ -136,5 +134,3 @@ typedef struct IQMBounds {
 } IQMBounds;
 
 #undef IQM_FIELDS
-
-#endif // IGUARD_resource_iqm_h

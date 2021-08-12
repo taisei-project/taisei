@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage3_stage3_h
-#define IGUARD_stages_stage3_stage3_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageinfo.h"
@@ -36,5 +34,3 @@ extern struct stage3_spells_s {
 } stage3_spells;
 
 extern StageProcs stage3_procs;
-
-#endif // IGUARD_stages_stage3_stage3_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage5_stage5_h
-#define IGUARD_stages_stage5_stage5_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageinfo.h"
@@ -37,5 +35,3 @@ extern StageProcs stage5_procs;
 extern StageProcs stage5_spell_procs;
 
 void stage5_skip(int);
-
-#endif // IGUARD_stages_stage5_stage5_h

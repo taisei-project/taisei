@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_replay_state_h
-#define IGUARD_replay_state_h
-
+#pragma once
 #include "taisei.h"
 
 #include "replay.h"
@@ -61,5 +59,3 @@ ReplaySyncStatus replay_state_check_desync(ReplayState *rst, int time, uint16_t 
 
 void replay_state_play_advance(ReplayState *rst, int frame, ReplayEventFunc event_callback, void *arg)
 	attr_nonnull(1, 3);
-
-#endif // IGUARD_replay_state_h

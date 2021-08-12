@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_common_h
-#define IGUARD_menu_common_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -22,5 +20,3 @@ void animate_menu_list(MenuData *m);
 void animate_menu_list_entries(MenuData *m);
 void animate_menu_list_entry(MenuData *m, int i);
 void menu_action_close(MenuData *menu, void *arg);
-
-#endif // IGUARD_menu_common_h

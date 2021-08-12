@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stagetext_h
-#define IGUARD_stagetext_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -74,5 +72,3 @@ void stagetext_table_add(StageTextTable *tbl, const char *title, const char *val
 void stagetext_table_add_numeric(StageTextTable *tbl, const char *title, int n);
 void stagetext_table_add_numeric_nonzero(StageTextTable *tbl, const char *title, int n);
 void stagetext_table_add_separator(StageTextTable *tbl);
-
-#endif // IGUARD_stagetext_h

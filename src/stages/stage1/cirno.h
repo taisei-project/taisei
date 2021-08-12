@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stage1_cirno_h
-#define IGUARD_stages_stage1_cirno_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -16,5 +14,3 @@
 Boss *stage1_spawn_cirno(cmplx pos);
 void stage1_draw_cirno_spellbg(Boss *boss, int time);
 void stage1_cirno_wander(Boss *boss, real dist, real lower_bound);
-
-#endif // IGUARD_stages_stage1_cirno_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage5_iku_h
-#define IGUARD_stages_stage5_iku_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -18,5 +16,3 @@ void iku_nonspell_spawn_cloud(void);
 void iku_lightning_particle(cmplx, int);
 
 int iku_induction_bullet(Projectile*, int);
-
-#endif // IGUARD_stages_stage5_iku_h

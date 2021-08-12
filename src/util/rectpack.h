@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_rectpack_h
-#define IGUARD_util_rectpack_h
-
+#pragma once
 #include "taisei.h"
 
 #include "geometry.h"
@@ -36,5 +34,3 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s)
 
 bool rectpack_is_empty(RectPack *rp)
 	attr_nonnull(1);
-
-#endif // IGUARD_util_rectpack_h

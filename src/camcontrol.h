@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_camcontrol_h
-#define IGUARD_camcontrol_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stageutils.h"
@@ -27,5 +25,3 @@
  */
 
 void camcontrol_init(Camera3D *cam);
-
-#endif // IGUARD_camcontrol_h

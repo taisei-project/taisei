@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_pngcruft_h
-#define IGUARD_util_pngcruft_h
-
+#pragma once
 #include "taisei.h"
 
 #include <png.h>
@@ -19,5 +17,3 @@ void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops);
 void pngutil_setup_error_handlers(png_structp png);
 png_structp pngutil_create_read_struct(void);
 png_structp pngutil_create_write_struct(void);
-
-#endif // IGUARD_util_pngcruft_h

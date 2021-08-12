@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_plrmodes_marisa_h
-#define IGUARD_plrmodes_marisa_h
-
+#pragma once
 #include "taisei.h"
 
 #include "plrmodes.h"
@@ -34,5 +32,3 @@ DECLARE_EXTERN_TASK(marisa_common_shot_forward, {
 	real damage;
 	int delay;
 });
-
-#endif // IGUARD_plrmodes_marisa_h

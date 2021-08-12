@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_compat_h
-#define IGUARD_util_compat_h
-
+#pragma once
 #include "taisei.h"
 
 // Common standard library headers
@@ -318,5 +316,3 @@ typedef _Complex double cmplx;
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
 	#define ADDRESS_SANITIZER
 #endif
-
-#endif // IGUARD_util_compat_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_player_h
-#define IGUARD_player_h
-
+#pragma once
 #include "taisei.h"
 
 #ifdef DEBUG
@@ -246,5 +244,3 @@ void player_preload(void);
 cmplx plrutil_homing_target(cmplx org, cmplx fallback);
 
 void plrutil_slave_retract(BoxedPlayer bplr, cmplx *pos, real retract_time);
-
-#endif // IGUARD_player_h

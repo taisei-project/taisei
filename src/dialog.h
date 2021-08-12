@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_dialog_h
-#define IGUARD_dialog_h
-
+#pragma once
 #include "taisei.h"
 
 #include "color.h"
@@ -135,5 +133,3 @@ bool dialog_is_active(Dialog *d);
 void dialog_preload(void);
 
 #include "dialog/dialog_interface.h"
-
-#endif // IGUARD_dialog_h

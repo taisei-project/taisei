@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stageobjects_h
-#define IGUARD_stageobjects_h
-
+#pragma once
 #include "taisei.h"
 
 #include "objectpool.h"
@@ -32,5 +30,3 @@ extern StageObjectPools stage_object_pools;
 
 void stage_objpools_alloc(void);
 void stage_objpools_free(void);
-
-#endif // IGUARD_stageobjects_h

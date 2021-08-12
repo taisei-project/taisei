@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_version_h
-#define IGUARD_version_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -83,5 +81,3 @@ int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCm
 char* taisei_version_tostring(TaiseiVersion *version);
 size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
 size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);
-
-#endif // IGUARD_version_h

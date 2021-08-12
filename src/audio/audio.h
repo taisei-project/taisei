@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_audio_audio_h
-#define IGUARD_audio_audio_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource/sfx.h"
@@ -88,5 +86,3 @@ INLINE SFXPlayID play_sound_ex(const char *name, int cooldown, bool replace) {
 }
 
 double audioutil_loopaware_position(double rt_pos, double duration, double loop_start);
-
-#endif // IGUARD_audio_audio_h

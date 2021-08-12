@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_plrmodes_reimu_h
-#define IGUARD_plrmodes_reimu_h
-
+#pragma once
 #include "taisei.h"
 
 #include "plrmodes.h"
@@ -22,5 +20,3 @@ double reimu_common_property(Player *plr, PlrProperty prop);
 Projectile *reimu_common_ofuda_swawn_trail(Projectile *p);
 void reimu_common_bomb_bg(Player *p, float alpha);
 void reimu_common_bomb_buffer_init(void);
-
-#endif // IGUARD_plrmodes_reimu_h

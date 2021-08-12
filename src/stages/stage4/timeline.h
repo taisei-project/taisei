@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage4_timeline_h
-#define IGUARD_stages_stage4_timeline_h
-
+#pragma once
 #include "taisei.h"
 
 #include "boss.h"
@@ -17,5 +15,3 @@ void stage4_events(void);
 
 #define STAGE4_MIDBOSS_TIME 3724
 #define STAGE4_MIDBOSS_MUSIC_TIME 2818
-
-#endif // IGUARD_stages_stage4_timeline_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_taisei_h
-#define IGUARD_taisei_h
-
+#pragma once
 #include "taisei.h"
 
 #include "build_config.h"
@@ -27,5 +25,3 @@
 #ifdef TAISEI_BUILDCONF_LOG_FATAL_MSGBOX
 	#define LOG_FATAL_MSGBOX
 #endif
-
-#endif // IGUARD_taisei_h

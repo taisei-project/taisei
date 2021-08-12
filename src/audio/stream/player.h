@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_audio_stream_player_h
-#define IGUARD_audio_stream_player_h
-
+#pragma once
 #include "taisei.h"
 
 #include "stream.h"
@@ -60,5 +58,3 @@ int splayer_pick_channel(StreamPlayer *plr) attr_nonnull_all;
 #include "audio/audio.h"
 
 BGMStatus splayer_util_bgmstatus(StreamPlayer *plr, int chan) attr_nonnull_all;
-
-#endif // IGUARD_audio_stream_player_h

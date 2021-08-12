@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_miscmath_h
-#define IGUARD_util_miscmath_h
-
+#pragma once
 #include "taisei.h"
 
 #define DEG2RAD (M_PI / 180.0)
@@ -98,5 +96,3 @@ typedef float         vec4_noalign[4];
 typedef int          ivec4_noalign[4];
 typedef vec3_noalign  mat3_noalign[3];
 typedef vec4_noalign  mat4_noalign[4];
-
-#endif // IGUARD_util_miscmath_h

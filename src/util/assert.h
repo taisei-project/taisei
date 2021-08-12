@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_util_assert_h
-#define IGUARD_util_assert_h
-
+#pragma once
 #include "taisei.h"
 
 #if __has_attribute(analyzer_noreturn)
@@ -56,5 +54,3 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 
 #define assume(cond) _assume(cond, true)
 #define assume_nolog(cond) _assume(cond, false)
-
-#endif // IGUARD_util_assert_h

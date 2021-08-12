@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_dialog_dialog_interface_h
-#define IGUARD_dialog_dialog_interface_h
-
+#pragma once
 #include "taisei.h"
 
 #include "dialog.h"
@@ -72,5 +70,3 @@ typedef struct PlayerDialogTasks {
 	}; \
 	_dialog_ref._cotask_##_dialog_name##Dialog##_thunk(&_dialog_args); \
 } while(0)
-
-#endif // IGUARD_dialog_dialog_interface_h

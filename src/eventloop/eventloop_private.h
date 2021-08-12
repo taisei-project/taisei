@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_eventloop_eventloop_private_h
-#define IGUARD_eventloop_eventloop_private_h
-
+#pragma once
 #include "taisei.h"
 
 #include "eventloop.h"
@@ -38,5 +36,3 @@ void eventloop_leave(void);
 LogicFrameAction run_logic_frame(LoopFrame *frame);
 LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes);
 RenderFrameAction run_render_frame(LoopFrame *frame);
-
-#endif // IGUARD_eventloop_eventloop_private_h

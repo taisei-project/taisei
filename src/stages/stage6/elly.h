@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_stages_stage6_elly_h
-#define IGUARD_stages_stage6_elly_h
-
+#pragma once
 #include "taisei.h"
 
 #include "enemy.h"
@@ -35,5 +33,3 @@ int baryon_reset(Enemy*, int);
 int wait_proj(Projectile*, int);
 
 Enemy* find_scythe(void);
-
-#endif // IGUARD_stages_stage6_elly_h

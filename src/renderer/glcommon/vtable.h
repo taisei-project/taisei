@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_glcommon_vtable_h
-#define IGUARD_renderer_glcommon_vtable_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -29,5 +27,3 @@ typedef struct GLBackendData {
 
 #define GLVT_OF(backend) (((GLBackendData*)backend.custom)->vtable)
 #define GLVT GLVT_OF(_r_backend)
-
-#endif // IGUARD_renderer_glcommon_vtable_h

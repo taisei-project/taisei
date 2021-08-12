@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_events_h
-#define IGUARD_events_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -116,5 +114,3 @@ void events_unregister_handler(EventHandlerProc proc);
 void events_poll(EventHandler *handlers, EventFlags flags);
 void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2);
 void events_defer(SDL_Event *evt);
-
-#endif // IGUARD_events_h

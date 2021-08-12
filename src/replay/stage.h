@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_replay_stage_h
-#define IGUARD_replay_stage_h
-
+#pragma once
 #include "taisei.h"
 
 #include "replay.h"
@@ -30,5 +28,3 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t
 
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr)
 	attr_nonnull_all;
-
-#endif // IGUARD_replay_stage_h

@@ -6,14 +6,10 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_cutscenes_scenes_h
-#define IGUARD_cutscenes_scenes_h
-
+#pragma once
 #include "taisei.h"
 
 #include "cutscene.h"
 #include "scene_impl.h"
 
 extern const Cutscene g_cutscenes[NUM_CUTSCENE_IDS];
-
-#endif // IGUARD_cutscenes_scenes_h

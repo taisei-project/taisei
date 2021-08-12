@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_dynarray_h
-#define IGUARD_dynarray_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util/macrohax.h"
@@ -168,5 +166,3 @@ void _dynarray_filter(
 		attr_unused void *_dynarray_foreach_ignored, \
 		__VA_ARGS__ \
 	)
-
-#endif // IGUARD_dynarray_h

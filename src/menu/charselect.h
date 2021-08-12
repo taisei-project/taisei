@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_charselect_h
-#define IGUARD_menu_charselect_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -16,5 +14,3 @@
 MenuData* create_char_menu(void);
 void draw_char_menu(MenuData *menu);
 void preload_char_menu(void);
-
-#endif // IGUARD_menu_charselect_h

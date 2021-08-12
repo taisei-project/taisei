@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_cli_h
-#define IGUARD_cli_h
-
+#pragma once
 #include "taisei.h"
 
 #include "plrmodes.h"
@@ -40,5 +38,3 @@ struct CLIAction {
 
 int cli_args(int argc, char **argv, CLIAction *a);
 void free_cli_action(CLIAction *a);
-
-#endif // IGUARD_cli_h

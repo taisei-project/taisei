@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_menu_mainmenu_h
-#define IGUARD_menu_mainmenu_h
-
+#pragma once
 #include "taisei.h"
 
 #include "menu.h"
@@ -19,5 +17,3 @@ void draw_main_menu(MenuData *m);
 void main_menu_update_practice_menus(void);
 void draw_loading_screen(void);
 void menu_preload(void);
-
-#endif // IGUARD_menu_mainmenu_h

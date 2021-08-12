@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_compat_cmplx_h
-#define IGUARD_util_compat_cmplx_h
-
+#pragma once
 #include "taisei.h"
 
 #undef HAS_BUILTIN_COMPLEX
@@ -60,5 +58,3 @@
 		#define CMPLXF(re,im) (_Complex float)((float)(re) + _Complex_I * (float)(im))
 	#endif
 #endif
-
-#endif // IGUARD_util_compat_cmplx_h

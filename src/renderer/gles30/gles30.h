@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gles30_gles30_h
-#define IGUARD_renderer_gles30_gles30_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../common/backend.h"
 
 extern RendererBackend _r_backend_gles30;
-
-#endif // IGUARD_renderer_gles30_gles30_h

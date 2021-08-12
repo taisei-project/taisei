@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_known_entities_h
-#define IGUARD_known_entities_h
-
+#pragma once
 #include "taisei.h"
 
 #define ENTITIES_CORE(X, ...) \
@@ -27,5 +25,3 @@
 	ENTITIES_CORE(X, __VA_ARGS__) \
 	ENTITIES_PLAYERMODES(X, __VA_ARGS__) \
 	ENTITIES_STAGES(X, __VA_ARGS__) \
-
-#endif // IGUARD_known_entities_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_common_backend_h
-#define IGUARD_renderer_common_backend_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -139,5 +137,3 @@ extern RendererBackend _r_backend;
 
 void _r_backend_init(void);
 void _r_backend_inherit(RendererBackend *dest, const RendererBackend *base);
-
-#endif // IGUARD_renderer_common_backend_h

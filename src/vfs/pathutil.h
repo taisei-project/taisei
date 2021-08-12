@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_vfs_pathutil_h
-#define IGUARD_vfs_pathutil_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL_platform.h>
@@ -26,5 +24,3 @@ void vfs_path_split_left(char *path, char **lpath, char **rpath);
 void vfs_path_split_right(char *path, char **lpath, char **rpath);
 void vfs_path_root_prefix(char *path);
 void vfs_path_resolve_relative(char *buf, size_t bufsize, const char *basepath, const char *relpath); // NOTE: doesn't normalize
-
-#endif // IGUARD_vfs_pathutil_h

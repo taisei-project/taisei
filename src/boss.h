@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_boss_h
-#define IGUARD_boss_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -244,5 +242,3 @@ void _begin_boss_attack_task(const BossAttackTaskArgs *args)
 
 int attacktype_start_delay(AttackType t) attr_const;
 int attacktype_end_delay(AttackType t) attr_const;
-
-#endif // IGUARD_boss_h

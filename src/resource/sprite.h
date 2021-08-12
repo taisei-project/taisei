@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_resource_sprite_h
-#define IGUARD_resource_sprite_h
-
+#pragma once
 #include "taisei.h"
 
 #include "resource.h"
@@ -75,5 +73,3 @@ extern ResourceHandler sprite_res_handler;
 
 #define SPRITE_PATH_PREFIX "res/gfx/"
 #define SPRITE_EXTENSION ".spr"
-
-#endif // IGUARD_resource_sprite_h

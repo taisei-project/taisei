@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stageinfo_h
-#define IGUARD_stageinfo_h
-
+#pragma once
 #include "taisei.h"
 
 #include "renderer/api.h"
@@ -68,5 +66,3 @@ StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool a
 
 void stageinfo_init(void);
 void stageinfo_shutdown(void);
-
-#endif // IGUARD_stageinfo_h

@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_lasers_laser_h
-#define IGUARD_lasers_laser_h
-
+#pragma once
 #include "taisei.h"
 
 #include "draw.h"
@@ -98,5 +96,3 @@ DECLARE_EXTERN_TASK(laser_charge, {
 	float charge_delay;
 	float target_width;
 });
-
-#endif // IGUARD_lasers_laser_h

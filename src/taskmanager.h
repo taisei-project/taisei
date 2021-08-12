@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_taskmanager_h
-#define IGUARD_taskmanager_h
-
+#pragma once
 #include "taisei.h"
 
 #include <SDL.h>
@@ -178,5 +176,3 @@ void taskmgr_global_shutdown(void);
  * Submit a task to the global task manager. See `taskmgr_submit`.
  */
 Task *taskmgr_global_submit(TaskParams params);
-
-#endif // IGUARD_taskmanager_h

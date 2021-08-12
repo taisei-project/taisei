@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_lasers_internal_h
-#define IGUARD_lasers_internal_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -41,5 +39,3 @@ extern LaserInternalData lintern;
 
 void laserintern_init(void);
 void laserintern_shutdown(void);
-
-#endif // IGUARD_lasers_internal_h

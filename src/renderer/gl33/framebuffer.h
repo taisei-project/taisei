@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_gl33_framebuffer_h
-#define IGUARD_renderer_gl33_framebuffer_h
-
+#pragma once
 #include "taisei.h"
 
 #include "../api.h"
@@ -37,5 +35,3 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, co
 IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer);
 void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label);
 const char *gl33_framebuffer_get_debug_label(Framebuffer* fb);
-
-#endif // IGUARD_renderer_gl33_framebuffer_h

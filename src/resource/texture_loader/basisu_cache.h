@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_resource_texture_loader_basisu_cache_h
-#define IGUARD_resource_texture_loader_basisu_cache_h
-
+#pragma once
 #include "taisei.h"
 
 #include "basisu.h"
@@ -31,5 +29,3 @@ bool texture_loader_basisu_cache(
 	const basist_image_level_desc *level_desc,
 	const Pixmap *pixmap
 ) attr_nonnull_all;
-
-#endif // IGUARD_resource_texture_loader_basisu_cache_h

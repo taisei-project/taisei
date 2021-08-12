@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_renderer_api_h
-#define IGUARD_renderer_api_h
-
+#pragma once
 #include "taisei.h"
 
 #include "util.h"
@@ -995,5 +993,3 @@ INLINE
 bool r_supports(RendererFeature feature) {
 	return r_features() & r_feature_bit(feature);
 }
-
-#endif // IGUARD_renderer_api_h

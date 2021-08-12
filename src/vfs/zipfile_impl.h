@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#ifndef IGUARD_vfs_zipfile_impl_h
-#define IGUARD_vfs_zipfile_impl_h
-
+#pragma once
 #include "taisei.h"
 
 // libzip on clang creates useless noise
@@ -60,5 +58,3 @@ typedef struct VFSZipPathData {
 
 void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx);
 VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create);
-
-#endif // IGUARD_vfs_zipfile_impl_h
