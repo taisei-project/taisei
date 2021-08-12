@@ -76,12 +76,9 @@
 
 #define PRAGMA(p) _Pragma(#p)
 
-#ifdef RNG_API_CHECK
-	#undef TAISEI_BUILDCONF_USE_GNU_EXTENSIONS
-	#undef USE_GNU_EXTENSIONS
-#endif
-
 #ifndef __GNUC__ // clang defines this too
+	#pragma Unsupported compiler, expect nothing to work
+
 	#define __attribute__(...)
 	#define __extension__
 	#define UNREACHABLE
@@ -91,9 +88,6 @@
 	#define LIKELY(x) (bool)(x)
 	#define UNLIKELY(x) (bool)(x)
 #else
-	#ifdef TAISEI_BUILDCONF_USE_GNU_EXTENSIONS
-		#define USE_GNU_EXTENSIONS
-	#endif
 	#define UNREACHABLE __builtin_unreachable()
 
 	#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
@@ -292,32 +286,23 @@ typedef _Complex double cmplx;
 
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
-#ifdef USE_GNU_EXTENSIONS
-	#define ASSUME_ALIGNED(expr, alignment) (__extension__ ({ \
-		static_assert(__builtin_constant_p(alignment), ""); \
-		__auto_type _assume_aligned_ptr = (expr); \
-		assert(((uintptr_t)_assume_aligned_ptr & ((alignment) - 1)) == 0); \
-		__builtin_assume_aligned(_assume_aligned_ptr, (alignment)); \
-	}))
-#else
-	#define ASSUME_ALIGNED(expr, alignment) (expr)
-#endif
+#define ASSUME_ALIGNED(expr, alignment) ({ \
+	static_assert(__builtin_constant_p(alignment), ""); \
+	__auto_type _assume_aligned_ptr = (expr); \
+	assert(((uintptr_t)_assume_aligned_ptr & ((alignment) - 1)) == 0); \
+	__builtin_assume_aligned(_assume_aligned_ptr, (alignment)); \
+})
 
 #define UNION_CAST(_from_type, _to_type, _expr) \
 	((union { _from_type f; _to_type t; }) { .f = (_expr) }).t
 
-// #define CASTPTR_ASSUME_ALIGNED(expr, type) UNION_CAST(void*, type*, ASSUME_ALIGNED(expr, alignof(type)))
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
-#ifdef USE_GNU_EXTENSIONS
-	#define NOT_NULL(expr) (__extension__ ({ \
-		__auto_type _assume_not_null_ptr = (expr); \
-		assume(_assume_not_null_ptr != NULL); \
-		_assume_not_null_ptr; \
-	}))
-#else
-	#define NOT_NULL(expr) (expr)
-#endif
+#define NOT_NULL(expr) ({ \
+	__auto_type _assume_not_null_ptr = (expr); \
+	assume(_assume_not_null_ptr != NULL); \
+	_assume_not_null_ptr; \
+})
 
 #ifdef __SWITCH__
 	#include "../arch_switch.h"

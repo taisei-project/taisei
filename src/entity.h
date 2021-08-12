@@ -125,15 +125,11 @@ INLINE const char *ent_type_name(EntityType type) {
 	}
 }
 
-#ifdef USE_GNU_EXTENSIONS
-	#define ENT_CAST(ent, typename) (__extension__ ({ \
-		__auto_type _ent = ent; \
-		assert(_ent->type == ENT_TYPE_ID(typename)); \
-		UNION_CAST(EntityInterface*, typename*, _ent); \
-	}))
-#else
-	#define ENT_CAST(ent, typename) UNION_CAST(EntityInterface*, typename*, (ent));
-#endif
+#define ENT_CAST(ent, typename) ({ \
+	__auto_type _ent = ent; \
+	assert(_ent->type == ENT_TYPE_ID(typename)); \
+	UNION_CAST(EntityInterface*, typename*, _ent); \
+})
 
 void ent_init(void);
 void ent_shutdown(void);

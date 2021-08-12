@@ -101,42 +101,36 @@ ListContainer* list_wrap_container(void *data) attr_returns_allocated;
 
 // type-generic macros
 
-#ifdef USE_GNU_EXTENSIONS
-	// thorough safeguard
+#define LIST_CAST(expr) ({ \
+	static_assert(__builtin_types_compatible_p( \
+		ListInterface, __typeof__((*(expr)).list_interface)), \
+		"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
+	static_assert(__builtin_offsetof(__typeof__(*(expr)), list_interface) == 0, \
+		"list_interface must be the first member in struct"); \
+	CASTPTR_ASSUME_ALIGNED((expr), List); \
+})
 
-	#define LIST_CAST(expr) (__extension__ ({ \
-		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((*(expr)).list_interface)), \
-			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(__typeof__(*(expr)), list_interface) == 0, \
-			"list_interface must be the first member in struct"); \
-		CASTPTR_ASSUME_ALIGNED((expr), List); \
-	}))
+#define LIST_CAST_2(expr) ({ \
+	static_assert(__builtin_types_compatible_p(\
+		ListInterface, __typeof__((**(expr)).list_interface)), \
+		"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
+	static_assert(__builtin_offsetof(__typeof__(**(expr)), list_interface) == 0, \
+		"list_interface must be the first member in struct"); \
+	(void)ASSUME_ALIGNED(*(expr), alignof(List)); \
+	(List**)(expr); \
+})
 
-	#define LIST_CAST_2(expr) (__extension__ ({ \
-		static_assert(__builtin_types_compatible_p(ListInterface, __typeof__((**(expr)).list_interface)), \
-			"struct must implement ListInterface (use the LIST_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(__typeof__(**(expr)), list_interface) == 0, \
-			"list_interface must be the first member in struct"); \
-		(void)ASSUME_ALIGNED(*(expr), alignof(List)); \
-		(List**)(expr); \
-	}))
+#define LIST_ANCHOR_CAST(expr) ({ \
+	static_assert(__builtin_types_compatible_p(\
+		ListAnchorInterface, __typeof__((*(expr)).list_anchor_interface)), \
+		"struct must implement ListAnchorInterface (use the LIST_ANCHOR_INTERFACE macro)"); \
+	static_assert(__builtin_offsetof(__typeof__(*(expr)), list_anchor_interface) == 0, \
+		"list_anchor_interface must be the first member in struct"); \
+	CASTPTR_ASSUME_ALIGNED((expr), ListAnchor); \
+})
 
-	#define LIST_ANCHOR_CAST(expr) (__extension__ ({ \
-		static_assert(__builtin_types_compatible_p(ListAnchorInterface, __typeof__((*(expr)).list_anchor_interface)), \
-			"struct must implement ListAnchorInterface (use the LIST_ANCHOR_INTERFACE macro)"); \
-		static_assert(__builtin_offsetof(__typeof__(*(expr)), list_anchor_interface) == 0, \
-			"list_anchor_interface must be the first member in struct"); \
-		CASTPTR_ASSUME_ALIGNED((expr), ListAnchor); \
-	}))
-
-	#define LIST_CAST_RETURN(e_typekey, e_return) CASTPTR_ASSUME_ALIGNED((e_return), __typeof__(*(e_typekey)))
-#else
-	// basic safeguard
-	#define LIST_CAST(expr) ((void)sizeof((*(expr)).list_interface), (List*)(expr))
-	#define LIST_CAST_2(expr) ((void)sizeof((**(expr)).list_interface), (List**)(expr))
-	#define LIST_ANCHOR_CAST(expr) ((void)sizeof((*(expr)).list_anchor_interface), (ListAnchor*)(expr))
-	#define LIST_CAST_RETURN(e_typekey, e_return) (void*)(e_return)
-#endif
+#define LIST_CAST_RETURN(e_typekey, e_return) \
+	CASTPTR_ASSUME_ALIGNED((e_return), __typeof__(*(e_typekey)))
 
 #define list_insert(dest,elem) \
 	(LIST_CAST_RETURN(elem, list_insert(LIST_CAST_2(dest), LIST_CAST(elem))))

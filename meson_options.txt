@@ -190,10 +190,3 @@ option(
     value : false,
     description : 'Build shaderc and spirv-cross CLI tools from subprojects even if system versions exist'
 )
-
-option(
-    'use_gnu_ext',
-    type : 'boolean',
-    value : true,
-    description : 'Allow use of some GNU C extensions (if supported by compiler)'
-)

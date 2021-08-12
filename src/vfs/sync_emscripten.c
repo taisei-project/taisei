@@ -36,7 +36,7 @@ void vfs_sync_callback(bool is_load, char *error, CallChain *next) {
 
 void vfs_sync(VFSSyncMode mode, CallChain next) {
 	CallChain *cc = memdup(&next, sizeof(next));
-	__extension__ (EM_ASM({
+	EM_ASM({
 		SyncFS($0, $1);
-	}, (mode == VFS_SYNC_LOAD), cc));
+	}, (mode == VFS_SYNC_LOAD), cc);
 }

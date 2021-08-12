@@ -3,7 +3,6 @@ project('taisei', 'c',
     version : 'v1.4-dev',
     meson_version : '>=0.53.0',
     default_options : [
-        # Should really be c11, but gnu11 is a safer default because everything is terrible.
         'c_std=gnu11',
 
         'default_library=static',
@@ -60,7 +59,6 @@ config = configuration_data()
 
 taisei_c_args = [
     '-Wall',
-    '-Wpedantic',
 
     '-Werror=assume',
     '-Werror=implicit-function-declaration',
@@ -81,10 +79,8 @@ taisei_c_args = [
     '-Wfloat-overflow-conversion',
     '-Wfloat-zero-conversion',
     '-Wfor-loop-analysis',
-    '-Wformat-pedantic',
     '-Wformat-security',
     '-Wgcc-compat',
-    '-Wgnu',
     '-Wignored-qualifiers',
     '-Winit-self',
     '-Wlogical-op',
@@ -272,7 +268,6 @@ else
     config.set('TAISEI_BUILDCONF_HAVE_MAX_ALIGN_T', malloc_alignment > 0)
 endif
 
-config.set('TAISEI_BUILDCONF_USE_GNU_EXTENSIONS', get_option('use_gnu_ext'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builtin_popcountll'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))

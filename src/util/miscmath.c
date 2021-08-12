@@ -506,7 +506,7 @@ uint64_t _umuldiv64_slow(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 INLINE
 uint64_t _umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor) {
 #if defined(TAISEI_BUILDCONF_HAVE_INT128)
-	__extension__ typedef unsigned __int128 uint128_t;
+	typedef unsigned __int128 uint128_t;
 	return ((uint128_t)x * (uint128_t)multiplier) / divisor;
 #elif defined(TAISEI_BUILDCONF_HAVE_LONG_DOUBLE)
 	#define UMULDIV64_SANITY_CHECK

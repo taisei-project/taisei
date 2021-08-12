@@ -79,7 +79,7 @@ void eventloop_run(void) {
 		em_handle_resize_event, NULL, EPRIO_SYSTEM, MAKE_TAISEI_EVENT(TE_VIDEO_MODE_CHANGED)
 	});
 
-	(__extension__ EM_ASM({
+	EM_ASM({
 		Module['onFirstFrame']();
-	}));
+	});
 }
