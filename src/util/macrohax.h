@@ -17,8 +17,9 @@
 #define MACROHAX_DEFER(id) id MACROHAX_EMPTY()
 #define MACROHAX_OBSTRUCT(...) __VA_ARGS__ MACROHAX_DEFER(MACROHAX_EMPTY)()
 #define MACROHAX_EXPAND(...) __VA_ARGS__
-#define MACROHAX_CONCAT(a, b) a ## b
-#define MACROHAX_ADDLINENUM(a) MACROHAX_EXPAND(MACROHAX_DEFER(MACROHAX_CONCAT)(a, __LINE__))
+#define MACROHAX_CONCAT_(a, b) a ## b
+#define MACROHAX_CONCAT(a, b) MACROHAX_CONCAT_(a, b)
+#define MACROHAX_ADDLINENUM(a) MACROHAX_CONCAT(a, __LINE__)
 #define MACROHAX_STRINGIFY(x) #x
 
 // Expands to 0 if argument list is empty, 1 otherwise.
@@ -55,14 +56,11 @@
 
 // Expands to baseN, where N is the number of arguments.
 #define MACROHAX_OVERLOAD_NARGS(base, ...) \
-	MACROHAX_EXPAND(\
-		MACROHAX_DEFER(MACROHAX_CONCAT)(base, MACROHAX_NARGS(__VA_ARGS__))\
-	)
+	MACROHAX_CONCAT(base, MACROHAX_NARGS(__VA_ARGS__))
 
 // Expands to baseN, where N is 0 if the argument list is empty, 1 otherwise.
 #define MACROHAX_OVERLOAD_HASARGS(base, ...) \
-	MACROHAX_EXPAND(\
-		MACROHAX_DEFER(MACROHAX_CONCAT)(base, MACROHAX_HASARGS(__VA_ARGS__))\
-	)
+	MACROHAX_CONCAT(base, MACROHAX_HASARGS(__VA_ARGS__))
+
 
 #endif // IGUARD_util_macrohax_h
