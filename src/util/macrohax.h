@@ -53,4 +53,16 @@
 	_17, _18, _19, _20, _21, _22, _23, _24, \
 	_25, _26, _27, _28, _29, _30, _31, _32, N, ...) N
 
+// Expands to baseN, where N is the number of arguments.
+#define MACROHAX_OVERLOAD_NARGS(base, ...) \
+	MACROHAX_EXPAND(\
+		MACROHAX_DEFER(MACROHAX_CONCAT)(base, MACROHAX_NARGS(__VA_ARGS__))\
+	)
+
+// Expands to baseN, where N is 0 if the argument list is empty, 1 otherwise.
+#define MACROHAX_OVERLOAD_HASARGS(base, ...) \
+	MACROHAX_EXPAND(\
+		MACROHAX_DEFER(MACROHAX_CONCAT)(base, MACROHAX_HASARGS(__VA_ARGS__))\
+	)
+
 #endif // IGUARD_util_macrohax_h
