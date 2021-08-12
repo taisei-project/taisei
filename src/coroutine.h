@@ -194,7 +194,7 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 #define ARGS (*_cotask_args)
 
-#define NO_ARGS attr_deprecated("Use { } instead of NO_ARGS") { }
+#define NO_ARGS attr_deprecated("Use { } instead of NO_ARGS, or omit it entirely") { }
 
 // NOTE: the nested anonymous struct hack allows us to support both of these syntaxes:
 //       INVOKE_TASK(foo, ENT_BOX(bar));
@@ -289,8 +289,11 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 
 /* declare a task with static linkage (needs to be defined later) */
-#define DECLARE_TASK(name, argstruct) \
-	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, static) /* require semicolon */
+#define DECLARE_TASK(name, ...) \
+	MACROHAX_OVERLOAD_HASARGS(DECLARE_TASK_, __VA_ARGS__)(name, ##__VA_ARGS__)
+#define DECLARE_TASK_1(name, ...) \
+	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(__VA_ARGS__), void, static) /* require semicolon */
+#define DECLARE_TASK_0(name) DECLARE_TASK_1(name, { })
 
 /* declare a task with static linkage that conforms to a common interface (needs to be defined later) */
 #define DECLARE_TASK_WITH_INTERFACE(name, iface) \
@@ -301,8 +304,8 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 	DEFINE_TASK_EXPLICIT(name, static)
 
 /* declare and define a task with static linkage */
-#define TASK(name, argstruct) \
-	DECLARE_TASK(name, argstruct); \
+#define TASK(name, ...) \
+	DECLARE_TASK(name, ##__VA_ARGS__); \
 	DEFINE_TASK(name)
 
 /* declare and define a task with static linkage that conforms to a common interface */
@@ -312,8 +315,12 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
 
 
 /* declare a task with extern linkage (needs to be defined later) */
-#define DECLARE_EXTERN_TASK(name, argstruct) \
-	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(argstruct), void, extern) /* require semicolon */
+#define DECLARE_EXTERN_TASK(name, ...)\
+	MACROHAX_OVERLOAD_HASARGS(DECLARE_EXTERN_TASK_, __VA_ARGS__)(name, ##__VA_ARGS__)
+#define DECLARE_EXTERN_TASK_1(name, ...) \
+	DECLARE_TASK_EXPLICIT(name, TASK_ARGS_STRUCT(__VA_ARGS__), void, extern) /* require semicolon */
+#define DECLARE_EXTERN_TASK_0(name) \
+	DECLARE_EXTERN_TASK_1(name, { })
 
 /* declare a task with extern linkage that conforms to a common interface (needs to be defined later) */
 #define DECLARE_EXTERN_TASK_WITH_INTERFACE(name, iface) \
