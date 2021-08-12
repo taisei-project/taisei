@@ -15,7 +15,7 @@
 #include "common_tasks.h"
 #include "global.h"
 
-TASK(crystal_rain_drops, NO_ARGS) {
+TASK(crystal_rain_drops) {
 	const int nshots = difficulty_value(1, 2, 4, 5);
 	const real accel_rate = difficulty_value(0.001, 0.001, 0.01, 0.01);
 

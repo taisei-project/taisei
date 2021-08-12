@@ -15,7 +15,7 @@
 #include "common_tasks.h"
 #include "global.h"
 
-TASK(crystal_wall, NO_ARGS) {
+TASK(crystal_wall) {
 	int num_crystals = difficulty_value(18, 21, 24, 27);
 	real spacing = VIEWPORT_W / (real)(num_crystals - 1);
 	real ofs = rng_real() - 1;

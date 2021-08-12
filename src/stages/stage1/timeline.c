@@ -399,7 +399,7 @@ TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 }
 
 // opening. projectile bursts
-TASK(burst_fairies_1, NO_ARGS) {
+TASK(burst_fairies_1) {
 	for(int i = 3; i--;) {
 		INVOKE_TASK(burst_fairy,
 			.e = espawn_fairy_blue_box(VIEWPORT_W/2 + 70, ITEMS(.points = 1)),
@@ -416,7 +416,7 @@ TASK(burst_fairies_1, NO_ARGS) {
 }
 
 // more bursts. fairies move \ / like
-TASK(burst_fairies_2, NO_ARGS) {
+TASK(burst_fairies_2) {
 	for(int i = 3; i--;) {
 		real ofs = 70 + i * 40;
 
@@ -445,7 +445,7 @@ TASK(burst_fairies_2, NO_ARGS) {
 	}
 }
 
-TASK(burst_fairies_3, NO_ARGS) {
+TASK(burst_fairies_3) {
 	for(int i = 10; i--;) {
 		cmplx pos = VIEWPORT_W/2 - 200 * sin(1.17 * global.frames);
 		INVOKE_TASK(burst_fairy,
@@ -472,7 +472,7 @@ TASK(sinepass_swirls, { int duration; real level; real dir; }) {
 }
 
 // big fairies, circle + projectile toss
-TASK(circletoss_fairies_1, NO_ARGS) {
+TASK(circletoss_fairies_1) {
 	for(int i = 0; i < 2; ++i) {
 		INVOKE_TASK(circletoss_fairy,
 			.pos = VIEWPORT_W * i + VIEWPORT_H / 3 * I,
@@ -492,13 +492,13 @@ TASK(drop_swirls, { int cnt; cmplx pos; cmplx vel; cmplx accel; }) {
 	}
 }
 
-TASK(schedule_swirls, NO_ARGS) {
+TASK(schedule_swirls) {
 	INVOKE_TASK(drop_swirls, 25, VIEWPORT_W/3, 2*I, 0.06);
 	WAIT(400);
 	INVOKE_TASK(drop_swirls, 25, 200*I, 4, -0.06*I);
 }
 
-TASK(circle_fairies_1, NO_ARGS) {
+TASK(circle_fairies_1) {
 	for(int i = 0; i < 3; ++i) {
 		for(int j = 0; j < 3; ++j) {
 			INVOKE_TASK(circle_fairy, VIEWPORT_W - 64, VIEWPORT_W/2 - 100 + 200 * I + 128 * j);
@@ -516,7 +516,7 @@ TASK(circle_fairies_1, NO_ARGS) {
 	}
 }
 
-TASK(multiburst_fairies_1, NO_ARGS) {
+TASK(multiburst_fairies_1) {
 	int rows = difficulty_value(1, 2, 3, 3);
 	int row_interval = difficulty_value(0, 160, 120, 120);
 	int cols = 5;
@@ -583,7 +583,7 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 	boss->move = move_towards(-250 + 30 * I, 0.02);
 }
 
-TASK(spawn_midboss, NO_ARGS) {
+TASK(spawn_midboss) {
 	STAGE_BOOKMARK_DELAYED(120, midboss);
 
 	Boss *boss = global.boss = stage1_spawn_cirno(VIEWPORT_W + 220 + 30.0*I);
@@ -659,7 +659,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
 }
 
-TASK(spawn_boss, NO_ARGS) {
+TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 
 	Boss *boss = global.boss = stage1_spawn_cirno(-230 + 100.0*I);

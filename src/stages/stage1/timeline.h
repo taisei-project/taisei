@@ -13,6 +13,6 @@
 
 #include "coroutine.h"
 
-DECLARE_EXTERN_TASK(stage1_timeline, NO_ARGS);
+DECLARE_EXTERN_TASK(stage1_timeline);
 
 #endif // IGUARD_stages_stage1_timeline_h

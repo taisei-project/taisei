@@ -16,7 +16,7 @@
 
 // TODO
 
-TASK(animate_bg, NO_ARGS) {
+TASK(animate_bg) {
 	for(;;) {
 		YIELD;
 		stage3d_update(&stage_3d_context);

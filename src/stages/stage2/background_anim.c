@@ -16,7 +16,7 @@
 #include "common_tasks.h"
 #include "util/glm.h"
 
-TASK(animate_hina_mode, NO_ARGS) {
+TASK(animate_hina_mode) {
 	Stage2DrawData *draw_data = stage2_get_draw_data();
 
 	int dur = 10000;
@@ -35,7 +35,7 @@ void stage2_bg_engage_hina_mode(void) {
 }
 
 
-TASK(animate_bg_fullstage, NO_ARGS) {
+TASK(animate_bg_fullstage) {
 	Camera3D *cam = &stage_3d_context.cam;
 
 	cam->pos[2] = 8;
@@ -68,7 +68,7 @@ void stage2_bg_init_fullstage(void) {
 	INVOKE_TASK(animate_bg_fullstage);
 }
 
-TASK(animate_bg_spellpractice, NO_ARGS) {
+TASK(animate_bg_spellpractice) {
 	Camera3D *cam = &stage_3d_context.cam;
 
 	cam->pos[2] = 8;

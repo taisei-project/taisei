@@ -146,7 +146,7 @@ TASK(reimu_dream_gap_bomb_projectile, {
 	}
 }
 
-TASK(reimu_dream_bomb_noise, NO_ARGS) {
+TASK(reimu_dream_bomb_noise) {
 	for(;;WAIT(16)) {
 		play_sfx("boon");
 	}

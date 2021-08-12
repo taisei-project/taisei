@@ -13,7 +13,7 @@
 #include "enemy.h"
 #include "enemy_classes.h"
 
-TASK(single_fairy, NO_ARGS) {
+TASK(single_fairy) {
 	for(;;) {
 		Enemy *e = espawn_super_fairy(VIEWPORT_W/2, ITEMS(.points = 10));
 		e->move = move_towards(BOSS_DEFAULT_GO_POS, 0.025);

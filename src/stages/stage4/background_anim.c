@@ -14,14 +14,14 @@
 #include "stageutils.h"
 #include "common_tasks.h"
 
-TASK(update_stage_3d, NO_ARGS) {
+TASK(update_stage_3d) {
 	for(;;) {
 		YIELD;
 		stage3d_update(&stage_3d_context);
 	}
 }
 
-TASK(animate_bg_fullstage, NO_ARGS) {
+TASK(animate_bg_fullstage) {
 	Camera3D *cam = &stage_3d_context.cam;
 	cam->far = 300;
 
@@ -64,7 +64,7 @@ void stage4_bg_init_spellpractice(void) {
 	INVOKE_TASK(update_stage_3d);
 }
 
-TASK(redden_corridor, NO_ARGS) {
+TASK(redden_corridor) {
 	Stage4DrawData *draw_data = stage4_get_draw_data();
 	int t = 100;
 

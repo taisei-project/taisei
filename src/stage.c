@@ -562,13 +562,13 @@ void stage_clear_hazards_in_ellipse(Ellipse e, ClearHazardsFlags flags) {
 	stage_clear_hazards_predicate(ellipse_predicate, &e, flags);
 }
 
-TASK(clear_dialog, NO_ARGS) {
+TASK(clear_dialog) {
 	assert(global.dialog != NULL);
 	// dialog_deinit() should've been called by dialog_end() at this point
 	global.dialog = NULL;
 }
 
-TASK(dialog_fixup_timer, NO_ARGS) {
+TASK(dialog_fixup_timer) {
 	// HACK: remove when global.timer is gone
 	global.timer++;
 }

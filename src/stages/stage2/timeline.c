@@ -478,7 +478,7 @@ static void wiggle_mid_flee(Boss *w, int t) {
 	}
 }
 
-TASK(spawn_midboss, NO_ARGS) {
+TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 
 	Boss *boss = global.boss = stage2_spawn_wriggle(VIEWPORT_W + 150 - 30.0*I);
@@ -543,11 +543,11 @@ static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
 
 }
 
-TASK(aimshot_fairies_blue, NO_ARGS) {
+TASK(aimshot_fairies_blue) {
 	aimshot_fairies(espawn_fairy_blue, ITEMS(.points = 2));
 }
 
-TASK(aimshot_fairies_red, NO_ARGS) {
+TASK(aimshot_fairies_red) {
 	aimshot_fairies(espawn_fairy_red, ITEMS(.power = 2));
 }
 
@@ -617,7 +617,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 	aniplayer_queue(&boss->ani, "main", 0);
 }
 
-TASK(spawn_boss, NO_ARGS) {
+TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 
 	Boss *boss = global.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
