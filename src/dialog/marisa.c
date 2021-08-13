@@ -559,7 +559,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	MSG(elly, "You’re after… magic?");
 	FACE(elly, smug);
 	MSG(elly, "Hah! You’ll regret wasting your time on such nonsense.");
-	MSG(elly, "Nothing will stand against our path of vengeance for those who have been forgotten by the—");
+	MSG(elly, "Soon, you’ll see the error of—");
 
 	MSG(marisa, "Do ya know how boring it is to be a magician in Gensōkyō these days?");
 
