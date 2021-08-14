@@ -410,7 +410,7 @@ static int draw_laser_pass1_build(Laser *l) {
 	bottom_right.as_cmplx = a;
 
 	for(uint i = 1; i < samples; ++i, t += tstep) {
-		cmplxf b = l->prule(l, t);
+		b = l->prule(l, t);
 
 		if(i < samples - 1 && (t - t0) < thres_temporal) {
 			cmplxf v1 = b - a;
