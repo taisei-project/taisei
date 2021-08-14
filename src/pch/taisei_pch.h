@@ -6,7 +6,11 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#pragma once
+#ifndef IGUARD_pch_taisei_pch_h
+#define IGUARD_pch_taisei_pch_h
+
 #include "taisei.h"
 
 #include "global.h"
+
+#endif // IGUARD_pch_taisei_pch_h

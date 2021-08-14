@@ -11,3 +11,4 @@
 
 #define ENTITIES_ReimuA(X, ...) \
 	X(ReimuASlave, __VA_ARGS__) \
+	END_OF_ENTITIES

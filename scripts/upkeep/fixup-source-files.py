@@ -77,8 +77,11 @@ class Janitor:
         relpath = path.relative_to(self.root)
         return f'{guard_prefix}{badchar_regex.sub("_", str(relpath))}'
 
-    def get_guard_template(self, guard):
-        if use_pragma_once:
+    def get_guard_template(self, guard, path):
+        # Workaround stupid gcc warning
+        is_pch = str(path).endswith('/src/pch/taisei_pch.h')
+
+        if use_pragma_once and not is_pch:
             return (
                 r'\n\n'
                 rf'#pragma once\n'
@@ -95,7 +98,7 @@ class Janitor:
 
     def transform_include_guards(self, text, path):
         guard = self.get_guard_name(path)
-        template = self.get_guard_template(guard)
+        template = self.get_guard_template(guard, path)
 
         # replace #pragma once
         text = pragma_regex.sub(template, text, 1)

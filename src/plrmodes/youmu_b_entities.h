@@ -10,3 +10,4 @@
 #include "taisei.h"
 
 #define ENTITIES_YoumuB(X, ...) \
+	END_OF_ENTITIES

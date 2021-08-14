@@ -25,3 +25,4 @@
 	ENTITIES_MarisaB(X, __VA_ARGS__) \
 	ENTITIES_YoumuA(X, __VA_ARGS__) \
 	ENTITIES_YoumuB(X, __VA_ARGS__) \
+	END_OF_ENTITIES

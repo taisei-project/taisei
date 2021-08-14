@@ -13,3 +13,4 @@
 	X(MarisaBSlave, __VA_ARGS__) \
 	X(MarisaBOrbiter, __VA_ARGS__) \
 	X(MarisaBBeams, __VA_ARGS__) \
+	END_OF_ENTITIES

@@ -10,3 +10,4 @@
 #include "taisei.h"
 
 #define ENTITIES_YoumuA(X, ...) \
+	END_OF_ENTITIES

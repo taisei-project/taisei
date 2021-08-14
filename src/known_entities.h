@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#define END_OF_ENTITIES
+
 #define ENTITIES_CORE(X, ...) \
 	X(Boss, __VA_ARGS__) \
 	X(Enemy, __VA_ARGS__) \
@@ -17,6 +19,7 @@
 	X(Player, __VA_ARGS__) \
 	X(PlayerIndicators, __VA_ARGS__) \
 	X(Projectile, __VA_ARGS__) \
+	END_OF_ENTITIES
 
 #include "plrmodes/entities.h"
 #include "stages/entities.h"
@@ -25,3 +28,4 @@
 	ENTITIES_CORE(X, __VA_ARGS__) \
 	ENTITIES_PLAYERMODES(X, __VA_ARGS__) \
 	ENTITIES_STAGES(X, __VA_ARGS__) \
+	END_OF_ENTITIES

@@ -12,3 +12,4 @@
 #define ENTITIES_ReimuB(X, ...) \
 	X(ReimuBController, __VA_ARGS__) \
 	X(ReimuBSlave, __VA_ARGS__) \
+	END_OF_ENTITIES

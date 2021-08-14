@@ -10,3 +10,4 @@
 #include "taisei.h"
 
 #define ENTITIES_STAGE2(X, ...) \
+	END_OF_ENTITIES

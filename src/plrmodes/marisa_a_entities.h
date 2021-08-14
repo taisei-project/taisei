@@ -13,3 +13,4 @@
 	X(MarisaAController, __VA_ARGS__) \
 	X(MarisaAMasterSpark, __VA_ARGS__) \
 	X(MarisaASlave, __VA_ARGS__) \
+	END_OF_ENTITIES
