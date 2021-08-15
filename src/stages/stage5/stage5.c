@@ -69,12 +69,6 @@ static void stage5_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"tower_light",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/linear",
-		"lasers/accelerated",
-		"lasers/iku_cathode",
-		"lasers/iku_lightning",
-	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/iku",
 		"boss/iku_mid",

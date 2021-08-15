@@ -112,9 +112,6 @@ static void stage4_preload(void) {
 		"ssr_water",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/accelerated",
-	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/kurumi",
 	NULL);
