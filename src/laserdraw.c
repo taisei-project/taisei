@@ -18,6 +18,91 @@
 #include "config.h"
 #include "global.h"
 
+/*
+ * LASER RENDERING OVERVIEW
+ *
+ * Laser rendering happens in two passes.
+ *
+ * In the first pass we quantize the laser into a sequence of connected line segments, possibly
+ * simplifying the shape and culling the invisible parts. The segments are then rasterized into a
+ * signed distance field. To achieve this, the vertex shader outputs oversized oriented quads for
+ * each segment. The amount of size overshoot depends on the maximum range of our distance field, as
+ * well as the width of each laser segment. The fragment shader then calculates the signed distance
+ * from each fragment to the actual segment. Since the width of a segment may be non-uniform, an
+ * "uneven capsule" primitive is used for the distance calculation — effectively, this interpolates
+ * the width linearly between the two points of a segment[1].
+ *
+ * To combine all segments into a signle distance field, the minimum function is used for the
+ * blending equation. The framebuffer is initially cleared with the maximum distance value, so that
+ * there are no discontinuities or clipping. It is also possible to use a depth buffer to implement
+ * this technique, if the blending option is not available.
+ *
+ * The result is stored into the red channel of a floating point texture, with negative distance
+ * denoting fragments that are inside the shape. We also store the negated "time" parameter,
+ * linearly interpolated between each point, into the second channel of the texture. This isn't used
+ * by default, but opens possibilities for interesting custom effects, including limited texturing.
+ *
+ * The second pass is a lot simpler: we sample our distance field texture to render a colored laser
+ * directly into the main viewport framebuffer. To save some shader invocations, we only render the
+ * part covered by the laser's axis-aligned bounding box (computed in the first pass).
+ *
+ * This method gives us very nice looking, easily tweakable, arbitrarily shaped curves free of
+ * artifacts[2] and discontinuities at any resolution!
+ *
+ * …
+ *
+ * Now, here is a problem: IT'S SLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW.
+ *
+ * The naive way of implementing it is, anyway. Having to render 2 passes with completely different
+ * pipeline states per laser doesn't scale — the back-and-forth switching of states and render
+ * targets gets very expensive. So instead of that, let's try to minimize the amount of state
+ * changes by cramming as many lasers into one pass as possible.
+ *
+ * Currently, this is implemented in the most basic way: we take the SDF backing texture and make it
+ * much larger, to accomodate multiple viewport-sized areas — we'll call them "tiles". The tiles
+ * don't have to be exactly the size of one game viewport, but the proportions matter. In the first
+ * pass, we render SDFs for multiple lasers, each into a separate tile. We tag each laser with its
+ * tile number, so that the second pass knows where to find their data in the texture. In order to
+ * properly scale and constrain the output to the tile area, the viewport transformation is used[3].
+ * When we run out of lasers to draw, or out of free tiles in the texture, we render the second pass
+ * for the lasers processed so far[4]. If we have any more lasers left to draw, we set up the state
+ * for pass one again and start over.
+ *
+ * With this optimization, the performance gets much more respectable. It's still not as fast as our
+ * old (v1.3 era) laser renderer, but hey, it's a lot prettier!
+ *
+ *
+ * OPEN ISSUES
+ *
+ *	- The tiling method is obviously very wasteful on VRAM. Laser bounding boxes don't typically
+ * envelop the entire viewport, so we are wasting a lot of space here. We could use a rect packing
+ * algorithm to fit a lot more lasers into a smaller texture. Our current rectpack code is not
+ * optimized for real-time use, however.
+ *
+ *	- Because there are no safe areas between the tiles, the second pass is susceptible to linear
+ * filtering artifacts at the edges of the viewport in some cases. This can be fixed at the cost of
+ * even more VRAM waste (albeit a little bit) and slightly complicating the tile addressing logic.
+ * But the rect packing proposal can also fix this trivially.
+ *
+ *	- It may be beneficial to separate the curve quantization/simplification code from the renderer.
+ * It can be used to optimize collision detection, and we can use the same line segment data to
+ * handle collision and rendering.
+ *
+ *
+ *
+ * [1] For this reason, we also can't reduce very long runs of straight segments into a single one,
+ * or this interpolation becomes too obvious.
+ *
+ * [2] Ok, there is one small artifact: self-intersections don't quite look right, because there is
+ * no way for the SDF to represent a laser stacking on top of itself. But the error is barely
+ * noticeable in-game, and could be masked almost entirely with a small amount of blur.
+ *
+ * [3] Unfortunately, this means we can't dispatch all lasers with a single draw call, as we must
+ * change the viewport setup each time. This doesn't seem to be a problem in practice, however.
+ *
+ * [4] And we can actually do it in a single draw call this time!
+ */
+
 // Should be set slightly larger than the
 // negated lowest distance threshold value in the sdf_apply shader
 #define SDF_RANGE 4.01
