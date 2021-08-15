@@ -32,7 +32,7 @@
  * "uneven capsule" primitive is used for the distance calculation — effectively, this interpolates
  * the width linearly between the two points of a segment[1].
  *
- * To combine all segments into a signle distance field, the minimum function is used for the
+ * To combine all segments into a single distance field, the minimum function is used for the
  * blending equation. The framebuffer is initially cleared with the maximum distance value, so that
  * there are no discontinuities or clipping. It is also possible to use a depth buffer to implement
  * this technique, if the blending option is not available.
