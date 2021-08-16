@@ -12,6 +12,7 @@
 #include "util.h"
 #include "global.h"
 #include "video.h"
+#include "util/gui.h"
 
 struct evloop_s evloop;
 
@@ -64,6 +65,8 @@ LogicFrameAction run_logic_frame(LoopFrame *frame) {
 	}
 
 	LogicFrameAction a = frame->logic(frame->context);
+
+	gui_end_frame();
 
 	if(a != LFRAME_SKIP_ALWAYS) {
 		fpscounter_update(&global.fps.logic);

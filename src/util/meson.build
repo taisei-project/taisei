@@ -10,6 +10,7 @@ util_src = files(
     'fbutil.c',
     'geometry.c',
     'graphics.c',
+    'gui.c',
     'io.c',
     'kvparser.c',
     'miscmath.c',

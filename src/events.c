@@ -13,6 +13,7 @@
 #include "global.h"
 #include "video.h"
 #include "gamepad.h"
+#include "util/gui.h"
 
 static hrtime_t keyrepeat_paused_until;
 static int global_handlers_lock = 0;
@@ -107,6 +108,10 @@ void events_unregister_handler(EventHandlerProc proc) {
 }
 
 static void events_apply_flags(EventFlags flags) {
+	if(gui_wants_text_input()) {
+		flags |= EFLAG_TEXT;
+	}
+
 	if(flags & EFLAG_TEXT) {
 		if(!SDL_IsTextInputActive()) {
 			SDL_StartTextInput();
@@ -228,6 +233,8 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 	});
 
 	deferred_events.num_elements = 0;
+
+	gui_begin_frame();
 }
 
 void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {

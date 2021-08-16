@@ -17,6 +17,7 @@
 #include "video_postprocess.h"
 #include "dynarray.h"
 #include "version.h"
+#include "util/gui.h"
 
 typedef DYNAMIC_ARRAY(VideoMode) VideoModeArray;
 
@@ -833,6 +834,7 @@ void video_init(void) {
 	});
 
 	log_info("Video subsystem initialized");
+	gui_init();
 }
 
 void video_post_init(void) {
@@ -842,6 +844,7 @@ void video_post_init(void) {
 }
 
 void video_shutdown(void) {
+	gui_shutdown();
 	video_postprocess_shutdown(video.postprocess);
 	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);
@@ -858,6 +861,8 @@ Framebuffer *video_get_screen_framebuffer(void) {
 }
 
 void video_swap_buffers(void) {
+	gui_render();
+
 	Framebuffer *pp_fb = video_postprocess_render(video.postprocess);
 
 	if(pp_fb) {
