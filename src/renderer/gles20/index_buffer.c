@@ -60,3 +60,7 @@ void gles20_index_buffer_destroy(IndexBuffer *ibuf) {
 
 void gles20_index_buffer_flush(IndexBuffer *ibuf) {
 }
+
+void gles20_index_buffer_invalidate(IndexBuffer *ibuf) {
+	ibuf->offset = 0;
+}

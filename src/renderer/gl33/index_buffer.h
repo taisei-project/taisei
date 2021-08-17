@@ -30,3 +30,4 @@ void gl33_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *da
 void gl33_index_buffer_destroy(IndexBuffer *ibuf);
 void gl33_index_buffer_flush(IndexBuffer *ibuf);
 void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao);
+void gl33_index_buffer_invalidate(IndexBuffer *buf);

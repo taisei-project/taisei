@@ -33,3 +33,4 @@ size_t gles20_index_buffer_get_offset(IndexBuffer *ibuf);
 void gles20_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data);
 void gles20_index_buffer_destroy(IndexBuffer *ibuf);
 void gles20_index_buffer_flush(IndexBuffer *ibuf);
+void gles20_index_buffer_invalidate(IndexBuffer *ibuf);

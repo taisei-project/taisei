@@ -169,6 +169,7 @@ static void null_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) { }
 static size_t null_index_buffer_get_offset(IndexBuffer *ibuf) { return 0; }
 static void null_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) { }
 static void null_index_buffer_destroy(IndexBuffer *ibuf) { }
+static void null_index_buffer_invalidate(IndexBuffer *ibuf) { }
 
 static VertexArray* null_vertex_array_create(void) { return (void*)&placeholder; }
 static void null_vertex_array_set_debug_label(VertexArray *varr, const char *label) { }
@@ -268,6 +269,7 @@ RendererBackend _r_backend_null = {
 		.index_buffer_set_offset = null_index_buffer_set_offset,
 		.index_buffer_get_offset = null_index_buffer_get_offset,
 		.index_buffer_add_indices = null_index_buffer_add_indices,
+		.index_buffer_invalidate = null_index_buffer_invalidate,
 		.index_buffer_destroy = null_index_buffer_destroy,
 		.vertex_array_create = null_vertex_array_create,
 		.vertex_array_get_debug_label = null_vertex_array_get_debug_label,

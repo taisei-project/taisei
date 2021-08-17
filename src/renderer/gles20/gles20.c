@@ -69,6 +69,7 @@ RendererBackend _r_backend_gles20 = {
 		.index_buffer_set_offset = gles20_index_buffer_set_offset,
 		.index_buffer_get_offset = gles20_index_buffer_get_offset,
 		.index_buffer_add_indices = gles20_index_buffer_add_indices,
+		.index_buffer_invalidate = gles20_index_buffer_invalidate,
 		.index_buffer_destroy = gles20_index_buffer_destroy,
 		.draw_indexed = gles20_draw_indexed,
 		.vertex_array_attach_index_buffer = gles20_vertex_array_attach_index_buffer,

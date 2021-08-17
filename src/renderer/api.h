@@ -783,6 +783,7 @@ void r_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) attr_nonnull(1)
 size_t r_index_buffer_get_offset(IndexBuffer *ibuf) attr_nonnull(1);
 void r_index_buffer_add_indices_u16(IndexBuffer *ibuf, uint16_t index_ofs, size_t num_elements, uint16_t indices[num_elements]) attr_nonnull(1, 4);
 void r_index_buffer_add_indices_u32(IndexBuffer *ibuf, uint32_t index_ofs, size_t num_elements, uint32_t indices[num_elements]) attr_nonnull(1, 4);
+void r_index_buffer_invalidate(IndexBuffer *ibuf) attr_nonnull(1);
 void r_index_buffer_destroy(IndexBuffer *ibuf) attr_nonnull(1);
 
 VertexArray* r_vertex_array_create(void);

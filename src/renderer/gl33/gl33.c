@@ -1510,6 +1510,7 @@ RendererBackend _r_backend_gl33 = {
 		.index_buffer_set_offset = gl33_index_buffer_set_offset,
 		.index_buffer_get_offset = gl33_index_buffer_get_offset,
 		.index_buffer_add_indices = gl33_index_buffer_add_indices,
+		.index_buffer_invalidate = gl33_index_buffer_invalidate,
 		.index_buffer_destroy = gl33_index_buffer_destroy,
 		.vertex_array_destroy = gl33_vertex_array_destroy,
 		.vertex_array_create = gl33_vertex_array_create,

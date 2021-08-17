@@ -110,6 +110,7 @@ typedef struct RendererFuncs {
 	void (*index_buffer_set_offset)(IndexBuffer *ibuf, size_t offset);
 	size_t (*index_buffer_get_offset)(IndexBuffer *ibuf);
 	void (*index_buffer_add_indices)(IndexBuffer *ibuf, size_t data_size, void *data);
+	void (*index_buffer_invalidate)(IndexBuffer *ibuf);
 	void (*index_buffer_destroy)(IndexBuffer *ibuf);
 
 	VertexArray* (*vertex_array_create)(void);

@@ -726,6 +726,10 @@ void r_index_buffer_add_indices_u32(
 	}
 }
 
+void r_index_buffer_invalidate(IndexBuffer *ibuf) {
+	B.index_buffer_invalidate(ibuf);
+}
+
 void r_index_buffer_destroy(IndexBuffer *ibuf) {
 	B.index_buffer_destroy(ibuf);
 }

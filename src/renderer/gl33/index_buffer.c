@@ -97,3 +97,7 @@ void gl33_index_buffer_destroy(IndexBuffer *ibuf) {
 void gl33_index_buffer_flush(IndexBuffer *ibuf) {
 	gl33_buffer_flush(&ibuf->cbuf);
 }
+
+void gl33_index_buffer_invalidate(IndexBuffer *ibuf) {
+	gl33_buffer_invalidate(&ibuf->cbuf);
+}
