@@ -834,7 +834,6 @@ void video_init(void) {
 	});
 
 	log_info("Video subsystem initialized");
-	gui_init();
 }
 
 void video_post_init(void) {
@@ -844,7 +843,6 @@ void video_post_init(void) {
 }
 
 void video_shutdown(void) {
-	gui_shutdown();
 	video_postprocess_shutdown(video.postprocess);
 	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);

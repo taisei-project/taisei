@@ -37,6 +37,8 @@ glsl_files = files(
     'healthbar.vert.glsl',
     'healthbar_linear.frag.glsl',
     'healthbar_radial.frag.glsl',
+    'imgui.frag.glsl',
+    'imgui.vert.glsl',
     'ingame_menu.frag.glsl',
     'mainmenubg.frag.glsl',
     'marisa_laser.frag.glsl',

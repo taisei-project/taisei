@@ -32,6 +32,7 @@
 #include "replay/struct.h"
 #include "filewatch/filewatch.h"
 #include "dynstage.h"
+#include "util/gui.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -49,6 +50,7 @@ static void taisei_shutdown(void) {
 	shutdown_resources();
 	taskmgr_global_shutdown();
 	audio_shutdown();
+	gui_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
 	stageinfo_shutdown();
@@ -343,6 +345,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	filewatch_init();
 	init_resources();
 	r_post_init();
+	gui_init();
 	draw_loading_screen();
 	dynstage_init_monitoring();
 
