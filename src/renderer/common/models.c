@@ -58,6 +58,7 @@ void _r_models_init(void) {
 void _r_models_shutdown(void) {
 	r_vertex_array_destroy(_r_models.varr);
 	r_vertex_buffer_destroy(_r_models.vbuf);
+	r_index_buffer_destroy(_r_models.ibuf);
 }
 
 void r_model_add_static(
