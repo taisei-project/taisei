@@ -1119,6 +1119,11 @@ void gl33_shader_deleted(ShaderProgram *prog) {
 }
 
 void gl33_buffer_deleted(CommonBuffer *cbuf) {
+	if(cbuf->bindidx == GL33_BUFFER_BINDING_ELEMENT_ARRAY) {
+		// TODO: unreference from VAO
+		return;
+	}
+
 	if(R.buffer_objects[cbuf->bindidx].active == cbuf->gl_handle) {
 		R.buffer_objects[cbuf->bindidx].active = 0;
 	}

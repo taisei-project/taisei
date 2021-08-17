@@ -46,6 +46,7 @@ static_assert(
 );
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size);
+void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity);
 void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint);
 void gl33_buffer_destroy(CommonBuffer *cbuf);
 void gl33_buffer_invalidate(CommonBuffer *cbuf);

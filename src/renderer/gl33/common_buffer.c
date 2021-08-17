@@ -93,13 +93,19 @@ CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size) {
 	return cbuf;
 }
 
-void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint) {
-	assert(cbuf->cache.buffer == NULL);
+void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity) {
+	capacity = topow2(capacity);
 
+	if(cbuf->size != capacity || !cbuf->cache.buffer) {
+		cbuf->cache.buffer = realloc(cbuf->cache.buffer, capacity);
+		cbuf->size = cbuf->commited_size = capacity;
+		cbuf->cache.update_begin = capacity;
+	}
+}
+
+void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint) {
 	size_t data_size = capacity;
-	cbuf->size = cbuf->commited_size = capacity = topow2(capacity);
-	cbuf->cache.buffer = calloc(1, capacity);
-	cbuf->cache.update_begin = capacity;
+	gl33_buffer_init_cache(cbuf, capacity);
 	cbuf->gl_usage_hint = usage_hint;
 
 	GL33_BUFFER_TEMP_BIND(cbuf, {
