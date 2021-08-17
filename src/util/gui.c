@@ -15,7 +15,9 @@
 
 #include <SDL.h>
 
-#define MAX_VERTICES (1 << 15)
+#define MAX_VERTICES (1 << 16)
+
+typedef DYNAMIC_ARRAY(GuiPersistentWindow) GuiPersistentWindowArray;
 
 static struct {
 	VertexArray *va;
@@ -24,6 +26,7 @@ static struct {
 	ShaderProgram *shader;
 	Uniform *texture_uniform;
 	Texture *atlas;
+	GuiPersistentWindowArray persistent_windows;
 	bool begun_frame;
 } gui;
 
@@ -73,6 +76,8 @@ bool gui_wants_text_input(void) {
 	ImGuiIO *io = igGetIO();
 	return io->WantTextInput;
 }
+
+static void gui_post_init(void);
 
 void gui_init(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT | RESF_PERMANENT, "imgui", NULL);
@@ -126,6 +131,8 @@ void gui_init(void) {
 
 	io->BackendRendererUserData = &gui;
 	io->BackendRendererName = "taiseiapi";
+
+	gui_post_init();
 }
 
 static void gui_update_atlas(void) {
@@ -194,83 +201,34 @@ void gui_shutdown(void) {
 	igDestroyContext(NULL);
 }
 
-static void display_vfs_path(const char *name, const char *path) {
-	assert(path != NULL);
-
-	igTableNextRow(0, 0);
-	igTableNextColumn();
-
-	bool is_dir = vfs_query(path).is_dir;
-
-	ImGuiTreeNodeFlags f = ImGuiTreeNodeFlags_SpanFullWidth;
-
-	if(!is_dir) {
-		f |=
-			ImGuiTreeNodeFlags_Leaf |
-			ImGuiTreeNodeFlags_NoTreePushOnOpen;
-	}
-
-	bool open = igTreeNodeEx_Str(name, f);
-	igTableNextColumn();
-	char *repr = vfs_repr(path, false);
-	if(repr == NULL) {
-		igTextUnformatted("???", NULL);
-	} else {
-		igTextUnformatted(repr, NULL);
-		free(repr);
-	}
-
-	igPushID_Str(name);
-
-	if(is_dir && open) {
-		VFSDir *vdir = vfs_dir_open(path);
-		if(vdir) {
-			size_t preflen = strlen(path);
-			for(const char *p; (p = vfs_dir_read(vdir));) {
-				size_t sublen = strlen(p);
-				char fullpath[preflen + sublen + 2];
-				memcpy(fullpath, path, preflen);
-				fullpath[preflen] = '/';
-				memcpy(fullpath+preflen+1, p, sublen);
-				fullpath[preflen + 1 + sublen] = 0;
-				display_vfs_path(p, fullpath);
-			}
-
-			vfs_dir_close(vdir);
-		}
-
-		igTreePop();
-	}
-
-	igPopID();
+GuiPersistentWindow *gui_add_persistent_window(const char *name, GuiPersistentWindowCallback callback, void *userdata) {
+	GuiPersistentWindow *w = dynarray_append(&gui.persistent_windows);
+	w->name = name;
+	w->callback = callback;
+	w->userdata = userdata;
+	return w;
 }
 
-static void gui_vfs(void) {
-	ImGuiWindowFlags f = 0;
+static void gui_show_persistent(void) {
+	dynarray_foreach_elem(&gui.persistent_windows, GuiPersistentWindow *w, {
+		if(!w->open) {
+			continue;
+		}
 
-	if(!igBegin("VFS view", NULL, f)) {
+		if(w->manual) {
+			w->callback(w);
+			continue;
+		}
+
+		if(!igBegin(w->name, &w->open, w->flags)) {
+			igEnd();
+			continue;
+		}
+
+		w->callback(w);
+
 		igEnd();
-		return;
-	}
-
-	ImGuiTableFlags treeflags =
-		ImGuiTableFlags_BordersV |
-		ImGuiTableFlags_BordersOuterH |
-		ImGuiTableFlags_Resizable |
-		ImGuiTableFlags_RowBg |
-		ImGuiTableFlags_NoBordersInBody;
-
-	if(igBeginTable("vfsTreeTable", 2, treeflags, (ImVec2) { 0 }, 0)) {
-		igTableSetupColumn("Name", ImGuiTableColumnFlags_NoHide, 0, 0);
-		igTableSetupColumn("Type", ImGuiTableColumnFlags_NoHide, 0, 0);
-		igTableHeadersRow();
-
-		display_vfs_path("/", "/");
-
-		igEndTable();
-	}
-
-	igEnd();
+	});
 }
 
 void gui_begin_frame(void) {
@@ -280,10 +238,18 @@ void gui_begin_frame(void) {
 	ImGui_ImplSDL2_NewFrame(SDL_GL_GetCurrentWindow());
 	igNewFrame();
 
-	bool showDemo;
-	igShowDemoWindow(&showDemo);
 
-	gui_vfs();
+	ImGuiDockNodeFlags f = ImGuiDockNodeFlags_PassthruCentralNode;
+	igDockSpaceOverViewport(igGetMainViewport(), f, NULL);
+
+	if(igBeginPopupContextVoid(NULL, ImGuiPopupFlags_MouseButtonRight)) {
+		dynarray_foreach_elem(&gui.persistent_windows, GuiPersistentWindow *w, {
+			igMenuItem_BoolPtr(w->name, NULL, &w->open, true);
+		});
+		igEndPopup();
+	}
+
+	gui_show_persistent();
 }
 
 void gui_end_frame(void) {
@@ -391,4 +357,86 @@ void gui_render(void) {
 	r_framebuffer_viewport_rect(fb, fb_prev_viewport);
 	r_mat_proj_pop();
 	r_state_pop();
+}
+
+static void display_vfs_path(const char *name, const char *path) {
+	assert(path != NULL);
+
+	igTableNextRow(0, 0);
+	igTableNextColumn();
+
+	bool is_dir = vfs_query(path).is_dir;
+
+	ImGuiTreeNodeFlags f = ImGuiTreeNodeFlags_SpanFullWidth;
+
+	if(!is_dir) {
+		f |=
+			ImGuiTreeNodeFlags_Leaf |
+			ImGuiTreeNodeFlags_NoTreePushOnOpen;
+	}
+
+	bool open = igTreeNodeEx_Str(name, f);
+	igTableNextColumn();
+	char *repr = vfs_repr(path, false);
+	if(repr == NULL) {
+		igTextUnformatted("???", NULL);
+	} else {
+		igTextUnformatted(repr, NULL);
+		free(repr);
+	}
+
+	igPushID_Str(name);
+
+	if(is_dir && open) {
+		VFSDir *vdir = vfs_dir_open(path);
+		if(vdir) {
+			size_t preflen = strlen(path);
+			for(const char *p; (p = vfs_dir_read(vdir));) {
+				size_t sublen = strlen(p);
+				char fullpath[preflen + sublen + 2];
+				memcpy(fullpath, path, preflen);
+				fullpath[preflen] = '/';
+				memcpy(fullpath+preflen+1, p, sublen);
+				fullpath[preflen + 1 + sublen] = 0;
+				display_vfs_path(p, fullpath);
+			}
+
+			vfs_dir_close(vdir);
+		}
+
+		igTreePop();
+	}
+
+	igPopID();
+}
+
+static void gui_window_vfs(GuiPersistentWindow *w) {
+	ImGuiTableFlags treeflags =
+		ImGuiTableFlags_BordersV |
+		ImGuiTableFlags_BordersOuterH |
+		ImGuiTableFlags_Resizable |
+		ImGuiTableFlags_RowBg |
+		ImGuiTableFlags_NoBordersInBody;
+
+	if(igBeginTable("vfsTreeTable", 2, treeflags, (ImVec2) { 0 }, 0)) {
+		igTableSetupColumn("Name", ImGuiTableColumnFlags_NoHide, 0, 0);
+		igTableSetupColumn("Type", ImGuiTableColumnFlags_NoHide, 0, 0);
+		igTableHeadersRow();
+
+		display_vfs_path("/", "/");
+
+		igEndTable();
+	}
+}
+
+static void gui_window_demo(GuiPersistentWindow *w) {
+	igShowDemoWindow(&w->open);
+}
+
+static void gui_post_init(void) {
+	GuiPersistentWindow *w;
+	gui_add_persistent_window("VFS view", gui_window_vfs, NULL);
+
+	w = gui_add_persistent_window("ImGui demo", gui_window_demo, NULL);
+	w->manual = true;
 }
