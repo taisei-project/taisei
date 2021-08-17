@@ -720,6 +720,19 @@ void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat 
 	B.vertex_array_layout(varr, nattribs, attribs);
 }
 
+void r_scissor(int x, int y, int w, int h) {
+	_r_state_touch_scissor();
+	B.scissor((IntRect) { x, y, w, h });
+}
+
+void r_scissor_rect(IntRect scissor) {
+	B.scissor(scissor);
+}
+
+void r_scissor_current(IntRect *scissor) {
+	B.scissor_current(scissor);
+}
+
 void r_vsync(VsyncMode mode) {
 	B.vsync(mode);
 }

@@ -85,6 +85,10 @@ void r_state_pop(void) {
 		B.framebuffer(S.framebuffer);
 	}
 
+	RESTORE(RSTATE_SCISSOR) {
+		B.scissor(S.scissor);
+	}
+
 	if(_r_state.head == _r_state.stack) {
 		_r_state.head = NULL;
 	} else {
@@ -134,5 +138,11 @@ void _r_state_touch_uniform(Uniform *uniform) {
 void _r_state_touch_framebuffer(void) {
 	TAINT(RSTATE_RENDERTARGET, {
 		S.framebuffer = B.framebuffer_current();
+	});
+}
+
+void _r_state_touch_scissor(void) {
+	TAINT(RSTATE_SCISSOR, {
+		B.scissor_current(&S.scissor);
 	});
 }

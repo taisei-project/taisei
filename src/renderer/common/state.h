@@ -20,6 +20,7 @@
 	RSTATE(SHADER) \
 	RSTATE(SHADER_UNIFORMS) \
 	RSTATE(RENDERTARGET) \
+	RSTATE(SCISSOR) \
 
 typedef enum RendererStateID {
 	#define RSTATE(id) RSTATE_ID_##id,
@@ -47,6 +48,7 @@ typedef struct RendererStateRollback {
 	ShaderProgram *shader;
 	// TODO uniforms
 	Framebuffer *framebuffer;
+	IntRect scissor;
 } RendererStateRollback;
 
 void _r_state_touch_capabilities(void);
@@ -57,6 +59,7 @@ void _r_state_touch_depth_func(void);
 void _r_state_touch_shader(void);
 void _r_state_touch_uniform(Uniform *uniform);
 void _r_state_touch_framebuffer(void);
+void _r_state_touch_scissor(void);
 
 void _r_state_init(void);
 void _r_state_shutdown(void);

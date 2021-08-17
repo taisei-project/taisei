@@ -106,6 +106,12 @@ static struct {
 		FloatRect default_framebuffer;
 	} viewport;
 
+	struct {
+		IntRect pending;
+		IntRect active;
+		bool active_enabled;
+	} scissor;
+
 	Color color;
 	Color clear_color;
 	float clear_depth;
@@ -379,7 +385,7 @@ static void gl33_apply_capability(RendererCapability cap, bool value) {
 	}
 }
 
-static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
+static int get_framebuffer_height(Framebuffer *fb) {
 	int fb_height = 0;
 
 	if(fb == NULL) {
@@ -396,6 +402,11 @@ static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
 	}
 
 	assert(fb_height > 0);
+	return fb_height;
+}
+
+static void transform_viewport_origin(Framebuffer *fb, FloatRect *vp) {
+	int fb_height = get_framebuffer_height(fb);
 	vp->y = fb_height - vp->y - vp->h;
 }
 
@@ -413,6 +424,37 @@ static void gl33_sync_viewport(void) {
 	if(memcmp(&R.viewport.active, vp, sizeof(R.viewport.active))) {
 		R.viewport.active = *vp;
 		GLVT.set_viewport(vp);
+	}
+}
+
+void gl33_sync_scissor(void) {
+	bool pending_enabled =
+		R.scissor.pending.x &&
+		R.scissor.pending.y &&
+		R.scissor.pending.w &&
+		R.scissor.pending.h;
+
+	if(!pending_enabled) {
+		if(R.scissor.active_enabled) {
+			glDisable(GL_SCISSOR_TEST);
+			R.scissor.active_enabled = false;
+		}
+
+		return;
+	}
+
+	if(!R.scissor.active_enabled) {
+		glEnable(GL_SCISSOR_TEST);
+		R.scissor.active_enabled = true;
+	}
+
+	IntRect scissor = R.scissor.pending;
+	int fb_height = get_framebuffer_height(R.framebuffer.pending);
+	scissor.y = fb_height - scissor.y - scissor.h;
+
+	if(memcmp(&R.scissor.active, &scissor, sizeof(R.scissor.active))) {
+		glScissor(scissor.x, scissor.y, scissor.w, scissor.h);
+		R.scissor.active = scissor;
 	}
 }
 
@@ -500,6 +542,7 @@ static void gl33_sync_state(void) {
 	gl33_sync_framebuffer();
 	gl33_sync_shader();
 	gl33_sync_viewport();
+	gl33_sync_scissor();
 	gl33_sync_magic_uniforms();
 	gl33_sync_uniforms(R.progs.active);
 	gl33_sync_texunits(true);
@@ -1380,6 +1423,14 @@ static bool gl33_screenshot(Pixmap *out) {
 	return true;
 }
 
+static void gl33_scissor(IntRect scissor) {
+	R.scissor.pending = scissor;
+}
+
+static void gl33_scissor_current(IntRect *scissor) {
+	*scissor = R.scissor.pending;
+}
+
 RendererBackend _r_backend_gl33 = {
 	.name = "gl33",
 	.funcs = {
@@ -1467,6 +1518,8 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_array_get_vertex_attachment = gl33_vertex_array_get_vertex_attachment,
 		.vertex_array_attach_index_buffer = gl33_vertex_array_attach_index_buffer,
 		.vertex_array_get_index_attachment = gl33_vertex_array_get_index_attachment,
+		.scissor = gl33_scissor,
+		.scissor_current = gl33_scissor_current,
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,

@@ -793,6 +793,11 @@ void r_vertex_array_attach_index_buffer(VertexArray *varr, IndexBuffer *ibuf) at
 IndexBuffer* r_vertex_array_get_index_attachment(VertexArray *varr)  attr_nonnull(1);
 void r_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) attr_nonnull(1, 3);
 
+// NOTE: setting all parameters to 0 disables the scissor test
+void r_scissor(int x, int y, int w, int h);
+void r_scissor_rect(IntRect scissor);
+void r_scissor_current(IntRect *scissor) attr_nonnull(1);
+
 void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint indices[num_indices]);
 const Model *r_model_get_quad(void) attr_returns_nonnull;
 

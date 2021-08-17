@@ -121,6 +121,9 @@ typedef struct RendererFuncs {
 	VertexBuffer* (*vertex_array_get_vertex_attachment)(VertexArray *varr, uint attachment);
 	IndexBuffer* (*vertex_array_get_index_attachment)(VertexArray *varr);
 
+	void (*scissor)(IntRect scissor);
+	void (*scissor_current)(IntRect *scissor);
+
 	void (*vsync)(VsyncMode mode);
 	VsyncMode (*vsync_current)(void);
 

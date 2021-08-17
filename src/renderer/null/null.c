@@ -179,6 +179,9 @@ static VertexBuffer* null_vertex_array_get_vertex_attachment(VertexArray *varr, 
 static IndexBuffer* null_vertex_array_get_index_attachment(VertexArray *varr) { return (void*)&placeholder; }
 static void null_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) { }
 
+static void null_scissor(IntRect scissor) { }
+static void null_scissor_current(IntRect *scissor) { *scissor = (IntRect) { 0 }; }
+
 static void null_vsync(VsyncMode mode) { }
 static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
@@ -273,6 +276,8 @@ RendererBackend _r_backend_null = {
 		.vertex_array_get_vertex_attachment = null_vertex_array_get_vertex_attachment,
 		.vertex_array_attach_index_buffer = null_vertex_array_attach_index_buffer,
 		.vertex_array_get_index_attachment = null_vertex_array_get_index_attachment,
+		.scissor = null_scissor,
+		.scissor_current = null_scissor_current,
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,

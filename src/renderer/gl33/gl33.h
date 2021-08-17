@@ -75,6 +75,7 @@ void gl33_sync_blend_mode(void);
 void gl33_sync_cull_face_mode(void);
 void gl33_sync_depth_test_func(void);
 void gl33_sync_capabilities(void);
+void gl33_sync_scissor(void);
 
 void gl33_buffer_deleted(CommonBuffer *cbuf);
 void gl33_vertex_buffer_deleted(VertexBuffer *vbuf);
