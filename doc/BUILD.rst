@@ -117,22 +117,13 @@ on macOS, the macOS-produced ``.dmg`` will look nicer):
 Windows
 """""""
 
-While the game itself officially supports Windows, building the project
-directly on Windows is a bit difficult to set up due to the radically different
-tooling required for a native Windows build environment.
-
-However, you can still compile on a Windows-based computer by leveraging Windows
-10's
-`Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
-to cross-compile to Windows. Ironically enough, compiling for Windows on Linux
-ends up being easier and more consistent than trying to compile with Windows's
-native toolset.
-
 Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to
-achieve cross-compiling on Windows. We also have a ``meson`` machine file
-located at ``misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini`` to go with
-that toolchain. In general, you'll need the following tools for compiling Taisei
-for Windows on Linux:
+achieve cross-compiling on Windows. Cross-compiling for Windows ends up being
+easier to maintain and more consistent than attempting to use Microsoft's native
+toolchain.
+
+On Linux, you'll need the following tools for cross-compiling Taisei for Windows
+on Linux:
 
 - ``llvm-mingw``
 - `nsis <https://nsis.sourceforge.io/Main_Page>`__ >= 3.0
@@ -142,8 +133,11 @@ On macOS, you're probably better off using Docker and the
 ``llvm-mingw`` provides, and installing ``nsis`` on top of it. Refer to
 ``misc/ci/Dockerfile.windows`` for more insight.
 
-Additionally, on Windows, you'll need to make sure you have *ANGLE support*
-enabled, as previously mentioned.
+However, you can still compile on a Windows-based computer by leveraging Windows
+10's
+`Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
+to cross-compile to Windows.
+
 
 Checking Out Code
 -----------------
@@ -191,22 +185,48 @@ possible, instead relying on system libraries. Useful for CI.
    # useful for testing/CI
    meson configure build/ --wrap-mode=nofallback
 
-Faster Builds (``-Db_lto``/``-Dstrip``)
-"""""""""""""""""""""""""""""""""""""""
+Relative Install (``-Dinstall_relative``)
+"""""""""""""""""""""""""""""""""""""""""
 
-* Defaults: ``false``
+* TODO
+
+Compiler Warning Checks (``-Dwerror``)
+""""""""""""""""""""""""""""""""""""""
+
+* Default: ``false``
 * Options: ``true``, ``false``
 
-These options prevent stripping of the binaries, leading to faster build times
-and keeping debugging symbols in place. There is a theoretical performance hit
-with these options enabled, but it can help with building during development.
+This option forces stricter checks against Taisei's codebase to ensure code
+health, treating all ``Warning``s as ``Error``s in the code.
+
+It's highly recommended to enable this whenever developing for the engine.
+Sometimes, it's overly-pedantic, but much of the time, it provides useful
+advice. (For example, it can detect potential null-pointer exceptions that may
+not be obvious to the human eye.)
 
 .. code:: sh
 
-   meson configure build/ -Db_lto=false -Dstrip=false
+   meson configure build/ -Dwerror=true
 
-Developer Mode (``-Ddeveloper``)
-""""""""""""""""""""""""""""""""
+Deprecation Warnings (``-Ddeprecation_warnings``)
+"""""""""""""""""""""""""""""""""""""""""""""""""
+
+* Default: ``(null)``
+* Options: ``error``, ``no-error``, ``ignore``
+
+Sets deprecation warnings to either hard-fail (``error``), print as warnings but
+not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
+ignore them (``ignore``).
+
+Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
+
+.. code:: sh
+
+   meson configure build/ -Ddeprecation_warnings=no-error
+
+
+Developer Options (``-Ddeveloper``)
+"""""""""""""""""""""""""""""""""""
 
 * Default: ``false``
 * Options: ``true``, ``false``
@@ -273,6 +293,20 @@ example):
 .. code:: sh
 
    /path/to/Taisei.app/Contents/MacOS/Taisei
+
+Linking & Striping (``-Db_lto``/``-Dstrip``)
+""""""""""""""""""""""""""""""""""""""""""""
+
+* Defaults: ``false``
+* Options: ``true``, ``false``
+
+These options prevent stripping of the binaries, leading to faster build times
+and keeping debugging symbols in place. There is a theoretical performance hit
+with these options enabled, but it can help with building during development.
+
+.. code:: sh
+
+   meson configure build/ -Db_lto=false -Dstrip=false
 
 Install Prefix (``--prefix``)
 """""""""""""""""""""""""""""
@@ -415,14 +449,59 @@ over into the package itself when running the packaging steps.
 Packaging
 ---------
 
-Building Examples
-"""""""""""""""""
+Archive Types
+"""""""""""""
+
+* TODO
+
+Examples
+""""""""
 
 Linux
 '''''
 
+Compiling on Linux for Linux is fairly straightforward. We have ``meson``
+machine configuration files provided for covering most of the basic settings
+when building for Linux.
+
+.. code:: sh
+
+   meson setup build/ --native-file=misc/ci/linux-x86_64-build-release.ini
+   meson compile -C build/
+   ninja txz -C build/
+
 macOS
 '''''
 
+Taisei is released as a ``.dmg`` package for macOS. You can also build for both
+x64 (Intel) and ARM64 (Apple Silicon, experimental).
+
+Intel
+^^^^^
+
+* TODO
+
+Apple Silicon
+^^^^^^^^^^^^^
+
+* TODO
+
 Windows
 '''''''
+
+As mentioned previously, it's recommended to use Linux when building for
+Windows, utilizing the ``llvm-mingw`` toolchain.
+
+* TODO
+
+Emscripten
+''''''''''
+
+Emscripten relies on ``emsdk`` to cross-compile for web browsers into WASM.
+
+* TODO
+
+Switch
+''''''
+
+* TODO
