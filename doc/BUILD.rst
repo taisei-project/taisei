@@ -81,13 +81,9 @@ If you're having mysterious errors, ensure that they're not installed.
 * ``spirv-cross``
 * ``sdl2_mixer``
 
-Remove them with:
-
 .. code:: sh
 
    brew remove spirv-tools spirv-cross sdl2_mixer
-
-Taisei-compatible versions are bundled and will be pulled in at compile time.
 
 In addition, if you're trying to compile on an older version of macOS
 (i.e: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
@@ -95,9 +91,8 @@ Let ``meson`` pull in the corrected version for you via subprojects.
 
 **NOTE:** While Homebrew's optional dependencies greatly improve compile times,
 if you can't remove packages that give you errors from your system for whatever
-reason, you can force ``meson`` to use its built-in subprojects by using the
-following option:
-
+reason, you can force ``meson`` to use its built-in subprojects by using
+``--wrap-mode`` (more on that later).
 
 Optionally, if you're on macOS and compiling for macOS, you can to install
 `create-dmg <https://github.com/create-dmg/create-dmg>`__, which will allow
@@ -106,13 +101,6 @@ you to have nicer-looking macOS ``.dmg`` files for distribution:
 .. code:: sh
 
    brew install create-dmg
-
-You can create a ``.dmg`` on either Linux or macOS (although with ``create-dmg``
-on macOS, the macOS-produced ``.dmg`` will look nicer):
-
-.. code:: sh
-
-   ninja dmg -C build/
 
 Windows
 """""""
@@ -158,16 +146,16 @@ needs to compile.
 Build Options
 -------------
 
-Force Vendored Dependencies (``--wrap-mode``)
-"""""""""""""""""""""""""""""""""""""""""""""
+System/Vendored Dependencies (``--wrap-mode``)
+""""""""""""""""""""""""""""""""""""""""""""""
 
-See: `Meson Wrap Dependency Manual <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__
+See: `Meson Manual <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__
 
 * Default: ``default``
 * Options: ``default``, ``nofallback``, ``forcefallback``, ...
 
-This is a ``meson`` flag that does quite a few things. Not all of them will be
-covered here. Refer to the documentation linked above.
+This is a core ``meson`` flag that does quite a few things. Not all of them will
+be covered here. Refer to the ``meson`` documentation linked above.
 
 Generally, ``default`` will rely on system-installed libraries when available,
 and fallback to vendored in-repository dependencies when necessary.
@@ -190,14 +178,14 @@ Relative Install (``-Dinstall_relative``)
 
 * TODO
 
-Compiler Warning Checks (``-Dwerror``)
-""""""""""""""""""""""""""""""""""""""
+Strict Compiler Warnings (``-Dwerror``)
+"""""""""""""""""""""""""""""""""""""""
 
 * Default: ``false``
 * Options: ``true``, ``false``
 
 This option forces stricter checks against Taisei's codebase to ensure code
-health, treating all ``Warning``s as ``Error``s in the code.
+health, treating all ``Warnings`` as ``Errors`` in the code.
 
 It's highly recommended to enable this whenever developing for the engine.
 Sometimes, it's overly-pedantic, but much of the time, it provides useful
@@ -225,8 +213,8 @@ Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
    meson configure build/ -Ddeprecation_warnings=no-error
 
 
-Developer Options (``-Ddeveloper``)
-"""""""""""""""""""""""""""""""""""
+In-Game Developer Options (``-Ddeveloper``)
+"""""""""""""""""""""""""""""""""""""""""""
 
 * Default: ``false``
 * Options: ``true``, ``false``
@@ -284,7 +272,7 @@ to use to launch ASan appropriately. Using macOS as an example:
    export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
 The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
-version of XCode. If it fails to launch for you, ensure that the version number
+version of Xcode. If it fails to launch for you, ensure that the version number
 is correct by browsing to the parent directory of ``../clang``.
 
 Then, you can launch Taisei's binary from the command line (using macOS as an
