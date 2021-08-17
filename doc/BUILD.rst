@@ -173,8 +173,13 @@ possible, instead relying on system libraries. Useful for CI.
    # useful for testing/CI
    meson configure build/ --wrap-mode=nofallback
 
-Relative Install (``-Dinstall_relative``)
-"""""""""""""""""""""""""""""""""""""""""
+Relative Directory Install (``-Dinstall_relative``)
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+
+* TODO
+
+Package Data/ZIP (``-Denable_zip``/``-Dpackage_data``)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 * TODO
 
