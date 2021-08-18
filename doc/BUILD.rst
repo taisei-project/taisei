@@ -182,6 +182,32 @@ needs to compile.
 Build Options
 -------------
 
+Setup
+"""""
+
+The first command you'll need to run is ``setup``, which creates a directory
+(in this case, ``taisei/build/``). It checks your system for various
+dependencies and required tools, which should take about a minute on most
+systems.
+
+.. code:: sh
+
+   # inside the taisei/ directory you cloned before
+   meson setup -C build/
+
+You can also have the ``setup`` command contain certain build options (seen
+below). The following are an *example* and *not required* for getting Taisei
+building.
+
+.. code:: sh
+
+   # enables Developer Mode and debugging symbols
+   meson setup -C build/ -Ddeveloper=true -Dbuildtype=debug
+
+You can then apply more build options later using ``meson configure`` (as seen
+below). It will automatically reconfigure your build environment with the new
+options without having to rebuild everything.
+
 System/Vendored Dependencies (``--wrap-mode``)
 """"""""""""""""""""""""""""""""""""""""""""""
 
@@ -209,27 +235,61 @@ possible, instead relying on system libraries. Useful for CI.
    # useful for testing/CI
    meson configure build/ --wrap-mode=nofallback
 
+Relative Directory Install (``-Dinstall_relative``)
+"""""""""""""""""""""""""""""""""""""""""""""""""""
+
+* Default: ``true`` or ``false`` (platform-dependent)
+
+``-Dinstall_relative`` is a special option that changes depending on the
+platform build target.
+
+It is set to ``true`` when building for macOS, Windows, Emscripten, and Switch.
+
+It is set to ``false`` when building for Linux.
+
 Install Prefix (``--prefix``)
 """""""""""""""""""""""""""""
 
 * Default: ``/usr/local``
 
 ``--prefix`` installs the Taisei binary and content files to a path of your
-choice.
+choice on your filesystem.
+
+On Linux without ``-Dinstall_relative`` enabled (i.e: ``false``), it should be
+set to ``/usr/local``.
+
+On other platforms, it will install all Taisei game files to the directory of
+your choice.
 
 .. code:: sh
 
    meson setup --prefix=/path/goes/here -C build/
 
-Relative Directory Install (``-Dinstall_relative``)
-"""""""""""""""""""""""""""""""""""""""""""""""""""
+Package Data (``-Dpackage_data``)
+"""""""""""""""""""""""""""""""""
 
-* TODO
+* Default: ``auto``
+* Options: ``auto``, ``true``, ``false``
 
-Package Data/ZIP (``-Denable_zip``/``-Dpackage_data``)
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Packages data into either a glob or a ``.zip`` depending on if ``-Denable_zip``
+is ``true`` (see below).
 
-* TODO
+.. code:: sh
+
+   meson configure build/ -Dpackage_data=false
+
+Enable ZIP Loading (``-Denable_zip``)
+"""""""""""""""""""""""""""""""""""""
+
+* Default: ``true```
+* Options: ``true``, ``false``
+
+Controls whether or not Taisei can load game data (textures, shaders, etc) from
+``.zip`` files. Useful for distribution and packaging.
+
+.. code:: sh
+
+   meson configure build/ -Denable_zip=false
 
 Strict Compiler Warnings (``-Dwerror``)
 """""""""""""""""""""""""""""""""""""""
@@ -240,10 +300,10 @@ Strict Compiler Warnings (``-Dwerror``)
 This option forces stricter checks against Taisei's codebase to ensure code
 health, treating all ``Warnings`` as ``Errors`` in the code.
 
-It's highly recommended to enable this whenever developing for the engine.
-Sometimes, it's overly-pedantic, but much of the time, it provides useful
-advice. (For example, it can detect potential null-pointer exceptions that may
-not be obvious to the human eye.)
+It's highly recommended to **enable** (i.e: ``true``) this whenever developing
+for the engine. Sometimes, it's overly-pedantic, but much of the time, it
+provides useful advice. (For example, it can detect potential null-pointer
+exceptions that may not be obvious to the human eye.)
 
 .. code:: sh
 
