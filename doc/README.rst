@@ -3,6 +3,12 @@ Taisei Project - Documentation
 
 Here's a list of all the docs we have for working with Taisei.
 
+Gameplay & Troubleshooting
+--------------------------
+
+* `MANUAL.rst <./MANUAL.rst>`__ - the general game manual on how to play Taisei
+* `STORY.txt <./STORY.txt>`__ - the story of Taisei Project
+
 Development
 -----------
 
@@ -18,8 +24,3 @@ Graphics
   game engine
 * `BASISU.rst <./BASISU.rst>`__ - how to compress certain assets within the game
   engine
-
-Gameplay & Troubleshooting
---------------------------
-
-* `MANUAL.rst <./MANUAL.rst>`__ - the general game manual on how to play Taisei
