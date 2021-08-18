@@ -466,6 +466,8 @@ Default Renderer (``-Dr_default``)
 * Default: ``gl33``
 * Options: ``gl33``, ``gles30``, ``gles20``, ``null``
 
+Sets the default renderer to use when Taisei launches.
+
 .. code:: sh
 
    # for GL 3.3 (default)
@@ -474,6 +476,8 @@ Default Renderer (``-Dr_default``)
    meson configure build/ -Dr_default=gles30
    # for GL ES 2.0
    meson configure build/ -Dr_default=gles20
+
+The renderer can be switched in the installed ``taisei`` binary.
 
 ANGLE
 """""
@@ -553,8 +557,8 @@ It will output two files to ``angle/out/x64``:
 The file extension can be ``.dll`` for Windows, ``.dylib`` for macOS,
 and ``.so`` for Linux.
 
-Using ``-Dinstall_angle`` (referenced above), ``meson`` will copy those files
-over into the package itself when running the packaging steps.
+Using ``-Dinstall_angle`` and ``-Dangle_lib*`` (see above), ``meson`` will copy
+those files over into the package itself when running the packaging steps.
 
 Packaging
 ---------
@@ -562,7 +566,9 @@ Packaging
 Archive Types
 """""""""""""
 
-* TODO (zip, txz, dmg, etc)
+Taisei supports a wide variety of packaging and archive types, including
+``.zip``, ``.tar.gz``, ``.dmg`` (for macOS), ``.exe`` (for Windows), among
+others.
 
 Examples
 """"""""
@@ -578,7 +584,21 @@ when building for Linux.
 
    meson setup build/ --native-file=misc/ci/linux-x86_64-build-release.ini
    meson compile -C build/
+
+The ``--native-file`` contains many of the recommended default options for
+building releases, including using ``--wrap-mode=forcefallback`` to force the
+use of ``meson`` wrap dependenices (as mentioned earlier).
+
+You can then package Taisei into ``.tar.xz`` (or any other ``.tar.*`` style
+archive) by using the ``ninja`` command, which is typically installed alongside
+``meson``.
+
+.. code:: sh
+
    ninja txz -C build/
+
+This will output a ``.tar.xz`` package inside ``build/``, which you can then
+copy and distribute.
 
 macOS
 '''''
@@ -586,15 +606,51 @@ macOS
 Taisei is released as a ``.dmg`` package for macOS. You can also build for both
 x64 (Intel) and ARM64 (Apple Silicon, experimental).
 
+Depending on what Mac you're compiling on or for, some options may change, so
+pay special attention to the distinction between ``--native-file`` and
+``--cross-file``.
+
 Intel
 ^^^^^
 
-* TODO
+Choose only one of the ``setup`` options depending on your hardware.
+
+.. code:: sh
+
+   # for building on Intel for Intel
+   meson setup build/ --native-file=misc/ci/macos-x86_64-build-release.ini
+   # for building on Apple Silicon for Intel
+   meson setup build/ --cross-file=misc/ci/macos-x86_64-build-release.ini
+   # compile
+   meson compile -C build/
+
 
 Apple Silicon
 ^^^^^^^^^^^^^
 
-* TODO
+Again, choose only one of the ``setup`` options depending on your hardware.
+
+.. code:: sh
+
+   # for building on Apple Silicon for Apple Silicon
+   meson setup build/ --native-file=misc/ci/macos-aarch64-build-release.ini
+   # for building on Intel for Apple Silicon
+   meson setup build/ --cross-file=misc/ci/macos-aarch64-build-release.ini
+   # compile
+   meson compile -C build/
+
+Packaging
+^^^^^^^^^
+
+With ``create-dmg`` installed through ``brew``, you can create a pretty-looking
+``.dmg`` file.
+
+.. code:: sh
+
+   ninja dmg -C build/
+
+This will output a ``.dmg`` package inside ``build/``, which you can then
+copy and distribute.
 
 Windows
 '''''''
@@ -607,11 +663,45 @@ Windows, utilizing the ``llvm-mingw`` toolchain.
 Emscripten
 ''''''''''
 
-Emscripten relies on ``emsdk`` to cross-compile for web browsers into WASM.
+Emscripten relies on `emsdk <https://github.com/emscripten-core/emsdk>`__
+to cross-compile for web browsers into `WASM <https://webassembly.org/>`__.
 
-* TODO
+Follow the documentation there for more information, but here is a basic guide
+to get you going.
 
-Switch
-''''''
+.. code:: sh
+
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk/
+   ./emsdk.py install 2.0.27
+   ./emsdk.py activate 2.0.27
+   # follow the instructions it presents to you, but follow the one that looks similar to this
+   source "/path/to/emsdk/emsdk_env.sh"
+
+This will set up your environment to use ``emsdk`` as your toolchain. You'll
+need to either set the ``source`` command in your shell's settings or re-run
+it every time you open your terminal.
+
+Since ``emscripten`` is its own separate platform, you are *always*
+cross-compiling for it. (Hence, ``--cross-file``.)
+
+.. code:: sh
+
+   meson setup build/ --cross-file=misc/ci/emscripten-build.ini
+   meson compile -C build/
+
+You can then zip it up for uploading to a server.
+
+.. code:: sh
+
+   ninja zip -C build/
+
+It will output your ``Taisei*.zip`` to ``build/``.
+
+
+Switch (Homebrew)
+'''''''''''''''''
+
+Building for Switch requires the use of special Switch tools.
 
 * TODO
