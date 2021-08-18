@@ -83,7 +83,7 @@ that Wayland deps are installed:
    apt install libwayland-dev
 
 macOS
-"""""
+'''''
 
 On macOS, you must install the Xcode Command Line Tools to build Taisei for
 the platform, as it contains headers and tools that aren't included in the FOSS
@@ -141,7 +141,7 @@ reason, you can force ``meson`` to use its built-in subprojects by using
 ``--wrap-mode`` (more on that later).
 
 Windows
-"""""""
+'''''''
 
 Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to
 achieve cross-compiling on Windows. Cross-compiling for Windows ends up being
@@ -181,6 +181,14 @@ needs to compile.
 
 Build Options
 -------------
+
+This is *not* an exhaustive list. You can see the full list of option using
+``meson`` in the ``taisei`` directory.
+
+.. code:: sh
+
+   cd taisei/
+   meson configure
 
 Setup
 """""
@@ -291,40 +299,6 @@ Controls whether or not Taisei can load game data (textures, shaders, etc) from
 
    meson configure build/ -Denable_zip=false
 
-Strict Compiler Warnings (``-Dwerror``)
-"""""""""""""""""""""""""""""""""""""""
-
-* Default: ``false``
-* Options: ``true``, ``false``
-
-This option forces stricter checks against Taisei's codebase to ensure code
-health, treating all ``Warnings`` as ``Errors`` in the code.
-
-It's highly recommended to **enable** (i.e: ``true``) this whenever developing
-for the engine. Sometimes, it's overly-pedantic, but much of the time, it
-provides useful advice. (For example, it can detect potential null-pointer
-exceptions that may not be obvious to the human eye.)
-
-.. code:: sh
-
-   meson configure build/ -Dwerror=true
-
-Deprecation Warnings (``-Ddeprecation_warnings``)
-"""""""""""""""""""""""""""""""""""""""""""""""""
-
-* Default: ``(null)``
-* Options: ``error``, ``no-error``, ``ignore``
-
-Sets deprecation warnings to either hard-fail (``error``), print as warnings but
-not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
-ignore them (``ignore``).
-
-Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
-
-.. code:: sh
-
-   meson configure build/ -Ddeprecation_warnings=no-error
-
 In-Game Developer Options (``-Ddeveloper``)
 """""""""""""""""""""""""""""""""""""""""""
 
@@ -369,6 +343,41 @@ Keep ``true`` during release.
 .. code:: sh
 
    meson configure build/ -Db_ndebug=false
+
+Strict Compiler Warnings (``-Dwerror``)
+"""""""""""""""""""""""""""""""""""""""
+
+* Default: ``false``
+* Options: ``true``, ``false``
+
+This option forces stricter checks against Taisei's codebase to ensure code
+health, treating all ``Warnings`` as ``Errors`` in the code.
+
+It's highly recommended to **enable** (i.e: ``true``) this whenever developing
+for the engine. Sometimes, it's overly-pedantic, but much of the time, it
+provides useful advice. (For example, it can detect potential null-pointer
+exceptions that may not be obvious to the human eye.)
+
+.. code:: sh
+
+   meson configure build/ -Dwerror=true
+
+Deprecation Warnings (``-Ddeprecation_warnings``)
+"""""""""""""""""""""""""""""""""""""""""""""""""
+
+* Default: ``(null)``
+* Options: ``error``, ``no-error``, ``ignore``
+
+Sets deprecation warnings to either hard-fail (``error``), print as warnings but
+not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
+ignore them (``ignore``).
+
+Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
+
+.. code:: sh
+
+   meson configure build/ -Ddeprecation_warnings=no-error
+
 
 Stack Trace Debugging (``-Db_sanitize``)
 """"""""""""""""""""""""""""""""""""""""
@@ -687,8 +696,14 @@ cross-compiling for it. (Hence, ``--cross-file``.)
 
 .. code:: sh
 
-   meson setup build/ --cross-file=misc/ci/emscripten-build.ini
+   meson setup build/ -Dbuild.cpp_std=gnu++14 --cross-file=misc/ci/emscripten-build.ini
    meson compile -C build/
+
+**NOTE**: ``-Dbuild.cpp_std`` changes the C++ standard used to compile the
+project. For Emscripten, it's necessary to set the project to ``gnu++14``
+(as opposed to the default of ``gnu++11``) for certain submodules to compile
+correctly with ``emcc`` from ``emsdk``. This is *not* typically required on
+other platforms.
 
 You can then zip it up for uploading to a server.
 
