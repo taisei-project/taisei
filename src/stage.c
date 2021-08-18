@@ -816,7 +816,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return skipmode;
 	}
 
-	if(global.frameskip || (global.replay.input.replay && gamekeypressed(KEY_SKIP))) {
+	if(global.replay.input.replay && gamekeypressed(KEY_SKIP)) {
 		return LFRAME_SKIP;
 	}
 
