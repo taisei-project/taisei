@@ -87,9 +87,9 @@ void gui_init(void) {
 	igCreateContext(NULL);
 	ImGuiIO *io = igGetIO();
 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+// 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io->ConfigFlags |= ImGuiConfigFlags_IsSRGB;
+	io->ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
 	ImGui_ImplSDL2_InitForOpenGL(
 		SDL_GL_GetCurrentWindow(),
 		SDL_GL_GetCurrentContext()
