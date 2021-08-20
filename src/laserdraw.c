@@ -423,13 +423,8 @@ static int laserdraw_pass1_build(Laser *l) {
 	t += sp.time_step;
 
 	// Vector from A to B of the last included segment, and its squared length.
-	cmplxf v0;
-	float v0_abs2;
-
-	// FIXME: we have to initialize these with something sane…
-	// but this method always causes the second sample to be skipped.
-	v0 = l->prule(l, t) - a;
-	v0_abs2 = cabs2f(v0);
+	cmplxf v0 = a - l->prule(l, t0 - sp.time_step);
+	float v0_abs2 = cabs2f(v0);
 
 	float viewmargin = l->width * 0.5f;
 	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
@@ -477,11 +472,25 @@ static int laserdraw_pass1_build(Laser *l) {
 			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
 
 		if(visible) {
-			LaserInstancedAttribsPass1 attr = {
-				.pos   = {   a,  b },
-				.width = {  w0,  w },
-				.time  = { -t0, -t },
-			};
+			LaserInstancedAttribsPass1 attr;
+
+			if(w < w0) {
+				// NOTE: the uneven capsule distance function may not work correctly in cases where
+				//       radius(A) > radius(B) and circle A contains circle B.
+				attr = (LaserInstancedAttribsPass1) {
+					.pos   = {  b,   a },
+					.width = {  w,  w0 },
+					.time  = { -t, -t0 },
+				};
+			} else {
+				attr = (LaserInstancedAttribsPass1) {
+					.pos   = {   a,  b },
+					.width = {  w0,  w },
+					.time  = { -t0, -t },
+				};
+			}
+
+			assert(attr.width.a <= attr.width.b);
 
 			SDL_RWwrite(ldraw.pass1.vb_stream, &attr, sizeof(attr), 1);
 			++segments;

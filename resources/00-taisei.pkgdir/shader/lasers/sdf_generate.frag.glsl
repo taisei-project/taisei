@@ -33,11 +33,25 @@ float sdUnevenCapsule(in vec2 p, in vec2 pa, in vec2 pb, in float ra, in float r
 	                   return m                               - ra;
 }
 
+float sdCircle(in vec2 p, in vec2 c, in float r) {
+	return length(c - p) - r;
+}
+
 void main(void) {
 	vec2 a = segment.xy;
 	vec2 b = segment.zw;
+
+	// NOTE: rb >= ra
 	float ra = segment_width.x;
 	float rb = segment_width.y;
-	float d = sdUnevenCapsule(coord, a, b, ra, rb);
+
+	float d;
+
+	if(a == b) {
+		d = sdCircle(coord, b, rb);
+	} else {
+		d = sdUnevenCapsule(coord, a, b, ra, rb);
+	}
+
 	fragOutput = vec4(d, segment_time, 0, 1);
 }
