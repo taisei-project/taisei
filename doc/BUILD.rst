@@ -1,5 +1,5 @@
-Taisei Project - Build/Maintainer FAQ
-=====================================
+Taisei Project - Building and Packaging
+=======================================
 
 This is intended for anyone looking to build or package Taisei Project
 for any of its supported operating systems, including Linux, macOS, Windows,
@@ -10,13 +10,43 @@ Emscripten, Switch, and others.
 Dependencies
 ------------
 
-Taisei's mandatory dependencies are as follows:
+Build-Time Dependenices
+"""""""""""""""""""""""
 
--  C (C11) compiler (``gcc``, ``clang``, etc)
--  Python >= 3.5
--  meson >= 0.56.2 (recommended)
--  ninja >= 1.10.0
--  docutils
+-  ``gcc`` or ``clang``
+-  meson >= 0.53.0 (0.56.2 recommended)
+-  Python >= 3.6
+-  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
+-  `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
+
+Run-Time Dependencies
+"""""""""""""""""""""
+
+Required
+''''''''
+
+-  OpenGL >= 3.3, or OpenGL ES >= 3.0
+-  SDL2 >= 2.0.10
+-  cglm >= 0.7.8
+-  libpng >= 1.5.0
+-  libwebpdecoder >= 0.5 or libwebp >= 0.5
+-  libzip >= 1.5.0 (>= 1.7.0 recommended)
+-  libzstd >= 1.4.0
+-  freetype2
+-  opusfile
+-  zlib
+
+Optional
+''''''''
+
+-  OpenSSL (for a better SHA-256 implementation; used in shader cache)
+-  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
+-  libshaderc (for OpenGL ES backends)
+-  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
+   flaky/non-existent OpenGL support, such as Windows)
+-  GameMode headers (Linux only; for automatic
+   `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
+
 
 Built-In vs. System Dependencies
 """"""""""""""""""""""""""""""""
@@ -28,55 +58,36 @@ This is used to pin specific versions of libraries such as `SDL2` to known-good
 versions, as well as assist with packaging and distribution on older and/or more
 esoteric systems (i.e: Emscripten).
 
-However, recompiling every single dependency Taisei needs every time you want to
-rebuild the project is not ideal. You can still use system dependencies
-installed through your OS's package manager (`apt`, `yum`, `brew`, etc) for
-development, local testing, or simply building the game for your own system.
-
 For convenience, ``meson`` will detect which packages are missing from your
 system and use its wrap dependency system to pull in what it can. The trade-off
 is that this can result in longer build times.
 
-For releases, however, you should rely *exclusively* on the ``meson`` wrap
-dependencies with the Taisei repository, for consistency and
+For consistency, we tend to release Taisei using exclusively built-in packages.
+However, you can also use system dependencies as well. There's a tradeoff in
+consistency and reproduceability for speed and ease of use.
 
 This is controlled through the ``--wrap-mode`` flag with ``meson``. (More
 on that later.)
 
-In summary:
-
-- Development = system-install dependencies are fine (`apt`, `brew`, etc)
-- Release = ``meson`` wrap dependencies only
-
-System Dependencies
-"""""""""""""""""""
-
 Linux
 '''''
 
-(The following example is specific to Ubuntu or Debian, but you can substitute
-`apt` for the package manager for your flavour of Linux.)
-
-The following will install the mandatory tools for building Taisei.
+On an Ubuntu or Debian-based distro, he following will install the mandatory
+tools for building Taisei.
 
 .. code:: sh
 
    apt update
    apt install meson cmake build-essential
 
+Beyond that, consult the *Optional Dependencies* list above. Many distros
+package compile-time system dependencies with ``*-dev`` (i.e: ``libsdl2-dev``).
+Search with your distro's package manager to install the correct libraries.
 
-The dependencies below are technically optional, as mentioned above in
-``Built-In Vs. System Dependencies``.
-
-Keep in mind that certain packages may have different names on different
-systems. Ensure you are installing the ``dev`` versions of those packages.
-
-.. code:: sh
-
-   apt install libsdl2-dev libsdl2-mixer-dev libogg-dev libopusfile-dev libpng-dev libzip-dev libx11-dev
-
-If your distribution of Linux uses Wayland as its default window server, ensure
-that Wayland deps are installed:
+If you're using built-in dependencies *only* for whatever reason, one
+non-obvious dependency is for Wayland-based systems, where you may need to
+install the Wayland development library to ensure SDL2 compiles for it
+correctly.
 
 .. code:: sh
 
@@ -86,8 +97,7 @@ macOS
 '''''
 
 On macOS, you must install the Xcode Command Line Tools to build Taisei for
-the platform, as it contains headers and tools that aren't included in the FOSS
-versions found in ``brew``.
+the platform, as it contains headers and tools for building native macOS apps.
 
 .. code:: sh
 
@@ -101,23 +111,9 @@ tools:
 
 .. code:: sh
 
-   brew install meson cmake pkg-config docutils imagemagick pygments
+   brew install meson cmake pkg-config docutils pygments
 
-The following dependencies are technically optional, and can be pulled in at
-build-time, but they will reduce compile times during development, so it's
-recommended to install them.
-
-.. code:: sh
-
-   brew install freetype2 libzip opusfile libvorbis webp sdl2
-
-Optionally, if you're on macOS and compiling for macOS, you can to install
-`create-dmg <https://github.com/create-dmg/create-dmg>`__, which will allow
-you to have nicer-looking macOS ``.dmg`` files for distribution:
-
-.. code:: sh
-
-   brew install create-dmg
+You can then install dependencies from the *Optional Dependencies* list.
 
 As of 2021-08-05, you should **not** install the following packages via
 Homebrew, as the versions available do not compile against Taisei correctly.
@@ -125,34 +121,36 @@ If you're having mysterious errors, ensure that they're not installed.
 
 -  ``spirv-tools``
 -  ``spirv-cross``
--  ``sdl2_mixer``
 
 .. code:: sh
 
-   brew remove spirv-tools spirv-cross sdl2_mixer
+   brew remove spirv-tools spirv-cross
 
 In addition, if you're trying to compile on an older version of macOS
 (i.e: <10.12), SDL2 may not compile correctly on Homebrew (as of 2019-02-19).
 Let ``meson`` pull in the corrected version for you via subprojects.
 
-**NOTE:** While Homebrew's optional dependencies greatly improve compile times,
-if you can't remove packages that give you errors from your system for whatever
-reason, you can force ``meson`` to use its built-in subprojects by using
-``--wrap-mode`` (more on that later).
+You can also install `create-dmg <https://github.com/create-dmg/create-dmg>`__
+for packaging ``.dmg`` files, which enables some additional options such as
+positioning of icons in the ``.dmg``.
 
 Windows
 '''''''
 
 Taisei uses `mstorsjo/llvm-mingw <https://github.com/mstorsjo/llvm-mingw>`__ to
-achieve cross-compiling on Windows. Cross-compiling for Windows ends up being
-easier to maintain and more consistent than attempting to use Microsoft's native
-toolchain.
+achieve cross-compiling for Windows. Microsoft's native C compiler toolchain
+simply does not support the things Taisei needs to compile correctly, including
+fundamental things like
+`complex numbers <https://en.wikipedia.org/wiki/Complex_number>`__.
 
-On Linux, you'll need the following tools for cross-compiling Taisei for Windows
-on Linux:
 
-- ``llvm-mingw``
-- `nsis <https://nsis.sourceforge.io/Main_Page>`__ >= 3.0
+You can use ``llvm-mingw`` too, or you can check if your distro has any
+``mingw64`` cross-compiler toolchains available as well. That's is just the one
+that works for us.
+
+Additionally, you can install `nsis <https://nsis.sourceforge.io/Main_Page>`__
+(>= 3.0) for packaging Windows installer ``.exe`` files. (However, you can
+still package ``.zip`` files for Windows without it.)
 
 On macOS, you're probably better off using Docker and the
 `Docker container <https://hub.docker.com/r/mstorsjo/llvm-mingw/>`__ that
@@ -161,7 +159,9 @@ On macOS, you're probably better off using Docker and the
 Another options for Windows-based computers is leveraging Windows
 10's
 `Windows For Linux (WSL) Subsystem <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`__
-to cross-compile to Windows using their Ubuntu image.
+to cross-compile to Windows using their Ubuntu image. You can also potentially
+use a ``mingw64`` toolchain directly on Windows, however that isn't supported
+or recommended, as it's generally more trouble than its worth.
 
 Checking Out Code
 -----------------
@@ -171,9 +171,7 @@ following:
 
 .. code:: sh
 
-   git clone https://github.com/taisei-project/taisei.git
-   cd taisei/
-   git submodule update --init --recursive
+   git clone --recurse-submodules https://github.com/taisei-project/taisei
 
 The ``git submodule update --init --recursive`` line is absolutely necessary,
 or Taisei will not build, as it will be missing many of the dependencies its
@@ -230,17 +228,17 @@ be covered here. Refer to the ``meson`` documentation linked above.
 Generally, ``default`` will rely on system-installed libraries when available,
 and fallback to vendored in-repository dependencies when necessary.
 
-``forcefallback`` will heavily encourage the use of in-repository dependencies
+``forcefallback`` will force the use of in-repository dependencies
 whenever possible. Recommended for release builds.
 
-``nofallback`` discourages the use of in-repository dependencies whenever
+``nofallback`` disallows the use of in-repository dependencies whenever
 possible, instead relying on system libraries. Useful for CI.
 
 .. code:: sh
 
-   # for release builds
+   # forces in-repo dependencies
    meson configure build/ --wrap-mode=forcefallback
-   # useful for testing/CI
+   # disables in-repo repositories
    meson configure build/ --wrap-mode=nofallback
 
 Relative Directory Install (``-Dinstall_relative``)
@@ -264,7 +262,8 @@ Install Prefix (``--prefix``)
 choice on your filesystem.
 
 On Linux without ``-Dinstall_relative`` enabled (i.e: ``false``), it should be
-set to ``/usr/local``.
+kept to its default ``/usr/local``. In general, don't touch it unless you need
+to.
 
 On other platforms, it will install all Taisei game files to the directory of
 your choice.
@@ -279,8 +278,8 @@ Package Data (``-Dpackage_data``)
 * Default: ``auto``
 * Options: ``auto``, ``true``, ``false``
 
-Packages data into either a glob or a ``.zip`` depending on if ``-Denable_zip``
-is ``true`` (see below).
+Packages game data into either a directory or a ``.zip`` depending on if
+``-Denable_zip`` is ``true`` (see below).
 
 .. code:: sh
 
@@ -294,6 +293,8 @@ Enable ZIP Loading (``-Denable_zip``)
 
 Controls whether or not Taisei can load game data (textures, shaders, etc) from
 ``.zip`` files. Useful for distribution and packaging.
+
+**NOTE:** Setting this to ``false`` automatically disables ``-Dpackage_data``.
 
 .. code:: sh
 
@@ -365,8 +366,8 @@ exceptions that may not be obvious to the human eye.)
 Deprecation Warnings (``-Ddeprecation_warnings``)
 """""""""""""""""""""""""""""""""""""""""""""""""
 
-* Default: ``(null)``
-* Options: ``error``, ``no-error``, ``ignore``
+* Default: ``default``
+* Options: ``error``, ``no-error``, ``ignore``, ``default``
 
 Sets deprecation warnings to either hard-fail (``error``), print as warnings but
 not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
@@ -415,7 +416,7 @@ Link-Time Optimizations (``-Db_lto``)
 
 Link-time optimizations (LTO) increase build times, but also increase
 performance. For quicker build times during development, you can disable it.
-For release builds, this should be keep ``true``.
+For release builds, this should be kept ``true``.
 
 See: `Interprocedural Optimization <https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO>`__
 
@@ -429,11 +430,11 @@ Binary Striping (``-Dstrip``)
 * Default: ``true``
 * Options: ``true``, ``false``
 
-This option prevents stripping of the `taisei` binary, leading to faster build
-times and keeping debugging symbols in place. There is a theoretical performance
-hit with this option enabled, but it can help with building during development.
+This option prevents stripping of the `taisei` binary, providing a marginally
+faster build time.
 
-Keep this ``true`` during releases.
+Keep this ``true`` during releases, but ``false`` during development, as it will
+strip out useful debugging symbols.
 
 .. code:: sh
 
@@ -450,17 +451,21 @@ Backends (``-Dr_gl*``)
 
 Enable or disable the various renderer backends for Taisei.
 
+``-Dshader_transpiler`` is required for when OpenGL ES is used.
+
 .. code:: sh
 
    # for GL 3.3 (default)
    meson configure build/ -Dr_gl33=true
    # for GL ES 3.0
    meson configure build/ -Dr_gles30=true
-   # for GL ES 2.0
+   # for GL ES 2.0 (not recommended)
    meson configure build/ -Dr_gles20=true
 
-Note that GL ES 2.0 requires a few extensions to be present on your system
-to function correctly, most notably:
+**NOTE:** GL ES 2.0 is *not recommended* as it is unsupported and may
+not work correctly. However, if for some reason you still want to use it,
+it requires a few extensions to be present on your system to function
+correctly, most notably:
 
 - ``OES_depth_texture`` or ``GL_ANGLE_depth_texture``
 - ``OES_standard_derivatives``
@@ -483,10 +488,11 @@ Sets the default renderer to use when Taisei launches.
    meson configure build/ -Dr_default=gl33
    # for GL ES 3.0
    meson configure build/ -Dr_default=gles30
-   # for GL ES 2.0
+   # for GL ES 2.0 (not recommended)
    meson configure build/ -Dr_default=gles20
 
-The renderer can be switched in the installed ``taisei`` binary.
+You can switch the renderer using the ``--renderer`` flag on the ``taisei``
+binary. (i.e: ``taisei --renderer gl33``).
 
 ANGLE
 """""
@@ -497,7 +503,7 @@ Shader Transpiler (``-Dshader_transpiler``)
 * Default: ``false``
 * Options: ``true``, ``false``
 
-For using ANGLE, the shader transpiler is necessary for converting Taisei's
+For using OpenGL ES, the shader transpiler is necessary for converting Taisei's
 shaders to a format usable by that driver.
 
 .. code:: sh
@@ -539,16 +545,18 @@ Generally recommended when packaging ANGLE for distribution.
    meson configure build/ -Dinstall_angle=true
 
 Building ANGLE (Optional)
--------------------------
+'''''''''''''''''''''''''
+`ANGLE <https://github.com/google/angle>`__ is Google's graphics translation
+layer, intended for for Chromium. Taisei packages it with Windows builds to
+workaround some bugs and performance issues with many Windows OpenGL drivers,
+and it can be optionally packaged as as an experimental Metal renderer for
+macOS.
 
-ANGLE is Google's graphics translation layer, intended for for Chromium. Taisei
-packages it with Windows builds to workaround some bugs and performance issues
-with many Windows OpenGL drivers, and it can be optionally packaged as as an
-experimental Metal renderer for macOS.
-
-You'll need to check out
-`ANGLE <https://github.com/google/angle>`__ and build it first. Refer to their
-documentation on how to do that, but generally:
+You need to read
+`this guide <https://github.com/google/angle/blob/master/doc/DevSetup.md>`__ and
+set up Google's custom build system to get things going. However, the below
+commands might help you compiling what you need from it when you have that all
+set up.
 
 .. code:: sh
 
