@@ -15,6 +15,7 @@
 #include "projectile.h"
 #include "resource/shader_program.h"
 #include "entity.h"
+#include "laserdraw.h"
 
 typedef LIST_ANCHOR(Laser) LaserList;
 
@@ -25,9 +26,14 @@ DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	cmplx args[4];
 
-	ShaderProgram *shader;
+	// NOTE: in the future we may reuse this to customize the SDF application shader
+	ShaderProgram *shader  attr_deprecated("Specialized shape shaders are no longer supported");
+
 	LaserPosRule prule;
 	LaserLogicRule lrule;
+
+	// NOTE: this field is considered private
+	LaserRenderData _renderdata;
 
 	Color color;
 
@@ -50,9 +56,6 @@ DEFINE_ENTITY_TYPE(Laser, {
 #define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, 0, 0)
 #define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
 #define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
-
-void lasers_preload(void);
-void lasers_free(void);
 
 void delete_lasers(void);
 void process_lasers(void);

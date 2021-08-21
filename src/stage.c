@@ -599,8 +599,8 @@ static void stage_free(void) {
 		global.boss = NULL;
 	}
 
+	laserdraw_shutdown();
 	projectiles_free();
-	lasers_free();
 	stagetext_free();
 }
 
@@ -649,7 +649,7 @@ static void stage_preload(void) {
 	player_preload();
 	items_preload();
 	boss_preload();
-	lasers_preload();
+	laserdraw_preload();
 	enemies_preload();
 
 	if(global.stage->type != STAGE_SPELL) {
@@ -883,6 +883,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	stage_draw_pre_init();
 	stage_preload();
 	stage_draw_init();
+	laserdraw_init();
 
 	rng_make_active(&global.rand_game);
 	stage_start(stage);

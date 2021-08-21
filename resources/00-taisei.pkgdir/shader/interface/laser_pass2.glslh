@@ -1,0 +1,25 @@
+
+#ifndef I_LASER_PASS2_H
+#define I_LASER_PASS2_H
+
+#include "../lib/defs.glslh"
+
+#ifdef VERT_STAGE
+ATTRIBUTE(0) vec2 vertex_position;
+ATTRIBUTE(1) vec2 vertex_uv;
+ATTRIBUTE(2) vec4 instance_bbox;
+ATTRIBUTE(3) vec4 instance_color_width;
+ATTRIBUTE(4) vec2 instance_texofs;
+#endif
+
+#ifdef FRAG_STAGE
+OUT(0) vec4 fragColor;
+#endif
+
+UNIFORM(0) sampler2D tex;
+UNIFORM(1) vec2 texsize;
+
+VARYING(0) vec2 texCoord;
+VARYING(1) vec4 color_width;
+
+#endif

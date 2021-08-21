@@ -120,10 +120,6 @@ static void stage3_preload(void) {
 		"glitch",
 		"maristar_bombbg",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/accelerated",
-		"lasers/sine_expanding",
-	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",
 		"boss/wriggleex",

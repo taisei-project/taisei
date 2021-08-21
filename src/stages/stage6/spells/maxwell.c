@@ -17,7 +17,6 @@ MODERNIZE_THIS_FILE_AND_REMOVE_ME
 static cmplx maxwell_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
 		l->unclearable = true;
-		l->shader = r_shader_get_optional("lasers/maxwell");
 		return 0;
 	}
 

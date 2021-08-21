@@ -150,6 +150,14 @@ cmplxf cwmulf(cmplxf c0, cmplxf c1) {
 	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
 }
 
+double cdot(cmplx c0, cmplx c1) {
+	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+}
+
+float cdotf(cmplxf c0, cmplxf c1) {
+	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+}
+
 cmplx cswap(cmplx c) {
 	return CMPLX(cimag(c), creal(c));
 }
@@ -234,8 +242,8 @@ double smoothstep(double edge0, double edge1, double x) {
 }
 
 double smoothmin(double a, double b, double k) {
-  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-  return lerp(b, a, h) - k * h * (1.0 - h);
+	float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+	return lerp(b, a, h) - k * h * (1.0 - h);
 }
 
 int sign(double x) {

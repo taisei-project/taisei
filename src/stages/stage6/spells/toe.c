@@ -265,19 +265,15 @@ static cmplx elly_toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: t
 	if(t == EVENT_BIRTH) {
 		switch(type) {
 		case 0:
-			l->shader = r_shader_get_optional("lasers/elly_toe_fermion");
 			l->color = *RGBA(0.4, 0.4, 1.0, 0.0);
 			break;
 		case 1:
-			l->shader = r_shader_get_optional("lasers/elly_toe_photon");
 			l->color = *RGBA(1.0, 0.4, 0.4, 0.0);
 			break;
 		case 2:
-			l->shader = r_shader_get_optional("lasers/elly_toe_gluon");
 			l->color = *RGBA(0.4, 1.0, 0.4, 0.0);
 			break;
 		case 3:
-			l->shader = r_shader_get_optional("lasers/elly_toe_higgs");
 			l->color = *RGBA(1.0, 0.4, 1.0, 0.0);
 			break;
 		default:

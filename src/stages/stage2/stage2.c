@@ -115,9 +115,6 @@ static void stage2_preload(void) {
 		"bloom",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/linear",
-	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/wriggle",
 		"boss/hina",

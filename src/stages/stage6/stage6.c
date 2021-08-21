@@ -116,17 +116,6 @@ static void stage6_preload(void) {
 		"stage6_sky",
 		"tower_wall",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_OPTIONAL,
-		"lasers/accelerated",
-		"lasers/circle",
-		"lasers/elly_toe_fermion",
-		"lasers/elly_toe_gluon",
-		"lasers/elly_toe_higgs",
-		"lasers/elly_toe_photon",
-		"lasers/linear",
-		"lasers/maxwell",
-		"lasers/sine",
-	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/elly",
 	NULL);

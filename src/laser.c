@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "laser.h"
+#include "laserdraw.h"
 #include "global.h"
 #include "list.h"
 #include "stageobjects.h"
@@ -16,127 +17,8 @@
 #include "renderer/api.h"
 #include "resource/model.h"
 #include "util/fbmgr.h"
+#include "util/glm.h"
 #include "video.h"
-
-static struct {
-	VertexArray *varr;
-	VertexBuffer *vbuf;
-	ShaderProgram *shader_generic;
-	Model quad_generic;
-	Framebuffer *saved_fb;
-	Framebuffer *render_fb;
-	FBPair blur_fb_pair;
-	ManagedFramebufferGroup *mfb_group;
-	bool force_generic;
-} lasers;
-
-typedef struct LaserInstancedAttribs {
-	float pos[2];
-	float delta[2];
-	float fragment_width;
-} LaserInstancedAttribs;
-
-static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg);
-static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg);
-
-static void lasers_fb_resize_strategy(void *userdata, IntExtent *fb_size, FloatRect *fb_viewport) {
-	float w, h;
-	float vid_vp_w, vid_vp_h;
-	video_get_viewport_size(&vid_vp_w, &vid_vp_h);
-
-	bool is_blur_fb = (bool)(uintptr_t)userdata;
-
-	float q = config_get_float(CONFIG_FG_QUALITY);
-
-	if(!is_blur_fb && config_get_int(CONFIG_POSTPROCESS) > 1) {
-		q *= 2;
-	}
-
-	w = floorf(fmin(1.0, vid_vp_w / SCREEN_W) * VIEWPORT_W) * q;
-	h = floorf(fmin(1.0, vid_vp_h / SCREEN_H) * VIEWPORT_H) * q;
-
-	*fb_size = (IntExtent) { w, h };
-	*fb_viewport = (FloatRect) { 0, 0, w, h };
-}
-
-void lasers_preload(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"blur25",
-		"blur5",
-		"lasers/generic",
-	NULL);
-
-	size_t sz_vert = sizeof(GenericModelVertex);
-	size_t sz_attr = sizeof(LaserInstancedAttribs);
-
-	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
-	#define INSTANCE_OFS(attr) offsetof(LaserInstancedAttribs, attr)
-
-	VertexAttribFormat fmt[] = {
-		// Per-vertex attributes (for the static models buffer, bound at 0)
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(position),       0 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 0 }, sz_vert, VERTEX_OFS(uv),             0 },
-
-		// Per-instance attributes (for our own buffer, bound at 1)
-		// pos and delta packed into a single attribute
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(pos),            1 },
-		{ { 1, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(fragment_width), 1 },
-	};
-
-	#undef VERTEX_OFS
-	#undef INSTANCE_OFS
-
-	lasers.vbuf = r_vertex_buffer_create(sizeof(LaserInstancedAttribs) * 4096, NULL);
-	r_vertex_buffer_set_debug_label(lasers.vbuf, "Lasers vertex buffer");
-
-	lasers.varr = r_vertex_array_create();
-	r_vertex_array_set_debug_label(lasers.varr, "Lasers vertex array");
-	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-	r_vertex_array_attach_vertex_buffer(lasers.varr, r_vertex_buffer_static_models(), 0);
-	r_vertex_array_attach_vertex_buffer(lasers.varr, lasers.vbuf, 1);
-	r_vertex_array_layout(lasers.varr, sizeof(fmt)/sizeof(VertexAttribFormat), fmt);
-
-	FBAttachmentConfig aconf = { 0 };
-	aconf.attachment = FRAMEBUFFER_ATTACH_COLOR0;
-	aconf.tex_params.type = TEX_TYPE_RGBA_8;
-	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
-	aconf.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	aconf.tex_params.wrap.s = TEX_WRAP_MIRROR;
-	aconf.tex_params.wrap.t = TEX_WRAP_MIRROR;
-
-	FramebufferConfig fbconf = { 0 };
-	fbconf.attachments = &aconf;
-	fbconf.num_attachments = 1;
-	fbconf.resize_strategy.resize_func = lasers_fb_resize_strategy;
-
-	lasers.mfb_group = fbmgr_group_create();
-	lasers.render_fb = fbmgr_group_framebuffer_create(lasers.mfb_group, "Lasers render FB", &fbconf);
-	fbconf.resize_strategy.userdata = (void*)(uintptr_t)true;
-	fbmgr_group_fbpair_create(lasers.mfb_group, "Lasers blur", &fbconf, &lasers.blur_fb_pair);
-
-	ent_hook_pre_draw(lasers_ent_predraw_hook, NULL);
-	ent_hook_post_draw(lasers_ent_postdraw_hook, NULL);
-
-	lasers.quad_generic.num_indices = 0;
-	lasers.quad_generic.num_vertices = 4;
-	lasers.quad_generic.offset = 0;
-	lasers.quad_generic.primitive = PRIM_TRIANGLE_STRIP;
-	lasers.quad_generic.vertex_array = lasers.varr;
-
-	lasers.shader_generic = res_shader("lasers/generic");
-
-	lasers.force_generic = env_get_int("TAISEI_FORCE_GENERIC_LASER_SHADER", false);
-}
-
-void lasers_free(void) {
-	fbmgr_group_destroy(lasers.mfb_group);
-	r_vertex_array_destroy(lasers.varr);
-	r_vertex_buffer_destroy(lasers.vbuf);
-	ent_unhook_pre_draw(lasers_ent_predraw_hook);
-	ent_unhook_post_draw(lasers_ent_postdraw_hook);
-}
-
-static void ent_draw_laser(EntityInterface *ent);
 
 Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3) {
 	Laser *l = alist_push(&global.lasers, (Laser*)objpool_acquire(stage_object_pools.lasers));
@@ -155,7 +37,6 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 	l->prule = prule;
 	l->lrule = lrule;
 
-	l->shader = NULL;
 	l->collision_step = 1;
 	l->width = 10;
 	l->width_exponent = 1.0;
@@ -167,7 +48,7 @@ Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, 
 	l->collision_active = true;
 
 	l->ent.draw_layer = LAYER_LASER_HIGH;
-	l->ent.draw_func = ent_draw_laser;
+	l->ent.draw_func = laserdraw_ent_drawfunc;
 	ent_register(&l->ent, ENT_TYPE_ID(Laser));
 
 	if(l->lrule)
@@ -193,215 +74,12 @@ static float laser_graze_width(Laser *l, float *exponent) {
 	return 5.0f * sqrtf(l->width) + 15.0f;
 }
 
-static bool draw_laser_instanced_prepare(Laser *l, uint *out_instances, float *out_timeshift) {
-	float t;
-	int c;
-
-	c = l->timespan;
-
-	t = (global.frames - l->birthtime)*l->speed - l->timespan + l->timeshift;
-
-	if(t + l->timespan > l->deathtime + l->timeshift)
-		c += l->deathtime + l->timeshift - (t + l->timespan);
-
-	if(t < 0) {
-		c += t;
-		t = 0;
-	}
-
-	if(c <= 0) {
-		return false;
-	}
-
-	*out_instances = c * 2;
-	*out_timeshift = t;
-
-	return true;
-}
-
-static void draw_laser_curve_specialized(Laser *l) {
-	float timeshift;
-	uint instances;
-
-	assert(!lasers.force_generic);
-
-	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
-		return;
-	}
-
-	r_shader_ptr(l->shader);
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_vec2_complex("origin", l->pos);
-	r_uniform_vec2_array_complex("args[0]", 0, 4, l->args);
-	r_uniform_float("timeshift", timeshift);
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_uniform_int("span", instances);
-
-#if 1
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-#else
-	double graze_exp;
-
-	r_color(RGBA(0, 0, 0.2, 0.2));
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("width", 2 * laser_graze_width(l, &graze_exp));
-	r_uniform_float("width_exponent", graze_exp);
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-#endif
-}
-
-static void draw_laser_curve_generic(Laser *l) {
-	float timeshift;
-	uint instances;
-
-	if(!draw_laser_instanced_prepare(l, &instances, &timeshift)) {
-		return;
-	}
-
-	r_shader_ptr(lasers.shader_generic);
-	r_color(&l->color);
-	r_uniform_sampler("tex", "part/lasercurve");
-	r_uniform_float("timeshift", timeshift);
-	r_uniform_float("width", l->width);
-	r_uniform_float("width_exponent", l->width_exponent);
-	r_uniform_int("span", instances);
-
-	SDL_RWops *stream = r_vertex_buffer_get_stream(lasers.vbuf);
-	r_vertex_buffer_invalidate(lasers.vbuf);
-
-	float tail = instances / 1.6;
-	float width_factor = -1 / (tail * tail);
-
-	for(uint i = 0; i < instances; ++i) {
-		cmplx pos = l->prule(l, i * 0.5 + timeshift);
-		cmplx delta = pos - l->prule(l, i * 0.5 + timeshift - 0.1);
-
-		float mid_ofs = i - instances * 0.5;
-		float w = 0.75f * powf(width_factor * (mid_ofs - tail) * (mid_ofs + tail), l->width_exponent);
-
-		LaserInstancedAttribs attr;
-		attr.pos[0] = creal(pos);
-		attr.pos[1] = cimag(pos);
-		attr.delta[0] = creal(delta);
-		attr.delta[1] = cimag(delta);
-		attr.fragment_width = w;
-
-		SDL_RWwrite(stream, &attr, sizeof(attr), 1);
-	}
-
-	r_draw_model_ptr(&lasers.quad_generic, instances, 0);
-}
-
-static void ent_draw_laser(EntityInterface *ent) {
-	Laser *laser = ENT_CAST(ent, Laser);
-
-	if(laser->shader && !lasers.force_generic) {
-		draw_laser_curve_specialized(laser);
-	} else {
-		draw_laser_curve_generic(laser);
-	}
-}
-
-static void lasers_ent_predraw_hook(EntityInterface *ent, void *arg) {
-	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
-
-	if(pp_quality < 1) {
-		return;
-	}
-
-	if(ent && ent->type == ENT_TYPE_ID(Laser)) {
-		if(lasers.saved_fb != NULL) {
-			return;
-		}
-
-		lasers.saved_fb = r_framebuffer_current();
-		r_framebuffer(lasers.render_fb);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
-	} else {
-		if(lasers.saved_fb == NULL) {
-			return;
-		}
-
-		FBPair *fbpair = &lasers.blur_fb_pair;
-
-		stage_draw_begin_noshake();
-
-		r_framebuffer(lasers.saved_fb);
-		r_state_push();
-		r_blend(BLEND_NONE);
-
-		if(pp_quality > 1) {
-			// Ambient glow pass (large kernel)
-
-			r_shader("blur25");
-			r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-
-			r_framebuffer(fbpair->back);
-			r_uniform_vec2("blur_direction", 1, 0);
-			draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
-
-			fbpair_swap(fbpair);
-
-			r_framebuffer(fbpair->back);
-			r_uniform_vec2("blur_direction", 0, 1);
-			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
-			fbpair_swap(fbpair);
-
-			r_framebuffer(lasers.saved_fb);
-			r_blend(BLEND_PREMUL_ALPHA);
-			r_shader_standard();
-			draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-			r_blend(BLEND_NONE);
-		}
-
-		// Smoothed laser curves pass (small kernel)
-		r_shader("blur5");
-		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-
-		r_framebuffer(fbpair->back);
-		r_uniform_vec2("blur_direction", 1, 0);
-		draw_framebuffer_tex(lasers.render_fb, VIEWPORT_W, VIEWPORT_H);
-
-		fbpair_swap(fbpair);
-
-		r_framebuffer(fbpair->back);
-		r_uniform_vec2("blur_direction", 0, 1);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
-		fbpair_swap(fbpair);
-
-		r_framebuffer(lasers.saved_fb);
-		r_blend(BLEND_PREMUL_ALPHA);
-		r_shader_standard();
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-
-		r_state_pop();
-		stage_draw_end_noshake();
-		lasers.saved_fb = NULL;
-	}
-}
-
-static void lasers_ent_postdraw_hook(EntityInterface *ent, void *arg) {
-	if(ent == NULL) {
-		// Edge case when the last entity drawn is a laser
-		lasers_ent_predraw_hook(NULL, arg);
-	}
-}
-
-static void* _delete_laser(ListAnchor *lasers, List *laser, void *arg) {
+static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 
-	if(l->lrule)
+	if(l->lrule) {
 		l->lrule(l, EVENT_DEATH);
+	}
 
 	ent_unregister(&l->ent);
 	objpool_release(stage_object_pools.lasers, alist_unlink(lasers, laser));
@@ -590,7 +268,6 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 
 cmplx las_linear(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/linear");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -600,7 +277,6 @@ cmplx las_linear(Laser *l, float t) {
 
 cmplx las_accel(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/accelerated");
 		l->collision_step = fmax(3, l->timespan/10);
 		return 0;
 	}
@@ -613,7 +289,6 @@ cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = s
 	// do we even still need this?
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/weird_sine");
 		return 0;
 	}
 
@@ -625,7 +300,6 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 	// this is actually shaped like a sine wave
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/sine");
 		return 0;
 	}
 
@@ -644,7 +318,6 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/sine_expanding");
 		return 0;
 	}
 
@@ -662,7 +335,6 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 
 cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/turning");
 		return 0;
 	}
 
@@ -682,7 +354,6 @@ cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn be
 
 cmplx las_circle(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/circle");
 		return 0;
 	}
 

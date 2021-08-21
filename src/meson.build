@@ -76,6 +76,7 @@ taisei_src = files(
     'hirestime.c',
     'item.c',
     'laser.c',
+    'laserdraw.c',
     'list.c',
     'log.c',
     'main.c',
