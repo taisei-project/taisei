@@ -381,3 +381,14 @@ void common_rotate_velocity(MoveParams *move, real angle, int duration) {
 DEFINE_EXTERN_TASK(common_rotate_velocity) {
 	common_rotate_velocity(ARGS.move, ARGS.angle, ARGS.duration);
 }
+
+DEFINE_EXTERN_TASK(common_easing_animated) {
+	double from = *ARGS.value;
+	double scale = ARGS.to - from;
+	double ftime = ARGS.duration;
+
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+		*ARGS.value = from + scale * ARGS.ease(t / ftime);
+    }
+}

@@ -153,3 +153,13 @@ DECLARE_EXTERN_TASK(
 		int duration;
 	}
 );
+
+DECLARE_EXTERN_TASK(
+	common_easing_animated,
+	{
+		double *value;
+		double to;
+		int duration;
+		glm_ease_t ease;
+	}
+);
