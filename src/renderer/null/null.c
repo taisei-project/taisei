@@ -102,7 +102,7 @@ static bool null_texture_type_query(TextureType type, TextureFlags flags, Pixmap
 	return true;
 }
 
-static FloatRect default_fb_viewport;
+static FloatRect default_fb_viewport = { 0, 0, 800, 600 };
 
 static Framebuffer* null_framebuffer_create(void) { return (void*)&placeholder; }
 static void null_framebuffer_set_debug_label(Framebuffer *fb, const char *label) { }
