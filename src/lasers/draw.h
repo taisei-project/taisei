@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_laserdraw_h
-#define IGUARD_laserdraw_h
+#ifndef IGUARD_lasers_draw_h
+#define IGUARD_lasers_draw_h
 
 #include "taisei.h"
 
@@ -23,10 +23,6 @@ typedef struct LaserRenderData LaserRenderData;
 struct LaserRenderData {
 	LIST_INTERFACE(LaserRenderData);
 	int tile;
-
-	struct {
-		FloatOffset top_left, bottom_right;
-	} bbox;
 };
 
-#endif // IGUARD_laserdraw_h
+#endif // IGUARD_lasers_draw_h

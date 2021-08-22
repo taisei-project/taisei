@@ -162,6 +162,14 @@ cmplx cswap(cmplx c) {
 	return CMPLX(cimag(c), creal(c));
 }
 
+double ccross(cmplx a, cmplx b) {
+	return creal(a)*cimag(b) - cimag(a)*creal(b);
+}
+
+float ccrossf(cmplxf a, cmplxf b) {
+	return crealf(a)*cimagf(b) - cimagf(a)*crealf(b);
+}
+
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }

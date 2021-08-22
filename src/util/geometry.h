@@ -79,11 +79,22 @@ typedef union Rect {
 	};
 } Rect;
 
+typedef struct UnevenCapsule {
+	LineSegment pos;
+	struct {
+		double a, b;
+	} radius;
+} UnevenCapsule;
+
+Rect ellipse_bbox(Ellipse e) attr_const;
+Rect lineseg_bbox(LineSegment seg) attr_const;
 bool point_in_ellipse(cmplx p, Ellipse e) attr_const;
 double lineseg_circle_intersect(LineSegment seg, Circle c) attr_const;
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) attr_const;
 double lineseg_closest_factor(LineSegment seg, cmplx p) attr_const;
 cmplx lineseg_closest_point(LineSegment seg, cmplx p) attr_const;
+bool lineseg_lineseg_intersection(LineSegment seg0, LineSegment seg1, cmplx *out);
+double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) attr_const;
 
 INLINE attr_const
 double rect_x(Rect r) {

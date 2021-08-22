@@ -8,8 +8,10 @@
 
 #include "taisei.h"
 
-#include "laserdraw.h"
 #include "laser.h"
+#include "draw.h"
+#include "internal.h"
+
 #include "renderer/api.h"
 #include "resource/model.h"
 #include "util/fbmgr.h"
@@ -84,9 +86,6 @@
  * even more VRAM waste (albeit a little bit) and slightly complicating the tile addressing logic.
  * But the rect packing proposal can also fix this trivially.
  *
- *	- It may be beneficial to separate the curve quantization/simplification code from the renderer.
- * It can be used to optimize collision detection, and we can use the same line segment data to
- * handle collision and rendering.
  *
  *
  *
@@ -102,10 +101,6 @@
  *
  * [4] And we can actually do it in a single draw call this time!
  */
-
-// Should be set slightly larger than the
-// negated lowest distance threshold value in the sdf_apply shader
-#define SDF_RANGE 4.01
 
 #define TILES_X 8
 #define TILES_Y 7
@@ -146,22 +141,9 @@ static struct {
 
 #define LASER_FROM_RENDERDATA(rd) \
 	UNION_CAST(char*, Laser*, \
-		UNION_CAST(LaserRenderData*, char*, (rd)) - offsetof(Laser, _renderdata))
+		UNION_CAST(LaserRenderData*, char*, (rd)) - offsetof(Laser, _internal.renderdata))
 
-typedef struct LaserInstancedAttribsPass1 {
-	union {
-		struct { cmplxf a, b; } pos;
-		float attr0[4];
-	};
-
-	union {
-		struct {
-			struct { float a, b; } width;
-			struct { float a, b; } time;
-		};
-		float attr1[4];
-	};
-} LaserInstancedAttribsPass1;
+typedef LaserSegment LaserInstancedAttribsPass1;
 
 typedef struct LaserInstancedAttribsPass2 {
 	union {
@@ -182,12 +164,6 @@ typedef struct LaserInstancedAttribsPass2 {
 		float attr2[2];
 	};
 } LaserInstancedAttribsPass2;
-
-typedef struct LaserSamplingParams {
-	uint num_samples;
-	float time_shift;
-	float time_step;
-} LaserSamplingParams;
 
 static void laserdraw_ent_predraw_hook(EntityInterface *ent, void *arg);
 static void laserdraw_ent_postdraw_hook(EntityInterface *ent, void *arg);
@@ -334,192 +310,32 @@ void laserdraw_shutdown(void) {
 
 static void laserdraw_prepare_state_pass1(void) {
 	r_framebuffer(ldraw.fb.sdf);
-	r_clear(CLEAR_COLOR, RGBA(SDF_RANGE, 0, 0, 0), 1);
+	r_clear(CLEAR_COLOR, RGBA(LASER_SDF_RANGE, 0, 0, 0), 1);
 	r_blend(BLENDMODE_COMPOSE(
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
 	));
 	r_shader_ptr(ldraw.shaders.sdf_generate);
-	r_uniform_float("sdf_range", SDF_RANGE);
-}
-
-static bool laserdraw_prepare_sampling_params(Laser *l, LaserSamplingParams *out_params) {
-	float t;
-	int c;
-
-	c = l->timespan;
-	t = (global.frames - l->birthtime) * l->speed - l->timespan + l->timeshift;
-
-	if(t + l->timespan > l->deathtime + l->timeshift) {
-		c += l->deathtime + l->timeshift - (t + l->timespan);
-	}
-
-	if(t < 0) {
-		c += t;
-		t = 0;
-	}
-
-	if(c <= 0) {
-		return false;
-	}
-
-	float step = 0.5;
-	out_params->num_samples = c / step;
-	out_params->time_shift = t;
-	out_params->time_step = step;
-
-	return true;
-}
-
-static float calc_sample_width(
-	Laser *l, float sample, float half_samples, float width_factor, float tail
-) {
-	float mid_ofs = sample - half_samples;
-	return 0.75f * l->width * powf(
-		width_factor * (mid_ofs - tail) * (mid_ofs + tail),
-		l->width_exponent
-	);
+	r_uniform_float("sdf_range", LASER_SDF_RANGE);
 }
 
 static int laserdraw_pass1_build(Laser *l) {
-	LaserSamplingParams sp;
+	// PASS 1: build the signed distance field
 
-	if(!laserdraw_prepare_sampling_params(l, &sp)) {
+	// The actual work happens in laser.c:quantize_laser(),
+	// since we use the segment data for collisions too.
+	// Here it's simply copied into our vertex buffer.
+
+	int nsegs = l->_internal.num_segments;
+
+	if(nsegs < 1) {
 		return 0;
 	}
 
-	// PASS 1: build the signed distance field
+	LaserSegment *segs = dynarray_get_ptr(&lintern.segments, l->_internal.segments_ofs);
+	SDL_RWwrite(ldraw.pass1.vb_stream, segs, sizeof(*segs), nsegs);
 
-	// Precomputed magic parameters for width calculation
-	float half_samples = sp.num_samples * 0.5;
-	float tail = sp.num_samples / 1.6;
-	float width_factor = -1 / (tail * tail);
-
-	// Maximum value of `1 - cos(angle)` between two curve segments to reduce to straight lines
-	const float thres_angular = 1e-4;
-	// Maximum laser-time sample difference between two segment points (for width interpolation)
-	const float thres_temporal = sp.num_samples / 16.0;
-	// These values should be kept as high as possible without introducing artifacts.
-
-	// Number of segments generated
-	int segments = 0;
-
-	// Time value of current sample
-	float t = sp.time_shift;
-
-	// Time value of last included sample
-	float t0 = t;
-
-	// Points of the current line segment
-	// Begin constructing at t0
-	cmplxf a, b;
-	a = l->prule(l, t0);
-
-	// Width value of the last included sample
-	// Initialized to the width at t0
-	float w0 = calc_sample_width(l, 0, half_samples, width_factor, tail);
-
-	// Already sampled the first point, so shift
-	t += sp.time_step;
-
-	// Vector from A to B of the last included segment, and its squared length.
-	cmplxf v0 = a - l->prule(l, t0 - sp.time_step);
-	float v0_abs2 = cabs2f(v0);
-
-	float viewmargin = l->width * 0.5f;
-	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
-	viewbounds.w += viewmargin * 2.0f;
-	viewbounds.h += viewmargin * 2.0f;
-	viewbounds.x -= viewmargin;
-	viewbounds.y -= viewmargin;
-
-	FloatOffset top_left, bottom_right;
-	top_left.as_cmplx = a;
-	bottom_right.as_cmplx = a;
-
-	for(uint i = 1; i < sp.num_samples; ++i, t += sp.time_step) {
-		b = l->prule(l, t);
-
-		if(i < sp.num_samples - 1 && (t - t0) < thres_temporal) {
-			cmplxf v1 = b - a;
-
-			// dot(a, b) == |a|*|b|*cos(theta)
-			float dot = cdotf(v0, v1);
-			float norm = sqrtf(v0_abs2 * cabs2f(v1));
-
-			if(norm == 0.0f) {
-				// degenerate case
-				continue;
-			}
-
-			float cosTheta = dot / norm;
-			float d = 1.0f - fabsf(cosTheta);
-
-			if(d < thres_angular) {
-				continue;
-			}
-		}
-
-		float w = calc_sample_width(l, i, half_samples, width_factor, tail);
-
-		float xa = crealf(a);
-		float ya = cimagf(a);
-		float xb = crealf(b);
-		float yb = cimagf(b);
-
-		bool visible =
-			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
-			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
-
-		if(visible) {
-			LaserInstancedAttribsPass1 attr;
-
-			if(w < w0) {
-				// NOTE: the uneven capsule distance function may not work correctly in cases where
-				//       radius(A) > radius(B) and circle A contains circle B.
-				attr = (LaserInstancedAttribsPass1) {
-					.pos   = {  b,   a },
-					.width = {  w,  w0 },
-					.time  = { -t, -t0 },
-				};
-			} else {
-				attr = (LaserInstancedAttribsPass1) {
-					.pos   = {   a,  b },
-					.width = {  w0,  w },
-					.time  = { -t0, -t },
-				};
-			}
-
-			assert(attr.width.a <= attr.width.b);
-
-			SDL_RWwrite(ldraw.pass1.vb_stream, &attr, sizeof(attr), 1);
-			++segments;
-
-			top_left.x     = fminf(    top_left.x, fminf(xa, xb));
-			top_left.y     = fminf(    top_left.y, fminf(ya, yb));
-			bottom_right.x = fmaxf(bottom_right.x, fmaxf(xa, xb));
-			bottom_right.y = fmaxf(bottom_right.y, fmaxf(ya, yb));
-		}
-
-		t0 = t;
-		w0 = w;
-		v0 = b - a;
-		v0_abs2 = cabs2f(v0);
-		a = b;
-	}
-
-	float aabb_margin = SDF_RANGE + l->width * 0.5f;
-	top_left.as_cmplx -= aabb_margin * (1.0f + I);
-	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
-
-	top_left.x = fmaxf(0, top_left.x);
-	top_left.y = fmaxf(0, top_left.y);
-	bottom_right.x = fminf(VIEWPORT_W, bottom_right.x);
-	bottom_right.y = fminf(VIEWPORT_H, bottom_right.y);
-
-	l->_renderdata.bbox.top_left = top_left;
-	l->_renderdata.bbox.bottom_right = bottom_right;
-	return segments;
+	return nsegs;
 }
 
 static void laserdraw_pass1_render(Laser *l, int segments) {
@@ -527,8 +343,8 @@ static void laserdraw_pass1_render(Laser *l, int segments) {
 	FloatRect vp_orig;
 	r_framebuffer_viewport_current(fb, &vp_orig);
 	FloatRect vp = vp_orig;
-	int sx = l->_renderdata.tile % TILES_X;
-	int sy = l->_renderdata.tile / TILES_X;
+	int sx = l->_internal.renderdata.tile % TILES_X;
+	int sy = l->_internal.renderdata.tile / TILES_X;
 	vp.w /= TILES_X;
 	vp.h /= TILES_Y;
 	vp.x = sx * vp.w;
@@ -550,8 +366,8 @@ static void laserdraw_prepare_state_pass2(void) {
 static void laserdraw_pass2_build(Laser *l) {
 	// PASS 2: color the curve using the generated SDF
 
-	FloatOffset top_left = l->_renderdata.bbox.top_left;
-	FloatOffset bottom_right = l->_renderdata.bbox.bottom_right;
+	FloatOffset top_left = l->_internal.bbox.top_left;
+	FloatOffset bottom_right = l->_internal.bbox.bottom_right;
 	cmplxf bbox_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
 	cmplxf bbox_size = bottom_right.as_cmplx - top_left.as_cmplx;
 
@@ -561,8 +377,8 @@ static void laserdraw_pass2_build(Laser *l) {
 
 	FloatRect frag = bbox;
 	frag.offset.as_cmplx -= bbox.extent.as_cmplx * 0.5;
-	frag.x += VIEWPORT_W * (l->_renderdata.tile % TILES_X);
-	frag.y += VIEWPORT_H * (l->_renderdata.tile / TILES_X);
+	frag.x += VIEWPORT_W * (l->_internal.renderdata.tile % TILES_X);
+	frag.y += VIEWPORT_H * (l->_internal.renderdata.tile / TILES_X);
 
 	LaserInstancedAttribsPass2 attrs = {
 		.bbox = bbox,
@@ -625,8 +441,8 @@ void laserdraw_ent_drawfunc(EntityInterface *ent) {
 	}
 
 	assert(ldraw.render_state.free_tile < TILES_MAX);
-	laser->_renderdata.tile = ldraw.render_state.free_tile++;
-	alist_push(&ldraw.render_state.batch, &laser->_renderdata);
+	laser->_internal.renderdata.tile = ldraw.render_state.free_tile++;
+	alist_push(&ldraw.render_state.batch, &laser->_internal.renderdata);
 
 	if(!ldraw.render_state.pass1_state_ready) {
 		// Pop out of entity-wide state into lasers-wide state

@@ -11,10 +11,12 @@
 #include "geometry.h"
 #include "miscmath.h"
 
-static inline void ellipse_bbox(const Ellipse *e, Rect *r) {
-	float largest_radius = fmax(creal(e->axes), cimag(e->axes)) * 0.5;
-	r->top_left     = e->origin - largest_radius - I * largest_radius;
-	r->bottom_right = e->origin + largest_radius + I * largest_radius;
+Rect ellipse_bbox(Ellipse e) {
+	float largest_radius = fmax(creal(e.axes), cimag(e.axes)) * 0.5;
+	return (Rect) {
+		.top_left     = e.origin - largest_radius - I * largest_radius,
+		.bottom_right = e.origin + largest_radius + I * largest_radius,
+	};
 }
 
 bool point_in_ellipse(cmplx p, Ellipse e) {
@@ -24,8 +26,7 @@ bool point_in_ellipse(cmplx p, Ellipse e) {
 	double Ye = cimag(e.origin);
 	double a = e.angle;
 
-	Rect e_bbox;
-	ellipse_bbox(&e, &e_bbox);
+	Rect e_bbox = ellipse_bbox(e);
 
 	return point_in_rect(p, e_bbox) && (
 		pow(cos(a) * (Xp - Xe) + sin(a) * (Yp - Ye), 2) / pow(creal(e.axes)/2, 2) +
@@ -33,18 +34,19 @@ bool point_in_ellipse(cmplx p, Ellipse e) {
 	) <= 1;
 }
 
+Rect lineseg_bbox(LineSegment seg) {
+	return (Rect) {
+		.top_left     = fmin(creal(seg.a), creal(seg.b)) + I * fmin(cimag(seg.a), cimag(seg.b)),
+		.bottom_right = fmax(creal(seg.a), creal(seg.b)) + I * fmax(cimag(seg.a), cimag(seg.b))
+	};
+}
+
 // If segment_ellipse_nonintersection_heuristic returns true, then the
 // segment and ellipse do not intersect. However, **the converse is not true**.
 // Used for quick returning false in real intersection functions.
 static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e) {
-	Rect seg_bbox = {
-		.top_left = fmin(creal(seg.a), creal(seg.b)) + I * fmin(cimag(seg.a), cimag(seg.b)),
-		.bottom_right = fmax(creal(seg.a), creal(seg.b)) + I * fmax(cimag(seg.a), cimag(seg.b))
-	};
-
-	Rect e_bbox;
-	ellipse_bbox(&e, &e_bbox);
-
+	Rect seg_bbox = lineseg_bbox(seg);
+	Rect e_bbox = ellipse_bbox(e);
 	return !rect_rect_intersect(seg_bbox, e_bbox, true, true);
 }
 
@@ -244,4 +246,81 @@ bool rect_join(Rect *r1, Rect r2) {
 void rect_set_xywh(Rect *rect, double x, double y, double w, double h) {
 	rect->top_left = CMPLX(x, y);
 	rect->bottom_right = CMPLX(w, h) + rect->top_left;
+}
+
+double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) {
+	assert(ucap.radius.b >= ucap.radius.a);
+
+	p -= ucap.pos.a;
+	ucap.pos.b -= ucap.pos.a;
+	double h = cabs2(ucap.pos.b);
+	cmplx q = CMPLX(cdot(p, conj(cswap(ucap.pos.b))), cdot(p, ucap.pos.b)) / h;
+
+	q = CMPLX(fabs(creal(q)), cimag(q));
+
+	double b = ucap.radius.a - ucap.radius.b;
+	cmplx c = CMPLX(sqrt(h - b * b), b);
+
+	double k = ccross(c, q);
+	double m = cdot(c, q);
+	double n = cabs2(q);
+
+	if(k < 0) {
+		return sqrt(h * n) - ucap.radius.a;
+	}
+
+	if(k > creal(c)) {
+		return sqrt(h * (n + 1 - 2 * cimag(q))) - ucap.radius.b;
+	}
+
+	return m - ucap.radius.a;
+}
+
+bool lineseg_lineseg_intersection(LineSegment seg0, LineSegment seg1, cmplx *out) {
+	// Based on an answer from https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
+
+	double p0_x = creal(seg0.a);
+	double p0_y = cimag(seg0.a);
+
+	double p1_x = creal(seg0.b);
+	double p1_y = cimag(seg0.b);
+
+	double p2_x = creal(seg1.a);
+	double p2_y = cimag(seg1.a);
+
+	double p3_x = creal(seg1.b);
+	double p3_y = cimag(seg1.b);
+
+	double s1_x = p1_x - p0_x;
+	double s1_y = p1_y - p0_y;
+
+	double s2_x = p3_x - p2_x;
+	double s2_y = p3_y - p2_y;
+
+	double d = -s2_x * s1_y + s1_x * s2_y;
+
+	if(d == 0) {
+		// NOTE: parallel or colinear.
+		// In the colinear case, the intersection may be another line segment.
+		// For our purposes, ignoring it is probably fine.
+		return false;
+	}
+
+	double s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / d;
+
+	if(s < 0 || s > 1) {
+		return false;
+	}
+
+	double t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / d;
+
+	if(t < 0 || t > 1) {
+		return false;
+	}
+
+	if(out) {
+		*out = CMPLX(p0_x + (t * s1_x), p0_y + (t * s1_y));
+	}
+
+	return true;
 }

@@ -599,7 +599,7 @@ static void stage_free(void) {
 		global.boss = NULL;
 	}
 
-	laserdraw_shutdown();
+	lasers_shutdown();
 	projectiles_free();
 	stagetext_free();
 }
@@ -883,7 +883,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	stage_draw_pre_init();
 	stage_preload();
 	stage_draw_init();
-	laserdraw_init();
+	lasers_init();
 
 	rng_make_active(&global.rand_game);
 	stage_start(stage);

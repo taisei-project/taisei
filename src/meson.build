@@ -75,8 +75,6 @@ taisei_src = files(
     'hashtable.c',
     'hirestime.c',
     'item.c',
-    'laser.c',
-    'laserdraw.c',
     'list.c',
     'log.c',
     'main.c',
@@ -129,6 +127,7 @@ subdir('audio')
 subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
+subdir('lasers')
 subdir('menu')
 subdir('pixmap')
 subdir('plrmodes')
@@ -147,6 +146,7 @@ taisei_src += [
     cutscenes_src,
     dialog_src,
     eventloop_src,
+    lasers_src,
     menu_src,
     pixmap_src,
     plrmodes_src,
