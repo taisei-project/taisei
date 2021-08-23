@@ -82,6 +82,8 @@ typedef union Rect {
 bool point_in_ellipse(cmplx p, Ellipse e) attr_const;
 double lineseg_circle_intersect(LineSegment seg, Circle c) attr_const;
 bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) attr_const;
+double lineseg_closest_factor(LineSegment seg, cmplx p) attr_const;
+cmplx lineseg_closest_point(LineSegment seg, cmplx p) attr_const;
 
 INLINE attr_const
 double rect_x(Rect r) {

@@ -9,6 +9,7 @@
 #include "taisei.h"
 
 #include "geometry.h"
+#include "miscmath.h"
 
 static inline void ellipse_bbox(const Ellipse *e, Rect *r) {
 	float largest_radius = fmax(creal(e->axes), cimag(e->axes)) * 0.5;
@@ -47,39 +48,56 @@ static bool segment_ellipse_nonintersection_heuristic(LineSegment seg, Ellipse e
 	return !rect_rect_intersect(seg_bbox, e_bbox, true, true);
 }
 
+static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
+	// m == vector from A to B
+	// v == vector from point of interest to A
+
+	double lm2 = cabs2(m);
+	assume(lm2 > 0);
+
+	double f = -creal(v * conj(m)) / lm2; // project v onto the line
+	f = clamp(f, 0, 1);                   // restrict it to segment
+
+	return f;
+}
+
+// Return f such that a + f * (b - a) is the closest point on segment to p
+double lineseg_closest_factor(LineSegment seg, cmplx p) {
+	if(UNLIKELY(seg.a == seg.b)) {
+		return 0;
+	}
+
+	return lineseg_closest_factor_impl(seg.b - seg.a, seg.a - p);
+}
+
+cmplx lineseg_closest_point(LineSegment seg, cmplx p) {
+	if(UNLIKELY(seg.a == seg.b)) {
+		return seg.a;
+	}
+
+	return clerp(seg.a, seg.b, lineseg_closest_factor_impl(seg.b - seg.a, seg.a - p));
+}
+
 // Is the point of shortest distance between the line through a and b
 // and a point c between a and b and closer than r?
 // if yes, return f so that a+f*(b-a) is that point.
 // otherwise return -1.
 static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
-	cmplx m, v;
-	double projection, lv, lm, distance;
+	double rad2 = c.radius * c.radius;
 
-	m = seg.b - seg.a; // vector pointing along the line
-	v = seg.a - c.origin; // vector from circle to point A
+	if(UNLIKELY(seg.a == seg.b)) {
+		if(cabs2(seg.a - c.origin) <= rad2) {
+			return 0;
+		}
 
-	lv = cabs(v);
-	lm = cabs(m);
-
-	if(lv < c.radius) {
-		return 0;
-	}
-
-	if(lm == 0) {
 		return -1;
 	}
 
-	projection = -creal(v*conj(m)) / lm; // project v onto the line
+	double f = lineseg_closest_factor_impl(seg.b - seg.a, seg.a - c.origin);
+	cmplx p = clerp(seg.a, seg.b, f);
 
-	// now the distance can be calculated by Pythagoras
-	distance = sqrt(lv*lv - projection*projection);
-
-	if(distance <= c.radius) {
-		double f = projection/lm;
-
-		if(f >= 0 && f <= 1) { // it’s on the line!
-			return f;
-		}
+	if(cabs2(p - c.origin) <= rad2) {
+		return f;
 	}
 
 	return -1;
