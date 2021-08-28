@@ -18,6 +18,7 @@
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_newton, ScytheAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_kepler, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_maxwell, ScytheAttack);
 
 void elly_spellbg_toe(Boss*, int);
 
@@ -26,6 +27,5 @@ void elly_lhc(Boss*, int);
 void elly_eigenstate(Boss*, int);
 void elly_eigenstate(Boss*, int);
 void elly_broglie(Boss*, int);
-void elly_maxwell(Boss*, int);
 void elly_ricci(Boss*, int);
 void elly_theory(Boss*, int);

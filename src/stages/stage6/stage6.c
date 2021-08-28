@@ -38,7 +38,7 @@ struct stage6_spells_s stage6_spells = {
 		},
 		.wave_theory = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 30, 25000,
-			elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
+			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_maxwell),
 		},
 	},
 

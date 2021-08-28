@@ -127,6 +127,98 @@ DEFINE_EXTERN_TASK(stage6_elly_scythe_nonspell) {
 	}
 }
 
+static void baryons_particles(EllyBaryons *baryons) {
+	Boss *boss = NOT_NULL(ENT_UNBOX(baryons->boss));
+
+	PARTICLE(
+		.sprite_ptr = res_sprite("stage6/baryon_center"),
+		.pos = boss->pos,
+		.draw_rule = pdraw_timeout_fade(1, 0),
+		.timeout = 4,
+		.angle = baryons->center_angle,
+		.scale = baryons->center_scale,
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+
+	for(int i = 0; i < NUM_BARYONS; i++) {
+		cmplx pos = baryons->poss[i];
+		cmplx pos_next = baryons->poss[(i+1) % NUM_BARYONS];
+		
+		PARTICLE(
+			.sprite_ptr = res_sprite("stage6/baryon"),
+			.pos = pos,
+			.draw_rule = pdraw_timeout_fade(1, 0),
+			.timeout = 4,
+			.angle = baryons->angles[i],
+			.flags = PFLAG_REQUIREDPARTICLE,
+		);
+
+
+		Sprite *spr = res_sprite("stage6/baryon_connector");
+		cmplx connector_pos = (pos + pos_next)/2;
+		real connector_angle = carg(pos - pos_next) + M_PI/2;
+		cmplx connector_scale = (cabs(pos - pos_next) - 70) / spr->w + I * 20 / spr->h;
+		PARTICLE(
+			.sprite_ptr = spr,
+			.pos = connector_pos,
+			.draw_rule = pdraw_timeout_fade(1, 0),
+			.timeout = 4,
+			.angle = connector_angle,
+			.flags = PFLAG_REQUIREDPARTICLE,
+			.scale = connector_scale
+		);
+	}
+}
+
+TASK(baryons_visuals, { BoxedEllyBaryons baryons; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+
+	for (;;) {
+		baryons_particles(baryons);
+		YIELD;
+	}
+}
+
+TASK(baryons_update, { BoxedEllyBaryons baryons; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+
+	for (;;) {
+		baryons->center_angle += 0.035;
+		YIELD;
+	}
+}
+
+
+void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
+	Boss *b = NOT_NULL(ENT_UNBOX(boss));
+	EllyBaryons *eb = NOT_NULL(ENT_UNBOX(baryons));
+	for(int i = 0; i < NUM_BARYONS; i++) {
+		eb->poss[i] = b->pos;
+	}
+	eb->boss = boss;
+	eb->center_scale = 0;
+	INVOKE_TASK(baryons_visuals, baryons);
+	INVOKE_TASK(baryons_update, baryons);
+}
+
+Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
+	if(ENT_UNBOX(args->baryons) == NULL) {
+		args->baryons = ENT_BOX(stage6_host_elly_baryons(args->base.boss));
+		stage6_init_elly_baryons(args->baryons, args->base.boss);
+	}
+
+	return INIT_BOSS_ATTACK(&args->base);
+}
+
+
+EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss) {
+	EllyBaryons *baryons = TASK_HOST_ENT(EllyBaryons);
+	TASK_HOST_EVENTS(baryons->events);
+	return baryons;
+}
+
+
+
 // REMOVE
 void scythe_draw(Enemy *, int, bool) {
 }

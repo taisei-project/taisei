@@ -17,6 +17,7 @@
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_1, ScytheAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_2, ScytheAttack);
+DECLARE_EXTERN_TASK(stage6_boss_paradigm_shift, { BossAttackTaskArgs base; BoxedEllyScythe scythe; BoxedEllyBaryons baryons; });
 
 void elly_paradigm_shift(Boss*, int);
 void elly_baryonattack(Boss*, int);

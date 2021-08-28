@@ -230,6 +230,11 @@ TASK(host_scythe, { cmplx pos; BoxedEllyScythe *out_scythe; }) {
 	WAIT_EVENT(&scythe->events.despawned);
 }
 
+TASK(host_baryons, { BoxedBoss boss; BoxedEllyBaryons *out_baryons; }) {
+	EllyBaryons *baryons = stage6_host_elly_baryons(ARGS.boss);
+	*ARGS.out_baryons = ENT_BOX(baryons);
+	WAIT_EVENT(&baryons->events.despawned);
+}
 
 TASK(spawn_boss, NO_ARGS) {
 	STAGE_BOOKMARK(boss);
@@ -237,11 +242,12 @@ TASK(spawn_boss, NO_ARGS) {
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
 
 	BoxedEllyScythe scythe_ref;
-	INVOKE_SUBTASK(host_scythe, VIEWPORT_W+100+200*I, &scythe_ref);
+	INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref);
 
 	TASK_IFACE_ARGS_SIZED_PTR_TYPE(ScytheAttack) scythe_args = TASK_IFACE_SARGS(ScytheAttack,
 	  .scythe = scythe_ref
 	);
+	
 
 	PlayerMode *pm = global.plr.mode;
 	Stage6PreBossDialogEvents *e;
@@ -255,9 +261,27 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.occams_razor, scythe_args.base);
 	boss_add_attack_task_with_args(boss, AT_Normal, "Frequency2", 40, 50000, TASK_INDIRECT(ScytheAttack, stage6_boss_nonspell_2).base, NULL, scythe_args.base);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.orbital_clockwork, scythe_args.base);
+	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.wave_theory, scythe_args.base);
+	
+
+	BoxedEllyBaryons baryons_ref;
+	INVOKE_SUBTASK(host_baryons, ENT_BOX(boss), &baryons_ref);
+
+	TASK_IFACE_ARGS_SIZED_PTR_TYPE(BaryonsAttack) baryons_args = TASK_IFACE_SARGS(BaryonsAttack,
+	  .baryons = baryons_ref
+	);
+	
+	Attack *pshift = boss_add_attack(boss, AT_Move, "Paradigm Shift", 5, 0, NULL, NULL);
+	INVOKE_TASK_WHEN(&pshift->events.initiated, stage6_boss_paradigm_shift, 
+		.base.boss = ENT_BOX(boss),
+		.base.attack = pshift,
+		.scythe = scythe_ref,
+		.baryons = baryons_ref
+	);
+
+	
+	
 	/*
-	boss_add_attack_from_info(b, &stage6_spells.scythe.wave_theory, false);
-	boss_add_attack(b, AT_Move, "Paradigm Shift", 3, 0, elly_paradigm_shift, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.many_world_interpretation, false);
 	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);

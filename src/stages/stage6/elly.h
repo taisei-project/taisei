@@ -21,15 +21,15 @@
 Boss* stage6_spawn_elly(cmplx pos);
 
 DEFINE_ENTITY_TYPE(EllyScythe, {
-    cmplx pos;
-    real angle;
-    float scale;
+	cmplx pos;
+	real angle;
+	float scale;
 
-    MoveParams move;
+	MoveParams move;
 
-    COEVENTS_ARRAY(
-        despawned
-    ) events;
+	COEVENTS_ARRAY(
+		despawned
+	) events;
 });
 
 EllyScythe *stage6_host_elly_scythe(cmplx pos);
@@ -43,9 +43,34 @@ Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args);
 
 // duration < 0 means infinite duration
 DECLARE_EXTERN_TASK(stage6_elly_scythe_spin, { BoxedEllyScythe scythe; real angular_velocity; int duration; });
-
 DECLARE_EXTERN_TASK(stage6_elly_scythe_nonspell, { BoxedEllyScythe scythe; });
-	
+
+#define NUM_BARYONS 6
+
+DEFINE_ENTITY_TYPE(EllyBaryons, {
+	cmplx poss[NUM_BARYONS];
+	real angles[NUM_BARYONS];
+
+	BoxedBoss boss;
+	float center_angle;
+	float center_scale;
+
+	COEVENTS_ARRAY(
+	        despawned
+	) events;
+});
+
+EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss);
+void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss);
+
+DEFINE_TASK_INTERFACE_WITH_BASE(BaryonsAttack, BossAttack, {
+	BoxedEllyBaryons baryons;
+});
+
+typedef TASK_IFACE_ARGS_TYPE(BaryonsAttack) BaryonsAttackTaskArgs;
+Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args);
+
+
 void scythe_draw(Enemy *, int, bool);
 void scythe_common(Enemy*, int);
 int scythe_reset(Enemy*, int);

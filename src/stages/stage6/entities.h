@@ -11,4 +11,5 @@
 
 #define ENTITIES_STAGE6(X, ...) \
 	X(EllyScythe, __VA_ARGS__) \
+	X(EllyBaryons, __VA_ARGS__) \
 	END_OF_ENTITIES
