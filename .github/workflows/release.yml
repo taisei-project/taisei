@@ -198,7 +198,7 @@ jobs:
 
   macos-release-build-arm64:
     name: macOS (ARM64)
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - name: Install Python
       uses: actions/setup-python@v2
@@ -238,7 +238,6 @@ jobs:
       run: |
         git fetch --force --tags
         echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-        echo "SDKROOT=$(xcrun --show-sdk-path --sdk macosx11.1)" >> $GITHUB_ENV # workaround for Xcode SDK path issue on GH runners
 
     - name: Configure
       run: >
