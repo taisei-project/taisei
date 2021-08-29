@@ -1,4 +1,4 @@
-FROM debian:buster-slim AS stage1
+FROM debian:bullseye-slim
 
 LABEL maintainer="Alice D. <alice@starwitch.productions>"
 
@@ -16,7 +16,7 @@ RUN apt-get update && \
 		xz-utils \
 		make \
 		git \
-		bsdtar \
+		libarchive-tools \
 		doxygen \
 		gnupg \
 		build-essential \
