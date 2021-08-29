@@ -46,7 +46,7 @@ RUN ln -s /proc/self/mounts /etc/mtab
 RUN dkp-pacman -Syyu --noconfirm \
 		switch-dev \
 		switch-portlibs \
-		devkitpro-pkgbuild-helpers \
+		dkp-toolchain-vars \
 		switch-pkg-config && \
     dkp-pacman -S --needed --noconfirm `dkp-pacman -Slq dkp-libs | grep '^switch-'` && \
     dkp-pacman -Scc --noconfirm
