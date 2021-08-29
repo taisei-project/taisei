@@ -32,6 +32,21 @@ the core concepts behind complex numbers.
 * `Complex Number Fundamentals <https://www.youtube.com/watch?v=5PcpBw5Hbwo>`__
   by 3Blue1Brown - a longer lecture-style format
 
+More helpful links:
+
+* `Formula for converting a *cartesian coordinate* to a *polar coordinate* <https://www.engineeringtoolbox.com/converting-cartesian-polar-coordinates-d_1347.html>`__
+
+Core Concept
+''''''''''''
+
+One important fact about complex numbers is that one can think of the same
+complex number in two ways: either as a traditional two-dimensional vector or
+as a length and an angle (measured starting from the positive x-axis). When
+adding two complex numbers, they behave exactly like vectors. But in contrast
+to vectors, one can also multiply them together and get a new complex number.
+In this multiplication, their second interpretation becomes useful: multiplying
+two complex numbers means multiplying their lengths and adding their angles.
+
 In-Game Examples
 ''''''''''''''''
 
@@ -51,10 +66,10 @@ The important piece here, for our purposes, is:
 
    VIEWPORT_W/2.0 + 200.0 * I
 
-What this is doing is specifying a position on the X-axis (``VIEWPORT_W/2.0``,
-which in Taisei means ``480 / 2.0`` or `240.0`), and then specifying a position
-on the "imaginary" (aka "lateral") axis (``200.0 * I``). The ``I`` here is the
-same ``i`` described in the videos and the above explanation.
+What this is doing is specifying a position on the "real" X-axis
+(``VIEWPORT_W/2.0``, which in Taisei means ``480 / 2.0`` or `240.0`), and then
+specifying a position on the "imaginary" Y-axis (``200.0 * I``). The ``I`` here
+is the same ``i`` described in the videos and the above explanation.
 
 So what we're really looking at here is:
 
@@ -62,8 +77,8 @@ So what we're really looking at here is:
 
    240.0 (real) + 200.0i (imaginary)
 
-Or "move 240 units on the X-axis, and then 200 units on the Y-axis (called the
-'imaginary axis' in complex vectors)."
+Or "move 240 units on the (real) X-axis, and then 200 units on the (imaginary)
+Y-axis."
 
 This is what's called a **Cartesian Coordinate.** What the function
 ``move_towards`` then does is make the enemy sprite/object move towards that
@@ -112,12 +127,6 @@ player.
 Since we don't really care about the distance, as we're looking for an angle
 or direction instead, ``cnormalize()`` in the original code mostly ignores
 that so that we get the complex number between ``[0, 0]`` and ``[-7, 3]``.
-You can see the formula used for converting a *cartesean coordinate* to a
-*polar coordinate* `here
-<https://www.engineeringtoolbox.com/converting-cartesian-polar-coordinates-d_1347.html>`__,
-but for the sake of brevity, the angle between the two, assuming **0°** is
-"positive" on the X-axis, is **157°**, which you can see from the orange line
-rotating counter-clockwise to about **157°** on the second image.
 
 This could still be done, technically, using traditional vectors. However,
 there are still significant advantages to doing it this way. Let's consider how
@@ -138,25 +147,15 @@ for a danmaku bullet:
 The important piece here is the ``aim * offset`` inside the ``move()`` block.
 Being able to multiply complex numbers by each other means "procedurally"
 generating danmaku patterns becomes much easier. Multiplying two complex
-numbers together like this means their **polar coordinates** are multiplied,
-and in the case of something like ``cdir(M_PI/180 * rng_sreal())``, you can add
-"predictable randomization" to your patterns without having to wrangle with
-cumbersome vector matricies. You can modify the original direction of "shoot
-directly at the player" of ``aim`` with an additional ``offset`` angle.
+numbers together like this means adding their angles,  and in the case of
+something like ``cdir(M_PI/180 * rng_sreal())``, you can quickly do rotations in
+your patterns without handling cumbersome matrices. In this case, we add some
+random scattering to the original direction of "shoot directly at the player"
+contained in ``aim`` with an additional ``offset`` angle.
 
 Additionally, the C programming language has a very robust support for handling
-complex numbers, whereas the support for things like vector matricies isn't as
-available or pleasant to use.
+complex numbers, whereas the support for things like vectors and matricies isn't
+as available or pleasant to use.
 
 With a bit of extra initial setup, you end up with code that's much easier to
 maintain and understand.
-
-Further Reading
-'''''''''''''''
-
-While Taisei doesn't use them, a more advanced form of these complex numbers,
-called `quaternions <https://en.wikipedia.org/wiki/Quaternion>`__, are used in
-3D games and programming very extensively in most major 3D engines. Hopefully
-this helps solidify that complex numbers aren't some special thing that Taisei
-invented or repurposed, and are applicable in many other scenarios when it
-comes to game programming and design.
