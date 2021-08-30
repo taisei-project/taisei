@@ -33,8 +33,10 @@ void stage1_drawsys_init(void) {
 	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
 	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
 
-	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer("Stage 1 water FB 1", 0.2, 0.5, 1, &cfg);
-	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer("Stage 1 water FB 2", 0.2, 0.5, 1, &cfg);
+	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer(
+		"Stage 1 water FB 1", 0.5, 0.5, 1, &cfg);
+	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer(
+		"Stage 1 water FB 2", 0.5, 0.5, 1, &cfg);
 }
 
 void stage1_drawsys_shutdown(void) {
@@ -81,6 +83,8 @@ static bool reflect_draw_predicate(EntityInterface *ent) {
 static void stage1_water_draw(vec3 pos) {
 	Stage1DrawData *draw_data = stage1_get_draw_data();
 
+	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
+
 	// don't even ask
 
 	r_state_push();
@@ -115,6 +119,12 @@ static void stage1_water_draw(vec3 pos) {
 	r_mat_mv_pop();
 	r_state_pop();
 
+	if(pp_quality < 1) {
+		r_state_pop();
+		r_mat_mv_pop();
+		return;
+	}
+
 	r_disable(RCAP_DEPTH_TEST);
 	r_disable(RCAP_CULL_FACE);
 
@@ -142,8 +152,6 @@ static void stage1_water_draw(vec3 pos) {
 	fbpair_swap(fbpair);
 	r_framebuffer(fbpair->back);
 
-	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
-
 	ShaderProgram *water_shader = res_shader("stage1_water");
 	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
 	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
@@ -163,9 +171,11 @@ static void stage1_water_draw(vec3 pos) {
 	}
 
 	if(pp_quality == 1) {
+		r_mat_mv_push_identity();
 		r_shader_ptr(water_shader);
 		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
 		fbpair_swap(fbpair);
+		r_mat_mv_pop();
 	}
 
 	r_mat_proj_pop();
