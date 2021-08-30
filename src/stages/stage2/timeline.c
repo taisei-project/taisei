@@ -391,8 +391,6 @@ TASK(turning_fairy, {
 			.move = move_asymptotic_simple(shot_normal/I, 3),
 		);
 	}
-
-	STALL;
 }
 
 TASK(turning_fairy_red, {

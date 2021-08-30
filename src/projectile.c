@@ -632,8 +632,6 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 			return t;
 		}
 	}
-
-	return t;
 }
 
 bool projectile_is_clearable(Projectile *p) {

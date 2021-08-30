@@ -143,6 +143,4 @@ DEFINE_EXTERN_TASK(stage2_midboss_nonspell_1) {
 
 		boss->move.attraction_point = common_wander(boss->pos, 120, wander_bounds);
 	}
-
-	STALL;
 }

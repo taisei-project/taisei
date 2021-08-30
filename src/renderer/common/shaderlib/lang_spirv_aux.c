@@ -37,8 +37,6 @@ static bool shader_cache_entry_name(
 			return false;
 		}
 	}
-
-	return false;
 }
 
 bool spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompileOptions *options) {

@@ -1176,8 +1176,6 @@ HT_DECLARE_FUNC(void, iter_next, (HT_TYPE(iter) *iter)) {
 			return;
 		}
 	}
-
-	return;
 }
 
 HT_DECLARE_FUNC(void, iter_end, (HT_TYPE(iter) *iter)) {
