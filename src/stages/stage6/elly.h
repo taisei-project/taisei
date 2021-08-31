@@ -49,9 +49,12 @@ DECLARE_EXTERN_TASK(stage6_elly_scythe_nonspell, { BoxedEllyScythe scythe; });
 
 DEFINE_ENTITY_TYPE(EllyBaryons, {
 	cmplx poss[NUM_BARYONS];
+	cmplx target_poss[NUM_BARYONS];
+	real relaxation_rate;
+
 	real angles[NUM_BARYONS];
 
-	BoxedBoss boss;
+	cmplx center_pos;
 	float center_angle;
 	float center_scale;
 

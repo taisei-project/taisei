@@ -35,10 +35,10 @@ TASK(baryons_spawn, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
 	INVOKE_SUBTASK(common_easing_animated, &angle_offset, 0, duration, glm_ease_quad_out);
 
 	for(int t = 0; t < duration; t++) {
-		Boss *b = NOT_NULL(ENT_UNBOX(baryons->boss));
+		Boss *b = NOT_NULL(ENT_UNBOX(ARGS.boss));
 		for(int i = 0; i < NUM_BARYONS; i++) {
 			real radius = 3*200.0/duration * clamp(t - duration/(real)NUM_BARYONS/2*i, 0, duration/3.0);
-			baryons->poss[i] = b->pos + radius * cdir((1-2*(i&1)) * angle_offset + M_TAU/NUM_BARYONS*i);
+			baryons->target_poss[i] = b->pos + radius * cdir((1-2*(i&1)) * angle_offset + M_TAU/NUM_BARYONS*i);
 		}
 		YIELD;
 	}

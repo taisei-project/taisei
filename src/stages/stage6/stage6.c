@@ -45,7 +45,7 @@ struct stage6_spells_s stage6_spells = {
 	.baryon = {
 		.many_world_interpretation = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 50, 60000,
-			elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_eigenstate),
 		},
 		.wave_particle_duality = {
 			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 65000,
@@ -168,10 +168,10 @@ static void stage6_spellpractice_start(void) {
 	AttackInfo *s = global.stage->spell;
 
 	if(STG6_SPELL_NEEDS_SCYTHE(s)) {
-		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
+//		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
 		stage_start_bgm("stage6boss_phase1");
 	} else if(STG6_SPELL_NEEDS_BARYON(s)) {
-		elly_spawn_baryons(global.boss->pos);
+//		elly_spawn_baryons(global.boss->pos);
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
 		stage6_bg_start_fall_over();
