@@ -280,10 +280,10 @@ TASK(spawn_boss, NO_ARGS) {
 	);
 
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.many_world_interpretation, baryons_args.base);
+	boss_add_attack_task_with_args(boss, AT_Normal, "Baryon", 50, 55000, TASK_INDIRECT(BaryonsAttack, stage6_boss_nonspell_4).base, NULL, baryons_args.base);
 	
 	
 	/*
-	boss_add_attack(b, AT_Normal, "Baryon", 50, 55000, elly_baryonattack, NULL);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.wave_particle_duality, false);
 	boss_add_attack_from_info(b, &stage6_spells.baryon.spacetime_curvature, false);
 	boss_add_attack(b, AT_Normal, "Baryon2", 50, 55000, elly_baryonattack2, NULL);

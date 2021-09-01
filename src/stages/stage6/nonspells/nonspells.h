@@ -15,11 +15,13 @@
 
 #include "stages/stage6/elly.h"
 
+DECLARE_EXTERN_TASK(stage6_boss_nonspell_baryons_common, { BoxedEllyBaryons baryons; });
+
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_1, ScytheAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_2, ScytheAttack);
 DECLARE_EXTERN_TASK(stage6_boss_paradigm_shift, { BossAttackTaskArgs base; BoxedEllyScythe scythe; BoxedEllyBaryons baryons; });
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_4, BaryonsAttack);
 
-void elly_paradigm_shift(Boss*, int);
-void elly_baryonattack(Boss*, int);
+
 void elly_baryonattack2(Boss*, int);
 void elly_baryon_explode(Boss*, int);
