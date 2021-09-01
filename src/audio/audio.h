@@ -12,32 +12,26 @@
 #include "resource/sfx.h"
 #include "resource/bgm.h"
 
-#define LOOPTIMEOUTFRAMES 10
-#define DEFAULT_SFX_VOLUME 100
-
-#define LOOPFADEOUT 50
-
 typedef struct SFXImpl SFXImpl;
 
 typedef enum {
-	LS_OFF,
-	LS_LOOPING,
-	LS_FADEOUT,
-} LoopState;
+	CHANGROUP_ANY = -1,
 
-typedef struct SFX {
-	SFXImpl *impl;
-	LoopState islooping;
-	int lastplayframe;
-} SFX;
+	CHANGROUP_SFX_GAME,
+	CHANGROUP_SFX_UI,
+	CHANGROUP_BGM,
+
+	NUM_CHANGROUPS,
+	NUM_SFX_CHANGROUPS = CHANGROUP_BGM,
+} AudioChannelGroup;
+
+typedef uint64_t SFXPlayID;
 
 typedef enum BGMStatus {
 	BGM_STOPPED,
 	BGM_PLAYING,
 	BGM_PAUSED,
 } BGMStatus;
-
-typedef uint64_t SFXPlayID;
 
 void audio_init(void);
 void audio_shutdown(void);
@@ -55,6 +49,9 @@ BGMStatus audio_bgm_status(void);
 bool audio_bgm_looping(void);
 BGM *audio_bgm_current(void);
 
+SFX *audio_sfx_load(const char *name, const char *path) attr_nodiscard attr_nonnull(1, 2);
+void audio_sfx_destroy(SFX *sfx) attr_nonnull(1);
+
 // TODO modernize sfx API
 
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);
@@ -62,15 +59,13 @@ SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) attr_nonnull
 void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
 void play_sfx_loop(const char *name) attr_nonnull(1);
 void play_sfx_ui(const char *name) attr_nonnull(1);
-void stop_sound(SFXPlayID sid);
+void stop_sfx(SFXPlayID sid);
 void replace_sfx(SFXPlayID sid, const char *name) attr_nonnull(2);
 void reset_all_sfx(void);
 void pause_all_sfx(void);
 void resume_all_sfx(void);
 void stop_all_sfx(void);
 void update_all_sfx(void); // checks if loops need to be stopped
-
-int get_default_sfx_volume(const char *sfx);
 
 DEFINE_DEPRECATED_RESOURCE_GETTER(SFX, get_sound, res_sfx)
 DEFINE_DEPRECATED_RESOURCE_GETTER(BGM, get_music, res_bgm)
@@ -83,6 +78,11 @@ INLINE SFXPlayID play_sound(const char *name) {
 attr_deprecated("Use play_sfx_ex() instead") attr_nonnull(1)
 INLINE SFXPlayID play_sound_ex(const char *name, int cooldown, bool replace) {
 	return play_sfx_ex(name, cooldown, replace);
+}
+
+attr_deprecated("Use stop_sfx() instead")
+INLINE void stop_sound(SFXPlayID sid) {
+	stop_sfx(sid);
 }
 
 double audioutil_loopaware_position(double rt_pos, double duration, double loop_start);

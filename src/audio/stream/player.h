@@ -48,6 +48,7 @@ bool splayer_pause(StreamPlayer *plr, int chan) attr_nonnull_all;
 bool splayer_resume(StreamPlayer *plr, int chan) attr_nonnull_all;
 void splayer_halt(StreamPlayer *plr, int chan) attr_nonnull_all;
 bool splayer_fadeout(StreamPlayer *plr, int chan, double fadeout) attr_nonnull_all;
+bool splayer_fadein(StreamPlayer *plr, int chan, double fadetime) attr_nonnull_all;
 double splayer_seek(StreamPlayer *plr, int chan, double position) attr_nonnull_all;
 double splayer_tell(StreamPlayer *plr, int chan) attr_nonnull_all;
 bool splayer_is_looping(StreamPlayer *plr, int chan) attr_nonnull_all;

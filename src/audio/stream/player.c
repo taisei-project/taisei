@@ -358,20 +358,29 @@ void splayer_halt(StreamPlayer *plr, int chan) {
 	splayer_history_move_to_front(plr, pchan);
 }
 
-bool splayer_fadeout(StreamPlayer *plr, int chan, double fadeout) {
+static bool splayer_fade(StreamPlayer *plr, int chan, double fadetime, double fadetarget) {
 	if(!splayer_validate_channel(plr, chan)) {
 		return false;
 	}
 
-	if(UNLIKELY(fadeout <= 0)) {
-		log_error("Bad fadeout time value %f", fadeout);
+	if(UNLIKELY(fadetime < 0)) {
+		log_error("Bad fade time value %f", fadetime);
 		return false;
 	}
 
 	StreamPlayerChannel *pchan = plr->channels + chan;
-	splayer_set_fade(plr, pchan, pchan->fade.gain, 0, fadeout);
+	splayer_set_fade(plr, pchan, pchan->fade.gain, fadetarget, fadetime);
 
 	return true;
+
+}
+
+bool splayer_fadeout(StreamPlayer *plr, int chan, double fadetime) {
+	return splayer_fade(plr, chan, fadetime, 0);
+}
+
+bool splayer_fadein(StreamPlayer *plr, int chan, double fadetime) {
+	return splayer_fade(plr, chan, fadetime, 1);
 }
 
 double splayer_seek(StreamPlayer *plr, int chan, double position) {

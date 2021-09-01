@@ -23,25 +23,18 @@ static bool check_sound_path(const char *path) {
 }
 
 static void load_sound(ResourceLoadState *st) {
-	SFXImpl *sound = _a_backend.funcs.sfx_load(st->path);
+	SFX *sfx = audio_sfx_load(st->name, st->path);
 
-	if(!sound) {
+	if(UNLIKELY(!sfx)) {
 		res_load_failed(st);
 		return;
 	}
 
-	_a_backend.funcs.object.sfx.set_volume(sound, get_default_sfx_volume(st->name) / 128.0);
-
-	SFX *snd = calloc(1, sizeof(SFX));
-	snd->impl = sound;
-
-	res_load_finished(st, snd);
+	res_load_finished(st, sfx);
 }
 
 static void unload_sound(void *vsnd) {
-	SFX *snd = vsnd;
-	_a_backend.funcs.sfx_unload(snd->impl);
-	free(snd);
+	audio_sfx_destroy(vsnd);
 }
 
 ResourceHandler sfx_res_handler = {

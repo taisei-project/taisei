@@ -11,11 +11,8 @@
 
 #include "audio.h"
 
-typedef enum {
-	SFXGROUP_ALL,
-	SFXGROUP_MAIN,
-	SFXGROUP_UI,
-} AudioBackendSFXGroup;
+typedef int16_t AudioBackendChannel;
+#define AUDIO_BACKEND_CHANNEL_INVALID ((AudioBackendChannel)-1)
 
 typedef struct AudioBGMObjectFuncs {
 	const char *(*get_title)(BGM *bgm);
@@ -40,24 +37,22 @@ typedef struct AudioFuncs {
 	BGMStatus (*bgm_status)(void);
 	BGM *(*bgm_current)(void);
 	bool (*bgm_looping)(void);
-	bool (*bgm_set_global_volume)(double gain);
 	bool (*output_works)(void);
 	bool (*shutdown)(void);
-	SFXPlayID (*sfx_loop)(SFXImpl *sfx, AudioBackendSFXGroup group);
-	bool (*sfx_pause_all)(AudioBackendSFXGroup group);
-	SFXPlayID (*sfx_play)(SFXImpl *sfx, AudioBackendSFXGroup group);
-	SFXPlayID (*sfx_play_or_restart)(SFXImpl *sfx, AudioBackendSFXGroup group);
-	bool (*sfx_resume_all)(AudioBackendSFXGroup group);
-	bool (*sfx_set_global_volume)(double gain);
-	bool (*sfx_stop_all)(AudioBackendSFXGroup group);
-	bool (*sfx_stop_loop)(SFXImpl *sfx, AudioBackendSFXGroup group);
-	bool (*sfx_stop_id)(SFXPlayID);
+	AudioBackendChannel (*sfx_play)(SFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel chan, bool loop);
+	bool (*chan_stop)(AudioBackendChannel chan, double fadeout);
+	bool (*chan_unstop)(AudioBackendChannel chan, double fadein);
 	const char *const *(*get_supported_bgm_exts)(uint *out_numexts);
 	const char *const *(*get_supported_sfx_exts)(uint *out_numexts);
 	BGM *(*bgm_load)(const char *vfspath);
 	SFXImpl *(*sfx_load)(const char *vfspath);
 	void (*bgm_unload)(BGM *bgm);
 	void (*sfx_unload)(SFXImpl *sfx);
+	bool (*group_get_channels_range)(AudioChannelGroup group, int *first, int *last);
+	bool (*group_pause)(AudioChannelGroup group);
+	bool (*group_resume)(AudioChannelGroup group);
+	bool (*group_set_volume)(AudioChannelGroup group, double vol);
+	bool (*group_stop)(AudioChannelGroup group, double fadeout);
 
 	struct {
 		AudioBGMObjectFuncs bgm;
