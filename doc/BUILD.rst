@@ -378,8 +378,8 @@ Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
 Debugging With Sanitizers (``-Db_sanitize``)
 """"""""""""""""""""""""""""""""""""""""
 
-This is useful for debugging crashes in the game. It uses
-`AddressSanitizer <https://github.com/google/sanitizers/wiki/AddressSanitizer>`__:
+This is useful for debugging memory management errors, leaks, and undefined behavior.
+However, there is some additional setup required to use it.
 
 .. code:: sh
 
