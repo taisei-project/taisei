@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from taiseilib.tempinstall import temp_install
+from taiseilib.releasefiles import gen_release_files
 from taiseilib.common import run_main
 
 from pathlib import Path
@@ -62,6 +63,12 @@ def main(args):
         nargs='?',
     )
 
+    parser.add_argument('--release',
+        help='Generate release files',
+        dest='release',
+        action='store_true',
+    )
+
     args = parser.parse_args(args[1:])
 
     if args.installation is None:
@@ -70,6 +77,11 @@ def main(args):
     else:
         package_dmg(args.installation, args.output)
 
+    if args.release:
+        gen_release_files(args.output)
+        print('\nGenerated release files (.sig, .sha256sum)')
+
+    print('\nPackage generated:', args.output)
 
 
 if __name__ == '__main__':
