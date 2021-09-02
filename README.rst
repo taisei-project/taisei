@@ -109,7 +109,7 @@ your host machine is:
     meson install -C build/
 
 See the `Building <./doc/BUILD.rst>`__ doc for more information on how to build
-Taisei.
+Taisei, and its list of dependencies.
 
 Replays, Screenshots, and Settings Locations
 --------------------------------------------
