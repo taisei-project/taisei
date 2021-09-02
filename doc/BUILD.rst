@@ -1,11 +1,30 @@
-Taisei Project - Building and Packaging
-=======================================
+Taisei Project - Build Options
+==============================
 
-This is intended for anyone looking to build or package Taisei Project
-for any of its supported operating systems, including Linux, macOS, Windows,
-Emscripten, Switch, and others.
+This is intended for anyone looking to build Taisei for any of its supported
+operating systems, including Linux, macOS, Windows, Emscripten, Switch, and
+others.
 
 .. contents::
+
+Checking Out Code
+-----------------
+
+First, you'll need to checkout the repository. You can do that with the
+following:
+
+.. code:: sh
+
+   git clone --recurse-submodules https://github.com/taisei-project/taisei
+
+The ``--recurse-submodules`` flag is absolutely necessary, or Taisei will not
+build, as it will be missing many of the dependencies its needs to compile. If
+you accidentally omit it during checkout, you can fix it with:
+
+.. code:: sh
+
+   cd taisei/
+   git submodules update --init --recursive
 
 Dependencies
 ------------
@@ -39,7 +58,6 @@ Required
 Optional
 ''''''''
 
--  OpenSSL (for a better SHA-256 implementation; used in shader cache)
 -  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
 -  libshaderc (for OpenGL ES backends)
 -  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
@@ -51,16 +69,16 @@ Optional
 Built-In vs. System Dependencies
 """"""""""""""""""""""""""""""""
 
-Due to the wide array of platforms Taisei supports, the project packages many of
-its core dependencies inside the project using the
+Due to the wide array of platforms Taisei supports, the project contains meson
+subprojects for its core dependencies using the
 `Meson dependency wrap system <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__.
-This is used to pin specific versions of libraries such as `SDL2` to known-good
-versions, as well as assist with packaging and distribution on older and/or more
-esoteric systems (i.e: Emscripten).
+This is to facilitate consistent build environments, including cross-builds,
+and for more esoteric platforms like Emscripten.
 
 For convenience, ``meson`` will detect which packages are missing from your
-system and use its wrap dependency system to pull in what it can. The trade-off
-is that this can result in longer build times.
+system and use its wrap dependency system to pull in what it can. Relying
+on this is *not* recommended in most circumstances, and you should instead
+rely on your operating system's package manager.
 
 For consistency, we tend to release Taisei using exclusively built-in packages.
 However, you can also use system dependencies as well. There's a tradeoff in
@@ -72,7 +90,7 @@ on that later.)
 Linux
 '''''
 
-On an Ubuntu or Debian-based distro, he following will install the mandatory
+On an Ubuntu or Debian-based distro, the following will install the mandatory
 tools for building Taisei.
 
 .. code:: sh
@@ -80,18 +98,9 @@ tools for building Taisei.
    apt update
    apt install meson cmake build-essential
 
-Beyond that, consult the *Optional Dependencies* list above. Many distros
+Beyond that, consult the *Dependencies* list above. Many distros
 package compile-time system dependencies with ``*-dev`` (i.e: ``libsdl2-dev``).
 Search with your distro's package manager to install the correct libraries.
-
-If you're using built-in dependencies *only* for whatever reason, one
-non-obvious dependency is for Wayland-based systems, where you may need to
-install the Wayland development library to ensure SDL2 compiles for it
-correctly.
-
-.. code:: sh
-
-   apt install libwayland-dev
 
 macOS
 '''''
@@ -113,7 +122,7 @@ tools:
 
    brew install meson cmake pkg-config docutils pygments
 
-You can then install dependencies from the *Optional Dependencies* list.
+You can then install dependencies from the *Dependencies* list.
 
 As of 2021-08-05, you should **not** install the following packages via
 Homebrew, as the versions available do not compile against Taisei correctly.
@@ -162,20 +171,6 @@ Another options for Windows-based computers is leveraging Windows
 to cross-compile to Windows using their Ubuntu image. You can also potentially
 use a ``mingw64`` toolchain directly on Windows, however that isn't supported
 or recommended, as it's generally more trouble than its worth.
-
-Checking Out Code
------------------
-
-First, you'll need to checkout the repository. You can do that with the
-following:
-
-.. code:: sh
-
-   git clone --recurse-submodules https://github.com/taisei-project/taisei
-
-The ``git submodule update --init --recursive`` line is absolutely necessary,
-or Taisei will not build, as it will be missing many of the dependencies its
-needs to compile.
 
 Build Options
 -------------
@@ -226,13 +221,13 @@ This is a core ``meson`` flag that does quite a few things. Not all of them will
 be covered here. Refer to the ``meson`` documentation linked above.
 
 Generally, ``default`` will rely on system-installed libraries when available,
-and fallback to vendored in-repository dependencies when necessary.
+and download missing dependencies when necessary.
 
-``forcefallback`` will force the use of in-repository dependencies
-whenever possible. Recommended for release builds.
+``forcefallback`` will force the use of wrapped dependencies whenever possible.
+Recommended for release builds.
 
-``nofallback`` disallows the use of in-repository dependencies whenever
-possible, instead relying on system libraries. Useful for CI.
+``nofallback`` disallows the use of wrapped dependencies whenever possible,
+instead relying on system libraries. Useful for CI.
 
 .. code:: sh
 
@@ -335,7 +330,7 @@ Assertions (``-Db_ndebug``)
 
 The name of this flag is opposite of what you'd expect. Think of it as "Not
 Debugging". It controls the ``NDEBUG`` declaration which is responsible for
-deactivating ``assert()`` functions.
+deactivating ``assert()`` macros.
 
 Setting to ``false`` will *enable* assertions (i.e: good for debugging).
 
@@ -369,7 +364,7 @@ Deprecation Warnings (``-Ddeprecation_warnings``)
 * Default: ``default``
 * Options: ``error``, ``no-error``, ``ignore``, ``default``
 
-Sets deprecation warnings to either hard-fail (``error``), print as warnings but
+Sets deprecation warnings to either hard-fail (``default``/```error``), print as warnings but
 not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
 ignore them (``ignore``).
 
@@ -380,7 +375,7 @@ Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
    meson configure build/ -Ddeprecation_warnings=no-error
 
 
-Stack Trace Debugging (``-Db_sanitize``)
+Debugging With Sanitizers (``-Db_sanitize``)
 """"""""""""""""""""""""""""""""""""""""
 
 This is useful for debugging crashes in the game. It uses
@@ -407,6 +402,8 @@ example):
 .. code:: sh
 
    /path/to/Taisei.app/Contents/MacOS/Taisei
+
+Further reading: `Sanitizers <https://github.com/google/sanitizers/wiki>`__
 
 Link-Time Optimizations (``-Db_lto``)
 """""""""""""""""""""""""""""""""""""
@@ -494,9 +491,6 @@ Sets the default renderer to use when Taisei launches.
 You can switch the renderer using the ``--renderer`` flag on the ``taisei``
 binary. (i.e: ``taisei --renderer gl33``).
 
-ANGLE
-"""""
-
 Shader Transpiler (``-Dshader_transpiler``)
 '''''''''''''''''''''''''''''''''''''''''''
 
@@ -510,39 +504,8 @@ shaders to a format usable by that driver.
 
    meson configure build/ -Dshader_transpiler=true
 
-ANGLE Library Paths (``-Dangle_lib*``)
-''''''''''''''''''''''''''''''''''''''
-
-* Default: ``(null)``
-* Options: ``/path/to/libGLESv2.{dll,dylib,so}``/``path/to/libEGL.{dll,dylib,so}``
-
-``-Dangle_libgles`` and ``-Dangle_libegl`` provide the full paths to the ANGLE
-libraries necessary for that engine.
-
-Generally, both need to be supplied at the same time.
-
-.. code:: sh
-
-   # for Linux
-   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.dylib -Dangle_libegl=/path/to/libEGL.dylib
-   # for macOS
-   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.so -Dangle_libegl=/path/to/libEGL.so
-   # for Windows
-   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.dll -Dangle_libegl=/path/to/libEGL.dll
-
-Install ANGLE (``-Dinstall_angle``)
-'''''''''''''''''''''''''''''''''''
-
-* Default: ``false``
-* Options: ``true``, ``false``
-
-Installs the ANGLE libraries supplied above through ``-Dangle_lib*``.
-
-Generally recommended when packaging ANGLE for distribution.
-
-.. code:: sh
-
-   meson configure build/ -Dinstall_angle=true
+ANGLE
+"""""
 
 Building ANGLE (Optional)
 '''''''''''''''''''''''''
@@ -574,157 +537,40 @@ It will output two files to ``angle/out/x64``:
 The file extension can be ``.dll`` for Windows, ``.dylib`` for macOS,
 and ``.so`` for Linux.
 
-Using ``-Dinstall_angle`` and ``-Dangle_lib*`` (see above), ``meson`` will copy
+Using ``-Dinstall_angle`` and ``-Dangle_lib*`` (see below), ``meson`` will copy
 those files over into the package itself when running the packaging steps.
 
-Packaging
----------
+ANGLE Library Paths (``-Dangle_lib*``)
+''''''''''''''''''''''''''''''''''''''
 
-Archive Types
-"""""""""""""
+* Default: ``(null)``
+* Options: ``/path/to/libGLESv2.{dll,dylib,so}``/``path/to/libEGL.{dll,dylib,so}``
 
-Taisei supports a wide variety of packaging and archive types, including
-``.zip``, ``.tar.gz``, ``.dmg`` (for macOS), ``.exe`` (for Windows), among
-others.
+``-Dangle_libgles`` and ``-Dangle_libegl`` provide the full paths to the ANGLE
+libraries necessary for that engine.
 
-Examples
-""""""""
-
-Linux
-'''''
-
-Compiling on Linux for Linux is fairly straightforward. We have ``meson``
-machine configuration files provided for covering most of the basic settings
-when building for Linux.
+Generally, both need to be supplied at the same time.
 
 .. code:: sh
 
-   meson setup build/ --native-file=misc/ci/linux-x86_64-build-release.ini
-   meson compile -C build/
+   # for macOS
+   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.dylib -Dangle_libegl=/path/to/libEGL.dylib
+   # for Linux
+   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.so -Dangle_libegl=/path/to/libEGL.so
+   # for Windows
+   meson configure build/ -Dangle_libgles=/path/to/libGLESv2.dll -Dangle_libegl=/path/to/libEGL.dll
 
-The ``--native-file`` contains many of the recommended default options for
-building releases, including using ``--wrap-mode=forcefallback`` to force the
-use of ``meson`` wrap dependenices (as mentioned earlier).
+Install ANGLE (``-Dinstall_angle``)
+'''''''''''''''''''''''''''''''''''
 
-You can then package Taisei into ``.tar.xz`` (or any other ``.tar.*`` style
-archive) by using the ``ninja`` command, which is typically installed alongside
-``meson``.
+* Default: ``false``
+* Options: ``true``, ``false``
 
-.. code:: sh
+Installs the ANGLE libraries supplied above through ``-Dangle_lib*``.
 
-   ninja txz -C build/
-
-This will output a ``.tar.xz`` package inside ``build/``, which you can then
-copy and distribute.
-
-macOS
-'''''
-
-Taisei is released as a ``.dmg`` package for macOS. You can also build for both
-x64 (Intel) and ARM64 (Apple Silicon, experimental).
-
-Depending on what Mac you're compiling on or for, some options may change, so
-pay special attention to the distinction between ``--native-file`` and
-``--cross-file``.
-
-Intel
-^^^^^
-
-Choose only one of the ``setup`` options depending on your hardware.
+Generally recommended when packaging ANGLE for distribution.
 
 .. code:: sh
 
-   # for building on Intel for Intel
-   meson setup build/ --native-file=misc/ci/macos-x86_64-build-release.ini
-   # for building on Apple Silicon for Intel
-   meson setup build/ --cross-file=misc/ci/macos-x86_64-build-release.ini
-   # compile
-   meson compile -C build/
+   meson configure build/ -Dinstall_angle=true
 
-
-Apple Silicon
-^^^^^^^^^^^^^
-
-Again, choose only one of the ``setup`` options depending on your hardware.
-
-.. code:: sh
-
-   # for building on Apple Silicon for Apple Silicon
-   meson setup build/ --native-file=misc/ci/macos-aarch64-build-release.ini
-   # for building on Intel for Apple Silicon
-   meson setup build/ --cross-file=misc/ci/macos-aarch64-build-release.ini
-   # compile
-   meson compile -C build/
-
-Packaging
-^^^^^^^^^
-
-With ``create-dmg`` installed through ``brew``, you can create a pretty-looking
-``.dmg`` file.
-
-.. code:: sh
-
-   ninja dmg -C build/
-
-This will output a ``.dmg`` package inside ``build/``, which you can then
-copy and distribute.
-
-Windows
-'''''''
-
-As mentioned previously, it's recommended to use Linux when building for
-Windows, utilizing the ``llvm-mingw`` toolchain.
-
-* TODO
-
-Emscripten
-''''''''''
-
-Emscripten relies on `emsdk <https://github.com/emscripten-core/emsdk>`__
-to cross-compile for web browsers into `WASM <https://webassembly.org/>`__.
-
-Follow the documentation there for more information, but here is a basic guide
-to get you going.
-
-.. code:: sh
-
-   git clone https://github.com/emscripten-core/emsdk.git
-   cd emsdk/
-   ./emsdk.py install 2.0.27
-   ./emsdk.py activate 2.0.27
-   # follow the instructions it presents to you, but follow the one that looks similar to this
-   source "/path/to/emsdk/emsdk_env.sh"
-
-This will set up your environment to use ``emsdk`` as your toolchain. You'll
-need to either set the ``source`` command in your shell's settings or re-run
-it every time you open your terminal.
-
-Since ``emscripten`` is its own separate platform, you are *always*
-cross-compiling for it. (Hence, ``--cross-file``.)
-
-.. code:: sh
-
-   meson setup build/ -Dbuild.cpp_std=gnu++14 --cross-file=misc/ci/emscripten-build.ini
-   meson compile -C build/
-
-**NOTE**: ``-Dbuild.cpp_std`` changes the C++ standard used to compile the
-project. For Emscripten, it's necessary to set the project to ``gnu++14``
-(as opposed to the default of ``gnu++11``) for certain submodules to compile
-correctly with ``emcc`` from ``emsdk``. This is *not* typically required on
-other platforms.
-
-You can then zip it up for uploading to a server.
-
-.. code:: sh
-
-   ninja zip -C build/
-
-It will output your ``Taisei*.zip`` to ``build/``.
-
-
-Switch (Homebrew)
-'''''''''''''''''
-
-Building for Switch requires the use of special Switch tools.
-
-* TODO

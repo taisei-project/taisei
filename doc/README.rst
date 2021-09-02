@@ -13,7 +13,7 @@ Development
 -----------
 
 * `BUILD.rst <./BUILD.rst>`__ - how to set up your build environment,
-  compile Taisei, and package it
+  and compile Taisei
 * `ENVIRON.rst <./ENVIRON.rst>`__ - various environment variables built
   into Taisei to modify its core settings, when run from the command line
 

@@ -82,9 +82,6 @@ You should also run ``git submodule update`` whenever you pull in
 new code, checkout another branch, or perform any ``git`` actions. The ``./pull``
 and ``./checkout`` helper scripts can do that for you automatically.
 
-See the `Building and Packaging <./doc/BUILD.rst>`__ for more information on how
-to build Taisei.
-
 Archive
 _______
 
@@ -110,6 +107,9 @@ your host machine is:
     meson setup build/
     meson compile -C build/
     meson install -C build/
+
+See the `Building <./doc/BUILD.rst>`__ doc for more information on how to build
+Taisei.
 
 Replays, Screenshots, and Settings Locations
 --------------------------------------------
