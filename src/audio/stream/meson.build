@@ -1,5 +1,6 @@
 
 a_stream_src = files(
+    'mixer.c',
     'player.c',
     'stream.c',
     'stream_opus.c',

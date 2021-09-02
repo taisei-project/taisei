@@ -9,9 +9,7 @@
 #include "taisei.h"
 
 #include "../backend.h"
-#include "../stream/stream.h"
-#include "../stream/stream_pcm.h"
-#include "../stream/player.h"
+#include "../stream/mixer.h"
 
 #include "util.h"
 #include "rwops/rwops_autobuf.h"
@@ -29,49 +27,24 @@
 #define NUM_SFX_CHANNELS (NUM_SFX_MAIN_CHANNELS + NUM_SFX_UI_CHANNELS)
 
 struct SFXImpl {
-	size_t pcm_size;
-	AudioStreamSpec spec;
-	float gain;
-
-	// TODO: maybe implement this tracking in the frontend instead.
-	// It's needed for things like sfx_stop_loop and sfx_play_or_restart to work, which are hacky at best.
-// 	struct {
-// 		SFXPlayID last_loop_id;
-// 		SFXPlayID last_play_id;
-// 	} per_group[NUM_SFX_GROUPS];
-
-	uint8_t pcm[];
+	MixerSFXImpl msfx;
 };
 
 struct BGM {
-	AudioStream stream;
+	MixerBGMImpl mbgm;
 };
 
-static_assert(offsetof(BGM, stream) == 0, "");
-
 static struct {
-	StreamPlayer players[NUM_CHANGROUPS];
-
-	StaticPCMAudioStream sfx_streams[NUM_SFX_CHANNELS];
-	uint32_t chan_play_ids[NUM_SFX_CHANNELS];
-	uint32_t play_counter;
-
-	AudioStreamSpec spec;
-	SDL_AudioDeviceID audio_device;
+	Mixer *mixer;
+	SDL_AudioDeviceID device;
 	uint8_t silence;
-} mixer;
-
-#define IS_VALID_CHANNEL(chan) ((uint)(chan) < NUM_SFX_CHANNELS)
+} audio;
 
 // BEGIN MISC
 
 static void SDLCALL mixer_callback(void *ignore, uint8_t *stream, int len) {
-	memset(stream, mixer.silence, len);
-
-	for(int i = 0; i < ARRAY_SIZE(mixer.players); ++i) {
-		StreamPlayer *plr = mixer.players + i;
-		splayer_process(plr, len, stream);
-	}
+	memset(stream, audio.silence, len);
+	mixer_process(audio.mixer, len, stream);
 }
 
 static bool init_sdl_audio(void) {
@@ -98,7 +71,7 @@ static bool init_sdl_audio(void) {
 	return true;
 }
 
-static bool init_audio_device(void) {
+static bool init_audio_device(SDL_AudioSpec *spec) {
 	SDL_AudioSpec want = { 0 }, have;
 	want.callback = mixer_callback;
 	want.channels = AUDIO_CHANNELS;
@@ -113,9 +86,9 @@ static bool init_audio_device(void) {
 		allow_changes |= SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
 	#endif
 
-	mixer.audio_device = SDL_OpenAudioDevice(NULL, false, &want, &have, allow_changes);
+	audio.device = SDL_OpenAudioDevice(NULL, false, &want, &have, allow_changes);
 
-	if(mixer.audio_device == 0) {
+	if(audio.device == 0) {
 		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDevice");
 		return false;
 	}
@@ -129,46 +102,10 @@ static bool init_audio_device(void) {
 		);
 	}
 
-	mixer.spec = astream_spec(have.format, have.channels, have.freq);
-	mixer.silence = have.silence;
+	*spec = have;
+	audio.silence = have.silence;
 
 	return true;
-}
-
-static void shutdown_players(void) {
-	for(int i = 0; i < ARRAY_SIZE(mixer.players); ++i) {
-		StreamPlayer *plr = mixer.players + i;
-
-		if(plr->channels) {
-			splayer_shutdown(plr);
-			memset(plr, 0, sizeof(*plr));
-		}
-	}
-}
-
-static bool init_players(void) {
-	if(!splayer_init(&mixer.players[CHANGROUP_BGM], NUM_BGM_CHANNELS, &mixer.spec)) {
-		log_error("splayer_init() failed");
-		return false;
-	}
-
-	if(!splayer_init(&mixer.players[CHANGROUP_SFX_GAME], NUM_SFX_MAIN_CHANNELS, &mixer.spec)) {
-		log_error("splayer_init() failed");
-		return false;
-	}
-
-	if(!splayer_init(&mixer.players[CHANGROUP_SFX_UI], NUM_SFX_UI_CHANNELS, &mixer.spec)) {
-		log_error("splayer_init() failed");
-		return false;
-	}
-
-	return true;
-}
-
-static void init_sfx_streams(void) {
-	for(int i = 0; i < ARRAY_SIZE(mixer.sfx_streams); ++i) {
-		astream_pcm_static_init(mixer.sfx_streams + i);
-	}
 }
 
 static bool audio_sdl_init(void) {
@@ -176,152 +113,87 @@ static bool audio_sdl_init(void) {
 		return false;
 	}
 
-	if(!init_audio_device()) {
+	SDL_AudioSpec aspec;
+
+	if(!init_audio_device(&aspec)) {
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
 
-	if(!init_players()) {
-		shutdown_players();
-		SDL_CloseAudioDevice(mixer.audio_device);
+	AudioStreamSpec mspec = astream_spec(aspec.format, aspec.channels, aspec.freq);
+
+	audio.mixer = calloc(1, sizeof(*audio.mixer));
+
+	if(!mixer_init(audio.mixer, &mspec)) {
+		mixer_shutdown(audio.mixer);
+		free(audio.mixer);
+		SDL_CloseAudioDevice(audio.device);
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
 
-	init_sfx_streams();
-
-	SDL_PauseAudioDevice(mixer.audio_device, false);
+	SDL_PauseAudioDevice(audio.device, false);
 	log_info("Audio subsystem initialized (SDL)");
 
 	return true;
 }
 
 static bool audio_sdl_shutdown(void) {
-	SDL_PauseAudioDevice(mixer.audio_device, true);
-	shutdown_players();
-	SDL_CloseAudioDevice(mixer.audio_device);
+	SDL_PauseAudioDevice(audio.device, true);
+	SDL_CloseAudioDevice(audio.device);
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+	mixer_shutdown(audio.mixer);
+	free(audio.mixer);
 
 	log_info("Audio subsystem deinitialized (SDL)");
 	return true;
 }
 
 static bool audio_sdl_output_works(void) {
-	return SDL_GetAudioDeviceStatus(mixer.audio_device) == SDL_AUDIO_PLAYING;
+	return SDL_GetAudioDeviceStatus(audio.device) == SDL_AUDIO_PLAYING;
 }
 
 static const char *const *audio_sdl_get_supported_exts(uint *numexts) {
-	// TODO figure this out dynamically
-	static const char *const exts[] = { ".opus" };
-	*numexts = ARRAY_SIZE(exts);
-	return exts;
+	return mixer_get_supported_exts(numexts);
 }
 
 INLINE void lock_audio(void) {
-	SDL_LockAudioDevice(mixer.audio_device);
+	SDL_LockAudioDevice(audio.device);
 }
 
 INLINE void unlock_audio(void) {
-	SDL_UnlockAudioDevice(mixer.audio_device);
+	SDL_UnlockAudioDevice(audio.device);
 }
+
+#define WITH_AUDIO_LOCK(...) ({ \
+	lock_audio(); \
+	__auto_type _result = __VA_ARGS__; \
+	unlock_audio(); \
+	_result; \
+})
 
 // END MISC
 
 // BEGIN GROUP
 
 static bool audio_sdl_group_get_channels_range(AudioChannelGroup group, int *first, int *last) {
-	switch(group) {
-		case CHANGROUP_SFX_GAME:
-			*first = 0;
-			*last = NUM_SFX_MAIN_CHANNELS - 1;
-			return true;
-
-		case CHANGROUP_SFX_UI:
-			*first = NUM_SFX_MAIN_CHANNELS;
-			*last = NUM_SFX_MAIN_CHANNELS + NUM_SFX_UI_CHANNELS - 1;
-			return true;
-
-		case CHANGROUP_BGM:
-			*first = NUM_SFX_CHANNELS;
-			*last = NUM_SFX_CHANNELS;
-			return true;
-
-		default:
-			UNREACHABLE;
-	}
+	return mixer_group_get_channels_range(group, first, last);
 }
 
 static bool audio_sdl_group_pause(AudioChannelGroup group) {
-	StreamPlayer *plr = &mixer.players[group];
-
-	lock_audio();
-	bool result = splayer_global_pause(plr);
-	unlock_audio();
-
-	return result;
+	return WITH_AUDIO_LOCK(mixer_group_pause(audio.mixer, group));
 }
 
 static bool audio_sdl_group_resume(AudioChannelGroup group) {
-	StreamPlayer *plr = &mixer.players[group];
-
-	lock_audio();
-	bool result = splayer_global_resume(plr);
-	unlock_audio();
-
-	return result;
+	return WITH_AUDIO_LOCK(mixer_group_resume(audio.mixer, group));
 }
 
 static bool audio_sdl_group_stop(AudioChannelGroup group, double fadeout) {
-	StreamPlayer *plr = &mixer.players[group];
-
-	lock_audio();
-
-	for(int i = 0; i < plr->num_channels; ++i) {
-		if(fadeout > 0) {
-			splayer_fadeout(plr, i, fadeout);
-		} else {
-			splayer_halt(plr, i);
-		}
-	}
-
-	unlock_audio();
-
-	return true;
+	return WITH_AUDIO_LOCK(mixer_group_stop(audio.mixer, group, fadeout));
 }
 
 static bool audio_sdl_group_set_volume(AudioChannelGroup group, double vol) {
-	lock_audio();
-	mixer.players[group].gain = vol;
-	unlock_audio();
-	return true;
-}
-
-static void flatchan_to_groupchan(
-	AudioBackendChannel fchan, AudioChannelGroup *out_group, int *out_chan
-) {
-	assert(fchan >= 0);
-	assert(fchan < NUM_SFX_CHANNELS);
-
-	if(fchan >= NUM_SFX_MAIN_CHANNELS) {
-		*out_group = CHANGROUP_SFX_UI;
-		*out_chan = fchan - NUM_SFX_MAIN_CHANNELS;
-	} else {
-		*out_group = CHANGROUP_SFX_GAME;
-		*out_chan = fchan;
-	}
-}
-
-static int groupchan_to_flatchan(int group, int chan) {
-	switch(group) {
-		case CHANGROUP_SFX_GAME:
-			return chan;
-
-		case CHANGROUP_SFX_UI:
-			return chan + NUM_SFX_MAIN_CHANNELS;
-
-		default:
-			UNREACHABLE;
-	}
+	return WITH_AUDIO_LOCK(mixer_group_set_volume(audio.mixer, group, vol));
 }
 
 // END GROUP
@@ -329,90 +201,41 @@ static int groupchan_to_flatchan(int group, int chan) {
 // BEGIN BGM
 
 static BGMStatus audio_sdl_bgm_status(void) {
-	lock_audio();
-	BGMStatus status = splayer_util_bgmstatus(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	unlock_audio();
-	return status;
+	return WITH_AUDIO_LOCK(mixer_bgm_status(audio.mixer));
 }
 
 static bool audio_sdl_bgm_play(BGM *bgm, bool loop, double position, double fadein) {
-	lock_audio();
-	bool status = splayer_play(&mixer.players[CHANGROUP_BGM], CHAN_BGM, &bgm->stream, loop, 1, position, fadein);
-	unlock_audio();
-	return status;
+	return WITH_AUDIO_LOCK(mixer_bgm_play(
+		audio.mixer, &bgm->mbgm, loop, position, fadein
+	));
 }
 
 static bool audio_sdl_bgm_stop(double fadeout) {
-	lock_audio();
-
-	if(splayer_util_bgmstatus(&mixer.players[CHANGROUP_BGM], CHAN_BGM) == BGM_STOPPED) {
-		unlock_audio();
-		log_warn("BGM is already stopped");
-		return false;
-	}
-
-	if(fadeout > 0) {
-		splayer_fadeout(&mixer.players[CHANGROUP_BGM], CHAN_BGM, fadeout);
-	} else {
-		splayer_halt(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	}
-
-	unlock_audio();
-	return true;
+	return WITH_AUDIO_LOCK(mixer_bgm_stop(audio.mixer, fadeout));
 }
 
 static bool audio_sdl_bgm_looping(void) {
-	lock_audio();
-
-	if(splayer_util_bgmstatus(&mixer.players[CHANGROUP_BGM], CHAN_BGM) == BGM_STOPPED) {
-		log_warn("BGM is stopped");
-		return false;
-	}
-
-	bool looping = splayer_is_looping(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	unlock_audio();
-
-	return looping;
+	return WITH_AUDIO_LOCK(mixer_bgm_looping(audio.mixer));
 }
 
 static bool audio_sdl_bgm_pause(void) {
-	lock_audio();
-	bool status = splayer_pause(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	unlock_audio();
-	return status;
+	return WITH_AUDIO_LOCK(mixer_bgm_pause(audio.mixer));
 }
 
 static bool audio_sdl_bgm_resume(void) {
-	lock_audio();
-	bool status = splayer_resume(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	unlock_audio();
-	return status;
+	return WITH_AUDIO_LOCK(mixer_bgm_resume(audio.mixer));
 }
 
 static double audio_sdl_bgm_seek(double pos) {
-	lock_audio();
-	pos = splayer_seek(&mixer.players[CHANGROUP_BGM], CHAN_BGM, pos);
-	unlock_audio();
-	return pos;
+	return WITH_AUDIO_LOCK(mixer_bgm_seek(audio.mixer, pos));
 }
 
 static double audio_sdl_bgm_tell(void) {
-	lock_audio();
-	double pos = splayer_tell(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	unlock_audio();
-	return pos;
+	return WITH_AUDIO_LOCK(mixer_bgm_tell(audio.mixer));
 }
 
 static BGM *audio_sdl_bgm_current(void) {
-	BGM *bgm = NULL;
-	lock_audio();
-
-	if(splayer_util_bgmstatus(&mixer.players[CHANGROUP_BGM], CHAN_BGM) != BGM_STOPPED) {
-		bgm = UNION_CAST(AudioStream*, BGM*, mixer.players[CHANGROUP_BGM].channels[CHAN_BGM].stream);
-	}
-
-	unlock_audio();
-	return bgm;
+	return (BGM*)WITH_AUDIO_LOCK(mixer_bgm_current(audio.mixer));
 }
 
 // END BGM
@@ -420,109 +243,43 @@ static BGM *audio_sdl_bgm_current(void) {
 // BEGIN BGM OBJECT
 
 static const char *audio_sdl_obj_bgm_get_title(BGM *bgm) {
-	return astream_get_meta_tag(&bgm->stream, STREAM_META_TITLE);
+	return mixerbgm_get_title(&bgm->mbgm);
 }
 
 static const char *audio_sdl_obj_bgm_get_artist(BGM *bgm) {
-	return astream_get_meta_tag(&bgm->stream, STREAM_META_ARTIST);
+	return mixerbgm_get_artist(&bgm->mbgm);
 }
 
 static const char *audio_sdl_obj_bgm_get_comment(BGM *bgm) {
-	return astream_get_meta_tag(&bgm->stream, STREAM_META_COMMENT);
+	return mixerbgm_get_comment(&bgm->mbgm);
 }
 
 static double audio_sdl_obj_bgm_get_duration(BGM *bgm) {
-	return astream_util_offset_to_time(&bgm->stream, bgm->stream.length);
+	return mixerbgm_get_duration(&bgm->mbgm);
 }
 
 static double audio_sdl_obj_bgm_get_loop_start(BGM *bgm) {
-	return astream_util_offset_to_time(&bgm->stream, bgm->stream.loop_start);
+	return mixerbgm_get_loop_start(&bgm->mbgm);
 }
 
 // END BGM OBJECT
 
 // BEGIN SFX
 
-static AudioBackendChannel play_sfx_on_channel(
-	SFXImpl *sfx,
-	AudioChannelGroup group,
-	AudioBackendChannel flat_chan,
-	bool loop,
-	double pos,
-	double fadein
-) {
-	lock_audio();
-
-	int chan;
-	StreamPlayer *plr;
-
-	if(flat_chan != AUDIO_BACKEND_CHANNEL_INVALID) {
-		assume(IS_VALID_CHANNEL(flat_chan));
-		assume(group == CHANGROUP_ANY);
-		flatchan_to_groupchan(flat_chan, &group, &chan);
-		plr = &mixer.players[group];
-	} else {
-		plr = &mixer.players[group];
-		chan = splayer_pick_channel(plr);
-		flat_chan = groupchan_to_flatchan(group, chan);
-	}
-
-	StaticPCMAudioStream *stream = &mixer.sfx_streams[flat_chan];
-
-	bool ok = (
-		astream_pcm_reopen(&stream->astream, &mixer.spec, sfx->pcm_size, sfx->pcm, 0)
-		&& splayer_play(plr, chan, &stream->astream, loop, sfx->gain, pos, fadein)
-	);
-
-	unlock_audio();
-
-	return ok ? flat_chan : AUDIO_BACKEND_CHANNEL_INVALID;
-}
-
 static AudioBackendChannel audio_sdl_sfx_play(
 	SFXImpl *sfx, AudioChannelGroup group, AudioBackendChannel chan, bool loop
 ) {
-	return play_sfx_on_channel(sfx, group, chan, loop, 0, 0);
+	return WITH_AUDIO_LOCK(mixer_sfx_play(
+		audio.mixer, &sfx->msfx, group, chan, loop
+	));
 }
 
 static bool audio_sdl_chan_stop(AudioBackendChannel chan, double fadeout) {
-	AudioChannelGroup g;
-	int gch;
-	flatchan_to_groupchan(chan, &g, &gch);
-	StreamPlayer *plr = &mixer.players[g];
-
-	lock_audio();
-
-	if(fadeout) {
-		splayer_fadeout(plr, gch, fadeout);
-	} else {
-		splayer_halt(plr, gch);
-	}
-
-	unlock_audio();
-
-	return true;
+	return WITH_AUDIO_LOCK(mixer_chan_stop(audio.mixer, chan, fadeout));
 }
 
 static bool audio_sdl_chan_unstop(AudioBackendChannel chan, double fadein) {
-	AudioChannelGroup g;
-	int gch;
-	flatchan_to_groupchan(chan, &g, &gch);
-	StreamPlayer *plr = &mixer.players[g];
-	bool ok = false;
-
-	lock_audio();
-
-	if(plr->channels[gch].stream) {
-		if(plr->channels[gch].fade.gain < 1) {
-			splayer_fadein(plr, gch, fadein);
-		}
-		ok = true;
-	}
-
-	unlock_audio();
-
-	return ok;
+	return WITH_AUDIO_LOCK(mixer_chan_unstop(audio.mixer, chan, fadein));
 }
 
 // END SFX
@@ -530,8 +287,7 @@ static bool audio_sdl_chan_unstop(AudioBackendChannel chan, double fadein) {
 // BEGIN SFX OBJECT
 
 static bool audio_sdl_obj_sfx_set_volume(SFXImpl *sfx, double vol) {
-	sfx->gain = vol;
-	return true;
+	return mixersfx_set_volume(&sfx->msfx, vol);
 }
 
 // END SFX OBJECT
@@ -539,101 +295,21 @@ static bool audio_sdl_obj_sfx_set_volume(SFXImpl *sfx, double vol) {
 // BEGIN LOAD
 
 static BGM *audio_sdl_bgm_load(const char *vfspath) {
-	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
-
-	if(!rw) {
-		log_error("VFS error: %s", vfs_get_error());
-		return NULL;
-	}
-
-	BGM *bgm = calloc(1, sizeof(*bgm));
-
-	if(!astream_open(&bgm->stream, rw, vfspath)) {
-		SDL_RWclose(rw);
-		free(bgm);
-		return NULL;
-	}
-
-	log_debug("Loaded stream from %s", vfspath);
-	return bgm;
+	return (BGM*)mixerbgm_load(vfspath);
 }
 
 static void audio_sdl_bgm_unload(BGM *bgm) {
-	lock_audio();
-	if(mixer.players[CHANGROUP_BGM].channels[CHAN_BGM].stream == &bgm->stream) {
-		splayer_halt(&mixer.players[CHANGROUP_BGM], CHAN_BGM);
-	}
-	unlock_audio();
-
-	astream_close(&bgm->stream);
-	free(bgm);
+	WITH_AUDIO_LOCK((mixer_notify_bgm_unload(audio.mixer, &bgm->mbgm), 0));
+	mixerbgm_unload(&bgm->mbgm);
 }
 
 static SFXImpl *audio_sdl_sfx_load(const char *vfspath) {
-	SDL_RWops *rw = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
-
-	if(!rw) {
-		log_error("VFS error: %s", vfs_get_error());
-		return NULL;
-	}
-
-	AudioStream stream;
-
-	if(!astream_open(&stream, rw, vfspath)) {
-		return NULL;
-	}
-
-	if(stream.length < 0) {
-		log_error("Indeterminate stream length");
-		astream_close(&stream);
-		return NULL;
-	}
-
-	if(stream.length == 0) {
-		log_error("Empty stream");
-		astream_close(&stream);
-		return NULL;
-	}
-
-	ssize_t pcm_size = astream_util_resampled_buffer_size(&stream, &mixer.spec);
-
-	if(pcm_size < 0) {
-		astream_close(&stream);
-		return NULL;
-	}
-
-	assert(pcm_size <= INT32_MAX);
-
-	SFXImpl *isnd = calloc(1, sizeof(*isnd) + pcm_size);
-
-	bool ok = astream_crystalize(&stream, &mixer.spec, pcm_size, &isnd->pcm);
-	astream_close(&stream);
-
-	if(!ok) {
-		free(isnd);
-		return NULL;
-	}
-
-	log_debug("Loaded SFX from %s", vfspath);
-
-	isnd->pcm_size = pcm_size;
-	return isnd;
+	return (SFXImpl*)mixersfx_load(vfspath, &audio.mixer->spec);
 }
 
 static void audio_sdl_sfx_unload(SFXImpl *sfx) {
-	lock_audio();
-
-	for(int i = 0; i < ARRAY_SIZE(mixer.sfx_streams); ++i) {
-		StaticPCMAudioStream *s = &mixer.sfx_streams[i];
-
-		if(s->ctx.start == sfx->pcm) {
-			astream_close(&s->astream);
-		}
-	}
-
-	unlock_audio();
-
-	free(sfx);
+	WITH_AUDIO_LOCK((mixer_notify_sfx_unload(audio.mixer, &sfx->msfx), 0));
+	mixersfx_unload(&sfx->msfx);
 }
 
 // END LOAD
