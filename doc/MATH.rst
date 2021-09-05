@@ -41,14 +41,30 @@ Core Concept
 
 One important fact about complex numbers is that one can think of the same
 complex number in two ways: either as a traditional two-dimensional vector or
-as a length and an angle (measured starting from the positive x-axis). When
-adding two complex numbers, they behave exactly like vectors. But in contrast
-to vectors, one can also multiply them together and get a new complex number.
-In this multiplication, their second interpretation becomes useful: multiplying
-two complex numbers means multiplying their lengths and adding their angles.
+as a length and an angle (measured starting from the positive X-axis). When
+adding two complex numbers, they behave exactly like vectors.
+
+But in contrast to vectors, one can also multiply them together and get a new
+complex number. In this multiplication, their second interpretation becomes
+useful: multiplying two complex numbers means multiplying their lengths and
+adding their angles.
 
 In-Game Examples
 ''''''''''''''''
+
+Coordinate System
+^^^^^^^^^^^^^^^^^
+
+Taisei's gameplay takes place entirely on a 2D plane, using an "X" and "Y"
+coordinate system.
+
+.. image:: images/taisei-xy-01.png
+   :width: 300pt
+
+Complex numbers in Taisei represent the "X-axis" (or "real") and "Y-axis" (or
+"imaginary"). This is not exactly a widely-adopted way of thinking about it,
+but as mentioned in *Core Concept*, it allows us to perform operations on the
+coordinate system that wouldn't otherwise be possible using vectors.
 
 Simple Movement
 ^^^^^^^^^^^^^^^
@@ -67,9 +83,9 @@ The important piece here, for our purposes, is:
    VIEWPORT_W/2.0 + 200.0 * I
 
 What this is doing is specifying a position on the "real" X-axis
-(``VIEWPORT_W/2.0``, which in Taisei means ``480 / 2.0`` or `240.0`), and then
-specifying a position on the "imaginary" Y-axis (``200.0 * I``). The ``I`` here
-is the same ``i`` described in the videos and the above explanation.
+(``VIEWPORT_W/2.0``, which in Taisei means ``480.0 / 2.0`` or `240.0`), and
+then specifying a position on the "imaginary" Y-axis (``200.0 * I``). The ``I``
+here is the same ``i`` described in the videos and the above explanation.
 
 So what we're really looking at here is:
 
@@ -124,9 +140,12 @@ This also conveniently lets the enemy position ``enemy->pos`` become the new
 easily determine what angle the danmaku need to travel in to travel towards the
 player.
 
-Since we don't really care about the distance, as we're looking for an angle
-or direction instead, ``cnormalize()`` in the original code mostly ignores
-that so that we get the complex number between ``[0, 0]`` and ``[-7, 3]``.
+As a vector, ``[-7, 3]``  points from the enemy position to the player position. Its
+length is the distance between enemy and player. Its direction is the direction
+we want the danmaku to travel in. In this example, we don’t care about the
+distance. We want a unit length pointer towards the player. ``cnormalize()`` does
+this for us by giving us a complex number with the same angle as its argument
+but length one.
 
 This could still be done, technically, using traditional vectors. However,
 there are still significant advantages to doing it this way. Let's consider how
@@ -149,7 +168,7 @@ Being able to multiply complex numbers by each other means "procedurally"
 generating danmaku patterns becomes much easier. Multiplying two complex
 numbers together like this means adding their angles,  and in the case of
 something like ``cdir(M_PI/180 * rng_sreal())``, you can quickly do rotations in
-your patterns without handling cumbersome matrices. In this case, we add some
+your patterns without handling cumbersome matricies. In this case, we add some
 random scattering to the original direction of "shoot directly at the player"
 contained in ``aim`` with an additional ``offset`` angle.
 
