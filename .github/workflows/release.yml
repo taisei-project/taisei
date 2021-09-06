@@ -198,7 +198,7 @@ jobs:
 
   macos-release-build-arm64:
     name: macOS (ARM64)
-    runs-on: macos-11
+    runs-on: macos-11.0
     steps:
     - name: Install Python
       uses: actions/setup-python@v2
@@ -336,8 +336,8 @@ jobs:
     - name: Configure
       run: >
         meson setup build/windows
-        -Dangle_libegl=$(pwd)/angle-compiled/dll/x64/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/dll/x64/libGLESv2.dll
+        -Dangle_libegl=$(pwd)/angle-compiled/angle/Windows-x64-dll/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/angle/Windows-x64-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -441,9 +441,9 @@ jobs:
     - name: Configure
       run: >
         meson setup build/windows
+        -Dangle_libegl=$(pwd)/angle-compiled/angle/Windows-x86-dll/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/angle/Windows-x86-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
-        -Dangle_libegl=$(pwd)/angle-compiled/dll/x86/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/dll/x86/libGLESv2.dll
         --prefix=$(pwd)/build-release
 
     - name: Build
