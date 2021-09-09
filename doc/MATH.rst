@@ -168,12 +168,12 @@ Being able to multiply complex numbers by each other means "procedurally"
 generating danmaku patterns becomes much easier. Multiplying two complex
 numbers together like this means adding their angles,  and in the case of
 something like ``cdir(M_PI/180 * rng_sreal())``, you can quickly do rotations in
-your patterns without handling cumbersome matricies. In this case, we add some
+your patterns without handling cumbersome matrices. In this case, we add some
 random scattering to the original direction of "shoot directly at the player"
 contained in ``aim`` with an additional ``offset`` angle.
 
 Additionally, the C programming language has a very robust support for handling
-complex numbers, whereas the support for things like vectors and matricies isn't
+complex numbers, whereas the support for things like vectors and matrices isn't
 as available or pleasant to use.
 
 With a bit of extra initial setup, you end up with code that's much easier to
