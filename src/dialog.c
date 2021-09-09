@@ -104,7 +104,7 @@ void dialog_update(Dialog *d) {
 		fapproach_asymptotic_p(&a->focus, a->target_focus, 0.12, 1e-3);
 	}
 
-	if (d->title.active) {
+	if(d->title.active) {
 		if(d->title.timeout > 0) {
 			fapproach_asymptotic_p(&d->title.box.opacity, 1, 0.05, 1e-3);
 			if(d->title.box.opacity >= 0.9 ) {
