@@ -53,6 +53,7 @@ Required
 -  libzstd >= 1.4.0
 -  freetype2
 -  opusfile
+-  OpenSSL/LibreSSL (for a better SHA-256 implementation)
 -  zlib
 
 Optional
@@ -69,7 +70,7 @@ Optional
 Built-In vs. System Dependencies
 """"""""""""""""""""""""""""""""
 
-Due to the wide array of platforms Taisei supports, the project contains meson
+Due to the wide array of platforms Taisei supports, we provide meson
 subprojects for its core dependencies using the
 `Meson dependency wrap system <https://mesonbuild.com/Wrap-dependency-system-manual.html>`__.
 This is to facilitate consistent build environments, including cross-builds,
@@ -364,9 +365,9 @@ Deprecation Warnings (``-Ddeprecation_warnings``)
 * Default: ``default``
 * Options: ``error``, ``no-error``, ``ignore``, ``default``
 
-Sets deprecation warnings to either hard-fail (``default``/```error``), print as warnings but
+Sets deprecation warnings to either hard-fail (``error``), print as warnings but
 not trigger full errors if ``-Dwerror=true`` (``no-error``), and otherwise
-ignore them (``ignore``).
+ignore them (``ignore``). ``default`` respects the ``-Dwerror`` setting.
 
 Generally, ``no-error`` is the recommended default when using ``-Dwerror=true``.
 
@@ -390,9 +391,9 @@ to use to launch ASan appropriately. Using macOS as an example:
 
 .. code:: sh
 
-   export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+   export DYLD_INSERT_LIBRARIES=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.5/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
 
-The ``../12.0.0/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
+The ``../12.0.5/..`` in the path of ``DYLD_INSERT_LIBRARIES`` changes with each
 version of Xcode. If it fails to launch for you, ensure that the version number
 is correct by browsing to the parent directory of ``../clang``.
 
