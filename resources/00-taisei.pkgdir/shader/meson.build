@@ -26,6 +26,8 @@ glsl_files = files(
     'extra_tower_apply_mask.frag.glsl',
     'extra_tower_mask.frag.glsl',
     'extra_tower_mask.vert.glsl',
+    'fireparticles.frag.glsl',
+    'fireparticles.vert.glsl',
     'fxaa.frag.glsl',
     'fxaa.vert.glsl',
     'glitch.frag.glsl',

@@ -22,6 +22,22 @@ typedef struct Stage4DrawData {
 		PBRModel ground;
 		PBRModel mansion;
 	} models;
+
+	struct {
+		struct {
+			vec3 c_base;
+			vec3 c_nstate;
+			vec3 c_nstate2;
+		} torch_particles;
+
+		struct {
+			vec3 base;
+			float r_factor;
+			float g_factor;
+		} torch_light;
+	} corridor;
+
+	mat4 fire_emitter_transform;
 } Stage4DrawData;
 
 void stage4_drawsys_init(void);

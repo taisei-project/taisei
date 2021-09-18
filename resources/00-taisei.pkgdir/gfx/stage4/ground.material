@@ -3,3 +3,6 @@ ambient_map = stage4/ground_ambient
 diffuse_map = stage4/ground_diffuse
 normal_map = stage4/ground_normal
 roughness_map = stage4/ground_roughness
+depth_map = stage4/ground_depth
+depth_scale = 0.005
+
