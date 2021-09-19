@@ -53,7 +53,6 @@ Required
 -  libzstd >= 1.4.0
 -  freetype2
 -  opusfile
--  OpenSSL/LibreSSL (for a better SHA-256 implementation)
 -  zlib
 
 Optional
@@ -65,6 +64,7 @@ Optional
    flaky/non-existent OpenGL support, such as Windows)
 -  GameMode headers (Linux only; for automatic
    `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
+-  OpenSSL/LibreSSL (for a better SHA-256 implementation)
 
 
 Built-In vs. System Dependencies
