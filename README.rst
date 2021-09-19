@@ -66,46 +66,6 @@ Firefox supported.)
 Source Code & Development
 -------------------------
 
-Basic Dependencies
-^^^^^^^^^^^^^^^^^^
-
-Run-Time Dependencies
-_____________________
-
-Required
-********
-
--  OpenGL >= 3.3, or OpenGL ES >= 3.0
--  SDL2 >= 2.0.10
--  cglm >= 0.7.8
--  libpng >= 1.5.0
--  libwebpdecoder >= 0.5 or libwebp >= 0.5
--  libzip >= 1.5.0 (>= 1.7.0 recommended)
--  libzstd >= 1.4.0
--  freetype2
--  opusfile
--  zlib
-
-Optional
-********
-
--  OpenSSL (for a better SHA-256 implementation; used in shader cache)
--  SPIRV-Cross >= 2019-03-22 (for OpenGL ES backends)
--  libshaderc (for OpenGL ES backends)
--  `ANGLE <https://github.com/google/angle>`__ (useful for platforms with
-   flaky/non-existent OpenGL support, such as Windows)
--  GameMode headers (Linux only; for automatic
-   `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
-
-Build-Time Dependenices
-_______________________
-
--  ``gcc`` or ``clang``
--  meson >= 0.53.0
--  Python >= 3.6
--  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
--  `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
-
 Obtaining Source Code
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -114,7 +74,7 @@ ______
 
 We recommend fetching the source code using ``git``:
 
-::
+.. code:: sh
 
     git clone --recurse-submodules https://github.com/taisei-project/taisei
 
@@ -142,11 +102,14 @@ etc).
 While Taisei is highly configurable, the easiest way to compile the code for
 your host machine is:
 
-::
+.. code:: sh
 
     meson setup build/
     meson compile -C build/
     meson install -C build/
+
+See the `Building <./doc/BUILD.rst>`__ doc for more information on how to build
+Taisei, and its list of dependencies.
 
 Replays, Screenshots, and Settings Locations
 --------------------------------------------
