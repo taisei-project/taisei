@@ -23,6 +23,10 @@ mathematics, and certainly if you're familiar with the concept of "variables"
 in programming, it should only take you a couple of hours to get used to
 thinking in these terms, and using them effectively in the code.
 
+Additionally, the C programming language has a very robust support for handling
+complex numbers, whereas the support for things like vectors and matrices isn't
+as readily available or pleasant to use.
+
 There are many different places you can learn about complex numbers, but we've
 found these two YouTube creators do a better job than we could of explaining
 the core concepts behind complex numbers.
@@ -64,12 +68,14 @@ coordinate system.
 Complex numbers in Taisei represent the "X-axis" (or "real") and "Y-axis" (or
 "imaginary"). This is not exactly a widely-adopted way of thinking about it,
 but as mentioned in *Core Concept*, it allows us to perform operations on the
-coordinate system that wouldn't otherwise be possible using vectors.
+coordinate system that wouldn't otherwise be possible using vectors. There are
+pros and cons to either way of doing it, with complex numbers being more
+involved to use but providing a few worthwhile advantages.
 
 Simple Movement
 ^^^^^^^^^^^^^^^
 
-Lets take a few concrete examples within Taisei's code. For let's look at a
+Let's take a few concrete examples within Taisei's code. For let's look at a
 piece of movement code for a fairy:
 
 .. code-block:: c
@@ -103,20 +109,15 @@ point on the X/Y axis at a certain rate (defined by ``0.035``).
 Simple Danmaku
 ^^^^^^^^^^^^^^
 
-Of course, there'd be no point in using complex numbers over a simpler X/Y
-system if it didn't provide significant advantages downstream. So let's look at
-a more complicated danmaku pattern to see why complex numbers are more
-effective for this role.
+Let's look at a danmaku pattern to see how complex numbers are used in-game.
 
 .. code-block:: c
 
    cmplx aim = cnormalize(global.plr.pos - enemy->pos);
 
 This ``aim`` variable could be passed to a ``move_towards`` function attached
-to a ``PROJECTILE`` object. The effect here would be the bullets moving
-directly towards the player in a straight line, even if the player moves around
-the screen, following the player as they move around in real-time (assuming)
-more than one bullet is fired.
+to a ``PROJECTILE`` object. The effect is bullets shooting directly at the
+player in a straight line, wherever on the screen they may be at the time.
 
 Let's look at the argument inside ``cnormalize`` first, ``global.plr.pos -
 e->pos``.  Both ``global.plr.pos`` and ``e->pos`` are *complex numbers*, in
@@ -141,16 +142,14 @@ easily determine what angle the danmaku need to travel in to travel towards the
 player.
 
 As a vector, ``[-7, 3]``  points from the enemy position to the player position. Its
-length is the distance between enemy and player. Its direction is the direction
+length is the distance between enemy and player. Its angle is the direction
 we want the danmaku to travel in. In this example, we don’t care about the
 distance. We want a unit length pointer towards the player. ``cnormalize()`` does
 this for us by giving us a complex number with the same angle as its argument
-but length one.
+but with a length of "1".
 
-This could still be done, technically, using traditional vectors. However,
-there are still significant advantages to doing it this way. Let's consider how
-we might use this new ``aim`` variable later on, say in a ``PROJECTILE`` block
-for a danmaku bullet:
+ Let's consider how we might use this new ``aim`` variable later on, say in a
+ ``PROJECTILE`` block for a danmaku bullet:
 
 .. code-block:: c
 
@@ -172,9 +171,6 @@ your patterns without handling cumbersome matrices. In this case, we add some
 random scattering to the original direction of "shoot directly at the player"
 contained in ``aim`` with an additional ``offset`` angle.
 
-Additionally, the C programming language has a very robust support for handling
-complex numbers, whereas the support for things like vectors and matrices isn't
-as available or pleasant to use.
-
-With a bit of extra initial setup, you end up with code that's much easier to
-maintain and understand.
+Hopefully, you can see now why complex numbers provides several advantages with
+the slight trade-off of being slightly more esoteric in the context of game
+programming.
