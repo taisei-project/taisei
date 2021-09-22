@@ -202,7 +202,7 @@ TASK(baryons_update, { BoxedEllyBaryons baryons; }) {
 
 		for(int i = 0; i < NUM_BARYONS; i++) {
 			cmplx d = (baryons->target_poss[i] - baryons->poss[i]);
-			baryons->poss[i] += baryons->relaxation_rate * d / sqrt(cabs(d));
+			baryons->poss[i] += baryons->relaxation_rate * (d / sqrt(cabs(d)) + 0.01*d);
 		}
 
 		YIELD;

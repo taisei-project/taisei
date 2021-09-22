@@ -27,22 +27,22 @@
 
 
 static real safe_radius_phase(int time, int baryon_idx) {
-	return baryon_idx * M_PI / 3 + SAFE_RADIUS_PHASE + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
+	return baryon_idx * M_PI / 3 + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
 }
 
 static int phase_num(real phase) {
-	return (int)((phase - SAFE_RADIUS_PHASE) / M_TAU);
+	return (int)(phase / M_TAU);
 }
 
 static real safe_radius(real phase) {
 	real base = 0.5 * (SAFE_RADIUS_MAX + SAFE_RADIUS_MIN);
 	real stretch = 0.5 * (SAFE_RADIUS_MAX - SAFE_RADIUS_MIN);
 
-	return base + stretch * 2 * (smooth(0.5 * sin(phase) + 0.5) - 0.5);
+	return base + stretch * 2 * (smooth(0.5 * sin(phase + SAFE_RADIUS_PHASE) + 0.5) - 0.5);
 }
 
-TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; int turn_speed; int timespan; }) {
-	Laser *l = TASK_BIND(create_laser(100+100*I, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed, 100, 0, 0));
+TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; int timespan; int time_offset; }) {
+	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
 	
 	double radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
 
@@ -52,9 +52,9 @@ TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Colo
 			return;
 		}
 		
-		//l->pos = baryons->poss[ARGS.baryon_idx] + ARGS.offset;
-		l->args[1] = radius ;//* sin(M_PI * t / (real)(l->deathtime + l->timespan));
-		l->width = 10;//clamp(t / 4.0, 0, 10);
+		l->pos = baryons->poss[ARGS.baryon_idx] + ARGS.offset;
+		l->args[1] = radius * sin(M_PI * t / (real)(l->deathtime + l->timespan));
+		l->width = clamp(t / 4.0, 0, 10);
 
 		YIELD;
 	}
@@ -83,42 +83,46 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 	// play_sound_ex("shot3",8, false);
 	play_sfx("shot_special1");
 
-	double turn_speed = 3*M_TAU/60;
+	real turn_speed = 3*M_TAU/60;
 
 	INVOKE_TASK(ricci_laser,
-		    .baryons = ARGS.baryons,
-		    .baryon_idx = ARGS.baryon_idx,
-		    .offset = offset,
-		    .color = *RGBA(0.2, 1, 0.5, 0),
-		    .turn_speed = turn_speed,
-		    .timespan = 12
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(0.2, 1, 0.5, 0),
+		.turn_speed = turn_speed,
+		.timespan = 12,
+		.time_offset = 0
 	);
 	
 	INVOKE_TASK(ricci_laser,
-		    .baryons = ARGS.baryons,
-		    .baryon_idx = ARGS.baryon_idx,
-		    .offset = offset,
-		    .color = *RGBA(1, 0, 0, 0),
-		    .turn_speed = -turn_speed,
-		    .timespan = 1
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(1, 0, 0, 0),
+		.turn_speed = -turn_speed,
+		.timespan = 1,
+		.time_offset = 0
 	);
 
-	INVOKE_TASK_DELAYED(30, ricci_laser,
-		    .baryons = ARGS.baryons,
-		    .baryon_idx = ARGS.baryon_idx,
-		    .offset = offset,
-		    .color = *RGBA(0.2, 0.4, 1, 0),
-		    .turn_speed = turn_speed,
-		    .timespan = 12
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(0.2, 0.4, 1, 0),
+		.turn_speed = turn_speed,
+		.timespan = 12,
+		.time_offset = 30
 	);
 	
-	INVOKE_TASK_DELAYED(30, ricci_laser,
-		    .baryons = ARGS.baryons,
-		    .baryon_idx = ARGS.baryon_idx,
-		    .offset = offset,
-		    .color = *RGBA(1, 0, 0, 0),
-		    .turn_speed = -turn_speed,
-		    .timespan = 1
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(1, 0, 0, 0),
+		.turn_speed = -turn_speed,
+		.timespan = 1,
+		.time_offset = 30
 	);
 
 	kill_projectile(p);
@@ -157,7 +161,7 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 
 	INVOKE_SUBTASK(ricci_baryons_movement, ARGS.baryons, ARGS.boss);
 
-	WAIT(150);
+	//WAIT(150);
 
 	for(int t = 0;; t++) {
 		int time = global.frames - NOT_NULL(ENT_UNBOX(ARGS.boss))->current->starttime;
