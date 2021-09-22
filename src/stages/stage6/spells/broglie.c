@@ -54,20 +54,6 @@ TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool 
 }
 
 
-static void broglie_laser_logic(Laser *l, int t) {
-	double hue = cimag(l->args[3]);
-
-	if(t == EVENT_BIRTH) {
-		l->color = *HSLA(hue, 1.0, 0.5, 0.0);
-	}
-
-	if(t < 0) {
-		return;
-	}
-
-	
-}
-
 TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
 	Laser *l = TASK_BIND(ARGS.laser);
 
