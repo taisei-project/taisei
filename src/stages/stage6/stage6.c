@@ -53,7 +53,7 @@ struct stage6_spells_s stage6_spells = {
 		},
 		.spacetime_curvature = {
 			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 80000,
-			elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_ricci),
 		},
 		.higgs_boson_uncovered = {
 			{16, 17, 18, 19}, AT_Spellcard, "LHC “Higgs Boson Uncovered”", 75, 60000,
