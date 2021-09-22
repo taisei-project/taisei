@@ -64,7 +64,6 @@ uint32_t topow2_u32(uint32_t x) attr_const;
 uint64_t topow2_u64(uint64_t x) attr_const;
 float ftopow2(float x) attr_const;
 float smooth(float x) attr_const;
-float smoothreclamp(float x, float old_min, float old_max, float new_min, float new_max) attr_const;
 double circle_angle(double index, double max_elements) attr_const;
 cmplx circle_dir(double index, double max_elements) attr_const;
 cmplx circle_dir_ofs(double index, double max_elements, double ofs) attr_const;
