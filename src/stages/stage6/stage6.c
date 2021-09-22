@@ -49,7 +49,7 @@ struct stage6_spells_s stage6_spells = {
 		},
 		.wave_particle_duality = {
 			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 65000,
-			elly_broglie, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_broglie),
 		},
 		.spacetime_curvature = {
 			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 80000,

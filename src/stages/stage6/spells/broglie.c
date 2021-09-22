@@ -12,53 +12,47 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool fast; real angle_freq; }) {
+	Laser *l = NOT_NULL(ENT_UNBOX(ARGS.laser));
+	cmplx pos = l->prule(l, ARGS.laser_offset);
 
-#define BROGLIE_PERIOD (420 - 30 * global.diff)
+	
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = ARGS.fast ? pp_thickrice : pp_rice,
+		.pos = pos,
+		.color = &ARGS.color,
+		.layer = LAYER_NODRAW,
+		.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION | PFLAG_MANUALANGLE,
+	));
+	
+	int scatter_time = l->timespan + ARGS.laser_offset - 10;
+	real speed = ARGS.fast ? 2.0 : 1.5;
 
-static int broglie_particle(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[0]);
-		return ACTION_ACK;
-	}
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	int scattertime = creal(p->args[1]);
-
-	if(t < scattertime) {
-		Laser *laser = (Laser*)REF(p->args[0]);
-
+	for(int t = 0; t < scatter_time; t++) {
+		Laser *laser = ENT_UNBOX(ARGS.laser);
 		if(laser) {
 			cmplx oldpos = p->pos;
-			p->pos = laser->prule(laser, fmin(t, cimag(p->args[1])));
+			p->pos = laser->prule(laser, fmin(t, ARGS.laser_offset));
 
 			if(oldpos != p->pos) {
 				p->angle = carg(p->pos - oldpos);
 			}
 		}
-	} else {
-		if(t == scattertime && p->type != PROJ_DEAD) {
-			projectile_set_layer(p, LAYER_BULLET);
-			p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION);
 
-			double angle_ampl = creal(p->args[3]);
-			double angle_freq = cimag(p->args[3]);
-
-			p->angle += angle_ampl * sin(t * angle_freq) * cos(2 * t * angle_freq);
-			p->args[2] = -cabs(p->args[2]) * cexp(I*p->angle);
-
-			play_sfx("redirect");
-		}
-
-		p->angle = carg(p->args[2]);
-		p->pos = p->pos + p->args[2];
+		YIELD;
 	}
 
-	return 1;
+	
+	projectile_set_layer(p, LAYER_BULLET);
+	p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION | PFLAG_MANUALANGLE);
+
+	double angle_ampl = difficulty_value(0.28, 0.48, 0.67, 0.86);
+
+	p->angle += angle_ampl * sin(scatter_time * ARGS.angle_freq) * cos(2 * scatter_time * ARGS.angle_freq);
+	p->move = move_linear(-speed * cdir(p->angle));
+	play_sfx("redirect");
 }
+
 
 static void broglie_laser_logic(Laser *l, int t) {
 	double hue = cimag(l->args[3]);
@@ -71,208 +65,175 @@ static void broglie_laser_logic(Laser *l, int t) {
 		return;
 	}
 
-	int dt = l->timespan * l->speed;
-	float charge = fmin(1, pow((double)t / dt, 4));
-	l->color = *HSLA(hue, 1.0, 0.5 + 0.2 * charge, 0.0);
-	l->width_exponent = 1.0 - 0.5 * charge;
+	
+}
+
+TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
+	Laser *l = TASK_BIND(ARGS.laser);
+
+	real dt = l->timespan * l->speed;
+	
+	for(int t = 0;; t++) {
+		real charge = fmin(1, powf(t / dt, 4));
+		l->color = *HSLA(ARGS.hue, 1.0, 0.5 + 0.2 * charge, 0.0);
+		l->width_exponent = 1.0 - 0.5 * charge;
+		
+		YIELD;
+	}
 }
 
 
-static int broglie_charge(Projectile *p, int t) {
-	if(t == EVENT_BIRTH) {
-		play_sfx_ex("shot3", 10, false);
-	}
+TASK(broglie_charger_bullet, { cmplx pos; real angle; real aim_angle; int firetime; int attack_num; }) {
+	play_sfx_ex("shot3", 10, false);
 
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+	float hue = ARGS.attack_num * 0.5 + ARGS.angle / M_TAU + 1.0 / 12.0;
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_ball,
+		.pos = ARGS.pos,
+		.color = HSLA(hue, 1.0, 0.55, 0.0),
+		.flags = PFLAG_NOCLEAR,
+	));
 
-	int firetime = creal(p->args[1]);
+	for(int t = 0; t < ARGS.firetime; t++) {
+		real f = pow(clamp((140 - (ARGS.firetime - t)) / 90.0, 0, 1), 8);
 
-	if(t == firetime) {
-		play_sfx_ex("laser1", 10, true);
-		play_sfx("boom");
-
-		stage_shake_view(20);
-
-		Color clr = p->color;
-		clr.a = 0;
-
-		PARTICLE(
-			.sprite = "blast",
-			.pos = p->pos,
-			.color = &clr,
-			.timeout = 35,
-			.draw_rule = GrowFade,
-			.args = { 0, 2.4 },
-			.flags = PFLAG_REQUIREDPARTICLE,
-		);
-
-		int attack_num = creal(p->args[2]);
-		double hue = creal(p->args[3]);
-
-		p->pos -= p->args[0] * 15;
-		cmplx aim = cexp(I*p->angle);
-
-		double s_ampl = 30 + 2 * attack_num;
-		double s_freq = 0.10 + 0.01 * attack_num;
-
-		for(int lnum = 0; lnum < 2; ++lnum) {
-			Laser *l = create_lasercurve4c(p->pos, 75, 100, RGBA(1, 1, 1, 0), las_sine,
-				5*aim, s_ampl, s_freq, lnum * M_PI +
-				I*(hue + lnum * (M_PI/12)/(M_PI/2)));
-
-			l->width = 20;
-			l->lrule = broglie_laser_logic;
-
-			int pnum = 0;
-			double inc = pow(1.10 - 0.10 * (global.diff - D_Easy), 2);
-
-			for(double ofs = 0; ofs < l->deathtime; ofs += inc, ++pnum) {
-				bool fast = global.diff == D_Easy || pnum & 1;
-
-				PROJECTILE(
-					.proto = fast ? pp_thickrice : pp_rice,
-					.pos = l->prule(l, ofs),
-					.color = HSLA(hue + lnum * (M_PI/12)/(M_PI/2), 1.0, 0.5, 0.0),
-					.rule = broglie_particle,
-					.args = {
-						add_ref(l),
-						I*ofs + l->timespan + ofs - 10,
-						fast ? 2.0 : 1.5,
-						(1 + 2 * ((global.diff - 1) / (double)(D_Lunatic - 1))) * M_PI/11 + s_freq*10*I
-					},
-					.layer = LAYER_NODRAW,
-					.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION,
-				);
-			}
-		}
-
-		return ACTION_DESTROY;
-	} else {
-		float f = pow(clamp((140 - (firetime - t)) / 90.0, 0, 1), 8);
-		cmplx o = p->pos - p->args[0] * 15;
-		p->args[0] *= cexp(I*M_PI*0.2*f);
-		p->pos = o + p->args[0] * 15;
+		// TODO: make the baryon spin in tune
+		ARGS.angle += M_PI * 0.2 * f;
+		p->pos = ARGS.pos + 15 * cdir(ARGS.angle);
 
 		if(f > 0.1) {
 			play_sfx_loop("charge_generic");
 
-			cmplx n = cexp(2.0*I*M_PI*frand());
-			float l = 50*frand()+25;
-			float s = 4+f;
+			cmplx dir = rng_dir();
+			real l = 50 * rng_real() + 25;
+			real s = 4 + f;
 
 			Color *clr = color_lerp(RGB(1, 1, 1), &p->color, clamp((1 - f * 0.5), 0.0, 1.0));
 			clr->a = 0;
 
 			PARTICLE(
 				.sprite = "flare",
-				.pos = p->pos+l*n,
+				.pos = p->pos + l * dir,
 				.color = clr,
-				.draw_rule = Fade,
-				.rule = linear,
-				.timeout = l/s,
-				.args = { -s*n },
+				.draw_rule = pdraw_timeout_fade(1, 0),
+				.move = move_linear(-s * dir),
+				.timeout = l / s,
 			);
 		}
+
+		YIELD;
 	}
 
-	return ACTION_NONE;
+
+	play_sfx_ex("laser1", 10, true);
+	play_sfx("boom");
+
+	stage_shake_view(20);
+
+	Color clr = p->color;
+	clr.a = 0;
+
+	PARTICLE(
+		.sprite = "blast",
+		.pos = p->pos,
+		.color = &clr,
+		.timeout = 35,
+		.draw_rule = pdraw_timeout_scalefade(1, 2.4, 1, 0),
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+
+	cmplx aim = cexp(I * ARGS.aim_angle);
+
+	real s_ampl = 30 + 2 * ARGS.attack_num;
+	real s_freq = 0.10 + 0.01 * ARGS.attack_num;
+
+	for(int lnum = 0; lnum < 2; ++lnum) {
+		Laser *l = create_lasercurve4c(ARGS.pos, 75, 100, RGBA(1, 1, 1, 0), las_sine,
+			5*aim, s_ampl, s_freq, lnum * M_PI +
+			I*(hue + lnum / 6.0));
+
+		l->width = 20;
+		INVOKE_TASK(broglie_laser, ENT_BOX(l), hue + lnum / 6.0);
+
+		int pnum = 0;
+		real inc = difficulty_value(1.21, 1.0, 0.81, 0.64);
+
+		for(real laser_offset = 0; laser_offset < l->deathtime; laser_offset += inc, ++pnum) {
+			bool fast = global.diff == D_Easy || pnum & 1;
+
+			INVOKE_TASK(broglie_particle,
+				    .laser = ENT_BOX(l),
+				    .laser_offset = laser_offset,
+				    .angle_freq = s_freq * 10,
+				    .color = *HSLA(hue + lnum / 6.0, 1.0, 0.5, 0.0),
+				    .fast = fast
+			);
+		}
+	}	
+
+	kill_projectile(p);
 }
 
-static int baryon_broglie(Enemy *e, int t) {
-	if(t < 0) {
-		return 1;
-	}
+TASK(broglie_baryons_centralize, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+	for(int t = 0;; t++) {
+		Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
+		baryons->center_pos = boss->pos; 
 
-	if(!global.boss) {
-		return ACTION_DESTROY;
-	}
-
-	int period = BROGLIE_PERIOD;
-	int t_real = t;
-	int attack_num = t_real / period;
-	t %= period;
-
-	TIMER(&t);
-	Enemy *master = NULL;
-
-	for(Enemy *en = global.enemies.first; en; en = en->next) {
-		if(en->visual_rule == baryon) {
-			master = en;
-			break;
+		for(int i = 1; i < NUM_BARYONS; i++) {
+			cmplx dir = cnormalize(baryons->poss[0] - baryons->center_pos);
+			baryons->target_poss[i] = baryons->center_pos + 50 * dir * cdir(M_TAU/5*(i-1)) * sin(0.05 * t);
 		}
+		YIELD;
 	}
+}
 
-	assert(master != NULL);
+TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+	INVOKE_SUBTASK(broglie_baryons_centralize, ARGS.boss, ARGS.baryons);
 
-	if(master != e) {
-		if(t_real < period) {
-			GO_TO(e, global.boss->pos, 0.03);
-		} else {
-			e->pos = global.boss->pos;
-		}
-
-		return 1;
-	}
-
+	real aim_angle;
 	int delay = 140;
 	int step = 15;
 	int cnt = 3;
 	int fire_delay = 120;
 
-	static double aim_angle;
+	for(int attack_num = 0;; attack_num++) {
+		for(int t = 0; t < delay; t++) {
+			cmplx boss_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
+			baryons->target_poss[0] = boss_pos + 100 * cnormalize(global.plr.pos - boss_pos);
 
-	AT(delay) {
+			YIELD;
+		}
+
 		elly_clap(global.boss,fire_delay);
-		aim_angle = carg(e->pos - global.boss->pos);
+		aim_angle = carg(baryons->poss[0] - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
+
+		for(int i = 0; i < cnt; i++) {
+			real angle = M_TAU * (0.25 + 1.0 / cnt * i);
+
+			INVOKE_TASK(broglie_charger_bullet,
+				    .pos = baryons->poss[0],
+				    .angle = angle,
+				    .aim_angle = M_TAU / cnt * i + aim_angle,
+				    .firetime = fire_delay - step * i,
+				    .attack_num = attack_num
+			);
+
+			WAIT(step);
+		}
+
+		WAIT(ARGS.period - delay - cnt * step);
 	}
-
-	FROM_TO(delay, delay + step * cnt - 1, step) {
-		double a = 2*M_PI * (0.25 + 1.0/cnt*_i);
-		cmplx n = cexp(I*a);
-		double hue = (attack_num * M_PI + a + M_PI/6) / (M_PI*2);
-
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = e->pos + 15*n,
-			.color = HSLA(hue, 1.0, 0.55, 0.0),
-			.rule = broglie_charge,
-			.args = {
-				n,
-				(fire_delay - step * _i),
-				attack_num,
-				hue
-			},
-			.flags = PFLAG_NOCLEAR,
-			.angle = (2*M_PI*_i)/cnt + aim_angle,
-		);
-	}
-
-	if(t < delay /*|| t > delay + fire_delay*/) {
-		cmplx target_pos = global.boss->pos + 100 * cexp(I*carg(global.plr.pos - global.boss->pos));
-		GO_TO(e, target_pos, 0.03);
-	}
-
-	return 1;
 }
 
-void elly_broglie(Boss *b, int t) {
-	TIMER(&t);
+DEFINE_EXTERN_TASK(stage6_spell_broglie) {
+	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
 
-	AT(0) {
-		set_baryon_rule(baryon_broglie);
-	}
+	int period = difficulty_value(390, 360, 330, 300);
+	INVOKE_SUBTASK(broglie_baryons, ENT_BOX(boss), ARGS.baryons, period);
 
-	AT(EVENT_DEATH) {
-		set_baryon_rule(baryon_reset);
-	}
-
-	if(t < 0) {
-		return;
-	}
-
-	int period = BROGLIE_PERIOD;
 	double ofs = 100;
 
 	cmplx positions[] = {
@@ -283,8 +244,9 @@ void elly_broglie(Boss *b, int t) {
 		ofs + ofs*I,
 		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
 	};
-
-	if(t/period > 0) {
-		GO_TO(b, positions[(t/period) % (sizeof(positions)/sizeof(cmplx))], 0.02);
+	
+	for(int i = 0;; i++) {
+		WAIT(period);
+		boss->move = move_towards(positions[i % ARRAY_SIZE(positions)], 0.02);
 	}
 }
