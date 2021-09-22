@@ -41,7 +41,7 @@ static real safe_radius(real phase) {
 	return base + stretch * 2 * (smooth(0.5 * sin(phase + SAFE_RADIUS_PHASE) + 0.5) - 0.5);
 }
 
-TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; int timespan; int time_offset; }) {
+TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; real timespan; int time_offset; }) {
 	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
 	
 	double radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
@@ -101,7 +101,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.offset = offset,
 		.color = *RGBA(1, 0, 0, 0),
 		.turn_speed = -turn_speed,
-		.timespan = 1,
+		.timespan = 2.5,
 		.time_offset = 0
 	);
 
@@ -121,7 +121,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.offset = offset,
 		.color = *RGBA(1, 0, 0, 0),
 		.turn_speed = -turn_speed,
-		.timespan = 1,
+		.timespan = 2.5,
 		.time_offset = 30
 	);
 
@@ -135,7 +135,7 @@ TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 	for(int t = 0;; t++) {
 		baryons->center_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
 
-		cmplx target = VIEWPORT_W / 2.0 + VIEWPORT_H * I * 2 / 3 + 100 * sin(baryon_speed * t / 200.0) + 25 * I * cos(baryon_speed * t * 3.0 / 500.0);
+		cmplx target = VIEWPORT_W / 2.0 + VIEWPORT_H * I * 2 / 3 - 100 * sin(baryon_speed * t / 200.0) - 25 * I * cos(baryon_speed * t * 3.0 / 500.0);
 
 		if(t < 150) {
 			baryons->target_poss[0] = global.plr.pos;
@@ -195,7 +195,6 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 				.max_viewport_dist = SAFE_RADIUS_MAX,
 	));
 
-	int time = global.frames-global.boss->current->starttime;
 
 	for(int t = 0;; t++) {
 		cmplx shift = 0;
@@ -208,6 +207,8 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 		double influence = 0;
 		
+		int time = global.frames-global.boss->current->starttime;
+		
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real base_radius = safe_radius(safe_radius_phase(time, i));
 
@@ -216,7 +217,7 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 			int gaps = phase_num(safe_radius_phase(time, i)) + 5;
 					     
-			real radius= cabs(d) / (1.0 - 0.15 * sin(gaps * carg(d) + angular_velocity * time));
+			real radius = cabs(d) / (1.0 - 0.15 * sin(gaps * carg(d) + angular_velocity * time));
 			double range = 1 / (exp((radius - base_radius) / 50) + 1);
 			shift += -1.1 * (base_radius - radius) / radius * d * range;
 			influence += range;
