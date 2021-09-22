@@ -54,7 +54,7 @@ TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Colo
 		
 		l->pos = baryons->poss[ARGS.baryon_idx] + ARGS.offset;
 		l->args[1] = radius * sin(M_PI * t / (real)(l->deathtime + l->timespan));
-		l->width = clamp(t / 4.0, 0, 10);
+		l->width = clamp(t / 3.0, 0, 15);
 
 		YIELD;
 	}
