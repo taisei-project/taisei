@@ -13,43 +13,26 @@
 #include "common_tasks.h"
 
 TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool fast; real angle_freq; }) {
-	Laser *l = NOT_NULL(ENT_UNBOX(ARGS.laser));
-	cmplx pos = l->prule(l, ARGS.laser_offset);
+	Laser *l = TASK_BIND(ARGS.laser);
 
+	real angle_ampl = difficulty_value(0.28, 0.48, 0.67, 0.86);
+	int scatter_time = l->timespan + ARGS.laser_offset - 10;
+
+	WAIT(scatter_time);
 	
-	Projectile *p = TASK_BIND(PROJECTILE(
+	real speed = ARGS.fast ? 2.0 : 1.5;
+
+	cmplx pos = l->prule(l, ARGS.laser_offset);
+	cmplx dir = cnormalize(pos - l->prule(l, ARGS.laser_offset-0.1));
+	dir *= cdir(angle_ampl * sin(scatter_time * ARGS.angle_freq) * cos(2 * scatter_time * ARGS.angle_freq));
+
+	PROJECTILE(
 		.proto = ARGS.fast ? pp_thickrice : pp_rice,
 		.pos = pos,
 		.color = &ARGS.color,
-		.layer = LAYER_NODRAW,
-		.flags = PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOSPAWNEFFECTS | PFLAG_NOCOLLISION | PFLAG_MANUALANGLE,
-	));
-	
-	int scatter_time = l->timespan + ARGS.laser_offset - 10;
-	real speed = ARGS.fast ? 2.0 : 1.5;
+		.move = move_linear(-speed * dir)
+	);
 
-	for(int t = 0; t < scatter_time; t++) {
-		Laser *laser = ENT_UNBOX(ARGS.laser);
-		if(laser) {
-			cmplx oldpos = p->pos;
-			p->pos = laser->prule(laser, fmin(t, ARGS.laser_offset));
-
-			if(oldpos != p->pos) {
-				p->angle = carg(p->pos - oldpos);
-			}
-		}
-
-		YIELD;
-	}
-
-	
-	projectile_set_layer(p, LAYER_BULLET);
-	p->flags &= ~(PFLAG_NOCLEARBONUS | PFLAG_NOCLEAREFFECT | PFLAG_NOCOLLISION | PFLAG_MANUALANGLE);
-
-	double angle_ampl = difficulty_value(0.28, 0.48, 0.67, 0.86);
-
-	p->angle += angle_ampl * sin(scatter_time * ARGS.angle_freq) * cos(2 * scatter_time * ARGS.angle_freq);
-	p->move = move_linear(-speed * cdir(p->angle));
 	play_sfx("redirect");
 }
 
@@ -69,7 +52,7 @@ TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
 }
 
 
-TASK(broglie_charger_bullet, { cmplx pos; real angle; real aim_angle; int firetime; int attack_num; }) {
+TASK(broglie_charger_bullet, { cmplx pos; real angle; cmplx aim; int firetime; int attack_num; }) {
 	play_sfx_ex("shot3", 10, false);
 
 	float hue = ARGS.attack_num * 0.5 + ARGS.angle / M_TAU + 1.0 / 12.0;
@@ -128,15 +111,12 @@ TASK(broglie_charger_bullet, { cmplx pos; real angle; real aim_angle; int fireti
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
-	cmplx aim = cexp(I * ARGS.aim_angle);
-
 	real s_ampl = 30 + 2 * ARGS.attack_num;
 	real s_freq = 0.10 + 0.01 * ARGS.attack_num;
 
 	for(int lnum = 0; lnum < 2; ++lnum) {
 		Laser *l = create_lasercurve4c(ARGS.pos, 75, 100, RGBA(1, 1, 1, 0), las_sine,
-			5*aim, s_ampl, s_freq, lnum * M_PI +
-			I*(hue + lnum / 6.0));
+			5 * ARGS.aim, s_ampl, s_freq, lnum * M_PI);
 
 		l->width = 20;
 		INVOKE_TASK(broglie_laser, ENT_BOX(l), hue + lnum / 6.0);
@@ -178,7 +158,6 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 	INVOKE_SUBTASK(broglie_baryons_centralize, ARGS.boss, ARGS.baryons);
 
-	real aim_angle;
 	int delay = 140;
 	int step = 15;
 	int cnt = 3;
@@ -193,7 +172,7 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 		}
 
 		elly_clap(global.boss,fire_delay);
-		aim_angle = carg(baryons->poss[0] - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
+		cmplx aim = cnormalize(baryons->poss[0] - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
 
 		for(int i = 0; i < cnt; i++) {
 			real angle = M_TAU * (0.25 + 1.0 / cnt * i);
@@ -201,7 +180,7 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 			INVOKE_TASK(broglie_charger_bullet,
 				    .pos = baryons->poss[0],
 				    .angle = angle,
-				    .aim_angle = M_TAU / cnt * i + aim_angle,
+				    .aim = cdir(M_TAU / cnt * i) * aim,
 				    .firetime = fire_delay - step * i,
 				    .attack_num = attack_num
 			);
@@ -220,7 +199,7 @@ DEFINE_EXTERN_TASK(stage6_spell_broglie) {
 	int period = difficulty_value(390, 360, 330, 300);
 	INVOKE_SUBTASK(broglie_baryons, ENT_BOX(boss), ARGS.baryons, period);
 
-	double ofs = 100;
+	real ofs = 100;
 
 	cmplx positions[] = {
 		VIEWPORT_W-ofs + ofs*I,
@@ -231,7 +210,7 @@ DEFINE_EXTERN_TASK(stage6_spell_broglie) {
 		VIEWPORT_W-ofs + (VIEWPORT_H-ofs)*I,
 	};
 	
-	for(int i = 0;; i++) {
+	for(int i = 1;; i++) {
 		WAIT(period);
 		boss->move = move_towards(positions[i % ARRAY_SIZE(positions)], 0.02);
 	}
