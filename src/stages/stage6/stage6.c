@@ -57,7 +57,7 @@ struct stage6_spells_s stage6_spells = {
 		},
 		.higgs_boson_uncovered = {
 			{16, 17, 18, 19}, AT_Spellcard, "LHC “Higgs Boson Uncovered”", 75, 60000,
-			elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_lhc),
 		}
 	},
 

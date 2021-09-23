@@ -22,9 +22,9 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_maxwell, ScytheAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_eigenstate, BaryonsAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_broglie, BaryonsAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_ricci, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_lhc, BaryonsAttack);
 
 void elly_spellbg_toe(Boss*, int);
 
 void elly_curvature(Boss*, int);
-void elly_lhc(Boss*, int);
 void elly_theory(Boss*, int);
