@@ -14,16 +14,10 @@
 
 /* !!! You are entering Akari danmaku code !!! (rejuvenated by lao) */
 #define SAFE_RADIUS_DELAY 300
-#define SAFE_RADIUS_BASE 100
-#define SAFE_RADIUS_STRETCH 100
 #define SAFE_RADIUS_MIN 60
 #define SAFE_RADIUS_MAX 150
 #define SAFE_RADIUS_PHASE_VELOCITY 0.015
 #define SAFE_RADIUS_PHASE 3*M_PI/2
-//#define SAFE_RADIUS_PHASE_FUNC(o) ((int)(creal(e->args[2])+0.5) * M_PI/3 + SAFE_RADIUS_PHASE + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
-#define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE, 2*M_PI) / (2*M_PI))
-#define SAFE_RADIUS_PHASE_NUM(o) ((int)((SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE) / (2*M_PI)))
-#define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
 
 
 static real safe_radius_phase(int time, int baryon_idx) {
