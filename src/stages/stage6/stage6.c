@@ -19,8 +19,6 @@
 #include "portrait.h"
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
  *	To add, remove, or reorder spells, see this stage's header file.
@@ -64,7 +62,7 @@ struct stage6_spells_s stage6_spells = {
 	.extra = {
 		.curvature_domination = {
 			{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe “Curvature Domination”", 60, 60000,
-			elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_forgotten),
 		}
 	},
 
@@ -184,12 +182,6 @@ static void stage6_spellpractice_start(void) {
 	boss_engage(global.boss);
 }
 
-static void stage6_spellpractice_events(void) {
-	// XXX: whaaat
-	if(!global.boss) {
-		enemy_kill_all(&global.enemies);
-	}
-}
 
 StageProcs stage6_procs = {
 	.begin = stage6_start,

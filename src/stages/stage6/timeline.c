@@ -286,7 +286,7 @@ TASK(spawn_boss, NO_ARGS) {
 	boss_add_attack_task_with_args(boss, AT_Normal, "Baryon2", 50, 55000, TASK_INDIRECT(BaryonsAttack, stage6_boss_nonspell_5).base, NULL, baryons_args.base);
 	
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.higgs_boson_uncovered, baryons_args.base);
-	//boss_add_attack_from_info(b, &stage6_spells.extra.curvature_domination, false);
+	boss_add_attack_from_info_with_args(boss, &stage6_spells.extra.curvature_domination, baryons_args.base);
 	boss_add_attack_task_with_args(boss, AT_Move, "Explode", 4, 0, TASK_INDIRECT(BaryonsAttack, stage6_boss_baryons_explode).base, NULL, baryons_args.base);
 	/*
 	boss_add_attack(b, AT_Move, "Move to center", 4, 0, elly_goto_center, NULL);
