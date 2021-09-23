@@ -12,8 +12,6 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 #define LASER_EXTENT (4+1.5*global.diff-D_Normal)
 #define LASER_LENGTH 60
 
@@ -586,56 +584,30 @@ static int elly_toe_higgs(Projectile *p, int t) {
 //		not an expert and more things might be off.
 //
 
-void elly_theory(Boss *b, int time) {
-	if(time == EVENT_BIRTH) {
-		stage_shake_view(50);
-		boss_set_portrait(b, "elly", "beaten", "shouting");
-		return;
-	}
+TASK(toe_part_bosons, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
 
-	if(time < 0) {
-		GO_TO(b, ELLY_TOE_TARGET_POS, 0.1);
-		return;
-	}
+	int step = 1;
+	int start_time = 0;
+	int end_time = FERMIONTIME + 1000;
+	int cycle_step = 200;
+	int solo_cycles = (FERMIONTIME - start_time) / cycle_step - global.diff + 1;
+	int warp_cycles = (HIGGSTIME - start_time) / cycle_step - 1;
 
-	TIMER(&time);
 
-	AT(0) {
-		assert(cabs(b->pos - ELLY_TOE_TARGET_POS) < 1);
-		b->pos = ELLY_TOE_TARGET_POS;
-		elly_clap(b,50000);
-	}
-
-	int fermiontime = FERMIONTIME;
-	int higgstime = HIGGSTIME;
-	int symmetrytime = SYMMETRYTIME;
-	int yukawatime = YUKAWATIME;
-	int breaktime = BREAKTIME;
-
-	{
-		int count = 30;
-		int step = 1;
-		int start_time = 0;
-		int end_time = fermiontime + 1000;
-		int cycle_time = count * step - 1;
-		int cycle_step = 200;
-		int solo_cycles = (fermiontime - start_time) / cycle_step - global.diff + 1;
-		int warp_cycles = (higgstime - start_time) / cycle_step - 1;
-
-		if(time - start_time <= cycle_time) {
-			--count; // get rid of the spawn safe spot on first cycle
-			cycle_time -= step;
-		}
-
-		FROM_TO_INT(start_time, end_time, cycle_step, cycle_time, step) {
+	for(int cycle = 0; cycle < end_time/cycle_step; cycle++) {
+		int count = 30 - (count == 0); // get rid of the spawn safe spot on first cycle
+		int cycle_time = count * step;
+		
+		for(int t = 0; t < cycle_time; t += WAIT(step)) {
 			play_sfx("shot2");
 
-			int pnum = _ni;
+			int pnum = t;
 			int num_warps = 0;
 
-			if(_i < solo_cycles) {
+			if(cycle < solo_cycles) {
 				num_warps = global.diff;
-			} else if(_i < warp_cycles && global.diff > D_Normal) {
+			} else if(cycle < warp_cycles && global.diff > D_Normal) {
 				num_warps = 1;
 			}
 
@@ -643,36 +615,46 @@ void elly_theory(Boss *b, int time) {
 			for(int i = 0; i < 4; i++) {
 				pnum = (count - pnum - 1);
 
-				cmplx dir = I*cexp(I*(2*M_PI/count*(pnum+0.5)));
-				dir *= cexp(I*0.15*sign(creal(dir))*sin(_i));
+				cmplx dir = I*cdir(M_TAU / count * (pnum + 0.5));
+				dir *= cdir(0.15 * sign(creal(dir)) * sin(cycle));
 
-				cmplx bpos = b->pos + 18 * dir * i;
+				cmplx bpos = boss->pos + 18 * dir * i;
 
 				PROJECTILE(
 					.proto = pp_rice,
-					.pos = b->pos,
+					.pos = boss->pos,
 					.color = boson_color(&(Color){0}, i, 0),
 					.rule = elly_toe_boson,
 					.args = {
 						2.5*dir,
 						num_warps * (1 + I),
-						42*2 - step * _ni + i*I, // real: activation delay, imag: pos in trail (0 is furtherst from head)
+						42*2 - step * t + i*I, // real: activation delay, imag: pos in trail (0 is furtherst from head)
 						bpos,
 					},
 					.max_viewport_dist = 20,
 				);
 			}
 		}
-	}
 
-	FROM_TO(fermiontime,yukawatime+250,2) {
+		WAIT(cycle_step - cycle_time);
+	}
+}
+
+TASK(toe_part_fermions, { BoxedBoss boss; int duration; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	play_sfx("charge_generic");
+	stage_shake_view(10);
+	
+	int step = 2;
+
+	for(int t = 0; t < ARGS.duration/step; t++) {
 		play_sfx_ex("shot1", 5, false);
 
-		cmplx dest = 100*cexp(I*1*_i);
+		cmplx dest = 100 * cdir(t);
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE(
 				.proto = pp_ball,
-				.pos = b->pos,
+				.pos = boss->pos,
 				.color = RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
@@ -684,114 +666,99 @@ void elly_theory(Boss *b, int time) {
 				.flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
+
+		WAIT(step);
 	}
+}
 
-	AT(fermiontime) {
-		play_sfx("charge_generic");
-		stage_shake_view(10);
-	}
+TASK(toe_part_symmetry, { BoxedBoss boss; }) {
+	Boss *b = TASK_BIND(ARGS.boss);
 
-	AT(symmetrytime) {
-		play_sfx("charge_generic");
-		play_sfx("boom");
-		stagetext_add("Symmetry broken!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		stage_shake_view(10);
+	play_sfx("charge_generic");
+	play_sfx("boom");
+	stagetext_add("Symmetry broken!", VIEWPORT_W / 2 + I * VIEWPORT_H / 4, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stage_shake_view(10);
 
+	PARTICLE(
+		.sprite = "blast",
+		.pos = b->pos,
+		.color = RGBA(1.0, 0.3, 0.3, 0.0),
+		.timeout = 60,
+		.draw_rule = ScaleFade,
+		.args = { 0, 0, 5*I },
+		.flags = PFLAG_REQUIREDPARTICLE,
+	);
+
+	for(int i = 0; i < 5; ++i) {
+		RNG_ARRAY(R, 2);
 		PARTICLE(
-			.sprite = "blast",
+			.sprite = "stain",
 			.pos = b->pos,
-			.color = RGBA(1.0, 0.3, 0.3, 0.0),
-			.timeout = 60,
+			.color = RGBA(0.3, 0.3, 1.0, 0.0),
+			.timeout = vrng_range(R[0], 80.0, 120.0),
 			.draw_rule = ScaleFade,
-			.args = { 0, 0, 5*I },
-			.flags = PFLAG_REQUIREDPARTICLE,
+			.args = { 0, 0, 2 * (0.4 + 2 * I) },
+			.angle = vrng_angle(R[1])
 		);
-
-		for(int i = 0; i < 5; ++i) {
-			PARTICLE(
-				.sprite = "stain",
-				.pos = b->pos,
-				.color = RGBA(0.3, 0.3, 1.0, 0.0),
-				.timeout = 100 + 20 * nfrand(),
-				.draw_rule = ScaleFade,
-				.args = { 0, 0, 2 * (0.4 + 2 * I) },
-				.angle = M_PI*2*frand(),
-			);
-		}
 	}
+}
 
-	AT(yukawatime) {
-		play_sfx("charge_generic");
-		stagetext_add("Coupling the Higgs!", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		stage_shake_view(10);
-	}
+TASK(toe_part_higgs, { BoxedBoss boss; int fast_duration; int full_duration; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+	int fast_step = 4;
+	int slow_step = 8; 
 
-	AT(breaktime) {
-		play_sfx("charge_generic");
-		stagetext_add("Perturbation theory", VIEWPORT_W/2+I*VIEWPORT_H/4, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		stagetext_add("breaking down!", VIEWPORT_W/2+I*VIEWPORT_H/4+30*I, ALIGN_CENTER, get_font("big"), RGB(1,1,1), 0,100,10,20);
-		stage_shake_view(10);
-	}
+	int fast_steps = ARGS.fast_duration/fast_step;
+	int full_steps = fast_steps + (ARGS.full_duration - ARGS.fast_duration)/slow_step;
 
-	FROM_TO(higgstime,yukawatime+100,4+4*(time>symmetrytime)) {
+	int time = 0; 
+
+	for(int t = 0; t < full_steps; t++) {
 		play_sfx_loop("shot1_loop");
-
-		int arms;
-
-		switch(global.diff) {
-			case D_Hard:	arms = 5; break;
-			case D_Lunatic: arms = 7; break;
-			default:		arms = 4; break;
-		}
+		int arms = difficulty_value(4, 4, 5, 7);
 
 		for(int dir = 0; dir < 2; dir++) {
 			for(int arm = 0; arm < arms; arm++) {
-				cmplx v = -2*I*cexp(I*M_PI/(arms+1)*(arm+1)+0.1*I*sin(time*0.1+arm));
-				if(dir)
-					v = -conj(v);
-				if(time>symmetrytime) {
-					int t = time-symmetrytime;
-					v*=cexp(-I*0.001*t*t+0.01*frand()*dir);
+				cmplx vel = -2 * I * cdir(M_PI / (arms+1) * (arm+1) + 0.1 * sin(time * 0.1 + arm));
+				
+				if(dir) {
+					vel = -conj(vel);
 				}
+				
+				if(t > fast_steps) {
+					int tr = t - fast_steps;
+					vel *= cexp(-I * 0.064 * tr * tr + 0.01 * rng_real() * dir);
+				}
+
 				PROJECTILE(
 					.proto = pp_flea,
-					.pos = b->pos,
-					.color = RGB(dir*(time>symmetrytime),0,1),
+					.pos = boss->pos,
+					.color = RGB(dir * (t > fast_steps),0,1),
 					.rule = elly_toe_higgs,
-					.args = { v },
+					.args = { vel },
 					.flags = PFLAG_NOSPAWNFLARE,
 				);
 			}
 		}
+		
+		time += WAIT(t < fast_steps ? 4 : 8);
 	}
+}
 
-	FROM_TO(breaktime,breaktime+10000,100) {
-		play_sfx_ex("laser1", 0, true);
+TASK(toe_part_break_fermions, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
 
-		cmplx phase = cexp(2*I*M_PI*frand());
-		int count = 8;
-		for(int i = 0; i < count; i++) {
-			create_laser(b->pos, LASER_LENGTH, LASER_LENGTH/2, RGBA(1, 1, 1, 0),
-				elly_toe_laser_pos, elly_toe_laser_logic,
-				2*cexp(2*I*M_PI/count*i)*phase,
-				0,
-				LASER_EXTENT,
-				0
-			);
-		}
-	}
+	play_sfx("redirect");
 
-	FROM_TO(breaktime+35, breaktime+10000, 14) {
-		play_sfx("redirect");
-
+	for(int t = 0;; t++) {
 		for(int clr = 0; clr < 3; clr++) {
 			PROJECTILE(
 				.proto = pp_soul,
-				.pos = b->pos,
+				.pos = boss->pos,
 				.color = RGBA(clr==0, clr==1, clr==2, 0),
 				.rule = elly_toe_fermion,
 				.args = {
-					50*cexp(1.3*I*_i),
+					50*cdir(1.3 * t),
 					clr*2*M_PI/3,
 					40,
 					-1,
@@ -800,8 +767,68 @@ void elly_theory(Boss *b, int time) {
 				.flags = PFLAG_NOSPAWNFLARE,
 			);
 		}
+		WAIT(14);
 	}
+}
 
-	FROM_TO_SND("noise1", yukawatime - 60, breaktime + 10000, 1) {};
+TASK(toe_noise_sfx) {
+	for(;;) {
+		play_sfx_loop("noise1");
+		YIELD;
+	}
+}
+
+DEFINE_EXTERN_TASK(stage6_spell_toe) {
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+	
+	stage_shake_view(50);
+	boss_set_portrait(boss, "elly", "beaten", "shouting");
+	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
+
+	assert(cabs(boss->pos - ELLY_TOE_TARGET_POS) < 1);
+	elly_clap(boss,50000);
+
+	INVOKE_SUBTASK(toe_part_bosons, ENT_BOX(boss));
+	INVOKE_SUBTASK_DELAYED(FERMIONTIME, toe_part_fermions, ENT_BOX(boss), YUKAWATIME - FERMIONTIME + 240);
+	INVOKE_SUBTASK_DELAYED(SYMMETRYTIME, toe_part_symmetry, ENT_BOX(boss));
+	INVOKE_SUBTASK_DELAYED(HIGGSTIME, toe_part_higgs, ENT_BOX(boss),
+		.fast_duration = SYMMETRYTIME - HIGGSTIME,
+		.full_duration = YUKAWATIME - HIGGSTIME + 100
+	);
+	INVOKE_SUBTASK_DELAYED(YUKAWATIME - 60, toe_noise_sfx);
+
+	WAIT(YUKAWATIME);
+
+	play_sfx("charge_generic");
+	stagetext_add("Coupling the Higgs!", VIEWPORT_W / 2.0 + I * VIEWPORT_H / 4.0, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stage_shake_view(10);
+
+	WAIT(YUKAWATIME - BREAKTIME);
+
+	play_sfx("charge_generic");
+	stagetext_add("Perturbation theory", VIEWPORT_W / 2.0 +I*VIEWPORT_H / 4.0, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stagetext_add("breaking down!", VIEWPORT_W / 2.0+ I * VIEWPORT_H / 4.0 + 30 * I, ALIGN_CENTER, get_font("big"), RGB(1, 1, 1), 0, 100, 10, 20);
+	stage_shake_view(10);
+
+	INVOKE_SUBTASK_DELAYED(35, toe_part_break_fermions, ENT_BOX(boss));
+
+	for(;;) {
+		play_sfx_ex("laser1", 0, true);
+
+		cmplx dir = rng_dir();
+		int count = 8;
+		for(int i = 0; i < count; i++) {
+			create_laser(boss->pos, LASER_LENGTH, LASER_LENGTH / 2.0, RGBA(1, 1, 1, 0),
+				elly_toe_laser_pos, elly_toe_laser_logic,
+				2 * cdir(M_TAU / count * i) * dir,
+				0,
+				LASER_EXTENT,
+				0
+			);
+		}
+		
+		WAIT(100);
+	}
 }
 

@@ -69,7 +69,7 @@ struct stage6_spells_s stage6_spells = {
 	.final = {
 		.theory_of_everything = {
 			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth “Theory of Everything”", 70, 40000,
-			elly_theory, elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8
+			NULL, elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8, TASK_INDIRECT_INIT(BossAttack, stage6_spell_toe),
 		}
 	},
 };
