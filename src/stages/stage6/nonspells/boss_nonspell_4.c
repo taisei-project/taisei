@@ -52,7 +52,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_baryons_common) {
 
 DEFINE_EXTERN_TASK(stage6_boss_nonspell_4) {
 	STAGE_BOOKMARK(boss-non4);
-	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
+	stage6_elly_init_baryons_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
 	INVOKE_SUBTASK(stage6_boss_nonspell_baryons_common, ARGS.baryons);
