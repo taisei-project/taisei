@@ -12,7 +12,6 @@
 #include "stagetext.h"
 #include "common_tasks.h"
 
-#define LASER_EXTENT (4+1.5*global.diff-D_Normal)
 #define LASER_LENGTH 60
 
 void elly_spellbg_toe(Boss *b, int t) {
@@ -173,6 +172,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			warps_left--;
 
 			if(warps_left < 0) {
+				kill_projectile(p);
 				return;
 			}
 
@@ -246,7 +246,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 	}
 }
 
-static cmplx toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, a[2]: width
+static cmplx toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type
 	int type = creal(l->args[1]+0.5);
 
 	if(t == EVENT_BIRTH) {
@@ -269,39 +269,19 @@ static cmplx toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type, 
 		return 0;
 	}
 
-	double width = creal(l->args[2]);
+	real width = difficulty_value(3.5, 5, 6.5, 8);
 	switch(type) {
 	case 0:
-		return l->pos+l->args[0]*t;
+		return l->pos + l->args[0] * t;
 	case 1:
-		return l->pos+l->args[0]*(t+width*I*sin(t/width));
+		return l->pos + l->args[0] * (t + width * I * sin(t / width));
 	case 2:
-		return l->pos+l->args[0]*(t+width*(0.6*(cos(3*t/width)-1)+I*sin(3*t/width)));
+		return l->pos + l->args[0] * (t + width * (0.6 * (cos(3 * t / width) - 1) + I * sin(3 * t / width)));
 	case 3:
-		return l->pos+l->args[0]*(t+floor(t/width)*width);
+		return l->pos + l->args[0] * (t + floor(t / width) * width);
 	}
 
 	return 0;
-}
-
-static int toe_laser_particle_rule(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[3]);
-	}
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	Laser *l = REF(p->args[3]);
-
-	if(!l) {
-		return ACTION_DESTROY;
-	}
-
-	p->pos = l->prule(l, 0);
-
-	return ACTION_NONE;
 }
 
 static void toe_laser_particle(Laser *l, cmplx origin) {
@@ -312,22 +292,18 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 		.sprite = "stardust",
 		.pos = origin,
 		.color = c,
-		.rule = toe_laser_particle_rule,
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(0, 1.5, 1, 0),
 		.timeout = 30,
-		.args = { 0, 0, 1.5 * I, add_ref(l) },
-		.angle = M_PI*2*frand(),
+		.angle = rng_angle(),
 	);
 
 	PARTICLE(
 		.sprite = "stain",
 		.pos = origin,
-		.color = color_mul_scalar(COLOR_COPY(c),0.5),
-		.rule = toe_laser_particle_rule,
-		.draw_rule = ScaleFade,
+		.color = color_mul_scalar(COLOR_COPY(c), 0.5),
+		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.timeout = 20,
-		.args = { 0, 0, 1 * I, add_ref(l) },
-		.angle = M_PI*2*frand(),
+		.angle = rng_angle(),
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
@@ -335,63 +311,66 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 		.sprite = "smoothdot",
 		.pos = origin,
 		.color = c,
-		.rule = toe_laser_particle_rule,
-		.draw_rule = ScaleFade,
+		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.timeout = 40,
-		.args = { 0, 0, 1, add_ref(l) },
-		.angle = M_PI*2*frand(),
+		.angle = rng_angle(),
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 }
 
-static void toe_laser_logic(Laser *l, int t) {
-	if(t == l->deathtime) {
-		static const int transfer[][4] = {
-			{1, 0, 0, 0},
-			{0,-1,-1, 3},
-			{0,-1, 2, 3},
-			{0, 3, 3, 1}
-		};
 
-		cmplx newpos = l->prule(l,t);
-		if(creal(newpos) < 0 || cimag(newpos) < 0 || creal(newpos) > VIEWPORT_W || cimag(newpos) > VIEWPORT_H)
-			return;
+DECLARE_TASK(toe_laser, { cmplx pos; cmplx vel; int type; int deathtime; });
 
-		int newtype, newtype2;
-		do {
-			newtype = 3.999999*frand();
-			newtype2 = transfer[(int)(creal(l->args[1])+0.5)][newtype];
-			// actually in this case, gluons are also always possible
-			if(newtype2 == 1 && frand() > 0.5) {
-				newtype = 2;
-			}
+TASK(toe_laser_respawn, { cmplx pos; cmplx vel; int type; }) {
+	static const int transfer[][4] = {
+		{1, 0, 0, 0},
+		{0,-1,-1, 3},
+		{0,-1, 2, 3},
+		{0, 3, 3, 1}
+	};
 
-			// I removed type 3 because i can’t draw dotted lines and it would be too difficult either way
-		} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
+	if(creal(ARGS.pos) < 0 || cimag(ARGS.pos) < 0 || creal(ARGS.pos) > VIEWPORT_W || cimag(ARGS.pos) > VIEWPORT_H)
+		return;
 
-		cmplx origin = l->prule(l,t);
-		cmplx newdir = cexp(0.3*I);
+	int newtype, newtype2;
+	do {
+		newtype = 3.999999*rng_real();
+		newtype2 = transfer[ARGS.type][newtype];
+		// actually in this case, gluons are also always possible
+		if(newtype2 == 1 && rng_chance(0.5)) {
+			newtype = 2;
+		}
 
-		Laser *l1 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
-			toe_laser_pos,toe_laser_logic,
-			l->args[0]*newdir,
-			newtype,
-			LASER_EXTENT,
-			0
-		);
+		// I removed type 3 because i can’t draw dotted lines and it would be too difficult either way
+	} while(newtype2 == -1 || newtype2 == 3 || newtype == 3);
 
-		Laser *l2 = create_laser(origin,LASER_LENGTH,LASER_LENGTH,RGBA(1, 1, 1, 0),
-			toe_laser_pos,toe_laser_logic,
-			l->args[0]/newdir,
-			newtype2,
-			LASER_EXTENT,
-			0
-		);
+	cmplx newdir = cdir(0.3);
 
-		toe_laser_particle(l1, origin);
-		toe_laser_particle(l2, origin);
+	INVOKE_TASK(toe_laser, ARGS.pos, ARGS.vel * newdir, newtype, LASER_LENGTH);
+	INVOKE_TASK(toe_laser, ARGS.pos, ARGS.vel / newdir, newtype2, LASER_LENGTH);
+}
+
+DEFINE_TASK(toe_laser) {
+	Laser *l = TASK_BIND(create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, RGBA(1, 1, 1, 0),
+		toe_laser_pos, NULL,
+		ARGS.vel,
+		ARGS.type,
+		0,
+		0
+	));
+	toe_laser_particle(l, ARGS.pos);
+
+	cmplx drift = 0.2 * I;
+
+	for(int t = 0;; t++) {
+		if(t == l->deathtime - 1) {
+			cmplx newpos = l->prule(l, l->deathtime);
+			INVOKE_TASK(toe_laser_respawn, newpos, ARGS.vel, ARGS.type);
+		}
+		
+		l->pos += drift;
+		YIELD;
 	}
-	l->pos+=I*0.2;
 }
 
 static bool toe_its_yukawatime(cmplx pos) {
@@ -789,12 +768,10 @@ DEFINE_EXTERN_TASK(stage6_spell_toe) {
 		cmplx dir = rng_dir();
 		int count = 8;
 		for(int i = 0; i < count; i++) {
-			create_laser(boss->pos, LASER_LENGTH, LASER_LENGTH / 2.0, RGBA(1, 1, 1, 0),
-				toe_laser_pos, toe_laser_logic,
-				2 * cdir(M_TAU / count * i) * dir,
-				0,
-				LASER_EXTENT,
-				0
+			INVOKE_TASK(toe_laser,
+				.pos = boss->pos,
+				.vel = 2 * cdir(M_TAU / count * i) * dir,
+				.deathtime = LASER_LENGTH / 2.0
 			);
 		}
 		

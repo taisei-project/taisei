@@ -235,7 +235,7 @@ TASK(host_baryons, { BoxedBoss boss; BoxedEllyBaryons *out_baryons; }) {
 	WAIT_EVENT(&baryons->events.despawned);
 }
 
-TASK(spawn_boss, NO_ARGS) {
+TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
@@ -292,8 +292,7 @@ TASK(spawn_boss, NO_ARGS) {
 	// XXX: can this be simplified now?
 	boss_add_attack_task(boss, AT_Immediate, "Final dialog", 0, 0, TASK_INDIRECT(BossAttack, elly_insert_interboss_dialog), NULL);
 	boss_add_attack_task(boss, AT_Move, "ToE transition", 7, 0, TASK_INDIRECT(BossAttack, elly_begin_toe), NULL);
-	/*
-	boss_add_attack_from_info(b, &stage6_spells.final.theory_of_everything, false);*/
+	boss_add_attack_from_info(boss, &stage6_spells.final.theory_of_everything, false);
 	boss_engage(boss);
 	WAIT_EVENT(&global.boss->events.defeated);
 	AWAIT_SUBTASKS;
