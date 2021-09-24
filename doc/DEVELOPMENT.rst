@@ -6,11 +6,27 @@ Taisei Project - Development FAQ
 Introduction
 ------------
 
-This document contains some important tips on compiling and developing for
-specific platforms.
+Some development tips for working with Taisei's code.
 
 Coding Style
 ------------
+
+Upkeep Script
+"""""""""""""
+
+``ninja`` has a function called ``upkeep`` which uses scripts found in
+``taisei/scripts/upkeep/`` to check against common issues such as poor RNG use,
+deprecation warnings, and other helpful code health checks. You don't have to
+run it constantly, but once in a while will make sure that basic things are
+more readily caught.
+
+It requires a setup ``build/`` directory, so make sure you've completed the basic
+``meson`` setup instructions seen on the `main README </README.rst#compiling-source-code>`__.
+
+.. code:: sh
+
+   # from the root taisei/ directory
+   ninja upkeep -C build/
 
 Tabs/Spaces
 """""""""""
@@ -36,6 +52,33 @@ In general, things like ``for`` loops should have no spaces between the ``for`` 
 
    # correct
    for(int i = 0; i < 10; i++) { log_debug(i); }
+
+Compiling Issues
+----------------
+
+-Wunused-variable
+"""""""""""""""""
+
+If you get an error compiling your code, but you're 100% sure that you've
+actually used the variable, chances are you're using that variable in an
+``assert()`` and are compiling with ``clang``.
+
+``clang`` won't recognize that the variable is actually being used in an
+``assert()``.
+
+You can use the macro ``attr_unused`` to bypass that warning. This:
+
+.. code:: c
+
+   int x = 0;
+   assert(x == 0);
+
+Becomes this:
+
+.. code:: c
+
+   attr_unused int x = 0;
+   assert(x == 0);
 
 Platform-Specific Tips
 ----------------------
@@ -80,30 +123,3 @@ following option:
 .. code:: sh
 
    meson configure build/ --wrap-mode=forcefallback
-
-Compiling Issues
-----------------
-
--Wunused-variable
-"""""""""""""""""
-
-If you get an error compiling your code, but you're 100% sure that you've
-actually used the variable, chances are you're using that variable in an
-``assert()`` and are compiling with ``clang``.
-
-``clang`` won't recognize that the variable is actually being used in an
-``assert()``.
-
-You can use the macro ``attr_unused`` to bypass that warning. This:
-
-.. code:: c
-
-   int x = 0;
-   assert(x == 0);
-
-Becomes this:
-
-.. code:: c
-
-   attr_unused int x = 0;
-   assert(x == 0);
