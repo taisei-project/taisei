@@ -212,7 +212,9 @@ TASK(baryons_update, { BoxedEllyBaryons baryons; }) {
 
 		for(int i = 0; i < NUM_BARYONS; i++) {
 			cmplx d = (baryons->target_poss[i] - baryons->poss[i]);
-			baryons->poss[i] += baryons->relaxation_rate * (d / sqrt(cabs(d)) + 0.01*d);
+			if(cabs2(d) > 0) {
+				baryons->poss[i] += baryons->relaxation_rate * (d / sqrt(cabs(d)) + 0.01*d);
+			}
 		}
 
 		YIELD;
@@ -233,8 +235,7 @@ void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 	Boss *b = NOT_NULL(ENT_UNBOX(boss));
 	EllyBaryons *eb = NOT_NULL(ENT_UNBOX(baryons));
 	for(int i = 0; i < NUM_BARYONS; i++) {
-		//eb->target_poss[i] = b->pos + 100 * cdir(M_TAU / NUM_BARYONS * i);
-		eb->target_poss[i] = b->pos;
+		eb->target_poss[i] = b->pos + 150 * cdir(M_TAU / NUM_BARYONS * i);
 		eb->poss[i] = b->pos;
 	}
 	eb->center_pos = b->pos;
@@ -248,7 +249,7 @@ Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
 	if(ENT_UNBOX(args->baryons) == NULL) {
 		args->baryons = ENT_BOX(stage6_host_elly_baryons(args->base.boss));
 		stage6_init_elly_baryons(args->baryons, args->base.boss);
-		//INVOKE_TASK(baryons_quick_intro, args->baryons);
+		INVOKE_TASK(baryons_quick_intro, args->baryons);
 	}
 
 	return INIT_BOSS_ATTACK(&args->base);
