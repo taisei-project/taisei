@@ -105,8 +105,8 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 }
 
 DEFINE_EXTERN_TASK(kurumi_aniwall) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	b->move = move_towards((VIEWPORT_W + I * VIEWPORT_H) * 0.5, 0.0005);
 	b->move.retention = cdir(0.01);

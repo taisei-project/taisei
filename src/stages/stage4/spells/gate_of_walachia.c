@@ -58,8 +58,8 @@ TASK(kurumi_walachia_slave, { cmplx pos; cmplx direction; int lifetime; }) {
 }
 
 DEFINE_EXTERN_TASK(kurumi_walachia) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int slave_count = difficulty_value(5, 7, 9, 11);
 	int duration = 400;

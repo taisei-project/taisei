@@ -403,7 +403,7 @@ TASK_WITH_INTERFACE(kurumi_outro, BossAttack) {
 	b->move = move_linear(-5 - I);
 }
 
-TASK(spawn_midboss, NO_ARGS) {
+TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 
 	Boss *b = global.boss = stage4_spawn_kurumi(VIEWPORT_W / 2.0 - 400.0 * I);
@@ -489,7 +489,7 @@ TASK_WITH_INTERFACE(kurumi_boss_intro, BossAttack){
 	stage4_dialog_pre_boss();
 }
 
-TASK(spawn_boss, NO_ARGS) {
+TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 	Boss *b = global.boss = stage4_spawn_kurumi(-400 * I);
 

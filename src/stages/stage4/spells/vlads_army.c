@@ -282,8 +282,8 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 }
 
 DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	cmplx startpos = VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I;
 

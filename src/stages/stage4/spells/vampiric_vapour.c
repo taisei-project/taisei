@@ -109,8 +109,8 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 }
 
 DEFINE_EXTERN_TASK(kurumi_vampvape) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 	
 	b->move = move_towards(BOSS_DEFAULT_GO_POS, 0.04);
 

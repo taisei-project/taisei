@@ -53,8 +53,8 @@ TASK(kurumi_redspike_spawn_slaves, { BoxedBoss boss; int interval; }) {
 }
 
 DEFINE_EXTERN_TASK(kurumi_dryfountain) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(kurumi_redspike_spawn_slaves, .boss = ENT_BOX(b), .interval = 60);
 
@@ -89,8 +89,8 @@ TASK(kurumi_redspike_animate, { BoxedBoss boss; }) {
 	
 
 DEFINE_EXTERN_TASK(kurumi_redspike) {
-	Boss *b = INIT_BOSS_ATTACK();
-	BEGIN_BOSS_ATTACK();
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(kurumi_redspike_spawn_slaves, .boss = ENT_BOX(b), .interval = 60);
 	for(;;) {
