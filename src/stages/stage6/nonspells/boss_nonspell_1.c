@@ -11,13 +11,49 @@
 #include "nonspells.h"
 #include "../elly.h"
 
+DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+
+	cmplx center = VIEWPORT_W/2.0 + 200.0 * I;
+
+	scythe->move = move_towards(center, 0.1);
+	WAIT(40);
+	scythe->move.retention = 0.9;
+
+	for(int t = 0;; t++) {
+		play_sfx_loop("shot1_loop");
+
+		real theta = 0.01 * t * (1 + 0.001 * t) + M_PI/2;
+		scythe->pos = center + 200 * cos(theta) * (1 + sin(theta) * I) / (1 + pow(sin(theta), 2));
+
+		scythe->angle = 0.2 * t * (1 + 0*0.001 * t);
+
+		cmplx dir = cdir(scythe->angle);
+		real vel = difficulty_value(1.4, 1.8, 2.2, 2.6);
+		
+		cmplx color_dir = cdir(3 * theta);
+
+		if(t > 50) {
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = scythe->pos + 60 * dir * cdir(1.2),
+				.color = RGB(creal(color_dir), cimag(color_dir), creal(color_dir * cdir(2.1))),
+				.move = move_accelerated(0, 0.01 *vel * dir),
+			);
+		}
+
+		YIELD;
+	}
+}
+
+
 DEFINE_EXTERN_TASK(stage6_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);
 
 	stage6_elly_init_scythe_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
-	INVOKE_SUBTASK(stage6_elly_scythe_nonspell, ARGS.scythe);
+	INVOKE_SUBTASK(stage6_boss_nonspell_scythe_common, ARGS.scythe);
 
 	STALL;
 }

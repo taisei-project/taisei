@@ -17,7 +17,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_2) {
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 	aniplayer_queue(&boss->ani, "snipsnip", 0);
 
-	INVOKE_SUBTASK(stage6_elly_scythe_nonspell, ARGS.scythe);
+	INVOKE_SUBTASK(stage6_boss_nonspell_scythe_common, ARGS.scythe);
 
 	int interval = difficulty_value(3, 3, 2, 2);
 	

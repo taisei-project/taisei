@@ -15,6 +15,7 @@
 
 #include "stages/stage6/elly.h"
 
+DECLARE_EXTERN_TASK(stage6_boss_nonspell_scythe_common, { BoxedEllyScythe scythe; });
 DECLARE_EXTERN_TASK(stage6_boss_nonspell_baryons_common, { BoxedEllyBaryons baryons; });
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_boss_nonspell_1, ScytheAttack);
