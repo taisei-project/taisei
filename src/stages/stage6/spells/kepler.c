@@ -60,7 +60,7 @@ DEFINE_TASK(kepler_bullet) {
 	INVOKE_SUBTASK(kepler_bullet_spawner, ENT_BOX(p), ARGS.tier, 20 * cnormalize(p->pos - pos));
 
 	for(int t = 0;; t++) {
-		Projectile *parent = ENT_UNBOX(ARGS.parent);
+		parent = ENT_UNBOX(ARGS.parent);
 		if(parent != NULL) {
 			p->move.attraction_point = parent->pos;
 		} else {
