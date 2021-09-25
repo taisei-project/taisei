@@ -11,6 +11,7 @@
 #include "global.h"
 #include "elly.h"
 #include "draw.h"
+#include "util/glm.h"
 #include "spells/spells.h"
 
 Boss* stage6_spawn_elly(cmplx pos) {
@@ -218,11 +219,22 @@ TASK(baryons_update, { BoxedEllyBaryons baryons; }) {
 	}
 }
 
+TASK(baryons_quick_intro, { BoxedEllyBaryons baryons; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+
+	int duration = 30;
+	for(int t = 0; t < duration; t++) {
+		baryons->scale = glm_ease_quad_in(t / (float) duration);
+		YIELD;
+	}
+}
 
 void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 	Boss *b = NOT_NULL(ENT_UNBOX(boss));
 	EllyBaryons *eb = NOT_NULL(ENT_UNBOX(baryons));
 	for(int i = 0; i < NUM_BARYONS; i++) {
+		//eb->target_poss[i] = b->pos + 100 * cdir(M_TAU / NUM_BARYONS * i);
+		eb->target_poss[i] = b->pos;
 		eb->poss[i] = b->pos;
 	}
 	eb->center_pos = b->pos;
@@ -236,6 +248,7 @@ Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
 	if(ENT_UNBOX(args->baryons) == NULL) {
 		args->baryons = ENT_BOX(stage6_host_elly_baryons(args->base.boss));
 		stage6_init_elly_baryons(args->baryons, args->base.boss);
+		//INVOKE_TASK(baryons_quick_intro, args->baryons);
 	}
 
 	return INIT_BOSS_ATTACK(&args->base);
