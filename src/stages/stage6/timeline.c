@@ -204,8 +204,10 @@ TASK_WITH_INTERFACE(elly_insert_interboss_dialog, BossAttack) {
 }
 
 TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
-	INIT_BOSS_ATTACK(&ARGS);
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
+
+	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
 
 	start_fall_over();
 	stage_unlock_bgm("stage6boss_phase2");
@@ -241,12 +243,11 @@ TASK(spawn_boss) {
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
 
 	BoxedEllyScythe scythe_ref;
-	INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref);
+	BoxedTask scythe_hoster = cotask_box(INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref));
 
 	TASK_IFACE_ARGS_SIZED_PTR_TYPE(ScytheAttack) scythe_args = TASK_IFACE_SARGS(ScytheAttack,
 	  .scythe = scythe_ref
 	);
-
 
 	PlayerMode *pm = global.plr.mode;
 	Stage6PreBossDialogEvents *e;
@@ -277,6 +278,7 @@ TASK(spawn_boss) {
 		.scythe = scythe_ref,
 		.baryons = baryons_ref
 	);
+	cotask_cancel(NOT_NULL(cotask_unbox(scythe_hoster)));
 
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.many_world_interpretation, baryons_args.base);
 	boss_add_attack_task_with_args(boss, AT_Normal, "Baryon", 50, 55000, TASK_INDIRECT(BaryonsAttack, stage6_boss_nonspell_4).base, NULL, baryons_args.base);
@@ -289,8 +291,8 @@ TASK(spawn_boss) {
 	boss_add_attack_task_with_args(boss, AT_Move, "Explode", 4, 0, TASK_INDIRECT(BaryonsAttack, stage6_boss_baryons_explode).base, NULL, baryons_args.base);
 	boss_add_attack_task(boss, AT_Move, "Move to center", 4, 0, TASK_INDIRECT(BossAttack, elly_goto_center), NULL);
 
-	// XXX: can this be simplified now?
-	boss_add_attack_task(boss, AT_Immediate, "Final dialog", 0, 0, TASK_INDIRECT(BossAttack, elly_insert_interboss_dialog), NULL);
+	// XXX: this does not work! help Akari
+	//boss_add_attack_task(boss, AT_Immediate, "Final dialog", 0, 0, TASK_INDIRECT(BossAttack, elly_insert_interboss_dialog), NULL);
 	boss_add_attack_task(boss, AT_Move, "ToE transition", 7, 0, TASK_INDIRECT(BossAttack, elly_begin_toe), NULL);
 	boss_add_attack_from_info(boss, &stage6_spells.final.theory_of_everything, false);
 	boss_engage(boss);

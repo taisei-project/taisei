@@ -52,11 +52,12 @@ DEFINE_ENTITY_TYPE(EllyBaryons, {
 	cmplx target_poss[NUM_BARYONS];
 	real relaxation_rate;
 
+	 // angles are currently unused, broglie sign may use them. otherwise remove.
 	real angles[NUM_BARYONS];
 
 	cmplx center_pos;
 	float center_angle;
-	float center_scale;
+	float scale;
 
 	COEVENTS_ARRAY(
 	        despawned
@@ -74,17 +75,8 @@ typedef TASK_IFACE_ARGS_TYPE(BaryonsAttack) BaryonsAttackTaskArgs;
 Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args);
 
 
-void scythe_draw(Enemy *, int, bool);
-void scythe_common(Enemy*, int);
-int scythe_reset(Enemy*, int);
-int scythe_infinity(Enemy*, int);
-int scythe_explode(Enemy*, int);
+void scythe_draw(Enemy *, int, bool); // REMOVE (stage 4 dependency)
+void scythe_common(Enemy*, int); // REMOVE (stage 4 dependency)
+
 void elly_clap(Boss*, int);
-void elly_spawn_baryons(cmplx);
 
-void set_baryon_rule(EnemyLogicRule);
-int baryon_reset(Enemy*, int);
-
-int wait_proj(Projectile*, int);
-
-Enemy* find_scythe(void);

@@ -149,6 +149,12 @@ DEFINE_EXTERN_TASK(stage6_boss_baryons_explode) {
 		YIELD;
 	}
 
+	// XXX: replace this by actual removal of baryons or the termination of the host task?
+	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
+	baryons->scale = 0;
+
+	
+
 	stage_shake_view(40);
 	play_sfx("boom");
 

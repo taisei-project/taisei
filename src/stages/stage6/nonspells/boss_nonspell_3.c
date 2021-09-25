@@ -28,7 +28,7 @@ TASK(baryons_spawn, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
 	stage6_init_elly_baryons(ARGS.baryons, ARGS.boss);
 	int duration = 100;
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
-	INVOKE_SUBTASK(common_easing_animate, &baryons->center_scale, 1, duration, glm_ease_bounce_out);
+	INVOKE_SUBTASK(common_easing_animate, &baryons->scale, 1, duration, glm_ease_bounce_out);
 
 	real angle_offset = -5;
 

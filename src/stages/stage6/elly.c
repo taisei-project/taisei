@@ -21,6 +21,10 @@ Boss* stage6_spawn_elly(cmplx pos) {
 }
 
 static void scythe_particles(EllyScythe *s) {
+	if(s->scale == 0) {
+		return;
+	}
+
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/scythe"),
 		.pos = s->pos+I*6*sin(global.frames/25.0),
@@ -145,13 +149,17 @@ static void baryons_connector_particles(cmplx a, cmplx b) {
 }
 
 static void baryons_particles(EllyBaryons *baryons) {
+	if(baryons->scale == 0) {
+		return;
+	}
+
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/baryon_center"),
 		.pos = baryons->center_pos,
 		.draw_rule = pdraw_timeout_fade(1, 0),
 		.timeout = 4,
 		.angle = baryons->center_angle,
-		.scale = baryons->center_scale,
+		.scale = baryons->scale,
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 	
@@ -174,6 +182,7 @@ static void baryons_particles(EllyBaryons *baryons) {
 			.pos = pos,
 			.draw_rule = pdraw_timeout_fade(1, 0),
 			.timeout = 4,
+			.scale = baryons->scale,
 			.angle = baryons->angles[i]+M_TAU/12,
 			.flags = PFLAG_REQUIREDPARTICLE,
 		);
@@ -217,7 +226,7 @@ void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 		eb->poss[i] = b->pos;
 	}
 	eb->center_pos = b->pos;
-	eb->center_scale = 0;
+	eb->scale = 0;
 	eb->relaxation_rate = 0.5;
 	INVOKE_TASK(baryons_visuals, baryons);
 	INVOKE_TASK(baryons_update, baryons);
@@ -250,186 +259,11 @@ void scythe_common(Enemy *e, int t) {
 	e->args[1] += cimag(e->args[1]);
 }
 
-// REMOVE
-int wait_proj(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	if(t > creal(p->args[1])) {
-		if(t == creal(p->args[1]) + 1) {
-			play_sfx_ex("redirect", 4, false);
-			spawn_projectile_highlight_effect(p);
-		}
-
-		p->angle = carg(p->args[0]);
-		p->pos += p->args[0];
-	}
-
-	return ACTION_NONE;
-}
-
-
-
-
-int scythe_reset(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 1;
-	}
-
-	if(t == 1)
-		e->args[1] = fmod(creal(e->args[1]), 2*M_PI) + I*cimag(e->args[1]);
-
-	GO_TO(e, BOSS_DEFAULT_GO_POS, 0.05);
-	e->args[2] = fmax(0.6, creal(e->args[2])-0.01*t);
-	e->args[1] += (0.19-creal(e->args[1]))*0.05;
-	e->args[1] = creal(e->args[1]) + I*0.9*cimag(e->args[1]);
-
-	scythe_common(e, t);
-	return 1;
-}
-
-attr_returns_nonnull
-Enemy* find_scythe(void) {
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->visual_rule == scythe_draw) {
-			return e;
-		}
-	}
-
-	UNREACHABLE;
-}
 
 void elly_clap(Boss *b, int claptime) {
 	aniplayer_queue(&b->ani, "clapyohands", 1);
 	aniplayer_queue_frames(&b->ani, "holdyohands", claptime);
 	aniplayer_queue(&b->ani, "unclapyohands", 1);
 	aniplayer_queue(&b->ani, "main", 0);
-}
-
-static int baryon_unfold(Enemy *baryon, int t) {
-	if(t < 0)
-		return 1; // not catching death for references! because there will be no death!
-
-	TIMER(&t);
-
-	int extent = 100;
-	float timeout;
-
-	if(global.stage->type == STAGE_SPELL) {
-		timeout = 92;
-	} else {
-		timeout = 142;
-	}
-
-	FROM_TO(0, timeout, 1) {
-		for(Enemy *e = global.enemies.first; e; e = e->next) {
-			if(e->visual_rule == baryon_center_draw) {
-				float f = t / (float)timeout;
-				float x = f;
-				float g = sin(2 * M_PI * log(log(x + 1) + 1));
-				float a = g * pow(1 - x, 2 * x);
-				f = 1 - pow(1 - f, 3) + a;
-
-				baryon->pos = baryon->pos0 = e->pos + baryon->args[0] * f * extent;
-				return 1;
-			}
-		}
-	}
-
-	return 1;
-}
-
-static int elly_baryon_center(Enemy *e, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(creal(e->args[1]));
-		free_ref(cimag(e->args[1]));
-	}
-
-	if(global.boss) {
-		e->pos = global.boss->pos;
-	}
-
-	return 1;
-}
-
-int scythe_explode(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 0;
-	}
-
-	if(t < 50) {
-		e->args[1] += 0.001*I*t;
-		e->args[2] += 0.0015*t;
-	}
-
-	if(t >= 50)
-		e->args[2] -= 0.002*(t-50);
-
-	if(t == 100) {
-		petal_explosion(100, e->pos);
-		stage_shake_view(16);
-		play_sfx("boom");
-
-		scythe_common(e, t);
-		return ACTION_DESTROY;
-	}
-
-	scythe_common(e, t);
-	return 1;
-}
-
-void elly_spawn_baryons(cmplx pos) {
-	int i;
-	Enemy *e, *last = NULL, *first = NULL, *middle = NULL;
-
-	for(i = 0; i < 6; i++) {
-		e = create_enemy3c(pos, ENEMY_IMMUNE, baryon, baryon_unfold, 1.5*cexp(2.0*I*M_PI/6*i), i != 0 ? add_ref(last) : 0, i);
-		e->ent.draw_layer = LAYER_BACKGROUND;
-
-		if(i == 0) {
-			first = e;
-		} else if(i == 3) {
-			middle = e;
-		}
-
-		last = e;
-	}
-
-	first->args[1] = add_ref(last);
-	e = create_enemy2c(pos, ENEMY_IMMUNE, baryon_center_draw, elly_baryon_center, 0, add_ref(first) + I*add_ref(middle));
-	e->ent.draw_layer = LAYER_BACKGROUND;
-}
-
-
-void set_baryon_rule(EnemyLogicRule r) {
-	Enemy *e;
-
-	for(e = global.enemies.first; e; e = e->next) {
-		if(e->visual_rule == baryon) {
-			e->birthtime = global.frames;
-			e->logic_rule = r;
-		}
-	}
-}
-
-int baryon_reset(Enemy* baryon, int t) {
-	if(t < 0) {
-		return 1;
-	}
-
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->visual_rule == baryon_center_draw) {
-			cmplx targ_pos = baryon->pos0 - e->pos0 + e->pos;
-			GO_TO(baryon, targ_pos, 0.1);
-
-			return 1;
-		}
-	}
-
-	GO_TO(baryon, baryon->pos0, 0.1);
-	return 1;
 }
 
