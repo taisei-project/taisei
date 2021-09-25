@@ -12,8 +12,6 @@
 
 #include "global.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_burst) {
 	Boss *b = TASK_BIND(ARGS.boss);
 
@@ -60,34 +58,13 @@ Boss *stage4_spawn_kurumi(cmplx pos) {
 	return b;
 }
 
-void kurumi_slave_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		return;
-	}
-
-	if(!(t%2)) {
-		cmplx offset = (frand()-0.5)*30;
-		offset += (frand()-0.5)*20.0*I;
-		PARTICLE(
-			.sprite = "smoothdot",
-			.pos = offset,
-			.color = RGBA(0.3, 0.0, 0.0, 0.0),
-			.draw_rule = Shrink,
-			.rule = enemy_flare,
-			.timeout = 50,
-			.args = { (-50.0*I-offset)/50.0, add_ref(e) },
-			.flags = PFLAG_REQUIREDPARTICLE,
-		);
-	}
-}
-
 DEFINE_EXTERN_TASK(stage4_boss_slave_visual) {
 	for(;;) {
 		PARTICLE(
 			.sprite = "stain",
 			.pos = *ARGS.pos,
 			.color = RGBA(0.3, 0.0, 0.0, 0.0),
-			.draw_rule = Fade,
+			.draw_rule = pdraw_timeout_fade(1, 0),
 			.angle = rng_angle(),
 			.scale = 0.4,
 			.timeout = 30,
@@ -97,23 +74,17 @@ DEFINE_EXTERN_TASK(stage4_boss_slave_visual) {
 	}
 }
 
-void kurumi_slave_static_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		return;
-	}
-}
-
 void kurumi_spell_bg(Boss *b, int time) {
 	float f = 0.5+0.5*sin(time/80.0);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(VIEWPORT_W/2, VIEWPORT_H/2,0);
+	r_mat_mv_translate(VIEWPORT_W / 2.0, VIEWPORT_H / 2.0, 0);
 	r_mat_mv_scale(0.6, 0.6, 1);
 	r_color3(f, 1 - f, 1 - f);
 	draw_sprite(0, 0, "stage4/kurumibg1");
 	r_mat_mv_pop();
 	r_color4(1, 1, 1, 0);
-	fill_viewport(time/300.0, time/300.0, 0.5, "stage4/kurumibg2");
+	fill_viewport(time / 300.0, time / 300.0, 0.5, "stage4/kurumibg2");
 	r_color4(1, 1, 1, 1);
 }
 

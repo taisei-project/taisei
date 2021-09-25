@@ -49,7 +49,7 @@ TASK(splasher_fairy, { cmplx pos; int direction; }) {
 			.proto = rng_chance(0.5) ? pp_rice : pp_thickrice,
 			.pos = e->pos,
 			.color = RGB(0.8, 0.3 - 0.1 * vrng_real(rand[0]), 0.5),
-            .move = move_accelerated(move / 2 + (1 - 2 * vrng_real(rand[1])) + (1 - 2 * vrng_real(rand[2])) * I, 0.02 * I),
+			.move = move_accelerated(move / 2 + (1 - 2 * vrng_real(rand[1])) + (1 - 2 * vrng_real(rand[2])) * I, 0.02 * I),
 		);
 		play_sfx_loop("shot1_loop");
 	}
@@ -618,7 +618,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	WAIT(2300);
 	INVOKE_TASK(spawn_boss);
 	WAIT_EVENT(&NOT_NULL(global.boss)->events.defeated);
-	stage_unlock_bgm("stage2boss");
+	stage_unlock_bgm("stage4boss");
 
 	WAIT(240);
 	stage4_dialog_post_boss();

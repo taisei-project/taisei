@@ -15,26 +15,27 @@
 #include "global.h"
 
 TASK(kurumi_redspike_slave, { cmplx pos; int direction; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1, kurumi_slave_visual, NULL, 0));
-	e->flags = EFLAGS_GHOST;
+	cmplx pos = ARGS.pos;
+	MoveParams move;
 
-	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, common_kill_enemy, ENT_BOX(e));
+	INVOKE_SUBTASK(common_move_ext, &pos, &move);
+	INVOKE_SUBTASK(stage4_boss_slave_visual, &pos, .interval = 1);
 
-	e->move.velocity = ARGS.direction;
-	e->move.retention = cdir(0.01 * ARGS.direction);
+	move.velocity = ARGS.direction;
+	move.retention = cdir(0.01 * ARGS.direction);
 
 	int lifetime = difficulty_value(350, 400, 450, 500);
 	int step = difficulty_value(16, 14, 12, 10);
 
 	for(int i = 0; i < lifetime/step; i++, WAIT(step)) {
-		float r = cimag(e->pos)/VIEWPORT_H;
+		float r = cimag(pos)/VIEWPORT_H;
 
 		for(int d = 1; d >= -1; d -= 2) {
 			PROJECTILE(
 				.proto = pp_wave,
-				.pos = e->pos + 10.0 * I * ARGS.direction,
+				.pos = pos + 10.0 * I * ARGS.direction,
 				.color = RGB(r,0,0),
-				.move = move_linear(d * 1.5 * I * e->move.velocity)
+				.move = move_linear(d * 1.5 * I * move.velocity)
 			);
 		}
 
