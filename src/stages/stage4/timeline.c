@@ -319,7 +319,7 @@ TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 	}
 
 	play_sfx("shot1");
-	enemy_kill(e);
+	e->hp = 0; // don’t use enemy_kill since this might be called after the enemy is dead
 }
 
 TASK(explosive_swirl, { cmplx pos; MoveParams move; }) {
