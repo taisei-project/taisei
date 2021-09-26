@@ -198,7 +198,7 @@ jobs:
 
   macos-release-build-arm64:
     name: macOS (ARM64)
-    runs-on: macos-11.0
+    runs-on: macos-11
     steps:
     - name: Install Python
       uses: actions/setup-python@v2
