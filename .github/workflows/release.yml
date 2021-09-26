@@ -479,7 +479,7 @@ jobs:
         if-no-files-found: warn
 
   emscripten-release-build:
-    name: Emscripten Release
+    name: Emscripten
     runs-on: ubuntu-20.04
     steps:
     - name: Install Python
