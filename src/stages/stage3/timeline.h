@@ -11,4 +11,4 @@
 
 #include "coroutine.h"
 
-DECLARE_EXTERN_TASK(stage3_timeline, NO_ARGS);
+DECLARE_EXTERN_TASK(stage3_timeline);
