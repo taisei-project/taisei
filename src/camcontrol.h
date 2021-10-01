@@ -14,8 +14,7 @@
 /*
  * NOTE: This is a stage background debugging facility that provides FPS-like keyboard-and-mouse
  * fly-mode camera control. This code is not linked into non-developer builds, and usually is not
- * referenced anywhere — it is expected to be used transiently while working on backgrounds. Which
- * is why it doesn't bother with cleaning up after itself, by the way.
+ * referenced anywhere — it is expected to be used transiently while working on backgrounds.
  *
  * To use it, simply call `camcontrol_init` in your background animation setup code instead of
  * invoking normal animation code. For best results, disable anything that can alter the camera

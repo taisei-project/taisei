@@ -89,8 +89,18 @@ static void predraw(EntityInterface *ent, void *a) {
 	}
 }
 
+TASK(cleanup) {
+	ent_unhook_pre_draw(predraw);
+	events_unregister_handler(mouse_event);
+	events_unregister_handler(wheel_event);
+	events_unregister_handler(focus_gained_event);
+	events_unregister_handler(focus_lost_event);
+}
+
 TASK(camera_control, { Camera3D *cam; }) {
 	Camera3D *cam = ARGS.cam;
+
+	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, cleanup);
 
 	SDL_Window *w = NOT_NULL(video_get_window());
 	SDL_SetWindowGrab(w, true);
