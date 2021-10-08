@@ -20,8 +20,7 @@ Stage3D stage_3d_context;
 void stage3d_init(Stage3D *s, uint pos_buffer_size) {
 	memset(s, 0, sizeof(*s));
 	camera3d_init(&s->cam);
-	s->pos_buffer_size = pos_buffer_size;
-	s->pos_buffer = calloc(s->pos_buffer_size, sizeof(vec3));
+	dynarray_ensure_capacity(&s->positions, pos_buffer_size);
 }
 
 void camera3d_init(Camera3D *cam) {
@@ -201,11 +200,18 @@ void pbr_load_model(PBRModel *pmdl, const char *model_name, const char *mat_name
 }
 
 void stage3d_draw_segment(Stage3D *s, SegmentPositionRule pos_rule, SegmentDrawRule draw_rule, float maxrange) {
+	s->positions.num_elements = 0;
+
+	// TODO maybe get rid of the return value
 	uint num = pos_rule(s, s->cam.pos, maxrange);
 
-	for(uint j = 0; j < num; ++j) {
-		draw_rule(s->pos_buffer[j]);
+	if(num < s->positions.num_elements) {
+		s->positions.num_elements = num;
 	}
+
+	dynarray_foreach_elem(&s->positions, vec3 *p, {
+		draw_rule(*p);
+	});
 }
 
 void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegment segments[nsegments]) {
@@ -223,7 +229,7 @@ void stage3d_draw(Stage3D *s, float maxrange, uint nsegments, const Stage3DSegme
 }
 
 void stage3d_shutdown(Stage3D *s) {
-	free(s->pos_buffer);
+	dynarray_free_data(&s->positions);
 }
 
 
@@ -244,7 +250,7 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 	const float projected_cam = glm_vec3_dot(support_to_camera, direction) / direction_length2;
 	const int n_closest_to_cam = projected_cam;
 
-	uint size = 0;
+	uint prev_size = s3d->positions.num_elements;
 
 	// This is an approximation that does not take into account the distance
 	// of the camera to the line. Can be made exact though.
@@ -256,35 +262,25 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 			if(r == 0 && dir > 0) {
 				continue;
 			}
+
 			int n = n_closest_to_cam + dir*r;
 			vec3 extended_direction;
 			glm_vec3_scale(direction, n, extended_direction);
-
-			assert(size < s3d->pos_buffer_size);
-			glm_vec3_add(support, extended_direction, s3d->pos_buffer[size]);
-			++size;
-
-			if(size == s3d->pos_buffer_size) {
-				s3d->pos_buffer_size *= 2;
-				log_debug("pos_buffer exhausted, reallocating %u -> %u", size, s3d->pos_buffer_size);
-				s3d->pos_buffer = realloc(s3d->pos_buffer, sizeof(vec3) * s3d->pos_buffer_size);
-			}
+			glm_vec3_add(support, extended_direction, *dynarray_append(&s3d->positions));
 		}
 	}
 
-	return size;
+	return s3d->positions.num_elements - prev_size;
 }
 
 uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
-	assume(s3d->pos_buffer_size > 0);
-
 	vec3 d;
 	glm_vec3_sub(p, q, d);
 
 	if(glm_vec3_norm2(d) > maxrange * maxrange) {
 		return 0;
 	} else {
-		memcpy(s3d->pos_buffer, p, sizeof(vec3));
+		glm_vec3_copy(p, *dynarray_append(&s3d->positions));
 		return 1;
 	}
 }

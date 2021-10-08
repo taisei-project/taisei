@@ -81,8 +81,16 @@ struct Stage3D {
 		};
 	};
 
-	vec3 *pos_buffer;
-	uint pos_buffer_size;
+	union {
+		DYNAMIC_ARRAY(vec3) positions;
+
+		struct {
+			vec3 *pos_buffer
+				attr_deprecated("Access through the 'positions' dynarray (if you must)");
+			dynarray_size_t pos_buffer_size
+				attr_deprecated("Access through the 'positions' dynarray (if you must)");
+		};
+	};
 };
 
 extern Stage3D stage_3d_context;
