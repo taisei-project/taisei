@@ -204,6 +204,8 @@ static SFXPlayID register_sfx_playback(
 	audio.chan_play_ids[sfx_chanidx(ch)] = cntr;
 	SFXPlayID play_id = pack_playid(ch, cntr);
 
+	assert((uint)g < NUM_SFX_CHANGROUPS);
+
 	if(loop) {
 		sfx->per_group[g].last_loop_id = play_id;
 	} else {
@@ -215,15 +217,23 @@ static SFXPlayID register_sfx_playback(
 }
 
 static SFXPlayID submit_play_sfx(
-	SFX *sfx, AudioChannelGroup g, AudioBackendChannel ch, bool loop
+	SFX *sfx, AudioChannelGroup group, AudioBackendChannel ch, bool loop
 ) {
-	ch = B.sfx_play(sfx->impl, g, ch, loop);
+	{
+		AudioChannelGroup g = group;
+
+		if(ch != AUDIO_BACKEND_CHANNEL_INVALID) {
+			g = CHANGROUP_ANY;
+		}
+
+		ch = B.sfx_play(sfx->impl, g, ch, loop);
+	}
 
 	if(UNLIKELY(ch == AUDIO_BACKEND_CHANNEL_INVALID)) {
 		return 0;
 	}
 
-	return register_sfx_playback(sfx, g, ch, loop);
+	return register_sfx_playback(sfx, group, ch, loop);
 }
 
 static SFXPlayID play_sound_internal(
@@ -257,10 +267,6 @@ static SFXPlayID play_sound_internal(
 	if(replace) {
 		SFXPlayID id = sfx->per_group[group].last_play_id;
 		ch = get_playid_chan(id);
-
-		if(ch != AUDIO_BACKEND_CHANNEL_INVALID) {
-			group = CHANGROUP_ANY;
-		}
 	}
 
 	return submit_play_sfx(sfx, group, ch, false);
