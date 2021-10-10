@@ -232,16 +232,7 @@ void stage3d_shutdown(Stage3D *s) {
 	dynarray_free_data(&s->positions);
 }
 
-
-// this function generates an array of positions on a line so that all points of
-// at least distance maxrange are contained.
-//
-// The equation of the (infinite) line is
-//
-//     x = support + direction * n
-//
-// where n is an integer.
-//
+// DEPRECATED
 uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 direction) {
 	vec3 support_to_camera;
 	glm_vec3_sub(camera, support, support_to_camera);
@@ -273,14 +264,143 @@ uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 d
 	return s3d->positions.num_elements - prev_size;
 }
 
-uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
+struct pos_ray_data {
+	int n_closest_to_cam;
+	int forward_nrange;
+	int back_nrange;
+	int max_nrange;
+};
+
+static struct pos_ray_data pos_ray_init(
+	vec3 camera, vec3 origin, vec3 step, float forward_range, float back_range
+) {
+	assert(forward_range >= 0);
+	assert(back_range >= 0);
+
+	vec3 orig_to_cam;
+	glm_vec3_sub(camera, origin, orig_to_cam);
+
+	const float step_len2 = glm_vec3_norm2(step);
+	const float step_len = sqrtf(step_len2);
+	const float projected_cam = glm_vec3_dot(orig_to_cam, step) / step_len2;
+
+	struct pos_ray_data rd = {
+		.n_closest_to_cam = roundf(projected_cam),
+
+		// This is an approximation that does not take into account the distance
+		// of the camera to the ray. Can be made exact though.
+		.forward_nrange = forward_range / step_len,
+		.back_nrange = back_range / step_len,
+	};
+	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+
+	return rd;
+}
+
+static struct pos_ray_data pos_ray_init_nsteps(
+	vec3 camera, vec3 origin, vec3 step, int forward_steps, int back_steps
+) {
+	assert(forward_steps >= 0);
+	assert(back_steps >= 0);
+
+	vec3 orig_to_cam;
+	glm_vec3_sub(camera, origin, orig_to_cam);
+
+	const float step_len2 = glm_vec3_norm2(step);
+	const float projected_cam = glm_vec3_dot(orig_to_cam, step) / step_len2;
+
+	struct pos_ray_data rd = {
+		.n_closest_to_cam = roundf(projected_cam),
+		.forward_nrange = forward_steps,
+		.back_nrange = back_steps,
+	};
+	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+
+	return rd;
+}
+
+static void pos_ray_step(
+	Stage3D *s3d, struct pos_ray_data *rd, int nofs, vec3 step, vec3 origin
+) {
+	if(nofs > rd->forward_nrange || nofs < -rd->back_nrange) {
+		return;
+	}
+
+	int n = rd->n_closest_to_cam + nofs;
+
+	if(n < 0) {
+		return;
+	}
+
+	vec3 ofs;
+	glm_vec3_scale(step, n, ofs);
+	glm_vec3_add(origin, ofs, *dynarray_append(&s3d->positions));
+}
+
+static uint pos_ray_steps_nearfirst(Stage3D *s3d, struct pos_ray_data *d, vec3 origin, vec3 step) {
+	const uint prev_size = s3d->positions.num_elements;
+
+	pos_ray_step(s3d, d, 0, step, origin);
+
+	for(int i = 1; i <= d->max_nrange; ++i) {
+		for(int dir = -1; dir <= 1; dir += 2) {
+			pos_ray_step(s3d, d, dir * i, step, origin);
+		}
+	}
+
+	return s3d->positions.num_elements - prev_size;
+}
+
+static uint pos_ray_steps_farfirst(Stage3D *s3d, struct pos_ray_data *d, vec3 origin, vec3 step) {
+	const uint prev_size = s3d->positions.num_elements;
+
+	for(int i = d->max_nrange; i > 0; --i) {
+		for(int dir = 1; dir >= -1; dir -= 2) {
+			pos_ray_step(s3d, d, dir * i, step, origin);
+		}
+	}
+
+	pos_ray_step(s3d, d, 0, step, origin);
+
+	return s3d->positions.num_elements - prev_size;
+}
+
+uint stage3d_pos_ray_nearfirst(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, float forward_range, float back_range
+) {
+	struct pos_ray_data d = pos_ray_init(camera, origin, step, forward_range, back_range);
+	return pos_ray_steps_nearfirst(s3d, &d, origin, step);
+}
+
+uint stage3d_pos_ray_nearfirst_nsteps(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, int forward_steps, int back_steps
+) {
+	struct pos_ray_data d = pos_ray_init_nsteps(camera, origin, step, forward_steps, back_steps);
+	return pos_ray_steps_nearfirst(s3d, &d, origin, step);
+}
+
+uint stage3d_pos_ray_farfirst(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, float forward_range, float back_range
+) {
+	struct pos_ray_data d = pos_ray_init(camera, origin, step, forward_range, back_range);
+	return pos_ray_steps_farfirst(s3d, &d, origin, step);
+}
+
+uint stage3d_pos_ray_farfirst_nsteps(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, int forward_steps, int back_steps
+) {
+	struct pos_ray_data d = pos_ray_init_nsteps(camera, origin, step, forward_steps, back_steps);
+	return pos_ray_steps_farfirst(s3d, &d, origin, step);
+}
+
+uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange) {
 	vec3 d;
-	glm_vec3_sub(p, q, d);
+	glm_vec3_sub(origin, camera, d);
 
 	if(glm_vec3_norm2(d) > maxrange * maxrange) {
 		return 0;
 	} else {
-		glm_vec3_copy(p, *dynarray_append(&s3d->positions));
+		glm_vec3_copy(origin, *dynarray_append(&s3d->positions));
 		return 1;
 	}
 }

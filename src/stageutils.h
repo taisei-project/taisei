@@ -132,7 +132,47 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 void pbr_draw_model(const PBRModel *pmdl, const PBREnvironment *env) attr_nonnull_all;
 void pbr_load_model(PBRModel *pmdl, const char *model_name, const char *mat_name);
 
-uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r);
-uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p);
+/*
+ * Generate an array of equally spaced positions on a ray starting at `origin`:
+ *
+ *     pos = origin + step * n
+ *
+ * where n >= 0.
+ *
+ * The array is culled depending on the camera position and the two range parameters.
+ * The forward_range is is maximum distance from the camera for points in front of it.
+ * The back_range is the maximum distance from the camera for points behind it.
+ *
+ * The _nearfirst variant generates points in ascending distance order. This should be used when
+ * drawing solid objects with depth test enabled (i.e. most of the time)
+ *
+ * The _farfirst variant generates points in descending distance order. This should be used when
+ * drawing alpha-blended objects (e.g. particles)
+ *
+ * The _nsteps variants take the maximum numbers of steps instead of distances for the range
+ * parameters.
+ */
+uint stage3d_pos_ray_nearfirst(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, float forward_range, float back_range
+);
+uint stage3d_pos_ray_nearfirst_nsteps(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, int forward_steps, int back_steps
+);
+uint stage3d_pos_ray_farfirst(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, float forward_range, float back_range
+);
+uint stage3d_pos_ray_farfirst_nsteps(
+	Stage3D *s3d, vec3 camera, vec3 origin, vec3 step, int forward_steps, int back_steps
+);
+
+uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange);
+
+attr_deprecated("Use stage3d_pos_single")
+INLINE uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
+	return stage3d_pos_single(s3d, q, p, maxrange);
+}
+
+uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r)
+	attr_deprecated("Use stage3d_pos_ray_nearfirst/stage3d_pos_ray_farfirst");
 
 void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);
