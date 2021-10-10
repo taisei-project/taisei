@@ -15,8 +15,6 @@
 #include "util/glm.h"
 #include "resource/model.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 static Stage5DrawData *stage5_draw_data;
 
 Stage5DrawData *stage5_get_draw_data(void) {
@@ -46,11 +44,12 @@ void stage5_drawsys_shutdown(void) {
 	stage5_draw_data = NULL;
 }
 
-static uint stage5_stairs_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {0, 0, 0};
-	vec3 r = {0, 0, 11.2};
+static uint stage5_stairs_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	float s = 11.2f;
+	vec3 p = {0, 0, -s};
+	vec3 r = {0, 0, s};
 
-	return linear3dpos(s3d, pos, maxrange, p, r);
+	return stage3d_pos_ray_nearfirst(s3d, cam, p, r, s, s * 3);
 }
 
 static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
@@ -87,9 +86,9 @@ static void stage5_stairs_draw(vec3 pos) {
 	PBREnvironment env = { 0 };
 	stage5_bg_setup_pbr_env(&stage_3d_context.cam, &env);
 
+	pbr_draw_model(&stage5_draw_data->models.metal, &env);
 	pbr_draw_model(&stage5_draw_data->models.stairs, &env);
 	pbr_draw_model(&stage5_draw_data->models.wall, &env);
-	pbr_draw_model(&stage5_draw_data->models.metal, &env);
 
 	r_mat_mv_pop();
 	r_state_pop();
