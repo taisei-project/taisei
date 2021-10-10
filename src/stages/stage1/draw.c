@@ -90,7 +90,7 @@ static void stage1_water_draw(vec3 pos) {
 	r_state_push();
 
 	r_mat_mv_push();
-	r_mat_mv_translate(0, stage_3d_context.cam.pos[1] + 500, 0);
+	r_mat_mv_translate(0, pos[1] + 500, 0);
 	r_mat_mv_rotate(M_PI, 1, 0, 0);
 
 	static const Color water_color = { 0, 0.08, 0.08, 1 };
@@ -155,7 +155,7 @@ static void stage1_water_draw(vec3 pos) {
 	ShaderProgram *water_shader = res_shader("stage1_water");
 	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
 	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
-	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, stage_3d_context.cam.pos[1] / 2400.0);
+	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, pos[1] / 2400.0);
 
 	if(pp_quality > 1) {
 		r_shader("blur5");
@@ -205,8 +205,7 @@ static void stage1_water_draw(vec3 pos) {
 }
 
 static uint stage1_water_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	vec3 q = {0, 0, 0};
-	return single3dpos(s3d, p, INFINITY, q);
+	return stage3d_pos_single(s3d, p, p, maxrange);
 }
 
 static void stage1_smoke_draw(vec3 pos) {
@@ -238,10 +237,10 @@ static void stage1_smoke_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static uint stage1_smoke_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	vec3 q = {0,0,800};
-	vec3 r = {0,200,0};
-	return linear3dpos(s3d, p, maxrange/2.0, q, r);
+static uint stage1_smoke_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 origin = {0,0,800};
+	vec3 step = {0,200,0};
+	return stage3d_pos_ray_farfirst(s3d, cam, origin, step, maxrange * 0.5f, 0);
 }
 
 static bool stage1_fog(Framebuffer *fb) {
@@ -286,8 +285,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 	float a = 0.8;
 	float s = 160 * (1 + 2 * psin(13.12993*pos[1]));
 	r_mat_mv_scale(s, s, 1);
-	r_depth_func(DEPTH_GREATER);
-	r_disable(RCAP_DEPTH_WRITE);
+	r_disable(RCAP_DEPTH_TEST);
 	r_cull(CULL_FRONT);
 	r_mat_tex_push();
 	r_mat_tex_scale(0.5, 1, 1);
@@ -304,10 +302,10 @@ static void stage1_waterplants_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static uint stage1_waterplants_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	vec3 q = {0,0,-300};
-	vec3 r = {0,150,0};
-	return linear3dpos(s3d, p, maxrange/2.0, q, r);
+static uint stage1_waterplants_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 origin = {0,0,-300};
+	vec3 step = {0,150,0};
+	return stage3d_pos_ray_farfirst(s3d, cam, origin, step, maxrange * 0.5f, 0.0f);
 }
 
 static void stage1_snow_draw(vec3 pos) {
@@ -357,10 +355,10 @@ static void stage1_snow_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static uint stage1_snow_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	vec3 q = {0,0,0};
-	vec3 r = {0,15,0};
-	return linear3dpos(s3d, p, maxrange, q, r);
+static uint stage1_snow_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 origin = {0,0,0};
+	vec3 step = {0,15,0};
+	return stage3d_pos_ray_farfirst(s3d, cam, origin, step, maxrange, 0);
 }
 
 void stage1_draw(void) {
