@@ -215,37 +215,38 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_state_pop();
 }
 
-static uint stage2_bg_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {0, 0, 0};
-	vec3 r = {0, 5, 0};
+static uint stage2_bg_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 orig = {0, 0, 0};
+	vec3 step = {0, 5, 0};
 
-	return linear3dpos(s3d, pos, maxrange, p, r);
-}
-static uint stage2_bg_water_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {7, 8, -1};
-	vec3 r = {0, STAGE2_WATER_SIZE, 0};
-
-	return linear3dpos(s3d, pos, maxrange*2, p, r);
+	return stage3d_pos_ray_nearfirst_nsteps(s3d, cam, orig, step, 4, 0);
 }
 
-static uint stage2_bg_water_start_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {7+STAGE2_WATER_SIZE, 6, -1};
+static uint stage2_bg_water_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 orig = {7, 8, -1};
+	vec3 step = {0, STAGE2_WATER_SIZE, 0};
 
-	return single3dpos(s3d, pos, maxrange*2, p);
+	return stage3d_pos_ray_nearfirst_nsteps(s3d, cam, orig, step, 1, 0);
 }
 
-static uint stage2_bg_branch_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {-1, 0, 3.5};
-	vec3 r = {0, 2, 0};
+static uint stage2_bg_water_start_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 pos = {7+STAGE2_WATER_SIZE, 6, -1};
 
-	return linear3dpos(s3d, pos, maxrange, p, r);
+	return stage3d_pos_single(s3d, cam, pos, maxrange*2);
 }
 
-static uint stage2_bg_grass_pos(Stage3D *s3d, vec3 pos, float maxrange) {
-	vec3 p = {-2.6, 0, 0.7};
-	vec3 r = {0, 0.9, 0};
+static uint stage2_bg_branch_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 orig = {-1, 0, 3.5};
+	vec3 step = {0, 2, 0};
 
-	return linear3dpos(s3d, pos, maxrange, p, r);
+	return stage3d_pos_ray_nearfirst_nsteps(s3d, cam, orig, step, 5, 0);
+}
+
+static uint stage2_bg_grass_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 orig = {-2.6, 0, 0.7};
+	vec3 step = {0, 0.9, 0};
+
+	return stage3d_pos_ray_nearfirst(s3d, cam, orig, step, maxrange, 0);
 }
 
 static bool stage2_fog(Framebuffer *fb) {
@@ -272,7 +273,7 @@ void stage2_draw(void) {
 		{ stage2_bg_ground_grass_draw, stage2_bg_pos },
 	};
 
-	stage3d_draw(&stage_3d_context, 25, ARRAY_SIZE(segs), segs);
+	stage3d_draw(&stage_3d_context, 20, ARRAY_SIZE(segs), segs);
 }
 
 void stage2_drawsys_init(void) {
