@@ -56,11 +56,13 @@ typedef struct PointLight3D {
 #define PBR_FEATURE_ENVIRONMENT_MAP    16
 #define PBR_FEATURE_DEPTH_MAP          32
 #define PBR_FEATURE_AO_MAP             64
+#define PBR_FEATURE_NEED_TONEMAP      128
 
 typedef struct PBREnvironment {
 	mat4 cam_inverse_transform;
 	Texture *environment_map;
 	vec3 ambient_color;
+	bool disable_tonemap;
 } PBREnvironment;
 
 typedef struct PBRModel {

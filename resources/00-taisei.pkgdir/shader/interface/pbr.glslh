@@ -11,6 +11,7 @@
 #define PBR_FEATURE_ENVIRONMENT_MAP    16
 #define PBR_FEATURE_DEPTH_MAP          32
 #define PBR_FEATURE_AO_MAP             64
+#define PBR_FEATURE_NEED_TONEMAP      128
 
 UNIFORM(1) int features_mask;
 

@@ -76,8 +76,10 @@ void main(void) {
 		color += envLight;
 	}
 
-	color = PBR_TonemapReinhard(color);
-	color = PBR_GammaCorrect(color);
+	if(bool(features_mask & PBR_FEATURE_NEED_TONEMAP)) {
+		color = PBR_TonemapReinhard(color);
+		color = PBR_GammaCorrect(color);
+	}
 
 	fragColor = vec4(color * alpha, alpha);
 }

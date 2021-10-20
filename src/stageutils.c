@@ -176,6 +176,10 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 		flags |= PBR_FEATURE_AO_MAP;
 	}
 
+	if(!env->disable_tonemap) {
+		flags |= PBR_FEATURE_NEED_TONEMAP;
+	}
+
 	vec4 diffuseRGB_metallicA;
 	glm_vec3_copy((float*)m->diffuse_color, diffuseRGB_metallicA);
 	diffuseRGB_metallicA[3] = m->metallic_value;
