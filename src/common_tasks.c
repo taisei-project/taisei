@@ -325,3 +325,40 @@ DEFINE_EXTERN_TASK(common_easing_animate) {
     }
 }
 
+DEFINE_EXTERN_TASK(common_easing_animate_vec3) {
+	vec3 from;
+	glm_vec3_copy(*ARGS.value, from);
+
+	vec3 scale;
+	glm_vec3_sub(ARGS.to, from, scale);
+
+	float ftime = ARGS.duration;
+
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+
+		float f = ARGS.ease(t / ftime);
+		vec3 d;
+		glm_vec3_scale(scale, f, d);
+		glm_vec3_add(from, d, *ARGS.value);
+	}
+}
+
+DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
+	vec4 from;
+	glm_vec4_copy(*ARGS.value, from);
+
+	vec4 scale;
+	glm_vec4_sub((float*)ARGS.to, from, scale);
+
+	float ftime = ARGS.duration;
+
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+
+		float f = ARGS.ease(t / ftime);
+		vec3 d;
+		glm_vec4_scale(scale, f, d);
+		glm_vec4_add(from, d, *ARGS.value);
+	}
+}

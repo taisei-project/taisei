@@ -116,9 +116,29 @@ DECLARE_EXTERN_TASK(
 
 DECLARE_EXTERN_TASK(
 	common_easing_animate,
-	{ 
+	{
 		float *value;
 		float to;
+		int duration;
+		glm_ease_t ease;
+	}
+);
+
+DECLARE_EXTERN_TASK(
+	common_easing_animate_vec3,
+	{
+		vec3 *value;
+		vec3 to;
+		int duration;
+		glm_ease_t ease;
+	}
+);
+
+DECLARE_EXTERN_TASK(
+	common_easing_animate_vec4,
+	{
+		vec4 *value;
+		vec4 to;
 		int duration;
 		glm_ease_t ease;
 	}
