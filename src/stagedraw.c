@@ -211,8 +211,8 @@ static void stage_draw_setup_framebuffers(void) {
 	a_color->tex_params.type = TEX_TYPE_RGBA_8;
 	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_FG_AUX, 1, a, &rp_fg_aux, "Stage FG AUX");
 
-	// Background: 1 RGBA texture + depth per FB
-	a_color->tex_params.type = TEX_TYPE_RGBA_8;
+	// Background: 1 HDR RGBA texture + depth per FB
+	a_color->tex_params.type = TEX_TYPE_RGBA_16_FLOAT;
 	stage_draw_fbpair_create(stagedraw.fb_pairs + FBPAIR_BG, 2, a, &rp_bg, "Stage BG");
 
 	// Background auxiliary: 1 RGBA texture per FB
