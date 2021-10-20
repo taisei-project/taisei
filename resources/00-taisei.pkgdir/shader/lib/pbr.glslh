@@ -193,6 +193,54 @@ vec3 PBR_TonemapReinhard(vec3 color) {
 	return color / (color + 1.0);
 }
 
+vec3 PBR_TonemapUchimura(vec3 x, float P, float a, float m, float l, float c, float b) {
+	// Uchimura 2017, "HDR theory and practice"
+	// Math: https://www.desmos.com/calculator/gslcdxvipg
+	// Source: https://www.slideshare.net/nikuque/hdr-theory-and-practicce-jp
+	float l0 = ((P - m) * l) / a;
+	float L0 = m - m / a;
+	float L1 = m + (1.0 - m) / a;
+	float S0 = m + l0;
+	float S1 = m + a * l0;
+	float C2 = (a * P) / (P - S1);
+	float CP = -C2 / P;
+
+	vec3 w0 = 1.0 - smoothstep(0.0, m, x);
+	vec3 w2 = step(m + l0, x);
+	vec3 w1 = 1.0 - w0 - w2;
+
+	vec3 T = m * pow(x / m, vec3(c)) + b;
+	vec3 S = P - (P - S1) * exp(CP * (x - S0));
+	vec3 L = m + a * (x - m);
+
+	return T * w0 + L * w1 + S * w2;
+}
+
+vec3 PBR_TonemapUchimura(vec3 x) {
+	const float P = 1.0;  // max display brightness
+	const float a = 1.0;  // contrast
+	const float m = 0.22; // linear section start
+	const float l = 0.4;  // linear section length
+	const float c = 1.33; // black
+	const float b = 0.0;  // pedestal
+	return PBR_TonemapUchimura(x, P, a, m, l, c, b);
+}
+
+vec3 PBR_TonemapUnreal(vec3 x) {
+	// NOTE: built-in gamma correction
+	return x / (x + 0.155) * 1.019;
+}
+
+vec3 PBR_TonemapACES(vec3 x) {
+	// Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
+	const float a = 2.51;
+	const float b = 0.03;
+	const float c = 2.43;
+	const float d = 0.59;
+	const float e = 0.14;
+	return (x * (a * x + b)) / (x * (c * x + d) + e);
+}
+
 vec3 PBR_GammaCorrect(vec3 color) {
 	// Approximate linear->sRGB conversion
 	return pow(color, vec3(1.0/2.2));
