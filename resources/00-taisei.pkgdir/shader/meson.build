@@ -88,6 +88,7 @@ glsl_files = files(
     'text_hud.frag.glsl',
     'text_stagetext.frag.glsl',
     'texture_post_load.frag.glsl',
+    'tonemap.frag.glsl',
     'tower_wall.frag.glsl',
     'tower_wall.vert.glsl',
     'tunnel.frag.glsl',
