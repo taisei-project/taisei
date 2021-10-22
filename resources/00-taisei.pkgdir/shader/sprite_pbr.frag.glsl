@@ -31,7 +31,7 @@ void main(void) {
 
 	vec3 ambient_color = customParams.rgb;
 	vec3 color = ambient * ambient_color + Lo;
-	color = PBR_TonemapReinhard(color);
+	color = PBR_TonemapUchimura(color);
 	color = PBR_GammaCorrect(color);
 
 	fragColor = vec4(color, 1) * alpha;

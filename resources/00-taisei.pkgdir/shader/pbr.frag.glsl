@@ -77,7 +77,7 @@ void main(void) {
 	}
 
 	if(bool(features_mask & PBR_FEATURE_NEED_TONEMAP)) {
-		color = PBR_TonemapReinhard(color);
+		color = PBR_TonemapUchimura(color);
 		color = PBR_GammaCorrect(color);
 	}
 
