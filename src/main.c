@@ -410,7 +410,6 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
 
-	mctx->replay_out = alloc_replay();
 	replay_reset(mctx->replay_out);
 	replay_state_init_record(&global.replay.output, mctx->replay_out);
 	replay_state_deinit(&global.replay.input);
@@ -430,7 +429,6 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 	MainContext *mctx = ctx->mctx;
 
 	if(global.gameover == GAMEOVER_RESTART) {
-		replay_reset(mctx->replay_out);
 		main_singlestg_begin_game(ccr);
 	} else {
 		ask_save_replay(mctx->replay_out, CALLCHAIN(main_singlestg_cleanup, ccr.ctx));
@@ -468,6 +466,7 @@ static void main_singlestg(MainContext *mctx) {
 
 	log_info("Entering %s", stg->title);
 
+	mctx->replay_out = alloc_replay();
 	main_singlestg_begin_game(CALLCHAIN_RESULT(ctx, NULL));
 	eventloop_run();
 }
