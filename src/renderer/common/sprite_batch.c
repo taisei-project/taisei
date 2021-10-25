@@ -334,21 +334,8 @@ void r_sprite_batch_prepare_state(const SpriteStateParams *stp) {
 	}
 }
 
-static SDL_RWops *_r_sprite_batch_prepare_buffer(void) {
-	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
-	size_t remaining = SDL_RWsize(stream) - SDL_RWtell(stream);
-
-	if(remaining < SIZEOF_SPRITE_ATTRIBS) {
-		// TODO: maybe it is better to grow the buffer instead?
-		log_warn("Vertex buffer exhausted (%zu needed for next sprite, %zu remaining), flush forced", SIZEOF_SPRITE_ATTRIBS, remaining);
-		r_flush_sprites();
-	}
-
-	return stream;
-}
-
 void r_sprite_batch_add_instance(const SpriteInstanceAttribs *attribs) {
-	SDL_RWops *stream = _r_sprite_batch_prepare_buffer();
+	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
 	SDL_RWwrite(stream, attribs, SIZEOF_SPRITE_ATTRIBS, 1);
 
 	_r_sprite_batch.num_pending++;
