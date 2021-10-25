@@ -24,7 +24,7 @@ static void gl33_index_buffer_post_bind(CommonBuffer *cbuf) {
 	gl33_bind_vao(ibuf->prev_vao);
 }
 
-IndexBuffer* gl33_index_buffer_create(size_t max_elements) {
+IndexBuffer *gl33_index_buffer_create(size_t max_elements) {
 	IndexBuffer *ibuf = (IndexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ELEMENT_ARRAY, sizeof(IndexBuffer));
 	ibuf->cbuf.size = max_elements * sizeof(gl33_ibo_index_t);
 	ibuf->cbuf.pre_bind = gl33_index_buffer_pre_bind;
@@ -50,7 +50,7 @@ size_t gl33_index_buffer_get_capacity(IndexBuffer *ibuf) {
 	return ibuf->cbuf.size / sizeof(gl33_ibo_index_t);
 }
 
-const char* gl33_index_buffer_get_debug_label(IndexBuffer *ibuf) {
+const char *gl33_index_buffer_get_debug_label(IndexBuffer *ibuf) {
 	return ibuf->cbuf.debug_label;
 }
 

@@ -28,7 +28,9 @@ struct CommonBuffer {
 
 			size_t offset;
 			size_t size;
+			size_t commited_size;
 			GLuint gl_handle;
+			GLuint gl_usage_hint;
 			uint bindidx;
 			char debug_label[R_DEBUG_LABEL_SIZE];
 
@@ -43,11 +45,12 @@ static_assert(
 	"stream should be the first member in CommonBuffer for simplicity"
 );
 
-CommonBuffer* gl33_buffer_create(uint bindidx, size_t alloc_size);
+CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size);
 void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum usage_hint);
 void gl33_buffer_destroy(CommonBuffer *cbuf);
 void gl33_buffer_invalidate(CommonBuffer *cbuf);
-SDL_RWops* gl33_buffer_get_stream(CommonBuffer *cbuf);
+void gl33_buffer_resize(CommonBuffer *cbuf, size_t new_size);
+SDL_RWops *gl33_buffer_get_stream(CommonBuffer *cbuf);
 void gl33_buffer_flush(CommonBuffer *cbuf);
 
 #define GL33_BUFFER_TEMP_BIND(cbuf, code) do { \

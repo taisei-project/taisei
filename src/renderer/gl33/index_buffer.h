@@ -17,13 +17,22 @@ typedef struct IndexBuffer {
 	GLuint prev_vao;
 } IndexBuffer;
 
+// Unfortunately, we can't use short indices unless we use glDrawElementsBaseVertex,
+// which is not available in unextended GLES3/WebGL.
+
+#if 0
 typedef GLushort gl33_ibo_index_t;
 #define GL33_IBO_MAX_INDEX UINT16_MAX
 #define GL33_IBO_GL_DATATYPE GL_UNSIGNED_SHORT
+#else
+typedef GLuint gl33_ibo_index_t;
+#define GL33_IBO_MAX_INDEX UINT32_MAX
+#define GL33_IBO_GL_DATATYPE GL_UNSIGNED_INT
+#endif
 
-IndexBuffer* gl33_index_buffer_create(size_t max_elements);
+IndexBuffer *gl33_index_buffer_create(size_t max_elements);
 size_t gl33_index_buffer_get_capacity(IndexBuffer *ibuf);
-const char* gl33_index_buffer_get_debug_label(IndexBuffer *ibuf);
+const char *gl33_index_buffer_get_debug_label(IndexBuffer *ibuf);
 void gl33_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label);
 void gl33_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset);
 size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf);
