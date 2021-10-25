@@ -53,6 +53,24 @@ In general, things like ``for`` loops should have no spaces between the ``for`` 
    # correct
    for(int i = 0; i < 10; i++) { log_debug(i); }
 
+``ctags`` Support
+'''''''''''''''''
+
+A ``.ctagsdb`` file can assist certain code editors (like ``vim``) with jump-to-definition support and other useful features. To generate a ``taisei/.ctagsdb`` file.
+
+.. code:: sh
+
+   ninja ctags -C build/
+
+You then have to let your editor know that a ``.ctagsdb`` file exists.
+
+Using ``.vimrc`` as an example:
+
+.. code:: sh
+
+   # this will walk the project directory until it finds a .ctagsdb file
+   set tags=.ctagsdb;
+
 Compiling Issues
 ----------------
 
@@ -86,14 +104,20 @@ Platform-Specific Tips
 macOS
 """""
 
+Tools
+'''''
+
 On macOS, you need to begin with installing the Xcode Command Line Tools:
 
 .. code:: sh
 
    xcode-select --install
 
-There are additional command line tools that you'll need. You can acquire those
-by using `Homebrew <https://brew.sh/>`__.
+For other tools, such as ``meson``, you can acquire those by using
+`Homebrew <https://brew.sh/>`__.
+
+Libraries
+'''''''''
 
 As of 2021-08-05, you should **not** install the following packages via
 Homebrew, as the versions available do not compile against Taisei correctly.
@@ -123,3 +147,17 @@ following option:
 .. code:: sh
 
    meson configure build/ --wrap-mode=forcefallback
+
+``ctags`` Error
+'''''''''''''''
+
+You may run into an error when generating ``.ctagsdb`` file, such as ``illegal option -- L`` or something similar. This is because the version of ``ctags`` that ships with Xcode isn't directly supported by ``ninja``.
+
+You can install and alias the Homebrew version of ``ctags`` by doing the following:
+
+.. code:: sh
+
+   brew install ctags
+   # either run this in console, or add to your shell profile
+   alias ctags='/usr/local/bin/ctags'
+
