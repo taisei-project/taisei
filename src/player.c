@@ -687,6 +687,7 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.time.activated = global.frames;
 	plr->powersurge.power = 0;
 	plr->powersurge.damage_accum = 0;
+	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
 	play_sfx("powersurge_start");
