@@ -104,7 +104,7 @@ static void randomize_hue(Color *clr, float r) {
 }
 
 TASK(charge_sound_stopper, { SFXPlayID id; }) {
-	stop_sound(ARGS.id);
+	stop_sfx(ARGS.id);
 }
 
 static int common_charge_impl(
@@ -180,7 +180,7 @@ static int common_charge_impl(
 	if(snd_discharge) {
 		replace_sfx(charge_snd_id, snd_discharge);
 	} else {
-		stop_sound(charge_snd_id);
+		stop_sfx(charge_snd_id);
 	}
 
 	Color c = *color;
