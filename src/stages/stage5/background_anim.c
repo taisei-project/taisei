@@ -15,7 +15,7 @@
 #include "stageutils.h"
 #include "common_tasks.h"
 
-TASK(stage5_bg_update, NO_ARGS) {
+TASK(stage5_bg_update) {
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 
 	Camera3D *cam = &stage_3d_context.cam;
