@@ -11,6 +11,7 @@
 #include "media.h"
 #include "musicroom.h"
 #include "cutsceneview.h"
+#include "charprofile.h"
 #include "common.h"
 #include "options.h"
 #include "global.h"
@@ -22,6 +23,10 @@ static void menu_action_enter_musicroom(MenuData *menu, void *arg) {
 
 static void menu_action_enter_cutsceneview(MenuData *menu, void *arg) {
 	enter_menu(create_cutsceneview_menu(), NO_CALLCHAIN);
+}
+
+static void menu_action_enter_charprofileview(MenuData *menu, void *arg) {
+	enter_menu(create_charprofile_menu(), NO_CALLCHAIN);
 }
 
 static void draw_media_menu(MenuData *m) {
@@ -38,6 +43,7 @@ MenuData *create_media_menu(void) {
 	m->flags = MF_Abortable;
 	m->transition = TransFadeBlack;
 
+	add_menu_entry(m, "Character Profiles", menu_action_enter_charprofileview, NULL);
 	add_menu_entry(m, "Music Room", menu_action_enter_musicroom, NULL);
 	add_menu_entry(m, "Replay Cutscenes", menu_action_enter_cutsceneview, NULL);
 	add_menu_separator(m);

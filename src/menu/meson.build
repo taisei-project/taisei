@@ -1,5 +1,6 @@
 
 menu_src = files(
+    'charprofile.c',
     'charselect.c',
     'common.c',
     'cutsceneview.c',
