@@ -12,8 +12,8 @@
 #include "menu.h"
 #include "portrait.h"
 
-#define NUM_PROFILES 10
-#define NUM_EXPRESSIONS 4
+#define NUM_PROFILES 11
+#define LOCKED_PROFILE NUM_PROFILES-1
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 80)
 
 typedef enum {
@@ -27,6 +27,7 @@ typedef enum {
 	PROFILE_KURUMI,
 	PROFILE_IKU,
 	PROFILE_ELLY,
+	PROFILE_LOCKED,
 } CharProfiles;
 
 typedef struct CharacterProfile {
@@ -35,6 +36,7 @@ typedef struct CharacterProfile {
 	const char *title;
 	const char *description;
 	const char *background;
+	const char *unlock;
 	Sprite *sprite;
 	char *faces[11];
 } CharacterProfile;
@@ -76,6 +78,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.title = "Thermodynamic Ice Fairy",
 		.description = "Species: Fairy\nField of Study: Thermodynamic Systems\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
 		.background = "stage1/cirnobg",
+		.unlock = "stage1boss",
 		.faces = {"normal", "angry", "defeated"},
 	},
 	[PROFILE_HINA] = {
@@ -84,6 +87,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.title = "Gyroscopic Pestilence God",
 		.description = "Species: Pestilence God\nField of Study: Gyroscopic Stabilization\n\nGuardian of Yōkai Mountain. Her angular momentum is out of this world!\n\nShe seems awfully concerned with your health and safety, to the point of being quite overbearing.\n\nYou’re old enough to decide your own path in life, though.",
 		.background = "stage2/spellbg2",
+		.unlock = "stage2boss",
 		.faces = {"normal", "concerned", "serious", "defeated"},
 	},
 	[PROFILE_SCUTTLE] = {
@@ -91,6 +95,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.fullname = "Scuttle",
 		.title = "???",
 		.description = "????",
+		.unlock = "stage3boss",
 		.background = "stage3/spellbg1",
 		.faces = {"normal"},
 	},
@@ -99,6 +104,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.fullname = "Wriggle Nightbug",
 		.title = "Insect Rights Activist",
 		.description = "Species: Insect\nField of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\nShe feels that Insects have lost their “rightful place” in history.\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
+		.unlock = "stage3boss",
 		.background = "stage3/spellbg2",
 		.faces = {"normal", "calm", "outraged", "outraged_unlit", "proud", "defeated"},
 	},
@@ -107,6 +113,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.fullname = "Kurumi",
 		.title = "High-Society Phlebotomist",
 		.description = "Species: Vampire\nField of Study: Phlebotomy\n\nVampiric blast from the past. Doesn’t she know Gensōkyō already has new bloodsuckers in town?\n\nSucking blood is what she’s good at, but her current job is a gatekeeper, and her true passion is high fashion.\n\nEveryone’s got multiple side-hustles these days…",
+		.unlock = "stage4boss",
 		.background = "stage4/kurumibg1",
 		.faces = {"normal", "dissatisfied", "puzzled", "tsun", "tsun_blush", "defeated"},
 	},
@@ -116,6 +123,7 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.title = "Fulminologist of the Heavens",
 		.description = "Species: Oarfish\nField of Study: Meteorology (Fulminology)\n\nMessenger from the clouds, and an amateur meteorologist.\n\nSeems to have been reading a few too many outdated psychiatry textbooks in recent times.\n\nDespite being so formal and stuffy, she seems to be the only one who knows what’s going on.",
 		.background = "stage5/spell_lightning",
+		.unlock = "stage5boss",
 		.faces = {"normal", "smile", "serious", "eyes_closed", "defeated"},
 	},
 	[PROFILE_ELLY] = {
@@ -124,8 +132,18 @@ static struct CharacterProfile profiles[NUM_PROFILES] = {
 		.title = "The Theoretical Reaper",
 		.description = "Species: Shinigami(?)\nField of Study: Theoretical Physics / Forensic Pathology (dual-major)\n\nSlightly upset over being forgotten.\n\nHas apparently gotten herself a tutor in the “dark art” of theoretical physics. Her side-hustle is megalomania.\n\nLiterally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent yōkai below when her Tower of Babel starts to crumble.",
 		.background = "stage6/spellbg_toe",
+		.unlock = "stage6boss_phase1",
 		.faces = {"normal", "eyes_closed", "angry", "shouting", "smug", "blush"},
 	},
+	[PROFILE_LOCKED] = {
+		.name = "locked",
+		.fullname = "Locked",
+		.title = "...",
+		.description = "You have not unlocked this character yet!",
+		.background = "stage1/cirnobg",
+		.faces = {"locked"},
+		.unlock = "lockedboss",
+	}
 };
 
 MenuData *create_charprofile_menu(void);

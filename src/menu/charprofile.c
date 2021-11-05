@@ -20,7 +20,6 @@
 #include "util/glm.h"
 #include "video.h"
 
-
 static void update_char_draw_order(MenuData *m) {
 	CharProfileContext *ctx = m->context;
 
@@ -37,6 +36,16 @@ static void update_char_draw_order(MenuData *m) {
 	}
 }
 
+static int check_unlocked_profile(int i) {
+	int selected = LOCKED_PROFILE;
+	if(!profiles[i].unlock) {
+		// for protagonists
+		selected = i;
+	} else if(profiles[i].unlock != "lockedboss") {
+		if(progress_is_bgm_unlocked(profiles[i].unlock)) selected = i;
+	}
+	return selected;
+}
 
 static void charprofile_logic(MenuData *m) {
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
@@ -45,7 +54,8 @@ static void charprofile_logic(MenuData *m) {
 	MenuEntry *cursor_entry = dynarray_get_ptr(&m->entries, m->cursor);
 	Font *font = res_font("small");
 	char buf[512] = { 0 };
-	text_wrap(font, profiles[m->cursor].description, DESCRIPTION_WIDTH, buf, sizeof(buf));
+	int j = check_unlocked_profile(m->cursor);
+	text_wrap(font, profiles[j].description, DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
 	fapproach_asymptotic_p(&m->drawdata[0], 1, 0.1, 1e-5);
@@ -80,7 +90,6 @@ static void charprofile_draw(MenuData *m) {
 	CharProfiles i = ctx->char_draw_order[m->cursor];
 
 	MenuEntry *e = dynarray_get_ptr(&m->entries, m->cursor);
-	Sprite *spr = profiles[m->cursor].sprite;
 
 	float o = 1 - e->drawdata*2;
 	float pbrightness = 0.6 + 0.4 * o;
@@ -92,16 +101,21 @@ static void charprofile_draw(MenuData *m) {
 		pofs = lerp(pofs, 1, menu_fade(m));
 	}
 
-	SpriteParams portrait_params = {
-		.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
-		.sprite_ptr = spr,
-		.shader = "sprite_default",
-		.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
-	};
+	int selected = check_unlocked_profile(m->cursor);
 
-	r_draw_sprite(&portrait_params);
-	portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[m->cursor].name, profiles[m->cursor].faces[ctx->face]);
-	r_draw_sprite(&portrait_params);
+	if(selected != LOCKED_PROFILE) {
+		Sprite *spr = profiles[selected].sprite;
+		SpriteParams portrait_params = {
+			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
+			.sprite_ptr = spr,
+			.shader = "sprite_default",
+			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
+		};
+
+		r_draw_sprite(&portrait_params);
+		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
+		r_draw_sprite(&portrait_params);
+	}
 	r_mat_mv_push();
 	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
 	r_mat_mv_push();
@@ -112,7 +126,7 @@ static void charprofile_draw(MenuData *m) {
 		r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
 	}
 
-	text_draw(profiles[m->cursor].fullname, &(TextParams) {
+	text_draw(profiles[selected].fullname, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.font = "big",
 		.shader = "text_default",
@@ -126,7 +140,7 @@ static void charprofile_draw(MenuData *m) {
 		o = 1;
 	}
 
-	text_draw(profiles[m->cursor].title, &(TextParams) {
+	text_draw(profiles[selected].title, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.pos = { 20*(1-o), 30 },
 		.shader = "text_default",
@@ -135,7 +149,7 @@ static void charprofile_draw(MenuData *m) {
 	r_mat_mv_pop();
 
 	r_color4(1, 1, 1, 0.5);
-	text_draw_wrapped(profiles[m->cursor].description, DESCRIPTION_WIDTH, &(TextParams) {
+	text_draw_wrapped(profiles[selected].description, DESCRIPTION_WIDTH, &(TextParams) {
 		.align = ALIGN_LEFT,
 		.pos = { -190, 120 },
 		.font = "small",
@@ -145,7 +159,6 @@ static void charprofile_draw(MenuData *m) {
 	r_mat_mv_pop();
 
 	o = 0.3*sin(m->frames/20.0)+0.5;
-	o *= 1 - dynarray_get(&m->entries, m->cursor).drawdata;
 	r_shader("sprite_default");
 
 	r_draw_sprite(&(SpriteParams) {
@@ -171,12 +184,13 @@ static void action_show_character(MenuData *m, void *arg) {
 }
 
 static void add_character(MenuData *m, int i) {
-	log_debug("adding character: %s", profiles[i].name);
-	portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-	profiles[i].sprite = portrait_get_base_sprite(profiles[i].name, NULL);
-
-	MenuEntry *e = add_menu_entry(m, NULL, action_show_character, NULL);
-	e->transition = NULL;
+	if(profiles[i].name != "locked") {
+		log_debug("adding character: %s", profiles[i].name);
+		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
+		profiles[i].sprite = portrait_get_base_sprite(profiles[i].name, NULL);
+		MenuEntry *e = add_menu_entry(m, NULL, action_show_character, NULL);
+		e->transition = NULL;
+	}
 }
 
 static void charprofile_free(MenuData *m) {
