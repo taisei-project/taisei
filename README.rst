@@ -127,6 +127,9 @@ variable ``TAISEI_STORAGE_PATH`` to override this behaviour.
 Troubleshooting
 ---------------
 
+Documentation for many topics, including development and game controller
+support, can be found in our `docs section <./doc/README.rst>`__.
+
 Feel free to
 `open up an issue <https://github.com/taisei-project/taisei/issues>`__ if you
 run into any issues with compiling or running Taisei.
