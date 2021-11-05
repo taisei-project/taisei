@@ -6,10 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "events.h"
 #include "resource/resource.h"
 #include "taisei.h"
 
 #include "charprofile.h"
+#include "mainmenu.h"
 #include "portrait.h"
 #include "common.h"
 #include "progress.h"
@@ -18,86 +20,103 @@
 #include "util/glm.h"
 #include "video.h"
 
-typedef struct CharacterEntryParam {
-	ShaderProgram *text_shader;
-	uint8_t state;
-} CharacterEntryParam;
+static Sprite *get_face_name(CharProfileContext *ctx, const char *name) {
+	char *facename;
+	switch (ctx->face) {
+		case 0:
+			facename = "normal";
+			break;
+		case 1:
+			facename = "surprised";
+			break;
+		case 2:
+			facename = "unamused";
+			break;
+		case 3:
+			facename = "happy";
+			break;
+		default:
+			facename = "normal";
+	}
+	return portrait_get_face_sprite(name, facename);
+}
 
-enum {
-	PROFILE_REIMU,
-	PROFILE_MARISA,
-	PROFILE_YOUMU,
-};
+static void update_char_draw_order(MenuData *m) {
+	CharProfileContext *ctx = m->context;
 
-enum {
-	S_NAME,
-	S_FULLNAME,
-	S_DESCRIPTION,
-	S_FACE,
-	NUM_FIELDS,
-};
+	for(int i = 0; i < NUM_PROFILES; ++i) {
+		if(ctx->char_draw_order[i] == m->cursor) {
+			while(i) {
+				ctx->char_draw_order[i] = ctx->char_draw_order[i - 1];
+				ctx->char_draw_order[i - 1] = m->cursor;
+				--i;
+			}
 
-#define CHARNAME_LEN 32
-#define NUM_PROFILES 3
-static const char chardefs[NUM_PROFILES][NUM_FIELDS][CHARNAME_LEN] = {
-	[PROFILE_REIMU] = {
-		[S_NAME] = "reimu",
-		[S_FULLNAME] = "Reimu Hakurei",
-		[S_DESCRIPTION] = "Temporary Description 1",
-		[S_FACE] = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, normal),
-	},
-	[PROFILE_MARISA] = {
-		[S_NAME] = "marisa",
-		[S_FULLNAME] = "Marisa Kirisame",
-		[S_DESCRIPTION] = "Temporary Description 2",
-		[S_FACE] = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, normal),
-	},
-	[PROFILE_YOUMU] = {
-		[S_NAME] = "youmu",
-		[S_FULLNAME] = "Youmu Konpaku",
-		[S_DESCRIPTION] = "Temporary Description 3",
-		[S_FACE] = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, normal),
-	},
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(cirno, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(hina, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(scuttle, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(wriggle, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(kurumi, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(iku, normal), */
-	/* PORTRAIT_STATIC_FACE_SPRITE_NAME(elly, normal), */
-};
+			break;
+		}
+	}
+}
+
 
 static void charprofile_logic(MenuData *m) {
-	animate_menu_list(m);
 	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
 		e->drawdata += 0.05 * ((m->cursor != i) - e->drawdata);
 	});
-
 	MenuEntry *cursor_entry = dynarray_get_ptr(&m->entries, m->cursor);
-
-	Font *font = res_font("standard");
-	char buf[256] = { 0 };
+	Font *font = res_font("small");
+	char buf[512] = { 0 };
+	text_wrap(font, profiles[m->cursor].description, DESCRIPTION_WIDTH, buf, sizeof(buf));
 	double height = text_height(font, buf, 0) + font_get_lineskip(font) * 2;
 
+	fapproach_asymptotic_p(&m->drawdata[0], 1, 0.1, 1e-5);
 	fapproach_asymptotic_p(&m->drawdata[1], 1 - cursor_entry->drawdata, 0.1, 1e-5);
 	fapproach_asymptotic_p(&m->drawdata[2], height, 0.1, 1e-5);
 }
 
 static void charprofile_draw(MenuData *m) {
-	assert(m->cursor < 3);
-	draw_options_menu_bg(m);
+	assert(m->cursor < NUM_PROFILES);
+	r_state_push();
+
+	CharProfileContext *ctx = m->context;
+	CharProfiles current_profile = 0;
+
+	draw_main_menu_bg(m, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * m->drawdata[1]), "menu/mainmenubg", profiles[m->cursor].background);
 	draw_menu_title(m, "Character Profiles");
 	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
 
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
+
+	float f = m->drawdata[0];
+	float descbg_ofs = 100 + 30 * f - 20 * f - font_get_lineskip(res_font("small")) * 0.7;
+
+	r_color4(0, 0, 0, 0.5);
+	r_shader_standard_notex();
+	r_mat_mv_translate(-150, descbg_ofs + m->drawdata[2] * 0.5, 0);
+	r_mat_mv_scale(650, m->drawdata[2], 1);
+	r_draw_quad();
+	r_shader_standard();
+	r_mat_mv_pop();
+
 	dynarray_foreach_idx(&m->entries, int j, {
+		CharProfiles i = ctx->char_draw_order[j];
+
 		MenuEntry *e = dynarray_get_ptr(&m->entries, j);
-		Sprite *spr = portrait_get_base_sprite(chardefs[j][S_NAME], NULL);  // TODO cache this
+		Sprite *spr = portrait_get_base_sprite(profiles[j].name, NULL);  // TODO cache this
+
+		if(m->cursor == i) {
+			current_profile = j;
+		}
 
 		float o = 1 - e->drawdata*2;
 		float pbrightness = 0.6 + 0.4 * o;
 
 		float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
 		pofs = glm_ease_back_in(pofs);
+
+		if(i != m->selected) {
+			pofs = lerp(pofs, 1, menu_fade(m));
+		}
 
 		SpriteParams portrait_params = {
 			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
@@ -107,10 +126,11 @@ static void charprofile_draw(MenuData *m) {
 		};
 
 		r_draw_sprite(&portrait_params);
-		portrait_params.sprite_ptr = res_sprite(chardefs[j][S_FACE]);
+		portrait_params.sprite_ptr = get_face_name(ctx, profiles[j].name);
 		r_draw_sprite(&portrait_params);
 		r_mat_mv_push();
 		r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
+		r_mat_mv_push();
 		r_mat_mv_push();
 
 		if(e->drawdata != 0) {
@@ -118,25 +138,60 @@ static void charprofile_draw(MenuData *m) {
 			r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
 		}
 
-		text_draw("name", &(TextParams) {
+		text_draw(profiles[j].fullname, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.font = "big",
 			.shader = "text_default",
-			.color = RGBA(1, 1, 1, 1),
+			.color = RGBA(o, o, o, o),
 		});
-
 		r_mat_mv_pop();
 
-		text_draw("title", &(TextParams) {
+		if(e->drawdata) {
+			o = 1 - e->drawdata * 3;
+		} else {
+			o = 1;
+		}
+
+		text_draw(profiles[j].title, &(TextParams) {
 			.align = ALIGN_CENTER,
 			.pos = { 20*(1-o), 30 },
 			.shader = "text_default",
-			.color = RGBA(1, 1, 1, 1),
+			.color = RGBA(o, o, o, o),
 		});
+		r_mat_mv_pop();
 
+		r_color4(1, 1, 1, 0.5);
+		text_draw_wrapped(profiles[j].description, DESCRIPTION_WIDTH, &(TextParams) {
+			.align = ALIGN_LEFT,
+			.pos = { -190, 120 },
+			.font = "small",
+			.shader = "text_default",
+			.color = RGBA(o, o, o, o),
+		});
 		r_mat_mv_pop();
 	});
 
+
+	float o = 0.3*sin(m->frames/20.0)+0.5;
+	o *= 1 - dynarray_get(&m->entries, m->cursor).drawdata;
+	r_shader("sprite_default");
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "menu/arrow",
+		.pos = { 30, SCREEN_H/3+10 },
+		.color = RGBA(o, o, o, o),
+		.scale = { 0.5, 0.7 },
+	});
+
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "menu/arrow",
+		.pos = { 30 + 340, SCREEN_H/3+10 },
+		.color = RGBA(o, o, o, o),
+		.scale = { 0.5, 0.7 },
+		.flip.x = true,
+	});
+
+	r_state_pop();
 }
 
 static void action_show_character(MenuData *m, void *arg) {
@@ -144,15 +199,11 @@ static void action_show_character(MenuData *m, void *arg) {
 }
 
 static void add_character(MenuData *m, int i) {
-	portrait_preload_base_sprite(chardefs[i][S_NAME], NULL, RESF_PERMANENT);
-	portrait_preload_face_sprite(chardefs[i][S_NAME], "normal", RESF_PERMANENT);
+	log_debug("adding character: %s", profiles[i].name);
+	portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
+	portrait_preload_face_sprite(profiles[i].name, "normal", RESF_PERMANENT);
 
-	/* char *p = (char*)chardefs; */
-
-	/* for(int i = 0; i < sizeof(chardefs) / CHARNAME_LEN; ++i) { */
-	/* 	preload_resource(RES_SPRITE, p + i * CHARNAME_LEN, RESF_PERMANENT); */
-	/* } */
-	MenuEntry *e = add_menu_entry(m, chardefs[i][S_FULLNAME], action_show_character, NULL);
+	MenuEntry *e = add_menu_entry(m, NULL, action_show_character, NULL);
 	e->transition = NULL;
 }
 
@@ -162,23 +213,70 @@ static void charprofile_free(MenuData *m) {
 	});
 }
 
+static bool charprofile_input_handler(SDL_Event *event, void *arg) {
+	MenuData *m = arg;
+	CharProfileContext *ctx = m->context;
+	TaiseiEvent type = TAISEI_EVENT(event->type);
+
+	int prev_cursor = m->cursor;
+
+	if(type == TE_MENU_CURSOR_LEFT) {
+		m->cursor++;
+		ctx->face = 0;
+	} else if(type == TE_MENU_CURSOR_RIGHT) {
+		m->cursor--;
+		ctx->face = 0;
+	} else if(type == TE_MENU_ACCEPT) {
+		// show different expressions for selected character
+		ctx->face++;
+		if(ctx->face > NUM_EXPRESSIONS) ctx->face = 0;
+	} else if(type == TE_MENU_ABORT) {
+		play_sfx_ui("hit");
+		close_menu(m);
+	}
+
+	m->cursor = (m->cursor % m->entries.num_elements) + m->entries.num_elements * (m->cursor < 0);
+
+	if(m->cursor != prev_cursor) {
+		if(ctx->prev_selected_char != m->cursor || dynarray_get(&m->entries, m->cursor).drawdata > 0.95) {
+			ctx->prev_selected_char = prev_cursor;
+			update_char_draw_order(m);
+		}
+	}
+
+	return false;
+}
+
+static void charprofile_input(MenuData *m) {
+	events_poll((EventHandler[]){
+		{ .proc = charprofile_input_handler, .arg = m },
+		{ NULL }
+	}, EFLAG_MENU);
+}
+
 MenuData *create_charprofile_menu(void) {
 	MenuData *m = alloc_menu();
 
+	m->input = charprofile_input;
 	m->draw = charprofile_draw;
 	m->logic = charprofile_logic;
 	m->end = charprofile_free;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
+	CharProfileContext *ctx = calloc(1, sizeof(*ctx));
+	ctx->prev_selected_char = -1;
+	m->context = ctx;
+
 	for(int i = 0; i < NUM_PROFILES; i++) {
 		add_character(m, i);
 	}
 
-	while(!dynarray_get(&m->entries, m->cursor).action) {
-			++m->cursor;
+	for(CharProfiles c = 0; c < NUM_PROFILES; ++c) {
+		ctx->char_draw_order[c] = c;
 	}
+
+	m->drawdata[1] = 1;
 
 	return m;
 }
-
