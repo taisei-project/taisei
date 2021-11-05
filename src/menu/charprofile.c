@@ -20,26 +20,6 @@
 #include "util/glm.h"
 #include "video.h"
 
-static Sprite *get_face_name(CharProfileContext *ctx, const char *name) {
-	char *facename;
-	switch (ctx->face) {
-		case 0:
-			facename = "normal";
-			break;
-		case 1:
-			facename = "surprised";
-			break;
-		case 2:
-			facename = "unamused";
-			break;
-		case 3:
-			facename = "happy";
-			break;
-		default:
-			facename = "normal";
-	}
-	return portrait_get_face_sprite(name, facename);
-}
 
 static void update_char_draw_order(MenuData *m) {
 	CharProfileContext *ctx = m->context;
@@ -78,7 +58,6 @@ static void charprofile_draw(MenuData *m) {
 	r_state_push();
 
 	CharProfileContext *ctx = m->context;
-	CharProfiles current_profile = 0;
 
 	draw_main_menu_bg(m, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * m->drawdata[1]), "menu/mainmenubg", profiles[m->cursor].background);
 	draw_menu_title(m, "Character Profiles");
@@ -98,81 +77,74 @@ static void charprofile_draw(MenuData *m) {
 	r_shader_standard();
 	r_mat_mv_pop();
 
-	dynarray_foreach_idx(&m->entries, int j, {
-		CharProfiles i = ctx->char_draw_order[j];
+	CharProfiles i = ctx->char_draw_order[m->cursor];
 
-		MenuEntry *e = dynarray_get_ptr(&m->entries, j);
-		Sprite *spr = portrait_get_base_sprite(profiles[j].name, NULL);  // TODO cache this
+	MenuEntry *e = dynarray_get_ptr(&m->entries, m->cursor);
+	Sprite *spr = profiles[m->cursor].sprite;
 
-		if(m->cursor == i) {
-			current_profile = j;
-		}
+	float o = 1 - e->drawdata*2;
+	float pbrightness = 0.6 + 0.4 * o;
 
-		float o = 1 - e->drawdata*2;
-		float pbrightness = 0.6 + 0.4 * o;
+	float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
+	pofs = glm_ease_back_in(pofs);
 
-		float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
-		pofs = glm_ease_back_in(pofs);
+	if(i != m->selected) {
+		pofs = lerp(pofs, 1, menu_fade(m));
+	}
 
-		if(i != m->selected) {
-			pofs = lerp(pofs, 1, menu_fade(m));
-		}
+	SpriteParams portrait_params = {
+		.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
+		.sprite_ptr = spr,
+		.shader = "sprite_default",
+		.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
+	};
 
-		SpriteParams portrait_params = {
-			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
-			.sprite_ptr = spr,
-			.shader = "sprite_default",
-			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
-		};
+	r_draw_sprite(&portrait_params);
+	portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[m->cursor].name, profiles[m->cursor].faces[ctx->face]);
+	r_draw_sprite(&portrait_params);
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
+	r_mat_mv_push();
+	r_mat_mv_push();
 
-		r_draw_sprite(&portrait_params);
-		portrait_params.sprite_ptr = get_face_name(ctx, profiles[j].name);
-		r_draw_sprite(&portrait_params);
-		r_mat_mv_push();
-		r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
-		r_mat_mv_push();
-		r_mat_mv_push();
+	if(e->drawdata != 0) {
+		r_mat_mv_translate(0, -300 * e->drawdata, 0);
+		r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
+	}
 
-		if(e->drawdata != 0) {
-			r_mat_mv_translate(0, -300 * e->drawdata, 0);
-			r_mat_mv_rotate(M_PI * e->drawdata, 1, 0, 0);
-		}
-
-		text_draw(profiles[j].fullname, &(TextParams) {
-			.align = ALIGN_CENTER,
-			.font = "big",
-			.shader = "text_default",
-			.color = RGBA(o, o, o, o),
-		});
-		r_mat_mv_pop();
-
-		if(e->drawdata) {
-			o = 1 - e->drawdata * 3;
-		} else {
-			o = 1;
-		}
-
-		text_draw(profiles[j].title, &(TextParams) {
-			.align = ALIGN_CENTER,
-			.pos = { 20*(1-o), 30 },
-			.shader = "text_default",
-			.color = RGBA(o, o, o, o),
-		});
-		r_mat_mv_pop();
-
-		r_color4(1, 1, 1, 0.5);
-		text_draw_wrapped(profiles[j].description, DESCRIPTION_WIDTH, &(TextParams) {
-			.align = ALIGN_LEFT,
-			.pos = { -190, 120 },
-			.font = "small",
-			.shader = "text_default",
-			.color = RGBA(o, o, o, o),
-		});
-		r_mat_mv_pop();
+	text_draw(profiles[m->cursor].fullname, &(TextParams) {
+		.align = ALIGN_CENTER,
+		.font = "big",
+		.shader = "text_default",
+		.color = RGBA(o, o, o, o),
 	});
+	r_mat_mv_pop();
 
+	if(e->drawdata) {
+		o = 1 - e->drawdata * 3;
+	} else {
+		o = 1;
+	}
 
-	float o = 0.3*sin(m->frames/20.0)+0.5;
+	text_draw(profiles[m->cursor].title, &(TextParams) {
+		.align = ALIGN_CENTER,
+		.pos = { 20*(1-o), 30 },
+		.shader = "text_default",
+		.color = RGBA(o, o, o, o),
+	});
+	r_mat_mv_pop();
+
+	r_color4(1, 1, 1, 0.5);
+	text_draw_wrapped(profiles[m->cursor].description, DESCRIPTION_WIDTH, &(TextParams) {
+		.align = ALIGN_LEFT,
+		.pos = { -190, 120 },
+		.font = "small",
+		.shader = "text_default",
+		.color = RGBA(o, o, o, o),
+	});
+	r_mat_mv_pop();
+
+	o = 0.3*sin(m->frames/20.0)+0.5;
 	o *= 1 - dynarray_get(&m->entries, m->cursor).drawdata;
 	r_shader("sprite_default");
 
@@ -201,7 +173,7 @@ static void action_show_character(MenuData *m, void *arg) {
 static void add_character(MenuData *m, int i) {
 	log_debug("adding character: %s", profiles[i].name);
 	portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-	portrait_preload_face_sprite(profiles[i].name, "normal", RESF_PERMANENT);
+	profiles[i].sprite = portrait_get_base_sprite(profiles[i].name, NULL);
 
 	MenuEntry *e = add_menu_entry(m, NULL, action_show_character, NULL);
 	e->transition = NULL;
@@ -221,15 +193,15 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 	int prev_cursor = m->cursor;
 
 	if(type == TE_MENU_CURSOR_LEFT) {
-		m->cursor++;
+		m->cursor--;
 		ctx->face = 0;
 	} else if(type == TE_MENU_CURSOR_RIGHT) {
-		m->cursor--;
+		m->cursor++;
 		ctx->face = 0;
 	} else if(type == TE_MENU_ACCEPT) {
 		// show different expressions for selected character
 		ctx->face++;
-		if(ctx->face > NUM_EXPRESSIONS) ctx->face = 0;
+		if(!profiles[m->cursor].faces[ctx->face]) ctx->face = 0;
 	} else if(type == TE_MENU_ABORT) {
 		play_sfx_ui("hit");
 		close_menu(m);
