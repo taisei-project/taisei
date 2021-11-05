@@ -64,7 +64,6 @@ When you're done, please consider contributing your mappings to
 and `us <https://github.com/taisei-project/SDL_GameControllerDB>`__, so
 that other people can benefit from your work.
 
-Also note that we currently only handle input from analog axes and digital
-buttons. Hats, analog buttons, and anything more exotic will not work, unless
-remapped.
-
+Also note that we currently only handle input from analog axes and
+analog/digital buttons. Anything more exotic, such as hats, probably wont work
+out of the box.
