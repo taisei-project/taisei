@@ -513,10 +513,6 @@ foreach bindist_target : bindist_targets
     )
 endforeach
 
-run_target('ctags',
-    command : ['ctags', '-R', '--exclude=.git', '-f', '.ctagsdb', join_paths(meson.source_root(), 'src')]
-)
-
 summary = '''
 
 Summary:

@@ -2,6 +2,7 @@ build/
 winbuild/
 osxbuild/
 .ctagsdb
+tags
 .*DS_Store
 __pycache__
 *.out

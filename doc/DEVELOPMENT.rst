@@ -56,20 +56,20 @@ In general, things like ``for`` loops should have no spaces between the ``for`` 
 ``ctags`` Support
 '''''''''''''''''
 
-A ``.ctagsdb`` file can assist certain code editors (like ``vim``) with jump-to-definition support and other useful features. To generate a ``taisei/.ctagsdb`` file.
+A ``tags`` file can assist certain code editors (like ``vim``) with jump-to-definition support and other useful features. To generate a ``taisei/tags`` file.
 
 .. code:: sh
 
    ninja ctags -C build/
 
-You then have to let your editor know that a ``.ctagsdb`` file exists.
+You then have to let your editor know that a ``tags`` file exists.
 
 Using ``.vimrc`` as an example:
 
 .. code:: sh
 
    # this will walk the project directory until it finds a .ctagsdb file
-   set tags=.ctagsdb;
+   set tags=tags;
 
 Compiling Issues
 ----------------
