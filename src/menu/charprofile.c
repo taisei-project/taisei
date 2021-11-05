@@ -41,7 +41,7 @@ static int check_unlocked_profile(int i) {
 	if(!profiles[i].unlock) {
 		// for protagonists
 		selected = i;
-	} else if(profiles[i].unlock != "lockedboss") {
+	} else if(strcmp(profiles[i].unlock, "lockedboss")) {
 		if(progress_is_bgm_unlocked(profiles[i].unlock)) selected = i;
 	}
 	return selected;
@@ -184,7 +184,7 @@ static void action_show_character(MenuData *m, void *arg) {
 }
 
 static void add_character(MenuData *m, int i) {
-	if(profiles[i].name != "locked") {
+	if(strcmp(profiles[i].name, "locked")) {
 		log_debug("adding character: %s", profiles[i].name);
 		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
 		profiles[i].sprite = portrait_get_base_sprite(profiles[i].name, NULL);
