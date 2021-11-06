@@ -11,4 +11,4 @@
 
 #define ENTITIES_STAGE5(X, ...) \
 	END_OF_ENTITIES \
-	X(IkuSlave, __VA_ARGS__) \
+	X(IkuSlave, __VA_ARGS__)
