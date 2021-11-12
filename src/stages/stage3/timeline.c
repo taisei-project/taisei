@@ -130,7 +130,7 @@ TASK(flower_swirl, { cmplx pos; cmplx dir; }) {
 			PROJECTILE(
 				.proto = pp_wave,
 				.color = RGB(1, 0.5, 0.6),
-				.pos = e->pos + 4 * dir,
+				.pos = e->pos - 4 * dir,
 				.move = move_asymptotic_halflife(0.1*dir, -2 * dir, 220),
 			);
 		}
@@ -147,7 +147,63 @@ TASK(flower_swirl_spawn, { cmplx pos; cmplx dir; int count; int interval; cmplx 
 		INVOKE_TASK(flower_swirl, pos, ARGS.dir);
 		WAIT(ARGS.interval);
 	}
-}	
+}
+
+TASK(horde_fairy, { cmplx pos; }) {
+	Enemy *e;
+	if(rng_chance(0.5)) {
+		e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(
+			.points = 1,
+		)));
+	} else {
+		e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(
+			.power = 1,
+		)));
+	}
+
+	e->move = move_linear(1.5 * I);
+	int interval = 40;
+
+	for(int t = 0;; t++, WAIT(interval)) {
+		play_sfx("shot1");
+		cmplx diff = global.plr.pos - e->pos;
+
+		if(cabs(diff) < 40) {
+			continue;
+		}
+
+		cmplx aim = cnormalize(diff);
+		PROJECTILE(
+			.proto = pp_plainball,
+			.pos = e->pos,
+			.color = RGB(0.4, 0, 1),
+			.move = move_asymptotic_halflife(0, 2 * aim, 25),
+		);
+		PROJECTILE(
+			.proto = pp_flea,
+			.pos = e->pos,
+			.color = RGB(0.1, 0.4, 0.8),
+			.move = move_asymptotic_halflife(0, 2 * aim, 20),
+		);
+	}
+}
+
+TASK(horde_fairy_spawn, { int count; int interval; }) {
+	for(int t = 0; t < ARGS.count; t++) {
+		INVOKE_TASK(horde_fairy, .pos = VIEWPORT_W * rng_real());
+		WAIT(ARGS.interval);
+	}
+}
+
+TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
+	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
+		.power = 5,
+		.points = 5,
+		.bomb_fragment = 1,
+	));
+						
+	e->move_towards(
+	
 
 // bosses
 
@@ -229,6 +285,14 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	);
 	
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
+
+	STAGE_BOOKMARK_DELAYED(800, horde);
+	INVOKE_TASK_DELAYED(800, horde_fairy_spawn,
+		.count = 60,
+		.interval = 20
+	);
+
+	
 
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
