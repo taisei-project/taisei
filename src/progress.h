@@ -118,6 +118,7 @@ uint32_t progress_times_any_ending_achieved(void);
 uint32_t progress_times_any_good_ending_achieved(void);
 
 bool progress_is_bgm_unlocked(const char *name);
+bool progress_is_bgm_id_unlocked(ProgressBGMID id);
 void progress_unlock_bgm(const char *name);
 
 void progress_track_ending(EndingID id);
