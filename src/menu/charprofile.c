@@ -17,13 +17,11 @@
 #include "progress.h"
 #include "options.h"
 #include "global.h"
+#include "portrait.h"
 #include "util/glm.h"
 #include "video.h"
 
-#define NUM_PROFILES 11
-#define LOCKED_PROFILE NUM_PROFILES-1
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 80)
-
 #define FACES(...) { __VA_ARGS__, NULL }
 
 typedef enum {
@@ -38,6 +36,7 @@ typedef enum {
 	PROFILE_IKU,
 	PROFILE_ELLY,
 	PROFILE_LOCKED,
+	NUM_PROFILES
 } CharProfiles;
 
 typedef struct CharacterProfile {
@@ -46,8 +45,8 @@ typedef struct CharacterProfile {
 	const char *title;
 	const char *description;
 	const char *background;
+	const char *faces[12];
 	ProgressBGMID unlock;
-	char *faces[12];
 } CharacterProfile;
 
 typedef struct CharProfileContext {
@@ -85,7 +84,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "cirno",
 		.fullname = "Cirno",
 		.title = "Thermodynamic Ice Fairy",
-		.description = "Species: Fairy\nField of Study: Thermodynamic Systems\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
+		.description = "Species: Fairy\nArea of Study: Thermodynamics\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
 		.background = "stage1/cirnobg",
 		.unlock = PBGM_STAGE1_BOSS,
 		.faces = FACES("normal", "angry", "defeated"),
@@ -94,7 +93,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "hina",
 		.fullname = "Kagiyama Hina",
 		.title = "Gyroscopic Pestilence God",
-		.description = "Species: Pestilence God\nField of Study: Gyroscopic Stabilization\n\nGuardian of Yōkai Mountain. Her angular momentum is out of this world!\n\nShe seems awfully concerned with your health and safety, to the point of being quite overbearing.\n\nYou’re old enough to decide your own path in life, though.",
+		.description = "Species: Pestilence God\nArea of Study: Gyroscopic Stabilization\n\nGuardian of Yōkai Mountain. Her angular momentum is out of this world!\n\nShe seems awfully concerned with your health and safety, to the point of being quite overbearing.\n\nYou’re old enough to decide your own path in life, though.",
 		.unlock = PBGM_STAGE2_BOSS,
 		.background = "stage2/spellbg2",
 		.faces = FACES("normal", "concerned", "serious", "defeated"),
@@ -102,8 +101,8 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 	[PROFILE_SCUTTLE] = {
 		.name = "scuttle",
 		.fullname = "Scuttle",
-		.title = "???",
-		.description = "????",
+		.title = "Agile Insect Engineer",
+		.description = "Species: Bombardier Beetle\nArea of Study: Full-Stack 'Web' Development\n\nNot all things are computable, and this bug seems to sneak in at a decisive fork in your commute to the true culprit.\nThe majority of insects do not scheme grand revolutions, yet their presence alone is enough to upset the course of events.",
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg1",
 		.faces = FACES("normal"),
@@ -112,7 +111,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "wriggle",
 		.fullname = "Wriggle Nightbug",
 		.title = "Insect Rights Activist",
-		.description = "Species: Insect\nField of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\nShe feels that Insects have lost their “rightful place” in history.\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
+		.description = "Species: Insect\nArea of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\nShe feels that Insects have lost their “rightful place” in history.\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg2",
 		.faces = FACES("normal", "calm", "outraged", "proud", "defeated"),
@@ -121,7 +120,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "kurumi",
 		.fullname = "Kurumi",
 		.title = "High-Society Phlebotomist",
-		.description = "Species: Vampire\nField of Study: Phlebotomy\n\nVampiric blast from the past. Doesn’t she know Gensōkyō already has new bloodsuckers in town?\n\nSucking blood is what she’s good at, but her current job is a gatekeeper, and her true passion is high fashion.\n\nEveryone’s got multiple side-hustles these days…",
+		.description = "Species: Vampire\nArea of Study: Hematology\n\nVampiric blast from the past. Doesn’t she know Gensōkyō already has new bloodsuckers in town?\n\nSucking blood is what she’s good at, but her current job is a gatekeeper, and her true passion is high fashion.\n\nEveryone’s got multiple side-hustles these days…",
 		.unlock = PBGM_STAGE4_BOSS,
 		.background = "stage4/kurumibg1",
 		.faces = FACES("normal", "dissatisfied", "puzzled", "tsun", "tsun_blush", "defeated"),
@@ -130,7 +129,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "iku",
 		.fullname = "Nagae Iku",
 		.title = "Fulminologist of the Heavens",
-		.description = "Species: Oarfish\nField of Study: Meteorology (Fulminology)\n\nMessenger from the clouds, and an amateur meteorologist.\n\nSeems to have been reading a few too many outdated psychiatry textbooks in recent times.\n\nDespite being so formal and stuffy, she seems to be the only one who knows what’s going on.",
+		.description = "Species: Oarfish\nArea of Study: Meteorology (Fulminology)\n\nMessenger from the clouds, and an amateur meteorologist.\n\nSeems to have been reading a few too many outdated psychiatry textbooks in recent times.\n\nDespite being so formal and stuffy, she seems to be the only one who knows what’s going on.",
 		.background = "stage5/spell_lightning",
 		.unlock = PBGM_STAGE5_BOSS,
 		.faces = FACES("normal", "smile", "serious", "eyes_closed", "defeated"),
@@ -139,7 +138,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "elly",
 		.fullname = "Elly",
 		.title = "The Theoretical Reaper",
-		.description = "Species: Shinigami(?)\nField of Study: Theoretical Physics / Forensic Pathology (dual-major)\n\nSlightly upset over being forgotten.\n\nHas apparently gotten herself a tutor in the “dark art” of theoretical physics. Her side-hustle is megalomania.\n\nLiterally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent yōkai below when her Tower of Babel starts to crumble.",
+		.description = "Species: Shinigami(?)\nArea of Study: Theoretical Physics / Forensic Pathology (dual-major)\n\nSlightly upset over being forgotten.\n\nHas apparently gotten herself a tutor in the “dark art” of theoretical physics. Her side-hustle is megalomania.\n\nLiterally on top of the world, without a care to spare for those beneath her. Try not to let too many stones crush the innocent yōkai below when her Tower of Babel starts to crumble.",
 		.background = "stage6/spellbg_toe",
 		.unlock = PBGM_STAGE6_BOSS1,
 		.faces = FACES("normal", "eyes_closed", "angry", "shouting", "smug", "blush"),
@@ -173,7 +172,7 @@ static void update_char_draw_order(MenuData *m) {
 }
 
 static int check_unlocked_profile(int i) {
-	int selected = LOCKED_PROFILE;
+	int selected = PROFILE_LOCKED;
 	if(!profiles[i].unlock) {
 		// for protagonists
 		selected = i;
@@ -239,19 +238,25 @@ static void charprofile_draw(MenuData *m) {
 
 	int selected = check_unlocked_profile(m->cursor);
 
-	if(selected != LOCKED_PROFILE) {
-		Sprite *spr = e->arg;
-		SpriteParams portrait_params = {
-			.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
-			.sprite_ptr = spr,
-			.shader = "sprite_default",
-			.color = RGBA(pbrightness, pbrightness, pbrightness, 1),
-		};
+	Color *color = RGBA(pbrightness, pbrightness, pbrightness, 1);
+	// if not unlocked, darken the sprite so it's barely visible
+	if(selected == PROFILE_LOCKED) color = RGBA(0.0, 0.0, 0.0, 0.9);
 
-		r_draw_sprite(&portrait_params);
+	Sprite *spr = e->arg;
+	SpriteParams portrait_params = {
+		.pos = { SCREEN_W/2 + 240 + 320 * pofs, SCREEN_H - spr->h * 0.5 },
+		.sprite_ptr = spr,
+		.shader = "sprite_default",
+		.color = color,
+	};
+
+	r_draw_sprite(&portrait_params);
+
+	if(selected != PROFILE_LOCKED) {
 		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
 		r_draw_sprite(&portrait_params);
 	}
+
 	r_mat_mv_push();
 	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
 	r_mat_mv_push();
@@ -326,6 +331,7 @@ static void add_character(MenuData *m, int i) {
 		MenuEntry *e = add_menu_entry(m, NULL, action_show_character, spr);
 		e->transition = NULL;
 	}
+	preload_resource(RES_TEXTURE, profiles[i].background, RESF_OPTIONAL);
 }
 
 static void charprofile_free(MenuData *m) {

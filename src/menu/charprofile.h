@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "menu.h"
-#include "portrait.h"
+
+void preload_charprofile_menu(void);
 
 MenuData *create_charprofile_menu(void);
