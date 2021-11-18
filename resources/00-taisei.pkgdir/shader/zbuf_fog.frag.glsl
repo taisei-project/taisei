@@ -1,6 +1,6 @@
 #version 330 core
 
-#include "lib/defs.glslh"
+#include "lib/util.glslh"
 #include "interface/standard.glslh"
 
 UNIFORM(1) sampler2D depth;
@@ -17,5 +17,5 @@ void main(void) {
 	float z = pow(d + curvature * length(texCoordRaw - vec2(0.5, 0.0)), exponent);
 	float f = clamp((end - z) / (end - start), 0.0, 1.0);
 
-	fragColor = mix(fog_color, texture(tex, texCoord), f);
+	fragColor = alphaCompose(texture(tex, texCoord), fog_color * (1.0 - f));
 }

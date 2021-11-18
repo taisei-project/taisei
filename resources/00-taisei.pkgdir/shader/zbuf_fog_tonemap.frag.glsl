@@ -1,5 +1,6 @@
 #version 330 core
 
+#include "lib/util.glslh"
 #include "lib/pbr.glslh"
 #include "interface/standard.glslh"
 
@@ -18,7 +19,7 @@ void main(void) {
 	float z = pow(d + curvature * length(texCoordRaw - vec2(0.5, 0.0)), exponent);
 	float f = clamp((end - z) / (end - start), 0.0, 1.0);
 
-	vec4 c = mix(fog_color, texture(tex, texCoord), f);
+	vec4 c = alphaCompose(texture(tex, texCoord), fog_color * (1.0 - f));
 	c.rgb = PBR_TonemapUchimura(exposure * c.rgb);
 	c.rgb = PBR_GammaCorrect(c.rgb);
 	fragColor = c;
