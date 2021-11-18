@@ -190,21 +190,20 @@ def renormalize(args, normalmap, tempdir):
 
 
 def process(args):
-    width, height = image_size(args.input)
-
-    if args.equirect_cubemap:
-        if width != 2 * height or height % 8 != 0:
-            raise MkbasisInputError(f'bad equirectangular map dimensions ({width}x{height}): must be multiples of 8 and have 2:1 aspect ratio')
-    elif width % 4 != 0 or height % 4 != 0:
-        raise MkbasisInputError(f'image dimensions are not multiples of 4 ({width}x{height})')
-
     with TemporaryDirectory() as tempdir:
         tempdir = Path(tempdir)
         img = preprocess(args, tempdir)
+        width, height = image_size(img)
         cubemap = None
 
         if args.equirect_cubemap:
+            if width != 2 * height or height % 8 != 0:
+                raise MkbasisInputError(
+                    f'bad equirectangular map dimensions ({width}x{height}): '
+                     'must be multiples of 8 and have 2:1 aspect ratio')
             cubemap = equirect_to_cubemap(args, img, width, height, height // 2, tempdir)
+        elif width % 4 != 0 or height % 4 != 0:
+            raise MkbasisInputError(f'image dimensions are not multiples of 4 ({width}x{height})')
 
         basis_output = args.output
         zst_output = None
