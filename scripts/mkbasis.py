@@ -77,12 +77,29 @@ def preprocess(args, tempdir):
             '-colorspace', 'gray'
         ]
 
+    if args.external_alpha_path is not None:
+        cmd += [
+            '(',
+                args.external_alpha_path,
+                '-set', 'colorspace', 'linear-gray',
+            ')',
+            '-alpha', 'off',
+            '-compose', 'copy_opacity',
+            '-composite',
+        ]
+
+    if args.blend_background is not None:
+        cmd += [
+            '-background', args.blend_background,
+            '-alpha', 'remove',
+        ]
+
     if channels_have_alpha(args.channels):
         if args.multiply_alpha:
             cmd += [
                 '(',
                     '+clone',
-                    '-background', 'black',
+                    '-background', args.multiply_alpha_blend_background,
                     '-alpha', 'remove',
                 ')',
                 '+swap',
@@ -445,11 +462,29 @@ def main(args):
         nargs=0,
     )
 
+    parser.add_argument('--external-alpha-path',
+        help=f'path to an external alpha channel image in linear grayscale space; overrides input image alpha',
+        default=None,
+        type=Path,
+    )
+
+    parser.add_argument('--blend-background',
+        help=f'alpha-blend input image with a solid color and discard alpha channel; use ImageMagick notation',
+        default=None,
+        type=str,
+    )
+
     parser.add_argument('--multiply-alpha',
         dest='multiply_alpha',
         help='premultiply color channels with alpha; ignored unless --channels=rgba (default)',
         action='store_true',
         default=True,
+    )
+
+    parser.add_argument('--multiply-alpha-blend-background',
+        help=f'color to blend translucent pixels with when premultiplying alpha; use ImageMagick notation (default: black)',
+        default='black',
+        type=str,
     )
 
     parser.add_argument('--no-multiply-alpha',
