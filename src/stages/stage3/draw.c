@@ -128,7 +128,7 @@ static bool stage3_fog(Framebuffer *fb) {
 	r_uniform_float("start", 0.6);
 	r_uniform_float("end", 2);
 	r_uniform_float("exponent", 10);
-	r_uniform_float("sphereness", 0);
+	r_uniform_float("curvature", 0);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 	return true;

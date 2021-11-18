@@ -95,6 +95,7 @@ glsl_files = files(
     'youmu_bomb_bg.frag.glsl',
     'youmua_bomb.frag.glsl',
     'zbuf_fog.frag.glsl',
+    'zbuf_fog_tonemap.frag.glsl',
 # @end glsl
 )
 

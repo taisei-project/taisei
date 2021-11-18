@@ -1,0 +1,2 @@
+
+objects = standard.vert zbuf_fog_tonemap.frag

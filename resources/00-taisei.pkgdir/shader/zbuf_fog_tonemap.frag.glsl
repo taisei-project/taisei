@@ -1,6 +1,6 @@
 #version 330 core
 
-#include "lib/defs.glslh"
+#include "lib/pbr.glslh"
 #include "interface/standard.glslh"
 
 UNIFORM(1) sampler2D depth;
@@ -9,6 +9,7 @@ UNIFORM(3) float end;
 UNIFORM(4) float exponent;
 UNIFORM(5) float curvature;
 UNIFORM(6) vec4 fog_color;
+UNIFORM(7) vec3 exposure;
 
 void main(void) {
 	vec2 pos = vec2(texCoord);
@@ -17,5 +18,8 @@ void main(void) {
 	float z = pow(d + curvature * length(texCoordRaw - vec2(0.5, 0.0)), exponent);
 	float f = clamp((end - z) / (end - start), 0.0, 1.0);
 
-	fragColor = mix(fog_color, texture(tex, texCoord), f);
+	vec4 c = mix(fog_color, texture(tex, texCoord), f);
+	c.rgb = PBR_TonemapUchimura(exposure * c.rgb);
+	c.rgb = PBR_GammaCorrect(c.rgb);
+	fragColor = c;
 }
