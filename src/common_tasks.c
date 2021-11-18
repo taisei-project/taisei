@@ -357,7 +357,7 @@ DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
 		YIELD;
 
 		float f = ARGS.ease(t / ftime);
-		vec3 d;
+		vec4 d;
 		glm_vec4_scale(scale, f, d);
 		glm_vec4_add(from, d, *ARGS.value);
 	}
