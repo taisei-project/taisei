@@ -206,6 +206,7 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 		}
 	} else {
 		resume_bgm(ctx);
+		events_emit(TE_GAME_PAUSE_STATE_CHANGED, false, NULL, NULL);
 	}
 
 	resume_all_sfx();
@@ -215,6 +216,7 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 }
 
 static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
+	events_emit(TE_GAME_PAUSE_STATE_CHANGED, true, NULL, NULL);
 	IngameMenuContext *ctx = calloc(1, sizeof(*ctx));
 	ctx->next = next;
 	setup_ingame_menu_bgm(ctx, bgm);

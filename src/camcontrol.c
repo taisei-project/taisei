@@ -41,12 +41,45 @@
 #define CAMCTRL_KEY_ROLL_LEFT   SDL_SCANCODE_Q
 #define CAMCTRL_KEY_ROLL_RIGHT  SDL_SCANCODE_E
 
+#define CAMCTRL_KEY_TOGGLE_GRAB SDL_SCANCODE_F8
+
+struct cc_state {
+	SDL_Window *w;
+	bool game_paused;
+	bool grab_enabled;
+};
+
 INLINE float normangle(float a) {
 	return a - 360.0f * floorf((a + 180.0f) / 360.0f);
 }
 
 INLINE void addangle(float *a, float d) {
 	*a = normangle(*a + d);
+}
+
+static void set_mouse_grab(struct cc_state *s, bool enable) {
+	enable = enable && s->grab_enabled && !s->game_paused;
+
+	SDL_SetWindowGrab(s->w, enable);
+	SDL_CaptureMouse(enable);
+	SDL_SetRelativeMouseMode(enable);
+	SDL_EventState(SDL_MOUSEMOTION, enable);
+	SDL_EventState(SDL_MOUSEWHEEL, enable);
+}
+
+static bool keydown_event(SDL_Event *e, void *a) {
+	struct cc_state *s = a;
+
+	if(e->key.repeat) {
+		return false;
+	}
+
+	if(e->key.keysym.scancode == CAMCTRL_KEY_TOGGLE_GRAB) {
+		s->grab_enabled = !s->grab_enabled;
+		set_mouse_grab(s, s->grab_enabled);
+	}
+
+	return false;
 }
 
 static bool mouse_event(SDL_Event *e, void *a) {
@@ -69,14 +102,21 @@ static bool wheel_event(SDL_Event *e, void *a) {
 }
 
 static bool focus_gained_event(SDL_Event *e, void *a) {
-	SDL_SetWindowGrab(a, true);
-	SDL_CaptureMouse(true);
+	struct cc_state *s = a;
+	set_mouse_grab(s, true);
 	return false;
 }
 
 static bool focus_lost_event(SDL_Event *e, void *a) {
-	SDL_SetWindowGrab(a, false);
-	SDL_CaptureMouse(false);
+	struct cc_state *s = a;
+	set_mouse_grab(s, false);
+	return false;
+}
+
+static bool pause_event(SDL_Event *e, void *a) {
+	struct cc_state *s = a;
+	s->game_paused = e->user.code;
+	set_mouse_grab(s, !s->game_paused);
 	return false;
 }
 
@@ -89,42 +129,74 @@ static void predraw(EntityInterface *ent, void *a) {
 	}
 }
 
-TASK(cleanup) {
+TASK(cleanup, { struct cc_state *s; }) {
 	ent_unhook_pre_draw(predraw);
+	events_unregister_handler(keydown_event);
 	events_unregister_handler(mouse_event);
 	events_unregister_handler(wheel_event);
 	events_unregister_handler(focus_gained_event);
 	events_unregister_handler(focus_lost_event);
+	events_unregister_handler(pause_event);
+	set_mouse_grab(ARGS.s, false);
 }
 
 TASK(camera_control, { Camera3D *cam; }) {
 	Camera3D *cam = ARGS.cam;
 
-	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, cleanup);
-
-	SDL_Window *w = NOT_NULL(video_get_window());
-	SDL_SetWindowGrab(w, true);
-	SDL_CaptureMouse(true);
-	SDL_SetRelativeMouseMode(true);
-	SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
-	SDL_EventState(SDL_MOUSEWHEEL, SDL_ENABLE);
+	struct cc_state estate = { };
+	estate.w = NOT_NULL(video_get_window());
+	estate.grab_enabled = true;
+	set_mouse_grab(&estate, true);
+	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, cleanup, &estate);
 
 	float move_speed = CAMCTRL_MOVE_SPEED;
 
 	events_register_handler(
-		&(EventHandler) { .proc = mouse_event, .arg = cam, .event_type = SDL_MOUSEMOTION }
+		&(EventHandler) {
+			.proc = mouse_event,
+			.arg = cam,
+			.event_type = SDL_MOUSEMOTION,
+		}
 	);
 
 	events_register_handler(
-		&(EventHandler) { .proc = wheel_event, .arg = &move_speed, .event_type = SDL_MOUSEWHEEL }
+		&(EventHandler) {
+			.proc = wheel_event,
+			.arg = &move_speed,
+			.event_type = SDL_MOUSEWHEEL,
+		}
 	);
 
 	events_register_handler(
-		&(EventHandler) { .proc = focus_gained_event, .arg = w, .event_type = SDL_WINDOWEVENT_FOCUS_GAINED }
+		&(EventHandler) {
+			.proc = keydown_event,
+			.arg = &estate,
+			.event_type = SDL_KEYDOWN,
+		}
 	);
 
 	events_register_handler(
-		&(EventHandler) { .proc = focus_lost_event, .arg = w, .event_type = SDL_WINDOWEVENT_FOCUS_LOST }
+		&(EventHandler) {
+			.proc = focus_gained_event,
+			.arg = &estate,
+			.event_type = SDL_WINDOWEVENT_FOCUS_GAINED,
+		}
+	);
+
+	events_register_handler(
+		&(EventHandler) {
+			.proc = focus_lost_event,
+			.arg = &estate,
+			.event_type = SDL_WINDOWEVENT_FOCUS_LOST,
+		}
+	);
+
+	events_register_handler(
+		&(EventHandler) {
+			.proc = pause_event,
+			.arg = &estate,
+			.event_type = MAKE_TAISEI_EVENT(TE_GAME_PAUSE_STATE_CHANGED)
+		}
 	);
 
 	ent_hook_pre_draw(predraw, NULL);
@@ -134,9 +206,16 @@ TASK(camera_control, { Camera3D *cam; }) {
 		NULL, I*font_get_lineskip(fnt)/2, ALIGN_LEFT, fnt, RGB(1,1,1), 0, 9000000, 0, 0
 	);
 
+	StageText *grabtxt = stagetext_add(
+		"Mouse input disabled ",
+		VIEWPORT_W + I*font_get_lineskip(fnt)/2, ALIGN_RIGHT, fnt, RGB(1,0.5,0), 0, 9000000, 0, 0
+	);
+
 	for(;;YIELD) {
 		int numkeys = 0;
 		const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
+
+		grabtxt->text[0] = estate.grab_enabled ? 0 : 'M';
 
 		if(numkeys < 1) {
 			continue;
