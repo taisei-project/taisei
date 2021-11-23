@@ -122,6 +122,37 @@
 #include "hashtable_incproxy.inc.h"
 
 /*
+ * int2ptr
+ *
+ * Maps 64-bit integers to pointers.
+ */
+#define HT_SUFFIX                      int2ptr
+#define HT_KEY_TYPE                    int64_t
+#define HT_VALUE_TYPE                  void*
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uint64_t)(key))
+#define HT_KEY_FMT                     PRIi64
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
+#include "hashtable_incproxy.inc.h"
+
+/*
+ * int2ptr_ts
+ *
+ * Maps 64-bit integers to pointers (thread-safe).
+ */
+#define HT_SUFFIX                      int2ptr_ts
+#define HT_KEY_TYPE                    int64_t
+#define HT_VALUE_TYPE                  void*
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uint64_t)(key))
+#define HT_KEY_FMT                     PRIi64
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
+#define HT_THREAD_SAFE
+#include "hashtable_incproxy.inc.h"
+
+/*
  * ptr2int
  *
  * Maps pointers to 64-bit integers.
@@ -157,6 +188,41 @@
 #include "hashtable_incproxy.inc.h"
 
 /*
+ * ptr2ptr
+ *
+ * Maps pointers to pointers.
+ */
+#define HT_SUFFIX                      ptr2ptr
+#define HT_KEY_TYPE                    void*
+#define HT_VALUE_TYPE                  void*
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
+#define HT_KEY_CONST
+#include "hashtable_incproxy.inc.h"
+
+/*
+ * ptr2ptr_ts
+ *
+ * Maps pointers to pointers (thread-safe).
+ */
+#define HT_SUFFIX                      ptr2ptr_ts
+#define HT_KEY_TYPE                    void*
+#define HT_VALUE_TYPE                  void*
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (void*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (val)
+#define HT_KEY_CONST
+#define HT_THREAD_SAFE
+#include "hashtable_incproxy.inc.h"
+
+/*
  * C11 generic selection witchcraft.
  */
 
@@ -167,14 +233,18 @@
 	_HT_GENERIC_MAP(str2ptr, name), \
 	_HT_GENERIC_MAP(str2int, name), \
 	_HT_GENERIC_MAP(int2int, name), \
-	_HT_GENERIC_MAP(ptr2int, name)
+	_HT_GENERIC_MAP(int2ptr, name), \
+	_HT_GENERIC_MAP(ptr2int, name), \
+	_HT_GENERIC_MAP(ptr2ptr, name)
 
 // Add all the thread-safe types here.
 #define _HT_GENERICLIST_TS(name) \
 	_HT_GENERIC_MAP(str2ptr_ts, name), \
 	_HT_GENERIC_MAP(str2int_ts, name), \
 	_HT_GENERIC_MAP(int2int_ts, name), \
-	_HT_GENERIC_MAP(ptr2int_ts, name)
+	_HT_GENERIC_MAP(int2ptr_ts, name), \
+	_HT_GENERIC_MAP(ptr2int_ts, name), \
+	_HT_GENERIC_MAP(ptr2ptr_ts, name)
 
 #define _HT_GENERIC(ht_expr, name) (_Generic((ht_expr), \
 	 _HT_GENERICLIST_NONTS(name), \
