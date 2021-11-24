@@ -274,7 +274,7 @@
 	_HT_GENERIC_TS(*(ht), lock) (ht)
 
 #define ht_unlock(ht) \
-	_HT_GENERIC(*(ht), unlock) (ht)
+	_HT_GENERIC_TS(*(ht), unlock) (ht)
 
 #define ht_get(ht, key, default) \
 	_HT_GENERIC(*(ht), get) (ht, key, default)
