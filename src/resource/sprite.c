@@ -45,7 +45,6 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	if(texture_res_handler.procs.check(st->path)) {
 		state->texture_name = strdup(st->name);
-		// preload_resource(RES_TEXTURE, state->texture_name, st->flags);
 		res_load_dependency(st, RES_TEXTURE, state->texture_name);
 		res_load_continue_after_dependencies(st, load_sprite_stage2, state);
 		return;
@@ -97,7 +96,7 @@ static void load_sprite_stage2(ResourceLoadState *st) {
 	struct sprite_load_state *state = NOT_NULL(st->opaque);
 	Sprite *spr = NOT_NULL(state->spr);
 
-	spr->tex = get_resource_data(RES_TEXTURE, state->texture_name, st->flags);
+	spr->tex = get_resource_data(RES_TEXTURE, state->texture_name, st->flags & ~RESF_RELOAD);
 
 	free(state->texture_name);
 	free(state);
@@ -200,6 +199,12 @@ void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc) {
 	spr->tex_area.h = tc.h / tex_h;
 }
 
+static bool transfer_sprite(void *dst, void *src) {
+	*(Sprite*)dst = *(Sprite*)src;
+	free(src);
+	return true;
+}
+
 ResourceHandler sprite_res_handler = {
 	.type = RES_SPRITE,
 	.typename = "sprite",
@@ -210,5 +215,6 @@ ResourceHandler sprite_res_handler = {
 		.check = check_sprite_path,
 		.load = load_sprite_stage1,
 		.unload = free,
+		.transfer = transfer_sprite,
 	},
 };

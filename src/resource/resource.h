@@ -28,10 +28,12 @@ typedef enum ResourceType {
 
 typedef enum ResourceFlags {
 	RESF_OPTIONAL = 1,
-	RESF_PERMANENT = 2,
+	RESF_PERMANENT = 2,   // TODO get rid of this cancer
 	RESF_PRELOAD = 4,
+	RESF_RELOAD = 8,
 
 	RESF_DEFAULT = 0,
+	RESF_PROMOTABLE_FLAGS = RESF_PERMANENT,   // TODO get rid of this cancer
 } ResourceFlags;
 
 typedef struct ResourceLoadState ResourceLoadState;
@@ -47,7 +49,7 @@ struct ResourceLoadState {
 // The path may not actually exist or be usable. The load function (see below) shall deal with such cases.
 // The returned path must be free()'d.
 // May return NULL on failure, but does not have to.
-typedef char* (*ResourceFindProc)(const char *name);
+typedef char *(*ResourceFindProc)(const char *name);
 
 // Tells whether the resource handler should attempt to load a file, specified by a vfs path.
 typedef bool (*ResourceCheckProc)(const char *path);
@@ -55,6 +57,15 @@ typedef bool (*ResourceCheckProc)(const char *path);
 // Begins loading a resource. Called on an unspecified thread.
 // Must call one of the following res_load_* functions before returning to indicate status.
 typedef void (*ResourceLoadProc)(ResourceLoadState *st);
+
+// Makes `dst` refer to the resource represented by `src`.
+// `src` may no longer be a valid reference to the resource after this operation.
+// Resource previously represented by `dst` is destroyed in the process.
+// Called on the main thread, after a resource reload successfully completes.
+//
+// Returns true if the operation succeeds.
+// In case of failure, `dst` must not be modified, and `src` must be destroyed.
+typedef bool (*ResourceTransferProc)(void *dst, void *src);
 
 void res_load_failed(ResourceLoadState *st) attr_nonnull(1);
 void res_load_finished(ResourceLoadState *st, void *res) attr_nonnull(1, 2);
@@ -96,6 +107,7 @@ typedef struct ResourceHandler {
 		ResourceCheckProc check;
 		ResourceLoadProc load;
 		ResourceUnloadProc unload;
+		ResourceTransferProc transfer;
 		ResourceInitProc init;
 		ResourcePostInitProc post_init;
 		ResourceShutdownProc shutdown;
@@ -115,6 +127,7 @@ typedef struct Resource {
 void init_resources(void);
 void load_resources(void);
 void free_resources(bool all);
+void reload_all_resources(void);
 
 Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
 void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;

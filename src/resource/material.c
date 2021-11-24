@@ -13,6 +13,7 @@
 static char *material_path(const char *basename);
 static bool material_check_path(const char *path);
 static void material_load_stage1(ResourceLoadState *st);
+static bool material_transfer(void *dst, void *src);
 
 ResourceHandler material_res_handler = {
 	.type = RES_MATERIAL,
@@ -23,6 +24,7 @@ ResourceHandler material_res_handler = {
 		.find = material_path,
 		.check = material_check_path,
 		.load = material_load_stage1,
+		.transfer = material_transfer,
 		.unload = free,
 	},
 };
@@ -104,7 +106,8 @@ static void material_load_stage1(ResourceLoadState *st) {
 
 #define LOADMAP(_map_) do { \
 	if(ld->_map_##_map) { \
-		ld->mat->_map_##_map = get_resource_data(RES_TEXTURE, ld->_map_##_map, st->flags); \
+		ld->mat->_map_##_map = get_resource_data( \
+			RES_TEXTURE, ld->_map_##_map, st->flags & ~RESF_RELOAD); \
 		if(UNLIKELY(ld->mat->_map_##_map == NULL)) { \
 			log_error("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \
 			free_mat_load_data(ld); \
@@ -126,4 +129,12 @@ static void material_load_stage2(ResourceLoadState *st) {
 
 	res_load_finished(st, ld->mat);
 	free_mat_load_data(ld);
+}
+
+static bool material_transfer(void *dst, void *src) {
+	PBRMaterial *mdst = dst;
+	PBRMaterial *msrc = src;
+	*mdst = *msrc;
+	free(msrc);
+	return true;
 }

@@ -356,6 +356,10 @@ const char* r_shader_object_get_debug_label(ShaderObject *shobj) {
 	return B.shader_object_get_debug_label(shobj);
 }
 
+bool r_shader_object_transfer(ShaderObject *dst, ShaderObject *src) {
+	return B.shader_object_transfer(dst, src);
+}
+
 ShaderProgram* r_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
 	return B.shader_program_link(num_objects, shobjs);
 }
@@ -370,6 +374,10 @@ void r_shader_program_set_debug_label(ShaderProgram *prog, const char *label) {
 
 const char* r_shader_program_get_debug_label(ShaderProgram *prog) {
 	return B.shader_program_get_debug_label(prog);
+}
+
+bool r_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
+	return B.shader_program_transfer(dst, src);
 }
 
 void r_shader_ptr(ShaderProgram *prog) {
@@ -460,6 +468,10 @@ void r_texture_clear(Texture *tex, const Color *clr) {
 
 void r_texture_destroy(Texture *tex) {
 	B.texture_destroy(tex);
+}
+
+bool r_texture_transfer(Texture *dst, Texture *src) {
+	return B.texture_transfer(dst, src);
 }
 
 bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) {

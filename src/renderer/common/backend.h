@@ -49,11 +49,13 @@ typedef struct RendererFuncs {
 	void (*shader_object_destroy)(ShaderObject *shobj);
 	void (*shader_object_set_debug_label)(ShaderObject *shobj, const char *label);
 	const char* (*shader_object_get_debug_label)(ShaderObject *shobj);
+	bool (*shader_object_transfer)(ShaderObject *dst, ShaderObject *src);
 
 	ShaderProgram* (*shader_program_link)(uint num_objects, ShaderObject *shobjs[num_objects]);
 	void (*shader_program_destroy)(ShaderProgram *prog);
 	void (*shader_program_set_debug_label)(ShaderProgram *prog, const char *label);
 	const char* (*shader_program_get_debug_label)(ShaderProgram *prog);
+	bool (*shader_program_transfer)(ShaderProgram *dst, ShaderProgram *src);
 
 	void (*shader)(ShaderProgram *prog);
 	ShaderProgram* (*shader_current)(void);
@@ -76,6 +78,7 @@ typedef struct RendererFuncs {
 	bool (*texture_dump)(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
 	void (*texture_clear)(Texture *tex, const Color *clr);
 	bool (*texture_type_query)(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
+	bool (*texture_transfer)(Texture *dst, Texture *src);
 
 	Framebuffer* (*framebuffer_create)(void);
 	const char* (*framebuffer_get_debug_label)(Framebuffer *framebuffer);

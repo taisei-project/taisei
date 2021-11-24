@@ -12,6 +12,11 @@
 
 #include "global.h"
 #include "video.h"
+#include "renderer/api.h"
+
+static bool texture_transfer(void *dst, void *src) {
+	return r_texture_transfer(dst, src);
+}
 
 ResourceHandler texture_res_handler = {
 	.type = RES_TEXTURE,
@@ -23,6 +28,7 @@ ResourceHandler texture_res_handler = {
 		.check = texture_loader_check_path,
 		.load = texture_loader_stage1,
 		.unload = texture_loader_unload,
+		.transfer = texture_transfer,
 	},
 };
 

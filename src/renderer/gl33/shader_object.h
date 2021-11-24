@@ -17,12 +17,13 @@ struct ShaderObject {
 	ShaderStage stage;
 	char debug_label[R_DEBUG_LABEL_SIZE];
 	uint num_attribs;
-	GLSLAttribute attribs[];
+	GLSLAttribute *attribs;
 };
 
 bool gl33_shader_language_supported(const ShaderLangInfo *lang, ShaderLangInfo *out_alternative);
 
-ShaderObject* gl33_shader_object_compile(ShaderSource *source);
+ShaderObject *gl33_shader_object_compile(ShaderSource *source);
 void gl33_shader_object_destroy(ShaderObject *shobj);
 void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label);
-const char* gl33_shader_object_get_debug_label(ShaderObject *shobj);
+const char *gl33_shader_object_get_debug_label(ShaderObject *shobj);
+bool gl33_shader_object_transfer(ShaderObject *dst, ShaderObject *src);

@@ -33,7 +33,7 @@ static struct shobj_type shobj_type_table[] = {
 	{ NULL }
 };
 
-static struct shobj_type* get_shobj_type(const char *name) {
+static struct shobj_type *get_shobj_type(const char *name) {
 	for(struct shobj_type *type = shobj_type_table; type->ext; ++type) {
 		if(strendswith(name, type->ext)) {
 			return type;
@@ -43,7 +43,7 @@ static struct shobj_type* get_shobj_type(const char *name) {
 	return NULL;
 }
 
-static char* shader_object_path(const char *name) {
+static char *shader_object_path(const char *name) {
 	char *path = NULL;
 
 	for(const char *const *ext = shobj_exts; *ext; ++ext) {
@@ -163,6 +163,10 @@ static void unload_shader_object(void *vsha) {
 	r_shader_object_destroy(vsha);
 }
 
+static bool transfer_shader_object(void *dst, void *src) {
+	return r_shader_object_transfer(dst, src);
+}
+
 ResourceHandler shader_object_res_handler = {
 	.type = RES_SHADER_OBJECT,
 	.typename = "shader object",
@@ -175,5 +179,6 @@ ResourceHandler shader_object_res_handler = {
 		.check = check_shader_object_path,
 		.load = load_shader_object_stage1,
 		.unload = unload_shader_object,
+		.transfer = transfer_shader_object,
 	},
 };

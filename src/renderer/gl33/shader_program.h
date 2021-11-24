@@ -36,6 +36,8 @@ struct ShaderProgram {
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
+#define INVALID_UNIFORM_LOCATION 0xffffffff
+
 struct Uniform {
 	// these are for sampler uniforms
 	LIST_INTERFACE(Uniform);
@@ -71,3 +73,5 @@ Uniform *gl33_shader_uniform(ShaderProgram *prog, const char *uniform_name, hash
 UniformType gl33_uniform_type(Uniform *uniform);
 void gl33_uniform(Uniform *uniform, uint offset, uint count, const void *data);
 void gl33_unref_texture_from_samplers(Texture *tex);
+void gl33_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew);
+bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src);

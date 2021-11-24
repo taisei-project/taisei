@@ -539,11 +539,13 @@ ShaderObject* r_shader_object_compile(ShaderSource *source) attr_nonnull(1);
 void r_shader_object_destroy(ShaderObject *shobj) attr_nonnull(1);
 void r_shader_object_set_debug_label(ShaderObject *shobj, const char *label) attr_nonnull(1);
 const char* r_shader_object_get_debug_label(ShaderObject *shobj) attr_nonnull(1);
+bool r_shader_object_transfer(ShaderObject *dst, ShaderObject *src) attr_nonnull_all;
 
 ShaderProgram* r_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) attr_nonnull(2);
 void r_shader_program_destroy(ShaderProgram *prog);
 void r_shader_program_set_debug_label(ShaderProgram *prog, const char *label) attr_nonnull(1);
 const char* r_shader_program_get_debug_label(ShaderProgram *prog) attr_nonnull(1);
+bool r_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) attr_nonnull_all;
 
 void r_shader_ptr(ShaderProgram *prog) attr_nonnull(1);
 ShaderProgram* r_shader_current(void) attr_returns_nonnull;
@@ -737,6 +739,7 @@ bool r_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) attr_non
 void r_texture_invalidate(Texture *tex) attr_nonnull(1);
 void r_texture_clear(Texture *tex, const Color *clr) attr_nonnull(1, 2);
 void r_texture_destroy(Texture *tex) attr_nonnull(1);
+bool r_texture_transfer(Texture *dst, Texture *src) attr_nonnull(1);
 
 bool r_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result) attr_nodiscard;
 const char *r_texture_type_name(TextureType type);

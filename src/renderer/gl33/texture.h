@@ -44,3 +44,4 @@ void gl33_texture_destroy(Texture *tex);
 bool gl33_texture_type_query(TextureType type, TextureFlags flags, PixmapFormat pxfmt, PixmapOrigin pxorigin, TextureTypeQueryResult *result);
 bool gl33_texture_sampler_compatible(Texture *tex, UniformType sampler_type) attr_nonnull(1);
 bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst);
+bool gl33_texture_transfer(Texture *dst, Texture *src);

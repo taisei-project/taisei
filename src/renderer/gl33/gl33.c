@@ -1035,6 +1035,21 @@ void gl33_texture_deleted(Texture *tex) {
 	}
 }
 
+void gl33_texture_pointer_renamed(Texture *pold, Texture *pnew) {
+	_r_sprite_batch_texture_deleted(pold);
+	gl33_uniforms_handle_texture_pointer_renamed(pold, pnew);
+
+	for(TextureUnit *unit = R.texunits.array; unit < R.texunits.array + R.texunits.limit; ++unit) {
+		if(unit->pending == pold) {
+			unit->pending = pnew;
+		}
+
+		if(unit->active == pold) {
+			unit->active = pnew;
+		}
+	}
+}
+
 void gl33_framebuffer_deleted(Framebuffer *fb) {
 	if(R.framebuffer.pending == fb) {
 		R.framebuffer.pending = NULL;
@@ -1390,10 +1405,12 @@ RendererBackend _r_backend_gl33 = {
 		.shader_object_destroy = gl33_shader_object_destroy,
 		.shader_object_set_debug_label = gl33_shader_object_set_debug_label,
 		.shader_object_get_debug_label = gl33_shader_object_get_debug_label,
+		.shader_object_transfer = gl33_shader_object_transfer,
 		.shader_program_link = gl33_shader_program_link,
 		.shader_program_destroy = gl33_shader_program_destroy,
 		.shader_program_set_debug_label = gl33_shader_program_set_debug_label,
 		.shader_program_get_debug_label = gl33_shader_program_get_debug_label,
+		.shader_program_transfer = gl33_shader_program_transfer,
 		.shader = gl33_shader,
 		.shader_current = gl33_shader_current,
 		.shader_uniform = gl33_shader_uniform,
@@ -1413,6 +1430,7 @@ RendererBackend _r_backend_gl33 = {
 		.texture_clear = gl33_texture_clear,
 		.texture_type_query = gl33_texture_type_query,
 		.texture_dump = gl33_texture_dump,
+		.texture_transfer = gl33_texture_transfer,
 		.framebuffer_create = gl33_framebuffer_create,
 		.framebuffer_destroy = gl33_framebuffer_destroy,
 		.framebuffer_attach = gl33_framebuffer_attach,

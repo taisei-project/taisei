@@ -78,7 +78,7 @@ static void load_shader_program_stage2(ResourceLoadState *st) {
 	char *objname = ldata.objlist;
 
 	for(int i = 0; i < ldata.num_objects; ++i) {
-		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, st->flags))) {
+		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, st->flags & ~RESF_RELOAD))) {
 			log_error("%s: couldn't load shader object '%s'", st->path, objname);
 			free(ldata.objlist);
 			res_load_failed(st);
@@ -104,6 +104,10 @@ static void unload_shader_program(void *vprog) {
 	r_shader_program_destroy(vprog);
 }
 
+static bool transfer_shader_program(void *dst, void *src) {
+	return r_shader_program_transfer(dst, src);
+}
+
 ResourceHandler shader_program_res_handler = {
 	.type = RES_SHADER_PROGRAM,
 	.typename = "shader program",
@@ -114,5 +118,6 @@ ResourceHandler shader_program_res_handler = {
 		.check = check_shader_program_path,
 		.load = load_shader_program_stage1,
 		.unload = unload_shader_program,
+		.transfer = transfer_shader_program,
 	},
 };

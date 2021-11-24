@@ -468,11 +468,28 @@ static bool cache_uniforms(ShaderProgram *prog) {
 void gl33_unref_texture_from_samplers(Texture *tex) {
 	for(Uniform *u = sampler_uniforms; u; u = u->next) {
 		assert(UNIFORM_TYPE_IS_SAMPLER(u->type));
-		assert(u->textures != NULL);
+
+		if(!u->textures) {
+			continue;
+		}
 
 		for(Texture **slot = u->textures; slot < u->textures + u->array_size; ++slot) {
+			assert(slot != NULL);
 			if(*slot == tex) {
 				*slot = NULL;
+			}
+		}
+	}
+}
+
+void gl33_uniforms_handle_texture_pointer_renamed(Texture *pold, Texture *pnew) {
+	for(Uniform *u = sampler_uniforms; u; u = u->next) {
+		assert(UNIFORM_TYPE_IS_SAMPLER(u->type));
+
+		for(Texture **slot = u->textures; slot < u->textures + u->array_size; ++slot) {
+			assert(slot != NULL);
+			if(*slot == pold) {
+				*slot = pnew;
 			}
 		}
 	}
@@ -560,4 +577,114 @@ void gl33_shader_program_set_debug_label(ShaderProgram *prog, const char *label)
 
 const char *gl33_shader_program_get_debug_label(ShaderProgram *prog) {
 	return prog->debug_label;
+}
+
+bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
+	ht_ptr2ptr_t old_new_map;  // bidirectional
+	ht_create(&old_new_map);
+
+	ht_str2ptr_iter_t iter;
+	ht_iter_begin(&src->uniforms, &iter);
+
+	bool fail = false;
+
+	for(; iter.has_data; ht_iter_next(&iter)) {
+		Uniform *unew = NOT_NULL(iter.value);
+		Uniform *uold = ht_get(&dst->uniforms, iter.key, NULL);
+
+		if(!uold) {
+			continue;
+		}
+
+		if(unew->type != uold->type || unew->elem_size != uold->elem_size) {
+			log_error(
+				"Can't update shader program '%s': uniform %s changed type",
+				dst->debug_label, iter.key
+			);
+			fail = true;
+			break;
+		}
+
+		ht_set(&old_new_map, uold, unew);
+		ht_set(&old_new_map, unew, uold);
+	}
+
+	ht_iter_end(&iter);
+
+	if(fail) {
+		ht_destroy(&old_new_map);
+		gl33_shader_program_destroy(src);
+		return false;
+	}
+
+	// Update existing uniforms
+
+	ht_iter_begin(&dst->uniforms, &iter);
+
+	for(; iter.has_data; ht_iter_next(&iter)) {
+		Uniform *uold = NOT_NULL(iter.value);
+		Uniform *unew = ht_get(&old_new_map, uold, NULL);
+
+		free(uold->textures);
+		free(uold->cache.pending);
+		free(uold->cache.commited);
+
+		if(unew) {
+			uold->textures = unew->textures;
+			assert(uold->elem_size == unew->elem_size);
+			uold->array_size = unew->array_size;
+			uold->location = unew->location;
+			assert(uold->type == unew->type);
+			uold->size_uniform = ht_get(&old_new_map, unew->size_uniform, unew->size_uniform);
+			uold->cache = unew->cache;
+
+			if(UNIFORM_TYPE_IS_SAMPLER(unew->type)) {
+				list_unlink(&sampler_uniforms, unew);
+			}
+
+			ht_unset(&src->uniforms, iter.key);
+			free(unew);
+		} else {
+			// Deactivate, but keep the object around, because user code may be referencing it.
+			// We also need to keep type information, in case the uniform gets re-introduced.
+			uold->location = INVALID_UNIFORM_LOCATION;
+			uold->size_uniform = NULL;
+			uold->array_size = 0;
+			uold->textures = NULL;
+			uold->cache.pending = NULL;
+			uold->cache.commited = NULL;
+		}
+	}
+
+	ht_iter_end(&iter);
+
+	// Add new uniforms
+
+	ht_iter_begin(&src->uniforms, &iter);
+
+	for(; iter.has_data; ht_iter_next(&iter)) {
+		Uniform *unew = NOT_NULL(iter.value);
+		assert(ht_get(&old_new_map, unew, NULL) == NULL);
+		assert(ht_get(&dst->uniforms, iter.key, NULL) == NULL);
+
+		unew->prog = dst;
+		unew->size_uniform = ht_get(&old_new_map, unew->size_uniform, unew->size_uniform);
+		ht_set(&dst->uniforms, iter.key, unew);
+	}
+
+	ht_iter_end(&iter);
+
+	dst->gl_handle = src->gl_handle;
+	memcpy(dst->debug_label, src->debug_label, sizeof(dst->debug_label));
+
+	for(int i = 0; i < ARRAY_SIZE(dst->magic_uniforms); ++i) {
+		Uniform *unew = src->magic_uniforms[i];
+		dst->magic_uniforms[i] = ht_get(&old_new_map, unew, unew);
+	}
+
+	ht_destroy(&old_new_map);
+	ht_destroy(&src->uniforms);
+	free(src);
+
+	return true;
 }

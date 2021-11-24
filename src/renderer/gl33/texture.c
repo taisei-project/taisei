@@ -622,3 +622,12 @@ bool gl33_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 	return true;
 #endif
 }
+
+bool gl33_texture_transfer(Texture *dst, Texture *src) {
+	gl33_texture_deleted(dst);
+	glDeleteTextures(1, &dst->gl_handle);
+	*dst = *src;
+	gl33_texture_pointer_renamed(src, dst);
+	free(src);
+	return true;
+}

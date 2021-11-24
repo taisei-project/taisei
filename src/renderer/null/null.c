@@ -46,11 +46,13 @@ static ShaderObject* null_shader_object_compile(ShaderSource *source) { return (
 static void null_shader_object_destroy(ShaderObject *shobj) { }
 static void null_shader_object_set_debug_label(ShaderObject *shobj, const char *label) { }
 static const char* null_shader_object_get_debug_label(ShaderObject *shobj) { return "Null shader object"; }
+static bool null_shader_object_transfer(ShaderObject *dst, ShaderObject *src) { return true; }
 
 static ShaderProgram* null_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) { return (void*)&placeholder; }
 static void null_shader_program_destroy(ShaderProgram *prog) { }
 static void null_shader_program_set_debug_label(ShaderProgram *prog, const char *label) { }
 static const char* null_shader_program_get_debug_label(ShaderProgram *prog) { return "Null shader program"; }
+static bool null_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) { return true; }
 
 static void null_shader(ShaderProgram *prog) { }
 static ShaderProgram* null_shader_current(void) { return (void*)&placeholder; }
@@ -101,6 +103,7 @@ static bool null_texture_type_query(TextureType type, TextureFlags flags, Pixmap
 
 	return true;
 }
+static bool null_texture_transfer(Texture *dst, Texture *src) { return true; }
 
 static FloatRect default_fb_viewport = { 0, 0, 800, 600 };
 
@@ -208,10 +211,12 @@ RendererBackend _r_backend_null = {
 		.shader_object_destroy = null_shader_object_destroy,
 		.shader_object_set_debug_label = null_shader_object_set_debug_label,
 		.shader_object_get_debug_label = null_shader_object_get_debug_label,
+		.shader_object_transfer = null_shader_object_transfer,
 		.shader_program_link = null_shader_program_link,
 		.shader_program_destroy = null_shader_program_destroy,
 		.shader_program_set_debug_label = null_shader_program_set_debug_label,
 		.shader_program_get_debug_label = null_shader_program_get_debug_label,
+		.shader_program_transfer = null_shader_program_transfer,
 		.shader = null_shader,
 		.shader_current = null_shader_current,
 		.shader_uniform = null_shader_uniform,
@@ -231,6 +236,7 @@ RendererBackend _r_backend_null = {
 		.texture_dump = null_texture_dump,
 		.texture_clear = null_texture_clear,
 		.texture_type_query = null_texture_type_query,
+		.texture_transfer = null_texture_transfer,
 		.framebuffer_create = null_framebuffer_create,
 		.framebuffer_get_debug_label = null_framebuffer_get_debug_label,
 		.framebuffer_set_debug_label = null_framebuffer_set_debug_label,

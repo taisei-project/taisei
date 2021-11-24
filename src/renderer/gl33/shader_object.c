@@ -58,7 +58,7 @@ static void print_info_log(GLuint shader) {
 	}
 }
 
-ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
+ShaderObject *gl33_shader_object_compile(ShaderSource *source) {
 	assert(r_shader_language_supported(&source->lang, NULL));
 
 	GLuint gl_handle = glCreateShader(
@@ -100,11 +100,15 @@ ShaderObject* gl33_shader_object_compile(ShaderSource *source) {
 	if(status) {
 		uint nattribs = source->meta.glsl.num_attributes;
 
-		shobj = calloc(1, sizeof(*shobj) + sizeof(GLSLAttribute) * nattribs);
+		shobj = calloc(1, sizeof(*shobj));
 		shobj->gl_handle = gl_handle;
 		shobj->stage = source->stage;
 		shobj->num_attribs = nattribs;
 		snprintf(shobj->debug_label, sizeof(shobj->debug_label), "Shader object #%i", gl_handle);
+
+		if(nattribs > 0) {
+			shobj->attribs = calloc(nattribs, sizeof(*shobj->attribs));
+		}
 
 		for(uint i = 0; i < nattribs; ++i) {
 			GLSLAttribute *a = source->meta.glsl.attributes + i;
@@ -127,6 +131,7 @@ void gl33_shader_object_destroy(ShaderObject *shobj) {
 		free(shobj->attribs[i].name);
 	}
 
+	free(shobj->attribs);
 	free(shobj);
 }
 
@@ -134,6 +139,27 @@ void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label) 
 	glcommon_set_debug_label(shobj->debug_label, "Shader object", GL_SHADER, shobj->gl_handle, label);
 }
 
-const char* gl33_shader_object_get_debug_label(ShaderObject *shobj) {
+const char *gl33_shader_object_get_debug_label(ShaderObject *shobj) {
 	return shobj->debug_label;
+}
+
+bool gl33_shader_object_transfer(ShaderObject *dst, ShaderObject *src) {
+	if(UNLIKELY(dst->stage != src->stage)) {
+		log_error("Shader object changed stage");
+		return false;
+	}
+
+	glDeleteShader(dst->gl_handle);
+
+	uint nattribs = dst->num_attribs;
+
+	for(uint i = 0; i < nattribs; ++i) {
+		free(dst->attribs[i].name);
+	}
+
+	free(dst->attribs);
+	*dst = *src;
+	free(src);
+
+	return true;
 }
