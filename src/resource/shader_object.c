@@ -62,6 +62,11 @@ static bool check_shader_object_path(const char *path) {
 static void load_shader_object_stage1(ResourceLoadState *st);
 static void load_shader_object_stage2(ResourceLoadState *st);
 
+static SDL_RWops *glsl_open_callback(const char *path, void *userdata) {
+	ResourceLoadState *st = userdata;
+	return res_open_file(st, path, VFS_MODE_READ);
+}
+
 static void load_shader_object_stage1(ResourceLoadState *st) {
 	struct shobj_type *type = get_shobj_type(st->path);
 
@@ -94,6 +99,8 @@ static void load_shader_object_stage1(ResourceLoadState *st) {
 				.version = { 330, GLSL_PROFILE_CORE },
 				.stage = type->stage,
 				.macros = macros,
+				.file_open_callback = glsl_open_callback,
+				.file_open_callback_userdata = st,
 			};
 
 			if(!glsl_load_source(st->path, &ldata->source, &opts)) {

@@ -34,15 +34,25 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 
 	char *strobjects = NULL;
 
-	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]){
+	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+
+	if(UNLIKELY(!rw)) {
+		log_error("VFS error: %s", vfs_get_error());
+		res_load_failed(st);
+	}
+
+	if(!parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
 		{ "glsl_objects", .out_str = &strobjects, KVSPEC_DEPRECATED("objects") },
 		{ "objects",      .out_str = &strobjects },
 		{ NULL }
 	})) {
+		SDL_RWclose(rw);
 		free(strobjects);
 		res_load_failed(st);
 		return;
 	}
+
+	SDL_RWclose(rw);
 
 	if(strobjects) {
 		ldata.objlist = calloc(1, strlen(strobjects) + 1);
