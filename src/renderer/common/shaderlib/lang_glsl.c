@@ -152,7 +152,15 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		return false;
 	}
 
-	SDL_RWops *stream = vfs_open(fstate->path, VFS_MODE_READ);
+	SDL_RWops *stream;
+	GLSLSourceOpenCallback open = fstate->global->options->file_open_callback;
+
+	if(open) {
+		stream = open(fstate->path, fstate->global->options->file_open_callback_userdata);
+	} else {
+		stream = vfs_open(fstate->path, VFS_MODE_READ);
+	}
+
 	SDL_RWops *dest = fstate->global->dest;
 
 	if(!stream) {

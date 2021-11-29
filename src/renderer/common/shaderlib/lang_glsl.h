@@ -11,6 +11,8 @@
 
 #include "defs.h"
 
+#include <SDL_rwops.h>
+
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,
 	GLSL_PROFILE_CORE,
@@ -37,11 +39,15 @@ typedef struct ShaderSourceMetaGLSL {
 	GLSLAttribute *attributes;
 } ShaderSourceMetaGLSL;
 
+typedef SDL_RWops *(*GLSLSourceOpenCallback)(const char *path, void *userdata);
+
 typedef struct GLSLSourceOptions {
 	GLSLVersion version;
 	ShaderStage stage;
 	bool force_version;
 	ShaderMacro *macros;
+	GLSLSourceOpenCallback file_open_callback;
+	void *file_open_callback_userdata;
 } GLSLSourceOptions;
 
 bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) attr_nonnull(1, 2, 3);
