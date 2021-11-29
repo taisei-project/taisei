@@ -52,7 +52,17 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	float ofs_x = 0, ofs_y = 0;
 
-	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
+	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+
+	if(UNLIKELY(!rw)) {
+		log_error("VFS error: %s", vfs_get_error());
+		free(spr);
+		free(state);
+		res_load_failed(st);
+		return;
+	}
+
+	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
 		{ "region_x",       .out_float = &spr->tex_area.x },
 		{ "region_y",       .out_float = &spr->tex_area.y },
@@ -67,7 +77,11 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{ "padding_left",   .out_float = &spr->padding.left },
 		{ "padding_right",  .out_float = &spr->padding.right },
 		{ NULL }
-	})) {
+	});
+
+	SDL_RWclose(rw);
+
+	if(UNLIKELY(!parsed)) {
 		free(spr);
 		free(state->texture_name);
 		free(state);
