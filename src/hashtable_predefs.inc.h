@@ -276,6 +276,12 @@
 #define ht_unlock(ht) \
 	_HT_GENERIC_TS(*(ht), unlock) (ht)
 
+#define ht_write_lock(ht) \
+	_HT_GENERIC_TS(*(ht), lock) (ht)
+
+#define ht_write_unlock(ht) \
+	_HT_GENERIC_TS(*(ht), unlock) (ht)
+
 #define ht_get(ht, key, default) \
 	_HT_GENERIC(*(ht), get) (ht, key, default)
 
@@ -287,6 +293,12 @@
 
 #define ht_get_unsafe_prehashed(ht, key, hash, default) \
 	_HT_GENERIC_TS(*(ht), get_unsafe_prehashed) (ht, key, hash, default)
+
+#define ht_get_ptr_unsafe(ht, key, outp, create) \
+	_HT_GENERIC(*(ht), get_ptr_unsafe) (ht, key, outp, create)
+
+#define ht_get_ptr_unsafe_prehashed(ht, key, hash, outp, create) \
+	_HT_GENERIC(*(ht), get_ptr_unsafe_prehashed) (ht, key, hash, outp, create)
 
 #define ht_lookup(ht, key, out_value) \
 	_HT_GENERIC(*(ht), lookup) (ht, key, out_value)
@@ -311,6 +323,9 @@
 
 #define ht_unset(ht, key) \
 	_HT_GENERIC(*(ht), unset) (ht, key)
+
+#define ht_unset_unsafe(ht, key) \
+	_HT_GENERIC_TS(*(ht), unset) (ht, key)
 
 #define ht_unset_list(ht, keylist) \
 	_HT_GENERIC(*(ht), unset_list) (ht, keylist)

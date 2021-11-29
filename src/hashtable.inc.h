@@ -419,6 +419,25 @@ HT_DECLARE_FUNC(void, lock, (HT_BASETYPE *ht))
 HT_DECLARE_FUNC(void, unlock, (HT_BASETYPE *ht))
 	attr_nonnull(1);
 
+/*
+ * void ht_XXX_write_lock(ht_XXX_t *ht);
+ *
+ * Acquire a write lock on a hashtable. All of the thread-safe APIs will block while this lock is
+ * held. This applies to the thread holding the lock as well, which will cause a deadlock.
+ *
+ * This is mostly useful in conjunction with get_ptr_unsafe.
+ */
+HT_DECLARE_FUNC(void, write_lock, (HT_BASETYPE *ht))
+	attr_nonnull(1);
+
+/*
+ * void ht_XXX_write_unlock(ht_XXX_t *ht);
+ *
+ * Release a write lock on a hashtable previously acquired via ht_XXX_write_unlock().
+ */
+HT_DECLARE_FUNC(void, write_unlock, (HT_BASETYPE *ht))
+	attr_nonnull(1);
+
 #endif // HT_THREAD_SAFE
 
 /*
@@ -450,6 +469,33 @@ INLINE HT_DECLARE_FUNC(HT_TYPE(value), get_unsafe, (HT_BASETYPE *ht, HT_TYPE(con
 }
 
 #endif // HT_THREAD_SAFE
+
+/*
+ * bool ht_XXX_get_ptr_unsafe(ht_XXX_t *ht, ht_XXX_const_key_t key, ht_XXX_value_t **outp, bool create);
+ *
+ * Retrieve a writeable pointer to a value associated with [key].
+ *
+ * If the association exists, this function returns true and stores the pointer into [outp].
+ *
+ * If there is no existing association, this function returns false.
+ * If [create] is false, [outp] is not modified.
+ * If [create] is true, a new association is created and the pointer is stored into [outp]. The
+ * contents of the value are undefined in this case and must be initialized by the caller.
+ *
+ * This function is not thread-safe. If the hashtable is accessed by more than one thread, you must
+ * protect this call as well as any modifications made to the pointed value with a write lock (see
+ * ht_XXX_write_lock).
+ *
+ * The pointer returned by this function may be invalidated by any API that can modify the
+ * hashtable. You should not keep any references to it after releasing the write lock.
+ */
+HT_DECLARE_FUNC(bool, get_ptr_unsafe_prehashed, (
+	HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) **outp, bool create))
+	attr_nonnull(1);
+
+HT_DECLARE_FUNC(bool, get_ptr_unsafe, (
+	HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) **outp, bool create))
+	attr_nonnull(1);
 
 /*
  * bool ht_XXX_lookup(ht_XXX_t *ht, ht_XXX_const_key_t key, ht_XXX_value_t *out_value);
@@ -535,6 +581,16 @@ INLINE HT_DECLARE_FUNC(bool, try_set, (HT_BASETYPE *ht, HT_TYPE(const_key) key, 
  */
 HT_DECLARE_FUNC(bool, unset, (HT_BASETYPE *ht, HT_TYPE(const_key) key))
 	attr_nonnull(1);
+
+#ifdef HT_THREAD_SAFE
+/*
+ * bool ht_XXX_unset_unsafe(ht_XXX_t *ht, ht_XXX_const_key_t key);
+ *
+ * A non-thread-safe version of ht_XXX_unset().
+ */
+HT_DECLARE_FUNC(bool, unset_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key))
+	attr_nonnull(1);
+#endif // HT_THREAD_SAFE
 
 /*
  * void ht_XXX_unset_list(ht_XXX_t *ht, const ht_XXX_key_list_t *keylist);
@@ -735,6 +791,14 @@ HT_DECLARE_FUNC(void, lock, (HT_BASETYPE *ht)) {
 HT_DECLARE_FUNC(void, unlock, (HT_BASETYPE *ht)) {
 	HT_PRIV_FUNC(end_read)(ht);
 }
+
+HT_DECLARE_FUNC(void, write_lock, (HT_BASETYPE *ht)) {
+	HT_PRIV_FUNC(begin_write)(ht);
+}
+
+HT_DECLARE_FUNC(void, write_unlock, (HT_BASETYPE *ht)) {
+	HT_PRIV_FUNC(end_write)(ht);
+}
 #endif // HT_THREAD_SAFE
 
 HT_DECLARE_FUNC(void, create, (HT_BASETYPE *ht)) {
@@ -921,6 +985,23 @@ HT_DECLARE_FUNC(bool, unset, (HT_BASETYPE *ht, HT_TYPE(const_key) key)) {
 	return success;
 }
 
+#ifdef HT_THREAD_SAFE
+
+HT_DECLARE_FUNC(bool, unset_unsafe, (HT_BASETYPE *ht, HT_TYPE(const_key) key)) {
+	hash_t hash = HT_FUNC_HASH_KEY(key);
+	bool success = false;
+
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+	if(e != NULL) {
+		HT_PRIV_FUNC(unset_with_backshift)(ht, e);
+		success = true;
+	}
+
+	return success;
+}
+
+#endif
+
 HT_DECLARE_FUNC(void, unset_list, (HT_BASETYPE *ht, const HT_TYPE(key_list) *key_list)) {
 	HT_PRIV_FUNC(begin_write)(ht);
 
@@ -1046,7 +1127,7 @@ HT_DECLARE_PRIV_FUNC(bool, set, (
 	// log_debug(" *** END SET ***");
 
 	assert(HT_PRIV_FUNC(find_element)(ht, key, hash) == e);
-	assert(e->value == value);
+	assert(!memcmp(&e->value, &value, sizeof(value)));
 	return true;
 }
 
@@ -1126,6 +1207,49 @@ HT_DECLARE_FUNC(bool, try_set_prehashed, (HT_BASETYPE *ht, HT_TYPE(const_key) ke
 	HT_PRIV_FUNC(maybe_resize)(ht);
 	HT_PRIV_FUNC(end_write)(ht);
 	return result;
+}
+
+HT_DECLARE_PRIV_FUNC(bool, get_ptr_unsafe_prehashed_noassert, (
+	HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) **outp, bool create)
+) {
+	HT_TYPE(element) *e = HT_PRIV_FUNC(find_element)(ht, key, hash);
+
+	if(e) {
+		*outp = &e->value;
+		return true;
+	}
+
+	if(!create) {
+		return false;
+	}
+
+	HT_TYPE(element) insertion_elem;
+	HT_FUNC_COPY_KEY(&insertion_elem.key, key);
+	insertion_elem.hash = hash | HT_HASH_LIVE_BIT;
+	e = NOT_NULL(HT_PRIV_FUNC(insert)(&insertion_elem, ht->elements, ht->hash_mask, &ht->max_psl));
+	++ht->num_elements_occupied;
+
+	if(HT_PRIV_FUNC(maybe_resize)(ht)) {
+		// element pointer invalidated
+		e = NOT_NULL(HT_PRIV_FUNC(find_element)(ht, key, hash));
+	}
+
+	*outp = &e->value;
+	return false;
+}
+
+HT_DECLARE_FUNC(bool, get_ptr_unsafe_prehashed, (
+	HT_BASETYPE *ht, HT_TYPE(const_key) key, hash_t hash, HT_TYPE(value) **outp, bool create)
+) {
+	assert(hash == HT_FUNC_HASH_KEY(key));
+	return HT_PRIV_FUNC(get_ptr_unsafe_prehashed_noassert)(ht, key, hash, outp, create);
+}
+
+HT_DECLARE_FUNC(bool, get_ptr_unsafe, (
+	HT_BASETYPE *ht, HT_TYPE(const_key) key, HT_TYPE(value) **outp, bool create)
+) {
+	hash_t hash = HT_FUNC_HASH_KEY(key);
+	return HT_PRIV_FUNC(get_ptr_unsafe_prehashed_noassert)(ht, key, hash, outp, create);
 }
 
 HT_DECLARE_FUNC(void*, foreach, (HT_BASETYPE *ht, HT_TYPE(foreach_callback) callback, void *arg)) {

@@ -20,6 +20,10 @@ typedef uint32_t hash_t;
 
 typedef hash_t ht_size_t;
 
+// for hashsets
+struct ht_empty { };
+#define HT_EMPTY ((struct ht_empty) {})
+
 /*
  * htutil_hashfunc_uint32
  *
