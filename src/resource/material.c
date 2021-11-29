@@ -65,6 +65,13 @@ static void free_mat_load_data(struct mat_load_data *ld) {
 static void material_load_stage2(ResourceLoadState *st);
 
 static void material_load_stage1(ResourceLoadState *st) {
+	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+
+	if(UNLIKELY(!rw)) {
+		log_error("VFS error: %s", vfs_get_error());
+		res_load_failed(st);
+	}
+
 	struct mat_load_data *ld = calloc(1, sizeof(*ld));
 	ld->mat = calloc(1, sizeof(*ld->mat));
 	*ld->mat = (PBRMaterial) {
@@ -75,7 +82,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		.depth_scale = 0,
 	};
 
-	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
+	bool ok = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 		{ "diffuse_map",      .out_str = &ld->diffuse_map },
 		{ "normal_map",       .out_str = &ld->normal_map },
 		{ "ambient_map",      .out_str = &ld->ambient_map },
@@ -88,7 +95,11 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{ "metallic",         .out_float = &ld->mat->metallic_value },
 		{ "depth_scale",      .out_float = &ld->mat->depth_scale },
 		{ NULL },
-	})) {
+	});
+
+	SDL_RWclose(rw);
+
+	if(!ok) {
 		free_mat_load_data(ld);
 		log_error("Failed to parse material file '%s'", st->path);
 		res_load_failed(st);
