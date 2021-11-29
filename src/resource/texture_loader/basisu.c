@@ -745,7 +745,8 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	const char *ctx = ld->st->name;
 	const char *basis_file = ld->src_paths.main;
 
-	SDL_RWops *rw_in = vfs_open(basis_file, VFS_MODE_READ);
+	SDL_RWops *rw_in = res_open_file(ld->st, basis_file, VFS_MODE_READ);
+
 	if(!UNLIKELY(rw_in)) {
 		log_error("%s: VFS error: %s", ctx, vfs_get_error());
 		texture_loader_basisu_failed(ld, &bld);

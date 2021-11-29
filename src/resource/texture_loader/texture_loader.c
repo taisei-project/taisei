@@ -461,6 +461,21 @@ static bool texture_loader_infer_sources_cubemap(TextureLoadData *ld) {
 	return true;
 }
 
+static bool load_pixmap(
+	TextureLoadData *ld, const char *path, Pixmap *dst, PixmapFormat preferred_format
+) {
+	SDL_RWops *stream = res_open_file(ld->st, path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+
+	if(UNLIKELY(!stream)) {
+		log_error("VFS error: %s", vfs_get_error());
+		return false;
+	}
+
+	bool result = pixmap_load_stream(stream, PIXMAP_FILEFORMAT_AUTO, dst, preferred_format);
+	SDL_RWclose(stream);
+	return result;
+}
+
 static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 	ResourceLoadState *st = ld->st;
 
@@ -475,7 +490,7 @@ static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 		const char *src = ld->src_paths.cubemap[i];
 		Pixmap *px = ld->pixmaps + i;
 
-		if(!pixmap_load_file(src, ld->pixmaps + i, ld->preferred_format)) {
+		if(!load_pixmap(ld, src, ld->pixmaps + i, ld->preferred_format)) {
 			log_error("%s: Couldn't load cubemap face %s", st->name, src);
 			texture_loader_failed(ld);
 			return;
@@ -559,7 +574,8 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		char *str_wrap_t = NULL;
 		char *str_format = NULL;
 
-		if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]) {
+		SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+		bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 			{ "source",         .out_str  = &ld->src_paths.main },
 			{ "alphamap",       .out_str  = &ld->src_paths.alphamap },
 			{ "cube_px",        .out_str  = &ld->src_paths.cubemap[CUBEMAP_FACE_POS_X] },
@@ -579,7 +595,10 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			{ "multiply_alpha", .out_bool = &ld->preprocess.multiply_alpha },
 			{ "linearize",      .out_bool = &want_srgb },
 			{ NULL }
-		})) {
+		});
+		SDL_RWclose(rw);
+
+		if(UNLIKELY(!parsed)) {
 			texture_loader_failed(ld);
 			return;
 		}
@@ -672,13 +691,16 @@ void texture_loader_stage1(ResourceLoadState *st) {
 	ld->num_pixmaps = 1;
 	ld->pixmaps = calloc(1, sizeof(*ld->pixmaps));
 
-	if(!pixmap_load_file(ld->src_paths.main, ld->pixmaps, ld->preferred_format)) {
+	if(!load_pixmap(ld, ld->src_paths.main, ld->pixmaps, ld->preferred_format)) {
 		log_error("%s: Couldn't load texture image %s", st->name, ld->src_paths.main);
 		texture_loader_failed(ld);
 		return;
 	}
 
-	if(ld->src_paths.alphamap && !pixmap_load_file(ld->src_paths.alphamap, &ld->alphamap, PIXMAP_FORMAT_R8)) {
+	if(
+		ld->src_paths.alphamap &&
+		!load_pixmap(ld, ld->src_paths.alphamap, &ld->alphamap, PIXMAP_FORMAT_R8)
+	) {
 		log_error("%s: Couldn't load texture alphamap %s", st->name, ld->src_paths.alphamap);
 		texture_loader_failed(ld);
 		return;
