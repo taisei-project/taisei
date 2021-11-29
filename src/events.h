@@ -47,6 +47,8 @@ typedef enum {
 
 	TE_AUDIO_BGM_STARTED,
 
+	TE_FILEWATCH,
+
 	NUM_TAISEI_EVENTS
 } TaiseiEvent;
 

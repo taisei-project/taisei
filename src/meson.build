@@ -127,6 +127,7 @@ subdir('audio')
 subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
+subdir('filewatch')
 subdir('lasers')
 subdir('menu')
 subdir('pixmap')
@@ -146,6 +147,7 @@ taisei_src += [
     cutscenes_src,
     dialog_src,
     eventloop_src,
+    filewatch_src,
     lasers_src,
     menu_src,
     pixmap_src,

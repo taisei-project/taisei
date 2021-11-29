@@ -30,6 +30,7 @@
 #include "util/gamemode.h"
 #include "cutscenes/cutscene.h"
 #include "replay/struct.h"
+#include "filewatch/filewatch.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -45,6 +46,7 @@ static void taisei_shutdown(void) {
 	gamemode_shutdown();
 	free_all_refs();
 	free_resources(true);
+	filewatch_shutdown();
 	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
@@ -337,6 +339,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	init_global(&ctx->cli);
 	events_init();
 	video_init();
+	filewatch_init();
 	init_resources();
 	r_post_init();
 	draw_loading_screen();
