@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "hashtable.h"
+#include "vfs/public.h"
 
 typedef enum ResourceType {
 	RES_TEXTURE,
@@ -84,6 +85,12 @@ void res_load_continue_after_dependencies(ResourceLoadState *st, ResourceLoadPro
 // Use with res_load_continue_after_dependencies/res_load_continue_on_main to wait for dependencies.
 void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *name);
 
+// Like vfs_open(), but registers the path to monitor the file for changes.
+// When a change is detected, the resource will be reloaded.
+// This only works if the transfer proc is implemented; otherwise it's equivalent to vfs_open().
+// Note that file monitoring support is not guaranteed.
+SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode);
+
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);
 
@@ -126,6 +133,7 @@ typedef struct Resource {
 
 void init_resources(void);
 void load_resources(void);
+void shutdown_resources(void);
 void free_resources(bool all);
 void reload_all_resources(void);
 

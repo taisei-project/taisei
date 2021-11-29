@@ -9,11 +9,14 @@
 #include "taisei.h"
 
 #include "resource.h"
+
 #include "config.h"
-#include "video.h"
-#include "menu/mainmenu.h"
 #include "events.h"
+#include "filewatch/filewatch.h"
+#include "menu/mainmenu.h"
+#include "renderer/common/backend.h"
 #include "taskmanager.h"
+#include "video.h"
 
 #include "animation.h"
 #include "bgm.h"
@@ -26,8 +29,6 @@
 #include "shader_program.h"
 #include "sprite.h"
 #include "texture.h"
-
-#include "renderer/common/backend.h"
 
 ResourceHandler *_handlers[] = {
 	[RES_ANIM]              = &animation_res_handler,
@@ -60,6 +61,42 @@ typedef enum LoadStatus {
 typedef struct InternalResource InternalResource;
 typedef struct InternalResLoadState InternalResLoadState;
 
+typedef DYNAMIC_ARRAY(InternalResource*) IResPtrArray;
+
+#define HT_SUFFIX                      ires_counted_set
+#define HT_KEY_TYPE                    InternalResource*
+#define HT_VALUE_TYPE                  uint32_t
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (InternalResource*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "i"
+#define HT_VALUE_PRINTABLE(val)        (val)
+#define HT_KEY_CONST
+#define HT_DECL
+#define HT_IMPL
+#include "hashtable_incproxy.inc.h"
+
+#define HT_SUFFIX                      watch2iresset
+#define HT_KEY_TYPE                    FileWatch*
+#define HT_VALUE_TYPE                  ht_ires_counted_set_t
+#define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_uint64((uintptr_t)(key))
+#define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = (FileWatch*)(src))
+#define HT_KEY_FMT                     "p"
+#define HT_KEY_PRINTABLE(key)          (key)
+#define HT_VALUE_FMT                   "p"
+#define HT_VALUE_PRINTABLE(val)        (&(val))
+#define HT_KEY_CONST
+#define HT_THREAD_SAFE
+#define HT_DECL
+#define HT_IMPL
+#include "hashtable_incproxy.inc.h"
+
+typedef struct WatchedPath {
+	char *vfs_path;
+	FileWatch *watch;
+} WatchedPath;
+
 struct InternalResource {
 	Resource res;
 	SDL_mutex *mutex;
@@ -68,21 +105,38 @@ struct InternalResource {
 	char *name;
 	ResourceStatus status;
 
+	// Reloading works by allocating a temporary InternalResource, attempting to load the resource
+	// into it, and, if succeeded, replacing the original resource with the new one.
+	// `is_transient_reloader` indicates whether this instance is the transient or persistent one.
+	// The transient-persistent pairs point to each other via the `reload_buddy` field.
 	bool is_transient_reloader;
 	InternalResource *reload_buddy;
+
+	// List of monitored VFS paths. If any of those files changes, a reload is triggered.
+	DYNAMIC_ARRAY(WatchedPath) watched_paths;
+
+	// Other resources that this one depends on.
+	// When a dependecy gets reloaded, this resource will get reloaded as well.
+	IResPtrArray dependencies;
+
+	// Reverse dependencies, i.e. which resources depend on this one.
+	// This needs to be tracked to avoid a brute force search when propagating reloads.
+	// For simplicity of implementation, this is a counted set (a multiset)
+	ht_ires_counted_set_t dependents;
 };
 
 struct InternalResLoadState {
 	ResourceLoadState st;
 	InternalResource *ires;
 	Task *async_task;
-	char *allocated_name;
-	char *allocated_path;
 	ResourceLoadProc continuation;
-	DYNAMIC_ARRAY(InternalResource*) dependencies;
 	LoadStatus status;
 	bool ready_to_finalize;
 };
+
+typedef struct FileWatchHandlerData {
+	IResPtrArray temp_ires_array;
+} FileWatchHandlerData;
 
 static struct {
 	hrtime_t frame_threshold;
@@ -95,6 +149,17 @@ static struct {
 	} env;
 	SDL_SpinLock ires_freelist_lock;
 	InternalResource *ires_freelist;
+
+	// Maps FileWatch pointers to sets of resources that are monitoring them.
+	// This needs to be tracked to avoid a brute force search when handling TE_FILEWATCH events.
+	// This is a hashtable where keys are FileWatch* and values are ht_ires_counted_set_t.
+	// ht_ires_counted_set_t is in turn another hashtable (InternalResource* -> uint32_t)
+	// implementing a counted set. This is because a resource may track the same FileWatch pointer
+	// multiple times.
+	ht_watch2iresset_t watch_to_iresset;
+
+	// Static data for filewatch event handler
+	FileWatchHandlerData fw_handler_data;
 } res_gstate;
 
 INLINE ResourceHandler *get_handler(ResourceType type) {
@@ -131,7 +196,20 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 }
 
 attr_nonnull_all
+static void ires_free_meta(InternalResource *ires) {
+	assert(ires->load == NULL);
+	assert(ires->watched_paths.num_elements == 0);
+	assert(ires->dependents.num_elements_occupied == 0);
+
+	dynarray_free_data(&ires->watched_paths);
+	dynarray_free_data(&ires->dependencies);
+	ht_ires_counted_set_destroy(&ires->dependents);
+}
+
+attr_nonnull_all
 static void ires_release(InternalResource *ires) {
+	ires_free_meta(ires);
+
 	*ires = (InternalResource) {
 		.mutex = ires->mutex,
 		.cond = ires->cond,
@@ -145,6 +223,7 @@ static void ires_release(InternalResource *ires) {
 
 attr_nonnull_all
 static void ires_free(InternalResource *ires) {
+	ires_free_meta(ires);
 	SDL_DestroyMutex(ires->mutex);
 	SDL_DestroyCond(ires->cond);
 	free(ires);
@@ -184,16 +263,283 @@ void res_load_continue_after_dependencies(ResourceLoadState *st, ResourceLoadPro
 	ist->continuation = callback;
 }
 
+static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource *dep);
+
 void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *name) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	InternalResource *dep = preload_resource_internal(type, name, st->flags);
+	InternalResource *dep = preload_resource_internal(type, name, st->flags & ~RESF_RELOAD);
 	InternalResource *ires = ist->ires;
 	SDL_LockMutex(ires->mutex);
-	*dynarray_append(&ist->dependencies) = dep;
+	*dynarray_append(&ires->dependencies) = dep;
+	ires_make_dependent_one(ires_get_persistent(ires), dep);
 	SDL_UnlockMutex(ires->mutex);
 }
 
+static uint32_t ires_counted_set_inc(ht_ires_counted_set_t *set, InternalResource *ires) {
+	if(!set->elements) {
+		ht_ires_counted_set_create(set);
+	}
 
+	uint *counter;
+	bool initialized = ht_ires_counted_set_get_ptr_unsafe(set, ires, &counter, true);
+	assume(counter != NULL);
+
+	if(!initialized) {
+		*counter = 1;
+	} else {
+		++(*counter);
+	}
+
+	return *counter;
+}
+
+static uint32_t ires_counted_set_dec(ht_ires_counted_set_t *set, InternalResource *ires) {
+	assert(set->elements != NULL);
+
+	uint *counter;
+	attr_unused bool initialized = ht_ires_counted_set_get_ptr_unsafe(set, ires, &counter, false);
+	assume(initialized);
+	assume(counter != NULL);
+	assume(*counter > 0);
+
+	if(--(*counter) == 0) {
+		ht_ires_counted_set_unset(set, ires);
+		return 0;
+	}
+
+	return *counter;
+}
+
+static void associate_ires_watch(InternalResource *ires, FileWatch *w) {
+	ht_watch2iresset_t *map = &res_gstate.watch_to_iresset;
+	ht_ires_counted_set_t *set;
+
+	ht_watch2iresset_write_lock(map);
+
+	bool initialized = ht_watch2iresset_get_ptr_unsafe(map, w, &set, true);
+	assume(set != NULL);
+
+	if(!initialized) {
+		ht_ires_counted_set_create(set);
+	}
+
+	ires_counted_set_inc(set, ires);
+	ht_watch2iresset_write_unlock(map);
+}
+
+static void unassociate_ires_watch(InternalResource *ires, FileWatch *w) {
+	ht_watch2iresset_t *map = &res_gstate.watch_to_iresset;
+	ht_ires_counted_set_t *set;
+
+	ht_watch2iresset_write_lock(map);
+
+	bool set_exists = ht_watch2iresset_get_ptr_unsafe(map, w, &set, false);
+
+	if(set_exists) {
+		ires_counted_set_dec(NOT_NULL(set), ires);
+
+		// TODO make this a public hashtable API
+		if(set->num_elements_occupied == 0) {
+			ht_ires_counted_set_destroy(set);
+			ht_watch2iresset_unset_unsafe(map, w);
+		}
+	}
+
+	ht_watch2iresset_write_unlock(map);
+}
+
+static void register_watched_path(InternalResource *ires, const char *vfspath, FileWatch *w) {
+	WatchedPath *free_slot = NULL;
+
+	SDL_LockMutex(ires->mutex);
+	associate_ires_watch(ires, w);
+
+	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
+		if(!free_slot && !wp->vfs_path) {
+			free_slot = wp;
+		}
+
+		if(!strcmp(wp->vfs_path, vfspath)) {
+			filewatch_unwatch(wp->watch);
+			unassociate_ires_watch(ires, wp->watch);
+			wp->watch = w;
+			goto done;
+		}
+	});
+
+	if(!free_slot) {
+		free_slot = dynarray_append(&ires->watched_paths);
+	}
+
+	free_slot->vfs_path = strdup(vfspath);
+	free_slot->watch = w;
+
+done:
+	SDL_UnlockMutex(ires->mutex);
+}
+
+static void cleanup_watched_path(InternalResource *ires, WatchedPath *wp) {
+	if(wp->vfs_path) {
+		free(wp->vfs_path);
+		wp->vfs_path = NULL;
+	}
+
+	if(wp->watch) {
+		unassociate_ires_watch(ires, wp->watch);
+		filewatch_unwatch(wp->watch);
+		wp->watch = NULL;
+	}
+}
+
+static void refresh_watched_path(InternalResource *ires, WatchedPath *wp) {
+	FileWatch *old_watch = wp->watch;
+
+	// FIXME: we probably need a better API to obtain the underlying syspath
+	// the returned path here may not actually be valid (e.g. in case it's inside a zip package)
+	char *syspath = vfs_repr(NOT_NULL(wp->vfs_path), true);
+
+	if(syspath != NULL) {
+		wp->watch = filewatch_watch(syspath);
+		free(syspath);
+		associate_ires_watch(ires, wp->watch);
+	} else {
+		wp->watch = NULL;
+	}
+
+	if(old_watch) {
+		unassociate_ires_watch(ires, old_watch);
+		filewatch_unwatch(old_watch);
+	}
+}
+
+static void get_ires_list_for_watch(FileWatch *watch, IResPtrArray *output) {
+	ht_watch2iresset_t *map = &res_gstate.watch_to_iresset;
+	ht_ires_counted_set_t *set;
+
+	output->num_elements = 0;
+
+	ht_watch2iresset_write_lock(map);
+
+	if(ht_watch2iresset_get_ptr_unsafe(map, watch, &set, false)) {
+		ht_ires_counted_set_iter_t iter;
+		ht_ires_counted_set_iter_begin(set, &iter);
+
+		for(;iter.has_data; ht_ires_counted_set_iter_next(&iter)) {
+			assert(iter.value > 0);
+			*dynarray_append(output) = iter.key;
+		}
+
+		ht_ires_counted_set_iter_end(&iter);
+	}
+
+	ht_watch2iresset_write_unlock(map);
+}
+
+static void ires_remove_watched_paths(InternalResource *ires) {
+	SDL_LockMutex(ires->mutex);
+
+	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
+		cleanup_watched_path(ires, wp);
+	});
+
+	dynarray_free_data(&ires->watched_paths);
+	SDL_UnlockMutex(ires->mutex);
+}
+
+static void ires_migrate_watched_paths(InternalResource *dst, InternalResource *src) {
+	SDL_LockMutex(dst->mutex);
+	SDL_LockMutex(src->mutex);
+
+	dynarray_foreach_elem(&dst->watched_paths, WatchedPath *wp, {
+		cleanup_watched_path(dst, wp);
+	});
+
+	dst->watched_paths.num_elements = 0;
+
+	dynarray_foreach_elem(&src->watched_paths, WatchedPath *src_wp, {
+		WatchedPath *dst_wp = dynarray_append(&dst->watched_paths);
+		*dst_wp = *src_wp;
+		FileWatch *w = dst_wp->watch;
+
+		associate_ires_watch(dst, w);
+		unassociate_ires_watch(src, w);
+	});
+
+	dynarray_free_data(&src->watched_paths);
+
+	SDL_UnlockMutex(src->mutex);
+	SDL_UnlockMutex(dst->mutex);
+}
+
+static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource *dep) {
+	SDL_LockMutex(dep->mutex);
+	assert(dep->name != NULL);
+	assert(!dep->is_transient_reloader);
+	assert(ires->name != NULL);
+	assert(!ires->is_transient_reloader);
+
+	uint32_t refs = ires_counted_set_inc(&dep->dependents, ires);
+
+	SDL_UnlockMutex(dep->mutex);
+	return refs;
+}
+
+static uint32_t ires_unmake_dependent_one(InternalResource *ires, InternalResource *dep) {
+	SDL_LockMutex(dep->mutex);
+	assert(dep->name != NULL);
+	assert(!dep->is_transient_reloader);
+	assert(ires->name != NULL);
+	assert(!ires->is_transient_reloader);
+
+	uint32_t refs = ires_counted_set_dec(&dep->dependents, ires);
+
+	SDL_UnlockMutex(dep->mutex);
+	return refs;
+}
+
+static void ires_unmake_dependent(InternalResource *ires, IResPtrArray *dependencies) {
+	SDL_LockMutex(ires->mutex);
+
+	dynarray_foreach_elem(dependencies, InternalResource **pdep, {
+		InternalResource *dep = *pdep;
+		ires_unmake_dependent_one(ires, dep);
+	});
+
+	SDL_UnlockMutex(ires->mutex);
+}
+
+SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
+	SDL_RWops *rw = vfs_open(path, mode);
+
+	if(UNLIKELY(!rw)) {
+		return NULL;
+	}
+
+	InternalResLoadState *ist = loadstate_internal(st);
+	InternalResource *ires = ist->ires;
+	ResourceHandler *handler = get_ires_handler(ires);
+
+	if(!handler->procs.transfer) {
+		return rw;
+	}
+
+	// FIXME: we probably need a better API to obtain the underlying syspath
+	char *syspath = vfs_repr(path, true);
+
+	if(syspath == NULL) {
+		return rw;
+	}
+
+	FileWatch *w = filewatch_watch(syspath);
+	free(syspath);
+
+	if(w == NULL) {
+		return rw;
+	}
+
+	register_watched_path(ires, path, w);
+	return rw;
+}
 
 INLINE void alloc_handler(ResourceHandler *h) {
 	assert(h != NULL);
@@ -231,10 +577,14 @@ static ResourceStatus wait_for_dependencies(InternalResLoadState *st) {
 	return pump_or_wait_for_dependencies(st, false);
 }
 
-static ResourceStatus pump_or_wait_for_resource_load(InternalResource *ires, uint32_t want_flags, bool pump_only) {
-	SDL_LockMutex(ires->mutex);
+static ResourceStatus pump_or_wait_for_resource_load_nolock(
+	InternalResource *ires, uint32_t want_flags, bool pump_only
+) {
+	assert(ires->name != NULL);
 
 	InternalResLoadState *load_state = ires->load;
+
+// 	log_debug("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
 
 	if(load_state) {
 		assert(ires->status == RES_STATUS_LOADING);
@@ -263,6 +613,8 @@ static ResourceStatus pump_or_wait_for_resource_load(InternalResource *ires, uin
 			ResourceStatus dep_status = pump_dependencies(load_state);
 
 			if(!pump_only && is_main_thread()) {
+				InternalResource *persistent = ires_get_persistent(ires);
+
 				if(dep_status == RES_STATUS_LOADING) {
 					wait_for_dependencies(load_state);
 				}
@@ -277,6 +629,15 @@ static ResourceStatus pump_or_wait_for_resource_load(InternalResource *ires, uin
 
 				if(load_state) {
 					load_resource_finish(load_state);
+				}
+
+				if(persistent != ires) {
+					// This was a reload and ires has been moved to the freelist now.
+					// All we can do with it now is unlock its mutex.
+					ResourceStatus status = persistent->status;
+					assert(status != RES_STATUS_LOADING);
+					SDL_UnlockMutex(ires->mutex);
+					return status;
 				}
 
 				assert(ires->status != RES_STATUS_LOADING);
@@ -303,14 +664,38 @@ static ResourceStatus pump_or_wait_for_resource_load(InternalResource *ires, uin
 		}
 
 		if((want_flags & RESF_RELOAD) && ires->reload_buddy && !ires->is_transient_reloader) {
+			// Wait for reload, if asked to.
+
+			// FIXME This is racy, and probably just fucked beyond all hope.
+			// The race seems to only manifest when trying to unload resources
+			// while reloads are in progress.
+
 			InternalResource *r = ires->reload_buddy;
+			assert(r->reload_buddy == ires);
+			assert(r->name == ires->name);
 			SDL_UnlockMutex(ires->mutex);
-			return pump_or_wait_for_resource_load(r, want_flags & ~RESF_RELOAD, pump_only);
+
+			SDL_LockMutex(r->mutex);
+			if(r->name == ires->name && r->reload_buddy == ires) {
+				assert(r->is_transient_reloader);
+				status = pump_or_wait_for_resource_load_nolock(r, want_flags & ~RESF_RELOAD, pump_only);
+			}
+			SDL_UnlockMutex(r->mutex);
+
+			// FIXME BRAINDEATH
+			SDL_LockMutex(ires->mutex);
 		}
 	}
 
-	SDL_UnlockMutex(ires->mutex);
+	return status;
+}
 
+static ResourceStatus pump_or_wait_for_resource_load(
+	InternalResource *ires, uint32_t want_flags, bool pump_only
+) {
+	SDL_LockMutex(ires->mutex);
+	ResourceStatus status = pump_or_wait_for_resource_load_nolock(ires, want_flags, pump_only);
+	SDL_UnlockMutex(ires->mutex);
 	return status;
 }
 
@@ -321,7 +706,7 @@ static ResourceStatus wait_for_resource_load(InternalResource *ires, uint32_t wa
 static ResourceStatus pump_or_wait_for_dependencies(InternalResLoadState *st, bool pump_only) {
 	ResourceStatus dep_status = RES_STATUS_LOADED;
 
-	dynarray_foreach_elem(&st->dependencies, InternalResource **dep, {
+	dynarray_foreach_elem(&st->ires->dependencies, InternalResource **dep, {
 		ResourceStatus s = pump_or_wait_for_resource_load(*dep, st->st.flags, pump_only);
 
 		switch(s) {
@@ -427,18 +812,58 @@ static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
 	return event->type == MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED) && event->user.data1 == vires;
 }
 
-static void unload_resource(InternalResource *ires) {
+static bool unload_resource(InternalResource *ires) {
 	assert(is_main_thread());
 
-	if(wait_for_resource_load(ires, 0) == RES_STATUS_LOADED) {
-		get_handler(ires->res.type)->procs.unload(ires->res.data);
+	ResourceHandler *handler = get_ires_handler(ires);
+	const char *tname = handler->typename;
+
+	SDL_LockMutex(ires->mutex);
+
+	assert(!ires->is_transient_reloader);
+	if(ires->reload_buddy) {
+		assert(ires->reload_buddy->is_transient_reloader);
+		assert(ires->reload_buddy->reload_buddy == ires);
 	}
+
+	if(ires->dependents.num_elements_occupied > 0) {
+		log_warn(
+			"Not unloading %s '%s' because it still has %i dependents",
+			tname, ires->name, ires->dependents.num_elements_occupied
+		);
+		SDL_LockMutex(ires->mutex);
+		return false;
+	}
+
+	ht_unset(&handler->private.mapping, ires->name);
+	attr_unused ResourceFlags flags = ires->res.flags;
+
+	SDL_UnlockMutex(ires->mutex);
+	if(wait_for_resource_load(ires, RESF_RELOAD) == RES_STATUS_LOADED) {
+		handler->procs.unload(ires->res.data);
+	}
+	SDL_LockMutex(ires->mutex);
 
 	SDL_PumpEvents();
 	SDL_FilterEvents(filter_asyncload_event, ires);
 
-	free(ires->name);
+	SDL_LockMutex(ires->mutex);
+	ires_unmake_dependent(ires, &ires->dependencies);
+	ires_remove_watched_paths(ires);
+	SDL_UnlockMutex(ires->mutex);
+
+	char *name = ires->name;
 	ires_release(ires);
+
+	log_info(
+		"Unloaded %s '%s' (%s)",
+		tname, name,
+		(flags & RESF_PERMANENT) ? "permanent" : "transient"
+	);
+
+	free(name);
+
+	return true;
 }
 
 static char *get_name_from_path(ResourceHandler *handler, const char *path) {
@@ -538,14 +963,6 @@ static InternalResLoadState *make_persistent_loadstate(InternalResLoadState *st_
 	assume(st->st.name != NULL);
 	assume(st->st.path != NULL);
 
-	if(!st->allocated_name) {
-		st->st.name = st->allocated_name = strdup(st->st.name);
-	}
-
-	if(!st->allocated_path) {
-		st->st.path = st->allocated_path = strdup(st->st.path);
-	}
-
 	st->ires->load = st;
 	return st;
 }
@@ -555,8 +972,13 @@ static void load_resource_async(InternalResLoadState *st_transient) {
 	st->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, st });
 }
 
-attr_nonnull_all
-static void load_resource(InternalResource *ires, const char *name, ResourceFlags flags, bool async) {
+attr_nonnull(1, 2)
+static void load_resource(
+	InternalResource *ires,
+	const char *name,
+	ResourceFlags flags,
+	bool async
+) {
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *typename = type_name(handler->type);
 	char *path = NULL;
@@ -571,10 +993,10 @@ static void load_resource(InternalResource *ires, const char *name, ResourceFlag
 	if(ires->name == NULL) {
 		ires->name = strdup(name);
 	} else {
-		name = ires->name;
 		assume(flags & RESF_RELOAD);
 	}
 
+	name = ires->name;
 	path = handler->procs.find(name);
 
 	if(path) {
@@ -591,7 +1013,6 @@ static void load_resource(InternalResource *ires, const char *name, ResourceFlag
 
 	InternalResLoadState st = {
 		.ires = ires,
-		.allocated_path = path,
 		.st = {
 			.name = name,
 			.path = path,
@@ -602,25 +1023,30 @@ static void load_resource(InternalResource *ires, const char *name, ResourceFlag
 	if(ires->status == RES_STATUS_FAILED) {
 		st.ready_to_finalize = true;
 		load_resource_finish(&st);
-	} else if(async) {
-		load_resource_async(&st);
 	} else {
-		st.status = LOAD_NONE;
-		PROTECT_FLAGS(&st, handler->procs.load(&st.st));
+		ires_unmake_dependent(ires, &ires->dependencies);
+		ires->dependencies.num_elements = 0;
 
-		retry: switch(st.status) {
-			case LOAD_OK:
-			case LOAD_FAILED:
-				st.ready_to_finalize = true;
-				load_resource_finish(&st);
-				break;
-			case LOAD_CONT:
-			case LOAD_CONT_ON_MAIN:
-				wait_for_dependencies(&st);
-				st.status = LOAD_NONE;
-				PROTECT_FLAGS(&st, st.continuation(&st.st));
-				goto retry;
-			default: UNREACHABLE;
+		if(async) {
+			load_resource_async(&st);
+		} else {
+			st.status = LOAD_NONE;
+			PROTECT_FLAGS(&st, handler->procs.load(&st.st));
+
+			retry: switch(st.status) {
+				case LOAD_OK:
+				case LOAD_FAILED:
+					st.ready_to_finalize = true;
+					load_resource_finish(&st);
+					break;
+				case LOAD_CONT:
+				case LOAD_CONT_ON_MAIN:
+					wait_for_dependencies(&st);
+					st.status = LOAD_NONE;
+					PROTECT_FLAGS(&st, st.continuation(&st.st));
+					goto retry;
+				default: UNREACHABLE;
+			}
 		}
 	}
 }
@@ -662,7 +1088,21 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 
 	load_resource(transient, ires->name, flags, async);
 
+	InternalResource *dependents[ires->dependents.num_elements_occupied];
+
+	ht_ires_counted_set_iter_t iter;
+	ht_ires_counted_set_iter_begin(&ires->dependents, &iter);
+	for(int i = 0; iter.has_data; ht_ires_counted_set_iter_next(&iter), ++i) {
+		assert(i < ARRAY_SIZE(dependents));
+		dependents[i] = iter.key;
+	}
+	ht_ires_counted_set_iter_end(&iter);
+
 	SDL_UnlockMutex(ires->mutex);
+
+	for(int i = 0; i < ARRAY_SIZE(dependents); ++i) {
+		reload_resource(dependents[i], 0, !res_gstate.env.no_async_load);
+	}
 
 	return true;
 }
@@ -694,8 +1134,6 @@ static void load_resource_finish(InternalResLoadState *st) {
 		}
 	}
 
-	dynarray_free_data(&st->dependencies);
-
 	const char *name = NOT_NULL(st->st.name);
 	const char *path = st->st.path ? st->st.path : "<path unknown>";
 	char *allocated_source = vfs_repr(path, true);
@@ -710,7 +1148,9 @@ static void load_resource_finish(InternalResLoadState *st) {
 		ires->res.flags |= RESF_PERMANENT;
 	}
 
-	if(raw) {
+	bool success = ires->res.data;
+
+	if(success) {
 		ires->status = RES_STATUS_LOADED;
 		log_info("Loaded %s '%s' from '%s' (%s)", typename, name, source, (ires->res.flags & RESF_PERMANENT) ? "permanent" : "transient");
 	} else {
@@ -724,8 +1164,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 	}
 
 	free(allocated_source);
-	free(st->allocated_path);
-	free(st->allocated_name);
+	free((char*)st->st.path);
 
 	assume(!ires->load || ires->load == st);
 
@@ -741,12 +1180,16 @@ static void load_resource_finish(InternalResLoadState *st) {
 	SDL_CondBroadcast(ires->cond);
 	assert(ires->status != RES_STATUS_LOADING);
 
-	// handle reload
-
+	// If we are reloading, ires points to a transient resource that will be copied into the
+	// persistent version at the end of this function.
+	// In case of a regular load, persistent == ires.
 	InternalResource *persistent = ires_get_persistent(ires);
+
 	if(persistent == ires) {
 		return;
 	}
+
+	// Handle reload.
 
 	ResourceHandler *handler = get_ires_handler(ires);
 	assert(handler->procs.transfer != NULL);
@@ -754,20 +1197,32 @@ static void load_resource_finish(InternalResLoadState *st) {
 	SDL_LockMutex(persistent->mutex);
 
 	if(
-		!ires->res.data ||
+		!success ||
 		!handler->procs.transfer(NOT_NULL(persistent->res.data), ires->res.data)
 	) {
 		log_error("Failed to reload %s '%s'", typename, persistent->name);
+		ires_remove_watched_paths(ires);
+		ires_unmake_dependent(persistent, &ires->dependencies);
+	} else {
+		ires_migrate_watched_paths(persistent, ires);
+
+		// Unassociate old dependencies
+		// NOTE: New dependencies already associated during load (in res_load_dependency)
+		ires_unmake_dependent(persistent, &persistent->dependencies);
+
+		// Move dependecy list into persistent entry
+		dynarray_free_data(&persistent->dependencies);
+		persistent->dependencies = ires->dependencies;
+		memset(&ires->dependencies, 0, sizeof(ires->dependencies));
 	}
 
 	persistent->reload_buddy = NULL;
 	persistent->res.flags |= ires->res.flags & ~(RESF_RELOAD | RESF_OPTIONAL);
 	assert(persistent->status == RES_STATUS_LOADED);
+	ires_release(ires);
 
 	SDL_CondBroadcast(persistent->cond);
 	SDL_UnlockMutex(persistent->mutex);
-
-	ires_release(ires);
 }
 
 Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
@@ -828,7 +1283,9 @@ void *_get_resource_data(ResourceType type, const char *name, hash_t hash, Resou
 	return NULL;
 }
 
-static InternalResource *preload_resource_internal(ResourceType type, const char *name, ResourceFlags flags) {
+static InternalResource *preload_resource_internal(
+	ResourceType type, const char *name, ResourceFlags flags
+) {
 	InternalResource *ires;
 
 	if(try_begin_load_resource(type, name, ht_str2ptr_hash(name), &ires)) {
@@ -882,6 +1339,76 @@ void reload_all_resources(void) {
 	}
 }
 
+struct file_deleted_handler_task_args {
+	InternalResource *ires;
+	FileWatch *watch;
+};
+
+static void *file_deleted_handler_task(void *data) {
+	struct file_deleted_handler_task_args *a = data;
+	// See explanation in resource_filewatch_handler below…
+	SDL_Delay(100);
+
+	InternalResource *ires = a->ires;
+	FileWatch *watch = a->watch;
+
+	reload_resource(ires, 0, !res_gstate.env.no_async_load);
+
+	SDL_LockMutex(ires->mutex);
+	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
+		if(wp->watch == watch) {
+			refresh_watched_path(ires, wp);
+		}
+	});
+	SDL_UnlockMutex(ires->mutex);
+
+	return NULL;
+}
+
+static bool resource_filewatch_handler(SDL_Event *e, void *a) {
+	FileWatchHandlerData *hdata = NOT_NULL(a);
+	FileWatch *watch = NOT_NULL(e->user.data1);
+	FileWatchEvent fevent = e->user.code;
+
+	get_ires_list_for_watch(watch, &hdata->temp_ires_array);
+	dynarray_foreach_elem(&hdata->temp_ires_array, InternalResource **pires, {
+		InternalResource *ires = *pires;
+
+		if(ires->is_transient_reloader || ires->status == RES_STATUS_LOADING) {
+			continue;
+		}
+
+		if(fevent == FILEWATCH_FILE_DELETED) {
+			// The file was (potentially) deleted or moved from its original path.
+			// Assume it will be replaced by a new file in short order — this is often done by text
+			// editors. In this case we wait an arbitrarily short amount of time and reload the
+			// resource, hoping the new file has been put in place.
+			// Needless to say, this is a very dumb HACK.
+			// An alternative is to monitor the parent directory for creation of the file of
+			// interest, but filewatch does not do this yet. That approach comes with its own bag
+			// of problems, e.g. symlinks, exacerbated by the nature of the VFS…
+
+			struct file_deleted_handler_task_args a;
+			a.ires = ires;
+			a.watch = watch;
+
+			if(res_gstate.env.no_async_load) {
+				file_deleted_handler_task(&a);
+			} else {
+				task_detach(taskmgr_global_submit((TaskParams) {
+					.callback = file_deleted_handler_task,
+					.userdata = memdup(&a, sizeof(a)),
+					.userdata_free_callback = free,
+				}));
+			}
+		} else {
+			reload_resource(ires, 0, !res_gstate.env.no_async_load);
+		}
+	});
+
+	return false;
+}
+
 void init_resources(void) {
 	res_gstate.env.no_async_load = env_get("TAISEI_NOASYNC", false);
 	res_gstate.env.no_preload = env_get("TAISEI_NOPRELOAD", false);
@@ -897,15 +1424,22 @@ void init_resources(void) {
 		}
 	}
 
+	ht_watch2iresset_create(&res_gstate.watch_to_iresset);
+
 	if(!res_gstate.env.no_async_load) {
-		EventHandler h = {
+		events_register_handler(&(EventHandler) {
 			.proc = resource_asyncload_handler,
 			.priority = EPRIO_SYSTEM,
 			.event_type = MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED),
-		};
-
-		events_register_handler(&h);
+		});
 	}
+
+	events_register_handler(&(EventHandler) {
+		.proc = resource_filewatch_handler,
+		.priority = EPRIO_SYSTEM,
+		.event_type = MAKE_TAISEI_EVENT(TE_FILEWATCH),
+		.arg = &res_gstate.fw_handler_data,
+	});
 }
 
 void resource_util_strip_ext(char *path) {
@@ -1006,7 +1540,48 @@ void load_resources(void) {
 	}
 }
 
+static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
+	ht_str2ptr_ts_iter_t iter;
+
+	bool retry = false;
+
+	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
+		ResourceHandler *handler = get_handler(type);
+		InternalResource *ires;
+
+		tmp_ires_array->num_elements = 0;
+		ht_iter_begin(&handler->private.mapping, &iter);
+
+		for(; iter.has_data; ht_iter_next(&iter)) {
+			ires = iter.value;
+
+			if(all || !(ires->res.flags & RESF_PERMANENT)) {
+				*dynarray_append(tmp_ires_array) = ires;
+			}
+		}
+
+		ht_iter_end(&iter);
+
+		dynarray_foreach_elem(tmp_ires_array, InternalResource **pires, {
+			if(!unload_resource(*pires)) {
+				// TODO: This is a little dumb; maybe recursively unload dependents first
+				retry = true;
+			}
+		});
+	}
+
+	if(retry) {
+		// Tail call; hope your compiler agrees.
+		_free_resources(tmp_ires_array, all);
+	}
+}
+
 void free_resources(bool all) {
+	// Wait for all resources to finish (re)loading first.
+	// FIXME: The wait inside unload_resource() should be sufficient so that we don't have to
+	// do this, but it isn't. I'm not yet sure why. Hell breaks loose if we start unloading stuff
+	// while something is reloading.
+
 	ht_str2ptr_ts_iter_t iter;
 
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
@@ -1015,69 +1590,28 @@ void free_resources(bool all) {
 		ht_iter_begin(&handler->private.mapping, &iter);
 
 		for(; iter.has_data; ht_iter_next(&iter)) {
-			wait_for_resource_load(iter.value, 0);
+			wait_for_resource_load(iter.value, RESF_RELOAD);
 		}
 
 		ht_iter_end(&iter);
 	}
+
+	IResPtrArray a = { };
+	_free_resources(&a, all);
+	dynarray_free_data(&a);
+}
+
+void shutdown_resources(void) {
+	free_resources(true);
 
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);
-		InternalResource *ires;
-		ht_str2ptr_ts_key_list_t *unset_list = NULL, *unset_entry;
 
-		ht_iter_begin(&handler->private.mapping, &iter);
-
-		for(; iter.has_data; ht_iter_next(&iter)) {
-			ires = iter.value;
-
-			if(!all && (ires->res.flags & RESF_PERMANENT)) {
-				continue;
-			}
-
-			unset_entry = calloc(1, sizeof(*unset_entry));
-			unset_entry->key = iter.key;
-			list_push(&unset_list, unset_entry);
+		if(handler->procs.shutdown != NULL) {
+			handler->procs.shutdown();
 		}
 
-		ht_iter_end(&iter);
-
-		for(ht_str2ptr_ts_key_list_t *c; (c = list_pop(&unset_list));) {
-			char *tmp = c->key;
-			char name[strlen(tmp) + 1];
-			strcpy(name, tmp);
-
-			ires = ht_get(&handler->private.mapping, name, NULL);
-			assert(ires != NULL);
-
-			attr_unused ResourceFlags flags = ires->res.flags;
-
-			if(!all) {
-				ht_unset(&handler->private.mapping, name);
-			}
-
-			unload_resource(ires);
-			free(c);
-
-			log_info(
-				"Unloaded %s '%s' (%s)",
-				type_name(type),
-				name,
-				(flags & RESF_PERMANENT) ? "permanent" : "transient"
-			);
-		}
-
-		if(all) {
-			if(handler->procs.shutdown != NULL) {
-				handler->procs.shutdown();
-			}
-
-			ht_destroy(&handler->private.mapping);
-		}
-	}
-
-	if(!all) {
-		return;
+		ht_destroy(&handler->private.mapping);
 	}
 
 	for(InternalResource *ires = res_gstate.ires_freelist; ires;) {
@@ -1086,9 +1620,12 @@ void free_resources(bool all) {
 		ires = next;
 	}
 
+	ht_watch2iresset_destroy(&res_gstate.watch_to_iresset);
 	res_gstate.ires_freelist = NULL;
 
 	if(!res_gstate.env.no_async_load) {
 		events_unregister_handler(resource_asyncload_handler);
 	}
+
+	events_unregister_handler(resource_filewatch_handler);
 }
