@@ -784,6 +784,10 @@ void texture_loader_continue(TextureLoadData *ld) {
 		ld->params.mipmap_mode = TEX_MIPMAP_MANUAL;
 	}
 
+	if(is_preprocess_needed(ld)) {
+		res_load_dependency(ld->st, RES_SHADER_PROGRAM, "texture_post_load");
+	}
+
 	res_load_continue_on_main(ld->st, texture_loader_stage2, ld);
 }
 
