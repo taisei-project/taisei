@@ -376,6 +376,7 @@ def main(args):
         namespace.channels = 'rg'
         namespace.normal = True
         namespace.srgb = False
+        namespace.blend_background = '#7f7fff'
 
     image_suffixes = ('.webp', '.png')
 
