@@ -125,7 +125,7 @@ float vrng_f32(rng_val_t v) {
 float vrng_f32s(rng_val_t v) {
 	FloatBits fb;
 	fb.val = vrng_f32((rng_val_t) { v._value << 1 });
-	fb.bits |= vrng_u32(v) & (1 << 31);
+	fb.bits |= vrng_u32(v) & (1u << 31);
 	return fb.val;
 }
 
