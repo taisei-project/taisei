@@ -106,9 +106,10 @@ static void material_load_stage1(ResourceLoadState *st) {
 	if(ld->_map_##_map) { \
 		ld->mat->_map_##_map = get_resource_data(RES_TEXTURE, ld->_map_##_map, st->flags); \
 		if(UNLIKELY(ld->mat->_map_##_map == NULL)) { \
-			log_fatal("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \
+			log_error("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \
 			free_mat_load_data(ld); \
 			res_load_failed(st); \
+			return; \
 		} \
 	} \
 } while(0)
