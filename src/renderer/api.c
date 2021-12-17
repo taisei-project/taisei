@@ -53,6 +53,12 @@ void r_post_init(void) {
 		"standardnotex",
 	NULL);
 
+#if DEBUG
+	preload_resources(RES_FONT, RESF_PERMANENT,
+		"monotiny",
+	NULL);
+#endif
+
 	R.progs.standard = res_shader("standard");
 	R.progs.standardnotex = res_shader("standardnotex");
 
