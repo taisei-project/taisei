@@ -30,6 +30,8 @@
 #include "sprite.h"
 #include "texture.h"
 
+#define DEBUG_LOCKS 0
+
 ResourceHandler *_handlers[] = {
 	[RES_ANIM]              = &animation_res_handler,
 	[RES_BGM]               = &bgm_res_handler,
@@ -123,6 +125,10 @@ struct InternalResource {
 	// This needs to be tracked to avoid a brute force search when propagating reloads.
 	// For simplicity of implementation, this is a counted set (a multiset)
 	ht_ires_counted_set_t dependents;
+
+#if DEBUG_LOCKS
+	SDL_atomic_t num_locks;
+#endif
 };
 
 struct InternalResLoadState {
@@ -176,6 +182,56 @@ static inline InternalResLoadState *loadstate_internal(ResourceLoadState *st) {
 
 static InternalResource *preload_resource_internal(ResourceType type, const char *name, ResourceFlags flags);
 
+#if DEBUG_LOCKS
+
+#define ires_update_num_locks(_ires, _n) \
+	log_debug("%p  :: %u ::  [%s '%s']   %s:%i", \
+		(_ires), \
+		SDL_AtomicAdd(&(_ires)->num_locks, _n), \
+		get_ires_handler(_ires)->typename, \
+		ires->name, \
+		dbg.func, dbg.line \
+	)
+
+#define ires_lock(ires) ires_lock(ires, _DEBUG_INFO_)
+static void (ires_lock)(InternalResource *ires, DebugInfo dbg) {
+	SDL_LockMutex(ires->mutex);
+	ires_update_num_locks(ires, 1);
+}
+
+#define ires_unlock(ires) ires_unlock(ires, _DEBUG_INFO_)
+static void (ires_unlock)(InternalResource *ires, DebugInfo dbg) {
+	ires_update_num_locks(ires, -1);
+	SDL_UnlockMutex(ires->mutex);
+}
+
+#define ires_cond_wait(ires) ires_cond_wait(ires, _DEBUG_INFO_)
+static void (ires_cond_wait)(InternalResource *ires, DebugInfo dbg) {
+	ires_update_num_locks(ires, -1);
+	SDL_CondWait(ires->cond, ires->mutex);
+	ires_update_num_locks(ires, 1);
+}
+
+#else
+
+INLINE void ires_lock(InternalResource *ires) {
+	SDL_LockMutex(ires->mutex);
+}
+
+INLINE void ires_unlock(InternalResource *ires) {
+	SDL_UnlockMutex(ires->mutex);
+}
+
+INLINE void ires_cond_wait(InternalResource *ires) {
+	SDL_CondWait(ires->cond, ires->mutex);
+}
+
+#endif  // DEBUG_LOCKS
+
+static void ires_cond_broadcast(InternalResource *ires) {
+	SDL_CondBroadcast(ires->cond);
+}
+
 attr_returns_nonnull
 static InternalResource *ires_alloc(ResourceType rtype) {
 	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
@@ -185,13 +241,18 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 	}
 	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
 
-	if(!ires) {
+	if(ires) {
+		ires_lock(ires);
+		ires->reload_buddy = NULL;
+		ires->res.type = rtype;
+		ires_unlock(ires);
+	} else {
 		ires = calloc(1, sizeof(*ires));
 		ires->mutex = SDL_CreateMutex();
 		ires->cond = SDL_CreateCond();
+		ires->res.type = rtype;
 	}
 
-	ires->res.type = rtype;
 	return ires;
 }
 
@@ -208,17 +269,20 @@ static void ires_free_meta(InternalResource *ires) {
 
 attr_nonnull_all
 static void ires_release(InternalResource *ires) {
+	ires_lock(ires);
 	ires_free_meta(ires);
 
-	*ires = (InternalResource) {
-		.mutex = ires->mutex,
-		.cond = ires->cond,
-	};
+	ires->res = (Resource) { };
+	ires->name = NULL;
+	ires->status = RES_STATUS_LOADING;
+	ires->is_transient_reloader = false;
+	ires->dependents = (ht_ires_counted_set_t) { };
 
 	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
 	ires->reload_buddy = res_gstate.ires_freelist;
 	res_gstate.ires_freelist = ires;
 	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
+	ires_unlock(ires);
 }
 
 attr_nonnull_all
@@ -269,10 +333,10 @@ void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *n
 	InternalResLoadState *ist = loadstate_internal(st);
 	InternalResource *dep = preload_resource_internal(type, name, st->flags & ~RESF_RELOAD);
 	InternalResource *ires = ist->ires;
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 	*dynarray_append(&ires->dependencies) = dep;
 	ires_make_dependent_one(ires_get_persistent(ires), dep);
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 }
 
 static uint32_t ires_counted_set_inc(ht_ires_counted_set_t *set, InternalResource *ires) {
@@ -351,7 +415,7 @@ static void unassociate_ires_watch(InternalResource *ires, FileWatch *w) {
 static void register_watched_path(InternalResource *ires, const char *vfspath, FileWatch *w) {
 	WatchedPath *free_slot = NULL;
 
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 	associate_ires_watch(ires, w);
 
 	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
@@ -375,7 +439,7 @@ static void register_watched_path(InternalResource *ires, const char *vfspath, F
 	free_slot->watch = w;
 
 done:
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 }
 
 static void cleanup_watched_path(InternalResource *ires, WatchedPath *wp) {
@@ -436,19 +500,19 @@ static void get_ires_list_for_watch(FileWatch *watch, IResPtrArray *output) {
 }
 
 static void ires_remove_watched_paths(InternalResource *ires) {
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 
 	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
 		cleanup_watched_path(ires, wp);
 	});
 
 	dynarray_free_data(&ires->watched_paths);
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 }
 
 static void ires_migrate_watched_paths(InternalResource *dst, InternalResource *src) {
-	SDL_LockMutex(dst->mutex);
-	SDL_LockMutex(src->mutex);
+	ires_lock(dst);
+	ires_lock(src);
 
 	dynarray_foreach_elem(&dst->watched_paths, WatchedPath *wp, {
 		cleanup_watched_path(dst, wp);
@@ -467,12 +531,13 @@ static void ires_migrate_watched_paths(InternalResource *dst, InternalResource *
 
 	dynarray_free_data(&src->watched_paths);
 
-	SDL_UnlockMutex(src->mutex);
-	SDL_UnlockMutex(dst->mutex);
+	ires_unlock(src);
+	ires_unlock(dst);
 }
 
 static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource *dep) {
-	SDL_LockMutex(dep->mutex);
+	ires_lock(dep);
+
 	assert(dep->name != NULL);
 	assert(!dep->is_transient_reloader);
 	assert(ires->name != NULL);
@@ -480,12 +545,13 @@ static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource
 
 	uint32_t refs = ires_counted_set_inc(&dep->dependents, ires);
 
-	SDL_UnlockMutex(dep->mutex);
+	ires_unlock(dep);
 	return refs;
 }
 
 static uint32_t ires_unmake_dependent_one(InternalResource *ires, InternalResource *dep) {
-	SDL_LockMutex(dep->mutex);
+	ires_lock(dep);
+
 	assert(dep->name != NULL);
 	assert(!dep->is_transient_reloader);
 	assert(ires->name != NULL);
@@ -493,19 +559,19 @@ static uint32_t ires_unmake_dependent_one(InternalResource *ires, InternalResour
 
 	uint32_t refs = ires_counted_set_dec(&dep->dependents, ires);
 
-	SDL_UnlockMutex(dep->mutex);
+	ires_unlock(dep);
 	return refs;
 }
 
 static void ires_unmake_dependent(InternalResource *ires, IResPtrArray *dependencies) {
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 
 	dynarray_foreach_elem(dependencies, InternalResource **pdep, {
 		InternalResource *dep = *pdep;
 		ires_unmake_dependent_one(ires, dep);
 	});
 
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 }
 
 SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
@@ -582,6 +648,8 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 ) {
 	assert(ires->name != NULL);
 
+	char *orig_name = ires->name;
+	attr_unused bool was_transient = ires->is_transient_reloader;
 	InternalResLoadState *load_state = ires->load;
 
 // 	log_debug("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
@@ -596,13 +664,24 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 			// If it's not yet running, it will be offloaded to this thread instead.
 
 			load_state->async_task = NULL;
-			SDL_UnlockMutex(ires->mutex);
+			ires_unlock(ires);
 
 			if(!task_finish(task, NULL)) {
 				log_fatal("Internal error: async task failed");
 			}
 
-			SDL_LockMutex(ires->mutex);
+			ires_lock(ires);
+
+			if(UNLIKELY(ires->name != orig_name)) {
+				// ires got released (and possibly reused) while it was unlocked.
+				// This should only happen for transient reloaders.
+				// FIXME Unfortunately we can not know whether the load succeeded in this case.
+				// A possible solution is to add a reference count, so that the ires is kept alive
+				// as long as anything is waiting on it.
+				assert(was_transient);
+				ires_unlock(ires);
+				return RES_STATUS_LOADED;
+			}
 
 			// It's important to refresh load_state here, because the task may have finalized the load.
 			// This may happen if the resource doesn't need to be finalized on the main thread, or if we *are* the main thread.
@@ -620,7 +699,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 				}
 
 				while(!load_state->ready_to_finalize) {
-					SDL_CondWait(ires->cond, ires->mutex);
+					ires_cond_wait(ires);
 				}
 
 				// May have been finalized while we were sleeping
@@ -636,7 +715,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 					// All we can do with it now is unlock its mutex.
 					ResourceStatus status = persistent->status;
 					assert(status != RES_STATUS_LOADING);
-					SDL_UnlockMutex(ires->mutex);
+					ires_unlock(ires);
 					return status;
 				}
 
@@ -649,7 +728,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 		// If we get to this point, then we're waiting for a resource that's awaiting finalization on the main thread.
 		// If we *are* the main thread, there's no excuse for us to wait; we should've finalized the resource ourselves.
 		assert(!is_main_thread());
-		SDL_CondWait(ires->cond, ires->mutex);
+		ires_cond_wait(ires);
 	}
 
 	ResourceStatus status = ires->status;
@@ -666,24 +745,22 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 		if((want_flags & RESF_RELOAD) && ires->reload_buddy && !ires->is_transient_reloader) {
 			// Wait for reload, if asked to.
 
-			// FIXME This is racy, and probably just fucked beyond all hope.
-			// The race seems to only manifest when trying to unload resources
-			// while reloads are in progress.
-
 			InternalResource *r = ires->reload_buddy;
-			assert(r->reload_buddy == ires);
-			assert(r->name == ires->name);
-			SDL_UnlockMutex(ires->mutex);
+			ires_unlock(ires);
 
-			SDL_LockMutex(r->mutex);
+			ires_lock(r);
+
+			//
 			if(r->name == ires->name && r->reload_buddy == ires) {
 				assert(r->is_transient_reloader);
+				assert(r->load != NULL);
 				status = pump_or_wait_for_resource_load_nolock(r, want_flags & ~RESF_RELOAD, pump_only);
 			}
-			SDL_UnlockMutex(r->mutex);
+
+			ires_unlock(r);
 
 			// FIXME BRAINDEATH
-			SDL_LockMutex(ires->mutex);
+			ires_lock(ires);
 		}
 	}
 
@@ -693,9 +770,9 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 static ResourceStatus pump_or_wait_for_resource_load(
 	InternalResource *ires, uint32_t want_flags, bool pump_only
 ) {
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 	ResourceStatus status = pump_or_wait_for_resource_load_nolock(ires, want_flags, pump_only);
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 	return status;
 }
 
@@ -770,7 +847,7 @@ retry:
 				if(dep_status == RES_STATUS_LOADING) {
 					st->status = LOAD_CONT_ON_MAIN;
 					st->ready_to_finalize = true;
-					SDL_CondBroadcast(ires->cond);
+					ires_cond_broadcast(ires);
 					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
 					break;
 				} else {
@@ -786,17 +863,17 @@ retry:
 		case LOAD_CONT_ON_MAIN:
 			if(pump_dependencies(st) == RES_STATUS_LOADING || !is_main_thread()) {
 				st->ready_to_finalize = true;
-				SDL_CondBroadcast(ires->cond);
+				ires_cond_broadcast(ires);
 				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
 				break;
 			}
 		// fallthrough
 		case LOAD_OK:
 		case LOAD_FAILED:
-			SDL_LockMutex(ires->mutex);
+			ires_lock(ires);
 			st->ready_to_finalize = true;
 			load_resource_finish(st);
-			SDL_UnlockMutex(ires->mutex);
+			ires_unlock(ires);
 			st = NULL;
 			break;
 
@@ -818,7 +895,7 @@ static bool unload_resource(InternalResource *ires) {
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *tname = handler->typename;
 
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 
 	assert(!ires->is_transient_reloader);
 	if(ires->reload_buddy) {
@@ -831,29 +908,28 @@ static bool unload_resource(InternalResource *ires) {
 			"Not unloading %s '%s' because it still has %i dependents",
 			tname, ires->name, ires->dependents.num_elements_occupied
 		);
-		SDL_LockMutex(ires->mutex);
+		ires_unlock(ires);
 		return false;
 	}
 
 	ht_unset(&handler->private.mapping, ires->name);
 	attr_unused ResourceFlags flags = ires->res.flags;
 
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 	if(wait_for_resource_load(ires, RESF_RELOAD) == RES_STATUS_LOADED) {
 		handler->procs.unload(ires->res.data);
 	}
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 
 	SDL_PumpEvents();
 	SDL_FilterEvents(filter_asyncload_event, ires);
 
-	SDL_LockMutex(ires->mutex);
 	ires_unmake_dependent(ires, &ires->dependencies);
 	ires_remove_watched_paths(ires);
-	SDL_UnlockMutex(ires->mutex);
 
 	char *name = ires->name;
 	ires_release(ires);
+	ires_unlock(ires);
 
 	log_info(
 		"Unloaded %s '%s' (%s)",
@@ -914,7 +990,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 		return true;
 	}
 
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 
 	ResourceStatus dep_status = pump_dependencies(st);
 
@@ -923,7 +999,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 
 		// FIXME: Make this less braindead.
 		// This will retry every frame until dependencies are satisfied.
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 		events_defer(evt);
 		return true;
 	}
@@ -933,13 +1009,13 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	st->async_task = NULL;
 
 	if(task) {
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 
 		if(!task_finish(task, NULL)) {
 			log_fatal("Internal error: async task failed");
 		}
 
-		SDL_LockMutex(ires->mutex);
+		ires_lock(ires);
 		st = ires->load;
 	}
 
@@ -948,7 +1024,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 		res_gstate.loaded_this_frame = true;
 	}
 
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 	return true;
 }
 
@@ -1062,17 +1138,17 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 
 	flags |= RESF_RELOAD | RESF_OPTIONAL;
 
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 	assert(!ires->is_transient_reloader);
 
 	if(ires->status != RES_STATUS_LOADED) {
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 		log_warn("Tried to reload %s '%s' that is not loaded", typename, ires->name);
 		return false;
 	}
 
 	if(ires->reload_buddy) {
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 		log_warn("Tried to reload %s '%s' that is currently reloading", typename, ires->name);
 		return false;
 	}
@@ -1084,9 +1160,11 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 	transient->status = RES_STATUS_LOADING;
 	transient->reload_buddy = ires;
 	transient->is_transient_reloader = true;
-	ires->reload_buddy = transient;
 
+	ires_lock(transient);
+	ires->reload_buddy = transient;
 	load_resource(transient, ires->name, flags, async);
+	ires_unlock(transient);
 
 	InternalResource *dependents[ires->dependents.num_elements_occupied];
 
@@ -1098,7 +1176,7 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 	}
 	ht_ires_counted_set_iter_end(&iter);
 
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 
 	for(int i = 0; i < ARRAY_SIZE(dependents); ++i) {
 		reload_resource(dependents[i], 0, !res_gstate.env.no_async_load);
@@ -1177,7 +1255,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 	free(ires->load);
 	ires->load = NULL;
 
-	SDL_CondBroadcast(ires->cond);
+	ires_cond_broadcast(ires);
 	assert(ires->status != RES_STATUS_LOADING);
 
 	// If we are reloading, ires points to a transient resource that will be copied into the
@@ -1194,7 +1272,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 	ResourceHandler *handler = get_ires_handler(ires);
 	assert(handler->procs.transfer != NULL);
 
-	SDL_LockMutex(persistent->mutex);
+	ires_lock(persistent);
 
 	if(
 		!success ||
@@ -1221,8 +1299,8 @@ static void load_resource_finish(InternalResLoadState *st) {
 	assert(persistent->status == RES_STATUS_LOADED);
 	ires_release(ires);
 
-	SDL_CondBroadcast(persistent->cond);
-	SDL_UnlockMutex(persistent->mutex);
+	ires_cond_broadcast(persistent);
+	ires_unlock(persistent);
 }
 
 Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
@@ -1232,7 +1310,7 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 	if(try_begin_load_resource(type, name, hash, &ires)) {
 		flags &= ~RESF_RELOAD;
 
-		SDL_LockMutex(ires->mutex);
+		ires_lock(ires);
 
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", type_name(type), name);
@@ -1243,7 +1321,7 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 		}
 
 		load_resource(ires, name, flags, false);
-		SDL_CondBroadcast(ires->cond);
+		ires_cond_broadcast(ires);
 
 		if(ires->status == RES_STATUS_FAILED) {
 			res = NULL;
@@ -1253,11 +1331,14 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 			res = &ires->res;
 		}
 
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 		return res;
 	} else {
 		if(flags & RESF_RELOAD) {
 			reload_resource(ires, flags, false);
+		} else if(ires->status == RES_STATUS_LOADED) {
+			assert(ires->res.data != NULL);
+			return &ires->res;
 		}
 
 		ResourceStatus status = wait_for_resource_load(ires, flags);
@@ -1289,9 +1370,9 @@ static InternalResource *preload_resource_internal(
 	InternalResource *ires;
 
 	if(try_begin_load_resource(type, name, ht_str2ptr_hash(name), &ires)) {
-		SDL_LockMutex(ires->mutex);
+		ires_lock(ires);
 		load_resource(ires, name, flags, !res_gstate.env.no_async_load);
-		SDL_UnlockMutex(ires->mutex);
+		ires_unlock(ires);
 	} else if(flags & RESF_RELOAD) {
 		reload_resource(ires, flags, !res_gstate.env.no_async_load);
 	}
@@ -1354,13 +1435,13 @@ static void *file_deleted_handler_task(void *data) {
 
 	reload_resource(ires, 0, !res_gstate.env.no_async_load);
 
-	SDL_LockMutex(ires->mutex);
+	ires_lock(ires);
 	dynarray_foreach_elem(&ires->watched_paths, WatchedPath *wp, {
 		if(wp->watch == watch) {
 			refresh_watched_path(ires, wp);
 		}
 	});
-	SDL_UnlockMutex(ires->mutex);
+	ires_unlock(ires);
 
 	return NULL;
 }
@@ -1577,10 +1658,8 @@ static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
 }
 
 void free_resources(bool all) {
-	// Wait for all resources to finish (re)loading first.
-	// FIXME: The wait inside unload_resource() should be sufficient so that we don't have to
-	// do this, but it isn't. I'm not yet sure why. Hell breaks loose if we start unloading stuff
-	// while something is reloading.
+	// Wait for all resources to finish (re)loading first, and pray that nothing else starts loading
+	// while we are in this function (FIXME)
 
 	ht_str2ptr_ts_iter_t iter;
 
