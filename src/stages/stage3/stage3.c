@@ -106,9 +106,11 @@ static void stage3_preload(void) {
 		"stage3/trees",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"zbuf_fog",
 		"glitch",
 		"maristar_bombbg",
+		"pbr",
+		"pbr_roughness_alpha_discard",
+		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",

@@ -93,12 +93,10 @@ static void stage2_bg_branch_draw(vec3 pos) {
 static void stage2_bg_leaves_draw(vec3 pos) {
 	r_state_push();
 
-// 	r_disable(RCAP_DEPTH_WRITE);
-
 	r_mat_mv_push();
 	stage2_branch_mv_transform(pos);
 
-	r_shader("pbr");
+	r_shader("pbr_roughness_alpha_discard");
 
 	PBREnvironment env = { 0 };
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, 1, &env);
@@ -128,7 +126,6 @@ static void stage2_bg_grass_draw(vec3 pos) {
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 
 	r_disable(RCAP_CULL_FACE);
-// 	r_disable(RCAP_DEPTH_WRITE);
 
 	Sprite grass = { 0 };
 	grass.tex = res_texture("stage2/grass_diffuse");
@@ -182,7 +179,7 @@ static void stage2_bg_ground_grass_draw(vec3 pos) {
 	r_mat_mv_push();
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 
-	r_shader("pbr");
+	r_shader("pbr_roughness_alpha_discard");
 	PBREnvironment env = { 0 };
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
 	glm_vec3_broadcast(0.4f, env.ambient_color);

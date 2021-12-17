@@ -20,7 +20,7 @@ void main(void) {
 	float f = clamp((end - z) / (end - start), 0.0, 1.0);
 
 	vec4 c = alphaCompose(texture(tex, texCoord), fog_color * (1.0 - f));
-	c.rgb = PBR_TonemapUchimura(exposure * c.rgb);
+	c.rgb = PBR_TonemapDefault(exposure * c.rgb);
 	c.rgb = PBR_GammaCorrect(c.rgb);
 	fragColor = c;
 }

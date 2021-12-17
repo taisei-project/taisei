@@ -48,7 +48,7 @@ typedef struct PointLight3D {
 // NOTE: should match PBR_MAX_LIGHTS in lib/pbr.glslh
 #define STAGE3D_MAX_LIGHTS 6
 
-// NOTE: should match definitions in interface/pbr.glslh
+// NOTE: should match definitions in lib/pbr_features.glslh
 #define PBR_FEATURE_DIFFUSE_MAP         1
 #define PBR_FEATURE_NORMAL_MAP          2
 #define PBR_FEATURE_AMBIENT_MAP         4

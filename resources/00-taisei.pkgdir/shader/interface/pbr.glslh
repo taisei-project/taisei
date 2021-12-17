@@ -2,16 +2,8 @@
 #define I_PBR_H
 
 #include "standard.glslh"
+#include "../lib/pbr_features.glslh"
 #include "../lib/pbr.glslh"
-
-#define PBR_FEATURE_DIFFUSE_MAP         1
-#define PBR_FEATURE_NORMAL_MAP          2
-#define PBR_FEATURE_AMBIENT_MAP         4
-#define PBR_FEATURE_ROUGHNESS_MAP       8
-#define PBR_FEATURE_ENVIRONMENT_MAP    16
-#define PBR_FEATURE_DEPTH_MAP          32
-#define PBR_FEATURE_AO_MAP             64
-#define PBR_FEATURE_NEED_TONEMAP      128
 
 UNIFORM(1) int features_mask;
 
@@ -38,5 +30,91 @@ UNIFORM(21) vec3 light_colors[PBR_MAX_LIGHTS]; // layout-id also depends on PBR_
 VARYING(3) vec3 pos;
 VARYING(4) vec3 tangent;
 VARYING(5) vec3 bitangent;
+
+#ifdef FRAG_STAGE
+
+#include "../lib/pbr_generic.glslh"
+
+void PBR_Interface_LoadMaterial(
+	out PBRMaterial mat,
+	inout vec2 uv,
+	in vec3 pos,
+	in mat3 tbn,
+	in int features_mask
+) {
+	PBR_Generic_MaybeParallaxMap(uv, pos, tbn, features_mask);
+
+	mat.ambient = ambientRGB_roughnessA.rgb;
+	mat.roughness = ambientRGB_roughnessA.a;
+	mat.albedo = diffuseRGB_metallicA.rgb;
+	mat.metallic = diffuseRGB_metallicA.a;
+
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_ROUGHNESS_ALPHA_DISCARD, features_mask)) {
+		// If this is enabled, then assume roughness map is also enabled.
+		// Sample roughness before diffuse.
+
+		vec4 roughness_sample = texture(roughness_map, uv);
+
+		mat.alpha = roughness_sample.a;
+		if(mat.alpha < PBR_ALPHA_DISCARD_THRESHOLD) {
+			discard;
+		}
+
+		mat.roughness *= roughness_sample.r;
+
+		if(PBR_FEATURE_ENABLED(PBR_FEATURE_DIFFUSE_MAP, features_mask)) {
+			mat.albedo *= texture(diffuse_map, uv).rgb;
+		}
+	} else if(PBR_FEATURE_ENABLED(PBR_FEATURE_DIFFUSE_ALPHA_DISCARD, features_mask)) {
+		// If this is enabled, then assume diffuse map is also enabled.
+		// Sample diffuse before roughness.
+
+		vec4 diffuse_sample = texture(diffuse_map, uv);
+
+		mat.alpha = diffuse_sample.a;
+		if(mat.alpha < PBR_ALPHA_DISCARD_THRESHOLD) {
+			discard;
+		}
+
+		mat.albedo *= diffuse_sample.rgb;
+
+		if(PBR_FEATURE_ENABLED(PBR_FEATURE_ROUGHNESS_MAP, features_mask)) {
+			mat.roughness *= texture(roughness_map, uv).r;
+		}
+	} else {
+		// No alpha discards are enabled.
+
+		mat.alpha = 1.0;
+
+		if(PBR_FEATURE_ENABLED(PBR_FEATURE_DIFFUSE_MAP, features_mask)) {
+			mat.albedo *= texture(diffuse_map, uv).rgb;
+		}
+
+		if(PBR_FEATURE_ENABLED(PBR_FEATURE_ROUGHNESS_MAP, features_mask)) {
+			mat.roughness *= texture(roughness_map, uv).r;
+		}
+	}
+
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_AMBIENT_MAP, features_mask)) {
+		mat.ambient *= texture(ambient_map, uv).rgb;
+	}
+
+	if(
+		PBR_FEATURE_ENABLED(PBR_FEATURE_AO_MAP, features_mask) &&
+		PBR_FEATURE_ENABLED(PBR_FEATURE_ENVIRONMENT_MAP, features_mask)
+	) {
+		mat.ambient_occlusion = texture(ao_map, uv).r;
+	} else {
+		mat.ambient_occlusion = 1;
+	}
+
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_NORMAL_MAP, features_mask)) {
+		mat.normal = tbn * sample_normalmap(normal_map, uv);
+	} else {
+		mat.normal = tbn * vec3(0, 0, 1);
+	}
+}
+
+#endif
 
 #endif

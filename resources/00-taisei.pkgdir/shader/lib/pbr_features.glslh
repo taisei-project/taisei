@@ -1,0 +1,37 @@
+
+#ifndef I_PBR_FEATURES_H
+#define I_PBR_FEATURES_H
+
+#define PBR_FEATURE_DIFFUSE_MAP                  1
+#define PBR_FEATURE_NORMAL_MAP                   2
+#define PBR_FEATURE_AMBIENT_MAP                  4
+#define PBR_FEATURE_ROUGHNESS_MAP                8
+#define PBR_FEATURE_ENVIRONMENT_MAP             16
+#define PBR_FEATURE_DEPTH_MAP                   32
+#define PBR_FEATURE_AO_MAP                      64
+#define PBR_FEATURE_NEED_TONEMAP               128
+#define PBR_FEATURE_ROUGHNESS_ALPHA_DISCARD    256
+#define PBR_FEATURE_DIFFUSE_ALPHA_DISCARD      512
+
+#define PBR_FEATURE_ALL                 0xffffffff
+
+// Sorry, no line continuations in glsl 330…
+#define PBR_CONDITIONAL_FEATURES_DEFAULT (PBR_FEATURE_ALL & ~(PBR_FEATURE_ROUGHNESS_ALPHA_DISCARD | PBR_FEATURE_DIFFUSE_ALPHA_DISCARD))
+
+// These features may be enabled by a bitflag uniform
+#ifndef PBR_CONDITIONAL_FEATURES
+	#define PBR_CONDITIONAL_FEATURES PBR_CONDITIONAL_FEATURES_DEFAULT
+#endif
+
+// These features are always enabled
+#ifndef PBR_UNCONDITIONAL_FEATURES
+	#define PBR_UNCONDITIONAL_FEATURES 0
+#endif
+
+// Features that are neither in PBR_CONDITIONAL_FEATURES nor in PBR_UNCONDITIONAL_FEATURES
+// are always disabled.
+
+// Sorry, no line continuations in glsl 330…
+#define PBR_FEATURE_ENABLED(feature, features_mask) (bool((feature) & (PBR_UNCONDITIONAL_FEATURES)) || (bool((feature) & (PBR_CONDITIONAL_FEATURES)) && bool((feature) & (features_mask))))
+
+#endif

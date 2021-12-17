@@ -7,16 +7,27 @@
 // NOTE: should match STAGE3D_MAX_LIGHTS in stageutils.h
 #define PBR_MAX_LIGHTS 6
 
+#ifndef PBR_ALPHA_DISCARD_THRESHOLD
+	#define PBR_ALPHA_DISCARD_THRESHOLD 0.3
+#endif
+
 struct PointLight {
 	vec3 pos;		// camera-relative
 	vec3 color;
 };
 
-struct PBRParams {
+struct PBRMaterial {
+	vec3 ambient;
 	vec3 albedo;
 	vec3 normal;
 	float roughness;
 	float metallic;
+	float ambient_occlusion;
+	float alpha;
+};
+
+struct PBRParams {
+	PBRMaterial mat;
 	vec3 fragPos;
 	mat4 inv_camera_transform;
 };
@@ -40,14 +51,14 @@ vec3 PBR_FresnelSchlick(float cosTheta, vec3 F0);
 PBRState PBR(PBRParams p) {
 	PBRState st;
 	st.params = p;
-	st.N = p.normal;
+	st.N = p.mat.normal;
 	st.V = normalize(-p.fragPos);
 	st.NdotV = max(dot(st.N, st.V), 0.0);
-	st.F0 = mix(vec3(0.04), p.albedo, p.metallic);
-	st.roughness2 = p.roughness * p.roughness;
+	st.F0 = mix(vec3(0.04), p.mat.albedo, p.mat.metallic);
+	st.roughness2 = p.mat.roughness * p.mat.roughness;
 	st.roughness4 = st.roughness2 * st.roughness2;
 	// st.geometryKfactor = st.roughness2 * 0.5;
-	st.geometryKfactor = (p.roughness + 1) * 0.125;
+	st.geometryKfactor = (p.mat.roughness + 1) * 0.125;
 	st.geometryNdotVDenomTerm = PBR_GeometrySchlickGGXDenom(st.NdotV, st.geometryKfactor);
 	st.fresnelNV = PBR_FresnelSchlick(st.NdotV, st.F0);
 	return st;
@@ -121,7 +132,7 @@ vec3 PBR_PointLight(PBRState st, PointLight light) {
 	vec2 NDF = PBR_DistributionGGXFraction(NdotH, st.roughness4);
 	float Gdenom = st.geometryNdotVDenomTerm * PBR_GeometrySchlickGGXDenom(NdotL, st.geometryKfactor);
 
-	vec3 diffuse = mix(0.3183098861837907, 0, st.params.metallic) * st.params.albedo;
+	vec3 diffuse = mix(0.3183098861837907, 0, st.params.mat.metallic) * st.params.mat.albedo;
 	float specular = NDF.x / (NDF.y * 4.0 * Gdenom);
 
 	vec3 combined = fresnelHL * specular + ((1 - fresnelNL) * (1 - fresnelNV)) * diffuse;
@@ -129,15 +140,28 @@ vec3 PBR_PointLight(PBRState st, PointLight light) {
 	return combined * radiance * NdotL;
 }
 
+vec3 PBR_PointLights(
+	PBRState pbr, int nlights, vec3 positions[PBR_MAX_LIGHTS], vec3 colors[PBR_MAX_LIGHTS]
+) {
+	vec3 color = vec3(0);
+
+	for(int i = 0; i < nlights; ++i) {
+		color += PBR_PointLight(pbr, PointLight(positions[i], colors[i]));
+	}
+
+	return color;
+}
+
 vec3 PBR_ReflectionRay(PBRState st) {
-	return mat3(st.params.inv_camera_transform) * reflect(st.params.fragPos, st.params.normal);
+	return mat3(st.params.inv_camera_transform) * reflect(st.params.fragPos, st.N);
 }
 
 vec3 PBR_EnvironmentLightFake(PBRState st, samplerCube envmap) {
 	vec3 reflected_ray = PBR_ReflectionRay(st);
 	vec3 reflection = texture(envmap, fixCubeCoord(reflected_ray)).rgb;
-	float r = (1 - st.params.roughness);
-	return (r * r) * reflection * mix(vec3(0.5), st.params.albedo, st.params.metallic);
+	float r = (1 - st.params.mat.roughness);
+	vec3 l = (r * r) * reflection * mix(vec3(0.5), st.params.mat.albedo, st.params.mat.metallic);
+	return l * st.params.mat.ambient_occlusion;
 }
 
 vec3 PBR_EnvironmentLight(
@@ -152,26 +176,28 @@ vec3 PBR_EnvironmentLight(
 
 	vec3 reflected_ray = PBR_ReflectionRay(st);
 	vec3 R = fixCubeCoord(reflected_ray);
-	vec3 F = PBR_FresnelSchlickRoughness(st.NdotV, st.F0, st.params.roughness);
+	vec3 F = PBR_FresnelSchlickRoughness(st.NdotV, st.F0, st.params.mat.roughness);
 
 	// Diffuse
 #if 0
 	vec3 kS = F;
 	vec3 kD = 1.0 - kS;
-	kD *= 1.0 - st.params.metallic;
+	kD *= 1.0 - st.params.mat.metallic;
 	vec3 irradiance = texture(irradiance_map, st.N).rgb;
-	vec3 diffuse = irradiance * st.params.albedo;
+	vec3 diffuse = irradiance * st.params.mat.albedo;
 #endif
 
 	// Specular
 	const float MAX_REFLECTION_LOD = 8.0;  // TODO pass as uniform or use LOD query extension
 // 	vec3 reflection = textureLod(prefiltered_cubemap, R, st.params.roughness * MAX_REFLECTION_LOD).rgb;
 	vec3 reflection = texture(prefiltered_cubemap, R).rgb;
-	vec2 brdf = texture(brdf_lut, vec2(st.NdotV, st.params.roughness)).rg;
+	vec2 brdf = texture(brdf_lut, vec2(st.NdotV, st.params.mat.roughness)).rg;
 	vec3 specular = reflection * (F * brdf.x + brdf.y);
 
-// 	return kD * diffuse + specular;
-	return specular;
+// 	vec3 l = kD * diffuse + specular;
+	vec3 l = specular;
+
+	return l * st.params.mat.ambient_occlusion;
 }
 
 vec3 PBR_TonemapReinhard(vec3 color) {
@@ -230,5 +256,7 @@ vec3 PBR_GammaCorrect(vec3 color) {
 	// Approximate linear->sRGB conversion
 	return pow(color, vec3(1.0/2.2));
 }
+
+#define PBR_TonemapDefault PBR_TonemapUchimura
 
 #endif

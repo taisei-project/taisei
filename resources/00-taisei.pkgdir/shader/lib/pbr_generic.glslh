@@ -1,0 +1,41 @@
+
+#ifndef PBR_GENERIC_H
+#define PBR_GENERIC_H
+
+#include "pbr.glslh"
+#include "pbr_features.glslh"
+#include "parallaxmap.glslh"
+
+void PBR_Generic_MaybeParallaxMap(
+	inout vec2 uv,
+	in vec3 pos, in mat3 tbn, in int features_mask
+) {
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_DEPTH_MAP, features_mask)) {
+		vec3 vdir = normalize(transpose(tbn) * -pos);
+		uv = parallaxOcclusionMap(depth_map, depth_scale, uv, vdir);
+	}
+}
+
+vec3 PBR_Generic_EnvironmentLight(
+	in PBRState pbr,
+	in sampler2D ibl_brdf_lut,
+	in samplerCube environment_map,
+	in int features_mask
+) {
+	vec3 color = vec3(0);
+
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_ENVIRONMENT_MAP, features_mask)) {
+		color = PBR_EnvironmentLight(pbr, ibl_brdf_lut, environment_map);
+	}
+
+	return color;
+}
+
+void PBR_Generic_MaybeTonemap(inout vec3 color, in int features_mask) {
+	if(PBR_FEATURE_ENABLED(PBR_FEATURE_NEED_TONEMAP, features_mask)) {
+		color = PBR_TonemapDefault(color);
+		color = PBR_GammaCorrect(color);
+	}
+}
+
+#endif

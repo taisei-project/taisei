@@ -3,11 +3,13 @@
 #include "lib/render_context.glslh"
 #include "interface/sprite_pbr.glslh"
 
+#define features_mask (0)
+
 void main(void) {
 	vec4 roughness_sample = texture(tex_roughness, texCoord);
 	float alpha = roughness_sample.a;
 
-	if(alpha < 0.3) {
+	if(alpha < PBR_ALPHA_DISCARD_THRESHOLD) {
 		discard;
 	}
 
@@ -17,21 +19,16 @@ void main(void) {
 
 	PBRParams p;
 	p.fragPos = pos;
-	p.albedo = color.rgb * texture(tex, texCoord).rgb;
-	p.roughness = roughness_sample.r;
-	p.metallic = customParams.a;
-	p.normal = normalize(tbn * tbn_normal);
+	p.mat.albedo = color.rgb * texture(tex, texCoord).rgb;
+	p.mat.roughness = roughness_sample.r;
+	p.mat.metallic = customParams.a;
+	p.mat.normal = normalize(tbn * tbn_normal);
 
 	PBRState pbr = PBR(p);
 
-	vec3 Lo = vec3(0.0);
-	for(int i = 0; i < light_count; ++i) {
-		Lo += PBR_PointLight(pbr, PointLight(light_positions[i], light_colors[i]));
-	}
-
-	vec3 ambient_color = customParams.rgb;
-	vec3 color = ambient * ambient_color + Lo;
-	color = PBR_TonemapUchimura(color);
+	vec3 color = customParams.rgb * ambient;
+	color += PBR_PointLights(pbr, light_count, light_positions, light_colors);
+	color = PBR_TonemapDefault(color);
 	color = PBR_GammaCorrect(color);
 
 	fragColor = vec4(color, 1) * alpha;

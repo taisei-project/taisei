@@ -91,7 +91,7 @@ static void stage3_bg_leaves_draw(vec3 pos) {
 	r_mat_mv_translate_v(pos);
 	r_mat_mv_translate(0, 0, -0.0002);
 
-	r_shader("pbr");
+	r_shader("pbr_roughness_alpha_discard");
 
 	PBREnvironment env = { 0 };
 	stage3_bg_setup_pbr_env(&stage_3d_context.cam, &env);

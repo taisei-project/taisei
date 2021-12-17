@@ -1,4 +1,7 @@
 
+#ifndef PARALLAXMAP_H
+#define PARALLAXMAP_H
+
 // Based on https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 
 #ifndef PARALLAX_MIN_LAYERS
@@ -46,3 +49,5 @@ vec2 parallaxOcclusionMap(sampler2D depthMap, float depthScale, vec2 texCoord, v
 	float weight = afterDepth / (afterDepth - beforeDepth);
 	return mix(currentTexCoords, prevTexCoords, weight);
 }
+
+#endif

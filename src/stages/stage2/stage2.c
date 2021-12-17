@@ -97,9 +97,10 @@ static void stage2_preload(void) {
 		"stage2/rocks",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"stage1_water",
-		"pbr",
 		"bloom",
+		"pbr",
+		"pbr_roughness_alpha_discard",
+		"stage1_water",
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,

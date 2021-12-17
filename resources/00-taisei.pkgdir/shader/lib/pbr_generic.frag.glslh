@@ -1,0 +1,21 @@
+
+#include "../interface/pbr.glslh"
+
+void main(void) {
+	mat3 tbn = mat3(normalize(tangent), normalize(bitangent), normalize(normal));
+	vec2 uv = texCoord;
+
+	PBRParams p;
+	p.fragPos = pos;
+	p.inv_camera_transform = inv_camera_transform;
+	PBR_Interface_LoadMaterial(p.mat, uv, pos, tbn, features_mask);
+
+	PBRState pbr = PBR(p);
+
+	vec3 color = p.mat.ambient;
+	color += PBR_PointLights(pbr, light_count, light_positions, light_colors);
+	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, features_mask);
+	PBR_Generic_MaybeTonemap(color, features_mask);
+
+	fragColor = vec4(color * p.mat.alpha, p.mat.alpha);
+}
