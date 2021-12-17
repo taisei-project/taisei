@@ -78,14 +78,15 @@ static void stage2_preload(void) {
 		"part/blast_huge_rays",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
-		"stage2/water_floor",
+		"ibl_brdf_lut",
+		"stage2/envmap",
 		"stage2/spellbg1",
 		"stage2/spellbg2",
 	NULL);
 	preload_resources(RES_MATERIAL, RESF_DEFAULT,
 		"stage2/branch",
-		"stage2/grass",
 		"stage2/ground",
+		"stage2/lakefloor",
 		"stage2/leaves",
 		"stage2/rocks",
 	NULL);
@@ -97,11 +98,11 @@ static void stage2_preload(void) {
 		"stage2/rocks",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"bloom",
+		"fireparticles",
 		"pbr",
-		"pbr_roughness_alpha_discard",
-		"stage1_water",
-		"zbuf_fog",
+		"pbr_diffuse_alpha_discard",
+		"pbr_water",
+		"zbuf_fog_tonemap",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
 		"boss/wriggle",

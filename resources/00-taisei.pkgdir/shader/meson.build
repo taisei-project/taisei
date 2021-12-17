@@ -45,6 +45,8 @@ glsl_files = files(
     'pbr.vert.glsl',
     'pbr_diffuse_alpha_discard.frag.glsl',
     'pbr_roughness_alpha_discard.frag.glsl',
+    'pbr_water.frag.glsl',
+    'pbr_water.vert.glsl',
     'player_death.frag.glsl',
     'powersurge_effect.frag.glsl',
     'powersurge_feedback.frag.glsl',

@@ -15,17 +15,24 @@
 typedef struct Stage2DrawData {
 	struct {
 		Color color;
+		float end;
 	} fog;
 
 	struct {
 		PBRModel branch;
 		PBRModel grass;
 		PBRModel ground;
+		PBRModel water;
 		PBRModel leaves;
 		PBRModel rocks;
 	} models;
 
-	real hina_lights;
+	Texture *envmap;
+
+	float hina_lights;
+	mat4 hina_fire_emitter_transform;
+
+	uint64_t branch_rng_seed;
 } Stage2DrawData;
 
 Stage2DrawData *stage2_get_draw_data(void)

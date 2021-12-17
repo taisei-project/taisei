@@ -613,6 +613,8 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 
 	aniplayer_queue(&boss->ani, "guruguru", 2);
 	aniplayer_queue(&boss->ani, "main", 0);
+
+	stage2_bg_enable_hina_lights();
 }
 
 TASK(spawn_boss) {
@@ -798,6 +800,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-midboss-filler);
+	stage2_bg_begin_color_shift();
 
 	INVOKE_TASK(aimshot_fairies_red);
 
@@ -840,7 +843,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	}
 
 	WAIT(860);
-	stage2_bg_engage_hina_mode();
+// 	stage2_bg_engage_hina_mode();
 	WAIT(300);
 	stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	INVOKE_TASK(spawn_boss);

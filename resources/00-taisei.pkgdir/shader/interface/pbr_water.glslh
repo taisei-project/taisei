@@ -1,0 +1,13 @@
+#ifndef I_PBR_WATER_H
+#define I_PBR_WATER_H
+
+#include "pbr.glslh"
+
+UNIFORM(60) float time;
+UNIFORM(61) float water_depth;
+UNIFORM(62) float wave_height;
+UNIFORM(63) vec2 wave_offset;
+UNIFORM(64) float wave_scale;
+UNIFORM(65) mat4 inverse_modelview;
+
+#endif

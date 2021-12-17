@@ -1,0 +1,8 @@
+
+diffuse_map = stage2/lakefloor_diffuse
+normal_map = stage2/lakefloor_normal
+depth_map = stage2/lakefloor_depth
+ambient_color = 0 0 0
+roughness = 0.9
+depth_scale = 0.04
+

@@ -12,4 +12,5 @@
 void stage2_bg_init_fullstage(void);
 void stage2_bg_init_spellpractice(void);
 
-void stage2_bg_engage_hina_mode(void);
+void stage2_bg_begin_color_shift(void);
+void stage2_bg_enable_hina_lights(void);
