@@ -55,7 +55,10 @@ static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
 	// v == vector from point of interest to A
 
 	double lm2 = cabs2(m);
-	assume(lm2 > 0);
+
+	if(UNLIKELY(lm2 == 0)) {
+		return 0;
+	}
 
 	double f = -creal(v * conj(m)) / lm2; // project v onto the line
 	f = clamp(f, 0, 1);                   // restrict it to segment
@@ -65,18 +68,10 @@ static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
 
 // Return f such that a + f * (b - a) is the closest point on segment to p
 double lineseg_closest_factor(LineSegment seg, cmplx p) {
-	if(UNLIKELY(seg.a == seg.b)) {
-		return 0;
-	}
-
 	return lineseg_closest_factor_impl(seg.b - seg.a, seg.a - p);
 }
 
 cmplx lineseg_closest_point(LineSegment seg, cmplx p) {
-	if(UNLIKELY(seg.a == seg.b)) {
-		return seg.a;
-	}
-
 	return clerp(seg.a, seg.b, lineseg_closest_factor_impl(seg.b - seg.a, seg.a - p));
 }
 
@@ -86,14 +81,6 @@ cmplx lineseg_closest_point(LineSegment seg, cmplx p) {
 // otherwise return -1.
 static double lineseg_circle_intersect_fallback(LineSegment seg, Circle c) {
 	double rad2 = c.radius * c.radius;
-
-	if(UNLIKELY(seg.a == seg.b)) {
-		if(cabs2(seg.a - c.origin) <= rad2) {
-			return 0;
-		}
-
-		return -1;
-	}
 
 	double f = lineseg_closest_factor_impl(seg.b - seg.a, seg.a - c.origin);
 	cmplx p = clerp(seg.a, seg.b, f);
