@@ -16,8 +16,14 @@
 #include "rwops/rwops_autobuf.h"
 #include "rwops/rwops_zstd.h"
 
-#define CACHE_VERSION 4
+#define CACHE_VERSION 5
 #define CRC_INIT 0
+
+#define MAX_CONTENT_SIZE          (1024 * 1024)
+#define MAX_GLSL_ATTRIBS          255
+#define MAX_GLSL_MACROS           255
+#define MAX_GLSL_MACRO_NAME_LEN   255
+#define MAX_GLSL_MACRO_VALUE_LEN  255
 
 static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const ShaderMacro *macros, size_t *out_size) {
 	uint8_t *buf, *result = NULL;
@@ -43,7 +49,7 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			++num_macros;
 		}
 
-		if(num_macros > 255) {
+		if(num_macros > MAX_GLSL_MACROS) {
 			log_error("Too many macros (%i)", num_macros);
 			goto fail;
 		}
@@ -54,12 +60,12 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			size_t name_len = strlen(m->name);
 			size_t value_len = strlen(m->value);
 
-			if(name_len > 255) {
+			if(name_len > MAX_GLSL_MACRO_NAME_LEN) {
 				log_error("Macro name is too long (%zu): %s", name_len, m->name);
 				goto fail;
 			}
 
-			if(value_len > 255) {
+			if(value_len > MAX_GLSL_MACRO_VALUE_LEN) {
 				log_error("Macro value is too long (%zu): %s", name_len, m->name);
 				goto fail;
 			}
@@ -79,7 +85,7 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			SDL_WriteLE16(dest, src->lang.glsl.version.version);
 			SDL_WriteU8(dest, src->lang.glsl.version.profile);
 
-			if(src->meta.glsl.num_attributes > 255) {
+			if(src->meta.glsl.num_attributes > MAX_GLSL_ATTRIBS) {
 				log_error("Too many attributes (%i)", src->meta.glsl.num_attributes);
 				goto fail;
 			}
@@ -113,12 +119,12 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 		}
 	}
 
-	if(src->content_size > 65535) {
+	if(src->content_size > MAX_CONTENT_SIZE) {
 		log_error("Content is too large (%zu)", src->content_size);
 		goto fail;
 	}
 
-	SDL_WriteLE16(dest, src->content_size);
+	SDL_WriteLE32(dest, src->content_size);
 	SDL_RWwrite(dest, src->content, src->content_size, 1);
 
 	dest = abuf;
@@ -194,7 +200,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 		}
 	}
 
-	out_src->content_size = SDL_ReadLE16(s);
+	out_src->content_size = SDL_ReadLE32(s);
 	out_src->content = calloc(1, out_src->content_size);
 
 	if(SDL_RWread(s, out_src->content, out_src->content_size, 1) != 1) {
