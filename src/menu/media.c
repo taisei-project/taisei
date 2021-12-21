@@ -53,6 +53,8 @@ MenuData *create_media_menu(void) {
 		++m->cursor;
 	}
 
+	preload_charprofile_menu();
+
 	return m;
 }
 

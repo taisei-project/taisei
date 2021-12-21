@@ -84,7 +84,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "cirno",
 		.fullname = "Cirno",
 		.title = "Thermodynamic Ice Fairy",
-		.description = "Species: Fairy\nArea of Study: Thermodynamics\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
+		.description = "Species: Fairy\nArea of Study: Thermodynamics\n\nThe lovably-foolish ice fairy.\n\nPerhaps she’s a bit dissatisfied after her recent duels with secret gods and hellish fairies?\n\nConsider going easy on her.",
 		.background = "stage1/cirnobg",
 		.unlock = PBGM_STAGE1_BOSS,
 		.faces = FACES("normal", "angry", "defeated"),
@@ -102,7 +102,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "scuttle",
 		.fullname = "Scuttle",
 		.title = "Agile Insect Engineer",
-		.description = "Species: Bombardier Beetle\nArea of Study: Full-Stack 'Web' Development\n\nNot all things are computable, and this bug seems to sneak in at a decisive fork in your commute to the true culprit.\nThe majority of insects do not scheme grand revolutions, yet their presence alone is enough to upset the course of events.",
+		.description = "Species: Bombardier Beetle\nArea of Study: Full-Stack 'Web' Development\n\nNot all things are computable, and this bug seems to sneak in at a decisive fork in your commute to the true culprit.\n\nThe majority of insects do not scheme grand revolutions, yet their presence alone is enough to upset the course of events.",
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg1",
 		.faces = FACES("normal"),
@@ -154,23 +154,6 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 	}
 };
 
-
-static void update_char_draw_order(MenuData *m) {
-	CharProfileContext *ctx = m->context;
-
-	for(int i = 0; i < NUM_PROFILES; ++i) {
-		if(ctx->char_draw_order[i] == m->cursor) {
-			while(i) {
-				ctx->char_draw_order[i] = ctx->char_draw_order[i - 1];
-				ctx->char_draw_order[i - 1] = m->cursor;
-				--i;
-			}
-
-			break;
-		}
-	}
-}
-
 static int check_unlocked_profile(int i) {
 	int selected = PROFILE_LOCKED;
 	if(!profiles[i].unlock) {
@@ -208,15 +191,14 @@ static void charprofile_draw(MenuData *m) {
 	draw_menu_title(m, "Character Profiles");
 	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
 
-	r_mat_mv_push();
-	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
-
+	// background behind description text
 	float f = m->drawdata[0];
 	float descbg_ofs = 100 + 30 * f - 20 * f - font_get_lineskip(res_font("small")) * 0.7;
-
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W/4, SCREEN_H/3, 0);
 	r_color4(0, 0, 0, 0.5);
 	r_shader_standard_notex();
-	r_mat_mv_translate(-150, descbg_ofs + m->drawdata[2] * 0.5, 0);
+	r_mat_mv_translate(-120, descbg_ofs + m->drawdata[2] * 0.5, 0);
 	r_mat_mv_scale(650, m->drawdata[2], 1);
 	r_draw_quad();
 	r_shader_standard();
@@ -239,8 +221,11 @@ static void charprofile_draw(MenuData *m) {
 	int selected = check_unlocked_profile(m->cursor);
 
 	Color *color = RGBA(pbrightness, pbrightness, pbrightness, 1);
+
 	// if not unlocked, darken the sprite so it's barely visible
-	if(selected == PROFILE_LOCKED) color = RGBA(0.0, 0.0, 0.0, 0.9);
+	if(selected == PROFILE_LOCKED) {
+		color = RGBA(0.0, 0.0, 0.0, 0.9);
+	}
 
 	Sprite *spr = e->arg;
 	SpriteParams portrait_params = {
@@ -291,7 +276,7 @@ static void charprofile_draw(MenuData *m) {
 
 	text_draw_wrapped(profiles[selected].description, DESCRIPTION_WIDTH, &(TextParams) {
 		.align = ALIGN_LEFT,
-		.pos = { -190, 120 },
+		.pos = { -175, 120 },
 		.font = "small",
 		.shader = "text_default",
 		.color = RGBA(o, o, o, o),
@@ -338,12 +323,11 @@ static void charprofile_free(MenuData *m) {
 	free(m->context);
 }
 
+// TODO: add a better drawing animation for character selection
 static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 	MenuData *m = arg;
 	CharProfileContext *ctx = m->context;
 	TaiseiEvent type = TAISEI_EVENT(event->type);
-
-	int prev_cursor = m->cursor;
 
 	if(type == TE_MENU_CURSOR_LEFT) {
 		m->cursor--;
@@ -364,15 +348,16 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 
 	m->cursor = (m->cursor % m->entries.num_elements) + m->entries.num_elements * (m->cursor < 0);
 
-	if(m->cursor != prev_cursor) {
-		if(ctx->prev_selected_char != m->cursor || dynarray_get(&m->entries, m->cursor).drawdata > 0.95) {
-			ctx->prev_selected_char = prev_cursor;
-			update_char_draw_order(m);
-		}
-	}
 	return false;
 
 }
+
+void preload_charprofile_menu(void) {
+	for(int i = 0; i < NUM_PROFILES-1; i++) {
+		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
+		preload_resource(RES_TEXTURE, profiles[i].background, RESF_OPTIONAL);
+	}
+};
 
 static void charprofile_input(MenuData *m) {
 	events_poll((EventHandler[]){
@@ -383,6 +368,8 @@ static void charprofile_input(MenuData *m) {
 
 MenuData *create_charprofile_menu(void) {
 	MenuData *m = alloc_menu();
+
+	preload_charprofile_menu();
 
 	m->input = charprofile_input;
 	m->draw = charprofile_draw;
