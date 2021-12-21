@@ -189,7 +189,7 @@ static void charprofile_draw(MenuData *m) {
 
 	draw_main_menu_bg(m, SCREEN_W/4+100, 0, 0.1 * (0.5 + 0.5 * m->drawdata[1]), "menu/mainmenubg", profiles[m->cursor].background);
 	draw_menu_title(m, "Character Profiles");
-	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
+
 
 	// background behind description text
 	float f = m->drawdata[0];
@@ -240,6 +240,15 @@ static void charprofile_draw(MenuData *m) {
 	if(selected != PROFILE_LOCKED) {
 		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
 		r_draw_sprite(&portrait_params);
+		r_mat_mv_push();
+		text_draw_wrapped("Press [Fire] for alternate expressions", DESCRIPTION_WIDTH, &(TextParams) {
+			.align = ALIGN_LEFT,
+			.pos = { 25, 570 },
+			.font = "standard",
+			.shader = "text_default",
+			.color = RGBA(0.9, 0.9, 0.9, 0.9),
+		});
+		r_mat_mv_pop();
 	}
 
 	r_mat_mv_push();
@@ -330,15 +339,22 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 
 	if(type == TE_MENU_CURSOR_LEFT) {
+		play_sfx_ui("generic_shot");
 		m->cursor--;
 		ctx->face = 0;
 	} else if(type == TE_MENU_CURSOR_RIGHT) {
+		play_sfx_ui("generic_shot");
 		m->cursor++;
 		ctx->face = 0;
 	} else if(type == TE_MENU_ACCEPT) {
-		// show different expressions for selected character
-		ctx->face++;
-		if(!profiles[m->cursor].faces[ctx->face]) ctx->face = 0;
+		if (check_unlocked_profile(m->cursor) != PROFILE_LOCKED) {
+			play_sfx_ui("generic_shot");
+			// show different expressions for selected character
+			ctx->face++;
+			if(!profiles[m->cursor].faces[ctx->face]) {
+				ctx->face = 0;
+			}
+		}
 	} else if(type == TE_MENU_ABORT) {
 		play_sfx_ui("hit");
 		close_menu(m);
