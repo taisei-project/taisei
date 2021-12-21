@@ -320,12 +320,10 @@ static void action_show_character(MenuData *m, void *arg) {
 static void add_character(MenuData *m, int i) {
 	if(strcmp(profiles[i].name, "locked")) {
 		log_debug("adding character: %s", profiles[i].name);
-		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
 		Sprite *spr = portrait_get_base_sprite(profiles[i].name, NULL);
 		MenuEntry *e = add_menu_entry(m, NULL, action_show_character, spr);
 		e->transition = NULL;
 	}
-	preload_resource(RES_TEXTURE, profiles[i].background, RESF_OPTIONAL);
 }
 
 static void charprofile_free(MenuData *m) {
