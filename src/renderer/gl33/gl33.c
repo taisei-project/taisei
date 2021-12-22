@@ -114,6 +114,10 @@ static struct {
 	SDL_GLContext *gl_context;
 	SDL_Window *window;
 
+#ifndef STATIC_GLES3
+	bool fb_sRGB_state;
+#endif
+
 	#ifdef GL33_DRAW_STATS
 	struct {
 		hrtime_t last_draw;
@@ -127,6 +131,26 @@ static struct {
 /*
  * Internal functions
  */
+
+static void gl33_set_framebuffer_sRGB_write(bool enable) {
+#ifndef STATIC_GLES3
+	if(glext.version.is_es) {
+		return;
+	}
+
+	if(enable) {
+		if(!R.fb_sRGB_state) {
+			glEnable(GL_FRAMEBUFFER_SRGB);
+			R.fb_sRGB_state = true;
+		}
+	} else {
+		if(R.fb_sRGB_state) {
+			glDisable(GL_FRAMEBUFFER_SRGB);
+			R.fb_sRGB_state = false;
+		}
+	}
+#endif
+}
 
 static GLenum blendop_to_gl_blendop(BlendOp op) {
 	switch(op) {
@@ -489,6 +513,8 @@ static void gl33_sync_state(void) {
 	if(R.capabilities.active & r_capability_bit(RCAP_DEPTH_TEST)) {
 		gl33_sync_depth_test_func();
 	}
+
+	gl33_set_framebuffer_sRGB_write(R.framebuffer.active != NULL);
 }
 
 /*
