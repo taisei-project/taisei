@@ -867,6 +867,10 @@ bool progress_is_bgm_unlocked(const char *name) {
 	return progress.unlocked_bgms & progress_bgm_bit(progress_bgm_id(name));
 }
 
+bool progress_is_bgm_id_unlocked(ProgressBGMID id) {
+	return progress.unlocked_bgms & progress_bgm_bit(id);
+}
+
 void progress_unlock_bgm(const char *name) {
 	progress.unlocked_bgms |= progress_bgm_bit(progress_bgm_id(name));
 }

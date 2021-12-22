@@ -203,7 +203,7 @@
   ○ Stage 1 Boss
     Name: Cirno
     Species: Fairy
-    Field of Study: Thermodynamic Systems
+    Field of Study: Thermodynamics
 
     The lovably-foolish ice fairy.
 
@@ -242,7 +242,7 @@
   ○ Stage 4 Boss
     Name: Kurumi
     Species: Vampire
-    Field of Study: Phlebotomy
+    Field of Study: Hematology
 
     Vampiric blast from the past. Doesn’t she know Gensōkyō already has new
     bloodsuckers in town?
