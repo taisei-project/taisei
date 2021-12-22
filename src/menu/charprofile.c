@@ -50,8 +50,6 @@ typedef struct CharacterProfile {
 } CharacterProfile;
 
 typedef struct CharProfileContext {
-	int8_t char_draw_order[NUM_PROFILES];
-	int8_t prev_selected_char;
 	int8_t face;
 } CharProfileContext;
 
@@ -204,8 +202,6 @@ static void charprofile_draw(MenuData *m) {
 	r_shader_standard();
 	r_mat_mv_pop();
 
-	CharProfiles i = ctx->char_draw_order[m->cursor];
-
 	MenuEntry *e = dynarray_get_ptr(&m->entries, m->cursor);
 
 	float o = 1 - e->drawdata*2;
@@ -213,10 +209,6 @@ static void charprofile_draw(MenuData *m) {
 
 	float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
 	pofs = glm_ease_back_in(pofs);
-
-	if(i != m->selected) {
-		pofs = lerp(pofs, 1, menu_fade(m));
-	}
 
 	int selected = check_unlocked_profile(m->cursor);
 
@@ -240,7 +232,6 @@ static void charprofile_draw(MenuData *m) {
 	if(selected != PROFILE_LOCKED) {
 		portrait_params.sprite_ptr = portrait_get_face_sprite(profiles[selected].name, profiles[selected].faces[ctx->face]);
 		r_draw_sprite(&portrait_params);
-		r_mat_mv_push();
 		text_draw_wrapped("Press [Fire] for alternate expressions", DESCRIPTION_WIDTH, &(TextParams) {
 			.align = ALIGN_LEFT,
 			.pos = { 25, 570 },
@@ -248,7 +239,6 @@ static void charprofile_draw(MenuData *m) {
 			.shader = "text_default",
 			.color = RGBA(0.9, 0.9, 0.9, 0.9),
 		});
-		r_mat_mv_pop();
 	}
 
 	r_mat_mv_push();
@@ -345,7 +335,7 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 		m->cursor++;
 		ctx->face = 0;
 	} else if(type == TE_MENU_ACCEPT) {
-		if (check_unlocked_profile(m->cursor) != PROFILE_LOCKED) {
+		if(check_unlocked_profile(m->cursor) != PROFILE_LOCKED) {
 			play_sfx_ui("generic_shot");
 			// show different expressions for selected character
 			ctx->face++;
@@ -369,7 +359,7 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 void preload_charprofile_menu(void) {
 	for(int i = 0; i < NUM_PROFILES-1; i++) {
 		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, profiles[i].background, RESF_OPTIONAL);
+		preload_resource(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
 	}
 };
 
@@ -393,15 +383,10 @@ MenuData *create_charprofile_menu(void) {
 	m->flags = MF_Abortable;
 
 	CharProfileContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->prev_selected_char = -1;
 	m->context = ctx;
 
 	for(int i = 0; i < NUM_PROFILES; i++) {
 		add_character(m, i);
-	}
-
-	for(CharProfiles c = 0; c < NUM_PROFILES; ++c) {
-		ctx->char_draw_order[c] = c;
 	}
 
 	m->drawdata[1] = 1;
