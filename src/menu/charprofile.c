@@ -23,6 +23,7 @@
 
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 80)
 #define FACES(...) { __VA_ARGS__, NULL }
+#define NUM_FACES 12
 
 typedef enum {
 	PROFILE_REIMU,
@@ -45,7 +46,7 @@ typedef struct CharacterProfile {
 	const char *title;
 	const char *description;
 	const char *background;
-	const char *faces[12];
+	const char *faces[NUM_FACES];
 	ProgressBGMID unlock;
 } CharacterProfile;
 
@@ -109,7 +110,7 @@ static const CharacterProfile profiles[NUM_PROFILES] = {
 		.name = "wriggle",
 		.fullname = "Wriggle Nightbug",
 		.title = "Insect Rights Activist",
-		.description = "Species: Insect\nArea of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\nShe feels that Insects have lost their “rightful place” in history.\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
+		.description = "Species: Insect\nArea of Study: Evolutionary Socio-Entomology\n\nA bright bug - or was it insect? - far from her usual stomping grounds.\n\nShe feels that Insects have lost their “rightful place” in history, whatever that means.\n\nIf she thinks she has a raw evolutionary deal, someone ought to tell her about the trilobites…",
 		.unlock = PBGM_STAGE3_BOSS,
 		.background = "stage3/spellbg2",
 		.faces = FACES("normal", "calm", "outraged", "proud", "defeated"),
@@ -309,7 +310,7 @@ static void action_show_character(MenuData *m, void *arg) {
 
 static void add_character(MenuData *m, int i) {
 	if(strcmp(profiles[i].name, "locked")) {
-		log_debug("adding character: %s", profiles[i].name);
+		log_debug("character profiles - adding character: %s", profiles[i].name);
 		Sprite *spr = portrait_get_base_sprite(profiles[i].name, NULL);
 		MenuEntry *e = add_menu_entry(m, NULL, action_show_character, spr);
 		e->transition = NULL;
@@ -358,6 +359,12 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 
 void preload_charprofile_menu(void) {
 	for(int i = 0; i < NUM_PROFILES-1; i++) {
+		for(int f = 0; f < NUM_FACES; f++) {
+			if(!profiles[i].faces[f]) {
+				break;
+			}
+			portrait_preload_face_sprite(profiles[i].name, profiles[i].faces[f], RESF_PERMANENT);
+		}
 		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
 		preload_resource(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
 	}
