@@ -161,3 +161,38 @@ You can install and alias the Homebrew version of ``ctags`` by doing the followi
    # either run this in console, or add to your shell profile
    alias ctags='/usr/local/bin/ctags'
 
+Live Resource Reloading (macOS)
+'''''''''''''''''''''''''''''''
+
+The required library for live resource reloading of shaders, etc., known as
+``libinotify``, is available natively on Linux, but macOS requires a
+third-party driver to gain ths same functionality.
+
+In order to use live resource reloading on macOS, you'll need to download,
+build, and install
+`libinotify-kqueue <https://github.com/libinotify-kqueue/libinotify-kqueue>`__
+onto your system.
+
+Once that's done, you'll also need to boost the limit on open file handlers.
+This is due to an OS-level limit on how many files an application can open at a
+single time, and Taisei keeps many files open for monitoring with
+live-reloading enabled.
+
+⚠️ **In summary, if you run into an error of ``Too many open files``,** you'll
+need to fix it using this command:
+
+.. code:: sh
+   # '1024' is a reasonable boost from macOS's default of `256`
+   # but it can also be any number you want
+   ulimit -n 1024
+
+This is not a system-wide or permanent setting, and will need to be executed on
+every shell you start. The simplest way to do this is to add the above command
+to your ``~/.zshrc`` or ``~/.bashrc`` depending on what shell you use. (The
+default on modern macOS is ``zsh``.) You can check the status of the limit with:
+
+.. code:: sh
+   # this should output `1024` if everything worked
+   ulimit -n
+   > 1024
+
