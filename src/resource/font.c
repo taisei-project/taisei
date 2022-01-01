@@ -838,7 +838,7 @@ int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 
 int text_width_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, sizeof(buf), buf);
+	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	return text_ucs4_width_raw(font, buf, maxlines);
 }
 
@@ -897,7 +897,7 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox)
 
 void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, sizeof(buf), buf);
+	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	text_ucs4_bbox(font, buf, maxlines, bbox);
 }
 
@@ -930,7 +930,7 @@ int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 
 int text_height_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, sizeof(buf), buf);
+	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	return text_ucs4_height_raw(font, buf, maxlines);
 }
 
@@ -1144,7 +1144,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 static double _text_draw(Font *font, const char *text, const TextParams *params) {
 	uint32_t buf[strlen(text) + 1];
-	utf8_to_ucs4(text, sizeof(buf), buf);
+	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 
 	if(params->max_width > 0) {
 		text_ucs4_shorten(font, buf, params->max_width);
