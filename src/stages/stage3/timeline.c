@@ -195,15 +195,74 @@ TASK(horde_fairy_spawn, { int count; int interval; }) {
 	}
 }
 
+TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
+	Enemy *e = TASK_BIND(ARGS.enemy);
+
+	cmplx offset = rng_dir();
+
+	int lance_count = 300;
+	int lance_segs = 20;
+	int lance_dirs = 100;
+	int fib1 = 1;
+	int fib2 = 1;
+	for(int i = 0; i < lance_count; i++) {
+		play_sfx("shot3");
+		int tmp = fib1;
+		fib1 = (fib1 + fib2) % lance_dirs;
+		fib2 = tmp;
+		
+		cmplx dir = offset * cdir(M_TAU / lance_dirs * fib1);
+		for(int j = 0; j < lance_segs; j++) {
+			int s = 1 - 2 * (j & 1);
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos + 20 * dir,
+				.color = RGB(0.3, 0.4, 1),
+					.move = move_asymptotic_halflife((0.5+4.5*j/lance_segs)*dir, 5*dir*cdir(0.05 * s), 50+10*I),
+			);
+		}
+
+		WAIT(2);
+	}
+}
+
+
 TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
 		.power = 5,
 		.points = 5,
 		.bomb_fragment = 1,
-	));
-						
-	e->move_towards(
-	
+	)));
+
+	e->move=move_towards(ARGS.target_pos, 0.01);
+	WAIT(50);
+
+	int circle_count = 10;
+	int count = 50;
+	int interval = 10;
+
+	INVOKE_SUBTASK_DELAYED(300, circle_twist_fairy_lances, ENT_BOX(e));
+
+	for(int i = 0; i < circle_count; i++) {
+		int s = 1-2*(i&1);
+		play_sfx("shot_special1");
+		for(int t = 0; t < count; t++) {
+			play_sfx_loop("shot1_loop");
+			cmplx dir = -I * cdir(s * M_TAU / count * t);
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = RGB(0.4, 0, 1),
+				.move = {(2 + 0.005 * t) * dir, -0.01 * dir, 1.0 * cdir(-0.01*s)}
+			);
+			YIELD;
+		}
+		WAIT(interval);
+	}
+
+	e->move = move_asymptotic_halflife(0, 2 * I, 20);
+
+}	
 
 // bosses
 
@@ -288,8 +347,14 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(800, horde);
 	INVOKE_TASK_DELAYED(800, horde_fairy_spawn,
-		.count = 60,
+		.count = 30,
 		.interval = 20
+	);
+	
+	STAGE_BOOKMARK_DELAYED(1300, circle-twist);
+	INVOKE_TASK_DELAYED(1300, circle_twist_fairy,
+		.pos = 0,
+		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
 	
