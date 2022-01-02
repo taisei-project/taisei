@@ -1,5 +1,5 @@
 
-filewatch_enabled = true
+filewatch_enabled = is_developer_build
 filewatch_src = []
 
 if filewatch_enabled
