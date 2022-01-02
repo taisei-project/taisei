@@ -123,7 +123,6 @@ FileWatch *filewatch_watch(const char *syspath) {
 	SDL_AtomicIncRef(&w->refs);
 	SDL_UnlockMutex(FW.modify_mtx);
 
-	log_debug("Watching '%s'; wd = %i", syspath, w->wd);
 	return NOT_NULL(w);
 }
 
@@ -159,15 +158,12 @@ static void filewatch_process_events(ssize_t bufsize, char buf[bufsize]) {
 		FileWatch *w = ht_get(&FW.wd_to_watch, e->wd, NULL);
 
 		if(w == NULL) {
-			log_debug("inotify event wd=%i mask=0x%08x (ignore)", e->wd, e->mask);
 			goto skip;
 		}
 
 		if(e->mask & DELETION_EVENTS) {
-			log_debug("inotify event wd=%i mask=0x%08x (delete)", e->wd, e->mask);
 			w->deleted = true;
 		} else {
-			log_debug("inotify event wd=%i mask=0x%08x (update)", e->wd, e->mask);
 			w->updated = true;
 		}
 	skip:
@@ -201,13 +197,11 @@ static void filewatch_process(void) {
 		FileWatch *w = NOT_NULL(iter.value);
 
 		if(w->deleted) {
-			log_debug("Emitting delete event for wd %i", w->wd);
 			events_emit(TE_FILEWATCH, FILEWATCH_FILE_DELETED, w, NULL);
 			w->deleted = w->updated = false;
 			// defer filewatch_deactivate(w) because it modifies this hashtable
 			*dynarray_append(&FW.deactivate_list) = w;
 		} else if(w->updated) {
-			log_debug("Emitting update event for wd %i", w->wd);
 			events_emit(TE_FILEWATCH, FILEWATCH_FILE_UPDATED, w, NULL);
 			w->updated = false;
 		}
