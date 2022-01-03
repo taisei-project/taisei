@@ -82,7 +82,7 @@ void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) {
 
 void _dynarray_set_elements(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t num_elements, void *elements) {
 	_dynarray_ensure_capacity(sizeof_element, darr, num_elements);
-	memcpy(&darr->data, elements, num_elements * sizeof_element);
+	memcpy(darr->data, elements, num_elements * sizeof_element);
 	darr->num_elements = num_elements;
 }
 
