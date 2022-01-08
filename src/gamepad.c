@@ -573,7 +573,8 @@ static GamepadButtonState* gamepad_button_state(GamepadButton button) {
 		}
 	}
 
-	log_fatal("Button id %i is invalid", button);
+	log_warn("Unknown button id %i ignored", button);
+	return NULL;
 }
 
 static const char* gamepad_button_name_internal(GamepadButton btn);
@@ -612,6 +613,10 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 	int key = gamepad_game_key_for_button(button);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
 	GamepadButtonState *btnstate = gamepad_button_state(button);
+
+	if(UNLIKELY(btnstate == NULL)) {
+		return;
+	}
 
 	if(state == SDL_PRESSED) {
 		if(is_repeat) {
@@ -675,6 +680,10 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 
 static void gamepad_handle_button_repeat(GamepadButton btn, hrtime_t time) {
 	GamepadButtonState *state = gamepad_button_state(btn);
+
+	if(UNLIKELY(state == NULL)) {
+		return;
+	}
 
 	if(state->held && time >= state->repeat_time) {
 		gamepad_button(btn, SDL_PRESSED, true);
