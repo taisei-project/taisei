@@ -837,6 +837,12 @@ static const char *const gamepad_button_names[GAMEPAD_BUTTON_MAX] = {
 	[GAMEPAD_BUTTON_DPAD_DOWN] = "Down",
 	[GAMEPAD_BUTTON_DPAD_LEFT] = "Left",
 	[GAMEPAD_BUTTON_DPAD_RIGHT] = "Right",
+	[GAMEPAD_BUTTON_MISC1] = "Misc",
+	[GAMEPAD_BUTTON_P1] = "P1",
+	[GAMEPAD_BUTTON_P2] = "P2",
+	[GAMEPAD_BUTTON_P3] = "P3",
+	[GAMEPAD_BUTTON_P4] = "P4",
+	[GAMEPAD_BUTTON_TOUCHPAD] = "Touchpad",
 };
 
 static const char *const gamepad_emulated_button_names[GAMEPAD_EMULATED_BUTTON_MAX] = {
