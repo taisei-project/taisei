@@ -821,7 +821,7 @@ bool gamepad_game_key_pressed(KeyIndex key) {
 	return pressed;
 }
 
-static const char *const gamepad_button_names[] = {
+static const char *const gamepad_button_names[GAMEPAD_BUTTON_MAX] = {
 	[GAMEPAD_BUTTON_A] = "A",
 	[GAMEPAD_BUTTON_B] = "B",
 	[GAMEPAD_BUTTON_X] = "X",
@@ -839,16 +839,12 @@ static const char *const gamepad_button_names[] = {
 	[GAMEPAD_BUTTON_DPAD_RIGHT] = "Right",
 };
 
-static const char *const gamepad_emulated_button_names[] = {
+static const char *const gamepad_emulated_button_names[GAMEPAD_EMULATED_BUTTON_MAX] = {
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = "Left Trigger",
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = "Right Trigger",
-	[GAMEPAD_BUTTON_ANALOG_STICK_UP] = NULL,
-	[GAMEPAD_BUTTON_ANALOG_STICK_DOWN] = NULL,
-	[GAMEPAD_BUTTON_ANALOG_STICK_LEFT] = NULL,
-	[GAMEPAD_BUTTON_ANALOG_STICK_RIGHT] = NULL,
 };
 
-static const char *const gamepad_axis_names[] = {
+static const char *const gamepad_axis_names[GAMEPAD_AXIS_MAX] = {
 	[GAMEPAD_AXIS_LEFT_X] = "Left X",
 	[GAMEPAD_AXIS_LEFT_Y] = "Left Y",
 	[GAMEPAD_AXIS_RIGHT_X] = "Right X",
