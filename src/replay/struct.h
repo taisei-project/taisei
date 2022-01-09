@@ -183,10 +183,10 @@ typedef struct Replay {
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
 
 	// Number of stages in this replay
-	uint16_t numstages;
+	// uint16_t numstages;
 
 	// Array, contains {numstages} elements when not NULL
-	ReplayStage *stages;
+	// ReplayStage stages[];
 
 	// ALL input events from ALL of the stages
 	// This is actually loaded into separate sub-arrays for every stage, see ReplayStage.events
@@ -200,6 +200,8 @@ typedef struct Replay {
 	// uint8_t useless;
 
 	/* END stored fields */
+
+	DYNAMIC_ARRAY(ReplayStage) stages;
 } Replay;
 
 typedef enum ReplayGlobalFlags {

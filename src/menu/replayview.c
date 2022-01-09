@@ -82,8 +82,7 @@ static void start_replay(MenuData *menu, void *arg) {
 		return;
 	}
 
-	assert(stagenum < rpy->numstages);
-	ReplayStage *stg = rpy->stages + stagenum;
+	ReplayStage *stg = dynarray_get_ptr(&rpy->stages, stagenum);
 	char buf[64];
 
 	if(!stageinfo_get_by_id(stg->stage)) {
@@ -120,9 +119,9 @@ static MenuData* replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 	m->transition = NULL;
 	m->context = parent->context;
 
-	for(int i = 0; i < rpy->numstages; ++i) {
-		add_menu_entry(m, stageinfo_get_by_id(rpy->stages[i].stage)->title, start_replay, ictx)/*->transition = TransFadeBlack*/;
-	}
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *rstg, {
+		add_menu_entry(m, stageinfo_get_by_id(rstg->stage)->title, start_replay, ictx);
+	});
 
 	return m;
 }
@@ -141,7 +140,7 @@ static void replayview_run(MenuData *menu, void *arg) {
 	ReplayviewItemContext *ctx = arg;
 	Replay *rpy = ctx->replay;
 
-	if(rpy->numstages > 1) {
+	if(rpy->stages.num_elements > 1) {
 		replayview_set_submenu(menu, replayview_sub_stageselect(menu, ctx));
 	} else {
 		start_replay(menu, ctx);
@@ -233,8 +232,9 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 	int columns = sizeof(sizes)/sizeof(float), i, j;
 	float base_size = (SCREEN_W - 110.0) / columns;
 
-	time_t t = rpy->stages[0].start_time;
-	struct tm* timeinfo = localtime(&t);
+	ReplayStage *first_stage = dynarray_get_ptr(&rpy->stages, 0);
+	time_t t = first_stage->start_time;
+	struct tm *timeinfo = localtime(&t);
 
 	for(i = 0; i < columns; ++i) {
 		char tmp[128];
@@ -259,7 +259,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 
 			case 2: {
 				a = ALIGN_RIGHT;
-				PlayerMode *plrmode = plrmode_find(rpy->stages[0].plr_char, rpy->stages[0].plr_shot);
+				PlayerMode *plrmode = plrmode_find(first_stage->plr_char, first_stage->plr_shot);
 
 				if(plrmode == NULL) {
 					strlcpy(tmp, "?????", sizeof(tmp));
@@ -272,13 +272,13 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 
 			case 3:
 				a = ALIGN_CENTER;
-				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(rpy->stages[0].diff));
+				snprintf(tmp, sizeof(tmp), "%s", difficulty_name(first_stage->diff));
 				break;
 
 			case 4:
 				a = ALIGN_LEFT;
-				if(rpy->numstages == 1) {
-					StageInfo *stg = stageinfo_get_by_id(rpy->stages[0].stage);
+				if(rpy->stages.num_elements == 1) {
+					StageInfo *stg = stageinfo_get_by_id(first_stage->stage);
 
 					if(stg) {
 						snprintf(tmp, sizeof(tmp), "%s", stg->title);
@@ -286,7 +286,7 @@ static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
 						snprintf(tmp, sizeof(tmp), "?????");
 					}
 				} else {
-					snprintf(tmp, sizeof(tmp), "%i stages", rpy->numstages);
+					snprintf(tmp, sizeof(tmp), "%i stages", rpy->stages.num_elements);
 				}
 				break;
 		}
@@ -358,7 +358,7 @@ static int replayview_cmp(const void *a, const void *b) {
 	Replay *arpy = actx->replay;
 	Replay *brpy = bctx->replay;
 
-	return brpy->stages[0].start_time - arpy->stages[0].start_time;
+	return dynarray_get(&brpy->stages, 0).start_time - dynarray_get(&arpy->stages, 0).start_time;
 }
 
 static int fill_replayview_menu(MenuData *m) {

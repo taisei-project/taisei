@@ -14,24 +14,14 @@
 #include "state.h"
 
 void replay_destroy_events(Replay *rpy) {
-	if(rpy->stages) {
-		for(int i = 0; i < rpy->numstages; ++i) {
-			ReplayStage *stg = rpy->stages + i;
-			dynarray_free_data(&stg->events);
-		}
-	}
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
+		replay_stage_destroy_events(stg);
+	});
 }
 
 void replay_reset(Replay *rpy) {
-	if(rpy->stages) {
-		for(int i = 0; i < rpy->numstages; ++i) {
-			ReplayStage *stg = rpy->stages + i;
-			dynarray_free_data(&stg->events);
-		}
-
-		free(rpy->stages);
-	}
-
+	replay_destroy_events(rpy);
+	dynarray_free_data(&rpy->stages);
 	free(rpy->playername);
 	memset(rpy, 0, sizeof(Replay));
 }
@@ -121,13 +111,11 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 }
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) {
-	assert(rpy->stages != NULL);
-
-	for(int i = 0; i < rpy->numstages; ++i) {
-		if(rpy->stages[i].stage == stageid) {
+	dynarray_foreach(&rpy->stages, int i, ReplayStage *stg, {
+		if(stg->stage == stageid) {
 			return i;
 		}
-	}
+	});
 
 	log_warn("Stage %X was not found in the replay", stageid);
 	return -1;

@@ -27,7 +27,7 @@ static void replay_do_play(CallChainResult ccr);
 static void replay_do_post_play(CallChainResult ccr);
 
 void replay_play(Replay *rpy, int firstidx, CallChain next) {
-	if(firstidx >= rpy->numstages || firstidx < 0) {
+	if(firstidx >= rpy->stages.num_elements || firstidx < 0) {
 		log_error("No stage #%i in the replay", firstidx);
 		run_call_chain(&next, NULL);
 		return;
@@ -47,8 +47,8 @@ static void replay_do_play(CallChainResult ccr) {
 	StageInfo *stginfo = NULL;
 	Replay *rpy = ctx->rpy;
 
-	while(ctx->stage_idx < rpy->numstages) {
-		rstg = rpy->stages + ctx->stage_idx++;
+	while(ctx->stage_idx < rpy->stages.num_elements) {
+		rstg = dynarray_get_ptr(&rpy->stages, ctx->stage_idx++);
 		stginfo = stageinfo_get_by_id(rstg->stage);
 
 		if(!stginfo) {
@@ -57,12 +57,14 @@ static void replay_do_play(CallChainResult ccr) {
 		}
 
 		break;
-	}
+	};
 
 	if(stginfo == NULL) {
 		replay_do_cleanup(ccr);
 	} else {
+		assume(rstg != NULL);
 		replay_state_init_play(&global.replay.input, rpy, rstg);
+		replay_state_deinit(&global.replay.output);
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		stage_enter(stginfo, CALLCHAIN(replay_do_post_play, ctx));
 	}

@@ -113,7 +113,6 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 	uint16_t version = rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT;
 
 	rpy->playername = NULL;
-	rpy->stages = NULL;
 
 	replay_read_string(file, &rpy->playername, version);
 	PRINTPROP(rpy->playername, s);
@@ -122,18 +121,19 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 		CHECKPROP(rpy->flags = SDL_ReadLE32(file), u);
 	}
 
-	CHECKPROP(rpy->numstages = SDL_ReadLE16(file), u);
+	uint64_t numstages;
+	CHECKPROP(numstages = SDL_ReadLE16(file), u);
 
-	if(!rpy->numstages) {
+	if(!numstages) {
 		log_error("%s: No stages in replay", source);
 		goto error;
 	}
 
-	rpy->stages = malloc(sizeof(ReplayStage) * rpy->numstages);
-	memset(rpy->stages, 0, sizeof(ReplayStage) * rpy->numstages);
+	dynarray_ensure_capacity(&rpy->stages, numstages);
 
-	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = rpy->stages + i;
+	for(int i = 0; i < numstages; ++i) {
+		ReplayStage *stg = dynarray_append(&rpy->stages);
+		*stg = (ReplayStage) { };
 
 		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
 			CHECKPROP(stg->flags = SDL_ReadLE32(file), u);
@@ -218,15 +218,12 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 error:
 	free(rpy->playername);
 	rpy->playername = NULL;
-	free(rpy->stages);
-	rpy->stages = NULL;
+	dynarray_free_data(&rpy->stages);
 	return false;
 }
 
 static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, const char *source) {
-	for(int i = 0; i < rpy->numstages; ++i) {
-		ReplayStage *stg = rpy->stages + i;
-
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		if(!stg->num_events) {
 			log_error("%s: No events in stage", source);
 			goto error;
@@ -241,7 +238,7 @@ static bool replay_read_events(Replay *rpy, SDL_RWops *file, int64_t filesize, c
 			CHECKPROP(evt->type = SDL_ReadU8(file), u);
 			CHECKPROP(evt->value = SDL_ReadLE16(file), u);
 		}
-	}
+	});
 
 	return true;
 
@@ -320,13 +317,13 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 				log_fatal("%s: Tried to read events before reading metadata", source);
 			}
 
-			for(int i = 0; i < rpy->numstages; ++i) {
-				if(rpy->stages->events.data) {
+			dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
+				if(stg->events.data) {
 					log_warn("%s: BUG: Reading events into a replay that already had events, call replay_destroy_events() if this is intended", source);
 					replay_destroy_events(rpy);
 					break;
 				}
-			}
+			});
 
 			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
 				log_error("%s: SDL_RWseek() failed: %s", source, SDL_GetError());

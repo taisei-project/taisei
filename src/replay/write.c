@@ -26,12 +26,12 @@ static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
 }
 
 static void fix_flags(Replay *rpy) {
-	for(int i = 0; i < rpy->numstages; ++i) {
-		if(!(rpy->stages[i].flags & REPLAY_SFLAG_CLEAR)) {
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
+		if(!(stg->flags & REPLAY_SFLAG_CLEAR)) {
 			rpy->flags &= ~REPLAY_GFLAG_CLEAR;
 			return;
 		}
-	}
+	});
 
 	rpy->flags |= REPLAY_GFLAG_CLEAR;
 }
@@ -84,13 +84,13 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 }
 
 static bool replay_write_events(Replay *rpy, SDL_RWops *file) {
-	for(int stgidx = 0; stgidx < rpy->numstages; ++stgidx) {
-		dynarray_foreach_elem(&rpy->stages[stgidx].events, ReplayEvent *evt, {
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
+		dynarray_foreach_elem(&stg->events, ReplayEvent *evt, {
 			SDL_WriteLE32(file, evt->frame);
 			SDL_WriteU8(file, evt->type);
 			SDL_WriteLE16(file, evt->value);
 		});
-	}
+	});
 
 	return true;
 }
@@ -127,10 +127,10 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	fix_flags(rpy);
 
 	SDL_WriteLE32(vfile, rpy->flags);
-	SDL_WriteLE16(vfile, rpy->numstages);
+	SDL_WriteLE16(vfile, rpy->stages.num_elements);
 
-	for(int i = 0; i < rpy->numstages; ++i) {
-		if(!replay_write_stage(rpy->stages + i, vfile, base_version)) {
+	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
+		if(!replay_write_stage(stg, vfile, base_version)) {
 			if(compression) {
 				SDL_RWclose(vfile);
 				SDL_RWclose(abuf);
@@ -138,7 +138,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 
 			return false;
 		}
-	}
+	});
 
 	if(compression) {
 		SDL_RWclose(vfile);

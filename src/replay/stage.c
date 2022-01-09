@@ -14,14 +14,10 @@
 #include "plrmodes.h"
 
 ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr) {
-	ReplayStage *s;
-
-	rpy->stages = (ReplayStage*)realloc(rpy->stages, sizeof(ReplayStage) * (++rpy->numstages));
-	s = rpy->stages + rpy->numstages - 1;
-	memset(s, 0, sizeof(ReplayStage));
+	ReplayStage *s = dynarray_append(&rpy->stages);
+	*s = (ReplayStage) { };
 
 	get_system_time(&s->init_time);
-
 	dynarray_ensure_capacity(&s->events, REPLAY_ALLOC_INITIAL);
 
 	s->stage = stage->id;
@@ -88,4 +84,8 @@ void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t
 	if(type == EV_OVER) {
 		log_debug("The replay is OVER");
 	}
+}
+
+void replay_stage_destroy_events(ReplayStage *stg) {
+	dynarray_free_data(&stg->events);
 }

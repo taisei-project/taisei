@@ -21,15 +21,15 @@ static void do_save_replay(Replay *rpy) {
 	char strtime[FILENAME_TIMESTAMP_MIN_BUF_SIZE], *name;
 	char prepr[16], drepr[16];
 
-	assert(rpy->numstages > 0);
-	ReplayStage *stg = rpy->stages;
+	assert(rpy->stages.num_elements > 0);
+	ReplayStage *stg = dynarray_get_ptr(&rpy->stages, 0);
 
 	filename_timestamp(strtime, sizeof(strtime), stg->init_time);
 	plrmode_repr(prepr, 16, plrmode_find(stg->plr_char, stg->plr_shot), true);
 	strlcpy(drepr, difficulty_name(stg->diff), 16);
 	drepr[0] += 'a' - 'A';
 
-	if(rpy->numstages > 1) {
+	if(rpy->stages.num_elements > 1) {
 		name = strfmt("taisei_%s_%s_%s", strtime, prepr, drepr);
 	} else {
 		name = strfmt("taisei_%s_stg%X_%s_%s", strtime, stg->stage, prepr, drepr);
