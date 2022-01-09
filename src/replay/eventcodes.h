@@ -20,4 +20,5 @@ typedef enum ReplayEventCode {
 	EV_FPS              = 0x06, // replay-only
 	EV_INFLAGS          = 0x07,
 	EV_CONTINUE         = 0x08,
+	EV_RESUME           = 0x09, // replay-only
 } ReplayEventCode;

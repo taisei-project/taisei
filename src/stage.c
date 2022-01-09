@@ -33,11 +33,15 @@ typedef struct StageFrameState {
 	StageInfo *stage;
 	CallChain cc;
 	CoSched sched;
+	Replay *quicksave;
+	bool quickload_requested;
 	int transition_delay;
 	int logic_calls;
 	int desync_check_freq;
 	uint16_t last_replay_fps;
 	float view_shake;
+	int bgm_start_time;
+	double bgm_start_pos;
 } StageFrameState;
 
 static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
@@ -45,14 +49,21 @@ static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
 #define BGM_FADE_LONG (2.0 * FADE_TIME / (double)FPS)
 #define BGM_FADE_SHORT (FADE_TIME / (double)FPS)
 
+static inline bool is_quickloading(StageFrameState *fstate) {
+	return fstate->quicksave && fstate->quicksave == global.replay.input.replay;
+}
+
+static void sync_bgm(StageFrameState *fstate) {
+	double t = fstate->bgm_start_pos + (global.frames - fstate->bgm_start_time) / (double)FPS;
+	audio_bgm_seek_realtime(t);
+}
+
 #ifdef HAVE_SKIP_MODE
 
 static struct {
 	const char *skip_to_bookmark;
 	bool skip_to_dialog;
 	bool was_skip_mode;
-	int bgm_start_time;
-	double bgm_start_pos;
 } skip_state;
 
 void _stage_bookmark(const char *name) {
@@ -86,7 +97,7 @@ static LogicFrameAction skipstate_handle_frame(void) {
 	bool skip_mode = stage_is_skip_mode();
 
 	if(!skip_mode && skip_state.was_skip_mode) {
-		audio_bgm_seek_realtime(skip_state.bgm_start_pos + (global.frames - skip_state.bgm_start_time) / (double)FPS);
+		sync_bgm(_current_stage_state);
 	}
 
 	skip_state.was_skip_mode = skip_mode;
@@ -106,15 +117,9 @@ static void skipstate_shutdown(void) {
 	memset(&skip_state, 0, sizeof(skip_state));
 }
 
-static void skipstate_handle_bgm_change(void) {
-	skip_state.bgm_start_time = global.frames;
-	skip_state.bgm_start_pos = audio_bgm_tell();
-}
-
 #else
 
 INLINE LogicFrameAction skipstate_handle_frame(void) { return LFRAME_WAIT; }
-INLINE void skipstate_handle_bgm_change(void) { }
 INLINE void skipstate_init(void) { }
 INLINE void skipstate_shutdown(void) { }
 
@@ -326,7 +331,57 @@ static bool stage_input_key_filter(KeyIndex key, bool is_release) {
 	return true;
 }
 
+static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
+	ReplayStage *rstg = memdup(rstg_src, sizeof(*rstg));
+	rstg->num_events = 0;
+	memset(&rstg->events, 0, sizeof(rstg->events));
+
+	dynarray_ensure_capacity(&rstg->events, rstg_src->events.num_elements + 1);
+	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
+	replay_stage_event(rstg, global.frames, EV_RESUME, 0);
+
+	Replay *rpy = calloc(1, sizeof(*rpy));
+	rpy->stages.num_elements = rpy->stages.capacity = 1;
+	rpy->stages.data = rstg;
+
+	log_info("Created quicksave replay on frame %i", global.frames);
+	return rpy;
+}
+
+static inline bool is_quicksave_allowed(void) {
+#ifndef DEBUG
+	if(global.is_practice_mode) {
+		return false;
+	}
+#endif
+
+	if(global.gameover != GAMEOVER_NONE) {
+		return false;
+	}
+
+	return true;
+}
+
 static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
+	StageFrameState *fstate = NOT_NULL(arg);
+
+	if(event->type == SDL_KEYDOWN && !event->key.repeat && is_quicksave_allowed()) {
+		if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKSAVE)) {
+			if(fstate->quicksave) {
+				replay_reset(fstate->quicksave);
+				free(fstate->quicksave);
+			}
+
+			fstate->quicksave = create_quicksave_replay(global.replay.output.stage);
+		} else if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKLOAD)) {
+			if(fstate->quicksave) {
+				fstate->quickload_requested = true;
+			}
+		}
+
+		return false;
+	}
+
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
 
@@ -376,25 +431,63 @@ static bool stage_input_handler_replay(SDL_Event *event, void *arg) {
 	return false;
 }
 
-static void handle_replay_event(ReplayEvent *e, void *arg) {
-	ReplayState *st = NOT_NULL(arg);
+struct replay_event_arg {
+	ReplayState *st;
+	ReplayEvent *resume_event;
+};
 
-	if(e->type == EV_OVER) {
-		global.gameover = GAMEOVER_DEFEAT;
-	} else {
-		player_event(&global.plr, st, &global.replay.output, e->type, e->value);
+static void handle_replay_event(ReplayEvent *e, void *arg) {
+	struct replay_event_arg *a = NOT_NULL(arg);
+
+	if(UNLIKELY(a->resume_event != NULL)) {
+		log_warn(
+			"Got replay event [%i:%02x:%04x] after resume event in the same frame, ignoring",
+			e->frame, e->type, e->value
+		);
+		return;
+	}
+
+	switch(e->type) {
+		case EV_OVER:
+			global.gameover = GAMEOVER_DEFEAT;
+			break;
+
+		case EV_RESUME:
+			a->resume_event = e;
+			break;
+
+		default:
+			player_event(&global.plr, a->st, &global.replay.output, e->type, e->value);
+			break;
 	}
 }
 
-static void replay_input(void) {
-	events_poll((EventHandler[]){
-		{ .proc = stage_input_handler_replay },
-		{ NULL }
-	}, EFLAG_GAME);
+static void replay_input(StageFrameState *fstate) {
+	if(!is_quickloading(fstate)) {
+		events_poll((EventHandler[]){
+			{ .proc = stage_input_handler_replay },
+			{ NULL }
+		}, EFLAG_GAME);
+	}
 
-	ReplayState *st = &global.replay.input;
-	replay_state_play_advance(st, global.frames, handle_replay_event, st);
+	ReplayState *rp_in = &global.replay.input;
+
+	if(UNLIKELY(rp_in->mode == REPLAY_NONE)) {
+		return;
+	}
+
+	struct replay_event_arg a = { .st = rp_in };
+	replay_state_play_advance(rp_in, global.frames, handle_replay_event, &a);
 	player_applymovement(&global.plr);
+
+	if(a.resume_event) {
+		if(rp_in->replay == fstate->quicksave) {
+			audio_sfx_set_enabled(true);
+			sync_bgm(fstate);
+		}
+
+		replay_state_deinit(rp_in);
+	}
 }
 
 static void display_bgm_title(void) {
@@ -409,26 +502,37 @@ static void display_bgm_title(void) {
 }
 
 static bool stage_handle_bgm_change(SDL_Event *evt, void *a) {
+	StageFrameState *fstate = NOT_NULL(a);
+	fstate->bgm_start_time = global.frames;
+	fstate->bgm_start_pos = audio_bgm_tell();
+
 	if(dialog_is_active(global.dialog)) {
 		INVOKE_TASK_WHEN(&global.dialog->events.fadeout_began, common_call_func, display_bgm_title);
 	} else {
 		display_bgm_title();
 	}
 
-	skipstate_handle_bgm_change();
 	return false;
 }
 
-static void stage_input(void) {
+static void stage_input(StageFrameState *fstate) {
 	if(stage_is_skip_mode()) {
 		events_poll((EventHandler[]){
-			{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
+			{
+				.proc = stage_handle_bgm_change,
+				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
+				.arg = fstate,
+			},
 			{NULL}
 		}, EFLAG_NOPUMP);
 	} else {
 		events_poll((EventHandler[]){
-			{ .proc = stage_input_handler_gameplay },
-			{ .proc = stage_handle_bgm_change, .event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED) },
+			{ .proc = stage_input_handler_gameplay, .arg = fstate },
+			{
+				.proc = stage_handle_bgm_change,
+				.event_type = MAKE_TAISEI_EVENT(TE_AUDIO_BGM_STARTED),
+				.arg = fstate,
+			},
 			{NULL}
 		}, EFLAG_GAME);
 	}
@@ -475,7 +579,7 @@ static void stage_logic(void) {
 		ReplayStage *rstg = global.replay.input.stage;
 		ReplayEvent *last_event = dynarray_get_ptr(&rstg->events, rstg->events.num_elements - 1);
 
-		if(global.frames == last_event->frame - FADE_TIME) {
+		if(global.frames == last_event->frame - FADE_TIME && last_event->type != EV_RESUME) {
 			stage_finish(GAMEOVER_DEFEAT);
 		}
 	}
@@ -751,9 +855,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	fapproach_asymptotic_p(&fstate->view_shake, 0, 0.05, 1e-2);
 
 	if(global.replay.input.replay != NULL) {
-		replay_input();
+		replay_input(fstate);
 	} else {
-		stage_input();
+		stage_input(fstate);
 	}
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
@@ -809,8 +913,17 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		progress.hiscore = global.plr.points;
 	}
 
+	if(fstate->quickload_requested) {
+		log_info("Quickload initiated");
+		return LFRAME_STOP;
+	}
+
 	if(global.gameover > 0) {
 		return LFRAME_STOP;
+	}
+
+	if(is_quickloading(fstate)) {
+		return LFRAME_SKIP_ALWAYS;
 	}
 
 	LogicFrameAction skipmode = skipstate_handle_frame();
@@ -849,7 +962,7 @@ static void stage_end_loop(void *ctx);
 
 static void stage_stub_proc(void) { }
 
-void stage_enter(StageInfo *stage, CallChain next) {
+static void _stage_enter(StageInfo *stage, CallChain next, Replay *quickload) {
 	assert(stage);
 	assert(stage->procs);
 
@@ -875,6 +988,13 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	} else if(global.gameover) {
 		run_call_chain(&next, NULL);
 		return;
+	}
+
+	if(quickload) {
+		assert(global.replay.input.stage == NULL);
+		ReplayStage *qload_stage = dynarray_get_ptr(&quickload->stages, 0);
+		assert(qload_stage->stage == stage->id);
+		replay_state_init_play(&global.replay.input, quickload, qload_stage);
 	}
 
 	// I really want to separate all of the game state from the global struct sometime
@@ -943,6 +1063,7 @@ void stage_enter(StageInfo *stage, CallChain next) {
 	cosched_set_invoke_target(&fstate->sched);
 	fstate->stage = stage;
 	fstate->cc = next;
+	fstate->quicksave = quickload;
 	fstate->desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5);
 
 	_current_stage_state = fstate;
@@ -956,20 +1077,46 @@ void stage_enter(StageInfo *stage, CallChain next) {
 		display_stage_title(stage);
 	}
 
+	if(is_quickloading(fstate)) {
+		audio_sfx_set_enabled(false);
+	}
+
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }
 
-void stage_end_loop(void* ctx) {
+void stage_enter(StageInfo *stage, CallChain next) {
+	_stage_enter(stage, next, NULL);
+}
+
+void stage_end_loop(void *ctx) {
 	StageFrameState *s = ctx;
 	assert(s == _current_stage_state);
 
-	if(global.replay.output.replay) {
-		replay_stage_event(global.replay.output.stage, global.frames, EV_OVER, 0);
-		global.replay.output.stage->plr_points_final = global.plr.points;
+	Replay *quicksave = s->quicksave;
+	bool is_quickload = s->quickload_requested;
 
-		if(global.gameover == GAMEOVER_WIN) {
-			global.replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
+	if(is_quickload) {
+		assume(quicksave != NULL);
+	}
+
+	if(global.replay.output.replay) {
+		if(is_quickload) {
+			// rollback this stage, as we're about to replay it
+			global.replay.output.replay->stages.num_elements--;
+			replay_stage_destroy_events(global.replay.output.stage);
+		} else {
+			replay_stage_event(global.replay.output.stage, global.frames, EV_OVER, 0);
+			global.replay.output.stage->plr_points_final = global.plr.points;
+
+			if(global.gameover == GAMEOVER_WIN) {
+				global.replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
+			}
 		}
+	}
+
+	if(quicksave && !is_quickload) {
+		replay_reset(quicksave);
+		free(quicksave);
 	}
 
 	s->stage->procs->end();
@@ -992,10 +1139,16 @@ void stage_end_loop(void* ctx) {
 
 	_current_stage_state = NULL;
 
+	StageInfo *stginfo = s->stage;
 	CallChain cc = s->cc;
+
 	free(s);
 
-	run_call_chain(&cc, NULL);
+	if(is_quickload) {
+		_stage_enter(stginfo, cc, quicksave);
+	} else {
+		run_call_chain(&cc, NULL);
+	}
 }
 
 void stage_unlock_bgm(const char *bgm) {

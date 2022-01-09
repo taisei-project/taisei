@@ -59,6 +59,8 @@
 	CONFIGDEF_KEYBINDING(KEY_HITAREAS,          "key_hitareas",         SDL_SCANCODE_H) \
 	CONFIGDEF_KEYBINDING(KEY_TOGGLE_AUDIO,      "key_toggle_audio",     SDL_SCANCODE_M) \
 	CONFIGDEF_KEYBINDING(KEY_RELOAD_RESOURCES,  "key_reload_resources", SDL_SCANCODE_F5) \
+	CONFIGDEF_KEYBINDING(KEY_QUICKSAVE,         "key_quicksave",        SDL_SCANCODE_F4) \
+	CONFIGDEF_KEYBINDING(KEY_QUICKLOAD,         "key_quickload",        SDL_SCANCODE_F3) \
 
 
 #define GPKEYDEFS \

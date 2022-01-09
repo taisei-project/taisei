@@ -840,6 +840,14 @@ static MenuData* create_options_menu_controls(MenuData *parent) {
 		bind_keybinding(CONFIG_KEY_RESTART)
 	);
 
+	add_menu_entry(m, "Quick save", do_nothing,
+		bind_keybinding(CONFIG_KEY_QUICKSAVE)
+	);
+
+	add_menu_entry(m, "Quick load", do_nothing,
+		bind_keybinding(CONFIG_KEY_QUICKLOAD)
+	);
+
 #ifdef DEBUG
 	add_menu_separator(m);
 
