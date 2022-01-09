@@ -52,6 +52,8 @@ BGM *audio_bgm_current(void);
 SFX *audio_sfx_load(const char *name, const char *path) attr_nodiscard attr_nonnull(1, 2);
 void audio_sfx_destroy(SFX *sfx) attr_nonnull(1);
 
+bool audio_sfx_set_enabled(bool enabled);
+
 // TODO modernize sfx API
 
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);

@@ -48,6 +48,7 @@ static struct {
 	uint32_t *chan_play_ids;
 	uint32_t play_counter;
 	int sfx_chan_first, sfx_chan_last;
+	bool sfx_enabled;
 } audio;
 
 static inline int sfx_chanidx(AudioBackendChannel ch) {
@@ -120,6 +121,7 @@ void audio_init(void) {
 
 	audio.sfx_chan_first = INT_MAX;
 	audio.sfx_chan_last = INT_MIN;
+	audio.sfx_enabled = true;
 
 	bool have_chans = false;
 
@@ -143,6 +145,12 @@ void audio_shutdown(void) {
 
 bool audio_output_works(void) {
 	return B.output_works();
+}
+
+bool audio_sfx_set_enabled(bool enabled) {
+	bool old = audio.sfx_enabled;
+	audio.sfx_enabled = enabled;
+	return old;
 }
 
 SFX *audio_sfx_load(const char *name, const char *path) {
@@ -253,6 +261,10 @@ static SFXPlayID play_sound_internal(
 		return 0;
 	}
 
+	if(!audio.sfx_enabled) {
+		return 0;
+	}
+
 	SFX *sfx = res_sfx(name);
 
 	if(!sfx || (!is_ui && sfx->lastplayframe + 3 + cooldown >= global.frames)) {
@@ -323,7 +335,7 @@ void replace_sfx(SFXPlayID sid, const char *name) {
 }
 
 void play_sfx_loop(const char *name) {
-	if(!audio_output_works() || is_skip_mode()) {
+	if(!audio_output_works() || is_skip_mode() || !audio.sfx_enabled) {
 		return;
 	}
 
