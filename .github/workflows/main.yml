@@ -11,6 +11,7 @@ on:
       - "**.yaml"
       - "**.build"
       - "**.ini"
+      - "**.wrap"
   pull_request:
     paths:
       - "**.c"
@@ -19,6 +20,7 @@ on:
       - "**.yaml"
       - "**.build"
       - "**.ini"
+      - "**.wrap"
 
 env:
   MESON_VERSION: '0.56.2'
