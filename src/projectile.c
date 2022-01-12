@@ -378,9 +378,11 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			.b = global.plr.pos - p->pos
 		};
 
-		attr_unused double seglen = cabs(seg.a - seg.b);
+#ifdef DEBUG
+		attr_unused real seglen2 = cabs2(seg.a - seg.b);
 
-		if(seglen > 30) {
+		if(seglen2 > 30 * 30) {
+			attr_unused real seglen = sqrt(seglen2);
 			log_debug(
 				seglen > VIEWPORT_W
 					? "Lerp over HUGE distance %f; this is ABSOLUTELY a bug! Player speed was %f. Spawned at %s:%d (%s); proj time = %d"
@@ -393,6 +395,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 				global.frames - p->birthtime
 			);
 		}
+#endif
 
 		if(lineseg_ellipse_intersect(seg, e_proj)) {
 			out_col->type = PCOL_ENTITY;
@@ -409,7 +412,10 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		}
 	} else if(p->type == PROJ_PLAYER) {
 		for(Enemy *e = global.enemies.first; e; e = e->next) {
-			if(!(e->flags & EFLAG_NO_HIT) && cabs(e->pos - p->pos) < e->hit_radius) {
+			if(
+				!(e->flags & EFLAG_NO_HIT) &&
+				cabs2(e->pos - p->pos) < e->hit_radius * e->hit_radius
+			) {
 				out_col->type = PCOL_ENTITY;
 				out_col->entity = &e->ent;
 				out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
@@ -418,18 +424,24 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 			}
 		}
 
-		if(global.boss && cabs(global.boss->pos - p->pos) < 42) {
-			if(boss_is_vulnerable(global.boss)) {
-				out_col->type = PCOL_ENTITY;
-				out_col->entity = &global.boss->ent;
-				out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
-			}
+		if(
+			global.boss &&
+			boss_is_vulnerable(global.boss) &&
+			cabs2(global.boss->pos - p->pos) < 42 * 42
+		) {
+			out_col->type = PCOL_ENTITY;
+			out_col->entity = &global.boss->ent;
+			out_col->fatal = !(p->flags & PFLAG_INDESTRUCTIBLE);
 		}
 	}
 
 skip_collision:
 
-	if(out_col->type == PCOL_NONE && !(p->flags & PFLAG_NOAUTOREMOVE) && !projectile_in_viewport(p)) {
+	if(
+		out_col->type == PCOL_NONE &&
+		!(p->flags & PFLAG_NOAUTOREMOVE) &&
+		!projectile_in_viewport(p)
+	) {
 		out_col->type = PCOL_VOID;
 		out_col->fatal = true;
 	}
@@ -516,9 +528,7 @@ Projectile *spawn_projectile_collision_effect(Projectile *proj) {
 		.shader_ptr = proj->shader,
 		.draw_rule = pdraw_timeout_scale(2+I, 0.0001+I),
 		.angle = proj->angle,
-		// .rule = linear,
-		// .args = { 5*cexp(I*proj->angle) },
-		.move = { .velocity = 5*cexp(I*proj->angle), .retention = 0.95 },
+		.move = { .velocity = 5 * cdir(proj->angle), .retention = 0.95 },
 		.timeout = 10,
 	);
 }
