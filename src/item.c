@@ -13,6 +13,11 @@
 #include "list.h"
 #include "stageobjects.h"
 
+// Instant collection radius.
+// This is not the same as the player's PLR_PROP_COLLECT_RADIUS property, which is the minimum
+// distance to begin attracting the item towards the player.
+#define ITEM_GRAB_RADIUS 10
+
 static const char* item_sprite_name(ItemType type) {
 	static const char *const map[] = {
 		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb",
@@ -173,12 +178,12 @@ static cmplx move_item(Item *i) {
 	cmplx oldpos = i->pos;
 
 	if(i->auto_collect && i->collecttime <= global.frames && global.frames - i->birthtime > 20) {
-		i->pos -= (7+i->auto_collect)*cexp(I*carg(i->pos - global.plr.pos));
+		i->pos -= (7 + i->auto_collect) * cnormalize(i->pos - global.plr.pos);
 	} else {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
 		cmplx v = i->pos - oldpos;
-		double half = item_sprite(i->type)->w/2.0;
+		double half = item_sprite(i->type)->w/2.0;  // TODO remove dependence on sprite size
 		bool over = false;
 
 		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
@@ -235,7 +240,7 @@ void collect_all_items(float value) {
 
 void process_items(void) {
 	Item *item = global.items.first, *del = NULL;
-	float r = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
+	float attract_dist = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
 	bool stage_cleared = stage_is_cleared();
 
@@ -264,11 +269,15 @@ void process_items(void) {
 			may_collect = false;
 		}
 
+		bool grabbed = false;
+
 		if(may_collect) {
+			real item_dist2 = cabs2(global.plr.pos - item->pos);
+
 			if(plr_alive) {
 				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) || stage_cleared) {
 					collect_item(item, 1);
-				} else if(cabs(global.plr.pos - item->pos) < r) {
+				} else if(item_dist2 < attract_dist * attract_dist) {
 					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H);
 					item->auto_collect = 2;
 				}
@@ -278,12 +287,13 @@ void process_items(void) {
 				item->birthtime = global.frames;
 				item->v = -10*I + 5*rng_sreal();
 			}
+
+			grabbed = (item_dist2 < ITEM_GRAB_RADIUS * ITEM_GRAB_RADIUS);
 		}
 
 		cmplx deltapos = move_item(item);
-		int v = may_collect ? collision_item(item) : 0;
 
-		if(v == 1) {
+		if(grabbed) {
 			switch(item->type) {
 			case ITEM_POWER:
 				player_add_power(&global.plr, POWER_VALUE);
@@ -329,7 +339,7 @@ void process_items(void) {
 			}
 		}
 
-		if(v == 1 || (cimag(deltapos) > 0 && item_out_of_bounds(item))) {
+		if(grabbed || (cimag(deltapos) > 0 && item_out_of_bounds(item))) {
 			del = item;
 			item = item->next;
 			delete_item(del);
@@ -337,13 +347,6 @@ void process_items(void) {
 			item = item->next;
 		}
 	}
-}
-
-int collision_item(Item *i) {
-	if(cabs(global.plr.pos - i->pos) < 10)
-		return 1;
-
-	return 0;
 }
 
 static void spawn_item_internal(cmplx pos, ItemType type, float collect_value) {

@@ -70,9 +70,8 @@ Item *create_item(cmplx pos, cmplx v, ItemType type);
 void delete_item(Item *item);
 void delete_items(void);
 
-Item* create_clear_item(cmplx pos, uint clear_flags);
+Item *create_clear_item(cmplx pos, uint clear_flags);
 
-int collision_item(Item *p);
 void process_items(void);
 
 void spawn_item(cmplx pos, ItemType type);
