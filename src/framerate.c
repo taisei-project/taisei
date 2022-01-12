@@ -14,7 +14,7 @@
 
 void fpscounter_reset(FPSCounter *fps) {
 	hrtime_t frametime = HRTIME_RESOLUTION / FPS;
-	const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
+	const int log_size = ARRAY_SIZE(fps->frametimes);
 
 	for(int i = 0; i < log_size; ++i) {
 		fps->frametimes[i] = frametime;
@@ -26,8 +26,9 @@ void fpscounter_reset(FPSCounter *fps) {
 }
 
 void fpscounter_update(FPSCounter *fps) {
-	const int log_size = sizeof(fps->frametimes)/sizeof(hrtime_t);
-	hrtime_t frametime = time_get() - fps->last_update_time;
+	const int log_size = ARRAY_SIZE(fps->frametimes);
+	hrtime_t update_time = time_get();
+	hrtime_t frametime = update_time - fps->last_update_time;
 
 	memmove(fps->frametimes, fps->frametimes + 1, (log_size - 1) * sizeof(hrtime_t));
 	fps->frametimes[log_size - 1] = frametime;
@@ -38,9 +39,9 @@ void fpscounter_update(FPSCounter *fps) {
 		avg += fps->frametimes[i];
 	}
 
-	fps->fps = HRTIME_RESOLUTION / (avg / (long double)log_size);
+	fps->fps = HRTIME_RESOLUTION / (avg / (double)log_size);
 	fps->frametime = avg / log_size;
-	fps->last_update_time = time_get();
+	fps->last_update_time = update_time;
 }
 
 uint32_t get_effective_frameskip(void) {
