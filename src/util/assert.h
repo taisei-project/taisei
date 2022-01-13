@@ -45,7 +45,7 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
     #define _assert(cond, uselog)
 	#define _assume(cond, uselog) ASSUME(cond)
 #else
-    #define _assert(cond, uselog) ((cond) ? (void)0 : (_ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog), TRAP()))
+    #define _assert(cond, uselog) (LIKELY(cond) ? (void)0 : (_ts_assert_fail(#cond, __func__, __FILE__, __LINE__, uselog), TRAP()))
 	#define _assume(cond, uselog) _assert(cond, uselog)
 #endif
 
