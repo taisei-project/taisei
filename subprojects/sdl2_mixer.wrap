@@ -1,5 +1,0 @@
-[wrap-git]
-directory=sdl2_mixer
-url=https://github.com/taisei-project/SDL2_mixer.git
-push-url=git@github.com:taisei-project/SDL2_mixer.git
-revision=meson-2.0.4
