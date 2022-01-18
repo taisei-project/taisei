@@ -120,7 +120,16 @@ static MenuData* replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 	m->context = parent->context;
 
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *rstg, {
-		add_menu_entry(m, stageinfo_get_by_id(rstg->stage)->title, start_replay, ictx);
+		uint16_t stage_id = rstg->stage;
+		StageInfo *stg = stageinfo_get_by_id(stage_id);
+
+		if(LIKELY(stg != NULL)) {
+			add_menu_entry(m, stg->title, start_replay, ictx);
+		} else {
+			char label[64];
+			snprintf(label, sizeof(label), "Unknown stage %X", stage_id);
+			add_menu_entry(m, label, menu_action_close, NULL);
+		}
 	});
 
 	return m;
@@ -190,7 +199,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	ReplayviewContext *ctx = m->context;
 	float alpha = 1 - ctx->sub_fade;
 	float height = (1 + m->entries.num_elements) * 20;
-	float width  = 100;
+	float width  = 180;
 
 	replayview_draw_submenu_bg(width, height, alpha);
 
