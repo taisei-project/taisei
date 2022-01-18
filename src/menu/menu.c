@@ -113,25 +113,37 @@ bool menu_input_handler(SDL_Event *event, void *arg) {
 	TaiseiEvent te = TAISEI_EVENT(event->type);
 
 	switch(te) {
-		case TE_MENU_CURSOR_DOWN:
+		case TE_MENU_CURSOR_DOWN: {
 			play_sfx_ui("generic_shot");
+			int orig_cursor = menu->cursor;
 			do {
 				if(++menu->cursor >= menu->entries.num_elements) {
 					menu->cursor = 0;
 				}
-			} while(dynarray_get(&menu->entries, menu->cursor).action == NULL);
 
-			return true;
-
-		case TE_MENU_CURSOR_UP:
-			play_sfx_ui("generic_shot");
-			do {
-				if(--menu->cursor < 0) {
-					menu->cursor = menu->entries.num_elements - 1;
+				if(menu->cursor == orig_cursor) {
+					break;
 				}
 			} while(dynarray_get(&menu->entries, menu->cursor).action == NULL);
 
 			return true;
+		}
+
+		case TE_MENU_CURSOR_UP: {
+			play_sfx_ui("generic_shot");
+			int orig_cursor = menu->cursor;
+			do {
+				if(--menu->cursor < 0) {
+					menu->cursor = menu->entries.num_elements - 1;
+				}
+
+				if(menu->cursor == orig_cursor) {
+					break;
+				}
+			} while(dynarray_get(&menu->entries, menu->cursor).action == NULL);
+
+			return true;
+		}
 
 		case TE_MENU_ACCEPT:
 			play_sfx_ui("shot_special1");
