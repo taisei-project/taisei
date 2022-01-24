@@ -75,6 +75,7 @@ static inline int prio_index(EventPriority prio) {
 }
 
 void events_register_handler(EventHandler *handler) {
+	assert(sdl_first_user_event > 0);
 	assert(handler->proc != NULL);
 	assert(handler->priority >= EPRIO_FIRST);
 	assert(handler->priority <= EPRIO_LAST);
