@@ -173,6 +173,8 @@ static int quantize_laser(Laser *l) {
 	LaserSamplingParams sp;
 
 	if(!laser_prepare_sampling_params(l, &sp)) {
+		l->_internal.bbox.top_left.as_cmplx = 0;
+		l->_internal.bbox.bottom_right.as_cmplx = 0;
 		return 0;
 	}
 
@@ -304,20 +306,38 @@ static int quantize_laser(Laser *l) {
 	return l->_internal.num_segments;
 }
 
-static bool laser_collision(Laser *l);
+static bool laser_collision(Laser *l, Player *plr);
 
 void process_lasers(void) {
-	Laser *laser = global.lasers.first, *del = NULL;
 	bool stage_cleared = stage_is_cleared();
+	Player *plr = &global.plr;
 
 	lintern.segments.num_elements = 0;
 
-	while(laser != NULL) {
-		      quantize_laser(laser);
+	/*
+	 * NOTE: it's important to have two loops here, because something triggered from ent_damage()
+	 * may try poking laser segment data before it's initialized by quantize_laser().
+	 * For example, dying to a laser while having a surge field active will immediately trigger a
+	 * discharge and try to cancel all lasers in a circle.
+	 */
+
+	for(Laser *laser = global.lasers.first, *next; laser; laser = next) {
+		next = laser->next;
+
+		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan * laser->speed) {
+			delete_laser(&global.lasers, laser);
+			continue;
+		}
+
+		quantize_laser(laser);
 
 		if(stage_cleared) {
 			clear_laser(laser, CLEAR_HAZARDS_LASERS | CLEAR_HAZARDS_FORCE);
 		}
+	}
+
+	for(Laser *laser = global.lasers.first, *next; laser; laser = next) {
+		next = laser->next;
 
 		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {
 			// TODO: implement CLEAR_HAZARDS_NOW
@@ -346,21 +366,13 @@ void process_lasers(void) {
 				}
 			}
 		} else {
-			if(laser_collision(laser)) {
-				ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
-			}
-
 			if(laser->lrule) {
 				laser->lrule(laser, global.frames - laser->birthtime);
 			}
-		}
 
-		if(global.frames - laser->birthtime > laser->deathtime + laser->timespan*laser->speed) {
-			del = laser;
-			laser = laser->next;
-			delete_laser(&global.lasers, del);
-		} else {
-			laser = laser->next;
+			if(laser_collision(laser, plr)) {
+				ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
+			}
 		}
 	}
 }
@@ -372,7 +384,7 @@ static inline Rect laser_bbox_rect(Laser *l) {
 	};
 }
 
-static bool laser_collision(Laser *l) {
+static bool laser_collision(Laser *l, Player *plr) {
 	if(!laser_is_active(l)) {
 		return false;
 	}
@@ -397,19 +409,19 @@ static bool laser_collision(Laser *l) {
 		bbox.bottom_right += graze_bbox_ofs;
 	}
 
-	if(!point_in_rect(global.plr.pos, bbox)) {
+	if(!point_in_rect(plr->pos, bbox)) {
 		return false;
 	}
 
 	LaserSegment *segs = dynarray_get_ptr(&lintern.segments, l->_internal.segments_ofs);
 
 	LineSegment plrmotion;
-	cmplx plrpos = global.plr.pos;
+	cmplx plrpos = plr->pos;
 	bool player_moved = false;
 
-	if(global.plr.velocity != 0) {
+	if(plr->velocity != 0) {
 		player_moved = true;
-		plrmotion.a = plrpos - global.plr.velocity;
+		plrmotion.a = plrpos - plr->velocity;
 		plrmotion.b = plrpos;
 	}
 
@@ -428,7 +440,7 @@ static bool laser_collision(Laser *l) {
 			.radius.b = fmax(lseg->width.b * 0.5 - 4, 2),
 		};
 
-		double d = ucapsule_dist_from_point(global.plr.pos, c);
+		double d = ucapsule_dist_from_point(plrpos, c);
 
 		if(d < 0) {
 			return true;
@@ -445,7 +457,7 @@ static bool laser_collision(Laser *l) {
 	}
 
 	if(graze_dist < graze_maxdist) {
-		player_graze(&global.plr, graze_pos, 7, 5, &l->color);
+		player_graze(plr, graze_pos, 7, 5, &l->color);
 		l->next_graze = global.frames + 4;
 	}
 
