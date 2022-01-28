@@ -18,6 +18,7 @@
 #include "portrait.h"
 #include "stages/stage5/stage5.h"  // for unlockable bonus BGM
 #include "stageobjects.h"
+#include "dynstage.h"
 
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
@@ -1001,6 +1002,13 @@ static void boss_call_rule(Boss *boss, int t) {
 	}
 }
 
+static bool spell_is_overload(AttackInfo *spell) {
+	// HACK HACK HACK
+	StagesExports *e = dynstage_get_exports();
+	struct stage5_spells_s *stage5_spells = (struct stage5_spells_s*)e->stage5.spells;
+	return spell == &stage5_spells->extra.overload;
+}
+
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
@@ -1024,7 +1032,7 @@ void boss_finish_current_attack(Boss *boss) {
 			}
 
 			// HACK
-			if(boss->current->info == &stage5_spells.extra.overload) {
+			if(spell_is_overload(boss->current->info)) {
 				stage_unlock_bgm("bonus0");
 			}
 		} else if(boss->current->type != AT_ExtraSpell) {

@@ -31,6 +31,7 @@
 #include "cutscenes/cutscene.h"
 #include "replay/struct.h"
 #include "filewatch/filewatch.h"
+#include "dynstage.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -46,13 +47,13 @@ static void taisei_shutdown(void) {
 	gamemode_shutdown();
 	free_all_refs();
 	shutdown_resources();
-	filewatch_shutdown();
 	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
 	gamepad_shutdown();
 	stageinfo_shutdown();
 	config_shutdown();
+	filewatch_shutdown();
 	vfs_shutdown();
 	events_shutdown();
 	time_shutdown();
@@ -343,6 +344,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	init_resources();
 	r_post_init();
 	draw_loading_screen();
+	dynstage_init_monitoring();
 
 	audio_init();
 	load_resources();

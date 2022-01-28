@@ -9,25 +9,13 @@
 #include "taisei.h"
 
 #include "stageinfo.h"
+#include "stages/stages.h"
 
-#include "stages/stage1/stage1.h"
-#include "stages/stage2/stage2.h"
-#include "stages/stage3/stage3.h"
-#include "stages/stage4/stage4.h"
-#include "stages/stage5/stage5.h"
-#include "stages/stage6/stage6.h"
-#include "stages/extra.h"
-
-#ifdef DEBUG
-	#define DPSTEST
-	#include "stages/dpstest.h"
-
-	#define COROTEST
-	#include "stages/corotest.h"
-#endif
+#include "dynstage.h"
 
 static struct {
 	DYNAMIC_ARRAY(StageInfo) stages;
+	StageProgress **stages_progress;
 } stageinfo;
 
 static void add_stage(
@@ -104,36 +92,70 @@ static bool spellfilter_extra(AttackInfo *spell) {
 	return spell->type == AT_ExtraSpell;
 }
 
+static void stageinfo_fill(StagesExports *e);
+
 void stageinfo_init(void) {
+	dynstage_init();
+	stageinfo_fill(dynstage_get_exports());
+	stageinfo.stages_progress = calloc(stageinfo.stages.num_elements, sizeof(*stageinfo.stages_progress));
+}
+
+void stageinfo_reload(void) {
+	if(!dynstage_reload_library()) {
+		log_debug("dynstage not reloaded");
+		return;
+	}
+
+	attr_unused StageInfo *prev_addr = stageinfo.stages.data;
+	attr_unused uint prev_count = stageinfo.stages.num_elements;
+
+	dynarray_foreach_elem(&stageinfo.stages, StageInfo *stg, {
+		free(stg->title);
+		free(stg->subtitle);
+	});
+
+	stageinfo.stages.num_elements = 0;
+	stageinfo_fill(dynstage_get_exports());
+
+	assert(stageinfo.stages.data == prev_addr);
+	assert(stageinfo.stages.num_elements == prev_count);
+
+	log_debug("Stageinfo updated after dynstage reload");
+}
+
+static void stageinfo_fill(StagesExports *e) {
 	int spellnum = 0;
 
-//	         id  procs          type         title      subtitle                       spells                       diff
-	add_stage(1, &stage1_procs, STAGE_STORY, "Stage 1", "Misty Lake",                  (AttackInfo*)&stage1_spells, D_Any);
-	add_stage(2, &stage2_procs, STAGE_STORY, "Stage 2", "Walk Along the Border",       (AttackInfo*)&stage2_spells, D_Any);
-	add_stage(3, &stage3_procs, STAGE_STORY, "Stage 3", "Through the Tunnel of Light", (AttackInfo*)&stage3_spells, D_Any);
-	add_stage(4, &stage4_procs, STAGE_STORY, "Stage 4", "Forgotten Mansion",           (AttackInfo*)&stage4_spells, D_Any);
-	add_stage(5, &stage5_procs, STAGE_STORY, "Stage 5", "Climbing the Tower of Babel", (AttackInfo*)&stage5_spells, D_Any);
-	add_stage(6, &stage6_procs, STAGE_STORY, "Stage 6", "Roof of the World",           (AttackInfo*)&stage6_spells, D_Any);
+//	         id  procs            type           title          subtitle                       spells                       diff
+	add_stage(1, e->stage1.procs, STAGE_STORY,   "Stage 1",     "Misty Lake",                  e->stage1.spells, D_Any);
+	add_stage(2, e->stage2.procs, STAGE_STORY,   "Stage 2",     "Walk Along the Border",       e->stage2.spells, D_Any);
+	add_stage(3, e->stage3.procs, STAGE_STORY,   "Stage 3",     "Through the Tunnel of Light", e->stage3.spells, D_Any);
+	add_stage(4, e->stage4.procs, STAGE_STORY,   "Stage 4",     "Forgotten Mansion",           e->stage4.spells, D_Any);
+	add_stage(5, e->stage5.procs, STAGE_STORY,   "Stage 5",     "Climbing the Tower of Babel", e->stage5.spells, D_Any);
+	add_stage(6, e->stage6.procs, STAGE_STORY,   "Stage 6",     "Roof of the World",           e->stage6.spells, D_Any);
+	add_stage(7, e->stagex.procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness",        e->stagex.spells, D_Extra);
 
-#ifdef DPSTEST
-	add_stage(0x40|0, &stage_dpstest_single_procs, STAGE_SPECIAL, "DPS Test", "Single target",    NULL, D_Normal);
-	add_stage(0x40|1, &stage_dpstest_multi_procs,  STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
-	add_stage(0x40|2, &stage_dpstest_boss_procs,   STAGE_SPECIAL, "DPS Test", "Boss",             NULL, D_Normal);
+#ifdef TAISEI_BUILDCONF_TESTING_STAGES
+	add_stage(0x40|0, e->testing.dps_single, STAGE_SPECIAL, "DPS Test", "Single target",    NULL, D_Normal);
+	add_stage(0x40|1, e->testing.dps_multi,  STAGE_SPECIAL, "DPS Test", "Multiple targets", NULL, D_Normal);
+	add_stage(0x40|2, e->testing.dps_boss,   STAGE_SPECIAL, "DPS Test", "Boss",             NULL, D_Normal);
 #endif
 
 	// generate spellpractice stages
 	add_spellpractice_stages(&spellnum, spellfilter_normal, STAGE_SPELL_BIT);
 	add_spellpractice_stages(&spellnum, spellfilter_extra, STAGE_SPELL_BIT | STAGE_EXTRASPELL_BIT);
 
-#ifdef SPELL_BENCHMARK
-	add_spellpractice_stage(dynarray_get_ptr(&stageinfo.stages, 0), &stage1_spell_benchmark, &spellnum, STAGE_SPELL_BIT, D_Extra);
-#endif
+#ifdef TAISEI_BUILDCONF_TESTING_STAGES
+	add_spellpractice_stage(
+		dynarray_get_ptr(&stageinfo.stages, 0),
+		e->testing.benchmark_spell, &spellnum, STAGE_SPELL_BIT, D_Extra
+	);
 
-#ifdef COROTEST
-	add_stage(0xC0, &corotest_procs, STAGE_SPECIAL, "Coroutines!", "wow such concurrency very async", NULL, D_Any);
+	add_stage(
+		0xC0, e->testing.coro, STAGE_SPECIAL,
+		"Coroutines!", "wow such concurrency very async", NULL, D_Any
+	);
 #endif
-
-	add_stage(0xC1, &extra_procs, STAGE_SPECIAL, "Extra Stage", "Descent into Madness", NULL, D_Extra);
 
 	dynarray_compact(&stageinfo.stages);
 
@@ -153,13 +175,15 @@ void stageinfo_init(void) {
 }
 
 void stageinfo_shutdown(void) {
-	dynarray_foreach_elem(&stageinfo.stages, StageInfo *stg, {
+	dynarray_foreach(&stageinfo.stages, int i, StageInfo *stg, {
 		free(stg->title);
 		free(stg->subtitle);
-		free(stg->progress);
+		free(stageinfo.stages_progress[i]);
 	});
 
 	dynarray_free_data(&stageinfo.stages);
+	free(stageinfo.stages_progress);
+	dynstage_shutdown();
 }
 
 size_t stageinfo_get_num_stages(void) {
@@ -203,23 +227,23 @@ StageProgress *stageinfo_get_progress(StageInfo *stage, Difficulty diff, bool al
 	// This stuff must stay around until progress_save(), which happens on shutdown.
 	// So do NOT try to free any pointers this function returns, that will fuck everything up.
 
+	uint idx = dynarray_indexof(&stageinfo.stages, stage);
+	StageProgress **prog = stageinfo.stages_progress + idx;
 	bool fixed_diff = (stage->difficulty != D_Any);
 
 	if(!fixed_diff && (diff < D_Easy || diff > D_Lunatic)) {
 		return NULL;
 	}
 
-	if(!stage->progress) {
+	if(!*prog) {
 		if(!allocate) {
 			return NULL;
 		}
 
-		size_t allocsize = sizeof(StageProgress) * (fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES);
-		stage->progress = malloc(allocsize);
-		memset(stage->progress, 0, allocsize);
+		*prog = calloc(fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES, sizeof(**prog));
 	}
 
-	return stage->progress + (fixed_diff ? 0 : diff - D_Easy);
+	return *prog + (fixed_diff ? 0 : diff - D_Easy);
 }
 
 StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool allocate) {

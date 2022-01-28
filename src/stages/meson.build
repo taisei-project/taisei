@@ -1,5 +1,7 @@
 
-stages_src = []
+stages_src = files(
+    'stages.c',
+)
 
 stages = [
     'stage1',
@@ -22,9 +24,11 @@ stages_src += files(
     'extra.c',
 )
 
-if is_developer_build
+if use_testing_stages
     stages_src += files(
         'dpstest.c',
         'corotest.c',
     )
 endif
+
+stages_srcdir = meson.current_source_dir()

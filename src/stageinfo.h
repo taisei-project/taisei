@@ -49,10 +49,6 @@ typedef struct StageInfo {
 	char *subtitle;
 	AttackInfo *spell;
 	Difficulty difficulty;
-
-	// Do NOT access this directly!
-	// Use stage_get_progress or stage_get_progress_from_info, which will lazy-initialize it and pick the correct offset.
-	StageProgress *progress;
 } StageInfo;
 
 size_t stageinfo_get_num_stages(void);
@@ -66,3 +62,4 @@ StageProgress *stageinfo_get_progress_by_id(uint16_t id, Difficulty diff, bool a
 
 void stageinfo_init(void);
 void stageinfo_shutdown(void);
+void stageinfo_reload(void);

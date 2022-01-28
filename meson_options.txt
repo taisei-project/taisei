@@ -190,3 +190,10 @@ option(
     value : false,
     description : 'Build shaderc and spirv-cross CLI tools from subprojects even if system versions exist'
 )
+
+option(
+    'stages_live_reload',
+    type : 'boolean',
+    value : 'false',
+    description : 'Enable live-reloading workflow for stages (for development only)'
+)

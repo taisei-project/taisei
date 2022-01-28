@@ -28,13 +28,16 @@
 #include "eventloop/eventloop.h"
 #include "common_tasks.h"
 #include "stageinfo.h"
+#include "dynstage.h"
 
 typedef struct StageFrameState {
 	StageInfo *stage;
 	CallChain cc;
 	CoSched sched;
 	Replay *quicksave;
+	bool quicksave_is_automatic;
 	bool quickload_requested;
+	uint32_t dynstage_generation;
 	int transition_delay;
 	int logic_calls;
 	int desync_check_freq;
@@ -362,21 +365,37 @@ static inline bool is_quicksave_allowed(void) {
 	return true;
 }
 
+static void stage_do_quicksave(StageFrameState *fstate, bool isauto) {
+	if(isauto && fstate->quicksave && !fstate->quicksave_is_automatic) {
+		// Do not overwrite a manual quicksave with an auto quicksave
+		return;
+	}
+
+	if(fstate->quicksave) {
+		replay_reset(fstate->quicksave);
+		free(fstate->quicksave);
+	}
+
+	fstate->quicksave = create_quicksave_replay(global.replay.output.stage);
+	fstate->quicksave_is_automatic = isauto;
+}
+
+static void stage_do_quickload(StageFrameState *fstate) {
+	if(fstate->quicksave) {
+		fstate->quickload_requested = true;
+	} else {
+		log_info("No active quicksave");
+	}
+}
+
 static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	StageFrameState *fstate = NOT_NULL(arg);
 
 	if(event->type == SDL_KEYDOWN && !event->key.repeat && is_quicksave_allowed()) {
 		if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKSAVE)) {
-			if(fstate->quicksave) {
-				replay_reset(fstate->quicksave);
-				free(fstate->quicksave);
-			}
-
-			fstate->quicksave = create_quicksave_replay(global.replay.output.stage);
+			stage_do_quicksave(fstate, false);
 		} else if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKLOAD)) {
-			if(fstate->quicksave) {
-				fstate->quickload_requested = true;
-			}
+			stage_do_quickload(fstate);
 		}
 
 		return false;
@@ -462,6 +481,15 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 	}
 }
 
+static void leave_replay_mode(StageFrameState *fstate, ReplayState *rp_in) {
+	if(rp_in->replay == fstate->quicksave) {
+		audio_sfx_set_enabled(true);
+		sync_bgm(fstate);
+	}
+
+	replay_state_deinit(rp_in);
+}
+
 static void replay_input(StageFrameState *fstate) {
 	if(!is_quickloading(fstate)) {
 		events_poll((EventHandler[]){
@@ -481,12 +509,7 @@ static void replay_input(StageFrameState *fstate) {
 	player_applymovement(&global.plr);
 
 	if(a.resume_event) {
-		if(rp_in->replay == fstate->quicksave) {
-			audio_sfx_set_enabled(true);
-			sync_bgm(fstate);
-		}
-
-		replay_state_deinit(rp_in);
+		leave_replay_mode(fstate, rp_in);
 	}
 }
 
@@ -860,6 +883,12 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		stage_input(fstate);
 	}
 
+	if(fstate->dynstage_generation != dynstage_get_generation()) {
+		log_info("Stages library updated, attempting to hot-reload");
+		stage_do_quicksave(fstate, true);   // no-op if user has a manual save
+		stage_do_quickload(fstate);
+	}
+
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
 		cosched_run_tasks(&fstate->sched);
 
@@ -891,12 +920,18 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		replay_stage_event(global.replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
 	}
 
-	if(
-		rpsync == REPLAY_SYNC_FAIL &&
-		global.is_replay_verification &&
-		!global.replay.output.stage
-	) {
-		exit(1);
+	if(rpsync == REPLAY_SYNC_FAIL) {
+		if(
+			global.is_replay_verification &&
+			!global.replay.output.stage
+		) {
+			exit(1);
+		}
+
+		if(fstate->quicksave && fstate->quicksave == global.replay.input.replay) {
+			log_warn("Quicksave replay desynced; resuming prematurely!");
+			leave_replay_mode(fstate, &global.replay.input);
+		}
 	}
 
 	stage_logic();
@@ -962,7 +997,12 @@ static void stage_end_loop(void *ctx);
 
 static void stage_stub_proc(void) { }
 
-static void _stage_enter(StageInfo *stage, CallChain next, Replay *quickload) {
+static void _stage_enter(
+	StageInfo *stage, CallChain next, Replay *quickload, bool quicksave_is_automatic
+) {
+	uint32_t dynstage_generation = dynstage_get_generation();
+	stageinfo_reload();
+
 	assert(stage);
 	assert(stage->procs);
 
@@ -1064,7 +1104,9 @@ static void _stage_enter(StageInfo *stage, CallChain next, Replay *quickload) {
 	fstate->stage = stage;
 	fstate->cc = next;
 	fstate->quicksave = quickload;
+	fstate->quicksave_is_automatic = quicksave_is_automatic;
 	fstate->desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5);
+	fstate->dynstage_generation = dynstage_generation;
 
 	_current_stage_state = fstate;
 
@@ -1085,7 +1127,7 @@ static void _stage_enter(StageInfo *stage, CallChain next, Replay *quickload) {
 }
 
 void stage_enter(StageInfo *stage, CallChain next) {
-	_stage_enter(stage, next, NULL);
+	_stage_enter(stage, next, NULL, false);
 }
 
 void stage_end_loop(void *ctx) {
@@ -1093,6 +1135,7 @@ void stage_end_loop(void *ctx) {
 	assert(s == _current_stage_state);
 
 	Replay *quicksave = s->quicksave;
+	bool quicksave_is_automatic = s->quicksave_is_automatic;
 	bool is_quickload = s->quickload_requested;
 
 	if(is_quickload) {
@@ -1145,7 +1188,7 @@ void stage_end_loop(void *ctx) {
 	free(s);
 
 	if(is_quickload) {
-		_stage_enter(stginfo, cc, quicksave);
+		_stage_enter(stginfo, cc, quicksave, quicksave_is_automatic);
 	} else {
 		run_call_chain(&cc, NULL);
 	}

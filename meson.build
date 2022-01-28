@@ -480,6 +480,17 @@ endif
 version_deps = []
 bindist_deps = []
 
+stages_live_reload = get_option('stages_live_reload')
+if stages_live_reload
+    assert(have_posix and host_machine.system() != 'emscripten',
+        'Stage live reloading is not supported on this platform')
+endif
+
+use_testing_stages = is_developer_build
+
+config.set('TAISEI_BUILDCONF_DYNSTAGE', stages_live_reload)
+config.set('TAISEI_BUILDCONF_TESTING_STAGES', use_testing_stages)
+
 subdir('misc')
 subdir('emscripten')
 subdir('switch')
@@ -520,6 +531,7 @@ Summary:
     System type:            @1@
     Build type:             @2@
     Developer mode:         @15@
+    Stages live reload:     @16@
 
     Audio backends:         @3@  (default: @4@)
     Renderers:              @5@  (default: @6@)
@@ -551,7 +563,8 @@ Summary:
         join_paths('$prefix', bindir),
         join_paths('$prefix', data_path),
         join_paths('$prefix', doc_path),
-        is_developer_build
+        is_developer_build,
+        stages_live_reload
     )
 
 message(summary)

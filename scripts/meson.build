@@ -152,3 +152,6 @@ em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]
 
 fix_path_script = files('unfuck-path.py')
 fix_path_command = [python_thunk, fix_path_script]
+
+format_array_script = files('format-array.py')
+format_array_command = [python_thunk, format_array_script]

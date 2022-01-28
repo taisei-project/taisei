@@ -140,8 +140,6 @@ subdir('stages')
 subdir('util')
 subdir('vfs')
 
-configure_file(configuration : config, output : 'build_config.h')
-
 taisei_src += [
     audio_src,
     cutscenes_src,
@@ -156,7 +154,6 @@ taisei_src += [
     replay_src,
     resource_src,
     rwops_src,
-    stages_src,
     util_src,
     vfs_src,
 ]
@@ -166,6 +163,36 @@ taisei_deps += [
     renderer_deps,
     util_deps,
 ]
+
+if stages_live_reload
+    taisei_src += files('dynstage.c')
+
+    taisei_stages = shared_module('taisei-stages', stages_src, version_deps,
+        dependencies : taisei_deps,
+        c_args : taisei_c_args,
+        c_pch : 'pch/taisei_pch.h',
+        build_by_default : true,
+        gnu_symbol_visibility : 'hidden',
+    )
+
+    taisei_deps += cc.find_library('dl', required : false)
+
+    taisei_stages_compile_command = [
+        # FIXME: no good way to get the effective meson command…
+        'meson', 'compile', '-C', meson.project_build_root(), '-v', taisei_stages.name(),
+    ]
+
+    r = run_command(format_array_command, taisei_stages_compile_command, check : true)
+
+    config.set_quoted('TAISEI_BUILDCONF_DYNSTAGE_LIB', taisei_stages.full_path())
+    config.set_quoted('TAISEI_BUILDCONF_DYNSTAGE_SRCROOT', stages_srcdir)
+    config.set('TAISEI_BUILDCONF_DYNSTAGE_REBUILD_CMD', r.stdout().strip())
+else
+    taisei_src += files('dynstage_stub.c')
+    taisei_src += stages_src
+endif
+
+configure_file(configuration : config, output : 'build_config.h')
 
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
 
@@ -329,6 +356,7 @@ else
         gui_app : not get_option('win_console'),
         install : true,
         install_dir : bindir,
+        export_dynamic : stages_live_reload,
     )
     bindist_deps += taisei
 endif

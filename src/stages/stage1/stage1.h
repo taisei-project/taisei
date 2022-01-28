@@ -38,7 +38,6 @@ extern struct stage1_spells_s {
 } stage1_spells;
 
 extern StageProcs stage1_procs;
-extern StageProcs stage1_spell_procs;
 
 #ifdef SPELL_BENCHMARK
 extern AttackInfo stage1_spell_benchmark;
