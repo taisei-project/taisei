@@ -167,12 +167,21 @@ taisei_deps += [
 if stages_live_reload
     taisei_src += files('dynstage.c')
 
+    # We want this to build fast
+    libstages_opts = ['b_lto=false']
+    if get_option('optimization') != '0'
+        # Don't force a higher optimization level if we're building the project
+        # without optimizations
+        libstages_opts += ['optimization=g']
+    endif
+
     taisei_stages = shared_module('taisei-stages', stages_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
         build_by_default : true,
         gnu_symbol_visibility : 'hidden',
+        override_options : libstages_opts,
     )
 
     taisei_deps += cc.find_library('dl', required : false)
