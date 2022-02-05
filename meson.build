@@ -13,6 +13,8 @@ project('taisei', 'c',
         'cglm:install=false',
         'cglm:build_tests=false',
 
+        'basis_universal:enable_ktx2=false',
+
         'libzip:bzip2=disabled',
         'libzip:lzma=disabled',
         'libzip:zstd=enabled',
