@@ -1000,11 +1000,18 @@ static void stage_stub_proc(void) { }
 static void _stage_enter(
 	StageInfo *stage, CallChain next, Replay *quickload, bool quicksave_is_automatic
 ) {
-	uint32_t dynstage_generation = dynstage_get_generation();
-	stageinfo_reload();
-
 	assert(stage);
 	assert(stage->procs);
+
+	if(global.gameover == GAMEOVER_WIN) {
+		global.gameover = 0;
+	} else if(global.gameover) {
+		run_call_chain(&next, NULL);
+		return;
+	}
+
+	uint32_t dynstage_generation = dynstage_get_generation();
+	stageinfo_reload();
 
 	#define STUB_PROC(proc, stub) do {\
 		if(!stage->procs->proc) { \
@@ -1022,13 +1029,6 @@ static void _stage_enter(
 	STUB_PROC(event, stage_stub_proc);
 	STUB_PROC(update, stage_stub_proc);
 	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
-
-	if(global.gameover == GAMEOVER_WIN) {
-		global.gameover = 0;
-	} else if(global.gameover) {
-		run_call_chain(&next, NULL);
-		return;
-	}
 
 	if(quickload) {
 		assert(global.replay.input.stage == NULL);
