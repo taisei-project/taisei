@@ -131,10 +131,10 @@ static void credits_fill(void) {
 
 	credits_add((
 		"aiju\n"
-		"Julius Schmidt\n"
+		"Emily Schmidt\n"
 		"http://aiju.de/\n\n"
 		"I don't remember\n"
-		"what this guy did"
+		"what she did"
 	), ENTRY_TIME);
 
 	credits_add("Special Thanks", HEADER_TIME);
