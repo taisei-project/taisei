@@ -11,7 +11,7 @@ UNIFORM(4) sampler2D tex2;
 UNIFORM(5) sampler2D blend_mask;
 UNIFORM(6) float inv_aspect_ratio;
 
-const float bmin = 3*sqrt(3)/2;
+const float bmin = 3.0 * sqrt(3.0) / 2.0;
 
 // approximate formula for the real thing I pulled out of my sleeve.
 // b is the impact parameter (google) all units are in terms of
