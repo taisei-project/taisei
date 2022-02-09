@@ -43,7 +43,7 @@ void _r_models_init(void) {
 	_r_models.vbuf = r_vertex_buffer_create(max_vertices * sizeof(GenericModelVertex), NULL);
 	r_vertex_buffer_set_debug_label(_r_models.vbuf, "Static models vertex buffer");
 
-	_r_models.ibuf = r_index_buffer_create(max_vertices);
+	_r_models.ibuf = r_index_buffer_create(sizeof(uint32_t), max_vertices);
 	r_index_buffer_set_debug_label(_r_models.ibuf, "Static models index buffer");
 
 	_r_models.varr = r_vertex_array_create();
@@ -66,7 +66,7 @@ void r_model_add_static(
 	size_t num_vertices,
 	GenericModelVertex vertices[num_vertices],
 	size_t num_indices,
-	uint indices[num_indices]
+	uint32_t indices[num_indices]
 ) {
 	out_mdl->vertex_array = _r_models.varr;
 	out_mdl->num_vertices = num_vertices;
@@ -79,7 +79,7 @@ void r_model_add_static(
 	if(num_indices > 0) {
 		assume(indices != NULL);
 		out_mdl->offset = r_index_buffer_get_offset(_r_models.ibuf);
-		r_index_buffer_add_indices(_r_models.ibuf, vert_ofs, num_indices, indices);
+		r_index_buffer_add_indices_u32(_r_models.ibuf, vert_ofs, num_indices, indices);
 	} else {
 		out_mdl->offset = vert_ofs;
 	}

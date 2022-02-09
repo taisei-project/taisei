@@ -63,6 +63,7 @@ RendererBackend _r_backend_gles20 = {
 		.screenshot = gles_screenshot,
 		.index_buffer_create = gles20_index_buffer_create,
 		.index_buffer_get_capacity = gles20_index_buffer_get_capacity,
+		.index_buffer_get_index_size = gles20_index_buffer_get_index_size,
 		.index_buffer_get_debug_label = gles20_index_buffer_get_debug_label,
 		.index_buffer_set_debug_label = gles20_index_buffer_set_debug_label,
 		.index_buffer_set_offset = gles20_index_buffer_set_offset,

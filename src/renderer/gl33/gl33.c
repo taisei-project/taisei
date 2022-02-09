@@ -1297,18 +1297,19 @@ static void gl33_draw(VertexArray *varr, Primitive prim, uint firstvert, uint co
 static void gl33_draw_indexed(VertexArray *varr, Primitive prim, uint firstidx, uint count, uint instances, uint base_instance) {
 	assert(count > 0);
 	assert(base_instance == 0);
-	assert(varr->index_attachment != NULL);
+
+	IndexBuffer *ibuf = NOT_NULL(varr->index_attachment);
 	GLuint gl_prim = gl33_prim_to_gl_prim(prim);
 
 	void *state;
 	gl33_begin_draw(varr, &state);
 
-	uintptr_t iofs = firstidx * sizeof(gl33_ibo_index_t);
+	uintptr_t iofs = firstidx * ibuf->index_size;
 
 	if(instances) {
-		glDrawElementsInstanced(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs, instances);
+		glDrawElementsInstanced(gl_prim, count, ibuf->index_datatype, (void*)iofs, instances);
 	} else {
-		glDrawElements(gl_prim, count, GL33_IBO_GL_DATATYPE, (void*)iofs);
+		glDrawElements(gl_prim, count, ibuf->index_datatype, (void*)iofs);
 	}
 
 	gl33_end_draw(state);
@@ -1503,6 +1504,7 @@ RendererBackend _r_backend_gl33 = {
 		.vertex_buffer_get_stream = gl33_vertex_buffer_get_stream,
 		.index_buffer_create = gl33_index_buffer_create,
 		.index_buffer_get_capacity = gl33_index_buffer_get_capacity,
+		.index_buffer_get_index_size = gl33_index_buffer_get_index_size,
 		.index_buffer_get_debug_label = gl33_index_buffer_get_debug_label,
 		.index_buffer_set_debug_label = gl33_index_buffer_set_debug_label,
 		.index_buffer_set_offset = gl33_index_buffer_set_offset,

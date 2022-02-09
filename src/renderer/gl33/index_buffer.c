@@ -24,9 +24,19 @@ static void gl33_index_buffer_post_bind(CommonBuffer *cbuf) {
 	gl33_bind_vao(ibuf->prev_vao);
 }
 
-IndexBuffer *gl33_index_buffer_create(size_t max_elements) {
+static GLuint index_size_to_datatype(uint size) {
+	switch(size) {
+		case 2: return GL_UNSIGNED_SHORT;
+		case 4: return GL_UNSIGNED_INT;
+		default: UNREACHABLE;
+	}
+}
+
+IndexBuffer *gl33_index_buffer_create(uint index_size, size_t max_elements) {
 	IndexBuffer *ibuf = (IndexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ELEMENT_ARRAY, sizeof(IndexBuffer));
-	ibuf->cbuf.size = max_elements * sizeof(gl33_ibo_index_t);
+	ibuf->index_size = index_size;
+	ibuf->index_datatype = index_size_to_datatype(index_size);
+	ibuf->cbuf.size = max_elements * index_size;
 	ibuf->cbuf.pre_bind = gl33_index_buffer_pre_bind;
 	ibuf->cbuf.post_bind = gl33_index_buffer_post_bind;
 
@@ -47,7 +57,11 @@ void gl33_index_buffer_on_vao_attach(IndexBuffer *ibuf, GLuint vao) {
 }
 
 size_t gl33_index_buffer_get_capacity(IndexBuffer *ibuf) {
-	return ibuf->cbuf.size / sizeof(gl33_ibo_index_t);
+	return ibuf->cbuf.size / ibuf->index_size;
+}
+
+uint gl33_index_buffer_get_index_size(IndexBuffer *ibuf) {
+	return ibuf->index_size;
 }
 
 const char *gl33_index_buffer_get_debug_label(IndexBuffer *ibuf) {
@@ -63,24 +77,16 @@ void gl33_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) {
 }
 
 void gl33_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) {
-	ibuf->cbuf.offset = offset * sizeof(gl33_ibo_index_t);
+	ibuf->cbuf.offset = offset * ibuf->index_size;
 }
 
 size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf) {
-	return ibuf->cbuf.offset / sizeof(gl33_ibo_index_t);
+	return ibuf->cbuf.offset / ibuf->index_size;
 }
 
-void gl33_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_elements, uint indices[num_elements]) {
+void gl33_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) {
 	SDL_RWops *stream = gl33_buffer_get_stream(&ibuf->cbuf);
-	gl33_ibo_index_t data[num_elements];
-
-	for(size_t i = 0; i < num_elements; ++i) {
-		uintmax_t idx = indices[i] + index_ofs;
-		assert(idx <= GL33_IBO_MAX_INDEX);
-		data[i] = idx;
-	}
-
-	SDL_RWwrite(stream, &data, sizeof(gl33_ibo_index_t), num_elements);
+	SDL_RWwrite(stream, data, data_size, 1);
 }
 
 void gl33_index_buffer_destroy(IndexBuffer *ibuf) {

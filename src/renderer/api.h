@@ -774,13 +774,15 @@ void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
 SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
 
-IndexBuffer* r_index_buffer_create(size_t max_elements);
+IndexBuffer* r_index_buffer_create(uint index_size, size_t max_elements);
 size_t r_index_buffer_get_capacity(IndexBuffer *ibuf) attr_nonnull(1);
+uint r_index_buffer_get_index_size(IndexBuffer *ibuf) attr_nonnull(1);
 const char* r_index_buffer_get_debug_label(IndexBuffer *ibuf) attr_nonnull(1);
 void r_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) attr_nonnull(1);
 void r_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) attr_nonnull(1);
 size_t r_index_buffer_get_offset(IndexBuffer *ibuf) attr_nonnull(1);
-void r_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]) attr_nonnull(1, 4);
+void r_index_buffer_add_indices_u16(IndexBuffer *ibuf, uint16_t index_ofs, size_t num_elements, uint16_t indices[num_elements]) attr_nonnull(1, 4);
+void r_index_buffer_add_indices_u32(IndexBuffer *ibuf, uint32_t index_ofs, size_t num_elements, uint32_t indices[num_elements]) attr_nonnull(1, 4);
 void r_index_buffer_destroy(IndexBuffer *ibuf) attr_nonnull(1);
 
 VertexArray* r_vertex_array_create(void);
@@ -798,7 +800,7 @@ void r_scissor(int x, int y, int w, int h);
 void r_scissor_rect(IntRect scissor);
 void r_scissor_current(IntRect *scissor) attr_nonnull(1);
 
-void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint indices[num_indices]);
+void r_model_add_static(Model *out_mdl, Primitive prim, size_t num_vertices, GenericModelVertex vertices[num_vertices], size_t num_indices, uint32_t indices[num_indices]);
 const Model *r_model_get_quad(void) attr_returns_nonnull;
 
 void r_vsync(VsyncMode mode);

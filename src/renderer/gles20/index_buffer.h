@@ -23,12 +23,13 @@ typedef struct IndexBuffer {
 	gles20_ibo_index_t elements[];
 } IndexBuffer;
 
-IndexBuffer* gles20_index_buffer_create(size_t max_elements);
+IndexBuffer *gles20_index_buffer_create(uint index_size, size_t max_elements);
 size_t gles20_index_buffer_get_capacity(IndexBuffer *ibuf);
-const char* gles20_index_buffer_get_debug_label(IndexBuffer *ibuf);
+uint gles20_index_buffer_get_index_size(IndexBuffer *ibuf);
+const char *gles20_index_buffer_get_debug_label(IndexBuffer *ibuf);
 void gles20_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label);
 void gles20_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset);
 size_t gles20_index_buffer_get_offset(IndexBuffer *ibuf);
-void gles20_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]);
+void gles20_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data);
 void gles20_index_buffer_destroy(IndexBuffer *ibuf);
 void gles20_index_buffer_flush(IndexBuffer *ibuf);

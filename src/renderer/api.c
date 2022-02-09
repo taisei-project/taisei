@@ -624,7 +624,7 @@ IntExtent r_framebuffer_get_size(Framebuffer *fb) {
 	return B.framebuffer_get_size(fb);
 }
 
-Framebuffer * r_framebuffer_current(void) {
+Framebuffer* r_framebuffer_current(void) {
 	return B.framebuffer_current();
 }
 
@@ -652,12 +652,16 @@ SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 	return B.vertex_buffer_get_stream(vbuf);
 }
 
-IndexBuffer* r_index_buffer_create(size_t max_elements) {
-	return B.index_buffer_create(max_elements);
+IndexBuffer* r_index_buffer_create(uint index_size, size_t max_elements) {
+	return B.index_buffer_create(index_size, max_elements);
 }
 
 size_t r_index_buffer_get_capacity(IndexBuffer *ibuf) {
 	return B.index_buffer_get_capacity(ibuf);
+}
+
+uint r_index_buffer_get_index_size(IndexBuffer *ibuf) {
+	return B.index_buffer_get_index_size(ibuf);
 }
 
 const char* r_index_buffer_get_debug_label(IndexBuffer *ibuf) {
@@ -676,8 +680,50 @@ size_t r_index_buffer_get_offset(IndexBuffer *ibuf) {
 	return B.index_buffer_get_offset(ibuf);
 }
 
-void r_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]) {
-	B.index_buffer_add_indices(ibuf, index_ofs, num_indices, indices);
+#define MAX_INDEX_VAL(isize) ((1ull << ((isize) * 8)) - 1)
+#define INDEX_WRITE_LOOP(itype, isize) \
+	itype data[num_elements]; \
+	attr_unused const uintmax_t max_val = MAX_INDEX_VAL(isize); \
+	for(size_t i = 0; i < num_elements; ++i) { \
+		assert((uintmax_t)indices[i] + (uintmax_t)index_ofs <= max_val); \
+		data[i] = indices[i] + index_ofs; \
+	} \
+	B.index_buffer_add_indices(ibuf, index_size * num_elements, data);
+
+void r_index_buffer_add_indices_u16(
+	IndexBuffer *ibuf, uint16_t index_ofs, size_t num_elements, uint16_t indices[num_elements]
+) {
+	uint index_size = r_index_buffer_get_index_size(ibuf);
+
+	if(index_size == 2) {
+		if(index_ofs == 0) {
+			B.index_buffer_add_indices(ibuf, 2 * num_elements, indices);
+			return;
+		}
+
+		INDEX_WRITE_LOOP(uint16_t, 2);
+	} else {
+		assert(index_size == 4);
+		INDEX_WRITE_LOOP(uint32_t, 4);
+	}
+}
+
+void r_index_buffer_add_indices_u32(
+	IndexBuffer *ibuf, uint32_t index_ofs, size_t num_elements, uint32_t indices[num_elements]
+) {
+	uint index_size = r_index_buffer_get_index_size(ibuf);
+
+	if(index_size == 4) {
+		if(index_ofs == 0) {
+			B.index_buffer_add_indices(ibuf, 4 * num_elements, indices);
+			return;
+		}
+
+		INDEX_WRITE_LOOP(uint32_t, 4);
+	} else {
+		assert(index_size == 2);
+		INDEX_WRITE_LOOP(uint16_t, 2);
+	}
 }
 
 void r_index_buffer_destroy(IndexBuffer *ibuf) {

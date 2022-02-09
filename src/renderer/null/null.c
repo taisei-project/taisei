@@ -160,13 +160,14 @@ static const char* null_vertex_buffer_get_debug_label(VertexBuffer *vbuf) { retu
 static void null_vertex_buffer_destroy(VertexBuffer *vbuf) { }
 static void null_vertex_buffer_invalidate(VertexBuffer *vbuf) { }
 
-static IndexBuffer* null_index_buffer_create(size_t max_elements) { return (void*)&placeholder; }
+static IndexBuffer* null_index_buffer_create(uint index_size, size_t max_elements) { return (void*)&placeholder; }
 static size_t null_index_buffer_get_capacity(IndexBuffer *ibuf) { return UINT32_MAX; }
+static uint null_index_buffer_get_index_size(IndexBuffer *ibuf) { return sizeof(uint32_t); }
 static const char* null_index_buffer_get_debug_label(IndexBuffer *ibuf) { return "null index buffer"; }
 static void null_index_buffer_set_debug_label(IndexBuffer *ibuf, const char *label) { }
 static void null_index_buffer_set_offset(IndexBuffer *ibuf, size_t offset) { }
 static size_t null_index_buffer_get_offset(IndexBuffer *ibuf) { return 0; }
-static void null_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_elements, uint indices[num_elements]) { }
+static void null_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) { }
 static void null_index_buffer_destroy(IndexBuffer *ibuf) { }
 
 static VertexArray* null_vertex_array_create(void) { return (void*)&placeholder; }
@@ -261,6 +262,7 @@ RendererBackend _r_backend_null = {
 		.vertex_buffer_get_stream = null_vertex_buffer_get_stream,
 		.index_buffer_create = null_index_buffer_create,
 		.index_buffer_get_capacity = null_index_buffer_get_capacity,
+		.index_buffer_get_index_size = null_index_buffer_get_index_size,
 		.index_buffer_get_debug_label = null_index_buffer_get_debug_label,
 		.index_buffer_set_debug_label = null_index_buffer_set_debug_label,
 		.index_buffer_set_offset = null_index_buffer_set_offset,

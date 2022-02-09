@@ -10,7 +10,8 @@
 
 #include "index_buffer.h"
 
-IndexBuffer* gles20_index_buffer_create(size_t max_elements) {
+IndexBuffer *gles20_index_buffer_create(uint index_size, size_t max_elements) {
+	assert(index_size == sizeof(gles20_ibo_index_t));
 	IndexBuffer *ibuf = calloc(1, sizeof(*ibuf) + max_elements * sizeof(gles20_ibo_index_t));
 	snprintf(ibuf->debug_label, sizeof(ibuf->debug_label), "Fake IBO at %p", (void*)ibuf);
 	ibuf->num_elements = max_elements;
@@ -21,7 +22,11 @@ size_t gles20_index_buffer_get_capacity(IndexBuffer *ibuf) {
 	return ibuf->num_elements;
 }
 
-const char* gles20_index_buffer_get_debug_label(IndexBuffer *ibuf) {
+uint gles20_index_buffer_get_index_size(IndexBuffer *ibuf) {
+	return sizeof(gles20_ibo_index_t);
+}
+
+const char *gles20_index_buffer_get_debug_label(IndexBuffer *ibuf) {
 	return ibuf->debug_label;
 }
 
@@ -41,15 +46,11 @@ size_t gles20_index_buffer_get_offset(IndexBuffer *ibuf) {
 	return ibuf->offset;
 }
 
-void gles20_index_buffer_add_indices(IndexBuffer *ibuf, uint index_ofs, size_t num_indices, uint indices[num_indices]) {
+void gles20_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) {
+	gles20_ibo_index_t *indices = data;
+	attr_unused size_t num_indices = data_size / sizeof(gles20_ibo_index_t);
 	assert(ibuf->offset + num_indices - 1 < ibuf->num_elements);
-
-	for(size_t i = 0; i < num_indices; ++i) {
-		uintmax_t idx = indices[i] + index_ofs;
-		assert(idx <= GLES20_IBO_MAX_INDEX);
-		ibuf->elements[ibuf->offset + i] = idx;
-	}
-
+	memcpy(ibuf->elements + ibuf->offset, indices, data_size);
 	ibuf->offset += num_indices;
 }
 
