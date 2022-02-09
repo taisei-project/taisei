@@ -77,6 +77,8 @@ bool gui_wants_text_input(void) {
 void gui_init(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT | RESF_PERMANENT, "imgui", NULL);
 
+	SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
+
 	igCreateContext(NULL);
 	ImGuiIO *io = igGetIO();
 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
