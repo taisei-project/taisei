@@ -12,3 +12,7 @@
 [submodule "external/python-zipfile-zstd"]
 	path = external/python-zipfile-zstd
 	url = https://github.com/taisei-project/python-zipfile-zstd
+[submodule "external/cimgui"]
+	path = external/cimgui
+	url = https://github.com/taisei-project/cimgui.git
+	branch = taisei
