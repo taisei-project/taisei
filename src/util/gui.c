@@ -13,6 +13,10 @@
 #include "renderer/api.h"
 #include "resource/model.h"
 
+#ifdef CIMGUI_STUB
+#error Compiling with stub cimgui library, your build is broken!
+#endif
+
 #include <SDL.h>
 
 #define MAX_VERTICES (1 << 16)
@@ -80,11 +84,11 @@ bool gui_wants_text_input(void) {
 static void gui_post_init(void);
 
 void gui_init(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT | RESF_PERMANENT, "imgui", NULL);
+	NOT_NULL(igCreateContext(NULL));
 
+	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT | RESF_PERMANENT, "imgui", NULL);
 	SDL_EventState(SDL_MOUSEMOTION, SDL_ENABLE);
 
-	igCreateContext(NULL);
 	ImGuiIO *io = igGetIO();
 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 // 	io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -237,7 +241,6 @@ void gui_begin_frame(void) {
 
 	ImGui_ImplSDL2_NewFrame(SDL_GL_GetCurrentWindow());
 	igNewFrame();
-
 
 	ImGuiDockNodeFlags f = ImGuiDockNodeFlags_PassthruCentralNode;
 	igDockSpaceOverViewport(igGetMainViewport(), f, NULL);

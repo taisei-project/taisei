@@ -167,7 +167,16 @@ dep_m           = cc.find_library('m', required : false)
 dep_basisu_transcoder = subproject('basis_universal').get_variable('basisu_transcoder_dep')
 dep_glad        = subproject('glad').get_variable('glad_dep')
 dep_koishi      = subproject('koishi').get_variable('koishi_dep')
-dep_cimgui      = subproject('cimgui').get_variable('cimgui_dep')
+
+use_imgui = is_developer_build
+imgui = subproject('cimgui')
+
+if use_imgui
+    dep_cimgui = imgui.get_variable('cimgui_dep')
+else
+    dep_cimgui = imgui.get_variable('cimgui_stub_dep')
+endif
+
 
 taisei_deps = [
     dep_basisu_transcoder,

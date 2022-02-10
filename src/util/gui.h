@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_util_gui_h
-#define IGUARD_util_gui_h
-
+#pragma once
 #include "taisei.h"
 
 DIAGNOSTIC(push)
@@ -41,5 +39,3 @@ GuiPersistentWindow *gui_add_persistent_window(
 	GuiPersistentWindowCallback callback,
 	void *userdata
 ) attr_nonnull(1, 2);
-
-#endif // IGUARD_util_gui_h

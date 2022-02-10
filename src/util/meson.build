@@ -10,7 +10,6 @@ util_src = files(
     'fbutil.c',
     'geometry.c',
     'graphics.c',
-    'gui.c',
     'io.c',
     'kvparser.c',
     'miscmath.c',
@@ -22,6 +21,12 @@ util_src = files(
 
 if is_developer_build
     util_src += files('debug.c')
+endif
+
+if use_imgui
+    util_src += files('gui.c')
+else
+    util_src += files('gui_stub.c')
 endif
 
 config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', cc.compiles(
