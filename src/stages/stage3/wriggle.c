@@ -15,26 +15,19 @@
 MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
 void stage3_draw_wriggle_spellbg(Boss *b, int time) {
-	r_color4(1,1,1,1);
-	fill_viewport(0, 0, 768.0/1024.0, "stage3/wspellbg");
-	r_color4(1,1,1,0.5);
-	r_blend(r_blend_compose(
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
-	));
-	fill_viewport(sin(time) * 0.015, time / 50.0, 1, "stage3/wspellclouds");
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(0.5, 0.5, 0.5, 0.0);
-	fill_viewport(0, time / 70.0, 1, "stage3/wspellswarm");
-	r_blend(r_blend_compose(
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_ONE, BLENDOP_SUB,
-		BLENDFACTOR_ZERO,      BLENDFACTOR_ONE, BLENDOP_ADD
-	));
-	r_color4(1,1,1,0.4);
-	fill_viewport(cos(time) * 0.02, time / 30.0, 1, "stage3/wspellclouds");
-
-	r_blend(BLEND_PREMUL_ALPHA);
-	r_color4(1, 1, 1, 1);
+	r_state_push();
+	r_blend(BLEND_NONE);
+	r_shader("stage3_wriggle_bg");
+	r_uniform_sampler("tex_bg", "stage3/wspellbg");
+	r_uniform_sampler("tex_clouds", "stage3/wspellclouds");
+	r_uniform_sampler("tex_swarm", "stage3/wspellswarm");
+	r_uniform_float("time", time / 60.0f);
+	r_mat_mv_push();
+	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_mv_translate(0.5, 0.5, 0);
+	r_draw_quad();
+	r_mat_mv_pop();
+	r_state_pop();
 }
 
 Boss *stage3_spawn_wriggle(cmplx pos) {

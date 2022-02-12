@@ -80,6 +80,7 @@ glsl_files = files(
     'ssr.vert.glsl',
     'ssr_water.frag.glsl',
     'stage1_water.frag.glsl',
+    'stage3_wriggle_bg.frag.glsl',
     'stage6_sky.frag.glsl',
     'stage6_sky.vert.glsl',
     'standard.frag.glsl',
