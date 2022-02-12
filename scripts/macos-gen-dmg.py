@@ -26,6 +26,19 @@ def main(args):
         nargs='?',
     )
 
+    parser.add_argument('--universal',
+        help='Universal build',
+        default=False,
+        action=argparse.BooleanOptionalAction,
+    )
+
+    parser.add_argument('combine_dir',
+        help='The build directory (defaults to CWD)',
+        default=Path(os.getcwd()),
+        type=Path,
+        nargs='?',
+    )
+
     args = parser.parse_args(args[1:])
 
     with temp_install(args.build_dir) as install_path:
@@ -45,7 +58,11 @@ def main(args):
                 --icon "COPYING" 125 350
                 --icon "ENVIRON.html" 275 350
                 --hide-extension "Taisei.app"
-                --app-drop-link 300 50''') + [args.output, str(install_path)]
+                --app-drop-link 300 50''')
+            if args.universal:
+                command += [args.output, str(args.combine_dir)]
+            else:
+                command += [args.output, str(install_path)]
         else:
             (install_path / 'Applications').symlink_to('/Applications')
 
@@ -60,4 +77,9 @@ def main(args):
 
 
 if __name__ == '__main__':
-    run_main(main)
+    try:
+        run_main(main)
+    except subprocess.CalledProcessError as e:
+        print("main dmg creation method failed, trying backup")
+        import sys
+        main(sys.argv)
