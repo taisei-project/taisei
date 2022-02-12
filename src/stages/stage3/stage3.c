@@ -110,6 +110,7 @@ static void stage3_preload(void) {
 		"maristar_bombbg",
 		"pbr",
 		"pbr_roughness_alpha_discard",
+		"stage3_wriggle_bg",
 		"zbuf_fog",
 	NULL);
 	preload_resources(RES_ANIM, RESF_DEFAULT,
