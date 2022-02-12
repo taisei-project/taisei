@@ -119,7 +119,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 	));
 
 	int warps_left = ARGS.num_warps;
-	
+
 	p->angle = carg(ARGS.vel);
 
 	assert(ARGS.activation_delay >= 0);
@@ -161,7 +161,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 		);
 
 		INVOKE_TASK(toe_boson_effect_spin, ENT_BOX(part));
-		
+
 	}
 
 	p->move = move_linear(ARGS.vel);
@@ -211,14 +211,14 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 				.timeout = 30,
 				.flags = PFLAG_REQUIREDPARTICLE,
 			);
-			
+
 			INVOKE_TASK(toe_boson_effect_spin, ENT_BOX(part));
 		}
 
 		float lookahead_time = 40;
 		cmplx pos_lookahead = p->pos + ARGS.vel * lookahead_time;
 		cmplx dir = wrap_around(&pos_lookahead);
-		
+
 		if(dir != 0 && t % 3 == 0 && warps_left > 0) {
 			cmplx pos0 = pos_lookahead - VIEWPORT_W / 2.0 * (1 - creal(dir)) - I * VIEWPORT_H / 2 * (1 - cimag(dir));
 
@@ -367,7 +367,7 @@ DEFINE_TASK(toe_laser) {
 			cmplx newpos = l->prule(l, l->deathtime);
 			INVOKE_TASK(toe_laser_respawn, newpos, ARGS.vel, ARGS.type);
 		}
-		
+
 		l->pos += drift;
 		YIELD;
 	}
@@ -450,7 +450,7 @@ TASK(toe_fermion, { ProjPrototype *proto; cmplx pos; cmplx dest; int color_idx; 
 		} else {
 			center_pos += cnormalize(center_pos) * (t - speeduptime) * 0.01;
 		}
-		
+
 		p->pos = ARGS.pos + center_pos * cdir(0.01 * t) + 5 * cdir(t * 0.05 + phase);
 
 		if(ARGS.disable_yukawa) {
@@ -571,12 +571,12 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 	int cycle_step = 200;
 	int solo_cycles = (FERMIONTIME - start_time) / cycle_step - global.diff + 1;
 	int warp_cycles = (HIGGSTIME - start_time) / cycle_step - 1;
-
+	int count;
 
 	for(int cycle = 0; cycle < end_time/cycle_step; cycle++) {
-		int count = 30 - (count == 0); // get rid of the spawn safe spot on first cycle
+		count = 30 - (count == 0); // get rid of the spawn safe spot on first cycle
 		int cycle_time = count * step;
-		
+
 		for(int t = 0; t < cycle_time; t += WAIT(step)) {
 			play_sfx("shot2");
 
@@ -617,7 +617,7 @@ TASK(toe_part_fermions, { BoxedBoss boss; int duration; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	play_sfx("charge_generic");
 	stage_shake_view(10);
-	
+
 	int step = 2;
 
 	for(int t = 0; t < ARGS.duration/step; t++) {
@@ -665,12 +665,12 @@ TASK(toe_part_symmetry, { BoxedBoss boss; }) {
 TASK(toe_part_higgs, { BoxedBoss boss; int fast_duration; int full_duration; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	int fast_step = 4;
-	int slow_step = 8; 
+	int slow_step = 8;
 
 	int fast_steps = ARGS.fast_duration/fast_step;
 	int full_steps = fast_steps + (ARGS.full_duration - ARGS.fast_duration)/slow_step;
 
-	int time = 0; 
+	int time = 0;
 
 	for(int t = 0; t < full_steps; t++) {
 		play_sfx_loop("shot1_loop");
@@ -679,11 +679,11 @@ TASK(toe_part_higgs, { BoxedBoss boss; int fast_duration; int full_duration; }) 
 		for(int dir = 0; dir < 2; dir++) {
 			for(int arm = 0; arm < arms; arm++) {
 				cmplx vel = -2 * I * cdir(M_PI / (arms+1) * (arm+1) + 0.1 * sin(time * 0.1 + arm));
-				
+
 				if(dir) {
 					vel = -conj(vel);
 				}
-				
+
 				if(t > fast_steps) {
 					int tr = t - fast_steps;
 					vel *= cexp(-I * 0.064 * tr * tr + 0.01 * rng_real() * dir);
@@ -696,7 +696,7 @@ TASK(toe_part_higgs, { BoxedBoss boss; int fast_duration; int full_duration; }) 
 				);
 			}
 		}
-		
+
 		time += WAIT(t < fast_steps ? 4 : 8);
 	}
 }
@@ -730,7 +730,7 @@ TASK(toe_noise_sfx) {
 DEFINE_EXTERN_TASK(stage6_spell_toe) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	
+
 	stage_shake_view(50);
 	boss_set_portrait(boss, "elly", "beaten", "shouting");
 	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
@@ -774,7 +774,7 @@ DEFINE_EXTERN_TASK(stage6_spell_toe) {
 				.deathtime = LASER_LENGTH / 2.0
 			);
 		}
-		
+
 		WAIT(100);
 	}
 }

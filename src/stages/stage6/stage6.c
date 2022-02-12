@@ -188,7 +188,6 @@ StageProcs stage6_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.event = stage6_events,
 	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
@@ -198,6 +197,5 @@ StageProcs stage6_spell_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.event = stage6_spellpractice_events,
 	.shader_rules = stage6_bg_effects,
 };

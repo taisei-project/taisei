@@ -128,7 +128,7 @@ static void baryons_particles(EllyBaryons *baryons) {
 		.scale = baryons->scale,
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
-	
+
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/baryon"),
 		.pos = baryons->center_pos,
@@ -137,12 +137,12 @@ static void baryons_particles(EllyBaryons *baryons) {
 		.timeout = 4,
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
-	
+
 
 	for(int i = 0; i < NUM_BARYONS; i++) {
 		cmplx pos = baryons->poss[i];
 		cmplx pos_next = baryons->poss[(i+1) % NUM_BARYONS];
-		
+
 		PARTICLE(
 			.sprite_ptr = res_sprite("stage6/baryon"),
 			.pos = pos,
@@ -230,7 +230,7 @@ EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss) {
 
 
 // REMOVE
-void scythe_draw(Enemy *, int, bool) {
+void scythe_draw(Enemy *e, int t, bool b) {
 }
 
 // REMOVE

@@ -197,6 +197,8 @@ TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 
 }
 
+// TODO fix this so it works
+attr_unused
 TASK_WITH_INTERFACE(elly_insert_interboss_dialog, BossAttack) {
 	INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
@@ -209,7 +211,7 @@ TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 
 	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
 
-	start_fall_over();
+	stage6_bg_start_fall_over();
 	stage_unlock_bgm("stage6boss_phase2");
 	stage_start_bgm("stage6boss_phase3");
 }
@@ -344,14 +346,15 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 
 	WAIT(3800);
 	INVOKE_TASK(spawn_boss);
-	/*
-	AT(3800) {
-		stage_unlock_bgm("stage6");
-		global.boss = create_elly();
-	}
+	WAIT_EVENT(&global.boss->events.defeated);
 
-	AT(3805) {
-		stage_unlock_bgm("stage6boss_phase3");
-		stage_finish(GAMEOVER_SCORESCREEN);
-	}*/
+	stage_unlock_bgm("stage6");
+	WAIT(300);
+
+	// TODO make these unlock at better times
+	stage_unlock_bgm("stage6boss_phase2");
+	stage_unlock_bgm("stage6boss_phase3");
+
+	WAIT(5);
+	stage_finish(GAMEOVER_SCORESCREEN);
 }
