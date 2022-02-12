@@ -100,7 +100,3 @@ def main(args):
 
     args = parser.parse_args(args[1:])
     print(get(args=args).format(template=args.format))
-
-if __name__ == '__main__':
-    import sys
-    main(sys.argv)

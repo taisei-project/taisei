@@ -26,15 +26,8 @@ def main(args):
         nargs='?',
     )
 
-    parser.add_argument('--universal',
-        help='Universal build',
-        default=False,
-        action=argparse.BooleanOptionalAction,
-    )
-
-    parser.add_argument('combine_dir',
-        help='The build directory (defaults to CWD)',
-        default=Path(os.getcwd()),
+    parser.add_argument('universal_dmg',
+        help='If specified, creates a universal dmg (x64/arm64)',
         type=Path,
         nargs='?',
     )
@@ -59,8 +52,8 @@ def main(args):
                 --icon "ENVIRON.html" 275 350
                 --hide-extension "Taisei.app"
                 --app-drop-link 300 50''')
-            if args.universal:
-                command += [args.output, str(args.combine_dir)]
+            if args.universal_dmg:
+                command += [args.output, str(args.universal_dmg)]
             else:
                 command += [args.output, str(install_path)]
         else:
