@@ -21,4 +21,4 @@ lipo -create -output $MESON_BUILD_ROOT_MACOS_COMBINED/$TAISEI_BIN_PATH $MESON_BU
 TAISEI_VERSION=$($PWD/scripts/taiseilib/version.py)
 echo $TAISEI_VERSION
 
-$PWD/scripts/macos-gen-dmg.py --universal $BUILD_DIR/compiled/Taisei-$TAISEI_VERSION.dmg $MESON_BUILD_ROOT_MACOS_X64 $MESON_BUILD_ROOT_MACOS_COMBINED
+$PWD/scripts/macos-gen-dmg.py --universal $BUILD_DIR/compiled/Taisei-$TAISEI_VERSION-universal.dmg $MESON_BUILD_ROOT_MACOS_X64 $MESON_BUILD_ROOT_MACOS_COMBINED
