@@ -32,7 +32,7 @@ void iku_lightning_particle(cmplx pos) {
 		.color = RGBA(1.0, 1.0, 1.0, 0.0),
 		.timeout = 20,
 		.draw_rule = pdraw_timeout_fade(0.8, 0.0),
-		.angle = rng_real() * M_TAU,
+		.angle = rng_angle(),
 	);
 }
 
