@@ -95,7 +95,7 @@ jobs:
   macos-test-build:
     name: macOS (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
