@@ -334,6 +334,7 @@ static bool stage_input_key_filter(KeyIndex key, bool is_release) {
 	return true;
 }
 
+attr_nonnull_all
 static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 	ReplayStage *rstg = memdup(rstg_src, sizeof(*rstg));
 	rstg->num_events = 0;
@@ -881,12 +882,12 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		replay_input(fstate);
 	} else {
 		stage_input(fstate);
-	}
 
-	if(fstate->dynstage_generation != dynstage_get_generation()) {
-		log_info("Stages library updated, attempting to hot-reload");
-		stage_do_quicksave(fstate, true);   // no-op if user has a manual save
-		stage_do_quickload(fstate);
+		if(fstate->dynstage_generation != dynstage_get_generation()) {
+			log_info("Stages library updated, attempting to hot-reload");
+			stage_do_quicksave(fstate, true);   // no-op if user has a manual save
+			stage_do_quickload(fstate);
+		}
 	}
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
