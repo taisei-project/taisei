@@ -1212,3 +1212,7 @@ float stage_get_view_shake_strength(void) {
 
 	return 0;
 }
+
+void stage_load_quicksave(void) {
+	stage_do_quickload(NOT_NULL(_current_stage_state));
+}
