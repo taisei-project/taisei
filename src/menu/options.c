@@ -971,329 +971,307 @@ static void update_options_menu(MenuData *menu) {
 	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 
-	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
-		if(e->name) {
-			e->drawdata += 0.2 * (10*(i == menu->cursor) - e->drawdata);
-		}
-	});
+	animate_menu_list_entries(menu);
 }
 
-static void draw_options_menu(MenuData *menu) {
-	OptionsMenuContext *ctx = menu->context;
+static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
+	MenuData *menu = ctx;
+	OptionBinding *bind = bind_get(menu, i);
+	Color clr;
 
-	draw_options_menu_bg(menu);
-	draw_menu_title(menu, ctx->title);
+	if(!e->name) {
+		return;
+	}
 
-	r_mat_mv_push();
-	r_mat_mv_translate(100, 100, 0);
+	r_shader("text_default");
 
-	draw_menu_selector(menu->drawdata[0], menu->drawdata[2], menu->drawdata[1], 34, menu->frames);
+	float a = e->drawdata * 0.1;
+	float alpha = entry_is_active(menu, i) ? 1 : 0.5;
 
-	int caption_drawn = 2;
+	clr = *r_color_current();
 
-	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {
-		OptionBinding *bind = bind_get(menu, i);
-		Color clr;
+	if(!entry_is_active(menu, i)) {
+		color_mul_scalar(&clr, 0.5f);
+	}
 
-		if(!e->name) {
-			continue;
-		}
+	text_draw(e->name, &(TextParams) {
+		.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i },
+		.color = &clr,
+	});
 
-		float a = e->drawdata * 0.1;
-		float alpha = entry_is_active(menu, i) ? 1 : 0.5;
+	if(bind) {
+		int j, origin = SCREEN_W - 220;
 
-		if(e->action == NULL) {
-			clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
-		} else {
-			float ia = 1-a;
-			clr = *RGBA_MUL_ALPHA(0.9 + ia * 0.1, 0.6 + ia * 0.4, 0.2 + ia * 0.8, (0.7 + 0.3 * a) * alpha);
-		}
+		switch(bind->type) {
+			case BT_IntValue: {
+				int val = bind_getvalue(bind);
 
-		r_shader("text_default");
+				if(bind->configentry == CONFIG_PRACTICE_POWER) {
+					Font *fnt_int = res_font("standard");
+					Font *fnt_fract = res_font("small");
 
-		text_draw(e->name, &(TextParams) {
-			.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i },
-			.color = &clr,
-		});
-
-		if(bind) {
-			int j, origin = SCREEN_W - 220;
-
-			if(caption_drawn == 2 && bind->type != BT_KeyBinding)
-				caption_drawn = 0;
-
-			switch(bind->type) {
-				case BT_IntValue: {
-					int val = bind_getvalue(bind);
-
-					if(bind->configentry == CONFIG_PRACTICE_POWER) {
-						Font *fnt_int = res_font("standard");
-						Font *fnt_fract = res_font("small");
-
-						draw_fraction(
-							val,
-							ALIGN_RIGHT,
-							origin,
-							20*i,
-							fnt_int,
-							fnt_fract,
-							&clr,
-							&clr,
-							false
-						);
-					} else if(bind->values) {
-						for(j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
-							if(j != bind->valrange_max && !bind->displaysingle) {
-								origin -= text_width(res_font("standard"), bind->values[j+1], 0) + 5;
-							}
-
-							if(val == j) {
-								clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
-							} else {
-								clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
-							}
-
-							text_draw(bind->values[j], &(TextParams) {
-								.pos = { origin, 20*i },
-								.align = ALIGN_RIGHT,
-								.color = &clr,
-							});
-						}
-					} else {
-						char tmp[16];   // who'd use a 16-digit number here anyway?
-						snprintf(tmp, 16, "%d", bind_getvalue(bind));
-
-						text_draw(tmp, &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
-					}
-					break;
-				}
-
-				case BT_KeyBinding: {
-					if(bind->blockinput) {
-						text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = RGBA(0.5, 1, 0.5, 1),
-						});
-					} else {
-						const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
-
-						if(!txt || !*txt) {
-							txt = "Unknown";
+					draw_fraction(
+						val,
+						ALIGN_RIGHT,
+						origin,
+						20*i,
+						fnt_int,
+						fnt_fract,
+						&clr,
+						&clr,
+						false
+					);
+				} else if(bind->values) {
+					for(j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
+						if(j != bind->valrange_max && !bind->displaysingle) {
+							origin -= text_width(res_font("standard"), bind->values[j+1], 0) + 5;
 						}
 
-						text_draw(txt, &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
-					}
-
-					if(!caption_drawn) {
-						text_draw("Controls", &(TextParams) {
-							.pos = { (SCREEN_W - 200)/2, 20*(i-1) },
-							.align = ALIGN_CENTER,
-							.color = RGBA(0.7, 0.7, 0.7, 0.7),
-						});
-						caption_drawn = 1;
-					}
-					break;
-				}
-
-				case BT_GamepadDevice: {
-					if(bind_isactive(bind)) {
-						// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
-						bind->valrange_max = gamepad_device_count() - 1;
-
-						if(bind->selected < -1 || bind->selected > bind->valrange_max) {
-							bind->selected = gamepad_get_active_device();
-
-							if(bind->selected < -1) {
-								bind->selected = -1;
-							}
-						}
-
-						char *txt;
-						char buf[64];
-
-						if(bind->valrange_max >= 0) {
-							if(bind->selected < 0) {
-								txt = "All devices";
-							} else {
-								snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
-								txt = buf;
-							}
+						if(val == j) {
+							clr = *RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha);
 						} else {
-							txt = "No devices available";
+							clr = *RGBA_MUL_ALPHA(0.5, 0.5, 0.5, 0.7 * alpha);
 						}
 
-						text_draw(txt, &(TextParams) {
+						text_draw(bind->values[j], &(TextParams) {
 							.pos = { origin, 20*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,
-							.max_width = (SCREEN_W - 220) / 2,
 						});
 					}
+				} else {
+					char tmp[16];   // who'd use a 16-digit number here anyway?
+					snprintf(tmp, 16, "%d", bind_getvalue(bind));
 
-					break;
+					text_draw(tmp, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = &clr,
+					});
+				}
+				break;
+			}
+
+			case BT_KeyBinding: {
+				if(bind->blockinput) {
+					text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = RGBA(0.5, 1, 0.5, 1),
+					});
+				} else {
+					const char *txt = SDL_GetScancodeName(config_get_int(bind->configentry));
+
+					if(!txt || !*txt) {
+						txt = "Unknown";
+					}
+
+					text_draw(txt, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = &clr,
+					});
 				}
 
-				case BT_VideoDisplay: {
-					// XXX: see the BT_GamepadDevice case...
-					bind->valrange_max = video_num_displays() - 1;
+				break;
+			}
 
-					if(bind->selected < 0 || bind->selected > bind->valrange_max) {
-						bind->selected = video_current_display();
+			case BT_GamepadDevice: {
+				if(bind_isactive(bind)) {
+					// XXX: I'm not exactly a huge fan of fixing up state in drawing code, but it seems the way to go for now...
+					bind->valrange_max = gamepad_device_count() - 1;
 
-						if(bind->selected < 0) {
-							bind->selected = 0;
+					if(bind->selected < -1 || bind->selected > bind->valrange_max) {
+						bind->selected = gamepad_get_active_device();
+
+						if(bind->selected < -1) {
+							bind->selected = -1;
 						}
 					}
 
+					char *txt;
 					char buf[64];
-					snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, video_display_name(bind->selected));
-					text_draw(buf, &(TextParams) {
+
+					if(bind->valrange_max >= 0) {
+						if(bind->selected < 0) {
+							txt = "All devices";
+						} else {
+							snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, gamepad_device_name(bind->selected));
+							txt = buf;
+						}
+					} else {
+						txt = "No devices available";
+					}
+
+					text_draw(txt, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 						.max_width = (SCREEN_W - 220) / 2,
 					});
-					break;
 				}
 
-				case BT_GamepadKeyBinding:
-				case BT_GamepadAxisBinding: {
-					bool is_axis = (bind->type == BT_GamepadAxisBinding);
+				break;
+			}
 
-					if(bind->blockinput) {
-						char *text = is_axis ? "Move an axis to assign, Back to cancel"
-						                     : "Press a button to assign, Back to cancel";
+			case BT_VideoDisplay: {
+				// XXX: see the BT_GamepadDevice case...
+				bind->valrange_max = video_num_displays() - 1;
 
-						text_draw(text, &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = RGBA(0.5, 1, 0.5, 1),
-						});
-					} else if(config_get_int(bind->configentry) >= 0) {
-						int id = config_get_int(bind->configentry);
-						const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
-						text_draw(name, &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
-					} else {
-						text_draw("Unbound", &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
+				if(bind->selected < 0 || bind->selected > bind->valrange_max) {
+					bind->selected = video_current_display();
+
+					if(bind->selected < 0) {
+						bind->selected = 0;
 					}
-					break;
 				}
 
-				case BT_StrValue: {
-					if(bind->blockinput) {
-						if(*bind->strvalue) {
-							text_draw(bind->strvalue, &(TextParams) {
-								.pos = { origin, 20*i },
-								.align = ALIGN_RIGHT,
-								.color = RGBA(0.5, 1, 0.5, 1.0),
-							});
-						}
-					} else {
-						text_draw(config_get_str(bind->configentry), &(TextParams) {
-							.pos = { origin, 20*i },
-							.align = ALIGN_RIGHT,
-							.color = &clr,
-						});
-					}
-					break;
-				}
+				char buf[64];
+				snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, video_display_name(bind->selected));
+				text_draw(buf, &(TextParams) {
+					.pos = { origin, 20*i },
+					.align = ALIGN_RIGHT,
+					.color = &clr,
+					.max_width = (SCREEN_W - 220) / 2,
+				});
+				break;
+			}
 
-				case BT_Resolution: {
-					char tmp[32];
-					int w, h;
-					VideoMode m;
+			case BT_GamepadKeyBinding:
+			case BT_GamepadAxisBinding: {
+				bool is_axis = (bind->type == BT_GamepadAxisBinding);
 
-					if(bind->selected == -1) {
-						m = video_get_current_mode();
-					} else {
-						bool fullscreen = video_is_fullscreen();
-						m = video_get_mode(bind->selected, fullscreen);
-					}
+				if(bind->blockinput) {
+					char *text = is_axis ? "Move an axis to assign, Back to cancel"
+											: "Press a button to assign, Back to cancel";
 
-					w = m.width;
-					h = m.height;
-
-					snprintf(tmp, sizeof(tmp), "%dx%d", w, h);
-					text_draw(tmp, &(TextParams) {
+					text_draw(text, &(TextParams) {
+						.pos = { origin, 20*i },
+						.align = ALIGN_RIGHT,
+						.color = RGBA(0.5, 1, 0.5, 1),
+					});
+				} else if(config_get_int(bind->configentry) >= 0) {
+					int id = config_get_int(bind->configentry);
+					const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
+					text_draw(name, &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
-					break;
-				}
-
-				case BT_FramebufferResolution: {
-					IntExtent fbsize = r_framebuffer_get_size(video_get_screen_framebuffer());
-					char tmp[32];
-					snprintf(tmp, sizeof(tmp), "%gx  %dx%d", video_get_scaling_factor(), fbsize.w, fbsize.h);
-					text_draw(tmp, &(TextParams) {
+				} else {
+					text_draw("Unbound", &(TextParams) {
 						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
-					break;
 				}
+				break;
+			}
 
-				case BT_Scale: {
-					int w  = 200;
-					int h  = 5;
-					int cw = 5;
-
-					float val = config_get_float(bind->configentry);
-
-					float ma = bind->scale_max;
-					float mi = bind->scale_min;
-					float pos = (val - mi) / (ma - mi);
-
-					char tmp[8];
-					snprintf(tmp, 8, "%.0f%%", 100 * val);
-					if(!strcmp(tmp, "-0%"))
-						strcpy(tmp, "0%");
-
-					r_mat_mv_push();
-					r_mat_mv_translate(origin - (w+cw) * 0.5, 20 * i, 0);
-					text_draw(tmp, &(TextParams) {
-						.pos = { -((w+cw) * 0.5 + 10), 0 },
+			case BT_StrValue: {
+				if(bind->blockinput) {
+					if(*bind->strvalue) {
+						text_draw(bind->strvalue, &(TextParams) {
+							.pos = { origin, 20*i },
+							.align = ALIGN_RIGHT,
+							.color = RGBA(0.5, 1, 0.5, 1.0),
+						});
+					}
+				} else {
+					text_draw(config_get_str(bind->configentry), &(TextParams) {
+						.pos = { origin, 20*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
-					r_shader_standard_notex();
-					r_mat_mv_push();
-					r_mat_mv_scale(w+cw, h, 1);
-					r_color(RGBA_MUL_ALPHA(1, 1, 1, (0.1 + 0.2 * a) * alpha));
-					r_draw_quad();
-					r_mat_mv_pop();
-					r_mat_mv_translate(w * (pos - 0.5), 0, 0);
-					r_mat_mv_scale(cw, h, 0);
-					r_color(RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha));
-					r_draw_quad();
-					r_mat_mv_pop();
-					r_shader("text_default");
-
-					break;
 				}
+				break;
+			}
+
+			case BT_Resolution: {
+				char tmp[32];
+				int w, h;
+				VideoMode m;
+
+				if(bind->selected == -1) {
+					m = video_get_current_mode();
+				} else {
+					bool fullscreen = video_is_fullscreen();
+					m = video_get_mode(bind->selected, fullscreen);
+				}
+
+				w = m.width;
+				h = m.height;
+
+				snprintf(tmp, sizeof(tmp), "%dx%d", w, h);
+				text_draw(tmp, &(TextParams) {
+					.pos = { origin, 20*i },
+					.align = ALIGN_RIGHT,
+					.color = &clr,
+				});
+				break;
+			}
+
+			case BT_FramebufferResolution: {
+				IntExtent fbsize = r_framebuffer_get_size(video_get_screen_framebuffer());
+				char tmp[32];
+				snprintf(tmp, sizeof(tmp), "%gx  %dx%d", video_get_scaling_factor(), fbsize.w, fbsize.h);
+				text_draw(tmp, &(TextParams) {
+					.pos = { origin, 20*i },
+					.align = ALIGN_RIGHT,
+					.color = &clr,
+				});
+				break;
+			}
+
+			case BT_Scale: {
+				int w  = 200;
+				int h  = 5;
+				int cw = 5;
+
+				float val = config_get_float(bind->configentry);
+
+				float ma = bind->scale_max;
+				float mi = bind->scale_min;
+				float pos = (val - mi) / (ma - mi);
+
+				char tmp[8];
+				snprintf(tmp, 8, "%.0f%%", 100 * val);
+				if(!strcmp(tmp, "-0%"))
+					strcpy(tmp, "0%");
+
+				r_mat_mv_push();
+				r_mat_mv_translate(origin - (w+cw) * 0.5, 20 * i, 0);
+				text_draw(tmp, &(TextParams) {
+					.pos = { -((w+cw) * 0.5 + 10), 0 },
+					.align = ALIGN_RIGHT,
+					.color = &clr,
+				});
+				r_shader_standard_notex();
+				r_mat_mv_push();
+				r_mat_mv_scale(w+cw, h, 1);
+				r_color(RGBA_MUL_ALPHA(1, 1, 1, (0.1 + 0.2 * a) * alpha));
+				r_draw_quad();
+				r_mat_mv_pop();
+				r_mat_mv_translate(w * (pos - 0.5), 0, 0);
+				r_mat_mv_scale(cw, h, 0);
+				r_color(RGBA_MUL_ALPHA(0.9, 0.6, 0.2, alpha));
+				r_draw_quad();
+				r_mat_mv_pop();
+				r_shader("text_default");
+
+				break;
 			}
 		}
-	});
-	r_shader_standard();
-	r_mat_mv_pop();
+	}
+}
+
+static void draw_options_menu(MenuData *menu) {
+	OptionsMenuContext *ctx = menu->context;
+	r_state_push();
+	draw_options_menu_bg(menu);
+	draw_menu_title(menu, ctx->title);
+	draw_menu_list(menu, 100, 100, options_draw_item, SCREEN_H * 1.1, menu);
+	r_state_pop();
 }
 
 // --- Input/event processing --- //
