@@ -71,7 +71,7 @@ static void musicroom_logic(MenuData *m) {
 	});
 }
 
-static void musicroom_draw_item(MenuEntry *e, int i, int cnt) {
+static void musicroom_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	if(!e->name) {
 		return;
 	}
@@ -130,7 +130,7 @@ static void musicroom_draw(MenuData *m) {
 	r_state_push();
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Music Room");
-	draw_menu_list(m, 100, 100, musicroom_draw_item, SCREEN_H / GOLDEN_RATIO);
+	draw_menu_list(m, 100, 100, musicroom_draw_item, SCREEN_H / GOLDEN_RATIO, NULL);
 
 	float comment_height = SCREEN_H * (1 - 1 / GOLDEN_RATIO);
 	float comment_alpha = (1 - menu_fade(m)) * m->drawdata[3];

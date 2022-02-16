@@ -21,7 +21,7 @@
 static void draw_cutsceneview_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Cutscene Viewer");
-	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
+	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
 static void restart_menu_bgm(CallChainResult ccr) {

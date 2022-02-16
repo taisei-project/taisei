@@ -228,7 +228,7 @@ static void replayview_draw_stagemenu(MenuData *m) {
 	r_mat_mv_pop();
 }
 
-static void replayview_drawitem(MenuEntry *e, int item, int cnt) {
+static void replayview_drawitem(MenuEntry *e, int item, int cnt, void *ctx) {
 	ReplayviewItemContext *ictx = e->arg;
 
 	if(!ictx) {
@@ -351,7 +351,7 @@ static void replayview_draw(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Replays");
 
-	draw_menu_list(m, 50, 100, replayview_drawitem, SCREEN_H);
+	draw_menu_list(m, 50, 100, replayview_drawitem, SCREEN_H, NULL);
 
 	if(ctx->submenu) {
 		ctx->submenu->draw(ctx->submenu);

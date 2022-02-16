@@ -32,7 +32,7 @@ static void menu_action_enter_charprofileview(MenuData *menu, void *arg) {
 static void draw_media_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Media Room");
-	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
+	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
 MenuData *create_media_menu(void) {

@@ -17,7 +17,7 @@
 static void draw_spell_menu(MenuData *m) {
 	draw_options_menu_bg(m);
 	draw_menu_title(m, "Spell Practice");
-	draw_menu_list(m, 100, 100, NULL, SCREEN_H);
+	draw_menu_list(m, 100, 100, NULL, SCREEN_H, NULL);
 }
 
 MenuData* create_spell_menu(void) {

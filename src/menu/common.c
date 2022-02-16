@@ -224,7 +224,7 @@ void draw_menu_title(MenuData *m, const char *title) {
 	});
 }
 
-void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int, int), float scroll_threshold) {
+void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int, int, void*), float scroll_threshold, void *userdata) {
 	r_mat_mv_push();
 	float offset = smoothmin(0, scroll_threshold * 0.8 - y - m->drawdata[2], 80);
 	r_mat_mv_translate(x, y + offset, 0);
@@ -253,7 +253,7 @@ void draw_menu_list(MenuData *m, float x, float y, void (*draw)(MenuEntry*, int,
 		r_color(&clr);
 
 		if(draw && i < m->entries.num_elements-1) {
-			draw(e, i, m->entries.num_elements);
+			draw(e, i, m->entries.num_elements, userdata);
 		} else if(e->name) {
 			text_draw(e->name, &(TextParams) {
 				.pos = { 20 - e->drawdata, 20*i },
