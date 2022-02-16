@@ -20,15 +20,22 @@
 #define INVALID_WD (-1)
 
 #define WATCHED_EVENTS ( \
-	IN_ATTRIB          | \
 	IN_CLOSE_WRITE     | \
 	IN_DELETE_SELF     | \
 	IN_MODIFY          | \
 	IN_MOVE_SELF       | \
 0)
 
+// FIXME: This doesn't detect removals of files with more than 1 hard link.
+// IM_DELETE_SELF is only emitted when the link count drops to 0.
+// Otherwise, IN_ATTRIB is emitted, indicating that the number of hard links has changed.
+// Unfortunately, IN_ATTRIB is also emitted for *any* attribute change on the file, such as
+// permissions or even access time, and there is no good way to distinguish a hard link removal from
+// anything else. In principle, we could test if the path we're interested in monitoring is still
+// accessible after an IN_ATTRIB event. However, that would require us to actually track the paths // here, complicating the code. Note that it is possible for multiple watched paths to resolve to
+// the same file/watch descriptor. In the current implementation, FileWatch instances correspond
+// 1-to-1 to watch descriptors, not paths.
 #define DELETION_EVENTS ( \
-	IN_ATTRIB           | /* could be an inode refcount update… */ \
 	IN_DELETE_SELF      | \
 	IN_IGNORED          | \
 	IN_MOVE_SELF        | \
