@@ -12,7 +12,6 @@
 
 static cmplx bolts2_laser(Laser *l, float t) {
 	if(t == EVENT_BIRTH) {
-		l->shader = res_shader_optional("lasers/iku_lightning");
 		return 0;
 	}
 
