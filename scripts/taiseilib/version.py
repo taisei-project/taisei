@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-try:
-    from . import common
-except:
-    import common
-
+from . import common
 import sys
 import subprocess
 import shlex
