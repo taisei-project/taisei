@@ -28,8 +28,10 @@ def package_dmg(install_path, destination):
             --icon "COPYING" 125 350
             --icon "ENVIRON.html" 275 350
             --hide-extension "Taisei.app"
-            --app-drop-link 300 50
-            {0} {1}'''.format(destination, str(install_path)))
+            --app-drop-link 300 50''') + [
+                destination,
+                str(install_path),
+            ]
     else:
         (install_path / 'Applications').symlink_to('/Applications')
         command = shlex.split('genisoimage -V Taisei -D -R -apple -no-pad -o') + [

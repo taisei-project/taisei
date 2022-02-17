@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+
 from . import common
+
 import sys
 import subprocess
 import shlex
