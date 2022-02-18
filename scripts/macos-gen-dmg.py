@@ -64,9 +64,9 @@ def main(args):
     )
 
     parser.add_argument('--release',
-        help='Generate release files',
-        dest='release',
-        action='store_true',
+        help='Generate release files (.sig, .sha256sum)',
+        default=False,
+        action=argparse.BooleanOptionalAction
     )
 
     args = parser.parse_args(args[1:])

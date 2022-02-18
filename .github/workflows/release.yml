@@ -184,7 +184,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: taisei_macos_universal_release_log
-        path: build/macos/meson-logs/meson-log.txt
+        path: build-release/*/meson-logs/meson-log.txt
         if-no-files-found: warn
 
   windows-release-build-x64:
