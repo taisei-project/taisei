@@ -163,7 +163,7 @@ jobs:
 
     - name: Configure & Build
       run: >
-        $(pwd)/scripts/macos_build_universal.sh $(pwd)/build-release/ $PWD
+        $(pwd)/scripts/macos_build_universal.sh $(pwd)/build-release/ $(pwd)
       shell: bash
 
     - name: Run Test
@@ -255,8 +255,8 @@ jobs:
     - name: Configure
       run: >
         meson setup build/windows
-        -Dangle_libegl=$(pwd)/angle-compiled/angle/Windows-x64-dll/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/angle/Windows-x64-dll/libGLESv2.dll
+        -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -360,8 +360,8 @@ jobs:
     - name: Configure
       run: >
         meson setup build/windows
-        -Dangle_libegl=$(pwd)/angle-compiled/angle/Windows-x86-dll/libEGL.dll
-        -Dangle_libgles=$(pwd)/angle-compiled/angle/Windows-x86-dll/libGLESv2.dll
+        -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
+        -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
 
