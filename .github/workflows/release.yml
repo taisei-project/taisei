@@ -120,7 +120,7 @@ jobs:
 
   macos-release-build-x64:
     name: macOS (x64)
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - name: Install Python
       uses: actions/setup-python@v2

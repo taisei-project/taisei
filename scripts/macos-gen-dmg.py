@@ -63,16 +63,16 @@ def main(args):
         nargs='?',
     )
 
-    parser.add_argument('installation',
-        help='Specify a pre-built directory instead of making a new one from the build directory (i.e: in the case of a universal image)',
-        type=Path,
-        nargs='?',
-    )
-
     parser.add_argument('--release',
         help='Generate release files',
         dest='release',
         action='store_true',
+    )
+
+    parser.add_argument('installation',
+        help='Specify a pre-built directory instead of making a new one from the build directory (i.e: in the case of a universal image)',
+        type=Path,
+        nargs='?',
     )
 
     args = parser.parse_args(args[1:])
