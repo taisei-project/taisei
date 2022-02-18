@@ -132,6 +132,10 @@ static void init_sdl(void) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 	}
 
+#if defined(SDL_HINT_EMSCRIPTEN_ASYNCIFY) && defined(__EMSCRIPTEN__)
+	SDL_SetHintWithPriority(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0", SDL_HINT_OVERRIDE);
+#endif
+
 	main_thread_id = SDL_ThreadID();
 
 	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
