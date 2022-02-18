@@ -83,13 +83,17 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	return true;
 }
 
+static void replay_write_stage_events(ReplayStage *stg, SDL_RWops *file) {
+	dynarray_foreach_elem(&stg->events, ReplayEvent *evt, {
+		SDL_WriteLE32(file, evt->frame);
+		SDL_WriteU8(file, evt->type);
+		SDL_WriteLE16(file, evt->value);
+	});
+}
+
 static bool replay_write_events(Replay *rpy, SDL_RWops *file) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
-		dynarray_foreach_elem(&stg->events, ReplayEvent *evt, {
-			SDL_WriteLE32(file, evt->frame);
-			SDL_WriteU8(file, evt->type);
-			SDL_WriteLE16(file, evt->value);
-		});
+		replay_write_stage_events(stg, file);
 	});
 
 	return true;
