@@ -50,9 +50,9 @@ def main(args):
         type=Path,
     )
 
-    parser.add_argument('--release',
-        help='Generate release files',
-        dest='release',
+    parser.add_argument('--integrity-files',
+        help='Generate integrity files for release (.sha256sum, .sig)',
+        dest='integrity',
         action='store_true',
     )
 
@@ -99,7 +99,7 @@ def main(args):
         if proc.returncode != 0:
             raise MakeNSISError(proc.returncode)
 
-        if args.release:
+        if args.integrity:
             gen_integrity_files(args.variables['OUTPUT'])
             print("Successfully verified release files (.sig, .sha256sum)")
             verify_integrity_files(args.variables['OUTPUT'])

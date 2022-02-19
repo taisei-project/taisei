@@ -9,7 +9,7 @@ from taiseilib.common import (
     run_main,
 )
 
-from taiseilib.integrityfiles import gen_integrity_files
+from taiseilib.integrityfiles import gen_integrity_files, verify_integrity_files
 
 from pathlib import (
     Path,
@@ -56,7 +56,7 @@ def main(args):
     )
 
     # can be switched to a newer Bool method when the Windows builder updates its Python version
-    parser.add_argument('--integrity',
+    parser.add_argument('--integrity-files',
         help='Generate integrity files',
         dest='integrity',
         action='store_true',
@@ -88,7 +88,9 @@ def main(args):
         archive.rename(args.output)
         if args.integrity:
             gen_integrity_files(args.output)
-            print("Generated integrity files (.sig, .sha256sum)")
+            print("Successfully generated integrity files (.sig, .sha256sum)")
+            verify_integrity_files(args.output)
+            print("Successfully verified integrity files (.sig, .sha256sum)")
 
     print("Generated distribution archive {}".format(str(args.output)))
 

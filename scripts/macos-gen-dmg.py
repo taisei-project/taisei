@@ -61,9 +61,9 @@ def main(args):
         help='Specify a pre-built directory instead of making a new one from the build directory (i.e: in the case of a universal image)',
         type=Path,
         nargs='?',
-    )
+)
 
-    parser.add_argument('--integrity',
+    parser.add_argument('--integrity-files',
         help='Generate integrity files (.sig, .sha256sum)',
         default=False,
         action=argparse.BooleanOptionalAction

@@ -199,8 +199,8 @@ option(
 )
 
 option(
-    'release_files',
+    'integrity_files',
     type : 'boolean',
     value : false,
-    description : 'Generate .sig and .sha256sum for releases'
+    description : 'Generate .sig and .sha256sum files of built archives for releases'
 )

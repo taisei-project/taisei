@@ -3,7 +3,7 @@
 set -e
 
 if [[ -z $1 || -z $2 ]]; then
-	echo "Usage: macos_build_universal.sh /path/to/taisei/build /path/to/taisei [--release]\n"
+	echo "Usage: macos_build_universal.sh /path/to/taisei/build /path/to/taisei [--integrity]\n"
 	exit 0
 fi
 
