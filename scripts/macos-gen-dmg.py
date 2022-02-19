@@ -66,7 +66,6 @@ def main(args):
     parser.add_argument('--integrity-files',
         help='Generate integrity files (.sig, .sha256sum)',
         default=False,
-        output='integrity',
         action=argparse.BooleanOptionalAction
     )
 
@@ -78,7 +77,7 @@ def main(args):
     else:
         package_dmg(args.installation, args.output)
 
-    if args.integrity:
+    if args.integrity_files:
         gen_integrity_files(args.output)
         print('\nSuccessfully generated integrity files (.sig, .sha256sum)')
         verify_integrity_files(args.output)

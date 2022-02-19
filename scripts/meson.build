@@ -74,27 +74,27 @@ endif
 
 zip_filename = '@0@.zip'.format(dist_name)
 zip_outpath = join_paths(meson.build_root(), zip_filename)
-zip_command = [dist_command, '--format=zip', dist_prefix_args, dist_integrity_files_args, meson.build_root(), zip_outpath]
+zip_command = [dist_command, '--format=zip', dist_prefix_args, meson.build_root(), zip_outpath, dist_integrity_files_args]
 
 txz_filename = '@0@.tar.xz'.format(dist_name)
 txz_outpath = join_paths(meson.build_root(), txz_filename)
-txz_command = [dist_command, '--format=xztar', dist_prefix_args, dist_integrity_files_args, meson.build_root(), txz_outpath]
+txz_command = [dist_command, '--format=xztar', dist_prefix_args, meson.build_root(), txz_outpath, dist_integrity_files_args]
 
 tgz_filename = '@0@.tar.gz'.format(dist_name)
 tgz_outpath = join_paths(meson.build_root(), tgz_filename)
-tgz_command = [dist_command, '--format=gztar', dist_prefix_args, dist_integrity_files_args, meson.build_root(), tgz_outpath]
+tgz_command = [dist_command, '--format=gztar', dist_prefix_args, meson.build_root(), tgz_outpath, dist_integrity_files_args]
 
 tbz_filename = '@0@.tar.bz2'.format(dist_name)
 tbz_outpath = join_paths(meson.build_root(), tbz_filename)
-tbz_command = [dist_command, '--format=bztar', dist_prefix_args, dist_integrity_files_args, meson.build_root(), tbz_outpath]
+tbz_command = [dist_command, '--format=bztar', dist_prefix_args, meson.build_root(), tbz_outpath, dist_integrity_files_args]
 
 tar_filename = '@0@.tar'.format(dist_name)
 tar_outpath = join_paths(meson.build_root(), tar_filename)
-tar_command = [dist_command, '--format=tar', dist_prefix_args, dist_integrity_files_args, meson.build_root(), tar_outpath]
+tar_command = [dist_command, '--format=tar', dist_prefix_args, meson.build_root(), tar_outpath, dist_integrity_files_args]
 
 dmg_script = files('macos-gen-dmg.py')
 dmg_filename = '@0@.dmg'.format(dist_name)
-dmg_command = [python_thunk, dmg_script, dist_integrity_files_args, join_paths(meson.build_root(), dmg_filename), meson.build_root()]
+dmg_command = [python_thunk, dmg_script, join_paths(meson.build_root(), dmg_filename), meson.build_root(), dist_integrity_files_args]
 
 angle_enabled = get_option('install_angle')
 

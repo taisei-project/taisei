@@ -86,6 +86,7 @@ def main(args):
 
         archive = Path(archive)
         archive.rename(args.output)
+
         if args.integrity:
             gen_integrity_files(args.output)
             print("Successfully generated integrity files (.sig, .sha256sum)")
