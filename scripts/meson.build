@@ -67,7 +67,7 @@ dist_name = 'Taisei-@0@-@1@-@2@'.format(dist_version_string, package_system_name
 dist_command = [python_thunk, dist_script, common_taiseilib_args]
 dist_prefix_args = ['--prefix=@0@'.format(dist_name)]
 
-dist_integrity_file_args = []
+dist_integrity_files_args = []
 if get_option('integrity_files')
     dist_integrity_files_args = ['--integrity-files']
 endif
