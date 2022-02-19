@@ -88,9 +88,10 @@ def main(args):
         archive.rename(args.output)
 
         if args.integrity:
-            gen_integrity_files(args.output)
+            print('Generating integrity files for: {0}'.format(str(args.output)))
+            gen_integrity_files(str(args.output))
             print("Successfully generated integrity files (.sig, .sha256sum)")
-            verify_integrity_files(args.output)
+            verify_integrity_files(str(args.output))
             print("Successfully verified integrity files (.sig, .sha256sum)")
 
     print("Generated distribution archive {}".format(str(args.output)))
