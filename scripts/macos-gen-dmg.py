@@ -66,6 +66,7 @@ def main(args):
     parser.add_argument('--integrity-files',
         help='Generate integrity files (.sig, .sha256sum)',
         default=False,
+        output='integrity',
         action=argparse.BooleanOptionalAction
     )
 
