@@ -91,17 +91,13 @@ jobs:
 
     - name: Package (Source)
       run: >
-        meson rewrite kwargs set project / version v${{ steps.vars.outputs.tag }}
+        # meson rewrite kwargs set project / version v${{ steps.vars.outputs.tag }} # see: https://github.com/actions/checkout/issues/290
 
         meson --reconfigure build/linux
 
         meson dist -C build/linux --no-tests # disable test build, since we already know it compiles
 
-        sha256sum build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz
-        > build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz.sha256sum
-
-        gpg --output build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz.sig
-        --detach-sig build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz
+        scripts/sign-release.py build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz
 
     - name: Upload Artifact (Source)
       uses: actions/upload-artifact@v2
@@ -190,22 +186,16 @@ jobs:
   windows-release-build-x64:
     name: Windows (x64)
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
+    container: mstorsjo/llvm-mingw:20211002 # cross-compiler with mingw
     steps:
     - name: Install Tools
       run: >
         apt update || true
 
-        apt install -y -qq software-properties-common
-
-        add-apt-repository ppa:git-core/ppa -y
-
         apt install -y -qq
         python3-docutils
         python3-pip
-        git
         wget
-        nsis
         gnupg
 
         pip3 install
@@ -295,22 +285,16 @@ jobs:
   windows-release-build-x86:
     name: Windows (x86)
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
+    container: mstorsjo/llvm-mingw:20211002 # cross-compiler with mingw
     steps:
     - name: Install Tools
       run: >
         apt update || true
 
-        apt install -y -qq software-properties-common
-
-        add-apt-repository ppa:git-core/ppa -y
-
         apt install -y -qq
         python3-docutils
         python3-pip
-        git
         wget
-        nsis
         gnupg
 
         pip3 install
@@ -473,10 +457,6 @@ jobs:
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
         -Drelease_files=true
-
-        meson configure
-        -Dbuild.cpp_std=gnu++14
-        build/emscripten # set correct C++ version
 
     - name: Build
       run: |

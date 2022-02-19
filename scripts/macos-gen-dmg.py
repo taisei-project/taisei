@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from taiseilib.tempinstall import temp_install
-from taiseilib.releasefiles import gen_release_files
+from taiseilib.integrityfiles import gen_integrity_files, verify_integrity_files
 from taiseilib.common import run_main
 
 from pathlib import Path
@@ -63,8 +63,8 @@ def main(args):
         nargs='?',
     )
 
-    parser.add_argument('--release',
-        help='Generate release files (.sig, .sha256sum)',
+    parser.add_argument('--integrity',
+        help='Generate integrity files (.sig, .sha256sum)',
         default=False,
         action=argparse.BooleanOptionalAction
     )
@@ -77,9 +77,11 @@ def main(args):
     else:
         package_dmg(args.installation, args.output)
 
-    if args.release:
-        gen_release_files(args.output)
-        print('\nGenerated release files (.sig, .sha256sum)')
+    if args.integrity:
+        gen_integrity_files(args.output)
+        print('\nSuccessfully generated integrity files (.sig, .sha256sum)')
+        verify_integrity_files(args.output)
+        print('\nSuccessfully verified integrity files (.sig, .sha256sum)')
 
     print('\nPackage generated:', args.output)
 

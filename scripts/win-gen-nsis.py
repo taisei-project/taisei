@@ -15,7 +15,7 @@ from taiseilib.configure import (
     configure,
 )
 
-from taiseilib.releasefiles import gen_release_files
+from taiseilib.integrityfiles import gen_integrity_files, verify_integrity_files
 
 from pathlib import (
     Path,
@@ -100,8 +100,11 @@ def main(args):
             raise MakeNSISError(proc.returncode)
 
         if args.release:
-            gen_release_files(args.variables['OUTPUT'])
-            print("Generated release files (.sig, .sha256sum)")
+            gen_integrity_files(args.variables['OUTPUT'])
+            print("Successfully verified release files (.sig, .sha256sum)")
+            verify_integrity_files(args.variables['OUTPUT'])
+            print("Successfully verified release files (.sig, .sha256sum)")
+
 
 if __name__ == '__main__':
     run_main(main)

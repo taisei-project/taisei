@@ -9,7 +9,7 @@ from taiseilib.common import (
     run_main,
 )
 
-from taiseilib.releasefiles import gen_release_files
+from taiseilib.integrityfiles import gen_integrity_files
 
 from pathlib import (
     Path,
@@ -55,9 +55,10 @@ def main(args):
         default=None,
     )
 
-    parser.add_argument('--release',
-        help='Generate release files',
-        dest='release',
+    # can be switched to a newer Bool method when the Windows builder updates its Python version
+    parser.add_argument('--integrity',
+        help='Generate integrity files',
+        dest='integrity',
         action='store_true',
     )
 
@@ -85,9 +86,9 @@ def main(args):
 
         archive = Path(archive)
         archive.rename(args.output)
-        if args.release:
-            gen_release_files(args.output)
-            print("Generated release files (.sig, .sha256sum)")
+        if args.integrity:
+            gen_integrity_files(args.output)
+            print("Generated integrity files (.sig, .sha256sum)")
 
     print("Generated distribution archive {}".format(str(args.output)))
 
