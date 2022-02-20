@@ -259,7 +259,7 @@ jobs:
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86_64.exe
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86_64.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v2
@@ -362,7 +362,7 @@ jobs:
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86.exe
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v2
