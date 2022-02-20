@@ -30,7 +30,7 @@ def verify_integrity_files(archive):
     sign_key = check_for_key(gpg)
 
     with open('{0}.sig'.format(archive), 'rb') as sig:
-        verified = gpg.verify_file(sig, archive)
+        verified = gpg.verify_file(sig, str(archive)) # str() necessary for Python3.6 on Windows builders
         if not verified:
             raise ValueError('could not verify gpg signature on archive: {0}'.format(archive))
         elif not sign_key is None and sign_key != verified.key_id:
