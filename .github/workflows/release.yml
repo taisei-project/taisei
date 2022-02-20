@@ -79,7 +79,9 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Package (Binary)
-      run: ninja txz -C build/linux --verbose
+      run: |
+        ninja txz -C build/linux --verbose
+        scripts/sign-release.py build/linux/Taisei-${{ steps.vars.outputs.tag }}-linux-x86_64.tar.xz
 
     - name: Upload Artifact (Binary)
       uses: actions/upload-artifact@v2
@@ -158,8 +160,9 @@ jobs:
         echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
 
     - name: Configure & Build
-      run: >
+      run: |
         $(pwd)/scripts/macos_build_universal.sh $(pwd)/build-release/ $(pwd)
+        scripts/sign-release.py build-release/compiled/Taisei-${{ steps.vars.outputs.tag }}-universal.dmg
       shell: bash
 
     - name: Run Test
@@ -254,7 +257,9 @@ jobs:
       run: meson compile -C build/windows
 
     - name: Package (EXE)
-      run: ninja nsis -C build/windows --verbose
+      run: |
+        ninja nsis -C build/windows --verbose
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86_64.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v2
@@ -265,7 +270,9 @@ jobs:
         if-no-files-found: error
 
     - name: Package (ZIP)
-      run: ninja zip -C build/windows --verbose
+      run: |
+        ninja zip -C build/windows --verbose
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86_64.zip
 
     - name: Upload Artifact (ZIP)
       uses: actions/upload-artifact@v2
@@ -353,7 +360,9 @@ jobs:
       run: meson compile -C build/windows
 
     - name: Package (EXE)
-      run: ninja nsis -C build/windows --verbose
+      run: |
+        ninja nsis -C build/windows --verbose
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86.exe
 
     - name: Upload Artifact (EXE)
       uses: actions/upload-artifact@v2
@@ -364,7 +373,9 @@ jobs:
         if-no-files-found: error
 
     - name: Package (ZIP)
-      run: ninja zip -C build/windows --verbose
+      run: |
+        ninja zip -C build/windows --verbose
+        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86.zip
 
     - name: Upload Artifact (ZIP)
       uses: actions/upload-artifact@v2
@@ -456,7 +467,6 @@ jobs:
         --cross-file misc/ci/emscripten-build.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
-        -Dintegrity_files=true
 
     - name: Build
       run: |
@@ -467,6 +477,7 @@ jobs:
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         ninja txz -C build/emscripten --verbose
+        scripts/sign-release.py build/emscripten/Taisei-${{ steps.vars.outputs.tag }}-emscripten-wasm32.tar.xz
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2
@@ -512,13 +523,14 @@ jobs:
         meson setup build/nx
         --cross-file=misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-release
-        -Dintegrity_files=true
 
     - name: Build
       run: meson compile -C build/nx --verbose
 
     - name: Package
-      run: ninja zip -C build/nx --verbose
+      run: |
+        ninja zip -C build/nx --verbose
+        scripts/sign-release.py build/nx/Taisei-${{ steps.vars.outputs.tag }}-switch-aarch64.zip
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v2

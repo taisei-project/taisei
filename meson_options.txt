@@ -198,9 +198,3 @@ option(
     description : 'Enable live-reloading workflow for stages (for development only)'
 )
 
-option(
-    'integrity_files',
-    type : 'boolean',
-    value : false,
-    description : 'Generate .sig and .sha256sum files of built archives for releases'
-)

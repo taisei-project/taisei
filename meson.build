@@ -607,7 +607,6 @@ Summary:
     Executables:            @12@
     Data:                   @13@
     Documentation:          @14@
-    Integrity files:        @17@
 '''.format(
         taisei_version_string,
         systype,
@@ -628,8 +627,7 @@ Summary:
         join_paths('$prefix', data_path),
         join_paths('$prefix', doc_path),
         is_developer_build,
-        stages_live_reload,
-        get_option('integrity_files')
+        stages_live_reload
     )
 
 message(summary)
