@@ -189,38 +189,8 @@ jobs:
   windows-release-build-x64:
     name: Windows (x64)
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20211002 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20220221
     steps:
-    - name: Install Tools
-      run: >
-        apt update || true
-
-        apt install -y -qq
-        python3-docutils
-        python3-pip
-        wget
-        gnupg
-
-        pip3 install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-        python-gnupg
-
-    # install NSIS 3.x manually/forcefully as it is not available for Ubuntu <20.04
-    - name: Install NSIS 3.x
-      run: >
-        wget
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis-pluginapi_3.05-2_all.deb
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis-common_3.05-2_all.deb
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis_3.05-2_amd64.deb
-        -P /tmp
-
-        dpkg -i --force-all
-        /tmp/nsis-common_3.05-2_all.deb
-        /tmp/nsis_3.05-2_amd64.deb
-        /tmp/nsis-pluginapi_3.05-2_all.deb
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:
@@ -292,38 +262,8 @@ jobs:
   windows-release-build-x86:
     name: Windows (x86)
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20211002 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20220221
     steps:
-    - name: Install Tools
-      run: >
-        apt update || true
-
-        apt install -y -qq
-        python3-docutils
-        python3-pip
-        wget
-        gnupg
-
-        pip3 install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-        python-gnupg
-
-    # install NSIS 3.x manually/forcefully as it is not available for Ubuntu <20.04
-    - name: Install NSIS 3.x
-      run: >
-        wget
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis-pluginapi_3.05-2_all.deb
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis-common_3.05-2_all.deb
-        http://security.ubuntu.com/ubuntu/pool/universe/n/nsis/nsis_3.05-2_amd64.deb
-        -P /tmp
-
-        dpkg -i --force-all
-        /tmp/nsis-common_3.05-2_all.deb
-        /tmp/nsis_3.05-2_amd64.deb
-        /tmp/nsis-pluginapi_3.05-2_all.deb
-
     - name: Checkout Code
       uses: actions/checkout@v2
       with:
