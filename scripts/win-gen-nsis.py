@@ -52,8 +52,8 @@ def main(args):
 
     parser.add_argument('--integrity-files',
         help='Generate integrity files for release (.sha256sum, .sig)',
-        dest='integrity',
-        action='store_true',
+        default=False,
+        action=argparse.BooleanOptionalAction
     )
 
     add_configure_args(parser)
@@ -99,7 +99,7 @@ def main(args):
         if proc.returncode != 0:
             raise MakeNSISError(proc.returncode)
 
-        if args.integrity:
+        if args.integrity_files:
             gen_integrity_files(args.variables['OUTPUT'])
             print("Successfully verified release files (.sig, .sha256sum)")
             verify_integrity_files(args.variables['OUTPUT'])

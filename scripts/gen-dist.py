@@ -58,8 +58,8 @@ def main(args):
     # can be switched to a newer Bool method when the Windows builder updates its Python version
     parser.add_argument('--integrity-files',
         help='Generate integrity files',
-        dest='integrity',
-        action='store_true',
+        default=False,
+        action=argparse.BooleanOptionalAction
     )
 
     add_common_args(parser)
@@ -87,7 +87,7 @@ def main(args):
         archive = Path(archive)
         archive.rename(args.output)
 
-        if args.integrity:
+        if args.integrity_files:
             print('Generating integrity files for: {0}'.format(str(args.output)))
             gen_integrity_files(str(args.output))
             print("Successfully generated integrity files (.sig, .sha256sum)")
