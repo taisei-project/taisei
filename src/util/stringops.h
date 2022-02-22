@@ -32,8 +32,11 @@ INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
 	return memcpy(malloc(sz), str, sz);
 }
 
+#ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 #undef strtok_r
 #define strtok_r _ts_strtok_r
+char *strtok_r(char *str, const char *delim, char **nextp);
+#endif
 
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
@@ -46,7 +49,6 @@ void stralloc(char **dest, const char *src);
 char* strjoin(const char *first, ...) attr_sentinel attr_returns_allocated;
 char* vstrfmt(const char *fmt, va_list args) attr_returns_allocated;
 char* strfmt(const char *fmt, ...) attr_printf(1,  2) attr_returns_allocated;
-char* strtok_r(char *str, const char *delim, char **nextp);
 char* strappend(char **dst, char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);

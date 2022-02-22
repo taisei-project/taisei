@@ -208,6 +208,7 @@ char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
 	return utf8;
 }
 
+#ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 /*
  * public domain strtok_r() by Charlie Gordon
  *
@@ -218,7 +219,7 @@ char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
  *     (Declaration that it's public domain):
  *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
  */
-char* strtok_r(char *str, const char *delim, char **nextp) {
+char *strtok_r(char *str, const char *delim, char **nextp) {
 	char *ret;
 
 	if(str == NULL) {
@@ -241,6 +242,7 @@ char* strtok_r(char *str, const char *delim, char **nextp) {
 	*nextp = str;
 	return ret;
 }
+#endif
 
 size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
 	assert(buf_size >= FILENAME_TIMESTAMP_MIN_BUF_SIZE);

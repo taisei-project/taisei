@@ -256,9 +256,16 @@ config.set('TAISEI_BUILDCONF_HAVE_LONG_DOUBLE', cc.sizeof('long double') > 8)
 config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
 config.set('TAISEI_BUILDCONF_HAVE_SINCOS', cc.has_function('sincos', dependencies : dep_m))
 
-if config.get('TAISEI_BUILDCONF_HAVE_SINCOS')
-    config.set('_GNU_SOURCE', true)
-endif
+use_gnu_funcs = false
+gnu_funcs = ['sincos', 'strtok_r']
+
+foreach f : gnu_funcs
+    have = cc.has_function(f, dependencies : dep_m)
+    config.set('TAISEI_BUILDCONF_HAVE_@0@'.format(f.to_upper()), have)
+    use_gnu_funcs = have or use_gnu_funcs
+endforeach
+
+config.set('_GNU_SOURCE', use_gnu_funcs)
 
 if host_machine.system() == 'emscripten'
     # Emscripten bug: https://github.com/emscripten-core/emscripten/issues/10072
