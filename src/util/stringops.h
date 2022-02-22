@@ -38,6 +38,12 @@ INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
 char *strtok_r(char *str, const char *delim, char **nextp);
 #endif
 
+#ifndef TAISEI_BUILDCONF_HAVE_MEMRCHR
+#undef memrchr
+#define memrchr _ts_memrchr
+void *memrchr(const void *s, int c, size_t n);
+#endif
+
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
 

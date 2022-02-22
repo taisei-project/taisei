@@ -417,3 +417,17 @@ void expand_escape_sequences(char *str) {
 		p[-1] = 0;
 	}
 }
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMRCHR
+void *memrchr(const void *s, int c, size_t n) {
+	const char *mem = s;
+
+	for(const char *p = mem + n - 1; p >= mem; --p) {
+		if(*p == c) {
+			return (void*)p;
+		}
+	}
+
+	return NULL;
+}
+#endif
