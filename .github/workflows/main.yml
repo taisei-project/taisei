@@ -86,6 +86,7 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: taisei_linux_fail_log
@@ -145,6 +146,7 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: taisei_macos_fail_log
@@ -193,6 +195,7 @@ jobs:
         meson install -C build/
 
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: taisei_windows_fail_log
@@ -271,6 +274,7 @@ jobs:
         meson compile tar -C build/ --verbose
 
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: taisei_emscripten_stable_build_log
@@ -300,6 +304,7 @@ jobs:
       run: meson compile -C build/ --verbose
 
     - name: Upload Log
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: taisei_switch_build_log
