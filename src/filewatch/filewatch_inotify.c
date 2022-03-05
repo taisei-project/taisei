@@ -30,6 +30,11 @@
 	#define IF_FW_DEBUG(...)
 #endif
 
+#ifndef IN_MASK_CREATE
+// libinotify-kqueue doesn't have this
+#define IN_MASK_CREATE (0)
+#endif
+
 #define WATCH_FLAGS ( \
 	IN_CLOSE_WRITE      | \
 	IN_CREATE           | \
