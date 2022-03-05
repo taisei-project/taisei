@@ -13,6 +13,7 @@
 #include "events.h"
 #include "vfs/syspath_public.h"
 
+#include <alloca.h>
 #include <errno.h>
 #include <stdio.h>
 #include <sys/inotify.h>
@@ -378,66 +379,101 @@ void filewatch_unwatch(FileWatch *fw) {
 	SDL_UnlockMutex(FW.modify_mtx);
 }
 
-static void filewatch_process_events(ssize_t bufsize, char buf[bufsize]) {
-	struct inotify_event *e;
+static uint32_t filewatch_process_event(
+	struct inotify_event *e
+	IF_FW_DEBUG(, StringBuffer *sbuf)
+) {
+	WDRecord *rec = wdrecord_get(e->wd, false);
 
+	IF_FW_DEBUG(
+		strbuf_clear(sbuf);
+		dump_events(sbuf, e->mask);
+		FW_DEBUG("wd %i :: %s :: %s", e->wd, e->name, sbuf->start);
+	)
+
+	if(!rec) {
+		return e->len;
+	}
+
+	for(DirWatch *dw = rec->dirwatch_list; dw; dw = dw->next) {
+		if(dw->wd != e->wd) {
+			continue;
+		}
+
+		FW_DEBUG("Match dir %s", dw->path);
+
+		if(e->mask & IN_ISDIR) {
+			if(e->mask & (IN_MOVE_SELF | IN_DELETE_SELF | IN_IGNORED)) {
+				dirwatch_invalidate(dw);
+			}
+
+			continue;
+		}
+
+		for(FileWatch *fw = dw->filewatch_list; fw; fw = fw->next) {
+			if(strcmp(fw->filename, e->name)) {
+				FW_DEBUG("* %p %s != %s", fw, fw->filename, e->name);
+				continue;
+			}
+
+			FW_DEBUG("Match file %s/%s", dw->path, fw->filename);
+
+			if(e->mask & (IN_DELETE | IN_MOVED_FROM)) {
+				fw->deleted = true;
+				ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
+			} else if(e->mask & (IN_CREATE | IN_MOVED_TO)) {
+				fw->deleted = false;
+				fw->updated = true;
+				ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
+			} else if(e->mask & (IN_CLOSE_WRITE | IN_MODIFY)) {
+				fw->updated = true;
+				ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
+			}
+		}
+	}
+
+	return e->len;
+}
+
+static uint32_t filewatch_process_event_misaligned(
+	size_t bufsize, char buf[bufsize]
+	IF_FW_DEBUG(, StringBuffer *sbuf)
+) {
+	uint32_t sz;
+	memcpy(&sz, buf + offsetof(struct inotify_event, len), sizeof(sz));
+	assert(sz <= bufsize);
+
+	struct inotify_event *e = alloca(sizeof(*e) + sz);
+	memcpy(e, buf, sizeof(*e));
+
+	filewatch_process_event(e  IF_FW_DEBUG(, sbuf));
+	return sz;
+}
+
+static void filewatch_process_events(ssize_t bufsize, char buf[bufsize]) {
 	IF_FW_DEBUG(
 		StringBuffer sbuf = {};
 	)
 
 	for(ssize_t i = 0; i < bufsize;) {
-		e = CASTPTR_ASSUME_ALIGNED(buf + i, struct inotify_event);
-		WDRecord *rec = wdrecord_get(e->wd, false);
+		uintptr_t misalign = ((uintptr_t)(buf + i) & (alignof(struct inotify_event) - 1));
+		uint32_t nlen;
 
-		IF_FW_DEBUG(
-			strbuf_clear(&sbuf);
-			dump_events(&sbuf, e->mask);
-			FW_DEBUG("wd %i :: %s :: %s", e->wd, e->name, sbuf.start);
-		)
-
-		if(!rec) {
-			goto skip;
+		if(UNLIKELY(misalign)) {
+			IF_FW_DEBUG(log_warn("inotify_event pointer %p misaligned by %u",
+				buf + i, (uint)misalign));
+			nlen = filewatch_process_event_misaligned(
+				bufsize - i, buf + i
+				IF_FW_DEBUG(, &sbuf)
+			);
+		} else {
+			nlen = filewatch_process_event(
+				CASTPTR_ASSUME_ALIGNED(buf + i, struct inotify_event)
+				IF_FW_DEBUG(, &sbuf)
+			);
 		}
 
-		for(DirWatch *dw = rec->dirwatch_list; dw; dw = dw->next) {
-			if(dw->wd != e->wd) {
-				continue;
-			}
-
-			FW_DEBUG("Match dir %s", dw->path);
-
-			if(e->mask & IN_ISDIR) {
-				if(e->mask & (IN_MOVE_SELF | IN_DELETE_SELF | IN_IGNORED)) {
-					dirwatch_invalidate(dw);
-				}
-
-				continue;
-			}
-
-			for(FileWatch *fw = dw->filewatch_list; fw; fw = fw->next) {
-				if(strcmp(fw->filename, e->name)) {
-					FW_DEBUG("* %p %s != %s", fw, fw->filename, e->name);
-					continue;
-				}
-
-				FW_DEBUG("Match file %s/%s", dw->path, fw->filename);
-
-				if(e->mask & (IN_DELETE | IN_MOVED_FROM)) {
-					fw->deleted = true;
-					ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
-				} else if(e->mask & (IN_CREATE | IN_MOVED_TO)) {
-					fw->deleted = false;
-					fw->updated = true;
-					ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
-				} else if(e->mask & (IN_CLOSE_WRITE | IN_MODIFY)) {
-					fw->updated = true;
-					ht_filewatchset_set(&FW.updated_watches, fw, HT_EMPTY);
-				}
-			}
-		}
-
-	skip:
-		i += sizeof(*e) + e->len;
+		i += sizeof(struct inotify_event) + nlen;
 	}
 
 	IF_FW_DEBUG(
