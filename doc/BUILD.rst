@@ -195,7 +195,7 @@ systems.
 .. code:: sh
 
    # inside the taisei/ directory you cloned before
-   meson setup -C build/
+   meson setup build/
 
 You can also have the ``setup`` command contain certain build options (seen
 below). The following are an *example* and *not required* for getting Taisei
@@ -204,7 +204,7 @@ building.
 .. code:: sh
 
    # enables Developer Mode and debugging symbols
-   meson setup -C build/ -Ddeveloper=true -Dbuildtype=debug
+   meson setup build/ -Ddeveloper=true -Dbuildtype=debug
 
 You can then apply more build options later using ``meson configure`` (as seen
 below). It will automatically reconfigure your build environment with the new
@@ -266,7 +266,7 @@ your choice.
 
 .. code:: sh
 
-   meson setup --prefix=/path/goes/here -C build/
+   meson setup --prefix=/path/goes/here build/
 
 Package Data (``-Dpackage_data``)
 """""""""""""""""""""""""""""""""
