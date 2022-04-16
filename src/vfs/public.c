@@ -10,6 +10,8 @@
 
 #include "private.h"
 
+//#include <execinfo.h>
+
 typedef struct VFSDir {
 	VFSNode *node;
 	void *opaque;
@@ -48,11 +50,16 @@ bool vfs_unmount(const char *path) {
 	return false;
 }
 
+
+//not absolute path(this path does not have zip)
 SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
 	SDL_RWops *rwops = NULL;
 	char p[strlen(path)+1];
-	path = vfs_path_normalize(path, p);
+	
+    //This second line is similar to 'vfs_repr' in vfs/public.c
+    path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
+
 
 	if(node) {
 		assert(node->funcs != NULL);
@@ -65,6 +72,7 @@ SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
 	} else {
 		vfs_set_error("Node '%s' does not exist", path);
 	}
+    log_debug("VFS_OPEN_HAS_ERROR?");
 
 	return rwops;
 }
@@ -124,7 +132,7 @@ void vfs_mkdir_required(const char *path) {
 		log_fatal("%s", vfs_get_error());
 	}
 }
-
+/*
 static bool vfs_mkparents_recurse(const char *path) {
 	// FIXME this has stupid space complexity and is probably silly in general; optimize if you care
 
@@ -137,7 +145,8 @@ static bool vfs_mkparents_recurse(const char *path) {
 
 	char p[strlen(path) + 1];
 	strcpy(p, path);
-	psep += p - path;
+	log_debug("MKP_REC %p %p",p ,path);
+    psep += p - path;
 	*psep = 0;
 
 	VFSInfo i = vfs_query(p);
@@ -152,6 +161,36 @@ static bool vfs_mkparents_recurse(const char *path) {
 
 	return vfs_mkparents_recurse(p) && vfs_mkdir(p);
 }
+*/
+static bool vfs_mkparents_recurse(const char *path) {
+
+    char p[strlen(path) + 1];
+    VFSInfo i;
+    strcpy(p,path);
+    while(*p){
+        char *psep = strrchr(p, VFS_PATH_SEPARATOR);
+
+        if(!psep){
+            //current parent is root
+            return true;
+        }
+
+        *psep = 0;
+
+        i = vfs_query(p);
+
+        if(i.error){
+            return false;
+        }else if(i.exists){
+            return true;
+        }else if(!vfs_mkdir(p)){
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 
 bool vfs_mkparents(const char *path) {
 	char p[strlen(path)+1];
@@ -160,10 +199,28 @@ bool vfs_mkparents(const char *path) {
 }
 
 char* vfs_repr(const char *path, bool try_syspath) {
-	char buf[strlen(path)+1];
-	path = vfs_path_normalize(path, buf);
-	VFSNode *node = vfs_locate(vfs_root, path);
+    char buf[strlen(path)+1];
+/*
+    void * buffer[100];
+    int nptrs = backtrace(buffer, 100);
+    char ** strings;
+    strings = backtrace_symbols(buffer,nptrs);
+    if(strings != NULL){
+        //functions are 0~nptrs
+        log_debug("functions list");
+        for(int j=0; j<nptrs; j++){
+            log_debug("%s",strings[j]);
+        }    
+    } 
+*/
+    log_debug("Show path and try_syspath '%s': %d", path, try_syspath);
+	
+    path = vfs_path_normalize(path, buf);
+    
+    log_debug("Show vfs_path_normalized '%s': %s", path, buf);
 
+	VFSNode *node = vfs_locate(vfs_root, path);
+    
 	if(node) {
 		char *p = vfs_node_repr(node, try_syspath);
 		vfs_decref(node);
