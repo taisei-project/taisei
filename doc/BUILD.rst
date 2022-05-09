@@ -64,7 +64,7 @@ Optional
    flaky/non-existent OpenGL support, such as Windows)
 -  GameMode headers (Linux only; for automatic
    `GameMode <https://github.com/FeralInteractive/gamemode>`__ integration)
--  OpenSSL/LibreSSL (for a better SHA-256 implementation)
+-  OpenSSL >= 1.1.0 or LibreSSL >= 2.7.0 (for a better SHA-256 implementation)
 
 
 Built-In vs. System Dependencies

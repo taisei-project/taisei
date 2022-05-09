@@ -62,6 +62,7 @@ jobs:
         libwebp-dev
         libfreetype6-dev
         libzstd-dev
+        libssl-dev
 
         pip install
         meson==${{ env.MESON_VERSION }}
