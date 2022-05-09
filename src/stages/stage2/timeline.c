@@ -372,7 +372,7 @@ TASK(turning_fairy, {
 	int period = difficulty_value(70, 50, 24, 16);
 	WAIT(7 + period/2);
 
-	for(int t = 0;; t += WAIT(period)) {
+	for(;;WAIT(period)) {
 		play_sfx_ex("shot1", 5, false);
 		cmplx shot_normal = 3 * cnormalize(e->move.velocity);
 		cmplx shot_org = e->pos + e->move.velocity * 4;
