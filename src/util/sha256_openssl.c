@@ -29,7 +29,9 @@ void sha256_update(SHA256State *st, const uint8_t *data, size_t len) {
 
 void sha256_final(SHA256State *st, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen) {
 	assert(hashlen >= SHA256_BLOCK_SIZE);
-	EVP_DigestFinalXOF((EVP_MD_CTX*)st, hash, hashlen);
+	uint osize = 0;
+	EVP_DigestFinal_ex((EVP_MD_CTX*)st, hash, &osize);
+	assert(osize == SHA256_BLOCK_SIZE);
 }
 
 void sha256_digest(const uint8_t *data, size_t len, uint8_t hash[SHA256_BLOCK_SIZE], size_t hashlen) {
