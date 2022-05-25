@@ -39,6 +39,7 @@ static void load_shader_program_stage1(ResourceLoadState *st) {
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
 		res_load_failed(st);
+		return;
 	}
 
 	if(!parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
