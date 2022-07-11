@@ -383,6 +383,11 @@ static uint32_t filewatch_process_event(
 	struct inotify_event *e
 	IF_FW_DEBUG(, StringBuffer *sbuf)
 ) {
+	if(UNLIKELY(e->wd == INVALID_WD)) {
+		log_error("inotify queue overflow");
+		return e->len;
+	}
+
 	WDRecord *rec = wdrecord_get(e->wd, false);
 
 	IF_FW_DEBUG(
