@@ -171,6 +171,12 @@ static void log_dispatch_async(LogEntry *entry) {
 	}
 }
 
+static void *sync_logger(List **loggers, List *logger, void *arg) {
+	Logger *l = (Logger*)logger;
+	SDL_RWsync(l->out);
+	return NULL;
+}
+
 static void log_internal(LogLevel lvl, const char *funcname, const char *filename, uint line, const char *fmt, va_list args) {
 	assert(fmt[strlen(fmt)-1] != '\n');
 
@@ -211,8 +217,13 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		log_dispatch(&entry);
 	}
 
-	if((lvl & LOG_FATAL) && !noabort) {
-		log_abort(entry.message);
+	if(lvl & LOG_FATAL) {
+		if(noabort) {
+			// Will likely abort externally (e.g. assertion failure), so sync everything now.
+			list_foreach(&logging.outputs, sync_logger, NULL);
+		} else {
+			log_abort(entry.message);
+		}
 	}
 
 	SDL_UnlockMutex(logging.mutex);
@@ -243,12 +254,7 @@ static void *delete_logger(List **loggers, List *logger, void *arg) {
 		l->formatter.free(&l->formatter);
 	}
 
-#if HAVE_STDIO_H
-	if(l->out->type == SDL_RWOPS_STDFILE) {
-		fflush(l->out->hidden.stdio.fp);
-	}
-#endif
-
+	SDL_RWsync(l->out);
 	SDL_RWclose(l->out);
 	free(list_unlink(loggers, logger));
 
