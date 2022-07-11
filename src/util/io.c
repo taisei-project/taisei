@@ -16,6 +16,10 @@
 #include "rwops/rwops_autobuf.h"
 #include "util/crap.h"
 
+#ifdef TAISEI_BUILDCONF_HAVE_POSIX
+#include <unistd.h>
+#endif
+
 char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	char c, *ptr = buf, *end = buf + bufsize - 1;
 	assert(end > ptr);
@@ -176,4 +180,22 @@ void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
 			return NULL;
 		}
 	}
+}
+
+void SDL_RWsync(SDL_RWops *rwops) {
+	#if HAVE_STDIO_H
+	if(rwops->type == SDL_RWOPS_STDFILE) {
+		FILE *fp = rwops->hidden.stdio.fp;
+
+		if(UNLIKELY(!fp)) {
+			return;
+		}
+
+		fflush(fp);
+
+		#ifdef TAISEI_BUILDCONF_HAVE_POSIX
+		fsync(fileno(fp));
+		#endif
+	}
+	#endif
 }
