@@ -13,9 +13,9 @@ from pathlib import Path
 
 
 allowed_patterns = set(re.compile(p) for p in (
-    r'^/.*ld-linux-.*?\.so\.\d+$',
+    r'^/.*?/ld-[\d\w_-]+-[\d\w_-]+\.so\.\d+$',
     r'^lib(?:std)?c\+\+(?:abi)?\.so\.\d+$',
-    r'^libc\.so\.\d+$',
+    r'^libc\.so(?:\.\d+)?$',
     r'^libdl\.so\.\d+$',
     r'^libgcc_s\.so\.\d+$',
     r'^libm\.so\.\d+$',
