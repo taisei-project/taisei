@@ -44,6 +44,13 @@ char *strtok_r(char *str, const char *delim, char **nextp);
 void *memrchr(const void *s, int c, size_t n);
 #endif
 
+#ifndef TAISEI_BUILDCONF_HAVE_MEMMEM
+#undef memmem
+#define memmem _ts_memmem
+void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen)
+	attr_nonnull_all;
+#endif
+
 #undef strcasecmp
 #define strcasecmp SDL_strcasecmp
 

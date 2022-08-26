@@ -272,7 +272,7 @@ config.set('TAISEI_BUILDCONF_HAVE_POSIX', have_posix)
 config.set('TAISEI_BUILDCONF_HAVE_SINCOS', cc.has_function('sincos', dependencies : dep_m))
 
 use_gnu_funcs = false
-gnu_funcs = ['sincos', 'strtok_r', 'memrchr']
+gnu_funcs = ['sincos', 'strtok_r', 'memrchr', 'memmem']
 
 foreach f : gnu_funcs
     have = cc.has_function(f, dependencies : dep_m)

@@ -431,3 +431,24 @@ void *memrchr(const void *s, int c, size_t n) {
 	return NULL;
 }
 #endif
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMMEM
+#undef memmem
+#define memmem _ts_memmem
+void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen) {
+	const char *p_haystack = haystack;
+	const char *e_haystack = p_haystack + haystacklen;
+
+	for(;;) {
+		if(needlelen > e_haystack - p_haystack) {
+			return NULL;
+		}
+
+		if(!memcmp(p_haystack, needle, needlelen)) {
+			return (void*)p_haystack;
+		}
+
+		++p_haystack;
+	}
+}
+#endif
