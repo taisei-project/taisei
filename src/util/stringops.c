@@ -452,3 +452,80 @@ void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_
 	}
 }
 #endif
+
+bool strnmatch(size_t globsize, const char glob[globsize], size_t insize, const char input[insize]) {
+	const char *ip = input;
+	const char *iend = input + insize;
+	const char *gp = glob;
+	const char *gend = glob + globsize;
+
+	int isfirst = 1;
+	int islast = 0;
+
+	for(;;) {
+		assert(!islast);
+
+		if(gp > gend) {
+			break;
+		}
+
+		const char *segment_start = gp;
+		const char *segment_end = memchr(segment_start, '*', gend - segment_start);
+
+		if(!segment_end) {
+			segment_end = gend;
+			islast = 1;
+		}
+
+		size_t segment_len = segment_end - segment_start;
+
+		if(segment_len < 1) {
+			if(islast) {
+				// Pattern ends with a * and we matched everything up to that point.
+				return 1;
+			}
+		} else {
+			// If this is the first segment, match at the start of input.
+			// Else search input for the first occurrence of the segment (lazy match).
+
+			if(isfirst) {
+				if(iend - ip < segment_len) {
+					// input shorter than pattern; can't possibly match
+					return 0;
+				}
+
+				if(memcmp(ip, segment_start, segment_len)) {
+					return 0;
+				}
+			} else if(!(ip = memmem(ip, iend - ip, segment_start, segment_len))) {
+				return 0;
+			}
+
+			ip += segment_len;
+		}
+
+		isfirst = 0;
+		gp += segment_len + 1;
+
+		if(islast) {
+			if(iend - ip == 0) {
+				// perfect match
+				return 1;
+			}
+
+			// Try to match the last pattern "greedily"
+			// So that e.g. a pattern like "start_*_end" can match "start_123_end_123_end"
+			if(iend - ip >= segment_len && !memcmp(iend - segment_len, segment_start, segment_len)) {
+				return 1;
+			}
+
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+bool strmatch(const char *glob, const char *input) {
+	return strnmatch(strlen(glob), glob, strlen(input), input);
+}

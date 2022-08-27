@@ -82,3 +82,14 @@ void hexdigest(uint8_t *input, size_t input_size, char *output, size_t output_si
 
 #define FILENAME_TIMESTAMP_MIN_BUF_SIZE 23
 size_t filename_timestamp(char *buf, size_t buf_size, const SystemTime time) attr_nonnull(1);
+
+/*
+ * Test if string matches a simple 'glob'-like pattern.
+ *
+ * Only '*' is supported as a metacharacter in the glob.
+ * '*' matches zero or more characters lazily.
+ * If the glob is not empty and does not end with a *, the last segment is matched greedily.
+ * An empty glob matches everything.
+ */
+bool strnmatch(size_t globsize, const char glob[globsize], size_t insize, const char input[insize]);
+bool strmatch(const char *glob, const char *input);
