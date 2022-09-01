@@ -24,6 +24,12 @@
 #include <stdnoreturn.h>
 #include <string.h>
 
+#ifdef TAISEI_BUILDCONF_REL_SRC_DIR
+	#define _TAISEI_SRC_FILE ((const char *)__FILE__ + sizeof(TAISEI_BUILDCONF_REL_SRC_DIR) - 1)
+#else
+	#define _TAISEI_SRC_FILE __FILE__
+#endif
+
 #include "util/assert.h"
 
 #ifdef __FAST_MATH__

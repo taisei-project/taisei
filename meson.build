@@ -515,6 +515,45 @@ use_testing_stages = is_developer_build
 config.set('TAISEI_BUILDCONF_DYNSTAGE', stages_live_reload)
 config.set('TAISEI_BUILDCONF_TESTING_STAGES', use_testing_stages)
 
+# Stolen from Sway
+# Compute the relative path used by compiler invocations.
+source_root = meson.current_source_dir().split('/')
+build_root = meson.build_root().split('/')
+if build_machine.system() == 'windows'
+    source_root = source_root.replace('\\', '/')
+    build_root = build_root.replace('\\', '/')
+endif
+relative_dir_parts = []
+i = 0
+in_prefix = true
+foreach p : build_root
+    if i >= source_root.length() or not in_prefix or p != source_root[i]
+        in_prefix = false
+        relative_dir_parts += '..'
+    endif
+    i += 1
+endforeach
+i = 0
+in_prefix = true
+foreach p : source_root
+    if i >= build_root.length() or not in_prefix or build_root[i] != p
+        in_prefix = false
+        relative_dir_parts += p
+    endif
+    i += 1
+endforeach
+relative_dir = join_paths(relative_dir_parts) + '/src/'
+
+# Strip relative path prefixes from the code if possible, otherwise hide them.
+if cc.has_argument('-fmacro-prefix-map=/prefix/to/hide=')
+    add_project_arguments(
+        '-fmacro-prefix-map=@0@='.format(relative_dir),
+        language: 'c',
+    )
+else
+    config.set('TAISEI_BUILDCONF_REL_SRC_DIR', relative_dir)
+endif
+
 subdir('misc')
 subdir('emscripten')
 subdir('switch')

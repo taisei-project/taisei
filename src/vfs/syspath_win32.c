@@ -51,7 +51,7 @@ static void _vfs_set_error_win32(const char *file, int line) {
 	free(errstr);
 }
 
-#define vfs_set_error_win32() _vfs_set_error_win32(__FILE__, __LINE__)
+#define vfs_set_error_win32() _vfs_set_error_win32(_TAISEI_SRC_FILE, __LINE__)
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
 	VFSInfo i = {0};

@@ -162,10 +162,10 @@ uint64_t _tsrand64_a(int idx, const char *file, uint line) RNG_DEPRECATED;
 double _afrand(int idx, const char *file, uint line) RNG_DEPRECATED;
 double _anfrand(int idx, const char *file, uint line) RNG_DEPRECATED;
 
-#define tsrand_fill_p(rnd,amount) _tsrand_fill_p(rnd, amount, __FILE__, __LINE__)
-#define tsrand_fill(amount) _tsrand_fill(amount, __FILE__, __LINE__)
-#define tsrand_a(idx) _tsrand_a(idx, __FILE__, __LINE__)
-#define afrand(idx) _afrand(idx, __FILE__, __LINE__)
-#define anfrand(idx) _anfrand(idx, __FILE__, __LINE__)
+#define tsrand_fill_p(rnd,amount) _tsrand_fill_p(rnd, amount, _TAISEI_SRC_FILE, __LINE__)
+#define tsrand_fill(amount) _tsrand_fill(amount, _TAISEI_SRC_FILE, __LINE__)
+#define tsrand_a(idx) _tsrand_a(idx, _TAISEI_SRC_FILE, __LINE__)
+#define afrand(idx) _afrand(idx, _TAISEI_SRC_FILE, __LINE__)
+#define anfrand(idx) _anfrand(idx, _TAISEI_SRC_FILE, __LINE__)
 
 #define TSRAND_ARRAY_LIMIT 16

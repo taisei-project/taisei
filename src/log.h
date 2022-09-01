@@ -120,16 +120,16 @@ void log_sync(void);
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
 	#undef UNREACHABLE
-	#define UNREACHABLE log_fatal("This code should never be reached  (%s:%i)", __FILE__, __LINE__)
+	#define UNREACHABLE log_fatal("This code should never be reached  (%s:%i)", _TAISEI_SRC_FILE, __LINE__)
 #else
 	#define log_debug(...) ((void)0)
-	#define LOG_NO_FILENAMES
+// 	#define LOG_NO_FILENAMES
 #endif
 
 #ifdef LOG_NO_FILENAMES
 	#define _do_log(func, lvl, ...) (func)(lvl, __func__, "<unknown>", 0, __VA_ARGS__)
 #else
-	#define _do_log(func, lvl, ...) (func)(lvl, __func__, __FILE__, __LINE__, __VA_ARGS__)
+	#define _do_log(func, lvl, ...) (func)(lvl, __func__, _TAISEI_SRC_FILE, __LINE__, __VA_ARGS__)
 #endif
 
 #define log_custom(lvl, ...) _do_log(_taisei_log, lvl, __VA_ARGS__)
