@@ -30,6 +30,14 @@ typedef struct QueuedLogEntry {
 	char message[];
 } QueuedLogEntry;
 
+typedef struct LogFilterEntry {
+	struct {
+		char *module;
+		char *func;
+	} patterns;
+	LogLevelDiff diff;
+} LogFilterEntry;
+
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
@@ -48,6 +56,8 @@ static struct {
 		LIST_ANCHOR(QueuedLogEntry) queue;
 		int shutdown;
 	} queue;
+
+	DYNAMIC_ARRAY(LogFilterEntry) filters;
 
 	bool initialized;
 
@@ -141,11 +151,93 @@ static void add_debug_info(StringBuffer *buf) {
 	});
 }
 
+#define MODULE_BUFFER_SIZE 128
+
+static size_t modname(const char *filename, size_t filename_len, char *mod) {
+	size_t mlen = filename_len;
+
+	char *dot = memchr(filename, '.', mlen);
+	if(dot) {
+		mlen = dot - filename;
+	}
+
+	if(mlen >= MODULE_BUFFER_SIZE) {
+		mlen = MODULE_BUFFER_SIZE - 1;
+	}
+
+	memcpy(mod, filename, mlen);
+	mod[mlen] = 0;
+
+	char *sep = memrchr(mod, '/', mlen);
+
+	if(sep) {
+		// simplify "foobar/foobar" into foobar and "foo/bar/foo_bar" into "foo/bar"
+
+		char pfx[sep - mod + 1];
+		int i;
+		for(i = 0; i < ARRAY_SIZE(pfx) - 1; ++i) {
+			char c = mod[i];
+			if(c == '/') {
+				c = '_';
+			}
+			pfx[i] = c;
+		}
+		pfx[i] = 0;
+
+		size_t tlen = strlen(sep + 1);
+
+		if(i == tlen && !memcmp(pfx, sep + 1, tlen)) {
+			mlen = tlen;
+			mod[mlen] = 0;
+		}
+	}
+
+	return mlen;
+}
+
+static void filter_entry_apply(const LogEntry *entry, const LogFilterEntry *f, LogLevelDiff *diff) {
+	if(f->patterns.module && !strmatch(f->patterns.module, entry->module)) {
+		return;
+	}
+
+	if(f->patterns.func && !strmatch(f->patterns.func, entry->func)) {
+		return;
+	}
+
+	*diff = log_merge_level_diff(*diff, f->diff);
+}
+
+static LogLevel filter_entry(LogEntry *entry) {
+	LogLevelDiff d = {};
+
+	dynarray_foreach_elem(&logging.filters, LogFilterEntry *f, {
+		filter_entry_apply(entry, f, &d);
+	});
+
+	return log_apply_level_diff(LOG_ALL, d);
+}
+
 static void log_dispatch(LogEntry *entry) {
 	StringBuffer *fmt_buf = &logging.buffers.format;
 
+	bool init = false;
+	LogLevel filter_lvlmask = LOG_ALL;
+
+	char mbuf[MODULE_BUFFER_SIZE];
+
 	for(Logger *l = logging.outputs; l; l = l->next) {
 		if(l->levels & entry->level) {
+			if(!init) {
+				modname(entry->file, strlen(entry->file), mbuf);
+				entry->module = mbuf;
+				filter_lvlmask = filter_entry(entry);
+				init = true;
+			}
+
+			if(!((entry->level & filter_lvlmask) | (l->levels & LOG_UNFILTERED_BIT))) {
+				continue;
+			}
+
 			strbuf_clear(fmt_buf);
 			size_t slen = l->formatter.format(&l->formatter, fmt_buf, entry);
 			assert_nolog(fmt_buf->buf_size >= slen);
@@ -342,6 +434,9 @@ void log_shutdown(void) {
 	strbuf_free(&logging.buffers.pre_format);
 	strbuf_free(&logging.buffers.format);
 
+	log_remove_filters();
+	dynarray_free_data(&logging.filters);
+
 #ifdef LOG_FATAL_MSGBOX
 	free(logging.err_appendix);
 #endif
@@ -395,10 +490,8 @@ static LogLevel chr2lvl(char c) {
 	return 0;
 }
 
-LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
-	if(!lvlmod) {
-		return lvls;
-	}
+LogLevelDiff log_parse_level_diff(const char *lvlmod) {
+	LogLevelDiff d = {};
 
 	bool enable = true;
 
@@ -407,23 +500,43 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
 			enable = true;
 		} else if(*c == '-') {
 			enable = false;
-		} else if(enable) {
-			lvls |= chr2lvl(*c);
 		} else {
-			lvls &= ~chr2lvl(*c);
+			char l = chr2lvl(*c);
+			d.diff[enable] |= l;
+			d.diff[!enable] &= ~l;
 		}
 	}
 
-	return lvls;
+	assert((d.removed & d.added) == 0);
+	return d;
+}
+
+LogLevelDiff log_merge_level_diff(LogLevelDiff lower, LogLevelDiff upper) {
+	assert((lower.removed & lower.added) == 0);
+	assert((upper.removed & upper.added) == 0);
+	lower.added = (lower.added & ~upper.removed) | upper.added;
+	lower.removed = (lower.removed & ~upper.added) | upper.removed;
+	assert((lower.removed & lower.added) == 0);
+	return lower;
+}
+
+LogLevel log_apply_level_diff(LogLevel lvls, LogLevelDiff diff) {
+	assert((diff.removed & diff.added) == 0);
+	return (lvls & ~diff.removed) | diff.added;
+}
+
+LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
+	return log_apply_level_diff(lvls, log_parse_level_diff(lvlmod));
 }
 
 static int log_fmtconsole_format_ansi(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
 	return strbuf_printf(
 		buf,
-		"\x1b[1;30m%-9d %s%s\x1b[1;30m: \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
+		"\x1b[1;30m%-9d %s%s\x1b[1;30m: \x1b[1;36m%s\x1b[1;30m \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
 		entry->time,
 		level_ansi_style_code(entry->level),
 		level_prefix(entry->level),
+		entry->module,
 		entry->func,
 		entry->message
 	);
@@ -432,9 +545,10 @@ static int log_fmtconsole_format_ansi(FormatterObj *obj, StringBuffer *buf, LogE
 static int log_fmtconsole_format_plain(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
 	return strbuf_printf(
 		buf,
-		"%-9d %s: %s: %s\n",
+		"%-9d %s: %s %s: %s\n",
 		entry->time,
 		level_prefix(entry->level),
+		entry->module,
 		entry->func,
 		entry->message
 	);
@@ -472,14 +586,79 @@ void log_formatter_console(FormatterObj *obj, const SDL_RWops *output) {
 static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
 	return strbuf_printf(
 		buf,
-		"%d  %s  %s: %s\n",
+		"%d  %s  %s %s: %s  [%s:%i]\n",
 		entry->time,
 		level_name(entry->level),
+		entry->module,
 		entry->func,
-		entry->message
+		entry->message,
+		entry->file,
+		entry->line
 	);
 }
 
 void log_formatter_file(FormatterObj *obj, const SDL_RWops *output) {
 	obj->format = log_fmtfile_format;
+}
+
+static char *copy_pattern(const char *p) {
+	const char *orig = p;
+
+	if(!p) {
+		return NULL;
+	}
+
+	while(*p == '*') {
+		++p;
+	}
+
+	if(!*p) {
+		return NULL;
+	}
+
+	return strdup(orig);
+}
+
+void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc) {
+	LogFilterEntry *f = dynarray_append(&logging.filters);
+	f->patterns.module = copy_pattern(pmod);
+	f->patterns.func = copy_pattern(pfunc);
+	f->diff = diff;
+}
+
+bool log_add_filter_string(const char *fstr) {
+	char buf[strlen(fstr) + 1];
+	memcpy(buf, fstr, sizeof(buf));
+	char *pbuf = buf;
+
+	char *levelmod = strtok_r(NULL, " \t\r\n", &pbuf);
+	if(!levelmod) {
+		goto error;
+	}
+
+	char *pmodule = strtok_r(NULL, " \t\r\n", &pbuf);
+	if(!pmodule) {
+		goto error;
+	}
+
+	char *pfunc = strtok_r(NULL, " \t\r\n", &pbuf);
+	if(!pfunc) {
+		goto error;
+	}
+
+	log_add_filter(log_parse_level_diff(levelmod), pmodule, pfunc);
+	return true;
+
+error:
+	log_error("Malformed filter string");
+	return false;
+}
+
+void log_remove_filters(void) {
+	dynarray_foreach_elem(&logging.filters, LogFilterEntry *f, {
+		free(f->patterns.module);
+		free(f->patterns.func);
+	});
+
+	logging.filters.num_elements = 0;
 }

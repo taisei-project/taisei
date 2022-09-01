@@ -21,6 +21,7 @@ enum {
 	_LOG_FATAL_ID,
 
 	_LOG_NOABORT_BIT,
+	_LOG_UNFILTERED_BIT,	// NOTE: only relevant for log_add_output
 };
 
 typedef enum LogLevel {
@@ -37,9 +38,20 @@ typedef enum LogLevel {
 	LOG_ALL = LOG_SPAM | LOG_ALERT,
 
 	LOG_NOABORT_BIT = (1 << _LOG_NOABORT_BIT),
+	LOG_UNFILTERED_BIT = (1 << _LOG_UNFILTERED_BIT),
 
 	LOG_FAKEFATAL = LOG_FATAL | LOG_NOABORT_BIT,
 } LogLevel;
+
+typedef struct LogLevelDiff {
+	union {
+		struct {
+			LogLevel removed;
+			LogLevel added;
+		};
+		LogLevel diff[2];
+	};
+} LogLevelDiff;
 
 #ifdef DEBUG
 	#define LOG_FATAL_IF_DEBUG LOG_FATAL
@@ -55,7 +67,7 @@ typedef enum LogLevel {
 	#ifdef __EMSCRIPTEN__
 		#define LOG_DEFAULT_LEVELS_FILE LOG_NONE
 	#else
-		#define LOG_DEFAULT_LEVELS_FILE LOG_ALL
+		#define LOG_DEFAULT_LEVELS_FILE LOG_ALL | LOG_UNFILTERED_BIT
 	#endif
 #endif
 
@@ -88,6 +100,7 @@ typedef enum LogLevel {
 typedef struct LogEntry {
 	const char *message;
 	const char *file;
+	const char *module;
 	const char *func;
 	uint time;
 	uint line;
@@ -113,9 +126,15 @@ void log_shutdown(void);
 void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) attr_nonnull(3);
 void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
+LogLevelDiff log_parse_level_diff(const char *lvlmod) attr_nonnull(1) attr_nodiscard;
+LogLevelDiff log_merge_level_diff(LogLevelDiff lower, LogLevelDiff upper) attr_nodiscard;
+LogLevel log_apply_level_diff(LogLevel lvls, LogLevelDiff diff) attr_nodiscard;
 bool log_initialized(void) attr_nodiscard;
 void log_set_gui_error_appendix(const char *message);
 void log_sync(void);
+void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc);
+bool log_add_filter_string(const char *fstr);
+void log_remove_filters(void);
 
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)

@@ -66,9 +66,9 @@ static void taisei_shutdown(void) {
 }
 
 static void init_log(void) {
-	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, env_get("TAISEI_LOGLVLS_CONSOLE", NULL));
-	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, env_get("TAISEI_LOGLVLS_STDOUT", NULL));
-	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", NULL));
+	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, env_get("TAISEI_LOGLVLS_CONSOLE", ""));
+	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, env_get("TAISEI_LOGLVLS_STDOUT", ""));
+	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", ""));
 
 	log_init(LOG_DEFAULT_LEVELS);
 	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false), log_formatter_console);
@@ -76,7 +76,7 @@ static void init_log(void) {
 }
 
 static void init_log_file(void) {
-	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", NULL));
+	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", ""));
 	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE), log_formatter_file);
 
 	char *logpath = vfs_repr("storage/log.txt", true);
@@ -93,6 +93,31 @@ static void init_log_file(void) {
 	} else {
 		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
 	}
+}
+
+static void init_log_filter(void) {
+	SDL_RWops *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
+
+	if(!rw) {
+		return;
+	}
+
+	char buf[256];
+
+	char *p;
+	while((p = SDL_RWgets(rw, buf, sizeof(buf)))) {
+		while(isspace(*p)) {
+			++p;
+		}
+
+		if(*p == '#' || !*p) {
+			continue;
+		}
+
+		log_add_filter_string(p);
+	}
+
+	SDL_RWclose(rw);
 }
 
 static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -330,6 +355,8 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	} else {
 		init_log_file();
 	}
+
+	init_log_filter();
 
 	log_version();
 	log_system_specs();
