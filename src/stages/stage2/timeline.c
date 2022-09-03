@@ -209,10 +209,10 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit;
 	int charge_time = difficulty_value(120, 80, 60, 60);
 	common_charge(charge_time, &e->pos, 0, RGBA(0.5, 0.2, 1.0, 0.0));
 
-	int step = difficulty_value(60, 40, 40, 30);
-	int interstep = difficulty_value(25, 20, 20, 15);
+	int step = difficulty_value(80, 40, 40, 30);
+	int interstep = difficulty_value(30, 20, 20, 15);
 	int arcshots = difficulty_value(10, 10, 12, 14);
-	int num_bursts = difficulty_value(4, 8, 12, 16);
+	int num_bursts = difficulty_value(2, 4, 12, 16);
 	int endpoints = 5;
 	int totalshots = endpoints * (1 + arcshots);
 
@@ -262,6 +262,10 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit;
 
 		dir *= rotate_per_burst;
 		WAIT(inward ? step : interstep);
+
+		if(inward) {
+			dir = rng_dir();
+		}
 	}
 
 	WAIT(60);
