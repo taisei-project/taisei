@@ -286,7 +286,7 @@ TASK(redwall_fairy, {
 
 	WAIT(30);
 
-	int duration = difficulty_value(42, 60, 65, 70);
+	int duration = difficulty_value(30, 60, 65, 70);
 	int step = difficulty_value(5, 4, 4, 3);
 	real pspeed = difficulty_value(2, 2, 2.2, 2.7);
 
