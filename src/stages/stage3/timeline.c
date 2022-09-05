@@ -56,7 +56,7 @@ TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width
 			head->pos = p->pos + 8*cdir(p->angle);
 		}
 		p->move = move_linear(p->pos-prevpos);
-		
+
 		prevpos = p->pos;
 		YIELD;
 	}
@@ -69,7 +69,7 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 	)));
 
 	e->move = ARGS.move;
-	
+
 	int shooting_time = 200;
 	real width = 30;
 	int interval = 10;
@@ -79,7 +79,7 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 	e->move.retention = 0.9;
 	WAIT(10);
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
-	
+
 	for(int t = 0; t < shooting_time/interval; t++) {
 		play_sfx("shot1");
 
@@ -95,7 +95,6 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 }
 
 TASK(swarm_trail_fairy_spawn, { int count; }) {
-
 	for(int i = 0; i < ARGS.count; i++) {
 		cmplx pos = VIEWPORT_W / 2.0;
 		cmplx vel = 5*I + 4 * cdir(-M_PI * i / (real)(ARGS.count-1));
@@ -103,35 +102,66 @@ TASK(swarm_trail_fairy_spawn, { int count; }) {
 
 		WAIT(60);
 	}
-	
-
 }
 
-TASK(flower_swirl, { cmplx pos; cmplx dir; }) {
+TASK(flower_swirl_trail, { BoxedEnemy e; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+
+	for(;;) {
+		YIELD;
+		PARTICLE(
+			.sprite = "smoothdot",
+			.color = RGBA(2, 1, 0.6, 0),
+			.pos = e->pos,
+			.timeout = 30,
+			.draw_rule = pdraw_timeout_scalefade_exp(1, 2, 1, 0, 2),
+		);
+	}
+}
+
+static inline MoveParams flower_swirl_move(cmplx dir, real angular_velocity, real radius) {
+	cmplx retention = 0.99 * cdir(angular_velocity);
+	return (MoveParams) {
+		.velocity = radius * cnormalize(dir) * I * cabs(1 - retention),
+		.retention = retention,
+		.acceleration = dir * (1 - retention),
+	};
+}
+
+TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(
 		.points = 1,
 	)));
 
-	real angular_velocity = 0.1;
-	real radius = 50;
-	cmplx retention = 0.99*cdir(angular_velocity);
-	e->move = (MoveParams){
-		.velocity = radius * cnormalize(ARGS.dir) * I * cabs(1 - retention),
-		.retention = retention,
-		.acceleration = ARGS.dir * (1 - retention)
-	};
+	e->move = ARGS.move;
+	INVOKE_TASK(flower_swirl_trail, ENT_BOX(e));
 
-	int interval = 10;
+	cmplx twist = cdir(M_TAU/64);
+
+	int interval = 20;
 	int petals = 5;
+	Color pcolor = *RGBA(1, 0.5, 0, 1);
+
 	for(int t = 0;; t++) {
+		if(t & 1) {
+			pcolor.g = 0;
+			petals = 7;
+		} else {
+			pcolor.g = 0.5;
+			petals = 5;
+		}
+
 		play_sfx("shot2");
+
+		cmplx r = cnormalize(e->move.velocity);
+
 		for(int i = 0; i < petals; i++) {
-			cmplx dir = cdir(M_TAU / petals * i);
+			cmplx dir = r * cdir(M_TAU / petals * i);
 			PROJECTILE(
 				.proto = pp_wave,
-				.color = RGB(1, 0.5, 0.6),
+				.color = &pcolor,
 				.pos = e->pos - 4 * dir,
-				.move = move_asymptotic_halflife(0.1*dir, -2 * dir, 220),
+				.move = move_asymptotic_halflife(0.7*dir, -4 * dir * twist, 200),
 			);
 		}
 
@@ -139,12 +169,9 @@ TASK(flower_swirl, { cmplx pos; cmplx dir; }) {
 	}
 }
 
-TASK(flower_swirl_spawn, { cmplx pos; cmplx dir; int count; int interval; cmplx spread; }) {
+TASK(flower_swirl_spawn, { cmplx pos; MoveParams move; int count; int interval; }) {
 	for(int i = 0; i < ARGS.count; i++) {
-		cmplx pos = ARGS.pos + creal(ARGS.spread) * rng_sreal();
-		pos += I * cimag(ARGS.spread) * rng_sreal();
-
-		INVOKE_TASK(flower_swirl, pos, ARGS.dir);
+		INVOKE_TASK(flower_swirl, ARGS.pos, ARGS.move);
 		WAIT(ARGS.interval);
 	}
 }
@@ -210,7 +237,7 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 		int tmp = fib1;
 		fib1 = (fib1 + fib2) % lance_dirs;
 		fib2 = tmp;
-		
+
 		cmplx dir = offset * cdir(M_TAU / lance_dirs * fib1);
 		for(int j = 0; j < lance_segs; j++) {
 			int s = 1 - 2 * (j & 1);
@@ -262,7 +289,7 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 
 	e->move = move_asymptotic_halflife(0, 2 * I, 20);
 
-}	
+}
 
 // bosses
 
@@ -328,21 +355,40 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
-	INVOKE_TASK(flower_swirl_spawn,
+	int interval = 60;
+	int lr_stagger = 0;
+	int ud_stagger = interval / 2;
+
+	INVOKE_TASK_DELAYED(0, flower_swirl_spawn,
 		.pos = VIEWPORT_W + 10 + 200 * I,
-		.dir = -3 - 1 * I,
-		.count = 10,
-		.interval = 30,
-		.spread = 10 + 200*I
+		.move = flower_swirl_move(-3 + 0.5 * I, -0.1, 20),
+		.count = 12,
+		.interval = interval,
 	);
-	INVOKE_TASK_DELAYED(100, flower_swirl_spawn,
+
+	INVOKE_TASK_DELAYED(ud_stagger, flower_swirl_spawn,
+		.pos = VIEWPORT_W + 10 + 200 * I,
+		.move = flower_swirl_move(-3 - 1 * I, 0.1, 20),
+		.count = 12,
+		.interval = interval,
+	);
+
+	INVOKE_TASK_DELAYED(lr_stagger, flower_swirl_spawn,
 		.pos = -10 + 200 * I,
-		.dir = 3 - 1 * I,
-		.count = 8,
-		.interval = 30,
-		.spread = 10 + 150*I
+		.move = flower_swirl_move(3 + 0.5 * I, 0.1, 20),
+		.count = 12,
+		.interval = interval,
 	);
-	
+
+	INVOKE_TASK_DELAYED(lr_stagger + ud_stagger, flower_swirl_spawn,
+		.pos = -10 + 200 * I,
+		.move = flower_swirl_move(3 - 1 * I, -0.1, 20),
+		.count = 12,
+		.interval = interval,
+	);
+
+	INVOKE_TASK_DELAYED(400, common_call_func, stage_load_quicksave);
+
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
 
 	STAGE_BOOKMARK_DELAYED(800, horde);
@@ -350,14 +396,14 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.count = 30,
 		.interval = 20
 	);
-	
+
 	STAGE_BOOKMARK_DELAYED(1300, circle-twist);
 	INVOKE_TASK_DELAYED(1300, circle_twist_fairy,
 		.pos = 0,
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
-	
+
 
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
