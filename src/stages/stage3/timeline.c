@@ -225,6 +225,7 @@ TASK(horde_fairy_spawn, { int count; int interval; }) {
 TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
+	common_charge(120, &e->pos, 0, RGBA(0.6, 0.8, 2, 0));
 	cmplx offset = rng_dir();
 
 	int lance_count = 300;
@@ -242,7 +243,7 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 		for(int j = 0; j < lance_segs; j++) {
 			int s = 1 - 2 * (j & 1);
 			PROJECTILE(
-				.proto = pp_ball,
+				.proto = pp_rice,
 				.pos = e->pos + 20 * dir,
 				.color = RGB(0.3, 0.4, 1),
 					.move = move_asymptotic_halflife((0.5+4.5*j/lance_segs)*dir, 5*dir*cdir(0.05 * s), 50+10*I),
@@ -266,9 +267,9 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 
 	int circle_count = 10;
 	int count = 50;
-	int interval = 10;
+	int interval = 40;
 
-	INVOKE_SUBTASK_DELAYED(300, circle_twist_fairy_lances, ENT_BOX(e));
+	INVOKE_SUBTASK_DELAYED(180, circle_twist_fairy_lances, ENT_BOX(e));
 
 	for(int i = 0; i < circle_count; i++) {
 		int s = 1-2*(i&1);
@@ -277,10 +278,14 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 			play_sfx_loop("shot1_loop");
 			cmplx dir = -I * cdir(s * M_TAU / count * t);
 			PROJECTILE(
-				.proto = pp_ball,
+				.proto = pp_wave,
 				.pos = e->pos,
-				.color = RGB(0.4, 0, 1),
-				.move = {(2 + 0.005 * t) * dir, -0.01 * dir, 1.0 * cdir(-0.01*s)}
+				.color = RGB(1, 0.3, 0),
+				.move = {
+					.velocity = (2 + 0.005 * t) * dir,
+					.acceleration = -0.005 * dir,
+					.retention = 1.0 * cdir(-0.01*s)
+				}
 			);
 			YIELD;
 		}
@@ -387,7 +392,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.interval = interval,
 	);
 
-	INVOKE_TASK_DELAYED(400, common_call_func, stage_load_quicksave);
+// 	INVOKE_TASK_DELAYED(400, common_call_func, stage_load_quicksave);
 
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
 
@@ -404,6 +409,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	);
 
 
+	INVOKE_TASK_DELAYED(2400, common_call_func, stage_load_quicksave);
 
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
