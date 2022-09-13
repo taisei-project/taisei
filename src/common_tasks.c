@@ -98,9 +98,17 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *c
 
 static void randomize_hue(Color *clr, float r) {
 	float h, s, l, a = clr->a;
+	float m = fmaxf(clr->r, fmaxf(clr->g, clr->b));
+
+	if(UNLIKELY(m == 0)) {
+		return;
+	}
+
+	color_div_scalar(clr, m);
 	color_get_hsl(clr, &h, &s, &l);
-	h += rng_sreal() * r;
+	h += rng_f32s() * r;
 	*clr = *HSLA(h, s, l, a);
+	color_mul_scalar(clr, m);
 }
 
 TASK(charge_sound_stopper, { SFXPlayID id; }) {
