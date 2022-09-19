@@ -1133,7 +1133,7 @@ HT_DECLARE_PRIV_FUNC(bool, set, (
 
 HT_DECLARE_PRIV_FUNC(void, check_elem_count, (HT_BASETYPE *ht)) {
 	#ifdef DEBUG
-	ht_size_t num_elements = 0;
+	attr_unused ht_size_t num_elements = 0;
 	for(ht_size_t i = 0; i < ht->num_elements_allocated; ++i) {
 		if(ht->elements[i].hash & HT_HASH_LIVE_BIT) {
 			++num_elements;

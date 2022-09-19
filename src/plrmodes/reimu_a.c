@@ -469,9 +469,8 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 		.shader_ptr = ARGS.shader,
 	));
 
-	for(int t = 0;; ++t) {
+	for(;;YIELD) {
 		reimu_common_ofuda_swawn_trail(ofuda);
-		YIELD;
 	}
 }
 
