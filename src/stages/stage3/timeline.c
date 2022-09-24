@@ -176,9 +176,18 @@ TASK(flower_swirl_spawn, { cmplx pos; MoveParams move; int count; int interval; 
 	}
 }
 
-TASK(horde_fairy, { cmplx pos; }) {
+TASK(horde_fairy_motion, { BoxedEnemy e; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	real ofs = rng_angle();
+	cmplx v = e->move.velocity;
+	for(;;YIELD) {
+		e->move.velocity = v * cdir(M_PI/8 * sin(ofs + global.frames/15.0));
+	}
+}
+
+TASK(horde_fairy, { cmplx pos; bool blue; }) {
 	Enemy *e;
-	if(rng_chance(0.5)) {
+	if(ARGS.blue) {
 		e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(
 			.points = 1,
 		)));
@@ -188,10 +197,13 @@ TASK(horde_fairy, { cmplx pos; }) {
 		)));
 	}
 
-	e->move = move_linear(1.5 * I);
+	e->move = move_linear(2 * I);
+
+	INVOKE_SUBTASK(horde_fairy_motion, ENT_BOX(e));
+
 	int interval = 40;
 
-	for(int t = 0;; t++, WAIT(interval)) {
+	for(;;WAIT(interval)) {
 		play_sfx("shot1");
 		cmplx diff = global.plr.pos - e->pos;
 
@@ -216,8 +228,17 @@ TASK(horde_fairy, { cmplx pos; }) {
 }
 
 TASK(horde_fairy_spawn, { int count; int interval; }) {
+	real p = 3.0 / ARGS.count;
+	real w = 0.9*VIEWPORT_W/2;
+	bool blue = rng_bool();
 	for(int t = 0; t < ARGS.count; t++) {
-		INVOKE_TASK(horde_fairy, .pos = VIEWPORT_W * rng_real());
+		INVOKE_TASK(horde_fairy,
+			.pos = VIEWPORT_W/2 + w * triangle(t * p),
+			.blue = blue,
+		);
+		if(((t+1) % 3) == 0) {
+			blue = !blue;
+		}
 		WAIT(ARGS.interval);
 	}
 }
@@ -253,7 +274,6 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 		WAIT(2);
 	}
 }
-
 
 TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
