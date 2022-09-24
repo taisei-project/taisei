@@ -370,3 +370,14 @@ DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
 		glm_vec4_add(from, d, *ARGS.value);
 	}
 }
+
+void common_rotate_velocity(MoveParams *move, real angle, int duration) {
+	cmplx r = cdir(angle / duration);
+	move->retention *= r;
+	WAIT(duration);
+	move->retention /= r;
+}
+
+DEFINE_EXTERN_TASK(common_rotate_velocity) {
+	common_rotate_velocity(ARGS.move, ARGS.angle, ARGS.duration);
+}

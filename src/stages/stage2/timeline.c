@@ -343,20 +343,9 @@ TASK(aimshot_fairy, { BoxedEnemy e; MoveParams move_enter; MoveParams move_exit;
 	e->move = ARGS.move_exit;
 }
 
-TASK(rotate_velocity, {
-	MoveParams *move;
-	real angle;
-	int duration;
-}) {
-	cmplx r = cdir(ARGS.angle / ARGS.duration);
-	ARGS.move->retention *= r;
-	WAIT(ARGS.duration);
-	ARGS.move->retention /= r;
-}
-
 static void set_turning_motion(Enemy *e, cmplx v, real turn_angle, int turn_delay, int turn_duration) {
 	e->move = move_linear(v);
-	INVOKE_SUBTASK_DELAYED(turn_delay, rotate_velocity,
+	INVOKE_SUBTASK_DELAYED(turn_delay, common_rotate_velocity,
 		.move = &e->move,
 		.angle = turn_angle,
 		.duration = turn_duration

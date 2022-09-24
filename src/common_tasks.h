@@ -90,6 +90,7 @@ INLINE Rect viewport_bounds(double margin) {
 }
 
 cmplx common_wander(cmplx origin, double dist, Rect bounds);
+void common_rotate_velocity(MoveParams *move, real angle, int duration);
 
 DECLARE_EXTERN_TASK(
 	common_set_bitflags,
@@ -141,5 +142,14 @@ DECLARE_EXTERN_TASK(
 		vec4 to;
 		int duration;
 		glm_ease_t ease;
+	}
+);
+
+DECLARE_EXTERN_TASK(
+	common_rotate_velocity,
+	{
+		MoveParams *move;
+		real angle;
+		int duration;
 	}
 );
