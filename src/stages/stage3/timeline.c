@@ -316,6 +316,102 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 
 }
 
+TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; }) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_bigball,
+		.pos = ARGS.origin,
+		.move = move_asymptotic_halflife(ARGS.velocity, 0, 15),
+		.color = ARGS.color,
+	));
+
+	WAIT(60);
+
+	cmplx lv = -4 * cnormalize(ARGS.velocity);
+
+	real lt = 20;
+	real dt = 300;
+
+	real amp = 0.08;
+	real freq = 0.25 * ARGS.freq_factor;
+
+	int charges = 4;
+	int delay = 20;
+	int refire = 20;
+
+	real phase = 0;
+
+	real scale = 1;
+	real scale_per_charge = 1 / (real)charges;
+	real scale_per_tick = scale_per_charge / delay;
+
+	cmplx orig_collision = p->collision_size;
+	cmplx orig_scale = p->scale;
+
+	for(int i = 0;; ++i) {
+		play_sfx("laser1");
+		PROJECTILE(
+			.pos = p->pos,
+			.proto = pp_flea,
+			.timeout = 1,
+			.color = RGBA(1, 1, 1, 0),
+		);
+		Laser *l = create_lasercurve4c(p->pos, lt, dt, &p->color, las_sine_expanding, lv, amp, freq, i * phase);
+
+		for(int t = 0; t < delay; ++t) {
+			YIELD;
+			scale -= scale_per_tick;
+			p->collision_size = orig_collision * scale;
+			p->scale = orig_scale * scale;		}
+
+		if(i == charges - 1) {
+			break;
+		}
+
+		WAIT(refire);
+		// phase += 3.2;
+		freq *= -1;
+	}
+
+	kill_projectile(p);
+}
+
+TASK(laserball_fairy, { cmplx pos; cmplx target_pos; }) {
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(
+		.power = 5,
+		.points = 5,
+	)));
+
+	e->move = move_towards(ARGS.target_pos, 0.04);
+	WAIT(30);
+	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
+
+	int balls = 6;
+	int cycles = 2;
+
+	for(int c = 0; c < cycles; ++c) {
+		play_sfx("shot1");
+		play_sfx("warp");
+
+		for(int i = 0; i < balls; ++i) {
+			cmplx v = 3 * cdir(i * (M_TAU / balls));
+			INVOKE_TASK(laserball, e->pos, v, RGBA(0.2, 2, 0.4, 0), 1);
+		}
+
+		WAIT(120);
+		play_sfx("shot1");
+		play_sfx("warp");
+
+		for(int i = 0; i < balls; ++i) {
+			cmplx v = 3 * cdir((i + 0.5) * (M_TAU / balls));
+			INVOKE_TASK(laserball, e->pos, v, RGBA(2, 1, 0.4, 0), -1);
+		}
+
+		WAIT(180);
+	}
+
+	e->move = move_asymptotic_halflife(e->move.velocity, 3*I, 60);
+}
+
 // bosses
 
 TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
@@ -379,6 +475,11 @@ TASK(spawn_boss) {
 DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
+
+	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
+	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
+
+	return;
 
 	int interval = 60;
 	int lr_stagger = 0;
