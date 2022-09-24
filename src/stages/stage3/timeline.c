@@ -472,6 +472,46 @@ TASK(spawn_boss) {
 	boss_engage(boss);
 }
 
+TASK(flower_swirls_alternating) {
+	int interval = 20;
+	int cnt = 4;
+	int altinterval = interval * cnt * 2;
+
+	INVOKE_TASK(flower_swirl_spawn,
+		.pos = VIEWPORT_W + 10 + 160 * I,
+		.move = flower_swirl_move(-2 + 0.0 * I, -0.09, 120),
+		.count = cnt,
+		.interval = interval,
+	);
+
+	WAIT(altinterval);
+
+	INVOKE_TASK(flower_swirl_spawn,
+		.pos = - 10 + 160 * I,
+		.move = flower_swirl_move(2 + 0.0 * I, -0.09, 120),
+		.count = 4,
+		.interval = interval,
+	);
+
+	WAIT(altinterval);
+
+	INVOKE_TASK(flower_swirl_spawn,
+		.pos = VIEWPORT_W + 10 + 160 * I,
+		.move = flower_swirl_move(-1 + 1.0 * I, -0.09, 120),
+		.count = cnt,
+		.interval = interval,
+	);
+
+	WAIT(altinterval);
+
+	INVOKE_TASK(flower_swirl_spawn,
+		.pos = - 10 + 160 * I,
+		.move = flower_swirl_move(1 + 1.0 * I, -0.09, 120),
+		.count = 4,
+		.interval = interval,
+	);
+}
+
 DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
@@ -513,8 +553,6 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.interval = interval,
 	);
 
-// 	INVOKE_TASK_DELAYED(400, common_call_func, stage_load_quicksave);
-
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
 
 	STAGE_BOOKMARK_DELAYED(800, horde);
@@ -530,8 +568,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	);
 
 
-	INVOKE_TASK_DELAYED(2400, common_call_func, stage_load_quicksave);
-
+	INVOKE_TASK_DELAYED(3400, common_call_func, stage_load_quicksave);
+	INVOKE_TASK_DELAYED(1800, flower_swirls_alternating);
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 
