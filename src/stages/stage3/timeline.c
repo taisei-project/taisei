@@ -130,7 +130,7 @@ static inline MoveParams flower_swirl_move(cmplx dir, real angular_velocity, rea
 
 TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(
-		.points = 1,
+		.power = 1,
 	)));
 
 	e->move = ARGS.move;
@@ -510,16 +510,23 @@ TASK(flower_swirls_alternating) {
 		.count = 4,
 		.interval = interval,
 	);
+
+	INVOKE_TASK(flower_swirl_spawn,
+		.pos = VIEWPORT_W + 10 + 160 * I,
+		.move = flower_swirl_move(-2 + 0.0 * I, -0.09, 120),
+		.count = cnt,
+		.interval = interval,
+	);
 }
 
 DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
+/*
 	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
 	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
-
-	return;
+	return;*/
 
 	int interval = 60;
 	int lr_stagger = 0;
@@ -561,15 +568,32 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.interval = 20
 	);
 
+	INVOKE_TASK_DELAYED(1000, laserball_fairy,
+		.pos = VIEWPORT_W + 10 + 300 * I,
+		.target_pos = 3*VIEWPORT_W/4 + 200*I
+	);
+
 	STAGE_BOOKMARK_DELAYED(1300, circle-twist);
 	INVOKE_TASK_DELAYED(1300, circle_twist_fairy,
 		.pos = 0,
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
+	INVOKE_TASK_DELAYED(1820, laserball_fairy,
+		.pos = - 10 + 300 * I,
+		.target_pos = VIEWPORT_W/3 + 140*I
+	);
+
+	INVOKE_TASK_DELAYED(1820, laserball_fairy,
+		.pos = VIEWPORT_W + 10 + 300 * I,
+		.target_pos = 2*VIEWPORT_W/3 + 140*I
+	);
+
+	INVOKE_TASK_DELAYED(1900, flower_swirls_alternating);
+	INVOKE_TASK_DELAYED(2390, swarm_trail_fairy, VIEWPORT_W+20 + VIEWPORT_H*0.24*I, move_linear(-9));
+	INVOKE_TASK_DELAYED(2450, swarm_trail_fairy,           -20 + VIEWPORT_H*0.32*I, move_linear( 9));
 
 	INVOKE_TASK_DELAYED(3400, common_call_func, stage_load_quicksave);
-	INVOKE_TASK_DELAYED(1800, flower_swirls_alternating);
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 
@@ -581,9 +605,6 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	WAIT(150);
 
 	STAGE_BOOKMARK(post-midboss);
-
-
-
 
 	STAGE_BOOKMARK_DELAYED(2800, pre-boss);
 
