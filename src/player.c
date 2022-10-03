@@ -39,7 +39,7 @@ void player_init(Player *plr) {
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->point_item_value = PLR_START_PIV;
-	plr->power = 100;
+	plr->power_stored = 100;
 	plr->deathtime = -1;
 	plr->continuetime = -1;
 	plr->bomb_triggertime = -1;
@@ -112,35 +112,48 @@ static void player_full_power(Player *plr) {
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
 
+static int player_track_effective_power_change(Player *plr) {
+	int old_effective = plr->_prev_effective_power;
+	int new_effective = player_get_effective_power(plr);
+
+	if(old_effective != new_effective) {
+		coevent_signal(&plr->events.effective_power_changed);
+	}
+
+	plr->_prev_effective_power = old_effective;
+	return new_effective;
+}
+
 bool player_set_power(Player *plr, short npow) {
-	int pow_base = clamp(npow, 0, PLR_MAX_POWER);
-	int pow_overflow = clamp(npow - PLR_MAX_POWER, 0, PLR_MAX_POWER_OVERFLOW);
+	int old_stored = plr->power_stored;
+	int new_stored = iclamp(npow, 0, PLR_MAX_POWER_STORED);
+	plr->power_stored = new_stored;
 
-	int oldpow = plr->power;
-	int oldpow_over = plr->power_overflow;
-
-	plr->power = pow_base;
-	plr->power_overflow = pow_overflow;
-
-	if((oldpow + oldpow_over) / 100 < (pow_base + pow_overflow) / 100) {
+	if(old_stored / 100 < new_stored / 100) {
 		play_sfx("powerup");
 	}
 
-	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
-		player_full_power(plr);
-	}
-
-	bool change = (oldpow + oldpow_over) != (plr->power + plr->power_overflow);
+	bool change = old_stored != new_stored;
 
 	if(change) {
-		coevent_signal(&plr->events.power_changed);
+		if(new_stored >= PLR_MAX_POWER_EFFECTIVE && old_stored < PLR_MAX_POWER_EFFECTIVE) {
+			player_full_power(plr);
+		}
+
+		coevent_signal(&plr->events.stored_power_changed);
 	}
+
+	player_track_effective_power_change(plr);
 
 	return change;
 }
 
 bool player_add_power(Player *plr, short pdelta) {
-	return player_set_power(plr, plr->power + plr->power_overflow + pdelta);
+	return player_set_power(plr, plr->power_stored + pdelta);
+}
+
+int player_get_effective_power(Player *plr) {
+	return iclamp(plr->power_stored, 0, PLR_MAX_POWER_EFFECTIVE);
 }
 
 void player_move(Player *plr, cmplx delta) {
@@ -554,6 +567,8 @@ DEFINE_TASK(player_logic) {
 	Player *plr = TASK_BIND(ARGS.plr);
 	uint prev_inputflags = 0;
 
+	plr->_prev_effective_power = player_get_effective_power(plr);
+
 	for(;;) {
 		YIELD;
 
@@ -580,7 +595,7 @@ DEFINE_TASK(player_logic) {
 			stats_track_continue_used(&plr->stats);
 			player_set_power(plr, 0);
 			stage_clear_hazards(CLEAR_HAZARDS_ALL);
-			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
+			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER_EFFECTIVE/(real)POWER_VALUE));
 		}
 
 		aniplayer_update(&plr->ani);
@@ -612,6 +627,8 @@ DEFINE_TASK(player_logic) {
 		} else if(plr->deathtime > global.frames) {
 			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		}
+
+		player_track_effective_power_change(plr);
 	}
 }
 
@@ -677,7 +694,7 @@ static bool player_powersurge(Player *plr) {
 		!player_is_alive(plr) ||
 		player_is_bomb_active(plr) ||
 		player_is_powersurge_active(plr) ||
-		plr->power + plr->power_overflow < PLR_POWERSURGE_POWERCOST
+		plr->power_stored < PLR_POWERSURGE_POWERCOST
 	) {
 		return false;
 	}
@@ -856,7 +873,7 @@ void player_realdeath(Player *plr) {
 		return;
 	}
 
-	int total_power = plr->power + plr->power_overflow;
+	int total_power = plr->power_stored;
 
 	int drop = fmax(2, (total_power * 0.15) / POWER_VALUE);
 	spawn_items(plr->deathpos, ITEM_POWER, drop);

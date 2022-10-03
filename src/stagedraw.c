@@ -1100,15 +1100,15 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	Font *fnt_int = res_font("standard");
 	Font *fnt_fract = res_font("small");
 
-	int pw = global.plr.power + global.plr.power_overflow;
+	int pw = global.plr.power_stored;
 
 	Color *c_whole, c_whole_buf, *c_fract, c_fract_buf;
 	Color *c_op_mod = RGBA(1, 0.2 + 0.3 * psin(global.frames / 10.0), 0.2, 1.0);
 
-	if(pw <= PLR_MAX_POWER) {
+	if(pw <= PLR_MAX_POWER_EFFECTIVE) {
 		c_whole = &stagedraw.hud_text.color.active;
 		c_fract = &stagedraw.hud_text.color.inactive;
-	} else if(pw - PLR_MAX_POWER < 100) {
+	} else if(pw - PLR_MAX_POWER_EFFECTIVE < 100) {
 		c_whole = &stagedraw.hud_text.color.active;
 		c_fract = color_mul(color_copy(&c_fract_buf, &stagedraw.hud_text.color.inactive), c_op_mod);
 	} else {
@@ -1136,7 +1136,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	});
 
 	draw_fraction(
-		PLR_MAX_POWER / 100.0,
+		PLR_MAX_POWER_EFFECTIVE / 100.0,
 		ALIGN_LEFT,
 		xpos,
 		ypos,

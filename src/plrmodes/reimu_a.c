@@ -740,7 +740,7 @@ static void reimu_spirit_kill_slaves(ReimuAController *ctrl) {
 
 static void reimu_spirit_respawn_slaves(ReimuAController *ctrl) {
 	Player *plr = ctrl->plr;
-	int power_rank = plr->power / 100;
+	int power_rank = player_get_effective_power(plr) / 100;
 
 	reimu_spirit_kill_slaves(ctrl);
 
@@ -779,11 +779,11 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 TASK(reimu_spirit_power_handler, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			reimu_spirit_respawn_slaves(ctrl);
 			old_power = new_power;
@@ -832,7 +832,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-		int power_rank = plr->power / 100;
+		int power_rank = player_get_effective_power(plr) / 100;
 		real damage = SHOT_VOLLEY_DMG;
 
 		for(int pwr = 0; pwr <= power_rank; ++pwr) {

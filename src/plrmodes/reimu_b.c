@@ -606,13 +606,13 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 TASK(reimu_dream_power_handler, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	reimu_dream_respawn_slaves(ctrl, old_power * 2);
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			reimu_dream_respawn_slaves(ctrl, new_power * 2);
 			old_power = new_power;

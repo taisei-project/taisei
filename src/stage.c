@@ -148,14 +148,10 @@ static void stage_start(StageInfo *stage) {
 	}
 
 	if(global.is_practice_mode) {
-		global.plr.power = config_get_int(CONFIG_PRACTICE_POWER);
+		global.plr.power_stored = config_get_int(CONFIG_PRACTICE_POWER);
 	}
 
-	if(global.plr.power < 0) {
-		global.plr.power = 0;
-	} else if(global.plr.power > PLR_MAX_POWER) {
-		global.plr.power = PLR_MAX_POWER;
-	}
+	global.plr.power_stored = iclamp(global.plr.power_stored, 0, PLR_MAX_POWER_STORED);
 
 	reset_all_sfx();
 }

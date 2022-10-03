@@ -37,7 +37,7 @@ ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time
 	s->plr_life_fragments = plr->life_fragments;
 	s->plr_bombs = plr->bombs;
 	s->plr_bomb_fragments = plr->bomb_fragments;
-	s->plr_power = plr->power + plr->power_overflow;
+	s->plr_power = plr->power_stored;
 	s->plr_graze = plr->graze;
 	s->plr_point_item_value = plr->point_item_value;
 	s->plr_inputflags = plr->inputflags;
@@ -56,8 +56,7 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->life_fragments = stg->plr_life_fragments;
 	plr->bombs = stg->plr_bombs;
 	plr->bomb_fragments = stg->plr_bomb_fragments;
-	plr->power = (stg->plr_power > PLR_MAX_POWER ? PLR_MAX_POWER : stg->plr_power);
-	plr->power_overflow = (stg->plr_power > PLR_MAX_POWER ? stg->plr_power - PLR_MAX_POWER : 0);
+	plr->power_stored = stg->plr_power;
 	plr->graze = stg->plr_graze;
 	plr->point_item_value = stg->plr_point_item_value;
 	plr->inputflags = stg->plr_inputflags;

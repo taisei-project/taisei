@@ -30,8 +30,8 @@
 #include "replay/eventcodes.h"
 
 enum {
-	PLR_MAX_POWER = 400,
-	PLR_MAX_POWER_OVERFLOW = 200,
+	PLR_MAX_POWER_EFFECTIVE = 400,
+	PLR_MAX_POWER_STORED = 600,
 	PLR_MAX_LIVES = 8,
 	PLR_MAX_BOMBS = 8,
 
@@ -121,7 +121,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	COEVENTS_ARRAY(
 		shoot,
 		inputflags_changed,
-		power_changed,
+		stored_power_changed,
+		effective_power_changed,
 		bomb_used
 	) events;
 
@@ -137,8 +138,8 @@ DEFINE_ENTITY_TYPE(Player, {
 	int bombs;
 	int life_fragments;
 	int bomb_fragments;
-	int power;
-	int power_overflow;
+	int power_stored;
+	int _prev_effective_power;
 
 	int continuetime;
 	int deathtime;          /* time of hit + deathbomb window */
@@ -191,6 +192,7 @@ bool player_should_shoot(Player *plr);
 
 bool player_set_power(Player *plr, short npow);
 bool player_add_power(Player *plr, short pdelta);
+int player_get_effective_power(Player *plr);
 
 void player_move(Player*, cmplx delta);
 

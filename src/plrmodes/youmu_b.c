@@ -176,7 +176,7 @@ TASK(youmu_haunting_shot_spread, { YoumuBController *ctrl; }) {
 			continue;
 		}
 
-		INVOKE_TASK(youmu_burst_shot, ctrl, 2 * plr->power / 100);
+		INVOKE_TASK(youmu_burst_shot, ctrl, 2 * player_get_effective_power(plr) / 100);
 		WAIT(SHOT_SPREAD_DELAY);
 	}
 }
@@ -452,12 +452,12 @@ TASK(youmu_haunting_shot_orbs, { YoumuBController *ctrl; }) {
 			continue;
 		}
 
-		int power_rank = plr->power / 100;
+		int power_rank = player_get_effective_power(plr) / 100;
 
 		INVOKE_TASK(youmu_orb_shot,
 			.ctrl = ctrl,
 			.lifetime = SHOT_ORBS_LIFETIME_BASE + power_rank * SHOT_ORBS_LIFETIME_PER_POWER,
-			.spirit_damage = SHOT_ORBS_SPIRIT_DAMAGE,  // 120 - 18 * 4 * (1 - pow(1 - (plr->power / 100) / 4.0, 1.5));
+			.spirit_damage = SHOT_ORBS_SPIRIT_DAMAGE,
 			.spirit_spawn_delay = SHOT_ORBS_SPIRIT_SPAWN_DELAY
 		);
 

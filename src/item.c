@@ -248,7 +248,7 @@ void process_items(void) {
 		bool may_collect = true;
 
 		if(
-			(item->type == ITEM_POWER_MINI && global.plr.power == PLR_MAX_POWER) ||
+			(item->type == ITEM_POWER_MINI && global.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
 			(item->type == ITEM_SURGE && !player_is_powersurge_active(&global.plr))
 		) {
 			item->type = ITEM_PIV;

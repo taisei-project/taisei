@@ -240,7 +240,7 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 		const real dmg_center = SHOT_MYON_DAMAGE;
 		const real dmg_side = SHOT_MYON_DAMAGE;
 		const real speed = -10;
-		const int power_rank = plr->power / 100;
+		const int power_rank = player_get_effective_power(plr) / 100;
 
 		real spread;
 		cmplx forward;
@@ -567,7 +567,7 @@ TASK(youmu_mirror_shot_forward, { YoumuAController *ctrl; }) {
 		play_sfx_loop("generic_shot");
 
 		cmplx v = -20 * I;
-		int power_rank = plr->power / 100;
+		int power_rank = player_get_effective_power(plr) / 100;
 
 		real spread = M_PI/64 * (1 + 0.5 * psin(t/15.0));
 

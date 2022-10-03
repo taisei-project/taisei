@@ -664,13 +664,13 @@ static void marisa_laser_respawn_slaves(MarisaAController *ctrl, int power_rank)
 TASK(marisa_laser_power_handler, { MarisaAController *ctrl; }) {
 	MarisaAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	marisa_laser_respawn_slaves(ctrl, old_power);
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			marisa_laser_respawn_slaves(ctrl, new_power);
 			old_power = new_power;
