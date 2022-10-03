@@ -153,7 +153,15 @@ bool player_add_power(Player *plr, short pdelta) {
 }
 
 int player_get_effective_power(Player *plr) {
-	return iclamp(plr->power_stored, 0, PLR_MAX_POWER_EFFECTIVE);
+	int p;
+
+	if(player_is_powersurge_active(plr)) {
+		p = plr->powersurge.player_power;
+	} else {
+		p = plr->power_stored;
+	}
+
+	return iclamp(p, 0, PLR_MAX_POWER_EFFECTIVE);
 }
 
 void player_move(Player *plr, cmplx delta) {
@@ -533,7 +541,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
 	b->gain_rate = round(1000 * plr->powersurge.negative * plr->powersurge.negative);
-	b->baseline = plr->powersurge.power + plr->powersurge.damage_done * 0.4;
+	b->baseline = plr->powersurge.total_charge + plr->powersurge.damage_done * 0.4;
 	b->score = b->baseline;
 	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
 	b->discharge_range = 1.2 * b->discharge_power;
@@ -545,8 +553,8 @@ static void player_powersurge_logic(Player *plr) {
 		return;
 	}
 
-	plr->powersurge.positive = fmax(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
-	plr->powersurge.negative = fmax(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
+	plr->powersurge.positive = fmaxf(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
+	plr->powersurge.negative = fmaxf(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
 
 	if(stage_is_cleared()) {
 		player_cancel_powersurge(plr);
@@ -560,7 +568,7 @@ static void player_powersurge_logic(Player *plr) {
 
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 
-	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
+	plr->powersurge.total_charge += plr->powersurge.bonus.gain_rate;
 }
 
 DEFINE_TASK(player_logic) {
@@ -702,8 +710,9 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.positive = 1.0;
 	plr->powersurge.negative = 0.0;
 	plr->powersurge.time.activated = global.frames;
-	plr->powersurge.power = 0;
+	plr->powersurge.total_charge = 0;
 	plr->powersurge.damage_accum = 0;
+	plr->powersurge.player_power = plr->power_stored;
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 

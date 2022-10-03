@@ -112,7 +112,8 @@ DEFINE_ENTITY_TYPE(Player, {
 		struct {
 			int activated, expired;
 		} time;
-		int power;
+		int total_charge;
+		int player_power;
 		double damage_done;
 		double damage_accum;
 		PowerSurgeBonus bonus;
