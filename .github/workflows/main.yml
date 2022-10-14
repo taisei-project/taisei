@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -88,7 +88,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_linux_fail_log
         path: build/meson-logs/meson-log.txt
@@ -100,14 +100,14 @@ jobs:
     runs-on: macos-11
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -148,7 +148,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_macos_fail_log
         path: build/meson-logs/meson-log.txt
@@ -180,7 +180,7 @@ jobs:
         zstandard
 
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
@@ -197,7 +197,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_windows_fail_log
         path: build/meson-logs/meson-log.txt
@@ -209,14 +209,14 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -234,7 +234,7 @@ jobs:
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -276,7 +276,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_emscripten_stable_build_log
         path: build/meson-logs/meson-log.txt
@@ -289,7 +289,7 @@ jobs:
     container: taiseiproject/switch-toolkit:20210520
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
@@ -306,7 +306,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_switch_build_log
         path: build/meson-logs/meson-log.txt
