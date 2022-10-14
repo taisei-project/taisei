@@ -20,17 +20,16 @@ jobs:
     name: 'Emscripten'
     if: "!contains(github.event.head_commit.message, '[skip ci]') && ${{ github.event.workflow_run.conclusion == 'success' }}"
     runs-on: ubuntu-20.04
-    continue-on-error: true
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
 
     - name: Install Tools
       run: >
@@ -81,7 +80,7 @@ jobs:
         ninja zip -C build/
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_emscripten_latest_build_log
         path: build/meson-logs/meson-log.txt
