@@ -320,7 +320,6 @@ if host_machine.system() == 'emscripten'
     em_link_args = [
         '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
-        '-s', 'ALLOW_UNIMPLEMENTED_SYSCALLS=0',
         '-s', 'ASYNCIFY_REMOVE=@0@'.format(','.join(asyncify_ignore)),
         '-s', 'AUTO_ARCHIVE_INDEXES=0',
         '-s', 'AUTO_JS_LIBRARIES=0',

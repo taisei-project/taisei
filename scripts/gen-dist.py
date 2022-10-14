@@ -59,7 +59,7 @@ def main(args):
     parser.add_argument('--integrity-files',
         help='Generate integrity files',
         default=False,
-        action=argparse.BooleanOptionalAction
+        action='store_true',
     )
 
     add_common_args(parser)

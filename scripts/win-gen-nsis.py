@@ -53,7 +53,7 @@ def main(args):
     parser.add_argument('--integrity-files',
         help='Generate integrity files for release (.sha256sum, .sig)',
         default=False,
-        action=argparse.BooleanOptionalAction
+        action='store_true',
     )
 
     add_configure_args(parser)

@@ -6,6 +6,11 @@ on:
     tags:
       - v[0-9].[0-9]**
       - v[0-9].[0-9]**-**
+  workflow_dispatch:
+    inputs:
+      custom-ref:
+        required: false
+        description: "Input git-ref to build as a test release"
 
 env:
   MESON_VERSION: '0.56.2'
@@ -17,15 +22,17 @@ env:
 jobs:
   linux-release-build-x64:
     name: "Linux (x64/Source)"
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.10'
 
     - name: Install Tools
       run: >
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
         sudo apt update || true # debian cache is not atomic and can sometimes fail
 
         sudo apt install -y -qq
@@ -35,6 +42,13 @@ jobs:
         libwayland-dev
         python3-docutils
         gnupg
+        gcc-10
+        g++-10
+        jq
+
+        sudo update-alternatives --install
+        /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave
+        /usr/bin/g++ g++ /usr/bin/g++-10
 
         pip install
         meson==${{ env.MESON_VERSION }}
@@ -42,35 +56,46 @@ jobs:
         zstandard
         python-gnupg
 
-    # NOTE: confusingly, 'fetch-depth: 0' == "get all history", not "no history"
+    - name: Import GPG Key
+      uses: taisei-project/ghaction-import-gpg@v5
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    # NOTE: 'fetch-depth: 0' == "get all history", not "no history"
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
         fetch-depth: 1
-
-    - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
-      with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags # see: https://github.com/actions/checkout/issues/290
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure
       run: >
+        git fetch --force --tags # see: https://github.com/actions/checkout/issues/290
+
         meson setup build/linux
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/linux | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Build
       run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}" # needs to be here as GITHUB_ENV doesn't update until the next step: https://github.com/github/docs/issues/7892
         meson compile -C build/linux --verbose
         meson install -C build/linux
+
+    - name: Unwanted Library Check
+      run: $(pwd)/scripts/smoke-test-standalone-linux-exe.py $(pwd)/build-release/bin/taisei
 
     - name: Run Test
       run: $(pwd)/build-release/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
@@ -81,36 +106,34 @@ jobs:
     - name: Package (Binary)
       run: |
         ninja txz -C build/linux --verbose
-        scripts/sign-release.py build/linux/Taisei-${{ steps.vars.outputs.tag }}-linux-x86_64.tar.xz
+        scripts/sign-release.py build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz
 
     - name: Upload Artifact (Binary)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: linux-x86_64-${{ steps.vars.outputs.tag }}-txz
-        path: build/linux/Taisei-${{ steps.vars.outputs.tag }}-linux-x86_64.tar.xz*
+        name: linux-x86_64-${{ env.BUILD_VERSION }}-txz
+        path: build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz*
         if-no-files-found: error
 
     - name: Package (Source)
-      run: >
-        meson rewrite kwargs set project / version v${{ steps.vars.outputs.tag }} # meson dist uses 'project.version' instead of 'git describe' for the tag to use, so this overwrites it as a workaround
-
+      run: |
+        meson rewrite kwargs set project / version ${{ env.BUILD_VERSION }} # meson dist uses 'project.version' instead of 'git describe' for the tag to use, so this overwrites it as a workaround
         meson --reconfigure build/linux
-
         meson dist -C build/linux --no-tests # disable test build, since we already know it compiles
-
-        scripts/sign-release.py build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz
+        scripts/sign-release.py build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz
 
     - name: Upload Artifact (Source)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: source-${{ steps.vars.outputs.tag }}-txz
-        path: build/linux/meson-dist/taisei-v${{ steps.vars.outputs.tag }}.tar.xz*
+        name: source-${{ env.BUILD_VERSION }}-txz
+        path: build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_x64_linux_release_log
         path: build/linux/meson-logs/meson-log.txt
@@ -118,51 +141,54 @@ jobs:
 
   macos-release-build-universal:
     name: macOS (Universal)
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
-    - name: Install Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
     - name: Install Tools
       run: >
         brew install
-        gcc
-        pkg-config
         docutils
         pygments
         create-dmg
-        gnupg
 
-        pip install
+        pip3 install
         meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
         python-gnupg
 
-    - name: Checkout Code
-      uses: actions/checkout@v2
-      with:
-        submodules: "recursive"
-        fetch-depth: 1
-
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
+      uses: taisei-project/ghaction-import-gpg@v5
       with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+        fetch-depth: 1
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure & Build
       run: |
+        git fetch --force --tags
         $(pwd)/scripts/macos_build_universal.sh $(pwd)/build-release/ $(pwd)
-        scripts/sign-release.py build-release/compiled/Taisei-${{ steps.vars.outputs.tag }}-universal.dmg
+      shell: bash
+
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build-release/x64 | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
+    - name: Sign Release
+      run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
+        scripts/sign-release.py build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg
       shell: bash
 
     - name: Run Test
@@ -172,15 +198,16 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: macos-universal-${{ steps.vars.outputs.tag }}-dmg
-        path: build-release/compiled/Taisei-${{ steps.vars.outputs.tag }}-universal.dmg*
+        name: macos-universal-${{ env.BUILD_VERSION }}-dmg
+        path: build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_macos_universal_release_log
         path: build-release/*/meson-logs/meson-log.txt
@@ -191,69 +218,79 @@ jobs:
     runs-on: ubuntu-20.04
     container: taiseiproject/windows-toolkit:20220221
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+    - name: Import GPG Key
+      uses: taisei-project/ghaction-import-gpg@v5
       with:
-        submodules: "recursive"
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
         fetch-depth: 1
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Checkout ANGLE DLLs
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: taisei-project/angle-compiled
         path: angle-compiled
 
-    - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
-      with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-
     - name: Configure
       run: >
+        git fetch --force --tags
+
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Build
-      run: meson compile -C build/windows
+      run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
+        meson compile -C build/windows
 
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86_64.exe
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: windows-x86_64-${{ steps.vars.outputs.tag }}-setup-exe
-        path: build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86_64.exe*
+        name: windows-x86_64-${{ env.BUILD_VERSION }}-setup-exe
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe*
         if-no-files-found: error
 
     - name: Package (ZIP)
       run: |
         ninja zip -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86_64.zip
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: windows-x86_64-${{ steps.vars.outputs.tag }}-zip
-        path: build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86_64.zip*
+        name: windows-x86_64-${{ env.BUILD_VERSION }}-zip
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_windows_x64_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -264,69 +301,79 @@ jobs:
     runs-on: ubuntu-20.04
     container: taiseiproject/windows-toolkit:20220221
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+    - name: Import GPG Key
+      uses: taisei-project/ghaction-import-gpg@v5
       with:
-        submodules: "recursive"
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: Checkout Code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
         fetch-depth: 1
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Checkout ANGLE DLLs
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: taisei-project/angle-compiled
         path: angle-compiled
 
-    - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
-      with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-
     - name: Configure
       run: >
+        git fetch --force --tags
+
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
 
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Build
-      run: meson compile -C build/windows
+      run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
+        meson compile -C build/windows
 
     - name: Package (EXE)
       run: |
         ninja nsis -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86.exe
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: windows-x86-${{ steps.vars.outputs.tag }}-setup-exe
-        path: build/windows/Taisei-${{ steps.vars.outputs.tag }}-setup-x86.exe*
+        name: windows-x86-${{ env.BUILD_VERSION }}-setup-exe
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe*
         if-no-files-found: error
 
     - name: Package (ZIP)
       run: |
         ninja zip -C build/windows --verbose
-        scripts/sign-release.py build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86.zip
+        scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: windows-x86-${{ steps.vars.outputs.tag }}-zip
-        path: build/windows/Taisei-${{ steps.vars.outputs.tag }}-windows-x86.zip*
+        name: windows-x86-${{ env.BUILD_VERSION }}-zip
+        path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_windows_x86_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -337,9 +384,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Install Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.10'
 
     - name: Install Tools
       run: >
@@ -357,27 +404,22 @@ jobs:
         zstandard
         python-gnupg
 
+    - name: Import GPG Key
+      uses: taisei-project/ghaction-import-gpg@v5
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
         fetch-depth: 1
-
-    - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
-      with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -401,6 +443,8 @@ jobs:
 
     - name: Configure
       run: >
+        git fetch --force --tags
+
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/emscripten
@@ -408,8 +452,19 @@ jobs:
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
 
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/emscripten | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Build
       run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         meson compile -C build/emscripten --verbose
 
@@ -417,18 +472,19 @@ jobs:
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         ninja txz -C build/emscripten --verbose
-        scripts/sign-release.py build/emscripten/Taisei-${{ steps.vars.outputs.tag }}-emscripten-wasm32.tar.xz
+        scripts/sign-release.py build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: emscripten-wasm32-${{ steps.vars.outputs.tag }}-txz
-        path: build/emscripten/Taisei-${{ steps.vars.outputs.tag }}-emscripten-wasm32.tar.xz*
+        name: emscripten-wasm32-${{ env.BUILD_VERSION }}-txz
+        path: build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_emscripten_build_log
         path: build/emscripten/meson-logs/meson-log.txt
@@ -439,49 +495,65 @@ jobs:
     runs-on: ubuntu-20.04
     container: taiseiproject/switch-toolkit:20210829
     steps:
+    - name: Import GPG Key
+      uses: taisei-project/ghaction-import-gpg@v5
+      with:
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+    - name: Install Tools
+      run: |
+        sudo apt update || true
+        sudo apt install -y -qq jq
+
     - name: Checkout Code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
         fetch-depth: 1
-
-    - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v3
-      with:
-        gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-        passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set Build Env
-      id: vars
-      run: |
-        git fetch --force --tags
-        echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
-        switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
+        ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure
       run: >
+        git fetch --force --tags
+
+        switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
+
         meson setup build/nx
         --cross-file=misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-release
 
+    - name: Set Package Version
+      run: |
+        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        then
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/nx | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        fi
+      shell: bash
+
     - name: Build
-      run: meson compile -C build/nx --verbose
+      run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
+        meson compile -C build/nx --verbose
 
     - name: Package
       run: |
         ninja zip -C build/nx --verbose
-        scripts/sign-release.py build/nx/Taisei-${{ steps.vars.outputs.tag }}-switch-aarch64.zip
+        scripts/sign-release.py build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: success()
       with:
-        name: switch-aarch64-${{ steps.vars.outputs.tag }}-zip
-        path: build/nx/Taisei-${{ steps.vars.outputs.tag }}-switch-aarch64.zip*
+        name: switch-aarch64-${{ env.BUILD_VERSION }}-zip
+        path: build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip*
         if-no-files-found: error
 
     - name: Upload Log
-      uses: actions/upload-artifact@v2
+      if: always()
+      uses: actions/upload-artifact@v3
       with:
         name: taisei_switch_release_log
         path: build/nx/meson-logs/meson-log.txt
