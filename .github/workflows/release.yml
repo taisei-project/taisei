@@ -80,11 +80,11 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/linux | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/linux | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -169,25 +169,31 @@ jobs:
         fetch-depth: 1
         ref: ${{ github.event.inputs.custom-ref }}
 
-    - name: Configure & Build
+    - name: Configure
       run: |
         git fetch --force --tags
-        $(pwd)/scripts/macos_build_universal.sh $(pwd)/build-release/ $(pwd)
+        $(pwd)/scripts/macos_configure_env.sh $(pwd)/build-release/ $(pwd)
+        $(pwd)/scripts/macos_setup_universal.sh
       shell: bash
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build-release/x64 | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build-release/x64 | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
+      shell: bash
+
+    - name: Build
+      run: |
+        echo "Version set to ${{ env.BUILD_VERSION }}"
+        $(pwd)/scripts/macos_build_universal.sh ${{ env.BUILD_VERSION }}
       shell: bash
 
     - name: Sign Release
       run: |
-        echo "Version set to ${{ env.BUILD_VERSION }}"
         scripts/sign-release.py build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg
       shell: bash
 
@@ -224,6 +230,11 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
+    - name: Install Tools
+      run: |
+        apt update || true
+        apt install jq -y -qq
+
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
@@ -249,11 +260,11 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -307,6 +318,11 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
+    - name: Install Tools
+      run: |
+        apt update || true
+        apt install jq -y -qq
+
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
@@ -332,11 +348,11 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -454,11 +470,11 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/emscripten | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/emscripten | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -525,11 +541,11 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if ${{ (github.event.inputs.custom-ref && true) || false }}
+        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
         then
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/nx | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        else
             echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+        else
+            echo "BUILD_VERSION=$(meson introspect --projectinfo build/nx | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
         fi
       shell: bash
 
