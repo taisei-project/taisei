@@ -84,7 +84,7 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 		play_sfx("shot1");
 
 		for(int i = 0; i < nrow - (t&1); i++) {
-			real x = ((i+0.5*(t&1))/(real)(nrow-1) - 0.5);
+			real x = (i/(real)(nrow-1) - 0.5);
 
 			INVOKE_TASK(swarm_trail_proj, e->pos, ARGS.move.velocity, 3*aim, x, .width = width);
 		}
