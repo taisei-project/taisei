@@ -176,16 +176,17 @@ TASK(flower_swirl_spawn, { cmplx pos; MoveParams move; int count; int interval; 
 	}
 }
 
-TASK(horde_fairy_motion, { BoxedEnemy e; }) {
+TASK(horde_fairy_motion, { BoxedEnemy e; cmplx velocity; }) {
 	Enemy *e = TASK_BIND(ARGS.e);
 	real ofs = rng_angle();
-	cmplx v = e->move.velocity;
+	cmplx v = ARGS.velocity;
+	e->move = move_linear(v);
 	for(;;YIELD) {
 		e->move.velocity = v * cdir(M_PI/8 * sin(ofs + global.frames/15.0));
 	}
 }
 
-TASK(horde_fairy, { cmplx pos; bool blue; }) {
+TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 	Enemy *e;
 	if(ARGS.blue) {
 		e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(
@@ -197,9 +198,7 @@ TASK(horde_fairy, { cmplx pos; bool blue; }) {
 		)));
 	}
 
-	e->move = move_linear(2 * I);
-
-	INVOKE_SUBTASK(horde_fairy_motion, ENT_BOX(e));
+	INVOKE_SUBTASK(horde_fairy_motion, ENT_BOX(e), ARGS.velocity);
 
 	int interval = 40;
 
@@ -227,7 +226,7 @@ TASK(horde_fairy, { cmplx pos; bool blue; }) {
 	}
 }
 
-TASK(horde_fairy_spawn, { int count; int interval; }) {
+TASK(horde_fairy_spawn, { int count; int interval; cmplx velocity; }) {
 	real p = 3.0 / ARGS.count;
 	real w = 0.9*VIEWPORT_W/2;
 	bool blue = rng_bool();
@@ -235,6 +234,7 @@ TASK(horde_fairy_spawn, { int count; int interval; }) {
 		INVOKE_TASK(horde_fairy,
 			.pos = VIEWPORT_W/2 + w * triangle(t * p),
 			.blue = blue,
+			.velocity = ARGS.velocity,
 		);
 		if(((t+1) % 3) == 0) {
 			blue = !blue;
@@ -412,6 +412,73 @@ TASK(laserball_fairy, { cmplx pos; cmplx target_pos; }) {
 	e->move = move_asymptotic_halflife(e->move.velocity, 3*I, 60);
 }
 
+TASK(bulletring, { BoxedEnemy owner; int num; real radius; real speed; }) {
+	int num_bullets = ARGS.num;
+	DECLARE_ENT_ARRAY(Projectile, bullets, num_bullets);
+
+	real angular_velocity = ARGS.speed / ARGS.radius;
+
+	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.owner));
+	e->max_viewport_dist = fmax(e->max_viewport_dist, ARGS.radius);
+	real r = 1;
+	real a = 0;
+
+	for(int i = 0; i < num_bullets; ++i) {
+		ENT_ARRAY_ADD(&bullets, PROJECTILE(
+			.proto = pp_rice,
+			.color = RGB(0.4, 0, 0.8),
+			.flags = PFLAG_MANUALANGLE,
+			.move = move_linear(0),
+			.pos = e->pos,
+			.max_viewport_dist = ARGS.radius,
+		));
+	}
+
+	cmplx opos = e->pos;
+
+	for(;;YIELD) {
+		if(!(e = ENT_UNBOX(ARGS.owner))) {
+			break;
+		}
+
+		ENT_ARRAY_FOREACH_COUNTER(&bullets, int i, Projectile *p, {
+			real angle = a + (M_TAU*i)/num_bullets;
+			cmplx npos = e->pos + (r * (1 + 0.03 * sin(3.6 * a + 6 * angle))) * cdir(angle);
+			p->move.velocity = npos - p->pos;
+			p->angle = carg(p->move.velocity + opos - e->pos);
+		});
+
+		opos = e->pos;
+		a += angular_velocity;
+		approach_asymptotic_p(&r, ARGS.radius, 0.05, 1e-4);
+	}
+
+	ENT_ARRAY_FOREACH(&bullets, Projectile *p, {
+		// p->move.velocity = ARGS.speed * cdir(p->angle);
+		p->angle = carg(p->move.velocity);
+		p->move = move_asymptotic_halflife(p->move.velocity, cnormalize(p->move.velocity) * fabs(ARGS.speed), 60);
+	});
+}
+
+TASK(bulletring_fairy, { cmplx pos; MoveParams move; }) {
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(
+		.power = 3,
+		.points = 5,
+	)));
+
+	e->move = ARGS.move;
+
+	for(int i = 0; i < 4; ++i) {
+		WAIT(60);
+
+		real rad = 64 + 16 * i;
+		real spacing = 2;
+		int bullets = round(rad / spacing);
+
+		INVOKE_TASK(bulletring, ENT_BOX(e), bullets, rad, ((i&1) ? 1 : -1) * 2);
+	}
+}
+
 // bosses
 
 TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
@@ -523,6 +590,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
+	// INVOKE_TASK(bulletring_fairy, VIEWPORT_W/2, move_towards(VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.01)); return;
+
 /*
 	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
 	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
@@ -565,7 +634,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	STAGE_BOOKMARK_DELAYED(800, horde);
 	INVOKE_TASK_DELAYED(800, horde_fairy_spawn,
 		.count = difficulty_value(20, 20, 30, 30),
-		.interval = 20
+		.interval = 20,
+		.velocity = 2*I,
 	);
 
 	INVOKE_TASK_DELAYED(1000, laserball_fairy,
@@ -603,6 +673,23 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
+
+	INVOKE_TASK_DELAYED(300, horde_fairy_spawn,
+		.count = 40,
+		.interval = 40,
+		.velocity = I,
+	);
+
+	for(int i = 0;;) {
+		real d = 120;
+		cmplx o[] = { d, VIEWPORT_W - d };
+		cmplx p = o[i % ARRAY_SIZE(o)];
+
+		INVOKE_TASK(bulletring_fairy, p, move_linear(I));
+
+		++i;
+		WAIT(120);
+	}
 
 	WAIT(150);
 
