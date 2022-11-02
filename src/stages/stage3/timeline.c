@@ -564,7 +564,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(800, horde);
 	INVOKE_TASK_DELAYED(800, horde_fairy_spawn,
-		.count = 30,
+		.count = difficulty_value(20, 20, 30, 30),
 		.interval = 20
 	);
 
@@ -579,15 +579,17 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
-	INVOKE_TASK_DELAYED(1820, laserball_fairy,
-		.pos = - 10 + 300 * I,
-		.target_pos = VIEWPORT_W/3 + 140*I
-	);
+	if(global.diff > D_Normal) {
+		INVOKE_TASK_DELAYED(1820, laserball_fairy,
+			.pos = - 10 + 300 * I,
+			.target_pos = VIEWPORT_W/3 + 140*I
+		);
 
-	INVOKE_TASK_DELAYED(1820, laserball_fairy,
-		.pos = VIEWPORT_W + 10 + 300 * I,
-		.target_pos = 2*VIEWPORT_W/3 + 140*I
-	);
+		INVOKE_TASK_DELAYED(1820, laserball_fairy,
+			.pos = VIEWPORT_W + 10 + 300 * I,
+			.target_pos = 2*VIEWPORT_W/3 + 140*I
+		);
+	}
 
 	INVOKE_TASK_DELAYED(1900, flower_swirls_alternating);
 	INVOKE_TASK_DELAYED(2390, swarm_trail_fairy, VIEWPORT_W+20 + VIEWPORT_H*0.24*I, move_linear(-9));
