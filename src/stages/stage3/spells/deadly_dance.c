@@ -14,8 +14,6 @@
 #include "common_tasks.h"
 #include "global.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 TASK(deadly_dance_proj, { BoxedProjectile p; int t; int i; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 
@@ -32,7 +30,9 @@ TASK(deadly_dance_proj, { BoxedProjectile p; int t; int i; }) {
 
 DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.08);
 	BEGIN_BOSS_ATTACK(&ARGS);
+	boss->move.attraction = 0;
 
 	aniplayer_queue(&boss->ani, "dance", 0);
 	int intensity = difficulty_value(15, 18, 21, 24);
@@ -44,14 +44,14 @@ DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
 		DECLARE_ENT_ARRAY(Projectile, projs, intensity*2);
 
 		real angle_ofs = rng_f32() * M_PI * 2;
-		double t = time * 1.5 * (0.4 + 0.3 * global.diff);
-		double moverad = fmin(160, time/2.7);
+		real t = time * 1.5 * (0.4 + 0.3 * global.diff);
+		real moverad = fmin(160, time/2.7);
 
 		boss->pos = VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cdir(M_PI_2 * t/100.0);
 
 		if(!(time % 70)) {
 			for(i = 0; i < intensity; ++i) {
-				double a = (M_PI/(5 + global.diff) * i * 2);
+				real a = (M_PI/(5 + global.diff) * i * 2);
 				ENT_ARRAY_ADD(&projs, PROJECTILE(
 					.proto = pp_wave,
 					.pos = boss->pos,
@@ -83,7 +83,7 @@ DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
 
 		if(!(time % 3)) {
 			for(i = -1; i < 2; i += 2) {
-				double c = psin(time/10.0);
+				real c = psin(time/10.0);
 				PROJECTILE(
 					.proto = pp_crystal,
 					.pos = boss->pos,

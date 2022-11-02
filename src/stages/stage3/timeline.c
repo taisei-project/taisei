@@ -595,7 +595,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	INVOKE_TASK_DELAYED(2390, swarm_trail_fairy, VIEWPORT_W+20 + VIEWPORT_H*0.24*I, move_linear(-9));
 	INVOKE_TASK_DELAYED(2450, swarm_trail_fairy,           -20 + VIEWPORT_H*0.32*I, move_linear( 9));
 
-	INVOKE_TASK_DELAYED(3400, common_call_func, stage_load_quicksave);
+	// INVOKE_TASK_DELAYED(3400, common_call_func, stage_load_quicksave);
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 
