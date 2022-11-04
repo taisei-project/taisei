@@ -551,7 +551,7 @@ if cc.has_argument('-fmacro-prefix-map=/prefix/to/hide=')
         language: 'c',
     )
 else
-    config.set('TAISEI_BUILDCONF_REL_SRC_DIR', relative_dir)
+    config.set_quoted('TAISEI_BUILDCONF_REL_SRC_DIR', relative_dir)
 endif
 
 subdir('misc')
