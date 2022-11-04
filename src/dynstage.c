@@ -294,6 +294,10 @@ uint32_t dynstage_get_generation(void) {
 
 bool dynstage_reload_library(void) {
 	if(dynstage.lib) {
+		// In-flight async log messages may still have pointers to static strings inside the old lib
+		// Wait for them to finish processing so it's safe to unload
+		log_sync();
+
 		dlclose(dynstage.lib);
 	}
 
