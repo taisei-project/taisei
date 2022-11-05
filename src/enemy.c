@@ -287,7 +287,11 @@ bool enemy_is_targetable(Enemy *enemy) {
 }
 
 bool enemy_in_viewport(Enemy *enemy) {
-	double s = 60; // TODO: make this adjustable
+	// FIXME: Ideally this is supposed to be the size of the visual, as in with projectiles, but
+	// we don't have access to this information here.
+	real base = 60;
+
+	real s = base + enemy->max_viewport_dist;
 
 	return
 		creal(enemy->pos) >= -s &&

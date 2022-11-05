@@ -112,6 +112,8 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	float hit_radius;
 	float hurt_radius;
 
+	float max_viewport_dist;
+
 	bool moving;
 
 	IF_ENEMY_DEBUG(
