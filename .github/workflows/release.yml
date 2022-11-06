@@ -80,12 +80,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/linux | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
@@ -155,6 +150,7 @@ jobs:
         ninja
         zstandard
         python-gnupg
+      shell: bash
 
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -178,12 +174,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build-release/x64 | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
@@ -260,12 +251,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
@@ -348,12 +334,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/windows | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
@@ -470,12 +451,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/emscripten | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
@@ -541,12 +517,7 @@ jobs:
 
     - name: Set Package Version
       run: |
-        if git describe --exact-match &>/dev/null && ${{ (github.event.inputs.custom-ref && false) || true }}
-        then
-            echo "BUILD_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
-        else
-            echo "BUILD_VERSION=$(meson introspect --projectinfo build/nx | jq -r '.version' | cut -c 2-)" >> $GITHUB_ENV
-        fi
+        echo BUILD_VERSION=$($(pwd)/scripts/version.py) >> $GITHUB_ENV
       shell: bash
 
     - name: Build
