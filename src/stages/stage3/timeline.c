@@ -416,6 +416,9 @@ TASK(bulletring, { BoxedEnemy owner; int num; real radius; real speed; }) {
 	int num_bullets = ARGS.num;
 	DECLARE_ENT_ARRAY(Projectile, bullets, num_bullets);
 
+	play_sfx("shot_special1");
+	play_sfx("warp");
+
 	real angular_velocity = ARGS.speed / ARGS.radius;
 
 	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.owner));
@@ -476,6 +479,16 @@ TASK(bulletring_fairy, { cmplx pos; MoveParams move; }) {
 		int bullets = round(rad / spacing);
 
 		INVOKE_TASK(bulletring, ENT_BOX(e), bullets, rad, ((i&1) ? 1 : -1) * 2);
+	}
+}
+
+TASK(bulletring_fairy_spawn, { int count; }) {
+	for(int i = 0; i < ARGS.count; ++i) {
+		real d = 120;
+		cmplx o[] = { d, VIEWPORT_W - d };
+		cmplx p = o[i % ARRAY_SIZE(o)];
+		INVOKE_TASK(bulletring_fairy, p, move_linear(I));
+		WAIT(120);
 	}
 }
 
@@ -586,17 +599,7 @@ TASK(flower_swirls_alternating) {
 	);
 }
 
-DEFINE_EXTERN_TASK(stage3_timeline) {
-	stage_start_bgm("stage3");
-	stage_set_voltage_thresholds(50, 125, 300, 600);
-
-	// INVOKE_TASK(bulletring_fairy, VIEWPORT_W/2, move_towards(VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.01)); return;
-
-/*
-	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
-	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
-	return;*/
-
+static void welcome_swirls(void) {
 	int interval = 60;
 	int lr_stagger = 0;
 	int ud_stagger = interval / 2;
@@ -628,6 +631,20 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.count = 12,
 		.interval = interval,
 	);
+}
+
+DEFINE_EXTERN_TASK(stage3_timeline) {
+	stage_start_bgm("stage3");
+	stage_set_voltage_thresholds(50, 125, 300, 600);
+
+	// INVOKE_TASK(bulletring_fairy, VIEWPORT_W/2, move_towards(VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.01)); return;
+
+/*
+	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
+	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
+	return;*/
+
+	welcome_swirls();
 
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
 
@@ -674,22 +691,22 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
 
+	INVOKE_TASK(bulletring_fairy_spawn,
+		.count = 10,
+	);
+
 	INVOKE_TASK_DELAYED(300, horde_fairy_spawn,
-		.count = 40,
-		.interval = 40,
+		.count = 20,
+		.interval = 30,
 		.velocity = I,
 	);
 
-	for(int i = 0;;) {
-		real d = 120;
-		cmplx o[] = { d, VIEWPORT_W - d };
-		cmplx p = o[i % ARRAY_SIZE(o)];
+	INVOKE_TASK_DELAYED(900, common_call_func, welcome_swirls);
 
-		INVOKE_TASK(bulletring_fairy, p, move_linear(I));
-
-		++i;
-		WAIT(120);
-	}
+	INVOKE_TASK_DELAYED(1200, circle_twist_fairy,
+		.pos = VIEWPORT_W/2.0 - 40*I,
+		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
+	);
 
 	WAIT(150);
 
