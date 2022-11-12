@@ -375,7 +375,7 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 	kill_projectile(p);
 }
 
-TASK(laserball_fairy, { cmplx pos; cmplx target_pos; }) {
+TASK(laserball_fairy, { cmplx pos; cmplx target_pos; real freq_factor; }) {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(
 		.power = 5,
 		.points = 5,
@@ -394,7 +394,7 @@ TASK(laserball_fairy, { cmplx pos; cmplx target_pos; }) {
 
 		for(int i = 0; i < balls; ++i) {
 			cmplx v = 3 * cdir(i * (M_TAU / balls));
-			INVOKE_TASK(laserball, e->pos, v, RGBA(0.2, 2, 0.4, 0), 1);
+			INVOKE_TASK(laserball, e->pos, v, RGBA(0.2, 2, 0.4, 0), ARGS.freq_factor);
 		}
 
 		WAIT(120);
@@ -403,7 +403,7 @@ TASK(laserball_fairy, { cmplx pos; cmplx target_pos; }) {
 
 		for(int i = 0; i < balls; ++i) {
 			cmplx v = 3 * cdir((i + 0.5) * (M_TAU / balls));
-			INVOKE_TASK(laserball, e->pos, v, RGBA(2, 1, 0.4, 0), -1);
+			INVOKE_TASK(laserball, e->pos, v, RGBA(2, 1, 0.4, 0), -ARGS.freq_factor);
 		}
 
 		WAIT(180);
@@ -599,6 +599,23 @@ TASK(flower_swirls_alternating) {
 	);
 }
 
+TASK(horde_fairies_intertwined, { int count; int interval; }) {
+	for(int i = 0; i < ARGS.count; ++i) {
+		INVOKE_TASK(horde_fairy,
+			.pos = -20 + 60*I,
+			.velocity = 1,
+		);
+
+		INVOKE_TASK(horde_fairy,
+			.pos = VIEWPORT_W-+0 + 60*I,
+			.velocity = -1,
+			.blue = 1
+		);
+
+		WAIT(ARGS.interval);
+	}
+}
+
 static void welcome_swirls(void) {
 	int interval = 60;
 	int lr_stagger = 0;
@@ -657,7 +674,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	INVOKE_TASK_DELAYED(1000, laserball_fairy,
 		.pos = VIEWPORT_W + 10 + 300 * I,
-		.target_pos = 3*VIEWPORT_W/4 + 200*I
+		.target_pos = 3*VIEWPORT_W/4 + 200*I,
+		.freq_factor = 1,
 	);
 
 	STAGE_BOOKMARK_DELAYED(1300, circle-twist);
@@ -669,12 +687,14 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	if(global.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(1820, laserball_fairy,
 			.pos = - 10 + 300 * I,
-			.target_pos = VIEWPORT_W/3 + 140*I
+			.target_pos = VIEWPORT_W/3 + 140*I,
+			.freq_factor = 1,
 		);
 
 		INVOKE_TASK_DELAYED(1820, laserball_fairy,
 			.pos = VIEWPORT_W + 10 + 300 * I,
-			.target_pos = 2*VIEWPORT_W/3 + 140*I
+			.target_pos = 2*VIEWPORT_W/3 + 140*I,
+			.freq_factor = -1,
 		);
 	}
 
@@ -706,6 +726,23 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	INVOKE_TASK_DELAYED(1200, circle_twist_fairy,
 		.pos = VIEWPORT_W/2.0 - 40*I,
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
+	);
+
+	INVOKE_TASK_DELAYED(1720, laserball_fairy,
+		.pos = - 10 + 300 * I,
+		.target_pos = VIEWPORT_W/3 + 140*I,
+		.freq_factor = -1,
+	);
+
+	INVOKE_TASK_DELAYED(1720, laserball_fairy,
+		.pos = VIEWPORT_W + 10 + 300 * I,
+		.target_pos = 2*VIEWPORT_W/3 + 140*I,
+		.freq_factor = 1,
+	);
+
+	INVOKE_TASK_DELAYED(2080, horde_fairies_intertwined,
+		.count = 20,
+		.interval = 60,
 	);
 
 	WAIT(150);
