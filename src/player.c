@@ -117,10 +117,10 @@ static int player_track_effective_power_change(Player *plr) {
 	int new_effective = player_get_effective_power(plr);
 
 	if(old_effective != new_effective) {
+		plr->_prev_effective_power = new_effective;
 		coevent_signal(&plr->events.effective_power_changed);
 	}
 
-	plr->_prev_effective_power = old_effective;
 	return new_effective;
 }
 
