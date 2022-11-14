@@ -26,36 +26,48 @@ static void stage3_dialog_post_boss(void) {
 	INVOKE_TASK_INDIRECT(Stage3PostBossDialog, pm->dialog->Stage3PostBoss);
 }
 
+TASK(swarm_trail_proj_cleanup, { BoxedProjectile phead; }) {
+	Projectile *p = TASK_BIND(ARGS.phead);
+	clear_projectile(p, CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
+}
+
 TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width;}) {
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_rice,
 		.color = RGB(0.4, 0, 0.8),
-		.max_viewport_dist = 1000,
+		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	));
 	BoxedProjectile phead = ENT_BOX(PROJECTILE(
 		.proto = pp_flea,
 		.color = RGB(0.8, 0.1, 0.4),
-		.max_viewport_dist = 1000,
+		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 	));
+
+	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, swarm_trail_proj_cleanup, phead);
 
 	real turn_length = 1; // |x/turn_length| should be smaller than pi
 
 	cmplx prevpos = ARGS.pos;
 	for(int t = -70;; t++) {
+		Projectile *head = ENT_UNBOX(phead);
+
 		if(t == 0) {
+			p->flags &= ~PFLAG_NOAUTOREMOVE;
+			if(head) {
+				head->flags &= ~PFLAG_NOAUTOREMOVE;
+			}
 			play_sfx("redirect");
 		}
+
 		cmplx z = t/ARGS.width + I * ARGS.x/turn_length;
-
 		p->pos = ARGS.pos + ARGS.width * z * (ARGS.vstart + (ARGS.vend-ARGS.vstart)/(cexp(-z) + 1));
+		cmplx dpos = p->pos - prevpos;
+		p->angle = carg(dpos);
 
-		p->angle = carg(p->pos-prevpos);
-
-		Projectile *head = ENT_UNBOX(phead);
 		if(head) {
-			head->pos = p->pos + 8*cdir(p->angle);
+			head->angle = p->angle;
+			head->pos = p->pos + 8*cnormalize(dpos);
 		}
-		p->move = move_linear(p->pos-prevpos);
 
 		prevpos = p->pos;
 		YIELD;
@@ -77,21 +89,21 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 
 	WAIT(30);
 	e->move.retention = 0.9;
-	WAIT(10);
+	WAIT(20);
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
 
 	for(int t = 0; t < shooting_time/interval; t++) {
 		play_sfx("shot1");
 
-		for(int i = 0; i < nrow - (t&1); i++) {
-			real x = (i/(real)(nrow-1) - 0.5);
-
+		for(int i = 0; i < nrow; i++) {
+			real x = (i/(real)nrow - 0.5);
 			INVOKE_TASK(swarm_trail_proj, e->pos, ARGS.move.velocity, 3*aim, x, .width = width);
 		}
+
 		WAIT(interval);
 	}
 	play_sfx("redirect");
-	e->move = move_asymptotic_halflife(0, -ARGS.move.velocity , 120);
+	e->move = move_asymptotic_halflife(0, -ARGS.move.velocity, 120);
 }
 
 TASK(swarm_trail_fairy_spawn, { int count; }) {
