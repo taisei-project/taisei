@@ -753,8 +753,36 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	);
 
 	INVOKE_TASK_DELAYED(2080, horde_fairies_intertwined,
-		.count = 20,
+		.count = 10,
 		.interval = 60,
+	);
+
+	INVOKE_TASK_DELAYED(2360, laserball_fairy,
+		.pos = VIEWPORT_W + 10 + 400 * I,
+		.target_pos = VIEWPORT_W/4 + 240*I,
+		.freq_factor = -1,
+	);
+
+	INVOKE_TASK_DELAYED(2360, laserball_fairy,
+		.pos = - 10 + 400 * I,
+		.target_pos = 3*VIEWPORT_W/4 + 240*I,
+		.freq_factor = 1,
+	);
+
+	INVOKE_TASK_DELAYED(2880, swarm_trail_fairy,
+		.pos = -40 + (VIEWPORT_H/2 + 20) * I,
+		.move = {
+			.velocity = 10,
+			.retention = 1/cdir(M_TAU/256),
+		},
+	);
+
+	INVOKE_TASK_DELAYED(2980, swarm_trail_fairy,
+		.pos = VIEWPORT_W+40 + (VIEWPORT_H/2 + 20) * I,
+		.move = {
+			.velocity = -10,
+			.retention = cdir(M_TAU/256),
+		},
 	);
 
 	WAIT(150);
@@ -763,7 +791,7 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(2800, pre-boss);
 
-	WAIT(3000);
+	WAIT(3300);
 
 	stage_unlock_bgm("stage3boss");
 
