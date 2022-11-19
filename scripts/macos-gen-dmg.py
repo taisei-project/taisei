@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from taiseilib.tempinstall import temp_install
+from taiseilib.integrityfiles import gen_integrity_files, verify_integrity_files
 from taiseilib.common import run_main
 
 from pathlib import Path
@@ -60,6 +61,12 @@ def main(args):
         help='Specify a pre-built directory instead of making a new one from the build directory (i.e: in the case of a universal image)',
         type=Path,
         nargs='?',
+)
+
+    parser.add_argument('--integrity-files',
+        help='Generate integrity files (.sig, .sha256sum)',
+        default=False,
+        action=argparse.BooleanOptionalAction
     )
 
     args = parser.parse_args(args[1:])
@@ -70,6 +77,13 @@ def main(args):
     else:
         package_dmg(args.installation, args.output)
 
+    if args.integrity_files:
+        gen_integrity_files(args.output)
+        print('\nSuccessfully generated integrity files (.sig, .sha256sum)')
+        verify_integrity_files(args.output)
+        print('\nSuccessfully verified integrity files (.sig, .sha256sum)')
+
+    print('\nPackage generated:', args.output)
 
 
 if __name__ == '__main__':

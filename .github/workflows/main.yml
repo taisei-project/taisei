@@ -158,27 +158,8 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
-    container: mstorsjo/llvm-mingw:20210423 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20220221 # cross-compiler with mingw
     steps:
-    - name: Install Tools
-      run: >
-        apt update || true
-
-        apt install -y -qq software-properties-common
-
-        add-apt-repository ppa:git-core/ppa -y
-
-        apt install -y -qq
-        python3-docutils
-        python3-pip
-        git
-        nsis
-
-        pip3 install
-        meson==${{ env.MESON_VERSION }}
-        ninja
-        zstandard
-
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
@@ -231,6 +212,7 @@ jobs:
         meson==${{ env.MESON_VERSION }}
         ninja
         zstandard
+        python-gnupg # required as we call into gen-dist.py for Emscripten
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
@@ -286,7 +268,7 @@ jobs:
     name: Switch (ARM64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20210520
+    container: taiseiproject/switch-toolkit:20210530
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3

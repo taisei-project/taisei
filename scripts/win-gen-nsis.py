@@ -15,6 +15,8 @@ from taiseilib.configure import (
     configure,
 )
 
+from taiseilib.integrityfiles import gen_integrity_files, verify_integrity_files
+
 from pathlib import (
     Path,
     PureWindowsPath,
@@ -46,6 +48,12 @@ def main(args):
     parser.add_argument('script_template',
         help='The NSIS script template',
         type=Path,
+    )
+
+    parser.add_argument('--integrity-files',
+        help='Generate integrity files for release (.sha256sum, .sig)',
+        default=False,
+        action='store_true',
     )
 
     add_configure_args(parser)
@@ -90,6 +98,12 @@ def main(args):
 
         if proc.returncode != 0:
             raise MakeNSISError(proc.returncode)
+
+        if args.integrity_files:
+            gen_integrity_files(args.variables['OUTPUT'])
+            print("Successfully verified release files (.sig, .sha256sum)")
+            verify_integrity_files(args.variables['OUTPUT'])
+            print("Successfully verified release files (.sig, .sha256sum)")
 
 
 if __name__ == '__main__':
