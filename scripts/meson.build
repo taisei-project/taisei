@@ -69,7 +69,7 @@ dist_prefix_args = ['--prefix=@0@'.format(dist_name)]
 
 zip_filename = '@0@.zip'.format(dist_name)
 zip_outpath = join_paths(meson.build_root(), zip_filename)
-zip_command = [dist_command, '--format=zip', dist_prefix_args, meson.build_root(), zip_outpath]
+zip_command = [dist_command, '--format=zip', meson.build_root(), zip_outpath]
 
 txz_filename = '@0@.tar.xz'.format(dist_name)
 txz_outpath = join_paths(meson.build_root(), txz_filename)

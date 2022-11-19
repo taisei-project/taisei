@@ -44,7 +44,6 @@ jobs:
         gnupg
         gcc-10
         g++-10
-        jq
 
         sudo update-alternatives --install
         /usr/bin/gcc gcc /usr/bin/gcc-10 60 --slave
@@ -221,11 +220,6 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-    - name: Install Tools
-      run: |
-        apt update || true
-        apt install jq -y -qq
-
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
@@ -303,11 +297,6 @@ jobs:
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Install Tools
-      run: |
-        apt update || true
-        apt install jq -y -qq
 
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -492,11 +481,6 @@ jobs:
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Install Tools
-      run: |
-        sudo apt update || true
-        sudo apt install -y -qq jq
 
     - name: Checkout Code
       uses: actions/checkout@v3

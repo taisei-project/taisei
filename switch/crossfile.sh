@@ -34,7 +34,7 @@ elf2nro = '$(which elf2nro)'
 nacptool = '$(which nacptool)'
 
 [project options]
-deprecations_warnings = 'no-error'
+deprecation_warnings = 'no-error'
 
 [built-in options]
 c_args = [$(meson_arg_list $CPPFLAGS $CFLAGS)]
