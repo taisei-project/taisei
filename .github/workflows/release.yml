@@ -89,10 +89,10 @@ jobs:
         meson install -C build/linux
 
     - name: Unwanted Library Check
-      run: $(pwd)/scripts/smoke-test-standalone-linux-exe.py $(pwd)/build-release/bin/taisei
+      run: $(pwd)/scripts/smoke-test-standalone-linux-exe.py $(pwd)/build-release/taisei
 
     - name: Run Test
-      run: $(pwd)/build-release/bin/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
+      run: $(pwd)/build-release/taisei -R $(pwd)/misc/ci/tests/test-replay.tsr
       env:
         TAISEI_NOPRELOAD: ${{ env.TAISEI_NOPRELOAD }}
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
