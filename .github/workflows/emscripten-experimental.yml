@@ -43,6 +43,7 @@ jobs:
         pip install
         meson==${{ env.MESON_VERSION }}
         ninja
+        python-gnupg
         zstandard
 
     - name: Install Emscripten SDK
