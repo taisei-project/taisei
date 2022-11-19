@@ -66,7 +66,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure
@@ -161,7 +161,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure
@@ -224,7 +224,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Checkout ANGLE DLLs
@@ -302,7 +302,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Checkout ANGLE DLLs
@@ -400,7 +400,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Fetch Cached Emscripten SDK
@@ -486,7 +486,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-        fetch-depth: 1
+        fetch-depth: 0
         ref: ${{ github.event.inputs.custom-ref }}
 
     - name: Configure
