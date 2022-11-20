@@ -11,79 +11,104 @@
 #include "nonspells.h"
 #include "../scuttle.h"
 
+#include "common_tasks.h"
 #include "global.h"
 
-TASK(midboss_delaymove, { BoxedBoss boss; } ) {
-	Boss *boss = TASK_BIND(ARGS.boss);
+TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
+	Color phase_colors[] = {
+		{ 2.0, 0.0, 0.1, 1.0 },
+		{ 1.2, 0.3, 0.1, 1.0 },
+		{ 0.3, 0.7, 0.1, 1.0 },
+	};
 
-	boss->move.attraction_point = 5*VIEWPORT_W/6 + 200*I;
-	boss->move.attraction = 0.001;
-}
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_wave,
+		.pos = ARGS.pos,
+		.color = phase_colors,
+		.max_viewport_dist = 50,
+	));
 
-DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
-	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS);
+	int aimed_speed = difficulty_value(3.0, 3.5, 4.5, 5.0);
 
-	int difficulty = difficulty_value(1, 2, 3, 4);
-	int intensity = difficulty_value(18, 19, 20, 21);
-	int velocity_intensity = difficulty_value(2, 3, 4, 5);
-	INVOKE_SUBTASK_DELAYED(400, midboss_delaymove, ENT_BOX(boss));
+	p->move = move_asymptotic_simple(ARGS.vel, 2.0);
+	WAIT(120);
 
-	for(;;) {
-		DECLARE_ENT_ARRAY(Projectile, projs, intensity*4);
+	for(int phase = 1; phase < ARRAY_SIZE(phase_colors); ++phase) {
+		p->move.acceleration = 0;
+		p->flags |= PFLAG_MANUALANGLE;
 
-		// fly through Scuttle, wind up on other side in a starburst pattern
-		for(int i = 0; i < intensity; ++i) {
-			cmplx v = (2 - psin((fmax(3, velocity_intensity) * 2 * M_PI * i / (float)intensity) + i)) * cdir(2 * M_PI / intensity * i);
-			ENT_ARRAY_ADD(&projs,
-				PROJECTILE(
-					.proto = pp_wave,
-					.pos = boss->pos - v * 50,
-					.color = i % 2 ? RGB(0.7, 0.3, 0.0) : RGB(0.3, .7, 0.0),
-					.move = move_asymptotic_simple(v, 2.0)
-				)
+		for(int i = 0; i < 20; ++i, YIELD) {
+			fapproach_asymptotic_p(&p->angle, carg(global.plr.pos - p->pos), 0.2, 1e-3);
+		}
+
+		play_sfx("redirect");
+		play_sfx("shot1");
+
+		cmplx aim = cnormalize(global.plr.pos - p->pos);
+		p->angle = carg(aim);
+		p->color = phase_colors[phase];
+		spawn_projectile_highlight_effect(p);
+		p->move = move_asymptotic_simple(aimed_speed * cnormalize(aim), 3.0);
+
+		PROJECTILE(
+			.proto = pp_thickrice,
+			.pos = p->pos,
+			.color = RGB(0.4, 0.3, 1.0),
+			.move = move_linear(-aim * 0.5),
+		);
+
+		for(int i = 0; i < 3; ++i) {
+			cmplx v = rng_dir();
+			v *= rng_range(1, 1.5);
+			v += aim * aimed_speed;
+
+			PARTICLE(
+				.pos = p->pos,
+				.sprite = "smoothdot",
+				.color = RGBA(0.8, 0.6, 0.6, 0),
+				.draw_rule = pdraw_timeout_scale(1, 0.01),
+				.timeout = rng_irange(20, 40),
+				.move = move_asymptotic_simple(v, 2),
 			);
 		}
 
-		WAIT(80);
+		WAIT(60);
+	}
+}
 
-		// halt acceleration for a moment
-		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
-			p->move.acceleration = 0;
-		});
+DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
+	STAGE_BOOKMARK(non1);
 
-		WAIT(30);
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.03);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
-		// change direction, fly towards player
-		ENT_ARRAY_FOREACH(&projs, Projectile *p, {
-			int count = 6;
+	Rect bounds = viewport_bounds(80);
+	bounds.bottom = 210;
 
-			// when the shot "releases", add a bunch of particles and some extra bullets
-			for(int i = 0; i < count; ++i) {
-				PARTICLE(
-					.sprite = "smoothdot",
-					.pos = p->pos,
-					.color = RGBA(0.8, 0.6, 0.6, 0),
-					.timeout = 100,
-					.draw_rule = pdraw_timeout_scalefade(0, 0.8, 1, 0),
-					.move = move_asymptotic_simple(p->move.velocity + rng_dir(), 0.1)
-				);
+	int time = 0;
+	int cnt = difficulty_value(18, 19, 20, 21);
+	int shape = difficulty_value(3, 3, 4, 5);
+	int delay = 120;
 
-				real offset = global.frames/15.0;
-				if(global.diff > D_Hard && global.boss) {
-					offset = M_PI + carg(global.plr.pos - global.boss->pos);
-				}
+	cmplx origin;
+	Color charge_color = *RGBA(1, 0, 0, 0);
 
-				PROJECTILE(
-					.proto = pp_thickrice,
-					.pos = p->pos,
-					.color = RGB(0.4, 0.3, 1.0),
-					.move = move_linear(-cdir(((i * 2 * M_PI/count + offset)) * (1.0 + (difficulty > 2))))
-				);
-			}
-			spawn_projectile_highlight_effect(p);
-			p->move = move_linear((3 + (2.0 * difficulty) / 4.0) * (cnormalize(global.plr.pos - p->pos)));
+	for(;;) {
+		origin = boss->pos;
+		boss->move.attraction_point = common_wander(boss->pos, 200, bounds);
+		time += common_charge_static(delay, origin, &charge_color);
 
-		});
+		for(int i = 0; i < cnt; ++i) {
+			play_sfx("shot_special1");
+
+			cmplx v = (2 - psin((shape*M_TAU*i/(real)cnt) + time)) * cdir(M_TAU/cnt*i);
+			INVOKE_TASK(bite_bullet,
+				.pos = origin - v * 25,
+				.vel = v,
+			);
+		}
+
+		delay = imax(60, delay - 10);
 	}
 }
