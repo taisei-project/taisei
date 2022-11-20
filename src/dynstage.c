@@ -58,13 +58,26 @@ static struct {
 } dynstage;
 
 static stageslib_t dynstage_dlopen(void) {
-	stageslib_t lib = dlopen(TAISEI_BUILDCONF_DYNSTAGE_LIB, RTLD_NOW | RTLD_LOCAL);
+	int attempts = 7;
+	int delay = 10;
 
-	if(UNLIKELY(!lib)) {
-		log_fatal("Failed to load stages library: %s", dlerror());
+	for(;;) {
+		stageslib_t lib = dlopen(TAISEI_BUILDCONF_DYNSTAGE_LIB, RTLD_NOW | RTLD_LOCAL);
+
+		if(LIKELY(lib != NULL)) {
+			return lib;
+		}
+
+		if(--attempts) {
+			log_error("Failed to load stages library (%i attempt%s left): %s", attempts, attempts > 1? "s" : "", dlerror());
+			SDL_Delay(delay);
+			delay *= 2;
+		} else {
+			break;
+		}
 	}
 
-	return lib;
+	log_fatal("Failed to load stages library: %s", dlerror());
 }
 
 static void dynstage_bump_lib_generation(void) {
