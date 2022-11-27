@@ -348,7 +348,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 
 	if(e->lines > 0) {
 		if(*(e->data[0]) == '*') {
-			total += *head = sprite_padded_height(res_sprite("kyoukkuri"));
+			total += *head = res_sprite("kyoukkuri")->h;
 		} else {
 			total += *head = font_get_lineskip(res_font("big"));
 		}
@@ -435,7 +435,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 			float t = ((global.frames) % 90) / 59.0;
 			float elevation = yukkuri_jump(t);
 			float squeeze = (elevation - yukkuri_jump(t - 0.03)) * 0.4;
-			float halfheight = sprite_padded_height(yukkuri_spr) * 0.5;
+			float halfheight = yukkuri_spr->h * 0.5;
 
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = yukkuri_spr,

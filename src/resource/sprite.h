@@ -12,49 +12,20 @@
 #include "resource.h"
 #include "texture.h"
 
-typedef struct SpriteMargin {
-	float top, bottom, left, right;
-} SpriteMargin;
-
 typedef struct Sprite {
 	Texture *tex;
 	FloatRect tex_area;
 	union {
+		// NOTE: This is stored with padding pre-applied.
+		// To get the area actually occupied by the image, subtract `padding.extent` from the size
+		// and bias the origin by `padding.offset`.
+		// You shouldn't need to worry about it in most cases, unless you're doing some low-level
+		// sprite rendering or want to add virtual paddings to your own Sprite instance.
 		FloatExtent extent;
 		struct { float w, h; };
 	};
-	SpriteMargin padding;
+	FloatRect padding;
 } Sprite;
-
-INLINE float sprite_padded_width(const Sprite *restrict spr) {
-	return spr->extent.w + spr->padding.left + spr->padding.right;
-}
-
-INLINE float sprite_padded_height(const Sprite *restrict spr) {
-	return spr->extent.h + spr->padding.top + spr->padding.bottom;
-}
-
-INLINE FloatExtent sprite_padded_extent(const Sprite *restrict spr) {
-	FloatExtent e;
-	e.w = sprite_padded_width(spr);
-	e.h = sprite_padded_height(spr);
-	return e;
-}
-
-INLINE float sprite_padded_offset_x(const Sprite *restrict spr) {
-	return (spr->padding.left - spr->padding.right) * 0.5;
-}
-
-INLINE float sprite_padded_offset_y(const Sprite *restrict spr) {
-	return (spr->padding.top - spr->padding.bottom) * 0.5;
-}
-
-INLINE FloatOffset sprite_padded_offset(const Sprite *restrict spr) {
-	FloatOffset o;
-	o.x = sprite_padded_offset_x(spr);
-	o.y = sprite_padded_offset_y(spr);
-	return o;
-}
 
 FloatRect sprite_denormalized_tex_coords(const Sprite *restrict spr);
 IntRect sprite_denormalized_int_tex_coords(const Sprite *restrict spr);

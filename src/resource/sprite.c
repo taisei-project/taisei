@@ -50,7 +50,6 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		return;
 	}
 
-	float ofs_x = 0, ofs_y = 0;
 
 	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
 
@@ -62,6 +61,8 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		return;
 	}
 
+	struct { float top, bottom, left, right; } pad = { };
+
 	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
 		{ "region_x",       .out_float = &spr->tex_area.x },
@@ -70,12 +71,10 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{ "region_h",       .out_float = &spr->tex_area.h },
 		{ "w",              .out_float = &spr->w },
 		{ "h",              .out_float = &spr->h },
-		{ "offset_x",       .out_float = &ofs_x, KVSPEC_DEPRECATED("margin_left; margin_right") },
-		{ "offset_y",       .out_float = &ofs_y, KVSPEC_DEPRECATED("margin_top; margin_bottom") },
-		{ "padding_top",    .out_float = &spr->padding.top },
-		{ "padding_bottom", .out_float = &spr->padding.bottom },
-		{ "padding_left",   .out_float = &spr->padding.left },
-		{ "padding_right",  .out_float = &spr->padding.right },
+		{ "padding_top",    .out_float = &pad.top },
+		{ "padding_bottom", .out_float = &pad.bottom },
+		{ "padding_left",   .out_float = &pad.left },
+		{ "padding_right",  .out_float = &pad.right },
 		{ NULL }
 	});
 
@@ -97,10 +96,13 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	res_load_dependency(st, RES_TEXTURE, state->texture_name);
 
-	spr->padding.left += ofs_x;
-	spr->padding.right -= ofs_x;
-	spr->padding.top += ofs_y;
-	spr->padding.bottom -= ofs_y;
+	spr->padding.extent.w = pad.left + pad.right;
+	spr->padding.extent.h = pad.top + pad.bottom;
+
+	spr->padding.offset.x = 0.5f * (pad.left - pad.right);
+	spr->padding.offset.y = 0.5f * (pad.top - pad.bottom);
+
+	spr->extent.as_cmplx += spr->padding.extent.as_cmplx;
 
 	res_load_continue_after_dependencies(st, load_sprite_stage2, state);
 	return;
@@ -154,7 +156,7 @@ Sprite *prefix_get_sprite(const char *name, const char *prefix) {
 }
 
 static void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
-	FloatOffset o = sprite_padded_offset(spr);
+	FloatOffset o = spr->padding.offset;
 
 	begin_draw_texture(
 		(FloatRect){ x + o.x * scale_x, y + o.y * scale_y, spr->w * scale_x, spr->h * scale_y },

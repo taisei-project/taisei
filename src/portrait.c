@@ -61,8 +61,8 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 
 	uint tex_w = imax(itc.w, 1);
 	uint tex_h = imax(itc.h, 1);
-	uint spr_w = s_base->extent.w;
-	uint spr_h = s_base->extent.h;
+	float spr_w = s_base->extent.w;
+	float spr_h = s_base->extent.h;
 
 	Texture *ptex = r_texture_create(&(TextureParams) {
 		.type = TEX_TYPE_RGBA_8,
@@ -82,14 +82,14 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_framebuffer(fb);
 	r_framebuffer_clear(fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 
-	r_mat_proj_push_ortho(spr_w, spr_h);
+	r_mat_proj_push_ortho(spr_w - s_base->padding.w, spr_h - s_base->padding.h);
 	r_mat_mv_push_identity();
 
 	SpriteParams sp = { 0 };
 	sp.sprite_ptr = s_base;
 	sp.blend = BLEND_NONE;
-	sp.pos.x = spr_w * 0.5f - sprite_padded_offset_x(s_base);
-	sp.pos.y = spr_h * 0.5f - sprite_padded_offset_y(s_base);
+	sp.pos.x = spr_w * 0.5f - s_base->padding.offset.x;
+	sp.pos.y = spr_h * 0.5f - s_base->padding.offset.y;
 	sp.color = RGBA(1, 1, 1, 1);
 	sp.shader_ptr = res_shader("sprite_default"),
 	r_draw_sprite(&sp);
