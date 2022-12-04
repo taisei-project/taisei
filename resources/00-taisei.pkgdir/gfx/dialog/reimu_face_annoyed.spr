@@ -5,9 +5,6 @@ region_x = 0.91450648055832506
 region_y = 0.55383848454636087
 region_w = 0.05009970089730808
 region_h = 0.03115653040877368
-
-# -- Pasted from the override file --
-
 w = 100.5
 h = 62.5
 padding_top = 57.5
