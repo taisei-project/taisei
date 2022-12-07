@@ -36,11 +36,13 @@ TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width
 		.proto = pp_rice,
 		.color = RGB(0.4, 0, 0.8),
 		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
+		.max_viewport_dist = ARGS.width,
 	));
 	BoxedProjectile phead = ENT_BOX(PROJECTILE(
 		.proto = pp_flea,
 		.color = RGB(0.8, 0.1, 0.4),
 		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
+		.max_viewport_dist = ARGS.width,
 	));
 
 	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, swarm_trail_proj_cleanup, phead);
@@ -83,9 +85,9 @@ TASK(swarm_trail_fairy, { cmplx pos; MoveParams move; }) {
 	e->move = ARGS.move;
 
 	int shooting_time = 200;
-	real width = 30;
 	int interval = 10;
-	int nrow = 5;
+	int nrow = difficulty_value(3, 5, 5, 7);
+	real width = 30 * (nrow / 5.0);
 
 	WAIT(30);
 	e->move.retention = 0.9;
@@ -154,13 +156,17 @@ TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 	int petals = 5;
 	Color pcolor = *RGBA(1, 0.5, 0, 1);
 
+	int orange_cnt = difficulty_value(5, 5, 7, 7);
+	int red_cnt = difficulty_value(5, 7, 7, 9);
+	real speed = difficulty_value(1, 1, 1.5, 2);
+
 	for(int t = 0;; t++) {
 		if(t & 1) {
 			pcolor.g = 0;
-			petals = 7;
+			petals = red_cnt;
 		} else {
 			pcolor.g = 0.5;
-			petals = 5;
+			petals = orange_cnt;
 		}
 
 		play_sfx("shot2");
@@ -173,7 +179,7 @@ TASK(flower_swirl, { cmplx pos; MoveParams move; }) {
 				.proto = pp_wave,
 				.color = &pcolor,
 				.pos = e->pos - 4 * dir,
-				.move = move_asymptotic_halflife(0.7*dir, -4 * dir * twist, 200),
+				.move = move_asymptotic_halflife(speed * 0.7 * dir, speed * -4 * dir * twist, 200),
 			);
 		}
 
@@ -212,7 +218,9 @@ TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 
 	INVOKE_SUBTASK(horde_fairy_motion, ENT_BOX(e), ARGS.velocity);
 
-	int interval = 40;
+	int interval = difficulty_value(60, 40, 30, 20);
+	real speed = difficulty_value(2, 2, 2.5, 3);
+	real lead = difficulty_value(5, 5, 3.25, 2.75);
 
 	for(;;WAIT(interval)) {
 		play_sfx("shot1");
@@ -227,13 +235,13 @@ TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 			.proto = pp_plainball,
 			.pos = e->pos,
 			.color = RGB(0.4, 0, 1),
-			.move = move_asymptotic_halflife(0, 2 * aim, 25),
+			.move = move_asymptotic_halflife(0, speed * aim, 25),
 		);
 		PROJECTILE(
 			.proto = pp_flea,
 			.pos = e->pos,
 			.color = RGB(0.1, 0.4, 0.8),
-			.move = move_asymptotic_halflife(0, 2 * aim, 20),
+			.move = move_asymptotic_halflife(0, speed * aim, 25 - lead),
 		);
 	}
 }
@@ -279,7 +287,11 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 				.proto = pp_rice,
 				.pos = e->pos + 20 * dir,
 				.color = RGB(0.3, 0.4, 1),
-					.move = move_asymptotic_halflife((0.5+4.5*j/lance_segs)*dir, 5*dir*cdir(0.05 * s), 50+10*I),
+				.move = move_asymptotic_halflife(
+					(0.5 + (4.5 * j) / lance_segs) * dir,
+					5 * dir * cdir(0.05 * s),
+					50
+				),
 			);
 		}
 
@@ -294,12 +306,13 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 		.bomb_fragment = 1,
 	)));
 
-	e->move=move_towards(ARGS.target_pos, 0.01);
+	e->move = move_towards(ARGS.target_pos, 0.01);
 	WAIT(50);
 
 	int circle_count = 10;
 	int count = 50;
-	int interval = 40;
+	int interval = difficulty_value(40, 40, 30, 20);
+	real twistangle = -0.01 * difficulty_value(1, 1, 0.5, 0.5);
 
 	INVOKE_SUBTASK_DELAYED(180, circle_twist_fairy_lances, ENT_BOX(e));
 
@@ -312,11 +325,11 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = e->pos,
-				.color = RGB(1, 0.3, 0),
+				.color = RGBA(1.5, -2.3, 0, 0),
 				.move = {
 					.velocity = (2 + 0.005 * t) * dir,
 					.acceleration = -0.005 * dir,
-					.retention = 1.0 * cdir(-0.01*s)
+					.retention = 1.0 * cdir(twistangle * s)
 				}
 			);
 			YIELD;
@@ -338,16 +351,17 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 
 	WAIT(60);
 
-	cmplx lv = -4 * cnormalize(ARGS.velocity);
+	real speed = difficulty_value(2, 3, 4, 4);
+	real amp = 0.01 * difficulty_value(8, 8, 8, 10);
+	real freq = (speed / 4) * 0.25 * ARGS.freq_factor;
+
+	cmplx lv = speed * -cnormalize(ARGS.velocity);
 
 	real lt = 20;
 	real dt = 300;
 
-	real amp = 0.08;
-	real freq = 0.25 * ARGS.freq_factor;
-
 	int charges = 4;
-	int delay = 20;
+	int delay = difficulty_value(30, 20, 20, 20);
 	int refire = 20;
 
 	real phase = 0;
@@ -367,13 +381,15 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 			.timeout = 1,
 			.color = RGBA(1, 1, 1, 0),
 		);
-		Laser *l = create_lasercurve4c(p->pos, lt, dt, &p->color, las_sine_expanding, lv, amp, freq, i * phase);
+
+		create_lasercurve4c(p->pos, lt, dt, &p->color, las_sine_expanding, lv, amp, freq, i * phase);
 
 		for(int t = 0; t < delay; ++t) {
 			YIELD;
 			scale -= scale_per_tick;
 			p->collision_size = orig_collision * scale;
-			p->scale = orig_scale * scale;		}
+			p->scale = orig_scale * scale;
+		}
 
 		if(i == charges - 1) {
 			break;
@@ -666,13 +682,6 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
 
-	// INVOKE_TASK(bulletring_fairy, VIEWPORT_W/2, move_towards(VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.01)); return;
-
-/*
-	INVOKE_TASK(laserball_fairy, VIEWPORT_W/2, VIEWPORT_W/2 + VIEWPORT_H/3*I);
-	INVOKE_TASK_DELAYED(800, common_call_func, stage_load_quicksave);
-	return;*/
-
 	welcome_swirls();
 
 	INVOKE_TASK_DELAYED(400, swarm_trail_fairy_spawn, 5);
@@ -713,8 +722,6 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	INVOKE_TASK_DELAYED(1900, flower_swirls_alternating);
 	INVOKE_TASK_DELAYED(2390, swarm_trail_fairy, VIEWPORT_W+20 + VIEWPORT_H*0.24*I, move_linear(-9));
 	INVOKE_TASK_DELAYED(2450, swarm_trail_fairy,           -20 + VIEWPORT_H*0.32*I, move_linear( 9));
-
-	// INVOKE_TASK_DELAYED(3400, common_call_func, stage_load_quicksave);
 
 	STAGE_BOOKMARK_DELAYED(2500, pre-midboss);
 
