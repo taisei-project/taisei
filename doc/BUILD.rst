@@ -33,7 +33,7 @@ Build-Time Dependenices
 """""""""""""""""""""""
 
 -  ``gcc`` or ``clang``
--  meson >= 0.53.0 (0.56.2 recommended)
+-  meson >= 0.56.2
 -  Python >= 3.6
 -  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
 -  `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)

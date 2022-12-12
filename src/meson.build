@@ -445,19 +445,15 @@ elif host_machine.system() == 'nx'
 
     taisei_nro_name = '@0@.nro'.format(taisei_basename)
     taisei_nro = custom_target(taisei_nro_name,
-        # NOTE: Unfortunately we can't just put 'taisei_elf' directly into the command array.
-        # Meson then makes an invalid assumption that we are going to execute it ("use as a generator"),
-        # and aborts because there's no exe wrapper in the cross file (which wouldn't make sense to have).
-
         command : [
             find_program('elf2nro'),
-            taisei_elf.full_path(),   # workaround for the above issue
+            taisei_elf,
             '@OUTPUT@',
             '--nacp=@0@'.format(taisei_nacp.full_path()),   # if we could pass the path in a standalone argument, we could have meson generate an implicit dependency here...
             '--icon=@0@'.format(nx_icon_path),
         ],
         build_by_default : true,
-        depends : [taisei_elf, taisei_nacp],
+        depends : [taisei_nacp],
         install : true,
         install_dir : bindir,
         output : taisei_nro_name,
@@ -468,7 +464,7 @@ else
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
-        gui_app : not get_option('win_console'),
+        win_subsystem : get_option('win_console') ? 'console' : 'windows',
         install : true,
         install_dir : bindir,
         export_dynamic : stages_live_reload,

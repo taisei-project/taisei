@@ -184,7 +184,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_uniform_location_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0
@@ -199,7 +200,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_basic_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0

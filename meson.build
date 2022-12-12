@@ -1,7 +1,7 @@
 project('taisei', 'c',
     license : 'MIT',
     version : 'v1.4-dev',
-    meson_version : '>=0.53.0',
+    meson_version : '>=0.56.2',
     default_options : [
         'c_std=gnu11',
 
@@ -136,11 +136,6 @@ elif deprecation_warnings == 'ignore'
     taisei_c_args += '-Wno-deprecated-declarations'
 endif
 
-if meson.version().version_compare('<0.50.0') and get_option('b_pch')
-    # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
-    taisei_c_args += ['-fpch-deps']
-endif
-
 taisei_c_args = cc.get_supported_arguments(taisei_c_args)
 
 foreach arglist : [
@@ -151,7 +146,7 @@ foreach arglist : [
     endif
 endforeach
 
-sm_check = run_command(check_submodules_command)
+sm_check = run_command(check_submodules_command, check : false)
 
 if sm_check.stdout() != ''
     foreach line : sm_check.stdout().strip().split('\n')
@@ -197,11 +192,7 @@ taisei_deps = [
     # don't add glad here
 ]
 
-if meson.version().version_compare('<0.49.0')
-    wrap_mode_forcefallback = false
-else
-    wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
-endif
+wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
 
 if dep_webpdecoder.found() and not wrap_mode_forcefallback
     # distro libwebpdecoder
@@ -518,7 +509,7 @@ config.set('TAISEI_BUILDCONF_TESTING_STAGES', use_testing_stages)
 # Stolen from Sway
 # Compute the relative path used by compiler invocations.
 source_root = meson.current_source_dir().split('/')
-build_root = meson.build_root().split('/')
+build_root = meson.project_build_root().split('/')
 if build_machine.system() == 'windows'
     source_root = source_root.replace('\\', '/')
     build_root = build_root.replace('\\', '/')
@@ -632,4 +623,4 @@ Summary:
 
 message(summary)
 
-run_command(postconf_command)
+run_command(postconf_command, check : false)

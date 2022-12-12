@@ -65,8 +65,7 @@ foreach pkg : packages
             var_files = 'em_bundle_@0@_files'.format(bundle)
             var_packer_args = 'em_bundle_@0@_packer_args'.format(bundle)
 
-            glob_result = run_command(glob_command, pkg_path, get_variable(var_patterns))
-            assert(glob_result.returncode() == 0, 'Glob script failed')
+            glob_result = run_command(glob_command, pkg_path, get_variable(var_patterns), check : true)
 
             foreach file : glob_result.stdout().strip().split('\n')
                 if file != ''
@@ -95,8 +94,7 @@ foreach pkg : packages
             console : true,
         )
     else
-        glob_result = run_command(glob_command, pkg_path, '**/meson.build')
-        assert(glob_result.returncode() == 0, 'Glob script failed')
+        glob_result = run_command(glob_command, pkg_path, '**/meson.build', check : true)
         install_subdir(pkg_pkgdir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
     endif
 endforeach
@@ -122,8 +120,7 @@ if host_machine.system() == 'nx'
             console : true,
         )
     else
-        glob_result = run_command(glob_command, shaders_build_dir, '**/*.spv', '**/meson.build')
-        assert(glob_result.returncode() == 0, 'Glob script failed')
+        glob_result = run_command(glob_command, shaders_build_dir, '**/*.spv', '**/meson.build', check : true)
         install_subdir(shaders_build_dir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
     endif
 endif
