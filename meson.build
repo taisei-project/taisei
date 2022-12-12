@@ -1,6 +1,14 @@
 project('taisei', 'c',
     license : 'MIT',
-    version : 'v1.4-dev',
+    # NOTE: See https://github.com/mesonbuild/meson/issues/11163
+    version : run_command([
+        files('scripts/version.py'),
+        '--rootdir', meson.project_source_root(),
+        '--fallback-version', (
+            get_option('version_fallback').strip() != ''
+                ? get_option('version_fallback').strip()
+                : 'v1.4-dev')
+    ], check : true).stdout().strip(),
     meson_version : '>=0.56.2',
     default_options : [
         'c_std=gnu11',
@@ -62,6 +70,8 @@ project('taisei', 'c',
         'b_ndebug=if-release',
     ]
 )
+
+taisei_version_string = meson.project_version()
 
 is_debug_build = get_option('debug')
 is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')

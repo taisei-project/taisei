@@ -12,17 +12,6 @@ common_taiseilib_defs = [
     '-DMESON_SOURCE_ROOT=@0@'.format(meson.project_source_root()),
 ]
 
-version_script = find_program(files('version.py'))
-version_command = [version_script, common_taiseilib_args]
-
-taisei_version_result = run_command(version_command, '{string}', check : true)
-
-if taisei_version_result.stderr() != ''
-    warning(taisei_version_result.stderr().strip())
-endif
-
-taisei_version_string = taisei_version_result.stdout().strip()
-
 preprocess_script = find_program(files('configure-file.py'))
 preprocess_args = common_taiseilib_args + common_taiseilib_defs
 preprocess_command = [preprocess_script, preprocess_args]
