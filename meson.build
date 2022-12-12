@@ -584,49 +584,28 @@ foreach bindist_target : bindist_targets
     )
 endforeach
 
-summary = '''
+summary({
+    'System type' : systype,
+    'Build type' : get_option('buildtype'),
+    'Developer mode' : is_developer_build,
+}, section : 'Main', bool_yn : true)
 
-Summary:
-    Taisei version:         @0@
-    System type:            @1@
-    Build type:             @2@
-    Developer mode:         @15@
-    Stages live reload:     @16@
+summary({
+    'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), get_option('a_default')),
+    'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
+    'Shader translation' : get_option('shader_transpiler'),
+    'ZIP packages' : enable_zip,
+    'Stages live reload' : stages_live_reload,
+}, section : 'Features', bool_yn : true)
 
-    Audio backends:         @3@  (default: @4@)
-    Renderers:              @5@  (default: @6@)
-    Shader translation:     @7@
-    ZIP support:            @8@
-    Package data:           @9@
-
-    Relative install paths: @10@
-    Prefix:                 @11@
-    Executables:            @12@
-    Data:                   @13@
-    Documentation:          @14@
-'''.format(
-        taisei_version_string,
-        systype,
-        get_option('buildtype'),
-
-        ', '.join(enabled_audio_backends),
-        get_option('a_default'),
-        ', '.join(enabled_renderers),
-        default_renderer,
-        get_option('shader_transpiler'),
-        enable_zip,
-        package_data,
-
-        is_relocatable_install,
-        get_option('prefix'),
-        # the $ is intentional
-        join_paths('$prefix', bindir),
-        join_paths('$prefix', data_path),
-        join_paths('$prefix', doc_path),
-        is_developer_build,
-        stages_live_reload
-    )
-
-message(summary)
+summary({
+    'Relocatable layout' : is_relocatable_install,
+    'Data in ZIP packages' : package_data,
+    'Bundle ANGLE libraries' : angle_enabled,
+    'Prefix' : get_option('prefix'),
+    'Executables' : join_paths('$prefix', bindir),
+    'Data' : join_paths('$prefix', data_path),
+    'Documentation' : join_paths('$prefix', doc_path),
+}, section : 'Installation', bool_yn : true)
 
 run_command(postconf_command, check : false)
