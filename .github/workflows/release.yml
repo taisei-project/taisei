@@ -112,8 +112,6 @@ jobs:
 
     - name: Package (Source)
       run: |
-        meson rewrite kwargs set project / version ${{ env.BUILD_VERSION }} # meson dist uses 'project.version' instead of 'git describe' for the tag to use, so this overwrites it as a workaround
-        meson --reconfigure build/linux
         meson dist -C build/linux --no-tests # disable test build, since we already know it compiles
         scripts/sign-release.py build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz
 
