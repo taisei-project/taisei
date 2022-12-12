@@ -4,10 +4,6 @@ project('taisei', 'c',
     version : run_command([
         files('scripts/version.py'),
         '--rootdir', meson.project_source_root(),
-        '--fallback-version', (
-            get_option('version_fallback').strip() != ''
-                ? get_option('version_fallback').strip()
-                : 'v1.4-dev')
     ], check : true).stdout().strip(),
     meson_version : '>=0.56.2',
     default_options : [

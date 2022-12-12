@@ -1,8 +1,3 @@
-option(
-    'version_fallback',
-    type : 'string',
-    description : 'Overrides the version string when not building in a git repository'
-)
 
 option(
     'developer',

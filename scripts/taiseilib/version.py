@@ -5,10 +5,15 @@ import sys
 import subprocess
 import shlex
 import re
+import  os
 
 
 class VersionFormatError(common.TaiseiError):
     pass
+
+
+VERSION_FALLBACK = 'v1.4-dev'
+OVERRIDE_FILE_NAME = '.VERSION'
 
 
 class Version(object):
@@ -53,13 +58,23 @@ class Version(object):
         return template.format(**self.__dict__)
 
 
-def get(*, rootdir=None, fallback=None, args=common.default_args):
+def get(*, rootdir=None, fallback=VERSION_FALLBACK, args=common.default_args):
     rootdir = rootdir if rootdir is not None else args.rootdir
-    fallback = fallback if fallback is not None else args.fallback_version
 
     if rootdir is None:
         import pathlib
         rootdir = pathlib.Path(__file__).parent
+    elif not isinstance(rootdir, os.PathLike):
+        rootdir = pathlib.Path(rootdir)
+
+    version_override_path = rootdir / OVERRIDE_FILE_NAME
+
+    try:
+        version_str = version_override_path.read_text().strip()
+    except FileNotFoundError:
+        pass
+    else:
+        return Version(version_str)
 
     try:
         version_str = subprocess.check_output(
@@ -80,6 +95,7 @@ def get(*, rootdir=None, fallback=None, args=common.default_args):
 
         print(e, file=sys.stderr)
         print("Warning: git not found or not a git repository; using fallback version {0}".format(fallback), file=sys.stderr)
+        print("Hint: if you are packaging Taisei, write the appropriate version into", str(version_override_path), file=sys.stderr)
         version_str = fallback
 
     return Version(version_str)

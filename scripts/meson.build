@@ -1,10 +1,6 @@
 
-ver_fb = get_option('version_fallback').strip()
-version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
-
 common_taiseilib_args = [
     '--rootdir', meson.project_source_root(),
-    '--fallback-version', version_fallback
 ]
 
 common_taiseilib_defs = [
@@ -137,3 +133,6 @@ fix_path_command = [fix_path_script]
 
 format_array_script = find_program(files('format-array.py'))
 format_array_command = [format_array_script]
+
+on_dist_script = find_program(files('on-meson-dist.py'))
+meson.add_dist_script(on_dist_script)
