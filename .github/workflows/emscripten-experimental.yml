@@ -11,7 +11,7 @@ on:
     - cron: '0 10 * * 4'
 
 env:
-  MESON_VERSION: '0.56.2'
+  MESON_VERSION: '0.63.0'
   EM_VERSION: 'tot'
   EM_CACHE_FOLDER: 'emsdk'
 
