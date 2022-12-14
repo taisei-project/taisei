@@ -11,7 +11,7 @@ rwops_src = files(
     'rwops_zstd.c',
 )
 
-if taisei_deps.contains(dep_zip)
+if dep_zip.found()
     rwops_src += files(
         'rwops_zipfile.c',
     )

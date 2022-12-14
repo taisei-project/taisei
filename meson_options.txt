@@ -8,18 +8,25 @@ option(
     description : 'Make a "developer" build with cheats and extra debugging features'
 )
 
+option('vfs_zip',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Support loading of game data from ZIP packages (requires libzip)'
+)
+
 option(
     'enable_zip',
     type : 'boolean',
-    value : 'true',
-    description : 'Enable loading of game data from ZIP packages (requires libzip)'
+    deprecated : 'vfs_zip',
 )
 
 option(
     'package_data',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
-    description : 'Package the game’s assets into a compressed archive (requires enable_zip)'
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Package the game’s assets into a compressed archive (requires vfs_zip)'
 )
 
 option(

@@ -164,6 +164,9 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
+opt_vfs_zip = get_option('vfs_zip').require(host_machine.system() != 'emscripten',
+    error_message : 'ZIP packages are not supported on Emscripten')
+
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
@@ -171,7 +174,7 @@ dep_webp        = dependency('libwebp',        version : '>=0.5',   required : t
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
 dep_zlib        = dependency('zlib',                                required : true)
 dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true)
-dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false)
+dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip)
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : false)
 dep_gamemode    = dependency('gamemode',                            required : false)
@@ -191,6 +194,7 @@ taisei_deps = [
     dep_m,
     dep_png,
     dep_sdl2,
+    dep_zip,
     dep_zlib,
     dep_zstd,
     # don't add glad here
@@ -210,25 +214,14 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-if host_machine.system() == 'emscripten'
-    package_data = false
-    enable_zip = false
-else
-    package_data = get_option('package_data')
-    enable_zip = get_option('enable_zip')
-    package_data = (package_data == 'auto' ? enable_zip : package_data == 'true')
-endif
+package_data = (
+    get_option('package_data')
+        .require(dep_zip.found(),
+            error_message : 'libzip not found or VFS ZIP support is disabled')
+        .allowed()
+)
 
-if enable_zip
-    assert(dep_zip.found(), 'ZIP support enabled but libzip not found')
-    taisei_deps += dep_zip
-endif
-
-if package_data and not enable_zip
-    error('ZIP support must be enabled for data packaging to work')
-endif
-
-config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
+config.set('TAISEI_BUILDCONF_USE_ZIP', dep_zip.found())
 
 have_posix = cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
 
@@ -291,7 +284,7 @@ config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builti
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 
-if enable_zip and dep_zip.found()
+if dep_zip.found()
     if dep_zip.type_name() == 'internal'
         have_zip_compression_method_supported = dep_zip.version().version_compare('>=1.7.0')
     else
@@ -592,7 +585,7 @@ summary({
     'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), get_option('a_default')),
     'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
     'Shader translation' : get_option('shader_transpiler'),
-    'ZIP packages' : enable_zip,
+    'ZIP packages' : dep_zip.found(),
     'Stages live reload' : stages_live_reload,
 }, section : 'Features', bool_yn : true)
 
