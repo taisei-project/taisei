@@ -74,7 +74,6 @@ is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_o
 
 cc = meson.get_compiler('c')
 python = import('python').find_installation()
-macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
 subdir('scripts')
 
@@ -305,52 +304,40 @@ force_relpath_systems = [
     'nx'
 ]
 
-if macos_app_bundle
-    bundle_dir = 'Taisei.app'
+opt_install_macos_bundle = get_option('install_macos_bundle')
+opt_install_macos_bundle = opt_install_macos_bundle.require(
+    host_machine.system() == 'darwin',
+    error_message : 'only supported on macOS')
 
-    bundle_datadir = join_paths('Contents', 'Resources')
-    bundle_bindir = join_paths('Contents', 'MacOS')
-    bundle_libdir = bundle_bindir
+prefer_relocatable = (
+    host_machine.system() in (prefer_relpath_systems + force_relpath_systems) or
+    opt_install_macos_bundle.allowed())
 
-    datadir = join_paths(bundle_dir, bundle_datadir)
-    bindir = join_paths(bundle_dir, bundle_bindir)
-    libdir = join_paths(bundle_dir, bundle_libdir)
+opt_install_relocatable = get_option('install_relocatable')
+opt_install_relocatable = opt_install_relocatable.disable_auto_if(
+    not prefer_relocatable)
 
-    is_relocatable_install = true
+opt_install_macos_bundle = opt_install_macos_bundle.require(
+    opt_install_relocatable.allowed(),
+    error_message : 'install_relocatable is required')
 
-    # arguments must be strings...
-    meson.add_install_script(
-        python.path(),
-        join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
-        ':'.join(meson.get_cross_property('macos_lib_path', [])),
-        ':'.join(meson.get_cross_property('macos_tool_path', [])),
-        meson.get_cross_property('macos_tool_prefix', ''),
-    )
-else
-    datadir = get_option('datadir')
-
-    if force_relpath_systems.contains(host_machine.system())
-        is_relocatable_install = true
-    elif get_option('install_relative') == 'auto'
-        is_relocatable_install = prefer_relpath_systems.contains(host_machine.system())
-    else
-        is_relocatable_install = (get_option('install_relative') == 'true')
-    endif
-
-    if is_relocatable_install
-        bindir = '.'
-        libdir = '.'
-    else
-        bindir = get_option('bindir')
-        libdir = get_option('libdir')
-    endif
+if host_machine.system() in force_relpath_systems and opt_install_relocatable.disabled()
+    error('install_relocatable must be enabled on this platform')
 endif
 
-if get_option('install_freedesktop') == 'auto'
-    install_xdg = not is_relocatable_install
-else
-    install_xdg = get_option('install_freedesktop') == 'true'
-endif
+is_relocatable_install = opt_install_relocatable.allowed()
+macos_app_bundle = opt_install_macos_bundle.allowed()
+
+opt_install_freedesktop = (
+    get_option('install_freedesktop')
+        .disable_auto_if(is_relocatable_install or host_machine.system() == 'darwin')
+        .require(not macos_app_bundle,
+            error_message : 'installing freedesktop.org stuff into a macOS bundle makes no sense')
+)
+
+install_xdg = opt_install_freedesktop.allowed()
+
+datadir = get_option('datadir')
 
 if is_relocatable_install
     data_path = 'data'
@@ -359,22 +346,44 @@ if is_relocatable_install
     lib_path = '.'
 
     if macos_app_bundle
+        bundle_dir = 'Taisei.app'
+
+        bundle_datadir = join_paths('Contents', 'Resources')
+        bundle_bindir = join_paths('Contents', 'MacOS')
+        bundle_libdir = bundle_bindir
+
+        datadir = join_paths(bundle_dir, bundle_datadir)
+        bindir = join_paths(bundle_dir, bundle_bindir)
+        libdir = join_paths(bundle_dir, bundle_libdir)
+
+        # arguments must be strings...
+        meson.add_install_script(
+            python.path(),
+            join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
+            ':'.join(meson.get_cross_property('macos_lib_path', [])),
+            ':'.join(meson.get_cross_property('macos_tool_path', [])),
+            meson.get_cross_property('macos_tool_prefix', ''),
+        )
+
         # Relative to SDL_GetBasePath() (bundle root)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(bundle_datadir, data_path))
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(bundle_libdir))
 
         # Make paths prefix-relative for installation
-
         data_path = join_paths(datadir, data_path)
         lib_path = libdir
-        # I don't know why would you do that, but more power to you
-        xdg_path = join_paths(datadir, xdg_path)
-    else
+    else  # Relocatable; not macOS bundle
+        bindir = '.'
+        libdir = '.'
+
         # Relative to SDL_GetBasePath() (typically contains the executable)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
-        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', '.')
+        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', lib_path)
     endif
-else
+else  # Non-relocatable
+    bindir = get_option('bindir')
+    libdir = get_option('libdir')
+
     data_path = join_paths(datadir, 'taisei')
     lib_path = join_paths(libdir, 'taisei')
     doc_path = join_paths(datadir, 'doc', 'taisei')
@@ -407,12 +416,10 @@ if host_machine.system() == 'windows'
             install_dir : doc_path
         )
     endif
-
 else
     if install_docs
         install_data('COPYING', install_dir : doc_path)
     endif
-
 endif
 
 if angle_enabled

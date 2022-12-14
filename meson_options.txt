@@ -30,17 +30,40 @@ option(
 )
 
 option(
+    'install_relocatable',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Install everything into the same directory, don\'t hardcode absolute paths into the executable. Prefix is assumed to be an empty directory reserved for Taisei in this mode.'
+)
+
+option(
     'install_relative',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
-    description : 'Use only relative paths to the executable and install everything in the same directory. Always enabled for macOS bundles'
+    deprecated : 'install_relocatable',
 )
 
 option(
     'install_freedesktop',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Install freedesktop.org integration files (launchers, icons, replay file associations, etc.). Mostly relevant for Linux/BSD/etc. desktop systems'
+)
+
+option(
+    'install_macos_bundle',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'auto', 'false' : 'disabled'},
+    description : 'Install into a macOS application bundle'
+)
+
+option(
+    'macos_bundle',
+    type : 'boolean',
+    deprecated : 'install_macos_bundle'
 )
 
 option(
@@ -81,13 +104,6 @@ option(
     type : 'boolean',
     value : true,
     description : 'Enable OpenGL debugging. Create a debug context, enable logging, and crash the game on errors. Only available in debug builds'
-)
-
-option(
-    'macos_bundle',
-    type : 'boolean',
-    value : true,
-    description : 'Make a macOS application bundle on install (ignored on other platforms)'
 )
 
 option(
