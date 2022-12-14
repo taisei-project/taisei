@@ -10,27 +10,7 @@ r_shaderlib_libdeps = []
 
 if get_option('shader_transpiler')
     dep_spvc = dependency('spirv-cross-c-shared', required : true, static : static, fallback : ['SPIRV-Cross', 'spirv_cross_dep'])
-
-    if get_option('wrap_mode') != 'forcefallback'
-        dep_shaderc = dependency('shaderc', static : static, required : false)
-
-        if not dep_shaderc.found()
-            # Thanks, google.
-            # https://github.com/google/shaderc/issues/392
-            if static
-                dep_shaderc = cc.find_library('shaderc_combined', required : false)
-            else
-                dep_shaderc = cc.find_library('shaderc_shared', required : false)
-            endif
-        endif
-        if not dep_shaderc.found()
-            dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
-        endif
-    else
-        dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
-    endif
-
-    assert(dep_shaderc.found(), 'shaderc is required for the shader transpiler')
+    dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
 
     r_shaderlib_src += files(
         'lang_spirv.c'
