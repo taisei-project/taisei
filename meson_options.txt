@@ -2,7 +2,9 @@
 option(
     'developer',
     type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    choices : ['true', 'false', 'auto'],
+    value : 'false',
+    deprecated : ['auto'],
     description : 'Make a "developer" build with cheats and extra debugging features'
 )
 
