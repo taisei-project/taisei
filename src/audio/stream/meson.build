@@ -7,7 +7,7 @@ a_stream_src = files(
     'stream_pcm.c',
 )
 
-dep_opusfile = dependency('opusfile', required : true, static : static, fallback : ['opusfile', 'opusfile_dep'])
+dep_opusfile = dependency('opusfile', required : true, fallback : ['opusfile', 'opusfile_dep'])
 
 a_stream_deps = []
 a_stream_libdeps = [dep_opusfile]

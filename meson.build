@@ -164,19 +164,17 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-static = get_option('static') or ['emscripten', 'nx'].contains(host_machine.system())
-
-dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
-dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
-dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
-dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
-dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
-dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
-dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false, static : static, fallback : ['libzip', 'libzip_dep'])
-dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  static : static, fallback : ['cglm', 'cglm_dep'])
-dep_crypto      = dependency('libcrypto',                           required : false, static : static)
-dep_gamemode    = dependency('gamemode',                            required : false, static : static)
+dep_freetype    = dependency('freetype2',                           required : true,  fallback : ['freetype', 'freetype_dep'])
+dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  fallback : ['libpng', 'png_dep'])
+dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true,  fallback : ['sdl2', 'sdl2_dep'])
+dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  fallback : ['libwebp', 'webpdecoder_dep'])
+dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
+dep_zlib        = dependency('zlib',                                required : true,  fallback : ['zlib', 'zlib_dep'])
+dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true,  fallback : ['libzstd', 'libzstd_dep'])
+dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false, fallback : ['libzip', 'libzip_dep'])
+dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  fallback : ['cglm', 'cglm_dep'])
+dep_crypto      = dependency('libcrypto',                           required : false)
+dep_gamemode    = dependency('gamemode',                            required : false)
 
 dep_m           = cc.find_library('m', required : false)
 

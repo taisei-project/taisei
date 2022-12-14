@@ -9,8 +9,8 @@ r_shaderlib_src = files(
 r_shaderlib_libdeps = []
 
 if get_option('shader_transpiler')
-    dep_spvc = dependency('spirv-cross-c-shared', required : true, static : static, fallback : ['SPIRV-Cross', 'spirv_cross_dep'])
-    dep_shaderc = dependency('shaderc', static : static, fallback : ['shaderc', 'shaderc_dep'], required : true)
+    dep_spvc = dependency('spirv-cross-c-shared', required : true, fallback : ['SPIRV-Cross', 'spirv_cross_dep'])
+    dep_shaderc = dependency('shaderc', fallback : ['shaderc', 'shaderc_dep'], required : true)
 
     r_shaderlib_src += files(
         'lang_spirv.c'

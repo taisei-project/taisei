@@ -64,7 +64,7 @@ option(
     'static',
     type : 'boolean',
     value : false,
-    description : 'Build statically linked executable'
+    deprecated : 'prefer_static'
 )
 
 option(

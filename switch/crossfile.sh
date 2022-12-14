@@ -42,6 +42,7 @@ c_link_args = [$(meson_arg_list $LDFLAGS $LIBS $ADDITIONAL_LINK_FLAGS)]
 cpp_args = [$(meson_arg_list $CPPFLAGS $CXXFLAGS)]
 cpp_link_args = [$(meson_arg_list $LDFLAGS $LIBS $ADDITIONAL_LINK_FLAGS)]
 werror = false
+prefer_static = true
 
 [host_machine]
 system = 'nx'
