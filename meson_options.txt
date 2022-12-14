@@ -192,8 +192,8 @@ option(
 
 option(
     'use_libcrypto',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Use libcrypto from OpenSSL for better SHA implementations'
 )
 

@@ -175,7 +175,7 @@ dep_zlib        = dependency('zlib',                                required : t
 dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true)
 dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip)
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
-dep_crypto      = dependency('libcrypto',                           required : false)
+dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
 dep_gamemode    = dependency('gamemode',                            required : false)
 
 dep_m           = cc.find_library('m', required : false)
@@ -187,6 +187,7 @@ dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 taisei_deps = [
     dep_basisu_transcoder,
     dep_cglm,
+    dep_crypto,
     dep_freetype,
     dep_gamemode,
     dep_koishi,
