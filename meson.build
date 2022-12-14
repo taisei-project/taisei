@@ -164,15 +164,15 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-dep_freetype    = dependency('freetype2',                           required : true,  fallback : ['freetype', 'freetype_dep'])
-dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  fallback : ['libpng', 'png_dep'])
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true,  fallback : ['sdl2', 'sdl2_dep'])
-dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  fallback : ['libwebp', 'webpdecoder_dep'])
+dep_freetype    = dependency('freetype2',                           required : true)
+dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
+dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
+dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
-dep_zlib        = dependency('zlib',                                required : true,  fallback : ['zlib', 'zlib_dep'])
-dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true,  fallback : ['libzstd', 'libzstd_dep'])
-dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false, fallback : ['libzip', 'libzip_dep'])
-dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  fallback : ['cglm', 'cglm_dep'])
+dep_zlib        = dependency('zlib',                                required : true)
+dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true)
+dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false)
+dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : false)
 dep_gamemode    = dependency('gamemode',                            required : false)
 
