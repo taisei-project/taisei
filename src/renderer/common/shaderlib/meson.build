@@ -8,21 +8,14 @@ r_shaderlib_src = files(
 
 r_shaderlib_libdeps = []
 
-if get_option('shader_transpiler')
-    dep_spvc = dependency('spirv-cross-c-shared')
-    dep_shaderc = dependency('shaderc')
+opt_shader_transpiler = get_option('shader_transpiler')
+dep_spvc = dependency('spirv-cross-c-shared', required : opt_shader_transpiler)
+dep_shaderc = dependency('shaderc', required : opt_shader_transpiler)
+shader_transpiler_enabled = dep_spvc.found() and dep_shaderc.found()
 
-    r_shaderlib_src += files(
-        'lang_spirv.c'
-    )
-
+if shader_transpiler_enabled
+    r_shaderlib_src += files('lang_spirv.c')
     r_shaderlib_libdeps += [dep_shaderc, dep_spvc]
-
-    if false and host_machine.system() == 'windows' and get_option('b_lto') and get_option('static') and cc.get_id() == 'gcc'
-        warning('LTO is known to break glslang on GCC-mingw64 based toolchains')
-    endif
 else
-    r_shaderlib_src += files(
-        'lang_spirv_stub.c'
-    )
+    r_shaderlib_src += files('lang_spirv_stub.c')
 endif

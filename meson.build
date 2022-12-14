@@ -592,7 +592,7 @@ summary({
 summary({
     'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), get_option('a_default')),
     'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
-    'Shader translation' : get_option('shader_transpiler'),
+    'Shader translation' : shader_transpiler_enabled,
     'ZIP packages' : dep_zip.found(),
     'Stages live reload' : stages_live_reload,
 }, section : 'Features', bool_yn : true)

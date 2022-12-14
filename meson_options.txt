@@ -115,8 +115,8 @@ option(
 
 option(
     'shader_transpiler',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Enable shader trans-compilation (requires shaderc)'
 )
 
