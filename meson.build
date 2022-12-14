@@ -405,22 +405,16 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
 ))
 config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
 
-install_docs = get_option('docs') and host_machine.system() != 'emscripten'
-
 if host_machine.system() == 'windows'
-    if install_docs
-        custom_target('COPYING.txt',
-            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-            input : 'COPYING',
-            output : 'COPYING.txt',
-            install : true,
-            install_dir : doc_path
-        )
-    endif
+    custom_target('COPYING.txt',
+        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
+        input : 'COPYING',
+        output : 'COPYING.txt',
+        install : true,
+        install_dir : doc_path
+    )
 else
-    if install_docs
-        install_data('COPYING', install_dir : doc_path)
-    endif
+    install_data('COPYING', install_dir : doc_path)
 endif
 
 if angle_enabled
@@ -439,7 +433,7 @@ if angle_enabled
     endif
 
     # Where to install the libs (prefix-relative)
-    # Also used in docs/meson.build to install the license
+    # Also used in doc/meson.build to install the license
     angle_install_path = join_paths(lib_path, angle_dir)
 
     # Where the game should look (either absolute or SDL_GetBasePath()-relative, depending on configuration)

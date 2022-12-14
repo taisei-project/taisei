@@ -108,9 +108,9 @@ option(
 
 option(
     'docs',
-    type : 'boolean',
-    value : true,
-    description : 'Build and install documentation'
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Build and install documentation (requires docutils)'
 )
 
 option(
