@@ -122,8 +122,8 @@ option(
 
 option(
     'validate_glsl',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Enable validation of GLSL shaders (requires glslc)'
 )
 
