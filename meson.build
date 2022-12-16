@@ -577,6 +577,13 @@ foreach bindist_target : bindist_targets
     )
 endforeach
 
+meson.add_devenv({
+    'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
+    'TAISEI_GL_DEBUG': '1',
+    # TODO: Add support for this in libkoishi
+    'ASAN_OPTIONS': 'detect_stack_use_after_return=false',
+})
+
 summary({
     'System type' : systype,
     'Build type' : get_option('buildtype'),
