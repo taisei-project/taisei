@@ -172,7 +172,7 @@ dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : t
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
 dep_zlib        = dependency('zlib',                                required : true)
-dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true)
+dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : ['libzstd', 'libzstd_dep'])
 dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip, allow_fallback : true)
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
