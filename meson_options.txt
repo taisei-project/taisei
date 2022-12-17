@@ -100,13 +100,6 @@ option(
 )
 
 option(
-    'debug_opengl',
-    type : 'boolean',
-    value : true,
-    description : 'Enable OpenGL debugging. Create a debug context, enable logging, and crash the game on errors. Only available in debug builds'
-)
-
-option(
     'docs',
     type : 'feature',
     deprecated : {'true' : 'enabled', 'false' : 'disabled'},
