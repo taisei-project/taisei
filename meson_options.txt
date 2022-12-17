@@ -123,36 +123,40 @@ option(
 option(
     'r_default',
     type : 'combo',
-    choices : ['gl33', 'gles20', 'gles30', 'null'],
+    choices : ['auto', 'gl33', 'gles20', 'gles30', 'null'],
     description : 'Which rendering backend to use by default'
 )
 
 option(
     'r_gl33',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL 3.3 Core renderer'
 )
 
 option(
     'r_gles20',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'disabled',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL ES 2.0 renderer (incomplete)'
 )
 
 option(
     'r_gles30',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL ES 3.0 renderer'
 )
 
 option(
     'r_null',
-    type : 'boolean',
-    value : true,
-    description : 'Build the no-op renderer (nothing is displayed)'
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Build the no-op renderer (nothing is displayed). Required for --verify-replay to work properly'
 )
 
 option(
