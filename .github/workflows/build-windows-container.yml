@@ -1,0 +1,34 @@
+name: Build Windows Docker Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        required: true
+        description: "Tag of the image (usually the date: YYYYMMDD)"
+      custom_ref:
+        required: false
+        description: "Commit ref that contains the Dockerfile you want to use (default: master branch)"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ github.event.inputs.custom_ref }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        file: misc/ci/Dockerfile.windows
+        push: true
+        tags: taiseiproject/windows-toolkit:${{ github.event.inputs.image_tag }}
