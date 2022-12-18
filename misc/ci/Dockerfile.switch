@@ -4,8 +4,9 @@ LABEL maintainer="Alice D. <alice@starwitch.productions>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && \
-	apt-get install -y --no-install-recommends \
+RUN apt update && \
+	apt dist-upgrade -yqq && \
+	apt install -y --no-install-recommends \
 		apt-utils \
 		sudo \
 		ca-certificates \
@@ -23,9 +24,10 @@ RUN apt-get update && \
 		python3-docutils \
 		python3-pip \
 		gdebi-core \
+		apt-transport-https \
 		cmake && \
 		apt-get clean && \
-		rm -rf /var/lib/apt/lists/*
+	rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install \
 		meson==0.63.0 \
@@ -33,15 +35,16 @@ RUN pip3 install \
 		zstandard \
 		python-gnupg
 
-RUN wget https://github.com/devkitPro/pacman/releases/latest/download/devkitpro-pacman.amd64.deb && \
-	gdebi -n devkitpro-pacman.amd64.deb && \
-	rm devkitpro-pacman.amd64.deb && \
-	dkp-pacman -Scc --noconfirm
-
 ENV DEVKITPRO=/opt/devkitpro
 ENV PATH=${DEVKITPRO}/tools/bin:$PATH
 
 RUN ln -s /proc/self/mounts /etc/mtab
+
+RUN mkdir -p /usr/local/share/keyring/ && \
+	curl https://apt.devkitpro.org/devkitpro-pub.gpg -o /usr/local/share/keyring/devkitpro-pub.gpg && \
+	echo "deb [signed-by=/usr/local/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
+	apt update && \
+	apt install devkitpro-pacman -yqq
 
 RUN dkp-pacman -Syyu --noconfirm \
 		switch-dev \
