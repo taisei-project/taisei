@@ -158,7 +158,7 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20221218 # cross-compiler with mingw
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
