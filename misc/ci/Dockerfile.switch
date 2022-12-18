@@ -25,9 +25,7 @@ RUN apt update && \
 		python3-pip \
 		gdebi-core \
 		apt-transport-https \
-		cmake && \
-		apt-get clean && \
-	rm -rf /var/lib/apt/lists/*
+		cmake
 
 RUN pip3 install \
 		meson==0.63.0 \
@@ -44,7 +42,9 @@ RUN mkdir -p /usr/local/share/keyring/ && \
 	curl https://apt.devkitpro.org/devkitpro-pub.gpg -o /usr/local/share/keyring/devkitpro-pub.gpg && \
 	echo "deb [signed-by=/usr/local/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \
 	apt update && \
-	apt install devkitpro-pacman -yqq
+	apt install devkitpro-pacman -yqq && \
+	apt-get clean && \
+	rm -rf /var/lib/apt/lists/*
 
 RUN dkp-pacman -Syyu --noconfirm \
 		switch-dev \
