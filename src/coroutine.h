@@ -21,9 +21,6 @@ typedef struct CoTask CoTask;
 typedef struct CoSched CoSched;
 typedef void *(*CoTaskFunc)(void *arg, size_t argsize);
 
-// target for the INVOKE_TASK macro
-extern CoSched *_cosched_global;
-
 typedef enum CoStatus {
 	CO_STATUS_SUSPENDED = KOISHI_SUSPENDED,
 	CO_STATUS_RUNNING   = KOISHI_RUNNING,
@@ -109,6 +106,7 @@ CoTaskEvents *cotask_get_events(CoTask *task);
 void *cotask_malloc(CoTask *task, size_t size) attr_returns_allocated attr_malloc attr_alloc_size(2);
 EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType ent_type) attr_nonnull_all attr_returns_allocated;
 void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events]) attr_nonnull_all;
+CoSched *cotask_get_sched(CoTask *task);
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);
@@ -134,8 +132,6 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg
 	_cosched_new_task(sched, func, arg, arg_size, true, COTASK_DEBUG_INFO(debug_label))
 uint cosched_run_tasks(CoSched *sched);  // returns number of tasks ran
 void cosched_finish(CoSched *sched);
-
-INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched; }
 
 #define TASK_ARGS_TYPE(name) COARGS_##name
 
@@ -349,14 +345,16 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  */
 
 #define INVOKE_TASK(_task, ...) \
-	_internal_INVOKE_TASK(cosched_new_task, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK(THIS_SCHED, cosched_new_task, _task, ##__VA_ARGS__)
 #define INVOKE_SUBTASK(_task, ...) \
-	_internal_INVOKE_TASK(cosched_new_subtask, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK(THIS_SCHED, cosched_new_subtask, _task, ##__VA_ARGS__)
+#define SCHED_INVOKE_TASK(_sched, _task, ...) \
+	_internal_INVOKE_TASK(_sched, cosched_new_task, _task, ##__VA_ARGS__)
 
-#define _internal_INVOKE_TASK(task_constructor, name, ...) ( \
+#define _internal_INVOKE_TASK(sched, task_constructor, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	task_constructor( \
-		_cosched_global, \
+		sched, \
 		COTASKTHUNK_##name, \
 		(&(TASK_ARGS_TYPE(name)) { __VA_ARGS__ }), \
 		sizeof(TASK_ARGS_TYPE(name)), \
@@ -378,14 +376,16 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  */
 
 #define INVOKE_TASK_DELAYED(_delay, _task, ...) \
-	_internal_INVOKE_TASK_DELAYED(cosched_new_task, _delay, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK_DELAYED(THIS_SCHED, cosched_new_task, _delay, _task, ##__VA_ARGS__)
 #define INVOKE_SUBTASK_DELAYED(_delay, _task, ...) \
-	_internal_INVOKE_TASK_DELAYED(cosched_new_subtask, _delay, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK_DELAYED(THIS_SCHED, cosched_new_subtask, _delay, _task, ##__VA_ARGS__)
+#define SCHED_INVOKE_TASK_DELAYED(_sched, _delay, _task, ...) \
+	_internal_INVOKE_TASK_DELAYED(_sched, cosched_new_task, _delay, _task, ##__VA_ARGS__)
 
-#define _internal_INVOKE_TASK_DELAYED(task_constructor, _delay, name, ...) ( \
+#define _internal_INVOKE_TASK_DELAYED(sched, task_constructor, _delay, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	task_constructor( \
-		_cosched_global, \
+		sched, \
 		COTASKTHUNKDELAY_##name, \
 		(&(TASK_ARGSDELAY(name)) { \
 			.real_args = { __VA_ARGS__ }, \
@@ -411,19 +411,23 @@ INLINE void cosched_set_invoke_target(CoSched *sched) { _cosched_global = sched;
  */
 
 #define INVOKE_TASK_WHEN(_event, _task, ...) \
-	_internal_INVOKE_TASK_ON_EVENT(cosched_new_task, false, _event, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK_ON_EVENT(THIS_SCHED, cosched_new_task, false, _event, _task, ##__VA_ARGS__)
 #define INVOKE_SUBTASK_WHEN(_event, _task, ...) \
-	_internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, false, _event, _task, ##__VA_ARGS__)
+	_internal_INVOKE_TASK_ON_EVENT(THIS_SCHED, cosched_new_subtask, false, _event, _task, ##__VA_ARGS__)
+#define SCHED_INVOKE_TASK_WHEN(_sched, _event, _task, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(_sched, cosched_new_task, false, _event, _task, ##__VA_ARGS__)
 
 #define INVOKE_TASK_AFTER(_event, _task, ...) \
-	_internal_INVOKE_TASK_ON_EVENT(cosched_new_task, true, _event, _task, ## __VA_ARGS__)
+	_internal_INVOKE_TASK_ON_EVENT(THIS_SCHED, cosched_new_task, true, _event, _task, ## __VA_ARGS__)
 #define INVOKE_SUBTASK_AFTER(_event, _task, ...) \
-	_internal_INVOKE_TASK_ON_EVENT(cosched_new_subtask, true, _event, _task, ## __VA_ARGS__)
+	_internal_INVOKE_TASK_ON_EVENT(THIS_SCHED, cosched_new_subtask, true, _event, _task, ## __VA_ARGS__)
+#define SCHED_INVOKE_TASK_AFTER(_sched, _event, _task, ...) \
+	_internal_INVOKE_TASK_ON_EVENT(_sched, cosched_new_task, true, _event, _task, ##__VA_ARGS__)
 
-#define _internal_INVOKE_TASK_ON_EVENT(task_constructor, is_unconditional, _event, name, ...) ( \
+#define _internal_INVOKE_TASK_ON_EVENT(sched, task_constructor, is_unconditional, _event, name, ...) ( \
 	(void)COTASK_UNUSED_CHECK_##name, \
 	task_constructor( \
-		_cosched_global, \
+		sched, \
 		COTASKTHUNKCOND_##name, \
 		(&(TASK_ARGSCOND(name)) { \
 			.real_args = { __VA_ARGS__ }, \
@@ -463,9 +467,9 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define TASK_INDIRECT_INIT(iface, task) \
 	{ ._cotask_##iface##_thunk = COTASKTHUNK_##task } \
 
-#define INVOKE_TASK_INDIRECT_(task_constructor, iface, taskhandle, ...) ( \
+#define INVOKE_TASK_INDIRECT_(sched, task_constructor, iface, taskhandle, ...) ( \
 	task_constructor( \
-		_cosched_global, \
+		sched, \
 		taskhandle._cotask_##iface##_thunk, \
 		(&(TASK_IFACE_ARGS_TYPE(iface)) { __VA_ARGS__ }), \
 		sizeof(TASK_IFACE_ARGS_TYPE(iface)), \
@@ -473,14 +477,18 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 	) \
 )
 
+#define SCHED_INVOKE_TASK_INDIRECT(_sched, _iface, _handle, ...) \
+	INVOKE_TASK_INDIRECT_(_sched, cosched_new_task, _iface, _handle, ##__VA_ARGS__)
 #define INVOKE_TASK_INDIRECT(_iface, _handle, ...) \
-	INVOKE_TASK_INDIRECT_(cosched_new_task, _iface, _handle, ##__VA_ARGS__)
+	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_task, _iface, _handle, ##__VA_ARGS__)
 #define INVOKE_SUBTASK_INDIRECT(_iface, _handle, ...) \
-	INVOKE_TASK_INDIRECT_(cosched_new_subtask, iface, _handle, ##__VA_ARGS__)
+	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_subtask, iface, _handle, ##__VA_ARGS__)
 
 #define THIS_TASK         cotask_box(cotask_active())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
 #define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
+
+#define THIS_SCHED        cotask_get_sched(cotask_active())
 
 #define TASK_HOST_ENT(ent_struct_type) \
 	ENT_CAST(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)

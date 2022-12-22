@@ -108,6 +108,8 @@ float stage_get_view_shake_strength(void);
 
 void stage_load_quicksave(void);
 
+CoSched *stage_get_sched(void);
+
 #ifdef DEBUG
 #define HAVE_SKIP_MODE
 #endif

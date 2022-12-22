@@ -80,6 +80,7 @@ struct CoTaskData {
 	LIST_INTERFACE(CoTaskData);
 
 	CoTask *task;
+	CoSched *sched;
 
 	CoTaskData *master;              // AKA supertask
 	LIST_ANCHOR(CoTaskData) slaves;  // AKA subtasks
@@ -121,6 +122,7 @@ struct CoTaskData {
 
 typedef struct CoTaskInitData {
 	CoTask *task;
+	CoSched *sched;
 	CoTaskFunc func;
 	void *func_arg;
 	size_t func_arg_size;
@@ -129,8 +131,6 @@ typedef struct CoTaskInitData {
 
 static LIST_ANCHOR(CoTask) task_pool;
 static koishi_coroutine_t *co_main;
-
-CoSched *_cosched_global;
 
 #ifdef CO_TASK_STATS
 static struct {
@@ -493,7 +493,7 @@ static void cotask_enslave(CoTaskData *master_data, CoTaskData *slave_data) {
 static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *init_data) {
 	task->data = data;
 	data->task = task;
-
+	data->sched = init_data->sched;
 	data->mem.onstack_alloc_head = data->mem.onstack_alloc_area;
 
 	CoTaskData *master_data = init_data->master_task_data;
@@ -898,6 +898,10 @@ CoStatus cotask_status(CoTask *task) {
 	return koishi_state(&task->ko);
 }
 
+CoSched *cotask_get_sched(CoTask *task) {
+	return get_task_data(task)->sched;
+}
+
 EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 	CoTaskData *task_data = get_task_data(task);
 	assert(task_data->bound_ent.ent == 0);
@@ -994,6 +998,7 @@ void cosched_init(CoSched *sched) {
 }
 
 CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
+	assume(sched != NULL);
 	CoTask *task = cotask_new_internal(cotask_entry);
 
 #ifdef CO_TASK_DEBUG
@@ -1002,6 +1007,7 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg
 
 	CoTaskInitData init_data = { 0 };
 	init_data.task = task;
+	init_data.sched = sched;
 	init_data.func = func;
 	init_data.func_arg = arg;
 	init_data.func_arg_size = arg_size;

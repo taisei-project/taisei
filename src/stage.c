@@ -39,7 +39,6 @@ typedef struct StageFrameState {
 	bool quickload_requested;
 	uint32_t dynstage_generation;
 	int transition_delay;
-	int logic_calls;
 	int desync_check_freq;
 	uint16_t last_replay_fps;
 	float view_shake;
@@ -863,8 +862,6 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
 
-	++fstate->logic_calls;
-
 	stage_update_fps(fstate);
 
 	if(stage_is_skip_mode()) {
@@ -874,24 +871,17 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	fapproach_p(&fstate->view_shake, 0, 1);
 	fapproach_asymptotic_p(&fstate->view_shake, 0, 0.05, 1e-2);
 
-	if(global.replay.input.replay != NULL) {
-		replay_input(fstate);
-	} else {
-		stage_input(fstate);
-
-		if(fstate->dynstage_generation != dynstage_get_generation()) {
-			log_info("Stages library updated, attempting to hot-reload");
-			stage_do_quicksave(fstate, true);   // no-op if user has a manual save
-			stage_do_quickload(fstate);
-		}
+	if(
+		global.replay.input.replay == NULL &&
+		fstate->dynstage_generation != dynstage_get_generation()
+	) {
+		log_info("Stages library updated, attempting to hot-reload");
+		stage_do_quicksave(fstate, true);   // no-op if user has a manual save
+		stage_do_quickload(fstate);
 	}
 
 	if(global.gameover != GAMEOVER_TRANSITIONING) {
 		cosched_run_tasks(&fstate->sched);
-
-		if(!stage_should_yield()) {
-			stage->procs->event();
-		}
 
 		if(global.gameover == GAMEOVER_SCORESCREEN && global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY) {
 			StageClearBonus b;
@@ -902,8 +892,6 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		if(stage->type == STAGE_SPELL && !global.boss && !fstate->transition_delay) {
 			fstate->transition_delay = 120;
 		}
-
-		stage->procs->update();
 	}
 
 	uint16_t desync_check = (rng_u64() ^ global.plr.points) & 0xFFFF;
@@ -930,8 +918,6 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 			leave_replay_mode(fstate, &global.replay.input);
 		}
 	}
-
-	stage_logic();
 
 	if(fstate->transition_delay) {
 		if(!--fstate->transition_delay) {
@@ -993,6 +979,33 @@ static RenderFrameAction stage_render_frame(void *arg) {
 static void stage_end_loop(void *ctx);
 
 static void stage_stub_proc(void) { }
+
+TASK(stage_comain, { StageFrameState *fstate; }) {
+	StageFrameState *fstate = ARGS.fstate;
+	StageInfo *stage = fstate->stage;
+
+	stage->procs->begin();
+	player_stage_post_init(&global.plr);
+
+	if(global.stage->type != STAGE_SPELL) {
+		display_stage_title(stage);
+	}
+
+	for(;;YIELD) {
+		if(global.replay.input.replay != NULL) {
+			replay_input(fstate);
+		} else {
+			stage_input(fstate);
+		}
+
+		if(!stage_should_yield()) {
+			stage->procs->event();
+		}
+
+		stage->procs->update();
+		stage_logic();
+	}
+}
 
 static void _stage_enter(
 	StageInfo *stage, CallChain next, Replay *quickload, bool quicksave_is_automatic
@@ -1097,7 +1110,6 @@ static void _stage_enter(
 
 	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
 	cosched_init(&fstate->sched);
-	cosched_set_invoke_target(&fstate->sched);
 	fstate->stage = stage;
 	fstate->cc = next;
 	fstate->quicksave = quickload;
@@ -1109,17 +1121,11 @@ static void _stage_enter(
 
 	skipstate_init();
 
-	stage->procs->begin();
-	player_stage_post_init(&global.plr);
-
-	if(global.stage->type != STAGE_SPELL) {
-		display_stage_title(stage);
-	}
-
 	if(is_quickloading(fstate)) {
 		audio_sfx_set_enabled(false);
 	}
 
+	SCHED_INVOKE_TASK(&fstate->sched, stage_comain, fstate);
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }
 
@@ -1212,4 +1218,8 @@ float stage_get_view_shake_strength(void) {
 
 void stage_load_quicksave(void) {
 	stage_do_quickload(NOT_NULL(_current_stage_state));
+}
+
+CoSched *stage_get_sched(void) {
+	return &NOT_NULL(_current_stage_state)->sched;
 }
