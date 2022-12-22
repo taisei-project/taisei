@@ -9,10 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-// TODO: Remove this file and adjust includes.
-
-#include "coroutine/coroutine.h"
-#include "coroutine/cotask.h"
-#include "coroutine/coevent.h"
-#include "coroutine/cosched.h"
-#include "coroutine/taskdsl.h"
+void coroutines_init(void);
+void coroutines_shutdown(void);
+void coroutines_draw_stats(void);

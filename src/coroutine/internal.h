@@ -9,10 +9,13 @@
 #pragma once
 #include "taisei.h"
 
-// TODO: Remove this file and adjust includes.
+#include "log.h"
+#include "util.h"
 
-#include "coroutine/coroutine.h"
-#include "coroutine/cotask.h"
-#include "coroutine/coevent.h"
-#include "coroutine/cosched.h"
-#include "coroutine/taskdsl.h"
+#include "coroutine.h"
+#include "cotask.h"
+#include "coevent.h"
+#include "cosched.h"
+
+#include "cotask_internal.h"
+#include "coevent_internal.h"

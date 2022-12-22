@@ -60,7 +60,6 @@ taisei_src = files(
     'color.c',
     'common_tasks.c',
     'config.c',
-    'coroutine.c',
     'credits.c',
     'dialog.c',
     'difficulty.c',
@@ -124,6 +123,7 @@ if host_machine.system() == 'nx'
 endif
 
 subdir('audio')
+subdir('coroutine')
 subdir('cutscenes')
 subdir('dialog')
 subdir('eventloop')
@@ -142,6 +142,7 @@ subdir('vfs')
 
 taisei_src += [
     audio_src,
+    coroutine_src,
     cutscenes_src,
     dialog_src,
     eventloop_src,

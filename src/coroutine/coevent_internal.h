@@ -9,10 +9,14 @@
 #pragma once
 #include "taisei.h"
 
-// TODO: Remove this file and adjust includes.
+// #define EVT_DEBUG
 
-#include "coroutine/coroutine.h"
-#include "coroutine/cotask.h"
-#include "coroutine/coevent.h"
-#include "coroutine/cosched.h"
-#include "coroutine/taskdsl.h"
+#ifdef EVT_DEBUG
+	#undef EVT_DEBUG
+	#define EVT_DEBUG(...) log_debug(__VA_ARGS__)
+#else
+	#define EVT_DEBUG(...) ((void)0)
+#endif
+
+void coevent_cleanup_subscribers(CoEvent *evt);
+void coevent_add_subscriber(CoEvent *evt, CoTask *task);

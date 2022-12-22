@@ -4,165 +4,21 @@
  * ---
  * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
- */
+*/
 
 #include "taisei.h"
 
-#include "coroutine.h"
-#include "util.h"
+#include "internal.h"
 
-// TODO refactor this intro a few smaller files under coroutine/
-
-#ifdef ADDRESS_SANITIZER
-	#include <sanitizer/asan_interface.h>
-#else
-	#define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)0)
-#endif
-
-#ifdef __EMSCRIPTEN__
-	#define CO_STACK_SIZE (64 * 1024)
-#else
-	#define CO_STACK_SIZE (256 * 1024)
-#endif
-
-// #define EVT_DEBUG
-
-#ifdef DEBUG
-	#define CO_TASK_STATS
-#endif
-
-#ifdef CO_TASK_DEBUG
-	#define TASK_DEBUG(...) log_debug(__VA_ARGS__)
-#else
-	#define TASK_DEBUG(...) ((void)0)
-#endif
-
-#ifdef EVT_DEBUG
-	#undef EVT_DEBUG
-	#define EVT_DEBUG(...) log_debug(__VA_ARGS__)
-#else
-	#define EVT_DEBUG(...) ((void)0)
-#endif
-
-enum {
-	COTASK_WAIT_NONE,
-	COTASK_WAIT_DELAY,
-	COTASK_WAIT_EVENT,
-	COTASK_WAIT_SUBTASKS,
-};
-
-#define MEM_AREA_SIZE (1 << 12)
-#define MEM_ALLOC_ALIGNMENT alignof(max_align_t)
-#define MEM_ALIGN_SIZE(x) (x + (MEM_ALLOC_ALIGNMENT - 1)) & ~(MEM_ALLOC_ALIGNMENT - 1)
-
-typedef struct CoTaskData CoTaskData;
-
-struct CoTask {
-	LIST_INTERFACE(CoTask);
-	koishi_coroutine_t ko;
-
-	// Pointer to a control structure on the coroutine's stack
-	CoTaskData *data;
-
-	uint32_t unique_id;
-
-#ifdef CO_TASK_DEBUG
-	char debug_label[256];
-#endif
-};
-
-typedef struct CoTaskHeapMemChunk {
-	struct CoTaskHeapMemChunk *next;
-	alignas(MEM_ALLOC_ALIGNMENT) char data[];
-} CoTaskHeapMemChunk;
-
-struct CoTaskData {
-	LIST_INTERFACE(CoTaskData);
-
-	CoTask *task;
-	CoSched *sched;
-
-	CoTaskData *master;              // AKA supertask
-	LIST_ANCHOR(CoTaskData) slaves;  // AKA subtasks
-
-	BoxedEntity bound_ent;
-	CoTaskEvents events;
-
-	bool finalizing;
-
-	struct {
-		CoWaitResult result;
-
-		union {
-			struct {
-				int remaining;
-			} delay;
-
-			struct {
-				CoEvent *pevent;
-				CoEventSnapshot snapshot;
-			} event;
-		};
-
-		uint wait_type;
-	} wait;
-
-	struct {
-		EntityInterface *ent;
-		CoEvent *events;
-		uint num_events;
-	} hosted;
-
-	struct {
-		CoTaskHeapMemChunk *onheap_alloc_head;
-		char *onstack_alloc_head;
-		alignas(MEM_ALLOC_ALIGNMENT) char onstack_alloc_area[MEM_AREA_SIZE];
-	} mem;
-};
-
-typedef struct CoTaskInitData {
-	CoTask *task;
-	CoSched *sched;
-	CoTaskFunc func;
-	void *func_arg;
-	size_t func_arg_size;
-	CoTaskData *master_task_data;
-} CoTaskInitData;
-
-static LIST_ANCHOR(CoTask) task_pool;
+static CoTaskList task_pool;
 static koishi_coroutine_t *co_main;
 
-#ifdef CO_TASK_STATS
-static struct {
-	size_t num_tasks_allocated;
-	size_t num_tasks_in_use;
-	size_t num_switches_this_frame;
-	size_t peak_stack_usage;
-} cotask_stats;
-
-#define STAT_VAL(name) (cotask_stats.name)
-#define STAT_VAL_SET(name, value) ((cotask_stats.name) = (value))
-
-// enable stack usage tracking (loose)
-#ifndef _WIN32
-// NOTE: disabled by default because of heavy performance overhead under ASan
-// #define CO_TASK_STATS_STACK
+#ifdef CO_TASK_DEBUG
+size_t _cotask_debug_event_id;
 #endif
 
-#else // CO_TASK_STATS
-
-#define STAT_VAL(name) ((void)0)
-#define STAT_VAL_SET(name, value) ((void)0)
-
-#endif // CO_TASK_STATS
-
-#define STAT_VAL_ADD(name, value) STAT_VAL_SET(name, STAT_VAL(name) + (value))
-
-#ifdef CO_TASK_DEBUG
-static size_t debug_event_id;
-#define TASK_DEBUG_EVENT(ev) uint64_t ev = debug_event_id++
-#else
-#define TASK_DEBUG_EVENT(ev) ((void)0)
+#ifdef CO_TASK_STATS
+CoTaskStats cotask_stats;
 #endif
 
 #ifdef CO_TASK_STATS_STACK
@@ -294,6 +150,18 @@ static void estimate_stack_usage(CoTask *task) { }
 
 #endif // CO_TASK_STATS_STACK
 
+
+void cotask_global_init(void) {
+	co_main = koishi_active();
+}
+
+void cotask_global_shutdown(void) {
+	for(CoTask *task; (task = alist_pop(&task_pool));) {
+		koishi_deinit(&task->ko);
+		free(task);
+	}
+}
+
 attr_nonnull_all attr_returns_nonnull
 INLINE CoTask *cotask_from_koishi_coroutine(koishi_coroutine_t *co) {
 	return CASTPTR_ASSUME_ALIGNED((char*)co - offsetof(CoTask, ko), CoTask);
@@ -316,7 +184,7 @@ CoTask *cotask_unbox(BoxedTask box) {
 	return NULL;
 }
 
-static CoTask *cotask_unbox_notnull(BoxedTask box) {
+CoTask *cotask_unbox_notnull(BoxedTask box) {
 	CoTask *task = NOT_NULL((void*)box.ptr);
 
 	if(task->unique_id == box.unique_id) {
@@ -326,7 +194,7 @@ static CoTask *cotask_unbox_notnull(BoxedTask box) {
 	return NULL;
 }
 
-static CoTask *cotask_new_internal(koishi_entrypoint_t entry_point) {
+CoTask *cotask_new_internal(koishi_entrypoint_t entry_point) {
 	CoTask *task;
 	STAT_VAL_ADD(num_tasks_in_use, 1);
 
@@ -362,21 +230,13 @@ static CoTask *cotask_new_internal(koishi_entrypoint_t entry_point) {
 	return task;
 }
 
-static void *cotask_resume_internal(CoTask *task, void *arg) {
+void *cotask_resume_internal(CoTask *task, void *arg) {
 	TASK_DEBUG_EVENT(ev);
 	TASK_DEBUG("[%zu] Resuming task %s", ev, task->debug_label);
 	STAT_VAL_ADD(num_switches_this_frame, 1);
 	arg = koishi_resume(&task->ko, arg);
 	TASK_DEBUG("[%zu] koishi_resume returned (%s)", ev, task->debug_label);
 	return arg;
-}
-
-attr_returns_nonnull attr_nonnull_all
-INLINE CoTaskData *get_task_data(CoTask *task) {
-	CoTaskData *data = task->data;
-	assume(data != NULL);
-	assume(data->task == task);
-	return data;
 }
 
 static void cancel_task_events(CoTaskData *task_data) {
@@ -390,10 +250,8 @@ static void cancel_task_events(CoTaskData *task_data) {
 	COEVENT_CANCEL_ARRAY(task_data->events);
 }
 
-static void coevent_cleanup_subscribers(CoEvent *evt);
-
 static bool cotask_finalize(CoTask *task) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 
 	TASK_DEBUG_EVENT(ev);
 
@@ -504,7 +362,7 @@ static void cotask_entry_setup(CoTask *task, CoTaskData *data, CoTaskInitData *i
 	COEVENT_INIT_ARRAY(data->events);
 }
 
-static void *cotask_entry(void *varg) {
+void *cotask_entry(void *varg) {
 	CoTaskData data = { 0 };
 	CoTaskInitData *init_data = varg;
 	CoTask *task = init_data->task;
@@ -568,7 +426,11 @@ static void cotask_unsafe_cancel(CoTask *task) {
 	TASK_DEBUG("[%zu] End canceling task %s", ev, task->debug_label);
 }
 
-static void *cotask_cancel_in_safe_context(void *a);
+static void *cotask_cancel_in_safe_context(void *arg) {
+	CoTask *victim = arg;
+	cotask_unsafe_cancel(victim);
+	return NULL;
+}
 
 static void cotask_force_cancel(CoTask *task) {
 	koishi_coroutine_t *ctx = koishi_active();
@@ -603,12 +465,6 @@ static void cotask_force_cancel(CoTask *task) {
 	cotask_free(cancel_task);
 }
 
-static void *cotask_cancel_in_safe_context(void *arg) {
-	CoTask *victim = arg;
-	cotask_unsafe_cancel(victim);
-	return NULL;
-}
-
 bool cotask_cancel(CoTask *task) {
 	if(!task || cotask_status(task) == CO_STATUS_DEAD) {
 		return false;
@@ -619,50 +475,16 @@ bool cotask_cancel(CoTask *task) {
 }
 
 static void *cotask_force_resume(CoTask *task, void *arg) {
-	attr_unused CoTaskData *task_data = get_task_data(task);
+	attr_unused CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
 	assert(!task_data->bound_ent.ent || ENT_UNBOX(task_data->bound_ent));
 	return cotask_resume_internal(task, arg);
 }
 
 static void *cotask_wake_and_resume(CoTask *task, void *arg) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	task_data->wait.wait_type = COTASK_WAIT_NONE;
 	return cotask_force_resume(task, arg);
-}
-
-CoEventSnapshot coevent_snapshot(const CoEvent *evt) {
-	return (CoEventSnapshot) {
-		.unique_id = evt->unique_id,
-		.num_signaled = evt->num_signaled,
-	};
-}
-
-CoEventStatus coevent_poll(const CoEvent *evt, const CoEventSnapshot *snap) {
-#if 0
-	EVT_DEBUG("[%p]", (void*)evt);
-	EVT_DEBUG("evt->unique_id     == %u", evt->unique_id);
-	EVT_DEBUG("snap->unique_id    == %u", snap->unique_id);
-	EVT_DEBUG("evt->num_signaled  == %u", evt->num_signaled);
-	EVT_DEBUG("snap->num_signaled == %u", snap->num_signaled);
-#endif
-
-	if(
-		evt->unique_id != snap->unique_id ||
-		evt->num_signaled < snap->num_signaled ||
-		evt->unique_id == 0
-	) {
-		EVT_DEBUG("[%p / %u] Event was canceled", (void*)evt, evt->unique_id);
-		return CO_EVENT_CANCELED;
-	}
-
-	if(evt->num_signaled > snap->num_signaled) {
-		EVT_DEBUG("[%p / %u] Event was signaled", (void*)evt, evt->unique_id);
-		return CO_EVENT_SIGNALED;
-	}
-
-	// EVT_DEBUG("Event hasn't changed; waiting...");
-	return CO_EVENT_PENDING;
 }
 
 static bool cotask_do_wait(CoTaskData *task_data) {
@@ -706,7 +528,7 @@ static bool cotask_do_wait(CoTaskData *task_data) {
 }
 
 void *cotask_resume(CoTask *task, void *arg) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 
 	if(task_data->bound_ent.ent && !ENT_UNBOX(task_data->bound_ent)) {
 		cotask_force_cancel(task);
@@ -742,7 +564,7 @@ static inline CoWaitResult cotask_wait_init(CoTaskData *task_data, char wait_typ
 
 int cotask_wait(int delay) {
 	CoTask *task = cotask_active();
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
 
 	if(delay == 1) {
@@ -762,7 +584,7 @@ int cotask_wait(int delay) {
 
 int cotask_wait_subtasks(void) {
 	CoTask *task = cotask_active();
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
 
 	cotask_wait_init(task_data, COTASK_WAIT_SUBTASKS);
@@ -801,12 +623,12 @@ static void *_cotask_malloc(CoTaskData *task_data, size_t size, bool allow_heap_
 }
 
 void *cotask_malloc(CoTask *task, size_t size) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	return _cotask_malloc(task_data, size, true);
 }
 
 EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType ent_type) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	assume(task_data->hosted.ent == NULL);
 	EntityInterface *ent = _cotask_malloc(task_data, ent_size, false);
 	ent_register(ent, ent_type);
@@ -815,7 +637,7 @@ EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType en
 }
 
 void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events]) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	assume(task_data->hosted.events == NULL);
 	assume(task_data->hosted.num_events == 0);
 	assume(num_events > 0);
@@ -824,31 +646,9 @@ void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events
 	_coevent_array_action(num_events, events, coevent_init);
 }
 
-static bool subscribers_array_predicate(const void *pelem, void *userdata) {
-	return cotask_unbox_notnull(*(const BoxedTask*)pelem);
-}
-
-static void coevent_cleanup_subscribers(CoEvent *evt) {
-	if(evt->subscribers.num_elements == 0) {
-		return;
-	}
-
-	attr_unused uint prev_num_subs = evt->subscribers.num_elements;
-	dynarray_filter(&evt->subscribers, subscribers_array_predicate, NULL);
-	attr_unused uint new_num_subs = evt->subscribers.num_elements;
-	EVT_DEBUG("Event %p num subscribers %u -> %u", (void*)evt, prev_num_subs, new_num_subs);
-}
-
-static void coevent_add_subscriber(CoEvent *evt, CoTask *task) {
-	EVT_DEBUG("Event %p (num=%u; capacity=%u)", (void*)evt, evt->subscribers.num_elements, evt->subscribers.capacity);
-	EVT_DEBUG("Subscriber: %s", task->debug_label);
-
-	*dynarray_append_with_min_capacity(&evt->subscribers, 4) = cotask_box(task);
-}
-
 static CoWaitResult cotask_wait_event_internal(CoEvent *evt) {
 	CoTask *task = cotask_active();
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 
 	coevent_add_subscriber(evt, task);
 
@@ -899,11 +699,11 @@ CoStatus cotask_status(CoTask *task) {
 }
 
 CoSched *cotask_get_sched(CoTask *task) {
-	return get_task_data(task)->sched;
+	return cotask_get_data(task)->sched;
 }
 
 EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->bound_ent.ent == 0);
 
 	if(ent == NULL) {
@@ -916,141 +716,11 @@ EntityInterface *(cotask_bind_to_entity)(CoTask *task, EntityInterface *ent) {
 }
 
 CoTaskEvents *cotask_get_events(CoTask *task) {
-	CoTaskData *task_data = get_task_data(task);
+	CoTaskData *task_data = cotask_get_data(task);
 	return &task_data->events;
 }
 
-void coevent_init(CoEvent *evt) {
-	static uint32_t g_uid;
-	uint32_t uid = ++g_uid;
-	EVT_DEBUG("Init event %p (uid = %u)", (void*)evt, uid);
-	*evt = (CoEvent) { .unique_id = uid };
-	assert(g_uid != 0);
-}
-
-static void coevent_wake_subscribers(CoEvent *evt, uint num_subs, BoxedTask subs[num_subs]) {
-	for(int i = 0; i < num_subs; ++i) {
-		CoTask *task = cotask_unbox_notnull(subs[i]);
-
-		if(task && cotask_status(task) != CO_STATUS_DEAD) {
-			EVT_DEBUG("Resume CoEvent{%p} subscriber %s", (void*)evt, task->debug_label);
-			cotask_resume(task, NULL);
-		}
-	}
-}
-
-void coevent_signal(CoEvent *evt) {
-	if(UNLIKELY(evt->unique_id == 0)) {
-		return;
-	}
-
-	++evt->num_signaled;
-	EVT_DEBUG("Signal event %p (uid = %u; num_signaled = %u)", (void*)evt, evt->unique_id, evt->num_signaled);
-	assert(evt->num_signaled != 0);
-
-	if(evt->subscribers.num_elements) {
-		BoxedTask subs_snapshot[evt->subscribers.num_elements];
-		memcpy(subs_snapshot, evt->subscribers.data, sizeof(subs_snapshot));
-		evt->subscribers.num_elements = 0;
-		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
-	}
-}
-
-void coevent_signal_once(CoEvent *evt) {
-	if(!evt->num_signaled) {
-		coevent_signal(evt);
-	}
-}
-
-void coevent_cancel(CoEvent *evt) {
-	TASK_DEBUG_EVENT(ev);
-
-	if(evt->unique_id == 0) {
-		EVT_DEBUG("[%lu] Event %p already canceled", ev, (void*)evt);
-		return;
-	}
-
-	EVT_DEBUG("[%lu] BEGIN Cancel event %p (uid = %u; num_signaled = %u)", ev,  (void*)evt, evt->unique_id, evt->num_signaled);
-	EVT_DEBUG("[%lu] SUBS = %p", ev,  (void*)evt->subscribers.data);
-	evt->unique_id = 0;
-
-	if(evt->subscribers.num_elements) {
-		BoxedTask subs_snapshot[evt->subscribers.num_elements];
-		memcpy(subs_snapshot, evt->subscribers.data, sizeof(subs_snapshot));
-		dynarray_free_data(&evt->subscribers);
-		coevent_wake_subscribers(evt, ARRAY_SIZE(subs_snapshot), subs_snapshot);
-		// CAUTION: no modifying evt after this point, it may be invalidated
-	} else {
-		dynarray_free_data(&evt->subscribers);
-	}
-
-	EVT_DEBUG("[%lu] END Cancel event %p", ev, (void*)evt);
-}
-
-void _coevent_array_action(uint num, CoEvent *events, void (*func)(CoEvent*)) {
-	for(uint i = 0; i < num; ++i) {
-		func(events + i);
-	}
-}
-
-void cosched_init(CoSched *sched) {
-	memset(sched, 0, sizeof(*sched));
-}
-
-CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
-	assume(sched != NULL);
-	CoTask *task = cotask_new_internal(cotask_entry);
-
-#ifdef CO_TASK_DEBUG
-	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);
-#endif
-
-	CoTaskInitData init_data = { 0 };
-	init_data.task = task;
-	init_data.sched = sched;
-	init_data.func = func;
-	init_data.func_arg = arg;
-	init_data.func_arg_size = arg_size;
-
-	if(is_subtask) {
-		init_data.master_task_data = get_task_data(cotask_active());
-		assert(init_data.master_task_data != NULL);
-	}
-
-	alist_append(&sched->pending_tasks, task);
-	cotask_resume_internal(task, &init_data);
-
-	assert(cotask_status(task) == CO_STATUS_SUSPENDED || cotask_status(task) == CO_STATUS_DEAD);
-
-	return task;
-}
-
-uint cosched_run_tasks(CoSched *sched) {
-	alist_merge_tail(&sched->tasks, &sched->pending_tasks);
-
-	uint ran = 0;
-
-	TASK_DEBUG("---------------------------------------------------------------");
-	for(CoTask *t = sched->tasks.first, *next; t; t = next) {
-		next = t->next;
-
-		if(cotask_status(t) == CO_STATUS_DEAD) {
-			TASK_DEBUG("<!> %s", t->debug_label);
-			alist_unlink(&sched->tasks, t);
-			cotask_free(t);
-		} else {
-			TASK_DEBUG(">>> %s", t->debug_label);
-			assert(cotask_status(t) == CO_STATUS_SUSPENDED);
-			cotask_resume(t, NULL);
-			++ran;
-		}
-	}
-	TASK_DEBUG("---------------------------------------------------------------");
-
-	return ran;
-}
-
-static void force_finish_task(CoTask *task) {
+void cotask_force_finish(CoTask *task) {
 	TASK_DEBUG("Finishing task %s", task->debug_label);
 
 	if(task->data) {
@@ -1061,141 +731,4 @@ static void force_finish_task(CoTask *task) {
 	}
 
 	cotask_free(task);
-}
-
-typedef ht_ptr2int_t events_hashset;
-
-static uint gather_blocking_events(CoTaskList *tasks, events_hashset *events) {
-	uint n = 0;
-
-	for(CoTask *t = tasks->first; t; t = t->next) {
-		if(!t->data) {
-			continue;
-		}
-
-		CoTaskData *tdata = t->data;
-
-		if(tdata->wait.wait_type != COTASK_WAIT_EVENT) {
-			continue;
-		}
-
-		CoEvent *e = tdata->wait.event.pevent;
-
-		if(e->unique_id != tdata->wait.event.snapshot.unique_id) {
-			// event not valid? (probably should not happen)
-			continue;
-		}
-
-		ht_set(events, e, e->unique_id);
-		++n;
-	}
-
-	return n;
-}
-
-static void cancel_blocking_events(CoSched *sched) {
-	events_hashset events;
-	ht_create(&events);
-
-	gather_blocking_events(&sched->tasks, &events);
-	gather_blocking_events(&sched->pending_tasks, &events);
-
-	ht_ptr2int_iter_t iter;
-	ht_iter_begin(&events, &iter);
-
-	for(;iter.has_data; ht_iter_next(&iter)) {
-		CoEvent *e = iter.key;
-		if(e->unique_id == iter.value) {
-			// NOTE: wakes subscribers, which may cancel/invalidate other events before we do.
-			// This is why we snapshot unique_id.
-			// We assume that the memory backing *e is safe to access, however.
-			coevent_cancel(e);
-		}
-	}
-
-	ht_destroy(&events);
-}
-
-static void finish_task_list(CoTaskList *tasks) {
-	for(CoTask *t; (t = alist_pop(tasks));) {
-		force_finish_task(t);
-	}
-}
-
-void cosched_finish(CoSched *sched) {
-	// First cancel all events that have any tasks waiting on them.
-	// This will wake those tasks, so they can do any necessary cleanup.
-	cancel_blocking_events(sched);
-	finish_task_list(&sched->tasks);
-	finish_task_list(&sched->pending_tasks);
-	assert(!sched->tasks.first);
-	assert(!sched->pending_tasks.first);
-	memset(sched, 0, sizeof(*sched));
-}
-
-void coroutines_init(void) {
-	co_main = koishi_active();
-}
-
-void coroutines_shutdown(void) {
-	for(CoTask *task; (task = alist_pop(&task_pool));) {
-		koishi_deinit(&task->ko);
-		free(task);
-	}
-}
-
-#ifdef CO_TASK_STATS
-#include "video.h"
-#include "resource/font.h"
-#endif
-
-void coroutines_draw_stats(void) {
-#ifdef CO_TASK_STATS
-	if(STAT_VAL(num_tasks_in_use) == 0 && STAT_VAL(num_switches_this_frame) == 0) {
-		return;
-	}
-
-	static char buf[128];
-
-	TextParams tp = {
-		.pos = { SCREEN_W },
-		.color = RGB(1, 1, 1),
-		.shader_ptr = res_shader("text_default"),
-		.font_ptr = res_font("monotiny"),
-		.align = ALIGN_RIGHT,
-	};
-
-	float ls = font_get_lineskip(tp.font_ptr);
-
-	tp.pos.y += ls;
-
-#ifdef CO_TASK_STATS_STACK
-	snprintf(buf, sizeof(buf), "Peak stack: %zukb    Tasks: %4zu / %4zu ",
-		STAT_VAL(peak_stack_usage) / 1024,
-		STAT_VAL(num_tasks_in_use),
-		STAT_VAL(num_tasks_allocated)
-	);
-#else
-	snprintf(buf, sizeof(buf), "Tasks: %4zu / %4zu ",
-		STAT_VAL(num_tasks_in_use),
-		STAT_VAL(num_tasks_allocated)
-	);
-#endif
-
-	text_draw(buf, &tp);
-
-	tp.pos.y += ls;
-	snprintf(buf, sizeof(buf), "Switches/frame: %4zu ", STAT_VAL(num_switches_this_frame));
-	text_draw(buf, &tp);
-
-	STAT_VAL_SET(num_switches_this_frame, 0);
-#endif
-}
-
-DEFINE_EXTERN_TASK(_cancel_task_helper) {
-	CoTask *task = cotask_unbox(ARGS.task);
-
-	if(task) {
-		cotask_cancel(task);
-	}
 }
