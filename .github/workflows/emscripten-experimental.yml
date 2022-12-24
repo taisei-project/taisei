@@ -66,6 +66,7 @@ jobs:
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
         --prefix=$(pwd)/build-test

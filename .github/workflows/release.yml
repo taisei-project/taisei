@@ -74,6 +74,7 @@ jobs:
         git fetch --force --tags # see: https://github.com/actions/checkout/issues/290
 
         meson setup build/linux
+        --native-file misc/ci/common-options.ini
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -238,6 +239,7 @@ jobs:
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -316,6 +318,7 @@ jobs:
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -432,6 +435,7 @@ jobs:
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/emscripten
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/emscripten-build.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
@@ -494,7 +498,9 @@ jobs:
         switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
 
         meson setup build/nx
-        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/switch-options.ini
+        --cross-file misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-release
 
     - name: Set Package Version
