@@ -23,7 +23,7 @@ on:
       - "**.wrap"
 
 env:
-  MESON_VERSION: '0.63.0'
+  MESON_VERSION: '0.63.3'
   EM_VERSION: '3.1.5'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0

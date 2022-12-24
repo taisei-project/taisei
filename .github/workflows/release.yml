@@ -13,7 +13,7 @@ on:
         description: "Input git-ref to build as a test release"
 
 env:
-  MESON_VERSION: '0.63.0'
+  MESON_VERSION: '0.63.3'
   EM_VERSION: '2.0.29'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0

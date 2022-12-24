@@ -28,7 +28,7 @@ RUN apt update && \
 		cmake
 
 RUN pip3 install \
-		meson==0.63.0 \
+		meson==0.63.3 \
 		ninja \
 		zstandard \
 		python-gnupg
