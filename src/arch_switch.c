@@ -14,6 +14,7 @@
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
 #include <switch/services/ssl.h>
+#include <switch/services/nifm.h>
 #include <switch/runtime/devices/socket.h>
 #include <switch/runtime/nxlink.h>
 
