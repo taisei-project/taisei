@@ -38,13 +38,6 @@ endif
 assert(renderer_opts[default_renderer].allowed(),
     f'Default renderer @default_renderer@ is not enabled')
 
-modules = [
-    'gl33',
-    'gles20',
-    'gles30',
-    'null',
-]
-
 static_gles30 = (
     renderer_opts['gles30'].allowed() and
     host_machine.system() == 'emscripten'
