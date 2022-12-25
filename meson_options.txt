@@ -162,21 +162,23 @@ option(
 option(
     'a_default',
     type : 'combo',
-    choices : ['sdl', 'null'],
+    choices : ['auto', 'sdl', 'null'],
     description : 'Which audio backend to use by default'
 )
 
 option(
     'a_sdl',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the SDL audio backend'
 )
 
 option(
     'a_null',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the no-op audio backend (silence); you want this on!'
 )
 

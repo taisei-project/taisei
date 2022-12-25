@@ -590,7 +590,7 @@ summary({
 }, section : 'Main', bool_yn : true)
 
 summary({
-    'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), get_option('a_default')),
+    'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), default_audio_backend),
     'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
     'Shader translation' : shader_transpiler_enabled,
     'ZIP packages' : dep_zip.found(),
