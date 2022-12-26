@@ -36,8 +36,6 @@ RUN pip3 install \
 ENV DEVKITPRO=/opt/devkitpro
 ENV PATH=${DEVKITPRO}/tools/bin:$PATH
 
-RUN ln -s /proc/self/mounts /etc/mtab
-
 RUN mkdir -p /usr/local/share/keyring/ && \
 	curl https://apt.devkitpro.org/devkitpro-pub.gpg -o /usr/local/share/keyring/devkitpro-pub.gpg && \
 	echo "deb [signed-by=/usr/local/share/keyring/devkitpro-pub.gpg] https://apt.devkitpro.org stable main" > /etc/apt/sources.list.d/devkitpro.list && \

@@ -211,7 +211,7 @@ jobs:
   windows-release-build-x64:
     name: Windows (x64)
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221
+    container: taiseiproject/windows-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -290,7 +290,7 @@ jobs:
   windows-release-build-x86:
     name: Windows (x86)
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221
+    container: taiseiproject/windows-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -476,7 +476,7 @@ jobs:
   switch-release-build:
     name: Switch (ARM64)
     runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20210829
+    container: taiseiproject/switch-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
