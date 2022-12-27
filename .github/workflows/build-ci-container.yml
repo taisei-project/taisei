@@ -1,14 +1,22 @@
-name: Build Windows Docker Image
+name: Build CI Container
 
 on:
   workflow_dispatch:
     inputs:
-      image_tag:
-        required: true
-        description: "Tag of the image (usually the date: YYYYMMDD)"
       custom_ref:
+        type: string
         required: false
         description: "Commit ref that contains the Dockerfile you want to use (if left blank: master HEAD)"
+      container_type:
+        type: choice
+        description: "Container type to build"
+        options:
+          - windows
+          - switch
+      image_tag:
+        type: number
+        required: true
+        description: "Container tag to push (usually the date: YYYYMMDD)"
 
 jobs:
   build:
@@ -29,6 +37,6 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: .
-        file: misc/ci/Dockerfile.windows
+        file: misc/ci/Dockerfile.${{ github.event.inputs.container_type }}
         push: true
-        tags: taiseiproject/windows-toolkit:${{ github.event.inputs.image_tag }}
+        tags: taiseiproject/${{ github.events.inputs.container_type }}-toolkit:${{ github.event.inputs.image_tag }}
