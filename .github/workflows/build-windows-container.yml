@@ -8,7 +8,7 @@ on:
         description: "Tag of the image (usually the date: YYYYMMDD)"
       custom_ref:
         required: false
-        description: "Commit ref that contains the Dockerfile you want to use (default: master branch)"
+        description: "Commit ref that contains the Dockerfile you want to use (if left blank: master HEAD)"
 
 jobs:
   build:
