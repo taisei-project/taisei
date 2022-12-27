@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
     inputs:
       custom_ref:
-        type: string
         required: false
         description: "Commit ref that contains the Dockerfile you want to use (if left blank: master HEAD)"
       container_type:
@@ -13,8 +12,8 @@ on:
         options:
           - windows
           - switch
+          - linux
       image_tag:
-        type: number
         required: true
         description: "Container tag to push (usually the date: YYYYMMDD)"
 
