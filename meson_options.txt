@@ -19,6 +19,7 @@ option(
     'enable_zip',
     type : 'boolean',
     deprecated : 'vfs_zip',
+    description : 'DEPRECATED: use vfs_zip instead',
 )
 
 option(
@@ -42,6 +43,7 @@ option(
     type : 'combo',
     choices : ['auto', 'true', 'false'],
     deprecated : 'install_relocatable',
+    description : 'DEPRECATED: use install_relocatable instead',
 )
 
 option(
@@ -63,7 +65,8 @@ option(
 option(
     'macos_bundle',
     type : 'boolean',
-    deprecated : 'install_macos_bundle'
+    deprecated : 'install_macos_bundle',
+    description : 'DEPRECATED: use install_macos_bundle instead',
 )
 
 option(
@@ -96,7 +99,8 @@ option(
     'static',
     type : 'boolean',
     value : false,
-    deprecated : 'prefer_static'
+    deprecated : 'prefer_static',
+    description : 'DEPRECATED: use prefer_static instead',
 )
 
 option(
