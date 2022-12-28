@@ -14,7 +14,7 @@ vfs_src = files(
     'zipfile_public.c',
 )
 
-if taisei_deps.contains(dep_zip)
+if dep_zip.found()
     vfs_src += files(
         'zipfile.c',
         'zippath.c',

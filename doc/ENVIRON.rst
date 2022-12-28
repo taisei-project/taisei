@@ -134,7 +134,7 @@ Video and OpenGL
    portable).
 
 **TAISEI_GL_DEBUG**
-   | Default: ``0`` for release builds, ``1`` for debug builds
+   | Default: ``0``
 
    Enables OpenGL debugging. A debug context will be requested, all OpenGL
    messages will be logged, and errors are fatal. Requires the ``KHR_debug``

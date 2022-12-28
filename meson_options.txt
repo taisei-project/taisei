@@ -1,42 +1,72 @@
-option(
-    'version_fallback',
-    type : 'string',
-    description : 'Overrides the version string when not building in a git repository'
-)
 
 option(
     'developer',
     type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    choices : ['true', 'false', 'auto'],
+    value : 'false',
+    deprecated : ['auto'],
     description : 'Make a "developer" build with cheats and extra debugging features'
+)
+
+option('vfs_zip',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Support loading of game data from ZIP packages (requires libzip)'
 )
 
 option(
     'enable_zip',
     type : 'boolean',
-    value : 'true',
-    description : 'Enable loading of game data from ZIP packages (requires libzip)'
+    deprecated : 'vfs_zip',
+    description : 'DEPRECATED: use vfs_zip instead',
 )
 
 option(
     'package_data',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
-    description : 'Package the game’s assets into a compressed archive (requires enable_zip)'
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Package the game’s assets into a compressed archive (requires vfs_zip)'
+)
+
+option(
+    'install_relocatable',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Install everything into the same directory, don\'t hardcode absolute paths into the executable. Prefix is assumed to be an empty directory reserved for Taisei in this mode.'
 )
 
 option(
     'install_relative',
     type : 'combo',
     choices : ['auto', 'true', 'false'],
-    description : 'Use only relative paths to the executable and install everything in the same directory. Always enabled for macOS bundles'
+    deprecated : 'install_relocatable',
+    description : 'DEPRECATED: use install_relocatable instead',
 )
 
 option(
     'install_freedesktop',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Install freedesktop.org integration files (launchers, icons, replay file associations, etc.). Mostly relevant for Linux/BSD/etc. desktop systems'
+)
+
+option(
+    'install_macos_bundle',
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'auto', 'false' : 'disabled'},
+    description : 'Install into a macOS application bundle'
+)
+
+option(
+    'macos_bundle',
+    type : 'boolean',
+    deprecated : 'install_macos_bundle',
+    description : 'DEPRECATED: use install_macos_bundle instead',
 )
 
 option(
@@ -69,97 +99,90 @@ option(
     'static',
     type : 'boolean',
     value : false,
-    description : 'Build statically linked executable'
-)
-
-option(
-    'debug_opengl',
-    type : 'boolean',
-    value : true,
-    description : 'Enable OpenGL debugging. Create a debug context, enable logging, and crash the game on errors. Only available in debug builds'
-)
-
-option(
-    'macos_bundle',
-    type : 'boolean',
-    value : true,
-    description : 'Make a macOS application bundle on install (ignored on other platforms)'
+    deprecated : 'prefer_static',
+    description : 'DEPRECATED: use prefer_static instead',
 )
 
 option(
     'docs',
-    type : 'boolean',
-    value : true,
-    description : 'Build and install documentation'
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Build and install documentation (requires docutils)'
 )
 
 option(
     'shader_transpiler',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Enable shader trans-compilation (requires shaderc)'
 )
 
 option(
     'validate_glsl',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Enable validation of GLSL shaders (requires glslc)'
 )
 
 option(
     'r_default',
     type : 'combo',
-    choices : ['gl33', 'gles20', 'gles30', 'null'],
+    choices : ['auto', 'gl33', 'gles20', 'gles30', 'null'],
     description : 'Which rendering backend to use by default'
 )
 
 option(
     'r_gl33',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL 3.3 Core renderer'
 )
 
 option(
     'r_gles20',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'disabled',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL ES 2.0 renderer (incomplete)'
 )
 
 option(
     'r_gles30',
-    type : 'boolean',
-    value : false,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the OpenGL ES 3.0 renderer'
 )
 
 option(
     'r_null',
-    type : 'boolean',
-    value : true,
-    description : 'Build the no-op renderer (nothing is displayed)'
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
+    description : 'Build the no-op renderer (nothing is displayed). Required for --verify-replay to work properly'
 )
 
 option(
     'a_default',
     type : 'combo',
-    choices : ['sdl', 'null'],
+    choices : ['auto', 'sdl', 'null'],
     description : 'Which audio backend to use by default'
 )
 
 option(
     'a_sdl',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the SDL audio backend'
 )
 
 option(
     'a_null',
-    type : 'boolean',
-    value : true,
+    type : 'feature',
+    value : 'auto',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Build the no-op audio backend (silence); you want this on!'
 )
 
@@ -172,8 +195,8 @@ option(
 
 option(
     'use_libcrypto',
-    type : 'combo',
-    choices : ['auto', 'true', 'false'],
+    type : 'feature',
+    deprecated : {'true' : 'enabled', 'false' : 'disabled'},
     description : 'Use libcrypto from OpenSSL for better SHA implementations'
 )
 

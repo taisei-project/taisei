@@ -20,7 +20,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install \
-    meson==0.56.2 \
+    meson==0.63.3 \
     ninja \
     zstandard \
     python-gnupg

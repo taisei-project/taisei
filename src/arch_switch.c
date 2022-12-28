@@ -8,11 +8,13 @@
 #include "taisei.h"
 
 #include "arch_switch.h"
+#include "renderer/glcommon/debug.h"
 
 #include <unistd.h>
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
 #include <switch/services/ssl.h>
+#include <switch/services/nifm.h>
 #include <switch/runtime/devices/socket.h>
 #include <switch/runtime/nxlink.h>
 
@@ -58,24 +60,24 @@ void userAppInit(void) {
 
 	getcwd(g_programDir, FS_MAX_PATH);
 
-#if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
-	// enable Mesa logging:
-	NX_SETENV("EGL_LOG_LEVEL", "debug");
-	NX_SETENV("MESA_VERBOSE", "all");
-	NX_SETENV("MESA_DEBUG", "1");
-	NX_SETENV("MESA_INFO", "1");
-	NX_SETENV("MESA_GLSL", "errors");
-	NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
-	NX_SETENV("LIBGL_DEBUG", "verbose");
+	if(glcommon_debug_requested()) {
+		// enable Mesa logging:
+		NX_SETENV("EGL_LOG_LEVEL", "debug");
+		NX_SETENV("MESA_VERBOSE", "all");
+		NX_SETENV("MESA_DEBUG", "1");
+		NX_SETENV("MESA_INFO", "1");
+		NX_SETENV("MESA_GLSL", "errors");
+		NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
+		NX_SETENV("LIBGL_DEBUG", "verbose");
 
-	// enable shader debugging in Nouveau:
-	NX_SETENV("NV50_PROG_OPTIMIZE", "0");
-	NX_SETENV("NV50_PROG_DEBUG", "1");
-	NX_SETENV("NV50_PROG_CHIPSET", "0x120");
-#else
-	// disable error checking and save CPU time
-	NX_SETENV("MESA_NO_ERROR", "1");
-#endif
+		// enable shader debugging in Nouveau:
+		NX_SETENV("NV50_PROG_OPTIMIZE", "0");
+		NX_SETENV("NV50_PROG_DEBUG", "1");
+		NX_SETENV("NV50_PROG_CHIPSET", "0x120");
+	} else {
+		// disable error checking and save CPU time
+		NX_SETENV("MESA_NO_ERROR", "1");
+	}
 }
 
 attr_used

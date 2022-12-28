@@ -29,18 +29,8 @@ config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', cc.compiles(
     args : ['-Wattributes', '-Werror']
 ))
 
-use_libcrypto = get_option('use_libcrypto')
-
-if use_libcrypto == 'auto'
-    use_libcrypto = dep_crypto.found()
-else
-    use_libcrypto = (use_libcrypto == 'true')
-endif
-
-if use_libcrypto
-    assert(dep_crypto.found(), 'use_libcrypto forced but libcrypto not found. Install OpenSSL or disable use_libcrypto.')
+if dep_crypto.found()
     util_src += files('sha256_openssl.c')
-    util_deps += [dep_crypto]
 else
     util_src += files('sha256.c')
 endif

@@ -153,28 +153,30 @@ spvc_vert_args = [
     '--stage', 'vert',
 ]
 
-if ['emscripten', 'nx'].contains(host_machine.system())
-    validate_glsl = 'true'
-    transpile_glsl = true
-else
-    validate_glsl = get_option('validate_glsl')
-    transpile_glsl = false
+transpile_glsl = (host_machine.system() in ['emscripten', 'nx'])
+opt_validate_glsl = get_option('validate_glsl')
+
+if opt_validate_glsl.disabled() and transpile_glsl
+    error('GLSL validation can\'t be disabled on this platform')
 endif
 
 force_vendored_shader_tools = get_option('force_vendored_shader_tools')
+force_validate_glsl = (
+    opt_validate_glsl.enabled() or
+    transpile_glsl or
+    (force_vendored_shader_tools and opt_validate_glsl.allowed())
+)
 
-if force_vendored_shader_tools and validate_glsl != 'false'
-    validate_glsl = 'true'
-endif
+validate_glsl = false
 
-if validate_glsl != 'false'
+if opt_validate_glsl.allowed()
     if force_vendored_shader_tools
         glslc_command = disabler()
     else
         glslc_command = find_program('glslc', required : false)
     endif
 
-    if not glslc_command.found() and validate_glsl == 'true'
+    if not glslc_command.found() and force_validate_glsl
         glslc_command = subproject('shaderc').get_variable('glslc_native')
         glslc_args += '-Werror'
         validate_glsl = true
@@ -184,7 +186,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_uniform_location_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0
@@ -199,7 +202,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_basic_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0
@@ -207,12 +211,12 @@ if validate_glsl != 'false'
         else
             warning(test_result.stderr())
 
-            if validate_glsl == 'auto'
-                warning('Basic glslc test failed, you probably have a broken/incompatible version. GLSL validation will be disabled.')
-                validate_glsl = false
-            else
+            if force_validate_glsl
                 error('Basic glslc test failed, you probably have a broken/incompatible version.')
             endif
+
+            warning('Basic glslc test failed, you probably have a broken/incompatible version. GLSL validation will be disabled.')
+            validate_glsl = false
         endif
     else
         warning('GLSL validation or translation requested, but glslc was not found')
@@ -232,9 +236,9 @@ if validate_glsl != 'false'
 
         glslc_args += ['-Os', '-g']
     endif
-else
-    validate_glsl = false
 endif
+
+transpile_glsl = transpile_glsl and validate_glsl
 
 # @begin validate
 if validate_glsl

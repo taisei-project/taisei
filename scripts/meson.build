@@ -1,46 +1,25 @@
 
-ver_fb = get_option('version_fallback').strip()
-version_fallback = ver_fb != '' ? ver_fb : meson.project_version()
-
 common_taiseilib_args = [
-    '--rootdir', meson.source_root(),
-    '--fallback-version', version_fallback
+    '--rootdir', meson.project_source_root(),
 ]
 
 common_taiseilib_defs = [
-    '-DMESON_BUILD_ROOT=@0@'.format(meson.build_root()),
-    '-DMESON_SOURCE_ROOT=@0@'.format(meson.source_root()),
+    '-DMESON_BUILD_ROOT=@0@'.format(meson.project_build_root()),
+    '-DMESON_SOURCE_ROOT=@0@'.format(meson.project_source_root()),
 ]
 
-# Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4947
-python_thunk = find_program(files('thunk.py'))
+preprocess_script = find_program(files('configure-file.py'))
+preprocess_args = common_taiseilib_args + common_taiseilib_defs
+preprocess_command = [preprocess_script, preprocess_args]
 
-version_script = files('version.py')
-version_command = [python_thunk, version_script, common_taiseilib_args]
-
-taisei_version_result = run_command(version_command, '{string}')
-assert(taisei_version_result.returncode() == 0, 'Version script failed')
-
-if taisei_version_result.stderr() != ''
-    warning(taisei_version_result.stderr().strip())
-endif
-
-taisei_version_string = taisei_version_result.stdout().strip()
-
-preprocess_script = files('configure-file.py')
-# generators are string supremacists apparently...
-preprocess_script_path = join_paths(meson.source_root(), '@0@'.format(preprocess_script[0]))
-preprocess_args = [preprocess_script_path] + common_taiseilib_args + common_taiseilib_defs
-preprocess_command = [python_thunk, preprocess_args]
-
-preprocessor = generator(preprocess_command[0],
+preprocessor = generator(preprocess_script,
     arguments: preprocess_args + ['@EXTRA_ARGS@', '--depfile', '@DEPFILE@', '@INPUT@', '@OUTPUT@'],
     output: '@BASENAME@',
     depfile: '@BASENAME@.d',
 )
 
-eolconv_script = files('eolconv.py')
-eolconv_command = [python_thunk, eolconv_script]
+eolconv_script = find_program(files('eolconv.py'))
+eolconv_command = [eolconv_script]
 
 package_system_name = host_machine.system()
 
@@ -62,39 +41,39 @@ if is_debug_build
     dist_version_string = '@0@-debug'.format(dist_version_string)
 endif
 
-dist_script = files('gen-dist.py')
+dist_script = find_program(files('gen-dist.py'))
 dist_name = 'Taisei-@0@-@1@-@2@'.format(dist_version_string, package_system_name, host_machine.cpu_family())
-dist_command = [python_thunk, dist_script, common_taiseilib_args]
+dist_command = [dist_script, common_taiseilib_args]
 dist_prefix_args = ['--prefix=@0@'.format(dist_name)]
 
 zip_filename = '@0@.zip'.format(dist_name)
-zip_outpath = join_paths(meson.build_root(), zip_filename)
-zip_command = [dist_command, '--format=zip', meson.build_root(), zip_outpath]
+zip_outpath = join_paths(meson.project_build_root(), zip_filename)
+zip_command = [dist_command, '--format=zip', meson.project_build_root(), zip_outpath]
 
 txz_filename = '@0@.tar.xz'.format(dist_name)
-txz_outpath = join_paths(meson.build_root(), txz_filename)
-txz_command = [dist_command, '--format=xztar', dist_prefix_args, meson.build_root(), txz_outpath]
+txz_outpath = join_paths(meson.project_build_root(), txz_filename)
+txz_command = [dist_command, '--format=xztar', dist_prefix_args, meson.project_build_root(), txz_outpath]
 
 tgz_filename = '@0@.tar.gz'.format(dist_name)
-tgz_outpath = join_paths(meson.build_root(), tgz_filename)
-tgz_command = [dist_command, '--format=gztar', dist_prefix_args, meson.build_root(), tgz_outpath]
+tgz_outpath = join_paths(meson.project_build_root(), tgz_filename)
+tgz_command = [dist_command, '--format=gztar', dist_prefix_args, meson.project_build_root(), tgz_outpath]
 
 tbz_filename = '@0@.tar.bz2'.format(dist_name)
-tbz_outpath = join_paths(meson.build_root(), tbz_filename)
-tbz_command = [dist_command, '--format=bztar', dist_prefix_args, meson.build_root(), tbz_outpath]
+tbz_outpath = join_paths(meson.project_build_root(), tbz_filename)
+tbz_command = [dist_command, '--format=bztar', dist_prefix_args, meson.project_build_root(), tbz_outpath]
 
 tar_filename = '@0@.tar'.format(dist_name)
-tar_outpath = join_paths(meson.build_root(), tar_filename)
-tar_command = [dist_command, '--format=tar', dist_prefix_args, meson.build_root(), tar_outpath]
+tar_outpath = join_paths(meson.project_build_root(), tar_filename)
+tar_command = [dist_command, '--format=tar', dist_prefix_args, meson.project_build_root(), tar_outpath]
 
-dmg_script = files('macos-gen-dmg.py')
+dmg_script = find_program(files('macos-gen-dmg.py'))
 dmg_filename = '@0@.dmg'.format(dist_name)
-dmg_command = [python_thunk, dmg_script, join_paths(meson.build_root(), dmg_filename), meson.build_root()]
+dmg_command = [dmg_script, join_paths(meson.project_build_root(), dmg_filename), meson.project_build_root()]
 
 angle_enabled = get_option('install_angle')
 
 if package_system_name == 'windows'
-    nsis_script = files('win-gen-nsis.py')
+    nsis_script = find_program(files('win-gen-nsis.py'))
     nsis_filename = 'Taisei-@0@-setup-@1@.exe'.format(dist_version_string, host_machine.cpu_family())
     nsis_outpath = join_paths(meson.build_root(), nsis_filename)
 
@@ -115,7 +94,6 @@ if package_system_name == 'windows'
     endif
 
     nsis_command = [
-        python_thunk,
         nsis_script,
         common_taiseilib_args,
         common_taiseilib_defs,
@@ -125,33 +103,36 @@ if package_system_name == 'windows'
     ]
 endif
 
-gen_atlas_script = files('gen-atlas.py')
-gen_atlas_command = [python_thunk, gen_atlas_script]
+gen_atlas_script = find_program(files('gen-atlas.py'))
+gen_atlas_command = [gen_atlas_script]
 
-gen_atlases_script = files('gen-atlases.py')
-gen_atlases_command = [python_thunk, gen_atlases_script]
+gen_atlases_script = find_program(files('gen-atlases.py'))
+gen_atlases_command = [gen_atlases_script]
 
-upkeep_script = files('upkeep.py')
-upkeep_command = [python_thunk, upkeep_script, common_taiseilib_args]
+upkeep_script = find_program(files('upkeep.py'))
+upkeep_command = [upkeep_script, common_taiseilib_args]
 upkeep_target = run_target('upkeep', command: upkeep_command)
 
-postconf_script = files('dump-build-options.py')
-postconf_command = [python_thunk, postconf_script]
+postconf_script = find_program(files('dump-build-options.py'))
+postconf_command = [postconf_script]
 
-pack_script = files('pack.py')
-pack_command = [python_thunk, pack_script, common_taiseilib_args]
+pack_script = find_program(files('pack.py'))
+pack_command = [pack_script, common_taiseilib_args]
 
-glob_script = files('glob-search.py')
-glob_command = [python_thunk, glob_script]
+glob_script = find_program(files('glob-search.py'))
+glob_command = [glob_script]
 
-check_submodules_script = files('check-submodules.py')
-check_submodules_command = [python_thunk, check_submodules_script]
+check_submodules_script = find_program(files('check-submodules.py'))
+check_submodules_command = [check_submodules_script]
 
-em_set_bundle_uuid_script = files('em-set-bundle-uuid.py')
-em_set_bundle_uuid_command = [python_thunk, em_set_bundle_uuid_script]
+em_set_bundle_uuid_script = find_program(files('em-set-bundle-uuid.py'))
+em_set_bundle_uuid_command = [em_set_bundle_uuid_script]
 
-fix_path_script = files('unfuck-path.py')
-fix_path_command = [python_thunk, fix_path_script]
+fix_path_script = find_program(files('unfuck-path.py'))
+fix_path_command = [fix_path_script]
 
-format_array_script = files('format-array.py')
-format_array_command = [python_thunk, format_array_script]
+format_array_script = find_program(files('format-array.py'))
+format_array_command = [format_array_script]
+
+on_dist_script = find_program(files('on-meson-dist.py'))
+meson.add_dist_script(on_dist_script)

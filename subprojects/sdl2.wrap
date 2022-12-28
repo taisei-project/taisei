@@ -3,3 +3,6 @@ directory=sdl2
 url=https://github.com/taisei-project/SDL.git
 push-url=git@github.com:taisei-project/SDL.git
 revision=meson-2.0.20
+
+[provide]
+sdl2=sdl2_dep

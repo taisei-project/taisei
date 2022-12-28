@@ -13,7 +13,7 @@ on:
         description: "Input git-ref to build as a test release"
 
 env:
-  MESON_VERSION: '0.56.2'
+  MESON_VERSION: '0.63.3'
   EM_VERSION: '2.0.29'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
@@ -74,6 +74,7 @@ jobs:
         git fetch --force --tags # see: https://github.com/actions/checkout/issues/290
 
         meson setup build/linux
+        --native-file misc/ci/common-options.ini
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -112,8 +113,6 @@ jobs:
 
     - name: Package (Source)
       run: |
-        meson rewrite kwargs set project / version ${{ env.BUILD_VERSION }} # meson dist uses 'project.version' instead of 'git describe' for the tag to use, so this overwrites it as a workaround
-        meson --reconfigure build/linux
         meson dist -C build/linux --no-tests # disable test build, since we already know it compiles
         scripts/sign-release.py build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz
 
@@ -212,7 +211,7 @@ jobs:
   windows-release-build-x64:
     name: Windows (x64)
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221
+    container: taiseiproject/windows-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -240,6 +239,7 @@ jobs:
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -290,7 +290,7 @@ jobs:
   windows-release-build-x86:
     name: Windows (x86)
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221
+    container: taiseiproject/windows-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -318,6 +318,7 @@ jobs:
         meson setup build/windows
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -434,6 +435,7 @@ jobs:
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/emscripten
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/emscripten-build.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
@@ -474,7 +476,7 @@ jobs:
   switch-release-build:
     name: Switch (ARM64)
     runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20210829
+    container: taiseiproject/switch-toolkit:20221226
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -496,7 +498,9 @@ jobs:
         switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
 
         meson setup build/nx
-        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/switch-options.ini
+        --cross-file misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-release
 
     - name: Set Package Version

@@ -23,7 +23,7 @@ on:
       - "**.wrap"
 
 env:
-  MESON_VERSION: '0.56.2'
+  MESON_VERSION: '0.63.3'
   EM_VERSION: '3.1.5'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
@@ -72,6 +72,7 @@ jobs:
     - name: Configure
       run: >
         meson setup build/
+        --native-file misc/ci/common-options.ini
         --native-file misc/ci/linux-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -132,6 +133,7 @@ jobs:
     - name: Configure
       run: >
         meson setup build/
+        --native-file misc/ci/common-options.ini
         --native-file misc/ci/macos-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -158,7 +160,7 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20220221 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20221226 # cross-compiler with mingw
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -168,6 +170,7 @@ jobs:
     - name: Configure Taisei (Meson)
       run: >
         meson setup build/
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-test-ci.ini
         --prefix=$(pwd)/build-test
 
@@ -243,6 +246,7 @@ jobs:
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/
+        --cross-file misc/ci/common-options.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
         --prefix=$(pwd)/build-test
@@ -268,7 +272,7 @@ jobs:
     name: Switch (ARM64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20210530
+    container: taiseiproject/switch-toolkit:20221226
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
@@ -280,7 +284,9 @@ jobs:
         switch/crossfile.sh > misc/ci/switch-crossfile-ci.ini
 
         meson setup build/
-        --cross-file=misc/ci/switch-crossfile-ci.ini
+        --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/switch-options.ini
+        --cross-file misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-test
 
     - name: Build

@@ -1,7 +1,11 @@
 project('taisei', 'c',
     license : 'MIT',
-    version : 'v1.4-dev',
-    meson_version : '>=0.53.0',
+    # NOTE: See https://github.com/mesonbuild/meson/issues/11163
+    version : run_command([
+        files('scripts/version.py'),
+        '--rootdir', meson.project_source_root(),
+    ], check : true).stdout().strip(),
+    meson_version : '>=0.63.0',
     default_options : [
         'c_std=gnu11',
 
@@ -63,12 +67,13 @@ project('taisei', 'c',
     ]
 )
 
+taisei_version_string = meson.project_version()
+
 is_debug_build = get_option('debug')
 is_developer_build = (get_option('developer') == 'auto' ? is_debug_build : get_option('developer') == 'true')
 
 cc = meson.get_compiler('c')
 python = import('python').find_installation()
-macos_app_bundle = get_option('macos_bundle') and host_machine.system() == 'darwin'
 
 subdir('scripts')
 
@@ -136,11 +141,6 @@ elif deprecation_warnings == 'ignore'
     taisei_c_args += '-Wno-deprecated-declarations'
 endif
 
-if meson.version().version_compare('<0.50.0') and get_option('b_pch')
-    # Workaround for Meson bug: https://github.com/mesonbuild/meson/issues/4905
-    taisei_c_args += ['-fpch-deps']
-endif
-
 taisei_c_args = cc.get_supported_arguments(taisei_c_args)
 
 foreach arglist : [
@@ -151,7 +151,7 @@ foreach arglist : [
     endif
 endforeach
 
-sm_check = run_command(check_submodules_command)
+sm_check = run_command(check_submodules_command, check : false)
 
 if sm_check.stdout() != ''
     foreach line : sm_check.stdout().strip().split('\n')
@@ -163,19 +163,20 @@ if sm_check.stderr() != ''
     warning('Submodule check completed with errors:\n@0@'.format(sm_check.stderr()))
 endif
 
-static = get_option('static') or ['emscripten', 'nx'].contains(host_machine.system())
+opt_vfs_zip = get_option('vfs_zip').require(host_machine.system() != 'emscripten',
+    error_message : 'ZIP packages are not supported on Emscripten')
 
-dep_freetype    = dependency('freetype2',                           required : true,  static : static, fallback : ['freetype', 'freetype_dep'])
-dep_png         = dependency('libpng',         version : '>=1.5',   required : true,  static : static, fallback : ['libpng', 'png_dep'])
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true,  static : static, fallback : ['sdl2', 'sdl2_dep'])
-dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true,  static : static, fallback : ['libwebp', 'webpdecoder_dep'])
-dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false, static : static)
-dep_zlib        = dependency('zlib',                                required : true,  static : static, fallback : ['zlib', 'zlib_dep'])
-dep_zstd        = dependency('libzstd',        version : '>=1.4.0', required : true,  static : static, fallback : ['libzstd', 'libzstd_dep'])
-dep_zip         = dependency('libzip',         version : '>=1.5.0', required : false, static : static, fallback : ['libzip', 'libzip_dep'])
-dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true,  static : static, fallback : ['cglm', 'cglm_dep'])
-dep_crypto      = dependency('libcrypto',                           required : false, static : static)
-dep_gamemode    = dependency('gamemode',                            required : false, static : static)
+dep_freetype    = dependency('freetype2',                           required : true)
+dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
+dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
+dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
+dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
+dep_zlib        = dependency('zlib',                                required : true)
+dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : ['libzstd', 'libzstd_dep'])
+dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip, allow_fallback : true)
+dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
+dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
+dep_gamemode    = dependency('gamemode',                            required : false)
 
 dep_m           = cc.find_library('m', required : false)
 
@@ -186,22 +187,20 @@ dep_koishi      = subproject('koishi').get_variable('koishi_dep')
 taisei_deps = [
     dep_basisu_transcoder,
     dep_cglm,
+    dep_crypto,
     dep_freetype,
     dep_gamemode,
     dep_koishi,
     dep_m,
     dep_png,
     dep_sdl2,
+    dep_zip,
     dep_zlib,
     dep_zstd,
     # don't add glad here
 ]
 
-if meson.version().version_compare('<0.49.0')
-    wrap_mode_forcefallback = false
-else
-    wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
-endif
+wrap_mode_forcefallback = (get_option('wrap_mode') == 'forcefallback')
 
 if dep_webpdecoder.found() and not wrap_mode_forcefallback
     # distro libwebpdecoder
@@ -215,25 +214,14 @@ if host_machine.system() == 'windows'
     taisei_deps += cc.find_library('shlwapi')
 endif
 
-if host_machine.system() == 'emscripten'
-    package_data = false
-    enable_zip = false
-else
-    package_data = get_option('package_data')
-    enable_zip = get_option('enable_zip')
-    package_data = (package_data == 'auto' ? enable_zip : package_data == 'true')
-endif
+package_data = (
+    get_option('package_data')
+        .require(dep_zip.found(),
+            error_message : 'libzip not found or VFS ZIP support is disabled')
+        .allowed()
+)
 
-if enable_zip
-    assert(dep_zip.found(), 'ZIP support enabled but libzip not found')
-    taisei_deps += dep_zip
-endif
-
-if package_data and not enable_zip
-    error('ZIP support must be enabled for data packaging to work')
-endif
-
-config.set('TAISEI_BUILDCONF_USE_ZIP', taisei_deps.contains(dep_zip))
+config.set('TAISEI_BUILDCONF_USE_ZIP', dep_zip.found())
 
 have_posix = cc.has_header_symbol('unistd.h', '_POSIX_VERSION')
 
@@ -296,7 +284,7 @@ config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builti
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 
-if enable_zip and dep_zip.found()
+if dep_zip.found()
     if dep_zip.type_name() == 'internal'
         have_zip_compression_method_supported = dep_zip.version().version_compare('>=1.7.0')
     else
@@ -317,52 +305,40 @@ force_relpath_systems = [
     'nx'
 ]
 
-if macos_app_bundle
-    bundle_dir = 'Taisei.app'
+opt_install_macos_bundle = get_option('install_macos_bundle')
+opt_install_macos_bundle = opt_install_macos_bundle.require(
+    host_machine.system() == 'darwin',
+    error_message : 'only supported on macOS')
 
-    bundle_datadir = join_paths('Contents', 'Resources')
-    bundle_bindir = join_paths('Contents', 'MacOS')
-    bundle_libdir = bundle_bindir
+prefer_relocatable = (
+    host_machine.system() in (prefer_relpath_systems + force_relpath_systems) or
+    opt_install_macos_bundle.allowed())
 
-    datadir = join_paths(bundle_dir, bundle_datadir)
-    bindir = join_paths(bundle_dir, bundle_bindir)
-    libdir = join_paths(bundle_dir, bundle_libdir)
+opt_install_relocatable = get_option('install_relocatable')
+opt_install_relocatable = opt_install_relocatable.disable_auto_if(
+    not prefer_relocatable)
 
-    is_relocatable_install = true
+opt_install_macos_bundle = opt_install_macos_bundle.require(
+    opt_install_relocatable.allowed(),
+    error_message : 'install_relocatable is required')
 
-    # arguments must be strings...
-    meson.add_install_script(
-        python.path(),
-        join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
-        ':'.join(meson.get_cross_property('macos_lib_path', [])),
-        ':'.join(meson.get_cross_property('macos_tool_path', [])),
-        meson.get_cross_property('macos_tool_prefix', ''),
-    )
-else
-    datadir = get_option('datadir')
-
-    if force_relpath_systems.contains(host_machine.system())
-        is_relocatable_install = true
-    elif get_option('install_relative') == 'auto'
-        is_relocatable_install = prefer_relpath_systems.contains(host_machine.system())
-    else
-        is_relocatable_install = (get_option('install_relative') == 'true')
-    endif
-
-    if is_relocatable_install
-        bindir = '.'
-        libdir = '.'
-    else
-        bindir = get_option('bindir')
-        libdir = get_option('libdir')
-    endif
+if host_machine.system() in force_relpath_systems and opt_install_relocatable.disabled()
+    error('install_relocatable must be enabled on this platform')
 endif
 
-if get_option('install_freedesktop') == 'auto'
-    install_xdg = not is_relocatable_install
-else
-    install_xdg = get_option('install_freedesktop') == 'true'
-endif
+is_relocatable_install = opt_install_relocatable.allowed()
+macos_app_bundle = opt_install_macos_bundle.allowed()
+
+opt_install_freedesktop = (
+    get_option('install_freedesktop')
+        .disable_auto_if(is_relocatable_install or host_machine.system() == 'darwin')
+        .require(not macos_app_bundle,
+            error_message : 'installing freedesktop.org stuff into a macOS bundle makes no sense')
+)
+
+install_xdg = opt_install_freedesktop.allowed()
+
+datadir = get_option('datadir')
 
 if is_relocatable_install
     data_path = 'data'
@@ -371,22 +347,44 @@ if is_relocatable_install
     lib_path = '.'
 
     if macos_app_bundle
+        bundle_dir = 'Taisei.app'
+
+        bundle_datadir = join_paths('Contents', 'Resources')
+        bundle_bindir = join_paths('Contents', 'MacOS')
+        bundle_libdir = bundle_bindir
+
+        datadir = join_paths(bundle_dir, bundle_datadir)
+        bindir = join_paths(bundle_dir, bundle_bindir)
+        libdir = join_paths(bundle_dir, bundle_libdir)
+
+        # arguments must be strings...
+        meson.add_install_script(
+            python.path(),
+            join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
+            ':'.join(meson.get_cross_property('macos_lib_path', [])),
+            ':'.join(meson.get_cross_property('macos_tool_path', [])),
+            meson.get_cross_property('macos_tool_prefix', ''),
+        )
+
         # Relative to SDL_GetBasePath() (bundle root)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', join_paths(bundle_datadir, data_path))
         config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', join_paths(bundle_libdir))
 
         # Make paths prefix-relative for installation
-
         data_path = join_paths(datadir, data_path)
         lib_path = libdir
-        # I don't know why would you do that, but more power to you
-        xdg_path = join_paths(datadir, xdg_path)
-    else
+    else  # Relocatable; not macOS bundle
+        bindir = '.'
+        libdir = '.'
+
         # Relative to SDL_GetBasePath() (typically contains the executable)
         config.set_quoted('TAISEI_BUILDCONF_DATA_PATH', data_path)
-        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', '.')
+        config.set_quoted('TAISEI_BUILDCONF_LIB_PATH', lib_path)
     endif
-else
+else  # Non-relocatable
+    bindir = get_option('bindir')
+    libdir = get_option('libdir')
+
     data_path = join_paths(datadir, 'taisei')
     lib_path = join_paths(libdir, 'taisei')
     doc_path = join_paths(datadir, 'doc', 'taisei')
@@ -405,26 +403,17 @@ config.set('TAISEI_BUILDCONF_LOG_FATAL_MSGBOX', (
     host_machine.system() == 'darwin' or
     not is_developer_build
 ))
-config.set('TAISEI_BUILDCONF_DEBUG_OPENGL', get_option('debug_opengl'))
-
-install_docs = get_option('docs') and host_machine.system() != 'emscripten'
 
 if host_machine.system() == 'windows'
-    if install_docs
-        custom_target('COPYING.txt',
-            command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
-            input : 'COPYING',
-            output : 'COPYING.txt',
-            install : true,
-            install_dir : doc_path
-        )
-    endif
-
+    custom_target('COPYING.txt',
+        command : [eolconv_command, host_eol_style, '@INPUT@', '@OUTPUT@'],
+        input : 'COPYING',
+        output : 'COPYING.txt',
+        install : true,
+        install_dir : doc_path
+    )
 else
-    if install_docs
-        install_data('COPYING', install_dir : doc_path)
-    endif
-
+    install_data('COPYING', install_dir : doc_path)
 endif
 
 if angle_enabled
@@ -443,7 +432,7 @@ if angle_enabled
     endif
 
     # Where to install the libs (prefix-relative)
-    # Also used in docs/meson.build to install the license
+    # Also used in doc/meson.build to install the license
     angle_install_path = join_paths(lib_path, angle_dir)
 
     # Where the game should look (either absolute or SDL_GetBasePath()-relative, depending on configuration)
@@ -518,7 +507,7 @@ config.set('TAISEI_BUILDCONF_TESTING_STAGES', use_testing_stages)
 # Stolen from Sway
 # Compute the relative path used by compiler invocations.
 source_root = meson.current_source_dir().split('/')
-build_root = meson.build_root().split('/')
+build_root = meson.project_build_root().split('/')
 if build_machine.system() == 'windows'
     source_root = source_root.replace('\\', '/')
     build_root = build_root.replace('\\', '/')
@@ -587,49 +576,35 @@ foreach bindist_target : bindist_targets
     )
 endforeach
 
-summary = '''
+meson.add_devenv({
+    'TAISEI_RES_PATH': meson.current_source_dir() / 'resources',
+    'TAISEI_GL_DEBUG': '1',
+    # TODO: Add support for this in libkoishi
+    'ASAN_OPTIONS': 'detect_stack_use_after_return=false',
+})
 
-Summary:
-    Taisei version:         @0@
-    System type:            @1@
-    Build type:             @2@
-    Developer mode:         @15@
-    Stages live reload:     @16@
+summary({
+    'System type' : systype,
+    'Build type' : get_option('buildtype'),
+    'Developer mode' : is_developer_build,
+}, section : 'Main', bool_yn : true)
 
-    Audio backends:         @3@  (default: @4@)
-    Renderers:              @5@  (default: @6@)
-    Shader translation:     @7@
-    ZIP support:            @8@
-    Package data:           @9@
+summary({
+    'Audio backends' : '@0@ (default: @1@)'.format(', '.join(enabled_audio_backends), default_audio_backend),
+    'Rendering backends' : '@0@ (default: @1@)'.format(', '.join(enabled_renderers), default_renderer),
+    'Shader translation' : shader_transpiler_enabled,
+    'ZIP packages' : dep_zip.found(),
+    'Stages live reload' : stages_live_reload,
+}, section : 'Features', bool_yn : true)
 
-    Relative install paths: @10@
-    Prefix:                 @11@
-    Executables:            @12@
-    Data:                   @13@
-    Documentation:          @14@
-'''.format(
-        taisei_version_string,
-        systype,
-        get_option('buildtype'),
+summary({
+    'Relocatable layout' : is_relocatable_install,
+    'Data in ZIP packages' : package_data,
+    'Bundle ANGLE libraries' : angle_enabled,
+    'Prefix' : get_option('prefix'),
+    'Executables' : join_paths('$prefix', bindir),
+    'Data' : join_paths('$prefix', data_path),
+    'Documentation' : join_paths('$prefix', doc_path),
+}, section : 'Installation', bool_yn : true)
 
-        ', '.join(enabled_audio_backends),
-        get_option('a_default'),
-        ', '.join(enabled_renderers),
-        default_renderer,
-        get_option('shader_transpiler'),
-        enable_zip,
-        package_data,
-
-        is_relocatable_install,
-        get_option('prefix'),
-        # the $ is intentional
-        join_paths('$prefix', bindir),
-        join_paths('$prefix', data_path),
-        join_paths('$prefix', doc_path),
-        is_developer_build,
-        stages_live_reload
-    )
-
-message(summary)
-
-run_command(postconf_command)
+run_command(postconf_command, check : false)

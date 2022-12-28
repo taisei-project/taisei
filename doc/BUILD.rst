@@ -33,8 +33,8 @@ Build-Time Dependenices
 """""""""""""""""""""""
 
 -  ``gcc`` or ``clang``
--  meson >= 0.53.0 (0.56.2 recommended)
--  Python >= 3.6
+-  meson >= 0.63.0
+-  Python >= 3.7
 -  `python-zstandard <https://github.com/indygreg/python-zstandard>`__ >= 0.11.1
 -  `python-docutils <https://pypi.org/project/docutils/>`__ (optional, for generating documentation)
 
@@ -45,7 +45,7 @@ Required
 ''''''''
 
 -  OpenGL >= 3.3, or OpenGL ES >= 3.0
--  SDL2 >= 2.0.10
+-  SDL2 >= 2.0.16
 -  cglm >= 0.7.8
 -  libpng >= 1.5.0
 -  libwebpdecoder >= 0.5 or libwebp >= 0.5
@@ -237,32 +237,39 @@ instead relying on system libraries. Useful for CI.
    # disables in-repo repositories
    meson configure build/ --wrap-mode=nofallback
 
-Relative Directory Install (``-Dinstall_relative``)
+Relative Directory Install (``-Dinstall_relocatable``)
 """""""""""""""""""""""""""""""""""""""""""""""""""
 
-* Default: ``true`` or ``false`` (platform-dependent)
+* Default: ``auto``
+* Options: ``auto``, ``enabled``, ``disabled``
 
-``-Dinstall_relative`` is a special option that changes depending on the
-platform build target.
+This option enables a "relocatable" installation layout, where everything is confined
+to one directory and no full paths are hardcoded into the executable.
 
-It is set to ``true`` when building for macOS, Windows, Emscripten, and Switch.
+The ``auto`` defaults to ``enabled`` when building for Windows, Emscripten, Switch,
+or macOS with ``install_macos_bundle`` enabled. Otherwise, it defaults to ``disabled``.
 
-It is set to ``false`` when building for Linux.
+Note that you probably want to change the ``--prefix`` with this option enabled.
+
+.. code:: sh
+
+   meson configure build/ -Dinstall_relocatable=enabled
 
 Install Prefix (``--prefix``)
 """""""""""""""""""""""""""""
 
-* Default: ``/usr/local``
+* Default: ``/usr/local`` (usually; platform-dependent)
 
-``--prefix`` installs the Taisei binary and content files to a path of your
-choice on your filesystem.
+Specifies a path under which all game files are installed.
 
-On Linux without ``-Dinstall_relative`` enabled (i.e: ``false``), it should be
-kept to its default ``/usr/local``. In general, don't touch it unless you need
-to.
+If ``install_relocatable`` is enabled, Taisei will be installed into the root of this
+directory, and thus you will probably want to change it from the default value.
 
-On other platforms, it will install all Taisei game files to the directory of
-your choice.
+Otherwise, it's not recommended to touch this option unless you know what you are
+doing.
+
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
 
 .. code:: sh
 
@@ -272,29 +279,31 @@ Package Data (``-Dpackage_data``)
 """""""""""""""""""""""""""""""""
 
 * Default: ``auto``
-* Options: ``auto``, ``true``, ``false``
+* Options: ``auto``, ``enabled``, ``disabled``
 
-Packages game data into either a directory or a ``.zip`` depending on if
-``-Denable_zip`` is ``true`` (see below).
+If enabled, game assets will be packaged into a ``.zip`` archive. Otherwise, they will
+be installed into the filesystem directly.
+
+This option is not available for Emscripten.
+
+Requires ``vfs_zip`` to be enabled as well.
 
 .. code:: sh
 
-   meson configure build/ -Dpackage_data=false
+   meson configure build/ -Dpackage_data=disabled
 
-Enable ZIP Loading (``-Denable_zip``)
+ZIP Package Loading (``-Dvfs_zip``)
 """""""""""""""""""""""""""""""""""""
 
-* Default: ``true```
-* Options: ``true``, ``false``
+* Default: ``auto```
+* Options: ``auto``, ``enabled``, ``disabled``
 
 Controls whether or not Taisei can load game data (textures, shaders, etc) from
-``.zip`` files. Useful for distribution and packaging.
-
-**NOTE:** Setting this to ``false`` automatically disables ``-Dpackage_data``.
+``.zip`` files. Requires ``libzip``.
 
 .. code:: sh
 
-   meson configure build/ -Denable_zip=false
+   meson configure build/ -Dvfs_zip=disabled
 
 In-Game Developer Options (``-Ddeveloper``)
 """""""""""""""""""""""""""""""""""""""""""
@@ -302,9 +311,8 @@ In-Game Developer Options (``-Ddeveloper``)
 * Default: ``false``
 * Options: ``true``, ``false``
 
-For testing actual gameplay, you can set this option and it will enable cheats
-and other 'fast-forward' options by the pressing keys defined in
-``src/config.h``.
+Enables various tools useful for developers and testers, such as cheats, stage menu,
+quick save/load, extra debugging information, etc.
 
 .. code:: sh
 
@@ -314,10 +322,12 @@ Build Type (``-Dbuildtype``)
 """"""""""""""""""""""""""""
 
 * Default: ``release``
-* Options: ``release``, ``debug``
+* Options: ``plain``, ``debug``, ``debugoptimized``, ``release``, ``minsize``, ``custom``
 
-Sets the type of build. ``debug`` enables several additional debugging features,
-as well as reduced optimizations and more debugging symbols.
+Sets the type of build. ``debug`` reduces optimizations and enables debugging symbols.
+
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
 
 .. code:: sh
 
@@ -326,8 +336,8 @@ as well as reduced optimizations and more debugging symbols.
 Assertions (``-Db_ndebug``)
 """""""""""""""""""""""""""
 
-* Default: ``true``
-* Options: ``true``, ``false``
+* Default: ``if-release``
+* Options: ``if-release``, ``true``, ``false``
 
 The name of this flag is opposite of what you'd expect. Think of it as "Not
 Debugging". It controls the ``NDEBUG`` declaration which is responsible for
@@ -336,6 +346,9 @@ deactivating ``assert()`` macros.
 Setting to ``false`` will *enable* assertions (i.e: good for debugging).
 
 Keep ``true`` during release.
+
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
 
 .. code:: sh
 
@@ -354,6 +367,9 @@ It's highly recommended to **enable** (i.e: ``true``) this whenever developing
 for the engine. Sometimes, it's overly-pedantic, but much of the time, it
 provides useful advice. (For example, it can detect potential null-pointer
 exceptions that may not be obvious to the human eye.)
+
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
 
 .. code:: sh
 
@@ -400,6 +416,9 @@ is correct by browsing to the parent directory of ``../clang``.
 Then, you can launch Taisei's binary from the command line (using macOS as an
 example):
 
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
+
 .. code:: sh
 
    /path/to/Taisei.app/Contents/MacOS/Taisei
@@ -417,6 +436,9 @@ performance. For quicker build times during development, you can disable it.
 For release builds, this should be kept ``true``.
 
 See: `Interprocedural Optimization <https://en.wikipedia.org/wiki/Interprocedural_optimization#WPO_and_LTO>`__
+
+This is a Meson built-in option; see `Meson Manual <https://mesonbuild.com/Builtin-options.html>`__
+for more information.
 
 .. code:: sh
 
@@ -441,11 +463,11 @@ strip out useful debugging symbols.
 Rendering
 """""""""
 
-Backends (``-Dr_gl*``)
+Backends (``-Dr_*``)
 ''''''''''''''''''''''
 
-* Default: ``false``
-* Options: ``true``, ``false``
+* Default: ``auto``
+* Options: ``auto``, ``enabled``, ``disabled``
 
 Enable or disable the various renderer backends for Taisei.
 
@@ -454,11 +476,14 @@ Enable or disable the various renderer backends for Taisei.
 .. code:: sh
 
    # for GL 3.3 (default)
-   meson configure build/ -Dr_gl33=true
+   meson configure build/ -Dr_gl33=enabled
    # for GL ES 3.0
-   meson configure build/ -Dr_gles30=true
+   meson configure build/ -Dr_gles30=enabled
    # for GL ES 2.0 (not recommended)
-   meson configure build/ -Dr_gles20=true
+   meson configure build/ -Dr_gles20=enabled
+   # No-op backend (nothing displayed).
+   # Disabling this will break the replay-verification mode.
+   meson configure build/ -Dr_null=enabled
 
 **NOTE:** GL ES 2.0 is *not recommended* as it is unsupported and may
 not work correctly. However, if for some reason you still want to use it,
@@ -475,10 +500,15 @@ correctly, most notably:
 Default Renderer (``-Dr_default``)
 ''''''''''''''''''''''''''''''''''
 
-* Default: ``gl33``
-* Options: ``gl33``, ``gles30``, ``gles20``, ``null``
+* Default: ``auto``
+* Options: ``auto``, ``gl33``, ``gles30``, ``gles20``, ``null``
 
 Sets the default renderer to use when Taisei launches.
+
+When set to ``auto``, defaults to the first enabled backend in this order:
+``gl33``, ``gles30``, ``gles20``.
+
+The chosen backend must not be disabled.
 
 .. code:: sh
 
@@ -490,20 +520,25 @@ Sets the default renderer to use when Taisei launches.
    meson configure build/ -Dr_default=gles20
 
 You can switch the renderer using the ``--renderer`` flag on the ``taisei``
-binary. (i.e: ``taisei --renderer gl33``).
+binary. (i.e: ``taisei --renderer gles30``).
 
 Shader Transpiler (``-Dshader_transpiler``)
 '''''''''''''''''''''''''''''''''''''''''''
 
-* Default: ``false``
-* Options: ``true``, ``false``
+* Default: ``auto``
+* Options: ``auto``, ``enabled``, ``disabled``
 
 For using OpenGL ES, the shader transpiler is necessary for converting Taisei's
 shaders to a format usable by that driver.
 
+Requires ``shaderc`` and ``SPIRV-cross``.
+
+Note that for Emscripten and Switch platforms, the translation is performed offline,
+and this option is not available.
+
 .. code:: sh
 
-   meson configure build/ -Dshader_transpiler=true
+   meson configure build/ -Dshader_transpiler=enabled
 
 ANGLE
 """""
