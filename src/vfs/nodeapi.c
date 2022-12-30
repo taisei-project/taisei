@@ -40,7 +40,6 @@ const char* vfs_node_iter(VFSNode *node, void **opaque) {
 	assert(node->funcs != NULL);
 
 	if(node->funcs->iter != NULL) {
-		assert(node->funcs->iter_stop != NULL);
 		return node->funcs->iter(node, opaque);
 	}
 
