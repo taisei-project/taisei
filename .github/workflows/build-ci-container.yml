@@ -38,4 +38,4 @@ jobs:
         context: .
         file: misc/ci/Dockerfile.${{ github.event.inputs.container_type }}
         push: true
-        tags: taiseiproject/${{ github.events.inputs.container_type }}-toolkit:${{ github.event.inputs.image_tag }}
+        tags: taiseiproject/${{ github.event.inputs.container_type }}-toolkit:${{ github.event.inputs.image_tag }}
