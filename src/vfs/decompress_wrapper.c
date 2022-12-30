@@ -80,17 +80,22 @@ static VFSNode *vfs_decomp_locate(VFSNode *dirnode, const char *path) {
 		memcpy(p + plen, ZST_SUFFIX, sizeof(ZST_SUFFIX));
 
 		child = vfs_node_locate(wrapped, p);
-		VFSInfo i = vfs_node_query(child);
 
-		if(i.error || i.is_dir) {
-			vfs_decref(child);
+		if(child == NULL) {
 			child = ochild;
 		} else {
-			data.compr_zstd = true;
+			VFSInfo i = vfs_node_query(child);
 
-			if(ochild) {
-				vfs_decref(ochild);
-				ochild = NULL;
+			if(i.error || i.is_dir) {
+				vfs_decref(child);
+				child = ochild;
+			} else {
+				data.compr_zstd = true;
+
+				if(ochild) {
+					vfs_decref(ochild);
+					ochild = NULL;
+				}
 			}
 		}
 	}
@@ -232,10 +237,6 @@ bool vfs_make_decompress_view(const char *path) {
 	char npath[strlen(path)+1];
 	strcpy(npath, buf);
 
-	if(vfs_query(path).is_readonly) {
-		return true;
-	}
-
 	vfs_path_split_right(buf, &path_parent, &path_subdir);
 
 	VFSNode *parent = vfs_locate(vfs_root, path_parent);
@@ -251,6 +252,12 @@ bool vfs_make_decompress_view(const char *path) {
 		return false;
 	}
 
+	if(node->funcs == &vfs_funcs_decomp) {
+		vfs_decref(node);
+		vfs_decref(parent);
+		return true;
+	}
+
 	if(!vfs_node_unmount(parent, path_subdir)) {
 		vfs_decref(node);
 		vfs_decref(parent);
@@ -262,10 +269,8 @@ bool vfs_make_decompress_view(const char *path) {
 	vfs_decref(node);
 
 	if(!vfs_node_mount(parent, path_subdir, wrapper)) {
-		log_error("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
-		vfs_decref(parent);
-		vfs_decref(wrapper);
-		return false;
+		log_fatal("Couldn't remount '%s' - VFS left in inconsistent state! Error: %s", npath, vfs_get_error());
+		UNREACHABLE;
 	}
 
 	vfs_decref(parent);
