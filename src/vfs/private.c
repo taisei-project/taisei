@@ -218,7 +218,7 @@ const char* vfs_get_error(void) {
 	return tls->error_str ? tls->error_str : "No error";
 }
 
-void vfs_set_error(char *fmt, ...) {
+void (vfs_set_error)(char *fmt, ...) {
 	vfs_tls_t *tls = vfs_tls_get();
 	va_list args;
 	va_start(args, fmt);
@@ -227,7 +227,7 @@ void vfs_set_error(char *fmt, ...) {
 	tls->error_str = err;
 	va_end(args);
 
-	log_debug("%s", tls->error_str);
+	// log_debug("%s", tls->error_str);
 }
 
 void vfs_set_error_from_sdl(void) {
