@@ -344,6 +344,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'MAX_WEBGL_VERSION=2',
         '-s', 'MIN_WEBGL_VERSION=2',
         '-s', 'MODULARIZE=0',
+        '-s', 'STACK_SIZE=1MB',
         '-s', 'STRICT_JS=1',
         '-s', 'SUPPORT_BIG_ENDIAN=1',
         '-s', 'WASM=1',
