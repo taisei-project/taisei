@@ -359,7 +359,6 @@ if host_machine.system() == 'emscripten'
     if em_debug
         em_link_output_suffixes += ['wasm.map']
         em_link_args += [
-            '--emrun',
             '--profiling',
             '-g3',
             '-gsource-map',
