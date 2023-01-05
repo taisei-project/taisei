@@ -362,7 +362,7 @@ if host_machine.system() == 'emscripten'
             '--profiling',
             '-g3',
             '-gsource-map',
-            '--source-map-base', meson.get_cross_property('source_map_base', 'http://0.0.0.0:6931/'),
+            '--source-map-base', meson.get_external_property('source_map_base', 'http://0.0.0.0:6931/'),
             '-s', 'ASSERTIONS=2',
             '-s', 'GL_ASSERTIONS=1',
             '-s', 'GL_DEBUG=1',
