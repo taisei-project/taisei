@@ -370,7 +370,6 @@ if host_machine.system() == 'emscripten'
         ]
     else
         em_link_args += [
-            '-O@0@'.format(get_option('optimization')),
             '-g0',
             '-s', 'ASSERTIONS=0',
             '-s', 'GL_TRACK_ERRORS=0',
