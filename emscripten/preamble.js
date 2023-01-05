@@ -92,7 +92,7 @@ Module = {
             progressElement.value = parseInt(m[2])*100;
             progressElement.max = parseInt(m[4])*100;
             progressElement.hidden = false;
-            spinnerElement.hidden = false;
+            spinnerElement.hidden = !canvasElement.hidden;
         } else {
             progressElement.value = null;
             progressElement.max = null;
@@ -118,7 +118,8 @@ function SyncFS(is_load, ccptr) {
         Module['ccall'](
             'vfs_sync_callback',
             null, ["boolean", "string", "number"],
-            [is_load, err, ccptr]
+            [is_load, err, ccptr],
+            { async: true }
         );
     });
 }

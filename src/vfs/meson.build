@@ -35,6 +35,7 @@ endif
 
 if host_machine.system() == 'emscripten'
     vfs_src += files(
+        'emscripten_fetch.c',
         'setup_emscripten.c',
         'sync_emscripten.c',
     )

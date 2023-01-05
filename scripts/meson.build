@@ -125,9 +125,6 @@ glob_command = [glob_script]
 check_submodules_script = find_program(files('check-submodules.py'))
 check_submodules_command = [check_submodules_script]
 
-em_set_bundle_uuid_script = find_program(files('em-set-bundle-uuid.py'))
-em_set_bundle_uuid_command = [em_set_bundle_uuid_script]
-
 fix_path_script = find_program(files('unfuck-path.py'))
 fix_path_command = [fix_path_script]
 
