@@ -9,22 +9,15 @@
 
 #include "taisei.h"
 
-#include "public.h"
 #include "setup.h"
-#include "util.h"
 
 static void vfs_setup_onsync(CallChainResult ccr) {
-	VfsSetupFixedPaths paths = {
+	vfs_setup_fixedpaths(&(VfsSetupFixedPaths) {
 		.res_path = "/" TAISEI_BUILDCONF_DATA_PATH,
 		.storage_path = "/persistent/storage",
-		.cache_path ="/persistent/cache",
-	};
-
-	vfs_setup_fixedpaths_onsync(ccr, &paths);
+		.cache_path = "/persistent/cache",
+	});
+	vfs_setup_onsync_done(ccr);
 }
 
-void vfs_setup(CallChain next) {
-	vfs_init();
-	CallChain *cc = memdup(&next, sizeof(next));
-	vfs_sync(VFS_SYNC_LOAD, CALLCHAIN(vfs_setup_onsync, cc));
-}
+VFS_SETUP_SYNCING(vfs_setup_onsync)
