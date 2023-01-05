@@ -50,5 +50,14 @@ else
     )
 endif
 
+if use_static_res_index
+    vfs_src += files('resindex.c')
+    vfs_src += resindex
+
+    if is_developer_build
+        vfs_src += files('resindex_layered.c')
+    endif
+endif
+
 subdir('platform_paths')
 vfs_src += vfs_platform_paths_src

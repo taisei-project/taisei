@@ -5,6 +5,56 @@ packages = [
     '00-taisei',
 ]
 
+use_static_res_index = false
+
+foreach pkg : packages
+    pkg_pkgdir = '@0@.pkgdir'.format(pkg)
+    subdir(pkg_pkgdir)
+endforeach
+
+if use_static_res_index
+    resindex_deps = []
+    resindex_cmd = [
+        index_resources_command,
+        '@OUTPUT@',
+    ]
+
+    foreach pkg : packages
+        pkg_pkgdir = '@0@.pkgdir'.format(pkg)
+        resindex_cmd += [resources_dir / pkg_pkgdir]
+
+        if transpile_glsl
+            resindex_cmd += [meson.current_build_dir() / pkg_pkgdir]
+        endif
+    endforeach
+
+    if transpile_glsl
+        resindex_deps += essl_targets
+        resindex_cmd += [
+            '--exclude', '**/*.spv',
+            '--exclude', '**/*.glslh',
+        ]
+    endif
+
+    resindex_cmd += [
+        '--exclude', '**/*.build',
+        '--depfile', '@DEPFILE@',
+    ]
+
+    resindex = custom_target(
+        command : resindex_cmd,
+        depfile : 'res-index.inc.h.d',
+        output : 'res-index.inc.h',
+        depends : resindex_deps,
+        build_by_default : false,
+    )
+
+    taisei_deps += declare_dependency(include_directories : include_directories('.'))
+
+    meson.add_install_script(res_index_install_command, resindex, data_path)
+    subdir_done()
+endif
+
 if host_machine.system() == 'emscripten'
     em_data_prefix = '/@0@'.format(config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH'))
     em_bundles = ['gfx', 'misc']
@@ -56,8 +106,6 @@ foreach pkg : packages
     pkg_pkgdir = '@0@.pkgdir'.format(pkg)
     pkg_zip = '@0@.zip'.format(pkg)
     pkg_path = join_paths(meson.current_source_dir(), pkg_pkgdir)
-
-    subdir(pkg_pkgdir)
 
     if host_machine.system() == 'emscripten'
         foreach bundle : em_bundles

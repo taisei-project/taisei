@@ -136,3 +136,9 @@ format_array_command = [format_array_script]
 
 on_dist_script = find_program(files('on-meson-dist.py'))
 meson.add_dist_script(on_dist_script)
+
+index_resources_script = find_program(files('index-resources.py'))
+index_resources_command = [index_resources_script, common_taiseilib_args]
+
+res_index_install_script = find_program(files('res-index-install.py'))
+res_index_install_command = [res_index_install_script, common_taiseilib_args]
