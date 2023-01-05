@@ -12,6 +12,7 @@
 #include "util.h"
 #include "global.h"
 #include "video.h"
+#include "vfs/public.h"
 
 struct evloop_s evloop;
 
@@ -33,6 +34,8 @@ void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc 
 	frame->on_leave = on_leave;
 	frame->frametime = HRTIME_RESOLUTION / target_fps;
 	frame->prev_logic_action = LFRAME_WAIT;
+
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 }
 
 void eventloop_leave(void) {
