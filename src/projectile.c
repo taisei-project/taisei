@@ -300,6 +300,10 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	projectile_set_layer(p, args->layer);
 
+	if(!(p->flags & (PFLAG_MANUALANGLE | PFLAG_NOMOVE))) {
+		p->angle = carg(p->move.velocity) + p->angle_delta;
+	}
+
 	COEVENT_INIT_ARRAY(p->events);
 	ent_register(&p->ent, ENT_TYPE_ID(Projectile));
 
