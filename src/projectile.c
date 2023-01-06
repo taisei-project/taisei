@@ -1089,6 +1089,10 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float opacity = lerpf(opacity0, opacity1, timefactor);
 	opacity = powf(opacity, opacity_exp);
 
+	if(creal(scale) == 0 || cimag(scale) == 0 || opacity == 0) {
+		return;
+	}
+
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 	spbuf.shader_params.vector[0] *= opacity;
