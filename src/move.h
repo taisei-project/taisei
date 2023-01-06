@@ -42,7 +42,7 @@ INLINE MoveParams move_asymptotic_halflife(cmplx vel0, cmplx vel1, double halfli
 INLINE MoveParams move_asymptotic_simple(cmplx vel, double boost_factor) {
 	// NOTE: this matches the old asymptotic rule semantics exactly
 	double retention = 0.8;
-	return move_asymptotic(vel * (1 + boost_factor * retention), vel, retention);
+	return move_asymptotic(vel * (1 + boost_factor), vel, retention);
 }
 
 INLINE MoveParams move_towards(cmplx target, cmplx attraction) {
