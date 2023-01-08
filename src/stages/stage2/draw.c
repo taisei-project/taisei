@@ -458,7 +458,8 @@ void stage2_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 16);
 	stage_3d_context.cam.near = 1;
 	stage_3d_context.cam.far = 60;
-	stage2_draw_data = calloc(1, sizeof(*stage2_draw_data));
+	stage2_draw_data = aligned_alloc(alignof(*stage2_draw_data), sizeof(*stage2_draw_data));
+	memset(stage2_draw_data, 0, sizeof(*stage2_draw_data));
 
 	pbr_load_model(&stage2_draw_data->models.branch, "stage2/branch", "stage2/branch");
 	pbr_load_model(&stage2_draw_data->models.grass,  "stage2/grass",  "stage2/ground");
