@@ -387,7 +387,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define AWAIT_SUBTASKS       cotask_wait_subtasks()
 
 #define NOT_NULL_OR_DIE(expr) ({ \
-	__auto_type _not_null_ptr = (expr); \
+	auto _not_null_ptr = (expr); \
 	if(_not_null_ptr == NULL) { \
 		cotask_cancel(NOT_NULL(cotask_active())); \
 		UNREACHABLE; \

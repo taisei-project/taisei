@@ -292,7 +292,7 @@ typedef _Complex double cmplx;
 
 #define ASSUME_ALIGNED(expr, alignment) ({ \
 	static_assert(__builtin_constant_p(alignment), ""); \
-	__auto_type _assume_aligned_ptr = (expr); \
+	auto _assume_aligned_ptr = (expr); \
 	assert(((uintptr_t)_assume_aligned_ptr & ((alignment) - 1)) == 0); \
 	__builtin_assume_aligned(_assume_aligned_ptr, (alignment)); \
 })
@@ -303,7 +303,7 @@ typedef _Complex double cmplx;
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
 #define NOT_NULL(expr) ({ \
-	__auto_type _assume_not_null_ptr = (expr); \
+	auto _assume_not_null_ptr = (expr); \
 	assume(_assume_not_null_ptr != NULL); \
 	_assume_not_null_ptr; \
 })
@@ -322,3 +322,8 @@ typedef _Complex double cmplx;
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
 	#define ADDRESS_SANITIZER
 #endif
+
+// `auto` for type inference is standardized in C23 based on GCC's __auto_type semantics.
+// We want to have it now, and we don't care about the useless original purpose of C's `auto`.
+// from __future__ import auto
+#define auto __auto_type

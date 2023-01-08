@@ -160,7 +160,7 @@ INLINE void unlock_audio(void) {
 
 #define WITH_AUDIO_LOCK(...) ({ \
 	lock_audio(); \
-	__auto_type _result = __VA_ARGS__; \
+	auto _result = __VA_ARGS__; \
 	unlock_audio(); \
 	_result; \
 })

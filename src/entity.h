@@ -124,7 +124,7 @@ INLINE const char *ent_type_name(EntityType type) {
 }
 
 #define ENT_CAST(ent, typename) ({ \
-	__auto_type _ent = ent; \
+	auto _ent = ent; \
 	assert(_ent->type == ENT_TYPE_ID(typename)); \
 	UNION_CAST(EntityInterface*, typename*, _ent); \
 })

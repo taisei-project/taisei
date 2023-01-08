@@ -79,7 +79,7 @@ dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeo
 	dynarray_get_ptr(darr, _dynarray_dispatch_func(prepare_append_with_min_capacity, darr, min_capacity))
 
 #define dynarray_append_with_min_capacity(darr, min_capacity) ({ \
-	__auto_type _darr2 = NOT_NULL(darr); \
+	auto _darr2 = NOT_NULL(darr); \
 	dynarray_get_ptr(_darr2, _dynarray_dispatch_func(prepare_append_with_min_capacity, _darr2, min_capacity)); \
 })
 
@@ -99,7 +99,7 @@ void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) attr_
 
 #define dynarray_get_ptr(darr, idx) ({ \
 	DYNARRAY_ASSERT_VALID(darr); \
-	__auto_type _darr = NOT_NULL(darr); \
+	auto _darr = NOT_NULL(darr); \
 	dynarray_size_t _darr_idx = (idx); \
 	assume(_darr_idx >= 0); \
 	assume(_darr_idx < _darr->num_elements); \
@@ -129,8 +129,8 @@ void _dynarray_filter(
 
 #define dynarray_indexof(darr, pelem) ({ \
 	DYNARRAY_ASSERT_VALID(darr); \
-	__auto_type _darr = NOT_NULL(darr); \
-	__auto_type _darr_pelem = NOT_NULL(pelem); \
+	auto _darr = NOT_NULL(darr); \
+	auto _darr_pelem = NOT_NULL(pelem); \
 	DYNARRAY_CHECK_ELEMENT_TYPE(_darr, *(_darr_pelem)); \
 	intptr_t _darr_idx = (intptr_t)(_darr_pelem - _darr->data); \
 	assume(_darr_idx >= 0); \
