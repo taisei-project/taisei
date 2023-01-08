@@ -23,12 +23,6 @@ if is_developer_build
     util_src += files('debug.c')
 endif
 
-config.set('TAISEI_BUILDCONF_USE_DESIGNATED_INIT', cc.compiles(
-    'struct { int dummy; } __attribute__((designated_init)) x;',
-    name : '__attribute__((designated_init)) with -Werror',
-    args : ['-Wattributes', '-Werror']
-))
-
 if dep_crypto.found()
     util_src += files('sha256_openssl.c')
 else

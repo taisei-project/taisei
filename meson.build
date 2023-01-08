@@ -297,6 +297,18 @@ endif
 
 config.set('TAISEI_BUILDCONF_HAVE_ZIP_COMPRESSION_METHOD_SUPPORTED', have_zip_compression_method_supported)
 
+config.set('TAISEI_BUILDCONF_HAVE_ATTR_DESIGNATED_INIT', cc.compiles(
+    'struct { int dummy; } __attribute__((designated_init)) x;',
+    name : '__attribute__((designated_init))',
+    args : ['-Wattributes', '-Werror']
+))
+
+config.set('TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS', cc.compiles(
+    'void myfree(void *p); void *myalloc() __attribute__((malloc(myfree, 1)));',
+    name : '__attribute__((malloc(deallocator, index)))',
+    args : ['-Wattributes', '-Werror']
+))
+
 prefer_relpath_systems = [
     'windows',
 ]

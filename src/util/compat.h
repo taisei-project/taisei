@@ -272,7 +272,7 @@ typedef _Complex double cmplx;
 	attr_returns_nonnull attr_returns_max_aligned attr_nodiscard
 
 // Structure must not be initialized with an implicit (non-designated) initializer.
-#if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_USE_DESIGNATED_INIT)
+#if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_HAVE_ATTR_DESIGNATED_INIT)
 	#define attr_designated_init \
 		__attribute__ ((designated_init))
 #else
@@ -284,9 +284,25 @@ typedef _Complex double cmplx;
 #define attr_malloc \
 	__attribute__ ((malloc))
 
-// Function returns a pointer to object whose size is specified by the 'size_arg_index'th function argument.
-#define attr_alloc_size(size_arg_index) \
-	__attribute__ ((alloc_size(size_arg_index)))
+// Function returns a pointer that must be 'freed' with the specified deallocator function
+#ifdef TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS
+	#define attr_dealloc(deallocator, arg_index) \
+		__attribute__ ((malloc(deallocator, arg_index)))
+#else
+	#define attr_dealloc(deallocator, arg_index)
+#endif
+
+// With one argument n: function returns a pointer to object whose size is specified by the
+// nth argument.
+// With two arguments n, m: function returns a pointer to object whose size is specified by the
+// product of nth and mth arguments.
+#define attr_alloc_size(...) \
+	__attribute__ ((alloc_size(__VA_ARGS__)))
+
+// Function returns a pointer aligned to a byte boundary specified by nth argument
+#define attr_alloc_align(arg_index) \
+	__attribute__ ((alloc_align(arg_index)))
+
 
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
