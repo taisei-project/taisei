@@ -15,7 +15,7 @@
 #include "stageutils.h"
 #include "common_tasks.h"
 
-TASK(stage6_bg_fall_over, NO_ARGS) {
+TASK(stage6_bg_fall_over) {
 	Camera3D *cam = &stage_3d_context.cam;
 	int duration = 3500;
 	WAIT(100);
@@ -51,14 +51,14 @@ static float ease_final(float t, float from, float to, float outfrac) {
 }
 
 
-TASK(stage6_bg_3d_update, NO_ARGS) {
+TASK(stage6_bg_3d_update) {
 	for(;;) {
 		stage3d_update(&stage_3d_context);
 		YIELD;
 	}
 }
 
-TASK(stage6_bg_update, NO_ARGS) {
+TASK(stage6_bg_update) {
 	Camera3D *cam = &stage_3d_context.cam;
 	float vel = 0.0026;
 	float r = 8;
