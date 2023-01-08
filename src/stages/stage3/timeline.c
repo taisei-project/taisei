@@ -218,7 +218,7 @@ TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 
 	INVOKE_SUBTASK(horde_fairy_motion, ENT_BOX(e), ARGS.velocity);
 
-	int interval = difficulty_value(60, 40, 30, 20);
+	int interval = difficulty_value(70, 40, 30, 20);
 	real speed = difficulty_value(2, 2, 2.5, 3);
 	real lead = difficulty_value(5, 5, 3.25, 2.75);
 
@@ -270,8 +270,8 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 	cmplx offset = rng_dir();
 
 	int lance_count = 300;
-	int lance_segs = 20;
-	int lance_dirs = 100;
+	int lance_segs = difficulty_value(10,15,18,20);
+	int lance_dirs = difficulty_value(50,70,100,100);
 	int fib1 = 1;
 	int fib2 = 1;
 	for(int i = 0; i < lance_count; i++) {
@@ -311,7 +311,7 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 
 	int circle_count = 10;
 	int count = 50;
-	int interval = difficulty_value(40, 40, 30, 20);
+	int interval = difficulty_value(60, 40, 30, 20);
 	real twistangle = -0.01 * difficulty_value(1, 1, 0.5, 0.5);
 
 	INVOKE_SUBTASK_DELAYED(180, circle_twist_fairy_lances, ENT_BOX(e));
@@ -499,7 +499,9 @@ TASK(bulletring_fairy, { cmplx pos; MoveParams move; }) {
 
 	e->move = ARGS.move;
 
-	for(int i = 0; i < 4; ++i) {
+	int bullet_rings = difficulty_value(3,3,4,4);
+
+	for(int i = 0; i < bullet_rings; ++i) {
 		WAIT(60);
 
 		real rad = 64 + 16 * i;
@@ -740,7 +742,9 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.velocity = I,
 	);
 
-	INVOKE_TASK_DELAYED(900, common_call_func, welcome_swirls);
+	if(global.diff > D_Easy) {
+		INVOKE_TASK_DELAYED(900, common_call_func, welcome_swirls);
+	}
 
 	INVOKE_TASK_DELAYED(1200, circle_twist_fairy,
 		.pos = VIEWPORT_W/2.0 - 40*I,
