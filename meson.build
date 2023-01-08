@@ -107,6 +107,7 @@ taisei_c_args = [
     '-Winit-self',
     '-Wlogical-op',
     '-Wmissing-prototypes',
+    '-Wno-gnu-alignof-expression',
     '-Wno-gnu-folding-constant',
     '-Wno-ignored-optimization-argument',
     '-Wno-implicit-fallthrough',
