@@ -16,6 +16,8 @@
 #include "stageutils.h"
 #include "util/glm.h"
 
+#include <stdlib.h>
+
 static Stage2DrawData *stage2_draw_data;
 
 Stage2DrawData *stage2_get_draw_data(void) {
