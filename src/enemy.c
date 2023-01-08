@@ -261,7 +261,10 @@ int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 		return ACTION_ACK;
 	}
 
+	DIAGNOSTIC(push)
+	DIAGNOSTIC(ignored "-Wdeprecated-declarations")
 	Enemy *owner = REF(p->args[1]);
+	DIAGNOSTIC(pop)
 
 	int result = ACTION_NONE;
 
