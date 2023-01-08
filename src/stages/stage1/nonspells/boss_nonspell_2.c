@@ -96,6 +96,7 @@ TASK(spiralshot, {
 			.pos = pos + dist * cdir(angle),
 			.color = RGB(0.3, 0.3, 0.8),
 			.angle = angle + M_PI,
+			.flags = PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 		));
 
 		WAIT(interval);
@@ -106,6 +107,7 @@ TASK(spiralshot, {
 	play_sfx("redirect");
 	ENT_ARRAY_FOREACH(&projs, Projectile *p, {
 		spawn_projectile_highlight_effect(p);
+		p->flags &= ~PFLAG_NOMOVE;
 		p->move = move_linear(cdir(p->angle) * ARGS.bullet_speed);
 	});
 	ENT_ARRAY_CLEAR(&projs);
