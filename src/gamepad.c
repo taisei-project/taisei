@@ -34,15 +34,13 @@ typedef struct GamepadDevice {
 static struct {
 	GamepadAxisState *axes;
 	GamepadButtonState *buttons;
-	GamepadDevice *devices;
-	size_t num_devices;
-	size_t num_devices_allocated;
+	DYNAMIC_ARRAY(GamepadDevice) devices;
 	int active_dev_num;
 	bool initialized;
 	bool update_needed;
 } gamepad;
 
-#define DEVNUM(dev) (int)(ptrdiff_t)((dev) - gamepad.devices)
+#define DEVNUM(dev) dynarray_indexof(&gamepad.devices, (dev))
 
 static bool gamepad_event_handler(SDL_Event *event, void *arg);
 
@@ -112,11 +110,11 @@ static const char* gamepad_device_name_unmapped(int idx) {
 }
 
 static inline GamepadDevice* gamepad_get_device(int num) {
-	if(num < 0 || num >= gamepad.num_devices) {
+	if(num < 0 || num >= gamepad.devices.num_elements) {
 		return NULL;
 	}
 
-	return gamepad.devices + num;
+	return dynarray_get_ptr(&gamepad.devices, num);
 }
 
 const char* gamepad_device_name(int num) {
@@ -133,31 +131,19 @@ static bool gamepad_update_device_list(void) {
 	int cnt = SDL_NumJoysticks();
 	log_info("Updating gamepad devices list");
 
-	if(gamepad.num_devices > 0) {
-		assume(gamepad.devices != NULL);
+	dynarray_foreach_elem(&gamepad.devices, auto dev, {
+		SDL_GameControllerClose(dev->controller);
+	});
 
-		for(uint i = 0; i < gamepad.num_devices; ++i) {
-			SDL_GameControllerClose(gamepad.devices[i].controller);
-		}
-	}
-
-	gamepad.num_devices = 0;
+	gamepad.devices.num_elements = 0;
 
 	if(!cnt) {
-		free(gamepad.devices);
-		gamepad.devices = NULL;
-		gamepad.num_devices_allocated = 0;
+		dynarray_free_data(&gamepad.devices);
 		log_info("No joysticks attached");
 		return false;
 	}
 
-	if(gamepad.num_devices_allocated != cnt) {
-		free(gamepad.devices);
-		gamepad.devices = calloc(cnt, sizeof(GamepadDevice));
-		gamepad.num_devices_allocated = cnt;
-	}
-
-	GamepadDevice *dev = gamepad.devices;
+	dynarray_ensure_capacity(&gamepad.devices, cnt);
 
 	for(int i = 0; i < cnt; ++i) {
 		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(i);
@@ -176,11 +162,13 @@ static bool gamepad_update_device_list(void) {
 			continue;
 		}
 
+		auto dev = dynarray_append(&gamepad.devices);
 		dev->sdl_id = i;
 		dev->controller = SDL_GameControllerOpen(i);
 
 		if(dev->controller == NULL) {
 			log_sdl_error(LOG_WARN, "SDL_GameControllerOpen");
+			--gamepad.devices.num_elements;
 			continue;
 		}
 
@@ -188,16 +176,14 @@ static bool gamepad_update_device_list(void) {
 
 		if(dev->joy_instance < 0) {
 			log_sdl_error(LOG_WARN, "SDL_JoystickGetDeviceInstanceID");
+			--gamepad.devices.num_elements;
 			continue;
 		}
 
 		log_info("Found device '%s' (#%i): %s", guid_str, DEVNUM(dev), gamepad_device_name_unmapped(i));
-
-		++gamepad.num_devices;
-		++dev;
 	}
 
-	if(!gamepad.num_devices) {
+	if(!gamepad.devices.num_elements) {
 		log_info("No usable devices");
 		return false;
 	}
@@ -206,7 +192,7 @@ static bool gamepad_update_device_list(void) {
 }
 
 static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
-	if(gamepad.num_devices < 1) {
+	if(gamepad.devices.num_elements < 1) {
 		*out_localdevnum = GAMEPAD_DEVNUM_INVALID;
 		return NULL;
 	}
@@ -217,17 +203,17 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 		return NULL;
 	}
 
-	for(int i = 0; i < gamepad.num_devices; ++i) {
+	dynarray_foreach(&gamepad.devices, int i, auto dev, {
 		*guid_out = 0;
 
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(gamepad.devices[i].sdl_id);
+		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
 		SDL_JoystickGetGUIDString(guid, guid_out, guid_out_sz);
 
 		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
 			*out_localdevnum = i;
-			return gamepad.devices + i;
+			return dev;
 		}
-	}
+	});
 
 	*out_localdevnum = GAMEPAD_DEVNUM_INVALID;
 	return NULL;
@@ -273,7 +259,7 @@ bool gamepad_update_devices(void) {
 	GamepadDevice *dev = gamepad_find_device(guid, sizeof(guid), &gamepad.active_dev_num);
 
 	if(gamepad.active_dev_num == GAMEPAD_DEVNUM_ANY) {
-		log_info("Using all available devices (%zu)", gamepad.num_devices);
+		log_info("Using all available devices (%u)", gamepad.devices.num_elements);
 		return true;
 	}
 
@@ -329,13 +315,13 @@ void gamepad_shutdown(void) {
 	free(gamepad.axes);
 	free(gamepad.buttons);
 
-	for(uint i = 0; i < gamepad.num_devices; ++i) {
-		if(gamepad.devices[i].controller) {
-			SDL_GameControllerClose(gamepad.devices[i].controller);
+	dynarray_foreach_elem(&gamepad.devices, auto dev, {
+		if(dev->controller) {
+			SDL_GameControllerClose(dev->controller);
 		}
-	}
+	});
 
-	free(gamepad.devices);
+	dynarray_free_data(&gamepad.devices);
 
 	set_events_state(SDL_IGNORE);
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
@@ -691,7 +677,13 @@ static void gamepad_handle_button_repeat(GamepadButton btn, hrtime_t time) {
 }
 
 #define INSTANCE_IS_VALID(inst) \
-	(gamepad.active_dev_num == GAMEPAD_DEVNUM_ANY || (gamepad.active_dev_num >= 0 && (inst) == gamepad.devices[gamepad.active_dev_num].joy_instance))
+	( \
+		gamepad.active_dev_num == GAMEPAD_DEVNUM_ANY || \
+		( \
+			gamepad.active_dev_num >= 0 && \
+			(inst) == dynarray_get(&gamepad.devices, gamepad.active_dev_num).joy_instance \
+		) \
+	)
 
 static bool gamepad_event_handler(SDL_Event *event, void *arg) {
 	assert(gamepad.initialized);
@@ -745,7 +737,7 @@ static bool gamepad_event_handler(SDL_Event *event, void *arg) {
 }
 
 int gamepad_device_count(void) {
-	return gamepad.num_devices;
+	return gamepad.devices.num_elements;
 }
 
 void gamepad_device_guid(int num, char *guid_str, size_t guid_str_sz) {
@@ -767,14 +759,14 @@ int gamepad_device_num_from_guid(const char *guid_str) {
 		return GAMEPAD_DEVNUM_ANY;
 	}
 
-	for(uint i = 0; i < gamepad.num_devices; ++i) {
+	dynarray_foreach_idx(&gamepad.devices, int i, {
 		char guid[33] = {0};
 		gamepad_device_guid(i, guid, sizeof(guid));
 
 		if(!strcasecmp(guid_str, guid)) {
 			return i;
 		}
-	}
+	});
 
 	return GAMEPAD_DEVNUM_INVALID;
 }
