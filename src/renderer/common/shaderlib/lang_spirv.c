@@ -187,7 +187,7 @@ bool _spirv_compile(const ShaderSource *in, ShaderSource *out, const SPIRVCompil
 	out->lang.lang = SHLANG_SPIRV;
 	out->lang.spirv.target = options->target;
 	out->content_size = data_len + 1;
-	out->content = calloc(1, out->content_size);
+	out->content = mem_alloc(out->content_size);
 	memcpy(out->content, data, data_len);
 	shaderc_result_release(result);
 
@@ -209,7 +209,7 @@ static spvc_result write_glsl_attribs(spvc_compiler compiler, ShaderSource *out)
 	log_debug("%zu stage inputs", num_inputs);
 
 	// caller is expected to clean this up in case of error
-	GLSLAttribute *attrs = calloc(num_inputs, sizeof(*attrs));
+	auto attrs = ALLOC_ARRAY(num_inputs, GLSLAttribute);
 	out->meta.glsl.attributes = attrs;
 	out->meta.glsl.num_attributes = num_inputs;
 

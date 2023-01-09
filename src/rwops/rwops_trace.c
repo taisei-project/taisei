@@ -40,7 +40,7 @@ static int trace_close(SDL_RWops *rw) {
 	}
 
 	TRACE(rw, "closed %i", ret);
-	free(rw->hidden.unknown.data2);
+	mem_free(rw->hidden.unknown.data2);
 	SDL_FreeRW(rw);
 	return ret;
 }
@@ -99,7 +99,7 @@ SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose) {
 
 	memset(rw, 0, sizeof(SDL_RWops));
 
-	TData *tdata = calloc(1, sizeof(*tdata) + strlen(tag) + 1);
+	auto tdata = ALLOC_FLEX(TData, strlen(tag) + 1);
 	tdata->autoclose = autoclose;
 	strcpy(tdata->tag, tag);
 

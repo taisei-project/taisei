@@ -247,7 +247,7 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 		ires->res.type = rtype;
 		ires_unlock(ires);
 	} else {
-		ires = calloc(1, sizeof(*ires));
+		ires = ALLOC(typeof(*ires));
 		ires->mutex = SDL_CreateMutex();
 		ires->cond = SDL_CreateCond();
 		ires->res.type = rtype;
@@ -290,7 +290,7 @@ static void ires_free(InternalResource *ires) {
 	ires_free_meta(ires);
 	SDL_DestroyMutex(ires->mutex);
 	SDL_DestroyCond(ires->cond);
-	free(ires);
+	mem_free(ires);
 }
 
 attr_nonnull_all attr_returns_nonnull
@@ -444,7 +444,7 @@ done:
 
 static void cleanup_watched_path(InternalResource *ires, WatchedPath *wp) {
 	if(wp->vfs_path) {
-		free(wp->vfs_path);
+		mem_free(wp->vfs_path);
 		wp->vfs_path = NULL;
 	}
 
@@ -464,7 +464,7 @@ static void refresh_watched_path(InternalResource *ires, WatchedPath *wp) {
 
 	if(syspath != NULL) {
 		wp->watch = filewatch_watch(syspath);
-		free(syspath);
+		mem_free(syspath);
 		associate_ires_watch(ires, wp->watch);
 	} else {
 		wp->watch = NULL;
@@ -597,7 +597,7 @@ SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mo
 	}
 
 	FileWatch *w = filewatch_watch(syspath);
-	free(syspath);
+	mem_free(syspath);
 
 	if(w == NULL) {
 		return rw;
@@ -937,7 +937,7 @@ static bool unload_resource(InternalResource *ires) {
 		(flags & RESF_PERMANENT) ? "permanent" : "transient"
 	);
 
-	free(name);
+	mem_free(name);
 
 	return true;
 }
@@ -1241,8 +1241,8 @@ static void load_resource_finish(InternalResLoadState *st) {
 		}
 	}
 
-	free(allocated_source);
-	free((char*)st->st.path);
+	mem_free(allocated_source);
+	mem_free((char*)st->st.path);
 
 	assume(!ires->load || ires->load == st);
 
@@ -1252,7 +1252,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 		task_detach(async_task);
 	}
 
-	free(ires->load);
+	mem_free(ires->load);
 	ires->load = NULL;
 
 	ires_cond_broadcast(ires);
@@ -1479,7 +1479,7 @@ static bool resource_filewatch_handler(SDL_Event *e, void *a) {
 				task_detach(taskmgr_global_submit((TaskParams) {
 					.callback = file_deleted_handler_task,
 					.userdata = memdup(&a, sizeof(a)),
-					.userdata_free_callback = free,
+					.userdata_free_callback = mem_free,
 				}));
 			}
 		} else {
@@ -1556,7 +1556,7 @@ static void preload_path(const char *path, ResourceType type, ResourceFlags flag
 		char *name = get_name_from_path(_handlers[type], path);
 		if(name) {
 			preload_resource(type, name, flags);
-			free(name);
+			mem_free(name);
 		}
 	}
 }

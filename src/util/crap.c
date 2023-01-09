@@ -13,12 +13,6 @@
 
 #include <SDL_thread.h>
 
-void* memdup(const void *src, size_t size) {
-	void *data = malloc(size);
-	memcpy(data, src, size);
-	return data;
-}
-
 static_assert(sizeof(void*) == sizeof(void (*)(void)), "Can't store function pointers in void* :(");
 
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) {

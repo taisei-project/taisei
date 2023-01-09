@@ -22,7 +22,7 @@ Stage5DrawData *stage5_get_draw_data(void) {
 }
 
 void stage5_drawsys_init(void) {
-	stage5_draw_data = calloc(1, sizeof(*stage5_draw_data));
+	stage5_draw_data = ALLOC(typeof(*stage5_draw_data));
 	stage3d_init(&stage_3d_context, 16);
 
 	stage5_draw_data->stairs.light_pos = -200;
@@ -40,7 +40,7 @@ void stage5_drawsys_init(void) {
 
 void stage5_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage5_draw_data);
+	mem_free(stage5_draw_data);
 	stage5_draw_data = NULL;
 }
 

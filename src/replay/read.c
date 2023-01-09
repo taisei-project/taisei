@@ -40,9 +40,7 @@ static void replay_read_string(SDL_RWops *file, char **ptr, uint16_t version) {
 		len = SDL_ReadLE16(file);
 	}
 
-	*ptr = malloc(len + 1);
-	memset(*ptr, 0, len + 1);
-
+	*ptr = mem_alloc(len + 1);
 	SDL_RWread(file, *ptr, 1, len);
 }
 
@@ -99,7 +97,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 	char *gamev = taisei_version_tostring(&rpy->game_version);
 	log_info("Struct version %u (%scompressed), game version %s%s",
 		base_version, compression ? "" : "un", gamev, gamev_assumed ? " (assumed)" : "");
-	free(gamev);
+	mem_free(gamev);
 
 	if(compression) {
 		CHECKPROP(rpy->fileoffset = SDL_ReadLE32(file), u);
@@ -216,7 +214,7 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 	return true;
 
 error:
-	free(rpy->playername);
+	mem_free(rpy->playername);
 	rpy->playername = NULL;
 	dynarray_free_data(&rpy->stages);
 	return false;

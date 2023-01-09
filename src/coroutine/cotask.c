@@ -158,7 +158,7 @@ void cotask_global_init(void) {
 void cotask_global_shutdown(void) {
 	for(CoTask *task; (task = alist_pop(&task_pool));) {
 		koishi_deinit(&task->ko);
-		free(task);
+		mem_free(task);
 	}
 }
 
@@ -206,7 +206,7 @@ CoTask *cotask_new_internal(koishi_entrypoint_t entry_point) {
 			STAT_VAL(num_tasks_allocated), STAT_VAL(num_tasks_in_use)
 		);
 	} else {
-		task = calloc(1, sizeof(*task));
+		task = ALLOC(typeof(*task));
 		koishi_init(&task->ko, CO_STACK_SIZE, entry_point);
 		STAT_VAL_ADD(num_tasks_allocated, 1);
 		TASK_DEBUG(
@@ -325,7 +325,7 @@ static bool cotask_finalize(CoTask *task) {
 	CoTaskHeapMemChunk *heap_alloc = task_data->mem.onheap_alloc_head;
 	while(heap_alloc) {
 		CoTaskHeapMemChunk *next = heap_alloc->next;
-		free(heap_alloc);
+		mem_free(heap_alloc);
 		heap_alloc = next;
 	}
 
@@ -613,7 +613,7 @@ static void *_cotask_malloc(CoTaskData *task_data, size_t size, bool allow_heap_
 		}
 
 		log_warn("Requested size=%zu, available=%zi, serving from the heap", size, (ssize_t)available_on_stack);
-		CoTaskHeapMemChunk *chunk = calloc(1, sizeof(*chunk) + size);
+		auto chunk = ALLOC_FLEX(CoTaskHeapMemChunk, size);
 		chunk->next = task_data->mem.onheap_alloc_head;
 		task_data->mem.onheap_alloc_head = chunk;
 		mem = chunk->data;

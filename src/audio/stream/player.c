@@ -42,7 +42,7 @@ bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *ds
 	assert(dst_spec->frame_size == sizeof(struct stereo_frame));
 
 	plr->num_channels = num_channels,
-	plr->channels = calloc(sizeof(*plr->channels), num_channels);
+	plr->channels = ALLOC_ARRAY(num_channels, typeof(*plr->channels));
 	plr->dst_spec = *dst_spec;
 
 	for(int i = 0; i < num_channels; ++i) {
@@ -80,7 +80,7 @@ void splayer_shutdown(StreamPlayer *plr) {
 		free_channel(plr->channels + i);
 	}
 
-	free(plr->channels);
+	mem_free(plr->channels);
 }
 
 static inline void splayer_stream_ended(StreamPlayer *plr, int chan) {

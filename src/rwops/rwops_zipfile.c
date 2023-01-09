@@ -73,7 +73,7 @@ static int ziprw_close(SDL_RWops *rw) {
 		}
 
 		vfs_decref(rwdata->node);
-		free(rwdata);
+		mem_free(rwdata);
 		SDL_FreeRW(rw);
 	}
 
@@ -173,9 +173,10 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 
 	memset(rw, 0, sizeof(SDL_RWops));
 
-	ZipRWData *rwdata = calloc(1, sizeof(*rwdata));
-	rwdata->node = znode;
-	rwdata->size = pdata->size;
+	auto rwdata = ALLOC(ZipRWData, {
+		.node = znode,
+		.size = pdata->size,
+	});
 
 	vfs_incref(znode);
 

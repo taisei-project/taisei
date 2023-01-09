@@ -79,8 +79,8 @@ cleanup:
 		log_info("Loaded %i mappings from '%s'", num_loaded, repr);
 	}
 
-	free(repr);
-	free(errstr);
+	mem_free(repr);
+	mem_free(errstr);
 	return num_loaded;
 }
 
@@ -292,8 +292,8 @@ void gamepad_init(void) {
 
 	gamepad.initialized = true;
 	gamepad.update_needed = true;
-	gamepad.axes = calloc(GAMEPAD_AXIS_MAX, sizeof(GamepadAxisState));
-	gamepad.buttons = calloc(GAMEPAD_BUTTON_MAX + GAMEPAD_EMULATED_BUTTON_MAX, sizeof(GamepadButtonState));
+	gamepad.axes = ALLOC_ARRAY(GAMEPAD_AXIS_MAX, typeof(*gamepad.axes));
+	gamepad.buttons = ALLOC_ARRAY(GAMEPAD_BUTTON_MAX + GAMEPAD_EMULATED_BUTTON_MAX, typeof(*gamepad.buttons));
 	gamepad.active_dev_num = GAMEPAD_DEVNUM_INVALID;
 	gamepad_load_all_mappings();
 
@@ -312,8 +312,8 @@ void gamepad_shutdown(void) {
 
 	log_info("Disabled the gamepad subsystem");
 
-	free(gamepad.axes);
-	free(gamepad.buttons);
+	mem_free(gamepad.axes);
+	mem_free(gamepad.buttons);
 
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
 		if(dev->controller) {

@@ -106,7 +106,7 @@ static int config_compare_values(ConfigEntryType type, ConfigValue val0, ConfigV
 static void config_free_value(ConfigEntryType type, ConfigValue *val) {
 	switch(type) {
 		case CONFIG_TYPE_STRING:
-			free(val->s);
+			mem_free(val->s);
 			val->s = NULL;
 			break;
 
@@ -239,9 +239,8 @@ static ConfigEntry* config_get_unknown_entry(const char *name) {
 		}
 	}
 
-	l = malloc(sizeof(ConfigEntryList));
+	l = ALLOC(typeof(*l));
 	e = &l->entry;
-	memset(e, 0, sizeof(ConfigEntry));
 	stralloc(&e->name, name);
 	e->type = CONFIG_TYPE_STRING;
 	list_push(&unknowndefs, l);
@@ -256,9 +255,9 @@ static void config_set_unknown(const char *name, const char *val) {
 static void* config_delete_unknown_entry(List **list, List *lentry, void *arg) {
 	ConfigEntry *e = &((ConfigEntryList*)lentry)->entry;
 
-	free(e->name);
-	free(e->val.s);
-	free(list_unlink(list, lentry));
+	mem_free(e->name);
+	mem_free(e->val.s);
+	mem_free(list_unlink(list, lentry));
 
 	return NULL;
 }
@@ -313,7 +312,7 @@ void config_save(void) {
 
 	char *sp = vfs_repr(CONFIG_FILE, true);
 	log_info("Saved config '%s'", sp);
-	free(sp);
+	mem_free(sp);
 }
 
 #define INTOF(s)   ((int)strtol(s, NULL, 10))
@@ -447,7 +446,7 @@ void config_load(void) {
 	if(config_file) {
 		log_info("Loading configuration from %s", config_path);
 
-		ConfigParseState *state = malloc(sizeof(ConfigParseState));
+		auto state = ALLOC(ConfigParseState);
 		state->first_entry = -1;
 
 		if(!parse_keyvalue_stream_cb(config_file, config_set, state)) {
@@ -459,7 +458,7 @@ void config_load(void) {
 			config_set_int(CONFIG_VERSION, 0);
 		}
 
-		free(state);
+		mem_free(state);
 		SDL_RWclose(config_file);
 
 		config_apply_upgrades(config_get_int(CONFIG_VERSION));
@@ -473,7 +472,7 @@ void config_load(void) {
 		}
 	}
 
-	free(config_path);
+	mem_free(config_path);
 
 	// set config version to the latest
 	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));

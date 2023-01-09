@@ -51,8 +51,8 @@ static void add_spellpractice_stage(
 
 	add_stage(id, s->procs->spellpractice_procs, STAGE_SPELL, title, subtitle, a, diff);
 
-	free(title);
-	free(subtitle);
+	mem_free(title);
+	mem_free(subtitle);
 }
 
 static void add_spellpractice_stages(
@@ -97,7 +97,8 @@ static void stageinfo_fill(StagesExports *e);
 void stageinfo_init(void) {
 	dynstage_init();
 	stageinfo_fill(dynstage_get_exports());
-	stageinfo.stages_progress = calloc(stageinfo.stages.num_elements, sizeof(*stageinfo.stages_progress));
+	stageinfo.stages_progress = ALLOC_ARRAY(
+		stageinfo.stages.num_elements, typeof(*stageinfo.stages_progress));
 }
 
 void stageinfo_reload(void) {
@@ -110,8 +111,8 @@ void stageinfo_reload(void) {
 	attr_unused uint prev_count = stageinfo.stages.num_elements;
 
 	dynarray_foreach_elem(&stageinfo.stages, StageInfo *stg, {
-		free(stg->title);
-		free(stg->subtitle);
+		mem_free(stg->title);
+		mem_free(stg->subtitle);
 	});
 
 	stageinfo.stages.num_elements = 0;
@@ -176,13 +177,13 @@ static void stageinfo_fill(StagesExports *e) {
 
 void stageinfo_shutdown(void) {
 	dynarray_foreach(&stageinfo.stages, int i, StageInfo *stg, {
-		free(stg->title);
-		free(stg->subtitle);
-		free(stageinfo.stages_progress[i]);
+		mem_free(stg->title);
+		mem_free(stg->subtitle);
+		mem_free(stageinfo.stages_progress[i]);
 	});
 
 	dynarray_free_data(&stageinfo.stages);
-	free(stageinfo.stages_progress);
+	mem_free(stageinfo.stages_progress);
 	dynstage_shutdown();
 }
 
@@ -240,7 +241,7 @@ StageProgress *stageinfo_get_progress(StageInfo *stage, Difficulty diff, bool al
 			return NULL;
 		}
 
-		*prog = calloc(fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES, sizeof(**prog));
+		*prog = ALLOC_ARRAY(fixed_diff ? 1 : NUM_SELECTABLE_DIFFICULTIES, typeof(**prog));
 	}
 
 	return *prog + (fixed_diff ? 0 : diff - D_Easy);

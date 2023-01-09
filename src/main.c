@@ -87,9 +87,9 @@ static void init_log_file(void) {
 			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
 			logpath
 		);
-		free(logpath);
+		mem_free(logpath);
 		log_set_gui_error_appendix(m);
-		free(m);
+		mem_free(m);
 	} else {
 		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
 	}
@@ -151,7 +151,7 @@ static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priori
 }
 
 static void init_sdl(void) {
-	SDL_version v;
+	mem_install_sdl_callbacks();
 
 	if(SDL_Init(SDL_INIT_EVENTS) < 0) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
@@ -172,6 +172,7 @@ static void init_sdl(void) {
 
 	log_info("SDL initialized");
 
+	SDL_version v;
 	SDL_VERSION(&v);
 	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
 
@@ -231,13 +232,13 @@ static noreturn void main_vfstree(CallChainResult ccr);
 static void cleanup_replay(Replay **rpy) {
 	if(*rpy) {
 		replay_reset(*rpy);
-		free(*rpy);
+		mem_free(*rpy);
 		*rpy = NULL;
 	}
 }
 
 static Replay *alloc_replay(void) {
-	return calloc(1, sizeof(Replay));
+	return ALLOC(Replay);
 }
 
 static noreturn void main_quit(MainContext *ctx, int status) {
@@ -262,7 +263,7 @@ static noreturn void main_quit(MainContext *ctx, int status) {
 
 	cleanup_replay(&ctx->replay_out);
 
-	free(ctx);
+	mem_free(ctx);
 	exit(status);
 }
 
@@ -279,7 +280,7 @@ int main(int argc, char **argv);
 
 attr_used
 int main(int argc, char **argv) {
-	MainContext *ctx = calloc(1, sizeof(*ctx));
+	auto ctx = ALLOC(MainContext);
 
 	setlocale(LC_ALL, "C");
 	init_log();
@@ -474,7 +475,7 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
-	free(ccr.ctx);
+	mem_free(ccr.ctx);
 	main_quit(mctx, 0);
 }
 
@@ -485,10 +486,11 @@ static void main_singlestg(MainContext *mctx) {
 	StageInfo *stg = stageinfo_get_by_id(a->stageid);
 	assert(stg); // properly checked before this
 
-	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->mctx = mctx;
-	ctx->plrmode = a->plrmode;
-	ctx->stg = stg;
+	auto ctx = ALLOC(SingleStageContext, {
+		.mctx = mctx,
+		.plrmode = a->plrmode,
+		.stg = stg,
+	});
 
 	global.diff = stg->difficulty;
 	global.is_practice_mode = (stg->type != STAGE_EXTRA);

@@ -155,7 +155,7 @@ static DirWatch *dirwatch_get(const char *path, bool create) {
 		return NULL;
 	}
 
-	dw = calloc(1, sizeof(*dw));
+	dw = ALLOC(typeof(*dw));
 	dw->path = strdup(path);
 	dw->wd = wd;
 
@@ -174,14 +174,14 @@ static void dirwatch_delete(DirWatch *dw) {
 	WDRecord *wdrec = NOT_NULL(wdrecord_get(dw->wd, false));
 	list_unlink(&wdrec->dirwatch_list, dw);
 	ht_unset(&FW.dirpath_to_dirwatch, dw->path);
-	free(dw->path);
+	mem_free(dw->path);
 
 	if(wdrecord_decref(wdrec) == 0) {
 		inotify_rm_watch(FW.inotify, dw->wd);
 		wdrecord_delete(dw->wd);
 	}
 
-	free(dw);
+	mem_free(dw);
 }
 
 static void dirwatch_invalidate(DirWatch *dw) {
@@ -257,7 +257,7 @@ void filewatch_init(void) {
 		return;
 	}
 
-	_fw_globals = calloc(1, sizeof(*_fw_globals));
+	_fw_globals = ALLOC(typeof(*_fw_globals));
 	FW.inotify = inotify;
 	ht_filewatchset_create(&FW.updated_watches);
 	ht_int2wdrecord_create(&FW.wd_records);
@@ -286,7 +286,7 @@ void filewatch_shutdown(void) {
 		ht_destroy(&FW.dirpath_to_dirwatch);
 		SDL_DestroyMutex(FW.modify_mtx);
 
-		free(_fw_globals);
+		mem_free(_fw_globals);
 		_fw_globals = NULL;
 	}
 }
@@ -353,10 +353,10 @@ FileWatch *filewatch_watch(const char *syspath) {
 		return NULL;
 	}
 
-	FileWatch *fw = calloc(1, sizeof(*fw));
-	fw->dw = dw;
-	fw->filename = strdup(filename);
-	list_push(&dw->filewatch_list, fw);
+	auto fw = list_push(&dw->filewatch_list, ALLOC(FileWatch, {
+		.dw = dw,
+		.filename = strdup(filename),
+	}));
 
 	SDL_UnlockMutex(FW.modify_mtx);
 
@@ -369,8 +369,8 @@ void filewatch_unwatch(FileWatch *fw) {
 	DirWatch *dw = NOT_NULL(fw->dw);
 	list_unlink(&dw->filewatch_list, fw);
 
-	free(fw->filename);
-	free(fw);
+	mem_free(fw->filename);
+	mem_free(fw);
 
 	if(dw->filewatch_list == NULL) {
 		dirwatch_delete(dw);

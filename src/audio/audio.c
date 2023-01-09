@@ -133,7 +133,7 @@ void audio_init(void) {
 	if(LIKELY(have_chans)) {
 		int num_chans = audio.sfx_chan_last - audio.sfx_chan_first + 1;
 		assume(num_chans > 0);
-		audio.chan_play_ids = calloc(num_chans, sizeof(*audio.chan_play_ids));
+		audio.chan_play_ids = ALLOC_ARRAY(num_chans, typeof(*audio.chan_play_ids));
 	}
 }
 
@@ -163,14 +163,12 @@ SFX *audio_sfx_load(const char *name, const char *path) {
 	double vol = ht_get(&audio.sfx_volumes, name, DEFAULT_SFX_VOLUME) / 128.0;
 	B.object.sfx.set_volume(impl, vol);
 
-	SFX *sfx = calloc(1, sizeof(*sfx));
-	sfx->impl = impl;
-	return sfx;
+	return ALLOC(SFX, { .impl = impl });
 }
 
 void audio_sfx_destroy(SFX *sfx) {
 	B.sfx_unload(sfx->impl);
-	free(sfx);
+	mem_free(sfx);
 }
 
 static bool is_skip_mode(void) {
@@ -252,12 +250,12 @@ static SFXPlayID play_sound_internal(
 	}
 
 	if(delay > 0) {
-		struct enqueued_sound *s = malloc(sizeof(struct enqueued_sound));
-		s->time = global.frames + delay;
-		s->name = strdup(name);
-		s->cooldown = cooldown;
-		s->replace = replace;
-		list_push(&audio.sound_queue, s);
+		list_push(&audio.sound_queue, ALLOC(struct enqueued_sound, {
+			.time = global.frames + delay,
+			.name = strdup(name),
+			.cooldown = cooldown,
+			.replace = replace,
+		}));
 		return 0;
 	}
 
@@ -286,8 +284,8 @@ static SFXPlayID play_sound_internal(
 
 static void *discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
 	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
-	free(snd->name);
-	free(list_unlink(queue, vsnd));
+	mem_free(snd->name);
+	mem_free(list_unlink(queue, vsnd));
 	return NULL;
 }
 
@@ -296,8 +294,8 @@ static void *play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_
 		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
 	}
 
-	free(snd->name);
-	free(list_unlink(queue, snd));
+	mem_free(snd->name);
+	mem_free(list_unlink(queue, snd));
 	return NULL;
 }
 

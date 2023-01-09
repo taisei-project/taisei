@@ -286,7 +286,7 @@ void pixmap_convert_inplace_realloc(Pixmap *src, PixmapFormat format) {
 	pixmap_copy_meta(src, &tmp);
 	pixmap_convert_alloc(src, &tmp, format);
 
-	free(src->data.untyped);
+	mem_free(src->data.untyped);
 	*src = tmp;
 }
 

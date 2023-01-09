@@ -34,7 +34,7 @@ static struct {
 } entities;
 
 static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *arg) {
-	EntityDrawHook *hook = calloc(1, sizeof(*hook));
+	auto hook = ALLOC(EntityDrawHook);
 	hook->callback = cb;
 	hook->arg = arg;
 
@@ -45,7 +45,7 @@ static void remove_hook(EntityDrawHookList *list, EntityDrawHookCallback cb) {
 	for(EntityDrawHook *hook = list->first; hook; hook = hook->next) {
 		if(hook->callback == cb) {
 			alist_unlink(list, hook);
-			free(hook);
+			mem_free(hook);
 			return;
 		}
 	}

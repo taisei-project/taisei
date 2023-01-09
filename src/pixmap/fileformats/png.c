@@ -135,7 +135,7 @@ done:
 
 	if(error) {
 		log_error("Failed to load image: %s", error);
-		free(pixmap->data.untyped);
+		mem_free(pixmap->data.untyped);
 		pixmap->data.untyped = NULL;
 		return false;
 	}
@@ -272,7 +272,7 @@ done:
 	}
 
 	if(px.data.untyped != src_pixmap->data.untyped) {
-		free(px.data.untyped);
+		mem_free(px.data.untyped);
 	}
 
 	if(png != NULL) {

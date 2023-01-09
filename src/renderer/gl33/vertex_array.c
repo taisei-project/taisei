@@ -25,7 +25,7 @@ static GLenum va_type_to_gl_type[] = {
 };
 
 VertexArray* gl33_vertex_array_create(void) {
-	VertexArray *varr = calloc(1, sizeof(VertexArray));
+	auto varr = ALLOC(VertexArray);
 	glGenVertexArrays(1, &varr->gl_handle);
 	// A VAO must be bound before it's considered valid.
 	// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glIsVertexArray.xhtml
@@ -40,9 +40,9 @@ VertexArray* gl33_vertex_array_create(void) {
 void gl33_vertex_array_destroy(VertexArray *varr) {
 	gl33_vertex_array_deleted(varr);
 	glDeleteVertexArrays(1, &varr->gl_handle);
-	free(varr->attachments);
-	free(varr->attribute_layout);
-	free(varr);
+	mem_free(varr->attachments);
+	mem_free(varr->attribute_layout);
+	mem_free(varr);
 }
 
 static void gl33_vertex_array_update_layout(VertexArray *varr) {
@@ -135,7 +135,7 @@ void gl33_vertex_array_attach_vertex_buffer(VertexArray *varr, VertexBuffer *vbu
 
 	// TODO: more efficient way of handling this?
 	if(attachment >= varr->num_attachments) {
-		varr->attachments = realloc(varr->attachments, (attachment + 1) * sizeof(VertexBuffer*));
+		varr->attachments = mem_realloc(varr->attachments, (attachment + 1) * sizeof(VertexBuffer*));
 		varr->num_attachments = attachment + 1;
 	}
 
@@ -162,7 +162,7 @@ IndexBuffer* gl33_vertex_array_get_index_attachment(VertexArray *varr) {
 
 void gl33_vertex_array_layout(VertexArray *varr, uint nattribs, VertexAttribFormat attribs[nattribs]) {
 	if(varr->num_attributes != nattribs) {
-		varr->attribute_layout = realloc(varr->attribute_layout, sizeof(VertexAttribFormat) * nattribs);
+		varr->attribute_layout = mem_realloc(varr->attribute_layout, sizeof(VertexAttribFormat) * nattribs);
 		varr->num_attributes = nattribs;
 	}
 

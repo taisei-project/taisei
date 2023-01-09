@@ -100,14 +100,15 @@ ShaderObject *gl33_shader_object_compile(ShaderSource *source) {
 	if(status) {
 		uint nattribs = source->meta.glsl.num_attributes;
 
-		shobj = calloc(1, sizeof(*shobj));
-		shobj->gl_handle = gl_handle;
-		shobj->stage = source->stage;
-		shobj->num_attribs = nattribs;
+		shobj = ALLOC(ShaderObject, {
+			.gl_handle = gl_handle,
+			.stage = source->stage,
+			.num_attribs = nattribs,
+		});
 		snprintf(shobj->debug_label, sizeof(shobj->debug_label), "Shader object #%i", gl_handle);
 
 		if(nattribs > 0) {
-			shobj->attribs = calloc(nattribs, sizeof(*shobj->attribs));
+			shobj->attribs = ALLOC_ARRAY(nattribs, typeof(*shobj->attribs));
 		}
 
 		for(uint i = 0; i < nattribs; ++i) {
@@ -128,11 +129,11 @@ void gl33_shader_object_destroy(ShaderObject *shobj) {
 	uint nattribs = shobj->num_attribs;
 
 	for(uint i = 0; i < nattribs; ++i) {
-		free(shobj->attribs[i].name);
+		mem_free(shobj->attribs[i].name);
 	}
 
-	free(shobj->attribs);
-	free(shobj);
+	mem_free(shobj->attribs);
+	mem_free(shobj);
 }
 
 void gl33_shader_object_set_debug_label(ShaderObject *shobj, const char *label) {
@@ -154,12 +155,12 @@ bool gl33_shader_object_transfer(ShaderObject *dst, ShaderObject *src) {
 	uint nattribs = dst->num_attribs;
 
 	for(uint i = 0; i < nattribs; ++i) {
-		free(dst->attribs[i].name);
+		mem_free(dst->attribs[i].name);
 	}
 
-	free(dst->attribs);
+	mem_free(dst->attribs);
 	*dst = *src;
-	free(src);
+	mem_free(src);
 
 	return true;
 }

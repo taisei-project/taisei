@@ -63,7 +63,7 @@ static int rwzstd_close(SDL_RWops *rw) {
 		SDL_RWclose(z->wrapped);
 	}
 
-	free(z);
+	mem_free(z);
 	SDL_FreeRW(rw);
 
 	return 0;
@@ -91,12 +91,10 @@ static SDL_RWops *rwzstd_alloc(SDL_RWops *wrapped, bool autoclose) {
 	rw->type = SDL_RWOPS_UNKNOWN;
 	rw->seek = rwzstd_seek;
 	rw->size = rwzstd_size_invalid;
-
-	ZstdData *z = calloc(1, sizeof(ZstdData));
-	z->wrapped = wrapped;
-	z->autoclose = autoclose;
-
-	rw->hidden.unknown.data1 = z;
+	rw->hidden.unknown.data1 = ALLOC(ZstdData, {
+		.wrapped = wrapped,
+		.autoclose = autoclose,
+	});
 
 	return rw;
 }
@@ -106,7 +104,7 @@ static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
 
 	if(request_size > z->reader.in_buffer_alloc_size) {
 		z->reader.in_buffer_alloc_size = request_size;
-		in->src = realloc((void*)in->src, request_size);
+		in->src = mem_realloc((void*)in->src, request_size);
 	}
 
 	if(request_size == 0) {
@@ -187,7 +185,7 @@ static size_t rwzstd_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) 
 static int rwzstd_reader_close(SDL_RWops *rw) {
 	ZstdData *z = ZDATA(rw);
 	ZSTD_freeDStream(z->reader.stream);
-	free((void*)z->reader.in_buffer.src);
+	mem_free((void*)z->reader.in_buffer.src);
 	return rwzstd_close(rw);
 }
 
@@ -210,7 +208,7 @@ SDL_RWops *SDL_RWWrapZstdReader(SDL_RWops *src, bool autoclose) {
 	z->reader.stream = NOT_NULL(ZSTD_createDStream());
 	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
 	z->reader.in_buffer_alloc_size = imax(z->reader.next_read_size, 16384);
-	z->reader.in_buffer.src = calloc(1, z->reader.in_buffer_alloc_size);
+	z->reader.in_buffer.src = mem_alloc(z->reader.in_buffer_alloc_size);
 	z->reader.next_read_size = z->reader.in_buffer_alloc_size;
 
 	return rw;
@@ -335,7 +333,7 @@ static size_t rwzstd_write(SDL_RWops *rw, const void *data_in, size_t size, size
 	size_t in_free = z->writer.in_buffer_alloc_size - in->size;
 
 	if(UNLIKELY(in_free < wsize)) {
-		in_root = realloc(in_root, z->writer.in_buffer_alloc_size + (wsize - in_free));
+		in_root = mem_realloc(in_root, z->writer.in_buffer_alloc_size + (wsize - in_free));
 		in->src = in_root;
 	}
 
@@ -370,8 +368,8 @@ static int rwzstd_writer_close(SDL_RWops *rw) {
 	bool flush_ok = rwzstd_writer_flush(rw, ZSTD_e_end);
 
 	ZSTD_freeCStream(z->writer.stream);
-	free(z->writer.out_buffer.dst);
-	free((void*)z->writer.in_buffer.src);
+	mem_free(z->writer.out_buffer.dst);
+	mem_free((void*)z->writer.in_buffer.src);
 
 	int r = rwzstd_close(rw);
 
@@ -400,9 +398,9 @@ SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose) {
 	ZstdData *z = ZDATA(rw);
 	z->writer.stream = NOT_NULL(ZSTD_createCStream());
 	z->writer.out_buffer.size = ZSTD_CStreamOutSize();
-	z->writer.out_buffer.dst = calloc(1, z->writer.out_buffer.size);
+	z->writer.out_buffer.dst = mem_alloc(z->writer.out_buffer.size);
 	z->writer.in_buffer_alloc_size = ZSTD_CStreamInSize();
-	z->writer.in_buffer.src = calloc(1, z->writer.in_buffer_alloc_size);
+	z->writer.in_buffer.src = mem_alloc(z->writer.in_buffer_alloc_size);
 
 	if(UNLIKELY(clevel < ZSTD_minCLevel() || clevel > ZSTD_maxCLevel())) {
 		log_warn("Invalid compression level %i", clevel);

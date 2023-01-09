@@ -37,7 +37,7 @@ static size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 	if(size_required >= size_available) {
 		ptrdiff_t offset = strbuf->pos - strbuf->start;
 		size_t new_size = topow2_u64(strbuf->buf_size + (size_required - size_available + 1));
-		strbuf->start = realloc(strbuf->start, new_size);
+		strbuf->start = mem_realloc(strbuf->start, new_size);
 		strbuf->pos = strbuf->start + offset;
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
@@ -89,6 +89,6 @@ void strbuf_clear(StringBuffer *strbuf) {
 }
 
 void strbuf_free(StringBuffer *strbuf) {
-	free(strbuf->start);
+	mem_free(strbuf->start);
 	memset(strbuf, 0, sizeof(*strbuf));
 }

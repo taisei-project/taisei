@@ -85,7 +85,7 @@ char* vfs_node_repr(VFSNode *node, bool try_syspath) {
 		i.error, i.exists, i.is_dir
 	);
 
-	free(o);
+	mem_free(o);
 	return r;
 }
 

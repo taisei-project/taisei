@@ -19,7 +19,7 @@ void shader_free_source(ShaderSource *src) {
 		default: break;
 	}
 
-	free(src->content);
+	mem_free(src->content);
 	src->content = NULL;
 	src->content_size = 0;
 }

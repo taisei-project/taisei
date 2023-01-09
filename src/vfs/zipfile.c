@@ -129,7 +129,7 @@ static void vfs_zipfile_free_tls(VFSZipFileTLS *tls) {
 		SDL_RWclose(tls->stream);
 	}
 
-	free(tls);
+	mem_free(tls);
 }
 
 static void vfs_zipfile_free(VFSNode *node) {
@@ -150,7 +150,7 @@ static void vfs_zipfile_free(VFSNode *node) {
 			}
 
 			ht_destroy(&zdata->pathmap);
-			free(zdata);
+			mem_free(zdata);
 		}
 	}
 }
@@ -172,7 +172,7 @@ static char* vfs_zipfile_repr(VFSNode *node) {
 	VFSZipFileData *zdata = node->data1;
 	char *srcrepr = vfs_node_repr(zdata->source, false);
 	char *ziprepr = strfmt("zip archive %s", srcrepr);
-	free(srcrepr);
+	mem_free(srcrepr);
 	return ziprepr;
 }
 
@@ -236,7 +236,7 @@ const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZip
 			// this is a top-level subdirectory
 			// strip the trailing slash
 
-			free(idata->allocated);
+			mem_free(idata->allocated);
 			idata->allocated = strdup(p);
 			*strchr(idata->allocated, '/') = 0;
 			r = idata->allocated;
@@ -254,7 +254,7 @@ static const char* vfs_zipfile_iter(VFSNode *node, void **opaque) {
 	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
 
 	if(!idata) {
-		*opaque = idata = calloc(1, sizeof(VFSZipFileIterData));
+		*opaque = idata = ALLOC(VFSZipFileIterData);
 		idata->num = zip_get_num_entries(tls->zip, 0);
 	}
 
@@ -265,8 +265,8 @@ void vfs_zipfile_iter_stop(VFSNode *node, void **opaque) {
 	VFSZipFileIterData *idata = *opaque;
 
 	if(idata) {
-		free(idata->allocated);
-		free(idata);
+		mem_free(idata->allocated);
+		mem_free(idata);
 		*opaque = NULL;
 	}
 }
@@ -310,7 +310,7 @@ VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 		return tls;
 	}
 
-	tls = calloc(1, sizeof(VFSZipFileTLS));
+	tls = ALLOC(typeof(*tls));
 	SDL_TLSSet(zdata->tls_id, tls, (void(*)(void*))vfs_zipfile_free_tls);
 
 	zip_source_t *src = zip_source_function_create(vfs_zipfile_srcfunc, node, &tls->error);
@@ -321,7 +321,7 @@ VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 	if(!zip) {
 		char *r = vfs_node_repr(zdata->source, true);
 		vfs_set_error("Failed to open zip archive '%s': %s", r, zip_error_strerror(&tls->error));
-		free(r);
+		mem_free(r);
 		vfs_zipfile_free_tls(tls);
 		SDL_TLSSet(zdata->tls_id, 0, NULL);
 		zip_source_free(src);
@@ -335,9 +335,10 @@ bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
 	VFSNode backup;
 	memcpy(&backup, node, sizeof(VFSNode));
 
-	VFSZipFileData *zdata = calloc(1, sizeof(VFSZipFileData));
-	zdata->source = source;
-	zdata->tls_id = SDL_TLSCreate();
+	auto zdata = ALLOC(VFSZipFileData, {
+		.source = source,
+		.tls_id = SDL_TLSCreate(),
+	});
 
 	node->data1 = zdata;
 	node->funcs = &vfs_funcs_zipfile;

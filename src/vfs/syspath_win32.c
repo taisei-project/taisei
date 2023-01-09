@@ -19,15 +19,31 @@
 
 char *vfs_syspath_separators = "\\/";
 
-// taken from SDL
-#define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
-#define WIN_UTF8ToString(S) (WCHAR*)(void*)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
+static char *WIN_StringToUTF8(WCHAR *s) {
+	size_t slen = SDL_wcslen(s);
+	size_t utf16_size = (slen + 1) * sizeof(WCHAR);
+	size_t utf8_size = slen + 1;
+	char *temp = SDL_iconv_string("UTF-8", "UTF-16LE", (char*)s, utf16_size);
+	char *buf = memdup(temp, utf8_size);
+	SDL_free(temp);
+	return buf;
+}
+
+static WCHAR *WIN_UTF8ToString(char *s) {
+	size_t slen = strlen(s);
+	size_t utf16_size = (slen + 1) * sizeof(WCHAR);
+	size_t utf8_size = slen + 1;
+	WCHAR *temp = (void*)SDL_iconv_string("UTF-16LE", "UTF-8", s, utf8_size);
+	WCHAR *buf = memdup(temp, utf16_size);
+	SDL_free(temp);
+	return buf;
+}
 
 static bool vfs_syspath_init_internal(VFSNode *node, char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
-	free(node->_path_);
-	free(node->_wpath_);
+	mem_free(node->_path_);
+	mem_free(node->_wpath_);
 }
 
 static void _vfs_set_error_win32(const char *file, int line) {
@@ -48,7 +64,7 @@ static void _vfs_set_error_win32(const char *file, int line) {
 	char *errstr = WIN_StringToUTF8(buf);
 	LocalFree(buf);
 	vfs_set_error("Win32 error %lu: %s [%s:%i]", err, errstr, file, line);
-	free(errstr);
+	mem_free(errstr);
 }
 
 #define vfs_set_error_win32() _vfs_set_error_win32(_TAISEI_SRC_FILE, __LINE__)
@@ -112,18 +128,19 @@ static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
 	if(!*opaque) {
 		char *pattern = strjoin(node->_path_, "\\*.*", NULL);
 		wchar_t *wpattern = WIN_UTF8ToString(pattern);
-		free(pattern);
+		mem_free(pattern);
 		search_handle = FindFirstFile(wpattern, &fdata);
-		free(wpattern);
+		mem_free(wpattern);
 
 		if(search_handle == INVALID_HANDLE_VALUE) {
 			vfs_set_error_win32();
 			return NULL;
 		}
 
-		idata = calloc(1, sizeof(VFSWin32IterData));
-		idata->search_handle = search_handle;
-		idata->last_result = WIN_StringToUTF8(fdata.cFileName);
+		idata = ALLOC(VFSWin32IterData, {
+			.search_handle = search_handle,
+			.last_result = WIN_StringToUTF8(fdata.cFileName),
+		});
 		*opaque = idata;
 
 		if(!strcmp(idata->last_result, ".") || !strcmp(idata->last_result, "..")) {
@@ -134,7 +151,7 @@ static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
 	}
 
 	idata = *opaque;
-	free(idata->last_result);
+	mem_free(idata->last_result);
 	idata->last_result = NULL;
 
 	if(FindNextFile(idata->search_handle, &fdata)) {
@@ -162,8 +179,8 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 			vfs_set_error_win32();
 		}
 
-		free(idata->last_result);
-		free(idata);
+		mem_free(idata->last_result);
+		mem_free(idata);
 	}
 }
 
@@ -203,8 +220,8 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		vfs_set_error("Can't create directory %s (win32 error: %lu)", p, err);
 	}
 
-	free(p);
-	free(wp);
+	mem_free(p);
+	mem_free(wp);
 	return ok;
 }
 

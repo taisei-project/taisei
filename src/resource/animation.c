@@ -112,7 +112,7 @@ static bool animation_parse_sequence_spec(AniSequence **seq, int seq_capacity, c
 			for(int i = 0; i < delay; i++) {
 				if(seq_capacity <= (*seq)->length) {
 					seq_capacity *= 2;
-					*seq = realloc(*seq, sizeof(AniSequence) + seq_capacity * sizeof(*(*seq)->frame_indices));
+					*seq = mem_realloc(*seq, sizeof(AniSequence) + seq_capacity * sizeof(*(*seq)->frame_indices));
 				}
 				(*seq)->frame_indices[(*seq)->length++] = spriteidx;
 			}
@@ -156,19 +156,19 @@ static bool animation_parse_callback(const char *key, const char *value, void *d
 	}
 
 	int init_seq_size = 4;
-	AniSequence *seq = calloc(1, sizeof(AniSequence) + init_seq_size * sizeof(*seq->frame_indices));
+	AniSequence *seq = ALLOC_FLEX(typeof(*seq), init_seq_size * sizeof(*seq->frame_indices));
 	if(!animation_parse_sequence_spec(&seq, init_seq_size, value)) {
-		free(seq);
+		mem_free(seq);
 		return false;
 	}
 
 	ht_set(&ani->sequences, key, seq);
-	free(prev_seq);
+	mem_free(prev_seq);
 	return true;
 }
 
 static void *free_sequence_callback(const char *key, void *data, void *arg) {
-	free(data);
+	mem_free(data);
 	return NULL;
 }
 
@@ -176,13 +176,13 @@ static void load_animation_stage1(ResourceLoadState *st);
 static void load_animation_stage2(ResourceLoadState *st);
 
 static void load_animation_stage1(ResourceLoadState *st) {
-	Animation *ani = calloc(1, sizeof(Animation));
+	auto ani = ALLOC(Animation);
 	ht_create(&ani->sequences);
 
 	if(!parse_keyvalue_file_cb(st->path, animation_parse_callback, ani)) {
 		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 		ht_destroy(&ani->sequences);
-		free(ani);
+		mem_free(ani);
 		res_load_failed(st);
 		return;
 	}
@@ -191,7 +191,7 @@ static void load_animation_stage1(ResourceLoadState *st) {
 		log_error("Animation sprite count of '%s', must be positive integer", st->name);
 		ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 		ht_destroy(&ani->sequences);
-		free(ani);
+		mem_free(ani);
 		res_load_failed(st);
 		return;
 	}
@@ -243,7 +243,7 @@ static int remap_frame_index(struct anim_remap_state *st, int idx) {
 
 	ht_set(&st->flip_map, idx, remapped_idx);
 
-	st->ani->local_sprites = realloc(st->ani->local_sprites, sizeof(*st->ani->local_sprites) * st->num_flipped_sprites);
+	st->ani->local_sprites = mem_realloc(st->ani->local_sprites, sizeof(*st->ani->local_sprites) * st->num_flipped_sprites);
 	st->ani->local_sprites[local_idx] = *st->ani->sprites[orig_idx];
 	flip_sprite(st->ani->local_sprites + local_idx);
 
@@ -286,14 +286,14 @@ static void unload_animation(void *vani) {
 	Animation *ani = vani;
 	ht_foreach(&ani->sequences, free_sequence_callback, NULL);
 	ht_destroy(&ani->sequences);
-	free(ani->sprites);
-	free(ani->local_sprites);
-	free(ani);
+	mem_free(ani->sprites);
+	mem_free(ani->local_sprites);
+	mem_free(ani);
 }
 
 static void load_animation_stage2(ResourceLoadState *st) {
 	Animation *ani = NOT_NULL(st->opaque);
-	ani->sprites = calloc(ani->sprite_count, sizeof(Sprite*));
+	ani->sprites = ALLOC_ARRAY(ani->sprite_count, typeof(*ani->sprites));
 
 	char buf[strlen(st->name) + sizeof(".frame0000")];
 	struct anim_remap_state remap_state = { 0 };
@@ -324,7 +324,7 @@ static void load_animation_stage2(ResourceLoadState *st) {
 			assume(ani->sprite_count > prev_sprite_count);
 			assume(remap_state.num_flipped_sprites == ani->sprite_count - prev_sprite_count);
 			assume(ani->local_sprites != NULL);
-			ani->sprites = realloc(ani->sprites, sizeof(*ani->sprites) * ani->sprite_count);
+			ani->sprites = mem_realloc(ani->sprites, sizeof(*ani->sprites) * ani->sprite_count);
 
 			for(int i = 0; i < remap_state.num_flipped_sprites; ++i) {
 				ani->sprites[prev_sprite_count + i] = ani->local_sprites + i;

@@ -41,7 +41,7 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
 	ht_str2ptr_iter_t *iter = *opaque;
 
 	if(!iter) {
-		iter = *opaque = calloc(1, sizeof(*iter));
+		iter = *opaque = ALLOC(typeof(*iter));
 		ht_iter_begin(VDIR_TABLE(vdir), iter);
 	} else {
 		ht_iter_next(iter);
@@ -53,7 +53,7 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
 static void vfs_vdir_iter_stop(VFSNode *vdir, void **opaque) {
 	if(*opaque) {
 		ht_iter_end((ht_str2ptr_iter_t*)*opaque);
-		free(*opaque);
+		mem_free(*opaque);
 		*opaque = NULL;
 	}
 }
@@ -77,7 +77,7 @@ static void vfs_vdir_free(VFSNode *vdir) {
 
 	ht_iter_end(&iter);
 	ht_destroy(ht);
-	free(ht);
+	mem_free(ht);
 }
 
 static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtree) {

@@ -33,22 +33,22 @@ void free_menu(MenuData *menu) {
 	}
 
 	dynarray_foreach_elem(&menu->entries, MenuEntry *e, {
-		free(e->name);
+		mem_free(e->name);
 	});
 
 	dynarray_free_data(&menu->entries);
-	free(menu);
+	mem_free(menu);
 }
 
 MenuData* alloc_menu(void) {
-	MenuData *menu = calloc(1, sizeof(*menu));
-	menu->selected = -1;
-	menu->transition = TransFadeBlack;
-	menu->transition_in_time = FADE_TIME;
-	menu->transition_out_time = FADE_TIME;
-	menu->fade = 1.0;
-	menu->input = menu_input;
-	return menu;
+	return ALLOC(MenuData, {
+		.selected = -1,
+		.transition = TransFadeBlack,
+		.transition_in_time = FADE_TIME,
+		.transition_out_time = FADE_TIME,
+		.fade = 1.0,
+		.input = menu_input,
+	});
 }
 
 void kill_menu(MenuData *menu) {

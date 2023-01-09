@@ -22,7 +22,7 @@ Stage1DrawData *stage1_get_draw_data(void) {
 }
 
 void stage1_drawsys_init(void) {
-	stage1_draw_data = calloc(1, sizeof(*stage1_draw_data));
+	stage1_draw_data = ALLOC(typeof(*stage1_draw_data));
 	stage3d_init(&stage_3d_context, 64);
 
 	FBAttachmentConfig cfg = { 0 };
@@ -41,7 +41,7 @@ void stage1_drawsys_init(void) {
 
 void stage1_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage1_draw_data);
+	mem_free(stage1_draw_data);
 	stage1_draw_data = NULL;
 }
 

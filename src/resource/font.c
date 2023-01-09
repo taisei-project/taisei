@@ -11,6 +11,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
+#include FT_MODULE_H
 
 #include "font.h"
 #include "config.h"
@@ -161,15 +162,35 @@ static void try_create_mutex(SDL_mutex **mtx) {
 	}
 }
 
+static void *ft_alloc(FT_Memory mem, long size) {
+	return mem_alloc(size);
+}
+
+static void ft_free(FT_Memory mem, void *block) {
+	mem_free(block);
+}
+
+static void *ft_realloc(FT_Memory mem, long cur_size, long new_size, void *block) {
+	return mem_realloc(block, new_size);
+}
+
 static void init_fonts(void) {
 	FT_Error err;
+
+	static typeof(*(FT_Memory)0) ft_mem = {
+		.alloc = ft_alloc,
+		.free = ft_free,
+		.realloc = ft_realloc,
+	};
 
 	try_create_mutex(&globals.mutex.new_face);
 	try_create_mutex(&globals.mutex.done_face);
 
-	if((err = FT_Init_FreeType(&globals.lib))) {
-		log_fatal("FT_Init_FreeType() failed: %s", ft_error_str(err));
+	if((err = FT_New_Library(&ft_mem, &globals.lib))) {
+		log_fatal("FT_New_Library() failed: %s", ft_error_str(err));
 	}
+
+	FT_Add_Default_Modules(globals.lib);
 
 	events_register_handler(&(EventHandler) {
 		fonts_event, NULL, EPRIO_SYSTEM,
@@ -209,7 +230,7 @@ static void shutdown_fonts(void) {
 	r_texture_destroy(globals.render_tex);
 	r_framebuffer_destroy(globals.render_buf);
 	events_unregister_handler(fonts_event);
-	FT_Done_FreeType(globals.lib);
+	FT_Done_Library(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
 	SDL_DestroyMutex(globals.mutex.done_face);
 }
@@ -261,37 +282,38 @@ static FT_Face load_font_face(char *vfspath, long index) {
 
 	if(!rwops) {
 		log_error("VFS error: %s", vfs_get_error());
-		free(syspath);
+		mem_free(syspath);
 		return NULL;
 	}
 
-	FT_Stream ftstream = calloc(1, sizeof(*ftstream));
-	ftstream->descriptor.pointer = rwops;
-	ftstream->pathname.pointer = syspath;
-	ftstream->read = ftstream_read;
-	ftstream->close = ftstream_close;
-	ftstream->size = SDL_RWsize(rwops);
+	FT_Stream ftstream = ALLOC(typeof(*ftstream), {
+		.descriptor.pointer = rwops,
+		.pathname.pointer = syspath,
+		.read = ftstream_read,
+		.close = ftstream_close,
+		.size = SDL_RWsize(rwops),
+	});
 
-	FT_Open_Args ftargs;
-	memset(&ftargs, 0, sizeof(ftargs));
-	ftargs.flags = FT_OPEN_STREAM;
-	ftargs.stream = ftstream;
+	FT_Open_Args ftargs = {
+		.flags = FT_OPEN_STREAM,
+		.stream = ftstream,
+	};
 
 	FT_Face face;
 	FT_Error err;
 
 	if((err = FT_Open_Face_Thread_Safe(globals.lib, &ftargs, index, &face))) {
 		log_error("Failed to load font '%s' (face %li): FT_Open_Face() failed: %s", syspath, index, ft_error_str(err));
-		free(syspath);
-		free(ftstream);
+		mem_free(syspath);
+		mem_free(ftstream);
 		return NULL;
 	}
 
 	if(!(FT_IS_SCALABLE(face))) {
 		log_error("Font '%s' (face %li) is not scalable. This is not supported, sorry. Load aborted", syspath, index);
 		FT_Done_Face_Thread_Safe(face);
-		free(syspath);
-		free(ftstream);
+		mem_free(syspath);
+		mem_free(ftstream);
 		return NULL;
 	}
 
@@ -356,20 +378,20 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 #define SS_TEXTURE_FLAGS 0
 
 static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
-	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
-	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
-
-	ss->tex = r_texture_create(&(TextureParams) {
-		.width = SS_WIDTH,
-		.height = SS_HEIGHT,
-		.type = SS_TEXTURE_TYPE,
-		.flags = SS_TEXTURE_FLAGS,
-		.filter.mag = TEX_FILTER_LINEAR,
-		.filter.min = TEX_FILTER_LINEAR,
-		.wrap.s = TEX_WRAP_CLAMP,
-		.wrap.t = TEX_WRAP_CLAMP,
-		.mipmaps = TEX_MIPMAPS_MAX,
-		.mipmap_mode = TEX_MIPMAP_AUTO,
+	auto ss = ALLOC(SpriteSheet, {
+		.rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT),
+		.tex = r_texture_create(&(TextureParams) {
+			.width = SS_WIDTH,
+			.height = SS_HEIGHT,
+			.type = SS_TEXTURE_TYPE,
+			.flags = SS_TEXTURE_FLAGS,
+			.filter.mag = TEX_FILTER_LINEAR,
+			.filter.min = TEX_FILTER_LINEAR,
+			.wrap.s = TEX_WRAP_CLAMP,
+			.wrap.t = TEX_WRAP_CLAMP,
+			.mipmaps = TEX_MIPMAPS_MAX,
+			.mipmap_mode = TEX_MIPMAP_AUTO,
+		})
 	});
 
 #ifdef DEBUG
@@ -459,7 +481,7 @@ static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss)
 	r_texture_destroy(ss->tex);
 	rectpack_free(ss->rectpack);
 	alist_unlink(spritesheets, ss);
-	free(ss);
+	mem_free(ss);
 }
 
 static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
@@ -611,7 +633,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				SS_HEIGHT
 			);
 
-			free(px.data.rg8);
+			mem_free(px.data.rg8);
 			FT_Done_Glyph(g_src);
 			FT_Done_Glyph(g_fill);
 			FT_Done_Glyph(g_border);
@@ -620,7 +642,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			return NULL;
 		}
 
-		free(px.data.rg8);
+		mem_free(px.data.rg8);
 	}
 
 	FT_Done_Glyph(g_src);
@@ -690,8 +712,8 @@ static void free_font_resources(Font *font) {
 		FT_Done_Face_Thread_Safe(font->face);
 
 		if(stream) {
-			free(stream->pathname.pointer);
-			free(stream);
+			mem_free(stream->pathname.pointer);
+			mem_free(stream);
 		}
 	}
 
@@ -704,7 +726,7 @@ static void free_font_resources(Font *font) {
 	ht_destroy(&font->charcodes_to_glyph_ofs);
 	ht_destroy(&font->ftindex_to_glyph_ofs);
 
-	free(font->source_path);
+	mem_free(font->source_path);
 	dynarray_free_data(&font->glyphs);
 }
 
@@ -719,7 +741,7 @@ void load_font(ResourceLoadState *st) {
 		{ NULL }
 	})) {
 		log_error("Failed to parse font file '%s'", st->path);
-		free(font.source_path);
+		mem_free(font.source_path);
 		res_load_failed(st);
 		return;
 	}
@@ -756,7 +778,7 @@ void load_font(ResourceLoadState *st) {
 
 void unload_font(void *vfont) {
 	free_font_resources(vfont);
-	free(vfont);
+	mem_free(vfont);
 }
 
 struct rlfonts_arg {

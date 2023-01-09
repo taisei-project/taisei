@@ -43,7 +43,7 @@ static void do_save_replay(Replay *rpy) {
 		rpy->playername = NULL;
 	}
 
-	free(name);
+	mem_free(name);
 }
 
 static void save_rpy(MenuData *menu, void *a) {

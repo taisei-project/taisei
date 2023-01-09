@@ -320,7 +320,7 @@ static void add_character(MenuData *m, int i) {
 }
 
 static void charprofile_free(MenuData *m) {
-	free(m->context);
+	mem_free(m->context);
 }
 
 // TODO: add a better drawing animation for character selection
@@ -390,9 +390,7 @@ MenuData *create_charprofile_menu(void) {
 	m->end = charprofile_free;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
-
-	CharProfileContext *ctx = calloc(1, sizeof(*ctx));
-	m->context = ctx;
+	m->context = ALLOC(CharProfileContext);
 
 	for(int i = 0; i < NUM_PROFILES; i++) {
 		add_character(m, i);

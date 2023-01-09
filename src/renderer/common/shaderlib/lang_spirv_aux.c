@@ -192,6 +192,6 @@ bool spirv_transpile(const ShaderSource *in, ShaderSource *out, const SPIRVTrans
 		}
 	}
 
-	free(spirv.content);
+	mem_free(spirv.content);
 	return result;
 }

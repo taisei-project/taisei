@@ -107,7 +107,7 @@ static void update_char_menu(MenuData *menu) {
 }
 
 static void end_char_menu(MenuData *m) {
-	free(m->context);
+	mem_free(m->context);
 }
 
 static void transition_to_game(double fade) {
@@ -124,9 +124,10 @@ MenuData* create_char_menu(void) {
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
-	CharMenuContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->subshot = progress.game_settings.shotmode;
-	ctx->prev_selected_char = -1;
+	auto ctx = ALLOC(CharMenuContext, {
+		.subshot = progress.game_settings.shotmode,
+		.prev_selected_char = -1,
+	});
 	m->context = ctx;
 
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {

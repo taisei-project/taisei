@@ -201,13 +201,12 @@ static void credits_add(char *data, int time) {
 
 	for(c = data; *c; ++c)
 		if(*c == '\n') e->lines++;
-	e->data = malloc(e->lines * sizeof(char*));
+	e->data = ALLOC_ARRAY(e->lines, typeof(*e->data));
 
 	for(c = data; *c; ++c) {
 		if(*c == '\n') {
 			buf[i] = 0;
-			e->data[l] = malloc(strlen(buf) + 1);
-			strcpy(e->data[l], buf);
+			e->data[l] = strdup(buf);
 			i = 0;
 			++l;
 		} else {
@@ -216,8 +215,7 @@ static void credits_add(char *data, int time) {
 	}
 
 	buf[i] = 0;
-	e->data[l] = malloc(strlen(buf) + 1);
-	strcpy(e->data[l], buf);
+	e->data[l] = strdup(buf);
 	credits.end += time;
 }
 
@@ -546,9 +544,9 @@ static void credits_free(void) {
 
 	dynarray_foreach_elem(&credits.entries, CreditsEntry *e, {
 		for(int i = 0; i < e->lines; ++i) {
-			free(e->data[i]);
+			mem_free(e->data[i]);
 		}
-		free(e->data);
+		mem_free(e->data);
 	});
 
 	dynarray_free_data(&credits.entries);

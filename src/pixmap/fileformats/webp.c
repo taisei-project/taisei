@@ -117,7 +117,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 
 		if(status != VP8_STATUS_OK && status != VP8_STATUS_SUSPENDED) {
 			log_error("WebPIAppend() failed: %s", webp_error_str(status));
-			free(pixmap->data.untyped);
+			mem_free(pixmap->data.untyped);
 			pixmap->data.untyped = NULL;
 			break;
 		}

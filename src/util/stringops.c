@@ -57,20 +57,14 @@ bool strstartswith_any(const char *s, const char **earray) {
 }
 
 void stralloc(char **dest, const char *src) {
-	free(*dest);
-
-	if(src) {
-		*dest = malloc(strlen(src)+1);
-		strcpy(*dest, src);
-	} else {
-		*dest = NULL;
-	}
+	mem_free(*dest);
+	*dest = src ? strdup(src) : NULL;
 }
 
 char* strjoin(const char *first, ...) {
 	va_list args;
 	size_t size = strlen(first) + 1;
-	char *str = malloc(size);
+	char *str = mem_alloc(size);
 
 	strcpy(str, first);
 	va_start(args, first);
@@ -83,7 +77,7 @@ char* strjoin(const char *first, ...) {
 		}
 
 		size += strlen(next);
-		str = realloc(str, size);
+		str = mem_realloc(str, size);
 		strcat(str, next);
 	}
 
@@ -101,7 +95,7 @@ char* vstrfmt(const char *fmt, va_list args) {
 		asize *= 2;
 
 	for(;;) {
-		out = realloc(out, asize);
+		out = mem_realloc(out, asize);
 
 		va_list nargs;
 		va_copy(nargs, args);
@@ -116,7 +110,7 @@ char* vstrfmt(const char *fmt, va_list args) {
 	}
 
 	if(asize > strlen(out) + 1) {
-		out = realloc(out, strlen(out) + 1);
+		out = mem_realloc(out, strlen(out) + 1);
 	}
 
 	return out;
@@ -149,7 +143,7 @@ char* strappend(char **dst, char *src) {
 		return *dst = strdup(src);
 	}
 
-	*dst = realloc(*dst, strlen(*dst) + strlen(src) + 1);
+	*dst = mem_realloc(*dst, strlen(*dst) + strlen(src) + 1);
 	strcat(*dst, src);
 	return *dst;
 }
@@ -199,7 +193,7 @@ void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) {
 	assert(bufsize > ucs4len(ucs4));
 	char *temp = ucs4_to_utf8_alloc(ucs4);
 	memcpy(buf, temp, bufsize);
-	free(temp);
+	SDL_free(temp);
 }
 
 char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {

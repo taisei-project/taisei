@@ -35,7 +35,7 @@ void *pixmap_alloc_buffer(PixmapFormat format, uint32_t width, uint32_t height, 
 		*out_bufsize = s;
 	}
 
-	return calloc(1, s);
+	return mem_alloc(s);
 }
 
 void *pixmap_alloc_buffer_for_copy(const Pixmap *src, uint32_t *out_bufsize) {

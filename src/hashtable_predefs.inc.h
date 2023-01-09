@@ -18,7 +18,7 @@
 #define HT_SUFFIX                      str2ptr
 #define HT_KEY_TYPE                    char*
 #define HT_VALUE_TYPE                  void*
-#define HT_FUNC_FREE_KEY(key)          free(key)
+#define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
@@ -38,7 +38,7 @@
 #define HT_SUFFIX                      str2ptr_ts
 #define HT_KEY_TYPE                    char*
 #define HT_VALUE_TYPE                  void*
-#define HT_FUNC_FREE_KEY(key)          free(key)
+#define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
@@ -59,7 +59,7 @@
 #define HT_SUFFIX                      str2int
 #define HT_KEY_TYPE                    char*
 #define HT_VALUE_TYPE                  int64_t
-#define HT_FUNC_FREE_KEY(key)          free(key)
+#define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))
@@ -78,7 +78,7 @@
 #define HT_SUFFIX                      str2int_ts
 #define HT_KEY_TYPE                    char*
 #define HT_VALUE_TYPE                  int64_t
-#define HT_FUNC_FREE_KEY(key)          free(key)
+#define HT_FUNC_FREE_KEY(key)          mem_free(key)
 #define HT_FUNC_KEYS_EQUAL(key1, key2) (!strcmp(key1, key2))
 #define HT_FUNC_HASH_KEY(key)          htutil_hashfunc_string(key)
 #define HT_FUNC_COPY_KEY(dst, src)     (*(dst) = strdup(src))

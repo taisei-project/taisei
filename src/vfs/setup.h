@@ -25,7 +25,7 @@ void vfs_setup(CallChain onready);
 static inline void vfs_setup_onsync_done(CallChainResult ccr) {
 	CallChain *next = ccr.ctx;
 	run_call_chain(next, NULL);
-	free(next);
+	mem_free(next);
 }
 
 static inline void vfs_setup_res_syspath(const char *res_path) {

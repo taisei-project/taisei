@@ -115,11 +115,11 @@ static bool audio_sdl_init(void) {
 
 	AudioStreamSpec mspec = astream_spec(aspec.format, aspec.channels, aspec.freq);
 
-	audio.mixer = calloc(1, sizeof(*audio.mixer));
+	audio.mixer = ALLOC(typeof(*audio.mixer));
 
 	if(!mixer_init(audio.mixer, &mspec)) {
 		mixer_shutdown(audio.mixer);
-		free(audio.mixer);
+		mem_free(audio.mixer);
 		SDL_CloseAudioDevice(audio.device);
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
@@ -136,7 +136,7 @@ static bool audio_sdl_shutdown(void) {
 	SDL_CloseAudioDevice(audio.device);
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	mixer_shutdown(audio.mixer);
-	free(audio.mixer);
+	mem_free(audio.mixer);
 
 	log_info("Audio subsystem deinitialized (SDL)");
 	return true;

@@ -29,9 +29,10 @@ VideoPostProcess *video_postprocess_init(void) {
 		return NULL;
 	}
 
-	VideoPostProcess *vpp = calloc(1, sizeof(*vpp));
-	vpp->pp_pipeline = pps;
-	vpp->mfb_group = fbmgr_group_create();
+	auto vpp = ALLOC(VideoPostProcess, {
+		.pp_pipeline = pps,
+		.mfb_group = fbmgr_group_create(),
+	});
 
 	FBAttachmentConfig a = { 0 };
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
@@ -56,7 +57,7 @@ VideoPostProcess *video_postprocess_init(void) {
 void video_postprocess_shutdown(VideoPostProcess *vpp) {
 	if(vpp) {
 		fbmgr_group_destroy(vpp->mfb_group);
-		free(vpp);
+		mem_free(vpp);
 	}
 }
 

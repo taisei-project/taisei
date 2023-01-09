@@ -25,7 +25,7 @@ static void auto_realloc(Buffer *b, size_t newsize) {
 	SDL_RWclose(b->memrw);
 
 	b->size = newsize;
-	b->data = realloc(b->data, b->size);
+	b->data = mem_realloc(b->data, b->size);
 	b->memrw = SDL_RWFromMem(b->data, b->size);
 
 	if(b->ptr) {
@@ -41,8 +41,8 @@ static int auto_close(SDL_RWops *rw) {
 	if(rw) {
 		Buffer *b = BUFFER(rw);
 		SDL_RWclose(b->memrw);
-		free(b->data);
-		free(b);
+		mem_free(b->data);
+		mem_free(b);
 		SDL_FreeRW(rw);
 	}
 
@@ -91,11 +91,12 @@ SDL_RWops *SDL_RWAutoBuffer(void **ptr, size_t initsize) {
 	rw->write = auto_write;
 	rw->close = auto_close;
 
-	Buffer *b = calloc(1, sizeof(Buffer));
+	auto b = ALLOC(Buffer, {
+		.size = initsize,
+		.data = mem_alloc(initsize),
+		.ptr = ptr,
+	});
 
-	b->size = initsize;
-	b->data = malloc(b->size);
-	b->ptr = ptr;
 	b->memrw = SDL_RWFromMem(b->data, b->size);
 
 	if(ptr) {

@@ -137,7 +137,7 @@ static void stage_framebuffer_resize_strategy(void *userdata, IntExtent *out_dim
 static void stage_framebuffer_resize_strategy_cleanup(void *userdata) {
 	StageFramebufferResizeParams *rp = userdata;
 	if(--rp->refs <= 0) {
-		free(rp);
+		mem_free(rp);
 	}
 }
 

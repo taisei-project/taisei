@@ -375,13 +375,13 @@ static bool cache_uniforms(ShaderProgram *prog) {
 
 		if(UNIFORM_TYPE_IS_SAMPLER(uni.type)) {
 			uni.elem_size = sizeof(GLint);
-			uni.textures = calloc(uni.array_size, sizeof(*uni.textures));
+			uni.textures = ALLOC_ARRAY(uni.array_size, typeof(*uni.textures));
 		} else {
 			uni.elem_size = typeinfo->element_size * typeinfo->elements;
 		}
 
-		uni.cache.commited = calloc(uni.array_size, uni.elem_size);
-		uni.cache.pending = calloc(uni.array_size, uni.elem_size);
+		uni.cache.commited = mem_alloc_array(uni.array_size, uni.elem_size);
+		uni.cache.pending = mem_alloc_array(uni.array_size, uni.elem_size);
 		uni.cache.update_first_idx = uni.array_size;
 
 		if(glext.version.is_webgl) {
@@ -518,10 +518,10 @@ static void *free_uniform(const char *key, void *data, void *arg) {
 		list_unlink(&sampler_uniforms, uniform);
 	}
 
-	free(uniform->textures);
-	free(uniform->cache.commited);
-	free(uniform->cache.pending);
-	free(uniform);
+	mem_free(uniform->textures);
+	mem_free(uniform->cache.commited);
+	mem_free(uniform->cache.pending);
+	mem_free(uniform);
 	return NULL;
 }
 
@@ -530,11 +530,11 @@ void gl33_shader_program_destroy(ShaderProgram *prog) {
 	glDeleteProgram(prog->gl_handle);
 	ht_foreach(&prog->uniforms, free_uniform, NULL);
 	ht_destroy(&prog->uniforms);
-	free(prog);
+	mem_free(prog);
 }
 
 ShaderProgram *gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[num_objects]) {
-	ShaderProgram *prog = calloc(1, sizeof(*prog));
+	auto prog = ALLOC(ShaderProgram);
 
 	prog->gl_handle = glCreateProgram();
 	snprintf(prog->debug_label, sizeof(prog->debug_label), "Shader program #%i", prog->gl_handle);
@@ -559,7 +559,7 @@ ShaderProgram *gl33_shader_program_link(uint num_objects, ShaderObject *shobjs[n
 	if(!link_status) {
 		log_error("Failed to link the shader program");
 		glDeleteProgram(prog->gl_handle);
-		free(prog);
+		mem_free(prog);
 		return NULL;
 	}
 
@@ -625,9 +625,9 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 		Uniform *uold = NOT_NULL(iter.value);
 		Uniform *unew = ht_get(&old_new_map, uold, NULL);
 
-		free(uold->textures);
-		free(uold->cache.pending);
-		free(uold->cache.commited);
+		mem_free(uold->textures);
+		mem_free(uold->cache.pending);
+		mem_free(uold->cache.commited);
 
 		if(unew) {
 			uold->textures = unew->textures;
@@ -643,7 +643,7 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 			}
 
 			ht_unset(&src->uniforms, iter.key);
-			free(unew);
+			mem_free(unew);
 		} else {
 			// Deactivate, but keep the object around, because user code may be referencing it.
 			// We also need to keep type information, in case the uniform gets re-introduced.
@@ -684,7 +684,7 @@ bool gl33_shader_program_transfer(ShaderProgram *dst, ShaderProgram *src) {
 
 	ht_destroy(&old_new_map);
 	ht_destroy(&src->uniforms);
-	free(src);
+	mem_free(src);
 
 	return true;
 }

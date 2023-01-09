@@ -147,7 +147,7 @@ bool texture_loader_basisu_load_cached(
 	return true;
 
 bad_entry:
-	free(out_pixmap->data.untyped);
+	mem_free(out_pixmap->data.untyped);
 	out_pixmap->data.untyped = NULL;
 	return false;
 }

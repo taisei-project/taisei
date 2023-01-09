@@ -13,6 +13,7 @@
 #include <SDL.h>
 
 #include "systime.h"
+#include "memory.h"
 
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF
@@ -29,7 +30,7 @@
 #define strdup _ts_strdup
 INLINE attr_returns_allocated attr_nonnull(1) char *strdup(const char *str) {
 	size_t sz = strlen(str) + 1;
-	return memcpy(malloc(sz), str, sz);
+	return memcpy(mem_alloc(sz), str, sz);
 }
 
 #ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
@@ -66,7 +67,7 @@ char* strappend(char **dst, char *src);
 char* strftimealloc(const char *fmt, const struct tm *timeinfo) attr_returns_allocated;
 void expand_escape_sequences(char *str);
 
-uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr);
+uint32_t* ucs4chr(const uint32_t *ucs4, uint32_t chr) attr_dealloc(SDL_free, 1);
 size_t ucs4len(const uint32_t *ucs4);
 
 void utf8_to_ucs4(const char *utf8, size_t bufsize, uint32_t buf[bufsize]) attr_nonnull(1, 3);

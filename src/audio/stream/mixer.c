@@ -338,11 +338,11 @@ MixerBGMImpl *mixerbgm_load(const char *vfspath) {
 		return NULL;
 	}
 
-	MixerBGMImpl *bgm = calloc(1, sizeof(*bgm));
+	auto bgm = ALLOC(MixerBGMImpl);
 
 	if(!astream_open(&bgm->stream, rw, vfspath)) {
 		SDL_RWclose(rw);
-		free(bgm);
+		mem_free(bgm);
 		return NULL;
 	}
 
@@ -352,7 +352,7 @@ MixerBGMImpl *mixerbgm_load(const char *vfspath) {
 
 void mixerbgm_unload(MixerBGMImpl *bgm) {
 	astream_close(&bgm->stream);
-	free(bgm);
+	mem_free(bgm);
 }
 
 void mixer_notify_bgm_unload(Mixer *mx, MixerBGMImpl *bgm) {
@@ -398,13 +398,13 @@ MixerSFXImpl *mixersfx_load(const char *vfspath, const AudioStreamSpec *spec) {
 
 	assert(pcm_size <= INT32_MAX);
 
-	MixerSFXImpl *isnd = calloc(1, sizeof(*isnd) + pcm_size);
+	auto isnd = ALLOC_FLEX(MixerSFXImpl, pcm_size);
 
 	bool ok = astream_crystalize(&stream, spec, pcm_size, &isnd->pcm);
 	astream_close(&stream);
 
 	if(!ok) {
-		free(isnd);
+		mem_free(isnd);
 		return NULL;
 	}
 
@@ -415,7 +415,7 @@ MixerSFXImpl *mixersfx_load(const char *vfspath, const AudioStreamSpec *spec) {
 }
 
 void mixersfx_unload(MixerSFXImpl *sfx) {
-	free(sfx);
+	mem_free(sfx);
 }
 
 void mixer_notify_sfx_unload(Mixer *mx, MixerSFXImpl *sfx) {

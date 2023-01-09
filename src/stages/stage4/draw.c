@@ -329,7 +329,7 @@ void stage4_draw(void) {
 }
 
 void stage4_drawsys_init(void) {
-	stage4_draw_data = calloc(1, sizeof(*stage4_draw_data));
+	stage4_draw_data = ALLOC(typeof(*stage4_draw_data));
 	stage3d_init(&stage_3d_context, 16);
 
 	pbr_load_model(&stage4_draw_data->models.corridor, "stage4/corridor", "stage4/corridor");
@@ -345,7 +345,7 @@ void stage4_drawsys_init(void) {
 
 void stage4_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage4_draw_data);
+	mem_free(stage4_draw_data);
 	stage4_draw_data = NULL;
 }
 

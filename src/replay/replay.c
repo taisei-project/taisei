@@ -22,7 +22,7 @@ void replay_destroy_events(Replay *rpy) {
 void replay_reset(Replay *rpy) {
 	replay_destroy_events(rpy);
 	dynarray_free_data(&rpy->stages);
-	free(rpy->playername);
+	mem_free(rpy->playername);
 	memset(rpy, 0, sizeof(Replay));
 }
 
@@ -36,10 +36,10 @@ bool replay_save(Replay *rpy, const char *name) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	char *sp = vfs_repr(p, true);
 	log_info("Saving %s", sp);
-	free(sp);
+	mem_free(sp);
 
 	SDL_RWops *file = vfs_open(p, VFS_MODE_WRITE);
-	free(p);
+	mem_free(p);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -74,17 +74,17 @@ bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
 	SDL_RWops *file = vfs_open(p, VFS_MODE_READ);
-	free(p);
+	mem_free(p);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
-		free(sp);
+		mem_free(sp);
 		return false;
 	}
 
 	bool result = replay_read(rpy, file, mode, sp);
 
-	free(sp);
+	mem_free(sp);
 	SDL_RWclose(file);
 	return result;
 }

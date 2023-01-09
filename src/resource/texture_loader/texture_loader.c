@@ -12,28 +12,28 @@
 #include "basisu.h"
 
 void texture_loader_cleanup_stage1(TextureLoadData *ld) {
-	free(ld->src_paths.main);
+	mem_free(ld->src_paths.main);
 	ld->src_paths.main = NULL;
 
-	free(ld->src_paths.alphamap);
+	mem_free(ld->src_paths.alphamap);
 	ld->src_paths.alphamap = NULL;
 
 	for(int i = 0; i < ARRAY_SIZE(ld->src_paths.cubemap); ++i) {
-		free(ld->src_paths.cubemap[i]);
+		mem_free(ld->src_paths.cubemap[i]);
 		ld->src_paths.cubemap[i] = NULL;
 	}
 }
 
 void texture_loader_cleanup_stage2(TextureLoadData *ld) {
-	free(ld->alphamap.data.untyped);
+	mem_free(ld->alphamap.data.untyped);
 	ld->alphamap.data.untyped = NULL;
 
 	if(ld->pixmaps) {
 		for(int i = 0; i < ld->num_pixmaps; ++i) {
-			free(ld->pixmaps[i].data.untyped);
+			mem_free(ld->pixmaps[i].data.untyped);
 		}
 
-		free(ld->pixmaps);
+		mem_free(ld->pixmaps);
 		ld->pixmaps = NULL;
 	}
 }
@@ -41,7 +41,7 @@ void texture_loader_cleanup_stage2(TextureLoadData *ld) {
 void texture_loader_cleanup(TextureLoadData *ld) {
 	texture_loader_cleanup_stage1(ld);
 	texture_loader_cleanup_stage2(ld);
-	free(ld);
+	mem_free(ld);
 }
 
 void texture_loader_failed(TextureLoadData *ld) {
@@ -482,7 +482,7 @@ static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 	static_assert_nomsg(sizeof(*ld->cubemaps)/sizeof(*ld->pixmaps) == ARRAY_SIZE(ld->src_paths.cubemap));
 	const int nsides = sizeof(*ld->cubemaps)/sizeof(*ld->pixmaps);
 	ld->num_pixmaps = nsides;
-	ld->cubemaps = calloc(1, sizeof(*ld->cubemaps));
+	ld->cubemaps = ALLOC_ARRAY(1, typeof(*ld->cubemaps));
 
 	Pixmap *ref = &ld->pixmaps[0];
 
@@ -546,8 +546,7 @@ static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 static void texture_loader_stage2(ResourceLoadState *st);
 
 void texture_loader_stage1(ResourceLoadState *st) {
-	TextureLoadData *ld = malloc(sizeof(*ld));
-	*ld = (TextureLoadData) {
+	auto ld = ALLOC(TextureLoadData, {
 		.params = {
 			.filter = {
 				.mag = TEX_FILTER_LINEAR,
@@ -562,7 +561,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		},
 		.preprocess.multiply_alpha = true,
 		.st = st,
-	};
+	});
 
 	bool want_srgb = false;
 
@@ -604,7 +603,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		}
 
 		bool class_ok = texture_loader_parse_class(ld, str_class, &ld->params.class);
-		free(str_class);
+		mem_free(str_class);
 
 		if(!class_ok) {
 			texture_loader_failed(ld);
@@ -614,7 +613,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		#define BADKEY(key, var, cstr) do { \
 				if((var) != NULL) { \
 					log_warn("%s: `" key "` is not applicable for " cstr, st->name); \
-					free(var); \
+					mem_free(var); \
 					var = NULL; \
 				} \
 			} while(0)\
@@ -647,19 +646,19 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		}
 
 		texture_loader_parse_filter(ld, "filter_min", str_filter_min, &ld->params.filter.min, true);
-		free(str_filter_min);
+		mem_free(str_filter_min);
 
 		texture_loader_parse_filter(ld, "filter_mag", str_filter_mag, &ld->params.filter.mag, false);
-		free(str_filter_mag);
+		mem_free(str_filter_mag);
 
 		texture_loader_parse_warp(ld, "warp_s", str_wrap_s, &ld->params.wrap.s);
-		free(str_wrap_s);
+		mem_free(str_wrap_s);
 
 		texture_loader_parse_warp(ld, "warp_t", str_wrap_t, &ld->params.wrap.t);
-		free(str_wrap_t);
+		mem_free(str_wrap_t);
 
 		bool format_ok = texture_loader_parse_format(ld, str_format, &ld->preferred_format);
-		free(str_format);
+		mem_free(str_format);
 
 		if(!format_ok) {
 			texture_loader_failed(ld);
@@ -682,14 +681,14 @@ void texture_loader_stage1(ResourceLoadState *st) {
 	}
 
 	if(texture_loader_basisu_check_path(ld->src_paths.main)) {
-		free(ld->src_paths.alphamap);
+		mem_free(ld->src_paths.alphamap);
 		ld->src_paths.alphamap = NULL;
 		texture_loader_basisu(ld);
 		return;
 	}
 
 	ld->num_pixmaps = 1;
-	ld->pixmaps = calloc(1, sizeof(*ld->pixmaps));
+	ld->pixmaps = ALLOC_ARRAY(1, typeof(*ld->pixmaps));
 
 	if(!load_pixmap(ld, ld->src_paths.main, ld->pixmaps, ld->preferred_format)) {
 		log_error("%s: Couldn't load texture image %s", st->name, ld->src_paths.main);
@@ -863,17 +862,17 @@ static void texture_loader_stage2(ResourceLoadState *st) {
 		for(uint i = 0; i < ld->num_pixmaps; ++i) {
 			Pixmap *p = ld->pixmaps + i;
 			r_texture_fill(texture, i, 0, p);
-			free(p->data.untyped);
+			mem_free(p->data.untyped);
 		}
 
-		free(ld->pixmaps);
+		mem_free(ld->pixmaps);
 		ld->pixmaps = NULL;
 	} else if(ld->params.class == TEXTURE_CLASS_CUBEMAP) {
 		for(uint i = 0; i < ld->num_pixmaps / 6; ++i) {
 			TextureLoadCubemap *cm = ld->cubemaps + i;
 			#define FACE(f) \
 				r_texture_fill(texture, i, f, cm->faces + f); \
-				free(cm->faces[f].data.untyped)
+				mem_free(cm->faces[f].data.untyped)
 
 			FACE(CUBEMAP_FACE_POS_X);
 			FACE(CUBEMAP_FACE_NEG_X);
@@ -885,7 +884,7 @@ static void texture_loader_stage2(ResourceLoadState *st) {
 			#undef FACE
 		}
 
-		free(ld->cubemaps);
+		mem_free(ld->cubemaps);
 		ld->cubemaps = NULL;
 	} else {
 		UNREACHABLE;
@@ -909,7 +908,7 @@ static void texture_loader_stage2(ResourceLoadState *st) {
 		snprintf(buf, sizeof(buf), "%s%s", st->name, suffix);
 		r_texture_set_debug_label(alphamap, buf);
 		r_texture_fill(alphamap, 0, 0, &ld->alphamap);
-		free(ld->alphamap.data.untyped);
+		mem_free(ld->alphamap.data.untyped);
 		ld->alphamap.data.untyped = NULL;
 	}
 

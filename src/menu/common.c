@@ -39,7 +39,7 @@ static void start_game_do_show_credits(CallChainResult ccr);
 static void start_game_do_cleanup(CallChainResult ccr);
 
 static void start_game_internal(MenuData *menu, StageInfo *info, bool difficulty_menu) {
-	StartGameContext *ctx = calloc(1, sizeof(*ctx));
+	auto ctx = ALLOC(StartGameContext);
 
 	if(info == NULL) {
 		global.is_practice_mode = false;
@@ -184,7 +184,7 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	StartGameContext *ctx = ccr.ctx;
 	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
-	free(ctx);
+	mem_free(ctx);
 	free_resources(false);
 	global.gameover = GAMEOVER_NONE;
 	replay_state_deinit(&global.replay.output);

@@ -205,9 +205,7 @@ VFSDir* vfs_dir_open(const char *path) {
 
 	if(node) {
 		if(node->funcs->iter && vfs_node_query(node).is_dir) {
-			VFSDir *d = calloc(1, sizeof(VFSDir));
-			d->node = node;
-			return d;
+			return ALLOC(VFSDir, { .node = node });
 		}
 
 		vfs_set_error("Node '%s' is not a directory", path);
@@ -223,7 +221,7 @@ void vfs_dir_close(VFSDir *dir) {
 	if(dir) {
 		vfs_node_iter_stop(dir->node, &dir->opaque);
 		vfs_decref(dir->node);
-		free(dir);
+		mem_free(dir);
 	}
 }
 
@@ -265,10 +263,10 @@ void vfs_dir_list_free(char **list, size_t size) {
 	}
 
 	for(size_t i = 0; i < size; ++i) {
-		free(list[i]);
+		mem_free(list[i]);
 	}
 
-	free(list);
+	mem_free(list);
 }
 
 int vfs_dir_list_order_ascending(const void *a, const void *b) {

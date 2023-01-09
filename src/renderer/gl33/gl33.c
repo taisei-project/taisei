@@ -248,7 +248,7 @@ static void gl33_init_texunits(void) {
 		R.texunits.limit = iclamp(R.texunits.limit, texunits_min, texunits_available);
 	}
 
-	R.texunits.array = calloc(R.texunits.limit, sizeof(TextureUnit));
+	R.texunits.array = ALLOC_ARRAY(R.texunits.limit, typeof(*R.texunits.array));
 	R.texunits.active = R.texunits.array;
 
 	for(int i = 0; i < R.texunits.limit; ++i) {

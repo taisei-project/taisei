@@ -113,7 +113,7 @@ noreturn static void log_abort(const char *msg) {
 		if(logging.err_appendix) {
 			char *m = strfmt("%s\n\n%s", msg, logging.err_appendix);
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, m, NULL);
-			free(m);
+			mem_free(m);
 		} else {
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, msg, NULL);
 		}
@@ -258,7 +258,7 @@ static void log_dispatch_async(LogEntry *entry) {
 	for(Logger *l = logging.outputs; l; l = l->next) {
 		if(l->levels & entry->level) {
 			size_t msg_len = strlen(entry->message);
-			QueuedLogEntry *qle = calloc(1, sizeof(*qle) + msg_len + 1);
+			auto qle = ALLOC_FLEX(QueuedLogEntry, msg_len + 1);
 			memcpy(&qle->e, entry, sizeof(*entry));
 			memcpy(qle->message, entry->message, msg_len);
 			qle->e.message = qle->message;
@@ -356,7 +356,7 @@ static void *delete_logger(List **loggers, List *logger, void *arg) {
 
 	SDL_RWsync(l->out);
 	SDL_RWclose(l->out);
-	free(list_unlink(loggers, logger));
+	mem_free(list_unlink(loggers, logger));
 
 	return NULL;
 }
@@ -374,7 +374,7 @@ static int log_queue_thread(void *a) {
 		while((qle = alist_pop(&logging.queue.queue)) && logging.queue.shutdown < 2) {
 			SDL_UnlockMutex(mtx);
 			log_dispatch(&qle->e);
-			free(qle);
+			mem_free(qle);
 			SDL_LockMutex(mtx);
 		}
 
@@ -446,7 +446,7 @@ void log_shutdown(void) {
 	dynarray_free_data(&logging.filters);
 
 #ifdef LOG_FATAL_MSGBOX
-	free(logging.err_appendix);
+	mem_free(logging.err_appendix);
 #endif
 
 	memset(&logging, 0, sizeof(logging));
@@ -474,10 +474,7 @@ void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) {
 		return;
 	}
 
-	Logger *l = calloc(1, sizeof(Logger));
-	l->levels = levels;
-	l->out = output;
-
+	auto l = ALLOC(Logger, { .levels = levels, .out = output });
 	formatter(&l->formatter, l->out);
 	assert(l->formatter.format != NULL);
 
@@ -664,8 +661,8 @@ error:
 
 void log_remove_filters(void) {
 	dynarray_foreach_elem(&logging.filters, LogFilterEntry *f, {
-		free(f->patterns.module);
-		free(f->patterns.func);
+		mem_free(f->patterns.module);
+		mem_free(f->patterns.func);
 	});
 
 	logging.filters.num_elements = 0;

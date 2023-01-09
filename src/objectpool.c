@@ -46,7 +46,7 @@ static void objpool_register_objects(ObjectPool *pool, char *objects) {
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
 	// TODO: overflow handling
 
-	ObjectPool *pool = calloc(1, sizeof(ObjectPool) + (obj_size * max_objects));
+	auto pool = ALLOC_FLEX(ObjectPool, obj_size * max_objects);
 	pool->size_of_object = obj_size;
 	pool->max_objects = max_objects;
 	pool->tag = strdup(tag);
@@ -63,8 +63,8 @@ ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) 
 }
 
 static char *objpool_add_extent(ObjectPool *pool) {
-	pool->extents = realloc(pool->extents, (++pool->num_extents) * sizeof(*pool->extents));
-	char *extent = pool->extents[pool->num_extents - 1] = calloc(pool->max_objects, pool->size_of_object);
+	pool->extents = mem_realloc(pool->extents, (++pool->num_extents) * sizeof(*pool->extents));
+	char *extent = pool->extents[pool->num_extents - 1] = mem_alloc_array(pool->max_objects, pool->size_of_object);
 	objpool_register_objects(pool, extent);
 	return extent;
 }
@@ -114,7 +114,7 @@ acquired:
 		pool->tag,
 		tmp
 	);
-	free(tmp);
+	mem_free(tmp);
 
 	objpool_add_extent(pool);
 	obj = pool->free_objects;
@@ -140,12 +140,12 @@ void objpool_free(ObjectPool *pool) {
 #endif
 
 	for(size_t i = 0; i < pool->num_extents; ++i) {
-		free(pool->extents[i]);
+		mem_free(pool->extents[i]);
 	}
 
-	free(pool->extents);
-	free(pool->tag);
-	free(pool);
+	mem_free(pool->extents);
+	mem_free(pool->tag);
+	mem_free(pool);
 }
 
 size_t objpool_object_size(ObjectPool *pool) {

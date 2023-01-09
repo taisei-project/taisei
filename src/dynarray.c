@@ -21,7 +21,7 @@
 #endif
 
 void _dynarray_free_data(dynarray_size_t sizeof_element, DynamicArray *darr) {
-	free(darr->data);
+	mem_free(darr->data);
 	if(darr->capacity) {
 		DYNARRAY_DEBUG(darr, "%u/%u", darr->num_elements, darr->capacity);
 	}
@@ -33,7 +33,7 @@ INLINE void _dynarray_resize(dynarray_size_t sizeof_element, DynamicArray *darr,
 	assert(capacity > 0);
 	DYNARRAY_DEBUG(darr, "capacity change: %u --> %u", darr->capacity, capacity);
 	darr->capacity = capacity;
-	darr->data = realloc(darr->data, sizeof_element * capacity);
+	darr->data = mem_realloc(darr->data, sizeof_element * capacity);
 }
 
 void _dynarray_ensure_capacity(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t capacity) {

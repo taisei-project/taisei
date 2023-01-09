@@ -164,7 +164,7 @@ static int segment_close(SDL_RWops *rw) {
 			SDL_RWclose(s->wrapped);
 		}
 
-		free(s);
+		mem_free(s);
 		SDL_FreeRW(rw);
 	}
 
@@ -192,17 +192,15 @@ SDL_RWops *SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool auto
 	rw->read = segment_read;
 	rw->write = segment_write;
 	rw->close = segment_close;
+	rw->hidden.unknown.data1 = ALLOC(Segment, {
+		.wrapped = src,
+		.start = start,
+		.end = end,
+		.autoclose = autoclose,
 
-	Segment *s = malloc(sizeof(Segment));
-	s->wrapped = src;
-	s->start = start;
-	s->end = end;
-	s->autoclose = autoclose;
-
-	// fallback for non-seekable streams
-	s->pos = start;
-
-	rw->hidden.unknown.data1 = s;
+		// fallback for non-seekable streams
+		.pos = start,
+	});
 
 	return rw;
 }

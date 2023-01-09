@@ -28,7 +28,7 @@ static_assert_nomsg(sizeof(struct decomp_data) <= sizeof(void*));
 static char *vfs_decomp_repr(VFSNode *node) {
 	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
 	char *repr = strjoin("decompress view of ", wrapped_repr, NULL);
-	free(wrapped_repr);
+	mem_free(wrapped_repr);
 	return repr;
 }
 
@@ -171,7 +171,7 @@ static const char *vfs_decomp_iter(VFSNode *node, void **opaque) {
 	struct decomp_iter_data *i = *opaque;
 
 	if(!i) {
-		i = calloc(1, sizeof(*i));
+		i = ALLOC(typeof(*i));
 		ht_create(&i->visited);
 		*opaque = i;
 	}
@@ -198,7 +198,7 @@ static void vfs_decomp_iter_stop(VFSNode *node, void **opaque) {
 		vfs_node_iter_stop(wrapped, &i->opaque);
 		ht_destroy(&i->visited);
 		strbuf_free(&i->temp_buf);
-		free(i);
+		mem_free(i);
 		*opaque = NULL;
 	}
 }

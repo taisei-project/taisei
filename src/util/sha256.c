@@ -120,13 +120,13 @@ static void sha256_init(SHA256State *ctx)
 }
 
 SHA256State *sha256_new(void) {
-	SHA256State *ctx = calloc(1, sizeof(*ctx));
+	auto ctx = ALLOC(SHA256State);
 	sha256_init(ctx);
 	return ctx;
 }
 
 void sha256_free(SHA256State *ctx) {
-	free(ctx);
+	mem_free(ctx);
 }
 
 void sha256_update(SHA256State *ctx, const sha256_byte_t data[], size_t len) {

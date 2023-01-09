@@ -1346,7 +1346,7 @@ void boss_death(Boss **boss) {
 
 static void free_attack(Attack *a) {
 	COEVENT_CANCEL_ARRAY(a->events);
-	free(a->name);
+	mem_free(a->name);
 }
 
 void free_boss(Boss *boss) {
@@ -1359,7 +1359,7 @@ void free_boss(Boss *boss) {
 	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
-	free(boss->name);
+	mem_free(boss->name);
 	objpool_release(stage_object_pools.bosses, boss);
 }
 

@@ -49,7 +49,7 @@ static void taskmgr_free(TaskManager *mgr) {
 		SDL_DestroyCond(mgr->cond);
 	}
 
-	free(mgr);
+	mem_free(mgr);
 }
 
 static void task_free(Task *task) {
@@ -68,7 +68,7 @@ static void task_free(Task *task) {
 		SDL_DestroyCond(task->cond);
 	}
 
-	free(task);
+	mem_free(task);
 }
 
 static int taskmgr_thread(void *arg) {
@@ -172,7 +172,7 @@ TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 		numthreads = maxthreads;
 	}
 
-	TaskManager *mgr = calloc(1, sizeof(TaskManager) + numthreads * sizeof(SDL_Thread*));
+	auto mgr = ALLOC_FLEX(TaskManager, numthreads * sizeof(SDL_Thread*));
 
 	if(!(mgr->mutex = SDL_CreateMutex())) {
 		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
@@ -236,12 +236,13 @@ static int task_prio_func(List *ltask) {
 Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	assert(params.callback != NULL);
 
-	Task *task = calloc(1, sizeof(Task));
-	task->callback = params.callback;
-	task->userdata_free_callback = params.userdata_free_callback;
-	task->userdata = params.userdata;
-	task->prio = params.prio;
-	task->status = TASK_PENDING;
+	auto task = ALLOC(Task, {
+		.callback = params.callback,
+		.userdata_free_callback = params.userdata_free_callback,
+		.userdata = params.userdata,
+		.prio = params.prio,
+		.status = TASK_PENDING,
+	});
 
 	if(!(task->mutex = SDL_CreateMutex())) {
 		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
@@ -439,12 +440,12 @@ void taskmgr_global_shutdown(void) {
 
 Task *taskmgr_global_submit(TaskParams params) {
 	if(g_taskmgr == NULL) {
-		Task *t = calloc(1, sizeof(Task));
-		t->callback = params.callback;
-		t->userdata = params.userdata;
-		t->userdata_free_callback = params.userdata_free_callback;
-		t->result = params.callback(params.userdata);
-		return t;
+		return ALLOC(Task, {
+			.callback = params.callback,
+			.userdata = params.userdata,
+			.userdata_free_callback = params.userdata_free_callback,
+			.result = params.callback(params.userdata),
+		});
 	}
 
 	return taskmgr_submit(g_taskmgr, params);

@@ -215,13 +215,12 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 	resume_all_sfx();
 
 	run_call_chain(&ctx->next, NULL);
-	free(ctx);
+	mem_free(ctx);
 }
 
 static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
 	events_emit(TE_GAME_PAUSE_STATE_CHANGED, true, NULL, NULL);
-	IngameMenuContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->next = next;
+	auto ctx = ALLOC(IngameMenuContext, { .next = next });
 	setup_ingame_menu_bgm(ctx, bgm);
 	pause_all_sfx();
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, ctx));
@@ -339,7 +338,7 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
 	replay_stage_event(rstg, global.frames, EV_RESUME, 0);
 
-	Replay *rpy = calloc(1, sizeof(*rpy));
+	auto rpy = ALLOC(Replay);
 	rpy->stages.num_elements = rpy->stages.capacity = 1;
 	rpy->stages.data = rstg;
 
@@ -369,7 +368,7 @@ static void stage_do_quicksave(StageFrameState *fstate, bool isauto) {
 
 	if(fstate->quicksave) {
 		replay_reset(fstate->quicksave);
-		free(fstate->quicksave);
+		mem_free(fstate->quicksave);
 	}
 
 	fstate->quicksave = create_quicksave_replay(global.replay.output.stage);
@@ -1108,15 +1107,16 @@ static void _stage_enter(
 		replay_stage_sync_player_state(global.replay.output.stage, &global.plr);
 	}
 
-	StageFrameState *fstate = calloc(1 , sizeof(*fstate));
-	cosched_init(&fstate->sched);
-	fstate->stage = stage;
-	fstate->cc = next;
-	fstate->quicksave = quickload;
-	fstate->quicksave_is_automatic = quicksave_is_automatic;
-	fstate->desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5);
-	fstate->dynstage_generation = dynstage_generation;
+	auto fstate = ALLOC(StageFrameState, {
+		.stage = stage,
+		.cc = next,
+		.quicksave = quickload,
+		.quicksave_is_automatic = quicksave_is_automatic,
+		.desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5),
+		.dynstage_generation = dynstage_generation,
+	});
 
+	cosched_init(&fstate->sched);
 	_current_stage_state = fstate;
 
 	skipstate_init();
@@ -1162,7 +1162,7 @@ void stage_end_loop(void *ctx) {
 
 	if(quicksave && !is_quickload) {
 		replay_reset(quicksave);
-		free(quicksave);
+		mem_free(quicksave);
 	}
 
 	s->stage->procs->end();
@@ -1188,7 +1188,7 @@ void stage_end_loop(void *ctx) {
 	StageInfo *stginfo = s->stage;
 	CallChain cc = s->cc;
 
-	free(s);
+	mem_free(s);
 
 	if(is_quickload) {
 		_stage_enter(stginfo, cc, quicksave, quicksave_is_automatic);

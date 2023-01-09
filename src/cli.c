@@ -289,8 +289,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 }
 
 void free_cli_action(CLIAction *a) {
-	free(a->filename);
+	mem_free(a->filename);
 	a->filename = NULL;
-	free(a->out_replay);
+	mem_free(a->out_replay);
 	a->out_replay = NULL;
 }

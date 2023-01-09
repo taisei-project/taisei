@@ -16,21 +16,19 @@ struct ObjectPool {
 };
 
 ObjectPool *objpool_alloc(size_t obj_size, size_t max_objects, const char *tag) {
-	ObjectPool *pool = malloc(sizeof(ObjectPool));
-	pool->size_of_object = obj_size;
-	return pool;
+	return ALLOC(ObjectPool, { .size_of_object = obj_size });
 }
 
 void *objpool_acquire(ObjectPool *pool) {
-	return calloc(1, pool->size_of_object);
+	return mem_alloc(pool->size_of_object);
 }
 
 void objpool_release(ObjectPool *pool, void *object) {
-	free(object);
+	mem_free(object);
 }
 
 void objpool_free(ObjectPool *pool) {
-	free(pool);
+	mem_free(pool);
 }
 
 void objpool_get_stats(ObjectPool *pool, ObjectPoolStats *stats) {

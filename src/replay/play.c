@@ -33,12 +33,11 @@ void replay_play(Replay *rpy, int firstidx, CallChain next) {
 		return;
 	}
 
-	ReplayContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->cc = next;
-	ctx->rpy = rpy;
-	ctx->stage_idx = firstidx;
-
-	replay_do_play(CALLCHAIN_RESULT(ctx, NULL));
+	replay_do_play(CALLCHAIN_RESULT(ALLOC(ReplayContext, {
+		.cc = next,
+		.rpy = rpy,
+		.stage_idx = firstidx,
+	}), NULL));
 }
 
 static void replay_do_play(CallChainResult ccr) {
@@ -94,6 +93,6 @@ static void replay_do_cleanup(CallChainResult ccr) {
 	free_resources(false);
 
 	CallChain cc = ctx->cc;
-	free(ctx);
+	mem_free(ctx);
 	run_call_chain(&cc, NULL);
 }

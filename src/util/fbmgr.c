@@ -65,7 +65,7 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 	assert(cfg->attachments != NULL);
 	assert(cfg->num_attachments >= 1);
 
-	ManagedFramebuffer *mfb = calloc(1, sizeof(*mfb) + sizeof(ManagedFramebufferData));
+	auto mfb = ALLOC_FLEX(ManagedFramebuffer, sizeof(ManagedFramebufferData));
 	ManagedFramebufferData *data = GET_DATA(mfb);
 	data->resize_strategy = cfg->resize_strategy;
 	mfb->fb = r_framebuffer_create();
@@ -113,7 +113,7 @@ Framebuffer *fbmgr_framebuffer_disown(ManagedFramebuffer *mfb) {
 
 			Framebuffer *fb = m->fb;
 			list_unlink(&framebuffers, d);
-			free(m);
+			mem_free(m);
 			return fb;
 		}
 	}
@@ -161,7 +161,7 @@ void fbmgr_shutdown(void) {
 }
 
 ManagedFramebufferGroup *fbmgr_group_create(void) {
-	return calloc(1, sizeof(ManagedFramebufferGroup));
+	return ALLOC(ManagedFramebufferGroup);
 }
 
 void fbmgr_group_destroy(ManagedFramebufferGroup *group) {
@@ -171,7 +171,7 @@ void fbmgr_group_destroy(ManagedFramebufferGroup *group) {
 		fbmgr_framebuffer_destroy(mfb);
 	}
 
-	free(group);
+	mem_free(group);
 }
 
 Framebuffer *fbmgr_group_framebuffer_create(ManagedFramebufferGroup *group, const char *name, const FramebufferConfig *cfg) {

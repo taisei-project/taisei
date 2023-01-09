@@ -51,9 +51,12 @@ static inline void section_make_used(RectPack *rp, RectPackSection *s) {
 }
 
 RectPack* rectpack_new(double width, double height) {
-	RectPack *rp = calloc(1, sizeof(RectPack));
-	rp->root.rect.top_left = CMPLX(0, 0);
-	rp->root.rect.bottom_right = CMPLX(width, height);
+	auto rp = ALLOC(RectPack, {
+		.root.rect = {
+			.top_left = CMPLX(0, 0),
+			.bottom_right = CMPLX(width, height),
+		},
+	});
 	list_push(&rp->freelist, &rp->root);
 	assert(rectpack_is_empty(rp));
 	return rp;
@@ -75,11 +78,11 @@ static void delete_subsections(RectPackSection *restrict s) {
 		assume(s->children[1]->parent == s);
 
 		delete_subsections(s->children[0]);
-		free(s->children[0]);
+		mem_free(s->children[0]);
 		s->children[0] = NULL;
 
 		delete_subsections(s->children[1]);
-		free(s->children[1]);
+		mem_free(s->children[1]);
 		s->children[1] = NULL;
 	}
 }
@@ -90,7 +93,7 @@ void rectpack_reset(RectPack *rp) {
 
 void rectpack_free(RectPack *rp) {
 	delete_subsections(&rp->root);
-	free(rp);
+	mem_free(rp);
 }
 
 static double section_fitness(RectPackSection *s, double w, double h) {
@@ -129,10 +132,10 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
 
 		// NOTE: the following frees s->sibling and s, in unspecified order
 
-		free(parent->children[0]);
+		mem_free(parent->children[0]);
 		parent->children[0] = NULL;
 
-		free(parent->children[1]);
+		mem_free(parent->children[1]);
 		parent->children[1] = NULL;
 
 		if(parent != NULL) {
@@ -185,8 +188,6 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double width, double height);
 
 static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, double width, double height) {
-	RectPackSection *sub;
-
 	RP_DEBUG("spliting section %p of size %gx%g for rect %gx%g", (void*)s, rect_width(s->rect), rect_height(s->rect), width, height);
 
 	assert(rect_width(s->rect) >= width);
@@ -198,7 +199,7 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 		return split_vertical(rp, s, width, height);
 	}
 
-	sub = calloc(1, sizeof(*sub));
+	auto sub = ALLOC(RectPackSection);
 	rect_set_xywh(&sub->rect,
 		rect_x(s->rect),
 		rect_y(s->rect),
@@ -211,7 +212,7 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 	sub->parent = s;
 	s->children[0] = sub;
 
-	s->children[1] = calloc(1, sizeof(*s->children[1]));
+	s->children[1] = ALLOC(typeof(*s->children[1]));
 	rect_set_xywh(&s->children[1]->rect,
 		rect_x(s->rect),
 		rect_y(s->rect) + height,
@@ -237,8 +238,6 @@ static RectPackSection *split_horizontal(RectPack *rp, RectPackSection *s, doubl
 }
 
 static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double width, double height) {
-	RectPackSection *sub;
-
 	assert(rect_width(s->rect) >= width);
 	assert(rect_height(s->rect) >= height);
 
@@ -250,7 +249,7 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 		return split_horizontal(rp, s, width, height);
 	}
 
-	sub = calloc(1, sizeof(*sub));
+	auto sub = ALLOC(RectPackSection);
 	rect_set_xywh(&sub->rect,
 		rect_x(s->rect),
 		rect_y(s->rect),
@@ -263,7 +262,7 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 	sub->parent = s;
 	s->children[0] = sub;
 
-	s->children[1] = calloc(1, sizeof(*s->children[1]));
+	s->children[1] = ALLOC(typeof(*s->children[1]));
 	rect_set_xywh(&s->children[1]->rect,
 		rect_x(s->rect) + width,
 		rect_y(s->rect),

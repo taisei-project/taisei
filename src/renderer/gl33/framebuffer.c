@@ -23,7 +23,7 @@ static GLuint r_attachment_to_gl_attachment[] = {
 static_assert(sizeof(r_attachment_to_gl_attachment)/sizeof(GLuint) == FRAMEBUFFER_MAX_ATTACHMENTS, "");
 
 Framebuffer *gl33_framebuffer_create(void) {
-	Framebuffer *fb = calloc(1, sizeof(Framebuffer));
+	auto fb = ALLOC(Framebuffer);
 	glGenFramebuffers(1, &fb->gl_fbo);
 	snprintf(fb->debug_label, sizeof(fb->debug_label), "FBO #%i", fb->gl_fbo);
 
@@ -117,7 +117,7 @@ void gl33_framebuffer_outputs(
 void gl33_framebuffer_destroy(Framebuffer *framebuffer) {
 	gl33_framebuffer_deleted(framebuffer);
 	glDeleteFramebuffers(1, &framebuffer->gl_fbo);
-	free(framebuffer);
+	mem_free(framebuffer);
 }
 
 void gl33_framebuffer_taint(Framebuffer *framebuffer) {

@@ -368,13 +368,13 @@ void* alist_foreach(ListAnchor *list, ListAnchorForeachCallback callback, void *
 
 void* list_callback_free_element(List **dest, List *elem, void *arg) {
 	list_unlink(dest, elem);
-	free(elem);
+	mem_free(elem);
 	return NULL;
 }
 
 void* alist_callback_free_element(ListAnchor *list, List *elem, void *arg) {
 	alist_unlink(list, elem);
-	free(elem);
+	mem_free(elem);
 	return NULL;
 }
 
@@ -389,7 +389,5 @@ void alist_free_all(ListAnchor *list) {
 }
 
 ListContainer* list_wrap_container(void *data) {
-	ListContainer *c = calloc(1, sizeof(ListContainer));
-	c->data = data;
-	return c;
+	return ALLOC(ListContainer, { .data = data });
 }

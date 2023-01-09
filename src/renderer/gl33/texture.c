@@ -302,8 +302,7 @@ static void apply_swizzle_mask(GLenum gl_target, SwizzleMask *mask) {
 }
 
 Texture *gl33_texture_create(const TextureParams *params) {
-	Texture *tex = calloc(1, sizeof(Texture));
-	memcpy(&tex->params, params, sizeof(*params));
+	auto tex = ALLOC(Texture, { .params = *params });
 	TextureParams *p = &tex->params;
 
 	TextureClass cls = p->class;
@@ -551,7 +550,7 @@ void gl33_texture_destroy(Texture *tex) {
 		glDeleteBuffers(1, &tex->pbo);
 	}
 
-	free(tex);
+	mem_free(tex);
 }
 
 void gl33_texture_taint(Texture *tex) {
@@ -628,6 +627,6 @@ bool gl33_texture_transfer(Texture *dst, Texture *src) {
 	glDeleteTextures(1, &dst->gl_handle);
 	*dst = *src;
 	gl33_texture_pointer_renamed(src, dst);
-	free(src);
+	mem_free(src);
 	return true;
 }

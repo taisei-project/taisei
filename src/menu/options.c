@@ -59,29 +59,24 @@ typedef struct OptionBinding {
 
 // --- Menu entry <-> config option binding stuff --- //
 
-static void bind_init(OptionBinding *bind) {
-	memset(bind, 0, sizeof(OptionBinding));
-	bind->selected      = -1;
-	bind->configentry   = -1;
-}
-
 static OptionBinding* bind_new(void) {
-	OptionBinding *bind = malloc(sizeof(OptionBinding));
-	bind_init(bind);
-	return bind;
+	return ALLOC(OptionBinding, {
+		.selected = -1,
+		.configentry = -1,
+	});
 }
 
 static void bind_free(OptionBinding *bind) {
 	int i;
 
 	if(bind->type == BT_StrValue) {
-		free(bind->strvalue);
+		mem_free(bind->strvalue);
 	} else if(bind->values) {
 		assert(bind->valrange_min == 0);
 		for(i = 0; i <= bind->valrange_max; ++i) {
-			free(*(bind->values+i));
+			mem_free(*(bind->values+i));
 		}
-		free(bind->values);
+		mem_free(bind->values);
 	}
 }
 
@@ -269,7 +264,7 @@ static int bind_addvalue(OptionBinding *b, char *val) {
 	assert(b->valrange_min == 0);
 
 	if(b->values == NULL) {
-		b->values = malloc(sizeof(char*));
+		b->values = mem_alloc(sizeof(char*));
 		b->valrange_min = 0;
 		b->valrange_max = 0;
 	} else {
@@ -277,7 +272,7 @@ static int bind_addvalue(OptionBinding *b, char *val) {
 		++b->valrange_max;
 	}
 
-	b->values = realloc(b->values, (1 + b->valrange_max) * sizeof(char*));
+	b->values = mem_realloc(b->values, (1 + b->valrange_max) * sizeof(char*));
 	b->values[b->valrange_max] = strdup(val);
 	return b->valrange_max;
 }
@@ -465,7 +460,7 @@ static void destroy_options_menu(MenuData *m) {
 		}
 
 		bind_free(bind);
-		free(bind);
+		mem_free(bind);
 	});
 
 	if(change_vidmode) {
@@ -480,8 +475,8 @@ static void destroy_options_menu(MenuData *m) {
 
 	if(m->context) {
 		OptionsMenuContext *ctx = m->context;
-		free(ctx->data);
-		free(ctx);
+		mem_free(ctx->data);
+		mem_free(ctx);
 	}
 }
 
@@ -526,10 +521,7 @@ static MenuData* create_options_menu_base(const char *s) {
 	m->logic = update_options_menu;
 	m->begin = begin_options_menu;
 	m->end = destroy_options_menu;
-
-	OptionsMenuContext *ctx = calloc(1, sizeof(OptionsMenuContext));
-	ctx->title = s;
-	m->context = ctx;
+	m->context = ALLOC(OptionsMenuContext, { .title = s });
 
 	return m;
 }
@@ -1442,15 +1434,15 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 
 			if(ulen > max_len) {
 				*(u + max_len) = 0;
-				free(b->strvalue);
+				mem_free(b->strvalue);
 				b->strvalue = ucs4_to_utf8_alloc(u);
 				snd = "hit";
 			}
 
-			free(u);
+			mem_free(u);
 		}
 
-		free(text_allocated);
+		mem_free(text_allocated);
 		play_sfx_ui(snd);
 		return true;
 	}
@@ -1486,9 +1478,9 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 				play_sfx_ui("hit");
 			}
 
-			free(b->strvalue);
+			mem_free(b->strvalue);
 			b->strvalue = ucs4_to_utf8_alloc(u);
-			free(u);
+			mem_free(u);
 		}
 
 		return true;

@@ -21,7 +21,7 @@ static const char* vfs_zippath_name(VFSNode *node) {
 }
 
 static void vfs_zippath_free(VFSNode *node) {
-	free(node->data1);
+	mem_free(node->data1);
 }
 
 static char* vfs_zippath_repr(VFSNode *node) {
@@ -29,7 +29,7 @@ static char* vfs_zippath_repr(VFSNode *node) {
 	char *ziprepr = vfs_node_repr(zdata->zipnode, false);
 	char *zpathrepr = strfmt("%s '%s' in %s",
 		zdata->info.is_dir ? "directory" : "file", vfs_zippath_name(node), ziprepr);
-	free(ziprepr);
+	mem_free(ziprepr);
 	return zpathrepr;
 }
 
@@ -37,7 +37,7 @@ static char* vfs_zippath_syspath(VFSNode *node) {
 	VFSZipPathData *zdata = node->data1;
 	char *zippath = vfs_node_repr(zdata->zipnode, true);
 	char *subpath = strfmt("%s%c%s", zippath, vfs_syspath_separators[0], vfs_zippath_name(node));
-	free(zippath);
+	mem_free(zippath);
 	vfs_syspath_normalize_inplace(subpath);
 	return subpath;
 }
@@ -67,7 +67,7 @@ static const char* vfs_zippath_iter(VFSNode *node, void **opaque) {
 	}
 
 	if(!idata) {
-		idata = calloc(1, sizeof(VFSZipFileIterData));
+		idata = ALLOC(typeof(*idata));
 		idata->num = zip_get_num_entries(ZTLS(zdata)->zip, 0);
 		idata->idx = zdata->index;
 		idata->prefix = vfs_zippath_name(node);
@@ -91,7 +91,7 @@ static SDL_RWops* vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	if(mode & VFS_MODE_SEEKABLE && zdata->compression != ZIP_CM_STORE) {
 		char *repr = vfs_node_repr(node, true);
 		log_warn("Opening compressed file '%s' in seekable mode, this is suboptimal. Consider storing this file without compression", repr);
-		free(repr);
+		mem_free(repr);
 	}
 
 	return SDL_RWFromZipFile(node, zdata);
@@ -111,20 +111,20 @@ static VFSNodeFuncs vfs_funcs_zippath = {
 };
 
 void vfs_zippath_init(VFSNode *node, VFSNode *zipnode, zip_int64_t idx) {
-	VFSZipPathData *zdata = calloc(1, sizeof(VFSZipPathData));
-	zdata->zipnode = zipnode;
-	zdata->index = idx;
-	zdata->size = -1;
-	zdata->compressed_size = -1;
-	zdata->compression = ZIP_CM_STORE;
+	auto zdata = ALLOC(VFSZipPathData, {
+		.zipnode = zipnode,
+		.index = idx,
+		.size = -1,
+		.compressed_size = -1,
+		.compression = ZIP_CM_STORE,
+		.info = {
+			.exists = true,
+			.is_readonly = true,
+		},
+	});
+
 	node->data1 = zdata;
-
-	zdata->info.exists = true;
-	zdata->info.is_readonly = true;
-
-	if('/' == *(strchr(vfs_zippath_name(node), 0) - 1)) {
-		zdata->info.is_dir = true;
-	}
+	zdata->info.is_dir = ('/' == *(strchr(vfs_zippath_name(node), 0) - 1));
 
 	zip_stat_t zstat;
 

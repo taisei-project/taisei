@@ -19,7 +19,7 @@ static void* vfs_union_delete_callback(List **list, List *elem, void *arg) {
 	ListContainer *c = (ListContainer*)elem;
 	VFSNode *n = c->data;
 	vfs_decref(n);
-	free(list_unlink(list, elem));
+	mem_free(list_unlink(list, elem));
 	return NULL;
 }
 
@@ -90,7 +90,7 @@ static const char* vfs_union_iter(VFSNode *node, void **opaque) {
 	const char *r = NULL;
 
 	if(!i) {
-		i = malloc(sizeof(VFSUnionIterData));
+		i = ALLOC(typeof(*i));
 		i->current = node->_members_;
 		i->opaque = NULL;
 		ht_create(&i->visited);
@@ -124,7 +124,7 @@ static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
 
 	if(i) {
 		ht_destroy(&i->visited);
-		free(i);
+		mem_free(i);
 	}
 
 	*opaque = NULL;
@@ -147,7 +147,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
 		if(seterror) {
 			char *r = vfs_node_repr(mountee, true);
 			vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
-			free(r);
+			mem_free(r);
 		}
 
 		return false;
@@ -156,7 +156,7 @@ static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFS
 	if(seterror && !info.is_dir) {
 		char *r = vfs_node_repr(mountee, true);
 		vfs_set_error("Mountee is not a directory: %s", r);
-		free(r);
+		mem_free(r);
 		return false;
 	}
 
@@ -194,7 +194,7 @@ static char* vfs_union_repr(VFSNode *node) {
 		VFSNode *n = c->data;
 
 		strappend(&mlist, r = vfs_node_repr(n, false));
-		free(r);
+		mem_free(r);
 
 		if(c->next) {
 			strappend(&mlist, ", ");

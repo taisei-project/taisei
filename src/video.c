@@ -560,7 +560,7 @@ static void *video_screenshot_task(void *arg) {
 	if(LIKELY(ok)) {
 		char *syspath = vfs_repr(tdata->dest_path, true);
 		log_info("Saved screenshot as %s", syspath);
-		free(syspath);
+		mem_free(syspath);
 	}
 
 	return NULL;
@@ -568,9 +568,9 @@ static void *video_screenshot_task(void *arg) {
 
 static void video_screenshot_free_task_data(void *arg) {
 	ScreenshotTaskData *tdata = arg;
-	free(tdata->image.data.untyped);
-	free(tdata->dest_path);
-	free(tdata);
+	mem_free(tdata->image.data.untyped);
+	mem_free(tdata->dest_path);
+	mem_free(tdata);
 }
 
 void video_take_screenshot(void) {

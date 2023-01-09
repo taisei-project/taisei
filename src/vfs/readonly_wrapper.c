@@ -17,7 +17,7 @@
 static char* vfs_ro_repr(VFSNode *node) {
 	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
 	char *repr = strjoin("read-only view of ", wrapped_repr, NULL);
-	free(wrapped_repr);
+	mem_free(wrapped_repr);
 	return repr;
 }
 

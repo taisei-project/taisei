@@ -11,6 +11,8 @@
 
 #include "build_config.h"
 #include "util/compat.h"
+#include "util/consideredharmful.h"
+#include "memory.h"
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this

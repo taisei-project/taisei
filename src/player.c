@@ -1287,7 +1287,7 @@ static void player_ani_moving(Player *plr, int dir) {
 	aniplayer_hard_switch(&plr->ani,transition,1);
 	aniplayer_queue(&plr->ani,seqname,0);
 	plr->lastmovesequence = dir;
-	free(transition);
+	mem_free(transition);
 }
 
 void player_applymovement(Player *plr) {

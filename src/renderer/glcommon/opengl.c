@@ -692,15 +692,11 @@ static void detect_broken_intel_driver(void) {
 
 	mbdata.flags = SDL_MESSAGEBOX_WARNING;
 	mbdata.title = "Taisei Project";
-
-	char *msg = strfmt(
+	mbdata.message =
 		"Looks like you have a broken OpenGL driver.\n"
 		"Taisei will probably not work correctly, if at all.\n\n"
 		"Starting the game in ANGLE mode should fix the problem, but may introduce slowdown.\n\n"
-		"Restart in ANGLE mode now? (If unsure, press YES)"
-	);
-
-	mbdata.message = msg;
+		"Restart in ANGLE mode now? (If unsure, press YES)";
 	mbdata.numbuttons = 3;
 	mbdata.buttons = (SDL_MessageBoxButtonData[]) {
 		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Abort" },
@@ -709,7 +705,6 @@ static void detect_broken_intel_driver(void) {
 	};
 
 	int mbresult = SDL_ShowMessageBox(&mbdata, &button);
-	free(msg);
 
 	if(mbresult < 0) {
 		log_sdl_error(LOG_ERROR, "SDL_ShowMessageBox");

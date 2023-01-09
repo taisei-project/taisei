@@ -109,7 +109,7 @@ void stage3_drawsys_init(void) {
 	stage_3d_context.cam.vel[1] = 0.1;
 	stage_3d_context.cam.vel[2] = 0.05;
 
-	stage3_draw_data = calloc(1, sizeof(*stage3_draw_data));
+	stage3_draw_data = ALLOC(typeof(*stage3_draw_data));
 
 	pbr_load_model(&stage3_draw_data->models.ground, "stage3/ground", "stage3/ground");	pbr_load_model(&stage3_draw_data->models.leaves, "stage3/leaves", "stage3/leaves");
 	pbr_load_model(&stage3_draw_data->models.rocks,  "stage3/rocks",  "stage3/rocks");
@@ -118,7 +118,7 @@ void stage3_drawsys_init(void) {
 
 void stage3_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage3_draw_data);
+	mem_free(stage3_draw_data);
 }
 
 static bool stage3_fog(Framebuffer *fb) {

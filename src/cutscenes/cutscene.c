@@ -151,11 +151,11 @@ static void cutscene_advance(CutsceneState *st) {
 		}
 
 		if(st->text_entry && st->text_entry->text) {
-			CutsceneTextVisual *tv = calloc(1, sizeof(*tv));
-			tv->alpha = 0.1;
-			tv->target_alpha = 1;
-			tv->entry = st->text_entry;
-			alist_append(&st->text_visuals, tv);
+			alist_append(&st->text_visuals, ALLOC(CutsceneTextVisual, {
+				.alpha = 0.1,
+				.target_alpha = 1,
+				.entry = st->text_entry,
+			}));
 		}
 	}
 
@@ -214,7 +214,7 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 		}
 
 		if(fapproach_p(&tv->alpha, tv->target_alpha, rate) == 0) {
-			free(alist_unlink(&st->text_visuals, tv));
+			mem_free(alist_unlink(&st->text_visuals, tv));
 		}
 	}
 
@@ -395,13 +395,13 @@ static void cutscene_end_loop(void *ctx) {
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first, *next; tv; tv = next) {
 		next = tv->next;
-		free(tv);
+		mem_free(tv);
 	}
 
 	fbmgr_group_destroy(st->mfb_group);
 
 	CallChain cc = st->cc;
-	free(st);
+	mem_free(st);
 	run_call_chain(&cc, NULL);
 }
 
@@ -415,12 +415,12 @@ static void cutscene_preload(const CutscenePhase phases[]) {
 
 static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 	cutscene_preload(phases);
-	CutsceneState *st = calloc(1, sizeof(*st));
-	st->phase = &phases[0];
+	auto st = ALLOC(CutsceneState, {
+		.phase = &phases[0],
+		.mfb_group = fbmgr_group_create(),
+	});
 	switch_bg(st, st->phase->background);
 	reset_timers(st);
-
-	st->mfb_group = fbmgr_group_create();
 
 	FBAttachmentConfig a = { 0 };
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;

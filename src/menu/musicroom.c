@@ -228,9 +228,10 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 		title = "Unknown track";
 	}
 
-	MusicEntryParam *p = calloc(1, sizeof(*p));
-	p->bgm = bgm;
-	p->text_shader = res_shader("text_default");
+	auto p = ALLOC(MusicEntryParam, {
+		.bgm = bgm,
+		.text_shader = res_shader("text_default"),
+	});
 
 	if(progress_is_bgm_unlocked(bgm_name)) {
 		p->state |= MSTATE_UNLOCKED;
@@ -242,7 +243,7 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 
 static void musicroom_free(MenuData *m) {
 	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
-		free(e->arg);
+		mem_free(e->arg);
 	});
 }
 

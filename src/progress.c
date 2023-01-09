@@ -140,11 +140,11 @@ static void progress_read(SDL_RWops *file) {
 	SDL_RWread(file, &checksum_fromfile, 4, 1);
 
 	size_t bufsize = filesize - sizeof(progress_magic_bytes) - 4;
-	uint8_t *buf = malloc(bufsize);
+	void *buf = mem_alloc(bufsize);
 
 	if(!SDL_RWread(file, buf, bufsize, 1)) {
 		log_sdl_error(LOG_ERROR, "SDL_RWread");
-		free(buf);
+		mem_free(buf);
 		return;
 	}
 
@@ -154,7 +154,7 @@ static void progress_read(SDL_RWops *file) {
 	if(checksum != checksum_fromfile) {
 		log_error("Bad checksum: %x != %x", checksum, checksum_fromfile);
 		SDL_RWclose(vfile);
-		free(buf);
+		mem_free(buf);
 		return;
 	}
 
@@ -250,7 +250,7 @@ static void progress_read(SDL_RWops *file) {
 					assert(read == TAISEI_VERSION_SIZE);
 					char *vstr = taisei_version_tostring(&version_info);
 					log_info("Progress file from Taisei v%s", vstr);
-					free(vstr);
+					mem_free(vstr);
 				}
 				break;
 
@@ -269,10 +269,11 @@ static void progress_read(SDL_RWops *file) {
 			default:
 				log_warn("Unknown command %x (%u bytes). Will preserve as-is and not interpret", cmd, cmdsize);
 
-				UnknownCmd *c = malloc(sizeof(UnknownCmd));
-				c->cmd = cmd;
-				c->size = cmdsize;
-				c->data = malloc(cmdsize);
+				auto c = ALLOC(UnknownCmd, {
+					.cmd = cmd,
+					.size = cmdsize,
+					.data = ALLOC_ARRAY(cmdsize, uint8_t)
+				});
 				SDL_RWread(vfile, c->data, c->size, 1);
 				list_append(&progress.unknown, c);
 
@@ -297,12 +298,12 @@ static void progress_read(SDL_RWops *file) {
 				log_warn("Progress file will be automatically downgraded from v%s to v%s upon saving", v_prog, v_game);
 			}
 
-			free(v_prog);
-			free(v_game);
+			mem_free(v_prog);
+			mem_free(v_game);
 		}
 	}
 
-	free(buf);
+	mem_free(buf);
 	SDL_RWclose(vfile);
 }
 
@@ -467,8 +468,7 @@ struct cmd_stage_playinfo_data {
 };
 
 static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
-	struct cmd_stage_playinfo_data *data = malloc(sizeof(struct cmd_stage_playinfo_data));
-	memset(data, 0, sizeof(struct cmd_stage_playinfo_data));
+	auto data = ALLOC(struct cmd_stage_playinfo_data);
 
 	int n = stageinfo_get_num_stages();
 	for(int i = 0; i < n; ++i) {
@@ -486,7 +486,7 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 			StageProgress *p = stageinfo_get_progress(stg, d, false);
 
 			if(p && (p->num_played || p->num_cleared)) {
-				struct cmd_stage_playinfo_data_elem *e = malloc(sizeof(struct cmd_stage_playinfo_data_elem));
+				auto e = ALLOC(struct cmd_stage_playinfo_data_elem);
 
 				e->stage = stg->id;                 data->size += sizeof(uint16_t);
 				e->diff = d;                        data->size += sizeof(uint8_t);
@@ -524,7 +524,7 @@ static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 
 cleanup:
 	list_free_all(&data->elems);
-	free(data);
+	mem_free(data);
 }
 
 //
@@ -690,7 +690,7 @@ static void progress_write(SDL_RWops *file) {
 		return;
 	}
 
-	uint8_t *buf = malloc(bufsize);
+	auto buf = ALLOC_ARRAY(bufsize, uint8_t);
 	memset(buf, 0x7f, bufsize);
 	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
 
@@ -701,7 +701,7 @@ static void progress_write(SDL_RWops *file) {
 	}
 
 	if(SDL_RWtell(vfile) != bufsize) {
-		free(buf);
+		mem_free(buf);
 		log_fatal("Buffer is inconsistent");
 		return;
 	}
@@ -715,7 +715,7 @@ static void progress_write(SDL_RWops *file) {
 		return;
 	}
 
-	free(buf);
+	mem_free(buf);
 	SDL_RWclose(vfile);
 }
 
@@ -790,8 +790,8 @@ void progress_save(void) {
 
 static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {
 	UnknownCmd *cmd = (UnknownCmd*)elem;
-	free(cmd->data);
-	free(list_unlink(dest, elem));
+	mem_free(cmd->data);
+	mem_free(list_unlink(dest, elem));
 	return NULL;
 }
 

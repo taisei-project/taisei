@@ -23,7 +23,7 @@ char *vfs_syspath_separators = "/";
 static void vfs_syspath_init_internal(VFSNode *node, char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
-	free(node->_path_);
+	mem_free(node->_path_);
 }
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
@@ -121,7 +121,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 		vfs_set_error("Can't create directory %s (errno: %i)", p, errno);
 	}
 
-	free(p);
+	mem_free(p);
 	return ok;
 }
 
