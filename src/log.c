@@ -168,6 +168,14 @@ static size_t modname(const char *filename, size_t filename_len, char *mod) {
 	memcpy(mod, filename, mlen);
 	mod[mlen] = 0;
 
+#ifdef _WIN32
+	for(char *c = mod; c < mod + mlen; ++c) {
+		if(*c == '\\') {
+			*c = '/';
+		}
+	}
+#endif
+
 	char *sep = memrchr(mod, '/', mlen);
 
 	if(sep) {
