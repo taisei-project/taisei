@@ -12,6 +12,7 @@
 // libzip on clang creates useless noise
 DIAGNOSTIC_CLANG(push)
 DIAGNOSTIC_CLANG(ignored "-Wnullability-extension")
+DIAGNOSTIC_CLANG(ignored "-Wnullability-completeness")
 #include <zip.h>
 DIAGNOSTIC_CLANG(pop)
 
