@@ -55,9 +55,7 @@ static vfs_tls_t* vfs_tls_get(void) {
 }
 
 void vfs_init(void) {
-	vfs_root = vfs_alloc();
-	vfs_vdir_init(vfs_root);
-
+	vfs_root = vfs_vdir_create();
 	vfs_tls_id = SDL_TLSCreate();
 
 	if(vfs_tls_id) {
@@ -95,12 +93,6 @@ void vfs_hook_on_shutdown(VFSShutdownHandler func, void *arg) {
 	}));
 }
 
-VFSNode* vfs_alloc(void) {
-	auto node = ALLOC(VFSNode);
-	vfs_incref(node);
-	return node;
-}
-
 static void vfs_free(VFSNode *node) {
 	if(!node) {
 		return;
@@ -113,11 +105,11 @@ static void vfs_free(VFSNode *node) {
 	mem_free(node);
 }
 
-void vfs_incref(VFSNode *node) {
+void (vfs_incref)(VFSNode *node) {
 	SDL_AtomicIncRef(&node->refcount);
 }
 
-bool vfs_decref(VFSNode *node) {
+bool (vfs_decref)(VFSNode *node) {
 	if(!node) {
 		return true;
 	}
@@ -130,7 +122,7 @@ bool vfs_decref(VFSNode *node) {
 	return false;
 }
 
-VFSNode* vfs_locate(VFSNode *root, const char *path) {
+VFSNode *(vfs_locate)(VFSNode *root, const char *path) {
 	if(!*path) {
 		vfs_incref(root);
 		return root;

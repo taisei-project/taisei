@@ -11,4 +11,4 @@
 
 #include "private.h"
 
-bool vfs_zipfile_init(VFSNode *node, VFSNode *source);
+VFSNode *vfs_zipfile_create(VFSNode *source);

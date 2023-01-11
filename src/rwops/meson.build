@@ -11,12 +11,6 @@ rwops_src = files(
     'rwops_zstd.c',
 )
 
-if dep_zip.found()
-    rwops_src += files(
-        'rwops_zipfile.c',
-    )
-endif
-
 if is_debug_build
     rwops_src += files(
         'rwops_trace.c',

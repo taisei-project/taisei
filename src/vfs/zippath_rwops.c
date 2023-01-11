@@ -8,12 +8,12 @@
 
 #include "taisei.h"
 
-#include "rwops_zipfile.h"
-#include "rwops_util.h"
-#include "rwops_zstd.h"
+#include "zipfile_impl.h"
+
+#include "rwops/rwops_util.h"
+#include "rwops/rwops_zstd.h"
 
 #include "util.h"
-#include "util/libzip_compat.h"
 
 #define FORCE_MANUAL_DECOMPRESSION (0)
 
@@ -22,7 +22,6 @@
 #endif
 
 typedef struct ZipRWData {
-	VFSNode *node;
 	zip_file_t *file;
 	int64_t pos;
 	int64_t size;
@@ -33,13 +32,13 @@ typedef struct ZipRWData {
 
 static int ziprw_reopen(SDL_RWops *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
-	VFSZipPathData *pdata = rw->hidden.unknown.data2;
+	VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
 
 	if(rwdata->file) {
 		zip_fclose(rwdata->file);
 	}
 
-	rwdata->file = zip_fopen_index(ZTLS(pdata)->zip, pdata->index, rwdata->open_flags);
+	rwdata->file = zip_fopen_index(ZTLS(zpnode)->zip, zpnode->index, rwdata->open_flags);
 	rwdata->pos = 0;
 
 	return rwdata->file ? 0 : -1;
@@ -47,11 +46,11 @@ static int ziprw_reopen(SDL_RWops *rw) {
 
 static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
-	VFSZipPathData *pdata = rw->hidden.unknown.data2;
+	VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
 
 	int64_t pos = rwdata->pos;
 
-	if(!vfs_zipfile_get_tls((pdata)->zipnode, false) && rwdata->file) {
+	if(!vfs_zipfile_get_tls(zpnode->zipnode, false) && rwdata->file) {
 		zip_fclose(rwdata->file);
 		rwdata->file = NULL;
 	}
@@ -67,12 +66,13 @@ static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
 static int ziprw_close(SDL_RWops *rw) {
 	if(rw) {
 		ZipRWData *rwdata = rw->hidden.unknown.data1;
+		VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
 
 		if(rwdata->file) {
 			zip_fclose(rwdata->file);
 		}
 
-		vfs_decref(rwdata->node);
+		vfs_decref(zpnode);
 		mem_free(rwdata);
 		SDL_FreeRW(rw);
 	}
@@ -164,7 +164,7 @@ static size_t ziprw_write(SDL_RWops *rw, const void *ptr, size_t size, size_t ma
 	return -1;
 }
 
-SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
+SDL_RWops *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
 	SDL_RWops *rw = SDL_AllocRW();
 
 	if(UNLIKELY(!rw)) {
@@ -174,14 +174,13 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 	memset(rw, 0, sizeof(SDL_RWops));
 
 	auto rwdata = ALLOC(ZipRWData, {
-		.node = znode,
-		.size = pdata->size,
+		.size = zpnode->size,
 	});
 
-	vfs_incref(znode);
+	vfs_incref(zpnode);
 
 	rw->hidden.unknown.data1 = rwdata;
-	rw->hidden.unknown.data2 = pdata;
+	rw->hidden.unknown.data2 = zpnode;
 	rw->type = SDL_RWOPS_UNKNOWN;
 
 	rw->size = ziprw_size;
@@ -192,33 +191,33 @@ SDL_RWops *SDL_RWFromZipFile(VFSNode *znode, VFSZipPathData *pdata) {
 	DIAGNOSTIC(push)
 	DIAGNOSTIC(ignored "-Wunreachable-code")
 
-	if(pdata->compression == ZIP_CM_STORE) {
+	if(zpnode->compression == ZIP_CM_STORE) {
 		rw->seek = ziprw_seek;
 	} else if(
 		!FORCE_MANUAL_DECOMPRESSION &&
-		zip_compression_method_supported(pdata->compression, false)
+		zip_compression_method_supported(zpnode->compression, false)
 	) {
 		rw->seek = ziprw_seek_emulated;
 	} else {
 		rw->seek = ziprw_seek;
-		rwdata->size = pdata->compressed_size;
+		rwdata->size = zpnode->compressed_size;
 		rwdata->open_flags = ZIP_FL_COMPRESSED;
 
-		switch(pdata->compression) {
+		switch(zpnode->compression) {
 			#if FORCE_MANUAL_DECOMPRESSION
 			case ZIP_CM_DEFLATE:
-				rw = SDL_RWWrapInflateReaderSeekable(rw, pdata->size, imin(4096, pdata->size), true);
+				rw = SDL_RWWrapInflateReaderSeekable(rw, zpnode->size, imin(4096, pdata->size), true);
 				break;
 			#endif
 
 			case ZIP_CM_ZSTD: {
-				rw = SDL_RWWrapZstdReaderSeekable(rw, pdata->size, true);
+				rw = SDL_RWWrapZstdReaderSeekable(rw, zpnode->size, true);
 				break;
 			}
 
 			default: {
-				char *fname = vfs_node_repr(znode, true);
-				SDL_SetError("%s: unsupported compression method: %i", fname, pdata->compression);
+				char *fname = vfs_node_repr(zpnode, true);
+				SDL_SetError("%s: unsupported compression method: %i", fname, zpnode->compression);
 				SDL_RWclose(rw);
 				return NULL;
 			}

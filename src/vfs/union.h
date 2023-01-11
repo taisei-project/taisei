@@ -12,4 +12,4 @@
 #include "private.h"
 #include "union_public.h"
 
-void vfs_union_init(VFSNode *node);
+VFSNode *vfs_union_create(void);

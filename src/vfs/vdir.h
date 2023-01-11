@@ -11,4 +11,5 @@
 
 #include "private.h"
 
-void vfs_vdir_init(VFSNode *node);
+VFSNode *vfs_vdir_create(void)
+	attr_returns_allocated;

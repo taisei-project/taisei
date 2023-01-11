@@ -9,7 +9,6 @@ vfs_src = files(
     'readonly_wrapper.c',
     'syspath_public.c',
     'union.c',
-    'union_public.c',
     'vdir.c',
     'zipfile_public.c',
 )
@@ -18,6 +17,7 @@ if dep_zip.found()
     vfs_src += files(
         'zipfile.c',
         'zippath.c',
+        'zippath_rwops.c',
     )
 else
     vfs_src += files(

@@ -41,9 +41,8 @@ static bool mkdir_with_parents(VFSNode *n, const char *fspath) {
 		return false;
 	}
 
-	VFSNode *pnode = vfs_alloc();
-	if(!vfs_syspath_init(pnode, p)) {
-		vfs_decref(pnode);
+	VFSNode *pnode;
+	if(!(pnode = vfs_syspath_create(p))) {
 		return false;
 	}
 
@@ -53,9 +52,9 @@ static bool mkdir_with_parents(VFSNode *n, const char *fspath) {
 }
 
 bool vfs_mount_syspath(const char *mountpoint, const char *fspath, uint flags) {
-	VFSNode *rdir = vfs_alloc();
+	VFSNode *rdir;
 
-	if(!vfs_syspath_init(rdir, fspath)) {
+	if(!(rdir = vfs_syspath_create(fspath))) {
 		vfs_set_error("Can't initialize path: %s", vfs_get_error());
 		vfs_decref(rdir);
 		return false;

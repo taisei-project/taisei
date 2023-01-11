@@ -14,10 +14,9 @@
 #define LOG_SDL_ERROR log_debug("SDL error: %s", SDL_GetError())
 
 static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t len, zip_source_cmd_t cmd) {
-	VFSNode *zipnode = userdata;
-	VFSZipFileData *zdata = zipnode->data1;
+	VFSZipNode *zipnode = userdata;
 	VFSZipFileTLS *tls = vfs_zipfile_get_tls(zipnode, false);
-	VFSNode *source = zdata->source;
+	VFSNode *source = zipnode->source;
 	zip_int64_t ret = -1;
 
 	if(!tls) {
@@ -134,24 +133,19 @@ static void vfs_zipfile_free_tls(VFSZipFileTLS *tls) {
 
 static void vfs_zipfile_free(VFSNode *node) {
 	if(node) {
-		VFSZipFileData *zdata = node->data1;
+		auto znode = VFS_NODE_CAST(VFSZipNode, node);
+		VFSZipFileTLS *tls = SDL_TLSGet(znode->tls_id);
 
-		if(zdata) {
-			SDL_TLSID tls_id = ((VFSZipFileData*)node->data1)->tls_id;
-			VFSZipFileTLS *tls = SDL_TLSGet(tls_id);
-
-			if(tls) {
-				vfs_zipfile_free_tls(tls);
-				SDL_TLSSet(tls_id, NULL, NULL);
-			}
-
-			if(zdata->source) {
-				vfs_decref(zdata->source);
-			}
-
-			ht_destroy(&zdata->pathmap);
-			mem_free(zdata);
+		if(tls) {
+			vfs_zipfile_free_tls(tls);
+			SDL_TLSSet(znode->tls_id, NULL, NULL);
 		}
+
+		if(znode->source) {
+			vfs_decref(znode->source);
+		}
+
+		ht_destroy(&znode->pathmap);
 	}
 }
 
@@ -163,25 +157,24 @@ static VFSInfo vfs_zipfile_query(VFSNode *node) {
 	};
 }
 
-static char* vfs_zipfile_syspath(VFSNode *node) {
-	VFSZipFileData *zdata = node->data1;
-	return vfs_node_syspath(zdata->source);
+static char *vfs_zipfile_syspath(VFSNode *node) {
+	return vfs_node_syspath(VFS_NODE_CAST(VFSZipNode, node)->source);
 }
 
-static char* vfs_zipfile_repr(VFSNode *node) {
-	VFSZipFileData *zdata = node->data1;
-	char *srcrepr = vfs_node_repr(zdata->source, false);
-	char *ziprepr = strfmt("zip archive %s", srcrepr);
+static char *vfs_zipfile_repr(VFSNode *node) {
+	auto znode = VFS_NODE_CAST(VFSZipNode, node);
+	char *srcrepr = vfs_node_repr(znode->source, false);
+	char *ziprepr = strjoin("zip archive ", srcrepr, NULL);
 	mem_free(srcrepr);
 	return ziprepr;
 }
 
-static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
-	VFSZipFileData *zdata = node->data1;
+static VFSNode *vfs_zipfile_locate(VFSNode *node, const char *path) {
+	auto znode = VFS_NODE_CAST(VFSZipNode, node);
+	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
 	int64_t idx;
 
-	if(!ht_lookup(&zdata->pathmap, path, &idx)) {
+	if(!ht_lookup(&znode->pathmap, path, &idx)) {
 		idx = zip_name_locate(tls->zip, path, 0);
 	}
 
@@ -189,12 +182,10 @@ static VFSNode* vfs_zipfile_locate(VFSNode *node, const char *path) {
 		return NULL;
 	}
 
-	VFSNode *n = vfs_alloc();
-	vfs_zippath_init(n, node, idx);
-	return n;
+	return vfs_zippath_create(znode, idx);
 }
 
-const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZipFileIterData *idata, VFSZipFileTLS *tls) {
+const char *vfs_zipfile_iter_shared(VFSZipFileIterData *idata, VFSZipFileTLS *tls) {
 	const char *r = NULL;
 
 	for(; !r && idata->idx < idata->num; ++idata->idx) {
@@ -248,17 +239,17 @@ const char* vfs_zipfile_iter_shared(VFSNode *node, VFSZipFileData *zdata, VFSZip
 	return r;
 }
 
-static const char* vfs_zipfile_iter(VFSNode *node, void **opaque) {
-	VFSZipFileData *zdata = node->data1;
+static const char *vfs_zipfile_iter(VFSNode *node, void **opaque) {
+	auto znode = VFS_NODE_CAST(VFSZipNode, node);
 	VFSZipFileIterData *idata = *opaque;
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
+	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
 
 	if(!idata) {
 		*opaque = idata = ALLOC(VFSZipFileIterData);
 		idata->num = zip_get_num_entries(tls->zip, 0);
 	}
 
-	return vfs_zipfile_iter_shared(node, zdata, idata, tls);
+	return vfs_zipfile_iter_shared(idata, tls);
 }
 
 void vfs_zipfile_iter_stop(VFSNode *node, void **opaque) {
@@ -271,7 +262,7 @@ void vfs_zipfile_iter_stop(VFSNode *node, void **opaque) {
 	}
 }
 
-static VFSNodeFuncs vfs_funcs_zipfile = {
+VFS_NODE_FUNCS(VFSZipNode, {
 	.repr = vfs_zipfile_repr,
 	.query = vfs_zipfile_query,
 	.free = vfs_zipfile_free,
@@ -282,14 +273,18 @@ static VFSNodeFuncs vfs_funcs_zipfile = {
 	.iter_stop = vfs_zipfile_iter_stop,
 	//.mkdir = vfs_zipfile_mkdir,
 	//.open = vfs_zipfile_open,
-};
+});
 
-static void vfs_zipfile_init_pathmap(VFSNode *node) {
-	VFSZipFileData *zdata = node->data1;
-	VFSZipFileTLS *tls = vfs_zipfile_get_tls(node, true);
+static bool vfs_zipfile_init_pathmap(VFSZipNode *znode) {
+	VFSZipFileTLS *tls = vfs_zipfile_get_tls(znode, true);
+
+	if(!tls) {
+		return false;
+	}
+
 	zip_int64_t num = zip_get_num_entries(tls->zip, 0);
 
-	ht_create(&zdata->pathmap);
+	ht_create(&znode->pathmap);
 
 	for(zip_int64_t i = 0; i < num; ++i) {
 		const char *original = zip_get_name(tls->zip, i, 0);
@@ -297,33 +292,34 @@ static void vfs_zipfile_init_pathmap(VFSNode *node) {
 		vfs_path_normalize(original, normalized);
 
 		if(strcmp(original, normalized)) {
-			ht_set(&zdata->pathmap, normalized, i);
+			ht_set(&znode->pathmap, normalized, i);
 		}
 	}
+
+	return true;
 }
 
-VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
-	VFSZipFileData *zdata = node->data1;
-	VFSZipFileTLS *tls = SDL_TLSGet(zdata->tls_id);
+VFSZipFileTLS *vfs_zipfile_get_tls(VFSZipNode *znode, bool create) {
+	VFSZipFileTLS *tls = SDL_TLSGet(znode->tls_id);
 
 	if(tls || !create) {
 		return tls;
 	}
 
 	tls = ALLOC(typeof(*tls));
-	SDL_TLSSet(zdata->tls_id, tls, (void(*)(void*))vfs_zipfile_free_tls);
+	SDL_TLSSet(znode->tls_id, tls, (void(*)(void*))vfs_zipfile_free_tls);
 
-	zip_source_t *src = zip_source_function_create(vfs_zipfile_srcfunc, node, &tls->error);
+	zip_source_t *src = zip_source_function_create(vfs_zipfile_srcfunc, znode, &tls->error);
 	zip_t *zip = tls->zip = zip_open_from_source(src, ZIP_RDONLY, &tls->error);
 
 	// FIXME: Taisei currently doesn't handle zip files without explicit directory entries correctly (file listing will not work)
 
 	if(!zip) {
-		char *r = vfs_node_repr(zdata->source, true);
+		char *r = vfs_node_repr(znode->source, true);
 		vfs_set_error("Failed to open zip archive '%s': %s", r, zip_error_strerror(&tls->error));
 		mem_free(r);
 		vfs_zipfile_free_tls(tls);
-		SDL_TLSSet(zdata->tls_id, 0, NULL);
+		SDL_TLSSet(znode->tls_id, 0, NULL);
 		zip_source_free(src);
 		return NULL;
 	}
@@ -331,33 +327,22 @@ VFSZipFileTLS* vfs_zipfile_get_tls(VFSNode *node, bool create) {
 	return tls;
 }
 
-bool vfs_zipfile_init(VFSNode *node, VFSNode *source) {
-	VFSNode backup;
-	memcpy(&backup, node, sizeof(VFSNode));
+VFSNode *vfs_zipfile_create(VFSNode *source) {
+	SDL_TLSID tls = SDL_TLSCreate();
 
-	auto zdata = ALLOC(VFSZipFileData, {
+	if(!tls) {
+		vfs_set_error("SDL_TLSCreate() failed: %s", SDL_GetError());
+		return NULL;
+	}
+
+	auto znode = VFS_ALLOC(VFSZipNode, {
 		.source = source,
-		.tls_id = SDL_TLSCreate(),
+		.tls_id = tls,
 	});
 
-	node->data1 = zdata;
-	node->funcs = &vfs_funcs_zipfile;
-
-	if(!zdata->tls_id) {
-		vfs_set_error("SDL_TLSCreate() failed: %s", SDL_GetError());
-		goto error;
+	if(!vfs_zipfile_init_pathmap(znode)) {
+		vfs_decref(znode);
 	}
 
-	if(!vfs_zipfile_get_tls(node, true)) {
-		goto error;
-	}
-
-	vfs_zipfile_init_pathmap(node);
-	return true;
-
-error:
-	zdata->source = NULL; // don't decref it
-	node->funcs->free(node);
-	memcpy(node, &backup, sizeof(VFSNode));
-	return false;
+	return &znode->as_generic;
 }

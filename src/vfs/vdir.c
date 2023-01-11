@@ -10,39 +10,44 @@
 
 #include "vdir.h"
 
-#define VDIR_TABLE(vdir) ((ht_str2ptr_t*)((vdir)->data1))
+VFS_NODE_TYPE(VFSVDirNode, {
+	ht_str2ptr_t table;
+});
 
-static void vfs_vdir_attach_node(VFSNode *vdir, const char *name, VFSNode *node) {
-	VFSNode *oldnode = ht_get(VDIR_TABLE(vdir), name, NULL);
+static void vfs_vdir_attach_node(VFSNode *node, const char *name, VFSNode *subnode) {
+	auto vdir = VFS_NODE_CAST(VFSVDirNode, node);
+	VFSNode *oldnode = ht_get(&vdir->table, name, NULL);
 
 	if(oldnode) {
 		vfs_decref(oldnode);
 	}
 
-	ht_set(VDIR_TABLE(vdir), name, node);
+	ht_set(&vdir->table, name, subnode);
 }
 
-static VFSNode* vfs_vdir_locate(VFSNode *vdir, const char *path) {
-	VFSNode *node;
+static VFSNode *vfs_vdir_locate(VFSNode *node, const char *path) {
+	auto vdir = VFS_NODE_CAST(VFSVDirNode, node);
+	VFSNode *subnode;
 	char mutpath[strlen(path)+1];
 	char *primpath, *subpath;
 
 	strcpy(mutpath, path);
 	vfs_path_split_left(mutpath, &primpath, &subpath);
 
-	if((node = ht_get(VDIR_TABLE(vdir), mutpath, NULL))) {
-		return vfs_locate(node, subpath);
+	if((subnode = ht_get(&vdir->table, primpath, NULL))) {
+		return vfs_locate(subnode, subpath);
 	}
 
 	return NULL;
 }
 
-static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
+static const char *vfs_vdir_iter(VFSNode *node, void **opaque) {
+	auto vdir = VFS_NODE_CAST(VFSVDirNode, node);
 	ht_str2ptr_iter_t *iter = *opaque;
 
 	if(!iter) {
 		iter = *opaque = ALLOC(typeof(*iter));
-		ht_iter_begin(VDIR_TABLE(vdir), iter);
+		ht_iter_begin(&vdir->table, iter);
 	} else {
 		ht_iter_next(iter);
 	}
@@ -50,7 +55,7 @@ static const char* vfs_vdir_iter(VFSNode *vdir, void **opaque) {
 	return iter->has_data ? iter->key : NULL;
 }
 
-static void vfs_vdir_iter_stop(VFSNode *vdir, void **opaque) {
+static void vfs_vdir_iter_stop(VFSNode *node, void **opaque) {
 	if(*opaque) {
 		ht_iter_end((ht_str2ptr_iter_t*)*opaque);
 		mem_free(*opaque);
@@ -58,26 +63,26 @@ static void vfs_vdir_iter_stop(VFSNode *vdir, void **opaque) {
 	}
 }
 
-static VFSInfo vfs_vdir_query(VFSNode *vdir) {
+static VFSInfo vfs_vdir_query(VFSNode *node) {
 	return (VFSInfo) {
 		.exists = true,
 		.is_dir = true,
 	};
 }
 
-static void vfs_vdir_free(VFSNode *vdir) {
-	ht_str2ptr_t *ht = VDIR_TABLE(vdir);
+static void vfs_vdir_free(VFSNode *node) {
+	auto vdir = VFS_NODE_CAST(VFSVDirNode, node);
+	ht_str2ptr_t *ht = &vdir->table;
 	ht_str2ptr_iter_t iter;
 
 	ht_iter_begin(ht, &iter);
 
 	for(; iter.has_data; ht_iter_next(&iter)) {
-		vfs_decref(iter.value);
+		vfs_decref((VFSNode*)iter.value);
 	}
 
 	ht_iter_end(&iter);
 	ht_destroy(ht);
-	mem_free(ht);
 }
 
 static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtree) {
@@ -90,37 +95,29 @@ static bool vfs_vdir_mount(VFSNode *vdir, const char *mountpoint, VFSNode *subtr
 	return true;
 }
 
-static bool vfs_vdir_unmount(VFSNode *vdir, const char *mountpoint) {
+static bool vfs_vdir_unmount(VFSNode *node, const char *mountpoint) {
+	auto vdir = VFS_NODE_CAST(VFSVDirNode, node);
 	VFSNode *mountee;
 
-	if(!(mountee = ht_get(VDIR_TABLE(vdir), mountpoint, NULL))) {
+	if(!(mountee = ht_get(&vdir->table, mountpoint, NULL))) {
 		vfs_set_error("Mountpoint '%s' doesn't exist", mountpoint);
 		return false;
 	}
 
-	ht_unset(VDIR_TABLE(vdir), mountpoint);
+	ht_unset(&vdir->table, mountpoint);
 	vfs_decref(mountee);
 	return true;
 }
 
 static bool vfs_vdir_mkdir(VFSNode *node, const char *subdir) {
-	if(!subdir) {
-		vfs_set_error("Virtual directory trying to create itself? How did you even get here?");
-		return false;
-	}
-
-	VFSNode *subnode = vfs_alloc();
-	vfs_vdir_init(subnode);
-	vfs_vdir_mount(node, subdir, subnode);
-
-	return true;
+	return vfs_vdir_mount(node, NOT_NULL(subdir), vfs_vdir_create());
 }
 
-static char* vfs_vdir_repr(VFSNode *node) {
+static char *vfs_vdir_repr(VFSNode *node) {
 	return strdup("virtual directory");
 }
 
-static VFSNodeFuncs vfs_funcs_vdir = {
+VFS_NODE_FUNCS(VFSVDirNode, {
 	.repr = vfs_vdir_repr,
 	.query = vfs_vdir_query,
 	.free = vfs_vdir_free,
@@ -130,9 +127,10 @@ static VFSNodeFuncs vfs_funcs_vdir = {
 	.iter = vfs_vdir_iter,
 	.iter_stop = vfs_vdir_iter_stop,
 	.mkdir = vfs_vdir_mkdir,
-};
+});
 
-void vfs_vdir_init(VFSNode *node) {
-	node->funcs = &vfs_funcs_vdir;
-	node->data1 = ht_str2ptr_new();
+VFSNode *vfs_vdir_create(void) {
+	auto vdir = VFS_ALLOC(VFSVDirNode);
+	ht_create(&vdir->table);
+	return &vdir->as_generic;
 }

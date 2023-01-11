@@ -12,9 +12,13 @@
 #include "private.h"
 #include "rwops/rwops_ro.h"
 
-#define WRAPPED(n) ((VFSNode*)(n)->data1)
+VFS_NODE_TYPE(VFSReadOnlyNode, {
+	VFSNode *wrapped;
+});
 
-static char* vfs_ro_repr(VFSNode *node) {
+#define WRAPPED(n) VFS_NODE_CAST(VFSReadOnlyNode, n)->wrapped
+
+static char *vfs_ro_repr(VFSNode *node) {
 	char *wrapped_repr = vfs_node_repr(WRAPPED(node), false);
 	char *repr = strjoin("read-only view of ", wrapped_repr, NULL);
 	mem_free(wrapped_repr);
@@ -80,7 +84,7 @@ static SDL_RWops* vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
 	return SDL_RWWrapReadOnly(vfs_node_open(WRAPPED(filenode), mode), true);
 }
 
-static VFSNodeFuncs vfs_funcs_ro = {
+VFS_NODE_FUNCS(VFSReadOnlyNode, {
 	.repr = vfs_ro_repr,
 	.query = vfs_ro_query,
 	.free = vfs_ro_free,
@@ -92,9 +96,9 @@ static VFSNodeFuncs vfs_funcs_ro = {
 	.open = vfs_ro_open,
 	.mount = vfs_ro_mount,
 	.unmount = vfs_ro_unmount,
-};
+});
 
-VFSNode* vfs_ro_wrap(VFSNode *base) {
+VFSNode *vfs_ro_wrap(VFSNode *base) {
 	if(base == NULL) {
 		return NULL;
 	}
@@ -106,10 +110,9 @@ VFSNode* vfs_ro_wrap(VFSNode *base) {
 		return base;
 	}
 
-	VFSNode *wrapper = vfs_alloc();
-	wrapper->funcs = &vfs_funcs_ro;
-	wrapper->data1 = base;
-	return wrapper;
+	return &VFS_ALLOC(VFSReadOnlyNode, {
+		.wrapped = base,
+	})->as_generic;
 }
 
 bool vfs_make_readonly(const char *path) {

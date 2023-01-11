@@ -13,4 +13,4 @@
 #include "syspath_public.h"
 
 extern char *vfs_syspath_separators;
-bool vfs_syspath_init(VFSNode *node, const char *path);
+VFSNode *vfs_syspath_create(const char *path);

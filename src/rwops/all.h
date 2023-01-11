@@ -17,10 +17,6 @@
 #include "rwops_zlib.h"
 #include "rwops_zstd.h"
 
-#ifdef TAISEI_BUILDCONF_USE_ZIP
-#include "rwops_zipfile.h"
-#endif
-
 #ifdef DEBUG
 #include "rwops_trace.h"
 #endif

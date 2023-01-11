@@ -18,7 +18,7 @@ VFSInfo vfs_node_query(VFSNode *node) {
 	return node->funcs->query(node);
 }
 
-VFSNode* vfs_node_locate(VFSNode *root, const char *path) {
+VFSNode *vfs_node_locate(VFSNode *root, const char *path) {
 	assert(root->funcs != NULL);
 
 	#ifndef NDEBUG
@@ -36,7 +36,7 @@ VFSNode* vfs_node_locate(VFSNode *root, const char *path) {
 	return root->funcs->locate(root, path);
 }
 
-const char* vfs_node_iter(VFSNode *node, void **opaque) {
+const char *vfs_node_iter(VFSNode *node, void **opaque) {
 	assert(node->funcs != NULL);
 
 	if(node->funcs->iter != NULL) {
@@ -56,7 +56,7 @@ void vfs_node_iter_stop(VFSNode *node, void **opaque) {
 	}
 }
 
-char* vfs_node_syspath(VFSNode *node) {
+char *vfs_node_syspath(VFSNode *node) {
 	assert(node->funcs != NULL);
 
 	if(node->funcs->syspath == NULL) {
@@ -67,7 +67,7 @@ char* vfs_node_syspath(VFSNode *node) {
 	return node->funcs->syspath(node);
 }
 
-char* vfs_node_repr(VFSNode *node, bool try_syspath) {
+char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
 	assert(node->funcs != NULL);
 	assert(node->funcs->repr != NULL);
 	char *r;
@@ -122,7 +122,7 @@ bool vfs_node_mkdir(VFSNode *parent, const char *subdir) {
 	return parent->funcs->mkdir(parent, subdir);
 }
 
-SDL_RWops* vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
+SDL_RWops *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	assert(filenode->funcs != NULL);
 
 	if(filenode->funcs->open == NULL) {

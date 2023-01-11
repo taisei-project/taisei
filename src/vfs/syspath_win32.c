@@ -14,8 +14,10 @@
 
 #include "syspath.h"
 
-#define _path_ data1
-#define _wpath_ data2
+VFS_NODE_TYPE(VFSSysPathNode, {
+	char *path;
+	wchar_t *wpath;
+});
 
 char *vfs_syspath_separators = "\\/";
 
@@ -39,11 +41,12 @@ static WCHAR *WIN_UTF8ToString(char *s) {
 	return buf;
 }
 
-static bool vfs_syspath_init_internal(VFSNode *node, char *path);
+static VFSNode *vfs_syspath_create_internal(char *path);
 
 static void vfs_syspath_free(VFSNode *node) {
-	mem_free(node->_path_);
-	mem_free(node->_wpath_);
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	mem_free(pnode->path);
+	mem_free(pnode->wpath);
 }
 
 static void _vfs_set_error_win32(const char *file, int line) {
@@ -70,14 +73,15 @@ static void _vfs_set_error_win32(const char *file, int line) {
 #define vfs_set_error_win32() _vfs_set_error_win32(_TAISEI_SRC_FILE, __LINE__)
 
 static VFSInfo vfs_syspath_query(VFSNode *node) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	VFSInfo i = {0};
 
-	if(!PathFileExists(node->_wpath_)) {
+	if(!PathFileExists(pnode->wpath)) {
 		i.exists = false;
 		return i;
 	}
 
-	DWORD attrib = GetFileAttributes(node->_wpath_);
+	DWORD attrib = GetFileAttributes(pnode->wpath);
 
 	if(attrib == INVALID_FILE_ATTRIBUTES) {
 		vfs_set_error_win32();
@@ -90,9 +94,10 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 	return i;
 }
 
-static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_RWops *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	mode &= VFS_MODE_RWMASK;
-	SDL_RWops *rwops = SDL_RWFromFile(node->_path_, mode == VFS_MODE_WRITE ? "w" : "r");
+	SDL_RWops *rwops = SDL_RWFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
 
 	if(!rwops) {
 		vfs_set_error_from_sdl();
@@ -101,18 +106,9 @@ static SDL_RWops* vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 	return rwops;
 }
 
-static VFSNode* vfs_syspath_locate(VFSNode *node, const char *path) {
-	VFSNode *n = vfs_alloc();
-	char buf[strlen(path)+1], *base, *name;
-	strcpy(buf, path);
-	vfs_path_split_right(buf, &base, &name);
-
-	if(!vfs_syspath_init_internal(n, strfmt("%s%c%s", (char*)node->_path_, '\\', path))) {
-		vfs_decref(n);
-		return NULL;
-	}
-
-	return n;
+static VFSNode *vfs_syspath_locate(VFSNode *node, const char *path) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	return vfs_syspath_create_internal(strjoin(pnode->path, "\\", path, NULL));
 }
 
 typedef struct VFSWin32IterData {
@@ -121,12 +117,13 @@ typedef struct VFSWin32IterData {
 } VFSWin32IterData;
 
 static const char* vfs_syspath_iter(VFSNode *node, void **opaque) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	VFSWin32IterData *idata;
 	WIN32_FIND_DATA fdata;
 	HANDLE search_handle;
 
 	if(!*opaque) {
-		char *pattern = strjoin(node->_path_, "\\*.*", NULL);
+		char *pattern = strjoin(pnode->path, "\\*.*", NULL);
 		wchar_t *wpattern = WIN_UTF8ToString(pattern);
 		mem_free(pattern);
 		search_handle = FindFirstFile(wpattern, &fdata);
@@ -185,21 +182,25 @@ static void vfs_syspath_iter_stop(VFSNode *node, void **opaque) {
 }
 
 static char* vfs_syspath_repr(VFSNode *node) {
-	return strfmt("filesystem path (win32): %s", (char*)node->_path_);
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	return strfmt("filesystem path (win32): %s", pnode->path);
 }
 
 static char* vfs_syspath_syspath(VFSNode *node) {
-	char *p = strdup(node->_path_);
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+	char *p = strdup(pnode->path);
 	vfs_syspath_normalize_inplace(p);
 	return p;
 }
 
 static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
+	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
+
 	if(!subdir) {
 		subdir = "";
 	}
 
-	char *p = strfmt("%s%c%s", (char*)node->_path_, '\\', subdir);
+	char *p = strjoin(pnode->path, "\\", subdir, NULL);
 	wchar_t *wp = WIN_UTF8ToString(p);
 	bool ok = CreateDirectory(wp, NULL);
 	DWORD err = GetLastError();
@@ -225,7 +226,7 @@ static bool vfs_syspath_mkdir(VFSNode *node, const char *subdir) {
 	return ok;
 }
 
-static VFSNodeFuncs vfs_funcs_syspath = {
+VFS_NODE_FUNCS(VFSSysPathNode, {
 	.repr = vfs_syspath_repr,
 	.query = vfs_syspath_query,
 	.free = vfs_syspath_free,
@@ -235,7 +236,7 @@ static VFSNodeFuncs vfs_funcs_syspath = {
 	.iter_stop = vfs_syspath_iter_stop,
 	.mkdir = vfs_syspath_mkdir,
 	.open = vfs_syspath_open,
-};
+});
 
 void vfs_syspath_normalize(char *buf, size_t bufsize, const char *path) {
 	// here we just remove redundant separators and convert forward slashes to back slashes.
@@ -308,20 +309,19 @@ static bool vfs_syspath_validate(char *path) {
 	return true;
 }
 
-static bool vfs_syspath_init_internal(VFSNode *node, char *path) {
+static VFSNode *vfs_syspath_create_internal(char *path) {
 	vfs_syspath_normalize_inplace(path);
 
 	if(!vfs_syspath_validate(path)) {
-		return false;
+		return NULL;
 	}
 
-	node->funcs = &vfs_funcs_syspath;
-	node->_path_ = path;
-	node->_wpath_ = WIN_UTF8ToString(path);
-
-	return true;
+	return &VFS_ALLOC(VFSSysPathNode, {
+		.path = path,
+		.wpath = WIN_UTF8ToString(path),
+	})->as_generic;
 }
 
-bool vfs_syspath_init(VFSNode *node, const char *path) {
-	return vfs_syspath_init_internal(node, strdup(path));
+VFSNode *vfs_syspath_create(const char *path) {
+	return vfs_syspath_create_internal(strdup(path));
 }
