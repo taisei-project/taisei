@@ -73,7 +73,8 @@ void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize
 	strbuf_reserve(strbuf, datasize);
 	assert_nolog(strbuf_size_available(strbuf) >= datasize);
 	memcpy(strbuf->pos, data, datasize - 1);
-	strbuf->pos[datasize - 1] = 0;
+	strbuf->pos += datasize - 1;
+	*strbuf->pos = 0;
 }
 
 void strbuf_cat(StringBuffer *strbuf, const char *str) {
