@@ -166,3 +166,28 @@ void _dynarray_filter(
 		attr_unused void *_dynarray_foreach_ignored, \
 		__VA_ARGS__ \
 	)
+
+#define dynarray_foreach_reversed(_darr, _cntr_var, _pelem_var, ...) do { \
+	for(dynarray_size_t _dynarray_foreach_iter = NOT_NULL(_darr)->num_elements; \
+		_dynarray_foreach_iter--; \
+	) { \
+		_cntr_var = _dynarray_foreach_iter; \
+		_pelem_var = dynarray_get_ptr((_darr), _dynarray_foreach_iter); \
+		__VA_ARGS__ \
+	} \
+} while(0)
+
+#define dynarray_foreach_elem_reversed(_darr, _pelem_var, ...) \
+	dynarray_foreach_reversed( \
+		_darr, \
+		attr_unused dynarray_size_t _dynarray_foreach_ignored, \
+		_pelem_var, \
+		__VA_ARGS__ \
+	)
+
+#define dynarray_foreach_idx_reversed(_darr, _cntr_var, ...) \
+	dynarray_foreach(_darr, \
+		_cntr_var, \
+		attr_unused void *_dynarray_foreach_ignored, \
+		__VA_ARGS__ \
+	)
