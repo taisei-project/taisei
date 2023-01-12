@@ -171,7 +171,7 @@ bool vfs_mount(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
 }
 
 bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree) {
-	if(!vfs_mount(vfs_root, mountpoint, subtree)) {
+	if(!vfs_mount(root, mountpoint, subtree)) {
 		vfs_decref(subtree);
 		return false;
 	}
