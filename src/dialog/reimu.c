@@ -327,7 +327,7 @@ DIALOG_TASK(reimu, Stage4PreBoss) {
 
 	MSG(kurumi, "Uniform? Are you kidding me?");
 	MSG(kurumi, "I’ve seen a real shrine maiden before, and she didn’t look anything like you!");
-	MSG(kurumi, "What’s with those patterns, anwyays? It’s completely unorthodox!");
+	MSG(kurumi, "What’s with those patterns, anyways? It’s completely unorthodox!");
 	MSG(kurumi, "It’s not even using the right type of fabric! Get out of here, fake-maiden!");
 
 	FACE(reimu, irritated);
