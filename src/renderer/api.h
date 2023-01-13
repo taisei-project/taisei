@@ -229,6 +229,7 @@ typedef enum Primitive {
 
 typedef enum VertexAttribType {
 	VA_FLOAT,
+	VA_HALF,
 	VA_BYTE,
 	VA_UBYTE,
 	VA_SHORT,

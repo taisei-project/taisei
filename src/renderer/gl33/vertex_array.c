@@ -16,6 +16,7 @@
 
 static GLenum va_type_to_gl_type[] = {
 	[VA_FLOAT]  = GL_FLOAT,
+	[VA_HALF]   = GL_HALF_FLOAT,
 	[VA_BYTE]   = GL_BYTE,
 	[VA_UBYTE]  = GL_UNSIGNED_BYTE,
 	[VA_SHORT]  = GL_SHORT,
