@@ -43,3 +43,7 @@ if dep_gamemode.found()
 else
     util_src += files('gamemode_stub.c')
 endif
+
+if not (float16_have_native_conversion or float16_have_rtlib_conversion)
+    util_src += files('float16_fallback.c')
+endif
