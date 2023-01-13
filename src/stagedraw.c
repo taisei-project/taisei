@@ -1092,7 +1092,7 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstance
 		st->color1 = st->color2;
 	}
 
-	spr_attribs->rgba = *st->color1;
+	f32v4_to_f16v4(spr_attribs->rgba, st->color1->rgba);
 	return 0;
 }
 

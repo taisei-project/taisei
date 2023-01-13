@@ -1047,21 +1047,14 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	text_ucs4_bbox(font, ucs4text, 0, &bbox);
 
-	Color color;
-
-	if(params->color == NULL) {
-		// XXX: sprite batch code defaults this to RGB(1, 1, 1)
-		color = *r_color_current();
-	} else {
-		color = *params->color;
-	}
-
-	ShaderCustomParams shader_params;
+	SpriteInstanceAttribs init_attribs = {};
+	// XXX: sprite batch code defaults this to RGBA(1, 1, 1, 1)
+	f32v4_to_f16v4(init_attribs.rgba, (params->color ?: r_color_current())->rgba);
 
 	if(params->shader_params == NULL) {
-		memset(&shader_params, 0, sizeof(shader_params));
+		memset(init_attribs.custom, 0, sizeof(init_attribs.custom));
 	} else {
-		shader_params = *params->shader_params;
+		f32v4_to_f16v4(init_attribs.custom, params->shader_params->vector);
 	}
 
 	mat4 mat_texture;
@@ -1131,9 +1124,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			Sprite *spr = &glyph->sprite;
 			set_batch_texture(&batch_state_params, spr->tex);
 
-			SpriteInstanceAttribs attribs;
-			attribs.rgba = color;
-			attribs.custom = shader_params;
+			SpriteInstanceAttribs attribs = init_attribs;
 
 			float g_x = x + glyph->metrics.bearing_x + spr->w * 0.5;
 			float g_y = y - glyph->metrics.bearing_y + spr->h * 0.5 - font->metrics.descent;
@@ -1147,8 +1138,7 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			attribs.texrect = spr->tex_area;
 
 			// NOTE: Glyphs have their sprite w/h unadjusted for scale.
-			attribs.sprite_size.w = spr->w * iscale;
-			attribs.sprite_size.h = spr->h * iscale;
+			f32v2_to_f16v2(attribs.sprite_size, (float[2]) { spr->w * iscale, spr->h * iscale });
 
 			if(params->glyph_callback.func != NULL) {
 				params->glyph_callback.func(font, uchar, &attribs, params->glyph_callback.userdata);
