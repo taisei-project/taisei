@@ -102,7 +102,7 @@ static void credits_fill(void) {
 
 	credits_add((
 		"Alice D.\n"
-		"https://unstable.systems/AmyZenunim\n"
+		"https://unstable.systems/@AmyZenunim\n"
 		"https://github.com/StarWitch\n\n"
 		"Lead story writer\n"
 		"macOS QA, debugging, CI"
