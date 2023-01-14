@@ -12,22 +12,27 @@
 typedef union FloatOffset {
 	struct { float x, y; };
 	cmplxf as_cmplx;
+	float as_array[2];
 } FloatOffset;
 
 typedef union FloatExtent {
 	struct { float w, h; };
 	cmplxf as_cmplx;
+	float as_array[2];
 } FloatExtent;
 
-typedef struct FloatRect {
-	union {
-		FloatOffset offset;
-		struct { float x, y; };
+typedef union FloatRect {
+	struct {
+		union {
+			FloatOffset offset;
+			struct { float x, y; };
+		};
+		union {
+			FloatExtent extent;
+			struct { float w, h; };
+		};
 	};
-	union {
-		FloatExtent extent;
-		struct { float w, h; };
-	};
+	float as_array[4];
 } FloatRect;
 
 typedef struct IntOffset {
