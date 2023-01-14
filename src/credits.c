@@ -101,11 +101,11 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
-		"Alice D\n"
-		"https://twitter.com/AmyZenunim\n"
-		"https://github.com/starwitch\n\n"
+		"Alice D.\n"
+		"https://unstable.systems/AmyZenunim\n"
+		"https://github.com/StarWitch\n\n"
 		"Lead story writer\n"
-		"macOS QA + debugging"
+		"macOS QA, debugging, CI"
 	), ENTRY_TIME);
 
 	credits_add((
