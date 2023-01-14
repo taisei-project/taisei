@@ -77,7 +77,72 @@ INLINE float f16_to_f32(float16_storage_t x) {
 
 // Resort to vendored fallbacks
 
-float f16_to_f32(float16_storage_t x) attr_const;
 float16_storage_t f32_to_f16(float x) attr_const;
+float f16_to_f32(float16_storage_t x) attr_const;
 
 #endif
+
+// Vector operations
+
+#define F16_DEFINE_VECTOR_CONVERSION_SCALAR(vecsize) \
+	INLINE void f32v##vecsize##_to_f16v##vecsize(float16_storage_t dst[vecsize], const float src[vecsize]) { \
+		for(int i = 0; i < vecsize; ++i) { \
+			dst[i] = f32_to_f16(src[i]); \
+		} \
+	} \
+	\
+	INLINE void f16v##vecsize##_to_f32v##vecsize(float dst[vecsize], const float16_storage_t src[vecsize]) { \
+		for(int i = 0; i < vecsize; ++i) { \
+			dst[i] = f16_to_f32(src[i]); \
+		} \
+	}
+
+#ifdef TAISEI_BUILDCONF_F16_SIMD_TYPE
+
+typedef TAISEI_BUILDCONF_F16_SIMD_TYPE f16_simd_t;
+
+// NOTE: Sadly GCC 12 still can't vectorize this, but clang can.
+
+#define F16_DEFINE_VECTOR_CONVERSION(vecsize) \
+	typedef float      f32v##vecsize##simd __attribute__((vector_size(vecsize * sizeof(float)))); \
+	typedef f16_simd_t f16v##vecsize##simd __attribute__((vector_size(vecsize * sizeof(f16_simd_t)))); \
+	\
+	INLINE void f32v##vecsize##_to_f16v##vecsize(float16_storage_t dst[vecsize], const float src[vecsize]) { \
+		f32v##vecsize##simd v32_simd; \
+		memcpy(&v32_simd, src, sizeof(v32_simd)); \
+		auto v16_simd = __builtin_convertvector(v32_simd, f16v##vecsize##simd); \
+		memcpy(dst, &v16_simd, sizeof(v16_simd)); \
+	} \
+	\
+	INLINE void f16v##vecsize##_to_f32v##vecsize(float dst[vecsize], const float16_storage_t src[vecsize]) { \
+		f16v##vecsize##simd v16_simd; \
+		memcpy(&v16_simd, src, sizeof(v16_simd)); \
+		auto v32_simd = __builtin_convertvector(v16_simd, f32v##vecsize##simd); \
+		memcpy(dst, &v32_simd, sizeof(v32_simd)); \
+	}
+
+#else
+
+#define F16_DEFINE_VECTOR_CONVERSION(vecsize) \
+	F16_DEFINE_VECTOR_CONVERSION_SCALAR(vecsize)
+
+#endif
+
+/*
+ * Defines functions:
+ *
+ *		void f16vX_to_f32vX(float dst[X], const float16_storage_t src[X]);
+ *		void f32vX_to_f16vX(float16_storage_t dst[X], const float src[X]);
+ *
+ * Where X is the vector size.
+ */
+
+F16_DEFINE_VECTOR_CONVERSION(4)
+
+#ifdef __clang__
+	F16_DEFINE_VECTOR_CONVERSION(3)
+#else
+	F16_DEFINE_VECTOR_CONVERSION_SCALAR(3)
+#endif
+
+F16_DEFINE_VECTOR_CONVERSION(2)

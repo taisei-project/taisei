@@ -316,6 +316,7 @@ config.set('TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS', cc.compiles(
 
 config.set('TAISEI_BUILDCONF_F16_CVT_TYPE', false)
 config.set('TAISEI_BUILDCONF_F16_STORAGE_TYPE', 'uint16_t')
+config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', false)
 config.set('TAISEI_BUILDCONF_F16_RT_ABI_TYPE', false)
 config.set('TAISEI_BUILDCONF_F16_RT_FUNC_H2F', false)
 config.set('TAISEI_BUILDCONF_F16_RT_FUNC_F2H', false)
@@ -325,6 +326,7 @@ float16_cvt_types = {
     '_Float16' : '_Float16',
     '__fp16'   : 'uint16_t',
 }
+float16_simd_types = ['_Float16']
 float16_rt_abi = 'none'
 float16_rt_abi_typemap = {
     'native'  : '_Float16',
@@ -348,6 +350,11 @@ foreach cvt_type, storage_type : float16_cvt_types
     if cc.sizeof(cvt_type) == 2
         config.set('TAISEI_BUILDCONF_F16_CVT_TYPE', cvt_type)
         config.set('TAISEI_BUILDCONF_F16_STORAGE_TYPE', storage_type)
+
+        if cvt_type in float16_simd_types
+            config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', cvt_type)
+        endif
+
         float16_rt_abi = 'none'
         float16_have_native_conversion = true
         break
@@ -419,6 +426,11 @@ if float16_rt_abi != 'none'
         config.set('TAISEI_BUILDCONF_F16_RT_ABI_TYPE', abi_type)
         config.set('TAISEI_BUILDCONF_F16_RT_FUNC_H2F', func_h2f)
         config.set('TAISEI_BUILDCONF_F16_RT_FUNC_F2H', func_f2h)
+
+        if abi_type in float16_simd_types
+            config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', abi_type)
+        endif
+
         float16_have_rtlib_conversion = true
         break
     endforeach
