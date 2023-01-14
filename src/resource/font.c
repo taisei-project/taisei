@@ -349,8 +349,8 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 }
 
 // TODO: Figure out sensible values for these; maybe make them depend on font size in some way.
-#define SS_WIDTH 1024
-#define SS_HEIGHT 1024
+#define SS_WIDTH 2048
+#define SS_HEIGHT 2048
 
 #define SS_TEXTURE_TYPE TEX_TYPE_RGB_8
 #define SS_TEXTURE_FLAGS 0
