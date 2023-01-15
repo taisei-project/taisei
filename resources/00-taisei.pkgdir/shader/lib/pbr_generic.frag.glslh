@@ -17,5 +17,5 @@ void main(void) {
 	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, features_mask);
 	PBR_Generic_MaybeTonemap(color, features_mask);
 
-	fragColor = vec4(color * p.mat.alpha, p.mat.alpha);
+	fragColor = vec4(color, 1);
 }
