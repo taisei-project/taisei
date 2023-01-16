@@ -14,7 +14,7 @@ void main(void) {
 
 	vec3 color = p.mat.ambient;
 	color += PBR_PointLights(pbr, light_count, light_positions, light_colors);
-	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, features_mask);
+	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, environmentRGB_depthScale.rgb, features_mask);
 	PBR_Generic_MaybeTonemap(color, features_mask);
 
 	fragColor = vec4(color, 1);

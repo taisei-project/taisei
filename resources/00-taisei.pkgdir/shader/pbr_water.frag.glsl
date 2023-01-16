@@ -67,7 +67,7 @@ vec3 topLayer(vec3 normal, vec3 pos, vec3 bottom) {
 	pbr.F0 = vec3(F0_WATER);
 
 	vec3 color = PBR_PointLights(pbr, light_count, light_positions, light_colors);
-	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, features_mask);
+	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, environmentRGB_depthScale.rgb, features_mask);
 
 	return mix(bottom, color, pbr.fresnelNV);
 }
@@ -82,7 +82,7 @@ vec3 bottomLayer(mat3 tbn, vec2 uv, vec3 pos) {
 
 	vec3 color = p.mat.ambient;
 	color += PBR_PointLights(pbr, light_count, light_positions, light_colors);
-	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, features_mask);
+	color += PBR_Generic_EnvironmentLight(pbr, ibl_brdf_lut, environment_map, environmentRGB_depthScale.rgb, features_mask);
 
 	return color;
 }

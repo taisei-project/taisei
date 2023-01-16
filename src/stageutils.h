@@ -62,6 +62,7 @@ typedef struct PBREnvironment {
 	mat4 cam_inverse_transform;
 	Texture *environment_map;
 	vec3 ambient_color;
+	vec3 environment_color;
 	bool disable_tonemap;
 } PBREnvironment;
 

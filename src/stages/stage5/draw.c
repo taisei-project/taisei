@@ -72,6 +72,7 @@ static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
 static void stage5_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
 	stage5_bg_setup_pbr_lighting(cam);
 	glm_vec3_broadcast(1.0f + stage5_draw_data->stairs.light_strength, env->ambient_color);
+	glm_vec3_broadcast(1.0f, env->environment_color);
 	env->environment_map = stage5_draw_data->env_map;
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 }

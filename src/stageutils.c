@@ -160,7 +160,6 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 
 	if(m->depth_map && m->depth_scale) {
 		r_uniform_sampler("depth_map", m->depth_map);
-		r_uniform_float("depth_scale", m->depth_scale);
 		flags |= PBR_FEATURE_DEPTH_MAP;
 	}
 
@@ -189,6 +188,11 @@ void pbr_set_material_uniforms(const PBRMaterial *m, const PBREnvironment *env) 
 	glm_vec3_mul((float*)env->ambient_color, (float*)m->ambient_color, ambientRGB_roughnessA);
 	ambientRGB_roughnessA[3] = m->roughness_value;
 	r_uniform_vec4_vec("ambientRGB_roughnessA", ambientRGB_roughnessA);
+
+	vec4 environmentRGB_depthScale;
+	glm_vec3_copy((float*)env->environment_color, (float*)environmentRGB_depthScale);
+	environmentRGB_depthScale[3] = m->depth_scale;
+	r_uniform_vec4_vec("environmentRGB_depthScale", environmentRGB_depthScale);
 
 	r_uniform_int("features_mask", flags);
 }

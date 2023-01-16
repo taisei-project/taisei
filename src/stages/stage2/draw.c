@@ -137,6 +137,7 @@ static void stage2_bg_setup_pbr_lighting(Camera3D *cam, int max_lights) {
 static void stage2_bg_setup_pbr_env(Camera3D *cam, int max_lights, PBREnvironment *env) {
 	stage2_bg_setup_pbr_lighting(cam, max_lights);
 	glm_vec3_broadcast(0.5f, env->ambient_color);
+	glm_vec3_broadcast(1.0f, env->environment_color);
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 	env->environment_map = stage2_draw_data->envmap;
 	env->disable_tonemap = true;
