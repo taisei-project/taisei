@@ -36,6 +36,7 @@ TASK(laser_bullet, { BoxedProjectile p; BoxedLaser l; CoEvent *event; int event_
 
 		if(t == ARGS.event_time && ARGS.event) {
 			coevent_signal(ARGS.event);
+			break;
 		}
 	}
 
@@ -61,12 +62,21 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 
 	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events.phase2, dt);
 	WAIT_EVENT_OR_DIE(&events.phase2);
+
+	p = PROJECTILE(
+		.pos = p->pos,
+		.proto = pp_plainball,
+		.color = RGB(1.0, 0.4, 0.6),
+		.flags = PFLAG_NOMOVE,
+	);
+
 	play_sfx("redirect");
 	// if we get here, p must be still alive and valid
 
 	cmplx dist = global.plr.pos - p->pos;
 	cmplx accel = ARGS.accel_rate * cnormalize(dist);
 	dt = sqrt(2 * cabs(dist) / ARGS.accel_rate);
+	dt += 2 * rng_f64s();
 	l = create_lasercurve2c(p->pos, dt, dt, RGBA(0.4, 0.9, 1.0, 0.0), las_accel, 0, accel);
 	l->width = 15;
 	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events.explosion, dt);
