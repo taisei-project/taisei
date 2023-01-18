@@ -15,6 +15,7 @@
 #include "spells/spells.h"
 #include "nonspells/nonspells.h"
 #include "background_anim.h"
+#include "draw.h"
 
 #include "global.h"
 #include "stagetext.h"
@@ -545,11 +546,13 @@ TASK(spawn_midboss) {
 	STAGE_BOOKMARK_DELAYED(120, midboss);
 
 	Boss *boss = global.boss = stage3_spawn_scuttle(VIEWPORT_W/2 - 200.0*I);
+
+	glm_vec3_copy((vec3) { -10, -20, -30 }, stage3_get_draw_data()->boss_light.radiance);
+
 	boss_add_attack_task(boss, AT_Move, "Introduction", 1, 0, TASK_INDIRECT(BossAttack, midboss_intro), NULL);
 	boss_add_attack_task(boss, AT_Normal, "Lethal Bite", 11, 20000, TASK_INDIRECT(BossAttack, stage3_midboss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage3_spells.mid.deadly_dance, false);
 	boss_add_attack_task(boss, AT_Move, "Runaway", 2, 1, TASK_INDIRECT(BossAttack, midboss_outro), NULL);
-	boss->zoomcolor = *RGB(0.4, 0.1, 0.4);
 
 	boss_engage(boss);
 }
@@ -563,6 +566,8 @@ TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
 
 	Boss *boss = global.boss = stage3_spawn_wriggle(VIEWPORT_W/2 - 200.0*I);
+
+	glm_vec3_copy((vec3) { 50, 30, 80 }, stage3_get_draw_data()->boss_light.radiance);
 
 	PlayerMode *pm = global.plr.mode;
 	Stage3PreBossDialogEvents *e;
@@ -680,6 +685,11 @@ static void welcome_swirls(void) {
 	);
 }
 
+TASK(set_swing, { float v; }) {
+	Stage3DrawData *dd = stage3_get_draw_data();
+	dd->target_swing_strength = ARGS.v;
+}
+
 DEFINE_EXTERN_TASK(stage3_timeline) {
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
@@ -731,10 +741,13 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
+	STAGE_BOOKMARK(post-midboss);
 
 	INVOKE_TASK(bulletring_fairy_spawn,
 		.count = 10,
 	);
+
+	INVOKE_TASK_DELAYED(60, set_swing, 1.0f);
 
 	INVOKE_TASK_DELAYED(300, horde_fairy_spawn,
 		.count = 20,
@@ -796,13 +809,9 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		},
 	);
 
-	WAIT(150);
-
-	STAGE_BOOKMARK(post-midboss);
-
-	STAGE_BOOKMARK_DELAYED(2800, pre-boss);
-
-	WAIT(3300);
+	STAGE_BOOKMARK_DELAYED(2950, pre-boss);
+	INVOKE_TASK_DELAYED(3200, set_swing, 0.2f);
+	WAIT(3450);
 
 	stage_unlock_bgm("stage3boss");
 

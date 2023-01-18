@@ -39,5 +39,6 @@ Boss *stage3_spawn_scuttle(cmplx pos) {
 	boss_set_portrait(scuttle, "scuttle", NULL, "normal");
 	scuttle->glowcolor = *RGB(0.5, 0.6, 0.3);
 	scuttle->shadowcolor = *RGBA_MUL_ALPHA(0.7, 0.3, 0.1, 0.5);
+	scuttle->zoomcolor = *RGB(0.4, 0.1, 0.4);
 	return scuttle;
 }
