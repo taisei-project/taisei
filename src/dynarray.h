@@ -168,8 +168,8 @@ void _dynarray_filter(
 	)
 
 #define dynarray_foreach_reversed(_darr, _cntr_var, _pelem_var, ...) do { \
-	for(dynarray_size_t _dynarray_foreach_iter = NOT_NULL(_darr)->num_elements; \
-		_dynarray_foreach_iter--; \
+	for(dynarray_size_t _dynarray_foreach_iter = NOT_NULL(_darr)->num_elements - 1; \
+		_dynarray_foreach_iter >= 0; --_dynarray_foreach_iter \
 	) { \
 		_cntr_var = _dynarray_foreach_iter; \
 		_pelem_var = dynarray_get_ptr((_darr), _dynarray_foreach_iter); \
