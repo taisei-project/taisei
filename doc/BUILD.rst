@@ -24,7 +24,7 @@ you accidentally omit it during checkout, you can fix it with:
 .. code:: sh
 
    cd taisei/
-   git submodules update --init --recursive
+   git submodule update --init --recursive
 
 Dependencies
 ------------
