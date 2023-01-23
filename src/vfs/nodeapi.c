@@ -70,9 +70,9 @@ char *vfs_node_syspath(VFSNode *node) {
 char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
 	assert(node->funcs != NULL);
 	assert(node->funcs->repr != NULL);
-	char *r;
 
 	if(try_syspath && node->funcs->syspath) {
+		char *r;
 		if((r = node->funcs->syspath(node))) {
 			return r;
 		}
@@ -81,12 +81,54 @@ char *(vfs_node_repr)(VFSNode *node, bool try_syspath) {
 	VFSInfo i = vfs_node_query(node);
 	char *o = node->funcs->repr(node);
 
-	r = strfmt("<%s (e:%i x:%i d:%i)>", o,
-		i.error, i.exists, i.is_dir
-	);
+	StringBuffer buf = {};
+	strbuf_cat(&buf, "[");
 
+	enum {
+		error = 1 << 0,
+		missing = 1 << 2,
+		dir = 1 << 3,
+		ro = 1 << 4,
+	};
+
+	uint attribs =
+		(i.error * error) |
+		(!i.exists * missing) |
+		(i.is_dir * dir) |
+		(i.is_readonly * ro);
+
+	if(attribs) {
+		strbuf_cat(&buf, "(");
+
+		for(;;) {
+			#define HANDLE(attrib) \
+				if(attribs & attrib) { \
+					attribs &= ~attrib; \
+					strbuf_cat(&buf, #attrib); \
+					goto next; \
+				}
+
+			HANDLE(error)
+			HANDLE(missing)
+			HANDLE(dir)
+			HANDLE(ro)
+
+		next:
+			if(!attribs) {
+				break;
+			}
+
+			strbuf_cat(&buf, ", ");
+		}
+
+		strbuf_cat(&buf, ") ");
+	}
+
+	strbuf_cat(&buf, o);
 	mem_free(o);
-	return r;
+
+	strbuf_cat(&buf, "]");
+	return buf.start;
 }
 
 bool vfs_node_mount(VFSNode *mountroot, const char *subname, VFSNode *mountee) {
