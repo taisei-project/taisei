@@ -5,11 +5,11 @@
 // Based on https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 
 #ifndef PARALLAX_MIN_LAYERS
-	#define PARALLAX_MIN_LAYERS 16.0
+	#define PARALLAX_MIN_LAYERS 4.0
 #endif
 
 #ifndef PARALLAX_MAX_LAYERS
-	#define PARALLAX_MAX_LAYERS 64.0
+	#define PARALLAX_MAX_LAYERS 16.0
 #endif
 
 vec2 parallaxOcclusionMap(sampler2D depthMap, float depthScale, vec2 texCoord, vec3 viewDir) {
