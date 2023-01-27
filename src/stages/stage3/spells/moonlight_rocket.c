@@ -14,6 +14,42 @@
 #include "common_tasks.h"
 #include "global.h"
 
+TASK(aimcircle, { int lifetime; int focustime; }) {
+	auto *p = TASK_BIND(PARTICLE(
+		.sprite_ptr = res_sprite("fairy_circle"),
+		.layer = LAYER_PARTICLE_LOW,
+		.flags = PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
+		.pos = global.plr.pos,
+		.angle_delta = M_TAU/60,
+		.color = RGB(2, 0.75, 0.5),
+	));
+
+	int spawntime = 30;
+	int despawntime = 30;
+
+	for(int t = 0; t < ARGS.lifetime; ++t, YIELD) {
+		if(t < ARGS.focustime) {
+			capproach_asymptotic_p(&p->pos, global.plr.pos, 0.2, 1e-3);
+		} else if(t == ARGS.focustime) {
+			p->pos = global.plr.pos;
+		}
+
+		float sf = fminf(t / (float)spawntime, 1.0f);
+		float sf2 = fminf(t / (float)(spawntime * 2), 1.0f);
+		float df = fminf((ARGS.lifetime - t - 1) / (float)despawntime, 1.0f);
+
+		df = glm_ease_back_out(df);
+		p->opacity = glm_ease_quad_out(sf) * glm_ease_quad_in(df) * 0.1f;
+		sf = glm_ease_quad_in(sf);
+		sf = glm_ease_back_out(sf) * 0.9 + sf * 0.1;
+
+		p->scale = (1+I) * (1.0f + 6 * (1 - sf));
+		p->angle -= p->angle_delta * 10.0f * (1 - sf2);
+	}
+
+	kill_projectile(p);
+}
+
 TASK(cancel_event, { CoEvent *event; }) {
 	coevent_cancel(ARGS.event);
 }
@@ -43,10 +79,10 @@ TASK(laser_bullet, { BoxedProjectile p; BoxedLaser l; CoEvent *event; int event_
 	kill_projectile(p);
 }
 
-TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; real accel_rate; }) {
+TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; real accel_rate; int rocket_time; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 
-	real dt = 60;
+	real dt = ARGS.rocket_time;
 	Laser *l = create_lasercurve4c(
 		ARGS.pos, dt, dt, &ARGS.color, las_sine_expanding, 2.5*ARGS.dir, M_PI/20, 0.2, ARGS.phase
 	);
@@ -71,12 +107,12 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	);
 
 	play_sfx("redirect");
-	// if we get here, p must be still alive and valid
 
 	cmplx dist = global.plr.pos - p->pos;
 	cmplx accel = ARGS.accel_rate * cnormalize(dist);
 	dt = sqrt(2 * cabs(dist) / ARGS.accel_rate);
 	dt += 2 * rng_f64s();
+
 	l = create_lasercurve2c(p->pos, dt, dt, RGBA(0.4, 0.9, 1.0, 0.0), las_accel, 0, accel);
 	l->width = 15;
 	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events.explosion, dt);
@@ -137,6 +173,8 @@ TASK(rocket_slave, { BoxedBoss boss; real rot_speed; real rot_initial; }) {
 		.out_dir = &dir
 	);
 
+	int rocket_time = 60;
+	int warn_time = 20;
 	int rperiod = difficulty_value(220, 200, 180, 160);
 	real laccel = difficulty_value(0.15, 0.2, 0.25, 0.3);
 
@@ -144,8 +182,9 @@ TASK(rocket_slave, { BoxedBoss boss; real rot_speed; real rot_initial; }) {
 
 	for(;;WAIT(rperiod)) {
 		play_sfx("laser1");
-		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(1.0, 1.0, 0.5, 0.0), 0, laccel);
-		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(0.5, 1.0, 0.5, 0.0), M_PI, laccel);
+		INVOKE_TASK_DELAYED(rocket_time - warn_time, aimcircle, 60 + warn_time, warn_time);
+		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(1.0, 1.0, 0.5, 0.0), 0, laccel, rocket_time);
+		INVOKE_TASK(rocket, ENT_BOX(boss), slave->pos, dir, *RGBA(0.5, 1.0, 0.5, 0.0), M_PI, laccel, rocket_time);
 	}
 }
 
