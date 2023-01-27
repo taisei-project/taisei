@@ -380,7 +380,7 @@ static void video_update_vsync(void) {
 }
 
 static void video_update_mode_settings(void) {
-	SDL_ShowCursor(false);
+	SDL_ShowCursor(!video_is_fullscreen());
 	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video_set_viewport();
