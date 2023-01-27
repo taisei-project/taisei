@@ -20,6 +20,18 @@ typedef struct Stage3DrawData {
 		PBRModel rocks;
 		PBRModel trees;
 	} models;
+
+	Texture *envmap;
+
+	vec3 environment_color;
+	vec3 ambient_color;
+	vec4 fog_color;
+
+	float boss_light_alpha;
+	PointLight3D boss_light;
+
+	float swing_strength;
+	float target_swing_strength;
 } Stage3DrawData;
 
 Stage3DrawData *stage3_get_draw_data(void)

@@ -29,42 +29,39 @@ static uint stage3_bg_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 }
 
 static void stage3_bg_setup_pbr_lighting(Camera3D *cam) {
-	PointLight3D lights[] = {
-		// TODO animate colors
-		{ { 0, 0, 10000 }, { 10, 42, 30 } },
-		{ { 0, 0, 0     }, { 10, 10, 10 } },
+	PointLight3D lights[2] = {
+		{ { 0, 0, 0 }, { 10, 10, 10 } },
 	};
 
-	if(global.boss) {
-		vec3 r;
-		cmplx bpos = global.boss->pos;
-		if(cimag(bpos) < 0) { // to make the light (dis)appear continuously
-			bpos = creal(bpos) + I*pow(fabs(cimag(bpos))*0.1,2)*cimag(bpos);
-		}
-		camera3d_unprojected_ray(cam,bpos,r);
-		glm_vec3_scale(r, 9, r);
-		glm_vec3_add(cam->pos, r, lights[0].pos);
+	PointLight3D *boss_light = &lights[1];
+	uint nlights = 1;
+
+	if(stage3_draw_data->boss_light_alpha > 0) {
+		glm_vec3_scale(
+			stage3_draw_data->boss_light.radiance,
+			stage3_draw_data->boss_light_alpha,
+			boss_light->radiance
+		);
+		glm_vec3_copy(stage3_draw_data->boss_light.pos, boss_light->pos);
+		nlights++;
 	}
 
 	vec3 r;
-	camera3d_unprojected_ray(cam, global.plr.pos,r);
+	camera3d_unprojected_ray(cam, global.plr.pos, r);
 	glm_vec3_scale(r, 5, r);
-	glm_vec3_add(cam->pos, r, lights[1].pos);
+	glm_vec3_add(cam->pos, r, lights[0].pos);
 
-	if(global.frames > 6000) { // wriggle
-		lights[0].radiance[0] = 20;
-		lights[0].radiance[1] = 10;
-		lights[0].radiance[2] = 40;
-	}
-
-	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
+	camera3d_set_point_light_uniforms(cam, nlights, lights);
 }
 
 static void stage3_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
+	Stage3DrawData *dd = stage3_get_draw_data();
 	stage3_bg_setup_pbr_lighting(cam);
-
-	float f = 1.0f / (1.0f + global.frames / 1000.0f);
-	glm_vec3_copy((vec3) { f, f, sqrtf(f) }, env->ambient_color);
+	glm_vec3_copy(dd->ambient_color, env->ambient_color);
+	glm_vec3_copy(dd->environment_color, env->environment_color);
+	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
+	env->environment_map = stage3_draw_data->envmap;
+	env->disable_tonemap = true;
 }
 
 static void stage3_bg_ground_draw(vec3 pos) {
@@ -114,6 +111,8 @@ void stage3_drawsys_init(void) {
 	pbr_load_model(&stage3_draw_data->models.ground, "stage3/ground", "stage3/ground");	pbr_load_model(&stage3_draw_data->models.leaves, "stage3/leaves", "stage3/leaves");
 	pbr_load_model(&stage3_draw_data->models.rocks,  "stage3/rocks",  "stage3/rocks");
 	pbr_load_model(&stage3_draw_data->models.trees,  "stage3/trees",  "stage3/trees");
+
+	stage3_draw_data->envmap = res_texture("stage3/envmap");
 }
 
 void stage3_drawsys_shutdown(void) {
@@ -122,13 +121,16 @@ void stage3_drawsys_shutdown(void) {
 }
 
 static bool stage3_fog(Framebuffer *fb) {
-	r_shader("zbuf_fog");
+	Stage3DrawData *dd = stage3_get_draw_data();
+	r_shader("zbuf_fog_tonemap");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
-	r_uniform_vec4("fog_color", 0.8, 0.5, 1, 1.0);
-	r_uniform_float("start", 0.6);
+	r_uniform_vec4_vec("fog_color", dd->fog_color);
+	r_uniform_float("start", 0.9);
 	r_uniform_float("end", 2);
-	r_uniform_float("exponent", 10);
+	r_uniform_float("exponent", 1);
 	r_uniform_float("curvature", 0);
+	float e = 1;
+	r_uniform_vec3("exposure", e, e, e);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
 	r_shader_standard();
 	return true;

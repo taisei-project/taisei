@@ -11,89 +11,104 @@
 #include "nonspells.h"
 #include "../scuttle.h"
 
+#include "common_tasks.h"
 #include "global.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
+	Color phase_colors[] = {
+		{ 2.0, 0.0, 0.1, 1.0 },
+		{ 1.2, 0.3, 0.1, 1.0 },
+		{ 0.3, 0.7, 0.1, 1.0 },
+	};
 
-static int scuttle_lethbite_proj(Projectile *p, int time) {
-	if(time < 0) {
-		return ACTION_ACK;
-	}
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_wave,
+		.pos = ARGS.pos,
+		.color = phase_colors,
+		.max_viewport_dist = 50,
+	));
 
-	#define A0_PROJ_START 120
-	#define A0_PROJ_CHARGE 20
-	TIMER(&time)
+	int aimed_speed = difficulty_value(3.0, 3.5, 4.5, 5.0);
 
-	FROM_TO(A0_PROJ_START, A0_PROJ_START + A0_PROJ_CHARGE, 1)
-		return 1;
+	p->move = move_asymptotic_simple(ARGS.vel, 2.0);
+	WAIT(120);
 
-	AT(A0_PROJ_START + A0_PROJ_CHARGE + 1) if(p->type != PROJ_DEAD) {
-		p->args[1] = 3;
-		p->args[0] = (3 + 2 * global.diff / (float)D_Lunatic) * cexp(I*carg(global.plr.pos - p->pos));
+	for(int phase = 1; phase < ARRAY_SIZE(phase_colors); ++phase) {
+		p->move.acceleration = 0;
+		p->flags |= PFLAG_MANUALANGLE;
 
-		int cnt = 3, i;
-		for(i = 0; i < cnt; ++i) {
-			tsrand_fill(2);
+		for(int i = 0; i < 20; ++i, YIELD) {
+			fapproach_asymptotic_p(&p->angle, carg(global.plr.pos - p->pos), 0.2, 1e-3);
+		}
+
+		play_sfx("redirect");
+		play_sfx("shot1");
+
+		cmplx aim = cnormalize(global.plr.pos - p->pos);
+		p->angle = carg(aim);
+		p->color = phase_colors[phase];
+		spawn_projectile_highlight_effect(p);
+		p->move = move_asymptotic_simple(aimed_speed * cnormalize(aim), 3.0);
+
+		PROJECTILE(
+			.proto = pp_thickrice,
+			.pos = p->pos,
+			.color = RGB(0.4, 0.3, 1.0),
+			.move = move_linear(-aim * 0.5),
+		);
+
+		for(int i = 0; i < 3; ++i) {
+			cmplx v = rng_dir();
+			v *= rng_range(1, 1.5);
+			v += aim * aimed_speed;
 
 			PARTICLE(
+				.pos = p->pos,
 				.sprite = "smoothdot",
 				.color = RGBA(0.8, 0.6, 0.6, 0),
-				.draw_rule = Shrink,
-				.rule = enemy_flare,
-				.timeout = 100,
-				.args = {
-					cexp(I*(M_PI*anfrand(0))) * (1 + afrand(1)),
-					add_ref(p)
-				},
-			);
-
-			float offset = global.frames/15.0;
-			if(global.diff > D_Hard && global.boss) {
-				offset = M_PI+carg(global.plr.pos-global.boss->pos);
-			}
-
-			PROJECTILE(
-				.proto = pp_thickrice,
-				.pos = p->pos,
-				.color = RGB(0.4, 0.3, 1.0),
-				.rule = linear,
-				.args = {
-					-cexp(I*(i*2*M_PI/cnt + offset)) * (1.0 + (global.diff > D_Normal))
-				},
+				.draw_rule = pdraw_timeout_scale(1, 0.01),
+				.timeout = rng_irange(20, 40),
+				.move = move_asymptotic_simple(v, 2),
 			);
 		}
 
-		play_sound("redirect");
-		play_sound("shot1");
-		spawn_projectile_highlight_effect(p);
+		WAIT(60);
 	}
-
-	return asymptotic(p, time);
-	#undef A0_PROJ_START
-	#undef A0_PROJ_CHARGE
 }
 
-void stage3_midboss_nonspell1(Boss *boss, int time) {
-	int i;
-	TIMER(&time)
+DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
+	STAGE_BOOKMARK(non1);
 
-	GO_TO(boss, VIEWPORT_W/2+VIEWPORT_W/3*sin(time/300) + I*cimag(boss->pos), 0.01)
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.03);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
-	FROM_TO_INT(0, 90000, 72 + 6 * (D_Lunatic - global.diff), 0, 1) {
-		int cnt = 21 - 1 * (D_Lunatic - global.diff);
+	Rect bounds = viewport_bounds(80);
+	bounds.bottom = 210;
 
-		for(i = 0; i < cnt; ++i) {
-			cmplx v = (2 - psin((fmax(3, global.diff+1)*2*M_PI*i/(float)cnt) + time)) * cexp(I*2*M_PI/cnt*i);
-			PROJECTILE(
-				.proto = pp_wave,
-				.pos = boss->pos - v * 50,
-				.color = _i % 2? RGB(0.7, 0.3, 0.0) : RGB(0.3, .7, 0.0),
-				.rule = scuttle_lethbite_proj,
-				.args = { v, 2.0 },
+	int time = 0;
+	int cnt = difficulty_value(18, 19, 20, 21);
+	int shape = difficulty_value(3, 3, 4, 5);
+	int delay = 120;
+
+	cmplx origin;
+	Color charge_color = *RGBA(1, 0, 0, 0);
+
+	for(;;) {
+		origin = boss->pos;
+		boss->move.attraction_point = common_wander(boss->pos, 200, bounds);
+		time += common_charge_static(delay, origin, &charge_color);
+
+		for(int i = 0; i < cnt; ++i) {
+			play_sfx("shot_special1");
+
+			cmplx v = (2 - psin((shape*M_TAU*i/(real)cnt) + time)) * cdir(M_TAU/cnt*i);
+			INVOKE_TASK(bite_bullet,
+				.pos = origin - v * 25,
+				.vel = v,
 			);
 		}
 
-		// FIXME: better sound
-		play_sound("shot_special1");
+		delay = imax(60, delay - 10);
 	}
 }
