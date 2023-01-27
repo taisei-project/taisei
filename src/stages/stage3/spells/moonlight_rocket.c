@@ -15,7 +15,7 @@
 #include "global.h"
 
 TASK(aimcircle, { int lifetime; int focustime; }) {
-	auto *p = TASK_BIND(PARTICLE(
+	auto p = TASK_BIND(PARTICLE(
 		.sprite_ptr = res_sprite("fairy_circle"),
 		.layer = LAYER_PARTICLE_LOW,
 		.flags = PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
