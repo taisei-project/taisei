@@ -414,7 +414,10 @@ TASK(spawn_midboss) {
 }
 
 TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, NULL));
+	// TODO: Restore scythe animation after Stage 6 port is merged.
+	// The fairy serves as a placeholder for now.
+
+	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, NULL));
 	e->flags |= EFLAG_NO_HIT | EFLAG_INVULNERABLE | EFLAG_NO_AUTOKILL;
 
 	cmplx anchor = VIEWPORT_W / 2.0 + I * VIEWPORT_H / 3.0;
@@ -460,16 +463,6 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 	}
 
 	enemy_kill(e);
-}
-
-TASK(ensure_scythe_spawn, { int duration; }) {
-	for(int i = 0; i < ARGS.duration; i++) {
-		if(!global.boss) {
-			INVOKE_TASK(scythe_post_mid, .pos = VIEWPORT_W / 2.0, .fleetime = ARGS.duration - i);
-			return;
-		}
-		YIELD;
-	}
 }
 
 TASK_WITH_INTERFACE(kurumi_boss_intro, BossAttack){
@@ -557,9 +550,10 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	STAGE_BOOKMARK(post-midboss);
 
 	if(filler_time - midboss_time > 100) {
-		INVOKE_TASK(ensure_scythe_spawn, .duration = filler_time - midboss_time);
+		INVOKE_TASK(scythe_post_mid, .pos = VIEWPORT_W / 2.0, .fleetime = filler_time - midboss_time);
 	}
-	WAIT(filler_time-midboss_time);
+
+	WAIT(filler_time - midboss_time);
 
 	for(int i = 0; i < 20; i++) {
 		real phase = 2 * i/M_PI;
