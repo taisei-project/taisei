@@ -192,7 +192,8 @@ void Fairy(Enemy *e, int t, bool r) { visual_fairy_blue(e, t, r); }
 void BigFairy(Enemy *e, int t, bool r) { visual_big_fairy(e, t, r); }
 
 TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
-	Enemy *e = TASK_BIND(ARGS.e);
+	// NOTE: Don't bind here! We need this task to outlive the enemy.
+	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
 
 	if(e->damage_info && DAMAGETYPE_IS_PLAYER(e->damage_info->type)) {
 		common_drop_items(e->pos, &ARGS.items);
