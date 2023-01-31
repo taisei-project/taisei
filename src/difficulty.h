@@ -22,13 +22,13 @@ typedef enum {
 
 #define NUM_SELECTABLE_DIFFICULTIES D_Lunatic
 
-const char* difficulty_name(Difficulty diff)
+const char *difficulty_name(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
-const char* difficulty_sprite_name(Difficulty diff)
+const char *difficulty_sprite_name(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
-const Color* difficulty_color(Difficulty diff)
+const Color *difficulty_color(Difficulty diff)
 	attr_pure attr_returns_nonnull;
 
 void difficulty_preload(void);

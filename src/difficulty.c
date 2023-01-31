@@ -28,7 +28,7 @@ static DiffDef diffs[] = {
 	{ "Extra",   "difficulty/lunatic", { 0.5, 1.0, 1.0, 1.0 } },
 };
 
-static inline DiffDef* get_diff_def(Difficulty diff) {
+static inline DiffDef *get_diff_def(Difficulty diff) {
 	uint idx = diff - D_Easy;
 
 	if(idx < sizeof(diffs)/sizeof(*diffs)) {
@@ -38,17 +38,17 @@ static inline DiffDef* get_diff_def(Difficulty diff) {
 	return NULL;
 }
 
-const char* difficulty_name(Difficulty diff) {
+const char *difficulty_name(Difficulty diff) {
 	DiffDef *d = get_diff_def(diff);
 	return d ? d->name : "Unknown";
 }
 
-const char* difficulty_sprite_name(Difficulty diff) {
+const char *difficulty_sprite_name(Difficulty diff) {
 	DiffDef *d = get_diff_def(diff);
 	return d ? d->spr_name : "difficulty/unknown";
 }
 
-const Color* difficulty_color(Difficulty diff) {
+const Color *difficulty_color(Difficulty diff) {
 	static Color unknown_clr = { 0.5, 0.5, 0.5, 1.0 };
 	DiffDef *d = get_diff_def(diff);
 	return d ? &d->color : &unknown_clr;
