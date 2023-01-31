@@ -14,45 +14,53 @@
 
 #include "global.h"
 
-static void kurumi_extra_swirl_visual(Enemy *e, int time, bool render) {
+// TODO SUPER REDESIGN THIS, IT'S A MESS!
+
+static void kurumi_extra_shield_visual(Enemy *e, int time, bool render) {
 	if(!render) {
-		// why the hell was this here?
-		// Swirl(e, time, render);
 		return;
 	}
 
-	// FIXME: blend
-	r_blend(BLEND_SUB);
-	Swirl(e, time, render);
-	r_blend(BLEND_PREMUL_ALPHA);
+	// TODO: something nicer here
+
+	float h = clampf(e->hp / e->spawn_hp, 0, 1);
+	h *= h;
+
+	r_draw_sprite(&(SpriteParams) {
+		.color = RGBA_MUL_ALPHA(
+			1 + (1 - h), 0.3 + 0.7 * h, 0.2 + 0.8 * h,
+			e->alpha * (1 + 1 - h)
+		),
+		.sprite = "enemy/swirl",
+		.pos.as_cmplx = e->pos,
+		.rotation.angle = time * -10 * DEG2RAD,
+		.shader = "sprite_negative",
+	});
+}
+
+static void draw_negative_fairy(Enemy *e, int t, Animation *ani) {
+	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
+	Sprite *spr = animation_get_frame(ani, get_ani_sequence(ani, seqname), t);
+
+	r_draw_sprite(&(SpriteParams) {
+		.shader = "sprite_negative",
+		.color = RGBA_MUL_ALPHA(1, 1, 1, e->alpha),
+		.sprite_ptr = spr,
+		.pos.as_cmplx = e->pos,
+	});
 }
 
 static void kurumi_extra_fairy_visual(Enemy *e, int time, bool render) {
-	if(!render) {
-		Fairy(e, time, render);
-		return;
+	if(render) {
+		draw_negative_fairy(e, time, res_anim("enemy/fairy_blue"));
 	}
-
-	// r_blend(BLEND_ADD);
-	r_shader("sprite_negative");
-	Fairy(e, time, render);
-	r_shader("sprite_default");
-	// r_blend(BLEND_ALPHA);
 }
 
 static void kurumi_extra_bigfairy_visual(Enemy *e, int time, bool render) {
-	if(!render) {
-		BigFairy(e, time, render);
-		return;
+	if(render) {
+		draw_negative_fairy(e, time, res_anim("enemy/superfairy"));
 	}
-
-	// r_blend(BLEND_ADD);
-	r_shader("sprite_negative");
-	BigFairy(e, time, render);
-	r_shader("sprite_default");
-	// r_blend(BLEND_ALPHA);
 }
-
 
 TASK(kurumi_vladsarmy_shield_death_proj, { cmplx pos; MoveParams move; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
@@ -101,17 +109,17 @@ TASK(kurumi_vladsarmy_shield_manage, { BoxedEnemy enemy; BoxedBoss boss; real an
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
 	for(int i = 0; i < ARGS.timeout; i++, YIELD) {
-		e->pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos + 140 * cdir(ARGS.angle + 0.1 * i); 
+		e->pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos + 140 * cdir(ARGS.angle + 0.02 * i);
 	}
 	e->flags &= ~EFLAG_IMPENETRABLE;
 	enemy_kill(e);
 }
 
 TASK(kurumi_vladsarmy_shield, { BoxedBoss boss; real angle; }) {
-	int hp = 500;
+	int hp = 1500;
 	Boss *b = NOT_NULL(ENT_UNBOX(ARGS.boss));
-	
-	Enemy *e = create_enemy2c(b->pos, hp, kurumi_extra_swirl_visual, NULL, 0, 0);
+
+	Enemy *e = create_enemy2c(b->pos, hp, kurumi_extra_shield_visual, NULL, 0, 0);
 	e->flags = EFLAG_IMPENETRABLE;
 
 	int timeout = 800;
@@ -128,13 +136,13 @@ TASK(kurumi_vladsarmy_shield, { BoxedBoss boss; real angle; }) {
 TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 2, .power = 1)));
 	e->visual_rule = kurumi_extra_bigfairy_visual;
-	
+
 	int escapetime = difficulty_value(400, 400, 400, 4000);
 
 	e->move = move_towards(ARGS.target, 0.02);
 
 	WAIT(50);
-	for(int k = 0; k < escapetime; k += WAIT(60)) { 
+	for(int k = 0; k < escapetime; k += WAIT(60)) {
 		int count = 5;
 		cmplx phase = rng_dir();
 		for(int j = 0; j < count; j++) {
@@ -157,12 +165,21 @@ TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 	e->move = move_towards(ARGS.target - I * VIEWPORT_H, 0.01);
 }
 
-DEPRECATED_DRAW_RULE
+typedef struct DrainerState {
+	Texture *texture;
+	float alpha;
+	cmplx target;
+} DrainerState;
+
 static void kurumi_extra_drainer_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
+	// TODO: Make this use the sprite batcher?
+
+	DrainerState *drainer = args[0].as_ptr;
+
 	cmplx org = p->pos;
-	cmplx targ = p->args[1];
-	double a = 0.5 * creal(p->args[2]);
-	Texture *tex = res_texture("part/sinewave");
+	cmplx targ = drainer->target;
+	float a = 0.5f * drainer->alpha;
+	Texture *tex = drainer->texture;
 
 	r_shader_standard();
 
@@ -177,22 +194,33 @@ static void kurumi_extra_drainer_draw(Projectile *p, int time, ProjDrawRuleArgs 
 }
 
 TASK(kurumi_vladsarmy_drainer, { BoxedBoss boss; BoxedEnemy enemy; }) {
+	DrainerState state = {
+		.texture = res_texture("part/sinewave"),
+	};
+
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.size = 1+I,
-		.pos = NOT_NULL(ENT_UNBOX(ARGS.enemy))->pos,
-		.draw_rule = kurumi_extra_drainer_draw,
+		.pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos,
+		.draw_rule = {
+			.func = kurumi_extra_drainer_draw,
+			.args[0].as_ptr = &state,
+		},
 		.shader = "sprite_default",
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
+		.layer = LAYER_BOSS - 1,
 	));
 
 	for(int i = 0;; i++, YIELD) {
-		p->pos = global.boss->pos;
 		Enemy *e = ENT_UNBOX(ARGS.enemy);
 		Boss *boss = ENT_UNBOX(ARGS.boss);
 
+		if(boss) {
+			p->pos = boss->pos;
+		}
+
 		if(e && boss) {
-			p->args[1] = e->pos;
-			p->args[2] = approach(p->args[2], 1, 0.5);
+			state.target = e->pos;
+			fapproach_asymptotic_p(&state.alpha, 1, 0.5, 1e-3);
 
 			if(i > 40 && e->hp > 0) {
 				// TODO: maybe add a special sound for this?
@@ -202,14 +230,13 @@ TASK(kurumi_vladsarmy_drainer, { BoxedBoss boss; BoxedEnemy enemy; }) {
 				boss->current->hp = fmin(boss->current->maxhp, boss->current->hp + drain * 2);
 			}
 		} else {
-			p->args[2] = approach(p->args[2], 0, 0.5);
-			if(!creal(p->args[2])) {
+			fapproach_asymptotic_p(&state.alpha, 0, 0.5, 1e-3);
+			if(!state.alpha) {
 				kill_projectile(p);
 			}
 		}
 	}
 }
-
 
 TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_time; int chase_time; int attack_type; BoxedBoss boss; }){
 	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.start_pos, ITEMS(.points = 1)));
@@ -289,14 +316,13 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 
 	int prey_count = 20;
 	int fairy_chase_time = difficulty_value(105, 100, 95, 90);
-	
+
 	for(int run = 0;; run++) {
 		b->move = move_towards(startpos, 0.01);
 		int direction = run&1;
 
 		int castlimit = b->current->maxhp * 0.05;
 		int shieldlimit = b->current->maxhp * 0.1;
-
 
 		if(b->current->hp >= shieldlimit) {
 			int shield_count = 12;
@@ -315,17 +341,17 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 
 			RNG_ARRAY(rand, 2);
 			cmplx pos = vrng_real(rand[0]) * VIEWPORT_W / 2 + I * vrng_real(rand[1]) * VIEWPORT_H * 0.67;
-			
+
 			if(direction)
 				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
 
 			INVOKE_SUBTASK(kurumi_vladsarmy_fairy,
-				       .start_pos = b->pos - 300 * (1 - 2 * direction),
-				       .target_pos = pos,
-				       .attack_time = 100 + 20 * i,
-				       .chase_time = fairy_chase_time,
-				       .attack_type = direction,
-				       .boss = ENT_BOX(b)
+				.start_pos = b->pos - 300 * (1 - 2 * direction),
+				.target_pos = pos,
+				.attack_time = 100 + 20 * i,
+				.chase_time = fairy_chase_time,
+				.attack_type = direction,
+				.boss = ENT_BOX(b)
 			);
 		}
 
@@ -342,7 +368,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 
 		WAIT(110);
 
-		b->move = move_towards(startpos, 0.1); 
+		b->move = move_towards(startpos, 0.1);
 
 		if(global.diff >= D_Hard) {
 			double offset = VIEWPORT_W * 0.5;
