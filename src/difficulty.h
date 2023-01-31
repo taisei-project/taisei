@@ -33,5 +33,14 @@ const Color *difficulty_color(Difficulty diff)
 
 void difficulty_preload(void);
 
-double difficulty_value(double easy, double normal, double hard, double lunatic)
-	attr_pure;
+#define difficulty_value(easy, normal, hard, lunatic) ({ \
+    typeof((easy)+(normal)+(hard)+(lunatic)) val; \
+    switch(global.diff) { \
+        case D_Easy:    val = easy;    break; \
+        case D_Normal:  val = normal;  break; \
+        case D_Hard:    val = hard;    break; \
+        case D_Lunatic: val = lunatic; break; \
+        default: UNREACHABLE; \
+    } \
+    val; \
+})

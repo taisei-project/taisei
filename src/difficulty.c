@@ -59,10 +59,3 @@ void difficulty_preload(void) {
 		preload_resource(RES_SPRITE, difficulty_sprite_name(diff), RESF_PERMANENT);
 	}
 }
-
-double difficulty_value(double easy, double normal, double hard, double lunatic) {
-	uint idx = global.diff - D_Easy;
-	double vals[NUM_SELECTABLE_DIFFICULTIES] = { easy, normal, hard, lunatic };
-	assert(idx < ARRAY_SIZE(vals));
-	return vals[idx];
-}
