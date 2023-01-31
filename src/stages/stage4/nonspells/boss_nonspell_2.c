@@ -16,6 +16,7 @@
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_2) {
 	STAGE_BOOKMARK(boss-non2);
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	b->move = move_towards(VIEWPORT_W/2 + 200*I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int duration = 350;
@@ -28,17 +29,17 @@ DEFINE_EXTERN_TASK(stage4_boss_nonspell_2) {
 	for(;;) {
 		WAIT(50);
 
-		INVOKE_SUBTASK_DELAYED(10, stage4_boss_nonspell_burst, 
+		INVOKE_SUBTASK_DELAYED(10, stage4_boss_nonspell_burst,
 			.boss = ENT_BOX(b),
 			.duration = duration-10,
 			.count = 20
 		);
 
-		for(int i = 0; i < duration/rice_step; i++, WAIT(rice_step)) {	
+		for(int i = 0; i < duration/rice_step; i++, WAIT(rice_step)) {
 			cmplx boss_target = VIEWPORT_W / 2.0 + VIEWPORT_W / 3.0 * sin(time / 220.0) + I*cimag(b->pos);
 
 			b->move = move_towards(boss_target, 0.02);
-			
+
 			play_sfx("shot1");
 			cmplx spawn_pos = b->pos + 150 * sin(i) + 100.0 * I * cos(i);
 

@@ -16,17 +16,18 @@
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	b->move = move_towards(VIEWPORT_W/2 + 200*I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int duration = difficulty_value(300, 350, 400, 450);
 	int count = difficulty_value(12, 14, 16, 18);
 	int redirect_time = 40;
-	
+
 	for(;;) {
 
 		int rice_step = difficulty_value(3, 3, 2, 2);
 		WAIT(50);
-		INVOKE_SUBTASK_DELAYED(10, stage4_boss_nonspell_burst, 
+		INVOKE_SUBTASK_DELAYED(10, stage4_boss_nonspell_burst,
 			.boss = ENT_BOX(b),
 			.duration = duration-10,
 			.count = 20
