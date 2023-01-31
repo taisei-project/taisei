@@ -34,7 +34,7 @@ static void stage4_dialog_post_boss(void) {
 }
 
 TASK(splasher_fairy, { cmplx pos; int direction; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1, .bomb = 1)));
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1, .bomb = 1)));
 
 	cmplx move = 3 * ARGS.direction - 4.0 * I;
 	e->move = move_linear(move);
