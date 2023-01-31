@@ -353,7 +353,7 @@ TASK(supercard_fairy_move, { BoxedEnemy enemy; }) {
 }
 
 TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5)));
+	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(.points = 5)));
 	e->move = ARGS.move;
 	INVOKE_TASK(supercard_fairy_move, ENT_BOX(e));
 
