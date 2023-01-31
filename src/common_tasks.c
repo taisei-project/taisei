@@ -13,7 +13,7 @@
 #include "util/glm.h"
 
 void common_drop_items(cmplx pos, const ItemCounts *items) {
-	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
+	for(int i = 0; i < ARRAY_SIZE(items->as_array); ++i) {
 		for(int j = items->as_array[i]; j; --j) {
 			spawn_item(pos, i + ITEM_FIRST);
 			WAIT(2);

@@ -48,7 +48,7 @@ typedef union ItemCounts {
 		int bomb;
 		int life;
 	};
-	int as_array[ITEM_LAST - ITEM_FIRST];
+	int as_array[ITEM_LAST - ITEM_FIRST + 1];
 } ItemCounts;
 
 #define ITEMS(...) (&(const ItemCounts) { __VA_ARGS__ })
