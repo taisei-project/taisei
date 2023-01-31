@@ -9,6 +9,8 @@
 #include "taisei.h"
 
 #include "memory.h"
+#include "util.h"
+#include "../util.h"
 
 #include <stdlib.h>
 
@@ -32,17 +34,6 @@ void mem_free(void *ptr) {
 #else
 	libc_free(ptr);
 #endif
-}
-
-static size_t mem_calc_array_size(size_t num_members, size_t size) {
-	size_t array_size;
-
-	if(__builtin_mul_overflow(num_members, size, &array_size)) {
-		assert(0 && "size_t overflow");
-		abort();
-	}
-
-	return array_size;
 }
 
 void *mem_alloc(size_t size) {
@@ -110,7 +101,7 @@ void *mem_alloc_aligned(size_t size, size_t alignment) {
 }
 
 void *mem_alloc_array_aligned(size_t num_members, size_t size, size_t alignment) {
-	return mem_alloc_aligned(mem_calc_array_size(num_members, size), alignment);
+	return mem_alloc_aligned(mem_util_calc_array_size(num_members, size), alignment);
 }
 
 void *mem_dup(const void *src, size_t size) {

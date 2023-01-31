@@ -77,7 +77,6 @@ taisei_src = files(
     'list.c',
     'log.c',
     'main.c',
-    'memory.c',
     'move.c',
     'player.c',
     'plrmodes.c',
@@ -130,6 +129,7 @@ subdir('dialog')
 subdir('eventloop')
 subdir('filewatch')
 subdir('lasers')
+subdir('memory')
 subdir('menu')
 subdir('pixmap')
 subdir('plrmodes')
@@ -149,6 +149,7 @@ taisei_src += [
     eventloop_src,
     filewatch_src,
     lasers_src,
+    memory_src,
     menu_src,
     pixmap_src,
     plrmodes_src,
