@@ -64,7 +64,6 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 
 	WAIT(10);
 	for(int i = 0; i < 2; i++, WAIT(120)) {
-
 		cmplx fairy_halfsize = 21 * (1 + I);
 
 		if(!rect_rect_intersect(
@@ -124,7 +123,7 @@ TASK(partcircle_fairy, { cmplx pos; MoveParams move; }) {
 
 	int circles = difficulty_value(1,2,3,4);
 	int projs_per_circle = 16;
-	
+
 	for(int i = 0; i < projs_per_circle; i++) {
 		for(int j = 0; j < circles; j++) {
 			play_sfx("shot2");
@@ -156,7 +155,6 @@ TASK(cardbuster_fairy_move, { Enemy *e; int stops; cmplx *poss; int *move_times;
 		ARGS.e->move = move_stop(0.8);
 	}
 }
-	
 
 TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 	int count = difficulty_value(40, 60, 80, 100);
@@ -173,7 +171,6 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 		YIELD;
 	}
 }
-	
 
 TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.poss[0], ITEMS(.points = 3, .power = 1)));
@@ -189,7 +186,6 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 	INVOKE_SUBTASK(cardbuster_fairy_move, e, ARRAY_SIZE(ARGS.poss), ARGS.poss, move_times, pause_times);
 	INVOKE_SUBTASK_DELAYED(second_attack_delay, cardbuster_fairy_second_attack, e);
 
-	
 	int count = difficulty_value(40, 80, 120, 160);
 
 	WAIT(60);
@@ -225,7 +221,6 @@ TASK(backfire_swirl_move, { BoxedEnemy enemy; }) {
 	WAIT(40);
 	e->move.acceleration = -0.02 * I;
 }
-	
 
 TASK(backfire_swirl, { cmplx pos; MoveParams move; }) {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 5)));
@@ -299,7 +294,6 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 	}
 }
 
-
 TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
@@ -339,7 +333,7 @@ TASK(supercard_proj, { cmplx pos; Color color; MoveParams move_start; MoveParams
 		.color = &ARGS.color,
 	));
 	p->move = ARGS.move_start;
-	
+
 	WAIT(ARGS.split_time);
 	p->color = *RGB(p->color.b, 0.2, p->color.g);
 	play_sfx_ex("redirect", 10, false);
@@ -368,11 +362,11 @@ TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
 		int count = difficulty_value(20, 40, 40, 50);
 		int fan = difficulty_value(1, 1, 2, 2);
 
-		for(int i = 0; i < count; i++) { 
+		for(int i = 0; i < count; i++) {
 			play_sfx_ex("shot1",5,false);
 
 			cmplx dir = cdir(M_TAU / count * i + repeat * M_PI/4);
-			
+
 			for(int j = -fan; j <= fan; j++) {
 				MoveParams move_split = move_accelerated(dir, 0.01 * (1 + j * I) * dir);
 				move_split.retention = 0.99;
@@ -381,7 +375,7 @@ TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
 					.pos = e->pos + 30 * dir,
 					.color = *RGB(0, 0.4, 1 - 0.5 * psin(i / 20.0)),
 					.move_start = move_linear(0.01 * dir),
-					.move_split = move_split, 
+					.move_split = move_split,
 					.split_time = 100 - i
 				);
 			}
@@ -407,7 +401,7 @@ TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 
 	Boss *b = global.boss = stage4_spawn_kurumi(VIEWPORT_W / 2.0 - 400.0 * I);
-	
+
 	boss_add_attack_task(b, AT_Move, "Introduction", 2, 0, TASK_INDIRECT(BossAttack, kurumi_intro), NULL);
 	boss_add_attack_from_info(b, &stage4_spells.mid.gate_of_walachia, false);
 	if(global.diff < D_Hard) {
@@ -419,14 +413,13 @@ TASK(spawn_midboss) {
 	boss_engage(b);
 }
 
-
 TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, NULL));
 	e->flags |= EFLAG_NO_HIT | EFLAG_INVULNERABLE | EFLAG_NO_AUTOKILL;
 
 	cmplx anchor = VIEWPORT_W / 2.0 + I * VIEWPORT_H / 3.0;
 
-	e->move = move_towards(anchor, 0.003 + 0.02 * I); 
+	e->move = move_towards(anchor, 0.003 + 0.02 * I);
 
 	real speed = difficulty_value(1.1, 1.0, 0.9, 0.8);
 
@@ -469,7 +462,6 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 	enemy_kill(e);
 }
 
-
 TASK(ensure_scythe_spawn, { int duration; }) {
 	for(int i = 0; i < ARGS.duration; i++) {
 		if(!global.boss) {
@@ -510,8 +502,6 @@ TASK(spawn_boss) {
 	boss_engage(b);
 }
 
-
-	
 DEFINE_EXTERN_TASK(stage4_timeline) {
 	INVOKE_TASK_DELAYED(70, splasher_fairy, VIEWPORT_H / 4.0 * 3 * I, 1);
 	INVOKE_TASK_DELAYED(70, splasher_fairy, VIEWPORT_W + VIEWPORT_H / 4.0 * 3 * I, -1);
@@ -528,19 +518,17 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 		INVOKE_TASK_DELAYED(500 + 10 * i, partcircle_fairy, .pos = pos, .move = move_linear(vel));
 	}
-				     
 
 	for(int i = 0; i < 8; i++) {
 		cmplx pos0 = VIEWPORT_W * (1.0 + 2.0 * (i & 1)) / 4.0;
 		cmplx pos1 = VIEWPORT_W * (1.0 + 4.0 * (i & 1)) / 6.0 + 100 * I;
 		cmplx pos2 = VIEWPORT_W * (1.0 + 2.0 * ((i+1) & 1)) / 4.0 + 300 * I;
 		cmplx pos3 = VIEWPORT_W * 0.5 + (VIEWPORT_H + 200) * I;
-		
-		INVOKE_TASK_DELAYED(600 + 100 * i, cardbuster_fairy, .poss = { 
+
+		INVOKE_TASK_DELAYED(600 + 100 * i, cardbuster_fairy, .poss = {
 			pos0, pos1, pos2, pos3
 		});
 	}
-			
 
 	INVOKE_TASK_DELAYED(1800, backfire_swirl, .pos = VIEWPORT_H / 2.0 * I, .move = move_linear(0.3));
 	INVOKE_TASK_DELAYED(1800, backfire_swirl, .pos = VIEWPORT_W + VIEWPORT_H / 2.0 * I, .move = move_linear(-0.3));
@@ -572,13 +560,13 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		INVOKE_TASK(ensure_scythe_spawn, .duration = filler_time - midboss_time);
 	}
 	WAIT(filler_time-midboss_time);
-			     
+
 	for(int i = 0; i < 20; i++) {
 		real phase = 2 * i/M_PI;
 		cmplx pos = VIEWPORT_W * (i&1) + I * 120 * psin(phase);
 		INVOKE_TASK_DELAYED(15 * i, fodder_fairy, .pos = pos, .move = move_linear(2 - 4 * (i & 1) + I));
 	}
-			     
+
 	for(int i = 0; i < 11; i++) {
 		cmplx pos = VIEWPORT_W * (i & 1);
 		cmplx vel = 2 * cdir(M_PI / 2 * (0.2 + 0.6 * rng_real() + (i & 1)));
@@ -591,15 +579,15 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		cmplx pos1 = VIEWPORT_W * (0.5 + 0.4 * (1 - 2 * (i & 1))) + 100.0 * I;
 		cmplx pos2 = VIEWPORT_W * (1.0 + 2.0 * ((i + 1) & 1)) / 4.0 + 300.0*I;
 		cmplx pos3 = VIEWPORT_W * 0.5 - 200 * I;
-		
-		INVOKE_TASK_DELAYED(550 + 200 * i, cardbuster_fairy, .poss = { 
+
+		INVOKE_TASK_DELAYED(550 + 200 * i, cardbuster_fairy, .poss = {
 			pos0, pos1, pos2, pos3
 		});
 	}
-		
+
 	INVOKE_TASK_DELAYED(800, supercard_fairy,
-			    .pos = VIEWPORT_W / 2.0,
-			    .move = move_linear(4.0 * I)
+		.pos = VIEWPORT_W / 2.0,
+		.move = move_linear(4.0 * I)
 	);
 
 	int swirl_delay = difficulty_value(85, 75, 65, 55);
@@ -627,4 +615,3 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	WAIT(5);
 	stage_finish(GAMEOVER_SCORESCREEN);
 }
-
