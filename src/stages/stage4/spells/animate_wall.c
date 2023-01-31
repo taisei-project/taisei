@@ -86,13 +86,13 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 	int impact_time = sqrt(2 * fabs(creal(ARGS.pos - target_edge) / creal(m.move.acceleration)));
 
 	WAIT(impact_time);
-	
+
 	m.move = move_linear(10 * I * sign(cimag(ARGS.direction)));
 
 	INVOKE_SUBTASK(kurumi_aniwall_slave_move, &m, ARGS.direction);
 
 	int step = difficulty_value(6, 5, 2, 1);
-	for(int i = 0;; i++, WAIT(step)) {
+	for(;;WAIT(step)) {
 		cmplx vel = sign(creal(ARGS.direction)) * I * cnormalize(m.move.velocity);
 		if(cimag(vel) > -0.1 || global.diff > D_Easy) {
 			play_sfx("shot1");
