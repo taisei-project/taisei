@@ -34,7 +34,7 @@ if rst2html5.found()
             '--no-source-link',
             '--smart-quotes=yes',
             '--no-compact-lists',
-            '--stylesheet-path=minimal.css,plain.css,@0@/doc/taisei.css'.format(meson.source_root()),
+            '--stylesheet-path=minimal.css,plain.css,@0@/doc/taisei.css'.format(meson.project_source_root()),
             '@INPUT@',
             '@OUTPUT@',
         ],
