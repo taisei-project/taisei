@@ -270,9 +270,9 @@ TASK(baryons_visuals, { BoxedEllyBaryons baryons; }) {
 			continue;
 		}
 
+		baryons_bg_fill(draw_data, t, baryons, &particles);
 		baryons_bg_feedback(draw_data, t);
 		baryons_bg_blend(draw_data);
-		baryons_bg_fill(draw_data, t, baryons, &particles);
 	}
 }
 
