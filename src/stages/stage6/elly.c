@@ -97,75 +97,182 @@ DEFINE_EXTERN_TASK(stage6_elly_scythe_spin) {
 	}
 }
 
-static void baryons_connector_particles(cmplx a, cmplx b) {
+static void baryons_connector_particles(cmplx a, cmplx b, BoxedProjectileArray *particles) {
 	Sprite *spr = res_sprite("stage6/baryon_connector");
 
 	cmplx connector_pos = (a + b)/2;
 	real connector_angle = carg(a - b) + M_PI/2;
 	cmplx connector_scale = (cabs(a - b) - 70) / spr->w + I * 20 / spr->h;
-	PARTICLE(
+	ENT_ARRAY_ADD(particles, PARTICLE(
 		.sprite_ptr = spr,
 		.pos = connector_pos,
-		.draw_rule = pdraw_timeout_fade(1, 0),
-		.timeout = 4,
+		.draw_rule = pdraw_timeout_fade(0.5, 0),
+		.timeout = 2,
 		.angle = connector_angle,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.scale = connector_scale
-	);
+	));
 }
 
-static void baryons_particles(EllyBaryons *baryons) {
+static void baryons_particles(EllyBaryons *baryons, BoxedProjectileArray *particles) {
 	if(baryons->scale == 0) {
 		return;
 	}
 
-	PARTICLE(
+	ENT_ARRAY_ADD(particles, PARTICLE(
 		.sprite_ptr = res_sprite("stage6/baryon_center"),
 		.pos = baryons->center_pos,
-		.draw_rule = pdraw_timeout_fade(1, 0),
+		.draw_rule = pdraw_timeout_fade(0.75, 0),
 		.timeout = 4,
 		.angle = baryons->center_angle,
 		.scale = baryons->scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
-	);
+	));
 
-	PARTICLE(
+	ENT_ARRAY_ADD(particles, PARTICLE(
 		.sprite_ptr = res_sprite("stage6/baryon"),
 		.pos = baryons->center_pos,
 		.angle = M_TAU/12,
-		.draw_rule = pdraw_timeout_fade(1, 0),
+		.draw_rule = pdraw_timeout_fade(0.75, 0),
 		.timeout = 4,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
-	);
+	));
 
 
 	for(int i = 0; i < NUM_BARYONS; i++) {
 		cmplx pos = baryons->poss[i];
 		cmplx pos_next = baryons->poss[(i+1) % NUM_BARYONS];
 
-		PARTICLE(
+		ENT_ARRAY_ADD(particles, PARTICLE(
 			.sprite_ptr = res_sprite("stage6/baryon"),
 			.pos = pos,
-			.draw_rule = pdraw_timeout_fade(1, 0),
+			.draw_rule = pdraw_timeout_fade(0.75, 0),
 			.timeout = 4,
 			.scale = baryons->scale,
 			.angle = baryons->angles[i]+M_TAU/12,
 			.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
-		);
+		));
 
-		baryons_connector_particles(pos, pos_next);
+		baryons_connector_particles(pos, pos_next, particles);
 	}
 
-	baryons_connector_particles(baryons->center_pos, baryons->poss[0]);
-	baryons_connector_particles(baryons->center_pos, baryons->poss[3]);
+	baryons_connector_particles(baryons->center_pos, baryons->poss[0], particles);
+	baryons_connector_particles(baryons->center_pos, baryons->poss[3], particles);
 }
 
-TASK(baryons_visuals, { BoxedEllyBaryons baryons; }) {
+static void baryons_bg_feedback(Stage6DrawData *draw_data, int t) {
+	stage_draw_begin_noshake();
+	r_state_push();
+
+	r_shader("baryon_feedback");
+	r_uniform_vec2("blur_resolution", 0.5*VIEWPORT_W, 0.5*VIEWPORT_H);
+	r_uniform_float("hue_shift", 0);
+	r_uniform_float("time", t/60.0);
+
+	r_framebuffer(draw_data->baryon.aux_fb);
+	r_blend(BLEND_NONE);
+	r_uniform_vec2("blur_direction", 1, 0);
+	r_uniform_float("hue_shift", 0.01);
+	r_color4(0.95, 0.88, 0.9, 0.5);
+
+	draw_framebuffer_tex(draw_data->baryon.fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	fbpair_swap(&draw_data->baryon.fbpair);
+
+	r_framebuffer(draw_data->baryon.fbpair.back);
+	r_uniform_vec2("blur_direction", 0, 1);
+	r_color4(1, 1, 1, 1);
+	draw_framebuffer_tex(draw_data->baryon.aux_fb, VIEWPORT_W, VIEWPORT_H);
+
+	r_state_pop();
+	stage_draw_end_noshake();
+}
+
+static void baryons_bg_blend(Stage6DrawData *draw_data) {
+	stage_draw_begin_noshake();
+	r_state_push();
+
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_shader_standard();
+	fbpair_swap(&draw_data->baryon.fbpair);
+	r_color4(0.7, 0.7, 0.7, 0.7);
+	draw_framebuffer_tex(draw_data->baryon.fbpair.front, VIEWPORT_W, VIEWPORT_H);
+
+	r_state_pop();
+	stage_draw_end_noshake();
+}
+
+static void baryons_bg_fill(Stage6DrawData *draw_data, int t, EllyBaryons *baryons, BoxedProjectileArray *particles) {
+	if(!particles->size) {
+		return;
+	}
+
+	r_state_push();
+	r_color4(1, 1, 1, 1);
+	r_framebuffer(draw_data->baryon.fbpair.front);
+
+	ENT_ARRAY_FOREACH(particles, Projectile *p, {
+		r_state_push();
+		p->ent.draw_func(&p->entity_interface);
+		r_state_pop();
+	});
+
+	if(baryons) {
+		ShaderProgram *shader = res_shader("sprite_default");
+		Sprite *sprite = res_sprite("part/myon");
+
+		for(int i = 0; i < NUM_BARYONS; ++i) {
+			r_draw_sprite(&(SpriteParams) {
+				.sprite_ptr = sprite,
+				.shader_ptr = shader,
+				.color = RGBA(1, 0.2, 1.0, 0.7),
+				.pos.as_cmplx = baryons->poss[i], //+10*frand()*cexp(2.0*I*M_PI*frand());
+				.rotation.angle = (i - t) / 16.0, // frand()*M_PI*2,
+				.scale.both = 2,
+			});
+		}
+
+		r_flush_sprites();
+	}
+
+	r_state_pop();
+}
+
+TASK(baryons_particle_spawner, { BoxedEllyBaryons baryons; BoxedProjectileArray *particles; }) {
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
 	for (;;) {
-		baryons_particles(baryons);
+		baryons_particles(baryons, ARGS.particles);
+		ENT_ARRAY_COMPACT(ARGS.particles);
 		YIELD;
+	}
+}
+
+TASK(baryons_visuals, { BoxedEllyBaryons baryons; }) {
+	DECLARE_ENT_ARRAY(Projectile, particles, MAX_BARYON_PARTICLES);
+	CoEvent *draw_event = &stage_get_draw_events()->background_drawn;
+	Stage6DrawData *draw_data = stage6_get_draw_data();
+
+	INVOKE_SUBTASK(baryons_particle_spawner, ARGS.baryons, &particles);
+
+	int timeout = 60;
+	int endtime = timeout;
+
+	for(int t = 0; t < endtime; ++t) {
+		WAIT_EVENT_OR_DIE(draw_event);
+		EllyBaryons *baryons = ENT_UNBOX(ARGS.baryons);
+
+		if(baryons != NULL) {
+			endtime = t + timeout;
+		}
+
+		if(config_get_int(CONFIG_POSTPROCESS) < 1) {
+			continue;
+		}
+
+		baryons_bg_feedback(draw_data, t);
+		baryons_bg_blend(draw_data);
+		baryons_bg_fill(draw_data, t, baryons, &particles);
 	}
 }
 
@@ -206,8 +313,8 @@ void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 	eb->center_pos = b->pos;
 	eb->scale = 0;
 	eb->relaxation_rate = 0.5;
-	INVOKE_TASK(baryons_visuals, baryons);
 	INVOKE_TASK(baryons_update, baryons);
+	INVOKE_TASK(baryons_visuals, baryons);
 }
 
 Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
@@ -219,7 +326,6 @@ Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
 
 	return INIT_BOSS_ATTACK(&args->base);
 }
-
 
 EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss) {
 	EllyBaryons *baryons = TASK_HOST_ENT(EllyBaryons);

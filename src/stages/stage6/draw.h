@@ -55,9 +55,6 @@ void stage6_drawsys_init(void);
 void stage6_drawsys_shutdown(void);
 void stage6_draw(void);
 
-void baryon_center_draw(Enemy*, int, bool);
-void baryon(Enemy*, int, bool);
-
 extern ShaderRule stage6_bg_effects[];
 extern ShaderRule stage6_postprocess[];
 
