@@ -73,6 +73,7 @@ DEFINE_TASK_INTERFACE_WITH_BASE(BaryonsAttack, BossAttack, {
 typedef TASK_IFACE_ARGS_TYPE(BaryonsAttack) BaryonsAttackTaskArgs;
 Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args);
 
+cmplx stage6_elly_baryon_default_offset(int i);
 
 void scythe_draw(Enemy *, int, bool); // REMOVE (stage 4 dependency)
 void scythe_common(Enemy*, int); // REMOVE (stage 4 dependency)

@@ -303,11 +303,15 @@ TASK(baryons_quick_intro, { BoxedEllyBaryons baryons; }) {
 	}
 }
 
+cmplx stage6_elly_baryon_default_offset(int i) {
+	return 150 * cdir(M_TAU / NUM_BARYONS * i);
+}
+
 void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 	Boss *b = NOT_NULL(ENT_UNBOX(boss));
 	EllyBaryons *eb = NOT_NULL(ENT_UNBOX(baryons));
 	for(int i = 0; i < NUM_BARYONS; i++) {
-		eb->target_poss[i] = b->pos + 150 * cdir(M_TAU / NUM_BARYONS * i);
+		eb->target_poss[i] = b->pos + stage6_elly_baryon_default_offset(i);
 		eb->poss[i] = b->pos;
 	}
 	eb->center_pos = b->pos;
@@ -317,6 +321,15 @@ void stage6_init_elly_baryons(BoxedEllyBaryons baryons, BoxedBoss boss) {
 	INVOKE_TASK(baryons_visuals, baryons);
 }
 
+TASK(reset_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
+	auto baryons = TASK_BIND(ARGS.baryons);
+	auto boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
+
+	for(int i = 0; i < NUM_BARYONS; ++i) {
+		baryons->target_poss[i] = boss->pos + stage6_elly_baryon_default_offset(i);
+	}
+}
+
 Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
 	if(ENT_UNBOX(args->baryons) == NULL) {
 		args->baryons = ENT_BOX(stage6_host_elly_baryons(args->base.boss));
@@ -324,7 +337,15 @@ Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args) {
 		INVOKE_TASK(baryons_quick_intro, args->baryons);
 	}
 
-	return INIT_BOSS_ATTACK(&args->base);
+	auto boss = INIT_BOSS_ATTACK(&args->base);
+
+	INVOKE_TASK_AFTER(
+		&args->base.attack->events.finished,
+		reset_baryons,
+		ENT_BOX(boss), args->baryons
+	);
+
+	return boss;
 }
 
 EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss) {

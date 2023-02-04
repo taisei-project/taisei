@@ -82,8 +82,7 @@ TASK(baryon_explode_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 		baryons->center_pos = boss_pos;
 
 		for(int i = 0; i < NUM_BARYONS; i++) {
-			// TODO: define and replace by default position
-			baryons->target_poss[i] = boss_pos + 150 * cdir(M_TAU / NUM_BARYONS * i) * (1.0 + 0.2 * sin(t * 0.1)) * cdir(t * t * 0.0004);
+			baryons->target_poss[i] = boss_pos + stage6_elly_baryon_default_offset(i) * (1.0 + 0.2 * sin(t * 0.1)) * cdir(t * t * 0.0004);
 		}
 
 		YIELD;
