@@ -33,7 +33,7 @@ static void scythe_particles(EllyScythe *s) {
 		.timeout = 8,
 		.angle = s->angle,
 		.scale = s->scale,
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
 	RNG_ARRAY(rand, 2);
@@ -109,7 +109,7 @@ static void baryons_connector_particles(cmplx a, cmplx b) {
 		.draw_rule = pdraw_timeout_fade(1, 0),
 		.timeout = 4,
 		.angle = connector_angle,
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.scale = connector_scale
 	);
 }
@@ -126,7 +126,7 @@ static void baryons_particles(EllyBaryons *baryons) {
 		.timeout = 4,
 		.angle = baryons->center_angle,
 		.scale = baryons->scale,
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
 	PARTICLE(
@@ -135,7 +135,7 @@ static void baryons_particles(EllyBaryons *baryons) {
 		.angle = M_TAU/12,
 		.draw_rule = pdraw_timeout_fade(1, 0),
 		.timeout = 4,
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
 
@@ -150,7 +150,7 @@ static void baryons_particles(EllyBaryons *baryons) {
 			.timeout = 4,
 			.scale = baryons->scale,
 			.angle = baryons->angles[i]+M_TAU/12,
-			.flags = PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		);
 
 		baryons_connector_particles(pos, pos_next);
