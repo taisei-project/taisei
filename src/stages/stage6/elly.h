@@ -46,6 +46,8 @@ DECLARE_EXTERN_TASK(stage6_elly_scythe_spin, { BoxedEllyScythe scythe; real angu
 
 #define NUM_BARYONS 6
 
+#define MAX_BARYON_PARTICLES 128
+
 DEFINE_ENTITY_TYPE(EllyBaryons, {
 	cmplx poss[NUM_BARYONS];
 	cmplx target_poss[NUM_BARYONS];
