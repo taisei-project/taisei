@@ -14,14 +14,15 @@
 #include "common_tasks.h"
 
 TASK(scythe_explode, { BoxedEllyScythe scythe; }) {
-	EllyScythe *scythe = TASK_BIND(ARGS.scythe); 
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 	INVOKE_TASK(common_easing_animated, &scythe->angle, 1000, 100, glm_ease_quad_in);
 	INVOKE_TASK(common_easing_animate, &scythe->scale, 1.7, 70, glm_ease_quad_inout);
 	INVOKE_TASK_DELAYED(70, common_easing_animate, &scythe->scale, 0, 30, glm_ease_linear);
-	
+
 	WAIT(100);
 	petal_explosion(100, scythe->pos);
 	play_sfx("boom");
+	stage6_despawn_elly_scythe(scythe);
 }
 
 TASK(baryons_spawn, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {

@@ -139,9 +139,7 @@ TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 TASK(scythe_mid, { cmplx pos; }) {
 	STAGE_BOOKMARK(scythe-mid);
 	EllyScythe *s = stage6_host_elly_scythe(ARGS.pos);
-	INVOKE_SUBTASK(stage6_elly_scythe_spin, ENT_BOX(s),
-		       .angular_velocity = 0.2,
-		       .duration = -1);
+	s->spin = 0.2;
 
 	real scythe_speed = difficulty_value(5, 4, 2, 1);
 
@@ -216,9 +214,15 @@ TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 	stage_start_bgm("stage6boss_phase3");
 }
 
-TASK(boss_appear, { BoxedBoss boss; }) {
+TASK(boss_appear, { BoxedBoss boss; BoxedEllyScythe scythe; }) {
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
+	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
+	scythe->spin = 0.5;
 	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	WAIT(80);
+	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS + ELLY_SCYTHE_RESTING_OFS, 0.3, 0.5);
+	WAIT(35);
+	scythe->spin = 0;
 }
 
 TASK_WITH_INTERFACE(elly_goto_center, BossAttack) {
@@ -248,23 +252,24 @@ TASK(spawn_boss) {
 	BoxedTask scythe_hoster = cotask_box(INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref));
 
 	TASK_IFACE_ARGS_SIZED_PTR_TYPE(ScytheAttack) scythe_args = TASK_IFACE_SARGS(ScytheAttack,
-	  .scythe = scythe_ref
+		.scythe = scythe_ref
 	);
 
 	PlayerMode *pm = global.plr.mode;
 	Stage6PreBossDialogEvents *e;
 	INVOKE_TASK_INDIRECT(Stage6PreBossDialog, pm->dialog->Stage6PreBoss, &e);
-	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss));
+	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss), scythe_ref);
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
-	WAIT_EVENT(&global.dialog->events.fadeout_began);
 
-	boss_add_attack_task_with_args(boss, AT_Move, "Catch the Scythe", 5, 30000, TASK_INDIRECT(ScytheAttack, elly_intro).base, NULL, scythe_args.base);
+	int scythe_ready_time = 120;
+	int dialog_time = WAIT_EVENT(&global.dialog->events.fadeout_began).frames;
+	WAIT(scythe_ready_time - dialog_time);
+
 	boss_add_attack_task_with_args(boss, AT_Normal, "Frequency", 40, 50000, TASK_INDIRECT(ScytheAttack, stage6_boss_nonspell_1).base, NULL, scythe_args.base);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.occams_razor, scythe_args.base);
 	boss_add_attack_task_with_args(boss, AT_Normal, "Frequency2", 40, 50000, TASK_INDIRECT(ScytheAttack, stage6_boss_nonspell_2).base, NULL, scythe_args.base);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.orbital_clockwork, scythe_args.base);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.wave_theory, scythe_args.base);
-
 
 	BoxedEllyBaryons baryons_ref;
 	INVOKE_SUBTASK(host_baryons, ENT_BOX(boss), &baryons_ref);
@@ -280,7 +285,6 @@ TASK(spawn_boss) {
 		.scythe = scythe_ref,
 		.baryons = baryons_ref
 	);
-	cotask_cancel(NOT_NULL(cotask_unbox(scythe_hoster)));
 
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.many_world_interpretation, baryons_args.base);
 	boss_add_attack_task_with_args(boss, AT_Normal, "Baryon", 50, 55000, TASK_INDIRECT(BaryonsAttack, stage6_boss_nonspell_4).base, NULL, baryons_args.base);

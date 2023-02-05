@@ -18,11 +18,17 @@
 #define SYMMETRYTIME (HIGGSTIME+200)
 #define BREAKTIME (YUKAWATIME+400)
 
+#define ELLY_DEFAULT_POS (BOSS_DEFAULT_GO_POS)
+#define ELLY_SCYTHE_RESTING_OFS (8)
+
 Boss* stage6_spawn_elly(cmplx pos);
 
 DEFINE_ENTITY_TYPE(EllyScythe, {
 	cmplx pos;
 	real angle;
+	real spin;
+	real resting_angle;
+
 	float scale;
 
 	MoveParams move;
@@ -33,6 +39,7 @@ DEFINE_ENTITY_TYPE(EllyScythe, {
 });
 
 EllyScythe *stage6_host_elly_scythe(cmplx pos);
+void stage6_despawn_elly_scythe(EllyScythe *scythe);
 
 DEFINE_TASK_INTERFACE_WITH_BASE(ScytheAttack, BossAttack, {
 	BoxedEllyScythe scythe;
@@ -40,9 +47,6 @@ DEFINE_TASK_INTERFACE_WITH_BASE(ScytheAttack, BossAttack, {
 typedef TASK_IFACE_ARGS_TYPE(ScytheAttack) ScytheAttackTaskArgs;
 Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args);
 
-
-// duration < 0 means infinite duration
-DECLARE_EXTERN_TASK(stage6_elly_scythe_spin, { BoxedEllyScythe scythe; real angular_velocity; int duration; });
 
 #define NUM_BARYONS 6
 
@@ -77,8 +81,4 @@ Boss *stage6_elly_init_baryons_attack(BaryonsAttackTaskArgs *args);
 
 cmplx stage6_elly_baryon_default_offset(int i);
 
-void scythe_draw(Enemy *, int, bool); // REMOVE (stage 4 dependency)
-void scythe_common(Enemy*, int); // REMOVE (stage 4 dependency)
-
 void elly_clap(Boss*, int);
-

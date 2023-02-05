@@ -21,19 +21,31 @@ Boss* stage6_spawn_elly(cmplx pos) {
 	return b;
 }
 
-static void scythe_particles(EllyScythe *s) {
+static void scythe_particles(EllyScythe *s, real oldangle) {
 	if(s->scale == 0) {
 		return;
 	}
 
 	PARTICLE(
 		.sprite_ptr = res_sprite("stage6/scythe"),
+		.pos = s->pos+I*6*sin((global.frames - 0.5)/25.0),
+		.draw_rule = pdraw_timeout_fade(0.75, 0),
+		.timeout = 4,
+		.angle = (s->angle + oldangle) * 0.5,
+		.scale = s->scale,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
+		.layer = LAYER_PARTICLE_MID,
+	);
+
+	PARTICLE(
+		.sprite_ptr = res_sprite("stage6/scythe"),
 		.pos = s->pos+I*6*sin(global.frames/25.0),
-		.draw_rule = pdraw_timeout_fade(1, 0),
-		.timeout = 8,
+		.draw_rule = pdraw_timeout_fade(0.75, 0),
+		.timeout = 4,
 		.angle = s->angle,
 		.scale = s->scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
+		.layer = LAYER_PARTICLE_MID,
 	);
 
 	RNG_ARRAY(rand, 2);
@@ -44,57 +56,111 @@ static void scythe_particles(EllyScythe *s) {
 		.draw_rule = pdraw_timeout_scalefade(0.4, 2, 1, 0),
 		.timeout = 60,
 		.flags = PFLAG_REQUIREDPARTICLE,
+		.layer = LAYER_PARTICLE_LOW,
 	);
 }
 
-TASK(scythe_visuals, { BoxedEllyScythe scythe; }) {
-	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
-
-	for (;;) {
-		scythe_particles(scythe);
-		YIELD;
-	}
+INLINE real normalize_angle(real a) {
+	// [0 .. tau)
+	return a - M_TAU * floorf(a / M_TAU);
 }
 
 TASK(scythe_update, { BoxedEllyScythe scythe; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 
-	for (;;) {
-		move_update(&scythe->pos, &scythe->move);
+	real spin = 0;
+	real oldangle;
+	real return_speed_cap;
+	bool was_return_mode = false;
+
+	for(;;) {
+		oldangle = scythe->angle;
 		YIELD;
+
+		approach_asymptotic_p(&spin, scythe->spin, 0.1, 1e-4);
+		real spin_sign = sign(spin);
+		real spin_abs = fabs(spin);
+
+		bool return_mode = scythe->spin == 0;
+
+		if(was_return_mode && !return_mode) {
+			return_speed_cap = 0;
+		}
+
+		if(spin_abs > return_speed_cap) {
+			return_speed_cap = spin_abs;
+		}
+
+		if(return_mode) {
+			real return_target = normalize_angle(scythe->resting_angle);
+			real scythe_angle = normalize_angle(scythe->angle);
+			real delta;
+
+			if(spin_sign > 0) {
+				if(return_target < scythe_angle) {
+					return_target += M_TAU;
+				}
+
+				delta = return_target - scythe_angle;
+			} else {
+				if(scythe_angle < return_target) {
+					return_target -= M_TAU;
+				}
+
+				delta = scythe_angle - return_target;
+			}
+
+			spin_abs = fmin(return_speed_cap, delta * 0.1);
+		}
+
+		was_return_mode = return_mode;
+		scythe->angle += spin_sign * spin_abs;
+
+		move_update(&scythe->pos, &scythe->move);
+		scythe_particles(scythe, oldangle);
 	}
 }
 
 static void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	scythe->pos = pos;
 	scythe->scale = 0.7;
-	INVOKE_TASK(scythe_visuals, ENT_BOX(scythe));
+	scythe->resting_angle = -M_PI/2;
+	scythe->angle = scythe->resting_angle;
 	INVOKE_TASK(scythe_update, ENT_BOX(scythe));
 }
 
+void stage6_despawn_elly_scythe(EllyScythe *scythe) {
+	coevent_signal_once(&scythe->events.despawned);
+}
+
+TASK(reset_scythe, { BoxedEllyScythe scythe; }) {
+	EllyScythe *s = TASK_BIND(ARGS.scythe);
+	s->resting_angle = -M_PI/2;
+	s->move = move_towards(ELLY_DEFAULT_POS + ELLY_SCYTHE_RESTING_OFS, 0.1);
+	s->spin = 0;
+}
+
 Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args) {
+	Boss *b = INIT_BOSS_ATTACK(&args->base);
+
 	if(ENT_UNBOX(args->scythe) == NULL) {
-		Boss *b = NOT_NULL(ENT_UNBOX(args->base.boss));
 		args->scythe = ENT_BOX(stage6_host_elly_scythe(b->pos));
 	}
 
-	return INIT_BOSS_ATTACK(&args->base);
-}
+	INVOKE_TASK_AFTER(
+		&args->base.attack->events.finished,
+		reset_scythe,
+		args->scythe
+	);
 
+	return b;
+}
 
 EllyScythe *stage6_host_elly_scythe(cmplx pos) {
 	EllyScythe *scythe = TASK_HOST_ENT(EllyScythe);
 	TASK_HOST_EVENTS(scythe->events);
 	stage6_init_elly_scythe(scythe, pos);
 	return scythe;
-}
-
-DEFINE_EXTERN_TASK(stage6_elly_scythe_spin) {
-	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
-	for(int i = 0; i != ARGS.duration; i++) {
-		scythe->angle += ARGS.angular_velocity;
-		YIELD;
-	}
 }
 
 static void baryons_connector_particles(cmplx a, cmplx b, BoxedProjectileArray *particles) {
@@ -353,18 +419,6 @@ EllyBaryons *stage6_host_elly_baryons(BoxedBoss boss) {
 	TASK_HOST_EVENTS(baryons->events);
 	return baryons;
 }
-
-
-
-// REMOVE
-void scythe_draw(Enemy *e, int t, bool b) {
-}
-
-// REMOVE
-void scythe_common(Enemy *e, int t) {
-	e->args[1] += cimag(e->args[1]);
-}
-
 
 void elly_clap(Boss *b, int claptime) {
 	aniplayer_queue(&b->ani, "clapyohands", 1);

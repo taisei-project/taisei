@@ -46,23 +46,16 @@ TASK(maxwell_laser, { cmplx pos; cmplx dir; }) {
 
 }
 
-TASK(maxwell_scythe, { BoxedEllyScythe scythe; cmplx center; }) {
-	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
-	INVOKE_SUBTASK(stage6_elly_scythe_spin, ARGS.scythe, 0.7, -1);
-
-	scythe->move = move_towards(ARGS.center, 0.03);
-	STALL;
-}
-
 DEFINE_EXTERN_TASK(stage6_spell_maxwell) {
 	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
+	scythe->move = move_towards(boss->pos, 0.03);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
-
-	INVOKE_SUBTASK(maxwell_scythe, ARGS.scythe, boss->pos);
+	scythe->spin = 0.7;
 
 	WAIT(40);
 	int num_lasers = 24;
-	
+
 	for(int i = 0; i < num_lasers; i++) {
 		INVOKE_TASK(maxwell_laser, .pos = boss->pos, .dir = cdir(M_TAU/num_lasers*i));
 

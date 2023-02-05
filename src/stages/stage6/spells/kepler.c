@@ -74,8 +74,7 @@ DEFINE_TASK(kepler_bullet) {
 
 TASK(kepler_scythe, { BoxedEllyScythe scythe; cmplx center; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
-	INVOKE_SUBTASK(stage6_elly_scythe_spin, ARGS.scythe, 0.7, -1);
-
+	scythe->spin = 0.7;
 	scythe->move = move_towards(ARGS.center + 100, 0.03);
 	WAIT(60);
 	scythe->move.attraction_point = ARGS.center;

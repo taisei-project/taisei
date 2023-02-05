@@ -50,6 +50,7 @@ static void spawn_apples(cmplx pos) {
 
 TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+	scythe->spin = 0.5;
 
 	real radius = 300;
 
@@ -116,7 +117,6 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	DECLARE_ENT_ARRAY(Projectile, projectiles, proj_count);
 
 	INVOKE_SUBTASK(newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
-	INVOKE_SUBTASK(stage6_elly_scythe_spin, ARGS.scythe, 0.5, -1);
 
 	real width = 100;
 	int bullets_per_side = 5;

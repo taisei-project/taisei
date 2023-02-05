@@ -14,8 +14,9 @@
 DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
 
-	cmplx center = VIEWPORT_W/2.0 + 200.0 * I;
+	cmplx center = ELLY_DEFAULT_POS;
 
+	scythe->spin = 0.2;
 	scythe->move = move_towards(center, 0.1);
 	WAIT(40);
 	scythe->move.retention = 0.9;
@@ -26,11 +27,9 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 		real theta = 0.01 * t * (1 + 0.001 * t) + M_PI/2;
 		scythe->pos = center + 200 * cos(theta) * (1 + sin(theta) * I) / (1 + pow(sin(theta), 2));
 
-		scythe->angle = 0.2 * t * (1 + 0*0.001 * t);
-
 		cmplx dir = cdir(scythe->angle);
 		real vel = difficulty_value(1.4, 1.8, 2.2, 2.6);
-		
+
 		cmplx color_dir = cdir(3 * theta);
 
 		if(t > 50) {
@@ -45,7 +44,6 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 		YIELD;
 	}
 }
-
 
 DEFINE_EXTERN_TASK(stage6_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);
