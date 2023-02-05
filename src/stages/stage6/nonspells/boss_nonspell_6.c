@@ -31,7 +31,7 @@ static void baryons_final_blast(cmplx pos) {
 
 	{
 		RNG_ARRAY(R, 8);
-		
+
 		PARTICLE(
 			.sprite = "blast_huge_halo",
 			.pos = pos + exp(4*vrng_real(R[0])) * vrng_dir(R[1]),
@@ -74,7 +74,7 @@ static void baryons_final_blast(cmplx pos) {
 }
 
 TASK(baryon_explode_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
-	EllyBaryons *baryons = TASK_BIND(ARGS.baryons); 
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
 	for(int t = 0;; t++) {
 		cmplx boss_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
@@ -91,7 +91,7 @@ TASK(baryon_explode_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 }
 
 TASK(baryons_explode, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
-	EllyBaryons *baryons = TASK_BIND(ARGS.baryons); 
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 	int lifetime = 120;
 	int interval = 6;
 
@@ -105,7 +105,7 @@ TASK(baryons_explode, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 			if(dead[i]) {
 				continue;
 			}
-			
+
 			float angle = rng_angle();
 			PARTICLE(
 				.sprite = "blast_huge_halo",
@@ -119,7 +119,7 @@ TASK(baryons_explode, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 			);
 
 			if(rng_chance((t - lifetime) / 300.0)) {
-				dead[i] = true; 
+				dead[i] = true;
 				baryons_final_blast(baryons->poss[i]);
 			}
 		}
@@ -152,7 +152,7 @@ DEFINE_EXTERN_TASK(stage6_boss_baryons_explode) {
 	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 	baryons->scale = 0;
 
-	
+
 
 	stage_shake_view(40);
 	play_sfx("boom");

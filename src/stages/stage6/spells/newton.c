@@ -29,7 +29,7 @@ TASK(spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; re
 		play_sfx("shot2");
 		WAIT(delay);
 	}
-	
+
 }
 
 static void spawn_apples(cmplx pos) {
@@ -45,7 +45,7 @@ static void spawn_apples(cmplx pos) {
 			.color = RGB(1.0, 0.5, 0),
 			.layer = LAYER_BULLET | 0xffff, // force them to render on top of the other bullets
 		);
-	}	
+	}
 }
 
 TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
@@ -53,23 +53,19 @@ TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 	scythe->spin = 0.5;
 
 	real radius = 300;
-
 	real speed = 0.01;
 	int steps = M_TAU/speed;
-
-
 
 	for(int n = 2;; n++) {
 		for(int i = 0; i < steps; i++) {
 			real t = M_TAU/steps*i;
 
-
 			Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
-			
+
 			if(i % (steps/(2*n)) == 0) {
 				spawn_apples(boss->pos);
 			}
-			
+
 			scythe->pos = boss->pos + radius * sin(n*t) * cdir(t) * I;
 			YIELD;
 		}
@@ -82,7 +78,7 @@ TASK(newton_scythed_proj, { BoxedProjectile proj; }) {
 	play_sfx("redirect");
 
 	real acceleration = difficulty_value(0.015, 0.02, 0.03, 0.04);
-	
+
 	p->move.velocity = 0;
 	p->move.acceleration = acceleration * aim;
 }

@@ -57,7 +57,7 @@ DEFINE_ENTITY_TYPE(EllyBaryons, {
 	cmplx target_poss[NUM_BARYONS];
 	real relaxation_rate;
 
-	 // angles are currently unused, broglie sign may use them. otherwise remove.
+	// angles are currently unused, broglie sign may use them. otherwise remove.
 	real angles[NUM_BARYONS];
 
 	cmplx center_pos;
@@ -65,7 +65,7 @@ DEFINE_ENTITY_TYPE(EllyBaryons, {
 	float scale;
 
 	COEVENTS_ARRAY(
-	        despawned
+		despawned
 	) events;
 });
 

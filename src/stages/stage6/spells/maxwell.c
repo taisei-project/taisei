@@ -66,5 +66,5 @@ DEFINE_EXTERN_TASK(stage6_spell_maxwell) {
 	elly_clap(boss, 50);
 	play_sfx("laser1");
 
-	STALL;	
+	STALL;
 }

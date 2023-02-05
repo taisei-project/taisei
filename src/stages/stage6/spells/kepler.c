@@ -38,7 +38,7 @@ TASK(kepler_bullet_spawner, { BoxedProjectile proj; int tier; cmplx offset; }) {
 		WAIT(interval);
 	}
 }
-	
+
 DEFINE_TASK(kepler_bullet) {
 	cmplx pos = ARGS.pos;
 	Projectile *parent = ENT_UNBOX(ARGS.parent);
@@ -49,7 +49,7 @@ DEFINE_TASK(kepler_bullet) {
 		.proto = kepler_pick_bullet(ARGS.tier),
 		.pos = pos + ARGS.offset,
 		.color = RGB(0.3 + 0.3 * ARGS.tier, 0.6 - 0.3 * ARGS.tier, 1.0),
-		
+
 	));
 
 	p->move.retention = 0;
@@ -92,7 +92,7 @@ DEFINE_EXTERN_TASK(stage6_spell_kepler) {
 	INVOKE_SUBTASK(kepler_scythe, ARGS.scythe, boss->pos);
 
 	elly_clap(boss, 20);
-	
+
 	for(int t = 0;; t++) {
 		int c = 2;
 		play_sfx("shot_special1");
@@ -108,7 +108,6 @@ DEFINE_EXTERN_TASK(stage6_spell_kepler) {
 
 			INVOKE_TASK_DELAYED(20, kepler_bullet, .parent = ENT_BOX(p), .tier = 1, .offset = 10 * dir);
 		}
-		
 
 		WAIT(20);
 	}
