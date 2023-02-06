@@ -157,27 +157,6 @@ TASK(scythe_mid, { cmplx pos; }) {
 	}
 }
 
-/*
-static int scythe_intro(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 0;
-	}
-
-	TIMER(&t);
-
-	GO_TO(e,VIEWPORT_W/2+200.0*I, 0.05);
-
-
-	FROM_TO(60, 119, 1) {
-		e->args[1] -= 0.00333333*I;
-		e->args[2] -= 0.007;
-	}
-
-	scythe_common(e, t);
-	return 1;
-}
-*/
 TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
@@ -187,7 +166,6 @@ TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 
 	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 	STALL;
-
 }
 
 TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
