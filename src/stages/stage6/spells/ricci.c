@@ -244,7 +244,9 @@ DEFINE_EXTERN_TASK(stage6_spell_ricci) {
 	int count = 15;
 	real speed = 3;
 	int interval = 5;
-	
+
+	WAIT(60);
+
 	for(int t = 0;; t++) {
 		real offset = -VIEWPORT_W/(real)count;
 		real w = VIEWPORT_W * (1 + 2.0 / count);
