@@ -20,11 +20,6 @@
 
 #include "common_tasks.h"
 
-static void stage6_dialog_pre_final(void) {
-	PlayerMode *pm = global.plr.mode;
-	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
-}
-
 TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 3)));
 	e->move = ARGS.move;
@@ -195,16 +190,13 @@ TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
 
 }
 
-// TODO fix this so it works
-attr_unused
-TASK_WITH_INTERFACE(elly_insert_interboss_dialog, BossAttack) {
-	INIT_BOSS_ATTACK(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS);
-	stage6_dialog_pre_final();
-}
-
 TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+
+	PlayerMode *pm = global.plr.mode;
+	INVOKE_TASK_INDIRECT(Stage6PreFinalDialog, pm->dialog->Stage6PreFinal);
+	WAIT_EVENT(&global.dialog->events.fadeout_began);
+
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
@@ -297,8 +289,6 @@ TASK(spawn_boss) {
 	boss_add_attack_task_with_args(boss, AT_Move, "Explode", 4, 0, TASK_INDIRECT(BaryonsAttack, stage6_boss_baryons_explode).base, NULL, baryons_args.base);
 	boss_add_attack_task(boss, AT_Move, "Move to center", 4, 0, TASK_INDIRECT(BossAttack, elly_goto_center), NULL);
 
-	// XXX: this does not work! help Akari
-	//boss_add_attack_task(boss, AT_Immediate, "Final dialog", 0, 0, TASK_INDIRECT(BossAttack, elly_insert_interboss_dialog), NULL);
 	boss_add_attack_task(boss, AT_Move, "ToE transition", 7, 0, TASK_INDIRECT(BossAttack, elly_begin_toe), NULL);
 	boss_add_attack_from_info(boss, &stage6_spells.final.theory_of_everything, false);
 	boss_engage(boss);
