@@ -19,7 +19,6 @@
 #define SAFE_RADIUS_PHASE_VELOCITY 0.015
 #define SAFE_RADIUS_PHASE 3*M_PI/2
 
-
 static real safe_radius_phase(int time, int baryon_idx) {
 	return baryon_idx * M_PI / 3 + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
 }
@@ -37,15 +36,15 @@ static real safe_radius(real phase) {
 
 TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; real timespan; int time_offset; }) {
 	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
-	
-	double radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
+
+	real radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
 
 	for(int t = 0; t < l->deathtime + l->timespan; t++) {
 		EllyBaryons *baryons = ENT_UNBOX(ARGS.baryons);
 		if(baryons == NULL) {
 			return;
 		}
-		
+
 		l->pos = baryons->poss[ARGS.baryon_idx] + ARGS.offset;
 		l->args[1] = radius * sin(M_PI * t / (real)(l->deathtime + l->timespan));
 		l->width = clamp(t / 3.0, 0, 15);
@@ -53,11 +52,10 @@ TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Colo
 		YIELD;
 	}
 }
-		
+
 
 TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmplx dir; }) {
 	play_sfx("shot3");
-
 
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_ball,
@@ -73,7 +71,6 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		YIELD;
 	}
 
-
 	// play_sound_ex("shot3",8, false);
 	play_sfx("shot_special1");
 
@@ -88,7 +85,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.timespan = 12,
 		.time_offset = 0
 	);
-	
+
 	INVOKE_TASK(ricci_laser,
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
@@ -108,7 +105,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.timespan = 12,
 		.time_offset = 30
 	);
-	
+
 	INVOKE_TASK(ricci_laser,
 		.baryons = ARGS.baryons,
 		.baryon_idx = ARGS.baryon_idx,
@@ -136,7 +133,7 @@ TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 		} else {
 			baryons->target_poss[0] += 0.5 * cnormalize(target - baryons->target_poss[0]);
 		}
-		
+
 		for(int i = 1; i < NUM_BARYONS; i++) {
 			if(i % 2 == 1) {
 				baryons->target_poss[i] = baryons->center_pos;
@@ -144,7 +141,7 @@ TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 				baryons->target_poss[i] = baryons->center_pos + (baryons->poss[0] - baryons->center_pos) * cdir(M_TAU/NUM_BARYONS * i);
 			}
 		}
-		
+
 		YIELD;
 	}
 
@@ -164,29 +161,28 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 			real phase = safe_radius_phase(time, i);
 			int num = phase_num(phase);
 			real phase_norm = fmod(phase, M_TAU) / M_TAU;
-			
+
 			if(num > 0 && phase_norm > 0.15 && phase_norm < 0.55) {
 				int count = 3;
 				cmplx dir = cdir(M_TAU * (0.25 + 1.0 / count * t));
 				INVOKE_TASK(ricci_baryon_laser_spawner, ARGS.baryons,
-					    .baryon_idx = i,
-					    .dir = dir
+					.baryon_idx = i,
+					.dir = dir
 				);
-
 			}
 		}
-		
+
 		WAIT(10);
 	}
 }
 
 TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
-				.proto = pp_ball,
-				.pos = ARGS.pos,
-				.color = RGBA(0, 0, 0, 0),
-				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
-				.max_viewport_dist = SAFE_RADIUS_MAX,
+		.proto = pp_ball,
+		.pos = ARGS.pos,
+		.color = RGBA(0, 0, 0, 0),
+		.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
+		.max_viewport_dist = SAFE_RADIUS_MAX,
 	));
 
 
@@ -199,10 +195,10 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 			return;
 		}
 
-		double influence = 0;
-		
+		real influence = 0;
+
 		int time = global.frames-global.boss->current->starttime;
-		
+
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real base_radius = safe_radius(safe_radius_phase(time, i));
 
@@ -210,20 +206,18 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 			real angular_velocity = 0.01 * difficulty_value(1.0, 1.25, 1.5, 1.75);
 
 			int gaps = phase_num(safe_radius_phase(time, i)) + 5;
-					     
+
 			real radius = cabs(d) / (1.0 - 0.15 * sin(gaps * carg(d) + angular_velocity * time));
-			double range = 1 / (exp((radius - base_radius) / 50) + 1);
+			real range = 1 / (exp((radius - base_radius) / 50) + 1);
 			shift += -1.1 * (base_radius - radius) / radius * d * range;
 			influence += range;
-			
-			
 		}
-		
+
 		if(p->type == PROJ_DEAD) {
 			p->move = move_asymptotic_simple(rng_dir(), 9);
 			return;
 		}
-		
+
 		p->pos = ARGS.pos + ARGS.velocity * t + shift;
 
 		float a = 0.5 + 0.5 * fmax(0, tanh((time - 80) / 100.)) * clamp(influence, 0.2, 1);
