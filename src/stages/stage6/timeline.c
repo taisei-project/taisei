@@ -199,7 +199,7 @@ TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.1);
+	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.01);
 
 	stage6_bg_start_fall_over();
 	stage_unlock_bgm("stage6boss_phase2");
