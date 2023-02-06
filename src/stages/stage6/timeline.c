@@ -112,7 +112,7 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 
 TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
-	for(int i = 0;; i++, WAIT(2)) {
+	for(;;WAIT(2)) {
 		cmplx dir = cdir(scythe->angle);
 
 		real speed = difficulty_value(0.01, 0.02, 0.03, 0.04);
@@ -129,7 +129,6 @@ TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 		}
 	}
 }
-
 
 TASK(scythe_mid, { cmplx pos; }) {
 	STAGE_BOOKMARK(scythe-mid);
@@ -155,17 +154,6 @@ TASK(scythe_mid, { cmplx pos; }) {
 
 		INVOKE_TASK_DELAYED(140, projectile_redirect, ENT_BOX(p), move_linear(global.diff * cexp(0.6 * I) * dir));
 	}
-}
-
-TASK_WITH_INTERFACE(elly_intro, ScytheAttack) {
-	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS.base);
-	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
-
-	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
-
-	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
-	STALL;
 }
 
 TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
@@ -219,7 +207,7 @@ TASK(spawn_boss) {
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
 
 	BoxedEllyScythe scythe_ref;
-	BoxedTask scythe_hoster = cotask_box(INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref));
+	INVOKE_SUBTASK(host_scythe, VIEWPORT_W + 100 + 200 * I, &scythe_ref);
 
 	TASK_IFACE_ARGS_SIZED_PTR_TYPE(ScytheAttack) scythe_args = TASK_IFACE_SARGS(ScytheAttack,
 		.scythe = scythe_ref

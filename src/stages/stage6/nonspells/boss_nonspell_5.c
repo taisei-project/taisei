@@ -21,7 +21,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_5) {
 	WAIT(100);
 	int interval = difficulty_value(195, 190, 185, 180);
 
-	for(int t = 0;; t++) {
+	for(;;) {
 		play_sfx("shot_special1");
 
 		int cnt = 5;
@@ -38,7 +38,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_5) {
 			}
 		}
 		WAIT(interval);
-		
+
 		int w = difficulty_value(1, 1, 2, 2);
 		cmplx dir = cnormalize(global.plr.pos - boss->pos);
 

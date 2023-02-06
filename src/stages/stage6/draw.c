@@ -14,8 +14,6 @@
 #include "util/glm.h"
 #include "resource/model.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 static Stage6DrawData *stage6_draw_data;
 
 Stage6DrawData *stage6_get_draw_data(void) {
@@ -23,10 +21,9 @@ Stage6DrawData *stage6_get_draw_data(void) {
 }
 
 void stage6_drawsys_init(void) {
-	stage6_draw_data = calloc(1, sizeof(*stage6_draw_data));
+	stage6_draw_data = ALLOC(typeof(*stage6_draw_data));
 	// TODO: make this background slightly less horribly inefficient
 	stage3d_init(&stage_3d_context, 128);
-
 
 	for(int i = 0; i < NUM_STARS; i++) {
 		vec3 p = { 0 };
@@ -67,7 +64,7 @@ void stage6_drawsys_init(void) {
 
 void stage6_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage6_draw_data);
+	mem_free(stage6_draw_data);
 	stage6_draw_data = NULL;
 }
 
