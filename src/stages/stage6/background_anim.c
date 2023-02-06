@@ -79,9 +79,6 @@ TASK(stage6_bg_update) {
 		cam->rot.v[2] = phi + cam_rot_offset;
 		cam->pos[0] = r*cos(phi*M_TAU/360);
 		cam->pos[1] = r*sin(phi*M_TAU/360);
-
-
-
 		YIELD;
 	}
 }
@@ -95,5 +92,12 @@ void stage6_bg_init_fullstage(void) {
 }
 
 void stage6_bg_init_spellpractice(void) {
-	stage6_bg_init_fullstage();
+	Camera3D *cam = &stage_3d_context.cam;
+	cam->pos[0] = -6;
+	cam->pos[2] = 8;
+	cam->rot.v[0] = 90;
+	cam->rot.v[2] = 270;
+	cam->fovy = STAGE3D_DEFAULT_FOVY*1.5;
+	cam->far = 100;
+	INVOKE_TASK(stage6_bg_3d_update);
 }

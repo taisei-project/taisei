@@ -12,28 +12,6 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
-static int scythe_kepler(Enemy *e, int t) {
-	if(t < 0) {
-		scythe_common(e, t);
-		return 1;
-	}
-
-	TIMER(&t);
-
-	AT(20) {
-		e->args[1] = 0.2*I;
-	}
-
-	FROM_TO(20, 10000, 1) {
-		GO_TO(e, global.boss->pos + 100*cexp(I*_i*0.01),0.03);
-	}
-
-	scythe_common(e, t);
-	return 1;
-}
-
 static ProjPrototype* kepler_pick_bullet(int tier) {
 	switch(tier) {
 		case 0:  return pp_soul;
@@ -43,103 +21,94 @@ static ProjPrototype* kepler_pick_bullet(int tier) {
 	}
 }
 
-static int kepler_bullet(Projectile *p, int t) {
-	TIMER(&t);
-	int tier = round(creal(p->args[1]));
+DECLARE_TASK(kepler_bullet, { BoxedProjectile parent; int tier; cmplx offset; cmplx pos; });
 
-	AT(EVENT_DEATH) {
-		if(tier != 0) {
-			free_ref(p->args[2]);
+TASK(kepler_bullet_spawner, { BoxedProjectile proj; int tier; cmplx offset; }) {
+	TASK_BIND(ARGS.proj);
+	int interval = 1.5*difficulty_value(25, 20, 15, 10);
+	int max_children = difficulty_value(4, 4, 5, 5) / (ARGS.tier + 1);
+
+	for(int i = 0; i < max_children; i++) {
+		if(ARGS.tier < 4) {
+			INVOKE_TASK(kepler_bullet,
+				       .parent = ARGS.proj,
+				       .tier = ARGS.tier + 1,
+				       .offset = ARGS.offset);
 		}
+		WAIT(interval);
 	}
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	cmplx pos = p->pos0;
-
-	if(tier != 0) {
-		Projectile *parent = (Projectile *) REF(creal(p->args[2]));
-
-		if(parent == 0) {
-			p->pos += p->args[3];
-			return 1;
-		}
-		pos = parent->pos;
-	} else {
-		pos += t*p->args[2];
-	}
-
-	cmplx newpos = pos + tanh(t/90.)*p->args[0]*cexp((1-2*(tier&1))*I*t*0.5/cabs(p->args[0]));
-	cmplx vel = newpos-p->pos;
-	p->pos = newpos;
-	p->args[3] = vel;
-
-	if(t%(30-5*global.diff) == 0) {
-		p->args[1]+=1*I;
-		int tau = global.frames-global.boss->current->starttime;
-		cmplx phase = cexp(I*0.2*tau*tau);
-		int n = global.diff/2+3+(frand()>0.3);
-		if(global.diff == D_Easy)
-			n=7;
-
-		play_sfx("redirect");
-		if(tier <= 1+(global.diff>D_Hard) && cimag(p->args[1])*(tier+1) < n) {
-			PROJECTILE(
-				.proto = kepler_pick_bullet(tier + 1),
-				.pos = p->pos,
-				.color = RGB(0.3 + 0.3 * tier, 0.6 - 0.3 * tier, 1.0),
-				.rule = kepler_bullet,
-				.args = {
-					cabs(p->args[0])*phase,
-					tier+1,
-					add_ref(p)
-				}
-			);
-		}
-	}
-	return ACTION_NONE;
 }
 
-void elly_kepler(Boss *b, int t) {
-	TIMER(&t);
-
-	AT(0) {
-		Enemy *scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_kepler;
-
-		PROJECTILE(
-			.proto = pp_soul,
-			.pos = b->pos,
-			.color = RGB(0.3,0.8,1),
-			.rule = kepler_bullet,
-			.args = { 50+10*global.diff }
-		);
-
-		elly_clap(b, 20);
+DEFINE_TASK(kepler_bullet) {
+	cmplx pos = ARGS.pos;
+	Projectile *parent = ENT_UNBOX(ARGS.parent);
+	if(parent != NULL) {
+		pos = parent->pos;
 	}
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = kepler_pick_bullet(ARGS.tier),
+		.pos = pos + ARGS.offset,
+		.color = RGB(0.3 + 0.3 * ARGS.tier, 0.6 - 0.3 * ARGS.tier, 1.0),
 
-	AT(EVENT_DEATH) {
-		Enemy *scythe = find_scythe();
-		scythe->birthtime = global.frames;
-		scythe->logic_rule = scythe_reset;
+	));
+
+	p->move.retention = 0;
+	p->move.attraction = 2 * I;
+	p->move.attraction_exponent = 0;
+	p->move.velocity = I * cnormalize(ARGS.offset);
+
+	INVOKE_SUBTASK(kepler_bullet_spawner, ENT_BOX(p), ARGS.tier, 20 * cnormalize(p->pos - pos));
+
+	for(;;) {
+		parent = ENT_UNBOX(ARGS.parent);
+		if(parent != NULL) {
+			p->move.attraction_point = parent->pos;
+		} else {
+			p->move.attraction = 0;
+			p->move.retention = 1;
+			break;
+		}
+		YIELD;
 	}
+}
 
-	FROM_TO(0, 100000, 20) {
+TASK(kepler_scythe, { BoxedEllyScythe scythe; cmplx center; }) {
+	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+	scythe->spin = 0.7;
+	scythe->move = move_towards(ARGS.center + 100, 0.03);
+	WAIT(60);
+	scythe->move.attraction_point = ARGS.center;
+	scythe->move.attraction = I;
+	scythe->move.attraction_exponent = 0;
+	scythe->move.retention = 0;
+
+	STALL;
+}
+
+DEFINE_EXTERN_TASK(stage6_spell_kepler) {
+	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+
+	INVOKE_SUBTASK(kepler_scythe, ARGS.scythe, boss->pos);
+
+	elly_clap(boss, 20);
+
+	for(int t = 0;; t++) {
 		int c = 2;
 		play_sfx("shot_special1");
 		for(int i = 0; i < c; i++) {
-			cmplx n = cexp(I*2*M_PI/c*i+I*0.6*_i);
+			cmplx dir = cdir(M_TAU / c * i + 0.6 * t);
 
-			PROJECTILE(
-				.proto = kepler_pick_bullet(0),
-				.pos = b->pos,
-				.color = RGB(0.3,0.8,1),
-				.rule = kepler_bullet,
-				.args = { 50*n, 0, (1.4+0.1*global.diff)*n }
+			Projectile *p = PROJECTILE(
+				.proto = pp_soul,
+				.pos = boss->pos,
+				.color = RGB(0.3, 0.6, 1.0),
+				.move = move_linear(dir)
 			);
+
+			INVOKE_TASK_DELAYED(20, kepler_bullet, .parent = ENT_BOX(p), .tier = 1, .offset = 10 * dir);
 		}
+
+		WAIT(20);
 	}
 }

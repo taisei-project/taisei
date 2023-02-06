@@ -12,245 +12,254 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
-/* !!! You are entering Akari danmaku code !!! */
+/* !!! You are entering Akari danmaku code !!! (rejuvenated by lao) */
 #define SAFE_RADIUS_DELAY 300
-#define SAFE_RADIUS_BASE 100
-#define SAFE_RADIUS_STRETCH 100
 #define SAFE_RADIUS_MIN 60
 #define SAFE_RADIUS_MAX 150
-#define SAFE_RADIUS_SPEED 0.015
+#define SAFE_RADIUS_PHASE_VELOCITY 0.015
 #define SAFE_RADIUS_PHASE 3*M_PI/2
-#define SAFE_RADIUS_PHASE_FUNC(o) ((int)(creal(e->args[2])+0.5) * M_PI/3 + SAFE_RADIUS_PHASE + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_SPEED)
-#define SAFE_RADIUS_PHASE_NORMALIZED(o) (fmod(SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE, 2*M_PI) / (2*M_PI))
-#define SAFE_RADIUS_PHASE_NUM(o) ((int)((SAFE_RADIUS_PHASE_FUNC(o) - SAFE_RADIUS_PHASE) / (2*M_PI)))
-#define SAFE_RADIUS(o) smoothreclamp(SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH * sin(SAFE_RADIUS_PHASE_FUNC(o)), SAFE_RADIUS_BASE - SAFE_RADIUS_STRETCH, SAFE_RADIUS_BASE + SAFE_RADIUS_STRETCH, SAFE_RADIUS_MIN, SAFE_RADIUS_MAX)
 
-static void ricci_laser_logic(Laser *l, int t) {
-	if(t == EVENT_BIRTH) {
-		// remember maximum radius, start at 0 actual radius
-		l->args[1] = 0 + creal(l->args[1]) * I;
-		l->width = 0;
-		return;
-	}
-
-	if(t == EVENT_DEATH) {
-		free_ref(l->args[2]);
-		return;
-	}
-
-	Enemy *e = (Enemy*)REF(l->args[2]);
-
-	if(e) {
-		// attach to baryon
-		l->pos = e->pos + l->args[3];
-	}
-
-	if(t > 0) {
-		// expand then shrink radius
-		l->args[1] = cimag(l->args[1]) * (I + sin(M_PI * t / (l->deathtime + l->timespan)));
-		l->width = clamp(t / 4.0, 0, 10);
-	}
-
-	return;
+static real safe_radius_phase(int time, int baryon_idx) {
+	return baryon_idx * M_PI / 3 + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
 }
 
-static int ricci_proj2(Projectile *p, int t) {
-	TIMER(&t);
+static int phase_num(real phase) {
+	return (int)(phase / M_TAU);
+}
 
-	AT(EVENT_BIRTH) {
-		play_sfx("shot3");
-	}
+static real safe_radius(real phase) {
+	real base = 0.5 * (SAFE_RADIUS_MAX + SAFE_RADIUS_MIN);
+	real stretch = 0.5 * (SAFE_RADIUS_MAX - SAFE_RADIUS_MIN);
 
-	AT(EVENT_DEATH) {
-		Enemy *e = (Enemy*)REF(p->args[1]);
+	return base + stretch * 2 * (smooth(0.5 * sin(phase + SAFE_RADIUS_PHASE) + 0.5) - 0.5);
+}
 
-		if(!e) {
-			return ACTION_ACK;
+TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; real timespan; int time_offset; }) {
+	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
+
+	real radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
+
+	for(int t = 0; t < l->deathtime + l->timespan; t++) {
+		EllyBaryons *baryons = ENT_UNBOX(ARGS.baryons);
+		if(baryons == NULL) {
+			return;
 		}
 
-		// play_sound_ex("shot3",8, false);
-		play_sfx("shot_special1");
+		l->pos = baryons->poss[ARGS.baryon_idx] + ARGS.offset;
+		l->args[1] = radius * sin(M_PI * t / (real)(l->deathtime + l->timespan));
+		l->width = clamp(t / 3.0, 0, 15);
 
-		double rad = SAFE_RADIUS_MAX * (0.6 - 0.2 * (double)(D_Lunatic - global.diff) / 3);
-
-		create_laser(p->pos, 12, 60, RGBA(0.2, 1, 0.5, 0), las_circle, ricci_laser_logic,  6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
-		create_laser(p->pos, 12, 60, RGBA(0.2, 0.4, 1, 0), las_circle, ricci_laser_logic,  6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
-
-		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI +  0*I, rad, add_ref(e), p->pos - e->pos);
-		create_laser(p->pos, 1,  60, RGBA(1.0, 0.0, 0, 0), las_circle, ricci_laser_logic, -6*M_PI + 30*I, rad, add_ref(e), p->pos - e->pos);
-
-		free_ref(p->args[1]);
-		return ACTION_ACK;
+		YIELD;
 	}
-
-	if(t < 0) {
-		return ACTION_ACK;
-	}
-
-	Enemy *e = (Enemy*)REF(p->args[1]);
-
-	if(!e) {
-		return ACTION_DESTROY;
-	}
-
-	p->pos = e->pos + p->pos0;
-
-	if(t > 30)
-		return ACTION_DESTROY;
-
-	return ACTION_NONE;
 }
 
-static int baryon_ricci(Enemy *e, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
+
+TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmplx dir; }) {
+	play_sfx("shot3");
+
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_ball,
+		.color = RGBA(0.0, 0.5, 0.1, 0.0),
+		.flags = PFLAG_NOCOLLISION,
+	));
+
+	int delay = 30;
+	cmplx offset = 15 * ARGS.dir;
+
+	for(int t = 0; t < delay; t++) {
+		p->pos = NOT_NULL(ENT_UNBOX(ARGS.baryons))->poss[ARGS.baryon_idx] + offset;
+		YIELD;
 	}
 
-	int num = creal(e->args[2])+0.5;
+	// play_sound_ex("shot3",8, false);
+	play_sfx("shot_special1");
 
-	if(num % 2 == 1) {
-		GO_TO(e, global.boss->pos,0.1);
-	} else if(num == 0) {
+	real turn_speed = 3*M_TAU/60;
+
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(0.2, 1, 0.5, 0),
+		.turn_speed = turn_speed,
+		.timespan = 12,
+		.time_offset = 0
+	);
+
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(1, 0, 0, 0),
+		.turn_speed = -turn_speed,
+		.timespan = 2.5,
+		.time_offset = 0
+	);
+
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(0.2, 0.4, 1, 0),
+		.turn_speed = turn_speed,
+		.timespan = 12,
+		.time_offset = 30
+	);
+
+	INVOKE_TASK(ricci_laser,
+		.baryons = ARGS.baryons,
+		.baryon_idx = ARGS.baryon_idx,
+		.offset = offset,
+		.color = *RGBA(1, 0, 0, 0),
+		.turn_speed = -turn_speed,
+		.timespan = 2.5,
+		.time_offset = 30
+	);
+
+	kill_projectile(p);
+}
+
+TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+	real baryon_speed = difficulty_value(1.00, 1.25, 1.50, 1.75);
+
+	for(int t = 0;; t++) {
+		baryons->center_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
+
+		cmplx target = VIEWPORT_W / 2.0 + VIEWPORT_H * I * 2 / 3 - 100 * sin(baryon_speed * t / 200.0) - 25 * I * cos(baryon_speed * t * 3.0 / 500.0);
+
 		if(t < 150) {
-			GO_TO(e, global.plr.pos, 0.1);
+			baryons->target_poss[0] = global.plr.pos;
 		} else {
-			float s = 1.00 + 0.25 * (global.diff - D_Easy);
-			cmplx d = e->pos - VIEWPORT_W/2-VIEWPORT_H*I*2/3 + 100*sin(s*t/200.)+25*I*cos(s*t*3./500.);
-			e->pos += -0.5*d/cabs(d);
+			baryons->target_poss[0] += 0.5 * cnormalize(target - baryons->target_poss[0]);
 		}
-	} else {
-		for(Enemy *reference = global.enemies.first; reference; reference = reference->next) {
-			if(reference->logic_rule == baryon_ricci && (int)(creal(reference->args[2])+0.5) == 0) {
-				e->pos = global.boss->pos+(reference->pos-global.boss->pos)*cexp(I*2*M_PI*(1./6*creal(e->args[2])));
+
+		for(int i = 1; i < NUM_BARYONS; i++) {
+			if(i % 2 == 1) {
+				baryons->target_poss[i] = baryons->center_pos;
+			} else {
+				baryons->target_poss[i] = baryons->center_pos + (baryons->poss[0] - baryons->center_pos) * cdir(M_TAU/NUM_BARYONS * i);
 			}
 		}
+
+		YIELD;
 	}
 
-	int time = global.frames - global.boss->current->starttime;
+}
 
-	if(num % 2 == 0 && SAFE_RADIUS_PHASE_NUM(e) > 0) {
-		TIMER(&time);
-		float phase = SAFE_RADIUS_PHASE_NORMALIZED(e);
+TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
+	TASK_BIND(ARGS.baryons);
 
-		if(phase < 0.55 && phase > 0.15) {
-			FROM_TO(150,100000,10) {
-				int c = 3;
-				cmplx n = cexp(2*M_PI*I * (0.25 + 1.0/c*_i));
-				PROJECTILE(
-					.proto = pp_ball,
-					.pos = 15*n,
-					.color = RGBA(0.0, 0.5, 0.1, 0.0),
-					.rule = ricci_proj2,
-					.args = {
-						-n,
-						add_ref(e),
-					},
-					.flags = PFLAG_NOCOLLISION,
+	INVOKE_SUBTASK(ricci_baryons_movement, ARGS.baryons, ARGS.boss);
+
+	//WAIT(150);
+
+	for(int t = 0;; t++) {
+		int time = global.frames - NOT_NULL(ENT_UNBOX(ARGS.boss))->current->starttime;
+
+		for(int i = 0; i < NUM_BARYONS; i += 2) {
+			real phase = safe_radius_phase(time, i);
+			int num = phase_num(phase);
+			real phase_norm = fmod(phase, M_TAU) / M_TAU;
+
+			if(num > 0 && phase_norm > 0.15 && phase_norm < 0.55) {
+				int count = 3;
+				cmplx dir = cdir(M_TAU * (0.25 + 1.0 / count * t));
+				INVOKE_TASK(ricci_baryon_laser_spawner, ARGS.baryons,
+					.baryon_idx = i,
+					.dir = dir
 				);
 			}
 		}
-	}
 
-	return 1;
+		WAIT(10);
+	}
 }
 
-static int ricci_proj(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_ball,
+		.pos = ARGS.pos,
+		.color = RGBA(0, 0, 0, 0),
+		.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
+		.max_viewport_dist = SAFE_RADIUS_MAX,
+	));
 
-	if(!global.boss) {
-		p->prevpos = p->pos;
-		return ACTION_DESTROY;
-	}
 
-	if(p->type == PROJ_DEAD) {
-		// p->pos += p->args[0];
-		p->prevpos = p->pos0 = p->pos;
-		p->birthtime = global.frames;
-		p->rule = asymptotic;
-		p->args[0] = cexp(I*M_PI*2*frand());
-		p->args[1] = 9;
-		return ACTION_NONE;
-	}
+	for(int t = 0;; t++) {
+		cmplx shift = 0;
+		p->pos = ARGS.pos + ARGS.velocity * t;
 
-	int time = global.frames-global.boss->current->starttime;
-
-	cmplx shift = 0;
-	p->pos = p->pos0 + p->args[0]*t;
-
-	double influence = 0;
-
-	for(Enemy *e = global.enemies.first; e; e = e->next) {
-		if(e->logic_rule != baryon_ricci) {
-			continue;
+		EllyBaryons *baryons = ENT_UNBOX(ARGS.baryons);
+		if(baryons == NULL) {
+			return;
 		}
 
-		int num = creal(e->args[2])+0.5;
+		real influence = 0;
 
-		if(num % 2 == 0) {
-			double radius = SAFE_RADIUS(e);
-			cmplx d = e->pos-p->pos;
-			float s = 1.00 + 0.25 * (global.diff - D_Easy);
-			int gaps = SAFE_RADIUS_PHASE_NUM(e) + 5;
-			double r = cabs(d)/(1.0-0.15*sin(gaps*carg(d)+0.01*s*time));
-			double range = 1/(exp((r-radius)/50)+1);
-			shift += -1.1*(radius-r)/r*d*range;
+		int time = global.frames-global.boss->current->starttime;
+
+		for(int i = 0; i < NUM_BARYONS; i += 2) {
+			real base_radius = safe_radius(safe_radius_phase(time, i));
+
+			cmplx d = baryons->poss[i] - p->pos;
+			real angular_velocity = 0.01 * difficulty_value(1.0, 1.25, 1.5, 1.75);
+
+			int gaps = phase_num(safe_radius_phase(time, i)) + 5;
+
+			real radius = cabs(d) / (1.0 - 0.15 * sin(gaps * carg(d) + angular_velocity * time));
+			real range = 1 / (exp((radius - base_radius) / 50) + 1);
+			shift += -1.1 * (base_radius - radius) / radius * d * range;
 			influence += range;
 		}
+
+		if(p->type == PROJ_DEAD) {
+			p->move = move_asymptotic_simple(rng_dir(), 9);
+			return;
+		}
+
+		p->pos = ARGS.pos + ARGS.velocity * t + shift;
+
+		float a = 0.5 + 0.5 * fmax(0, tanh((time - 80) / 100.)) * clamp(influence, 0.2, 1);
+		a *= fmin(1, t / 20.0f);
+
+		p->color.r = 0.5;
+		p->color.g = 0;
+		p->color.b = cabs(shift)/20.0;
+		p->color.a = 0;
+		p->opacity = a;
+
+		YIELD;
 	}
-
-	p->pos = p->pos0 + p->args[0]*t+shift;
-	p->angle = carg(p->args[0]);
-	p->prevpos = p->pos;
-
-	float a = 0.5 + 0.5 * fmax(0,tanh((time-80)/100.))*clamp(influence,0.2,1);
-	a *= fmin(1, t / 20.0f);
-
-	p->color.r = 0.5;
-	p->color.g = 0;
-	p->color.b = cabs(shift)/20.0;
-	p->color.a = 0;
-	p->opacity = a;
-
-	return ACTION_NONE;
 }
 
-void elly_ricci(Boss *b, int t) {
-	TIMER(&t);
-	AT(0)
-		set_baryon_rule(baryon_ricci);
-	AT(EVENT_DEATH)
-		set_baryon_rule(baryon_reset);
+DEFINE_EXTERN_TASK(stage6_spell_ricci) {
+	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
 
-	int c = 15;
-	float v = 3;
+	INVOKE_SUBTASK(ricci_baryons, ARGS.baryons, ENT_BOX(boss));
+
+	boss->move = move_towards(BOSS_DEFAULT_GO_POS, 0.03);
+
+	int count = 15;
+	real speed = 3;
 	int interval = 5;
 
-	GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
+	WAIT(60);
 
-	FROM_TO(30, 100000, interval) {
-		float w = VIEWPORT_W;
-		float ofs = -1 * w/(float)c;
-		w *= (1 + 2.0 / c);
+	for(int t = 0;; t++) {
+		real offset = -VIEWPORT_W/(real)count;
+		real w = VIEWPORT_W * (1 + 2.0 / count);
 
-		for(int i = 0; i < c; i++) {
-			cmplx pos = ofs + fmod(w/(float)c*(i+0.5*_i),w) + (VIEWPORT_H+10)*I;
+		for(int i = 0; i < count; i++) {
+			cmplx pos = offset + fmod((i + 0.5 * t) / count, 1) * w + (VIEWPORT_H + 10) * I;
 
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = pos,
-				.color = RGBA(0, 0, 0, 0),
-				.rule = ricci_proj,
-				.args = { -v*I },
-				.flags = PFLAG_NOSPAWNEFFECTS | PFLAG_NOCLEAR,
-				.max_viewport_dist = SAFE_RADIUS_MAX,
-			);
+			INVOKE_TASK(ricci_proj, pos, -speed * I, ARGS.baryons);
 		}
+
+		WAIT(interval);
 	}
 }
 
-/* Thank you for visiting Akari danmaku code (tm) */
+/* Thank you for visiting Akari danmaku code (tm) rejuvenated by lao */
 

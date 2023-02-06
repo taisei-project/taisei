@@ -19,8 +19,6 @@
 #include "portrait.h"
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
  *	To add, remove, or reorder spells, see this stage's header file.
@@ -30,48 +28,48 @@ struct stage6_spells_s stage6_spells = {
 	.scythe = {
 		.occams_razor = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign “Occam’s Razor”", 50, 60000,
-			elly_newton, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
+			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_newton),
 		},
 		.orbital_clockwork = {
 			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 50, 60000,
-			elly_kepler, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
+			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_kepler),
 		},
 		.wave_theory = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 30, 25000,
-			elly_maxwell, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6
+			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_maxwell),
 		},
 	},
 
 	.baryon = {
 		.many_world_interpretation = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 50, 60000,
-			elly_eigenstate, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_eigenstate),
 		},
 		.wave_particle_duality = {
 			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 65000,
-			elly_broglie, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_broglie),
 		},
 		.spacetime_curvature = {
 			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 80000,
-			elly_ricci, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_ricci),
 		},
 		.higgs_boson_uncovered = {
 			{16, 17, 18, 19}, AT_Spellcard, "LHC “Higgs Boson Uncovered”", 75, 60000,
-			elly_lhc, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_lhc),
 		}
 	},
 
 	.extra = {
 		.curvature_domination = {
 			{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe “Curvature Domination”", 60, 60000,
-			elly_curvature, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7
+			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_forgotten),
 		}
 	},
 
 	.final = {
 		.theory_of_everything = {
 			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth “Theory of Everything”", 70, 40000,
-			elly_theory, elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8
+			NULL, elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8, TASK_INDIRECT_INIT(BossAttack, stage6_spell_toe),
 		}
 	},
 };
@@ -150,6 +148,10 @@ static void stage6_preload(void) {
 static void stage6_start(void) {
 	stage6_drawsys_init();
 	stage6_bg_init_fullstage();
+	stage_start_bgm("stage6");
+	stage_set_voltage_thresholds(380, 670, 1100, 1500);
+
+	INVOKE_TASK(stage6_timeline);
 }
 
 static void stage6_end(void) {
@@ -157,17 +159,17 @@ static void stage6_end(void) {
 }
 
 static void stage6_spellpractice_start(void) {
-	stage6_start();
+	stage6_drawsys_init();
 	stage6_bg_init_spellpractice();
 
 	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
 	AttackInfo *s = global.stage->spell;
 
 	if(STG6_SPELL_NEEDS_SCYTHE(s)) {
-		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
+//		create_enemy3c(-32 + 32*I, ENEMY_IMMUNE, scythe_draw, scythe_reset, 0, 1+0.2*I, 1);
 		stage_start_bgm("stage6boss_phase1");
 	} else if(STG6_SPELL_NEEDS_BARYON(s)) {
-		elly_spawn_baryons(global.boss->pos);
+//		elly_spawn_baryons(global.boss->pos);
 		stage_start_bgm("stage6boss_phase2");
 	} else if(s == &stage6_spells.final.theory_of_everything) {
 		stage6_bg_start_fall_over();
@@ -180,18 +182,12 @@ static void stage6_spellpractice_start(void) {
 	boss_engage(global.boss);
 }
 
-static void stage6_spellpractice_events(void) {
-	if(!global.boss) {
-		enemy_kill_all(&global.enemies);
-	}
-}
 
 StageProcs stage6_procs = {
 	.begin = stage6_start,
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.event = stage6_events,
 	.shader_rules = stage6_bg_effects,
 	.spellpractice_procs = &stage6_spell_procs,
 };
@@ -201,6 +197,5 @@ StageProcs stage6_spell_procs = {
 	.preload = stage6_preload,
 	.end = stage6_end,
 	.draw = stage6_draw,
-	.event = stage6_spellpractice_events,
 	.shader_rules = stage6_bg_effects,
 };

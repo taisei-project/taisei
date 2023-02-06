@@ -12,161 +12,156 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+TASK(forgotten_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
-static int baryon_curvature(Enemy *e, int t) {
-	int num = creal(e->args[2])+0.5;
-	int odd = num&1;
-	cmplx bpos = global.boss->pos;
-	cmplx target = (1-2*odd)*(300+100*sin(t*0.01))*cexp(I*(2*M_PI*(num+0.5*odd)/6+0.6*sqrt(1+t*t/600.)));
-	GO_TO(e,bpos+target, 0.1);
+	for(int t = 0;; t++) {
+		cmplx boss_pos = NOT_NULL(ENT_UNBOX(ARGS.boss))->pos;
+		baryons->center_pos = boss_pos;
 
-	if(global.diff > D_Easy && t % (80-4*global.diff) == 0) {
-		tsrand_fill(2);
-		cmplx pos = e->pos+60*anfrand(0)+I*60*anfrand(1);
+		for(int i = 0; i < NUM_BARYONS; i++) {
+			bool odd = i & 1;
 
-		if(cabs(pos - global.plr.pos) > 100) {
-			PROJECTILE(
-				.proto = pp_ball,
-				.pos = pos,
-				.color = RGBA(1.0, 0.4, 1.0, 0.0),
-				.rule = linear,
-				.args = { cexp(I*carg(global.plr.pos-pos)) },
-			);
+			cmplx target = (1 - 2 * odd) * (300 + 100 * sin(t * 0.01)) * cdir(M_TAU * (i + 0.5 * odd) / 6 + 0.6 * sqrt(1 + t * t / 600.));
+
+			baryons->target_poss[i] = boss_pos + target;
 		}
+		YIELD;
 	}
-
-	return 1;
 }
 
-static int curvature_bullet(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
-		return ACTION_ACK;
-	} else if(t ==	EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
+TASK(forgotten_baryons_spawner, { BoxedEllyBaryons baryons;}) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
-	if(REF(p->args[1]) == 0) {
-		return 0;
-	}
+	int interval = difficulty_value(76, 72, 68, 64);
 
-	float vx, vy, x, y;
-	cmplx v = ((Enemy *)REF(p->args[1]))->args[0]*0.00005;
-	vx = creal(v);
-	vy = cimag(v);
-	x = creal(p->pos-global.plr.pos);
-	y = cimag(p->pos-global.plr.pos);
+	for(;;) {
+		for(int i = 0; i < NUM_BARYONS; i++) {
+			RNG_ARRAY(R, 2);
+			cmplx pos = baryons->poss[i] + 60 * vrng_sreal(R[0]) + I * 60 * vrng_sreal(R[1]);
 
-	float f1 = (1+2*(vx*x+vy*y)+x*x+y*y);
-	float f2 = (1-vx*vx+vy*vy);
-	float f3 = f1-f2*(x*x+y*y);
-	p->pos = global.plr.pos + (f1*v+f2*(x+I*y))/f3+p->args[0]/(1+2*(x*x+y*y)/VIEWPORT_W/VIEWPORT_W);
-
-	return ACTION_NONE;
-}
-
-static int curvature_orbiter(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
-		return ACTION_ACK;
-	} else if(t ==	EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	const double w = 0.03;
-	if(REF(p->args[1]) != 0 && p->args[3] == 0) {
-		p->pos = ((Projectile *)REF(p->args[1]))->pos+p->args[0]*cexp(I*t*w);
-
-		p->args[2] = p->args[0]*I*w*cexp(I*t*w);
-	} else {
-		p->pos += p->args[2];
-	}
-
-	return ACTION_NONE;
-}
-
-static double saw(double t) {
-	return cos(t)+cos(3*t)/9+cos(5*t)/25;
-}
-
-static int curvature_slave(Enemy *e, int t) {
-	e->args[0] = -(e->args[1] - global.plr.pos);
-	e->args[1] = global.plr.pos;
-	play_sfx_loop("shot1_loop");
-
-	if(t % (2+(global.diff < D_Hard)) == 0) {
-		tsrand_fill(2);
-		cmplx pos = VIEWPORT_W*afrand(0)+I*VIEWPORT_H*afrand(1);
-		if(cabs(pos - global.plr.pos) > 50) {
-			tsrand_fill(2);
-			float speed = 0.5/(1+(global.diff < D_Hard));
-
-			PROJECTILE(
-				.proto = pp_flea,
-				.pos = pos,
-				.color = RGB(0.1*afrand(0), 0.6,1),
-				.rule = curvature_bullet,
-				.args = {
-					speed*cexp(2*M_PI*I*afrand(1)),
-					add_ref(e)
-				}
-			);
-		}
-	}
-
-	if(global.diff >= D_Hard && !(t%20)) {
-		play_sfx_ex("shot2",10,false);
-		Projectile *p =PROJECTILE(
-			.proto = pp_bigball,
-			.pos = global.boss->pos,
-			.color = RGBA(0.5, 0.4, 1.0, 0.0),
-			.rule = linear,
-			.args = { 4*I*cexp(I*M_PI*2/5*saw(t/100.)) },
-		);
-
-		if(global.diff == D_Lunatic) {
-			PROJECTILE(
-				.proto = pp_plainball,
-				.pos = global.boss->pos,
-				.color = RGBA(0.2, 0.4, 1.0, 0.0),
-				.rule = curvature_orbiter,
-				.args = {
-					40*cexp(I*t/400),
-					add_ref(p)
-				},
-			);
-		}
-	}
-
-	return 1;
-}
-
-
-void elly_curvature(Boss *b, int t) {
-	TIMER(&t);
-
-	AT(EVENT_BIRTH) {
-		set_baryon_rule(baryon_curvature);
-		return;
-	}
-
-	AT(EVENT_DEATH) {
-		set_baryon_rule(baryon_reset);
-
-		for(Enemy *e = global.enemies.first; e; e = e->next) {
-			if(e->logic_rule == curvature_slave) {
-				e->hp = 0;
+			if(cabs(pos - global.plr.pos) > 100) {
+				PROJECTILE(
+					.proto = pp_ball,
+					.pos = pos,
+					.color = RGBA(1.0, 0.4, 1.0, 0.0),
+					.move = move_linear(cnormalize(global.plr.pos - pos)),
+				);
 			}
 		}
 
-		return;
+		WAIT(interval);
+	}
+}
+
+TASK(forgotten_bullet, { cmplx pos; cmplx *diff; }) {
+	real speed = difficulty_value(0.25, 0.25, 0.5, 0.5);
+
+	Projectile *p = TASK_BIND(PROJECTILE(
+		.proto = pp_flea,
+		.pos = ARGS.pos,
+		.color = RGB(0.1 * rng_real(), 0.6, 1),
+	));
+	
+	cmplx vel0 = speed * rng_dir();
+
+	for(;;) {
+		cmplx v = (*ARGS.diff)*0.00005;
+		cmplx x = p->pos - global.plr.pos;
+
+		real f1 = 1 + 2 * creal(v*conj(x)) + cabs2(x);
+		real f2 = 1 - creal(v*v);
+		real f3 = f1 - f2 * cabs2(x);
+		p->pos = global.plr.pos + (f1 * v + f2 * x) / f3 + vel0 / (1 + 2 * cabs2(x) / VIEWPORT_W / VIEWPORT_W);
+
+		YIELD;
+	}
+}
+
+TASK(forgotten_orbiter, { BoxedProjectile parent; cmplx offset; }) {
+	real angular_velocity = 0.03;
+	Projectile *p = PROJECTILE(
+		.proto = pp_plainball,
+		.pos = NOT_NULL_OR_DIE(ENT_UNBOX(ARGS.parent))->pos + ARGS.offset,
+		.color = RGBA(0.2, 0.4, 1.0, 0.0),
+	);
+	
+	for(int t = 0;; t++) {
+		Projectile *parent = ENT_UNBOX(ARGS.parent);
+		if(parent == NULL) {
+			p->move = move_linear(angular_velocity * I * ARGS.offset * cdir(t * angular_velocity));
+			break;
+		}
+		
+		p->pos = parent->pos + ARGS.offset * cdir(t * angular_velocity);
+		YIELD;
+	}
+}
+
+TASK(forgotten_orbiter_spawner, { BoxedBoss boss; }) {
+	Boss *boss = TASK_BIND(ARGS.boss);
+
+	for(int i = 0;; i++) {
+		play_sfx_ex("shot2", 10, false);
+		
+		Projectile *p = PROJECTILE(
+			.proto = pp_bigball,
+			.pos = boss->pos,
+			.color = RGBA(0.5, 0.4, 1.0, 0.0),
+			.move = move_linear(4 * I * cdir(-M_TAU / 5 * triangle(i/5./M_TAU)))
+		);
+
+		if(global.diff == D_Lunatic) {
+			INVOKE_TASK(forgotten_orbiter, ENT_BOX(p), 40 * cdir(i / 20.0));
+		}
+
+		WAIT(20);
+	}
+}
+
+TASK(forgotten_spawner) {
+	cmplx diff = 0;
+	cmplx plr_pos_old = global.plr.pos;
+
+	int interval = difficulty_value(3, 3, 2, 2);
+
+	for(int t = 0;; t++) {
+		diff = global.plr.pos - plr_pos_old;
+		plr_pos_old = global.plr.pos;
+
+		play_sfx_loop("shot1_loop");
+
+		if(t % interval == 0) {
+			RNG_ARRAY(R, 2);
+			cmplx pos = VIEWPORT_W * vrng_real(R[0]) + I * VIEWPORT_H * vrng_real(R[1]);
+		
+			if(cabs(pos - global.plr.pos) > 50) {
+				INVOKE_SUBTASK(forgotten_bullet, pos, &diff);
+			}
+		}
+		YIELD;
+	}
+}
+
+
+DEFINE_EXTERN_TASK(stage6_spell_forgotten) {
+	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+
+	INVOKE_SUBTASK(forgotten_baryons_movement, ARGS.baryons, ENT_BOX(boss));
+	if(global.diff > D_Easy) {
+		INVOKE_SUBTASK(forgotten_baryons_spawner, ARGS.baryons);
 	}
 
-	AT(50) {
-		create_enemy2c(b->pos, ENEMY_IMMUNE, 0, curvature_slave, 0, global.plr.pos);
+	INVOKE_SUBTASK_DELAYED(50, forgotten_spawner); 
+	if(global.diff > D_Normal) {
+		INVOKE_SUBTASK_DELAYED(50, forgotten_orbiter_spawner, ENT_BOX(boss));
 	}
 
-	GO_TO(b, VIEWPORT_W/2+100*I+VIEWPORT_W/3*round(sin(t/200)), 0.04);
+	for(int t = 0;; t++) {
+		boss->move = move_towards(VIEWPORT_W / 2.0 + 100 * I + VIEWPORT_W / 3.0 * round(sin(t)), 0.04);
+
+		WAIT(200);
+	}
 
 }

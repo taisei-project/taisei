@@ -595,8 +595,7 @@ cmplx las_circle(Laser *l, float t) {
 		return 0;
 	}
 
-	// XXX: should turn speed be in rad/sec or rad/frame? currently rad/sec.
-	double turn_speed = creal(l->args[0]) / 60;
+	double turn_speed = creal(l->args[0]);
 	double time_ofs = cimag(l->args[0]);
 	double radius = creal(l->args[1]);
 
