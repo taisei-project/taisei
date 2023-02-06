@@ -70,7 +70,7 @@ TASK(scythe_update, { BoxedEllyScythe scythe; }) {
 
 	real spin = 0;
 	real oldangle;
-	real return_speed_cap;
+	real return_speed_cap = 0;
 	bool was_return_mode = false;
 
 	for(;;) {
