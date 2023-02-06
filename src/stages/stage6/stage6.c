@@ -159,7 +159,7 @@ static void stage6_end(void) {
 }
 
 static void stage6_spellpractice_start(void) {
-	stage6_start();
+	stage6_drawsys_init();
 	stage6_bg_init_spellpractice();
 
 	global.boss = stage6_spawn_elly(BOSS_DEFAULT_SPAWN_POS);
