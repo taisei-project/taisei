@@ -273,10 +273,7 @@ ProjDrawRule pdraw_petal(float rot_angle, vec3 rot_axis);
 ProjDrawRule pdraw_petal_random(void);
 ProjDrawRule pdraw_blast(void);
 
-void Petal(Projectile *p, int t);
 void petal_explosion(int n, cmplx pos);
-
-void Blast(Projectile *p, int t);
 
 void projectiles_preload(void);
 void projectiles_free(void);
