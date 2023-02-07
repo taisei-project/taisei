@@ -71,29 +71,9 @@ typedef struct PBRModel {
 	PBRMaterial *mat;
 } PBRModel;
 
-#define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
-
 struct Stage3D {
-	union {
-		Camera3D cam;
-
-		struct {
-			vec3 cx     STAGE3D_DEPRECATED("Use .cam.pos instead");
-			vec3 cv     STAGE3D_DEPRECATED("Use .cam.vel instead");
-			vec3 crot   STAGE3D_DEPRECATED("Use .cam.rot instead");
-		};
-	};
-
-	union {
-		DYNAMIC_ARRAY(vec3) positions;
-
-		struct {
-			vec3 *pos_buffer
-				attr_deprecated("Access through the 'positions' dynarray (if you must)");
-			dynarray_size_t pos_buffer_size
-				attr_deprecated("Access through the 'positions' dynarray (if you must)");
-		};
-	};
+	Camera3D cam;
+	DYNAMIC_ARRAY(vec3) positions;
 };
 
 extern Stage3D stage_3d_context;

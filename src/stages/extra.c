@@ -139,8 +139,9 @@ static uint extra_stairs_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 
 	uint pnum = linear3dpos(s3d, pos, maxrange, p, r);
 
+	// FIXME use proper positioning function
 	for(uint i = 0; i < pnum; ++i) {
-		stage_3d_context.pos_buffer[i][2] -= maxrange - r[2];
+		stage_3d_context.positions.data[i][2] -= maxrange - r[2];
 	}
 
 	return pnum;
