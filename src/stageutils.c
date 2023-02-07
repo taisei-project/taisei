@@ -412,17 +412,3 @@ uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange) 
 		return 1;
 	}
 }
-
-void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2) {
-	int targetframes = *timer + frames;
-
-	while(*timer < targetframes) {
-		++*timer;
-
-		if(timer2) {
-			++*timer2;
-		}
-
-		update_func();
-	}
-}

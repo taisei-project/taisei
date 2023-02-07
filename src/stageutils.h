@@ -152,5 +152,3 @@ uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange);
 
 uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r)
 	attr_deprecated("Use stage3d_pos_ray_nearfirst/stage3d_pos_ray_farfirst");
-
-void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);
