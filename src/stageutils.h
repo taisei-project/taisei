@@ -150,11 +150,6 @@ uint stage3d_pos_ray_farfirst_nsteps(
 
 uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange);
 
-attr_deprecated("Use stage3d_pos_single")
-INLINE uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
-	return stage3d_pos_single(s3d, q, p, maxrange);
-}
-
 uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r)
 	attr_deprecated("Use stage3d_pos_ray_nearfirst/stage3d_pos_ray_farfirst");
 
