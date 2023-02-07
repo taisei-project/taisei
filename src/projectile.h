@@ -214,8 +214,6 @@ struct ProjPrototype {
 
 #include "projectile_prototypes/all.inc.h"
 
-#define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
-
 Projectile *create_projectile(ProjArgs *args)
 	attr_nonnull_all attr_returns_nonnull attr_returns_max_aligned;
 Projectile *create_particle(ProjArgs *args)
