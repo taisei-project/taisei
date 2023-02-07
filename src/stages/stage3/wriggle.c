@@ -12,8 +12,6 @@
 
 #include "common_tasks.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
-
 void stage3_draw_wriggle_spellbg(Boss *b, int time) {
 	r_state_push();
 	r_blend(BLEND_NONE);
