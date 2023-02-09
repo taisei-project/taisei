@@ -15,24 +15,18 @@
 #include "global.h"
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
-	float f = 1-fmin(time/60.0,1);
-	r_mat_mv_push();
-	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
-	r_mat_mv_rotate(p->angle + M_PI/2, 0, 0, 1);
-	ProjDrawCore(p, &p->color);
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = projectile_sprite_params(p, &spbuf);
+	r_draw_sprite(&sp);
 
+	float f = 1 - fminf(time / 60.0f, 1.0f);
 	if(f > 0) {
 		// TODO: Maybe convert this into a particle effect?
-		Sprite *s = p->sprite;
-		Color c = p->color;
-		c.a = 0;
-		p->sprite = res_sprite("proj/ball");
-		r_mat_mv_scale(f,f,f);
-		ProjDrawCore(p, &c);
-		p->sprite = s;
+		sp.sprite_ptr = res_sprite("proj/ball");
+		sp.scale.as_cmplx *= f;
+		spbuf.color.a = 0;
+		r_draw_sprite(&sp);
 	}
-
-	r_mat_mv_pop();
 }
 
 TASK(fstorm_bullet, { BoxedBoss boss; ProjPrototype *proto; cmplx pos; cmplx vel; int convert_time; }) {
