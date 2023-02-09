@@ -48,6 +48,10 @@ void *allocator_alloc_aligned(Allocator *alloc, size_t size, size_t alignment) {
 	return alloc->procs.alloc_aligned(alloc, size, alignment);
 }
 
+void *allocator_alloc_array_aligned(Allocator *alloc, size_t num_members, size_t size, size_t alignment) {
+	return allocator_alloc_aligned(alloc, mem_util_calc_array_size(num_members, size), alignment);
+}
+
 void allocator_free(Allocator *alloc, void *mem) {
 	return NOT_NULL(alloc->procs.free)(alloc, mem);
 }
