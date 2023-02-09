@@ -79,7 +79,7 @@ static const char* ft_error_str(FT_Error err_code) {
 typedef struct SpriteSheet {
 	LIST_INTERFACE(struct SpriteSheet);
 	Texture *tex;
-	RectPack *rectpack;
+	RectPack rectpack;
 	uint glyphs;
 } SpriteSheet;
 
@@ -379,7 +379,6 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 
 static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 	auto ss = ALLOC(SpriteSheet, {
-		.rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT),
 		.tex = r_texture_create(&(TextureParams) {
 			.width = SS_WIDTH,
 			.height = SS_HEIGHT,
@@ -393,6 +392,8 @@ static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
 			.mipmap_mode = TEX_MIPMAP_AUTO,
 		})
 	});
+
+	rectpack_init(&ss->rectpack, &default_allocator, SS_WIDTH, SS_HEIGHT);
 
 #ifdef DEBUG
 	char buf[128];
@@ -412,7 +413,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 	uint padded_w = pixmap->width + 2 * GLYPH_SPRITE_PADDING;
 	uint padded_h = pixmap->height + 2 * GLYPH_SPRITE_PADDING;
 
-	glyph->spritesheet_section = rectpack_add(ss->rectpack, padded_w, padded_h);
+	glyph->spritesheet_section = rectpack_add(&ss->rectpack, padded_w, padded_h);
 
 	if(glyph->spritesheet_section == NULL) {
 		return false;
@@ -479,7 +480,7 @@ static const char* pixmode_name(FT_Pixel_Mode mode) {
 
 static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss) {
 	r_texture_destroy(ss->tex);
-	rectpack_free(ss->rectpack);
+	rectpack_deinit(&ss->rectpack);
 	alist_unlink(spritesheets, ss);
 	mem_free(ss);
 }
@@ -687,9 +688,7 @@ static void wipe_glyph_cache(Font *font) {
 			continue;
 		}
 
-		RectPack *rp = ss->rectpack;
-		assume(rp != NULL);
-
+		RectPack *rp = &ss->rectpack;
 		RectPackSection *section = g->spritesheet_section;
 		assume(section != NULL);
 
