@@ -736,19 +736,6 @@ static float proj_spawn_effect_factor(Projectile *proj, int t) {
 	return t / (float)maxt;
 }
 
-static inline void apply_common_transforms(Projectile *proj, int t) {
-	r_mat_mv_translate(creal(proj->pos), cimag(proj->pos), 0);
-	r_mat_mv_rotate(proj->angle + M_PI/2, 0, 0, 1);
-
-	/*
-	float s = 0.75 + 0.25 * proj_spawn_effect_factor(proj, t);
-
-	if(s != 1) {
-		r_mat_mv_scale(s, s, 1);
-	}
-	*/
-}
-
 static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float timefactor = t / p->timeout;
 	float sx = args[0].as_float[0];
@@ -934,27 +921,6 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 	return sp;
 }
 
-static void projectile_draw_sprite(Sprite *s, const Color *clr, float opacity, cmplxf scale) {
-	if(opacity <= 0 || crealf(scale) == 0) {
-		return;
-	}
-
-	ShaderCustomParams p = {
-		opacity,
-	};
-
-	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = s,
-		.color = clr,
-		.shader_params = &p,
-		.scale = { crealf(scale), cimagf(scale) },
-	});
-}
-
-void ProjDrawCore(Projectile *proj, const Color *c) {
-	projectile_draw_sprite(proj->sprite, c, proj->opacity, proj->scale);
-}
-
 static void pdraw_basic_func(Projectile *proj, int t, ProjDrawRuleArgs args) {
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(proj, &spbuf);
@@ -1025,61 +991,6 @@ ProjDrawRule pdraw_blast(void) {
 	};
 }
 
-void Shrink(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
-
-	float s = 2.0-t/(double)p->timeout*2;
-	if(s != 1) {
-		r_mat_mv_scale(s, s, 1);
-	}
-
-	ProjDrawCore(p, &p->color);
-	r_mat_mv_pop();
-}
-
-void GrowFade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
-
-	set_debug_info(&p->debug);
-	assert(p->timeout != 0);
-
-	float s = t/(double)p->timeout*(1 + (creal(p->args[2])? p->args[2] : p->args[1]));
-	if(s != 1) {
-		r_mat_mv_scale(s, s, 1);
-	}
-
-	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
-	r_mat_mv_pop();
-}
-
-void Fade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
-	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), 1 - t/(double)p->timeout));
-	r_mat_mv_pop();
-}
-
-static void ScaleFadeImpl(Projectile *p, int t, int fade_exponent) {
-	r_mat_mv_push();
-	apply_common_transforms(p, t);
-
-	double scale_min = creal(p->args[2]);
-	double scale_max = cimag(p->args[2]);
-	double timefactor = t / (double)p->timeout;
-	double scale = scale_min * (1 - timefactor) + scale_max * timefactor;
-	double alpha = pow(fabs(1 - timefactor), fade_exponent);
-
-	r_mat_mv_scale(scale, scale, 1);
-	ProjDrawCore(p, color_mul_scalar(COLOR_COPY(&p->color), alpha));
-	r_mat_mv_pop();
-}
-
-void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	ScaleFadeImpl(p, t, 1);
-}
-
 static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	cmplxf scale0 = args[0].as_cmplx;
 	cmplxf scale1 = args[1].as_cmplx;
@@ -1137,6 +1048,29 @@ ProjDrawRule pdraw_timeout_scale(cmplxf scale0, cmplxf scale1) {
 ProjDrawRule pdraw_timeout_fade(float opacity0, float opacity1) {
 	// TODO: specialized code path without scale component
 	return pdraw_timeout_scalefade(1+I, 1+I, opacity0, opacity1);
+}
+
+void Shrink(Projectile *p, int t, ProjDrawRuleArgs args) {
+	ProjDrawRule r = pdraw_timeout_scale(2.0f + 2.0if, 0.0f);
+	r.func(p, t, r.args);
+}
+
+void GrowFade(Projectile *p, int t, ProjDrawRuleArgs args) {
+	float grow_factor = creal(p->args[2]) ?: creal(p->args[1]);
+	ProjDrawRule r = pdraw_timeout_scalefade(0, (1+I) * (1 + grow_factor), 1, 0);
+	r.func(p, t, r.args);
+}
+
+void Fade(Projectile *p, int t, ProjDrawRuleArgs args) {
+	ProjDrawRule r = pdraw_timeout_fade(1, 0);
+	r.func(p, t, r.args);
+}
+
+void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
+	float scale_min = creal(p->args[2]);
+	float scale_max = cimag(p->args[2]);
+	ProjDrawRule r = pdraw_timeout_scalefade(scale_min, scale_max, 1, 0);
+	r.func(p, t, r.args);
 }
 
 static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {

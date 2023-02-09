@@ -257,8 +257,6 @@ int asymptotic(Projectile *p, int t);
 
 #define DEPRECATED_DRAW_RULE attr_deprecated("")
 
-void ProjDrawCore(Projectile *proj, const Color *c) attr_deprecated("Use projectile_sprite_params() combined with r_draw_sprite()");
-
 void Shrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void Fade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
