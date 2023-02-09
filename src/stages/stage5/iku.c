@@ -139,7 +139,7 @@ DEFINE_EXTERN_TASK(iku_induction_bullet) {
 }
 
 DEFINE_EXTERN_TASK(iku_spawn_clouds) {
-	for(int i = 0;; i += WAIT(2)) {
+	for(;;WAIT(2)) {
 		iku_nonspell_spawn_cloud();
 	}
 }

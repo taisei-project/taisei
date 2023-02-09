@@ -33,7 +33,7 @@ DEFINE_EXTERN_TASK(stage5_boss_nonspell_1) {
 
 	int offset = difficulty_value(0, 1, 2, 3);
 	int count = difficulty_value(11, 12, 13, 14);
-	for(int x = 0;; x += WAIT(50)) {
+	for(;;WAIT(50)) {
 		for(int i = 0; i < count; i++) {
 			PROJECTILE(
 				.proto = pp_ball,

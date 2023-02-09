@@ -10,8 +10,9 @@
 
 #include "spells.h"
 
-TASK(cloud_shoot, NO_ARGS) {
-	for(int x = 0;; x += WAIT(difficulty_value(6, 5, 4, 3))) {
+TASK(cloud_shoot) {
+	int delay = difficulty_value(19, 17, 15, 13);
+	for(;;WAIT(delay)) {
 		if(global.diff >= D_Hard) {
 			PROJECTILE(
 				.proto = pp_thickrice,
@@ -30,11 +31,12 @@ TASK(cloud_shoot, NO_ARGS) {
 	}
 }
 
-TASK(ball_shoot, NO_ARGS) {
+TASK(ball_shoot) {
 	int shot_angle = difficulty_value(140, 160, 180, 200);
 	int shot_count = difficulty_value(7, 8, 9, 10);
 	int shot_accel = difficulty_value(5, 6, 7, 8);
-	for(int x = 0;; x += WAIT(difficulty_value(19, 17, 15, 13))) {
+	int delay = difficulty_value(19, 17, 15, 13);
+	for(;;WAIT(delay)) {
 		RNG_ARRAY(rand, 4);
 		cmplx p1 = VIEWPORT_W * vrng_real(rand[0]) + VIEWPORT_H/2 * I * vrng_real(rand[1]);
 		cmplx p2 = p1 + shot_angle * cdir(0.5 * vrng_sreal(rand[2])) * (1 - 2 * (vrng_chance(rand[3], 0.5)));

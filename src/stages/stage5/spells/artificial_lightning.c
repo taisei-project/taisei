@@ -49,8 +49,8 @@ TASK(zigzag_move, { BoxedProjectile p; cmplx velocity; }) {
 
 TASK(zigzag_shoot, { BoxedBoss boss; } ) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	for(int time = 0;;) {
-		time += WAIT(100);
+	for(;;) {
+		WAIT(100);
 		int count = difficulty_value(7, 7, 7, 9);
 		for(int i = 0; i < count; i++) {
 			Projectile *p = PROJECTILE(

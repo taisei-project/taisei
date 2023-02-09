@@ -41,7 +41,7 @@ DECLARE_EXTERN_TASK(iku_induction_bullet, {
 	int mode;
 });
 
-DECLARE_EXTERN_TASK(iku_spawn_clouds, NO_ARGS);
+DECLARE_EXTERN_TASK(iku_spawn_clouds);
 
 void stage5_init_iku_slave(IkuSlave *slave, cmplx pos);
 void iku_lightning_particle(cmplx);

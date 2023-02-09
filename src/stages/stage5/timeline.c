@@ -123,7 +123,7 @@ TASK_WITH_INTERFACE(midboss_flee, BossAttack) {
 	boss->move = move_linear(I);
 }
 
-TASK(spawn_midboss, NO_ARGS) {
+TASK(spawn_midboss) {
 	STAGE_BOOKMARK(midboss);
 	Boss *boss = global.boss = create_boss("Bombs?", "iku_mid", VIEWPORT_W + 800.0 * I);
 	boss->glowcolor = *RGB(0.2, 0.4, 0.5);
@@ -144,7 +144,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 	boss->move = move_towards(VIEWPORT_W/2 + 240.0 * I, 0.015);
 }
 
-TASK(spawn_boss, NO_ARGS) {
+TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
 	Boss *boss = global.boss = stage5_spawn_iku(VIEWPORT_W/2 - 200.0 * I);
 	PlayerMode *pm = global.plr.mode;
