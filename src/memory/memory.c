@@ -48,7 +48,7 @@ void *mem_alloc(size_t size) {
 
 void *mem_alloc_array(size_t num_members, size_t size) {
 #if MEMALIGN_METHOD == MEMALIGN_METHOD_WIN32
-	size_t array_size = mem_calc_array_size(num_members, size);
+	size_t array_size = mem_util_calc_array_size(num_members, size);
 	void *p = NOT_NULL(_aligned_malloc(array_size, alignof(max_align_t)));
 	memset(p, 0, array_size);
 	return p;
