@@ -12,8 +12,8 @@ on:
         required: false
         description: "Input git-ref to build as a test release"
   schedule:
-    # run every other wednesday at 11AM
-    - cron: '0 11 1-7,15-21 * 3'
+    # run every Wednesday at 8AM EST
+    - cron: '0 8 * * 3'
 
 env:
   MESON_VERSION: '0.63.3'
