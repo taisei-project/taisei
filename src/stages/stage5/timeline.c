@@ -46,7 +46,7 @@ TASK(magnetto_swirl_shoot, {
 	int bullet_dir = difficulty_value(0, 0, 1, 0);
 	int bullet_dir2 = difficulty_value(1, 1, 1, 0);
 
-	for(int t = 0; t <= 180 / interval; t++, WAIT(interval)) {
+	for(int t = 0; t <= 180; t += WAIT(interval)) {
 		play_sfx_loop("shot1_loop");
 		for(int i = 0; i < bullets; i++) {
 			cmplx dir = cdir(M_PI * i + M_PI / 8 * sin(2 * t / 70.0 * M_PI)) * cnormalize(ARGS.move_to - e->pos);
