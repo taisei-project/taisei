@@ -33,6 +33,7 @@ void iku_lightning_particle(cmplx pos) {
 		.timeout = 20,
 		.draw_rule = pdraw_timeout_fade(0.8, 0.0),
 		.angle = rng_angle(),
+		.flags = PFLAG_MANUALANGLE | PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE,
 	);
 }
 
