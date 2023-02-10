@@ -27,6 +27,14 @@ static void stage5_dialog_post_midboss(void) {
 	INVOKE_TASK_INDIRECT(Stage5PostMidBossDialog, pm->dialog->Stage5PostMidBoss);
 }
 
+TASK(magnetto_swirl_particles, { BoxedEnemy e; }) {
+	Enemy *e = TASK_BIND(ARGS.e);
+	for(;;WAIT(5)) {
+		RNG_ARRAY(rand, 2);
+		iku_lightning_particle(e->pos + 15 * vrng_real(rand[0]) * vrng_dir(rand[1]));
+	}
+}
+
 TASK(magnetto_swirl_shoot, {
 	BoxedEnemy e;
 	cmplx move_to;
@@ -37,7 +45,9 @@ TASK(magnetto_swirl_shoot, {
 	int bullets = difficulty_value(1, 2, 2, 2);
 	int bullet_dir = difficulty_value(0, 0, 1, 0);
 	int bullet_dir2 = difficulty_value(1, 1, 1, 0);
+
 	for(int t = 0; t <= 180 / interval; t++, WAIT(interval)) {
+		play_sfx_loop("shot1_loop");
 		for(int i = 0; i < bullets; i++) {
 			cmplx dir = cdir(M_PI * i + M_PI / 8 * sin(2 * t / 70.0 * M_PI)) * cnormalize(ARGS.move_to - e->pos);
 			PROJECTILE(
@@ -55,19 +65,14 @@ TASK(magnetto_swirl_move, {
 	cmplx move_to;
 }) {
 	Enemy *e = TASK_BIND(ARGS.e);
+	cmplx swoop = 3 * cdir(M_PI/2);
 
-	cmplx swoop = 2.75 * cdir(M_PI/2);
-	for(int t = 0; t <= 140; t++, YIELD) {
-		if(!(t % 5)) {
-			RNG_ARRAY(rand, 2);
-			iku_lightning_particle(e->pos + 15 * vrng_real(rand[0]) * vrng_dir(rand[1]));
-		}
+	for(int t = 0; t <= 180; t++, YIELD) {
+		cmplx v = e->move.velocity;
 		e->move = move_towards(ARGS.move_to, pow(t / 300.0, 3));
 		e->move.acceleration = cnormalize(ARGS.move_to - e->pos) * swoop;
+		e->move.velocity = v;
 	}
-	e->move = move_towards(ARGS.move_to, 0.5);
-	WAIT(50);
-	enemy_kill(e);
 }
 
 TASK(magnetto_swirl, {
@@ -77,12 +82,14 @@ TASK(magnetto_swirl, {
 }) {
 	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 5, .power = 5)));
 	e->move = ARGS.move_enter;
+	e->hp *= 40;
+	e->spawn_hp = e->hp;
+	INVOKE_SUBTASK(magnetto_swirl_particles, ENT_BOX(e));
 
 	WAIT(140);
 	play_sfx("redirect");
 	play_sfx_delayed("redirect", 0, false, 180);
 
-	// FIXME: for some reason, this move doesn't work anymore
 	INVOKE_SUBTASK(magnetto_swirl_move, {
 		.e = ENT_BOX(e),
 		.move_to = ARGS.move_to
@@ -92,6 +99,9 @@ TASK(magnetto_swirl, {
 		.e = ENT_BOX(e),
 		.move_to = ARGS.move_to
 	});
+
+	WAIT(200);
+	enemy_kill(e);
 }
 
 TASK(magnetto_swirls, {
@@ -99,21 +109,26 @@ TASK(magnetto_swirls, {
 }) {
 	enemy_kill_all(&global.enemies);
 	real ofs = 42 * 2;
-	int count = ARGS.num - 1;
-	for(int i = 0; i < ARGS.num; i++) {
+	int cnt = ARGS.num;
+	for(int i = 0; i < cnt; i++) {
+		cmplx src1 = -ofs/4               + (-ofs/4 +      i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+		cmplx src2 = (VIEWPORT_W + ofs/4) + (-ofs/4 + (cnt-i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+		cmplx dst1 = ofs                  + ( ofs   +      i    * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
+		cmplx dst2 = (VIEWPORT_W - ofs)   + ( ofs   + (cnt-i-1) * (VIEWPORT_H-2*ofs)/(cnt-1))*I;
 
 		INVOKE_TASK(magnetto_swirl,
-			.pos = -ofs / 4 + (-ofs / 4 + i * (VIEWPORT_H-2 * ofs) / count) * I, // src1 (e->pos)
-			.move_enter = move_towards((ofs + (ofs + i * (VIEWPORT_H-2 * ofs) / count) * I), 0.1), // dst1 (e->args[0])
-			.move_to = (VIEWPORT_W - ofs) + ( ofs + (count - i) * (VIEWPORT_H-2 * ofs) / count) * I // dst2 (e->args[1])
+			.pos = src1,
+			.move_enter = move_towards(dst1, 0.1),
+			.move_to = dst2,
 		);
 
 		INVOKE_TASK(magnetto_swirl,
-			.pos = (VIEWPORT_W + ofs / 4) + (-ofs / 4 + (count - i) * (VIEWPORT_H-2 * ofs) / count) * I,
-			.move_enter = move_towards((VIEWPORT_W - ofs) + ( ofs + (count - i) * (VIEWPORT_H-2 * ofs) / count) * I, 0.1), // dst2 (e->args[0])
-			.move_to = ofs + (ofs + i * (VIEWPORT_H-2 * ofs) / count) * I // dst1 (e->args[1])
+			.pos = src2,
+			.move_enter = move_towards(dst2, 0.1),
+			.move_to = dst1,
 		);
-		WAIT(20);
+
+		WAIT(10);
 	}
 }
 
