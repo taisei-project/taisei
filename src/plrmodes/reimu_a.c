@@ -123,7 +123,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real 
 		.move = move_linear(p->move.velocity * rng_range(0.6, 1.0) * vfactor),
 		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.scale = REIMU_SPIRIT_HOMING_SCALE,
 	);
 }
@@ -257,7 +257,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 			.timeout = 120,
 			.layer = LAYER_BOSS + 1,
 			.angle = -M_PI/2,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		));
 	}
 
@@ -531,7 +531,7 @@ TASK(reimu_slave_shot_particles, {
 			.draw_rule = draw,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.move = move,
-			.pos = slave->pos,
+			.pos = slave->pos + move.velocity * 0.5,
 			.sprite_ptr = sprite,
 			.timeout = timeout,
 		);
