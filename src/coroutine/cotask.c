@@ -646,9 +646,26 @@ void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events
 	_coevent_array_action(num_events, events, coevent_init);
 }
 
-static CoWaitResult cotask_wait_event_internal(CoEvent *evt) {
+static CoWaitResult cotask_wait_event_internal(CoEvent *evt, bool once) {
 	CoTask *task = cotask_active();
 	CoTaskData *task_data = cotask_get_data(task);
+
+	// Edge case: if the task is being finalized, don't try to subscribe to another event.
+	// This deals with some cases of WAIT_EVENT() deadlocking in loops.
+	// cotask_yield() should land us somewhere inside cotask_finalize(), and the task will not be
+	// resumed again.
+	if(UNLIKELY(task_data->finalizing)) {
+		cotask_yield(NULL);
+		UNREACHABLE;
+	}
+
+	if(evt->unique_id == 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
+	}
+
+	if(once && evt->num_signaled > 0) {
+		return (CoWaitResult) { .event_status = CO_EVENT_SIGNALED };
+	}
 
 	coevent_add_subscriber(evt, task);
 
@@ -664,23 +681,11 @@ static CoWaitResult cotask_wait_event_internal(CoEvent *evt) {
 }
 
 CoWaitResult cotask_wait_event(CoEvent *evt) {
-	if(evt->unique_id == 0) {
-		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
-	}
-
-	return cotask_wait_event_internal(evt);
+	return cotask_wait_event_internal(evt, false);
 }
 
 CoWaitResult cotask_wait_event_once(CoEvent *evt) {
-	if(evt->unique_id == 0) {
-		return (CoWaitResult) { .event_status = CO_EVENT_CANCELED };
-	}
-
-	if(evt->num_signaled > 0) {
-		return (CoWaitResult) { .event_status = CO_EVENT_SIGNALED };
-	}
-
-	return cotask_wait_event_internal(evt);
+	return cotask_wait_event_internal(evt, true);
 }
 
 CoWaitResult cotask_wait_event_or_die(CoEvent *evt) {
@@ -688,6 +693,10 @@ CoWaitResult cotask_wait_event_or_die(CoEvent *evt) {
 
 	if(wr.event_status == CO_EVENT_CANCELED) {
 		cotask_cancel(cotask_active());
+		// Edge case: should usually die here, unless the task has already been cancelled and is
+		// currently being finalized. In that case, we should just yield back to cotask_finalize().
+		assert(cotask_active()->data->finalizing);
+		cotask_yield(NULL);
 		UNREACHABLE;
 	}
 
