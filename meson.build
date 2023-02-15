@@ -98,8 +98,6 @@ taisei_c_args = [
     '-Wclobbered',
     '-Wduplicated-branches',
     '-Wduplicated-cond',
-    '-Wfloat-overflow-conversion',
-    '-Wfloat-zero-conversion',
     '-Wfor-loop-analysis',
     '-Wformat-security',
     '-Wgcc-compat',
@@ -132,6 +130,28 @@ taisei_c_args = [
     '-fno-trapping-math',
 ]
 
+taisei_conversion_c_args = [
+    # These are intended to enable "implicit conversion discards imaginary component" warnings
+    # on clang. Those are gated by `-Wconversion`, which enables a ton of other stuff that we are
+    # not ready for. So we need to undo that. Some of this stuff might be worth enabling later.
+
+    # In GCC, -Wconversion also enables a bunch of stuff that can't be disabled individually, or so
+    # it seems. It also doesn't have the warning we are actually interested in. That's why we test
+    # for all of these flags at once: if the compiler accepts all of them, we assume clang-like
+    # behavior.
+
+    '-Wconversion',
+    '-Wno-enum-conversion',
+    '-Wno-float-conversion',
+    '-Wfloat-overflow-conversion',
+    '-Wno-implicit-int-conversion',
+    '-Wno-implicit-int-float-conversion',
+    '-Wno-implicit-float-conversion',
+    '-Wno-shorten-64-to-32',
+    '-Wno-sign-conversion',
+    '-Wno-string-conversion',
+]
+
 deprecation_warnings = get_option('deprecation_warnings')
 
 if deprecation_warnings == 'error'
@@ -145,6 +165,7 @@ endif
 taisei_c_args = cc.get_supported_arguments(taisei_c_args)
 
 foreach arglist : [
+        taisei_conversion_c_args,
         ['-msse', '-mfpmath=sse'],
     ]
     if cc.has_multi_arguments(arglist)
