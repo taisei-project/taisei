@@ -23,6 +23,11 @@ typedef struct MoveParams {
 cmplx move_update(cmplx *restrict pos, MoveParams *restrict params);
 cmplx move_update_multiple(uint times, cmplx *restrict pos, MoveParams *restrict params);
 
+INLINE MoveParams move_next(cmplx pos, MoveParams move) {
+	move_update(&pos, &move);
+	return move;
+}
+
 INLINE MoveParams move_linear(cmplx vel) {
 	return (MoveParams) { vel, 0, 1 };
 }
