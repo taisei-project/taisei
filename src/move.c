@@ -12,18 +12,25 @@
 #include "util/miscmath.h"
 
 cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
-	cmplx v = p->velocity;
+	MoveParams o = *p;
+	cmplx orig_velocity = o.velocity;
+	*pos += orig_velocity;
+	o.velocity = o.acceleration + o.retention * o.velocity;
 
-	*pos += v;
-	p->velocity = p->acceleration + p->retention * v;
+	if(o.attraction) {
+		cmplx av = o.attraction_point - *pos;
 
-	if(p->attraction) {
-		cmplx av = p->attraction_point - *pos;
-
-		p->velocity += p->attraction * cnormalize(av) * pow(cabs(av), p->attraction_exponent);
+		if(LIKELY(o.attraction_exponent == 1)) {
+			o.velocity += o.attraction * av;
+		} else {
+			real m = sqrt(creal(av) * creal(av) + cimag(av) * cimag(av));
+			m = pow(m, o.attraction_exponent) / m;
+			o.velocity += o.attraction * (av * m);
+		}
 	}
 
-	return v;
+	p->velocity = o.velocity;
+	return orig_velocity;
 }
 
 cmplx move_update_multiple(uint times, cmplx *restrict pos, MoveParams *restrict p) {
