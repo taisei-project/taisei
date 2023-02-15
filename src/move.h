@@ -50,12 +50,29 @@ INLINE MoveParams move_asymptotic_simple(cmplx vel, double boost_factor) {
 	return move_asymptotic(vel * (1 + boost_factor), vel, retention);
 }
 
-INLINE MoveParams move_towards(cmplx target, cmplx attraction) {
+INLINE MoveParams move_towards(cmplx vel, cmplx target, cmplx attraction) {
 	return (MoveParams) {
+		.velocity = vel,
 		.attraction = attraction,
 		.attraction_point = target,
 		.attraction_exponent = 1
 	};
+}
+
+#define _move_towards_nargs3 move_towards
+
+attr_deprecated(
+	"Use move_towards(velocity, target, attraction) or "
+	"move_from_towards(origin, target, attraction) instead")
+INLINE MoveParams _move_towards_nargs2(cmplx target, cmplx attraction) {
+	return move_towards(0, target, attraction);
+}
+
+#define move_towards(...) \
+	MACROHAX_OVERLOAD_NARGS(_move_towards_nargs, __VA_ARGS__)(__VA_ARGS__)
+
+INLINE MoveParams move_from_towards(cmplx origin, cmplx target, cmplx attraction) {
+	return move_next(origin, move_towards(0, target, attraction));
 }
 
 INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real exponent) {
