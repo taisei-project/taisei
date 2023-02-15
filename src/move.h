@@ -75,12 +75,18 @@ INLINE MoveParams move_from_towards(cmplx origin, cmplx target, cmplx attraction
 	return move_next(origin, move_towards(0, target, attraction));
 }
 
-INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real exponent) {
+INLINE MoveParams move_towards_exp(cmplx vel, cmplx target, cmplx attraction, real exponent) {
 	return (MoveParams) {
+		.velocity = vel,
 		.attraction = attraction,
 		.attraction_point = target,
 		.attraction_exponent = exponent
 	};
+}
+
+attr_deprecated("Use move_towards_exp instead")
+INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real exponent) {
+	return move_towards_exp(0, target, attraction, exponent);
 }
 
 INLINE MoveParams move_dampen(cmplx vel, cmplx retention) {
