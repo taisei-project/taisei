@@ -66,6 +66,14 @@ INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real expone
 	};
 }
 
+INLINE MoveParams move_dampen(cmplx vel, cmplx retention) {
+	return (MoveParams) {
+		.velocity = vel,
+		.retention = retention,
+	};
+}
+
+attr_deprecated("Use move_dampen instead")
 INLINE MoveParams move_stop(cmplx retention) {
 	return (MoveParams) { .retention = retention };
 }
