@@ -530,7 +530,7 @@ cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = s
 		return 0;
 	}
 
-	double s = (l->args[2] * t + l->args[3]);
+	real s = (creal(l->args[2]) * t + creal(l->args[3]));
 	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
 }
 
@@ -545,8 +545,8 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 	cmplx line_dir = line_vel / cabs(line_vel);
 	cmplx line_normal = cimag(line_dir) - I*creal(line_dir);
 	cmplx sine_amp = l->args[1];
-	cmplx sine_freq = l->args[2];
-	cmplx sine_phase = l->args[3];
+	real sine_freq = creal(l->args[2]);
+	real sine_phase = creal(l->args[3]);
 
 	cmplx sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
 	return l->pos + t * line_vel + sine_ofs;
