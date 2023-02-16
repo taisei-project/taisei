@@ -21,11 +21,21 @@
 #include "common_tasks.h"
 
 TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
-	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 3)));
+	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
+		.points = 12,
+		.power = 6,
+		.life = 1,
+	)));
 	e->move = ARGS.move;
 
+	INVOKE_SUBTASK_DELAYED(20, common_charge,
+		.anchor = &e->pos,
+		.color = RGBA(1, 0, 0, 0),
+		.time = 80,
+		.sound = COMMON_CHARGE_SOUNDS,
+	);
 	WAIT(70);
-	e->move = move_dampen(e->move.velocity, 0.5);
+	e->move = move_dampen(e->move.velocity, 0.9);
 
 	WAIT(30);
 	int duration = difficulty_value(220, 260, 300, 340);
@@ -47,7 +57,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
 		}
 	}
 
-	WAIT(60);
+	WAIT(300);
 	e->move = move_linear(-ARGS.move.velocity);
 }
 
@@ -56,7 +66,7 @@ TASK(side_fairy, { cmplx pos; MoveParams move; cmplx direction; real index; }) {
 	e->move = ARGS.move;
 
 	WAIT(60);
-	e->move = move_dampen(e->move.velocity, 0.5);
+	e->move = move_dampen(e->move.velocity, 0.8);
 
 	WAIT(10);
 
