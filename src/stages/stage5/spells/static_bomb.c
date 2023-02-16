@@ -48,7 +48,7 @@ TASK(slave_bullet_shot, { BoxedIkuSlave slave; }) {
 				.proto = pp_rice,
 				.pos = slave->pos,
 				.color = RGB(1,0,0),
-				.move = move_asymptotic_simple(i * 2 * cdir(-0.3 * x + rand * I), 3)
+				.move = move_asymptotic_simple(i * 2 * cdir(-0.3 * x + rand), 3),
 			);
 			play_sfx("shot3");
 		}
