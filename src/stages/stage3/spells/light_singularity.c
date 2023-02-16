@@ -30,7 +30,7 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 			play_sfx("laser1");
 		}
 
-		laser_charge(l, t, 150, 10 + 10 * psin(l->args[0] + t / 60.0));
+		laser_charge(l, t, 150, 10 + 10 * psin(creal(l->args[0]) + t / 60.0));
 		l->args[3] = t / 10.0;  // phase
 		l->args[0] *= cexp(I*(M_PI/500.0) * spin_factor);
 
