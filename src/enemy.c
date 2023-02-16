@@ -257,7 +257,7 @@ static void ent_draw_enemy(EntityInterface *ent) {
 
 int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
 	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
+		free_ref(creal(p->args[1]));
 		return ACTION_ACK;
 	}
 
