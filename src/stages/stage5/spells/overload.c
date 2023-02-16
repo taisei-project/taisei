@@ -36,7 +36,7 @@ static Enemy* iku_overload_find_next_slave(cmplx from, double playerbias) {
 
 static int iku_overload_trigger_bullet(Projectile *p, int t) {
 	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
+		free_ref(creal(p->args[1]));
 		return ACTION_ACK;
 	}
 
@@ -182,7 +182,7 @@ static int iku_overload_slave(Enemy *e, int t) {
 				new->args[1] = 1;
 				new->args[3] = global.frames + 55 - 5 * global.diff;
 
-				Laser *l = create_laserline_ab(e->pos, new->pos, 10, 30, e->args[2], RGBA(0.3, 1, 1, 0));
+				Laser *l = create_laserline_ab(e->pos, new->pos, 10, 30, creal(e->args[2]), RGBA(0.3, 1, 1, 0));
 				l->ent.draw_layer = LAYER_LASER_LOW;
 				l->unclearable = true;
 
