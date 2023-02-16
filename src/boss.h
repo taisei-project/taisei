@@ -168,6 +168,9 @@ DEFINE_ENTITY_TYPE(Boss, {
 	float bomb_damage_multiplier;
 	float shot_damage_multiplier;
 
+	bool in_background;
+	float background_transition;
+
 	struct {
 		float opacity;
 		float fill_total;

@@ -249,7 +249,7 @@ static void update_healthbar(Boss *boss) {
 		target_opacity = 0.0;
 	}
 
-	if(player_nearby) {
+	if(player_nearby || boss->in_background) {
 		target_opacity *= 0.25;
 	}
 
@@ -657,7 +657,11 @@ DEFINE_TASK(boss_particles) {
 			));
 		}
 
-		if(!(global.frames % (2 + 2 * is_extra)) && (is_spell || boss_is_dying(boss))) {
+		if(
+			!(global.frames % (2 + 2 * is_extra)) &&
+			(is_spell || boss_is_dying(boss)) &&
+			!boss->in_background
+		) {
 			float glowstr = 0.5;
 			float a = (1.0 - glowstr) + glowstr * psin(global.frames/15.0);
 			spawn_boss_glow(boss, color_mul_scalar(COLOR_COPY(glowcolor), a), 24);
@@ -699,10 +703,14 @@ static void ent_draw_boss(EntityInterface *ent) {
 		boss_alpha = (1 - t) + 0.3;
 	}
 
+	Color *c = RGB(1.0f, 1.0f - red, 1.0f - red * 0.5f);
+	color_lerp(c, RGB(0.2f, 0.2f, 0.2f), boss->background_transition);
+	color_mul_scalar(c, boss_alpha);
+
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
 		.pos = { creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0) },
-		.color = RGBA_MUL_ALPHA(1, 1-red, 1-red/2, boss_alpha),
+		.color = c,
 	});
 }
 
@@ -800,7 +808,7 @@ void draw_boss_overlay(Boss *boss) {
 }
 
 static void boss_rule_extra(Boss *boss, float alpha) {
-	if(global.frames % 5) {
+	if(global.frames % 5 || boss->in_background) {
 		return;
 	}
 
@@ -855,6 +863,7 @@ bool boss_is_vulnerable(Boss *boss) {
 	Attack *atk = boss->current;
 
 	return
+		!boss->in_background &&
 		atk &&
 		atk->type != AT_Move &&
 		atk->type != AT_SurvivalSpell &&
@@ -863,7 +872,12 @@ bool boss_is_vulnerable(Boss *boss) {
 
 bool boss_is_player_collision_active(Boss *boss) {
 	// TODO: possibly only enable if attack_is_active()?
-	return boss->current && !boss_is_dying(boss) && !boss_is_fleeing(boss);
+	return
+		boss->current &&
+		!boss->in_background &&
+		boss->background_transition < 0.5f &&
+		!boss_is_dying(boss) &&
+		!boss_is_fleeing(boss);
 }
 
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg) {
@@ -1012,6 +1026,7 @@ static bool spell_is_overload(AttackInfo *spell) {
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
+	boss->in_background = false;
 	boss->current->hp = 0;
 	boss_call_rule(boss, EVENT_DEATH);
 
@@ -1065,6 +1080,9 @@ void process_boss(Boss **pboss) {
 	move_update(&boss->pos, &boss->move);
 	aniplayer_update(&boss->ani);
 	update_hud(boss);
+
+	fapproach_asymptotic_p(&boss->background_transition, boss->in_background ? 1.0f : 0.0f, 0.15, 1e-3);
+	boss->ent.draw_layer = lerp(LAYER_BOSS, LAYER_BACKGROUND, boss->background_transition);
 
 	if(boss->global_rule) {
 		boss->global_rule(boss, global.frames - boss->birthtime);
