@@ -26,7 +26,6 @@ DEFINE_ENTITY_TYPE(IkuSlave, {
 		killed,
 		collision
 	) events;
-
 });
 
 DECLARE_EXTERN_TASK(iku_slave_move, {

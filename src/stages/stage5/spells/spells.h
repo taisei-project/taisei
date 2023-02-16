@@ -18,7 +18,4 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_spell_atmospheric_discharge, BossAttac
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_spell_artificial_lightning, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_spell_induction, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_spell_natural_cathode, BossAttack);
-
-// TODO: remove this once Overload is modernized
-void iku_overload(Boss *, int);
-
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_spell_overload, BossAttack);
