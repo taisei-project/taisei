@@ -158,15 +158,17 @@ TASK(cardbuster_fairy_move, { Enemy *e; int stops; cmplx *poss; int *move_times;
 
 TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 	int count = difficulty_value(40, 60, 80, 100);
+	real speed = difficulty_value(1.0, 1.2, 1.4, 1.6);
+
 	for(int i = 0; i < count; i++) {
 		play_sfx_loop("shot1_loop");
 		cmplx dir = cnormalize(global.plr.pos - ARGS.e->pos) * cdir(2 * M_TAU / (count + 1) * i);
-		real speed = difficulty_value(1.0, 1.2, 1.4, 1.6);
+		cmplx v = speed * dir;
 		PROJECTILE(
 			.proto = pp_card,
 			.pos = ARGS.e->pos + 30 * dir,
 			.color = RGB(0, 0.7, 0.5),
-			.move = move_asymptotic_simple(speed * dir, 0.4*I),
+			.move = move_asymptotic(2*v*I, v, 0.99),
 		);
 		YIELD;
 	}
@@ -187,6 +189,7 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 	INVOKE_SUBTASK_DELAYED(second_attack_delay, cardbuster_fairy_second_attack, e);
 
 	int count = difficulty_value(40, 80, 120, 160);
+	real shotspeed = difficulty_value(1.0, 1.2, 1.4, 1.6);
 
 	WAIT(60);
 	for(int i = 0; i < count; i++) {
@@ -194,13 +197,13 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 		cmplx dir = cnormalize(global.plr.pos - e->pos) * cdir(2 * M_TAU / (count + 1) * i);
 
 		for(int j = 0; j < 3; j++) {
-			real speed = difficulty_value(1.0, 1.2, 1.4, 1.6) * (1.0 + 0.1 * j);
-			real speedup = 0.01*(1.0 + 0.01 * i);
+			real speed = shotspeed * (1.0 + 0.1 * j);
+			real speedup = 0.01 * (1.0 + 0.01 * i);
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = e->pos + 30 * dir,
 				.color = RGB(0, 0.2, 0.4 + 0.2 * j),
-				.move = move_asymptotic_simple(speed * dir, speedup * dir),
+				.move = move_asymptotic_simple(speed * dir, speedup),
 			);
 		}
 
@@ -285,7 +288,7 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 					.pos = e->pos,
 					.color = RGBA(0, 0.3 * i, 0.4, 0),
 					.move = move_asymptotic_simple(ball_speed*cdir(3*(j+rng_real())),
-						I * 5 * sin(6 * M_PI / count * j))
+						5 * sin(6 * M_PI / count * j))
 				);
 			}
 		}
