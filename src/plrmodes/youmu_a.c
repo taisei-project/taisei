@@ -405,7 +405,7 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		.color = RGBA(sin(5*t) * t, cos(5*t) * t, 0.5 * t, 0),
 		.move = move_asymptotic_simple(
 			vrng_sign(R[0]) * vrng_range(R[1], 3, 3 + 5 * t) * cdir(M_PI*8*t),
-			5+I
+			5
 		),
 		.layer = LAYER_PARTICLE_PETAL,
 	);
