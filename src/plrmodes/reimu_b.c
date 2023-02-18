@@ -315,6 +315,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scalefade(0.2, 1, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
+		.flags = PFLAG_MANUALANGLE,
 	);
 
 	Color *clr = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit);
@@ -326,6 +327,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scalefade(0.1, 0.6, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
+		.flags = PFLAG_MANUALANGLE,
 	);
 }
 

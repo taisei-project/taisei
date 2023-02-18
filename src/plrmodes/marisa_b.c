@@ -163,7 +163,7 @@ TASK(marisa_star_slave_projectile, {
 				.angle = rng_angle(),
 				.angle_delta = 0.1 * rng_sreal(),
 				.draw_rule = pdraw_timeout_scalefade(0, 1.4, 1, 0),
-				.flags = PFLAG_NOREFLECT,
+				.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			);
 		}
 
@@ -390,7 +390,7 @@ TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; real hue; BoxedM
 			.timeout = 10,
 			.angle = t * 0.1,
 			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		);
 	}
 }

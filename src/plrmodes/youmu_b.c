@@ -240,7 +240,7 @@ TASK(youmu_orb_homing_spirit_expire, { BoxedProjectile p; }) {
 		.pos = p->pos,
 		.move = p->move,
 		.angle = p->angle,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.layer = LAYER_PLAYER_SHOT,
 	);
 }
@@ -338,7 +338,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 20,
 		.color = RGBA(0.1, 0.5, 0.1, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.01*(1+I), 1, 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -349,7 +349,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 30,
 		.color = RGBA(0.1, 0.1, 0.5, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(1, 0.01*(1+I), 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -360,7 +360,7 @@ static void youmu_orb_explode(YoumuBController *ctrl, Projectile *orb) {
 		.timeout = 40,
 		.color = RGBA(0.5, 0.1, 0.1, 0.0),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.8, -0.3*(1+I), 1, 0, 2),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.angle = rng_angle(),
 		.layer = LAYER_PARTICLE_LOW,
 	);
@@ -495,7 +495,7 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 			.func = youmu_particle_slice_draw,
 			.args[0].as_ptr = &ctrl->plr->ani,
 		},
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOMOVE,
 		.timeout = 100,
 		.angle = ARGS.angle,
 		.layer = LAYER_PARTICLE_HIGH | 0x1,

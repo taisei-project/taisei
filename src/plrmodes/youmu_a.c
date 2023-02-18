@@ -195,7 +195,7 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 			.draw_rule = myon_draw_proj_trail,
 			.timeout = 10,
 			.move = trail_move,
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.angle = p->angle,
 			.scale = 0.6,
 		);
@@ -388,7 +388,7 @@ static void youmu_mirror_bomb_damage_callback(EntityInterface *victim, cmplx vic
 		.draw_rule = pdraw_timeout_scalefade(0, 0.5, 1, 0),
 		.layer = LAYER_PARTICLE_HIGH | 0x4,
 		.angle = vrng_angle(R[3]),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
 	if(global.frames & 2) {
