@@ -100,7 +100,6 @@ TASK(projectile_redirect, { BoxedProjectile proj; MoveParams move; }) {
 	p->move = ARGS.move;
 }
 
-
 TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4, .power = 3)));
 	INVOKE_TASK(flowermine_fairy_move, ENT_BOX(e), .move1 = ARGS.move1, .move2 = ARGS.move2);
@@ -118,6 +117,123 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 		INVOKE_TASK_DELAYED(200, projectile_redirect, ENT_BOX(p), move_linear(I * cdir(0.6 * i) * speed));
 		play_sfx("shot1");
 	}
+}
+
+TASK(sniper_fairy_shot_cleanup, { BoxedLaser l; }) {
+	auto l = ENT_UNBOX(ARGS.l);
+	if(l) {
+		l->deathtime = imin(l->deathtime, global.frames - l->birthtime + 10);
+	}
+}
+
+TASK(sniper_fairy_bullet, { cmplx pos; cmplx aim; }) {
+	int vpdist = 64;
+
+	real speed = difficulty_value(30, 20, 12, 6);
+	real trail_speed = 2.5;
+	real freq = 1/3.0;
+
+	auto p = TASK_BIND(PROJECTILE(
+		.proto = pp_bullet,
+		.move = move_linear(speed * ARGS.aim),
+		.color = RGB(1, 0, 0),
+		.pos = ARGS.pos,
+		.max_viewport_dist = vpdist,
+	));
+
+	play_sfx("shot_special1");
+
+	cmplx dir = cdir(freq/7);
+	cmplx r = cdir(freq);
+
+	for(;;) {
+		YIELD;
+
+		PROJECTILE(
+			.proto = pp_flea,
+			.color = RGB(0.5, 0, 1.0),
+			.pos = p->pos,
+			.move = move_asymptotic_halflife(trail_speed * dir, trail_speed / dir, 10),
+			.max_viewport_dist = vpdist,
+		);
+
+		dir *= r;
+
+		PROJECTILE(
+			.proto = pp_flea,
+			.color = RGB(0.5, 0, 1.0),
+			.pos = (p->pos + p->prevpos) * 0.5,
+			.move = move_asymptotic_halflife(trail_speed / dir, trail_speed * dir, 10),
+			.max_viewport_dist = vpdist,
+		);
+
+		dir *= r;
+	}
+}
+
+TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
+	auto e = TASK_BIND(ARGS.e);
+
+	int aimtime = 90;
+	int aimfreezetime = aimtime - difficulty_value(30, 30, 20, 15);
+	int trailtime = 20;
+	float lwidth = 16;
+
+	BoxedLaser lb = ENT_BOX(create_laserline(
+		e->pos, lwidth, aimtime, aimtime + trailtime, RGBA(1, 0.1, 0.1, 0)));
+
+	BoxedTask cleanup = cotask_box(INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished,
+		sniper_fairy_shot_cleanup, lb));
+
+	cmplx aim = global.plr.pos - e->pos;
+	MoveParams aim_move = { };
+
+	INVOKE_SUBTASK(common_charge,
+		.anchor = &e->pos,
+		.time = aimtime,
+		.color = RGBA(1, 0.1, 0.1, 0),
+		.sound = COMMON_CHARGE_SOUNDS,
+	);
+
+	cmplx aim_target;
+
+	for(int t = 0; t < aimtime; ++t, YIELD) {
+		Laser *l = ENT_UNBOX(lb);
+
+		if(!l) {
+			return;
+		}
+
+		if(t < aimfreezetime) {
+			aim_target = global.plr.pos;
+		}
+
+		aim_move = move_towards(aim_move.velocity, aim_target, 1.5);
+		aim_move.retention = 0.8;
+		move_update(&aim, &aim_move);
+		laserline_set_posdir(l, e->pos, aim - e->pos);
+	}
+
+	INVOKE_TASK(sniper_fairy_bullet,
+		.pos = e->pos,
+		.aim = cnormalize(aim - e->pos),
+	);
+
+	play_sfx("laser1");
+	CANCEL_TASK(cleanup);
+}
+
+TASK(sniper_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
+	e->move = ARGS.move_enter;
+	WAIT(60);
+	e->move = move_dampen(e->move.velocity, 0.9);
+
+	INVOKE_SUBTASK(sniper_fairy_shot, ENT_BOX(e));
+	AWAIT_SUBTASKS;
+	WAIT(20);
+
+	e->move = ARGS.move_exit;
 }
 
 TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
@@ -296,7 +412,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 	}
 
 	for(int i = 0; i < 14; i++) {
-		INVOKE_TASK_DELAYED(1380 + 20 * i, flowermine_fairy,
+		INVOKE_TASK_DELAYED(980 + 20 * i, flowermine_fairy,
 			.pos = 200.0 * I,
 			.move1 = move_linear(2 * cdir(0.5 * M_PI / 9 * i) + 1.0),
 			.move2 = move_towards_exp(0, -100, 1, 0.2)
@@ -304,13 +420,28 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 	}
 
 	for(int i = 0; i < 20; i++) {
-		INVOKE_TASK_DELAYED(1600 + 20 * i, flowermine_fairy,
+		INVOKE_TASK_DELAYED(1200 + 20 * i, flowermine_fairy,
 			.pos = VIEWPORT_W / 2.0,
 			.move1 = move_linear(2 * I * cdir(0.5 * M_PI / 9 * i) + 1.0 * I),
 			.move2 = move_towards_exp(0, VIEWPORT_W + I * VIEWPORT_H * 0.5 + 100, 1, 0.2)
 		);
 	}
 
+	for(int i = 0; i < 20; i++) {
+		INVOKE_TASK_DELAYED(1420 + 20 * i, flowermine_fairy,
+			.pos = 200.0 * I,
+			.move1 = move_linear(3),
+			.move2 = move_asymptotic_halflife(3, 2*I, 60),
+		);
+	}
+
+	for(int i = 0; i < 6; ++i) {
+		INVOKE_TASK_DELAYED(1400 + 120 * i, sniper_fairy,
+			.pos = VIEWPORT_W + VIEWPORT_H*0.6i,
+			.move_enter = move_linear(-1.5 * cdir(0.5 * ((2 - (i % 3)) - 1))),
+			.move_exit = move_accelerated(-1, -0.04i),
+		);
+	}
 
 	INVOKE_TASK_DELAYED(2300, scythe_mid, .pos = -100 + I * 300);
 
