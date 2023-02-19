@@ -87,6 +87,15 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
 }
 
+void laserline_set_ab(Laser *l, cmplx a, cmplx b) {
+	l->pos = a;
+	l->args[0] = (b - a) * 0.005;
+}
+
+void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
+	laserline_set_ab(l, pos, pos + VIEWPORT_H * cnormalize(dir));
+}
+
 static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
 

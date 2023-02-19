@@ -66,6 +66,9 @@ void process_lasers(void);
 
 Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Color *clr);
 Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr);
+void laserline_set_ab(Laser *l, cmplx a, cmplx b);
+void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir);
+
 Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
 
 bool laser_is_active(Laser *l);
