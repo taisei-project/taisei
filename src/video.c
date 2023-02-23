@@ -692,8 +692,7 @@ static void video_handle_resize(int w, int h) {
 	log_debug("%ix%i --> %ix%i", video.current.width, video.current.height, w, h);
 	video.current.width = w;
 	video.current.height = h;
-	video_set_viewport();
-	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
+	video_update_mode_settings();
 }
 
 static bool video_handle_window_event(SDL_Event *event, void *arg) {
