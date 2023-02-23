@@ -544,12 +544,15 @@ config.set('TAISEI_BUILDCONF_TESTING_STAGES', use_testing_stages)
 
 # Stolen from Sway
 # Compute the relative path used by compiler invocations.
-source_root = meson.current_source_dir().split('/')
-build_root = meson.project_build_root().split('/')
+source_root = meson.current_source_dir()
+build_root = meson.project_build_root()
 if build_machine.system() == 'windows'
     source_root = source_root.replace('\\', '/')
     build_root = build_root.replace('\\', '/')
 endif
+source_root = source_root.split('/')
+build_root = build_root.split('/')
+
 relative_dir_parts = []
 i = 0
 in_prefix = true

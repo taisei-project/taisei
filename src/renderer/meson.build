@@ -25,7 +25,7 @@ if default_renderer == 'auto'
     if default_renderer == 'auto'
         renderers_prio_opts = []
         foreach renderer : renderers_prio
-            renderers_prio_opts + f'r_@renderer@'
+            renderers_prio_opts += f'r_@renderer@'
         endforeach
         renderers_prio_opts = ', '.join(renderers_prio_opts)
 

@@ -72,7 +72,7 @@ option(
 option(
     'install_angle',
     type : 'boolean',
-    value : 'false',
+    value : false,
     description : 'Install pre-built ANGLE libraries. Required for Windows/macOS OpenGL ES 2.0/3.0'
 )
 
@@ -217,6 +217,6 @@ option(
 option(
     'stages_live_reload',
     type : 'boolean',
-    value : 'false',
+    value : false,
     description : 'Enable live-reloading workflow for stages (for development only)'
 )
