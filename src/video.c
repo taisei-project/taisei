@@ -467,6 +467,26 @@ static void video_set_fullscreen_internal(bool fullscreen) {
 	SDL_RaiseWindow(video.window);
 }
 
+INLINE bool should_recreate_on_size_change(void) {
+	bool defaultval = (
+		/* Resize failures are impossible to detect under some WMs */
+		video.backend == VIDEO_BACKEND_X11 ||
+		/* Needed to work around various SDL bugs and/or HTML/DOM quirks */
+		video.backend == VIDEO_BACKEND_EMSCRIPTEN ||
+	0);
+
+	return env_get("TAISEI_VIDEO_RECREATE_ON_RESIZE", defaultval);
+}
+
+INLINE bool should_recreate_on_fullscreen_change(void) {
+	bool defaultval = (
+		/* FIXME Do we need this? */
+		video.backend == VIDEO_BACKEND_X11 ||
+	0);
+
+	return env_get("TAISEI_VIDEO_RECREATE_ON_FULLSCREEN", defaultval);
+}
+
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 	video.intended.width = w;
 	video.intended.height = h;
@@ -481,38 +501,32 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 		return;
 	}
 
-	uint old_display = video_current_display();
-	bool display_changed = display != old_display;
+	bool display_changed = display != video_current_display();
 	bool size_changed = w != video.current.width || h != video.current.height;
+	bool fullscreen_changed = video_is_fullscreen() != fs;
 
 	if(display_changed) {
 		video_new_window(display, w, h, fs, resizable);
 		return;
 	}
 
+	if(fullscreen_changed && should_recreate_on_fullscreen_change()) {
+		video_new_window(display, w, h, fs, resizable);
+		return;
+	}
+
 	if(size_changed) {
-		if(video.backend == VIDEO_BACKEND_X11) {
-			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
-			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
-			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
-			//
-			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
+		if(!fullscreen_changed && should_recreate_on_size_change()) {
 			video_new_window(display, w, h, fs, resizable);
 			return;
-		} else if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && !fs) {
-			// Needed to work around various SDL bugs and HTML/DOM quirks...
-			video_new_window(display, w, h, fs, resizable);
-			return;
-		} else {
-			SDL_SetWindowSize(video.window, w, h);
-			// so the user doesn't have to drag the window back
-			// into the middle of the screen after a resolution change
-			SDL_SetWindowPosition(
-				video.window,
-				SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-				SDL_WINDOWPOS_CENTERED_DISPLAY(display)
-			);
 		}
+
+		SDL_SetWindowSize(video.window, w, h);
+		SDL_SetWindowPosition(
+			video.window,
+			SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+			SDL_WINDOWPOS_CENTERED_DISPLAY(display)
+		);
 	}
 
 	video_set_fullscreen_internal(fs);
