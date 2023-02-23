@@ -65,7 +65,7 @@ void stage5_init_iku_slave(IkuSlave *slave, cmplx pos) {
 	slave->ent.draw_layer = LAYER_BOSS - 1;
 	slave->ent.draw_func = iku_slave_draw;
 	slave->scale = (1 + I);
-	slave->color = *RGBA_MUL_ALPHA(0.1, 0.1, 0.6, 0.2);
+	slave->color = *RGBA(0.05, 0.05, 0.3, 0);
 	slave->sprites.lightning0 = res_sprite("part/lightning0");
 	slave->sprites.lightning1 = res_sprite("part/lightning1");
 	slave->sprites.cloud = res_sprite("part/lightningball");

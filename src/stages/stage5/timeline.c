@@ -151,6 +151,8 @@ TASK(spawn_midboss) {
 	// TODO: investigate why the death effect doesn't work (points/items still spawn off-screen)
 	boss_add_attack_task(boss, AT_Move, "Flee", 2, 0, TASK_INDIRECT(BossAttack, midboss_flee), NULL);
 
+	stage5_bg_raise_lightning();
+
 	boss_engage(boss);
 }
 

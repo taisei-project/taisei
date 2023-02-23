@@ -17,7 +17,11 @@ TASK(slave_ball_shot, { BoxedIkuSlave slave; }) {
 		PROJECTILE(
 			.proto = pp_soul,
 			.pos = slave->pos,
-			.color = RGBA(0, 0, 1, 0),
+			.color = RGBA(0, 0.2, 1, 0),
+			.angle_delta = -M_TAU/230,
+			.angle = rng_angle(),
+			.flags = PFLAG_MANUALANGLE,
+			.opacity = 0.95,
 			.move = move_asymptotic_simple(4 * cdir(0.5 * i), 3)
 		);
 		play_sfx("shot_special1");
@@ -59,6 +63,8 @@ TASK(slave_bullet_shot, { BoxedIkuSlave slave; }) {
 TASK(slave_explode, { BoxedIkuSlave slave; }) {
 	IkuSlave *slave = TASK_BIND(ARGS.slave);
 
+	common_charge(120, &slave->pos, 0, &slave->color);
+
 	RNG_ARRAY(ray_rand, 5);
 	PARTICLE(
 		.sprite = "blast_huge_rays",
@@ -83,6 +89,7 @@ TASK(slave_explode, { BoxedIkuSlave slave; }) {
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
+	stage_shake_view(16);
 	play_sfx("boom");
 }
 
@@ -93,7 +100,7 @@ TASK(slave, { cmplx pos; int number; }) {
 	INVOKE_TASK_WHEN(&slave->events.despawned, common_drop_items, &slave->pos, {
 		.power = 5,
 		.points = 5,
-		.life = (ARGS.number == 1) ? 0 : 1
+		.life = (ARGS.number == 1) ? 1 : 0
 	});
 	INVOKE_SUBTASK(iku_slave_move, {
 		.slave = ENT_BOX(slave),
@@ -106,9 +113,9 @@ TASK(slave, { cmplx pos; int number; }) {
 
 	INVOKE_SUBTASK(slave_laser_shot, { .slave = ENT_BOX(slave), .delay = difficulty_value(500, 470, 440, 410)});
 
-	INVOKE_SUBTASK_DELAYED(880, slave_explode, { .slave = ENT_BOX(slave) });
+	INVOKE_SUBTASK_DELAYED(770, slave_explode, { .slave = ENT_BOX(slave) });
 
-	WAIT(890);
+	WAIT(900);
 
 	coevent_signal_once(&slave->events.despawned);
 }
