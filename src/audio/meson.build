@@ -18,7 +18,7 @@ if default_audio_backend == 'auto'
     if default_audio_backend == 'auto'
         audio_backends_prio_opts = []
         foreach audio_backend : audio_backends_prio
-            audio_backends_prio_opts + f'a_@audio_backend@'
+            audio_backends_prio_opts += f'a_@audio_backend@'
         endforeach
         audio_backends_prio_opts = ', '.join(audio_backends_prio_opts)
 
