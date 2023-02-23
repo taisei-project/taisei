@@ -234,6 +234,18 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	ConfigEntryType ctype = e->type;
 	config_copy_value(ctype, &oldv, e->val);
 	config_copy_value(ctype, &e->val, v);
+
+#ifdef DEBUG
+	StringBuffer sb = {};
+	strbuf_printf(&sb, "%s: [", e->name);
+	config_dump_stringval(&sb, ctype, &oldv);
+	strbuf_printf(&sb, "] -> [");
+	config_dump_stringval(&sb, ctype, &e->val);
+	strbuf_printf(&sb, "]");
+	log_debug("%s", sb.start);
+	strbuf_free(&sb);
+#endif
+
 	events_emit(TE_CONFIG_UPDATED, idx, &e->val, &oldv);
 	config_free_value(ctype, &oldv);
 }
