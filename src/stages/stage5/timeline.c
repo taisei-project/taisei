@@ -876,9 +876,11 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 		.exit = 2 * I,
 	});
 
+	INVOKE_TASK_DELAYED(3300, common_call_func, stage5_bg_lower_camera);
+
 	STAGE_BOOKMARK_DELAYED(3400, pre-boss);
 
-	WAIT(3700);
+	WAIT(3750);
 	INVOKE_TASK(spawn_boss);
 	while(!global.boss) YIELD;
 	WAIT_EVENT(&global.boss->events.defeated);
