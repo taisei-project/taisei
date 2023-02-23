@@ -376,7 +376,7 @@ TASK(laser_fairy, {
 	MoveParams move_exit;
 	int time;
 }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 
 	e->move = ARGS.move_enter;
 	WAIT(100);
@@ -483,7 +483,7 @@ TASK(limiter_fairy, {
 	cmplx pos;
 	MoveParams exit;
 }) {
-	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.points = 4, .power = 4)));
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 4, .power = 4)));
 	e->move = ARGS.exit;
 
 	int difficulty = difficulty_value(0.25, 0.50, 0.75, 1);
