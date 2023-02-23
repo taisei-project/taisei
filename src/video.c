@@ -711,6 +711,13 @@ static void video_handle_resize(int w, int h) {
 
 static bool video_handle_window_event(SDL_Event *event, void *arg) {
 	switch(event->window.event) {
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
+			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
+			// user). We only need to handle external resizes.
+			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+			break;
+
 		case SDL_WINDOWEVENT_RESIZED:
 			video_handle_resize(event->window.data1, event->window.data2);
 			break;
