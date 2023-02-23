@@ -14,6 +14,7 @@ TASK(plainball_shoot, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 
 	for(int x = 0;; x++, WAIT(difficulty_value(4, 3, 2, 1))) {
+		play_sfx_loop("shot1_loop");
 		if(rng_chance(0.9)) {
 			PROJECTILE(
 				.proto = pp_plainball,
