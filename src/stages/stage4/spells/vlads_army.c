@@ -119,7 +119,7 @@ TASK(kurumi_vladsarmy_shield, { BoxedBoss boss; real angle; }) {
 	int hp = 1500;
 	Boss *b = NOT_NULL(ENT_UNBOX(ARGS.boss));
 
-	Enemy *e = create_enemy2c(b->pos, hp, kurumi_extra_shield_visual, NULL, 0, 0);
+	Enemy *e = create_enemy(b->pos, hp, kurumi_extra_shield_visual);
 	e->flags = EFLAG_IMPENETRABLE;
 
 	int timeout = 800;

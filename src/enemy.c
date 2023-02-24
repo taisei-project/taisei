@@ -73,27 +73,17 @@ static void signal_event_once_with_damage_info(Enemy *e, CoEvent *evt, DamageInf
 	_signal_event_with_damage_info(e, evt, dmg, coevent_signal_once);
 }
 
-static inline int enemy_call_logic_rule(Enemy *e, int t) {
+static inline void enemy_update(Enemy *e, int t) {
 	assert(e->damage_info == NULL);
+	assert(t >= 0);
 
-	if(t == EVENT_KILLED) {
-		signal_event_once_with_damage_info(e, &e->events.killed, NULL);
-	}
-
-	if(e->logic_rule) {
-		return e->logic_rule(e, t);
-	} else if(t >= 0) {
-		// TODO: backport unified left/right move animations from the obsolete `newart` branch
-		cmplx v = move_update(&e->pos, &e->move);
-		e->moving = fabs(creal(v)) >= 1;
-		e->dir = creal(v) < 0;
-	}
-
-	return ACTION_NONE;
+	// TODO: backport unified left/right move animations from the obsolete `newart` branch
+	cmplx v = move_update(&e->pos, &e->move);
+	e->moving = fabs(creal(v)) >= 1;
+	e->dir = creal(v) < 0;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
-				      cmplx a1, cmplx a2, cmplx a3, cmplx a4) {
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
@@ -101,26 +91,15 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	Enemy *e = alist_append(enemies, (Enemy*)objpool_acquire(stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
-
 	e->birthtime = global.frames;
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
-
 	e->spawn_hp = hp;
 	e->hp = hp;
 	e->alpha = 1.0;
-
 	e->flags = 0;
-
-	e->logic_rule = logic_rule;
 	e->visual_rule = visual_rule;
-
-	e->args[0] = a1;
-	e->args[1] = a2;
-	e->args[2] = a3;
-	e->args[3] = a4;
-
 	e->hurt_radius = 7;
 	e->hit_radius = 30;
 
@@ -132,7 +111,6 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_TYPE_ID(Enemy));
 
-	enemy_call_logic_rule(e, EVENT_BIRTH);
 	return e;
 }
 
@@ -188,7 +166,6 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	}
 
 	COEVENT_CANCEL_ARRAY(e->events);
-	enemy_call_logic_rule(e, EVENT_DEATH);
 	ent_unregister(&e->ent);
 	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
@@ -341,12 +318,12 @@ void process_enemies(EnemyList *enemies) {
 		next = enemy->next;
 
 		if(enemy->flags & EFLAG_KILLED) {
-			enemy_call_logic_rule(enemy, EVENT_KILLED);
+			signal_event_once_with_damage_info(enemy, &enemy->events.killed, NULL);
 			delete_enemy(enemies, enemy);
 			continue;
 		}
 
-		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
+		enemy_update(enemy, global.frames - enemy->birthtime);
 
 		float hurt_radius = enemy_get_hurt_radius(enemy);
 
@@ -356,7 +333,7 @@ void process_enemies(EnemyList *enemies) {
 
 		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
 
-		if(action == ACTION_DESTROY || should_auto_kill(enemy)) {
+		if(should_auto_kill(enemy)) {
 			delete_enemy(enemies, enemy);
 			continue;
 		}

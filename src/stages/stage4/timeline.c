@@ -444,7 +444,8 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 
 		struct projentry *pe = &projs[i % (sizeof(projs)/sizeof(struct projentry))];
 
-		double ca = creal(e->args[1]) + i/60.0;
+		// FIXME: find out what the args[1] was for
+		double ca = /*creal(e->args[1]) +*/ i/60.0;
 		Color *c = RGB(cos(ca), sin(ca), cos(ca+2.1));
 
 		play_sfx_ex(pe->snd, 3, true);

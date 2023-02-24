@@ -196,7 +196,7 @@ TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
 }
 
 static Enemy *spawn(cmplx pos, const ItemCounts *item_drops, real hp, EnemyVisualRule visual) {
-	Enemy *e = create_enemy_p(&global.enemies, pos, hp, visual, NULL, 0, 0, 0, 0);
+	Enemy *e = create_enemy(pos, hp, visual);
 
 	if(item_drops) {
 		INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, ENT_BOX(e), *item_drops);

@@ -27,7 +27,6 @@
 #endif
 
 typedef LIST_ANCHOR(Enemy) EnemyList;
-typedef int (*EnemyLogicRule)(Enemy*, int t);
 typedef void (*EnemyVisualRule)(Enemy*, int t, bool render);
 
 typedef enum EnemyFlag {
@@ -54,13 +53,7 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
-
-	union {
-		cmplx args[PROJ_DRAWRULE_NUMARGS];
-		MoveParams move;
-	};
-
-	EnemyLogicRule logic_rule;
+	MoveParams move;
 	EnemyVisualRule visual_rule;
 
 	COEVENTS_ARRAY(
@@ -115,20 +108,15 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	)
 });
 
-#define create_enemy4c(p,h,d,l,a1,a2,a3,a4) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,a4)
-#define create_enemy3c(p,h,d,l,a1,a2,a3) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,0)
-#define create_enemy2c(p,h,d,l,a1,a2) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,0,0)
-#define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
-
-Enemy *create_enemy_p(
-	EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
-	cmplx a1, cmplx a2, cmplx a3, cmplx a4
-);
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule draw_rule);
 
 #ifdef ENEMY_DEBUG
 	Enemy *_enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
 	#define create_enemy_p(...) _enemy_attach_dbginfo(create_enemy_p(__VA_ARGS__), _DEBUG_INFO_PTR_)
 #endif
+
+#define create_enemy(pos, hp, draw_rule) \
+	create_enemy_p(&global.enemies, pos, hp, draw_rule)
 
 void delete_enemy(EnemyList *enemies, Enemy* enemy);
 void delete_enemies(EnemyList *enemies);

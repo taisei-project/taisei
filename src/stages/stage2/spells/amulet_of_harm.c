@@ -77,7 +77,7 @@ TASK(amulet, {
 	MoveParams move;
 	CoEvent *death_event;
 }) {
-	Enemy *core = create_enemy_p(&global.enemies, ARGS.pos, 2000, amulet_visual, NULL, 0, 0, 0, 0);
+	Enemy *core = create_enemy(ARGS.pos, 2000, amulet_visual);
 	core->hurt_radius = 18;
 	core->hit_radius = 36;
 	core->flags |= EFLAG_NO_VISUAL_CORRECTION;

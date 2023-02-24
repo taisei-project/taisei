@@ -78,7 +78,7 @@ TASK(lightning_slave_move, { BoxedEnemy e; cmplx velocity; }) {
 }
 
 TASK(lightning_slave, { cmplx pos; cmplx move_arg; }) {
-	Enemy *e = TASK_BIND(create_enemy1c(ARGS.pos, 1, NULL, NULL, 0));
+	Enemy *e = TASK_BIND(create_enemy(ARGS.pos, 1, NULL));
 	e->flags = EFLAGS_GHOST;
 
 	INVOKE_TASK(lightning_slave_move, ENT_BOX(e), ARGS.move_arg);
