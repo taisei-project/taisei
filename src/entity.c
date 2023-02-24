@@ -93,7 +93,6 @@ void ent_unregister(EntityInterface *ent) {
 	assert(dynarray_get(&entities.registered, ent->index) == ent);
 	EntityInterface *sub = entities.registered.data[--entities.registered.num_elements];
 	entities.registered.data[sub->index = ent->index] = sub;
-	del_ref(ent);
 }
 
 static int ent_cmp(const void *ptr1, const void *ptr2) {

@@ -86,7 +86,6 @@ taisei_src = files(
     'projectile.c',
     'projectile_prototypes.c',
     'random.c',
-    'refs.c',
     'stage.c',
     'stagedraw.c',
     'stageinfo.c',

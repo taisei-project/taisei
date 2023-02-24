@@ -30,7 +30,6 @@
 #include "laser.h"
 #include "dialog.h"
 #include "list.h"
-#include "refs.h"
 #include "config.h"
 #include "resource/resource.h"
 #include "replay/state.h"
@@ -108,8 +107,6 @@ typedef struct {
 
 	Boss *boss;
 	Dialog *dialog;
-
-	RefArray refs;
 
 	GameoverType gameover;
 	int gameover_time;

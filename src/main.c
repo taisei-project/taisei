@@ -45,7 +45,6 @@ static void taisei_shutdown(void) {
 	progress_unload();
 
 	gamemode_shutdown();
-	free_all_refs();
 	shutdown_resources();
 	taskmgr_global_shutdown();
 	audio_shutdown();

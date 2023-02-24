@@ -1170,7 +1170,6 @@ void stage_end_loop(void *ctx) {
 	cosched_finish(&s->sched);
 	stage_free();
 	player_free(&global.plr);
-	free_all_refs();
 	ent_shutdown();
 	rng_make_active(&global.rand_visual);
 	stage_objpools_free();
