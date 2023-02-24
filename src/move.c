@@ -23,8 +23,10 @@ cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
 		if(LIKELY(o.attraction_exponent == 1)) {
 			o.velocity += o.attraction * av;
 		} else {
-			real m = sqrt(creal(av) * creal(av) + cimag(av) * cimag(av));
-			m = pow(m, o.attraction_exponent) / m;
+			real m = cabs2(av);
+			assume(m >= 0);
+			m = pow(m, o.attraction_exponent - 0.5);
+			assume(isfinite(m));
 			o.velocity += o.attraction * (av * m);
 		}
 	}
