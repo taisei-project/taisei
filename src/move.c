@@ -26,7 +26,7 @@ cmplx move_update(cmplx *restrict pos, MoveParams *restrict p) {
 			real m = cabs2(av);
 			assume(m >= 0);
 			m = pow(m, o.attraction_exponent - 0.5);
-			assume(isfinite(m));
+			assert(isfinite(m));
 			o.velocity += o.attraction * (av * m);
 		}
 	}
