@@ -17,11 +17,8 @@ foreach stage : stages
     stages_src += get_variable('@0@_src'.format(stage))
 endforeach
 
-# TODO: reorganize all the remaining stages to use a separate directory and put
-# them into the "stages" array
-
 stages_src += files(
-    'extra.c',
+    'extra.c',  # stub
 )
 
 if use_testing_stages

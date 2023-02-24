@@ -11,4 +11,6 @@
 
 #include "stageinfo.h"
 
+// NOTE: See the 'yumemi' branch for the work-in-progress extra stage
+
 extern StageProcs extra_procs;
