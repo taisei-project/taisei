@@ -520,16 +520,15 @@ static void credits_finish(void *arg) {
 }
 
 static void credits_process(void) {
-	TIMER(&global.frames);
-
 	stage3d_update(&stage_3d_context);
 
 	//stage_3d_context.cam.pos[2] = 10-0.1*global.frames;
 	//stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
 	//stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
-	FROM_TO(100, 200, 1)
+	if(global.frames >= 100 && global.frames <= 200) {
 		credits.panelalpha += 0.01;
+	}
 
 	if(global.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {
 		credits.panelalpha -= 1 / 120.0;
