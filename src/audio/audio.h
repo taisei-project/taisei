@@ -69,22 +69,4 @@ void resume_all_sfx(void);
 void stop_all_sfx(void);
 void update_all_sfx(void); // checks if loops need to be stopped
 
-DEFINE_DEPRECATED_RESOURCE_GETTER(SFX, get_sound, res_sfx)
-DEFINE_DEPRECATED_RESOURCE_GETTER(BGM, get_music, res_bgm)
-
-attr_deprecated("Use play_sfx() instead")
-INLINE SFXPlayID play_sound(const char *name) {
-	return play_sfx(name);
-}
-
-attr_deprecated("Use play_sfx_ex() instead") attr_nonnull(1)
-INLINE SFXPlayID play_sound_ex(const char *name, int cooldown, bool replace) {
-	return play_sfx_ex(name, cooldown, replace);
-}
-
-attr_deprecated("Use stop_sfx() instead")
-INLINE void stop_sound(SFXPlayID sid) {
-	stop_sfx(sid);
-}
-
 double audioutil_loopaware_position(double rt_pos, double duration, double loop_start);
