@@ -240,38 +240,6 @@ void stage3d_shutdown(Stage3D *s) {
 	dynarray_free_data(&s->positions);
 }
 
-// DEPRECATED
-uint linear3dpos(Stage3D *s3d, vec3 camera, float maxrange, vec3 support, vec3 direction) {
-	vec3 support_to_camera;
-	glm_vec3_sub(camera, support, support_to_camera);
-
-	const float direction_length2 = glm_vec3_norm2(direction);
-	const float projected_cam = glm_vec3_dot(support_to_camera, direction) / direction_length2;
-	const int n_closest_to_cam = projected_cam;
-
-	uint prev_size = s3d->positions.num_elements;
-
-	// This is an approximation that does not take into account the distance
-	// of the camera to the line. Can be made exact though.
-	const int nrange = maxrange/sqrt(direction_length2);
-
-	// draw furthest to closest
-	for(int r = 0; r <= nrange; r++) {
-		for(int dir = -1; dir <= 1; dir += 2) {
-			if(r == 0 && dir > 0) {
-				continue;
-			}
-
-			int n = n_closest_to_cam + dir*r;
-			vec3 extended_direction;
-			glm_vec3_scale(direction, n, extended_direction);
-			glm_vec3_add(support, extended_direction, *dynarray_append(&s3d->positions));
-		}
-	}
-
-	return s3d->positions.num_elements - prev_size;
-}
-
 struct pos_ray_data {
 	int n_closest_to_cam;
 	int forward_nrange;
