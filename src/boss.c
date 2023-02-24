@@ -1010,12 +1010,6 @@ static int attack_end_delay(Boss *boss) {
 	return attacktype_end_delay(boss->current->type);
 }
 
-static void boss_call_rule(Boss *boss, int t) {
-	if(boss->current->rule) {
-		boss->current->rule(boss, t);
-	}
-}
-
 static bool spell_is_overload(AttackInfo *spell) {
 	// HACK HACK HACK
 	StagesExports *e = dynstage_get_exports();
@@ -1028,7 +1022,6 @@ void boss_finish_current_attack(Boss *boss) {
 
 	boss->in_background = false;
 	boss->current->hp = 0;
-	boss_call_rule(boss, EVENT_DEATH);
 
 	aniplayer_soft_switch(&boss->ani,"main",0);
 
@@ -1084,10 +1077,6 @@ void process_boss(Boss **pboss) {
 	fapproach_asymptotic_p(&boss->background_transition, boss->in_background ? 1.0f : 0.0f, 0.15, 1e-3);
 	boss->ent.draw_layer = lerp(LAYER_BOSS, LAYER_BACKGROUND, boss->background_transition);
 
-	if(boss->global_rule) {
-		boss->global_rule(boss, global.frames - boss->birthtime);
-	}
-
 	if(!boss->current || dialog_is_active(global.dialog)) {
 		return;
 	}
@@ -1112,8 +1101,6 @@ void process_boss(Boss **pboss) {
 		if(boss->current->type != AT_Move && remaining <= 11*FPS && remaining > 0 && !(time % FPS)) {
 			play_sfx(remaining <= 6*FPS ? "timeout2" : "timeout1");
 		}
-
-		boss_call_rule(boss, time);
 	}
 
 	if(extra) {
@@ -1276,7 +1263,6 @@ void process_boss(Boss **pboss) {
 
 			if(boss->current->type == AT_Immediate) {
 				boss->current->starttime = global.frames;
-				boss_call_rule(boss, EVENT_BIRTH);
 
 				coevent_signal_once(&boss->current->events.initiated);
 				coevent_signal_once(&boss->current->events.started);
@@ -1417,7 +1403,6 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	b->shot_damage_multiplier = 1.0;
 
 	a->starttime = global.frames + attacktype_start_delay(a->type);
-	boss_call_rule(b, EVENT_BIRTH);
 
 	if(ATTACK_IS_SPELL(a->type)) {
 		play_sfx(a->type == AT_ExtraSpell ? "charge_extra" : "charge_generic");
@@ -1439,21 +1424,17 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
 }
 
-static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule draw_rule) {
 	assert(boss->acount < BOSS_MAX_ATTACKS);
 
 	Attack *a = &boss->attacks[boss->acount];
 	boss->acount += 1;
 	memset(a, 0, sizeof(Attack));
-
 	a->type = type;
 	a->name = strdup(name);
 	a->timeout = timeout * FPS;
-
 	a->maxhp = hp;
 	a->hp = hp;
-
-	a->rule = rule;
 	a->draw_rule = draw_rule;
 
 	COEVENT_INIT_ARRAY(a->events);
@@ -1462,13 +1443,12 @@ static Attack *_boss_add_attack(Boss *boss, AttackType type, char *name, float t
 }
 
 static Attack *_boss_add_attack_from_info(Boss *boss, AttackInfo *info){
-	Attack *a = _boss_add_attack(
+	Attack *a = boss_add_attack(
 		boss,
 		info->type,
 		info->name,
 		info->timeout,
 		info->hp,
-		info->rule,
 		info->draw_rule
 	);
 
@@ -1533,31 +1513,9 @@ static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
 }
 
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
-	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
 	setup_attack_task(boss, a, task);
 	return a;
-}
-
-TASK_WITH_INTERFACE(legacy_attack_helper, BossAttack) {
-	INIT_BOSS_ATTACK(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS);
-}
-
-static void setup_legacy_attack(Boss *boss, Attack *atk) {
-	if(!atk->rule) {
-		return;
-	}
-
-	INVOKE_TASK_WHEN(&atk->events.initiated, legacy_attack_helper,
-		.boss = ENT_BOX(boss),
-		.attack = atk
-	);
-}
-
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule) {
-	Attack *atk = _boss_add_attack(boss, type, name, timeout, hp, rule, draw_rule);
-	setup_legacy_attack(boss, atk);
-	return atk;
 }
 
 void boss_set_attack_bonus(Attack *a, int rank) {
@@ -1580,39 +1538,33 @@ void boss_set_attack_bonus(Attack *a, int rank) {
 	}
 }
 
-static void boss_generic_move(Boss *b, int time) {
-	Attack *atck = b->current;
+TASK(boss_generic_move_finish, { BoxedBoss boss; cmplx dest; }) {
+	Boss *b = TASK_BIND(ARGS.boss);
+	b->pos = ARGS.dest;
+	b->move = move_linear(0);
+}
 
-	if(atck->info->pos_dest == BOSS_NOMOVE) {
-		return;
-	}
-
-	if(time == EVENT_DEATH) {
-		b->pos = atck->info->pos_dest;
-		return;
-	}
-
-	// because GO_TO is unreliable and linear is just not hip and cool enough
-
-	float f = (time + ATTACK_START_DELAY) / ((float)atck->timeout + ATTACK_START_DELAY);
-	float x = f;
-	float a = 0.3;
-	f = 1 - pow(f - 1, 4);
-	f = f * (1 + a * pow(1 - x, 2));
-	b->pos = atck->info->pos_dest * f + BOSS_DEFAULT_SPAWN_POS * (1 - f);
+TASK_WITH_INTERFACE(boss_generic_move, BossAttack) {
+	Boss *b = INIT_BOSS_ATTACK(&ARGS);
+	cmplx dest = ARGS.attack->info->pos_dest;
+	b->move = move_from_towards(b->pos, dest, 0.07);
+	INVOKE_TASK_WHEN(&ARGS.attack->events.completed, boss_generic_move_finish, ENT_BOX(b), dest);
+	BEGIN_BOSS_ATTACK(&ARGS);
 }
 
 Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move) {
 	if(move) {
-		boss_add_attack(boss, AT_Move, "Generic Move", 0.5, 0, boss_generic_move, NULL)->info = info;
+		Attack *m = boss_add_attack_task(
+			boss, AT_Move, "Generic Move", 0.5, 0,
+			TASK_INDIRECT(BossAttack, boss_generic_move), NULL
+		);
+		m->info = info;
 	}
 
 	Attack *a = _boss_add_attack_from_info(boss, info);
 
 	if(info->task._cotask_BossAttack_thunk) {
 		setup_attack_task(boss, a, info->task);
-	} else {
-		setup_legacy_attack(boss, a);
 	}
 
 	return a;
@@ -1631,7 +1583,7 @@ Attack *boss_add_attack_task_with_args(
 	Boss *boss, AttackType type, char *name, float timeout, int hp,
 	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args
 ) {
-	Attack *a = _boss_add_attack(boss, type, name, timeout, hp, NULL, draw_rule);
+	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
 	setup_attack_task_with_custom_args(boss, a, task, args.ptr, args.size);
 	return a;
 }

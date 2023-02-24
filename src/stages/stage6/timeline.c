@@ -236,7 +236,7 @@ TASK(spawn_boss) {
 	  .baryons = baryons_ref
 	);
 
-	Attack *pshift = boss_add_attack(boss, AT_Move, "Paradigm Shift", 5, 0, NULL, NULL);
+	Attack *pshift = boss_add_attack(boss, AT_Move, "Paradigm Shift", 5, 0, NULL);
 	INVOKE_TASK_WHEN(&pshift->events.initiated, stage6_boss_paradigm_shift,
 		.base.boss = ENT_BOX(boss),
 		.base.attack = pshift,

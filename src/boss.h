@@ -108,7 +108,6 @@ struct Attack {
 	float maxhp;
 	float hp;
 
-	BossRule rule;
 	BossRule draw_rule;
 
 	COEVENTS_ARRAY(
@@ -158,8 +157,6 @@ DEFINE_ENTITY_TYPE(Boss, {
 	int lastdamageframe; // used to make the boss blink on damage taken
 	int birthtime;
 
-	BossRule global_rule;
-
 	MoveParams move;
 
 	// These are publicly accessible damage multipliers *you* can use to buff your spells.
@@ -201,7 +198,7 @@ void draw_boss_background(Boss *boss) attr_nonnull(1);
 void draw_boss_overlay(Boss *boss) attr_nonnull(1);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
