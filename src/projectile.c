@@ -257,14 +257,10 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	Projectile *p = (Projectile*)objpool_acquire(stage_object_pools.projectiles);
 
-	DIAGNOSTIC(push)
-	DIAGNOSTIC(ignored "-Wdeprecated-declarations")
-
 	p->birthtime = global.frames;
 	p->pos = p->pos0 = p->prevpos = args->pos;
 	p->angle = args->angle;
 	p->angle_delta = args->angle_delta;
-	p->rule = args->rule;
 	p->draw_rule = args->draw_rule;
 	p->shader = args->shader_ptr;
 	p->blend = args->blend;
@@ -282,10 +278,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->move = args->move;
 	p->scale = args->scale;
 	p->opacity = args->opacity;
-
-	memcpy(p->args, args->args, sizeof(p->args));
-
-	DIAGNOSTIC(pop)
 
 	p->ent.draw_func = ent_draw_projectile;
 
