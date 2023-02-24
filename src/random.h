@@ -12,8 +12,6 @@
 #include "util/crap.h"
 #include "util/miscmath.h"
 
-#define RNG_DEPRECATED attr_deprecated("Use the new rng_ API")
-
 typedef struct RandomState {
 	uint64_t state[4];
 #ifdef DEBUG
@@ -138,34 +136,3 @@ bool vrng_f32_chance(rng_val_t v, float chance) attr_pure;
 )(v, chance)
 
 #define rng_chance(chance) vrng_chance(rng_next(), chance)
-
-/*
- * Deprecated APIs; to be removed
- */
-
-uint32_t tsrand_p(RandomState *rng) RNG_DEPRECATED;
-uint64_t tsrand64_p(RandomState *rng) RNG_DEPRECATED;
-
-uint32_t tsrand(void) RNG_DEPRECATED;
-uint64_t tsrand64(void) RNG_DEPRECATED;
-
-double frand(void) RNG_DEPRECATED;  // Range: [0.0; 1.0)
-double nfrand(void) RNG_DEPRECATED;  // Range: (-1.0; 1.0)
-bool rand_bool(void) RNG_DEPRECATED;
-double rand_sign(void) RNG_DEPRECATED;  // 1.0 or -1.0
-float rand_signf(void) RNG_DEPRECATED;  // 1.0f or -1.0f
-
-void _tsrand_fill_p(RandomState *rnd, int amount, const char *file, uint line) RNG_DEPRECATED;
-void _tsrand_fill(int amount, const char *file, uint line) RNG_DEPRECATED;
-uint32_t _tsrand_a(int idx, const char *file, uint line) RNG_DEPRECATED;
-uint64_t _tsrand64_a(int idx, const char *file, uint line) RNG_DEPRECATED;
-double _afrand(int idx, const char *file, uint line) RNG_DEPRECATED;
-double _anfrand(int idx, const char *file, uint line) RNG_DEPRECATED;
-
-#define tsrand_fill_p(rnd,amount) _tsrand_fill_p(rnd, amount, _TAISEI_SRC_FILE, __LINE__)
-#define tsrand_fill(amount) _tsrand_fill(amount, _TAISEI_SRC_FILE, __LINE__)
-#define tsrand_a(idx) _tsrand_a(idx, _TAISEI_SRC_FILE, __LINE__)
-#define afrand(idx) _afrand(idx, _TAISEI_SRC_FILE, __LINE__)
-#define anfrand(idx) _anfrand(idx, _TAISEI_SRC_FILE, __LINE__)
-
-#define TSRAND_ARRAY_LIMIT 16
