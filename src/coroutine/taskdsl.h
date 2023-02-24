@@ -70,8 +70,6 @@
 
 #define ARGS (*_cotask_args)
 
-#define NO_ARGS attr_deprecated("Use { } instead of NO_ARGS, or omit it entirely") { }
-
 // NOTE: the nested anonymous struct hack allows us to support both of these syntaxes:
 //       INVOKE_TASK(foo, ENT_BOX(bar));
 //       INVOKE_TASK(foo, { ENT_BOX(bar) });
