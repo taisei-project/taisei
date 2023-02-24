@@ -126,35 +126,13 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 	assert(*h > 0);
 }
 
-static void ent_draw_projectile(EntityInterface *ent);
+static Projectile *spawn_bullet_spawning_effect(Projectile *p);
 
-static inline char* event_name(int ev) {
-	switch(ev) {
-		case EVENT_BIRTH: return "EVENT_BIRTH";
-		case EVENT_DEATH: return "EVENT_DEATH";
-		default: UNREACHABLE;
-	}
-}
-
-static Projectile* spawn_bullet_spawning_effect(Projectile *p);
-
-static inline int proj_call_rule(Projectile *p, int t) {
+static inline int proj_update(Projectile *p, int t) {
 	int result = ACTION_NONE;
 
 	if(p->timeout > 0 && t >= p->timeout) {
 		result = ACTION_DESTROY;
-	} else if(p->rule != NULL) {
-		result = p->rule(p, t);
-
-		if(t < 0 && result != ACTION_ACK) {
-			set_debug_info(&p->debug);
-			log_fatal(
-				"Projectile rule didn't acknowledge %s (returned %i, expected %i)",
-				event_name(t),
-				result,
-				ACTION_ACK
-			);
-		}
 	} else if(t >= 0) {
 		if(!(p->flags & PFLAG_NOMOVE)) {
 			move_update(&p->pos, &p->move);
@@ -171,11 +149,9 @@ static inline int proj_call_rule(Projectile *p, int t) {
 		}
 	}
 
-	if(/*t == 0 ||*/ t == EVENT_BIRTH) {
-		p->prevpos = p->pos;
-	}
-
 	if(t == 0) {
+		// FIXME: not sure if this should happen before or after move_update,
+		// or maybe even directly at spawn.
 		spawn_bullet_spawning_effect(p);
 	}
 
@@ -250,6 +226,8 @@ void projectile_set_layer(Projectile *p, drawlayer_t layer) {
 	p->ent.draw_layer = layer;
 }
 
+static void ent_draw_projectile(EntityInterface *ent);
+
 static Projectile* _create_projectile(ProjArgs *args) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
@@ -298,10 +276,6 @@ static Projectile* _create_projectile(ProjArgs *args) {
 
 	COEVENT_INIT_ARRAY(p->events);
 	ent_register(&p->ent, ENT_TYPE_ID(Projectile));
-
-	// TODO: Maybe allow ACTION_DESTROY here?
-	// But in that case, code that uses this function's return value must be careful to not dereference a NULL pointer.
-	proj_call_rule(p, EVENT_BIRTH);
 	alist_append(args->dest, p);
 
 	return p;
@@ -335,7 +309,6 @@ static void signal_event_with_collision_result(Projectile *p, CoEvent *evt, Proj
 }
 
 static void delete_projectile(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) {
-	proj_call_rule(p, EVENT_DEATH);
 	signal_event_with_collision_result(p, &p->events.killed, col);
 	COEVENT_CANCEL_ARRAY(p->events);
 	ent_unregister(&p->ent);
@@ -587,7 +560,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
 		}
 
-		action = proj_call_rule(proj, global.frames - proj->birthtime);
+		action = proj_update(proj, global.frames - proj->birthtime);
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
 			proj->graze_counter--;
@@ -631,7 +604,7 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 	int t;
 
 	for(t = timeofs;; ++t) {
-		int action = proj_call_rule(p, t);
+		int action = proj_update(p, t);
 		calc_projectile_collision(p, out_col);
 
 		if(out_col->type & stopflags || action == ACTION_DESTROY) {

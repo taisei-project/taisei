@@ -107,12 +107,10 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	cmplx prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
 	cmplx size; // affects out-of-viewport culling and grazing
 	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
-	cmplx args[PROJ_DRAWRULE_NUMARGS];
-	ProjRule rule;
-	ProjDrawRule draw_rule;
 	ShaderProgram *shader;
 	Sprite *sprite;
 	ProjPrototype *proto;
+	ProjDrawRule draw_rule;
 
 	/*
 	 * This field is usually NULL except during handling of "collision" and "killed" events.
