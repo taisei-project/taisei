@@ -50,12 +50,6 @@ typedef enum EnemyFlag {
 		0,
 } EnemyFlag;
 
-enum {
-	_internal_ENEMY_IMMUNE = -9000,
-	ENEMY_IMMUNE attr_deprecated("Set enemy flags explicitly") = _internal_ENEMY_IMMUNE,
-// 	ENEMY_KILLED = -9002,
-};
-
 DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;

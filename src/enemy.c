@@ -115,10 +115,6 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 
 	e->flags = 0;
 
-	if(e->hp == _internal_ENEMY_IMMUNE) {
-		e->flags |= EFLAGS_GHOST;
-	}
-
 	e->logic_rule = logic_rule;
 	e->visual_rule = visual_rule;
 
@@ -338,7 +334,7 @@ float enemy_get_hurt_radius(Enemy *enemy) {
 
 static bool should_auto_kill(Enemy *enemy) {
 	return
-		(enemy->hp <= 0 && enemy->hp != _internal_ENEMY_IMMUNE) ||
+		(enemy->hp <= 0) ||
 		(!(enemy->flags & EFLAG_NO_AUTOKILL) && !enemy_in_viewport(enemy));
 }
 
