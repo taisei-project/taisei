@@ -49,7 +49,7 @@ static uint stage5_stairs_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 	vec3 p = {0, 0, -s};
 	vec3 r = {0, 0, s};
 
-	return stage3d_pos_ray_nearfirst(s3d, cam, p, r, s, s * 3);
+	return stage3d_pos_ray_nearfirst(s3d, cam, p, r, s, s * 4);
 }
 
 static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {

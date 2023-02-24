@@ -20,38 +20,55 @@
 #include "common_tasks.h"
 
 struct stage5_spells_s stage5_spells = {
+	.mid = {
+		.static_bomb = {
+			{ 16, 17, 18, 19}, AT_SurvivalSpell, "High Voltage “Static Bomb”", 16, 10,
+			NULL, NULL, BOSS_DEFAULT_GO_POS, 0,
+			TASK_INDIRECT_INIT(BossAttack, stage5_midboss_static_bomb)
+		},
+	},
+
 	.boss = {
 		.atmospheric_discharge = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "High Voltage “Atmospheric Discharge”", 60, 44000,
-			iku_atmospheric, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+			NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_atmospheric_discharge)
 		},
 		.artificial_lightning = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Charge Sign “Artificial Lightning”", 75, 60000,
-			iku_lightning, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+			NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_artificial_lightning)
 		},
 		.induction_field = {
 			{12, 13, -1, -1}, AT_Spellcard, "Current Sign “Induction Field”", 60, 50000,
-			iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+			NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_induction)
 		},
 		.inductive_resonance = {
 			{-1, -1, 14, 15}, AT_Spellcard, "Current Sign “Inductive Resonance”", 60, 50000,
-			iku_induction, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+			NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_induction)
 		},
 		.natural_cathode = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Spark Sign “Natural Cathode”", 60, 44000,
-			iku_cathode, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+			NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+			TASK_INDIRECT_INIT(BossAttack, stage5_spell_natural_cathode)
 		},
 	},
 
 	.extra.overload = {
-		{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign “Overload”", 60, 44000,
-		iku_overload, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5
+		{ 0,  1,  2,  3}, AT_ExtraSpell, "Circuit Sign “Overload”", 120, 22000,
+		NULL, iku_spell_bg, BOSS_DEFAULT_GO_POS, 5,
+		TASK_INDIRECT_INIT(BossAttack, stage5_spell_overload)
 	},
 };
 
 static void stage5_start(void) {
 	stage5_drawsys_init();
 	stage5_bg_init_fullstage();
+	stage_start_bgm("stage5");
+	stage_set_voltage_thresholds(255, 480, 860, 1250);
+	INVOKE_TASK(stage5_timeline);
 }
 
 static void stage5_preload(void) {
@@ -114,7 +131,6 @@ StageProcs stage5_procs = {
 	.preload = stage5_preload,
 	.end = stage5_end,
 	.draw = stage5_draw,
-	.event = stage5_events,
 	.shader_rules = stage5_bg_effects,
 	.spellpractice_procs = &stage5_spell_procs,
 };

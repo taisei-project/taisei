@@ -10,4 +10,5 @@
 #include "taisei.h"
 
 #define ENTITIES_STAGE5(X, ...) \
+	X(IkuSlave, __VA_ARGS__) \
 	END_OF_ENTITIES

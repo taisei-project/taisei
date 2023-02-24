@@ -57,7 +57,7 @@ void stage5_bg_init_spellpractice(void) {
 
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 	stage5_draw_data->stairs.roffset = -90;
-	stage5_draw_data->stairs.zoffset = 5;
+	stage5_draw_data->stairs.zoffset = 30;
 	stage5_draw_data->stairs.rad = -3;
 
 	INVOKE_TASK(stage5_bg_update);
