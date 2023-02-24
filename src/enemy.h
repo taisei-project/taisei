@@ -154,6 +154,4 @@ void Fairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from
 void Swirl(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
 void BigFairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
 
-int enemy_flare(Projectile *p, int t) attr_deprecated("Use tasks");
-
 void enemies_preload(void);

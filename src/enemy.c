@@ -255,32 +255,6 @@ static void ent_draw_enemy(EntityInterface *ent) {
 #endif
 }
 
-int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
-	if(t == EVENT_DEATH) {
-		free_ref(creal(p->args[1]));
-		return ACTION_ACK;
-	}
-
-	DIAGNOSTIC(push)
-	DIAGNOSTIC(ignored "-Wdeprecated-declarations")
-	Enemy *owner = REF(p->args[1]);
-	DIAGNOSTIC(pop)
-
-	int result = ACTION_NONE;
-
-	if(t == EVENT_BIRTH) {
-		t = 0;
-		result = ACTION_ACK;
-	}
-
-	if(owner != NULL) {
-		p->args[3] = owner->pos;
-	}
-
-	p->pos = p->pos0 + p->args[3] + p->args[0]*t;
-	return result;
-}
-
 bool enemy_is_vulnerable(Enemy *enemy) {
 	return !(enemy->flags & EFLAG_INVULNERABLE);
 }
