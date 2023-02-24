@@ -30,7 +30,7 @@
 #endif
 
 enum {
-	RULE_ARGC = 4
+	PROJ_DRAWRULE_NUMARGS = 4
 };
 
 typedef LIST_ANCHOR(Projectile) ProjectileList;
@@ -43,7 +43,7 @@ typedef union {
 	float as_float[2];
 	cmplxf as_cmplx;
 	void *as_ptr;
-} ProjDrawRuleArgs[RULE_ARGC];
+} ProjDrawRuleArgs[PROJ_DRAWRULE_NUMARGS];
 
 typedef struct ProjDrawRule {
 	void (*func)(Projectile *p, int t, ProjDrawRuleArgs args);
@@ -107,7 +107,7 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	cmplx prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
 	cmplx size; // affects out-of-viewport culling and grazing
 	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
-	cmplx args[RULE_ARGC];
+	cmplx args[PROJ_DRAWRULE_NUMARGS];
 	ProjRule rule;
 	ProjDrawRule draw_rule;
 	ShaderProgram *shader;
@@ -175,7 +175,7 @@ typedef struct ProjArgs {
 	ShaderProgram *shader_ptr;
 	ProjectileList *dest;
 	attr_deprecated("Use .move and/or tasks instead") ProjRule rule;
-	attr_deprecated("Use .move and/or tasks instead") cmplx args[RULE_ARGC];
+	attr_deprecated("Use .move and/or tasks instead") cmplx args[PROJ_DRAWRULE_NUMARGS];
 	ProjDrawRule draw_rule;
 	cmplx pos;
 	cmplx size; // affects default draw order, out-of-viewport culling, and grazing

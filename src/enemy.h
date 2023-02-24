@@ -62,7 +62,7 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos0_visual;
 
 	union {
-		cmplx args[RULE_ARGC];
+		cmplx args[PROJ_DRAWRULE_NUMARGS];
 		MoveParams move;
 	};
 
