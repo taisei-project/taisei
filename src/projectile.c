@@ -128,11 +128,12 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 
 static Projectile *spawn_bullet_spawning_effect(Projectile *p);
 
-static inline int proj_update(Projectile *p, int t) {
-	int result = ACTION_NONE;
+// Returns true if projectile should be destroyed
+static inline bool proj_update(Projectile *p, int t) {
+	bool destroy = false;
 
 	if(p->timeout > 0 && t >= p->timeout) {
-		result = ACTION_DESTROY;
+		destroy = true;
 	} else if(t >= 0) {
 		if(!(p->flags & PFLAG_NOMOVE)) {
 			move_update(&p->pos, &p->move);
@@ -155,7 +156,7 @@ static inline int proj_update(Projectile *p, int t) {
 		spawn_bullet_spawning_effect(p);
 	}
 
-	return result;
+	return destroy;
 }
 
 void projectile_set_prototype(Projectile *p, ProjPrototype *proto) {
@@ -543,8 +544,6 @@ void kill_projectile(Projectile *proj) {
 
 void process_projectiles(ProjectileList *projlist, bool collision) {
 	ProjCollisionResult col = { 0 };
-
-	int action;
 	bool stage_cleared = stage_is_cleared();
 
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
@@ -560,7 +559,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			clear_projectile(proj, CLEAR_HAZARDS_BULLETS | CLEAR_HAZARDS_FORCE);
 		}
 
-		action = proj_update(proj, global.frames - proj->birthtime);
+		bool destroy = proj_update(proj, global.frames - proj->birthtime);
 
 		if(proj->graze_counter && proj->graze_counter_reset_timer - global.frames <= -90) {
 			proj->graze_counter--;
@@ -571,7 +570,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			proj->clear_flags |= CLEAR_HAZARDS_NOW;
 		}
 
-		if(action == ACTION_DESTROY) {
+		if(destroy) {
 			memset(&col, 0, sizeof(col));
 			col.fatal = true;
 		} else if(collision) {
@@ -604,10 +603,10 @@ int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionT
 	int t;
 
 	for(t = timeofs;; ++t) {
-		int action = proj_update(p, t);
+		bool destroy = proj_update(p, t);
 		calc_projectile_collision(p, out_col);
 
-		if(out_col->type & stopflags || action == ACTION_DESTROY) {
+		if(out_col->type & stopflags || destroy) {
 			return t;
 		}
 	}
