@@ -19,46 +19,6 @@
 #include "dynarray.h"
 #include "stageinfo.h"
 
-/* taisei's strange macro language.
- *
- * sorry, I guess it is bad style, but I hardcode everything and in that case
- * you'll find yourself soon in a situation where you have to spread your
- * coherent thoughts over frames using masses of redundant ifs.
- * I've just invented this thingy to keep track of my sanity.
- *
- */
-
-#define TIMER(ptr) int *__timep = ptr; int _i = 0, _ni = 0;  _i = _ni = _i;
-#define AT(t) if(*__timep == t)
-#define FROM_TO(start,end,step) _ni = _ni; _i = (*__timep - (start))/(step); if(*__timep >= (start) && *__timep <= (end) && !((*__timep - (start)) % (step)))
-
-// Like FROM_TO just with two different intervals:
-// A pause interval step and an action interval dur. For dur frames something
-// happens, then for step frames there is a break.
-//
-// Lastly, istep is the step inside the action interval. For istep = 2, only
-// every second frame of dur is executed.
-//
-// Finally an example for step = 4, dur = 5, and istep = 2:
-//
-// A_A_A____A_A_A____A_A_A____...
-//
-// where A denotes a frame in which the body of FROM_TO_INT gets executed.
-#define FROM_TO_INT(start, end, step, dur, istep) \
-		_i = (*__timep - (start))/(step+dur); _ni = ((*__timep - (start)) % (step+dur))/istep; \
-		if(*__timep >= (start) && *__timep <= (end) && (*__timep - (start)) % ((dur) + (step)) <= dur && !((*__timep - (start)) % (istep)))
-
-#define GO_AT(obj, start, end, vel) if(*__timep >= (start) && *__timep <= (end)) (obj)->pos += (vel);
-#define GO_TO(obj, p, f) (obj)->pos += (f)*((p) - (obj)->pos);
-
-// This is newest addition to the macro zoo! It allows you to loop a sound like
-// you loop your French- I mean your danmaku code. Nothing strange going on here.
-#define PLAY_FOR(name,start, end) FROM_TO(start,end,2) { play_sfx_loop(name); }
-
-// easy to soundify versions of FROM_TO and friends. Note how I made FROM_TO_INT even more complicated!
-#define FROM_TO_SND(snd,start,end,step) PLAY_FOR(snd,start,end); FROM_TO(start,end,step)
-#define FROM_TO_INT_SND(snd,start,end,step,dur,istep) FROM_TO_INT(start,end,step,dur,2) { play_sfx_loop(snd); }FROM_TO_INT(start,end,step,dur,istep)
-
 typedef struct StageClearBonus {
 	uint64_t base;
 	uint64_t lives;
