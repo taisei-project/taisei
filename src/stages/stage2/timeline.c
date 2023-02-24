@@ -461,11 +461,13 @@ static void wriggle_intro_stage2(Boss *w, int t) {
 	w->pos = CMPLX(VIEWPORT_W/2, 100.0) + (1.0 - t / 240.0) * (300 * cexp(I * (3 - t * 0.04)) - 128);
 }
 
-static void wiggle_mid_flee(Boss *w, int t) {
-	if(t == 0)
-		aniplayer_queue(&w->ani, "fly", 0);
-	if(t >= 0) {
-		GO_TO(w, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01)
+TASK_WITH_INTERFACE(wriggle_mid_flee, BossAttack) {
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+	aniplayer_queue(&boss->ani, "fly", 0);
+
+	for(int t = 0;; ++t, YIELD) {
+		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01);
 	}
 }
 
@@ -477,7 +479,7 @@ TASK(spawn_midboss) {
 
 	boss_add_attack(boss, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
 	boss_add_attack_task(boss, AT_Normal, "", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
-	boss_add_attack(boss, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);
+	boss_add_attack_task(boss, AT_Move, "Flee", 5, 0, TASK_INDIRECT(BossAttack, wriggle_mid_flee), NULL);
 
 	boss_engage(boss);
 }
