@@ -65,7 +65,6 @@ enum {
 
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
-	EVENT_KILLED,
 
 	FPS = 60,
 
