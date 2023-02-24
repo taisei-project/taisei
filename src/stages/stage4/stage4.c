@@ -28,40 +28,48 @@ struct stage4_spells_s stage4_spells = {
 	.mid = {
 		.gate_of_walachia = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Bloodless “Gate of Walachia”", 50, 44000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_walachia)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_walachia),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 		.dry_fountain = {
 			{ 4,  5, -1, -1}, AT_Spellcard, "Bloodless “Dry Fountain”", 50, 44000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_dryfountain)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_dryfountain),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 		.red_spike = {
 			{-1, -1,  6,  7}, AT_Spellcard, "Bloodless “Red Spike”", 50, 46000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_redspike)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_redspike),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 	},
 
 	.boss = {
 		.animate_wall = {
 			{ 8,  9, -1, -1}, AT_Spellcard, "Limit “Animate Wall”", 60, 50000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_aniwall),
+			TASK_INDIRECT_INIT(BossAttack, kurumi_aniwall),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 		.demon_wall = {
 			{-1, -1, 10, 11}, AT_Spellcard, "Summoning “Demon Wall”", 60, 55000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_aniwall)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_aniwall),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 		.blow_the_walls = {
 			{12, 13, 14, 15}, AT_Spellcard, "Power Sign “Blow the Walls”", 60, 55000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_blowwall)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_blowwall),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 		.bloody_danmaku = {
 			{18, 19, 16, 17}, AT_Spellcard, "Predation “Vampiric Vapor”", 80, 60000,
-			NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_vampvape)
+			TASK_INDIRECT_INIT(BossAttack, kurumi_vampvape),
+			kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 		},
 	},
 
 	.extra.vlads_army = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Blood Magic “Vlad’s Army”", 60, 50000,
-		NULL, kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4, TASK_INDIRECT_INIT(BossAttack, kurumi_vladsarmy)
+		TASK_INDIRECT_INIT(BossAttack, kurumi_vladsarmy),
+		kurumi_spell_bg, BOSS_DEFAULT_GO_POS, 4,
 	},
 };
 

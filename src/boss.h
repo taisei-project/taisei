@@ -83,14 +83,11 @@ struct AttackInfo {
 	float timeout;
 	float hp;
 
-	BossRule rule;
+	TASK_INDIRECT_TYPE(BossAttack) task;
 	BossRule draw_rule;
 
 	cmplx pos_dest;
 	int bonus_rank;
-
-	// TODO: when we no longer need rule, this shall take its place
-	TASK_INDIRECT_TYPE(BossAttack) task;
 };
 
 struct Attack {

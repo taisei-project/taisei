@@ -28,41 +28,41 @@ struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
 			{-1, -1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 	},
 
 	.boss = {
 		.crystal_rain = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.snow_halation = {
 			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.icicle_cascade = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Cascade”", 40, 40000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 	},
 
 	.extra.crystal_blizzard = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
-		NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-		TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard)
+		TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard),
+		stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 	},
 };
 
 #ifdef SPELL_BENCHMARK
 AttackInfo stage1_spell_benchmark = {
 	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling “ベンチマーク”", 40, 40000,
-	NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-	TASK_INDIRECT_INIT(BossAttack, stage1_spell_benchmark)
+	TASK_INDIRECT_INIT(BossAttack, stage1_spell_benchmark),
+	stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 };
 #endif
 

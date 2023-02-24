@@ -28,48 +28,57 @@ struct stage6_spells_s stage6_spells = {
 	.scythe = {
 		.occams_razor = {
 			{ 0,  1,  2,  3}, AT_Spellcard, "Newton Sign “Occam’s Razor”", 50, 60000,
-			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_newton),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_newton),
+			elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6,
 		},
 		.orbital_clockwork = {
 			{24, 25, 26, 27}, AT_Spellcard, "Kepler Sign “Orbital Clockwork”", 50, 60000,
-			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_kepler),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_kepler),
+			elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6,
 		},
 		.wave_theory = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Maxwell Sign “Wave Theory”", 30, 25000,
-			NULL, elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6, TASK_INDIRECT_INIT(BossAttack, stage6_spell_maxwell),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_maxwell),
+			elly_spellbg_classic, BOSS_DEFAULT_GO_POS, 6,
 		},
 	},
 
 	.baryon = {
 		.many_world_interpretation = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Eigenstate “Many-World Interpretation”", 50, 60000,
-			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_eigenstate),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_eigenstate),
+			elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7,
 		},
 		.wave_particle_duality = {
 			{28, 29, 30, 31}, AT_Spellcard, "de Broglie Sign “Wave-Particle Duality”", 60, 65000,
-			NULL, elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_broglie),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_broglie),
+			elly_spellbg_modern_dark, BOSS_DEFAULT_GO_POS, 7,
 		},
 		.spacetime_curvature = {
 			{12, 13, 14, 15}, AT_Spellcard, "Ricci Sign “Spacetime Curvature”", 50, 80000,
-			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_ricci),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_ricci),
+			elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7,
 		},
 		.higgs_boson_uncovered = {
 			{16, 17, 18, 19}, AT_Spellcard, "LHC “Higgs Boson Uncovered”", 75, 60000,
-			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_lhc),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_lhc),
+			elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7,
 		}
 	},
 
 	.extra = {
 		.curvature_domination = {
 			{ 0,  1,  2,  3}, AT_ExtraSpell, "Forgotten Universe “Curvature Domination”", 60, 60000,
-			NULL, elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7, TASK_INDIRECT_INIT(BossAttack, stage6_spell_forgotten),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_forgotten),
+			elly_spellbg_modern, BOSS_DEFAULT_GO_POS, 7,
 		}
 	},
 
 	.final = {
 		.theory_of_everything = {
 			{20, 21, 22, 23}, AT_SurvivalSpell, "Tower of Truth “Theory of Everything”", 70, 40000,
-			NULL, elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8, TASK_INDIRECT_INIT(BossAttack, stage6_spell_toe),
+			TASK_INDIRECT_INIT(BossAttack, stage6_spell_toe),
+			elly_spellbg_toe, ELLY_TOE_TARGET_POS, 8,
 		}
 	},
 };
