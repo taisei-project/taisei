@@ -203,11 +203,6 @@ void elly_spellbg_modern_dark(Boss *b, int t) {
 	fade_out(0.75 * fmin(1, t / 300.0));
 }
 
-void elly_global_rule(Boss *b, int time) {
-	global.boss->glowcolor = *HSL(time/120.0, 1.0, 0.25);
-	global.boss->shadowcolor = *HSLA_MUL_ALPHA((time+20)/120.0, 1.0, 0.25, 0.5);
-}
-
 static bool stage6_fog(Framebuffer *fb) {
 	r_shader("zbuf_fog");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));

@@ -14,10 +14,19 @@
 #include "util/glm.h"
 #include "spells/spells.h"
 
-Boss* stage6_spawn_elly(cmplx pos) {
+TASK(elly_animate_colors, { BoxedBoss boss; }) {
+	auto boss = TASK_BIND(ARGS.boss);
+
+	for(int t = 0;; ++t, YIELD) {
+		boss->glowcolor = *HSL(t/120.0, 1.0, 0.25);
+		boss->shadowcolor = *HSLA_MUL_ALPHA((t+20)/120.0, 1.0, 0.25, 0.5);
+	}
+}
+
+Boss *stage6_spawn_elly(cmplx pos) {
 	Boss *b = create_boss("Elly", "elly", pos);
 	boss_set_portrait(b, "elly", NULL, "normal");
-	b->global_rule = elly_global_rule;
+	INVOKE_TASK(elly_animate_colors, ENT_BOX(b));
 	return b;
 }
 
