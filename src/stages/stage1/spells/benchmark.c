@@ -11,18 +11,13 @@
 #include "spells.h"
 #include "../cirno.h"
 
+#ifdef SPELL_BENCHMARK
+
 #include "global.h"
 
-void stage1_spell_benchmark_proc(Boss *b, int t) {
-	if(t < 0) {
-		return;
-	}
-
+static void stage1_spell_benchmark_proc(Boss *b, int t) {
 	int N = 5000; // number of particles on the screen
 
-	if(t == 0) {
-		aniplayer_queue(&b->ani, "(9)", 0);
-	}
 	double speed = 10;
 	int c = N*speed/VIEWPORT_H;
 	for(int i = 0; i < c; i++) {
@@ -52,3 +47,15 @@ void stage1_spell_benchmark_proc(Boss *b, int t) {
 			p->color.a = 0;
 	}
 }
+
+DEFINE_EXTERN_TASK(stage1_spell_benchmark) {
+	auto b = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+	aniplayer_queue(&b->ani, "(9)", 0);
+
+	for(int t = 0;; ++t, YIELD) {
+		stage1_spell_benchmark_proc(b, t);
+	}
+}
+
+#endif

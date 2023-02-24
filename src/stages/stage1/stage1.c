@@ -61,7 +61,8 @@ struct stage1_spells_s stage1_spells = {
 #ifdef SPELL_BENCHMARK
 AttackInfo stage1_spell_benchmark = {
 	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling “ベンチマーク”", 40, 40000,
-	stage1_spell_benchmark_proc, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I
+	NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
+	TASK_INDIRECT_INIT(BossAttack, stage1_spell_benchmark)
 };
 #endif
 
