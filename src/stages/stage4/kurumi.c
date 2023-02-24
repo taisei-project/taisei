@@ -40,13 +40,16 @@ DEFINE_EXTERN_TASK(stage4_boss_nonspell_redirect) {
 	spawn_projectile_highlight_effect(p);
 }
 
-static void kurumi_global_rule(Boss *b, int time) {
-	// FIXME: avoid running this every frame!
+TASK(kurumi_shadowcolor, { BoxedBoss boss; }) {
+	auto b = TASK_BIND(ARGS.boss);
 
-	if(b->current && ATTACK_IS_SPELL(b->current->type)) {
-		b->shadowcolor = *RGBA_MUL_ALPHA(0.0, 0.4, 0.5, 0.5);
-	} else {
-		b->shadowcolor = *RGBA_MUL_ALPHA(1.0, 0.1, 0.0, 0.5);
+	// TODO: less braindead way of doing this. Perhaps a boss event on attack switch?
+	for(;;YIELD) {
+		if(b->current && ATTACK_IS_SPELL(b->current->type)) {
+			b->shadowcolor = *RGBA_MUL_ALPHA(0.0, 0.4, 0.5, 0.5);
+		} else {
+			b->shadowcolor = *RGBA_MUL_ALPHA(1.0, 0.1, 0.0, 0.5);
+		}
 	}
 }
 
@@ -54,7 +57,7 @@ Boss *stage4_spawn_kurumi(cmplx pos) {
 	Boss* b = create_boss("Kurumi", "kurumi", pos);
 	boss_set_portrait(b, "kurumi", NULL, "normal");
 	b->glowcolor = *RGB(0.5, 0.1, 0.0);
-	b->global_rule = kurumi_global_rule;
+	INVOKE_TASK(kurumi_shadowcolor, ENT_BOX(b));
 	return b;
 }
 
