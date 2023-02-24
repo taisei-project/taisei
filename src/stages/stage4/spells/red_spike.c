@@ -16,13 +16,13 @@
 
 TASK(kurumi_redspike_slave, { cmplx pos; int direction; }) {
 	cmplx pos = ARGS.pos;
-	MoveParams move;
+	MoveParams move = {
+		.velocity = ARGS.direction,
+		.retention = cdir(0.01 * ARGS.direction),
+	};
 
 	INVOKE_SUBTASK(common_move_ext, &pos, &move);
 	INVOKE_SUBTASK(stage4_boss_slave_visual, &pos, .interval = 1);
-
-	move.velocity = ARGS.direction;
-	move.retention = cdir(0.01 * ARGS.direction);
 
 	int lifetime = difficulty_value(350, 400, 450, 500);
 	int step = difficulty_value(16, 14, 12, 10);
@@ -86,8 +86,8 @@ TASK(kurumi_redspike_animate, { BoxedBoss boss; }) {
 	aniplayer_queue(&b->ani, "muda", 0);
 	WAIT(420);
 	aniplayer_queue(&b->ani, "main", 0);
-}	
-	
+}
+
 
 DEFINE_EXTERN_TASK(kurumi_redspike) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
@@ -104,7 +104,7 @@ DEFINE_EXTERN_TASK(kurumi_redspike) {
 
 			for(int i = 0; i < 200; i += WAIT(step)) {
 				RNG_ARRAY(rand, 2);
-				cmplx offset = 100 * vrng_real(rand[0]) * vrng_dir(rand[1]); 
+				cmplx offset = 100 * vrng_real(rand[0]) * vrng_dir(rand[1]);
 				cmplx dir = cnormalize(global.plr.pos - b->pos - offset);
 
 				PROJECTILE(
