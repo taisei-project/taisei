@@ -19,7 +19,7 @@ typedef struct StagesExports {
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 	struct {
-		StageProcs *dps_single, *dps_multi, *dps_boss, *coro;
+		StageProcs *dps_single, *dps_multi, *dps_boss;
 		AttackInfo *benchmark_spell;
 	} testing;
 #endif

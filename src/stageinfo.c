@@ -151,11 +151,6 @@ static void stageinfo_fill(StagesExports *e) {
 		dynarray_get_ptr(&stageinfo.stages, 0),
 		e->testing.benchmark_spell, &spellnum, STAGE_SPELL_BIT, D_Extra
 	);
-
-	add_stage(
-		0xC0, e->testing.coro, STAGE_SPECIAL,
-		"Coroutines!", "wow such concurrency very async", NULL, D_Any
-	);
 #endif
 
 	dynarray_compact(&stageinfo.stages);

@@ -24,7 +24,6 @@ stages_src += files(
 if use_testing_stages
     stages_src += files(
         'dpstest.c',
-        'corotest.c',
     )
 endif
 

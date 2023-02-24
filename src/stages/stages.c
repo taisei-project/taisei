@@ -19,7 +19,6 @@
 
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 #include "stages/dpstest.h"
-#include "stages/corotest.h"
 #endif
 
 StagesExports stages_exports = {
@@ -36,7 +35,6 @@ StagesExports stages_exports = {
 		.dps_single = &stage_dpstest_single_procs,
 		.dps_multi = &stage_dpstest_multi_procs,
 		.dps_boss = &stage_dpstest_boss_procs,
-		.coro = &corotest_procs,
 		.benchmark_spell = &stage1_spell_benchmark,
 	}
 #endif
