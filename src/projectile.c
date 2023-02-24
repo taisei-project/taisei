@@ -664,56 +664,6 @@ int projectile_time(Projectile *p) {
 	return global.frames - p->birthtime;
 }
 
-int linear(Projectile *p, int t) { // sure is physics in here; a[0]: velocity
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	p->angle = carg(p->args[0]);
-
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	p->pos = p->pos0 + p->args[0]*t;
-
-	return ACTION_NONE;
-}
-
-int accelerated(Projectile *p, int t) {
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	p->angle = carg(p->args[0]);
-
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	p->pos += p->args[0];
-	p->args[0] += p->args[1];
-
-	return 1;
-}
-
-int asymptotic(Projectile *p, int t) { // v = a[0]*(a[1] + 1); a[1] -> 0
-	if(t == EVENT_DEATH) {
-		return ACTION_ACK;
-	}
-
-	p->angle = carg(p->args[0]);
-
-	if(t == EVENT_BIRTH) {
-		return ACTION_ACK;
-	}
-
-	p->args[1] *= 0.8;
-	p->pos += p->args[0]*(p->args[1] + 1);
-
-	return 1;
-}
-
 static inline bool proj_uses_spawning_effect(Projectile *proj, ProjFlags effect_flag) {
 	if(proj->type != PROJ_ENEMY) {
 		return false;
@@ -1048,29 +998,6 @@ ProjDrawRule pdraw_timeout_scale(cmplxf scale0, cmplxf scale1) {
 ProjDrawRule pdraw_timeout_fade(float opacity0, float opacity1) {
 	// TODO: specialized code path without scale component
 	return pdraw_timeout_scalefade(1+I, 1+I, opacity0, opacity1);
-}
-
-void Shrink(Projectile *p, int t, ProjDrawRuleArgs args) {
-	ProjDrawRule r = pdraw_timeout_scale(2.0f + 2.0if, 0.0f);
-	r.func(p, t, r.args);
-}
-
-void GrowFade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float grow_factor = creal(p->args[2]) ?: creal(p->args[1]);
-	ProjDrawRule r = pdraw_timeout_scalefade(0, (1+I) * (1 + grow_factor), 1, 0);
-	r.func(p, t, r.args);
-}
-
-void Fade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	ProjDrawRule r = pdraw_timeout_fade(1, 0);
-	r.func(p, t, r.args);
-}
-
-void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs args) {
-	float scale_min = creal(p->args[2]);
-	float scale_max = cimag(p->args[2]);
-	ProjDrawRule r = pdraw_timeout_scalefade(scale_min, scale_max, 1, 0);
-	r.func(p, t, r.args);
 }
 
 static void pdraw_petal_func(Projectile *p, int t, ProjDrawRuleArgs args) {

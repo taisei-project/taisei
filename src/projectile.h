@@ -37,7 +37,6 @@ typedef LIST_ANCHOR(Projectile) ProjectileList;
 typedef LIST_INTERFACE(Projectile) ProjectileListInterface;
 
 typedef int (*ProjRule)(Projectile *p, int t);
-// typedef void (*ProjDrawRule)(Projectile *p, int t);
 typedef bool (*ProjPredicate)(Projectile *p);
 
 typedef union {
@@ -250,17 +249,6 @@ void projectile_set_layer(Projectile *p, drawlayer_t layer) attr_nonnull_all;
 
 bool clear_projectile(Projectile *proj, uint flags) attr_nonnull_all;
 void kill_projectile(Projectile *proj) attr_nonnull_all;
-
-int linear(Projectile *p, int t);
-int accelerated(Projectile *p, int t);
-int asymptotic(Projectile *p, int t);
-
-#define DEPRECATED_DRAW_RULE attr_deprecated("")
-
-void Shrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void Fade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
 
 ProjDrawRule pdraw_basic(void);
 ProjDrawRule pdraw_timeout_scalefade_exp(cmplxf scale0, cmplxf scale1, float opacity0, float opacity1, float opacity_exp);
