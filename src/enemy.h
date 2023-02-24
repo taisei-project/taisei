@@ -150,8 +150,4 @@ cmplx enemy_visual_pos(Enemy *enemy);
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
-void Fairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-void Swirl(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-void BigFairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-
 void enemies_preload(void);

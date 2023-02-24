@@ -186,11 +186,6 @@ static void visual_super_fairy(Enemy *e, int t, bool render) {
 	}
 }
 
-// Deprecated declarations defined in enemy.h; TODO remove these later
-void Swirl(Enemy *e, int t, bool r) { visual_swirl(e, t, r); }
-void Fairy(Enemy *e, int t, bool r) { visual_fairy_blue(e, t, r); }
-void BigFairy(Enemy *e, int t, bool r) { visual_big_fairy(e, t, r); }
-
 TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
 	// NOTE: Don't bind here! We need this task to outlive the enemy.
 	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
