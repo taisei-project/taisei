@@ -169,9 +169,3 @@ const char *resource_util_filename(const char *path);
 	INLINE _type *_name(const char *resname) { \
 		return get_resource_data(_enum, resname, RESF_OPTIONAL); \
 	}
-
-#define DEFINE_DEPRECATED_RESOURCE_GETTER(_type, _name, _successor) \
-	attr_deprecated("Use " #_successor "() instead") \
-	INLINE _type *_name(const char *resname) { \
-		return _successor(resname); \
-	}

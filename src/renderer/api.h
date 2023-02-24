@@ -903,10 +903,6 @@ void r_disable(RendererCapability cap) {
 	r_capability(cap, false);
 }
 
-DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get, res_shader)
-DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get_optional, res_shader_optional)
-DEFINE_DEPRECATED_RESOURCE_GETTER(Texture, r_texture_get, res_texture)
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 

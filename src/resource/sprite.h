@@ -36,7 +36,6 @@ void draw_sprite_p(float x, float y, Sprite *spr);
 
 DEFINE_RESOURCE_GETTER(Sprite, res_sprite, RES_SPRITE)
 DEFINE_OPTIONAL_RESOURCE_GETTER(Sprite, res_sprite_optional, RES_SPRITE)
-DEFINE_DEPRECATED_RESOURCE_GETTER(Sprite, get_sprite, res_sprite)
 
 Sprite *prefix_get_sprite(const char *name, const char *prefix);
 

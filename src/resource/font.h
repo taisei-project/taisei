@@ -76,7 +76,6 @@ typedef struct TextParams {
 
 DEFINE_RESOURCE_GETTER(Font, res_font, RES_FONT)
 DEFINE_OPTIONAL_RESOURCE_GETTER(Font, res_font_optional, RES_FONT)
-DEFINE_DEPRECATED_RESOURCE_GETTER(Font, get_font, res_font)
 
 ShaderProgram* text_get_default_shader(void)
 	attr_returns_nonnull;
