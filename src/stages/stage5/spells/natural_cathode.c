@@ -44,7 +44,7 @@ DEFINE_EXTERN_TASK(stage5_spell_natural_cathode) {
 				.p = ENT_BOX(p),
 				.radial_vel = speedmod * 2 * cdir(M_TAU * rng_real()),
 				.angular_vel = speedmod * 0.01 * I * (1 - 2 * (x & 1)),
-				.mode = 1,
+				.inverted = false,
 			});
 
 			if(i < c * 3/4) {

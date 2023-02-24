@@ -37,7 +37,7 @@ DECLARE_EXTERN_TASK(iku_induction_bullet, {
 	BoxedProjectile p;
 	cmplx radial_vel;
 	cmplx angular_vel;
-	int mode;
+	bool inverted;
 });
 
 DECLARE_EXTERN_TASK(iku_spawn_clouds);

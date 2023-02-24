@@ -122,7 +122,8 @@ DEFINE_EXTERN_TASK(iku_induction_bullet) {
 
 	for(int time = 0;; time++, YIELD) {
 		int t = time * sqrt(global.diff);
-		if(global.diff > D_Normal && ARGS.mode) {
+
+		if(ARGS.inverted) {
 			t = time*0.6;
 			t = 230-t;
 		}

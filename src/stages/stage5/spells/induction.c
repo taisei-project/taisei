@@ -18,6 +18,7 @@ DEFINE_EXTERN_TASK(stage5_spell_induction) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	aniplayer_queue(&boss->ani, "dashdown_wait", 0);
+	bool inverted = (global.diff > D_Normal);
 
 	for(int x = 0;; x++, WAIT(8)) {
 		play_sfx_loop("shot1_loop");
@@ -45,6 +46,7 @@ DEFINE_EXTERN_TASK(stage5_spell_induction) {
 					.p = ENT_BOX(p),
 					.radial_vel = 2 * cdir(M_TAU / c * i + M_PI/2 + shift),
 					.angular_vel = (0.01 + 0.001 * difficulty_value(1, 2, 3, 4)) * I * (1 - 2 * j) + a,
+					.inverted = inverted,
 				});
 			}
 		}
