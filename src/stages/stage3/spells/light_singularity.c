@@ -17,7 +17,7 @@
 TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 	Laser *l = TASK_BIND(create_laser(ARGS.pos,
 		200, 10000, RGBA(0.0, 0.2, 1.0, 0.0), las_sine_expanding,
-		NULL, ARGS.vel, ARGS.amp, ARGS.freq, 0
+		ARGS.vel, ARGS.amp, ARGS.freq, 0
 	));
 
 	laser_make_static(l);

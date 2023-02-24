@@ -35,7 +35,7 @@ static real safe_radius(real phase) {
 }
 
 TASK(ricci_laser, { BoxedEllyBaryons baryons; int baryon_idx; cmplx offset; Color color; real turn_speed; real timespan; int time_offset; }) {
-	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle, NULL,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
+	Laser *l = TASK_BIND(create_laser(0, ARGS.timespan, 60, &ARGS.color, las_circle,  ARGS.turn_speed + I * ARGS.time_offset, 0, 0, 0));
 
 	real radius = SAFE_RADIUS_MAX * difficulty_value(0.4, 0.47, 0.53, 0.6);
 

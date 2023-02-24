@@ -352,7 +352,7 @@ TASK(toe_laser_respawn, { cmplx pos; cmplx vel; int type; }) {
 
 DEFINE_TASK(toe_laser) {
 	Laser *l = TASK_BIND(create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, RGBA(1, 1, 1, 0),
-		toe_laser_pos, NULL,
+		toe_laser_pos,
 		ARGS.vel,
 		ARGS.type,
 		0,

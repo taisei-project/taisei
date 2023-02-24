@@ -26,9 +26,8 @@ static cmplx maxwell_laser(Laser *l, float t) {
 }
 
 TASK(maxwell_laser, { cmplx pos; cmplx dir; }) {
-	Laser *l = TASK_BIND(create_laser(ARGS.pos, 200, 10000, RGBA(0, 0.2, 1, 0.0), maxwell_laser, NULL, ARGS.dir*VIEWPORT_H*0.005, 0, 0, 0));
+	Laser *l = TASK_BIND(create_laser(ARGS.pos, 200, 10000, RGBA(0, 0.2, 1, 0.0), maxwell_laser, ARGS.dir*VIEWPORT_H*0.005, 0, 0, 0));
 
-	laser_make_static(l);
 	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), .charge_delay = 200, .target_width = 15);
 
 	real phase = 0;

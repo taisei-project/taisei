@@ -40,7 +40,7 @@ void lasers_shutdown(void) {
 
 Laser *create_laser(
 	cmplx pos, float time, float deathtime, const Color *color,
-	LaserPosRule prule, LaserLogicRule lrule,
+	LaserPosRule prule,
 	cmplx a0, cmplx a1, cmplx a2, cmplx a3
 ) {
 	Laser *l = objpool_acquire(stage_object_pools.lasers);
@@ -51,15 +51,11 @@ Laser *create_laser(
 	l->deathtime = deathtime;
 	l->pos = pos;
 	l->color = *color;
-
 	l->args[0] = a0;
 	l->args[1] = a1;
 	l->args[2] = a2;
 	l->args[3] = a3;
-
 	l->prule = prule;
-	l->lrule = lrule;
-
 	l->width = 10;
 	l->width_exponent = 1.0;
 	l->speed = 1;
@@ -68,9 +64,6 @@ Laser *create_laser(
 	l->ent.draw_layer = LAYER_LASER_HIGH;
 	l->ent.draw_func = laserdraw_ent_drawfunc;
 	ent_register(&l->ent, ENT_TYPE_ID(Laser));
-
-	if(l->lrule)
-		l->lrule(l, EVENT_BIRTH);
 
 	l->prule(l, EVENT_BIRTH);
 
@@ -82,14 +75,20 @@ Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Col
 }
 
 Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
-	cmplx m = (b-a)*0.005;
-
-	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
+	float lt = 200;
+	cmplx m = (b - a) / lt;
+	Laser *l = create_laser(a, lt, dur, clr, las_linear, m, 0, 0, 0);
+	INVOKE_TASK(laser_charge,
+		.laser = ENT_BOX(l),
+		.charge_delay = charge,
+		.target_width = width,
+	);
+	return l;
 }
 
 void laserline_set_ab(Laser *l, cmplx a, cmplx b) {
 	l->pos = a;
-	l->args[0] = (b - a) * 0.005;
+	l->args[0] = (b - a) / l->timespan;
 }
 
 void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
@@ -98,11 +97,6 @@ void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
 
 static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
-
-	if(l->lrule) {
-		l->lrule(l, EVENT_DEATH);
-	}
-
 	ent_unregister(&l->ent);
 	objpool_release(stage_object_pools.lasers, alist_unlink(lasers, laser));
 	return NULL;
@@ -374,14 +368,8 @@ void process_lasers(void) {
 					laser->deathtime = 0;
 				}
 			}
-		} else {
-			if(laser->lrule) {
-				laser->lrule(laser, global.frames - laser->birthtime);
-			}
-
-			if(laser_collision(laser, plr)) {
-				ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
-			}
+		} else if(laser_collision(laser, plr)) {
+			ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
 		}
 	}
 }
@@ -633,17 +621,6 @@ void laser_make_static(Laser *l) {
 	l->timeshift = l->timespan;
 }
 
-void static_laser(Laser *l, int t) {
-	if(t == EVENT_BIRTH) {
-		l->width = 0;
-		l->collision_active = false;
-		laser_make_static(l);
-		return;
-	}
-
-	laser_charge(l, t, creal(l->args[1]), cimag(l->args[1]));
-}
-
 DEFINE_EXTERN_TASK(laser_charge) {
 	Laser *l = TASK_BIND(ARGS.laser);
 
@@ -654,6 +631,7 @@ DEFINE_EXTERN_TASK(laser_charge) {
 	float target_width = ARGS.target_width;
 	float charge_delay = ARGS.charge_delay;
 
+	// TODO: stop when done charging
 	for(int t = 0;; ++t) {
 		laser_charge(l, t, charge_delay, target_width);
 		YIELD;

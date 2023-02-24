@@ -61,7 +61,7 @@ TASK(warnlaser, { BoxedLaser base_laser; }) {
 
 	real f = 6;
 	Laser *l = TASK_BIND(create_laser(
-		b->pos, 90, 120, RGBA(1, 1, 1, 0), b->prule, NULL,
+		b->pos, 90, 120, RGBA(1, 1, 1, 0), b->prule,
 		f*b->args[0], b->args[1], f*b->args[2], b->args[3]
 	));
 

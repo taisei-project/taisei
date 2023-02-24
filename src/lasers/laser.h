@@ -19,14 +19,12 @@
 typedef LIST_ANCHOR(Laser) LaserList;
 
 typedef cmplx (*LaserPosRule)(Laser* l, float time);
-typedef void (*LaserLogicRule)(Laser* l, int time);
 
 DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	cmplx args[4];
 
 	LaserPosRule prule;
-	LaserLogicRule lrule;
 
 	struct {
 		LaserRenderData renderdata;
@@ -53,10 +51,10 @@ DEFINE_ENTITY_TYPE(Laser, {
 	uchar collision_active : 1;
 });
 
-#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, 0, a0, 0, 0, 0)
-#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, 0, 0)
-#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, 0)
-#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, 0, a0, a1, a2, a3)
+#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, a0, 0, 0, 0)
+#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, a0, a1, 0, 0)
+#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, a0, a1, a2, 0)
+#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, a0, a1, a2, a3)
 
 void lasers_init(void);
 void lasers_shutdown(void);
@@ -69,7 +67,7 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 void laserline_set_ab(Laser *l, cmplx a, cmplx b);
 void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir);
 
-Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, LaserLogicRule lrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
 
 bool laser_is_active(Laser *l);
 bool laser_is_clearable(Laser *l);
@@ -85,8 +83,6 @@ cmplx las_circle(Laser *l, float t);
 
 void laser_make_static(Laser *l);
 void laser_charge(Laser *l, int t, float charge, float width);
-
-void static_laser(Laser *l, int t);
 
 bool laser_intersects_circle(Laser *l, Circle circle);
 bool laser_intersects_ellipse(Laser *l, Ellipse ellipse);

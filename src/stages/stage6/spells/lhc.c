@@ -21,9 +21,8 @@ static real lhc_target_height(int turn) {
 TASK(lhc_laser, { BoxedEllyBaryons baryons; int baryon_idx; real direction; Color color;}) {
 	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 
-	Laser *l = TASK_BIND(create_laser(baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color, las_linear, NULL, ARGS.direction * VIEWPORT_W * 0.005, 0, 0, 0));
+	Laser *l = TASK_BIND(create_laser(baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color, las_linear, ARGS.direction * VIEWPORT_W * 0.005, 0, 0, 0));
 	l->unclearable = true;
-	laser_make_static(l);
 
 	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), 200, 30);
 
@@ -81,7 +80,7 @@ TASK(lhc_secondary_projs, { BoxedBoss boss; }) {
 	int interval = difficulty_value(6, 5, 4, 3);
 	for(int i = 0;; i++) {
 		play_sfx_ex("shot2", 10, false);
-		
+
 		PROJECTILE(
 			.proto = pp_ball,
 			.pos = boss->pos,
@@ -96,7 +95,7 @@ TASK(lhc_secondary_projs, { BoxedBoss boss; }) {
 DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
-	
+
 	INVOKE_SUBTASK(lhc_baryons, ARGS.baryons, ENT_BOX(boss));
 
 	INVOKE_SUBTASK(lhc_secondary_projs, ENT_BOX(boss));
@@ -123,7 +122,7 @@ DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 
 			real speed1 = rng_range(1, 3.5);
 			real speed2 = rng_range(1, 3.5);
-			
+
 			PROJECTILE(
 				.proto = pp_soul,
 				.pos = pos,
