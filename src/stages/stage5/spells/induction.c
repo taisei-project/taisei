@@ -14,7 +14,7 @@ DEFINE_EXTERN_TASK(stage5_spell_induction) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	// thwart safespots
  	cmplx ofs = global.diff > D_Normal ? 10 * I : 0;
-	boss->move = move_towards(VIEWPORT_W/2 + 200.0 * I + ofs, 0.06);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0 * I + ofs, 0.06);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	aniplayer_queue(&boss->ani, "dashdown_wait", 0);

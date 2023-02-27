@@ -95,7 +95,11 @@ TASK(slave_explode, { BoxedIkuSlave slave; }) {
 
 TASK(slave, { cmplx pos; int number; }) {
 	IkuSlave *slave = stage5_midboss_slave(ARGS.pos);
-	MoveParams move = move_towards(VIEWPORT_W / 4 + ARGS.number * 40 + 2.0 * I * 90 - 5 * ARGS.number * 2.0 * I, 0.03);
+	MoveParams move = move_from_towards(
+		slave->pos,
+		VIEWPORT_W / 4 + ARGS.number * 40 + 2.0 * I * 90 - 5 * ARGS.number * 2.0 * I,
+		0.03
+	);
 
 	INVOKE_TASK_WHEN(&slave->events.despawned, common_drop_items, &slave->pos, {
 		.power = 5,
@@ -123,7 +127,7 @@ TASK(slave, { cmplx pos; int number; }) {
 DEFINE_EXTERN_TASK(stage5_midboss_static_bomb) {
 	STAGE_BOOKMARK(midspell1);
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
-	b->move = move_towards(VIEWPORT_W / 2 - VIEWPORT_H * I, 0.01);
+	b->move = move_from_towards(b->pos, VIEWPORT_W / 2 - VIEWPORT_H * I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 	WAIT(50);
 

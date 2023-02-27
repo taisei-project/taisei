@@ -68,10 +68,8 @@ TASK(magnetto_swirl_move, {
 	cmplx swoop = 3 * cdir(M_PI/2);
 
 	for(int t = 0; t <= 180; t++, YIELD) {
-		cmplx v = e->move.velocity;
-		e->move = move_towards(ARGS.move_to, pow(t / 300.0, 3));
+		e->move = move_towards(e->move.velocity, ARGS.move_to, pow(t / 300.0, 3));
 		e->move.acceleration = cnormalize(ARGS.move_to - e->pos) * swoop;
-		e->move.velocity = v;
 	}
 }
 
@@ -118,13 +116,13 @@ TASK(magnetto_swirls, {
 
 		INVOKE_TASK(magnetto_swirl,
 			.pos = src1,
-			.move_enter = move_towards(dst1, 0.1),
+			.move_enter = move_from_towards(src1, dst1, 0.1),
 			.move_to = dst2,
 		);
 
 		INVOKE_TASK(magnetto_swirl,
 			.pos = src2,
-			.move_enter = move_towards(dst2, 0.1),
+			.move_enter = move_from_towards(src2, dst2, 0.1),
 			.move_to = dst1,
 		);
 
@@ -158,7 +156,7 @@ TASK(spawn_midboss) {
 
 TASK(boss_appear, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(VIEWPORT_W/2 + 240.0 * I, 0.015);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 240.0 * I, 0.015);
 }
 
 TASK(spawn_boss) {
@@ -229,7 +227,7 @@ TASK(greeter_fairies_3, {
 		real xdir = 1 - 2 * (i % 2);
 		INVOKE_TASK(greeter_fairy,
 			.pos = pos,
-			.move_enter = move_towards(pos + 6 * (30 - 60 * (i % 2)) + I, 0.05),
+			.move_enter = move_from_towards(pos, pos + 6 * (30 - 60 * (i % 2)) + I, 0.05),
 			.move_exit = move_linear(3 * xdir)
 		);
 		WAIT(60);
@@ -245,7 +243,7 @@ TASK(greeter_fairies_2, {
 
 		INVOKE_TASK(greeter_fairy,
 			.pos = pos,
-			.move_enter = move_towards(pos + (150 - 300 * (i % 2)), 0.05),
+			.move_enter = move_from_towards(pos, pos + (150 - 300 * (i % 2)), 0.05),
 			.move_exit = move_linear(3 * xdir)
 		);
 		WAIT(80);
@@ -260,7 +258,7 @@ TASK(greeter_fairies_1, {
 		real xdir = 1 - 2 * (i % 2);
 		INVOKE_TASK(greeter_fairy,
 			.pos = pos,
-			.move_enter = move_towards(pos + (150 - 300 * (i % 2)), 0.05),
+			.move_enter = move_from_towards(pos, pos + (150 - 300 * (i % 2)), 0.05),
 			.move_exit = move_linear(3 * xdir)
 		);
 		WAIT(15);
@@ -348,7 +346,7 @@ TASK(lightburst_fairies_1, {
 		cmplx pos = ARGS.pos + ARGS.offset * i;
 		INVOKE_TASK(lightburst_fairy_1,
 			.pos = pos,
-			.move_enter = move_towards(pos + ARGS.exit * 70 , 0.05),
+			.move_enter = move_from_towards(pos, pos + ARGS.exit * 70, 0.05),
 			.move_exit = move_linear(ARGS.exit)
 		);
 		WAIT(40);
@@ -365,7 +363,7 @@ TASK(lightburst_fairies_2, {
 		cmplx pos = ARGS.pos + ARGS.offset * i;
 		INVOKE_TASK(lightburst_fairy_2,
 			.pos = pos,
-			.move_enter = move_towards(pos + ARGS.exit * 70 , 0.05),
+			.move_enter = move_from_towards(pos, pos + ARGS.exit * 70, 0.05),
 			.move_exit = move_linear(ARGS.exit)
 		);
 		WAIT(40);
@@ -604,7 +602,7 @@ TASK(superbullet_fairy, {
 }) {
 	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4, .power = 2)));
 
-	e->move = move_towards(e->pos + ARGS.acceleration * 70 + ARGS.offset, 0.05);
+	e->move = move_from_towards(e->pos, e->pos + ARGS.acceleration * 70 + ARGS.offset, 0.05);
 	WAIT(60);
 
 	float difficulty = difficulty_value(9.0, 10.0, 11.0, 12.0);
@@ -685,7 +683,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 	// 1000
 	INVOKE_TASK_DELAYED(1000, laser_fairy, {
 		.pos = VIEWPORT_W/2,
-		.move_enter = move_towards(VIEWPORT_W/2 + 2.0 * I * 100, 0.05),
+		.move_enter = move_from_towards(VIEWPORT_W/2, VIEWPORT_W/2 + 2.0 * I * 100, 0.05),
 		.move_exit = move_linear(-(2.0 * I)),
 		.time = 700,
 	});
@@ -755,7 +753,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 	// 3400
 	INVOKE_TASK_DELAYED(400, laser_fairy, {
 		.pos = VIEWPORT_W/4,
-		.move_enter = move_towards(VIEWPORT_W/4 + 2.0 * I * 100, 0.05),
+		.move_enter = move_from_towards(VIEWPORT_W/4, VIEWPORT_W/4 + 2.0 * I * 100, 0.05),
 		.move_exit = move_linear(-(2.0 * I)),
 		.time = 600,
 	});
@@ -763,7 +761,7 @@ DEFINE_EXTERN_TASK(stage5_timeline) {
 	// 3400
 	INVOKE_TASK_DELAYED(400, laser_fairy, {
 		.pos = VIEWPORT_W/4 * 3,
-		.move_enter = move_towards(VIEWPORT_W/4 * 3 + 2.0 * I * 100, 0.05),
+		.move_enter = move_from_towards(VIEWPORT_W/4 * 3, VIEWPORT_W/4 * 3 + 2.0 * I * 100, 0.05),
 		.move_exit = move_linear(-(2.0 * I)),
 		.time = 600,
 	});

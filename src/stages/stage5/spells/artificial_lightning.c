@@ -140,7 +140,7 @@ TASK(lightning_slaves, { BoxedBoss boss; } ) {
 DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
 	STAGE_BOOKMARK(artificial-lightning);
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 200.0 * I, 0.06);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0 * I, 0.06);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect wander_bounds = viewport_bounds(64);
