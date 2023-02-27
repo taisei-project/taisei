@@ -79,7 +79,7 @@ static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
 
 static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *clr, real power) {
 	cmplx pos = target + rng_dir() * dist;
-	MoveParams move = move_towards(target, rng_range(0.1, 0.2) + 0.05 * power);
+	MoveParams move = move_towards(0, target, rng_range(0.1, 0.2) + 0.05 * power);
 	move.retention = 0.25 * cdir(1.5 * rng_sign());
 
 	spawn_charge_particle_smoke(target, power);
@@ -174,7 +174,7 @@ static int common_charge_impl(
 			.color = &c,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-			.move = move_towards(pos, 0.1),
+			.move = move_towards(0, pos, 0.1),
 			.timeout = 30,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
