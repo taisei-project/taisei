@@ -44,7 +44,7 @@ TASK(spinshot_fairy_attack_spawn_projs, {
 			.proto = pp_wave,
 			.color = ARGS.color,
 			.pos = o,
-			.move = move_towards(o + ofs, 0.1),
+			.move = move_from_towards(o, o + ofs, 0.1),
 			.max_viewport_dist = 128,
 		));
 
@@ -530,7 +530,7 @@ static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
 
 		INVOKE_TASK(aimshot_fairy,
 			.e = ENT_BOX(spawner(pos, items)),
-			.move_enter = move_towards(pos + 180 * I, 0.03),
+			.move_enter = move_from_towards(pos, pos + 180 * I, 0.03),
 			.move_exit = move_accelerated(0, -0.15*I)
 		);
 
@@ -607,7 +607,7 @@ TASK(flea_swirls, {
 
 TASK(boss_appear, { BoxedBoss boss; }) {
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
-	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100.0*I, 0.05);
 
 	aniplayer_queue(&boss->ani, "guruguru", 2);
 	aniplayer_queue(&boss->ani, "main", 0);
@@ -645,7 +645,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	INVOKE_TASK_DELAYED(300, starcaller_fairy,
 		.pos = VIEWPORT_W/2 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W/2 + 150.0*I, 0.04),
+		.move_enter = move_towards(0, VIEWPORT_W/2 + 150.0*I, 0.04),
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -679,13 +679,13 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	INVOKE_TASK_DELAYED(1300, starcaller_fairy,
 		.pos = 150 - 10.0*I,
-		.move_enter = move_towards(150 + 100.0*I, 0.04),
+		.move_enter = move_towards(0, 150 + 100.0*I, 0.04),
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
 	INVOKE_TASK_DELAYED(1500, starcaller_fairy,
 		.pos = VIEWPORT_W - 150 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W - 150 + 160.0*I, 0.04),
+		.move_enter = move_towards(0, VIEWPORT_W - 150 + 160.0*I, 0.04),
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -776,7 +776,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	INVOKE_TASK_DELAYED(1360 + time_ofs, spinshot_fairy,
 		.pos = VIEWPORT_W/2,
-		.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+		.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
 		.move_exit = move_accelerated(0, 0.1*I)
 	);
 
@@ -792,7 +792,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	INVOKE_TASK_DELAYED(1660 + time_ofs, starcaller_fairy,
 		.pos = VIEWPORT_W - 150 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W - 150 + 160.0*I, 0.04),
+		.move_enter = move_towards(0, VIEWPORT_W - 150 + 160.0*I, 0.04),
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -813,19 +813,19 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	if(global.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(420, spinshot_fairy,
 			.pos = 0,
-			.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 
 		INVOKE_TASK_DELAYED(480, spinshot_fairy,
 			.pos = VIEWPORT_W,
-			.move_enter = move_towards(2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, 2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	} else {
 		INVOKE_TASK_DELAYED(420, spinshot_fairy,
 			.pos = VIEWPORT_W/2,
-			.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	}

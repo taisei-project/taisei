@@ -60,7 +60,7 @@ TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; })
 					.pos = p->pos,
 					.color = RGB(0.2 + 0.8 * tanh(cabs2(o - core->pos) / 4200), 0.2, 1.0),
 					.max_viewport_dist = p->max_viewport_dist,
-					.move = move_towards(o, 0.02),
+					.move = move_from_towards(p->pos, o, 0.02),
 				);
 
 				INVOKE_TASK_DELAYED(42, spinner_bullet_redirect, ENT_BOX(c), move_accelerated(0, aim * accel));
@@ -180,7 +180,7 @@ TASK(fan_burst, { Boss *boss; }) {
 
 DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 200.0*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect wander_bounds = viewport_bounds(64);

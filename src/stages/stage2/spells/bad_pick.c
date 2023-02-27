@@ -81,7 +81,7 @@ TASK(walls, { int duration; }) {
 
 DEFINE_EXTERN_TASK(stage2_spell_bad_pick) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(pick_boss_position(), 0.02);
+	boss->move = move_from_towards(boss->pos, pick_boss_position(), 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int balls_per_slot = difficulty_value(15, 15, 20, 25);
