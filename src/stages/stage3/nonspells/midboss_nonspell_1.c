@@ -80,7 +80,7 @@ DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
 	STAGE_BOOKMARK(non1);
 
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.03);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100.0*I, 0.03);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect bounds = viewport_bounds(80);

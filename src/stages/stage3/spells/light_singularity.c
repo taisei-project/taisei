@@ -40,7 +40,7 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 
 DEFINE_EXTERN_TASK(stage3_spell_light_singularity) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	WAIT(100);

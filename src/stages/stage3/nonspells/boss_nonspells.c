@@ -76,7 +76,7 @@ static void wriggle_nonspell_common(Boss *boss, int level) {
 	wander_bounds.bottom = 180 + 20 * level;
 	real wander_dist = 60 + 10 * level;
 
-	boss->move = move_towards(boss->pos, 0.02);
+	boss->move = move_towards(0, boss->pos, 0.02);
 
 	for(;;) {
 		WAIT(120);

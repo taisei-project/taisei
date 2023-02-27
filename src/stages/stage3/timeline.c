@@ -307,7 +307,7 @@ TASK(circle_twist_fairy, { cmplx pos; cmplx target_pos; }) {
 		.bomb_fragment = 1,
 	)));
 
-	e->move = move_towards(ARGS.target_pos, 0.01);
+	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.01);
 	WAIT(50);
 
 	int circle_count = 10;
@@ -410,7 +410,7 @@ TASK(laserball_fairy, { cmplx pos; cmplx target_pos; real freq_factor; }) {
 		.points = 5,
 	)));
 
-	e->move = move_towards(ARGS.target_pos, 0.04);
+	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.04);
 	WAIT(30);
 	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
 
@@ -529,7 +529,7 @@ TASK_WITH_INTERFACE(midboss_intro, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.04);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100.0*I, 0.04);
 }
 
 TASK_WITH_INTERFACE(midboss_outro, BossAttack) {
@@ -559,7 +559,7 @@ TASK(spawn_midboss) {
 
 TASK(boss_appear, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 }
 
 TASK(spawn_boss) {

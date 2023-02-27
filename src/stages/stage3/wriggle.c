@@ -127,7 +127,7 @@ DEFINE_EXTERN_TASK(wriggle_slave_follow) {
 	WriggleSlave *slave = TASK_BIND(ARGS.slave);
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
 
-	MoveParams move = move_towards(0, 0.03);
+	MoveParams move = move_towards(0, 0, 0.03);
 	cmplx dir = cdir(ARGS.rot_initial);
 	cmplx r = cdir(ARGS.rot_speed);
 

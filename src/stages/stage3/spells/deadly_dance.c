@@ -105,7 +105,7 @@ DEFINE_EXTERN_TASK(stage3_spell_deadly_dance) {
 	STAGE_BOOKMARK(dance);
 
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.08);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H*I/2, 0.08);
 	BEGIN_BOSS_ATTACK(&ARGS);
 	boss->move.attraction = 0;
 

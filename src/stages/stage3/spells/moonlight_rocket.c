@@ -190,7 +190,7 @@ TASK(rocket_slave, { BoxedBoss boss; real rot_speed; real rot_initial; }) {
 
 DEFINE_EXTERN_TASK(stage3_spell_moonlight_rocket) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H*I/2.5, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int nslaves = difficulty_value(2, 3, 4, 5);

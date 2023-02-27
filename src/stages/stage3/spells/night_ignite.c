@@ -93,7 +93,7 @@ TASK(laserbullet, { ProjPrototype *proto; Color *color; BoxedLaser laser; cmplx 
 
 DEFINE_EXTERN_TASK(stage3_spell_night_ignite) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H*I/3, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int nslaves = 7;
