@@ -597,7 +597,7 @@ TASK(reimu_spirit_slave_needle, {
 	cmplx rot = cdir(ARGS.rotation);
 
 	real target_speed = 0.005 * dist;
-	MoveParams move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
 		move.attraction = approach(creal(move.attraction), target_speed, target_speed / 12.0);
@@ -666,7 +666,7 @@ TASK(reimu_spirit_slave_homing, {
 
 	cmplx offset = ARGS.offset;
 	real target_speed = 0.005 * cabs(offset);
-	MoveParams move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
 		move.attraction = approach(creal(move.attraction), target_speed, target_speed / 12.0);
