@@ -84,6 +84,10 @@ INLINE MoveParams move_towards_exp(cmplx vel, cmplx target, cmplx attraction, re
 	};
 }
 
+INLINE MoveParams move_from_towards_exp(cmplx origin, cmplx target, cmplx attraction, real exponent) {
+	return move_next(origin, move_towards_exp(0, target, attraction, exponent));
+}
+
 attr_deprecated("Use move_towards_exp instead")
 INLINE MoveParams move_towards_power(cmplx target, cmplx attraction, real exponent) {
 	return move_towards_exp(0, target, attraction, exponent);
