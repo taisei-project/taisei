@@ -1291,7 +1291,7 @@ void process_boss(Boss **pboss) {
 }
 
 void boss_reset_motion(Boss *boss) {
-	boss->move = move_stop(0.8);
+	boss->move = move_dampen(boss->move.velocity, 0.8);
 }
 
 static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArgs args) {
