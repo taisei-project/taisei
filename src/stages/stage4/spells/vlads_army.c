@@ -139,7 +139,7 @@ TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 
 	int escapetime = difficulty_value(400, 400, 400, 4000);
 
-	e->move = move_towards(ARGS.target, 0.02);
+	e->move = move_from_towards(e->pos, ARGS.target, 0.02);
 
 	WAIT(50);
 	for(int k = 0; k < escapetime; k += WAIT(60)) {
@@ -162,7 +162,7 @@ TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 		play_sfx_ex("laser1", 60, false);
 	}
 
-	e->move = move_towards(ARGS.target - I * VIEWPORT_H, 0.01);
+	e->move = move_from_towards(e->pos, ARGS.target - I * VIEWPORT_H, 0.01);
 }
 
 typedef struct DrainerState {
@@ -243,7 +243,7 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 	e->visual_rule = kurumi_extra_fairy_visual;
 	e->flags |= EFLAG_NO_AUTOKILL;
 
-	e->move = move_towards(ARGS.target_pos, 0.1);
+	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.1);
 
 	WAIT(50);
 		e->flags &= ~EFLAG_NO_AUTOKILL;
@@ -305,7 +305,7 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 			);
 		}
 	}
-	e->move = move_towards(global.boss->pos, 0.04);
+	e->move = move_from_towards(e->pos, global.boss->pos, 0.04);
 }
 
 DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
@@ -318,7 +318,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 	int fairy_chase_time = difficulty_value(105, 100, 95, 90);
 
 	for(int run = 0;; run++) {
-		b->move = move_towards(startpos, 0.01);
+		b->move = move_from_towards(b->pos, startpos, 0.01);
 		int direction = run&1;
 
 		int castlimit = b->current->maxhp * 0.05;
@@ -359,16 +359,16 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 		play_sfx("shot_special1");
 
 		cmplx sidepos = VIEWPORT_W * (0.5 + 0.3 * (1 - 2 * direction)) + VIEWPORT_H * 0.28 * I;
-		b->move = move_towards(sidepos, 0.1);
+		b->move = move_from_towards(b->pos, sidepos, 0.1);
 		WAIT(100);
-		b->move = move_towards(sidepos + 30 * I, 0.1);
+		b->move = move_from_towards(b->pos, sidepos + 30 * I, 0.1);
 
 		aniplayer_queue_frames(&b->ani, "muda", 110);
 		aniplayer_queue(&b->ani, "main", 0);
 
 		WAIT(110);
 
-		b->move = move_towards(startpos, 0.1);
+		b->move = move_from_towards(b->pos, startpos, 0.1);
 
 		if(global.diff >= D_Hard) {
 			double offset = VIEWPORT_W * 0.5;

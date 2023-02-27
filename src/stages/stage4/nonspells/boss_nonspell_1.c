@@ -16,7 +16,7 @@
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
-	b->move = move_towards(VIEWPORT_W/2 + 200*I, 0.01);
+	b->move = move_from_towards(b->pos, VIEWPORT_W/2 + 200*I, 0.01);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int duration = difficulty_value(300, 350, 400, 450);

@@ -77,7 +77,7 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 	cmplx direction = cnormalize(ARGS.target - ARGS.pos);
 	cmplx acceleration = 0.2 * direction;
-	
+
 	create_lasercurve2c(ARGS.pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0), las_accel, 0, acceleration);
 
 	int travel_time = sqrt(2 * cabs(ARGS.target - ARGS.pos) / cabs(acceleration));
@@ -111,8 +111,8 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 DEFINE_EXTERN_TASK(kurumi_vampvape) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	
-	b->move = move_towards(BOSS_DEFAULT_GO_POS, 0.04);
+
+	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
 	for(int t = 0;; t++) {
 		INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);

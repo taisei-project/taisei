@@ -108,9 +108,8 @@ DEFINE_EXTERN_TASK(kurumi_aniwall) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	b->move = move_towards((VIEWPORT_W + I * VIEWPORT_H) * 0.5, 0.0005);
+	b->move = move_from_towards(b->pos, (VIEWPORT_W + I * VIEWPORT_H) * 0.5, 0.0005);
 	b->move.retention = cdir(0.01);
-
 
 	aniplayer_queue(&b->ani, "muda", 0);
 	play_sfx("laser1");

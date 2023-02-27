@@ -66,7 +66,7 @@ DEFINE_EXTERN_TASK(kurumi_blowwall) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	b->move = move_towards(BOSS_DEFAULT_GO_POS, 0.04);
+	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
 	INVOKE_SUBTASK(common_charge, b->pos, RGBA(1, 0.3, 0.2, 0), 50, .sound = COMMON_CHARGE_SOUNDS);
 	for(;;) {

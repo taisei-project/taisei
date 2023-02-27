@@ -152,7 +152,7 @@ TASK(cardbuster_fairy_move, { Enemy *e; int stops; cmplx *poss; int *move_times;
 		WAIT(ARGS.pause_times[i]);
 		ARGS.e->move = move_linear((ARGS.poss[i+1] - ARGS.e->pos) / ARGS.move_times[i]);
 		WAIT(ARGS.move_times[i]);
-		ARGS.e->move = move_stop(0.8);
+		ARGS.e->move = move_dampen(ARGS.e->move.velocity, 0.8);
 	}
 }
 
@@ -255,11 +255,11 @@ TASK(bigcircle_fairy_move, { BoxedEnemy enemy; cmplx vel; }) {
 
 	e->move = move_linear(ARGS.vel);
 	WAIT(70);
-	e->move = move_stop(0.9);
+	e->move = move_dampen(e->move.velocity, 0.9);
 	WAIT(130);
 	e->move = move_linear(-ARGS.vel);
 	WAIT(100);
-	e->move = move_stop(0.9);
+	e->move = move_dampen(e->move.velocity, 0.9);
 }
 
 TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
@@ -391,7 +391,7 @@ TASK(supercard_fairy, { cmplx pos; MoveParams move; }) {
 TASK_WITH_INTERFACE(kurumi_intro, BossAttack) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	b->move = move_towards(BOSS_DEFAULT_GO_POS, 0.03);
+	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.03);
 }
 
 TASK_WITH_INTERFACE(kurumi_outro, BossAttack) {
@@ -425,7 +425,7 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 
 	cmplx anchor = VIEWPORT_W / 2.0 + I * VIEWPORT_H / 3.0;
 
-	e->move = move_towards(anchor, 0.003 + 0.02 * I);
+	e->move = move_from_towards(e->pos, anchor, 0.003 + 0.02 * I);
 
 	real speed = difficulty_value(1.1, 1.0, 0.9, 0.8);
 
@@ -472,7 +472,7 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 TASK_WITH_INTERFACE(kurumi_boss_intro, BossAttack){
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	b->move = move_towards(BOSS_DEFAULT_GO_POS, 0.015);
+	b->move = move_from_towards(b->pos, BOSS_DEFAULT_GO_POS, 0.015);
 
 	WAIT(120);
 	stage4_dialog_pre_boss();
