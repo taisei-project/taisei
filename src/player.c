@@ -490,7 +490,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 			.pos = plr->pos,
 			.color = RGBA(1, 1, 1, 0.5),
 			.draw_rule = powersurge_trail_draw,
-			.move = move_towards(plr->pos, 0),
+			.move = move_towards(0, plr->pos, 0),
 			.timeout = 15,
 			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
