@@ -235,6 +235,6 @@ DEFINE_EXTERN_TASK(stage6_spell_broglie) {
 
 	for(int i = 1;; i++) {
 		WAIT(period);
-		boss->move = move_towards(positions[i % ARRAY_SIZE(positions)], 0.02);
+		boss->move = move_from_towards(boss->pos, positions[i % ARRAY_SIZE(positions)], 0.02);
 	}
 }

@@ -62,7 +62,7 @@ TASK(forgotten_bullet, { cmplx pos; cmplx *diff; }) {
 		.pos = ARGS.pos,
 		.color = RGB(0.1 * rng_real(), 0.6, 1),
 	));
-	
+
 	cmplx vel0 = speed * rng_dir();
 
 	for(;;) {
@@ -85,14 +85,14 @@ TASK(forgotten_orbiter, { BoxedProjectile parent; cmplx offset; }) {
 		.pos = NOT_NULL_OR_DIE(ENT_UNBOX(ARGS.parent))->pos + ARGS.offset,
 		.color = RGBA(0.2, 0.4, 1.0, 0.0),
 	);
-	
+
 	for(int t = 0;; t++) {
 		Projectile *parent = ENT_UNBOX(ARGS.parent);
 		if(parent == NULL) {
 			p->move = move_linear(angular_velocity * I * ARGS.offset * cdir(t * angular_velocity));
 			break;
 		}
-		
+
 		p->pos = parent->pos + ARGS.offset * cdir(t * angular_velocity);
 		YIELD;
 	}
@@ -103,7 +103,7 @@ TASK(forgotten_orbiter_spawner, { BoxedBoss boss; }) {
 
 	for(int i = 0;; i++) {
 		play_sfx_ex("shot2", 10, false);
-		
+
 		Projectile *p = PROJECTILE(
 			.proto = pp_bigball,
 			.pos = boss->pos,
@@ -134,7 +134,7 @@ TASK(forgotten_spawner) {
 		if(t % interval == 0) {
 			RNG_ARRAY(R, 2);
 			cmplx pos = VIEWPORT_W * vrng_real(R[0]) + I * VIEWPORT_H * vrng_real(R[1]);
-		
+
 			if(cabs(pos - global.plr.pos) > 50) {
 				INVOKE_SUBTASK(forgotten_bullet, pos, &diff);
 			}
@@ -153,15 +153,17 @@ DEFINE_EXTERN_TASK(stage6_spell_forgotten) {
 		INVOKE_SUBTASK(forgotten_baryons_spawner, ARGS.baryons);
 	}
 
-	INVOKE_SUBTASK_DELAYED(50, forgotten_spawner); 
+	INVOKE_SUBTASK_DELAYED(50, forgotten_spawner);
 	if(global.diff > D_Normal) {
 		INVOKE_SUBTASK_DELAYED(50, forgotten_orbiter_spawner, ENT_BOX(boss));
 	}
 
 	for(int t = 0;; t++) {
-		boss->move = move_towards(VIEWPORT_W / 2.0 + 100 * I + VIEWPORT_W / 3.0 * round(sin(t)), 0.04);
-
+		boss->move = move_from_towards(
+			boss->pos,
+			VIEWPORT_W / 2.0 + 100 * I + VIEWPORT_W / 3.0 * round(sin(t)),
+			0.04
+		);
 		WAIT(200);
 	}
-
 }

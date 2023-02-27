@@ -17,7 +17,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 	cmplx center = ELLY_DEFAULT_POS;
 
 	scythe->spin = 0.2;
-	scythe->move = move_towards(center, 0.1);
+	scythe->move = move_from_towards(scythe->pos, center, 0.1);
 	WAIT(40);
 	scythe->move.retention = 0.9;
 

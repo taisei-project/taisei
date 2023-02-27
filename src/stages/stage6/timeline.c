@@ -25,7 +25,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
 	e->move = ARGS.move;
 
 	WAIT(70);
-	e->move = move_stop(0.5);
+	e->move = move_dampen(e->move.velocity, 0.5);
 
 	WAIT(30);
 	int duration = difficulty_value(220, 260, 300, 340);
@@ -56,7 +56,7 @@ TASK(side_fairy, { cmplx pos; MoveParams move; cmplx direction; real index; }) {
 	e->move = ARGS.move;
 
 	WAIT(60);
-	e->move = move_stop(0.5);
+	e->move = move_dampen(e->move.velocity, 0.5);
 
 	WAIT(10);
 
@@ -165,7 +165,7 @@ TASK_WITH_INTERFACE(elly_begin_toe, BossAttack) {
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	boss->move = move_towards(ELLY_TOE_TARGET_POS, 0.01);
+	boss->move = move_from_towards(boss->pos, ELLY_TOE_TARGET_POS, 0.01);
 
 	stage6_bg_start_fall_over();
 	stage_unlock_bgm("stage6boss_phase2");
@@ -176,9 +176,9 @@ TASK(boss_appear, { BoxedBoss boss; BoxedEllyScythe scythe; }) {
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
 	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
 	scythe->spin = 0.5;
-	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	boss->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 	WAIT(80);
-	scythe->move = move_towards_power(BOSS_DEFAULT_GO_POS + ELLY_SCYTHE_RESTING_OFS, 0.3, 0.5);
+	scythe->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS + ELLY_SCYTHE_RESTING_OFS, 0.3, 0.5);
 	WAIT(35);
 	scythe->spin = 0;
 }
@@ -186,7 +186,7 @@ TASK(boss_appear, { BoxedBoss boss; BoxedEllyScythe scythe; }) {
 TASK_WITH_INTERFACE(elly_goto_center, BossAttack) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards_power(BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	boss->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS, 0.3, 0.5);
 }
 
 TASK(host_scythe, { cmplx pos; BoxedEllyScythe *out_scythe; }) {
@@ -289,7 +289,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		INVOKE_TASK_DELAYED(1380 + 20 * i, flowermine_fairy,
 			.pos = 200.0 * I,
 			.move1 = move_linear(2 * cdir(0.5 * M_PI / 9 * i) + 1.0),
-			.move2 = move_towards_power(-100, 1, 0.2)
+			.move2 = move_towards_exp(0, -100, 1, 0.2)
 		);
 	}
 
@@ -297,7 +297,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		INVOKE_TASK_DELAYED(1600 + 20 * i, flowermine_fairy,
 			.pos = VIEWPORT_W / 2.0,
 			.move1 = move_linear(2 * I * cdir(0.5 * M_PI / 9 * i) + 1.0 * I),
-			.move2 = move_towards_power(VIEWPORT_W + I * VIEWPORT_H * 0.5 + 100, 1, 0.2)
+			.move2 = move_towards_exp(0, VIEWPORT_W + I * VIEWPORT_H * 0.5 + 100, 1, 0.2)
 		);
 	}
 

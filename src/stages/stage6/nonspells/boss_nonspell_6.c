@@ -132,7 +132,7 @@ DEFINE_EXTERN_TASK(stage6_boss_baryons_explode) {
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
 	INVOKE_SUBTASK_DELAYED(20, baryons_explode, ARGS.baryons, ENT_BOX(boss));
-	boss->move = move_towards(BOSS_DEFAULT_GO_POS, 0.04);
+	boss->move = move_from_towards(boss->pos, BOSS_DEFAULT_GO_POS, 0.04);
 
 	for(int t = 0; t < 200; t++) {
 		stage_shake_view(t / 200.0f);

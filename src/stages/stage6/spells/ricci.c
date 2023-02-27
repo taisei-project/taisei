@@ -239,7 +239,7 @@ DEFINE_EXTERN_TASK(stage6_spell_ricci) {
 
 	INVOKE_SUBTASK(ricci_baryons, ARGS.baryons, ENT_BOX(boss));
 
-	boss->move = move_towards(BOSS_DEFAULT_GO_POS, 0.03);
+	boss->move = move_from_towards(boss->pos, BOSS_DEFAULT_GO_POS, 0.03);
 
 	int count = 15;
 	real speed = 3;

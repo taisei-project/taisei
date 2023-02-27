@@ -145,7 +145,7 @@ void stage6_despawn_elly_scythe(EllyScythe *scythe) {
 TASK(reset_scythe, { BoxedEllyScythe scythe; }) {
 	EllyScythe *s = TASK_BIND(ARGS.scythe);
 	s->resting_angle = -M_PI/2;
-	s->move = move_towards(ELLY_DEFAULT_POS + ELLY_SCYTHE_RESTING_OFS, 0.1);
+	s->move = move_from_towards(s->pos, ELLY_DEFAULT_POS + ELLY_SCYTHE_RESTING_OFS, 0.1);
 	s->spin = 0;
 }
 

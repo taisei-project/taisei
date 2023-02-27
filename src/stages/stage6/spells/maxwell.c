@@ -48,7 +48,7 @@ TASK(maxwell_laser, { cmplx pos; cmplx dir; }) {
 DEFINE_EXTERN_TASK(stage6_spell_maxwell) {
 	Boss *boss = stage6_elly_init_scythe_attack(&ARGS);
 	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
-	scythe->move = move_towards(boss->pos, 0.03);
+	scythe->move = move_from_towards(scythe->pos, boss->pos, 0.03);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 	scythe->spin = 0.7;
 
