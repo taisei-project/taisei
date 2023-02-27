@@ -16,7 +16,7 @@
 TASK(single_fairy) {
 	for(;;) {
 		Enemy *e = espawn_super_fairy(VIEWPORT_W/2, ITEMS(.points = 10));
-		e->move = move_towards(BOSS_DEFAULT_GO_POS, 0.025);
+		e->move = move_from_towards(e->pos, BOSS_DEFAULT_GO_POS, 0.025);
 		WAIT_EVENT(&e->events.killed);
 	}
 }
@@ -33,7 +33,7 @@ TASK(circling_fairy, { EnemySpawner spawner; cmplx circle_orig; cmplx circle_ofs
 	cmplx org = ARGS.circle_orig;
 	cmplx ofs = ARGS.circle_ofs;
 
-	e->move = move_towards(0, 0.025);
+	e->move = move_towards(0, 0, 0.025);
 
 	INVOKE_TASK_AFTER(&e->events.killed, circling_fairy, ARGS.spawner, org, ofs);
 
