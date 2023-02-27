@@ -41,7 +41,7 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	for(;;) {
-		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
+		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 		common_charge(40, &boss->pos, 0, RGBA(1.0, 0.5, 0.0, 0));
 
 		int n = global.diff;

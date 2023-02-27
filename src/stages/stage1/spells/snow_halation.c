@@ -75,7 +75,7 @@ TASK(halation_orb, {
 		.pos = ARGS.pos[0],
 		.max_viewport_dist = 200,
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION,
-		.move = move_towards(ARGS.pos[2], 0.1),
+		.move = move_from_towards(ARGS.pos[0], ARGS.pos[2], 0.1),
 	));
 
 	halation_color(&orb->color, 0);
@@ -142,7 +142,7 @@ TASK(halation_orb, {
 
 TASK(halation_chase, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(global.plr.pos, 0.05);
+	boss->move = move_from_towards(boss->pos, global.plr.pos, 0.05);
 	for(;;) {
 		aniplayer_queue(&boss->ani, "(9)", 0);
 		boss->move.attraction_point = global.plr.pos;
@@ -152,7 +152,7 @@ TASK(halation_chase, { BoxedBoss boss; }) {
 
 DEFINE_EXTERN_TASK(stage1_spell_snow_halation) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2.0 + 100.0*I, 0.05);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	cmplx center;

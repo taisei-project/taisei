@@ -91,9 +91,9 @@ TASK(make_snowflake, {
 
 DEFINE_EXTERN_TASK(stage1_midboss_nonspell_1) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(CMPLX(VIEWPORT_W/2, 200), 0.02);
+	boss->move = move_from_towards(boss->pos, CMPLX(VIEWPORT_W/2, 200), 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	boss->move = move_stop(0.8);
+	boss->move = move_dampen(boss->move.velocity, 0.8);
 
 	int flake_spawn_interval = difficulty_value(11, 10, 9, 8);
 	int flakes_per_burst = difficulty_value(3, 5, 7, 9);
