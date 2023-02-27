@@ -83,7 +83,7 @@ TASK(fairy_flame_emitter, {
 				.draw_rule = pdraw_timeout_scalefade(2+2*I, 0.5+2*I, 1, 0),
 				.angle = M_PI/2 + rng_sreal() * M_PI/16,
 				.timeout = 50,
-				.move = move_towards(spawn_pos, 0.3),
+				.move = move_towards(0, spawn_pos, 0.3),
 				.flags = PFLAG_MANUALANGLE,
 				.layer = LAYER_PARTICLE_MID,
 			));
@@ -126,7 +126,7 @@ TASK(fairy_stardust_emitter, {
 				.draw_rule = pdraw_timeout_scalefade_exp(0.1 * (1+I), 2 * (1+I), 1, 0, 2),
 				.angle = vrng_angle(rng[0]),
 				.timeout = 180,
-				.move = move_towards(pos, 0.18 + 0.01 * vrng_sreal(rng[1])),
+				.move = move_towards(0, pos, 0.18 + 0.01 * vrng_sreal(rng[1])),
 				.flags = PFLAG_MANUALANGLE,
 				.layer = LAYER_PARTICLE_MID,
 			));
