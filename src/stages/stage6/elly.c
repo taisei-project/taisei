@@ -69,6 +69,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 		.flags = PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_PARTICLE_LOW,
 		.opacity = s->opacity,
+		.scale = s->scale / 0.7,
 	);
 }
 
