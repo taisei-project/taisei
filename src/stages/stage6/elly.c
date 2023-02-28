@@ -44,6 +44,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 		.scale = s->scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.layer = LAYER_PARTICLE_MID,
+		.opacity = s->opacity,
 	);
 
 	PARTICLE(
@@ -55,6 +56,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 		.scale = s->scale,
 		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.layer = LAYER_PARTICLE_MID,
+		.opacity = s->opacity,
 	);
 
 	RNG_ARRAY(rand, 2);
@@ -66,6 +68,7 @@ static void scythe_particles(EllyScythe *s, real oldangle) {
 		.timeout = 60,
 		.flags = PFLAG_REQUIREDPARTICLE,
 		.layer = LAYER_PARTICLE_LOW,
+		.opacity = s->opacity,
 	);
 }
 
@@ -135,6 +138,7 @@ static void stage6_init_elly_scythe(EllyScythe *scythe, cmplx pos) {
 	scythe->scale = 0.7;
 	scythe->resting_angle = -M_PI/2;
 	scythe->angle = scythe->resting_angle;
+	scythe->opacity = 1.0f;
 	INVOKE_TASK(scythe_update, ENT_BOX(scythe));
 }
 

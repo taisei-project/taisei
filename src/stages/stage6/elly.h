@@ -30,6 +30,7 @@ DEFINE_ENTITY_TYPE(EllyScythe, {
 	real resting_angle;
 
 	float scale;
+	float opacity;
 
 	MoveParams move;
 
