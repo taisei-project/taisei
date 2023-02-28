@@ -416,24 +416,40 @@ TASK(spawn_midboss) {
 	boss_engage(b);
 }
 
-TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
-	// TODO: Restore scythe animation after Stage 6 port is merged.
-	// The fairy serves as a placeholder for now.
+TASK(scythe_enter, { BoxedEllyScythe s; }) {
+	auto s = TASK_BIND(ARGS.s);
+	int entertime = 120;
+	for(int t = 0; t < entertime; ++t, YIELD) {
+		float f = (t + 1.0f) / entertime;
+		s->scale = 0.7f * f * f;
+		s->opacity = glm_ease_quad_out(f);
+	}
+}
 
-	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, NULL));
-	e->flags |= EFLAG_NO_HIT | EFLAG_INVULNERABLE | EFLAG_NO_AUTOKILL;
+TASK(scythe_post_mid, { int fleetime; }) {
+	cmplx spawnpos = VIEWPORT_W/2 + 140i;
+	EllyScythe *s = stage6_host_elly_scythe(spawnpos);
+	INVOKE_SUBTASK(scythe_enter, ENT_BOX(s));
+	s->spin = M_TAU/12;
 
 	cmplx anchor = VIEWPORT_W / 2.0 + I * VIEWPORT_H / 3.0;
-
-	e->move = move_from_towards(e->pos, anchor, 0.003 + 0.02 * I);
+	s->move = move_from_towards(s->pos, anchor, 0.03 + 0.01i);
 
 	real speed = difficulty_value(1.1, 1.0, 0.9, 0.8);
+	real boost = difficulty_value(5, 7, 10, 15);
 
 	WAIT(90);
+	s->spin *= -1;
+
+	real hrange = 230;
+	real vrange = difficulty_value(80, 100, 120, 140);
+	real vofs = 45;
 
 	for(int i = 0; i < ARGS.fleetime - 210; i++, YIELD) {
-		cmplx shotorg = e->pos + 80 * cdir(-0.1 * i);
-		cmplx shotdir = cdir(-0.3563 * i);
+		s->move.attraction_point = anchor + hrange * sin(i * 0.03) + I*(vofs + vrange * cos(i * 0.05));
+
+		cmplx shotorg = s->pos + 80 * cdir(s->angle);
+		cmplx shotdir = cdir(-1.1 * s->angle);
 
 		struct projentry { ProjPrototype *proj; char *snd; } projs[] = {
 			{ pp_ball,       "shot1"},
@@ -444,9 +460,8 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 
 		struct projentry *pe = &projs[i % (sizeof(projs)/sizeof(struct projentry))];
 
-		// FIXME: find out what the args[1] was for
-		double ca = /*creal(e->args[1]) +*/ i/60.0;
-		Color *c = RGB(cos(ca), sin(ca), cos(ca+2.1));
+		float ca = i/60.0f;
+		Color *c = RGBA(cosf(ca), sinf(ca), cosf(ca + 2.1f), 0.5f);
 
 		play_sfx_ex(pe->snd, 3, true);
 
@@ -454,19 +469,29 @@ TASK(scythe_post_mid, { cmplx pos; int fleetime; }) {
 			.proto = pe->proj,
 			.pos = shotorg,
 			.color = c,
-			.move = move_asymptotic_simple(speed * shotdir, 5 * sin(i / 150.0))
+			.move = move_asymptotic_simple(speed * shotdir, boost * (1 + psin(i / 150.0))),
+			.flags = PFLAG_MANUALANGLE,
+			.angle = rng_angle(),
+			.angle_delta = M_TAU/64,
 		);
 	}
 
+	s->move.attraction = creal(s->move.attraction);
+	s->move.attraction_point = spawnpos;
+	s->spin *= -1;
+
 	for(int i = 0; i < 120; i++, YIELD) {
+		float f = 1.0f - i / 120.0f;
+		s->scale = 0.7f * f * f * f;
+		s->opacity = glm_ease_quad_out(f);
 		stage_clear_hazards(CLEAR_HAZARDS_ALL);
 	}
 
 	if(ARGS.fleetime >= 300) {
-		spawn_items(e->pos, ITEM_LIFE, 1);
+		spawn_items(s->pos, ITEM_LIFE, 1);
 	}
 
-	enemy_kill(e);
+	stage6_despawn_elly_scythe(s);
 }
 
 TASK_WITH_INTERFACE(kurumi_boss_intro, BossAttack){
@@ -554,7 +579,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	STAGE_BOOKMARK(post-midboss);
 
 	if(filler_time - midboss_time > 100) {
-		INVOKE_TASK(scythe_post_mid, .pos = VIEWPORT_W / 2.0, .fleetime = filler_time - midboss_time);
+		INVOKE_TASK(scythe_post_mid, .fleetime = filler_time - midboss_time);
 	}
 
 	WAIT(filler_time - midboss_time);
