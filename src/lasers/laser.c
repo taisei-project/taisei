@@ -128,7 +128,7 @@ bool clear_laser(Laser *l, uint flags) {
 	return true;
 }
 
-static bool laser_prepare_sampling_params(Laser *l, LaserSamplingParams *out_params) {
+static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingParams *out_params) {
 	float t;
 	int c;
 
@@ -148,7 +148,6 @@ static bool laser_prepare_sampling_params(Laser *l, LaserSamplingParams *out_par
 		return false;
 	}
 
-	float step = 0.5;
 	out_params->num_samples = c / step;
 	out_params->time_shift = t;
 	out_params->time_step = step;
@@ -181,7 +180,7 @@ static int quantize_laser(Laser *l) {
 
 	LaserSamplingParams sp;
 
-	if(!laser_prepare_sampling_params(l, &sp)) {
+	if(!laser_prepare_sampling_params(l, 0.5f, &sp)) {
 		l->_internal.bbox.top_left.as_cmplx = 0;
 		l->_internal.bbox.bottom_right.as_cmplx = 0;
 		return 0;
@@ -419,6 +418,66 @@ void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata) {
 	return NULL;
 }
 
+static void laser_clear_effect(Sprite *spr, cmplx p, cmplxf scale, const Color *clr) {
+	int timeout = rng_irange(18, 24);
+	cmplx v = rng_dir();
+	v *= rng_range(0.4, 1.2);
+	PARTICLE(
+		.sprite_ptr = spr,
+		.pos = p,
+		.color = clr,
+		.timeout = timeout,
+		.move = move_linear(v),
+		.draw_rule = pdraw_timeout_scalefade(1+I, 0.25+0.5i, 1, 0),
+		.flags = PFLAG_NOREFLECT,
+		.scale = scale,
+	);
+}
+
+#define CLEAR_STEP 16
+
+typedef struct LaserClearTraceCtx {
+	struct {
+		Sprite *spr;
+		Color clr;
+	} particle;
+
+	struct {
+		cmplx pos;
+		float width;
+	} prev;
+} LaserClearTraceCtx;
+
+static void *laser_clear_now_tracefunc(Laser *l, const LaserTraceSample *sample, void *userdata) {
+	LaserClearTraceCtx *ctx = userdata;
+	cmplx pos = sample->pos;
+	float width = lerpf(sample->segment->width.a, sample->segment->width.b, sample->segment_param);
+	create_clear_item(pos, l->clear_flags);
+
+	if(!sample->discontinuous) {
+		for(float f = 0.33; f < 0.9; f += 0.33) {
+			cmplx ipos = clerp(ctx->prev.pos, pos, f);
+			float iwidth = lerpf(ctx->prev.width, width, f);
+			laser_clear_effect(
+				ctx->particle.spr, ipos, iwidth / ctx->particle.spr->w, &ctx->particle.clr);
+		}
+	}
+
+	laser_clear_effect(ctx->particle.spr, pos, width / ctx->particle.spr->w, &ctx->particle.clr);
+	ctx->prev.pos = pos;
+	ctx->prev.width = width;
+	return NULL;
+}
+
+static void laser_clear_now(Laser *l) {
+	LaserClearTraceCtx ctx;
+	ctx.particle.spr = res_sprite("part/flare");
+	ctx.particle.clr = l->color;
+	color_mul(&ctx.particle.clr, RGBA(2, 2, 2, 0));
+	color_add(&ctx.particle.clr, RGBA(0.1, 0.1, 0.1, 0));
+	laser_trace(l, CLEAR_STEP, laser_clear_now_tracefunc, &ctx);
+}
+
 void process_lasers(void) {
 	bool stage_cleared = stage_is_cleared();
 	Player *plr = &global.plr;
@@ -451,31 +510,8 @@ void process_lasers(void) {
 		next = laser->next;
 
 		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {
-			// TODO: implement CLEAR_HAZARDS_NOW
-
-			laser->timespan *= 0.9;
-			bool kill_now = laser->timespan < 5;
-
-			if(!((global.frames - laser->birthtime) % 2) || kill_now) {
-				float t = fmaxf(0, (global.frames - laser->birthtime) * laser->speed - laser->timespan + laser->timeshift);
-				cmplx p = laser->prule(laser, t);
-				double x = creal(p);
-				double y = cimag(p);
-
-				if(x > 0 && x < VIEWPORT_W && y > 0 && y < VIEWPORT_H) {
-					create_clear_item(p, laser->clear_flags);
-				}
-
-				if(kill_now) {
-					PARTICLE(
-						.sprite = "flare",
-						.pos = p,
-						.timeout = 20,
-						.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-					);
-					laser->deathtime = 0;
-				}
-			}
+			laser_clear_now(laser);
+			laser->deathtime = 0;
 		} else if(laser_collision(laser, plr)) {
 			ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
 		}
