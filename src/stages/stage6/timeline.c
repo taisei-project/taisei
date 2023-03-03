@@ -97,6 +97,7 @@ TASK(flowermine_fairy_move, { BoxedEnemy enemy; MoveParams move1; MoveParams mov
 TASK(projectile_redirect, { BoxedProjectile proj; MoveParams move; }) {
 	Projectile *p = TASK_BIND(ARGS.proj);
 	play_sfx_ex("redirect", 1, false);
+	spawn_projectile_highlight_effect(p);
 	p->move = ARGS.move;
 }
 
@@ -106,15 +107,20 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 
 	int step = difficulty_value(6, 5, 4, 3);
 	real speed = difficulty_value(1.0, 1.3, 1.6, 1.9);
+	real boost = difficulty_value(0, 3, 5, 7);
+
 	for(int i = 0; i < 1000/step; i++, WAIT(step)) {
 		cmplx dir = cdir(0.6 * i);
 		Projectile *p = PROJECTILE(
 			.proto = pp_rice,
 			.pos = e->pos + 40 * cnormalize(ARGS.move1.velocity) * dir,
-			.color = RGB(1-psin(i), 0.3, psin(i)),
+			.color = RGB(1-psin(i), 0.1, psin(i)),
 			.move = move_linear(I * dir * 0.0001)
 		);
-		INVOKE_TASK_DELAYED(200, projectile_redirect, ENT_BOX(p), move_linear(I * cdir(0.6 * i) * speed));
+		INVOKE_TASK_DELAYED(200, projectile_redirect,
+			.proj = ENT_BOX(p),
+			.move = move_asymptotic_simple(I * cdir(0.6 * i) * speed, boost)
+		);
 		play_sfx("shot1");
 	}
 }
