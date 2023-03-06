@@ -78,9 +78,10 @@ TASK(broglie_spin_baryon, { BoxedEllyBaryons baryons; int peaktime; }) {
 }
 
 TASK(broglie_charger_bullet, {
+	BoxedBoss boss;
 	BoxedEllyBaryons baryons;
 	real angle;
-	cmplx aim;
+	cmplx aim_rot;
 	int predelay;
 	int firetime;
 	int attack_num;
@@ -140,7 +141,6 @@ TASK(broglie_charger_bullet, {
 		}
 	}
 
-
 	play_sfx_ex("laser1", 10, true);
 	play_sfx("boom");
 
@@ -161,9 +161,11 @@ TASK(broglie_charger_bullet, {
 	real s_ampl = 30 + 2 * ARGS.attack_num;
 	real s_freq = 0.10 + 0.01 * ARGS.attack_num;
 
+	cmplx aim = ARGS.aim_rot * cnormalize(center - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
+
 	for(int lnum = 0; lnum < 2; ++lnum) {
 		Laser *l = create_lasercurve4c(center, 75, 100, RGBA(1, 1, 1, 0), las_sine,
-			5 * ARGS.aim, s_ampl, s_freq, lnum * M_PI);
+			5 * aim, s_ampl, s_freq, lnum * M_PI);
 
 		l->width = 20;
 		INVOKE_TASK(broglie_laser, ENT_BOX(l), hue + lnum / 6.0);
@@ -219,8 +221,6 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 		}
 
 		elly_clap(global.boss, fire_delay);
-		cmplx center = baryons->poss[0];
-		cmplx aim = cnormalize(center - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
 
 		INVOKE_SUBTASK_DELAYED(step * cnt,
 			broglie_spin_baryon, ENT_BOX(baryons), fire_delay - step * (cnt - 1));
@@ -229,9 +229,10 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 			real angle = M_TAU * (0.25 + 1.0 / cnt * i);
 
 			INVOKE_TASK(broglie_charger_bullet,
+				.boss = ARGS.boss,
 				.baryons = ENT_BOX(baryons),
 				.angle = angle,
-				.aim = cdir(M_TAU / cnt * i) * aim,
+				.aim_rot = cdir(M_TAU / cnt * i),
 				.predelay = step * (cnt - i),
 				.firetime = fire_delay - step * (cnt - 1),
 				.attack_num = attack_num
