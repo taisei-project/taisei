@@ -244,14 +244,13 @@ TASK(sniper_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) 
 
 TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+	real speed = difficulty_value(0.01, 0.02, 0.03, 0.04);
 	real r = 80;
 
 	for(;;WAIT(2)) {
 		cmplx dir = cdir(scythe->angle);
 
-		real speed = difficulty_value(0.01, 0.02, 0.03, 0.04);
-
-		Projectile *p = PROJECTILE(
+		PROJECTILE(
 			.proto = pp_ball,
 			.pos = scythe->pos + r * dir,
 			.color = RGBA(0, 0.2, 0.5, 0.0),
