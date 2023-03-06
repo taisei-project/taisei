@@ -308,7 +308,7 @@ TASK(boss_appear, { BoxedBoss boss; BoxedEllyScythe scythe; }) {
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
 	EllyScythe *scythe = NOT_NULL(ENT_UNBOX(ARGS.scythe));
 	scythe->spin = 0.5;
-	boss->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS, 0.3, 0.5);
+	boss->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS, 0.03, 0.5);
 	WAIT(80);
 	scythe->move = move_from_towards_exp(boss->pos, BOSS_DEFAULT_GO_POS + ELLY_SCYTHE_RESTING_OFS, 0.3, 0.5);
 	WAIT(35);
