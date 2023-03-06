@@ -244,6 +244,8 @@ TASK(sniper_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) 
 
 TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 	EllyScythe *scythe = TASK_BIND(ARGS.scythe);
+	real r = 80;
+
 	for(;;WAIT(2)) {
 		cmplx dir = cdir(scythe->angle);
 
@@ -251,14 +253,13 @@ TASK(scythe_mid_aimshot, { BoxedEllyScythe scythe; }) {
 
 		Projectile *p = PROJECTILE(
 			.proto = pp_ball,
-			.pos = scythe->pos + 80 * dir,
+			.pos = scythe->pos + r * dir,
 			.color = RGBA(0, 0.2, 0.5, 0.0),
-			.move = move_accelerated(dir, speed * cnormalize(global.plr.pos - scythe->pos - 80 * dir))
+			.move = move_accelerated(dir, speed * cnormalize(global.plr.pos - scythe->pos - r * dir)),
+			.max_viewport_dist = r,
 		);
 
-		if(projectile_in_viewport(p)) {
-			play_sfx("shot1");
-		}
+		play_sfx("shot1");
 	}
 }
 
@@ -267,24 +268,28 @@ TASK(scythe_mid, { cmplx pos; }) {
 	EllyScythe *s = stage6_host_elly_scythe(ARGS.pos);
 	s->spin = 0.2;
 
-	real scythe_speed = difficulty_value(5, 4, 2, 1);
+	real scythe_speed = difficulty_value(5, 4, 3, 2);
+	int firetime = difficulty_value(150, 200, 300, 300);
+	real r = 80;
 
-	s->move = move_accelerated(scythe_speed, - 0.005 * I);
+	s->move = move_asymptotic_halflife(scythe_speed, -(scythe_speed*2)*I, firetime);
 
 	if(global.diff > D_Normal) {
 		INVOKE_SUBTASK(scythe_mid_aimshot, ENT_BOX(s));
 	}
 
-	for(int i = 0; i < 300; i++, YIELD) {
+	for(int i = 0; i < firetime; i++, YIELD) {
 		play_sfx_loop("shot1_loop");
 		cmplx dir = cdir(s->angle);
+
 		Projectile *p = PROJECTILE(
 			.proto = pp_bigball,
-			.pos = s->pos + 80 * dir,
+			.pos = s->pos + r * dir,
 			.color = RGBA(0.2, 0.5 - 0.5 * cimag(dir), 0.5 + 0.5 * creal(dir), 0.0),
+			.max_viewport_dist = r*2,
 		);
 
-		INVOKE_TASK_DELAYED(140, projectile_redirect, ENT_BOX(p), move_linear(global.diff * cexp(0.6 * I) * dir));
+		INVOKE_TASK_DELAYED(140, projectile_redirect, ENT_BOX(p), move_linear(global.diff * cdir(0.6) * dir));
 	}
 }
 
@@ -395,6 +400,36 @@ TASK(spawn_boss) {
 
 }
 
+TASK(wallmaker, { cmplx pos; MoveParams move; }) {
+	auto e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 1)));
+	e->move = ARGS.move;
+
+	int period = 4;
+	int n = 1;
+
+	for(;;WAIT(period)) {
+		play_sfx_loop("shot1_loop");
+
+		for(int i = 0; i < n; ++i) {
+			real ox = rng_sreal() * 8;
+			real oy = 24;
+			real b = rng_range(1, 3);
+			PROJECTILE(
+				.proto = pp_wave,
+				.color = RGB(0.2, 0.0, 0.5),
+				.pos = e->pos + ox + oy*I,
+				.move = move_asymptotic_simple(I, b),
+			);
+		}
+	}
+}
+
+TASK(wallmakers, { int count; cmplx pos; MoveParams move; }) {
+	for(int i = 0; i < ARGS.count; ++i, WAIT(60)) {
+		INVOKE_TASK(wallmaker, ARGS.pos, ARGS.move);
+	}
+}
+
 DEFINE_EXTERN_TASK(stage6_timeline) {
 	INVOKE_TASK_DELAYED(100, hacker_fairy, .pos = VIEWPORT_W / 2.0, .move = move_linear(2.0 * I));
 
@@ -425,6 +460,9 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		);
 	}
 
+	INVOKE_TASK_DELAYED(1500, wallmakers, 20, VIEWPORT_W+30+40i, move_linear(-1));
+	INVOKE_TASK_DELAYED(1740, wallmakers, 16, -30+40i, move_linear(1));
+
 	for(int i = 0; i < 20; i++) {
 		INVOKE_TASK_DELAYED(1200 + 20 * i, flowermine_fairy,
 			.pos = VIEWPORT_W / 2.0,
@@ -441,7 +479,7 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		);
 	}
 
-	for(int i = 0; i < 6; ++i) {
+	for(int i = 0; i < 12; ++i) {
 		INVOKE_TASK_DELAYED(1400 + 120 * i, sniper_fairy,
 			.pos = VIEWPORT_W + VIEWPORT_H*0.6i,
 			.move_enter = move_linear(-1.5 * cdir(0.5 * ((2 - (i % 3)) - 1))),
@@ -449,7 +487,15 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		);
 	}
 
-	INVOKE_TASK_DELAYED(2300, scythe_mid, .pos = -100 + I * 300);
+	for(int i = 0; i < 6; ++i) {
+		INVOKE_TASK_DELAYED(2180 + 120 * i, sniper_fairy,
+			.pos = VIEWPORT_H*0.6i,
+			.move_enter = move_linear(1.5 * cdir(0.5 * ((2 - (i % 3)) - 1))),
+			.move_exit = move_accelerated(1, -0.04i),
+		);
+	}
+
+	INVOKE_TASK_DELAYED(3300, scythe_mid, .pos = -100 + I * 300);
 
 	WAIT(3800);
 	INVOKE_TASK(spawn_boss);
