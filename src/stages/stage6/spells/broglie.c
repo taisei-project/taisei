@@ -51,6 +51,32 @@ TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
 	}
 }
 
+TASK(broglie_spin_baryon, { BoxedEllyBaryons baryons; int peaktime; }) {
+	auto baryons = TASK_BIND(ARGS.baryons);
+	int peaktime = ARGS.peaktime;
+
+	real maxspin = M_PI * 0.2;
+	real spin = 0;
+
+	INVOKE_SUBTASK(common_charge,
+		.anchor = &baryons->poss[0],
+		.color = RGBA(0.05, 1, 0.5, 0),
+		.sound = COMMON_CHARGE_SOUNDS,
+		.time = peaktime,
+	);
+
+	for(int t = 0; t < peaktime; ++t, YIELD) {
+		approach_asymptotic_p(&spin, maxspin, 0.02, 1e-4);
+		baryons->angles[0] += spin;
+	}
+
+	while(spin > 0) {
+		approach_asymptotic_p(&spin, 0, 0.02, 1e-4);
+		baryons->angles[0] += spin;
+		YIELD;
+	}
+}
+
 TASK(broglie_charger_bullet, {
 	BoxedEllyBaryons baryons;
 	real angle;
@@ -72,6 +98,8 @@ TASK(broglie_charger_bullet, {
 		.flags = PFLAG_NOCLEAR,
 	));
 
+	cmplx spin = 0;
+
 	for(int t = -ARGS.predelay; t < ARGS.firetime; t++, YIELD) {
 		// NOTE: We can't use a static position here because we want it to look like it's attached
 		// to the baryon, which may be still decelerating to its target position.
@@ -80,35 +108,33 @@ TASK(broglie_charger_bullet, {
 
 		if(baryons) {
 			center = baryons->poss[0];
+			spin = cdir(baryons->angles[0]);
 		}
 
+		p->pos = center + ofs * spin;
+
 		if(t < 0) {
-			p->pos = center + ofs;
 			continue;
 		}
 
 		real f = pow(clamp((140 - (ARGS.firetime - t)) / 90.0, 0, 1), 8);
-		real spin = M_PI * 0.2 * f;
-		// TODO: make the baryon spin in tune
-		ofs *= cdir(spin);
-		p->pos = center + ofs;
 
 		if(f > 0.1) {
-			play_sfx_loop("charge_generic");
-
-			cmplx dir = rng_dir();
-			real l = 50 * rng_real() + 25;
-			real s = 4 + f;
-
-			Color *clr = color_lerp(RGB(1, 1, 1), &p->color, clamp((1 - f * 0.5), 0.0, 1.0));
+			Color *clr = COLOR_COPY(&p->color);
+			color_mul_scalar(clr, 2);
 			clr->a = 0;
+
+			real l = rng_range(70, 100) * (0.5 + 0.5 * f);
+			real s = 4 + f;
+			cmplx dir = rng_dir();
+			cmplx o = l * dir;
 
 			PARTICLE(
 				.sprite = "flare",
-				.pos = p->pos + l * dir,
+				.pos = p->pos + o,
 				.color = clr,
-				.draw_rule = pdraw_timeout_fade(1, 0),
-				.move = move_linear(-s * dir),
+				.draw_rule = pdraw_timeout_scalefade(1+I, 2*I, 0, 1),
+				.move = move_linear(s * -dir),
 				.timeout = l / s,
 			);
 		}
@@ -196,6 +222,9 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 		cmplx center = baryons->poss[0];
 		cmplx aim = cnormalize(center - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
 
+		INVOKE_SUBTASK_DELAYED(step * cnt,
+			broglie_spin_baryon, ENT_BOX(baryons), fire_delay - step * (cnt - 1));
+
 		for(int i = 0; i < cnt; i++) {
 			real angle = M_TAU * (0.25 + 1.0 / cnt * i);
 
@@ -215,12 +244,22 @@ TASK(broglie_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; int period; })
 	}
 }
 
+TASK(reset_baryon_angle, { BoxedEllyBaryons baryons; }) {
+	auto baryons = TASK_BIND(ARGS.baryons);
+	// FIXME better way to do this?
+	baryons->angles[0] = fmod(baryons->angles[0], M_TAU);
+	for(;baryons->angles[0] != 0; YIELD) {
+		approach_asymptotic_p(&baryons->angles[0], 0, 0.05, 1e-4);
+	}
+}
+
 DEFINE_EXTERN_TASK(stage6_spell_broglie) {
 	Boss *boss = stage6_elly_init_baryons_attack(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS.base);
 
 	int period = difficulty_value(390, 360, 330, 300);
 	INVOKE_SUBTASK(broglie_baryons, ENT_BOX(boss), ARGS.baryons, period);
+	INVOKE_TASK_AFTER(&ARGS.base.attack->events.finished, reset_baryon_angle, ARGS.baryons);
 
 	real ofs = 100;
 

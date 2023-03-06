@@ -56,10 +56,8 @@ Boss *stage6_elly_init_scythe_attack(ScytheAttackTaskArgs *args);
 DEFINE_ENTITY_TYPE(EllyBaryons, {
 	cmplx poss[NUM_BARYONS];
 	cmplx target_poss[NUM_BARYONS];
-	real relaxation_rate;
-
-	// angles are currently unused, broglie sign may use them. otherwise remove.
 	real angles[NUM_BARYONS];
+	real relaxation_rate;
 
 	cmplx center_pos;
 	float center_angle;
