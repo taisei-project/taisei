@@ -157,7 +157,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 			.timeout = 60,
 			.angle = 0,
-			.flags = PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		);
 
 		INVOKE_TASK(toe_boson_effect_spin, ENT_BOX(part));
@@ -187,6 +187,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 				.timeout = 50,
 				.draw_rule = pdraw_timeout_scalefade(5, 0, 1, 0),
 				.angle = rng_angle(),
+				.flags = PFLAG_MANUALANGLE,
 			);
 
 			PARTICLE(
@@ -196,7 +197,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 				.timeout = 60,
 				.draw_rule = pdraw_timeout_scalefade(0, 2, 1, 0),
 				.angle = rng_angle(),
-				.flags = PFLAG_REQUIREDPARTICLE,
+				.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 			);
 
 			boson_color(&p->color, ARGS.trail_idx, ARGS.num_warps - warps_left);
@@ -295,6 +296,7 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 		.draw_rule = pdraw_timeout_scalefade(0, 1.5, 1, 0),
 		.timeout = 30,
 		.angle = rng_angle(),
+		.flags = PFLAG_MANUALANGLE,
 	);
 
 	PARTICLE(
@@ -304,7 +306,7 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.timeout = 20,
 		.angle = rng_angle(),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 
 	PARTICLE(
@@ -314,7 +316,7 @@ static void toe_laser_particle(Laser *l, cmplx origin) {
 		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.timeout = 40,
 		.angle = rng_angle(),
-		.flags = PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 	);
 }
 
@@ -398,6 +400,7 @@ TASK(toe_fermion_yukawa_effect, { BoxedProjectile parent; }) {
 		.timeout = 60,
 		.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
 		.angle = rng_angle(),
+		.flags = PFLAG_MANUALANGLE,
 	));
 
 	for(;;) {
@@ -422,6 +425,7 @@ TASK(toe_fermion_effects, { BoxedProjectile p; }) {
 			.timeout = fmin(t / 6.0, 10),
 			.draw_rule = pdraw_timeout_scalefade(particle_scale * 0.5, particle_scale * 2, 1, 0),
 			.angle = rng_angle(),
+			.flags = PFLAG_MANUALANGLE,
 		);
 	}
 }
@@ -657,7 +661,8 @@ TASK(toe_part_symmetry, { BoxedBoss boss; }) {
 			.color = RGBA(0.3, 0.3, 1.0, 0.0),
 			.timeout = vrng_range(R[0], 80.0, 120.0),
 			.draw_rule = pdraw_timeout_scalefade(0.8, 4, 1, 0),
-			.angle = vrng_angle(R[1])
+			.angle = vrng_angle(R[1]),
+			.flags = PFLAG_MANUALANGLE,
 		);
 	}
 }
