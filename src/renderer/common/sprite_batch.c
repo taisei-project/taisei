@@ -64,7 +64,7 @@ void _r_sprite_batch_init(void) {
 	size_t sz_vert = sizeof(GenericModelVertex);
 	size_t sz_attr = SIZEOF_SPRITE_ATTRIBS;
 
-	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,  attr)
+	#define VERTEX_OFS(attr)   offsetof(GenericModelVertex,    attr)
 	#define INSTANCE_OFS(attr) offsetof(SpriteInstanceAttribs, attr)
 
 	VertexAttribFormat fmt[] = {
@@ -83,10 +83,10 @@ void _r_sprite_batch_init(void) {
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[1]), 1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[2]), 1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(tex_transform[3]), 1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
+		{ { 4, VA_HALF,  VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(rgba),             1 },
 		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(texrect),          1 },
-		{ { 2, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
-		{ { 4, VA_FLOAT, VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
+		{ { 2, VA_HALF,  VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(sprite_size),      1 },
+		{ { 4, VA_HALF,  VA_CONVERT_FLOAT, 1 }, sz_attr, INSTANCE_OFS(custom),           1 },
 	};
 
 	#undef VERTEX_OFS
@@ -213,12 +213,9 @@ static void _r_sprite_batch_compute_attribs(
 		glm_translate(attribs.mv_transform, (vec3) { ofs.x / imgdims.w, ofs.y / imgdims.h });
 	}
 
-	if(params->color == NULL) {
-		// XXX: should we use r_color_current here?
-		attribs.rgba = *RGBA(1, 1, 1, 1);
-	} else {
-		attribs.rgba = *params->color;
-	}
+	// XXX: should we default to r_color_current here?
+	const Color *color = params->color ?: RGBA(1, 1, 1, 1);
+	f32v4_to_f16v4(attribs.rgba, color->rgba);
 
 	attribs.texrect = spr->tex_area;
 
@@ -232,12 +229,12 @@ static void _r_sprite_batch_compute_attribs(
 		attribs.texrect.h *= -1;
 	}
 
-	attribs.sprite_size = spr->extent;
+	f32v2_to_f16v2(attribs.sprite_size, spr->extent.as_array);
 
 	if(params->shader_params == NULL) {
-		memset(&attribs.custom, 0, sizeof(attribs.custom));
+		memset(attribs.custom, 0, sizeof(attribs.custom));
 	} else {
-		attribs.custom = *params->shader_params;
+		f32v4_to_f16v4(attribs.custom, params->shader_params->vector);
 	}
 
 	*out_attribs = attribs;

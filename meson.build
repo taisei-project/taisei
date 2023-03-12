@@ -128,6 +128,7 @@ taisei_c_args = [
     '-fno-math-errno',
     '-fno-signaling-nans',
     '-fno-trapping-math',
+    '-mfp16-format=ieee',
 ]
 
 taisei_conversion_c_args = [
@@ -333,6 +334,128 @@ config.set('TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS', cc.compiles(
     name : '__attribute__((malloc(deallocator, index)))',
     args : ['-Wattributes', '-Werror']
 ))
+
+config.set('TAISEI_BUILDCONF_F16_CVT_TYPE', false)
+config.set('TAISEI_BUILDCONF_F16_STORAGE_TYPE', 'uint16_t')
+config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', false)
+config.set('TAISEI_BUILDCONF_F16_RT_ABI_TYPE', false)
+config.set('TAISEI_BUILDCONF_F16_RT_FUNC_H2F', false)
+config.set('TAISEI_BUILDCONF_F16_RT_FUNC_F2H', false)
+
+float16_cvt_types = {
+    #      cvt : storage
+    '_Float16' : '_Float16',
+    '__fp16'   : 'uint16_t',
+}
+float16_simd_types = ['_Float16']
+float16_rt_abi = 'none'
+float16_rt_abi_typemap = {
+    'native'  : '_Float16',
+    'integer' : 'uint16_t',
+}
+float16_rt_abi_choices = ['auto', 'none'] + float16_rt_abi_typemap.keys()
+float16_rt_funcs = [
+    [ '__extendhfsf2', '__truncsfhf2' ],
+    [ '__gnu_h2f_ieee', '__gnu_f2h_ieee' ],
+]
+
+float16_rt_abi = meson.get_external_property('float16_rt_abi', 'auto')
+if float16_rt_abi not in float16_rt_abi_choices
+    error('float16_rt_abi must be one of @0@'.format(', '.join(float16_rt_abi_choices)))
+endif
+
+float16_have_native_conversion = false
+float16_have_rtlib_conversion = false
+
+foreach cvt_type, storage_type : float16_cvt_types
+    if cc.sizeof(cvt_type) == 2
+        config.set('TAISEI_BUILDCONF_F16_CVT_TYPE', cvt_type)
+        config.set('TAISEI_BUILDCONF_F16_STORAGE_TYPE', storage_type)
+
+        if cvt_type in float16_simd_types
+            config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', cvt_type)
+        endif
+
+        float16_rt_abi = 'none'
+        float16_have_native_conversion = true
+        break
+    endif
+endforeach
+
+if float16_rt_abi != 'none'
+    foreach funcs : float16_rt_funcs
+        func_h2f = funcs[0]
+        func_f2h = funcs[1]
+
+        if not cc.has_function(func_h2f) or not cc.has_function(func_f2h)
+            continue
+        endif
+
+        if float16_rt_abi == 'auto'
+            float16_rt_abi = 'none'
+
+            foreach abiname, abitype : float16_rt_abi_typemap
+                r = cc.run(f'''
+                    #include <assert.h>
+                    #include <stdint.h>
+
+                    #define NOINLINE __attribute__((noinline))
+
+                    typedef @abitype@ f16_abi_t;
+                    float @func_h2f@(f16_abi_t);
+                    f16_abi_t @func_f2h@(float);
+
+                    NOINLINE float f16_to_f32(uint16_t x) {
+                        union {
+                            f16_abi_t _f16abi;
+                            uint16_t _uint;
+                        } u = { ._uint =  x };
+                        return @func_h2f@(u._f16abi);
+                    }
+
+                    NOINLINE uint16_t f32_to_f16(float  x) {
+                        union {
+                            f16_abi_t _f16abi;
+                            uint16_t _uint;
+                        } u = { ._f16abi =  @func_f2h@(x) };
+                        return u._uint;
+                    }
+
+                    int main(int argc, char **argv) {
+                        volatile float src = 420.69f;
+                        const float expected = 420.75f;
+                        volatile uint16_t half = f32_to_f16(src);
+                        volatile float roundtrip = f16_to_f32(half);
+                        assert(roundtrip == expected);
+                        return 0;
+                    }
+                ''', name : f'Test for @abiname@ float16 ABI')
+
+                if r.compiled() and r.returncode() == 0
+                    float16_rt_abi = abiname
+                    break
+                endif
+            endforeach
+        endif
+
+        if float16_rt_abi == 'none'
+            break
+        endif
+
+        abi_type = float16_rt_abi_typemap[float16_rt_abi]
+        config.set('TAISEI_BUILDCONF_F16_STORAGE_TYPE', abi_type)
+        config.set('TAISEI_BUILDCONF_F16_RT_ABI_TYPE', abi_type)
+        config.set('TAISEI_BUILDCONF_F16_RT_FUNC_H2F', func_h2f)
+        config.set('TAISEI_BUILDCONF_F16_RT_FUNC_F2H', func_f2h)
+
+        if abi_type in float16_simd_types
+            config.set('TAISEI_BUILDCONF_F16_SIMD_TYPE', abi_type)
+        endif
+
+        float16_have_rtlib_conversion = true
+        break
+    endforeach
+endif
 
 prefer_relpath_systems = [
     'windows',

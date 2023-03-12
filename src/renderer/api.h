@@ -229,6 +229,7 @@ typedef enum Primitive {
 
 typedef enum VertexAttribType {
 	VA_FLOAT,
+	VA_HALF,
 	VA_BYTE,
 	VA_UBYTE,
 	VA_SHORT,
@@ -482,15 +483,10 @@ typedef struct SpriteParamsBuffer {
 typedef struct SpriteInstanceAttribs {
 	mat4 mv_transform;
 	mat4 tex_transform;
-
-	union {
-		FloatRect texrect;
-		vec4 texrect_vec4;
-	};
-
-	Color rgba;
-	FloatExtent sprite_size;
-	ShaderCustomParams custom;
+	FloatRect texrect;
+	float16_storage_t sprite_size[2];
+	float16_storage_t rgba[4];
+	float16_storage_t custom[4];
 
 	// offsetof(end_of_fields) == size without padding.
 	char end_of_fields;
