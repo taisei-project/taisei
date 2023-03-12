@@ -201,7 +201,7 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
 
-	cmplx aim_target;
+	cmplx aim_target = 0;
 
 	for(int t = 0; t < aimtime; ++t, YIELD) {
 		Laser *l = ENT_UNBOX(lb);
