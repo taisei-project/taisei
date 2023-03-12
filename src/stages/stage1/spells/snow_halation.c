@@ -47,7 +47,7 @@ static Laser *create_halation_laser(cmplx a, cmplx b, float width, float charge,
 	Laser *l;
 
 	if(clr == NULL) {
-		Color c;
+		Color c = { };
 		l = create_laserline_ab(a, b, width, charge, dur, &c);
 		INVOKE_TASK(halation_laser_color, ENT_BOX(l), width);
 	} else {
