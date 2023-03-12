@@ -12,9 +12,16 @@
 
 #include "common_tasks.h"
 
-TASK(spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; real width; int count; real speed; }) {
-
+TASK(spawn_square, {
+	BoxedProjectileArray *projectiles;
+	cmplx pos;
+	cmplx dir;
+	real width;
+	int count;
+	real speed;
+}) {
 	int delay = round(ARGS.width / (ARGS.count-1) / ARGS.speed);
+
 	for(int i = 0; i < ARGS.count; i++) {
 		for(int j = 0; j < ARGS.count; j++) {
 			real x = ARGS.width * (-0.5 + j / (real) (ARGS.count-1));
@@ -23,13 +30,12 @@ TASK(spawn_square, { BoxedProjectileArray *projectiles; cmplx pos; cmplx dir; re
 				.proto = pp_ball,
 				.pos = ARGS.pos + x * ARGS.dir * I,
 				.color = RGB(0, 0.5, 1),
-				.move = move_accelerated(ARGS.speed * ARGS.dir, 0*0.01*I),
+				.move = move_linear(ARGS.speed * ARGS.dir),
 			));
 		}
 		play_sfx("shot2");
 		WAIT(delay);
 	}
-
 }
 
 static void spawn_apples(cmplx pos) {
@@ -54,6 +60,7 @@ TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 
 	real radius = 300;
 	real speed = 0.01;
+	real phase = 0.5;
 	int steps = M_TAU/speed;
 
 	for(int n = 2;; n++) {
@@ -66,21 +73,36 @@ TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 				spawn_apples(boss->pos);
 			}
 
-			scythe->pos = boss->pos + radius * sin(n*t) * cdir(t) * I;
+			scythe->pos = boss->pos + radius * sin(n*t) * cdir(t + phase) * I;
 			YIELD;
 		}
 	}
 }
 
-TASK(newton_scythed_proj, { BoxedProjectile proj; }) {
-	Projectile *p = TASK_BIND(ARGS.proj);
-	cmplx aim = cnormalize(global.plr.pos - p->pos);
-	play_sfx("redirect");
-
+static void scythe_touch_bullet(Projectile *p) {
 	real acceleration = difficulty_value(0.015, 0.02, 0.03, 0.04);
+	cmplx aim = cnormalize(p->move.velocity * I);
+	real vis_scale = 0.75;
+	real hit_scale = 0.75;
 
-	p->move.velocity = 0;
-	p->move.acceleration = acceleration * aim;
+	p->color.r = 1.0;
+	p->scale = vis_scale * (1 + I);
+	p->collision_size *= hit_scale;
+
+	auto p2 = PROJECTILE(
+		.proto = p->proto,
+		.pos = p->pos,
+		.color = &p->color,
+		.move = p->move,
+	);
+
+	p2->scale = vis_scale * (1 + I);
+	p2->collision_size *= hit_scale;
+
+	p->move.acceleration  += acceleration * aim;
+	p2->move.acceleration -= acceleration * aim;
+
+	play_sfx("redirect");
 }
 
 TASK(newton_scythe, { BoxedEllyScythe scythe; BoxedBoss boss; BoxedProjectileArray *projectiles; }) {
@@ -89,13 +111,14 @@ TASK(newton_scythe, { BoxedEllyScythe scythe; BoxedBoss boss; BoxedProjectileArr
 	INVOKE_SUBTASK(newton_scythe_movement, ARGS.scythe, ARGS.boss);
 
 	real effect_radius = 30;
+	real effect_radius_sq = effect_radius * effect_radius;
 
 	for(;;) {
-		ENT_ARRAY_FOREACH(ARGS.projectiles, Projectile *p, {
-			real distance = cabs(p->pos - scythe->pos);
-			if(distance < effect_radius && p->color.r != 1.0) {
-				p->color.r = 1.0;
-				INVOKE_TASK(newton_scythed_proj, ENT_BOX(p));
+		ENT_ARRAY_FOREACH_COUNTER(ARGS.projectiles, int idx, Projectile *p, {
+			if(cabs2(p->pos - scythe->pos) < effect_radius_sq) {
+				scythe_touch_bullet(p);
+				// Stop tracking this bullet
+				ARGS.projectiles->array[idx] = (BoxedProjectile) { };
 			}
 		});
 
@@ -112,25 +135,31 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	int proj_count = 1024;
 	DECLARE_ENT_ARRAY(Projectile, projectiles, proj_count);
 
-	INVOKE_SUBTASK(newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
+	INVOKE_SUBTASK_DELAYED(180, newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
 
 	real width = 100;
 	int bullets_per_side = 5;
 
 	real square_speed = difficulty_value(2, 2.3, 2.6, 3);
 
-	for(int i = 0;; i++) {
-		for(int s = -1; s <= 1; s += 2) {
-			cmplx dir = cdir((5 * M_PI / 6 + 0.1) * i) * I;
+	int n = 6;
+	real o = 0;
+
+	for(;;) {
+		cmplx aim = cnormalize(global.plr.pos - boss->pos);
+
+		for(int i = 0; i < n; ++i) {
+			cmplx dir = aim * cdir((i + o) * M_TAU / n);
 			cmplx pos = boss->pos + 100 * dir;
-			INVOKE_SUBTASK(spawn_square, &projectiles, pos, -s*dir,
-				       .width = width,
-				       .count = bullets_per_side,
-				       .speed = square_speed
+			INVOKE_SUBTASK(spawn_square, &projectiles, pos, -dir,
+				.width = width,
+				.count = bullets_per_side,
+				.speed = square_speed,
 			);
 		}
 
-		WAIT(20*(2/square_speed));
+		WAIT(60*(2/square_speed));
+		o += 0.5;
 	}
 }
 
