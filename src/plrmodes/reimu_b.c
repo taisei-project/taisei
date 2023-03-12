@@ -348,7 +348,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 			continue;
 		}
 
-		Rect gap_bbox, overlap;
+		Rect gap_bbox, overlap = { };
 		cmplx gap_size = (GAP_LENGTH + I * GAP_WIDTH) * gap->parallel_axis;
 		cmplx p0 = gap->pos - gap_size * 0.5;
 		cmplx p1 = gap->pos + gap_size * 0.5;
