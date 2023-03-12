@@ -12,7 +12,7 @@
 
 #include "common_tasks.h"
 
-static ProjPrototype* kepler_pick_bullet(int tier) {
+static ProjPrototype *kepler_pick_bullet(int tier) {
 	switch(tier) {
 		case 0:  return pp_soul;
 		case 1:  return pp_bigball;
@@ -31,9 +31,10 @@ TASK(kepler_bullet_spawner, { BoxedProjectile proj; int tier; cmplx offset; }) {
 	for(int i = 0; i < max_children; i++) {
 		if(ARGS.tier < 4) {
 			INVOKE_TASK(kepler_bullet,
-				       .parent = ARGS.proj,
-				       .tier = ARGS.tier + 1,
-				       .offset = ARGS.offset);
+				.parent = ARGS.proj,
+				.tier = ARGS.tier + 1,
+				.offset = ARGS.offset,
+			);
 		}
 		WAIT(interval);
 	}
@@ -42,9 +43,11 @@ TASK(kepler_bullet_spawner, { BoxedProjectile proj; int tier; cmplx offset; }) {
 DEFINE_TASK(kepler_bullet) {
 	cmplx pos = ARGS.pos;
 	Projectile *parent = ENT_UNBOX(ARGS.parent);
+
 	if(parent != NULL) {
 		pos = parent->pos;
 	}
+
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = kepler_pick_bullet(ARGS.tier),
 		.pos = pos + ARGS.offset,
