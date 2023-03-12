@@ -106,7 +106,12 @@ DEFINE_EXTERN_TASK(stage6_spell_kepler) {
 				.move = move_linear(dir)
 			);
 
-			INVOKE_TASK_DELAYED(20, kepler_bullet, .parent = ENT_BOX(p), .tier = 1, .offset = 10 * dir);
+			INVOKE_TASK_DELAYED(20, kepler_bullet,
+				.parent = ENT_BOX(p),
+				.tier = 1,
+				.offset = 10 * dir,
+				.pos = p->pos,
+			);
 		}
 
 		WAIT(20);
