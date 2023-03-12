@@ -103,8 +103,11 @@ DEFINE_EXTERN_TASK(stage6_spell_kepler) {
 			Projectile *p = PROJECTILE(
 				.proto = pp_soul,
 				.pos = boss->pos,
-				.color = RGB(0.3, 0.6, 1.0),
-				.move = move_linear(dir)
+				.color = RGBA(0.3, 0.6, 1.0, 0.5),
+				.move = move_linear(dir),
+				.flags = PFLAG_MANUALANGLE,
+				.angle = rng_angle(),
+				.angle_delta = M_TAU/59,
 			);
 
 			INVOKE_TASK_DELAYED(20, kepler_bullet,
