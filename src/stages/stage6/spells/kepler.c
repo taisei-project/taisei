@@ -84,8 +84,6 @@ TASK(kepler_scythe, { BoxedEllyScythe scythe; cmplx center; }) {
 	scythe->move.attraction = I;
 	scythe->move.attraction_exponent = 0;
 	scythe->move.retention = 0;
-
-	STALL;
 }
 
 DEFINE_EXTERN_TASK(stage6_spell_kepler) {
