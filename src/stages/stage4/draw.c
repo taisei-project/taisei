@@ -27,30 +27,18 @@ static bool stage4_fog(Framebuffer *fb) {
 	r_state_push();
 	r_blend(BLEND_NONE);
 
-	// NOTE: this is applied in linear HDR space, before tonemapping
-
 	Color c = *RGBA(0.05, 0.0, 0.01, 1.0);
 
-	r_shader("zbuf_fog");
+	r_shader("zbuf_fog_tonemap");
 	r_uniform_sampler("depth", r_framebuffer_get_attachment(fb, FRAMEBUFFER_ATTACH_DEPTH));
 	r_uniform_vec4_rgba("fog_color", &c);
 	r_uniform_float("start", 0.4);
 	r_uniform_float("end", 1);
 	r_uniform_float("exponent", 20.0);
 	r_uniform_float("curvature", 0);
-	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
-
-	r_state_pop();
-
-	return true;
-}
-
-static bool stage4_tonemap(Framebuffer *fb) {
-	r_state_push();
-	r_blend(BLEND_NONE);
-	r_shader("tonemap");
 	r_uniform_vec3("exposure", 1, 1, 1);
 	draw_framebuffer_tex(fb, VIEWPORT_W, VIEWPORT_H);
+
 	r_state_pop();
 
 	return true;
@@ -356,6 +344,5 @@ ShaderRule stage4_bg_effects[] = {
 	stage4_water,
 	stage4_water_composite,
 	stage4_fog,
-	stage4_tonemap,
 	NULL,
 };
