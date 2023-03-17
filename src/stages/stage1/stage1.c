@@ -100,6 +100,7 @@ static void stage1_preload(void) {
 		"stage1/waterplants",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
 		"stage1/horizon",
 	NULL);
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,

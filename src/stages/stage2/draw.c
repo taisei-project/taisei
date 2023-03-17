@@ -267,6 +267,9 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_uniform_float("wave_scale", 16);
 	r_uniform_vec2("wave_offset", pos[0]/WATER_SIZE, pos[1]/WATER_SIZE);
 	r_uniform_float("water_depth", 5.0);
+	r_uniform_sampler("water_noisetex", "fractal_noise");
+	r_uniform_vec3("water_color", 0.1, 0.2, 0.3);
+	r_uniform_vec3("wave_highlight_color", 0.1, 0.1, 0.1);
 
 	PBREnvironment env = { 0 };
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
@@ -275,9 +278,13 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	r_mat_mv_scale(-WATER_SIZE, WATER_SIZE, 1);
 
-	mat4 imv;
-	glm_mat4_inv_fast(*r_mat_mv_current_ptr(), imv);
-	r_uniform_mat4("inverse_modelview", imv);
+	bool have_bottom = config_get_int(CONFIG_POSTPROCESS) > 1;
+	r_uniform_int("water_has_bottom_layer", have_bottom);
+	if(have_bottom) {
+		mat4 imv;
+		glm_mat4_inv_fast(*r_mat_mv_current_ptr(), imv);
+		r_uniform_mat4("inverse_modelview", imv);
+	}
 
 	r_mat_tex_push();
 	r_mat_tex_translate(pos[0], pos[1], 0);

@@ -78,6 +78,7 @@ static void stage2_preload(void) {
 		"part/blast_huge_rays",
 	NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
 		"ibl_brdf_lut",
 		"stage2/envmap",
 		"stage2/spellbg1",

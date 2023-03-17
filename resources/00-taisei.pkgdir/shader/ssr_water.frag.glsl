@@ -3,10 +3,12 @@
 #include "lib/render_context.glslh"
 #include "interface/ssr.glslh"
 #include "lib/util.glslh"
-#include "lib/water.glslh"
 #include "lib/frag_util.glslh"
 
 UNIFORM(5) float wave_height;
+UNIFORM(6) sampler2D water_noisetex;
+
+#include "lib/water.glslh"
 
 const int steps = 10;
 
@@ -53,7 +55,7 @@ vec3 trace_screenspace_reflection(vec3 pos, vec3 n, sampler2D screen_depth, samp
 
 void main(void) {
 	vec2 uv = flip_native_to_bottomleft(texCoord - wave_offset);
-	float height = wave_height * warpedNoise(uv * 4, time);
+	float height = wave_height * water_sampleWarpedNoise(uv * 4, mat2(2), vec2(time, 0));
 	vec2 dheightduv = dFduv(height, uv);
 
 	mat3 tbn = mat3(normalize(tangent), normalize(bitangent), normalize(normal));

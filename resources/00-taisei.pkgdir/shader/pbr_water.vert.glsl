@@ -13,6 +13,6 @@ void main(void) {
 	tangent = normalize(mv3 * tangentIn.xyz);
 	bitangent = normalize(mv3 * cross(normalIn.xyz, tangentIn.xyz) * tangentIn.w);
 
-	mat2 trans = wave_scale * rot(-3*pi/4);
-	texCoord = trans * flip_native_to_bottomleft(texCoordRawIn - wave_offset);
+	texCoord = wave_scale * flip_native_to_bottomleft(texCoordRawIn - wave_offset);
+	waterTexCoord = texCoord + vec2(-time, 0);
 }

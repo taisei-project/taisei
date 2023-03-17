@@ -97,6 +97,7 @@ static void stage4_preload(void) {
 	portrait_preload_face_sprite("kurumi", "normal", RESF_DEFAULT);
 	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
 	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
 		"stage4/kurumibg1",
 		"stage4/kurumibg2",
 	NULL);

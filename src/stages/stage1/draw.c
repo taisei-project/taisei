@@ -33,6 +33,7 @@ void stage1_drawsys_init(void) {
 	cfg.tex_params.wrap.s = TEX_WRAP_CLAMP;
 	cfg.tex_params.wrap.t = TEX_WRAP_CLAMP;
 
+	stage1_draw_data->water_shader = res_shader("stage1_water");
 	stage1_draw_data->water_fbpair.front = stage_add_background_framebuffer(
 		"Stage 1 water FB 1", 0.5, 0.5, 1, &cfg);
 	stage1_draw_data->water_fbpair.back = stage_add_background_framebuffer(
@@ -53,6 +54,7 @@ static bool reflect_draw_predicate(EntityInterface *ent) {
 	switch(ent->draw_layer & ~LAYER_LOW_MASK) {
 		case LAYER_PLAYER_SLAVE:
 		case LAYER_PLAYER_FOCUS:
+			return true;
 		case LAYER_PLAYER_SHOT:
 		case LAYER_PLAYER_SHOT_HIGH:
 			return false;
@@ -60,6 +62,7 @@ static bool reflect_draw_predicate(EntityInterface *ent) {
 	}
 
 	switch(ent->type) {
+		case ENT_TYPE_ID(Player):
 		case ENT_TYPE_ID(Boss):
 		case ENT_TYPE_ID(Enemy):
 			return true;
@@ -80,132 +83,98 @@ static bool reflect_draw_predicate(EntityInterface *ent) {
 	UNREACHABLE;
 }
 
-static void stage1_water_draw(vec3 pos) {
-	Stage1DrawData *draw_data = stage1_get_draw_data();
 
-	int pp_quality = config_get_int(CONFIG_POSTPROCESS);
-
-	// don't even ask
-
+static void stage1_horizon_draw(vec3 pos) {
 	r_state_push();
-
 	r_mat_mv_push();
-	r_mat_mv_translate(0, pos[1] + 500, 0);
-	r_mat_mv_rotate(M_PI, 1, 0, 0);
-
-	static const Color water_color = { 0, 0.08, 0.08, 1 };
-
-	r_clear(CLEAR_COLOR, &water_color, 1);
-
-	r_mat_mv_push();
-	r_mat_mv_translate(0, -9000, 0);
-	r_mat_mv_rotate(M_PI/2, 1, 0, 0);
-	r_mat_mv_scale(3640*1.4, 1456*1.4, 1);
+	r_mat_mv_translate_v(pos);
+	r_mat_mv_rotate(1.5 * M_PI, 1, 0, 0);
+	r_mat_mv_scale(3640 * 1.4, 1456 * 1.4, 1);
 	r_mat_mv_translate(0, -0.5, 0);
 	r_shader_standard();
 	r_uniform_sampler("tex", "stage1/horizon");
 	r_draw_quad();
 	r_mat_mv_pop();
+	r_state_pop();
+}
+
+static uint stage1_horizon_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	vec3 o;
+	glm_vec3_copy(cam, o);
+	o[2] = 0;
+	o[1] += 9700;
+	return stage3d_pos_single(s3d, cam, o, maxrange);
+}
+
+static const Color water_color = { 0, 0.08, 0.08, 1 };
+
+static void stage1_water_render_reflections(void) {
+	r_disable(RCAP_DEPTH_TEST);
+	r_shader("sprite_default");
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_mat_proj_push_ortho(VIEWPORT_W, VIEWPORT_H);
+	ent_draw(reflect_draw_predicate);
+	r_mat_proj_pop();
+}
+
+static void stage1_water_render_waves(float pos) {
+	r_shader_ptr(stage1_draw_data->water_shader);
+	r_uniform_float("time", 0.5f * global.frames / (float)FPS);
+	r_uniform_vec4_rgba("water_color", &water_color);
+	r_uniform_vec2("wave_offset", 0, pos / 2400.0f);
+	r_uniform_sampler("water_noisetex", "fractal_noise");
+	r_mat_mv_push();
+	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
+	r_mat_mv_scale(0.01, 0.01, 1);
+	r_mat_mv_translate(-VIEWPORT_W/2, -VIEWPORT_H/2, -0.1);
+	draw_framebuffer_tex(stage1_draw_data->water_fbpair.front, VIEWPORT_W, VIEWPORT_H);
+	r_mat_mv_pop();
+}
+
+static void stage1_water_draw(vec3 pos) {
+	r_state_push();
+	r_disable(RCAP_CULL_FACE);
+
+	r_mat_mv_push();
+	r_mat_mv_translate(pos[0], pos[1], 0);
 
 	r_state_push();
 	r_enable(RCAP_DEPTH_TEST);
 	r_depth_func(DEPTH_ALWAYS);
 	r_shader_standard_notex();
 	r_mat_mv_push();
-	r_mat_mv_scale(80000, 80000, 1);
+	r_mat_mv_scale(10000, 900000, 1);
 	r_color(&water_color);
 	r_draw_quad();
-	r_color4(1, 1, 1, 1);
 	r_mat_mv_pop();
 	r_state_pop();
 
-	if(pp_quality < 1) {
-		r_state_pop();
-		r_mat_mv_pop();
-		return;
-	}
-
 	r_disable(RCAP_DEPTH_TEST);
-	r_disable(RCAP_CULL_FACE);
 
-	Framebuffer *bg_fb = r_framebuffer_current();
-	FBPair *fbpair = &draw_data->water_fbpair;
-	r_framebuffer(fbpair->back);
-	r_mat_proj_push();
-	set_ortho(VIEWPORT_W, VIEWPORT_H);
-	r_mat_mv_push_identity();
-
-	float hack = (stage_3d_context.cam.rot.v[0] - 60) / 15.0;
-
-	float z = glm_lerp(0.75, 0.8, hack);
-	float zo = glm_lerp(-0.05, -0.3, hack);
-
-	r_mat_mv_translate(VIEWPORT_W * 0.5 * (1 - z), VIEWPORT_H * 0.5 * (1 - z), 0);
-	r_mat_mv_scale(z, z, 1);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-	r_shader("sprite_default");
-
-	ent_draw(reflect_draw_predicate);
-
-	r_mat_mv_pop();
-
-	fbpair_swap(fbpair);
-	r_framebuffer(fbpair->back);
-
-	ShaderProgram *water_shader = res_shader("stage1_water");
-	r_uniform_float(r_shader_uniform(water_shader, "time"), 0.5 * global.frames / (float)FPS);
-	r_uniform_vec4_rgba(r_shader_uniform(water_shader, "water_color"), &water_color);
-	r_uniform_vec2(r_shader_uniform(water_shader, "wave_offset"), 0, pos[1] / 2400.0);
-
-	if(pp_quality > 1) {
-		r_shader("blur5");
-		r_uniform_vec2("blur_resolution", VIEWPORT_W, VIEWPORT_H);
-		r_uniform_vec2("blur_direction", 1, 0);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbpair);
-		r_framebuffer(fbpair->back);
-		r_uniform_vec2("blur_direction", 0, 1);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbpair);
-		r_framebuffer(fbpair->back);
+	switch(config_get_int(CONFIG_POSTPROCESS))  {
+		case 0: break;
+		case 1:
+			// NOTE: we used to render water into a half-res framebuffer here,
+			// but it's no longer beneficial. In fact it's slightly slower.
+		default: {
+			r_mat_mv_translate(0, 0, pos[2]);
+			stage1_water_render_waves(pos[1]);
+			break;
+		}
 	}
-
-	if(pp_quality == 1) {
-		r_mat_mv_push_identity();
-		r_shader_ptr(water_shader);
-		draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-		fbpair_swap(fbpair);
-		r_mat_mv_pop();
-	}
-
-	r_mat_proj_pop();
-
-	r_enable(RCAP_DEPTH_TEST);
-	r_disable(RCAP_DEPTH_WRITE);
-
-	r_framebuffer(bg_fb);
-
-	if(pp_quality > 1) {
-		r_shader_ptr(water_shader);
-	} else {
-		r_shader_standard();
-	}
-
-	r_mat_mv_push();
-	r_mat_mv_translate(0, 70 - 140 * hack, 0);
-	r_mat_mv_rotate(10 * DEG2RAD, 1, 0, 0);
-	r_mat_mv_scale(0.85 / (z + zo), -0.85 / (z + zo), 0.85);
-	r_mat_mv_translate(-VIEWPORT_W/2, VIEWPORT_H/4 * hack, 0);
-	r_color4(1, 1, 1, 1);
-	draw_framebuffer_tex(fbpair->front, VIEWPORT_W, VIEWPORT_H);
-	r_mat_mv_pop();
 
 	r_mat_mv_pop();
 	r_state_pop();
 }
 
-static uint stage1_water_pos(Stage3D *s3d, vec3 p, float maxrange) {
-	return stage3d_pos_single(s3d, p, p, maxrange);
+static uint stage1_water_pos(Stage3D *s3d, vec3 cam, float maxrange) {
+	cmplx sp = VIEWPORT_W*0.5 + VIEWPORT_H*0.6*I;
+	vec3 ray;
+	camera3d_unprojected_ray(&s3d->cam, sp, ray);
+	vec3 o = { 0, 0, 0 };
+	glm_vec3_scale(ray, 3000, ray);
+	glm_vec3_add(cam, ray, o);
+	return stage3d_pos_single(s3d, cam, o, maxrange);
 }
 
 static void stage1_smoke_draw(vec3 pos) {
@@ -303,7 +272,7 @@ static void stage1_waterplants_draw(vec3 pos) {
 }
 
 static uint stage1_waterplants_pos(Stage3D *s3d, vec3 cam, float maxrange) {
-	vec3 origin = {0,0,-300};
+	vec3 origin = {0,0,0};
 	vec3 step = {0,150,0};
 	return stage3d_pos_ray_farfirst(s3d, cam, origin, step, maxrange * 0.5f, 0.0f);
 }
@@ -362,7 +331,19 @@ static uint stage1_snow_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 }
 
 void stage1_draw(void) {
+	int ppq = config_get_int(CONFIG_POSTPROCESS);
+
+	if(ppq > 0) {
+		r_state_push();
+		r_framebuffer(stage1_draw_data->water_fbpair.back);
+		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		stage1_water_render_reflections();
+		r_state_pop();
+		fbpair_swap(&stage1_draw_data->water_fbpair);
+	}
+
 	Stage3DSegment segs[] = {
+		{ stage1_horizon_draw, stage1_horizon_pos },
 		{ stage1_water_draw, stage1_water_pos },
 		{ stage1_waterplants_draw, stage1_waterplants_pos },
 		{ stage1_snow_draw, stage1_snow_pos },

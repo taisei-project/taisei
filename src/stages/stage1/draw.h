@@ -14,6 +14,7 @@
 
 typedef struct Stage1DrawData {
 	FBPair water_fbpair;
+	ShaderProgram *water_shader;
 
 	struct {
 		float near, near_target;

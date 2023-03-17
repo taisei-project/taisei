@@ -57,13 +57,15 @@ static bool stage4_tonemap(Framebuffer *fb) {
 }
 
 static bool should_draw_water(void) {
-	return stage_3d_context.cam.pos[1] < 0 && config_get_int(CONFIG_POSTPROCESS) > 1;
+	return stage_3d_context.cam.pos[1] < 0;
 }
 
 static bool stage4_water(Framebuffer *fb) {
 	if(!should_draw_water()) {
 		return false;
 	}
+
+	// TODO: SSR-less version for postprocess < 2
 
 	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_mat_proj_push_perspective(stage_3d_context.cam.fovy, stage_3d_context.cam.aspect, stage_3d_context.cam.near, stage_3d_context.cam.far);
@@ -80,6 +82,7 @@ static bool stage4_water(Framebuffer *fb) {
 	r_uniform_float("time", global.frames * 0.002);
 	r_uniform_vec2("wave_offset", -global.frames * 0.0005, 0);
 	r_uniform_float("wave_height", 0.005);
+	r_uniform_sampler("water_noisetex", "fractal_noise");
 	r_color4(0.8, 0.9, 1.0, 1);
 	r_mat_tex_push();
 	r_mat_tex_scale(3, 3, 3);
@@ -109,7 +112,7 @@ static bool stage4_water_composite(Framebuffer *reflections) {
 	// exempt from the fog effect, which is not 100% correct, but the error is not
 	// noticeable with our camera and fog settings.
 
-	// Perhaps a more delcarative post-processing system would be nice, so that we
+	// Perhaps a more declarative post-processing system would be nice, so that we
 	// could specify which passes consume and/or update depth, and have the depth
 	// buffer copied automatically when needed.
 
