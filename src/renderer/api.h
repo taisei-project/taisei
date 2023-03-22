@@ -982,12 +982,12 @@ void r_clear(BufferKindFlags flags, const Color *colorval, float depthval) {
 
 INLINE attr_nonnull(1)
 void r_draw_model(const char *model) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
 }
 
 INLINE attr_nonnull(1)
 void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
 }
 
 INLINE

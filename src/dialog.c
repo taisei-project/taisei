@@ -387,5 +387,5 @@ bool dialog_is_active(Dialog *d) {
 }
 
 void dialog_preload(void) {
-	preload_resource(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
+	res_preload(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
 }

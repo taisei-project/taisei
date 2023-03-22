@@ -1617,7 +1617,7 @@ void _begin_boss_attack_task(const BossAttackTaskArgs *args) {
 }
 
 void boss_preload(void) {
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
 		"charge_extra",
 		"spellend",
@@ -1627,7 +1627,7 @@ void boss_preload(void) {
 		"bossdeath",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
 		"boss_circle",
 		"boss_indicator",
 		"boss_spellcircle0",
@@ -1636,7 +1636,7 @@ void boss_preload(void) {
 		"spell",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"boss_zoom",
 		"boss_death",
 		"spellcard_intro",
@@ -1650,7 +1650,7 @@ void boss_preload(void) {
 	StageInfo *s = global.stage;
 
 	if(s->type != STAGE_SPELL || s->spell->type == AT_ExtraSpell) {
-		preload_resources(RES_TEXTURE, RESF_DEFAULT,
+		res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
 			"stage3/wspellclouds",
 			"stage4/kurumibg2",
 		NULL);

@@ -345,7 +345,7 @@ void process_enemies(EnemyList *enemies) {
 }
 
 void enemies_preload(void) {
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_preload_multi(RES_ANIM, RESF_DEFAULT,
 		"enemy/fairy_blue",
 		"enemy/fairy_red",
 		"enemy/bigfairy",
@@ -353,14 +353,14 @@ void enemies_preload(void) {
 		"enemy/superfairy",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
 		"fairy_circle_red",
 		"fairy_circle_big_and_mean",
 		"enemy/swirl",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"enemydeath",
 	NULL);
 }

@@ -131,41 +131,45 @@ typedef struct Resource {
 	ResourceFlags flags;
 } Resource;
 
-void init_resources(void);
-void load_resources(void);
-void shutdown_resources(void);
-void free_resources(bool all);
-void reload_all_resources(void);
+void res_init(void);
+void res_post_init(void);
+void res_shutdown(void);
+void res_unload_all(bool include_permanent);
+void res_reload_all(void);
 
-Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
-void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
+Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
 
-attr_nonnull_all
-INLINE Resource *get_resource(ResourceType type, const char *name, ResourceFlags flags) {
-	return _get_resource(type, name, ht_str2ptr_hash(name), flags);
+INLINE void *_res_get_data_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
+	Resource *res = _res_get_prehashed(type, name, hash, flags);
+	return res ? res->data : NULL;
 }
 
 attr_nonnull_all
-INLINE void *get_resource_data(ResourceType type, const char *name, ResourceFlags flags) {
-	return _get_resource_data(type, name, ht_str2ptr_hash(name), flags);
+INLINE Resource *res_get(ResourceType type, const char *name, ResourceFlags flags) {
+	return _res_get_prehashed(type, name, ht_str2ptr_hash(name), flags);
 }
 
-void preload_resource(ResourceType type, const char *name, ResourceFlags flags);
-void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
-void *resource_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
+attr_nonnull_all
+INLINE void *res_get_data(ResourceType type, const char *name, ResourceFlags flags) {
+	return _res_get_data_prehashed(type, name, ht_str2ptr_hash(name), flags);
+}
 
-void resource_util_strip_ext(char *path);
-char *resource_util_basename(const char *prefix, const char *path);
-const char *resource_util_filename(const char *path);
+void res_preload(ResourceType type, const char *name, ResourceFlags flags);
+void res_preload_multi(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
+void *res_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
+
+void res_util_strip_ext(char *path);
+char *res_util_basename(const char *prefix, const char *path);
+const char *res_util_filename(const char *path);
 
 #define DEFINE_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all attr_returns_nonnull \
 	INLINE _type *_name(const char *resname) { \
-		return NOT_NULL(get_resource_data(_enum, resname, RESF_DEFAULT)); \
+		return NOT_NULL(res_get_data(_enum, resname, RESF_DEFAULT)); \
 	}
 
 #define DEFINE_OPTIONAL_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all \
 	INLINE _type *_name(const char *resname) { \
-		return get_resource_data(_enum, resname, RESF_OPTIONAL); \
+		return res_get_data(_enum, resname, RESF_OPTIONAL); \
 	}

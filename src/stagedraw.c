@@ -269,27 +269,27 @@ static void stage_draw_destroy_framebuffers(void) {
 void stage_draw_pre_init(void) {
 	stagedraw.mfb_group = fbmgr_group_create();
 
-	preload_resources(RES_POSTPROCESS, RESF_OPTIONAL,
+	res_preload_multi(RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_preload_multi(RES_SPRITE, RESF_PERMANENT,
 		"hud/heart",
 		"hud/star",
 		"star",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_preload_multi(RES_TEXTURE, RESF_PERMANENT,
 		"powersurge_flow",
 		"titletransition",
 		"hud",
 	NULL);
 
-	preload_resources(RES_MODEL, RESF_PERMANENT,
+	res_preload_multi(RES_MODEL, RESF_PERMANENT,
 		"hud",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"ingame_menu",
 		"powersurge_effect",
 		"powersurge_feedback",
@@ -306,7 +306,7 @@ void stage_draw_pre_init(void) {
 		#endif
 	NULL);
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_preload_multi(RES_FONT, RESF_PERMANENT,
 		"mono",
 		"small",
 		"monosmall",
@@ -322,20 +322,20 @@ void stage_draw_pre_init(void) {
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
-		preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
 			"graph",
 		NULL);
 	}
 
 	if(stagedraw.objpool_stats) {
-		preload_resources(RES_FONT, RESF_PERMANENT,
+		res_preload_multi(RES_FONT, RESF_PERMANENT,
 			"monotiny",
 		NULL);
 	}
 }
 
 void stage_draw_init(void) {
-	stagedraw.viewport_pp = get_resource_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
+	stagedraw.viewport_pp = res_get_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = res_shader("text_hud");
 	stagedraw.hud_text.font = res_font("standard");
 	stagedraw.shaders.fxaa = res_shader("fxaa");

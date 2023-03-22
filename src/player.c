@@ -1673,23 +1673,23 @@ uint64_t player_next_extralife_threshold(uint64_t step) {
 void player_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_preload_multi(RES_SHADER_PROGRAM, flags,
 		"circle_distort",
 		"player_death",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_preload_multi(RES_TEXTURE, flags,
 		"static",
 	NULL);
 
-	preload_resources(RES_SPRITE, flags,
+	res_preload_multi(RES_SPRITE, flags,
 		"fairy_circle",
 		"focus",
 		"part/blast_huge_halo",
 		"part/powersurge_field",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
 		"death",
 		"extra_bomb",
 		"extra_life",

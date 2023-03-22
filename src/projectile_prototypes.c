@@ -20,7 +20,7 @@ typedef struct PPBasicPriv {
 } PPBasicPriv;
 
 static void pp_basic_preload(ProjPrototype *proto) {
-	preload_resource(RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_PERMANENT);
+	res_preload(RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_PERMANENT);
 	// not assigning ->sprite here because it'll block the thread until loaded
 }
 

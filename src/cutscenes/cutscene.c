@@ -409,7 +409,7 @@ static void cutscene_end_loop(void *ctx) {
 static void cutscene_preload(const CutscenePhase phases[]) {
 	for(const CutscenePhase *p = phases; p->background; ++p) {
 		if(*p->background) {
-			preload_resource(RES_TEXTURE, p->background, RESF_DEFAULT);
+			res_preload(RES_TEXTURE, p->background, RESF_DEFAULT);
 		}
 	}
 }

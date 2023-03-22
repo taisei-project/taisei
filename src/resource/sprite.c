@@ -111,7 +111,7 @@ static void load_sprite_stage2(ResourceLoadState *st) {
 	struct sprite_load_state *state = NOT_NULL(st->opaque);
 	Sprite *spr = NOT_NULL(state->spr);
 
-	spr->tex = get_resource_data(RES_TEXTURE, state->texture_name, st->flags & ~RESF_RELOAD);
+	spr->tex = res_get_data(RES_TEXTURE, state->texture_name, st->flags & ~RESF_RELOAD);
 
 	mem_free(state->texture_name);
 	mem_free(state);

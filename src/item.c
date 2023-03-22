@@ -389,14 +389,14 @@ void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs grou
 
 void items_preload(void) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
-		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		res_preload(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
 		const char *indicator = item_indicator_sprite_name(i);
 		if(indicator != NULL) {
-			preload_resource(RES_SPRITE, indicator, RESF_PERMANENT);
+			res_preload(RES_SPRITE, indicator, RESF_PERMANENT);
 		}
 	}
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"item_generic",
 	NULL);
 }

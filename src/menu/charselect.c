@@ -382,12 +382,12 @@ void preload_char_menu(void) {
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
 		PlayerCharacter *pchar = plrchar_get(i);
 		portrait_preload_base_sprite(pchar->lower_name, NULL, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
+		res_preload(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
 	}
 
 	char *p = (char*)facedefs;
 
 	for(int i = 0; i < sizeof(facedefs) / FACENAME_LEN; ++i) {
-		preload_resource(RES_SPRITE, p + i * FACENAME_LEN, RESF_PERMANENT);
+		res_preload(RES_SPRITE, p + i * FACENAME_LEN, RESF_PERMANENT);
 	}
 }

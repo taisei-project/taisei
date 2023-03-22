@@ -368,7 +368,7 @@ void preload_charprofile_menu(void) {
 			portrait_preload_face_sprite(profiles[i].name, profiles[i].faces[f], RESF_PERMANENT);
 		}
 		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
+		res_preload(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
 	}
 };
 

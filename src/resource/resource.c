@@ -991,7 +991,7 @@ static char *get_name_from_path(ResourceHandler *handler, const char *path) {
 		return NULL;
 	}
 
-	return resource_util_basename(handler->subdir, path);
+	return res_util_basename(handler->subdir, path);
 }
 
 static bool should_defer_load(InternalResLoadState *st) {
@@ -1343,7 +1343,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 	ires_unlock(persistent);
 }
 
-Resource *_get_resource(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
+Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
 	InternalResource *ires;
 	Resource *res;
 
@@ -1394,16 +1394,6 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 	}
 }
 
-void *_get_resource_data(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) {
-	Resource *res = _get_resource(type, name, hash, flags);
-
-	if(res) {
-		return res->data;
-	}
-
-	return NULL;
-}
-
 static InternalResource *preload_resource_internal(
 	ResourceType type, const char *name, ResourceFlags flags
 ) {
@@ -1420,18 +1410,18 @@ static InternalResource *preload_resource_internal(
 	return ires;
 }
 
-void preload_resource(ResourceType type, const char *name, ResourceFlags flags) {
+void res_preload(ResourceType type, const char *name, ResourceFlags flags) {
 	if(!res_gstate.env.no_preload) {
 		preload_resource_internal(type, name, flags | RESF_PRELOAD);
 	}
 }
 
-void preload_resources(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
+void res_preload_multi(ResourceType type, ResourceFlags flags, const char *firstname, ...) {
 	va_list args;
 	va_start(args, firstname);
 
 	for(const char *name = firstname; name; name = va_arg(args, const char*)) {
-		preload_resource(type, name, flags);
+		res_preload(type, name, flags);
 	}
 
 	va_end(args);
@@ -1452,7 +1442,7 @@ static void reload_resources(ResourceHandler *h) {
 	ht_iter_end(&iter);
 }
 
-void reload_all_resources(void) {
+void res_reload_all(void) {
 	for(uint i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		assert(h != NULL);
@@ -1530,7 +1520,7 @@ static bool resource_filewatch_handler(SDL_Event *e, void *a) {
 	return false;
 }
 
-void init_resources(void) {
+void res_init(void) {
 	res_gstate.env.no_async_load = env_get("TAISEI_NOASYNC", false);
 	res_gstate.env.no_preload = env_get("TAISEI_NOPRELOAD", false);
 	res_gstate.env.no_unload = env_get("TAISEI_NOUNLOAD", false);
@@ -1563,7 +1553,7 @@ void init_resources(void) {
 	});
 }
 
-void resource_util_strip_ext(char *path) {
+void res_util_strip_ext(char *path) {
 	char *dot = strrchr(path, '.');
 	char *psep = strrchr(path, '/');
 
@@ -1572,16 +1562,16 @@ void resource_util_strip_ext(char *path) {
 	}
 }
 
-char *resource_util_basename(const char *prefix, const char *path) {
+char *res_util_basename(const char *prefix, const char *path) {
 	assert(strstartswith(path, prefix));
 
 	char *out = strdup(path + strlen(prefix));
-	resource_util_strip_ext(out);
+	res_util_strip_ext(out);
 
 	return out;
 }
 
-const char *resource_util_filename(const char *path) {
+const char *res_util_filename(const char *path) {
 	char *sep = strrchr(path, '/');
 
 	if(sep) {
@@ -1595,7 +1585,7 @@ static void preload_path(const char *path, ResourceType type, ResourceFlags flag
 	if(_handlers[type]->procs.check(path)) {
 		char *name = get_name_from_path(_handlers[type], path);
 		if(name) {
-			preload_resource(type, name, flags);
+			res_preload(type, name, flags);
 			mem_free(name);
 		}
 	}
@@ -1614,7 +1604,7 @@ static void *preload_all(const char *path, void *arg) {
 	return NULL;
 }
 
-void *resource_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
+void *res_for_each(ResourceType type, void* (*callback)(const char *name, Resource *res, void *arg), void *arg) {
 	ht_str2ptr_ts_iter_t iter;
 	ht_iter_begin(&get_handler(type)->private.mapping, &iter);
 	void *result = NULL;
@@ -1638,7 +1628,7 @@ void *resource_for_each(ResourceType type, void* (*callback)(const char *name, R
 	return result;
 }
 
-void load_resources(void) {
+void res_post_init(void) {
 	for(uint i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		assert(h != NULL);
@@ -1661,7 +1651,7 @@ void load_resources(void) {
 	}
 }
 
-static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
+static void _res_unload_all(IResPtrArray *tmp_ires_array, bool include_permanent) {
 	ht_str2ptr_ts_iter_t iter;
 
 	bool retry = false;
@@ -1676,7 +1666,7 @@ static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
 		for(; iter.has_data; ht_iter_next(&iter)) {
 			ires = iter.value;
 
-			if(all || !(ires->res.flags & RESF_PERMANENT)) {
+			if(include_permanent || !(ires->res.flags & RESF_PERMANENT)) {
 				*dynarray_append(tmp_ires_array) = ires;
 			}
 		}
@@ -1693,11 +1683,11 @@ static void _free_resources(IResPtrArray *tmp_ires_array, bool all) {
 
 	if(retry) {
 		// Tail call; hope your compiler agrees.
-		_free_resources(tmp_ires_array, all);
+		_res_unload_all(tmp_ires_array, include_permanent);
 	}
 }
 
-void free_resources(bool all) {
+void res_unload_all(bool include_permanent) {
 	// Wait for all resources to finish (re)loading first, and pray that nothing else starts loading
 	// while we are in this function (FIXME)
 
@@ -1716,12 +1706,12 @@ void free_resources(bool all) {
 	}
 
 	IResPtrArray a = { };
-	_free_resources(&a, all);
+	_res_unload_all(&a, include_permanent);
 	dynarray_free_data(&a);
 }
 
-void shutdown_resources(void) {
-	free_resources(true);
+void res_shutdown(void) {
+	res_unload_all(true);
 
 	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
 		ResourceHandler *handler = get_handler(type);

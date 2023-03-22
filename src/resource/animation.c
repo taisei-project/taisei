@@ -301,7 +301,7 @@ static void load_animation_stage2(ResourceLoadState *st) {
 	for(int i = 0; i < ani->sprite_count; ++i) {
 		snprintf(buf, sizeof(buf), "%s.frame%04d", st->name, i);
 
-		if(!(ani->sprites[i] = get_resource_data(RES_SPRITE, buf, st->flags))) {
+		if(!(ani->sprites[i] = res_get_data(RES_SPRITE, buf, st->flags))) {
 			log_error("Animation frame '%s' not found but @sprite_count was %d",buf,ani->sprite_count);
 			unload_animation(ani);
 			ani = NULL;

@@ -116,7 +116,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 
 #define LOADMAP(_map_) do { \
 	if(ld->_map_##_map) { \
-		ld->mat->_map_##_map = get_resource_data( \
+		ld->mat->_map_##_map = res_get_data( \
 			RES_TEXTURE, ld->_map_##_map, st->flags & ~RESF_RELOAD); \
 		if(UNLIKELY(ld->mat->_map_##_map == NULL)) { \
 			log_error("%s: failed to load " #_map_ " map '%s'", st->name, ld->_map_##_map); \

@@ -185,7 +185,7 @@ static void start_game_do_cleanup(CallChainResult ccr) {
 	replay_reset(&ctx->replay);
 	kill_aux_menus(ctx);
 	mem_free(ctx);
-	free_resources(false);
+	res_unload_all(false);
 	global.gameover = GAMEOVER_NONE;
 	replay_state_deinit(&global.replay.output);
 	main_menu_update_practice_menus();

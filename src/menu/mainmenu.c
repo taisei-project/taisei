@@ -241,8 +241,8 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	preload_resource(RES_TEXTURE, "loading", RESF_DEFAULT);
-	preload_resource(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
+	res_preload(RES_TEXTURE, "loading", RESF_DEFAULT);
+	res_preload(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
 
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
@@ -260,19 +260,19 @@ void draw_loading_screen(void) {
 void menu_preload(void) {
 	difficulty_preload();
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_preload_multi(RES_FONT, RESF_PERMANENT,
 		"big",
 		"small",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_preload_multi(RES_TEXTURE, RESF_PERMANENT,
 		"abstract_brown",
 		"cell_noise",
 		"stage1/cirnobg",
 		"menu/mainmenubg",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_preload_multi(RES_SPRITE, RESF_PERMANENT,
 		"part/smoke",
 		"part/petal",
 		"menu/logo",
@@ -280,18 +280,18 @@ void menu_preload(void) {
 		"star",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"mainmenubg",
 		"sprite_circleclipped_indicator",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
 		"generic_shot",
 		"shot_special1",
 		"hit",
 	NULL);
 
-	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
+	res_preload_multi(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
 		"menu",
 	NULL);
 

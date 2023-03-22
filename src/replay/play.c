@@ -93,7 +93,7 @@ static void replay_do_cleanup(CallChainResult ccr) {
 
 	global.gameover = 0;
 	replay_state_deinit(&global.replay.input);
-	free_resources(false);
+	res_unload_all(false);
 
 	CallChain cc = ctx->cc;
 	mem_free(ctx);

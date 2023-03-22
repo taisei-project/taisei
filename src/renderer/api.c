@@ -46,7 +46,7 @@ void r_post_init(void) {
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
 		"sprite_default",
 		"texture_post_load",
 		"standard",
@@ -54,7 +54,7 @@ void r_post_init(void) {
 	NULL);
 
 #if DEBUG
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_preload_multi(RES_FONT, RESF_PERMANENT,
 		"monotiny",
 	NULL);
 #endif

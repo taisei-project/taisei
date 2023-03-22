@@ -74,8 +74,8 @@ static void stage5_start(void) {
 static void stage5_preload(void) {
 	portrait_preload_base_sprite("iku", NULL, RESF_DEFAULT);
 	portrait_preload_face_sprite("iku", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
+	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
 		"stage5/noise",
@@ -83,28 +83,28 @@ static void stage5_preload(void) {
 		"stage5/spell_clouds",
 		"stage5/spell_lightning",
 	NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
 		"stage5/envmap",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
 		"stage5/metal",
 		"stage5/stairs",
 		"stage5/wall",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_preload_multi(RES_MODEL, RESF_DEFAULT,
 		"stage5/stairs",
 		"stage5/wall",
 		"stage5/metal",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"pbr",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_preload_multi(RES_ANIM, RESF_DEFAULT,
 		"boss/iku",
 		"boss/iku_mid",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"boom",
 		"laser1",
 		"enemydeath",

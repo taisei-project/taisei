@@ -196,7 +196,7 @@ static void init_fonts(void) {
 		fonts_event, NULL, EPRIO_SYSTEM,
 	});
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_preload_multi(RES_FONT, RESF_PERMANENT,
 		"standard",
 	NULL);
 
@@ -223,7 +223,7 @@ static void init_fonts(void) {
 }
 
 static void post_init_fonts(void) {
-	globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+	globals.default_shader = res_get_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
 }
 
 static void shutdown_fonts(void) {
@@ -799,7 +799,7 @@ static void* reload_font_callback(const char *name, Resource *res, void *varg) {
 }
 
 static void reload_fonts(double quality) {
-	resource_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
+	res_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
 }
 
 static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {

@@ -528,7 +528,7 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 	}
 
 	if(scan == config_get_int(CONFIG_KEY_RELOAD_RESOURCES)) {
-		reload_all_resources();
+		res_reload_all();
 		return true;
 	}
 

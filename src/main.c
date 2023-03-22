@@ -48,7 +48,7 @@ static void taisei_shutdown(void) {
 	progress_unload();
 	stage_objpools_shutdown();
 	gamemode_shutdown();
-	shutdown_resources();
+	res_shutdown();
 	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
@@ -373,13 +373,13 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	events_init();
 	video_init();
 	filewatch_init();
-	init_resources();
+	res_init();
 	r_post_init();
 	draw_loading_screen();
 	dynstage_init_monitoring();
 
 	audio_init();
-	load_resources();
+	res_post_init();
 	gamepad_init();
 	progress_load();
 	video_post_init();

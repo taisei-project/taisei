@@ -392,12 +392,12 @@ static void *update_sounds_callback(const char *name, Resource *res, void *arg) 
 }
 
 void reset_all_sfx(void) {
-	resource_for_each(RES_SFX, update_sounds_callback, (void*)true);
+	res_for_each(RES_SFX, update_sounds_callback, (void*)true);
 	list_foreach(&audio.sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_all_sfx(void) {
-	resource_for_each(RES_SFX, update_sounds_callback, (void*)false);
+	res_for_each(RES_SFX, update_sounds_callback, (void*)false);
 
 	for(struct enqueued_sound *s = audio.sound_queue, *next; s; s = next) {
 		next = (struct enqueued_sound*)s->next;

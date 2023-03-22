@@ -805,7 +805,7 @@ static void stage_preload(void) {
 	enemies_preload();
 
 	if(global.stage->type != STAGE_SPELL) {
-		preload_resource(RES_BGM, "gameover", RESF_DEFAULT);
+		res_preload(RES_BGM, "gameover", RESF_DEFAULT);
 		dialog_preload();
 	}
 

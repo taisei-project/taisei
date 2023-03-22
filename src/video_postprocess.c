@@ -23,7 +23,7 @@ struct VideoPostProcess {
 };
 
 VideoPostProcess *video_postprocess_init(void) {
-	PostprocessShader *pps = get_resource_data(RES_POSTPROCESS, "global", RESF_OPTIONAL | RESF_PERMANENT | RESF_PRELOAD);
+	PostprocessShader *pps = res_get_data(RES_POSTPROCESS, "global", RESF_OPTIONAL | RESF_PERMANENT | RESF_PRELOAD);
 
 	if(!pps) {
 		return NULL;

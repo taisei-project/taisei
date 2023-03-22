@@ -598,16 +598,16 @@ static void youmu_haunting_init(Player *plr) {
 static void youmu_haunting_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_preload_multi(RES_SPRITE, flags,
 		"proj/youmu",
 		"part/youmu_slice",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_preload_multi(RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

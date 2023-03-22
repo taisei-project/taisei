@@ -35,7 +35,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 		current->uniforms = NULL;
 
 		// if loading this fails, get_resource will print a warning
-		current->shader = get_resource_data(RES_SHADER_PROGRAM, value, ldata->resflags);
+		current->shader = res_get_data(RES_SHADER_PROGRAM, value, ldata->resflags);
 
 		list_append(slist, current);
 		return true;
@@ -68,7 +68,7 @@ static bool postprocess_load_callback(const char *key, const char *value, void *
 	const UniformTypeInfo *type_info = r_uniform_type_info(type);
 
 	if(UNIFORM_TYPE_IS_SAMPLER(type)) {
-		Texture *tex = get_resource_data(RES_TEXTURE, value, ldata->resflags);
+		Texture *tex = res_get_data(RES_TEXTURE, value, ldata->resflags);
 
 		if(tex) {
 			list_append(&current->uniforms, ALLOC(PostprocessShaderUniform, {

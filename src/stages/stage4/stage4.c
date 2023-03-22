@@ -95,39 +95,39 @@ static void stage4_spellpractice_start(void) {
 static void stage4_preload(void) {
 	portrait_preload_base_sprite("kurumi", NULL, RESF_DEFAULT);
 	portrait_preload_face_sprite("kurumi", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
+	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
 		"stage4/kurumibg1",
 		"stage4/kurumibg2",
 	NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is intentional
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"alpha_discard",
 		"pbr",
 		"sprite_negative",
 		"ssr_water",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_preload_multi(RES_ANIM, RESF_DEFAULT,
 		"boss/kurumi",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
 		"stage4/corridor",
 		"stage4/ground",
 		"stage4/mansion",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_preload_multi(RES_MODEL, RESF_DEFAULT,
 		"stage4/corridor",
 		"stage4/ground",
 		"stage4/mansion",
 	NULL);
-	preload_resources(RES_TEXTURE, RESF_OPTIONAL,
+	res_preload_multi(RES_TEXTURE, RESF_OPTIONAL,
 		"part/sinewave",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"laser1",
 		"boom",
 		"warp",

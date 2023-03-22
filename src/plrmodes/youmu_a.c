@@ -619,7 +619,7 @@ static void youmu_mirror_init(Player *plr) {
 static void youmu_mirror_preload(void) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_preload_multi(RES_SPRITE, flags,
 		"part/arc",
 		"part/blast_huge_halo",
 		"part/myon",
@@ -629,17 +629,17 @@ static void youmu_mirror_preload(void) {
 		"proj/youmu",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_preload_multi(RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_preload_multi(RES_SHADER_PROGRAM, flags,
 		"sprite_youmu_myon_shot",
 		"youmu_bomb_bg",
 		"youmua_bomb",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

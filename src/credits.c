@@ -555,21 +555,21 @@ static void credits_free(void) {
 }
 
 void credits_preload(void) {
-	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload(RES_BGM, "credits", RESF_OPTIONAL);
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"pbr",
 		"envmap_reflect",
 		"stage6_sky",
 	NULL);
-	preload_resource(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_preload(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
+	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
 		"loading",  // for transition
 		"stage6/sky",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
 		"credits/tower",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_preload_multi(RES_MODEL, RESF_DEFAULT,
 		"credits/metal_columns",
 		"credits/tower",
 		"cube",

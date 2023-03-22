@@ -89,7 +89,7 @@ static void load_shader_program_stage2(ResourceLoadState *st) {
 	char *objname = ldata.objlist;
 
 	for(int i = 0; i < ldata.num_objects; ++i) {
-		if(!(objs[i] = get_resource_data(RES_SHADER_OBJECT, objname, st->flags & ~RESF_RELOAD))) {
+		if(!(objs[i] = res_get_data(RES_SHADER_OBJECT, objname, st->flags & ~RESF_RELOAD))) {
 			log_error("%s: couldn't load shader object '%s'", st->path, objname);
 			mem_free(ldata.objlist);
 			res_load_failed(st);

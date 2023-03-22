@@ -47,7 +47,7 @@ void plrchar_preload(PlayerCharacter *pc) {
 
 	char buf[64];
 	plrchar_player_anim_name(pc, sizeof(buf), buf);
-	preload_resource(RES_ANIM, buf, RESF_DEFAULT);
+	res_preload(RES_ANIM, buf, RESF_DEFAULT);
 }
 
 void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {

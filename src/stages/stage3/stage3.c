@@ -89,8 +89,8 @@ static void stage3_preload(void) {
 	portrait_preload_face_sprite("wriggle", "proud", RESF_DEFAULT);
 	portrait_preload_base_sprite("scuttle", NULL, RESF_DEFAULT);
 	portrait_preload_face_sprite("scuttle", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
+	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
 		"ibl_brdf_lut",
 		"stage3/envmap",
 		"stage3/spellbg1",
@@ -99,19 +99,19 @@ static void stage3_preload(void) {
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/leaves",
 		"stage3/rocks",
 		"stage3/trees",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_preload_multi(RES_MODEL, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/leaves",
 		"stage3/rocks",
 		"stage3/trees",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"glitch",
 		"maristar_bombbg",
 		"pbr",
@@ -119,11 +119,11 @@ static void stage3_preload(void) {
 		"stage3_wriggle_bg",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_preload_multi(RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",
 		"boss/wriggleex",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_preload_multi(RES_SFX, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

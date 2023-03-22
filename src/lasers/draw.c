@@ -251,7 +251,7 @@ static void create_pass2_resources(void) {
 }
 
 void laserdraw_preload(void) {
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"lasers/sdf_apply",
 		"lasers/sdf_generate",
 	NULL);
