@@ -856,8 +856,11 @@ void glcommon_check_capabilities(void) {
 
 #ifndef STATIC_GLES3
 	if(glcommon_check_extension("GL_ANGLE_request_extension")) {
-		PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE = (PFNGLREQUESTEXTENSIONANGLEPROC)load_gl_func("glRequestExtensionANGLE");
-		assert(glRequestExtensionANGLE != NULL);
+		union {
+			void (*fp);
+			PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE;
+		} u = { load_gl_func("glRequestExtensionANGLE") };
+		assert(u.glRequestExtensionANGLE != NULL);
 
 		const char *src_string = (const char*)glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE);
 		char exts[strlen(src_string) + 1];
@@ -871,7 +874,7 @@ void glcommon_check_capabilities(void) {
 				continue;
 			}
 
-			glRequestExtensionANGLE(ext);
+			u.glRequestExtensionANGLE(ext);
 		}
 	}
 #endif
