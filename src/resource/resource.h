@@ -160,7 +160,6 @@ void *res_for_each(ResourceType type, void *(*callback)(const char *name, Resour
 
 void res_util_strip_ext(char *path);
 char *res_util_basename(const char *prefix, const char *path);
-const char *res_util_filename(const char *path);
 
 #define DEFINE_RESOURCE_GETTER(_type, _name, _enum) \
 	attr_nonnull_all attr_returns_nonnull \

@@ -1571,16 +1571,6 @@ char *res_util_basename(const char *prefix, const char *path) {
 	return out;
 }
 
-const char *res_util_filename(const char *path) {
-	char *sep = strrchr(path, '/');
-
-	if(sep) {
-		return sep + 1;
-	}
-
-	return path;
-}
-
 static void preload_path(const char *path, ResourceType type, ResourceFlags flags) {
 	if(_handlers[type]->procs.check(path)) {
 		char *name = get_name_from_path(_handlers[type], path);
