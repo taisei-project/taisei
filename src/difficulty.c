@@ -54,8 +54,8 @@ const Color *difficulty_color(Difficulty diff) {
 	return d ? &d->color : &unknown_clr;
 }
 
-void difficulty_preload(void) {
+void difficulty_preload(ResourceGroup *rg) {
 	for(Difficulty diff = D_Easy; diff < NUM_SELECTABLE_DIFFICULTIES + D_Easy; ++diff) {
-		res_preload(RES_SPRITE, difficulty_sprite_name(diff), RESF_PERMANENT);
+		res_group_preload(rg, RES_SPRITE, RESF_DEFAULT, difficulty_sprite_name(diff), NULL);
 	}
 }

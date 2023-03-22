@@ -55,7 +55,6 @@ void player_stage_pre_init(Player *plr) {
 	plr->deathtime = -1;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
-	plrmode_preload(plr->mode);
 }
 
 double player_property(Player *plr, PlrProperty prop) {
@@ -1670,26 +1669,26 @@ uint64_t player_next_extralife_threshold(uint64_t step) {
 	return base * (step * step + step + 2) / 2;
 }
 
-void player_preload(void) {
+void player_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"circle_distort",
 		"player_death",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"static",
 	NULL);
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"fairy_circle",
 		"focus",
 		"part/blast_huge_halo",
 		"part/powersurge_field",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"death",
 		"extra_bomb",
 		"extra_life",

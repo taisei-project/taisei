@@ -33,6 +33,7 @@
 
 typedef struct StageFrameState {
 	StageInfo *stage;
+	ResourceGroup *rg;
 	CallChain cc;
 	CoSched sched;
 	Replay *quicksave;
@@ -795,21 +796,21 @@ void stage_finish(int gameover) {
 	}
 }
 
-static void stage_preload(void) {
-	difficulty_preload();
-	projectiles_preload();
-	player_preload();
-	items_preload();
-	boss_preload();
-	laserdraw_preload();
-	enemies_preload();
+static void stage_preload(StageInfo *si, ResourceGroup *rg) {
+	difficulty_preload(rg);
+	projectiles_preload(rg);
+	player_preload(rg);
+	items_preload(rg);
+	boss_preload(rg);
+	laserdraw_preload(rg);
+	enemies_preload(rg);
 
-	if(global.stage->type != STAGE_SPELL) {
-		res_preload(RES_BGM, "gameover", RESF_DEFAULT);
-		dialog_preload();
+	if(si->type != STAGE_SPELL) {
+		res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "gameover", NULL);
+		dialog_preload(rg);
 	}
 
-	global.stage->procs->preload();
+	si->procs->preload(rg);
 }
 
 static void display_stage_title(StageInfo *info) {
@@ -1013,6 +1014,7 @@ static RenderFrameAction stage_render_frame(void *arg) {
 static void stage_end_loop(void *ctx);
 
 static void stage_stub_proc(void) { }
+static void stage_preload_stub_proc(ResourceGroup *rg) { }
 
 TASK(stage_comain, { StageFrameState *fstate; }) {
 	StageFrameState *fstate = ARGS.fstate;
@@ -1037,7 +1039,7 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 }
 
 static void _stage_enter(
-	StageInfo *stage, CallChain next, Replay *quickload, bool quicksave_is_automatic
+	StageInfo *stage, ResourceGroup *rg, CallChain next, Replay *quickload, bool quicksave_is_automatic
 ) {
 	assert(stage);
 	assert(stage->procs);
@@ -1061,7 +1063,7 @@ static void _stage_enter(
 
 	static const ShaderRule shader_rules_stub[1] = { NULL };
 
-	STUB_PROC(preload, stage_stub_proc);
+	STUB_PROC(preload, stage_preload_stub_proc);
 	STUB_PROC(begin, stage_stub_proc);
 	STUB_PROC(end, stage_stub_proc);
 	STUB_PROC(draw, stage_stub_proc);
@@ -1079,8 +1081,8 @@ static void _stage_enter(
 
 	ent_init();
 	stage_objpools_init();
-	stage_draw_pre_init();
-	stage_preload();
+	stage_draw_preload(rg);
+	stage_preload(stage, rg);
 	stage_draw_init();
 	lasers_init();
 
@@ -1135,6 +1137,10 @@ static void _stage_enter(
 		replay_stage_sync_player_state(global.replay.output.stage, &global.plr);
 	}
 
+	plrmode_preload(global.plr.mode, rg);
+
+	res_purge();
+
 	auto fstate = ALLOC(StageFrameState, {
 		.stage = stage,
 		.cc = next,
@@ -1159,8 +1165,8 @@ static void _stage_enter(
 	eventloop_enter(fstate, stage_logic_frame, stage_render_frame, stage_end_loop, FPS);
 }
 
-void stage_enter(StageInfo *stage, CallChain next) {
-	_stage_enter(stage, next, NULL, false);
+void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next) {
+	_stage_enter(stage, rg, next, NULL, false);
 }
 
 void stage_end_loop(void *ctx) {
@@ -1215,11 +1221,12 @@ void stage_end_loop(void *ctx) {
 
 	StageInfo *stginfo = s->stage;
 	CallChain cc = s->cc;
+	ResourceGroup *rg = s->rg;
 
 	mem_free(s);
 
 	if(is_quickload) {
-		_stage_enter(stginfo, cc, quicksave, quicksave_is_automatic);
+		_stage_enter(stginfo, rg, cc, quicksave, quicksave_is_automatic);
 	} else {
 		demoplayer_resume();
 		run_call_chain(&cc, NULL);

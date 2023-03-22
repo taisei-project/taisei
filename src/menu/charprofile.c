@@ -359,16 +359,16 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 
 }
 
-void preload_charprofile_menu(void) {
+void preload_charprofile_menu(ResourceGroup *rg) {
 	for(int i = 0; i < NUM_PROFILES-1; i++) {
 		for(int f = 0; f < NUM_FACES; f++) {
 			if(!profiles[i].faces[f]) {
 				break;
 			}
-			portrait_preload_face_sprite(profiles[i].name, profiles[i].faces[f], RESF_PERMANENT);
+			portrait_preload_face_sprite(rg, profiles[i].name, profiles[i].faces[f], RESF_DEFAULT);
 		}
-		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-		res_preload(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
+		portrait_preload_base_sprite(rg, profiles[i].name, NULL, RESF_DEFAULT);
+		res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, profiles[i].background, NULL);
 	}
 };
 
@@ -381,8 +381,6 @@ static void charprofile_input(MenuData *m) {
 
 MenuData *create_charprofile_menu(void) {
 	MenuData *m = alloc_menu();
-
-	preload_charprofile_menu();
 
 	m->input = charprofile_input;
 	m->draw = charprofile_draw;

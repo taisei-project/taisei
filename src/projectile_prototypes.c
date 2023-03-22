@@ -19,9 +19,14 @@ typedef struct PPBasicPriv {
 	cmplx collision_size;
 } PPBasicPriv;
 
-static void pp_basic_preload(ProjPrototype *proto) {
-	res_preload(RES_SPRITE, ((PPBasicPriv*)proto->private)->sprite_name, RESF_PERMANENT);
+static void pp_basic_preload(ProjPrototype *proto, ResourceGroup *rg) {
+	res_group_preload(rg, RES_SPRITE, 0, ((PPBasicPriv*)proto->private)->sprite_name, NULL);
 	// not assigning ->sprite here because it'll block the thread until loaded
+}
+
+static void pp_basic_reset(ProjPrototype *proto) {
+	PPBasicPriv *pdata = proto->private;
+	pdata->sprite = NULL;
 }
 
 static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
@@ -38,6 +43,7 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 #define _PP_BASIC(sprite, width, height, colwidth, colheight) \
 	ProjPrototype _pp_##sprite = { \
 		.preload = pp_basic_preload, \
+		.reset = pp_basic_reset, \
 		.init_projectile = pp_basic_init_projectile, \
 		.private = (&(PPBasicPriv) { \
 			.sprite_name = "proj/" #sprite, \
@@ -55,6 +61,7 @@ static void pp_basic_init_projectile(ProjPrototype *proto, Projectile *p) {
 
 ProjPrototype _pp_blast = {
 	.preload = pp_basic_preload,
+	.reset = pp_basic_reset,
 	.init_projectile = pp_basic_init_projectile,
 	.private = &(PPBasicPriv) {
 		.sprite_name = "part/blast",

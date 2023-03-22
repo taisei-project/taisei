@@ -521,10 +521,10 @@ static double marisa_star_property(Player *plr, PlrProperty prop) {
 	}
 }
 
-static void marisa_star_preload(void) {
+static void marisa_star_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"hakkero",
 		"masterspark_ring",
 		"part/maristar_orbit",
@@ -533,17 +533,17 @@ static void marisa_star_preload(void) {
 		"proj/maristar",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"marisa_bombbg",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"masterspark",
 		"maristar_bombbg",
 		"sprite_hakkero",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_b",
 	NULL);
 }

@@ -40,14 +40,14 @@ PlayerCharacter *plrchar_get(CharacterID id) {
 	return pc;
 }
 
-void plrchar_preload(PlayerCharacter *pc) {
+void plrchar_preload(PlayerCharacter *pc, ResourceGroup *rg) {
 	const char *name = pc->lower_name;
-	portrait_preload_base_sprite(name, NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite(name, "normal", RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, name, NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, name, "normal", RESF_DEFAULT);
 
 	char buf[64];
 	plrchar_player_anim_name(pc, sizeof(buf), buf);
-	res_preload(RES_ANIM, buf, RESF_DEFAULT);
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT, buf, NULL);
 }
 
 void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr) {
@@ -132,11 +132,11 @@ PlayerMode *plrmode_parse(const char *name) {
 	return plrmode_find(char_id, shot_id);
 }
 
-void plrmode_preload(PlayerMode *mode) {
+void plrmode_preload(PlayerMode *mode, ResourceGroup *rg) {
 	assert(mode != NULL);
-	plrchar_preload(mode->character);
+	plrchar_preload(mode->character, rg);
 
 	if(mode->procs.preload) {
-		mode->procs.preload();
+		mode->procs.preload(rg);
 	}
 }

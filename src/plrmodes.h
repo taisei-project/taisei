@@ -74,7 +74,7 @@ typedef struct PlayerCharacter {
 
 typedef void (*PlayerModeInitProc)(Player *plr);
 typedef void (*PlayerModeFreeProc)(Player *plr);
-typedef void (*PlayerModePreloadProc)(void);
+typedef void (*PlayerModePreloadProc)(ResourceGroup *rg);
 typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 
 typedef struct PlayerMode {
@@ -97,7 +97,7 @@ enum {
 };
 
 PlayerCharacter *plrchar_get(CharacterID id);
-void plrchar_preload(PlayerCharacter *pc);
+void plrchar_preload(PlayerCharacter *pc, ResourceGroup *rg);
 void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr);
 int plrchar_player_anim_name(PlayerCharacter *pc, size_t bufsize, char buf[bufsize]);
 Animation *plrchar_player_anim(PlayerCharacter *pc);
@@ -105,6 +105,6 @@ Animation *plrchar_player_anim(PlayerCharacter *pc);
 PlayerMode *plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal);
 PlayerMode *plrmode_parse(const char *name);
-void plrmode_preload(PlayerMode *mode);
+void plrmode_preload(PlayerMode *mode, ResourceGroup *rg);
 
 double player_property(Player *plr, PlrProperty prop);

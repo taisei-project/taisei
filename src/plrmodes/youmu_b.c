@@ -595,19 +595,19 @@ static void youmu_haunting_init(Player *plr) {
 	INVOKE_TASK(youmu_haunting_controller, ENT_BOX(plr));
 }
 
-static void youmu_haunting_preload(void) {
+static void youmu_haunting_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"proj/youmu",
 		"part/youmu_slice",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

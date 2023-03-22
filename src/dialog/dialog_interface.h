@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "dialog.h"
+#include "resource/resource.h"
 
 
 #define DIALOG_SCRIPTS \
@@ -35,6 +36,7 @@
 		_name##DialogEvents **out_events; \
 		int called_for_preload; \
 		ResourceFlags preload_rflags; \
+		ResourceGroup *preload_group; \
 	});
 
 #define WITHOUT_EVENTS(_name) \

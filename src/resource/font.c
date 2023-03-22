@@ -121,6 +121,8 @@ static struct {
 		SDL_mutex *new_face;
 		SDL_mutex *done_face;
 	} mutex;
+
+	ResourceGroup rg;
 } globals;
 
 static double global_font_scale(void) {
@@ -196,7 +198,9 @@ static void init_fonts(void) {
 		fonts_event, NULL, EPRIO_SYSTEM,
 	});
 
-	res_preload_multi(RES_FONT, RESF_PERMANENT,
+	res_group_init(&globals.rg);
+
+	res_group_preload(&globals.rg, RES_FONT, RESF_DEFAULT,
 		"standard",
 	NULL);
 
@@ -223,10 +227,13 @@ static void init_fonts(void) {
 }
 
 static void post_init_fonts(void) {
-	globals.default_shader = res_get_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+	res_group_preload(&globals.rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_default", NULL);
+	globals.default_shader = res_shader("text_default");
 }
 
 static void shutdown_fonts(void) {
+	res_group_release(&globals.rg);
+	res_purge();
 	r_texture_destroy(globals.render_tex);
 	r_framebuffer_destroy(globals.render_buf);
 	events_unregister_handler(fonts_event);

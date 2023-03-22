@@ -83,21 +83,21 @@ struct stage6_spells_s stage6_spells = {
 	},
 };
 
-static void stage6_preload(void) {
-	portrait_preload_base_sprite("elly", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("elly", "normal", RESF_DEFAULT);
-	portrait_preload_base_sprite("elly", "beaten", RESF_DEFAULT);
-	portrait_preload_face_sprite("elly", "shouting", RESF_DEFAULT);
-	res_preload_multi(RES_BGM, RESF_OPTIONAL,
+static void stage6_preload(ResourceGroup *rg) {
+	portrait_preload_base_sprite(rg, "elly", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "normal", RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "elly", "beaten", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "shouting", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL,
 		"stage6",
 		"stage6boss_phase1",
 		"stage6boss_phase2",
 		"stage6boss_phase3",
 	NULL);
-	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"stage6/sky",
 	NULL);
-	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/blast_huge_halo",
 		"part/blast_huge_rays",
 		"part/myon",
@@ -117,7 +117,7 @@ static void stage6_preload(void) {
 		"stage6/toelagrangian/3",
 		"stage6/toelagrangian/4",
 	NULL);
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"baryon_feedback",
 		"calabi-yau-quintic",
 		"envmap_reflect",
@@ -125,10 +125,10 @@ static void stage6_preload(void) {
 		"stage6_sky",
 		"zbuf_fog",
 	NULL);
-	res_preload_multi(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/elly",
 	NULL);
-	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage6/floor",
 		"stage6/rim",
 		"stage6/spires",
@@ -136,7 +136,7 @@ static void stage6_preload(void) {
 		"stage6/tower",
 		"stage6/tower_bottom",
 	NULL);
-	res_preload_multi(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"cube",
 		"stage6/calabi-yau-quintic",
 		"stage6/floor",
@@ -146,7 +146,7 @@ static void stage6_preload(void) {
 		"stage6/tower",
 		"stage6/tower_bottom",
 	NULL);
-	res_preload_multi(RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
 		"warp",
 		"noise1",
 		"boom",

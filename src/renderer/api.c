@@ -16,6 +16,7 @@
 #include "common/state.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "resource/resource.h"
 #include "resource/texture.h"
 #include "resource/sprite.h"
 #include "coroutine.h"
@@ -23,6 +24,7 @@
 #define B _r_backend.funcs
 
 static struct {
+	ResourceGroup rg;
 	struct {
 		ShaderProgram *standard;
 		ShaderProgram *standardnotex;
@@ -46,7 +48,9 @@ void r_post_init(void) {
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_init(&R.rg);
+
+	res_group_preload(&R.rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"sprite_default",
 		"texture_post_load",
 		"standard",
@@ -54,7 +58,7 @@ void r_post_init(void) {
 	NULL);
 
 #if DEBUG
-	res_preload_multi(RES_FONT, RESF_PERMANENT,
+	res_group_preload(&R.rg, RES_FONT, RESF_DEFAULT,
 		"monotiny",
 	NULL);
 #endif
@@ -73,6 +77,10 @@ void r_post_init(void) {
 	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
+}
+
+void r_release_resources(void) {
+	res_group_release(&R.rg);
 }
 
 void r_shutdown(void) {

@@ -241,8 +241,10 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	res_preload(RES_TEXTURE, "loading", RESF_DEFAULT);
-	res_preload(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
+	ResourceGroup rg;
+	res_group_init(&rg);
+	res_group_preload(&rg, RES_TEXTURE, RESF_DEFAULT, "loading", NULL);
+	res_group_preload(&rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_default", NULL);
 
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
@@ -255,24 +257,25 @@ void draw_loading_screen(void) {
 	});
 
 	video_swap_buffers();
+	res_group_release(&rg);
 }
 
-void menu_preload(void) {
-	difficulty_preload();
+void menu_preload(ResourceGroup *rg) {
+	difficulty_preload(rg);
 
-	res_preload_multi(RES_FONT, RESF_PERMANENT,
+	res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 		"big",
 		"small",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, RESF_PERMANENT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"abstract_brown",
 		"cell_noise",
 		"stage1/cirnobg",
 		"menu/mainmenubg",
 	NULL);
 
-	res_preload_multi(RES_SPRITE, RESF_PERMANENT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/smoke",
 		"part/petal",
 		"menu/logo",
@@ -280,20 +283,20 @@ void menu_preload(void) {
 		"star",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"mainmenubg",
 		"sprite_circleclipped_indicator",
 	NULL);
 
-	res_preload_multi(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"generic_shot",
 		"shot_special1",
 		"hit",
 	NULL);
 
-	res_preload_multi(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL,
 		"menu",
 	NULL);
 
-	preload_char_menu();
+	preload_char_menu(rg);
 }

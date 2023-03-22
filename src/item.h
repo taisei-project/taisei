@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "resource/resource.h"
 #include "resource/texture.h"
 #include "objectpool.h"
 #include "entity.h"
@@ -94,7 +95,7 @@ void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs grou
 bool collect_item(Item *item, float value);
 void collect_all_items(float value);
 
-void items_preload(void);
+void items_preload(ResourceGroup *rg);
 
 #define POWER_VALUE 5
 #define POWER_VALUE_MINI 1

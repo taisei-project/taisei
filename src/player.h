@@ -9,6 +9,17 @@
 #pragma once
 #include "taisei.h"
 
+#include "util.h"
+#include "enemy.h"
+#include "gamepad.h"
+#include "aniplayer.h"
+#include "stats.h"
+#include "resource/resource.h"
+#include "resource/animation.h"
+#include "entity.h"
+#include "replay/state.h"
+#include "replay/eventcodes.h"
+
 #ifdef DEBUG
 	#define PLR_DPS_STATS
 #endif
@@ -18,16 +29,6 @@
 #else
 	#define IF_PLR_DPS_STATS(...)
 #endif
-
-#include "util.h"
-#include "enemy.h"
-#include "gamepad.h"
-#include "aniplayer.h"
-#include "stats.h"
-#include "resource/animation.h"
-#include "entity.h"
-#include "replay/state.h"
-#include "replay/eventcodes.h"
 
 enum {
 	PLR_MAX_POWER_EFFECTIVE = 400,
@@ -241,7 +242,7 @@ double player_get_bomb_progress(Player *plr);
 
 void player_damage_hook(Player *plr, EntityInterface *target, DamageInfo *dmg);
 
-void player_preload(void);
+void player_preload(ResourceGroup *rg);
 
 // FIXME: where should this be?
 cmplx plrutil_homing_target(cmplx org, cmplx fallback);

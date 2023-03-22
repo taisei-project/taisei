@@ -32,10 +32,10 @@ Sprite *portrait_get_base_sprite(const char *charname, const char *variant) {
 	return res_sprite(buf);
 }
 
-void portrait_preload_base_sprite(const char *charname, const char *variant, ResourceFlags rflags) {
+void portrait_preload_base_sprite(ResourceGroup *rg, const char *charname, const char *variant, ResourceFlags rflags) {
 	char buf[BUFFER_SIZE];
 	portrait_get_base_sprite_name(charname, variant, sizeof(buf), buf);
-	res_preload(RES_SPRITE, buf, rflags);
+	res_group_preload(rg, RES_SPRITE, rflags, buf, NULL);
 }
 
 int portrait_get_face_sprite_name(const char *charname, const char *face, size_t bufsize, char buf[bufsize]) {
@@ -48,10 +48,10 @@ Sprite *portrait_get_face_sprite(const char *charname, const char *face) {
 	return res_sprite(buf);
 }
 
-void portrait_preload_face_sprite(const char *charname, const char *face, ResourceFlags rflags) {
+void portrait_preload_face_sprite(ResourceGroup *rg, const char *charname, const char *face, ResourceFlags rflags) {
 	char buf[BUFFER_SIZE];
 	portrait_get_face_sprite_name(charname, face, sizeof(buf), buf);
-	res_preload(RES_SPRITE, buf, rflags);
+	res_group_preload(rg, RES_SPRITE, rflags, buf, NULL);
 }
 
 void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {

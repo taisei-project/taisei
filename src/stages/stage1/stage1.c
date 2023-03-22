@@ -88,30 +88,30 @@ static void stage1_spellpractice_start(void) {
 	INVOKE_TASK_WHEN(&cirno->events.defeated, common_call_func, stage1_bg_disable_snow);
 }
 
-static void stage1_preload(void) {
+static void stage1_preload(ResourceGroup *rg) {
 	// DIALOG_PRELOAD(&global.plr, Stage1PreBoss, RESF_DEFAULT);
-	portrait_preload_base_sprite("cirno", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("cirno", "normal", RESF_DEFAULT);
-	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
-	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
+	portrait_preload_base_sprite(rg, "cirno", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "cirno", "normal", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
 		"stage1/waterplants",
 	NULL);
-	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
 		"stage1/horizon",
 	NULL);
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"blur5",
 		"stage1_water",
 		"zbuf_fog",
 	NULL);
-	res_preload_multi(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",
 	NULL);
-	res_preload_multi(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

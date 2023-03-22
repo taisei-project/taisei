@@ -57,11 +57,11 @@
 	if(ARGS.called_for_preload)
 
 #define PRELOAD_CHAR(name) \
-	portrait_preload_base_sprite(#name, NULL, ARGS.preload_rflags); \
+	portrait_preload_base_sprite(ARGS.preload_group, #name, NULL, ARGS.preload_rflags); \
 	for(const char *_charname = #name; _charname; _charname = NULL)
 
 #define PRELOAD_VARIANT(variant) \
-	portrait_preload_base_sprite(_charname, #variant, ARGS.preload_rflags)
+	portrait_preload_base_sprite(ARGS.preload_group, _charname, #variant, ARGS.preload_rflags)
 
 #define PRELOAD_FACE(face) \
-	portrait_preload_face_sprite(_charname, #face, ARGS.preload_rflags)
+	portrait_preload_face_sprite(ARGS.preload_group, _charname, #face, ARGS.preload_rflags)

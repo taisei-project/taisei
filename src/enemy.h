@@ -15,6 +15,7 @@
 #include "entity.h"
 #include "coroutine.h"
 #include "move.h"
+#include "resource/resource.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -132,4 +133,4 @@ cmplx enemy_visual_pos(Enemy *enemy);
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
-void enemies_preload(void);
+void enemies_preload(ResourceGroup *rg);

@@ -44,11 +44,13 @@ static void taisei_shutdown(void) {
 		progress_save();
 	}
 
+	r_release_resources();
+	res_shutdown();
+
 	demoplayer_shutdown();
 	progress_unload();
 	stage_objpools_shutdown();
 	gamemode_shutdown();
-	res_shutdown();
 	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
@@ -219,6 +221,7 @@ typedef struct MainContext {
 	Replay *replay_in;
 	Replay *replay_out;
 	SDL_RWops *replay_out_stream;
+	ResourceGroup rg;
 	int replay_idx;
 	uchar headless : 1;
 } MainContext;
@@ -242,6 +245,7 @@ static Replay *alloc_replay(void) {
 }
 
 static noreturn void main_quit(MainContext *ctx, int status) {
+	res_group_release(&ctx->rg);
 	free_cli_action(&ctx->cli);
 
 	cleanup_replay(&ctx->replay_in);
@@ -375,11 +379,15 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	filewatch_init();
 	res_init();
 	r_post_init();
+
+	res_group_init(&ctx->rg);
+
 	draw_loading_screen();
 	dynstage_init_monitoring();
 
 	audio_init();
 	res_post_init();
+	menu_preload(&ctx->rg);
 	gamepad_init();
 	progress_load();
 	video_post_init();
@@ -459,7 +467,7 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 		global.plr.mode = ctx->plrmode;
 	}
 
-	stage_enter(ctx->stg, CALLCHAIN(main_singlestg_end_game, ctx));
+	stage_enter(ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));
 }
 
 static void main_singlestg_end_game(CallChainResult ccr) {
@@ -476,6 +484,7 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
+	res_group_release(&mctx->rg);
 	mem_free(ccr.ctx);
 	main_quit(mctx, 0);
 }

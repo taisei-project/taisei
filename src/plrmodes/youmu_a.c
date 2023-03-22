@@ -616,10 +616,10 @@ static void youmu_mirror_init(Player *plr) {
 	INVOKE_TASK(youmu_mirror_controller, ENT_BOX(plr));
 }
 
-static void youmu_mirror_preload(void) {
+static void youmu_mirror_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"part/arc",
 		"part/blast_huge_halo",
 		"part/myon",
@@ -629,17 +629,17 @@ static void youmu_mirror_preload(void) {
 		"proj/youmu",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"youmu_bombbg1",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"sprite_youmu_myon_shot",
 		"youmu_bomb_bg",
 		"youmua_bomb",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_youmu_b",
 	NULL);
 }

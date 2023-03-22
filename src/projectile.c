@@ -1024,7 +1024,7 @@ void petal_explosion(int n, cmplx pos) {
 	}
 }
 
-void projectiles_preload(void) {
+void projectiles_preload(ResourceGroup *rg) {
 	const char *shaders[] = {
 		// This array defines a shader-based fallback draw order
 		"sprite_silhouette",
@@ -1036,17 +1036,12 @@ void projectiles_preload(void) {
 	const uint num_shaders = sizeof(shaders)/sizeof(*shaders);
 
 	for(uint i = 0; i < num_shaders; ++i) {
-		res_preload(RES_SHADER_PROGRAM, shaders[i], RESF_PERMANENT);
+		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT, shaders[i], NULL);
 	}
-
-	// FIXME: Why is this here?
-	res_preload_multi(RES_TEXTURE, RESF_PERMANENT,
-		"part/lasercurve",
-	NULL);
 
 	// TODO: Maybe split this up into stage-specific preloads too?
 	// some of these are ubiquitous, but some only appear in very specific parts.
-	res_preload_multi(RES_SPRITE, RESF_PERMANENT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/blast",
 		"part/bullet_flare",
 		"part/flare",
@@ -1061,11 +1056,11 @@ void projectiles_preload(void) {
 		"part/stardust_green",
 	NULL);
 
-	res_preload_multi(RES_ANIM, RESF_PERMANENT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"part/bullet_clear",
 	NULL);
 
-	res_preload_multi(RES_SFX, RESF_PERMANENT,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"shot1",
 		"shot2",
 		"shot3",
@@ -1074,7 +1069,7 @@ void projectiles_preload(void) {
 		"redirect",
 	NULL);
 
-	#define PP(name) (_pp_##name).preload(&_pp_##name);
+	#define PP(name) (_pp_##name).preload(&_pp_##name, rg);
 	#include "projectile_prototypes/all.inc.h"
 
 	ht_create(&shader_sublayer_map);
@@ -1089,4 +1084,6 @@ void projectiles_preload(void) {
 
 void projectiles_free(void) {
 	ht_destroy(&shader_sublayer_map);
+	#define PP(name) (_pp_##name).reset(&_pp_##name);
+	#include "projectile_prototypes/all.inc.h"
 }

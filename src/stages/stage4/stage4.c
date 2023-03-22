@@ -92,42 +92,42 @@ static void stage4_spellpractice_start(void) {
 	stage_start_bgm("stage4boss");
 }
 
-static void stage4_preload(void) {
-	portrait_preload_base_sprite("kurumi", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("kurumi", "normal", RESF_DEFAULT);
-	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
-	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
+static void stage4_preload(ResourceGroup *rg) {
+	portrait_preload_base_sprite(rg, "kurumi", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "normal", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
 		"stage4/kurumibg1",
 		"stage4/kurumibg2",
 	NULL);
-	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage6/scythe", // Stage 6 is intentional
 	NULL);
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"alpha_discard",
 		"pbr",
 		"sprite_negative",
 		"ssr_water",
 		"zbuf_fog",
 	NULL);
-	res_preload_multi(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/kurumi",
 	NULL);
-	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage4/corridor",
 		"stage4/ground",
 		"stage4/mansion",
 	NULL);
-	res_preload_multi(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"stage4/corridor",
 		"stage4/ground",
 		"stage4/mansion",
 	NULL);
-	res_preload_multi(RES_TEXTURE, RESF_OPTIONAL,
+	res_group_preload(rg, RES_TEXTURE, RESF_OPTIONAL,
 		"part/sinewave",
 	NULL);
-	res_preload_multi(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 		"boom",
 		"warp",
@@ -135,7 +135,7 @@ static void stage4_preload(void) {
 
 	// XXX: Special case for spell practice of the god damn extra spell, because it always needs a special case.
 	// TODO: Maybe add spell-specific preloads instead of putting everything into the stage one?
-	enemies_preload();
+	enemies_preload(rg);
 }
 
 static void stage4_end(void) {

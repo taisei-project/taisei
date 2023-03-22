@@ -42,10 +42,10 @@ DEFINE_ENTITY_TYPE(ReimuASlave, {
 	uint alive;
 });
 
-static void reimu_spirit_preload(void) {
+static void reimu_spirit_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle",
@@ -55,16 +55,16 @@ static void reimu_spirit_preload(void) {
 		"part/fantasyseal_impact",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"runes",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"sprite_yinyang",
 		"reimu_bomb_bg",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"boom",
 		"bomb_reimu_a",
 		"bomb_marisa_b",

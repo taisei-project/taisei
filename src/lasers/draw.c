@@ -250,8 +250,8 @@ static void create_pass2_resources(void) {
 	ldraw.pass2.quad.vertex_array = va;
 }
 
-void laserdraw_preload(void) {
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+void laserdraw_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"lasers/sdf_apply",
 		"lasers/sdf_generate",
 	NULL);

@@ -10,7 +10,8 @@
 #include "taisei.h"
 
 #include "menu.h"
+#include "resource/resource.h"
 
-void preload_charprofile_menu(void);
+void preload_charprofile_menu(ResourceGroup *rg);
 
 MenuData *create_charprofile_menu(void);

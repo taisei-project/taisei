@@ -19,6 +19,7 @@
 typedef struct ReplayContext {
 	CallChain cc;
 	Replay *rpy;
+	ResourceGroup rg;
 	int stage_idx;
 	bool demo_mode;
 } ReplayContext;
@@ -34,12 +35,15 @@ void replay_play(Replay *rpy, int firstidx, bool demo_mode, CallChain next) {
 		return;
 	}
 
-	replay_do_play(CALLCHAIN_RESULT(ALLOC(ReplayContext, {
+	auto ctx = ALLOC(ReplayContext, {
 		.cc = next,
 		.rpy = rpy,
 		.stage_idx = firstidx,
 		.demo_mode = demo_mode,
-	}), NULL));
+	});
+
+	res_group_init(&ctx->rg);
+	replay_do_play(CALLCHAIN_RESULT(ctx, NULL));
 }
 
 static void replay_do_play(CallChainResult ccr) {
@@ -68,7 +72,8 @@ static void replay_do_play(CallChainResult ccr) {
 		global.replay.input.play.demo_mode = ctx->demo_mode;
 		replay_state_deinit(&global.replay.output);
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
-		stage_enter(stginfo, CALLCHAIN(replay_do_post_play, ctx));
+		res_group_release(&ctx->rg);
+		stage_enter(stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
 	}
 }
 
@@ -93,7 +98,7 @@ static void replay_do_cleanup(CallChainResult ccr) {
 
 	global.gameover = 0;
 	replay_state_deinit(&global.replay.input);
-	res_unload_all(false);
+	res_group_release(&ctx->rg);
 
 	CallChain cc = ctx->cc;
 	mem_free(ctx);

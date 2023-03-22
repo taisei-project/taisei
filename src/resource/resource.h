@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "hashtable.h"
+#include "dynarray.h"
 #include "vfs/public.h"
 
 typedef enum ResourceType {
@@ -29,12 +30,10 @@ typedef enum ResourceType {
 
 typedef enum ResourceFlags {
 	RESF_OPTIONAL = 1,
-	RESF_PERMANENT = 2,   // TODO get rid of this cancer
-	RESF_PRELOAD = 4,
-	RESF_RELOAD = 8,
+	RESF_PRELOAD = 2,
+	RESF_RELOAD = 4,
 
 	RESF_DEFAULT = 0,
-	RESF_PROMOTABLE_FLAGS = RESF_PERMANENT,   // TODO get rid of this cancer
 } ResourceFlags;
 
 typedef struct ResourceLoadState ResourceLoadState;
@@ -131,11 +130,15 @@ typedef struct Resource {
 	ResourceFlags flags;
 } Resource;
 
+typedef struct ResourceGroup {
+	DYNAMIC_ARRAY(void*) refs;
+} ResourceGroup;
+
 void res_init(void);
 void res_post_init(void);
 void res_shutdown(void);
-void res_unload_all(bool include_permanent);
 void res_reload_all(void);
+void res_purge(void);
 
 Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, ResourceFlags flags) attr_nonnull_all;
 
@@ -154,9 +157,12 @@ INLINE void *res_get_data(ResourceType type, const char *name, ResourceFlags fla
 	return _res_get_data_prehashed(type, name, ht_str2ptr_hash(name), flags);
 }
 
-void res_preload(ResourceType type, const char *name, ResourceFlags flags);
-void res_preload_multi(ResourceType type, ResourceFlags flags, const char *firstname, ...) attr_sentinel;
 void *res_for_each(ResourceType type, void *(*callback)(const char *name, Resource *res, void *arg), void *arg);
+
+void res_group_init(ResourceGroup *rg) attr_nonnull_all;
+void res_group_release(ResourceGroup *rg) attr_nonnull_all;
+void res_group_preload(ResourceGroup *rg, ResourceType type, ResourceFlags flags, ...)
+	attr_sentinel;
 
 void res_util_strip_ext(char *path);
 char *res_util_basename(const char *prefix, const char *path);

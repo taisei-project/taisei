@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "stage.h"
+#include "resource/resource.h"
 #include "util/graphics.h"
 
 typedef enum StageFBPair {
@@ -26,7 +27,7 @@ typedef COEVENTS_ARRAY(
 	postprocess_after_overlay
 ) StageDrawEvents;
 
-void stage_draw_pre_init(void);
+void stage_draw_preload(ResourceGroup *rg);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
 

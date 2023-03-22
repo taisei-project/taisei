@@ -714,23 +714,23 @@ static double marisa_laser_property(Player *plr, PlrProperty prop) {
 	}
 }
 
-static void marisa_laser_preload(void) {
+static void marisa_laser_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"proj/marisa",
 		"part/maristar_orbit",
 		"hakkero",
 		"masterspark_ring",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"marisa_bombbg",
 		"part/marisa_laser0",
 		"part/marisa_laser1",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"blur25",
 		"blur5",
 		"marisa_laser",
@@ -739,11 +739,11 @@ static void marisa_laser_preload(void) {
 		"sprite_hakkero",
 	NULL);
 
-	res_preload_multi(RES_ANIM, flags,
+	res_group_preload(rg, RES_ANIM, flags,
 		"fire",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_a",
 	NULL);
 }

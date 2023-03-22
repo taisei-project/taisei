@@ -676,10 +676,10 @@ static void reimu_dream_init(Player *plr) {
 	INVOKE_TASK(reimu_dream_controller, ENT_BOX(plr));
 }
 
-static void reimu_dream_preload(void) {
+static void reimu_dream_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	res_preload_multi(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle2",
@@ -688,19 +688,19 @@ static void reimu_dream_preload(void) {
 		"part/stardust",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"runes",
 		"gaplight",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"sprite_yinyang",
 		"reimu_gap",
 		"reimu_gap_light",
 		"reimu_bomb_bg",
 	NULL);
 
-	res_preload_multi(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_a",
 		"boon",
 	NULL);

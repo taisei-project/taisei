@@ -266,30 +266,28 @@ static void stage_draw_destroy_framebuffers(void) {
 	stagedraw.mfb_group = NULL;
 }
 
-void stage_draw_pre_init(void) {
-	stagedraw.mfb_group = fbmgr_group_create();
-
-	res_preload_multi(RES_POSTPROCESS, RESF_OPTIONAL,
+void stage_draw_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_POSTPROCESS, RESF_OPTIONAL,
 		"viewport",
 	NULL);
 
-	res_preload_multi(RES_SPRITE, RESF_PERMANENT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"hud/heart",
 		"hud/star",
 		"star",
 	NULL);
 
-	res_preload_multi(RES_TEXTURE, RESF_PERMANENT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"powersurge_flow",
 		"titletransition",
 		"hud",
 	NULL);
 
-	res_preload_multi(RES_MODEL, RESF_PERMANENT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"hud",
 	NULL);
 
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"ingame_menu",
 		"powersurge_effect",
 		"powersurge_feedback",
@@ -306,14 +304,14 @@ void stage_draw_pre_init(void) {
 		#endif
 	NULL);
 
-	res_preload_multi(RES_FONT, RESF_PERMANENT,
+	res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 		"mono",
 		"small",
 		"monosmall",
 	NULL);
 
 	if(stage_is_demo_mode()) {
-		preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 			"text_demo",
 		NULL);
 	}
@@ -322,19 +320,21 @@ void stage_draw_pre_init(void) {
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
 	if(stagedraw.framerate_graphs) {
-		res_preload_multi(RES_SHADER_PROGRAM, RESF_PERMANENT,
+		res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 			"graph",
 		NULL);
 	}
 
 	if(stagedraw.objpool_stats) {
-		res_preload_multi(RES_FONT, RESF_PERMANENT,
+		res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 			"monotiny",
 		NULL);
 	}
 }
 
 void stage_draw_init(void) {
+	stagedraw.mfb_group = fbmgr_group_create();
+
 	stagedraw.viewport_pp = res_get_data(RES_POSTPROCESS, "viewport", RESF_OPTIONAL);
 	stagedraw.hud_text.shader = res_shader("text_hud");
 	stagedraw.hud_text.font = res_font("standard");

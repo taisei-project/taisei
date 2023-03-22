@@ -16,6 +16,7 @@
 #include "projectile.h"
 #include "entity.h"
 #include "coroutine.h"
+#include "resource/resource.h"
 
 #define BOSS_HURT_RADIUS 16
 #define BOSS_MAX_ATTACKS 24
@@ -226,7 +227,7 @@ void boss_death(Boss **boss) attr_nonnull(1);
 
 void boss_reset_motion(Boss *boss) attr_nonnull(1);
 
-void boss_preload(void);
+void boss_preload(ResourceGroup *rg);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

@@ -18,6 +18,7 @@
 #include "coroutine.h"
 #include "dynarray.h"
 #include "stageinfo.h"
+#include "resource/resource.h"
 
 typedef struct StageClearBonus {
 	uint64_t base;
@@ -28,7 +29,7 @@ typedef struct StageClearBonus {
 	bool all_clear;
 } StageClearBonus;
 
-void stage_enter(StageInfo *stage, CallChain next);
+void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next);
 void stage_finish(int gameover);
 
 void stage_pause(void);

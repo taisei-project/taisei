@@ -387,16 +387,16 @@ void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs grou
 	spawn_items_internal(pos, collect_value, groups);
 }
 
-void items_preload(void) {
+void items_preload(ResourceGroup *rg) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
-		res_preload(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		res_group_preload(rg, RES_SPRITE, 0, item_sprite_name(i), NULL);
 		const char *indicator = item_indicator_sprite_name(i);
 		if(indicator != NULL) {
-			res_preload(RES_SPRITE, indicator, RESF_PERMANENT);
+			res_group_preload(rg, RES_SPRITE, 0, indicator, NULL);
 		}
 	}
 
-	res_preload_multi(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"item_generic",
 	NULL);
 }

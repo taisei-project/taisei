@@ -68,49 +68,49 @@ static void stage2_end(void) {
 	stage2_drawsys_shutdown();
 }
 
-static void stage2_preload(void) {
-	portrait_preload_base_sprite("hina", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("hina", "normal", RESF_DEFAULT);
-	res_preload_multi(RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
+static void stage2_preload(ResourceGroup *rg) {
+	portrait_preload_base_sprite(rg, "hina", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "hina", "normal", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
 
-	res_preload_multi(RES_SPRITE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle_big",
 		"part/blast_huge_rays",
 	NULL);
-	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
 		"ibl_brdf_lut",
 		"stage2/envmap",
 		"stage2/spellbg1",
 		"stage2/spellbg2",
 	NULL);
-	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage2/branch",
 		"stage2/ground",
 		"stage2/lakefloor",
 		"stage2/leaves",
 		"stage2/rocks",
 	NULL);
-	res_preload_multi(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"stage2/branch",
 		"stage2/grass",
 		"stage2/ground",
 		"stage2/leaves",
 		"stage2/rocks",
 	NULL);
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"fireparticles",
 		"pbr",
 		"pbr_diffuse_alpha_discard",
 		"pbr_water",
 		"zbuf_fog_tonemap",
 	NULL);
-	res_preload_multi(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/wriggle",
 		"boss/hina",
 		"fire",
 	NULL);
-	res_preload_multi(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

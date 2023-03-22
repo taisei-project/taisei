@@ -10,8 +10,9 @@
 #include "taisei.h"
 
 #include "entity.h"
+#include "resource/resource.h"
 
-void laserdraw_preload(void);
+void laserdraw_preload(ResourceGroup *rg);
 void laserdraw_init(void);
 void laserdraw_shutdown(void);
 

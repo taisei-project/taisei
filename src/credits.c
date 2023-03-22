@@ -554,22 +554,22 @@ static void credits_free(void) {
 	stage3d_shutdown(&stage_3d_context);
 }
 
-void credits_preload(void) {
-	res_preload(RES_BGM, "credits", RESF_OPTIONAL);
-	res_preload_multi(RES_SHADER_PROGRAM, RESF_DEFAULT,
+void credits_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "credits", NULL);
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"pbr",
 		"envmap_reflect",
 		"stage6_sky",
 	NULL);
-	res_preload(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
-	res_preload_multi(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT, "kyoukkuri", NULL);
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"loading",  // for transition
 		"stage6/sky",
 	NULL);
-	res_preload_multi(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"credits/tower",
 	NULL);
-	res_preload_multi(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"credits/metal_columns",
 		"credits/tower",
 		"cube",
@@ -603,7 +603,6 @@ static void credits_end_loop(void *ctx) {
 }
 
 void credits_enter(CallChain next) {
-	credits_preload();
 	credits_init();
 	credits.cc = next;
 	eventloop_enter(&credits, credits_logic_frame, credits_render_frame, credits_end_loop, FPS);

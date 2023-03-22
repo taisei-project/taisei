@@ -49,6 +49,7 @@ typedef struct CutsceneState {
 	const CutscenePhase *phase;
 	const CutscenePhaseTextEntry *text_entry;
 	CallChain cc;
+	ResourceGroup rg;
 
 	CutsceneBGState bg_state;
 	LIST_ANCHOR(CutsceneTextVisual) text_visuals;
@@ -393,6 +394,7 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 
 static void cutscene_end_loop(void *ctx) {
 	CutsceneState *st = ctx;
+	res_group_release(&st->rg);
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first, *next; tv; tv = next) {
 		next = tv->next;
@@ -406,20 +408,23 @@ static void cutscene_end_loop(void *ctx) {
 	run_call_chain(&cc, NULL);
 }
 
-static void cutscene_preload(const CutscenePhase phases[]) {
+static void cutscene_preload(const CutscenePhase phases[], ResourceGroup *rg) {
 	for(const CutscenePhase *p = phases; p->background; ++p) {
 		if(*p->background) {
-			res_preload(RES_TEXTURE, p->background, RESF_DEFAULT);
+			res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, p->background, NULL);
 		}
 	}
 }
 
 static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
-	cutscene_preload(phases);
 	auto st = ALLOC(CutsceneState, {
 		.phase = &phases[0],
 		.mfb_group = fbmgr_group_create(),
 	});
+
+	res_group_init(&st->rg);
+	cutscene_preload(phases, &st->rg);
+
 	switch_bg(st, st->phase->background);
 	reset_timers(st);
 

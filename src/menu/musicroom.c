@@ -34,6 +34,10 @@ typedef struct MusicEntryParam {
 	uint8_t state;
 } MusicEntryParam;
 
+typedef struct MusicRoomContext {
+	ResourceGroup rg;
+} MusicRoomContext;
+
 static void musicroom_logic(MenuData *m) {
 	float prev_selector_x = m->drawdata[0];
 	float prev_selector_w = m->drawdata[1];
@@ -216,11 +220,10 @@ static void action_play_bgm(MenuData *m, void *arg) {
 }
 
 static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
+	MusicRoomContext *ctx = m->context;
+
 	if(preload) {
-		// FIXME HACK: make this just RESF_OPTIONAL once we have proper refcounting for resources!
-		// Currently without RESF_PERMANENT we segfault after returning from demo playback,
-		// because transient resources get unloaded.
-		res_preload(RES_BGM, bgm_name, RESF_PERMANENT | RESF_OPTIONAL);
+		res_group_preload(&ctx->rg, RES_BGM, RESF_OPTIONAL, bgm_name, NULL);
 		return;
 	}
 
@@ -245,18 +248,26 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 }
 
 static void musicroom_free(MenuData *m) {
+	MusicRoomContext *ctx = m->context;
+	res_group_release(&ctx->rg);
+	mem_free(ctx);
+
 	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
 		mem_free(e->arg);
 	});
 }
 
-MenuData* create_musicroom_menu(void) {
+MenuData *create_musicroom_menu(void) {
+	auto ctx = ALLOC(MusicRoomContext);
+	res_group_init(&ctx->rg);
+
 	MenuData *m = alloc_menu();
 	m->logic = musicroom_logic;
 	m->draw = musicroom_draw;
 	m->end = musicroom_free;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
+	m->context = ctx;
 
 	for(int preload = 1; preload >= 0; --preload) {
 		add_bgm(m, "menu", preload);

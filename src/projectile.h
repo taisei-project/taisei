@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "resource/resource.h"
 #include "resource/sprite.h"
 #include "resource/shader_program.h"
 #include "color.h"
@@ -196,8 +197,9 @@ typedef struct ProjArgs {
 } attr_designated_init ProjArgs;
 
 struct ProjPrototype {
-	void (*preload)(ProjPrototype *proto);
+	void (*preload)(ProjPrototype *proto, ResourceGroup *rg);
 	void (*process_args)(ProjPrototype *proto, ProjArgs *args);
+	void (*reset)(ProjPrototype *proto);
 	void (*init_projectile)(ProjPrototype *proto, Projectile *p);
 	void (*deinit_projectile)(ProjPrototype *proto, Projectile *p);
 	void *private;
@@ -257,7 +259,7 @@ ProjDrawRule pdraw_blast(void);
 
 void petal_explosion(int n, cmplx pos);
 
-void projectiles_preload(void);
+void projectiles_preload(ResourceGroup *rg);
 void projectiles_free(void);
 
 cmplx projectile_graze_size(Projectile *p);

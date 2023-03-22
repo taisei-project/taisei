@@ -386,6 +386,6 @@ bool dialog_is_active(Dialog *d) {
 	return d && d->state != DIALOG_STATE_FADEOUT;
 }
 
-void dialog_preload(void) {
-	res_preload(RES_SHADER_PROGRAM, "text_dialog", RESF_DEFAULT);
+void dialog_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_dialog", NULL);
 }
