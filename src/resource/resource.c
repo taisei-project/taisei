@@ -30,7 +30,14 @@
 #include "sprite.h"
 #include "texture.h"
 
+#define DEBUG_LOAD 0
 #define DEBUG_LOCKS 0
+
+#if DEBUG_LOAD
+	#define LOAD_DBG(fmt, ...) log_debug(fmt, ##__VA_ARGS__)
+#else
+	#define LOAD_DBG(fmt, ...) ((void)0)
+#endif
 
 ResourceHandler *_handlers[] = {
 	[RES_ANIM]              = &animation_res_handler,
@@ -302,27 +309,56 @@ static InternalResource *ires_get_persistent(InternalResource *ires) {
 	return ires;
 }
 
+attr_unused
+static inline const char *loadstatus_name(LoadStatus status) {
+	switch(status) {
+		#define S(x) case x: return #x;
+		S(LOAD_NONE)
+		S(LOAD_OK)
+		S(LOAD_FAILED)
+		S(LOAD_CONT)
+		S(LOAD_CONT_ON_MAIN)
+		#undef S
+	}
+
+	return "UNKNOWN";
+}
+
+#define lstate_set_status(_st, _status) ({ \
+	auto _a_st = _st; \
+	attr_unused LoadStatus old = _a_st->status; \
+	_a_st->status = _status; \
+	LOAD_DBG("%p load status changed from %s to %s", _a_st->ires, loadstatus_name(old), loadstatus_name(_status)); \
+})
+
+#define lstate_set_ready_to_finalize(_st) ({ \
+	auto _a_st = _st; \
+	assert(!_a_st->ready_to_finalize); \
+	_a_st->ready_to_finalize = true; \
+	LOAD_DBG("%p now ready to finalize", _a_st->ires); \
+})
+
 void res_load_failed(ResourceLoadState *st) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_FAILED;
+	lstate_set_status(ist, LOAD_FAILED);
 }
 
 void res_load_finished(ResourceLoadState *st, void *res) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_OK;
+	lstate_set_status(ist, LOAD_OK);
 	ist->st.opaque = res;
 }
 
 void res_load_continue_on_main(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_CONT_ON_MAIN;
+	lstate_set_status(ist, LOAD_CONT_ON_MAIN);
 	ist->st.opaque = opaque;
 	ist->continuation = callback;
 }
 
 void res_load_continue_after_dependencies(ResourceLoadState *st, ResourceLoadProc callback, void *opaque) {
 	InternalResLoadState *ist = loadstate_internal(st);
-	ist->status = LOAD_CONT;
+	lstate_set_status(ist, LOAD_CONT);
 	ist->st.opaque = opaque;
 	ist->continuation = callback;
 }
@@ -652,7 +688,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 	attr_unused bool was_transient = ires->is_transient_reloader;
 	InternalResLoadState *load_state = ires->load;
 
-// 	log_debug("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
+	LOAD_DBG("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
 
 	if(load_state) {
 		assert(ires->status == RES_STATUS_LOADING);
@@ -821,12 +857,15 @@ static void *load_resource_async_task(void *vdata) {
 	InternalResource *ires = st->ires;
 	assume(st == ires->load);
 
+	LOAD_DBG("BEGIN:\t\tires = %p\t\tst = %p", ires, st);
+
 	ResourceHandler *h = get_ires_handler(ires);
 
-	st->status = LOAD_NONE;
+	lstate_set_status(st, LOAD_NONE);
 	PROTECT_FLAGS(st, h->procs.load(&st->st));
 
 retry:
+	LOAD_DBG("st->status == %s", loadstatus_name(st->status));
 	switch(st->status) {
 		case LOAD_CONT: {
 			ResourceStatus dep_status;
@@ -838,20 +877,20 @@ retry:
 					dep_status = wait_for_dependencies(st);
 				}
 
-				st->status = LOAD_NONE;
+				lstate_set_status(st, LOAD_NONE);
 				PROTECT_FLAGS(st, st->continuation(&st->st));
 				goto retry;
 			} else {
 				dep_status = pump_dependencies(st);
 
 				if(dep_status == RES_STATUS_LOADING) {
-					st->status = LOAD_CONT_ON_MAIN;
-					st->ready_to_finalize = true;
+					lstate_set_status(st, LOAD_CONT_ON_MAIN);
+					lstate_set_ready_to_finalize(st);
 					ires_cond_broadcast(ires);
 					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
 					break;
 				} else {
-					st->status = LOAD_NONE;
+					lstate_set_status(st, LOAD_NONE);
 					PROTECT_FLAGS(st, st->continuation(&st->st));
 					goto retry;
 				}
@@ -862,7 +901,7 @@ retry:
 
 		case LOAD_CONT_ON_MAIN:
 			if(pump_dependencies(st) == RES_STATUS_LOADING || !is_main_thread()) {
-				st->ready_to_finalize = true;
+				lstate_set_ready_to_finalize(st);
 				ires_cond_broadcast(ires);
 				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
 				break;
@@ -871,7 +910,7 @@ retry:
 		case LOAD_OK:
 		case LOAD_FAILED:
 			ires_lock(ires);
-			st->ready_to_finalize = true;
+			lstate_set_ready_to_finalize(st);
 			load_resource_finish(st);
 			ires_unlock(ires);
 			st = NULL;
@@ -881,6 +920,7 @@ retry:
 			UNREACHABLE;
 	}
 
+	LOAD_DBG("  END:\t\tires = %p\t\tst = %p", ires, st);
 	assume(ires->load == st);
 	return st;
 }
@@ -995,7 +1035,7 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	ResourceStatus dep_status = pump_dependencies(st);
 
 	if(dep_status == RES_STATUS_LOADING) {
-		// log_debug("Deferring %s '%s' because some dependencies are not satisfied", type_name(ires->res.type), st->st.name);
+		LOAD_DBG("Deferring %s '%s' because some dependencies are not satisfied", type_name(ires->res.type), st->st.name);
 
 		// FIXME: Make this less braindead.
 		// This will retry every frame until dependencies are satisfied.
@@ -1039,6 +1079,7 @@ static InternalResLoadState *make_persistent_loadstate(InternalResLoadState *st_
 	assume(st->st.name != NULL);
 	assume(st->st.path != NULL);
 
+	LOAD_DBG("Setting load state for %p (was: %p)", st->ires, st->ires->load);
 	st->ires->load = st;
 	return st;
 }
@@ -1097,7 +1138,7 @@ static void load_resource(
 	};
 
 	if(ires->status == RES_STATUS_FAILED) {
-		st.ready_to_finalize = true;
+		lstate_set_ready_to_finalize(&st);
 		load_resource_finish(&st);
 	} else {
 		ires_unmake_dependent(ires, &ires->dependencies);
@@ -1106,19 +1147,19 @@ static void load_resource(
 		if(async) {
 			load_resource_async(&st);
 		} else {
-			st.status = LOAD_NONE;
+			lstate_set_status(&st, LOAD_NONE);
 			PROTECT_FLAGS(&st, handler->procs.load(&st.st));
 
 			retry: switch(st.status) {
 				case LOAD_OK:
 				case LOAD_FAILED:
-					st.ready_to_finalize = true;
+					lstate_set_ready_to_finalize(&st);
 					load_resource_finish(&st);
 					break;
 				case LOAD_CONT:
 				case LOAD_CONT_ON_MAIN:
 					wait_for_dependencies(&st);
-					st.status = LOAD_NONE;
+					lstate_set_status(&st, LOAD_NONE);
 					PROTECT_FLAGS(&st, st.continuation(&st.st));
 					goto retry;
 				default: UNREACHABLE;
@@ -1196,7 +1237,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 		retry: switch(st->status) {
 			case LOAD_CONT:
 			case LOAD_CONT_ON_MAIN:
-				st->status = LOAD_NONE;
+				lstate_set_status(st, LOAD_NONE);
 				st->continuation(&st->st);
 				goto retry;
 
@@ -1248,10 +1289,12 @@ static void load_resource_finish(InternalResLoadState *st) {
 
 	Task *async_task = st->async_task;
 	if(async_task) {
+		LOAD_DBG("%p still has async task %p; detaching", ires, st->async_task);
 		st->async_task = NULL;
 		task_detach(async_task);
 	}
 
+	LOAD_DBG("Clearing load state for %p (was: %p)", ires, ires->load);
 	mem_free(ires->load);
 	ires->load = NULL;
 
