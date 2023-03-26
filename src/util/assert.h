@@ -11,8 +11,11 @@
 
 #include "util/macrohax.h"
 
-#ifndef TAISEI_BUILDCONF_HAVE_STATIC_ASSERT_WITHOUT_MSG
-	#undef static_assert
+#undef static_assert
+
+#ifdef TAISEI_BUILDCONF_HAVE_STATIC_ASSERT_WITHOUT_MSG
+	#define static_assert _Static_assert
+#else
 	#define _static_assert_0(cond) _Static_assert(cond, #cond)
 	#define _static_assert_1(cond, msg) _Static_assert(cond, msg)
 	#define static_assert(cond, ...) \
