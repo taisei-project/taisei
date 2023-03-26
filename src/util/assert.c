@@ -17,7 +17,7 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 
 	if(use_log) {
 		_taisei_log(LOG_FAKEFATAL, func, file, line, "%s:%i: assertion `%s` failed", file, line, cond);
-		log_sync();
+		log_sync(true);
 	} else {
 		tsfprintf(stderr, "%s:%i: %s(): assertion `%s` failed\n", file, line, func, cond);
 	}

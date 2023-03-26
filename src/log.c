@@ -452,11 +452,17 @@ void log_shutdown(void) {
 	memset(&logging, 0, sizeof(logging));
 }
 
-void log_sync(void) {
+void log_sync(bool flush) {
 	SDL_LockMutex(logging.queue.mutex);
- 	while(logging.queue.queue.first) {
+
+	while(logging.queue.queue.first) {
 		SDL_CondWait(logging.queue.cond, logging.queue.mutex);
 	}
+
+	if(flush) {
+		list_foreach(&logging.outputs, sync_logger, NULL);
+	}
+
 	SDL_UnlockMutex(logging.queue.mutex);
 }
 

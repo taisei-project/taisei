@@ -131,7 +131,7 @@ LogLevelDiff log_merge_level_diff(LogLevelDiff lower, LogLevelDiff upper) attr_n
 LogLevel log_apply_level_diff(LogLevel lvls, LogLevelDiff diff) attr_nodiscard;
 bool log_initialized(void) attr_nodiscard;
 void log_set_gui_error_appendix(const char *message);
-void log_sync(void);
+void log_sync(bool flush);
 void log_add_filter(LogLevelDiff diff, const char *pmod, const char *pfunc);
 bool log_add_filter_string(const char *fstr);
 void log_remove_filters(void);
