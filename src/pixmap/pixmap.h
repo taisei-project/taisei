@@ -150,11 +150,11 @@ typedef enum PixmapFormat {
 } PixmapFormat;
 
 // sanity check
-static_assert_nomsg(_impl_pixmap_format_layout(PIXMAP_FORMAT_ETC2_EAC_RG11) == PIXMAP_LAYOUT_RG);
-static_assert_nomsg(_impl_pixmap_format_compression(PIXMAP_FORMAT_ASTC_4x4_RGBA) == PIXMAP_COMPRESSION_ASTC_4x4_RGBA);
-static_assert_nomsg(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB16F) == 16);
-static_assert_nomsg(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB8) == 8);
-static_assert_nomsg(_impl_pixmap_format_layout(PIXMAP_FORMAT_RGB8) == PIXMAP_LAYOUT_RGB);
+static_assert(_impl_pixmap_format_layout(PIXMAP_FORMAT_ETC2_EAC_RG11) == PIXMAP_LAYOUT_RG);
+static_assert(_impl_pixmap_format_compression(PIXMAP_FORMAT_ASTC_4x4_RGBA) == PIXMAP_COMPRESSION_ASTC_4x4_RGBA);
+static_assert(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB16F) == 16);
+static_assert(_impl_pixmap_format_depth(PIXMAP_FORMAT_RGB8) == 8);
+static_assert(_impl_pixmap_format_layout(PIXMAP_FORMAT_RGB8) == PIXMAP_LAYOUT_RGB);
 
 INLINE bool pixmap_format_is_compressed(PixmapFormat fmt) {
 	return _impl_pixmap_format_is_compressed(fmt);

@@ -334,6 +334,16 @@ config.set('TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS', cc.compiles(
     args : ['-Wattributes', '-Werror']
 ))
 
+config.set('TAISEI_BUILDCONF_HAVE_STATIC_ASSERT_WITHOUT_MSG', cc.compiles(
+    '''
+    #include <assert.h>
+    static_assert(1, "with message");
+    static_assert(1);
+    ''',
+    name : 'static_assert() without message',
+    args : ['-Werror']
+))
+
 prefer_relpath_systems = [
     'windows',
 ]

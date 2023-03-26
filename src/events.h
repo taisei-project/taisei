@@ -68,7 +68,7 @@ typedef enum {
 	NUM_EPRIOS = EPRIO_LAST - EPRIO_FIRST + 1,
 } EventPriority;
 
-static_assert_nomsg(EPRIO_DEFAULT == 0);
+static_assert(EPRIO_DEFAULT == 0);
 
 typedef enum {
 	EFLAG_MENU = (1 << 0),

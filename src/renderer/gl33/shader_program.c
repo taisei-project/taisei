@@ -167,7 +167,7 @@ static MagicUniformSpec magic_unfiroms[] = {
 	[UMAGIC_COLOR_OUT_SIZES] = { "r_colorOutputSizes[0]", "vec2", UNIFORM_VEC2 },
 	[UMAGIC_DEPTH_OUT_SIZE]  = { "r_depthOutputSize",     "vec2", UNIFORM_VEC2 },
 };
-static_assert_nomsg(ARRAY_SIZE(magic_unfiroms) == NUM_MAGIC_UNIFORMS);
+static_assert(ARRAY_SIZE(magic_unfiroms) == NUM_MAGIC_UNIFORMS);
 
 static void gl33_update_uniform(Uniform *uniform, uint offset, uint count, const void *data) {
 	// these are validated properly in gl33_uniform

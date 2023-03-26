@@ -186,7 +186,7 @@ static GLenum target_from_class_and_layer(TextureClass cls, uint layer) {
 			[CUBEMAP_FACE_POS_Z] = GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
 			[CUBEMAP_FACE_NEG_Z] = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
 		};
-		static_assert_nomsg(ARRAY_SIZE(facemap) == 6);
+		static_assert(ARRAY_SIZE(facemap) == 6);
 		assert(layer < ARRAY_SIZE(facemap));
 		return facemap[layer];
 	} else if(target == GL_TEXTURE_2D) {

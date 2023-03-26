@@ -9,21 +9,26 @@
 #pragma once
 #include "taisei.h"
 
-#if __has_attribute(analyzer_noreturn)
-	#define attr_analyzer_noreturn \
-		__attribute__ ((analyzer_noreturn))
-#else
-	#define attr_analyzer_noreturn
+#include "util/macrohax.h"
+
+#ifndef TAISEI_BUILDCONF_HAVE_STATIC_ASSERT_WITHOUT_MSG
+	#undef static_assert
+	#define _static_assert_0(cond) _Static_assert(cond, #cond)
+	#define _static_assert_1(cond, msg) _Static_assert(cond, msg)
+	#define static_assert(cond, ...) \
+		MACROHAX_OVERLOAD_NARGS(_static_assert_, __VA_ARGS__)(cond, ##__VA_ARGS__)
 #endif
 
-attr_analyzer_noreturn
-void _ts_assert_fail(const char *cond, const char *func, const char *file, int line, bool use_log);
+void _ts_assert_fail(
+	const char *cond,
+	const char *msg,
+	const char *func,
+	const char *file,
+	int line,
+	bool use_log
+);
 
 #undef assert
-#undef static_assert
-
-#define static_assert _Static_assert
-#define static_assert_nomsg(x) static_assert(x, #x)
 
 #if defined(__EMSCRIPTEN__)
 	void _emscripten_trap(void);
@@ -42,15 +47,35 @@ void _ts_assert_fail(const char *cond, const char *func, const char *file, int l
 #endif
 
 #ifdef NDEBUG
-    #define _assert(cond, uselog)
-	#define _assume(cond, uselog) ASSUME(cond)
+    #define _assert(cond, msg, uselog)
+	#define _assume(cond, msg, uselog) ASSUME(cond)
 #else
-    #define _assert(cond, uselog) (LIKELY(cond) ? (void)0 : (_ts_assert_fail(#cond, __func__, _TAISEI_SRC_FILE, __LINE__, uselog), TRAP()))
-	#define _assume(cond, uselog) _assert(cond, uselog)
+    #define _assert(cond, msg, uselog) ({ \
+		if(UNLIKELY(!(cond))) { \
+			_ts_assert_fail(#cond, msg, __func__, _TAISEI_SRC_FILE, __LINE__, uselog); \
+			TRAP(); \
+			__builtin_unreachable(); \
+		} \
+	})
+	#define _assume(cond, msg, uselog) _assert(cond, msg, uselog)
 #endif
 
-#define assert(cond) _assert(cond, true)
-#define assert_nolog(cond) _assert(cond, false)
+#define _assert_0(cond)      _assert(cond, NULL, true)
+#define _assert_1(cond, msg) _assert(cond, msg, true)
+#define assert(cond, ...) \
+	MACROHAX_OVERLOAD_NARGS(_assert_, __VA_ARGS__)(cond, ##__VA_ARGS__)
 
-#define assume(cond) _assume(cond, true)
-#define assume_nolog(cond) _assume(cond, false)
+#define _assert_nolog_0(cond)      _assert(cond, NULL, false)
+#define _assert_nolog_1(cond, msg) _assert(cond, msg, false)
+#define assert_nolog(cond, ...) \
+	MACROHAX_OVERLOAD_NARGS(_assert_nolog_, __VA_ARGS__)(cond, ##__VA_ARGS__)
+
+#define _assume_0(cond)      _assume(cond, NULL, true)
+#define _assume_1(cond, msg) _assume(cond, msg, true)
+#define assume(cond, ...) \
+	MACROHAX_OVERLOAD_NARGS(_assume_, __VA_ARGS__)(cond, ##__VA_ARGS__)
+
+#define _assume_nolog_0(cond)      _assume(cond, NULL, false)
+#define _assume_nolog_1(cond, msg) _assume(cond, msg, false)
+#define assume_nolog(cond, ...) \
+	MACROHAX_OVERLOAD_NARGS(_assume_nolog_, __VA_ARGS__)(cond, ##__VA_ARGS__)

@@ -479,7 +479,7 @@ static bool load_pixmap(
 static void texture_loader_cubemap_from_pixmaps(TextureLoadData *ld) {
 	ResourceLoadState *st = ld->st;
 
-	static_assert_nomsg(sizeof(*ld->cubemaps)/sizeof(*ld->pixmaps) == ARRAY_SIZE(ld->src_paths.cubemap));
+	static_assert(sizeof(*ld->cubemaps)/sizeof(*ld->pixmaps) == ARRAY_SIZE(ld->src_paths.cubemap));
 	const int nsides = sizeof(*ld->cubemaps)/sizeof(*ld->pixmaps);
 	ld->num_pixmaps = nsides;
 	ld->cubemaps = ALLOC_ARRAY(1, typeof(*ld->cubemaps));
