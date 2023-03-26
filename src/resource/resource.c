@@ -719,8 +719,8 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 				return RES_STATUS_LOADED;
 			}
 
-			// It's important to refresh load_state here, because the task may have finalized the load.
-			// This may happen if the resource doesn't need to be finalized on the main thread, or if we *are* the main thread.
+			// It's important to refresh load_state here, because the load may have been finalized
+			// while we were waiting for (or executing) the task.
 			load_state = ires->load;
 		}
 
@@ -904,6 +904,8 @@ retry:
 				lstate_set_ready_to_finalize(st);
 				ires_cond_broadcast(ires);
 				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
+				// fun fact: in some rare cases, the main thread manages to finalize the load
+				// before this function even returns.
 				break;
 			}
 		// fallthrough
@@ -913,7 +915,6 @@ retry:
 			lstate_set_ready_to_finalize(st);
 			load_resource_finish(st);
 			ires_unlock(ires);
-			st = NULL;
 			break;
 
 		default:
@@ -921,8 +922,7 @@ retry:
 	}
 
 	LOAD_DBG("  END:\t\tires = %p\t\tst = %p", ires, st);
-	assume(ires->load == st);
-	return st;
+	return NULL;
 }
 
 static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
