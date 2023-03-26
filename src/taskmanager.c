@@ -428,7 +428,8 @@ bool task_abort(Task *task) {
 
 void taskmgr_global_init(void) {
 	assert(g_taskmgr == NULL);
-	g_taskmgr = taskmgr_create(0, SDL_THREAD_PRIORITY_LOW, "global");
+	int nthreads = env_get("TAISEI_TASKMGR_NUM_THREADS", 0);
+	g_taskmgr = taskmgr_create(nthreads, SDL_THREAD_PRIORITY_LOW, "global");
 }
 
 void taskmgr_global_shutdown(void) {
