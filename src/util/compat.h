@@ -24,6 +24,11 @@
 #include <stdnoreturn.h>
 #include <string.h>
 
+// clang defines this too
+#ifndef __GNUC__
+	#warning Unsupported compiler. Only GCC and Clang are officially supported. Expect errors.
+#endif
+
 #ifdef TAISEI_BUILDCONF_REL_SRC_DIR
 	#define _TAISEI_SRC_FILE ((const char *)__FILE__ + sizeof(TAISEI_BUILDCONF_REL_SRC_DIR) - 1)
 #else
@@ -71,49 +76,27 @@
 
 // This macro should be provided by stddef.h, but in practice it sometimes is not.
 #ifndef offsetof
-	#ifdef __GNUC__
-		#define offsetof(type, field) __builtin_offsetof(type, field)
-	#else
-		#define offsetof(type, field) ((size_t)&(((type *)0)->field))
-	#endif
+	#define offsetof(type, field) __builtin_offsetof(type, field)
 #endif
 
 #define PRAGMA(p) _Pragma(#p)
+#define UNREACHABLE __builtin_unreachable()
+#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
 
-#ifndef __GNUC__ // clang defines this too
-	#pragma Unsupported compiler, expect nothing to work
-
-	#define __attribute__(...)
-	#define __extension__
-	#define UNREACHABLE
-	#define DIAGNOSTIC(x)
+#if defined(__clang__)
 	#define DIAGNOSTIC_GCC(x)
-	#define DIAGNOSTIC_CLANG(x)
-	#define LIKELY(x) (bool)(x)
-	#define UNLIKELY(x) (bool)(x)
+	#define DIAGNOSTIC_CLANG(x) PRAGMA(clang diagnostic x)
 #else
-	#define UNREACHABLE __builtin_unreachable()
-
-	#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
-
-	#if defined(__clang__)
-		#define DIAGNOSTIC_GCC(x)
-		#define DIAGNOSTIC_CLANG(x) PRAGMA(clang diagnostic x)
-	#else
-		#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
-		#define DIAGNOSTIC_CLANG(x)
-	#endif
-
-	#define LIKELY(x) __builtin_expect((bool)(x), 1)
-	#define UNLIKELY(x) __builtin_expect((bool)(x), 0)
+	#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
+	#define DIAGNOSTIC_CLANG(x)
 #endif
 
+#define LIKELY(x) __builtin_expect((bool)(x), 1)
+#define UNLIKELY(x) __builtin_expect((bool)(x), 0)
+
 #ifndef __has_attribute
-	#ifdef __GNUC__
-		#define __has_attribute(attr) 1
-	#else
-		#define __has_attribute(attr) 0
-	#endif
+	// FIXME: maybe should be 0?
+	#define __has_attribute(attr) 1
 #endif
 
 #ifndef __has_feature
@@ -138,12 +121,8 @@
 	#endif
 #endif
 
-#if !defined(ASSUME) && defined(__GNUC__)
+#if !defined(ASSUME)
 	#define ASSUME(x) do { if(!(x)) { UNREACHABLE; } } while(0)
-#endif
-
-#ifndef ASSUME
-	#define ASSUME(x)
 #endif
 
 // On windows, use the MinGW implementations of printf and friends instead of the crippled mscrt ones.
