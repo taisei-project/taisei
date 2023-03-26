@@ -80,7 +80,10 @@
 #endif
 
 #define PRAGMA(p) _Pragma(#p)
-#define UNREACHABLE __builtin_unreachable()
+#define UNREACHABLE ({ \
+	assert(0, "This code should never be reachable"); \
+	__builtin_unreachable(); \
+})
 #define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
 
 #if defined(__clang__)

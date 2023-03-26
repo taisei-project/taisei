@@ -138,8 +138,6 @@ void log_remove_filters(void);
 
 #if defined(DEBUG) && !defined(__EMSCRIPTEN__)
 	#define log_debug(...) log_custom(LOG_DEBUG, __VA_ARGS__)
-	#undef UNREACHABLE
-	#define UNREACHABLE log_fatal("This code should never be reached  (%s:%i)", _TAISEI_SRC_FILE, __LINE__)
 #else
 	#define log_debug(...) ((void)0)
 // 	#define LOG_NO_FILENAMES
