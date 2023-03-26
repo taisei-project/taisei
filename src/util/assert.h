@@ -37,13 +37,8 @@ void _ts_assert_fail(
 	#define TRAP() abort()
 #elif defined(__clang__)
 	#define TRAP() __builtin_debugtrap()
-#elif defined(__GNUC__)
-	#define TRAP() __builtin_trap()
-#elif TAISEI_BUILDCONF_HAVE_POSIX
-	#include <signal.h>
-	#define TRAP() raise(SIGTRAP)
 #else
-	#define TRAP() abort()
+	#define TRAP() __builtin_trap()
 #endif
 
 #ifdef NDEBUG
