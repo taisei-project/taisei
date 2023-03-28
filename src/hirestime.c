@@ -10,6 +10,7 @@
 
 #include "util.h"
 #include "hirestime.h"
+#include "thread.h"
 
 static bool use_hires;
 static hrtime_t time_current;
@@ -81,7 +82,7 @@ void time_shutdown(void) {
 
 hrtime_t time_get(void) {
 	if(use_hires) {
-		assert(is_main_thread());
+		assert(thread_current_is_main());
 		time_update();
 		return time_current;
 	}

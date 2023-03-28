@@ -11,10 +11,11 @@
 #include "eventloop_private.h"
 #include "util.h"
 #include "framerate.h"
+#include "thread.h"
 #include "global.h"
 
 void eventloop_run(void) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	if(evloop.stack_ptr == NULL) {
 		return;

@@ -20,8 +20,7 @@ struct TaskManager {
 	uint running : 1;
 	uint aborted : 1;
 	SDL_atomic_t numtasks;
-	SDL_ThreadPriority thread_prio;
-	SDL_Thread *threads[];
+	Thread *threads[];
 };
 
 struct Task {
@@ -71,13 +70,9 @@ static void task_free(Task *task) {
 	mem_free(task);
 }
 
-static int taskmgr_thread(void *arg) {
+static void *taskmgr_thread(void *arg) {
 	TaskManager *mgr = arg;
 	attr_unused SDL_threadID tid = SDL_ThreadID();
-
-	if(SDL_SetThreadPriority(mgr->thread_prio) < 0) {
-		log_sdl_error(LOG_WARN, "SDL_SetThreadPriority");
-	}
 
 	bool running;
 	bool aborted;
@@ -152,10 +147,10 @@ static int taskmgr_thread(void *arg) {
 		}
 	}
 
-	return 0;
+	return NULL;
 }
 
-TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char *name) {
+TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *name) {
 	int numcores = SDL_GetCPUCount();
 
 	if(numcores < 1) {
@@ -185,19 +180,16 @@ TaskManager *taskmgr_create(uint numthreads, SDL_ThreadPriority prio, const char
 	}
 
 	mgr->numthreads = numthreads;
-	mgr->thread_prio = prio;
 
 	for(uint i = 0; i < numthreads; ++i) {
-		int digits = i ? log10(i) + 1 : 0;
+		int digits = i ? log10(i) + 1 : 1;
 		static const char *const prefix = "taskmgr";
 		char threadname[sizeof(prefix) + strlen(name) + digits + 2];
 		snprintf(threadname, sizeof(threadname), "%s:%s/%i", prefix, name, i);
 
-		if(!(mgr->threads[i] = SDL_CreateThread(taskmgr_thread, threadname, mgr))) {
-			log_sdl_error(LOG_WARN, "SDL_CreateThread");
-
+		if(!(mgr->threads[i] = thread_create(threadname, taskmgr_thread, mgr, prio))) {
 			for(uint j = 0; j < i; ++j) {
-				SDL_DetachThread(mgr->threads[j]);
+				thread_decref(mgr->threads[j]);
 				mgr->threads[j] = NULL;
 			}
 
@@ -297,7 +289,7 @@ static void taskmgr_finalize_and_wait(TaskManager *mgr, bool do_abort) {
 	SDL_UnlockMutex(mgr->mutex);
 
 	for(uint i = 0; i < mgr->numthreads; ++i) {
-		SDL_WaitThread(mgr->threads[i], NULL);
+		thread_wait(mgr->threads[i]);
 	}
 
 	taskmgr_free(mgr);

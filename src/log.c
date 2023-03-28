@@ -15,6 +15,7 @@
 #include "util.h"
 #include "list.h"
 #include "util/strbuf.h"
+#include "thread.h"
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -50,7 +51,7 @@ static struct {
 	} buffers;
 
 	struct {
-		SDL_Thread *thread;
+		Thread *thread;
 		SDL_mutex *mutex;
 		SDL_cond *cond;
 		LIST_ANCHOR(QueuedLogEntry) queue;
@@ -103,7 +104,7 @@ static const char* level_prefix(LogLevel lvl) { INDEX_MAP(level_prefix_map, lvl)
 static const char* level_name(LogLevel lvl) { INDEX_MAP(level_name_map, lvl) }
 attr_unused static const char* level_ansi_style_code(LogLevel lvl) { INDEX_MAP(level_ansi_style_map, lvl) }
 
-static void log_queue_shutdown(bool force_sync);
+static void log_queue_shutdown_internal(bool force_sync);
 
 noreturn static void log_abort(const char *msg) {
 #ifdef LOG_FATAL_MSGBOX
@@ -122,7 +123,7 @@ noreturn static void log_abort(const char *msg) {
 	}
 #endif
 
-	log_queue_shutdown(true);
+	log_queue_shutdown_internal(true);
 	log_shutdown();
 
 	// abort() doesn't clean up, but it lets us get a backtrace, which is more useful
@@ -311,6 +312,10 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.time = SDL_GetTicks(),
 	};
 
+	if(entry.thread) {
+		thread_incref(entry.thread);
+	}
+
 	if(logging.queue.thread) {
 		log_dispatch_async(&entry);
 	} else {
@@ -361,7 +366,7 @@ static void *delete_logger(List **loggers, List *logger, void *arg) {
 	return NULL;
 }
 
-static int log_queue_thread(void *a) {
+static void *log_queue_thread(void *a) {
 	SDL_mutex *mtx = logging.queue.mutex;
 	SDL_cond *cond = logging.queue.cond;
 
@@ -386,7 +391,7 @@ static int log_queue_thread(void *a) {
 	}
 
 	SDL_UnlockMutex(mtx);
-	return 0;
+	return NULL;
 }
 
 static void log_queue_init(void) {
@@ -404,13 +409,15 @@ static void log_queue_init(void) {
 		return;
 	}
 
-	if(!(logging.queue.thread = SDL_CreateThread(log_queue_thread, "Log queue", NULL))) {
-		log_sdl_error(LOG_ERROR, "SDL_CreateThread");
+	logging.queue.thread = thread_create("Log queue", log_queue_thread, NULL, THREAD_PRIO_LOW);
+
+	if(!logging.queue.thread) {
+		log_error("Failed to create log queue thread");
 		return;
 	}
 }
 
-static void log_queue_shutdown(bool force_sync) {
+static void log_queue_shutdown_internal(bool force_sync) {
 	if(!logging.queue.thread) {
 		return;
 	}
@@ -419,12 +426,16 @@ static void log_queue_shutdown(bool force_sync) {
 	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
 	SDL_CondBroadcast(logging.queue.cond);
 	SDL_UnlockMutex(logging.queue.mutex);
-	SDL_WaitThread(logging.queue.thread, NULL);
+	thread_wait(logging.queue.thread);
 	logging.queue.thread = NULL;
 	SDL_DestroyMutex(logging.queue.mutex);
 	logging.queue.mutex = NULL;
 	SDL_DestroyCond(logging.queue.cond);
 	logging.queue.cond = NULL;
+}
+
+void log_queue_shutdown(void) {
+	log_queue_shutdown_internal(false);
 }
 
 void log_init(LogLevel lvls) {
@@ -436,7 +447,7 @@ void log_init(LogLevel lvls) {
 
 void log_shutdown(void) {
 	logging.initialized = false;
-	log_queue_shutdown(false);
+	log_queue_shutdown_internal(false);
 	list_foreach(&logging.outputs, delete_logger, NULL);
 	SDL_DestroyMutex(logging.mutex);
 	strbuf_free(&logging.buffers.pre_format);

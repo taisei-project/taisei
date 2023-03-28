@@ -13,11 +13,12 @@
 #include "global.h"
 #include "video.h"
 #include "vfs/public.h"
+#include "thread.h"
 
 struct evloop_s evloop;
 
 void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr < evloop.stack + EVLOOP_STACK_SIZE - 1);
 
 	LoopFrame *frame;
@@ -39,7 +40,7 @@ void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc 
 }
 
 void eventloop_leave(void) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr != NULL);
 
 	LoopFrame *frame = evloop.stack_ptr;

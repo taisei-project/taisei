@@ -12,7 +12,6 @@
 #include <SDL.h>
 
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) attr_nonnull(2, 3);
-bool is_main_thread(void);
 
 typedef union FloatBits {
 	float val;
@@ -39,7 +38,5 @@ INLINE uint64_t double_to_bits(double d) {
 INLINE double bits_to_double(uint64_t i) {
 	return ((DoubleBits) { .bits = i }).val;
 }
-
-extern SDL_threadID main_thread_id;
 
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))

@@ -727,7 +727,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 		if(load_state) {
 			ResourceStatus dep_status = pump_dependencies(load_state);
 
-			if(!pump_only && is_main_thread()) {
+			if(!pump_only && thread_current_is_main()) {
 				InternalResource *persistent = ires_get_persistent(ires);
 
 				if(dep_status == RES_STATUS_LOADING) {
@@ -763,7 +763,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 	while(ires->status == RES_STATUS_LOADING && !pump_only) {
 		// If we get to this point, then we're waiting for a resource that's awaiting finalization on the main thread.
 		// If we *are* the main thread, there's no excuse for us to wait; we should've finalized the resource ourselves.
-		assert(!is_main_thread());
+		assert(!thread_current_is_main());
 		ires_cond_wait(ires);
 	}
 
@@ -870,7 +870,7 @@ retry:
 		case LOAD_CONT: {
 			ResourceStatus dep_status;
 
-			if(is_main_thread()) {
+			if(thread_current_is_main()) {
 				dep_status = pump_dependencies(st);
 
 				if(dep_status == RES_STATUS_LOADING) {
@@ -900,7 +900,7 @@ retry:
 		}
 
 		case LOAD_CONT_ON_MAIN:
-			if(pump_dependencies(st) == RES_STATUS_LOADING || !is_main_thread()) {
+			if(pump_dependencies(st) == RES_STATUS_LOADING || !thread_current_is_main()) {
 				lstate_set_ready_to_finalize(st);
 				ires_cond_broadcast(ires);
 				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
@@ -930,7 +930,7 @@ static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
 }
 
 static bool unload_resource(InternalResource *ires) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *tname = handler->typename;
@@ -1016,7 +1016,7 @@ static bool should_defer_load(InternalResLoadState *st) {
 }
 
 static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	InternalResource *ires = evt->user.data1;
 	InternalResLoadState *st = ires->load;

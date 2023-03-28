@@ -57,11 +57,11 @@ static void taisei_shutdown(void) {
 	events_shutdown();
 	time_shutdown();
 	coroutines_shutdown();
-
+	log_queue_shutdown();
+	thread_shutdown();
 	log_info("Good bye");
-	SDL_Quit();
-
 	log_shutdown();
+	SDL_Quit();
 }
 
 static void init_log(void) {
@@ -159,8 +159,6 @@ static void init_sdl(void) {
 #if defined(SDL_HINT_EMSCRIPTEN_ASYNCIFY) && defined(__EMSCRIPTEN__)
 	SDL_SetHintWithPriority(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0", SDL_HINT_OVERRIDE);
 #endif
-
-	main_thread_id = SDL_ThreadID();
 
 	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
 
@@ -282,6 +280,7 @@ int main(int argc, char **argv) {
 	auto ctx = ALLOC(MainContext);
 
 	setlocale(LC_ALL, "C");
+	thread_init();
 	init_log();
 	stageinfo_init(); // cli_args depends on this
 

@@ -122,6 +122,7 @@ extern Formatter log_formatter_file;
 extern Formatter log_formatter_console;
 
 void log_init(LogLevel lvls);
+void log_queue_shutdown(void);
 void log_shutdown(void);
 void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) attr_nonnull(3);
 void log_backtrace(LogLevel lvl);
