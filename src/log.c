@@ -16,6 +16,7 @@
 #include "list.h"
 #include "util/strbuf.h"
 #include "thread.h"
+#include "random.h"
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -253,6 +254,10 @@ static void log_dispatch(LogEntry *entry) {
 			SDL_RWwrite(l->out, fmt_buf->start, 1, slen);
 		}
 	}
+
+	if(entry->thread) {
+		thread_decref(entry->thread);
+	}
 }
 
 static void log_dispatch_async(LogEntry *entry) {
@@ -310,6 +315,8 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.line = line,
 		.level = lvl,
 		.time = SDL_GetTicks(),
+		.thread = thread_get_current(),
+		.thread_id = thread_get_current_id(),
 	};
 
 	if(entry.thread) {
@@ -551,29 +558,72 @@ LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) {
 	return log_apply_level_diff(lvls, log_parse_level_diff(lvlmod));
 }
 
+static inline int thread_color(uint64_t tid) {
+	uint64_t hash = splitmix64(&tid);
+	return 0x10 + hash % 0xD8;
+}
+
+static const char *thread_name(LogEntry *entry, size_t tmpsize, char tmpbuf[tmpsize]) {
+	if(entry->thread) {
+		return thread_get_name(entry->thread);
+	} else {
+		snprintf(tmpbuf, tmpsize, "%llx", (unsigned long long)entry->thread_id);
+		return tmpbuf;
+	}
+}
+
 static int log_fmtconsole_format_ansi(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
-	return strbuf_printf(
+	char tmp[32];
+	int len = 0;
+
+	len += strbuf_printf(buf, "\x1b[1;30m%-9d ", entry->time);
+
+	if(entry->thread_id != thread_get_main_id()) {
+		len += strbuf_printf(
+			buf,
+			"\x1b[38;5;%im%-18s",
+			thread_color(entry->thread_id),
+			thread_name(entry, sizeof(tmp), tmp)
+		);
+	}
+
+	len += strbuf_printf(
 		buf,
-		"\x1b[1;30m%-9d %s%s\x1b[1;30m: \x1b[1;36m%s\x1b[1;30m \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
-		entry->time,
+		"%s%s\x1b[1;30m: \x1b[1;36m%s\x1b[1;30m \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
 		level_ansi_style_code(entry->level),
 		level_prefix(entry->level),
 		entry->module,
 		entry->func,
 		entry->message
 	);
+
+	return len;
 }
 
 static int log_fmtconsole_format_plain(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
-	return strbuf_printf(
+	char tmp[32];
+	int len = 0;
+
+	len += strbuf_printf(buf, "%-9d ", entry->time);
+
+	if(entry->thread_id != thread_get_main_id()) {
+		len += strbuf_printf(
+			buf,
+			"%-18s ",
+			thread_name(entry, sizeof(tmp), tmp)
+		);
+	}
+
+	len += strbuf_printf(
 		buf,
-		"%-9d %s: %s %s: %s\n",
-		entry->time,
+		"%s: %s %s: %s\n",
 		level_prefix(entry->level),
 		entry->module,
 		entry->func,
 		entry->message
 	);
+
+	return len;
 }
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
@@ -606,10 +656,22 @@ void log_formatter_console(FormatterObj *obj, const SDL_RWops *output) {
 }
 
 static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
-	return strbuf_printf(
+	char tmp[32];
+	int len = 0;
+
+	len += strbuf_printf(buf, "%d  ", entry->time);
+
+	if(entry->thread_id != thread_get_main_id()) {
+		len += strbuf_printf(
+			buf,
+			"{%s}  ",
+			thread_name(entry, sizeof(tmp), tmp)
+		);
+	}
+
+	len += strbuf_printf(
 		buf,
-		"%d  %s  %s %s: %s  [%s:%i]\n",
-		entry->time,
+		"%s  %s %s: %s  [%s:%i]\n",
 		level_name(entry->level),
 		entry->module,
 		entry->func,
@@ -617,6 +679,8 @@ static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *en
 		entry->file,
 		entry->line
 	);
+
+	return len;
 }
 
 void log_formatter_file(FormatterObj *obj, const SDL_RWops *output) {

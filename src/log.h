@@ -12,6 +12,7 @@
 #include <SDL.h>
 
 #include "util/strbuf.h"
+#include "thread.h"
 
 enum {
 	_LOG_DEBUG_ID,
@@ -105,6 +106,8 @@ typedef struct LogEntry {
 	uint time;
 	uint line;
 	LogLevel level;
+	Thread *thread;
+	ThreadID thread_id;
 } LogEntry;
 
 typedef struct FormatterObj FormatterObj;
