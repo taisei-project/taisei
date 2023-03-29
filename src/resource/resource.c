@@ -654,16 +654,19 @@ INLINE const char *type_name(ResourceType type) {
 
 struct valfunc_arg {
 	ResourceType type;
+	const char *name;
 };
 
-static void *valfunc_begin_load_resource(void* arg) {
-	ResourceType type = ((struct valfunc_arg*)arg)->type;
-	return ires_alloc(type);
+static void *valfunc_begin_load_resource(void *varg) {
+	struct valfunc_arg *arg = varg;
+	auto ires = ires_alloc(arg->type);
+	ires->name = strdup(NOT_NULL(arg->name));
+	return ires;
 }
 
 static bool try_begin_load_resource(ResourceType type, const char *name, hash_t hash, InternalResource **out_ires) {
 	ResourceHandler *handler = get_handler(type);
-	struct valfunc_arg arg = { type };
+	struct valfunc_arg arg = { type, name };
 	return ht_try_set_prehashed(&handler->private.mapping, name, hash, &arg, valfunc_begin_load_resource, (void**)out_ires);
 }
 
@@ -1089,10 +1092,9 @@ static void load_resource_async(InternalResLoadState *st_transient) {
 	st->async_task = taskmgr_global_submit((TaskParams) { load_resource_async_task, st });
 }
 
-attr_nonnull(1, 2)
+attr_nonnull(1)
 static void load_resource(
 	InternalResource *ires,
-	const char *name,
 	ResourceFlags flags,
 	bool async
 ) {
@@ -1107,13 +1109,7 @@ static void load_resource(
 		flags |= RESF_OPTIONAL;
 	}
 
-	if(ires->name == NULL) {
-		ires->name = strdup(name);
-	} else {
-		assume(flags & RESF_RELOAD);
-	}
-
-	name = ires->name;
+	const char *name = NOT_NULL(ires->name);
 	path = handler->procs.find(name);
 
 	if(path) {
@@ -1204,7 +1200,7 @@ static bool reload_resource(InternalResource *ires, ResourceFlags flags, bool as
 
 	ires_lock(transient);
 	ires->reload_buddy = transient;
-	load_resource(transient, ires->name, flags, async);
+	load_resource(transient, flags, async);
 	ires_unlock(transient);
 
 	InternalResource *dependents[ires->dependents.num_elements_occupied];
@@ -1363,7 +1359,7 @@ Resource *_get_resource(ResourceType type, const char *name, hash_t hash, Resour
 			}
 		}
 
-		load_resource(ires, name, flags, false);
+		load_resource(ires, flags, false);
 		ires_cond_broadcast(ires);
 
 		if(ires->status == RES_STATUS_FAILED) {
@@ -1414,7 +1410,7 @@ static InternalResource *preload_resource_internal(
 
 	if(try_begin_load_resource(type, name, ht_str2ptr_hash(name), &ires)) {
 		ires_lock(ires);
-		load_resource(ires, name, flags, !res_gstate.env.no_async_load);
+		load_resource(ires, flags, !res_gstate.env.no_async_load);
 		ires_unlock(ires);
 	} else if(flags & RESF_RELOAD) {
 		reload_resource(ires, flags, !res_gstate.env.no_async_load);
