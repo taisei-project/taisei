@@ -64,7 +64,8 @@ CoWaitResult cotask_wait_event_or_die(CoEvent *evt);
 CoWaitResult cotask_wait_event_once(CoEvent *evt);
 int cotask_wait_subtasks(void);
 CoStatus cotask_status(CoTask *task);
-CoTask *cotask_active(void);
+CoTask *cotask_active(void);  // Returns NULL if not in task context
+CoTask *cotask_active_unsafe(void) attr_returns_nonnull;  // Must be called in task context
 EntityInterface *cotask_bind_to_entity(CoTask *task, EntityInterface *ent) attr_returns_nonnull;
 CoTaskEvents *cotask_get_events(CoTask *task);
 void *cotask_malloc(CoTask *task, size_t size) attr_returns_allocated attr_malloc attr_alloc_size(2);

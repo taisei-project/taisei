@@ -364,17 +364,17 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define INVOKE_SUBTASK_INDIRECT(_iface, _handle, ...) \
 	INVOKE_TASK_INDIRECT_(THIS_SCHED, cosched_new_subtask, iface, _handle, ##__VA_ARGS__)
 
-#define THIS_TASK         cotask_box(cotask_active())
+#define THIS_TASK         cotask_box(cotask_active_unsafe())
 #define TASK_EVENTS(task) cotask_get_events(cotask_unbox(task))
-#define TASK_MALLOC(size) cotask_malloc(cotask_active(), size)
+#define TASK_MALLOC(size) cotask_malloc(cotask_active_unsafe(), size)
 
-#define THIS_SCHED        cotask_get_sched(cotask_active())
+#define THIS_SCHED        cotask_get_sched(cotask_active_unsafe())
 
 #define TASK_HOST_ENT(ent_struct_type) \
-	ENT_CAST(cotask_host_entity(cotask_active(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)
+	ENT_CAST(cotask_host_entity(cotask_active_unsafe(), sizeof(ent_struct_type), ENT_TYPE_ID(ent_struct_type)), ent_struct_type)
 
 #define TASK_HOST_EVENTS(events_array) \
-	cotask_host_events(cotask_active(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
+	cotask_host_events(cotask_active_unsafe(), sizeof(events_array)/sizeof(CoEvent), &((events_array)._first_event_))
 
 #define YIELD                cotask_yield(NULL)
 #define WAIT(delay)          cotask_wait(delay)
@@ -387,7 +387,7 @@ DECLARE_EXTERN_TASK(_cancel_task_helper, { BoxedTask task; });
 #define NOT_NULL_OR_DIE(expr) ({ \
 	auto _not_null_ptr = (expr); \
 	if(_not_null_ptr == NULL) { \
-		cotask_cancel(NOT_NULL(cotask_active())); \
+		cotask_cancel(cotask_active_unsafe()); \
 		UNREACHABLE; \
 	} \
 	NOT_NULL(_not_null_ptr); \
@@ -413,4 +413,5 @@ INLINE EntityInterface *_cotask_bind_to_entity_Entity(EntityInterface *ent, CoTa
 #define cotask_bind_to_entity(task, ent) \
 	ENT_UNBOXED_DISPATCH_FUNCTION(_cotask_bind_to_entity_, ent, task)
 
-#define TASK_BIND(ent_or_box) cotask_bind_to_entity(cotask_active(), ENT_UNBOX_OR_PASSTHROUGH(ent_or_box))
+#define TASK_BIND(ent_or_box) \
+	cotask_bind_to_entity(cotask_active_unsafe(), ENT_UNBOX_OR_PASSTHROUGH(ent_or_box))

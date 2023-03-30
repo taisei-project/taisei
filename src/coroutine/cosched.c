@@ -30,7 +30,7 @@ CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg
 	init_data.func_arg_size = arg_size;
 
 	if(is_subtask) {
-		init_data.master_task_data = cotask_get_data(cotask_active());
+		init_data.master_task_data = cotask_get_data(cotask_active_unsafe());
 		assert(init_data.master_task_data != NULL);
 	}
 

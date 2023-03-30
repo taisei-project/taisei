@@ -400,9 +400,27 @@ void cotask_free(CoTask *task) {
 	);
 }
 
-CoTask *cotask_active(void) {
-	koishi_coroutine_t *co = koishi_active();
+CoTask *cotask_active_unsafe(void) {
+	koishi_coroutine_t *co = NOT_NULL(koishi_active());
 	assert(co != co_main);
+	return cotask_from_koishi_coroutine(co);
+}
+
+CoTask *cotask_active(void) {
+	if(!thread_current_is_main()) {
+		// FIXME make this play nice with threads, in case we ever want
+		// to use cotasks outside the main thread.
+		// Requires a thread-aware build of libkoishi, and making co_main
+		// a thread-local variable.
+		return NULL;
+	}
+
+	koishi_coroutine_t *co = NOT_NULL(koishi_active());
+
+	if(co == co_main) {
+		return NULL;
+	}
+
 	return cotask_from_koishi_coroutine(co);
 }
 
@@ -563,7 +581,7 @@ static inline CoWaitResult cotask_wait_init(CoTaskData *task_data, char wait_typ
 }
 
 int cotask_wait(int delay) {
-	CoTask *task = cotask_active();
+	CoTask *task = cotask_active_unsafe();
 	CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
 
@@ -583,7 +601,7 @@ int cotask_wait(int delay) {
 }
 
 int cotask_wait_subtasks(void) {
-	CoTask *task = cotask_active();
+	CoTask *task = cotask_active_unsafe();
 	CoTaskData *task_data = cotask_get_data(task);
 	assert(task_data->wait.wait_type == COTASK_WAIT_NONE);
 
@@ -647,7 +665,7 @@ void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events
 }
 
 static CoWaitResult cotask_wait_event_internal(CoEvent *evt, bool once) {
-	CoTask *task = cotask_active();
+	CoTask *task = cotask_active_unsafe();
 	CoTaskData *task_data = cotask_get_data(task);
 
 	// Edge case: if the task is being finalized, don't try to subscribe to another event.
@@ -692,10 +710,10 @@ CoWaitResult cotask_wait_event_or_die(CoEvent *evt) {
 	CoWaitResult wr = cotask_wait_event(evt);
 
 	if(wr.event_status == CO_EVENT_CANCELED) {
-		cotask_cancel(cotask_active());
+		cotask_cancel(cotask_active_unsafe());
 		// Edge case: should usually die here, unless the task has already been cancelled and is
 		// currently being finalized. In that case, we should just yield back to cotask_finalize().
-		assert(cotask_active()->data->finalizing);
+		assert(cotask_active_unsafe()->data->finalizing);
 		cotask_yield(NULL);
 		UNREACHABLE;
 	}
