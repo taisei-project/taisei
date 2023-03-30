@@ -78,10 +78,6 @@ int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]
 	return datasize;
 }
 
-int strbuf_cat(StringBuffer *strbuf, const char *str) {
-	return strbuf_ncat(strbuf, strlen(str), str);
-}
-
 void strbuf_clear(StringBuffer *strbuf) {
 	strbuf->pos = strbuf->start;
 

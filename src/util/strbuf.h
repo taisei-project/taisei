@@ -32,5 +32,6 @@ void strbuf_free(StringBuffer *strbuf)
 int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize])
 	attr_nonnull(1, 3);
 
-int strbuf_cat(StringBuffer *strbuf, const char *str)
-	attr_nonnull(1, 2);
+INLINE int strbuf_cat(StringBuffer *strbuf, const char *str) {
+	return strbuf_ncat(strbuf, strlen(str), str);
+}
