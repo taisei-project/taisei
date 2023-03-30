@@ -55,6 +55,7 @@ struct CoTask {
 	CoTaskData *data;
 
 	uint32_t unique_id;
+	const char *name;
 
 	#ifdef CO_TASK_DEBUG
 	char debug_label[256];

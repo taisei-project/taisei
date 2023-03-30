@@ -40,16 +40,17 @@ typedef struct CoWaitResult {
 	CoEventStatus event_status;
 } CoWaitResult;
 
+typedef struct CoTaskDebugInfo {
+	const char *label;
 #ifdef CO_TASK_DEBUG
-	typedef struct CoTaskDebugInfo {
-		const char *label;
-		DebugInfo debug_info;
-	} CoTaskDebugInfo;
+	DebugInfo debug_info;
+#endif
+} CoTaskDebugInfo;
 
+#ifdef CO_TASK_DEBUG
 	#define COTASK_DEBUG_INFO(label) ((CoTaskDebugInfo) { (label), _DEBUG_INFO_INITIALIZER_ })
 #else
-	typedef char CoTaskDebugInfo;
-	#define COTASK_DEBUG_INFO(label) (0)
+	#define COTASK_DEBUG_INFO(label) ((CoTaskDebugInfo) { (label) })
 #endif
 
 typedef struct CoSched CoSched;
@@ -72,6 +73,7 @@ void *cotask_malloc(CoTask *task, size_t size) attr_returns_allocated attr_mallo
 EntityInterface *cotask_host_entity(CoTask *task, size_t ent_size, EntityType ent_type) attr_nonnull_all attr_returns_allocated;
 void cotask_host_events(CoTask *task, uint num_events, CoEvent events[num_events]) attr_nonnull_all;
 CoSched *cotask_get_sched(CoTask *task);
+const char *cotask_get_name(CoTask *task) attr_nonnull(1);
 
 BoxedTask cotask_box(CoTask *task);
 CoTask *cotask_unbox(BoxedTask box);

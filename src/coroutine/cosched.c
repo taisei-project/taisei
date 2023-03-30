@@ -17,6 +17,7 @@ void cosched_init(CoSched *sched) {
 CoTask *_cosched_new_task(CoSched *sched, CoTaskFunc func, void *arg, size_t arg_size, bool is_subtask, CoTaskDebugInfo debug) {
 	assume(sched != NULL);
 	CoTask *task = cotask_new_internal(cotask_entry);
+	task->name = debug.label;
 
 #ifdef CO_TASK_DEBUG
 	snprintf(task->debug_label, sizeof(task->debug_label), "#%i <%p> %s (%s:%i:%s)", task->unique_id, (void*)task, debug.label, debug.debug_info.file, debug.debug_info.line, debug.debug_info.func);

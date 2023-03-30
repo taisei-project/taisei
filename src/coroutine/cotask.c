@@ -759,3 +759,7 @@ void cotask_force_finish(CoTask *task) {
 
 	cotask_free(task);
 }
+
+const char *cotask_get_name(CoTask *task) {
+	return task->name;
+}
