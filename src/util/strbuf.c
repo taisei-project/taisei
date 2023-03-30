@@ -68,17 +68,18 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 	return size_required;
 }
 
-void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]) {
-	datasize += 1;
-	strbuf_reserve(strbuf, datasize);
-	assert_nolog(strbuf_size_available(strbuf) >= datasize);
-	memcpy(strbuf->pos, data, datasize - 1);
-	strbuf->pos += datasize - 1;
+int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]) {
+	assert(datasize < INT32_MAX);
+	strbuf_reserve(strbuf, datasize + 1);
+	assert_nolog(strbuf_size_available(strbuf) >= datasize + 1);
+	memcpy(strbuf->pos, data, datasize);
+	strbuf->pos += datasize;
 	*strbuf->pos = 0;
+	return datasize;
 }
 
-void strbuf_cat(StringBuffer *strbuf, const char *str) {
-	strbuf_ncat(strbuf, strlen(str), str);
+int strbuf_cat(StringBuffer *strbuf, const char *str) {
+	return strbuf_ncat(strbuf, strlen(str), str);
 }
 
 void strbuf_clear(StringBuffer *strbuf) {
