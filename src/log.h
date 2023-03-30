@@ -103,11 +103,13 @@ typedef struct LogEntry {
 	const char *file;
 	const char *module;
 	const char *func;
+	const char *task;
+	Thread *thread;
+	ThreadID thread_id;
+	uint32_t task_id;
 	uint time;
 	uint line;
 	LogLevel level;
-	Thread *thread;
-	ThreadID thread_id;
 } LogEntry;
 
 typedef struct FormatterObj FormatterObj;

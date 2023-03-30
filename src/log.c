@@ -17,6 +17,7 @@
 #include "util/strbuf.h"
 #include "thread.h"
 #include "random.h"
+#include "coroutine/cotask.h"
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -319,6 +320,13 @@ static void log_internal(LogLevel lvl, const char *funcname, const char *filenam
 		.thread_id = thread_get_current_id(),
 	};
 
+	CoTask *task = cotask_active();
+
+	if(task) {
+		entry.task = cotask_get_name(task);
+		entry.task_id = cotask_box(task).unique_id;
+	}
+
 	if(entry.thread) {
 		thread_incref(entry.thread);
 	}
@@ -572,58 +580,95 @@ static const char *thread_name(LogEntry *entry, size_t tmpsize, char tmpbuf[tmps
 	}
 }
 
-static int log_fmtconsole_format_ansi(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
-	char tmp[32];
-	int len = 0;
+typedef struct ConsoleFormatterData {
+	struct {
+		bool timestamps;
+		bool context;
+		bool color;
+	} cfg;
 
-	len += strbuf_printf(buf, "\x1b[1;30m%-9d ", entry->time);
+	struct {
+		int max_context_len;
+	} state;
+} ConsoleFormatterData;
+
+#define C(x) (fdata->cfg.color ? (x) : 0)
+
+static int log_fmtconsole_format_context(
+	ConsoleFormatterData *fdata,
+	StringBuffer *buf,
+	LogEntry *entry
+) {
+	char tmp[32];
+	int txtlen = 0;
+	int clrlen = 0;
 
 	if(entry->thread_id != thread_get_main_id()) {
-		len += strbuf_printf(
-			buf,
-			"\x1b[38;5;%im%-18s",
-			thread_color(entry->thread_id),
-			thread_name(entry, sizeof(tmp), tmp)
-		);
+		clrlen += C(strbuf_printf(buf, "\x1b[38;5;%im", thread_color(entry->thread_id)));
+		txtlen +=   strbuf_printf(buf, "%-18s ", thread_name(entry, sizeof(tmp), tmp));
+		clrlen += C(strbuf_cat(buf, "\x1b[1;30m"));
 	}
 
-	len += strbuf_printf(
-		buf,
-		"%s%s\x1b[1;30m: \x1b[1;36m%s\x1b[1;30m \x1b[1;34m%s\x1b[1;30m: \x1b[0m%s\n",
-		level_ansi_style_code(entry->level),
-		level_prefix(entry->level),
-		entry->module,
-		entry->func,
-		entry->message
-	);
+	if(entry->task_id != 0) {
+		clrlen += C(strbuf_cat(buf, "\x1b[1;35m"));
+		txtlen +=   strbuf_cat(buf, entry->task ?: "<unknown task>");
+		clrlen += C(strbuf_cat(buf, "\x1b[1;30m"));
+		txtlen +=   strbuf_cat(buf, "[");
+		clrlen += C(strbuf_cat(buf, "\x1b[1;37m"));
+		txtlen +=   strbuf_printf(buf, "%x", entry->task_id);
+		clrlen += C(strbuf_cat(buf, "\x1b[1;30m"));
+		txtlen +=   strbuf_cat(buf, "] ");
+	}
+
+	if(txtlen) {
+		if(fdata->state.max_context_len < txtlen) {
+			fdata->state.max_context_len = txtlen;
+		} else {
+			static char spaces[] = "                                      ";
+			size_t n = imin(sizeof(spaces) - 1, fdata->state.max_context_len - txtlen);
+			txtlen += strbuf_ncat(buf, n, spaces);
+		}
+	}
+
+	return txtlen + clrlen;
+}
+
+static int log_fmtconsole_format(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
+	ConsoleFormatterData *fdata = obj->data;
+	int len = 0;
+
+	if(fdata->cfg.timestamps) {
+		len += strbuf_printf(buf, "\x1b[1;30m%-9d ", entry->time);
+	}
+
+	if(fdata->cfg.context) {
+		len += log_fmtconsole_format_context(fdata, buf, entry);
+	}
+
+	len += C(strbuf_cat(buf, level_ansi_style_code(entry->level)));
+	len +=   strbuf_cat(buf, level_prefix(entry->level));
+	len += C(strbuf_cat(buf, "\x1b[1;30m"));
+	len +=   strbuf_cat(buf, ": ");
+
+	len += C(strbuf_cat(buf, "\x1b[1;36m"));
+	len +=   strbuf_cat(buf, entry->module);
+	len += C(strbuf_cat(buf, "\x1b[1;30m"));
+	len +=   strbuf_cat(buf, ">");
+	len += C(strbuf_cat(buf, "\x1b[1;34m"));
+	len +=   strbuf_cat(buf, entry->func);
+	len += C(strbuf_cat(buf, "\x1b[1;30m"));
+	len +=   strbuf_cat(buf, ": ");
+	len += C(strbuf_cat(buf, "\x1b[0m"));
+	len +=   strbuf_cat(buf, entry->message);
+	len +=   strbuf_cat(buf, "\n");
 
 	return len;
 }
 
-static int log_fmtconsole_format_plain(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
-	char tmp[32];
-	int len = 0;
+#undef C
 
-	len += strbuf_printf(buf, "%-9d ", entry->time);
-
-	if(entry->thread_id != thread_get_main_id()) {
-		len += strbuf_printf(
-			buf,
-			"%-18s ",
-			thread_name(entry, sizeof(tmp), tmp)
-		);
-	}
-
-	len += strbuf_printf(
-		buf,
-		"%s: %s %s: %s\n",
-		level_prefix(entry->level),
-		entry->module,
-		entry->func,
-		entry->message
-	);
-
-	return len;
+static void log_fmtconsole_free(FormatterObj *fobj) {
+	mem_free(fobj->data);
 }
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
@@ -648,11 +693,18 @@ static bool output_supports_ansi_sequences(const SDL_RWops *output) {
 #endif
 
 void log_formatter_console(FormatterObj *obj, const SDL_RWops *output) {
-	if(output_supports_ansi_sequences(output)) {
-		obj->format = log_fmtconsole_format_ansi;
-	} else {
-		obj->format = log_fmtconsole_format_plain;
-	}
+	obj->data = ALLOC(ConsoleFormatterData, {
+		.cfg = {
+			.color = (
+				env_get("TAISEI_LOG_CONSOLE_COLOR", true) &&
+				output_supports_ansi_sequences(output)
+			),
+			.context = env_get("TAISEI_LOG_CONSOLE_CONTEXT", true),
+			.timestamps = env_get("TAISEI_LOG_CONSOLE_TIME", false),
+		}
+	});
+	obj->format = log_fmtconsole_format;
+	obj->free = log_fmtconsole_free;
 }
 
 static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *entry) {
@@ -666,6 +718,14 @@ static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *en
 			buf,
 			"{%s}  ",
 			thread_name(entry, sizeof(tmp), tmp)
+		);
+	}
+
+	if(entry->task_id != 0) {
+		len += strbuf_printf(
+			buf,
+			"%s[%x]  ",
+			entry->task ?: "<unknown task>", entry->task_id
 		);
 	}
 
