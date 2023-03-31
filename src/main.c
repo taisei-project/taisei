@@ -281,6 +281,7 @@ int main(int argc, char **argv) {
 
 	setlocale(LC_ALL, "C");
 	thread_init();
+	coroutines_init();
 	init_log();
 	stageinfo_init(); // cli_args depends on this
 
@@ -333,8 +334,6 @@ int main(int argc, char **argv) {
 	}
 
 	log_info("Girls are now preparing, please wait warmly...");
-
-	coroutines_init();
 
 	free_cli_action(&ctx->cli);
 	vfs_setup(CALLCHAIN(main_post_vfsinit, ctx));
