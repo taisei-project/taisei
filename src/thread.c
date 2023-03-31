@@ -61,6 +61,7 @@ void thread_shutdown(void) {
 	ht_iter_end(&iter);
 
 	ht_destroy(&threads.id_to_thread);
+	threads.id_to_thread.num_elements_allocated = 0;
 }
 
 static void thread_finalize(Thread *thrd) {
@@ -170,6 +171,10 @@ fail:
 }
 
 Thread *thread_get_current(void) {
+	if(!threads.id_to_thread.num_elements_allocated) {
+		return NULL;
+	}
+
 	return ht_get(&threads.id_to_thread, thread_get_current_id(), NULL);
 }
 
