@@ -27,7 +27,6 @@ DEFINE_ENTITY_TYPE(Laser, {
 	LaserPosRule prule;
 
 	struct {
-		LaserRenderData renderdata;
 		int segments_ofs;
 		int num_segments;
 		struct {

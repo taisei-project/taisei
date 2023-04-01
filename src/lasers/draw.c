@@ -28,11 +28,11 @@
  * In the first pass we quantize the laser into a sequence of connected line segments, possibly
  * simplifying the shape and culling the invisible parts. The segments are then rasterized into a
  * signed distance field. To achieve this, the vertex shader outputs oversized oriented quads for
- * each segment. The amount of size overshoot depends on the maximum range of our distance field, as
- * well as the width of each laser segment. The fragment shader then calculates the signed distance
- * from each fragment to the actual segment. Since the width of a segment may be non-uniform, an
- * "uneven capsule" primitive is used for the distance calculation — effectively, this interpolates
- * the width linearly between the two points of a segment[1].
+ * each segment. The amount of size overshoot depends on the maximum range of our distance field,
+ * as well as the width of each laser segment. The fragment shader then calculates the signed
+ * distance from each fragment to the actual segment. Since the width of a segment may be non-
+ * uniform, an "uneven capsule" primitive is used for the distance calculation — effectively, this
+ * interpolates the width linearly between the two points of a segment[1].
  *
  * To combine all segments into a single distance field, the minimum function is used for the
  * blending equation. The framebuffer is initially cleared with the maximum distance value, so that
@@ -41,8 +41,9 @@
  *
  * The result is stored into the red channel of a floating point texture, with negative distance
  * denoting fragments that are inside the shape. We also store the negated "time" parameter,
- * linearly interpolated between each point, into the second channel of the texture. This isn't used
- * by default, but opens possibilities for interesting custom effects, including limited texturing.
+ * linearly interpolated between each point, into the second channel of the texture. This isn't
+ * used by default, but opens possibilities for interesting custom effects, including limited
+ * texturing.
  *
  * The second pass is a lot simpler: we sample our distance field texture to render a colored laser
  * directly into the main viewport framebuffer. To save some shader invocations, we only render the
@@ -53,25 +54,26 @@
  *
  * …
  *
- * Now, here is a problem: IT'S SLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW.
+ * Now, here is a problem: IT'S SLOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOW.
  *
  * The naive way of implementing it is, anyway. Having to render 2 passes with completely different
  * pipeline states per laser doesn't scale — the back-and-forth switching of states and render
  * targets gets very expensive. So instead of that, let's try to minimize the amount of state
  * changes by cramming as many lasers into one pass as possible.
  *
- * Currently, this is implemented in the most basic way: we take the SDF backing texture and make it
- * much larger, to accomodate multiple viewport-sized areas — we'll call them "tiles". The tiles
+ * Currently, this is implemented in the most basic way: we take the SDF backing texture and make
+ * it much larger, to accomodate multiple viewport-sized areas — we'll call them "tiles". The tiles
  * don't have to be exactly the size of one game viewport, but the proportions matter. In the first
- * pass, we render SDFs for multiple lasers, each into a separate tile. We tag each laser with its
- * tile number, so that the second pass knows where to find their data in the texture. In order to
- * properly scale and constrain the output to the tile area, the viewport transformation is used[3].
- * When we run out of lasers to draw, or out of free tiles in the texture, we render the second pass
- * for the lasers processed so far[4]. If we have any more lasers left to draw, we set up the state
- * for pass one again and start over.
+ * pass, we render SDFs for multiple lasers, each into a separate tile.
  *
- * With this optimization, the performance gets much more respectable. It's still not as fast as our
- * old (v1.3 era) laser renderer, but hey, it's a lot prettier!
+ * We don't directly render lasers in their draw callbacks, instead we enqueue them for the next
+ * draw batch. This involves allocating a free tile for the laser and generating its vertex data
+ * for both passes. If we ran out of free tiles, we flush the batch first: render both passes with
+ * the batch data we've collected so far, invalidate vertex buffers, and reset batch state, along
+ * with tile allocation. We also flush the batch when there are no more lasers to draw.
+ *
+ * With this optimization, the performance gets much more respectable. It's still not as fast as
+ * our old (v1.3 era) laser renderer, but hey, it's a lot prettier!
  *
  *
  * OPEN ISSUES
@@ -95,11 +97,6 @@
  * [2] Ok, there is one small artifact: self-intersections don't quite look right, because there is
  * no way for the SDF to represent a laser stacking on top of itself. But the error is barely
  * noticeable in-game, and could be masked almost entirely with a small amount of blur.
- *
- * [3] Unfortunately, this means we can't dispatch all lasers with a single draw call, as we must
- * change the viewport setup each time. This doesn't seem to be a problem in practice, however.
- *
- * [4] And we can actually do it in a single draw call this time!
  */
 
 #define TILES_X 8
@@ -131,17 +128,12 @@ static struct {
 	} fb;
 
 	struct {
-		LIST_ANCHOR(LaserRenderData) batch;
 		int free_tile;
-		int rendered_lasers;
-		bool pass1_state_ready;
+		int pass1_num_segments;
+		int pass2_num_lasers;
 		bool drawing_lasers;
 	} render_state;
 } ldraw;
-
-#define LASER_FROM_RENDERDATA(rd) \
-	UNION_CAST(char*, Laser*, \
-		UNION_CAST(LaserRenderData*, char*, (rd)) - offsetof(Laser, _internal.renderdata))
 
 typedef LaserSegment LaserInstancedAttribsPass1;
 
@@ -308,64 +300,36 @@ void laserdraw_shutdown(void) {
 	ent_unhook_post_draw(laserdraw_ent_postdraw_hook);
 }
 
-static void laserdraw_prepare_state_pass1(void) {
-	r_framebuffer(ldraw.fb.sdf);
-	r_clear(CLEAR_COLOR, RGBA(LASER_SDF_RANGE, 0, 0, 0), 1);
-	r_blend(BLENDMODE_COMPOSE(
-		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
-		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
-	));
-	r_shader_ptr(ldraw.shaders.sdf_generate);
-	r_uniform_float("sdf_range", LASER_SDF_RANGE);
-}
-
-static int laserdraw_pass1_build(Laser *l) {
-	// PASS 1: build the signed distance field
-
-	// The actual work happens in laser.c:quantize_laser(),
-	// since we use the segment data for collisions too.
-	// Here it's simply copied into our vertex buffer.
-
+// Add laser to batch for SDF generation pass
+static int laserdraw_pass1_add(Laser *l, cmplxf *out_ofs) {
 	int nsegs = l->_internal.num_segments;
 
 	if(nsegs < 1) {
 		return 0;
 	}
 
-	LaserSegment *segs = dynarray_get_ptr(&lintern.segments, l->_internal.segments_ofs);
-	SDL_RWwrite(ldraw.pass1.vb_stream, segs, sizeof(*segs), nsegs);
+	assert(ldraw.render_state.free_tile < TILES_MAX);
+	int tile = ldraw.render_state.free_tile++;
 
+	cmplxf ofs = *out_ofs = CMPLXF(
+		VIEWPORT_W * (tile % TILES_X),
+		VIEWPORT_H * (tile / TILES_X)
+	);
+
+	int iofs = l->_internal.segments_ofs;
+	for(int i = iofs; i < nsegs + iofs; ++i) {
+		LaserSegment s = dynarray_get(&lintern.segments, i);
+		s.pos.a += ofs;
+		s.pos.b += ofs;
+		SDL_RWwrite(ldraw.pass1.vb_stream, &s, sizeof(s), 1);
+	}
+
+	ldraw.render_state.pass1_num_segments += nsegs;
 	return nsegs;
 }
 
-static void laserdraw_pass1_render(Laser *l, int segments) {
-	Framebuffer *fb = r_framebuffer_current();
-	FloatRect vp_orig;
-	r_framebuffer_viewport_current(fb, &vp_orig);
-	FloatRect vp = vp_orig;
-	int sx = l->_internal.renderdata.tile % TILES_X;
-	int sy = l->_internal.renderdata.tile / TILES_X;
-	vp.w /= TILES_X;
-	vp.h /= TILES_Y;
-	vp.x = sx * vp.w;
-	vp.y = sy * vp.h;
-	r_framebuffer_viewport_rect(fb, vp);
-	r_draw_model_ptr(&ldraw.pass1.quad, segments, 0);
-	r_vertex_buffer_invalidate(ldraw.pass1.vb);
-	r_framebuffer_viewport_rect(fb, vp_orig);
-}
-
-static void laserdraw_prepare_state_pass2(void) {
-	Texture *tex = r_framebuffer_get_attachment(ldraw.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
-	r_shader_ptr(ldraw.shaders.sdf_apply);
-	r_uniform_sampler("tex", tex);
-	r_uniform_vec2("texsize", VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
-	r_blend(BLEND_PREMUL_ALPHA);
-}
-
-static void laserdraw_pass2_build(Laser *l) {
-	// PASS 2: color the curve using the generated SDF
-
+// Add laser to batch for coloring pass
+static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs) {
 	FloatOffset top_left = l->_internal.bbox.top_left;
 	FloatOffset bottom_right = l->_internal.bbox.bottom_right;
 	cmplxf bbox_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
@@ -376,9 +340,7 @@ static void laserdraw_pass2_build(Laser *l) {
 	bbox.extent.as_cmplx = bbox_size;
 
 	FloatRect frag = bbox;
-	frag.offset.as_cmplx -= bbox.extent.as_cmplx * 0.5;
-	frag.x += VIEWPORT_W * (l->_internal.renderdata.tile % TILES_X);
-	frag.y += VIEWPORT_H * (l->_internal.renderdata.tile / TILES_X);
+	frag.offset.as_cmplx += sdf_ofs - bbox.extent.as_cmplx * 0.5;
 
 	LaserInstancedAttribsPass2 attrs = {
 		.bbox = bbox,
@@ -388,74 +350,78 @@ static void laserdraw_pass2_build(Laser *l) {
 	};
 
 	SDL_RWwrite(ldraw.pass2.vb_stream, &attrs, sizeof(attrs), 1);
+	++ldraw.render_state.pass2_num_lasers;
 }
 
-static void laserdraw_pass2_renderall(void) {
-	if(!ldraw.render_state.batch.first) {
+static void laserdraw_add(Laser *l) {
+	cmplxf sdf_ofs;
+	if(laserdraw_pass1_add(l, &sdf_ofs)) {
+		laserdraw_pass2_add(l, sdf_ofs);
+	}
+}
+
+// Render the SDF generation pass
+static void laserdraw_pass1_render(void) {
+	r_state_push();
+	r_framebuffer(ldraw.fb.sdf);
+	r_clear(CLEAR_COLOR, RGBA(LASER_SDF_RANGE, 0, 0, 0), 1);
+	r_blend(BLENDMODE_COMPOSE(
+		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
+		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN
+	));
+	r_shader_ptr(ldraw.shaders.sdf_generate);
+	r_uniform_float("sdf_range", LASER_SDF_RANGE);
+	r_mat_proj_push_ortho(VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
+	r_draw_model_ptr(&ldraw.pass1.quad, ldraw.render_state.pass1_num_segments, 0);
+	r_mat_proj_pop();
+	r_state_pop();
+}
+
+// Render the coloring pass
+static void laserdraw_pass2_render(void) {
+	r_state_push();
+	r_framebuffer(ldraw.fb.saved);
+	r_shader_ptr(ldraw.shaders.sdf_apply);
+	Texture *tex = r_framebuffer_get_attachment(ldraw.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
+	r_uniform_sampler("tex", tex);
+	r_uniform_vec2("texsize", VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
+	r_blend(BLEND_PREMUL_ALPHA);
+	r_draw_model_ptr(&ldraw.pass2.quad, ldraw.render_state.pass2_num_lasers, 0);
+	r_state_pop();
+}
+
+// Render the two two passes and reset batch state
+static void laserdraw_flush(void) {
+	// Sanity check: if we have no lasers, we must have no segments.
+	// If we have at least one laser, we must have at least one segment.
+
+	if(!ldraw.render_state.pass2_num_lasers) {
+		assert(!ldraw.render_state.pass1_num_segments);
 		return;
 	}
 
-	r_state_push();
-	r_framebuffer(ldraw.fb.saved);
-	laserdraw_prepare_state_pass2();
+	assert(ldraw.render_state.pass1_num_segments);
 
-	int instances = 0;
-
-	for(;;) {
-		LaserRenderData *rd = ldraw.render_state.batch.last;
-
-		if(rd == NULL) {
-			break;
-		}
-
-		alist_unlink(&ldraw.render_state.batch, rd);
-		Laser *l = LASER_FROM_RENDERDATA(rd);
-		laserdraw_pass2_build(l);
-		++instances;
-	}
-
-	assert(instances > 0);
-	r_draw_model_ptr(&ldraw.pass2.quad, instances, 0);
+	laserdraw_pass1_render();
+	r_vertex_buffer_invalidate(ldraw.pass1.vb);
+	laserdraw_pass2_render();
 	r_vertex_buffer_invalidate(ldraw.pass2.vb);
 
-	r_state_pop();
-
-	ldraw.render_state.rendered_lasers += instances;
-	ldraw.render_state.pass1_state_ready = false;
 	ldraw.render_state.free_tile = 0;
-	assert(ldraw.render_state.batch.first == NULL);
+	ldraw.render_state.pass1_num_segments = 0;
+	ldraw.render_state.pass2_num_lasers = 0;
 }
 
 void laserdraw_ent_drawfunc(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
-	int segments = laserdraw_pass1_build(laser);
-
-	if(segments <= 0) {
-		return;
-	}
-
 	if(ldraw.render_state.free_tile == TILES_MAX) {
-		// No more space in the sdf framebuffer — flush pending lasers
-		laserdraw_pass2_renderall();
+		// No more space in the SDF framebuffer
+		// render current batch and queue for next one.
+		laserdraw_flush();
 	}
 
-	assert(ldraw.render_state.free_tile < TILES_MAX);
-	laser->_internal.renderdata.tile = ldraw.render_state.free_tile++;
-	alist_push(&ldraw.render_state.batch, &laser->_internal.renderdata);
-
-	if(!ldraw.render_state.pass1_state_ready) {
-		// Pop out of entity-wide state into lasers-wide state
-		r_state_pop();
-
-		laserdraw_prepare_state_pass1();
-		ldraw.render_state.pass1_state_ready = true;
-
-		// Push new entity-wide state; entity draw loop will pop it
-		r_state_push();
-	}
-
-	laserdraw_pass1_render(laser, segments);
+	laserdraw_add(laser);
 }
 
 static void laserdraw_begin(void) {
@@ -472,7 +438,7 @@ static void laserdraw_end(void) {
 		ldraw.render_state.drawing_lasers = false;
 	}
 
-	laserdraw_pass2_renderall();
+	laserdraw_flush();
 }
 
 static void laserdraw_ent_predraw_hook(EntityInterface *ent, void *arg) {

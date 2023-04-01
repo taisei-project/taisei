@@ -16,9 +16,3 @@ void laserdraw_init(void);
 void laserdraw_shutdown(void);
 
 void laserdraw_ent_drawfunc(EntityInterface *ent);
-
-typedef struct LaserRenderData LaserRenderData;
-struct LaserRenderData {
-	LIST_INTERFACE(LaserRenderData);
-	int tile;
-};
