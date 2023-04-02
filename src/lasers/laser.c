@@ -297,11 +297,6 @@ static int quantize_laser(Laser *l) {
 	top_left.as_cmplx -= aabb_margin * (1.0f + I);
 	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
 
-	top_left.x = fmaxf(0, top_left.x);
-	top_left.y = fmaxf(0, top_left.y);
-	bottom_right.x = fminf(VIEWPORT_W, bottom_right.x);
-	bottom_right.y = fminf(VIEWPORT_H, bottom_right.y);
-
 	l->_internal.bbox.top_left = top_left;
 	l->_internal.bbox.bottom_right = bottom_right;
 

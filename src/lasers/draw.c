@@ -16,9 +16,12 @@
 #include "resource/model.h"
 #include "util/fbmgr.h"
 #include "util/glm.h"
+#include "util/rectpack.h"
 #include "video.h"
 #include "config.h"
 #include "global.h"
+#include "memory/allocator.h"
+#include "memory/arena.h"
 
 /*
  * LASER RENDERING OVERVIEW
@@ -26,13 +29,13 @@
  * Laser rendering happens in two passes.
  *
  * In the first pass we quantize the laser into a sequence of connected line segments, possibly
- * simplifying the shape and culling the invisible parts. The segments are then rasterized into a
- * signed distance field. To achieve this, the vertex shader outputs oversized oriented quads for
+ * simplifying the shape and culling the invisible parts[1]. The segments are then rasterized into
+ * a signed distance field. To achieve this, the vertex shader outputs oversized oriented quads for
  * each segment. The amount of size overshoot depends on the maximum range of our distance field,
  * as well as the width of each laser segment. The fragment shader then calculates the signed
  * distance from each fragment to the actual segment. Since the width of a segment may be non-
  * uniform, an "uneven capsule" primitive is used for the distance calculation — effectively, this
- * interpolates the width linearly between the two points of a segment[1].
+ * interpolates the width linearly between the two points of a segment[2].
  *
  * To combine all segments into a single distance field, the minimum function is used for the
  * blending equation. The framebuffer is initially cleared with the maximum distance value, so that
@@ -47,10 +50,10 @@
  *
  * The second pass is a lot simpler: we sample our distance field texture to render a colored laser
  * directly into the main viewport framebuffer. To save some shader invocations, we only render the
- * part covered by the laser's axis-aligned bounding box (computed in the first pass).
+ * part covered by the laser's axis-aligned bounding box.
  *
  * This method gives us very nice looking, easily tweakable, arbitrarily shaped curves free of
- * artifacts[2] and discontinuities at any resolution!
+ * artifacts[3] and discontinuities at any resolution!
  *
  * …
  *
@@ -61,52 +64,46 @@
  * targets gets very expensive. So instead of that, let's try to minimize the amount of state
  * changes by cramming as many lasers into one pass as possible.
  *
- * Currently, this is implemented in the most basic way: we take the SDF backing texture and make
- * it much larger, to accomodate multiple viewport-sized areas — we'll call them "tiles". The tiles
- * don't have to be exactly the size of one game viewport, but the proportions matter. In the first
- * pass, we render SDFs for multiple lasers, each into a separate tile.
+ * First of all, we make the SDF backing texture considerably larger, so that it can accommodate
+ * many lasers at once, packed into it in a non-overlapping way. A Guillotine 2D rect packing
+ * algorithm is used for this implementation (see util/rectpack.c). It's not the most
+ * space-efficient algorithm around, but it's pretty fast and does the job just fine here.
  *
  * We don't directly render lasers in their draw callbacks, instead we enqueue them for the next
- * draw batch. This involves allocating a free tile for the laser and generating its vertex data
- * for both passes. If we ran out of free tiles, we flush the batch first: render both passes with
- * the batch data we've collected so far, invalidate vertex buffers, and reset batch state, along
- * with tile allocation. We also flush the batch when there are no more lasers to draw.
+ * draw batch. This involves allocating space for the laser's bounding box on the SDF texture as
+ * described above, and generating its vertex data for both passes. If we ran out of free space, we
+ * flush the batch first: render both passes with the batch data we've collected so far, invalidate
+ * the vertex buffers, and start the next batch. We also flush the batch when there are no more
+ * lasers to draw.
  *
  * With this optimization, the performance gets much more respectable. It's still not as fast as
  * our old (v1.3 era) laser renderer, but hey, it's a lot prettier!
  *
+ * ————————————————————————————————————————————————————————————————————————————————————————————————
  *
- * OPEN ISSUES
+ * [1] This quantization and culling stage actually happens in laser.c (see quantize_laser()),
+ * because this data is used for collision detection as well. The laser's axis-aligned bounding box
+ * is also trivially computed at this stage.
  *
- *	- The tiling method is obviously very wasteful on VRAM. Laser bounding boxes don't typically
- * envelop the entire viewport, so we are wasting a lot of space here. We could use a rect packing
- * algorithm to fit a lot more lasers into a smaller texture. Our current rectpack code is not
- * optimized for real-time use, however.
- *
- *	- Because there are no safe areas between the tiles, the second pass is susceptible to linear
- * filtering artifacts at the edges of the viewport in some cases. This can be fixed at the cost of
- * even more VRAM waste (albeit a little bit) and slightly complicating the tile addressing logic.
- * But the rect packing proposal can also fix this trivially.
- *
- *
- *
- *
- * [1] For this reason, we also can't reduce very long runs of straight segments into a single one,
+ * [2] For this reason, we also can't reduce very long runs of straight segments into a single one,
  * or this interpolation becomes too obvious.
  *
- * [2] Ok, there is one small artifact: self-intersections don't quite look right, because there is
+ * [3] Ok, there is one small artifact: self-intersections don't quite look right, because there is
  * no way for the SDF to represent a laser stacking on top of itself. But the error is barely
  * noticeable in-game, and could be masked almost entirely with a small amount of blur.
  */
 
-#define TILES_X 8
-#define TILES_Y 7
-// Maximum number of lasers that can be rendered "at once",
-// i.e. in one SDF generation pass followed by one coloring pass.
-#define TILES_MAX (TILES_X * TILES_Y)
+// Size of the SDF texture to pack lasers into. This is in game units.
+// Should be large enough so that we never have to render one SDF and one coloring pass per frame,
+// but must be also at least about ~1.2x the viewport size to accommodate all kinds of lasers.
+#define PACKING_SPACE_SIZE   2048
+#define PACKING_SPACE_SIZE_W PACKING_SPACE_SIZE
+#define PACKING_SPACE_SIZE_H PACKING_SPACE_SIZE
 
-// Maximum amount of segments in one laser
-#define SEGMENTS_MAX 512
+// Hints for how much vertex buffer space to allocate upfront.
+// The buffers will be dynamically resized on demand.
+#define EXPECTED_MAX_SEGMENTS 512
+#define EXPECTED_MAX_LASERS 64
 
 static struct {
 	struct {
@@ -128,7 +125,12 @@ static struct {
 	} fb;
 
 	struct {
-		int free_tile;
+		MemArena arena;
+		Allocator alloc;
+		RectPack rectpack;
+	} packer;
+
+	struct {
 		int pass1_num_segments;
 		int pass2_num_lasers;
 		bool drawing_lasers;
@@ -164,17 +166,11 @@ static void laserdraw_sdf_fb_resize_strategy(void *userdata, IntExtent *fb_size,
 	float w, h;
 	float vid_vp_w, vid_vp_h;
 	video_get_viewport_size(&vid_vp_w, &vid_vp_h);
-
 	float q = config_get_float(CONFIG_FG_QUALITY);
+	float factor = clampf(q * vid_vp_w / SCREEN_W, 0.5f, 1.0f);
 
-	float wfactor = fminf(1.0f, vid_vp_w / SCREEN_W);
-	float hfactor = fminf(1.0f, vid_vp_h / SCREEN_H);
-
-	float wbase = VIEWPORT_W * TILES_X;
-	float hbase = VIEWPORT_H * TILES_Y;
-
-	w = floorf(wfactor * wbase) * q;
-	h = floorf(hfactor * hbase) * q;
+	w = roundf(PACKING_SPACE_SIZE_W * factor);
+	h = roundf(PACKING_SPACE_SIZE_H * factor);
 
 	*fb_size = (IntExtent) { w, h };
 	*fb_viewport = (FloatRect) { 0, 0, w, h };
@@ -199,7 +195,7 @@ static void create_pass1_resources(void) {
 	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
-	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * SEGMENTS_MAX, NULL);
+	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * EXPECTED_MAX_SEGMENTS, NULL);
 	r_vertex_buffer_set_debug_label(vb, "Lasers VB pass 1");
 
 	VertexArray *va = r_vertex_array_create();
@@ -237,7 +233,7 @@ static void create_pass2_resources(void) {
 	#undef VERTEX_OFS
 	#undef INSTANCE_OFS
 
-	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * TILES_MAX, NULL);
+	VertexBuffer *vb = r_vertex_buffer_create(sz_attr * EXPECTED_MAX_LASERS, NULL);
 	r_vertex_buffer_set_debug_label(vb, "Lasers VB pass 2");
 
 	VertexArray *va = r_vertex_array_create();
@@ -256,14 +252,26 @@ static void create_pass2_resources(void) {
 
 void laserdraw_preload(void) {
 	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"blur25",
-		"blur5",
 		"lasers/sdf_apply",
 		"lasers/sdf_generate",
 	NULL);
 }
 
+static void laserdraw_init_packer(void) {
+	rectpack_init(&ldraw.packer.rectpack, &ldraw.packer.alloc,
+		PACKING_SPACE_SIZE_W, PACKING_SPACE_SIZE_H);
+}
+
+static void laserdraw_reset_packer(void) {
+	marena_reset(&ldraw.packer.arena);
+	laserdraw_init_packer();
+}
+
 void laserdraw_init(void) {
+	marena_init(&ldraw.packer.arena, 0);
+	allocator_init_from_arena(&ldraw.packer.alloc, &ldraw.packer.arena);
+	laserdraw_init_packer();
+
 	create_pass1_resources();
 	create_pass2_resources();
 
@@ -272,8 +280,8 @@ void laserdraw_init(void) {
 	aconf.tex_params.type = TEX_TYPE_RG_16_FLOAT;
 	aconf.tex_params.filter.min = TEX_FILTER_LINEAR;
 	aconf.tex_params.filter.mag = TEX_FILTER_LINEAR;
-	aconf.tex_params.wrap.s = TEX_WRAP_MIRROR;
-	aconf.tex_params.wrap.t = TEX_WRAP_MIRROR;
+	aconf.tex_params.wrap.s = TEX_WRAP_REPEAT;
+	aconf.tex_params.wrap.t = TEX_WRAP_REPEAT;
 
 	FramebufferConfig fbconf = { 0 };
 	fbconf.attachments = &aconf;
@@ -291,6 +299,8 @@ void laserdraw_init(void) {
 }
 
 void laserdraw_shutdown(void) {
+	allocator_deinit(&ldraw.packer.alloc);
+	marena_deinit(&ldraw.packer.arena);
 	fbmgr_group_destroy(ldraw.fb.group);
 	r_vertex_array_destroy(ldraw.pass1.va);
 	r_vertex_array_destroy(ldraw.pass2.va);
@@ -300,32 +310,44 @@ void laserdraw_shutdown(void) {
 	ent_unhook_post_draw(laserdraw_ent_postdraw_hook);
 }
 
-// Add laser to batch for SDF generation pass
-static int laserdraw_pass1_add(Laser *l, cmplxf *out_ofs) {
-	int nsegs = l->_internal.num_segments;
+// Allocate a free region in the SDF texture for the laser's bbox.
+// Returns false on failure (not enough free space).
+// Returns true on success and sets out_ofs to the offset to apply to the laser's points
+// for rendering into (or sampling from) the SDF texture, such that the whole laser is contained
+// in the allocated region.
+static bool laserdraw_pack_laser(Laser *l, cmplxf *out_ofs) {
+	FloatExtent bbox_size = {
+		.as_cmplx = l->_internal.bbox.bottom_right.as_cmplx - l->_internal.bbox.top_left.as_cmplx,
+	};
+	// Align to texel boundaries and add a small gap to prevent sampling artifacts from lasers that
+	// happen to be right next to each other in the texture.
+	bbox_size.w = ceilf(bbox_size.w + 0.5f);
+	bbox_size.h = ceilf(bbox_size.h + 0.5f);
 
-	if(nsegs < 1) {
-		return 0;
+	RectPackSection *section = rectpack_add(&ldraw.packer.rectpack, bbox_size.w, bbox_size.h);
+
+	if(!section) {
+		return false;
 	}
 
-	assert(ldraw.render_state.free_tile < TILES_MAX);
-	int tile = ldraw.render_state.free_tile++;
+	*out_ofs = section->rect.top_left - (cmplxf)l->_internal.bbox.top_left.as_cmplx;
+	return true;
+}
 
-	cmplxf ofs = *out_ofs = CMPLXF(
-		VIEWPORT_W * (tile % TILES_X),
-		VIEWPORT_H * (tile / TILES_X)
-	);
-
+// Add laser to batch for SDF generation pass
+static void laserdraw_pass1_add(Laser *l, cmplxf sdf_ofs) {
 	int iofs = l->_internal.segments_ofs;
+	int nsegs = l->_internal.num_segments;
+	assert(nsegs > 0);
+
 	for(int i = iofs; i < nsegs + iofs; ++i) {
 		LaserSegment s = dynarray_get(&lintern.segments, i);
-		s.pos.a += ofs;
-		s.pos.b += ofs;
+		s.pos.a += sdf_ofs;
+		s.pos.b += sdf_ofs;
 		SDL_RWwrite(ldraw.pass1.vb_stream, &s, sizeof(s), 1);
 	}
 
 	ldraw.render_state.pass1_num_segments += nsegs;
-	return nsegs;
 }
 
 // Add laser to batch for coloring pass
@@ -353,11 +375,24 @@ static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs) {
 	++ldraw.render_state.pass2_num_lasers;
 }
 
-static void laserdraw_add(Laser *l) {
-	cmplxf sdf_ofs;
-	if(laserdraw_pass1_add(l, &sdf_ofs)) {
-		laserdraw_pass2_add(l, sdf_ofs);
+// Returns false if unable to pack.
+static bool laserdraw_add(Laser *l) {
+	if(l->_internal.num_segments < 1) {
+		// This can happen if the laser is totally out of bounds so all segments have been
+		// culled during quantization.
+		return true;
 	}
+
+	cmplxf sdf_ofs;
+
+	if(!laserdraw_pack_laser(l, &sdf_ofs)) {
+		return false;
+	}
+
+	laserdraw_pass1_add(l, sdf_ofs);
+	laserdraw_pass2_add(l, sdf_ofs);
+
+	return true;
 }
 
 // Render the SDF generation pass
@@ -371,7 +406,7 @@ static void laserdraw_pass1_render(void) {
 	));
 	r_shader_ptr(ldraw.shaders.sdf_generate);
 	r_uniform_float("sdf_range", LASER_SDF_RANGE);
-	r_mat_proj_push_ortho(VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
+	r_mat_proj_push_ortho(PACKING_SPACE_SIZE_W, PACKING_SPACE_SIZE_H);
 	r_draw_model_ptr(&ldraw.pass1.quad, ldraw.render_state.pass1_num_segments, 0);
 	r_mat_proj_pop();
 	r_state_pop();
@@ -384,7 +419,7 @@ static void laserdraw_pass2_render(void) {
 	r_shader_ptr(ldraw.shaders.sdf_apply);
 	Texture *tex = r_framebuffer_get_attachment(ldraw.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
 	r_uniform_sampler("tex", tex);
-	r_uniform_vec2("texsize", VIEWPORT_W * TILES_X, VIEWPORT_H * TILES_Y);
+	r_uniform_vec2("texsize", PACKING_SPACE_SIZE_W, PACKING_SPACE_SIZE_H);
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_draw_model_ptr(&ldraw.pass2.quad, ldraw.render_state.pass2_num_lasers, 0);
 	r_state_pop();
@@ -407,21 +442,23 @@ static void laserdraw_flush(void) {
 	laserdraw_pass2_render();
 	r_vertex_buffer_invalidate(ldraw.pass2.vb);
 
-	ldraw.render_state.free_tile = 0;
 	ldraw.render_state.pass1_num_segments = 0;
 	ldraw.render_state.pass2_num_lasers = 0;
+
+	laserdraw_reset_packer();
 }
 
 void laserdraw_ent_drawfunc(EntityInterface *ent) {
 	Laser *laser = ENT_CAST(ent, Laser);
 
-	if(ldraw.render_state.free_tile == TILES_MAX) {
+	bool ok = laserdraw_add(laser);
+	if(!ok) {
 		// No more space in the SDF framebuffer
 		// render current batch and queue for next one.
 		laserdraw_flush();
+		ok = laserdraw_add(laser);
+		assert(ok);
 	}
-
-	laserdraw_add(laser);
 }
 
 static void laserdraw_begin(void) {
