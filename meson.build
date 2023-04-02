@@ -306,7 +306,9 @@ config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNTLL', cc.has_function('__builti
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_POPCOUNT', cc.has_function('__builtin_popcount'))
 config.set('TAISEI_BUILDCONF_HAVE_BUILTIN_AVAILABLE', cc.has_function('__builtin_available'))
 config.set('TAISEI_BUILDCONF_HAVE_ALIGNED_ALLOC', cc.has_function('aligned_alloc'))
-config.set('TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN', cc.has_function('posix_memalign'))
+# XXX: meson thinks posix_memalign exists on Switch
+config.set('TAISEI_BUILDCONF_HAVE_POSIX_MEMALIGN',
+    host_machine.system() != 'nx' and cc.has_function('posix_memalign'))
 config.set('TAISEI_BUILDCONF_HAVE_ALIGNED_MALLOC_FREE',
     cc.has_function('_aligned_malloc') and cc.has_function('_aligned_free'))
 
