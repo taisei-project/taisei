@@ -264,7 +264,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 
 	FACE(kurumi, dissastisfied);
 	MSG(kurumi, "Of course not! Who do you take me for?!");
-	MSG(kurumi, "No WAY I’d want to associate myself with the idiot running this mansion!");
+	MSG(kurumi, "No WAY I’d want to associate myself with the dweebs running this mansion!");
 	MSG(kurumi, "They dress like they’ve fallen out of a bad 80s anime!");
 
 	FACE(youmu, eyes_closed);
