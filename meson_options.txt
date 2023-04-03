@@ -187,13 +187,6 @@ option(
 )
 
 option(
-    'objpools',
-    type : 'boolean',
-    value : true,
-    description : 'Pre-allocate memory for game objects (disable for debugging only)'
-)
-
-option(
     'use_libcrypto',
     type : 'feature',
     deprecated : {'true' : 'enabled', 'false' : 'disabled'},

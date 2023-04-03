@@ -234,7 +234,7 @@ static Projectile* _create_projectile(ProjArgs *args) {
 		log_fatal("Tried to spawn a projectile while in drawing code");
 	}
 
-	Projectile *p = (Projectile*)objpool_acquire(stage_object_pools.projectiles);
+	Projectile *p = objpool_acquire(&stage_object_pools.projectiles);
 
 	p->birthtime = global.frames;
 	p->pos = p->pos0 = p->prevpos = args->pos;
@@ -313,7 +313,7 @@ static void delete_projectile(ProjectileList *projlist, Projectile *p, ProjColli
 	signal_event_with_collision_result(p, &p->events.killed, col);
 	COEVENT_CANCEL_ARRAY(p->events);
 	ent_unregister(&p->ent);
-	objpool_release(stage_object_pools.projectiles, alist_unlink(projlist, p));
+	objpool_release(&stage_object_pools.projectiles, alist_unlink(projlist, p));
 }
 
 static void *foreach_delete_projectile(ListAnchor *projlist, List *proj, void *arg) {

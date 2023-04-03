@@ -11,22 +11,29 @@
 
 #include "objectpool.h"
 
-typedef struct StageObjectPools {
-	union {
-		struct {
-			ObjectPool *projectiles;    // includes particles as well
-			ObjectPool *items;
-			ObjectPool *enemies;
-			ObjectPool *lasers;
-			ObjectPool *stagetext;
-			ObjectPool *bosses;
-		};
+#define OBJECT_POOLS \
+	OBJECT_POOL(Projectile, projectiles) \
+	OBJECT_POOL(Item,       items) \
+	OBJECT_POOL(Enemy,      enemies) \
+	OBJECT_POOL(Laser,      lasers) \
+	OBJECT_POOL(StageText,  stagetext) \
+	OBJECT_POOL(Boss,       bosses) \
 
-		ObjectPool *first;
-	};
+typedef struct StageObjectPools {
+	#define OBJECT_POOL(type, field) \
+		ObjectPool field;
+
+	OBJECT_POOLS
+	#undef OBJECT_POOL
 } StageObjectPools;
 
 extern StageObjectPools stage_object_pools;
 
-void stage_objpools_alloc(void);
-void stage_objpools_free(void);
+#define STAGE_OBJPOOLS_AS_ARRAYPTR \
+	(ObjectPool (*)[sizeof(stage_object_pools) / sizeof(ObjectPool)])&stage_object_pools
+
+// Can be called many times to reinitialize the pools while reusing allocated arena memory.
+void stage_objpools_init(void);
+
+// Frees the arena
+void stage_objpools_shutdown(void);

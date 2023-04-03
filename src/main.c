@@ -44,6 +44,7 @@ static void taisei_shutdown(void) {
 
 	progress_unload();
 
+	stage_objpools_shutdown();
 	gamemode_shutdown();
 	shutdown_resources();
 	taskmgr_global_shutdown();

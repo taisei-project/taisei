@@ -1174,22 +1174,43 @@ static void stage_draw_hud_scores(float ypos_hiscore, float ypos_score, char *bu
 }
 
 static void stage_draw_hud_objpool_stats(float x, float y, float width) {
-	ObjectPool **last = &stage_object_pools.first + (sizeof(StageObjectPools)/sizeof(ObjectPool*) - 1);
+	char buf[128];
+	auto objpools = STAGE_OBJPOOLS_AS_ARRAYPTR;
+	MemArena *arena = (*objpools)[0].arena;
+
 	Font *font = res_font("monotiny");
 
 	ShaderProgram *sh_prev = r_shader_current();
-	r_shader("text_default");
-	for(ObjectPool **pool = &stage_object_pools.first; pool <= last; ++pool) {
-		ObjectPoolStats stats;
-		char buf[32];
-		objpool_get_stats(*pool, &stats);
+	r_shader("text_hud");
 
-		snprintf(buf, sizeof(buf), "%zu | %5zu", stats.usage, stats.peak_usage);
-		// draw_text(ALIGN_LEFT  | AL_Flag_NoAdjust, (int)x,           (int)y, stats.tag, font);
-		// draw_text(ALIGN_RIGHT | AL_Flag_NoAdjust, (int)(x + width), (int)y, buf,       font);
-		// y += stringheight(buf, font) * 1.1;
+	float lineskip = font_get_lineskip(font);
 
-		text_draw(stats.tag, &(TextParams) {
+	text_draw("Arena memory:", &(TextParams) {
+		.pos = { x, y },
+		.font_ptr = font,
+		.align = ALIGN_LEFT,
+	});
+
+	snprintf(buf, sizeof(buf),
+		"%zukb | %5zukb",
+		arena->total_used / 1024,
+		arena->total_allocated / 1024
+	);
+
+	text_draw(buf, &(TextParams) {
+		.pos = { x + width, y },
+		.font_ptr = font,
+		.align = ALIGN_RIGHT,
+	});
+
+	y += lineskip * 1.5;
+
+	for(int i = 0; i < ARRAY_SIZE(*objpools); ++i) {
+		ObjectPool *p = &(*objpools)[i];
+
+		snprintf(buf, sizeof(buf), "%u | %7u", p->num_used, p->num_allocated);
+
+		text_draw(p->tag, &(TextParams) {
 			.pos = { x, y },
 			.font_ptr = font,
 			.align = ALIGN_LEFT,
@@ -1201,8 +1222,9 @@ static void stage_draw_hud_objpool_stats(float x, float y, float width) {
 			.align = ALIGN_RIGHT,
 		});
 
-		y += font_get_lineskip(font);
+		y += lineskip;
 	}
+
 	r_shader_ptr(sh_prev);
 }
 
@@ -1272,10 +1294,6 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 	draw_label("Volts:",       labels->y.voltage, labels, &stagedraw.hud_text.color.label_voltage);
 	draw_label("Graze:",       labels->y.graze,   labels, &stagedraw.hud_text.color.label_graze);
 	r_mat_mv_pop();
-
-	if(stagedraw.objpool_stats) {
-		stage_draw_hud_objpool_stats(0, 390, HUD_EFFECTIVE_WIDTH);
-	}
 
 	// Score/Hi-Score values
 	stage_draw_hud_scores(labels->y.hiscore, labels->y.score, buf, sizeof(buf));
@@ -1442,6 +1460,10 @@ static void stage_draw_hud_text(struct labels_s* labels) {
 			.align = ALIGN_CENTER,
 			.color = RGB(1.0, 0.5, 0.2),
 		});
+	}
+
+	if(stagedraw.objpool_stats) {
+		stage_draw_hud_objpool_stats(0, 440, HUD_EFFECTIVE_WIDTH);
 	}
 }
 

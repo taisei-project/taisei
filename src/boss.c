@@ -38,7 +38,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
 
 Boss *create_boss(char *name, char *ani, cmplx pos) {
-	Boss *boss = objpool_acquire(stage_object_pools.bosses);
+	Boss *boss = objpool_acquire(&stage_object_pools.bosses);
 
 	boss->name = strdup(name);
 	boss->pos = pos;
@@ -1364,7 +1364,7 @@ void free_boss(Boss *boss) {
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
 	mem_free(boss->name);
-	objpool_release(stage_object_pools.bosses, boss);
+	objpool_release(&stage_object_pools.bosses, boss);
 }
 
 static void boss_schedule_next_attack(Boss *b, Attack *a) {

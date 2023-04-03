@@ -78,6 +78,7 @@ taisei_src = files(
     'log.c',
     'main.c',
     'move.c',
+    'objectpool.c',
     'player.c',
     'plrmodes.c',
     'portrait.c',
@@ -103,16 +104,6 @@ taisei_src = files(
 if is_developer_build
     taisei_src += files(
         'camcontrol.c'
-    )
-endif
-
-if get_option('objpools')
-    taisei_src += files(
-        'objectpool.c',
-    )
-else
-    taisei_src += files(
-        'objectpool_fake.c',
     )
 endif
 

@@ -1050,7 +1050,7 @@ static void _stage_enter(
 	global.stage = stage;
 
 	ent_init();
-	stage_objpools_alloc();
+	stage_objpools_init();
 	stage_draw_pre_init();
 	stage_preload();
 	stage_draw_init();
@@ -1172,7 +1172,6 @@ void stage_end_loop(void *ctx) {
 	player_free(&global.plr);
 	ent_shutdown();
 	rng_make_active(&global.rand_visual);
-	stage_objpools_free();
 	stop_all_sfx();
 
 	taisei_commit_persistent_data();
