@@ -203,10 +203,6 @@ DIALOG_TASK(reimu, Stage3PreBoss) {
 	TITLE(wriggle, "Wriggle Nightbug", "Insect Rights Activist");
 	FACE(wriggle, outraged);
 	MSG(wriggle, "'Far from home'? But you’ve intruded on my secret lair!");
-
-	FACE(reimu, sigh);
-	MSG(reimu, "Again with the ‘secret lair’…");
-
 	FACE(wriggle, proud);
 	MSG(wriggle, "Haven’t you heard of the Car—…");
 	MSG(wriggle, "Carb—…");
