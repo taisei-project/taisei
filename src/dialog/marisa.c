@@ -27,7 +27,7 @@ DIALOG_TASK(marisa, Stage1PreBoss) {
 	MSG(marisa, "…even though it’s half-way through summer already.");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(cirno, 180, "Don’t you like the cold weather???");
+	MSG(cirno, "Don’t you like the cold weather???");
 
 	SHOW(cirno);
 	FACE(cirno, normal);
@@ -85,7 +85,7 @@ DIALOG_TASK(marisa, Stage2PreBoss) {
 	MSG(marisa, "What would be causin’ the yōkai to get all weird, anyways?");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(hina, 180, "Why hello, Ms. Kirisame.");
+	MSG(hina, "Why hello, Ms. Kirisame.");
 	SHOW(hina);
 	FACE(hina, normal);
 	MSG(hina, "You seem to be as reckless as always. I recommend turning back.");
@@ -144,7 +144,7 @@ DIALOG_TASK(marisa, Stage3PreBoss) {
 	MSG(marisa, "Geez, everyone’s getting even more reckless the further up I go. What gives?");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(wriggle, 180, "Wait ‘til you meet their leader!");
+	MSG(wriggle, "Wait ‘til you meet their leader!");
 	SHOW(wriggle);
 
 	MSG(marisa, "Yeah, I’m gonna have to ask their leader a bunch‘a questions for sure.");
@@ -247,7 +247,7 @@ DIALOG_TASK(marisa, Stage4PreBoss) {
 	MSG(marisa, "… how generic can you get?");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(kurumi, 180, "And to top it off, a western witch!");
+	MSG(kurumi, "And to top it off, a western witch!");
 	SHOW(kurumi);
 	MSG(kurumi, "Seen it a thousand times already. It’s such a boring motif.");
 
@@ -378,7 +378,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 	MSG(marisa, "I gotta tell Nitori!");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(iku, 180, "I would not recommend getting too enamoured, young witch.");
+	MSG(iku, "I would not recommend getting too enamoured, young witch.");
 	SHOW(iku);
 	MSG(iku, "I’m surprised to see you here. How have you been?");
 
@@ -465,7 +465,7 @@ DIALOG_TASK(marisa, Stage5PreBoss) {
 
 	MSG(iku, "Enough!");
 	MSG(iku, "It is said that specifically applied electro-stimulation can ease the mind.");
-    FACE(iku, eyes_closed);
+	FACE(iku, eyes_closed);
 	MSG(iku, "Allow me to put that into practice for you!");
 
 	DIALOG_END();
@@ -539,7 +539,7 @@ DIALOG_TASK(marisa, Stage6PreBoss) {
 	HIDE(elly);
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(elly, 180, "I’ve been waiting for you to make your move.");
+	MSG(elly, "I’ve been waiting for you to make your move.");
 	SHOW(elly);
 	MSG(elly, "Sneaking around as you are, and yet still so loud somehow.");
 

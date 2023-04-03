@@ -25,7 +25,7 @@ DIALOG_TASK(youmu, Stage1PreBoss) {
 	MSG(youmu, "I suppose falling snow can be just as pretty as cherry blossoms…");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(cirno, 180, "Hey!");
+	MSG(cirno, "Hey!");
 	SHOW(cirno);
 
 	MSG(cirno, "I’m cooler than you, so get off my lake!");
@@ -82,7 +82,7 @@ DIALOG_TASK(youmu, Stage2PreBoss) {
 	MSG(youmu, "A shame, I’ve heard this is usually quite a lovely place.");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(hina, 180, "Oh my, what’s this? A new face?");
+	MSG(hina, "Oh my, what’s this? A new face?");
 	SHOW(hina);
 	MSG(hina, "And who might you be, dear?");
 
@@ -153,7 +153,7 @@ DIALOG_TASK(youmu, Stage3PreBoss) {
 	MSG(youmu, "Something is definitely amiss.");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(wriggle, 120, "Amiss?");
+	MSG(wriggle, "Amiss?");
 	SHOW(wriggle);
 	MSG(wriggle, "Perhaps you’re frightened by our growing, overwhelming influence?");
 
@@ -264,7 +264,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 
 	FACE(kurumi, dissastisfied);
 	MSG(kurumi, "Of course not! Who do you take me for?!");
-	MSG(kurumi, "No WAY I’d want to associate myself with the people running this mansion!");
+	MSG(kurumi, "No WAY I’d want to associate myself with the idiot running this mansion!");
 	MSG(kurumi, "They dress like they’ve fallen out of a bad 80s anime!");
 
 	FACE(youmu, eyes_closed);
@@ -359,7 +359,7 @@ DIALOG_TASK(youmu, Stage5PreBoss) {
 	MSG(youmu, "Will it be a legendary duel? One to go down in the history of Gensōkyō?!");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(iku, 180, "Oh, the gardener from the Netherworld?");
+	MSG(iku, "Oh, the gardener from the Netherworld?");
 	SHOW(iku);
 	MSG(iku, "It’s no surprise to see you here.");
 	MSG(iku, "Your mistress has been taken by the Tower’s presence, I assume?");
@@ -496,7 +496,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	MSG(youmu, "What a magnificent arena for a heroic final battle!!");
 
 	EVENT(boss_appears);
-	MSG_UNSKIPPABLE(elly, 180, "Nothing seems to slow you down, hmm?");
+	MSG(elly, "Nothing seems to slow you down, hmm?");
 
 	SHOW(elly);
 	MSG(elly, "Such an annoyance. But that’s to be expected of the folk of this Gensōkyō.");
