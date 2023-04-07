@@ -11,4 +11,4 @@
 
 #include "menu.h"
 
-MenuData* create_replayview_menu(void);
+MenuData *create_replayview_menu(void);

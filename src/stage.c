@@ -728,8 +728,8 @@ static void stage_free(void) {
 	stagetext_free();
 }
 
-static void stage_finalize(void *arg) {
-	global.gameover = (intptr_t)arg;
+static void stage_finalize(CallChainResult ccr) {
+	global.gameover = (intptr_t)ccr.ctx;
 }
 
 void stage_finish(int gameover) {
@@ -744,7 +744,8 @@ void stage_finish(int gameover) {
 		global.gameover = GAMEOVER_SCORESCREEN;
 	} else {
 		global.gameover = GAMEOVER_TRANSITIONING;
-		set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME*2, stage_finalize, (void*)(intptr_t)gameover);
+		CallChain cc = CALLCHAIN(stage_finalize, (void*)(intptr_t)gameover);
+		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2, cc);
 		audio_bgm_stop(BGM_FADE_LONG);
 	}
 

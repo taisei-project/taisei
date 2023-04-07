@@ -113,7 +113,7 @@ static void ingame_menu_input(MenuData *m) {
 	}, EFLAG_MENU);
 }
 
-MenuData* create_ingame_menu(void) {
+MenuData *create_ingame_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
@@ -127,7 +127,7 @@ MenuData* create_ingame_menu(void) {
 	add_menu_entry(m, "Return to Game", menu_action_close, NULL);
 	add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop the Game", return_to_title, NULL)->transition = TransFadeBlack;
-	set_transition(TransEmpty, 0, m->transition_out_time);
+	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
 }
@@ -137,7 +137,7 @@ static void skip_stage(MenuData *m, void *arg) {
 	menu_action_close(m, arg);
 }
 
-MenuData* create_ingame_menu_replay(void) {
+MenuData *create_ingame_menu_replay(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
@@ -152,7 +152,7 @@ MenuData* create_ingame_menu_replay(void) {
 	add_menu_entry(m, "Skip the Stage", skip_stage, NULL)->transition = TransFadeBlack;
 	add_menu_entry(m, "Stop Watching", return_to_title, NULL)->transition = TransFadeBlack;
 	m->cursor = 1;
-	set_transition(TransEmpty, 0, m->transition_out_time);
+	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 
 	return m;
 }

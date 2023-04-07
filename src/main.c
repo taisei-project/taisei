@@ -383,7 +383,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	progress_load();
 	video_post_init();
 
-	set_transition(TransLoader, 0, FADE_TIME*2);
+	set_transition(TransLoader, 0, FADE_TIME*2, NO_CALLCHAIN);
 
 	log_info("Initialization complete");
 

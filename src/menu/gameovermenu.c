@@ -23,7 +23,7 @@ static void give_up(MenuData *m, void *arg) {
 	global.gameover = (MAX_CONTINUES - global.plr.stats.total.continues_used) ? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
 }
 
-MenuData* create_gameover_menu(void) {
+MenuData *create_gameover_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->draw = draw_ingame_menu;
@@ -50,6 +50,6 @@ MenuData* create_gameover_menu(void) {
 			m->cursor = 1;
 	}
 
-	set_transition(TransEmpty, 0, m->transition_out_time);
+	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);
 	return m;
 }

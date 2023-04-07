@@ -41,8 +41,7 @@ static bool popq(void) {
 
 		transition.dur1 = transition.queued.dur1;
 		transition.dur2 = transition.queued.dur2;
-		transition.callback = transition.queued.callback;
-		transition.arg = transition.queued.arg;
+		transition.cc = transition.queued.cc;
 		transition.queued.rule = NULL;
 
 		if(transition.dur1 <= 0) {
@@ -58,29 +57,21 @@ static bool popq(void) {
 	return false;
 }
 
-static void setq(TransitionRule rule, int dur1, int dur2, TransitionCallback cb, void *arg) {
+static void setq(TransitionRule rule, int dur1, int dur2, CallChain cc) {
 	transition.queued.rule = rule;
 	transition.queued.dur1 = dur1;
 	transition.queued.dur2 = dur2;
-	transition.queued.callback = cb;
-	transition.queued.arg = arg;
+	transition.queued.cc = cc;
 }
 
-static void call_callback(void) {
-	if(transition.callback) {
-		transition.callback(transition.arg);
-		transition.callback = NULL;
-	}
-}
-
-void set_transition_callback(TransitionRule rule, int dur1, int dur2, TransitionCallback cb, void *arg) {
+void set_transition(TransitionRule rule, int dur1, int dur2, CallChain cc) {
 	static bool initialized = false;
 
 	if(!rule) {
 		return;
 	}
 
-	setq(rule, dur1, dur2, cb, arg);
+	setq(rule, dur1, dur2, cc);
 
 	if(!initialized) {
 		popq();
@@ -91,10 +82,6 @@ void set_transition_callback(TransitionRule rule, int dur1, int dur2, Transition
 	if(transition.state == TRANS_IDLE || rule == transition.rule) {
 		popq();
 	}
-}
-
-void set_transition(TransitionRule rule, int dur1, int dur2) {
-	set_transition_callback(rule, dur1, dur2, NULL, NULL);
 }
 
 static bool check_transition(void) {
@@ -131,9 +118,9 @@ void update_transition(void) {
 		transition.fade = approach(transition.fade, 1.0, 1.0/transition.dur1);
 		if(transition.fade == 1.0) {
 			transition.state = TRANS_FADE_OUT;
-			call_callback();
+			run_call_chain(&transition.cc, NULL);
 			if(popq()) {
-				call_callback();
+				run_call_chain(&transition.cc, NULL);
 			}
 		}
 	} else if(transition.state == TRANS_FADE_OUT) {

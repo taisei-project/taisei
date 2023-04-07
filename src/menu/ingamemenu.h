@@ -14,8 +14,8 @@
 void draw_ingame_menu_bg(MenuData *menu, float f);
 void draw_ingame_menu(MenuData *menu);
 
-MenuData* create_ingame_menu(void);
-MenuData* create_ingame_menu_replay(void);
+MenuData *create_ingame_menu(void);
+MenuData *create_ingame_menu_replay(void);
 
 void update_ingame_menu(MenuData *menu);
 

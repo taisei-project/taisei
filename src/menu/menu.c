@@ -59,8 +59,8 @@ void kill_menu(MenuData *menu) {
 	}
 }
 
-static void close_menu_finish(void *vmenu) {
-	MenuData *menu = vmenu;
+static void close_menu_finish(CallChainResult ccr) {
+	MenuData *menu = ccr.ctx;
 
 	// This may happen with MF_AlwaysProcessInput menus, so make absolutely sure we
 	// never run the call chain with menu->state == MS_Dead more than once.
@@ -95,15 +95,17 @@ void close_menu(MenuData *menu) {
 		trans = dynarray_get(&menu->entries, menu->selected).transition;
 	}
 
+	CallChain cc = CALLCHAIN(close_menu_finish, menu);
+
 	if(trans) {
-		set_transition_callback(
+		set_transition(
 			trans,
 			menu->transition_in_time,
 			menu->transition_out_time,
-			(TransitionCallback)close_menu_finish, menu
+			cc
 		);
 	} else {
-		close_menu_finish(menu);
+		run_call_chain(&cc, NULL);
 	}
 }
 

@@ -515,9 +515,9 @@ static void credits_draw(void) {
 	draw_transition();
 }
 
-static void credits_finish(void *arg) {
+static void credits_finish(CallChainResult ccr) {
 	credits.end = 0;
-	set_transition(TransLoader, 0, FADE_TIME*10);
+	set_transition(TransLoader, 0, FADE_TIME*10, NO_CALLCHAIN);
 }
 
 static void credits_process(void) {
@@ -536,7 +536,7 @@ static void credits_process(void) {
 	}
 
 	if(global.frames == credits.end) {
-		set_transition_callback(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, credits_finish, NULL);
+		set_transition(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, CALLCHAIN(credits_finish, NULL));
 	}
 }
 

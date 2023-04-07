@@ -118,7 +118,7 @@ static bool skip_text_animation(CutsceneState *st) {
 static void begin_fadeout(CutsceneState *st) {
 	const int fade_frames = CUTSCENE_FADE_OUT;
 	audio_bgm_stop((FPS * fade_frames) / 4000.0);
-	set_transition(TransFadeBlack, fade_frames, fade_frames);
+	set_transition(TransFadeBlack, fade_frames, fade_frames, NO_CALLCHAIN);
 	st->fadeout_timer = fade_frames;
 	st->bg_state.next_scene = NULL;
 	st->bg_state.fade_out = true;
