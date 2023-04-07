@@ -880,7 +880,10 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		stage_do_quickload(fstate);
 	}
 
-	if(global.gameover != GAMEOVER_TRANSITIONING) {
+	if(global.gameover == GAMEOVER_TRANSITIONING) {
+		// Usually stage_comain will do this
+		events_poll(NULL, 0);
+	} else {
 		cosched_run_tasks(&fstate->sched);
 
 		if(global.gameover == GAMEOVER_SCORESCREEN && global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY) {
