@@ -63,7 +63,10 @@ static void really_start_replay(CallChainResult ccr) {
 	startrpy_arg_t *argp = ccr.ctx;
 	auto arg = *argp;
 	mem_free(argp);
-	replay_play(arg.rpy, arg.stgnum, false, CALLCHAIN(on_replay_finished, NULL));
+
+	if(!TRANSITION_RESULT_CANCELED(ccr)) {
+		replay_play(arg.rpy, arg.stgnum, false, CALLCHAIN(on_replay_finished, NULL));
+	}
 }
 
 static void start_replay(MenuData *menu, void *arg) {

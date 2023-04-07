@@ -14,6 +14,8 @@
 typedef struct Transition Transition;
 typedef void (*TransitionRule)(double fade);
 
+#define TRANSITION_RESULT_CANCELED(ccr) ((bool)(uintptr_t)ccr.result)
+
 struct Transition {
 	double fade;
 	int dur1; // first half

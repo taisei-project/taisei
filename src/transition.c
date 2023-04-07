@@ -14,6 +14,26 @@
 
 Transition transition;
 
+static CallChain swap_cc(CallChain *pcc, CallChain newcc) {
+	CallChain cc = *pcc;
+	*pcc = newcc;
+	return cc;
+}
+
+static CallChain pop_cc(CallChain *pcc) {
+	return swap_cc(pcc, NO_CALLCHAIN);
+}
+
+static void run_cc(CallChain *pcc, bool canceled) {
+	CallChain cc = pop_cc(pcc);
+	run_call_chain(&cc, (void*)(uintptr_t)canceled);
+}
+
+static void swap_cc_withcancel(CallChain *pcc, CallChain newcc) {
+	CallChain oldcc = swap_cc(pcc, newcc);
+	run_cc(&oldcc, true);
+}
+
 void TransFadeBlack(double fade) {
 	fade_out(fade);
 }
@@ -41,7 +61,8 @@ static bool popq(void) {
 
 		transition.dur1 = transition.queued.dur1;
 		transition.dur2 = transition.queued.dur2;
-		transition.cc = transition.queued.cc;
+		swap_cc_withcancel(&transition.cc, transition.queued.cc);
+		transition.queued.cc = NO_CALLCHAIN;
 		transition.queued.rule = NULL;
 
 		if(transition.dur1 <= 0) {
@@ -61,7 +82,7 @@ static void setq(TransitionRule rule, int dur1, int dur2, CallChain cc) {
 	transition.queued.rule = rule;
 	transition.queued.dur1 = dur1;
 	transition.queued.dur2 = dur2;
-	transition.queued.cc = cc;
+	swap_cc_withcancel(&transition.queued.cc, cc);
 }
 
 void set_transition(TransitionRule rule, int dur1, int dur2, CallChain cc) {
@@ -118,10 +139,8 @@ void update_transition(void) {
 		transition.fade = approach(transition.fade, 1.0, 1.0/transition.dur1);
 		if(transition.fade == 1.0) {
 			transition.state = TRANS_FADE_OUT;
-			run_call_chain(&transition.cc, NULL);
-			if(popq()) {
-				run_call_chain(&transition.cc, NULL);
-			}
+			popq();
+			run_cc(&transition.cc, false);
 		}
 	} else if(transition.state == TRANS_FADE_OUT) {
 		transition.fade = transition.dur2 ? approach(transition.fade, 0.0, 1.0/transition.dur2) : 0.0;
