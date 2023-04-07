@@ -93,7 +93,7 @@ static bool hfilter_remove_pending(const void *pelem, void *ignored) {
 
 void events_unregister_handler(EventHandlerProc proc) {
 	dynarray_foreach_elem(&global_handlers, EventHandler *h, {
-		if(h->proc == proc) {
+		if(h->proc == proc && !h->_private.removal_pending) {
 			h->_private.removal_pending = true;
 			break;
 		}
