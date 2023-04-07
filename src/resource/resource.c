@@ -17,6 +17,7 @@
 #include "renderer/common/backend.h"
 #include "taskmanager.h"
 #include "video.h"
+#include "eventloop/eventloop.h"
 
 #include "animation.h"
 #include "bgm.h"

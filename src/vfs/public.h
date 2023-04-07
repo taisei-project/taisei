@@ -15,7 +15,7 @@
 #include "union_public.h"
 #include "zipfile_public.h"
 #include "readonly_wrapper_public.h"
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 
 typedef struct VFSInfo {
 	uchar error       : 1;

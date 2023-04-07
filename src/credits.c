@@ -17,6 +17,7 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "dynarray.h"
+#include "eventloop/eventloop.h"
 
 typedef struct CreditsEntry {
 	char **data;

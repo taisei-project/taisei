@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 
 void credits_enter(CallChain next);
 void credits_preload(void);

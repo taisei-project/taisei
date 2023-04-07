@@ -32,6 +32,7 @@
 #include "replay/struct.h"
 #include "filewatch/filewatch.h"
 #include "dynstage.h"
+#include "eventloop/eventloop.h"
 
 attr_unused
 static void taisei_shutdown(void) {

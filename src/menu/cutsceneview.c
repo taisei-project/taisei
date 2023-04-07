@@ -8,7 +8,7 @@
 
 #include "taisei.h"
 
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 #include "menu/menu.h"
 #include "cutsceneview.h"
 #include "common.h"

@@ -11,6 +11,7 @@
 #include "menu.h"
 #include "global.h"
 #include "video.h"
+#include "eventloop/eventloop.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
 	MenuEntry *e = dynarray_append(&menu->entries);

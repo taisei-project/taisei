@@ -20,6 +20,7 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "video.h"
+#include "eventloop/eventloop.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
