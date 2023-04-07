@@ -64,7 +64,10 @@ typedef struct TextParams {
 		GlyphDrawCallback func;
 		void *userdata;
 	} glyph_callback;
-	struct { double x, y; } pos;
+	union {
+		struct { double x, y; };
+		cmplx as_cmplx;
+	} pos;
 	const Color *color;
 	const ShaderCustomParams *shader_params;
 	Texture *aux_textures[R_NUM_SPRITE_AUX_TEXTURES];
