@@ -68,13 +68,11 @@ static const char *replay_mode_string(ReplayReadMode mode) {
 	log_fatal("Bad mode %i", mode);
 }
 
-bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	char *sp = vfs_repr(p, true);
+bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
+	char *sp = vfs_repr(path, true);
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
-	SDL_RWops *file = vfs_open(p, VFS_MODE_READ);
-	mem_free(p);
+	SDL_RWops *file = vfs_open(path, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -86,6 +84,13 @@ bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 
 	mem_free(sp);
 	SDL_RWclose(file);
+	return result;
+}
+
+bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	bool result = replay_load_vfspath(rpy, p, mode);
+	mem_free(p);
 	return result;
 }
 

@@ -40,6 +40,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 bool replay_save(Replay *rpy, const char *name) attr_nonnull_all;
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) attr_nonnull_all;
 bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) attr_nonnull_all;
+bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) attr_nonnull_all;
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) attr_nonnull_all;
 
