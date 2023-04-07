@@ -90,6 +90,8 @@ glsl_files = files(
     'text_cutscene.frag.glsl',
     'text_default.frag.glsl',
     'text_default.vert.glsl',
+    'text_demo.frag.glsl',
+    'text_demo.vert.glsl',
     'text_dialog.frag.glsl',
     'text_dialog.vert.glsl',
     'text_example.frag.glsl',

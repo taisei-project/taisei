@@ -13,8 +13,9 @@
 #include "global.h"
 #include "video.h"
 #include "resource/bgm.h"
-#include "replay/state.h"
+#include "replay/demoplayer.h"
 #include "replay/stage.h"
+#include "replay/state.h"
 #include "replay/struct.h"
 #include "config.h"
 #include "player.h"
@@ -53,6 +54,10 @@ static StageFrameState *_current_stage_state;  // TODO remove this shitty hack
 
 static inline bool is_quickloading(StageFrameState *fstate) {
 	return fstate->quicksave && fstate->quicksave == global.replay.input.replay;
+}
+
+bool stage_is_demo_mode(void) {
+	return global.replay.input.replay && global.replay.input.play.demo_mode;
 }
 
 static void sync_bgm(StageFrameState *fstate) {
@@ -445,6 +450,21 @@ static bool stage_input_handler_replay(SDL_Event *event, void *arg) {
 	return false;
 }
 
+static bool stage_input_handler_demo(SDL_Event *event, void *arg) {
+	if(event->type == SDL_KEYDOWN && !event->key.repeat) {
+		goto exit;
+	}
+
+	switch(TAISEI_EVENT(event->type)) {
+		case TE_GAME_KEY_DOWN:
+		case TE_GAMEPAD_BUTTON_DOWN:
+		exit:
+			stage_finish(GAMEOVER_ABORT);
+	}
+
+	return false;
+}
+
 struct replay_event_arg {
 	ReplayState *st;
 	ReplayEvent *resume_event;
@@ -488,7 +508,11 @@ static void leave_replay_mode(StageFrameState *fstate, ReplayState *rp_in) {
 static void replay_input(StageFrameState *fstate) {
 	if(!is_quickloading(fstate)) {
 		events_poll((EventHandler[]){
-			{ .proc = stage_input_handler_replay },
+			{ .proc =
+				stage_is_demo_mode()
+					? stage_input_handler_demo
+					: stage_input_handler_replay
+			},
 			{ NULL }
 		}, EFLAG_GAME);
 	}
@@ -746,7 +770,10 @@ void stage_finish(int gameover) {
 		global.gameover = GAMEOVER_TRANSITIONING;
 		CallChain cc = CALLCHAIN(stage_finalize, (void*)(intptr_t)gameover);
 		set_transition(TransFadeBlack, FADE_TIME, FADE_TIME*2, cc);
-		audio_bgm_stop(BGM_FADE_LONG);
+
+		if(!stage_is_demo_mode()) {
+			audio_bgm_stop(BGM_FADE_LONG);
+		}
 	}
 
 	if(
@@ -786,6 +813,10 @@ static void stage_preload(void) {
 }
 
 static void display_stage_title(StageInfo *info) {
+	if(stage_is_demo_mode()) {
+		return;
+	}
+
 	stagetext_add(info->title,    VIEWPORT_W/2 + I * (VIEWPORT_H/2-40), ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 50, 85, 35, 35);
 	stagetext_add(info->subtitle, VIEWPORT_W/2 + I * (VIEWPORT_H/2),    ALIGN_CENTER, res_font("standard"), RGB(1, 1, 1), 60, 85, 35, 35);
 }
@@ -795,6 +826,10 @@ TASK(start_bgm, { BGM *bgm; }) {
 }
 
 void stage_start_bgm(const char *bgm) {
+	if(stage_is_demo_mode()) {
+		return;
+	}
+
 	INVOKE_TASK_DELAYED(1, start_bgm, res_bgm(bgm));
 }
 
@@ -1127,6 +1162,8 @@ static void _stage_enter(
 
 	if(is_quickloading(fstate)) {
 		audio_sfx_set_enabled(false);
+	} else {
+		demoplayer_suspend();
 	}
 
 	SCHED_INVOKE_TASK(&fstate->sched, stage_comain, fstate);
@@ -1195,6 +1232,7 @@ void stage_end_loop(void *ctx) {
 	if(is_quickload) {
 		_stage_enter(stginfo, cc, quicksave, quicksave_is_automatic);
 	} else {
+		demoplayer_resume();
 		run_call_chain(&cc, NULL);
 	}
 }

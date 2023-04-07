@@ -44,4 +44,4 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) att
 
 int replay_find_stage_idx(Replay *rpy, uint8_t stageid) attr_nonnull_all;
 
-void replay_play(Replay *rpy, int firstidx, CallChain next) attr_nonnull_all;
+void replay_play(Replay *rpy, int firstidx, bool demo_mode, CallChain next) attr_nonnull_all;

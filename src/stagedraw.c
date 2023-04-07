@@ -314,6 +314,12 @@ void stage_draw_pre_init(void) {
 		"monosmall",
 	NULL);
 
+	if(stage_is_demo_mode()) {
+		preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+			"text_demo",
+		NULL);
+	}
+
 	stagedraw.framerate_graphs = env_get("TAISEI_FRAMERATE_GRAPHS", GRAPHS_DEFAULT);
 	stagedraw.objpool_stats = env_get("TAISEI_OBJPOOL_STATS", OBJPOOLSTATS_DEFAULT);
 
@@ -1501,9 +1507,8 @@ void stage_draw_bottom_text(void) {
 		.font_ptr = font,
 	});
 
-	if(global.replay.input.replay != NULL) {
-		ReplayState *rst = &global.replay.input;
-
+	ReplayState *rst = &global.replay.input;
+	if(rst->replay != NULL && (!stage_is_demo_mode() || rst->play.desync_frame >= 0)) {
 		r_shader_ptr(stagedraw.hud_text.shader);
 		// XXX: does it make sense to use the monospace font here?
 
@@ -1830,6 +1835,51 @@ void stage_draw_hud(void) {
 			.shader = "sprite_default",
 			.pos = { VIEWPORT_X+creal(global.boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
+		});
+	}
+
+	// Demo indicator
+	if(stage_is_demo_mode()) {
+		cmplxf pos = CMPLXF(
+			VIEWPORT_X + VIEWPORT_W * 0.5f,
+			VIEWPORT_Y + VIEWPORT_H * 0.5f - 75
+		);
+
+		float bg_width = 250;
+		float bg_height = 60;
+
+		Sprite *bg = res_sprite("part/smoke");
+
+		SpriteParams sp = {
+			.sprite_ptr = bg,
+			.shader_ptr = res_shader("sprite_default"),
+			.color = RGBA(0.1, 0.1, 0.2, 0.07),
+		};
+
+		r_mat_mv_push();
+		r_mat_mv_translate(crealf(pos), cimagf(pos), 0);
+		r_mat_mv_scale(bg_width / bg->w, bg_height / bg->h, 1);
+
+		r_mat_mv_push();
+		r_mat_mv_rotate(global.frames * 0.5 * DEG2RAD, 0, 0, 1);
+		r_draw_sprite(&sp);
+		r_mat_mv_pop();
+
+		sp.color = RGBA(0.2, 0.1, 0.1, 0.07);
+
+		r_mat_mv_push();
+		r_mat_mv_rotate(global.frames * -0.93 * DEG2RAD, 0, 0, 1);
+		r_draw_sprite(&sp);
+		r_mat_mv_pop();
+
+		r_mat_mv_pop();
+
+		text_draw("Demo", &(TextParams) {
+			.align = ALIGN_CENTER,
+			.font = "big",
+			.shader = "text_demo",
+			.shader_params = &(ShaderCustomParams) { global.frames / 60.0f },
+			.pos.as_cmplx = pos,
 		});
 	}
 }

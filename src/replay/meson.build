@@ -1,5 +1,6 @@
 
 replay_src = files(
+    'demoplayer.c',
     'play.c',
     'read.c',
     'replay.c',

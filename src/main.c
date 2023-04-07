@@ -33,6 +33,7 @@
 #include "filewatch/filewatch.h"
 #include "dynstage.h"
 #include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -43,8 +44,8 @@ static void taisei_shutdown(void) {
 		progress_save();
 	}
 
+	demoplayer_shutdown();
 	progress_unload();
-
 	stage_objpools_shutdown();
 	gamemode_shutdown();
 	shutdown_resources();
@@ -423,12 +424,13 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		return;
 	}
 
-	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
+	run_call_chain(&CALLCHAIN(main_mainmenu, ctx), NULL);
 	eventloop_run();
 }
 
 static void main_mainmenu(CallChainResult ccr) {
 	MainContext *ctx = ccr.ctx;
+	demoplayer_init();
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 }
 
@@ -514,7 +516,7 @@ static void main_replay(MainContext *mctx) {
 		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
 	}
 
-	replay_play(mctx->replay_in, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
+	replay_play(mctx->replay_in, mctx->replay_idx, false, CALLCHAIN(main_cleanup, mctx));
 	eventloop_run();
 }
 

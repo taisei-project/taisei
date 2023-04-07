@@ -66,6 +66,8 @@ void stage_load_quicksave(void);
 
 CoSched *stage_get_sched(void);
 
+bool stage_is_demo_mode(void);
+
 #ifdef DEBUG
 #define HAVE_SKIP_MODE
 #endif

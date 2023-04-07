@@ -217,7 +217,10 @@ static void action_play_bgm(MenuData *m, void *arg) {
 
 static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 	if(preload) {
-		preload_resource(RES_BGM, bgm_name, RESF_OPTIONAL);
+		// FIXME HACK: make this just RESF_OPTIONAL once we have proper refcounting for resources!
+		// Currently without RESF_PERMANENT we segfault after returning from demo playback,
+		// because transient resources get unloaded.
+		preload_resource(RES_BGM, bgm_name, RESF_PERMANENT | RESF_OPTIONAL);
 		return;
 	}
 

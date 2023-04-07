@@ -29,6 +29,7 @@ typedef struct ReplayState {
 			uint16_t desync_check;
 			int desync_check_frame;
 			int desync_frame;
+			bool demo_mode;
 		} play;
 
 		struct {
