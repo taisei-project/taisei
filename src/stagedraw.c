@@ -47,7 +47,6 @@ static struct {
 
 	struct {
 		ShaderProgram *fxaa;
-		ShaderProgram *copy_depth;
 	} shaders;
 
 	PostprocessShader *viewport_pp;
@@ -291,7 +290,6 @@ void stage_draw_pre_init(void) {
 	NULL);
 
 	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
-		"copy_depth",
 		"ingame_menu",
 		"powersurge_effect",
 		"powersurge_feedback",
@@ -341,7 +339,6 @@ void stage_draw_init(void) {
 	stagedraw.hud_text.shader = res_shader("text_hud");
 	stagedraw.hud_text.font = res_font("standard");
 	stagedraw.shaders.fxaa = res_shader("fxaa");
-	stagedraw.shaders.copy_depth = res_shader("copy_depth");
 
 	r_shader_standard();
 
@@ -578,25 +575,8 @@ static bool fxaa_rule(Framebuffer *fb) {
 }
 
 static bool copydepth_rule(Framebuffer *fb) {
-	r_state_push();
-	r_enable(RCAP_DEPTH_TEST);
-	r_depth_func(DEPTH_ALWAYS);
-	r_blend(BLEND_NONE);
-	r_shader_ptr(stagedraw.shaders.copy_depth);
-
 	Framebuffer *target_fb = r_framebuffer_current();
-	FramebufferAttachment prev_outputs[FRAMEBUFFER_MAX_OUTPUTS];
-	FramebufferAttachment outputs[FRAMEBUFFER_MAX_OUTPUTS];
-	for(int i = 0; i < FRAMEBUFFER_MAX_OUTPUTS; ++i) {
-		outputs[i] = FRAMEBUFFER_ATTACH_NONE;
-	}
-
-	r_framebuffer_get_output_attachments(target_fb, prev_outputs);
-	r_framebuffer_set_output_attachments(target_fb, outputs);
-	draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
-	r_framebuffer_set_output_attachments(target_fb, prev_outputs);
-	r_state_pop();
-
+	r_framebuffer_copy(target_fb, fb, BUFFER_DEPTH);
 	return false;
 }
 

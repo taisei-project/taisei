@@ -21,7 +21,6 @@ glsl_files = files(
     'calabi-yau-quintic.frag.glsl',
     'calabi-yau-quintic.vert.glsl',
     'circle_distort.frag.glsl',
-    'copy_depth.frag.glsl',
     'cutscene.frag.glsl',
     'envmap_reflect.frag.glsl',
     'extra_bg.frag.glsl',
