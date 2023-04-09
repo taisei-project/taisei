@@ -597,6 +597,10 @@ void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *co
 	B.framebuffer_clear(fb, flags, colorval, depthval);
 }
 
+void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
+	B.framebuffer_copy(dst, src, flags);
+}
+
 void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h) {
 	r_framebuffer_viewport_rect(fb, (FloatRect) { x, y, w, h });
 }

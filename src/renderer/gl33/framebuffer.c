@@ -198,6 +198,27 @@ void gl33_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, con
 	r_framebuffer(fb_saved);
 }
 
+void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
+	GLuint glflags = buffer_flags_to_gl(flags);
+
+	r_flush_sprites();
+
+	IntExtent size = r_framebuffer_get_size(dst);
+	GLint X0 = 0;
+	GLint X1 = size.w;
+	GLint Y0 = 0;
+	GLint Y1 = size.h;
+
+	Framebuffer *fb_saved = r_framebuffer_current();
+	r_framebuffer(dst);
+	gl33_sync_framebuffer();
+	gl33_sync_scissor();
+	// TODO track this?
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, src->gl_fbo);
+	glBlitFramebuffer(X0, Y0, X1, Y1, X0, Y0, X1, Y1, glflags, GL_NEAREST);
+	r_framebuffer(fb_saved);
+}
+
 IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
 	// According to the OpenGL wiki:
 	// "The effective size of the FBO is the intersection of all of the sizes of the bound images (ie: the smallest in each dimension)."

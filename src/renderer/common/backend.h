@@ -90,6 +90,7 @@ typedef struct RendererFuncs {
 	FramebufferAttachmentQueryResult (*framebuffer_query_attachment)(Framebuffer *framebuffer, FramebufferAttachment attachment);
 	void (*framebuffer_outputs)(Framebuffer *framebuffer, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS], uint8_t write_mask);
 	void (*framebuffer_clear)(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval);
+	void (*framebuffer_copy)(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags);
 	IntExtent (*framebuffer_get_size)(Framebuffer *framebuffer);
 
 	void (*framebuffer)(Framebuffer *framebuffer);

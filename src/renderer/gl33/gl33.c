@@ -1500,6 +1500,7 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.framebuffer_clear = gl33_framebuffer_clear,
+		.framebuffer_copy = gl33_framebuffer_copy,
 		.framebuffer_get_size = gl33_framebuffer_get_size,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,

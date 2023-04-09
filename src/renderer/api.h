@@ -769,6 +769,7 @@ void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval);
+void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) attr_nonnull_all;
 IntExtent r_framebuffer_get_size(Framebuffer *fb);
 
 void r_framebuffer(Framebuffer *fb);
