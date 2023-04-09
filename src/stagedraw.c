@@ -813,7 +813,7 @@ static void stage_render_bg(StageInfo *stage) {
 	FBPair *background = stage_get_fbpair(FBPAIR_BG);
 
 	r_framebuffer(background->back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	if(should_draw_stage_bg()) {
 		r_mat_mv_push();
@@ -836,7 +836,7 @@ static void stage_render_bg(StageInfo *stage) {
 		Framebuffer *staging = stage_get_fbpair(FBPAIR_BG_AUX)->back;
 
 		r_state_push();
-		r_framebuffer_clear(staging, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_framebuffer_clear(staging, BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		draw_powersurge_effect(staging, BLEND_NONE);
 		r_shader_standard();
 		r_framebuffer(background->front);
@@ -1024,7 +1024,7 @@ void stage_draw_scene(StageInfo *stage) {
 
 		coevent_signal(&stagedraw.events.background_drawn);
 	} else if(!key_nobg) {
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 1), 1);
 	}
 
 	// draw the 2D objects

@@ -117,7 +117,7 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 
 RenderFrameAction run_render_frame(LoopFrame *frame) {
 	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	RenderFrameAction a = frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
 

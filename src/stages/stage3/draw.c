@@ -163,7 +163,7 @@ void stage3_draw(void) {
 		{ stage3_bg_leaves_draw, stage3_bg_pos },
 		{ stage3_bg_ground_draw, stage3_bg_pos },
 	};
-	r_clear(CLEAR_COLOR, RGB(0.12, 0.11, 0.10), 1);
+	r_clear(BUFFER_COLOR, RGB(0.12, 0.11, 0.10), 1);
 	stage3d_draw(&stage_3d_context, 120, ARRAY_SIZE(segments), segments);
 }
 

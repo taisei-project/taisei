@@ -162,17 +162,29 @@ const char *gl33_framebuffer_get_debug_label(Framebuffer* fb) {
 	return fb->debug_label;
 }
 
-void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) {
+static GLuint buffer_flags_to_gl(BufferKindFlags flags) {
 	GLuint glflags = 0;
 
-	if(flags & CLEAR_COLOR) {
+	if(flags & BUFFER_COLOR) {
 		glflags |= GL_COLOR_BUFFER_BIT;
+	}
+
+	if(flags & BUFFER_DEPTH) {
+		glflags |= GL_DEPTH_BUFFER_BIT;
+	}
+
+	return glflags;
+}
+
+void gl33_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval) {
+	GLuint glflags = buffer_flags_to_gl(flags);
+
+	if(flags & BUFFER_COLOR) {
 		assert(colorval != NULL);
 		gl33_set_clear_color(colorval);
 	}
 
-	if(flags & CLEAR_DEPTH) {
-		glflags |= GL_DEPTH_BUFFER_BIT;
+	if(flags & BUFFER_DEPTH) {
 		gl33_set_clear_depth(depthval);
 	}
 

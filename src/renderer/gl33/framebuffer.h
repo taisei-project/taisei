@@ -31,7 +31,7 @@ FramebufferAttachmentQueryResult gl33_framebuffer_query_attachment(Framebuffer *
 void gl33_framebuffer_outputs(Framebuffer *framebuffer, FramebufferAttachment config[FRAMEBUFFER_MAX_OUTPUTS], uint8_t write_mask);
 void gl33_framebuffer_destroy(Framebuffer *framebuffer);
 void gl33_framebuffer_taint(Framebuffer *framebuffer);
-void gl33_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval);
+void gl33_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval);
 IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer);
 void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label);
 const char *gl33_framebuffer_get_debug_label(Framebuffer* fb);

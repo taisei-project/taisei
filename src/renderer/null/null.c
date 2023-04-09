@@ -129,7 +129,7 @@ static void null_framebuffer_viewport(Framebuffer *framebuffer, FloatRect vp) { 
 static void null_framebuffer_viewport_current(Framebuffer *framebuffer, FloatRect *vp) { *vp = default_fb_viewport; }
 static void null_framebuffer(Framebuffer *framebuffer) { }
 static Framebuffer* null_framebuffer_current(void) { return (void*)&placeholder; }
-static void null_framebuffer_clear(Framebuffer *framebuffer, ClearBufferFlags flags, const Color *colorval, float depthval) { }
+static void null_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval) { }
 static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
 
 static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }

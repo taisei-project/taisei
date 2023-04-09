@@ -1244,7 +1244,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_state_push();
 
 	r_framebuffer(globals.render_buf);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);

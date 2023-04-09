@@ -70,7 +70,7 @@ void r_post_init(void) {
 	r_depth_func(DEPTH_LEQUAL);
 	r_cull(CULL_BACK);
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
 }
@@ -593,7 +593,7 @@ void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment
 	B.framebuffer_outputs(fb, config, 0x00);
 }
 
-void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval) {
 	B.framebuffer_clear(fb, flags, colorval, depthval);
 }
 

@@ -96,7 +96,7 @@ ManagedFramebuffer *fbmgr_framebuffer_create(const char *name, const Framebuffer
 	}
 
 	r_framebuffer_viewport_rect(mfb->fb, fb_viewport);
-	r_framebuffer_clear(mfb->fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(mfb->fb, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 
 	list_push(&framebuffers, data);
 	return mfb;

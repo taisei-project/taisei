@@ -891,7 +891,7 @@ void video_swap_buffers(void) {
 		r_shader_standard();
 		r_color3(1, 1, 1);
 		draw_framebuffer_tex(pp_fb, SCREEN_W, SCREEN_H);
-		r_framebuffer_clear(pp_fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+		r_framebuffer_clear(pp_fb, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 		r_mat_proj_pop();
 		r_state_pop();
 

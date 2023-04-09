@@ -399,7 +399,7 @@ static bool laserdraw_add(Laser *l) {
 static void laserdraw_pass1_render(void) {
 	r_state_push();
 	r_framebuffer(ldraw.fb.sdf);
-	r_clear(CLEAR_COLOR, RGBA(LASER_SDF_RANGE, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(LASER_SDF_RANGE, 0, 0, 0), 1);
 	r_blend(BLENDMODE_COMPOSE(
 		BLENDFACTOR_SRC_COLOR, BLENDFACTOR_DST_COLOR, BLENDOP_MIN,
 		BLENDFACTOR_SRC_ALPHA, BLENDFACTOR_DST_ALPHA, BLENDOP_MIN

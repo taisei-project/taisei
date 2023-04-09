@@ -270,7 +270,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 		r_shader("reimu_gap");
 		r_uniform_int("draw_background", true);
 		r_blend(BLEND_NONE);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	} else {
 		r_shader("reimu_gap");
 		r_uniform_int("draw_background", false);

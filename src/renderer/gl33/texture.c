@@ -537,7 +537,7 @@ void gl33_texture_clear(Texture *tex, const Color *clr) {
 	// TODO: maybe find a more efficient method
 	Framebuffer *temp_fb = r_framebuffer_create();
 	r_framebuffer_attach(temp_fb, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
-	r_framebuffer_clear(temp_fb, CLEAR_COLOR, clr, 1);
+	r_framebuffer_clear(temp_fb, BUFFER_COLOR, clr, 1);
 	r_framebuffer_destroy(temp_fb);
 }
 

@@ -336,7 +336,7 @@ void stage1_draw(void) {
 	if(ppq > 0) {
 		r_state_push();
 		r_framebuffer(stage1_draw_data->water_fbpair.back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		stage1_water_render_reflections();
 		r_state_pop();
 		fbpair_swap(&stage1_draw_data->water_fbpair);

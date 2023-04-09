@@ -211,7 +211,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	r_uniform_float(u_clr_phase, -1.5 * t/M_PI);
 	r_uniform_float(u_clr_freq,  10.0);
 	r_framebuffer(fbp_aux->back);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_color4(1, 1, 1, 1);
 
 	r_blend(r_blend_compose(
@@ -231,7 +231,7 @@ static void marisa_laser_draw_lasers(EntityInterface *ent) {
 	stage_draw_begin_noshake();
 
 	r_framebuffer(fbp_aux->back);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	r_shader("max_to_alpha");
 	draw_framebuffer_tex(fbp_aux->front, VIEWPORT_W, VIEWPORT_H);
 	fbpair_swap(fbp_aux);

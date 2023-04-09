@@ -80,7 +80,7 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 	r_framebuffer_attach(fb, ptex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 	r_framebuffer_viewport(fb, 0, 0, tex_w, tex_h);
 	r_framebuffer(fb);
-	r_framebuffer_clear(fb, CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(fb, BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_mat_proj_push_ortho(spr_w - s_base->padding.w, spr_h - s_base->padding.h);
 	r_mat_mv_push_identity();

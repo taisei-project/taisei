@@ -347,20 +347,20 @@ static void draw_text(CutsceneState *st) {
 
 static RenderFrameAction cutscene_render_frame(void *ctx) {
 	CutsceneState *st = ctx;
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	r_state_push();
 
 	r_framebuffer(st->text_fb);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	draw_text(st);
 
 	r_shader_standard();
 	r_blend(BLEND_NONE);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);
 
@@ -370,13 +370,13 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 	r_uniform_vec2("blur_resolution", mask_vp.w, mask_vp.h);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	r_uniform_vec2("blur_direction", 1, 0);
 	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	r_uniform_vec2("blur_direction", 0, 1);
 	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);

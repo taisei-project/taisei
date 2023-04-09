@@ -123,7 +123,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
 
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		for(int i = 0; i < numBeams; i++) {
 			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
 		}
@@ -142,7 +142,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 		FBPair *aux = stage_get_fbpair(FBPAIR_FG_AUX);
 
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 		for(int i = 0; i < numBeams; i++) {
 			draw_masterspark_beam(beamInfos[i].origin, beamInfos[i].size, beamInfos[i].angle, beamInfos[i].t, alpha);
@@ -159,7 +159,7 @@ void marisa_common_masterspark_draw(int numBeams, MarisaBeamInfo *beamInfos, flo
 
 		fbpair_swap(aux);
 		r_framebuffer(aux->back);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 		draw_framebuffer_tex(aux->front, VIEWPORT_W, VIEWPORT_H);
 
 		r_uniform_vec2("blur_direction", 0, blur);

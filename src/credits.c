@@ -474,7 +474,7 @@ static uint credits_skysphere_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 }
 
 static void credits_draw(void) {
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 //	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
 
@@ -482,7 +482,7 @@ static void credits_draw(void) {
 
 	r_state_push();
 	r_framebuffer(credits.fb);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	r_enable(RCAP_DEPTH_TEST);
 	stage3d_draw(&stage_3d_context, 500, 2, (Stage3DSegment[]) { credits_skysphere_draw, credits_skysphere_pos, credits_towerwall_draw, credits_towerwall_pos });
