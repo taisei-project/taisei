@@ -889,10 +889,6 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
-INLINE bool stage_should_yield(void) {
-	return (global.boss && !boss_is_fleeing(global.boss)) || dialog_is_active(global.dialog);
-}
-
 static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
@@ -1036,11 +1032,6 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 			stage_input(fstate);
 		}
 
-		if(!stage_should_yield()) {
-			stage->procs->event();
-		}
-
-		stage->procs->update();
 		stage_logic();
 	}
 }
@@ -1074,8 +1065,6 @@ static void _stage_enter(
 	STUB_PROC(begin, stage_stub_proc);
 	STUB_PROC(end, stage_stub_proc);
 	STUB_PROC(draw, stage_stub_proc);
-	STUB_PROC(event, stage_stub_proc);
-	STUB_PROC(update, stage_stub_proc);
 	STUB_PROC(shader_rules, (ShaderRule*)shader_rules_stub);
 
 	if(quickload) {

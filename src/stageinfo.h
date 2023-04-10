@@ -34,8 +34,6 @@ struct StageProcs {
 	StageProc preload;
 	StageProc end;
 	StageProc draw;
-	StageProc event;
-	StageProc update;
 	ShaderRule *shader_rules;
 	ShaderRule *postprocess_rules;
 	StageProcs *spellpractice_procs;
