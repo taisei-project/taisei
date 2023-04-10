@@ -20,6 +20,9 @@
 #include "stageobjects.h"
 #include "dynstage.h"
 
+#define DAMAGE_PER_POWER_POINT 500.0f
+#define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)
+
 static void ent_draw_boss(EntityInterface *ent);
 static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg);
 
@@ -36,6 +39,17 @@ typedef struct SpellBonus {
 static void calc_spell_bonus(Attack *a, SpellBonus *bonus);
 
 DECLARE_TASK(boss_particles, { BoxedBoss boss; });
+
+TASK(boss_damage_to_power, { BoxedBoss boss; }) {
+	auto boss = TASK_BIND(ARGS.boss);
+
+	for(;;WAIT(2)) {
+		if(boss->damage_to_power_accum >= DAMAGE_PER_POWER_ITEM) {
+			spawn_item(boss->pos, ITEM_POWER);
+			boss->damage_to_power_accum -= DAMAGE_PER_POWER_ITEM;
+		}
+	}
+}
 
 Boss *create_boss(char *name, char *ani, cmplx pos) {
 	Boss *boss = objpool_acquire(&stage_object_pools.bosses);
@@ -63,6 +77,7 @@ Boss *create_boss(char *name, char *ani, cmplx pos) {
 
 	COEVENT_INIT_ARRAY(boss->events);
 	INVOKE_TASK(boss_particles, ENT_BOX(boss));
+	INVOKE_TASK(boss_damage_to_power, ENT_BOX(boss));
 
 	return boss;
 }
@@ -918,7 +933,9 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 		boss->lastdamageframe = global.frames;
 	}
 
-	boss->current->hp -= dmg->amount * factor;
+	float damage = fmin(boss->current->hp, dmg->amount * factor);
+	boss->current->hp -= damage;
+	boss->damage_to_power_accum += damage;
 
 	if(boss->current->hp < boss->current->maxhp * 0.1) {
 		play_sfx_loop("hit1");

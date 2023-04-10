@@ -165,6 +165,8 @@ DEFINE_ENTITY_TYPE(Boss, {
 	bool in_background;
 	float background_transition;
 
+	float damage_to_power_accum;
+
 	struct {
 		float opacity;
 		float fill_total;
