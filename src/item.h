@@ -96,7 +96,7 @@ void collect_all_items(float value);
 
 void items_preload(void);
 
-#define POWER_VALUE 3
+#define POWER_VALUE 5
 #define POWER_VALUE_MINI 1
 
 #define ITEM_MAX_VALUE 1.0
