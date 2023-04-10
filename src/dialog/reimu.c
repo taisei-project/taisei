@@ -92,7 +92,7 @@ DIALOG_TASK(reimu, Stage1PostBoss) {
 	MSG(cirno, "Chill out! I didn’t mean it like that!");
 	FACE(reimu, smug);
 	MSG(reimu, "You could have just let me through, you know.");
-	MSG(cirno, "I don’t remember that! You broke the rules! I wasn’t ready yet…");
+	MSG(cirno, "Not fair! You broke the rules! I wasn’t ready yet…");
 
 	DIALOG_END();
 }
