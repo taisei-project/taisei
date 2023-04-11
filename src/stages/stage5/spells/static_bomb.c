@@ -90,7 +90,7 @@ TASK(slave_explode, { BoxedIkuSlave slave; }) {
 		.flags = PFLAG_REQUIREDPARTICLE,
 	);
 
-	stage_shake_view(16);
+	stage_shake_view(420);
 	play_sfx("boom");
 }
 
@@ -115,6 +115,10 @@ TASK(slave, { cmplx pos; int number; }) {
 	INVOKE_SUBTASK_DELAYED(100, slave_ball_shot, { .slave = ENT_BOX(slave) });
 
 	INVOKE_SUBTASK_DELAYED(200, slave_bullet_shot, { .slave = ENT_BOX(slave) });
+
+	if(global.diff > D_Normal) {
+		INVOKE_SUBTASK_DELAYED(600, slave_ball_shot, { .slave = ENT_BOX(slave) });
+	}
 
 	INVOKE_SUBTASK(slave_laser_shot, { .slave = ENT_BOX(slave), .delay = difficulty_value(500, 470, 440, 410)});
 
