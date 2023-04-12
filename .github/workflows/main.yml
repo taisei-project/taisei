@@ -251,8 +251,12 @@ jobs:
         toolchain = '$(pwd)/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
         EOF
 
-    - name: Configure
+    - name: Configure Standard Version
       run: >
+        scripts/version.py > .VERSION.tmp
+
+        mv .VERSION.tmp .VERSION
+
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
 
         meson setup build/
@@ -260,12 +264,9 @@ jobs:
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
         --prefix=$(pwd)/taisei-web-test
-
-        meson configure
         -Dbuild.cpp_std=gnu++14
-        build/
 
-    - name: Build
+    - name: Build Standard Version
       run: |
         source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
         meson compile tar -C build/ --verbose
@@ -279,18 +280,44 @@ jobs:
         path: taisei-web-test
         clean: false
 
+    - name: Prepare taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        rm -v taisei-web-test/data/*
+
+    - name: Install Standard Version to taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        meson install -C build --no-rebuild
+
+    - name: Configure Developer Version
+      if: github.ref == 'refs/heads/master'
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        sed -i "s/^\(taisei_basename = \).*/\1'taisei-dev'/" src/meson.build   # I'm sorry
+        meson setup --reconfigure $(pwd) build/ -Ddeveloper=true
+
+    - name: Build Developer Version
+      if: github.ref == 'refs/heads/master'
+      run: |
+        source ${{ env.EM_CACHE_FOLDER }}/emsdk_env.sh
+        meson compile -C build/ --verbose
+
+    - name: Install Developer Version to taisei-web-test
+      if: github.ref == 'refs/heads/master'
+      run: |
+        meson install -C build --no-rebuild
+
     - name: Deploy to taisei-web-test
       if: github.ref == 'refs/heads/master'
       run: |
-          TAISEI_VERSION=$(scripts/version.py)
-          rm taisei-web-test/data/*
-          meson install -C build --no-rebuild
-          cd taisei-web-test
-          git config user.name 'Nitori Kawashiro [bot]'
-          git config user.email 'release@taisei-project.org'
-          git add .
-          git commit -m "Taisei $TAISEI_VERSION"
-          git push
+        TAISEI_VERSION=$(scripts/version.py)
+        cd taisei-web-test
+        git config user.name 'Nitori Kawashiro [bot]'
+        git config user.email 'release@taisei-project.org'
+        git add .
+        git commit -m "Taisei $TAISEI_VERSION"
+        git push
 
     - name: Upload Log
       if: always()
