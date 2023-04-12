@@ -533,22 +533,21 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 }
 
 cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
 		return 0;
 	}
 
 	cmplx velocity = l->args[0];
-	double amplitude = creal(l->args[1]);
-	double frequency = creal(l->args[2]);
-	double phase = creal(l->args[3]);
+	real amplitude = creal(l->args[1]);
+	real frequency = creal(l->args[2]);
+	real phase = creal(l->args[3]);
 
-	double angle = carg(velocity);
-	double speed = cabs(velocity);
+	real angle = carg(velocity);
+	real speed = cabs(velocity);
 
-	double s = (frequency * t + phase);
-	return l->pos + cexp(I * (angle + amplitude * sin(s))) * t * speed;
+	real s = (frequency * t + phase);
+	return l->pos + cdir(angle + amplitude * sin(s)) * t * speed;
 }
 
 cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
@@ -575,11 +574,11 @@ cmplx las_circle(Laser *l, float t) {
 		return 0;
 	}
 
-	double turn_speed = creal(l->args[0]);
-	double time_ofs = cimag(l->args[0]);
-	double radius = creal(l->args[1]);
+	real turn_speed = creal(l->args[0]);
+	real time_ofs = cimag(l->args[0]);
+	real radius = creal(l->args[1]);
 
-	return l->pos + radius * cexp(I * (t + time_ofs) * turn_speed);
+	return l->pos + radius * cdir(turn_speed * (t + time_ofs));
 }
 
 void laser_charge(Laser *l, int t, float charge, float width) {
