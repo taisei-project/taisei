@@ -514,18 +514,6 @@ cmplx las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-	// XXX: this used to be called "las_sine", but it's actually not a proper sine wave
-	// do we even still need this?
-
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	real s = (creal(l->args[2]) * t + creal(l->args[3]));
-	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
-}
-
 cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// this is actually shaped like a sine wave
 

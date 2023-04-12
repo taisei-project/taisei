@@ -75,7 +75,6 @@ bool clear_laser(Laser *l, uint flags);
 cmplx las_linear(Laser *l, float t);
 cmplx las_accel(Laser *l, float t);
 cmplx las_sine(Laser *l, float t);
-cmplx las_weird_sine(Laser *l, float t);
 cmplx las_sine_expanding(Laser *l, float t);
 cmplx las_turning(Laser *l, float t);
 cmplx las_circle(Laser *l, float t);
