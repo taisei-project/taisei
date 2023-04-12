@@ -62,6 +62,10 @@ void kill_menu(MenuData *menu) {
 static void close_menu_finish(CallChainResult ccr) {
 	MenuData *menu = ccr.ctx;
 
+	if(TRANSITION_RESULT_CANCELED(ccr)) {
+		return;
+	}
+
 	// This may happen with MF_AlwaysProcessInput menus, so make absolutely sure we
 	// never run the call chain with menu->state == MS_Dead more than once.
 	bool was_dead = (menu->state == MS_Dead);
