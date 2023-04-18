@@ -19,11 +19,7 @@ bool strendswith(const char *s, const char *e) {
 	if(le > ls)
 		return false;
 
-	int i; for(i = 0; i < le; ++i)
-	if(s[ls-i-1] != e[le-i-1])
-		return false;
-
-	return true;
+	return !strncmp(s+ls-le, e, le);
 }
 
 bool strstartswith(const char *s, const char *p) {
