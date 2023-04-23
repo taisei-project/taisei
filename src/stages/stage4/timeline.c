@@ -42,15 +42,39 @@ TASK(splasher_fairy, { cmplx pos; int direction; }) {
 	e->move.velocity = 0; // stop
 
 	WAIT(50);
-	for(int time = 0; time < 150; time += WAIT(5)) {
-		// "shower" effect
-		RNG_ARRAY(rand, 3);
-		PROJECTILE(
-			.proto = rng_chance(0.5) ? pp_rice : pp_thickrice,
-			.pos = e->pos,
-			.color = RGB(0.8, 0.3 - 0.1 * vrng_real(rand[0]), 0.5),
-			.move = move_accelerated(move / 2 + (1 - 2 * vrng_real(rand[1])) + (1 - 2 * vrng_real(rand[2])) * I, 0.02 * I),
-		);
+	int duration = difficulty_value(150, 160, 180, 210);
+	for(int time = 0; time < duration; time += WAIT(5)) {
+		RNG_ARRAY(rand, 4);
+		cmplx offset = 50 * vrng_real(rand[0]) * cdir(vrng_angle(rand[1]));
+		cmplx v = (0.5 + vrng_real(rand[2])) * cdir(-0.1 * time * creal(ARGS.direction))*I;
+		
+		int petals = 5;
+		if(rng_chance(0.5)) {
+			for(int i = 0; i < petals; i++) {
+				cmplx petal_pos = 15 * cdir(M_TAU/petals * i + vrng_angle(rand[3]));
+
+					PROJECTILE(
+						.proto = pp_wave,
+						.pos = e->pos + offset + petal_pos,
+						.color = RGBA(1.0, 0.0, 0.0, 0.0),
+						.move = move_accelerated(v - 0.1 * I, 0.01 * I),
+						.angle = carg(petal_pos),
+						.flags = PFLAG_MANUALANGLE
+					);
+			}
+		} else {
+			for(int i = 0; i < petals; i++) {
+				cmplx petal_pos = 5 * cdir(M_TAU/petals * i + vrng_angle(rand[3]));
+				PROJECTILE(
+					.proto = pp_rice,
+					.pos = e->pos + offset + petal_pos,
+					.color = RGBA(1.0, 0.0, 0.5, 0.0),
+					.move = move_accelerated(v - 0.1 * I, 0.01 * v + 0.001 * cnormalize(petal_pos)),
+					.angle = carg(petal_pos),
+					.flags = PFLAG_MANUALANGLE
+				);
+			}
+		}
 		play_sfx_loop("shot1_loop");
 	}
 
@@ -82,28 +106,29 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 		real boost_base = 1;
 		int chain_len = difficulty_value(3, 4, 5, 6);
 
-		PROJECTILE(
-			.proto = pp_wave,
-			.pos = e->pos,
-			.color = RGB(1, 0.3, 0.5),
-			.move = move_asymptotic_simple(speed * aim, (chain_len + 1) * boost_factor),
-			.max_viewport_dist = 32,
-		);
+		if(global.diff > D_Easy) {
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = e->pos,
+				.color = RGB(1.0, 0.0, 0.5),
+				.move = move_linear(rng_dir()),
+			);
+		}
 
 		for(int j = chain_len; j; --j) {
 			PROJECTILE(
-				.proto = pp_crystal,
+				.proto = j & 1 ? pp_rice : pp_wave,
 				.pos = e->pos,
-				.color = RGB(j / (float)(chain_len+1), 0.3, 0.5),
+				.color = RGB(j / (float)(chain_len+1), 0.0, 0.5),
 				.move = move_asymptotic_simple(speed * aim, boost_base + j * boost_factor),
 				.max_viewport_dist = 32,
 			);
 		}
 
 		PROJECTILE(
-			.proto = pp_ball,
+			.proto = pp_wave,
 			.pos = e->pos,
-			.color = RGB(0, 0.3, 0.5),
+			.color = RGB(0.0, 0.0, 0.5),
 			.move = move_asymptotic_simple(speed * aim, boost_base),
 			.max_viewport_dist = 32,
 		);
@@ -122,20 +147,20 @@ TASK(partcircle_fairy, { cmplx pos; MoveParams move; }) {
 	e->move.retention = 1;
 
 	int circles = difficulty_value(1,2,3,4);
-	int projs_per_circle = 16;
+	int projs_per_circle = 40;
 
 	for(int i = 0; i < projs_per_circle; i++) {
 		for(int j = 0; j < circles; j++) {
 			play_sfx("shot2");
 
-			real angle_offset = -0.01 * i * sign(creal(ARGS.move.velocity));
-			cmplx dir = cdir((i - 4) * M_PI / 16 + angle_offset) * cnormalize(ARGS.move.velocity);
+			real angle_offset = -cnormalize(global.plr.pos - e->pos);
+			cmplx dir = cdir((i - 4) * M_TAU / projs_per_circle + angle_offset) * cnormalize(ARGS.move.velocity);
 
 			PROJECTILE(
 				.proto = pp_wave,
 				.pos = e->pos + 30 * dir,
-				.color = RGB(1 - 0.2 * j, 0.5, 0.7),
-				.move = move_asymptotic_simple(2 * dir, 2 + 2 * j),
+				.color = RGB(1 - 0.2 * j, 0.0, 1),
+				.move = move_asymptotic_simple(2 * dir, 2 + j * j),
 			);
 		}
 		YIELD;
@@ -157,8 +182,11 @@ TASK(cardbuster_fairy_move, { Enemy *e; int stops; cmplx *poss; int *move_times;
 }
 
 TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
-	int count = difficulty_value(40, 60, 80, 100);
+	int count = difficulty_value(35, 55, 75, 90);
 	real speed = difficulty_value(1.0, 1.2, 1.4, 1.6);
+
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0.0, 0.7, 1.0, 0), 40, .anchor = &ARGS.e->pos, .sound = COMMON_CHARGE_SOUNDS);
+	WAIT(40);
 
 	for(int i = 0; i < count; i++) {
 		play_sfx_loop("shot1_loop");
@@ -168,6 +196,12 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 			.proto = pp_card,
 			.pos = ARGS.e->pos + 30 * dir,
 			.color = RGB(0, 0.7, 0.5),
+			.move = move_asymptotic(2*v*I, v, 0.99),
+		);
+		PROJECTILE(
+			.proto = pp_card,
+			.pos = ARGS.e->pos + 30 * dir + 4*v,
+			.color = RGB(0, 0.2, 1.0),
 			.move = move_asymptotic(2*v*I, v, 0.99),
 		);
 		YIELD;
@@ -202,7 +236,7 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = e->pos + 30 * dir,
-				.color = RGB(0, 0.2, 0.4 + 0.2 * j),
+				.color = RGB(0.5, 0.1, 0.2 + 0.2 * j),
 				.move = move_asymptotic_simple(speed * dir, speedup),
 			);
 		}
@@ -265,8 +299,10 @@ TASK(bigcircle_fairy_move, { BoxedEnemy enemy; cmplx vel; }) {
 TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1)));
 	INVOKE_TASK(bigcircle_fairy_move, ENT_BOX(e), ARGS.vel);
+	WAIT(20);
+	INVOKE_SUBTASK(common_charge, 0, RGBA(0, 0.8, 0, 0), 60, .anchor = &e->pos, .sound = COMMON_CHARGE_SOUNDS);
 
-	WAIT(80);
+	WAIT(40);
 	int shots = difficulty_value(3, 4, 6, 7);
 	for(int i = 0; i < shots; i++) {
 
@@ -293,7 +329,7 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 			}
 		}
 
-		WAIT(20);
+		WAIT(30/(1+i/2));
 	}
 }
 
