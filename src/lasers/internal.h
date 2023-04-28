@@ -9,23 +9,9 @@
 #pragma once
 #include "taisei.h"
 
+#include "laser.h"
 #include "util.h"
 #include "dynarray.h"
-
-typedef struct LaserSegment {
-	union {
-		struct { cmplxf a, b; } pos;
-		float attr0[4];
-	};
-
-	union {
-		struct {
-			struct { float a, b; } width;
-			struct { float a, b; } time;
-		};
-		float attr1[4];
-	};
-} LaserSegment;
 
 typedef struct LaserInternalData {
 	DYNAMIC_ARRAY(LaserSegment) segments;

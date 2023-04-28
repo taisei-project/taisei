@@ -166,6 +166,12 @@ static float calc_sample_width(
 	);
 }
 
+static void laserseg_flip(LaserSegment *s) {
+	SWAP(s->pos.a, s->pos.b);
+	SWAP(s->time.a, s->time.b);
+	SWAP(s->width.a, s->width.b);
+}
+
 static int quantize_laser(Laser *l) {
 	// Break the laser curve into small line segments, simplify and cull them,
 	// compute the bounding box.
@@ -261,21 +267,16 @@ static int quantize_laser(Laser *l) {
 
 		if(visible) {
 			LaserSegment *seg = dynarray_append(&lintern.segments);
+			*seg = (LaserSegment) {
+				.pos   = {   a,  b },
+				.width = {  w0,  w },
+				.time  = { -t0, -t },
+			};
 
 			if(w < w0) {
 				// NOTE: the uneven capsule distance function may not work correctly in cases where
 				//       radius(A) > radius(B) and circle A contains circle B.
-				*seg = (LaserSegment) {
-					.pos   = {  b,   a },
-					.width = {  w,  w0 },
-					.time  = { -t, -t0 },
-				};
-			} else {
-				*seg = (LaserSegment) {
-					.pos   = {   a,  b },
-					.width = {  w0,  w },
-					.time  = { -t0, -t },
-				};
+				laserseg_flip(seg);
 			}
 
 			assert(seg->width.a <= seg->width.b);
@@ -305,6 +306,118 @@ static int quantize_laser(Laser *l) {
 }
 
 static bool laser_collision(Laser *l, Player *plr);
+
+typedef struct LaserTraceState {
+	Laser *l;
+	LaserTraceFunc func;
+	void *userdata;
+	LaserSegment *seg;
+	LaserTraceSample sample;
+	cmplx p;
+	real step;
+	real accum;
+	real inverse_seglen;
+} LaserTraceState;
+
+static void *laser_trace_dispatch(LaserTraceState *st) {
+	return st->func(st->l, &st->sample, st->userdata);
+}
+
+static void *laser_trace_advance(LaserTraceState *st, cmplx v, real l) {
+	real full = l;
+	l = fmin(l, st->step - st->accum);
+
+	st->accum += l;
+	st->sample.segment_param += l * st->inverse_seglen;
+	st->p += v * l;
+
+	if(st->accum >= st->step) {
+		st->accum -= st->step;
+		st->sample.pos = st->p;
+
+		void *result = laser_trace_dispatch(st);
+
+		if(result) {
+			return result;
+		}
+	}
+
+	if(full - l > 0) {
+		return laser_trace_advance(st, v, full - l);
+	}
+
+	return NULL;
+}
+
+void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata) {
+	if(l->_internal.num_segments < 1) {
+		return NULL;
+	}
+
+	int first_seg = l->_internal.segments_ofs;
+	int last_seg = first_seg + l->_internal.num_segments - 1;
+
+	LaserTraceState st = {
+		.l = l,
+		.step = step,
+		.func = trace,
+		.userdata = userdata,
+		.p = dynarray_get(&lintern.segments, first_seg).pos.a,
+	};
+
+	void *result;
+
+	cmplx prev_endpos = INFINITY;
+
+	for(int seg = first_seg; seg <= last_seg; ++seg) {
+		// NOTE: deliberate copy
+		LaserSegment s = dynarray_get(&lintern.segments, seg);
+
+		if(prev_endpos != s.pos.a && prev_endpos == s.pos.b) {
+			// Segment was flipped (see quantize_laser); undo it
+			laserseg_flip(&s);
+		}
+
+		cmplx v = s.pos.b - s.pos.a;
+		real len = cabs(v);
+		st.inverse_seglen = 1 / len;
+		v *= st.inverse_seglen;
+
+		st.sample.segment = &s;
+		st.sample.segment_param = 0;
+
+		if(prev_endpos != s.pos.a) {
+			// discontinuity, or first segment.
+			st.p = s.pos.a;
+			st.accum = 0;
+			st.sample.discontinuous = true;
+			st.sample.pos = st.p;
+			result = laser_trace_dispatch(&st);
+
+			if(result) {
+				return result;
+			}
+
+			st.sample.discontinuous = false;
+		}
+
+		real pstep = step * 1;
+		while(len >= pstep) {
+			result = laser_trace_advance(&st, v, pstep);
+
+			if(result) {
+				return result;
+			}
+
+			len -= pstep;
+		}
+
+		laser_trace_advance(&st, v, len);
+		prev_endpos = s.pos.b;
+	}
+
+	return NULL;
+}
 
 void process_lasers(void) {
 	bool stage_cleared = stage_is_cleared();

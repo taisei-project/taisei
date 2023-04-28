@@ -85,6 +85,31 @@ void laser_charge(Laser *l, int t, float charge, float width);
 bool laser_intersects_circle(Laser *l, Circle circle);
 bool laser_intersects_ellipse(Laser *l, Ellipse ellipse);
 
+typedef struct LaserSegment {
+	union {
+		struct { cmplxf a, b; } pos;
+		float attr0[4];
+	};
+
+	union {
+		struct {
+			struct { float a, b; } width;
+			struct { float a, b; } time;
+		};
+		float attr1[4];
+	};
+} LaserSegment;
+
+typedef struct LaserTraceSample {
+	const LaserSegment *segment;
+	cmplx pos;
+	float segment_param;
+	bool discontinuous;
+} LaserTraceSample;
+
+typedef void *(*LaserTraceFunc)(Laser *l, const LaserTraceSample *sample, void *userdata);
+void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata);
+
 DECLARE_EXTERN_TASK(laser_charge, {
 	BoxedLaser laser;
 	float charge_delay;
