@@ -40,3 +40,10 @@ INLINE double bits_to_double(uint64_t i) {
 }
 
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(*(arr)))
+
+#define SWAP(_a, _b) ({ \
+	auto _swap_temp = _a; \
+	_a = _b; \
+	_b = _swap_temp; \
+	(void)0; \
+})
