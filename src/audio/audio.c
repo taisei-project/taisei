@@ -34,17 +34,8 @@ struct SFX {
 
 #define B (_a_backend.funcs)
 
-struct enqueued_sound {
-	LIST_INTERFACE(struct enqueued_sound);
-	char *name;
-	int time;
-	int cooldown;
-	bool replace;
-};
-
 static struct {
 	ht_str2int_t sfx_volumes;
-	struct enqueued_sound *sound_queue;
 	uint32_t *chan_play_ids;
 	uint32_t play_counter;
 	int sfx_chan_first, sfx_chan_last;
@@ -242,24 +233,10 @@ static SFXPlayID submit_play_sfx(
 	return register_sfx_playback(sfx, group, ch, loop);
 }
 
-static SFXPlayID play_sound_internal(
-	const char *name, bool is_ui, int cooldown, bool replace, int delay
+static SFXPlayID play_sfx_internal(
+	const char *name, bool is_ui, int cooldown, bool replace
 ) {
-	if(!audio_output_works() || is_skip_mode()) {
-		return 0;
-	}
-
-	if(delay > 0) {
-		list_push(&audio.sound_queue, ALLOC(struct enqueued_sound, {
-			.time = global.frames + delay,
-			.name = strdup(name),
-			.cooldown = cooldown,
-			.replace = replace,
-		}));
-		return 0;
-	}
-
-	if(!audio.sfx_enabled) {
+	if(!audio_output_works() || is_skip_mode() || !audio.sfx_enabled) {
 		return 0;
 	}
 
@@ -282,37 +259,16 @@ static SFXPlayID play_sound_internal(
 	return submit_play_sfx(sfx, group, ch, false);
 }
 
-static void *discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
-	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
-	mem_free(snd->name);
-	mem_free(list_unlink(queue, vsnd));
-	return NULL;
-}
-
-static void *play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
-	if(!is_skip_mode()) {
-		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
-	}
-
-	mem_free(snd->name);
-	mem_free(list_unlink(queue, snd));
-	return NULL;
-}
-
 SFXPlayID play_sfx(const char *name) {
-	return play_sound_internal(name, false, 0, false, 0);
+	return play_sfx_internal(name, false, 0, false);
 }
 
 SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) {
-	return play_sound_internal(name, false, cooldown, replace, 0);
-}
-
-void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) {
-	play_sound_internal(name, false, cooldown, replace, delay);
+	return play_sfx_internal(name, false, cooldown, replace);
 }
 
 void play_sfx_ui(const char *name) {
-	play_sound_internal(name, true, 0, true, 0);
+	play_sfx_internal(name, true, 0, true);
 }
 
 static void stop_sfx_fadeout(SFXPlayID sid, double fadeout) {
@@ -393,19 +349,10 @@ static void *update_sounds_callback(const char *name, Resource *res, void *arg) 
 
 void reset_all_sfx(void) {
 	res_for_each(RES_SFX, update_sounds_callback, (void*)true);
-	list_foreach(&audio.sound_queue, discard_enqueued_sound, NULL);
 }
 
 void update_all_sfx(void) {
 	res_for_each(RES_SFX, update_sounds_callback, (void*)false);
-
-	for(struct enqueued_sound *s = audio.sound_queue, *next; s; s = next) {
-		next = (struct enqueued_sound*)s->next;
-
-		if(s->time <= global.frames) {
-			play_enqueued_sound(&audio.sound_queue, s, NULL);
-		}
-	}
 }
 
 void pause_all_sfx(void) {

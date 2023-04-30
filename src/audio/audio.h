@@ -58,7 +58,6 @@ bool audio_sfx_set_enabled(bool enabled);
 
 SFXPlayID play_sfx(const char *name) attr_nonnull(1);
 SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) attr_nonnull(1);
-void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) attr_nonnull(1);
 void play_sfx_loop(const char *name) attr_nonnull(1);
 void play_sfx_ui(const char *name) attr_nonnull(1);
 void stop_sfx(SFXPlayID sid);
