@@ -259,23 +259,30 @@ TASK(backfire_swirl_move, { BoxedEnemy enemy; }) {
 	e->move.acceleration = -0.02 * I;
 }
 
+TASK(backfire_swirl_explosion, { BoxedEnemy enemy; }) {
+	Enemy *e = TASK_BIND(ARGS.enemy);
+
+	play_sfx("laser1");
+	create_laserline_ab(e->pos, e->pos + 1000*cnormalize(global.plr.pos - e->pos), 15, 60, 70, RGBA(1.0, 0.7, 0.0, 0.0));
+}
+
 TASK(backfire_swirl, { cmplx pos; MoveParams move; }) {
-	Enemy *e = TASK_BIND(espawn_swirl(ARGS.pos, ITEMS(.points = 5)));
+	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 5)));
 	e->move = ARGS.move;
 
-	INVOKE_SUBTASK(backfire_swirl_move, ENT_BOX(e));
+	INVOKE_TASK_WHEN(&e->events.killed, backfire_swirl_explosion, ENT_BOX(e));
 
 	WAIT(20);
 	int count = difficulty_value(90, 100, 110, 120);
 	for(int i = 0; i < count; i++) {
-		play_sfx("shot2");
-		cmplx dir = cdir(M_PI * rng_real() - M_PI / 2.0 * sign(creal(ARGS.move.velocity)));
+		play_sfx("shot3");
+		cmplx dir = cdir(123 * i * i - M_PI / 2.0 * sign(creal(ARGS.move.velocity)));
 		for(int j = 0; j < global.diff; j++) {
 			PROJECTILE(
-				.proto = pp_wave,
+				.proto = pp_crystal,
 				.pos = e->pos,
-				.color = RGB(0.2, 0.2, 1 - 0.2 * j),
-				.move = move_asymptotic_simple(2 * dir, 2 + 2 * j),
+				.color = RGB(1.0, 0.7, 0.3),
+				.move = move_asymptotic_simple(3 * dir, 2 + 2 * j),
 			);
 		}
 		WAIT(2);
@@ -344,9 +351,9 @@ TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU * i / count) * aim;
 		PROJECTILE(
-			.proto = pp_ball,
+			.proto = i&1 ? pp_plainball : pp_ball,
 			.pos = e->pos,
-			.color = RGB(0.1 + 0.6 * (i&1), 0.2, 1 - 0.6 * (i&1)),
+			.color = RGB(0.2, 0.2 + 0.6 * (i&1), 1 - 0.6 * (i&1)),
 			.move = move_accelerated(speed * dir, 0.001*dir),
 		);
 	}
@@ -588,9 +595,15 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		});
 	}
 
-	INVOKE_TASK_DELAYED(1800, backfire_swirl, .pos = VIEWPORT_H / 2.0 * I, .move = move_linear(0.3));
-	INVOKE_TASK_DELAYED(1800, backfire_swirl, .pos = VIEWPORT_W + VIEWPORT_H / 2.0 * I, .move = move_linear(-0.3));
+	int swirl_delay = difficulty_value(85, 75, 65, 55);
+	int swirl_count = 200 / swirl_delay;
+	for(int i = 0; i < swirl_count; i++) {
+		INVOKE_TASK_DELAYED(1700 + swirl_delay * i, backfire_swirl, .pos = VIEWPORT_H / 2.0 * I + 50 * i * I, .move = move_linear(0.3));
+		INVOKE_TASK_DELAYED(1700 + swirl_delay * i, backfire_swirl, .pos = VIEWPORT_W + VIEWPORT_H / 2.0 * I + 50 * i * I, .move = move_linear(-0.3));
+		
+	}
 
+	
 	for(int i = 0; i < 36; i++) {
 		real phase = 2*i/M_PI * (1 - 2*(i&1));
 		cmplx pos = -24 + I * psin(phase) * 300;
@@ -649,8 +662,6 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		.move = move_linear(4.0 * I)
 	);
 
-	int swirl_delay = difficulty_value(85, 75, 65, 55);
-	int swirl_count = 300 / swirl_delay;
 	for(int i = 0; i < swirl_count; i++) {
 		cmplx pos = VIEWPORT_W * (i & 1) + 100 * I;
 		INVOKE_TASK_DELAYED(1300 + swirl_delay * i, backfire_swirl, .pos = pos, .move = move_linear(rng_real() * (1 - 2 * (i & 1))));
