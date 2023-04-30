@@ -60,8 +60,6 @@ TASK(lhc_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 	INVOKE_SUBTASK(lhc_baryons_movement, ARGS.baryons, ARGS.boss);
 
 	for(;;) {
-		play_sfx_delayed("laser1", 10, true, 200);
-
 		for(int baryon_idx = 2; baryon_idx < NUM_BARYONS; baryon_idx += 3) {
 			Color clr = *RGBA(0.1 + 0.9 * (baryon_idx > 3), 0, 1 - 0.9 * (baryon_idx > 3), 0);
 			INVOKE_SUBTASK(lhc_laser, ARGS.baryons, baryon_idx,
@@ -69,9 +67,11 @@ TASK(lhc_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 				.color = clr
 			);
 		}
-		WAIT(LHC_PERIOD);
-	}
 
+		WAIT(200);
+		play_sfx("laser1");
+		WAIT(LHC_PERIOD - 200);
+	}
 }
 
 TASK(lhc_secondary_projs, { BoxedBoss boss; }) {
