@@ -86,7 +86,6 @@ TASK(magnetto_swirl, {
 
 	WAIT(140);
 	play_sfx("redirect");
-	play_sfx_delayed("redirect", 0, false, 180);
 
 	INVOKE_SUBTASK(magnetto_swirl_move, {
 		.e = ENT_BOX(e),
@@ -98,7 +97,9 @@ TASK(magnetto_swirl, {
 		.move_to = ARGS.move_to
 	});
 
-	WAIT(200);
+	WAIT(180);
+	play_sfx("redirect");
+	WAIT(20);
 	enemy_kill(e);
 }
 
