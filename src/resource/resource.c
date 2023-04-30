@@ -120,6 +120,7 @@ struct InternalResource {
 	PurgatoryNode purgatory_node;
 	ResourceStatus status;
 	SDL_atomic_t refcount;
+	uint32_t generation_id;
 
 	// Reloading works by allocating a temporary InternalResource, attempting to load the resource
 	// into it, and, if succeeded, replacing the original resource with the new one.
@@ -167,8 +168,8 @@ static struct {
 		uchar no_unload : 1;
 		uchar preload_required : 1;
 	} env;
-	SDL_SpinLock ires_freelist_lock;
 	InternalResource *ires_freelist;
+	SDL_SpinLock ires_freelist_lock;
 
 	// Maps FileWatch pointers to sets of resources that are monitoring them.
 	// This needs to be tracked to avoid a brute force search when handling TE_FILEWATCH events.
@@ -376,7 +377,11 @@ static void ires_release(InternalResource *ires) {
 	ires_free_meta(ires);
 
 	assert(SDL_AtomicGet(&ires->refcount) == 0);
-	ires_remove_from_purgatory(ires, true);
+
+	if(!ires->is_transient_reloader) {
+		ires_remove_from_purgatory(ires, true);
+	}
+
 	assert(!ires_in_purgatory(ires));
 
 	ires->res = (Resource) { };
@@ -384,6 +389,7 @@ static void ires_release(InternalResource *ires) {
 	ires->status = RES_STATUS_LOADING;
 	ires->is_transient_reloader = false;
 	ires->dependents = (ht_ires_counted_set_t) { };
+	ires->generation_id++;
 
 	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
 	ires->reload_buddy = res_gstate.ires_freelist;
@@ -847,6 +853,7 @@ static ResourceStatus pump_or_wait_for_resource_load_nolock(
 	LOAD_DBG("%p transient=%i load_state=%p", ires, ires->is_transient_reloader, ires->load);
 
 	if(load_state) {
+		LOAD_DBG("Waiting for %s '%s' (pump_only = %i)", type_name(ires->res.type), ires->name, pump_only);
 		assert(ires->status == RES_STATUS_LOADING);
 
 		Task *task = load_state->async_task;
@@ -1038,7 +1045,7 @@ retry:
 					lstate_set_status(st, LOAD_CONT_ON_MAIN);
 					lstate_set_ready_to_finalize(st);
 					ires_cond_broadcast(ires);
-					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
+					events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, (void*)(uintptr_t)ires->generation_id);
 					break;
 				} else {
 					lstate_set_status(st, LOAD_NONE);
@@ -1054,7 +1061,7 @@ retry:
 			if(pump_dependencies(st) == RES_STATUS_LOADING || !thread_current_is_main()) {
 				lstate_set_ready_to_finalize(st);
 				ires_cond_broadcast(ires);
-				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, NULL);
+				events_emit(TE_RESOURCE_ASYNC_LOADED, 0, ires, (void*)(uintptr_t)ires->generation_id);
 				// fun fact: in some rare cases, the main thread manages to finalize the load
 				// before this function even returns.
 				break;
@@ -1076,10 +1083,6 @@ retry:
 	return NULL;
 }
 
-static SDLCALL int filter_asyncload_event(void *vires, SDL_Event *event) {
-	return event->type == MAKE_TAISEI_EVENT(TE_RESOURCE_ASYNC_LOADED) && event->user.data1 == vires;
-}
-
 static bool unload_resource(InternalResource *ires) {
 	assert(thread_current_is_main());
 
@@ -1094,14 +1097,17 @@ static bool unload_resource(InternalResource *ires) {
 		assert(ires->reload_buddy->reload_buddy == ires);
 	}
 
-	if(ires->dependents.num_elements_occupied > 0) {
-		log_warn(
-			"Not unloading %s '%s' because it still has %i dependents",
-			tname, ires->name, ires->dependents.num_elements_occupied
+	int nrefs = SDL_AtomicGet(&ires->refcount);
+	if(nrefs > 0) {
+		log_debug(
+			"Not unloading %s '%s' because it still has %i references",
+			tname, ires->name, nrefs
 		);
 		ires_unlock(ires);
 		return false;
 	}
+
+	assert(ires->dependents.num_elements_occupied == 0);
 
 	ht_unset(&handler->private.mapping, ires->name);
 	attr_unused ResourceFlags flags = ires->res.flags;
@@ -1111,9 +1117,6 @@ static bool unload_resource(InternalResource *ires) {
 		handler->procs.unload(ires->res.data);
 	}
 	ires_lock(ires);
-
-	SDL_PumpEvents();
-	SDL_FilterEvents(filter_asyncload_event, ires);
 
 	ires_unmake_dependent(ires, &ires->dependencies);
 	ires_remove_watched_paths(ires);
@@ -1143,6 +1146,8 @@ static bool should_defer_load(InternalResLoadState *st) {
 	}
 
 	FrameTimes ft = eventloop_get_frame_times();
+	shrtime_t tnext = ft.start + ft.target;
+	shrtime_t tmin = ft.target / 2;
 
 	if(ft.next != res_gstate.frame_threshold) {
 		res_gstate.frame_threshold = ft.next;
@@ -1153,9 +1158,9 @@ static bool should_defer_load(InternalResLoadState *st) {
 		return false;
 	}
 
-	hrtime_t t = time_get();
+	shrtime_t t = time_get();
 
-	if(ft.next < t || ft.next - t < ft.target / 2) {
+	if(tnext - t < tmin) {
 		return true;
 	}
 
@@ -1168,7 +1173,9 @@ static bool resource_asyncload_handler(SDL_Event *evt, void *arg) {
 	InternalResource *ires = evt->user.data1;
 	InternalResLoadState *st = ires->load;
 
-	if(st == NULL) {
+	LOAD_DBG("%s '%s'  ires=%p  st=%p", type_name(ires->res.type), ires->name, ires, st);
+
+	if(st == NULL || ires->generation_id != (uintptr_t)evt->user.data2) {
 		return true;
 	}
 
