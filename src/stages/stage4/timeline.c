@@ -209,7 +209,7 @@ TASK(cardbuster_fairy_second_attack, { Enemy *e; }) {
 }
 
 TASK(cardbuster_fairy, { cmplx poss[4]; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.poss[0], ITEMS(.points = 3, .power = 1)));
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.poss[0], ITEMS(.points = 3, .power = 1)));
 
 	int move_times[ARRAY_SIZE(ARGS.poss)-1] = {
 		120, 100, 200
