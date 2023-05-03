@@ -337,6 +337,10 @@ TASK(host_baryons, { BoxedBoss boss; BoxedEllyBaryons *out_baryons; }) {
 	WAIT_EVENT(&baryons->events.despawned);
 }
 
+TASK(stop_boss_rotation) {
+	stage6_bg_stop_boss_rotation();
+}
+
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
 
@@ -358,6 +362,7 @@ TASK(spawn_boss) {
 	int scythe_ready_time = 120;
 	int dialog_time = WAIT_EVENT(&global.dialog->events.fadeout_began).frames;
 	WAIT(scythe_ready_time - dialog_time);
+	stage6_bg_start_boss_rotation();
 
 	boss_add_attack_task_with_args(boss, AT_Normal, "Frequency", 40, 50000, TASK_INDIRECT(ScytheAttack, stage6_boss_nonspell_1).base, NULL, scythe_args.base);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.scythe.occams_razor, scythe_args.base);
@@ -386,7 +391,8 @@ TASK(spawn_boss) {
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.spacetime_curvature, baryons_args.base);
 	boss_add_attack_task_with_args(boss, AT_Normal, "Baryon2", 50, 55000, TASK_INDIRECT(BaryonsAttack, stage6_boss_nonspell_5).base, NULL, baryons_args.base);
 
-	boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.higgs_boson_uncovered, baryons_args.base);
+	Attack *higgs = boss_add_attack_from_info_with_args(boss, &stage6_spells.baryon.higgs_boson_uncovered, baryons_args.base);
+	INVOKE_TASK_WHEN(&higgs->events.started, stop_boss_rotation);
 	boss_add_attack_from_info_with_args(boss, &stage6_spells.extra.curvature_domination, baryons_args.base);
 	boss_add_attack_task_with_args(boss, AT_Move, "Explode", 4, 0, TASK_INDIRECT(BaryonsAttack, stage6_boss_baryons_explode).base, NULL, baryons_args.base);
 	boss_add_attack_task(boss, AT_Move, "Move to center", 4, 0, TASK_INDIRECT(BossAttack, elly_goto_center), NULL);

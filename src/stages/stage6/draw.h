@@ -32,6 +32,8 @@ typedef struct Stage6DrawData {
 		FBPair fbpair;
 	} baryon;
 
+	BoxedTask boss_rotation;
+
 	struct {
 		PBRModel rim;
 		PBRModel spires;

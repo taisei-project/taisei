@@ -34,6 +34,35 @@ void stage6_bg_start_fall_over(void) {
 }
 
 
+TASK(stage6_bg_boss_rotation) {
+	Camera3D *cam = &stage_3d_context.cam;
+	float r = sqrt(cam->pos[0] * cam->pos[0] + cam->pos[1] * cam->pos[1]);
+	float ease = 10;
+	float offset = cam->rot.v[2];
+	for(float phi = 0;; phi += 0.05) {
+		cam->rot.v[2] = sqrt(ease*ease + phi*phi) - ease + offset;
+		cam->pos[0] = r * cos((cam->rot.v[2] - 90) * M_TAU / 360);
+		cam->pos[1] = r * sin((cam->rot.v[2] - 90) * M_TAU / 360);
+		r += 0.0002;
+		YIELD;
+	}
+}
+
+void stage6_bg_start_boss_rotation(void) {
+	Stage6DrawData *drawdata = stage6_get_draw_data();
+	drawdata->boss_rotation = cotask_box(INVOKE_TASK(stage6_bg_boss_rotation));
+}
+
+void stage6_bg_stop_boss_rotation(void) {
+	Stage6DrawData *drawdata = stage6_get_draw_data();
+	CANCEL_TASK(drawdata->boss_rotation);
+	Camera3D *cam = &stage_3d_context.cam;
+	cam->rot.v[2] = 270;
+	cam->pos[0] = -6;
+	cam->pos[1] = 0;
+}
+	
+
 static float ease_final(float t, float from, float to, float outfrac) {
 	float slope = 2/(1 + outfrac);
 	float deceleration = 1/(1-outfrac*outfrac);
