@@ -262,8 +262,29 @@ TASK(backfire_swirl_move, { BoxedEnemy enemy; }) {
 TASK(backfire_swirl_explosion, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
-	play_sfx("laser1");
-	create_laserline_ab(e->pos, e->pos + 1000*cnormalize(global.plr.pos - e->pos), 15, 60, 70, RGBA(1.0, 0.7, 0.0, 0.0));
+	int laser_delay = 120;
+	play_sfx_delayed("laser1", 10, true, laser_delay);
+
+	
+	cmplx aim = cnormalize(global.plr.pos - e->pos);
+	int count = difficulty_value(4,5,6,8);
+	for(int i = 0; i < count; i++) {
+		cmplx dir = aim * cdir(M_TAU * i / count);
+		create_laserline_ab(e->pos, e->pos + 1000*dir, 15, laser_delay, laser_delay + 60, RGBA(1.0, 0.7, 0.0, 0.0));
+	}
+
+	int count2 = 6*count;
+	play_sfx("shot3");
+	for(int i = 0; i < count2; i++) {
+		cmplx dir = aim * cdir(M_TAU * i / count2);
+		PROJECTILE(
+			.proto = pp_crystal,
+			.pos = e->pos,
+			.color = RGB(1.0, 0.5, 0.3),
+			.move = move_asymptotic_simple(3 * dir, 2),
+		);
+	}
+		
 }
 
 TASK(backfire_swirl, { cmplx pos; MoveParams move; }) {
