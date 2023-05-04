@@ -259,11 +259,15 @@ TASK(backfire_swirl_move, { BoxedEnemy enemy; }) {
 	e->move.acceleration = -0.02 * I;
 }
 
+TASK(play_laser_sfx) {
+	play_sfx("laser1");
+}
+
 TASK(backfire_swirl_explosion, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
 	int laser_delay = 120;
-	play_sfx_delayed("laser1", 10, true, laser_delay);
+	INVOKE_TASK_DELAYED(laser_delay, play_laser_sfx);
 
 	
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
@@ -273,15 +277,17 @@ TASK(backfire_swirl_explosion, { BoxedEnemy enemy; }) {
 		create_laserline_ab(e->pos, e->pos + 1000*dir, 15, laser_delay, laser_delay + 60, RGBA(1.0, 0.7, 0.0, 0.0));
 	}
 
-	int count2 = 6*count;
+	int count2 = 10*count;
 	play_sfx("shot3");
 	for(int i = 0; i < count2; i++) {
 		cmplx dir = aim * cdir(M_TAU * i / count2);
+		real radius = 2.0 - 4*creal(cpow(dir, count));
+		cmplx dir_squeezed = dir * cdir(0.3*cimag(cpow(dir,count)));
 		PROJECTILE(
 			.proto = pp_crystal,
 			.pos = e->pos,
-			.color = RGB(1.0, 0.5, 0.3),
-			.move = move_asymptotic_simple(3 * dir, 2),
+			.color = RGB(1.0, 0.9, 0.3),
+			.move = move_asymptotic_simple(2 * dir_squeezed, radius),
 		);
 	}
 		
@@ -371,6 +377,7 @@ TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU * i / count) * aim;
+
 		PROJECTILE(
 			.proto = i&1 ? pp_plainball : pp_ball,
 			.pos = e->pos,
