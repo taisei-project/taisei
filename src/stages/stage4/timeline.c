@@ -25,7 +25,9 @@
 
 static void stage4_dialog_pre_boss(void) {
 	PlayerMode *pm = global.plr.mode;
-	INVOKE_TASK_INDIRECT(Stage4PreBossDialog, pm->dialog->Stage4PreBoss);
+	Stage4PreBossDialogEvents *e;
+	INVOKE_TASK_INDIRECT(Stage4PreBossDialog, pm->dialog->Stage4PreBoss, &e);
+	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage4boss");
 }
 
 static void stage4_dialog_post_boss(void) {
