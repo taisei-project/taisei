@@ -686,7 +686,7 @@ static uint32_t ires_make_dependent_one(InternalResource *ires, InternalResource
 	assert(!ires->is_transient_reloader);
 
 	uint32_t refs = ires_counted_set_inc(&dep->dependents, ires);
-	ires_incref(dep);
+	// NOTE: no incref; presume we already own a reference
 
 	ires_unlock(dep);
 	return refs;
@@ -760,19 +760,6 @@ INLINE const char *type_name(ResourceType type) {
 	return get_handler(type)->typename;
 }
 
-struct valfunc_arg {
-	ResourceType type;
-	const char *name;
-};
-
-static void *valfunc_begin_load_resource(void *varg) {
-	struct valfunc_arg *arg = varg;
-	auto ires = ires_alloc(arg->type);
-	ires->name = strdup(NOT_NULL(arg->name));
-	ires_put_in_purgatory(ires);
-	return ires;
-}
-
 void res_group_init(ResourceGroup *rg) {
 	*rg = (ResourceGroup) { };
 }
@@ -785,7 +772,7 @@ void res_group_release(ResourceGroup *rg) {
 	dynarray_free_data(&rg->refs);
 }
 
-static void res_group_add_ires(ResourceGroup *rg, InternalResource *ires) {
+static void res_group_add_ires(ResourceGroup *rg, InternalResource *ires, bool incref) {
 	if(rg == NULL) {
 		rg = &res_gstate.default_group;
 	}
@@ -794,7 +781,10 @@ static void res_group_add_ires(ResourceGroup *rg, InternalResource *ires) {
 		log_debug("Adding %s '%s' to the default group", type_name(ires->res.type), ires->name);
 	}
 
-	ires_incref(ires);
+	if(incref) {
+		ires_incref(ires);
+	}
+
 	*dynarray_append(&rg->refs) = ires;
 }
 
@@ -809,7 +799,7 @@ static void res_group_preload_one(
 	}
 
 	InternalResource *ires = preload_resource_internal(type, name, flags | RESF_PRELOAD);
-	res_group_add_ires(rg, ires);
+	res_group_add_ires(rg, ires, false);
 }
 
 void res_group_preload(ResourceGroup *rg, ResourceType type, ResourceFlags flags, ...) {
@@ -821,6 +811,19 @@ void res_group_preload(ResourceGroup *rg, ResourceType type, ResourceFlags flags
 	}
 
 	va_end(args);
+}
+
+struct valfunc_arg {
+	ResourceType type;
+	const char *name;
+};
+
+static void *valfunc_begin_load_resource(void *varg) {
+	struct valfunc_arg *arg = varg;
+	auto ires = ires_alloc(arg->type);
+	ires->name = strdup(NOT_NULL(arg->name));
+	ires->refcount.value = 1;
+	return ires;
 }
 
 static bool try_begin_load_resource(ResourceType type, const char *name, hash_t hash, InternalResource **out_ires) {
@@ -1411,7 +1414,7 @@ static void load_resource_finish(InternalResLoadState *st) {
 
 	if(ires->res.type == RES_MODEL || res_gstate.env.no_unload) {
 		// FIXME: models can't be safely unloaded at runtime yet
-		res_group_add_ires(NULL, ires);
+		res_group_add_ires(NULL, ires, true);
 	}
 
 	bool success = ires->res.data;
@@ -1504,7 +1507,7 @@ Resource *_res_get_prehashed(ResourceType type, const char *name, hash_t hash, R
 
 		if(!(flags & RESF_PRELOAD)) {
 			log_warn("%s '%s' was not preloaded", type_name(type), name);
-			res_group_add_ires(NULL, ires);
+			res_group_add_ires(NULL, ires, false);
 
 			if(res_gstate.env.preload_required) {
 				log_fatal("Aborting due to TAISEI_PRELOAD_REQUIRED");
@@ -1554,8 +1557,13 @@ static InternalResource *preload_resource_internal(
 		ires_lock(ires);
 		load_resource(ires, flags, !res_gstate.env.no_async_load);
 		ires_unlock(ires);
-	} else if(flags & RESF_RELOAD) {
-		reload_resource(ires, flags, !res_gstate.env.no_async_load);
+	} else {
+		// NOTE: try_begin_load_resource() does an implicit incref on success
+		ires_incref(ires);
+
+		if(flags & RESF_RELOAD) {
+			reload_resource(ires, flags, !res_gstate.env.no_async_load);
+		}
 	}
 
 	return ires;
