@@ -19,16 +19,52 @@
 #define ECLASS_HP_HUGE_FAIRY    8000
 #define ECLASS_HP_SUPER_FAIRY   28000
 
+typedef struct BaseEnemyVisualParams {
+	union {
+		Sprite *spr;
+		Animation *ani;
+	};
+} BaseEnemyVisualParams;
+
+typedef struct FairyVisualParams {
+	BaseEnemyVisualParams base;
+} FairyVisualParams;
+
+SpriteParams ecls_anyfairy_sprite_params(
+	Enemy *fairy,
+	EnemyDrawParams draw_params,
+	SpriteParamsBuffer *out_spbuf
+) {
+	FairyVisualParams *vp = fairy->visual.drawdata;
+	auto ani = vp->base.ani;
+	const char *seqname = !fairy->moving ? "main" : (fairy->dir ? "left" : "right");
+	Sprite *spr = animation_get_frame(ani, get_ani_sequence(ani, seqname), draw_params.time);
+
+	out_spbuf->color = *RGB(1, 1, 1);
+
+	return (SpriteParams) {
+		.color = &out_spbuf->color,
+		.sprite_ptr = spr,
+		.pos.as_cmplx = draw_params.pos,
+	};
+}
+
+static void anyfairy_draw(Enemy *e, EnemyDrawParams p) {
+	SpriteParamsBuffer spbuf;
+	SpriteParams sp = ecls_anyfairy_sprite_params(e, p, &spbuf);
+	r_draw_sprite(&sp);
+}
+
 TASK(fairy_circle, {
 	BoxedEnemy e;
 	Sprite *sprite;
+	Color color;
 	float spin_rate;
 	float scale_base;
 	float scale_osc_ampl;
 	float scale_osc_freq;
-	Color color;
 }) {
-	Projectile *p = TASK_BIND(PARTICLE(
+	Projectile *circle = TASK_BIND(PARTICLE(
 		.sprite_ptr = ARGS.sprite,
 		.color = &ARGS.color,
 		.flags = PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
@@ -38,14 +74,14 @@ TASK(fairy_circle, {
 	float scale_osc_phase = 0.0f;
 
 	for(Enemy *e; (e = ENT_UNBOX(ARGS.e)); YIELD) {
-		p->pos = enemy_visual_pos(e);
-		p->opacity = e->alpha;
-		p->angle += ARGS.spin_rate;
-		p->scale = (ARGS.scale_base + ARGS.scale_osc_ampl * sinf(scale_osc_phase)) * (1.0f + I);
+		circle->pos = enemy_visual_pos(e);
+		circle->angle += ARGS.spin_rate;
+		float s = ARGS.scale_base + ARGS.scale_osc_ampl * sinf(scale_osc_phase);
+		circle->scale = CMPLXF(s, s);
 		scale_osc_phase += ARGS.scale_osc_freq;
 	}
 
-	kill_projectile(p);
+	kill_projectile(circle);
 }
 
 TASK(fairy_flame_emitter, {
@@ -114,7 +150,6 @@ TASK(fairy_stardust_emitter, {
 
 		old_pos = e->pos;
 
-
 		if(!(t % period)) {
 			RNG_ARRAY(rng, 4);
 			cmplx pos = e->pos + vrng_sreal(rng[0]) * 12 + vrng_sreal(rng[1]) * 10 * I;
@@ -134,58 +169,6 @@ TASK(fairy_stardust_emitter, {
 	}
 }
 
-static void draw_fairy(Enemy *e, int t, Animation *ani) {
-	const char *seqname = !e->moving ? "main" : (e->dir ? "left" : "right");
-	Sprite *spr = animation_get_frame(ani, get_ani_sequence(ani, seqname), t);
-
-	r_draw_sprite(&(SpriteParams) {
-		.color = RGBA_MUL_ALPHA(1, 1, 1, e->alpha),
-		.sprite_ptr = spr,
-		.pos.as_cmplx = e->pos,
-	});
-}
-
-static void visual_swirl(Enemy *e, int t, bool render) {
-	if(render) {
-		r_draw_sprite(&(SpriteParams) {
-			.color = RGBA_MUL_ALPHA(1, 1, 1, e->alpha),
-			.sprite = "enemy/swirl",
-			.pos.as_cmplx = e->pos,
-			.rotation.angle = t * 10 * DEG2RAD,
-		});
-	}
-}
-
-static void visual_fairy_blue(Enemy *e, int t, bool render) {
-	if(render) {
-		draw_fairy(e, t, res_anim("enemy/fairy_blue"));
-	}
-}
-
-static void visual_fairy_red(Enemy *e, int t, bool render) {
-	if(render) {
-		draw_fairy(e, t, res_anim("enemy/fairy_red"));
-	}
-}
-
-static void visual_big_fairy(Enemy *e, int t, bool render) {
-	if(render) {
-		draw_fairy(e, t, res_anim("enemy/bigfairy"));
-	}
-}
-
-static void visual_huge_fairy(Enemy *e, int t, bool render) {
-	if(render) {
-		draw_fairy(e, t, res_anim("enemy/hugefairy"));
-	}
-}
-
-static void visual_super_fairy(Enemy *e, int t, bool render) {
-	if(render) {
-		draw_fairy(e, t, res_anim("enemy/superfairy"));
-	}
-}
-
 TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
 	// NOTE: Don't bind here! We need this task to outlive the enemy.
 	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
@@ -193,68 +176,116 @@ TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
 	if(e->damage_info && DAMAGETYPE_IS_PLAYER(e->damage_info->type)) {
 		common_drop_items(e->pos, &ARGS.items);
 	}
+
+	// NOTE: Needed to keep drawdata alive for this frame (see _spawn below)
+	YIELD;
 }
 
-static Enemy *spawn(cmplx pos, const ItemCounts *item_drops, real hp, EnemyVisualRule visual) {
-	Enemy *e = create_enemy(pos, hp, visual);
+static Enemy *_spawn(
+	cmplx pos, const ItemCounts *item_drops, real hp, EnemyDrawFunc draw, size_t drawdata_alloc
+) {
+	assert(drawdata_alloc > 0);
+	Enemy *e = create_enemy(pos, hp, (EnemyVisual) { draw });
 
-	if(item_drops) {
-		INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, ENT_BOX(e), *item_drops);
-	}
+	// NOTE: almost all enemies drop items, so we can abuse the itemdrop task's stack to hold onto
+	// the draw data buffer for us.
+
+	auto t = INVOKE_TASK_WHEN(&e->events.killed, enemy_drop_items, {
+		.e = ENT_BOX(e),
+		.items = LIKELY(item_drops) ? *item_drops : (ItemCounts) { }
+	});
+	e->visual.drawdata = cotask_malloc(t, drawdata_alloc);
 
 	return e;
 }
 
+// Spawn enemy; allocate and initialize its drawdata buffer
+#define spawn(_pos, _items, _hp, _draw, ...) ({ \
+	auto _e = _spawn(_pos, _items, _hp, _draw, sizeof(__VA_ARGS__)); \
+	*(typeof(__VA_ARGS__)*)(_e->visual.drawdata) = __VA_ARGS__; \
+	_e; \
+});
+
+static void swirl_draw(Enemy *e, EnemyDrawParams p) {
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	r_draw_sprite(&(SpriteParams) {
+		.color = RGB(1, 1 ,1),
+		.sprite_ptr = vp->spr,
+		.pos.as_cmplx = p.pos,
+		.rotation.angle = p.time * 10 * DEG2RAD,
+	});
+}
+
 Enemy *(espawn_swirl)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_SWIRL, visual_swirl);
+	return spawn(pos, item_drops, ECLASS_HP_SWIRL, swirl_draw, (BaseEnemyVisualParams) {
+		.spr = res_sprite("enemy/swirl"),
+	});
+}
+
+static Enemy *spawn_fairy(cmplx pos, const ItemCounts *item_drops, real hp, Animation *ani) {
+	return spawn(pos, item_drops, hp, anyfairy_draw, (FairyVisualParams) {
+		.base.ani = ani,
+	});
+}
+
+static Enemy *espawn_fairy_weak(
+	cmplx pos, const ItemCounts *item_drops, Animation *fairy_ani, Sprite *circle_spr
+) {
+	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_FAIRY, fairy_ani);
+	INVOKE_TASK(fairy_circle, ENT_BOX(e),
+		.sprite = circle_spr,
+		.color = *RGB(1, 1, 1),
+		.spin_rate = 10 * DEG2RAD,
+		.scale_base = 0.8f,
+		.scale_osc_ampl = 1.0f / 6.0f,
+		.scale_osc_freq = 0.1f,
+	);
 	return e;
 }
 
 Enemy *(espawn_fairy_blue)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_FAIRY, visual_fairy_blue);
-	INVOKE_TASK(fairy_circle, ENT_BOX(e),
-		.sprite = res_sprite("fairy_circle"),
-		.spin_rate = 10 * DEG2RAD,
-		.scale_base = 0.8f,
-		.scale_osc_ampl = 1.0f / 6.0f,
-		.scale_osc_freq = 0.1f,
-		.color = *RGB(1, 1, 1)
+	return espawn_fairy_weak(
+		pos, item_drops,
+		res_anim("enemy/fairy_blue"),
+		res_sprite("fairy_circle")
 	);
-	return e;
 }
 
 Enemy *(espawn_fairy_red)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_FAIRY, visual_fairy_red);
+	return espawn_fairy_weak(
+		pos, item_drops,
+		res_anim("enemy/fairy_red"),
+		res_sprite("fairy_circle_red")
+	);
+}
+
+Enemy *(espawn_big_fairy)(cmplx pos, const ItemCounts *item_drops) {
+	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_BIG_FAIRY, res_anim("enemy/bigfairy"));
 	INVOKE_TASK(fairy_circle, ENT_BOX(e),
-		.sprite = res_sprite("fairy_circle_red"),
+		.sprite = res_sprite("fairy_circle_big"),
+		.color = *RGB(1, 1, 1),
 		.spin_rate = 10 * DEG2RAD,
 		.scale_base = 0.8f,
 		.scale_osc_ampl = 1.0f / 6.0f,
 		.scale_osc_freq = 0.1f,
-		.color = *RGB(1, 1, 1)
 	);
-	return e;
-}
-
-Enemy *(espawn_big_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_BIG_FAIRY, visual_big_fairy);
 	INVOKE_TASK(fairy_flame_emitter, ENT_BOX(e),
 		.period = 5,
 		.color = *RGBA(0.0, 0.2, 0.3, 0.0)
-	);
-	INVOKE_TASK(fairy_circle, ENT_BOX(e),
-		.sprite = res_sprite("fairy_circle_big"),
-		.spin_rate = 5 * DEG2RAD,
-		.scale_base = 0.75f,
-		.scale_osc_ampl = 0.15f,
-		.scale_osc_freq = 1.0f / 15.0f,
-		.color = *RGBA(1, 1, 1, 0.8)
 	);
 	return e;
 }
 
 Enemy *(espawn_huge_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_HUGE_FAIRY, visual_huge_fairy);
+	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_HUGE_FAIRY, res_anim("enemy/hugefairy"));
+	INVOKE_TASK(fairy_circle, ENT_BOX(e),
+		.sprite = res_sprite("fairy_circle_big"),
+		.color = *RGBA(1, 1, 1, 0.95),
+		.spin_rate = 5 * DEG2RAD,
+		.scale_base = 0.85f,
+		.scale_osc_ampl = 0.1f,
+		.scale_osc_freq = 1.0f / 15.0f,
+	);
 	INVOKE_TASK(fairy_flame_emitter, ENT_BOX(e),
 		.period = 6,
 		.color = *RGBA(0.0, 0.2, 0.3, 0.0)
@@ -263,19 +294,19 @@ Enemy *(espawn_huge_fairy)(cmplx pos, const ItemCounts *item_drops) {
 		.period = 6,
 		.color = *RGBA(0.3, 0.0, 0.2, 0.0)
 	);
-	INVOKE_TASK(fairy_circle, ENT_BOX(e),
-		.sprite = res_sprite("fairy_circle_big"),
-		.spin_rate = 5 * DEG2RAD,
-		.scale_base = 0.85f,
-		.scale_osc_ampl = 0.1f,
-		.scale_osc_freq = 1.0f / 15.0f,
-		.color = *RGBA(1, 1, 1, 0.95)
-	);
 	return e;
 }
 
 Enemy *(espawn_super_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	Enemy *e = spawn(pos, item_drops, ECLASS_HP_SUPER_FAIRY, visual_super_fairy);
+	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_SUPER_FAIRY, res_anim("enemy/superfairy"));
+	INVOKE_TASK(fairy_circle, ENT_BOX(e),
+		.sprite = res_sprite("fairy_circle_big_and_mean"),
+		.color = *RGBA(1, 1, 1, 0.6),
+		.spin_rate = 5 * DEG2RAD,
+		.scale_base = 0.9f,
+		.scale_osc_ampl = 0.1f,
+		.scale_osc_freq = 1.0f / 15.0f,
+	);
 	INVOKE_TASK(fairy_flame_emitter, ENT_BOX(e),
 		.period = 5,
 		.color = *RGBA(0.2, 0.0, 0.3, 0.0)
@@ -283,14 +314,6 @@ Enemy *(espawn_super_fairy)(cmplx pos, const ItemCounts *item_drops) {
 	INVOKE_TASK(fairy_stardust_emitter, ENT_BOX(e),
 		.period = 15,
 		.color = *RGBA(0.0, 0.0, 0.0, 0.8)
-	);
-	INVOKE_TASK(fairy_circle, ENT_BOX(e),
-		.sprite = res_sprite("fairy_circle_big_and_mean"),
-		.spin_rate = 5 * DEG2RAD,
-		.scale_base = 0.9f,
-		.scale_osc_ampl = 0.1f,
-		.scale_osc_freq = 1.0f / 15.0f,
-		.color = *RGBA(1, 1, 1, 0.6)
 	);
 	return e;
 }

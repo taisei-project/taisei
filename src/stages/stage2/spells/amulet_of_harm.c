@@ -20,21 +20,19 @@ TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	p->move.velocity += ov;
 }
 
-static void amulet_visual(Enemy *e, int t, bool render) {
-	if(render) {
-		r_draw_sprite(&(SpriteParams) {
-			.color = RGBA(2, 1, 1, 0),
-			.sprite = "fairy_circle_big",
-			.pos.as_cmplx = e->pos,
-			.rotation.angle = t * 5 * DEG2RAD,
-		});
+static void amulet_draw(Enemy *e, EnemyDrawParams p) {
+	r_draw_sprite(&(SpriteParams) {
+		.color = RGBA(2, 1, 1, 0),
+		.sprite = "fairy_circle_big",
+		.pos.as_cmplx = p.pos,
+		.rotation.angle = p.time * 5 * DEG2RAD,
+	});
 
-		r_draw_sprite(&(SpriteParams) {
-			.sprite = "enemy/swirl",
-			.pos.as_cmplx = e->pos,
-			.rotation.angle = t * -10 * DEG2RAD,
-		});
-	}
+	r_draw_sprite(&(SpriteParams) {
+		.sprite = "enemy/swirl",
+		.pos.as_cmplx = p.pos,
+		.rotation.angle = p.time * -10 * DEG2RAD,
+	});
 }
 
 TASK(amulet_fire_spinners, { BoxedEnemy core; BoxedProjectileArray *spinners; }) {
@@ -77,7 +75,7 @@ TASK(amulet, {
 	MoveParams move;
 	CoEvent *death_event;
 }) {
-	Enemy *core = create_enemy(ARGS.pos, 2000, amulet_visual);
+	Enemy *core = create_enemy(ARGS.pos, 2000, (EnemyVisual) { amulet_draw });
 	core->hurt_radius = 18;
 	core->hit_radius = 36;
 	core->flags |= EFLAG_NO_VISUAL_CORRECTION;

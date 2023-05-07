@@ -39,3 +39,9 @@ Enemy *espawn_super_fairy(cmplx pos, const ItemCounts *item_drops);
 #define espawn_big_fairy_box(...)       ENT_BOX(espawn_big_fairy(__VA_ARGS__))
 #define espawn_huge_fairy_box(...)      ENT_BOX(espawn_huge_fairy(__VA_ARGS__))
 #define espawn_super_fairy_box(...)     ENT_BOX(espawn_super_fairy(__VA_ARGS__))
+
+SpriteParams ecls_anyfairy_sprite_params(
+	Enemy *fairy,
+	EnemyDrawParams draw_params,
+	SpriteParamsBuffer *out_spbuf
+);

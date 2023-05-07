@@ -83,7 +83,7 @@ static inline void enemy_update(Enemy *e, int t) {
 	e->dir = creal(v) < 0;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule) {
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
@@ -97,9 +97,8 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	e->pos0_visual = pos;
 	e->spawn_hp = hp;
 	e->hp = hp;
-	e->alpha = 1.0;
 	e->flags = 0;
-	e->visual_rule = visual_rule;
+	e->visual = visual;
 	e->hurt_radius = 7;
 	e->hit_radius = 30;
 
@@ -185,7 +184,7 @@ cmplx enemy_visual_pos(Enemy *enemy) {
 		return enemy->pos;
 	}
 
-	double t = (global.frames - enemy->birthtime) / 30.0;
+	real t = (global.frames - enemy->birthtime) / 30.0;
 
 	if(t >= 1) {
 		return enemy->pos;
@@ -197,17 +196,17 @@ cmplx enemy_visual_pos(Enemy *enemy) {
 	return p;
 }
 
-static void call_visual_rule(Enemy *e, bool render) {
-	cmplx tmp = e->pos;
-	e->pos = enemy_visual_pos(e);
-	e->visual_rule(e, global.frames - e->birthtime, render);
-	e->pos = tmp;
+static void draw_enemy(Enemy *e) {
+	e->visual.draw(e, (EnemyDrawParams) {
+		.time = global.frames - e->birthtime,
+		.pos = enemy_visual_pos(e),
+	});
 }
 
 static void ent_draw_enemy(EntityInterface *ent) {
 	Enemy *e = ENT_CAST(ent, Enemy);
 
-	if(!e->visual_rule) {
+	if(!e->visual.draw) {
 		return;
 	}
 
@@ -216,7 +215,7 @@ static void ent_draw_enemy(EntityInterface *ent) {
 	memcpy(&prev_state, e, sizeof(Enemy));
 #endif
 
-	call_visual_rule(e, true);
+	draw_enemy(e);
 
 #ifdef ENEMY_DEBUG
 	if(memcmp(&prev_state, e, sizeof(Enemy))) {
@@ -300,11 +299,7 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 }
 
 float enemy_get_hurt_radius(Enemy *enemy) {
-	if(enemy->flags & EFLAG_NO_HURT || enemy->alpha < 1.0f) {
-		return 0;
-	} else {
-		return enemy->hurt_radius;
-	}
+	return (enemy->flags & EFLAG_NO_HURT) ? 0 : enemy->hurt_radius;
 }
 
 static bool should_auto_kill(Enemy *enemy) {
@@ -331,15 +326,9 @@ void process_enemies(EnemyList *enemies) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 
-		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
-
 		if(should_auto_kill(enemy)) {
 			delete_enemy(enemies, enemy);
 			continue;
-		}
-
-		if(enemy->visual_rule) {
-			call_visual_rule(enemy, false);
 		}
 	}
 }
