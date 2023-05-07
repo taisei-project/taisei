@@ -1148,6 +1148,7 @@ static void _stage_enter(
 		.quicksave_is_automatic = quicksave_is_automatic,
 		.desync_check_freq = env_get("TAISEI_REPLAY_DESYNC_CHECK_FREQUENCY", FPS * 5),
 		.dynstage_generation = dynstage_generation,
+		.rg = rg,
 	});
 
 	cosched_init(&fstate->sched);
