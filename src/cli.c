@@ -28,6 +28,7 @@ enum {
 	OPT_CUTSCENE_LIST,
 	OPT_FORCE_INTRO,
 	OPT_REREPLAY,
+	OPT_POPCACHE,
 };
 
 static void print_help(struct TsOption* opts) {
@@ -92,6 +93,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
 		{{"renderer",           required_argument,  0, OPT_RENDERER},   "Choose the rendering backend", renderer_list},
+		{{"populate-cache",     no_argument,        0, OPT_POPCACHE},   "Attempt to load all available resources, populating the cache, then exit"},
 		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
 		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
 		{ 0 }
@@ -246,6 +248,10 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case 'v':
 			tsfprintf(stdout, "%s %s\n", TAISEI_VERSION_FULL, TAISEI_VERSION_BUILD_TYPE);
 			exit(0);
+		case OPT_POPCACHE:
+			env_set("TAISEI_AGGRESSIVE_PRELOAD", 1, true);
+			a->type = CLI_QuitLate;
+			break;
 		default:
 			UNREACHABLE;
 		}

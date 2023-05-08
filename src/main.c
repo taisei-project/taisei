@@ -400,13 +400,20 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	atexit(taisei_shutdown);
 #endif
 
+	CallChain cc_cleanup = CALLCHAIN(main_cleanup, ctx);
+
+	if(ctx->cli.type == CLI_QuitLate) {
+		run_call_chain(&cc_cleanup, NULL);
+		return;
+	}
+
 	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
 		main_replay(ctx);
 		return;
 	}
 
 	if(ctx->cli.type == CLI_Credits) {
-		credits_enter(CALLCHAIN(main_cleanup, ctx));
+		credits_enter(cc_cleanup);
 		eventloop_run();
 		return;
 	}
@@ -420,14 +427,14 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	}
 
 	if(ctx->cli.type == CLI_Cutscene) {
-		cutscene_enter(CALLCHAIN(main_cleanup, ctx), ctx->cli.cutscene);
+		cutscene_enter(cc_cleanup, ctx->cli.cutscene);
 		eventloop_run();
 		return;
 	}
 #endif
 
 	if(!progress_is_cutscene_unlocked(CUTSCENE_ID_INTRO) || ctx->cli.force_intro) {
-		cutscene_enter(CALLCHAIN(main_mainmenu, ctx), CUTSCENE_ID_INTRO);
+		cutscene_enter(cc_cleanup, CUTSCENE_ID_INTRO);
 		eventloop_run();
 		return;
 	}

@@ -19,6 +19,7 @@ typedef enum {
 	CLI_DumpStages,
 	CLI_DumpVFSTree,
 	CLI_Quit,
+	CLI_QuitLate,
 	CLI_Credits,
 	CLI_Cutscene,
 } CLIActionType;
