@@ -1092,6 +1092,7 @@ static bool unload_resource(InternalResource *ires) {
 	ResourceHandler *handler = get_ires_handler(ires);
 	const char *tname = handler->typename;
 
+	wait_for_resource_load(ires, RESF_RELOAD);
 	ires_lock(ires);
 
 	assert(!ires->is_transient_reloader);
@@ -1113,20 +1114,18 @@ static bool unload_resource(InternalResource *ires) {
 	assert(ires->dependents.num_elements_occupied == 0);
 
 	ht_unset(&handler->private.mapping, ires->name);
-	attr_unused ResourceFlags flags = ires->res.flags;
-
-	ires_unlock(ires);
-	if(wait_for_resource_load(ires, RESF_RELOAD) == RES_STATUS_LOADED) {
-		handler->procs.unload(ires->res.data);
-	}
-	ires_lock(ires);
 
 	ires_unmake_dependent(ires, &ires->dependencies);
 	ires_remove_watched_paths(ires);
 
+	void *loaded_data = ires->res.data;
 	char *name = ires->name;
 	ires_release(ires);
 	ires_unlock(ires);
+
+	if(loaded_data) {
+		handler->procs.unload(loaded_data);
+	}
 
 	log_info("Unloaded %s '%s'", tname, name);
 
