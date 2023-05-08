@@ -1782,64 +1782,6 @@ void res_post_init(void) {
 	}
 }
 
-#if 0
-static void res_unload_array(IResPtrArray *tmp_ires_array) {
-	ht_str2ptr_ts_iter_t iter;
-
-	bool retry = false;
-
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		ResourceHandler *handler = get_handler(type);
-		InternalResource *ires;
-
-		tmp_ires_array->num_elements = 0;
-		ht_iter_begin(&handler->private.mapping, &iter);
-
-		for(; iter.has_data; ht_iter_next(&iter)) {
-			ires = iter.value;
-			*dynarray_append(tmp_ires_array) = ires;
-		}
-
-		ht_iter_end(&iter);
-
-		dynarray_foreach_elem(tmp_ires_array, InternalResource **pires, {
-			if(!unload_resource(*pires)) {
-				// TODO: This is a little dumb; maybe recursively unload dependents first
-				retry = true;
-			}
-		});
-	}
-
-	if(retry) {
-		// Tail call; hope your compiler agrees.
-		res_unload_array(tmp_ires_array);
-	}
-}
-
-void res_unload_all(bool include_permanent) {
-	// Wait for all resources to finish (re)loading first, and pray that nothing else starts loading
-	// while we are in this function (FIXME)
-
-	ht_str2ptr_ts_iter_t iter;
-
-	for(ResourceType type = 0; type < RES_NUMTYPES; ++type) {
-		ResourceHandler *handler = get_handler(type);
-
-		ht_iter_begin(&handler->private.mapping, &iter);
-
-		for(; iter.has_data; ht_iter_next(&iter)) {
-			wait_for_resource_load(iter.value, RESF_RELOAD);
-		}
-
-		ht_iter_end(&iter);
-	}
-
-	IResPtrArray a = { };
-	res_unload_array(&a, include_permanent);
-	dynarray_free_data(&a);
-}
-#endif
-
 void res_purge(void) {
 	purgatory_lock();
 
