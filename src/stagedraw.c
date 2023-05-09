@@ -477,7 +477,7 @@ static void apply_shader_rules(ShaderRule *shaderrules, FBPair *fbos) {
 
 static void draw_wall_of_text(float f, const char *txt) {
 	Sprite spr;
-	BBox bbox;
+	TextBBox bbox;
 
 	char buf[strlen(txt) + 4];
 	memcpy(buf, txt, sizeof(buf) - 4);
@@ -1071,7 +1071,7 @@ struct glyphcb_state {
 	Color *color1, *color2;
 };
 
-static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_attribs, void *userdata) {
+static void draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstanceAttribs *spr_attribs, void *userdata) {
 	struct glyphcb_state *st = userdata;
 
 	if(charcode != '0' && charcode != ',') {
@@ -1079,7 +1079,6 @@ static int draw_numeric_callback(Font *font, charcode_t charcode, SpriteInstance
 	}
 
 	spr_attribs->rgba = *st->color1;
-	return 0;
 }
 
 static inline void stage_draw_hud_power_value(float xpos, float ypos) {
