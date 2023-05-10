@@ -31,6 +31,7 @@ static char *font_path(const char*);
 static bool check_font_path(const char*);
 static void load_font(ResourceLoadState *st);
 static void unload_font(void*);
+static bool transfer_font(void*, void*);
 
 ResourceHandler font_res_handler = {
 	.type = RES_FONT,
@@ -45,6 +46,7 @@ ResourceHandler font_res_handler = {
 		.check = check_font_path,
 		.load = load_font,
 		.unload = unload_font,
+		.transfer = transfer_font,
 	},
 };
 
@@ -736,16 +738,30 @@ static void free_font_resources(Font *font) {
 	dynarray_free_data(&font->glyphs);
 }
 
+static void finish_reload(ResourceLoadState *st);
+
 void load_font(ResourceLoadState *st) {
 	Font font;
 	memset(&font, 0, sizeof(font));
 
-	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]){
-		{ "source",  .out_str   = &font.source_path },
-		{ "size",    .out_int   = &font.base_size },
-		{ "face",    .out_long  = &font.base_face_idx },
+	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+
+	if(UNLIKELY(!rw)) {
+		log_error("VFS error: %s", vfs_get_error());
+		res_load_failed(st);
+		return;
+	}
+
+	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
+		{ "source",        .out_str   = &font.source_path },
+		{ "size",          .out_int   = &font.base_size },
+		{ "face",          .out_long  = &font.base_face_idx },
 		{ NULL }
-	})) {
+	});
+
+	SDL_RWclose(rw);
+
+	if(UNLIKELY(!parsed)) {
 		log_error("Failed to parse font file '%s'", st->path);
 		mem_free(font.source_path);
 		res_load_failed(st);
@@ -779,7 +795,18 @@ void load_font(ResourceLoadState *st) {
 #endif
 
 	font_set_kerning_enabled(&font, true);
-	res_load_finished(st, memdup(&font, sizeof(font)));
+	Font *newfont = memdup(&font, sizeof(font));
+
+	if(st->flags & RESF_RELOAD) {
+		// workaround to avoid data race (font in use on main thread)
+		res_load_continue_on_main(st, finish_reload, newfont);
+	} else {
+		res_load_finished(st, newfont);
+	}
+}
+
+static void finish_reload(ResourceLoadState *st) {
+	res_load_finished(st, st->opaque);
 }
 
 void unload_font(void *vfont) {
@@ -1389,4 +1416,13 @@ const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
 	}
 
 	return &g->metrics;
+}
+
+static bool transfer_font(void *dst, void *src) {
+	auto dfont = CASTPTR_ASSUME_ALIGNED(dst, Font);
+	auto sfont = CASTPTR_ASSUME_ALIGNED(src, Font);
+	free_font_resources(dfont);
+	*dfont = *sfont;
+	mem_free(sfont);
+	return true;
 }
