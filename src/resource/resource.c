@@ -1667,6 +1667,9 @@ void res_init(void) {
 	res_gstate.env.no_unload = env_get("TAISEI_NOUNLOAD", false);
 	res_gstate.env.preload_required = env_get("TAISEI_PRELOAD_REQUIRED", false);
 
+	ht_watch2iresset_create(&res_gstate.watch_to_iresset);
+	res_group_init(&res_gstate.default_group);
+
 	for(int i = 0; i < RES_NUMTYPES; ++i) {
 		ResourceHandler *h = get_handler(i);
 		alloc_handler(h);
@@ -1675,9 +1678,6 @@ void res_init(void) {
 			h->procs.init();
 		}
 	}
-
-	ht_watch2iresset_create(&res_gstate.watch_to_iresset);
-	res_group_init(&res_gstate.default_group);
 
 	if(!res_gstate.env.no_async_load) {
 		events_register_handler(&(EventHandler) {
