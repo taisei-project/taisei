@@ -19,16 +19,35 @@
 #define ECLASS_HP_HUGE_FAIRY    8000
 #define ECLASS_HP_SUPER_FAIRY   28000
 
+#define LAYER_ENEMY_BACKGROUND           (LAYER_BACKGROUND | 0x12)
+#define LAYER_ENEMY_PARTICLE_BACKGROUND  (LAYER_BACKGROUND | 0x11)
+#define LAYER_ENEMY_CIRCLE_BACKGROUND    (LAYER_BACKGROUND | 0x10)
+
 typedef struct BaseEnemyVisualParams {
 	union {
 		Sprite *spr;
 		Animation *ani;
 	};
+	float scale;
+	float opacity;
+	struct {
+		cmplxf pos;
+		float blendfactor;
+	} fakepos;
 } BaseEnemyVisualParams;
 
 typedef struct FairyVisualParams {
 	BaseEnemyVisualParams base;
 } FairyVisualParams;
+
+static cmplxf visual_pos(const EnemyDrawParams *dp, BaseEnemyVisualParams *vp) {
+	return clerpf(dp->pos, vp->fakepos.pos, vp->fakepos.blendfactor);
+}
+
+static cmplxf visual_pos_e(Enemy *e) {
+	EnemyDrawParams edp = { .pos = enemy_visual_pos(e) };
+	return visual_pos(&edp, e->visual.drawdata);
+}
 
 SpriteParams ecls_anyfairy_sprite_params(
 	Enemy *fairy,
@@ -40,12 +59,15 @@ SpriteParams ecls_anyfairy_sprite_params(
 	const char *seqname = !fairy->moving ? "main" : (fairy->dir ? "left" : "right");
 	Sprite *spr = animation_get_frame(ani, get_ani_sequence(ani, seqname), draw_params.time);
 
-	out_spbuf->color = *RGB(1, 1, 1);
+	float o = vp->base.opacity;
+	float b = 1.0f - vp->base.fakepos.blendfactor;
+	out_spbuf->color = *RGBA(o*b, o*b, o*b, o);
 
 	return (SpriteParams) {
 		.color = &out_spbuf->color,
 		.sprite_ptr = spr,
-		.pos.as_cmplx = draw_params.pos,
+		.pos.as_cmplx = visual_pos(&draw_params, &vp->base),
+		.scale = { vp->base.scale, vp->base.scale },
 	};
 }
 
@@ -64,6 +86,8 @@ TASK(fairy_circle, {
 	float scale_osc_ampl;
 	float scale_osc_freq;
 }) {
+	YIELD;
+
 	Projectile *circle = TASK_BIND(PARTICLE(
 		.sprite_ptr = ARGS.sprite,
 		.color = &ARGS.color,
@@ -74,10 +98,16 @@ TASK(fairy_circle, {
 	float scale_osc_phase = 0.0f;
 
 	for(Enemy *e; (e = ENT_UNBOX(ARGS.e)); YIELD) {
-		circle->pos = enemy_visual_pos(e);
+		FairyVisualParams *fvp = e->visual.drawdata;
+		circle->pos = visual_pos_e(e);
 		circle->angle += ARGS.spin_rate;
 		float s = ARGS.scale_base + ARGS.scale_osc_ampl * sinf(scale_osc_phase);
+		s *= fvp->base.scale;
 		circle->scale = CMPLXF(s, s);
+		circle->opacity = fvp->base.opacity * (1 - fvp->base.fakepos.blendfactor);
+		circle->ent.draw_layer = fvp->base.fakepos.blendfactor
+			? LAYER_ENEMY_CIRCLE_BACKGROUND
+			: LAYER_PARTICLE_LOW,
 		scale_osc_phase += ARGS.scale_osc_freq;
 	}
 
@@ -95,22 +125,25 @@ TASK(fairy_flame_emitter, {
 	WAIT(rng_irange(0, period) + 1);
 
 	DECLARE_ENT_ARRAY(Projectile, parts, 16);
-	cmplx old_pos = e->pos;
-	YIELD;
+
+	cmplx old_pos = visual_pos_e(e);
+	FairyVisualParams *fvp = e->visual.drawdata;
 
 	for(int t = 0;; ++t, YIELD) {
+		cmplx epos = visual_pos_e(e);
+
 		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
-			p->move.attraction_point += e->pos - old_pos - I + rng_sreal() * 0.5;
+			p->move.attraction_point += epos - old_pos - I + rng_sreal() * 0.5;
 		});
 
 		ENT_ARRAY_COMPACT(&parts);
 
-		old_pos = e->pos;
+		old_pos = epos;
 
 		if(!(t % period)) {
 			cmplx offset = rng_sreal() * 8;
 			offset += rng_sreal() * 10 * I;
-			cmplx spawn_pos = e->pos + offset;
+			cmplx spawn_pos = epos + fvp->base.scale * offset;
 
 			ENT_ARRAY_ADD(&parts, PARTICLE(
 				.sprite_ptr = spr,
@@ -121,7 +154,11 @@ TASK(fairy_flame_emitter, {
 				.timeout = 50,
 				.move = move_towards(0, spawn_pos, 0.3),
 				.flags = PFLAG_MANUALANGLE,
-				.layer = LAYER_PARTICLE_MID,
+				.layer = fvp->base.fakepos.blendfactor
+					? LAYER_ENEMY_PARTICLE_BACKGROUND
+					: LAYER_PARTICLE_MID,
+				.scale = fvp->base.scale,
+				.opacity = fvp->base.opacity,
 			));
 		}
 	}
@@ -138,21 +175,27 @@ TASK(fairy_stardust_emitter, {
 	WAIT(rng_irange(0, period) + 1);
 
 	DECLARE_ENT_ARRAY(Projectile, parts, 32);
-	cmplx old_pos = e->pos;
-	YIELD;
+
+	cmplx old_pos = visual_pos_e(e);
+	FairyVisualParams *fvp = e->visual.drawdata;
 
 	for(int t = 0;; ++t, YIELD) {
+		cmplx epos = visual_pos_e(e);
+
 		ENT_ARRAY_FOREACH(&parts, Projectile *p, {
-			p->move.attraction_point += e->pos - old_pos;
+			p->move.attraction_point += epos - old_pos;
+			p->scale = (1 + I) * fvp->base.scale;
+			p->opacity = fvp->base.opacity;
 		});
 
 		ENT_ARRAY_COMPACT(&parts);
 
-		old_pos = e->pos;
+		old_pos = epos;
 
 		if(!(t % period)) {
 			RNG_ARRAY(rng, 4);
-			cmplx pos = e->pos + vrng_sreal(rng[0]) * 12 + vrng_sreal(rng[1]) * 10 * I;
+			cmplx ofs = vrng_sreal(rng[0]) * 12 + vrng_sreal(rng[1]) * 10 * I;
+			cmplx pos = epos + fvp->base.scale * ofs;
 
 			ENT_ARRAY_ADD(&parts, PARTICLE(
 				.sprite_ptr = spr,
@@ -163,7 +206,11 @@ TASK(fairy_stardust_emitter, {
 				.timeout = 180,
 				.move = move_towards(0, pos, 0.18 + 0.01 * vrng_sreal(rng[1])),
 				.flags = PFLAG_MANUALANGLE,
-				.layer = LAYER_PARTICLE_MID,
+				.layer = fvp->base.fakepos.blendfactor
+					? LAYER_ENEMY_PARTICLE_BACKGROUND
+					: LAYER_PARTICLE_MID,
+				.scale = fvp->base.scale,
+				.opacity = fvp->base.opacity,
 			));
 		}
 	}
@@ -208,23 +255,32 @@ static Enemy *_spawn(
 
 static void swirl_draw(Enemy *e, EnemyDrawParams p) {
 	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	float o = vp->opacity;
+	float b = 1.0f - vp->fakepos.blendfactor;
 	r_draw_sprite(&(SpriteParams) {
-		.color = RGB(1, 1 ,1),
+		.color = RGBA(o*b*b, o*b*b, o*b*b, o),
 		.sprite_ptr = vp->spr,
-		.pos.as_cmplx = p.pos,
+		.pos.as_cmplx = visual_pos(&p, vp),
 		.rotation.angle = p.time * 10 * DEG2RAD,
+		.scale = { vp->scale, vp->scale },
 	});
 }
 
 Enemy *(espawn_swirl)(cmplx pos, const ItemCounts *item_drops) {
 	return spawn(pos, item_drops, ECLASS_HP_SWIRL, swirl_draw, (BaseEnemyVisualParams) {
 		.spr = res_sprite("enemy/swirl"),
+		.scale = 1,
+		.opacity = 1,
 	});
 }
 
 static Enemy *spawn_fairy(cmplx pos, const ItemCounts *item_drops, real hp, Animation *ani) {
 	return spawn(pos, item_drops, hp, anyfairy_draw, (FairyVisualParams) {
-		.base.ani = ani,
+		.base = {
+			.ani = ani,
+			.scale = 1,
+			.opacity = 1,
+		}
 	});
 }
 
@@ -316,4 +372,43 @@ Enemy *(espawn_super_fairy)(cmplx pos, const ItemCounts *item_drops) {
 		.color = *RGBA(0.0, 0.0, 0.0, 0.8)
 	);
 	return e;
+}
+
+void ecls_anyenemy_fake3dmovein(
+	Enemy *e,
+	Camera3D *cam,
+	vec3 initpos_3d,
+	int duration
+) {
+	assert(duration > 0);
+
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	vec3 initpos_projected;
+	camera3d_project(cam, initpos_3d, initpos_projected);
+	vp->fakepos.pos = CMPLXF(initpos_projected[0], initpos_projected[1]);
+
+	EnemyFlag tempflags = EFLAG_NO_HIT | EFLAG_NO_HURT | EFLAG_INVULNERABLE;
+	EnemyFlag keepflags = e->flags & tempflags;
+	DrawLayer layer = e->ent.draw_layer;
+
+	tempflags &= ~keepflags;
+	e->flags |= tempflags;
+	e->ent.draw_layer = LAYER_ENEMY_BACKGROUND;
+
+	for(int i = 1;;) {
+		float f = i / (float)duration;
+		vp->fakepos.blendfactor = (1.0 - glm_ease_sine_inout(f));
+		vp->scale = glm_ease_sine_inout(f);
+		vp->opacity = glm_ease_sine_out(f);
+
+		if(i == duration) {
+			break;
+		}
+
+		++i;
+		YIELD;
+	}
+
+	e->flags &= ~tempflags;
+	e->ent.draw_layer = layer;
 }

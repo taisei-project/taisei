@@ -11,6 +11,7 @@
 
 #include "enemy.h"
 #include "item.h"
+#include "stageutils.h"
 
 typedef Enemy *(*EnemySpawner)(cmplx pos, const ItemCounts *item_drops);
 
@@ -44,4 +45,11 @@ SpriteParams ecls_anyfairy_sprite_params(
 	Enemy *fairy,
 	EnemyDrawParams draw_params,
 	SpriteParamsBuffer *out_spbuf
+);
+
+void ecls_anyenemy_fake3dmovein(
+	Enemy *e,
+	Camera3D *cam,
+	vec3 initpos_3d,
+	int duration
 );
