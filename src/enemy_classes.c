@@ -374,6 +374,30 @@ Enemy *(espawn_super_fairy)(cmplx pos, const ItemCounts *item_drops) {
 	return e;
 }
 
+float ecls_anyenemy_set_scale(Enemy *e, float s) {
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	float olds = vp->scale;
+	vp->scale = s;
+	return olds;
+}
+
+float ecls_anyenemy_get_scale(Enemy *e) {
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	return vp->scale;
+}
+
+float ecls_anyenemy_set_opacity(Enemy *e, float o) {
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	float oldo = vp->opacity;
+	vp->opacity = o;
+	return oldo;
+}
+
+float ecls_anyenemy_get_opacity(Enemy *e) {
+	BaseEnemyVisualParams *vp = e->visual.drawdata;
+	return vp->opacity;
+}
+
 void ecls_anyenemy_fake3dmovein(
 	Enemy *e,
 	Camera3D *cam,

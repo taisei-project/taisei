@@ -47,6 +47,11 @@ SpriteParams ecls_anyfairy_sprite_params(
 	SpriteParamsBuffer *out_spbuf
 );
 
+float ecls_anyenemy_set_scale(Enemy *e, float s);
+float ecls_anyenemy_get_scale(Enemy *e);
+float ecls_anyenemy_set_opacity(Enemy *e, float o);
+float ecls_anyenemy_get_opacity(Enemy *e);
+
 void ecls_anyenemy_fake3dmovein(
 	Enemy *e,
 	Camera3D *cam,
