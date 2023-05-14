@@ -39,10 +39,14 @@ void stage3d_update(Stage3D *s) {
 	camera3d_update(&s->cam);
 }
 
-void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
+static void camera3d_apply_rotations(Camera3D *cam, mat4 mat) {
 	glm_rotate_x(mat, glm_rad(-cam->rot.pitch), mat);
 	glm_rotate_y(mat, glm_rad(-cam->rot.yaw), mat);
 	glm_rotate_z(mat, glm_rad(-cam->rot.roll), mat);
+}
+
+void camera3d_apply_transforms(Camera3D *cam, mat4 mat) {
+	camera3d_apply_rotations(cam, mat);
 
 	vec3 trans;
 	glm_vec3_negate_to(cam->pos, trans);
@@ -89,13 +93,21 @@ void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 
 	mat4 mpersp;
 	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
-	camera3d_apply_transforms(cam, mpersp);
-	glm_translate(mpersp, cam->pos);
+	camera3d_apply_rotations(cam, mpersp);
 
 	glm_unproject(p, mpersp, viewport, dest);
 	glm_vec3_normalize(dest);
 }
 
+void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) {
+	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
+
+	mat4 mpersp;
+	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
+	camera3d_apply_rotations(cam, mpersp);
+
+	glm_project(pos, mpersp, viewport, dest);
+}
 
 void camera3d_fill_point_light_uniform_vectors(
 	Camera3D *cam,

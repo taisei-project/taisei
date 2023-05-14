@@ -96,6 +96,7 @@ void camera3d_update(Camera3D *cam) attr_nonnull(1);
 void camera3d_apply_transforms(Camera3D *cam, mat4 mat) attr_nonnull(1, 2);
 void camera3d_apply_inverse_transforms(Camera3D *cam, mat4 mat) attr_nonnull(1, 2);
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) attr_nonnull(1, 3);
+void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) attr_nonnull(1, 2, 3);
 
 void camera3d_set_point_light_uniforms(
 	Camera3D *cam,
