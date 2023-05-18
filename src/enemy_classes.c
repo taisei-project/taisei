@@ -23,6 +23,14 @@
 #define LAYER_ENEMY_PARTICLE_BACKGROUND  (LAYER_BACKGROUND | 0x11)
 #define LAYER_ENEMY_CIRCLE_BACKGROUND    (LAYER_BACKGROUND | 0x10)
 
+typedef enum EnemyDrawOrder {
+	ECLASS_ORDER_SWIRL = 1,
+	ECLASS_ORDER_FAIRY,
+	ECLASS_ORDER_BIG_FAIRY,
+	ECLASS_ORDER_HUGE_FAIRY,
+	ECLASS_ORDER_SUPER_FAIRY,
+} EnemyDrawOrder;
+
 typedef struct BaseEnemyVisualParams {
 	union {
 		Sprite *spr;
@@ -245,10 +253,12 @@ TASK(enemy_drop_items, { BoxedEnemy e; ItemCounts items; }) {
 }
 
 static Enemy *_spawn(
-	cmplx pos, const ItemCounts *item_drops, real hp, EnemyDrawFunc draw, size_t drawdata_alloc
+	cmplx pos, const ItemCounts *item_drops, real hp,
+	EnemyDrawFunc draw, EnemyDrawOrder draw_order, size_t drawdata_alloc
 ) {
 	assert(drawdata_alloc > 0);
 	Enemy *e = create_enemy(pos, hp, (EnemyVisual) { draw });
+	e->ent.draw_layer = LAYER_ENEMY | ((drawlayer_low_t)draw_order << 8);
 
 	// NOTE: almost all enemies drop items, so we can abuse the itemdrop task's stack to hold onto
 	// the draw data buffer for us.
@@ -263,8 +273,8 @@ static Enemy *_spawn(
 }
 
 // Spawn enemy; allocate and initialize its drawdata buffer
-#define spawn(_pos, _items, _hp, _draw, ...) ({ \
-	auto _e = _spawn(_pos, _items, _hp, _draw, sizeof(__VA_ARGS__)); \
+#define spawn(_pos, _items, _hp, _draw, _order, ...) ({ \
+	auto _e = _spawn(_pos, _items, _hp, _draw, _order, sizeof(__VA_ARGS__)); \
 	*(typeof(__VA_ARGS__)*)(_e->visual.drawdata) = __VA_ARGS__; \
 	_e; \
 });
@@ -283,15 +293,19 @@ static void swirl_draw(Enemy *e, EnemyDrawParams p) {
 }
 
 Enemy *(espawn_swirl)(cmplx pos, const ItemCounts *item_drops) {
-	return spawn(pos, item_drops, ECLASS_HP_SWIRL, swirl_draw, (BaseEnemyVisualParams) {
-		.spr = res_sprite("enemy/swirl"),
-		.scale = 1,
-		.opacity = 1,
-	});
+	return spawn(pos, item_drops, ECLASS_HP_SWIRL, swirl_draw, ECLASS_ORDER_SWIRL,
+		(BaseEnemyVisualParams) {
+			.spr = res_sprite("enemy/swirl"),
+			.scale = 1,
+			.opacity = 1,
+		}
+	);
 }
 
-static Enemy *spawn_fairy(cmplx pos, const ItemCounts *item_drops, real hp, Animation *ani) {
-	return spawn(pos, item_drops, hp, anyfairy_draw, (FairyVisualParams) {
+static Enemy *spawn_fairy(
+	cmplx pos, const ItemCounts *item_drops, real hp, EnemyDrawOrder order, Animation *ani
+) {
+	return spawn(pos, item_drops, hp, anyfairy_draw, order, (FairyVisualParams) {
 		.base = {
 			.ani = ani,
 			.scale = 1,
@@ -304,7 +318,7 @@ static Enemy *spawn_fairy(cmplx pos, const ItemCounts *item_drops, real hp, Anim
 static Enemy *espawn_fairy_weak(
 	cmplx pos, const ItemCounts *item_drops, Animation *fairy_ani, Sprite *circle_spr
 ) {
-	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_FAIRY, fairy_ani);
+	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_FAIRY, ECLASS_ORDER_FAIRY, fairy_ani);
 	INVOKE_TASK(fairy_circle, ENT_BOX(e),
 		.sprite = circle_spr,
 		.color = *RGB(1, 1, 1),
@@ -333,7 +347,9 @@ Enemy *(espawn_fairy_red)(cmplx pos, const ItemCounts *item_drops) {
 }
 
 Enemy *(espawn_big_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_BIG_FAIRY, res_anim("enemy/bigfairy"));
+	auto e = spawn_fairy(pos, item_drops,
+		ECLASS_HP_BIG_FAIRY, ECLASS_ORDER_BIG_FAIRY, res_anim("enemy/bigfairy")
+	);
 	INVOKE_TASK(fairy_circle, ENT_BOX(e),
 		.sprite = res_sprite("fairy_circle_big"),
 		.color = *RGB(1, 1, 1),
@@ -350,7 +366,9 @@ Enemy *(espawn_big_fairy)(cmplx pos, const ItemCounts *item_drops) {
 }
 
 Enemy *(espawn_huge_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_HUGE_FAIRY, res_anim("enemy/hugefairy"));
+	auto e = spawn_fairy(pos, item_drops,
+		ECLASS_HP_HUGE_FAIRY, ECLASS_ORDER_HUGE_FAIRY, res_anim("enemy/hugefairy")
+	);
 	INVOKE_TASK(fairy_circle, ENT_BOX(e),
 		.sprite = res_sprite("fairy_circle_big"),
 		.color = *RGBA(1, 1, 1, 0.95),
@@ -371,7 +389,9 @@ Enemy *(espawn_huge_fairy)(cmplx pos, const ItemCounts *item_drops) {
 }
 
 Enemy *(espawn_super_fairy)(cmplx pos, const ItemCounts *item_drops) {
-	auto e = spawn_fairy(pos, item_drops, ECLASS_HP_SUPER_FAIRY, res_anim("enemy/superfairy"));
+	auto e = spawn_fairy(pos, item_drops,
+		ECLASS_HP_SUPER_FAIRY, ECLASS_ORDER_SUPER_FAIRY, res_anim("enemy/superfairy")
+	);
 	INVOKE_TASK(fairy_circle, ENT_BOX(e),
 		.sprite = res_sprite("fairy_circle_big_and_mean"),
 		.color = *RGBA(1, 1, 1, 0.6),
