@@ -58,3 +58,5 @@ void ecls_anyenemy_fake3dmovein(
 	vec3 initpos_3d,
 	int duration
 );
+
+void ecls_anyfairy_summon(Enemy *e, int duration);

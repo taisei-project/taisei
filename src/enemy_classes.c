@@ -38,6 +38,11 @@ typedef struct BaseEnemyVisualParams {
 
 typedef struct FairyVisualParams {
 	BaseEnemyVisualParams base;
+	BoxedProjectile circle;
+	struct {
+		float progress;
+		FloatOffset mask_ofs;
+	} summon;
 } FairyVisualParams;
 
 static cmplxf visual_pos(const EnemyDrawParams *dp, BaseEnemyVisualParams *vp) {
@@ -62,12 +67,18 @@ SpriteParams ecls_anyfairy_sprite_params(
 	float o = vp->base.opacity;
 	float b = 1.0f - vp->base.fakepos.blendfactor;
 	out_spbuf->color = *RGBA(o*b, o*b, o*b, o);
+	out_spbuf->shader_params.vector[0] = vp->summon.progress;
+	out_spbuf->shader_params.vector[1] = vp->summon.mask_ofs.x;
+	out_spbuf->shader_params.vector[2] = vp->summon.mask_ofs.y;
 
 	return (SpriteParams) {
 		.color = &out_spbuf->color,
 		.sprite_ptr = spr,
 		.pos.as_cmplx = visual_pos(&draw_params, &vp->base),
 		.scale = { vp->base.scale, vp->base.scale },
+		.shader_ptr = res_shader("sprite_fairy"),
+		.aux_textures = { res_texture("fractal_noise") },
+		.shader_params = &out_spbuf->shader_params,
 	};
 }
 
@@ -86,19 +97,24 @@ TASK(fairy_circle, {
 	float scale_osc_ampl;
 	float scale_osc_freq;
 }) {
-	YIELD;
+	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.e));
 
 	Projectile *circle = TASK_BIND(PARTICLE(
 		.sprite_ptr = ARGS.sprite,
 		.color = &ARGS.color,
 		.flags = PFLAG_NOMOVE | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE | PFLAG_NOAUTOREMOVE,
-		.layer = LAYER_PARTICLE_LOW,
+		.layer = LAYER_NODRAW,
 	));
+
+	FairyVisualParams *fvp = e->visual.drawdata;
+	fvp->circle = ENT_BOX(circle);
+	YIELD;
+	circle->ent.draw_layer = LAYER_PARTICLE_LOW;
 
 	float scale_osc_phase = 0.0f;
 
-	for(Enemy *e; (e = ENT_UNBOX(ARGS.e)); YIELD) {
-		FairyVisualParams *fvp = e->visual.drawdata;
+	for(;(e = ENT_UNBOX(ARGS.e)); YIELD) {
+		assert(fvp == e->visual.drawdata);
 		circle->pos = visual_pos_e(e);
 		circle->angle += ARGS.spin_rate;
 		float s = ARGS.scale_base + ARGS.scale_osc_ampl * sinf(scale_osc_phase);
@@ -280,7 +296,8 @@ static Enemy *spawn_fairy(cmplx pos, const ItemCounts *item_drops, real hp, Anim
 			.ani = ani,
 			.scale = 1,
 			.opacity = 1,
-		}
+		},
+		.summon.progress = 1,
 	});
 }
 
@@ -398,6 +415,16 @@ float ecls_anyenemy_get_opacity(Enemy *e) {
 	return vp->opacity;
 }
 
+static inline void spawnanim_set_flags(Enemy *e, EnemyFlag *tempflags) {
+	EnemyFlag flags = EFLAG_NO_HIT | EFLAG_NO_HURT | EFLAG_INVULNERABLE;
+	*tempflags = flags & ~e->flags;
+	e->flags |= flags;
+}
+
+static inline void spawnanim_restore_flags(Enemy *e, EnemyFlag *tempflags) {
+	e->flags &= ~*tempflags;
+}
+
 void ecls_anyenemy_fake3dmovein(
 	Enemy *e,
 	Camera3D *cam,
@@ -411,13 +438,11 @@ void ecls_anyenemy_fake3dmovein(
 	camera3d_project(cam, initpos_3d, initpos_projected);
 	vp->fakepos.pos = CMPLXF(initpos_projected[0], initpos_projected[1]);
 
-	EnemyFlag tempflags = EFLAG_NO_HIT | EFLAG_NO_HURT | EFLAG_INVULNERABLE;
-	EnemyFlag keepflags = e->flags & tempflags;
-	DrawLayer layer = e->ent.draw_layer;
+	EnemyFlag tempflags;
+	spawnanim_set_flags(e, &tempflags);
 
-	tempflags &= ~keepflags;
-	e->flags |= tempflags;
-	e->ent.draw_layer = LAYER_ENEMY_BACKGROUND;
+	DrawLayer layer = e->ent.draw_layer;
+	e->ent.draw_layer = LAYER_ENEMY_BACKGROUND | (layer & LAYER_LOW_MASK);
 
 	for(int i = 1;;) {
 		float f = i / (float)duration;
@@ -433,6 +458,61 @@ void ecls_anyenemy_fake3dmovein(
 		YIELD;
 	}
 
-	e->flags &= ~tempflags;
+	spawnanim_restore_flags(e, &tempflags);
 	e->ent.draw_layer = layer;
+}
+
+void ecls_anyfairy_summon(Enemy *e, int duration) {
+	assert(duration > 0);
+
+	FairyVisualParams *vp = e->visual.drawdata;
+
+	EnemyFlag tempflags;
+	spawnanim_set_flags(e, &tempflags);
+
+	DrawLayer elayer = e->ent.draw_layer;
+	e->ent.draw_layer = LAYER_NODRAW;
+	vp->summon.progress = 0;
+	vp->summon.mask_ofs.x = rng_f32();
+	vp->summon.mask_ofs.y = rng_f32();
+
+	Projectile *circle = NOT_NULL(ENT_UNBOX(vp->circle));
+	Color circle_basecolor = circle->color;
+	Color circle_spawncolor = *color_mul(
+		COLOR_COPY(&circle_basecolor),
+		RGBA(2, 2, 2, 0)
+	);
+
+	float fairy_delay = 0.1f;
+
+	for(int i = 1;;) {
+		float f = i / (float)duration;
+
+		vp->base.opacity = glm_ease_quint_in(clampf(f * 2.0f, 0.0f, 1.0f));
+		vp->base.scale = lerpf(3.0f, 1.0f, glm_ease_back_out( glm_ease_sine_inout(f)));
+
+		if(f >= fairy_delay) {
+			vp->summon.progress = glm_ease_sine_inout(
+				(f - fairy_delay) / (1.0f - fairy_delay) * 0.875f);
+			e->ent.draw_layer = elayer;
+		}
+
+		if((circle = ENT_UNBOX(vp->circle))) {
+			circle->color = *color_lerp(
+				COLOR_COPY(&circle_spawncolor),
+				&circle_basecolor,
+				glm_ease_quad_in(f)
+			);
+		}
+
+		if(i == duration) {
+			break;
+		}
+
+		++i;
+		YIELD;
+	}
+
+	vp->summon.progress = 1;
+	spawnanim_restore_flags(e, &tempflags);
 }
