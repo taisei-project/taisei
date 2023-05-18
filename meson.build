@@ -460,10 +460,11 @@ if host_machine.system() == 'windows'
         input : 'COPYING',
         output : 'COPYING.txt',
         install : true,
-        install_dir : doc_path
+        install_dir : doc_path,
+        install_tag : 'license',
     )
 else
-    install_data('COPYING', install_dir : doc_path)
+    install_data('COPYING', install_dir : doc_path, install_tag : 'license')
 endif
 
 if angle_enabled
@@ -504,6 +505,7 @@ if angle_enabled
         angle_libgles,
         angle_libegl,
         install_dir : angle_install_path,
+        install_tag : 'runtime',
     )
 endif
 
@@ -599,8 +601,8 @@ endif
 subdir('misc')
 subdir('emscripten')
 subdir('switch')
-subdir('external')
 subdir('resources')
+subdir('external')
 subdir('doc')
 subdir('xdg')
 subdir('atlas')

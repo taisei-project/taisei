@@ -5,6 +5,7 @@ packages = [
     '00-taisei',
 ]
 
+res_install_tag = 'resources'
 use_static_res_index = (host_machine.system() == 'emscripten')
 
 foreach pkg : packages
@@ -51,7 +52,10 @@ if use_static_res_index
 
     taisei_deps += declare_dependency(include_directories : include_directories('.'))
 
-    meson.add_install_script(res_index_install_command, resindex, data_path)
+    meson.add_install_script(
+        res_index_install_command, resindex, data_path,
+        install_tag : res_install_tag,
+    )
     subdir_done()
 endif
 
@@ -72,11 +76,17 @@ foreach pkg : packages
             depfile : '@0@.d'.format(pkg_zip),
             install : true,
             install_dir : data_path,
+            install_tag : res_install_tag,
             console : true,
         )
     else
         glob_result = run_command(glob_command, pkg_path, '**/meson.build', check : true)
-        install_subdir(pkg_pkgdir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
+        install_subdir(
+            pkg_pkgdir,
+            install_dir : data_path,
+            install_tag : res_install_tag,
+            exclude_files : glob_result.stdout().split('\n')
+        )
     endif
 endforeach
 
@@ -98,10 +108,19 @@ if host_machine.system() == 'nx'
             depfile : '@0@.d'.format(shader_pkg_zip),
             install : true,
             install_dir : data_path,
+            install_tag : res_install_tag,
             console : true,
         )
     else
-        glob_result = run_command(glob_command, shaders_build_dir, '**/*.spv', '**/meson.build', check : true)
-        install_subdir(shaders_build_dir, install_dir : data_path, exclude_files : glob_result.stdout().split('\n'))
+        glob_result = run_command(
+            glob_command, shaders_build_dir, '**/*.spv', '**/meson.build',
+            check : true
+        )
+        install_subdir(
+            shaders_build_dir,
+            install_dir : data_path,
+            install_tag : res_install_tag,
+            exclude_files : glob_result.stdout().split('\n')
+        )
     endif
 endif

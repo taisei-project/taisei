@@ -382,6 +382,7 @@ if host_machine.system() == 'emscripten'
         output : em_link_outputs,
         install : true,
         install_dir : bindir,
+        install_tag : 'runtime',
         console : true,
     )
 
@@ -426,6 +427,7 @@ elif host_machine.system() == 'nx'
         depends : [taisei_nacp],
         install : true,
         install_dir : bindir,
+        install_tag : 'runtime',
         output : taisei_nro_name,
     )
     bindist_deps += taisei_nro

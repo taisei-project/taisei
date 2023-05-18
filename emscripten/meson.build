@@ -9,6 +9,7 @@ if host_machine.system() == 'emscripten'
             'scythe.webp',
             'favicon.ico',
         ),
-        install_dir : bindir
+        install_dir : bindir,
+        install_tag : 'runtime',
     )
 endif

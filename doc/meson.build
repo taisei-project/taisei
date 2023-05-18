@@ -5,7 +5,8 @@ if angle_enabled
         input : 'LICENSE.ANGLE',
         output : 'LICENSE.txt',
         install : true,
-        install_dir : angle_install_path
+        install_dir : angle_install_path,
+        install_tag : 'license',
     )
 endif
 
@@ -58,7 +59,8 @@ if rst2html5.found()
             input : f,
             output : f,
             install : true,
-            install_dir : doc_path
+            install_dir : doc_path,
+            install_tag : 'doc',
         )
     endforeach
 
@@ -70,6 +72,7 @@ if rst2html5.found()
             output : name,
             install : true,
             install_dir : doc_path,
+            install_tag : 'doc',
             depend_files : files('taisei.css')
         )
     endforeach
