@@ -401,6 +401,7 @@ static void main_post_vfsinit(CallChainResult ccr) {
 #endif
 
 	CallChain cc_cleanup = CALLCHAIN(main_cleanup, ctx);
+	CallChain cc_mainmenu = CALLCHAIN(main_mainmenu, ctx);
 
 	if(ctx->cli.type == CLI_QuitLate) {
 		run_call_chain(&cc_cleanup, NULL);
@@ -434,12 +435,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 #endif
 
 	if(!progress_is_cutscene_unlocked(CUTSCENE_ID_INTRO) || ctx->cli.force_intro) {
-		cutscene_enter(cc_cleanup, CUTSCENE_ID_INTRO);
+		cutscene_enter(cc_mainmenu, CUTSCENE_ID_INTRO);
 		eventloop_run();
 		return;
 	}
 
-	run_call_chain(&CALLCHAIN(main_mainmenu, ctx), NULL);
+	run_call_chain(&cc_mainmenu, NULL);
 	eventloop_run();
 }
 
