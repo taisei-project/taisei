@@ -299,9 +299,9 @@ TASK(instantcircle_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	e->move.acceleration = ARGS.exit_accel;
 }
 
-TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int interval; } ) {
+TASK(waveshot, { cmplx pos; cmplx dir; real spread; real freq; int shots; int interval; } ) {
 	for(int i = 0; i < ARGS.shots; ++i) {
-		cmplx v = 4 * cdir(ARGS.angle + ARGS.spread * triangle(ARGS.freq * i));
+		cmplx v = 4 * ARGS.dir * cdir(ARGS.spread * triangle(ARGS.freq * i));
 
 		play_sfx_loop("shot1_loop");
 		PROJECTILE(
@@ -316,14 +316,12 @@ TASK(waveshot, { cmplx pos; real angle; real spread; real freq; int shots; int i
 	}
 }
 
-TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
+TASK(waveshot_fairy, { cmplx pos; cmplx exit_accel; }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 4, .power = 2)));
-	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.03);
+	ecls_anyfairy_summon(e, 120);
 
-	WAIT(60);
-
-	real angle = carg(global.plr.pos - e->pos);
-	cmplx ofs = -24 * cdir(angle);
+	cmplx dir = cnormalize(global.plr.pos - e->pos);
+	cmplx ofs = -24 * dir;
 
 	common_charge(60, &e->pos, ofs, RGBA(0.0, 0.25, 0.5, 0));
 
@@ -333,7 +331,7 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	real frequency = 60 * (1.0/12.0) / shots;
 	shots += 1;
 
-	INVOKE_SUBTASK(waveshot, e->pos + ofs, angle, rng_sign() * spread, frequency, shots, interval);
+	INVOKE_SUBTASK(waveshot, e->pos + ofs, dir, rng_sign() * spread, frequency, shots, interval);
 
 	WAIT(120);
 
@@ -342,12 +340,17 @@ TASK(waveshot_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
 	e->move.acceleration = ARGS.exit_accel;
 }
 
-TASK(explosion_fairy, { cmplx pos; cmplx target_pos; cmplx exit_accel; }) {
+TASK(explosion_fairy, { cmplx pos; cmplx exit_accel; }) {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 8)));
-	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.06);
+	INVOKE_SUBTASK_DELAYED(80, common_charge, {
+		.time = 120,
+		.pos = e->pos,
+		.color = RGBA(1.0, 0, 0.2, 0),
+		.sound = COMMON_CHARGE_SOUNDS,
+	});
+	ecls_anyfairy_summon(e, 120);
 
-	WAIT(40);
-	common_charge(60, &e->pos, 0, RGBA(1.0, 0, 0.2, 0));
+	WAIT(80);
 
 	int cnt = difficulty_value(30, 30, 60, 60);
 	int trails = difficulty_value(0, 2, 3, 4);
@@ -566,7 +569,7 @@ TASK(waveshot_fairies, { int duration; }) {
 	for(int t = ARGS.duration; t > 0; t -= interval) {
 		real x = VIEWPORT_W/2 + round(rng_sreal() * 69);
 		real y = rng_range(200, 240);
-		INVOKE_TASK(waveshot_fairy, x, x+y*I, 0.15 * I);
+		INVOKE_TASK(waveshot_fairy, x+y*I, 0.15 * I);
 		WAIT(interval);
 	}
 }
@@ -601,13 +604,15 @@ TASK(spawn_midboss) {
 	stage1_bg_enable_snow();
 }
 
-TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
+TASK(tritoss_fairy, { cmplx pos; cmplx end_velocity; }) {
 	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(.points = 5, .power = 6)));
-
-	e->move = move_linear(ARGS.velocity);
-	WAIT(60);
-	e->move.retention = 0.9;
-	WAIT(20);
+	INVOKE_SUBTASK_DELAYED(120, common_charge, {
+		.pos = e->pos,
+		.time = 60,
+		.color = RGBA(0.1, 0.2, 1.0, 0),
+		.sound = COMMON_CHARGE_SOUNDS,
+	});
+	ecls_anyfairy_summon(e, 180);
 
 	int interval = difficulty_value(12, 9, 5, 3);
 	int rounds = 680/interval;
@@ -650,7 +655,7 @@ TASK(tritoss_fairy, { cmplx pos; cmplx velocity; cmplx end_velocity; }) {
 		WAIT(interval);
 	}
 
-	WAIT(20);
+	WAIT(60);
 	e->move = move_asymptotic_simple(ARGS.end_velocity, -1);
 }
 
@@ -744,17 +749,17 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 		INVOKE_TASK_DELAYED(140, circletoss_fairy, VIEWPORT_W+25 + 2*VIEWPORT_H/3*I, -1 - 0.5*I, 0.01 * (-1 - I), 200);
 	}
 
-	STAGE_BOOKMARK_DELAYED(200, waveshot-fairies);
+	STAGE_BOOKMARK_DELAYED(180, waveshot-fairies);
 
-	INVOKE_TASK_DELAYED(240, waveshot_fairies, 600);
+	INVOKE_TASK_DELAYED(180, waveshot_fairies, 600);
 	INVOKE_TASK_DELAYED(400, burst_fairies_3);
 	INVOKE_TASK_DELAYED(430, burst_fairies_3);
 
 	STAGE_BOOKMARK_DELAYED(1000, post-midboss-filler-2);
 
 	INVOKE_TASK_DELAYED(1000, burst_fairies_1);
-	INVOKE_TASK_DELAYED(1120, explosion_fairy,              120*I, VIEWPORT_W-80 + 120*I, -0.2+0.1*I);
-	INVOKE_TASK_DELAYED(1280, explosion_fairy, VIEWPORT_W + 220*I,            80 + 220*I,  0.2+0.1*I);
+	INVOKE_TASK_DELAYED(1000, explosion_fairy, VIEWPORT_W-80 + 120*I, -0.2+0.1*I);
+	INVOKE_TASK_DELAYED(1140, explosion_fairy,            80 + 220*I,  0.2+0.1*I);
 
 	STAGE_BOOKMARK_DELAYED(1400, post-midboss-filler-3);
 
@@ -764,7 +769,7 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 		INVOKE_TASK_DELAYED(1600, drop_swirls, 25,   VIEWPORT_W/3, 2*I,  0.06);
 	}
 
-	INVOKE_TASK_DELAYED(1520, tritoss_fairy, VIEWPORT_W / 2 - 30*I, 3 * I, -2.6 * I);
+	INVOKE_TASK_DELAYED(1420, tritoss_fairy, VIEWPORT_W / 2 + 220*I, -2.6 * I);
 
 	INVOKE_TASK_DELAYED(1820, circle_fairy, VIEWPORT_W + 42 + 300*I, VIEWPORT_W - 130 + 240*I);
 	INVOKE_TASK_DELAYED(1820, circle_fairy,            - 42 + 300*I,              130 + 240*I);
@@ -774,8 +779,8 @@ DEFINE_EXTERN_TASK(stage1_timeline) {
 		INVOKE_TASK_DELAYED(1880, instantcircle_fairy,            - 42 + 300*I,               84 + 260*I, 0.2 * ( 2 - I));
 	}
 
-	INVOKE_TASK_DELAYED(2120, waveshot_fairy, VIEWPORT_W + 42 + 300*I,               130 + 140*I, 0.2 * (-2 - I));
-	INVOKE_TASK_DELAYED(2120, waveshot_fairy,            - 42 + 300*I, VIEWPORT_W -  130 + 140*I, 0.2 * ( 2 - I));
+	INVOKE_TASK_DELAYED(2060, waveshot_fairy,               130 + 140*I, 0.2 * (-2 - I));
+	INVOKE_TASK_DELAYED(2060, waveshot_fairy, VIEWPORT_W -  130 + 140*I, 0.2 * ( 2 - I));
 
 	STAGE_BOOKMARK_DELAYED(2300, pre-boss);
 
