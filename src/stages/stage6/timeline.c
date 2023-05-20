@@ -20,24 +20,27 @@
 
 #include "common_tasks.h"
 
-TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
+TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(
 		.points = 12,
 		.power = 6,
 		.life = 1,
 	)));
-	e->move = ARGS.move;
 
-	INVOKE_SUBTASK_DELAYED(20, common_charge,
+	int summon_time = 180;
+	int precharge_time = 30;
+	int charge_time = 60;
+
+	INVOKE_SUBTASK_DELAYED(summon_time - precharge_time, common_charge,
 		.anchor = &e->pos,
 		.color = RGBA(1, 0, 0, 0),
-		.time = 80,
+		.time = charge_time + precharge_time,
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
-	WAIT(70);
-	e->move = move_dampen(e->move.velocity, 0.9);
 
-	WAIT(30);
+	ecls_anyfairy_summon(e, summon_time);
+	WAIT(charge_time);
+
 	int duration = difficulty_value(220, 260, 300, 340);
 	int step = 3;
 
@@ -58,7 +61,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams move; }) {
 	}
 
 	WAIT(300);
-	e->move = move_linear(-ARGS.move.velocity);
+	e->move = ARGS.exit_move;
 }
 
 TASK(side_fairy, { cmplx pos; MoveParams move; cmplx direction; real index; }) {
@@ -180,7 +183,7 @@ TASK(sniper_fairy_bullet, { cmplx pos; cmplx aim; }) {
 TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 	auto e = TASK_BIND(ARGS.e);
 
-	int aimtime = 90;
+	int aimtime = 150;
 	int aimfreezetime = aimtime - difficulty_value(30, 30, 20, 15);
 	int trailtime = 20;
 	float lwidth = 16;
@@ -229,11 +232,11 @@ TASK(sniper_fairy_shot, { BoxedEnemy e; }) {
 	CANCEL_TASK(cleanup);
 }
 
-TASK(sniper_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+#define SNIPER_SPAWNTIME 180
+
+TASK(sniper_fairy, { cmplx pos; MoveParams move_exit; }) {
 	auto e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 5, .power = 4)));
-	e->move = ARGS.move_enter;
-	WAIT(60);
-	e->move = move_dampen(e->move.velocity, 0.9);
+	ecls_anyfairy_summon(e, SNIPER_SPAWNTIME);
 
 	INVOKE_SUBTASK(sniper_fairy_shot, ENT_BOX(e));
 	AWAIT_SUBTASKS;
@@ -436,7 +439,10 @@ TASK(wallmakers, { int count; cmplx pos; MoveParams move; }) {
 }
 
 DEFINE_EXTERN_TASK(stage6_timeline) {
-	INVOKE_TASK_DELAYED(100, hacker_fairy, .pos = VIEWPORT_W / 2.0, .move = move_linear(2.0 * I));
+	INVOKE_TASK_DELAYED(20, hacker_fairy, {
+		.pos = VIEWPORT_W / 2.0 + 200 * I,
+		.exit_move = move_asymptotic_simple(2.0 * I, -1),
+	});
 
 	for(int i = 0; i < 20; i++) {
 		INVOKE_TASK_DELAYED(500 + 10 * i, side_fairy,
@@ -485,17 +491,15 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 	}
 
 	for(int i = 0; i < 12; ++i) {
-		INVOKE_TASK_DELAYED(1400 + 120 * i, sniper_fairy,
-			.pos = VIEWPORT_W + VIEWPORT_H*0.6i,
-			.move_enter = move_linear(-1.5 * cdir(0.5 * ((2 - (i % 3)) - 1))),
+		INVOKE_TASK_DELAYED(1400 + 120 * i - SNIPER_SPAWNTIME, sniper_fairy,
+			.pos = VIEWPORT_W + VIEWPORT_H*0.6i - 1.5 * 80 * cdir(0.5 * ((2 - (i % 3)) - 1)),
 			.move_exit = move_accelerated(-1, -0.04i),
 		);
 	}
 
 	for(int i = 0; i < 6; ++i) {
-		INVOKE_TASK_DELAYED(2180 + 120 * i, sniper_fairy,
-			.pos = VIEWPORT_H*0.6i,
-			.move_enter = move_linear(1.5 * cdir(0.5 * ((2 - (i % 3)) - 1))),
+		INVOKE_TASK_DELAYED(2180 + 120 * i - SNIPER_SPAWNTIME, sniper_fairy,
+			.pos = VIEWPORT_H*0.6i + 1.5 * 80 * cdir(0.5 * ((2 - (i % 3)) - 1)),
 			.move_exit = move_accelerated(1, -0.04i),
 		);
 	}
