@@ -404,13 +404,13 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 	kill_projectile(p);
 }
 
-TASK(laserball_fairy, { cmplx pos; cmplx target_pos; real freq_factor; }) {
+TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(
 		.power = 5,
 		.points = 5,
 	)));
 
-	e->move = move_from_towards(e->pos, ARGS.target_pos, 0.04);
+	ecls_anyfairy_summon(e, 120);
 	WAIT(30);
 	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
 
@@ -705,9 +705,8 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.velocity = 2*I,
 	);
 
-	INVOKE_TASK_DELAYED(1000, laserball_fairy,
-		.pos = VIEWPORT_W + 10 + 300 * I,
-		.target_pos = 3*VIEWPORT_W/4 + 200*I,
+	INVOKE_TASK_DELAYED(880, laserball_fairy,
+		.pos = 3*VIEWPORT_W/4 + 200*I,
 		.freq_factor = 1,
 	);
 
@@ -718,15 +717,13 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 	);
 
 	if(global.diff > D_Normal) {
-		INVOKE_TASK_DELAYED(1820, laserball_fairy,
-			.pos = - 10 + 300 * I,
-			.target_pos = VIEWPORT_W/3 + 140*I,
+		INVOKE_TASK_DELAYED(1700, laserball_fairy,
+			.pos = VIEWPORT_W/3 + 140*I,
 			.freq_factor = 1,
 		);
 
-		INVOKE_TASK_DELAYED(1820, laserball_fairy,
-			.pos = VIEWPORT_W + 10 + 300 * I,
-			.target_pos = 2*VIEWPORT_W/3 + 140*I,
+		INVOKE_TASK_DELAYED(1700, laserball_fairy,
+			.pos = 2*VIEWPORT_W/3 + 140*I,
 			.freq_factor = -1,
 		);
 	}
@@ -764,15 +761,13 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.target_pos = VIEWPORT_W/2.0 + I*VIEWPORT_H/3.0,
 	);
 
-	INVOKE_TASK_DELAYED(1720, laserball_fairy,
-		.pos = - 10 + 300 * I,
-		.target_pos = VIEWPORT_W/3 + 140*I,
+	INVOKE_TASK_DELAYED(1600, laserball_fairy,
+		.pos = VIEWPORT_W/3 + 140*I,
 		.freq_factor = -1,
 	);
 
-	INVOKE_TASK_DELAYED(1720, laserball_fairy,
-		.pos = VIEWPORT_W + 10 + 300 * I,
-		.target_pos = 2*VIEWPORT_W/3 + 140*I,
+	INVOKE_TASK_DELAYED(1600, laserball_fairy,
+		.pos = 2*VIEWPORT_W/3 + 140*I,
 		.freq_factor = 1,
 	);
 
@@ -781,15 +776,13 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 		.interval = 60,
 	);
 
-	INVOKE_TASK_DELAYED(2360, laserball_fairy,
-		.pos = VIEWPORT_W + 10 + 400 * I,
-		.target_pos = VIEWPORT_W/4 + 240*I,
+	INVOKE_TASK_DELAYED(2240, laserball_fairy,
+		.pos = VIEWPORT_W/4 + 240*I,
 		.freq_factor = -1,
 	);
 
-	INVOKE_TASK_DELAYED(2360, laserball_fairy,
-		.pos = - 10 + 400 * I,
-		.target_pos = 3*VIEWPORT_W/4 + 240*I,
+	INVOKE_TASK_DELAYED(2240, laserball_fairy,
+		.pos = 3*VIEWPORT_W/4 + 240*I,
 		.freq_factor = 1,
 	);
 
