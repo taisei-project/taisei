@@ -249,18 +249,6 @@ TASK(cardbuster_fairy, { cmplx poss[4]; }) {
 	STALL;
 }
 
-TASK(backfire_swirl_move, { BoxedEnemy enemy; }) {
-	Enemy *e = TASK_BIND(ARGS.enemy);
-
-	e->move.acceleration = -0.05 * I;
-	WAIT(20);
-	e->move.acceleration = 0;
-	WAIT(40);
-	e->move.acceleration = 0.05 * I;
-	WAIT(40);
-	e->move.acceleration = -0.02 * I;
-}
-
 TASK(play_laser_sfx) {
 	play_sfx("laser1");
 }
@@ -292,7 +280,6 @@ TASK(backfire_swirl_explosion, { BoxedEnemy enemy; }) {
 			.move = move_asymptotic_simple(2 * dir_squeezed, radius),
 		);
 	}
-		
 }
 
 TASK(backfire_swirl, { cmplx pos; MoveParams move; }) {
