@@ -583,48 +583,6 @@ static void stage_input(StageFrameState *fstate) {
 	player_applymovement(&global.plr);
 }
 
-static void stage_logic(void) {
-	process_boss(&global.boss);
-	process_enemies(&global.enemies);
-	process_projectiles(&global.projs, true);
-	process_items();
-	process_lasers();
-	process_projectiles(&global.particles, false);
-
-	if(global.dialog) {
-		dialog_update(global.dialog);
-
-		if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
-			dialog_page(global.dialog);
-		}
-	}
-
-	if(stage_is_skip_mode()) {
-		if(dialog_is_active(global.dialog)) {
-			dialog_page(global.dialog);
-		}
-
-		if(global.boss) {
-			ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
-		}
-	}
-
-	update_all_sfx();
-
-	global.frames++;
-
-	if(global.replay.input.replay && global.gameover != GAMEOVER_TRANSITIONING) {
-		ReplayStage *rstg = global.replay.input.stage;
-		ReplayEvent *last_event = dynarray_get_ptr(&rstg->events, rstg->events.num_elements - 1);
-
-		if(global.frames == last_event->frame - FADE_TIME && last_event->type != EV_RESUME) {
-			stage_finish(GAMEOVER_DEFEAT);
-		}
-	}
-
-	stagetext_update();
-}
-
 void stage_clear_hazards_predicate(bool (*predicate)(EntityInterface *ent, void *arg), void *arg, ClearHazardsFlags flags) {
 	bool force = flags & CLEAR_HAZARDS_FORCE;
 
@@ -879,6 +837,33 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
+static void stage_replay_sync(StageFrameState *fstate) {
+	uint16_t desync_check = (rng_u64() ^ global.plr.points) & 0xFFFF;
+	ReplaySyncStatus rpsync = replay_state_check_desync(&global.replay.input, global.frames, desync_check);
+
+	if(
+		global.replay.output.stage &&
+		fstate->desync_check_freq > 0 &&
+		!(global.frames % fstate->desync_check_freq)
+	) {
+		replay_stage_event(global.replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
+	}
+
+	if(rpsync == REPLAY_SYNC_FAIL) {
+		if(
+			global.is_replay_verification &&
+			!global.replay.output.stage
+		) {
+			exit(1);
+		}
+
+		if(fstate->quicksave && fstate->quicksave == global.replay.input.replay) {
+			log_warn("Quicksave replay desynced; resuming prematurely!");
+			leave_replay_mode(fstate, &global.replay.input);
+		}
+	}
+}
+
 static LogicFrameAction stage_logic_frame(void *arg) {
 	StageFrameState *fstate = arg;
 	StageInfo *stage = fstate->stage;
@@ -906,8 +891,35 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		events_poll(NULL, 0);
 	} else {
 		cosched_run_tasks(&fstate->sched);
+		update_all_sfx();
+		stage_replay_sync(fstate);
 
-		if(global.gameover == GAMEOVER_SCORESCREEN && global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY) {
+		global.frames++;
+
+		/*
+		 * TODO: Investigate why/if any of this needs to happen after global.frames++,
+		 *       and possibly fix that.
+		 */
+
+		stagetext_update();
+
+		if(global.replay.input.replay && global.gameover != GAMEOVER_TRANSITIONING) {
+			ReplayStage *rstg = global.replay.input.stage;
+			ReplayEvent *last_event = dynarray_get_ptr(
+				&rstg->events, rstg->events.num_elements - 1);
+
+			if(
+				global.frames == last_event->frame - FADE_TIME &&
+				last_event->type != EV_RESUME
+			) {
+				stage_finish(GAMEOVER_DEFEAT);
+			}
+		}
+
+		if(
+			global.gameover == GAMEOVER_SCORESCREEN &&
+			global.frames - global.gameover_time == GAMEOVER_SCORE_DELAY
+		) {
 			StageClearBonus b;
 			stage_give_clear_bonus(stage, &b);
 			stage_display_clear_screen(&b);
@@ -915,31 +927,6 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 
 		if(stage->type == STAGE_SPELL && !global.boss && !fstate->transition_delay) {
 			fstate->transition_delay = 120;
-		}
-	}
-
-	uint16_t desync_check = (rng_u64() ^ global.plr.points) & 0xFFFF;
-	ReplaySyncStatus rpsync = replay_state_check_desync(&global.replay.input, global.frames, desync_check);
-
-	if(
-		global.replay.output.stage &&
-		fstate->desync_check_freq > 0 &&
-		!(global.frames % fstate->desync_check_freq)
-	) {
-		replay_stage_event(global.replay.output.stage, global.frames, EV_CHECK_DESYNC, desync_check);
-	}
-
-	if(rpsync == REPLAY_SYNC_FAIL) {
-		if(
-			global.is_replay_verification &&
-			!global.replay.output.stage
-		) {
-			exit(1);
-		}
-
-		if(fstate->quicksave && fstate->quicksave == global.replay.input.replay) {
-			log_warn("Quicksave replay desynced; resuming prematurely!");
-			leave_replay_mode(fstate, &global.replay.input);
 		}
 	}
 
@@ -1023,7 +1010,30 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 			stage_input(fstate);
 		}
 
-		stage_logic();
+		process_boss(&global.boss);
+		process_enemies(&global.enemies);
+		process_projectiles(&global.projs, true);
+		process_items();
+		process_lasers();
+		process_projectiles(&global.particles, false);
+
+		if(global.dialog) {
+			dialog_update(global.dialog);
+
+			if((global.plr.inputflags & INFLAG_SKIP) && dialog_is_active(global.dialog)) {
+				dialog_page(global.dialog);
+			}
+		}
+
+		if(stage_is_skip_mode()) {
+			if(dialog_is_active(global.dialog)) {
+				dialog_page(global.dialog);
+			}
+
+			if(global.boss) {
+				ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
+			}
+		}
 	}
 }
 
