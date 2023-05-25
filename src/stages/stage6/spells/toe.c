@@ -575,7 +575,7 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 	int cycle_step = 200;
 	int solo_cycles = (FERMIONTIME - start_time) / cycle_step - global.diff + 1;
 	int warp_cycles = (HIGGSTIME - start_time) / cycle_step - 1;
-	int count;
+	int count = 0;
 
 	for(int cycle = 0; cycle < end_time/cycle_step; cycle++) {
 		count = 30 - (count == 0); // get rid of the spawn safe spot on first cycle
