@@ -240,7 +240,14 @@ static void log_dispatch(LogEntry *entry) {
 		if(l->levels & entry->level) {
 			if(!init) {
 				modname(entry->file, strlen(entry->file), mbuf);
+
+				DIAGNOSTIC_GCC(push)
+				DIAGNOSTIC_GCC(ignored "-Wpragmas")
+				DIAGNOSTIC_GCC(ignored "-Wdangling-pointer")
+				// The formatter is not expected to leak this out of the the stack frame.
 				entry->module = mbuf;
+				DIAGNOSTIC_GCC(pop)
+
 				filter_lvlmask = filter_entry(entry);
 				init = true;
 			}
