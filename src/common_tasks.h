@@ -163,3 +163,5 @@ DECLARE_EXTERN_TASK(
 		glm_ease_t ease;
 	}
 );
+
+DECLARE_EXTERN_TASK(common_play_sfx, { const char *name; });

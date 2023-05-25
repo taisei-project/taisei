@@ -392,3 +392,7 @@ DEFINE_EXTERN_TASK(common_easing_animated) {
 		*ARGS.value = from + scale * ARGS.ease(t / ftime);
     }
 }
+
+DEFINE_EXTERN_TASK(common_play_sfx) {
+	play_sfx(ARGS.name);
+}
