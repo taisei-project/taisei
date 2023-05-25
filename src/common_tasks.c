@@ -286,9 +286,9 @@ DEFINE_EXTERN_TASK(common_kill_enemy) {
 
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
-	double angle;
-	cmplx dest;
-	cmplx dir;
+	double angle = 0;
+	cmplx dest = 0;
+	cmplx dir = 0;
 
 	// assert(point_in_rect(origin, bounds));
 
