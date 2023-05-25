@@ -134,7 +134,6 @@ INLINE void skipstate_shutdown(void) { }
 #endif
 
 static void stage_start(StageInfo *stage) {
-	global.timer = 0;
 	global.frames = 0;
 	global.gameover = 0;
 	global.voltage_threshold = 0;
@@ -614,10 +613,6 @@ static void stage_logic(void) {
 
 	global.frames++;
 
-	if(!dialog_is_active(global.dialog) && (!global.boss || boss_is_fleeing(global.boss))) {
-		global.timer++;
-	}
-
 	if(global.replay.input.replay && global.gameover != GAMEOVER_TRANSITIONING) {
 		ReplayStage *rstg = global.replay.input.stage;
 		ReplayEvent *last_event = dynarray_get_ptr(&rstg->events, rstg->events.num_elements - 1);
@@ -717,16 +712,10 @@ TASK(clear_dialog) {
 	global.dialog = NULL;
 }
 
-TASK(dialog_fixup_timer) {
-	// HACK: remove when global.timer is gone
-	global.timer++;
-}
-
 void stage_begin_dialog(Dialog *d) {
 	assert(global.dialog == NULL);
 	global.dialog = d;
 	dialog_init(d);
-	INVOKE_TASK_WHEN(&d->events.fadeout_began, dialog_fixup_timer);
 	INVOKE_TASK_WHEN(&d->events.fadeout_ended, clear_dialog);
 }
 

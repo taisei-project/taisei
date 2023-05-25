@@ -1457,10 +1457,9 @@ void stage_draw_bottom_text(void) {
 	Font *font;
 
 #ifdef DEBUG
-	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, timer: %d, frames: %d (%d:%02d) ",
+	snprintf(buf, sizeof(buf), "%.2f lfps, %.2f rfps, frames: %d (%d:%02d) ",
 		global.fps.logic.fps,
 		global.fps.render.fps,
-		global.timer,
 		global.frames,
 		global.frames / 3600,
 		(global.frames % 3600) / 60
