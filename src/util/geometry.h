@@ -154,6 +154,6 @@ void rect_move(Rect *r, cmplx pos) {
 bool point_in_rect(cmplx p, Rect r);
 bool rect_in_rect(Rect inner, Rect outer) attr_const;
 bool rect_rect_intersect(Rect r1, Rect r2, bool edges, bool corners) attr_const;
-bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *out) attr_pure attr_nonnull(5);
+bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *out) attr_nonnull(5);
 bool rect_join(Rect *r1, Rect r2) attr_pure attr_nonnull(1);
 void rect_set_xywh(Rect *rect, double x, double y, double w, double h) attr_nonnull(1);
