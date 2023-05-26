@@ -33,10 +33,11 @@ TASK(kurumi_aniwall_bullet, { cmplx pos; MoveParams move; }) {
 		.pos = ARGS.pos,
 		.color = RGB(1,0,0),
 		.move = ARGS.move,
+		.layer = LAYER_BULLET + rng_real() * 10
 	));
 
 	for(;;) {
-		p->color.r = cimag(p->pos)/VIEWPORT_H;
+		p->color.r = 0.3 + 0.7 * psin(4 * cimag(p->pos)/VIEWPORT_H + 0.03 * global.frames);
 		YIELD;
 	}
 }
@@ -82,6 +83,8 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 
 	create_lasercurve2c(ARGS.pos, 50, 80, RGBA(1.0, 0.4, 0.4, 0.0), las_accel, 0, m.move.acceleration);
 
+	real velocity_boost = creal(ARGS.direction) > 0 ? 1 : 0.7;
+
 	real target_edge = creal(ARGS.direction) > 0 ? VIEWPORT_W : 0;
 	int impact_time = sqrt(2 * fabs(creal(ARGS.pos - target_edge) / creal(m.move.acceleration)));
 
@@ -91,15 +94,29 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 
 	INVOKE_SUBTASK(kurumi_aniwall_slave_move, &m, ARGS.direction);
 
-	int step = difficulty_value(6, 5, 2, 1);
-	for(;;WAIT(step)) {
-		cmplx vel = sign(creal(ARGS.direction)) * I * cnormalize(m.move.velocity);
-		if(cimag(vel) > -0.1 || global.diff > D_Easy) {
-			play_sfx("shot1");
-			INVOKE_TASK(kurumi_aniwall_bullet,
-				.pos = m.pos + I * vel * 20 * rng_sreal(),
-				.move = move_linear(vel)
-			);
+	int next_gap = 0;
+
+	int step = difficulty_value(4, 3, 2, 2);
+	for(int i = 0;; i++, WAIT(step)) {
+		cmplx vel = cdir(0.5*M_TAU/4 * sign(creal(ARGS.direction))) * cnormalize(m.move.velocity) * velocity_boost;
+		if(1) {
+			if(i < next_gap) {
+				play_sfx("shot1");
+				INVOKE_TASK(kurumi_aniwall_bullet,
+					.pos = m.pos,
+					.move = move_linear(vel)
+				);
+			} else {
+				next_gap += rng_i32_range(2, 5);
+				if(global.diff > D_Normal) {
+					PROJECTILE(
+						.proto = pp_flea,
+						.pos = m.pos,
+						.color = RGBA(1,0,0,0.5),
+						.move = move_linear(vel),
+					);
+				}
+			}
 		}
 	}
 }
