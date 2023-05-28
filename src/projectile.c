@@ -150,7 +150,7 @@ static inline bool proj_update(Projectile *p, int t) {
 		}
 	}
 
-	if(t == 0) {
+	if(t == 1) {
 		// FIXME: not sure if this should happen before or after move_update,
 		// or maybe even directly at spawn.
 		spawn_bullet_spawning_effect(p);
