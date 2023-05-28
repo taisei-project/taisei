@@ -390,6 +390,12 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	menu_preload(&ctx->rg);
 	gamepad_init();
 	progress_load();
+
+	if(ctx->cli.unlock_all) {
+		log_info("Unlocking all content because of --unlock-all");
+		progress_unlock_all();
+	}
+
 	video_post_init();
 
 	set_transition(TransLoader, 0, FADE_TIME*2, NO_CALLCHAIN);

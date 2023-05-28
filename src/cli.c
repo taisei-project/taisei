@@ -29,6 +29,7 @@ enum {
 	OPT_FORCE_INTRO,
 	OPT_REREPLAY,
 	OPT_POPCACHE,
+	OPT_UNLOCKALL,
 };
 
 static void print_help(struct TsOption* opts) {
@@ -89,6 +90,7 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"list-cutscenes",     no_argument,        0, OPT_CUTSCENE_LIST}, "List all registered cutscenes with their numeric IDs and names, then exit" },
 		{{"intro",              no_argument,        0, OPT_FORCE_INTRO}, "Play the intro cutscene even if already seen"},
 		{{"skip-to-bookmark",   required_argument,  0, 'b'},            "Fast-forward stage to a specific STAGE_BOOKMARK call"},
+		{{"unlock-all",         no_argument,        0, OPT_UNLOCKALL},  "Unlock all content"},
 #endif
 		{{"frameskip",          optional_argument,  0, 'f'},            "Disable FPS limiter, render only every %s frame", "FRAME"},
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
@@ -251,6 +253,9 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		case OPT_POPCACHE:
 			env_set("TAISEI_AGGRESSIVE_PRELOAD", 1, true);
 			a->type = CLI_QuitLate;
+			break;
+		case OPT_UNLOCKALL:
+			a->unlock_all = true;
 			break;
 		default:
 			UNREACHABLE;

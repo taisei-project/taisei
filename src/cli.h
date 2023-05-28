@@ -26,15 +26,16 @@ typedef enum {
 
 typedef struct CLIAction CLIAction;
 struct CLIAction {
+	char *filename;
+	char *out_replay;
+	PlayerMode *plrmode;
 	CLIActionType type;
-	bool force_intro;
 	int stageid;
 	int diff;
 	int frameskip;
 	CutsceneID cutscene;
-	char *filename;
-	char *out_replay;
-	PlayerMode *plrmode;
+	bool force_intro;
+	bool unlock_all;
 };
 
 int cli_args(int argc, char **argv, CLIAction *a);

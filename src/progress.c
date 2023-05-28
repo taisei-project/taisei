@@ -719,13 +719,14 @@ static void progress_write(SDL_RWops *file) {
 	SDL_RWclose(vfile);
 }
 
-#ifdef PROGRESS_UNLOCK_ALL
-static void progress_unlock_all(void) {
-	StageInfo *stg;
+void progress_unlock_all(void) {
+	size_t num_stages = stageinfo_get_num_stages();
 
-	for(stg = stages; stg->procs; ++stg) {
+	for(size_t i = 0; i < num_stages; ++i) {
+		StageInfo *stg = NOT_NULL(stageinfo_get_by_index(i));
+
 		for(Difficulty diff = D_Any; diff <= D_Lunatic; ++diff) {
-			StageProgress *p = stage_get_progress_from_info(stg, diff, true);
+			StageProgress *p = stageinfo_get_progress(stg, diff, true);
 			if(p) {
 				p->unlocked = true;
 			}
@@ -733,8 +734,12 @@ static void progress_unlock_all(void) {
 	}
 
 	progress.unlocked_bgms = UINT64_MAX;
+	progress.unlocked_cutscenes = UINT64_MAX;
+
+	for(int i = 0; i < NUM_ENDINGS; ++i) {
+		progress.achieved_endings[i] = imax(1, progress.achieved_endings[i]);
+	}
 }
-#endif
 
 static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
 	if(progress.achieved_endings[ending] > 0) {

@@ -16,10 +16,6 @@
 #define PROGRESS_FILE "storage/progress.dat"
 #define PROGRESS_MAXFILESIZE 4096
 
-#ifdef DEBUG
-	// #define PROGRESS_UNLOCK_ALL
-#endif
-
 typedef enum ProgfileCommand {
 	// Do not reorder this!
 
@@ -113,6 +109,7 @@ extern GlobalProgress progress;
 void progress_load(void);
 void progress_save(void);
 void progress_unload(void);
+void progress_unlock_all(void);
 
 uint32_t progress_times_any_ending_achieved(void);
 uint32_t progress_times_any_good_ending_achieved(void);
