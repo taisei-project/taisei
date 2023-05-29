@@ -28,8 +28,8 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
-			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
-			TASK_INDIRECT_INIT(BossAttack, stage3_spell_deadly_dance),
+			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Disruption “Logic Bomb”", 14, 40000,
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_logic_bomb),
 			stage3_draw_scuttle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 	},
