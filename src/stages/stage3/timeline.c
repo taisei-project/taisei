@@ -352,7 +352,7 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 
 	WAIT(60);
 
-	real speed = difficulty_value(2, 3, 4, 4);
+	real speed = difficulty_value(2, 2.5, 3, 4);
 	real amp = 0.01 * difficulty_value(8, 8, 8, 10);
 	real freq = (speed / 4) * 0.25 * ARGS.freq_factor;
 
