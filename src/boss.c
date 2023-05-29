@@ -630,8 +630,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 static Projectile *spawn_boss_glow(Boss *boss, const Color *clr, int timeout) {
 	return PARTICLE(
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		// this is in sync with the boss position oscillation
-		.pos = boss->pos + 6 * sin(global.frames/25.0) * I,
+		.pos = boss->pos + boss_get_sprite_offset(boss),
 		.color = clr,
 		.draw_rule = boss_glow_draw,
 		.timeout = timeout,
@@ -704,6 +703,10 @@ void draw_boss_background(Boss *boss) {
 	r_mat_mv_pop();
 }
 
+cmplx boss_get_sprite_offset(Boss *boss) {
+	return 6 * sin(global.frames/25.0) * I;
+}
+
 static void ent_draw_boss(EntityInterface *ent) {
 	Boss *boss = ENT_CAST(ent, Boss);
 
@@ -724,7 +727,7 @@ static void ent_draw_boss(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = aniplayer_get_frame(&boss->ani),
-		.pos = { creal(boss->pos), cimag(boss->pos) + 6*sin(global.frames/25.0) },
+		.pos.as_cmplx = boss->pos + boss_get_sprite_offset(boss),
 		.color = c,
 	});
 }

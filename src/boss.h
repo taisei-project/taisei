@@ -223,6 +223,8 @@ bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 bool boss_is_player_collision_active(Boss *boss) attr_nonnull(1);
 
+cmplx boss_get_sprite_offset(Boss *boss);
+
 void boss_death(Boss **boss) attr_nonnull(1);
 
 void boss_reset_motion(Boss *boss) attr_nonnull(1);
