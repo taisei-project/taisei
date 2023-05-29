@@ -49,7 +49,8 @@ typedef struct FairyVisualParams {
 	BoxedProjectile circle;
 	struct {
 		float progress;
-		FloatOffset mask_ofs;
+		float cloak;
+		FloatBits mask_ofs_bits;
 	} summon;
 } FairyVisualParams;
 
@@ -76,8 +77,9 @@ SpriteParams ecls_anyfairy_sprite_params(
 	float b = 1.0f - vp->base.fakepos.blendfactor;
 	out_spbuf->color = *RGBA(o*b, o*b, o*b, o);
 	out_spbuf->shader_params.vector[0] = vp->summon.progress;
-	out_spbuf->shader_params.vector[1] = vp->summon.mask_ofs.x;
-	out_spbuf->shader_params.vector[2] = vp->summon.mask_ofs.y;
+	out_spbuf->shader_params.vector[1] = vp->summon.cloak;
+	out_spbuf->shader_params.vector[2] = vp->summon.mask_ofs_bits.val;
+	out_spbuf->shader_params.vector[3] = global.frames / 60.0f;
 
 	return (SpriteParams) {
 		.color = &out_spbuf->color,
@@ -123,6 +125,11 @@ TASK(fairy_circle, {
 
 	for(;(e = ENT_UNBOX(ARGS.e)); YIELD) {
 		assert(fvp == e->visual.drawdata);
+
+		if(fvp->summon.progress >= 1 && fvp->summon.cloak > 0) {
+			fapproach_asymptotic_p(&fvp->summon.cloak, 0, 0.1, 1e-2);
+		}
+
 		circle->pos = visual_pos_e(e);
 		circle->angle += ARGS.spin_rate;
 		float s = ARGS.scale_base + ARGS.scale_osc_ampl * sinf(scale_osc_phase);
@@ -493,8 +500,8 @@ void ecls_anyfairy_summon(Enemy *e, int duration) {
 	DrawLayer elayer = e->ent.draw_layer;
 	e->ent.draw_layer = LAYER_NODRAW;
 	vp->summon.progress = 0;
-	vp->summon.mask_ofs.x = rng_f32();
-	vp->summon.mask_ofs.y = rng_f32();
+	vp->summon.cloak = 0.75;
+	vp->summon.mask_ofs_bits.bits = rng_u32();
 
 	Projectile *circle = NOT_NULL(ENT_UNBOX(vp->circle));
 	Color circle_basecolor = circle->color;
