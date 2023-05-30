@@ -99,6 +99,7 @@ typedef struct PowerSurgeBonus {
 DEFINE_ENTITY_TYPE(Player, {
 	cmplx pos;
 	cmplx velocity;
+	cmplx uncapped_velocity;
 	cmplx deathpos;
 
 	struct PlayerMode *mode;

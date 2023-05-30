@@ -165,10 +165,11 @@ int player_get_effective_power(Player *plr) {
 
 void player_move(Player *plr, cmplx delta) {
 	delta *= player_property(plr, PLR_PROP_SPEED);
+	plr->uncapped_velocity = delta;
 	cmplx lastpos = plr->pos;
-	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
-	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
-	plr->pos = x + y*I;
+	cmplx ofs = CMPLX(PLR_MIN_BORDER_DIST, PLR_MIN_BORDER_DIST);
+	cmplx vp = CMPLX(VIEWPORT_W, VIEWPORT_H);
+	plr->pos = cwclamp(lastpos + delta, ofs, vp - ofs);
 	plr->velocity = plr->pos - lastpos;
 }
 
@@ -1291,6 +1292,7 @@ static void player_ani_moving(Player *plr, int dir) {
 
 void player_applymovement(Player *plr) {
 	plr->velocity = 0;
+	plr->uncapped_velocity = 0;
 
 	if(!player_is_alive(plr))
 		return;
