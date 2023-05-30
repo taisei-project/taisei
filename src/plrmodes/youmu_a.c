@@ -57,7 +57,7 @@ static Color *myon_color(Color *c, float f, float opacity, float alpha) {
 static cmplx myon_tail_dir(YoumuAMyon *myon) {
 	cmplx dir = myon->dir * cdir(0.1 * sin(global.frames * 0.05));
 	real f = myon->focus_factor;
-	return f * f * dir;
+	return lerp(f * f, 1, 0.5) * dir;
 }
 
 static void myon_draw_trail_func(Projectile *p, int t, ProjDrawRuleArgs args) {
@@ -111,9 +111,8 @@ TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
 
 static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 	cmplx pos = myon->pos + 3 * cdir(global.frames * 0.07);
-	cmplx stardust_v = 3 * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
 	real f = myon->focus_factor;
-	stardust_v = f * stardust_v + (1 - f) * -I;
+	cmplx stardust_v = (2 + f) * myon_tail_dir(myon) * cdir(M_PI/16*sin(1.33*t));
 
 	if(player_should_shoot(&global.plr)) {
 		RNG_ARRAY(R, 7);
