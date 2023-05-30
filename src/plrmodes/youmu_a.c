@@ -286,6 +286,21 @@ TASK(youmu_mirror_myon_shot, { YoumuAController *ctrl; }) {
 	}
 }
 
+static cmplx fit_velocity(cmplx smoothed, int entries, cmplx history[entries]) {
+	cmplx bestfit = history[0];
+	real mindst = cabs2(bestfit - smoothed);
+
+	for(int i = 1; i < entries; ++i) {
+		real d = cabs2(history[i] - smoothed);
+		if(d < mindst) {
+			bestfit = history[i];
+			mindst = d;
+		}
+	}
+
+	return bestfit;
+}
+
 TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	YoumuAController *ctrl = ARGS.ctrl;
 	YoumuAMyon *myon = &ctrl->myon;
@@ -300,8 +315,31 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 
 	real focus_factor = 0.0;
 	bool fixed_position = false;
+
+	/*
+	 * Myon's target offset is based on a weighted average of the player's inputs
+	 * in the last N frames. When the player stops moving, we snap the smoothed value
+	 * to a real recent input. This allows keyboard players to aim it diagonally
+	 * without frame-perfect inputs.
+	 *
+	 * This algorithm was pulled out of my ass without any theoretical justification,
+	 * and it's probably dumb, but it works well enough so i don't care.
+	 *
+	 * Numpy code to generate the weights:
+	 *
+	 * 		w = np.array(range(N - 1, -1, -1))
+	 * 		w = 0.5 * (np.tanh( 2*np.pi * (w/len(w) - 0.5) ) + 1)
+	 * 		w /= np.sum(w)
+	 */
+	static const cmplx pvel_history_weights[12] = {
+		0.1807944744847358,   0.1790414880132086,   0.1742275298832384,
+		0.1618282865310685,   0.1345428375193760,   0.0908782920594558,
+		0.0472137465995357,   0.0199282975878431,   0.0075290542356732,
+		0.0027150961057031,   0.0009621096341759,   0.0003387873459861,
+	};
+	cmplx pvel_history[ARRAY_SIZE(pvel_history_weights)] = { };
+
 	cmplx offset_dir = -I;
-	cmplx plr_lastmovedir = -offset_dir;
 
 	myon->pos = plr->pos;
 	myon->dir = I;
@@ -309,13 +347,28 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 	INVOKE_SUBTASK(youmu_mirror_myon_shot, ctrl);
 
 	for(int t = 0;; ++t) {
-		// yeah i no longer understand most of this either
-
-		if(cabs(plr->velocity)) {
-			plr_lastmovedir = cnormalize(plr->velocity);
+		for(int i = ARRAY_SIZE(pvel_history) - 1; i > 0; --i) {
+			pvel_history[i] = pvel_history[i - 1];
 		}
 
-		real follow_factor = 0.1;
+		pvel_history[0] = cnormalize(plr->uncapped_velocity);
+
+		if(pvel_history[0]) {
+			cmplx smoothed = 0;
+
+			for(int i = 0; i < ARRAY_SIZE(pvel_history); ++i) {
+				smoothed += pvel_history[i] * pvel_history_weights[1];
+			}
+
+			smoothed = cnormalize(smoothed);
+
+			offset_dir = -smoothed;
+		} else if(pvel_history[1]) {
+			// just stopped - snap to a real recent input
+			offset_dir = -fit_velocity(-offset_dir, ARRAY_SIZE(pvel_history), pvel_history);
+		}
+
+		real follow_factor = 0.15;
 
 		if(plr->inputflags & INFLAG_FOCUS) {
 			fixed_position = true;
@@ -334,20 +387,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 			}
 		}
 
-		if(!fixed_position) {
-			if(!(plr->inputflags & INFLAG_SHOT)) {
-				focus_factor = 0;
-				offset_dir = -I;
-			} else if(!(plr->inputflags & INFLAG_FOCUS)) {
-				if(plr->inputflags & INFLAGS_MOVE) {
-					offset_dir = -plr_lastmovedir;
-				} else if(myon->pos != plr->pos) {
-					offset_dir = cnormalize(myon->pos - plr->pos);
-				}
-			}
-		}
-
-		cmplx target = plr->pos + distance * offset_dir;
+		cmplx target = plr->pos + distance * cnormalize(offset_dir);
 		cmplx v = cnormalize(target - myon->pos) * fmin(10, follow_factor * fmax(0, cabs(target - myon->pos) - VIEWPORT_W * 0.5 * focus_factor));
 
 		real s = sign(creal(myon->pos) - creal(plr->pos));
