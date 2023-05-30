@@ -388,7 +388,8 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 		}
 
 		cmplx target = plr->pos + distance * cnormalize(offset_dir);
-		cmplx v = cnormalize(target - myon->pos) * fmin(10, follow_factor * fmax(0, cabs(target - myon->pos) - VIEWPORT_W * 0.5 * focus_factor));
+		real follow_speed = smoothmin(10, follow_factor * fmax(0, cabs(target - myon->pos)), 10);
+		cmplx v = cnormalize(target - myon->pos) * follow_speed * (1 - focus_factor) * (1 - focus_factor);
 
 		real s = sign(creal(myon->pos) - creal(plr->pos));
 		if(!s) {
