@@ -23,7 +23,8 @@
 #define SHOT_SPREAD_DAMAGE 40
 #define SHOT_SPREAD_DELAY 12
 
-#define SHOT_ORBS_SPIRIT_DAMAGE 90
+#define SHOT_ORBS_SPIRIT_DAMAGE 60
+#define SHOT_ORBS_SPIRIT_RELEASED_DAMAGEFACTOR 1.5
 #define SHOT_ORBS_SPIRIT_SPAWN_DELAY 11
 #define SHOT_ORBS_DELAY_BASE 45
 #define SHOT_ORBS_DELAY_PER_POWER -5
@@ -290,6 +291,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 				p->timeout = 0;
 				// p->move.velocity = 0;
 				p->move.retention *= 0.9;
+				p->damage *= SHOT_ORBS_SPIRIT_RELEASED_DAMAGEFACTOR;
 				aim_peaked = false;
 				aim_strength = -0.2;
 				speed *= 1.2;
