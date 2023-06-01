@@ -87,11 +87,6 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 		timeofs = trace_projectile(lproj.first, &col, col_types | PCOL_VOID, timeofs);
 		struct enemy_col *c = NULL;
 
-		if(!first_found) {
-			laser->trace_hit.first = col.location;
-			first_found = true;
-		}
-
 		if(col.type & col_types) {
 			RNG_ARRAY(R, 3);
 			PARTICLE(
@@ -126,6 +121,15 @@ static void trace_laser(MarisaALaser *laser, cmplx vel, real damage) {
 		if(c) {
 			c->original_flags = (ENT_CAST(col.entity, Enemy))->flags;
 			(ENT_CAST(col.entity, Enemy))->flags |= EFLAG_NO_HIT;
+		}
+
+		if(!first_found) {
+			if(lproj.first) {
+				lproj.first->damage *= 0.5;
+			}
+
+			laser->trace_hit.first = col.location;
+			first_found = true;
 		}
 	}
 
