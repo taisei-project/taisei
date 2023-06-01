@@ -16,7 +16,7 @@
 #include "util/glm.h"
 #include "stagedraw.h"
 
-#define SHOT_FORWARD_DAMAGE 100
+#define SHOT_FORWARD_DAMAGE 60
 #define SHOT_FORWARD_DELAY 6
 
 #define SHOT_SLAVE_DAMAGE 50
