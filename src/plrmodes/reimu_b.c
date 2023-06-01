@@ -411,7 +411,7 @@ TASK(reimu_dream_needle, {
 		.shader_ptr = ARGS.shader,
 	));
 
-	Color *trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.35);
+	Color *trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.15);
 	int warp_cnt = 1;
 
 	for(;;) {
