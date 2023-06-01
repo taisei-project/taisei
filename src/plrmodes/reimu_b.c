@@ -14,10 +14,10 @@
 #include "stagedraw.h"
 #include "common_tasks.h"
 
-#define SHOT_FORWARD_DMG 60
+#define SHOT_FORWARD_DMG 35
 #define SHOT_FORWARD_DELAY 6
 
-#define SHOT_SLAVE_DMG 42
+#define SHOT_SLAVE_DMG 44
 #define SHOT_SLAVE_PRE_DELAY 3
 #define SHOT_SLAVE_POST_DELAY 3
 
