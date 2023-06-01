@@ -18,7 +18,7 @@
 #define SHOT_SELF_DAMAGE 60
 
 #define SHOT_MYON_HALFDELAY 3
-#define SHOT_MYON_DAMAGE 30
+#define SHOT_MYON_DAMAGE 25
 
 typedef struct YoumuAController YoumuAController;
 typedef struct YoumuAMyon YoumuAMyon;
