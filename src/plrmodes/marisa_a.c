@@ -15,9 +15,9 @@
 #include "stagedraw.h"
 #include "common_tasks.h"
 
-#define SHOT_FORWARD_DAMAGE 100
+#define SHOT_FORWARD_DAMAGE 60
 #define SHOT_FORWARD_DELAY 6
-#define SHOT_LASER_DAMAGE 10
+#define SHOT_LASER_DAMAGE 13
 
 #define HAKKERO_RETRACT_TIME 4
 
