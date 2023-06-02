@@ -65,7 +65,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 }
 
 TASK(side_fairy, { cmplx pos; MoveParams move; cmplx direction; real index; }) {
-	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4, .power = 3)));
+	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 2)));
 	e->move = ARGS.move;
 
 	WAIT(60);
@@ -105,7 +105,7 @@ TASK(projectile_redirect, { BoxedProjectile proj; MoveParams move; }) {
 }
 
 TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
-	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4, .power = 3)));
+	Enemy *e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 1)));
 	INVOKE_TASK(flowermine_fairy_move, ENT_BOX(e), .move1 = ARGS.move1, .move2 = ARGS.move2);
 
 	int step = difficulty_value(6, 5, 4, 3);
@@ -409,7 +409,7 @@ TASK(spawn_boss) {
 }
 
 TASK(wallmaker, { cmplx pos; MoveParams move; }) {
-	auto e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 1)));
+	auto e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 1)));
 	e->move = ARGS.move;
 
 	int period = 4;
