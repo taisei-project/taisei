@@ -85,17 +85,17 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 
 	int travel_time = sqrt(2 * cabs(ARGS.target - ARGS.pos) / cabs(acceleration));
 	WAIT(travel_time);
-	real step = 5;
+	real step = difficulty_value(5,5,6,6);
 	int step_count = 1.2 * VIEWPORT_H / step;
 
 	for(int i = ARGS.time_offset; i < ARGS.time_offset + step_count; i++, YIELD) {
 		real y = step * i;
 
-		int count = difficulty_value(1, 3, 4, 5);
+		int count = difficulty_value(1, 2, 3, 3);
 		float speed = difficulty_value(0.5, 0.7, 0.9, 0.95);
 
 		for(int j = 0; j < count; j++) {
-			cmplx p = VIEWPORT_W * (-0.3 + 1.6 / (real)count * (j + psin(i * exp(i) * j * j + i * i))) + I * y;
+			cmplx p = VIEWPORT_W * (-0.1 + 1.2 / (real)count * (j + psin(i * exp(i) * j * j + i * i))) + I * y;
 			cmplx dir =  cdir(M_TAU * sin(245 * i + j * j * 3501));
 
 			if(cabs(p-global.plr.pos) > 60) {
