@@ -35,8 +35,19 @@ static void stage4_dialog_post_boss(void) {
 	INVOKE_TASK_INDIRECT(Stage4PostBossDialog, pm->dialog->Stage4PostBoss);
 }
 
+TASK(filler_fairy, { cmplx pos; MoveParams move; }) {
+	Enemy *e;
+	if(rng_chance(0.5)) {
+		e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 1)));
+	} else {
+		e = TASK_BIND(espawn_fairy_red(ARGS.pos, ITEMS(.power = 1)));
+	}
+
+	e->move = ARGS.move;
+}
+
 TASK(splasher_fairy, { cmplx pos; int direction; }) {
-	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1, .bomb = 1)));
+	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 3, .power = 1, .bomb = 1)));
 
 	cmplx move = 3 * ARGS.direction - 4.0 * I;
 	e->move = move_linear(move);
@@ -155,7 +166,7 @@ TASK(partcircle_fairy, { cmplx pos; MoveParams move; }) {
 		for(int j = 0; j < circles; j++) {
 			play_sfx("shot2");
 
-			real angle_offset = -cnormalize(global.plr.pos - e->pos);
+			real angle_offset = carg(global.plr.pos - e->pos);
 			cmplx dir = cdir((i - 4) * M_TAU / projs_per_circle + angle_offset) * cnormalize(ARGS.move.velocity);
 
 			PROJECTILE(
@@ -264,20 +275,20 @@ TASK(laser_fairy_explosion, { BoxedEnemy enemy; }) {
 	int count = difficulty_value(4,5,6,8);
 	for(int i = 0; i < count; i++) {
 		cmplx dir = aim * cdir(M_TAU * i / count);
-		create_laserline_ab(e->pos, e->pos + 1000*dir, 15, laser_delay, laser_delay + 60, RGBA(1.0, 0.7, 0.0, 0.0));
+		create_laserline_ab(e->pos, e->pos + 1000*dir, 15, laser_delay, laser_delay + 60, RGBA(0.7, 1.0, 0.2, 0.0));
 	}
 
-	int count2 = difficulty_value(4, 6, 8, 10) * count;
+	int count2 = difficulty_value(4, 5, 6, 8) * count;
 	play_sfx("shot3");
 	for(int i = 0; i < count2; i++) {
 		cmplx dir = aim * cdir(M_TAU * i / count2);
 		real radius = 2.0 - 4*creal(cpow(dir, count));
-		cmplx dir_squeezed = dir * cdir(0.3*cimag(cpow(dir,count)));
+		cmplx dir_squeezed = dir * cdir(0.0*cimag(cpow(dir,count)));
 		PROJECTILE(
 			.proto = pp_crystal,
 			.pos = e->pos,
 			.color = RGBA(1.0, 0.9, 0.3, 0.0),
-			.move = move_asymptotic_simple(2 * dir_squeezed, radius),
+			.move = move_asymptotic_simple(1 * dir_squeezed, radius),
 		);
 	}
 }
@@ -359,16 +370,16 @@ TASK(bigcircle_fairy, { cmplx pos; cmplx vel; }) {
 TASK(explosive_swirl_explosion, { BoxedEnemy enemy; }) {
 	Enemy *e = TASK_BIND(ARGS.enemy);
 
-	int count = difficulty_value(10, 20, 30, 40);
+	int count = difficulty_value(5, 10, 15, 20);
 	cmplx aim = cnormalize(global.plr.pos - e->pos);
 
-	real speed = 1.5 * difficulty_value(1.4, 1.7, 2.0, 2.3);
+	real speed = 0.5*difficulty_value(1.4, 1.7, 2.0, 2.3);
 
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU * i / count) * aim;
 
 		PROJECTILE(
-			.proto = i&1 ? pp_plainball : pp_ball,
+			.proto = pp_flea,
 			.pos = e->pos,
 			.color = RGB(0.2, 0.2 + 0.6 * (i&1), 1 - 0.6 * (i&1)),
 			.move = move_accelerated(speed * dir, 0.001*dir),
@@ -448,7 +459,8 @@ TASK(hex_fairy, { cmplx pos; cmplx lattice_vec; MoveParams escape_move; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 4)));
 	ecls_anyfairy_summon(e, 120);
 
-	int num_flowers = difficulty_value(4, 4, 4, 4);
+	int num_flowers = 4;
+	WAIT(20);
 
 	play_sfx("shot_special1");
 	for(int r = 0; r < 6; r++) {
@@ -458,8 +470,14 @@ TASK(hex_fairy, { cmplx pos; cmplx lattice_vec; MoveParams escape_move; }) {
 			PROJECTILE(
 				.proto = pp_rice,
 				.pos = e->pos,
+				.color = RGBA(0.8, 0.0, 0.5, 0.0),
+				.move = (MoveParams) {0.2 * dir, 0, 1.005}
+			);
+			PROJECTILE(
+				.proto = pp_wave,
+				.pos = e->pos + 7 * dir,
 				.color = RGBA(1.0, 0.0, 0.5, 0.0),
-				.move = move_linear(dir),
+				.move = (MoveParams) {0.2 * dir, 0, 1.005}
 			);
 		}
 	}
@@ -469,9 +487,9 @@ TASK(hex_fairy, { cmplx pos; cmplx lattice_vec; MoveParams escape_move; }) {
 	
 }
 
-TASK(spawn_hex_fairy, { cmplx offset; MoveParams escape_move; }) {
+TASK(spawn_hex_fairy, { cmplx offset; real angle; MoveParams escape_move; }) {
 	// spawn a triangular lattice of fairies
-	cmplx lattice_vec1 = difficulty_value(200, 180, 160, 140);
+	cmplx lattice_vec1 = cdir(ARGS.angle) * difficulty_value(220, 200, 180, 160);
 	cmplx lattice_vec2 = cdir(-2*M_TAU / 3) * lattice_vec1;
 
 	cmplx offset = ARGS.offset;
@@ -507,6 +525,7 @@ TASK(spiral_fairy, { cmplx pos; cmplx dir; }) {
 		*RGBA(0.0, 0.0, 1.0, 0.0),
 	};
 	
+	WAIT(20);
 	play_sfx("shot_special1");
 	for(int j = 0; j < 3; j++) {
 
@@ -544,6 +563,36 @@ TASK(spawn_spiral_fairy, { real twist; }) {
 			INVOKE_TASK(spiral_fairy, .pos = pos, .dir = I*cnormalize(pos - origin));
 		}
 		WAIT(10);
+	}
+}
+
+TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
+	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points=2)));
+	ecls_anyfairy_summon(e, 60);
+	e->move = move_accelerated(2*ARGS.dir, 0.01*I*ARGS.dir);
+
+	for(;;) {
+		int count = 5;
+		real length = difficulty_value(20,30,40,50);
+		for(int i = 0; i < count; i++) {
+			create_laser(e->pos, length, 200, RGBA(0.7,1.0,0.2,0), las_linear, 3*ARGS.dir*cdir(M_TAU/count * i), 0, 0, 0);
+		}
+		play_sfx("laser1");
+
+		WAIT(60);
+	}
+}
+
+TASK(spawn_laser_pattern_fairy) {
+	int count = difficulty_value(10,12,14,15);
+
+	cmplx pos = VIEWPORT_W * 0.5 + VIEWPORT_H * 0.5 * I;
+	for(int i = 0; i < count; i++) {
+		cmplx dir = cdir(M_TAU / count * i);
+
+		INVOKE_TASK(laser_pattern_fairy, .pos = pos + 100 * dir, .dir = dir);
+
+		WAIT(1);
 	}
 }
 
@@ -683,6 +732,7 @@ TASK(spawn_boss) {
 	boss_engage(b);
 }
 
+
 DEFINE_EXTERN_TASK(stage4_timeline) {
 	INVOKE_TASK_DELAYED(70, splasher_fairy, VIEWPORT_H / 4.0 * 3 * I, 1);
 	INVOKE_TASK_DELAYED(70, splasher_fairy, VIEWPORT_W + VIEWPORT_H / 4.0 * 3 * I, -1);
@@ -693,11 +743,19 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		INVOKE_TASK_DELAYED(300 + 15 * i, fodder_fairy, .pos = pos, .move = move_linear(2 * I * cdir(0.1 * phase)));
 	}
 
-	for(int i = 0; i < 20; i++) {
-		cmplx pos = VIEWPORT_W * (i & 1);
+	for(int i = 0; i < 12; i++) {
+		cmplx pos = VIEWPORT_W * (i & 1) + 200 * I;
 		cmplx vel = 2 * cdir(M_PI / 2 * (0.2 + 0.6 * rng_real() + (i & 1)));
 
-		INVOKE_TASK_DELAYED(500 + 50 * i, partcircle_fairy, .pos = pos, .move = move_linear(vel));
+		INVOKE_TASK_DELAYED(500 + 80 * i, partcircle_fairy, .pos = pos, .move = move_linear(vel));
+	}
+
+	for(int i = 0; i < 17; i++) {
+		real y = rng_range(200, 300);
+		real dy = rng_range(-0.1, 0.1);
+		
+		INVOKE_TASK_DELAYED(600 + 40 * i, filler_fairy, .pos = y * I, .move = move_linear(2 + dy * I));
+		INVOKE_TASK_DELAYED(600 + 40 * i, filler_fairy, .pos = y * I + VIEWPORT_W, .move = move_linear(-2 + dy * I));
 	}
 
 	for(int i = 0; i < 4; i++) {
@@ -721,14 +779,14 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	
 	for(int i = 0; i < 30; i++) {
-		real phase = 2*i/M_PI * (1 - 2*(i&1));
+		real phase = 2*i/M_PI * (1 - 2*(i&1)) + 200 * I;
 		cmplx pos = -24 + I * psin(phase) * 300;
-		INVOKE_TASK_DELAYED(1800 + 15 * i, fodder_fairy, .pos = pos, .move = move_linear(2 * cdir(0.005 * phase)));
+		INVOKE_TASK_DELAYED(1700 + 15 * i, fodder_fairy, .pos = pos, .move = move_linear(2 * cdir(0.005 * phase)));
 	}
 
-	for(int i = 0; i < 2; i++) {
+	for(int i = 0; i < 4; i++) {
 		cmplx pos = VIEWPORT_W / 2.0 + 200 * rng_sreal();
-		INVOKE_TASK_DELAYED(1900 + 200 * i, bigcircle_fairy, .pos = pos, .vel = 2.0 * I);
+		INVOKE_TASK_DELAYED(1600 + 200 * i, bigcircle_fairy, .pos = pos, .vel = 2.0 * I);
 	}
 
 	for(int i = 0; i < 40; i++) {
@@ -740,6 +798,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		.pos = VIEWPORT_W / 2.0,
 		.move = move_linear(4.0 * I)
 	);
+
 
 	WAIT(3200);
 	INVOKE_TASK(spawn_midboss);
@@ -754,14 +813,21 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	WAIT(filler_time - midboss_time);
 
-	INVOKE_TASK_DELAYED(80, spawn_hex_fairy, .offset = 0, .escape_move = move_linear( + I));
+	INVOKE_TASK_DELAYED(20, spawn_hex_fairy, .offset = 0, .angle = 0.0, .escape_move = move_linear(1 + I));
 	
-	for(int i = 0; i < 10; i++) {
-		real phase = 2 * i/M_PI;
-		cmplx pos = VIEWPORT_W * (i&1) + I * 120 * psin(phase);
-		INVOKE_TASK_DELAYED(280 + 15 * i, laser_fairy, .pos = pos, .move = move_linear(2 - 4 * (i & 1) + I));
+	// for(int i = 0; i < 4; i++) {
+	// 	real phase = 2 * i/M_PI;
+	// 	cmplx pos = VIEWPORT_W * (i&1) + I * 120 * psin(phase);
+	// 	INVOKE_TASK_DELAYED(280 + 15 * i, laser_fairy, .pos = pos, .move = move_linear(2 - 4 * (i & 1) + I));
+	// }
+	for(int i = 0; i < 40; i++) {
+		cmplx pos = VIEWPORT_W * (i & 1) + I * (20.0 + VIEWPORT_H/3.0 * rng_real());
+		cmplx vel = 3 * (1 - 2 * (i & 1)) + I;
+		INVOKE_TASK_DELAYED(300 + 10 * i, explosive_swirl, .pos = pos, .move = move_linear(vel));
 	}
-	INVOKE_TASK_DELAYED(300, spawn_hex_fairy, .offset = 0, .escape_move = move_linear(-1 + I));
+
+	INVOKE_TASK_DELAYED(300, spawn_hex_fairy, .offset = 0, .angle = 0.0, .escape_move = move_linear(-1 + I));
+
 
 	// for(int i = 0; i < 11; i++) {
 	// 	cmplx pos = VIEWPORT_W * (i & 1);
@@ -770,31 +836,37 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	// 	INVOKE_TASK_DELAYED(350 + 60 * i, partcircle_fairy, .pos = pos, .move = move_linear(vel));
 	// }
 
-	for(int i = 0; i < 4; i++) {
+	for(int i = 0; i < 2; i++) {
 		cmplx pos0 = VIEWPORT_W * (1.0 + 2.0 * (i & 1)) / 4.0;
 		cmplx pos1 = VIEWPORT_W * (0.5 + 0.4 * (1 - 2 * (i & 1))) + 100.0 * I;
 		cmplx pos2 = VIEWPORT_W * (1.0 + 2.0 * ((i + 1) & 1)) / 4.0 + 300.0*I;
 		cmplx pos3 = VIEWPORT_W * 0.5 - 200 * I;
 
-		INVOKE_TASK_DELAYED(550 + 200 * i, cardbuster_fairy, .poss = {
+		INVOKE_TASK_DELAYED(600 + 200 * i, cardbuster_fairy, .poss = {
 			pos0, pos1, pos2, pos3
 		});
 	}
 	
-	INVOKE_TASK_DELAYED(900, spawn_spiral_fairy, .twist = 0.1);
+	cmplx pos[4] = {
+		100, VIEWPORT_W-100, 0, VIEWPORT_W
+	};
+	
+	INVOKE_TASK_DELAYED(1100, spawn_laser_pattern_fairy);
+	for(int i = 0; i < 4; i++) {
+		INVOKE_TASK_DELAYED(1000+120*i, bigcircle_fairy, .pos = pos[i], .vel = cnormalize(global.plr.pos-pos[i]));
+	}
+	
+	INVOKE_TASK_DELAYED(1200, spawn_spiral_fairy, .twist = 0.1);
 
-	INVOKE_TASK_DELAYED(800, supercard_fairy,
+	INVOKE_TASK_DELAYED(1500, supercard_fairy,
 		.pos = VIEWPORT_W / 2.0,
 		.move = move_linear(4.0 * I)
 	);
 
-	INVOKE_TASK_DELAYED(1300, spawn_spiral_fairy, .twist = -0.5);
+	
+	INVOKE_TASK_DELAYED(1700, spawn_spiral_fairy, .twist = -0.5);
+	
 
-	for(int i = 0; i < 40; i++) {
-		cmplx pos = VIEWPORT_W * (i & 1) + I * (20.0 + VIEWPORT_H/3.0 * rng_real());
-		cmplx vel = 3 * (1 - 2 * (i & 1)) + I;
-		INVOKE_TASK_DELAYED(1800 + 10 * i, explosive_swirl, .pos = pos, .move = move_linear(vel));
-	}
 
 	WAIT(2300);
 	INVOKE_TASK(spawn_boss);
