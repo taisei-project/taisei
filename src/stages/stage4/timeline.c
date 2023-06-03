@@ -779,8 +779,8 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 
 	
 	for(int i = 0; i < 30; i++) {
-		real phase = 2*i/M_PI * (1 - 2*(i&1)) + 200 * I;
-		cmplx pos = -24 + I * psin(phase) * 300;
+		real phase = 2*i/M_PI * (1 - 2*(i&1));
+		cmplx pos = -24 + I * psin(phase) * 300 + 100 * I;
 		INVOKE_TASK_DELAYED(1700 + 15 * i, fodder_fairy, .pos = pos, .move = move_linear(2 * cdir(0.005 * phase)));
 	}
 
