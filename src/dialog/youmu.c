@@ -262,7 +262,7 @@ DIALOG_TASK(youmu, Stage4PreBoss) {
 	FACE(youmu, normal);
 	MSG(youmu, "Are you an associate of this… mansion-tower’s denizens, then?");
 
-	FACE(kurumi, dissastisfied);
+	FACE(kurumi, dissatisfied);
 	MSG(kurumi, "Of course not! Who do you take me for?!");
 	MSG(kurumi, "No WAY I’d want to associate myself with the dweebs running this mansion!");
 	MSG(kurumi, "They dress like they’ve fallen out of a bad 80s anime!");
