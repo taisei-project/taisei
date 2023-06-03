@@ -40,7 +40,6 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 		.color = RGBA(1.0, 0.5, 0.5, 0.0),
 		.move = move_linear(ARGS.vel),
 		.flags = PFLAG_NOSPAWNFLARE,
-		.max_viewport_dist = 150,
 	));
 
 	WAIT(ARGS.delay);
@@ -50,7 +49,9 @@ TASK(kurumi_vampvape_proj, { int delay; cmplx pos; cmplx vel; }) {
 
 	cmplx vel = cdir(rng_sreal()*0.01) * (global.plr.pos - p->pos) * 0.001;
 	p->move = move_linear(vel);
-	p->move.retention = 1.02;
+
+	real deflection = difficulty_value(0.004, 0.004, 0.005, 0.005);
+	p->move.retention = 1.02 + deflection * sin(global.frames*314) * I;
 
 	if(rng_chance(0.5)) {
 		Projectile *v = vapor_particle(p->pos, color_mul_scalar(COLOR_COPY(&p->color), 0.3));
@@ -85,17 +86,21 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 
 	int travel_time = sqrt(2 * cabs(ARGS.target - ARGS.pos) / cabs(acceleration));
 	WAIT(travel_time);
-	real step = difficulty_value(5,5,6,6);
-	int step_count = 1.2 * VIEWPORT_H / step;
+	real step = difficulty_value(7,9,7,5);
+	int step_count = VIEWPORT_H / step;
+
+	if(creal(direction) < 0) {
+		return;
+	}
 
 	for(int i = ARGS.time_offset; i < ARGS.time_offset + step_count; i++, YIELD) {
 		real y = step * i;
 
-		int count = difficulty_value(1, 2, 3, 3);
+		int count = difficulty_value(2, 3, 3, 3);
 		float speed = difficulty_value(0.5, 0.7, 0.9, 0.95);
 
 		for(int j = 0; j < count; j++) {
-			cmplx p = VIEWPORT_W * (-0.1 + 1.2 / (real)count * (j + psin(i * exp(i) * j * j + i * i))) + I * y;
+			cmplx p = VIEWPORT_W * (1 / (real)count * (j + psin(i * exp(i) * j * j + i * i))) + I * y;
 			cmplx dir =  cdir(M_TAU * sin(245 * i + j * j * 3501));
 
 			if(cabs(p-global.plr.pos) > 60) {
