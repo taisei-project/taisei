@@ -560,7 +560,7 @@ DIALOG_TASK(youmu, Stage6PreBoss) {
 	FACE(youmu, chuuni);
 	MSG(youmu, "What a tragedy!");
 
-	FACE(elly, outraged);
+	FACE(elly, shouting);
 	MSG(elly, "You’re aiming to be the big ‘hero’ of this Gensōkyō, aren’t you?!");
 
 	MSG(youmu, "Naturally! No different than how you wish to be the hero of ‘your’ Gensōkyō!");
