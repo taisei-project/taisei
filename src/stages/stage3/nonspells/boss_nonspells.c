@@ -35,7 +35,7 @@ TASK(slave, { BoxedBoss boss; real rot_speed; real rot_initial; int level; }) {
 
 	for(int t = 0;; t += WAIT(delay)) {
 		if(boss->pos == slave->pos) {
-			// in this case aim would be NaN!
+			// in this case aim would be ill-defined!
 			continue;
 		}
 		play_sfx("shot1");
