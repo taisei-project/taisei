@@ -222,12 +222,14 @@ TASK(horde_fairy, { cmplx pos; cmplx velocity; bool blue; }) {
 	int interval = difficulty_value(70, 40, 30, 20);
 	real speed = difficulty_value(2, 2, 2.5, 3);
 	real lead = difficulty_value(5, 5, 3.25, 2.75);
+	real minrange = difficulty_value(80, 60, 40, 40);
+	int maxshots = difficulty_value(3, 5, 10, 20);
 
-	for(;;WAIT(interval)) {
+	for(int i = 0; i < maxshots; ++i, WAIT(interval)) {
 		play_sfx("shot1");
 		cmplx diff = global.plr.pos - e->pos;
 
-		if(cabs(diff) < 40) {
+		if(cabs2(diff) < minrange * minrange) {
 			continue;
 		}
 
@@ -270,9 +272,10 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 	common_charge(120, &e->pos, 0, RGBA(0.6, 0.8, 2, 0));
 	cmplx offset = rng_dir();
 
-	int lance_count = 300;
-	int lance_segs = difficulty_value(10,15,18,20);
-	int lance_dirs = difficulty_value(50,70,100,100);
+	int lance_count = difficulty_value(50, 100, 200, 300);
+	int lance_segs = difficulty_value(10, 15, 18, 20);
+	int lance_dirs = difficulty_value(50, 70, 100, 100);
+	real split = difficulty_value(0, 0.02, 0.03, 0.05);
 	int fib1 = 1;
 	int fib2 = 1;
 	for(int i = 0; i < lance_count; i++) {
@@ -284,13 +287,16 @@ TASK(circle_twist_fairy_lances, { BoxedEnemy enemy; }) {
 		cmplx dir = offset * cdir(M_TAU / lance_dirs * fib1);
 		for(int j = 0; j < lance_segs; j++) {
 			int s = 1 - 2 * (j & 1);
+
+			cmplx d = dir * cdir(split * s);
+
 			PROJECTILE(
 				.proto = pp_rice,
-				.pos = e->pos + 20 * dir,
+				.pos = e->pos + 20 * d,
 				.color = RGB(0.3, 0.4, 1),
 				.move = move_asymptotic_halflife(
-					(0.5 + (4.5 * j) / lance_segs) * dir,
-					5 * dir * cdir(0.05 * s),
+					(0.5 + (4.5 * j) / lance_segs) * d,
+					5 * d,
 					50
 				),
 			);
@@ -353,7 +359,7 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 	WAIT(60);
 
 	real speed = difficulty_value(2, 2.5, 3, 4);
-	real amp = 0.01 * difficulty_value(8, 8, 8, 10);
+	real amp = 0.01 * difficulty_value(4, 8, 8, 10);
 	real freq = (speed / 4) * 0.25 * ARGS.freq_factor;
 
 	cmplx lv = speed * -cnormalize(ARGS.velocity);
@@ -415,7 +421,7 @@ TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
 	common_charge(90, &e->pos, 0, RGBA(0.5, 1, 0.25, 0));
 
 	int balls = 6;
-	int cycles = 2;
+	int cycles = difficulty_value(1, 1, 2, 2);
 
 	for(int c = 0; c < cycles; ++c) {
 		play_sfx("shot1");
@@ -426,7 +432,7 @@ TASK(laserball_fairy, { cmplx pos; real freq_factor; }) {
 			INVOKE_TASK(laserball, e->pos, v, RGBA(0.2, 2, 0.4, 0), ARGS.freq_factor);
 		}
 
-		WAIT(120);
+		WAIT(difficulty_value(240, 240, 120, 120));
 		play_sfx("shot1");
 		play_sfx("warp");
 
@@ -500,7 +506,7 @@ TASK(bulletring_fairy, { cmplx pos; MoveParams move; }) {
 
 	e->move = ARGS.move;
 
-	int bullet_rings = difficulty_value(3,3,4,4);
+	int bullet_rings = difficulty_value(2, 3, 4, 4);
 
 	for(int i = 0; i < bullet_rings; ++i) {
 		WAIT(60);
@@ -726,6 +732,9 @@ DEFINE_EXTERN_TASK(stage3_timeline) {
 			.pos = 2*VIEWPORT_W/3 + 140*I,
 			.freq_factor = -1,
 		);
+	} else {
+		INVOKE_TASK_DELAYED(1800, swarm_trail_fairy,           -20 + 140*I, move_linear( 9));
+		INVOKE_TASK_DELAYED(1860, swarm_trail_fairy, VIEWPORT_W+20 + 110*I, move_linear(-9));
 	}
 
 	INVOKE_TASK_DELAYED(1900, flower_swirls_alternating);
