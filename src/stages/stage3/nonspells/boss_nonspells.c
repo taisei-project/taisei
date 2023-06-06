@@ -34,12 +34,11 @@ TASK(slave, { BoxedBoss boss; real rot_speed; real rot_initial; int level; }) {
 	WAIT(1);
 
 	for(int t = 0;; t += WAIT(delay)) {
-		if(boss->pos == slave->pos) {
-			// in this case aim would be ill-defined!
-			continue;
-		}
 		play_sfx("shot1");
 		cmplx aim = cnormalize(boss->pos - slave->pos);
+		if(aim == 0) {
+			continue;
+		}
 
 		PROJECTILE(
 			.proto = pp_rice,
