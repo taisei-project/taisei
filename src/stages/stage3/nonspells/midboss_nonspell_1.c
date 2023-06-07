@@ -29,6 +29,7 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 	));
 
 	int aimed_speed = difficulty_value(3.0, 3.5, 4.5, 5.0);
+	int aimed_boost = difficulty_value(2, 2, 3, 3);
 
 	p->move = move_asymptotic_simple(ARGS.vel, 2.0);
 	WAIT(120);
@@ -48,7 +49,7 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 		p->angle = carg(aim);
 		p->color = phase_colors[phase];
 		spawn_projectile_highlight_effect(p);
-		p->move = move_asymptotic_simple(aimed_speed * cnormalize(aim), 3.0);
+		p->move = move_asymptotic_simple(aimed_speed * cnormalize(aim), aimed_boost);
 
 		PROJECTILE(
 			.proto = pp_thickrice,
@@ -70,6 +71,10 @@ TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 				.timeout = rng_irange(20, 40),
 				.move = move_asymptotic_simple(v, 2),
 			);
+		}
+
+		if(global.diff < D_Normal) {
+			break;
 		}
 
 		WAIT(60);
