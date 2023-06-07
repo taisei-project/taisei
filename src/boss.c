@@ -889,9 +889,10 @@ bool boss_is_vulnerable(Boss *boss) {
 }
 
 bool boss_is_player_collision_active(Boss *boss) {
-	// TODO: possibly only enable if attack_is_active()?
 	return
 		boss->current &&
+		boss->current->type != AT_Move &&
+		attack_is_active(boss->current) &&
 		!boss->in_background &&
 		boss->background_transition < 0.5f &&
 		!boss_is_dying(boss) &&
