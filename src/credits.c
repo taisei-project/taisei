@@ -337,6 +337,7 @@ static void credits_init(void) {
 	// presumably not desired anyway.
 	credits.skipable = progress_times_any_ending_achieved() > 1;
 
+	progress_unlock_bgm("credits");
 	audio_bgm_play(res_bgm("credits"), false, 0, 0);
 }
 
@@ -599,7 +600,6 @@ static RenderFrameAction credits_render_frame(void *arg) {
 
 static void credits_end_loop(void *ctx) {
 	credits_free();
-	progress_unlock_bgm("credits");
 	demoplayer_resume();
 	run_call_chain(&credits.cc, NULL);
 }
