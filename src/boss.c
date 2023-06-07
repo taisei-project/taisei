@@ -138,7 +138,6 @@ static const Color *boss_healthbar_color(AttackType atype) {
 		[AT_Spellcard]     = { 1.00, 0.00, 0.00, 1.00 },
 		[AT_SurvivalSpell] = { 0.00, 1.00, 0.00, 1.00 },
 		[AT_ExtraSpell]    = { 1.00, 0.40, 0.00, 1.00 },
-		[AT_Immediate]     = { 1.00, 1.00, 1.00, 1.00 },
 	};
 
 	assert(atype >= 0 && atype < sizeof(colors)/sizeof(*colors));
@@ -174,12 +173,6 @@ static bool boss_should_skip_attack(Boss *boss, Attack *a) {
 		if(global.plr.voltage < global.voltage_threshold) {
 			return true;
 		}
-	}
-
-	// Immediates are handled in a special way by process_boss,
-	// but may be considered skipped/nonexistent for other purposes
-	if(a->type == AT_Immediate) {
-		return true;
 	}
 
 	// Skip zero-length spells. Zero-length AT_Move and AT_Normal attacks are ok.
@@ -1102,12 +1095,6 @@ void process_boss(Boss **pboss) {
 		return;
 	}
 
-	if(boss->current->type == AT_Immediate) {
-		boss->current->endtime = global.frames;
-		boss->current->endtime_undelayed = global.frames;
-		coevent_signal_once(&boss->current->events.finished);
-	}
-
 	int time = global.frames - boss->current->starttime;
 	bool extra = boss->current->type == AT_ExtraSpell;
 	bool over = attack_has_finished(boss->current) && global.frames >= boss->current->endtime;
@@ -1281,22 +1268,6 @@ void process_boss(Boss **pboss) {
 
 			boss->current++;
 			assert(boss->current != NULL);
-
-			if(boss->current->type == AT_Immediate) {
-				boss->current->starttime = global.frames;
-
-				coevent_signal_once(&boss->current->events.initiated);
-				coevent_signal_once(&boss->current->events.started);
-				coevent_signal_once(&boss->current->events.finished);
-				coevent_signal_once(&boss->current->events.completed);
-				COEVENT_CANCEL_ARRAY(boss->current->events);
-
-				if(dialog_is_active(global.dialog)) {
-					break;
-				}
-
-				continue;
-			}
 
 			if(boss_should_skip_attack(boss, boss->current)) {
 				COEVENT_CANCEL_ARRAY(boss->current->events);

@@ -44,7 +44,6 @@ typedef enum AttackType {
 	AT_Spellcard,
 	AT_SurvivalSpell,
 	AT_ExtraSpell,
-	AT_Immediate,
 } AttackType;
 
 #define ATTACK_IS_SPELL(a) ((a) == AT_Spellcard || (a) == AT_SurvivalSpell || (a) == AT_ExtraSpell)
