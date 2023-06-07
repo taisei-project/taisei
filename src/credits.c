@@ -18,6 +18,7 @@
 #include "util/glm.h"
 #include "dynarray.h"
 #include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -599,11 +600,13 @@ static RenderFrameAction credits_render_frame(void *arg) {
 static void credits_end_loop(void *ctx) {
 	credits_free();
 	progress_unlock_bgm("credits");
+	demoplayer_resume();
 	run_call_chain(&credits.cc, NULL);
 }
 
 void credits_enter(CallChain next) {
 	credits_init();
 	credits.cc = next;
+	demoplayer_suspend();
 	eventloop_enter(&credits, credits_logic_frame, credits_render_frame, credits_end_loop, FPS);
 }
