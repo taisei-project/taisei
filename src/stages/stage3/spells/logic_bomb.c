@@ -21,7 +21,7 @@ TASK(limiters, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 
 	real angle = 3*M_PI/2;
-	real final_angle = M_PI/16;
+	real final_angle = M_PI/16 * difficulty_value(2, 1.5, 1, 1);
 
 	for(int time = 0;; time += WAIT(3)) {
 		play_sfx_loop("shot1_loop");
