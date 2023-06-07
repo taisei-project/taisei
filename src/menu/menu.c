@@ -12,6 +12,7 @@
 #include "global.h"
 #include "video.h"
 #include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
 	MenuEntry *e = dynarray_append(&menu->entries);
@@ -225,6 +226,10 @@ static RenderFrameAction menu_render_frame(void *arg) {
 static void menu_end_loop(void *ctx) {
 	MenuData *menu = ctx;
 
+	if(menu->flags & MF_NoDemo) {
+		demoplayer_resume();
+	}
+
 	if(menu->state != MS_Dead) {
 		// definitely dead now...
 		menu->state = MS_Dead;
@@ -248,6 +253,10 @@ void enter_menu(MenuData *menu, CallChain next) {
 
 	if(menu->begin != NULL) {
 		menu->begin(menu);
+	}
+
+	if(menu->flags & MF_NoDemo) {
+		demoplayer_suspend();
 	}
 
 	eventloop_enter(menu, menu_logic_frame, menu_render_frame, menu_end_loop, FPS);
