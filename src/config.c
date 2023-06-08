@@ -432,6 +432,10 @@ static void config_upgrade_2(void) {
 #define config_upgrade_2 NULL
 #endif
 
+static void config_upgrade_3(void) {
+	config_set_int(CONFIG_MIXER_CHUNKSIZE, CONFIG_CHUNKSIZE_DEFAULT);
+}
+
 static ConfigUpgradeFunc config_upgrades[] = {
 	/*
 		To bump the config version and add an upgrade state, simply append an upgrade function to this array.
@@ -443,6 +447,7 @@ static ConfigUpgradeFunc config_upgrades[] = {
 
 	config_upgrade_1,
 	config_upgrade_2,
+	config_upgrade_3,
 };
 
 static void config_apply_upgrades(int start) {

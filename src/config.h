@@ -83,6 +83,7 @@
 	#define CONFIG_FXAA_DEFAULT 1
 #endif
 
+#define CONFIG_CHUNKSIZE_DEFAULT 512
 
 #define CONFIGDEFS \
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
@@ -96,7 +97,7 @@
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
 	CONFIGDEF_INT       (VSYNC,                     "vsync",                                CONFIG_VSYNC_DEFAULT) \
-	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
+	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      CONFIG_CHUNKSIZE_DEFAULT) \
 	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           0.5) \
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
 	CONFIGDEF_INT       (MUTE_AUDIO,                "mute_audio",                           0) \
