@@ -141,6 +141,7 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 
 	int count = difficulty_value(8, 10, 12, 14);
 	int charge_time = difficulty_value(100, 80, 60, 60);
+	real accel_multiplier = difficulty_value(0.3, 0.6, 0.9, 1.0);
 	int spawn_period = charge_time / count + (charge_time % count != 0);
 	charge_time = count * spawn_period;
 
@@ -174,9 +175,9 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 			.spawn_period = spawn_period,
 			.activate_time = charge_time + 2 * (10 - i) + 14,
 			.initial_offset = (24 + 10 * i) * dir,
-			.activated_vel_multiplier = -3,
-			.activated_accel_multiplier = 0.05*I,
-			.activated_retention_multiplier = cdir(0.1),
+			.activated_vel_multiplier = -3 * accel_multiplier,
+			.activated_accel_multiplier = 0.05 * I * accel_multiplier,
+			.activated_retention_multiplier = cdir(0.1 * accel_multiplier),
 			.color = RGBA(1.0, 0, 0, 0.5)
 		);
 
@@ -186,9 +187,9 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 			.spawn_period = spawn_period,
 			.activate_time = charge_time + 2 * (10 - i),
 			.initial_offset = (24 + 10 * i) / dir,
-			.activated_vel_multiplier = 3,
-			.activated_accel_multiplier = 0.05/I,
-			.activated_retention_multiplier = cdir(-0.1),
+			.activated_vel_multiplier = 3*accel_multiplier,
+			.activated_accel_multiplier = 0.05/I * accel_multiplier,
+			.activated_retention_multiplier = cdir(-0.1 * accel_multiplier),
 			.color = RGBA(0.0, 0, 1.0, 0.5)
 		);
 
