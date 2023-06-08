@@ -32,6 +32,8 @@ TASK(speen, { BoxedBoss boss; }) {
 TASK(balls, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 
+	real velocity = difficulty_value(2.0, 2.33, 2.66, 3.0);
+
 	for(;;) {
 		WAIT(75);
 		play_sfx("shot_special1");
@@ -47,17 +49,17 @@ TASK(balls, { BoxedBoss boss; }) {
 				.proto = pp_bigball,
 				.pos = boss->pos,
 				.color = RGB(0.8, 0.0, 0.8),
-				.move = move_asymptotic_halflife(8 * d, 3 * d, 60),
+				.move = move_asymptotic_halflife(8/3.0*velocity * d, velocity * d, 60),
 			);
 
-			int m = 8;
+			int m = difficulty_value(4, 6, 8, 8);
 			for(int j = 0; j < m; ++j) {
-				real s = (m - j) / (real)m;
+				real s = (m - j) / 8.0;
 				PROJECTILE(
 					.proto = pp_ball,
 					.pos = boss->pos,
 					.color = j & 1 ? RGBA(0.8, 0.0, 0.0, 0.0) : RGBA(0.0, 0.0, 0.8, 0.0),
-					.move = move_asymptotic_halflife((8 - 3 * s) * d, 3 * d, 60),
+					.move = move_asymptotic_halflife((8/3.0 - s) * velocity * d, velocity * d, 60),
 				);
 			}
 		}
