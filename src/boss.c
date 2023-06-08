@@ -1031,6 +1031,11 @@ static bool spell_is_overload(AttackInfo *spell) {
 	return spell == &stage5_spells->extra.overload;
 }
 
+static void clear_hazards_and_enemies(void) {
+	enemy_kill_all(&global.enemies);
+	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+}
+
 void boss_finish_current_attack(Boss *boss) {
 	AttackType t = boss->current->type;
 
@@ -1040,7 +1045,7 @@ void boss_finish_current_attack(Boss *boss) {
 	aniplayer_soft_switch(&boss->ani,"main",0);
 
 	if(t != AT_Move) {
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+		clear_hazards_and_enemies();
 	}
 
 	if(ATTACK_IS_SPELL(t)) {
@@ -1164,7 +1169,7 @@ void process_boss(Boss **pboss) {
 			// XXX: do we actually need to call this for AT_Move attacks at all?
 			//      it should be harmless, but probably unnecessary.
 			//      i'll be conservative and leave it in for now.
-			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+			clear_hazards_and_enemies();
 		}
 	}
 
@@ -1321,7 +1326,7 @@ void boss_death(Boss **boss) {
 	}
 
 	if(!fleed) {
-		stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+		clear_hazards_and_enemies();
 		stage_shake_view(100);
 
 		PARTICLE(
@@ -1413,7 +1418,7 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 		}
 	}
 
-	stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_FORCE);
+	clear_hazards_and_enemies();
 }
 
 Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule draw_rule) {
