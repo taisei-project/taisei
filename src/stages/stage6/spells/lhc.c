@@ -123,12 +123,18 @@ DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 			real speed1 = rng_range(1, 3.5);
 			real speed2 = rng_range(1, 3.5);
 
+			real baseangle = rng_angle();
+			real spin = rng_range(M_PI/52, M_PI/60);
+			spin *= rng_sign();
+
 			PROJECTILE(
 				.proto = pp_soul,
 				.pos = pos,
 				.color = RGBA(0.4, 0.0, 1.0, 0.0),
 				.move = move_linear(speed1 * rng_dir()),
-				.flags = PFLAG_NOSPAWNFLARE,
+				.flags = PFLAG_NOSPAWNFLARE | PFLAG_MANUALANGLE,
+				.angle = baseangle,
+				.angle_delta = spin,
 			);
 
 			PROJECTILE(
