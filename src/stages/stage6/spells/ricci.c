@@ -13,6 +13,7 @@
 #include "common_tasks.h"
 
 /* !!! You are entering Akari danmaku code !!! (rejuvenated by lao) */
+// FIXME: This awful timing system is an relic of a shameful coroutine-less past; rewrite this.
 #define SAFE_RADIUS_DELAY 300
 #define SAFE_RADIUS_MIN 60
 #define SAFE_RADIUS_MAX 150
@@ -64,7 +65,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 	));
 
 	int delay = 30;
-	cmplx offset = 15 * ARGS.dir;
+	cmplx offset = 14 * ARGS.dir;
 
 	for(int t = 0; t < delay; t++) {
 		p->pos = NOT_NULL(ENT_UNBOX(ARGS.baryons))->poss[ARGS.baryon_idx] + offset;
@@ -116,6 +117,7 @@ TASK(ricci_baryon_laser_spawner, { BoxedEllyBaryons baryons; int baryon_idx; cmp
 		.time_offset = 30
 	);
 
+	spawn_projectile_highlight_effect(p);
 	kill_projectile(p);
 }
 
@@ -148,11 +150,11 @@ TASK(ricci_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 }
 
 TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
-	TASK_BIND(ARGS.baryons);
+	auto baryons = TASK_BIND(ARGS.baryons);
 
 	INVOKE_SUBTASK(ricci_baryons_movement, ARGS.baryons, ARGS.boss);
 
-	//WAIT(150);
+	bool charge_flags[NUM_BARYONS] = {};
 
 	for(int t = 0;; t++) {
 		int time = global.frames - NOT_NULL(ENT_UNBOX(ARGS.boss))->current->starttime;
@@ -160,15 +162,36 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 		for(int i = 0; i < NUM_BARYONS; i += 2) {
 			real phase = safe_radius_phase(time, i);
 			int num = phase_num(phase);
+
+			if(num == 0) {
+				continue;
+			}
+
 			real phase_norm = fmod(phase, M_TAU) / M_TAU;
 
-			if(num > 0 && phase_norm > 0.15 && phase_norm < 0.55) {
+			if(phase_norm < 0.15 && !charge_flags[i]) {
+				charge_flags[i] = true;
+
+				for(int j = 0; j < 3; ++j) {
+					int d = 10 * j;
+					INVOKE_SUBTASK_DELAYED(d, common_charge,
+						.anchor = &baryons->poss[i],
+						.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
+						.bind_to_entity = ARGS.baryons.as_generic,
+						.time = 250 - d,
+						.color = RGBA(0.02, 0.01, 0.1, 0.0),
+						.sound = COMMON_CHARGE_SOUNDS,
+					);
+				}
+			} else if(phase_norm > 0.15 && phase_norm < 0.55) {
 				int count = 3;
 				cmplx dir = cdir(M_TAU * (0.25 + 1.0 / count * t));
 				INVOKE_TASK(ricci_baryon_laser_spawner, ARGS.baryons,
 					.baryon_idx = i,
 					.dir = dir
 				);
+			} else if(phase_norm > 0.55) {
+				charge_flags[i] = false;
 			}
 		}
 
