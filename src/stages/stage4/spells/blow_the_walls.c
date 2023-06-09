@@ -36,11 +36,19 @@ TASK(kurumi_blowwall_exploder, { cmplx pos; cmplx acceleration; }) {
 			type = pp_plainball;
 		}
 
+		cmplx v = (1 + 3 * f) * rng_dir();
+		real baseangle = rng_angle();
+		real spin = rng_range(M_PI/49, M_PI/53);
+		spin *= rng_sign();
+
 		PROJECTILE(
 			.proto = type,
 			.pos = pos,
 			.color = RGBA(1.0, 0.1, 0.1, 0.0),
-			.move = move_asymptotic_simple((1 + 3 * f) * rng_dir(), 4)
+			.move = move_asymptotic_simple(v, 4),
+			.flags = PFLAG_MANUALANGLE,
+			.angle = baseangle,
+			.angle_delta = spin,
 		);
 	}
 
