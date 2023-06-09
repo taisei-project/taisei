@@ -24,6 +24,7 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 	l->unclearable = true;
 
 	real spin_factor = difficulty_value(1.05, 1.4, 1.75, 2.1);
+	cmplx r = cdir(M_PI/500.0 * spin_factor);
 
 	for(int t = 0;; ++t, YIELD) {
 		if(t == 140) {
@@ -32,7 +33,7 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 
 		laser_charge(l, t, 150, 10 + 10 * psin(creal(l->args[0]) + t / 60.0));
 		l->args[3] = t / 10.0;  // phase
-		l->args[0] *= cexp(I*(M_PI/500.0) * spin_factor);
+		l->args[0] *= r;
 
 		l->color = *HSLA((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
 	}
