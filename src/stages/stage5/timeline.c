@@ -460,11 +460,11 @@ TASK(limiter_fairy, {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, ITEMS(.points = 2, .power = 1)));
 	e->move = ARGS.exit;
 
-	int difficulty = difficulty_value(0.25, 0.50, 0.75, 1);
-	for(int x = 0; x < 400; x++) {
+	real baseangle = difficulty_value(0.2, 0.15, 0.125, 0.1);
 
+	for(int x = 0; x < 400; x++) {
 		for(int i = 1; i >= -1; i -= 2) {
-			real a = i * 0.2 - 0.1 * difficulty + i * 3.0 / (x + 1);
+			real a = i * (baseangle + 3.0 / (x + 1));
 			cmplx plraim = cnormalize(global.plr.pos - e->pos);
 			cmplx aim = plraim * cdir(a);
 
