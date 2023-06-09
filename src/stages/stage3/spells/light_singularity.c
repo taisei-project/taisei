@@ -95,11 +95,24 @@ DEFINE_EXTERN_TASK(stage3_spell_light_singularity) {
 			real f = i / (real)nbullets;
 			cmplx dir = cdir(M_TAU * f);
 
+			ProjFlags flags = 0;
+			real angle = 0;
+			real angle_delta = 0;
+
+			if(ptype == pp_soul) {
+				flags |= PFLAG_MANUALANGLE,
+				angle = rng_angle();
+				angle_delta = -M_PI/93;
+			}
+
 			PROJECTILE(
 				.proto = ptype,
 				.pos = boss->pos,
 				.color = HSLA(f + colorofs, 1.0, 0.5, 0),
 				.move = move_asymptotic_simple(dir * bullet_speed, 20),
+				.flags = flags,
+				.angle = angle,
+				.angle_delta = angle_delta,
 			);
 		}
 
