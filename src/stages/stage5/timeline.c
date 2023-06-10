@@ -103,13 +103,14 @@ TASK(greeter_fairy, {
 	e->move = ARGS.move_enter;
 	real speed = difficulty_value(3.0, 3.5, 4.0, 4.5);
 	real count = difficulty_value(1, 2, 2, 3);
+	int reps = difficulty_value(3,4,5,5);
 
 	Color clr_charge = *(ARGS.red ? RGBA(0.25, 0.05, 0, 0) : RGBA(0, 0.05, 0.25, 0));
 	Color clr_bullet = *(ARGS.red ? RGB(1.0, 0.0, 0.0) : RGB(0.0, 0.0, 1.0));
 
 	common_charge(80, &e->pos, 0, &clr_charge);
 
-	for(int x = 0; x < 5; x++) {
+	for(int x = 0; x < reps; x++) {
 		cmplx dir = cnormalize(global.plr.pos - e->pos);
 		for(int i = -count; i <= count; i++) {
 			real boost = 5 - glm_ease_quad_in(fabs(i / (real)count));
@@ -366,16 +367,19 @@ TASK(sine_swirl, { cmplx pos; cmplx velocity; int fire_delay; }) {
 
 	cmplx aim = I;
 
+	real shot_chance = difficulty_value(0.0,0.33, 0.66, 1.0);
 	for(;;WAIT(delay)) {
 		for(int i = 0; i < nshots; ++i) {
-			PROJECTILE(
-				.proto = pp_thickrice,
-				.pos = e->pos,
-				.color = RGB(0.3, 0.4, 0.5),
-				.move = move_asymptotic_simple(
-					3 * aim, 1 + i),
-			);
-			play_sfx("shot2");
+			if(rng_chance(shot_chance)) {
+				PROJECTILE(
+					.proto = pp_thickrice,
+					.pos = e->pos,
+					.color = RGB(0.3, 0.4, 0.5),
+					.move = move_asymptotic_simple(
+						3 * aim, 1 + i),
+				);
+				play_sfx("shot2");
+			}
 		}
 	}
 }
@@ -712,7 +716,7 @@ TASK(lasertrap_arc_bullet, { BoxedLaser l; int timeout; }) {
 }
 
 TASK(lasertrap, { cmplx pos; }) {
-	int traptime = 120;
+	int traptime = difficulty_value(200, 160, 140, 120);
 	int boomdelay = 30;
 	int boomtime = traptime + boomdelay;
 	real radius = 120;
