@@ -56,7 +56,8 @@ TASK(splasher_fairy, { cmplx pos; int direction; }) {
 
 	WAIT(50);
 	int duration = difficulty_value(150, 160, 180, 210);
-	for(int time = 0; time < duration; time += WAIT(5)) {
+	int interval = difficulty_value(20, 15, 10, 5);
+	for(int time = 0; time < duration; time += WAIT(interval)) {
 		RNG_ARRAY(rand, 4);
 		cmplx offset = 50 * vrng_real(rand[0]) * cdir(vrng_angle(rand[1]));
 		cmplx v = (0.5 + vrng_real(rand[2])) * cdir(-0.1 * time * creal(ARGS.direction))*I;
@@ -118,6 +119,7 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 		real boost_factor = 1.2;
 		real boost_base = 1;
 		int chain_len = difficulty_value(3, 4, 5, 6);
+		real fire_chance = difficulty_value(0.3,0.5,0.7,1.0);
 
 		if(global.diff > D_Easy) {
 			PROJECTILE(
@@ -128,23 +130,25 @@ TASK(fodder_fairy, { cmplx pos; MoveParams move; }) {
 			);
 		}
 
-		for(int j = chain_len; j; --j) {
+		if(rng_chance(fire_chance)) {
+			for(int j = chain_len; j; --j) {
+				PROJECTILE(
+					.proto = j & 1 ? pp_rice : pp_wave,
+					.pos = e->pos,
+					.color = RGB(j / (float)(chain_len+1), 0.0, 0.5),
+					.move = move_asymptotic_simple(speed * aim, boost_base + j * boost_factor),
+					.max_viewport_dist = 32,
+				);
+			}
+
 			PROJECTILE(
-				.proto = j & 1 ? pp_rice : pp_wave,
+				.proto = pp_wave,
 				.pos = e->pos,
-				.color = RGB(j / (float)(chain_len+1), 0.0, 0.5),
-				.move = move_asymptotic_simple(speed * aim, boost_base + j * boost_factor),
+				.color = RGB(0.0, 0.0, 0.5),
+				.move = move_asymptotic_simple(speed * aim, boost_base),
 				.max_viewport_dist = 32,
 			);
 		}
-
-		PROJECTILE(
-			.proto = pp_wave,
-			.pos = e->pos,
-			.color = RGB(0.0, 0.0, 0.5),
-			.move = move_asymptotic_simple(speed * aim, boost_base),
-			.max_viewport_dist = 32,
-		);
 	}
 }
 
