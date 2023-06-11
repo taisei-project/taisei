@@ -181,8 +181,7 @@ if stages_live_reload
     taisei_deps += cc.find_library('dl', required : false)
 
     taisei_stages_compile_command = [
-        # FIXME: no good way to get the effective meson command…
-        'meson', 'compile', '-C', meson.project_build_root(), '-v', taisei_stages.name(),
+        find_program('meson'), 'compile', '-C', meson.project_build_root(), '-v', taisei_stages.name(),
     ]
 
     r = run_command(format_array_command, taisei_stages_compile_command, check : true)
