@@ -353,7 +353,7 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 
 static inline bool is_quicksave_allowed(void) {
 #ifndef DEBUG
-	if(global.is_practice_mode) {
+	if(!global.is_practice_mode) {
 		return false;
 	}
 #endif
