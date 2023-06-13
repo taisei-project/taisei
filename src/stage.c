@@ -341,7 +341,9 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 
 	dynarray_ensure_capacity(&rstg->events, rstg_src->events.num_elements + 1);
 	dynarray_set_elements(&rstg->events, rstg_src->events.num_elements, rstg_src->events.data);
+
 	replay_stage_event(rstg, global.frames, EV_RESUME, 0);
+	replay_stage_update_final_stats(rstg, &global.plr.stats);
 
 	auto rpy = ALLOC(Replay);
 	rpy->stages.num_elements = rpy->stages.capacity = 1;
@@ -1193,6 +1195,8 @@ void stage_end_loop(void *ctx) {
 			if(global.gameover == GAMEOVER_WIN) {
 				global.replay.output.stage->flags |= REPLAY_SFLAG_CLEAR;
 			}
+
+			replay_stage_update_final_stats(global.replay.output.stage, &global.plr.stats);
 		}
 	}
 

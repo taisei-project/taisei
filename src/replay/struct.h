@@ -52,13 +52,17 @@
 
 	// Taisei v1.4 revision 0: add statistics for player
 	#define REPLAY_STRUCT_VERSION_TS104000_REV0 13
+
+	// Taisei v1.4 revision 1: switch to zstd compression, remove plr_focus, add skip_frames (for demos), rework/fix player resource usage stats
+	#define REPLAY_STRUCT_VERSION_TS104000_REV1 14
 /* END supported struct versions */
 
 #define REPLAY_VERSION_COMPRESSION_BIT 0x8000
 #define REPLAY_COMPRESSION_CHUNK_SIZE 4096
 
 // What struct version to use when saving recorded replays
-#define REPLAY_STRUCT_VERSION_WRITE (REPLAY_STRUCT_VERSION_TS104000_REV0 | REPLAY_VERSION_COMPRESSION_BIT)
+#define REPLAY_STRUCT_VERSION_WRITE \
+	(REPLAY_STRUCT_VERSION_TS104000_REV1 | REPLAY_VERSION_COMPRESSION_BIT)
 
 #define REPLAY_ALLOC_INITIAL 256
 
@@ -95,17 +99,27 @@ typedef struct ReplayStage {
 	/* END REPLAY_STRUCT_VERSION_TS103000_REV2 and above */
 	uint64_t rng_seed; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV2: uint32_t, also specifies start_time
 	uint8_t diff;
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
+	uint16_t skip_frames;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
 
 	// initial player settings
 	uint64_t plr_points; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV0: uint32_t
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
+	uint8_t plr_total_lives_used;
+	uint8_t plr_total_bombs_used;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
 	/* BEGIN REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
-	uint8_t plr_continues_used;
+	uint8_t plr_total_continues_used;
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV1 and above */
 	uint8_t plr_char;
 	uint8_t plr_shot;
 	uint16_t plr_pos_x;
 	uint16_t plr_pos_y;
-	uint8_t plr_focus;
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 and below */
+	// NOTE: Not used anymore
+	// uint8_t plr_focus;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 and below */
 	uint16_t plr_power;
 	uint8_t plr_lives;
 	uint16_t plr_life_fragments; // NOTE: before REPLAY_STRUCT_VERSION_TS103000_REV1: uint8_t
@@ -124,13 +138,21 @@ typedef struct ReplayStage {
 	uint64_t plr_points_final;
 	/* END REPLAY_STRUCT_VERSION_TS102000_REV3 and above */
 
-	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
-	uint8_t plr_stats_total_lives_used;
-	uint8_t plr_stats_stage_lives_used;
-	uint8_t plr_stats_total_bombs_used;
-	uint8_t plr_stats_stage_bombs_used;
-	uint8_t plr_stats_stage_continues_used;
-	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 and above */
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV0 only */
+	// NOTE: These never worked correctly and were always 0
+	// uint8_t plr_stats_total_lives_used;
+	// uint8_t plr_stats_stage_lives_used;
+	// uint8_t plr_stats_total_bombs_used;
+	// uint8_t plr_stats_stage_bombs_used;
+	// uint8_t plr_stats_stage_continues_used;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV0 only */
+
+	/* BEGIN REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
+	// Resources used in this stage by the end of it
+	uint8_t plr_stage_lives_used_final;
+	uint8_t plr_stage_bombs_used_final;
+	uint8_t plr_stage_continues_used_final;
+	/* END REPLAY_STRUCT_VERSION_TS104000_REV1 and above */
 
 	// player input
 	// NOTE: only used to read the number of events from file.

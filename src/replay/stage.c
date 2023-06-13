@@ -29,8 +29,9 @@ ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time
 	s->plr_pos_y = floor(cimag(plr->pos));
 
 	s->plr_points = plr->points;
-	s->plr_continues_used = plr->stats.total.continues_used;
-	// s->plr_focus = plr->focus;  FIXME remove and bump version
+	s->plr_total_lives_used = plr->stats.total.lives_used;
+	s->plr_total_bombs_used = plr->stats.total.bombs_used;
+	s->plr_total_continues_used = plr->stats.total.continues_used;
 	s->plr_char = plr->mode->character->id;
 	s->plr_shot = plr->mode->shot_mode;
 	s->plr_lives = plr->lives;
@@ -48,10 +49,11 @@ ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time
 
 void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->points = stg->plr_points;
-	plr->stats.total.continues_used = stg->plr_continues_used;
+	plr->stats.total.lives_used = stg->plr_total_lives_used;
+	plr->stats.total.bombs_used = stg->plr_total_bombs_used;
+	plr->stats.total.continues_used = stg->plr_total_continues_used;
 	plr->mode = plrmode_find(stg->plr_char, stg->plr_shot);
 	plr->pos = stg->plr_pos_x + I * stg->plr_pos_y;
-	// plr->focus = stg->plr_focus;  FIXME remove and bump version
 	plr->lives = stg->plr_lives;
 	plr->life_fragments = stg->plr_life_fragments;
 	plr->bombs = stg->plr_bombs;
@@ -60,12 +62,12 @@ void replay_stage_sync_player_state(ReplayStage *stg, Player *plr) {
 	plr->graze = stg->plr_graze;
 	plr->point_item_value = stg->plr_point_item_value;
 	plr->inputflags = stg->plr_inputflags;
+}
 
-	plr->stats.total.lives_used = stg->plr_stats_total_lives_used;
-	plr->stats.stage.lives_used = stg->plr_stats_stage_lives_used;
-	plr->stats.total.bombs_used = stg->plr_stats_total_bombs_used;
-	plr->stats.stage.bombs_used = stg->plr_stats_stage_bombs_used;
-	plr->stats.stage.continues_used = stg->plr_stats_stage_continues_used;
+void replay_stage_update_final_stats(ReplayStage *stg, const Stats *stats) {
+	stg->plr_stage_lives_used_final = stats->stage.lives_used;
+	stg->plr_stage_bombs_used_final = stats->stage.bombs_used;
+	stg->plr_stage_continues_used_final = stats->stage.continues_used;
 }
 
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {

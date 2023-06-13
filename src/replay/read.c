@@ -12,7 +12,6 @@
 #include "rw_common.h"
 
 #include "player.h"
-#include "rwops/rwops_zlib.h"
 #include "rwops/rwops_segment.h"
 
 #ifdef REPLAY_LOAD_DEBUG
@@ -78,6 +77,7 @@ static bool replay_read_header(Replay *rpy, SDL_RWops *file, int64_t filesize, s
 		case REPLAY_STRUCT_VERSION_TS103000_REV2:
 		case REPLAY_STRUCT_VERSION_TS103000_REV3:
 		case REPLAY_STRUCT_VERSION_TS104000_REV0:
+		case REPLAY_STRUCT_VERSION_TS104000_REV1:
 		{
 			if(taisei_version_read(file, &rpy->game_version) != TAISEI_VERSION_SIZE) {
 				log_error("%s: Failed to read game version", source);
@@ -149,21 +149,35 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 
 		CHECKPROP(stg->diff = SDL_ReadU8(file), u);
 
+		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+			CHECKPROP(stg->skip_frames = SDL_ReadLE16(file), u);
+		}
+
 		if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
 			CHECKPROP(stg->plr_points = SDL_ReadLE64(file), zu);
 		} else {
 			CHECKPROP(stg->plr_points = SDL_ReadLE32(file), zu);
 		}
 
+		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+			CHECKPROP(stg->plr_total_lives_used = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_total_bombs_used = SDL_ReadU8(file), u);
+		}
+
 		if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-			CHECKPROP(stg->plr_continues_used = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_total_continues_used = SDL_ReadU8(file), u);
 		}
 
 		CHECKPROP(stg->plr_char = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_shot = SDL_ReadU8(file), u);
 		CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
-		CHECKPROP(stg->plr_focus = SDL_ReadU8(file), u);  // FIXME remove and bump version
+
+		if(version <= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+			// NOTE: old plr_focus field, ignored
+			SDL_ReadU8(file);
+		}
+
 		CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
 		CHECKPROP(stg->plr_lives = SDL_ReadU8(file), u);
 
@@ -195,12 +209,16 @@ static bool replay_read_meta(Replay *rpy, SDL_RWops *file, int64_t filesize, con
 			CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
 		}
 
-		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
-			CHECKPROP(stg->plr_stats_total_lives_used = SDL_ReadU8(file), u);
-			CHECKPROP(stg->plr_stats_stage_lives_used = SDL_ReadU8(file), u);
-			CHECKPROP(stg->plr_stats_total_bombs_used = SDL_ReadU8(file), u);
-			CHECKPROP(stg->plr_stats_stage_bombs_used = SDL_ReadU8(file), u);
-			CHECKPROP(stg->plr_stats_stage_continues_used = SDL_ReadU8(file), u);
+		if(version == REPLAY_STRUCT_VERSION_TS104000_REV0) {
+			// NOTE: These fields were always bugged, so we ignore them
+			uint8_t junk[5];
+			SDL_RWread(file, junk, sizeof(junk), 1);
+		}
+
+		if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+			CHECKPROP(stg->plr_stage_lives_used_final = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stage_bombs_used_final = SDL_ReadU8(file), u);
+			CHECKPROP(stg->plr_stage_continues_used_final = SDL_ReadU8(file), u);
 		}
 
 		CHECKPROP(stg->num_events = SDL_ReadLE16(file), u);
@@ -283,9 +301,9 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 				return false;
 			}
 
-			vfile = SDL_RWWrapZlibReader(
+			vfile = replay_wrap_stream_decompress(
+				rpy->version,
 				SDL_RWWrapSegment(file, ofs, rpy->fileoffset, false),
-				REPLAY_COMPRESSION_CHUNK_SIZE,
 				true
 			);
 
@@ -332,7 +350,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 		bool compression = false;
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
-			vfile = SDL_RWWrapZlibReader(file, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+			vfile = replay_wrap_stream_decompress(rpy->version, file, false);
 			filesize = -1;
 			compression = true;
 		}
