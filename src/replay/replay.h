@@ -38,6 +38,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) attr_nonnull_a
 bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source) attr_nonnull(1, 2);
 
 bool replay_save(Replay *rpy, const char *name) attr_nonnull_all;
+bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) attr_nonnull_all;
 bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) attr_nonnull_all;
 bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) attr_nonnull_all;
 bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) attr_nonnull_all;
