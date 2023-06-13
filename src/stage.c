@@ -39,6 +39,7 @@ typedef struct StageFrameState {
 	Replay *quicksave;
 	bool quicksave_is_automatic;
 	bool quickload_requested;
+	bool was_skipping;
 	uint32_t dynstage_generation;
 	int transition_delay;
 	int desync_check_freq;
@@ -57,16 +58,39 @@ static inline bool is_quickloading(StageFrameState *fstate) {
 	return fstate->quicksave && fstate->quicksave == global.replay.input.replay;
 }
 
+static inline bool should_skip_frame(StageFrameState *fstate) {
+	return
+		is_quickloading(fstate) || (
+			global.replay.input.replay &&
+			global.replay.input.play.skip_frames > 0
+		);
+}
+
 bool stage_is_demo_mode(void) {
 	return global.replay.input.replay && global.replay.input.play.demo_mode;
 }
 
 static void sync_bgm(StageFrameState *fstate) {
+	if(stage_is_demo_mode()) {
+		return;
+	}
+
 	double t = fstate->bgm_start_pos + (global.frames - fstate->bgm_start_time) / (double)FPS;
 	audio_bgm_seek_realtime(t);
 }
 
+static void recover_after_skip(StageFrameState *fstate) {
+	if(fstate->was_skipping) {
+		fstate->was_skipping = false;
+		sync_bgm(fstate);
+		audio_sfx_set_enabled(true);
+	}
+}
+
 #ifdef HAVE_SKIP_MODE
+
+// TODO refactor this unholy mess
+// somehow reconcile with what's implemented for quickloads and demos.
 
 static struct {
 	const char *skip_to_bookmark;
@@ -499,16 +523,11 @@ static void handle_replay_event(ReplayEvent *e, void *arg) {
 }
 
 static void leave_replay_mode(StageFrameState *fstate, ReplayState *rp_in) {
-	if(rp_in->replay == fstate->quicksave) {
-		audio_sfx_set_enabled(true);
-		sync_bgm(fstate);
-	}
-
 	replay_state_deinit(rp_in);
 }
 
 static void replay_input(StageFrameState *fstate) {
-	if(!is_quickloading(fstate)) {
+	if(!should_skip_frame(fstate)) {
 		events_poll((EventHandler[]){
 			{ .proc =
 				stage_is_demo_mode()
@@ -953,9 +972,13 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		return LFRAME_STOP;
 	}
 
-	if(is_quickloading(fstate)) {
+	if(should_skip_frame(fstate)) {
+		fstate->was_skipping = true;
 		return LFRAME_SKIP_ALWAYS;
 	}
+
+	recover_after_skip(fstate);
+
 
 	LogicFrameAction skipmode = skipstate_handle_frame();
 	if(skipmode != LFRAME_WAIT) {
@@ -1093,10 +1116,9 @@ static void _stage_enter(
 	uint64_t start_time, seed;
 
 	if(global.replay.input.replay) {
-		ReplayStage *rstg = global.replay.input.stage;
-
-		assert(rstg != NULL);
+		ReplayStage *rstg = NOT_NULL(global.replay.input.stage);
 		assert(stageinfo_get_by_id(rstg->stage) == stage);
+		assert(!rstg->skip_frames || !quickload);
 
 		start_time = rstg->start_time;
 		seed = rstg->rng_seed;
@@ -1157,9 +1179,11 @@ static void _stage_enter(
 
 	skipstate_init();
 
-	if(is_quickloading(fstate)) {
+	if(should_skip_frame(fstate)) {
 		audio_sfx_set_enabled(false);
-	} else {
+	}
+
+	if(!is_quickloading(fstate)) {
 		demoplayer_suspend();
 	}
 
@@ -1174,6 +1198,8 @@ void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next) {
 void stage_end_loop(void *ctx) {
 	StageFrameState *s = ctx;
 	assert(s == _current_stage_state);
+
+	recover_after_skip(s);
 
 	Replay *quicksave = s->quicksave;
 	bool quicksave_is_automatic = s->quicksave_is_automatic;
