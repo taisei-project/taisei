@@ -21,6 +21,7 @@ void replay_state_init_play(ReplayState *rst, Replay *rpy, ReplayStage *rstage) 
 	rst->mode = REPLAY_PLAY;
 	rst->play.desync_frame = -1;
 	rst->play.desync_check_frame = -1;
+	rst->play.skip_frames = rstage->skip_frames;
 }
 
 void replay_state_init_record(ReplayState *rst, Replay *rpy) {
@@ -90,4 +91,8 @@ void replay_state_play_advance(ReplayState *rst, int frame, ReplayEventFunc even
 	}
 
 	rst->play.pos = i;
+
+	if(rst->play.skip_frames > 0) {
+		--rst->play.skip_frames;
+	}
 }
