@@ -128,9 +128,9 @@ static void stageinfo_fill(StagesExports *e) {
 	int spellnum = 0;
 
 //	         id  procs            type           title          subtitle                       spells                       diff
-	add_stage(1, e->stage1.procs, STAGE_STORY,   "Stage 1",     "Misty Lake",                  e->stage1.spells, D_Any);
-	add_stage(2, e->stage2.procs, STAGE_STORY,   "Stage 2",     "Walk Along the Border",       e->stage2.spells, D_Any);
-	add_stage(3, e->stage3.procs, STAGE_STORY,   "Stage 3",     "Mountain Ascent",             e->stage3.spells, D_Any);
+	add_stage(1, e->stage1.procs, STAGE_STORY,   "Stage 1",     "Misty Lake Encounter",        e->stage1.spells, D_Any);
+	add_stage(2, e->stage2.procs, STAGE_STORY,   "Stage 2",     "Riverside Hina-Nagashi",      e->stage2.spells, D_Any);
+	add_stage(3, e->stage3.procs, STAGE_STORY,   "Stage 3",     "Crawly Mountain Ascent",      e->stage3.spells, D_Any);
 	add_stage(4, e->stage4.procs, STAGE_STORY,   "Stage 4",     "Forgotten Mansion",           e->stage4.spells, D_Any);
 	add_stage(5, e->stage5.procs, STAGE_STORY,   "Stage 5",     "Climbing the Tower of Babel", e->stage5.spells, D_Any);
 	add_stage(6, e->stage6.procs, STAGE_STORY,   "Stage 6",     "Roof of the World",           e->stage6.spells, D_Any);
