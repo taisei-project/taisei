@@ -34,6 +34,7 @@
 #include "dynstage.h"
 #include "eventloop/eventloop.h"
 #include "replay/demoplayer.h"
+#include "replay/tsrtool.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -284,13 +285,19 @@ int main(int argc, char **argv);
 
 attr_used
 int main(int argc, char **argv) {
-	auto ctx = ALLOC(MainContext);
-
 	setlocale(LC_ALL, "C");
 	thread_init();
 	coroutines_init();
 	init_log();
 	stageinfo_init(); // cli_args depends on this
+
+#if DEBUG
+	if(argc > 1 && !strcmp("tsrtool", argv[1])) {
+		return tsrtool_main(argc - 1, argv + 1);
+	}
+#endif
+
+	auto ctx = ALLOC(MainContext);
 
 	// commandline arguments should be parsed as early as possible
 	cli_args(argc, argv, &ctx->cli); // stage_init_array goes first!

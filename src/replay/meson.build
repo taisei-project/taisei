@@ -9,3 +9,9 @@ replay_src = files(
     'state.c',
     'write.c',
 )
+
+if is_developer_build
+    replay_src += files(
+        'tsrtool.c',
+    )
+endif
