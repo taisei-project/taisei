@@ -22,7 +22,6 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 	scythe->move.retention = 0.9;
 
 	for(int t = 0;; t++) {
-		play_sfx_loop("shot1_loop");
 
 		real theta = 0.01 * t * (1 + 0.001 * t) + M_PI/2;
 		scythe->pos = center + 200 * cos(theta) * (1 + sin(theta) * I) / (1 + pow(sin(theta), 2));
@@ -33,6 +32,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 		cmplx color_dir = cdir(3 * theta);
 
 		if(t > 50) {
+			play_sfx_loop("shot1_loop");
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = scythe->pos + 60 * dir * cdir(1.2),
