@@ -71,16 +71,21 @@ static const float PLR_POWERSURGE_NEGATIVE_DRAIN_MIN = (0.01 / 60.0);
 static const float PLR_POWERSURGE_POSITIVE_GAIN      = (1.50 / 60.0);
 static const float PLR_POWERSURGE_NEGATIVE_GAIN      = (0.40 / 60.0);
 
-typedef enum {
-	// do not reorder these or you'll break replays
+// do not reorder these or you'll break replays
+#define INFLAGS \
+	INFLAG(UP,    0) \
+	INFLAG(DOWN,  1) \
+	INFLAG(LEFT,  2) \
+	INFLAG(RIGHT, 3) \
+	INFLAG(FOCUS, 4) \
+	INFLAG(SHOT,  5) \
+	INFLAG(SKIP,  6) \
 
-	INFLAG_UP = 1,
-	INFLAG_DOWN = 2,
-	INFLAG_LEFT = 4,
-	INFLAG_RIGHT = 8,
-	INFLAG_FOCUS = 16,
-	INFLAG_SHOT = 32,
-	INFLAG_SKIP = 64,
+typedef enum {
+	#define INFLAG(name, bit) \
+		INFLAG_##name = (1 << bit),
+	INFLAGS
+	#undef INFLAG
 } PlrInputFlag;
 
 enum {
