@@ -362,7 +362,7 @@ TASK(spawn_boss) {
 	INVOKE_TASK_WHEN(&e->boss_appears, boss_appear, ENT_BOX(boss), scythe_ref);
 	INVOKE_TASK_WHEN(&e->music_changes, common_start_bgm, "stage6boss_phase1");
 
-	int scythe_ready_time = 120;
+	int scythe_ready_time = 220;
 	int dialog_time = WAIT_EVENT(&global.dialog->events.fadeout_began).frames;
 	WAIT(scythe_ready_time - dialog_time);
 	stage6_bg_start_boss_rotation();
