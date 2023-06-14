@@ -226,16 +226,26 @@ typedef struct Replay {
 	DYNAMIC_ARRAY(ReplayStage) stages;
 } Replay;
 
+#define REPLAY_GFLAGS \
+	REPLAY_GFLAG(CONTINUES,   0) /* a continue was used in any stage */ \
+	REPLAY_GFLAG(CHEATS,      1) /* a cheat was used in any stage */ \
+	REPLAY_GFLAG(CLEAR,       2) /* all stages in the replay were cleared */ \
+
+#define REPLAY_SFLAGS \
+	REPLAY_SFLAG(CONTINUES,   0) /* a continue was used in any stage */ \
+	REPLAY_SFLAG(CHEATS,      1) /* a cheat was used in any stage */ \
+	REPLAY_SFLAG(CLEAR,       2) /* all stages in the replay were cleared */ \
+
 typedef enum ReplayGlobalFlags {
-	_REPLAY_GFLAG_NULL,
-	REPLAY_GFLAG_CONTINUES          = (1 << 0), // a continue was used in any stage
-	REPLAY_GFLAG_CHEATS             = (1 << 1), // a cheat was used in any stage
-	REPLAY_GFLAG_CLEAR              = (1 << 2), // all stages in the replay were cleared
+	#define REPLAY_GFLAG(name, bit) \
+		REPLAY_GFLAG_##name = (1 << bit),
+	REPLAY_GFLAGS
+	#undef REPLAY_GFLAG
 } ReplayGlobalFlags;
 
 typedef enum ReplayStageFlags {
-	_REPLAY_SFLAG_NULL,
-	REPLAY_SFLAG_CONTINUES          = (1 << 0), // a continue was used in this stage
-	REPLAY_SFLAG_CHEATS             = (1 << 1), // a cheat was used in this stage
-	REPLAY_SFLAG_CLEAR              = (1 << 2), // this stage was cleared
+	#define REPLAY_SFLAG(name, bit) \
+		REPLAY_SFLAG_##name = (1 << bit),
+	REPLAY_SFLAGS
+	#undef REPLAY_SFLAG
 } ReplayStageFlags;
