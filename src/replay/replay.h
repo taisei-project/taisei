@@ -27,6 +27,7 @@ typedef enum ReplayReadMode {
 	// bitflags
 	REPLAY_READ_META = (1 << 0),
 	REPLAY_READ_EVENTS = (1 << 1),
+	REPLAY_READ_IGNORE_ERRORS = (1 << 2),
 
 	REPLAY_READ_ALL = REPLAY_READ_META | REPLAY_READ_EVENTS,
 } ReplayReadMode;
