@@ -56,6 +56,7 @@ typedef struct {
 } startrpy_arg_t;
 
 static void on_replay_finished(CallChainResult ccr) {
+	replay_destroy_events(ccr.ctx);
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
 
@@ -65,7 +66,7 @@ static void really_start_replay(CallChainResult ccr) {
 	mem_free(argp);
 
 	if(!TRANSITION_RESULT_CANCELED(ccr)) {
-		replay_play(arg.rpy, arg.stgnum, false, CALLCHAIN(on_replay_finished, NULL));
+		replay_play(arg.rpy, arg.stgnum, false, CALLCHAIN(on_replay_finished, arg.rpy));
 	}
 }
 
