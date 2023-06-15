@@ -449,7 +449,7 @@ TASK(flea_swirl, {
 		PROJECTILE(
 			.proto = pp_flea,
 			.pos = e->pos,
-			.color = RGB(0.3, 0.2, 1),
+			.color = RGB(0, 0.7, 1),
 			.move = move_asymptotic_simple(1.5 * I * cdir(rng_sreal()*M_PI/17), 1.5),
 		);
 	}
