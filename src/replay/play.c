@@ -70,7 +70,6 @@ static void replay_do_play(CallChainResult ccr) {
 		assume(rstg != NULL);
 		replay_state_init_play(&global.replay.input, rpy, rstg);
 		global.replay.input.play.demo_mode = ctx->demo_mode;
-		replay_state_deinit(&global.replay.output);
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
 		res_group_release(&ctx->rg);
 		stage_enter(stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
