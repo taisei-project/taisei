@@ -93,21 +93,23 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 		return;
 	}
 
-	for(int i = ARGS.time_offset; i < ARGS.time_offset + step_count; i++, YIELD) {
-		real y = step * i;
+	int count = difficulty_value(2, 3, 3, 3);
+	float speed = difficulty_value(0.5, 0.7, 0.9, 0.95);
 
-		int count = difficulty_value(2, 3, 3, 3);
-		float speed = difficulty_value(0.5, 0.7, 0.9, 0.95);
+	RNG_ARRAY(rand, count);
+
+	for(int i = ARGS.time_offset; i < ARGS.time_offset + step_count; i++, YIELD) {
+		real y = step * (i + 0.5 - ARGS.time_offset);
 
 		for(int j = 0; j < count; j++) {
-			cmplx p = VIEWPORT_W * (1 / (real)count * (j + psin(i * exp(i) * j * j + i * i))) + I * y;
-			cmplx dir =  cdir(M_TAU * sin(245 * i + j * j * 3501));
+			cmplx p = CMPLX(VIEWPORT_W * ((j + 0.5 + 0.4 * rng_sreal()) / (real)count), y);
+			cmplx dir = cdir(M_TAU * sin(vrng_angle(rand[j]) + 245 * i + j * j * 3501));
 
-			if(cabs(p-global.plr.pos) > 60) {
+			if(cabs(p - global.plr.pos) > 60) {
 				INVOKE_TASK(kurumi_vampvape_proj, 160, p, speed * dir);
 
 				if(rng_chance(0.5)) {
-					RNG_ARRAY(rand, 2);
+					RNG_NEXT(rand);
 					vapor_particle(p, RGBA(0.5, 0.125 * vrng_real(rand[0]), 0.125 * vrng_real(rand[1]), 0.1));
 				}
 			}
