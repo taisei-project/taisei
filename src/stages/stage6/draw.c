@@ -109,8 +109,8 @@ static void stage6_towertop_draw(vec3 pos) {
 	pbr_draw_model(&stage6_draw_data->models.floor, &env);
 
 	r_disable(RCAP_CULL_FACE);
-	//r_disable(RCAP_DEPTH_WRITE);
-	r_mat_mv_translate(0, 0, 6);
+	r_disable(RCAP_DEPTH_WRITE);
+	r_mat_mv_translate(0, 0, 7);
 	r_mat_mv_scale(0.7, 0.7, 0.7);
 	//r_mat_mv_translate(stage_3d_context.cam.pos[0], stage_3d_context.cam.pos[1], stage_3d_context.cam.pos[2]);
 	r_shader("calabi-yau-quintic");
