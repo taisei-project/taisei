@@ -45,7 +45,10 @@ TASK(maxwell_laser, { cmplx pos; cmplx dir; real phase; real phase_speed; }) {
 			play_sfx_ex("laser1", 1, true);
 		}
 
-		real f = tanh(steepness * sin(t / 120.0)) * fcorrection;
+		real f = -1.0;
+		if(global.diff > D_Normal) {
+			f = tanh(steepness * sin(t / 120.0)) * fcorrection;
+		}
 		l->color.b = 0.5 + 0.5 * f;
 		l->color.r = 0.5 - 0.5 * f;
 
@@ -75,8 +78,8 @@ DEFINE_EXTERN_TASK(stage6_spell_maxwell) {
 	int num_lasers = 24;
 
 	real phase = 0;
-	real phase_speed = difficulty_value(0.12, 0.14, 0.16, 0.16);
-	int delay = difficulty_value(20, 17, 16, 16);
+	real phase_speed = difficulty_value(0.12, 0.13, 0.16, 0.16);
+	int delay = difficulty_value(1, 4, 16, 16);
 
 	for(int i = 0; i < num_lasers; i++) {
 		INVOKE_TASK(maxwell_laser,
