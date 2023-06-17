@@ -43,21 +43,45 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 	int count = sizeof(delays) / sizeof(int);
 	for(int i = 0; i < count; i++) {
-		if(t < delays[i])
-			break;
+		float a = clamp((t - delays[i]) / 240.0, 0, 1);
 
-		r_color(RGBA_MUL_ALPHA(1, 1, 1, 0.5 * clamp((t - delays[i]) * 0.1, 0, 1)));
+		if(a <= 0) {
+			break;
+		}
+
 		char texname[33];
 		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
 		float wobble = fmax(0, t - BREAKTIME) * 0.03;
 
-		r_draw_sprite(&(SpriteParams) {
+		a = glm_ease_quad_inout(a) * 0.4;
+		Color color;
+
+		SpriteParams sp = {
+			.color = &color,
 			.sprite = texname,
 			.pos = {
 				VIEWPORT_W / 2.0 + positions[i][0] + cos(wobble + i) * wobble,
 				VIEWPORT_H / 2.0 - 150 + positions[i][1] + sin(i + wobble) * wobble,
 			},
-		});
+			.blend = BLEND_PREMUL_ALPHA,
+		};
+
+		cmplxf basepos = sp.pos.as_cmplx;
+
+		float f = a * 0.2;
+		color.a = f;
+
+		for(int i = 0; i < 3; ++i) {
+			sp.pos.as_cmplx = basepos + 2 * cdir(0.1 * t + i*M_TAU/3);
+			color.r = -f * (i == 0);
+			color.g = -f * (i == 1);
+			color.b = -f * (i == 2);
+			r_draw_sprite(&sp);
+		}
+
+		color = *RGBA(a, a, a, a);
+		sp.pos.as_cmplx = basepos;
+		r_draw_sprite(&sp);
 	}
 
 	r_color4(1, 1, 1, 1);
