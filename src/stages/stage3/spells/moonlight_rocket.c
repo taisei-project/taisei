@@ -153,7 +153,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	// FIXME: better sound
 	play_sfx("enemydeath");
 	play_sfx("shot1");
-	play_sfx("shot1_special");
+	play_sfx("shot_special1");
 
 	kill_projectile(p);
 }

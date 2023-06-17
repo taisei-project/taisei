@@ -70,19 +70,23 @@ static void stage2_end(void) {
 
 static void stage2_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "hina", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "hina", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "hina", "concerned", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "hina", "defeated", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "hina", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "hina", "serious", RESF_DEFAULT);
 	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage2", "stage2boss", NULL);
 
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle_big",
 		"part/blast_huge_rays",
+		"stage2/spellbg1",
+		"stage2/spellbg2",
 	NULL);
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
 		"ibl_brdf_lut",
 		"stage2/envmap",
-		"stage2/spellbg1",
-		"stage2/spellbg2",
 	NULL);
 	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage2/branch",

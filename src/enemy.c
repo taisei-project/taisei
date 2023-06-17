@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "resource/resource.h"
 #include "taisei.h"
 
 #include "enemy.h"
@@ -345,10 +346,15 @@ void enemies_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
 		"fairy_circle_red",
+		"fairy_circle_big",
 		"fairy_circle_big_and_mean",
 		"enemy/swirl",
 	NULL);
 
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"sprite_fairy",
+	NULL);
+	
 	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"enemydeath",
 	NULL);

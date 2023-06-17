@@ -86,18 +86,27 @@ static void stage3_spellpractice_start(void) {
 
 static void stage3_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "wriggle", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "wriggle", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "calm", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "outraged", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "outraged_unlit", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "wriggle", "proud", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "defeated", RESF_DEFAULT);
 	portrait_preload_base_sprite(rg, "scuttle", NULL, RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "scuttle", "normal", RESF_DEFAULT);
 	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
 		"ibl_brdf_lut",
 		"stage3/envmap",
 		"stage3/spellbg1",
-		"stage3/spellbg2",
 		"stage3/wspellbg",
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
+	NULL);
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
+		"stage3/spellbg2",
 	NULL);
 	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage3/ground",
@@ -117,7 +126,7 @@ static void stage3_preload(ResourceGroup *rg) {
 		"pbr",
 		"pbr_roughness_alpha_discard",
 		"stage3_wriggle_bg",
-		"zbuf_fog",
+		"zbuf_fog_tonemap",
 	NULL);
 	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",

@@ -414,6 +414,8 @@ static void cutscene_preload(const CutscenePhase phases[], ResourceGroup *rg) {
 			res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, p->background, NULL);
 		}
 	}
+
+	res_group_preload(rg, RES_BGM, RESF_DEFAULT, "ending", NULL);
 }
 
 static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {

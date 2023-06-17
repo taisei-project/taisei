@@ -1600,6 +1600,7 @@ void boss_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"charge_generic",
 		"charge_extra",
+		"discharge",
 		"spellend",
 		"spellclear",
 		"timeout1",
@@ -1612,6 +1613,7 @@ void boss_preload(ResourceGroup *rg) {
 		"boss_indicator",
 		"boss_spellcircle0",
 		"part/arc",
+		"part/blast_huge_rays",
 		"part/boss_shadow",
 		"spell",
 	NULL);

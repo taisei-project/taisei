@@ -94,22 +94,29 @@ static void stage4_spellpractice_start(void) {
 
 static void stage4_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "kurumi", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "kurumi", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "dissatisfied", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "kurumi", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "puzzled", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "tsun", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "kurumi", "tsun_blush", RESF_DEFAULT);
 	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage4", "stage4boss", NULL);
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"fractal_noise",
-		"stage4/kurumibg1",
 		"stage4/kurumibg2",
 	NULL);
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
+		"stage4/kurumibg1",
 		"stage6/scythe", // Stage 6 is intentional
 	NULL);
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"alpha_discard",
+		"fireparticles",
 		"pbr",
 		"sprite_negative",
 		"ssr_water",
-		"zbuf_fog",
+		"zbuf_fog_tonemap",
 	NULL);
 	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/kurumi",
@@ -130,7 +137,6 @@ static void stage4_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 		"boom",
-		"warp",
 	NULL);
 
 	// XXX: Special case for spell practice of the god damn extra spell, because it always needs a special case.

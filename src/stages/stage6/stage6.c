@@ -85,9 +85,13 @@ struct stage6_spells_s stage6_spells = {
 
 static void stage6_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "elly", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite(rg, "elly", "normal", RESF_DEFAULT);
 	portrait_preload_base_sprite(rg, "elly", "beaten", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "angry", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "blush", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "eyes_closed", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "normal", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "elly", "shouting", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "elly", "smug", RESF_DEFAULT);
 	res_group_preload(rg, RES_BGM, RESF_OPTIONAL,
 		"stage6",
 		"stage6boss_phase1",
@@ -95,6 +99,8 @@ static void stage6_preload(ResourceGroup *rg) {
 		"stage6boss_phase3",
 	NULL);
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
+		"ibl_brdf_lut",
+		"fractal_noise",
 		"stage6/sky",
 	NULL);
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
@@ -147,7 +153,6 @@ static void stage6_preload(ResourceGroup *rg) {
 		"stage6/tower_bottom",
 	NULL);
 	res_group_preload(rg, RES_SFX, RESF_DEFAULT | RESF_OPTIONAL,
-		"warp",
 		"noise1",
 		"boom",
 		"laser1",

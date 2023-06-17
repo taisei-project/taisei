@@ -273,6 +273,7 @@ void menu_preload(ResourceGroup *rg) {
 		"cell_noise",
 		"stage1/cirnobg",
 		"menu/mainmenubg",
+		"loading",
 	NULL);
 
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,

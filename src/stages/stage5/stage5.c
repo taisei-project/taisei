@@ -73,7 +73,12 @@ static void stage5_start(void) {
 
 static void stage5_preload(ResourceGroup *rg) {
 	portrait_preload_base_sprite(rg, "iku", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "iku", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "iku", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "iku", "eyes_closed", RESF_DEFAULT);
 	portrait_preload_face_sprite(rg, "iku", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "iku", "serious", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "iku", "smile", RESF_DEFAULT);
 	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage5", "stage5boss", NULL);
 	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/blast_huge_halo",
@@ -84,6 +89,8 @@ static void stage5_preload(ResourceGroup *rg) {
 		"stage5/spell_lightning",
 	NULL);
 	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
+		"ibl_brdf_lut",
+		"fractal_noise",
 		"stage5/envmap",
 	NULL);
 	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,

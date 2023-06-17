@@ -1053,6 +1053,7 @@ void projectiles_preload(ResourceGroup *rg) {
 		"part/smoke",
 		"part/smoothdot",
 		"part/stain",
+		"part/stardust",
 		"part/stardust_green",
 	NULL);
 
@@ -1067,6 +1068,7 @@ void projectiles_preload(ResourceGroup *rg) {
 		"shot1_loop",
 		"shot_special1",
 		"redirect",
+		"warp",
 	NULL);
 
 	#define PP(name) (_pp_##name).preload(&_pp_##name, rg);
