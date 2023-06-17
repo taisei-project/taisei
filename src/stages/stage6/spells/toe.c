@@ -71,11 +71,11 @@ void elly_spellbg_toe(Boss *b, int t) {
 		float f = a * 0.2;
 		color.a = f;
 
-		for(int i = 0; i < 3; ++i) {
-			sp.pos.as_cmplx = basepos + 2 * cdir(0.1 * t + i*M_TAU/3);
-			color.r = -f * (i == 0);
-			color.g = -f * (i == 1);
-			color.b = -f * (i == 2);
+		for(int j = 0; j < 3; ++j) {
+			sp.pos.as_cmplx = basepos + 2 * cdir(0.1 * t + j*M_TAU/3);
+			color.r = -f * (j == 0);
+			color.g = -f * (j == 1);
+			color.b = -f * (j == 2);
 			r_draw_sprite(&sp);
 		}
 
