@@ -955,7 +955,7 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		if(!--fstate->transition_delay) {
 			stage_finish(GAMEOVER_WIN);
 		}
-	} else {
+	} else if(!(should_skip_frame(fstate) && stage_is_demo_mode())) {
 		update_transition();
 	}
 
