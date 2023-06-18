@@ -32,7 +32,7 @@ DEFINE_EXTERN_TASK(stage5_boss_nonspell_1) {
 	INVOKE_SUBTASK(boss_move, { .boss = ENT_BOX(boss) });
 
 	int offset = difficulty_value(0, 1, 2, 3);
-	int count = difficulty_value(11, 12, 13, 14);
+	int count = difficulty_value(8, 10, 12, 14);
 	for(;;WAIT(50)) {
 		for(int i = 0; i < count; i++) {
 			PROJECTILE(

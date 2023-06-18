@@ -18,7 +18,7 @@ TASK(balls, { BoxedBoss boss; }) {
 	auto boss = TASK_BIND(ARGS.boss);
 
 	real speedmod = difficulty_value(1, 1, 1, 0.7);
-	int bursts = difficulty_value(4, 5, 5, 6);
+	int bursts = difficulty_value(3, 4, 5, 6);
 	int c = 10;
 
 	cmplx r = cdir(M_TAU / c);

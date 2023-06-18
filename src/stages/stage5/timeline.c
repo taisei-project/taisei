@@ -258,10 +258,13 @@ TASK(lightburst_fairy_1, {
 		.move = ARGS.move_exit
 	});
 
-	real count = difficulty_value(6, 7, 8, 9);
-	int difficulty = difficulty_value(1, 2, 3, 4);
+	real count = difficulty_value(1, 4, 7, 9);
+	real difficulty = difficulty_value(1, 2, 3, 4);
+
+	real speed = difficulty_value(2, 2.33, 2.66, 3.0);
+	int length = difficulty_value(35, 40, 45, 50);
 	WAIT(20);
-	for(int x = 0; x < 50; x++, WAIT(5)) {
+	for(int x = 0; x < length; x++, WAIT(5)) {
 		play_sfx_loop("shot1_loop");
 		for(int i = 0; i < count; i++) {
 			cmplx n = cnormalize(global.plr.pos - e->pos) * cdir(M_TAU / count * i);
@@ -269,7 +272,7 @@ TASK(lightburst_fairy_1, {
 				.proto = pp_ball,
 				.pos = e->pos + 50 * n * cdir(-0.4 * x * difficulty),
 				.color = RGB(0.3, 0, 0.7),
-				.move = move_asymptotic_simple(3 * n, 3),
+				.move = move_asymptotic_simple(speed * n, 3),
 			);
 		}
 		play_sfx("shot2");
@@ -600,7 +603,7 @@ TASK(superbullet_fairy, {
 	e->move = move_from_towards(e->pos, e->pos + ARGS.acceleration * 70 + ARGS.offset, 0.05);
 	common_charge(60, &e->pos, 0, RGBA(1.0, 0.5, 0, 0));
 
-	float difficulty = difficulty_value(9.0, 10.0, 11.0, 12.0);
+	real difficulty = difficulty_value(5.0, 8.0, 11.0, 12.0);
 	cmplx r = cnormalize(global.plr.pos - e->pos);
 
 	for(int x = 0; x < 140; x++, YIELD) {

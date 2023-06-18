@@ -11,7 +11,7 @@
 #include "spells.h"
 
 TASK(ball_shoot, { cmplx p1; cmplx p2; }) {
-	int shot_count = difficulty_value(7, 8, 9, 10);
+	int shot_count = difficulty_value(5, 6, 8, 10);
 	int shot_accel = difficulty_value(5, 6, 7, 8);
 	int delay = 10;
 	int waves = difficulty_value(7, 8, 9, 10);
