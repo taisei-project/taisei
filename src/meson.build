@@ -322,6 +322,7 @@ if host_machine.system() == 'emscripten'
         '-legl.js',
         '-lidbfs.js',
         '-lwebgl.js',
+        '-lhtml5',   # NOTE: SDL dependency; should be fixed there
     ]
 
     em_link_args += subproject('koishi').get_variable('koishi_external_link_args')
