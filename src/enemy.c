@@ -6,6 +6,8 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "taisei.h"
+
 #include "resource/resource.h"
 #include "taisei.h"
 
