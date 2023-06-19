@@ -279,9 +279,13 @@ static inline void set_events_state(int state) {
 }
 
 void gamepad_init(void) {
+	if(gamepad.initialized) {
+		return;
+	}
+
 	set_events_state(SDL_IGNORE);
 
-	if(!config_get_int(CONFIG_GAMEPAD_ENABLED) || gamepad.initialized) {
+	if(!config_get_int(CONFIG_GAMEPAD_ENABLED)) {
 		return;
 	}
 
