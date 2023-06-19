@@ -67,20 +67,10 @@ MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 	} else {
 		ctx->base.title = "Game Over";
 
-		char s[64];
-		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
-		bool have_continues = c > 0;
-
-		if(have_continues) {
-			snprintf(s, sizeof(s), "Continue (%i)", c);
-		} else {
-			snprintf(s, sizeof(s), "Continue");
-		}
-
-		add_action_entry(m, s, GAMEOVERMENU_ACTION_CONTINUE, have_continues);
+		add_action_entry(m, "Continue", GAMEOVERMENU_ACTION_CONTINUE, true);
 		add_action_entry(m, "Restart the Game", GAMEOVERMENU_ACTION_RESTART, true)
 			->transition = TransFadeBlack;
-		add_action_entry(m, have_continues ? "Give up" : "Return to Title", GAMEOVERMENU_ACTION_QUIT, true)
+		add_action_entry(m, "Give up", GAMEOVERMENU_ACTION_QUIT, true)
 			->transition = TransFadeBlack;
 	}
 
