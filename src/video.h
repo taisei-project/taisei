@@ -80,7 +80,7 @@ void video_set_display(uint idx);
 const char *video_display_name(uint id) attr_returns_nonnull;
 Framebuffer *video_get_screen_framebuffer(void);
 VideoBackend video_get_backend(void);
-VideoMode video_get_mode(uint idx, bool fullscreen);
+bool video_get_mode(uint idx, bool fullscreen, VideoMode *out_mode);
 uint video_get_num_modes(bool fullscreen);
 VideoMode video_get_current_mode(void);
 double video_get_scaling_factor(void);

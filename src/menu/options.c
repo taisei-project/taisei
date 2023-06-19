@@ -209,7 +209,10 @@ static void bind_resolution_update(OptionBinding *bind) {
 	log_debug("nmodes = %i", nmodes);
 
 	for(int i = 0; i < nmodes; ++i) {
-		VideoMode m = video_get_mode(i, fullscreen);
+		VideoMode m;
+		attr_unused bool ok = video_get_mode(i, fullscreen, &m);
+		assert(ok);
+
 		log_debug("#%i   %ix%i", i, m.width, m.height);
 		if(m.width == cur.width && m.height == cur.height) {
 			bind->selected = i;
@@ -414,9 +417,9 @@ static bool bind_fullscreen_dependence(void) {
 }
 
 static int bind_resolution_set(OptionBinding *b, int v) {
-	bool fullscreen = video_is_fullscreen();
-	if(v >= 0) {
-		VideoMode m = video_get_mode(v, fullscreen);
+	VideoMode m;
+
+	if(video_get_mode(v, video_is_fullscreen(), &m)) {
 		config_set_int(CONFIG_VID_WIDTH, m.width);
 		config_set_int(CONFIG_VID_HEIGHT, m.height);
 	}
@@ -452,10 +455,13 @@ static void destroy_options_menu(MenuData *m) {
 		if(bind->type == BT_Resolution && video_query_capability(VIDEO_CAP_CHANGE_RESOLUTION) == VIDEO_AVAILABLE) {
 			if(bind->selected != -1) {
 				bool fullscreen = video_is_fullscreen();
-				VideoMode mode = video_get_mode(bind->selected, fullscreen);
-				config_set_int(CONFIG_VID_WIDTH, mode.width);
-				config_set_int(CONFIG_VID_HEIGHT, mode.height);
-				change_vidmode = true;
+				VideoMode mode;
+
+				if(video_get_mode(bind->selected, fullscreen, &mode)) {
+					config_set_int(CONFIG_VID_WIDTH, mode.width);
+					config_set_int(CONFIG_VID_HEIGHT, mode.height);
+					change_vidmode = true;
+				}
 			}
 		}
 
@@ -1188,11 +1194,8 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				int w, h;
 				VideoMode m;
 
-				if(bind->selected == -1) {
+				if(!video_get_mode(bind->selected, video_is_fullscreen(), &m)) {
 					m = video_get_current_mode();
-				} else {
-					bool fullscreen = video_is_fullscreen();
-					m = video_get_mode(bind->selected, fullscreen);
 				}
 
 				w = m.width;

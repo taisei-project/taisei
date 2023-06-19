@@ -913,9 +913,15 @@ static VideoModeArray *get_vidmode_array(bool fullscreen) {
 	return fullscreen ? &video.fs_modes : &video.win_modes;
 }
 
-VideoMode video_get_mode(uint idx, bool fullscreen) {
+bool video_get_mode(uint idx, bool fullscreen, VideoMode *out_mode) {
 	VideoModeArray *a = get_vidmode_array(fullscreen);
-	return dynarray_get(a, idx);
+
+	if(idx >= a->num_elements) {
+		return false;
+	}
+
+	*out_mode = dynarray_get(a, idx);
+	return true;
 }
 
 uint video_get_num_modes(bool fullscreen) {
