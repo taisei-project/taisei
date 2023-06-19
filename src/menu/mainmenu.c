@@ -78,7 +78,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	TaiseiEvent te = TAISEI_EVENT(event->type);
 	static hrtime_t last_abort_time = 0;
 
-	if(te == TE_MENU_ABORT) {
+	if(te == TE_MENU_ABORT && dynarray_get(&m->entries, m->entries.num_elements - 1).action) {
 		play_sfx_ui("hit");
 		m->cursor = m->entries.num_elements - 1;
 		hrtime_t t = time_get();
@@ -125,7 +125,7 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Media Room", menu_action_enter_media, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
 #ifndef __EMSCRIPTEN__
-	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, "Quit", global.is_kiosk_mode ? NULL : menu_action_close, NULL)->transition = TransFadeBlack;
 	m->input = main_menu_input;
 #endif
 

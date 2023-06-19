@@ -151,6 +151,24 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 	}
 }
 
+static VideoCapabilityState (*video_query_capability_kiosk_fallback)(VideoCapability cap);
+
+static VideoCapabilityState video_query_capability_kiosk(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_ALWAYS_ENABLED;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_NEVER_AVAILABLE;
+
+		default:
+			return video_query_capability_kiosk_fallback(cap);
+	}
+}
+
 static void video_add_mode(VideoModeArray *mode_array, IntExtent mode_screen, IntExtent min_screen, IntExtent max_screen, const char *mode_type) {
 	if(
 		(mode_screen.w > max_screen.w && max_screen.w > 0) ||
@@ -842,6 +860,11 @@ void video_init(void) {
 		video_query_capability = video_query_capability_alwaysfullscreen;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
+	}
+
+	if(global.is_kiosk_mode) {
+		video_query_capability_kiosk_fallback = video_query_capability;
+		video_query_capability = video_query_capability_kiosk;
 	}
 
 	video.scaling_factor = 0;
