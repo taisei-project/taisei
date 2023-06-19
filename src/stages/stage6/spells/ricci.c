@@ -174,14 +174,25 @@ TASK(ricci_baryons, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 
 				for(int j = 0; j < 3; ++j) {
 					int d = 10 * j;
-					INVOKE_SUBTASK_DELAYED(d, common_charge,
-						.anchor = &baryons->poss[i],
-						.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
-						.bind_to_entity = ARGS.baryons.as_generic,
-						.time = 250 - d,
-						.color = RGBA(0.02, 0.01, 0.1, 0.0),
-						.sound = COMMON_CHARGE_SOUNDS,
-					);
+					// dirty way of only playing sound for the first one
+					if(j == 0) {
+						INVOKE_SUBTASK_DELAYED(d, common_charge,
+							.anchor = &baryons->poss[i],
+							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
+							.bind_to_entity = ARGS.baryons.as_generic,
+							.time = 250 - d,
+							.color = RGBA(0.02, 0.01, 0.1, 0.0),
+							.sound = COMMON_CHARGE_SOUNDS,
+						);
+					} else {
+						INVOKE_SUBTASK_DELAYED(d, common_charge,
+							.anchor = &baryons->poss[i],
+							.pos = 14 * cdir(M_TAU * (0.25 + j / 3.0)),
+							.bind_to_entity = ARGS.baryons.as_generic,
+							.time = 250 - d,
+							.color = RGBA(0.02, 0.01, 0.1, 0.0),
+						);
+					}
 				}
 			} else if(phase_norm > 0.15 && phase_norm < 0.55) {
 				int count = 3;

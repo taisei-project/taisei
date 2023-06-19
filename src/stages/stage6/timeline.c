@@ -44,10 +44,12 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 	int duration = difficulty_value(220, 260, 300, 340);
 	int step = 3;
 
+	int density = difficulty_value(3,3,4,5);
+
 	for(int i = 0; i < duration/step; i++, WAIT(step)) {
 		play_sfx_loop("shot1_loop");
-		for(int j = 0; j < 6; j++) {
-			cmplx dir = sin(i * 0.2) * cdir(0.3 * (j / 2 - 1)) * (1 - 2 * (i&1));
+		for(int j = 0; j <= density; j++) {
+			cmplx dir = sin(i * 0.2) * cdir(0.15 * (j - density*0.5)) * (1 - 2 * (i&1));
 
 			cmplx vel = (-0.5 * sin(global.frames + i * 46752 + 16463 * j + 467 * sin(global.frames*i*j))) * global.diff + creal(dir) + 2.0 * I;
 
@@ -75,7 +77,7 @@ TASK(side_fairy, { cmplx pos; MoveParams move; cmplx direction; real index; }) {
 
 	int count = difficulty_value(25, 35, 45, 55);
 	real speed = difficulty_value(0.9, 1.1, 1.3, 1.5);
-	play_sfx_ex("shot1", 4, true);
+	play_sfx("shot2");
 	for(int i = 0; i < count; i++) {
 		PROJECTILE(
 			.proto = (i % 2 == 0) ? pp_rice : pp_flea,
@@ -124,7 +126,7 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 			.proj = ENT_BOX(p),
 			.move = move_asymptotic_simple(I * cdir(0.6 * i) * speed, boost)
 		);
-		play_sfx("shot1");
+		play_sfx_loop("shot3");
 	}
 }
 
@@ -139,7 +141,7 @@ TASK(sniper_fairy_bullet, { cmplx pos; cmplx aim; }) {
 	int vpdist = 64;
 
 	real speed = difficulty_value(30, 20, 12, 6);
-	real trail_speed = 2.5;
+	real trail_speed = difficulty_value(2, 2.1, 2.3, 2.5);
 	real freq = 1/3.0;
 
 	auto p = TASK_BIND(PROJECTILE(
@@ -412,7 +414,7 @@ TASK(wallmaker, { cmplx pos; MoveParams move; }) {
 	auto e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points = 1)));
 	e->move = ARGS.move;
 
-	int period = 4;
+	int period = difficulty_value(7, 6, 5, 4);
 	int n = 1;
 
 	for(;;WAIT(period)) {
@@ -490,14 +492,15 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 		);
 	}
 
-	for(int i = 0; i < 12; ++i) {
+	int sniper_step = difficulty_value(3,2,2,1);
+	for(int i = 0; i < 12; i += sniper_step) {
 		INVOKE_TASK_DELAYED(1400 + 120 * i - SNIPER_SPAWNTIME, sniper_fairy,
 			.pos = VIEWPORT_W + VIEWPORT_H*0.6i - 1.5 * 80 * cdir(0.5 * ((2 - (i % 3)) - 1)),
 			.move_exit = move_accelerated(-1, -0.04i),
 		);
 	}
 
-	for(int i = 0; i < 6; ++i) {
+	for(int i = 0; i < 6; i += sniper_step) {
 		INVOKE_TASK_DELAYED(2180 + 120 * i - SNIPER_SPAWNTIME, sniper_fairy,
 			.pos = VIEWPORT_H*0.6i + 1.5 * 80 * cdir(0.5 * ((2 - (i % 3)) - 1)),
 			.move_exit = move_accelerated(1, -0.04i),

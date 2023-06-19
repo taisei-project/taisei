@@ -25,11 +25,11 @@ DECLARE_TASK(kepler_bullet, { BoxedProjectile parent; int tier; cmplx offset; cm
 
 TASK(kepler_bullet_spawner, { BoxedProjectile proj; int tier; cmplx offset; }) {
 	TASK_BIND(ARGS.proj);
-	int interval = 1.5*difficulty_value(25, 20, 15, 10);
+	int interval = 1.5*difficulty_value(30, 25, 15, 10);
 	int max_children = difficulty_value(4, 4, 5, 5) / (ARGS.tier + 1);
 
 	for(int i = 0; i < max_children; i++) {
-		if(ARGS.tier < 4) {
+		if(ARGS.tier < difficulty_value(3,4,4,4)) {
 			INVOKE_TASK(kepler_bullet,
 				.parent = ARGS.proj,
 				.tier = ARGS.tier + 1,

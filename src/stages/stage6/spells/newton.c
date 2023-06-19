@@ -80,7 +80,7 @@ TASK(newton_scythe_movement, { BoxedEllyScythe scythe; BoxedBoss boss; }) {
 }
 
 static void scythe_touch_bullet(Projectile *p) {
-	real acceleration = difficulty_value(0.015, 0.02, 0.03, 0.04);
+	real acceleration = difficulty_value(0.01, 0.02, 0.03, 0.04);
 	cmplx aim = cnormalize(p->move.velocity * I);
 	real vis_scale = 0.75;
 	real hit_scale = 0.75;
@@ -110,7 +110,7 @@ TASK(newton_scythe, { BoxedEllyScythe scythe; BoxedBoss boss; BoxedProjectileArr
 
 	INVOKE_SUBTASK(newton_scythe_movement, ARGS.scythe, ARGS.boss);
 
-	real effect_radius = 30;
+	real effect_radius = difficulty_value(15, 20, 25, 30);
 	real effect_radius_sq = effect_radius * effect_radius;
 
 	for(;;) {
@@ -138,7 +138,7 @@ DEFINE_EXTERN_TASK(stage6_spell_newton) {
 	INVOKE_SUBTASK_DELAYED(180, newton_scythe, ARGS.scythe, ENT_BOX(boss), &projectiles);
 
 	real width = 100;
-	int bullets_per_side = 5;
+	int bullets_per_side = difficulty_value(4, 4, 5, 5);
 
 	real square_speed = difficulty_value(2, 2.3, 2.6, 3);
 
