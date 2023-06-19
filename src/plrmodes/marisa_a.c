@@ -688,7 +688,7 @@ TASK(marisa_laser_controller, { BoxedPlayer plr; }) {
 	TASK_HOST_EVENTS(ctrl->events);
 
 	ctrl->ent.draw_func = marisa_laser_draw_lasers;
-	ctrl->ent.draw_layer = LAYER_PLAYER_FOCUS;
+	ctrl->ent.draw_layer = LAYER_PLAYER_SHOT_HIGH;
 
 	INVOKE_SUBTASK(marisa_laser_power_handler, ctrl);
 	INVOKE_SUBTASK(marisa_laser_bomb_handler, ctrl);
