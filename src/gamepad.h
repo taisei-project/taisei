@@ -103,6 +103,7 @@ enum {
 
 void gamepad_init(void);
 void gamepad_shutdown(void);
+bool gamepad_initialized(void);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 int gamepad_device_count(void);
