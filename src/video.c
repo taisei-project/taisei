@@ -487,7 +487,25 @@ INLINE bool should_recreate_on_fullscreen_change(void) {
 	return env_get("TAISEI_VIDEO_RECREATE_ON_FULLSCREEN", defaultval);
 }
 
+static bool restrict_to_capability(bool enabled, VideoCapability cap) {
+	VideoCapabilityState capval = video_query_capability(cap);
+
+	switch(capval) {
+		case VIDEO_ALWAYS_ENABLED:
+			return true;
+
+		case VIDEO_NEVER_AVAILABLE:
+			return false;
+
+		default:
+			return enabled;
+	}
+}
+
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
+	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
+	resizable = restrict_to_capability(resizable, VIDEO_CAP_EXTERNAL_RESIZE);
+
 	video.intended.width = w;
 	video.intended.height = h;
 
