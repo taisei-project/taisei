@@ -263,7 +263,6 @@ void events_pause_keyrepeat(void) {
  */
 
 static bool events_handler_quit(SDL_Event *event, void *arg);
-static bool events_handler_config(SDL_Event *event, void *arg);
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg);
 static bool events_handler_clipboard(SDL_Event *event, void *arg);
 static bool events_handler_hotkeys(SDL_Event *event, void *arg);
@@ -339,7 +338,6 @@ static EventHandler default_handlers[] = {
 	{ .proc = events_handler_debug_winevt,          .priority = EPRIO_SYSTEM,       .event_type = SDL_WINDOWEVENT },
 #endif
 	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
-	{ .proc = events_handler_config,                .priority = EPRIO_SYSTEM,       .event_type = 0 },
 	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
 	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_KEYDOWN },
 	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_KEYDOWN },
@@ -364,27 +362,6 @@ static void events_unregister_default_handlers(void) {
 static bool events_handler_quit(SDL_Event *event, void *arg) {
 	taisei_quit();
 	return true;
-}
-
-static bool events_handler_config(SDL_Event *event, void *arg) {
-	if(event->type != MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)) {
-		return false;
-	}
-
-	ConfigValue *val = event->user.data1;
-
-	switch(event->user.code) {
-		case CONFIG_GAMEPAD_ENABLED:
-			// TODO: Refactor gamepad code so that we don't have to do this.
-			if(val->i) {
-				gamepad_init();
-			} else {
-				gamepad_shutdown();
-			}
-			break;
-	}
-
-	return false;
 }
 
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {

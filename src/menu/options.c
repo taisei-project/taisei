@@ -435,6 +435,14 @@ static int bind_power_get(OptionBinding *b) {
 	return config_get_int(b->configentry) / 100;
 }
 
+static int bind_gamepad_set(OptionBinding *b, int v) {
+	v = bind_common_onoff_set(b, v);
+	if(v == 0) {
+		gamepad_init();
+	}
+	return v;
+}
+
 // --- Creating, destroying, filling the menu --- //
 
 typedef struct OptionsMenuContext {
@@ -653,7 +661,7 @@ static void bind_setvaluerange_fancy(OptionBinding *b, int ma) {
 
 #ifndef __SWITCH__
 static bool gamepad_enabled_depencence(void) {
-	return config_get_int(CONFIG_GAMEPAD_ENABLED);
+	return config_get_int(CONFIG_GAMEPAD_ENABLED) && gamepad_initialized();
 }
 #endif
 
@@ -709,8 +717,12 @@ static MenuData* create_options_menu_gamepad_controls(MenuData *parent) {
 static void destroy_options_menu_gamepad(MenuData *m) {
 	OptionsMenuContext *ctx = m->context;
 
-	if(config_get_int(CONFIG_GAMEPAD_ENABLED) && strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), ctx->data)) {
-		gamepad_update_devices();
+	if(config_get_int(CONFIG_GAMEPAD_ENABLED)) {
+		if(strcasecmp(config_get_str(CONFIG_GAMEPAD_DEVICE), ctx->data)) {
+			gamepad_update_devices();
+		}
+	} else {
+		gamepad_shutdown();
 	}
 
 	destroy_options_menu(m);
@@ -727,7 +739,7 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 #ifndef __SWITCH__
 	add_menu_entry(m, "Enable Gamepad/Joystick support", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_common_onoff_set)
+		b = bind_option(CONFIG_GAMEPAD_ENABLED, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
 
 	add_menu_entry(m, "Device", do_nothing,
