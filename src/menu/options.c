@@ -908,6 +908,10 @@ MenuData* create_options_menu(void) {
 		b = bind_option(CONFIG_SHOT_INVERTED,   bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_onoff(b);
 
+	add_menu_entry(m, "Automatic Power Surge activation", do_nothing,
+		b = bind_option(CONFIG_AUTO_SURGE,      bind_common_onoff_get, bind_common_onoff_set)
+	);	bind_onoff(b);
+
 	add_menu_entry(m, "Boss healthbar style", do_nothing,
 		b = bind_option(CONFIG_HEALTHBAR_STYLE,   bind_common_int_get, bind_common_int_set)
 	);	bind_addvalue(b, "classic");

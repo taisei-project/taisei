@@ -116,6 +116,7 @@
 	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
 	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \
 	CONFIGDEF_FLOAT     (SCORETEXT_ALPHA,           "scoretext_alpha",                      1) \
+	CONFIGDEF_INT       (AUTO_SURGE,                "auto_surge",                           1) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      1) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "any") \

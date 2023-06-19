@@ -1370,6 +1370,15 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 	if(plr->axis_ud != axis_ud) {
 		player_event(plr, NULL, rpy_out, EV_AXIS_UD, axis_ud);
 	}
+
+	if(
+		config_get_int(CONFIG_AUTO_SURGE) &&
+		plr->power_stored == PLR_MAX_POWER_STORED &&
+		!player_is_powersurge_active(plr) &&
+		!dialog_is_active(global.dialog)
+	) {
+		player_event(plr, NULL, rpy_out, EV_PRESS, KEY_SPECIAL);
+	}
 }
 
 void player_graze(Player *plr, cmplx pos, int pts, int effect_intensity, const Color *color) {
