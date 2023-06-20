@@ -205,7 +205,8 @@ static int quantize_laser(Laser *l) {
 
 	// Points of the current line segment
 	// Begin constructing at t0
-	cmplxf a, b;
+	// WARNING: these must be double precision to prevent cross-platform replay desync
+	cmplx a, b;
 	a = l->prule(l, t0);
 
 	// Width value of the last included sample
