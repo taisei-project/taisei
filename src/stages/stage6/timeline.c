@@ -348,6 +348,7 @@ TASK(stop_boss_rotation) {
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
+	stage_unlock_bgm("stage6");
 
 	Boss *boss = global.boss = stage6_spawn_elly(-200.0*I);
 
@@ -513,11 +514,8 @@ DEFINE_EXTERN_TASK(stage6_timeline) {
 	INVOKE_TASK(spawn_boss);
 	WAIT_EVENT(&global.boss->events.defeated);
 
-	stage_unlock_bgm("stage6");
 	WAIT(300);
 
-	// TODO make these unlock at better times
-	stage_unlock_bgm("stage6boss_phase2");
 	stage_unlock_bgm("stage6boss_phase3");
 
 	WAIT(5);

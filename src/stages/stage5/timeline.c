@@ -58,6 +58,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK_DELAYED(120, boss);
+	stage_unlock_bgm("stage5");
 	Boss *boss = global.boss = stage5_spawn_iku(VIEWPORT_W/2 - 200.0 * I);
 	PlayerMode *pm = global.plr.mode;
 	Stage5PreBossDialogEvents *e;

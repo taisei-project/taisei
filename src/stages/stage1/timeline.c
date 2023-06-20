@@ -666,6 +666,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
+	stage_unlock_bgm("stage1");
 
 	Boss *boss = global.boss = stage1_spawn_cirno(-230 + 100.0*I);
 

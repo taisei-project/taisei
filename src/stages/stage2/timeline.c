@@ -628,6 +628,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
+	stage_unlock_bgm("stage2");
 
 	Boss *boss = global.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
 
