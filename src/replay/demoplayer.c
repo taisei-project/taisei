@@ -15,12 +15,12 @@
 #include "vfs/public.h"
 #include "events.h"
 
-#define DEMOPLAYER_DIR_PATH "res/demos"
-#define DEMOPLAYER_WAIT_TIME (60 * FPS)
+#define DEMOPLAYER_DIR_PATH        "res/demos"
+#define DEMOPLAYER_WAIT_TIME       (60 * FPS)
+#define DEMOPLAYER_INTER_WAIT_TIME (30 * FPS)
 
 struct {
-	uint time;
-	uint wait_time;
+	uint next_demo_countdown;
 	uint next_demo_index;
 	char **demo_files;
 	size_t num_demo_files;
@@ -40,6 +40,14 @@ static bool demoplayer_check_demos(void) {
 	return true;
 }
 
+static inline int get_initial_wait_time(void) {
+	return env_get("TAISEI_DEMO_TIME", DEMOPLAYER_WAIT_TIME);
+}
+
+static inline int get_inter_wait_time(void) {
+	return env_get("TAISEI_DEMO_INTER_TIME", DEMOPLAYER_INTER_WAIT_TIME);
+}
+
 void demoplayer_init(void) {
 	dplr.demo_files = vfs_dir_list_sorted(
 		DEMOPLAYER_DIR_PATH, &dplr.num_demo_files, vfs_dir_list_order_ascending, demo_path_filter
@@ -49,12 +57,7 @@ void demoplayer_init(void) {
 		log_info("Found %zu demo files", dplr.num_demo_files);
 	}
 
-	dplr.wait_time = env_get("TAISEI_DEMO_TIME", DEMOPLAYER_WAIT_TIME);
-
-	if(!dplr.wait_time) {
-		dplr.wait_time = UINT32_MAX;
-	}
-
+	dplr.next_demo_countdown = get_initial_wait_time();
 	dplr.suspend_level = 1;
 	demoplayer_resume();
 }
@@ -125,16 +128,13 @@ static void demoplayer_end_demo(CallChainResult ccr) {
 }
 
 static bool demoplayer_frame_event(SDL_Event *evt, void *arg) {
-	if(dplr.time == dplr.wait_time) {
+	if(!(--dplr.next_demo_countdown)) {
 		demoplayer_start_demo();
-		dplr.time = 0;
+		dplr.next_demo_countdown = get_inter_wait_time();
 		return false;
 	}
 
-	assert(dplr.time < dplr.wait_time);
-	++dplr.time;
-
-	// log_debug("%u", dplr.time);
+	// log_debug("%u", dplr.next_demo_countdown);
 	return false;
 }
 
@@ -153,8 +153,7 @@ static bool demoplayer_activity_event(SDL_Event *evt, void *arg) {
 	}
 
 reset:
-	// log_debug("Reset timer (was %u)", dplr.time);
-	dplr.time = 0;
+	dplr.next_demo_countdown = get_initial_wait_time();
 	return false;
 }
 
