@@ -448,6 +448,9 @@ static int bind_gamepad_set(OptionBinding *b, int v) {
 typedef struct OptionsMenuContext {
 	const char *title;
 	void *data;
+	MenuData *submenu;
+	MenuData *submenu_fading;
+	float submenu_alpha;
 } OptionsMenuContext;
 
 static void destroy_options_menu(MenuData *m) {
@@ -489,6 +492,15 @@ static void destroy_options_menu(MenuData *m) {
 
 	if(m->context) {
 		OptionsMenuContext *ctx = m->context;
+
+		if(ctx->submenu) {
+			free_menu(ctx->submenu);
+		}
+
+		if(ctx->submenu_fading) {
+			free_menu(ctx->submenu);
+		}
+
 		mem_free(ctx->data);
 		mem_free(ctx);
 	}
@@ -549,6 +561,96 @@ static void options_enter_sub(MenuData *parent, MenuData *(*construct)(MenuData*
 	static void enter(MenuData *parent, void *arg) { \
 		options_enter_sub(parent, construct); \
 	}
+
+static void reset_to_defaults_draw(MenuData *m) {
+	OptionsMenuContext *ctx = m->context;
+	float alpha = ctx->submenu_alpha;
+
+	static const char confirm_text[] = "Reset all settings to defaults?";
+
+	float lineskip = font_get_lineskip(res_font("standard"));
+	float height = lineskip * 4;
+	float width  = text_width(res_font("standard"), confirm_text, 0) + 64;
+
+	r_state_push();
+	alpha *= 0.7;
+	r_color4(0, 0, 0, alpha);
+	r_shader_standard_notex();
+
+	r_mat_mv_push();
+	r_mat_mv_translate(SCREEN_W*0.5, SCREEN_H*0.5, 0);
+
+	r_mat_mv_push();
+	r_mat_mv_scale(SCREEN_W, SCREEN_H, 1);
+	r_draw_quad();
+	r_mat_mv_pop();
+
+	r_mat_mv_scale(width, height, 1);
+	r_color4(0.1 * alpha, 0.1 * alpha, 0.1 * alpha, alpha);
+	r_draw_quad();
+	r_mat_mv_pop();
+
+	r_state_pop();
+
+	text_draw(confirm_text, &(TextParams) {
+		.align = ALIGN_CENTER,
+		.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
+		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 - lineskip * 0.5 },
+		.shader = "text_default",
+	});
+
+	dynarray_foreach(&m->entries, int i, MenuEntry *e, {
+		float x = 0.5f * SCREEN_W - width * 0.5f;
+		x += (i + 1) * width / (m->entries.num_elements + 1);
+
+		float a = e->drawdata / 10;
+		float ia = 1.0f - a;
+
+		text_draw(e->name, &(TextParams) {
+			.align = ALIGN_CENTER,
+			.color = RGBA_MUL_ALPHA(
+				0.9 + ia * 0.1,
+				0.6 + ia * 0.4,
+				0.2 + ia * 0.8,
+				(0.7 + 0.3 * a) * alpha
+			),
+			.pos = { x, SCREEN_H*0.5 + lineskip * 0.75f },
+			.shader = "text_default",
+		});
+
+	});
+}
+
+static void confirm_reset(MenuData *m, void *a) {
+	config_reset();
+	menu_action_close(m, a);
+}
+
+static void reset_to_defaults_logic(MenuData *m) {
+	animate_menu_list_entries(m);
+}
+
+static void reset_to_defaults(MenuData *m, void *a) {
+	MenuData *sub = alloc_menu();
+	sub->draw = reset_to_defaults_draw;
+	sub->logic = reset_to_defaults_logic;
+	sub->flags = MF_Transient | MF_Abortable;
+	sub->transition = NULL;
+	sub->context = m->context;
+	add_menu_entry(sub, "Yes", confirm_reset, NULL);
+	add_menu_entry(sub, "No", menu_action_close, NULL);
+	sub->cursor = 1;
+
+	OptionsMenuContext *ctx = m->context;
+	assert(!ctx->submenu);
+	ctx->submenu = sub;
+	ctx->submenu_alpha = 0;
+
+	if(ctx->submenu_fading) {
+		free_menu(ctx->submenu_fading);
+		ctx->submenu_fading = NULL;
+	}
+}
 
 static MenuData* create_options_menu_controls(MenuData *parent);
 DECLARE_ENTER_FUNC(enter_options_menu_controls, create_options_menu_controls)
@@ -959,6 +1061,10 @@ MenuData* create_options_menu(void) {
 	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
 	add_menu_separator(m);
 
+	auto e = add_menu_entry(m, "Reset to defaults", reset_to_defaults, NULL);
+	e->transition = NULL;
+	add_menu_separator(m);
+
 	add_menu_entry(m, "Back", menu_action_close, NULL);
 
 	return m;
@@ -986,6 +1092,25 @@ static void update_options_menu(MenuData *menu) {
 	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
 
 	animate_menu_list_entries(menu);
+
+	OptionsMenuContext *ctx = menu->context;
+
+	if(ctx->submenu) {
+		if(ctx->submenu->state == MS_Dead) {
+			ctx->submenu_fading = ctx->submenu;
+			ctx->submenu = NULL;
+		} else {
+			fapproach_asymptotic_p(&ctx->submenu_alpha, 1, 0.2, 1e-3);
+			ctx->submenu->logic(ctx->submenu);
+		}
+	}
+
+	if(ctx->submenu_fading) {
+		if(fapproach_asymptotic_p(&ctx->submenu_alpha, 0, 0.2, 1e-3) == 0) {
+			free_menu(ctx->submenu_fading);
+			ctx->submenu_fading = NULL;
+		}
+	}
 }
 
 static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
@@ -1283,6 +1408,18 @@ static void draw_options_menu(MenuData *menu) {
 	draw_menu_title(menu, ctx->title);
 	draw_menu_list(menu, 100, 100, options_draw_item, SCREEN_H * 1.1, menu);
 	r_state_pop();
+
+	if(ctx->submenu_fading) {
+		r_state_push();
+		ctx->submenu_fading->draw(ctx->submenu_fading);
+		r_state_pop();
+	}
+
+	if(ctx->submenu) {
+		r_state_push();
+		ctx->submenu->draw(ctx->submenu);
+		r_state_pop();
+	}
 }
 
 // --- Input/event processing --- //
@@ -1595,9 +1732,31 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 }
 #undef SHOULD_SKIP
 
+static bool submenu_input_handler(SDL_Event *event, void *arg) {
+	if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_LEFT)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_UP);
+	} else if(event->type == MAKE_TAISEI_EVENT(TE_MENU_CURSOR_RIGHT)) {
+		event->type = MAKE_TAISEI_EVENT(TE_MENU_CURSOR_DOWN);
+	}
+
+	return false;
+}
+
 static void options_menu_input(MenuData *menu) {
 	OptionBinding *b;
 	EventFlags flags = EFLAG_MENU;
+
+	OptionsMenuContext *ctx = menu->context;
+	MenuData *sub = ctx->submenu;
+
+	if(sub) {
+		events_poll((EventHandler[]){
+			{ .proc = submenu_input_handler, .arg = sub },
+			{ .proc = menu_input_handler, .arg = sub },
+			{NULL}
+		}, flags);
+		return;
+	}
 
 	if((b = bind_getinputblocking(menu)) != NULL) {
 		if(b->type == BT_StrValue) {
