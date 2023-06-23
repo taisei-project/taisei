@@ -82,13 +82,6 @@ def get(*, rootdir=None, fallback=VERSION_FALLBACK, args=common.default_args):
             cwd=str(rootdir),
             universal_newlines=True
         ).strip()
-
-        if '-' in version_str:
-            version_str += '-' + subprocess.check_output(
-                shlex.split('git rev-parse --abbrev-ref HEAD'),
-                cwd=str(rootdir),
-                universal_newlines=True
-            ).strip()
     except (subprocess.SubprocessError, OSError) as e:
         if not fallback:
             raise
