@@ -29,6 +29,7 @@ static struct {
 	VideoMode current;
 	VideoBackend backend;
 	double scaling_factor;
+	uint num_resize_events;
 } video;
 
 VideoCapabilityState (*video_query_capability)(VideoCapability cap);
@@ -420,6 +421,7 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
+		video.num_resize_events = 0;
 	}
 
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
@@ -732,7 +734,7 @@ static void video_handle_resize(int w, int h) {
 	int minw, minh;
 	SDL_GetWindowMinimumSize(video.window, &minw, &minh);
 
-	if(w < minw || h < minh) {
+	if((w < minw || h < minh) && video.num_resize_events > 3) {
 		log_warn("Bad resize: %ix%i is too small!", w, h);
 		// FIXME: the video_new_window is actually a workaround for Wayland.
 		// I'm not sure if it's necessary for anything else.
@@ -744,6 +746,7 @@ static void video_handle_resize(int w, int h) {
 	video.current.width = w;
 	video.current.height = h;
 	video_update_mode_settings();
+	++video.num_resize_events;
 }
 
 static bool video_handle_window_event(SDL_Event *event, void *arg) {
