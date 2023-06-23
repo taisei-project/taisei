@@ -124,24 +124,6 @@ void config_shutdown(void) {
 	config_delete_unknown_entries();
 }
 
-void config_reset(void) {
-	#define CONFIGDEF(id,default,ufield) configdefs[CONFIG_##id].val.ufield = default;
-	#define CONFIGDEF_KEYBINDING(id,entryname,default) CONFIGDEF(id, default, i)
-	#define CONFIGDEF_GPKEYBINDING(id,entryname,default) CONFIGDEF(id, default, i)
-	#define CONFIGDEF_INT(id,entryname,default) CONFIGDEF(id, default, i)
-	#define CONFIGDEF_FLOAT(id,entryname,default) CONFIGDEF(id, default, f)
-	#define CONFIGDEF_STRING(id,entryname,default) stralloc(&configdefs[CONFIG_##id].val.s, default);
-
-	CONFIGDEFS
-
-	#undef CONFIGDEF
-	#undef CONFIGDEF_KEYBINDING
-	#undef CONFIGDEF_GPKEYBINDING
-	#undef CONFIGDEF_INT
-	#undef CONFIGDEF_FLOAT
-	#undef CONFIGDEF_STRING
-}
-
 #ifndef CONFIG_RAWACCESS
 ConfigEntry* config_get(ConfigIndex idx) {
 	assert(idx >= 0 && idx < CONFIGIDX_NUM);
@@ -512,4 +494,25 @@ void config_load(void) {
 	config_set_int(CONFIG_GAMEPAD_ENABLED, true);
 	config_set_str(CONFIG_GAMEPAD_DEVICE, "any");
 #endif
+}
+
+void config_reset(void) {
+	#define CONFIGDEF(id, default, type) config_set_##type(CONFIG_##id, default);
+	#define CONFIGDEF_KEYBINDING(id, entryname, default) CONFIGDEF(id, default, int)
+	#define CONFIGDEF_GPKEYBINDING(id, entryname, default) CONFIGDEF(GAMEPAD_##id, default, int)
+	#define CONFIGDEF_INT(id, entryname, default) CONFIGDEF(id, default, int)
+	#define CONFIGDEF_FLOAT(id, entryname, default) CONFIGDEF(id, default, float)
+	#define CONFIGDEF_STRING(id, entryname, default) CONFIGDEF(id, default, str)
+
+	CONFIGDEFS
+
+	#undef CONFIGDEF
+	#undef CONFIGDEF_KEYBINDING
+	#undef CONFIGDEF_GPKEYBINDING
+	#undef CONFIGDEF_INT
+	#undef CONFIGDEF_FLOAT
+	#undef CONFIGDEF_STRING
+
+	// set config version to the latest
+	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));
 }
