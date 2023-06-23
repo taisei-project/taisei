@@ -1642,6 +1642,15 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		return true;
 	}
 
+	if(
+		t == MAKE_TAISEI_EVENT(TE_MENU_ABORT) &&
+		(intptr_t)event->user.data1 == INDEV_GAMEPAD
+	) {
+		play_sfx_ui("hit");
+		stralloc(&b->strvalue, config_get_str(b->configentry));
+		b->blockinput = false;
+	}
+
 	return true;
 }
 
