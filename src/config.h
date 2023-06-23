@@ -89,10 +89,10 @@
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
 	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
 	\
-	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "Player") \
+	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "DoKomi 2023") \
 	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           1) \
-	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
-	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
+	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            1024) \
+	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           768) \
 	CONFIGDEF_INT       (VID_DISPLAY,               "vid_display",                          0) \
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
@@ -102,7 +102,7 @@
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
 	CONFIGDEF_INT       (MUTE_AUDIO,                "mute_audio",                           0) \
 	CONFIGDEF_INT       (NO_STAGEBG,                "disable_stagebg",                      0) \
-	CONFIGDEF_INT       (SAVE_RPY,                  "save_rpy",                             2) \
+	CONFIGDEF_INT       (SAVE_RPY,                  "save_rpy",                             1) \
 	CONFIGDEF_INT       (SPELLSTAGE_AUTORESTART,    "spellpractice_restart_on_fail",        0) \
 	CONFIGDEF_INT       (PRACTICE_POWER,            "practice_power",                       400) \
 	CONFIGDEF_FLOAT     (TEXT_QUALITY,              "text_quality",                         1.0) \
