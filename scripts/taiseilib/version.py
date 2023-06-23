@@ -12,7 +12,7 @@ class VersionFormatError(common.TaiseiError):
     pass
 
 
-VERSION_FALLBACK = 'v1.5-dev'
+VERSION_FALLBACK = 'v1.4.99-dokomi2024-preview'
 OVERRIDE_FILE_NAME = '.VERSION'
 
 
