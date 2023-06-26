@@ -270,6 +270,7 @@ MenuData *create_musicroom_menu(void) {
 	m->context = ctx;
 
 	for(int preload = 1; preload >= 0; --preload) {
+		add_bgm(m, "intro", preload);
 		add_bgm(m, "menu", preload);
 		add_bgm(m, "stage1", preload);
 		add_bgm(m, "stage1boss", preload);
