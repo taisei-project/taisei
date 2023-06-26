@@ -470,6 +470,7 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
 	st->bg_state.transition_rate = 1/80.0f;
+	progress_unlock_bgm(cs->bgm);
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }
