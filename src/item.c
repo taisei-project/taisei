@@ -243,13 +243,15 @@ void process_items(void) {
 	float attract_dist = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
 	bool stage_cleared = stage_is_cleared();
+	bool surge_active = player_is_powersurge_active(&global.plr);
+	real poc = player_property(&global.plr, PLR_PROP_POC);
 
 	while(item != NULL) {
 		bool may_collect = true;
 
 		if(
 			(item->type == ITEM_POWER_MINI && global.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
-			(item->type == ITEM_SURGE && !player_is_powersurge_active(&global.plr))
+			(item->type == ITEM_SURGE && !surge_active)
 		) {
 			item->type = ITEM_PIV;
 
@@ -275,10 +277,18 @@ void process_items(void) {
 			real item_dist2 = cabs2(global.plr.pos - item->pos);
 
 			if(plr_alive) {
-				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) || stage_cleared) {
+				if(cimag(global.plr.pos) < poc || stage_cleared) {
 					collect_item(item, 1);
 				} else if(item_dist2 < attract_dist * attract_dist) {
-					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H);
+					real value;
+
+					if(surge_active) {
+						value = 1;
+					} else {
+						value = 1 - cimag(global.plr.pos) / VIEWPORT_H;
+					}
+
+					collect_item(item, value);
 					item->auto_collect = 2;
 				}
 			} else if(item->auto_collect) {
