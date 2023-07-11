@@ -16,7 +16,6 @@
 
 typedef struct GamepadAxisState {
 	int16_t raw;
-	int16_t analog;
 	int8_t digital;
 } GamepadAxisState;
 
@@ -41,6 +40,9 @@ static struct {
 } gamepad;
 
 #define DEVNUM(dev) dynarray_indexof(&gamepad.devices, (dev))
+
+#define MIN_DEADZONE (4.0 / (GAMEPAD_AXIS_MAX_VALUE))
+#define MAX_DEADZONE (1 - MIN_DEADZONE)
 
 static bool gamepad_event_handler(SDL_Event *event, void *arg);
 
@@ -338,16 +340,6 @@ bool gamepad_initialized(void) {
 	return gamepad.initialized;
 }
 
-static float gamepad_axis_sens(GamepadAxis id) {
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR))
-		return config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS);
-
-	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_UD))
-		return config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS);
-
-	return 1.0;
-}
-
 static int gamepad_axis2gameevt(GamepadAxis id) {
 	if(id == config_get_int(CONFIG_GAMEPAD_AXIS_LR)) {
 		return TE_GAME_AXIS_LR;
@@ -360,55 +352,15 @@ static int gamepad_axis2gameevt(GamepadAxis id) {
 	return -1;
 }
 
-static int get_axis_abs_limit(int val) {
-	if(val < 0) {
-		return -GAMEPAD_AXIS_MIN_VALUE;
-	}
-
-	return GAMEPAD_AXIS_MAX_VALUE;
-}
-
-static int gamepad_axis_process_value_deadzone(int raw) {
-	int val, vsign;
-	int limit = get_axis_abs_limit(raw);
-	float deadzone = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), 0.01, 0.999);
-	int minval = clamp(deadzone, 0, 1) * limit;
-
-	val = raw;
-	vsign = sign(val);
-	val = abs(val);
-
-	if(val < minval) {
-		val = 0;
-	} else {
-		val = vsign * clamp((val - minval) / (1.0 - deadzone), 0, limit);
-	}
-
-	return val;
-}
-
-static int gamepad_axis_process_value(GamepadAxis id, int raw) {
-	double sens = gamepad_axis_sens(id);
-	int sens_sign = sign(sens);
-
-	raw = gamepad_axis_process_value_deadzone(raw);
-
-	int limit = get_axis_abs_limit(sens_sign * raw);
-	double x = raw / (double)limit;
-	int in_sign = sign(x);
-
-	x = pow(fabs(x), 1.0 / fabs(sens)) * in_sign * sens_sign;
-	x = x ? x : 0;
-	x = clamp(x * limit, GAMEPAD_AXIS_MIN_VALUE, GAMEPAD_AXIS_MAX_VALUE);
-
-	return (int)x;
+static inline double gamepad_get_deadzone(void) {
+	return clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), MIN_DEADZONE, MAX_DEADZONE);
 }
 
 int gamepad_axis_value(GamepadAxis id) {
 	assert(id > GAMEPAD_AXIS_INVALID);
 	assert(id < GAMEPAD_AXIS_MAX);
 
-	return gamepad.axes[id].analog;
+	return gamepad.axes[id].raw;
 }
 
 int gamepad_player_axis_value(GamepadPlrAxis paxis) {
@@ -434,7 +386,7 @@ static void gamepad_axis(GamepadAxis id, int raw);
 
 double gamepad_normalize_axis_value(int val) {
 	if(val < 0) {
-		return -val / (double)GAMEPAD_AXIS_MIN_VALUE;
+		return val / (double)-GAMEPAD_AXIS_MIN_VALUE;
 	} else if(val > 0) {
 		return val / (double)GAMEPAD_AXIS_MAX_VALUE;
 	} else {
@@ -444,25 +396,25 @@ double gamepad_normalize_axis_value(int val) {
 
 int gamepad_denormalize_axis_value(double val) {
 	if(val < 0) {
-		return -val * GAMEPAD_AXIS_MIN_VALUE;
+		return imax(GAMEPAD_AXIS_MIN_VALUE, val * -GAMEPAD_AXIS_MIN_VALUE);
 	} else if(val > 0) {
-		return val * GAMEPAD_AXIS_MAX_VALUE;
+		return imin(GAMEPAD_AXIS_MAX_VALUE, val * GAMEPAD_AXIS_MAX_VALUE);
 	} else {
 		return 0;
 	}
 }
 
 static void gamepad_update_game_axis(GamepadAxis axis, int oldval) {
-	if(oldval != gamepad.axes[axis].analog) {
+	if(oldval != gamepad.axes[axis].raw) {
 		int evt = gamepad_axis2gameevt(axis);
 
 		if(evt >= 0) {
-			events_emit(evt, gamepad.axes[axis].analog, NULL, NULL);
+			events_emit(evt, gamepad.axes[axis].raw, NULL, NULL);
 		}
 	}
 }
 
-static void gamepad_restrict_player_axis_vals(GamepadAxis new_axis, int new_val) {
+static cmplx gamepad_restrict_analog_input(cmplx z) {
 	typedef enum {
 		UP = (1 << 0),
 		DOWN = (1 << 1),
@@ -470,19 +422,8 @@ static void gamepad_restrict_player_axis_vals(GamepadAxis new_axis, int new_val)
 		LEFT = (1 << 2),
 	} MoveDir;
 
-	GamepadAxis axis_x = config_get_int(CONFIG_GAMEPAD_AXIS_LR);
-	GamepadAxis axis_y = config_get_int(CONFIG_GAMEPAD_AXIS_UD);
-
-	int old_x = gamepad.axes[axis_x].analog;
-	int old_y = gamepad.axes[axis_y].analog;
-
-	gamepad.axes[new_axis].analog = new_val;
-
-	assert(axis_x > GAMEPAD_AXIS_INVALID && axis_x < GAMEPAD_AXIS_MAX);
-	assert(axis_y > GAMEPAD_AXIS_INVALID && axis_y < GAMEPAD_AXIS_MAX);
-
-	double x = gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_LR));
-	double y = gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_UD));
+	double x = creal(z);
+	double y = cimag(z);
 
 	MoveDir move = 0;
 
@@ -501,19 +442,93 @@ static void gamepad_restrict_player_axis_vals(GamepadAxis new_axis, int new_val)
 		}
 	}
 
-	gamepad.axes[axis_x].analog = (move & LEFT)  ? GAMEPAD_AXIS_MIN_VALUE :
-	                              (move & RIGHT) ? GAMEPAD_AXIS_MAX_VALUE : 0;
+	x = (bool)(move & RIGHT) - (bool)(move & LEFT);
+	y = (bool)(move & UP)    - (bool)(move & DOWN);
 
-	gamepad.axes[axis_y].analog = (move & DOWN)  ? GAMEPAD_AXIS_MIN_VALUE :
-	                              (move & UP)    ? GAMEPAD_AXIS_MAX_VALUE : 0;
+	return CMPLX(x, y);
+}
 
-	gamepad_update_game_axis(axis_x, old_x);
-	gamepad_update_game_axis(axis_y, old_y);
+static double gamepad_apply_sensitivity(double p, double sens) {
+	if(sens == 0) {
+		return p;
+	}
+
+	double t = exp2(sens);
+	double a = 1 - pow(1 - fabs(p), t);
+
+	if(isnan(a)) {
+		return p;
+	}
+
+	return copysign(pow(a, 1 / t), p);
+}
+
+static cmplx square_to_circle(cmplx z) {
+	double u = creal(z) * sqrt(1.0 - cimag(z) * cimag(z) / 2.0);
+	double v = cimag(z) * sqrt(1.0 - creal(z) * creal(z) / 2.0);
+
+	return CMPLX(u, v);
+}
+
+void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
+	int xraw = gamepad_player_axis_value(PLRAXIS_LR);
+	int yraw = gamepad_player_axis_value(PLRAXIS_UD);
+
+	*xaxis = 0;
+	*yaxis = 0;
+
+	double deadzone = gamepad_get_deadzone();
+	double maxzone = config_get_float(CONFIG_GAMEPAD_AXIS_MAXZONE);
+
+	cmplx z = CMPLX(
+		gamepad_normalize_axis_value(xraw),
+		gamepad_normalize_axis_value(yraw)
+	);
+
+	if(config_get_int(CONFIG_GAMEPAD_AXIS_SQUARECIRCLE)) {
+		z = square_to_circle(z);
+	}
+
+	double raw_abs2 = cabs2(z);
+
+	if(raw_abs2 < deadzone * deadzone) {
+		return;
+	}
+
+	double raw_abs = sqrt(raw_abs2);
+	assert(raw_abs > 0);
+
+	double new_abs = (raw_abs - deadzone) / (maxzone - deadzone);
+	new_abs = gamepad_apply_sensitivity(new_abs, config_get_float(CONFIG_GAMEPAD_AXIS_SENS));
+	z *= new_abs / raw_abs;
+
+	z = CMPLX(
+		gamepad_apply_sensitivity(creal(z), config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS)),
+		gamepad_apply_sensitivity(cimag(z), config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS))
+	);
+
+	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
+		z = gamepad_restrict_analog_input(z);
+	}
+
+	*xaxis = gamepad_denormalize_axis_value(creal(z));
+	*yaxis = gamepad_denormalize_axis_value(cimag(z));
+}
+
+static int gamepad_axis_get_digital_value(int raw) {
+	double deadzone = gamepad_get_deadzone();
+	deadzone = fmax(deadzone, 0.5);
+	int threshold = GAMEPAD_AXIS_MAX_VALUE * deadzone;
+
+	if(abs(raw) < threshold) {
+		return 0;
+	}
+
+	return raw < 0 ? -1 : 1;
 }
 
 static void gamepad_axis(GamepadAxis id, int raw) {
-	int8_t digital = AXISVAL(gamepad_axis_process_value_deadzone(raw));
-	int16_t analog = gamepad_axis_process_value(id, raw);
+	int8_t digital = gamepad_axis_get_digital_value(raw);
 
 	if(digital * gamepad.axes[id].digital < 0) {
 		// axis changed direction without passing the '0' state
@@ -524,19 +539,14 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 
 	events_emit(TE_GAMEPAD_AXIS, id, (void*)(intptr_t)raw, NULL);
 
-	int old_analog = gamepad.axes[id].analog;
+	int old_raw = gamepad.axes[id].raw;
 	gamepad.axes[id].raw = raw;
-
-	if(config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
-		gamepad.axes[id].analog = analog;
-		gamepad_update_game_axis(id, old_analog);
-	} else if(gamepad_axis2gameevt(id) >= 0) {
-		gamepad_restrict_player_axis_vals(id, analog);
-	}
+	gamepad_update_game_axis(id, old_raw);
 
 	if(digital != AXISVAL_NULL) {   // simulate press
 		if(!gamepad.axes[id].digital) {
 			gamepad.axes[id].digital = digital;
+			events_emit(TE_GAMEPAD_AXIS_DIGITAL, id, (void*)(intptr_t)digital, NULL);
 
 			GamepadButton btn = gamepad_button_from_axis(id, digital);
 
@@ -547,6 +557,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 	} else if(gamepad.axes[id].digital != AXISVAL_NULL) {  // simulate release
 		GamepadButton btn = gamepad_button_from_axis(id, gamepad.axes[id].digital);
 		gamepad.axes[id].digital = AXISVAL_NULL;
+		events_emit(TE_GAMEPAD_AXIS_DIGITAL, id, (void*)(intptr_t)digital, NULL);
 
 		if(btn != GAMEPAD_BUTTON_INVALID) {
 			gamepad_button(btn, SDL_RELEASED, false);

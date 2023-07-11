@@ -418,6 +418,11 @@ static void config_upgrade_3(void) {
 	config_set_int(CONFIG_MIXER_CHUNKSIZE, CONFIG_CHUNKSIZE_DEFAULT);
 }
 
+static void config_upgrade_4(void) {
+	config_set_float(CONFIG_GAMEPAD_BTNREPEAT_DELAY, CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT);
+	config_set_float(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL, CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT);
+}
+
 static ConfigUpgradeFunc config_upgrades[] = {
 	/*
 		To bump the config version and add an upgrade state, simply append an upgrade function to this array.
@@ -430,6 +435,7 @@ static ConfigUpgradeFunc config_upgrades[] = {
 	config_upgrade_1,
 	config_upgrade_2,
 	config_upgrade_3,
+	config_upgrade_4,
 };
 
 static void config_apply_upgrades(int start) {

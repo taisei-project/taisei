@@ -145,7 +145,7 @@ static bool demoplayer_activity_event(SDL_Event *evt, void *arg) {
 
 		default: switch(TAISEI_EVENT(evt->type)) {
 			case TE_GAMEPAD_BUTTON_DOWN:
-			case TE_GAMEPAD_AXIS:
+			case TE_GAMEPAD_AXIS_DIGITAL:
 				goto reset;
 		}
 

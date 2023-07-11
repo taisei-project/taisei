@@ -119,6 +119,7 @@ static OptionBinding* bind_gpbinding(int cfgentry) {
 }
 
 // BT_GamepadAxisBinding: gamepad axis mapping options
+attr_unused
 static OptionBinding* bind_gpaxisbinding(int cfgentry) {
 	OptionBinding *bind = bind_new();
 
@@ -854,29 +855,27 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "X axis", do_nothing,
-		b = bind_gpaxisbinding(CONFIG_GAMEPAD_AXIS_LR)
-	);
-
-	add_menu_entry(m, "Y axis", do_nothing,
-		b = bind_gpaxisbinding(CONFIG_GAMEPAD_AXIS_UD)
-	);
-
 	add_menu_entry(m, "Axes mode", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoff_get, bind_common_onoff_set)
 	);	bind_addvalue(b, "free");
 		bind_addvalue(b, "restricted");
 
-	add_menu_entry(m, "X axis sensitivity", do_nothing,
-		b = bind_scale(CONFIG_GAMEPAD_AXIS_LR_SENS, -2, 2, 0.05)
-	);	b->pad++;
+	add_menu_entry(m, "Remap square input into circular", do_nothing,
+		b = bind_option(CONFIG_GAMEPAD_AXIS_SQUARECIRCLE, bind_common_onoff_get, bind_gamepad_set)
+	);	bind_onoff(b);
 
-	add_menu_entry(m, "Y axis sensitivity", do_nothing,
-		b = bind_scale(CONFIG_GAMEPAD_AXIS_UD_SENS, -2, 2, 0.05)
-	);	b->pad++;
+	add_menu_separator(m);
 
 	add_menu_entry(m, "Dead zone", do_nothing,
 		b = bind_scale(CONFIG_GAMEPAD_AXIS_DEADZONE, 0, 1, 0.01)
+	);
+
+	add_menu_entry(m, "Maximum zone", do_nothing,
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_MAXZONE, 0, 1, 0.01)
+	);
+
+	add_menu_entry(m, "Sensitivity", do_nothing,
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_SENS, -2, 2, 0.05)
 	);
 
 	add_menu_separator(m);
@@ -1533,7 +1532,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		return true;
 	}
 
-	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_AXIS)) {
+	if(t == MAKE_TAISEI_EVENT(TE_GAMEPAD_AXIS_DIGITAL)) {
 		GamepadAxis axis = event->user.code;
 
 		if(b->type == BT_GamepadAxisBinding) {

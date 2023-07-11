@@ -457,14 +457,6 @@ static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 			}
 			break;
 
-		case TE_GAME_AXIS_LR:
-			player_event(&global.plr, NULL, rpy, EV_AXIS_LR, (uint16_t)code);
-			break;
-
-		case TE_GAME_AXIS_UD:
-			player_event(&global.plr, NULL, rpy, EV_AXIS_UD, (uint16_t)code);
-			break;
-
 		default: break;
 	}
 
@@ -484,6 +476,7 @@ static bool stage_input_handler_demo(SDL_Event *event, void *arg) {
 	switch(TAISEI_EVENT(event->type)) {
 		case TE_GAME_KEY_DOWN:
 		case TE_GAMEPAD_BUTTON_DOWN:
+		case TE_GAMEPAD_AXIS_DIGITAL:
 		exit:
 			stage_finish(GAMEOVER_ABORT);
 	}

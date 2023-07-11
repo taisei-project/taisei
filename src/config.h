@@ -85,6 +85,9 @@
 
 #define CONFIG_CHUNKSIZE_DEFAULT 512
 
+#define CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT 0.5
+#define CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT 0.04
+
 #define CONFIGDEFS \
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
 	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
@@ -123,11 +126,14 @@
 	CONFIGDEF_INT       (GAMEPAD_AXIS_UD,           "gamepad_axis_ud",                      1) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_LR,           "gamepad_axis_lr",                      0) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_FREE,         "gamepad_axis_free",                    1) \
-	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_free_sensitivity",     1.0) \
-	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_free_sensitivity",     1.0) \
+	CONFIGDEF_INT       (GAMEPAD_AXIS_SQUARECIRCLE, "gamepad_axis_square_to_circle",        0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_SENS,         "gamepad_axis_sensitivity",             0.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_sensitivity",          0.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_sensitivity",          0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
-	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          0.25) \
-	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       0.02) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_MAXZONE,      "gamepad_axis_maxzone",                 0.9) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT) \
 	GPKEYDEFS \
 
 

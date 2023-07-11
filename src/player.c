@@ -1360,8 +1360,8 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 		player_event(plr, NULL, rpy_out, EV_INFLAGS, newflags);
 	}
 
-	int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
-	int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
+	int axis_lr, axis_ud;
+	gamepad_get_player_analog_input(&axis_lr, &axis_ud);
 
 	if(plr->axis_lr != axis_lr) {
 		player_event(plr, NULL, rpy_out, EV_AXIS_LR, axis_lr);
