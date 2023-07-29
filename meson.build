@@ -52,12 +52,14 @@ project('taisei', 'c',
         'libzstd:lz4=disabled',
         'libzstd:multi_thread=disabled',
 
+        'sdl2:test=false',
         'sdl2:use_haptic=disabled',
         'sdl2:use_power=disabled',
         'sdl2:use_render=disabled',
         'sdl2:use_sensor=disabled',
         'sdl2:use_video_offscreen=disabled',
         'sdl2:use_video_vulkan=disabled',
+        'sdl2:with_main=true',
 
         # You may want to change these for a debug build dir
         'buildtype=release',
