@@ -67,6 +67,7 @@ jobs:
 
         meson setup build/
         --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --cross-file misc/ci/emscripten-build.ini
         --prefix=$(pwd)/build-test

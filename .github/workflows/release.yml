@@ -80,6 +80,7 @@ jobs:
 
         meson setup build/linux
         --native-file misc/ci/common-options.ini
+        --native-file misc/ci/forcefallback.ini
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -248,6 +249,7 @@ jobs:
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x64-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x64-dll/libGLESv2.dll
         --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -329,6 +331,7 @@ jobs:
         -Dangle_libegl=$(pwd)/angle-compiled/lib/Windows-x86-dll/libEGL.dll
         -Dangle_libgles=$(pwd)/angle-compiled/lib/Windows-x86-dll/libGLESv2.dll
         --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
 
@@ -448,6 +451,7 @@ jobs:
 
         meson setup build/emscripten
         --cross-file misc/ci/common-options.ini
+        --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/emscripten-build.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
