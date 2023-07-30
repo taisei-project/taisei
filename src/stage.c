@@ -743,12 +743,8 @@ void stage_finish(int gameover) {
 		prev_gameover != GAMEOVER_SCORESCREEN &&
 		(gameover == GAMEOVER_SCORESCREEN || gameover == GAMEOVER_WIN)
 	) {
-		StageProgress *p = stageinfo_get_progress(global.stage, global.diff, true);
-
-		if(p) {
-			++p->num_cleared;
-			log_debug("Stage cleared %u times now", p->num_cleared);
-		}
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(global.stage, global.diff, true));
+		progress_register_stage_cleared(p, global.plr.mode);
 	}
 
 	if(gameover == GAMEOVER_SCORESCREEN && stage_is_skip_mode()) {
@@ -952,8 +948,9 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 		update_transition();
 	}
 
-	if(global.replay.input.replay == NULL && global.plr.points > progress.hiscore) {
-		progress.hiscore = global.plr.points;
+	if(global.replay.input.replay == NULL) {
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(fstate->stage, global.diff, true));
+		progress_register_hiscore(p, global.plr.mode, global.plr.points);
 	}
 
 	if(fstate->quickload_requested) {
@@ -1122,15 +1119,8 @@ static void _stage_enter(
 		start_time = (uint64_t)time(0);
 		seed = makeseed();
 
-		StageProgress *p = stageinfo_get_progress(stage, global.diff, true);
-
-		if(p) {
-			log_debug("You played this stage %u times", p->num_played);
-			log_debug("You cleared this stage %u times", p->num_cleared);
-
-			++p->num_played;
-			p->unlocked = true;
-		}
+		StageProgress *p = NOT_NULL(stageinfo_get_progress(stage, global.diff, true));
+		progress_register_stage_played(p, global.plr.mode);
 	}
 
 	rng_seed(&global.rand_game, seed);

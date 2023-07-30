@@ -502,7 +502,8 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 		bool kern = font_get_kerning_enabled(font);
 		font_set_kerning_enabled(font, false);
 
-		snprintf(buf, sizeof(buf), "%u / %u", p->num_cleared, p->num_played);
+		// TODO: display plrmode-specific data?
+		snprintf(buf, sizeof(buf), "%u / %u", p->global.num_cleared, p->global.num_played);
 
 		draw_boss_text(ALIGN_RIGHT,
 			VIEWPORT_W - 10 - text_width(font, buf, 0), 0,
@@ -1055,7 +1056,7 @@ void boss_finish_current_attack(Boss *boss) {
 			StageProgress *p = get_spellstage_progress(boss->current, NULL, true);
 
 			if(p) {
-				++p->num_cleared;
+				progress_register_stage_cleared(p, global.plr.mode);
 			}
 
 			// HACK
@@ -1387,12 +1388,12 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	StageProgress *p = get_spellstage_progress(a, &i, true);
 
 	if(p) {
-		++p->num_played;
-
 		if(!p->unlocked) {
 			log_info("Spellcard unlocked! %s: %s", i->title, i->subtitle);
 			p->unlocked = true;
 		}
+
+		progress_register_stage_played(p, global.plr.mode);
 	}
 
 	// This should go before a->rule(b,EVENT_BIRTH), so it doesn’t reset values set by the attack rule.

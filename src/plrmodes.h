@@ -43,6 +43,10 @@ typedef enum {
 	PLR_SHOT_REIMU_DREAM    = PLR_SHOT_B,
 } ShotModeID;
 
+enum {
+	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
+};
+
 typedef enum {
 	// vpu = viewport units
 
@@ -91,10 +95,6 @@ typedef struct PlayerMode {
 		PlayerModePropertyProc property;
 	} procs;
 } PlayerMode;
-
-enum {
-	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
-};
 
 PlayerCharacter *plrchar_get(CharacterID id);
 void plrchar_preload(PlayerCharacter *pc, ResourceGroup *rg);

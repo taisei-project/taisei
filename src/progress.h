@@ -11,13 +11,17 @@
 
 #include "cutscenes/cutscene.h"
 #include "endings.h"
+#include "plrmodes.h"
 
-typedef struct StageProgress {
-	// Keep this struct small if you can
-	// See stage_get_progress_from_info() in stage.c for more information
-
+typedef struct StageProgressContents {
 	uint32_t num_played;
 	uint32_t num_cleared;
+	uint64_t hiscore;
+} StageProgressContents;
+
+typedef struct StageProgress {
+	StageProgressContents global;
+	StageProgressContents per_plrmode[NUM_CHARACTERS][NUM_SHOT_MODES_PER_CHARACTER];
 	uchar unlocked : 1;
 } StageProgress;
 
@@ -78,3 +82,7 @@ void progress_unlock_bgm(const char *name);
 void progress_track_ending(EndingID id);
 bool progress_is_cutscene_unlocked(CutsceneID id);
 void progress_unlock_cutscene(CutsceneID id);
+
+void progress_register_stage_played(StageProgress *p, PlayerMode *pm);
+void progress_register_stage_cleared(StageProgress *p, PlayerMode *pm);
+void progress_register_hiscore(StageProgress *p, PlayerMode *pm, uint64_t score);

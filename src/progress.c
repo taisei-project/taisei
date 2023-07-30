@@ -68,6 +68,9 @@ typedef enum ProgfileCommand {
 
 	// Sets the high-score (64-bit value)
 	PCMD_HISCORE_64BIT                     = 0x09,
+
+	// Sets the high scores and per-plrmode play/clear counters for stage/difficulty combinations
+	PCMD_STAGE_PLAYINFO2                   = 0x10,
 } ProgfileCommand;
 
 /*
@@ -106,6 +109,136 @@ typedef struct UnknownCmd {
 	uint16_t size;
 	uint8_t *data;
 } UnknownCmd;
+
+#define PLAYINFO_HEADER_FIELDS \
+	PLAYINFO_FIELD(uint16_t, stage) \
+	PLAYINFO_FIELD(uint8_t,  diff) \
+
+#define PLAYINFO_FIELDS \
+	PLAYINFO_FIELD(uint32_t, num_played) \
+	PLAYINFO_FIELD(uint32_t, num_cleared) \
+
+#define PLAYINFO2_FIELDS_GLOBAL \
+	PLAYINFO_FIELD(uint64_t, hiscore) \
+
+#define PLAYINFO2_FIELDS_PERMODE \
+	PLAYINFO_FIELD(uint32_t, num_played) \
+	PLAYINFO_FIELD(uint32_t, num_cleared) \
+	PLAYINFO_FIELD(uint64_t, hiscore) \
+
+#define WRITEFUNC_uint64_t SDL_WriteLE64
+#define WRITEFUNC_uint32_t SDL_WriteLE32
+#define WRITEFUNC_uint16_t SDL_WriteLE16
+#define WRITEFUNC_uint8_t  SDL_WriteU8
+#define WRITEFUNC(t) WRITEFUNC_##t
+
+#define READFUNC_uint64_t SDL_ReadLE64
+#define READFUNC_uint32_t SDL_ReadLE32
+#define READFUNC_uint16_t SDL_ReadLE16
+#define READFUNC_uint8_t  SDL_ReadU8
+#define READFUNC(t) READFUNC_##t
+
+#define PLAYINFO_FIELD(t,f) + sizeof(t)
+
+INLINE size_t playinfo_header_size(void) {
+	return PLAYINFO_HEADER_FIELDS;
+}
+
+INLINE size_t playinfo_size(uint num_entries) {
+	return num_entries * (PLAYINFO_HEADER_FIELDS PLAYINFO_FIELDS);
+}
+
+INLINE size_t playinfo2_size(uint num_entries) {
+	return num_entries * (
+			PLAYINFO_HEADER_FIELDS PLAYINFO2_FIELDS_GLOBAL
+			+ NUM_PLAYER_MODES * (PLAYINFO2_FIELDS_PERMODE)
+		);
+}
+
+#undef PLAYINFO_FIELD
+
+typedef struct PlayInfoHeader {
+	#define PLAYINFO_FIELD(t,f) \
+		t f;
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+} PlayInfoHeader;
+
+static size_t playinfo_header_read(SDL_RWops *vfile, PlayInfoHeader *h) {
+	#define PLAYINFO_FIELD(t,f) \
+		h->f = READFUNC(t)(vfile);
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_header_size();
+}
+
+static size_t playinfo_header_write(SDL_RWops *vfile, const PlayInfoHeader *h) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, h->f);
+	PLAYINFO_HEADER_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_header_size();
+}
+
+static size_t playinfo_data_read(SDL_RWops *vfile, StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		p->global.f = READFUNC(t)(vfile);
+	PLAYINFO_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo_data_write(SDL_RWops *vfile, const StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, p->global.f);
+	PLAYINFO_FIELDS
+	#undef PLAYINFO_FIELD
+	return playinfo_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo2_data_read(SDL_RWops *vfile, StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		p->global.f = READFUNC(t)(vfile);
+	PLAYINFO2_FIELDS_GLOBAL
+	#undef PLAYINFO_FIELD
+
+	static_assert(ARRAY_SIZE(p->per_plrmode) == NUM_CHARACTERS);
+	static_assert(ARRAY_SIZE(p->per_plrmode[0]) == NUM_SHOT_MODES_PER_CHARACTER);
+
+	for(int chr = 0; chr < ARRAY_SIZE(p->per_plrmode); ++chr) {
+		for(int mod = 0; mod < ARRAY_SIZE(p->per_plrmode[chr]); ++mod) {
+			StageProgressContents *c = &p->per_plrmode[chr][mod];
+			#define PLAYINFO_FIELD(t,f) \
+				c->f = READFUNC(t)(vfile);
+			PLAYINFO2_FIELDS_PERMODE
+			#undef PLAYINFO_FIELD
+		}
+	}
+
+	return playinfo2_size(1) - playinfo_header_size();
+}
+
+static size_t playinfo2_data_write(SDL_RWops *vfile, const StageProgress *p) {
+	#define PLAYINFO_FIELD(t,f) \
+		WRITEFUNC(t)(vfile, p->global.f);
+	PLAYINFO2_FIELDS_GLOBAL
+	#undef PLAYINFO_FIELD
+
+	static_assert(ARRAY_SIZE(p->per_plrmode) == NUM_CHARACTERS);
+	static_assert(ARRAY_SIZE(p->per_plrmode[0]) == NUM_SHOT_MODES_PER_CHARACTER);
+
+	for(int chr = 0; chr < ARRAY_SIZE(p->per_plrmode); ++chr) {
+		for(int mod = 0; mod < ARRAY_SIZE(p->per_plrmode[chr]); ++mod) {
+			const StageProgressContents *c = &p->per_plrmode[chr][mod];
+			#define PLAYINFO_FIELD(t,f) \
+				WRITEFUNC(t)(vfile, c->f);
+			PLAYINFO2_FIELDS_PERMODE
+			#undef PLAYINFO_FIELD
+		}
+	}
+
+	return playinfo2_size(1) - playinfo_header_size();
+}
 
 static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_t cmdsize, uint16_t expectsize) {
 	if(cmdsize == expectsize) {
@@ -175,6 +308,8 @@ static void progress_read(SDL_RWops *file) {
 		uint16_t cur = 0;
 		uint16_t cmdsize = SDL_ReadLE16(vfile);
 
+		log_debug("at %i: %i (%i)", cur, cmd, cmdsize);
+
 		switch(cmd) {
 			case PCMD_UNLOCK_STAGES:
 				while(cur < cmdsize) {
@@ -215,21 +350,33 @@ static void progress_read(SDL_RWops *file) {
 
 			case PCMD_STAGE_PLAYINFO:
 				while(cur < cmdsize) {
-					uint16_t stg = SDL_ReadLE16(vfile); cur += sizeof(uint16_t);
-					Difficulty diff = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
-					StageProgress *p = stageinfo_get_progress_by_id(stg, diff, true);
+					PlayInfoHeader h = {};
+					cur += playinfo_header_read(vfile, &h);
+					StageProgress *p = stageinfo_get_progress_by_id(h.stage, h.diff, true);
+					StageProgress discard;
 
-					// assert(p != NULL);
-
-					uint32_t np = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-					uint32_t nc = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
-
-					if(p) {
-						p->num_played = np;
-						p->num_cleared = nc;
-					} else {
-						log_warn("Invalid stage %X ignored", stg);
+					if(!p) {
+						log_warn("Invalid stage %X ignored", h.stage);
+						p = &discard;
 					}
+
+					cur += playinfo_data_read(vfile, p);
+				}
+				break;
+
+			case PCMD_STAGE_PLAYINFO2:
+				while(cur < cmdsize) {
+					PlayInfoHeader h = {};
+					cur += playinfo_header_read(vfile, &h);
+					StageProgress *p = stageinfo_get_progress_by_id(h.stage, h.diff, true);
+					StageProgress discard;
+
+					if(!p) {
+						log_warn("Invalid stage %X ignored", h.stage);
+						p = &discard;
+					}
+
+					cur += playinfo2_data_read(vfile, p);
 				}
 				break;
 
@@ -473,20 +620,16 @@ static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
 }
 
 //
-//  PCMD_STAGE_PLAYINFO
+//  PCMD_STAGE_PLAYINFO / PCMD_STAGE_PLAYINFO2
 //
 
 struct cmd_stage_playinfo_data_elem {
-	LIST_INTERFACE(struct cmd_stage_playinfo_data_elem);
-	uint16_t stage;
-	uint8_t diff;
-	uint32_t num_played;
-	uint32_t num_cleared;
+	PlayInfoHeader head;
+	StageProgress *prog;
 };
 
 struct cmd_stage_playinfo_data {
-	size_t size;
-	struct cmd_stage_playinfo_data_elem *elems;
+	DYNAMIC_ARRAY(struct cmd_stage_playinfo_data_elem) elems;
 };
 
 static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
@@ -507,45 +650,48 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 		for(Difficulty d = d_first; d <= d_last; ++d) {
 			StageProgress *p = stageinfo_get_progress(stg, d, false);
 
-			if(p && (p->num_played || p->num_cleared)) {
-				auto e = ALLOC(struct cmd_stage_playinfo_data_elem);
-
-				e->stage = stg->id;                 data->size += sizeof(uint16_t);
-				e->diff = d;                        data->size += sizeof(uint8_t);
-				e->num_played = p->num_played;      data->size += sizeof(uint32_t);
-				e->num_cleared = p->num_cleared;    data->size += sizeof(uint32_t);
-
-				(void)list_push(&data->elems, e);
+			if(p && (p->global.num_played || p->global.num_cleared)) {
+				auto e = dynarray_append(&data->elems);
+				e->head.stage = stg->id;
+				e->head.diff = d;
+				e->prog = p;
 			}
 		}
 	}
 
 	*arg = data;
 
-	if(data->size) {
-		*bufsize += CMD_HEADER_SIZE + data->size;
+	if(data->elems.num_elements) {
+		*bufsize += CMD_HEADER_SIZE + playinfo_size(data->elems.num_elements);
+		*bufsize += CMD_HEADER_SIZE + playinfo2_size(data->elems.num_elements);
 	}
 }
 
 static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	struct cmd_stage_playinfo_data *data = *arg;
 
-	if(!data->size) {
+	if(!data->elems.num_elements) {
 		goto cleanup;
 	}
 
 	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO);
-	SDL_WriteLE16(vfile, data->size);
+	SDL_WriteLE16(vfile, playinfo_size(data->elems.num_elements));
 
-	for(struct cmd_stage_playinfo_data_elem *e = data->elems; e; e = e->next) {
-		SDL_WriteLE16(vfile, e->stage);
-		SDL_WriteU8(vfile, e->diff);
-		SDL_WriteLE32(vfile, e->num_played);
-		SDL_WriteLE32(vfile, e->num_cleared);
-	}
+	dynarray_foreach_elem(&data->elems, auto e, {
+		playinfo_header_write(vfile, &e->head);
+		playinfo_data_write(vfile, e->prog);
+	});
+
+	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO2);
+	SDL_WriteLE16(vfile, playinfo2_size(data->elems.num_elements));
+
+	dynarray_foreach_elem(&data->elems, auto e, {
+		playinfo_header_write(vfile, &e->head);
+		playinfo2_data_write(vfile, e->prog);
+	});
 
 cleanup:
-	list_free_all(&data->elems);
+	dynarray_free_data(&data->elems);
 	mem_free(data);
 }
 
@@ -913,4 +1059,63 @@ bool progress_is_cutscene_unlocked(CutsceneID id) {
 
 void progress_unlock_cutscene(CutsceneID id) {
 	progress.unlocked_cutscenes |= progress_cutscene_bit(id);
+}
+
+attr_returns_nonnull attr_nonnull_all
+static StageProgressContents *stage_plrmode_data(StageProgress *p, PlayerMode *pm) {
+	uint ichar = pm->character->id;
+	uint imode = pm->shot_mode;
+
+	assert(ichar < ARRAY_SIZE(p->per_plrmode));
+	assert(imode < ARRAY_SIZE(p->per_plrmode[ichar]));
+
+	return &p->per_plrmode[ichar][imode];
+}
+
+void progress_register_stage_played(StageProgress *p, PlayerMode *pm) {
+	p->unlocked = true;
+	p->global.num_played += 1;
+	auto c = stage_plrmode_data(p, pm);
+	c->num_played += 1;
+
+	char tmp[64];
+	plrmode_repr(tmp, sizeof(tmp), pm, false);
+
+	log_debug("Stage played %i times total; %i as %s",
+		p->global.num_played,
+		c->num_played,
+		tmp
+	);
+}
+
+void progress_register_stage_cleared(StageProgress *p, PlayerMode *pm) {
+	p->unlocked = true;
+	p->global.num_cleared += 1;
+	auto c = stage_plrmode_data(p, pm);
+	c->num_cleared += 1;
+
+	char tmp[64];
+	plrmode_repr(tmp, sizeof(tmp), pm, false);
+
+	log_debug("Stage cleared %i times total; %i as %s",
+		p->global.num_cleared,
+		c->num_cleared,
+		tmp
+	);
+}
+
+void progress_register_hiscore(StageProgress *p, PlayerMode *pm, uint64_t score) {
+	if(score > progress.hiscore) {
+		progress.hiscore = score;
+	}
+
+	if(score > p->global.hiscore) {
+		p->global.hiscore = score;
+	}
+
+	auto c = stage_plrmode_data(p, pm);
+
+	if(score > c->hiscore) {
+		c->hiscore = score;
+	}
 }
