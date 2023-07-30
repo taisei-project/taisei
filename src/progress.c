@@ -45,7 +45,7 @@ typedef enum ProgfileCommand {
 	// Unlocks one or more stages, each on a specific difficulty
 	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
 
-	// Sets the "Hi-Score" (highest score ever attained in one game session)
+	// Sets the high-score (legacy, 32-bit value)
 	PCMD_HISCORE                           = 0x02,
 
 	// Sets the times played and times cleared counters for a list of stage/difficulty combinations
@@ -65,6 +65,9 @@ typedef enum ProgfileCommand {
 
 	// Unlocks cutscenes in the cutscenes menu
 	PCMD_UNLOCK_CUTSCENES                  = 0x08,
+
+	// Sets the high-score (64-bit value)
+	PCMD_HISCORE_64BIT                     = 0x09,
 } ProgfileCommand;
 
 /*
@@ -204,6 +207,10 @@ static void progress_read(SDL_RWops *file) {
 
 			case PCMD_HISCORE:
 				progress.hiscore = SDL_ReadLE32(vfile);
+				break;
+
+			case PCMD_HISCORE_64BIT:
+				progress.hiscore = SDL_ReadLE64(vfile);
 				break;
 
 			case PCMD_STAGE_PLAYINFO:
@@ -444,17 +451,25 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 }
 
 //
-//  PCMD_HISCORE
+//  PCMD_HISCORE / PCMD_HISCORE_64BIT
 //
 
 static void progress_prepare_cmd_hiscore(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
+	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
 }
 
 static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
+	// Legacy 32-bit command for compatibility
+	// NOTE: must be written BEFORE the 64-bit command
+
 	SDL_WriteU8(vfile, PCMD_HISCORE);
 	SDL_WriteLE16(vfile, sizeof(uint32_t));
-	SDL_WriteLE32(vfile, progress.hiscore);
+	SDL_WriteLE32(vfile, progress.hiscore & 0xFFFFFFFFu);
+
+	SDL_WriteU8(vfile, PCMD_HISCORE_64BIT);
+	SDL_WriteLE16(vfile, sizeof(uint64_t));
+	SDL_WriteLE64(vfile, progress.hiscore);
 }
 
 //
