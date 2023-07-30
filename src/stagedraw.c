@@ -1133,7 +1133,7 @@ static inline void stage_draw_hud_power_value(float xpos, float ypos) {
 	);
 }
 
-static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint32_t score) {
+static void stage_draw_hud_score(Alignment a, float xpos, float ypos, char *buf, size_t bufsize, uint64_t score) {
 	format_huge_num(10, score, bufsize, buf);
 
 	Font *fnt = res_font("standard");
