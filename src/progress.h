@@ -9,26 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-
 #include "cutscenes/cutscene.h"
-
-#define PROGRESS_FILE "storage/progress.dat"
-#define PROGRESS_MAXFILESIZE 4096
-
-typedef enum ProgfileCommand {
-	// Do not reorder this!
-
-	PCMD_UNLOCK_STAGES                     = 0x00,
-	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
-	PCMD_HISCORE                           = 0x02,
-	PCMD_STAGE_PLAYINFO                    = 0x03,
-	PCMD_ENDINGS                           = 0x04,
-	PCMD_GAME_SETTINGS                     = 0x05,
-	PCMD_GAME_VERSION                      = 0x06,
-	PCMD_UNLOCK_BGMS                       = 0x07,
-	PCMD_UNLOCK_CUTSCENES                  = 0x08,
-} ProgfileCommand;
 
 typedef struct StageProgress {
 	// Keep this struct small if you can
@@ -65,8 +46,6 @@ typedef enum ProgressBGMID {
 	PBGM_INTRO,
 } ProgressBGMID;
 
-struct UnknownCmd;
-
 typedef enum EndingID {
 	// WARNING: Reordering this will break current progress files.
 
@@ -102,8 +81,6 @@ typedef struct GlobalProgress {
 		uint8_t shotmode;
 	} game_settings;
 } GlobalProgress;
-
-
 
 extern GlobalProgress progress;
 

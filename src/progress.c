@@ -31,37 +31,41 @@
 	If the checksum is incorrect, the whole progress file is deemed invalid and ignored.
 
 	All commands are optional and the array may be empty. In that case, the checksum may be omitted as well.
-
-	Currently implemented commands (see also the ProgfileCommand enum in progress.h):
-
-		- PCMD_UNLOCK_STAGES:
-			Unlocks one or more stages. Only works for stages with fixed difficulty.
-
-		- PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
-			Unlocks one or more stages, each on a specific difficulty
-
-		- PCMD_HISCORE
-			Sets the "Hi-Score" (highest score ever attained in one game session)
-
-		- PCMD_STAGE_PLAYINFO
-			Sets the times played and times cleared counters for a list of stage/difficulty combinations
-
-		- PCMD_ENDINGS
-			Sets the the number of times an ending was achieved for a list of endings
-
-		- PCMD_GAME_SETTINGS
-			Sets the last picked difficulty, character and shot mode
-
-		- PCMD_GAME_VERSION
-			Sets the game version this file was last written with
-
-		- PCMD_UNLOCK_BGMS
-			Unlocks BGMs in the music room
-
-		- PCMD_UNLOCK_CUTSCENES
-			Unlocks cutscenes in the cutscenes menu
-
 */
+
+/*
+ * Currently implemented commands:
+ */
+typedef enum ProgfileCommand {
+	// NOTE: These values must never change to preserve compatibility with old progress files!
+
+	// Unlocks one or more stages. Only works for stages with fixed difficulty.
+	PCMD_UNLOCK_STAGES                     = 0x00,
+
+	// Unlocks one or more stages, each on a specific difficulty
+	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
+
+	// Sets the "Hi-Score" (highest score ever attained in one game session)
+	PCMD_HISCORE                           = 0x02,
+
+	// Sets the times played and times cleared counters for a list of stage/difficulty combinations
+	PCMD_STAGE_PLAYINFO                    = 0x03,
+
+	// Sets the the number of times an ending was achieved for a list of endings
+	PCMD_ENDINGS                           = 0x04,
+
+	// Sets the last picked difficulty, character and shot mode
+	PCMD_GAME_SETTINGS                     = 0x05,
+
+	// Sets the game version this file was last written with
+	PCMD_GAME_VERSION                      = 0x06,
+
+	// Unlocks BGMs in the music room
+	PCMD_UNLOCK_BGMS                       = 0x07,
+
+	// Unlocks cutscenes in the cutscenes menu
+	PCMD_UNLOCK_CUTSCENES                  = 0x08,
+} ProgfileCommand;
 
 /*
 
@@ -78,6 +82,9 @@
 		  As long as this can stop a l33th4XxXxX0r1998 armed with notepad.exe or a hex editor, I'm happy.
 
 */
+
+#define PROGRESS_FILE "storage/progress.dat"
+#define PROGRESS_MAXFILESIZE 4096
 
 GlobalProgress progress;
 
