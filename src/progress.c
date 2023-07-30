@@ -87,7 +87,7 @@ typedef enum ProgfileCommand {
 */
 
 #define PROGRESS_FILE "storage/progress.dat"
-#define PROGRESS_MAXFILESIZE 4096
+#define PROGRESS_MAXFILESIZE (1 << 15)
 
 GlobalProgress progress;
 
