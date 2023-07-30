@@ -111,11 +111,16 @@ static void gl33_vertex_array_update_layout(VertexArray *varr) {
 			default: UNREACHABLE;
 		}
 
+		DIAGNOSTIC(push)
+		DIAGNOSTIC(ignored "-Wunreachable-code")
+
 		if(HAVE_GL_FUNC(glVertexAttribDivisor)) {
 			glVertexAttribDivisor(i, a->spec.divisor);
 		} else if(a->spec.divisor != 0) {
 			log_fatal("Renderer backend does not support instance attributes");
 		}
+
+		DIAGNOSTIC(pop)
 	}
 
 	for(uint i = varr->num_attributes; i < varr->prev_num_attributes; ++i) {
