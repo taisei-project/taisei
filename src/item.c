@@ -11,6 +11,7 @@
 #include "item.h"
 #include "global.h"
 #include "list.h"
+#include "stage.h"
 #include "stageobjects.h"
 
 // Instant collection radius.

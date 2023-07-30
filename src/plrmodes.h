@@ -13,8 +13,8 @@
 #include "projectile.h"
 #include "player.h"
 #include "cutscenes/cutscene.h"
-#include "stage.h"
 #include "dialog.h"
+#include "endings.h"
 
 typedef enum {
 	// WARNING: Reordering this will break current replays, and possibly even progress files.

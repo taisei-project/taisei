@@ -14,6 +14,7 @@
 #include "list.h"
 #include "stageobjects.h"
 #include "util/glm.h"
+#include "stage.h"
 
 static ht_ptr2int_t shader_sublayer_map;
 

@@ -11,6 +11,7 @@
 #include "common_tasks.h"
 #include "random.h"
 #include "util/glm.h"
+#include "stage.h"
 
 void common_drop_items(cmplx pos, const ItemCounts *items) {
 	for(int i = 0; i < ARRAY_SIZE(items->as_array); ++i) {

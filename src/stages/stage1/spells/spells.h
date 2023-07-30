@@ -11,6 +11,7 @@
 
 #include "../stage1.h"
 #include "boss.h"
+#include "stage.h"
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_rain, BossAttack);

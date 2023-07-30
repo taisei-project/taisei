@@ -13,6 +13,7 @@
 #include "video.h"
 #include "eventloop/eventloop.h"
 #include "replay/demoplayer.h"
+#include "util/graphics.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
 	MenuEntry *e = dynarray_append(&menu->entries);

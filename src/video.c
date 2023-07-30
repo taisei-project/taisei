@@ -13,6 +13,7 @@
 #include "renderer/api.h"
 #include "util/pngcruft.h"
 #include "util/fbmgr.h"
+#include "util/graphics.h"
 #include "taskmanager.h"
 #include "video_postprocess.h"
 #include "dynarray.h"

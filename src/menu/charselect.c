@@ -15,6 +15,7 @@
 #include "global.h"
 #include "video.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 #include "portrait.h"
 
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)

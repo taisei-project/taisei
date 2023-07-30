@@ -10,8 +10,8 @@
 #include "taisei.h"
 
 #include "global.h"
-
 #include "boss.h"
+#include "stage.h"
 
 #include "stages/stage6/elly.h"
 

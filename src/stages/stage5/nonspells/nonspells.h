@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "common_tasks.h"
+#include "stage.h"
 
 #include "stages/stage5/iku.h"
 

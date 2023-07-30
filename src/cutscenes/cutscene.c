@@ -19,6 +19,7 @@
 #include "renderer/api.h"
 #include "util/fbmgr.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 #include "video.h"
 #include "eventloop/eventloop.h"
 

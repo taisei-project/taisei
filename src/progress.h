@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "cutscenes/cutscene.h"
+#include "endings.h"
 
 typedef struct StageProgress {
 	// Keep this struct small if you can
@@ -45,28 +46,6 @@ typedef enum ProgressBGMID {
 	PBGM_GAMEOVER,
 	PBGM_INTRO,
 } ProgressBGMID;
-
-typedef enum EndingID {
-	// WARNING: Reordering this will break current progress files.
-
-	ENDING_BAD_MARISA,
-	ENDING_BAD_YOUMU,
-	ENDING_GOOD_MARISA,
-	ENDING_GOOD_YOUMU,
-	ENDING_BAD_REIMU,
-	ENDING_GOOD_REIMU,
-	NUM_ENDINGS,
-} EndingID;
-
-#define GOOD_ENDINGS \
-	ENDING(ENDING_GOOD_MARISA) \
-	ENDING(ENDING_GOOD_YOUMU) \
-	ENDING(ENDING_GOOD_REIMU)
-
-#define BAD_ENDINGS \
-	ENDING(ENDING_BAD_MARISA) \
-	ENDING(ENDING_BAD_YOUMU) \
-	ENDING(ENDING_BAD_REIMU)
 
 typedef struct GlobalProgress {
 	uint32_t hiscore;

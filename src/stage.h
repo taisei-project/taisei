@@ -11,7 +11,6 @@
 
 #include "projectile.h"
 #include "boss.h"
-#include "progress.h"
 #include "difficulty.h"
 #include "util/graphics.h"
 #include "dialog.h"

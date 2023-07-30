@@ -14,6 +14,7 @@
 #include "resource/bgm.h"
 #include "resource/sfx.h"
 #include "global.h"
+#include "stage.h"
 
 #define LOOPTIMEOUTFRAMES 10
 #define DEFAULT_SFX_VOLUME 100

@@ -21,6 +21,8 @@
 #include "video.h"
 #include "replay/struct.h"
 #include "replay/state.h"
+#include "util/graphics.h"
+#include "stage.h"
 
 typedef struct StartGameContext {
 	StageInfo *restart_stage;

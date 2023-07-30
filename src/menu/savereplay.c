@@ -15,6 +15,7 @@
 #include "plrmodes.h"
 #include "common.h"
 #include "video.h"
+#include "util/graphics.h"
 
 attr_nonnull_all
 static void do_save_replay(Replay *rpy) {

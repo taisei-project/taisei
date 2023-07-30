@@ -16,6 +16,7 @@
 #include "mainmenu.h"
 #include "global.h"
 #include "video.h"
+#include "util/graphics.h"
 
 typedef struct OptionBinding OptionBinding;
 

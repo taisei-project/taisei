@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "boss.h"
+#include "stage.h"
 
 void hina_cards1(Boss *h, int time);
 void hina_cards2(Boss *h, int time);
