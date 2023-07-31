@@ -2,7 +2,5 @@
 directory=zlib
 url=https://github.com/taisei-project/zlib.git
 push-url=git@github.com:taisei-project/zlib.git
-revision=meson-1.2.11
+revision=meson-1.2.13
 
-[provide]
-zlib=zlib_dep
