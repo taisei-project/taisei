@@ -67,6 +67,10 @@ project('taisei', 'c',
         'freetype:png=disabled',
         'freetype:tests=disabled',
 
+        'opus:docs=disabled',
+        'opus:extra-programs=disabled',
+        'opus:tests=disabled',
+
         # You may want to change these for a debug build dir
         'buildtype=release',
         'strip=true',
