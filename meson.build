@@ -61,6 +61,12 @@ project('taisei', 'c',
         'sdl2:use_video_vulkan=disabled',
         'sdl2:with_main=true',
 
+        'freetype:brotli=disabled',
+        'freetype:bzip2=disabled',
+        'freetype:harfbuzz=disabled',
+        'freetype:png=disabled',
+        'freetype:tests=disabled',
+
         # You may want to change these for a debug build dir
         'buildtype=release',
         'strip=true',
