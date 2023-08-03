@@ -516,8 +516,8 @@ TASK(spawn_hex_fairy, { cmplx offset; real angle; MoveParams escape_move; }) {
 	int Lx = 10;
 	int Ly = 20;
 
-	for(int y = 0; y < Ly; y++) {
-		for(int x = 0; x < Lx; x++) {
+	for(int y = -Ly/2; y < Ly/2; y++) {
+		for(int x = -Lx/2; x < Lx/2; x++) {
 			cmplx pos = offset + lattice_vec1 * x + lattice_vec2 * y;
 
 			INVOKE_TASK(hex_fairy,
@@ -842,7 +842,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	WAIT(filler_time - midboss_time);
 	STAGE_BOOKMARK(post-filler);
 
-	INVOKE_TASK_DELAYED(20, spawn_hex_fairy, .offset = 0, .angle = 0.0, .escape_move = move_linear(1 + I));
+	INVOKE_TASK_DELAYED(20, spawn_hex_fairy, .offset = VIEWPORT_W / 2 + I * VIEWPORT_H / 2, .angle = 0.0, .escape_move = move_linear(1 + I));
 
 	// for(int i = 0; i < 4; i++) {
 	// 	real phase = 2 * i/M_PI;
@@ -855,7 +855,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		INVOKE_TASK_DELAYED(300 + 10 * i, explosive_swirl, .pos = pos, .move = move_linear(vel));
 	}
 
-	INVOKE_TASK_DELAYED(320, spawn_hex_fairy, .offset = 0, .angle = 0.0, .escape_move = move_linear(-1 + I));
+	INVOKE_TASK_DELAYED(320, spawn_hex_fairy, .offset = VIEWPORT_W / 2 + I * VIEWPORT_H / 2 + I * 100 , .angle = 0.0, .escape_move = move_linear(-1 + I));
 
 
 	// for(int i = 0; i < 11; i++) {
