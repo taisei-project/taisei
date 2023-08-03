@@ -97,6 +97,7 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 	int next_gap = 0;
 
 	int step = difficulty_value(4, 3, 2, 2);
+	int max_gap = difficulty_value(4, 5, 6, 7);
 	for(int i = 0;; i++, WAIT(step)) {
 		cmplx vel = cdir(0.5*M_TAU/4 * sign(creal(ARGS.direction))) * cnormalize(m.move.velocity) * velocity_boost;
 		if(1) {
@@ -107,7 +108,7 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 					.move = move_linear(vel)
 				);
 			} else {
-				next_gap += rng_i32_range(2, 5);
+				next_gap += rng_i32_range(2, max_gap);
 				if(global.diff > D_Normal) {
 					PROJECTILE(
 						.proto = pp_flea,
