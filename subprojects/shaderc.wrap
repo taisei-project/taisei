@@ -2,7 +2,7 @@
 directory=shaderc
 url=https://github.com/taisei-project/shaderc.git
 push-url=git@github.com:taisei-project/shaderc.git
-revision=meson-2020.5
+revision=meson-2023.5
 
 [provide]
 shaderc=shaderc_dep
