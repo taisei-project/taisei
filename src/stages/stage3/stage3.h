@@ -21,7 +21,7 @@ extern struct stage3_spells_s {
 
 	struct {
 		AttackInfo moonlight_rocket;
-		AttackInfo wriggle_night_ignite;
+		AttackInfo moths_to_a_flame;
 		AttackInfo firefly_storm;
 	} boss;
 

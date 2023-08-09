@@ -9,7 +9,7 @@ stage3_src = files(
     'spells/light_singularity.c',
     'spells/logic_bomb.c',
     'spells/moonlight_rocket.c',
-    'spells/night_ignite.c',
+    'spells/moths_to_a_flame.c',
     'stage3.c',
     'timeline.c',
 )

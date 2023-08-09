@@ -586,7 +586,7 @@ TASK(spawn_boss) {
 	boss_add_attack_task(boss, AT_Normal, "", 11, 35000, TASK_INDIRECT(BossAttack, stage3_boss_nonspell_1), NULL);
 	boss_add_attack_from_info(boss, &stage3_spells.boss.moonlight_rocket, false);
 	boss_add_attack_task(boss, AT_Normal, "", 40, 35000, TASK_INDIRECT(BossAttack, stage3_boss_nonspell_2), NULL);
-	boss_add_attack_from_info(boss, &stage3_spells.boss.wriggle_night_ignite, false);
+	boss_add_attack_from_info(boss, &stage3_spells.boss.moths_to_a_flame, false);
 	boss_add_attack_task(boss, AT_Normal, "", 40, 35000, TASK_INDIRECT(BossAttack, stage3_boss_nonspell_3), NULL);
 	boss_add_attack_from_info(boss, &stage3_spells.boss.firefly_storm, false);
 	boss_add_attack_from_info(boss, &stage3_spells.extra.light_singularity, false);

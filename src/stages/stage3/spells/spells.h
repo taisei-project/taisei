@@ -14,5 +14,5 @@
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_firefly_storm, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_light_singularity, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_moonlight_rocket, BossAttack);
-DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_night_ignite, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_moths_to_a_flame, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage3_spell_logic_bomb, BossAttack);

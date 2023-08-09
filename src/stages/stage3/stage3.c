@@ -40,9 +40,9 @@ struct stage3_spells_s stage3_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moonlight_rocket),
 			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
-		.wriggle_night_ignite = {
-			{10, 11, 12, 13}, AT_Spellcard, "Light Source “Wriggle Night Ignite”", 50, 46000,
-			TASK_INDIRECT_INIT(BossAttack, stage3_spell_night_ignite),
+		.moths_to_a_flame = {
+			{18, 19, 20, 21}, AT_Spellcard, "Attractor “Moths to a Flame”", 90, 70000,
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moths_to_a_flame),
 			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 		.firefly_storm = {
