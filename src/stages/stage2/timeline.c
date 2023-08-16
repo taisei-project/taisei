@@ -46,6 +46,7 @@ TASK(spinshot_fairy_attack_spawn_projs, {
 			.pos = o,
 			.move = move_from_towards(o, o + ofs, 0.1),
 			.max_viewport_dist = 128,
+			.flags = PFLAG_MANUALANGLE,
 		));
 
 		ofs *= r;
@@ -96,7 +97,12 @@ TASK(spinshot_fairy_attack, {
 			cmplx ofs = ref_pos - proj_origins[i];
 			proj_origins[i] += ofs;
 			p->pos += ofs;
- 			p->move.attraction_point += ofs;
+			p->move.attraction_point += ofs;
+
+			if(p->move.velocity) {
+				p->angle = carg(p->move.velocity);
+			}
+
 			++live_count;
 		});
 
@@ -116,6 +122,7 @@ TASK(spinshot_fairy_attack, {
 		cmplx dir = cdir(p->angle);
 		p->move = move_accelerated(dir * ARGS.activated_vel_multiplier, dir * ARGS.activated_accel_multiplier);
 		p->move.retention *= ARGS.activated_retention_multiplier;
+		p->flags &= ~PFLAG_MANUALANGLE;
 		++live_count;
 	});
 

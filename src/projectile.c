@@ -549,7 +549,6 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 
 	for(Projectile *proj = projlist->first, *next; proj; proj = next) {
 		next = proj->next;
-		proj->prevpos = proj->pos;
 
 		if(proj->flags & PFLAG_INTERNAL_DEAD) {
 			delete_projectile(projlist, proj, NULL);
@@ -588,6 +587,7 @@ void process_projectiles(ProjectileList *projlist, bool collision) {
 			}
 		}
 
+		proj->prevpos = proj->pos;
 		apply_projectile_collision(projlist, proj, &col);
 	}
 
