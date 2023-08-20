@@ -165,3 +165,24 @@ DECLARE_EXTERN_TASK(
 );
 
 DECLARE_EXTERN_TASK(common_play_sfx, { const char *name; });
+
+// TODO: move this elsewhere?
+
+typedef struct RadialLoop {
+	cmplx dir, turn;
+	int cnt, i;
+} RadialLoop;
+
+INLINE RadialLoop _radial_loop_init(int cnt, cmplx dir) {
+	return (RadialLoop) {
+		.dir = dir,
+		.cnt = abs(cnt),
+		.turn = cdir(M_TAU/cnt),
+	};
+}
+
+#define RADIAL_LOOP(_loop_var, _cnt_init, _dir_init) \
+	for( \
+		RadialLoop _loop_var = _radial_loop_init(_cnt_init, _dir_init); \
+		_loop_var.i < _loop_var.cnt; \
+		++_loop_var.i, _loop_var.dir *= _loop_var.turn)
