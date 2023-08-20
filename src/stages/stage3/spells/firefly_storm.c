@@ -90,6 +90,8 @@ DEFINE_EXTERN_TASK(stage3_spell_firefly_storm) {
 	WAIT(30);
 
 	for(int cycle = 0;; ++cycle, WAIT(2)) {
+		play_sfx_loop("shot1_loop");
+
 		int cnt = 2;
 		for(int i = 0; i < cnt; ++i) {
 			real r = fmax(0.05, tanh(sin(cycle / 200.0)));
