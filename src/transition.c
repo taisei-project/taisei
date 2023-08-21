@@ -101,7 +101,12 @@ void set_transition(TransitionRule rule, int dur1, int dur2, CallChain cc) {
 		transition.rule2 = NULL;
 	}
 
-	if(transition.state == TRANS_IDLE || rule == transition.rule) {
+	// FIXME can we just do this unconditionally?
+	if(
+		transition.state == TRANS_IDLE ||
+		transition.state == TRANS_FADE_OUT ||
+		rule == transition.rule
+	) {
 		popq();
 	}
 }
