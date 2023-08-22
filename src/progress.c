@@ -13,9 +13,10 @@
 #include "progress.h"
 #include "stageinfo.h"
 #include "version.h"
+#include "rwops/rwops_autobuf.h"
+#include "rwops/rwops_zstd.h"
 
 /*
-
 	This module implements a persistent storage of a player's game progress, such as unlocked stages, high-scores etc.
 
 	Basic outline of the progress file structure (little-endian encoding):
@@ -89,7 +90,8 @@ typedef enum ProgfileCommand {
 
 */
 
-#define PROGRESS_FILE "storage/progress.dat"
+#define PROGRESS_FILE_OLD "storage/progress.dat"
+#define PROGRESS_FILE "storage/progress.zst"
 #define PROGRESS_MAXFILESIZE (1 << 15)
 
 GlobalProgress progress;
@@ -255,18 +257,6 @@ static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_
 }
 
 static void progress_read(SDL_RWops *file) {
-	int64_t filesize = SDL_RWsize(file);
-
-	if(filesize < 0) {
-		log_sdl_error(LOG_ERROR, "SDL_RWseek");
-		return;
-	}
-
-	if(filesize > PROGRESS_MAXFILESIZE) {
-		log_error("Progress file is huge (%"PRIi64" bytes, %i max)", filesize, PROGRESS_MAXFILESIZE);
-		return;
-	}
-
 	for(int i = 0; i < sizeof(progress_magic_bytes); ++i) {
 		if(SDL_ReadU8(file) != progress_magic_bytes[i]) {
 			log_error("Invalid header");
@@ -274,36 +264,42 @@ static void progress_read(SDL_RWops *file) {
 		}
 	}
 
-	if(filesize - SDL_RWtell(file) < 4) {
-		return;
-	}
-
 	uint32_t checksum_fromfile;
 	// no byteswapping here
 	SDL_RWread(file, &checksum_fromfile, 4, 1);
 
-	size_t bufsize = filesize - sizeof(progress_magic_bytes) - 4;
-	void *buf = mem_alloc(bufsize);
+	const size_t chunk_size = (1 << 12);
+	DYNAMIC_ARRAY(uint8_t) buf = {};
 
-	if(!SDL_RWread(file, buf, bufsize, 1)) {
-		log_sdl_error(LOG_ERROR, "SDL_RWread");
-		mem_free(buf);
-		return;
+	for(;;) {
+		dynarray_ensure_capacity(&buf, buf.num_elements + chunk_size);
+		size_t read = SDL_RWread(file, buf.data + buf.num_elements, 1, chunk_size);
+		buf.num_elements += read;
+
+		if(buf.num_elements > PROGRESS_MAXFILESIZE) {
+			log_error("Progress file is too large (>= %i; max is %i)", buf.num_elements, PROGRESS_MAXFILESIZE);
+			dynarray_free_data(&buf);
+			return;
+		}
+
+		if(read == 0) {
+			break;
+		}
 	}
 
-	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
-	uint32_t checksum = progress_checksum(buf, bufsize);
+	SDL_RWops *vfile = SDL_RWFromMem(buf.data, buf.num_elements);
+	uint32_t checksum = progress_checksum(buf.data, buf.num_elements);
 
 	if(checksum != checksum_fromfile) {
 		log_error("Bad checksum: %x != %x", checksum, checksum_fromfile);
 		SDL_RWclose(vfile);
-		mem_free(buf);
+		dynarray_free_data(&buf);
 		return;
 	}
 
 	TaiseiVersion version_info = { 0 };
 
-	while(SDL_RWtell(vfile) < bufsize) {
+	while(SDL_RWtell(vfile) < buf.num_elements) {
 		ProgfileCommand cmd = (int8_t)SDL_ReadU8(vfile);
 		uint16_t cur = 0;
 		uint16_t cmdsize = SDL_ReadLE16(vfile);
@@ -464,7 +460,7 @@ static void progress_read(SDL_RWops *file) {
 		}
 	}
 
-	mem_free(buf);
+	dynarray_free_data(&buf);
 	SDL_RWclose(vfile);
 }
 
@@ -915,6 +911,36 @@ static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
 	}
 }
 
+static SDL_RWops *progress_open_file_read(void) {
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+
+	if(file) {
+		return SDL_RWWrapZstdReader(file, true);
+	}
+
+	log_error("VFS error: %s; trying legacy path", vfs_get_error());
+
+	file = vfs_open(PROGRESS_FILE_OLD, VFS_MODE_READ);
+
+	if(file) {
+		return file;
+	}
+
+	log_error("VFS error: %s", vfs_get_error());
+	return NULL;
+}
+
+static SDL_RWops *progress_open_file_write(void) {
+	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
+
+	if(file) {
+		return SDL_RWWrapZstdWriter(file, 20, true);
+	}
+
+	log_error("VFS error: %s", vfs_get_error());
+	return NULL;
+}
+
 void progress_load(void) {
 	memset(&progress, 0, sizeof(GlobalProgress));
 
@@ -923,17 +949,9 @@ void progress_load(void) {
 	progress_save();
 #endif
 
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+	SDL_RWops *file = progress_open_file_read();
 
 	if(!file) {
-		VFSInfo i = vfs_query(PROGRESS_FILE);
-
-		if(i.error) {
-			log_error("VFS error: %s", vfs_get_error());
-		} else if(i.exists) {
-			log_error("Progress file %s is not readable", PROGRESS_FILE);
-		}
-
 		return;
 	}
 
@@ -950,12 +968,7 @@ void progress_load(void) {
 }
 
 void progress_save(void) {
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
-
-	if(!file) {
-		log_error("Couldn't open the progress file for writing: %s", vfs_get_error());
-		return;
-	}
+	SDL_RWops *file = progress_open_file_write();
 
 	progress_write(file);
 	SDL_RWclose(file);
