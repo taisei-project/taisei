@@ -48,7 +48,7 @@ typedef enum ProgressBGMID {
 } ProgressBGMID;
 
 typedef struct GlobalProgress {
-	uint32_t hiscore;
+	uint64_t hiscore;
 	uint32_t achieved_endings[NUM_ENDINGS];
 	uint64_t unlocked_bgms;
 	uint64_t unlocked_cutscenes;
