@@ -289,12 +289,18 @@ TASK(kurumi_vladsarmy_fairy, { cmplx start_pos; cmplx target_pos; int attack_tim
 
 DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 	Boss *b = INIT_BOSS_ATTACK(&ARGS);
-	BEGIN_BOSS_ATTACK(&ARGS);
-
 	cmplx startpos = VIEWPORT_W * 0.5 + VIEWPORT_H * 0.28 * I;
+	b->move = move_from_towards(b->pos, startpos, 0.01);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int prey_count = 20;
 	int fairy_chase_time = difficulty_value(105, 100, 95, 90);
+
+	b->shot_damage_multiplier = 0;
+	b->bomb_damage_multiplier = 0;
+	WAIT(120);
+	b->shot_damage_multiplier = 1;
+	b->bomb_damage_multiplier = 1;
 
 	for(int run = 0;; run++) {
 		b->move = move_from_towards(b->pos, startpos, 0.01);
