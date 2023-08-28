@@ -19,18 +19,26 @@ TASK(ball_shoot, { cmplx p1; cmplx p2; }) {
 	cmplx p1 = ARGS.p1;
 	cmplx p2 = ARGS.p2;
 
+	cmplx dir = cnormalize(p2 - p1);
+
 	for(int n = 0; n < waves * 2; ++n) {
+		real s = (1.0 - 2.0 * (n & 1));
+
 		for(real i = -shot_count * 0.5; i <= shot_count * 0.5; i++) {
-			PROJECTILE(
+			auto p = PROJECTILE(
 				.proto = pp_ball,
 				.pos = p1 + (p2 - p1) / shot_count * i,
 				.color = RGBA(1 - 1 / (1 + fabs(0.1 * i)), 0.5 - 0.1 * fabs(i), 1, 0),
-				.move = move_accelerated(0,
-					(1 - 2 * (n & 1)) *
-					(0.001 * shot_accel) *
-					cnormalize(p2 - p1) * cdir(M_PI/2 + 0.2 * i)
+				.move = move_accelerated(
+					s * dir * cdir(M_PI - 0.5 * i * s),
+					s * (0.001 * shot_accel) * dir * cdir(M_PI/2 + 0.2 * i * s)
 				),
+				.max_viewport_dist = 100,
 			);
+
+			if(s < 0) {
+				SWAP(p->color.r, p->color.b);
+			}
 		}
 
 		play_sfx("shot_special1");
@@ -46,12 +54,13 @@ DEFINE_EXTERN_TASK(stage5_spell_atmospheric_discharge) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	Rect wander_bounds = viewport_bounds(32);
-	wander_bounds.bottom = VIEWPORT_H * 0.5;
+	wander_bounds.top = 60;
+	wander_bounds.bottom = VIEWPORT_H * 0.45;
 
 	boss->move.attraction = 0.03;
 
-	int mindelay = 30;
-	int delay_step = 6;
+	int mindelay = 40;
+	int delay_step = 8;
 	int delay = mindelay + 10 * delay_step;
 
 	for(;;WAIT(delay)) {
