@@ -282,22 +282,28 @@ static void gl41_set_viewport(const FloatRect *vp) {
 }
 #endif
 
-static void gl33_init_context(SDL_Window *window) {
-	R.gl_context = SDL_GL_CreateContext(window);
+static SDL_GLContext gl33_create_context(SDL_Window *window) {
+	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 
 	int gl_profile;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &gl_profile);
 
-	if(!R.gl_context && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
+	if(!ctx && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
 		log_error("Failed to create OpenGL context: %s", SDL_GetError());
 		log_warn("Attempting to create a fallback context");
 		SDL_GL_ResetAttributes();
-		R.gl_context = SDL_GL_CreateContext(window);
+		ctx = SDL_GL_CreateContext(window);
 	}
 
-	if(!R.gl_context) {
+	if(!ctx) {
 		log_fatal("Failed to create OpenGL context: %s", SDL_GetError());
 	}
+
+	return ctx;
+}
+
+static void gl33_init_context(SDL_Window *window) {
+	R.gl_context = GLVT.create_context(window);
 
 	glcommon_load_functions();
 	glcommon_check_capabilities();
@@ -1537,6 +1543,7 @@ RendererBackend _r_backend_gl33 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
+			.create_context = gl33_create_context,
 			.init_context = gl33_init_context,
 		}
 	},

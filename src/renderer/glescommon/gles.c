@@ -11,8 +11,27 @@
 #include "gles.h"
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
+#include "angle_egl.h"
+
+#ifdef _WIN32
+	// Enable WebGL compatibility mode on Windows, because cubemaps are broken in the D3D11 backend
+	// except in WebGL mode for some reason.
+	#define ANGLE_WEBGL_DEFAULT true
+#else
+	#define ANGLE_WEBGL_DEFAULT false
+#endif
+
+attr_unused
+static SDL_GLContext gles_create_context_webgl(SDL_Window *window) {
+	int major, minor;
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+	SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+	return gles_create_context_angle(window, major, minor, true);
+}
 
 void gles_init(RendererBackend *gles_backend, int major, int minor) {
+	GLVT_OF(*gles_backend).create_context = GLVT_OF(_r_backend_gl33).create_context;
+
 #ifdef TAISEI_BUILDCONF_HAVE_ANGLE
 	// Load ANGLE by default by setting up some SDL-specific environment vars.
 	// These are not overwritten if they are already set in the environment, so
@@ -37,6 +56,10 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 	#endif
 
 	env_set("SDL_OPENGL_ES_DRIVER", 1, false);
+
+	if(env_get("TAISEI_ANGLE_WEBGL", ANGLE_WEBGL_DEFAULT)) {
+		GLVT_OF(*gles_backend).create_context = gles_create_context_webgl;
+	}
 #endif // TAISEI_BUILDCONF_HAVE_ANGLE
 
 	_r_backend_inherit(gles_backend, &_r_backend_gl33);

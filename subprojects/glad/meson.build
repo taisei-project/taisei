@@ -77,17 +77,26 @@ glad_args = [
 glad_sources = []
 glad_includes = include_directories('include')
 
-subdir('src')
-
-glad_lib = static_library('glad', glad_sources,
+glad_gl_lib = static_library('gladGL', files('src/gl.c'),
     install : not meson.is_subproject(),
     build_by_default : not meson.is_subproject(),
     include_directories : glad_includes,
 )
 
-glad_dep = declare_dependency(
+glad_egl_lib = static_library('gladEGL', files('src/egl.c'),
+    install : not meson.is_subproject(),
+    build_by_default : not meson.is_subproject(),
+    include_directories : glad_includes,
+)
+
+glad_gl_dep = declare_dependency(
   include_directories : glad_includes,
-  link_with : glad_lib
+  link_with : glad_gl_lib
+)
+
+glad_egl_dep = declare_dependency(
+  include_directories : glad_includes,
+  link_with : glad_egl_lib
 )
 
 if glad_program.found()

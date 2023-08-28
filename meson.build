@@ -216,8 +216,11 @@ dep_gamemode    = dependency('gamemode',                            required : f
 dep_m           = cc.find_library('m', required : false)
 
 dep_basisu_transcoder = subproject('basis_universal').get_variable('basisu_transcoder_dep')
-dep_glad        = subproject('glad').get_variable('glad_dep')
 dep_koishi      = subproject('koishi').get_variable('koishi_dep')
+
+sub_glad = subproject('glad')
+dep_glad_gl = sub_glad.get_variable('glad_gl_dep')
+dep_glad_egl = sub_glad.get_variable('glad_egl_dep')
 
 taisei_deps = [
     dep_basisu_transcoder,
