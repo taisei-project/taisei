@@ -1,7 +1,6 @@
 project('glad', 'c')
 
-glad_profile = 'core'
-glad_api = ['gl=3.3', 'gles2=3.0']
+glad_api = ['gl:core=3.3', 'gles2=3.0', 'egl=1.5']
 glad_extensions = [
     'GL_3DFX_texture_compression_FXT1',
     'GL_AMD_compressed_ATC_texture',
@@ -64,11 +63,10 @@ glad_extensions = [
     'GL_SGIX_depth_texture',
 ]
 
-# NOTE: requires glad2 (beta) https://github.com/Dav1dde/glad/tree/glad2
 glad_program = find_program('glad', required : false)
 
 glad_args = [
-    '--api', 'gl:core=3.3,gles2=3.0',
+    '--api', ','.join(glad_api),
     '--extensions', ','.join(glad_extensions),
     '--merge',
     '--out-path', meson.current_source_dir(),
