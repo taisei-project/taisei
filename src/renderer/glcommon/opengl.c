@@ -329,6 +329,11 @@ static void glcommon_ext_clear_texture(void) {
 static void glcommon_ext_texture_norm16(void) {
 	EXT_FLAG(texture_norm16);
 
+	if(glext.issues.disable_norm16) {
+		EXT_MISSING();
+		return;
+	}
+
 	CHECK_CORE(!glext.version.is_es);
 
 	/*
@@ -796,11 +801,28 @@ static const char *detect_slow_sampler_update(void) {
 	return NULL;
 }
 
+static const char *detect_broken_norm16(void) {
+	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
+	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
+
+	if(!strcmp(gl_vendor, "Mesa") && !strncmp(gl_renderer, "NV", 2)) {
+		return "Normalized 16bpc pixel formats are broken on nouveau";
+	}
+
+	return NULL;
+}
+
 static void glcommon_check_issues(void) {
 	glext.issues.avoid_sampler_uniform_updates = glcommon_check_workaround(
 		"avoid sampler uniform updates",
 		"TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES",
 		detect_slow_sampler_update
+	);
+
+	glext.issues.disable_norm16 = glcommon_check_workaround(
+		"disable normalized 16bpc pixel formats",
+		"TAISEI_GL_WORKAROUND_DISABLE_NORM16",
+		detect_broken_norm16
 	);
 }
 
@@ -901,6 +923,8 @@ void glcommon_check_capabilities(void) {
 		SDL_RWclose(writer);
 	}
 
+	glcommon_check_issues();
+
 	glcommon_ext_clear_texture();
 	glcommon_ext_color_buffer_float();
 	glcommon_ext_debug_output();
@@ -943,7 +967,6 @@ void glcommon_check_capabilities(void) {
 
 	glcommon_build_shader_lang_table();
 	glcommon_init_texture_formats();
-	glcommon_check_issues();
 }
 
 void glcommon_load_library(void) {
