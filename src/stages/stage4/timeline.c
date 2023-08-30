@@ -589,13 +589,13 @@ TASK(spawn_spiral_fairy, { real twist; }) {
 
 TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
 	Enemy *e = TASK_BIND(espawn_fairy_blue(ARGS.pos, ITEMS(.points=2)));
-	INVOKE_SUBTASK(common_charge,
+	INVOKE_SUBTASK_DELAYED(60, common_charge,
 		.time = 90,
 		.pos = e->pos,
 		.color = color_mul_scalar(RGBA(0.7, 1.0, 0.2, 0), 0.25),
 		.sound = COMMON_CHARGE_SOUNDS,
 	);
-	ecls_anyfairy_summon(e, 60);
+	ecls_anyfairy_summon(e, 120);
 	WAIT(30);
 	e->move = move_accelerated(2*ARGS.dir, 0.01*I*ARGS.dir);
 
@@ -614,13 +614,13 @@ TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
 TASK(spawn_laser_pattern_fairy) {
 	int count = difficulty_value(10,12,14,15);
 
-	cmplx pos = VIEWPORT_W * 0.5 + VIEWPORT_H * 0.5 * I;
+	cmplx pos = VIEWPORT_W * 0.5 + VIEWPORT_H * 0.4 * I;
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU / count * i);
 
 		INVOKE_TASK(laser_pattern_fairy, .pos = pos + 100 * dir, .dir = dir);
 
-		WAIT(1);
+		WAIT(10);
 	}
 }
 
@@ -682,7 +682,11 @@ TASK(scythe_post_mid, { int fleetime; }) {
 	real vofs = 45;
 
 	for(int i = 0; i < ARGS.fleetime - 210; i++, YIELD) {
-		s->move.attraction_point = anchor + hrange * sin(i * 0.03) + I*(vofs + vrange * cos(i * 0.05));
+		s->move.attraction_point = anchor + hrange * sin((i+60) * 0.03) + I*(vofs + vrange * cos((i+60) * 0.05));
+
+		if(i <= 30) {
+			continue;
+		}
 
 		cmplx shotorg = s->pos + 80 * cdir(s->angle);
 		cmplx shotdir = cdir(-1.1 * s->angle);
@@ -852,7 +856,7 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 	for(int i = 0; i < 40; i++) {
 		cmplx pos = VIEWPORT_W * (i & 1) + I * (20.0 + VIEWPORT_H/3.0 * rng_real());
 		cmplx vel = 3 * (1 - 2 * (i & 1)) + I;
-		INVOKE_TASK_DELAYED(300 + 10 * i, explosive_swirl, .pos = pos, .move = move_linear(vel));
+		INVOKE_TASK_DELAYED(480 + 10 * i, explosive_swirl, .pos = pos, .move = move_linear(vel));
 	}
 
 	INVOKE_TASK_DELAYED(320, spawn_hex_fairy, .offset = VIEWPORT_W / 2 + I * VIEWPORT_H / 2 + I * 100 , .angle = 0.0, .escape_move = move_linear(-1 + I));
@@ -880,21 +884,21 @@ DEFINE_EXTERN_TASK(stage4_timeline) {
 		100, VIEWPORT_W-100, 0, VIEWPORT_W
 	};
 
-	INVOKE_TASK_DELAYED(1100, spawn_laser_pattern_fairy);
+	INVOKE_TASK_DELAYED(1200, spawn_laser_pattern_fairy);
 	for(int i = 0; i < 4; i++) {
 		INVOKE_TASK_DELAYED(1000+120*i, bigcircle_fairy, .pos = pos[i], .vel = cnormalize(global.plr.pos-pos[i]));
 	}
 
-	INVOKE_TASK_DELAYED(1200, spawn_spiral_fairy, .twist = 0.1);
+	INVOKE_TASK_DELAYED(1500, spawn_spiral_fairy, .twist = 0.1);
 
-	INVOKE_TASK_DELAYED(1500, supercard_fairy,
+	INVOKE_TASK_DELAYED(1600, supercard_fairy,
 		.pos = VIEWPORT_W / 2.0,
 		.move = move_linear(4.0 * I)
 	);
 
-	INVOKE_TASK_DELAYED(1900, spawn_spiral_fairy, .twist = -0.5);
+	INVOKE_TASK_DELAYED(2000, spawn_spiral_fairy, .twist = -0.5);
 
-	WAIT(2300);
+	WAIT(2460);
 	INVOKE_TASK(spawn_boss);
 	WAIT_EVENT(&NOT_NULL(global.boss)->events.defeated);
 	stage_unlock_bgm("stage4boss");
