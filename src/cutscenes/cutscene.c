@@ -22,6 +22,7 @@
 #include "util/graphics.h"
 #include "video.h"
 #include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
@@ -406,6 +407,8 @@ static void cutscene_end_loop(void *ctx) {
 
 	CallChain cc = st->cc;
 	mem_free(st);
+
+	demoplayer_resume();
 	run_call_chain(&cc, NULL);
 }
 
@@ -473,6 +476,7 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	st->bg_state.transition_rate = 1/80.0f;
 	progress_unlock_bgm(cs->bgm);
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
+	demoplayer_suspend();
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }
 
