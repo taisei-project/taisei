@@ -32,15 +32,30 @@ TASK(swarm_trail_proj_cleanup, { BoxedProjectile phead; }) {
 	clear_projectile(p, CLEAR_HAZARDS_FORCE | CLEAR_HAZARDS_NOW);
 }
 
-TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width;}) {
+static cmplx trail_pos(
+	int t, cmplx origin, cmplx vstart, cmplx vend, real x, real width, real turn_length
+) {
+	cmplx z = t/width + I * x/turn_length;
+	return origin + width * z * (vstart + (vend - vstart) / (cexp(-z) + 1));
+}
+
+TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width; }) {
+	int t0 = -70;
+	real turn_length = 1; // |x/turn_length| should be smaller than pi
+	cmplx prevpos = trail_pos(
+		t0 - 1, ARGS.pos, ARGS.vstart, ARGS.vend, ARGS.x, ARGS.width, turn_length);
+
 	Projectile *p = TASK_BIND(PROJECTILE(
 		.proto = pp_rice,
+		.pos = prevpos,
 		.color = RGB(0.4, 0, 0.8),
 		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 		.max_viewport_dist = ARGS.width,
 	));
+
 	BoxedProjectile phead = ENT_BOX(PROJECTILE(
 		.proto = pp_flea,
+		.pos = prevpos,
 		.color = RGB(0.8, 0.1, 0.4),
 		.flags = PFLAG_NOAUTOREMOVE | PFLAG_NOMOVE | PFLAG_MANUALANGLE,
 		.max_viewport_dist = ARGS.width,
@@ -48,10 +63,7 @@ TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width
 
 	INVOKE_TASK_AFTER(&TASK_EVENTS(THIS_TASK)->finished, swarm_trail_proj_cleanup, phead);
 
-	real turn_length = 1; // |x/turn_length| should be smaller than pi
-
-	cmplx prevpos = ARGS.pos;
-	for(int t = -70;; t++) {
+	for(int t = t0;; t++) {
 		Projectile *head = ENT_UNBOX(phead);
 
 		if(t == 0) {
@@ -62,8 +74,7 @@ TASK(swarm_trail_proj, { cmplx pos; cmplx vstart; cmplx vend; real x; real width
 			play_sfx("redirect");
 		}
 
-		cmplx z = t/ARGS.width + I * ARGS.x/turn_length;
-		p->pos = ARGS.pos + ARGS.width * z * (ARGS.vstart + (ARGS.vend-ARGS.vstart)/(cexp(-z) + 1));
+		p->pos = trail_pos(t, ARGS.pos, ARGS.vstart, ARGS.vend, ARGS.x, ARGS.width, turn_length);
 		cmplx dpos = p->pos - prevpos;
 		p->angle = carg(dpos);
 
