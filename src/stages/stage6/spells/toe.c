@@ -759,10 +759,9 @@ TASK(toe_noise_sfx) {
 DEFINE_EXTERN_TASK(stage6_spell_toe) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	boss->move = move_from_towards(boss->pos, ELLY_TOE_TARGET_POS, 0.1);
-	BEGIN_BOSS_ATTACK(&ARGS);
-
 	stage_shake_view(50);
 	boss_set_portrait(boss, "elly", "beaten", "shouting");
+	BEGIN_BOSS_ATTACK(&ARGS);
 
 	assert(cabs(boss->pos - ELLY_TOE_TARGET_POS) < 1);
 	elly_clap(boss,50000);
