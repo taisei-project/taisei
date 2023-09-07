@@ -65,7 +65,7 @@
 		{ 0 },
 	}},
 	{ "cutscenes/youmu_good/02", {
-		T_CENTERED("— Good End —", "Extra Stage unlocked!"),
+		T_CENTERED("— Good End —", "The Extra Stage is not ready yet, sorry! ^_^'"),
 		{ 0 },
 	}},
 	{ NULL }
