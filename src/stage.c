@@ -780,6 +780,7 @@ static void display_stage_title(StageInfo *info) {
 }
 
 TASK(start_bgm, { BGM *bgm; }) {
+	_current_stage_state->bgm_start_time = global.frames + 1;
 	audio_bgm_play(ARGS.bgm, true, 0, 0);
 }
 
