@@ -219,10 +219,9 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 		.max_viewport_dist = SAFE_RADIUS_MAX,
 	));
 
-
 	for(int t = 0;; t++) {
 		cmplx shift = 0;
-		p->pos = ARGS.pos + ARGS.velocity * t;
+		p->pos = p->prevpos = ARGS.pos + ARGS.velocity * t;
 
 		EllyBaryons *baryons = ENT_UNBOX(ARGS.baryons);
 		if(baryons == NULL) {
@@ -252,7 +251,7 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 			return;
 		}
 
-		p->pos = ARGS.pos + ARGS.velocity * t + shift;
+		p->pos = p->prevpos = ARGS.pos + ARGS.velocity * t + shift;
 
 		float a = 0.5 + 0.5 * fmax(0, tanh((time - 80) / 100.)) * clamp(influence, 0.2, 1);
 		a *= fmin(1, t / 20.0f);
