@@ -494,17 +494,19 @@ static void credits_draw(void) {
 	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);
 
+	float pane_pos = SCREEN_W/4*3 - 6;
+
 	r_mat_mv_push();
 	r_color4(0, 0, 0, credits.panelalpha * 0.7);
-	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	r_mat_mv_scale(300, SCREEN_H, 1);
+	r_mat_mv_translate(pane_pos, SCREEN_H/2, 0);
+	r_mat_mv_scale(385, SCREEN_H, 1);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_color4(1, 1, 1, 1);
 	r_mat_mv_pop();
 
 	r_mat_mv_push();
-	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_mv_translate(pane_pos, SCREEN_H/2, 0);
 
 	r_shader_standard();
 
