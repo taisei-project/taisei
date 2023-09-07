@@ -25,7 +25,12 @@ typedef struct StageClearBonus {
 	uint64_t voltage;
 	uint64_t graze;
 	uint64_t total;
-	bool all_clear;
+
+	struct {
+		uint64_t base;
+		real diff_multiplier;
+		uint64_t diff_bonus;
+	} all_clear;
 } StageClearBonus;
 
 void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next);

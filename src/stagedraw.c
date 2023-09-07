@@ -1864,12 +1864,29 @@ void stage_draw_hud(void) {
 
 void stage_display_clear_screen(const StageClearBonus *bonus) {
 	StageTextTable tbl;
-	stagetext_begin_table(&tbl, bonus->all_clear ? "All Clear!" : "Stage Clear!", RGB(1, 1, 1), RGB(1, 1, 1), VIEWPORT_W/2,
+
+	bool all_clear = bonus->all_clear.base;
+	const char *title = all_clear ? "All Clear!" : "Stage Clear!";
+
+	stagetext_begin_table(&tbl, title, RGB(1, 1, 1), RGB(1, 1, 1), 2*VIEWPORT_W/3,
 		20, 5184000, 60, 60);
-	stagetext_table_add_numeric_nonzero(&tbl, "Clear bonus", bonus->base);
+	stagetext_table_add_numeric_nonzero(&tbl, "Stage Clear bonus", bonus->base);
 	stagetext_table_add_numeric_nonzero(&tbl, "Life bonus", bonus->lives);
 	stagetext_table_add_numeric_nonzero(&tbl, "Voltage bonus", bonus->voltage);
 	stagetext_table_add_numeric_nonzero(&tbl, "Graze bonus", bonus->graze);
+
+	if(all_clear) {
+		stagetext_table_add_separator(&tbl);
+		stagetext_table_add_numeric_nonzero(&tbl, "All Clear bonus", bonus->all_clear.base);
+
+		if(bonus->all_clear.diff_bonus) {
+			char tmp[128];
+			int percent = (bonus->all_clear.diff_multiplier - 1.0) * 100;
+			snprintf(tmp, sizeof(tmp), "Difficulty bonus (+%i%%)", percent);
+			stagetext_table_add_numeric_nonzero(&tbl, tmp, bonus->all_clear.diff_bonus);
+		}
+	}
+
 	stagetext_table_add_separator(&tbl);
 	stagetext_table_add_numeric(&tbl, "Total", bonus->total);
 	stagetext_end_table(&tbl);

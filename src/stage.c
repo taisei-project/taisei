@@ -824,7 +824,9 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 		StageInfo *next = stageinfo_get_by_id(stage->id + 1);
 
 		if(next == NULL || next->type != STAGE_STORY) {
-			bonus->all_clear = true;
+			bonus->all_clear.base = global.plr.point_item_value * 100 + global.plr.points / 10;
+			bonus->all_clear.diff_multiplier = difficulty_value(1.0, 1.1, 1.3, 1.6);
+			bonus->all_clear.diff_bonus = bonus->all_clear.base * (bonus->all_clear.diff_multiplier - 1.0);
 		}
 	}
 
@@ -832,18 +834,19 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 		bonus->base = stage->id * 1000000;
 	}
 
-	if(bonus->all_clear) {
-		bonus->base += global.plr.point_item_value * 100;
-		// TODO redesign this
-		// bonus->graze = global.plr.graze * (global.plr.point_item_value / 10);
-	}
-
 	bonus->voltage = imax(0, (int)global.plr.voltage - (int)global.voltage_threshold) * (global.plr.point_item_value / 25);
 	bonus->lives = global.plr.lives * global.plr.point_item_value * 5;
 
 	// TODO: maybe a difficulty multiplier?
 
-	bonus->total = bonus->base + bonus->voltage + bonus->lives + bonus->graze;
+	bonus->total = (
+		bonus->base +
+		bonus->voltage +
+		bonus->lives +
+		bonus->graze +
+		bonus->all_clear.base +
+		bonus->all_clear.diff_bonus +
+	0);
 	player_add_points(&global.plr, bonus->total, global.plr.pos);
 }
 
