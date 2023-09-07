@@ -156,19 +156,26 @@ static void credits_fill(void) {
 
 	credits_add((
 		"Free Software\n"
-		"Simple DirectMedia Layer\n"  "https://libsdl.org/\n\n"
+		"Basis Universal\n"           "https://github.com/BinomialLLC/basis_universal\n\n"
+		"Blender\n"                   "https://www.blender.org/\n\n"
+		"cglm\n"                      "https://github.com/recp/cglm\n\n"
+		"FreeType\n"                  "https://freetype.org/\n\n"
+		"Inkscape\n"                  "https://inkscape.org/\n"
+		"Krita\n"                     "https://krita.org/\n\n"
 		"libpng\n"                    "http://libpng.org/\n\n"
 		"libwebp\n"                   "https://git.io/WebP\n\n"
-		"FreeType\n"                  "https://freetype.org/\n\n"
-		"Ogg Opus\n"                  "https://www.opus-codec.org/"
 	), ENTRY_TIME);
 
 	credits_add((
 		"\n"
-		"zlib\n"                      "https://zlib.net/\n\n"
 		"libzip\n"                    "https://libzip.org/\n\n"
 		"Meson build system\n"        "https://mesonbuild.com/\n\n"
-		"Krita\n"                     "https://krita.org/\n\n"
+		"Ogg Opus\n"                  "https://www.opus-codec.org/\n\n"
+		"SPIRV-Cross\n"               "https://github.com/KhronosGroup/SPIRV-Cross\n\n"
+		"shaderc\n"                   "https://github.com/google/shaderc\n\n"
+		"Simple DirectMedia Layer\n"  "https://libsdl.org/\n\n"
+		"zlib\n"                      "https://zlib.net/\n\n"
+		"Zstandard\n"                 "https://facebook.github.io/zstd/\n\n"
 		"and many other projects"
 	), ENTRY_TIME);
 
