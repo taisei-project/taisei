@@ -25,6 +25,7 @@ struct {
 	char **demo_files;
 	size_t num_demo_files;
 	int suspend_level;
+	bool initialized;
 } dplr;
 
 static bool demo_path_filter(const char *path) {
@@ -49,6 +50,10 @@ static inline int get_inter_wait_time(void) {
 }
 
 void demoplayer_init(void) {
+	if(dplr.initialized) {
+		return;
+	}
+
 	dplr.demo_files = vfs_dir_list_sorted(
 		DEMOPLAYER_DIR_PATH, &dplr.num_demo_files, vfs_dir_list_order_ascending, demo_path_filter
 	);
@@ -59,10 +64,16 @@ void demoplayer_init(void) {
 
 	dplr.next_demo_countdown = get_initial_wait_time();
 	dplr.suspend_level = 1;
+	dplr.initialized = true;
+
 	demoplayer_resume();
 }
 
 void demoplayer_shutdown(void) {
+	if(!dplr.initialized) {
+		return;
+	}
+
 	if(dplr.suspend_level == 0) {
 		demoplayer_suspend();
 	}
@@ -70,6 +81,7 @@ void demoplayer_shutdown(void) {
 	vfs_dir_list_free(dplr.demo_files, dplr.num_demo_files);
 	dplr.demo_files = NULL;
 	dplr.num_demo_files = 0;
+	dplr.initialized = false;
 }
 
 typedef struct DemoPlayerContext {
@@ -158,6 +170,11 @@ reset:
 }
 
 void demoplayer_suspend(void) {
+	if(!dplr.initialized) {
+		log_debug("Not initialized");
+		return;
+	}
+
 	dplr.suspend_level++;
 	assert(dplr.suspend_level > 0);
 	log_debug("Suspend level is now %i", dplr.suspend_level);
@@ -173,6 +190,11 @@ void demoplayer_suspend(void) {
 }
 
 void demoplayer_resume(void) {
+	if(!dplr.initialized) {
+		log_debug("Not initialized");
+		return;
+	}
+
 	dplr.suspend_level--;
 	assert(dplr.suspend_level >= 0);
 	log_debug("Suspend level is now %i", dplr.suspend_level);
