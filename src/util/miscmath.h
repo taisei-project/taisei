@@ -14,6 +14,9 @@
 #define GOLDEN_RATIO 1.618033988749895
 #define M_TAU (M_PI * 2)
 
+#define re(z) (__real__ (z))
+#define im(z) (__imag__ (z))
+
 double lerp(double v0, double v1, double f) attr_const;
 float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
