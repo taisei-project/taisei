@@ -278,14 +278,6 @@ double triangle(double x) {
 	return 2 * fabs(sawtooth(x)) - 1;
 }
 
-double logistic(double x) {
-	return 1.0 / (1.0 + exp(-x));
-}
-
-float flogistic(float x) {
-	return 1.0f / (1.0f + expf(-x));
-}
-
 uint32_t topow2_u32(uint32_t x) {
 	x -= 1;
 	x |= (x >> 1);
@@ -307,13 +299,6 @@ uint64_t topow2_u64(uint64_t x) {
 	return x + 1;
 }
 
-float ftopow2(float x) {
-	// NOTE: obviously this isn't the smallest possible power of two, but for our purposes, it could as well be.
-	float y = 0.0625;
-	while(y < x) y *= 2;
-	return y;
-}
-
 float smooth(float x) {
 	return 1.0 - (0.5 * cos(M_PI * x) + 0.5);
 }
@@ -328,31 +313,6 @@ cmplx circle_dir(double index, double max_elements) {
 
 cmplx circle_dir_ofs(double index, double max_elements, double ofs) {
 	return cdir(circle_angle(index, max_elements) + ofs);
-}
-
-float normpdf(float x, float sigma) {
-    return 0.39894 * exp(-0.5 * pow(x, 2) / pow(sigma, 2)) / sigma;
-}
-
-void gaussian_kernel_1d(size_t size, float sigma, float kernel[size]) {
-	assert(size & 1);
-
-	double sum = 0.0;
-	size_t halfsize = size / 2;
-
-	kernel[halfsize] = normpdf(0, sigma);
-	sum += kernel[halfsize];
-
-	for(size_t i = 1; i <= halfsize; ++i) {
-		float k = normpdf(i, sigma);
-		kernel[halfsize + i] = kernel[halfsize - i] = k;
-		sum += k * 2;
-
-	}
-
-	for(size_t i = 0; i < size; ++i) {
-		kernel[i] /= sum;
-	}
 }
 
 static const uint64_t upow10_table[] = {
