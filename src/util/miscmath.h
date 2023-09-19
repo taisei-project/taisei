@@ -17,6 +17,18 @@
 #define re(z) (__real__ (z))
 #define im(z) (__imag__ (z))
 
+#define min(a, b) ({ \
+	typeof((a)+(b)) _temp_a = (a); \
+	typeof((a)+(b)) _temp_b = (b); \
+	_temp_a > _temp_b ? _temp_b : _temp_a; \
+})
+
+#define max(a, b) ({ \
+	typeof((a)+(b)) _temp_a = (a); \
+	typeof((a)+(b)) _temp_b = (b); \
+	_temp_a > _temp_b ? _temp_a : _temp_b; \
+})
+
 double lerp(double v0, double v1, double f) attr_const;
 float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
