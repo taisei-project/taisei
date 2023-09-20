@@ -93,20 +93,20 @@ static void draw_masterspark_ring(int t, float width) {
 
 static void draw_masterspark_beam(cmplx origin, cmplx size, float angle, int t, float alpha) {
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(origin), cimag(origin), 0);
+	r_mat_mv_translate(re(origin), im(origin), 0);
 	r_mat_mv_rotate(angle, 0, 0, 1);
 
 	r_shader("masterspark");
 	r_uniform_float("t", t);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(0, cimag(size) * -0.5, 0);
-	r_mat_mv_scale(alpha * creal(size), cimag(size), 1);
+	r_mat_mv_translate(0, im(size) * -0.5, 0);
+	r_mat_mv_scale(alpha * re(size), im(size), 1);
 	r_draw_quad();
 	r_mat_mv_pop();
 
 	for(int i = 0; i < 4; i++) {
-		draw_masterspark_ring(t % 20 + 10 * i, alpha * creal(size));
+		draw_masterspark_ring(t % 20 + 10 * i, alpha * re(size));
 	}
 
 	r_mat_mv_pop();

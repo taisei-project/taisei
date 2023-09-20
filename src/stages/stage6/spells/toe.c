@@ -98,19 +98,19 @@ static cmplx wrap_around(cmplx *pos) {
 	// perfectly with this simplified version.
 
 	cmplx dir = 0;
-	if(creal(*pos) < -10) {
+	if(re(*pos) < -10) {
 		*pos += VIEWPORT_W;
 		dir += -1;
 	}
-	if(creal(*pos) > VIEWPORT_W+10) {
+	if(re(*pos) > VIEWPORT_W+10) {
 		*pos -= VIEWPORT_W;
 		dir += 1;
 	}
-	if(cimag(*pos) < -10) {
+	if(im(*pos) < -10) {
 		*pos += I*VIEWPORT_H;
 		dir += -I;
 	}
-	if(cimag(*pos) > VIEWPORT_H+10) {
+	if(im(*pos) > VIEWPORT_H+10) {
 		*pos -= I*VIEWPORT_H;
 		dir += I;
 	}
@@ -245,10 +245,10 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 		cmplx dir = wrap_around(&pos_lookahead);
 
 		if(dir != 0 && t % 3 == 0 && warps_left > 0) {
-			cmplx pos0 = pos_lookahead - VIEWPORT_W / 2.0 * (1 - creal(dir)) - I * VIEWPORT_H / 2 * (1 - cimag(dir));
+			cmplx pos0 = pos_lookahead - VIEWPORT_W / 2.0 * (1 - re(dir)) - I * VIEWPORT_H / 2 * (1 - im(dir));
 
 			// Re [a b^*] behaves like the 2D vector scalar product
-			float overshoot_time = creal(pos0 * conj(dir)) / creal(ARGS.vel * conj(dir));
+			float overshoot_time = re(pos0 * conj(dir)) / re(ARGS.vel * conj(dir));
 			pos_lookahead -= ARGS.vel * overshoot_time;
 
 			Color *clr = boson_color(&(Color){0}, ARGS.trail_idx, ARGS.num_warps - warps_left + 1);
@@ -272,7 +272,7 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 }
 
 static cmplx toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type
-	int type = creal(l->args[1]+0.5);
+	int type = re(l->args[1]+0.5);
 
 	if(t == EVENT_BIRTH) {
 		switch(type) {
@@ -355,7 +355,7 @@ TASK(toe_laser_respawn, { cmplx pos; cmplx vel; int type; }) {
 		{0, 3, 3, 1}
 	};
 
-	if(creal(ARGS.pos) < 0 || cimag(ARGS.pos) < 0 || creal(ARGS.pos) > VIEWPORT_W || cimag(ARGS.pos) > VIEWPORT_H)
+	if(re(ARGS.pos) < 0 || im(ARGS.pos) < 0 || re(ARGS.pos) > VIEWPORT_W || im(ARGS.pos) > VIEWPORT_H)
 		return;
 
 	int newtype, newtype2;
@@ -622,7 +622,7 @@ TASK(toe_part_bosons, { BoxedBoss boss; }) {
 				pnum = (count - pnum - 1);
 
 				cmplx dir = I*cdir(M_TAU / count * (pnum + 0.5));
-				dir *= cdir(0.15 * sign(creal(dir)) * sin(cycle));
+				dir *= cdir(0.15 * sign(re(dir)) * sin(cycle));
 
 				cmplx wait_pos = boss->pos + 18 * dir * i;
 

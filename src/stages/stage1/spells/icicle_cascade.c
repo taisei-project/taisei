@@ -28,7 +28,7 @@ TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 
 	WAIT(80);
 
-	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (creal(v) > 0));
+	v = 2.5 * cdir(carg(v) - M_PI/2.0 + M_PI * (re(v) > 0));
 	p->move = move_asymptotic_simple(v, 2);
 	p->angle = carg(p->move.velocity);
 	p->color = *RGB(0.5, 0.5, 0.5);

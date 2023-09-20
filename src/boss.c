@@ -356,7 +356,7 @@ static void update_hud(Boss *boss) {
 		target_spell_opacity = 0.0;
 	}
 
-	if(cimag(global.plr.pos) < 128) {
+	if(im(global.plr.pos) < 128) {
 		target_plrproximity_opacity = 0.25;
 	}
 
@@ -377,7 +377,7 @@ static void draw_radial_healthbar(Boss *boss) {
 
 	r_state_push();
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_mv_translate(re(boss->pos), im(boss->pos), 0);
 	r_mat_mv_scale(220, 220, 0);
 	r_shader("healthbar_radial");
 	r_uniform_vec4_rgba("borderColor",   RGBA(0.75, 0.75, 0.75, 0.75));
@@ -428,7 +428,7 @@ static void draw_spell_warning(Font *font, float y_pos, float f, float opacity) 
 	opacity *= 1 - 2 * fabs(f - 0.5);
 	cmplx pos = (VIEWPORT_W + msg_width) * f - msg_width * 0.5 + I * y_pos;
 
-	draw_boss_text(ALIGN_CENTER, creal(pos), cimag(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
+	draw_boss_text(ALIGN_CENTER, re(pos), im(pos), msg, font, color_mul_scalar(RGBA(1, flash, flash, 1), opacity));
 }
 
 static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
@@ -459,7 +459,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	float warn_progress = clamp((time + delay) / 120.0, 0, 1);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(x), cimag(x),0);
+	r_mat_mv_translate(re(x), im(x),0);
 	float scale = f+1.*(1-f)*(1-f)*(1-f);
 	r_mat_mv_scale(scale,scale,1);
 	r_mat_mv_rotate(glm_ease_quad_out(f) * 2 * M_PI, 0.8, -0.2, 0);
@@ -481,7 +481,7 @@ static void draw_spell_name(Boss *b, int time, bool healthbar_radial) {
 	r_capability(RCAP_CULL_FACE, cullcap_saved);
 
 	if(warn_progress < 1) {
-		draw_spell_warning(font, cimag(x0) - font_get_lineskip(font), warn_progress, opacity);
+		draw_spell_warning(font, im(x0) - font_get_lineskip(font), warn_progress, opacity);
 	}
 
 	StageProgress *p = get_spellstage_progress(b->current, NULL, false);
@@ -612,7 +612,7 @@ static void boss_glow_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	color_mul_scalar(&c, 1.5 - s);
 
 	r_draw_sprite(&(SpriteParams) {
-		.pos = { creal(p->pos), cimag(p->pos) },
+		.pos = { re(p->pos), im(p->pos) },
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
 		.color = &c,
@@ -679,7 +679,7 @@ DEFINE_TASK(boss_particles) {
 
 void draw_boss_background(Boss *boss) {
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(boss->pos), cimag(boss->pos), 0);
+	r_mat_mv_translate(re(boss->pos), im(boss->pos), 0);
 	r_mat_mv_rotate(global.frames * 4.0 * DEG2RAD, 0, 0, -1);
 
 	float f = 0.8+0.1*sin(global.frames/8.0);
@@ -1298,8 +1298,8 @@ static void boss_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleArg
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
-	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
-	r_uniform_vec2("clear_origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
+	r_uniform_vec2("origin", re(p->pos), VIEWPORT_H - im(p->pos));
+	r_uniform_vec2("clear_origin", re(p->pos), VIEWPORT_H - im(p->pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);

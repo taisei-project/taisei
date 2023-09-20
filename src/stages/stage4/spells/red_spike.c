@@ -28,7 +28,7 @@ TASK(kurumi_redspike_slave, { cmplx pos; int direction; }) {
 	int step = difficulty_value(16, 14, 12, 10);
 
 	for(int i = 0; i < lifetime/step; i++, WAIT(step)) {
-		float r = cimag(pos)/VIEWPORT_H;
+		float r = im(pos)/VIEWPORT_H;
 
 		for(int d = 1; d >= -1; d -= 2) {
 			PROJECTILE(

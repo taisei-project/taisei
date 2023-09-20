@@ -399,13 +399,13 @@ static void stage_draw_collision_areas(void) {
 	for(Projectile *p = global.projs.first; p; p = p->next) {
 		cmplx gsize = projectile_graze_size(p);
 
-		if(creal(gsize)) {
+		if(re(gsize)) {
 			r_draw_sprite(&(SpriteParams) {
 				.color = RGB(0, 0.5, 0.5),
 				.sprite_ptr = &stagedraw.dummy,
-				.pos = { creal(p->pos), cimag(p->pos) },
+				.pos = { re(p->pos), im(p->pos) },
 				.rotation.angle = p->angle + M_PI/2,
-				.scale = { .x = creal(gsize), .y = cimag(gsize) },
+				.scale = { .x = re(gsize), .y = im(gsize) },
 				.blend = BLEND_SUB,
 			});
 		}
@@ -418,9 +418,9 @@ static void stage_draw_collision_areas(void) {
 	for(Projectile *p = global.projs.first; p; p = p->next) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
-			.pos = { creal(p->pos), cimag(p->pos) },
+			.pos = { re(p->pos), im(p->pos) },
 			.rotation.angle = p->angle + M_PI/2,
-			.scale = { .x = creal(p->collision_size), .y = cimag(p->collision_size) },
+			.scale = { .x = re(p->collision_size), .y = im(p->collision_size) },
 			.blend = BLEND_ALPHA,
 		});
 	}
@@ -431,7 +431,7 @@ static void stage_draw_collision_areas(void) {
 		if(hurt_radius > 0) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = &stagedraw.dummy,
-				.pos = { creal(e->pos), cimag(e->pos) },
+				.pos = { re(e->pos), im(e->pos) },
 				.scale = { .x = hurt_radius * 2, .y = hurt_radius * 2 },
 				.blend = BLEND_ALPHA,
 			});
@@ -441,7 +441,7 @@ static void stage_draw_collision_areas(void) {
 	if(global.boss && boss_is_player_collision_active(global.boss)) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = &stagedraw.dummy,
-			.pos = { creal(global.boss->pos), cimag(global.boss->pos) },
+			.pos = { re(global.boss->pos), im(global.boss->pos) },
 			.scale = { .x = BOSS_HURT_RADIUS * 2, .y = BOSS_HURT_RADIUS * 2 },
 			.blend = BLEND_ALPHA,
 		});
@@ -449,7 +449,7 @@ static void stage_draw_collision_areas(void) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = &stagedraw.dummy,
-		.pos = { creal(global.plr.pos), cimag(global.plr.pos) },
+		.pos = { re(global.plr.pos), im(global.plr.pos) },
 		.scale.both = 2, // NOTE: actual player is a singular point
 	});
 
@@ -503,7 +503,7 @@ static void draw_wall_of_text(float f, const char *txt) {
 	r_uniform_float("w", spr.tex_area.w);
 	r_uniform_float("h", spr.tex_area.h);
 	r_uniform_float("ratio", h/w);
-	r_uniform_vec2("origin", creal(global.boss->pos)/h, cimag(global.boss->pos)/w); // what the fuck?
+	r_uniform_vec2("origin", re(global.boss->pos)/h, im(global.boss->pos)/w); // what the fuck?
 	r_uniform_float("t", f);
 	r_uniform_sampler("tex", spr.tex);
 	r_draw_quad();
@@ -532,7 +532,7 @@ static void draw_spellbg(int t) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite = "boss_spellcircle0",
 		.shader = "sprite_default",
-		.pos = { creal(b->pos), cimag(b->pos) },
+		.pos = { re(b->pos), im(b->pos) },
 		.rotation.angle = global.frames * 7.0 * DEG2RAD,
 		.rotation.vector = { 0, 0, -1 },
 		.scale.both = scale,
@@ -669,8 +669,8 @@ static bool boss_distortion_rule(Framebuffer *fb) {
 	cmplx pos = fpos;
 
 	r_shader("boss_zoom");
-	r_uniform_vec2("blur_orig", creal(pos)  / VIEWPORT_W,  1-cimag(pos)  / VIEWPORT_H);
-	r_uniform_vec2("fix_orig",  creal(fpos) / VIEWPORT_W,  1-cimag(fpos) / VIEWPORT_H);
+	r_uniform_vec2("blur_orig", re(pos)  / VIEWPORT_W,  1-im(pos)  / VIEWPORT_H);
+	r_uniform_vec2("fix_orig",  re(fpos) / VIEWPORT_W,  1-im(fpos) / VIEWPORT_H);
 	r_uniform_float("blur_rad", 1.5*(0.2+0.025*sin(global.frames/15.0)));
 	r_uniform_float("rad", 0.24);
 	r_uniform_float("ratio", (float)VIEWPORT_H/VIEWPORT_W);
@@ -765,7 +765,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 			if(trans_intro) {
 				r_shader("spellcard_intro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
 				r_uniform_float("t", SPELL_INTRO_TIME_FACTOR * (t + delay) / (float)SPELL_INTRO_DURATION);
 			} else {
 				int tn = global.frames - b->current->endtime;
@@ -773,7 +773,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
-				r_uniform_vec2("origin", creal(pos) / VIEWPORT_W, 1 - cimag(pos) / VIEWPORT_H);
+				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
 				r_uniform_float("t", fmax(0, tn / (float)delay + 1));
 			}
 
@@ -885,7 +885,7 @@ void stage_draw_overlay(void) {
 static void postprocess_prepare(Framebuffer *fb, ShaderProgram *s, void *arg) {
 	r_uniform_int("frames", global.frames);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
-	r_uniform_vec2("player", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
+	r_uniform_vec2("player", re(global.plr.pos), VIEWPORT_H - im(global.plr.pos));
 }
 
 static inline void begin_viewport_shake(void) {
@@ -1811,7 +1811,7 @@ void stage_draw_hud(void) {
 		r_draw_sprite(&(SpriteParams) {
 			.sprite = "boss_indicator",
 			.shader = "sprite_default",
-			.pos = { VIEWPORT_X+creal(global.boss->pos), 590 },
+			.pos = { VIEWPORT_X+re(global.boss->pos), 590 },
 			.color = RGBA(1 - red, 1 - red, 1 - red, 1 - red),
 		});
 	}
@@ -1835,7 +1835,7 @@ void stage_draw_hud(void) {
 		};
 
 		r_mat_mv_push();
-		r_mat_mv_translate(crealf(pos), cimagf(pos), 0);
+		r_mat_mv_translate(re(pos), im(pos), 0);
 		r_mat_mv_scale(bg_width / bg->w, bg_height / bg->h, 1);
 
 		r_mat_mv_push();

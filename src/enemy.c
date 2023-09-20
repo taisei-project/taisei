@@ -41,8 +41,8 @@ static void fix_pos0_visual(Enemy *e) {
 		return;
 	}
 
-	double x = creal(e->pos0_visual);
-	double y = cimag(e->pos0_visual);
+	double x = re(e->pos0_visual);
+	double y = im(e->pos0_visual);
 	double ofs = 21;
 
 	if(x <= 0 && x > -ofs) {
@@ -82,8 +82,8 @@ static inline void enemy_update(Enemy *e, int t) {
 
 	// TODO: backport unified left/right move animations from the obsolete `newart` branch
 	cmplx v = move_update(&e->pos, &e->move);
-	e->moving = fabs(creal(v)) >= 1;
-	e->dir = creal(v) < 0;
+	e->moving = fabs(re(v)) >= 1;
+	e->dir = re(v) < 0;
 }
 
 Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual) {
@@ -244,10 +244,10 @@ bool enemy_in_viewport(Enemy *enemy) {
 	real s = base + enemy->max_viewport_dist;
 
 	return
-		creal(enemy->pos) >= -s &&
-		creal(enemy->pos) <= VIEWPORT_W + s &&
-		cimag(enemy->pos) >= -s &&
-		cimag(enemy->pos) <= VIEWPORT_H + s;
+		re(enemy->pos) >= -s &&
+		re(enemy->pos) <= VIEWPORT_W + s &&
+		im(enemy->pos) >= -s &&
+		im(enemy->pos) <= VIEWPORT_H + s;
 }
 
 void enemy_kill(Enemy *enemy) {

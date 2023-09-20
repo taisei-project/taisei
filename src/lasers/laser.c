@@ -256,10 +256,10 @@ static int quantize_laser(Laser *l) {
 
 		float w = calc_sample_width(l, i, half_samples, width_factor, tail);
 
-		float xa = crealf(a);
-		float ya = cimagf(a);
-		float xb = crealf(b);
-		float yb = cimagf(b);
+		float xa = re(a);
+		float ya = im(a);
+		float xb = re(b);
+		float yb = im(b);
 
 		bool visible =
 			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
@@ -673,10 +673,10 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 
 	cmplx line_vel = l->args[0];
 	cmplx line_dir = line_vel / cabs(line_vel);
-	cmplx line_normal = cimag(line_dir) - I*creal(line_dir);
+	cmplx line_normal = im(line_dir) - I*re(line_dir);
 	cmplx sine_amp = l->args[1];
-	real sine_freq = creal(l->args[2]);
-	real sine_phase = creal(l->args[3]);
+	real sine_freq = re(l->args[2]);
+	real sine_phase = re(l->args[3]);
 
 	cmplx sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
 	return l->pos + t * line_vel + sine_ofs;
@@ -689,9 +689,9 @@ cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine ampl
 	}
 
 	cmplx velocity = l->args[0];
-	real amplitude = creal(l->args[1]);
-	real frequency = creal(l->args[2]);
-	real phase = creal(l->args[3]);
+	real amplitude = re(l->args[1]);
+	real frequency = re(l->args[2]);
+	real phase = re(l->args[3]);
 
 	real angle = carg(velocity);
 	real speed = cabs(velocity);
@@ -707,8 +707,8 @@ cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn be
 
 	cmplx v0 = l->args[0];
 	cmplx v1 = l->args[1];
-	float begin = creal(l->args[2]);
-	float end = cimag(l->args[2]);
+	float begin = re(l->args[2]);
+	float end = im(l->args[2]);
 
 	float a = clamp((t - begin) / (end - begin), 0, 1);
 	a = 1.0 - (0.5 + 0.5 * cos(a * M_PI));
@@ -724,9 +724,9 @@ cmplx las_circle(Laser *l, float t) {
 		return 0;
 	}
 
-	real turn_speed = creal(l->args[0]);
-	real time_ofs = cimag(l->args[0]);
-	real radius = creal(l->args[1]);
+	real turn_speed = re(l->args[0]);
+	real time_ofs = im(l->args[0]);
+	real radius = re(l->args[1]);
 
 	return l->pos + radius * cdir(turn_speed * (t + time_ofs));
 }

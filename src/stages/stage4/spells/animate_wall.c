@@ -37,7 +37,7 @@ TASK(kurumi_aniwall_bullet, { cmplx pos; MoveParams move; }) {
 	));
 
 	for(;;) {
-		p->color.r = 0.3 + 0.7 * psin(4 * cimag(p->pos)/VIEWPORT_H + 0.03 * global.frames);
+		p->color.r = 0.3 + 0.7 * psin(4 * im(p->pos)/VIEWPORT_H + 0.03 * global.frames);
 		YIELD;
 	}
 }
@@ -55,7 +55,7 @@ TASK(kurumi_aniwall_slave_move, { Mover *m; cmplx direction; }) {
 
 	int order;
 	int next;
-	if(creal(ARGS.direction) > 0) {
+	if(re(ARGS.direction) > 0) {
 		next = 2;
 		order = 1;
 	} else {
@@ -83,14 +83,14 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 
 	create_lasercurve2c(ARGS.pos, 50, 80, RGBA(1.0, 0.4, 0.4, 0.0), las_accel, 0, m.move.acceleration);
 
-	real velocity_boost = creal(ARGS.direction) > 0 ? 1 : 0.7;
+	real velocity_boost = re(ARGS.direction) > 0 ? 1 : 0.7;
 
-	real target_edge = creal(ARGS.direction) > 0 ? VIEWPORT_W : 0;
-	int impact_time = sqrt(2 * fabs(creal(ARGS.pos - target_edge) / creal(m.move.acceleration)));
+	real target_edge = re(ARGS.direction) > 0 ? VIEWPORT_W : 0;
+	int impact_time = sqrt(2 * fabs(re(ARGS.pos - target_edge) / re(m.move.acceleration)));
 
 	WAIT(impact_time);
 
-	m.move = move_linear(10 * I * sign(cimag(ARGS.direction)));
+	m.move = move_linear(10 * I * sign(im(ARGS.direction)));
 
 	INVOKE_SUBTASK(kurumi_aniwall_slave_move, &m, ARGS.direction);
 
@@ -99,7 +99,7 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 	int step = difficulty_value(4, 3, 2, 2);
 	int max_gap = difficulty_value(4, 5, 6, 7);
 	for(int i = 0;; i++, WAIT(step)) {
-		cmplx vel = cdir(0.5*M_TAU/4 * sign(creal(ARGS.direction))) * cnormalize(m.move.velocity) * velocity_boost;
+		cmplx vel = cdir(0.5*M_TAU/4 * sign(re(ARGS.direction))) * cnormalize(m.move.velocity) * velocity_boost;
 		if(1) {
 			if(i < next_gap) {
 				play_sfx("shot1");

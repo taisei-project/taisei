@@ -89,7 +89,7 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 	real step = difficulty_value(7,9,7,5);
 	int step_count = VIEWPORT_H / step;
 
-	if(creal(direction) < 0) {
+	if(re(direction) < 0) {
 		return;
 	}
 

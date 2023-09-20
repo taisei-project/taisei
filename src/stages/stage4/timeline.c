@@ -60,7 +60,7 @@ TASK(splasher_fairy, { cmplx pos; int direction; }) {
 	for(int time = 0; time < duration; time += WAIT(interval)) {
 		RNG_ARRAY(rand, 4);
 		cmplx offset = 50 * vrng_real(rand[0]) * cdir(vrng_angle(rand[1]));
-		cmplx v = (0.5 + vrng_real(rand[2])) * cdir(-0.1 * time * creal(ARGS.direction))*I;
+		cmplx v = (0.5 + vrng_real(rand[2])) * cdir(-0.1 * time * re(ARGS.direction))*I;
 
 		int petals = 5;
 		if(rng_chance(0.5)) {
@@ -280,7 +280,7 @@ TASK(laser_fairy_explosion, { BoxedEnemy enemy; }) {
 	play_sfx("shot3");
 	for(int i = 0; i < count2; i++) {
 		cmplx dir = aim * cdir(M_TAU * i / count2);
-		real radius = 2.0 - 4*creal(cpow(dir, count));
+		real radius = 2.0 - 4*re(cpow(dir, count));
 		PROJECTILE(
 			.proto = pp_ball,
 			.pos = e->pos,
@@ -302,7 +302,7 @@ TASK(laser_fairy, { cmplx pos; MoveParams move; }) {
 	int interval = difficulty_value(3, 3, 2, 2);
 	for(int i = 0; i < count; i++) {
 		play_sfx("shot3");
-		cmplx dir = cdir((0.1 * i - (1-2*(i&1))*M_PI / 2.0) * sign(creal(ARGS.move.velocity)));
+		cmplx dir = cdir((0.1 * i - (1-2*(i&1))*M_PI / 2.0) * sign(re(ARGS.move.velocity)));
 		for(int j = 0; j < global.diff; j++) {
 			PROJECTILE(
 				.proto = pp_crystal,
@@ -716,7 +716,7 @@ TASK(scythe_post_mid, { int fleetime; }) {
 		);
 	}
 
-	s->move.attraction = creal(s->move.attraction);
+	s->move.attraction = re(s->move.attraction);
 	s->move.attraction_point = spawnpos;
 	s->spin *= -1;
 

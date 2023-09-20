@@ -16,7 +16,7 @@
 #define SLOTS 5
 
 static int slot_of_position(cmplx pos) {
-	return (int)(creal(pos) / (VIEWPORT_W / SLOTS) + 1) - 1;  // correct rounding for slot == -1
+	return (int)(re(pos) / (VIEWPORT_W / SLOTS) + 1) - 1;  // correct rounding for slot == -1
 }
 
 TASK(bad_pick_bullet, { cmplx pos; cmplx vel; cmplx accel; int target_slot; }) {
@@ -32,7 +32,7 @@ TASK(bad_pick_bullet, { cmplx pos; cmplx vel; cmplx accel; int target_slot; }) {
 		int slot = slot_of_position(p->pos);
 
 		if(slot != ARGS.target_slot) {
-			p->move.velocity = copysign(creal(p->move.velocity), ARGS.target_slot - slot) + I*cimag(p->move.velocity);
+			p->move.velocity = copysign(re(p->move.velocity), ARGS.target_slot - slot) + I*im(p->move.velocity);
 		}
 	}
 }

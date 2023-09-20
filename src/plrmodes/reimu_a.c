@@ -600,7 +600,7 @@ TASK(reimu_spirit_slave_needle, {
 	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
-		move.attraction = approach(creal(move.attraction), target_speed, target_speed / 12.0);
+		move.attraction = approach(re(move.attraction), target_speed, target_speed / 12.0);
 		move.attraction_point = plr->pos + offset;
 		offset *= rot;
 		move_update(&slave->pos, &move);
@@ -669,7 +669,7 @@ TASK(reimu_spirit_slave_homing, {
 	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
-		move.attraction = approach(creal(move.attraction), target_speed, target_speed / 12.0);
+		move.attraction = approach(re(move.attraction), target_speed, target_speed / 12.0);
 		move.attraction_point = plr->pos + offset;
 		move_update(&slave->pos, &move);
 		YIELD;

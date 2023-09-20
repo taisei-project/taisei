@@ -177,12 +177,12 @@ static void draw_laser_beam(cmplx src, cmplx dst, real size, real step, real t, 
 
 	r_mat_mv_push();
 
-	r_mat_mv_translate(creal(center), cimag(center), 0);
+	r_mat_mv_translate(re(center), im(center), 0);
 	r_mat_mv_rotate(carg(dir), 0, 0, 1);
 	r_mat_mv_scale(cabs(dir), size, 1);
 
 	r_mat_tex_push_identity();
-	r_mat_tex_translate(-cimag(src) / step + t, 0, 0);
+	r_mat_tex_translate(-im(src) / step + t, 0, 0);
 	r_mat_tex_scale(cabs(dir) / step, 1, 1);
 
 	r_uniform_sampler("tex", tex);
@@ -442,7 +442,7 @@ TASK(marisa_laser_slave, {
 		capproach_asymptotic_p(&offset, offsets[focused], formation_switch_rate, epsilon);
 
 		capproach_asymptotic_p(&slave->pos, plr->pos + offset, follow_rate, epsilon);
-		approach_asymptotic_p(&slave->lean, -lean_strength * creal(slave->pos - prev_pos), lean_rate, epsilon);
+		approach_asymptotic_p(&slave->lean, -lean_strength * re(slave->pos - prev_pos), lean_rate, epsilon);
 		prev_pos = slave->pos;
 
 		if(player_should_shoot(plr)) {
@@ -566,7 +566,7 @@ TASK(marisa_laser_bomb_masterspark, { MarisaAController *ctrl; }) {
 	do {
 		real bomb_progress = player_get_bomb_progress(plr);
 		ms->alpha = marisa_laser_masterspark_width(bomb_progress);
-		ms->dir *= cdir(0.005 * (creal(plr->velocity) + 2 * rng_sreal()));
+		ms->dir *= cdir(0.005 * (re(plr->velocity) + 2 * rng_sreal()));
 		ms->pos = plr->pos - 30 * I;
 
 		marisa_laser_masterspark_damage(ms);

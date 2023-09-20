@@ -117,7 +117,7 @@ DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 		for(int i = 0; i < count; i++) {
 			cmplx vel = 3 * rng_dir();
 
-			Laser *l = create_lasercurve2c(pos, laser_lifetime, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, vel, 0.02 * rng_real() * sign(creal(vel)));
+			Laser *l = create_lasercurve2c(pos, laser_lifetime, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, vel, 0.02 * rng_real() * sign(re(vel)));
 			l->width = 15;
 
 			real speed1 = rng_range(1, 3.5);

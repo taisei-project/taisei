@@ -232,7 +232,7 @@ static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real s
 		cmplx center = gap->pos - gap->orientation * (len * 0.5 - GAP_WIDTH * 0.6);
 
 		r_mat_mv_push();
-		r_mat_mv_translate(creal(center), cimag(center), 0);
+		r_mat_mv_translate(re(center), im(center), 0);
 		r_mat_mv_rotate(carg(gap->orientation) + M_PI, 0, 0, 1);
 		r_mat_mv_scale(len, GAP_LENGTH, 1);
 		r_draw_quad();
@@ -249,8 +249,8 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
 		ReimuBGap *gap = ctrl->gaps.array + i;
-		gaps[i][0] = creal(gap->pos);
-		gaps[i][1] = cimag(gap->pos);
+		gaps[i][0] = re(gap->pos);
+		gaps[i][1] = im(gap->pos);
 		angles[i] = -carg(gap->orientation);
 		links[i] = gap->link - ctrl->gaps.array;
 	}
@@ -336,7 +336,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 		return;
 	}
 
-	real p_long_side = fmax(creal(p->size), cimag(p->size));
+	real p_long_side = fmax(re(p->size), im(p->size));
 	cmplx half = 0.25 * (1 + I);
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
@@ -352,17 +352,17 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 		cmplx gap_size = (GAP_LENGTH + I * GAP_WIDTH) * gap->parallel_axis;
 		cmplx p0 = gap->pos - gap_size * 0.5;
 		cmplx p1 = gap->pos + gap_size * 0.5;
-		gap_bbox.top_left = fmin(creal(p0), creal(p1)) + I * fmin(cimag(p0), cimag(p1));
-		gap_bbox.bottom_right = fmax(creal(p0), creal(p1)) + I * fmax(cimag(p0), cimag(p1));
+		gap_bbox.top_left = fmin(re(p0), re(p1)) + I * fmin(im(p0), im(p1));
+		gap_bbox.bottom_right = fmax(re(p0), re(p1)) + I * fmax(im(p0), im(p1));
 
 		if(rect_rect_intersection(p_bbox, gap_bbox, true, false, &overlap)) {
 			cmplx o = (overlap.top_left + overlap.bottom_right) / 2;
 			real fract;
 
-			if(creal(gap_size) > cimag(gap_size)) {
-				fract = 1 - creal(o - gap_bbox.top_left) / creal(gap_size);
+			if(re(gap_size) > im(gap_size)) {
+				fract = 1 - re(o - gap_bbox.top_left) / re(gap_size);
 			} else {
-				fract = 1 - cimag(o - gap_bbox.top_left) / cimag(gap_size);
+				fract = 1 - im(o - gap_bbox.top_left) / im(gap_size);
 			}
 
 			ReimuBGap *ngap = gap->link;
@@ -513,9 +513,9 @@ static cmplx reimu_dream_gaps_reference_pos(ReimuBController *ctrl, cmplx vp) {
 	cmplx rp = ctrl->plr->pos;
 
 	if(!(ctrl->plr->inputflags & INFLAG_FOCUS)) {
-		rp = CMPLX(creal(rp), cimag(vp) - cimag(rp));
+		rp = CMPLX(re(rp), im(vp) - im(rp));
 	} else {
-		// rp = CMPLX(creal(vp) - creal(rp), cimag(rp));
+		// rp = CMPLX(re(vp) - re(rp), im(rp));
 	}
 
 	return rp;

@@ -145,13 +145,13 @@ TASK(marisa_star_slave_projectile, {
 
 		cmplx center = clerp(plr->pos, ctrl->slave_ref_pos, tanh(t / 10.0));
 
-		real brightener = -1 / (1 + sqrt(0.03 * fabs(creal(p->pos - center))));
+		real brightener = -1 / (1 + sqrt(0.03 * fabs(re(p->pos - center))));
 		marisa_star_slave_projectile_color(&p->color, focus, brightener);
 
 		real verticalfac = - 5 * t * (1 + 0.01 * t) + 10 * t / (0.01 * t + 1);
 
 		prev_pos = p->pos;
-		next_pos = center + focusfac * cbrt(0.1 * t) * creal(vel) * 70 * sin(freq * t + cimag(vel)) + verticalfac*I;
+		next_pos = center + focusfac * cbrt(0.1 * t) * re(vel) * 70 * sin(freq * t + im(vel)) + verticalfac*I;
 		p->move.velocity = next_pos - prev_pos;
 
 		if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again

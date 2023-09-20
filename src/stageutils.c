@@ -89,7 +89,7 @@ void stage3d_apply_inverse_transforms(Stage3D *s, mat4 mat) {
 //
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) {
 	vec4 viewport = {0, VIEWPORT_H, VIEWPORT_W, -VIEWPORT_H};
-	vec3 p = {creal(pos), cimag(pos),1};
+	vec3 p = {re(pos), im(pos),1};
 
 	mat4 mpersp;
 	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);

@@ -265,7 +265,7 @@ static void ent_draw_player(EntityInterface *ent) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
-			.pos = { creal(plr->pos), cimag(plr->pos) },
+			.pos = { re(plr->pos), im(plr->pos) },
 		});
 	}
 
@@ -327,7 +327,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 	if(ps_opacity > 0) {
 		r_state_push();
 		r_mat_mv_push();
-		r_mat_mv_translate(crealf(pos), cimagf(pos), 0);
+		r_mat_mv_translate(re(pos), im(pos), 0);
 		r_mat_mv_scale(140, 140, 0);
 		r_shader("healthbar_radial");
 		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
@@ -345,8 +345,8 @@ static void player_draw_indicators(EntityInterface *ent) {
 		format_huge_num(0, plr->powersurge.bonus.baseline, sizeof(buf), buf);
 		Font *fnt = res_font("monotiny");
 
-		float x = crealf(pos);
-		float y = cimagf(pos) + 80;
+		float x = re(pos);
+		float y = im(pos) + 80;
 
 		float text_opacity = ps_opacity * 0.75;
 
@@ -457,7 +457,7 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
-		.pos = { creal(p->pos), cimag(p->pos) },
+		.pos = { re(p->pos), im(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
 		.shader_ptr = p->shader,
@@ -762,7 +762,7 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 
 	r_framebuffer(fb_aux);
 	r_shader("circle_distort");
-	r_uniform_vec3("distortOriginRadius", creal(p->pos), VIEWPORT_H - cimag(p->pos), radius);
+	r_uniform_vec3("distortOriginRadius", re(p->pos), VIEWPORT_H - im(p->pos), radius);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_blend(BLEND_NONE);
 	draw_framebuffer_tex(fb_main, VIEWPORT_W, VIEWPORT_H);
@@ -901,8 +901,8 @@ static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleA
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
-	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
-	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
+	r_uniform_vec2("origin", re(p->pos), VIEWPORT_H - im(p->pos));
+	r_uniform_vec2("clear_origin", re(global.plr.pos), VIEWPORT_H - im(global.plr.pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
@@ -1249,8 +1249,8 @@ static bool player_applymovement_gamepad(Player *plr) {
 		direction /= cabs(direction);
 	}
 
-	int sr = sign(creal(direction));
-	int si = sign(cimag(direction));
+	int sr = sign(re(direction));
+	int si = sign(im(direction));
 
 	player_updateinputflags_moveonly(plr,
 		(INFLAG_UP    * (si == -1)) |
@@ -1645,7 +1645,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		}
 	}
 
-	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
+	if(!isnan(re(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
 		double rate = NOT_NULL(target)->type == ENT_TYPE_ID(Boss) ? 110 : 256;
 		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate));
 	}
@@ -1654,7 +1654,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		plr->powersurge.damage_done += damage->amount;
 		plr->powersurge.damage_accum += damage->amount;
 
-		if(!isnan(creal(pos))) {
+		if(!isnan(re(pos))) {
 			double rate = 500;
 
 			while(plr->powersurge.damage_accum > rate) {

@@ -15,8 +15,8 @@ static cmplx bolts2_laser(Laser *l, float t) {
 		return 0;
 	}
 
-	double diff = creal(l->args[2]);
-	return creal(l->args[0]) + I * cimag(l->pos) + sign(cimag(l->args[0] - l->pos)) * 0.06 * I * t * t + (20 + 4 * diff) * sin(t * 0.025 * diff + creal(l->args[0])) * l->args[1];
+	double diff = re(l->args[2]);
+	return re(l->args[0]) + I * im(l->pos) + sign(im(l->args[0] - l->pos)) * 0.06 * I * t * t + (20 + 4 * diff) * sin(t * 0.025 * diff + re(l->args[0])) * l->args[1];
 }
 
 TASK(laser_drop, { BoxedBoss boss; }) {
@@ -24,7 +24,7 @@ TASK(laser_drop, { BoxedBoss boss; }) {
 	for(int x = 0;; x++, WAIT(60)) {
 		aniplayer_queue(&boss->ani, (x&1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
-		create_lasercurve3c(creal(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0), bolts2_laser, global.plr.pos, (x&1) * 2 - 1, global.diff);
+		create_lasercurve3c(re(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0), bolts2_laser, global.plr.pos, (x&1) * 2 - 1, global.diff);
 		play_sfx_ex("laser1", 0, false);
 	}
 }

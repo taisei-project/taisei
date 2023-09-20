@@ -36,7 +36,7 @@ DEFINE_EXTERN_TASK(stage6_boss_nonspell_scythe_common) {
 			PROJECTILE(
 				.proto = pp_ball,
 				.pos = scythe->pos + 60 * dir * cdir(1.2),
-				.color = RGB(creal(color_dir), cimag(color_dir), creal(color_dir * cdir(2.1))),
+				.color = RGB(re(color_dir), im(color_dir), re(color_dir * cdir(2.1))),
 				.move = move_accelerated(0, 0.01 *vel * dir),
 			);
 		}

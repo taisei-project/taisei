@@ -328,7 +328,7 @@ DEFINE_EXTERN_TASK(kurumi_vladsarmy) {
 			cmplx pos = vrng_real(rand[0]) * VIEWPORT_W / 2 + I * vrng_real(rand[1]) * VIEWPORT_H * 0.67;
 
 			if(direction)
-				pos = VIEWPORT_W-creal(pos)+I*cimag(pos);
+				pos = VIEWPORT_W-re(pos)+I*im(pos);
 
 			INVOKE_SUBTASK(kurumi_vladsarmy_fairy,
 				.start_pos = b->pos - 300 * (1 - 2 * direction),

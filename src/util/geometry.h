@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "miscmath.h"
+
 typedef union FloatOffset {
 	struct { float x, y; };
 	cmplxf as_cmplx;
@@ -101,42 +103,42 @@ double ucapsule_dist_from_point(cmplx p, UnevenCapsule ucap) attr_const;
 
 INLINE attr_const
 double rect_x(Rect r) {
-	return creal(r.top_left);
+	return re(r.top_left);
 }
 
 INLINE attr_const
 double rect_y(Rect r) {
-	return cimag(r.top_left);
+	return im(r.top_left);
 }
 
 INLINE attr_const
 double rect_width(Rect r) {
-	return creal(r.bottom_right) - creal(r.top_left);
+	return re(r.bottom_right) - re(r.top_left);
 }
 
 INLINE attr_const
 double rect_height(Rect r) {
-	return cimag(r.bottom_right) - cimag(r.top_left);
+	return im(r.bottom_right) - im(r.top_left);
 }
 
 INLINE attr_const
 double rect_top(Rect r) {
-	return cimag(r.top_left);
+	return im(r.top_left);
 }
 
 INLINE attr_const
 double rect_bottom(Rect r) {
-	return cimag(r.bottom_right);
+	return im(r.bottom_right);
 }
 
 INLINE attr_const
 double rect_left(Rect r) {
-	return creal(r.top_left);
+	return re(r.top_left);
 }
 
 INLINE attr_const
 double rect_right(Rect r) {
-	return creal(r.bottom_right);
+	return re(r.bottom_right);
 }
 
 INLINE attr_const

@@ -69,8 +69,8 @@ TASK(forgotten_bullet, { cmplx pos; cmplx *diff; }) {
 		cmplx v = (*ARGS.diff)*0.00005;
 		cmplx x = p->pos - global.plr.pos;
 
-		real f1 = 1 + 2 * creal(v*conj(x)) + cabs2(x);
-		real f2 = 1 - creal(v*v);
+		real f1 = 1 + 2 * re(v*conj(x)) + cabs2(x);
+		real f2 = 1 - re(v*v);
 		real f3 = f1 - f2 * cabs2(x);
 		p->pos = global.plr.pos + (f1 * v + f2 * x) / f3 + vel0 / (1 + 2 * cabs2(x) / VIEWPORT_W / VIEWPORT_W);
 

@@ -175,7 +175,7 @@ static void sun_move(Projectile *p) {
 		.pos = p->pos,
 		.sprite_ptr = halo,
 		.color = color_add(COLOR_COPY(&p->color), RGBA(0, 0, 1, 0)),
-		.scale = crealf(p->scale) * p->sprite->w / halo->w,
+		.scale = re(p->scale) * p->sprite->w / halo->w,
 		.flags = PFLAG_MANUALANGLE | PFLAG_REQUIREDPARTICLE,
 		.angle = rng_angle(),
 		.timeout = 20,
@@ -198,7 +198,7 @@ TASK(sun_flare, { BoxedProjectile sun; }) {
 		float smear = 2;
 		PARTICLE(
 			.sprite_ptr = halo,
-			.scale = crealf(p->scale) * p->sprite->w / halo->w,
+			.scale = re(p->scale) * p->sprite->w / halo->w,
 			.pos = p->pos,
 			.angle = rng_angle(), // p->angle,
 			.flags = PFLAG_NOMOVE | PFLAG_MANUALANGLE,

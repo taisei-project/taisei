@@ -73,7 +73,7 @@ static void youmu_homing_trail(YoumuBController *ctrl, Projectile *p, cmplx v, i
 		.sprite_ptr = ctrl->sprites.smoothdot,
 		.pos = p->pos,
 		.color = color_mul(RGBA(0.2, 0.24, 0.3, 0.2), &p->color),
-		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*creal(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*cimag(p->pos)/VIEWPORT_H*M_TAU)), 2),
+		.move = move_asymptotic_simple(-0.5*v*cdir(0.2*sin(u+3*re(p->pos)/VIEWPORT_W*M_TAU) + 0.2*cos(u+3*im(p->pos)/VIEWPORT_H*M_TAU)), 2),
 		.draw_rule = pdraw_timeout_scalefade_exp(0.5+0.5*I, 3+7*I, 1, 0, 2),
 		.timeout = to,
 		.flags = PFLAG_NOREFLECT,
@@ -303,7 +303,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 		if(orb) {
 			target = orb->pos;
 		} else {
-			target = plrutil_homing_target(p->pos, creal(global.plr.pos) - 128*I);
+			target = plrutil_homing_target(p->pos, re(global.plr.pos) - 128*I);
 		}
 
 		cmplx aimdir = cnormalize(target - p->pos - p->move.velocity);
