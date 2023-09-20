@@ -65,6 +65,8 @@ float cdotf(cmplxf c0, cmplxf c1) attr_const;
 cmplx cswap(cmplx c) attr_const;
 double ccross(cmplx a, cmplx b) attr_const;
 float ccrossf(cmplxf a, cmplxf b) attr_const;
+cmplx csort(cmplx z) attr_const;
+cmplxf csortf(cmplxf z) attr_const;
 double psin(double) attr_const;
 double pcos(double) attr_const;
 float psinf(float) attr_const;
