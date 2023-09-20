@@ -17,6 +17,11 @@
 #define re(z) (__real__ (z))
 #define im(z) (__imag__ (z))
 
+double (creal)(cmplx z) attr_deprecated("Use re() instead");
+double (cimag)(cmplx z) attr_deprecated("Use im() instead");
+float (crealf)(cmplxf z) attr_deprecated("Use re() instead");
+float (cimagf)(cmplxf z) attr_deprecated("Use im() instead");
+
 #define min(a, b) ({ \
 	typeof((a)+(b)) _temp_a = (a); \
 	typeof((a)+(b)) _temp_b = (b); \
