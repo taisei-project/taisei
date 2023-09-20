@@ -100,15 +100,15 @@ cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsil
 }
 
 double cabs2(cmplx c) {
-	return creal(c)*creal(c) + cimag(c)*cimag(c);
+	return re(c) * re(c) + im(c) * im(c);
 }
 
 float cabs2f(cmplxf c) {
-	return crealf(c)*crealf(c) + cimagf(c)*cimagf(c);
+	return re(c) * re(c) + im(c) * im(c);
 }
 
 cmplx cnormalize(cmplx c) {
-	cmplx r = c / sqrt(creal(c)*creal(c) + cimag(c)*cimag(c));
+	cmplx r = c / sqrt(re(c) * re(c) + im(c) * im(c));
 	// NOTE: clang generates a function call for isnan()...
 	return LIKELY(r == r) ? r : 0;
 }
@@ -125,8 +125,8 @@ cmplx cclampabs(cmplx c, double maxabs) {
 
 cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) {
 	return CMPLX(
-		clamp(creal(c), creal(cmin), creal(cmax)),
-		clamp(cimag(c), cimag(cmin), cimag(cmax))
+		clamp(re(c), re(cmin), re(cmax)),
+		clamp(im(c), im(cmin), im(cmax))
 	);
 }
 
@@ -143,31 +143,31 @@ cmplx cdir(double angle) {
 }
 
 cmplx cwmul(cmplx c0, cmplx c1) {
-	return CMPLX(creal(c0)*creal(c1), cimag(c0)*cimag(c1));
+	return CMPLX(re(c0) * re(c1), im(c0) * im(c1));
 }
 
 cmplxf cwmulf(cmplxf c0, cmplxf c1) {
-	return CMPLXF(crealf(c0)*crealf(c1), cimagf(c0)*cimagf(c1));
+	return CMPLXF(re(c0) * re(c1), im(c0) * im(c1));
 }
 
 double cdot(cmplx c0, cmplx c1) {
-	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+	return re(c0) * re(c1) + im(c0) * im(c1);
 }
 
 float cdotf(cmplxf c0, cmplxf c1) {
-	return creal(c0)*creal(c1) + cimag(c0)*cimag(c1);
+	return re(c0) * re(c1) + im(c0) * im(c1);
 }
 
 cmplx cswap(cmplx c) {
-	return CMPLX(cimag(c), creal(c));
+	return CMPLX(im(c), re(c));
 }
 
 double ccross(cmplx a, cmplx b) {
-	return creal(a)*cimag(b) - cimag(a)*creal(b);
+	return re(a) * im(b) - im(a) * re(b);
 }
 
 float ccrossf(cmplxf a, cmplxf b) {
-	return crealf(a)*cimagf(b) - cimagf(a)*crealf(b);
+	return re(a) * im(b) - im(a) * re(b);
 }
 
 cmplx csort(cmplx z) {
