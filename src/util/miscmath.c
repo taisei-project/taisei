@@ -170,6 +170,18 @@ float ccrossf(cmplxf a, cmplxf b) {
 	return crealf(a)*cimagf(b) - cimagf(a)*crealf(b);
 }
 
+cmplx csort(cmplx z) {
+	double a = re(z);
+	double b = im(z);
+	return b > a ? CMPLX(a, b) : CMPLX(b, a);
+}
+
+cmplxf csortf(cmplxf z) {
+	float a = re(z);
+	float b = im(z);
+	return b > a ? CMPLXF(a, b) : CMPLXF(b, a);
+}
+
 double psin(double x) {
 	return 0.5 + 0.5 * sin(x);
 }
