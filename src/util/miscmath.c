@@ -64,7 +64,7 @@ float fapproach_p(float *v, float t, float d) {
 }
 
 double approach_asymptotic(double val, double target, double rate, double epsilon) {
-	if(fabs(val - target) < epsilon || rate >= 1) {
+	if(fabs(val - target) < epsilon || UNLIKELY(rate >= 1.0)) {
 		return target;
 	}
 
@@ -72,7 +72,7 @@ double approach_asymptotic(double val, double target, double rate, double epsilo
 }
 
 float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
-	if(fabsf(val - target) < epsilon || rate >= 1) {
+	if(fabsf(val - target) < epsilon || UNLIKELY(rate >= 1.0f)) {
 		return target;
 	}
 
@@ -80,7 +80,7 @@ float fapproach_asymptotic(float val, float target, float rate, float epsilon) {
 }
 
 cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon) {
-	if(cabs(val - target) < epsilon || rate >= 1) {
+	if(cabs(val - target) < epsilon || UNLIKELY(rate >= 1.0)) {
 		return target;
 	}
 
