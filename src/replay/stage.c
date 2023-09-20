@@ -25,8 +25,8 @@ ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time
 	s->rng_seed = seed;
 	s->diff = diff;
 
-	s->plr_pos_x = floor(creal(plr->pos));
-	s->plr_pos_y = floor(cimag(plr->pos));
+	s->plr_pos_x = floor(re(plr->pos));
+	s->plr_pos_y = floor(im(plr->pos));
 
 	s->plr_points = plr->points;
 	s->plr_total_lives_used = plr->stats.total.lives_used;

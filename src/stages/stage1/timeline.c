@@ -126,7 +126,7 @@ TASK(sinepass_swirl_move, { BoxedEnemy e; cmplx v; cmplx sv; }) {
 	cmplx v = ARGS.v;
 
 	for(;;) {
-		sv -= cimag(e->pos - e->pos0) * 0.03 * I;
+		sv -= im(e->pos - e->pos0) * 0.03 * I;
 		e->pos += sv * 0.4 + v;
 		YIELD;
 	}

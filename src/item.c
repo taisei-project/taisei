@@ -76,7 +76,7 @@ static void ent_draw_item(EntityInterface *ent) {
 
 	const int indicator_display_y = 6;
 
-	float y = cimag(i->pos);
+	float y = im(i->pos);
 	if(y < 0) {
 		Sprite *s = item_indicator_sprite(i->type);
 
@@ -85,7 +85,7 @@ static void ent_draw_item(EntityInterface *ent) {
 		if(s != NULL) {
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = s,
-				.pos = { creal(i->pos), indicator_display_y },
+				.pos = { re(i->pos), indicator_display_y },
 				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 			});
 		}
@@ -101,14 +101,14 @@ static void ent_draw_item(EntityInterface *ent) {
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = item_sprite(i->type),
-		.pos = { creal(i->pos), y },
+		.pos = { re(i->pos), y },
 		.color = c,
 	});
 
 }
 
 Item* create_item(cmplx pos, cmplx v, ItemType type) {
-	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
+	if((re(pos) < 0 || re(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
 		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
 		return NULL;
@@ -187,12 +187,12 @@ static cmplx move_item(Item *i) {
 		double half = item_sprite(i->type)->w/2.0;  // TODO remove dependence on sprite size
 		bool over = false;
 
-		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
+		if((over = re(i->pos) > VIEWPORT_W-half) || re(i->pos) < half) {
 			cmplx normal = over ? -1 : 1;
-			v -= 2 * normal * (creal(normal)*creal(v));
-			v = 1.5*creal(v) - I*fabs(cimag(v));
+			v -= 2 * normal * (re(normal)*re(v));
+			v = 1.5*re(v) - I*fabs(im(v));
 
-			i->pos = clamp(creal(i->pos), half, VIEWPORT_W-half) + I*cimag(i->pos);
+			i->pos = clamp(re(i->pos), half, VIEWPORT_W-half) + I*im(i->pos);
 			i->v = v;
 			i->pos0 = i->pos;
 			i->birthtime = global.frames;
@@ -206,9 +206,9 @@ static bool item_out_of_bounds(Item *item) {
 	double margin = fmax(item_sprite(item->type)->w, item_sprite(item->type)->h);
 
 	return (
-		creal(item->pos) < -margin ||
-		creal(item->pos) > VIEWPORT_W + margin ||
-		cimag(item->pos) > VIEWPORT_H + margin
+		re(item->pos) < -margin ||
+		re(item->pos) > VIEWPORT_W + margin ||
+		im(item->pos) > VIEWPORT_H + margin
 	);
 }
 
@@ -278,7 +278,7 @@ void process_items(void) {
 			real item_dist2 = cabs2(global.plr.pos - item->pos);
 
 			if(plr_alive) {
-				if(cimag(global.plr.pos) < poc || stage_cleared) {
+				if(im(global.plr.pos) < poc || stage_cleared) {
 					collect_item(item, 1);
 				} else if(item_dist2 < attract_dist * attract_dist) {
 					real value;
@@ -286,7 +286,7 @@ void process_items(void) {
 					if(surge_active) {
 						value = 1;
 					} else {
-						value = 1 - cimag(global.plr.pos) / VIEWPORT_H;
+						value = 1 - im(global.plr.pos) / VIEWPORT_H;
 					}
 
 					collect_item(item, value);
@@ -350,7 +350,7 @@ void process_items(void) {
 			}
 		}
 
-		if(grabbed || (cimag(deltapos) > 0 && item_out_of_bounds(item))) {
+		if(grabbed || (im(deltapos) > 0 && item_out_of_bounds(item))) {
 			del = item;
 			item = item->next;
 			delete_item(del);

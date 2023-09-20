@@ -173,7 +173,7 @@ void loop_tex_line_p(cmplx a, cmplx b, float w, float t, Texture *texture) {
 	cmplx c = (b+a)/2;
 
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(c), cimag(c), 0);
+	r_mat_mv_translate(re(c), im(c), 0);
 	r_mat_mv_rotate(carg(d), 0, 0, 1);
 	r_mat_mv_scale(cabs(d), w, 1);
 

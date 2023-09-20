@@ -36,7 +36,7 @@ DEFINE_EXTERN_TASK(stage4_boss_nonspell_2) {
 		);
 
 		for(int i = 0; i < duration/rice_step; i++, WAIT(rice_step)) {
-			cmplx boss_target = VIEWPORT_W / 2.0 + VIEWPORT_W / 3.0 * sin(time / 220.0) + I*cimag(b->pos);
+			cmplx boss_target = VIEWPORT_W / 2.0 + VIEWPORT_W / 3.0 * sin(time / 220.0) + I*im(b->pos);
 
 			b->move = move_from_towards(b->pos, boss_target, 0.02);
 

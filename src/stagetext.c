@@ -105,8 +105,8 @@ static void stagetext_draw_single(StageText *txt) {
 	params.shader_ptr = res_shader("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
 	params.aux_textures[0] = res_texture("titletransition");
-	params.pos.x = creal(txt->pos) + ofs_x;
-	params.pos.y = cimag(txt->pos) + ofs_y;
+	params.pos.x = re(txt->pos) + ofs_x;
+	params.pos.y = im(txt->pos) + ofs_y;
 	params.color = &txt->color;
 
 	text_draw(txt->text, &params);
@@ -151,7 +151,7 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *
 }
 
 void stagetext_end_table(StageTextTable *tbl) {
-	cmplx ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
+	cmplx ofs = -0.5 * I * (im(tbl->pos) - VIEWPORT_H/2);
 
 	for(ListContainer *c = tbl->elems; c; c = c->next) {
 		((StageText*)c->data)->pos += ofs;

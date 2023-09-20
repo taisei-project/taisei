@@ -422,8 +422,8 @@ static cmplx gamepad_restrict_analog_input(cmplx z) {
 		LEFT = (1 << 2),
 	} MoveDir;
 
-	double x = creal(z);
-	double y = cimag(z);
+	double x = re(z);
+	double y = im(z);
 
 	MoveDir move = 0;
 
@@ -464,8 +464,8 @@ static double gamepad_apply_sensitivity(double p, double sens) {
 }
 
 static cmplx square_to_circle(cmplx z) {
-	double u = creal(z) * sqrt(1.0 - cimag(z) * cimag(z) / 2.0);
-	double v = cimag(z) * sqrt(1.0 - creal(z) * creal(z) / 2.0);
+	double u = re(z) * sqrt(1.0 - im(z) * im(z) / 2.0);
+	double v = im(z) * sqrt(1.0 - re(z) * re(z) / 2.0);
 
 	return CMPLX(u, v);
 }
@@ -503,16 +503,16 @@ void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
 	z *= new_abs / raw_abs;
 
 	z = CMPLX(
-		gamepad_apply_sensitivity(creal(z), config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS)),
-		gamepad_apply_sensitivity(cimag(z), config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS))
+		gamepad_apply_sensitivity(re(z), config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS)),
+		gamepad_apply_sensitivity(im(z), config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS))
 	);
 
 	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
 		z = gamepad_restrict_analog_input(z);
 	}
 
-	*xaxis = gamepad_denormalize_axis_value(creal(z));
-	*yaxis = gamepad_denormalize_axis_value(cimag(z));
+	*xaxis = gamepad_denormalize_axis_value(re(z));
+	*yaxis = gamepad_denormalize_axis_value(im(z));
 }
 
 static int gamepad_axis_get_digital_value(int raw) {

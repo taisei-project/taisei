@@ -67,8 +67,8 @@ static void testlights(Camera3D *cam, uint nlights, PointLight3D lights[nlights]
 		PointLight3D *l = lights + i;
 		glm_vec3_scale(HSL(i / (float)nlights, 1, 0.5)->rgb, TESTLIGHT_STRENGTH, l->radiance);
 		glm_vec3_copy(orig, l->pos);
-		glm_vec3_muladds(X, crealf(r), l->pos);
-		glm_vec3_muladds(Y, cimagf(r), l->pos);
+		glm_vec3_muladds(X, re(r), l->pos);
+		glm_vec3_muladds(Y, im(r), l->pos);
 		r *= p;
 	}
 }

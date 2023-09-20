@@ -19,8 +19,8 @@ static cmplx maxwell_laser(Laser *l, float t) {
 	}
 
 	cmplx direction = l->args[0];
-	real amplitude = creal(l->args[2]);
-	real phase = cimag(l->args[2]);
+	real amplitude = re(l->args[2]);
+	real phase = im(l->args[2]);
 
 	return l->pos + direction * t * (1 + I * amplitude * 0.02 * sin(0.1 * t + phase));
 }

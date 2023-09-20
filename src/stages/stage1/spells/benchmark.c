@@ -22,7 +22,7 @@ static void stage1_spell_benchmark_proc(Boss *b, int t) {
 	int c = N*speed/VIEWPORT_H;
 	for(int i = 0; i < c; i++) {
 		double x = rng_range(0, VIEWPORT_W);
-		double plrx = creal(global.plr.pos);
+		double plrx = re(global.plr.pos);
 		x = plrx + sqrt((x-plrx)*(x-plrx)+100)*(1-2*(x<plrx));
 
 		Projectile *p = PROJECTILE(

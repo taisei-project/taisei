@@ -122,7 +122,7 @@ TASK(cards, { BoxedBoss boss; }) {
 	for(int t = 0; t < 360;) {
 		for(int i = 0; i < cnt; ++i) {
 			play_sfx("shot3");
-			cmplx o = creal(boss->pos) + side * (ofs + (w*i)/cnt) + I*cimag(boss->pos);
+			cmplx o = re(boss->pos) + side * (ofs + (w*i)/cnt) + I*im(boss->pos);
 			PROJECTILE(
 				.proto = pp_card,
 				.pos = o,
@@ -174,7 +174,7 @@ DEFINE_EXTERN_TASK(stage2_spell_monty_hall_danmaku) {
 		}
 
 		WAIT(90);
-		plr_slot = creal(global.plr.pos) / SLOT_WIDTH;
+		plr_slot = re(global.plr.pos) / SLOT_WIDTH;
 
 		// goat1_slot is the one that we will reveal
 		if(goat1_slot == plr_slot) {

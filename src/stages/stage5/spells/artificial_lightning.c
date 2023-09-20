@@ -186,6 +186,6 @@ DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
 		aniplayer_hard_switch(&boss->ani, (x & 1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
 		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.3, wander_bounds);
-		INVOKE_SUBTASK(fork, creal(boss->pos), global.plr.pos, 64, 8);
+		INVOKE_SUBTASK(fork, re(boss->pos), global.plr.pos, 64, 8);
 	}
 }

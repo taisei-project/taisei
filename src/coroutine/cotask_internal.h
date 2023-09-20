@@ -57,6 +57,8 @@ struct CoTask {
 	uint32_t unique_id;
 	const char *name;
 
+	char _end[0];
+
 	#ifdef CO_TASK_DEBUG
 	char debug_label[256];
 	#endif

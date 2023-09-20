@@ -304,10 +304,10 @@ cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	}
 
 	log_warn("Clipping fallback  origin = %f%+fi  dist = %f  bounds.top_left = %f%+fi  bounds.bottom_right = %f%+fi",
-		creal(origin), cimag(origin),
+		re(origin), im(origin),
 		dist,
-		creal(bounds.top_left), cimag(bounds.top_left),
-		creal(bounds.bottom_right), cimag(bounds.bottom_right)
+		re(bounds.top_left), im(bounds.top_left),
+		re(bounds.bottom_right), im(bounds.bottom_right)
 	);
 
 	// TODO: implement proper line-clipping here?

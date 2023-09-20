@@ -871,7 +871,7 @@ void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
 
 void _r_uniform_ptr_vec2_complex(Uniform *uniform, cmplx value) {
 	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
-	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
+	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { re(value), im(value) });
 }
 
 void _r_uniform_vec2_complex(const char *uniform, cmplx value) {
@@ -895,8 +895,8 @@ void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count
 		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
 
 		do {
-			*aptr++ = creal(*eptr);
-			*aptr++ = cimag(*eptr++);
+			*aptr++ = re(*eptr);
+			*aptr++ = im(*eptr++);
 		} while(aptr < aend);
 
 		B.uniform(uniform, offset, count, arr);

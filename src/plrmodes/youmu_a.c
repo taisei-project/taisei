@@ -390,7 +390,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 		real follow_speed = smoothmin(10, follow_factor * fmax(0, cabs(target - myon->pos)), 10);
 		cmplx v = cnormalize(target - myon->pos) * follow_speed * (1 - focus_factor) * (1 - focus_factor);
 
-		real s = sign(creal(myon->pos) - creal(plr->pos));
+		real s = sign(re(myon->pos) - re(plr->pos));
 		if(!s) {
 			s = sign(sin(t / 10.0));
 		}
@@ -511,7 +511,7 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAMyon *myon; }) {
 
 		float t = player_get_bomb_progress(&global.plr);
 		float f = fmaxf(0, 1 - 10 * t);
-		cmplx myonpos = CMPLX(creal(myon->pos)/VIEWPORT_W, 1 - cimag(myon->pos)/VIEWPORT_H);
+		cmplx myonpos = CMPLX(re(myon->pos)/VIEWPORT_W, 1 - im(myon->pos)/VIEWPORT_H);
 
 		FBPair *fbpair = stage_get_postprocess_fbpair();
 		r_framebuffer(fbpair->back);

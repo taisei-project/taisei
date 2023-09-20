@@ -51,7 +51,7 @@ TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 		for(int j = 0; j <= density; j++) {
 			cmplx dir = sin(i * 0.2) * cdir(0.15 * (j - density*0.5)) * (1 - 2 * (i&1));
 
-			cmplx vel = (-0.5 * sin(global.frames + i * 46752 + 16463 * j + 467 * sin(global.frames*i*j))) * global.diff + creal(dir) + 2.0 * I;
+			cmplx vel = (-0.5 * sin(global.frames + i * 46752 + 16463 * j + 467 * sin(global.frames*i*j))) * global.diff + re(dir) + 2.0 * I;
 
 			PROJECTILE(
 				.proto = pp_wave,
@@ -289,7 +289,7 @@ TASK(scythe_mid, { cmplx pos; }) {
 		Projectile *p = PROJECTILE(
 			.proto = pp_bigball,
 			.pos = s->pos + r * dir,
-			.color = RGBA(0.2, 0.5 - 0.5 * cimag(dir), 0.5 + 0.5 * creal(dir), 0.0),
+			.color = RGBA(0.2, 0.5 - 0.5 * im(dir), 0.5 + 0.5 * re(dir), 0.0),
 			.max_viewport_dist = r*2,
 		);
 

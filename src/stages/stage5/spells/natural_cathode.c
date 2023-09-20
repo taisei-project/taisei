@@ -11,7 +11,7 @@
 #include "spells.h"
 
 static cmplx cathode_laser(Laser *l, float t) {
-	return l->pos + l->args[0] * sqrt(200 * t) * cdir(creal(l->args[1]) * t);
+	return l->pos + l->args[0] * sqrt(200 * t) * cdir(re(l->args[1]) * t);
 }
 
 TASK(balls, { BoxedBoss boss; }) {

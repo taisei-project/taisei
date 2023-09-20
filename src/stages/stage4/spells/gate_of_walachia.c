@@ -40,7 +40,7 @@ TASK(kurumi_walachia_slave, { cmplx pos; cmplx direction; int lifetime; }) {
 
 	int step = difficulty_value(16, 14, 12, 10);
 	for(int i = 0; i < ARGS.lifetime; i += WAIT(step)) {
-		float r = cimag(pos)/VIEWPORT_H;
+		float r = im(pos)/VIEWPORT_H;
 
 		for(int j = 1; j >= -1; j -= 2) {
 			PROJECTILE(

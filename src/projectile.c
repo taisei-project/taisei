@@ -103,8 +103,8 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 
 	if(args->scale == 0) {
 		args->scale = 1+I;
-	} else if(cimagf(args->scale) == 0) {
-		args->scale = CMPLXF(crealf(args->scale), crealf(args->scale));
+	} else if(im(args->scale) == 0) {
+		args->scale = CMPLXF(re(args->scale), re(args->scale));
 	}
 
 	if(args->opacity == 0) {
@@ -119,8 +119,8 @@ static void projectile_size(Projectile *p, double *w, double *h) {
 		*w = p->sprite->w;
 		*h = p->sprite->h;
 	} else {
-		*w = creal(p->size);
-		*h = cimag(p->size);
+		*w = re(p->size);
+		*h = im(p->size);
 	}
 
 	assert(*w > 0);
@@ -180,7 +180,7 @@ cmplx projectile_graze_size(Projectile *p) {
 		global.frames >= p->graze_cooldown
 	) {
 		cmplx s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
-		return sqrt(creal(s)) + sqrt(cimag(s)) * I;
+		return sqrt(re(s)) + sqrt(im(s)) * I;
 	}
 
 	return 0;
@@ -266,8 +266,8 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	// p->collision_size *= 10;
 	// p->size *= 5;
 
-	if((p->type == PROJ_ENEMY || p->type == PROJ_PLAYER) && (creal(p->size) <= 0 || cimag(p->size) <= 0)) {
-		log_fatal("Tried to spawn a projectile with invalid size %f x %f", creal(p->size), cimag(p->size));
+	if((p->type == PROJ_ENEMY || p->type == PROJ_PLAYER) && (re(p->size) <= 0 || im(p->size) <= 0)) {
+		log_fatal("Tried to spawn a projectile with invalid size %f x %f", re(p->size), im(p->size));
 	}
 
 	projectile_set_layer(p, args->layer);
@@ -375,7 +375,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) {
 		} else {
 			e_proj.axes = projectile_graze_size(p);
 
-			if(creal(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
+			if(re(e_proj.axes) > 1 && lineseg_ellipse_intersect(seg, e_proj)) {
 				out_col->type = PCOL_PLAYER_GRAZE;
 				out_col->entity = &global.plr.ent;
 				out_col->location = p->pos;
@@ -476,8 +476,8 @@ bool projectile_in_viewport(Projectile *proj) {
 	int e = proj->max_viewport_dist;
 	projectile_size(proj, &w, &h);
 
-	return !(creal(proj->pos) + w/2 + e < 0 || creal(proj->pos) - w/2 - e > VIEWPORT_W
-		  || cimag(proj->pos) + h/2 + e < 0 || cimag(proj->pos) - h/2 - e > VIEWPORT_H);
+	return !(re(proj->pos) + w/2 + e < 0 || re(proj->pos) - w/2 - e > VIEWPORT_W
+		  || im(proj->pos) + h/2 + e < 0 || im(proj->pos) - h/2 - e > VIEWPORT_H);
 }
 
 Projectile *spawn_projectile_collision_effect(Projectile *proj) {
@@ -662,7 +662,7 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	opacity *= p->opacity;
 
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(p->pos), cimag(p->pos), 0);
+	r_mat_mv_translate(re(p->pos), im(p->pos), 0);
 	r_mat_mv_rotate(p->angle + M_PI * 0.5, 0, 0, 1);
 	r_mat_mv_scale(sx, sy, 1);
 	r_mat_mv_rotate(tex_angle, 0, 0, 1);
@@ -821,14 +821,14 @@ SpriteParams projectile_sprite_params(Projectile *proj, SpriteParamsBuffer *spbu
 	SpriteParams sp = { 0 };
 	sp.blend = proj->blend;
 	sp.color = &spbuf->color;
-	sp.pos.x = creal(proj->pos);
-	sp.pos.y = cimag(proj->pos);
+	sp.pos.x = re(proj->pos);
+	sp.pos.y = im(proj->pos);
 	sp.rotation = (SpriteRotationParams) {
 		.angle = proj->angle + (float)(M_PI/2),
 		.vector = { 0, 0, 1 },
 	};
-	sp.scale.x = crealf(proj->scale);
-	sp.scale.y = cimagf(proj->scale);
+	sp.scale.x = re(proj->scale);
+	sp.scale.y = im(proj->scale);
 	sp.shader_params = &spbuf->shader_params;
 	sp.shader_ptr = proj->shader;
 	sp.sprite_ptr = proj->sprite;
@@ -919,7 +919,7 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float opacity = lerpf(opacity0, opacity1, timefactor);
 	opacity = powf(opacity, opacity_exp);
 
-	if(creal(scale) == 0 || cimag(scale) == 0 || opacity == 0) {
+	if(re(scale) == 0 || im(scale) == 0 || opacity == 0) {
 		return;
 	}
 
@@ -933,12 +933,12 @@ static void pdraw_scalefade_func(Projectile *p, int t, ProjDrawRuleArgs args) {
 
 ProjDrawRule pdraw_timeout_scalefade_exp(cmplxf scale0,
 	cmplxf scale1, float opacity0, float opacity1, float opacity_exp) {
-	if(cimagf(scale0) == 0) {
-		scale0 = CMPLXF(crealf(scale0), crealf(scale0));
+	if(im(scale0) == 0) {
+		scale0 = CMPLXF(re(scale0), re(scale0));
 	}
 
-	if(cimagf(scale1) == 0) {
-		scale1 = CMPLXF(crealf(scale1), crealf(scale1));
+	if(im(scale1) == 0) {
+		scale1 = CMPLXF(re(scale1), re(scale1));
 	}
 
 	return (ProjDrawRule) {

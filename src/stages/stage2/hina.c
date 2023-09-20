@@ -30,8 +30,8 @@ void stage2_draw_hina_spellbg(Boss *h, int time) {
 	Animation *fireani = res_anim("fire");
 	sp.sprite_ptr = animation_get_frame(fireani, get_ani_sequence(fireani, "main"), global.frames);
 	sp.sprite = NULL;
-	sp.pos.x = creal(h->pos);
-	sp.pos.y = cimag(h->pos);
+	sp.pos.x = re(h->pos);
+	sp.pos.y = im(h->pos);
 	sp.scale.both = 1;
 	sp.rotation = (SpriteRotationParams) { 0 };
 	sp.blend = BLEND_PREMUL_ALPHA;

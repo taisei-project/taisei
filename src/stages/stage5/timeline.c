@@ -692,8 +692,8 @@ TASK(animate_arc, { BoxedLaser arc; real radius_delta; }) {
 
 	for(;;YIELD) {
 		arc->args[1] += ARGS.radius_delta;
-		real a = creal(arc->args[0]);
-		arc->args[0] = a + I * (cimag(arc->args[0]) * a + M_TAU/194) / a;
+		real a = re(arc->args[0]);
+		arc->args[0] = a + I * (im(arc->args[0]) * a + M_TAU/194) / a;
 	}
 }
 
@@ -818,7 +818,7 @@ TASK(magnet_bullet, { cmplx pos; cmplx vel; int idx; BoxedProjectileArray *magne
 			}
 
 			cmplx delta = m->pos - p->pos;
-			real r = 1.5 * creal(m->collision_size);
+			real r = 1.5 * re(m->collision_size);
 
 			real norm2 = cabs2(delta);
 			real norm = sqrt(norm2);

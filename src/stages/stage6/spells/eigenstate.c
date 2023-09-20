@@ -20,7 +20,7 @@ TASK(eigenstate_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
 		for(int i = 0; i < NUM_BARYONS; i++) {
 			cmplx pos0 = 150 * cdir(M_TAU / NUM_BARYONS * i);
 
-			cmplx offset = 40 * sin(0.03 * t + M_PI * (creal(pos0) > 0)) + 45 * cimag(cnormalize(pos0)) * I * sin(0.06*t);
+			cmplx offset = 40 * sin(0.03 * t + M_PI * (re(pos0) > 0)) + 45 * im(cnormalize(pos0)) * I * sin(0.06*t);
 
 			baryons->target_poss[i] = boss_pos + pos0 + offset;
 		}
