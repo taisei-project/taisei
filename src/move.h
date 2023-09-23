@@ -20,7 +20,7 @@ typedef struct MoveParams {
 	real attraction_exponent;
 } MoveParams;
 
-cmplx move_update(cmplx *restrict pos, MoveParams *restrict params);
+cmplx move_update(cmplx *restrict pos, MoveParams *restrict params) attr_hot attr_nonnull_all;
 cmplx move_update_multiple(uint times, cmplx *restrict pos, MoveParams *restrict params);
 
 INLINE MoveParams move_next(cmplx pos, MoveParams move) {

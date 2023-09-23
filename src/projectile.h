@@ -239,7 +239,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) attr
 void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) attr_nonnull_all;
 int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs) attr_nonnull_all;
 bool projectile_in_viewport(Projectile *proj) attr_nonnull_all;
-void process_projectiles(ProjectileList *projlist, bool collision) attr_nonnull_all;
+void process_projectiles(ProjectileList *projlist, bool collision) attr_hot attr_nonnull_all;
 bool projectile_is_clearable(Projectile *p) attr_nonnull_all;
 
 Projectile *spawn_projectile_collision_effect(Projectile *proj) attr_nonnull_all;

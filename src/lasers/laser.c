@@ -174,6 +174,7 @@ static void laserseg_flip(LaserSegment *s) {
 	SWAP(s->width.a, s->width.b);
 }
 
+attr_hot
 static int quantize_laser(Laser *l) {
 	// Break the laser curve into small line segments, simplify and cull them,
 	// compute the bounding box.
