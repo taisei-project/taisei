@@ -22,6 +22,11 @@ double (cimag)(cmplx z) attr_deprecated("Use im() instead");
 float (crealf)(cmplxf z) attr_deprecated("Use re() instead");
 float (cimagf)(cmplxf z) attr_deprecated("Use im() instead");
 
+float fminf(float x, float y) attr_deprecated("Use min() instead");
+double fmin(double x, double y) attr_deprecated("Use min() instead");
+float fmaxf(float x, float y) attr_deprecated("Use max() instead");
+double fmax(double x, double y) attr_deprecated("Use max() instead");
+
 #define min(a, b) ({ \
 	typeof((a)+(b)) _temp_a = (a); \
 	typeof((a)+(b)) _temp_b = (b); \
@@ -38,10 +43,10 @@ double lerp(double v0, double v1, double f) attr_const;
 float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
 cmplxf clerpf(cmplxf v0, cmplxf v1, float f) attr_const;
-intmax_t imin(intmax_t, intmax_t) attr_const;
-intmax_t imax(intmax_t, intmax_t) attr_const;
-uintmax_t umin(uintmax_t, uintmax_t) attr_const;
-uintmax_t umax(uintmax_t, uintmax_t) attr_const;
+intmax_t imin(intmax_t, intmax_t) attr_const attr_deprecated("Use min() instead");
+intmax_t imax(intmax_t, intmax_t) attr_const attr_deprecated("Use max() instead");
+uintmax_t umin(uintmax_t, uintmax_t) attr_const attr_deprecated("Use min() instead");
+uintmax_t umax(uintmax_t, uintmax_t) attr_const attr_deprecated("Use max() instead");
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
 double clamp(double, double, double) attr_const;
 float clampf(float, float, float) attr_const;
