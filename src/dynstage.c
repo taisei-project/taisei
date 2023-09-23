@@ -82,18 +82,18 @@ static stageslib_t dynstage_dlopen(void) {
 
 static void dynstage_bump_lib_generation(void) {
 	// Delay reporting library update to avoid trying to load a partially written file
-	dynstage.lib_gen_bump_delay = imax(dynstage.lib_gen_bump_delay, LIBRARY_BUMP_DELAY);
+	dynstage.lib_gen_bump_delay = max(dynstage.lib_gen_bump_delay, LIBRARY_BUMP_DELAY);
 }
 
 static void dynstage_bump_src_generation(bool deleted) {
 	++dynstage.src_generation;
-	dynstage.recompile_delay = imax(dynstage.recompile_delay, RECOMPILE_DELAY);
+	dynstage.recompile_delay = max(dynstage.recompile_delay, RECOMPILE_DELAY);
 
 	if(deleted) {
 		// Some text editors may delete the original file and replace it when saving.
 		// In case that happens, rescan shortly after detecting a delete.
 		// Not very efficient, but simple since we don't have to track file names.
-		dynstage.rescan_delay = imax(dynstage.rescan_delay, RESCAN_DELAY);
+		dynstage.rescan_delay = max(dynstage.rescan_delay, RESCAN_DELAY);
 	}
 
 	log_debug("%i", dynstage.src_generation);

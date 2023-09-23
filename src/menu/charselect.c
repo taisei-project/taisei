@@ -116,7 +116,7 @@ static void end_char_menu(MenuData *m) {
 }
 
 static void transition_to_game(double fade) {
-	fade_out(pow(fmax(0, (fade - 0.5) * 2), 2));
+	fade_out(pow(max(0, (fade - 0.5) * 2), 2));
 }
 
 MenuData* create_char_menu(void) {
@@ -201,7 +201,7 @@ void draw_char_menu(MenuData *menu) {
 			face = facedefs[i][F_UNAMUSED];
 		}
 
-		float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
+		float pofs = max(0.0f, e->drawdata * 1.5f - 0.5f);
 		pofs = glm_ease_back_in(pofs);
 
 		if(i != menu->selected) {

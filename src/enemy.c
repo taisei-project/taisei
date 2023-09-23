@@ -288,7 +288,7 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 		enemy_kill(enemy);
 
 		if(ndmg.type == DMG_PLAYER_DISCHARGE) {
-			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)imax(1, enemy->spawn_hp / 100));
+			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)max(1, enemy->spawn_hp / 100));
 		}
 	}
 
@@ -356,7 +356,7 @@ void enemies_preload(ResourceGroup *rg) {
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"sprite_fairy",
 	NULL);
-	
+
 	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"enemydeath",
 	NULL);

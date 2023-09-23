@@ -102,7 +102,7 @@ DEFINE_EXTERN_TASK(stage3_spell_logic_bomb) {
 
 	for(int time = 0;; ++time, YIELD) {
 		real t = time * 1.5;
-		real moverad = fmin(160, time/2.7);
+		real moverad = min(160, time/2.7);
 		boss->pos = VIEWPORT_W/2 + VIEWPORT_H*I/2 + sin(t/50.0) * moverad * cdir(M_PI/2 * t/100.0);
 	}
 }

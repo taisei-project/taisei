@@ -835,7 +835,7 @@ static void stage_give_clear_bonus(const StageInfo *stage, StageClearBonus *bonu
 		bonus->base = stage->id * 1000000;
 	}
 
-	bonus->voltage = imax(0, (int)global.plr.voltage - (int)global.voltage_threshold) * (global.plr.point_item_value / 25);
+	bonus->voltage = max(0, (int)global.plr.voltage - (int)global.voltage_threshold) * (global.plr.point_item_value / 25);
 	bonus->lives = global.plr.lives * global.plr.point_item_value * 5;
 
 	// TODO: maybe a difficulty multiplier?

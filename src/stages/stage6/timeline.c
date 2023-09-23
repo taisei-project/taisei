@@ -133,7 +133,7 @@ TASK(flowermine_fairy, { cmplx pos; MoveParams move1; MoveParams move2; }) {
 TASK(sniper_fairy_shot_cleanup, { BoxedLaser l; }) {
 	auto l = ENT_UNBOX(ARGS.l);
 	if(l) {
-		l->deathtime = imin(l->deathtime, global.frames - l->birthtime + 10);
+		l->deathtime = min(l->deathtime, global.frames - l->birthtime + 10);
 	}
 }
 

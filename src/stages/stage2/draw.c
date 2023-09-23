@@ -131,7 +131,7 @@ static void stage2_bg_setup_pbr_lighting(Camera3D *cam, int max_lights) {
 	max_lights += NUM_TESTLIGHTS;
 #endif
 
-	camera3d_set_point_light_uniforms(cam, imin(max_lights, ARRAY_SIZE(lights)), lights);
+	camera3d_set_point_light_uniforms(cam, min(max_lights, ARRAY_SIZE(lights)), lights);
 }
 
 static void stage2_bg_setup_pbr_env(Camera3D *cam, int max_lights, PBREnvironment *env) {

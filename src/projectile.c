@@ -683,7 +683,7 @@ static void bullet_highlight_draw(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float tex_angle = args[1].as_float[0];
 
 	float opacity = pow(1 - timefactor, 3);
-	opacity = fmin(1, 1.5 * opacity) * fmin(1, timefactor * 10);
+	opacity = min(1, 1.5 * opacity) * min(1, timefactor * 10);
 	opacity *= p->opacity;
 
 	r_mat_mv_push();
@@ -708,9 +708,9 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 	}
 
 	Color clr = p->color;
-	clr.r = fmax(0.1, clr.r);
-	clr.g = fmax(0.1, clr.g);
-	clr.b = fmax(0.1, clr.b);
+	clr.r = max(0.1f, clr.r);
+	clr.g = max(0.1f, clr.g);
+	clr.b = max(0.1f, clr.b);
 	float h, s, l;
 	color_get_hsl(&clr, &h, &s, &l);
 	s = s > 0 ? 0.75 : 0;
@@ -730,7 +730,7 @@ static Projectile* spawn_projectile_highlight_effect_internal(Projectile *p, boo
 			.shader = "sprite_bullet",
 			.size = p->size * 4.5,
 			.layer = LAYER_PARTICLE_HIGH | 0x40,
-			.draw_rule = pdraw_timeout_scalefade_exp(0, 0.2f * fmaxf(sx, sy) * vrng_f32_range(R[0], 0.8f, 1.0f), 1, 0, 2),
+			.draw_rule = pdraw_timeout_scalefade_exp(0, 0.2f * max(sx, sy) * vrng_f32_range(R[0], 0.8f, 1.0f), 1, 0, 2),
 			.angle = vrng_angle(R[1]),
 			.pos = p->pos + vrng_range(R[2], 0, 8) * vrng_dir(R[3]),
 			.flags = PFLAG_NOREFLECT,
@@ -788,15 +788,15 @@ static void projectile_clear_effect_draw(Projectile *p, int t, ProjDrawRuleArgs 
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 
 	float o = spbuf.shader_params.vector[0];
-	spbuf.shader_params.vector[0] = o * fmaxf(0, 1.5 * (1 - tf) - 0.5);
+	spbuf.shader_params.vector[0] = o * max(0, 1.5f * (1 - tf) - 0.5f);
 
 	r_draw_sprite(&sp);
 
 	sp.sprite_ptr = animation_get_frame(ani, seq, o_tf * (seq->length - 1));
-	sp.scale.as_cmplx *= scale * (0.0 + 1.5*tf);
+	sp.scale.as_cmplx *= scale * (0.0f + 1.5f * tf);
 	spbuf.color.a *= (1 - tf);
 	spbuf.shader_params.vector[0] = o;
-	sp.rotation.angle += t * 0.5*0 + angle;
+	sp.rotation.angle += angle;
 
 	r_draw_sprite(&sp);
 }
@@ -815,7 +815,7 @@ Projectile *spawn_projectile_clear_effect(Projectile *proj) {
 	AniSequence *seq = get_ani_sequence(ani, "main");
 
 	Sprite *sprite_ref = animation_get_frame(ani, seq, 0);
-	float scale = fmaxf(proj->sprite->w, proj->sprite->h) / sprite_ref->w;
+	float scale = max(proj->sprite->w, proj->sprite->h) / sprite_ref->w;
 
 	return PARTICLE(
 		.sprite_ptr = proj->sprite,
@@ -869,7 +869,7 @@ static void pdraw_basic_func(Projectile *proj, int t, ProjDrawRuleArgs args) {
 
 	if(eff < 1) {
 		spbuf.color.a *= eff;
-		spbuf.shader_params.vector[0] *= fminf(1.0f, eff * 2.0f);
+		spbuf.shader_params.vector[0] *= min(1.0f, eff * 2.0f);
 	}
 
 	r_draw_sprite(&sp);

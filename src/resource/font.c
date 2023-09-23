@@ -141,7 +141,7 @@ static struct {
 static float global_font_scale(void) {
 	float w, h;
 	video_get_viewport_size(&w, &h);
-	return fmaxf(0.1, (h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
+	return max(0.1f, (h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
 static void reload_fonts(float quality);
@@ -160,7 +160,7 @@ static bool fonts_event(SDL_Event *event, void *arg) {
 		case TE_CONFIG_UPDATED: {
 			if(event->user.code == CONFIG_TEXT_QUALITY) {
 				ConfigValue *val = event->user.data1;
-				val->f = fmax(0.1, val->f);
+				val->f = max(0.1f, val->f);
 				reload_fonts(global_font_scale());
 			}
 
@@ -594,8 +594,8 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		Pixmap px;
 		px.origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 		px.format = PIXMAP_FORMAT_RGB8;
-		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
-		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
+		px.width = max(g_bm_fill->bitmap.width, max(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
+		px.height = max(g_bm_fill->bitmap.rows, max(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
 		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
 
 		int ref_left = g_bm_border->left;
@@ -1005,25 +1005,25 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *b
 		}
 
 		float x = cursor_advance(&c, glyph);
-		bbox->x.max = fmaxf(bbox->x.max, c.x);
+		bbox->x.max = max(bbox->x.max, c.x);
 
 		FloatOffset ofs = glyph->sprite.padding.offset;
 
 		float g_x0 = x + glyph->metrics.bearing_x + ofs.x;
-		float g_x1 = g_x0 + fmaxf(glyph->metrics.width, glyph->sprite.w);
+		float g_x1 = g_x0 + max(glyph->metrics.width, glyph->sprite.w);
 
-		bbox->x.max = fmaxf(bbox->x.max, g_x0);
-		bbox->x.max = fmaxf(bbox->x.max, g_x1);
-		bbox->x.min = fminf(bbox->x.min, g_x0);
-		bbox->x.min = fminf(bbox->x.min, g_x1);
+		bbox->x.max = max(bbox->x.max, g_x0);
+		bbox->x.max = max(bbox->x.max, g_x1);
+		bbox->x.min = min(bbox->x.min, g_x0);
+		bbox->x.min = min(bbox->x.min, g_x1);
 
 		float g_y0 = y - glyph->metrics.bearing_y + ofs.y;
-		float g_y1 = g_y0 + fmaxf(glyph->metrics.height, glyph->sprite.h);
+		float g_y1 = g_y0 + max(glyph->metrics.height, glyph->sprite.h);
 
-		bbox->y.max = fmaxf(bbox->y.max, g_y0);
-		bbox->y.max = fmaxf(bbox->y.max, g_y1);
-		bbox->y.min = fminf(bbox->y.min, g_y0);
-		bbox->y.min = fminf(bbox->y.min, g_y1);
+		bbox->y.max = max(bbox->y.max, g_y0);
+		bbox->y.max = max(bbox->y.max, g_y1);
+		bbox->y.min = min(bbox->y.min, g_y0);
+		bbox->y.min = min(bbox->y.min, g_y1);
 	}
 }
 

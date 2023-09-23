@@ -65,6 +65,6 @@ DEFINE_EXTERN_TASK(stage5_spell_atmospheric_discharge) {
 
 	for(;;WAIT(delay)) {
 		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.4, wander_bounds);	INVOKE_SUBTASK_DELAYED(10, ball_shoot, boss->pos, boss->move.attraction_point);
-		delay = imax(delay - delay_step, mindelay);
+		delay = max(delay - delay_step, mindelay);
 	}
 }

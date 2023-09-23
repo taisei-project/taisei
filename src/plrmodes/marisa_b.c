@@ -245,7 +245,7 @@ TASK(marisa_star_slave, {
 
 	for(int t = 0; slave->alive; t += WAIT(1)) {
 		cmplx target_pos = ctrl->slave_ref_pos + 80 * sin(angle) + 45*I;
-		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(fmin(1, (real)t/HAKKERO_RETRACT_TIME)));
+		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(min(1, (real)t/HAKKERO_RETRACT_TIME)));
 		slave->ent.draw_layer = cos(angle) < 0 ? LAYER_BACKGROUND : LAYER_PLAYER_SLAVE;
 		angle += angle_step;
 	}

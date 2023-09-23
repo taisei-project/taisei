@@ -140,7 +140,7 @@ static bool stage3_glitch(Framebuffer *fb) {
 	float strength;
 
 	if(global.boss && global.boss->current && ATTACK_IS_SPELL(global.boss->current->type) && !strcmp(global.boss->name, "Scuttle")) {
-		strength = 0.05 * fmax(0, (global.frames - global.boss->current->starttime) / (double)global.boss->current->timeout);
+		strength = 0.05f * max(0, (global.frames - global.boss->current->starttime) / (float)global.boss->current->timeout);
 	} else {
 		strength = 0.0;
 	}

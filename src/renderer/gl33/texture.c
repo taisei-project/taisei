@@ -162,11 +162,11 @@ void gl33_texture_get_size(Texture *tex, uint mipmap, uint *width, uint *height)
 		}
 	} else {
 		if(width != NULL) {
-			*width = umax(1, tex->params.width / (1u << mipmap));
+			*width = max(1, tex->params.width / (1u << mipmap));
 		}
 
 		if(height != NULL) {
-			*height = umax(1, tex->params.height / (1u << mipmap));
+			*height = max(1, tex->params.height / (1u << mipmap));
 		}
 	}
 }

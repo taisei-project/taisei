@@ -123,7 +123,7 @@ TASK(scythe_update, { BoxedEllyScythe scythe; }) {
 				delta = scythe_angle - return_target;
 			}
 
-			spin_abs = fmin(return_speed_cap, delta * 0.1);
+			spin_abs = min(return_speed_cap, delta * 0.1);
 		}
 
 		was_return_mode = return_mode;

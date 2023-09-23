@@ -113,7 +113,7 @@ static double section_fitness(RectPackSection *s, double w, double h) {
 	// Best Long Side Fit (BLSF)
 	// This method has a nice property: fitness==0 indicates an exact fit.
 
-	return fmax(sw - w, sh - h);
+	return max(sw - w, sh - h);
 }
 
 void rectpack_reclaim(RectPack *rp, RectPackSection *s) {

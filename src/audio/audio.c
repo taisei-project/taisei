@@ -97,8 +97,8 @@ static bool get_chanrange(AudioChannelGroup g) {
 
 	assume(clast >= cfirst);
 
-	audio.sfx_chan_first = imin(audio.sfx_chan_first, cfirst);
-	audio.sfx_chan_last = imax(audio.sfx_chan_last, clast);
+	audio.sfx_chan_first = min(audio.sfx_chan_first, cfirst);
+	audio.sfx_chan_last = max(audio.sfx_chan_last, clast);
 
 	return true;
 }
@@ -372,7 +372,7 @@ double audioutil_loopaware_position(double rt_pos, double duration, double loop_
 	loop_start = clamp(loop_start, 0, duration);
 
 	if(rt_pos < loop_start) {
-		return fmax(0, rt_pos);
+		return max(0, rt_pos);
 	}
 
 	return fmod(rt_pos - loop_start, duration - loop_start) + loop_start;

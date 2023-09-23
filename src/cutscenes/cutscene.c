@@ -342,7 +342,7 @@ static void draw_text(CutsceneState *st) {
 		text_wrap(font, e->text, w, buf, sizeof(buf));
 		text_draw(buf, &p);
 
-		y += text_height(font, buf, 0) * glm_ease_quad_in(fminf(3 * tv->alpha, 1));
+		y += text_height(font, buf, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
 	}
 
 	r_state_pop();

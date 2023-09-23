@@ -632,7 +632,7 @@ static int log_fmtconsole_format_context(
 			fdata->state.max_context_len = txtlen;
 		} else {
 			static char spaces[] = "                                      ";
-			size_t n = imin(sizeof(spaces) - 1, fdata->state.max_context_len - txtlen);
+			size_t n = min(sizeof(spaces) - 1, fdata->state.max_context_len - txtlen);
 			txtlen += strbuf_ncat(buf, n, spaces);
 		}
 	}

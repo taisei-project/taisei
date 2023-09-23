@@ -183,13 +183,13 @@ bool rect_rect_intersection(Rect r1, Rect r2, bool edges, bool corners, Rect *ou
 	}
 
 	out->top_left = CMPLX(
-		fmax(rect_left(r1), rect_left(r2)),
-		fmax(rect_top(r1), rect_top(r2))
+		max(rect_left(r1), rect_left(r2)),
+		max(rect_top(r1), rect_top(r2))
 	);
 
 	out->bottom_right = CMPLX(
-		fmin(rect_right(r1), rect_right(r2)),
-		fmin(rect_bottom(r1), rect_bottom(r2))
+		min(rect_right(r1), rect_right(r2)),
+		min(rect_bottom(r1), rect_bottom(r2))
 	);
 
 	return true;
@@ -211,8 +211,8 @@ bool rect_join(Rect *r1, Rect r2) {
 
 	if(rect_left(*r1) == rect_left(r2) && rect_right(*r1) == rect_right(r2)) {
 		// r2 is directly above/below r1
-		double y_min = fmin(rect_top(*r1), rect_top(r2));
-		double y_max = fmax(rect_bottom(*r1), rect_bottom(r2));
+		double y_min = min(rect_top(*r1), rect_top(r2));
+		double y_max = max(rect_bottom(*r1), rect_bottom(r2));
 
 		r1->top_left = CMPLX(re(r1->top_left), y_min);
 		r1->bottom_right = CMPLX(re(r1->bottom_right), y_max);
@@ -222,8 +222,8 @@ bool rect_join(Rect *r1, Rect r2) {
 
 	if(rect_top(*r1) == rect_top(r2) && rect_bottom(*r1) == rect_bottom(r2)) {
 		// r2 is directly left/right to r1
-		double x_min = fmin(rect_left(*r1), rect_left(r2));
-		double x_max = fmax(rect_right(*r1), rect_right(r2));
+		double x_min = min(rect_left(*r1), rect_left(r2));
+		double x_max = max(rect_right(*r1), rect_right(r2));
 
 		r1->top_left = CMPLX(x_min, im(r1->top_left));
 		r1->bottom_right = CMPLX(x_max, im(r1->bottom_right));

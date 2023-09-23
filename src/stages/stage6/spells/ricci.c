@@ -21,7 +21,7 @@
 #define SAFE_RADIUS_PHASE 3*M_PI/2
 
 static real safe_radius_phase(int time, int baryon_idx) {
-	return baryon_idx * M_PI / 3 + fmax(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
+	return baryon_idx * M_PI / 3 + max(0, time - SAFE_RADIUS_DELAY) * SAFE_RADIUS_PHASE_VELOCITY;
 }
 
 static int phase_num(real phase) {
@@ -253,8 +253,8 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 		p->pos = p->prevpos = ARGS.pos + ARGS.velocity * t + shift;
 
-		float a = 0.5 + 0.5 * fmax(0, tanh((time - 80) / 100.)) * clamp(influence, 0.2, 1);
-		a *= fmin(1, t / 20.0f);
+		float a = 0.5f + 0.5f * max(0, tanhf((time - 80) / 100.0f)) * clampf(influence, 0.2f, 1);
+		a *= min(1, t / 20.0f);
 
 		p->color.r = 0.5;
 		p->color.g = 0;

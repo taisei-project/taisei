@@ -164,8 +164,8 @@ void draw_main_menu(MenuData *menu) {
 		.pos = { SCREEN_W/2, SCREEN_H/2 },
 		.shader = "sprite_default",
 		.rotation.vector = { 0, -1, 0 },
-		.rotation.angle = fmax(0, M_PI/1.5 - fmin(M_PI/1.5, rot) * rotfac),
-		.color = color_mul_scalar(RGBA(1, 1, 1, 1), fmin(1, rot) * rotfac),
+		.rotation.angle = max(0, M_PI/1.5 - min(M_PI/1.5, rot) * rotfac),
+		.color = color_mul_scalar(RGBA(1, 1, 1, 1), min(1, rot) * rotfac),
 	});
 
 	r_mat_mv_push();
@@ -179,7 +179,7 @@ void draw_main_menu(MenuData *menu) {
 			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
 		} else {
 			float a = 1 - e->drawdata;
-			r_color4(o, fmin(1, 0.7 + a) * o, fmin(1, 0.4 + a) * o, o);
+			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
 		text_draw(e->name, &(TextParams) {

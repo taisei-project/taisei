@@ -102,7 +102,7 @@ TASK(youmu_mirror_myon_trail, { YoumuAMyon *myon; cmplx pos; }) {
 
 	for(int t = 0;; ++t) {
 		real f = myon->focus_factor;
-		myon_color(&p->color, f, pow(1 - fmin(1, t / p->timeout), 2), 0.95);
+		myon_color(&p->color, f, powf(1 - min(1, t / p->timeout), 2), 0.95f);
 		p->pos += 0.05 * (myon->pos - p->pos) * cdir(sin((t - global.frames * 2) * 0.1) * M_PI/8);
 		p->move.velocity = 3 * myon_tail_dir(myon);
 		YIELD;
@@ -150,7 +150,7 @@ static void myon_spawn_trail(YoumuAMyon *myon, int t) {
 static void myon_draw_proj_trail(Projectile *p, int t, ProjDrawRuleArgs args) {
 	float time_progress = projectile_timeout_factor(p);
 	float s = 2 * time_progress;
-	float a = fmin(1, s) * (1 - time_progress);
+	float a = min(1, s) * (1 - time_progress);
 
 	SpriteParamsBuffer spbuf;
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
@@ -185,7 +185,7 @@ TASK(youmu_mirror_myon_proj, { cmplx pos; cmplx vel; real dmg; const Color *clr;
 		// or drawn in the projectile's custom draw rule. The opacity change can
 		// live in the draw rule as well. Then a separate task per shot is not needed.
 
-		p->opacity = 1.0f - powf(1.0f - fminf(1.0f, t / 10.0f), 2.0f);
+		p->opacity = 1.0f - powf(1.0f - min(1.0f, t / 10.0f), 2.0f);
 
 		PARTICLE(
 			.sprite_ptr = trail_sprite,
@@ -387,7 +387,7 @@ TASK(youmu_mirror_myon, { YoumuAController *ctrl; }) {
 		}
 
 		cmplx target = plr->pos + distance * cnormalize(offset_dir);
-		real follow_speed = smoothmin(10, follow_factor * fmax(0, cabs(target - myon->pos)), 10);
+		real follow_speed = smoothmin(10, follow_factor * max(0, cabs(target - myon->pos)), 10);
 		cmplx v = cnormalize(target - myon->pos) * follow_speed * (1 - focus_factor) * (1 - focus_factor);
 
 		real s = sign(re(myon->pos) - re(plr->pos));
@@ -510,7 +510,7 @@ TASK(youmu_mirror_bomb_postprocess, { YoumuAMyon *myon; }) {
 		WAIT_EVENT_OR_DIE(pp_event);
 
 		float t = player_get_bomb_progress(&global.plr);
-		float f = fmaxf(0, 1 - 10 * t);
+		float f = max(0, 1 - 10 * t);
 		cmplx myonpos = CMPLX(re(myon->pos)/VIEWPORT_W, 1 - im(myon->pos)/VIEWPORT_H);
 
 		FBPair *fbpair = stage_get_postprocess_fbpair();

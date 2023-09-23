@@ -266,7 +266,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_FOREACH_COUNTER(&impact_effects, int i, Projectile *p, {
 			float t = (global.frames - p->birthtime) / p->timeout;
-			float attack = fmin(1, vrng_f32_range(rand[i], 7, 12) * t);
+			float attack = min(1, vrng_f32_range(rand[i], 7, 12) * t);
 			float decay = t;
 
 			Color c = base_colors[i];
@@ -415,7 +415,7 @@ TASK(reimu_spirit_bomb_background, { ReimuAController *ctrl; }) {
 		float alpha = 0.0f;
 
 		if(t > 0) {
-			alpha = fminf(1.0f, 10.0f * t);
+			alpha = min(1.0f, 10.0f * t);
 		}
 
 		if(t > 0.7) {
@@ -546,7 +546,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -574,7 +574,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 		);
 
 		ctrl->last_needle_fire_time = global.frames;
-		ctrl->last_homing_fire_time = imax(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
+		ctrl->last_homing_fire_time = max(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
 
 		WAIT(delay);
 	}
@@ -618,7 +618,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");

@@ -397,9 +397,9 @@ double gamepad_normalize_axis_value(int val) {
 
 int gamepad_denormalize_axis_value(double val) {
 	if(val < 0) {
-		return imax(GAMEPAD_AXIS_MIN_VALUE, val * -GAMEPAD_AXIS_MIN_VALUE);
+		return max(GAMEPAD_AXIS_MIN_VALUE, (int)(val * -GAMEPAD_AXIS_MIN_VALUE));
 	} else if(val > 0) {
-		return imin(GAMEPAD_AXIS_MAX_VALUE, val * GAMEPAD_AXIS_MAX_VALUE);
+		return min(GAMEPAD_AXIS_MAX_VALUE, (int)(val * GAMEPAD_AXIS_MAX_VALUE));
 	} else {
 		return 0;
 	}
@@ -518,7 +518,7 @@ void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
 
 static int gamepad_axis_get_digital_value(int raw) {
 	double deadzone = gamepad_get_deadzone();
-	deadzone = fmax(deadzone, 0.5);
+	deadzone = max(deadzone, 0.5);
 	int threshold = GAMEPAD_AXIS_MAX_VALUE * deadzone;
 
 	if(abs(raw) < threshold) {

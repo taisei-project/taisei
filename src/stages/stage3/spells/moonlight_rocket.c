@@ -34,9 +34,9 @@ TASK(aimcircle, { int lifetime; int focustime; }) {
 			p->pos = global.plr.pos;
 		}
 
-		float sf = fminf(t / (float)spawntime, 1.0f);
-		float sf2 = fminf(t / (float)(spawntime * 2), 1.0f);
-		float df = fminf((ARGS.lifetime - t - 1) / (float)despawntime, 1.0f);
+		float sf = min(t / (float)spawntime, 1.0f);
+		float sf2 = min(t / (float)(spawntime * 2), 1.0f);
+		float df = min((ARGS.lifetime - t - 1) / (float)despawntime, 1.0f);
 
 		df = glm_ease_back_out(df);
 		p->opacity = glm_ease_quad_out(sf) * glm_ease_quad_in(df) * 0.1f;

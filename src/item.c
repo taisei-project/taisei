@@ -233,9 +233,9 @@ bool collect_item(Item *item, float value) {
 	const int delay = 0;
 
 	if(item->auto_collect) {
-		item->auto_collect = imax(speed, item->auto_collect);
-		item->pickup_value = fmax(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
-		item->collecttime = imin(global.frames + delay, item->collecttime);
+		item->auto_collect = max(speed, item->auto_collect);
+		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
+		item->collecttime = min(global.frames + delay, item->collecttime);
 	} else {
 		item->auto_collect = speed;
 		item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);

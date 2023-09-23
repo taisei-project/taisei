@@ -116,7 +116,7 @@ static void set_fb_size(StageFBPair fb_id, int *w, int *h, float scale_worst, fl
 			break;
 	}
 
-	scale = fmax(0.1, scale);
+	scale = max(0.1, scale);
 	*w = round(VIEWPORT_W * scale);
 	*h = round(VIEWPORT_H * scale);
 }
@@ -774,7 +774,7 @@ static void apply_bg_shaders(ShaderRule *shaderrules, FBPair *fbos) {
 				r_shader("spellcard_outro");
 				r_uniform_float("ratio", ratio);
 				r_uniform_vec2("origin", re(pos) / VIEWPORT_W, 1 - im(pos) / VIEWPORT_H);
-				r_uniform_float("t", fmax(0, tn / (float)delay + 1));
+				r_uniform_float("t", max(0, tn / (float)delay + 1));
 			}
 
 			r_blend(BLEND_PREMUL_ALPHA);
@@ -1646,7 +1646,7 @@ void stage_draw_hud(void) {
 	float extraspell_fadein = 1;
 
 	if(global.boss && global.boss->current && global.boss->current->type == AT_ExtraSpell) {
-		extraspell_fadein  = fmin(1, -fmin(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
+		extraspell_fadein  = min(1, -min(0, global.frames - global.boss->current->starttime) / (float)ATTACK_START_DELAY);
 
 		float fadeout;
 
@@ -1656,7 +1656,7 @@ void stage_draw_hud(void) {
 			fadeout = 0;
 		}
 
-		float fade = fmax(extraspell_fadein, fadeout);
+		float fade = max(extraspell_fadein, fadeout);
 		extraspell_alpha = 1 - fade;
 	}
 
@@ -1775,7 +1775,7 @@ void stage_draw_hud(void) {
 
 	// Extra Spell indicator
 	if(extraspell_alpha > 0) {
-		float s2 = fmax(0, swing(extraspell_alpha, 3));
+		float s2 = max(0, swing(extraspell_alpha, 3));
 		r_state_push();
 		r_shader("text_default");
 		r_mat_mv_push();

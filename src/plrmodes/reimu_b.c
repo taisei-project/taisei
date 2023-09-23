@@ -336,7 +336,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 		return;
 	}
 
-	real p_long_side = fmax(re(p->size), im(p->size));
+	real p_long_side = max(re(p->size), im(p->size));
 	cmplx half = 0.25 * (1 + I);
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
@@ -352,8 +352,8 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 		cmplx gap_size = (GAP_LENGTH + I * GAP_WIDTH) * gap->parallel_axis;
 		cmplx p0 = gap->pos - gap_size * 0.5;
 		cmplx p1 = gap->pos + gap_size * 0.5;
-		gap_bbox.top_left = fmin(re(p0), re(p1)) + I * fmin(im(p0), im(p1));
-		gap_bbox.bottom_right = fmax(re(p0), re(p1)) + I * fmax(im(p0), im(p1));
+		gap_bbox.top_left = min(re(p0), re(p1)) + I * min(im(p0), im(p1));
+		gap_bbox.bottom_right = max(re(p0), re(p1)) + I * max(im(p0), im(p1));
 
 		if(rect_rect_intersection(p_bbox, gap_bbox, true, false, &overlap)) {
 			cmplx o = (overlap.top_left + overlap.bottom_right) / 2;

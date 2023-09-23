@@ -194,7 +194,7 @@ DEFINE_EXTERN_TASK(stage2_spell_amulet_of_harm) {
 		real arange = M_PI/3;
 
 		for(int i = 0; i < cnt; ++i) {
-			real s = 4 * fmax(2, log1p(cabs(boss->move.velocity)));
+			real s = 4 * max(2, log1p(cabs(boss->move.velocity)));
 			cmplx dir = cnormalize(-boss->move.velocity) * cdir(arange * (i / (cnt - 1.0) - 0.5));
 
 			play_sfx("redirect");

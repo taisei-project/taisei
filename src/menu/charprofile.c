@@ -210,7 +210,7 @@ static void charprofile_draw(MenuData *m) {
 	float o = 1 - e->drawdata*2;
 	float pbrightness = 0.6 + 0.4 * o;
 
-	float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
+	float pofs = max(0.0f, e->drawdata * 1.5f - 0.5f);
 	pofs = glm_ease_back_in(pofs);
 
 	int selected = check_unlocked_profile(m->cursor);

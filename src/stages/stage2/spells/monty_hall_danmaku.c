@@ -134,7 +134,7 @@ TASK(cards, { BoxedBoss boss; }) {
 
 		side = -side;
 		t += WAIT(period);
-		period = imax(1, period - period_reduction);
+		period = max(1, period - period_reduction);
 	}
 }
 

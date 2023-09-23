@@ -59,8 +59,8 @@ void portrait_render(Sprite *s_base, Sprite *s_face, Sprite *s_out) {
 
 	IntRect itc = sprite_denormalized_int_tex_coords(s_base);
 
-	uint tex_w = imax(itc.w, 1);
-	uint tex_h = imax(itc.h, 1);
+	uint tex_w = max(itc.w, 1);
+	uint tex_h = max(itc.h, 1);
 	float spr_w = s_base->extent.w;
 	float spr_h = s_base->extent.h;
 

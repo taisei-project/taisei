@@ -58,7 +58,7 @@ TASK(walls, { int duration; }) {
 			real shift = 0;
 
 			if(global.diff == D_Lunatic) {
-				shift = 0.3 * fmax(0, t - 100);
+				shift = 0.3 * max(0, t - 100);
 			}
 
 			for(int i = 1; i < SLOTS; i++) {
