@@ -143,6 +143,10 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	float damage;
 	float angle;
 	float angle_delta;
+
+	cmplx _cached_delta_pos;
+	real _cached_angle;
+
 	ProjType type;
 	DamageType damage_type;
 	int max_viewport_dist;
