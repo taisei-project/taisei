@@ -51,7 +51,7 @@ void elly_spellbg_toe(Boss *b, int t) {
 
 		char texname[33];
 		snprintf(texname, sizeof(texname), "stage6/toelagrangian/%d", i);
-		float wobble = fmax(0, t - BREAKTIME) * 0.03;
+		float wobble = max(0, t - BREAKTIME) * 0.03f;
 
 		a = glm_ease_quad_inout(a) * 0.4;
 		Color color;
@@ -440,13 +440,13 @@ TASK(toe_fermion_effects, { BoxedProjectile p; }) {
 	thiscolor_additive.a = 0;
 
 	for(int t = 0;; t += WAIT(5)) {
-		float particle_scale = fmin(1.0, 0.5 * p->sprite->w / 28.0);
+		float particle_scale = min(1.0f, 0.5f * p->sprite->w / 28.0f);
 
 		PARTICLE(
 			.sprite = "stardust",
 			.pos = p->pos,
 			.color = &thiscolor_additive,
-			.timeout = fmin(t / 6.0, 10),
+			.timeout = min(t / 6.0f, 10),
 			.draw_rule = pdraw_timeout_scalefade(particle_scale * 0.5, particle_scale * 2, 1, 0),
 			.angle = rng_angle(),
 			.flags = PFLAG_MANUALANGLE,

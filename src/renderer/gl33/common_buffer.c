@@ -55,8 +55,8 @@ static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t s
 
 	if(LIKELY(total_size > 0)) {
 		memcpy(cbuf->cache.buffer + cbuf->offset, data, total_size);
-		cbuf->cache.update_begin = umin(cbuf->offset, cbuf->cache.update_begin);
-		cbuf->cache.update_end = umax(cbuf->offset + total_size, cbuf->cache.update_end);
+		cbuf->cache.update_begin = min(cbuf->offset, cbuf->cache.update_begin);
+		cbuf->cache.update_end = max(cbuf->offset + total_size, cbuf->cache.update_end);
 		cbuf->offset += total_size;
 	}
 
@@ -151,7 +151,7 @@ void gl33_buffer_resize(CommonBuffer *cbuf, size_t new_size) {
 	cbuf->size = new_size;
 	cbuf->cache.buffer = mem_realloc(cbuf->cache.buffer, new_size);
 	cbuf->cache.update_begin = 0;
-	cbuf->cache.update_end = umin(old_size, new_size);
+	cbuf->cache.update_end = min(old_size, new_size);
 
 	if(cbuf->offset > new_size) {
 		cbuf->offset = new_size;

@@ -99,7 +99,7 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *c
 
 static void randomize_hue(Color *clr, float r) {
 	float h, s, l, a = clr->a;
-	float m = fmaxf(clr->r, fmaxf(clr->g, clr->b));
+	float m = max(clr->r, max(clr->g, clr->b));
 
 	if(UNLIKELY(m == 0)) {
 		return;

@@ -91,7 +91,7 @@ static void youmu_particle_slice_draw(Projectile *p, int t, ProjDrawRuleArgs arg
 	float f = 0.0f;
 
 	if(tt > 0.1) {
-		f = fminf(1.0f, (tt - 0.1f) / 0.2f);
+		f = min(1.0f, (tt - 0.1f) / 0.2f);
 	}
 
 	if(tt > 0.5f) {
@@ -324,7 +324,7 @@ TASK(youmu_orb_homing_spirit, { YoumuBController *ctrl; cmplx pos; cmplx velocit
 			}
 		}
 
-		real s = fmax(speed, cabs(p->move.velocity));
+		real s = max(speed, cabs(p->move.velocity));
 		p->move.velocity = s * cnormalize(p->move.velocity + aim_strength * s * aimdir);
 		approach_asymptotic_p(&speed, speed_target, 0.05, 1e-5);
 
@@ -481,7 +481,7 @@ TASK(youmu_haunting_bomb_slice_petal, { YoumuBController *ctrl; cmplx pos; cmplx
 	real transition_time = 40;
 
 	for(real t = 0; t <= transition_time; ++t) {
-		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), fmin(1, t / transition_time));
+		p->color = *color_mul_scalar(RGBA(0.2, 0.2, 1, 0), min(1, t / transition_time));
 		YIELD;
 	}
 }
@@ -511,9 +511,9 @@ TASK(youmu_haunting_bomb_slice, { YoumuBController *ctrl; cmplx pos; real angle;
 		real a = 0;
 
 		if(tt > 0.5) {
-			a = fmax(0, 1 - (tt - 0.5) / 0.5);
+			a = max(0, 1 - (tt - 0.5) / 0.5);
 		} else {
-			a = fmin(1, tt / 0.2);
+			a = min(1, tt / 0.2);
 		}
 
 		p->color = *RGBA(a, a, a, 0);

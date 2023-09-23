@@ -204,9 +204,9 @@ TASK(kurumi_vladsarmy_drainer, { BoxedBoss boss; BoxedEnemy enemy; }) {
 			if(i > 40 && e->hp > 0) {
 				// TODO: maybe add a special sound for this?
 
-				float drain = fmin(4, e->hp);
+				float drain = min(4, e->hp);
 				ent_damage(&e->ent, &(DamageInfo) { .amount = drain });
-				boss->current->hp = fmin(boss->current->maxhp, boss->current->hp + drain * 2);
+				boss->current->hp = min(boss->current->maxhp, boss->current->hp + drain * 2);
 			}
 		} else {
 			fapproach_asymptotic_p(&state.alpha, 0, 0.5, 1e-3);

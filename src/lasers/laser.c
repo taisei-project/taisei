@@ -329,7 +329,7 @@ static void *laser_trace_dispatch(LaserTraceState *st) {
 
 static void *laser_trace_advance(LaserTraceState *st, cmplx v, real l) {
 	real full = l;
-	l = fmin(l, st->step - st->accum);
+	l = min(l, st->step - st->accum);
 
 	st->accum += l;
 	st->sample.segment_param += l * st->inverse_seglen;
@@ -582,8 +582,8 @@ static bool laser_collision(Laser *l, Player *plr) {
 
 		UnevenCapsule c = {
 			.pos = s,
-			.radius.a = fmax(lseg->width.a * 0.5 - 4, 2),
-			.radius.b = fmax(lseg->width.b * 0.5 - 4, 2),
+			.radius.a = max(lseg->width.a * 0.5 - 4, 2),
+			.radius.b = max(lseg->width.b * 0.5 - 4, 2),
 		};
 
 		double d = ucapsule_dist_from_point(plrpos, c);
@@ -739,11 +739,11 @@ void laser_charge(Laser *l, int t, float charge, float width) {
 	float new_width;
 
 	if(t < charge - 10) {
-		new_width = fminf(2.0f, 2.0f * t / fminf(30.0f, charge - 10.0f));
+		new_width = min(2.0f, 2.0f * t / min(30.0f, charge - 10.0f));
 	} else if(t >= charge - 10.0f && t < l->deathtime - 20.0f) {
-		new_width = fminf(width, 1.7f + width / 20.0f * (t - charge + 10.0f));
+		new_width = min(width, 1.7f + width / 20.0f * (t - charge + 10.0f));
 	} else if(t >= l->deathtime - 20.0f) {
-		new_width = fmaxf(0.0f, width - width / 20.0f * (t - l->deathtime + 20.0f));
+		new_width = max(0.0f, width - width / 20.0f * (t - l->deathtime + 20.0f));
 	} else {
 		new_width = width;
 	}

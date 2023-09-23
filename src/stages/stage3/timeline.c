@@ -468,7 +468,7 @@ TASK(bulletring, { BoxedEnemy owner; int num; real radius; real speed; }) {
 	real angular_velocity = ARGS.speed / ARGS.radius;
 
 	Enemy *e = NOT_NULL(ENT_UNBOX(ARGS.owner));
-	e->max_viewport_dist = fmax(e->max_viewport_dist, ARGS.radius);
+	e->max_viewport_dist = max(e->max_viewport_dist, ARGS.radius);
 	real r = 1;
 	real a = 0;
 

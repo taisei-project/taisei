@@ -239,7 +239,7 @@ static void gl33_init_texunits(void) {
 		texunits_max = iclamp(texunits_max, texunits_min, texunits_available);
 	}
 
-	texunits_capped = imin(texunits_max, texunits_available);
+	texunits_capped = min(texunits_max, texunits_available);
 	R.texunits.limit = env_get_int("GL33_NUM_TEXUNITS", texunits_capped);
 
 	if(R.texunits.limit == 0) {

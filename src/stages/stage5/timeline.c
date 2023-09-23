@@ -822,7 +822,7 @@ TASK(magnet_bullet, { cmplx pos; cmplx vel; int idx; BoxedProjectileArray *magne
 
 			real norm2 = cabs2(delta);
 			real norm = sqrt(norm2);
-			real s = 1 / (fmax(r, norm - r));
+			real s = 1 / max(r, norm - r);
 			cmplx force = (s / norm) * delta;
 
 			if(norm < r || color_equals(&m->color, &p->color)) {

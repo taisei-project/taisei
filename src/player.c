@@ -183,9 +183,9 @@ void player_draw_overlay(Player *plr) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	float char_in = clamp(a * 1.5, 0, 1);
-	float char_out = fmin(1, 2 - (2 * a));
-	float char_opacity_in = 0.75 * fmin(1, a * 5);
+	float char_in = clampf(a * 1.5f, 0, 1);
+	float char_out = min(1, 2 - (2 * a));
+	float char_opacity_in = 0.75 * min(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
@@ -201,27 +201,27 @@ void player_draw_overlay(Player *plr) {
 
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = char_spr,
-			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+			.pos = { char_spr->w * 0.5 + VIEWPORT_W * powf(1 - char_in, 4 - i * 0.3f) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
-			.scale.both = 1.0 + 0.02 * (fmin(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+			.scale.both = 1.0f + 0.02f * (min(1, a * 1.2f)) + i * 0.5 * powf(1 - o, 2),
 		});
 	}
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = char_spr,
-		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
-		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * fmin(1, char_in * 2) * (1 - fmin(1, (1 - char_out) * 5))),
+		.pos = { char_spr->w * 0.5f + VIEWPORT_W * powf(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
 		.flip.x = true,
 		.scale.both = 1.0 + 0.1 * (1 - char_out),
 	});
 
-	float spell_in = fmin(1, a * 3.0);
-	float spell_out = fmin(1, 3 - (3 * a));
-	float spell_opacity = fmin(1, a * 5) * spell_out * spell_out;
+	float spell_in = min(1, a * 3.0);
+	float spell_out = min(1, 3 - (3 * a));
+	float spell_opacity = min(1, a * 5) * spell_out * spell_out;
 
-	float spell_x = 128 * (1 - pow(1 - spell_in, 5)) + (VIEWPORT_W + 256) * pow(1 - spell_in, 3);
-	float spell_y = VIEWPORT_H - 128 * sqrt(a);
+	float spell_x = 128 * (1 - powf(1 - spell_in, 5)) + (VIEWPORT_W + 256) * powf(1 - spell_in, 3);
+	float spell_y = VIEWPORT_H - 128 * sqrtf(a);
 
 	Sprite *spell_spr = res_sprite("spell");
 
@@ -295,7 +295,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 
 	if(focus_opacity > 0) {
 		float trans_frames = 12;
-		float trans_factor = 1.0 - fminf(trans_frames, t) / trans_frames;
+		float trans_factor = 1.0f - min(trans_frames, t) / trans_frames;
 		float rot_speed = DEG2RAD * global.frames * (1.0f + 3.0f * trans_factor);
 		float scale = 1.0f + trans_factor;
 
@@ -391,7 +391,7 @@ DEFINE_TASK(player_indicators) {
 
 		if(is_focused && !was_focused) {
 			indicators->focus_time = global.frames;
-			indicators->focus_alpha = fminf(indicators->focus_alpha, 0.1f);
+			indicators->focus_alpha = min(indicators->focus_alpha, 0.1f);
 		}
 
 		was_focused = is_focused;
@@ -553,8 +553,8 @@ static void player_powersurge_logic(Player *plr) {
 		return;
 	}
 
-	plr->powersurge.positive = fmaxf(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
-	plr->powersurge.negative = fmaxf(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
+	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
+	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
 
 	if(stage_is_cleared()) {
 		player_cancel_powersurge(plr);
@@ -884,7 +884,7 @@ void player_realdeath(Player *plr) {
 
 	int total_power = plr->power_stored;
 
-	int drop = fmax(2, (total_power * 0.15) / POWER_VALUE);
+	int drop = max(2, (total_power * 0.15) / POWER_VALUE);
 	spawn_items(plr->deathpos, ITEM_POWER, drop);
 
 	player_set_power(plr, total_power * 0.7);
@@ -1535,7 +1535,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 	timings.fadeouttime = 20;
 
 	if(is_piv) {
-		importance = sqrt(fmin(points/500.0, 1));
+		importance = sqrt(min(points/500.0, 1));
 		a = lerp(0.4, 1.0, importance);
 		c = *color_lerp(RGB(0.5, 0.8, 1.0), RGB(1.0, 0.3, 1.0), importance);
 		timings.lifetime = 35 + 10 * importance;

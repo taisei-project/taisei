@@ -114,6 +114,6 @@ DEFINE_EXTERN_TASK(stage3_midboss_nonspell_1) {
 			);
 		}
 
-		delay = imax(60, delay - 10);
+		delay = max(60, delay - 10);
 	}
 }

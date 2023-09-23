@@ -369,7 +369,7 @@ TASK(boss_regen, { BoxedBoss boss; }) {
 	auto boss = TASK_BIND(ARGS.boss);
 	Attack *a = NOT_NULL(boss->current);
 	for(;;YIELD) {
-		a->hp = fminf(a->maxhp, a->hp + 2);
+		a->hp = min(a->maxhp, a->hp + 2);
 	}
 }
 

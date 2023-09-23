@@ -43,7 +43,7 @@ TASK(broglie_laser, { BoxedLaser laser; float hue; }) {
 	real dt = l->timespan * l->speed;
 
 	for(int t = 0;; t++) {
-		real charge = fmin(1, powf(t / dt, 4));
+		real charge = min(1, powf(t / dt, 4));
 		l->color = *HSLA(ARGS.hue, 1.0, 0.5 + 0.2 * charge, 0.0);
 		l->width_exponent = 1.0 - 0.5 * charge;
 

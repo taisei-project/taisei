@@ -280,7 +280,7 @@ static struct pos_ray_data pos_ray_init(
 		.forward_nrange = forward_range / step_len,
 		.back_nrange = back_range / step_len,
 	};
-	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+	rd.max_nrange = max(rd.forward_nrange, rd.back_nrange);
 
 	return rd;
 }
@@ -302,7 +302,7 @@ static struct pos_ray_data pos_ray_init_nsteps(
 		.forward_nrange = forward_steps,
 		.back_nrange = back_steps,
 	};
-	rd.max_nrange = imax(rd.forward_nrange, rd.back_nrange);
+	rd.max_nrange = max(rd.forward_nrange, rd.back_nrange);
 
 	return rd;
 }

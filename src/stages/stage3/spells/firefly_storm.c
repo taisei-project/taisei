@@ -19,7 +19,7 @@ static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs a
 	SpriteParams sp = projectile_sprite_params(p, &spbuf);
 	r_draw_sprite(&sp);
 
-	float f = 1 - fminf(time / 60.0f, 1.0f);
+	float f = 1 - min(time / 60.0f, 1.0f);
 	if(f > 0) {
 		// TODO: Maybe convert this into a particle effect?
 		sp.sprite_ptr = res_sprite("proj/ball");
@@ -43,7 +43,7 @@ TASK(fstorm_bullet, { BoxedBoss boss; ProjPrototype *proto; cmplx pos; cmplx vel
 		if(cabs(global.plr.pos - p->pos) > 100) {
 			++t;
 		} else {
-			t = imax(0, t - 1);
+			t = max(0, t - 1);
 		}
 
 		if(t >= ARGS.convert_time) {
@@ -94,7 +94,7 @@ DEFINE_EXTERN_TASK(stage3_spell_firefly_storm) {
 
 		int cnt = 2;
 		for(int i = 0; i < cnt; ++i) {
-			real r = fmax(0.05, tanh(sin(cycle / 200.0)));
+			real r = max(0.05, tanh(sin(cycle / 200.0)));
 			real v = lun ? cos(cycle / 150.0) / pow(cosh(atanh(r)), 2) : 0.5;
 			cmplx pos = 230 * cdir(cycle * 0.301 + M_TAU / cnt * i) * r;
 

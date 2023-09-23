@@ -145,8 +145,8 @@ void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l) {
 	float g = clamp(c->g, 0, 1);
 	float b = clamp(c->b, 0, 1);
 
-	float maxv = fmax(fmax(r, g), b);
-	float minv = fmin(fmin(r, g), b);
+	float maxv = max(max(r, g), b);
+	float minv = min(min(r, g), b);
 	float h = 0, s = 0, d = maxv - minv, l = (maxv + minv) / 2;
 
 	if(maxv != minv) {

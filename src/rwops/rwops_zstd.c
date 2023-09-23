@@ -207,7 +207,7 @@ SDL_RWops *SDL_RWWrapZstdReader(SDL_RWops *src, bool autoclose) {
 	ZstdData *z = ZDATA(rw);
 	z->reader.stream = NOT_NULL(ZSTD_createDStream());
 	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
-	z->reader.in_buffer_alloc_size = imax(z->reader.next_read_size, 16384);
+	z->reader.in_buffer_alloc_size = max(z->reader.next_read_size, 16384);
 	z->reader.in_buffer.src = mem_alloc(z->reader.in_buffer_alloc_size);
 	z->reader.next_read_size = z->reader.in_buffer_alloc_size;
 

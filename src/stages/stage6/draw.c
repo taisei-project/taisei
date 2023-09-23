@@ -200,7 +200,7 @@ void elly_spellbg_modern(Boss *b, int t) {
 
 void elly_spellbg_modern_dark(Boss *b, int t) {
 	elly_spellbg_modern(b, t);
-	fade_out(0.75 * fmin(1, t / 300.0));
+	fade_out(0.75f * min(1.0f, t / 300.0f));
 }
 
 static bool stage6_fog(Framebuffer *fb) {

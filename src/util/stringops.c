@@ -344,7 +344,7 @@ void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize
 		digits = digitcnt(num);
 	}
 
-	num = umin(upow10(digits) - 1, num);
+	num = min(upow10(digits) - 1, num);
 
 	div_t separators = div(digits, 3);
 	attr_unused uint len = digits + (separators.quot + !!separators.rem);

@@ -902,7 +902,7 @@ void progress_unlock_all(void) {
 	progress.unlocked_cutscenes = UINT64_MAX;
 
 	for(int i = 0; i < NUM_ENDINGS; ++i) {
-		progress.achieved_endings[i] = imax(1, progress.achieved_endings[i]);
+		progress.achieved_endings[i] = max(1, progress.achieved_endings[i]);
 	}
 }
 

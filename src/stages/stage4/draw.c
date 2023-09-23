@@ -154,9 +154,9 @@ static void torchlight(float t, PointLight3D *light) {
 	float r = powf(psinf(2*t+o0), 2)    + powf(pcosf(4.43*t+o1), 4) + powf(psinf(5*t+o2),  21);
 	float g = powf(psinf(1.65*t+o3), 2) + powf(pcosf(5.21*t+o4), 3) + powf(psinf(-3*t+o5), 12);
 
-	r = fmaxf(r, g);
-	r = powf(tanh(r), 5);
-	g = powf(tanh(g), 5);
+	r = max(r, g);
+	r = powf(tanhf(r), 5);
+	g = powf(tanhf(g), 5);
 
 	vec3 c;
 	vec3 rg = {
@@ -260,7 +260,7 @@ static void stage4_flames_draw(vec3 pos) {
 	uint imax = 256;
 	uint instances = lerpf(imin, imax, lod * lod * lod * lod);
 
-	float al = fminf(1.0f, 64.0f / instances);
+	float al = min(1.0f, 64.0f / instances);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_disable(RCAP_DEPTH_WRITE);
