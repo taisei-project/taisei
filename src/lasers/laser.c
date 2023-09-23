@@ -266,12 +266,11 @@ static int quantize_laser(Laser *l) {
 			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
 
 		if(visible) {
-			LaserSegment *seg = dynarray_append(&lintern.segments);
-			*seg = (LaserSegment) {
+			LaserSegment *seg = dynarray_append(&lintern.segments, {
 				.pos   = {   a,  b },
 				.width = {  w0,  w },
 				.time  = { -t0, -t },
-			};
+			});
 
 			if(w < w0) {
 				// NOTE: the uneven capsule distance function may not work correctly in cases where

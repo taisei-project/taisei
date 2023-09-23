@@ -284,7 +284,7 @@ static bool _replay_read_events(ReplayReadContext *ctx) {
 		dynarray_ensure_capacity(&stg->events, stg->num_events);
 
 		for(int j = 0; j < stg->num_events; ++j) {
-			ReplayEvent *evt = dynarray_append(&stg->events);
+			ReplayEvent *evt = dynarray_append(&stg->events, {});
 
 			CHECKPROP(evt->frame = SDL_ReadLE32(ctx->stream), u);
 			CHECKPROP(evt->type = SDL_ReadU8(ctx->stream), u);

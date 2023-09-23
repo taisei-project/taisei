@@ -81,7 +81,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 	ent->spawn_id = ++entities.total_spawns;
 	ent->index = entities.registered.num_elements;
 	assume(ent->spawn_id > 0);
-	*dynarray_append(&entities.registered) = ent;
+	dynarray_append(&entities.registered, ent);
 }
 
 void ent_unregister(EntityInterface *ent) {

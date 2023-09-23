@@ -16,18 +16,16 @@
 #include "util/graphics.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
-	MenuEntry *e = dynarray_append(&menu->entries);
-
-	stralloc(&e->name, name);
-	e->action = action;
-	e->arg = arg;
-	e->transition = menu->transition;
-
-	return e;
+	return dynarray_append(&menu->entries, {
+		.action = action,
+		.arg = arg,
+		.transition = menu->transition,
+		.name = name ? strdup(name) : NULL,
+	});
 }
 
 void add_menu_separator(MenuData *menu) {
-	dynarray_append(&menu->entries);
+	dynarray_append(&menu->entries, {});
 }
 
 void free_menu(MenuData *menu) {

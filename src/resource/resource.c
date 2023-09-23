@@ -476,7 +476,7 @@ void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *n
 	InternalResource *dep = preload_resource_internal(type, name, st->flags & ~RESF_RELOAD);
 	InternalResource *ires = ist->ires;
 	ires_lock(ires);
-	*dynarray_append(&ires->dependencies) = dep;
+	dynarray_append(&ires->dependencies, dep);
 	ires_make_dependent_one(ires_get_persistent(ires), dep);
 	ires_unlock(ires);
 }
@@ -574,7 +574,7 @@ static void register_watched_path(InternalResource *ires, const char *vfspath, F
 	});
 
 	if(!free_slot) {
-		free_slot = dynarray_append(&ires->watched_paths);
+		free_slot = dynarray_append(&ires->watched_paths, {});
 	}
 
 	free_slot->vfs_path = strdup(vfspath);
@@ -632,7 +632,7 @@ static void get_ires_list_for_watch(FileWatch *watch, IResPtrArray *output) {
 
 		for(;iter.has_data; ht_ires_counted_set_iter_next(&iter)) {
 			assert(iter.value > 0);
-			*dynarray_append(output) = iter.key;
+			dynarray_append(output, iter.key);
 		}
 
 		ht_ires_counted_set_iter_end(&iter);
@@ -663,8 +663,7 @@ static void ires_migrate_watched_paths(InternalResource *dst, InternalResource *
 	dst->watched_paths.num_elements = 0;
 
 	dynarray_foreach_elem(&src->watched_paths, WatchedPath *src_wp, {
-		WatchedPath *dst_wp = dynarray_append(&dst->watched_paths);
-		*dst_wp = *src_wp;
+		WatchedPath *dst_wp = dynarray_append(&dst->watched_paths, *src_wp);
 		FileWatch *w = dst_wp->watch;
 
 		associate_ires_watch(dst, w);
@@ -785,7 +784,7 @@ static void res_group_add_ires(ResourceGroup *rg, InternalResource *ires, bool i
 		ires_incref(ires);
 	}
 
-	*dynarray_append(&rg->refs) = ires;
+	dynarray_append(&rg->refs, ires);
 }
 
 static void res_group_preload_one(

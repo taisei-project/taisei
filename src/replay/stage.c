@@ -14,8 +14,7 @@
 #include "plrmodes.h"
 
 ReplayStage *replay_stage_new(Replay *rpy, StageInfo *stage, uint64_t start_time, uint64_t seed, Difficulty diff, Player *plr) {
-	ReplayStage *s = dynarray_append(&rpy->stages);
-	*s = (ReplayStage) { };
+	ReplayStage *s = dynarray_append(&rpy->stages, {});
 
 	get_system_time(&s->init_time);
 	dynarray_ensure_capacity(&s->events, REPLAY_ALLOC_INITIAL);
@@ -73,10 +72,11 @@ void replay_stage_update_final_stats(ReplayStage *stg, const Stats *stats) {
 void replay_stage_event(ReplayStage *stg, uint32_t frame, uint8_t type, uint16_t value) {
 	dynarray_size_t old_capacity = stg->events.capacity;
 
-	ReplayEvent *e = dynarray_append(&stg->events);
-	e->frame = frame;
-	e->type = type;
-	e->value = value;
+	dynarray_append(&stg->events, {
+		.frame = frame,
+		.type = type,
+		.value = value,
+	});
 
 	if(stg->events.capacity > old_capacity && stg->events.capacity > UINT16_MAX) {
 		log_error("Too many events in replay; saving WILL FAIL!");

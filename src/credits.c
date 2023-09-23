@@ -204,9 +204,10 @@ static void credits_add(char *data, int time) {
 
 	assert(time > CREDITS_ENTRY_FADEOUT);
 
-	e = dynarray_append(&credits.entries);
-	e->time = time - CREDITS_ENTRY_FADEOUT;
-	e->lines = 1;
+	e = dynarray_append(&credits.entries, {
+		.time = time - CREDITS_ENTRY_FADEOUT,
+		.lines = 1,
+	});
 
 	for(c = data; *c; ++c)
 		if(*c == '\n') e->lines++;

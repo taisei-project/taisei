@@ -27,14 +27,15 @@ static void add_stage(
 	AttackInfo *spell,
 	Difficulty diff
 ) {
-	StageInfo *stg = dynarray_append(&stageinfo.stages);
-	stg->id = id;
-	stg->procs = procs;
-	stg->type = type;
-	stralloc(&stg->title, title);
-	stralloc(&stg->subtitle, subtitle);
-	stg->spell = spell;
-	stg->difficulty = diff;
+	dynarray_append(&stageinfo.stages, {
+		.id = id,
+		.procs = procs,
+		.type = type,
+		.spell = spell,
+		.difficulty = diff,
+		.title = title ? strdup(title) : NULL,
+		.subtitle = subtitle ? strdup(subtitle) : NULL,
+	});
 }
 
 static void add_spellpractice_stage(
