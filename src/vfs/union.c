@@ -163,7 +163,7 @@ static bool vfs_union_mount(VFSNode *node, const char *mountpoint, VFSNode *moun
 		return false;
 	}
 
-	*dynarray_append(&unode->members) = mountee;
+	dynarray_append(&unode->members, mountee);
 	assert(vfs_union_get_primary(unode) == mountee);
 
 	return true;

@@ -22,15 +22,17 @@ static void add_glsl_version_parsed(GLSLVersion v) {
 		}
 	});
 
-	ShaderLangInfo *lang = dynarray_append(&glcommon_shader_lang_table);
-	lang->lang = SHLANG_GLSL;
-	lang->glsl.version = v;
+	dynarray_append(&glcommon_shader_lang_table, {
+		.lang = SHLANG_GLSL,
+		.glsl.version = v,
+	});
 
 	if(v.profile == GLSL_PROFILE_NONE && v.version >= 330) {
 		v.profile = GLSL_PROFILE_CORE;
-		lang = dynarray_append(&glcommon_shader_lang_table);
-		lang->lang = SHLANG_GLSL;
-		lang->glsl.version = v;
+		dynarray_append(&glcommon_shader_lang_table, {
+			.lang = SHLANG_GLSL,
+			.glsl.version = v,
+		});
 	}
 }
 

@@ -80,7 +80,7 @@ void events_register_handler(EventHandler *handler) {
 	assert(handler->priority >= EPRIO_FIRST);
 	assert(handler->priority <= EPRIO_LAST);
 
-	*dynarray_append(&global_handlers) = *handler;
+	dynarray_append(&global_handlers, *handler);
 
 	// don't bother sorting, since most of the time we will need to re-sort it
 	// together with local handlers when polling
@@ -249,7 +249,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 }
 
 void events_defer(SDL_Event *evt) {
-	*dynarray_append(&deferred_events) = *evt;
+	dynarray_append(&deferred_events, *evt);
 }
 
 void events_pause_keyrepeat(void) {

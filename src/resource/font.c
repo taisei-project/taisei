@@ -516,15 +516,17 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		return NULL;
 	}
 
-	Glyph *glyph = dynarray_append(&font->glyphs);
-
-	glyph->metrics.bearing_x = f26dot6_to_float(font->face->glyph->metrics.horiBearingX);
-	glyph->metrics.bearing_y = f26dot6_to_float(font->face->glyph->metrics.horiBearingY);
-	glyph->metrics.width = f26dot6_to_float(font->face->glyph->metrics.width);
-	glyph->metrics.height = f26dot6_to_float(font->face->glyph->metrics.height);
-	glyph->metrics.advance = f26dot6_to_float(font->face->glyph->metrics.horiAdvance);
-	glyph->metrics.lsb_delta = f26dot6_to_float(font->face->glyph->lsb_delta);
-	glyph->metrics.rsb_delta = f26dot6_to_float(font->face->glyph->rsb_delta);
+	Glyph *glyph = dynarray_append(&font->glyphs, {
+		.metrics = {
+			.bearing_x = f26dot6_to_float(font->face->glyph->metrics.horiBearingX),
+			.bearing_y = f26dot6_to_float(font->face->glyph->metrics.horiBearingY),
+			.width = f26dot6_to_float(font->face->glyph->metrics.width),
+			.height = f26dot6_to_float(font->face->glyph->metrics.height),
+			.advance = f26dot6_to_float(font->face->glyph->metrics.horiAdvance),
+			.lsb_delta = f26dot6_to_float(font->face->glyph->lsb_delta),
+			.rsb_delta = f26dot6_to_float(font->face->glyph->rsb_delta),
+		}
+	});
 
 	FT_Glyph g_src = NULL, g_fill = NULL, g_border = NULL, g_inner = NULL;
 	FT_BitmapGlyph g_bm_fill = NULL, g_bm_border = NULL, g_bm_inner = NULL;

@@ -50,15 +50,14 @@ dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeo
 	assume(num_elements <= capacity);
 	assume(min_capacity >= 2);
 
-	if(capacity < min_capacity) {
+	if(UNLIKELY(capacity < min_capacity)) {
 		_dynarray_resize(sizeof_element, darr, min_capacity);
-	} else if(num_elements == capacity) {
+	} else if(UNLIKELY(num_elements == capacity)) {
 		capacity += capacity >> 1;
 		_dynarray_resize(sizeof_element, darr, capacity);
 	}
 
 	++darr->num_elements;
-	memset((char*)darr->data + num_elements * sizeof_element, 0, sizeof_element);
 
 	DYNARRAY_DEBUG(darr, "elements: %u/%u", darr->num_elements, darr->capacity);
 	return num_elements;  // insertion index

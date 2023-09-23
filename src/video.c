@@ -197,7 +197,7 @@ static void video_add_mode(VideoModeArray *mode_array, IntExtent mode_screen, In
 		}
 	}
 
-	dynarray_append(mode_array)->as_int_extent = mode_screen;
+	dynarray_append(mode_array, { .as_int_extent = mode_screen });
 	log_debug("Add %s mode: %ix%i", mode_type, mode_screen.w, mode_screen.h);
 }
 

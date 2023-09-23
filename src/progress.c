@@ -647,10 +647,11 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 			StageProgress *p = stageinfo_get_progress(stg, d, false);
 
 			if(p && (p->global.num_played || p->global.num_cleared)) {
-				auto e = dynarray_append(&data->elems);
-				e->head.stage = stg->id;
-				e->head.diff = d;
-				e->prog = p;
+				dynarray_append(&data->elems, {
+					.head.stage = stg->id,
+					.head.diff = d,
+					.prog = p,
+				});
 			}
 		}
 	}

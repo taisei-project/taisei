@@ -70,21 +70,23 @@ void _dynarray_ensure_capacity(dynarray_size_t sizeof_element, DynamicArray *dar
 
 dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t min_capacity) attr_nonnull_all;
 
-/*
- * NOTE: unfortunately this evaluates `darr` more than once, but when compiling
- * with NDEBUG the assume() macro should trip a clang warning if there are
- * potential side-effects, and we always treat that warning as an error.
- */
-#define _dynarray_append_with_min_capacity(darr, min_capacity) \
-	dynarray_get_ptr(darr, _dynarray_dispatch_func(prepare_append_with_min_capacity, darr, min_capacity))
-
-#define dynarray_append_with_min_capacity(darr, min_capacity) ({ \
-	auto _darr2 = NOT_NULL(darr); \
-	dynarray_get_ptr(_darr2, _dynarray_dispatch_func(prepare_append_with_min_capacity, _darr2, min_capacity)); \
+#define _dynarray_append_with_min_capacity_1(darr, min_capacity, ...) ({ \
+	auto _pelem = _dynarray_append_with_min_capacity_0(darr, min_capacity); \
+	*_pelem = ((typeof(*_pelem)) __VA_ARGS__); \
+	_pelem; \
 })
 
-#define dynarray_append(darr) \
-	dynarray_append_with_min_capacity(darr, 2)
+#define _dynarray_append_with_min_capacity_0(darr, min_capacity) ({ \
+	auto _darr2 = NOT_NULL(darr); \
+	auto _pelem = dynarray_get_ptr(_darr2, _dynarray_dispatch_func(prepare_append_with_min_capacity, _darr2, min_capacity)); \
+	_pelem; \
+})
+
+#define dynarray_append_with_min_capacity(darr, min_capacity, ...) \
+	MACROHAX_OVERLOAD_HASARGS(_dynarray_append_with_min_capacity_, __VA_ARGS__)(darr, min_capacity, ##__VA_ARGS__)
+
+#define dynarray_append(darr, ...) \
+	dynarray_append_with_min_capacity(darr, 2, ##__VA_ARGS__)
 
 void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) attr_nonnull_all;
 #define dynarray_compact(darr) \

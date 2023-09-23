@@ -164,9 +164,10 @@ static bool gamepad_update_device_list(void) {
 			continue;
 		}
 
-		auto dev = dynarray_append(&gamepad.devices);
-		dev->sdl_id = i;
-		dev->controller = SDL_GameControllerOpen(i);
+		auto dev = dynarray_append(&gamepad.devices, {
+			.sdl_id = i,
+			.controller = SDL_GameControllerOpen(i),
+		});
 
 		if(dev->controller == NULL) {
 			log_sdl_error(LOG_WARN, "SDL_GameControllerOpen");
