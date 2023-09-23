@@ -148,7 +148,17 @@ static inline bool proj_update(Projectile *p, int t) {
 			cmplx delta_pos = p->pos - p->prevpos;
 
 			if(delta_pos) {
-				p->angle = carg(delta_pos) + p->angle_delta;
+				real angle;
+
+				if(p->_cached_delta_pos == delta_pos) {
+					angle = p->_cached_angle;
+				} else {
+					angle = carg(delta_pos);
+					p->_cached_delta_pos = delta_pos;
+					p->_cached_angle = angle;
+				}
+
+				p->angle = angle + p->angle_delta;
 			}
 		}
 	}
@@ -260,6 +270,8 @@ static Projectile* _create_projectile(ProjArgs *args) {
 	p->move = args->move;
 	p->scale = args->scale;
 	p->opacity = args->opacity;
+
+	p->_cached_angle = p->angle;
 
 	p->ent.draw_func = ent_draw_projectile;
 
