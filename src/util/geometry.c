@@ -12,7 +12,7 @@
 #include "miscmath.h"
 
 Rect ellipse_bbox(Ellipse e) {
-	double largest_radius = fmax(re(e.axes), im(e.axes)) * 0.5;
+	double largest_radius = max(re(e.axes), im(e.axes)) * 0.5;
 	cmplx d = CMPLX(largest_radius, largest_radius);
 	return (Rect) {
 		.top_left     = e.origin - d,
@@ -21,24 +21,27 @@ Rect ellipse_bbox(Ellipse e) {
 }
 
 bool point_in_ellipse(cmplx p, Ellipse e) {
-	double Xp = re(p);
-	double Yp = im(p);
-	double Xe = re(e.origin);
-	double Ye = im(e.origin);
-	double a = e.angle;
-
 	Rect e_bbox = ellipse_bbox(e);
 
-	return point_in_rect(p, e_bbox) && (
-		pow(cos(a) * (Xp - Xe) + sin(a) * (Yp - Ye), 2) / pow(re(e.axes)/2, 2) +
-		pow(sin(a) * (Xp - Xe) - cos(a) * (Yp - Ye), 2) / pow(im(e.axes)/2, 2)
-	) <= 1;
+	if(!point_in_rect(p, e_bbox)) {
+		return false;
+	}
+
+	p -= e.origin;
+	cmplx dir = cdir(e.angle);
+	cmplx dotcross = CMPLX(cdot(p, dir), ccross(p, dir));
+	cmplx dotcross2 = cwmul(dotcross, dotcross);
+	cmplx terms = cwdiv(dotcross2, cwmul(e.axes, e.axes));
+	return re(terms) + im(terms) <= 0.25;
 }
 
 Rect lineseg_bbox(LineSegment seg) {
+	cmplx rmm = csort(CMPLX(re(seg.a), re(seg.b)));
+	cmplx imm = csort(CMPLX(im(seg.a), im(seg.b)));
+
 	return (Rect) {
-		.top_left     = fmin(re(seg.a), re(seg.b)) + I * fmin(im(seg.a), im(seg.b)),
-		.bottom_right = fmax(re(seg.a), re(seg.b)) + I * fmax(im(seg.a), im(seg.b))
+		.top_left     = CMPLX(re(rmm), re(imm)),
+		.bottom_right = CMPLX(im(rmm), im(imm))
 	};
 }
 
@@ -61,8 +64,8 @@ static double lineseg_closest_factor_impl(cmplx m, cmplx v) {
 		return 0;
 	}
 
-	double f = -re(v * conj(m)) / lm2; // project v onto the line
-	f = clamp(f, 0, 1);                   // restrict it to segment
+	double f = -re(cmul_finite(v, conj(m))) / lm2; // project v onto the line
+	f = clamp(f, 0, 1);                            // restrict it to segment
 
 	return f;
 }
@@ -106,13 +109,13 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	seg.b -= e.origin;
 
 	double ratio = re(e.axes) / im(e.axes);
-	cmplx rotation = cexp(I * -e.angle);
-	seg.a *= rotation;
-	seg.b *= rotation;
-	seg.a = re(seg.a) + I * ratio * im(seg.a);
-	seg.b = re(seg.b) + I * ratio * im(seg.b);
+	cmplx rotation = cdir(-e.angle);
+	seg.a = cmul_finite(seg.a, rotation);
+	seg.b = cmul_finite(seg.b, rotation);
+	im(seg.a) *= ratio;
+	im(seg.b) *= ratio;
 
-	Circle c = { .radius = re(e.axes) / 2 };
+	Circle c = { .radius = re(e.axes) * 0.5 };
 	return lineseg_circle_intersect_fallback(seg, c) >= 0;
 }
 
