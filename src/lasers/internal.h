@@ -21,7 +21,7 @@ extern LaserInternalData lintern;
 
 // Should be set slightly larger than the
 // negated lowest distance threshold value in the sdf_apply shader
-#define LASER_SDF_RANGE 4.01
+#define LASER_SDF_RANGE 4.01f
 
 void laserintern_init(void);
 void laserintern_shutdown(void);

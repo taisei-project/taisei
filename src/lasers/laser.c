@@ -159,10 +159,13 @@ static float calc_sample_width(
 	Laser *l, float sample, float half_samples, float width_factor, float tail
 ) {
 	float mid_ofs = sample - half_samples;
-	return 0.75f * l->width * powf(
-		width_factor * (mid_ofs - tail) * (mid_ofs + tail),
-		l->width_exponent
-	);
+	float w = width_factor * (mid_ofs - tail) * (mid_ofs + tail);
+
+	if(l->width_exponent != 1.0) {
+		w = powf(w, l->width_exponent);
+	}
+
+	return 0.75f * l->width * w;
 }
 
 static void laserseg_flip(LaserSegment *s) {
@@ -239,13 +242,14 @@ static int quantize_laser(Laser *l) {
 
 			// dot(a, b) == |a|*|b|*cos(theta)
 			float dot = cdotf(v0, v1);
-			float norm = sqrtf(v0_abs2 * cabs2f(v1));
+			float norm2 = v0_abs2 * cabs2f(v1);
 
-			if(norm == 0.0f) {
+			if(norm2 == 0.0f) {
 				// degenerate case
 				continue;
 			}
 
+			float norm = sqrtf(norm2);
 			float cosTheta = dot / norm;
 			float d = 1.0f - fabsf(cosTheta);
 
@@ -280,10 +284,10 @@ static int quantize_laser(Laser *l) {
 
 			assert(seg->width.a <= seg->width.b);
 
-			top_left.x     = fminf(    top_left.x, fminf(xa, xb));
-			top_left.y     = fminf(    top_left.y, fminf(ya, yb));
-			bottom_right.x = fmaxf(bottom_right.x, fmaxf(xa, xb));
-			bottom_right.y = fmaxf(bottom_right.y, fmaxf(ya, yb));
+			top_left.x     = min(    top_left.x, min(xa, xb));
+			top_left.y     = min(    top_left.y, min(ya, yb));
+			bottom_right.x = max(bottom_right.x, max(xa, xb));
+			bottom_right.y = max(bottom_right.y, max(ya, yb));
 		}
 
 		t0 = t;
