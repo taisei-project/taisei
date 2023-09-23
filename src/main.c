@@ -362,8 +362,6 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		env_set("SDL_VIDEODRIVER", "dummy", true);
 		env_set("TAISEI_AUDIO_BACKEND", "null", true);
 		env_set("TAISEI_RENDERER", "null", true);
-		env_set("TAISEI_NOPRELOAD", true, false);
-		env_set("TAISEI_PRELOAD_REQUIRED", false, false);
 	} else {
 		init_log_file();
 	}
