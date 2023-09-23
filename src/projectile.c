@@ -114,17 +114,19 @@ static void process_projectile_args(ProjArgs *args, ProjArgs *defaults) {
 	assert(args->type <= PROJ_PLAYER);
 }
 
-static void projectile_size(Projectile *p, double *w, double *h) {
-	if(p->type == PROJ_PARTICLE && p->sprite != NULL) {
-		*w = p->sprite->w;
-		*h = p->sprite->h;
+static cmplx projectile_size(Projectile *p) {
+	cmplx r;
+
+	if(p->type == PROJ_PARTICLE && LIKELY(p->sprite != NULL)) {
+		r = p->sprite->extent.as_cmplx;
 	} else {
-		*w = re(p->size);
-		*h = im(p->size);
+		r = p->size;
 	}
 
-	assert(*w > 0);
-	assert(*h > 0);
+	assert(re(r) > 0);
+	assert(im(r) > 0);
+
+	return r;
 }
 
 static Projectile *spawn_bullet_spawning_effect(Projectile *p);
@@ -179,8 +181,9 @@ cmplx projectile_graze_size(Projectile *p) {
 		p->graze_counter < 3 &&
 		global.frames >= p->graze_cooldown
 	) {
-		cmplx s = (p->size * 420 /* graze it */) / (2 * p->graze_counter + 1);
-		return sqrt(re(s)) + sqrt(im(s)) * I;
+		real scale = 420.0 /* graze it */ / (2 * p->graze_counter + 1);
+		cmplx s = scale * p->size;
+		return CMPLX(sqrt(re(s)), sqrt(im(s)));
 	}
 
 	return 0;
@@ -191,9 +194,8 @@ float projectile_timeout_factor(Projectile *p) {
 }
 
 static double projectile_rect_area(Projectile *p) {
-	double w, h;
-	projectile_size(p, &w, &h);
-	return w * h;
+	cmplx s = projectile_size(p);
+	return re(s) * im(s);
 }
 
 void projectile_set_layer(Projectile *p, drawlayer_t layer) {
@@ -472,12 +474,23 @@ static void ent_draw_projectile(EntityInterface *ent) {
 }
 
 bool projectile_in_viewport(Projectile *proj) {
-	double w, h;
-	int e = proj->max_viewport_dist;
-	projectile_size(proj, &w, &h);
+	real e = proj->max_viewport_dist;
+	cmplx size = projectile_size(proj);
+	cmplx buffer = 0.5 * size + CMPLX(e, e);
+	cmplx pos = proj->pos;
+	cmplx br = pos + buffer;
 
-	return !(re(proj->pos) + w/2 + e < 0 || re(proj->pos) - w/2 - e > VIEWPORT_W
-		  || im(proj->pos) + h/2 + e < 0 || im(proj->pos) - h/2 - e > VIEWPORT_H);
+	if(re(br) < 0 || im(br) < 0) {
+		return false;
+	}
+
+	cmplx tl = pos - buffer;
+
+	if(re(tl) > VIEWPORT_W || im(tl) > VIEWPORT_H) {
+		return false;
+	}
+
+	return true;
 }
 
 Projectile *spawn_projectile_collision_effect(Projectile *proj) {
