@@ -19,7 +19,7 @@
 // distance to begin attracting the item towards the player.
 #define ITEM_GRAB_RADIUS 10
 
-static const char* item_sprite_name(ItemType type) {
+static const char *item_sprite_name(ItemType type) {
 	static const char *const map[] = {
 		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb",
 		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag",
@@ -39,7 +39,7 @@ static const char* item_sprite_name(ItemType type) {
 	return map[index];
 }
 
-static const char* item_indicator_sprite_name(ItemType type) {
+static const char *item_indicator_sprite_name(ItemType type) {
 	static const char *const map[] = {
 		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb_indicator",
 		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag_indicator",
@@ -59,11 +59,11 @@ static const char* item_indicator_sprite_name(ItemType type) {
 	return map[index];
 }
 
-static Sprite* item_sprite(ItemType type) {
+static Sprite *item_sprite(ItemType type) {
 	return res_sprite(item_sprite_name(type));
 }
 
-static Sprite* item_indicator_sprite(ItemType type) {
+static Sprite *item_indicator_sprite(ItemType type) {
 	const char *name = item_indicator_sprite_name(type);
 	if(name == NULL) {
 		return NULL;
@@ -71,18 +71,32 @@ static Sprite* item_indicator_sprite(ItemType type) {
 	return res_sprite(name);
 }
 
+void item_set_type(Item *item, ItemType type) {
+	if(UNLIKELY(item->type == type)) {
+		return;
+	}
+
+	item->type = type;
+	item->sprites.pickup = NOT_NULL(item_sprite(type));
+	item->sprites.indicator = item_indicator_sprite(type);
+
+	// TODO: remove dependence on sprite size
+	item->size = item->sprites.pickup->extent.as_cmplx;
+
+	item->ent.draw_layer = LAYER_ITEM | type;
+}
+
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
 	const int indicator_display_y = 6;
-
 	float y = im(i->pos);
-	if(y < 0) {
-		Sprite *s = item_indicator_sprite(i->type);
 
-		float alpha = -tanh(y*0.1)/(1+0.1*fabs(y));
+	if(y < 0) {
+		Sprite *s = i->sprites.indicator;
 
 		if(s != NULL) {
+			float alpha = -tanhf(y * 0.1f) / (1 + 0.1 * fabsf(y));
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = s,
 				.pos = { re(i->pos), indicator_display_y },
@@ -91,23 +105,21 @@ static void ent_draw_item(EntityInterface *ent) {
 		}
 	}
 
-
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
-		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
+		alpha = clampf(2.0f - (global.frames - i->birthtime) / 60.0f, 0.1f, 1.0f);
 	}
 
 	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = item_sprite(i->type),
+		.sprite_ptr = i->sprites.pickup,
 		.pos = { re(i->pos), y },
 		.color = c,
 	});
-
 }
 
-Item* create_item(cmplx pos, cmplx v, ItemType type) {
+Item *create_item(cmplx pos, cmplx v, ItemType type) {
 	if((re(pos) < 0 || re(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
 		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
@@ -127,11 +139,11 @@ Item* create_item(cmplx pos, cmplx v, ItemType type) {
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
 	i->collecttime = 0;
-	i->type = type;
 
-	i->ent.draw_layer = LAYER_ITEM | i->type;
 	i->ent.draw_func = ent_draw_item;
 	ent_register(&i->ent, ENT_TYPE_ID(Item));
+
+	item_set_type(i, type);
 
 	return i;
 }
@@ -184,7 +196,7 @@ static cmplx move_item(Item *i) {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
 		cmplx v = i->pos - oldpos;
-		double half = item_sprite(i->type)->w/2.0;  // TODO remove dependence on sprite size
+		double half = re(i->size) * 0.5f;
 		bool over = false;
 
 		if((over = re(i->pos) > VIEWPORT_W-half) || re(i->pos) < half) {
@@ -203,7 +215,7 @@ static cmplx move_item(Item *i) {
 }
 
 static bool item_out_of_bounds(Item *item) {
-	double margin = fmax(item_sprite(item->type)->w, item_sprite(item->type)->h);
+	double margin = max(re(item->size), im(item->size));
 
 	return (
 		re(item->pos) < -margin ||
@@ -254,7 +266,7 @@ void process_items(void) {
 			(item->type == ITEM_POWER_MINI && global.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
 			(item->type == ITEM_SURGE && !surge_active)
 		) {
-			item->type = ITEM_PIV;
+			item_set_type(item, ITEM_PIV);
 
 			if(collect_item(item, 1)) {
 				item->pos0 = item->pos;
@@ -265,7 +277,7 @@ void process_items(void) {
 
 		if(global.stage->type == STAGE_SPELL && (item->type == ITEM_LIFE || item->type == ITEM_BOMB || item->type == ITEM_LIFE_FRAGMENT || item->type == ITEM_BOMB_FRAGMENT)) {
 			// just in case we ever have some weird spell that spawns those...
-			item->type = ITEM_POINTS;
+			item_set_type(item, ITEM_POINTS);
 		}
 
 		if(global.frames - item->birthtime < 20) {
