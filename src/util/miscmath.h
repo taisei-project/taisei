@@ -96,6 +96,46 @@ int popcnt64(uint64_t) attr_const;
 // If the final result would not fit into 64 bits, the return value is undefined.
 uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor);
 
+#define ASSUME_FINITE(x) ({ \
+	auto _temp = (x); \
+	assume(isfinite(_temp)) ; \
+	_temp; \
+})
+
+INLINE cmplx cmul_finite(cmplx a, cmplx b) {
+	double ra = ASSUME_FINITE(re(a));
+	double ia = ASSUME_FINITE(im(a));
+	double rb = ASSUME_FINITE(re(b));
+	double ib = ASSUME_FINITE(im(b));
+	return CMPLX(ra * rb - ia * ib, ra * ib + ia * rb);
+}
+
+INLINE cmplxf cmulf_finite(cmplxf a, cmplxf b) {
+	float ra = ASSUME_FINITE(re(a));
+	float ia = ASSUME_FINITE(im(a));
+	float rb = ASSUME_FINITE(re(b));
+	float ib = ASSUME_FINITE(im(b));
+	return CMPLXF(ra * rb - ia * ib, ra * ib + ia * rb);
+}
+
+INLINE cmplx cdiv_finite(cmplx a, cmplx b) {
+	double ra = ASSUME_FINITE(re(a));
+	double ia = ASSUME_FINITE(im(a));
+	double rb = ASSUME_FINITE(re(b));
+	double ib = ASSUME_FINITE(im(b));
+	double denom = rb * rb + ib * ib;
+	return CMPLX((ra*rb + ia*ib) / denom, (ia*rb - ra*ib) / denom);
+}
+
+INLINE cmplxf cdivf_finite(cmplxf a, cmplxf b) {
+	float ra = ASSUME_FINITE(re(a));
+	float ia = ASSUME_FINITE(im(a));
+	float rb = ASSUME_FINITE(re(b));
+	float ib = ASSUME_FINITE(im(b));
+	float denom = rb * rb + ib * ib;
+	return CMPLXF((ra*rb + ia*ib) / denom, (ia*rb - ra*ib) / denom);
+}
+
 #define topow2(x) (_Generic((x), \
 	uint32_t: topow2_u32, \
 	uint64_t: topow2_u64, \
