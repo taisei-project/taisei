@@ -65,6 +65,8 @@ cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) attr_const;
 cmplx cdir(double angle) attr_const;
 cmplx cwmul(cmplx c0, cmplx c1) attr_const;
 cmplxf cwmulf(cmplxf c0, cmplxf c1) attr_const;
+cmplx cwdiv(cmplx c0, cmplx c1) attr_const;
+cmplxf cwdivf(cmplxf c0, cmplxf c1) attr_const;
 double cdot(cmplx c0, cmplx c1) attr_const;
 float cdotf(cmplxf c0, cmplxf c1) attr_const;
 cmplx cswap(cmplx c) attr_const;

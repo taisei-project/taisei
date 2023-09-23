@@ -150,6 +150,14 @@ cmplxf cwmulf(cmplxf c0, cmplxf c1) {
 	return CMPLXF(re(c0) * re(c1), im(c0) * im(c1));
 }
 
+cmplx cwdiv(cmplx c0, cmplx c1) {
+	return CMPLX(re(c0) / re(c1), im(c0) / im(c1));
+}
+
+cmplxf cwdivf(cmplxf c0, cmplxf c1) {
+	return CMPLXF(re(c0) / re(c1), im(c0) / im(c1));
+}
+
 double cdot(cmplx c0, cmplx c1) {
 	return re(c0) * re(c1) + im(c0) * im(c1);
 }
