@@ -39,6 +39,8 @@ double fmax(double x, double y) attr_deprecated("Use max() instead");
 	_temp_a > _temp_b ? _temp_a : _temp_b; \
 })
 
+#define clamp(x, a, b) min(max(x, a), b)
+
 double lerp(double v0, double v1, double f) attr_const;
 float lerpf(float v0, float v1, float f) attr_const;
 cmplx clerp(cmplx v0, cmplx v1, double f) attr_const;
@@ -48,7 +50,6 @@ intmax_t imax(intmax_t, intmax_t) attr_const attr_deprecated("Use max() instead"
 uintmax_t umin(uintmax_t, uintmax_t) attr_const attr_deprecated("Use min() instead");
 uintmax_t umax(uintmax_t, uintmax_t) attr_const attr_deprecated("Use max() instead");
 intmax_t iclamp(intmax_t, intmax_t, intmax_t) attr_const;
-double clamp(double, double, double) attr_const;
 float clampf(float, float, float) attr_const;
 double smoothstep(double edge0, double edge1, double x) attr_const;
 double smoothmin(double a, double b, double k) attr_const;
