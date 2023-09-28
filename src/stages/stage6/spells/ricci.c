@@ -253,7 +253,7 @@ TASK(ricci_proj, { cmplx pos; cmplx velocity; BoxedEllyBaryons baryons; }) {
 
 		p->pos = p->prevpos = ARGS.pos + ARGS.velocity * t + shift;
 
-		float a = 0.5f + 0.5f * max(0, tanhf((time - 80) / 100.0f)) * clampf(influence, 0.2f, 1);
+		float a = 0.5f + 0.5f * max(0, tanhf((time - 80) / 100.0f)) * clamp((float)influence, 0.2f, 1);
 		a *= min(1, t / 20.0f);
 
 		p->color.r = 0.5;

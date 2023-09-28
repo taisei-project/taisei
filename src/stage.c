@@ -179,7 +179,7 @@ static void stage_start(StageInfo *stage) {
 		global.plr.power_stored = config_get_int(CONFIG_PRACTICE_POWER);
 	}
 
-	global.plr.power_stored = iclamp(global.plr.power_stored, 0, PLR_MAX_POWER_STORED);
+	global.plr.power_stored = clamp(global.plr.power_stored, 0, PLR_MAX_POWER_STORED);
 
 	reset_all_sfx();
 }

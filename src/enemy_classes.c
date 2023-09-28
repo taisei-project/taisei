@@ -515,7 +515,7 @@ void ecls_anyfairy_summon(Enemy *e, int duration) {
 	for(int i = 1;;) {
 		float f = i / (float)duration;
 
-		vp->base.opacity = glm_ease_quint_in(clampf(f * 2.0f, 0.0f, 1.0f));
+		vp->base.opacity = glm_ease_quint_in(clamp(f * 2.0f, 0.0f, 1.0f));
 		vp->base.scale = lerpf(3.0f, 1.0f, glm_ease_back_out( glm_ease_sine_inout(f)));
 
 		if(f >= fairy_delay) {
