@@ -105,7 +105,7 @@ uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor);
 
 #define ASSUME_FINITE(x) ({ \
 	auto _temp = (x); \
-	assume(isfinite(_temp)) ; \
+	assert(isfinite(_temp)) ; \
 	_temp; \
 })
 
