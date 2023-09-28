@@ -201,6 +201,9 @@ endif
 opt_vfs_zip = get_option('vfs_zip').require(host_machine.system() != 'emscripten',
     error_message : 'ZIP packages are not supported on Emscripten')
 
+opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
+    error_message : 'GameMode is Linux-specific')
+
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
 dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
@@ -211,7 +214,7 @@ dep_zstd        = dependency('libzstd',        version : '>=1.4.0', fallback : [
 dep_zip         = dependency('libzip',         version : '>=1.5.0', required : opt_vfs_zip, allow_fallback : true)
 dep_cglm        = dependency('cglm',           version : '>=0.7.8', required : true)
 dep_crypto      = dependency('libcrypto',                           required : get_option('use_libcrypto'))
-dep_gamemode    = dependency('gamemode',                            required : false)
+dep_gamemode    = dependency('gamemode',                            required : opt_gamemode)
 
 dep_m           = cc.find_library('m', required : false)
 

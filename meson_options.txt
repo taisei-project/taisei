@@ -213,3 +213,9 @@ option(
     value : false,
     description : 'Enable live-reloading workflow for stages (for development only)'
 )
+
+option(
+    'gamemode',
+    type : 'feature',
+    description: 'Integrate with the GameMode daemon, if running'
+)
