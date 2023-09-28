@@ -222,20 +222,6 @@ uintmax_t umax(uintmax_t a, uintmax_t b) {
 	return (a > b) ? a : b;
 }
 
-double clamp(double f, double lower, double upper) {
-	assert(lower <= upper);
-
-	if(f < lower) {
-		return lower;
-	}
-
-	if(f > upper) {
-		return upper;
-	}
-
-	return f;
-}
-
 float clampf(float f, float lower, float upper) {
 	assert(lower <= upper);
 
