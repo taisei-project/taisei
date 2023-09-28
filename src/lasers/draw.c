@@ -167,7 +167,7 @@ static void laserdraw_sdf_fb_resize_strategy(void *userdata, IntExtent *fb_size,
 	float vid_vp_w, vid_vp_h;
 	video_get_viewport_size(&vid_vp_w, &vid_vp_h);
 	float q = config_get_float(CONFIG_FG_QUALITY);
-	float factor = clampf(q * vid_vp_w / SCREEN_W, 0.5f, 1.0f);
+	float factor = clamp(q * vid_vp_w / SCREEN_W, 0.5f, 1.0f);
 
 	w = roundf(PACKING_SPACE_SIZE_W * factor);
 	h = roundf(PACKING_SPACE_SIZE_H * factor);

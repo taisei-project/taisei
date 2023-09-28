@@ -19,7 +19,7 @@
 static void kurumi_extra_shield_draw(Enemy *e, EnemyDrawParams p) {
 	// TODO: something nicer here
 
-	float h = clampf(e->hp / e->spawn_hp, 0, 1);
+	float h = clamp(e->hp / e->spawn_hp, 0, 1);
 	h *= h;
 
 	r_draw_sprite(&(SpriteParams) {

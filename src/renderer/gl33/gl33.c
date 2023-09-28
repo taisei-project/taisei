@@ -236,7 +236,7 @@ static void gl33_init_texunits(void) {
 	if(texunits_max == 0) {
 		texunits_max = texunits_available;
 	} else {
-		texunits_max = iclamp(texunits_max, texunits_min, texunits_available);
+		texunits_max = clamp(texunits_max, texunits_min, texunits_available);
 	}
 
 	texunits_capped = min(texunits_max, texunits_available);
@@ -245,7 +245,7 @@ static void gl33_init_texunits(void) {
 	if(R.texunits.limit == 0) {
 		R.texunits.limit = texunits_available;
 	} else {
-		R.texunits.limit = iclamp(R.texunits.limit, texunits_min, texunits_available);
+		R.texunits.limit = clamp(R.texunits.limit, texunits_min, texunits_available);
 	}
 
 	R.texunits.array = ALLOC_ARRAY(R.texunits.limit, typeof(*R.texunits.array));
@@ -506,7 +506,7 @@ static void gl33_sync_magic_uniforms(void) {
 	int num_color_out;
 
 	if(u[UMAGIC_COLOR_OUT_SIZES]) {
-		num_color_out = iclamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
+		num_color_out = clamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
 	} else {
 		num_color_out = 0;
 	}

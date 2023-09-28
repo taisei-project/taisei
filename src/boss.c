@@ -560,7 +560,7 @@ static void draw_spell_portrait(Boss *b, int time) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	float char_in = clampf(a * 1.5f, 0, 1);
+	float char_in = clamp(a * 1.5f, 0, 1);
 	float char_out = min(1, 2 - (2 * a));
 	float char_opacity_in = 0.75f * min(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
@@ -921,7 +921,7 @@ static DamageResult ent_damage_boss(EntityInterface *ent, const DamageInfo *dmg)
 
 	if(pattern_time < max_damage_time) {
 		float span = max_damage_time - min_damage_time;
-		factor = clampf((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
+		factor = clamp((pattern_time - min_damage_time) / span, 0.0f, 1.0f);
 	}
 
 	if(factor == 0) {
@@ -949,7 +949,7 @@ static void calc_spell_bonus(Attack *a, SpellBonus *bonus) {
 	bool survival = a->type == AT_SurvivalSpell;
 	bonus->failed = attack_was_failed(a);
 
-	int time_left = iclamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
+	int time_left = clamp(a->starttime + a->timeout - global.frames, 0, a->timeout);
 
 	double piv_factor = global.plr.point_item_value / (double)PLR_START_PIV;
 	double base = a->bonus_base * 0.5 * (1 + piv_factor);

@@ -317,7 +317,7 @@ static SDL_RWops *wrap_writer(
 	z->window_bits = window_bits;
 
 	if(clevel >= 0) {
-		clevel = iclamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
+		clevel = clamp(clevel, Z_BEST_SPEED, Z_BEST_COMPRESSION);
 	}
 
 	int status = deflateInit2(

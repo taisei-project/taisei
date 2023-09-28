@@ -591,11 +591,11 @@ static bool texture_loader_basisu_init_mipmaps(
 	}
 
 	int mip_bias = env_get("TAISEI_BASISU_MIP_BIAS", 0);
-	mip_bias = iclamp(mip_bias, 0, total_levels - 1);
+	mip_bias = clamp(mip_bias, 0, total_levels - 1);
 	{
 		int max_levels = env_get("TAISEI_BASISU_MAX_MIP_LEVELS", 0);
 		if(max_levels > 0) {
-			total_levels = iclamp(total_levels, 1, mip_bias + max_levels);
+			total_levels = clamp(total_levels, 1, mip_bias + max_levels);
 		}
 	}
 	bld->mip_bias = mip_bias;

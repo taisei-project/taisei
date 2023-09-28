@@ -125,7 +125,7 @@ static int player_track_effective_power_change(Player *plr) {
 
 bool player_set_power(Player *plr, short npow) {
 	int old_stored = plr->power_stored;
-	int new_stored = iclamp(npow, 0, PLR_MAX_POWER_STORED);
+	int new_stored = clamp(npow, 0, PLR_MAX_POWER_STORED);
 	plr->power_stored = new_stored;
 
 	if(old_stored / 100 < new_stored / 100) {
@@ -160,7 +160,7 @@ int player_get_effective_power(Player *plr) {
 		p = plr->power_stored;
 	}
 
-	return iclamp(p, 0, PLR_MAX_POWER_EFFECTIVE);
+	return clamp(p, 0, PLR_MAX_POWER_EFFECTIVE);
 }
 
 void player_move(Player *plr, cmplx delta) {
@@ -183,7 +183,7 @@ void player_draw_overlay(Player *plr) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	float char_in = clampf(a * 1.5f, 0, 1);
+	float char_in = clamp(a * 1.5f, 0, 1);
 	float char_out = min(1, 2 - (2 * a));
 	float char_opacity_in = 0.75 * min(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
