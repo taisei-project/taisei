@@ -7,14 +7,14 @@
 #
 # @end header
 
-glsl_files = files(
+glsl_files = [
 # @begin glsl
     'sdf_apply.frag.glsl',
     'sdf_apply.vert.glsl',
     'sdf_generate.frag.glsl',
     'sdf_generate.vert.glsl',
 # @end glsl
-)
+]
 
 subdirs = [
 # @begin subdirs
@@ -23,37 +23,37 @@ subdirs = [
 
 # @begin validate
 if validate_glsl
-    foreach src : glsl_files
-        fname = '@0@'.format(src)
+    foreach fname : glsl_files
+        message(f'fname: @fname@')
         stage = fname.split('.')[-2]
 
-        spirv = custom_target('SPIRV_' + fname.underscorify(),
-            input : src,
+        spirv = custom_target(
+            input : fname,
             output : '@BASENAME@.spv',
             command : [
-                glslc_command, glslc_args, glslc_depfile_args, get_variable('glslc_@0@_args'.format(stage)),
+                glslc_command, glslc_args, glslc_depfile_args, get_variable(f'glslc_@stage@_args'),
                 '@INPUT@', '-o', '@OUTPUT@'
             ],
             install : false,
             build_by_default : true,
-            depfile : '@0@.d'.format(fname.underscorify()),
+            depfile : f'@fname@.d',
         )
 
         spirv_targets += spirv
 
         if transpile_glsl
-            essl = custom_target('ESSL_' + fname.underscorify(),
+            essl = custom_target(
                 input : spirv,
                 output : '@BASENAME@.glsl',
                 command : [
                     spvc_command,
                     '--output', '@OUTPUT@', '@INPUT@',
                     spvc_args,
-                    get_variable('spvc_@0@_args'.format(stage)),
+                    get_variable(f'spvc_@stage@_args'),
                 ],
                 install : false,
                 build_by_default : true,
-                depfile : '@0@.d'.format(fname.underscorify()),
+                depfile : f'@fname@.d',
             )
 
             essl_targets += essl
