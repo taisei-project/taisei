@@ -6,49 +6,68 @@ ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
 ENV TOOLCHAIN_VERSION="20230919"
-ARG TOOLCHAIN_ARCHS="i686 x86_64"
-ARG DEFAULT_CRT=ucrt
 
-RUN apt-get update -qq && \
-    apt-get dist-upgrade -qqy && \
-    apt-get install -qqy --no-install-recommends \
-    git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim-tiny python3 python3-distutils \
-    ninja-build ca-certificates curl less zip python3-docutils python3-pip \
-    nsis gnupg && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
+ARG TOOLCHAIN_BUILD_ARGS="--disable-lldb --disable-clang-tools-extra"
+ARG TOOLCHAIN_ARCHS="i686 x86_64"
+ARG MESON_VERSION="0.63.3"
+
+RUN apt-get update
+
+RUN apt-get dist-upgrade -y
+
+RUN apt-get install -y --no-install-recommends \
+	automake \
+	autopoint \
+	build-essential \
+	bzip2 \
+	ca-certificates \
+	cmake \
+	curl \
+	file \
+	gettext \
+	git \
+	gnupg \
+	less \
+	libtool \
+	ninja-build \
+	nsis \
+	pkg-config \
+	python3 \
+	python3-distutils \
+	python3-docutils \
+	python3-gnupg \
+	python3-pip \
+	unzip \
+	wget \
+	yasm \
+	zip
+
+RUN apt-get clean -y
+
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install \
-    meson==0.63.3 \
-    ninja \
-    zstandard \
-    python-gnupg
+    meson==$MESON_VERSION \
+    zstandard
 
 WORKDIR /build
 
 # clone a specific tag
 RUN git clone --branch $TOOLCHAIN_VERSION \
-	--single-branch \
+	--single-branch --depth 1 \
 	https://github.com/mstorsjo/llvm-mingw
 
 WORKDIR /build/llvm-mingw
 
-# Build everything that uses the llvm monorepo. We need to build the mingw runtime before the compiler-rt/libunwind/libcxxabi/libcxx runtimes.
-RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
-    ./build-lldb-mi.sh $TOOLCHAIN_PREFIX && \
-    ./strip-llvm.sh $TOOLCHAIN_PREFIX && \
-    ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT && \
-    ./build-mingw-w64-tools.sh $TOOLCHAIN_PREFIX && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX && \
-    ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
-    ./build-openmp.sh $TOOLCHAIN_PREFIX
+RUN CHECKOUT_ONLY=1 CHECKOUT=1 ./build-llvm.sh
 
-# Build libssp
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
+RUN ./build-all.sh $TOOLCHAIN_BUILD_ARGS $TOOLCHAIN_PREFIX
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+
+WORKDIR /build
+
+RUN rm -rfv /build/llvm-mingw
+
+RUN find $TOOLCHAIN_PREFIX/llvm-mingw/{bin,lib*} -type f | \
+	while read line; do sudo llvm-strip -g "$line"; done
