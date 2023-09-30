@@ -217,8 +217,8 @@ jobs:
 
   windows-release-build-x64:
     name: Windows (x64)
-    runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20221226
+    runs-on: ubuntu-latest
+    container: taiseiproject/windows-toolkit:20230929
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -299,8 +299,8 @@ jobs:
 
   windows-release-build-x86:
     name: Windows (x86)
-    runs-on: ubuntu-20.04
-    container: taiseiproject/windows-toolkit:20221226
+    runs-on: ubuntu-latest
+    container: taiseiproject/windows-toolkit:20230929
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
