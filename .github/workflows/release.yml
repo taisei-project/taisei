@@ -525,8 +525,8 @@ jobs:
   switch-release-build:
     name: Switch (ARM64)
     if: ${{ github.event.inputs.switch == 'true' }}
-    runs-on: ubuntu-20.04
-    container: taiseiproject/switch-toolkit:20221226
+    runs-on: ubuntu-latest
+    container: taiseiproject/switch-toolkit:20231006
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
