@@ -22,8 +22,6 @@
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);env_set_string(name, val, true)
 
-uint32_t __nx_fs_num_sessions = 1;
-
 static nxAtExitFn g_nxAtExitFn = NULL;
 static char g_programDir[FS_MAX_PATH] = {0};
 static AppletHookCookie g_hookCookie;
