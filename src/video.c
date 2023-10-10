@@ -142,6 +142,8 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 
 static VideoCapabilityState video_query_capability_switch(VideoCapability cap) {
 	switch(cap) {
+		// We want the window to be resizable and resized internally by SDL
+		// when the Switch gets docked/undocked
 		case VIDEO_CAP_FULLSCREEN:
 			return VIDEO_NEVER_AVAILABLE;
 
@@ -777,6 +779,7 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
 
 			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
+			// https://github.com/devkitPro/SDL/issues/31
 			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
 				video_handle_resize(event->window.data1, event->window.data2);
 			}
