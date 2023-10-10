@@ -26,6 +26,9 @@ static nxAtExitFn g_nxAtExitFn = NULL;
 static char g_programDir[FS_MAX_PATH] = {0};
 static AppletHookCookie g_hookCookie;
 
+static s32 g_initialScreenWidth = 1920;
+static s32 g_initialScreenHeight = 1080;
+
 static void onAppletHook(AppletHookType hook, void *param) {
 	switch (hook) {
 		case AppletHookType_OnExitRequest:
@@ -51,6 +54,7 @@ void userAppInit(void) {
 	NX_LOG("nxlink enabled");
 #endif
 
+	appletGetDefaultDisplayResolution(&g_initialScreenWidth, &g_initialScreenHeight);
 	appletInitializeGamePlayRecording();
 	appletSetGamePlayRecordingState(1);
 
@@ -111,4 +115,12 @@ void noreturn nxAbort(void) {
 
 const char* nxGetProgramDir(void) {
 	return g_programDir;
+}
+
+int nxGetInitialScreenWidth(void) {
+	return g_initialScreenWidth;
+}
+
+int nxGetInitialScreenHeight(void) {
+	return g_initialScreenHeight;
 }
