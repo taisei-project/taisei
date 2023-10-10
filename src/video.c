@@ -140,6 +140,24 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 	UNREACHABLE;
 }
 
+static VideoCapabilityState video_query_capability_switch(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_AVAILABLE;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_VSYNC_ADAPTIVE:
+			return VIDEO_NEVER_AVAILABLE;
+	}
+
+	UNREACHABLE;
+}
+
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
@@ -757,6 +775,11 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
 			// user). We only need to handle external resizes.
 			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+
+			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
+			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
+				video_handle_resize(event->window.data1, event->window.data2);
+			}
 			break;
 
 		case SDL_WINDOWEVENT_RESIZED:
@@ -862,7 +885,7 @@ void video_init(void) {
 		video_query_capability = video_query_capability_alwaysfullscreen;
 	} else if(!strcmp(driver, "Switch")) {
 		video.backend = VIDEO_BACKEND_SWITCH;
-		video_query_capability = video_query_capability_alwaysfullscreen;
+		video_query_capability = video_query_capability_switch;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
 	}

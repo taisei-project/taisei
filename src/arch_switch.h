@@ -16,3 +16,6 @@ int nxAtExit(nxAtExitFn fn);
 void noreturn nxExit(int rc);
 void noreturn nxAbort(void);
 const char* nxGetProgramDir(void);
+
+int nxGetInitialScreenWidth(void);
+int nxGetInitialScreenHeight(void);
