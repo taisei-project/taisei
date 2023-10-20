@@ -285,7 +285,7 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 	);
 
 	if(rect_height(sub->rect) != height) {
-		sub = split_vertical(rp, sub, width, height);
+		sub = split_horizontal(rp, sub, width, height);
 	}
 
 	return sub;
