@@ -269,13 +269,7 @@ static bool bg_effect_tower_mask(Framebuffer *fb) {
 
 static bool bg_effect_copy_depth(Framebuffer *fb) {
 	if(should_draw_tower_postprocess()) {
-		r_state_push();
-		r_enable(RCAP_DEPTH_TEST);
-		r_depth_func(DEPTH_ALWAYS);
-		r_blend(BLEND_NONE);
-		r_shader("copy_depth");
-		draw_framebuffer_attachment(fb, VIEWPORT_W, VIEWPORT_H, FRAMEBUFFER_ATTACH_DEPTH);
-		r_state_pop();
+		r_framebuffer_copy(r_framebuffer_current(), fb, BUFFER_DEPTH);
 	}
 
 	return false;
