@@ -28,6 +28,8 @@ StagesExports stages_exports = {
 	.stage6 = { &stage6_procs, (AttackInfo*)&stage6_spells },
 	.stagex = { &stagex_procs, NULL },
 
+	.stagex_draw_boss_portrait_overlay = stagex_draw_yumemi_portrait_overlay,
+
 #ifdef TAISEI_BUILDCONF_TESTING_STAGES
 	.testing = {
 		.dps_single = &stage_dpstest_single_procs,
