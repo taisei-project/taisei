@@ -113,7 +113,7 @@ static void bg_end_3d(void) {
 static uint bg_tower_pos(Stage3D *s3d, vec3 pos, float maxrange) {
 	vec3 p = { 0, 0, 0 };
 	vec3 r = { 0, 0, STAGEX_BG_SEGMENT_PERIOD };
-	return linear3dpos(s3d, pos, maxrange, p, r);
+	return stage3d_pos_ray_farfirst(s3d, pos, p, r, maxrange, STAGEX_BG_SEGMENT_PERIOD * 2);
 }
 
 static void bg_tower_draw_solid(vec3 pos) {
