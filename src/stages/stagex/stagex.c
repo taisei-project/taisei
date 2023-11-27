@@ -90,7 +90,6 @@ static void stagex_preload(ResourceGroup *rg) {
 		"stagex/dissolve_mask",
 	NULL);
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
-		"copy_depth",
 		"extra_bg",
 		"extra_tower_apply_mask",
 		"extra_tower_mask",
