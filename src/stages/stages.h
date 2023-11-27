@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "stageinfo.h"
+#include "renderer/api.h"
 
 typedef struct StagesExports {
 	struct {
@@ -23,6 +24,9 @@ typedef struct StagesExports {
 		AttackInfo *benchmark_spell;
 	} testing;
 #endif
+
+	// FIXME: exposing it like that feels kind of silly…
+	void (*stagex_draw_boss_portrait_overlay)(SpriteParams *sp);
 } StagesExports;
 
 #ifdef TAISEI_BUILDCONF_DYNSTAGE

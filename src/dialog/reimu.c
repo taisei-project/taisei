@@ -7,6 +7,7 @@
  */
 
 #include "dialog_macros.h"
+#include "dynstage.h"
 
 /*
  * Stage 1
@@ -647,15 +648,13 @@ DIALOG_TASK(reimu, Stage6PreFinal) {
  * Extra Stage
  */
 
-#include "stages/stagex/stagex.h"
-
 DIALOG_TASK(reimu, StageExPreBoss) {
 	DIALOG_BEGIN(StageExPreBoss);
 
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(yumemi);
 	HIDE(yumemi);
-	yumemi.draw_dynamic_overlay = stagex_draw_yumemi_portrait_overlay;
+	yumemi.draw_dynamic_overlay = dynstage_get_exports()->stagex_draw_boss_portrait_overlay;
 
 	EVENT(boss_appears);
 	MSG_UNSKIPPABLE(yumemi, 180, "So it's this scenario that's playing out, hmm?");
@@ -802,7 +801,7 @@ DIALOG_TASK(reimu, StageExPostBoss) {
 
 	ACTOR_LEFT(reimu);
 	ACTOR_RIGHT(yumemi);
-	yumemi.draw_dynamic_overlay = stagex_draw_yumemi_portrait_overlay;
+	yumemi.draw_dynamic_overlay = dynstage_get_exports()->stagex_draw_boss_portrait_overlay;
 
 	VARIANT(yumemi, defeated);
 	FACE(yumemi, defeated);
