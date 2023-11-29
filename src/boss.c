@@ -51,10 +51,10 @@ TASK(boss_damage_to_power, { BoxedBoss boss; }) {
 	}
 }
 
-Boss *create_boss(char *name, char *ani, cmplx pos) {
+Boss *create_boss(const char *name, char *ani, cmplx pos) {
 	Boss *boss = objpool_acquire(&stage_object_pools.bosses);
 
-	boss->name = strdup(name);
+	boss->name = name;
 	boss->pos = pos;
 
 	char strbuf[strlen(ani) + sizeof("boss/")];
@@ -1349,7 +1349,6 @@ void boss_death(Boss **boss) {
 
 static void free_attack(Attack *a) {
 	COEVENT_CANCEL_ARRAY(a->events);
-	mem_free(a->name);
 }
 
 void free_boss(Boss *boss) {
@@ -1362,7 +1361,6 @@ void free_boss(Boss *boss) {
 	ent_unregister(&boss->ent);
 	boss_set_portrait(boss, NULL, NULL, NULL);
 	aniplayer_free(&boss->ani);
-	mem_free(boss->name);
 	objpool_release(&stage_object_pools.bosses, boss);
 }
 
@@ -1423,14 +1421,14 @@ void boss_start_next_attack(Boss *b, Attack *a) {
 	clear_hazards_and_enemies();
 }
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule draw_rule) {
+Attack *boss_add_attack(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossRule draw_rule) {
 	assert(boss->acount < BOSS_MAX_ATTACKS);
 
 	Attack *a = &boss->attacks[boss->acount];
 	boss->acount += 1;
 	memset(a, 0, sizeof(Attack));
 	a->type = type;
-	a->name = strdup(name);
+	a->name = name;
 	a->timeout = timeout * FPS;
 	a->maxhp = hp;
 	a->hp = hp;
@@ -1511,7 +1509,7 @@ static void setup_attack_task(Boss *boss, Attack *a, BossAttackTask task) {
 	);
 }
 
-Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
+Attack *boss_add_attack_task(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule) {
 	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
 	setup_attack_task(boss, a, task);
 	return a;
@@ -1579,7 +1577,7 @@ Attack *boss_add_attack_from_info_with_args(
 }
 
 Attack *boss_add_attack_task_with_args(
-	Boss *boss, AttackType type, char *name, float timeout, int hp,
+	Boss *boss, AttackType type, const char *name, float timeout, int hp,
 	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args
 ) {
 	Attack *a = boss_add_attack(boss, type, name, timeout, hp, draw_rule);
