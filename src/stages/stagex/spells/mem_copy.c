@@ -49,8 +49,8 @@ static void cell_split_idx(int cell, int *x, int *y) {
 }
 
 static int find_player_cell(void) {
-	int x = creal(global.plr.pos) / VIEWPORT_W * CELLS_W;
-	int y = cimag(global.plr.pos) / VIEWPORT_H * CELLS_H;
+	int x = re(global.plr.pos) / VIEWPORT_W * CELLS_W;
+	int y = im(global.plr.pos) / VIEWPORT_H * CELLS_H;
 
 	return y * CELLS_W + x;
 }
@@ -126,7 +126,7 @@ static cmplx cell_topleft(int cell) {
 	int cx, cy;
 	cell_split_idx(cell, &cx, &cy);
 
-	return CMPLX(cx*creal(CELL_SIZE), cy*cimag(CELL_SIZE));
+	return CMPLX(cx*re(CELL_SIZE), cy*im(CELL_SIZE));
 }
 
 TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_dir; }) {
@@ -143,8 +143,9 @@ TASK(spawn_cell, { int idx; int missing; CoEvent *destroy; CellDirection *clear_
 			if(y*CELL_W+x == ARGS.missing) {
 				continue;
 			}
-			cmplx offset = CMPLX(creal(CELL_SIZE)*(x+0.5)/CELL_W,
-					     cimag(CELL_SIZE)*(y+0.5)/CELL_H);
+			cmplx offset = CMPLX(
+				re(CELL_SIZE)*(x+0.5)/CELL_W,
+				im(CELL_SIZE)*(y+0.5)/CELL_H);
 			projs[y*CELL_W+x] = ENT_BOX(PROJECTILE(
 				.pos = topleft + offset,
 				.proto = pp_bigball,
@@ -195,9 +196,9 @@ TASK(clearing_laser_rect, { int start_cell; int end_cell; int start_delay; int m
 
 	cmplx positions[] = {
 		topleft0,
-		topleft0 + creal(CELL_SIZE),
+		topleft0 + re(CELL_SIZE),
 		topleft0 + CELL_SIZE,
-		topleft0 + I * cimag(CELL_SIZE),
+		topleft0 + I * im(CELL_SIZE),
 		topleft0,
 	};
 
@@ -274,7 +275,8 @@ DEFINE_EXTERN_TASK(stagex_spell_mem_copy) {
 		coevent_signal(&cell_events.destroy[dest_cell]);
 		cell_gaps[dest_cell] = -1;
 
-		boss->move = move_towards(CMPLX(creal(cell_topleft(dest_cell)+CELL_SIZE*0.5), 100), 0.01);
+		boss->move = move_towards(boss->move.velocity,
+			CMPLX(re(cell_topleft(dest_cell)+CELL_SIZE*0.5), 100), 0.01);
 		WAIT(CLEAR_TIME);
 
 		int src_cell;

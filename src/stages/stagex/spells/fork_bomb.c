@@ -51,7 +51,7 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 	));
 
 	WAIT(ARGS.split_time);
-	p->move = move_stop(0.01);
+	p->move = move_dampen(p->move.velocity, 0.01);
 	/*int count = 6;
 	for(int i = 0; i < count; i++) {
 		cmplx vel = 1 * cdir(M_TAU / count * i);
@@ -73,8 +73,8 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 		cmplx nvel = I*ARGS.vel;
 		cmplx ndirection = I*ARGS.direction;
 
-		int ngx1 = ARGS.gx + creal(ndirection);
-		int ngy1 = ARGS.gy + cimag(ndirection);
+		int ngx1 = ARGS.gx + re(ndirection);
+		int ngy1 = ARGS.gy + im(ndirection);
 		play_sfx("shot1");
 		if(ngx1 >= 0 && ngx1 < FORK_GRID_SIZE && ngy1 >= 0 && ngy1 < FORK_GRID_SIZE && !ARGS.fork_grid[ngy1*FORK_GRID_SIZE+ngx1]) {
 			INVOKE_TASK(fork_proj, {p->pos, nvel, ARGS.split_time,
@@ -84,8 +84,8 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 						   .gy = ngy1
 			});
 		}
-		int ngx2 = ARGS.gx - creal(ndirection);
-		int ngy2 = ARGS.gy - cimag(ndirection);
+		int ngx2 = ARGS.gx - re(ndirection);
+		int ngy2 = ARGS.gy - im(ndirection);
 		if(ngx2 >= 0 && ngx2 < FORK_GRID_SIZE && ngy2 >= 0 && ngy2 < FORK_GRID_SIZE && !ARGS.fork_grid[ngy2*FORK_GRID_SIZE+ngx2]) {
 			INVOKE_TASK(fork_proj, {p->pos, -nvel, ARGS.split_time,
 						   .fork_grid = ARGS.fork_grid,
@@ -120,7 +120,7 @@ TASK(fork_proj, { cmplx pos; cmplx vel; int split_time; int *fork_grid; cmplx di
 
 DEFINE_EXTERN_TASK(stagex_spell_fork_bomb) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
+	boss->move = move_towards(boss->move.velocity, CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int split_time = 30;
