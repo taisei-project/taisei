@@ -20,8 +20,8 @@ TASK(wallproj, { BoxedProjectile p; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 
 	for(;;YIELD) {
-		real x = creal(p->pos);
-		real y = cimag(p->pos);
+		real x = re(p->pos);
+		real y = im(p->pos);
 		real th = 16 * rng_sreal();
 
 		if(x < th || x > VIEWPORT_W - th || y < th || y > VIEWPORT_H - th) {
@@ -193,7 +193,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_1) {
 	);
 
 	WAIT_EVENT_ONCE(&ARGS.attack->events.initiated);
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;
 }
@@ -241,7 +241,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_2) {
 		.sync_event = sync_event
 	);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;
@@ -290,7 +290,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_3) {
 		.sync_event = sync_event
 	);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;
@@ -336,7 +336,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_4) {
 		.sync_event = sync_event
 	);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;
@@ -403,7 +403,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_5) {
 		.sync_event = sync_event
 	);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;
@@ -514,7 +514,7 @@ DEFINE_EXTERN_TASK(stagex_boss_nonspell_6) {
 		.type = 0
 	);
 
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 + 180*I, 0.015);
 
 	BEGIN_BOSS_ATTACK(&ARGS);
 	AWAIT_SUBTASKS;

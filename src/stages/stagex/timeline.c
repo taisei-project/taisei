@@ -96,7 +96,7 @@ TASK(glider_fairy, {
 	}
 
 	for(;;) {
-		e->pos += 2*(creal(e->pos)-VIEWPORT_W/2 > 0)-1;
+		e->pos += 2*(re(e->pos)-VIEWPORT_W/2 > 0)-1;
 		YIELD;
 	}
 }
@@ -105,7 +105,7 @@ TASK(aimgrind_fairy, {
 	cmplx pos;
 }) {
 	Enemy *e = TASK_BIND(espawn_big_fairy(ARGS.pos, NULL));
-	cmplx v = CMPLX(1-2*(creal(ARGS.pos)<VIEWPORT_W/2), 1);
+	cmplx v = CMPLX(1-2*(re(ARGS.pos)<VIEWPORT_W/2), 1);
 
 	for(int i = 0; i < 30; i++) {
 		for(int k = 0; k < 2; k++) {
@@ -179,7 +179,7 @@ TASK(ngoner_proj, { cmplx pos; cmplx target; int stop_time; int laser_time; cmpl
 		.move = move_linear(ARGS.target/ARGS.stop_time)
 	));
 	WAIT(ARGS.stop_time);
-	p->move = move_stop(0.5);
+	p->move = move_dampen(p->move.velocity, 0.5);
 
 	WAIT(ARGS.laser_time-ARGS.stop_time);
 	p->move = move_linear(ARGS.laser_vel);
@@ -258,7 +258,7 @@ TASK(scuttleproj_appear) {
 		.pos = VIEWPORT_W/2,
 		.proto = pp_soul,
 		.color = RGBA(0,0.2,1,0),
-		.move = move_towards(global.plr.pos, 0.01),
+		.move = move_towards(0, global.plr.pos, 0.01),
 		.flags = PFLAG_NOCLEAR | PFLAG_NOCOLLISION | PFLAG_NOAUTOREMOVE,
 	));
 
@@ -299,7 +299,7 @@ TASK(scuttleproj_appear) {
 
 TASK(yumemi_appear, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(VIEWPORT_W/2 + 180*I, 0.015);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 180*I, 0.015);
 }
 
 TASK(spawn_boss) {

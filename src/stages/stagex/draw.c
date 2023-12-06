@@ -231,7 +231,7 @@ static void render_tower_mask(Framebuffer *fb) {
 	r_enable(RCAP_DEPTH_TEST);
 
 	r_framebuffer(fb);
-	r_clear(CLEAR_ALL, RGBA(1, 1, 1, draw_data->tower_global_dissolution), 1);
+	r_clear(BUFFER_ALL, RGBA(1, 1, 1, draw_data->tower_global_dissolution), 1);
 
 	bg_begin_3d();
 	Stage3DSegment segs[] = {
@@ -327,7 +327,7 @@ static bool glitchmask_draw_predicate(EntityInterface *ent) {
 static void render_glitch_mask(Framebuffer *fb) {
 	r_state_push();
 	r_framebuffer(fb);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	r_shader("sprite_default");
 	ent_draw(glitchmask_draw_predicate);
 	r_state_pop();
@@ -341,7 +341,7 @@ static bool postprocess_glitch(Framebuffer *fb) {
 	glm_vec3_adds(t, global.frames / 60.0f, t);
 
 	r_state_push();
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	r_blend(BLEND_NONE);
 	r_shader("extra_glitch");
 	r_uniform_vec3_vec("times", t);
@@ -370,8 +370,8 @@ TASK(update_camera) {
 		stage3d_update(&stage_3d_context);
 		stage_3d_context.cam.rot.roll += draw_data->tower_spin;
 		float p = draw_data->plr_influence;
-		float yaw   = 10.0f * (crealf(global.plr.pos) / VIEWPORT_W - 0.5f) * p;
-		float pitch = 10.0f * (cimagf(global.plr.pos) / VIEWPORT_H - 0.5f) * p;
+		float yaw   = 10.0f * (re(global.plr.pos) / VIEWPORT_W - 0.5f) * p;
+		float pitch = 10.0f * (im(global.plr.pos) / VIEWPORT_H - 0.5f) * p;
 		fapproach_asymptotic_p(&draw_data->plr_yaw,   yaw,   0.03, 1e-4);
 		fapproach_asymptotic_p(&draw_data->plr_pitch, pitch, 0.03, 1e-4);
 		YIELD;
@@ -438,7 +438,7 @@ static void init_spellbg_fb(void) {
 }
 
 void stagex_drawsys_init(void) {
-	draw_data = calloc(1, sizeof(*draw_data));
+	draw_data = ALLOC(typeof(*draw_data));
 
 	stage3d_init(&stage_3d_context, 16);
 	stage_3d_context.cam.far = 128;
@@ -483,7 +483,7 @@ void stagex_drawsys_init(void) {
 
 void stagex_drawsys_shutdown(void) {
 	COEVENT_CANCEL_ARRAY(draw_data->events);
-	free(draw_data);
+	mem_free(draw_data);
 	draw_data = NULL;
 	stage3d_shutdown(&stage_3d_context);
 }

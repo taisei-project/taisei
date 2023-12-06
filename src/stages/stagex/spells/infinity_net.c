@@ -208,7 +208,7 @@ TASK(animate_infnet, { InfnetAnimData *infnet; }) {
 	do {
 		YIELD;
 
-		infnet->radius = lerp(radius0, radius1, fmin(1, t / mtime));
+		infnet->radius = lerp(radius0, radius1, min(1, t / mtime));
 
 		ENT_ARRAY_FOREACH_COUNTER(infnet->dots, i, Projectile *dot, {
 			dot->pos = infnet->radius * infnet->offsets[i] + infnet->origin;

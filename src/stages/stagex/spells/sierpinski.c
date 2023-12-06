@@ -76,7 +76,7 @@ static Laser *create_lane_laser(cmplx origin, cmplx dir) {
 DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	cmplx origin = VIEWPORT_W/2 + 260*I;
-	boss->move = move_towards(origin, 0.02);
+	boss->move = move_towards(boss->move.velocity, origin, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	/*
