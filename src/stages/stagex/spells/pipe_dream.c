@@ -54,7 +54,7 @@ TASK(pipe_conversions, { BoxedBoss bbox; BoxedProjectileArray *projs; }) {
 
 DEFINE_EXTERN_TASK(stagex_spell_pipe_dream) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
+	boss->move = move_towards(boss->move.velocity, CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int enough = 1000;

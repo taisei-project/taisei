@@ -41,7 +41,7 @@ static void draw_wriggle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 DEFINE_EXTERN_TASK(stagex_spell_trap_representation) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
+	boss->move = move_towards(boss->move.velocity, CMPLX(VIEWPORT_W/2, VIEWPORT_H/2), 0.02);
 
 	real radius = 200;
 	int count = 20;
