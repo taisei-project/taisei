@@ -95,7 +95,7 @@ static void bombshield_draw(EntityInterface *ent) {
 	r_shader_ptr(shield->shader);
 
 	r_mat_mv_push();
-	r_mat_mv_translate(creal(shield->pos), cimag(shield->pos), 0);
+	r_mat_mv_translate(re(shield->pos), im(shield->pos), 0);
 
 	if(stagex_drawing_into_glitchmask()) {
 		float x = rng_f32s() * 16;
@@ -217,7 +217,7 @@ Boss *stagex_spawn_yumemi(cmplx pos) {
 	boss_set_portrait(yumemi, "yumemi", NULL, "normal");
 	yumemi->shadowcolor = *RGBA(0.5, 0.0, 0.22, 1);
 	yumemi->glowcolor = *RGBA(0.30, 0.0, 0.12, 0);
-	yumemi->move = move_towards(pos, 0.01);
+	yumemi->move = move_towards(0, pos, 0.01);
 	yumemi->pos = pos;
 
 	INVOKE_TASK(yumemi_bombshield_controller, ENT_BOX(yumemi));
@@ -319,7 +319,7 @@ static void render_spellbg_mask(Framebuffer *fb) {
 	r_state_push();
 	r_framebuffer(fb);
 	r_blend(BLEND_NONE);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	r_shader("yumemi_spellbg_voronoi");
 	r_mat_mv_push();
 	r_mat_mv_scale(VIEWPORT_W, VIEWPORT_H, 1);
@@ -337,7 +337,7 @@ void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time) {
 
 	r_state_push();
 	r_blend(BLEND_NONE);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	r_shader("yumemi_spellbg_voronoi_compose");
 	r_uniform_sampler("tex2", r_framebuffer_get_attachment(draw_data->fb.spell_background_lq, FRAMEBUFFER_ATTACH_COLOR0));
 	// draw_framebuffer_tex(draw_data->fb.spell_background_lq, VIEWPORT_W, VIEWPORT_H);
