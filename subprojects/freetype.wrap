@@ -2,7 +2,7 @@
 directory=freetype
 url=https://github.com/taisei-project/freetype2.git
 push-url=git@github.com:taisei-project/freetype2.git
-revision=taisei-2.13.1
+revision=taisei-2.13.2
 
 [provide]
 freetype2=freetype_dep
