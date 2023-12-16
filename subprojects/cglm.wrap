@@ -2,7 +2,7 @@
 directory=cglm
 url=https://github.com/taisei-project/cglm.git
 push-url=git@github.com:taisei-project/cglm.git
-revision=taisei-0.9.0
+revision=taisei-0.9.1
 
 [provide]
 cglm=cglm_dep
