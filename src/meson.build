@@ -284,9 +284,7 @@ if host_machine.system() == 'emscripten'
     em_link_outputs = []
     em_link_output_suffixes = ['html', 'wasm', 'js']  # first element is significant
     em_data_dir = config.get_unquoted('TAISEI_BUILDCONF_DATA_PATH')
-    em_common_args = [
-        '-s', 'DEFAULT_TO_CXX=0',
-    ]
+    em_common_args = []
     em_link_args = [
         '-O@0@'.format(get_option('optimization')),
         '-s', 'ALLOW_MEMORY_GROWTH=1',
@@ -304,6 +302,7 @@ if host_machine.system() == 'emscripten'
         '-s', 'FETCH_SUPPORT_INDEXEDDB=0',
         '-s', 'FILESYSTEM=1',
         '-s', 'FORCE_FILESYSTEM=1',
+        '-s', 'GL_ENABLE_GET_PROC_ADDRESS',
         '-s', 'GL_POOL_TEMP_BUFFERS=0',
         '-s', 'GL_PREINITIALIZED_CONTEXT=1',
         '-s', 'GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0',

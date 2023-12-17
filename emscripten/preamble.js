@@ -151,8 +151,6 @@ function SyncFS(is_load, ccptr) {
     document.addEventListener('keydown', resumeAudio);
 })();
 
-var dynCall;
-
 if(typeof dynCall === 'undefined') {
     dynCall = window['dynCall'] = Module['dynCall'] = function dynCall(sig, ptr, args) {
         return wasmTable.get(ptr).apply(this, args);
