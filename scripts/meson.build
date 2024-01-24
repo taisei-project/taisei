@@ -136,3 +136,7 @@ index_resources_command = [index_resources_script, common_taiseilib_args]
 
 res_index_install_script = find_program(files('res-index-install.py'))
 res_index_install_command = [res_index_install_script, common_taiseilib_args]
+
+macos_install_dylibs_script = find_program(files('macos-install-dylibs.py'))
+# NOTE/FIXME: script doesn't use taiseilib
+macos_install_dylibs_command = [macos_install_dylibs_script]
