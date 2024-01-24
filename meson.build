@@ -426,10 +426,8 @@ if is_relocatable_install
         bindir = join_paths(bundle_dir, bundle_bindir)
         libdir = join_paths(bundle_dir, bundle_libdir)
 
-        # arguments must be strings...
         meson.add_install_script(
-            python.path(),
-            join_paths(meson.source_root(), 'scripts', 'macos-install-dylibs.py'),
+            macos_install_dylibs_command,
             ':'.join(meson.get_cross_property('macos_lib_path', [])),
             ':'.join(meson.get_cross_property('macos_tool_path', [])),
             meson.get_cross_property('macos_tool_prefix', ''),
