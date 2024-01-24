@@ -680,5 +680,3 @@ summary({
     'Data' : join_paths('$prefix', data_path),
     'Documentation' : join_paths('$prefix', doc_path),
 }, section : 'Installation', bool_yn : true)
-
-run_command(postconf_command, check : false)

@@ -113,9 +113,6 @@ upkeep_script = find_program(files('upkeep.py'))
 upkeep_command = [upkeep_script, common_taiseilib_args]
 upkeep_target = run_target('upkeep', command: upkeep_command)
 
-postconf_script = find_program(files('dump-build-options.py'))
-postconf_command = [postconf_script]
-
 pack_script = find_program(files('pack.py'))
 pack_command = [pack_script, common_taiseilib_args]
 
