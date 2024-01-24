@@ -140,3 +140,6 @@ res_index_install_command = [res_index_install_script, common_taiseilib_args]
 macos_install_dylibs_script = find_program(files('macos-install-dylibs.py'))
 # NOTE/FIXME: script doesn't use taiseilib
 macos_install_dylibs_command = [macos_install_dylibs_script]
+
+post_install_remove_script = find_program(files('post-install-remove.py'))
+post_install_remove_command = [post_install_remove_script, common_taiseilib_args]

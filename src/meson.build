@@ -354,12 +354,30 @@ if host_machine.system() == 'emscripten'
         em_link_outputs += ['@0@.@1@'.format(taisei_basename, suffix)]
     endforeach
 
+    meson_link_whole_is_broken = meson.version().version_compare('>1.1.0')
+
+    if meson_link_whole_is_broken
+        warning('Installing private static library to work around a Meson bug: https://github.com/mesonbuild/meson/issues/12638')
+    endif
+
     libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_pch : 'pch/taisei_pch.h',
         c_args : [em_common_args, taisei_c_args],
-        install : false,
+        install : meson_link_whole_is_broken,
+        install_dir : '.',
+        install_tag : 'trash',
+        # Explicitly give it a predictable name, in case we have to remove it via install script
+        name_prefix : 'lib',
+        name_suffix : 'a',
     )
+
+    if meson_link_whole_is_broken
+        meson.add_install_script(
+            post_install_remove_command, 'lib' + libtaisei.name() + '.a',
+            install_tag : 'trash',
+        )
+    endif
 
     taisei = static_library(taisei_basename + '-full',
         link_whole : libtaisei,
