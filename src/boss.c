@@ -189,13 +189,6 @@ static Attack* boss_get_final_attack(Boss *boss) {
 	return final >= boss->attacks ? final : NULL;
 }
 
-attr_unused
-static Attack* boss_get_next_attack(Boss *boss) {
-	Attack *next;
-	for(next = boss->current + 1; next < boss->attacks + boss->acount && boss_should_skip_attack(boss, next); ++next);
-	return next < boss->attacks + boss->acount ? next : NULL;
-}
-
 static bool boss_attack_is_final(Boss *boss, Attack *a) {
 	return boss_get_final_attack(boss) == a;
 }
