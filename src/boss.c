@@ -169,13 +169,10 @@ static StageProgress *get_spellstage_progress(Attack *a, StageInfo **out_stginfo
 }
 
 static bool boss_should_skip_attack(Boss *boss, Attack *a) {
-	if(a->type == AT_ExtraSpell || (a->info != NULL && a->info->type == AT_ExtraSpell)) {
-		if(global.plr.voltage < global.voltage_threshold) {
-			return true;
-		}
-	}
-
 	// Skip zero-length spells. Zero-length AT_Move and AT_Normal attacks are ok.
+	// FIXME: I'm really not sure what was the purpose of this, but for now I'm abusing this to
+	// conditionally flag the extra spell as skipped. Investigate whether we can remove simplify
+	// things a bit and remove this function.
 	if(ATTACK_IS_SPELL(a->type) && a->timeout <= 0) {
 		return true;
 	}
@@ -1068,6 +1065,17 @@ void boss_finish_current_attack(Boss *boss) {
 		);
 	}
 
+	if(boss->current < boss->attacks + boss->acount - 1) {
+		// If the next attack is an extra spell, determine whether we have enough voltage now, and
+		// if not, skip it. This can't be done any later, because we have to know whether to start
+		// the death sequence this frame (since the extra spell is usually the final one).
+		Attack *next = boss->current + 1;
+		if(next->type == AT_ExtraSpell && global.plr.voltage < global.voltage_threshold) {
+			// see boss_should_skip_attack()
+			next->timeout = 0;
+		}
+	}
+
 	boss->current->endtime = global.frames + attack_end_delay(boss);
 	boss->current->endtime_undelayed = global.frames;
 
@@ -1267,7 +1275,6 @@ void process_boss(Boss **pboss) {
 			}
 
 			boss->current++;
-			assert(boss->current != NULL);
 
 			if(boss_should_skip_attack(boss, boss->current)) {
 				COEVENT_CANCEL_ARRAY(boss->current->events);
