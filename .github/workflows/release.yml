@@ -180,8 +180,9 @@ jobs:
         pip3 install
         meson==${{ env.MESON_VERSION }}
         ninja
-        zstandard
         python-gnupg
+        setuptools
+        zstandard
       shell: bash
 
     - name: Import GPG Key
