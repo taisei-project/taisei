@@ -11,6 +11,9 @@ on:
       custom-ref:
         required: false
         description: "Build release from git-ref:"
+      release-tag:
+        required: false
+        description: "Publish release to tag:"
       developer:
         default: false
         type: boolean
@@ -45,8 +48,29 @@ env:
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
+  setup-release:
+    name: "Setup release"
+    if: ${{ github.event.inputs.release-tag }}
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        ref: ${{ env.REF }}
+
+    - name: Create release draft
+      run: |
+        if gh release view "${{ github.event.inputs.release-tag }}" &>/dev/null; then
+          echo "Release ${{ github.event.inputs.release-tag }}" already exists
+        else
+          gh release create --draft "${{ github.event.inputs.release-tag }}"
+        fi
+
   linux-release-build-x64:
     name: "Linux (x64/Source)"
     if: ${{ (github.event.inputs.linux-x64 || 'true') == 'true' }}
@@ -157,6 +181,13 @@ jobs:
         path: build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz*
         if-no-files-found: error
 
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz*
+        build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz*
+
     - name: Upload Log
       if: always()
       uses: actions/upload-artifact@v3
@@ -173,9 +204,9 @@ jobs:
     - name: Install Tools
       run: >
         brew install
+        create-dmg
         docutils
         pygments
-        create-dmg
 
         pip3 install
         meson==${{ env.MESON_VERSION }}
@@ -235,6 +266,12 @@ jobs:
         name: macos-universal-${{ env.BUILD_VERSION }}-dmg
         path: build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg*
         if-no-files-found: error
+
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build-release/compiled/Taisei-${{ env.BUILD_VERSION }}-universal.dmg*
 
     - name: Upload Log
       if: always()
@@ -320,6 +357,13 @@ jobs:
         path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip*
         if-no-files-found: error
 
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip*
+
     - name: Upload Log
       if: always()
       uses: actions/upload-artifact@v3
@@ -403,6 +447,13 @@ jobs:
         name: windows-x86-${{ env.BUILD_VERSION }}-zip
         path: build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip*
         if-no-files-found: error
+
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe*
+        build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip*
 
     - name: Upload Log
       if: always()
@@ -516,6 +567,12 @@ jobs:
         path: build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz*
         if-no-files-found: error
 
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz*
+
     - name: Upload Log
       if: always()
       uses: actions/upload-artifact@v3
@@ -580,6 +637,12 @@ jobs:
         name: switch-aarch64-${{ env.BUILD_VERSION }}-zip
         path: build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip*
         if-no-files-found: error
+
+    - name: Upload Release Artifacts
+      if: ${{ github.event.inputs.release-tag }}
+      run: >
+        gh release upload "${{ github.event.inputs.release-tag }}"
+        build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip*
 
     - name: Upload Log
       if: always()
