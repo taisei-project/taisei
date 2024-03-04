@@ -42,6 +42,18 @@ RUN apt-get install -y --no-install-recommends \
 	yasm \
 	zip
 
+RUN mkdir -p -m 755 /etc/apt/keyrings
+
+RUN wget https://cli.github.com/packages/githubcli-archive-keyring.gpg -O /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+RUN chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+
+RUN apt-get update
+
+RUN apt-get install -y --no-install-recommends gh
+
 RUN apt-get clean -y
 
 RUN rm -rf /var/lib/apt/lists/*
@@ -69,5 +81,5 @@ WORKDIR /build
 
 RUN rm -rfv /build/llvm-mingw
 
-RUN find $TOOLCHAIN_PREFIX/llvm-mingw/{bin,lib*} -type f | \
-	while read line; do sudo llvm-strip -g "$line"; done
+RUN find $TOOLCHAIN_PREFIX/{bin,lib*} -type f | \
+	while read line; do llvm-strip -g "$line"; done
