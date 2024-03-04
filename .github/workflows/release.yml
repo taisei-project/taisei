@@ -38,9 +38,10 @@ on:
     - cron: '0 8 * * 3'
 
 env:
-  DEFAULT_REF: 'master'
+  REF: ${{ github.event.inputs.custom-ref || github.ref || 'master' }}
   MESON_VERSION: '0.63.3'
   EM_VERSION: '3.1.51'
+  PYTHON_VERSION: '3.11.8'
   EM_CACHE_FOLDER: 'emsdk'
   TAISEI_NOPRELOAD: 0
   TAISEI_PRELOAD_REQUIRED: 1
@@ -48,14 +49,14 @@ env:
 jobs:
   linux-release-build-x64:
     name: "Linux (x64/Source)"
-    if: ${{ github.event.inputs.linux-x64 == 'true' }}
+    if: ${{ (github.event.inputs.linux-x64 || 'true') == 'true' }}
     runs-on: ubuntu-20.04
     steps:
 
     - name: Install Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Install Tools
       run: >
@@ -95,7 +96,7 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Configure
       run: >
@@ -108,7 +109,7 @@ jobs:
         --native-file misc/ci/forcefallback.ini
         --native-file misc/ci/linux-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
-        -Ddeveloper=${{ github.event.inputs.developer }}
+        -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
 
     - name: Set Package Version
       run: |
@@ -166,7 +167,7 @@ jobs:
 
   macos-release-build-universal:
     name: macOS (Universal)
-    if: ${{ github.event.inputs.macos-x64-arm64 == 'true' }}
+    if: ${{ (github.event.inputs.macos-x64-arm64 || 'true') == 'true' }}
     runs-on: macos-12
     steps:
     - name: Install Tools
@@ -194,14 +195,14 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Configure
       run: |
         git config --global --add safe.directory $(pwd)
         git fetch --force --tags
         $(pwd)/scripts/macos_configure_env.sh $(pwd)/build-release/ $(pwd)
-        $(pwd)/scripts/macos_setup_universal.sh -Ddeveloper=${{ github.event.inputs.developer }}
+        $(pwd)/scripts/macos_setup_universal.sh -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
       shell: bash
 
     - name: Set Package Version
@@ -244,7 +245,7 @@ jobs:
 
   windows-release-build-x64:
     name: Windows (x64)
-    if: ${{ github.event.inputs.windows-x64 == 'true' }}
+    if: ${{ (github.event.inputs.windows-x64 || 'true') == 'true' }}
     runs-on: ubuntu-latest
     container: taiseiproject/windows-toolkit:20230929
     steps:
@@ -259,7 +260,7 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Checkout ANGLE DLLs
       uses: actions/checkout@v3
@@ -280,7 +281,7 @@ jobs:
         --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86_64-build-release.ini
         --prefix=$(pwd)/build-release
-        -Ddeveloper=${{ github.event.inputs.developer }}
+        -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
 
     - name: Set Package Version
       run: |
@@ -328,7 +329,7 @@ jobs:
 
   windows-release-build-x86:
     name: Windows (x86)
-    if: ${{ github.event.inputs.windows-x86 == 'true' }}
+    if: ${{ (github.event.inputs.windows-x86 || 'true') == 'true' }}
     runs-on: ubuntu-latest
     container: taiseiproject/windows-toolkit:20230929
     steps:
@@ -343,7 +344,7 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Checkout ANGLE DLLs
       uses: actions/checkout@v3
@@ -364,7 +365,7 @@ jobs:
         --cross-file misc/ci/forcefallback.ini
         --cross-file misc/ci/windows-llvm_mingw-x86-build-release.ini
         --prefix=$(pwd)/build-release
-        -Ddeveloper=${{ github.event.inputs.developer }}
+        -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
 
     - name: Set Package Version
       run: |
@@ -412,13 +413,13 @@ jobs:
 
   emscripten-release-build:
     name: Emscripten
-    if: ${{ github.event.inputs.emscripten == 'true' }}
+    if: ${{ (github.event.inputs.emscripten || 'true') == 'true' }}
     runs-on: ubuntu-20.04
     steps:
     - name: Install Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: ${{ env.PYTHON_VERSION }}
 
     - name: Install Tools
       run: >
@@ -447,7 +448,7 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
@@ -487,7 +488,7 @@ jobs:
         --cross-file misc/ci/emscripten-build.ini
         --cross-file misc/ci/emscripten-ephemeral-ci.ini
         --prefix=$(pwd)/build-release
-        -Ddeveloper=${{ github.event.inputs.developer }}
+        -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
 
     - name: Set Package Version
       run: |
@@ -524,7 +525,7 @@ jobs:
 
   switch-release-build:
     name: Switch (ARM64)
-    if: ${{ github.event.inputs.switch == 'true' }}
+    if: ${{ (github.event.inputs.switch || 'true') == 'true' }}
     runs-on: ubuntu-latest
     container: taiseiproject/switch-toolkit:20231006
     steps:
@@ -539,7 +540,7 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        ref: ${{ github.event.inputs.custom-ref || env.GITHUB_REF || env.DEFAULT_REF }}
+        ref: ${{ env.REF }}
 
     - name: Configure
       run: >
@@ -554,7 +555,7 @@ jobs:
         --cross-file misc/ci/switch-options.ini
         --cross-file misc/ci/switch-crossfile-ci.ini
         --prefix=$(pwd)/build-release
-        -Ddeveloper=${{ github.event.inputs.developer }}
+        -Ddeveloper=${{ github.event.inputs.developer || 'false' }}
 
     - name: Set Package Version
       run: |
