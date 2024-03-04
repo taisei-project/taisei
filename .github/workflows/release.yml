@@ -92,7 +92,7 @@ jobs:
 
     # NOTE: 'fetch-depth: 0' == "get all history", not "no history"
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -191,7 +191,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -256,14 +256,14 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
 
     - name: Checkout ANGLE DLLs
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
         path: angle-compiled
@@ -340,14 +340,14 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
         ref: ${{ env.REF }}
 
     - name: Checkout ANGLE DLLs
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: taisei-project/angle-compiled
         path: angle-compiled
@@ -444,7 +444,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -536,7 +536,7 @@ jobs:
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0

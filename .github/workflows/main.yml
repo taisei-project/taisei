@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -106,7 +106,7 @@ jobs:
     runs-on: macos-11
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -169,7 +169,7 @@ jobs:
     container: taiseiproject/windows-toolkit:20230929 # cross-compiler with mingw
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
@@ -200,7 +200,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         fetch-depth: 0
@@ -276,7 +276,7 @@ jobs:
         meson compile tar -C build/ --verbose
 
     - name: Checkout taisei-web-test
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       if: github.ref == 'refs/heads/master'
       with:
         repository: taisei-project/taisei-web-test
@@ -338,7 +338,7 @@ jobs:
     container: taiseiproject/switch-toolkit:20231006
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
 
