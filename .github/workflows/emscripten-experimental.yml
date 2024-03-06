@@ -27,7 +27,7 @@ jobs:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
@@ -83,7 +83,7 @@ jobs:
         ninja zip -C build/
 
     - name: Upload Log
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_emscripten_latest_build_log
         path: build/meson-logs/meson-log.txt

@@ -78,7 +78,7 @@ jobs:
     steps:
 
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
@@ -109,7 +109,7 @@ jobs:
         python-gnupg
 
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -161,7 +161,7 @@ jobs:
         scripts/sign-release.py build/linux/Taisei-${{ env.BUILD_VERSION }}-linux-x86_64.tar.xz
 
     - name: Upload Artifact (Binary)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: linux-x86_64-${{ env.BUILD_VERSION }}-txz
@@ -174,7 +174,7 @@ jobs:
         scripts/sign-release.py build/linux/meson-dist/taisei-${{ env.BUILD_VERSION }}.tar.xz
 
     - name: Upload Artifact (Source)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: source-${{ env.BUILD_VERSION }}-txz
@@ -190,7 +190,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_x64_linux_release_log
         path: build/linux/meson-logs/meson-log.txt
@@ -217,7 +217,7 @@ jobs:
       shell: bash
 
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -260,7 +260,7 @@ jobs:
         TAISEI_PRELOAD_REQUIRED: ${{ env.TAISEI_PRELOAD_REQUIRED }}
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: macos-universal-${{ env.BUILD_VERSION }}-dmg
@@ -275,7 +275,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_macos_universal_release_log
         path: build-release/*/meson-logs/meson-log.txt
@@ -288,7 +288,7 @@ jobs:
     container: taiseiproject/windows-toolkit:20240304
     steps:
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -337,7 +337,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86_64.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-setup-exe
@@ -350,7 +350,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86_64.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86_64-${{ env.BUILD_VERSION }}-zip
@@ -366,7 +366,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_windows_x64_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -379,7 +379,7 @@ jobs:
     container: taiseiproject/windows-toolkit:20240304
     steps:
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -428,7 +428,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-setup-x86.exe
 
     - name: Upload Artifact (EXE)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-setup-exe
@@ -441,7 +441,7 @@ jobs:
         scripts/sign-release.py build/windows/Taisei-${{ env.BUILD_VERSION }}-windows-x86.zip
 
     - name: Upload Artifact (ZIP)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: windows-x86-${{ env.BUILD_VERSION }}-zip
@@ -457,7 +457,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_windows_x86_release_log
         path: build/windows/meson-logs/meson-log.txt
@@ -469,7 +469,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
@@ -490,7 +490,7 @@ jobs:
         python-gnupg
 
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -504,7 +504,7 @@ jobs:
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -560,7 +560,7 @@ jobs:
         scripts/sign-release.py build/emscripten/Taisei-${{ env.BUILD_VERSION }}-emscripten-wasm32.tar.xz
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: emscripten-wasm32-${{ env.BUILD_VERSION }}-txz
@@ -575,7 +575,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_emscripten_build_log
         path: build/emscripten/meson-logs/meson-log.txt
@@ -588,7 +588,7 @@ jobs:
     container: taiseiproject/switch-toolkit:20240305
     steps:
     - name: Import GPG Key
-      uses: taisei-project/ghaction-import-gpg@v5
+      uses: taisei-project/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
@@ -631,7 +631,7 @@ jobs:
         scripts/sign-release.py build/nx/Taisei-${{ env.BUILD_VERSION }}-switch-aarch64.zip
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: switch-aarch64-${{ env.BUILD_VERSION }}-zip
@@ -646,7 +646,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_switch_release_log
         path: build/nx/meson-logs/meson-log.txt

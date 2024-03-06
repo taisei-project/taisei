@@ -45,7 +45,7 @@ jobs:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
@@ -94,7 +94,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_linux_fail_log
         path: build/meson-logs/meson-log.txt
@@ -111,7 +111,7 @@ jobs:
         submodules: 'recursive'
 
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
@@ -157,7 +157,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_macos_fail_log
         path: build/meson-logs/meson-log.txt
@@ -189,7 +189,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_windows_fail_log
         path: build/meson-logs/meson-log.txt
@@ -212,7 +212,7 @@ jobs:
         git fetch --force --tags
 
     - name: Install Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
 
@@ -233,7 +233,7 @@ jobs:
 
     - name: Fetch Cached Emscripten SDK
       id: emsdk-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ${{ env.EM_CACHE_FOLDER }}
         key: ${{ env.EM_VERSION }}-${{ runner.os }}
@@ -326,7 +326,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_emscripten_stable_build_log
         path: build/meson-logs/meson-log.txt
@@ -358,7 +358,7 @@ jobs:
 
     - name: Upload Log
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: taisei_switch_build_log
         path: build/meson-logs/meson-log.txt
