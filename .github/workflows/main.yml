@@ -103,7 +103,7 @@ jobs:
   macos-test-build:
     name: macOS (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -133,6 +133,7 @@ jobs:
         pip install
         meson==${{ env.MESON_VERSION }}
         ninja
+        setuptools
         zstandard
 
     - name: Configure
