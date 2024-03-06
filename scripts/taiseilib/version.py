@@ -5,14 +5,14 @@ import sys
 import subprocess
 import shlex
 import re
-import  os
+import os
 
 
 class VersionFormatError(common.TaiseiError):
     pass
 
 
-VERSION_FALLBACK = 'v1.4.1-dev'
+VERSION_FALLBACK = 'v1.4.1'
 OVERRIDE_FILE_NAME = '.VERSION'
 
 
