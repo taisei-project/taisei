@@ -285,7 +285,7 @@ jobs:
     name: Windows (x64)
     if: ${{ (github.event.inputs.windows-x64 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20230929
+    container: taiseiproject/windows-toolkit:20240304
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -376,7 +376,7 @@ jobs:
     name: Windows (x86)
     if: ${{ (github.event.inputs.windows-x86 || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20230929
+    container: taiseiproject/windows-toolkit:20240304
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5
@@ -585,7 +585,7 @@ jobs:
     name: Switch (ARM64)
     if: ${{ (github.event.inputs.switch || 'true') == 'true' }}
     runs-on: ubuntu-latest
-    container: taiseiproject/switch-toolkit:20231006
+    container: taiseiproject/switch-toolkit:20240305
     steps:
     - name: Import GPG Key
       uses: taisei-project/ghaction-import-gpg@v5

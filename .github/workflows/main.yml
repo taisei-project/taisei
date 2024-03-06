@@ -167,7 +167,7 @@ jobs:
     name: Windows (x64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/windows-toolkit:20230929 # cross-compiler with mingw
+    container: taiseiproject/windows-toolkit:20240304 # cross-compiler with mingw
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -336,7 +336,7 @@ jobs:
     name: Switch (ARM64)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
-    container: taiseiproject/switch-toolkit:20231006
+    container: taiseiproject/switch-toolkit:20240305
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
