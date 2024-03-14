@@ -13,6 +13,7 @@
 #include "draw.h"
 #include "stagex.h"
 
+#include "common_tasks.h"
 #include "renderer/api.h"
 #include "util/glm.h"
 #include "global.h"
@@ -297,6 +298,33 @@ YumemiSlave *stagex_host_yumemi_slave(cmplx pos, int type) {
 
 void stagex_despawn_yumemi_slave(YumemiSlave *slave) {
 	coevent_signal_once(&slave->events.despawned);
+}
+
+TASK(laser_sweep_sound) {
+	SFXPlayID csound = play_sfx("charge_generic");
+	WAIT(50);
+	stop_sfx(csound);
+	play_sfx("laser1");
+}
+
+void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target) {
+	int cnt = 32;
+
+	INVOKE_SUBTASK(laser_sweep_sound);
+	real g = carg(target - slave->pos);
+	real angle_ofs = (s < 0) * M_PI;
+
+	for(int i = 0; i < cnt; ++i) {
+		real x = i/(real)cnt;
+		cmplx o = 32 * cdir(s * x * M_TAU + g + M_PI/2 + angle_ofs);
+		cmplx pos = slave->pos + o;
+		cmplx aim = cnormalize(target - pos + o);
+		Color *c = RGBA(0.1 + 0.9 * x * x, 1 - 0.9 * (1 - pow(1 - x, 2)), 0.1, 0);
+		create_laserline(pos, 40 * aim, 60 + i, 80 + i, c);
+		WAIT(1);
+	}
+
+	WAIT(10 + cnt);
 }
 
 void stagex_draw_yumemi_portrait_overlay(SpriteParams *sp) {
