@@ -71,26 +71,6 @@ static void yumemi_slave_aimed_burst(YumemiSlave *slave, int count, real *a, rea
 	WAIT(20);
 }
 
-static void yumemi_slave_aimed_lasers(YumemiSlave *slave, real s, cmplx target) {
-	int cnt = 32;
-	int t = 2;
-
-	INVOKE_SUBTASK_DELAYED(50, common_play_sfx, "laser1");
-	real g = carg(target - slave->pos);
-	real angle_ofs = (s < 0) * M_PI;
-
-	for(int i = 0; i < cnt; ++i) {
-		real x = i/(real)cnt;
-		cmplx o = 32 * cdir(s * x * M_TAU + g + M_PI/2 + angle_ofs);
-		cmplx pos = slave->pos + o;
-		cmplx aim = cnormalize(target - pos + o);
-		Color *c = RGBA(0.1 + 0.9 * x * x, 1 - 0.9 * (1 - pow(1 - x, 2)), 0.1, 0);
-		create_laserline(pos, 40 * aim, 60 + i * t, 80 + i * t, c);
-	}
-
-	WAIT(10 + t * cnt);
-}
-
 static void yumemi_slave_aimed_funnel(YumemiSlave *slave, int count, real *a, real s, bool wallproj) {
 	real max_angle = M_PI/2;
 	real min_angle = M_PI/24;
@@ -157,7 +137,7 @@ TASK(yumemi_opening_slave, {
 
 	for(;;) {
 		yumemi_slave_aimed_burst(slave, 25, &a, s, false);
-		yumemi_slave_aimed_lasers(slave, s, global.plr.pos);
+		stagex_yumemi_slave_laser_sweep(slave, s, global.plr.pos);
 		WAIT(40);
 	}
 }
@@ -206,7 +186,7 @@ TASK(yumemi_non2_slave, {
 	for(;;) {
 		yumemi_slave_aimed_funnel(slave, 20, &a, s, false);
 		WAIT(10);
-		yumemi_slave_aimed_lasers(slave, s, global.plr.pos);
+		stagex_yumemi_slave_laser_sweep(slave, s, global.plr.pos);
 		WAIT(40);
 		// yumemi_slave_aimed_burst(slave, 15, &a, s);
 	}
@@ -255,7 +235,7 @@ TASK(yumemi_non3_slave, {
 	for(;;) {
 		yumemi_slave_aimed_funnel(slave, 20, &a, s, false);
 		WAIT(10);
-		yumemi_slave_aimed_lasers(slave, s, global.plr.pos);
+		stagex_yumemi_slave_laser_sweep(slave, s, global.plr.pos);
 		WAIT(40);
 		yumemi_slave_aimed_burst(slave, 15, &a, s, false);
 	}
