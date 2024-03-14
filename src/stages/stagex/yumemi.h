@@ -34,6 +34,7 @@ DEFINE_ENTITY_TYPE(YumemiSlave, {
 void stagex_init_yumemi_slave(YumemiSlave *slave, cmplx pos, int type);
 YumemiSlave *stagex_host_yumemi_slave(cmplx pos, int type);
 void stagex_despawn_yumemi_slave(YumemiSlave *slave);
+void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target);
 
 Boss *stagex_spawn_yumemi(cmplx pos);
 
