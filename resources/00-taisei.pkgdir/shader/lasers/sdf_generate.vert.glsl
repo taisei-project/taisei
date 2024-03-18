@@ -23,5 +23,5 @@ void main(void) {
 	segment_width = widthAB * 0.5;
 	segment_time = mix(timeAB.x, timeAB.y, position.x * size.x / len + 0.5);
 
-	gl_Position  = r_projectionMatrix * r_modelViewMatrix * vec4(pos, 0.0, 1.0);
+	gl_Position  = r_projectionMatrix * vec4(pos, 0.0, 1.0);
 }
