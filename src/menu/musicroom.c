@@ -288,6 +288,8 @@ MenuData *create_musicroom_menu(void) {
 		add_bgm(m, "stage6boss_phase1", preload);
 		add_bgm(m, "stage6boss_phase2", preload);
 		add_bgm(m, "stage6boss_phase3", preload);
+		add_bgm(m, "stagex", preload);
+		add_bgm(m, "stagexboss", preload);
 		add_bgm(m, "ending", preload);
 		add_bgm(m, "credits", preload);
 		add_bgm(m, "gameover", preload);
