@@ -26,7 +26,7 @@ StagesExports stages_exports = {
 	.stage4 = { &stage4_procs, (AttackInfo*)&stage4_spells },
 	.stage5 = { &stage5_procs, (AttackInfo*)&stage5_spells },
 	.stage6 = { &stage6_procs, (AttackInfo*)&stage6_spells },
-	.stagex = { &stagex_procs, NULL },
+	.stagex = { &stagex_procs, (AttackInfo*)&stagex_spells },
 
 	.stagex_draw_boss_portrait_overlay = stagex_draw_yumemi_portrait_overlay,
 
