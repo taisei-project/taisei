@@ -435,8 +435,6 @@ static void gl33_sync_viewport(void) {
 
 void gl33_sync_scissor(void) {
 	bool pending_enabled =
-		R.scissor.pending.x &&
-		R.scissor.pending.y &&
 		R.scissor.pending.w &&
 		R.scissor.pending.h;
 
