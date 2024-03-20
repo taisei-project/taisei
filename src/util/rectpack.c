@@ -155,22 +155,38 @@ void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
 	RP_DEBUG("END RECLAIM %p[%gx%g]", (void*)s, w, h);
 }
 
-static RectPackSection *select_fittest_section(RectPack *rp, double width, double height, double *out_fitness) {
+static RectPackSection *select_fittest_section(
+	RectPack *rp, double *width, double *height, bool allow_rotation
+) {
 	RectPackSection *best = NULL;
 	double fitness = DBL_MAX;
 
 	RP_DEBUG("trying to fit %gx%g...", width, height);
 
+	bool rotated = false;
+
 	for(RectPackSection *s = rp->unused_sections; s; s = s->next) {
 		assume(s->children[0] == NULL);
 		assume(s->children[1] == NULL);
 
-		double f = section_fitness(s, width, height);
+		double f = section_fitness(s, *width, *height);
 
 		if(!isnan(f) && f < fitness) {
 			best = s;
 			fitness = f;
+			rotated = false;
 			RP_DEBUG("candidate: %g (%gx%g)", fitness, rect_width(best->rect), rect_height(best->rect));
+		}
+
+		if(allow_rotation) {
+			f = section_fitness(s, *height, *width);
+
+			if(!isnan(f) && f < fitness) {
+				best = s;
+				fitness = f;
+				rotated = true;
+				RP_DEBUG("candidate: %g (%gx%g) (rotated)", fitness, rect_width(best->rect), rect_height(best->rect));
+			}
 		}
 	}
 
@@ -180,8 +196,8 @@ static RectPackSection *select_fittest_section(RectPack *rp, double width, doubl
 		RP_DEBUG("%gx%g doesn't fit at all", width, height);
 	}
 
-	if(out_fitness) {
-		*out_fitness = fitness;
+	if(rotated) {
+		SWAP(*width, *height);
 	}
 
 	return best;
@@ -298,9 +314,10 @@ static RectPackSection *split(RectPack *rp, RectPackSection *s, double width, do
 	}
 }
 
-RectPackSection *rectpack_add(RectPack *rp, double width, double height) {
-	double fitness;
-	RectPackSection *s = select_fittest_section(rp, width, height, &fitness);
+RectPackSection *(rectpack_add)(
+	RectPack *rp, double width, double height, bool allow_rotation
+) {
+	RectPackSection *s = select_fittest_section(rp, &width, &height, allow_rotation);
 
 	if(s == NULL) {
 		return NULL;
