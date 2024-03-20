@@ -40,8 +40,15 @@ void rectpack_reset(RectPack *rp)
 void rectpack_deinit(RectPack *rp)
 	attr_nonnull(1);
 
-RectPackSection *rectpack_add(RectPack *rp, double width, double height)
+RectPackSection *rectpack_add(RectPack *rp, double width, double height, bool allow_rotation)
 	attr_nonnull(1);
+
+#define _rectpack_add_3(rp, width, height) \
+	rectpack_add(rp, width, height, false)
+#define _rectpack_add_4(rp, width, height, allow_rotation) \
+	rectpack_add(rp, width, height, allow_rotation)
+#define rectpack_add(...) \
+	MACROHAX_OVERLOAD_NARGS(_rectpack_add_, __VA_ARGS__)(__VA_ARGS__)
 
 Rect rectpack_section_rect(RectPackSection *s)
 	attr_nonnull(1);
