@@ -110,10 +110,7 @@ static double section_fitness(RectPackSection *s, double w, double h) {
 		return NAN;
 	}
 
-	// Best Long Side Fit (BLSF)
-	// This method has a nice property: fitness==0 indicates an exact fit.
-
-	return max(sw - w, sh - h);
+	return sw * sh - w * h;  // best area fit
 }
 
 void rectpack_reclaim(RectPack *rp, RectPackSection *s) {
@@ -292,7 +289,9 @@ static RectPackSection *split_vertical(RectPack *rp, RectPackSection *s, double 
 }
 
 static RectPackSection *split(RectPack *rp, RectPackSection *s, double width, double height) {
-	if(width * (rect_height(s->rect) - height) <= height * (rect_width(s->rect) - width)) {
+	// short leftover axis split
+
+	if(rect_width(s->rect) - width < rect_height(s->rect) - height) {
 		return split_horizontal(rp, s, width, height);
 	} else {
 		return split_vertical(rp, s, width, height);
@@ -309,9 +308,7 @@ RectPackSection *rectpack_add(RectPack *rp, double width, double height) {
 
 	section_make_used(rp, s);
 
-	if(fitness == 0) {   // exact fit
-		assert(rect_width(s->rect) == width);
-		assert(rect_height(s->rect) == height);
+	if(rect_width(s->rect) == width && rect_height(s->rect) == height) {
 		return s;
 	}
 
