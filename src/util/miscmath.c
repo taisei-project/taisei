@@ -170,6 +170,10 @@ cmplx cswap(cmplx c) {
 	return CMPLX(im(c), re(c));
 }
 
+cmplxf cswapf(cmplxf c) {
+	return CMPLXF(im(c), re(c));
+}
+
 double ccross(cmplx a, cmplx b) {
 	return re(a) * im(b) - im(a) * re(b);
 }
