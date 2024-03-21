@@ -94,8 +94,9 @@
  */
 
 // Size of the SDF texture to pack lasers into. This is in game units.
-// Should be large enough so that we never have to render one SDF and one coloring pass per frame,
-// but must be also at least about ~1.2x the viewport size to accommodate all kinds of lasers.
+// Must be at least about ~1.2x the viewport size to accommodate all kinds of lasers.
+// Ideally should be large enough so that all lasers in a single frame can fit into it, but for
+// some pathological cases we expect to render more than one pass.
 #define PACKING_SPACE_SIZE   2048
 #define PACKING_SPACE_SIZE_W PACKING_SPACE_SIZE
 #define PACKING_SPACE_SIZE_H PACKING_SPACE_SIZE
@@ -119,7 +120,6 @@ static struct {
 	} shaders;
 
 	struct {
-		Framebuffer *saved;
 		Framebuffer *sdf;
 		ManagedFramebufferGroup *group;
 	} fb;
@@ -135,6 +135,8 @@ static struct {
 		int pass2_num_lasers;
 		bool drawing_lasers;
 	} render_state;
+
+	DYNAMIC_ARRAY(Laser*) queue;
 } ldraw;
 
 typedef LaserSegment LaserInstancedAttribsPass1;
@@ -271,6 +273,7 @@ void laserdraw_init(void) {
 	marena_init(&ldraw.packer.arena, 0);
 	allocator_init_from_arena(&ldraw.packer.alloc, &ldraw.packer.arena);
 	laserdraw_init_packer();
+	dynarray_ensure_capacity(&ldraw.queue, 64);
 
 	create_pass1_resources();
 	create_pass2_resources();
@@ -299,6 +302,7 @@ void laserdraw_init(void) {
 }
 
 void laserdraw_shutdown(void) {
+	dynarray_free_data(&ldraw.queue);
 	allocator_deinit(&ldraw.packer.alloc);
 	marena_deinit(&ldraw.packer.arena);
 	fbmgr_group_destroy(ldraw.fb.group);
@@ -310,40 +314,66 @@ void laserdraw_shutdown(void) {
 	ent_unhook_post_draw(laserdraw_ent_postdraw_hook);
 }
 
-// Allocate a free region in the SDF texture for the laser's bbox.
-// Returns false on failure (not enough free space).
-// Returns true on success and sets out_ofs to the offset to apply to the laser's points
-// for rendering into (or sampling from) the SDF texture, such that the whole laser is contained
-// in the allocated region.
-static bool laserdraw_pack_laser(Laser *l, cmplxf *out_ofs) {
+static cmplxf laser_packed_dimensions(Laser *l) {
 	FloatExtent bbox_size = {
 		.as_cmplx = l->_internal.bbox.bottom_right.as_cmplx - l->_internal.bbox.top_left.as_cmplx,
 	};
+
 	// Align to texel boundaries and add a small gap to prevent sampling artifacts from lasers that
 	// happen to be right next to each other in the texture.
 	bbox_size.w = ceilf(bbox_size.w + 0.5f);
 	bbox_size.h = ceilf(bbox_size.h + 0.5f);
 
-	RectPackSection *section = rectpack_add(&ldraw.packer.rectpack, bbox_size.w, bbox_size.h);
+	return bbox_size.as_cmplx;
+}
+
+// Allocate a free region in the SDF texture for the laser's bbox.
+// Returns false on failure (not enough free space).
+// Returns true on success and sets out_ofs to the offset to apply to the laser's points
+// for rendering into (or sampling from) the SDF texture, such that the whole laser is contained
+// in the allocated region.
+static bool laserdraw_pack_laser(Laser *l, cmplxf *out_ofs, bool *rotated) {
+	FloatExtent bbox_size = { .as_cmplx = laser_packed_dimensions(l) };
+
+	RectPackSection *section = rectpack_add(
+		&ldraw.packer.rectpack, bbox_size.w, bbox_size.h, true);
 
 	if(!section) {
 		return false;
 	}
 
 	*out_ofs = section->rect.top_left - (cmplxf)l->_internal.bbox.top_left.as_cmplx;
+
+	FloatExtent packed_size = { .as_cmplx = section->rect.bottom_right - section->rect.top_left };
+
+	*rotated = (
+		bbox_size.w == packed_size.h &&
+		bbox_size.h == packed_size.w &&
+		bbox_size.w != bbox_size.h
+	);
+
 	return true;
 }
 
 // Add laser to batch for SDF generation pass
-static void laserdraw_pass1_add(Laser *l, cmplxf sdf_ofs) {
+static void laserdraw_pass1_add(Laser *l, cmplxf sdf_ofs, bool rotated) {
 	int iofs = l->_internal.segments_ofs;
 	int nsegs = l->_internal.num_segments;
 	assert(nsegs > 0);
 
+	cmplxf section_origin = sdf_ofs + (cmplxf)l->_internal.bbox.top_left.as_cmplx;
+
 	for(int i = iofs; i < nsegs + iofs; ++i) {
 		LaserSegment s = dynarray_get(&lintern.segments, i);
+
 		s.pos.a += sdf_ofs;
 		s.pos.b += sdf_ofs;
+
+		if(rotated) {
+			s.pos.a = section_origin + cswapf(s.pos.a - section_origin);
+			s.pos.b = section_origin + cswapf(s.pos.b - section_origin);
+		}
+
 		SDL_RWwrite(ldraw.pass1.vb_stream, &s, sizeof(s), 1);
 	}
 
@@ -351,7 +381,7 @@ static void laserdraw_pass1_add(Laser *l, cmplxf sdf_ofs) {
 }
 
 // Add laser to batch for coloring pass
-static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs) {
+static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs, bool rotated) {
 	FloatOffset top_left = l->_internal.bbox.top_left;
 	FloatOffset bottom_right = l->_internal.bbox.bottom_right;
 	cmplxf bbox_midpoint = (top_left.as_cmplx + bottom_right.as_cmplx) * 0.5f;
@@ -363,6 +393,11 @@ static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs) {
 
 	FloatRect frag = bbox;
 	frag.offset.as_cmplx += sdf_ofs - bbox.extent.as_cmplx * 0.5;
+
+	if(rotated) {
+		// random HACK to encode the rotation bit without adding an attribute
+		bbox.extent.w = -bbox.extent.w;
+	}
 
 	LaserInstancedAttribsPass2 attrs = {
 		.bbox = bbox,
@@ -384,13 +419,14 @@ static bool laserdraw_add(Laser *l) {
 	}
 
 	cmplxf sdf_ofs;
+	bool rotated;
 
-	if(!laserdraw_pack_laser(l, &sdf_ofs)) {
+	if(!laserdraw_pack_laser(l, &sdf_ofs, &rotated)) {
 		return false;
 	}
 
-	laserdraw_pass1_add(l, sdf_ofs);
-	laserdraw_pass2_add(l, sdf_ofs);
+	laserdraw_pass1_add(l, sdf_ofs, rotated);
+	laserdraw_pass2_add(l, sdf_ofs, rotated);
 
 	return true;
 }
@@ -415,7 +451,6 @@ static void laserdraw_pass1_render(void) {
 // Render the coloring pass
 static void laserdraw_pass2_render(void) {
 	r_state_push();
-	r_framebuffer(ldraw.fb.saved);
 	r_shader_ptr(ldraw.shaders.sdf_apply);
 	Texture *tex = r_framebuffer_get_attachment(ldraw.fb.sdf, FRAMEBUFFER_ATTACH_COLOR0);
 	r_uniform_sampler("tex", tex);
@@ -425,7 +460,7 @@ static void laserdraw_pass2_render(void) {
 	r_state_pop();
 }
 
-// Render the two two passes and reset batch state
+// Render the two passes and reset batch state
 static void laserdraw_flush(void) {
 	// Sanity check: if we have no lasers, we must have no segments.
 	// If we have at least one laser, we must have at least one segment.
@@ -449,50 +484,56 @@ static void laserdraw_flush(void) {
 }
 
 void laserdraw_ent_drawfunc(EntityInterface *ent) {
-	Laser *laser = ENT_CAST(ent, Laser);
-
-	bool ok = laserdraw_add(laser);
-	if(!ok) {
-		// No more space in the SDF framebuffer
-		// render current batch and queue for next one.
-		laserdraw_flush();
-		ok = laserdraw_add(laser);
-		assert(ok);
-	}
+	*dynarray_append(&ldraw.queue) = ENT_CAST(ent, Laser);
 }
 
-static void laserdraw_begin(void) {
-	if(!ldraw.render_state.drawing_lasers) {
-		ldraw.fb.saved = r_framebuffer_current();
-		r_state_push();
-		ldraw.render_state.drawing_lasers = true;
-	}
+static float laser_comparator(Laser *l) {
+	cmplxf dim = laser_packed_dimensions(l);
+	return -cabs2f(dim);
 }
 
-static void laserdraw_end(void) {
-	if(ldraw.render_state.drawing_lasers) {
-		r_state_pop();
-		ldraw.render_state.drawing_lasers = false;
-	}
-
-	laserdraw_flush();
+static int laser_compare(const void *a, const void *b) {
+	auto va = laser_comparator(*(Laser**)a);
+	auto vb = laser_comparator(*(Laser**)b);
+	return ((va > vb) - (vb > va));
 }
 
-static void laserdraw_ent_predraw_hook(EntityInterface *ent, void *arg) {
-	if(!ent) {
+static void laserdraw_commit(void) {
+	if(ldraw.queue.num_elements < 1) {
 		return;
 	}
 
-	if(ent->type == ENT_TYPE_ID(Laser)) {
-		laserdraw_begin();
-	} else {
-		laserdraw_end();
+	dynarray_qsort(&ldraw.queue, laser_compare);
+
+	r_state_push();
+
+	dynarray_foreach_elem(&ldraw.queue, Laser **lp, {
+		bool ok = laserdraw_add(*lp);
+
+		if(!ok) {
+			// No more space in the SDF framebuffer
+			// render current batch and queue for next one.
+			laserdraw_flush();
+			ok = laserdraw_add(*lp);
+			assert(ok);
+		}
+	});
+
+	laserdraw_flush();
+	r_state_pop();
+
+	ldraw.queue.num_elements = 0;
+}
+
+static void laserdraw_ent_predraw_hook(EntityInterface *ent, void *arg) {
+	if(ent && ent->type != ENT_TYPE_ID(Laser)) {
+		laserdraw_commit();
 	}
 }
 
 static void laserdraw_ent_postdraw_hook(EntityInterface *ent, void *arg) {
 	if(ent == NULL) {
 		// Handle edge case when the last entity drawn is a laser
-		laserdraw_end();
+		laserdraw_commit();
 	}
 }
