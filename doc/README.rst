@@ -1,8 +1,6 @@
 Taisei Project - Documentation
 ==============================
 
-Here's a list of all the docs we have for working with Taisei.
-
 Gameplay & Troubleshooting
 --------------------------
 
@@ -13,10 +11,12 @@ Gameplay & Troubleshooting
 Development
 -----------
 
-* `BUILD.rst <./BUILD.rst>`__ - how to set up your build environment,
-  and compile Taisei
-* `ENVIRON.rst <./ENVIRON.rst>`__ - various environment variables built
-  into Taisei to modify its core settings, when run from the command line
+* `BUILD.rst <./BUILD.rst>`__ - how to set up your build environment, and
+  compile Taisei
+* `DEVELOPMENT.rst <./DEVELOPMENT.rst>`__ - how to develop with Taisei,
+  including code style and various other platform-specific tips
+* `ENVIRON.rst <./ENVIRON.rst>`__ - various environment variables built into
+  Taisei to modify its core settings, when run from the command line
 * `MATH.rst <./MATH.rst>`__ - introduction to complex numbers, used in the
   coordinate system of Taisei
 
