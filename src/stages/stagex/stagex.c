@@ -37,7 +37,7 @@ struct stagex_spells_s stagex_spells = {
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+100.0*I, 7,
 		},
 		.sierpinski = {
-			{-1, -1, -1, 2}, AT_Spellcard, "Automaton “Legacy of Sierpiński”", 90, 150000,
+			{-1, -1, -1, 2}, AT_Spellcard, "Automaton “Legacy of Sierpiński”", 90, 60000,
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_sierpinski),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
