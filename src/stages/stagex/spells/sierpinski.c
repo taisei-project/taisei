@@ -7,6 +7,8 @@
  */
 
 #include "../stagex.h"
+#include "../yumemi.h"
+
 #include "stage.h"
 #include "global.h"
 #include "common_tasks.h"
@@ -15,60 +17,75 @@ static int idxmod(int i, int n) {   // TODO move into utils?
 	return (n + i) % n;
 }
 
-attr_unused // TODO: remove me
-TASK(splitter, {
-	BoxedProjectile cell;
-	int delay;
-	cmplx v;
-	Color *color;
-}) {
-	Projectile *cell = TASK_BIND(ARGS.cell);
-	cmplx v = ARGS.v;
-	Color c = *ARGS.color;
+TASK(rule90, { cmplx origin; int duration; }) {
+	/*
+	 * Rule 90 automaton with a twist
+	 */
 
-	WAIT(ARGS.delay);
+	enum { N = 65 };  // NOTE: must be odd (or it'll halt quickly)
+	bool state[N] = { 0 };
+	// initialize with 1 bit in the middle to get a nice Sierpinski triangle pattern
+	state[N/2] = 1;
 
-#if 0
-	PROJECTILE(
-		.proto = pp_ball,
-		.color = &c,
-		.pos = cell->pos,
-		.move = move_asymptotic_halflife(v, v + 2 * cabs(v), 80),
-	);
+	static Color color0 = { 0.2, 0.25, 1.0, 1.0 };
+	static Color color1 = { 1.2, 0.25, 0.8, 1.0 };
 
-	PROJECTILE(
-		.proto = pp_ball,
-		.color = &c,
-		.pos = cell->pos,
-		.move = move_asymptotic_halflife(v, v - 2 * cabs(v), 80),
-	);
-#else
-	PROJECTILE(
-		.proto = pp_ball,
-		.color = &c,
-		.pos = cell->pos,
-		.move = move_accelerated(v, 0.05 * v),
-	);
-#endif
+	int delay = 3;
+	int ncycles = ARGS.duration / delay;
 
-	kill_projectile(cell);
+	for(int cycle = 0; cycle < ncycles; ++cycle, WAIT(3)) {
+		bool next_state[N] = { 0 };
+
+		for(int i = 0; i < N; ++i) {
+			next_state[i] = state[idxmod(i - 1, N)] ^ state[idxmod(i + 1, N)];
+		}
+
+		Color clr = color0;
+		float f = cycle / (ncycles - 1.0f);
+		f = smoothstep(0, 1, f);
+		f = smoothstep(0, 1, f);
+		f = smoothstep(0, 1, f);
+		f = smoothstep(0, 1, f);
+		color_lerp(&clr, &color1, f);
+
+		for(int i = 0; i < N; ++i) {
+			if(!state[i]) {
+				continue;
+			}
+
+			play_sfx_loop("shot1_loop");;
+
+			cmplx dir = cdir((i + 0.5) / N * M_TAU + M_PI/2);
+			cmplx v = dir;
+
+			attr_unused Projectile *cell = PROJECTILE(
+				.proto = pp_thickrice,
+				.color = &clr,
+				.pos = ARGS.origin - 100 * dir,
+				.move = move_accelerated(v, 0.04 * v),
+				.max_viewport_dist = VIEWPORT_W/2,
+			);
+		}
+
+		memcpy(state, next_state, sizeof(state));
+	}
+
 }
 
-static Laser *create_lane_laser(cmplx origin, cmplx dir) {
-	real t = 100;
+TASK(slave, { cmplx origin; int type; }) {
+	auto slave = stagex_host_yumemi_slave(ARGS.origin, ARGS.type);
 
-	cmplx a = origin;
-	cmplx b = origin + dir * hypot(VIEWPORT_W, VIEWPORT_H) * 0.6;
-	cmplx m = (b - a) / t;
+	INVOKE_SUBTASK(common_move,
+		.pos = &slave->pos,
+		.move_params = move_towards(ARGS.origin - 64i, 0.025),
+		.ent = ENT_BOX(slave).as_generic
+	);
 
-	Color *clr = RGBA(0, 0, 0, 0);
-	Laser *l = create_laser(a, t, 1, clr, las_linear, m, 0, 0, 0);
-	laser_make_static(l);
-	l->width = 2;
-	l->collision_active = false;
-	l->ent.draw_layer = LAYER_LASER_LOW;
-
-	return l;
+	common_charge(60, &slave->pos, 0, RGBA(0.2, 0.3, 1.0, 0));
+	INVOKE_SUBTASK(rule90, slave->pos, 180);
+	WAIT(60);
+	common_charge(120, &slave->pos, 0, RGBA(1, 0.3, 0.2, 0));
+	stagex_yumemi_slave_laser_sweep(slave, ARGS.type ? 1 : -1, global.plr.pos);
 }
 
 DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
@@ -77,130 +94,16 @@ DEFINE_EXTERN_TASK(stagex_spell_sierpinski) {
 	boss->move = move_towards(boss->move.velocity, origin, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	/*
-	 * Rule 90 automaton with a twist
-	 */
+	Rect bounds = viewport_bounds(128);
+	bounds.top += 64;
+	bounds.bottom = VIEWPORT_H / 2 + 64;
 
-	enum { N = 65 };  // NOTE: must be odd (or it'll halt quickly)
-	bool state[N] = { 0 };
-	state[N/2] = 1;  // initialize with 1 bit in the middle to get a nice Sierpinski triangle pattern
+	int type = 0;
 
-	const float b = 1;
-	Color colors[] = {
-		{ 0.2, 0.25, 1.0, 1.0 },
-		{ 1.0, 0.45, 0.1, 0.0 },
-		{ 1.0, 0.65, 0.1, 0.0 },
-	};
-	color_mul_scalar(&colors[0], b);
-	color_mul_scalar(&colors[1], b);
-
-	DECLARE_ENT_ARRAY(Laser, lasers, N*2);
-	cmplx laser_dirs[N*2];
-	int laser_cooldowns[N*2] = { 0 };
-
-	for(int i = 0; i < lasers.capacity; ++i) {
-		cmplx dir = cdir((i + 0.5) / lasers.capacity * M_TAU + M_PI/2);
-		laser_dirs[i] = dir;
-		ENT_ARRAY_ADD(&lasers, create_lane_laser(origin, dir));
-	}
-
-	real rate = 0.04;
-
-	for(int step = 0;; step++) {
-		real pangle = carg(global.plr.pos - origin);
-		log_debug("%f", pangle);
-
-		ENT_ARRAY_FOREACH_COUNTER(&lasers, int i, Laser *l, {
-			l->deathtime += 3;
-
-			real a = carg(laser_dirs[i]);
-			if(fabs(a - pangle) < 0.05 && !laser_cooldowns[i]) {
-				// color_approach(&l->color, RGBA(0.2, 0.1, 0.05, 0), 0.1);
-				color_lerp(&l->color, RGBA(0.05, 0.01, 0.1, 0), rate);
-				if(fapproach_asymptotic_p(&l->width, 20, rate, 2) == 20) {
-					create_laserline(origin, 40 * laser_dirs[i], 60, 120, RGBA(0.1, 2, 0.2, 0));
-					INVOKE_SUBTASK_DELAYED(40, common_play_sfx, "laser1");
-					laser_cooldowns[i] = 180;
-				}
-			} else {
-				color_approach(&l->color, RGBA(0.3, 0.03, 0.03, 0), 0.1);
-				fapproach_p(&l->width, 3, 0.5);
-
-				if(laser_cooldowns[i]) {
-					laser_cooldowns[i]--;
-				}
-			}
-		});
-
-		if(step % 3) {
-			WAIT(1);
-			continue;
-		}
-
-		bool next_state[N] = { 0 };
-
-		for(int i = 0; i < N; ++i) {
-			next_state[i] = state[idxmod(i - 1, N)] ^ state[idxmod(i + 1, N)];
-		}
-
-		int sum = 0;
-
-		for(int i = 0; i < N; ++i) {
-			if(!state[i]) {
-				continue;
-			}
-			sum++;
-
-			cmplx dir = cdir((i + 0.5) / N * M_TAU + M_PI/2);
-			cmplx v = dir;
-
-			attr_unused Projectile *cell = PROJECTILE(
-				.proto = pp_thickrice,
-				.color = &colors[0],
-				.pos = origin - 100 * dir,
-				.move = move_accelerated(v, 0.04 * v),
-				.max_viewport_dist = VIEWPORT_W/2,
-			);
-			/*
-			Projectile *cell2 = PROJECTILE(
-				.proto = pp_flea,
-				.color = &colors[1],
-				.pos = boss->pos+rad*conj(dir),
-				.move = {conj(v), 0, 1.006*cdir(-slip/wait)},
-			);*/
-
-			/*if(
-				next_state[idxmod(i - 1, N)] ^ next_state[idxmod(i + 1, N)] ^
-				     state[idxmod(i - 1, N)] ^      state[idxmod(i + 1, N)] ^
-				next_state[idxmod(i - 3, N)] ^ next_state[idxmod(i + 3, N)] ^
-				     state[idxmod(i - 3, N)] ^      state[idxmod(i + 3, N)]
-			) {
-				INVOKE_TASK(splitter, ENT_BOX(cell), 160, v, &colors[1]);
-			}*/
-		}
-
-#if 0
-		for(int i = 0; i < sqrt(N-sum)/6; i++) {
-			cmplx souldir = rng_dir();
-			if(i%2==0) {
-				PROJECTILE(
-					.proto = rng_chance(0.8) ? pp_soul : pp_bigball,
-					.color = &colors[1],
-					.pos = boss->pos,
-					.move = move_accelerated(souldir, 0.01*I*souldir),
-				);
-			} else {
-				PROJECTILE(
-					.proto = pp_ball,
-					.color = &colors[2],
-					.pos = boss->pos,
-					.move = move_accelerated(-souldir, 0.01*I*souldir),
-				);
-			}
-		}
-#endif
-
-		memcpy(state, next_state, sizeof(state));
-		WAIT(1);
+	for(;;) {
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W/3, bounds);
+		INVOKE_SUBTASK(slave, boss->pos, type);
+		type = !type;
+		WAIT(200);
 	}
 }
