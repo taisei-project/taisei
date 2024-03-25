@@ -1,0 +1,42 @@
+
+option('system_iconv',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use iconv() from system-installed libraries'
+)
+
+option('x11',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use X11 video driver'
+)
+
+option('wayland',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use Wayland video driver'
+)
+
+option('pulseaudio',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use PulseAudio'
+)
+
+option('pipewire',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use Pipewire audio'
+)
+
+option('alsa',
+    type : 'feature',
+    value : 'auto',
+    description : 'Support the ALSA audio API'
+)
+
+option('pthreads',
+    type : 'feature',
+    value : 'auto',
+    description : 'Use POSIX threads for multi-threading'
+)

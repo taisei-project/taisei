@@ -20,7 +20,6 @@ project('taisei', 'c',
         'ogg:default_library=static',
         'opus:default_library=static',
         'opusfile:default_library=static',
-        'sdl2:default_library=static',
         'shaderc:default_library=static',
         'SPIRV-Cross:default_library=static',
         'vorbis:default_library=static',
@@ -51,15 +50,6 @@ project('taisei', 'c',
         'libzstd:lzma=disabled',
         'libzstd:lz4=disabled',
         'libzstd:multi_thread=disabled',
-
-        'sdl2:test=false',
-        'sdl2:use_haptic=disabled',
-        'sdl2:use_power=disabled',
-        'sdl2:use_render=disabled',
-        'sdl2:use_sensor=disabled',
-        'sdl2:use_video_offscreen=disabled',
-        'sdl2:use_video_vulkan=disabled',
-        'sdl2:with_main=true',
 
         'freetype:brotli=disabled',
         'freetype:bzip2=disabled',
@@ -206,7 +196,7 @@ opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
 
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
+dep_sdl3        = dependency('sdl3',           version : '>=3.2.0', fallback : ['sdl3-cmake-wrapper', 'sdl3_dep'])
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
 dep_zlib        = dependency('zlib',                                required : true)
@@ -234,7 +224,7 @@ taisei_deps = [
     dep_koishi,
     dep_m,
     dep_png,
-    dep_sdl2,
+    dep_sdl3,
     dep_zip,
     dep_zlib,
     dep_zstd,
