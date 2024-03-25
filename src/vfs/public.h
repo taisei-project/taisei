@@ -16,7 +16,7 @@
 
 #include "util/callchain.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 typedef struct VFSInfo {
 	uchar error       : 1;
@@ -42,7 +42,7 @@ typedef enum VFSSyncMode {
 
 typedef struct VFSDir VFSDir;
 
-SDL_RWops* vfs_open(const char *path, VFSOpenMode mode);
+SDL_IOStream * vfs_open(const char *path, VFSOpenMode mode);
 VFSInfo vfs_query(const char *path);
 
 bool vfs_mkdir(const char *path);
@@ -65,7 +65,7 @@ int vfs_dir_list_order_ascending(const void *a, const void *b);
 int vfs_dir_list_order_descending(const void *a, const void *b);
 
 char* vfs_repr(const char *path, bool try_syspath) attr_nonnull(1) attr_nodiscard;
-bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
+bool vfs_print_tree(SDL_IOStream *dest, const char *path) attr_nonnull(1, 2);
 
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);

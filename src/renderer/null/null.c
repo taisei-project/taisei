@@ -13,7 +13,7 @@ static char placeholder;
 static Color dummycolor;
 
 static SDL_Window* null_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	return SDL_CreateWindow(title, x, y, w, h, flags);
+	return SDL_CreateWindow(title, w, h, flags);
 }
 
 static void null_init(void) { }
@@ -134,26 +134,23 @@ static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAtt
 	callback(NULL, userdata);
 }
 
-static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
-static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
-static size_t null_vertex_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) { return num; }
-static int null_vertex_buffer_stream_close(SDL_RWops *rw) { return 0; }
+static int64_t null_vertex_buffer_stream_seek(void *ctx, int64_t offset, SDL_IOWhence whence) { return 0; }
+static int64_t null_vertex_buffer_stream_size(void *ctx) { return (1 << 16); }
+static size_t null_vertex_buffer_stream_write(void *ctx, const void *data, size_t size, SDL_IOStatus *status) { return size; }
 
-static size_t null_vertex_buffer_stream_read(SDL_RWops *rw, void *data, size_t size, size_t num) {
-	SDL_SetError("Stream is write-only");
-	return 0;
-}
+static SDL_IOStream* null_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+	static SDL_IOStream *dummy;
 
-static SDL_RWops dummy_stream = {
-	.seek = null_vertex_buffer_stream_seek,
-	.size = null_vertex_buffer_stream_size,
-	.write = null_vertex_buffer_stream_write,
-	.read = null_vertex_buffer_stream_read,
-	.close = null_vertex_buffer_stream_close,
-};
+	if(dummy) {
+		return dummy;
+	}
 
-static SDL_RWops* null_vertex_buffer_get_stream(VertexBuffer *vbuf) {
-	return &dummy_stream;
+	return (dummy = SDL_OpenIO(&(SDL_IOStreamInterface) {
+		.version = sizeof(SDL_IOStreamInterface),
+		.seek = null_vertex_buffer_stream_seek,
+		.size = null_vertex_buffer_stream_size,
+		.write = null_vertex_buffer_stream_write,
+	}, NULL));
 }
 
 static VertexBuffer* null_vertex_buffer_create(size_t capacity, void *data) { return (void*)&placeholder; }

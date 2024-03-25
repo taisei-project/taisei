@@ -9,6 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
-SDL_RWops *SDL_RWWrapTrace(SDL_RWops *src, const char *tag, bool autoclose);
+SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag,
+			      bool autoclose);

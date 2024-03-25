@@ -40,10 +40,10 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 	return i;
 }
 
-static SDL_RWops *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 	mode &= VFS_MODE_RWMASK;
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
-	SDL_RWops *rwops = SDL_RWFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
+	SDL_IOStream *rwops = SDL_IOFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
 
 	if(!rwops) {
 		vfs_set_error_from_sdl();

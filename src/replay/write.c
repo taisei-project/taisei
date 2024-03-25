@@ -13,14 +13,14 @@
 #include "rwops/rwops_autobuf.h"
 
 attr_nonnull_all
-static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
+static void replay_write_string(SDL_IOStream *file, char *str, uint16_t version) {
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
 		SDL_WriteU8(file, strlen(str));
 	} else {
-		SDL_WriteLE16(file, strlen(str));
+		SDL_WriteU16LE(file, strlen(str));
 	}
 
-	SDL_RWwrite(file, str, 1, strlen(str));
+	SDL_WriteIO(file, str, strlen(str));
 }
 
 static void fix_flags(Replay *rpy) {
@@ -34,20 +34,21 @@ static void fix_flags(Replay *rpy) {
 	rpy->flags |= REPLAY_GFLAG_CLEAR;
 }
 
-static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t version) {
+static bool replay_write_stage(ReplayStage *stg, SDL_IOStream *file,
+			       uint16_t version) {
 	assert(version >= REPLAY_STRUCT_VERSION_TS103000_REV2);
 
-	SDL_WriteLE32(file, stg->flags);
-	SDL_WriteLE16(file, stg->stage);
-	SDL_WriteLE64(file, stg->start_time);
-	SDL_WriteLE64(file, stg->rng_seed);
+	SDL_WriteU32LE(file, stg->flags);
+	SDL_WriteU16LE(file, stg->stage);
+	SDL_WriteU64LE(file, stg->start_time);
+	SDL_WriteU64LE(file, stg->rng_seed);
 	SDL_WriteU8(file, stg->diff);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
-		SDL_WriteLE16(file, stg->skip_frames);
+		SDL_WriteU16LE(file, stg->skip_frames);
 	}
 
-	SDL_WriteLE64(file, stg->plr_points);
+	SDL_WriteU64LE(file, stg->plr_points);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
 		SDL_WriteU8(file, stg->plr_total_lives_used);
@@ -57,31 +58,31 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteU8(file, stg->plr_total_continues_used);
 	SDL_WriteU8(file, stg->plr_char);
 	SDL_WriteU8(file, stg->plr_shot);
-	SDL_WriteLE16(file, stg->plr_pos_x);
-	SDL_WriteLE16(file, stg->plr_pos_y);
+	SDL_WriteU16LE(file, stg->plr_pos_x);
+	SDL_WriteU16LE(file, stg->plr_pos_y);
 
 	if(version <= REPLAY_STRUCT_VERSION_TS104000_REV0) {
 		// NOTE: old plr_focus field
 		SDL_WriteU8(file, 0);
 	}
 
-	SDL_WriteLE16(file, stg->plr_power);
+	SDL_WriteU16LE(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lives);
-	SDL_WriteLE16(file, stg->plr_life_fragments);
+	SDL_WriteU16LE(file, stg->plr_life_fragments);
 	SDL_WriteU8(file, stg->plr_bombs);
-	SDL_WriteLE16(file, stg->plr_bomb_fragments);
+	SDL_WriteU16LE(file, stg->plr_bomb_fragments);
 	SDL_WriteU8(file, stg->plr_inputflags);
-	SDL_WriteLE32(file, stg->plr_graze);
-	SDL_WriteLE32(file, stg->plr_point_item_value);
+	SDL_WriteU32LE(file, stg->plr_graze);
+	SDL_WriteU32LE(file, stg->plr_point_item_value);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
-		SDL_WriteLE64(file, stg->plr_points_final);
+		SDL_WriteU64LE(file, stg->plr_points_final);
 	}
 
 	if(version == REPLAY_STRUCT_VERSION_TS104000_REV0) {
 		// NOTE: These fields were always bugged; older taisei only wrote zeroes here.
 		uint8_t buf[5] = { 0 };
-		SDL_RWwrite(file, buf, sizeof(buf), 1);
+		SDL_WriteIO(file, buf, sizeof(buf));
 	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
@@ -95,21 +96,21 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 		return false;
 	}
 
-	SDL_WriteLE16(file, stg->events.num_elements);
-	SDL_WriteLE32(file, 1 + ~replay_struct_stage_metadata_checksum(stg, version));
+	SDL_WriteU16LE(file, stg->events.num_elements);
+	SDL_WriteU32LE(file, 1 + ~replay_struct_stage_metadata_checksum(stg, version));
 
 	return true;
 }
 
-static void replay_write_stage_events(ReplayStage *stg, SDL_RWops *file) {
+static void replay_write_stage_events(ReplayStage *stg, SDL_IOStream *file) {
 	dynarray_foreach_elem(&stg->events, ReplayEvent *evt, {
-		SDL_WriteLE32(file, evt->frame);
+		SDL_WriteU32LE(file, evt->frame);
 		SDL_WriteU8(file, evt->type);
-		SDL_WriteLE16(file, evt->value);
+		SDL_WriteU16LE(file, evt->value);
 	});
 }
 
-static bool replay_write_events(Replay *rpy, SDL_RWops *file) {
+static bool replay_write_events(Replay *rpy, SDL_IOStream *file) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		replay_write_stage_events(stg, file);
 	});
@@ -117,14 +118,15 @@ static bool replay_write_events(Replay *rpy, SDL_RWops *file) {
 	return true;
 }
 
-bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
+bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 	assert(version >= REPLAY_STRUCT_VERSION_TS103000_REV2);
 
 	uint16_t base_version = (version & ~REPLAY_VERSION_COMPRESSION_BIT);
 	bool compression = (version & REPLAY_VERSION_COMPRESSION_BIT);
 
-	SDL_RWwrite(file, replay_magic_header, sizeof(replay_magic_header), 1);
-	SDL_WriteLE16(file, version);
+	SDL_WriteIO(file, replay_magic_header,
+		    sizeof(replay_magic_header));
+	SDL_WriteU16LE(file, version);
 
 	TaiseiVersion v;
 	TAISEI_VERSION_GET_CURRENT(&v);
@@ -135,8 +137,8 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	}
 
 	void *buf;
-	SDL_RWops *abuf = NULL;
-	SDL_RWops *vfile = file;
+	SDL_IOStream *abuf = NULL;
+	SDL_IOStream *vfile = file;
 
 	if(compression) {
 		abuf = SDL_RWAutoBuffer(&buf, 64);
@@ -146,14 +148,14 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	replay_write_string(vfile, rpy->playername, base_version);
 	fix_flags(rpy);
 
-	SDL_WriteLE32(vfile, rpy->flags);
-	SDL_WriteLE16(vfile, rpy->stages.num_elements);
+	SDL_WriteU32LE(vfile, rpy->flags);
+	SDL_WriteU16LE(vfile, rpy->stages.num_elements);
 
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		if(!replay_write_stage(stg, vfile, base_version)) {
 			if(compression) {
-				SDL_RWclose(vfile);
-				SDL_RWclose(abuf);
+				SDL_CloseIO(vfile);
+				SDL_CloseIO(abuf);
 			}
 
 			return false;
@@ -161,17 +163,17 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 	});
 
 	if(compression) {
-		SDL_RWclose(vfile);
-		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
-		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
-		SDL_RWclose(abuf);
+		SDL_CloseIO(vfile);
+		SDL_WriteU32LE(file, SDL_TellIO(file) + SDL_TellIO(abuf) + 4);
+		SDL_WriteIO(file, buf, SDL_TellIO(abuf));
+		SDL_CloseIO(abuf);
 		vfile = replay_wrap_stream_compress(version, file, false);
 	}
 
 	bool events_ok = replay_write_events(rpy, vfile);
 
 	if(compression) {
-		SDL_RWclose(vfile);
+		SDL_CloseIO(vfile);
 	}
 
 	if(!events_ok) {

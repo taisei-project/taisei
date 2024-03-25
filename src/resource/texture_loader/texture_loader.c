@@ -466,7 +466,7 @@ static bool texture_loader_infer_sources_cubemap(TextureLoadData *ld) {
 static bool load_pixmap(
 	TextureLoadData *ld, const char *path, Pixmap *dst, PixmapFormat preferred_format
 ) {
-	SDL_RWops *stream = res_open_file(ld->st, path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *stream = res_open_file(ld->st, path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(UNLIKELY(!stream)) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -474,7 +474,7 @@ static bool load_pixmap(
 	}
 
 	bool result = pixmap_load_stream(stream, PIXMAP_FILEFORMAT_AUTO, dst, preferred_format);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 	return result;
 }
 
@@ -575,7 +575,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 		char *str_wrap_t = NULL;
 		char *str_format = NULL;
 
-		SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+		SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
 		bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 			{ "source",         .out_str  = &ld->src_paths.main },
 			{ "alphamap",       .out_str  = &ld->src_paths.alphamap },
@@ -597,7 +597,7 @@ void texture_loader_stage1(ResourceLoadState *st) {
 			{ "linearize",      .out_bool = &want_srgb },
 			{ NULL }
 		});
-		SDL_RWclose(rw);
+		SDL_CloseIO(rw);
 
 		if(UNLIKELY(!parsed)) {
 			texture_loader_failed(ld);

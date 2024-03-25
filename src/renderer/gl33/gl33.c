@@ -115,7 +115,7 @@ static struct {
 	float clear_depth;
 	r_feature_bits_t features;
 
-	SDL_GLContext *gl_context;
+	SDL_GLContext gl_context;
 	SDL_Window *window;
 
 #ifndef STATIC_GLES3
@@ -395,7 +395,7 @@ static int get_framebuffer_height(Framebuffer *fb) {
 	if(fb == NULL) {
 		SDL_Window *win = SDL_GL_GetCurrentWindow();
 		assume(win != NULL);
-		SDL_GL_GetDrawableSize(win, NULL, &fb_height);
+		SDL_GetWindowSizeInPixels(win, NULL, &fb_height);
 	} else {
 		for(FramebufferAttachment a = FRAMEBUFFER_ATTACH_COLOR0; a < FRAMEBUFFER_MAX_ATTACHMENTS; ++a) {
 			if(fb->attachments[a] != NULL) {
@@ -463,7 +463,7 @@ void gl33_sync_scissor(void) {
 static IntExtent gl33_get_default_framebuffer_size(void) {
 	IntExtent s;
 	// TODO: cache this at window creation time and refresh on resize events?
-	SDL_GL_GetDrawableSize(R.window, &s.w, &s.h);
+	SDL_GetWindowSizeInPixels(R.window, &s.w, &s.h);
 	return s;
 }
 
@@ -1157,8 +1157,8 @@ void gl33_vertex_array_deleted(VertexArray *varr) {
  */
 
 static void gl33_init(void) {
-	SDL_GLprofile profile;
-	SDL_GLcontextFlag flags = 0;
+	SDL_GLProfile profile;
+	SDL_GLContextFlag flags = 0;
 
 	if(env_get("TAISEI_GL33_CORE_PROFILE", true)) {
 		profile = SDL_GL_CONTEXT_PROFILE_CORE;
@@ -1184,11 +1184,11 @@ static void gl33_post_init(void) {
 static void gl33_shutdown(void) {
 	gl33_framebuffer_finalize_read_requests();
 	glcommon_unload_library();
-	SDL_GL_DeleteContext(R.gl_context);
+	SDL_GL_DestroyContext(R.gl_context);
 }
 
 static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_OPENGL);
+	SDL_Window *window = SDL_CreateWindow(title, w, h, flags | SDL_WINDOW_OPENGL);
 
 	if(!window) {
 		log_sdl_error(LOG_FATAL, "SDL_CreateWindow");
@@ -1243,7 +1243,8 @@ set_interval:
 }
 
 static VsyncMode gl33_vsync_current(void) {
-	int interval = SDL_GL_GetSwapInterval();
+	int interval = 0;
+	SDL_GL_GetSwapInterval(&interval);
 
 	if(interval == 0) {
 		return VSYNC_NONE;

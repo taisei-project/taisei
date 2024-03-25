@@ -133,8 +133,8 @@ static struct {
 	RectPackSectionPool rpspool;
 
 	struct {
-		SDL_mutex *new_face;
-		SDL_mutex *done_face;
+		SDL_Mutex *new_face;
+		SDL_Mutex *done_face;
 	} mutex;
 
 	ResourceGroup rg;
@@ -173,7 +173,7 @@ static bool fonts_event(SDL_Event *event, void *arg) {
 	return false;
 }
 
-static void try_create_mutex(SDL_mutex **mtx) {
+static void try_create_mutex(SDL_Mutex **mtx) {
 	if((*mtx = SDL_CreateMutex()) == NULL) {
 		log_sdl_error(LOG_WARN, "SDL_CreateMutex");
 	}
@@ -269,19 +269,20 @@ bool check_font_path(const char *path) {
 }
 
 static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong count) {
-	SDL_RWops *rwops = stream->descriptor.pointer;
+	SDL_IOStream *rwops = stream->descriptor.pointer;
 	ulong error = count ? 0 : 1;
 
-	if(SDL_RWseek(rwops, offset, RW_SEEK_SET) < 0) {
+	if(SDL_SeekIO(rwops, offset, SDL_IO_SEEK_SET) < 0) {
 		log_error("Can't seek in stream (%s)", (char*)stream->pathname.pointer);
 		return error;
 	}
 
-	return SDL_RWread(rwops, buffer, 1, count);
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
+	SDL_ReadIO(rwops, buffer, count);
 }
 
 static void ftstream_close(FT_Stream stream) {
-	SDL_RWclose((SDL_RWops*)stream->descriptor.pointer);
+	SDL_CloseIO((SDL_IOStream*)stream->descriptor.pointer);
 }
 
 static FT_Error FT_Open_Face_Thread_Safe(FT_Library library, const FT_Open_Args *args, FT_Long face_index, FT_Face *aface) {
@@ -303,7 +304,7 @@ static FT_Error FT_Done_Face_Thread_Safe(FT_Face face) {
 static FT_Face load_font_face(char *vfspath, long index) {
 	char *syspath = vfs_repr(vfspath, true);
 
-	SDL_RWops *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rwops = vfs_open(vfspath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rwops) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -316,7 +317,7 @@ static FT_Face load_font_face(char *vfspath, long index) {
 		.pathname.pointer = syspath,
 		.read = ftstream_read,
 		.close = ftstream_close,
-		.size = SDL_RWsize(rwops),
+		.size = SDL_GetIOSize(rwops),
 	});
 
 	FT_Open_Args ftargs = {
@@ -679,8 +680,8 @@ static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			log_error(
 				"Glyph %u fill can't fit into any spritesheets (padded bitmap size: %ux%u; max spritesheet size: %ux%u)",
 				gindex,
-				px.width + 2 * GLYPH_SPRITE_PADDING,
-				px.height + 2 * GLYPH_SPRITE_PADDING,
+				px.width + 2,
+				px.height + 2,
 				SS_WIDTH,
 				SS_HEIGHT
 			);
@@ -796,7 +797,7 @@ void load_font(ResourceLoadState *st) {
 		.base_border_outer = 1.5f,
 	};
 
-	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
 
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -813,7 +814,7 @@ void load_font(ResourceLoadState *st) {
 		{ NULL }
 	});
 
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(UNLIKELY(!parsed)) {
 		log_error("Failed to parse font file '%s'", st->path);

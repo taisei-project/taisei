@@ -88,7 +88,7 @@ void res_load_dependency(ResourceLoadState *st, ResourceType type, const char *n
 // When a change is detected, the resource will be reloaded.
 // This only works if the transfer proc is implemented; otherwise it's equivalent to vfs_open().
 // Note that file monitoring support is not guaranteed.
-SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode);
+SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode);
 
 // Unloads a resource, freeing all allocated to it memory.
 typedef void (*ResourceUnloadProc)(void *res);

@@ -8,56 +8,59 @@
 
 #include "rwops_dummy.h"
 
-#define DUMMY_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
-#define DUMMY_AUTOCLOSE(rw) ((bool)((rw)->hidden.unknown.data2))
+// autoclose bit encoded as lowest bit of the context pointer, which is normally always 0
+#define DUMMY_SOURCE(ctx)    ((SDL_IOStream*)((uintptr_t)(ctx) & ~1ull))
+#define DUMMY_AUTOCLOSE(ctx) ((bool)((uintptr_t)(ctx) & 1ull))
 
-static int dummy_close(SDL_RWops *rw) {
-	if(DUMMY_AUTOCLOSE(rw)) {
-		SDL_RWclose(DUMMY_SOURCE(rw));
+static bool dummy_close(void *ctx) {
+	bool result = true;
+
+	if(DUMMY_AUTOCLOSE(ctx)) {
+		result = SDL_CloseIO(DUMMY_SOURCE(ctx));
 	}
 
-	SDL_FreeRW(rw);
-	return 0;
+	return result;
 }
 
-static int64_t dummy_seek(SDL_RWops *rw, int64_t offset, int whence) {
-	return SDL_RWseek(DUMMY_SOURCE(rw), offset, whence);
+static int64_t dummy_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+	return SDL_SeekIO(DUMMY_SOURCE(ctx), offset, whence);
 }
 
-static int64_t dummy_size(SDL_RWops *rw) {
-	return SDL_RWsize(DUMMY_SOURCE(rw));
+static int64_t dummy_size(void *ctx) {
+	return SDL_GetIOSize(DUMMY_SOURCE(ctx));
 }
 
-static size_t dummy_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
-	return SDL_RWread(DUMMY_SOURCE(rw), ptr, size, maxnum);
+static size_t dummy_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	size_t r = SDL_ReadIO(DUMMY_SOURCE(ctx), ptr, size);
+	*status = SDL_GetIOStatus(DUMMY_SOURCE(ctx));
+	return r;
 }
 
-static size_t dummy_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
-	return SDL_RWwrite(DUMMY_SOURCE(rw), ptr, size, maxnum);
+static size_t dummy_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+	size_t r = SDL_WriteIO(DUMMY_SOURCE(ctx), ptr, size);
+	*status = SDL_GetIOStatus(DUMMY_SOURCE(ctx));
+	return r;
 }
 
-SDL_RWops *SDL_RWWrapDummy(SDL_RWops *src, bool autoclose) {
+SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose, bool readonly) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
-	SDL_RWops *rw = SDL_AllocRW();
+	SDL_IOStreamInterface iface = {
+		.version = sizeof(iface),
+		.size = dummy_size,
+		.seek = dummy_seek,
+		.close = dummy_close,
+		.read = dummy_read,
+		.write = readonly ? NULL : dummy_write,
+	};
 
-	if(UNLIKELY(!rw)) {
-		return NULL;
-	}
+	union {
+		uintptr_t u;
+		void *p;
+	} ctx = { .p = src };
+	ctx.u |= (autoclose & 1u);
 
-	memset(rw, 0, sizeof(SDL_RWops));
-
-	rw->hidden.unknown.data1 = src;
-	rw->hidden.unknown.data2 = (void*)(intptr_t)autoclose;
-	rw->type = SDL_RWOPS_UNKNOWN;
-
-	rw->size = dummy_size;
-	rw->seek = dummy_seek;
-	rw->close = dummy_close;
-	rw->read = dummy_read;
-	rw->write = dummy_write;
-
-	return rw;
+	return SDL_OpenIO(&iface, ctx.p);
 }

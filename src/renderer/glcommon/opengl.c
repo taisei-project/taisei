@@ -685,8 +685,6 @@ static const char *get_unmasked_property(GLenum prop, bool fallback) {
 
 static void detect_broken_intel_driver(void) {
 #ifdef TAISEI_BUILDCONF_WINDOWS_ANGLE_INTEL
-	extern DECLSPEC int SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
-
 	bool is_broken_intel_driver = (
 		!glext.version.is_es &&
 		strstartswith((const char*)glGetString(GL_VENDOR), "Intel") &&
@@ -886,7 +884,7 @@ void glcommon_check_capabilities(void) {
 		log_info("Supported extensions: %s", exts);
 	} else {
 		void *buf;
-		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 1024);
+		SDL_IOStream *writer = SDL_RWAutoBuffer(&buf, 1024);
 		GLint num_extensions;
 
 		SDL_RWprintf(writer, "Supported extensions:");
@@ -898,7 +896,7 @@ void glcommon_check_capabilities(void) {
 
 		SDL_WriteU8(writer, 0);
 		log_info("%s", (char*)buf);
-		SDL_RWclose(writer);
+		SDL_CloseIO(writer);
 	}
 
 	glcommon_check_issues();
@@ -957,7 +955,7 @@ void glcommon_load_library(void) {
 		lib = NULL;
 	}
 
-	if(SDL_GL_LoadLibrary(lib) < 0) {
+	if(!SDL_GL_LoadLibrary(lib)) {
 		log_fatal("SDL_GL_LoadLibrary() failed: %s", SDL_GetError());
 	}
 #endif
@@ -986,7 +984,7 @@ void glcommon_load_functions(void) {
 #ifndef STATIC_GLES3
 	int profile, version;
 
-	if(SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile) < 0) {
+	if(!SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile)) {
 		log_fatal("SDL_GL_GetAttribute() failed: %s", SDL_GetError());
 	}
 
@@ -1025,7 +1023,7 @@ void glcommon_load_functions(void) {
 #endif
 }
 
-void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags) {
+void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SDL_GLContextFlag ctxflags) {
 	if(glcommon_debug_requested()) {
 		ctxflags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 	}

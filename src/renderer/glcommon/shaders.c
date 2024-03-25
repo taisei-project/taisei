@@ -176,7 +176,7 @@ static void glcommon_build_shader_lang_table_fallback(void) {
 static void glcommon_build_shader_lang_table_finish(void) {
 	if(glcommon_shader_lang_table.num_elements > 0) {
 		char *str;
-		SDL_RWops *abuf = SDL_RWAutoBuffer((void**)&str, 256);
+		SDL_IOStream *abuf = SDL_RWAutoBuffer((void**)&str, 256);
 		SDL_RWprintf(abuf, "Supported GLSL versions: ");
 		char vbuf[32];
 
@@ -194,7 +194,7 @@ static void glcommon_build_shader_lang_table_finish(void) {
 
 		SDL_WriteU8(abuf, 0);
 		log_info("%s", str);
-		SDL_RWclose(abuf);
+		SDL_CloseIO(abuf);
 
 		dynarray_compact(&glcommon_shader_lang_table);
 	} else {

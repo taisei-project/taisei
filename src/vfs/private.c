@@ -41,32 +41,24 @@ static void vfs_tls_free(void *vtls) {
 }
 
 static vfs_tls_t* vfs_tls_get(void) {
-	if(vfs_tls_id) {
-		vfs_tls_t *tls = SDL_TLSGet(vfs_tls_id);
+	vfs_tls_t *tls = SDL_GetTLS(&vfs_tls_id) ?: vfs_tls_fallback;
 
-		if(!tls) {
-			SDL_TLSSet(vfs_tls_id, ALLOC(vfs_tls_t), vfs_tls_free);
-			tls = SDL_TLSGet(vfs_tls_id);
-		}
-
-		assert(tls != NULL);
+	if(tls) {
 		return tls;
 	}
 
-	assert(vfs_tls_fallback != NULL);
-	return vfs_tls_fallback;
+	tls = ALLOC(vfs_tls_t);
+
+	if(!SDL_SetTLS(&vfs_tls_id, tls, vfs_tls_free)) {
+		log_warn("SDL_SetTLS(): failed: %s", SDL_GetError());
+		vfs_tls_fallback = tls;
+	}
+
+	return tls;
 }
 
 void vfs_init(void) {
 	vfs_root = vfs_vdir_create();
-	vfs_tls_id = SDL_TLSCreate();
-
-	if(vfs_tls_id) {
-		vfs_tls_fallback = NULL;
-	} else {
-		log_warn("SDL_TLSCreate(): failed: %s", SDL_GetError());
-		vfs_tls_fallback = ALLOC(typeof(*vfs_tls_fallback));
-	}
 }
 
 static void* call_shutdown_hook(List **vlist, List *vhook, void *arg) {
@@ -85,7 +77,6 @@ void vfs_shutdown(void) {
 	vfs_tls_free(vfs_tls_fallback);
 
 	vfs_root = NULL;
-	vfs_tls_id = 0;
 	vfs_tls_fallback = NULL;
 }
 
@@ -182,7 +173,8 @@ bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree
 	return true;
 }
 
-void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) {
+void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix,
+			    const char *name) {
 	void *o = NULL;
 	bool is_dir = vfs_node_query(root).is_dir;
 	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");

@@ -133,7 +133,7 @@ static EGLDisplay egl_display_from_sdl(SDL_Window *window) {
 	EGLDisplay display = eglGetCurrentDisplay();
 	assert(display != EGL_NO_DISPLAY);
 
-	SDL_GL_DeleteContext(ctx);
+	SDL_GL_DestroyContext(ctx);
 	return display;
 }
 
@@ -177,7 +177,7 @@ SDL_GLContext gles_create_context_angle(SDL_Window *window, int major, int minor
 		log_fatal("eglCreateContext failed: %s", egl_get_error_string());
 	}
 
-	if(SDL_GL_MakeCurrent(window, context)) {
+	if(!SDL_GL_MakeCurrent(window, context)) {
 		log_sdl_error(LOG_FATAL, "SDL_GL_MakeCurrent");
 	}
 

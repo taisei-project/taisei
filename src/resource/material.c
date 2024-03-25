@@ -67,7 +67,7 @@ static void free_mat_load_data(struct mat_load_data *ld) {
 static void material_load_stage2(ResourceLoadState *st);
 
 static void material_load_stage1(ResourceLoadState *st) {
-	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
 
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -98,7 +98,7 @@ static void material_load_stage1(ResourceLoadState *st) {
 		{ NULL },
 	});
 
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(!ok) {
 		free_mat_load_data(ld);

@@ -12,9 +12,9 @@
 #include "log.h"
 #include "util/env.h"
 
-#include <SDL_atomic.h>
-#include <SDL_mutex.h>
-#include <SDL_thread.h>
+#include <SDL3/SDL_atomic.h>
+#include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_thread.h>
 
 typedef enum TaskManagerState {
 	TMGR_STATE_SHUTDOWN,
@@ -24,11 +24,11 @@ typedef enum TaskManagerState {
 
 struct TaskManager {
 	LIST_ANCHOR(Task) queue;
-	SDL_sem *queue_sem;
+	SDL_Semaphore *queue_sem;
 	SDL_SpinLock queue_lock;
 	uint numthreads;
 	TaskManagerState state;
-	SDL_atomic_t numtasks;
+	SDL_AtomicInt numtasks;
 	Thread *threads[];
 };
 
@@ -38,8 +38,8 @@ struct Task {
 	task_free_func_t userdata_free_callback;
 	void *userdata;
 	int prio;
-	SDL_mutex *mutex;
-	SDL_cond *cond;
+	SDL_Mutex *mutex;
+	SDL_Condition *cond;
 	TaskStatus status;
 	void *result;
 	uint disowned : 1;
@@ -66,7 +66,7 @@ static void task_free(Task *task) {
 	}
 
 	if(task->cond != NULL) {
-		SDL_DestroyCond(task->cond);
+		SDL_DestroyCondition(task->cond);
 	}
 
 	mem_free(task);
@@ -77,21 +77,21 @@ static Task *taskmgr_pop_queue(TaskManager *mgr) {
 		return NULL;
 	}
 
-	SDL_AtomicLock(&mgr->queue_lock);
+	SDL_LockSpinlock(&mgr->queue_lock);
 	auto t = alist_pop(&mgr->queue);
-	SDL_AtomicUnlock(&mgr->queue_lock);
+	SDL_UnlockSpinlock(&mgr->queue_lock);
 	return t;
 }
 
 static void *taskmgr_thread(void *arg) {
 	TaskManager *mgr = arg;
-	attr_unused SDL_threadID tid = SDL_ThreadID();
+	attr_unused SDL_ThreadID tid = SDL_GetCurrentThreadID();
 
 	TaskManagerState state = mgr->state;
-	SDL_sem *qsem = mgr->queue_sem;
+	SDL_Semaphore *qsem = mgr->queue_sem;
 
 	while(state != TMGR_STATE_ABORTED) {
-		SDL_SemWait(qsem);
+		SDL_WaitSemaphore(qsem);
 
 		Task *task = taskmgr_pop_queue(mgr);
 		state = mgr->state;
@@ -126,7 +126,7 @@ static void *taskmgr_thread(void *arg) {
 				task_free(task);
 			} else {
 				task->status = TASK_FINISHED;
-				SDL_CondBroadcast(task->cond);
+				SDL_BroadcastCondition(task->cond);
 				SDL_UnlockMutex(task->mutex);
 			}
 		} else if(
@@ -152,7 +152,7 @@ static void *taskmgr_thread(void *arg) {
 }
 
 TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *name) {
-	int numcores = SDL_GetCPUCount();
+	int numcores = SDL_GetNumLogicalCPUCores();
 
 	if(numcores < 1) {
 		log_warn("SDL_GetCPUCount() returned %i, assuming 1", numcores);
@@ -188,7 +188,7 @@ TaskManager *taskmgr_create(uint numthreads, ThreadPriority prio, const char *na
 			mgr->state = TMGR_STATE_ABORTED;
 
 			for(uint j = 0; j < i; ++j) {
-				SDL_SemPost(mgr->queue_sem);
+				SDL_SignalSemaphore(mgr->queue_sem);
 				thread_decref(mgr->threads[j]);
 				mgr->threads[j] = NULL;
 			}
@@ -233,22 +233,22 @@ Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 		goto fail;
 	}
 
-	if(!(task->cond = SDL_CreateCond())) {
-		log_sdl_error(LOG_WARN, "SDL_CreateCond");
+	if(!(task->cond = SDL_CreateCondition())) {
+		log_sdl_error(LOG_WARN, "SDL_CreateCondition");
 		goto fail;
 	}
 
-	SDL_AtomicLock(&mgr->queue_lock);
+	SDL_LockSpinlock(&mgr->queue_lock);
 	if(params.topmost) {
 		alist_insert_at_priority_head(&mgr->queue, task, task->prio, task_prio_func);
 	} else {
 		alist_insert_at_priority_tail(&mgr->queue, task, task->prio, task_prio_func);
 	}
-	SDL_AtomicUnlock(&mgr->queue_lock);
+	SDL_UnlockSpinlock(&mgr->queue_lock);
 
 	task->in_queue = true;
 	SDL_AtomicIncRef(&mgr->numtasks);
-	SDL_SemPost(mgr->queue_sem);
+	SDL_SignalSemaphore(mgr->queue_sem);
 
 	return task;
 
@@ -258,13 +258,13 @@ fail:
 }
 
 uint taskmgr_remaining(TaskManager *mgr) {
-	return SDL_AtomicGet(&mgr->numtasks);
+	return SDL_GetAtomicInt(&mgr->numtasks);
 }
 
 static void taskmgr_finalize_and_wait(TaskManager *mgr, bool do_abort) {
 	log_debug(
 		"%08lx [%p] waiting for %u tasks (abort = %i)",
-		SDL_ThreadID(),
+		SDL_GetCurrentThreadID(),
 		(void*)mgr,
 		taskmgr_remaining(mgr),
 		do_abort
@@ -274,7 +274,7 @@ static void taskmgr_finalize_and_wait(TaskManager *mgr, bool do_abort) {
 	mgr->state = do_abort ? TMGR_STATE_ABORTED : TMGR_STATE_SHUTDOWN;
 
 	for(uint i = 0; i < mgr->numthreads; ++i) {
-		SDL_SemPost(mgr->queue_sem);
+		SDL_SignalSemaphore(mgr->queue_sem);
 	}
 
 	for(uint i = 0; i < mgr->numthreads; ++i) {
@@ -313,7 +313,7 @@ static void *task_offload(Task *task) {
 	assert(!task->disowned);
 	task->status = TASK_FINISHED;
 	task->result = result;
-	SDL_CondBroadcast(task->cond);
+	SDL_BroadcastCondition(task->cond);
 	return result;
 }
 
@@ -334,7 +334,7 @@ bool task_wait(Task *task, void **result) {
 		success = true;
 		_result = task->result;
 	} else if(task->status == TASK_RUNNING) {
-		SDL_CondWait(task->cond, task->mutex);
+		SDL_WaitCondition(task->cond, task->mutex);
 		_result = task->result;
 		success = (task->status == TASK_FINISHED);
 	} else if(task->status == TASK_PENDING) {

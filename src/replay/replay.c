@@ -10,6 +10,8 @@
 #include "struct.h"
 #include "stage.h"
 
+#include "rwops/rwops_stdiofp.h"
+
 void replay_destroy_events(Replay *rpy) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		replay_stage_destroy_events(stg);
@@ -35,7 +37,7 @@ bool replay_save(Replay *rpy, const char *name) {
 	log_info("Saving %s", sp);
 	mem_free(sp);
 
-	SDL_RWops *file = vfs_open(p, VFS_MODE_WRITE);
+	SDL_IOStream *file = vfs_open(p, VFS_MODE_WRITE);
 	mem_free(p);
 
 	if(!file) {
@@ -44,7 +46,7 @@ bool replay_save(Replay *rpy, const char *name) {
 	}
 
 	bool result = replay_write(rpy, file, REPLAY_STRUCT_VERSION_WRITE);
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 	return result;
 }
@@ -69,7 +71,7 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	char *sp = vfs_repr(path, true);
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
-	SDL_RWops *file = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *file = vfs_open(path, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -80,7 +82,7 @@ bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	bool result = replay_read(rpy, file, mode, sp);
 
 	mem_free(sp);
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 	return result;
 }
 
@@ -93,7 +95,7 @@ bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
 
 bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	log_info("Loading %s (%s)", path, replay_mode_string(mode));
-	SDL_RWops *file;
+	SDL_IOStream *file;
 
 	if(!strcmp(path, "-")) {
 		file = SDL_RWFromFP(stdin, false);
@@ -102,9 +104,9 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 			return false;
 		}
 	} else {
-		file = SDL_RWFromFile(path, "rb");
+		file = SDL_IOFromFile(path, "rb");
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
 			return false;
 		}
 	}
@@ -112,13 +114,13 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 
 	bool result = replay_read(rpy, file, mode, path);
 
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 	return result;
 }
 
 bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) {
 	log_info("Saving %s", path);
-	SDL_RWops *file;
+	SDL_IOStream *file;
 
 	if(!strcmp(path, "-")) {
 		file = SDL_RWFromFP(stdout, false);
@@ -127,15 +129,15 @@ bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) {
 			return false;
 		}
 	} else {
-		file = SDL_RWFromFile(path, "wb");
+		file = SDL_IOFromFile(path, "wb");
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
 			return false;
 		}
 	}
 
 	bool result = replay_write(rpy, file, version);
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 	return result;
 }
 

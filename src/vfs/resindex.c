@@ -223,7 +223,7 @@ static void vfs_resindex_free(VFSNode *node) {
 	}
 }
 
-static SDL_RWops *vfs_resindex_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_IOStream *vfs_resindex_open(VFSNode *node, VFSOpenMode mode) {
 	if(mode & VFS_MODE_WRITE) {
 		vfs_set_error("Read-only filesystem");
 		return NULL;

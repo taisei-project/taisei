@@ -35,7 +35,7 @@ static bool watchdog_event(SDL_Event *event, void *arg) {
 	assert(watchdog_initialized());
 
 	switch(event->type) {
-		case SDL_KEYDOWN:
+		case SDL_EVENT_KEY_DOWN:
 			watchdog_reset();
 			return false;
 

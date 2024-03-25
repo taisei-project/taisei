@@ -1612,8 +1612,8 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		return false;
 	}
 
-	if(t == SDL_KEYDOWN) {
-		SDL_Scancode scan = event->key.keysym.scancode;
+	if(t == SDL_EVENT_KEY_DOWN) {
+		SDL_Scancode scan = event->key.scancode;
 		bool esc = scan == SDL_SCANCODE_ESCAPE;
 
 		if(b->type != BT_KeyBinding) {
@@ -1713,12 +1713,13 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 
 	uint32_t t = event->type;
 
-	if(t == SDL_TEXTINPUT || t == MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE)) {
+	if(t == SDL_EVENT_TEXT_INPUT || t == MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE)) {
 		const size_t max_len = 32;
 		const char *snd = "generic_shot";
-		char *text, *text_allocated = NULL;
+		const char *text;
+		char *text_allocated = NULL;
 
-		if(t == SDL_TEXTINPUT) {
+		if(t == SDL_EVENT_TEXT_INPUT) {
 			text = event->text.text;
 		} else {
 			text = text_allocated = SDL_GetClipboardText();
@@ -1745,13 +1746,13 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 			mem_free(u);
 		}
 
-		mem_free(text_allocated);
+		SDL_free(text_allocated);
 		play_sfx_ui(snd);
 		return true;
 	}
 
-	if(t == SDL_KEYDOWN) {
-		SDL_Scancode scan = event->key.keysym.scancode;
+	if(t == SDL_EVENT_KEY_DOWN) {
+		SDL_Scancode scan = event->key.scancode;
 
 		if(scan == SDL_SCANCODE_ESCAPE) {
 			play_sfx_ui("hit");

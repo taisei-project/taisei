@@ -14,7 +14,7 @@
 #include "util/io.h"
 
 #define AUDIO_FREQ 48000
-#define AUDIO_FORMAT AUDIO_F32SYS
+#define AUDIO_FORMAT SDL_AUDIO_F32
 #define AUDIO_CHANNELS 2
 
 struct SFXImpl {
@@ -27,21 +27,27 @@ struct BGM {
 
 static struct {
 	Mixer *mixer;
-	SDL_AudioDeviceID device;
+	SDL_AudioStream *sink;
 	uint8_t silence;
 } audio;
 
 // BEGIN MISC
 
-static void SDLCALL mixer_callback(void *ignore, uint8_t *stream, int len) {
-	memset(stream, audio.silence, len);
-	mixer_process(audio.mixer, len, stream);
+static void SDLCALL mixer_callback(
+	void *ignore, SDL_AudioStream *sink, int additional_amount, int total_amount
+) {
+	if(additional_amount > 0) {
+		uint8_t data[additional_amount];
+		memset(data, audio.silence, additional_amount);
+		mixer_process(audio.mixer, additional_amount, data);
+		SDL_PutAudioStreamData(sink, data, additional_amount);
+	}
 }
 
 static bool init_sdl_audio(void) {
 	uint num_drivers = SDL_GetNumAudioDrivers();
 	void *buf;
-	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+	SDL_IOStream *out = SDL_RWAutoBuffer(&buf, 256);
 
 	SDL_RWprintf(out, "Available audio drivers:");
 
@@ -51,9 +57,9 @@ static bool init_sdl_audio(void) {
 
 	SDL_WriteU8(out, 0);
 	log_info("%s", (char*)buf);
-	SDL_RWclose(out);
+	SDL_CloseIO(out);
 
-	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+	if(!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
 		return false;
 	}
@@ -63,26 +69,26 @@ static bool init_sdl_audio(void) {
 }
 
 static bool init_audio_device(SDL_AudioSpec *spec) {
-	SDL_AudioSpec want = { 0 }, have;
-	want.callback = mixer_callback;
-	want.channels = AUDIO_CHANNELS;
-	want.format = AUDIO_FORMAT;
-	want.freq = AUDIO_FREQ;
-	want.samples = config_get_int(CONFIG_MIXER_CHUNKSIZE);
+	SDL_AudioSpec want = {
+		.channels = AUDIO_CHANNELS,
+		.format = AUDIO_FORMAT,
+		.freq = AUDIO_FREQ,
+	}, have;
 
-	// NOTE: StreamPlayer expects stereo float32 samples.
-	uint allow_changes = SDL_AUDIO_ALLOW_FREQUENCY_CHANGE;
+	// FIXME looks like we can't specify buffer size at all anymore?
+	attr_unused int want_bufsize = config_get_int(CONFIG_MIXER_CHUNKSIZE);
+	int have_bufsize;
 
-	#ifdef SDL_AUDIO_ALLOW_SAMPLES_CHANGE
-		allow_changes |= SDL_AUDIO_ALLOW_SAMPLES_CHANGE;
-	#endif
+	audio.sink = SDL_OpenAudioDeviceStream(
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, mixer_callback, NULL);
 
-	audio.device = SDL_OpenAudioDevice(NULL, false, &want, &have, allow_changes);
-
-	if(audio.device == 0) {
-		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDevice");
+	if(!audio.sink) {
+		log_sdl_error(LOG_ERROR, "SDL_OpenAudioDeviceStream");
 		return false;
 	}
+
+	SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(audio.sink);
+	SDL_GetAudioDeviceFormat(dev, &have, &have_bufsize);
 
 	if(have.freq != want.freq || have.format != want.format) {
 		log_warn(
@@ -93,8 +99,10 @@ static bool init_audio_device(SDL_AudioSpec *spec) {
 		);
 	}
 
+	log_debug("Buffer size: %u (want %u)", have_bufsize, want_bufsize);
+
 	*spec = have;
-	audio.silence = have.silence;
+	audio.silence = SDL_GetSilenceValueForFormat(want.format);
 
 	return true;
 }
@@ -118,20 +126,20 @@ static bool audio_sdl_init(void) {
 	if(!mixer_init(audio.mixer, &mspec)) {
 		mixer_shutdown(audio.mixer);
 		mem_free(audio.mixer);
-		SDL_CloseAudioDevice(audio.device);
+		SDL_DestroyAudioStream(audio.sink);
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return false;
 	}
 
-	SDL_PauseAudioDevice(audio.device, false);
+	SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(audio.sink));
 	log_info("Audio subsystem initialized (SDL)");
 
 	return true;
 }
 
 static bool audio_sdl_shutdown(void) {
-	SDL_PauseAudioDevice(audio.device, true);
-	SDL_CloseAudioDevice(audio.device);
+	SDL_PauseAudioDevice(SDL_GetAudioStreamDevice(audio.sink));
+	SDL_DestroyAudioStream(audio.sink);
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	mixer_shutdown(audio.mixer);
 	mem_free(audio.mixer);
@@ -141,7 +149,17 @@ static bool audio_sdl_shutdown(void) {
 }
 
 static bool audio_sdl_output_works(void) {
-	return SDL_GetAudioDeviceStatus(audio.device) == SDL_AUDIO_PLAYING;
+	if(!audio.sink) {
+		return false;
+	}
+
+	SDL_AudioDeviceID dev = SDL_GetAudioStreamDevice(audio.sink);
+
+	if(!dev) {
+		return false;
+	}
+
+	return !SDL_AudioDevicePaused(dev);
 }
 
 static const char *const *audio_sdl_get_supported_exts(uint *numexts) {
@@ -149,11 +167,11 @@ static const char *const *audio_sdl_get_supported_exts(uint *numexts) {
 }
 
 INLINE void lock_audio(void) {
-	SDL_LockAudioDevice(audio.device);
+	SDL_LockAudioStream(audio.sink);
 }
 
 INLINE void unlock_audio(void) {
-	SDL_UnlockAudioDevice(audio.device);
+	SDL_UnlockAudioStream(audio.sink);
 }
 
 #define WITH_AUDIO_LOCK(...) ({ \

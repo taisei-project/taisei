@@ -73,8 +73,8 @@ void r_model_add_static(
 	out_mdl->num_indices = num_indices;
 	out_mdl->primitive = prim;
 
-	SDL_RWops *vert_stream = r_vertex_buffer_get_stream(_r_models.vbuf);
-	size_t vert_ofs = SDL_RWtell(vert_stream) / sizeof(GenericModelVertex);
+	SDL_IOStream *vert_stream = r_vertex_buffer_get_stream(_r_models.vbuf);
+	size_t vert_ofs = SDL_TellIO(vert_stream) / sizeof(GenericModelVertex);
 
 	if(num_indices > 0) {
 		assume(indices != NULL);
@@ -84,7 +84,8 @@ void r_model_add_static(
 		out_mdl->offset = vert_ofs;
 	}
 
-	SDL_RWwrite(vert_stream, vertices, sizeof(GenericModelVertex), num_vertices);
+	SDL_WriteIO(vert_stream, vertices,
+		    sizeof(GenericModelVertex) * num_vertices);
 }
 
 VertexBuffer* r_vertex_buffer_static_models(void) {

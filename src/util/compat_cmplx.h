@@ -25,7 +25,7 @@
 
 #if defined __clang__
 	// On these platforms CMPLX is defined without __extension__, causing warning spam
-	#if defined __EMSCRIPTEN__ || defined __APPLE__
+	#if defined __EMSCRIPTEN__ || defined SDL_PLATFORM_APPLE
 		#undef CMPLX
 		#undef CMPLXF
 	#endif

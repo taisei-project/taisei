@@ -10,7 +10,7 @@
 #include "resindex_layered.h"
 #include "resindex_layered_public.h"
 
-static SDL_RWops *vfs_resindex_layered_open(VFSResIndexFSContext *ctx, const char *content_id, VFSOpenMode mode) {
+static SDL_IOStream *vfs_resindex_layered_open(VFSResIndexFSContext *ctx, const char *content_id, VFSOpenMode mode) {
 	const char *backend_path = ctx->userdata;
 	size_t pathlen = strlen(backend_path) + 1 + strlen(content_id);
 	char path[pathlen + 1];

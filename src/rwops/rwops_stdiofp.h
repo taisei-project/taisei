@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_iostream.h>
 
-SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end,
-				bool autoclose);
+SDL_IOStream *SDL_RWFromFP(FILE *fp, bool autoclose);

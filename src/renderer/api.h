@@ -790,7 +790,7 @@ const char* r_vertex_buffer_get_debug_label(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char* label) attr_nonnull(1);
 void r_vertex_buffer_destroy(VertexBuffer *vbuf) attr_nonnull(1);
 void r_vertex_buffer_invalidate(VertexBuffer *vbuf) attr_nonnull(1);
-SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
+SDL_IOStream* r_vertex_buffer_get_stream(VertexBuffer *vbuf) attr_nonnull(1);
 
 IndexBuffer* r_index_buffer_create(uint index_size, size_t max_elements);
 size_t r_index_buffer_get_capacity(IndexBuffer *ibuf) attr_nonnull(1);

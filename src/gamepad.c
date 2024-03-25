@@ -30,9 +30,8 @@ typedef struct GamepadButtonState {
 } GamepadButtonState;
 
 typedef struct GamepadDevice {
-	SDL_GameController *controller;
+	SDL_Gamepad *controller;
 	SDL_JoystickID joy_instance;
-	int sdl_id;
 } GamepadDevice;
 
 static struct {
@@ -56,7 +55,7 @@ static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
 	char *errstr = NULL;
 	const char *const_errstr = NULL;
 
-	SDL_RWops *mappings = vfs_open(vpath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *mappings = vfs_open(vpath, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 	int num_loaded = -1;
 	LogLevel loglvl = LOG_WARN;
 
@@ -75,7 +74,7 @@ static int gamepad_load_mappings(const char *vpath, int warn_noexist) {
 		goto cleanup;
 	}
 
-	if((num_loaded = SDL_GameControllerAddMappingsFromRW(mappings, true)) < 0) {
+	if((num_loaded = SDL_AddGamepadMappingsFromIO(mappings, true)) < 0) {
 		const_errstr = SDL_GetError();
 	}
 
@@ -96,26 +95,6 @@ static void gamepad_load_all_mappings(void) {
 	gamepad_load_mappings("storage/gamecontrollerdb.txt", false);
 }
 
-static const char* gamepad_device_name_unmapped(int idx) {
-	const char *name = SDL_GameControllerNameForIndex(idx);
-
-	if(name == NULL) {
-		return "Unknown device";
-	}
-
-	if(!strcasecmp(name, "Xinput Controller")) {
-		// HACK: let's try to get a more descriptive name...
-		const char *prev_name = name;
-		name = SDL_JoystickNameForIndex(idx);
-
-		if(name == NULL) {
-			name = prev_name;
-		}
-	}
-
-	return name;
-}
-
 static inline GamepadDevice* gamepad_get_device(int num) {
 	if(num < 0 || num >= gamepad.devices.num_elements) {
 		return NULL;
@@ -124,72 +103,94 @@ static inline GamepadDevice* gamepad_get_device(int num) {
 	return dynarray_get_ptr(&gamepad.devices, num);
 }
 
-const char* gamepad_device_name(int num) {
+const char *gamepad_device_name(int num) {
 	GamepadDevice *dev = gamepad_get_device(num);
+	static const char *const default_name = "Unknown device";
+	const char *name = NULL;
 
-	if(dev) {
-		return gamepad_device_name_unmapped(dev->sdl_id);
+	if(!dev) {
+		return default_name;
 	}
 
-	return NULL;
+	name = SDL_GetGamepadName(dev->controller);
+
+	if(!name) {
+		return default_name;
+	}
+
+	if(!strcasecmp(name, "Xinput Controller")) {
+		// HACK: let's try to get a more descriptive name…
+		const char *jname = SDL_GetJoystickNameForID(dev->joy_instance);
+
+		if(jname != NULL) {
+			name = jname;
+		}
+	}
+
+	return name;
 }
 
 static bool gamepad_update_device_list(void) {
-	int cnt = SDL_NumJoysticks();
 	log_info("Updating gamepad devices list");
 
+	int num_joysticks;
+	SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+
+	if(!joysticks) {
+		log_sdl_error(LOG_ERROR, "SDL_GetJoysticks");
+		return false;
+	}
+
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
-		SDL_GameControllerClose(dev->controller);
+		SDL_CloseGamepad(dev->controller);
 	});
 
 	gamepad.devices.num_elements = 0;
 
-	if(!cnt) {
+	if(num_joysticks < 1) {
 		dynarray_free_data(&gamepad.devices);
 		log_info("No joysticks attached");
+		SDL_free(joysticks);
 		return false;
 	}
 
-	dynarray_ensure_capacity(&gamepad.devices, cnt);
+	dynarray_ensure_capacity(&gamepad.devices, num_joysticks);
 
-	for(int i = 0; i < cnt; ++i) {
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(i);
+	for(int i = 0; i < num_joysticks; ++i) {
+		SDL_GUID guid = SDL_GetJoystickGUIDForID(joysticks[i]);
 		char guid_str[33] = { 0 };
-		SDL_JoystickGetGUIDString(guid, guid_str, sizeof(guid_str));
+		SDL_GUIDToString(guid, guid_str, sizeof(guid_str));
 
 		if(!*guid_str) {
 			log_warn("Failed to read GUID of joystick at index %i: %s", i, SDL_GetError());
 			continue;
 		}
 
-		if(!SDL_IsGameController(i)) {
-			log_warn("Joystick at index %i (name: \"%s\"; guid: %s) is not recognized as a game controller by SDL. "
-					 "Most likely it just doesn't have a mapping. See https://git.io/vdvdV for solutions",
-				i, SDL_JoystickNameForIndex(i), guid_str);
+		if(!	SDL_IsGamepad(joysticks[i])) {
+			log_warn(
+				"Joystick at index %i (name: \"%s\"; guid: %s) is not recognized as a game controller by SDL. "
+				"Most likely it just doesn't have a mapping. See https://git.io/vdvdV for solutions",
+				i, SDL_GetJoystickNameForID(joysticks[i]), guid_str
+			);
 			continue;
 		}
 
 		auto dev = dynarray_append(&gamepad.devices, {
-			.sdl_id = i,
-			.controller = SDL_GameControllerOpen(i),
+			.joy_instance = joysticks[i],
+			.controller = SDL_OpenGamepad(joysticks[i]),
 		});
 
 		if(dev->controller == NULL) {
-			log_sdl_error(LOG_WARN, "SDL_GameControllerOpen");
+			log_sdl_error(LOG_WARN, "SDL_OpenGamepad");
 			--gamepad.devices.num_elements;
 			continue;
 		}
 
-		dev->joy_instance = SDL_JoystickGetDeviceInstanceID(i);
-
-		if(dev->joy_instance < 0) {
-			log_sdl_error(LOG_WARN, "SDL_JoystickGetDeviceInstanceID");
-			--gamepad.devices.num_elements;
-			continue;
-		}
-
-		log_info("Found device '%s' (#%i): %s", guid_str, DEVNUM(dev), gamepad_device_name_unmapped(i));
+		int n = DEVNUM(dev);
+		log_info("Found device '%s' (#%i): %s", guid_str, n, gamepad_device_name(n));
 	}
+
+	SDL_free(joysticks);
 
 	if(!gamepad.devices.num_elements) {
 		log_info("No usable devices");
@@ -199,7 +200,7 @@ static bool gamepad_update_device_list(void) {
 	return true;
 }
 
-static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+static GamepadDevice *gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
 	if(gamepad.devices.num_elements < 1) {
 		*out_localdevnum = GAMEPAD_DEVNUM_INVALID;
 		return NULL;
@@ -214,8 +215,8 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 	dynarray_foreach(&gamepad.devices, int i, auto dev, {
 		*guid_out = 0;
 
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
-		SDL_JoystickGetGUIDString(guid, guid_out, guid_out_sz);
+		SDL_GUID guid = SDL_GetJoystickGUIDForID(dev->joy_instance);
+		SDL_GUIDToString(guid, guid_out, guid_out_sz);
 
 		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
 			*out_localdevnum = i;
@@ -227,7 +228,7 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 	return NULL;
 }
 
-static GamepadDevice* gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+static GamepadDevice *gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
 	GamepadDevice *dev;
 	const char *want_guid = config_get_str(CONFIG_GAMEPAD_DEVICE);
 
@@ -281,9 +282,9 @@ bool gamepad_update_devices(void) {
 	return true;
 }
 
-static inline void set_events_state(int state) {
-	SDL_JoystickEventState(state);
-	SDL_GameControllerEventState(state);
+static inline void set_events_state(bool state) {
+	SDL_SetJoystickEventsEnabled(state);
+	SDL_SetGamepadEventsEnabled(state);
 }
 
 void gamepad_init(void) {
@@ -291,13 +292,13 @@ void gamepad_init(void) {
 		return;
 	}
 
-	set_events_state(SDL_IGNORE);
+	set_events_state(false);
 
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED)) {
 		return;
 	}
 
-	if(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
+	if(!SDL_InitSubSystem(SDL_INIT_GAMEPAD)) {
 		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
 		return;
 	}
@@ -314,7 +315,7 @@ void gamepad_init(void) {
 		.priority = EPRIO_TRANSLATION,
 	});
 
-	set_events_state(SDL_ENABLE);
+	set_events_state(true);
 }
 
 void gamepad_shutdown(void) {
@@ -329,14 +330,14 @@ void gamepad_shutdown(void) {
 
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
 		if(dev->controller) {
-			SDL_GameControllerClose(dev->controller);
+			SDL_CloseGamepad(dev->controller);
 		}
 	});
 
 	dynarray_free_data(&gamepad.devices);
 
-	set_events_state(SDL_IGNORE);
-	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+	set_events_state(false);
+	SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 
 	memset(&gamepad, 0, sizeof(gamepad));
 	events_unregister_handler(gamepad_event_handler);
@@ -391,7 +392,7 @@ int gamepad_player_axis_value(GamepadPlrAxis paxis) {
 	return gamepad_axis_value(id);
 }
 
-static void gamepad_button(GamepadButton button, int state, bool is_repeat);
+static void gamepad_button(GamepadButton button, bool pressed, bool is_repeat);
 static void gamepad_axis(GamepadAxis id, int raw);
 
 double gamepad_normalize_axis_value(int val) {
@@ -575,7 +576,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 			GamepadButton btn = gamepad_button_from_axis(id, digital);
 
 			if(btn != GAMEPAD_BUTTON_INVALID) {
-				gamepad_button(btn, SDL_PRESSED, false);
+				gamepad_button(btn, true, false);
 			}
 		}
 	} else if(gamepad.axes[id].digital != AXISVAL_NULL) {  // simulate release
@@ -584,7 +585,7 @@ static void gamepad_axis(GamepadAxis id, int raw) {
 		events_emit(TE_GAMEPAD_AXIS_DIGITAL, id, (void*)(intptr_t)digital, NULL);
 
 		if(btn != GAMEPAD_BUTTON_INVALID) {
-			gamepad_button(btn, SDL_RELEASED, false);
+			gamepad_button(btn, false, false);
 		}
 	}
 }
@@ -638,7 +639,7 @@ static inline hrtime_t gamepad_repeat_interval(ConfigIndex opt) {
 	return HRTIME_RESOLUTION * (double)config_get_float(opt);
 }
 
-static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
+static void gamepad_button(GamepadButton button, bool pressed, bool is_repeat) {
 	int key = gamepad_game_key_for_button(button);
 	void *indev = (void*)(intptr_t)INDEV_GAMEPAD;
 	GamepadButtonState *btnstate = gamepad_button_state(button);
@@ -647,7 +648,7 @@ static void gamepad_button(GamepadButton button, int state, bool is_repeat) {
 		return;
 	}
 
-	if(state == SDL_PRESSED) {
+	if(pressed) {
 		if(is_repeat) {
 			btnstate->repeat_time = time_get() + gamepad_repeat_interval(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL);
 		} else {
@@ -715,7 +716,7 @@ static void gamepad_handle_button_repeat(GamepadButton btn, hrtime_t time) {
 	}
 
 	if(state->held && time >= state->repeat_time) {
-		gamepad_button(btn, SDL_PRESSED, true);
+		gamepad_button(btn, true, true);
 	}
 }
 
@@ -732,30 +733,30 @@ static bool gamepad_event_handler(SDL_Event *event, void *arg) {
 	assert(gamepad.initialized);
 
 	switch(event->type) {
-		case SDL_CONTROLLERAXISMOTION:
-			if(INSTANCE_IS_VALID(event->caxis.which)) {
-				GamepadAxis axis = gamepad_axis_from_sdl_axis(event->caxis.axis);
+		case SDL_EVENT_GAMEPAD_AXIS_MOTION :
+			if(INSTANCE_IS_VALID(event->gaxis.which)) {
+				GamepadAxis axis = gamepad_axis_from_sdl_axis(event->gaxis.axis);
 
 				if(axis != GAMEPAD_AXIS_INVALID) {
-					gamepad_axis(axis, event->caxis.value);
+					gamepad_axis(axis, event->gaxis.value);
 				}
 			}
 		return true;
 
-		case SDL_CONTROLLERBUTTONDOWN:
-		case SDL_CONTROLLERBUTTONUP:
-			if(INSTANCE_IS_VALID(event->cbutton.which)) {
-				GamepadButton btn = gamepad_button_from_sdl_button(event->cbutton.button);
+		case SDL_EVENT_GAMEPAD_BUTTON_DOWN :
+		case SDL_EVENT_GAMEPAD_BUTTON_UP :
+			if(INSTANCE_IS_VALID(event->gbutton.which)) {
+				GamepadButton btn = gamepad_button_from_sdl_button(event->gbutton.button);
 
 				if(btn != GAMEPAD_BUTTON_INVALID) {
-					gamepad_button(btn, event->cbutton.state, false);
+					gamepad_button(btn, event->gbutton.down, false);
 				}
 			}
 		return true;
 
-		case SDL_CONTROLLERDEVICEADDED:
-		case SDL_CONTROLLERDEVICEREMOVED:
-		case SDL_CONTROLLERDEVICEREMAPPED:
+		case SDL_EVENT_GAMEPAD_ADDED :
+		case SDL_EVENT_GAMEPAD_REMOVED :
+		case SDL_EVENT_GAMEPAD_REMAPPED :
 			gamepad.update_needed = true;
 		return true;
 	}
@@ -792,8 +793,8 @@ void gamepad_device_guid(int num, char *guid_str, size_t guid_str_sz) {
 	GamepadDevice *dev = gamepad_get_device(num);
 
 	if(dev) {
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
-		SDL_JoystickGetGUIDString(guid, guid_str, guid_str_sz);
+		SDL_GUID guid = SDL_GetJoystickGUIDForID(dev->joy_instance);
+		SDL_GUIDToString(guid, guid_str, guid_str_sz);
 	}
 }
 
@@ -865,7 +866,7 @@ bool gamepad_game_key_pressed(KeyIndex key) {
 	return pressed;
 }
 
-static const char *const gamepad_button_names[GAMEPAD_BUTTON_MAX] = {
+static const char *const gamepad_button_names[] = {
 	[GAMEPAD_BUTTON_A] = "A",
 	[GAMEPAD_BUTTON_B] = "B",
 	[GAMEPAD_BUTTON_X] = "X",
@@ -887,12 +888,25 @@ static const char *const gamepad_button_names[GAMEPAD_BUTTON_MAX] = {
 	[GAMEPAD_BUTTON_P3] = "P3",
 	[GAMEPAD_BUTTON_P4] = "P4",
 	[GAMEPAD_BUTTON_TOUCHPAD] = "Touchpad",
+	[GAMEPAD_BUTTON_MISC2] = "Misc 2",
+	[GAMEPAD_BUTTON_MISC3] = "Misc 3",
+	[GAMEPAD_BUTTON_MISC4] = "Misc 4",
+	[GAMEPAD_BUTTON_MISC5] = "Misc 5",
+	[GAMEPAD_BUTTON_MISC6] = "Misc 6",
 };
 
-static const char *const gamepad_emulated_button_names[GAMEPAD_EMULATED_BUTTON_MAX] = {
+static_assert(ARRAY_SIZE(gamepad_button_names) == GAMEPAD_BUTTON_MAX);
+
+static const char *const gamepad_emulated_button_names[] = {
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_LEFT] = "Left Trigger",
 	[GAMEPAD_EMULATED_BUTTON_TRIGGER_RIGHT] = "Right Trigger",
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_UP] = "Stick Up",
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_DOWN] = "Stick Down",
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_LEFT] = "Stick Left",
+	[GAMEPAD_EMULATED_BUTTON_ANALOG_STICK_RIGHT] = "Stick Right",
 };
+
+static_assert(ARRAY_SIZE(gamepad_emulated_button_names) == GAMEPAD_EMULATED_BUTTON_MAX);
 
 static const char *const gamepad_axis_names[GAMEPAD_AXIS_MAX] = {
 	[GAMEPAD_AXIS_LEFT_X] = "Left X",
@@ -902,6 +916,8 @@ static const char *const gamepad_axis_names[GAMEPAD_AXIS_MAX] = {
 	[GAMEPAD_AXIS_TRIGGER_LEFT] = "Left Trigger",
 	[GAMEPAD_AXIS_TRIGGER_RIGHT] = "Right Trigger",
 };
+
+static_assert(ARRAY_SIZE(gamepad_axis_names) == GAMEPAD_AXIS_MAX);
 
 static const char* gamepad_button_name_internal(GamepadButton btn) {
 	if(btn > GAMEPAD_BUTTON_INVALID && btn < GAMEPAD_BUTTON_MAX) {
@@ -947,7 +963,7 @@ GamepadButton gamepad_button_from_name(const char *name) {
 	}
 
 	// for compatibility
-	return (GamepadButton)SDL_GameControllerGetButtonFromString(name);
+	return (GamepadButton) SDL_GetGamepadButtonFromString(name);
 }
 
 GamepadAxis gamepad_axis_from_name(const char *name) {
@@ -958,11 +974,11 @@ GamepadAxis gamepad_axis_from_name(const char *name) {
 	}
 
 	// for compatibility
-	return (GamepadAxis)SDL_GameControllerGetAxisFromString(name);
+	return (GamepadAxis) SDL_GetGamepadAxisFromString(name);
 }
 
-GamepadButton gamepad_button_from_sdl_button(SDL_GameControllerButton btn) {
-	if(btn <= SDL_CONTROLLER_BUTTON_INVALID || btn >= SDL_CONTROLLER_BUTTON_MAX) {
+GamepadButton gamepad_button_from_sdl_button(SDL_GamepadButton btn) {
+	if(btn <= SDL_GAMEPAD_BUTTON_INVALID || btn >= SDL_GAMEPAD_BUTTON_COUNT) {
 		return GAMEPAD_BUTTON_INVALID;
 	}
 
@@ -1010,26 +1026,26 @@ GamepadButton gamepad_button_from_axis(GamepadAxis axis, GamepadAxisDigitalValue
 	return GAMEPAD_BUTTON_INVALID;
 }
 
-SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn) {
+SDL_GamepadButton gamepad_button_to_sdl_button(GamepadButton btn) {
 	if(btn <= GAMEPAD_BUTTON_INVALID || btn >= GAMEPAD_BUTTON_MAX) {
-		return SDL_CONTROLLER_BUTTON_INVALID;
+		return SDL_GAMEPAD_BUTTON_INVALID;
 	}
 
-	return (SDL_GameControllerButton)btn;
+	return (SDL_GamepadButton)btn;
 }
 
-GamepadAxis gamepad_axis_from_sdl_axis(SDL_GameControllerAxis axis) {
-	if(axis <= SDL_CONTROLLER_AXIS_INVALID || axis >= SDL_CONTROLLER_AXIS_MAX) {
+GamepadAxis gamepad_axis_from_sdl_axis(SDL_GamepadAxis axis) {
+	if(axis <= SDL_GAMEPAD_AXIS_INVALID || axis >= SDL_GAMEPAD_AXIS_COUNT) {
 		return GAMEPAD_AXIS_INVALID;
 	}
 
 	return (GamepadAxis)axis;
 }
 
-SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis) {
+SDL_GamepadAxis gamepad_axis_to_sdl_axis(GamepadAxis axis) {
 	if(axis <= GAMEPAD_AXIS_INVALID || axis >= GAMEPAD_AXIS_MAX) {
-		return SDL_CONTROLLER_AXIS_INVALID;
+		return SDL_GAMEPAD_AXIS_INVALID;
 	}
 
-	return (SDL_GameControllerAxis)axis;
+	return (SDL_GamepadAxis)axis;
 }

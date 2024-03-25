@@ -103,7 +103,7 @@ typedef struct RendererFuncs {
 	void (*vertex_buffer_set_debug_label)(VertexBuffer *vbuf, const char *label);
 	void (*vertex_buffer_destroy)(VertexBuffer *vbuf);
 	void (*vertex_buffer_invalidate)(VertexBuffer *vbuf);
-	SDL_RWops* (*vertex_buffer_get_stream)(VertexBuffer *vbuf);
+	SDL_IOStream * (*vertex_buffer_get_stream)(VertexBuffer *vbuf);
 
 	IndexBuffer* (*index_buffer_create)(uint index_size, size_t max_elements);
 	size_t (*index_buffer_get_capacity)(IndexBuffer *ibuf);

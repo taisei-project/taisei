@@ -10,23 +10,21 @@
 
 #include "gl33.h"
 
-#define STREAM_CBUF(rw) ((CommonBuffer*)rw)
-
-static int64_t gl33_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) {
-	CommonBuffer *cbuf = STREAM_CBUF(rw);
+static int64_t gl33_buffer_stream_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+	CommonBuffer *cbuf = ctx;
 
 	switch(whence) {
-		case RW_SEEK_CUR: {
+		case SDL_IO_SEEK_CUR : {
 			cbuf->offset += offset;
 			break;
 		}
 
-		case RW_SEEK_END: {
+		case SDL_IO_SEEK_END : {
 			cbuf->offset = cbuf->size + offset;
 			break;
 		}
 
-		case RW_SEEK_SET: {
+		case SDL_IO_SEEK_SET : {
 			cbuf->offset = offset;
 			break;
 		}
@@ -36,15 +34,17 @@ static int64_t gl33_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence
 	return cbuf->offset;
 }
 
-static int64_t gl33_buffer_stream_size(SDL_RWops *rw) {
-	return STREAM_CBUF(rw)->size;
+static int64_t gl33_buffer_stream_size(void *ctx) {
+	CommonBuffer *cbuf = ctx;
+	return cbuf->size;
 }
 
-static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) {
-	CommonBuffer *cbuf = STREAM_CBUF(rw);
-	size_t total_size = size * num;
+static size_t gl33_buffer_stream_write(
+	void *ctx, const void *data, size_t size, SDL_IOStatus *status
+) {
+	CommonBuffer *cbuf = ctx;
 	size_t offset = cbuf->offset;
-	size_t req_bufsize = offset + total_size;
+	size_t req_bufsize = offset + size;
 
 	if(UNLIKELY(req_bufsize > cbuf->size)) {
 		gl33_buffer_resize(cbuf, req_bufsize);
@@ -52,40 +52,30 @@ static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t s
 		assert(offset == cbuf->offset);
 	}
 
-	if(LIKELY(total_size > 0)) {
-		memcpy(cbuf->cache.buffer + cbuf->offset, data, total_size);
+	if(LIKELY(size > 0)) {
+		memcpy(cbuf->cache.buffer + cbuf->offset, data, size);
 		cbuf->cache.update_begin = min(cbuf->offset, cbuf->cache.update_begin);
-		cbuf->cache.update_end = max(cbuf->offset + total_size, cbuf->cache.update_end);
-		cbuf->offset += total_size;
+		cbuf->cache.update_end = max(cbuf->offset + size, cbuf->cache.update_end);
+		cbuf->offset += size;
 	}
 
-	return num;
+	return size;
 }
 
-static size_t gl33_buffer_stream_read(SDL_RWops *rw, void *data, size_t size, size_t num) {
-	SDL_SetError("Can't read from an OpenGL buffer stream");
-	return 0;
-}
-
-static int gl33_buffer_stream_close(SDL_RWops *rw) {
-	SDL_SetError("Can't close an OpenGL buffer stream");
-	return -1;
-}
-
-SDL_RWops *gl33_buffer_get_stream(CommonBuffer *cbuf) {
-	return &cbuf->stream;
+SDL_IOStream *gl33_buffer_get_stream(CommonBuffer *cbuf) {
+	return cbuf->stream;
 }
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size) {
 	CommonBuffer *cbuf = mem_alloc(alloc_size);
 	cbuf->bindidx = bindidx;
-	cbuf->stream.type = SDL_RWOPS_UNKNOWN;
-	cbuf->stream.close = gl33_buffer_stream_close;
-	cbuf->stream.read = gl33_buffer_stream_read;
-	cbuf->stream.write = gl33_buffer_stream_write;
-	cbuf->stream.seek = gl33_buffer_stream_seek;
-	cbuf->stream.size = gl33_buffer_stream_size;
 	glGenBuffers(1, &cbuf->gl_handle);
+	cbuf->stream = NOT_NULL(SDL_OpenIO(&(SDL_IOStreamInterface) {
+		.version = sizeof(SDL_IOStreamInterface),
+		.write = gl33_buffer_stream_write,
+		.seek = gl33_buffer_stream_seek,
+		.size = gl33_buffer_stream_size,
+	}, cbuf));
 	return cbuf;
 }
 
@@ -121,6 +111,7 @@ void gl33_buffer_destroy(CommonBuffer *cbuf) {
 	mem_free(cbuf->cache.buffer);
 	gl33_buffer_deleted(cbuf);
 	glDeleteBuffers(1, &cbuf->gl_handle);
+	SDL_CloseIO(cbuf->stream);
 	mem_free(cbuf);
 }
 

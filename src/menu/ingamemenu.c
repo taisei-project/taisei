@@ -67,8 +67,8 @@ static bool ingame_menu_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
 
 	switch(event->type) {
-		case SDL_KEYDOWN: {
-			SDL_Scancode scan = event->key.keysym.scancode;
+		case SDL_EVENT_KEY_DOWN : {
+			SDL_Scancode scan = event->key.scancode;
 
 			if(check_shortcut(scan, SDL_SCANCODE_R)) {
 				ingame_menu_do(menu, restart_game);

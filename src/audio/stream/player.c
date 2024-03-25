@@ -27,7 +27,7 @@ union audio_buffer {
 bool splayer_init(StreamPlayer *plr, int num_channels, const AudioStreamSpec *dst_spec) {
 	memset(plr, 0, sizeof(*plr));
 
-	if(dst_spec->sample_format != AUDIO_F32SYS) {
+	if(dst_spec->sample_format != SDL_AUDIO_F32) {
 		log_error("Unsupported audio format: 0x%4x", dst_spec->sample_format);
 		return false;
 	}
@@ -70,7 +70,7 @@ static inline void splayer_history_move_to_back(StreamPlayer *plr, StreamPlayerC
 }
 
 static void free_channel(StreamPlayerChannel *chan) {
-	SDL_FreeAudioStream(chan->pipe);
+	SDL_DestroyAudioStream(chan->pipe);
 }
 
 void splayer_shutdown(StreamPlayer *plr) {
@@ -108,10 +108,10 @@ static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsiz
 
 		do {
 			uint8_t staging_buffer[bufsize];
-			ssize_t read = SDL_AudioStreamGet(pipe, buf, buf_end - buf);
+			ssize_t read = SDL_GetAudioStreamData(pipe, buf, buf_end - buf);
 
 			if(UNLIKELY(read < 0)) {
-				log_sdl_error(LOG_ERROR, "SDL_AudioStreamGet");
+				log_sdl_error(LOG_ERROR, "SDL_GetAudioStreamData");
 				break;
 			}
 
@@ -124,9 +124,9 @@ static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsiz
 			read = astream_read_into_sdl_stream(astream, pipe, sizeof(staging_buffer), staging_buffer, rflags);
 
 			if(read <= 0) {
-				SDL_AudioStreamFlush(pipe);
+				SDL_FlushAudioStream(pipe);
 
-				if(SDL_AudioStreamAvailable(pipe) <= 0)  {
+				if(SDL_GetAudioStreamAvailable(pipe) <= 0)  {
 					splayer_stream_ended(plr, chan);
 					break;
 				}
@@ -274,7 +274,7 @@ bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, f
 		SPAM("Stream needs no conversion");
 
 		if(pchan->pipe) {
-			SDL_FreeAudioStream(pchan->pipe);
+			SDL_DestroyAudioStream(pchan->pipe);
 			pchan->pipe = NULL;
 			SPAM("Destroyed conversion pipe");
 		}
@@ -282,13 +282,13 @@ bool splayer_play(StreamPlayer *plr, int chan, AudioStream *stream, bool loop, f
 		SPAM("Stream needs a conversion");
 
 		if(pchan->pipe && UNLIKELY(!astream_spec_equals(&stream->spec, &pchan->src_spec))) {
-			SDL_FreeAudioStream(pchan->pipe);
+			SDL_DestroyAudioStream(pchan->pipe);
 			pchan->pipe = NULL;
 			SPAM("Existing conversion pipe can't be reused; destroyed");
 		}
 
 		if(pchan->pipe) {
-			SDL_AudioStreamClear(pchan->pipe);
+			SDL_ClearAudioStream(pchan->pipe);
 			SPAM("Reused an existing conversion pipe");
 		} else {
 			pchan->pipe = astream_create_sdl_stream(stream, &plr->dst_spec);

@@ -684,7 +684,7 @@ void r_vertex_buffer_invalidate(VertexBuffer *vbuf) {
 	B.vertex_buffer_invalidate(vbuf);
 }
 
-SDL_RWops* r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+SDL_IOStream * r_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 	return B.vertex_buffer_get_stream(vbuf);
 }
 
