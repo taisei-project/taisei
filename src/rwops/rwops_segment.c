@@ -11,22 +11,20 @@
 #include "util/miscmath.h"
 
 typedef struct Segment {
-	SDL_RWops *wrapped;
+	SDL_IOStream *wrapped;
 	size_t start;
 	size_t end;
 	int64_t pos; // fallback for non-seekable streams
 	bool autoclose;
 } Segment;
 
-#define SEGMENT(rw) ((Segment*)((rw)->hidden.unknown.data1))
-
-static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
-	Segment *s = SEGMENT(rw);
+static int64_t segment_seek(void *ctx, int64_t offset, SDL_IOWhence whence) {
+	Segment *s = ctx;
 
 	switch(whence) {
-		case RW_SEEK_CUR: {
+		case SDL_IO_SEEK_CUR : {
 			if(offset) {
-				int64_t pos = SDL_RWtell(s->wrapped);
+				int64_t pos = SDL_TellIO(s->wrapped);
 
 				if(pos < 0) {
 					return pos;
@@ -42,7 +40,7 @@ static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
 			break;
 		}
 
-		case RW_SEEK_SET: {
+		case SDL_IO_SEEK_SET : {
 			offset += s->start;
 
 			if(offset > s->end) {
@@ -52,8 +50,8 @@ static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
 			break;
 		}
 
-		case RW_SEEK_END: {
-			int64_t size = SDL_RWsize(s->wrapped);
+		case SDL_IO_SEEK_END : {
+			int64_t size = SDL_GetIOSize(s->wrapped);
 
 			if(size < 0) {
 				return size;
@@ -76,7 +74,7 @@ static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
 		}
 	}
 
-	int64_t result = SDL_RWseek(s->wrapped, offset, whence);
+	int64_t result = SDL_SeekIO(s->wrapped, offset, whence);
 
 	if(result > 0) {
 		if(s->start > result) {
@@ -89,9 +87,9 @@ static int64_t segment_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	return result;
 }
 
-static int64_t segment_size(SDL_RWops *rw) {
-	Segment *s = SEGMENT(rw);
-	int64_t size = SDL_RWsize(s->wrapped);
+static int64_t segment_size(void *ctx) {
+	Segment *s = ctx;
+	int64_t size = SDL_GetIOSize(s->wrapped);
 
 	if(size < 0) {
 		return size;
@@ -104,18 +102,18 @@ static int64_t segment_size(SDL_RWops *rw) {
 	return size - s->start;
 }
 
-static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum, bool write) {
-	Segment *s = SEGMENT(rw);
-	int64_t pos = SDL_RWtell(s->wrapped);
-	size_t onum;
+static size_t segment_readwrite(
+	Segment *s, void *ptr, size_t size, bool write, SDL_IOStatus *status
+) {
+	int64_t pos = SDL_TellIO(s->wrapped);
 
 	if(pos < 0) {
-		log_debug("SDL_RWtell failed (%i): %s", (int)pos, SDL_GetError());
-		SDL_SetError("segment_readwrite: SDL_RWtell failed (%i) %s", (int)pos, SDL_GetError());
+		log_debug("SDL_TellIO failed (%i): %s", (int)pos, SDL_GetError());
+		SDL_SetError("segment_readwrite: SDL_TellIO failed (%i) %s", (int)pos, SDL_GetError());
 
 		// this could be a non-seekable stream, like /dev/stdin...
 		// let's assume nothing else uses the wrapped stream and try to guess the current position
-		// this only works if the actual positon in the stream at the time of segment creation matched s->start...
+		// this only works if the actual position in the stream at the time of segment creation matched s->start...
 		pos = s->pos;
 	} else {
 		s->pos = pos;
@@ -128,78 +126,71 @@ static size_t segment_readwrite(SDL_RWops *rw, void *ptr, size_t size, size_t ma
 	}
 
 	int64_t maxsize = s->end - pos;
-
-	while(size * maxnum > maxsize) {
-		if(!--maxnum) {
-			return 0;
-		}
-	}
+	size = min(size, maxsize);
 
 	if(write) {
-		onum = SDL_RWwrite(s->wrapped, ptr, size, maxnum);
+		size = SDL_WriteIO(s->wrapped, ptr, size);
 	} else {
-		onum = SDL_RWread(s->wrapped, ptr, size, maxnum);
+		size = SDL_ReadIO(s->wrapped, ptr, size);
 	}
 
-	s->pos += onum / size;
+	*status = SDL_GetIOStatus(s->wrapped);
+	s->pos += size;
 	assert(s->pos <= s->end);
-
-	return onum;
+	return size;
 }
 
-static size_t segment_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
-	return segment_readwrite(rw, ptr, size, maxnum, false);
+static size_t segment_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	return segment_readwrite(ctx, ptr, size, false, status);
 }
 
-static size_t segment_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
-	return segment_readwrite(rw, (void*)ptr, size, maxnum, true);
+static size_t segment_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+	return segment_readwrite(ctx, (void*)ptr, size, true, status);
 }
 
-static int segment_close(SDL_RWops *rw) {
-	if(rw) {
-		Segment *s = SEGMENT(rw);
+static bool segment_close(void *ctx) {
+	Segment *s = ctx;
 
-		if(s->autoclose) {
-			SDL_RWclose(s->wrapped);
-		}
+	bool result = true;
 
-		mem_free(s);
-		SDL_FreeRW(rw);
+	if(s->autoclose) {
+		result = SDL_CloseIO(s->wrapped);
 	}
 
-	return 0;
+	mem_free(s);
+	return result;
 }
 
-SDL_RWops *SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose) {
+SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	assert(end > start);
 
-	SDL_RWops *rw = SDL_AllocRW();
+	SDL_IOStreamInterface iface = {
+		.version = sizeof(iface),
+		.seek = segment_seek,
+		.size = segment_size,
+		.read = segment_read,
+		.write = segment_write,
+		.close = segment_close,
+	};
 
-	if(UNLIKELY(!rw)) {
-		return NULL;
-	}
-
-	memset(rw, 0, sizeof(SDL_RWops));
-
-	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->seek = segment_seek;
-	rw->size = segment_size;
-	rw->read = segment_read;
-	rw->write = segment_write;
-	rw->close = segment_close;
-	rw->hidden.unknown.data1 = ALLOC(Segment, {
+	auto s = ALLOC(Segment, {
 		.wrapped = src,
 		.start = start,
 		.end = end,
 		.autoclose = autoclose,
-
-		// fallback for non-seekable streams
-		.pos = start,
+		.pos = start,  // fallback for non-seekable streams
 	});
 
-	return rw;
+	SDL_IOStream *io = SDL_OpenIO(&iface, s);
+
+	if(UNLIKELY(!io)) {
+		mem_free(s);
+		return NULL;
+	}
+
+	return io;
 }

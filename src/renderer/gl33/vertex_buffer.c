@@ -41,6 +41,6 @@ void gl33_vertex_buffer_flush(VertexBuffer *vbuf) {
 	gl33_buffer_flush(&vbuf->cbuf);
 }
 
-SDL_RWops* gl33_vertex_buffer_get_stream(VertexBuffer *vbuf) {
+SDL_IOStream * gl33_vertex_buffer_get_stream(VertexBuffer *vbuf) {
 	return gl33_buffer_get_stream(&vbuf->cbuf);
 }

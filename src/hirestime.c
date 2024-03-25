@@ -13,7 +13,7 @@
 #include "util/env.h"
 #include "util/miscmath.h"
 
-#include <SDL_timer.h>
+#include <SDL3/SDL_timer.h>
 
 static bool use_hires;
 static hrtime_t time_current;

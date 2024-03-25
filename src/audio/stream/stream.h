@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_audio.h>
+#include <SDL3/SDL_audio.h>
 
 typedef struct AudioStream AudioStream;
 typedef struct AudioStreamProcs AudioStreamProcs;
@@ -50,7 +50,7 @@ typedef enum AudioStreamReadFlags {
 } AudioStreamReadFlags;
 
 
-bool astream_open(AudioStream *stream, SDL_RWops *rwops, const char *filename) attr_nonnull_all;
+bool astream_open(AudioStream *stream, SDL_IOStream *rwops, const char *filename) attr_nonnull_all;
 void astream_close(AudioStream *stream) attr_nonnull_all;
 ssize_t astream_read(AudioStream *stream, size_t bufsize, void *buffer, AudioStreamReadFlags flags) attr_nonnull_all;
 ssize_t astream_read_into_sdl_stream(AudioStream *stream, SDL_AudioStream *sdlstream, size_t bufsize, void *buffer, AudioStreamReadFlags flags) attr_nonnull_all;

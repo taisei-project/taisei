@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "hashtable.h"
 
@@ -35,11 +35,12 @@ typedef struct KVSpec {
 	void *callback_data;
 } KVSpec;
 
-bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data);
+bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
+			      void *data);
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data);
-bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *hashtable);
+bool parse_keyvalue_stream(SDL_IOStream *strm, ht_str2ptr_t *hashtable);
 bool parse_keyvalue_file(const char *filename, ht_str2ptr_t *hashtable);
-bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec);
+bool parse_keyvalue_stream_with_spec(SDL_IOStream *strm, KVSpec *spec);
 bool parse_keyvalue_file_with_spec(const char *filename, KVSpec *spec);
 
 bool parse_bool(const char *str, bool fallback) attr_nonnull(1);

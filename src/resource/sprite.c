@@ -49,7 +49,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		return;
 	}
 
-	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+	SDL_IOStream *rw = res_open_file(st, st->path, VFS_MODE_READ);
 
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -76,7 +76,7 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{ NULL }
 	});
 
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(UNLIKELY(!parsed)) {
 		mem_free(spr);

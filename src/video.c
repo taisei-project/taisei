@@ -12,13 +12,11 @@
 #include "events.h"
 #include "global.h"
 #include "renderer/api.h"
-#include "rwops/rwops_autobuf.h"
 #include "stagedraw.h"
 #include "taskmanager.h"
 #include "util/env.h"
 #include "util/fbmgr.h"
 #include "util/graphics.h"
-#include "util/io.h"
 #include "version.h"
 #include "video_postprocess.h"
 
@@ -47,6 +45,9 @@ static struct {
 		int compression;
 		FramedumpSource source;
 	} framedump;
+
+	SDL_DisplayID *displays;
+	int num_displays;
 } video;
 
 #define FRAMEDUMP_FILENAME_SUFFIX ".png"
@@ -311,43 +312,49 @@ static void video_update_mode_lists(void) {
 
 	// Register all resolutions that are available in fullscreen and their corresponding windowed modes.
 	for(int s = 0; s < video_num_displays(); ++s) {
+		SDL_DisplayID display = video.displays[s];
 		log_info("Found display #%i: %s", s, video_display_name(s));
 
-		SDL_DisplayMode desktop_mode;
+		const SDL_DisplayMode *desktop_mode;
 		IntExtent screenspace_max_size = { 0 };
 
-		if(SDL_GetDesktopDisplayMode(s, &desktop_mode)) {
+		if(!(desktop_mode = SDL_GetDesktopDisplayMode(display))) {
 			log_sdl_error(LOG_WARN, "SDL_GetDesktopDisplayMode");
 		} else {
-			log_debug("Desktop mode: %ix%i@%iHz", desktop_mode.w, desktop_mode.h, desktop_mode.refresh_rate);
-			screenspace_max_size.w = desktop_mode.w;
-			screenspace_max_size.h = desktop_mode.h;
-			screenspace_max_size = coords_ext_pixels_to_screen(screenspace_max_size);
-			log_debug("Scaled screen-space bounds: %ix%i", screenspace_max_size.w, screenspace_max_size.h);
+			log_debug("Desktop mode: %ix%i@%gHz, scale: %g",
+				desktop_mode->w, desktop_mode->h,
+				desktop_mode->refresh_rate, desktop_mode->pixel_density
+			);
+			screenspace_max_size.w = desktop_mode->w;
+			screenspace_max_size.h = desktop_mode->h;
 		}
 
-		for(int i = 0; i < SDL_GetNumDisplayModes(s); ++i) {
-			SDL_DisplayMode mode = { SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0, 0 };
+		int mcount;
+		SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &mcount);
 
-			if(SDL_GetDisplayMode(s, i, &mode) != 0) {
-				log_sdl_error(LOG_WARN, "SDL_GetDisplayMode");
-			} else {
-				log_debug("Display mode #%i: %ix%i@%iHz", i, mode.w, mode.h, mode.refresh_rate);
+		for(int i = 0; i < mcount; ++i) {
+			const SDL_DisplayMode *mode = modes[i];
 
-				video_add_mode_fullscreen((IntExtent) { mode.w, mode.h }, screenspace_min_size, screenspace_max_size);
-				fullscreen_available = true;
+			log_debug("Display mode #%i: %ix%i@%gHz; scale = %g", i,
+				mode->w, mode->h, mode->refresh_rate, mode->pixel_density);
 
-				if(has_windowed_modes) {
-					FloatExtent vp = video_get_viewport_size_for_framebuffer((IntExtent) { mode.w, mode.h });
-					video_add_mode_windowed(round_viewport_size(vp), screenspace_min_size, screenspace_max_size);
+			video_add_mode_fullscreen((IntExtent) { mode->w, mode->h }, screenspace_min_size, screenspace_max_size);
+			fullscreen_available = true;
 
-					// the ratio is always constant, so we need to check only 1 dimension
-					if(vp.w > largest_fullscreen_viewport.w) {
-						largest_fullscreen_viewport = vp;
-					}
+			if(has_windowed_modes) {
+				FloatExtent vp = video_get_viewport_size_for_framebuffer(
+					(IntExtent) { mode->w, mode->h });
+				video_add_mode_windowed(
+					round_viewport_size(vp), screenspace_min_size, screenspace_max_size);
+
+				// the ratio is always constant, so we need to check only 1 dimension
+				if(vp.w > largest_fullscreen_viewport.w) {
+					largest_fullscreen_viewport = vp;
 				}
 			}
 		}
+
+		SDL_free(modes);
 	}
 
 	if(has_windowed_modes) {
@@ -449,7 +456,12 @@ static void video_update_vsync(void) {
 }
 
 static void video_update_mode_settings(void) {
-	SDL_ShowCursor(!video_is_fullscreen());
+	if(video_is_fullscreen()) {
+		SDL_HideCursor();
+	} else {
+		SDL_ShowCursor();
+	}
+
 	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video_set_viewport();
@@ -458,7 +470,7 @@ static void video_update_mode_settings(void) {
 }
 
 static const char *modeflagsstr(uint32_t flags) {
-	if(flags & SDL_WINDOW_FULLSCREEN_DESKTOP) {
+	if(flags & SDL_WINDOW_FULLSCREEN) {
 		return "fullscreen";
 	} else if(flags & SDL_WINDOW_RESIZABLE) {
 		return "windowed, resizable";
@@ -501,7 +513,7 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 		return;
 	}
 
-	video_new_window_internal(display, RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN_DESKTOP, true);
+	video_new_window_internal(display, RESX, RESY, flags & ~SDL_WINDOW_FULLSCREEN, true);
 }
 
 static bool restrict_to_capability(bool enabled, VideoCapability cap) {
@@ -520,13 +532,13 @@ static bool restrict_to_capability(bool enabled, VideoCapability cap) {
 }
 
 static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
-	uint32_t flags = SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32_t flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
 	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
 	resizable = restrict_to_capability(resizable, VIDEO_CAP_EXTERNAL_RESIZE);
 
 	if(fs) {
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		flags |= SDL_WINDOW_FULLSCREEN;
 	} else if(resizable) {
 		flags |= SDL_WINDOW_RESIZABLE;
 	}
@@ -547,10 +559,10 @@ static void video_new_window(uint display, uint w, uint h, bool fs, bool resizab
 }
 
 static void video_set_fullscreen_internal(bool fullscreen) {
-	uint32_t flags = fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+	uint32_t flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
 	events_pause_keyrepeat();
 
-	if(SDL_SetWindowFullscreen(video.window, flags) < 0) {
+	if(!SDL_SetWindowFullscreen(video.window, flags)) {
 		log_error("Failed to switch to %s mode: %s", modeflagsstr(flags), SDL_GetError());
 	}
 
@@ -648,8 +660,7 @@ void video_set_fullscreen(bool fullscreen) {
 		return;
 	}
 
-	video_set_mode(
-		SDL_GetWindowDisplayIndex(video.window),
+	video_set_mode(video_current_display(),
 		video.intended.width,
 		video.intended.height,
 		fullscreen,
@@ -687,7 +698,7 @@ static void *video_screenshot_task(void *arg) {
 		char buf[video.framedump.name_prefix_len + FRAMEDUMP_FILENAME_EXTRA_BUFSIZE];
 		snprintf(buf, sizeof(buf), "%s" FRAMEDUMP_FILENAME_FORMAT, video.framedump.name_prefix, tdata->frame_num);
 
-		SDL_RWops *stream = SDL_RWFromFile(buf, "wb");
+		SDL_IOStream *stream = SDL_IOFromFile(buf, "wb");
 
 		if(UNLIKELY(!stream)) {
 			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
@@ -696,7 +707,7 @@ static void *video_screenshot_task(void *arg) {
 
 		opts.zlib_compression_level = video.framedump.compression;
 		bool ok = pixmap_save_stream(stream, &tdata->image, &opts.base);
-		SDL_RWclose(stream);
+		SDL_CloseIO(stream);
 
 		if(LIKELY(ok)) {
 			log_debug("Frame dump: %s", buf);
@@ -779,80 +790,16 @@ bool video_is_resizable(void) {
 }
 
 bool video_is_fullscreen(void) {
-	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+	return SDL_GetWindowFlags(video.window) & SDL_WINDOW_FULLSCREEN;
 }
 
 static void video_init_sdl(void) {
 	// XXX: workaround for an SDL bug: https://bugzilla.libsdl.org/show_bug.cgi?id=4127
+	// TODO: test if still needed for SDL3 (but in any case it won't hurt)
 	SDL_SetHintWithPriority(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0", SDL_HINT_OVERRIDE);
 
-	uint num_drivers = SDL_GetNumVideoDrivers();
-	const char *video_drivers[num_drivers];
-
-	void *buf;
-	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
-
-	SDL_RWprintf(out, "Available video drivers:");
-
-	for(uint i = 0; i < num_drivers; ++i) {
-		video_drivers[i] = SDL_GetVideoDriver(i);
-		SDL_RWprintf(out, " %s", video_drivers[i]);
-	}
-
-	SDL_WriteU8(out, 0);
-	log_info("%s", (char*)buf);
-	SDL_RWclose(out);
-
-	// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
-	// A suboptimal X11 server may be available on top of those systems,
-	// so we push X11 down in the priority list.
-	const char *prefer_drivers = env_get_string_nonempty("TAISEI_PREFER_SDL_VIDEODRIVERS", "wayland,cocoa,windows,x11");
-	const char *force_driver = env_get_string_nonempty("TAISEI_VIDEO_DRIVER", NULL);
-
-	if(force_driver) {
-		log_warn("TAISEI_VIDEO_DRIVER is deprecated and will be removed, use TAISEI_PREFER_SDL_VIDEODRIVERS or SDL_VIDEODRIVER instead");
-	} else {
-		force_driver = env_get_string_nonempty("SDL_VIDEODRIVER", NULL);
-	}
-
-	if(prefer_drivers && *prefer_drivers && !force_driver) {
-		char buf[strlen(prefer_drivers) + 1];
-		char *driver, *bufptr = buf;
-		int drivernum = 0;
-		strcpy(buf, prefer_drivers);
-
-		while((driver = strtok_r(NULL, " :;,", &bufptr))) {
-			bool skip = true;
-
-			for(uint i = 0; i < num_drivers; ++i) {
-				if(!strcmp(video_drivers[i], driver)) {
-					skip = false;
-					break;
-				}
-			}
-
-			++drivernum;
-
-			if(skip) {
-				continue;
-			}
-
-			log_info("Trying preferred driver #%i: %s", drivernum, driver);
-
-			if(SDL_VideoInit(driver)) {
-				log_info("Driver '%s' failed: %s", driver, SDL_GetError());
-			} else {
-				return;
-			}
-		}
-
-		if(drivernum) {
-			log_info("All preferred drivers failed, falling back to SDL default");
-		}
-	}
-
-	if(SDL_VideoInit(force_driver)) {
-		log_fatal("SDL_VideoInit() failed: %s", SDL_GetError());
+	if(!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+		log_sdl_error(LOG_FATAL, "SDL_InitSubSystem");
 	}
 }
 
@@ -875,33 +822,13 @@ static void video_handle_resize(int w, int h) {
 	++video.num_resize_events;
 }
 
-static bool video_handle_window_event(SDL_Event *event, void *arg) {
-	switch(event->window.event) {
-		case SDL_WINDOWEVENT_SIZE_CHANGED:
-			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
-			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
-			// user). We only need to handle external resizes.
-			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+static void video_update_displays(void) {
+	SDL_free(video.displays);
 
-			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
-			// https://github.com/devkitPro/SDL/issues/31
-			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
-				video_handle_resize(event->window.data1, event->window.data2);
-			}
-			break;
-
-		case SDL_WINDOWEVENT_RESIZED:
-			video_handle_resize(event->window.data1, event->window.data2);
-			break;
-
-		case SDL_WINDOWEVENT_FOCUS_LOST:
-			if(config_get_int(CONFIG_FOCUS_LOSS_PAUSE)) {
-				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
-			}
-			break;
+	if(!(video.displays = SDL_GetDisplays(&video.num_displays))) {
+		log_sdl_error(LOG_ERROR, "SDL_GetDisplays");
+		video.num_displays = 0;
 	}
-
-	return true;
 }
 
 static bool video_handle_config_event(SDL_Event *evt, void *arg) {
@@ -928,44 +855,76 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 	return false;
 }
 
-uint video_num_displays(void) {
-	int displays = SDL_GetNumVideoDisplays();
+static bool video_handle_event(SDL_Event *event, void *arg) {
+	switch(event->type) {
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
+			// It's followed by SDL_EVENT_WINDOW_RESIZED for external resizes (from the WM or the
+			// user). We only need to handle external resizes.
+			log_debug("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
 
-	if(displays < 1) {
-		if(displays == 0) {
-			log_warn("SDL_GetNumVideoDisplays() returned 0, this shouldn't happen");
-		} else {
-			log_sdl_error(LOG_WARN, "SDL_GetNumVideoDisplays");
-		}
+			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
+			// https://github.com/devkitPro/SDL/issues/31
+			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
+				video_handle_resize(event->window.data1, event->window.data2);
+			}
+			break;
 
-		displays = 1;
+		case SDL_EVENT_WINDOW_RESIZED:
+			video_handle_resize(event->window.data1, event->window.data2);
+			break;
+
+		case SDL_EVENT_WINDOW_FOCUS_LOST:
+			if(config_get_int(CONFIG_FOCUS_LOSS_PAUSE)) {
+				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
+			}
+			break;
+
+		case SDL_EVENT_DISPLAY_ADDED:
+		case SDL_EVENT_DISPLAY_REMOVED:
+			video_update_displays();
+			break;
+
+		default:
+			if(event->type == MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED)) {
+				return video_handle_config_event(event, arg);
+			}
 	}
 
-	return displays;
+	return false;
+}
+
+uint video_num_displays(void) {
+	return video.num_displays;
 }
 
 const char *video_display_name(uint id) {
-	assert(id < video_num_displays());
-
-	const char *name = SDL_GetDisplayName(id);
+	const char *name = SDL_GetDisplayName(video.displays[id]);
 
 	if(name == NULL) {
 		log_sdl_error(LOG_WARN, "SDL_GetDisplayName");
-		name = "Unknown";
+		return "Unknown";
 	}
 
 	return name;
 }
 
 uint video_current_display(void) {
-	int display = SDL_GetWindowDisplayIndex(video.window);
+	SDL_DisplayID display = SDL_GetDisplayForWindow(video.window);
 
-	if(display < 0) {
-		log_sdl_error(LOG_WARN, "SDL_GetWindowDisplayIndex");
-		display = 1;
+	if(!display) {
+		log_sdl_error(LOG_WARN, "SDL_GetDisplayForWindow");
+		return 0;  // FIXME return error?
 	}
 
-	return display;
+	for(int i = 0; i < video.num_displays; ++i) {
+		if(video.displays[i] == display) {
+			return i;
+		}
+	}
+
+	assert(0 && "Display index for window not found");
+	return 0;
 }
 
 static void video_init_framedump(void) {
@@ -1051,6 +1010,8 @@ void video_init(const VideoInitParams *params) {
 		fullscreen = config_get_int(CONFIG_FULLSCREEN);
 	}
 
+	video_update_displays();
+
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
 		w, h, fullscreen,
@@ -1060,15 +1021,8 @@ void video_init(const VideoInitParams *params) {
 	video_update_scaling_factor();
 
 	events_register_handler(&(EventHandler) {
-		.proc = video_handle_window_event,
+		.proc = video_handle_event,
 		.priority = EPRIO_SYSTEM,
-		.event_type = SDL_WINDOWEVENT,
-	});
-
-	events_register_handler(&(EventHandler) {
-		.proc = video_handle_config_event,
-		.priority = EPRIO_SYSTEM,
-		.event_type = MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED),
 	});
 
 	video_init_framedump();
@@ -1084,14 +1038,14 @@ void video_post_init(void) {
 void video_shutdown(void) {
 	video_postprocess_shutdown(video.postprocess);
 	fbmgr_shutdown();
-	events_unregister_handler(video_handle_window_event);
-	events_unregister_handler(video_handle_config_event);
+	events_unregister_handler(video_handle_event);
 	r_unclaim_window(video.window);
 	SDL_DestroyWindow(video.window);
 	r_shutdown();
+	SDL_free(video.displays);
 	dynarray_free_data(&video.win_modes);
 	dynarray_free_data(&video.fs_modes);
-	SDL_VideoQuit();
+	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 	mem_free(video.framedump.name_prefix);
 }
 

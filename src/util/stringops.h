@@ -13,7 +13,7 @@
 #include "systime.h"
 
 #include <time.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF

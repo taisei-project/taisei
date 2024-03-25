@@ -77,9 +77,9 @@ static void fetch_onsuccess(emscripten_fetch_t *fetch) {
 
 	MAKE_CACHED_PATH(path, FETCH_CONTENT_ID(fetch));
 
-	SDL_RWops *rw = SDL_RWFromFile(path, "w");
-	SDL_RWwrite(rw, fetch->data, fetch->numBytes, 1);
-	SDL_RWclose(rw);
+	SDL_IOStream *rw = SDL_IOFromFile(path, "w");
+	SDL_WriteIO(rw, fetch->data, fetch->numBytes);
+	SDL_CloseIO(rw);
 
 	log_info("Cached %s as %s", fetch->url, path);
 }
@@ -126,14 +126,14 @@ static void fetch_wait(emscripten_fetch_t *fetch) {
 	}
 }
 
-static int fetch_rwops_close(SDL_RWops *rw) {
+static int fetch_rwops_close(SDL_IOStream *rw) {
 	// HACK: mega-jank, heavily relies on rwops_dummy implementation details
-	int r = SDL_RWclose(rw->hidden.unknown.data1);
+	int r = SDL_CloseIO(rw->hidden.unknown.data1);
 	emscripten_fetch_close(rw->hidden.unknown.data2);
 	return r;
 }
 
-static SDL_RWops *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char *content_id, VFSOpenMode mode) {
+static SDL_IOStream *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char *content_id, VFSOpenMode mode) {
 	assert(!(mode & VFS_MODE_WRITE));
 
 	FetchFSContext *ctx = UNION_CAST(VFSResIndexFSContext*, FetchFSContext*, resindex_ctx);
@@ -141,7 +141,7 @@ static SDL_RWops *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char 
 
 	MAKE_CACHED_PATH(cached_path, content_id);
 
-	SDL_RWops *cached_rw = SDL_RWFromFile(cached_path, "r");
+	SDL_IOStream *cached_rw = SDL_IOFromFile(cached_path, "r");
 	if(cached_rw) {
 		return cached_rw;
 	}
@@ -157,8 +157,8 @@ static SDL_RWops *vfs_fetch_open(VFSResIndexFSContext *resindex_ctx, const char 
 		emscripten_fetch_close(fetch);
 	}
 
-	SDL_RWops *memrw = NOT_NULL(SDL_RWFromConstMem(fetch->data, fetch->numBytes));
-	SDL_RWops *wraprw = SDL_RWWrapDummy(memrw, true);
+	SDL_IOStream *memrw = NOT_NULL(SDL_IOFromConstMem(fetch->data, fetch->numBytes));
+	SDL_IOStream *wraprw = SDL_RWWrapDummy(memrw, true);
 	wraprw->close = fetch_rwops_close;
 	wraprw->hidden.unknown.data2 = fetch;
 

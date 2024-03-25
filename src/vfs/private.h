@@ -34,13 +34,13 @@ struct VFSNodeFuncs {
 	const char* (*iter)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
 	void        (*iter_stop)(VFSNode *dirnode, void **opaque) attr_nonnull(1);
 	bool        (*mkdir)(VFSNode *parent, const char *subdir) attr_nonnull(1);
-	SDL_RWops*  (*open)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
+	SDL_IOStream*  (*open)(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1);
 };
 
 struct VFSNode {
 	char as_generic[0];
 	const VFSNodeFuncs *funcs;
-	SDL_atomic_t refcount;
+	SDL_AtomicInt refcount;
 };
 
 #define VFS_NODE_TYPE_FUNCS_NAME(_typename) _vfs_funcs_##_typename
@@ -114,7 +114,7 @@ VFSNode *vfs_node_locate(VFSNode *root, const char *path) attr_nonnull(1, 2) att
 const char *vfs_node_iter(VFSNode *node, void **opaque) attr_nonnull(1);
 void vfs_node_iter_stop(VFSNode *node, void **opaque) attr_nonnull(1);
 bool vfs_node_mkdir(VFSNode *parent, const char *subdir) attr_nonnull(1);
-SDL_RWops *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) attr_nodiscard;
+SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) attr_nodiscard;
 
 // NOTE: convenience wrappers added on demand
 
@@ -132,4 +132,4 @@ SDL_RWops *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) attr_nonnull(1) at
 
 
 void vfs_hook_on_shutdown(VFSShutdownHandler, void *arg);
-void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);
+void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix, const char *name) attr_nonnull(1, 2, 3, 4);

@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 // IWYU pragma: private, include "util.h"
 

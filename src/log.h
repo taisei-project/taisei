@@ -12,7 +12,7 @@
 #include "thread.h"
 #include "util/strbuf.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 enum {
 	_LOG_DEBUG_ID,
@@ -121,7 +121,7 @@ struct FormatterObj {
 };
 
 // "constructor". initializer, actually.
-typedef void Formatter(FormatterObj *obj, const SDL_RWops *output);
+typedef void Formatter(FormatterObj *obj, SDL_IOStream *output);
 
 extern Formatter log_formatter_file;
 extern Formatter log_formatter_console;
@@ -129,7 +129,7 @@ extern Formatter log_formatter_console;
 void log_init(LogLevel lvls);
 void log_queue_shutdown(void);
 void log_shutdown(void);
-void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) attr_nonnull(3);
+void log_add_output(LogLevel levels, SDL_IOStream *output, Formatter *formatter) attr_nonnull(3);
 void log_backtrace(LogLevel lvl);
 LogLevel log_parse_levels(LogLevel lvls, const char *lvlmod) attr_nodiscard;
 LogLevelDiff log_parse_level_diff(const char *lvlmod) attr_nonnull(1) attr_nodiscard;

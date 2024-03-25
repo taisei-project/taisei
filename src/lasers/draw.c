@@ -107,7 +107,7 @@ static struct {
 	struct {
 		VertexArray *va;
 		VertexBuffer *vb;
-		SDL_RWops *vb_stream;
+		SDL_IOStream *vb_stream;
 		Model quad;
 	} pass1, pass2;
 
@@ -374,7 +374,7 @@ static void laserdraw_pass1_add(Laser *l, cmplxf sdf_ofs, bool rotated) {
 			s.pos.b = section_origin + cswapf(s.pos.b - section_origin);
 		}
 
-		SDL_RWwrite(ldraw.pass1.vb_stream, &s, sizeof(s), 1);
+		SDL_WriteIO(ldraw.pass1.vb_stream, &s, sizeof(s));
 	}
 
 	ldraw.render_state.pass1_num_segments += nsegs;
@@ -406,7 +406,7 @@ static void laserdraw_pass2_add(Laser *l, cmplxf sdf_ofs, bool rotated) {
 		.width = l->width,
 	};
 
-	SDL_RWwrite(ldraw.pass2.vb_stream, &attrs, sizeof(attrs), 1);
+	SDL_WriteIO(ldraw.pass2.vb_stream, &attrs, sizeof(attrs));
 	++ldraw.render_state.pass2_num_lasers;
 }
 

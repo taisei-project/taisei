@@ -1,12 +1,13 @@
 
 #include "taisei.h"
 
-#include "renderer/api.h"
+#include "config.h"
 #include "events.h"
 #include "log.h"
+#include "renderer/api.h"
+#include "rwops/rwops_stdiofp.h"
 #include "util/compat.h"
 #include "video.h"
-#include "config.h"
 
 #include <locale.h>
 
@@ -18,7 +19,7 @@ static void test_init_log(void) {
 static void test_init_sdl(void) {
 	mem_install_sdl_callbacks();
 
-	if(SDL_Init(SDL_INIT_EVENTS) < 0) {
+	if(!SDL_Init(SDL_INIT_EVENTS)) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 	}
 
@@ -93,7 +94,7 @@ static ShaderObject *test_renderer_load_glsl(ShaderStage stage, const char *src)
 
 attr_unused
 static Texture *test_renderer_load_texture(const char *path) {
-	auto istream = SDL_RWFromFile(path, "rb");
+	auto istream = SDL_IOFromFile(path, "rb");
 
 	if(!istream) {
 		log_sdl_error(LOG_FATAL, "SDL_IOFromFile");
@@ -111,7 +112,7 @@ static Texture *test_renderer_load_texture(const char *path) {
 		log_fatal("pixmap_load_stream() failed");
 	}
 
-	SDL_RWclose(istream);
+	SDL_CloseIO(istream);
 
 	pixmap_convert_inplace_realloc(&px, fmt);
 	pixmap_flip_to_origin_inplace(&px, origin);

@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define PIXMAP_BUFFER_MAX_SIZE INT32_MAX
 
@@ -306,10 +306,10 @@ void pixmap_flip_to_origin_alloc(const Pixmap *src, Pixmap *dst, PixmapOrigin or
 void pixmap_flip_to_origin_inplace(Pixmap *src, PixmapOrigin origin) attr_nonnull(1);
 
 bool pixmap_load_file(const char *path, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 2) attr_nodiscard;
-bool pixmap_load_stream(SDL_RWops *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 3) attr_nodiscard;
+bool pixmap_load_stream(SDL_IOStream *stream, PixmapFileFormat filefmt, Pixmap *dst, PixmapFormat preferred_format) attr_nonnull(1, 3) attr_nodiscard;
 
 bool pixmap_save_file(const char *path, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2);
-bool pixmap_save_stream(SDL_RWops *stream, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2, 3);
+bool pixmap_save_stream(SDL_IOStream *stream, const Pixmap *src, const PixmapSaveOptions *opts) attr_nonnull(1, 2, 3);
 
 bool pixmap_check_filename(const char *path);
 char *pixmap_source_path(const char *prefix, const char *path) attr_nodiscard;

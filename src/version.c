@@ -19,46 +19,36 @@ int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCm
 	return result;
 }
 
-size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version) {
-	// XXX: detect errors somehow?
+size_t taisei_version_read(SDL_IOStream *rwops, TaiseiVersion *version) {
+	size_t read_size = 0;
 
-	version->major = SDL_ReadU8(rwops);
-	version->minor = SDL_ReadU8(rwops);
-	version->patch = SDL_ReadU8(rwops);
-	version->tweak = SDL_ReadLE16(rwops);
+	if(!SDL_ReadU8(rwops, &version->major)) return read_size;
+	read_size += sizeof(version->major);
+	if(!SDL_ReadU8(rwops, &version->minor)) return read_size;
+	read_size += sizeof(version->minor);
+	if(!SDL_ReadU8(rwops, &version->patch)) return read_size;
+	read_size += sizeof(version->patch);
+	if(!SDL_ReadU16LE(rwops, &version->tweak)) return read_size;
+	read_size += sizeof(version->tweak);
 
+	assume(TAISEI_VERSION_SIZE == read_size);
 	return TAISEI_VERSION_SIZE;
 }
 
-size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version) {
-	size_t wrote_now = 0, wrote_total = 0;
+size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version) {
+	size_t write_size = 0;
 
-	if(!(wrote_now = SDL_WriteU8(rwops, version->major))) {
-		return wrote_total;
-	} else {
-		wrote_total += wrote_now;
-	}
+	if(!SDL_WriteU8(rwops, version->major)) return write_size;
+	write_size += sizeof(version->major);
+	if(!SDL_WriteU8(rwops, version->minor)) return write_size;
+	write_size += sizeof(version->minor);
+	if(!SDL_WriteU8(rwops, version->patch)) return write_size;
+	write_size += sizeof(version->patch);
+	if(!SDL_WriteU16LE(rwops, version->tweak)) return write_size;
+	write_size += sizeof(version->tweak);
 
-	if(!(wrote_now = SDL_WriteU8(rwops, version->minor))) {
-		return wrote_total;
-	} else {
-		wrote_total += wrote_now;
-	}
-
-	if(!(wrote_now = SDL_WriteU8(rwops, version->patch))) {
-		return wrote_total;
-	} else {
-		wrote_total += wrote_now;
-	}
-
-	if(!(wrote_now = 2 * SDL_WriteLE16(rwops, version->tweak))) {
-		return wrote_total;
-	} else {
-		wrote_total += wrote_now;
-	}
-
-	assert(wrote_total == TAISEI_VERSION_SIZE);
-	return wrote_total;
+	assert(write_size == TAISEI_VERSION_SIZE);
+	return write_size;
 }
 
 char *taisei_version_tostring(TaiseiVersion *version) {

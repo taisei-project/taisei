@@ -347,8 +347,8 @@ void r_sprite_batch_prepare_state(const SpriteStateParams *stp) {
 }
 
 void r_sprite_batch_add_instance(const SpriteInstanceAttribs *attribs) {
-	SDL_RWops *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
-	SDL_RWwrite(stream, attribs, SIZEOF_SPRITE_ATTRIBS, 1);
+	SDL_IOStream *stream = r_vertex_buffer_get_stream(_r_sprite_batch.vbuf);
+	SDL_WriteIO(stream, attribs, SIZEOF_SPRITE_ATTRIBS);
 
 	_r_sprite_batch.num_pending++;
 

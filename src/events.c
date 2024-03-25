@@ -40,7 +40,7 @@ void events_init(void) {
 		log_fatal("%s", s);
 	}
 
-	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_MOTION, false);
 
 	events_register_default_handlers();
 }
@@ -112,24 +112,26 @@ void events_unregister_handler(EventHandlerProc proc) {
 }
 
 static void events_apply_flags(EventFlags flags) {
+	auto window = video_get_window();
+
 	if(flags & EFLAG_TEXT) {
-		if(!SDL_IsTextInputActive()) {
-			SDL_StartTextInput();
+		if(!SDL_TextInputActive(window)) {
+			SDL_StartTextInput(window);
 		}
 	} else {
-		if(SDL_IsTextInputActive()) {
-			SDL_StopTextInput();
+		if(SDL_TextInputActive(window)) {
+			SDL_StopTextInput(window);
 		}
 	}
 
 	TaiseiEvent type;
 
 	for(type = TE_MENU_FIRST; type <= TE_MENU_LAST; ++type) {
-		SDL_EventState(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_MENU));
+		SDL_SetEventEnabled(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_MENU));
 	}
 
 	for(type = TE_GAME_FIRST; type <= TE_GAME_LAST; ++type) {
-		SDL_EventState(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_GAME));
+		SDL_SetEventEnabled(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_GAME));
 	}
 }
 
@@ -199,7 +201,8 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 		}
 
 		SDL_Event events[8];
-		int nevents = SDL_PeepEvents(events, ARRAY_SIZE(events), SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+		int nevents = SDL_PeepEvents(events, ARRAY_SIZE(events), SDL_GETEVENT,
+					     SDL_EVENT_FIRST, SDL_EVENT_LAST);
 
 		if(UNLIKELY(nevents < 0)) {
 			log_sdl_error(LOG_ERROR, "SDL_PeepEvents");
@@ -245,7 +248,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 	uint32_t sdltype = MAKE_TAISEI_EVENT(type);
 	assert(IS_TAISEI_EVENT(sdltype));
 
-	if(!SDL_EventState(sdltype, SDL_QUERY)) {
+	if(!SDL_EventEnabled(sdltype)) {
 		return;
 	}
 
@@ -283,76 +286,68 @@ attr_unused
 static bool events_handler_debug_winevt(SDL_Event *event, void *arg) {
 	// copied from SDL wiki almost verbatim
 
-	if(event->type == SDL_WINDOWEVENT) {
-		switch(event->window.event) {
-			case SDL_WINDOWEVENT_SHOWN:
-				log_info("Window %d shown", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_HIDDEN:
-				log_info("Window %d hidden", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_EXPOSED:
-				log_info("Window %d exposed", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_MOVED:
-				log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_WINDOWEVENT_RESIZED:
-				log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
-				log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_WINDOWEVENT_MINIMIZED:
-				log_info("Window %d minimized", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_MAXIMIZED:
-				log_info("Window %d maximized", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_RESTORED:
-				log_info("Window %d restored", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_ENTER:
-				log_info("Mouse entered window %d", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_LEAVE:
-				log_info("Mouse left window %d", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_FOCUS_GAINED:
-				log_info("Window %d gained keyboard focus", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_FOCUS_LOST:
-				log_info("Window %d lost keyboard focus", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_CLOSE:
-				log_info("Window %d closed", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_TAKE_FOCUS:
-				log_info("Window %d is offered a focus", event->window.windowID);
-				break;
-			case SDL_WINDOWEVENT_HIT_TEST:
-				log_info("Window %d has a special hit test", event->window.windowID);
-				break;
-			default:
-				log_warn("Window %d got unknown event %d", event->window.windowID, event->window.event);
+	switch(event->type) {
+		case SDL_EVENT_WINDOW_SHOWN:
+			log_info("Window %d shown", event->window.windowID);
 			break;
-		}
+		case SDL_EVENT_WINDOW_HIDDEN:
+			log_info("Window %d hidden", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_EXPOSED:
+			log_info("Window %d exposed", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOVED:
+			log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+			log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_MINIMIZED:
+			log_info("Window %d minimized", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MAXIMIZED:
+			log_info("Window %d maximized", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_RESTORED:
+			log_info("Window %d restored", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOUSE_ENTER:
+			log_info("Mouse entered window %d", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+			log_info("Mouse left window %d", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_FOCUS_GAINED:
+			log_info("Window %d gained keyboard focus", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_FOCUS_LOST:
+			log_info("Window %d lost keyboard focus", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			log_info("Window %d closed", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_HIT_TEST:
+			log_info("Window %d has a special hit test", event->window.windowID);
+			break;
+		break;
 	}
 
 	return false;
 }
 
-
 static EventHandler default_handlers[] = {
 #ifdef DEBUG_WINDOW_EVENTS
 	{ .proc = events_handler_debug_winevt,          .priority = EPRIO_SYSTEM,       .event_type = SDL_WINDOWEVENT },
 #endif
-	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
+	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_EVENT_QUIT },
 	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
-	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYUP },
+	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_UP },
 
 	{NULL}
 };
@@ -377,7 +372,7 @@ static bool events_handler_quit(SDL_Event *event, void *arg) {
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 	hrtime_t timenow = time_get();
 
-	if(event->type != SDL_KEYDOWN) {
+	if(event->type != SDL_EVENT_KEY_DOWN) {
 		uint32_t te = TAISEI_EVENT(event->type);
 
 		if(te < TE_MENU_FIRST || te > TE_MENU_LAST) {
@@ -398,11 +393,11 @@ static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 }
 
 static bool events_handler_clipboard(SDL_Event *event, void *arg) {
-	if(!SDL_IsTextInputActive()) {
+	if(!SDL_TextInputActive(video_get_window())) {
 		return false;
 	}
 
-	if(event->key.keysym.mod & KMOD_CTRL && event->key.keysym.scancode == SDL_SCANCODE_V) {
+	if(event->key.mod & SDL_KMOD_CTRL && event->key.scancode == SDL_SCANCODE_V) {
 		if(SDL_HasClipboardText()) {
 			memset(event, 0, sizeof(SDL_Event));
 			event->type = MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE);
@@ -415,7 +410,7 @@ static bool events_handler_clipboard(SDL_Event *event, void *arg) {
 }
 
 static bool events_handler_key_down(SDL_Event *event, void *arg) {
-	SDL_Scancode scan = event->key.keysym.scancode;
+	SDL_Scancode scan = event->key.scancode;
 	bool repeat = event->key.repeat;
 
 	if(video_get_backend() == VIDEO_BACKEND_EMSCRIPTEN && scan == SDL_SCANCODE_TAB) {
@@ -476,7 +471,7 @@ static bool events_handler_key_down(SDL_Event *event, void *arg) {
 }
 
 static bool events_handler_key_up(SDL_Event *event, void *arg) {
-	SDL_Scancode scan = event->key.keysym.scancode;
+	SDL_Scancode scan = event->key.scancode;
 
 	/*
 	 *  Emit game events
@@ -496,16 +491,16 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 		return false;
 	}
 
-	SDL_Scancode scan = event->key.keysym.scancode;
-	SDL_Keymod mod = event->key.keysym.mod;
+	SDL_Scancode scan = event->key.scancode;
+	SDL_Keymod mod = event->key.mod;
 
 	if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
-		bool viewport_only = (mod & KMOD_ALT);
+		bool viewport_only = (mod & SDL_KMOD_ALT);
 		video_take_screenshot(viewport_only);
 		return true;
 	}
 
-	if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
+	if((scan == SDL_SCANCODE_RETURN && (mod & SDL_KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
 		video_set_fullscreen(!video_is_fullscreen());
 		return true;
 	}

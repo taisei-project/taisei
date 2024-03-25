@@ -61,7 +61,7 @@ static bool check_shader_object_path(const char *path) {
 static void load_shader_object_stage1(ResourceLoadState *st);
 static void load_shader_object_stage2(ResourceLoadState *st);
 
-static SDL_RWops *glsl_open_callback(const char *path, void *userdata) {
+static SDL_IOStream *glsl_open_callback(const char *path, void *userdata) {
 	ResourceLoadState *st = userdata;
 	return res_open_file(st, path, VFS_MODE_READ);
 }

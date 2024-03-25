@@ -13,7 +13,7 @@ typedef struct tagLOGFONTW LOGFONTW;  /* broken piece of shit garbage windows he
 
 #include <shlobj.h>
 #include <objbase.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 const char *vfs_platformpath_cache(void) {
 	static char *cached;

@@ -12,7 +12,7 @@
 #include "events.h"
 #include "config.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 typedef enum GamepadAxisDigitalValue {
 	AXISVAL_LEFT  = -1,
@@ -41,7 +41,7 @@ typedef enum GamepadEmulatedButton {
 } GamepadEmulatedButton;
 
 typedef enum GamepadButton {
-	// must match SDL_GameControllerButton
+	// must match SDL_GamepadButton
 	GAMEPAD_BUTTON_INVALID = -1,
 #ifdef __SWITCH__
 	GAMEPAD_BUTTON_B,
@@ -71,6 +71,11 @@ typedef enum GamepadButton {
 	GAMEPAD_BUTTON_P3,
 	GAMEPAD_BUTTON_P4,
 	GAMEPAD_BUTTON_TOUCHPAD,
+	GAMEPAD_BUTTON_MISC2,
+	GAMEPAD_BUTTON_MISC3,
+	GAMEPAD_BUTTON_MISC4,
+	GAMEPAD_BUTTON_MISC5,
+	GAMEPAD_BUTTON_MISC6,
 	GAMEPAD_BUTTON_MAX,
 
 	GAMEPAD_BUTTON_EMULATED = 0x8000,
@@ -85,7 +90,7 @@ typedef enum GamepadButton {
 } GamepadButton;
 
 typedef enum GamepadAxis {
-	// must match SDL_GameControllerAxis
+	// must match SDL_GamepadAxis
 	GAMEPAD_AXIS_INVALID = -1,
 	GAMEPAD_AXIS_LEFT_X,
 	GAMEPAD_AXIS_LEFT_Y,
@@ -123,11 +128,11 @@ GamepadButton gamepad_button_from_name(const char *name);
 GamepadAxis gamepad_axis_from_name(const char *name);
 
 GamepadButton gamepad_button_from_axis(GamepadAxis axis, GamepadAxisDigitalValue dval);
-GamepadButton gamepad_button_from_sdl_button(SDL_GameControllerButton btn);
-SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn);
+GamepadButton gamepad_button_from_sdl_button(SDL_GamepadButton btn);
+SDL_GamepadButton gamepad_button_to_sdl_button(GamepadButton btn);
 
-GamepadAxis gamepad_axis_from_sdl_axis(SDL_GameControllerAxis axis);
-SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
+GamepadAxis gamepad_axis_from_sdl_axis(SDL_GamepadAxis axis);
+SDL_GamepadAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
 
 int gamepad_axis_value(GamepadAxis paxis);
 int gamepad_player_axis_value(GamepadPlrAxis paxis);

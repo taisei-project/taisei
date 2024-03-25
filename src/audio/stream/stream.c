@@ -33,17 +33,18 @@ bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2) {
 }
 
 SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, const AudioStreamSpec *dest_spec) {
-	return SDL_NewAudioStream(
-		source->spec.sample_format,
-		source->spec.channels,
-		source->spec.sample_rate,
-		dest_spec->sample_format,
-		dest_spec->channels,
-		dest_spec->sample_rate
-	);
+	return SDL_CreateAudioStream(&(SDL_AudioSpec) {
+		.channels = source->spec.channels,
+		.format = source->spec.sample_format,
+		.freq = source->spec.sample_rate,
+	}, &(SDL_AudioSpec) {
+		.channels = dest_spec->channels,
+		.format = dest_spec->sample_format,
+		.freq = dest_spec->sample_rate,
+	});
 }
 
-bool astream_open(AudioStream *stream, SDL_RWops *rwops, const char *filename) {
+bool astream_open(AudioStream *stream, SDL_IOStream *rwops, const char *filename) {
 	bool ok = false;
 
 	ok = astream_opus_open(stream, rwops);
@@ -102,8 +103,8 @@ ssize_t astream_read_into_sdl_stream(AudioStream *stream, SDL_AudioStream *sdlst
 	ssize_t read_size = astream_read(stream, bufsize, buf, flags);
 
 	if(LIKELY(read_size > 0)) {
-		if(UNLIKELY(SDL_AudioStreamPut(sdlstream, buf, read_size) < 0)) {
-			log_sdl_error(LOG_ERROR, "SDL_AudioStreamPut");
+		if(UNLIKELY(!SDL_PutAudioStreamData(sdlstream, buf, read_size))) {
+			log_sdl_error(LOG_ERROR, "SDL_PutAudioStreamData");
 			return -1;
 		}
 	}
@@ -176,10 +177,10 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 	assert(buffer_size >= astream_util_resampled_buffer_size(src, spec));
 
 	SDL_AudioStream *pipe = NULL;
-	SDL_RWops *rw = SDL_RWFromMem(buffer, buffer_size);
+	SDL_IOStream *rw = SDL_IOFromMem(buffer, buffer_size);
 
 	if(UNLIKELY(!rw)) {
-		log_sdl_error(LOG_ERROR, "SDL_RWFromMem");
+		log_sdl_error(LOG_ERROR, "SDL_IOFromMem");
 		goto fail;
 	}
 
@@ -193,16 +194,16 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 	for(;;) {
 		char staging[1 << 14];
 
-		ssize_t read = SDL_AudioStreamGet(pipe, staging, sizeof(staging));
+		ssize_t read = SDL_GetAudioStreamData(pipe, staging, sizeof(staging));
 
 		if(UNLIKELY(read < 0)) {
-			log_sdl_error(LOG_ERROR, "SDL_AudioStreamGet");
+			log_sdl_error(LOG_ERROR, "SDL_GetAudioStreamData");
 			goto fail;
 		}
 
 		if(read > 0) {
-			if(UNLIKELY(SDL_RWwrite(rw, staging, 1, read) < read)) {
-				log_sdl_error(LOG_ERROR, "SDL_RWwrite");
+			if(UNLIKELY(SDL_WriteIO(rw, staging, read) < read)) {
+				log_sdl_error(LOG_ERROR, "SDL_WriteIO");
 				goto fail;
 			}
 		}
@@ -214,21 +215,21 @@ bool astream_crystalize(AudioStream *src, const AudioStreamSpec *spec, size_t bu
 		}
 
 		if(read == 0) {
-			SDL_AudioStreamFlush(pipe);
-			if(SDL_AudioStreamAvailable(pipe) == 0) {
+			SDL_FlushAudioStream(pipe);
+			if(SDL_GetAudioStreamAvailable(pipe) == 0) {
 				break;
 			}
 		}
 	}
 
-	SDL_FreeAudioStream(pipe);
-	SDL_RWclose(rw);
+	SDL_DestroyAudioStream(pipe);
+	SDL_CloseIO(rw);
 	return true;
 
 fail:
 	if(rw) {
-		SDL_RWclose(rw);
+		SDL_CloseIO(rw);
 	}
-	SDL_FreeAudioStream(pipe);
+	SDL_DestroyAudioStream(pipe);
 	return false;
 }

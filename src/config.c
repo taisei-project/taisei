@@ -274,7 +274,7 @@ static void config_delete_unknown_entries(void) {
 }
 
 void config_save(void) {
-	SDL_RWops *out = vfs_open(CONFIG_FILE, VFS_MODE_WRITE);
+	SDL_IOStream *out = vfs_open(CONFIG_FILE, VFS_MODE_WRITE);
 	ConfigEntry *e = configdefs;
 
 	if(!out) {
@@ -300,9 +300,9 @@ void config_save(void) {
 		}
 	}
 
-	SDL_RWwrite(out, sbuf.start, sbuf.pos - sbuf.start, 1);
+	SDL_WriteIO(out, sbuf.start, (sbuf.pos - sbuf.start));
 	strbuf_free(&sbuf);
-	SDL_RWclose(out);
+	SDL_CloseIO(out);
 
 	char *sp = vfs_repr(CONFIG_FILE, true);
 	log_info("Saved config '%s'", sp);
@@ -469,7 +469,7 @@ static void config_apply_upgrades(int start, ConfigParseState *state) {
 	config_set_version_latest();
 }
 
-static bool config_load_stream(SDL_RWops *stream) {
+static bool config_load_stream(SDL_IOStream *stream) {
 	config_set_int(CONFIG_VERSION, 0);
 	ConfigParseState state = {};
 
@@ -482,7 +482,7 @@ static bool config_load_stream(SDL_RWops *stream) {
 }
 
 static bool config_load_file(const char *vfspath, LogLevel fail_loglevel) {
-	SDL_RWops *stream = vfs_open(vfspath, VFS_MODE_READ);
+	SDL_IOStream *stream = vfs_open(vfspath, VFS_MODE_READ);
 	char *syspath_alloc = vfs_repr(vfspath, true);
 	const char *syspath = syspath_alloc ?: vfspath;
 	log_info("Loading configuration from %s", syspath);
@@ -500,7 +500,7 @@ static bool config_load_file(const char *vfspath, LogLevel fail_loglevel) {
 
 	mem_free(syspath_alloc);
 	bool ok = config_load_stream(stream);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 	return ok;
 }
 

@@ -10,7 +10,7 @@
 
 #include "log.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 const char *vfs_platformpath_storage(void) {
 	static char *cached;

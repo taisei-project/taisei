@@ -48,7 +48,7 @@ bool gamekeypressed(KeyIndex key) {
 	return SDL_GetKeyboardState(NULL)[config_get_int(KEYIDX_TO_CFGIDX(key))] || gamepad_game_key_pressed(key);
 }
 
-static SDL_atomic_t quitting;
+static SDL_AtomicInt quitting;
 
 static bool taisei_is_quit_forbidden(void) {
 	return global.is_kiosk_mode && env_get("TAISEI_KIOSK_PREVENT_QUIT", true);
@@ -68,13 +68,13 @@ void taisei_quit(void) {
 		return;
 	}
 
-	if(SDL_AtomicCAS(&quitting, 0, 1)) {
+	if(SDL_CompareAndSwapAtomicInt(&quitting, 0, 1)) {
 		log_info("Exit requested");
 	}
 }
 
 bool taisei_quit_requested(void) {
-	return SDL_AtomicGet(&quitting);
+	return SDL_GetAtomicInt(&quitting);
 }
 
 void taisei_commit_persistent_data(void) {

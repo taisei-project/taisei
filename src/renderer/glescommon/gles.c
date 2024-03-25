@@ -40,7 +40,7 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 
 	#ifdef TAISEI_BUILDCONF_RELOCATABLE_INSTALL
 	// In a relocatable build, paths are relative to SDL_GetBasePath
-	char *basepath = SDL_GetBasePath();
+	const char *basepath = SDL_GetBasePath();
 	char buf[strlen(basepath) + sizeof(TAISEI_BUILDCONF_ANGLE_GLES_PATH) + sizeof(TAISEI_BUILDCONF_ANGLE_EGL_PATH)];
 
 	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_GLES_PATH);
@@ -48,8 +48,6 @@ void gles_init(RendererBackend *gles_backend, int major, int minor) {
 
 	snprintf(buf, sizeof(buf), "%s%s", basepath, TAISEI_BUILDCONF_ANGLE_EGL_PATH);
 	env_set("SDL_VIDEO_EGL_DRIVER", buf, false);
-
-	SDL_free(basepath);
 	#else
 	// Static absolute paths
 	env_set("SDL_VIDEO_GL_DRIVER", TAISEI_BUILDCONF_ANGLE_GLES_PATH, false);

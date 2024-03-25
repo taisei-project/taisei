@@ -13,7 +13,7 @@
 #include "util/callchain.h"
 #include "dynarray.h"
 
-#include <SDL_events.h>
+#include <SDL3/SDL_events.h>
 
 #define IMENU_BLUR 0.05
 

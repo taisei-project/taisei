@@ -154,7 +154,7 @@ static bool demoplayer_frame_event(SDL_Event *evt, void *arg) {
 
 static bool demoplayer_activity_event(SDL_Event *evt, void *arg) {
 	switch(evt->type) {
-		case SDL_KEYDOWN:
+		case SDL_EVENT_KEY_DOWN :
 			goto reset;
 
 		default: switch(TAISEI_EVENT(evt->type)) {

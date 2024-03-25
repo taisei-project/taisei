@@ -11,13 +11,13 @@
 #include "../syspath_public.h"
 #include "log.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 const char *vfs_platformpath_resroot(void) {
 	static char *cached;
 
 	if(!cached) {
-		char *basepath = SDL_GetBasePath();
+		const char *basepath = SDL_GetBasePath();
 
 		if(!basepath) {
 			log_sdl_error(LOG_FATAL, "SDL_GetBasePath");
@@ -25,7 +25,6 @@ const char *vfs_platformpath_resroot(void) {
 		}
 
 		cached = vfs_syspath_join_alloc(basepath, TAISEI_BUILDCONF_DATA_PATH);
-		SDL_free(basepath);
 	}
 
 	return cached;

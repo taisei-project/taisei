@@ -60,11 +60,11 @@ INLINE void addangle(float *a, float d) {
 static void set_mouse_grab(struct cc_state *s, bool enable) {
 	enable = enable && s->grab_enabled && !s->game_paused;
 
-	SDL_SetWindowGrab(s->w, enable);
+	SDL_SetWindowMouseGrab(s->w, enable);
 	SDL_CaptureMouse(enable);
-	SDL_SetRelativeMouseMode(enable);
-	SDL_EventState(SDL_MOUSEMOTION, enable);
-	SDL_EventState(SDL_MOUSEWHEEL, enable);
+	SDL_SetWindowRelativeMouseMode(s->w, enable);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_MOTION, enable);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_WHEEL, enable);
 }
 
 static bool keydown_event(SDL_Event *e, void *a) {
@@ -74,7 +74,7 @@ static bool keydown_event(SDL_Event *e, void *a) {
 		return false;
 	}
 
-	if(e->key.keysym.scancode == CAMCTRL_KEY_TOGGLE_GRAB) {
+	if(e->key.scancode == CAMCTRL_KEY_TOGGLE_GRAB) {
 		s->grab_enabled = !s->grab_enabled;
 		set_mouse_grab(s, s->grab_enabled);
 	}
@@ -155,7 +155,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = mouse_event,
 			.arg = cam,
-			.event_type = SDL_MOUSEMOTION,
+			.event_type = SDL_EVENT_MOUSE_MOTION,
 		}
 	);
 
@@ -163,7 +163,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = wheel_event,
 			.arg = &move_speed,
-			.event_type = SDL_MOUSEWHEEL,
+			.event_type = SDL_EVENT_MOUSE_WHEEL,
 		}
 	);
 
@@ -171,7 +171,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = keydown_event,
 			.arg = &estate,
-			.event_type = SDL_KEYDOWN,
+			.event_type = SDL_EVENT_KEY_DOWN,
 		}
 	);
 
@@ -179,7 +179,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = focus_gained_event,
 			.arg = &estate,
-			.event_type = SDL_WINDOWEVENT_FOCUS_GAINED,
+			.event_type = SDL_EVENT_WINDOW_FOCUS_GAINED,
 		}
 	);
 
@@ -187,7 +187,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = focus_lost_event,
 			.arg = &estate,
-			.event_type = SDL_WINDOWEVENT_FOCUS_LOST,
+			.event_type = SDL_EVENT_WINDOW_FOCUS_LOST,
 		}
 	);
 
@@ -213,7 +213,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 
 	for(;;YIELD) {
 		int numkeys = 0;
-		const uint8_t *keys = SDL_GetKeyboardState(&numkeys);
+		const bool *keys = SDL_GetKeyboardState(&numkeys);
 
 		grabtxt->text[0] = estate.grab_enabled ? 0 : 'M';
 

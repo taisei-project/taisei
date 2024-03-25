@@ -115,13 +115,13 @@ static VFSNode *vfs_decomp_locate(VFSNode *dirnode, const char *path) {
 	return wrapped_child;
 }
 
-static SDL_RWops *vfs_decomp_open(VFSNode *filenode, VFSOpenMode mode) {
+static SDL_IOStream *vfs_decomp_open(VFSNode *filenode, VFSOpenMode mode) {
 	if(mode & VFS_MODE_WRITE) {
 		vfs_set_error("Read-only filesystem");
 		return NULL;
 	}
 
-	SDL_RWops *raw = vfs_node_open(WRAPPED(filenode), mode);
+	SDL_IOStream *raw = vfs_node_open(WRAPPED(filenode), mode);
 
 	if(!raw) {
 		return NULL;

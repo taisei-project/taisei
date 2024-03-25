@@ -6,7 +6,7 @@
 #include "util/stringops.h"
 #include "log.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 /******************************************************************************\
  *                                      ,.                                    *
@@ -340,8 +340,8 @@ struct HT_BASETYPE {
 
 #ifdef HT_THREAD_SAFE
 	struct {
-		SDL_mutex *mutex;
-		SDL_cond *cond;
+		SDL_Mutex *mutex;
+		SDL_Condition *cond;
 		uint readers;
 		bool writing;
 	} sync;
@@ -740,7 +740,7 @@ HT_DECLARE_PRIV_FUNC(void, begin_write, (HT_BASETYPE *ht)) {
 	SDL_LockMutex(ht->sync.mutex);
 
 	while(ht->sync.writing || ht->sync.readers) {
-		SDL_CondWait(ht->sync.cond, ht->sync.mutex);
+		SDL_WaitCondition(ht->sync.cond, ht->sync.mutex);
 	}
 
 	ht->sync.writing = true;
@@ -752,7 +752,7 @@ HT_DECLARE_PRIV_FUNC(void, end_write, (HT_BASETYPE *ht)) {
 	#ifdef HT_THREAD_SAFE
 	SDL_LockMutex(ht->sync.mutex);
 	ht->sync.writing = false;
-	SDL_CondBroadcast(ht->sync.cond);
+	SDL_BroadcastCondition(ht->sync.cond);
 	SDL_UnlockMutex(ht->sync.mutex);
 	#endif
 }
@@ -762,7 +762,7 @@ HT_DECLARE_PRIV_FUNC(void, begin_read, (HT_BASETYPE *ht)) {
 	SDL_LockMutex(ht->sync.mutex);
 
 	while(ht->sync.writing) {
-		SDL_CondWait(ht->sync.cond, ht->sync.mutex);
+		SDL_WaitCondition(ht->sync.cond, ht->sync.mutex);
 	}
 
 	++ht->sync.readers;
@@ -775,7 +775,7 @@ HT_DECLARE_PRIV_FUNC(void, end_read, (HT_BASETYPE *ht)) {
 	SDL_LockMutex(ht->sync.mutex);
 
 	if(!--ht->sync.readers) {
-		SDL_CondBroadcast(ht->sync.cond);
+		SDL_BroadcastCondition(ht->sync.cond);
 	}
 
 	SDL_UnlockMutex(ht->sync.mutex);
@@ -812,14 +812,14 @@ HT_DECLARE_FUNC(void, create, (HT_BASETYPE *ht)) {
 	ht->sync.writing = false;
 	ht->sync.readers = 0;
 	ht->sync.mutex = SDL_CreateMutex();
-	ht->sync.cond = SDL_CreateCond();
+	ht->sync.cond = SDL_CreateCondition();
 	#endif
 }
 
 HT_DECLARE_FUNC(void, destroy, (HT_BASETYPE *ht)) {
 	HT_FUNC(unset_all)(ht);
 	#ifdef HT_THREAD_SAFE
-	SDL_DestroyCond(ht->sync.cond);
+	SDL_DestroyCondition(ht->sync.cond);
 	SDL_DestroyMutex(ht->sync.mutex);
 	#endif
 	mem_free(ht->elements);

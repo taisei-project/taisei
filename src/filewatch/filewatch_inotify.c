@@ -107,7 +107,7 @@ struct {
 	ht_int2wdrecord_t wd_records;
 	ht_str2ptr_t dirpath_to_dirwatch;
 	ht_filewatchset_t updated_watches;
-	SDL_mutex *modify_mtx;
+	SDL_Mutex *modify_mtx;
 } *_fw_globals;
 
 static WDRecord *wdrecord_get(int wd, bool create) {

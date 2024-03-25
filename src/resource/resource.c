@@ -109,13 +109,13 @@ typedef struct PurgatoryNode {
 
 struct InternalResource {
 	Resource res;
-	SDL_mutex *mutex;
-	SDL_cond *cond;
+	SDL_Mutex *mutex;
+	SDL_Condition *cond;
 	InternalResLoadState *load;
 	char *name;
 	PurgatoryNode purgatory_node;
 	ResourceStatus status;
-	SDL_atomic_t refcount;
+	SDL_AtomicInt refcount;
 	uint32_t generation_id;
 
 	// Reloading works by allocating a temporary InternalResource, attempting to load the resource
@@ -138,7 +138,7 @@ struct InternalResource {
 	ht_ires_counted_set_t dependents;
 
 #if DEBUG_LOCKS
-	SDL_atomic_t num_locks;
+	SDL_AtomicInt num_locks;
 #endif
 };
 
@@ -228,7 +228,7 @@ static void (ires_unlock)(InternalResource *ires, DebugInfo dbg) {
 #define ires_cond_wait(ires) ires_cond_wait(ires, _DEBUG_INFO_)
 static void (ires_cond_wait)(InternalResource *ires, DebugInfo dbg) {
 	ires_update_num_locks(ires, -1);
-	SDL_CondWait(ires->cond, ires->mutex);
+	SDL_WaitCondition(ires->cond, ires->mutex);
 	ires_update_num_locks(ires, 1);
 }
 
@@ -243,21 +243,21 @@ INLINE void ires_unlock(InternalResource *ires) {
 }
 
 INLINE void ires_cond_wait(InternalResource *ires) {
-	SDL_CondWait(ires->cond, ires->mutex);
+	SDL_WaitCondition(ires->cond, ires->mutex);
 }
 
 #endif  // DEBUG_LOCKS
 
 INLINE void ires_cond_broadcast(InternalResource *ires) {
-	SDL_CondBroadcast(ires->cond);
+	SDL_BroadcastCondition(ires->cond);
 }
 
 INLINE void purgatory_lock(void) {
-	SDL_AtomicLock(&res_gstate.purgatory.lock);
+	SDL_LockSpinlock(&res_gstate.purgatory.lock);
 }
 
 INLINE void purgatory_unlock(void) {
-	SDL_AtomicUnlock(&res_gstate.purgatory.lock);
+	SDL_UnlockSpinlock(&res_gstate.purgatory.lock);
 }
 
 INLINE InternalResource *ires_from_purgatory_node(PurgatoryNode *n) {
@@ -294,7 +294,7 @@ static bool ires_put_in_purgatory(InternalResource *ires) {
 	purgatory_lock();
 
 	// Someone incremented refcount before we acquired the lock?
-	if((result = (SDL_AtomicGet(&ires->refcount) == 0))) {
+	if((result = (SDL_GetAtomicInt(&ires->refcount) == 0))) {
 		_unlocked_ires_put_in_purgatory(ires);
 	}
 
@@ -307,7 +307,7 @@ static bool ires_remove_from_purgatory(InternalResource *ires, bool force) {
 	purgatory_lock();
 
 	// Someone decremented refcount before we acquired the lock?
-	if((result = (force || SDL_AtomicGet(&ires->refcount) > 0))) {
+	if((result = (force || SDL_GetAtomicInt(&ires->refcount) > 0))) {
 		_unlocked_ires_remove_from_purgatory(ires);
 	}
 
@@ -333,12 +333,12 @@ static bool ires_decref(InternalResource *ires) {
 
 attr_returns_nonnull
 static InternalResource *ires_alloc(ResourceType rtype) {
-	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
+	SDL_LockSpinlock(&res_gstate.ires_freelist_lock);
 	InternalResource *ires = res_gstate.ires_freelist;
 	if(ires) {
 		res_gstate.ires_freelist = ires->reload_buddy;
 	}
-	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
+	SDL_UnlockSpinlock(&res_gstate.ires_freelist_lock);
 
 	if(ires) {
 		assert(!ires_in_purgatory(ires));
@@ -349,7 +349,7 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 	} else {
 		ires = ALLOC(typeof(*ires));
 		ires->mutex = SDL_CreateMutex();
-		ires->cond = SDL_CreateCond();
+		ires->cond = SDL_CreateCondition();
 		ires->res.type = rtype;
 	}
 
@@ -372,7 +372,7 @@ static void ires_release(InternalResource *ires) {
 	ires_lock(ires);
 	ires_free_meta(ires);
 
-	assert(SDL_AtomicGet(&ires->refcount) == 0);
+	assert(SDL_GetAtomicInt(&ires->refcount) == 0);
 
 	if(!ires->is_transient_reloader) {
 		ires_remove_from_purgatory(ires, true);
@@ -387,10 +387,10 @@ static void ires_release(InternalResource *ires) {
 	ires->dependents = (ht_ires_counted_set_t) { };
 	ires->generation_id++;
 
-	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
+	SDL_LockSpinlock(&res_gstate.ires_freelist_lock);
 	ires->reload_buddy = res_gstate.ires_freelist;
 	res_gstate.ires_freelist = ires;
-	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
+	SDL_UnlockSpinlock(&res_gstate.ires_freelist_lock);
 	ires_unlock(ires);
 }
 
@@ -398,7 +398,7 @@ attr_nonnull_all
 static void ires_free(InternalResource *ires) {
 	ires_free_meta(ires);
 	SDL_DestroyMutex(ires->mutex);
-	SDL_DestroyCond(ires->cond);
+	SDL_DestroyCondition(ires->cond);
 	mem_free(ires);
 }
 
@@ -713,8 +713,8 @@ static void ires_unmake_dependent(InternalResource *ires, IResPtrArray *dependen
 	ires_unlock(ires);
 }
 
-SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
-	SDL_RWops *rw = vfs_open(path, mode);
+SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
+	SDL_IOStream *rw = vfs_open(path, mode);
 
 	if(UNLIKELY(!rw)) {
 		return NULL;
@@ -1096,7 +1096,7 @@ static bool unload_resource(InternalResource *ires) {
 		assert(ires->reload_buddy->reload_buddy == ires);
 	}
 
-	int nrefs = SDL_AtomicGet(&ires->refcount);
+	int nrefs = SDL_GetAtomicInt(&ires->refcount);
 	if(nrefs > 0) {
 		log_debug(
 			"Not unloading %s '%s' because it still has %i references",
@@ -1826,7 +1826,7 @@ void res_shutdown(void) {
 			InternalResource *ires = iter.value;
 			wait_for_resource_load(ires, RESF_RELOAD);
 
-			int nrefs = SDL_AtomicGet(&ires->refcount);
+			int nrefs = SDL_GetAtomicInt(&ires->refcount);
 			assert(nrefs >= 0);
 
 			if(nrefs > 0) {

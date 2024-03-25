@@ -12,7 +12,7 @@
 #include "util/geometry.h"
 #include "renderer/api.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define WINDOW_TITLE "Taisei Project"
 #define VIDEO_ASPECT_RATIO ((double)SCREEN_W/SCREEN_H)

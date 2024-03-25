@@ -11,7 +11,7 @@
 #include "hashtable.h"
 #include "log.h"
 
-#include <SDL_thread.h>
+#include <SDL3/SDL_thread.h>
 
 static_assert(THREAD_PRIO_LOW == (int)SDL_THREAD_PRIORITY_LOW);
 static_assert(THREAD_PRIO_NORMAL == (int)SDL_THREAD_PRIORITY_NORMAL);
@@ -28,8 +28,8 @@ struct Thread {
 	SDL_Thread *sdlthread;
 	void *data;
 	ThreadID id;
-	SDL_atomic_t refcount;
-	SDL_atomic_t state;
+	SDL_AtomicInt refcount;
+	SDL_AtomicInt state;
 	char name[];
 };
 
@@ -39,7 +39,7 @@ static struct {
 } threads;
 
 void thread_init(void) {
-	threads.main_id = SDL_ThreadID();
+	threads.main_id = SDL_GetCurrentThreadID();
 	ht_create(&threads.id_to_thread);
 }
 
@@ -48,10 +48,10 @@ void thread_shutdown(void) {
 	ht_iter_begin(&threads.id_to_thread, &iter);
 	for(;iter.has_data; ht_iter_next(&iter)) {
 		Thread *thrd = iter.value;
-		int nref = SDL_AtomicGet(&thrd->refcount);
+		int nref = SDL_GetAtomicInt(&thrd->refcount);
 		log_error("Thread '%s' had non-zero refcount of %i", thrd->name, nref);
 
-		SDL_Thread *sdlthread = SDL_AtomicSetPtr((void**)&thrd->sdlthread, NULL);
+		SDL_Thread *sdlthread = SDL_SetAtomicPointer((void**)&thrd->sdlthread, NULL);
 
 		if(sdlthread) {
 			SDL_DetachThread(sdlthread);
@@ -70,13 +70,13 @@ static void thread_finalize(Thread *thrd) {
 }
 
 static void thread_try_finalize(Thread *thrd) {
-	if(SDL_AtomicCAS(&thrd->state, THREAD_STATE_DONE, THREAD_STATE_CLEANING_UP)) {
+	if(SDL_CompareAndSwapAtomicInt(&thrd->state, THREAD_STATE_DONE, THREAD_STATE_CLEANING_UP)) {
 		thread_finalize(thrd);
 	}
 }
 
 static void thread_try_detach(Thread *thrd) {
-	SDL_Thread *sdlthread = SDL_AtomicSetPtr((void**)&thrd->sdlthread, NULL);
+	SDL_Thread *sdlthread = SDL_SetAtomicPointer((void**)&thrd->sdlthread, NULL);
 	if(sdlthread) {
 		SDL_DetachThread(sdlthread);
 	}
@@ -87,7 +87,7 @@ void thread_incref(Thread *thrd) {
 }
 
 static void thread_decref_internal(Thread *thrd, bool try_detach) {
-	int prev_refcount = SDL_AtomicAdd(&thrd->refcount, -1);
+	int prev_refcount = SDL_AddAtomicInt(&thrd->refcount, -1);
 	assert(prev_refcount > 0);
 	if(prev_refcount == 1) {
 		thread_try_finalize(thrd);
@@ -103,28 +103,28 @@ typedef struct ThreadCreateData {
 	ThreadProc proc;
 	void *userdata;
 	ThreadPriority prio;
-	SDL_sem *init_sem;
+	SDL_Semaphore *init_sem;
 } ThreadCreateData;
 
 static int SDLCALL sdlthread_entry(void *data) {
 	auto tcd = *(ThreadCreateData*)data;
 
-	ThreadID id = SDL_ThreadID();
+	ThreadID id = SDL_GetCurrentThreadID();
 	tcd.thrd->id = id;
 	ht_set(&threads.id_to_thread, id, tcd.thrd);
-	SDL_SemPost(tcd.init_sem);
+	SDL_SignalSemaphore(tcd.init_sem);
 
-	if(SDL_SetThreadPriority(tcd.prio) < 0) {
+	if(!SDL_SetCurrentThreadPriority(tcd.prio)) {
 		log_sdl_error(LOG_WARN, "SDL_SetThreadPriority");
 	}
 
 	tcd.thrd->data = tcd.proc(tcd.userdata);
 
 	attr_unused bool cas_ok;
-	cas_ok = SDL_AtomicCAS(&tcd.thrd->state, THREAD_STATE_EXECUTING, THREAD_STATE_DONE);
+	cas_ok = SDL_CompareAndSwapAtomicInt(&tcd.thrd->state, THREAD_STATE_EXECUTING, THREAD_STATE_DONE);
 	assert(cas_ok);
 
-	if(SDL_AtomicGet(&tcd.thrd->refcount) < 1) {
+	if(SDL_GetAtomicInt(&tcd.thrd->refcount) < 1) {
 		thread_try_detach(tcd.thrd);
 		thread_try_finalize(tcd.thrd);
 	}
@@ -164,7 +164,7 @@ Thread *thread_create(const char *name, ThreadProc proc, void *userdata, ThreadP
 		goto fail;
 	}
 
-	SDL_SemWait(tcd.init_sem);
+	SDL_WaitSemaphore(tcd.init_sem);
 	SDL_DestroySemaphore(tcd.init_sem);
 	return thrd;
 
@@ -187,7 +187,7 @@ ThreadID thread_get_id(Thread *thrd) {
 }
 
 ThreadID thread_get_current_id(void) {
-	return SDL_ThreadID();
+	return SDL_GetCurrentThreadID();
 }
 
 ThreadID thread_get_main_id(void) {
@@ -203,7 +203,7 @@ const char *thread_get_name(Thread *thrd) {
 }
 
 void *thread_wait(Thread *thrd) {
-	SDL_Thread *sdlthread = SDL_AtomicSetPtr((void**)&thrd->sdlthread, NULL);
+	SDL_Thread *sdlthread = SDL_SetAtomicPointer((void**)&thrd->sdlthread, NULL);
 
 	if(sdlthread) {
 		SDL_WaitThread(sdlthread, NULL);
@@ -215,7 +215,7 @@ void *thread_wait(Thread *thrd) {
 }
 
 bool thread_get_result(Thread *thrd, void **result) {
-	if(SDL_AtomicGet(&thrd->state) == THREAD_STATE_EXECUTING) {
+	if(SDL_GetAtomicInt(&thrd->state) == THREAD_STATE_EXECUTING) {
 		return false;
 	}
 

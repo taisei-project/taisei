@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #ifdef TAISEI_BUILDCONF_RENDERER_STATIC_GLES30
 	#define STATIC_GLES3
@@ -143,7 +143,7 @@ void glcommon_load_functions(void);
 void glcommon_check_capabilities(void);
 void glcommon_unload_library(void);
 ext_flag_t glcommon_check_extension(const char *ext) attr_nonnull_all;
-void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags);
+void glcommon_setup_attributes(SDL_GLProfile profile, uint major, uint minor, SDL_GLContextFlag ctxflags);
 
 struct glext_s {
 	struct {

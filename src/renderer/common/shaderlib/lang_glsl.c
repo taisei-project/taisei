@@ -26,7 +26,7 @@ enum {
 typedef struct GLSLParseState {
 	const GLSLSourceOptions *options;
 	ShaderSource *src;
-	SDL_RWops *dest;
+	SDL_IOStream *dest;
 	bool version_defined;
 	char *linebuf;
 	size_t linebuf_size;
@@ -154,7 +154,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		return false;
 	}
 
-	SDL_RWops *stream;
+	SDL_IOStream *stream;
 	GLSLSourceOpenCallback open = fstate->global->options->file_open_callback;
 
 	if(open) {
@@ -163,7 +163,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		stream = vfs_open(fstate->path, VFS_MODE_READ);
 	}
 
-	SDL_RWops *dest = fstate->global->dest;
+	SDL_IOStream *dest = fstate->global->dest;
 
 	if(!stream) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -181,14 +181,14 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 
 		if(check_directive(p, INCLUDE_DIRECTIVE)) {
 			if(!glsl_try_write_header(fstate)) {
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
 			char *filename = glsl_parse_include_directive(fstate, p);
 
 			if(filename == NULL) {
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
@@ -207,7 +207,7 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			SDL_RWprintf(dest, "// end include (level %i)\n", fstate->include_level);
 
 			if(!include_ok) {
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
@@ -215,14 +215,14 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 		} else if(check_directive(p, VERSION_DIRECTIVE)) {
 			if(fstate->global->version_defined) {
 				log_error("%s:%d: duplicate or misplaced %s directive", fstate->path, fstate->lineno, VERSION_DIRECTIVE);
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
 			GLSLVersion shader_v = glsl_parse_version_directive(fstate, p);
 
 			if(shader_v.version == 0) {
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
@@ -257,24 +257,25 @@ static bool glsl_process_file(GLSLFileParseState *fstate) {
 			glsl_write_header(fstate);
 		} else {
 			if(*p && !glsl_try_write_header(fstate)) {
-				SDL_RWclose(stream);
+				SDL_CloseIO(stream);
 				return false;
 			}
 
-			SDL_RWwrite(dest, fstate->global->linebuf, 1, strlen(fstate->global->linebuf));
+			SDL_WriteIO(dest, fstate->global->linebuf,
+				    strlen(fstate->global->linebuf));
 		}
 
 		fstate->lineno++;
 		glsl_write_lineno(fstate);
 	}
 
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 	return true;
 }
 
 bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptions *options) {
 	void *bufdata_ptr;
-	SDL_RWops *out_buf = SDL_RWAutoBuffer(&bufdata_ptr, 1024);
+	SDL_IOStream *out_buf = SDL_RWAutoBuffer(&bufdata_ptr, 1024);
 	assert(out_buf != NULL);
 
 	memset(out, 0, sizeof(*out));
@@ -303,7 +304,7 @@ bool glsl_load_source(const char *path, ShaderSource *out, const GLSLSourceOptio
 		memcpy(out->content, bufdata_ptr, out->content_size);
 	}
 
-	SDL_RWclose(out_buf);
+	SDL_CloseIO(out_buf);
 	return result;
 }
 

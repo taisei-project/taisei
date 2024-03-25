@@ -12,7 +12,7 @@
 #include "renderer/api.h"
 #include "util/kvparser.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define PP_PATH_PREFIX SHPROG_PATH_PREFIX
 #define PP_EXTENSION ".pp"

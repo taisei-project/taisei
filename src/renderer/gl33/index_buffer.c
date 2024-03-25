@@ -94,8 +94,8 @@ size_t gl33_index_buffer_get_offset(IndexBuffer *ibuf) {
 }
 
 void gl33_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *data) {
-	SDL_RWops *stream = gl33_buffer_get_stream(&ibuf->cbuf);
-	SDL_RWwrite(stream, data, data_size, 1);
+	SDL_IOStream *stream = gl33_buffer_get_stream(&ibuf->cbuf);
+	SDL_WriteIO(stream, data, data_size);
 }
 
 void gl33_index_buffer_destroy(IndexBuffer *ibuf) {
