@@ -1,8 +1,9 @@
 [wrap-git]
-directory=sdl2
+directory=sdl3
+method=cmake
 url=https://github.com/taisei-project/SDL.git
 push-url=git@github.com:taisei-project/SDL.git
-revision=meson-2.28.5
+revision=taisei-3.2.8
 
 [provide]
-sdl2=sdl2_dep
+sdl3=SDL3_static_dep

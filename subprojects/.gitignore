@@ -14,6 +14,8 @@ opus
 opusfile
 sdl2
 sdl2_mixer
+sdl3
 shaderc
 vorbis
 zlib
+packagecache

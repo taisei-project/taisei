@@ -125,7 +125,7 @@ void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
 
 	if(file_size >= 0) {
 		if(max_size && file_size > max_size) {
-			SDL_SetError("File is too large (%zu bytes; max is %zu)", file_size, max_size);
+			SDL_SetError("File is too large (%zu bytes; max is %zu)", (size_t)file_size, max_size);
 			return NULL;
 		}
 
