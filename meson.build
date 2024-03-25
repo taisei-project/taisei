@@ -206,7 +206,7 @@ opt_gamemode = get_option('gamemode').require(host_machine.system() == 'linux',
 
 dep_freetype    = dependency('freetype2',                           required : true)
 dep_png         = dependency('libpng',         version : '>=1.5',   required : true)
-dep_sdl2        = dependency('sdl2',           version : '>=2.0.10',required : true)
+dep_sdl3        = dependency('sdl3',           version : '>=3.1.0', required : true)
 dep_webp        = dependency('libwebp',        version : '>=0.5',   required : true)
 dep_webpdecoder = dependency('libwebpdecoder', version : '>=0.5',   required : false)
 dep_zlib        = dependency('zlib',                                required : true)
@@ -234,7 +234,7 @@ taisei_deps = [
     dep_koishi,
     dep_m,
     dep_png,
-    dep_sdl2,
+    dep_sdl3,
     dep_zip,
     dep_zlib,
     dep_zstd,
