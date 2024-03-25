@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include <time.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "systime.h"
 

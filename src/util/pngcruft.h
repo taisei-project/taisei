@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include <png.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 void pngutil_init_rwops_read(png_structp png, SDL_RWops *rwops);
 void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops);

@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <stdio.h>
 
 char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) attr_nonnull_all;

@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 SDL_RWops *SDL_RWWrapReadOnly(SDL_RWops *src, bool autoclose);

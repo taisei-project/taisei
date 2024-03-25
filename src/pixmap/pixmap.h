@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define PIXMAP_BUFFER_MAX_SIZE INT32_MAX
 

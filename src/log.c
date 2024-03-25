@@ -18,8 +18,8 @@
 #include "util/strbuf.h"
 #include "util/stringops.h"
 
-#include <SDL_bits.h>
-#include <SDL_mutex.h>
+#include <SDL3/SDL_bits.h>
+#include <SDL3/SDL_mutex.h>
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);

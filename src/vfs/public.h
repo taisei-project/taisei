@@ -16,7 +16,7 @@
 
 #include "util/callchain.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 typedef struct VFSInfo {
 	uchar error       : 1;

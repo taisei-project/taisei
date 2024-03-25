@@ -11,7 +11,7 @@
 #include "hashtable.h"
 #include "log.h"
 
-#include <SDL_thread.h>
+#include <SDL3/SDL_thread.h>
 
 static_assert(THREAD_PRIO_LOW == (int)SDL_THREAD_PRIORITY_LOW);
 static_assert(THREAD_PRIO_NORMAL == (int)SDL_THREAD_PRIORITY_NORMAL);

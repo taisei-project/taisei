@@ -11,7 +11,7 @@
 
 #include <windows.h>
 #include <shlwapi.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;

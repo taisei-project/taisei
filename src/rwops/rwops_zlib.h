@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define RW_DEFLATE_LEVEL_DEFAULT -1
 

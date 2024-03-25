@@ -12,7 +12,7 @@
 #include "thread.h"
 #include "util/strbuf.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 enum {
 	_LOG_DEBUG_ID,

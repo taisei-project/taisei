@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 SDL_RWops *SDL_RWWrapSegment(SDL_RWops *src, size_t start, size_t end, bool autoclose);

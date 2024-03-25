@@ -12,7 +12,7 @@
 #include "rwops_util.h"
 #include "util/miscmath.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 #include <zlib.h>
 
 #define MIN_CHUNK_SIZE 1024

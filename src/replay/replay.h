@@ -11,7 +11,7 @@
 
 #include "util/callchain.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #define REPLAY_EXTENSION "tsr"
 

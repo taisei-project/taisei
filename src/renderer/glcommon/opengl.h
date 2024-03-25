@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #ifdef TAISEI_BUILDCONF_RENDERER_STATIC_GLES30
 	#define STATIC_GLES3

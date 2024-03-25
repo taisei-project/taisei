@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_audio.h>
+#include <SDL3/SDL_audio.h>
 
 typedef struct AudioStream AudioStream;
 typedef struct AudioStreamProcs AudioStreamProcs;

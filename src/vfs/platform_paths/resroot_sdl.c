@@ -11,7 +11,7 @@
 #include "../syspath_public.h"
 #include "log.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 const char *vfs_platformpath_resroot(void) {
 	static char *cached;
