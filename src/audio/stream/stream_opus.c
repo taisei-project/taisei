@@ -126,7 +126,7 @@ static bool astream_opus_init(AudioStream *stream, OggOpusFile *opus) {
 	}
 
 	stream->length = length;
-	stream->spec = astream_spec(AUDIO_F32SYS, 2, OPUS_SAMPLE_RATE);
+	stream->spec = astream_spec(SDL_AUDIO_F32, 2, OPUS_SAMPLE_RATE);
 	stream->procs = &astream_opus_procs;
 	stream->opaque = opus;
 
@@ -145,28 +145,29 @@ static bool astream_opus_init(AudioStream *stream, OggOpusFile *opus) {
 }
 
 static int opus_rwops_read(void *_stream, unsigned char *_ptr, int _nbytes) {
-	SDL_RWops *rw = _stream;
-	return SDL_RWread(rw, _ptr, 1, _nbytes);
+	SDL_IOStream *rw = _stream;
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
+	SDL_ReadIO(rw, _ptr, _nbytes);
 }
 
 static int opus_rwops_seek(void *_stream, opus_int64 _offset, int _whence) {
-	SDL_RWops *rw = _stream;
-	return SDL_RWseek(rw, _offset, _whence) < 0 ? -1 : 0;
+	SDL_IOStream *rw = _stream;
+	return SDL_SeekIO(rw, _offset, _whence) < 0 ? -1 : 0;
 }
 
 static opus_int64 opus_rwops_tell(void *_stream) {
-	SDL_RWops *rw = _stream;
-	return SDL_RWtell(rw);
+	SDL_IOStream *rw = _stream;
+	return SDL_TellIO(rw);
 }
 
 static int opus_rwops_close(void *_stream) {
-	SDL_RWops *rw = _stream;
-	return SDL_RWclose(rw) < 0 ? EOF : 0;
+	SDL_IOStream *rw = _stream;
+	return !SDL_CloseIO(rw) ? EOF : 0;
 }
 
-bool astream_opus_open(AudioStream *stream, SDL_RWops *rw) {
+bool astream_opus_open(AudioStream *stream, SDL_IOStream *rw) {
 	uint8_t buf[128];
-	SDL_RWread(rw, buf, 1, sizeof(buf));
+	SDL_ReadIO(rw, buf, sizeof(buf));
 	int error = op_test(NULL, buf, sizeof(buf));
 
 	if(error != 0) {
@@ -193,6 +194,6 @@ bool astream_opus_open(AudioStream *stream, SDL_RWops *rw) {
 	return astream_opus_init(stream, opus);
 
 fail:
-	SDL_RWseek(rw, 0, RW_SEEK_SET);
+	SDL_SeekIO(rw, 0, SDL_IO_SEEK_SET);
 	return false;
 }

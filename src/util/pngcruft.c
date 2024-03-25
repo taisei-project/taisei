@@ -10,24 +10,24 @@
 #include "log.h"
 
 static void pngutil_rwops_write_data(png_structp png_ptr, png_bytep data, png_size_t length) {
-	SDL_RWops *out = png_get_io_ptr(png_ptr);
-	SDL_RWwrite(out, data, length, 1);
+	SDL_IOStream *out = png_get_io_ptr(png_ptr);
+	SDL_WriteIO(out, data, length);
 }
 
 static void pngutil_rwops_flush_data(png_structp png_ptr) {
-	// no flush operation in SDL_RWops
+	// no flush operation in SDL_IOStream
 }
 
 static void pngutil_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
-	SDL_RWops *out = png_get_io_ptr(png_ptr);
-	SDL_RWread(out, data, length, 1);
+	SDL_IOStream *out = png_get_io_ptr(png_ptr);
+	SDL_ReadIO(out, data, length);
 }
 
-void pngutil_init_rwops_read(png_structp png, SDL_RWops *rwops) {
+void pngutil_init_rwops_read(png_structp png, SDL_IOStream *rwops) {
 	png_set_read_fn(png, rwops, pngutil_rwops_read_data);
 }
 
-void pngutil_init_rwops_write(png_structp png, SDL_RWops *rwops) {
+void pngutil_init_rwops_write(png_structp png, SDL_IOStream *rwops) {
 	png_set_write_fn(png, rwops, pngutil_rwops_write_data, pngutil_rwops_flush_data);
 }
 

@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_keycode.h>
+#include <SDL3/SDL_keycode.h>
 
 /*
 	Define these macros, then use CONFIGDEFS to expand them all for all config entries, or KEYDEFS for just keybindings.

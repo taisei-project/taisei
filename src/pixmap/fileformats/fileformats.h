@@ -9,14 +9,16 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "../pixmap.h"
 
 typedef struct PixmapFileFormatHandler {
-	bool (*probe)(SDL_RWops *stream);
-	bool (*load)(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format);
-	bool (*save)(SDL_RWops *stream, const Pixmap *pixmap, const PixmapSaveOptions *opts);
+	bool (*probe)(SDL_IOStream *stream);
+	bool (*load)(SDL_IOStream *stream, Pixmap *pixmap,
+		     PixmapFormat preferred_format);
+	bool (*save)(SDL_IOStream *stream, const Pixmap *pixmap,
+		     const PixmapSaveOptions *opts);
 	const char **filename_exts;
 	const char *name;
 } PixmapFileFormatHandler;

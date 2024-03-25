@@ -51,31 +51,12 @@ static void texture_loader_basisu_tls_destructor(void *tc) {
 }
 
 static basist_transcoder *texture_loader_basisu_get_transcoder(void) {
-	static SDL_SpinLock lock;
-	static SDL_TLSID tls;
-	static basist_transcoder *fallback;
+	static SDL_TLSID tls = { 0 };
+	static basist_transcoder *fallback = NULL;
 
-	if(UNLIKELY(fallback)) {
-		return fallback;
-	}
+	basist_transcoder *tc = SDL_GetTLS(&tls) ?: fallback;
 
-	if(UNLIKELY(!tls)) {
-		SDL_AtomicLock(&lock);
-		if(!tls) {
-			tls = SDL_TLSCreate();
-		}
-		SDL_AtomicUnlock(&lock);
-	}
-
-	basist_transcoder *tc;
-
-	if(LIKELY(tls)) {
-		tc = SDL_TLSGet(tls);
-	} else {
-		tc = fallback;
-	}
-
-	if(LIKELY(tc)) {
+	if(tc) {
 		return tc;
 	}
 
@@ -86,12 +67,11 @@ static basist_transcoder *texture_loader_basisu_get_transcoder(void) {
 		return NULL;
 	}
 
-	BASISU_DEBUG("Created Basis Universal transcoder %p for thread %p", (void*)tc, (void*)SDL_ThreadID());
+	BASISU_DEBUG("Created Basis Universal transcoder %p for thread %p", (void*)tc,
+		     (void*) SDL_GetCurrentThreadID());
 
-	if(LIKELY(tls)) {
-		SDL_TLSSet(tls, tc, texture_loader_basisu_tls_destructor);
-	} else {
-		// This "leaks"; I don't care. The allocation should only happen once.
+	if(!SDL_SetTLS(&tls, tc, texture_loader_basisu_tls_destructor)) {
+		// FIXME: this is never destroyed, but should be ok since it's created only once.
 		fallback = tc;
 	}
 
@@ -398,7 +378,8 @@ static void texture_loader_basisu_failed(TextureLoadData *ld, struct basisu_load
 	texture_loader_failed(ld);
 }
 
-static char *read_basis_file(SDL_RWops *rw, size_t *file_size, size_t hash_size, char hash[hash_size]) {
+static char *read_basis_file(SDL_IOStream *rw, size_t *file_size,
+			     size_t hash_size, char hash[hash_size]) {
 	assert(hash_size >= BASISU_HASH_SIZE);
 
 	SHA256State *sha256 = sha256_new();
@@ -407,7 +388,7 @@ static char *read_basis_file(SDL_RWops *rw, size_t *file_size, size_t hash_size,
 
 	if(LIKELY(rw)) {
 		buf = SDL_RWreadAll(rw, file_size, INT32_MAX);
-		SDL_RWclose(rw);
+		SDL_CloseIO(rw);
 	}
 
 	if(UNLIKELY(!buf)) {
@@ -744,7 +725,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 	const char *ctx = ld->st->name;
 	const char *basis_file = ld->src_paths.main;
 
-	SDL_RWops *rw_in = res_open_file(ld->st, basis_file, VFS_MODE_READ);
+	SDL_IOStream *rw_in = res_open_file(ld->st, basis_file, VFS_MODE_READ);
 
 	if(!UNLIKELY(rw_in)) {
 		log_error("%s: VFS error: %s", ctx, vfs_get_error());
@@ -754,7 +735,7 @@ void texture_loader_basisu(TextureLoadData *ld) {
 
 	size_t filesize;
 	bld.filebuf = read_basis_file(rw_in, &filesize, sizeof(bld.basis_hash), bld.basis_hash);
-	SDL_RWclose(rw_in);
+	SDL_CloseIO(rw_in);
 
 	if(UNLIKELY(!bld.filebuf)) {
 		log_error("%s: Read error: %s", basis_file, SDL_GetError());

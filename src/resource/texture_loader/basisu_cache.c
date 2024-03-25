@@ -67,7 +67,7 @@ bool texture_loader_basisu_load_cached(
 		return false;
 	}
 
-	SDL_RWops *rw = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -77,7 +77,7 @@ bool texture_loader_basisu_load_cached(
 	rw = SDL_RWWrapZstdReader(rw, true);
 
 	bool deserialize_ok = pixmap_load_stream(rw, PIXMAP_FILEFORMAT_INTERNAL, out_pixmap, 0);
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(!deserialize_ok) {
 		log_error("%s: Failed to deserialize cached pixmap", path);
@@ -170,7 +170,7 @@ bool texture_loader_basisu_cache(
 		return false;
 	}
 
-	SDL_RWops *rw = vfs_open(path, VFS_MODE_WRITE);
+	SDL_IOStream *rw = vfs_open(path, VFS_MODE_WRITE);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -182,7 +182,7 @@ bool texture_loader_basisu_cache(
 	PixmapSaveOptions opts = PIXMAP_DEFAULT_SAVE_OPTIONS;
 	opts.file_format = PIXMAP_FILEFORMAT_INTERNAL;
 	bool serialize_ok = pixmap_save_stream(rw, pixmap, &opts);
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(!serialize_ok) {
 		log_error("%s: Failed to serialize pixmap", path);

@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 // XXX: this header trips some of these deprecation warnings; include it early as a workaround
-#include <SDL_cpuinfo.h>
+#include <SDL3/SDL_cpuinfo.h>
 
 //
 // safeguards against some dangerous or otherwise undesirable practices
@@ -25,7 +25,7 @@ PRAGMA(GCC diagnostic ignored "-Wstrict-prototypes")
 PRAGMA(GCC diagnostic ignored "-Wignored-attributes")
 
 #undef fopen
-attr_deprecated("Use vfs_open or SDL_RWFromFile instead")
+attr_deprecated("Use vfs_open or SDL_IOFromFile instead")
 FILE* fopen();
 
 #undef strncat
@@ -49,7 +49,7 @@ attr_deprecated("Use log_info instead")
 int printf(const char*, ...);
 
 #undef fprintf
-attr_deprecated("Use log_warn or log_error instead (or SDL_RWops if you want to write to a file)")
+attr_deprecated("Use log_warn or log_error instead (or SDL_IOStream if you want to write to a file)")
 int fprintf(FILE*, const char*, ...);
 
 #undef strtok

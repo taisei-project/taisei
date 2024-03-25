@@ -163,7 +163,7 @@ bool vfs_node_mkdir(VFSNode *parent, const char *subdir) {
 	return parent->funcs->mkdir(parent, subdir);
 }
 
-SDL_RWops *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
+SDL_IOStream *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 	assert(filenode->funcs != NULL);
 
 	if(filenode->funcs->open == NULL) {
@@ -171,7 +171,7 @@ SDL_RWops *vfs_node_open(VFSNode *filenode, VFSOpenMode mode) {
 		return NULL;
 	}
 
-	SDL_RWops *stream = filenode->funcs->open(filenode, mode);
+	SDL_IOStream *stream = filenode->funcs->open(filenode, mode);
 
 	if(!stream) {
 		return NULL;

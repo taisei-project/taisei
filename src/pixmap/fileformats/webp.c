@@ -8,16 +8,15 @@
 
 #include "fileformats.h"
 #include "log.h"
-#include "util/io.h"
 
 #include <webp/decode.h>
 
-static bool px_webp_probe(SDL_RWops *stream) {
+static bool px_webp_probe(SDL_IOStream *stream) {
 	// "RIFF", file size (4 bytes), "WEBP", ("VP8 " | "VP8L" | "VP8X")
 	// https://developers.google.com/speed/webp/docs/riff_container
 
 	uchar header[16] = { 0 };
-	SDL_RWread(stream, header, sizeof(header), 1);
+	SDL_ReadIO(stream, header, sizeof(header));
 
 	return (
 		!memcmp(header, "RIFF", 4) &&
@@ -48,10 +47,9 @@ static inline const char* webp_error_str(VP8StatusCode code)  {
 	return "Unknown error";
 }
 
-static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
+static bool px_webp_load(SDL_IOStream *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
 	size_t webp_bufsize;
-	// 64MB ought to be enough for anybody
-	uint8_t *webp_buffer = SDL_RWreadAll(stream, &webp_bufsize, 1024 * 1024 * 64);
+	uint8_t *webp_buffer = SDL_LoadFile_IO(stream, &webp_bufsize, false);
 
 	if(UNLIKELY(!webp_buffer)) {
 		log_sdl_error(LOG_ERROR, "SDL_RWreadAll");
@@ -62,7 +60,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 	VP8StatusCode status = WebPGetFeatures(webp_buffer, webp_bufsize, &features);
 
 	if(UNLIKELY(status != VP8_STATUS_OK)) {
-		mem_free(webp_buffer);
+		SDL_free(webp_buffer);
 		log_error("WebPGetFeatures() failed: %s", webp_error_str(status));
 		return false;
 	}
@@ -83,7 +81,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 	size_t scanline_size = pixel_size * pixmap->width;
 
 	if(UNLIKELY(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / scanline_size)) {
-		mem_free(webp_buffer);
+		SDL_free(webp_buffer);
 		log_error("The image is too large");
 		return false;
 	}
@@ -116,7 +114,7 @@ static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferr
 		}
 	}
 
-	mem_free(webp_buffer);
+	SDL_free(webp_buffer);
 
 	if(UNLIKELY(!ok)) {
 		mem_free(pixmap->data.untyped);

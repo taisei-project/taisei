@@ -18,14 +18,14 @@
 #include "util/strbuf.h"
 #include "util/stringops.h"
 
-#include <SDL_bits.h>
-#include <SDL_mutex.h>
+#include <SDL3/SDL_bits.h>
+#include <SDL3/SDL_mutex.h>
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
 
 	FormatterObj formatter;
-	SDL_RWops *out;
+	SDL_IOStream *out;
 	uint levels;
 } Logger;
 
@@ -46,7 +46,7 @@ typedef struct LogFilterEntry {
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
-	SDL_mutex *mutex;
+	SDL_Mutex *mutex;
 	uint enabled_log_levels;
 
 	struct {
@@ -56,8 +56,8 @@ static struct {
 
 	struct {
 		Thread *thread;
-		SDL_mutex *mutex;
-		SDL_cond *cond;
+		SDL_Mutex *mutex;
+		SDL_Condition *cond;
 		LIST_ANCHOR(QueuedLogEntry) queue;
 		int shutdown;
 	} queue;
@@ -261,7 +261,7 @@ static void log_dispatch(LogEntry *entry) {
 			strbuf_clear(fmt_buf);
 			size_t slen = l->formatter.format(&l->formatter, fmt_buf, entry);
 			assert_nolog(fmt_buf->buf_size >= slen);
-			SDL_RWwrite(l->out, fmt_buf->start, 1, slen);
+			SDL_WriteIO(l->out, fmt_buf->start, slen);
 		}
 	}
 
@@ -280,7 +280,7 @@ static void log_dispatch_async(LogEntry *entry) {
 			qle->e.message = qle->message;
 			SDL_LockMutex(logging.queue.mutex);
 			alist_append(&logging.queue.queue, qle);
-			SDL_CondBroadcast(logging.queue.cond);
+			SDL_BroadcastCondition(logging.queue.cond);
 			SDL_UnlockMutex(logging.queue.mutex);
 			break;
 		}
@@ -384,20 +384,20 @@ static void *delete_logger(List **loggers, List *logger, void *arg) {
 	}
 
 	SDL_RWsync(l->out);
-	SDL_RWclose(l->out);
+	SDL_CloseIO(l->out);
 	mem_free(list_unlink(loggers, logger));
 
 	return NULL;
 }
 
 static void *log_queue_thread(void *a) {
-	SDL_mutex *mtx = logging.queue.mutex;
-	SDL_cond *cond = logging.queue.cond;
+	SDL_Mutex *mtx = logging.queue.mutex;
+	SDL_Condition *cond = logging.queue.cond;
 
 	SDL_LockMutex(mtx);
 
 	for(;;) {
-		SDL_CondWait(cond, mtx);
+		SDL_WaitCondition(cond, mtx);
 		QueuedLogEntry *qle;
 
 		while((qle = alist_pop(&logging.queue.queue)) && logging.queue.shutdown < 2) {
@@ -407,7 +407,7 @@ static void *log_queue_thread(void *a) {
 			SDL_LockMutex(mtx);
 		}
 
-		SDL_CondBroadcast(cond);
+		SDL_BroadcastCondition(cond);
 
 		if(logging.queue.shutdown) {
 			break;
@@ -423,8 +423,8 @@ static void log_queue_init(void) {
 		return;
 	}
 
-	if(!(logging.queue.cond = SDL_CreateCond())) {
-		log_sdl_error(LOG_ERROR, "SDL_CreateCond");
+	if(!(logging.queue.cond = SDL_CreateCondition())) {
+		log_sdl_error(LOG_ERROR, "SDL_CreateCondition");
 		return;
 	}
 
@@ -442,19 +442,18 @@ static void log_queue_init(void) {
 }
 
 static void log_queue_shutdown_internal(bool force_sync) {
-	if(!logging.queue.thread) {
-		return;
+	if(logging.queue.thread) {
+		SDL_LockMutex(logging.queue.mutex);
+		logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
+		SDL_BroadcastCondition(logging.queue.cond);
+		SDL_UnlockMutex(logging.queue.mutex);
+		thread_wait(logging.queue.thread);
+		logging.queue.thread = NULL;
 	}
 
-	SDL_LockMutex(logging.queue.mutex);
-	logging.queue.shutdown = env_get("TAISEI_LOG_ASYNC_FAST_SHUTDOWN", false) && !force_sync ? 2 : 1;
-	SDL_CondBroadcast(logging.queue.cond);
-	SDL_UnlockMutex(logging.queue.mutex);
-	thread_wait(logging.queue.thread);
-	logging.queue.thread = NULL;
 	SDL_DestroyMutex(logging.queue.mutex);
 	logging.queue.mutex = NULL;
-	SDL_DestroyCond(logging.queue.cond);
+	SDL_DestroyCondition(logging.queue.cond);
 	logging.queue.cond = NULL;
 }
 
@@ -491,7 +490,7 @@ void log_sync(bool flush) {
 	SDL_LockMutex(logging.queue.mutex);
 
 	while(logging.queue.queue.first) {
-		SDL_CondWait(logging.queue.cond, logging.queue.mutex);
+		SDL_WaitCondition(logging.queue.cond, logging.queue.mutex);
 	}
 
 	if(flush) {
@@ -505,13 +504,14 @@ bool log_initialized(void) {
 	return logging.initialized;
 }
 
-void log_add_output(LogLevel levels, SDL_RWops *output, Formatter *formatter) {
+void log_add_output(LogLevel levels, SDL_IOStream *output,
+		    Formatter *formatter) {
 	if(!output) {
 		return;
 	}
 
 	if(!(levels & logging.enabled_log_levels)) {
-		SDL_RWclose(output);
+		SDL_CloseIO(output);
 		return;
 	}
 
@@ -683,25 +683,33 @@ static void log_fmtconsole_free(FormatterObj *fobj) {
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #include <unistd.h>
 
-static bool output_supports_ansi_sequences(const SDL_RWops *output) {
+static bool output_supports_ansi_sequences(SDL_IOStream *output) {
 	if(!strcmp(env_get("TERM", "dumb"), "dumb")) {
 		return false;
 	}
 
-	if(output->type != SDL_RWOPS_STDFILE) {
+	SDL_PropertiesID props = SDL_GetIOProperties(output);
+
+	if(!props) {
 		return false;
 	}
 
-	return isatty(fileno(output->hidden.stdio.fp));
+	FILE *fp = SDL_GetPointerProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, NULL);
+
+	if(!fp) {
+		return false;
+	}
+
+	return isatty(fileno(fp));
 }
 #else
-static bool output_supports_ansi_sequences(const SDL_RWops *output) {
+static bool output_supports_ansi_sequences(SDL_IOStream *output) {
 	// TODO: Handle it for windows. The windows console supports ANSI escapes, but requires special setup.
 	return false;
 }
 #endif
 
-void log_formatter_console(FormatterObj *obj, const SDL_RWops *output) {
+void log_formatter_console(FormatterObj *obj, SDL_IOStream *output) {
 	obj->data = ALLOC(ConsoleFormatterData, {
 		.cfg = {
 			.color = (
@@ -752,7 +760,7 @@ static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *en
 	return len;
 }
 
-void log_formatter_file(FormatterObj *obj, const SDL_RWops *output) {
+void log_formatter_file(FormatterObj *obj, SDL_IOStream *output) {
 	obj->format = log_fmtfile_format;
 }
 

@@ -9,7 +9,7 @@
 #include "crap.h"
 #include "assert.h"
 
-#include <SDL_thread.h>
+#include <SDL3/SDL_thread.h>
 
 static_assert(sizeof(void*) == sizeof(void (*)(void)), "Can't store function pointers in void* :(");
 

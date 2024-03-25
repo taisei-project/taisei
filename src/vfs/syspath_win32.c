@@ -11,7 +11,7 @@
 
 #include <windows.h>
 #include <shlwapi.h>
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;
@@ -93,10 +93,10 @@ static VFSInfo vfs_syspath_query(VFSNode *node) {
 	return i;
 }
 
-static SDL_RWops *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_IOStream *vfs_syspath_open(VFSNode *node, VFSOpenMode mode) {
 	auto pnode = VFS_NODE_CAST(VFSSysPathNode, node);
 	mode &= VFS_MODE_RWMASK;
-	SDL_RWops *rwops = SDL_RWFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
+	SDL_IOStream *rwops = SDL_IOFromFile(pnode->path, mode == VFS_MODE_WRITE ? "w" : "r");
 
 	if(!rwops) {
 		vfs_set_error_from_sdl();

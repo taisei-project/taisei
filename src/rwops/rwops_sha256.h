@@ -9,8 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include "util/sha256.h"
 
-SDL_RWops *SDL_RWWrapSHA256(SDL_RWops *src, SHA256State *sha256, bool autoclose);
+SDL_IOStream *SDL_RWWrapSHA256(SDL_IOStream *src, SHA256State *sha256,
+			       bool autoclose);

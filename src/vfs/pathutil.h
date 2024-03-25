@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL_platform.h>
+#include <SDL3/SDL_platform.h>
 
 #define VFS_PATH_SEPARATOR_STR "/"
 #define VFS_PATH_SEPARATOR VFS_PATH_SEPARATOR_STR[0]

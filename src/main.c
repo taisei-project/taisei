@@ -25,6 +25,7 @@
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
+#include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "stageobjects.h"
 #include "taskmanager.h"
@@ -39,6 +40,9 @@
 #include <locale.h>
 #include <png.h>
 #include <zlib.h>
+
+#undef UNICODE
+#include <SDL3/SDL_main.h>
 
 static bool watchdog_handler(SDL_Event *evt, void *arg) {
 	assert(evt->type == MAKE_TAISEI_EVENT(TE_WATCHDOG));
@@ -118,7 +122,7 @@ static void init_log_file(void) {
 }
 
 static void init_log_filter(void) {
-	SDL_RWops *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
+	SDL_IOStream *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
 
 	if(!rw) {
 		return;
@@ -139,7 +143,7 @@ static void init_log_filter(void) {
 		log_add_filter_string(p);
 	}
 
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 }
 
 static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -156,16 +160,17 @@ static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priori
 		case SDL_LOG_CATEGORY_RENDER:      cat_str = "Render"; break;
 		case SDL_LOG_CATEGORY_INPUT:       cat_str = "Input"; break;
 		case SDL_LOG_CATEGORY_TEST:        cat_str = "Test"; break;
+		case SDL_LOG_CATEGORY_GPU:         cat_str = "GPU"; break;
 		default:                           cat_str = "Unknown"; break;
 	}
 
 	switch(priority) {
 		case SDL_LOG_PRIORITY_VERBOSE:  prio_str = "Verbose"; break;
 		case SDL_LOG_PRIORITY_DEBUG:    prio_str = "Debug"; break;
-		case SDL_LOG_PRIORITY_INFO:     prio_str = "Debug"; lvl = LOG_INFO; break;
-		case SDL_LOG_PRIORITY_WARN:     prio_str = "Debug"; lvl = LOG_WARN; break;
-		case SDL_LOG_PRIORITY_ERROR:    prio_str = "Debug"; lvl = LOG_ERROR; break;
-		case SDL_LOG_PRIORITY_CRITICAL: prio_str = "Debug"; lvl = LOG_ERROR; break;
+		case SDL_LOG_PRIORITY_INFO:     prio_str = "Info"; lvl = LOG_INFO; break;
+		case SDL_LOG_PRIORITY_WARN:     prio_str = "Warn"; lvl = LOG_WARN; break;
+		case SDL_LOG_PRIORITY_ERROR:    prio_str = "Error"; lvl = LOG_ERROR; break;
+		case SDL_LOG_PRIORITY_CRITICAL: prio_str = "Critical"; lvl = LOG_ERROR; break;
 		default:                        prio_str = "Unknown"; break;
 	}
 
@@ -175,7 +180,7 @@ static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priori
 static void init_sdl(void) {
 	mem_install_sdl_callbacks();
 
-	if(SDL_Init(SDL_INIT_EVENTS) < 0) {
+	if(!SDL_Init(SDL_INIT_EVENTS)) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
 	}
 
@@ -186,18 +191,19 @@ static void init_sdl(void) {
 	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
 
 	if(sdl_logprio >= SDL_LOG_PRIORITY_VERBOSE) {
-		SDL_LogSetAllPriority(sdl_logprio);
-		SDL_LogSetOutputFunction(sdl_log, NULL);
+		SDL_SetLogPriorities(sdl_logprio);
+		SDL_SetLogOutputFunction(sdl_log, NULL);
 	}
 
 	log_info("SDL initialized");
 
-	SDL_version v;
-	SDL_VERSION(&v);
-	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
+	int v = SDL_VERSION;
+	log_info("Compiled against SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
 
-	SDL_GetVersion(&v);
-	log_info("Using SDL %u.%u.%u", v.major, v.minor, v.patch);
+	v = SDL_GetVersion();
+	log_info("Using SDL %u.%u.%u",
+		SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
 }
 
 static void log_lib_versions(void) {
@@ -209,14 +215,12 @@ static void log_lib_versions(void) {
 }
 
 static void log_system_specs(void) {
-	log_info("CPU count: %d", SDL_GetCPUCount());
+	log_info("CPU count: %d", SDL_GetNumLogicalCPUCores());
 	// log_info("CPU type: %s", SDL_GetCPUType());
 	// log_info("CPU name: %s", SDL_GetCPUName());
 	log_info("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	log_info("RDTSC: %d", SDL_HasRDTSC());
 	log_info("Altivec: %d", SDL_HasAltiVec());
 	log_info("MMX: %d", SDL_HasMMX());
-	log_info("3DNow: %d", SDL_Has3DNow());
 	log_info("SSE: %d", SDL_HasSSE());
 	log_info("SSE2: %d", SDL_HasSSE2());
 	log_info("SSE3: %d", SDL_HasSSE3());
@@ -224,9 +228,7 @@ static void log_system_specs(void) {
 	log_info("SSE4.2: %d", SDL_HasSSE42());
 	log_info("AVX: %d", SDL_HasAVX());
 	log_info("AVX2: %d", SDL_HasAVX2());
-#if SDL_VERSION_ATLEAST(2, 0, 6)
 	log_info("NEON: %d", SDL_HasNEON());
-#endif
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
 }
 
@@ -238,7 +240,7 @@ typedef struct MainContext {
 	CLIAction cli;
 	Replay *replay_in;
 	Replay *replay_out;
-	SDL_RWops *replay_out_stream;
+	SDL_IOStream *replay_out_stream;
 	ResourceGroup rg;
 	int replay_idx;
 	uchar headless : 1;
@@ -280,7 +282,7 @@ static noreturn void main_quit(MainContext *ctx, int status) {
 			}
 		}
 
-		SDL_RWclose(ctx->replay_out_stream);
+		SDL_CloseIO(ctx->replay_out_stream);
 		ctx->replay_out_stream = NULL;
 	}
 
@@ -352,10 +354,10 @@ int main(int argc, char **argv) {
 		}
 
 		if(ctx->cli.out_replay != NULL) {
-			ctx->replay_out_stream = SDL_RWFromFile(ctx->cli.out_replay, "wb");
+			ctx->replay_out_stream = SDL_IOFromFile(ctx->cli.out_replay, "wb");
 
 			if(!ctx->replay_out_stream) {
-				log_sdl_error(LOG_FATAL, "SDL_RWFromFile");
+				log_sdl_error(LOG_FATAL, "SDL_IOFromFile");
 			}
 
 			ctx->replay_out = alloc_replay();
@@ -589,7 +591,7 @@ static void main_replay(MainContext *mctx) {
 
 static void main_vfstree(CallChainResult ccr) {
 	MainContext *mctx = ccr.ctx;
-	SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
+	SDL_IOStream *rwops = SDL_RWFromFP(stdout, false);
 	int status = 0;
 
 	if(!rwops) {
@@ -601,7 +603,7 @@ static void main_vfstree(CallChainResult ccr) {
 		status = 2;
 	}
 
-	SDL_RWclose(rwops);
+	SDL_CloseIO(rwops);
 	vfs_shutdown();
 	main_quit(mctx, status);
 }

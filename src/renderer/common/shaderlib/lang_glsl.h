@@ -11,7 +11,7 @@
 
 #include "defs.h"
 
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,
@@ -39,7 +39,7 @@ typedef struct ShaderSourceMetaGLSL {
 	GLSLAttribute *attributes;
 } ShaderSourceMetaGLSL;
 
-typedef SDL_RWops *(*GLSLSourceOpenCallback)(const char *path, void *userdata);
+typedef SDL_IOStream *(*GLSLSourceOpenCallback)(const char *path, void *userdata);
 
 typedef struct GLSLSourceOptions {
 	GLSLVersion version;

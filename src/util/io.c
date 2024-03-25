@@ -18,13 +18,26 @@
 #include <unistd.h>
 #endif
 
-char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
+char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) {
 	char c, *ptr = buf, *end = buf + bufsize - 1;
 	assert(end > ptr);
 
-	while((c = SDL_ReadU8(rwops)) && ptr <= end) {
-		if((*ptr++ = c) == '\n')
+	while(ptr <= end) {
+		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
+			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			}
+
 			break;
+		}
+
+		if(!c) {
+			break;
+		}
+
+		if((*ptr++ = c) == '\n') {
+			break;
+		}
 	}
 
 	if(ptr == buf)
@@ -40,11 +53,23 @@ char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) {
 	return buf;
 }
 
-char *SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) {
+char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
 	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
 	assert(end >= ptr);
 
-	while((c = SDL_ReadU8(rwops))) {
+	while(true) {
+		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
+			if(SDL_GetIOStatus(rwops) != SDL_IO_STATUS_EOF) {
+				log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			}
+
+			break;
+		}
+
+		if(!c) {
+			break;
+		}
+
 		*ptr++ = c;
 
 		if(ptr > end) {
@@ -70,13 +95,14 @@ char *SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) {
 	return *buf;
 }
 
-size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) {
+size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) {
 	va_list args;
 	va_start(args, fmt);
 	char *str = vstrfmt(fmt, args);
 	va_end(args);
 
-	size_t ret = SDL_RWwrite(rwops, str, 1, strlen(str));
+	size_t ret = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
+		SDL_WriteIO(rwops, str, strlen(str));
 	mem_free(str);
 
 	return ret;
@@ -100,7 +126,8 @@ char *try_path(const char *prefix, const char *name, const char *ext) {
 	return NULL;
 }
 
-static void *SDL_RWreadAll_known_size(SDL_RWops *rwops, size_t file_size, size_t *out_size) {
+static void *SDL_RWreadAll_known_size(SDL_IOStream *rwops, size_t file_size,
+				      size_t *out_size) {
 	char *start = mem_alloc(file_size);
 	char *end = start + file_size;
 	char *pbuf = start;
@@ -108,7 +135,8 @@ static void *SDL_RWreadAll_known_size(SDL_RWops *rwops, size_t file_size, size_t
 	assert(end >= start);
 
 	for(;;) {
-		size_t read = SDL_RWread(rwops, pbuf, 1, end - pbuf);
+		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
+			SDL_ReadIO(rwops, pbuf, (end - pbuf));
 		assert(read <= end - pbuf);
 
 		if(read == 0) {
@@ -120,8 +148,8 @@ static void *SDL_RWreadAll_known_size(SDL_RWops *rwops, size_t file_size, size_t
 	}
 }
 
-void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
-	ssize_t file_size = SDL_RWsize(rwops);
+void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) {
+	int64_t file_size = SDL_GetIOSize(rwops);
 
 	if(file_size >= 0) {
 		if(max_size && file_size > max_size) {
@@ -142,29 +170,31 @@ void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
 	static const size_t chunk_size = BUFSIZ;
 
 	void *buf;
-	SDL_RWops *autobuf = NOT_NULL(SDL_RWAutoBuffer(&buf, chunk_size));
+	SDL_IOStream *autobuf = NOT_NULL(SDL_RWAutoBuffer(&buf, chunk_size));
 	void *chunk = mem_alloc(chunk_size);
 
 	size_t total_size = 0;
 
 	for(;;) {
-		size_t read = SDL_RWread(rwops, chunk, 1, chunk_size);
+		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
+			SDL_ReadIO(rwops, chunk, chunk_size);
 
 		if(read == 0) {
 			mem_free(chunk);
-			SDL_RWclose(rwops);
+			SDL_CloseIO(rwops);
 			buf = memdup(buf, total_size);
-			SDL_RWclose(autobuf);
+			SDL_CloseIO(autobuf);
 			*out_size = total_size;
 			return buf;
 		}
 
-		size_t write = SDL_RWwrite(autobuf, chunk, 1, chunk_size);
+		size_t write = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
+			SDL_WriteIO(autobuf, chunk, chunk_size);
 
 		if(UNLIKELY(write != read)) {
 			mem_free(chunk);
-			SDL_RWclose(rwops);
-			SDL_RWclose(autobuf);
+			SDL_CloseIO(rwops);
+			SDL_CloseIO(autobuf);
 			return NULL;
 		}
 
@@ -173,14 +203,14 @@ void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) {
 		if(max_size && UNLIKELY(total_size > max_size)) {
 			SDL_SetError("File is too large (%zu bytes read so far; max is %zu)", total_size, max_size);
 			mem_free(chunk);
-			SDL_RWclose(rwops);
-			SDL_RWclose(autobuf);
+			SDL_CloseIO(rwops);
+			SDL_CloseIO(autobuf);
 			return NULL;
 		}
 	}
 }
 
-void SDL_RWsync(SDL_RWops *rwops) {
+void SDL_RWsync(SDL_IOStream *rwops) {
 	#if HAVE_STDIO_H
 	if(rwops->type == SDL_RWOPS_STDFILE) {
 		FILE *fp = rwops->hidden.stdio.fp;

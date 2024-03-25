@@ -172,7 +172,7 @@ static bool vfs_union_mount(VFSNode *node, const char *mountpoint, VFSNode *moun
 	return true;
 }
 
-static SDL_RWops *vfs_union_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_IOStream *vfs_union_open(VFSNode *node, VFSOpenMode mode) {
 	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
 	return primary ? vfs_node_open(primary, mode) : NULL;
 }

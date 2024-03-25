@@ -74,7 +74,7 @@ static const char *vfs_zippath_iter(VFSNode *node, void **opaque) {
 
 #define vfs_zippath_iter_stop vfs_zipfile_iter_stop
 
-static SDL_RWops *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
+static SDL_IOStream *vfs_zippath_open(VFSNode *node, VFSOpenMode mode) {
 	auto zpnode = VFS_NODE_CAST(VFSZipPathNode, node);
 
 	if(mode & VFS_MODE_WRITE) {

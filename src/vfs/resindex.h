@@ -13,7 +13,7 @@
 
 typedef struct VFSResIndexFSContext VFSResIndexFSContext;
 
-typedef SDL_RWops *(*VFSResIndexFSOpenProc)(VFSResIndexFSContext *ctx, const char *content_id, VFSOpenMode mode);
+typedef SDL_IOStream *(*VFSResIndexFSOpenProc)(VFSResIndexFSContext *ctx, const char *content_id, VFSOpenMode mode);
 typedef void (*VFSResIndexFSFreeProc)(VFSResIndexFSContext *ctx);
 
 typedef struct VFSResIndexFSContext {

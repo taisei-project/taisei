@@ -69,7 +69,8 @@ uint32_t replay_struct_stage_metadata_checksum(ReplayStage *stg, uint16_t versio
 	return cs;
 }
 
-SDL_RWops *replay_wrap_stream_compress(uint16_t version, SDL_RWops *rw, bool autoclose) {
+SDL_IOStream *replay_wrap_stream_compress(uint16_t version, SDL_IOStream *rw,
+					  bool autoclose) {
 	if((version & ~REPLAY_VERSION_COMPRESSION_BIT) >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
 		return SDL_RWWrapZstdWriter(rw, 22, autoclose);
 	} else {
@@ -78,7 +79,8 @@ SDL_RWops *replay_wrap_stream_compress(uint16_t version, SDL_RWops *rw, bool aut
 	}
 }
 
-SDL_RWops *replay_wrap_stream_decompress(uint16_t version, SDL_RWops *rw, bool autoclose) {
+SDL_IOStream *replay_wrap_stream_decompress(uint16_t version,
+					    SDL_IOStream *rw, bool autoclose) {
 	if((version & ~REPLAY_VERSION_COMPRESSION_BIT) >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
 		return SDL_RWWrapZstdReader(rw, autoclose);
 	} else {

@@ -11,7 +11,7 @@
 #include "log.h"
 
 const char *env_get_string(const char *var, const char *fallback) {
-	const char *val = SDL_getenv(var);
+	const char *val = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), var);
 
 	if(val == NULL) {
 		return fallback;
@@ -21,7 +21,7 @@ const char *env_get_string(const char *var, const char *fallback) {
 }
 
 const char *env_get_string_nonempty(const char *var, const char *fallback) {
-	const char *val = SDL_getenv(var);
+	const char *val = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), var);
 
 	if(!val || !*val) {
 		return fallback;
@@ -32,11 +32,11 @@ const char *env_get_string_nonempty(const char *var, const char *fallback) {
 
 void env_set_string(const char *var, const char *val, bool override) {
 	log_debug("%s=%s (%i)", var, val, override);
-	SDL_setenv(var, val, override);
+	SDL_SetEnvironmentVariable(SDL_GetEnvironment(), var, val, override);
 }
 
 int64_t env_get_int(const char *var, int64_t fallback) {
-	const char *val = SDL_getenv(var);
+	const char *val = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), var);
 
 	if(val == NULL) {
 		return fallback;
@@ -52,7 +52,7 @@ void env_set_int(const char *var, int64_t val, bool override) {
 }
 
 double env_get_double(const char *var, double fallback) {
-	const char* val = SDL_getenv(var);
+	const char* val = SDL_GetEnvironmentVariable(SDL_GetEnvironment(), var);
 
 	if(val == NULL) {
 		return fallback;

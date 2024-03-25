@@ -11,7 +11,7 @@
 
 #include "util/strbuf.h"
 
-#include <SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 #ifdef TAISEI_BUILDCONF_DEBUG
 	#define TAISEI_VERSION_BUILD_TYPE_0 "debug"
@@ -82,5 +82,5 @@ typedef enum {
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level);
 char *taisei_version_tostring(TaiseiVersion *version);
 void taisei_version_tostrbuf(StringBuffer *sbuf, TaiseiVersion *version);
-size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
-size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);
+size_t taisei_version_read(SDL_IOStream *rwops, TaiseiVersion *version);
+size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version);

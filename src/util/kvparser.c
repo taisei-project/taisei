@@ -13,7 +13,8 @@
 #include "stringops.h"
 #include "vfs/public.h"
 
-bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {
+bool parse_keyvalue_stream_cb(SDL_IOStream *strm, KVCallback callback,
+			      void *data) {
 	static const char separator[] = "= ";
 
 	size_t bufsize = 256;
@@ -73,7 +74,7 @@ bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) 
 }
 
 bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *data) {
-	SDL_RWops *strm = vfs_open(filename, VFS_MODE_READ);
+	SDL_IOStream *strm = vfs_open(filename, VFS_MODE_READ);
 
 	if(!strm) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -81,7 +82,7 @@ bool parse_keyvalue_file_cb(const char *filename, KVCallback callback, void *dat
 	}
 
 	bool status = parse_keyvalue_stream_cb(strm, callback, data);
-	SDL_RWclose(strm);
+	SDL_CloseIO(strm);
 	return status;
 }
 
@@ -91,7 +92,7 @@ static bool kvcallback_hashtable(const char *key, const char *val, void *data) {
 	return true;
 }
 
-bool parse_keyvalue_stream(SDL_RWops *strm, ht_str2ptr_t *ht) {
+bool parse_keyvalue_stream(SDL_IOStream *strm, ht_str2ptr_t *ht) {
 	return parse_keyvalue_stream_cb(strm, kvcallback_hashtable, ht);
 }
 
@@ -140,7 +141,7 @@ static bool kvcallback_spec(const char *key, const char *val, void *data) {
 	return true;
 }
 
-bool parse_keyvalue_stream_with_spec(SDL_RWops *strm, KVSpec *spec) {
+bool parse_keyvalue_stream_with_spec(SDL_IOStream *strm, KVSpec *spec) {
 	return parse_keyvalue_stream_cb(strm, kvcallback_spec, spec);
 }
 

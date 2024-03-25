@@ -76,7 +76,7 @@ static bool vfs_ro_mkdir(VFSNode *parent, const char *subdir) {
 	return false;
 }
 
-static SDL_RWops* vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
+static SDL_IOStream * vfs_ro_open(VFSNode *filenode, VFSOpenMode mode) {
 	if(mode & VFS_MODE_WRITE) {
 		vfs_set_error("Read-only filesystem");
 		return NULL;
