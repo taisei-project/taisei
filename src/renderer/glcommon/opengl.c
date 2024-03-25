@@ -329,6 +329,11 @@ static void glcommon_ext_clear_texture(void) {
 static void glcommon_ext_texture_norm16(void) {
 	EXT_FLAG(texture_norm16);
 
+	if(glext.issues.disable_norm16) {
+		EXT_MISSING();
+		return;
+	}
+
 	CHECK_CORE(!glext.version.is_es);
 
 	/*
@@ -692,15 +697,11 @@ static void detect_broken_intel_driver(void) {
 
 	mbdata.flags = SDL_MESSAGEBOX_WARNING;
 	mbdata.title = "Taisei Project";
-
-	char *msg = strfmt(
+	mbdata.message =
 		"Looks like you have a broken OpenGL driver.\n"
 		"Taisei will probably not work correctly, if at all.\n\n"
 		"Starting the game in ANGLE mode should fix the problem, but may introduce slowdown.\n\n"
-		"Restart in ANGLE mode now? (If unsure, press YES)"
-	);
-
-	mbdata.message = msg;
+		"Restart in ANGLE mode now? (If unsure, press YES)";
 	mbdata.numbuttons = 3;
 	mbdata.buttons = (SDL_MessageBoxButtonData[]) {
 		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "Abort" },
@@ -709,7 +710,6 @@ static void detect_broken_intel_driver(void) {
 	};
 
 	int mbresult = SDL_ShowMessageBox(&mbdata, &button);
-	free(msg);
 
 	if(mbresult < 0) {
 		log_sdl_error(LOG_ERROR, "SDL_ShowMessageBox");
@@ -801,11 +801,28 @@ static const char *detect_slow_sampler_update(void) {
 	return NULL;
 }
 
+static const char *detect_broken_norm16(void) {
+	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
+	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
+
+	if(!strcmp(gl_vendor, "Mesa") && !strncmp(gl_renderer, "NV", 2)) {
+		return "Normalized 16bpc pixel formats are broken on nouveau";
+	}
+
+	return NULL;
+}
+
 static void glcommon_check_issues(void) {
 	glext.issues.avoid_sampler_uniform_updates = glcommon_check_workaround(
 		"avoid sampler uniform updates",
 		"TAISEI_GL_WORKAROUND_AVOID_SAMPLER_UNIFORM_UPDATES",
 		detect_slow_sampler_update
+	);
+
+	glext.issues.disable_norm16 = glcommon_check_workaround(
+		"disable normalized 16bpc pixel formats",
+		"TAISEI_GL_WORKAROUND_DISABLE_NORM16",
+		detect_broken_norm16
 	);
 }
 
@@ -861,8 +878,11 @@ void glcommon_check_capabilities(void) {
 
 #ifndef STATIC_GLES3
 	if(glcommon_check_extension("GL_ANGLE_request_extension")) {
-		PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE = (PFNGLREQUESTEXTENSIONANGLEPROC)load_gl_func("glRequestExtensionANGLE");
-		assert(glRequestExtensionANGLE != NULL);
+		union {
+			void (*fp);
+			PFNGLREQUESTEXTENSIONANGLEPROC glRequestExtensionANGLE;
+		} u = { load_gl_func("glRequestExtensionANGLE") };
+		assert(u.glRequestExtensionANGLE != NULL);
 
 		const char *src_string = (const char*)glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE);
 		char exts[strlen(src_string) + 1];
@@ -876,7 +896,7 @@ void glcommon_check_capabilities(void) {
 				continue;
 			}
 
-			glRequestExtensionANGLE(ext);
+			u.glRequestExtensionANGLE(ext);
 		}
 	}
 #endif
@@ -902,6 +922,8 @@ void glcommon_check_capabilities(void) {
 		log_info("%s", (char*)buf);
 		SDL_RWclose(writer);
 	}
+
+	glcommon_check_issues();
 
 	glcommon_ext_clear_texture();
 	glcommon_ext_color_buffer_float();
@@ -945,7 +967,6 @@ void glcommon_check_capabilities(void) {
 
 	glcommon_build_shader_lang_table();
 	glcommon_init_texture_formats();
-	glcommon_check_issues();
 }
 
 void glcommon_load_library(void) {

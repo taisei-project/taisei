@@ -11,6 +11,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
+#include FT_MODULE_H
 
 #include "font.h"
 #include "config.h"
@@ -30,6 +31,7 @@ static char *font_path(const char*);
 static bool check_font_path(const char*);
 static void load_font(ResourceLoadState *st);
 static void unload_font(void*);
+static bool transfer_font(void*, void*);
 
 ResourceHandler font_res_handler = {
 	.type = RES_FONT,
@@ -44,18 +46,28 @@ ResourceHandler font_res_handler = {
 		.check = check_font_path,
 		.load = load_font,
 		.unload = unload_font,
+		.transfer = transfer_font,
 	},
 };
-
-// Handy routines for converting from fixed point
-// From SDL_ttf
-#define FT_FLOOR(X) (((X) & -64) / 64)
-#define FT_CEIL(X)  ((((X) + 63) & -64) / 64)
 
 #undef FTERRORS_H_
 #define FT_ERRORDEF(e, v, s)  { e, s },
 #undef FT_ERROR_START_LIST
 #undef FT_ERROR_END_LIST
+
+#define FIXED_CONVERSION(ft_typename, func_typename, factor) \
+	attr_unused INLINE float func_typename##_to_float(ft_typename x) { \
+		return x * (1.0f / factor); \
+	} \
+	\
+	attr_unused INLINE ft_typename float_to_##func_typename(float x) { \
+		return roundf(x * factor); \
+	}
+
+FIXED_CONVERSION(FT_F26Dot6, f26dot6, 64.0f)
+FIXED_CONVERSION(FT_Fixed, f16dot16, 65536.0f)
+
+#define GLOBAL_RENDER_MODE FT_RENDER_MODE_NORMAL
 
 static const struct ft_error_def {
 	FT_Error    err_code;
@@ -65,7 +77,7 @@ static const struct ft_error_def {
 	{ 0, NULL }
 };
 
-static const char* ft_error_str(FT_Error err_code) {
+static const char *ft_error_str(FT_Error err_code) {
 	for(const struct ft_error_def *e = ft_errors; e->err_msg; ++e) {
 		if(e->err_code == err_code) {
 			return e->err_msg;
@@ -78,7 +90,7 @@ static const char* ft_error_str(FT_Error err_code) {
 typedef struct SpriteSheet {
 	LIST_INTERFACE(struct SpriteSheet);
 	Texture *tex;
-	RectPack *rectpack;
+	RectPack rectpack;
 	uint glyphs;
 } SpriteSheet;
 
@@ -99,6 +111,8 @@ struct Font {
 	FT_Stroker stroker;
 	long base_face_idx;
 	int base_size;
+	float base_border_inner;
+	float base_border_outer;
 	ht_int2int_t charcodes_to_glyph_ofs;
 	ht_int2int_t ftindex_to_glyph_ofs;
 	FontMetrics metrics;
@@ -120,15 +134,17 @@ static struct {
 		SDL_mutex *new_face;
 		SDL_mutex *done_face;
 	} mutex;
+
+	ResourceGroup rg;
 } globals;
 
-static double global_font_scale(void) {
+static float global_font_scale(void) {
 	float w, h;
 	video_get_viewport_size(&w, &h);
-	return fmax(0.1, ((double)h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
+	return max(0.1f, (h / SCREEN_H) * config_get_float(CONFIG_TEXT_QUALITY));
 }
 
-static void reload_fonts(double quality);
+static void reload_fonts(float quality);
 
 static bool fonts_event(SDL_Event *event, void *arg) {
 	if(!IS_TAISEI_EVENT(event->type)) {
@@ -144,7 +160,7 @@ static bool fonts_event(SDL_Event *event, void *arg) {
 		case TE_CONFIG_UPDATED: {
 			if(event->user.code == CONFIG_TEXT_QUALITY) {
 				ConfigValue *val = event->user.data1;
-				val->f = fmax(0.1, val->f);
+				val->f = max(0.1f, val->f);
 				reload_fonts(global_font_scale());
 			}
 
@@ -161,21 +177,43 @@ static void try_create_mutex(SDL_mutex **mtx) {
 	}
 }
 
+static void *ft_alloc(FT_Memory mem, long size) {
+	return mem_alloc(size);
+}
+
+static void ft_free(FT_Memory mem, void *block) {
+	mem_free(block);
+}
+
+static void *ft_realloc(FT_Memory mem, long cur_size, long new_size, void *block) {
+	return mem_realloc(block, new_size);
+}
+
 static void init_fonts(void) {
 	FT_Error err;
+
+	static typeof(*(FT_Memory)0) ft_mem = {
+		.alloc = ft_alloc,
+		.free = ft_free,
+		.realloc = ft_realloc,
+	};
 
 	try_create_mutex(&globals.mutex.new_face);
 	try_create_mutex(&globals.mutex.done_face);
 
-	if((err = FT_Init_FreeType(&globals.lib))) {
-		log_fatal("FT_Init_FreeType() failed: %s", ft_error_str(err));
+	if((err = FT_New_Library(&ft_mem, &globals.lib))) {
+		log_fatal("FT_New_Library() failed: %s", ft_error_str(err));
 	}
+
+	FT_Add_Default_Modules(globals.lib);
 
 	events_register_handler(&(EventHandler) {
 		fonts_event, NULL, EPRIO_SYSTEM,
 	});
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_init(&globals.rg);
+
+	res_group_preload(&globals.rg, RES_FONT, RESF_DEFAULT,
 		"standard",
 	NULL);
 
@@ -202,19 +240,22 @@ static void init_fonts(void) {
 }
 
 static void post_init_fonts(void) {
-	globals.default_shader = get_resource_data(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT | RESF_PRELOAD);
+	res_group_preload(&globals.rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_default", NULL);
+	globals.default_shader = res_shader("text_default");
 }
 
 static void shutdown_fonts(void) {
+	res_group_release(&globals.rg);
+	res_purge();
 	r_texture_destroy(globals.render_tex);
 	r_framebuffer_destroy(globals.render_buf);
 	events_unregister_handler(fonts_event);
-	FT_Done_FreeType(globals.lib);
+	FT_Done_Library(globals.lib);
 	SDL_DestroyMutex(globals.mutex.new_face);
 	SDL_DestroyMutex(globals.mutex.done_face);
 }
 
-static char* font_path(const char *name) {
+static char *font_path(const char *name) {
 	return strjoin(FONT_PATH_PREFIX, name, FONT_EXTENSION, NULL);
 }
 
@@ -261,37 +302,38 @@ static FT_Face load_font_face(char *vfspath, long index) {
 
 	if(!rwops) {
 		log_error("VFS error: %s", vfs_get_error());
-		free(syspath);
+		mem_free(syspath);
 		return NULL;
 	}
 
-	FT_Stream ftstream = calloc(1, sizeof(*ftstream));
-	ftstream->descriptor.pointer = rwops;
-	ftstream->pathname.pointer = syspath;
-	ftstream->read = ftstream_read;
-	ftstream->close = ftstream_close;
-	ftstream->size = SDL_RWsize(rwops);
+	FT_Stream ftstream = ALLOC(typeof(*ftstream), {
+		.descriptor.pointer = rwops,
+		.pathname.pointer = syspath,
+		.read = ftstream_read,
+		.close = ftstream_close,
+		.size = SDL_RWsize(rwops),
+	});
 
-	FT_Open_Args ftargs;
-	memset(&ftargs, 0, sizeof(ftargs));
-	ftargs.flags = FT_OPEN_STREAM;
-	ftargs.stream = ftstream;
+	FT_Open_Args ftargs = {
+		.flags = FT_OPEN_STREAM,
+		.stream = ftstream,
+	};
 
 	FT_Face face;
 	FT_Error err;
 
 	if((err = FT_Open_Face_Thread_Safe(globals.lib, &ftargs, index, &face))) {
 		log_error("Failed to load font '%s' (face %li): FT_Open_Face() failed: %s", syspath, index, ft_error_str(err));
-		free(syspath);
-		free(ftstream);
+		mem_free(syspath);
+		mem_free(ftstream);
 		return NULL;
 	}
 
 	if(!(FT_IS_SCALABLE(face))) {
 		log_error("Font '%s' (face %li) is not scalable. This is not supported, sorry. Load aborted", syspath, index);
 		FT_Done_Face_Thread_Safe(face);
-		free(syspath);
-		free(ftstream);
+		mem_free(syspath);
+		mem_free(ftstream);
 		return NULL;
 	}
 
@@ -299,14 +341,14 @@ static FT_Face load_font_face(char *vfspath, long index) {
 	return face;
 }
 
-static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
+static FT_Error set_font_size(Font *fnt, float scale) {
 	FT_Error err = FT_Err_Ok;
+	uint pxsize = fnt->base_size;
 
 	assert(fnt != NULL);
 	assert(fnt->face != NULL);
 
-	FT_Fixed fixed_scale = round(scale * (2 << 15));
-	pxsize = FT_MulFix(pxsize * 64, fixed_scale);
+	pxsize = float_to_f26dot6(pxsize * scale);
 
 	if((err = FT_Set_Char_Size(fnt->face, 0, pxsize, 0, 0))) {
 		log_error("FT_Set_Char_Size(%u) failed: %s", pxsize, ft_error_str(err));
@@ -322,15 +364,12 @@ static FT_Error set_font_size(Font *fnt, uint pxsize, double scale) {
 		return err;
 	}
 
-	FT_Stroker_Set(fnt->stroker, FT_MulFix(1.5 * 64, fixed_scale), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
-
-	// Based on SDL_ttf
 	FT_Face face = fnt->face;
-	fixed_scale = face->size->metrics.y_scale;
-	fnt->metrics.ascent = FT_CEIL(FT_MulFix(face->ascender, fixed_scale));
-	fnt->metrics.descent = FT_CEIL(FT_MulFix(face->descender, fixed_scale));
+	FT_Fixed fixed_scale = face->size->metrics.y_scale;
+	fnt->metrics.ascent = f26dot6_to_float(FT_MulFix(face->ascender, fixed_scale));
+	fnt->metrics.descent = f26dot6_to_float(FT_MulFix(face->descender, fixed_scale));
 	fnt->metrics.max_glyph_height = fnt->metrics.ascent - fnt->metrics.descent;
-	fnt->metrics.lineskip = FT_CEIL(FT_MulFix(face->height, fixed_scale));
+	fnt->metrics.lineskip = f26dot6_to_float(FT_MulFix(face->height, fixed_scale));
 	fnt->metrics.scale = scale;
 
 	return err;
@@ -349,28 +388,29 @@ void font_set_kerning_enabled(Font *font, bool newval) {
 }
 
 // TODO: Figure out sensible values for these; maybe make them depend on font size in some way.
-#define SS_WIDTH 1024
-#define SS_HEIGHT 1024
+#define SS_WIDTH 2048
+#define SS_HEIGHT 2048
 
 #define SS_TEXTURE_TYPE TEX_TYPE_RGB_8
 #define SS_TEXTURE_FLAGS 0
 
-static SpriteSheet* add_spritesheet(SpriteSheetAnchor *spritesheets) {
-	SpriteSheet *ss = calloc(1, sizeof(SpriteSheet));
-	ss->rectpack = rectpack_new(SS_WIDTH, SS_HEIGHT);
-
-	ss->tex = r_texture_create(&(TextureParams) {
-		.width = SS_WIDTH,
-		.height = SS_HEIGHT,
-		.type = SS_TEXTURE_TYPE,
-		.flags = SS_TEXTURE_FLAGS,
-		.filter.mag = TEX_FILTER_LINEAR,
-		.filter.min = TEX_FILTER_LINEAR,
-		.wrap.s = TEX_WRAP_CLAMP,
-		.wrap.t = TEX_WRAP_CLAMP,
-		.mipmaps = TEX_MIPMAPS_MAX,
-		.mipmap_mode = TEX_MIPMAP_AUTO,
+static SpriteSheet *add_spritesheet(SpriteSheetAnchor *spritesheets) {
+	auto ss = ALLOC(SpriteSheet, {
+		.tex = r_texture_create(&(TextureParams) {
+			.width = SS_WIDTH,
+			.height = SS_HEIGHT,
+			.type = SS_TEXTURE_TYPE,
+			.flags = SS_TEXTURE_FLAGS,
+			.filter.mag = TEX_FILTER_LINEAR,
+			.filter.min = TEX_FILTER_LINEAR,
+			.wrap.s = TEX_WRAP_CLAMP,
+			.wrap.t = TEX_WRAP_CLAMP,
+			.mipmaps = TEX_MIPMAPS_MAX,
+			.mipmap_mode = TEX_MIPMAP_AUTO,
+		})
 	});
+
+	rectpack_init(&ss->rectpack, &default_allocator, SS_WIDTH, SS_HEIGHT);
 
 #ifdef DEBUG
 	char buf[128];
@@ -390,7 +430,7 @@ static bool add_glyph_to_spritesheet(Glyph *glyph, Pixmap *pixmap, SpriteSheet *
 	uint padded_w = pixmap->width + 2 * GLYPH_SPRITE_PADDING;
 	uint padded_h = pixmap->height + 2 * GLYPH_SPRITE_PADDING;
 
-	glyph->spritesheet_section = rectpack_add(ss->rectpack, padded_w, padded_h);
+	glyph->spritesheet_section = rectpack_add(&ss->rectpack, padded_w, padded_h);
 
 	if(glyph->spritesheet_section == NULL) {
 		return false;
@@ -441,7 +481,7 @@ static bool add_glyph_to_spritesheets(Glyph *glyph, Pixmap *pixmap, SpriteSheetA
 	return add_glyph_to_spritesheet(glyph, pixmap, add_spritesheet(spritesheets));
 }
 
-static const char* pixmode_name(FT_Pixel_Mode mode) {
+static const char *pixmode_name(FT_Pixel_Mode mode) {
 	switch(mode) {
 		case FT_PIXEL_MODE_NONE   : return "FT_PIXEL_MODE_NONE";
 		case FT_PIXEL_MODE_MONO   : return "FT_PIXEL_MODE_MONO";
@@ -457,28 +497,36 @@ static const char* pixmode_name(FT_Pixel_Mode mode) {
 
 static void delete_spritesheet(SpriteSheetAnchor *spritesheets, SpriteSheet *ss) {
 	r_texture_destroy(ss->tex);
-	rectpack_free(ss->rectpack);
+	rectpack_deinit(&ss->rectpack);
 	alist_unlink(spritesheets, ss);
-	free(ss);
+	mem_free(ss);
 }
 
-static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
+static Glyph *load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesheets) {
 	// log_debug("Loading glyph 0x%08x", gindex);
 
-	FT_Error err = FT_Load_Glyph(font->face, gindex, FT_LOAD_NO_BITMAP | FT_LOAD_TARGET_LIGHT);
+	FT_Render_Mode render_mode = GLOBAL_RENDER_MODE;
+	FT_Error err = FT_Load_Glyph(font->face, gindex,
+		FT_LOAD_NO_BITMAP |
+		FT_LOAD_TARGET_(render_mode) |
+	0);
 
 	if(err) {
 		log_warn("FT_Load_Glyph(%u) failed: %s", gindex, ft_error_str(err));
 		return NULL;
 	}
 
-	Glyph *glyph = dynarray_append(&font->glyphs);
-
-	glyph->metrics.bearing_x = FT_FLOOR(font->face->glyph->metrics.horiBearingX);
-	glyph->metrics.bearing_y = FT_FLOOR(font->face->glyph->metrics.horiBearingY);
-	glyph->metrics.width = FT_CEIL(font->face->glyph->metrics.width);
-	glyph->metrics.height = FT_CEIL(font->face->glyph->metrics.height);
-	glyph->metrics.advance = FT_CEIL(font->face->glyph->metrics.horiAdvance);
+	Glyph *glyph = dynarray_append(&font->glyphs, {
+		.metrics = {
+			.bearing_x = f26dot6_to_float(font->face->glyph->metrics.horiBearingX),
+			.bearing_y = f26dot6_to_float(font->face->glyph->metrics.horiBearingY),
+			.width = f26dot6_to_float(font->face->glyph->metrics.width),
+			.height = f26dot6_to_float(font->face->glyph->metrics.height),
+			.advance = f26dot6_to_float(font->face->glyph->metrics.horiAdvance),
+			.lsb_delta = f26dot6_to_float(font->face->glyph->lsb_delta),
+			.rsb_delta = f26dot6_to_float(font->face->glyph->rsb_delta),
+		}
+	});
 
 	FT_Glyph g_src = NULL, g_fill = NULL, g_border = NULL, g_inner = NULL;
 	FT_BitmapGlyph g_bm_fill = NULL, g_bm_border = NULL, g_bm_inner = NULL;
@@ -489,7 +537,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 
 	assert(g_src->format == FT_GLYPH_FORMAT_OUTLINE);
 
-	bool have_bitmap = FT_Glyph_To_Bitmap(&g_fill, FT_RENDER_MODE_LIGHT, NULL, true) == FT_Err_Ok;
+	bool have_bitmap = FT_Glyph_To_Bitmap(&g_fill, render_mode, NULL, true) == FT_Err_Ok;
 
 	if(have_bitmap) {
 		have_bitmap = ((FT_BitmapGlyph)g_fill)->bitmap.width > 0;
@@ -499,11 +547,25 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		// Some glyphs may be invisible, but we still need the metrics data for them (e.g. space)
 		memset(&glyph->sprite, 0, sizeof(Sprite));
 	} else {
+		FT_Stroker_Set(font->stroker,
+			FT_MulFix(
+				float_to_f26dot6(font->base_border_outer),
+				font->face->size->metrics.y_scale),
+			FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0
+		);
+
 		FT_Glyph_StrokeBorder(&g_border, font->stroker, false, true);
-		FT_Glyph_To_Bitmap(&g_border, FT_RENDER_MODE_LIGHT, NULL, true);
+		FT_Glyph_To_Bitmap(&g_border, GLOBAL_RENDER_MODE, NULL, true);
+
+		FT_Stroker_Set(font->stroker,
+			FT_MulFix(
+				float_to_f26dot6(font->base_border_inner),
+				font->face->size->metrics.y_scale),
+			FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_BEVEL, 0
+		);
 
 		FT_Glyph_StrokeBorder(&g_inner, font->stroker, true, true);
-		FT_Glyph_To_Bitmap(&g_inner, FT_RENDER_MODE_LIGHT, NULL, true);
+		FT_Glyph_To_Bitmap(&g_inner, GLOBAL_RENDER_MODE, NULL, true);
 
 		g_bm_fill = (FT_BitmapGlyph)g_fill;
 		g_bm_border = (FT_BitmapGlyph)g_border;
@@ -532,8 +594,8 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 		Pixmap px;
 		px.origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 		px.format = PIXMAP_FORMAT_RGB8;
-		px.width = imax(g_bm_fill->bitmap.width, imax(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
-		px.height = imax(g_bm_fill->bitmap.rows, imax(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
+		px.width = max(g_bm_fill->bitmap.width, max(g_bm_border->bitmap.width, g_bm_inner->bitmap.width));
+		px.height = max(g_bm_fill->bitmap.rows, max(g_bm_border->bitmap.rows, g_bm_inner->bitmap.rows));
 		px.data.rg8 = pixmap_alloc_buffer_for_copy(&px, &px.data_size);
 
 		int ref_left = g_bm_border->left;
@@ -611,7 +673,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 				SS_HEIGHT
 			);
 
-			free(px.data.rg8);
+			mem_free(px.data.rg8);
 			FT_Done_Glyph(g_src);
 			FT_Done_Glyph(g_fill);
 			FT_Done_Glyph(g_border);
@@ -620,7 +682,15 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 			return NULL;
 		}
 
-		free(px.data.rg8);
+		mem_free(px.data.rg8);
+
+		float xpad = px.width - g_bm_fill->bitmap.width;
+		float ypad = px.height - g_bm_fill->bitmap.rows;
+		glyph->sprite.padding.extent.w = xpad;
+		glyph->sprite.padding.extent.h = ypad;
+		glyph->sprite.padding.offset.x = -xpad;
+		glyph->sprite.padding.offset.y = -ypad;
+		glyph->sprite.extent.as_cmplx += glyph->sprite.padding.extent.as_cmplx;
 	}
 
 	FT_Done_Glyph(g_src);
@@ -632,7 +702,7 @@ static Glyph* load_glyph(Font *font, FT_UInt gindex, SpriteSheetAnchor *spritesh
 	return glyph;
 }
 
-static Glyph* get_glyph(Font *fnt, charcode_t cp) {
+static Glyph *get_glyph(Font *fnt, charcode_t cp) {
 	int64_t ofs;
 
 	if(!ht_lookup(&fnt->charcodes_to_glyph_ofs, cp, &ofs)) {
@@ -665,9 +735,7 @@ static void wipe_glyph_cache(Font *font) {
 			continue;
 		}
 
-		RectPack *rp = ss->rectpack;
-		assume(rp != NULL);
-
+		RectPack *rp = &ss->rectpack;
 		RectPackSection *section = g->spritesheet_section;
 		assume(section != NULL);
 
@@ -690,8 +758,8 @@ static void free_font_resources(Font *font) {
 		FT_Done_Face_Thread_Safe(font->face);
 
 		if(stream) {
-			free(stream->pathname.pointer);
-			free(stream);
+			mem_free(stream->pathname.pointer);
+			mem_free(stream);
 		}
 	}
 
@@ -704,22 +772,40 @@ static void free_font_resources(Font *font) {
 	ht_destroy(&font->charcodes_to_glyph_ofs);
 	ht_destroy(&font->ftindex_to_glyph_ofs);
 
-	free(font->source_path);
+	mem_free(font->source_path);
 	dynarray_free_data(&font->glyphs);
 }
 
-void load_font(ResourceLoadState *st) {
-	Font font;
-	memset(&font, 0, sizeof(font));
+static void finish_reload(ResourceLoadState *st);
 
-	if(!parse_keyvalue_file_with_spec(st->path, (KVSpec[]){
-		{ "source",  .out_str   = &font.source_path },
-		{ "size",    .out_int   = &font.base_size },
-		{ "face",    .out_long  = &font.base_face_idx },
+void load_font(ResourceLoadState *st) {
+	Font font = {
+		.base_border_inner = 0.5f,
+		.base_border_outer = 1.5f,
+	};
+
+	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
+
+	if(UNLIKELY(!rw)) {
+		log_error("VFS error: %s", vfs_get_error());
+		res_load_failed(st);
+		return;
+	}
+
+	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]){
+		{ "source",        .out_str   = &font.source_path },
+		{ "size",          .out_int   = &font.base_size },
+		{ "face",          .out_long  = &font.base_face_idx },
+		{ "border_inner",  .out_float = &font.base_border_inner, },
+		{ "border_outer",  .out_float = &font.base_border_outer, },
 		{ NULL }
-	})) {
+	});
+
+	SDL_RWclose(rw);
+
+	if(UNLIKELY(!parsed)) {
 		log_error("Failed to parse font file '%s'", st->path);
-		free(font.source_path);
+		mem_free(font.source_path);
 		res_load_failed(st);
 		return;
 	}
@@ -738,7 +824,7 @@ void load_font(ResourceLoadState *st) {
 		res_load_failed(st);
 	}
 
-	if(set_font_size(&font, font.base_size, global_font_scale())) {
+	if(set_font_size(&font, global_font_scale())) {
 		free_font_resources(&font);
 		res_load_failed(st);
 		return;
@@ -751,56 +837,117 @@ void load_font(ResourceLoadState *st) {
 #endif
 
 	font_set_kerning_enabled(&font, true);
-	res_load_finished(st, memdup(&font, sizeof(font)));
+	Font *newfont = memdup(&font, sizeof(font));
+
+	if(st->flags & RESF_RELOAD) {
+		// workaround to avoid data race (font in use on main thread)
+		res_load_continue_on_main(st, finish_reload, newfont);
+	} else {
+		res_load_finished(st, newfont);
+	}
+}
+
+static void finish_reload(ResourceLoadState *st) {
+	res_load_finished(st, st->opaque);
 }
 
 void unload_font(void *vfont) {
 	free_font_resources(vfont);
-	free(vfont);
+	mem_free(vfont);
 }
 
 struct rlfonts_arg {
-	double quality;
+	float quality;
 };
 
 attr_nonnull(1)
-static void reload_font(Font *font, double quality) {
+static void reload_font(Font *font, float quality) {
 	if(font->metrics.scale != quality) {
 		wipe_glyph_cache(font);
-		set_font_size(font, font->base_size, quality);
+		set_font_size(font, quality);
 	}
 }
 
-static void* reload_font_callback(const char *name, Resource *res, void *varg) {
+static void *reload_font_callback(const char *name, Resource *res, void *varg) {
 	struct rlfonts_arg *a = varg;
 	reload_font((Font*)res->data, a->quality);
 	return NULL;
 }
 
-static void reload_fonts(double quality) {
-	resource_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
+static void reload_fonts(float quality) {
+	res_for_each(RES_FONT, reload_font_callback, &(struct rlfonts_arg) { quality });
 }
 
-static inline int apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
+static inline float apply_kerning(Font *font, uint prev_index, Glyph *gthis) {
 	FT_Vector kvec;
 
 	if(!font_get_kerning_enabled(font) || prev_index == 0) {
 		return 0;
 	}
 
-	if(!FT_Get_Kerning(font->face, prev_index, gthis->ft_index, FT_KERNING_DEFAULT, &kvec)) {
-		return kvec.x >> 6;
+	if(!FT_Get_Kerning(font->face, prev_index, gthis->ft_index, FT_KERNING_UNFITTED, &kvec)) {
+		return f26dot6_to_float(kvec.x);
 	}
 
 	return 0;
 }
 
-int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
+static float apply_subpixel_shift(Glyph *g, float prev_rsb_delta) {
+	float shift = 0;
+	float diff = prev_rsb_delta - g->metrics.lsb_delta;
+
+#if 0
+	if(diff > 32 * FIXED_TO_FLOAT) {
+		shift = -FIXED_TO_FLOAT;
+	} else if(diff < -31 * FIXED_TO_FLOAT) {
+		shift = FIXED_TO_FLOAT;
+	}
+#else
+	shift -= diff;
+#endif
+
+	return shift;
+}
+
+typedef struct Cursor {
+	Font *font;
+	float x;
+	float prev_rsb_delta;
+	uint prev_glyph_idx;
+} Cursor;
+
+static Cursor cursor_init(Font *font) {
+	return (Cursor) { .font = font };
+}
+
+static void cursor_reset(Cursor *c) {
+	c->x = 0;
+	c->prev_rsb_delta = 0;
+	c->prev_glyph_idx = 0;
+}
+
+static float cursor_advance(Cursor *c, Glyph *g) {
+	if(g == NULL) {
+		return c->x;
+	}
+
+	c->x += apply_kerning(c->font, c->prev_glyph_idx, g);
+	c->x += apply_subpixel_shift(g, c->prev_rsb_delta);
+
+	float startpos = c->x;
+	c->x += g->metrics.advance;
+
+	c->prev_rsb_delta = g->metrics.rsb_delta;
+	c->prev_glyph_idx = g->ft_index;
+
+	return startpos;
+}
+
+float text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 	const uint32_t *tptr = text;
-	uint prev_glyph_idx = 0;
 	uint numlines = 0;
-	int x = 0;
-	int width = 0;
+	float width = 0;
+	Cursor c = cursor_init(font);
 
 	while(*tptr) {
 		uint32_t uchar = *tptr++;
@@ -810,45 +957,33 @@ int text_ucs4_width_raw(Font *font, const uint32_t *text, uint maxlines) {
 				break;
 			}
 
-			if(x > width) {
-				width = x;
-			}
-
-			x = 0;
+			cursor_reset(&c);
 			continue;
 		}
 
-		Glyph *glyph = get_glyph(font, uchar);
+		cursor_advance(&c, get_glyph(font, uchar));
 
-		if(glyph == NULL) {
-			continue;
+		if(c.x > width) {
+			width = c.x;
 		}
-
-		x += apply_kerning(font, prev_glyph_idx, glyph);
-		x += glyph->metrics.advance;
-		prev_glyph_idx = glyph->ft_index;
-	}
-
-	if(x > width) {
-		width = x;
 	}
 
 	return width;
 }
 
-int text_width_raw(Font *font, const char *text, uint maxlines) {
+float text_width_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
 	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	return text_ucs4_width_raw(font, buf, maxlines);
 }
 
-void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox) {
+void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, TextBBox *bbox) {
 	const uint32_t *tptr = text;
-	uint prev_glyph_idx = 0;
 	uint numlines = 0;
 
 	memset(bbox, 0, sizeof(*bbox));
-	int x = 0, y = 0;
+	float y = 0;
+	Cursor c = cursor_init(font);
 
 	while(*tptr) {
 		uint32_t uchar = *tptr++;
@@ -858,9 +993,8 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox)
 				break;
 			}
 
-			x = 0;
 			y += font->metrics.lineskip;
-
+			cursor_reset(&c);
 			continue;
 		}
 
@@ -870,46 +1004,44 @@ void text_ucs4_bbox(Font *font, const uint32_t *text, uint maxlines, BBox *bbox)
 			continue;
 		}
 
-		x += apply_kerning(font, prev_glyph_idx, glyph);
+		float x = cursor_advance(&c, glyph);
+		bbox->x.max = max(bbox->x.max, c.x);
 
-		int g_x0 = x + glyph->metrics.bearing_x;
-		int g_x1 = g_x0 + imax(glyph->metrics.width, glyph->sprite.w);
+		FloatOffset ofs = glyph->sprite.padding.offset;
 
-		bbox->x.max = imax(bbox->x.max, g_x0);
-		bbox->x.max = imax(bbox->x.max, g_x1);
-		bbox->x.min = imin(bbox->x.min, g_x0);
-		bbox->x.min = imin(bbox->x.min, g_x1);
+		float g_x0 = x + glyph->metrics.bearing_x + ofs.x;
+		float g_x1 = g_x0 + max(glyph->metrics.width, glyph->sprite.w);
 
-		int g_y0 = y - glyph->metrics.bearing_y;
-		int g_y1 = g_y0 + imax(glyph->metrics.height, glyph->sprite.h);
+		bbox->x.max = max(bbox->x.max, g_x0);
+		bbox->x.max = max(bbox->x.max, g_x1);
+		bbox->x.min = min(bbox->x.min, g_x0);
+		bbox->x.min = min(bbox->x.min, g_x1);
 
-		bbox->y.max = imax(bbox->y.max, g_y0);
-		bbox->y.max = imax(bbox->y.max, g_y1);
-		bbox->y.min = imin(bbox->y.min, g_y0);
-		bbox->y.min = imin(bbox->y.min, g_y1);
+		float g_y0 = y - glyph->metrics.bearing_y + ofs.y;
+		float g_y1 = g_y0 + max(glyph->metrics.height, glyph->sprite.h);
 
-		prev_glyph_idx = glyph->ft_index;
-
-		x += glyph->metrics.advance;
-		bbox->x.max = imax(bbox->x.max, x);
+		bbox->y.max = max(bbox->y.max, g_y0);
+		bbox->y.max = max(bbox->y.max, g_y1);
+		bbox->y.min = min(bbox->y.min, g_y0);
+		bbox->y.min = min(bbox->y.min, g_y1);
 	}
 }
 
-void text_bbox(Font *font, const char *text, uint maxlines, BBox *bbox) {
+void text_bbox(Font *font, const char *text, uint maxlines, TextBBox *bbox) {
 	uint32_t buf[strlen(text) + 1];
 	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	text_ucs4_bbox(font, buf, maxlines, bbox);
 }
 
-double text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) {
+float text_ucs4_width(Font *font, const uint32_t *text, uint maxlines) {
 	return text_ucs4_width_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-double text_width(Font *font, const char *text, uint maxlines) {
+float text_width(Font *font, const char *text, uint maxlines) {
 	return text_width_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
+float text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 	// FIXME: I'm not sure this is correct. Perhaps it should consider max_glyph_height at least?
 
 	uint text_lines = 1;
@@ -928,22 +1060,24 @@ int text_ucs4_height_raw(Font *font, const uint32_t *text, uint maxlines) {
 	return font->metrics.lineskip * text_lines;
 }
 
-int text_height_raw(Font *font, const char *text, uint maxlines) {
+float text_height_raw(Font *font, const char *text, uint maxlines) {
 	uint32_t buf[strlen(text) + 1];
 	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 	return text_ucs4_height_raw(font, buf, maxlines);
 }
 
-double text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) {
+float text_ucs4_height(Font *font, const uint32_t *text, uint maxlines) {
 	return text_ucs4_height_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-double text_height(Font *font, const char *text, uint maxlines) {
+float text_height(Font *font, const char *text, uint maxlines) {
 	return text_height_raw(font, text, maxlines) / font->metrics.scale;
 }
 
-static inline void adjust_xpos(Font *font, const uint32_t *ucs4text, Alignment align, double x_orig, double *x) {
-	double line_width;
+static inline void adjust_xpos(
+	Font *font, const uint32_t *ucs4text, Alignment align, float x_orig, float *x
+) {
+	float line_width;
 
 	switch(align) {
 		case ALIGN_LEFT: {
@@ -965,7 +1099,7 @@ static inline void adjust_xpos(Font *font, const uint32_t *ucs4text, Alignment a
 	}
 }
 
-ShaderProgram* text_get_default_shader(void) {
+ShaderProgram *text_get_default_shader(void) {
 	return globals.default_shader;
 }
 
@@ -993,7 +1127,7 @@ static void set_batch_texture(SpriteStateParams *stp, Texture *tex) {
 }
 
 attr_nonnull(1, 2, 3)
-static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextParams *params) {
+static float _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextParams *params) {
 	SpriteStateParams batch_state_params;
 
 	memcpy(batch_state_params.aux_textures, params->aux_textures, sizeof(batch_state_params.aux_textures));
@@ -1012,15 +1146,17 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 
 	batch_state_params.primary_texture = NULL;
 
-	BBox bbox;
-	double x = params->pos.x;
-	double y = params->pos.y;
-	double scale = font->metrics.scale;
-	double iscale = 1 / scale;
+	TextBBox bbox;
+	float y = params->pos.y;
+	float scale = font->metrics.scale;
+	float iscale = 1.0f / scale;
+
+	Cursor c = cursor_init(font);
+	c.x = params->pos.x;
 
 	struct {
-		struct { double min, max; } x, y;
-		double w, h;
+		struct { float min, max; } x, y;
+		float w, h;
 	} overlay;
 
 	text_ucs4_bbox(font, ucs4text, 0, &bbox);
@@ -1048,14 +1184,14 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 	r_mat_tex_current(mat_texture);
 	r_mat_mv_current(mat_model);
 
-	glm_translate(mat_model, (vec3) { x, y } );
+	glm_translate(mat_model, (vec3) { c.x, y } );
 	glm_scale(mat_model, (vec3) { iscale, iscale, 1 } );
 
-	double orig_x = x;
-	double orig_y = y;
-	x = y = 0;
+	float orig_x = c.x;
+	float orig_y = y;
+	c.x = y = 0;
 
-	adjust_xpos(font, ucs4text, params->align, 0, &x);
+	adjust_xpos(font, ucs4text, params->align, 0, &c.x);
 
 	if(params->overlay_projection) {
 		FloatRect *op = params->overlay_projection;
@@ -1064,8 +1200,8 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 		overlay.y.min = (op->y - orig_y) * scale;
 		overlay.y.max = overlay.y.min + op->h * scale;
 	} else {
-		overlay.x.min = bbox.x.min + x;
-		overlay.x.max = bbox.x.max + x;
+		overlay.x.min = bbox.x.min + c.x;
+		overlay.x.max = bbox.x.max + c.x;
 		overlay.y.min = bbox.y.min - font->metrics.descent;
 		overlay.y.max = bbox.y.max - font->metrics.descent;
 	}
@@ -1085,14 +1221,14 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 		texmat_offset_sign = 1;
 	}
 
-	uint prev_glyph_idx = 0;
 	const uint32_t *tptr = ucs4text;
 
 	while(*tptr) {
 		uint32_t uchar = *tptr++;
 
 		if(uchar == '\n') {
-			adjust_xpos(font, tptr, params->align, 0, &x);
+			cursor_reset(&c);
+			adjust_xpos(font, tptr, params->align, 0, &c.x);
 			y += font->metrics.lineskip;
 			continue;
 		}
@@ -1103,46 +1239,53 @@ static double _text_ucs4_draw(Font *font, const uint32_t *ucs4text, const TextPa
 			continue;
 		}
 
-		x += apply_kerning(font, prev_glyph_idx, glyph);
+		float x = cursor_advance(&c, glyph);
 
-		if(glyph->sprite.tex != NULL) {
-			Sprite *spr = &glyph->sprite;
-			set_batch_texture(&batch_state_params, spr->tex);
-
-			SpriteInstanceAttribs attribs;
-			attribs.rgba = color;
-			attribs.custom = shader_params;
-
-			float g_x = x + glyph->metrics.bearing_x + spr->w * 0.5;
-			float g_y = y - glyph->metrics.bearing_y + spr->h * 0.5 - font->metrics.descent;
-
-			glm_translate_to(mat_texture, (vec3) { g_x - spr->w * 0.5, g_y * texmat_offset_sign + overlay.h - spr->h * 0.5 }, attribs.tex_transform );
-			glm_scale(attribs.tex_transform, (vec3) { spr->w, spr->h, 1.0 });
-
-			glm_translate_to(mat_model, (vec3) { g_x, g_y }, attribs.mv_transform);
-			glm_scale(attribs.mv_transform, (vec3) { spr->w, spr->h, 1.0 } );
-
-			attribs.texrect = spr->tex_area;
-
-			// NOTE: Glyphs have their sprite w/h unadjusted for scale.
-			attribs.sprite_size.w = spr->w * iscale;
-			attribs.sprite_size.h = spr->h * iscale;
-
-			if(params->glyph_callback.func != NULL) {
-				params->glyph_callback.func(font, uchar, &attribs, params->glyph_callback.userdata);
-			}
-
-			r_sprite_batch_add_instance(&attribs);
+		if(glyph->sprite.tex == NULL) {
+			continue;
 		}
 
-		x += glyph->metrics.advance;
-		prev_glyph_idx = glyph->ft_index;
+		Sprite *spr = &glyph->sprite;
+		set_batch_texture(&batch_state_params, spr->tex);
+
+		SpriteInstanceAttribs attribs;
+		attribs.rgba = color;
+		attribs.custom = shader_params;
+
+		FloatOffset ofs = spr->padding.offset;
+		FloatExtent imgdims = spr->extent;
+		imgdims.as_cmplx -= spr->padding.extent.as_cmplx;
+
+		float g_x = x + glyph->metrics.bearing_x + spr->w * 0.5f + ofs.x;
+		float g_y = y - glyph->metrics.bearing_y + spr->h * 0.5f - font->metrics.descent + ofs.y;
+
+		glm_translate_to(mat_texture, (vec3) {
+			g_x - imgdims.w * 0.5f,
+			g_y * texmat_offset_sign + overlay.h - imgdims.h * 0.5f
+		}, attribs.tex_transform);
+		glm_scale(attribs.tex_transform, (vec3) { imgdims.w, imgdims.h, 1.0 });
+
+		glm_translate_to(mat_model, (vec3) { g_x, g_y }, attribs.mv_transform);
+		glm_scale(attribs.mv_transform, (vec3) { imgdims.w, imgdims.h, 1.0 } );
+
+		attribs.texrect = spr->tex_area;
+
+		// NOTE: Glyphs have their sprite w/h unadjusted for scale.
+		attribs.sprite_size.w = imgdims.w * iscale;
+		attribs.sprite_size.h = imgdims.h * iscale;
+
+		if(params->glyph_callback.func != NULL) {
+			params->glyph_callback.func(
+				font, uchar, &attribs, params->glyph_callback.userdata);
+		}
+
+		r_sprite_batch_add_instance(&attribs);
 	}
 
-	return x * iscale;
+	return c.x * iscale;
 }
 
-static double _text_draw(Font *font, const char *text, const TextParams *params) {
+static float _text_draw(Font *font, const char *text, const TextParams *params) {
 	uint32_t buf[strlen(text) + 1];
 	utf8_to_ucs4(text, ARRAY_SIZE(buf), buf);
 
@@ -1153,11 +1296,11 @@ static double _text_draw(Font *font, const char *text, const TextParams *params)
 	return _text_ucs4_draw(font, buf, params);
 }
 
-double text_draw(const char *text, const TextParams *params) {
+float text_draw(const char *text, const TextParams *params) {
 	return _text_draw(font_from_params(params), text, params);
 }
 
-double text_ucs4_draw(const uint32_t *text, const TextParams *params) {
+float text_ucs4_draw(const uint32_t *text, const TextParams *params) {
 	Font *font = font_from_params(params);
 
 	if(params->max_width > 0) {
@@ -1170,18 +1313,18 @@ double text_ucs4_draw(const uint32_t *text, const TextParams *params) {
 	return _text_ucs4_draw(font, text, params);
 }
 
-double text_draw_wrapped(const char *text, double max_width, const TextParams *params) {
+float text_draw_wrapped(const char *text, float max_width, const TextParams *params) {
 	Font *font = font_from_params(params);
 	char buf[strlen(text) * 2 + 1];
 	text_wrap(font, text, max_width, buf, sizeof(buf));
 	return _text_draw(font, buf, params);
 }
 
-void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbox) {
+void text_render(const char *text, Font *font, Sprite *out_sprite, TextBBox *out_bbox) {
 	text_bbox(font, text, 0, out_bbox);
 
-	int bbox_width = out_bbox->x.max - out_bbox->x.min;
-	int bbox_height = out_bbox->y.max - out_bbox->y.min;
+	float bbox_width = out_bbox->x.max - out_bbox->x.min;
+	float bbox_height = out_bbox->y.max - out_bbox->y.min;
 
 	if(bbox_height < font->metrics.max_glyph_height) {
 		out_bbox->y.min -= font->metrics.max_glyph_height - bbox_height;
@@ -1190,8 +1333,8 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 
 	Texture *tex = globals.render_tex;
 
-	int tex_new_w = bbox_width; // max(tex->w, bbox_width);
-	int tex_new_h = bbox_height; // max(tex->h, bbox_height);
+	uint tex_new_w = ceilf(bbox_width); // max(tex->w, bbox_width);
+	uint tex_new_h = ceilf(bbox_height); // max(tex->h, bbox_height);
 	uint tex_w, tex_h;
 	r_texture_get_size(tex, 0, &tex_w, &tex_h);
 
@@ -1210,12 +1353,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 		params.mipmaps = 0;
 		globals.render_tex = tex = r_texture_create(&params);
 
-		#ifdef DEBUG
-		char buf[128];
-		snprintf(buf, sizeof(buf), "Font render texture");
-		r_texture_set_debug_label(tex, buf);
-		#endif
-
+		r_texture_set_debug_label(tex, "Font render texture");
 		r_framebuffer_attach(globals.render_buf, tex, 0, FRAMEBUFFER_ATTACH_COLOR0);
 		r_framebuffer_viewport(globals.render_buf, 0, 0, tex_new_w, tex_new_h);
 	}
@@ -1223,7 +1361,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_state_push();
 
 	r_framebuffer(globals.render_buf);
-	r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 
 	r_blend(BLEND_PREMUL_ALPHA);
 	r_enable(RCAP_CULL_FACE);
@@ -1236,7 +1374,7 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 
 	// HACK: Coordinates are in texel space, font scale must not be used.
 	// This probably should be exposed in the text_draw API.
-	double fontscale = font->metrics.scale;
+	float fontscale = font->metrics.scale;
 	font->metrics.scale = 1;
 
 	text_draw(text, &(TextParams) {
@@ -1256,15 +1394,15 @@ void text_render(const char *text, Font *font, Sprite *out_sprite, BBox *out_bbo
 	r_state_pop();
 
 	out_sprite->tex = tex;
-	out_sprite->tex_area.w = 1;
-	out_sprite->tex_area.h = 1;
+	out_sprite->tex_area.w = bbox_width / tex_new_w;
+	out_sprite->tex_area.h = bbox_height / tex_new_h;
 	out_sprite->tex_area.x = 0;
 	out_sprite->tex_area.y = 0;
 	out_sprite->w = bbox_width / font->metrics.scale;
 	out_sprite->h = bbox_height / font->metrics.scale;
 }
 
-void text_ucs4_shorten(Font *font, uint32_t *text, double width) {
+void text_ucs4_shorten(Font *font, uint32_t *text, float width) {
 	assert(!ucs4chr(text, '\n'));
 
 	if(text_ucs4_width(font, text, 0) <= width) {
@@ -1284,7 +1422,7 @@ void text_ucs4_shorten(Font *font, uint32_t *text, double width) {
 	} while(text_ucs4_width(font, text, 0) > width);
 }
 
-void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufsize) {
+void text_wrap(Font *font, const char *src, float width, char *buf, size_t bufsize) {
 	assert(bufsize > strlen(src) + 1);
 	assert(width > 0);
 
@@ -1297,7 +1435,7 @@ void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufs
 	*buf = 0;
 
 	while((next = strtok_r(NULL, " \t", &sptr))) {
-		int curwidth;
+		float curwidth;
 
 		if(!*next) {
 			continue;
@@ -1314,7 +1452,7 @@ void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufs
 		strcat(tmpbuf, " ");
 		strcat(tmpbuf, next);
 
-		double totalwidth = text_width(font, tmpbuf, 0);
+		float totalwidth = text_width(font, tmpbuf, 0);
 
 		if(totalwidth > width) {
 			if(curwidth == 0) {
@@ -1337,23 +1475,23 @@ void text_wrap(Font *font, const char *src, double width, char *buf, size_t bufs
 	}
 }
 
-const FontMetrics* font_get_metrics(Font *font) {
+const FontMetrics *font_get_metrics(Font *font) {
 	return &font->metrics;
 }
 
-double font_get_lineskip(Font *font) {
+float font_get_lineskip(Font *font) {
 	return font->metrics.lineskip / font->metrics.scale;
 }
 
-double font_get_ascent(Font *font) {
+float font_get_ascent(Font *font) {
 	return font->metrics.descent / font->metrics.scale;
 }
 
-double font_get_descent(Font *font) {
+float font_get_descent(Font *font) {
 	return font->metrics.descent / font->metrics.scale;
 }
 
-const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
+const GlyphMetrics *font_get_char_metrics(Font *font, charcode_t c) {
 	Glyph *g = get_glyph(font, c);
 
 	if(!g) {
@@ -1361,4 +1499,13 @@ const GlyphMetrics* font_get_char_metrics(Font *font, charcode_t c) {
 	}
 
 	return &g->metrics;
+}
+
+static bool transfer_font(void *dst, void *src) {
+	auto dfont = CASTPTR_ASSUME_ALIGNED(dst, Font);
+	auto sfont = CASTPTR_ASSUME_ALIGNED(src, Font);
+	free_font_resources(dfont);
+	*dfont = *sfont;
+	mem_free(sfont);
+	return true;
 }

@@ -10,7 +10,7 @@
 #include "taisei.h"
 
 #include "menu.h"
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 #include "replay/replay.h"
 
 void ask_save_replay(Replay *rpy, CallChain next)

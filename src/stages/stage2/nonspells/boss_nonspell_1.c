@@ -18,7 +18,7 @@ TASK(wander, { BoxedBoss boss; }) {
 	wander_bounds.bottom = 130;
 
 	Boss *boss = TASK_BIND(ARGS.boss);
-	boss->move = move_towards(boss->pos, 0.03);
+	boss->move = move_from_towards(boss->pos, boss->pos, 0.03);
 
 	for(;;WAIT(300)) {
 		boss->move.attraction_point = common_wander(boss->pos, 60, wander_bounds);

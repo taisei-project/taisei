@@ -16,7 +16,7 @@
 #include "util/glm.h"
 #include "stagedraw.h"
 
-#define SHOT_FORWARD_DAMAGE 100
+#define SHOT_FORWARD_DAMAGE 60
 #define SHOT_FORWARD_DELAY 6
 
 #define SHOT_SLAVE_DAMAGE 50
@@ -145,13 +145,13 @@ TASK(marisa_star_slave_projectile, {
 
 		cmplx center = clerp(plr->pos, ctrl->slave_ref_pos, tanh(t / 10.0));
 
-		real brightener = -1 / (1 + sqrt(0.03 * fabs(creal(p->pos - center))));
+		real brightener = -1 / (1 + sqrt(0.03 * fabs(re(p->pos - center))));
 		marisa_star_slave_projectile_color(&p->color, focus, brightener);
 
 		real verticalfac = - 5 * t * (1 + 0.01 * t) + 10 * t / (0.01 * t + 1);
 
 		prev_pos = p->pos;
-		next_pos = center + focusfac * cbrt(0.1 * t) * creal(vel) * 70 * sin(freq * t + cimag(vel)) + verticalfac*I;
+		next_pos = center + focusfac * cbrt(0.1 * t) * re(vel) * 70 * sin(freq * t + im(vel)) + verticalfac*I;
 		p->move.velocity = next_pos - prev_pos;
 
 		if(t%(2+(int)round(2*rng_real())) == 0) {  // please never write stuff like this ever again
@@ -163,7 +163,7 @@ TASK(marisa_star_slave_projectile, {
 				.angle = rng_angle(),
 				.angle_delta = 0.1 * rng_sreal(),
 				.draw_rule = pdraw_timeout_scalefade(0, 1.4, 1, 0),
-				.flags = PFLAG_NOREFLECT,
+				.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			);
 		}
 
@@ -245,7 +245,7 @@ TASK(marisa_star_slave, {
 
 	for(int t = 0; slave->alive; t += WAIT(1)) {
 		cmplx target_pos = ctrl->slave_ref_pos + 80 * sin(angle) + 45*I;
-		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(fmin(1, (real)t/HAKKERO_RETRACT_TIME)));
+		slave->pos = clerp(plr->pos, target_pos, glm_ease_quad_out(min(1, (real)t/HAKKERO_RETRACT_TIME)));
 		slave->ent.draw_layer = cos(angle) < 0 ? LAYER_BACKGROUND : LAYER_PLAYER_SLAVE;
 		angle += angle_step;
 	}
@@ -270,13 +270,13 @@ static void marisa_star_respawn_slaves(MarisaBController *ctrl, int numslaves) {
 TASK(marisa_star_power_handler, { MarisaBController *ctrl; }) {
 	MarisaBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	marisa_star_respawn_slaves(ctrl, old_power);
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			marisa_star_respawn_slaves(ctrl, new_power);
 			old_power = new_power;
@@ -390,7 +390,7 @@ TASK(marisa_star_orbiter, { MarisaBController *ctrl; cmplx dir; real hue; BoxedM
 			.timeout = 10,
 			.angle = t * 0.1,
 			.draw_rule = pdraw_timeout_scalefade(0, 1 + 4 * tb, 1, 0),
-			.flags = PFLAG_NOREFLECT,
+			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 		);
 	}
 }
@@ -521,10 +521,10 @@ static double marisa_star_property(Player *plr, PlrProperty prop) {
 	}
 }
 
-static void marisa_star_preload(void) {
+static void marisa_star_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"hakkero",
 		"masterspark_ring",
 		"part/maristar_orbit",
@@ -533,17 +533,17 @@ static void marisa_star_preload(void) {
 		"proj/maristar",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"marisa_bombbg",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"masterspark",
 		"maristar_bombbg",
 		"sprite_hakkero",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_b",
 	NULL);
 }

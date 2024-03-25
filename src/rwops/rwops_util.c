@@ -71,7 +71,7 @@ int64_t rwutil_seek_emulated_abs(
 	}
 
 	while(new_pos > *pos) {
-		size_t want_read_size = imin(new_pos - *pos, readbuf_size);
+		size_t want_read_size = min(new_pos - *pos, readbuf_size);
 		size_t read_size = SDL_RWread(rw, readbuf, 1, want_read_size);
 		assert(read_size <= want_read_size);
 

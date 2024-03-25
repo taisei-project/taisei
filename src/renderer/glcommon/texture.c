@@ -107,9 +107,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 #ifndef STATIC_GLES3
 	if(!glext.internalformat_query2) {
 #endif
-		GLTextureFormatInfo *entry = dynarray_append(&g_formats);
-		*entry = *fmt;
-		return entry;
+		return dynarray_append(&g_formats, *fmt);
 #ifndef STATIC_GLES3
 	}
 
@@ -134,8 +132,7 @@ static GLTextureFormatInfo *add_texture_format(const GLTextureFormatInfo *fmt) {
 	GLint64 blendable = query_gl_format(ifmt, GL_FRAMEBUFFER_BLEND);
 	GLint64 encoding = query_gl_format(ifmt, GL_COLOR_ENCODING);
 
-	GLTextureFormatInfo *entry = dynarray_append(&g_formats);
-	*entry = *fmt;
+	GLTextureFormatInfo *entry = dynarray_append(&g_formats, *fmt);
 
 	entry->flags &= ~(
 		GLTEX_COLOR_RENDERABLE |

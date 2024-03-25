@@ -1,53 +1,85 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 LABEL maintainer="Alice D. <alice@starwitch.productions>"
 
 ENV LANG C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
+ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
+ENV TOOLCHAIN_VERSION="20230919"
 
-RUN apt-get update -qq && \
-    apt-get upgrade -qqy && \
-    apt-get install -qqy --no-install-recommends \
-    git wget bzip2 file unzip libtool pkg-config cmake build-essential \
-    automake yasm gettext autopoint vim-tiny python3 python3-distutils \
-    ninja-build ca-certificates curl less zip python3-docutils python3-pip \
-    nsis gnupg zlibc && \
-    apt-get clean -y && \
-    rm -rf /var/lib/apt/lists/*
+ARG TOOLCHAIN_BUILD_ARGS="--disable-lldb --disable-clang-tools-extra"
+ARG TOOLCHAIN_ARCHS="i686 x86_64"
+ARG MESON_VERSION="0.63.3"
+
+RUN apt-get update
+
+RUN apt-get dist-upgrade -y
+
+RUN apt-get install -y --no-install-recommends \
+	automake \
+	autopoint \
+	build-essential \
+	bzip2 \
+	ca-certificates \
+	cmake \
+	curl \
+	file \
+	gettext \
+	git \
+	gnupg \
+	less \
+	libtool \
+	ninja-build \
+	nsis \
+	pkg-config \
+	python3 \
+	python3-distutils \
+	python3-docutils \
+	python3-gnupg \
+	python3-pip \
+	unzip \
+	wget \
+	yasm \
+	zip
+
+RUN mkdir -p -m 755 /etc/apt/keyrings
+
+RUN wget https://cli.github.com/packages/githubcli-archive-keyring.gpg -O /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+RUN chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
+
+RUN apt-get update
+
+RUN apt-get install -y --no-install-recommends gh
+
+RUN apt-get clean -y
+
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN pip3 install \
-    meson==0.56.2 \
-    ninja \
-    zstandard \
-    python-gnupg
+    meson==$MESON_VERSION \
+    zstandard
 
 WORKDIR /build
 
-ENV TOOLCHAIN_PREFIX=/opt/llvm-mingw
+# clone a specific tag
+RUN git clone --branch $TOOLCHAIN_VERSION \
+	--single-branch --depth 1 \
+	https://github.com/mstorsjo/llvm-mingw
 
-ARG TOOLCHAIN_ARCHS="i686 x86_64"
+WORKDIR /build/llvm-mingw
 
-ARG DEFAULT_CRT=ucrt
+RUN CHECKOUT_ONLY=1 CHECKOUT=1 ./build-llvm.sh
 
-# Build everything that uses the llvm monorepo. We need to build the mingw runtime before the compiler-rt/libunwind/libcxxabi/libcxx runtimes.
-COPY build-llvm.sh build-lldb-mi.sh strip-llvm.sh install-wrappers.sh build-mingw-w64.sh build-mingw-w64-tools.sh build-compiler-rt.sh build-libcxx.sh build-mingw-w64-libraries.sh build-openmp.sh ./
-COPY wrappers/*.sh wrappers/*.c wrappers/*.h ./wrappers/
-RUN ./build-llvm.sh $TOOLCHAIN_PREFIX && \
-    ./build-lldb-mi.sh $TOOLCHAIN_PREFIX && \
-    ./strip-llvm.sh $TOOLCHAIN_PREFIX && \
-    ./install-wrappers.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64.sh $TOOLCHAIN_PREFIX --with-default-msvcrt=$DEFAULT_CRT && \
-    ./build-mingw-w64-tools.sh $TOOLCHAIN_PREFIX && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX && \
-    ./build-libcxx.sh $TOOLCHAIN_PREFIX && \
-    ./build-mingw-w64-libraries.sh $TOOLCHAIN_PREFIX && \
-    ./build-compiler-rt.sh $TOOLCHAIN_PREFIX --build-sanitizers && \
-    ./build-openmp.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
-
-# Build libssp
-COPY build-libssp.sh libssp-Makefile ./
-RUN ./build-libssp.sh $TOOLCHAIN_PREFIX && \
-    rm -rf /build/*
+RUN ./build-all.sh $TOOLCHAIN_BUILD_ARGS $TOOLCHAIN_PREFIX
 
 ENV PATH=$TOOLCHAIN_PREFIX/bin:$PATH
+
+WORKDIR /build
+
+RUN rm -rfv /build/llvm-mingw
+
+RUN find $TOOLCHAIN_PREFIX/{bin,lib*} -type f | \
+	while read line; do llvm-strip -g "$line"; done

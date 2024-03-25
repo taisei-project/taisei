@@ -9,7 +9,9 @@
 #pragma once
 #include "taisei.h"
 
+#include "../stage1.h"
 #include "boss.h"
+#include "stage.h"
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_rain, BossAttack);
@@ -17,4 +19,6 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_snow_halation, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_icicle_cascade, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_blizzard, BossAttack);
 
-void stage1_spell_benchmark_proc(Boss *b, int t);
+#ifdef SPELL_BENCHMARK
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_benchmark, BossAttack);
+#endif

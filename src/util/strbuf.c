@@ -37,7 +37,7 @@ static size_t strbuf_reserve(StringBuffer *strbuf, size_t size_required) {
 	if(size_required >= size_available) {
 		ptrdiff_t offset = strbuf->pos - strbuf->start;
 		size_t new_size = topow2_u64(strbuf->buf_size + (size_required - size_available + 1));
-		strbuf->start = realloc(strbuf->start, new_size);
+		strbuf->start = mem_realloc(strbuf->start, new_size);
 		strbuf->pos = strbuf->start + offset;
 		strbuf->buf_size = new_size;
 		size_available = new_size - offset;
@@ -68,16 +68,14 @@ int strbuf_vprintf(StringBuffer *strbuf, const char *format, va_list args) {
 	return size_required;
 }
 
-void strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]) {
-	datasize += 1;
-	strbuf_reserve(strbuf, datasize);
-	assert_nolog(strbuf_size_available(strbuf) >= datasize);
-	memcpy(strbuf->pos, data, datasize - 1);
-	strbuf->pos[datasize - 1] = 0;
-}
-
-void strbuf_cat(StringBuffer *strbuf, const char *str) {
-	strbuf_ncat(strbuf, strlen(str), str);
+int strbuf_ncat(StringBuffer *strbuf, size_t datasize, const char data[datasize]) {
+	assert(datasize < INT32_MAX);
+	strbuf_reserve(strbuf, datasize + 1);
+	assert_nolog(strbuf_size_available(strbuf) >= datasize + 1);
+	memcpy(strbuf->pos, data, datasize);
+	strbuf->pos += datasize;
+	*strbuf->pos = 0;
+	return datasize;
 }
 
 void strbuf_clear(StringBuffer *strbuf) {
@@ -89,6 +87,6 @@ void strbuf_clear(StringBuffer *strbuf) {
 }
 
 void strbuf_free(StringBuffer *strbuf) {
-	free(strbuf->start);
+	mem_free(strbuf->start);
 	memset(strbuf, 0, sizeof(*strbuf));
 }

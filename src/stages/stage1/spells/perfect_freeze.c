@@ -40,8 +40,8 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
-	for(int run = 1;;run++) {
-		boss->move = move_towards(VIEWPORT_W/2.0 + 100.0*I, 0.04);
+	for(;;) {
+		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2.0 + 100.0*I, 0.04);
 		common_charge(40, &boss->pos, 0, RGBA(1.0, 0.5, 0.0, 0));
 
 		int n = global.diff;
@@ -108,11 +108,14 @@ DEFINE_EXTERN_TASK(stage1_spell_perfect_freeze) {
 			real speed = 2 + 0.2 * global.diff;
 
 			for(int sign = -1; sign <= 1; sign += 2) {
+				cmplx v1 = speed * aim * cdir(0.5 * (sign > 0 ? r1 : r2));
+				cmplx v0 = v1 * (3.5 - 3i * sign);
+
 				PROJECTILE(
 					.proto = pp_rice,
 					.pos = boss->pos + sign*60,
 					.color = RGB(0.3, 0.4, 0.9),
-					.move = move_asymptotic_simple(speed*aim*cdir(0.5*(sign > 0 ? r1 : r2)), 2.5+0.1*sign*I),
+					.move = move_asymptotic(v0, v1, 0.8),
 				);
 			}
 

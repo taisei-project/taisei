@@ -4,9 +4,8 @@ texture = atlas_huge_0
 region_x = 0.00122549019607843
 region_y = 0.00231481481481481
 region_w = 0.52696078431372551
-region_h = 0.99537037037037035
-
-# -- Pasted from the override file --
-
+region_h = 0.99305555555555558
 w = 430
-h = 430
+h = 429
+padding_top = 0.5
+padding_bottom = 0.5

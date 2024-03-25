@@ -83,27 +83,31 @@
 	#define CONFIG_FXAA_DEFAULT 1
 #endif
 
+#define CONFIG_CHUNKSIZE_DEFAULT 512
+
+#define CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT 0.5
+#define CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT 0.04
 
 #define CONFIGDEFS \
 	 /* @version must be on top. don't change its default value here, it does nothing. */ \
 	CONFIGDEF_INT       (VERSION,                   "@version",                             0) \
 	\
 	CONFIGDEF_STRING    (PLAYERNAME,                "playername",                           "Player") \
-	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           0) \
+	CONFIGDEF_INT       (FULLSCREEN,                "fullscreen",                           1) \
 	CONFIGDEF_INT       (VID_WIDTH,                 "vid_width",                            RESX) \
 	CONFIGDEF_INT       (VID_HEIGHT,                "vid_height",                           RESY) \
 	CONFIGDEF_INT       (VID_DISPLAY,               "vid_display",                          0) \
 	CONFIGDEF_INT       (VID_RESIZABLE,             "vid_resizable",                        0) \
 	CONFIGDEF_INT       (VID_FRAMESKIP,             "vid_frameskip",                        1) \
 	CONFIGDEF_INT       (VSYNC,                     "vsync",                                CONFIG_VSYNC_DEFAULT) \
-	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      1024) \
+	CONFIGDEF_INT       (MIXER_CHUNKSIZE,           "mixer_chunksize",                      CONFIG_CHUNKSIZE_DEFAULT) \
 	CONFIGDEF_FLOAT     (SFX_VOLUME,                "sfx_volume",                           0.5) \
 	CONFIGDEF_FLOAT     (BGM_VOLUME,                "bgm_volume",                           1.0) \
 	CONFIGDEF_INT       (MUTE_AUDIO,                "mute_audio",                           0) \
 	CONFIGDEF_INT       (NO_STAGEBG,                "disable_stagebg",                      0) \
 	CONFIGDEF_INT       (SAVE_RPY,                  "save_rpy",                             2) \
 	CONFIGDEF_INT       (SPELLSTAGE_AUTORESTART,    "spellpractice_restart_on_fail",        0) \
-	CONFIGDEF_INT       (PRACTICE_POWER,            "practice_power",                       200) \
+	CONFIGDEF_INT       (PRACTICE_POWER,            "practice_power",                       400) \
 	CONFIGDEF_FLOAT     (TEXT_QUALITY,              "text_quality",                         1.0) \
 	CONFIGDEF_FLOAT     (FG_QUALITY,                "fg_quality",                           1.0) \
 	CONFIGDEF_FLOAT     (BG_QUALITY,                "bg_quality",                           1.0) \
@@ -115,17 +119,21 @@
 	CONFIGDEF_INT       (HEALTHBAR_STYLE,           "healthbar_style",                      1) \
 	CONFIGDEF_INT       (SKIP_SPEED,                "skip_speed",                           10) \
 	CONFIGDEF_FLOAT     (SCORETEXT_ALPHA,           "scoretext_alpha",                      1) \
+	CONFIGDEF_INT       (AUTO_SURGE,                "auto_surge",                           1) \
 	KEYDEFS \
 	CONFIGDEF_INT       (GAMEPAD_ENABLED,           "gamepad_enabled",                      1) \
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "any") \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_UD,           "gamepad_axis_ud",                      1) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_LR,           "gamepad_axis_lr",                      0) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_FREE,         "gamepad_axis_free",                    1) \
-	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_free_sensitivity",     1.0) \
-	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_free_sensitivity",     1.0) \
+	CONFIGDEF_INT       (GAMEPAD_AXIS_SQUARECIRCLE, "gamepad_axis_square_to_circle",        0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_SENS,         "gamepad_axis_sensitivity",             0.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_sensitivity",          0.0) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_sensitivity",          0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
-	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          0.25) \
-	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       0.02) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_MAXZONE,      "gamepad_axis_maxzone",                 0.9) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT) \
+	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT) \
 	GPKEYDEFS \
 
 

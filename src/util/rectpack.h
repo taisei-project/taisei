@@ -10,21 +10,45 @@
 #include "taisei.h"
 
 #include "geometry.h"
+#include "list.h"
+#include "memory/allocator.h"
 
 typedef struct RectPack RectPack;
 typedef struct RectPackSection RectPackSection;
 
-RectPack *rectpack_new(double width, double height)
-	attr_returns_max_aligned attr_returns_nonnull attr_nodiscard;
+struct RectPackSection {
+	LIST_INTERFACE(RectPackSection);
+	Rect rect;
+	RectPackSection *parent;
+	RectPackSection *sibling;
+	RectPackSection *children[2];
+};
+
+struct RectPack {
+	RectPackSection root;
+	RectPackSection *unused_sections;
+	RectPackSection *sections_freelist;
+	Allocator *allocator;
+};
+
+void rectpack_init(RectPack *rp, Allocator *alloc, double width, double height)
+	attr_nonnull_all;
 
 void rectpack_reset(RectPack *rp)
 	attr_nonnull(1);
 
-void rectpack_free(RectPack *rp)
+void rectpack_deinit(RectPack *rp)
 	attr_nonnull(1);
 
-RectPackSection *rectpack_add(RectPack *rp, double width, double height)
+RectPackSection *rectpack_add(RectPack *rp, double width, double height, bool allow_rotation)
 	attr_nonnull(1);
+
+#define _rectpack_add_3(rp, width, height) \
+	rectpack_add(rp, width, height, false)
+#define _rectpack_add_4(rp, width, height, allow_rotation) \
+	rectpack_add(rp, width, height, allow_rotation)
+#define rectpack_add(...) \
+	MACROHAX_OVERLOAD_NARGS(_rectpack_add_, __VA_ARGS__)(__VA_ARGS__)
 
 Rect rectpack_section_rect(RectPackSection *s)
 	attr_nonnull(1);

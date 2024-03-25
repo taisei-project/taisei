@@ -16,15 +16,12 @@
 
 #define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)
 
-void elly_spellbg_toe(Boss*, int);
-
-void elly_curvature(Boss*, int);
-void elly_lhc(Boss*, int);
-void elly_eigenstate(Boss*, int);
-void elly_newton(Boss*, int);
-void elly_eigenstate(Boss*, int);
-void elly_broglie(Boss*, int);
-void elly_maxwell(Boss*, int);
-void elly_kepler(Boss*, int);
-void elly_ricci(Boss*, int);
-void elly_theory(Boss*, int);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_newton, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_kepler, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_maxwell, ScytheAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_eigenstate, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_broglie, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_ricci, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_lhc, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_forgotten, BaryonsAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stage6_spell_toe, BossAttack);

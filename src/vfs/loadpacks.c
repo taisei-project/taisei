@@ -83,7 +83,7 @@ void vfs_load_packages(const char *dir, const char *unionmp) {
 			log_error("VFS error: %s", vfs_get_error());
 		}
 
-		free(tmp);
+		mem_free(tmp);
 	}
 
 	vfs_dir_list_free(paklist, numpaks);

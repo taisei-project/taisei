@@ -22,7 +22,7 @@ void replay_destroy_events(Replay *rpy) {
 void replay_reset(Replay *rpy) {
 	replay_destroy_events(rpy);
 	dynarray_free_data(&rpy->stages);
-	free(rpy->playername);
+	mem_free(rpy->playername);
 	memset(rpy, 0, sizeof(Replay));
 }
 
@@ -36,10 +36,10 @@ bool replay_save(Replay *rpy, const char *name) {
 	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
 	char *sp = vfs_repr(p, true);
 	log_info("Saving %s", sp);
-	free(sp);
+	mem_free(sp);
 
 	SDL_RWops *file = vfs_open(p, VFS_MODE_WRITE);
-	free(p);
+	mem_free(p);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -68,24 +68,29 @@ static const char *replay_mode_string(ReplayReadMode mode) {
 	log_fatal("Bad mode %i", mode);
 }
 
-bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
-	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
-	char *sp = vfs_repr(p, true);
+bool replay_load_vfspath(Replay *rpy, const char *path, ReplayReadMode mode) {
+	char *sp = vfs_repr(path, true);
 	log_info("Loading %s (%s)", sp, replay_mode_string(mode));
 
-	SDL_RWops *file = vfs_open(p, VFS_MODE_READ);
-	free(p);
+	SDL_RWops *file = vfs_open(path, VFS_MODE_READ);
 
 	if(!file) {
 		log_error("VFS error: %s", vfs_get_error());
-		free(sp);
+		mem_free(sp);
 		return false;
 	}
 
 	bool result = replay_read(rpy, file, mode, sp);
 
-	free(sp);
+	mem_free(sp);
 	SDL_RWclose(file);
+	return result;
+}
+
+bool replay_load(Replay *rpy, const char *name, ReplayReadMode mode) {
+	char *p = replay_getpath(name, !strendswith(name, REPLAY_EXTENSION));
+	bool result = replay_load_vfspath(rpy, p, mode);
+	mem_free(p);
 	return result;
 }
 
@@ -95,17 +100,44 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 
 	if(!strcmp(path, "-")) {
 		file = SDL_RWFromFP(stdin, false);
+		if(!file) {
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+			return false;
+		}
 	} else {
 		file = SDL_RWFromFile(path, "rb");
+		if(!file) {
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			return false;
+		}
 	}
 
-	if(!file) {
-		log_error("SDL_RWFromFile() failed: %s", SDL_GetError());
-		return false;
-	}
 
 	bool result = replay_read(rpy, file, mode, path);
 
+	SDL_RWclose(file);
+	return result;
+}
+
+bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) {
+	log_info("Saving %s", path);
+	SDL_RWops *file;
+
+	if(!strcmp(path, "-")) {
+		file = SDL_RWFromFP(stdout, false);
+		if(!file) {
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFP");
+			return false;
+		}
+	} else {
+		file = SDL_RWFromFile(path, "wb");
+		if(!file) {
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			return false;
+		}
+	}
+
+	bool result = replay_write(rpy, file, version);
 	SDL_RWclose(file);
 	return result;
 }

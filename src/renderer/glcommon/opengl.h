@@ -148,12 +148,6 @@ ext_flag_t glcommon_check_extension(const char *ext) attr_nonnull_all;
 ext_flag_t glcommon_require_extension(const char *ext) attr_nonnull_all;
 void glcommon_setup_attributes(SDL_GLprofile profile, uint major, uint minor, SDL_GLcontextFlag ctxflags);
 
-#if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
-	#define DEBUG_GL_DEFAULT 1
-#else
-	#define DEBUG_GL_DEFAULT 0
-#endif
-
 struct glext_s {
 	struct {
 		char major;
@@ -165,6 +159,7 @@ struct glext_s {
 
 	struct {
 		uchar avoid_sampler_uniform_updates : 1;
+		uchar disable_norm16 : 1;
 	} issues;
 
 	ext_flag_t clear_texture;

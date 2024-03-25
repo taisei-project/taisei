@@ -9,7 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
+#include "resource/resource.h"
 
 void credits_enter(CallChain next);
-void credits_preload(void);
+void credits_preload(ResourceGroup *rg);

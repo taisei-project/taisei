@@ -9,37 +9,19 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-
 #include "cutscenes/cutscene.h"
+#include "endings.h"
+#include "plrmodes.h"
 
-#define PROGRESS_FILE "storage/progress.dat"
-#define PROGRESS_MAXFILESIZE 4096
-
-#ifdef DEBUG
-	// #define PROGRESS_UNLOCK_ALL
-#endif
-
-typedef enum ProgfileCommand {
-	// Do not reorder this!
-
-	PCMD_UNLOCK_STAGES                     = 0x00,
-	PCMD_UNLOCK_STAGES_WITH_DIFFICULTY     = 0x01,
-	PCMD_HISCORE                           = 0x02,
-	PCMD_STAGE_PLAYINFO                    = 0x03,
-	PCMD_ENDINGS                           = 0x04,
-	PCMD_GAME_SETTINGS                     = 0x05,
-	PCMD_GAME_VERSION                      = 0x06,
-	PCMD_UNLOCK_BGMS                       = 0x07,
-	PCMD_UNLOCK_CUTSCENES                  = 0x08,
-} ProgfileCommand;
-
-typedef struct StageProgress {
-	// Keep this struct small if you can
-	// See stage_get_progress_from_info() in stage.c for more information
-
+typedef struct StageProgressContents {
 	uint32_t num_played;
 	uint32_t num_cleared;
+	uint64_t hiscore;
+} StageProgressContents;
+
+typedef struct StageProgress {
+	StageProgressContents global;
+	StageProgressContents per_plrmode[NUM_CHARACTERS][NUM_SHOT_MODES_PER_CHARACTER];
 	uchar unlocked : 1;
 } StageProgress;
 
@@ -66,34 +48,13 @@ typedef enum ProgressBGMID {
 	PBGM_BONUS0,  // old Iku theme
 	PBGM_BONUS1,  // Scuttle theme
 	PBGM_GAMEOVER,
+	PBGM_INTRO,
+	PBGM_STAGEX,
+	PBGM_STAGEX_BOSS,
 } ProgressBGMID;
 
-struct UnknownCmd;
-
-typedef enum EndingID {
-	// WARNING: Reordering this will break current progress files.
-
-	ENDING_BAD_MARISA,
-	ENDING_BAD_YOUMU,
-	ENDING_GOOD_MARISA,
-	ENDING_GOOD_YOUMU,
-	ENDING_BAD_REIMU,
-	ENDING_GOOD_REIMU,
-	NUM_ENDINGS,
-} EndingID;
-
-#define GOOD_ENDINGS \
-	ENDING(ENDING_GOOD_MARISA) \
-	ENDING(ENDING_GOOD_YOUMU) \
-	ENDING(ENDING_GOOD_REIMU)
-
-#define BAD_ENDINGS \
-	ENDING(ENDING_BAD_MARISA) \
-	ENDING(ENDING_BAD_YOUMU) \
-	ENDING(ENDING_BAD_REIMU)
-
 typedef struct GlobalProgress {
-	uint32_t hiscore;
+	uint64_t hiscore;
 	uint32_t achieved_endings[NUM_ENDINGS];
 	uint64_t unlocked_bgms;
 	uint64_t unlocked_cutscenes;
@@ -106,13 +67,12 @@ typedef struct GlobalProgress {
 	} game_settings;
 } GlobalProgress;
 
-
-
 extern GlobalProgress progress;
 
 void progress_load(void);
 void progress_save(void);
 void progress_unload(void);
+void progress_unlock_all(void);
 
 uint32_t progress_times_any_ending_achieved(void);
 uint32_t progress_times_any_good_ending_achieved(void);
@@ -124,3 +84,7 @@ void progress_unlock_bgm(const char *name);
 void progress_track_ending(EndingID id);
 bool progress_is_cutscene_unlocked(CutsceneID id);
 void progress_unlock_cutscene(CutsceneID id);
+
+void progress_register_stage_played(StageProgress *p, PlayerMode *pm);
+void progress_register_stage_cleared(StageProgress *p, PlayerMode *pm);
+void progress_register_hiscore(StageProgress *p, PlayerMode *pm, uint64_t score);

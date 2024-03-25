@@ -21,6 +21,7 @@
 #include "util/miscmath.h"
 // #include "util/pngcruft.h"
 #include "util/stringops.h"
+#include "util/callchain.h"
 
 // FIXME: might not be the best place for these
 #include "log.h"

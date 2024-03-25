@@ -11,9 +11,10 @@
 #include "common_tasks.h"
 #include "random.h"
 #include "util/glm.h"
+#include "stage.h"
 
 void common_drop_items(cmplx pos, const ItemCounts *items) {
-	for(int i = 0; i < ITEM_LAST - ITEM_FIRST; ++i) {
+	for(int i = 0; i < ARRAY_SIZE(items->as_array); ++i) {
 		for(int j = items->as_array[i]; j; --j) {
 			spawn_item(pos, i + ITEM_FIRST);
 			WAIT(2);
@@ -79,7 +80,7 @@ static Projectile *spawn_charge_particle_smoke(cmplx target, real power) {
 
 static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *clr, real power) {
 	cmplx pos = target + rng_dir() * dist;
-	MoveParams move = move_towards(target, rng_range(0.1, 0.2) + 0.05 * power);
+	MoveParams move = move_towards(0, target, rng_range(0.1, 0.2) + 0.05 * power);
 	move.retention = 0.25 * cdir(1.5 * rng_sign());
 
 	spawn_charge_particle_smoke(target, power);
@@ -98,9 +99,17 @@ static Projectile *spawn_charge_particle(cmplx target, real dist, const Color *c
 
 static void randomize_hue(Color *clr, float r) {
 	float h, s, l, a = clr->a;
+	float m = max(clr->r, max(clr->g, clr->b));
+
+	if(UNLIKELY(m == 0)) {
+		return;
+	}
+
+	color_div_scalar(clr, m);
 	color_get_hsl(clr, &h, &s, &l);
-	h += rng_sreal() * r;
+	h += rng_f32s() * r;
 	*clr = *HSLA(h, s, l, a);
+	color_mul_scalar(clr, m);
 }
 
 TASK(charge_sound_stopper, { SFXPlayID id; }) {
@@ -166,7 +175,7 @@ static int common_charge_impl(
 			.color = &c,
 			.pos = pos,
 			.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-			.move = move_towards(pos, 0.1),
+			.move = move_towards(0, pos, 0.1),
 			.timeout = 30,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.scale = glm_ease_bounce_out(rayfactor * (i + 1)),
@@ -278,9 +287,9 @@ DEFINE_EXTERN_TASK(common_kill_enemy) {
 
 cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	int attempts = 32;
-	double angle;
-	cmplx dest;
-	cmplx dir;
+	double angle = 0;
+	cmplx dest = 0;
+	cmplx dir = 0;
 
 	// assert(point_in_rect(origin, bounds));
 
@@ -295,10 +304,10 @@ cmplx common_wander(cmplx origin, double dist, Rect bounds) {
 	}
 
 	log_warn("Clipping fallback  origin = %f%+fi  dist = %f  bounds.top_left = %f%+fi  bounds.bottom_right = %f%+fi",
-		creal(origin), cimag(origin),
+		re(origin), im(origin),
 		dist,
-		creal(bounds.top_left), cimag(bounds.top_left),
-		creal(bounds.bottom_right), cimag(bounds.bottom_right)
+		re(bounds.top_left), im(bounds.top_left),
+		re(bounds.bottom_right), im(bounds.bottom_right)
 	);
 
 	// TODO: implement proper line-clipping here?
@@ -361,4 +370,30 @@ DEFINE_EXTERN_TASK(common_easing_animate_vec4) {
 		glm_vec4_scale(scale, f, d);
 		glm_vec4_add(from, d, *ARGS.value);
 	}
+}
+
+void common_rotate_velocity(MoveParams *move, real angle, int duration) {
+	cmplx r = cdir(angle / duration);
+	move->retention *= r;
+	WAIT(duration);
+	move->retention /= r;
+}
+
+DEFINE_EXTERN_TASK(common_rotate_velocity) {
+	common_rotate_velocity(ARGS.move, ARGS.angle, ARGS.duration);
+}
+
+DEFINE_EXTERN_TASK(common_easing_animated) {
+	double from = *ARGS.value;
+	double scale = ARGS.to - from;
+	double ftime = ARGS.duration;
+
+	for(int t = 1; t <= ARGS.duration; t++) {
+		YIELD;
+		*ARGS.value = from + scale * ARGS.ease(t / ftime);
+    }
+}
+
+DEFINE_EXTERN_TASK(common_play_sfx) {
+	play_sfx(ARGS.name);
 }

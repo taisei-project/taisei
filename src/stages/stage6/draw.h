@@ -32,6 +32,8 @@ typedef struct Stage6DrawData {
 		FBPair fbpair;
 	} baryon;
 
+	BoxedTask boss_rotation;
+
 	struct {
 		PBRModel rim;
 		PBRModel spires;
@@ -54,9 +56,6 @@ Stage6DrawData* stage6_get_draw_data(void);
 void stage6_drawsys_init(void);
 void stage6_drawsys_shutdown(void);
 void stage6_draw(void);
-
-void baryon_center_draw(Enemy*, int, bool);
-void baryon(Enemy*, int, bool);
 
 extern ShaderRule stage6_bg_effects[];
 extern ShaderRule stage6_postprocess[];

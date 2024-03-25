@@ -113,7 +113,7 @@ void glcommon_debug_enable(void) {
 #endif
 
 bool glcommon_debug_requested(void) {
-	return env_get("TAISEI_GL_DEBUG", DEBUG_GL_DEFAULT);
+	return env_get("TAISEI_GL_DEBUG", false);
 }
 
 void glcommon_set_debug_label_local(char *label_storage, const char *kind_name, GLuint gl_handle, const char *label) {

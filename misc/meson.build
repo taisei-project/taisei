@@ -9,7 +9,8 @@ if macos_app_bundle
         input : 'Info.plist.in',
         output : 'Info.plist',
         install : true,
-        install_dir : join_paths(bundle_dir, 'Contents')
+        install_dir : join_paths(bundle_dir, 'Contents'),
+        install_tag : 'runtime',
     )
 
     version_deps += plist
@@ -24,6 +25,7 @@ if angle_enabled and host_machine.system() == 'windows'
         output : angle_launcher,
         install : true,
         install_dir : bindir,
+        install_tag : 'runtime',
     )
     bindist_deps += angle_bat
 endif

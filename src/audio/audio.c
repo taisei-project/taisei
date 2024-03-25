@@ -14,6 +14,7 @@
 #include "resource/bgm.h"
 #include "resource/sfx.h"
 #include "global.h"
+#include "stage.h"
 
 #define LOOPTIMEOUTFRAMES 10
 #define DEFAULT_SFX_VOLUME 100
@@ -34,17 +35,8 @@ struct SFX {
 
 #define B (_a_backend.funcs)
 
-struct enqueued_sound {
-	LIST_INTERFACE(struct enqueued_sound);
-	char *name;
-	int time;
-	int cooldown;
-	bool replace;
-};
-
 static struct {
 	ht_str2int_t sfx_volumes;
-	struct enqueued_sound *sound_queue;
 	uint32_t *chan_play_ids;
 	uint32_t play_counter;
 	int sfx_chan_first, sfx_chan_last;
@@ -105,8 +97,8 @@ static bool get_chanrange(AudioChannelGroup g) {
 
 	assume(clast >= cfirst);
 
-	audio.sfx_chan_first = imin(audio.sfx_chan_first, cfirst);
-	audio.sfx_chan_last = imax(audio.sfx_chan_last, clast);
+	audio.sfx_chan_first = min(audio.sfx_chan_first, cfirst);
+	audio.sfx_chan_last = max(audio.sfx_chan_last, clast);
 
 	return true;
 }
@@ -133,7 +125,7 @@ void audio_init(void) {
 	if(LIKELY(have_chans)) {
 		int num_chans = audio.sfx_chan_last - audio.sfx_chan_first + 1;
 		assume(num_chans > 0);
-		audio.chan_play_ids = calloc(num_chans, sizeof(*audio.chan_play_ids));
+		audio.chan_play_ids = ALLOC_ARRAY(num_chans, typeof(*audio.chan_play_ids));
 	}
 }
 
@@ -163,14 +155,12 @@ SFX *audio_sfx_load(const char *name, const char *path) {
 	double vol = ht_get(&audio.sfx_volumes, name, DEFAULT_SFX_VOLUME) / 128.0;
 	B.object.sfx.set_volume(impl, vol);
 
-	SFX *sfx = calloc(1, sizeof(*sfx));
-	sfx->impl = impl;
-	return sfx;
+	return ALLOC(SFX, { .impl = impl });
 }
 
 void audio_sfx_destroy(SFX *sfx) {
 	B.sfx_unload(sfx->impl);
-	free(sfx);
+	mem_free(sfx);
 }
 
 static bool is_skip_mode(void) {
@@ -244,24 +234,10 @@ static SFXPlayID submit_play_sfx(
 	return register_sfx_playback(sfx, group, ch, loop);
 }
 
-static SFXPlayID play_sound_internal(
-	const char *name, bool is_ui, int cooldown, bool replace, int delay
+static SFXPlayID play_sfx_internal(
+	const char *name, bool is_ui, int cooldown, bool replace
 ) {
-	if(!audio_output_works() || is_skip_mode()) {
-		return 0;
-	}
-
-	if(delay > 0) {
-		struct enqueued_sound *s = malloc(sizeof(struct enqueued_sound));
-		s->time = global.frames + delay;
-		s->name = strdup(name);
-		s->cooldown = cooldown;
-		s->replace = replace;
-		list_push(&audio.sound_queue, s);
-		return 0;
-	}
-
-	if(!audio.sfx_enabled) {
+	if(!audio_output_works() || is_skip_mode() || !audio.sfx_enabled) {
 		return 0;
 	}
 
@@ -284,37 +260,16 @@ static SFXPlayID play_sound_internal(
 	return submit_play_sfx(sfx, group, ch, false);
 }
 
-static void *discard_enqueued_sound(List **queue, List *vsnd, void *arg) {
-	struct enqueued_sound *snd = (struct enqueued_sound*)vsnd;
-	free(snd->name);
-	free(list_unlink(queue, vsnd));
-	return NULL;
-}
-
-static void *play_enqueued_sound(struct enqueued_sound **queue, struct enqueued_sound *snd, void *arg) {
-	if(!is_skip_mode()) {
-		play_sound_internal(snd->name, false, snd->cooldown, snd->replace, 0);
-	}
-
-	free(snd->name);
-	free(list_unlink(queue, snd));
-	return NULL;
-}
-
 SFXPlayID play_sfx(const char *name) {
-	return play_sound_internal(name, false, 0, false, 0);
+	return play_sfx_internal(name, false, 0, false);
 }
 
 SFXPlayID play_sfx_ex(const char *name, int cooldown, bool replace) {
-	return play_sound_internal(name, false, cooldown, replace, 0);
-}
-
-void play_sfx_delayed(const char *name, int cooldown, bool replace, int delay) {
-	play_sound_internal(name, false, cooldown, replace, delay);
+	return play_sfx_internal(name, false, cooldown, replace);
 }
 
 void play_sfx_ui(const char *name) {
-	play_sound_internal(name, true, 0, true, 0);
+	play_sfx_internal(name, true, 0, true);
 }
 
 static void stop_sfx_fadeout(SFXPlayID sid, double fadeout) {
@@ -394,20 +349,11 @@ static void *update_sounds_callback(const char *name, Resource *res, void *arg) 
 }
 
 void reset_all_sfx(void) {
-	resource_for_each(RES_SFX, update_sounds_callback, (void*)true);
-	list_foreach(&audio.sound_queue, discard_enqueued_sound, NULL);
+	res_for_each(RES_SFX, update_sounds_callback, (void*)true);
 }
 
 void update_all_sfx(void) {
-	resource_for_each(RES_SFX, update_sounds_callback, (void*)false);
-
-	for(struct enqueued_sound *s = audio.sound_queue, *next; s; s = next) {
-		next = (struct enqueued_sound*)s->next;
-
-		if(s->time <= global.frames) {
-			play_enqueued_sound(&audio.sound_queue, s, NULL);
-		}
-	}
+	res_for_each(RES_SFX, update_sounds_callback, (void*)false);
 }
 
 void pause_all_sfx(void) {
@@ -426,7 +372,7 @@ double audioutil_loopaware_position(double rt_pos, double duration, double loop_
 	loop_start = clamp(loop_start, 0, duration);
 
 	if(rt_pos < loop_start) {
-		return fmax(0, rt_pos);
+		return max(0, rt_pos);
 	}
 
 	return fmod(rt_pos - loop_start, duration - loop_start) + loop_start;

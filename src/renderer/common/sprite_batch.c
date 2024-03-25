@@ -181,6 +181,10 @@ static void _r_sprite_batch_compute_attribs(
 	float scale_x = params->scale.x ? params->scale.x : 1;
 	float scale_y = params->scale.y ? params->scale.y : scale_x;
 
+	FloatOffset ofs = spr->padding.offset;
+	FloatExtent imgdims = spr->extent;
+	imgdims.as_cmplx -= spr->padding.extent.as_cmplx;
+
 	if(params->pos.x || params->pos.y) {
 		glm_translate(attribs.mv_transform, (vec3) { params->pos.x, params->pos.y });
 	}
@@ -195,21 +199,18 @@ static void _r_sprite_batch_compute_attribs(
 		}
 	}
 
-	glm_scale(attribs.mv_transform, (vec3) { scale_x * spr->w, scale_y * spr->h, 1 });
+	glm_scale(attribs.mv_transform, (vec3) { scale_x * imgdims.w, scale_y * imgdims.h, 1 });
 
-	float ofs_x = sprite_padded_offset_x(spr);
-	float ofs_y = sprite_padded_offset_y(spr);
-
-	if(ofs_x || ofs_y) {
+	if(ofs.x || ofs.y) {
 		if(params->flip.x) {
-			ofs_x *= -1;
+			ofs.x *= -1;
 		}
 
 		if(params->flip.y) {
-			ofs_y *= -1;
+			ofs.y *= -1;
 		}
 
-		glm_translate(attribs.mv_transform, (vec3) { ofs_x / spr->w, ofs_y / spr->h });
+		glm_translate(attribs.mv_transform, (vec3) { ofs.x / imgdims.w, ofs.y / imgdims.h });
 	}
 
 	if(params->color == NULL) {

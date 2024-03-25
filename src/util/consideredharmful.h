@@ -73,4 +73,25 @@ int rand(void);
 attr_deprecated("Use tsrand_seed instead")
 void srand(uint);
 
+
+INLINE void *libc_malloc(size_t size) { return malloc(size); }
+#undef malloc
+attr_deprecated("Use the memory.h API instead")
+void *malloc(size_t size);
+
+INLINE void libc_free(void *ptr) { free(ptr); }
+#undef free
+attr_deprecated("Use the memory.h API instead, or libc_free if this is a foreign allocation")
+void free(void *ptr);
+
+INLINE void *libc_calloc(size_t nmemb, size_t size) { return calloc(nmemb, size); }
+#undef calloc
+attr_deprecated("Use the memory.h API instead")
+void *calloc(size_t nmemb, size_t size);
+
+INLINE void *libc_realloc(void *ptr, size_t size) { return realloc(ptr, size); }
+#undef realloc
+attr_deprecated("Use the memory.h API instead")
+void *realloc(void *ptr, size_t size);
+
 PRAGMA(GCC diagnostic pop)

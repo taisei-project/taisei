@@ -28,40 +28,41 @@ struct stage1_spells_s stage1_spells = {
 	.mid = {
 		.perfect_freeze = {
 			{-1, -1,  2,  3}, AT_Spellcard, "Freeze Sign “Perfect Freeze”", 50, 24000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_perfect_freeze),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 	},
 
 	.boss = {
 		.crystal_rain = {
 			{ 4,  5,  6,  7}, AT_Spellcard, "Freeze Sign “Crystal Rain”", 40, 33000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_rain),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.snow_halation = {
 			{-1, -1, 12, 13}, AT_Spellcard, "Winter Sign “Snow Halation”", 50, 40000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_snow_halation),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 		.icicle_cascade = {
 			{ 8,  9, 10, 11}, AT_Spellcard, "Doom Sign “Icicle Cascade”", 40, 40000,
-			NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade)
+			TASK_INDIRECT_INIT(BossAttack, stage1_spell_icicle_cascade),
+			stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 		},
 	},
 
 	.extra.crystal_blizzard = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Frost Sign “Crystal Blizzard”", 60, 40000,
-		NULL, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
-		TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard)
+		TASK_INDIRECT_INIT(BossAttack, stage1_spell_crystal_blizzard),
+		stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 	},
 };
 
 #ifdef SPELL_BENCHMARK
 AttackInfo stage1_spell_benchmark = {
 	{-1, -1, -1, -1, 127}, AT_SurvivalSpell, "Profiling “ベンチマーク”", 40, 40000,
-	stage1_spell_benchmark_proc, stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I
+	TASK_INDIRECT_INIT(BossAttack, stage1_spell_benchmark),
+	stage1_draw_cirno_spellbg, VIEWPORT_W/2.0+100.0*I, 1,
 };
 #endif
 
@@ -87,29 +88,33 @@ static void stage1_spellpractice_start(void) {
 	INVOKE_TASK_WHEN(&cirno->events.defeated, common_call_func, stage1_bg_disable_snow);
 }
 
-static void stage1_preload(void) {
+static void stage1_preload(ResourceGroup *rg) {
 	// DIALOG_PRELOAD(&global.plr, Stage1PreBoss, RESF_DEFAULT);
-	portrait_preload_base_sprite("cirno", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("cirno", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	portrait_preload_base_sprite(rg, "cirno", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "cirno", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "cirno", "angry", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "cirno", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "cirno", "defeated", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage1", "stage1boss", NULL);
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"stage1/cirnobg",
 		"stage1/fog",
 		"stage1/snowlayer",
 		"stage1/waterplants",
 	NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
 		"stage1/horizon",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"blur5",
 		"stage1_water",
 		"zbuf_fog",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/cirno",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }

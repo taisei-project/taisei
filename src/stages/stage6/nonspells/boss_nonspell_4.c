@@ -10,87 +10,51 @@
 
 #include "nonspells.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
 
-static int baryon_nattack(Enemy *e, int t) {
-	if(t < 0)
-		return 1;
+TASK(baryons_nonspell_movement, { BoxedEllyBaryons baryons; }) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
-	TIMER(&t);
-
-	e->pos = global.boss->pos + (e->pos-global.boss->pos)*cexp(0.006*I);
-
-	FROM_TO_SND("shot1_loop",30, 10000, (7 - global.diff)) {
-		float a = 0.2*_i + creal(e->args[2]) + 0.006*t;
-		float ca = a + t/60.0f;
-		PROJECTILE(
-			.proto = pp_ball,
-			.pos = e->pos+40*cexp(I*a),
-			.color = RGB(cos(ca), sin(ca), cos(ca+2.1)),
-			.rule = asymptotic,
-			.args = {
-				(1+0.2*global.diff)*cexp(I*a),
-				3
-			}
-		);
-	}
-
-	return 1;
-}
-
-void elly_baryonattack(Boss *b, int t) {
-	TIMER(&t);
-	AT(0)
-		set_baryon_rule(baryon_nattack);
-	AT(EVENT_DEATH)
-		set_baryon_rule(baryon_reset);
-}
-
-void elly_baryonattack2(Boss *b, int t) {
-	TIMER(&t);
-	AT(0) {
-		aniplayer_queue(&b->ani, "snipsnip", 0);
-		set_baryon_rule(baryon_nattack);
-	}
-	AT(EVENT_DEATH)
-		set_baryon_rule(baryon_reset);
-
-	FROM_TO(100, 100000, 200-5*global.diff) {
-		play_sfx("shot_special1");
-
-		if(_i % 2) {
-			int cnt = 5;
-			for(int i = 0; i < cnt; ++i) {
-				float a = M_PI/4;
-				a = a * (i/(float)cnt) - a/2;
-				cmplx n = cexp(I*(a+carg(global.plr.pos-b->pos)));
-
-				for(int j = 0; j < 3; ++j) {
-					PROJECTILE(
-						.proto = pp_bigball,
-						.pos = b->pos,
-						.color = RGB(0,0.2,0.9),
-						.rule = asymptotic,
-						.args = { n, 2 * j }
-					);
-				}
-			}
-		} else {
-			int x, y;
-			int w = 1+(global.diff > D_Normal);
-			cmplx n = cexp(I*carg(global.plr.pos-b->pos));
-
-			for(x = -w; x <= w; x++) {
-				for(y = -w; y <= w; y++) {
-					PROJECTILE(
-						.proto = pp_bigball,
-						.pos = b->pos+25*(x+I*y)*n,
-						.color = RGB(0,0.2,0.9),
-						.rule = asymptotic,
-						.args = { n, 3 },
-					);
-				}
-			}
+	for(int t = 0;; t++) {
+		for(int i = 0; i < NUM_BARYONS; i++) {
+			baryons->target_poss[i] = baryons->center_pos + 150 * cdir(M_TAU/6 * i + 0.006 * t);
 		}
+		YIELD;
 	}
+}
+	
+
+DEFINE_EXTERN_TASK(stage6_boss_nonspell_baryons_common) {
+	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
+	INVOKE_SUBTASK(baryons_nonspell_movement, ARGS.baryons);
+
+	int interval = difficulty_value(6, 5, 4, 3);
+	real speed = difficulty_value(1.2, 1.4, 1.6, 1.8);
+
+	WAIT(30);
+	for(int t = 0;; t++) {
+		play_sfx_loop("shot1_loop");
+		for(int i = 0; i < NUM_BARYONS; i++) {
+			real angle = (0.2 + 0.006 * interval) * t + i;
+
+			real color_angle = angle + t * interval / 60.0;
+
+			PROJECTILE(
+				.proto = pp_ball,
+				.pos = baryons->poss[i] + 40 * cdir(angle),
+				.color = RGB(cos(color_angle), sin(color_angle), cos(color_angle + 2.1)),
+				.move = move_asymptotic_simple(speed * cdir(angle), 3)
+			);
+		}
+
+		WAIT(interval);
+	}
+}
+
+DEFINE_EXTERN_TASK(stage6_boss_nonspell_4) {
+	STAGE_BOOKMARK(boss-non4);
+	stage6_elly_init_baryons_attack(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS.base);
+
+	INVOKE_SUBTASK(stage6_boss_nonspell_baryons_common, ARGS.baryons);
+	STALL;
 }

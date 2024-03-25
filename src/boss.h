@@ -16,6 +16,7 @@
 #include "projectile.h"
 #include "entity.h"
 #include "coroutine.h"
+#include "resource/resource.h"
 
 #define BOSS_HURT_RADIUS 16
 #define BOSS_MAX_ATTACKS 24
@@ -43,7 +44,6 @@ typedef enum AttackType {
 	AT_Spellcard,
 	AT_SurvivalSpell,
 	AT_ExtraSpell,
-	AT_Immediate,
 } AttackType;
 
 #define ATTACK_IS_SPELL(a) ((a) == AT_Spellcard || (a) == AT_SurvivalSpell || (a) == AT_ExtraSpell)
@@ -72,7 +72,7 @@ struct AttackInfo {
 
 		IDs of AT_ExtraSpell attacks may overlap with those of other types.
 
-		Most importantly DO NOT CHANGE ENSTABILISHED IDs unless you absolutely must.
+		Most importantly DO NOT CHANGE ESTABLISHED IDs unless you absolutely must.
 		Doing so is going to break replays, progress files, and anything that stores stage IDs permanently.
 		Stage IDs are an internal detail invisible to the player, so they don't need to have any kind of fancy ordering.
 	*/
@@ -83,18 +83,15 @@ struct AttackInfo {
 	float timeout;
 	float hp;
 
-	BossRule rule;
+	TASK_INDIRECT_TYPE(BossAttack) task;
 	BossRule draw_rule;
 
 	cmplx pos_dest;
 	int bonus_rank;
-
-	// TODO: when we no longer need rule, this shall take its place
-	TASK_INDIRECT_TYPE(BossAttack) task;
 };
 
 struct Attack {
-	char *name;
+	const char *name;
 
 	AttackType type;
 
@@ -108,7 +105,6 @@ struct Attack {
 	float maxhp;
 	float hp;
 
-	BossRule rule;
 	BossRule draw_rule;
 
 	COEVENTS_ARRAY(
@@ -143,7 +139,7 @@ DEFINE_ENTITY_TYPE(Boss, {
 	Attack attacks[BOSS_MAX_ATTACKS];
 	Attack *current;
 
-	char *name;
+	const char *name;
 
 	int acount;
 
@@ -158,8 +154,6 @@ DEFINE_ENTITY_TYPE(Boss, {
 	int lastdamageframe; // used to make the boss blink on damage taken
 	int birthtime;
 
-	BossRule global_rule;
-
 	MoveParams move;
 
 	// These are publicly accessible damage multipliers *you* can use to buff your spells.
@@ -167,6 +161,11 @@ DEFINE_ENTITY_TYPE(Boss, {
 	// If a new attack starts, they are reset. Nothing can go wrong!
 	float bomb_damage_multiplier;
 	float shot_damage_multiplier;
+
+	bool in_background;
+	float background_transition;
+
+	float damage_to_power_accum;
 
 	struct {
 		float opacity;
@@ -189,7 +188,7 @@ DEFINE_ENTITY_TYPE(Boss, {
 	COEVENTS_ARRAY(defeated) events;
 });
 
-Boss *create_boss(char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
+Boss *create_boss(const char *name, char *ani, cmplx pos) attr_nonnull(1, 2) attr_returns_nonnull;
 void free_boss(Boss *boss) attr_nonnull(1);
 void process_boss(Boss **boss) attr_nonnull(1);
 
@@ -198,12 +197,12 @@ void draw_boss_background(Boss *boss) attr_nonnull(1);
 void draw_boss_overlay(Boss *boss) attr_nonnull(1);
 void draw_boss_fake_overlay(Boss *boss) attr_nonnull(1);
 
-Attack *boss_add_attack(Boss *boss, AttackType type, char *name, float timeout, int hp, BossRule rule, BossRule draw_rule)
+Attack *boss_add_attack(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
-Attack *boss_add_attack_task(Boss *boss, AttackType type, char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
+Attack *boss_add_attack_task(Boss *boss, AttackType type, const char *name, float timeout, int hp, BossAttackTask task, BossRule draw_rule)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_task_with_args(
-	Boss *boss, AttackType type, char *name, float timeout, int hp,
+	Boss *boss, AttackType type, const char *name, float timeout, int hp,
 	BossAttackTask task, BossRule draw_rule, BossAttackTaskCustomArgs args)
 	attr_nonnull(1) attr_returns_nonnull;
 Attack *boss_add_attack_from_info(Boss *boss, AttackInfo *info, bool move)
@@ -223,11 +222,13 @@ bool boss_is_fleeing(Boss *boss) attr_nonnull(1);
 bool boss_is_vulnerable(Boss *boss) attr_nonnull(1);
 bool boss_is_player_collision_active(Boss *boss) attr_nonnull(1);
 
+cmplx boss_get_sprite_offset(Boss *boss);
+
 void boss_death(Boss **boss) attr_nonnull(1);
 
 void boss_reset_motion(Boss *boss) attr_nonnull(1);
 
-void boss_preload(void);
+void boss_preload(ResourceGroup *rg);
 
 #define BOSS_DEFAULT_SPAWN_POS (VIEWPORT_W * 0.5 - I * VIEWPORT_H * 0.5)
 #define BOSS_DEFAULT_GO_POS (VIEWPORT_W * 0.5 + 200.0*I)

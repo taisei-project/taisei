@@ -16,6 +16,7 @@
 #include "common/state.h"
 #include "util/glm.h"
 #include "util/graphics.h"
+#include "resource/resource.h"
 #include "resource/texture.h"
 #include "resource/sprite.h"
 #include "coroutine.h"
@@ -23,6 +24,7 @@
 #define B _r_backend.funcs
 
 static struct {
+	ResourceGroup rg;
 	struct {
 		ShaderProgram *standard;
 		ShaderProgram *standardnotex;
@@ -46,7 +48,9 @@ void r_post_init(void) {
 	_r_models_init();
 	_r_sprite_batch_init();
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_init(&R.rg);
+
+	res_group_preload(&R.rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"sprite_default",
 		"texture_post_load",
 		"standard",
@@ -54,7 +58,7 @@ void r_post_init(void) {
 	NULL);
 
 #if DEBUG
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_preload(&R.rg, RES_FONT, RESF_DEFAULT,
 		"monotiny",
 	NULL);
 #endif
@@ -70,9 +74,13 @@ void r_post_init(void) {
 	r_depth_func(DEPTH_LEQUAL);
 	r_cull(CULL_BACK);
 	r_blend(BLEND_PREMUL_ALPHA);
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	log_info("Rendering subsystem initialized (%s)", _r_backend.name);
+}
+
+void r_release_resources(void) {
+	res_group_release(&R.rg);
 }
 
 void r_shutdown(void) {
@@ -543,7 +551,7 @@ TextureType r_texture_type_from_pixmap_format(PixmapFormat fmt) {
 }
 
 uint r_texture_util_max_num_miplevels(uint width, uint height) {
-	uint dim = umax(width, height);
+	uint dim = max(width, height);
 	return dim > 0 ? 1 + floor(log2(dim)) : 0;  // TODO replace with integer log2
 }
 
@@ -593,8 +601,12 @@ void r_framebuffer_get_output_attachments(Framebuffer *fb, FramebufferAttachment
 	B.framebuffer_outputs(fb, config, 0x00);
 }
 
-void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval) {
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval) {
 	B.framebuffer_clear(fb, flags, colorval, depthval);
+}
+
+void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) {
+	B.framebuffer_copy(dst, src, flags);
 }
 
 void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h) {
@@ -859,7 +871,7 @@ void _r_uniform_vec2_vec(const char *uniform, vec2_noalign value) {
 
 void _r_uniform_ptr_vec2_complex(Uniform *uniform, cmplx value) {
 	ASSERT_UTYPE(uniform, UNIFORM_VEC2);
-	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { creal(value), cimag(value) });
+	if(uniform) B.uniform(uniform, 0, 1, (vec2_noalign) { re(value), im(value) });
 }
 
 void _r_uniform_vec2_complex(const char *uniform, cmplx value) {
@@ -883,8 +895,8 @@ void _r_uniform_ptr_vec2_array_complex(Uniform *uniform, uint offset, uint count
 		float *aptr = arr, *aend = arr + sizeof(arr)/sizeof(*arr);
 
 		do {
-			*aptr++ = creal(*eptr);
-			*aptr++ = cimag(*eptr++);
+			*aptr++ = re(*eptr);
+			*aptr++ = im(*eptr++);
 		} while(aptr < aend);
 
 		B.uniform(uniform, offset, count, arr);

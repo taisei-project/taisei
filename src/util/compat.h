@@ -24,6 +24,17 @@
 #include <stdnoreturn.h>
 #include <string.h>
 
+// clang defines this too
+#ifndef __GNUC__
+	#warning Unsupported compiler. Only GCC and Clang are officially supported. Expect errors.
+#endif
+
+#ifdef TAISEI_BUILDCONF_REL_SRC_DIR
+	#define _TAISEI_SRC_FILE ((const char *)__FILE__ + sizeof(TAISEI_BUILDCONF_REL_SRC_DIR) - 1)
+#else
+	#define _TAISEI_SRC_FILE __FILE__
+#endif
+
 #include "util/assert.h"
 
 #ifdef __FAST_MATH__
@@ -65,49 +76,30 @@
 
 // This macro should be provided by stddef.h, but in practice it sometimes is not.
 #ifndef offsetof
-	#ifdef __GNUC__
-		#define offsetof(type, field) __builtin_offsetof(type, field)
-	#else
-		#define offsetof(type, field) ((size_t)&(((type *)0)->field))
-	#endif
+	#define offsetof(type, field) __builtin_offsetof(type, field)
 #endif
 
 #define PRAGMA(p) _Pragma(#p)
+#define UNREACHABLE ({ \
+	assert(0, "This code should never be reachable"); \
+	__builtin_unreachable(); \
+})
+#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
 
-#ifndef __GNUC__ // clang defines this too
-	#pragma Unsupported compiler, expect nothing to work
-
-	#define __attribute__(...)
-	#define __extension__
-	#define UNREACHABLE
-	#define DIAGNOSTIC(x)
+#if defined(__clang__)
 	#define DIAGNOSTIC_GCC(x)
-	#define DIAGNOSTIC_CLANG(x)
-	#define LIKELY(x) (bool)(x)
-	#define UNLIKELY(x) (bool)(x)
+	#define DIAGNOSTIC_CLANG(x) PRAGMA(clang diagnostic x)
 #else
-	#define UNREACHABLE __builtin_unreachable()
-
-	#define DIAGNOSTIC(x) PRAGMA(GCC diagnostic x)
-
-	#if defined(__clang__)
-		#define DIAGNOSTIC_GCC(x)
-		#define DIAGNOSTIC_CLANG(x) PRAGMA(clang diagnostic x)
-	#else
-		#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
-		#define DIAGNOSTIC_CLANG(x)
-	#endif
-
-	#define LIKELY(x) __builtin_expect((bool)(x), 1)
-	#define UNLIKELY(x) __builtin_expect((bool)(x), 0)
+	#define DIAGNOSTIC_GCC(x) PRAGMA(GCC diagnostic x)
+	#define DIAGNOSTIC_CLANG(x)
 #endif
 
+#define LIKELY(x) __builtin_expect((bool)(x), 1)
+#define UNLIKELY(x) __builtin_expect((bool)(x), 0)
+
 #ifndef __has_attribute
-	#ifdef __GNUC__
-		#define __has_attribute(attr) 1
-	#else
-		#define __has_attribute(attr) 0
-	#endif
+	// FIXME: maybe should be 0?
+	#define __has_attribute(attr) 1
 #endif
 
 #ifndef __has_feature
@@ -132,12 +124,8 @@
 	#endif
 #endif
 
-#if !defined(ASSUME) && defined(__GNUC__)
+#if !defined(ASSUME)
 	#define ASSUME(x) do { if(!(x)) { UNREACHABLE; } } while(0)
-#endif
-
-#ifndef ASSUME
-	#define ASSUME(x)
 #endif
 
 // On windows, use the MinGW implementations of printf and friends instead of the crippled mscrt ones.
@@ -266,7 +254,7 @@ typedef _Complex double cmplx;
 	attr_returns_nonnull attr_returns_max_aligned attr_nodiscard
 
 // Structure must not be initialized with an implicit (non-designated) initializer.
-#if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_USE_DESIGNATED_INIT)
+#if __has_attribute(designated_init) && defined(TAISEI_BUILDCONF_HAVE_ATTR_DESIGNATED_INIT)
 	#define attr_designated_init \
 		__attribute__ ((designated_init))
 #else
@@ -278,15 +266,31 @@ typedef _Complex double cmplx;
 #define attr_malloc \
 	__attribute__ ((malloc))
 
-// Function returns a pointer to object whose size is specified by the 'size_arg_index'th function argument.
-#define attr_alloc_size(size_arg_index) \
-	__attribute__ ((alloc_size(size_arg_index)))
+// Function returns a pointer that must be 'freed' with the specified deallocator function
+#ifdef TAISEI_BUILDCONF_HAVE_ATTR_MALLOC_WITH_ARGS
+	#define attr_dealloc(deallocator, arg_index) \
+		__attribute__ ((malloc(deallocator, arg_index)))
+#else
+	#define attr_dealloc(deallocator, arg_index)
+#endif
+
+// With one argument n: function returns a pointer to object whose size is specified by the
+// nth argument.
+// With two arguments n, m: function returns a pointer to object whose size is specified by the
+// product of nth and mth arguments.
+#define attr_alloc_size(...) \
+	__attribute__ ((alloc_size(__VA_ARGS__)))
+
+// Function returns a pointer aligned to a byte boundary specified by nth argument
+#define attr_alloc_align(arg_index) \
+	__attribute__ ((alloc_align(arg_index)))
+
 
 #define INLINE static inline attr_must_inline __attribute__((gnu_inline))
 
 #define ASSUME_ALIGNED(expr, alignment) ({ \
 	static_assert(__builtin_constant_p(alignment), ""); \
-	__auto_type _assume_aligned_ptr = (expr); \
+	auto _assume_aligned_ptr = (expr); \
 	assert(((uintptr_t)_assume_aligned_ptr & ((alignment) - 1)) == 0); \
 	__builtin_assume_aligned(_assume_aligned_ptr, (alignment)); \
 })
@@ -297,7 +301,7 @@ typedef _Complex double cmplx;
 #define CASTPTR_ASSUME_ALIGNED(expr, type) ((type*)ASSUME_ALIGNED((expr), alignof(type)))
 
 #define NOT_NULL(expr) ({ \
-	__auto_type _assume_not_null_ptr = (expr); \
+	auto _assume_not_null_ptr = (expr); \
 	assume(_assume_not_null_ptr != NULL); \
 	_assume_not_null_ptr; \
 })
@@ -316,3 +320,8 @@ typedef _Complex double cmplx;
 #if defined(__SANITIZE_ADDRESS__) || __has_feature(address_sanitizer)
 	#define ADDRESS_SANITIZER
 #endif
+
+// `auto` for type inference is standardized in C23 based on GCC's __auto_type semantics.
+// We want to have it now, and we don't care about the useless original purpose of C's `auto`.
+// from __future__ import auto
+#define auto __auto_type

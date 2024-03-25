@@ -50,8 +50,8 @@ void fbpair_swap(FBPair *pair) {
 }
 
 static void fbpair_clear(FBPair *pair) {
-	r_framebuffer_clear(pair->front, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
-	r_framebuffer_clear(pair->back, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(pair->front, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
+	r_framebuffer_clear(pair->back, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 }
 
 void fbpair_resize(FBPair *pair, FramebufferAttachment attachment, uint width, uint height) {

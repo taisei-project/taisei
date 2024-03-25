@@ -42,10 +42,10 @@ DEFINE_ENTITY_TYPE(ReimuASlave, {
 	uint alive;
 });
 
-static void reimu_spirit_preload(void) {
+static void reimu_spirit_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle",
@@ -55,16 +55,16 @@ static void reimu_spirit_preload(void) {
 		"part/fantasyseal_impact",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"runes",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"sprite_yinyang",
 		"reimu_bomb_bg",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"boom",
 		"bomb_reimu_a",
 		"bomb_marisa_b",
@@ -123,7 +123,7 @@ static Projectile *reimu_spirit_spawn_ofuda_particle(Projectile *p, int t, real 
 		.move = move_linear(p->move.velocity * rng_range(0.6, 1.0) * vfactor),
 		.draw_rule = pdraw_timeout_scalefade(1, 1.5, 1, 0),
 		.layer = LAYER_PARTICLE_LOW,
-		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+		.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		.scale = REIMU_SPIRIT_HOMING_SCALE,
 	);
 }
@@ -257,7 +257,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 			.timeout = 120,
 			.layer = LAYER_BOSS + 1,
 			.angle = -M_PI/2,
-			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE,
+			.flags = PFLAG_NOREFLECT | PFLAG_REQUIREDPARTICLE | PFLAG_MANUALANGLE,
 		));
 	}
 
@@ -266,7 +266,7 @@ TASK(reimu_spirit_bomb_orb_impact, { BoxedProjectile orb; }) {
 
 		ENT_ARRAY_FOREACH_COUNTER(&impact_effects, int i, Projectile *p, {
 			float t = (global.frames - p->birthtime) / p->timeout;
-			float attack = fmin(1, vrng_f32_range(rand[i], 7, 12) * t);
+			float attack = min(1, vrng_f32_range(rand[i], 7, 12) * t);
 			float decay = t;
 
 			Color c = base_colors[i];
@@ -415,7 +415,7 @@ TASK(reimu_spirit_bomb_background, { ReimuAController *ctrl; }) {
 		float alpha = 0.0f;
 
 		if(t > 0) {
-			alpha = fminf(1.0f, 10.0f * t);
+			alpha = min(1.0f, 10.0f * t);
 		}
 
 		if(t > 0.7) {
@@ -469,9 +469,8 @@ TASK(reimu_spirit_ofuda, { cmplx pos; cmplx vel; real damage; ShaderProgram *sha
 		.shader_ptr = ARGS.shader,
 	));
 
-	for(int t = 0;; ++t) {
+	for(;;YIELD) {
 		reimu_common_ofuda_swawn_trail(ofuda);
-		YIELD;
 	}
 }
 
@@ -532,7 +531,7 @@ TASK(reimu_slave_shot_particles, {
 			.draw_rule = draw,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
 			.move = move,
-			.pos = slave->pos,
+			.pos = slave->pos + move.velocity * 0.5,
 			.sprite_ptr = sprite,
 			.timeout = timeout,
 		);
@@ -547,7 +546,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_needle_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -575,7 +574,7 @@ TASK(reimu_spirit_slave_needle_shot, {
 		);
 
 		ctrl->last_needle_fire_time = global.frames;
-		ctrl->last_homing_fire_time = imax(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
+		ctrl->last_homing_fire_time = max(ctrl->last_homing_fire_time, global.frames - SHOT_SLAVE_HOMING_DELAY / 2);
 
 		WAIT(delay);
 	}
@@ -598,10 +597,10 @@ TASK(reimu_spirit_slave_needle, {
 	cmplx rot = cdir(ARGS.rotation);
 
 	real target_speed = 0.005 * dist;
-	MoveParams move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
-		move.attraction = approach(move.attraction, target_speed, target_speed / 12.0);
+		move.attraction = approach(re(move.attraction), target_speed, target_speed / 12.0);
 		move.attraction_point = plr->pos + offset;
 		offset *= rot;
 		move_update(&slave->pos, &move);
@@ -619,7 +618,7 @@ TASK(reimu_spirit_slave_homing_shot, {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
 	ReimuASlave *slave = TASK_BIND(ARGS.slave);
-	WAIT(imax(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
+	WAIT(max(0, SHOT_SLAVE_HOMING_DELAY - (global.frames - ctrl->last_homing_fire_time)));
 
 	ShaderProgram *shader = res_shader("sprite_particle");
 	Sprite *particle_spr = res_sprite("part/stain");
@@ -667,10 +666,10 @@ TASK(reimu_spirit_slave_homing, {
 
 	cmplx offset = ARGS.offset;
 	real target_speed = 0.005 * cabs(offset);
-	MoveParams move = move_towards(plr->pos + offset, 0);
+	MoveParams move = move_towards(0, plr->pos + offset, 0);
 
 	do {
-		move.attraction = approach(move.attraction, target_speed, target_speed / 12.0);
+		move.attraction = approach(re(move.attraction), target_speed, target_speed / 12.0);
 		move.attraction_point = plr->pos + offset;
 		move_update(&slave->pos, &move);
 		YIELD;
@@ -741,7 +740,7 @@ static void reimu_spirit_kill_slaves(ReimuAController *ctrl) {
 
 static void reimu_spirit_respawn_slaves(ReimuAController *ctrl) {
 	Player *plr = ctrl->plr;
-	int power_rank = plr->power / 100;
+	int power_rank = player_get_effective_power(plr) / 100;
 
 	reimu_spirit_kill_slaves(ctrl);
 
@@ -780,11 +779,11 @@ TASK(reimu_spirit_focus_handler, { ReimuAController *ctrl; }) {
 TASK(reimu_spirit_power_handler, { ReimuAController *ctrl; }) {
 	ReimuAController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			reimu_spirit_respawn_slaves(ctrl);
 			old_power = new_power;
@@ -833,7 +832,7 @@ TASK(reimu_spirit_shot_volley, { ReimuAController *ctrl; }) {
 	for(;;) {
 		WAIT_EVENT_OR_DIE(&plr->events.shoot);
 
-		int power_rank = plr->power / 100;
+		int power_rank = player_get_effective_power(plr) / 100;
 		real damage = SHOT_VOLLEY_DMG;
 
 		for(int pwr = 0; pwr <= power_rank; ++pwr) {

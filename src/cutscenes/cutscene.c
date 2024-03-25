@@ -19,7 +19,10 @@
 #include "renderer/api.h"
 #include "util/fbmgr.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 #include "video.h"
+#include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
@@ -48,6 +51,7 @@ typedef struct CutsceneState {
 	const CutscenePhase *phase;
 	const CutscenePhaseTextEntry *text_entry;
 	CallChain cc;
+	ResourceGroup rg;
 
 	CutsceneBGState bg_state;
 	LIST_ANCHOR(CutsceneTextVisual) text_visuals;
@@ -117,7 +121,7 @@ static bool skip_text_animation(CutsceneState *st) {
 static void begin_fadeout(CutsceneState *st) {
 	const int fade_frames = CUTSCENE_FADE_OUT;
 	audio_bgm_stop((FPS * fade_frames) / 4000.0);
-	set_transition(TransFadeBlack, fade_frames, fade_frames);
+	set_transition(TransFadeBlack, fade_frames, fade_frames, NO_CALLCHAIN);
 	st->fadeout_timer = fade_frames;
 	st->bg_state.next_scene = NULL;
 	st->bg_state.fade_out = true;
@@ -151,11 +155,11 @@ static void cutscene_advance(CutsceneState *st) {
 		}
 
 		if(st->text_entry && st->text_entry->text) {
-			CutsceneTextVisual *tv = calloc(1, sizeof(*tv));
-			tv->alpha = 0.1;
-			tv->target_alpha = 1;
-			tv->entry = st->text_entry;
-			alist_append(&st->text_visuals, tv);
+			alist_append(&st->text_visuals, ALLOC(CutsceneTextVisual, {
+				.alpha = 0.1,
+				.target_alpha = 1,
+				.entry = st->text_entry,
+			}));
 		}
 	}
 
@@ -214,7 +218,7 @@ static LogicFrameAction cutscene_logic_frame(void *ctx) {
 		}
 
 		if(fapproach_p(&tv->alpha, tv->target_alpha, rate) == 0) {
-			free(alist_unlink(&st->text_visuals, tv));
+			mem_free(alist_unlink(&st->text_visuals, tv));
 		}
 	}
 
@@ -338,7 +342,7 @@ static void draw_text(CutsceneState *st) {
 		text_wrap(font, e->text, w, buf, sizeof(buf));
 		text_draw(buf, &p);
 
-		y += text_height(font, buf, 0) * glm_ease_quad_in(fminf(3 * tv->alpha, 1));
+		y += text_height(font, buf, 0) * glm_ease_quad_in(min(3.0f * tv->alpha, 1.0f));
 	}
 
 	r_state_pop();
@@ -346,20 +350,20 @@ static void draw_text(CutsceneState *st) {
 
 static RenderFrameAction cutscene_render_frame(void *ctx) {
 	CutsceneState *st = ctx;
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	set_ortho(SCREEN_W, SCREEN_H);
 
 	r_state_push();
 
 	r_framebuffer(st->text_fb);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	draw_text(st);
 
 	r_shader_standard();
 	r_blend(BLEND_NONE);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	draw_framebuffer_tex(st->text_fb, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);
 
@@ -369,13 +373,13 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 	r_uniform_vec2("blur_resolution", mask_vp.w, mask_vp.h);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	r_uniform_vec2("blur_direction", 1, 0);
 	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);
 
 	r_framebuffer(st->erase_mask_fbpair.back);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 	r_uniform_vec2("blur_direction", 0, 1);
 	draw_framebuffer_tex(st->erase_mask_fbpair.front, SCREEN_W, SCREEN_H);
 	fbpair_swap(&st->erase_mask_fbpair);
@@ -392,35 +396,43 @@ static RenderFrameAction cutscene_render_frame(void *ctx) {
 
 static void cutscene_end_loop(void *ctx) {
 	CutsceneState *st = ctx;
+	res_group_release(&st->rg);
 
 	for(CutsceneTextVisual *tv = st->text_visuals.first, *next; tv; tv = next) {
 		next = tv->next;
-		free(tv);
+		mem_free(tv);
 	}
 
 	fbmgr_group_destroy(st->mfb_group);
 
 	CallChain cc = st->cc;
-	free(st);
+	mem_free(st);
+
+	demoplayer_resume();
 	run_call_chain(&cc, NULL);
 }
 
-static void cutscene_preload(const CutscenePhase phases[]) {
+static void cutscene_preload(const CutscenePhase phases[], ResourceGroup *rg) {
 	for(const CutscenePhase *p = phases; p->background; ++p) {
 		if(*p->background) {
-			preload_resource(RES_TEXTURE, p->background, RESF_DEFAULT);
+			res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, p->background, NULL);
 		}
 	}
+
+	res_group_preload(rg, RES_BGM, RESF_DEFAULT, "ending", NULL);
 }
 
 static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
-	cutscene_preload(phases);
-	CutsceneState *st = calloc(1, sizeof(*st));
-	st->phase = &phases[0];
+	auto st = ALLOC(CutsceneState, {
+		.phase = &phases[0],
+		.mfb_group = fbmgr_group_create(),
+	});
+
+	res_group_init(&st->rg);
+	cutscene_preload(phases, &st->rg);
+
 	switch_bg(st, st->phase->background);
 	reset_timers(st);
-
-	st->mfb_group = fbmgr_group_create();
 
 	FBAttachmentConfig a = { 0 };
 	a.attachment = FRAMEBUFFER_ATTACH_COLOR0;
@@ -462,7 +474,9 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
 	st->bg_state.transition_rate = 1/80.0f;
+	progress_unlock_bgm(cs->bgm);
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
+	demoplayer_suspend();
 	eventloop_enter(st, cutscene_logic_frame, cutscene_render_frame, cutscene_end_loop, FPS);
 }
 

@@ -12,7 +12,7 @@
 
 IndexBuffer *gles20_index_buffer_create(uint index_size, size_t max_elements) {
 	assert(index_size == sizeof(gles20_ibo_index_t));
-	IndexBuffer *ibuf = calloc(1, sizeof(*ibuf) + max_elements * sizeof(gles20_ibo_index_t));
+	auto ibuf = ALLOC_FLEX(IndexBuffer, max_elements * sizeof(gles20_ibo_index_t));
 	snprintf(ibuf->debug_label, sizeof(ibuf->debug_label), "Fake IBO at %p", (void*)ibuf);
 	ibuf->num_elements = max_elements;
 	return ibuf;
@@ -55,7 +55,7 @@ void gles20_index_buffer_add_indices(IndexBuffer *ibuf, size_t data_size, void *
 }
 
 void gles20_index_buffer_destroy(IndexBuffer *ibuf) {
-	free(ibuf);
+	mem_free(ibuf);
 }
 
 void gles20_index_buffer_flush(IndexBuffer *ibuf) {

@@ -46,10 +46,24 @@ void pngutil_setup_error_handlers(png_structp png) {
 	png_set_error_fn(png, NULL, pngutil_error_handler, pngutil_warning_handler);
 }
 
+static PNG_CALLBACK(png_voidp, pngutil_malloc, (png_structp png, png_alloc_size_t size)) {
+	return mem_alloc(size);
+}
+
+static PNG_CALLBACK(void, pngutil_free, (png_structp png, png_voidp ptr)) {
+	mem_free(ptr);
+}
+
 png_structp pngutil_create_read_struct(void) {
-	return png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, pngutil_error_handler, pngutil_warning_handler);
+	return png_create_read_struct_2(
+		PNG_LIBPNG_VER_STRING,
+		NULL, pngutil_error_handler, pngutil_warning_handler,
+		NULL, pngutil_malloc, pngutil_free);
 }
 
 png_structp pngutil_create_write_struct(void) {
-	return png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, pngutil_error_handler, pngutil_warning_handler);
+	return png_create_write_struct_2(
+		PNG_LIBPNG_VER_STRING,
+		NULL, pngutil_error_handler, pngutil_warning_handler,
+		NULL, pngutil_malloc, pngutil_free);
 }

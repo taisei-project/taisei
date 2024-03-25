@@ -1,6 +1,9 @@
 build/
+build-release/
 winbuild/
 osxbuild/
+releases/
+emsdk/
 .ctagsdb
 .*DS_Store
 __pycache__
@@ -11,3 +14,4 @@ __pycache__
 *~
 *-autosave.kra
 *.swp
+.VERSION

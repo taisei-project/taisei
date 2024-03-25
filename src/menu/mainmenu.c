@@ -78,7 +78,7 @@ static bool main_menu_input_handler(SDL_Event *event, void *arg) {
 	TaiseiEvent te = TAISEI_EVENT(event->type);
 	static hrtime_t last_abort_time = 0;
 
-	if(te == TE_MENU_ABORT) {
+	if(te == TE_MENU_ABORT && dynarray_get(&m->entries, m->entries.num_elements - 1).action) {
 		play_sfx_ui("hit");
 		m->cursor = m->entries.num_elements - 1;
 		hrtime_t t = time_get();
@@ -125,7 +125,7 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Media Room", menu_action_enter_media, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
 #ifndef __EMSCRIPTEN__
-	add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+	add_menu_entry(m, "Quit", global.is_kiosk_mode ? NULL : menu_action_close, NULL)->transition = TransFadeBlack;
 	m->input = main_menu_input;
 #endif
 
@@ -164,8 +164,8 @@ void draw_main_menu(MenuData *menu) {
 		.pos = { SCREEN_W/2, SCREEN_H/2 },
 		.shader = "sprite_default",
 		.rotation.vector = { 0, -1, 0 },
-		.rotation.angle = fmax(0, M_PI/1.5 - fmin(M_PI/1.5, rot) * rotfac),
-		.color = color_mul_scalar(RGBA(1, 1, 1, 1), fmin(1, rot) * rotfac),
+		.rotation.angle = max(0, M_PI/1.5 - min(M_PI/1.5, rot) * rotfac),
+		.color = color_mul_scalar(RGBA(1, 1, 1, 1), min(1, rot) * rotfac),
 	});
 
 	r_mat_mv_push();
@@ -179,7 +179,7 @@ void draw_main_menu(MenuData *menu) {
 			r_color4(0.2 * o, 0.3 * o, 0.5 * o, o);
 		} else {
 			float a = 1 - e->drawdata;
-			r_color4(o, fmin(1, 0.7 + a) * o, fmin(1, 0.4 + a) * o, o);
+			r_color4(o, min(1, 0.7 + a) * o, min(1, 0.4 + a) * o, o);
 		}
 
 		text_draw(e->name, &(TextParams) {
@@ -241,8 +241,10 @@ void draw_main_menu(MenuData *menu) {
 }
 
 void draw_loading_screen(void) {
-	preload_resource(RES_TEXTURE, "loading", RESF_DEFAULT);
-	preload_resource(RES_SHADER_PROGRAM, "text_default", RESF_PERMANENT);
+	ResourceGroup rg;
+	res_group_init(&rg);
+	res_group_preload(&rg, RES_TEXTURE, RESF_DEFAULT, "loading", NULL);
+	res_group_preload(&rg, RES_SHADER_PROGRAM, RESF_DEFAULT, "text_default", NULL);
 
 	set_ortho(SCREEN_W, SCREEN_H);
 	fill_screen("loading");
@@ -255,24 +257,26 @@ void draw_loading_screen(void) {
 	});
 
 	video_swap_buffers();
+	res_group_release(&rg);
 }
 
-void menu_preload(void) {
-	difficulty_preload();
+void menu_preload(ResourceGroup *rg) {
+	difficulty_preload(rg);
 
-	preload_resources(RES_FONT, RESF_PERMANENT,
+	res_group_preload(rg, RES_FONT, RESF_DEFAULT,
 		"big",
 		"small",
 	NULL);
 
-	preload_resources(RES_TEXTURE, RESF_PERMANENT,
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"abstract_brown",
 		"cell_noise",
 		"stage1/cirnobg",
 		"menu/mainmenubg",
+		"loading",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_PERMANENT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"part/smoke",
 		"part/petal",
 		"menu/logo",
@@ -280,20 +284,20 @@ void menu_preload(void) {
 		"star",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, RESF_PERMANENT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"mainmenubg",
 		"sprite_circleclipped_indicator",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"generic_shot",
 		"shot_special1",
 		"hit",
 	NULL);
 
-	preload_resources(RES_BGM, RESF_PERMANENT | RESF_OPTIONAL,
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL,
 		"menu",
 	NULL);
 
-	preload_char_menu();
+	preload_char_menu(rg);
 }

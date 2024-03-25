@@ -10,6 +10,7 @@ stage6_src = files(
 	'nonspells/boss_nonspell_3.c',
 	'nonspells/boss_nonspell_4.c',
 	'nonspells/boss_nonspell_5.c',
+	'nonspells/boss_nonspell_6.c',
 	'spells/lhc.c',
 	'spells/toe.c',
 	'spells/ricci.c',

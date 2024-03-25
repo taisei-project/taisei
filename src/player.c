@@ -39,7 +39,7 @@ void player_init(Player *plr) {
 	plr->lives = PLR_START_LIVES;
 	plr->bombs = PLR_START_BOMBS;
 	plr->point_item_value = PLR_START_PIV;
-	plr->power = 100;
+	plr->power_stored = 100;
 	plr->deathtime = -1;
 	plr->continuetime = -1;
 	plr->bomb_triggertime = -1;
@@ -55,7 +55,6 @@ void player_stage_pre_init(Player *plr) {
 	plr->deathtime = -1;
 	plr->axis_lr = 0;
 	plr->axis_ud = 0;
-	plrmode_preload(plr->mode);
 }
 
 double player_property(Player *plr, PlrProperty prop) {
@@ -112,43 +111,65 @@ static void player_full_power(Player *plr) {
 	stagetext_add("Full Power!", VIEWPORT_W * 0.5 + VIEWPORT_H * 0.33 * I, ALIGN_CENTER, res_font("big"), RGB(1, 1, 1), 0, 60, 20, 20);
 }
 
+static int player_track_effective_power_change(Player *plr) {
+	int old_effective = plr->_prev_effective_power;
+	int new_effective = player_get_effective_power(plr);
+
+	if(old_effective != new_effective) {
+		plr->_prev_effective_power = new_effective;
+		coevent_signal(&plr->events.effective_power_changed);
+	}
+
+	return new_effective;
+}
+
 bool player_set_power(Player *plr, short npow) {
-	int pow_base = clamp(npow, 0, PLR_MAX_POWER);
-	int pow_overflow = clamp(npow - PLR_MAX_POWER, 0, PLR_MAX_POWER_OVERFLOW);
+	int old_stored = plr->power_stored;
+	int new_stored = clamp(npow, 0, PLR_MAX_POWER_STORED);
+	plr->power_stored = new_stored;
 
-	int oldpow = plr->power;
-	int oldpow_over = plr->power_overflow;
-
-	plr->power = pow_base;
-	plr->power_overflow = pow_overflow;
-
-	if((oldpow + oldpow_over) / 100 < (pow_base + pow_overflow) / 100) {
+	if(old_stored / 100 < new_stored / 100) {
 		play_sfx("powerup");
 	}
 
-	if(plr->power == PLR_MAX_POWER && oldpow < PLR_MAX_POWER) {
-		player_full_power(plr);
-	}
-
-	bool change = (oldpow + oldpow_over) != (plr->power + plr->power_overflow);
+	bool change = old_stored != new_stored;
 
 	if(change) {
-		coevent_signal(&plr->events.power_changed);
+		if(new_stored >= PLR_MAX_POWER_EFFECTIVE && old_stored < PLR_MAX_POWER_EFFECTIVE) {
+			player_full_power(plr);
+		}
+
+		coevent_signal(&plr->events.stored_power_changed);
 	}
+
+	player_track_effective_power_change(plr);
 
 	return change;
 }
 
 bool player_add_power(Player *plr, short pdelta) {
-	return player_set_power(plr, plr->power + plr->power_overflow + pdelta);
+	return player_set_power(plr, plr->power_stored + pdelta);
+}
+
+int player_get_effective_power(Player *plr) {
+	int p;
+
+	if(player_is_powersurge_active(plr)) {
+		p = plr->powersurge.player_power;
+	} else {
+		p = plr->power_stored;
+	}
+
+	return clamp(p, 0, PLR_MAX_POWER_EFFECTIVE);
 }
 
 void player_move(Player *plr, cmplx delta) {
 	delta *= player_property(plr, PLR_PROP_SPEED);
+	plr->uncapped_velocity = delta;
 	cmplx lastpos = plr->pos;
-	double x = clamp(creal(plr->pos) + creal(delta), PLR_MIN_BORDER_DIST, VIEWPORT_W - PLR_MIN_BORDER_DIST);
-	double y = clamp(cimag(plr->pos) + cimag(delta), PLR_MIN_BORDER_DIST, VIEWPORT_H - PLR_MIN_BORDER_DIST);
-	plr->pos = x + y*I;
+	cmplx ofs = CMPLX(PLR_MIN_BORDER_DIST, PLR_MIN_BORDER_DIST);
+	cmplx vp = CMPLX(VIEWPORT_W, VIEWPORT_H);
+	plr->pos = cwclamp(lastpos + delta, ofs, vp - ofs);
 	plr->velocity = plr->pos - lastpos;
 }
 
@@ -162,9 +183,9 @@ void player_draw_overlay(Player *plr) {
 	r_state_push();
 	r_shader("sprite_default");
 
-	float char_in = clamp(a * 1.5, 0, 1);
-	float char_out = fmin(1, 2 - (2 * a));
-	float char_opacity_in = 0.75 * fmin(1, a * 5);
+	float char_in = clamp(a * 1.5f, 0, 1);
+	float char_out = min(1, 2 - (2 * a));
+	float char_opacity_in = 0.75 * min(1, a * 5);
 	float char_opacity = char_opacity_in * char_out * char_out;
 	float char_xofs = -20 * a;
 
@@ -180,27 +201,27 @@ void player_draw_overlay(Player *plr) {
 
 		r_draw_sprite(&(SpriteParams) {
 			.sprite_ptr = char_spr,
-			.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4 - i * 0.3) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
+			.pos = { char_spr->w * 0.5 + VIEWPORT_W * powf(1 - char_in, 4 - i * 0.3f) - i + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
 			.color = color_mul_scalar(color_add(RGBA(0.2, 0.2, 0.2, 0), RGBA(i==1, i==2, i==3, 0)), char_opacity_in * (1 - char_in * o) * o),
 			.flip.x = true,
-			.scale.both = 1.0 + 0.02 * (fmin(1, a * 1.2)) + i * 0.5 * pow(1 - o, 2),
+			.scale.both = 1.0f + 0.02f * (min(1, a * 1.2f)) + i * 0.5 * powf(1 - o, 2),
 		});
 	}
 
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = char_spr,
-		.pos = { char_spr->w * 0.5 + VIEWPORT_W * pow(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5 },
-		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * fmin(1, char_in * 2) * (1 - fmin(1, (1 - char_out) * 5))),
+		.pos = { char_spr->w * 0.5f + VIEWPORT_W * powf(1 - char_in, 4) + char_xofs, VIEWPORT_H - char_spr->h * 0.5f },
+		.color = RGBA_MUL_ALPHA(1, 1, 1, char_opacity * min(1, char_in * 2) * (1 - min(1, (1 - char_out) * 5))),
 		.flip.x = true,
 		.scale.both = 1.0 + 0.1 * (1 - char_out),
 	});
 
-	float spell_in = fmin(1, a * 3.0);
-	float spell_out = fmin(1, 3 - (3 * a));
-	float spell_opacity = fmin(1, a * 5) * spell_out * spell_out;
+	float spell_in = min(1, a * 3.0);
+	float spell_out = min(1, 3 - (3 * a));
+	float spell_opacity = min(1, a * 5) * spell_out * spell_out;
 
-	float spell_x = 128 * (1 - pow(1 - spell_in, 5)) + (VIEWPORT_W + 256) * pow(1 - spell_in, 3);
-	float spell_y = VIEWPORT_H - 128 * sqrt(a);
+	float spell_x = 128 * (1 - powf(1 - spell_in, 5)) + (VIEWPORT_W + 256) * powf(1 - spell_in, 3);
+	float spell_y = VIEWPORT_H - 128 * sqrtf(a);
 
 	Sprite *spell_spr = res_sprite("spell");
 
@@ -244,7 +265,7 @@ static void ent_draw_player(EntityInterface *ent) {
 			.sprite = "fairy_circle",
 			.rotation.angle = DEG2RAD * global.frames * 10,
 			.color = RGBA_MUL_ALPHA(1, 1, 1, 0.2 * plr->focus_circle_alpha),
-			.pos = { creal(plr->pos), cimag(plr->pos) },
+			.pos = { re(plr->pos), im(plr->pos) },
 		});
 	}
 
@@ -274,7 +295,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 
 	if(focus_opacity > 0) {
 		float trans_frames = 12;
-		float trans_factor = 1.0 - fminf(trans_frames, t) / trans_frames;
+		float trans_factor = 1.0f - min(trans_frames, t) / trans_frames;
 		float rot_speed = DEG2RAD * global.frames * (1.0f + 3.0f * trans_factor);
 		float scale = 1.0f + trans_factor;
 
@@ -306,7 +327,7 @@ static void player_draw_indicators(EntityInterface *ent) {
 	if(ps_opacity > 0) {
 		r_state_push();
 		r_mat_mv_push();
-		r_mat_mv_translate(crealf(pos), cimagf(pos), 0);
+		r_mat_mv_translate(re(pos), im(pos), 0);
 		r_mat_mv_scale(140, 140, 0);
 		r_shader("healthbar_radial");
 		r_uniform_vec4_rgba("borderColor",   RGBA(0.5, 0.5, 0.5, 0.5));
@@ -324,8 +345,8 @@ static void player_draw_indicators(EntityInterface *ent) {
 		format_huge_num(0, plr->powersurge.bonus.baseline, sizeof(buf), buf);
 		Font *fnt = res_font("monotiny");
 
-		float x = crealf(pos);
-		float y = cimagf(pos) + 80;
+		float x = re(pos);
+		float y = im(pos) + 80;
 
 		float text_opacity = ps_opacity * 0.75;
 
@@ -370,7 +391,7 @@ DEFINE_TASK(player_indicators) {
 
 		if(is_focused && !was_focused) {
 			indicators->focus_time = global.frames;
-			indicators->focus_alpha = fminf(indicators->focus_alpha, 0.1f);
+			indicators->focus_alpha = min(indicators->focus_alpha, 0.1f);
 		}
 
 		was_focused = is_focused;
@@ -436,7 +457,7 @@ static void _powersurge_trail_draw(Projectile *p, float t, float cmul) {
 	r_draw_sprite(&(SpriteParams) {
 		.sprite_ptr = p->sprite,
 		.scale.both = s,
-		.pos = { creal(p->pos), cimag(p->pos) },
+		.pos = { re(p->pos), im(p->pos) },
 		.color = color_mul_scalar(RGBA(0.8, 0.1 + 0.2 * psin((t+global.frames)/5.0), 0.1, 0.0), 0.5 * (1 - nt) * cmul),
 		.shader_params = &(ShaderCustomParams){{ -2 * nt * nt }},
 		.shader_ptr = p->shader,
@@ -469,7 +490,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 			.pos = plr->pos,
 			.color = RGBA(1, 1, 1, 0.5),
 			.draw_rule = powersurge_trail_draw,
-			.move = move_towards(plr->pos, 0),
+			.move = move_towards(0, plr->pos, 0),
 			.timeout = 15,
 			.layer = LAYER_PARTICLE_HIGH,
 			.flags = PFLAG_NOREFLECT | PFLAG_MANUALANGLE,
@@ -520,7 +541,7 @@ TASK(powersurge_player_particles, { BoxedPlayer plr; }) {
 
 void player_powersurge_calc_bonus(Player *plr, PowerSurgeBonus *b) {
 	b->gain_rate = round(1000 * plr->powersurge.negative * plr->powersurge.negative);
-	b->baseline = plr->powersurge.power + plr->powersurge.damage_done * 0.4;
+	b->baseline = plr->powersurge.total_charge + plr->powersurge.damage_done * 0.4;
 	b->score = b->baseline;
 	b->discharge_power = sqrtf(0.2 * b->baseline + 1024 * log1pf(b->baseline)) * smoothstep(0, 1, 0.0001 * b->baseline);
 	b->discharge_range = 1.2 * b->discharge_power;
@@ -532,8 +553,8 @@ static void player_powersurge_logic(Player *plr) {
 		return;
 	}
 
-	plr->powersurge.positive = fmax(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
-	plr->powersurge.negative = fmax(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
+	plr->powersurge.positive = max(0, plr->powersurge.positive - lerp(PLR_POWERSURGE_POSITIVE_DRAIN_MIN, PLR_POWERSURGE_POSITIVE_DRAIN_MAX, plr->powersurge.positive));
+	plr->powersurge.negative = max(0, plr->powersurge.negative - lerp(PLR_POWERSURGE_NEGATIVE_DRAIN_MIN, PLR_POWERSURGE_NEGATIVE_DRAIN_MAX, plr->powersurge.negative));
 
 	if(stage_is_cleared()) {
 		player_cancel_powersurge(plr);
@@ -547,12 +568,14 @@ static void player_powersurge_logic(Player *plr) {
 
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 
-	plr->powersurge.power += plr->powersurge.bonus.gain_rate;
+	plr->powersurge.total_charge += plr->powersurge.bonus.gain_rate;
 }
 
 DEFINE_TASK(player_logic) {
 	Player *plr = TASK_BIND(ARGS.plr);
 	uint prev_inputflags = 0;
+
+	plr->_prev_effective_power = player_get_effective_power(plr);
 
 	for(;;) {
 		YIELD;
@@ -580,7 +603,7 @@ DEFINE_TASK(player_logic) {
 			stats_track_continue_used(&plr->stats);
 			player_set_power(plr, 0);
 			stage_clear_hazards(CLEAR_HAZARDS_ALL);
-			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER/(double)POWER_VALUE));
+			spawn_items(plr->deathpos, ITEM_POWER, (int)ceil(PLR_MAX_POWER_EFFECTIVE/(real)POWER_VALUE));
 		}
 
 		aniplayer_update(&plr->ani);
@@ -612,6 +635,8 @@ DEFINE_TASK(player_logic) {
 		} else if(plr->deathtime > global.frames) {
 			stage_clear_hazards(CLEAR_HAZARDS_ALL | CLEAR_HAZARDS_NOW);
 		}
+
+		player_track_effective_power_change(plr);
 	}
 }
 
@@ -677,7 +702,7 @@ static bool player_powersurge(Player *plr) {
 		!player_is_alive(plr) ||
 		player_is_bomb_active(plr) ||
 		player_is_powersurge_active(plr) ||
-		plr->power + plr->power_overflow < PLR_POWERSURGE_POWERCOST
+		plr->power_stored < PLR_POWERSURGE_POWERCOST
 	) {
 		return false;
 	}
@@ -685,8 +710,9 @@ static bool player_powersurge(Player *plr) {
 	plr->powersurge.positive = 1.0;
 	plr->powersurge.negative = 0.0;
 	plr->powersurge.time.activated = global.frames;
-	plr->powersurge.power = 0;
+	plr->powersurge.total_charge = 0;
 	plr->powersurge.damage_accum = 0;
+	plr->powersurge.player_power = plr->power_stored;
 	player_powersurge_calc_bonus(plr, &plr->powersurge.bonus);
 	player_add_power(plr, -PLR_POWERSURGE_POWERCOST);
 
@@ -736,7 +762,7 @@ static void powersurge_distortion_draw(Projectile *p, int t, ProjDrawRuleArgs ar
 
 	r_framebuffer(fb_aux);
 	r_shader("circle_distort");
-	r_uniform_vec3("distortOriginRadius", creal(p->pos), VIEWPORT_H - cimag(p->pos), radius);
+	r_uniform_vec3("distortOriginRadius", re(p->pos), VIEWPORT_H - im(p->pos), radius);
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_blend(BLEND_NONE);
 	draw_framebuffer_tex(fb_main, VIEWPORT_W, VIEWPORT_H);
@@ -856,9 +882,9 @@ void player_realdeath(Player *plr) {
 		return;
 	}
 
-	int total_power = plr->power + plr->power_overflow;
+	int total_power = plr->power_stored;
 
-	int drop = fmax(2, (total_power * 0.15) / POWER_VALUE);
+	int drop = max(2, (total_power * 0.15) / POWER_VALUE);
 	spawn_items(plr->deathpos, ITEM_POWER, drop);
 
 	player_set_power(plr, total_power * 0.7);
@@ -875,8 +901,8 @@ static void player_death_effect_draw_overlay(Projectile *p, int t, ProjDrawRuleA
 	r_uniform_sampler("noise_tex", "static");
 	r_uniform_int("frames", global.frames);
 	r_uniform_float("progress", t / p->timeout);
-	r_uniform_vec2("origin", creal(p->pos), VIEWPORT_H - cimag(p->pos));
-	r_uniform_vec2("clear_origin", creal(global.plr.pos), VIEWPORT_H - cimag(global.plr.pos));
+	r_uniform_vec2("origin", re(p->pos), VIEWPORT_H - im(p->pos));
+	r_uniform_vec2("clear_origin", re(global.plr.pos), VIEWPORT_H - im(global.plr.pos));
 	r_uniform_vec2("viewport", VIEWPORT_W, VIEWPORT_H);
 	r_uniform_float("size", hypotf(VIEWPORT_W, VIEWPORT_H));
 	draw_framebuffer_tex(framebuffers->back, VIEWPORT_W, VIEWPORT_H);
@@ -1223,8 +1249,8 @@ static bool player_applymovement_gamepad(Player *plr) {
 		direction /= cabs(direction);
 	}
 
-	int sr = sign(creal(direction));
-	int si = sign(cimag(direction));
+	int sr = sign(re(direction));
+	int si = sign(im(direction));
 
 	player_updateinputflags_moveonly(plr,
 		(INFLAG_UP    * (si == -1)) |
@@ -1261,11 +1287,12 @@ static void player_ani_moving(Player *plr, int dir) {
 	aniplayer_hard_switch(&plr->ani,transition,1);
 	aniplayer_queue(&plr->ani,seqname,0);
 	plr->lastmovesequence = dir;
-	free(transition);
+	mem_free(transition);
 }
 
 void player_applymovement(Player *plr) {
 	plr->velocity = 0;
+	plr->uncapped_velocity = 0;
 
 	if(!player_is_alive(plr))
 		return;
@@ -1333,8 +1360,8 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 		player_event(plr, NULL, rpy_out, EV_INFLAGS, newflags);
 	}
 
-	int axis_lr = gamepad_player_axis_value(PLRAXIS_LR);
-	int axis_ud = gamepad_player_axis_value(PLRAXIS_UD);
+	int axis_lr, axis_ud;
+	gamepad_get_player_analog_input(&axis_lr, &axis_ud);
 
 	if(plr->axis_lr != axis_lr) {
 		player_event(plr, NULL, rpy_out, EV_AXIS_LR, axis_lr);
@@ -1342,6 +1369,15 @@ void player_fix_input(Player *plr, ReplayState *rpy_out) {
 
 	if(plr->axis_ud != axis_ud) {
 		player_event(plr, NULL, rpy_out, EV_AXIS_UD, axis_ud);
+	}
+
+	if(
+		config_get_int(CONFIG_AUTO_SURGE) &&
+		plr->power_stored == PLR_MAX_POWER_STORED &&
+		!player_is_powersurge_active(plr) &&
+		!dialog_is_active(global.dialog)
+	) {
+		player_event(plr, NULL, rpy_out, EV_PRESS, KEY_SPECIAL);
 	}
 }
 
@@ -1499,7 +1535,7 @@ static void add_score_text(Player *plr, cmplx location, uint points, bool is_piv
 	timings.fadeouttime = 20;
 
 	if(is_piv) {
-		importance = sqrt(fmin(points/500.0, 1));
+		importance = sqrt(min(points/500.0, 1));
 		a = lerp(0.4, 1.0, importance);
 		c = *color_lerp(RGB(0.5, 0.8, 1.0), RGB(1.0, 0.3, 1.0), importance);
 		timings.lifetime = 35 + 10 * importance;
@@ -1609,7 +1645,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		}
 	}
 
-	if(!isnan(creal(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
+	if(!isnan(re(pos)) && damage->type == DMG_PLAYER_DISCHARGE) {
 		double rate = NOT_NULL(target)->type == ENT_TYPE_ID(Boss) ? 110 : 256;
 		spawn_and_collect_items(pos, 1, ITEM_VOLTAGE, (int)(damage->amount / rate));
 	}
@@ -1618,7 +1654,7 @@ void player_register_damage(Player *plr, EntityInterface *target, const DamageIn
 		plr->powersurge.damage_done += damage->amount;
 		plr->powersurge.damage_accum += damage->amount;
 
-		if(!isnan(creal(pos))) {
+		if(!isnan(re(pos))) {
 			double rate = 500;
 
 			while(plr->powersurge.damage_accum > rate) {
@@ -1644,26 +1680,26 @@ uint64_t player_next_extralife_threshold(uint64_t step) {
 	return base * (step * step + step + 2) / 2;
 }
 
-void player_preload(void) {
+void player_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"circle_distort",
 		"player_death",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"static",
 	NULL);
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"fairy_circle",
 		"focus",
 		"part/blast_huge_halo",
 		"part/powersurge_field",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"death",
 		"extra_bomb",
 		"extra_life",

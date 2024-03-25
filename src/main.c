@@ -32,6 +32,9 @@
 #include "replay/struct.h"
 #include "filewatch/filewatch.h"
 #include "dynstage.h"
+#include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
+#include "replay/tsrtool.h"
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -42,11 +45,13 @@ static void taisei_shutdown(void) {
 		progress_save();
 	}
 
-	progress_unload();
+	r_release_resources();
+	res_shutdown();
 
+	demoplayer_shutdown();
+	progress_unload();
+	stage_objpools_shutdown();
 	gamemode_shutdown();
-	free_all_refs();
-	shutdown_resources();
 	taskmgr_global_shutdown();
 	audio_shutdown();
 	video_shutdown();
@@ -58,17 +63,17 @@ static void taisei_shutdown(void) {
 	events_shutdown();
 	time_shutdown();
 	coroutines_shutdown();
-
+	log_queue_shutdown();
+	thread_shutdown();
 	log_info("Good bye");
-	SDL_Quit();
-
 	log_shutdown();
+	SDL_Quit();
 }
 
 static void init_log(void) {
-	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, env_get("TAISEI_LOGLVLS_CONSOLE", NULL));
-	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, env_get("TAISEI_LOGLVLS_STDOUT", NULL));
-	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", NULL));
+	LogLevel lvls_console = log_parse_levels(LOG_DEFAULT_LEVELS_CONSOLE, env_get("TAISEI_LOGLVLS_CONSOLE", ""));
+	LogLevel lvls_stdout = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDOUT, env_get("TAISEI_LOGLVLS_STDOUT", ""));
+	LogLevel lvls_stderr = lvls_console & log_parse_levels(LOG_DEFAULT_LEVELS_STDERR, env_get("TAISEI_LOGLVLS_STDERR", ""));
 
 	log_init(LOG_DEFAULT_LEVELS);
 	log_add_output(lvls_stdout, SDL_RWFromFP(stdout, false), log_formatter_console);
@@ -76,7 +81,7 @@ static void init_log(void) {
 }
 
 static void init_log_file(void) {
-	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", NULL));
+	LogLevel lvls_file = log_parse_levels(LOG_DEFAULT_LEVELS_FILE, env_get("TAISEI_LOGLVLS_FILE", ""));
 	log_add_output(lvls_file, vfs_open("storage/log.txt", VFS_MODE_WRITE), log_formatter_file);
 
 	char *logpath = vfs_repr("storage/log.txt", true);
@@ -87,12 +92,37 @@ static void init_log_file(void) {
 			"Please report the problem to the developers at https://taisei-project.org/ if it persists.",
 			logpath
 		);
-		free(logpath);
+		mem_free(logpath);
 		log_set_gui_error_appendix(m);
-		free(m);
+		mem_free(m);
 	} else {
 		log_set_gui_error_appendix("Please report the problem to the developers at https://taisei-project.org/ if it persists.");
 	}
+}
+
+static void init_log_filter(void) {
+	SDL_RWops *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
+
+	if(!rw) {
+		return;
+	}
+
+	char buf[256];
+
+	char *p;
+	while((p = SDL_RWgets(rw, buf, sizeof(buf)))) {
+		while(isspace(*p)) {
+			++p;
+		}
+
+		if(*p == '#' || !*p) {
+			continue;
+		}
+
+		log_add_filter_string(p);
+	}
+
+	SDL_RWclose(rw);
 }
 
 static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -126,7 +156,7 @@ static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priori
 }
 
 static void init_sdl(void) {
-	SDL_version v;
+	mem_install_sdl_callbacks();
 
 	if(SDL_Init(SDL_INIT_EVENTS) < 0) {
 		log_fatal("SDL_Init() failed: %s", SDL_GetError());
@@ -135,8 +165,6 @@ static void init_sdl(void) {
 #if defined(SDL_HINT_EMSCRIPTEN_ASYNCIFY) && defined(__EMSCRIPTEN__)
 	SDL_SetHintWithPriority(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0", SDL_HINT_OVERRIDE);
 #endif
-
-	main_thread_id = SDL_ThreadID();
 
 	SDL_LogPriority sdl_logprio = env_get("TAISEI_SDL_LOG", 0);
 
@@ -147,6 +175,7 @@ static void init_sdl(void) {
 
 	log_info("SDL initialized");
 
+	SDL_version v;
 	SDL_VERSION(&v);
 	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
 
@@ -193,6 +222,7 @@ typedef struct MainContext {
 	Replay *replay_in;
 	Replay *replay_out;
 	SDL_RWops *replay_out_stream;
+	ResourceGroup rg;
 	int replay_idx;
 	uchar headless : 1;
 } MainContext;
@@ -206,16 +236,17 @@ static noreturn void main_vfstree(CallChainResult ccr);
 static void cleanup_replay(Replay **rpy) {
 	if(*rpy) {
 		replay_reset(*rpy);
-		free(*rpy);
+		mem_free(*rpy);
 		*rpy = NULL;
 	}
 }
 
 static Replay *alloc_replay(void) {
-	return calloc(1, sizeof(Replay));
+	return ALLOC(Replay);
 }
 
 static noreturn void main_quit(MainContext *ctx, int status) {
+	res_group_release(&ctx->rg);
 	free_cli_action(&ctx->cli);
 
 	cleanup_replay(&ctx->replay_in);
@@ -237,7 +268,7 @@ static noreturn void main_quit(MainContext *ctx, int status) {
 
 	cleanup_replay(&ctx->replay_out);
 
-	free(ctx);
+	mem_free(ctx);
 	exit(status);
 }
 
@@ -254,11 +285,19 @@ int main(int argc, char **argv);
 
 attr_used
 int main(int argc, char **argv) {
-	MainContext *ctx = calloc(1, sizeof(*ctx));
-
 	setlocale(LC_ALL, "C");
+	thread_init();
+	coroutines_init();
 	init_log();
 	stageinfo_init(); // cli_args depends on this
+
+#if DEBUG
+	if(argc > 1 && !strcmp("tsrtool", argv[1])) {
+		return tsrtool_main(argc - 1, argv + 1);
+	}
+#endif
+
+	auto ctx = ALLOC(MainContext);
 
 	// commandline arguments should be parsed as early as possible
 	cli_args(argc, argv, &ctx->cli); // stage_init_array goes first!
@@ -310,8 +349,6 @@ int main(int argc, char **argv) {
 
 	log_info("Girls are now preparing, please wait warmly...");
 
-	coroutines_init();
-
 	free_cli_action(&ctx->cli);
 	vfs_setup(CALLCHAIN(main_post_vfsinit, ctx));
 	return 0;
@@ -325,11 +362,11 @@ static void main_post_vfsinit(CallChainResult ccr) {
 		env_set("SDL_VIDEODRIVER", "dummy", true);
 		env_set("TAISEI_AUDIO_BACKEND", "null", true);
 		env_set("TAISEI_RENDERER", "null", true);
-		env_set("TAISEI_NOPRELOAD", true, false);
-		env_set("TAISEI_PRELOAD_REQUIRED", false, false);
 	} else {
 		init_log_file();
 	}
+
+	init_log_filter();
 
 	log_version();
 	log_system_specs();
@@ -345,18 +382,28 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	events_init();
 	video_init();
 	filewatch_init();
-	init_resources();
+	res_init();
 	r_post_init();
+
+	res_group_init(&ctx->rg);
+
 	draw_loading_screen();
 	dynstage_init_monitoring();
 
 	audio_init();
-	load_resources();
+	res_post_init();
+	menu_preload(&ctx->rg);
 	gamepad_init();
 	progress_load();
+
+	if(ctx->cli.unlock_all) {
+		log_info("Unlocking all content because of --unlock-all");
+		progress_unlock_all();
+	}
+
 	video_post_init();
 
-	set_transition(TransLoader, 0, FADE_TIME*2);
+	set_transition(TransLoader, 0, FADE_TIME*2, NO_CALLCHAIN);
 
 	log_info("Initialization complete");
 
@@ -364,13 +411,21 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	atexit(taisei_shutdown);
 #endif
 
+	CallChain cc_cleanup = CALLCHAIN(main_cleanup, ctx);
+	CallChain cc_mainmenu = CALLCHAIN(main_mainmenu, ctx);
+
+	if(ctx->cli.type == CLI_QuitLate) {
+		run_call_chain(&cc_cleanup, NULL);
+		return;
+	}
+
 	if(ctx->cli.type == CLI_PlayReplay || ctx->cli.type == CLI_VerifyReplay) {
 		main_replay(ctx);
 		return;
 	}
 
 	if(ctx->cli.type == CLI_Credits) {
-		credits_enter(CALLCHAIN(main_cleanup, ctx));
+		credits_enter(cc_cleanup);
 		eventloop_run();
 		return;
 	}
@@ -384,24 +439,25 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	}
 
 	if(ctx->cli.type == CLI_Cutscene) {
-		cutscene_enter(CALLCHAIN(main_cleanup, ctx), ctx->cli.cutscene);
+		cutscene_enter(cc_cleanup, ctx->cli.cutscene);
 		eventloop_run();
 		return;
 	}
 #endif
 
 	if(!progress_is_cutscene_unlocked(CUTSCENE_ID_INTRO) || ctx->cli.force_intro) {
-		cutscene_enter(CALLCHAIN(main_mainmenu, ctx), CUTSCENE_ID_INTRO);
+		cutscene_enter(cc_mainmenu, CUTSCENE_ID_INTRO);
 		eventloop_run();
 		return;
 	}
 
-	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
+	run_call_chain(&cc_mainmenu, NULL);
 	eventloop_run();
 }
 
 static void main_mainmenu(CallChainResult ccr) {
 	MainContext *ctx = ccr.ctx;
+	demoplayer_init();
 	enter_menu(create_main_menu(), CALLCHAIN(main_cleanup, ctx));
 }
 
@@ -430,7 +486,7 @@ static void main_singlestg_begin_game(CallChainResult ccr) {
 		global.plr.mode = ctx->plrmode;
 	}
 
-	stage_enter(ctx->stg, CALLCHAIN(main_singlestg_end_game, ctx));
+	stage_enter(ctx->stg, &mctx->rg, CALLCHAIN(main_singlestg_end_game, ctx));
 }
 
 static void main_singlestg_end_game(CallChainResult ccr) {
@@ -447,7 +503,8 @@ static void main_singlestg_end_game(CallChainResult ccr) {
 static void main_singlestg_cleanup(CallChainResult ccr) {
 	SingleStageContext *ctx = ccr.ctx;
 	MainContext *mctx = ctx->mctx;
-	free(ccr.ctx);
+	res_group_release(&mctx->rg);
+	mem_free(ccr.ctx);
 	main_quit(mctx, 0);
 }
 
@@ -458,10 +515,11 @@ static void main_singlestg(MainContext *mctx) {
 	StageInfo *stg = stageinfo_get_by_id(a->stageid);
 	assert(stg); // properly checked before this
 
-	SingleStageContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->mctx = mctx;
-	ctx->plrmode = a->plrmode;
-	ctx->stg = stg;
+	auto ctx = ALLOC(SingleStageContext, {
+		.mctx = mctx,
+		.plrmode = a->plrmode,
+		.stg = stg,
+	});
 
 	global.diff = stg->difficulty;
 	global.is_practice_mode = (stg->type != STAGE_EXTRA);
@@ -486,7 +544,7 @@ static void main_replay(MainContext *mctx) {
 		stralloc(&mctx->replay_out->playername, mctx->replay_in->playername);
 	}
 
-	replay_play(mctx->replay_in, mctx->replay_idx, CALLCHAIN(main_cleanup, mctx));
+	replay_play(mctx->replay_in, mctx->replay_idx, false, CALLCHAIN(main_cleanup, mctx));
 	eventloop_run();
 }
 

@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "dialog.h"
+#include "resource/resource.h"
 
 
 #define DIALOG_SCRIPTS \
@@ -26,6 +27,8 @@
 	WITHOUT_EVENTS (Stage5PostBoss)                                   \
 	WITH_EVENTS    (Stage6PreBoss,     (boss_appears, music_changes)) \
 	WITHOUT_EVENTS (Stage6PreFinal)                                   \
+	WITH_EVENTS    (StageExPreBoss,    (boss_appears, music_changes)) \
+	WITHOUT_EVENTS (StageExPostBoss)                                  \
 
 
 
@@ -35,6 +38,7 @@
 		_name##DialogEvents **out_events; \
 		int called_for_preload; \
 		ResourceFlags preload_rflags; \
+		ResourceGroup *preload_group; \
 	});
 
 #define WITHOUT_EVENTS(_name) \

@@ -18,7 +18,7 @@ static char *sprite_path(const char *name) {
 	VFSInfo pinfo = vfs_query(path);
 
 	if(!pinfo.exists) {
-		free(path);
+		mem_free(path);
 		return texture_res_handler.procs.find(name);;
 	}
 
@@ -38,10 +38,10 @@ static void load_sprite_stage1(ResourceLoadState *st);
 static void load_sprite_stage2(ResourceLoadState *st);
 
 static void load_sprite_stage1(ResourceLoadState *st) {
-	Sprite *spr = calloc(1, sizeof(Sprite));
-	struct sprite_load_state *state = calloc(1, sizeof(struct sprite_load_state));
-	state->spr = spr;
-	spr->tex_area = (FloatRect) { .offset = { 0, 0 }, .extent = { 1, 1 } };
+	auto spr = ALLOC(Sprite, {
+		.tex_area = { .offset = { 0, 0 }, .extent = { 1, 1 } },
+	});
+	auto state = ALLOC(struct sprite_load_state, { .spr = spr });
 
 	if(texture_res_handler.procs.check(st->path)) {
 		state->texture_name = strdup(st->name);
@@ -50,17 +50,17 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		return;
 	}
 
-	float ofs_x = 0, ofs_y = 0;
-
 	SDL_RWops *rw = res_open_file(st, st->path, VFS_MODE_READ);
 
 	if(UNLIKELY(!rw)) {
 		log_error("VFS error: %s", vfs_get_error());
-		free(spr);
-		free(state);
+		mem_free(spr);
+		mem_free(state);
 		res_load_failed(st);
 		return;
 	}
+
+	struct { float top, bottom, left, right; } pad = { };
 
 	bool parsed = parse_keyvalue_stream_with_spec(rw, (KVSpec[]) {
 		{ "texture",        .out_str   = &state->texture_name },
@@ -70,21 +70,19 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 		{ "region_h",       .out_float = &spr->tex_area.h },
 		{ "w",              .out_float = &spr->w },
 		{ "h",              .out_float = &spr->h },
-		{ "offset_x",       .out_float = &ofs_x, KVSPEC_DEPRECATED("margin_left; margin_right") },
-		{ "offset_y",       .out_float = &ofs_y, KVSPEC_DEPRECATED("margin_top; margin_bottom") },
-		{ "padding_top",    .out_float = &spr->padding.top },
-		{ "padding_bottom", .out_float = &spr->padding.bottom },
-		{ "padding_left",   .out_float = &spr->padding.left },
-		{ "padding_right",  .out_float = &spr->padding.right },
+		{ "padding_top",    .out_float = &pad.top },
+		{ "padding_bottom", .out_float = &pad.bottom },
+		{ "padding_left",   .out_float = &pad.left },
+		{ "padding_right",  .out_float = &pad.right },
 		{ NULL }
 	});
 
 	SDL_RWclose(rw);
 
 	if(UNLIKELY(!parsed)) {
-		free(spr);
-		free(state->texture_name);
-		free(state);
+		mem_free(spr);
+		mem_free(state->texture_name);
+		mem_free(state);
 		log_error("Failed to parse sprite file '%s'", st->path);
 		res_load_failed(st);
 		return;
@@ -97,10 +95,13 @@ static void load_sprite_stage1(ResourceLoadState *st) {
 
 	res_load_dependency(st, RES_TEXTURE, state->texture_name);
 
-	spr->padding.left += ofs_x;
-	spr->padding.right -= ofs_x;
-	spr->padding.top += ofs_y;
-	spr->padding.bottom -= ofs_y;
+	spr->padding.extent.w = pad.left + pad.right;
+	spr->padding.extent.h = pad.top + pad.bottom;
+
+	spr->padding.offset.x = 0.5f * (pad.left - pad.right);
+	spr->padding.offset.y = 0.5f * (pad.top - pad.bottom);
+
+	spr->extent.as_cmplx += spr->padding.extent.as_cmplx;
 
 	res_load_continue_after_dependencies(st, load_sprite_stage2, state);
 	return;
@@ -110,13 +111,13 @@ static void load_sprite_stage2(ResourceLoadState *st) {
 	struct sprite_load_state *state = NOT_NULL(st->opaque);
 	Sprite *spr = NOT_NULL(state->spr);
 
-	spr->tex = get_resource_data(RES_TEXTURE, state->texture_name, st->flags & ~RESF_RELOAD);
+	spr->tex = res_get_data(RES_TEXTURE, state->texture_name, st->flags & ~RESF_RELOAD);
 
-	free(state->texture_name);
-	free(state);
+	mem_free(state->texture_name);
+	mem_free(state);
 
 	if(spr->tex == NULL) {
-		free(spr);
+		mem_free(spr);
 		res_load_failed(st);
 		return;
 	}
@@ -154,7 +155,7 @@ Sprite *prefix_get_sprite(const char *name, const char *prefix) {
 }
 
 static void begin_draw_sprite(float x, float y, float scale_x, float scale_y, Sprite *spr) {
-	FloatOffset o = sprite_padded_offset(spr);
+	FloatOffset o = spr->padding.offset;
 
 	begin_draw_texture(
 		(FloatRect){ x + o.x * scale_x, y + o.y * scale_y, spr->w * scale_x, spr->h * scale_y },
@@ -215,7 +216,7 @@ void sprite_set_denormalized_tex_coords(Sprite *restrict spr, FloatRect tc) {
 
 static bool transfer_sprite(void *dst, void *src) {
 	*(Sprite*)dst = *(Sprite*)src;
-	free(src);
+	mem_free(src);
 	return true;
 }
 
@@ -228,7 +229,7 @@ ResourceHandler sprite_res_handler = {
 		.find = sprite_path,
 		.check = check_sprite_path,
 		.load = load_sprite_stage1,
-		.unload = free,
+		.unload = mem_free,
 		.transfer = transfer_sprite,
 	},
 };

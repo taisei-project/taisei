@@ -20,10 +20,9 @@ bool vfs_mount_zipfile(const char *mountpoint, const char *zippath) {
 		return false;
 	}
 
-	VFSNode *znode = vfs_alloc();
+	VFSNode *znode;
 
-	if(!vfs_zipfile_init(znode, node)) {
-		vfs_decref(znode);
+	if(!(znode = vfs_zipfile_create(node))) {
 		vfs_decref(node);
 		return false;
 	}

@@ -80,7 +80,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_rain) {
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	INVOKE_SUBTASK(crystal_rain_drops);
-	boss->move = move_towards_power(boss->pos, 0.1, 0.5);
+	boss->move = move_towards_exp(boss->move.velocity, boss->pos, 0.1, 0.5);
 
 	for(;;) {
 		WAIT(20);

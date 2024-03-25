@@ -34,7 +34,7 @@ static struct {
 } entities;
 
 static void add_hook(EntityDrawHookList *list, EntityDrawHookCallback cb, void *arg) {
-	EntityDrawHook *hook = calloc(1, sizeof(*hook));
+	auto hook = ALLOC(EntityDrawHook);
 	hook->callback = cb;
 	hook->arg = arg;
 
@@ -45,7 +45,7 @@ static void remove_hook(EntityDrawHookList *list, EntityDrawHookCallback cb) {
 	for(EntityDrawHook *hook = list->first; hook; hook = hook->next) {
 		if(hook->callback == cb) {
 			alist_unlink(list, hook);
-			free(hook);
+			mem_free(hook);
 			return;
 		}
 	}
@@ -81,7 +81,7 @@ void ent_register(EntityInterface *ent, EntityType type) {
 	ent->spawn_id = ++entities.total_spawns;
 	ent->index = entities.registered.num_elements;
 	assume(ent->spawn_id > 0);
-	*dynarray_append(&entities.registered) = ent;
+	dynarray_append(&entities.registered, ent);
 }
 
 void ent_unregister(EntityInterface *ent) {
@@ -93,7 +93,6 @@ void ent_unregister(EntityInterface *ent) {
 	assert(dynarray_get(&entities.registered, ent->index) == ent);
 	EntityInterface *sub = entities.registered.data[--entities.registered.num_elements];
 	entities.registered.data[sub->index = ent->index] = sub;
-	del_ref(ent);
 }
 
 static int ent_cmp(const void *ptr1, const void *ptr2) {

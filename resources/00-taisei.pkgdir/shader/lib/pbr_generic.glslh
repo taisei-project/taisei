@@ -12,7 +12,7 @@ void PBR_Generic_MaybeParallaxMap(
 ) {
 	if(PBR_FEATURE_ENABLED(PBR_FEATURE_DEPTH_MAP, features_mask)) {
 		vec3 vdir = normalize(transpose(tbn) * -pos);
-		uv = parallaxOcclusionMap(depth_map, depth_scale, uv, vdir);
+		uv = parallaxOcclusionMap(depth_map, environmentRGB_depthScale.a, uv, vdir);
 	}
 }
 
@@ -20,12 +20,13 @@ vec3 PBR_Generic_EnvironmentLight(
 	in PBRState pbr,
 	in sampler2D ibl_brdf_lut,
 	in samplerCube environment_map,
+	in vec3 environment_color,
 	in int features_mask
 ) {
 	vec3 color = vec3(0);
 
 	if(PBR_FEATURE_ENABLED(PBR_FEATURE_ENVIRONMENT_MAP, features_mask)) {
-		color = PBR_EnvironmentLight(pbr, ibl_brdf_lut, environment_map);
+		color = PBR_EnvironmentLight(pbr, ibl_brdf_lut, environment_map) * environment_color;
 	}
 
 	return color;

@@ -11,4 +11,4 @@
 
 #include "menu.h"
 
-MenuData* create_musicroom_menu(void);
+MenuData *create_musicroom_menu(void);

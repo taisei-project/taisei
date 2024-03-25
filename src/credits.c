@@ -17,6 +17,8 @@
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "dynarray.h"
+#include "eventloop/eventloop.h"
+#include "replay/demoplayer.h"
 
 typedef struct CreditsEntry {
 	char **data;
@@ -101,11 +103,11 @@ static void credits_fill(void) {
 	), ENTRY_TIME);
 
 	credits_add((
-		"Alice D\n"
-		"https://twitter.com/AmyZenunim\n"
-		"https://github.com/starwitch\n\n"
+		"Alice D.\n"
+		"https://unstable.systems/@AmyZenunim\n"
+		"https://github.com/StarWitch\n\n"
 		"Lead story writer\n"
-		"macOS QA + debugging"
+		"macOS QA, debugging, CI"
 	), ENTRY_TIME);
 
 	credits_add((
@@ -154,19 +156,26 @@ static void credits_fill(void) {
 
 	credits_add((
 		"Free Software\n"
-		"Simple DirectMedia Layer\n"  "https://libsdl.org/\n\n"
+		"Basis Universal\n"           "https://github.com/BinomialLLC/basis_universal\n\n"
+		"Blender\n"                   "https://www.blender.org/\n\n"
+		"cglm\n"                      "https://github.com/recp/cglm\n\n"
+		"FreeType\n"                  "https://freetype.org/\n\n"
+		"Inkscape\n"                  "https://inkscape.org/\n"
+		"Krita\n"                     "https://krita.org/\n\n"
 		"libpng\n"                    "http://libpng.org/\n\n"
 		"libwebp\n"                   "https://git.io/WebP\n\n"
-		"FreeType\n"                  "https://freetype.org/\n\n"
-		"Ogg Opus\n"                  "https://www.opus-codec.org/"
 	), ENTRY_TIME);
 
 	credits_add((
 		"\n"
-		"zlib\n"                      "https://zlib.net/\n\n"
 		"libzip\n"                    "https://libzip.org/\n\n"
 		"Meson build system\n"        "https://mesonbuild.com/\n\n"
-		"Krita\n"                     "https://krita.org/\n\n"
+		"Ogg Opus\n"                  "https://www.opus-codec.org/\n\n"
+		"SPIRV-Cross\n"               "https://github.com/KhronosGroup/SPIRV-Cross\n\n"
+		"shaderc\n"                   "https://github.com/google/shaderc\n\n"
+		"Simple DirectMedia Layer\n"  "https://libsdl.org/\n\n"
+		"zlib\n"                      "https://zlib.net/\n\n"
+		"Zstandard\n"                 "https://facebook.github.io/zstd/\n\n"
 		"and many other projects"
 	), ENTRY_TIME);
 
@@ -195,19 +204,19 @@ static void credits_add(char *data, int time) {
 
 	assert(time > CREDITS_ENTRY_FADEOUT);
 
-	e = dynarray_append(&credits.entries);
-	e->time = time - CREDITS_ENTRY_FADEOUT;
-	e->lines = 1;
+	e = dynarray_append(&credits.entries, {
+		.time = time - CREDITS_ENTRY_FADEOUT,
+		.lines = 1,
+	});
 
 	for(c = data; *c; ++c)
 		if(*c == '\n') e->lines++;
-	e->data = malloc(e->lines * sizeof(char*));
+	e->data = ALLOC_ARRAY(e->lines, typeof(*e->data));
 
 	for(c = data; *c; ++c) {
 		if(*c == '\n') {
 			buf[i] = 0;
-			e->data[l] = malloc(strlen(buf) + 1);
-			strcpy(e->data[l], buf);
+			e->data[l] = strdup(buf);
 			i = 0;
 			++l;
 		} else {
@@ -216,8 +225,7 @@ static void credits_add(char *data, int time) {
 	}
 
 	buf[i] = 0;
-	e->data[l] = malloc(strlen(buf) + 1);
-	strcpy(e->data[l], buf);
+	e->data[l] = strdup(buf);
 	credits.end += time;
 }
 
@@ -248,6 +256,7 @@ static void credits_bg_setup_pbr_lighting(Camera3D *cam) {
 static void credits_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
 	credits_bg_setup_pbr_lighting(cam);
 	glm_vec3_broadcast(1.0f, env->ambient_color);
+	glm_vec3_broadcast(1.0f, env->environment_color);
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 	env->environment_map = credits.env_map;
 }
@@ -336,6 +345,7 @@ static void credits_init(void) {
 	// presumably not desired anyway.
 	credits.skipable = progress_times_any_ending_achieved() > 1;
 
+	progress_unlock_bgm("credits");
 	audio_bgm_play(res_bgm("credits"), false, 0, 0);
 }
 
@@ -348,7 +358,7 @@ static double entry_height(CreditsEntry *e, double *head, double *body) {
 
 	if(e->lines > 0) {
 		if(*(e->data[0]) == '*') {
-			total += *head = sprite_padded_height(res_sprite("kyoukkuri"));
+			total += *head = res_sprite("kyoukkuri")->h;
 		} else {
 			total += *head = font_get_lineskip(res_font("big"));
 		}
@@ -405,7 +415,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 	}
 
 	if(time - e->time - CREDITS_ENTRY_FADEIN + ofs > 0) {
-		fadeout = fmax(0, 1 - (time - e->time - CREDITS_ENTRY_FADEIN + ofs) / CREDITS_ENTRY_FADEOUT);
+		fadeout = max(0, 1 - (time - e->time - CREDITS_ENTRY_FADEIN + ofs) / CREDITS_ENTRY_FADEOUT);
 	}
 
 	if(!fadein || !fadeout) {
@@ -435,7 +445,7 @@ static void credits_draw_entry(CreditsEntry *e) {
 			float t = ((global.frames) % 90) / 59.0;
 			float elevation = yukkuri_jump(t);
 			float squeeze = (elevation - yukkuri_jump(t - 0.03)) * 0.4;
-			float halfheight = sprite_padded_height(yukkuri_spr) * 0.5;
+			float halfheight = yukkuri_spr->h * 0.5;
 
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = yukkuri_spr,
@@ -474,7 +484,7 @@ static uint credits_skysphere_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 }
 
 static void credits_draw(void) {
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 //	colorfill(1, 1, 1, 1); // don't use r_clear for this, it screws up letterboxing
 
 
@@ -482,7 +492,7 @@ static void credits_draw(void) {
 
 	r_state_push();
 	r_framebuffer(credits.fb);
-	r_clear(CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_clear(BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 
 	r_enable(RCAP_DEPTH_TEST);
 	stage3d_draw(&stage_3d_context, 500, 2, (Stage3DSegment[]) { credits_skysphere_draw, credits_skysphere_pos, credits_towerwall_draw, credits_towerwall_pos });
@@ -492,17 +502,19 @@ static void credits_draw(void) {
 	r_mat_mv_pop();
 	set_ortho(SCREEN_W, SCREEN_H);
 
+	float pane_pos = SCREEN_W/4*3 - 6;
+
 	r_mat_mv_push();
 	r_color4(0, 0, 0, credits.panelalpha * 0.7);
-	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
-	r_mat_mv_scale(300, SCREEN_H, 1);
+	r_mat_mv_translate(pane_pos, SCREEN_H/2, 0);
+	r_mat_mv_scale(385, SCREEN_H, 1);
 	r_shader_standard_notex();
 	r_draw_quad();
 	r_color4(1, 1, 1, 1);
 	r_mat_mv_pop();
 
 	r_mat_mv_push();
-	r_mat_mv_translate(SCREEN_W/4*3, SCREEN_H/2, 0);
+	r_mat_mv_translate(pane_pos, SCREEN_H/2, 0);
 
 	r_shader_standard();
 
@@ -515,29 +527,28 @@ static void credits_draw(void) {
 	draw_transition();
 }
 
-static void credits_finish(void *arg) {
+static void credits_finish(CallChainResult ccr) {
 	credits.end = 0;
-	set_transition(TransLoader, 0, FADE_TIME*10);
+	set_transition(TransLoader, 0, FADE_TIME*10, NO_CALLCHAIN);
 }
 
 static void credits_process(void) {
-	TIMER(&global.frames);
-
 	stage3d_update(&stage_3d_context);
 
 	//stage_3d_context.cam.pos[2] = 10-0.1*global.frames;
 	//stage_3d_context.cam.pos[1] = 500 + 100 * psin(global.frames / 100.0) * psin(global.frames / 200.0 + M_PI);
 	//stage_3d_context.cam.pos[0] = 25 * sin(global.frames / 75.7) * cos(global.frames / 99.3);
 
-	FROM_TO(100, 200, 1)
+	if(global.frames >= 100 && global.frames <= 200) {
 		credits.panelalpha += 0.01;
+	}
 
 	if(global.frames >= credits.end - CREDITS_ENTRY_FADEOUT) {
 		credits.panelalpha -= 1 / 120.0;
 	}
 
 	if(global.frames == credits.end) {
-		set_transition_callback(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, credits_finish, NULL);
+		set_transition(TransFadeWhite, CREDITS_FADEOUT, CREDITS_FADEOUT, CALLCHAIN(credits_finish, NULL));
 	}
 }
 
@@ -546,31 +557,31 @@ static void credits_free(void) {
 
 	dynarray_foreach_elem(&credits.entries, CreditsEntry *e, {
 		for(int i = 0; i < e->lines; ++i) {
-			free(e->data[i]);
+			mem_free(e->data[i]);
 		}
-		free(e->data);
+		mem_free(e->data);
 	});
 
 	dynarray_free_data(&credits.entries);
 	stage3d_shutdown(&stage_3d_context);
 }
 
-void credits_preload(void) {
-	preload_resource(RES_BGM, "credits", RESF_OPTIONAL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+void credits_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "credits", NULL);
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"pbr",
 		"envmap_reflect",
 		"stage6_sky",
 	NULL);
-	preload_resource(RES_SPRITE, "kyoukkuri", RESF_DEFAULT);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT, "kyoukkuri", NULL);
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
 		"loading",  // for transition
 		"stage6/sky",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"credits/tower",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"credits/metal_columns",
 		"credits/tower",
 		"cube",
@@ -599,13 +610,13 @@ static RenderFrameAction credits_render_frame(void *arg) {
 
 static void credits_end_loop(void *ctx) {
 	credits_free();
-	progress_unlock_bgm("credits");
+	demoplayer_resume();
 	run_call_chain(&credits.cc, NULL);
 }
 
 void credits_enter(CallChain next) {
-	credits_preload();
 	credits_init();
 	credits.cc = next;
+	demoplayer_suspend();
 	eventloop_enter(&credits, credits_logic_frame, credits_render_frame, credits_end_loop, FPS);
 }

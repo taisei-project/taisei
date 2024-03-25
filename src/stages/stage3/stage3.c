@@ -15,8 +15,6 @@
 #include "scuttle.h"
 #include "spells/spells.h"
 #include "timeline.h"
-#include "wriggle.h"
-#include "scuttle.h"
 
 #include "global.h"
 #include "portrait.h"
@@ -30,29 +28,34 @@
 struct stage3_spells_s stage3_spells = {
 	.mid = {
 		.deadly_dance = {
-			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Venom Sign “Deadly Dance”", 14, 40000,
-			scuttle_deadly_dance, stage3_draw_scuttle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			{ 0,  1,  2,  3}, AT_SurvivalSpell, "Disruption “Logic Bomb”", 14, 40000,
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_logic_bomb),
+			stage3_draw_scuttle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 	},
 
 	.boss = {
 		.moonlight_rocket = {
 			{ 6,  7,  8,  9}, AT_Spellcard, "Firefly Sign “Moonlight Rocket”", 40, 40000,
-			wriggle_moonlight_rocket, stage3_draw_wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moonlight_rocket),
+			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
-		.wriggle_night_ignite = {
-			{10, 11, 12, 13}, AT_Spellcard, "Light Source “Wriggle Night Ignite”", 50, 46000,
-			wriggle_night_ignite, stage3_draw_wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+		.moths_to_a_flame = {
+			{18, 19, 20, 21}, AT_Spellcard, "Attractor “Moths to a Flame”", 90, 70000,
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_moths_to_a_flame),
+			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 		.firefly_storm = {
 			{14, 15, 16, 17}, AT_Spellcard, "Bug Sign “Firefly Storm”", 45, 45000,
-			wriggle_firefly_storm, stage3_draw_wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+			TASK_INDIRECT_INIT(BossAttack, stage3_spell_firefly_storm),
+			stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 		},
 	},
 
 	.extra.light_singularity = {
 		{ 0,  1,  2,  3}, AT_ExtraSpell, "Lamp Sign “Light Singularity”", 75, 45000,
-		wriggle_light_singularity, stage3_draw_wriggle_spellbg, BOSS_DEFAULT_GO_POS, 3
+		TASK_INDIRECT_INIT(BossAttack, stage3_spell_light_singularity),
+		stage3_draw_wriggle_spellbg, VIEWPORT_W/2.0+100*I, 3,
 	},
 };
 
@@ -61,6 +64,7 @@ static void stage3_start(void) {
 	stage3_bg_init_fullstage();
 	stage_start_bgm("stage3");
 	stage_set_voltage_thresholds(50, 125, 300, 600);
+	INVOKE_TASK(stage3_timeline);
 }
 
 static void stage3_spellpractice_start(void) {
@@ -80,44 +84,55 @@ static void stage3_spellpractice_start(void) {
 	boss_engage(global.boss);
 }
 
-static void stage3_preload(void) {
-	portrait_preload_base_sprite("wriggle", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("wriggle", "proud", RESF_DEFAULT);
-	portrait_preload_base_sprite("scuttle", NULL, RESF_DEFAULT);
-	portrait_preload_face_sprite("scuttle", "normal", RESF_DEFAULT);
-	preload_resources(RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
-	preload_resources(RES_TEXTURE, RESF_DEFAULT,
+static void stage3_preload(ResourceGroup *rg) {
+	portrait_preload_base_sprite(rg, "wriggle", NULL, RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "wriggle", "defeated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "calm", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "normal", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "outraged", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "outraged_unlit", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "proud", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "wriggle", "defeated", RESF_DEFAULT);
+	portrait_preload_base_sprite(rg, "scuttle", NULL, RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "scuttle", "normal", RESF_DEFAULT);
+	res_group_preload(rg, RES_BGM, RESF_OPTIONAL, "stage3", "stage3boss", NULL);
+	res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT,
+		"fractal_noise",
+		"ibl_brdf_lut",
+		"stage3/envmap",
 		"stage3/spellbg1",
-		"stage3/spellbg2",
 		"stage3/wspellbg",
 		"stage3/wspellclouds",
 		"stage3/wspellswarm",
 	NULL);
-	preload_resources(RES_MATERIAL, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
+		"stage3/spellbg2",
+	NULL);
+	res_group_preload(rg, RES_MATERIAL, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/leaves",
 		"stage3/rocks",
 		"stage3/trees",
 	NULL);
-	preload_resources(RES_MODEL, RESF_DEFAULT,
+	res_group_preload(rg, RES_MODEL, RESF_DEFAULT,
 		"stage3/ground",
 		"stage3/leaves",
 		"stage3/rocks",
 		"stage3/trees",
 	NULL);
-	preload_resources(RES_SHADER_PROGRAM, RESF_DEFAULT,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
 		"glitch",
 		"maristar_bombbg",
 		"pbr",
 		"pbr_roughness_alpha_discard",
 		"stage3_wriggle_bg",
-		"zbuf_fog",
+		"zbuf_fog_tonemap",
 	NULL);
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"boss/scuttle",
 		"boss/wriggleex",
 	NULL);
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"laser1",
 	NULL);
 }
@@ -131,7 +146,6 @@ StageProcs stage3_procs = {
 	.draw = stage3_draw,
 	.end = stage3_end,
 	.preload = stage3_preload,
-	.event = stage3_events,
 	.shader_rules = stage3_bg_effects,
 	.postprocess_rules = stage3_postprocess,
 	.spellpractice_procs = &(StageProcs) {

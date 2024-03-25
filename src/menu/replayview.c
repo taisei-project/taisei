@@ -32,7 +32,7 @@ typedef struct ReplayviewItemContext {
 	char *replayname;
 } ReplayviewItemContext;
 
-static MenuData* replayview_sub_messagebox(MenuData *parent, const char *message);
+static MenuData *replayview_sub_messagebox(MenuData *parent, const char *message);
 
 static void replayview_set_submenu(MenuData *parent, MenuData *submenu) {
 	ReplayviewContext *ctx = parent->context;
@@ -56,13 +56,18 @@ typedef struct {
 } startrpy_arg_t;
 
 static void on_replay_finished(CallChainResult ccr) {
+	replay_destroy_events(ccr.ctx);
 	audio_bgm_play(res_bgm("menu"), true, 0, 0);
 }
 
-static void really_start_replay(void *varg) {
-	startrpy_arg_t arg = *(startrpy_arg_t*)varg;
-	free(varg);
-	replay_play(arg.rpy, arg.stgnum, CALLCHAIN(on_replay_finished, NULL));
+static void really_start_replay(CallChainResult ccr) {
+	startrpy_arg_t *argp = ccr.ctx;
+	auto arg = *argp;
+	mem_free(argp);
+
+	if(!TRANSITION_RESULT_CANCELED(ccr)) {
+		replay_play(arg.rpy, arg.stgnum, false, CALLCHAIN(on_replay_finished, arg.rpy));
+	}
 }
 
 static void start_replay(MenuData *menu, void *arg) {
@@ -99,18 +104,18 @@ static void start_replay(MenuData *menu, void *arg) {
 		return;
 	}
 
-	set_transition_callback(TransFadeBlack, FADE_TIME, FADE_TIME, really_start_replay,
-		memdup(&(startrpy_arg_t) {
+	set_transition(TransFadeBlack, FADE_TIME, FADE_TIME,
+		CALLCHAIN(really_start_replay, ALLOC(startrpy_arg_t, {
 			.rpy = ictx->replay,
 			.stgnum = stagenum
-		}, sizeof(startrpy_arg_t))
+		}))
 	);
 }
 
 static void replayview_draw_stagemenu(MenuData*);
 static void replayview_draw_messagebox(MenuData*);
 
-static MenuData* replayview_sub_stageselect(MenuData *parent, ReplayviewItemContext *ictx) {
+static MenuData *replayview_sub_stageselect(MenuData *parent, ReplayviewItemContext *ictx) {
 	MenuData *m = alloc_menu();
 	Replay *rpy = ictx->replay;
 
@@ -135,7 +140,7 @@ static MenuData* replayview_sub_stageselect(MenuData *parent, ReplayviewItemCont
 	return m;
 }
 
-static MenuData* replayview_sub_messagebox(MenuData *parent, const char *message) {
+static MenuData *replayview_sub_messagebox(MenuData *parent, const char *message) {
 	MenuData *m = alloc_menu();
 	m->draw = replayview_draw_messagebox;
 	m->flags = MF_Transient | MF_Abortable;
@@ -159,9 +164,9 @@ static void replayview_run(MenuData *menu, void *arg) {
 static void replayview_freearg(void *a) {
 	ReplayviewItemContext *ctx = a;
 	replay_reset(ctx->replay);
-	free(ctx->replay);
-	free(ctx->replayname);
-	free(ctx);
+	mem_free(ctx->replay);
+	mem_free(ctx->replayname);
+	mem_free(ctx);
 }
 
 static void replayview_draw_submenu_bg(float width, float height, float alpha) {
@@ -387,17 +392,16 @@ static int fill_replayview_menu(MenuData *m) {
 		if(!strendswith(filename, ext))
 			continue;
 
-		Replay *rpy = malloc(sizeof(Replay));
+		auto rpy = ALLOC(Replay);
 		if(!replay_load(rpy, filename, REPLAY_READ_META)) {
-			free(rpy);
+			mem_free(rpy);
 			continue;
 		}
 
-		ReplayviewItemContext *ictx = malloc(sizeof(ReplayviewItemContext));
-		memset(ictx, 0, sizeof(ReplayviewItemContext));
-
-		ictx->replay = rpy;
-		ictx->replayname = strdup(filename);
+		auto ictx = ALLOC(ReplayviewItemContext, {
+			.replay = rpy,
+			.replayname = strdup(filename),
+		});
 
 		add_menu_entry(m, " ", replayview_run, ictx)->transition = /*rpy->numstages < 2 ? TransFadeBlack :*/ NULL;
 		++rpys;
@@ -431,7 +435,7 @@ static void replayview_free(MenuData *m) {
 
 		free_menu(ctx->next_submenu);
 		free_menu(ctx->submenu);
-		free(m->context);
+		mem_free(m->context);
 		m->context = NULL;
 	}
 
@@ -442,7 +446,7 @@ static void replayview_free(MenuData *m) {
 	});
 }
 
-MenuData* create_replayview_menu(void) {
+MenuData *create_replayview_menu(void) {
 	MenuData *m = alloc_menu();
 
 	m->logic = replayview_logic;
@@ -450,12 +454,9 @@ MenuData* create_replayview_menu(void) {
 	m->draw = replayview_draw;
 	m->end = replayview_free;
 	m->transition = TransFadeBlack;
-
-	ReplayviewContext *ctx = malloc(sizeof(ReplayviewContext));
-	memset(ctx, 0, sizeof(ReplayviewContext));
-	ctx->sub_fade = 1.0;
-
-	m->context = ctx;
+	m->context = ALLOC(ReplayviewContext, {
+		.sub_fade = 1.0,
+	});
 	m->flags = MF_Abortable;
 
 	int r = fill_replayview_menu(m);

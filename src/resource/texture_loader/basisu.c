@@ -390,7 +390,7 @@ static void texture_loader_basisu_cleanup(struct basisu_load_data *bld) {
 		basist_transcoder_set_data(bld->tc, (basist_data) { 0 });
 	}
 
-	free(bld->filebuf);
+	mem_free(bld->filebuf);
 	bld->filebuf = NULL;
 }
 
@@ -591,11 +591,11 @@ static bool texture_loader_basisu_init_mipmaps(
 	}
 
 	int mip_bias = env_get("TAISEI_BASISU_MIP_BIAS", 0);
-	mip_bias = iclamp(mip_bias, 0, total_levels - 1);
+	mip_bias = clamp(mip_bias, 0, total_levels - 1);
 	{
 		int max_levels = env_get("TAISEI_BASISU_MAX_MIP_LEVELS", 0);
 		if(max_levels > 0) {
-			total_levels = iclamp(total_levels, 1, mip_bias + max_levels);
+			total_levels = clamp(total_levels, 1, mip_bias + max_levels);
 		}
 	}
 	bld->mip_bias = mip_bias;
@@ -638,12 +638,12 @@ static bool texture_loader_basisu_init_mipmaps(
 
 	switch(ld->params.class) {
 		case TEXTURE_CLASS_2D:
-			ld->pixmaps = calloc(ld->params.mipmaps, sizeof(*ld->pixmaps));
+			ld->pixmaps = ALLOC_ARRAY(ld->params.mipmaps, typeof(*ld->pixmaps));
 			ld->num_pixmaps = ld->params.mipmaps;
 			break;
 
 		case TEXTURE_CLASS_CUBEMAP:
-			ld->cubemaps = calloc(ld->params.mipmaps, sizeof(*ld->cubemaps));
+			ld->cubemaps = ALLOC_ARRAY(ld->params.mipmaps, typeof(*ld->cubemaps));
 			ld->num_pixmaps = ld->params.mipmaps * 6;
 			break;
 
@@ -701,7 +701,7 @@ static bool texture_loader_basisu_load_pixmap(
 		}
 
 		out_pixmap->data_size = data_size;
-		out_pixmap->data.untyped = calloc(1, out_pixmap->data_size);
+		out_pixmap->data.untyped = mem_alloc(out_pixmap->data_size);
 		parm->output_blocks = out_pixmap->data.untyped;
 		parm->output_blocks_size = size_info.num_blocks;
 

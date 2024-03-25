@@ -13,8 +13,8 @@
 #include "projectile.h"
 #include "player.h"
 #include "cutscenes/cutscene.h"
-#include "stage.h"
 #include "dialog.h"
+#include "endings.h"
 
 typedef enum {
 	// WARNING: Reordering this will break current replays, and possibly even progress files.
@@ -42,6 +42,10 @@ typedef enum {
 	PLR_SHOT_REIMU_SPIRIT   = PLR_SHOT_A,
 	PLR_SHOT_REIMU_DREAM    = PLR_SHOT_B,
 } ShotModeID;
+
+enum {
+	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
+};
 
 typedef enum {
 	// vpu = viewport units
@@ -74,7 +78,7 @@ typedef struct PlayerCharacter {
 
 typedef void (*PlayerModeInitProc)(Player *plr);
 typedef void (*PlayerModeFreeProc)(Player *plr);
-typedef void (*PlayerModePreloadProc)(void);
+typedef void (*PlayerModePreloadProc)(ResourceGroup *rg);
 typedef double (*PlayerModePropertyProc)(Player *plr, PlrProperty prop);
 
 typedef struct PlayerMode {
@@ -92,12 +96,8 @@ typedef struct PlayerMode {
 	} procs;
 } PlayerMode;
 
-enum {
-	NUM_PLAYER_MODES = NUM_CHARACTERS * NUM_SHOT_MODES_PER_CHARACTER,
-};
-
 PlayerCharacter *plrchar_get(CharacterID id);
-void plrchar_preload(PlayerCharacter *pc);
+void plrchar_preload(PlayerCharacter *pc, ResourceGroup *rg);
 void plrchar_render_bomb_portrait(PlayerCharacter *pc, Sprite *out_spr);
 int plrchar_player_anim_name(PlayerCharacter *pc, size_t bufsize, char buf[bufsize]);
 Animation *plrchar_player_anim(PlayerCharacter *pc);
@@ -105,6 +105,6 @@ Animation *plrchar_player_anim(PlayerCharacter *pc);
 PlayerMode *plrmode_find(CharacterID charid, ShotModeID shotid);
 int plrmode_repr(char *out, size_t outsize, PlayerMode *mode, bool internal);
 PlayerMode *plrmode_parse(const char *name);
-void plrmode_preload(PlayerMode *mode);
+void plrmode_preload(PlayerMode *mode, ResourceGroup *rg);
 
 double player_property(Player *plr, PlrProperty prop);

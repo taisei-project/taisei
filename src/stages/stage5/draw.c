@@ -22,7 +22,7 @@ Stage5DrawData *stage5_get_draw_data(void) {
 }
 
 void stage5_drawsys_init(void) {
-	stage5_draw_data = calloc(1, sizeof(*stage5_draw_data));
+	stage5_draw_data = ALLOC(typeof(*stage5_draw_data));
 	stage3d_init(&stage_3d_context, 16);
 
 	stage5_draw_data->stairs.light_pos = -200;
@@ -40,7 +40,7 @@ void stage5_drawsys_init(void) {
 
 void stage5_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage5_draw_data);
+	mem_free(stage5_draw_data);
 	stage5_draw_data = NULL;
 }
 
@@ -49,7 +49,7 @@ static uint stage5_stairs_pos(Stage3D *s3d, vec3 cam, float maxrange) {
 	vec3 p = {0, 0, -s};
 	vec3 r = {0, 0, s};
 
-	return stage3d_pos_ray_nearfirst(s3d, cam, p, r, s, s * 3);
+	return stage3d_pos_ray_nearfirst(s3d, cam, p, r, s, s * 4);
 }
 
 static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
@@ -72,6 +72,7 @@ static void stage5_bg_setup_pbr_lighting(Camera3D *cam) {
 static void stage5_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
 	stage5_bg_setup_pbr_lighting(cam);
 	glm_vec3_broadcast(1.0f + stage5_draw_data->stairs.light_strength, env->ambient_color);
+	glm_vec3_broadcast(1.0f, env->environment_color);
 	env->environment_map = stage5_draw_data->env_map;
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 }

@@ -236,19 +236,19 @@ static void gl33_init_texunits(void) {
 	if(texunits_max == 0) {
 		texunits_max = texunits_available;
 	} else {
-		texunits_max = iclamp(texunits_max, texunits_min, texunits_available);
+		texunits_max = clamp(texunits_max, texunits_min, texunits_available);
 	}
 
-	texunits_capped = imin(texunits_max, texunits_available);
+	texunits_capped = min(texunits_max, texunits_available);
 	R.texunits.limit = env_get_int("GL33_NUM_TEXUNITS", texunits_capped);
 
 	if(R.texunits.limit == 0) {
 		R.texunits.limit = texunits_available;
 	} else {
-		R.texunits.limit = iclamp(R.texunits.limit, texunits_min, texunits_available);
+		R.texunits.limit = clamp(R.texunits.limit, texunits_min, texunits_available);
 	}
 
-	R.texunits.array = calloc(R.texunits.limit, sizeof(TextureUnit));
+	R.texunits.array = ALLOC_ARRAY(R.texunits.limit, typeof(*R.texunits.array));
 	R.texunits.active = R.texunits.array;
 
 	for(int i = 0; i < R.texunits.limit; ++i) {
@@ -282,22 +282,28 @@ static void gl41_set_viewport(const FloatRect *vp) {
 }
 #endif
 
-static void gl33_init_context(SDL_Window *window) {
-	R.gl_context = SDL_GL_CreateContext(window);
+static SDL_GLContext gl33_create_context(SDL_Window *window) {
+	SDL_GLContext ctx = SDL_GL_CreateContext(window);
 
 	int gl_profile;
 	SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &gl_profile);
 
-	if(!R.gl_context && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
+	if(!ctx && gl_profile != SDL_GL_CONTEXT_PROFILE_ES) {
 		log_error("Failed to create OpenGL context: %s", SDL_GetError());
 		log_warn("Attempting to create a fallback context");
 		SDL_GL_ResetAttributes();
-		R.gl_context = SDL_GL_CreateContext(window);
+		ctx = SDL_GL_CreateContext(window);
 	}
 
-	if(!R.gl_context) {
+	if(!ctx) {
 		log_fatal("Failed to create OpenGL context: %s", SDL_GetError());
 	}
+
+	return ctx;
+}
+
+static void gl33_init_context(SDL_Window *window) {
+	R.gl_context = GLVT.create_context(window);
 
 	glcommon_load_functions();
 	glcommon_check_capabilities();
@@ -429,8 +435,6 @@ static void gl33_sync_viewport(void) {
 
 void gl33_sync_scissor(void) {
 	bool pending_enabled =
-		R.scissor.pending.x &&
-		R.scissor.pending.y &&
 		R.scissor.pending.w &&
 		R.scissor.pending.h;
 
@@ -500,7 +504,7 @@ static void gl33_sync_magic_uniforms(void) {
 	int num_color_out;
 
 	if(u[UMAGIC_COLOR_OUT_SIZES]) {
-		num_color_out = iclamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
+		num_color_out = clamp(u[UMAGIC_COLOR_OUT_SIZES]->array_size, 0, FRAMEBUFFER_MAX_OUTPUTS);
 	} else {
 		num_color_out = 0;
 	}
@@ -1425,6 +1429,7 @@ static bool gl33_screenshot(Pixmap *out) {
 	out->format = PIXMAP_FORMAT_RGB8;
 	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
 	return true;
 }
@@ -1500,6 +1505,7 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer = gl33_framebuffer,
 		.framebuffer_current = gl33_framebuffer_current,
 		.framebuffer_clear = gl33_framebuffer_clear,
+		.framebuffer_copy = gl33_framebuffer_copy,
 		.framebuffer_get_size = gl33_framebuffer_get_size,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
@@ -1535,6 +1541,7 @@ RendererBackend _r_backend_gl33 = {
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
+			.create_context = gl33_create_context,
 			.init_context = gl33_init_context,
 		}
 	},

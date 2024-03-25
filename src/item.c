@@ -11,6 +11,7 @@
 #include "item.h"
 #include "global.h"
 #include "list.h"
+#include "stage.h"
 #include "stageobjects.h"
 
 // Instant collection radius.
@@ -18,7 +19,7 @@
 // distance to begin attracting the item towards the player.
 #define ITEM_GRAB_RADIUS 10
 
-static const char* item_sprite_name(ItemType type) {
+static const char *item_sprite_name(ItemType type) {
 	static const char *const map[] = {
 		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb",
 		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag",
@@ -38,7 +39,7 @@ static const char* item_sprite_name(ItemType type) {
 	return map[index];
 }
 
-static const char* item_indicator_sprite_name(ItemType type) {
+static const char *item_indicator_sprite_name(ItemType type) {
 	static const char *const map[] = {
 		[ITEM_BOMB          - ITEM_FIRST] = "item/bomb_indicator",
 		[ITEM_BOMB_FRAGMENT - ITEM_FIRST] = "item/bombfrag_indicator",
@@ -58,11 +59,11 @@ static const char* item_indicator_sprite_name(ItemType type) {
 	return map[index];
 }
 
-static Sprite* item_sprite(ItemType type) {
+static Sprite *item_sprite(ItemType type) {
 	return res_sprite(item_sprite_name(type));
 }
 
-static Sprite* item_indicator_sprite(ItemType type) {
+static Sprite *item_indicator_sprite(ItemType type) {
 	const char *name = item_indicator_sprite_name(type);
 	if(name == NULL) {
 		return NULL;
@@ -70,44 +71,56 @@ static Sprite* item_indicator_sprite(ItemType type) {
 	return res_sprite(name);
 }
 
+void item_set_type(Item *item, ItemType type) {
+	if(UNLIKELY(item->type == type)) {
+		return;
+	}
+
+	item->type = type;
+	item->sprites.pickup = NOT_NULL(item_sprite(type));
+	item->sprites.indicator = item_indicator_sprite(type);
+
+	// TODO: remove dependence on sprite size
+	item->size = item->sprites.pickup->extent.as_cmplx;
+
+	item->ent.draw_layer = LAYER_ITEM | type;
+}
+
 static void ent_draw_item(EntityInterface *ent) {
 	Item *i = ENT_CAST(ent, Item);
 
 	const int indicator_display_y = 6;
+	float y = im(i->pos);
 
-	float y = cimag(i->pos);
 	if(y < 0) {
-		Sprite *s = item_indicator_sprite(i->type);
-
-		float alpha = -tanh(y*0.1)/(1+0.1*fabs(y));
+		Sprite *s = i->sprites.indicator;
 
 		if(s != NULL) {
+			float alpha = -tanhf(y * 0.1f) / (1 + 0.1 * fabsf(y));
 			r_draw_sprite(&(SpriteParams) {
 				.sprite_ptr = s,
-				.pos = { creal(i->pos), indicator_display_y },
+				.pos = { re(i->pos), indicator_display_y },
 				.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 			});
 		}
 	}
 
-
 	float alpha = 1;
 	if(i->type == ITEM_PIV && !i->auto_collect) {
-		alpha *=  clamp(2.0 - (global.frames - i->birthtime) / 60.0, 0.1, 1.0);
+		alpha = clamp(2.0f - (global.frames - i->birthtime) / 60.0f, 0.1f, 1.0f);
 	}
 
 	Color *c = RGBA_MUL_ALPHA(1, 1, 1, alpha);
 
 	r_draw_sprite(&(SpriteParams) {
-		.sprite_ptr = item_sprite(i->type),
-		.pos = { creal(i->pos), y },
+		.sprite_ptr = i->sprites.pickup,
+		.pos = { re(i->pos), y },
 		.color = c,
 	});
-
 }
 
-Item* create_item(cmplx pos, cmplx v, ItemType type) {
-	if((creal(pos) < 0 || creal(pos) > VIEWPORT_W)) {
+Item *create_item(cmplx pos, cmplx v, ItemType type) {
+	if((re(pos) < 0 || re(pos) > VIEWPORT_W)) {
 		// we need this because we clamp the item position to the viewport boundary during motion
 		// e.g. enemies that die offscreen shouldn't spawn any items inside the viewport
 		return NULL;
@@ -117,7 +130,7 @@ Item* create_item(cmplx pos, cmplx v, ItemType type) {
 		type = ITEM_SURGE;
 	}
 
-	Item *i = (Item*)objpool_acquire(stage_object_pools.items);
+	Item *i = objpool_acquire(&stage_object_pools.items);
 	alist_append(&global.items, i);
 
 	i->pos = pos;
@@ -126,18 +139,18 @@ Item* create_item(cmplx pos, cmplx v, ItemType type) {
 	i->birthtime = global.frames;
 	i->auto_collect = 0;
 	i->collecttime = 0;
-	i->type = type;
 
-	i->ent.draw_layer = LAYER_ITEM | i->type;
 	i->ent.draw_func = ent_draw_item;
 	ent_register(&i->ent, ENT_TYPE_ID(Item));
+
+	item_set_type(i, type);
 
 	return i;
 }
 
 void delete_item(Item *item) {
 	ent_unregister(&item->ent);
-	objpool_release(stage_object_pools.items, alist_unlink(&global.items, item));
+	objpool_release(&stage_object_pools.items, alist_unlink(&global.items, item));
 }
 
 Item *create_clear_item(cmplx pos, uint clear_flags) {
@@ -183,15 +196,15 @@ static cmplx move_item(Item *i) {
 		i->pos = i->pos0 + log(t/5.0 + 1)*5*(i->v + lim) + lim*t;
 
 		cmplx v = i->pos - oldpos;
-		double half = item_sprite(i->type)->w/2.0;  // TODO remove dependence on sprite size
+		double half = re(i->size) * 0.5f;
 		bool over = false;
 
-		if((over = creal(i->pos) > VIEWPORT_W-half) || creal(i->pos) < half) {
+		if((over = re(i->pos) > VIEWPORT_W-half) || re(i->pos) < half) {
 			cmplx normal = over ? -1 : 1;
-			v -= 2 * normal * (creal(normal)*creal(v));
-			v = 1.5*creal(v) - I*fabs(cimag(v));
+			v -= 2 * normal * (re(normal)*re(v));
+			v = 1.5*re(v) - I*fabs(im(v));
 
-			i->pos = clamp(creal(i->pos), half, VIEWPORT_W-half) + I*cimag(i->pos);
+			i->pos = clamp(re(i->pos), half, VIEWPORT_W-half) + I*im(i->pos);
 			i->v = v;
 			i->pos0 = i->pos;
 			i->birthtime = global.frames;
@@ -202,12 +215,12 @@ static cmplx move_item(Item *i) {
 }
 
 static bool item_out_of_bounds(Item *item) {
-	double margin = fmax(item_sprite(item->type)->w, item_sprite(item->type)->h);
+	double margin = max(re(item->size), im(item->size));
 
 	return (
-		creal(item->pos) < -margin ||
-		creal(item->pos) > VIEWPORT_W + margin ||
-		cimag(item->pos) > VIEWPORT_H + margin
+		re(item->pos) < -margin ||
+		re(item->pos) > VIEWPORT_W + margin ||
+		im(item->pos) > VIEWPORT_H + margin
 	);
 }
 
@@ -220,9 +233,9 @@ bool collect_item(Item *item, float value) {
 	const int delay = 0;
 
 	if(item->auto_collect) {
-		item->auto_collect = imax(speed, item->auto_collect);
-		item->pickup_value = fmax(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
-		item->collecttime = imin(global.frames + delay, item->collecttime);
+		item->auto_collect = max(speed, item->auto_collect);
+		item->pickup_value = max(clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE), item->pickup_value);
+		item->collecttime = min(global.frames + delay, item->collecttime);
 	} else {
 		item->auto_collect = speed;
 		item->pickup_value = clamp(value, ITEM_MIN_VALUE, ITEM_MAX_VALUE);
@@ -243,15 +256,17 @@ void process_items(void) {
 	float attract_dist = player_property(&global.plr, PLR_PROP_COLLECT_RADIUS);
 	bool plr_alive = player_is_alive(&global.plr);
 	bool stage_cleared = stage_is_cleared();
+	bool surge_active = player_is_powersurge_active(&global.plr);
+	real poc = player_property(&global.plr, PLR_PROP_POC);
 
 	while(item != NULL) {
 		bool may_collect = true;
 
 		if(
-			(item->type == ITEM_POWER_MINI && global.plr.power == PLR_MAX_POWER) ||
-			(item->type == ITEM_SURGE && !player_is_powersurge_active(&global.plr))
+			(item->type == ITEM_POWER_MINI && global.plr.power_stored >= PLR_MAX_POWER_EFFECTIVE) ||
+			(item->type == ITEM_SURGE && !surge_active)
 		) {
-			item->type = ITEM_PIV;
+			item_set_type(item, ITEM_PIV);
 
 			if(collect_item(item, 1)) {
 				item->pos0 = item->pos;
@@ -262,7 +277,7 @@ void process_items(void) {
 
 		if(global.stage->type == STAGE_SPELL && (item->type == ITEM_LIFE || item->type == ITEM_BOMB || item->type == ITEM_LIFE_FRAGMENT || item->type == ITEM_BOMB_FRAGMENT)) {
 			// just in case we ever have some weird spell that spawns those...
-			item->type = ITEM_POINTS;
+			item_set_type(item, ITEM_POINTS);
 		}
 
 		if(global.frames - item->birthtime < 20) {
@@ -275,10 +290,18 @@ void process_items(void) {
 			real item_dist2 = cabs2(global.plr.pos - item->pos);
 
 			if(plr_alive) {
-				if(cimag(global.plr.pos) < player_property(&global.plr, PLR_PROP_POC) || stage_cleared) {
+				if(im(global.plr.pos) < poc || stage_cleared) {
 					collect_item(item, 1);
 				} else if(item_dist2 < attract_dist * attract_dist) {
-					collect_item(item, 1 - cimag(global.plr.pos) / VIEWPORT_H);
+					real value;
+
+					if(surge_active) {
+						value = 1;
+					} else {
+						value = 1 - im(global.plr.pos) / VIEWPORT_H;
+					}
+
+					collect_item(item, value);
 					item->auto_collect = 2;
 				}
 			} else if(item->auto_collect) {
@@ -339,7 +362,7 @@ void process_items(void) {
 			}
 		}
 
-		if(grabbed || (cimag(deltapos) > 0 && item_out_of_bounds(item))) {
+		if(grabbed || (im(deltapos) > 0 && item_out_of_bounds(item))) {
 			del = item;
 			item = item->next;
 			delete_item(del);
@@ -387,16 +410,16 @@ void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs grou
 	spawn_items_internal(pos, collect_value, groups);
 }
 
-void items_preload(void) {
+void items_preload(ResourceGroup *rg) {
 	for(ItemType i = ITEM_FIRST; i <= ITEM_LAST; ++i) {
-		preload_resource(RES_SPRITE, item_sprite_name(i), RESF_PERMANENT);
+		res_group_preload(rg, RES_SPRITE, 0, item_sprite_name(i), NULL);
 		const char *indicator = item_indicator_sprite_name(i);
 		if(indicator != NULL) {
-			preload_resource(RES_SPRITE, indicator, RESF_PERMANENT);
+			res_group_preload(rg, RES_SPRITE, 0, indicator, NULL);
 		}
 	}
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"item_generic",
 	NULL);
 }

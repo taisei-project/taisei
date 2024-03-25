@@ -11,7 +11,7 @@
 
 #include "transition.h"
 #include "events.h"
-#include "eventloop/eventloop.h"
+#include "util/callchain.h"
 #include "dynarray.h"
 
 #define IMENU_BLUR 0.05
@@ -37,7 +37,8 @@ typedef struct MenuEntry {
 enum MenuFlag {
 	MF_Transient = 1,           // the menu will be automatically closed on selection
 	MF_Abortable = 2,           // the menu can be closed with the escape key
-	MF_AlwaysProcessInput = 4   // the menu will process input when it's fading out
+	MF_AlwaysProcessInput = 4,  // the menu will process input when it's fading out
+	MF_NoDemo = 8,              // demo playback is disabled while in this menu
 };
 
 enum MenuState {

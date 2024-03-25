@@ -65,7 +65,7 @@ TASK(cirno_frostbolt, { cmplx pos; cmplx vel; }) {
 
 DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W / 2.0 + 300 * I, 0.1);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W / 2.0 + 300 * I, 0.1);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	int frostbolt_period = difficulty_value(4, 3, 2, 1);
@@ -80,7 +80,7 @@ DEFINE_EXTERN_TASK(stage1_spell_crystal_blizzard) {
 		INVOKE_SUBTASK(common_charge, boss->pos, RGBA(0.5, 0.6, 2.0, 0.0), charge_time, .sound = COMMON_CHARGE_SOUNDS);
 		WAIT(charge_time);
 
-		boss->move = move_towards_power(global.plr.pos, 1, 0.1);
+		boss->move = move_towards_exp(boss->move.velocity, global.plr.pos, 1, 0.1);
 
 		for(int t = 0; t < 370; ++t) {
 			play_sfx_loop("shot1_loop");

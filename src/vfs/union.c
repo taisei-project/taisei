@@ -10,109 +10,111 @@
 
 #include "union.h"
 
-#define _members_ data1
-#define _primary_member_ data2
-
-static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror);
-
-static void* vfs_union_delete_callback(List **list, List *elem, void *arg) {
-	ListContainer *c = (ListContainer*)elem;
-	VFSNode *n = c->data;
-	vfs_decref(n);
-	free(list_unlink(list, elem));
-	return NULL;
-}
+VFS_NODE_TYPE(VFSUnionNode, {
+	DYNAMIC_ARRAY(VFSNode*) members;
+});
 
 static void vfs_union_free(VFSNode *node) {
-	list_foreach((ListContainer**)&node->_members_, vfs_union_delete_callback, NULL);
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
+	dynarray_foreach_elem(&unode->members, VFSNode **node, {
+		vfs_decref(*node);
+	});
+	dynarray_free_data(&unode->members);
 }
 
-static VFSNode* vfs_union_locate(VFSNode *node, const char *path) {
-	VFSNode *u = vfs_alloc();
-	vfs_union_init(u); // uniception!
-
-	VFSInfo prim_info = VFSINFO_ERROR;
-	ListContainer *first = node->_members_;
-	ListContainer *last = first;
-	ListContainer *c;
-
-	for(c = first; c; c = c->next) {
-		last = c;
+static VFSNode *vfs_union_get_primary(VFSUnionNode *unode) {
+	if(UNLIKELY(unode->members.num_elements == 0)) {
+		vfs_set_error("The union is empty");
+		return NULL;
 	}
 
-	for(c = last; c; c = c->prev) {
-		VFSNode *n = c->data;
-		VFSNode *o = vfs_locate(n, path);
+	return NOT_NULL(dynarray_get(&unode->members, unode->members.num_elements - 1));
+}
 
-		if(o) {
-			VFSInfo i = vfs_node_query(o);
+static VFSNode *vfs_union_locate(VFSNode *node, const char *path) {
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
 
-			if(vfs_union_mount_internal(u, NULL, o, i, false)) {
-				prim_info = i;
-			} else {
-				vfs_decref(o);
+	if(!vfs_union_get_primary(unode)) {
+		return NULL;
+	}
+
+	VFSNode *dirs[unode->members.num_elements];
+	int num_dirs = 0;
+
+	dynarray_foreach_elem_reversed(&unode->members, VFSNode **member, {
+		auto subnode = vfs_locate(*member, path);
+
+		if(!subnode) {
+			continue;
+		}
+
+		auto subinfo = vfs_node_query(subnode);
+
+		if(!subinfo.exists) {
+			vfs_decref(subnode);
+			continue;
+		}
+
+		if(subinfo.is_dir) {
+			dirs[num_dirs++] = subnode;
+		} else {
+			if(num_dirs == 0) {
+				return subnode;
 			}
+
+			vfs_decref(subnode);
 		}
+	});
+
+	if(num_dirs == 0) {
+		vfs_set_error("No such file or directory: %s", path);
+		return NULL;
 	}
 
-	if(u->_primary_member_) {
-		if(!((List*)(u->_members_))->next || !prim_info.is_dir) {
-			// the temporary union contains just one member, or doesn't represent a directory
-			// in those cases it's just a useless wrapper, so let's just return the primary member directly
-			VFSNode *n = u->_primary_member_;
-
-			// incref primary member to keep it alive
-			vfs_incref(n);
-
-			// destroy the wrapper, also decrefs n
-			vfs_decref(u);
-
-			// no need to incref n, vfs_locate did that for us earlier
-			return n;
-		}
-	} else {
-		// all in vain...
-		vfs_decref(u);
-		u = NULL;
+	if(num_dirs == 1) {
+		return dirs[0];
 	}
 
-	return u;
+	auto subunion = VFS_ALLOC(VFSUnionNode);
+	dynarray_set_elements(&subunion->members, num_dirs, dirs);
+	return &subunion->as_generic;
 }
 
 typedef struct VFSUnionIterData {
-	ht_str2int_t visited; // XXX: this may not be the most efficient implementation of a "set" structure...
-	ListContainer *current;
+	ht_strset_t visited;
 	void *opaque;
+	int idx;
 } VFSUnionIterData;
 
-static const char* vfs_union_iter(VFSNode *node, void **opaque) {
+static const char *vfs_union_iter(VFSNode *node, void **opaque) {
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
 	VFSUnionIterData *i = *opaque;
 	const char *r = NULL;
 
 	if(!i) {
-		i = malloc(sizeof(VFSUnionIterData));
-		i->current = node->_members_;
+		i = ALLOC(typeof(*i));
+		i->idx = unode->members.num_elements - 1;
 		i->opaque = NULL;
 		ht_create(&i->visited);
 		*opaque = i;
 	}
 
-	while(i->current) {
-		VFSNode *n = (VFSNode*)i->current->data;
+	while(i->idx >= 0) {
+		auto n = dynarray_get(&unode->members, i->idx);
 		r = vfs_node_iter(n, &i->opaque);
 
 		if(!r) {
 			vfs_node_iter_stop(n, &i->opaque);
 			i->opaque = NULL;
-			i->current = i->current->next;
+			i->idx--;
 			continue;
 		}
 
-		if(ht_get(&i->visited, r, false)) {
+		if(ht_lookup(&i->visited, r, NULL)) {
 			continue;
 		}
 
-		ht_set(&i->visited, r, true);
+		ht_set(&i->visited, r, HT_EMPTY);
 		break;
 	}
 
@@ -124,109 +126,84 @@ static void vfs_union_iter_stop(VFSNode *node, void **opaque) {
 
 	if(i) {
 		ht_destroy(&i->visited);
-		free(i);
+		mem_free(i);
 	}
 
 	*opaque = NULL;
 }
 
 static VFSInfo vfs_union_query(VFSNode *node) {
-	if(node->_primary_member_) {
-		VFSInfo i = vfs_node_query(node->_primary_member_);
-		// can't trust the primary member here, others might be writable'
-		i.is_readonly = false;
-		return i;
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
+	auto primary = vfs_union_get_primary(unode);
+
+	if(!primary) {
+		return VFSINFO_ERROR;
 	}
 
-	vfs_set_error("Union object has no members");
-	return VFSINFO_ERROR;
+	auto i = vfs_node_query(dynarray_get(&unode->members, unode->members.num_elements - 1));
+	// can't trust the primary member here, others might be writable
+	i.is_readonly = false;
+	return i;
 }
 
-static bool vfs_union_mount_internal(VFSNode *unode, const char *mountpoint, VFSNode *mountee, VFSInfo info, bool seterror) {
-	if(!info.exists) {
-		if(seterror) {
-			char *r = vfs_node_repr(mountee, true);
-			vfs_set_error("Mountee doesn't represent a usable resource: %s", r);
-			free(r);
-		}
+static bool vfs_union_mount(VFSNode *node, const char *mountpoint, VFSNode *mountee) {
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
 
-		return false;
-	}
-
-	if(seterror && !info.is_dir) {
-		char *r = vfs_node_repr(mountee, true);
-		vfs_set_error("Mountee is not a directory: %s", r);
-		free(r);
-		return false;
-	}
-
-	list_push((ListContainer**)&unode->_members_, list_wrap_container(mountee));
-	unode->_primary_member_ = mountee;
-
-	return true;
-}
-
-static bool vfs_union_mount(VFSNode *unode, const char *mountpoint, VFSNode *mountee) {
 	if(mountpoint) {
 		vfs_set_error("Attempted to use a named mountpoint '%s' on a union", mountpoint);
 		return false;
 	}
 
-	return vfs_union_mount_internal(unode, NULL, mountee, vfs_node_query(mountee), true);
-}
+	auto minfo = vfs_node_query(mountee);
 
-static SDL_RWops* vfs_union_open(VFSNode *unode, VFSOpenMode mode) {
-	VFSNode *n = unode->_primary_member_;
-
-	if(n) {
-		return vfs_node_open(n, mode);
-	} else {
-		vfs_set_error("Union object has no members");
+	if(!minfo.is_dir || !minfo.exists) {
+		char *r = vfs_node_repr(mountee, true);
+		vfs_set_error("Union mountee is not a directory: %s", r);
+		mem_free(r);
+		return false;
 	}
 
-	return NULL;
+	dynarray_append(&unode->members, mountee);
+	assert(vfs_union_get_primary(unode) == mountee);
+
+	return true;
 }
 
-static char* vfs_union_repr(VFSNode *node) {
-	char *mlist = strdup("union: "), *r;
+static SDL_RWops *vfs_union_open(VFSNode *node, VFSOpenMode mode) {
+	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
+	return primary ? vfs_node_open(primary, mode) : NULL;
+}
 
-	for(ListContainer *c = node->_members_; c; c = c->next) {
-		VFSNode *n = c->data;
+static char *vfs_union_repr(VFSNode *node) {
+	auto unode = VFS_NODE_CAST(VFSUnionNode, node);
+	StringBuffer sb = {};
+	strbuf_free(&sb);
+	strbuf_cat(&sb, "union: ");
 
-		strappend(&mlist, r = vfs_node_repr(n, false));
-		free(r);
+	dynarray_foreach(&unode->members, int idx, VFSNode **node, {
+		char *r = vfs_node_repr(*node, false);
+		strbuf_cat(&sb, r);
+		mem_free(r);
 
-		if(c->next) {
-			strappend(&mlist, ", ");
+		if(idx < unode->members.num_elements - 1) {
+			strbuf_cat(&sb, ", ");
 		}
-	}
+	});
 
-	return mlist;
+	return sb.start;
 }
 
-static char* vfs_union_syspath(VFSNode *node) {
-	VFSNode *n = node->_primary_member_;
-
-	if(n) {
-		return vfs_node_syspath(n);
-	}
-
-	vfs_set_error("Union object has no members");
-	return NULL;
+static char *vfs_union_syspath(VFSNode *node) {
+	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
+	return primary ? vfs_node_syspath(primary) : NULL;
 }
 
 static bool vfs_union_mkdir(VFSNode *node, const char *subdir) {
-	VFSNode *n = node->_primary_member_;
-
-	if(n) {
-		return vfs_node_mkdir(n, subdir);
-	}
-
-	vfs_set_error("Union object has no members");
-	return false;
+	auto primary = vfs_union_get_primary(VFS_NODE_CAST(VFSUnionNode, node));
+	return primary ? vfs_node_mkdir(primary, subdir) : false;
 }
 
-static VFSNodeFuncs vfs_funcs_union = {
+VFS_NODE_FUNCS(VFSUnionNode, {
 	.repr = vfs_union_repr,
 	.query = vfs_union_query,
 	.free = vfs_union_free,
@@ -237,9 +214,12 @@ static VFSNodeFuncs vfs_funcs_union = {
 	.iter_stop = vfs_union_iter_stop,
 	.mkdir = vfs_union_mkdir,
 	.open = vfs_union_open,
-};
+});
 
-void vfs_union_init(VFSNode *node) {
-	node->funcs = &vfs_funcs_union;
-	node->data1 = node->data2 = NULL;
+VFSNode *vfs_union_create(void) {
+	return &VFS_ALLOC(VFSUnionNode)->as_generic;
+}
+
+bool vfs_create_union_mountpoint(const char *mountpoint) {
+	return vfs_mount_or_decref(vfs_root, mountpoint, vfs_union_create());
 }

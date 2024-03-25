@@ -8,6 +8,9 @@
 
 #include "taisei.h"
 
+#include "resource/resource.h"
+#include "taisei.h"
+
 #include "enemy.h"
 
 #include "global.h"
@@ -38,8 +41,8 @@ static void fix_pos0_visual(Enemy *e) {
 		return;
 	}
 
-	double x = creal(e->pos0_visual);
-	double y = cimag(e->pos0_visual);
+	double x = re(e->pos0_visual);
+	double y = im(e->pos0_visual);
 	double ofs = 21;
 
 	if(x <= 0 && x > -ofs) {
@@ -73,60 +76,32 @@ static void signal_event_once_with_damage_info(Enemy *e, CoEvent *evt, DamageInf
 	_signal_event_with_damage_info(e, evt, dmg, coevent_signal_once);
 }
 
-static inline int enemy_call_logic_rule(Enemy *e, int t) {
+static inline void enemy_update(Enemy *e, int t) {
 	assert(e->damage_info == NULL);
+	assert(t >= 0);
 
-	if(t == EVENT_KILLED) {
-		signal_event_once_with_damage_info(e, &e->events.killed, NULL);
-	}
-
-	if(e->logic_rule) {
-		return e->logic_rule(e, t);
-	} else if(t >= 0) {
-		// TODO: backport unified left/right move animations from the obsolete `newart` branch
-		cmplx v = move_update(&e->pos, &e->move);
-		e->moving = fabs(creal(v)) >= 1;
-		e->dir = creal(v) < 0;
-	}
-
-	return ACTION_NONE;
+	// TODO: backport unified left/right move animations from the obsolete `newart` branch
+	cmplx v = move_update(&e->pos, &e->move);
+	e->moving = fabs(re(v)) >= 1;
+	e->dir = re(v) < 0;
 }
 
-Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule visual_rule, EnemyLogicRule logic_rule,
-				      cmplx a1, cmplx a2, cmplx a3, cmplx a4) {
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual) {
 	if(IN_DRAW_CODE) {
 		log_fatal("Tried to spawn an enemy while in drawing code");
 	}
 
-	// FIXME: some code relies on the insertion logic (which?)
-	Enemy *e = alist_insert(enemies, enemies->first, (Enemy*)objpool_acquire(stage_object_pools.enemies));
-	// Enemy *e = alist_append(enemies, (Enemy*)objpool_acquire(stage_object_pools.enemies));
+	Enemy *e = alist_append(enemies, (Enemy*)objpool_acquire(&stage_object_pools.enemies));
 	e->moving = false;
 	e->dir = 0;
-
 	e->birthtime = global.frames;
 	e->pos = pos;
 	e->pos0 = pos;
 	e->pos0_visual = pos;
-
 	e->spawn_hp = hp;
 	e->hp = hp;
-	e->alpha = 1.0;
-
 	e->flags = 0;
-
-	if(e->hp == _internal_ENEMY_IMMUNE) {
-		e->flags |= EFLAGS_GHOST;
-	}
-
-	e->logic_rule = logic_rule;
-	e->visual_rule = visual_rule;
-
-	e->args[0] = a1;
-	e->args[1] = a2;
-	e->args[2] = a3;
-	e->args[3] = a4;
-
+	e->visual = visual;
 	e->hurt_radius = 7;
 	e->hit_radius = 30;
 
@@ -138,7 +113,6 @@ Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule v
 	fix_pos0_visual(e);
 	ent_register(&e->ent, ENT_TYPE_ID(Enemy));
 
-	enemy_call_logic_rule(e, EVENT_BIRTH);
 	return e;
 }
 
@@ -194,9 +168,8 @@ static void *_delete_enemy(ListAnchor *enemies, List* enemy, void *arg) {
 	}
 
 	COEVENT_CANCEL_ARRAY(e->events);
-	enemy_call_logic_rule(e, EVENT_DEATH);
 	ent_unregister(&e->ent);
-	objpool_release(stage_object_pools.enemies, alist_unlink(enemies, enemy));
+	objpool_release(&stage_object_pools.enemies, alist_unlink(enemies, enemy));
 
 	return NULL;
 }
@@ -214,7 +187,7 @@ cmplx enemy_visual_pos(Enemy *enemy) {
 		return enemy->pos;
 	}
 
-	double t = (global.frames - enemy->birthtime) / 30.0;
+	real t = (global.frames - enemy->birthtime) / 30.0;
 
 	if(t >= 1) {
 		return enemy->pos;
@@ -226,17 +199,17 @@ cmplx enemy_visual_pos(Enemy *enemy) {
 	return p;
 }
 
-static void call_visual_rule(Enemy *e, bool render) {
-	cmplx tmp = e->pos;
-	e->pos = enemy_visual_pos(e);
-	e->visual_rule(e, global.frames - e->birthtime, render);
-	e->pos = tmp;
+static void draw_enemy(Enemy *e) {
+	e->visual.draw(e, (EnemyDrawParams) {
+		.time = global.frames - e->birthtime,
+		.pos = enemy_visual_pos(e),
+	});
 }
 
 static void ent_draw_enemy(EntityInterface *ent) {
 	Enemy *e = ENT_CAST(ent, Enemy);
 
-	if(!e->visual_rule) {
+	if(!e->visual.draw) {
 		return;
 	}
 
@@ -245,7 +218,7 @@ static void ent_draw_enemy(EntityInterface *ent) {
 	memcpy(&prev_state, e, sizeof(Enemy));
 #endif
 
-	call_visual_rule(e, true);
+	draw_enemy(e);
 
 #ifdef ENEMY_DEBUG
 	if(memcmp(&prev_state, e, sizeof(Enemy))) {
@@ -253,29 +226,6 @@ static void ent_draw_enemy(EntityInterface *ent) {
 		log_fatal("Enemy modified its own state in draw rule");
 	}
 #endif
-}
-
-int enemy_flare(Projectile *p, int t) { // a[0] velocity, a[1] ref to enemy
-	if(t == EVENT_DEATH) {
-		free_ref(p->args[1]);
-		return ACTION_ACK;
-	}
-
-	Enemy *owner = REF(p->args[1]);
-
-	int result = ACTION_NONE;
-
-	if(t == EVENT_BIRTH) {
-		t = 0;
-		result = ACTION_ACK;
-	}
-
-	if(owner != NULL) {
-		p->args[3] = owner->pos;
-	}
-
-	p->pos = p->pos0 + p->args[3] + p->args[0]*t;
-	return result;
 }
 
 bool enemy_is_vulnerable(Enemy *enemy) {
@@ -287,13 +237,17 @@ bool enemy_is_targetable(Enemy *enemy) {
 }
 
 bool enemy_in_viewport(Enemy *enemy) {
-	double s = 60; // TODO: make this adjustable
+	// FIXME: Ideally this is supposed to be the size of the visual, as in with projectiles, but
+	// we don't have access to this information here.
+	real base = 60;
+
+	real s = base + enemy->max_viewport_dist;
 
 	return
-		creal(enemy->pos) >= -s &&
-		creal(enemy->pos) <= VIEWPORT_W + s &&
-		cimag(enemy->pos) >= -s &&
-		cimag(enemy->pos) <= VIEWPORT_H + s;
+		re(enemy->pos) >= -s &&
+		re(enemy->pos) <= VIEWPORT_W + s &&
+		im(enemy->pos) >= -s &&
+		im(enemy->pos) <= VIEWPORT_H + s;
 }
 
 void enemy_kill(Enemy *enemy) {
@@ -334,7 +288,7 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 		enemy_kill(enemy);
 
 		if(ndmg.type == DMG_PLAYER_DISCHARGE) {
-			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)imax(1, enemy->spawn_hp / 100));
+			spawn_and_collect_items(enemy->pos, 1, ITEM_VOLTAGE, (int)max(1, enemy->spawn_hp / 100));
 		}
 	}
 
@@ -348,16 +302,12 @@ static DamageResult ent_damage_enemy(EntityInterface *ienemy, const DamageInfo *
 }
 
 float enemy_get_hurt_radius(Enemy *enemy) {
-	if(enemy->flags & EFLAG_NO_HURT || enemy->alpha < 1.0f) {
-		return 0;
-	} else {
-		return enemy->hurt_radius;
-	}
+	return (enemy->flags & EFLAG_NO_HURT) ? 0 : enemy->hurt_radius;
 }
 
 static bool should_auto_kill(Enemy *enemy) {
 	return
-		(enemy->hp <= 0 && enemy->hp != _internal_ENEMY_IMMUNE) ||
+		(enemy->hp <= 0) ||
 		(!(enemy->flags & EFLAG_NO_AUTOKILL) && !enemy_in_viewport(enemy));
 }
 
@@ -366,12 +316,12 @@ void process_enemies(EnemyList *enemies) {
 		next = enemy->next;
 
 		if(enemy->flags & EFLAG_KILLED) {
-			enemy_call_logic_rule(enemy, EVENT_KILLED);
+			signal_event_once_with_damage_info(enemy, &enemy->events.killed, NULL);
 			delete_enemy(enemies, enemy);
 			continue;
 		}
 
-		int action = enemy_call_logic_rule(enemy, global.frames - enemy->birthtime);
+		enemy_update(enemy, global.frames - enemy->birthtime);
 
 		float hurt_radius = enemy_get_hurt_radius(enemy);
 
@@ -379,21 +329,15 @@ void process_enemies(EnemyList *enemies) {
 			ent_damage(&global.plr.ent, &(DamageInfo) { .type = DMG_ENEMY_COLLISION });
 		}
 
-		enemy->alpha = approach(enemy->alpha, 1.0, 1.0/60.0);
-
-		if(action == ACTION_DESTROY || should_auto_kill(enemy)) {
+		if(should_auto_kill(enemy)) {
 			delete_enemy(enemies, enemy);
 			continue;
-		}
-
-		if(enemy->visual_rule) {
-			call_visual_rule(enemy, false);
 		}
 	}
 }
 
-void enemies_preload(void) {
-	preload_resources(RES_ANIM, RESF_DEFAULT,
+void enemies_preload(ResourceGroup *rg) {
+	res_group_preload(rg, RES_ANIM, RESF_DEFAULT,
 		"enemy/fairy_blue",
 		"enemy/fairy_red",
 		"enemy/bigfairy",
@@ -401,14 +345,19 @@ void enemies_preload(void) {
 		"enemy/superfairy",
 	NULL);
 
-	preload_resources(RES_SPRITE, RESF_DEFAULT,
+	res_group_preload(rg, RES_SPRITE, RESF_DEFAULT,
 		"fairy_circle",
 		"fairy_circle_red",
+		"fairy_circle_big",
 		"fairy_circle_big_and_mean",
 		"enemy/swirl",
 	NULL);
 
-	preload_resources(RES_SFX, RESF_OPTIONAL,
+	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"sprite_fairy",
+	NULL);
+
+	res_group_preload(rg, RES_SFX, RESF_OPTIONAL,
 		"enemydeath",
 	NULL);
 }

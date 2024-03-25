@@ -8,11 +8,13 @@
 #include "taisei.h"
 
 #include "arch_switch.h"
+#include "renderer/glcommon/debug.h"
 
 #include <unistd.h>
 #include <switch/services/applet.h>
 #include <switch/services/fs.h>
 #include <switch/services/ssl.h>
+#include <switch/services/nifm.h>
 #include <switch/runtime/devices/socket.h>
 #include <switch/runtime/nxlink.h>
 
@@ -20,11 +22,12 @@
 #define NX_LOG(str) NX_LOG_FMT("%s", str)
 #define NX_SETENV(name, val) NX_LOG_FMT("Setting env var %s to %s", name, val);env_set_string(name, val, true)
 
-uint32_t __nx_fs_num_sessions = 1;
-
 static nxAtExitFn g_nxAtExitFn = NULL;
 static char g_programDir[FS_MAX_PATH] = {0};
 static AppletHookCookie g_hookCookie;
+
+static s32 g_initialScreenWidth = 1920;
+static s32 g_initialScreenHeight = 1080;
 
 static void onAppletHook(AppletHookType hook, void *param) {
 	switch (hook) {
@@ -51,31 +54,30 @@ void userAppInit(void) {
 	NX_LOG("nxlink enabled");
 #endif
 
-	NX_SETENV("TAISEI_NOASYNC", "1");
-
+	appletGetDefaultDisplayResolution(&g_initialScreenWidth, &g_initialScreenHeight);
 	appletInitializeGamePlayRecording();
 	appletSetGamePlayRecordingState(1);
 
 	getcwd(g_programDir, FS_MAX_PATH);
 
-#if defined(DEBUG) && defined(TAISEI_BUILDCONF_DEBUG_OPENGL)
-	// enable Mesa logging:
-	NX_SETENV("EGL_LOG_LEVEL", "debug");
-	NX_SETENV("MESA_VERBOSE", "all");
-	NX_SETENV("MESA_DEBUG", "1");
-	NX_SETENV("MESA_INFO", "1");
-	NX_SETENV("MESA_GLSL", "errors");
-	NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
-	NX_SETENV("LIBGL_DEBUG", "verbose");
+	if(glcommon_debug_requested()) {
+		// enable Mesa logging:
+		NX_SETENV("EGL_LOG_LEVEL", "debug");
+		NX_SETENV("MESA_VERBOSE", "all");
+		NX_SETENV("MESA_DEBUG", "1");
+		NX_SETENV("MESA_INFO", "1");
+		NX_SETENV("MESA_GLSL", "errors");
+		NX_SETENV("NOUVEAU_MESA_DEBUG", "1");
+		NX_SETENV("LIBGL_DEBUG", "verbose");
 
-	// enable shader debugging in Nouveau:
-	NX_SETENV("NV50_PROG_OPTIMIZE", "0");
-	NX_SETENV("NV50_PROG_DEBUG", "1");
-	NX_SETENV("NV50_PROG_CHIPSET", "0x120");
-#else
-	// disable error checking and save CPU time
-	NX_SETENV("MESA_NO_ERROR", "1");
-#endif
+		// enable shader debugging in Nouveau:
+		NX_SETENV("NV50_PROG_OPTIMIZE", "0");
+		NX_SETENV("NV50_PROG_DEBUG", "1");
+		NX_SETENV("NV50_PROG_CHIPSET", "0x120");
+	} else {
+		// disable error checking and save CPU time
+		NX_SETENV("MESA_NO_ERROR", "1");
+	}
 }
 
 attr_used
@@ -113,4 +115,12 @@ void noreturn nxAbort(void) {
 
 const char* nxGetProgramDir(void) {
 	return g_programDir;
+}
+
+int nxGetInitialScreenWidth(void) {
+	return g_initialScreenWidth;
+}
+
+int nxGetInitialScreenHeight(void) {
+	return g_initialScreenHeight;
 }

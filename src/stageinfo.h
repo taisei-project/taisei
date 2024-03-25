@@ -15,6 +15,7 @@
 #include "progress.h"
 
 typedef void (*StageProc)(void);
+typedef void (*StagePreloadProc)(ResourceGroup *rg);
 typedef bool (*ShaderRule)(Framebuffer*); // true = drawn to color buffer
 
 // two highest bits of uint16_t, WAY higher than the amount of spells in this game can ever possibly be
@@ -31,11 +32,9 @@ typedef enum StageType {
 typedef struct StageProcs StageProcs;
 struct StageProcs {
 	StageProc begin;
-	StageProc preload;
+	StagePreloadProc preload;
 	StageProc end;
 	StageProc draw;
-	StageProc event;
-	StageProc update;
 	ShaderRule *shader_rules;
 	ShaderRule *postprocess_rules;
 	StageProcs *spellpractice_procs;

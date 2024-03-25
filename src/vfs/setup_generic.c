@@ -108,8 +108,8 @@ void vfs_setup(CallChain next) {
 		log_warn("%s", vfs_get_error());
 	}
 
-	free(local_res_path);
-	free(cache_path_allocated);
+	mem_free(local_res_path);
+	mem_free(cache_path_allocated);
 
 	// set up the final "res" union and get rid of the temporaries
 

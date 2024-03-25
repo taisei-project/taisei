@@ -6,7 +6,7 @@
 #
 # @end header
 
-glsl_files = files(
+glsl_files = [
 # @begin glsl
     'alpha_depth.frag.glsl',
     'alpha_discard.frag.glsl',
@@ -16,15 +16,16 @@ glsl_files = files(
     'blur25.frag.glsl',
     'blur5.frag.glsl',
     'blur9.frag.glsl',
+    'bombshield.frag.glsl',
     'boss_death.frag.glsl',
     'boss_zoom.frag.glsl',
     'calabi-yau-quintic.frag.glsl',
     'calabi-yau-quintic.vert.glsl',
     'circle_distort.frag.glsl',
-    'copy_depth.frag.glsl',
     'cutscene.frag.glsl',
     'envmap_reflect.frag.glsl',
     'extra_bg.frag.glsl',
+    'extra_glitch.frag.glsl',
     'extra_tower_apply_mask.frag.glsl',
     'extra_tower_mask.frag.glsl',
     'extra_tower_mask.vert.glsl',
@@ -65,6 +66,8 @@ glsl_files = files(
     'sprite_circleclipped_indicator.vert.glsl',
     'sprite_default.frag.glsl',
     'sprite_default.vert.glsl',
+    'sprite_fairy.frag.glsl',
+    'sprite_fairy.vert.glsl',
     'sprite_filled_circle.frag.glsl',
     'sprite_filled_circle.vert.glsl',
     'sprite_hakkero.frag.glsl',
@@ -77,6 +80,8 @@ glsl_files = files(
     'sprite_silhouette.vert.glsl',
     'sprite_yinyang.frag.glsl',
     'sprite_youmu_myon_shot.frag.glsl',
+    'sprite_yumemi_overlay.frag.glsl',
+    'sprite_yumemi_overlay.vert.glsl',
     'ssr.vert.glsl',
     'ssr_water.frag.glsl',
     'stage1_water.frag.glsl',
@@ -90,6 +95,8 @@ glsl_files = files(
     'text_cutscene.frag.glsl',
     'text_default.frag.glsl',
     'text_default.vert.glsl',
+    'text_demo.frag.glsl',
+    'text_demo.vert.glsl',
     'text_dialog.frag.glsl',
     'text_dialog.vert.glsl',
     'text_example.frag.glsl',
@@ -103,10 +110,12 @@ glsl_files = files(
     'tunnel.frag.glsl',
     'youmu_bomb_bg.frag.glsl',
     'youmua_bomb.frag.glsl',
+    'yumemi_spellbg_voronoi.frag.glsl',
+    'yumemi_spellbg_voronoi_compose.frag.glsl',
     'zbuf_fog.frag.glsl',
     'zbuf_fog_tonemap.frag.glsl',
 # @end glsl
-)
+]
 
 subdirs = [
 # @begin subdirs
@@ -153,28 +162,30 @@ spvc_vert_args = [
     '--stage', 'vert',
 ]
 
-if ['emscripten', 'nx'].contains(host_machine.system())
-    validate_glsl = 'true'
-    transpile_glsl = true
-else
-    validate_glsl = get_option('validate_glsl')
-    transpile_glsl = false
+transpile_glsl = (host_machine.system() in ['emscripten', 'nx'])
+opt_validate_glsl = get_option('validate_glsl')
+
+if opt_validate_glsl.disabled() and transpile_glsl
+    error('GLSL validation can\'t be disabled on this platform')
 endif
 
 force_vendored_shader_tools = get_option('force_vendored_shader_tools')
+force_validate_glsl = (
+    opt_validate_glsl.enabled() or
+    transpile_glsl or
+    (force_vendored_shader_tools and opt_validate_glsl.allowed())
+)
 
-if force_vendored_shader_tools and validate_glsl != 'false'
-    validate_glsl = 'true'
-endif
+validate_glsl = false
 
-if validate_glsl != 'false'
+if opt_validate_glsl.allowed()
     if force_vendored_shader_tools
         glslc_command = disabler()
     else
         glslc_command = find_program('glslc', required : false)
     endif
 
-    if not glslc_command.found() and validate_glsl == 'true'
+    if not glslc_command.found() and force_validate_glsl
         glslc_command = subproject('shaderc').get_variable('glslc_native')
         glslc_args += '-Werror'
         validate_glsl = true
@@ -184,7 +195,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_uniform_location_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0
@@ -199,7 +211,8 @@ if validate_glsl != 'false'
             glslc_frag_args,
             glslc_test_basic_file,
             '-o', '-',
-            capture : false
+            capture : false,
+            check : false
         )
 
         if test_result.returncode() == 0
@@ -207,12 +220,12 @@ if validate_glsl != 'false'
         else
             warning(test_result.stderr())
 
-            if validate_glsl == 'auto'
-                warning('Basic glslc test failed, you probably have a broken/incompatible version. GLSL validation will be disabled.')
-                validate_glsl = false
-            else
+            if force_validate_glsl
                 error('Basic glslc test failed, you probably have a broken/incompatible version.')
             endif
+
+            warning('Basic glslc test failed, you probably have a broken/incompatible version. GLSL validation will be disabled.')
+            validate_glsl = false
         endif
     else
         warning('GLSL validation or translation requested, but glslc was not found')
@@ -232,43 +245,43 @@ if validate_glsl != 'false'
 
         glslc_args += ['-Os', '-g']
     endif
-else
-    validate_glsl = false
 endif
+
+transpile_glsl = transpile_glsl and validate_glsl
 
 # @begin validate
 if validate_glsl
-    foreach src : glsl_files
-        fname = '@0@'.format(src)
+    foreach fname : glsl_files
+        message(f'fname: @fname@')
         stage = fname.split('.')[-2]
 
-        spirv = custom_target('SPIRV_' + fname.underscorify(),
-            input : src,
+        spirv = custom_target(
+            input : fname,
             output : '@BASENAME@.spv',
             command : [
-                glslc_command, glslc_args, glslc_depfile_args, get_variable('glslc_@0@_args'.format(stage)),
+                glslc_command, glslc_args, glslc_depfile_args, get_variable(f'glslc_@stage@_args'),
                 '@INPUT@', '-o', '@OUTPUT@'
             ],
             install : false,
             build_by_default : true,
-            depfile : '@0@.d'.format(fname.underscorify()),
+            depfile : f'@fname@.d',
         )
 
         spirv_targets += spirv
 
         if transpile_glsl
-            essl = custom_target('ESSL_' + fname.underscorify(),
+            essl = custom_target(
                 input : spirv,
                 output : '@BASENAME@.glsl',
                 command : [
                     spvc_command,
                     '--output', '@OUTPUT@', '@INPUT@',
                     spvc_args,
-                    get_variable('spvc_@0@_args'.format(stage)),
+                    get_variable(f'spvc_@stage@_args'),
                 ],
                 install : false,
                 build_by_default : true,
-                depfile : '@0@.d'.format(fname.underscorify()),
+                depfile : f'@fname@.d',
             )
 
             essl_targets += essl

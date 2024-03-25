@@ -15,6 +15,7 @@
 #include "plrmodes.h"
 #include "common.h"
 #include "video.h"
+#include "util/graphics.h"
 
 attr_nonnull_all
 static void do_save_replay(Replay *rpy) {
@@ -43,7 +44,7 @@ static void do_save_replay(Replay *rpy) {
 		rpy->playername = NULL;
 	}
 
-	free(name);
+	mem_free(name);
 }
 
 static void save_rpy(MenuData *menu, void *a) {
@@ -118,13 +119,13 @@ static void update_saverpy_menu(MenuData *m) {
 	});
 }
 
-static MenuData* create_saverpy_menu(Replay *rpy) {
+static MenuData *create_saverpy_menu(Replay *rpy) {
 	MenuData *m = alloc_menu();
 
 	m->input = saverpy_menu_input;
 	m->draw = draw_saverpy_menu;
 	m->logic = update_saverpy_menu;
-	m->flags = MF_Transient;
+	m->flags = MF_Transient | MF_NoDemo;
 
 	add_menu_entry(m, "Yes", save_rpy, rpy);
 	add_menu_entry(m, "No", menu_action_close, NULL);

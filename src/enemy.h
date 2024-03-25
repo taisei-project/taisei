@@ -15,6 +15,7 @@
 #include "entity.h"
 #include "coroutine.h"
 #include "move.h"
+#include "resource/resource.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG
@@ -27,8 +28,6 @@
 #endif
 
 typedef LIST_ANCHOR(Enemy) EnemyList;
-typedef int (*EnemyLogicRule)(Enemy*, int t);
-typedef void (*EnemyVisualRule)(Enemy*, int t, bool render);
 
 typedef enum EnemyFlag {
 	EFLAG_KILLED                = (1 << 0),  // is dead, pending removal (internal)
@@ -50,24 +49,26 @@ typedef enum EnemyFlag {
 		0,
 } EnemyFlag;
 
-enum {
-	_internal_ENEMY_IMMUNE = -9000,
-	ENEMY_IMMUNE attr_deprecated("Set enemy flags explicitly") = _internal_ENEMY_IMMUNE,
-// 	ENEMY_KILLED = -9002,
-};
+typedef struct EnemyDrawParams {
+	cmplx pos;  // NOTE: subject to slide-in correction at screen edges
+	int time;
+} EnemyDrawParams;
+
+typedef void (*EnemyDrawFunc)(Enemy*, EnemyDrawParams);
+
+typedef struct EnemyVisual {
+	EnemyDrawFunc draw;
+	void *drawdata;
+} EnemyVisual;
+
+#define ENEMY_NOVISUAL ((EnemyVisual) {})
 
 DEFINE_ENTITY_TYPE(Enemy, {
 	cmplx pos;
 	cmplx pos0;
 	cmplx pos0_visual;
-
-	union {
-		cmplx args[RULE_ARGC];
-		MoveParams move;
-	};
-
-	EnemyLogicRule logic_rule;
-	EnemyVisualRule visual_rule;
+	MoveParams move;
+	EnemyVisual visual;
 
 	COEVENTS_ARRAY(
 		predamage,
@@ -107,10 +108,10 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	float spawn_hp;
 	float hp;
 
-	float alpha;
-
 	float hit_radius;
 	float hurt_radius;
+
+	float max_viewport_dist;
 
 	bool moving;
 
@@ -119,20 +120,15 @@ DEFINE_ENTITY_TYPE(Enemy, {
 	)
 });
 
-#define create_enemy4c(p,h,d,l,a1,a2,a3,a4) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,a4)
-#define create_enemy3c(p,h,d,l,a1,a2,a3) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,a3,0)
-#define create_enemy2c(p,h,d,l,a1,a2) create_enemy_p(&global.enemies,p,h,d,l,a1,a2,0,0)
-#define create_enemy1c(p,h,d,l,a1) create_enemy_p(&global.enemies,p,h,d,l,a1,0,0,0)
-
-Enemy *create_enemy_p(
-	EnemyList *enemies, cmplx pos, float hp, EnemyVisualRule draw_rule, EnemyLogicRule logic_rule,
-	cmplx a1, cmplx a2, cmplx a3, cmplx a4
-);
+Enemy *create_enemy_p(EnemyList *enemies, cmplx pos, float hp, EnemyVisual visual);
 
 #ifdef ENEMY_DEBUG
 	Enemy *_enemy_attach_dbginfo(Enemy *p, DebugInfo *dbg);
 	#define create_enemy_p(...) _enemy_attach_dbginfo(create_enemy_p(__VA_ARGS__), _DEBUG_INFO_PTR_)
 #endif
+
+#define create_enemy(pos, hp, visual) \
+	create_enemy_p(&global.enemies, pos, hp, visual)
 
 void delete_enemy(EnemyList *enemies, Enemy* enemy);
 void delete_enemies(EnemyList *enemies);
@@ -148,10 +144,4 @@ cmplx enemy_visual_pos(Enemy *enemy);
 void enemy_kill(Enemy *enemy);
 void enemy_kill_all(EnemyList *enemies);
 
-void Fairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-void Swirl(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-void BigFairy(Enemy*, int t, bool render) attr_deprecated("Use the espawn_ API from enemy_classes.h");
-
-int enemy_flare(Projectile *p, int t) attr_deprecated("Use tasks");
-
-void enemies_preload(void);
+void enemies_preload(ResourceGroup *rg);

@@ -112,7 +112,7 @@ static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat pre
 		goto fail;
 	}
 
-	pixmap->data.untyped = NOT_NULL(malloc(pixmap->data_size));
+	pixmap->data.untyped = mem_alloc(pixmap->data_size);
 	size_t read = SDL_RWread(cstream, pixmap->data.untyped, 1, pixmap->data_size);
 
 	if(read != pixmap->data_size) {
@@ -134,7 +134,7 @@ static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat pre
 
 fail:
 	if(pixmap->data.untyped) {
-		free(pixmap->data.untyped);
+		mem_free(pixmap->data.untyped);
 		pixmap->data.untyped = NULL;
 	}
 

@@ -17,6 +17,6 @@ indent_size = 4
 indent_style = space
 indent_size = 4
 
-[*.manifest]
+[*.{manifest,yml}]
 indent_style = space
 indent_size = 2

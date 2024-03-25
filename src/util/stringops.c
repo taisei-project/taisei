@@ -19,11 +19,7 @@ bool strendswith(const char *s, const char *e) {
 	if(le > ls)
 		return false;
 
-	int i; for(i = 0; i < le; ++i)
-	if(s[ls-i-1] != e[le-i-1])
-		return false;
-
-	return true;
+	return !strncmp(s+ls-le, e, le);
 }
 
 bool strstartswith(const char *s, const char *p) {
@@ -57,20 +53,14 @@ bool strstartswith_any(const char *s, const char **earray) {
 }
 
 void stralloc(char **dest, const char *src) {
-	free(*dest);
-
-	if(src) {
-		*dest = malloc(strlen(src)+1);
-		strcpy(*dest, src);
-	} else {
-		*dest = NULL;
-	}
+	mem_free(*dest);
+	*dest = src ? strdup(src) : NULL;
 }
 
 char* strjoin(const char *first, ...) {
 	va_list args;
 	size_t size = strlen(first) + 1;
-	char *str = malloc(size);
+	char *str = mem_alloc(size);
 
 	strcpy(str, first);
 	va_start(args, first);
@@ -83,7 +73,7 @@ char* strjoin(const char *first, ...) {
 		}
 
 		size += strlen(next);
-		str = realloc(str, size);
+		str = mem_realloc(str, size);
 		strcat(str, next);
 	}
 
@@ -101,7 +91,7 @@ char* vstrfmt(const char *fmt, va_list args) {
 		asize *= 2;
 
 	for(;;) {
-		out = realloc(out, asize);
+		out = mem_realloc(out, asize);
 
 		va_list nargs;
 		va_copy(nargs, args);
@@ -116,7 +106,7 @@ char* vstrfmt(const char *fmt, va_list args) {
 	}
 
 	if(asize > strlen(out) + 1) {
-		out = realloc(out, strlen(out) + 1);
+		out = mem_realloc(out, strlen(out) + 1);
 	}
 
 	return out;
@@ -149,7 +139,7 @@ char* strappend(char **dst, char *src) {
 		return *dst = strdup(src);
 	}
 
-	*dst = realloc(*dst, strlen(*dst) + strlen(src) + 1);
+	*dst = mem_realloc(*dst, strlen(*dst) + strlen(src) + 1);
 	strcat(*dst, src);
 	return *dst;
 }
@@ -199,7 +189,7 @@ void ucs4_to_utf8(const uint32_t *ucs4, size_t bufsize, char buf[bufsize]) {
 	assert(bufsize > ucs4len(ucs4));
 	char *temp = ucs4_to_utf8_alloc(ucs4);
 	memcpy(buf, temp, bufsize);
-	free(temp);
+	SDL_free(temp);
 }
 
 char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
@@ -208,6 +198,7 @@ char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
 	return utf8;
 }
 
+#ifndef TAISEI_BUILDCONF_HAVE_STRTOK_R
 /*
  * public domain strtok_r() by Charlie Gordon
  *
@@ -218,7 +209,7 @@ char* ucs4_to_utf8_alloc(const uint32_t *ucs4) {
  *     (Declaration that it's public domain):
  *      http://groups.google.com/group/comp.lang.c/msg/7c7b39328fefab9c
  */
-char* strtok_r(char *str, const char *delim, char **nextp) {
+char *strtok_r(char *str, const char *delim, char **nextp) {
 	char *ret;
 
 	if(str == NULL) {
@@ -241,6 +232,7 @@ char* strtok_r(char *str, const char *delim, char **nextp) {
 	*nextp = str;
 	return ret;
 }
+#endif
 
 size_t filename_timestamp(char *buf, size_t buf_size, SystemTime systime) {
 	assert(buf_size >= FILENAME_TIMESTAMP_MIN_BUF_SIZE);
@@ -352,7 +344,7 @@ void format_huge_num(uint digits, uint64_t num, size_t bufsize, char buf[bufsize
 		digits = digitcnt(num);
 	}
 
-	num = umin(upow10(digits) - 1, num);
+	num = min(upow10(digits) - 1, num);
 
 	div_t separators = div(digits, 3);
 	attr_unused uint len = digits + (separators.quot + !!separators.rem);
@@ -414,4 +406,116 @@ void expand_escape_sequences(char *str) {
 	if(in_escape) {
 		p[-1] = 0;
 	}
+}
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMRCHR
+void *memrchr(const void *s, int c, size_t n) {
+	const char *mem = s;
+
+	for(const char *p = mem + n - 1; p >= mem; --p) {
+		if(*p == c) {
+			return (void*)p;
+		}
+	}
+
+	return NULL;
+}
+#endif
+
+#ifndef TAISEI_BUILDCONF_HAVE_MEMMEM
+#undef memmem
+#define memmem _ts_memmem
+void *memmem(const void *haystack, size_t haystacklen, const void *needle, size_t needlelen) {
+	const char *p_haystack = haystack;
+	const char *e_haystack = p_haystack + haystacklen;
+
+	for(;;) {
+		if(needlelen > e_haystack - p_haystack) {
+			return NULL;
+		}
+
+		if(!memcmp(p_haystack, needle, needlelen)) {
+			return (void*)p_haystack;
+		}
+
+		++p_haystack;
+	}
+}
+#endif
+
+bool strnmatch(size_t globsize, const char glob[globsize], size_t insize, const char input[insize]) {
+	const char *ip = input;
+	const char *iend = input + insize;
+	const char *gp = glob;
+	const char *gend = glob + globsize;
+
+	int isfirst = 1;
+	int islast = 0;
+
+	for(;;) {
+		assert(!islast);
+
+		if(gp > gend) {
+			break;
+		}
+
+		const char *segment_start = gp;
+		const char *segment_end = memchr(segment_start, '*', gend - segment_start);
+
+		if(!segment_end) {
+			segment_end = gend;
+			islast = 1;
+		}
+
+		size_t segment_len = segment_end - segment_start;
+
+		if(segment_len < 1) {
+			if(islast) {
+				// Pattern ends with a * and we matched everything up to that point.
+				return 1;
+			}
+		} else {
+			// If this is the first segment, match at the start of input.
+			// Else search input for the first occurrence of the segment (lazy match).
+
+			if(isfirst) {
+				if(iend - ip < segment_len) {
+					// input shorter than pattern; can't possibly match
+					return 0;
+				}
+
+				if(memcmp(ip, segment_start, segment_len)) {
+					return 0;
+				}
+			} else if(!(ip = memmem(ip, iend - ip, segment_start, segment_len))) {
+				return 0;
+			}
+
+			ip += segment_len;
+		}
+
+		isfirst = 0;
+		gp += segment_len + 1;
+
+		if(islast) {
+			if(iend - ip == 0) {
+				// perfect match
+				return 1;
+			}
+
+			// Try to match the last pattern "greedily"
+			// So that e.g. a pattern like "start_*_end" can match "start_123_end_123_end"
+			if(iend - ip >= segment_len && !memcmp(iend - segment_len, segment_start, segment_len)) {
+				return 1;
+			}
+
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+bool strmatch(const char *glob, const char *input) {
+	return strnmatch(strlen(glob), glob, strlen(input), input);
 }

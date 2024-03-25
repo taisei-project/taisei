@@ -11,10 +11,11 @@
 #include "eventloop_private.h"
 #include "util.h"
 #include "framerate.h"
+#include "thread.h"
 #include "global.h"
 
 void eventloop_run(void) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 
 	if(evloop.stack_ptr == NULL) {
 		return;
@@ -116,7 +117,7 @@ begin_frame:
 			if(rt > evloop.frame_times.next) {
 				// frame took too long...
 				// try to compensate in the next frame to avoid slowdown
-				evloop.frame_times.start = rt - imin(rt - evloop.frame_times.next, evloop.frame_times.target);
+				evloop.frame_times.start = rt - min(rt - evloop.frame_times.next, evloop.frame_times.target);
 				goto begin_frame;
 			}
 		}
@@ -126,9 +127,9 @@ begin_frame:
 			while((shrtime_t)evloop.frame_times.next - (shrtime_t)time_get() > (shrtime_t)evloop.frame_times.target / sleep) {
 				uint32_t nap_multiplier = 1;
 				uint32_t nap_divisor = 3;
-				hrtime_t nap_raw = imax(0, (shrtime_t)evloop.frame_times.next - (shrtime_t)time_get());
+				hrtime_t nap_raw = max(0, (shrtime_t)evloop.frame_times.next - (shrtime_t)time_get());
 				uint32_t nap_sdl = (nap_multiplier * nap_raw * 1000) / (HRTIME_RESOLUTION * nap_divisor);
-				nap_sdl = imax(nap_sdl, 1);
+				nap_sdl = max(nap_sdl, 1);
 				SDL_Delay(nap_sdl);
 			}
 		}

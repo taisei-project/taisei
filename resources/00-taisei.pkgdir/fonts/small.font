@@ -1,3 +1,7 @@
 
 source = res/fonts/Exo2-Regular-Taisei.ttf
 size = 12
+
+border_inner = 0.2
+border_outer = 1.5
+

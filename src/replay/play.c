@@ -19,25 +19,30 @@
 typedef struct ReplayContext {
 	CallChain cc;
 	Replay *rpy;
+	ResourceGroup rg;
 	int stage_idx;
+	bool demo_mode;
 } ReplayContext;
 
 static void replay_do_cleanup(CallChainResult ccr);
 static void replay_do_play(CallChainResult ccr);
 static void replay_do_post_play(CallChainResult ccr);
 
-void replay_play(Replay *rpy, int firstidx, CallChain next) {
+void replay_play(Replay *rpy, int firstidx, bool demo_mode, CallChain next) {
 	if(firstidx >= rpy->stages.num_elements || firstidx < 0) {
 		log_error("No stage #%i in the replay", firstidx);
 		run_call_chain(&next, NULL);
 		return;
 	}
 
-	ReplayContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->cc = next;
-	ctx->rpy = rpy;
-	ctx->stage_idx = firstidx;
+	auto ctx = ALLOC(ReplayContext, {
+		.cc = next,
+		.rpy = rpy,
+		.stage_idx = firstidx,
+		.demo_mode = demo_mode,
+	});
 
+	res_group_init(&ctx->rg);
 	replay_do_play(CALLCHAIN_RESULT(ctx, NULL));
 }
 
@@ -64,9 +69,10 @@ static void replay_do_play(CallChainResult ccr) {
 	} else {
 		assume(rstg != NULL);
 		replay_state_init_play(&global.replay.input, rpy, rstg);
-		replay_state_deinit(&global.replay.output);
+		global.replay.input.play.demo_mode = ctx->demo_mode;
 		global.plr.mode = plrmode_find(rstg->plr_char, rstg->plr_shot);
-		stage_enter(stginfo, CALLCHAIN(replay_do_post_play, ctx));
+		res_group_release(&ctx->rg);
+		stage_enter(stginfo, &ctx->rg, CALLCHAIN(replay_do_post_play, ctx));
 	}
 }
 
@@ -91,9 +97,9 @@ static void replay_do_cleanup(CallChainResult ccr) {
 
 	global.gameover = 0;
 	replay_state_deinit(&global.replay.input);
-	free_resources(false);
+	res_group_release(&ctx->rg);
 
 	CallChain cc = ctx->cc;
-	free(ctx);
+	mem_free(ctx);
 	run_call_chain(&cc, NULL);
 }

@@ -28,7 +28,7 @@ typedef union Color {
  * and has automatic storage-class.
  */
 
-#define RGBA(r, g, b, a) (&(Color) { (r), (g), (b), (a) })
+#define RGBA(r, g, b, a) (&(Color) { { (r), (g), (b), (a) } })
 #define RGBA_MUL_ALPHA(r, g, b, a) color_mul_alpha(RGBA((r), (g), (b), (a)))
 #define RGB(r, g, b) RGBA((r), (g), (b), 1)
 

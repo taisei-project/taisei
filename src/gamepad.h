@@ -103,6 +103,7 @@ enum {
 
 void gamepad_init(void);
 void gamepad_shutdown(void);
+bool gamepad_initialized(void);
 void gamepad_event(SDL_Event*, EventHandler, EventFlags, void*);
 
 int gamepad_device_count(void);
@@ -130,10 +131,10 @@ SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
 
 int gamepad_axis_value(GamepadAxis paxis);
 int gamepad_player_axis_value(GamepadPlrAxis paxis);
+void gamepad_get_player_analog_input(int *xaxis, int *yaxis);
 
 double gamepad_normalize_axis_value(int val);
 int gamepad_denormalize_axis_value(double val);
 
 #define GAMEPAD_AXIS_MAX_VALUE 32767
 #define GAMEPAD_AXIS_MIN_VALUE -32768
-#define AXISVAL sign

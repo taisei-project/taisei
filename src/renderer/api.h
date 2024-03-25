@@ -296,12 +296,19 @@ typedef struct UniformTypeInfo {
 
 typedef struct Uniform Uniform;
 
-typedef enum ClearBufferFlags {
-	CLEAR_COLOR = (1 << 0),
-	CLEAR_DEPTH = (1 << 1),
+typedef enum BufferKindFlags {
+	BUFFER_COLOR = (1 << 0),
+	BUFFER_DEPTH = (1 << 1),
 
-	CLEAR_ALL = CLEAR_COLOR | CLEAR_DEPTH,
-} ClearBufferFlags;
+	BUFFER_ALL = BUFFER_COLOR | BUFFER_DEPTH,
+
+	CLEAR_COLOR attr_deprecated("Use BUFFER_COLOR instead") = BUFFER_COLOR,
+	CLEAR_DEPTH attr_deprecated("Use BUFFER_DEPTH instead") = BUFFER_DEPTH,
+	CLEAR_ALL   attr_deprecated("Use BUFFER_ALL instead")   = BUFFER_ALL,
+} BufferKindFlags;
+
+typedef BufferKindFlags ClearBufferFlags
+	attr_deprecated("Use BufferKindFlags instead");
 
 // Blend modes API based on the SDL one.
 
@@ -510,6 +517,7 @@ SDL_Window* r_create_window(const char *title, int x, int y, int w, int h, uint3
 
 void r_init(void);
 void r_post_init(void);
+void r_release_resources(void);
 void r_shutdown(void);
 const char *r_backend_name(void);
 
@@ -761,7 +769,8 @@ void r_framebuffer_viewport(Framebuffer *fb, float x, float y, float w, float h)
 void r_framebuffer_viewport_rect(Framebuffer *fb, FloatRect viewport);
 void r_framebuffer_viewport_current(Framebuffer *fb, FloatRect *viewport) attr_nonnull(2);
 void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
-void r_framebuffer_clear(Framebuffer *fb, ClearBufferFlags flags, const Color *colorval, float depthval);
+void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval);
+void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) attr_nonnull_all;
 IntExtent r_framebuffer_get_size(Framebuffer *fb);
 
 void r_framebuffer(Framebuffer *fb);
@@ -903,10 +912,6 @@ void r_disable(RendererCapability cap) {
 	r_capability(cap, false);
 }
 
-DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get, res_shader)
-DEFINE_DEPRECATED_RESOURCE_GETTER(ShaderProgram, r_shader_get_optional, res_shader_optional)
-DEFINE_DEPRECATED_RESOURCE_GETTER(Texture, r_texture_get, res_texture)
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated"
 
@@ -972,18 +977,18 @@ Uniform* r_shader_current_uniform(const char *name) {
 }
 
 INLINE
-void r_clear(ClearBufferFlags flags, const Color *colorval, float depthval) {
+void r_clear(BufferKindFlags flags, const Color *colorval, float depthval) {
 	r_framebuffer_clear(r_framebuffer_current(), flags, colorval, depthval);
 }
 
 INLINE attr_nonnull(1)
 void r_draw_model(const char *model) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), 0, 0);
 }
 
 INLINE attr_nonnull(1)
 void r_draw_model_instanced(const char *model, uint instances, uint base_instance) {
-	r_draw_model_ptr(get_resource_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
+	r_draw_model_ptr(res_get_data(RES_MODEL, model, RESF_DEFAULT), instances, base_instance);
 }
 
 INLINE

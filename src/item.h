@@ -10,7 +10,9 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "resource/resource.h"
 #include "resource/texture.h"
+#include "resource/sprite.h"
 #include "objectpool.h"
 #include "entity.h"
 
@@ -48,22 +50,28 @@ typedef union ItemCounts {
 		int bomb;
 		int life;
 	};
-	int as_array[ITEM_LAST - ITEM_FIRST];
+	int as_array[ITEM_LAST - ITEM_FIRST + 1];
 } ItemCounts;
 
 #define ITEMS(...) (&(const ItemCounts) { __VA_ARGS__ })
 
 DEFINE_ENTITY_TYPE(Item, {
-	int birthtime;
-	int collecttime;
+	struct {
+		Sprite *pickup;
+		Sprite *indicator;
+	} sprites;
+
 	cmplx pos;
 	cmplx pos0;
+	cmplx v;
+	cmplxf size;
+
+	int birthtime;
+	int collecttime;
 
 	int auto_collect;
 	ItemType type;
 	float pickup_value;
-
-	cmplx v;
 });
 
 Item *create_item(cmplx pos, cmplx v, ItemType type);
@@ -94,9 +102,11 @@ void spawn_and_collect_items(cmplx pos, float collect_value, SpawnItemsArgs grou
 bool collect_item(Item *item, float value);
 void collect_all_items(float value);
 
-void items_preload(void);
+void items_preload(ResourceGroup *rg);
 
-#define POWER_VALUE 3
+void item_set_type(Item *item, ItemType type);
+
+#define POWER_VALUE 5
 #define POWER_VALUE_MINI 1
 
 #define ITEM_MAX_VALUE 1.0

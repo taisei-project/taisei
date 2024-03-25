@@ -47,7 +47,7 @@ TASK(wheel, { BoxedBoss boss; real spin_dir; int duration; }) {
 		}
 
 		int max_delay = 60;
-		int min_delay = max_delay - iclamp((t - 100)/20, 0, 50) - 1;
+		int min_delay = max_delay - clamp((t - 100)/20, 0, 50) - 1;
 
 		for(int i = 1; i < arms; i++) {
 			real a = spin_dir * M_TAU / (arms - 1) * (i + (1 + 0.4 * d) * pow(t/200.0, 2));
@@ -67,7 +67,7 @@ TASK(wheel, { BoxedBoss boss; real spin_dir; int duration; }) {
 
 DEFINE_EXTERN_TASK(stage2_spell_wheel_of_fortune) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
-	boss->move = move_towards(VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.02);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + VIEWPORT_H/2*I, 0.02);
 	BEGIN_BOSS_ATTACK(&ARGS);
 
 	aniplayer_queue(&boss->ani, "guruguru", 0);

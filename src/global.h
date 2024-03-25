@@ -30,7 +30,6 @@
 #include "laser.h"
 #include "dialog.h"
 #include "list.h"
-#include "refs.h"
 #include "config.h"
 #include "resource/resource.h"
 #include "replay/state.h"
@@ -49,27 +48,18 @@
 
 enum {
 	// defaults
-#ifdef __SWITCH__
-	RESX = 1280,
-	RESY = 720,
-#else
 	RESX = 800,
 	RESY = 600,
-#endif
 
 	VIEWPORT_X = 40,
 	VIEWPORT_Y = 20,
 	VIEWPORT_W = 480,
 	VIEWPORT_H = 560,
 
-	MAX_CONTINUES = 3,
+	MAX_CONTINUES = 5,
 
 	EVENT_DEATH = -8999,
 	EVENT_BIRTH,
-	EVENT_KILLED,
-	ACTION_DESTROY,
-	ACTION_ACK,
-	ACTION_NONE,
 
 	FPS = 60,
 
@@ -101,15 +91,12 @@ typedef struct {
 	LaserList lasers;
 
 	int frames; // stage global timer
-	int timer; // stage event timer (freezes on bosses, dialogs, etc.)
 	int stage_start_frame;
 
 	int frameskip;
 
 	Boss *boss;
 	Dialog *dialog;
-
-	RefArray refs;
 
 	GameoverType gameover;
 	int gameover_time;
@@ -134,6 +121,7 @@ typedef struct {
 	uint is_practice_mode : 1;
 	uint is_headless : 1;
 	uint is_replay_verification : 1;
+	uint is_kiosk_mode : 1;
 } Global;
 
 extern Global global;

@@ -25,15 +25,13 @@ static void vfs_setup_onsync(CallChainResult ccr) {
 		.cache_path = cache_path,
 	};
 
-	vfs_setup_fixedpaths_onsync(ccr, &paths);
+	vfs_setup_fixedpaths(&paths);
 
 	free(res_path);
 	free(storage_path);
 	free(cache_path);
+
+	vfs_setup_onsync_done(ccr);
 }
 
-void vfs_setup(CallChain next) {
-	vfs_init();
-	CallChain *cc = memdup(&next, sizeof(next));
-	vfs_sync(VFS_SYNC_LOAD, CALLCHAIN(vfs_setup_onsync, cc));
-}
+VFS_SETUP_SYNCING(vfs_setup_onsync)

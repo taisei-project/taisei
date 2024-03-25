@@ -18,5 +18,6 @@ Projectile *stage1_spawn_stain(cmplx pos, float angle, int to) {
 		.timeout = to,
 		.angle = angle,
 		.color = RGBA(0.4, 0.4, 0.4, 0),
+		.flags = PFLAG_MANUALANGLE,
 	);
 }

@@ -40,6 +40,7 @@ typedef enum {
 	TE_GAMEPAD_BUTTON_DOWN,
 	TE_GAMEPAD_BUTTON_UP,
 	TE_GAMEPAD_AXIS,
+	TE_GAMEPAD_AXIS_DIGITAL,
 
 	TE_VIDEO_MODE_CHANGED,
 
@@ -68,7 +69,7 @@ typedef enum {
 	NUM_EPRIOS = EPRIO_LAST - EPRIO_FIRST + 1,
 } EventPriority;
 
-static_assert_nomsg(EPRIO_DEFAULT == 0);
+static_assert(EPRIO_DEFAULT == 0);
 
 typedef enum {
 	EFLAG_MENU = (1 << 0),

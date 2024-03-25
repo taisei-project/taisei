@@ -14,10 +14,10 @@
 #include "stagedraw.h"
 #include "common_tasks.h"
 
-#define SHOT_FORWARD_DMG 60
+#define SHOT_FORWARD_DMG 35
 #define SHOT_FORWARD_DELAY 6
 
-#define SHOT_SLAVE_DMG 42
+#define SHOT_SLAVE_DMG 44
 #define SHOT_SLAVE_PRE_DELAY 3
 #define SHOT_SLAVE_POST_DELAY 3
 
@@ -232,7 +232,7 @@ static void reimu_dream_draw_gap_lights(ReimuBController *ctrl, int time, real s
 		cmplx center = gap->pos - gap->orientation * (len * 0.5 - GAP_WIDTH * 0.6);
 
 		r_mat_mv_push();
-		r_mat_mv_translate(creal(center), cimag(center), 0);
+		r_mat_mv_translate(re(center), im(center), 0);
 		r_mat_mv_rotate(carg(gap->orientation) + M_PI, 0, 0, 1);
 		r_mat_mv_scale(len, GAP_LENGTH, 1);
 		r_draw_quad();
@@ -249,8 +249,8 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 
 	for(int i = 0; i < NUM_GAPS; ++i) {
 		ReimuBGap *gap = ctrl->gaps.array + i;
-		gaps[i][0] = creal(gap->pos);
-		gaps[i][1] = cimag(gap->pos);
+		gaps[i][0] = re(gap->pos);
+		gaps[i][1] = im(gap->pos);
 		angles[i] = -carg(gap->orientation);
 		links[i] = gap->link - ctrl->gaps.array;
 	}
@@ -270,7 +270,7 @@ static void reimu_dream_draw_gaps(EntityInterface *gap_renderer_ent) {
 		r_shader("reimu_gap");
 		r_uniform_int("draw_background", true);
 		r_blend(BLEND_NONE);
-		r_clear(CLEAR_COLOR, RGBA(0, 0, 0, 0), 1);
+		r_clear(BUFFER_COLOR, RGBA(0, 0, 0, 0), 1);
 	} else {
 		r_shader("reimu_gap");
 		r_uniform_int("draw_background", false);
@@ -315,6 +315,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scalefade(0.2, 1, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
+		.flags = PFLAG_MANUALANGLE,
 	);
 
 	Color *clr = color_mul_scalar(RGBA(0.75, rng_range(0, 0.4), 0.4, 0), 0.8-0.4*exit);
@@ -326,6 +327,7 @@ static void reimu_dream_spawn_warp_effect(cmplx pos, bool exit) {
 		.angle = rng_angle(),
 		.draw_rule = pdraw_timeout_scalefade(0.1, 0.6, 1, 0),
 		.layer = LAYER_PLAYER_FOCUS,
+		.flags = PFLAG_MANUALANGLE,
 	);
 }
 
@@ -334,7 +336,7 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 		return;
 	}
 
-	real p_long_side = fmax(creal(p->size), cimag(p->size));
+	real p_long_side = max(re(p->size), im(p->size));
 	cmplx half = 0.25 * (1 + I);
 	Rect p_bbox = { p->pos - p_long_side * half, p->pos + p_long_side * half };
 
@@ -346,21 +348,21 @@ static void reimu_dream_bullet_warp(ReimuBController *ctrl, Projectile *p, int *
 			continue;
 		}
 
-		Rect gap_bbox, overlap;
+		Rect gap_bbox, overlap = { };
 		cmplx gap_size = (GAP_LENGTH + I * GAP_WIDTH) * gap->parallel_axis;
 		cmplx p0 = gap->pos - gap_size * 0.5;
 		cmplx p1 = gap->pos + gap_size * 0.5;
-		gap_bbox.top_left = fmin(creal(p0), creal(p1)) + I * fmin(cimag(p0), cimag(p1));
-		gap_bbox.bottom_right = fmax(creal(p0), creal(p1)) + I * fmax(cimag(p0), cimag(p1));
+		gap_bbox.top_left = min(re(p0), re(p1)) + I * min(im(p0), im(p1));
+		gap_bbox.bottom_right = max(re(p0), re(p1)) + I * max(im(p0), im(p1));
 
 		if(rect_rect_intersection(p_bbox, gap_bbox, true, false, &overlap)) {
 			cmplx o = (overlap.top_left + overlap.bottom_right) / 2;
 			real fract;
 
-			if(creal(gap_size) > cimag(gap_size)) {
-				fract = 1 - creal(o - gap_bbox.top_left) / creal(gap_size);
+			if(re(gap_size) > im(gap_size)) {
+				fract = 1 - re(o - gap_bbox.top_left) / re(gap_size);
 			} else {
-				fract = 1 - cimag(o - gap_bbox.top_left) / cimag(gap_size);
+				fract = 1 - im(o - gap_bbox.top_left) / im(gap_size);
 			}
 
 			ReimuBGap *ngap = gap->link;
@@ -409,7 +411,7 @@ TASK(reimu_dream_needle, {
 		.shader_ptr = ARGS.shader,
 	));
 
-	Color *trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.35);
+	Color *trail_color = color_mul_scalar(RGBA(0.75, 0.5, 1, 0), 0.15);
 	int warp_cnt = 1;
 
 	for(;;) {
@@ -511,9 +513,9 @@ static cmplx reimu_dream_gaps_reference_pos(ReimuBController *ctrl, cmplx vp) {
 	cmplx rp = ctrl->plr->pos;
 
 	if(!(ctrl->plr->inputflags & INFLAG_FOCUS)) {
-		rp = CMPLX(creal(rp), cimag(vp) - cimag(rp));
+		rp = CMPLX(re(rp), im(vp) - im(rp));
 	} else {
-		// rp = CMPLX(creal(vp) - creal(rp), cimag(rp));
+		// rp = CMPLX(re(vp) - re(rp), im(rp));
 	}
 
 	return rp;
@@ -606,13 +608,13 @@ TASK(reimu_dream_shot_forward, { ReimuBController *ctrl; }) {
 TASK(reimu_dream_power_handler, { ReimuBController *ctrl; }) {
 	ReimuBController *ctrl = ARGS.ctrl;
 	Player *plr = ctrl->plr;
-	int old_power = plr->power / 100;
+	int old_power = player_get_effective_power(plr) / 100;
 
 	reimu_dream_respawn_slaves(ctrl, old_power * 2);
 
 	for(;;) {
-		WAIT_EVENT_OR_DIE(&plr->events.power_changed);
-		int new_power = plr->power / 100;
+		WAIT_EVENT_OR_DIE(&plr->events.effective_power_changed);
+		int new_power = player_get_effective_power(plr) / 100;
 		if(old_power != new_power) {
 			reimu_dream_respawn_slaves(ctrl, new_power * 2);
 			old_power = new_power;
@@ -674,10 +676,10 @@ static void reimu_dream_init(Player *plr) {
 	INVOKE_TASK(reimu_dream_controller, ENT_BOX(plr));
 }
 
-static void reimu_dream_preload(void) {
+static void reimu_dream_preload(ResourceGroup *rg) {
 	const int flags = RESF_DEFAULT;
 
-	preload_resources(RES_SPRITE, flags,
+	res_group_preload(rg, RES_SPRITE, flags,
 		"yinyang",
 		"proj/ofuda",
 		"proj/needle2",
@@ -686,19 +688,19 @@ static void reimu_dream_preload(void) {
 		"part/stardust",
 	NULL);
 
-	preload_resources(RES_TEXTURE, flags,
+	res_group_preload(rg, RES_TEXTURE, flags,
 		"runes",
 		"gaplight",
 	NULL);
 
-	preload_resources(RES_SHADER_PROGRAM, flags,
+	res_group_preload(rg, RES_SHADER_PROGRAM, flags,
 		"sprite_yinyang",
 		"reimu_gap",
 		"reimu_gap_light",
 		"reimu_bomb_bg",
 	NULL);
 
-	preload_resources(RES_SFX, flags | RESF_OPTIONAL,
+	res_group_preload(rg, RES_SFX, flags | RESF_OPTIONAL,
 		"bomb_marisa_a",
 		"boon",
 	NULL);

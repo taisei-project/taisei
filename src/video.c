@@ -13,6 +13,7 @@
 #include "renderer/api.h"
 #include "util/pngcruft.h"
 #include "util/fbmgr.h"
+#include "util/graphics.h"
 #include "taskmanager.h"
 #include "video_postprocess.h"
 #include "dynarray.h"
@@ -29,6 +30,7 @@ static struct {
 	VideoMode current;
 	VideoBackend backend;
 	double scaling_factor;
+	uint num_resize_events;
 } video;
 
 VideoCapabilityState (*video_query_capability)(VideoCapability cap);
@@ -138,6 +140,26 @@ static VideoCapabilityState video_query_capability_alwaysfullscreen(VideoCapabil
 	UNREACHABLE;
 }
 
+static VideoCapabilityState video_query_capability_switch(VideoCapability cap) {
+	switch(cap) {
+		// We want the window to be resizable and resized internally by SDL
+		// when the Switch gets docked/undocked
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_AVAILABLE;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_VSYNC_ADAPTIVE:
+			return VIDEO_NEVER_AVAILABLE;
+	}
+
+	UNREACHABLE;
+}
+
 static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap) {
 	switch(cap) {
 		case VIDEO_CAP_EXTERNAL_RESIZE:
@@ -148,6 +170,24 @@ static VideoCapabilityState video_query_capability_webcanvas(VideoCapability cap
 
 		default:
 			return video_query_capability_generic(cap);
+	}
+}
+
+static VideoCapabilityState (*video_query_capability_kiosk_fallback)(VideoCapability cap);
+
+static VideoCapabilityState video_query_capability_kiosk(VideoCapability cap) {
+	switch(cap) {
+		case VIDEO_CAP_FULLSCREEN:
+			return VIDEO_ALWAYS_ENABLED;
+
+		case VIDEO_CAP_CHANGE_RESOLUTION:
+			return VIDEO_NEVER_AVAILABLE;
+
+		case VIDEO_CAP_EXTERNAL_RESIZE:
+			return VIDEO_NEVER_AVAILABLE;
+
+		default:
+			return video_query_capability_kiosk_fallback(cap);
 	}
 }
 
@@ -177,7 +217,7 @@ static void video_add_mode(VideoModeArray *mode_array, IntExtent mode_screen, In
 		}
 	}
 
-	dynarray_append(mode_array)->as_int_extent = mode_screen;
+	dynarray_append(mode_array, { .as_int_extent = mode_screen });
 	log_debug("Add %s mode: %ix%i", mode_type, mode_screen.w, mode_screen.h);
 }
 
@@ -380,10 +420,11 @@ static void video_update_vsync(void) {
 }
 
 static void video_update_mode_settings(void) {
-	SDL_ShowCursor(false);
+	SDL_ShowCursor(!video_is_fullscreen());
 	video_update_vsync();
 	SDL_GetWindowSize(video.window, &video.current.width, &video.current.height);
 	video_set_viewport();
+	video_update_scaling_factor();
 	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
 }
 
@@ -401,6 +442,7 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 	if(video.window) {
 		SDL_DestroyWindow(video.window);
 		video.window = NULL;
+		video.num_resize_events = 0;
 	}
 
 	char title[sizeof(WINDOW_TITLE) + strlen(TAISEI_VERSION) + 2];
@@ -467,7 +509,45 @@ static void video_set_fullscreen_internal(bool fullscreen) {
 	SDL_RaiseWindow(video.window);
 }
 
+INLINE bool should_recreate_on_size_change(void) {
+	bool defaultval = (
+		/* Resize failures are impossible to detect under some WMs */
+		video.backend == VIDEO_BACKEND_X11 ||
+		/* Needed to work around various SDL bugs and/or HTML/DOM quirks */
+		video.backend == VIDEO_BACKEND_EMSCRIPTEN ||
+	0);
+
+	return env_get("TAISEI_VIDEO_RECREATE_ON_RESIZE", defaultval);
+}
+
+INLINE bool should_recreate_on_fullscreen_change(void) {
+	bool defaultval = (
+		/* FIXME Do we need this? */
+		video.backend == VIDEO_BACKEND_X11 ||
+	0);
+
+	return env_get("TAISEI_VIDEO_RECREATE_ON_FULLSCREEN", defaultval);
+}
+
+static bool restrict_to_capability(bool enabled, VideoCapability cap) {
+	VideoCapabilityState capval = video_query_capability(cap);
+
+	switch(capval) {
+		case VIDEO_ALWAYS_ENABLED:
+			return true;
+
+		case VIDEO_NEVER_AVAILABLE:
+			return false;
+
+		default:
+			return enabled;
+	}
+}
+
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
+	fs = restrict_to_capability(fs, VIDEO_CAP_FULLSCREEN);
+	resizable = restrict_to_capability(resizable, VIDEO_CAP_EXTERNAL_RESIZE);
+
 	video.intended.width = w;
 	video.intended.height = h;
 
@@ -481,38 +561,32 @@ void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable) {
 		return;
 	}
 
-	uint old_display = video_current_display();
-	bool display_changed = display != old_display;
+	bool display_changed = display != video_current_display();
 	bool size_changed = w != video.current.width || h != video.current.height;
+	bool fullscreen_changed = video_is_fullscreen() != fs;
 
 	if(display_changed) {
 		video_new_window(display, w, h, fs, resizable);
 		return;
 	}
 
+	if(fullscreen_changed && should_recreate_on_fullscreen_change()) {
+		video_new_window(display, w, h, fs, resizable);
+		return;
+	}
+
 	if(size_changed) {
-		if(video.backend == VIDEO_BACKEND_X11) {
-			// XXX: I would like to use SDL_SetWindowSize for size changes, but apparently it's impossible to reliably detect
-			//      when it fails to actually resize the window. For example, a tiling WM (awesome) may be getting in its way
-			//      and we'd never know. SDL_GL_GetDrawableSize/SDL_GetWindowSize aren't helping as of SDL 2.0.5.
-			//
-			//      There's not much to be done about it. We're at mercy of SDL here and SDL is at mercy of the WM.
+		if(!fullscreen_changed && should_recreate_on_size_change()) {
 			video_new_window(display, w, h, fs, resizable);
 			return;
-		} else if(video.backend == VIDEO_BACKEND_EMSCRIPTEN && !fs) {
-			// Needed to work around various SDL bugs and HTML/DOM quirks...
-			video_new_window(display, w, h, fs, resizable);
-			return;
-		} else {
-			SDL_SetWindowSize(video.window, w, h);
-			// so the user doesn't have to drag the window back
-			// into the middle of the screen after a resolution change
-			SDL_SetWindowPosition(
-				video.window,
-				SDL_WINDOWPOS_CENTERED_DISPLAY(display),
-				SDL_WINDOWPOS_CENTERED_DISPLAY(display)
-			);
 		}
+
+		SDL_SetWindowSize(video.window, w, h);
+		SDL_SetWindowPosition(
+			video.window,
+			SDL_WINDOWPOS_CENTERED_DISPLAY(display),
+			SDL_WINDOWPOS_CENTERED_DISPLAY(display)
+		);
 	}
 
 	video_set_fullscreen_internal(fs);
@@ -560,7 +634,7 @@ static void *video_screenshot_task(void *arg) {
 	if(LIKELY(ok)) {
 		char *syspath = vfs_repr(tdata->dest_path, true);
 		log_info("Saved screenshot as %s", syspath);
-		free(syspath);
+		mem_free(syspath);
 	}
 
 	return NULL;
@@ -568,9 +642,9 @@ static void *video_screenshot_task(void *arg) {
 
 static void video_screenshot_free_task_data(void *arg) {
 	ScreenshotTaskData *tdata = arg;
-	free(tdata->image.data.untyped);
-	free(tdata->dest_path);
-	free(tdata);
+	mem_free(tdata->image.data.untyped);
+	mem_free(tdata->dest_path);
+	mem_free(tdata);
 }
 
 void video_take_screenshot(void) {
@@ -681,7 +755,7 @@ static void video_handle_resize(int w, int h) {
 	int minw, minh;
 	SDL_GetWindowMinimumSize(video.window, &minw, &minh);
 
-	if(w < minw || h < minh) {
+	if((w < minw || h < minh) && video.num_resize_events > 3) {
 		log_warn("Bad resize: %ix%i is too small!", w, h);
 		// FIXME: the video_new_window is actually a workaround for Wayland.
 		// I'm not sure if it's necessary for anything else.
@@ -692,12 +766,25 @@ static void video_handle_resize(int w, int h) {
 	log_debug("%ix%i --> %ix%i", video.current.width, video.current.height, w, h);
 	video.current.width = w;
 	video.current.height = h;
-	video_set_viewport();
-	events_emit(TE_VIDEO_MODE_CHANGED, 0, NULL, NULL);
+	video_update_mode_settings();
+	++video.num_resize_events;
 }
 
 static bool video_handle_window_event(SDL_Event *event, void *arg) {
 	switch(event->window.event) {
+		case SDL_WINDOWEVENT_SIZE_CHANGED:
+			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
+			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
+			// user). We only need to handle external resizes.
+			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+
+			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
+			// https://github.com/devkitPro/SDL/issues/31
+			if(video_get_backend() == VIDEO_BACKEND_SWITCH) {
+				video_handle_resize(event->window.data1, event->window.data2);
+			}
+			break;
+
 		case SDL_WINDOWEVENT_RESIZED:
 			video_handle_resize(event->window.data1, event->window.data2);
 			break;
@@ -801,9 +888,14 @@ void video_init(void) {
 		video_query_capability = video_query_capability_alwaysfullscreen;
 	} else if(!strcmp(driver, "Switch")) {
 		video.backend = VIDEO_BACKEND_SWITCH;
-		video_query_capability = video_query_capability_alwaysfullscreen;
+		video_query_capability = video_query_capability_switch;
 	} else {
 		video.backend = VIDEO_BACKEND_OTHER;
+	}
+
+	if(global.is_kiosk_mode) {
+		video_query_capability_kiosk_fallback = video_query_capability;
+		video_query_capability = video_query_capability_kiosk;
 	}
 
 	video.scaling_factor = 0;
@@ -871,7 +963,7 @@ void video_swap_buffers(void) {
 		r_shader_standard();
 		r_color3(1, 1, 1);
 		draw_framebuffer_tex(pp_fb, SCREEN_W, SCREEN_H);
-		r_framebuffer_clear(pp_fb, CLEAR_ALL, RGBA(0, 0, 0, 0), 1);
+		r_framebuffer_clear(pp_fb, BUFFER_ALL, RGBA(0, 0, 0, 0), 1);
 		r_mat_proj_pop();
 		r_state_pop();
 
@@ -893,9 +985,15 @@ static VideoModeArray *get_vidmode_array(bool fullscreen) {
 	return fullscreen ? &video.fs_modes : &video.win_modes;
 }
 
-VideoMode video_get_mode(uint idx, bool fullscreen) {
+bool video_get_mode(uint idx, bool fullscreen, VideoMode *out_mode) {
 	VideoModeArray *a = get_vidmode_array(fullscreen);
-	return dynarray_get(a, idx);
+
+	if(idx >= a->num_elements) {
+		return false;
+	}
+
+	*out_mode = dynarray_get(a, idx);
+	return true;
 }
 
 uint video_get_num_modes(bool fullscreen) {

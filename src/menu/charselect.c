@@ -15,6 +15,7 @@
 #include "global.h"
 #include "video.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 #include "portrait.h"
 
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
@@ -23,6 +24,7 @@
 enum {
 	F_HAPPY,
 	F_NORMAL,
+	F_PUZZLED,
 	F_SMUG,
 	F_SURPRISED,
 	F_UNAMUSED,
@@ -34,6 +36,7 @@ static const char facedefs[NUM_CHARACTERS][NUM_FACES][FACENAME_LEN] = {
 	[PLR_CHAR_REIMU]  = {
 		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, happy),
 		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, normal),
+		[F_PUZZLED]   = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, puzzled),
 		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, smug),
 		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, surprised),
 		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(reimu, unamused),
@@ -41,6 +44,7 @@ static const char facedefs[NUM_CHARACTERS][NUM_FACES][FACENAME_LEN] = {
 	[PLR_CHAR_MARISA]  = {
 		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, happy),
 		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, normal),
+		[F_PUZZLED]   = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, puzzled),
 		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, smug),
 		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, surprised),
 		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(marisa, unamused),
@@ -48,6 +52,7 @@ static const char facedefs[NUM_CHARACTERS][NUM_FACES][FACENAME_LEN] = {
 	[PLR_CHAR_YOUMU]  = {
 		[F_HAPPY]     = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, happy),
 		[F_NORMAL]    = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, normal),
+		[F_PUZZLED]   = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, puzzled),
 		[F_SMUG]      = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, smug),
 		[F_SURPRISED] = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, surprised),
 		[F_UNAMUSED]  = PORTRAIT_STATIC_FACE_SPRITE_NAME(youmu, unamused),
@@ -107,11 +112,11 @@ static void update_char_menu(MenuData *menu) {
 }
 
 static void end_char_menu(MenuData *m) {
-	free(m->context);
+	mem_free(m->context);
 }
 
 static void transition_to_game(double fade) {
-	fade_out(pow(fmax(0, (fade - 0.5) * 2), 2));
+	fade_out(pow(max(0, (fade - 0.5) * 2), 2));
 }
 
 MenuData* create_char_menu(void) {
@@ -124,9 +129,10 @@ MenuData* create_char_menu(void) {
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
 
-	CharMenuContext *ctx = calloc(1, sizeof(*ctx));
-	ctx->subshot = progress.game_settings.shotmode;
-	ctx->prev_selected_char = -1;
+	auto ctx = ALLOC(CharMenuContext, {
+		.subshot = progress.game_settings.shotmode,
+		.prev_selected_char = -1,
+	});
 	m->context = ctx;
 
 	for(uintptr_t i = 0; i < NUM_CHARACTERS; ++i) {
@@ -195,7 +201,7 @@ void draw_char_menu(MenuData *menu) {
 			face = facedefs[i][F_UNAMUSED];
 		}
 
-		float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
+		float pofs = max(0.0f, e->drawdata * 1.5f - 0.5f);
 		pofs = glm_ease_back_in(pofs);
 
 		if(i != menu->selected) {
@@ -377,16 +383,29 @@ static void char_menu_input(MenuData *menu) {
 	}, EFLAG_MENU);
 }
 
-void preload_char_menu(void) {
+void preload_char_menu(ResourceGroup *rg) {
 	for(int i = 0; i < NUM_CHARACTERS; ++i) {
 		PlayerCharacter *pchar = plrchar_get(i);
-		portrait_preload_base_sprite(pchar->lower_name, NULL, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, pchar->menu_texture_name, RESF_PERMANENT);
+		portrait_preload_base_sprite(rg, pchar->lower_name, NULL, RESF_DEFAULT);
+		res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, pchar->menu_texture_name, NULL);
 	}
 
 	char *p = (char*)facedefs;
 
 	for(int i = 0; i < sizeof(facedefs) / FACENAME_LEN; ++i) {
-		preload_resource(RES_SPRITE, p + i * FACENAME_LEN, RESF_PERMANENT);
+		res_group_preload(rg, RES_SPRITE, RESF_DEFAULT, p + i * FACENAME_LEN, NULL);
 	}
+	portrait_preload_face_sprite(rg, "reimu", "annoyed", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "reimu", "assertive", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "reimu", "irritated", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "reimu", "outraged", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "reimu", "sigh", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "reimu", "unsettled", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "marisa", "sweat_smile", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "marisa", "inquisitive", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "youmu", "eeeeh", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "youmu", "embarrassed", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "youmu", "eyes_closed", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "youmu", "relaxed", RESF_DEFAULT);
+	portrait_preload_face_sprite(rg, "youmu", "sigh", RESF_DEFAULT);
 }

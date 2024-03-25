@@ -67,8 +67,8 @@ static void testlights(Camera3D *cam, uint nlights, PointLight3D lights[nlights]
 		PointLight3D *l = lights + i;
 		glm_vec3_scale(HSL(i / (float)nlights, 1, 0.5)->rgb, TESTLIGHT_STRENGTH, l->radiance);
 		glm_vec3_copy(orig, l->pos);
-		glm_vec3_muladds(X, crealf(r), l->pos);
-		glm_vec3_muladds(Y, cimagf(r), l->pos);
+		glm_vec3_muladds(X, re(r), l->pos);
+		glm_vec3_muladds(Y, im(r), l->pos);
 		r *= p;
 	}
 }
@@ -131,12 +131,13 @@ static void stage2_bg_setup_pbr_lighting(Camera3D *cam, int max_lights) {
 	max_lights += NUM_TESTLIGHTS;
 #endif
 
-	camera3d_set_point_light_uniforms(cam, imin(max_lights, ARRAY_SIZE(lights)), lights);
+	camera3d_set_point_light_uniforms(cam, min(max_lights, ARRAY_SIZE(lights)), lights);
 }
 
 static void stage2_bg_setup_pbr_env(Camera3D *cam, int max_lights, PBREnvironment *env) {
 	stage2_bg_setup_pbr_lighting(cam, max_lights);
 	glm_vec3_broadcast(0.5f, env->ambient_color);
+	glm_vec3_broadcast(1.0f, env->environment_color);
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 	env->environment_map = stage2_draw_data->envmap;
 	env->disable_tonemap = true;
@@ -266,6 +267,9 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_uniform_float("wave_scale", 16);
 	r_uniform_vec2("wave_offset", pos[0]/WATER_SIZE, pos[1]/WATER_SIZE);
 	r_uniform_float("water_depth", 5.0);
+	r_uniform_sampler("water_noisetex", "fractal_noise");
+	r_uniform_vec3("water_color", 0.1, 0.2, 0.3);
+	r_uniform_vec3("wave_highlight_color", 0.1, 0.1, 0.1);
 
 	PBREnvironment env = { 0 };
 	stage2_bg_setup_pbr_env(&stage_3d_context.cam, STAGE2_MAX_LIGHTS, &env);
@@ -274,9 +278,13 @@ static void stage2_bg_water_draw(vec3 pos) {
 	r_mat_mv_translate(pos[0], pos[1], pos[2]);
 	r_mat_mv_scale(-WATER_SIZE, WATER_SIZE, 1);
 
-	mat4 imv;
-	glm_mat4_inv_fast(*r_mat_mv_current_ptr(), imv);
-	r_uniform_mat4("inverse_modelview", imv);
+	bool have_bottom = config_get_int(CONFIG_POSTPROCESS) > 1;
+	r_uniform_int("water_has_bottom_layer", have_bottom);
+	if(have_bottom) {
+		mat4 imv;
+		glm_mat4_inv_fast(*r_mat_mv_current_ptr(), imv);
+		r_uniform_mat4("inverse_modelview", imv);
+	}
 
 	r_mat_tex_push();
 	r_mat_tex_translate(pos[0], pos[1], 0);
@@ -458,7 +466,8 @@ void stage2_drawsys_init(void) {
 	stage3d_init(&stage_3d_context, 16);
 	stage_3d_context.cam.near = 1;
 	stage_3d_context.cam.far = 60;
-	stage2_draw_data = calloc(1, sizeof(*stage2_draw_data));
+
+	stage2_draw_data = ALLOC(typeof(*stage2_draw_data));
 
 	pbr_load_model(&stage2_draw_data->models.branch, "stage2/branch", "stage2/branch");
 	pbr_load_model(&stage2_draw_data->models.grass,  "stage2/grass",  "stage2/ground");
@@ -481,7 +490,7 @@ void stage2_drawsys_init(void) {
 
 void stage2_drawsys_shutdown(void) {
 	stage3d_shutdown(&stage_3d_context);
-	free(stage2_draw_data);
+	mem_free(stage2_draw_data);
 }
 
 ShaderRule stage2_bg_effects[] = {

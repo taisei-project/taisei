@@ -55,8 +55,8 @@ static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t s
 
 	if(LIKELY(total_size > 0)) {
 		memcpy(cbuf->cache.buffer + cbuf->offset, data, total_size);
-		cbuf->cache.update_begin = umin(cbuf->offset, cbuf->cache.update_begin);
-		cbuf->cache.update_end = umax(cbuf->offset + total_size, cbuf->cache.update_end);
+		cbuf->cache.update_begin = min(cbuf->offset, cbuf->cache.update_begin);
+		cbuf->cache.update_end = max(cbuf->offset + total_size, cbuf->cache.update_end);
 		cbuf->offset += total_size;
 	}
 
@@ -78,8 +78,7 @@ SDL_RWops *gl33_buffer_get_stream(CommonBuffer *cbuf) {
 }
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size) {
-	CommonBuffer *cbuf = calloc(1, alloc_size);
-
+	CommonBuffer *cbuf = mem_alloc(alloc_size);
 	cbuf->bindidx = bindidx;
 	cbuf->stream.type = SDL_RWOPS_UNKNOWN;
 	cbuf->stream.close = gl33_buffer_stream_close;
@@ -87,9 +86,7 @@ CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size) {
 	cbuf->stream.write = gl33_buffer_stream_write;
 	cbuf->stream.seek = gl33_buffer_stream_seek;
 	cbuf->stream.size = gl33_buffer_stream_size;
-
 	glGenBuffers(1, &cbuf->gl_handle);
-
 	return cbuf;
 }
 
@@ -97,7 +94,7 @@ void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity) {
 	capacity = topow2(capacity);
 
 	if(cbuf->size != capacity || !cbuf->cache.buffer) {
-		cbuf->cache.buffer = realloc(cbuf->cache.buffer, capacity);
+		cbuf->cache.buffer = mem_realloc(cbuf->cache.buffer, capacity);
 		cbuf->size = cbuf->commited_size = capacity;
 		cbuf->cache.update_begin = capacity;
 	}
@@ -122,10 +119,10 @@ void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum us
 }
 
 void gl33_buffer_destroy(CommonBuffer *cbuf) {
-	free(cbuf->cache.buffer);
+	mem_free(cbuf->cache.buffer);
 	gl33_buffer_deleted(cbuf);
 	glDeleteBuffers(1, &cbuf->gl_handle);
-	free(cbuf);
+	mem_free(cbuf);
 }
 
 void gl33_buffer_invalidate(CommonBuffer *cbuf) {
@@ -152,9 +149,9 @@ void gl33_buffer_resize(CommonBuffer *cbuf, size_t new_size) {
 	);
 
 	cbuf->size = new_size;
-	cbuf->cache.buffer = realloc(cbuf->cache.buffer, new_size);
+	cbuf->cache.buffer = mem_realloc(cbuf->cache.buffer, new_size);
 	cbuf->cache.update_begin = 0;
-	cbuf->cache.update_end = umin(old_size, new_size);
+	cbuf->cache.update_end = min(old_size, new_size);
 
 	if(cbuf->offset > new_size) {
 		cbuf->offset = new_size;

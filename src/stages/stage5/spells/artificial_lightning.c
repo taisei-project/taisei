@@ -10,148 +10,182 @@
 
 #include "spells.h"
 
-MODERNIZE_THIS_FILE_AND_REMOVE_ME
+#define CHARGE_TIME 90
 
-static int zigzag_bullet(Projectile *p, int t) {
-	if(t < 0) {
-		return ACTION_ACK;
-	}
+TASK(rain_lane, { cmplx origin; real spread; }) {
+	real accel = difficulty_value(0.005, 0.01, 0.01, 0.01);
+	int delay = 16;
 
-	int l = 50;
-	p->pos = p->pos0+(abs(((2*t)%l)-l/2)*I+t)*2*p->args[0];
+	for(;;WAIT(delay)) {
+		cmplx ofs = ARGS.spread * rng_sreal();
+		cmplx p = ofs + ARGS.origin;
 
-	if(t%2 == 0) {
-		PARTICLE(
-			.sprite = "lightningball",
-			.pos = p->pos,
-			.color = RGBA(0.1, 0.1, 0.6, 0.0),
-			.timeout = 15,
-			.draw_rule = Fade,
+		PROJECTILE(
+			.pos = p,
+			.proto = pp_rice,
+			.color = RGB(0.2, 0.3, 1.0),
+			.move = move_next(p, move_accelerated(0, I * accel)),
+			.max_viewport_dist = ARGS.spread * 2,
 		);
 	}
-
-	return ACTION_NONE;
 }
 
-static int lightning_slave(Enemy *e, int t) {
-	if(t < 0)
-		return 1;
-	if(t > 200)
-		return ACTION_DESTROY;
+TASK(rain) {
+	int cnt = difficulty_value(8, 9, 10, 11);
+	real spacing = VIEWPORT_W / cnt;
 
-	TIMER(&t);
+	for(int i = 0; i < cnt; ++i) {
+		INVOKE_SUBTASK_DELAYED((7 * i) % 13, rain_lane, {
+			.origin = spacing * (i + 0.5),
+			.spread = 0.25 * spacing,
+		});
+	}
 
-	e->pos += e->args[0];
+	for(;;WAIT(5)) {
+		play_sfx_loop("shot1_loop");
+	}
+}
 
-	FROM_TO(0,200,20)
-		e->args[0] *= cexp(I * (0.25 + 0.25 * frand() * M_PI));
+TASK(lightning_segment, {
+	cmplx a; cmplx b; real width; Color *color;
+}) {
+	real lifetime = 10;
+	real chargetime = CHARGE_TIME;
 
-	FROM_TO(0, 200, 3)
-		if(cabs(e->pos-global.plr.pos) > 60) {
-			Color *clr = RGBA(1-1/(1+0.01*_i), 0.5-0.01*_i, 1, 0);
+	auto l = TASK_BIND(create_laserline_ab(
+		ARGS.a, ARGS.b, ARGS.width, chargetime, chargetime + lifetime, ARGS.color
+	));
+	l->width_exponent = 0.25;
 
-			Projectile *p = PROJECTILE(
-				.proto = pp_wave,
-				.pos = e->pos,
-				.color = clr,
-				.rule = asymptotic,
-				.args = {
-					0.75*e->args[0]/cabs(e->args[0])*I,
-					10
-				},
-			);
+	WAIT(chargetime);
 
-			if(projectile_in_viewport(p)) {
-				for(int i = 0; i < 3; ++i) {
-					tsrand_fill(2);
-					iku_lightning_particle(p->pos + 5 * afrand(0) * cexp(I*M_PI*2*afrand(1)), 0);
-				}
+	play_sfx("shot_special1");
+	play_sfx("shot1");
+}
 
-				play_sfx_ex("shot3", 0, false);
+TASK(fork_branch, {
+	cmplx orig; cmplx dest; real chance; real width; Color color; int *branch_count;
+}) {
+	cmplx orig = ARGS.orig;
+	cmplx dest = ARGS.dest;
+
+	if(ARGS.width < 8 || cabs(orig - dest) < 64) {
+		if(ARGS.branch_count) {
+			--*ARGS.branch_count;
+		}
+		return;
+	}
+
+	cmplx mid = clerp(orig, dest, rng_range(0.15, 0.25));
+	INVOKE_TASK(lightning_segment, orig, mid, ARGS.width, &ARGS.color);
+
+	int delay = 1;
+	WAIT(delay);
+
+	real s = rng_sign();
+
+	int bc = 0;
+	for(real c = ARGS.chance; rng_chance(c); c *= 0.4) {
+		cmplx r = cdir(s * rng_range(M_TAU/24, M_TAU/16));
+		cmplx o = (dest - mid) * r;
+		real m = cabs(o);
+		o = m * cnormalize(clerp(o, global.plr.pos - mid, 0.125));
+
+		++bc;
+		INVOKE_TASK(fork_branch, mid, mid + o, c, ARGS.width * 0.8, ARGS.color, &bc);
+		s *= -1;
+	}
+}
+
+TASK(fork, { cmplx orig; cmplx dest; real maxwidth; real minwidth; }) {
+	cmplx orig = ARGS.orig;
+	cmplx dest = ARGS.dest;
+	real width = ARGS.maxwidth;
+
+	real seglen = 64;
+
+	cmplx delta = dest - orig;
+	real maxdist = cabs(delta);
+
+	cmplx a = orig, b;
+
+	real branch_chance = 1;
+	real branch_len = seglen * 6;
+	real next_len = seglen;
+
+	Color *color = RGBA(0.1, 0.5, 1, 0);
+
+	INVOKE_SUBTASK(common_charge, {
+		.time = CHARGE_TIME,
+		.sound = {
+			.charge = COMMON_CHARGE_SOUND_CHARGE,
+			.discharge = "boom",
+		},
+		.pos = orig,
+		.color = RGBA(1.5, 1, 2, 0),
+	});
+
+	for(real d = 0; d < maxdist; d += next_len) {
+		next_len = seglen * rng_range(0.5, 1.2);
+		cmplx arcdir;
+
+		arcdir = global.plr.pos - a;
+
+		if(cabs2(arcdir) > next_len * next_len) {
+			arcdir = cnormalize(arcdir) * next_len;
+		}
+
+		arcdir *= cdir(rng_sreal() * M_TAU/12);
+		b = a + arcdir;
+
+		INVOKE_TASK(lightning_segment, a, b, width, color);
+
+		a = b;
+		width = lerp(width, ARGS.minwidth, 0.1);
+		arcdir = cnormalize(arcdir);
+
+		for(real s = -1; s < 2; s += 2) {
+			if(rng_chance(branch_chance)) {
+				real angle = rng_range(M_TAU/24, M_TAU/12);
+				cmplx r = cdir(s * angle);
+				INVOKE_TASK(fork_branch,
+					b, b + arcdir * r * branch_len, branch_chance, width, *color
+				);
 			}
 		}
 
-	return 1;
+		branch_chance = lerp(branch_chance, 0.5, 0.05);
+		seglen = lerp(seglen, 32, 0.2);
+		branch_len *= 0.98;
+
+		color_lerp(color, RGBA(0.5, 0.1, 1, 0), 0.1);
+
+		WAIT(1);
+	}
+
+	AWAIT_SUBTASKS;
 }
 
-void iku_lightning(Boss *b, int time) {
-	int t = time % 141;
+DEFINE_EXTERN_TASK(stage5_spell_artificial_lightning) {
+	STAGE_BOOKMARK(artificial-lightning);
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 200.0 * I, 0.06);
+	BEGIN_BOSS_ATTACK(&ARGS);
 
-	if(time == EVENT_DEATH) {
-		enemy_kill_all(&global.enemies);
-		return;
-	}
+	Rect wander_bounds = viewport_bounds(64);
+	wander_bounds.top += 64;
+	wander_bounds.bottom = VIEWPORT_H * 0.4;
 
-	if(time < 0) {
-		GO_TO(b, BOSS_DEFAULT_GO_POS, 0.03);
-		return;
-	}
+	INVOKE_SUBTASK(rain);
 
-	TIMER(&t);
+	boss->move.attraction = 0.03;
+	int delay = difficulty_value(180, 140, 120, 110);
 
-	GO_TO(b,VIEWPORT_W/2+tanh(sin(time/100))*200+I*VIEWPORT_H/3+I*(cos(t/200)-1)*50,0.03);
-
-	AT(0) {
-		play_sound("charge_generic");
-	}
-
-	FROM_TO(0, 60, 1) {
-		cmplx n = cexp(2.0*I*M_PI*frand());
-		float l = 150*frand()+50;
-		float s = 4+_i*0.01;
-		float alpha = 0.5;
-
-		PARTICLE(
-			.sprite = "lightningball",
-			.pos = b->pos+l*n,
-			.color = RGBA(0.1*alpha, 0.1*alpha, 0.6*alpha, 0),
-			.draw_rule = Fade,
-			.rule = linear,
-			.timeout = l/s,
-			.args = { -s*n },
-		);
-	}
-
-	if(global.diff >= D_Hard && time > 0 && !(time%100)) {
-		int c = 7 + 2 * (global.diff == D_Lunatic);
-		for(int i = 0; i<c; i++) {
-			PROJECTILE(
-				.proto = pp_bigball,
-				.pos = b->pos,
-				.color = RGBA(0.5, 0.1, 1.0, 0.0),
-				.rule = zigzag_bullet,
-				.args = { cexp(2*M_PI*I/c*i+I*carg(global.plr.pos-b->pos)) },
-			);
-		}
-
-		play_sound("redirect");
-		play_sound("shot_special1");
-	}
-
-	AT(100) {
-		aniplayer_hard_switch(&b->ani, ((time/141)&1) ? "dashdown_left" : "dashdown_right",1);
-		aniplayer_queue(&b->ani, "main", 0);
-		int c = 40;
-		int l = 200;
-		int s = 10;
-
-		for(int i=0; i < c; i++) {
-			cmplx n = cexp(2.0*I*M_PI*frand());
-			PARTICLE(
-				.sprite = "smoke",
-				.pos = b->pos,
-				.color = RGBA(0.4, 0.4, 1.0, 0.0),
-				.draw_rule = Fade,
-				.rule = linear,
-				.timeout = l/s,
-				.args = { s*n },
-			);
-		}
-
-		for(int i = 0; i < global.diff+1; i++){
-			create_enemy1c(b->pos, ENEMY_IMMUNE, NULL, lightning_slave, 10*cexp(I*carg(global.plr.pos - b->pos)+2.0*I*M_PI/(global.diff+1)*i));
-		}
-
-		play_sound("shot_special1");
+	for(int x = 0;; ++x) {
+		WAIT(delay);
+		aniplayer_hard_switch(&boss->ani, (x & 1) ? "dashdown_left" : "dashdown_right", 1);
+		aniplayer_queue(&boss->ani, "main", 0);
+		boss->move.attraction_point = common_wander(boss->pos, VIEWPORT_W * 0.3, wander_bounds);
+		INVOKE_SUBTASK(fork, re(boss->pos), global.plr.pos, 64, 8);
 	}
 }

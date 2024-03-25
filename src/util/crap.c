@@ -13,12 +13,6 @@
 
 #include <SDL_thread.h>
 
-void* memdup(const void *src, size_t size) {
-	void *data = malloc(size);
-	memcpy(data, src, size);
-	return data;
-}
-
 static_assert(sizeof(void*) == sizeof(void (*)(void)), "Can't store function pointers in void* :(");
 
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) {
@@ -27,15 +21,4 @@ void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) 
 			dest[i] = base[i];
 		}
 	}
-}
-
-SDL_threadID main_thread_id = 0;
-
-bool is_main_thread(void) {
-	if(main_thread_id == 0) {
-		return true;
-	}
-
-	SDL_threadID tid = SDL_ThreadID();
-	return main_thread_id == tid;
 }

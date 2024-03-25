@@ -34,6 +34,10 @@ typedef struct MusicEntryParam {
 	uint8_t state;
 } MusicEntryParam;
 
+typedef struct MusicRoomContext {
+	ResourceGroup rg;
+} MusicRoomContext;
+
 static void musicroom_logic(MenuData *m) {
 	float prev_selector_x = m->drawdata[0];
 	float prev_selector_w = m->drawdata[1];
@@ -216,8 +220,10 @@ static void action_play_bgm(MenuData *m, void *arg) {
 }
 
 static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
+	MusicRoomContext *ctx = m->context;
+
 	if(preload) {
-		preload_resource(RES_BGM, bgm_name, RESF_OPTIONAL);
+		res_group_preload(&ctx->rg, RES_BGM, RESF_OPTIONAL, bgm_name, NULL);
 		return;
 	}
 
@@ -228,9 +234,10 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 		title = "Unknown track";
 	}
 
-	MusicEntryParam *p = calloc(1, sizeof(*p));
-	p->bgm = bgm;
-	p->text_shader = res_shader("text_default");
+	auto p = ALLOC(MusicEntryParam, {
+		.bgm = bgm,
+		.text_shader = res_shader("text_default"),
+	});
 
 	if(progress_is_bgm_unlocked(bgm_name)) {
 		p->state |= MSTATE_UNLOCKED;
@@ -241,20 +248,29 @@ static void add_bgm(MenuData *m, const char *bgm_name, bool preload) {
 }
 
 static void musicroom_free(MenuData *m) {
+	MusicRoomContext *ctx = m->context;
+	res_group_release(&ctx->rg);
+	mem_free(ctx);
+
 	dynarray_foreach_elem(&m->entries, MenuEntry *e, {
-		free(e->arg);
+		mem_free(e->arg);
 	});
 }
 
-MenuData* create_musicroom_menu(void) {
+MenuData *create_musicroom_menu(void) {
+	auto ctx = ALLOC(MusicRoomContext);
+	res_group_init(&ctx->rg);
+
 	MenuData *m = alloc_menu();
 	m->logic = musicroom_logic;
 	m->draw = musicroom_draw;
 	m->end = musicroom_free;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
+	m->context = ctx;
 
 	for(int preload = 1; preload >= 0; --preload) {
+		add_bgm(m, "intro", preload);
 		add_bgm(m, "menu", preload);
 		add_bgm(m, "stage1", preload);
 		add_bgm(m, "stage1boss", preload);
@@ -272,6 +288,8 @@ MenuData* create_musicroom_menu(void) {
 		add_bgm(m, "stage6boss_phase1", preload);
 		add_bgm(m, "stage6boss_phase2", preload);
 		add_bgm(m, "stage6boss_phase3", preload);
+		add_bgm(m, "stagex", preload);
+		add_bgm(m, "stagexboss", preload);
 		add_bgm(m, "ending", preload);
 		add_bgm(m, "credits", preload);
 		add_bgm(m, "gameover", preload);

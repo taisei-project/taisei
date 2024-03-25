@@ -44,8 +44,9 @@ TASK(spinshot_fairy_attack_spawn_projs, {
 			.proto = pp_wave,
 			.color = ARGS.color,
 			.pos = o,
-			.move = move_towards(o + ofs, 0.1),
+			.move = move_from_towards(o, o + ofs, 0.1),
 			.max_viewport_dist = 128,
+			.flags = PFLAG_MANUALANGLE,
 		));
 
 		ofs *= r;
@@ -96,7 +97,12 @@ TASK(spinshot_fairy_attack, {
 			cmplx ofs = ref_pos - proj_origins[i];
 			proj_origins[i] += ofs;
 			p->pos += ofs;
- 			p->move.attraction_point += ofs;
+			p->move.attraction_point += ofs;
+
+			if(p->move.velocity) {
+				p->angle = carg(p->move.velocity);
+			}
+
 			++live_count;
 		});
 
@@ -116,6 +122,7 @@ TASK(spinshot_fairy_attack, {
 		cmplx dir = cdir(p->angle);
 		p->move = move_accelerated(dir * ARGS.activated_vel_multiplier, dir * ARGS.activated_accel_multiplier);
 		p->move.retention *= ARGS.activated_retention_multiplier;
+		p->flags &= ~PFLAG_MANUALANGLE;
 		++live_count;
 	});
 
@@ -141,6 +148,7 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 
 	int count = difficulty_value(8, 10, 12, 14);
 	int charge_time = difficulty_value(100, 80, 60, 60);
+	real accel_multiplier = difficulty_value(0.3, 0.6, 0.9, 1.0);
 	int spawn_period = charge_time / count + (charge_time % count != 0);
 	charge_time = count * spawn_period;
 
@@ -174,9 +182,9 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 			.spawn_period = spawn_period,
 			.activate_time = charge_time + 2 * (10 - i) + 14,
 			.initial_offset = (24 + 10 * i) * dir,
-			.activated_vel_multiplier = -3,
-			.activated_accel_multiplier = 0.05*I,
-			.activated_retention_multiplier = cdir(0.1),
+			.activated_vel_multiplier = -3 * accel_multiplier,
+			.activated_accel_multiplier = 0.05 * I * accel_multiplier,
+			.activated_retention_multiplier = cdir(0.1 * accel_multiplier),
 			.color = RGBA(1.0, 0, 0, 0.5)
 		);
 
@@ -186,9 +194,9 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 			.spawn_period = spawn_period,
 			.activate_time = charge_time + 2 * (10 - i),
 			.initial_offset = (24 + 10 * i) / dir,
-			.activated_vel_multiplier = 3,
-			.activated_accel_multiplier = 0.05/I,
-			.activated_retention_multiplier = cdir(-0.1),
+			.activated_vel_multiplier = 3*accel_multiplier,
+			.activated_accel_multiplier = 0.05/I * accel_multiplier,
+			.activated_retention_multiplier = cdir(-0.1 * accel_multiplier),
 			.color = RGBA(0.0, 0, 1.0, 0.5)
 		);
 
@@ -202,17 +210,27 @@ TASK(spinshot_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }
 	STALL;
 }
 
-TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit; }) {
+TASK(starcaller_fairy, { cmplx pos; MoveParams move_exit; }) {
 	Enemy *e = TASK_BIND(espawn_huge_fairy(ARGS.pos, ITEMS(.points = 5, .power = 5)));
-	e->move = ARGS.move_enter;
 
+	int summon_time = 120;
+	int precharge_time = 20;
 	int charge_time = difficulty_value(120, 80, 60, 60);
-	common_charge(charge_time, &e->pos, 0, RGBA(0.5, 0.2, 1.0, 0.0));
 
-	int step = difficulty_value(60, 40, 40, 30);
-	int interstep = difficulty_value(25, 20, 20, 15);
+	INVOKE_TASK_DELAYED(summon_time - precharge_time, common_charge, {
+		.time = charge_time + precharge_time,
+		.pos = e->pos,
+		.color = RGBA(0.5, 0.2, 1.0, 0.0),
+		.sound = COMMON_CHARGE_SOUNDS,
+	});
+
+	ecls_anyfairy_summon(e, summon_time);
+	WAIT(charge_time);
+
+	int step = difficulty_value(80, 40, 40, 30);
+	int interstep = difficulty_value(30, 20, 20, 15);
 	int arcshots = difficulty_value(10, 10, 12, 14);
-	int num_bursts = difficulty_value(4, 8, 12, 16);
+	int num_bursts = difficulty_value(2, 4, 12, 16);
 	int endpoints = 5;
 	int totalshots = endpoints * (1 + arcshots);
 
@@ -262,6 +280,10 @@ TASK(starcaller_fairy, { cmplx pos; MoveParams move_enter; MoveParams move_exit;
 
 		dir *= rotate_per_burst;
 		WAIT(inward ? step : interstep);
+
+		if(inward) {
+			dir = rng_dir();
+		}
 	}
 
 	WAIT(60);
@@ -282,7 +304,7 @@ TASK(redwall_fairy, {
 
 	WAIT(30);
 
-	int duration = difficulty_value(42, 60, 65, 70);
+	int duration = difficulty_value(30, 60, 65, 70);
 	int step = difficulty_value(5, 4, 4, 3);
 	real pspeed = difficulty_value(2, 2, 2.2, 2.7);
 
@@ -339,20 +361,9 @@ TASK(aimshot_fairy, { BoxedEnemy e; MoveParams move_enter; MoveParams move_exit;
 	e->move = ARGS.move_exit;
 }
 
-TASK(rotate_velocity, {
-	MoveParams *move;
-	real angle;
-	int duration;
-}) {
-	cmplx r = cdir(ARGS.angle / ARGS.duration);
-	ARGS.move->retention *= r;
-	WAIT(ARGS.duration);
-	ARGS.move->retention /= r;
-}
-
 static void set_turning_motion(Enemy *e, cmplx v, real turn_angle, int turn_delay, int turn_duration) {
 	e->move = move_linear(v);
-	INVOKE_SUBTASK_DELAYED(turn_delay, rotate_velocity,
+	INVOKE_SUBTASK_DELAYED(turn_delay, common_rotate_velocity,
 		.move = &e->move,
 		.angle = turn_angle,
 		.duration = turn_duration
@@ -372,7 +383,7 @@ TASK(turning_fairy, {
 	int period = difficulty_value(70, 50, 24, 16);
 	WAIT(7 + period/2);
 
-	for(int t = 0;; t += WAIT(period)) {
+	for(;;WAIT(period)) {
 		play_sfx_ex("shot1", 5, false);
 		cmplx shot_normal = 3 * cnormalize(e->move.velocity);
 		cmplx shot_org = e->pos + e->move.velocity * 4;
@@ -445,7 +456,7 @@ TASK(flea_swirl, {
 		PROJECTILE(
 			.proto = pp_flea,
 			.pos = e->pos,
-			.color = RGB(0.3, 0.2, 1),
+			.color = RGB(0, 0.7, 1),
 			.move = move_asymptotic_simple(1.5 * I * cdir(rng_sreal()*M_PI/17), 1.5),
 		);
 	}
@@ -461,18 +472,23 @@ static void wriggle_ani_flyin(Boss *w) {
 	aniplayer_queue(&w->ani,"main",0);
 }
 
-static void wriggle_intro_stage2(Boss *w, int t) {
-	if(t < 0)
-		return;
-	t = smoothstep(0.0, 1.0, t / 240.0) * 240;
-	w->pos = CMPLX(VIEWPORT_W/2, 100.0) + (1.0 - t / 240.0) * (300 * cexp(I * (3 - t * 0.04)) - 128);
+TASK_WITH_INTERFACE(wriggle_intro, BossAttack) {
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+
+	for(int t = 0;; ++t, YIELD) {
+		real st = smoothstep(0.0, 1.0, t / 240.0) * 240;
+		boss->pos = CMPLX(VIEWPORT_W/2, 100.0) + (1.0 - st / 240.0) * (300 * cdir(3 - t * 0.04) - 128);
+	}
 }
 
-static void wiggle_mid_flee(Boss *w, int t) {
-	if(t == 0)
-		aniplayer_queue(&w->ani, "fly", 0);
-	if(t >= 0) {
-		GO_TO(w, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01)
+TASK_WITH_INTERFACE(wriggle_mid_flee, BossAttack) {
+	Boss *boss = INIT_BOSS_ATTACK(&ARGS);
+	BEGIN_BOSS_ATTACK(&ARGS);
+	aniplayer_queue(&boss->ani, "fly", 0);
+
+	for(int t = 0;; ++t, YIELD) {
+		boss->move = move_towards(boss->move.velocity, VIEWPORT_W/2 - 3.0 * t - 300 * I, 0.01);
 	}
 }
 
@@ -482,9 +498,9 @@ TASK(spawn_midboss) {
 	Boss *boss = global.boss = stage2_spawn_wriggle(VIEWPORT_W + 150 - 30.0*I);
 	wriggle_ani_flyin(boss);
 
-	boss_add_attack(boss, AT_Move, "Introduction", 4, 0, wriggle_intro_stage2, NULL);
+	boss_add_attack_task(boss, AT_Move, "Introduction", 4, 0, TASK_INDIRECT(BossAttack, wriggle_intro), NULL);
 	boss_add_attack_task(boss, AT_Normal, "", 20, 26000, TASK_INDIRECT(BossAttack, stage2_midboss_nonspell_1), NULL);
-	boss_add_attack(boss, AT_Move, "Flee", 5, 0, wiggle_mid_flee, NULL);
+	boss_add_attack_task(boss, AT_Move, "Flee", 5, 0, TASK_INDIRECT(BossAttack, wriggle_mid_flee), NULL);
 
 	boss_engage(boss);
 }
@@ -532,7 +548,7 @@ static void aimshot_fairies(EnemySpawner spawner, const ItemCounts *items) {
 
 		INVOKE_TASK(aimshot_fairy,
 			.e = ENT_BOX(spawner(pos, items)),
-			.move_enter = move_towards(pos + 180 * I, 0.03),
+			.move_enter = move_from_towards(pos, pos + 180 * I, 0.03),
 			.move_exit = move_accelerated(0, -0.15*I)
 		);
 
@@ -609,7 +625,7 @@ TASK(flea_swirls, {
 
 TASK(boss_appear, { BoxedBoss boss; }) {
 	Boss *boss = NOT_NULL(ENT_UNBOX(ARGS.boss));
-	boss->move = move_towards(VIEWPORT_W/2 + 100.0*I, 0.05);
+	boss->move = move_from_towards(boss->pos, VIEWPORT_W/2 + 100.0*I, 0.05);
 
 	aniplayer_queue(&boss->ani, "guruguru", 2);
 	aniplayer_queue(&boss->ani, "main", 0);
@@ -619,6 +635,7 @@ TASK(boss_appear, { BoxedBoss boss; }) {
 
 TASK(spawn_boss) {
 	STAGE_BOOKMARK(boss);
+	stage_unlock_bgm("stage2");
 
 	Boss *boss = global.boss = stage2_spawn_hina(VIEWPORT_W + 180 + 100.0*I);
 
@@ -645,9 +662,8 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	STAGE_BOOKMARK_DELAYED(300, init);
 
-	INVOKE_TASK_DELAYED(300, starcaller_fairy,
-		.pos = VIEWPORT_W/2 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W/2 + 150.0*I, 0.04),
+	INVOKE_TASK_DELAYED(180, starcaller_fairy,
+		.pos = VIEWPORT_W/2 + 150.0*I,
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -679,15 +695,13 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		.turn_duration = 120
 	);
 
-	INVOKE_TASK_DELAYED(1300, starcaller_fairy,
-		.pos = 150 - 10.0*I,
-		.move_enter = move_towards(150 + 100.0*I, 0.04),
+	INVOKE_TASK_DELAYED(1180, starcaller_fairy,
+		.pos = 150 + 100.0*I,
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
-	INVOKE_TASK_DELAYED(1500, starcaller_fairy,
-		.pos = VIEWPORT_W - 150 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W - 150 + 160.0*I, 0.04),
+	INVOKE_TASK_DELAYED(1380, starcaller_fairy,
+		.pos = VIEWPORT_W - 150 + 160.0*I,
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -778,7 +792,7 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 
 	INVOKE_TASK_DELAYED(1360 + time_ofs, spinshot_fairy,
 		.pos = VIEWPORT_W/2,
-		.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+		.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
 		.move_exit = move_accelerated(0, 0.1*I)
 	);
 
@@ -792,9 +806,8 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 		);
 	}
 
-	INVOKE_TASK_DELAYED(1660 + time_ofs, starcaller_fairy,
-		.pos = VIEWPORT_W - 150 - 10.0*I,
-		.move_enter = move_towards(VIEWPORT_W - 150 + 160.0*I, 0.04),
+	INVOKE_TASK_DELAYED(1540 + time_ofs, starcaller_fairy,
+		.pos = VIEWPORT_W - 150 + 160.0*I,
 		.move_exit = move_asymptotic_halflife(0, 2*I, 60)
 	);
 
@@ -815,19 +828,19 @@ DEFINE_EXTERN_TASK(stage2_timeline) {
 	if(global.diff > D_Normal) {
 		INVOKE_TASK_DELAYED(420, spinshot_fairy,
 			.pos = 0,
-			.move_enter = move_towards(VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 
 		INVOKE_TASK_DELAYED(480, spinshot_fairy,
 			.pos = VIEWPORT_W,
-			.move_enter = move_towards(2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, 2*VIEWPORT_W/3+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	} else {
 		INVOKE_TASK_DELAYED(420, spinshot_fairy,
 			.pos = VIEWPORT_W/2,
-			.move_enter = move_towards(VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
+			.move_enter = move_towards(0, VIEWPORT_W/2+VIEWPORT_H/3*I, 0.02),
 			.move_exit = move_accelerated(0, 0.1*I)
 		);
 	}

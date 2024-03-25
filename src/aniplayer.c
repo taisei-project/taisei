@@ -46,7 +46,7 @@ static void aniplayer_reset(AniPlayer *plr, bool hard) {
 }
 
 AniQueueEntry *aniplayer_queue(AniPlayer *plr, const char *seqname, int loops) {
-	AniQueueEntry *s = calloc(1, sizeof(AniQueueEntry));
+	auto s = ALLOC(AniQueueEntry);
 	alist_append(&plr->queue, s);
 	plr->queuesize++;
 
@@ -82,7 +82,7 @@ void aniplayer_update(AniPlayer *plr) {
 	s->clock++;
 	// The last condition assures that animations only switch at their end points
 	if(s->clock >= s->duration && plr->queuesize > 1 && s->clock%s->sequence->length == 0) {
-		free(alist_pop(&plr->queue));
+		mem_free(alist_pop(&plr->queue));
 		plr->queuesize--;
 	}
 }

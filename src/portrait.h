@@ -9,6 +9,7 @@
 #pragma once
 #include "taisei.h"
 
+#include "resource/resource.h"
 #include "resource/sprite.h"
 
 #define PORTRAIT_PREFIX "dialog/"
@@ -27,14 +28,14 @@ int portrait_get_base_sprite_name(const char *charname, const char *variant, siz
 Sprite *portrait_get_base_sprite(const char *charname, const char *variant)
 	attr_nonnull(1) attr_returns_nonnull;
 
-void portrait_preload_base_sprite(const char *charname, const char *variant, ResourceFlags rflags)
-	attr_nonnull(1);
+void portrait_preload_base_sprite(ResourceGroup *rg, const char *charname, const char *variant, ResourceFlags rflags)
+	attr_nonnull(2);
 
 int portrait_get_face_sprite_name(const char *charname, const char *face, size_t bufsize, char buf[bufsize])
 	attr_nonnull(1, 2, 4);
 
-void portrait_preload_face_sprite(const char *charname, const char *variant, ResourceFlags rflags)
-	attr_nonnull(1, 2);
+void portrait_preload_face_sprite(ResourceGroup *rg, const char *charname, const char *variant, ResourceFlags rflags)
+	attr_nonnull(2, 3);
 
 Sprite *portrait_get_face_sprite(const char *charname, const char *face)
 	attr_nonnull(1, 2) attr_returns_nonnull;

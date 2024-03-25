@@ -40,10 +40,10 @@ void lasers_shutdown(void) {
 
 Laser *create_laser(
 	cmplx pos, float time, float deathtime, const Color *color,
-	LaserPosRule prule, LaserLogicRule lrule,
+	LaserPosRule prule,
 	cmplx a0, cmplx a1, cmplx a2, cmplx a3
 ) {
-	Laser *l = objpool_acquire(stage_object_pools.lasers);
+	Laser *l = objpool_acquire(&stage_object_pools.lasers);
 	alist_push(&global.lasers, l);
 
 	l->birthtime = global.frames;
@@ -51,15 +51,11 @@ Laser *create_laser(
 	l->deathtime = deathtime;
 	l->pos = pos;
 	l->color = *color;
-
 	l->args[0] = a0;
 	l->args[1] = a1;
 	l->args[2] = a2;
 	l->args[3] = a3;
-
 	l->prule = prule;
-	l->lrule = lrule;
-
 	l->width = 10;
 	l->width_exponent = 1.0;
 	l->speed = 1;
@@ -68,9 +64,6 @@ Laser *create_laser(
 	l->ent.draw_layer = LAYER_LASER_HIGH;
 	l->ent.draw_func = laserdraw_ent_drawfunc;
 	ent_register(&l->ent, ENT_TYPE_ID(Laser));
-
-	if(l->lrule)
-		l->lrule(l, EVENT_BIRTH);
 
 	l->prule(l, EVENT_BIRTH);
 
@@ -82,20 +75,30 @@ Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Col
 }
 
 Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
-	cmplx m = (b-a)*0.005;
+	float lt = 200;
+	cmplx m = (b - a) / lt;
+	Laser *l = create_laser(a, lt, dur, clr, las_linear, m, 0, 0, 0);
+	INVOKE_TASK(laser_charge,
+		.laser = ENT_BOX(l),
+		.charge_delay = charge,
+		.target_width = width,
+	);
+	return l;
+}
 
-	return create_laser(a, 200, dur, clr, las_linear, static_laser, m, charge + I*width, 0, 0);
+void laserline_set_ab(Laser *l, cmplx a, cmplx b) {
+	l->pos = a;
+	l->args[0] = (b - a) / l->timespan;
+}
+
+void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
+	laserline_set_ab(l, pos, pos + VIEWPORT_H * cnormalize(dir));
 }
 
 static void *_delete_laser(ListAnchor *lasers, List *laser, void *arg) {
 	Laser *l = (Laser*)laser;
-
-	if(l->lrule) {
-		l->lrule(l, EVENT_DEATH);
-	}
-
 	ent_unregister(&l->ent);
-	objpool_release(stage_object_pools.lasers, alist_unlink(lasers, laser));
+	objpool_release(&stage_object_pools.lasers, alist_unlink(lasers, laser));
 	return NULL;
 }
 
@@ -125,7 +128,7 @@ bool clear_laser(Laser *l, uint flags) {
 	return true;
 }
 
-static bool laser_prepare_sampling_params(Laser *l, LaserSamplingParams *out_params) {
+static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingParams *out_params) {
 	float t;
 	int c;
 
@@ -145,7 +148,6 @@ static bool laser_prepare_sampling_params(Laser *l, LaserSamplingParams *out_par
 		return false;
 	}
 
-	float step = 0.5;
 	out_params->num_samples = c / step;
 	out_params->time_shift = t;
 	out_params->time_step = step;
@@ -157,12 +159,22 @@ static float calc_sample_width(
 	Laser *l, float sample, float half_samples, float width_factor, float tail
 ) {
 	float mid_ofs = sample - half_samples;
-	return 0.75f * l->width * powf(
-		width_factor * (mid_ofs - tail) * (mid_ofs + tail),
-		l->width_exponent
-	);
+	float w = width_factor * (mid_ofs - tail) * (mid_ofs + tail);
+
+	if(l->width_exponent != 1.0) {
+		w = powf(w, l->width_exponent);
+	}
+
+	return 0.75f * l->width * w;
 }
 
+static void laserseg_flip(LaserSegment *s) {
+	SWAP(s->pos.a, s->pos.b);
+	SWAP(s->time.a, s->time.b);
+	SWAP(s->width.a, s->width.b);
+}
+
+attr_hot
 static int quantize_laser(Laser *l) {
 	// Break the laser curve into small line segments, simplify and cull them,
 	// compute the bounding box.
@@ -172,7 +184,7 @@ static int quantize_laser(Laser *l) {
 
 	LaserSamplingParams sp;
 
-	if(!laser_prepare_sampling_params(l, &sp)) {
+	if(!laser_prepare_sampling_params(l, 0.5f, &sp)) {
 		l->_internal.bbox.top_left.as_cmplx = 0;
 		l->_internal.bbox.bottom_right.as_cmplx = 0;
 		return 0;
@@ -197,7 +209,8 @@ static int quantize_laser(Laser *l) {
 
 	// Points of the current line segment
 	// Begin constructing at t0
-	cmplxf a, b;
+	// WARNING: these must be double precision to prevent cross-platform replay desync
+	cmplx a, b;
 	a = l->prule(l, t0);
 
 	// Width value of the last included sample
@@ -230,13 +243,14 @@ static int quantize_laser(Laser *l) {
 
 			// dot(a, b) == |a|*|b|*cos(theta)
 			float dot = cdotf(v0, v1);
-			float norm = sqrtf(v0_abs2 * cabs2f(v1));
+			float norm2 = v0_abs2 * cabs2f(v1);
 
-			if(norm == 0.0f) {
+			if(norm2 == 0.0f) {
 				// degenerate case
 				continue;
 			}
 
+			float norm = sqrtf(norm2);
 			float cosTheta = dot / norm;
 			float d = 1.0f - fabsf(cosTheta);
 
@@ -247,40 +261,34 @@ static int quantize_laser(Laser *l) {
 
 		float w = calc_sample_width(l, i, half_samples, width_factor, tail);
 
-		float xa = crealf(a);
-		float ya = cimagf(a);
-		float xb = crealf(b);
-		float yb = cimagf(b);
+		float xa = re(a);
+		float ya = im(a);
+		float xb = re(b);
+		float yb = im(b);
 
 		bool visible =
 			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
 			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
 
 		if(visible) {
-			LaserSegment *seg = dynarray_append(&lintern.segments);
+			LaserSegment *seg = dynarray_append(&lintern.segments, {
+				.pos   = {   a,  b },
+				.width = {  w0,  w },
+				.time  = { -t0, -t },
+			});
 
 			if(w < w0) {
 				// NOTE: the uneven capsule distance function may not work correctly in cases where
 				//       radius(A) > radius(B) and circle A contains circle B.
-				*seg = (LaserSegment) {
-					.pos   = {  b,   a },
-					.width = {  w,  w0 },
-					.time  = { -t, -t0 },
-				};
-			} else {
-				*seg = (LaserSegment) {
-					.pos   = {   a,  b },
-					.width = {  w0,  w },
-					.time  = { -t0, -t },
-				};
+				laserseg_flip(seg);
 			}
 
 			assert(seg->width.a <= seg->width.b);
 
-			top_left.x     = fminf(    top_left.x, fminf(xa, xb));
-			top_left.y     = fminf(    top_left.y, fminf(ya, yb));
-			bottom_right.x = fmaxf(bottom_right.x, fmaxf(xa, xb));
-			bottom_right.y = fmaxf(bottom_right.y, fmaxf(ya, yb));
+			top_left.x     = min(    top_left.x, min(xa, xb));
+			top_left.y     = min(    top_left.y, min(ya, yb));
+			bottom_right.x = max(bottom_right.x, max(xa, xb));
+			bottom_right.y = max(bottom_right.y, max(ya, yb));
 		}
 
 		t0 = t;
@@ -294,11 +302,6 @@ static int quantize_laser(Laser *l) {
 	top_left.as_cmplx -= aabb_margin * (1.0f + I);
 	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
 
-	top_left.x = fmaxf(0, top_left.x);
-	top_left.y = fmaxf(0, top_left.y);
-	bottom_right.x = fminf(VIEWPORT_W, bottom_right.x);
-	bottom_right.y = fminf(VIEWPORT_H, bottom_right.y);
-
 	l->_internal.bbox.top_left = top_left;
 	l->_internal.bbox.bottom_right = bottom_right;
 
@@ -307,6 +310,178 @@ static int quantize_laser(Laser *l) {
 }
 
 static bool laser_collision(Laser *l, Player *plr);
+
+typedef struct LaserTraceState {
+	Laser *l;
+	LaserTraceFunc func;
+	void *userdata;
+	LaserSegment *seg;
+	LaserTraceSample sample;
+	cmplx p;
+	real step;
+	real accum;
+	real inverse_seglen;
+} LaserTraceState;
+
+static void *laser_trace_dispatch(LaserTraceState *st) {
+	return st->func(st->l, &st->sample, st->userdata);
+}
+
+static void *laser_trace_advance(LaserTraceState *st, cmplx v, real l) {
+	real full = l;
+	l = min(l, st->step - st->accum);
+
+	st->accum += l;
+	st->sample.segment_param += l * st->inverse_seglen;
+	st->p += v * l;
+
+	if(st->accum >= st->step) {
+		st->accum -= st->step;
+		st->sample.pos = st->p;
+
+		void *result = laser_trace_dispatch(st);
+
+		if(result) {
+			return result;
+		}
+	}
+
+	if(full - l > 0) {
+		return laser_trace_advance(st, v, full - l);
+	}
+
+	return NULL;
+}
+
+void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata) {
+	if(l->_internal.num_segments < 1) {
+		return NULL;
+	}
+
+	int first_seg = l->_internal.segments_ofs;
+	int last_seg = first_seg + l->_internal.num_segments - 1;
+
+	LaserTraceState st = {
+		.l = l,
+		.step = step,
+		.func = trace,
+		.userdata = userdata,
+		.p = dynarray_get(&lintern.segments, first_seg).pos.a,
+	};
+
+	void *result;
+
+	cmplx prev_endpos = INFINITY;
+
+	for(int seg = first_seg; seg <= last_seg; ++seg) {
+		// NOTE: deliberate copy
+		LaserSegment s = dynarray_get(&lintern.segments, seg);
+
+		if(prev_endpos != s.pos.a && prev_endpos == s.pos.b) {
+			// Segment was flipped (see quantize_laser); undo it
+			laserseg_flip(&s);
+		}
+
+		cmplx v = s.pos.b - s.pos.a;
+		real len = cabs(v);
+		st.inverse_seglen = 1 / len;
+		v *= st.inverse_seglen;
+
+		st.sample.segment = &s;
+		st.sample.segment_param = 0;
+
+		if(prev_endpos != s.pos.a) {
+			// discontinuity, or first segment.
+			st.p = s.pos.a;
+			st.accum = 0;
+			st.sample.discontinuous = true;
+			st.sample.pos = st.p;
+			result = laser_trace_dispatch(&st);
+
+			if(result) {
+				return result;
+			}
+
+			st.sample.discontinuous = false;
+		}
+
+		real pstep = step * 1;
+		while(len >= pstep) {
+			result = laser_trace_advance(&st, v, pstep);
+
+			if(result) {
+				return result;
+			}
+
+			len -= pstep;
+		}
+
+		laser_trace_advance(&st, v, len);
+		prev_endpos = s.pos.b;
+	}
+
+	return NULL;
+}
+
+static void laser_clear_effect(Sprite *spr, cmplx p, cmplxf scale, const Color *clr) {
+	int timeout = rng_irange(18, 24);
+	cmplx v = rng_dir();
+	v *= rng_range(0.4, 1.2);
+	PARTICLE(
+		.sprite_ptr = spr,
+		.pos = p,
+		.color = clr,
+		.timeout = timeout,
+		.move = move_linear(v),
+		.draw_rule = pdraw_timeout_scalefade(1+I, 0.25+0.5i, 1, 0),
+		.flags = PFLAG_NOREFLECT,
+		.scale = scale,
+	);
+}
+
+#define CLEAR_STEP 16
+
+typedef struct LaserClearTraceCtx {
+	struct {
+		Sprite *spr;
+		Color clr;
+	} particle;
+
+	struct {
+		cmplx pos;
+		float width;
+	} prev;
+} LaserClearTraceCtx;
+
+static void *laser_clear_now_tracefunc(Laser *l, const LaserTraceSample *sample, void *userdata) {
+	LaserClearTraceCtx *ctx = userdata;
+	cmplx pos = sample->pos;
+	float width = lerpf(sample->segment->width.a, sample->segment->width.b, sample->segment_param);
+	create_clear_item(pos, l->clear_flags);
+
+	if(!sample->discontinuous) {
+		for(float f = 0.33; f < 0.9; f += 0.33) {
+			cmplx ipos = clerp(ctx->prev.pos, pos, f);
+			float iwidth = lerpf(ctx->prev.width, width, f);
+			laser_clear_effect(
+				ctx->particle.spr, ipos, iwidth / ctx->particle.spr->w, &ctx->particle.clr);
+		}
+	}
+
+	laser_clear_effect(ctx->particle.spr, pos, width / ctx->particle.spr->w, &ctx->particle.clr);
+	ctx->prev.pos = pos;
+	ctx->prev.width = width;
+	return NULL;
+}
+
+static void laser_clear_now(Laser *l) {
+	LaserClearTraceCtx ctx;
+	ctx.particle.spr = res_sprite("part/flare");
+	ctx.particle.clr = l->color;
+	color_mul(&ctx.particle.clr, RGBA(2, 2, 2, 0));
+	color_add(&ctx.particle.clr, RGBA(0.1, 0.1, 0.1, 0));
+	laser_trace(l, CLEAR_STEP, laser_clear_now_tracefunc, &ctx);
+}
 
 void process_lasers(void) {
 	bool stage_cleared = stage_is_cleared();
@@ -340,39 +515,10 @@ void process_lasers(void) {
 		next = laser->next;
 
 		if(laser->clear_flags & CLEAR_HAZARDS_LASERS) {
-			// TODO: implement CLEAR_HAZARDS_NOW
-
-			laser->timespan *= 0.9;
-			bool kill_now = laser->timespan < 5;
-
-			if(!((global.frames - laser->birthtime) % 2) || kill_now) {
-				float t = fmaxf(0, (global.frames - laser->birthtime) * laser->speed - laser->timespan + laser->timeshift);
-				cmplx p = laser->prule(laser, t);
-				double x = creal(p);
-				double y = cimag(p);
-
-				if(x > 0 && x < VIEWPORT_W && y > 0 && y < VIEWPORT_H) {
-					create_clear_item(p, laser->clear_flags);
-				}
-
-				if(kill_now) {
-					PARTICLE(
-						.sprite = "flare",
-						.pos = p,
-						.timeout = 20,
-						.draw_rule = pdraw_timeout_scalefade(0, 1, 1, 0),
-					);
-					laser->deathtime = 0;
-				}
-			}
-		} else {
-			if(laser->lrule) {
-				laser->lrule(laser, global.frames - laser->birthtime);
-			}
-
-			if(laser_collision(laser, plr)) {
-				ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
-			}
+			laser_clear_now(laser);
+			laser->deathtime = 0;
+		} else if(laser_collision(laser, plr)) {
+			ent_damage(&plr->ent, &(DamageInfo) { .type = DMG_ENEMY_SHOT });
 		}
 	}
 }
@@ -436,8 +582,8 @@ static bool laser_collision(Laser *l, Player *plr) {
 
 		UnevenCapsule c = {
 			.pos = s,
-			.radius.a = fmax(lseg->width.a * 0.5 - 4, 2),
-			.radius.b = fmax(lseg->width.b * 0.5 - 4, 2),
+			.radius.a = max(lseg->width.a * 0.5 - 4, 2),
+			.radius.b = max(lseg->width.b * 0.5 - 4, 2),
 		};
 
 		double d = ucapsule_dist_from_point(plrpos, c);
@@ -522,18 +668,6 @@ cmplx las_accel(Laser *l, float t) {
 	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
 }
 
-cmplx las_weird_sine(Laser *l, float t) {             // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-	// XXX: this used to be called "las_sine", but it's actually not a proper sine wave
-	// do we even still need this?
-
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	double s = (l->args[2] * t + l->args[3]);
-	return l->pos + cexp(I * (carg(l->args[0]) + l->args[1] * sin(s) / s)) * t * cabs(l->args[0]);
-}
-
 cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
 	// this is actually shaped like a sine wave
 
@@ -543,32 +677,31 @@ cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine 
 
 	cmplx line_vel = l->args[0];
 	cmplx line_dir = line_vel / cabs(line_vel);
-	cmplx line_normal = cimag(line_dir) - I*creal(line_dir);
+	cmplx line_normal = im(line_dir) - I*re(line_dir);
 	cmplx sine_amp = l->args[1];
-	cmplx sine_freq = l->args[2];
-	cmplx sine_phase = l->args[3];
+	real sine_freq = re(l->args[2]);
+	real sine_phase = re(l->args[3]);
 
 	cmplx sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
 	return l->pos + t * line_vel + sine_ofs;
 }
 
 cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-	// XXX: this is also a "weird" one
 
 	if(t == EVENT_BIRTH) {
 		return 0;
 	}
 
 	cmplx velocity = l->args[0];
-	double amplitude = creal(l->args[1]);
-	double frequency = creal(l->args[2]);
-	double phase = creal(l->args[3]);
+	real amplitude = re(l->args[1]);
+	real frequency = re(l->args[2]);
+	real phase = re(l->args[3]);
 
-	double angle = carg(velocity);
-	double speed = cabs(velocity);
+	real angle = carg(velocity);
+	real speed = cabs(velocity);
 
-	double s = (frequency * t + phase);
-	return l->pos + cexp(I * (angle + amplitude * sin(s))) * t * speed;
+	real s = (frequency * t + phase);
+	return l->pos + cdir(angle + amplitude * sin(s)) * t * speed;
 }
 
 cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
@@ -578,8 +711,8 @@ cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn be
 
 	cmplx v0 = l->args[0];
 	cmplx v1 = l->args[1];
-	float begin = creal(l->args[2]);
-	float end = cimag(l->args[2]);
+	float begin = re(l->args[2]);
+	float end = im(l->args[2]);
 
 	float a = clamp((t - begin) / (end - begin), 0, 1);
 	a = 1.0 - (0.5 + 0.5 * cos(a * M_PI));
@@ -595,23 +728,22 @@ cmplx las_circle(Laser *l, float t) {
 		return 0;
 	}
 
-	// XXX: should turn speed be in rad/sec or rad/frame? currently rad/sec.
-	double turn_speed = creal(l->args[0]) / 60;
-	double time_ofs = cimag(l->args[0]);
-	double radius = creal(l->args[1]);
+	real turn_speed = re(l->args[0]);
+	real time_ofs = im(l->args[0]);
+	real radius = re(l->args[1]);
 
-	return l->pos + radius * cexp(I * (t + time_ofs) * turn_speed);
+	return l->pos + radius * cdir(turn_speed * (t + time_ofs));
 }
 
 void laser_charge(Laser *l, int t, float charge, float width) {
 	float new_width;
 
 	if(t < charge - 10) {
-		new_width = fminf(2.0f, 2.0f * t / fminf(30.0f, charge - 10.0f));
+		new_width = min(2.0f, 2.0f * t / min(30.0f, charge - 10.0f));
 	} else if(t >= charge - 10.0f && t < l->deathtime - 20.0f) {
-		new_width = fminf(width, 1.7f + width / 20.0f * (t - charge + 10.0f));
+		new_width = min(width, 1.7f + width / 20.0f * (t - charge + 10.0f));
 	} else if(t >= l->deathtime - 20.0f) {
-		new_width = fmaxf(0.0f, width - width / 20.0f * (t - l->deathtime + 20.0f));
+		new_width = max(0.0f, width - width / 20.0f * (t - l->deathtime + 20.0f));
 	} else {
 		new_width = width;
 	}
@@ -625,17 +757,6 @@ void laser_make_static(Laser *l) {
 	l->timeshift = l->timespan;
 }
 
-void static_laser(Laser *l, int t) {
-	if(t == EVENT_BIRTH) {
-		l->width = 0;
-		l->collision_active = false;
-		laser_make_static(l);
-		return;
-	}
-
-	laser_charge(l, t, creal(l->args[1]), cimag(l->args[1]));
-}
-
 DEFINE_EXTERN_TASK(laser_charge) {
 	Laser *l = TASK_BIND(ARGS.laser);
 
@@ -646,6 +767,7 @@ DEFINE_EXTERN_TASK(laser_charge) {
 	float target_width = ARGS.target_width;
 	float charge_delay = ARGS.charge_delay;
 
+	// TODO: stop when done charging
 	for(int t = 0;; ++t) {
 		laser_charge(l, t, charge_delay, target_width);
 		YIELD;

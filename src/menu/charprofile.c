@@ -210,7 +210,7 @@ static void charprofile_draw(MenuData *m) {
 	float o = 1 - e->drawdata*2;
 	float pbrightness = 0.6 + 0.4 * o;
 
-	float pofs = fmax(0.0f, e->drawdata * 1.5f - 0.5f);
+	float pofs = max(0.0f, e->drawdata * 1.5f - 0.5f);
 	pofs = glm_ease_back_in(pofs);
 
 	int selected = check_unlocked_profile(m->cursor);
@@ -320,7 +320,7 @@ static void add_character(MenuData *m, int i) {
 }
 
 static void charprofile_free(MenuData *m) {
-	free(m->context);
+	mem_free(m->context);
 }
 
 // TODO: add a better drawing animation for character selection
@@ -359,16 +359,16 @@ static bool charprofile_input_handler(SDL_Event *event, void *arg) {
 
 }
 
-void preload_charprofile_menu(void) {
+void preload_charprofile_menu(ResourceGroup *rg) {
 	for(int i = 0; i < NUM_PROFILES-1; i++) {
 		for(int f = 0; f < NUM_FACES; f++) {
 			if(!profiles[i].faces[f]) {
 				break;
 			}
-			portrait_preload_face_sprite(profiles[i].name, profiles[i].faces[f], RESF_PERMANENT);
+			portrait_preload_face_sprite(rg, profiles[i].name, profiles[i].faces[f], RESF_DEFAULT);
 		}
-		portrait_preload_base_sprite(profiles[i].name, NULL, RESF_PERMANENT);
-		preload_resource(RES_TEXTURE, profiles[i].background, RESF_PERMANENT);
+		portrait_preload_base_sprite(rg, profiles[i].name, NULL, RESF_DEFAULT);
+		res_group_preload(rg, RES_TEXTURE, RESF_DEFAULT, profiles[i].background, NULL);
 	}
 };
 
@@ -382,17 +382,13 @@ static void charprofile_input(MenuData *m) {
 MenuData *create_charprofile_menu(void) {
 	MenuData *m = alloc_menu();
 
-	preload_charprofile_menu();
-
 	m->input = charprofile_input;
 	m->draw = charprofile_draw;
 	m->logic = charprofile_logic;
 	m->end = charprofile_free;
 	m->transition = TransFadeBlack;
 	m->flags = MF_Abortable;
-
-	CharProfileContext *ctx = calloc(1, sizeof(*ctx));
-	m->context = ctx;
+	m->context = ALLOC(CharProfileContext);
 
 	for(int i = 0; i < NUM_PROFILES; i++) {
 		add_character(m, i);

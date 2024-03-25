@@ -11,5 +11,5 @@
 
 #include "boss.h"
 
-void stage6_events(void);
 Boss* stage6_spawn_elly(cmplx);
+DECLARE_EXTERN_TASK(stage6_timeline);

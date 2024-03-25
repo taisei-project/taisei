@@ -55,33 +55,45 @@ static struct {
 	int recompile_delay;
 	int rescan_delay;
 	int lib_gen_bump_delay;
-	pid_t recompile_pid;
 } dynstage;
 
 static stageslib_t dynstage_dlopen(void) {
-	stageslib_t lib = dlopen(TAISEI_BUILDCONF_DYNSTAGE_LIB, RTLD_NOW | RTLD_LOCAL);
+	int attempts = 7;
+	int delay = 10;
 
-	if(UNLIKELY(!lib)) {
-		log_fatal("Failed to load stages library: %s", dlerror());
+	for(;;) {
+		stageslib_t lib = dlopen(TAISEI_BUILDCONF_DYNSTAGE_LIB, RTLD_NOW | RTLD_LOCAL);
+
+		if(LIKELY(lib != NULL)) {
+			return lib;
+		}
+
+		if(--attempts) {
+			log_error("Failed to load stages library (%i attempt%s left): %s", attempts, attempts > 1? "s" : "", dlerror());
+			SDL_Delay(delay);
+			delay *= 2;
+		} else {
+			break;
+		}
 	}
 
-	return lib;
+	log_fatal("Failed to load stages library: %s", dlerror());
 }
 
 static void dynstage_bump_lib_generation(void) {
 	// Delay reporting library update to avoid trying to load a partially written file
-	dynstage.lib_gen_bump_delay = imax(dynstage.lib_gen_bump_delay, LIBRARY_BUMP_DELAY);
+	dynstage.lib_gen_bump_delay = max(dynstage.lib_gen_bump_delay, LIBRARY_BUMP_DELAY);
 }
 
 static void dynstage_bump_src_generation(bool deleted) {
 	++dynstage.src_generation;
-	dynstage.recompile_delay = imax(dynstage.recompile_delay, RECOMPILE_DELAY);
+	dynstage.recompile_delay = max(dynstage.recompile_delay, RECOMPILE_DELAY);
 
 	if(deleted) {
 		// Some text editors may delete the original file and replace it when saving.
 		// In case that happens, rescan shortly after detecting a delete.
 		// Not very efficient, but simple since we don't have to track file names.
-		dynstage.rescan_delay = imax(dynstage.rescan_delay, RESCAN_DELAY);
+		dynstage.rescan_delay = max(dynstage.rescan_delay, RESCAN_DELAY);
 	}
 
 	log_debug("%i", dynstage.src_generation);
@@ -129,12 +141,12 @@ static bool dynstage_filewatch_event(SDL_Event *e, void *ctx) {
 	if(watch == dynstage.lib_watch) {
 		switch(fevent) {
 			case FILEWATCH_FILE_UPDATED:
+				log_debug("Library updated");
 				dynstage_bump_lib_generation();
 				break;
 
 			case FILEWATCH_FILE_DELETED:
-				filewatch_unwatch(dynstage.lib_watch);
-				dynstage.lib_watch = NULL;
+				log_debug("Library deleted");
 				break;
 		}
 
@@ -149,13 +161,11 @@ static bool dynstage_filewatch_event(SDL_Event *e, void *ctx) {
 }
 
 static void dynstage_sigchld(int sig, siginfo_t *sinfo, void *ctx) {
-	pid_t cpid;
+	attr_unused pid_t cpid;
 	int status;
 
 	while((cpid = waitpid(-1, &status, WNOHANG)) > 0) {
-		if(cpid == dynstage.recompile_pid) {
-			dynstage.recompile_pid = 0;
-		}
+		log_debug("Process %i terminated with status %i", cpid, status);
 	}
 }
 
@@ -297,6 +307,10 @@ uint32_t dynstage_get_generation(void) {
 
 bool dynstage_reload_library(void) {
 	if(dynstage.lib) {
+		// In-flight async log messages may still have pointers to static strings inside the old lib
+		// Wait for them to finish processing so it's safe to unload
+		log_sync(false);
+
 		dlclose(dynstage.lib);
 	}
 

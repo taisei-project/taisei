@@ -189,9 +189,9 @@
 ■ 3. Stages
 ================================================================================
 
-  ○ Stage 1: Misty Lake
-  ○ Stage 2: Walk Along the Border
-  ○ Stage 3: Through the Tunnel of Light
+  ○ Stage 1: Misty Lake Encounter
+  ○ Stage 2: Riverside Hina-Nagashi
+  ○ Stage 3: Crawly Mountain Ascent
   ○ Stage 4: Forgotten Mansion
   ○ Stage 5: Climbing the Tower of Babel
   ○ Stage 6: Roof of the World

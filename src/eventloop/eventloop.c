@@ -12,11 +12,13 @@
 #include "util.h"
 #include "global.h"
 #include "video.h"
+#include "vfs/public.h"
+#include "thread.h"
 
 struct evloop_s evloop;
 
 void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc frame_render, PostLoopFunc on_leave, uint target_fps) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr < evloop.stack + EVLOOP_STACK_SIZE - 1);
 
 	LoopFrame *frame;
@@ -33,10 +35,12 @@ void eventloop_enter(void *context, LogicFrameFunc frame_logic, RenderFrameFunc 
 	frame->on_leave = on_leave;
 	frame->frametime = HRTIME_RESOLUTION / target_fps;
 	frame->prev_logic_action = LFRAME_WAIT;
+
+	vfs_sync(VFS_SYNC_STORE, NO_CALLCHAIN);
 }
 
 void eventloop_leave(void) {
-	assert(is_main_thread());
+	assert(thread_current_is_main());
 	assume(evloop.stack_ptr != NULL);
 
 	LoopFrame *frame = evloop.stack_ptr;
@@ -113,7 +117,7 @@ LogicFrameAction handle_logic(LoopFrame **pframe, const FrameTimes *ftimes) {
 
 RenderFrameAction run_render_frame(LoopFrame *frame) {
 	attr_unused LoopFrame *stack_prev = evloop.stack_ptr;
-	r_framebuffer_clear(NULL, CLEAR_ALL, RGBA(0, 0, 0, 1), 1);
+	r_framebuffer_clear(NULL, BUFFER_ALL, RGBA(0, 0, 0, 1), 1);
 	RenderFrameAction a = frame->render(frame->context);
 	assert(evloop.stack_ptr == stack_prev);
 

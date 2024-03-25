@@ -32,7 +32,7 @@ TASK(stage5_bg_update) {
 		stage5_draw_data->stairs.light_strength *= 0.975;
 
 		if(rng_chance(0.007)) {
-			stage5_draw_data->stairs.light_strength = fmax(stage5_draw_data->stairs.light_strength, rng_range(5, 10));
+			stage5_draw_data->stairs.light_strength = max(stage5_draw_data->stairs.light_strength, rng_range(5, 10));
 		}
 
 		YIELD;
@@ -57,7 +57,7 @@ void stage5_bg_init_spellpractice(void) {
 
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();
 	stage5_draw_data->stairs.roffset = -90;
-	stage5_draw_data->stairs.zoffset = 5;
+	stage5_draw_data->stairs.zoffset = 30;
 	stage5_draw_data->stairs.rad = -3;
 
 	INVOKE_TASK(stage5_bg_update);

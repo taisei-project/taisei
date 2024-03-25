@@ -12,7 +12,6 @@
 #include "rw_common.h"
 
 #include "rwops/rwops_autobuf.h"
-#include "rwops/rwops_zlib.h"
 
 attr_nonnull_all
 static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
@@ -44,13 +43,29 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 	SDL_WriteLE64(file, stg->start_time);
 	SDL_WriteLE64(file, stg->rng_seed);
 	SDL_WriteU8(file, stg->diff);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+		SDL_WriteLE16(file, stg->skip_frames);
+	}
+
 	SDL_WriteLE64(file, stg->plr_points);
-	SDL_WriteU8(file, stg->plr_continues_used);
+
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+		SDL_WriteU8(file, stg->plr_total_lives_used);
+		SDL_WriteU8(file, stg->plr_total_bombs_used);
+	}
+
+	SDL_WriteU8(file, stg->plr_total_continues_used);
 	SDL_WriteU8(file, stg->plr_char);
 	SDL_WriteU8(file, stg->plr_shot);
 	SDL_WriteLE16(file, stg->plr_pos_x);
 	SDL_WriteLE16(file, stg->plr_pos_y);
-	SDL_WriteU8(file, stg->plr_focus);  // FIXME remove and bump version
+
+	if(version <= REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		// NOTE: old plr_focus field
+		SDL_WriteU8(file, 0);
+	}
+
 	SDL_WriteLE16(file, stg->plr_power);
 	SDL_WriteU8(file, stg->plr_lives);
 	SDL_WriteLE16(file, stg->plr_life_fragments);
@@ -64,12 +79,16 @@ static bool replay_write_stage(ReplayStage *stg, SDL_RWops *file, uint16_t versi
 		SDL_WriteLE64(file, stg->plr_points_final);
 	}
 
-	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV0) {
-		SDL_WriteU8(file, stg->plr_stats_total_lives_used);
-		SDL_WriteU8(file, stg->plr_stats_stage_lives_used);
-		SDL_WriteU8(file, stg->plr_stats_total_bombs_used);
-		SDL_WriteU8(file, stg->plr_stats_stage_bombs_used);
-		SDL_WriteU8(file, stg->plr_stats_stage_continues_used);
+	if(version == REPLAY_STRUCT_VERSION_TS104000_REV0) {
+		// NOTE: These fields were always bugged; older taisei only wrote zeroes here.
+		uint8_t buf[5] = { 0 };
+		SDL_RWwrite(file, buf, sizeof(buf), 1);
+	}
+
+	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
+		SDL_WriteU8(file, stg->plr_stage_lives_used_final);
+		SDL_WriteU8(file, stg->plr_stage_bombs_used_final);
+		SDL_WriteU8(file, stg->plr_stage_continues_used_final);
 	}
 
 	if(stg->events.num_elements > UINT16_MAX) {
@@ -122,9 +141,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 
 	if(compression) {
 		abuf = SDL_RWAutoBuffer(&buf, 64);
-		vfile = SDL_RWWrapZlibWriter(
-			abuf, RW_DEFLATE_LEVEL_DEFAULT, REPLAY_COMPRESSION_CHUNK_SIZE, false
-		);
+		vfile = replay_wrap_stream_compress(version, abuf, false);
 	}
 
 	replay_write_string(vfile, rpy->playername, base_version);
@@ -149,7 +166,7 @@ bool replay_write(Replay *rpy, SDL_RWops *file, uint16_t version) {
 		SDL_WriteLE32(file, SDL_RWtell(file) + SDL_RWtell(abuf) + 4);
 		SDL_RWwrite(file, buf, SDL_RWtell(abuf), 1);
 		SDL_RWclose(abuf);
-		vfile = SDL_RWWrapZlibWriter(file, RW_DEFLATE_LEVEL_DEFAULT, REPLAY_COMPRESSION_CHUNK_SIZE, false);
+		vfile = replay_wrap_stream_compress(version, file, false);
 	}
 
 	bool events_ok = replay_write_events(rpy, vfile);

@@ -29,6 +29,12 @@ void init_global(CLIAction *cli) {
 		log_warn("FPS limiter disabled. Gotta go fast! (frameskip = %i)", global.frameskip);
 	}
 
+	global.is_kiosk_mode = env_get("TAISEI_KIOSK", false);
+
+	if(global.is_kiosk_mode) {
+		SDL_SetHintWithPriority(SDL_HINT_NO_SIGNAL_HANDLERS, 0, SDL_HINT_DEFAULT);
+	}
+
 	fpscounter_reset(&global.fps.logic);
 	fpscounter_reset(&global.fps.render);
 	fpscounter_reset(&global.fps.busy);
@@ -44,6 +50,11 @@ bool gamekeypressed(KeyIndex key) {
 static SDL_atomic_t quitting;
 
 void taisei_quit(void) {
+	if(global.is_kiosk_mode) {
+		log_info("Running in kiosk mode; exit request ignored");
+		return;
+	}
+
 	if(SDL_AtomicCAS(&quitting, 0, 1)) {
 		log_info("Exit requested");
 	}

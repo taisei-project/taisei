@@ -15,7 +15,7 @@
 static StageText *textlist = NULL;
 
 StageText* stagetext_add(const char *text, cmplx pos, Alignment align, Font *font, const Color *clr, int delay, int lifetime, int fadeintime, int fadeouttime) {
-	StageText *t = (StageText*)objpool_acquire(stage_object_pools.stagetext);
+	StageText *t = objpool_acquire(&stage_object_pools.stagetext);
 	list_append(&textlist, t);
 
 	if(text != NULL) {
@@ -48,7 +48,7 @@ StageText* stagetext_add_numeric(int n, cmplx pos, Alignment align, Font *font, 
 }
 
 static void* stagetext_delete(List **dest, List *txt, void *arg) {
-	objpool_release(stage_object_pools.stagetext, list_unlink(dest, txt));
+	objpool_release(&stage_object_pools.stagetext, list_unlink(dest, txt));
 	return NULL;
 }
 
@@ -105,8 +105,8 @@ static void stagetext_draw_single(StageText *txt) {
 	params.shader_ptr = res_shader("text_stagetext");
 	params.shader_params = &(ShaderCustomParams){{ 1 - f }},
 	params.aux_textures[0] = res_texture("titletransition");
-	params.pos.x = creal(txt->pos) + ofs_x;
-	params.pos.y = cimag(txt->pos) + ofs_y;
+	params.pos.x = re(txt->pos) + ofs_x;
+	params.pos.y = im(txt->pos) + ofs_y;
 	params.color = &txt->color;
 
 	text_draw(txt->text, &params);
@@ -151,7 +151,7 @@ void stagetext_begin_table(StageTextTable *tbl, const char *title, const Color *
 }
 
 void stagetext_end_table(StageTextTable *tbl) {
-	cmplx ofs = -0.5 * I * (cimag(tbl->pos) - VIEWPORT_H/2);
+	cmplx ofs = -0.5 * I * (im(tbl->pos) - VIEWPORT_H/2);
 
 	for(ListContainer *c = tbl->elems; c; c = c->next) {
 		((StageText*)c->data)->pos += ofs;

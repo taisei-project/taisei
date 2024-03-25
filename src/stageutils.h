@@ -62,6 +62,7 @@ typedef struct PBREnvironment {
 	mat4 cam_inverse_transform;
 	Texture *environment_map;
 	vec3 ambient_color;
+	vec3 environment_color;
 	bool disable_tonemap;
 } PBREnvironment;
 
@@ -70,29 +71,9 @@ typedef struct PBRModel {
 	PBRMaterial *mat;
 } PBRModel;
 
-#define STAGE3D_DEPRECATED(...) attr_deprecated(__VA_ARGS__)
-
 struct Stage3D {
-	union {
-		Camera3D cam;
-
-		struct {
-			vec3 cx     STAGE3D_DEPRECATED("Use .cam.pos instead");
-			vec3 cv     STAGE3D_DEPRECATED("Use .cam.vel instead");
-			vec3 crot   STAGE3D_DEPRECATED("Use .cam.rot instead");
-		};
-	};
-
-	union {
-		DYNAMIC_ARRAY(vec3) positions;
-
-		struct {
-			vec3 *pos_buffer
-				attr_deprecated("Access through the 'positions' dynarray (if you must)");
-			dynarray_size_t pos_buffer_size
-				attr_deprecated("Access through the 'positions' dynarray (if you must)");
-		};
-	};
+	Camera3D cam;
+	DYNAMIC_ARRAY(vec3) positions;
 };
 
 extern Stage3D stage_3d_context;
@@ -115,6 +96,7 @@ void camera3d_update(Camera3D *cam) attr_nonnull(1);
 void camera3d_apply_transforms(Camera3D *cam, mat4 mat) attr_nonnull(1, 2);
 void camera3d_apply_inverse_transforms(Camera3D *cam, mat4 mat) attr_nonnull(1, 2);
 void camera3d_unprojected_ray(Camera3D *cam, cmplx pos, vec3 dest) attr_nonnull(1, 3);
+void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) attr_nonnull(1, 2, 3);
 
 void camera3d_set_point_light_uniforms(
 	Camera3D *cam,
@@ -168,13 +150,3 @@ uint stage3d_pos_ray_farfirst_nsteps(
 );
 
 uint stage3d_pos_single(Stage3D *s3d, vec3 camera, vec3 origin, float maxrange);
-
-attr_deprecated("Use stage3d_pos_single")
-INLINE uint single3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p) {
-	return stage3d_pos_single(s3d, q, p, maxrange);
-}
-
-uint linear3dpos(Stage3D *s3d, vec3 q, float maxrange, vec3 p, vec3 r)
-	attr_deprecated("Use stage3d_pos_ray_nearfirst/stage3d_pos_ray_farfirst");
-
-void skip_background_anim(void (*update_func)(void), int frames, int *timer, int *timer2);

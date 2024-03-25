@@ -70,21 +70,23 @@ void _dynarray_ensure_capacity(dynarray_size_t sizeof_element, DynamicArray *dar
 
 dynarray_size_t _dynarray_prepare_append_with_min_capacity(dynarray_size_t sizeof_element, DynamicArray *darr, dynarray_size_t min_capacity) attr_nonnull_all;
 
-/*
- * NOTE: unfortunately this evaluates `darr` more than once, but when compiling
- * with NDEBUG the assume() macro should trip a clang warning if there are
- * potential side-effects, and we always treat that warning as an error.
- */
-#define _dynarray_append_with_min_capacity(darr, min_capacity) \
-	dynarray_get_ptr(darr, _dynarray_dispatch_func(prepare_append_with_min_capacity, darr, min_capacity))
-
-#define dynarray_append_with_min_capacity(darr, min_capacity) ({ \
-	__auto_type _darr2 = NOT_NULL(darr); \
-	dynarray_get_ptr(_darr2, _dynarray_dispatch_func(prepare_append_with_min_capacity, _darr2, min_capacity)); \
+#define _dynarray_append_with_min_capacity_1(darr, min_capacity, ...) ({ \
+	auto _pelem = _dynarray_append_with_min_capacity_0(darr, min_capacity); \
+	*_pelem = ((typeof(*_pelem)) __VA_ARGS__); \
+	_pelem; \
 })
 
-#define dynarray_append(darr) \
-	dynarray_append_with_min_capacity(darr, 2)
+#define _dynarray_append_with_min_capacity_0(darr, min_capacity) ({ \
+	auto _darr2 = NOT_NULL(darr); \
+	auto _pelem = dynarray_get_ptr(_darr2, _dynarray_dispatch_func(prepare_append_with_min_capacity, _darr2, min_capacity)); \
+	_pelem; \
+})
+
+#define dynarray_append_with_min_capacity(darr, min_capacity, ...) \
+	MACROHAX_OVERLOAD_HASARGS(_dynarray_append_with_min_capacity_, __VA_ARGS__)(darr, min_capacity, ##__VA_ARGS__)
+
+#define dynarray_append(darr, ...) \
+	dynarray_append_with_min_capacity(darr, 2, ##__VA_ARGS__)
 
 void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) attr_nonnull_all;
 #define dynarray_compact(darr) \
@@ -99,7 +101,7 @@ void _dynarray_compact(dynarray_size_t sizeof_element, DynamicArray *darr) attr_
 
 #define dynarray_get_ptr(darr, idx) ({ \
 	DYNARRAY_ASSERT_VALID(darr); \
-	__auto_type _darr = NOT_NULL(darr); \
+	auto _darr = NOT_NULL(darr); \
 	dynarray_size_t _darr_idx = (idx); \
 	assume(_darr_idx >= 0); \
 	assume(_darr_idx < _darr->num_elements); \
@@ -129,8 +131,8 @@ void _dynarray_filter(
 
 #define dynarray_indexof(darr, pelem) ({ \
 	DYNARRAY_ASSERT_VALID(darr); \
-	__auto_type _darr = NOT_NULL(darr); \
-	__auto_type _darr_pelem = NOT_NULL(pelem); \
+	auto _darr = NOT_NULL(darr); \
+	auto _darr_pelem = NOT_NULL(pelem); \
 	DYNARRAY_CHECK_ELEMENT_TYPE(_darr, *(_darr_pelem)); \
 	intptr_t _darr_idx = (intptr_t)(_darr_pelem - _darr->data); \
 	assume(_darr_idx >= 0); \
@@ -161,6 +163,31 @@ void _dynarray_filter(
 	)
 
 #define dynarray_foreach_idx(_darr, _cntr_var, ...) \
+	dynarray_foreach(_darr, \
+		_cntr_var, \
+		attr_unused void *_dynarray_foreach_ignored, \
+		__VA_ARGS__ \
+	)
+
+#define dynarray_foreach_reversed(_darr, _cntr_var, _pelem_var, ...) do { \
+	for(dynarray_size_t _dynarray_foreach_iter = NOT_NULL(_darr)->num_elements - 1; \
+		_dynarray_foreach_iter >= 0; --_dynarray_foreach_iter \
+	) { \
+		_cntr_var = _dynarray_foreach_iter; \
+		_pelem_var = dynarray_get_ptr((_darr), _dynarray_foreach_iter); \
+		__VA_ARGS__ \
+	} \
+} while(0)
+
+#define dynarray_foreach_elem_reversed(_darr, _pelem_var, ...) \
+	dynarray_foreach_reversed( \
+		_darr, \
+		attr_unused dynarray_size_t _dynarray_foreach_ignored, \
+		_pelem_var, \
+		__VA_ARGS__ \
+	)
+
+#define dynarray_foreach_idx_reversed(_darr, _cntr_var, ...) \
 	dynarray_foreach(_darr, \
 		_cntr_var, \
 		attr_unused void *_dynarray_foreach_ignored, \

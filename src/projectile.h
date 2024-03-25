@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "util.h"
+#include "resource/resource.h"
 #include "resource/sprite.h"
 #include "resource/shader_program.h"
 #include "color.h"
@@ -30,21 +31,20 @@
 #endif
 
 enum {
-	RULE_ARGC = 4
+	PROJ_DRAWRULE_NUMARGS = 4
 };
 
 typedef LIST_ANCHOR(Projectile) ProjectileList;
 typedef LIST_INTERFACE(Projectile) ProjectileListInterface;
 
 typedef int (*ProjRule)(Projectile *p, int t);
-// typedef void (*ProjDrawRule)(Projectile *p, int t);
 typedef bool (*ProjPredicate)(Projectile *p);
 
 typedef union {
 	float as_float[2];
 	cmplxf as_cmplx;
 	void *as_ptr;
-} ProjDrawRuleArgs[RULE_ARGC];
+} ProjDrawRuleArgs[PROJ_DRAWRULE_NUMARGS];
 
 typedef struct ProjDrawRule {
 	void (*func)(Projectile *p, int t, ProjDrawRuleArgs args);
@@ -108,12 +108,10 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	cmplx prevpos; // used to lerp trajectory for collision detection; set this to pos if you intend to "teleport" the projectile in the rule!
 	cmplx size; // affects out-of-viewport culling and grazing
 	cmplx collision_size; // affects collision with player (TODO: make this work for player projectiles too?)
-	cmplx args[RULE_ARGC];
-	ProjRule rule;
-	ProjDrawRule draw_rule;
 	ShaderProgram *shader;
 	Sprite *sprite;
 	ProjPrototype *proto;
+	ProjDrawRule draw_rule;
 
 	/*
 	 * This field is usually NULL except during handling of "collision" and "killed" events.
@@ -145,6 +143,10 @@ DEFINE_ENTITY_TYPE(Projectile, {
 	float damage;
 	float angle;
 	float angle_delta;
+
+	cmplx _cached_delta_pos;
+	real _cached_angle;
+
 	ProjType type;
 	DamageType damage_type;
 	int max_viewport_dist;
@@ -175,8 +177,6 @@ typedef struct ProjArgs {
 	const char *shader;
 	ShaderProgram *shader_ptr;
 	ProjectileList *dest;
-	attr_deprecated("Use .move and/or tasks instead") ProjRule rule;
-	attr_deprecated("Use .move and/or tasks instead") cmplx args[RULE_ARGC];
 	ProjDrawRule draw_rule;
 	cmplx pos;
 	cmplx size; // affects default draw order, out-of-viewport culling, and grazing
@@ -201,8 +201,9 @@ typedef struct ProjArgs {
 } attr_designated_init ProjArgs;
 
 struct ProjPrototype {
-	void (*preload)(ProjPrototype *proto);
+	void (*preload)(ProjPrototype *proto, ResourceGroup *rg);
 	void (*process_args)(ProjPrototype *proto, ProjArgs *args);
+	void (*reset)(ProjPrototype *proto);
 	void (*init_projectile)(ProjPrototype *proto, Projectile *p);
 	void (*deinit_projectile)(ProjPrototype *proto, Projectile *p);
 	void *private;
@@ -213,8 +214,6 @@ struct ProjPrototype {
 	extern ProjPrototype *pp_##name; \
 
 #include "projectile_prototypes/all.inc.h"
-
-#define PARTICLE_ADDITIVE_SUBLAYER (1 << 3)
 
 Projectile *create_projectile(ProjArgs *args)
 	attr_nonnull_all attr_returns_nonnull attr_returns_max_aligned;
@@ -240,7 +239,7 @@ void calc_projectile_collision(Projectile *p, ProjCollisionResult *out_col) attr
 void apply_projectile_collision(ProjectileList *projlist, Projectile *p, ProjCollisionResult *col) attr_nonnull_all;
 int trace_projectile(Projectile *p, ProjCollisionResult *out_col, ProjCollisionType stopflags, int timeofs) attr_nonnull_all;
 bool projectile_in_viewport(Projectile *proj) attr_nonnull_all;
-void process_projectiles(ProjectileList *projlist, bool collision) attr_nonnull_all;
+void process_projectiles(ProjectileList *projlist, bool collision) attr_hot attr_nonnull_all;
 bool projectile_is_clearable(Projectile *p) attr_nonnull_all;
 
 Projectile *spawn_projectile_collision_effect(Projectile *proj) attr_nonnull_all;
@@ -253,19 +252,6 @@ void projectile_set_layer(Projectile *p, drawlayer_t layer) attr_nonnull_all;
 bool clear_projectile(Projectile *proj, uint flags) attr_nonnull_all;
 void kill_projectile(Projectile *proj) attr_nonnull_all;
 
-int linear(Projectile *p, int t);
-int accelerated(Projectile *p, int t);
-int asymptotic(Projectile *p, int t);
-
-#define DEPRECATED_DRAW_RULE attr_deprecated("")
-
-void ProjDrawCore(Projectile *proj, const Color *c);
-
-void Shrink(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void Fade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void GrowFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-void ScaleFade(Projectile *p, int t, ProjDrawRuleArgs) DEPRECATED_DRAW_RULE;
-
 ProjDrawRule pdraw_basic(void);
 ProjDrawRule pdraw_timeout_scalefade_exp(cmplxf scale0, cmplxf scale1, float opacity0, float opacity1, float opacity_exp);
 ProjDrawRule pdraw_timeout_scalefade(cmplxf scale0, cmplxf scale1, float opacity0, float opacity1);
@@ -275,12 +261,9 @@ ProjDrawRule pdraw_petal(float rot_angle, vec3 rot_axis);
 ProjDrawRule pdraw_petal_random(void);
 ProjDrawRule pdraw_blast(void);
 
-void Petal(Projectile *p, int t);
 void petal_explosion(int n, cmplx pos);
 
-void Blast(Projectile *p, int t);
-
-void projectiles_preload(void);
+void projectiles_preload(ResourceGroup *rg);
 void projectiles_free(void);
 
 cmplx projectile_graze_size(Projectile *p);

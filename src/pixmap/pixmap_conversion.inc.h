@@ -21,7 +21,7 @@ static _CONV_OUT_TYPE _CONV_VALUE_FUNC(_CONV_IN_TYPE val) {
 		if(_CONV_OUT_IS_FLOAT) {
 			return val;
 		} else {
-			return (_CONV_OUT_TYPE)roundf(clampf(val, 0.0f, 1.0f) * (float)_CONV_OUT_MAX);
+			return (_CONV_OUT_TYPE)roundf(clamp(val, 0.0f, 1.0f) * (float)_CONV_OUT_MAX);
 		}
 	} else if(_CONV_OUT_IS_FLOAT) {
 		return val * (1.0f / (float)_CONV_IN_MAX);
