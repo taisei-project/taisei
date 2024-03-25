@@ -782,7 +782,7 @@ EM_JS(bool, webgl_is_mac, (void), {
 #endif
 
 static const char *detect_slow_sampler_update(void) {
-#if defined(__MACOSX__) || defined(__EMSCRIPTEN__)
+#if defined(SDL_PLATFORM_MACOS) || defined(__EMSCRIPTEN__)
 	const char *gl_vendor = get_unmasked_property(GL_VENDOR, true);
 	const char *gl_renderer = get_unmasked_property(GL_RENDERER, true);
 
