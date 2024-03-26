@@ -179,7 +179,7 @@ taisei_c_args = cc.get_supported_arguments(taisei_c_args)
 
 foreach arglist : [
         taisei_conversion_c_args,
-        ['-msse', '-mfpmath=sse'],
+        ['-msse2', '-mfpmath=sse'],
     ]
     if cc.has_multi_arguments(arglist)
         taisei_c_args += arglist
