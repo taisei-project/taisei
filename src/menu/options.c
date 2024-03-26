@@ -1612,7 +1612,7 @@ static bool options_rebind_input_handler(SDL_Event *event, void *arg) {
 		return false;
 	}
 
-	if(t == SDL_KEYDOWN) {
+	if(t == SDL_EVENT_KEY_DOWN) {
 		SDL_Scancode scan = event->key.keysym.scancode;
 		bool esc = scan == SDL_SCANCODE_ESCAPE;
 
@@ -1713,12 +1713,12 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 
 	uint32_t t = event->type;
 
-	if(t == SDL_TEXTINPUT || t == MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE)) {
+	if(t == SDL_EVENT_TEXT_INPUT || t == MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE)) {
 		const size_t max_len = 32;
 		const char *snd = "generic_shot";
 		char *text, *text_allocated = NULL;
 
-		if(t == SDL_TEXTINPUT) {
+		if(t == SDL_EVENT_TEXT_INPUT) {
 			text = event->text.text;
 		} else {
 			text = text_allocated = SDL_GetClipboardText();
@@ -1750,7 +1750,7 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 		return true;
 	}
 
-	if(t == SDL_KEYDOWN) {
+	if(t == SDL_EVENT_KEY_DOWN) {
 		SDL_Scancode scan = event->key.keysym.scancode;
 
 		if(scan == SDL_SCANCODE_ESCAPE) {

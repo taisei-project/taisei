@@ -82,5 +82,5 @@ typedef enum {
 int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCmpLevel level);
 char *taisei_version_tostring(TaiseiVersion *version);
 void taisei_version_tostrbuf(StringBuffer *sbuf, TaiseiVersion *version);
-size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version);
-size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version);
+size_t taisei_version_read(SDL_IOStream *rwops, TaiseiVersion *version);
+size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version);

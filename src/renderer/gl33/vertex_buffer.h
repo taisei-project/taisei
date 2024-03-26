@@ -20,5 +20,5 @@ const char* gl33_vertex_buffer_get_debug_label(VertexBuffer *vbuf);
 void gl33_vertex_buffer_set_debug_label(VertexBuffer *vbuf, const char *label);
 void gl33_vertex_buffer_destroy(VertexBuffer *vbuf);
 void gl33_vertex_buffer_invalidate(VertexBuffer *vbuf);
-SDL_RWops* gl33_vertex_buffer_get_stream(VertexBuffer *vbuf);
+SDL_IOStream * gl33_vertex_buffer_get_stream(VertexBuffer *vbuf);
 void gl33_vertex_buffer_flush(VertexBuffer *vbuf);

@@ -13,9 +13,9 @@
 
 static const uint8_t png_magic[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
-static bool px_png_probe(SDL_RWops *stream) {
+static bool px_png_probe(SDL_IOStream *stream) {
 	uint8_t magic[sizeof(png_magic)] = { 0 };
-	SDL_RWread(stream, magic, sizeof(magic), 1);
+	SDL_ReadIO(stream, magic, sizeof(magic));
 	return !memcmp(magic, png_magic, sizeof(magic));
 }
 
@@ -29,7 +29,8 @@ static inline PixmapLayout clrtype_to_layout(png_byte color_type) {
 	UNREACHABLE;
 }
 
-static bool px_png_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
+static bool px_png_load(SDL_IOStream *stream, Pixmap *pixmap,
+			PixmapFormat preferred_format) {
 	png_structp png = NULL;
 	png_infop png_info = NULL;
 	const char *volatile error = NULL;
@@ -170,8 +171,8 @@ static void px_png_save_apply_conversions(
 DIAGNOSTIC_GCC(push)
 DIAGNOSTIC_GCC(ignored "-Wclobbered")
 
-static bool px_png_save(
-	SDL_RWops *stream, const Pixmap *src_pixmap, const PixmapSaveOptions *base_opts
+static bool px_png_save(SDL_IOStream *stream, const Pixmap *src_pixmap,
+			const PixmapSaveOptions *base_opts
 ) {
 	if(
 		pixmap_format_is_compressed(src_pixmap->format) ||

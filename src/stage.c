@@ -480,7 +480,7 @@ static void stage_do_quickload(StageFrameState *fstate) {
 static bool stage_input_handler_gameplay(SDL_Event *event, void *arg) {
 	StageFrameState *fstate = NOT_NULL(arg);
 
-	if(event->type == SDL_KEYDOWN && !event->key.repeat && is_quicksave_allowed()) {
+	if(event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat && is_quicksave_allowed()) {
 		if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKSAVE)) {
 			stage_do_quicksave(fstate, false);
 		} else if(event->key.keysym.scancode == config_get_int(CONFIG_KEY_QUICKLOAD)) {
@@ -532,7 +532,7 @@ static bool stage_input_handler_replay(SDL_Event *event, void *arg) {
 }
 
 static bool stage_input_handler_demo(SDL_Event *event, void *arg) {
-	if(event->type == SDL_KEYDOWN && !event->key.repeat) {
+	if(event->type == SDL_EVENT_KEY_DOWN && !event->key.repeat) {
 		goto exit;
 	}
 

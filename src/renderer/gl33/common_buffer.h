@@ -16,9 +16,9 @@ typedef struct CommonBuffer CommonBuffer;
 
 struct CommonBuffer {
 	union {
-		SDL_RWops stream;
+		SDL_IOStream stream;
 		struct {
-			char padding[offsetof(SDL_RWops, hidden)];
+			char padding[offsetof(SDL_IOStream, hidden)];
 
 			struct {
 				char *buffer;
@@ -51,7 +51,7 @@ void gl33_buffer_init(CommonBuffer *cbuf, size_t capacity, void *data, GLenum us
 void gl33_buffer_destroy(CommonBuffer *cbuf);
 void gl33_buffer_invalidate(CommonBuffer *cbuf);
 void gl33_buffer_resize(CommonBuffer *cbuf, size_t new_size);
-SDL_RWops *gl33_buffer_get_stream(CommonBuffer *cbuf);
+SDL_IOStream *gl33_buffer_get_stream(CommonBuffer *cbuf);
 void gl33_buffer_flush(CommonBuffer *cbuf);
 
 #define GL33_BUFFER_TEMP_BIND(cbuf, code) do { \

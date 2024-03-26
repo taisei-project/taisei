@@ -11,4 +11,5 @@
 
 #include <SDL3/SDL.h>
 
-SDL_RWops *SDL_RWWrapCRC32(SDL_RWops *src, uint32_t *crc32_ptr, bool autoclose);
+SDL_IOStream *SDL_RWWrapCRC32(SDL_IOStream *src, uint32_t *crc32_ptr,
+			      bool autoclose);

@@ -114,7 +114,7 @@ static void init_log_file(void) {
 }
 
 static void init_log_filter(void) {
-	SDL_RWops *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
+	SDL_IOStream *rw = vfs_open("storage/logfilter", VFS_MODE_READ);
 
 	if(!rw) {
 		return;
@@ -135,7 +135,7 @@ static void init_log_filter(void) {
 		log_add_filter_string(p);
 	}
 
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 }
 
 static SDLCALL void sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
@@ -183,12 +183,12 @@ static void init_sdl(void) {
 
 	if(sdl_logprio >= SDL_LOG_PRIORITY_VERBOSE) {
 		SDL_LogSetAllPriority(sdl_logprio);
-		SDL_LogSetOutputFunction(sdl_log, NULL);
+		SDL_SetLogOutputFunction(sdl_log, NULL);
 	}
 
 	log_info("SDL initialized");
 
-	SDL_version v;
+	SDL_Version v;
 	SDL_VERSION(&v);
 	log_info("Compiled against SDL %u.%u.%u", v.major, v.minor, v.patch);
 
@@ -212,7 +212,8 @@ static void log_system_specs(void) {
 	log_info("RDTSC: %d", SDL_HasRDTSC());
 	log_info("Altivec: %d", SDL_HasAltiVec());
 	log_info("MMX: %d", SDL_HasMMX());
-	log_info("3DNow: %d", SDL_Has3DNow());
+	log_info("3DNow: %d",
+		 /* FIXME MIGRATION: SDL_Has3DNow() has been removed; there is no replacement. */0);
 	log_info("SSE: %d", SDL_HasSSE());
 	log_info("SSE2: %d", SDL_HasSSE2());
 	log_info("SSE3: %d", SDL_HasSSE3());
@@ -234,7 +235,7 @@ typedef struct MainContext {
 	CLIAction cli;
 	Replay *replay_in;
 	Replay *replay_out;
-	SDL_RWops *replay_out_stream;
+	SDL_IOStream *replay_out_stream;
 	ResourceGroup rg;
 	int replay_idx;
 	uchar headless : 1;
@@ -275,7 +276,7 @@ static noreturn void main_quit(MainContext *ctx, int status) {
 			}
 		}
 
-		SDL_RWclose(ctx->replay_out_stream);
+		SDL_CloseIO(ctx->replay_out_stream);
 		ctx->replay_out_stream = NULL;
 	}
 
@@ -347,7 +348,7 @@ int main(int argc, char **argv) {
 		}
 
 		if(ctx->cli.out_replay != NULL) {
-			ctx->replay_out_stream = SDL_RWFromFile(ctx->cli.out_replay, "wb");
+			ctx->replay_out_stream = SDL_IOFromFile(ctx->cli.out_replay, "wb");
 
 			if(!ctx->replay_out_stream) {
 				log_sdl_error(LOG_FATAL, "SDL_RWFromFile");
@@ -576,7 +577,7 @@ static void main_replay(MainContext *mctx) {
 
 static void main_vfstree(CallChainResult ccr) {
 	MainContext *mctx = ccr.ctx;
-	SDL_RWops *rwops = SDL_RWFromFP(stdout, false);
+	SDL_IOStream *rwops = SDL_RWFromFP(stdout, false);
 	int status = 0;
 
 	if(!rwops) {
@@ -588,7 +589,7 @@ static void main_vfstree(CallChainResult ccr) {
 		status = 2;
 	}
 
-	SDL_RWclose(rwops);
+	SDL_CloseIO(rwops);
 	vfs_shutdown();
 	main_quit(mctx, status);
 }

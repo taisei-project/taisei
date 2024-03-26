@@ -42,11 +42,11 @@ static void vfs_tls_free(void *vtls) {
 
 static vfs_tls_t* vfs_tls_get(void) {
 	if(vfs_tls_id) {
-		vfs_tls_t *tls = SDL_TLSGet(vfs_tls_id);
+		vfs_tls_t *tls = SDL_GetTLS(vfs_tls_id);
 
 		if(!tls) {
-			SDL_TLSSet(vfs_tls_id, ALLOC(vfs_tls_t), vfs_tls_free);
-			tls = SDL_TLSGet(vfs_tls_id);
+			SDL_SetTLS(vfs_tls_id, ALLOC(vfs_tls_t), vfs_tls_free);
+			tls = SDL_GetTLS(vfs_tls_id);
 		}
 
 		assert(tls != NULL);
@@ -59,7 +59,7 @@ static vfs_tls_t* vfs_tls_get(void) {
 
 void vfs_init(void) {
 	vfs_root = vfs_vdir_create();
-	vfs_tls_id = SDL_TLSCreate();
+	vfs_tls_id = SDL_CreateTLS();
 
 	if(vfs_tls_id) {
 		vfs_tls_fallback = NULL;
@@ -182,7 +182,8 @@ bool vfs_mount_or_decref(VFSNode *root, const char *mountpoint, VFSNode *subtree
 	return true;
 }
 
-void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const char *name) {
+void vfs_print_tree_recurse(SDL_IOStream *dest, VFSNode *root, char *prefix,
+			    const char *name) {
 	void *o = NULL;
 	bool is_dir = vfs_node_query(root).is_dir;
 	char *newprefix = strfmt("%s%s%s", prefix, name, is_dir ? VFS_PATH_SEPARATOR_STR : "");

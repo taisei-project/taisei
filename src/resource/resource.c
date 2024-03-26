@@ -249,15 +249,15 @@ INLINE void ires_cond_wait(InternalResource *ires) {
 #endif  // DEBUG_LOCKS
 
 INLINE void ires_cond_broadcast(InternalResource *ires) {
-	SDL_CondBroadcast(ires->cond);
+	SDL_BroadcastCondition(ires->cond);
 }
 
 INLINE void purgatory_lock(void) {
-	SDL_AtomicLock(&res_gstate.purgatory.lock);
+	SDL_LockSpinlock(&res_gstate.purgatory.lock);
 }
 
 INLINE void purgatory_unlock(void) {
-	SDL_AtomicUnlock(&res_gstate.purgatory.lock);
+	SDL_UnlockSpinlock(&res_gstate.purgatory.lock);
 }
 
 INLINE InternalResource *ires_from_purgatory_node(PurgatoryNode *n) {
@@ -713,8 +713,8 @@ static void ires_unmake_dependent(InternalResource *ires, IResPtrArray *dependen
 	ires_unlock(ires);
 }
 
-SDL_RWops *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
-	SDL_RWops *rw = vfs_open(path, mode);
+SDL_IOStream *res_open_file(ResourceLoadState *st, const char *path, VFSOpenMode mode) {
+	SDL_IOStream *rw = vfs_open(path, mode);
 
 	if(UNLIKELY(!rw)) {
 		return NULL;

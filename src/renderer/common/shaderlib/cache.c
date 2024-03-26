@@ -29,9 +29,9 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 	uint8_t *buf, *result = NULL;
 	uint32_t crc = CRC_INIT;
 
-	SDL_RWops *abuf = SDL_RWAutoBuffer((void**)&buf, BUFSIZ);
-	SDL_RWops *crcbuf = SDL_RWWrapCRC32(abuf, &crc, false);
-	SDL_RWops *dest = crcbuf;
+	SDL_IOStream *abuf = SDL_RWAutoBuffer((void**)&buf, BUFSIZ);
+	SDL_IOStream *crcbuf = SDL_RWWrapCRC32(abuf, &crc, false);
+	SDL_IOStream *dest = crcbuf;
 
 	if(UNLIKELY(!crcbuf)) {
 		log_sdl_error(LOG_ERROR, "SDL_RWWrapCRC32");
@@ -71,10 +71,10 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			}
 
 			SDL_WriteU8(dest, name_len);
-			SDL_RWwrite(dest, m->name, name_len, 1);
+			SDL_WriteIO(dest, m->name, name_len);
 
 			SDL_WriteU8(dest, value_len);
-			SDL_RWwrite(dest, m->value, value_len, 1);
+			SDL_WriteIO(dest, m->value, value_len);
 		}
 	} else {
 		SDL_WriteU8(dest, 0);
@@ -82,7 +82,7 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 
 	switch(src->lang.lang) {
 		case SHLANG_GLSL: {
-			SDL_WriteLE16(dest, src->lang.glsl.version.version);
+			SDL_WriteU16LE(dest, src->lang.glsl.version.version);
 			SDL_WriteU8(dest, src->lang.glsl.version.profile);
 
 			if(src->meta.glsl.num_attributes > MAX_GLSL_ATTRIBS) {
@@ -93,7 +93,7 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 			SDL_WriteU8(dest, src->meta.glsl.num_attributes);
 
 			for(uint i = 0; i < src->meta.glsl.num_attributes; ++i) {
-				SDL_WriteLE32(dest, src->meta.glsl.attributes[i].location);
+				SDL_WriteU32LE(dest, src->meta.glsl.attributes[i].location);
 
 				size_t len = strlen(src->meta.glsl.attributes[i].name);
 
@@ -103,7 +103,8 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 				}
 
 				SDL_WriteU8(dest, len);
-				SDL_RWwrite(dest, src->meta.glsl.attributes[i].name, len, 1);
+				SDL_WriteIO(dest, src->meta.glsl.attributes[i].name,
+					    len);
 			}
 			break;
 		}
@@ -124,30 +125,31 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 		goto fail;
 	}
 
-	SDL_WriteLE32(dest, src->content_size);
-	SDL_RWwrite(dest, src->content, src->content_size, 1);
+	SDL_WriteU32LE(dest, src->content_size);
+	SDL_WriteIO(dest, src->content, src->content_size);
 
 	dest = abuf;
-	SDL_RWclose(crcbuf);
+	SDL_CloseIO(crcbuf);
 	crcbuf = NULL;
 
-	SDL_WriteLE32(dest, crc);
+	SDL_WriteU32LE(dest, crc);
 
-	*out_size = SDL_RWtell(dest);
+	*out_size = SDL_TellIO(dest);
 	result = memdup(buf, *out_size);
 
 fail:
 	if(crcbuf != NULL) {
-		SDL_RWclose(crcbuf);
+		SDL_CloseIO(crcbuf);
 	}
 
-	SDL_RWclose(abuf);
+	SDL_CloseIO(abuf);
 	return result;
 }
 
-static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
+static bool shader_cache_load_entry(SDL_IOStream *stream,
+				    ShaderSource *out_src) {
 	uint32_t crc = CRC_INIT;
-	SDL_RWops *s = SDL_RWWrapCRC32(stream, &crc, false);
+	SDL_IOStream *s = SDL_RWWrapCRC32(stream, &crc, false);
 
 	memset(out_src, 0, sizeof(*out_src));
 	out_src->content = NULL;
@@ -169,7 +171,7 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 
 	switch(out_src->lang.lang) {
 		case SHLANG_GLSL: {
-			out_src->lang.glsl.version.version = SDL_ReadLE16(s);
+			out_src->lang.glsl.version.version = SDL_ReadU16LE(s);
 			out_src->lang.glsl.version.profile = SDL_ReadU8(s);
 
 			uint nattrs = SDL_ReadU8(s);
@@ -180,10 +182,10 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 
 				for(uint i = 0; i < nattrs; ++i) {
 					GLSLAttribute *attr = out_src->meta.glsl.attributes + i;
-					attr->location = SDL_ReadLE32(s);
+					attr->location = SDL_ReadU32LE(s);
 					uint len = SDL_ReadU8(s);
 					attr->name = mem_alloc(len + 1);
-					SDL_RWread(s, attr->name, len, 1);
+					SDL_ReadIO(s, attr->name, len);
 				}
 			}
 			break;
@@ -200,27 +202,27 @@ static bool shader_cache_load_entry(SDL_RWops *stream, ShaderSource *out_src) {
 		}
 	}
 
-	out_src->content_size = SDL_ReadLE32(s);
+	out_src->content_size = SDL_ReadU32LE(s);
 	out_src->content = mem_alloc(out_src->content_size);
 
-	if(SDL_RWread(s, out_src->content, out_src->content_size, 1) != 1) {
+	if(SDL_ReadIO(s, out_src->content, out_src->content_size) != 1) {
 		log_error("Read error");
 		goto fail;
 	}
 
-	uint32_t file_crc = SDL_ReadLE32(stream);
+	uint32_t file_crc = SDL_ReadU32LE(stream);
 
 	if(crc != file_crc) {
 		log_error("CRC mismatch (%08x != %08x), cache entry is corrupted", crc, file_crc);
 		goto fail;
 	}
 
-	SDL_RWclose(s);
+	SDL_CloseIO(s);
 	return true;
 
 fail:
 	shader_free_source(out_src);
-	SDL_RWclose(s);
+	SDL_CloseIO(s);
 	return false;
 }
 
@@ -228,7 +230,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 	char path[256];
 	snprintf(path, sizeof(path), "cache/shaders/%s/%s", hash, key);
 
-	SDL_RWops *stream = vfs_open(path, VFS_MODE_READ);
+	SDL_IOStream *stream = vfs_open(path, VFS_MODE_READ);
 
 	if(stream == NULL) {
 		return false;
@@ -236,7 +238,7 @@ bool shader_cache_get(const char *hash, const char *key, ShaderSource *entry) {
 
 	stream = NOT_NULL(SDL_RWWrapZstdReader(stream, true));
 	bool result = shader_cache_load_entry(stream, entry);
-	SDL_RWclose(stream);
+	SDL_CloseIO(stream);
 
 	log_debug("Retrieved %s/%s from cache", hash, key);
 	return result;
@@ -250,7 +252,7 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 	vfs_mkdir(path);
 	snprintf(path, sizeof(path), "cache/shaders/%s/%s", hash, key);
 
-	SDL_RWops *out = vfs_open(path, VFS_MODE_WRITE);
+	SDL_IOStream *out = vfs_open(path, VFS_MODE_WRITE);
 
 	if(out == NULL) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -258,8 +260,8 @@ static bool shader_cache_set_raw(const char *hash, const char *key, uint8_t *ent
 	}
 
 	out = NOT_NULL(SDL_RWWrapZstdWriter(out, RW_ZSTD_LEVEL_DEFAULT, true));
-	SDL_RWwrite(out, entry, entry_size, 1);
-	SDL_RWclose(out);
+	SDL_WriteIO(out, entry, entry_size);
+	SDL_CloseIO(out);
 
 	return true;
 }

@@ -11,7 +11,7 @@
 
 #include <SDL3/SDL.h>
 
-typedef int (*rwutil_reopen_func)(SDL_RWops *rw);
+typedef int (*rwutil_reopen_func)(SDL_IOStream *rw);
 
 /*
  * Compute an absolute seek position from `offset` and `whence`, give a stream open at `pos` of

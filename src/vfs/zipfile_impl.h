@@ -31,7 +31,7 @@ VFS_NODE_TYPE(VFSZipNode, {
 
 typedef struct VFSZipFileTLS {
 	zip_t *zip;
-	SDL_RWops *stream;
+	SDL_IOStream *stream;
 	zip_error_t error;
 } VFSZipFileTLS;
 

@@ -498,7 +498,7 @@ static void video_new_window_internal(uint display, uint w, uint h, uint32_t fla
 }
 
 static void video_new_window(uint display, uint w, uint h, bool fs, bool resizable) {
-	uint32_t flags = SDL_WINDOW_ALLOW_HIGHDPI;
+	uint32_t flags = SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
 	if(fs || video_query_capability(VIDEO_CAP_FULLSCREEN) == VIDEO_ALWAYS_ENABLED) {
 		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -625,12 +625,11 @@ SDL_Window *video_get_window(void) {
 }
 
 void video_set_fullscreen(bool fullscreen) {
-	video_set_mode(
-		SDL_GetWindowDisplayIndex(video.window),
-		video.intended.width,
-		video.intended.height,
-		fullscreen,
-		config_get_int(CONFIG_VID_RESIZABLE)
+	video_set_mode(SDL_GetDisplayForWindow(video.window),
+		       video.intended.width,
+		       video.intended.height,
+		       fullscreen,
+		       config_get_int(CONFIG_VID_RESIZABLE)
 	);
 }
 
@@ -767,7 +766,7 @@ static void video_init_sdl(void) {
 	const char *video_drivers[num_drivers];
 
 	void *buf;
-	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+	SDL_IOStream *out = SDL_RWAutoBuffer(&buf, 256);
 
 	SDL_RWprintf(out, "Available video drivers:");
 
@@ -778,7 +777,7 @@ static void video_init_sdl(void) {
 
 	SDL_WriteU8(out, 0);
 	log_info("%s", (char*)buf);
-	SDL_RWclose(out);
+	SDL_CloseIO(out);
 
 	// https://bugzilla.libsdl.org/show_bug.cgi?id=3948
 	// A suboptimal X11 server may be available on top of those systems,
@@ -854,7 +853,7 @@ static void video_handle_resize(int w, int h) {
 
 static bool video_handle_window_event(SDL_Event *event, void *arg) {
 	switch(event->window.event) {
-		case SDL_WINDOWEVENT_SIZE_CHANGED:
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED :
 			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
 			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
 			// user). We only need to handle external resizes.
@@ -867,11 +866,11 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 			}
 			break;
 
-		case SDL_WINDOWEVENT_RESIZED:
+		case SDL_EVENT_WINDOW_RESIZED :
 			video_handle_resize(event->window.data1, event->window.data2);
 			break;
 
-		case SDL_WINDOWEVENT_FOCUS_LOST:
+		case SDL_EVENT_WINDOW_FOCUS_LOST :
 			if(config_get_int(CONFIG_FOCUS_LOSS_PAUSE)) {
 				events_emit(TE_GAME_PAUSE, 0, NULL, NULL);
 			}
@@ -935,7 +934,7 @@ const char *video_display_name(uint id) {
 }
 
 uint video_current_display(void) {
-	int display = SDL_GetWindowDisplayIndex(video.window);
+	int display = SDL_GetDisplayForWindow(video.window);
 
 	if(display < 0) {
 		log_sdl_error(LOG_WARN, "SDL_GetWindowDisplayIndex");

@@ -11,4 +11,4 @@
 
 #include <SDL3/SDL.h>
 
-SDL_RWops *SDL_RWWrapReadOnly(SDL_RWops *src, bool autoclose);
+SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose);

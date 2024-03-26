@@ -57,12 +57,12 @@ bool vfs_unmount(const char *path) {
 	return false;
 }
 
-SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
+SDL_IOStream* vfs_open(const char *path, VFSOpenMode mode) {
 	if(UNLIKELY(!vfs_initialized())) {
 		return NULL;
 	}
 
-	SDL_RWops *rwops = NULL;
+	SDL_IOStream *rwops = NULL;
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -199,7 +199,7 @@ char* vfs_repr(const char *path, bool try_syspath) {
 	return NULL;
 }
 
-bool vfs_print_tree(SDL_RWops *dest, const char *path) {
+bool vfs_print_tree(SDL_IOStream *dest, const char *path) {
 	if(UNLIKELY(!vfs_initialized())) {
 		return false;
 	}

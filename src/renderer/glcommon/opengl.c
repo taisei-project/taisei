@@ -908,7 +908,7 @@ void glcommon_check_capabilities(void) {
 		log_info("Supported extensions: %s", exts);
 	} else {
 		void *buf;
-		SDL_RWops *writer = SDL_RWAutoBuffer(&buf, 1024);
+		SDL_IOStream *writer = SDL_RWAutoBuffer(&buf, 1024);
 		GLint num_extensions;
 
 		SDL_RWprintf(writer, "Supported extensions:");
@@ -920,7 +920,7 @@ void glcommon_check_capabilities(void) {
 
 		SDL_WriteU8(writer, 0);
 		log_info("%s", (char*)buf);
-		SDL_RWclose(writer);
+		SDL_CloseIO(writer);
 	}
 
 	glcommon_check_issues();

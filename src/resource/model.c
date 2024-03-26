@@ -64,8 +64,8 @@ static const char *iqm_va_format_str(uint32_t type) {
 	}
 }
 
-static bool read_fields(SDL_RWops *rw, size_t n, uint32_t fields[n]) {
-	if(SDL_RWread(rw, fields, sizeof(fields[0]), n) != n) {
+static bool read_fields(SDL_IOStream *rw, size_t n, uint32_t fields[n]) {
+	if(SDL_ReadIO(rw, fields, sizeof(fields[0]) * n) != n) {
 		return false;
 	}
 
@@ -76,7 +76,7 @@ static bool read_fields(SDL_RWops *rw, size_t n, uint32_t fields[n]) {
 	return true;
 }
 
-static bool read_floats(SDL_RWops *rw, size_t n, float floats[n]) {
+static bool read_floats(SDL_IOStream *rw, size_t n, float floats[n]) {
 	uint32_t fields[n];
 
 	if(read_fields(rw, n, fields)) {
@@ -87,8 +87,9 @@ static bool read_floats(SDL_RWops *rw, size_t n, float floats[n]) {
 	return false;
 }
 
-static bool iqm_read_header(const char *fpath, SDL_RWops *rw, IQMHeader *hdr) {
-	if(SDL_RWread(rw, &hdr->magic, sizeof(hdr->magic), 1) != 1) {
+static bool iqm_read_header(const char *fpath, SDL_IOStream *rw,
+			    IQMHeader *hdr) {
+	if(SDL_ReadIO(rw, &hdr->magic, sizeof(hdr->magic)) != 1) {
 		log_error("%s: read error: %s", fpath, SDL_GetError());
 		return false;
 	}
@@ -159,7 +160,8 @@ static bool iqm_read_header(const char *fpath, SDL_RWops *rw, IQMHeader *hdr) {
 	return true;
 }
 
-static bool iqm_read_meshes(const char *fpath, SDL_RWops *rw, uint num_meshes, IQMMesh meshes[num_meshes]) {
+static bool iqm_read_meshes(const char *fpath, SDL_IOStream *rw,
+			    uint num_meshes, IQMMesh meshes[num_meshes]) {
 	for(uint i = 0; i < num_meshes; ++i) {
 		if(!read_fields(rw, ARRAY_SIZE(meshes[i].u32_array), meshes[i].u32_array)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
@@ -172,7 +174,10 @@ static bool iqm_read_meshes(const char *fpath, SDL_RWops *rw, uint num_meshes, I
 	return true;
 }
 
-static bool iqm_read_vertex_arrays(const char *fpath, SDL_RWops *rw, uint num_varrs, IQMVertexArray varrs[num_varrs], VertexArrayIndices *indices) {
+static bool iqm_read_vertex_arrays(const char *fpath, SDL_IOStream *rw,
+				   uint num_varrs,
+				   IQMVertexArray varrs[num_varrs],
+				   VertexArrayIndices *indices) {
 	for(uint i = 0; i < num_varrs; ++i) {
 		IQMVertexArray *va = varrs + i;
 
@@ -265,7 +270,9 @@ static bool iqm_read_vertex_arrays(const char *fpath, SDL_RWops *rw, uint num_va
 	return ok;
 }
 
-static bool iqm_read_vert_positions(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+static bool iqm_read_vert_positions(const char *fpath, SDL_IOStream *rw,
+				    uint num_verts,
+				    GenericModelVertex vertices[num_verts]) {
 	for(uint i = 0; i < num_verts; ++i) {
 		if(!read_floats(rw, ARRAY_SIZE(vertices[i].position), vertices[i].position)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
@@ -276,7 +283,9 @@ static bool iqm_read_vert_positions(const char *fpath, SDL_RWops *rw, uint num_v
 	return true;
 }
 
-static bool iqm_read_vert_texcoords(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+static bool iqm_read_vert_texcoords(const char *fpath, SDL_IOStream *rw,
+				    uint num_verts,
+				    GenericModelVertex vertices[num_verts]) {
 	for(uint i = 0; i < num_verts; ++i) {
 		if(!read_floats(rw, ARRAY_SIZE(vertices[i].uv), vertices[i].uv)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
@@ -289,7 +298,9 @@ static bool iqm_read_vert_texcoords(const char *fpath, SDL_RWops *rw, uint num_v
 	return true;
 }
 
-static bool iqm_read_vert_normals(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+static bool iqm_read_vert_normals(const char *fpath, SDL_IOStream *rw,
+				  uint num_verts,
+				  GenericModelVertex vertices[num_verts]) {
 	for(uint i = 0; i < num_verts; ++i) {
 		if(!read_floats(rw, ARRAY_SIZE(vertices[i].normal), vertices[i].normal)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
@@ -300,7 +311,9 @@ static bool iqm_read_vert_normals(const char *fpath, SDL_RWops *rw, uint num_ver
 	return true;
 }
 
-static bool iqm_read_vert_tangents(const char *fpath, SDL_RWops *rw, uint num_verts, GenericModelVertex vertices[num_verts]) {
+static bool iqm_read_vert_tangents(const char *fpath, SDL_IOStream *rw,
+				   uint num_verts,
+				   GenericModelVertex vertices[num_verts]) {
 	for(uint i = 0; i < num_verts; ++i) {
 		if(!read_floats(rw, ARRAY_SIZE(vertices[i].tangent), vertices[i].tangent)) {
 			log_error("%s: read error: %s", fpath, SDL_GetError());
@@ -311,7 +324,8 @@ static bool iqm_read_vert_tangents(const char *fpath, SDL_RWops *rw, uint num_ve
 	return true;
 }
 
-static bool iqm_read_triangles(const char *fpath, SDL_RWops *rw, uint num_tris, IQMTriangle triangles[num_tris]) {
+static bool iqm_read_triangles(const char *fpath, SDL_IOStream *rw,
+			       uint num_tris, IQMTriangle triangles[num_tris]) {
 	if(!read_fields(rw, ARRAY_SIZE(triangles->u32_array) * num_tris, triangles->u32_array)) {
 		log_error("%s: read error: %s", fpath, SDL_GetError());
 		return false;
@@ -337,7 +351,7 @@ static void load_model_stage2(ResourceLoadState *st);
 
 static void load_model_stage1(ResourceLoadState *st) {
 	const char *path = st->path;
-	SDL_RWops *rw = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
+	SDL_IOStream *rw = vfs_open(path, VFS_MODE_READ | VFS_MODE_SEEKABLE);
 
 	if(!rw) {
 		log_error("VFS error: %s", vfs_get_error());
@@ -432,7 +446,7 @@ static void load_model_stage1(ResourceLoadState *st) {
 cleanup:
 	mem_free(meshes);
 	mem_free(vert_arrays);
-	SDL_RWclose(rw);
+	SDL_CloseIO(rw);
 
 	if(ldata) {
 		res_load_continue_on_main(st, load_model_stage2, ldata);

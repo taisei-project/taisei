@@ -14,7 +14,7 @@
 
 typedef struct ReplayReadContext {
 	Replay *replay;
-	SDL_RWops *stream;
+	SDL_IOStream *stream;
 	const char *filename;
 	int64_t filesize;
 	uint16_t version;
@@ -23,7 +23,7 @@ typedef struct ReplayReadContext {
 
 #ifdef REPLAY_LOAD_DEBUG
 	#define PRINTPROP(prop, fmt) \
-		log_debug(#prop " = %" # fmt " [%"PRIi64" / %"PRIi64"]", prop, SDL_RWtell(file), filesize)
+		log_debug(#prop " = %" # fmt " [%"PRIi64" / %"PRIi64"]", prop, SDL_TellIO(file), filesize)
 #else
 	#define PRINTPROP(prop,fmt) (void)(prop)
 #endif
@@ -33,7 +33,7 @@ typedef struct ReplayReadContext {
 #define CHECKPROP(prop, fmt) \
 	do { \
 		PRINTPROP(prop,fmt); \
-		if(ctx->filesize > 0 && SDL_RWtell(ctx->stream) == ctx->filesize) { \
+		if(ctx->filesize > 0 && SDL_TellIO(ctx->stream) == ctx->filesize) { \
 			log_error("%s: Premature EOF", ctx->filename); \
 			RETURN_ERROR; \
 		} \
@@ -45,11 +45,11 @@ static void replay_read_string(ReplayReadContext *ctx, char **ptr) {
 	if(ctx->version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
 		len = SDL_ReadU8(ctx->stream);
 	} else {
-		len = SDL_ReadLE16(ctx->stream);
+		len = SDL_ReadU16LE(ctx->stream);
 	}
 
 	*ptr = mem_alloc(len + 1);
-	SDL_RWread(ctx->stream, *ptr, 1, len);
+	SDL_ReadIO(ctx->stream, *ptr, len);
 }
 
 static bool replay_read_header(
@@ -63,14 +63,14 @@ static bool replay_read_header(
 	uint8_t header[sizeof(replay_magic_header)];
 	(*ofs) += sizeof(header);
 
-	SDL_RWread(file, header, sizeof(header), 1);
+	SDL_ReadIO(file, header, sizeof(header));
 
 	if(memcmp(header, replay_magic_header, sizeof(header))) {
 		log_error("%s: Incorrect header", source);
 		RETURN_ERROR;
 	}
 
-	CHECKPROP(rpy->version = SDL_ReadLE16(file), u);
+	CHECKPROP(rpy->version = SDL_ReadU16LE(file), u);
 	(*ofs) += 2;
 
 	uint16_t base_version = (rpy->version & ~REPLAY_VERSION_COMPRESSION_BIT);
@@ -116,7 +116,7 @@ static bool replay_read_header(
 	mem_free(gamev);
 
 	if(compression) {
-		CHECKPROP(rpy->fileoffset = SDL_ReadLE32(file), u);
+		CHECKPROP(rpy->fileoffset = SDL_ReadU32LE(file), u);
 		(*ofs) += 4;
 	}
 
@@ -130,29 +130,29 @@ static bool replay_read_stage(ReplayReadContext *ctx, ReplayStage *stg) {
 	*stg = (ReplayStage) { };
 
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-		CHECKPROP(stg->flags = SDL_ReadLE32(file), u);
+		CHECKPROP(stg->flags = SDL_ReadU32LE(file), u);
 	}
 
-	CHECKPROP(stg->stage = SDL_ReadLE16(file), u);
+	CHECKPROP(stg->stage = SDL_ReadU16LE(file), u);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV2) {
-		CHECKPROP(stg->start_time = SDL_ReadLE64(file), u);
-		CHECKPROP(stg->rng_seed = SDL_ReadLE64(file), u);
+		CHECKPROP(stg->start_time = SDL_ReadU64LE(file), u);
+		CHECKPROP(stg->rng_seed = SDL_ReadU64LE(file), u);
 	} else {
-		stg->rng_seed = SDL_ReadLE32(file);
+		stg->rng_seed = SDL_ReadU32LE(file);
 		stg->start_time = stg->rng_seed;
 	}
 
 	CHECKPROP(stg->diff = SDL_ReadU8(file), u);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
-		CHECKPROP(stg->skip_frames = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->skip_frames = SDL_ReadU16LE(file), u);
 	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
-		CHECKPROP(stg->plr_points = SDL_ReadLE64(file), zu);
+		CHECKPROP(stg->plr_points = SDL_ReadU64LE(file), zu);
 	} else {
-		CHECKPROP(stg->plr_points = SDL_ReadLE32(file), zu);
+		CHECKPROP(stg->plr_points = SDL_ReadU32LE(file), zu);
 	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
@@ -166,19 +166,19 @@ static bool replay_read_stage(ReplayReadContext *ctx, ReplayStage *stg) {
 
 	CHECKPROP(stg->plr_char = SDL_ReadU8(file), u);
 	CHECKPROP(stg->plr_shot = SDL_ReadU8(file), u);
-	CHECKPROP(stg->plr_pos_x = SDL_ReadLE16(file), u);
-	CHECKPROP(stg->plr_pos_y = SDL_ReadLE16(file), u);
+	CHECKPROP(stg->plr_pos_x = SDL_ReadU16LE(file), u);
+	CHECKPROP(stg->plr_pos_y = SDL_ReadU16LE(file), u);
 
 	if(version <= REPLAY_STRUCT_VERSION_TS104000_REV0) {
 		// NOTE: old plr_focus field, ignored
 		SDL_ReadU8(file);
 	}
 
-	CHECKPROP(stg->plr_power = SDL_ReadLE16(file), u);
+	CHECKPROP(stg->plr_power = SDL_ReadU16LE(file), u);
 	CHECKPROP(stg->plr_lives = SDL_ReadU8(file), u);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
-		CHECKPROP(stg->plr_life_fragments = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_life_fragments = SDL_ReadU16LE(file), u);
 	} else {
 		CHECKPROP(stg->plr_life_fragments = SDL_ReadU8(file), u);
 	}
@@ -186,7 +186,7 @@ static bool replay_read_stage(ReplayReadContext *ctx, ReplayStage *stg) {
 	CHECKPROP(stg->plr_bombs = SDL_ReadU8(file), u);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV1) {
-		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU16LE(file), u);
 	} else {
 		CHECKPROP(stg->plr_bomb_fragments = SDL_ReadU8(file), u);
 	}
@@ -194,21 +194,21 @@ static bool replay_read_stage(ReplayReadContext *ctx, ReplayStage *stg) {
 	CHECKPROP(stg->plr_inputflags = SDL_ReadU8(file), u);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV0) {
-		CHECKPROP(stg->plr_graze = SDL_ReadLE32(file), u);
-		CHECKPROP(stg->plr_point_item_value = SDL_ReadLE32(file), u);
+		CHECKPROP(stg->plr_graze = SDL_ReadU32LE(file), u);
+		CHECKPROP(stg->plr_point_item_value = SDL_ReadU32LE(file), u);
 	} else if(version >= REPLAY_STRUCT_VERSION_TS102000_REV2) {
-		CHECKPROP(stg->plr_graze = SDL_ReadLE16(file), u);
+		CHECKPROP(stg->plr_graze = SDL_ReadU16LE(file), u);
 		stg->plr_point_item_value = PLR_START_PIV;
 	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS103000_REV3) {
-		CHECKPROP(stg->plr_points_final = SDL_ReadLE64(file), zu);
+		CHECKPROP(stg->plr_points_final = SDL_ReadU64LE(file), zu);
 	}
 
 	if(version == REPLAY_STRUCT_VERSION_TS104000_REV0) {
 		// NOTE: These fields were always bugged, so we ignore them
 		uint8_t junk[5];
-		SDL_RWread(file, junk, sizeof(junk), 1);
+		SDL_ReadIO(file, junk, sizeof(junk));
 	}
 
 	if(version >= REPLAY_STRUCT_VERSION_TS104000_REV1) {
@@ -217,9 +217,9 @@ static bool replay_read_stage(ReplayReadContext *ctx, ReplayStage *stg) {
 		CHECKPROP(stg->plr_stage_continues_used_final = SDL_ReadU8(file), u);
 	}
 
-	CHECKPROP(stg->num_events = SDL_ReadLE16(file), u);
+	CHECKPROP(stg->num_events = SDL_ReadU16LE(file), u);
 
-	if(replay_struct_stage_metadata_checksum(stg, version) + SDL_ReadLE32(file)) {
+	if(replay_struct_stage_metadata_checksum(stg, version) + SDL_ReadU32LE(file)) {
 		log_error("%s: Stageinfo is corrupt", ctx->filename);
 		RETURN_ERROR;
 	}
@@ -239,11 +239,11 @@ static bool _replay_read_meta(ReplayReadContext *ctx) {
 	PRINTPROP(rpy->playername, s);
 
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
-		CHECKPROP(rpy->flags = SDL_ReadLE32(file), u);
+		CHECKPROP(rpy->flags = SDL_ReadU32LE(file), u);
 	}
 
 	uint64_t numstages;
-	CHECKPROP(numstages = SDL_ReadLE16(file), u);
+	CHECKPROP(numstages = SDL_ReadU16LE(file), u);
 
 	if(!numstages) {
 		log_error("%s: No stages in replay", ctx->filename);
@@ -302,7 +302,8 @@ static bool replay_read_events(ReplayReadContext *ctx) {
 	return true;
 }
 
-bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *source) {
+bool replay_read(Replay *rpy, SDL_IOStream *file, ReplayReadMode mode,
+		 const char *source) {
 	int64_t filesize; // must be signed
 
 	if(!source) {
@@ -310,7 +311,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 	}
 
 	assert((mode & REPLAY_READ_ALL) != 0);
-	filesize = SDL_RWsize(file);
+	filesize = SDL_SizeIO(file);
 
 	if(filesize < 0) {
 		log_warn("%s: SDL_RWsize() failed: %s", source, SDL_GetError());
@@ -346,7 +347,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 		bool compression = false;
 
 		if(rpy->version & REPLAY_VERSION_COMPRESSION_BIT) {
-			if(rpy->fileoffset < SDL_RWtell(file)) {
+			if(rpy->fileoffset < SDL_TellIO(file)) {
 				log_error("%s: Invalid offset %"PRIi32"", source, rpy->fileoffset);
 				RETURN_ERROR;
 			}
@@ -363,17 +364,17 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 
 		if(!replay_read_meta(ctx)) {
 			if(compression) {
-				SDL_RWclose(ctx->stream);
+				SDL_CloseIO(ctx->stream);
 			}
 
 			return false;
 		}
 
 		if(compression) {
-			SDL_RWclose(ctx->stream);
+			SDL_CloseIO(ctx->stream);
 			ctx->stream = file;
 		} else {
-			rpy->fileoffset = SDL_RWtell(file);
+			rpy->fileoffset = SDL_TellIO(file);
 		}
 	}
 
@@ -391,7 +392,7 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 				}
 			});
 
-			if(SDL_RWseek(file, rpy->fileoffset, RW_SEEK_SET) < 0) {
+			if(SDL_SeekIO(file, rpy->fileoffset, SDL_IO_SEEK_SET) < 0) {
 				log_error("%s: SDL_RWseek() failed: %s", source, SDL_GetError());
 				return false;
 			}
@@ -407,14 +408,14 @@ bool replay_read(Replay *rpy, SDL_RWops *file, ReplayReadMode mode, const char *
 
 		if(!replay_read_events(ctx)) {
 			if(compression) {
-				SDL_RWclose(ctx->stream);
+				SDL_CloseIO(ctx->stream);
 			}
 
 			return false;
 		}
 
 		if(compression) {
-			SDL_RWclose(ctx->stream);
+			SDL_CloseIO(ctx->stream);
 		}
 
 		// useless byte to simplify the premature EOF check, can be anything

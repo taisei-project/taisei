@@ -9,17 +9,18 @@
 #include "rwops_ro.h"
 #include "rwops_dummy.h"
 
-static size_t ro_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
+static size_t ro_write(SDL_IOStream *rw, const void *ptr, size_t size,
+		       size_t maxnum) {
 	SDL_SetError("Read-only stream");
 	return 0;
 }
 
-SDL_RWops *SDL_RWWrapReadOnly(SDL_RWops *src, bool autoclose) {
+SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
-	SDL_RWops *rw = SDL_RWWrapDummy(src, autoclose);
+	SDL_IOStream *rw = SDL_RWWrapDummy(src, autoclose);
 
 	if(UNLIKELY(!rw)) {
 		return NULL;

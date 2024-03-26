@@ -14,7 +14,7 @@
 #include "util/io.h"
 
 #define AUDIO_FREQ 48000
-#define AUDIO_FORMAT AUDIO_F32SYS
+#define AUDIO_FORMAT SDL_AUDIO_F32
 #define AUDIO_CHANNELS 2
 
 struct SFXImpl {
@@ -41,7 +41,7 @@ static void SDLCALL mixer_callback(void *ignore, uint8_t *stream, int len) {
 static bool init_sdl_audio(void) {
 	uint num_drivers = SDL_GetNumAudioDrivers();
 	void *buf;
-	SDL_RWops *out = SDL_RWAutoBuffer(&buf, 256);
+	SDL_IOStream *out = SDL_RWAutoBuffer(&buf, 256);
 
 	SDL_RWprintf(out, "Available audio drivers:");
 
@@ -51,7 +51,7 @@ static bool init_sdl_audio(void) {
 
 	SDL_WriteU8(out, 0);
 	log_info("%s", (char*)buf);
-	SDL_RWclose(out);
+	SDL_CloseIO(out);
 
 	if(SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		log_sdl_error(LOG_ERROR, "SDL_InitSubSystem");
@@ -123,14 +123,24 @@ static bool audio_sdl_init(void) {
 		return false;
 	}
 
-	SDL_PauseAudioDevice(audio.device, false);
+	if (false) {
+		SDL_PauseAudioDevice(audio.device);
+	}
+	else {
+		SDL_ResumeAudioDevice(audio.device);
+	}
 	log_info("Audio subsystem initialized (SDL)");
 
 	return true;
 }
 
 static bool audio_sdl_shutdown(void) {
-	SDL_PauseAudioDevice(audio.device, true);
+	if (true) {
+		SDL_PauseAudioDevice(audio.device);
+	}
+	else {
+		SDL_ResumeAudioDevice(audio.device);
+	}
 	SDL_CloseAudioDevice(audio.device);
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	mixer_shutdown(audio.mixer);

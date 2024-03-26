@@ -42,7 +42,7 @@ typedef enum VFSSyncMode {
 
 typedef struct VFSDir VFSDir;
 
-SDL_RWops* vfs_open(const char *path, VFSOpenMode mode);
+SDL_IOStream * vfs_open(const char *path, VFSOpenMode mode);
 VFSInfo vfs_query(const char *path);
 
 bool vfs_mkdir(const char *path);

@@ -12,21 +12,22 @@
 
 #define STREAM_CBUF(rw) ((CommonBuffer*)rw)
 
-static int64_t gl33_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) {
+static int64_t gl33_buffer_stream_seek(SDL_IOStream *rw, int64_t offset,
+				       int whence) {
 	CommonBuffer *cbuf = STREAM_CBUF(rw);
 
 	switch(whence) {
-		case RW_SEEK_CUR: {
+		case SDL_IO_SEEK_CUR : {
 			cbuf->offset += offset;
 			break;
 		}
 
-		case RW_SEEK_END: {
+		case SDL_IO_SEEK_END : {
 			cbuf->offset = cbuf->size + offset;
 			break;
 		}
 
-		case RW_SEEK_SET: {
+		case SDL_IO_SEEK_SET : {
 			cbuf->offset = offset;
 			break;
 		}
@@ -36,11 +37,12 @@ static int64_t gl33_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence
 	return cbuf->offset;
 }
 
-static int64_t gl33_buffer_stream_size(SDL_RWops *rw) {
+static int64_t gl33_buffer_stream_size(SDL_IOStream *rw) {
 	return STREAM_CBUF(rw)->size;
 }
 
-static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) {
+static size_t gl33_buffer_stream_write(SDL_IOStream *rw, const void *data,
+				       size_t size, size_t num) {
 	CommonBuffer *cbuf = STREAM_CBUF(rw);
 	size_t total_size = size * num;
 	size_t offset = cbuf->offset;
@@ -62,17 +64,18 @@ static size_t gl33_buffer_stream_write(SDL_RWops *rw, const void *data, size_t s
 	return num;
 }
 
-static size_t gl33_buffer_stream_read(SDL_RWops *rw, void *data, size_t size, size_t num) {
+static size_t gl33_buffer_stream_read(SDL_IOStream *rw, void *data,
+				      size_t size, size_t num) {
 	SDL_SetError("Can't read from an OpenGL buffer stream");
 	return 0;
 }
 
-static int gl33_buffer_stream_close(SDL_RWops *rw) {
+static int gl33_buffer_stream_close(SDL_IOStream *rw) {
 	SDL_SetError("Can't close an OpenGL buffer stream");
 	return -1;
 }
 
-SDL_RWops *gl33_buffer_get_stream(CommonBuffer *cbuf) {
+SDL_IOStream *gl33_buffer_get_stream(CommonBuffer *cbuf) {
 	return &cbuf->stream;
 }
 

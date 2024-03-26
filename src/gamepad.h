@@ -123,11 +123,11 @@ GamepadButton gamepad_button_from_name(const char *name);
 GamepadAxis gamepad_axis_from_name(const char *name);
 
 GamepadButton gamepad_button_from_axis(GamepadAxis axis, GamepadAxisDigitalValue dval);
-GamepadButton gamepad_button_from_sdl_button(SDL_GameControllerButton btn);
-SDL_GameControllerButton gamepad_button_to_sdl_button(GamepadButton btn);
+GamepadButton gamepad_button_from_sdl_button(SDL_GamepadButton btn);
+SDL_GamepadButton gamepad_button_to_sdl_button(GamepadButton btn);
 
-GamepadAxis gamepad_axis_from_sdl_axis(SDL_GameControllerAxis axis);
-SDL_GameControllerAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
+GamepadAxis gamepad_axis_from_sdl_axis(SDL_GamepadAxis axis);
+SDL_GamepadAxis gamepad_axis_to_sdl_axis(GamepadAxis axis);
 
 int gamepad_axis_value(GamepadAxis paxis);
 int gamepad_player_axis_value(GamepadPlrAxis paxis);

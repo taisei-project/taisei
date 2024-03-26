@@ -40,7 +40,7 @@ struct VFSNodeFuncs {
 struct VFSNode {
 	char as_generic[0];
 	const VFSNodeFuncs *funcs;
-	SDL_atomic_t refcount;
+	SDL_AtomicInt refcount;
 };
 
 #define VFS_NODE_TYPE_FUNCS_NAME(_typename) _vfs_funcs_##_typename

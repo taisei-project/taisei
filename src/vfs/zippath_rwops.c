@@ -26,7 +26,7 @@ typedef struct ZipRWData {
 
 #define ZTLS(pdata) vfs_zipfile_get_tls((pdata)->zipnode, true)
 
-static int ziprw_reopen(SDL_RWops *rw) {
+static int ziprw_reopen(SDL_IOStream *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 	VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
 
@@ -40,7 +40,7 @@ static int ziprw_reopen(SDL_RWops *rw) {
 	return rwdata->file ? 0 : -1;
 }
 
-static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
+static zip_file_t *ziprw_get_zipfile(SDL_IOStream *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 	VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
 
@@ -52,14 +52,14 @@ static zip_file_t *ziprw_get_zipfile(SDL_RWops *rw) {
 	}
 
 	if(!rwdata->file && ziprw_reopen(rw) >= 0) {
-		SDL_RWseek(rw, pos, RW_SEEK_SET);
+		SDL_SeekIO(rw, pos, SDL_IO_SEEK_SET);
 	}
 
 	assert(rwdata->file);
 	return rwdata->file;
 }
 
-static int ziprw_close(SDL_RWops *rw) {
+static int ziprw_close(SDL_IOStream *rw) {
 	if(rw) {
 		ZipRWData *rwdata = rw->hidden.unknown.data1;
 		VFSZipPathNode *zpnode = rw->hidden.unknown.data2;
@@ -76,7 +76,7 @@ static int ziprw_close(SDL_RWops *rw) {
 	return 0;
 }
 
-static int64_t ziprw_seek(SDL_RWops *rw, int64_t offset, int whence) {
+static int64_t ziprw_seek(SDL_IOStream *rw, int64_t offset, int whence) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
 	if(!ziprw_get_zipfile(rw)) {
@@ -91,7 +91,8 @@ static int64_t ziprw_seek(SDL_RWops *rw, int64_t offset, int whence) {
 	return -1;
 }
 
-static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
+static int64_t ziprw_seek_emulated(SDL_IOStream *rw, int64_t offset,
+				   int whence) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
 	if(!ziprw_get_zipfile(rw)) {
@@ -106,7 +107,7 @@ static int64_t ziprw_seek_emulated(SDL_RWops *rw, int64_t offset, int whence) {
 	);
 }
 
-static int64_t ziprw_size(SDL_RWops *rw) {
+static int64_t ziprw_size(SDL_IOStream *rw) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
 	if(rwdata->size < 0) {
@@ -116,7 +117,8 @@ static int64_t ziprw_size(SDL_RWops *rw) {
 	return rwdata->size;
 }
 
-static size_t ziprw_read(SDL_RWops *rw, void *ptr, size_t size, size_t maxnum) {
+static size_t ziprw_read(SDL_IOStream *rw, void *ptr, size_t size,
+			 size_t maxnum) {
 	ZipRWData *rwdata = rw->hidden.unknown.data1;
 
 libzip_sucks:
@@ -155,19 +157,20 @@ libzip_sucks:
 	return bytes_read / size;
 }
 
-static size_t ziprw_write(SDL_RWops *rw, const void *ptr, size_t size, size_t maxnum) {
+static size_t ziprw_write(SDL_IOStream *rw, const void *ptr, size_t size,
+			  size_t maxnum) {
 	SDL_SetError("Not implemented");
 	return -1;
 }
 
-SDL_RWops *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
-	SDL_RWops *rw = SDL_AllocRW();
+SDL_IOStream *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
+	SDL_IOStream *rw = SDL_AllocRW();
 
 	if(UNLIKELY(!rw)) {
 		return NULL;
 	}
 
-	memset(rw, 0, sizeof(SDL_RWops));
+	memset(rw, 0, sizeof(SDL_IOStream));
 
 	auto rwdata = ALLOC(ZipRWData, {
 		.size = zpnode->size,
@@ -214,7 +217,7 @@ SDL_RWops *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) {
 			default: {
 				char *fname = vfs_node_repr(zpnode, true);
 				SDL_SetError("%s: unsupported compression method: %i", fname, zpnode->compression);
-				SDL_RWclose(rw);
+				SDL_CloseIO(rw);
 				return NULL;
 			}
 		}

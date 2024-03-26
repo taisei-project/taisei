@@ -28,8 +28,8 @@ struct Thread {
 	SDL_Thread *sdlthread;
 	void *data;
 	ThreadID id;
-	SDL_atomic_t refcount;
-	SDL_atomic_t state;
+	SDL_AtomicInt refcount;
+	SDL_AtomicInt state;
 	char name[];
 };
 
@@ -39,7 +39,7 @@ static struct {
 } threads;
 
 void thread_init(void) {
-	threads.main_id = SDL_ThreadID();
+	threads.main_id = SDL_GetCurrentThreadID();
 	ht_create(&threads.id_to_thread);
 }
 
@@ -70,7 +70,7 @@ static void thread_finalize(Thread *thrd) {
 }
 
 static void thread_try_finalize(Thread *thrd) {
-	if(SDL_AtomicCAS(&thrd->state, THREAD_STATE_DONE, THREAD_STATE_CLEANING_UP)) {
+	if(SDL_AtomicCompareAndSwap(&thrd->state, THREAD_STATE_DONE, THREAD_STATE_CLEANING_UP)) {
 		thread_finalize(thrd);
 	}
 }
@@ -103,16 +103,16 @@ typedef struct ThreadCreateData {
 	ThreadProc proc;
 	void *userdata;
 	ThreadPriority prio;
-	SDL_sem *init_sem;
+	SDL_Semaphore *init_sem;
 } ThreadCreateData;
 
 static int SDLCALL sdlthread_entry(void *data) {
 	auto tcd = *(ThreadCreateData*)data;
 
-	ThreadID id = SDL_ThreadID();
+	ThreadID id = SDL_GetCurrentThreadID();
 	tcd.thrd->id = id;
 	ht_set(&threads.id_to_thread, id, tcd.thrd);
-	SDL_SemPost(tcd.init_sem);
+	SDL_PostSemaphore(tcd.init_sem);
 
 	if(SDL_SetThreadPriority(tcd.prio) < 0) {
 		log_sdl_error(LOG_WARN, "SDL_SetThreadPriority");
@@ -121,7 +121,7 @@ static int SDLCALL sdlthread_entry(void *data) {
 	tcd.thrd->data = tcd.proc(tcd.userdata);
 
 	attr_unused bool cas_ok;
-	cas_ok = SDL_AtomicCAS(&tcd.thrd->state, THREAD_STATE_EXECUTING, THREAD_STATE_DONE);
+	cas_ok = SDL_AtomicCompareAndSwap(&tcd.thrd->state, THREAD_STATE_EXECUTING, THREAD_STATE_DONE);
 	assert(cas_ok);
 
 	if(SDL_AtomicGet(&tcd.thrd->refcount) < 1) {
@@ -164,7 +164,7 @@ Thread *thread_create(const char *name, ThreadProc proc, void *userdata, ThreadP
 		goto fail;
 	}
 
-	SDL_SemWait(tcd.init_sem);
+	SDL_WaitSemaphore(tcd.init_sem);
 	SDL_DestroySemaphore(tcd.init_sem);
 	return thrd;
 
@@ -187,7 +187,7 @@ ThreadID thread_get_id(Thread *thrd) {
 }
 
 ThreadID thread_get_current_id(void) {
-	return SDL_ThreadID();
+	return SDL_GetCurrentThreadID();
 }
 
 ThreadID thread_get_main_id(void) {

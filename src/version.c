@@ -19,18 +19,18 @@ int taisei_version_compare(TaiseiVersion *v1, TaiseiVersion *v2, TaiseiVersionCm
 	return result;
 }
 
-size_t taisei_version_read(SDL_RWops *rwops, TaiseiVersion *version) {
+size_t taisei_version_read(SDL_IOStream *rwops, TaiseiVersion *version) {
 	// XXX: detect errors somehow?
 
 	version->major = SDL_ReadU8(rwops);
 	version->minor = SDL_ReadU8(rwops);
 	version->patch = SDL_ReadU8(rwops);
-	version->tweak = SDL_ReadLE16(rwops);
+	version->tweak = SDL_ReadU16LE(rwops);
 
 	return TAISEI_VERSION_SIZE;
 }
 
-size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version) {
+size_t taisei_version_write(SDL_IOStream *rwops, TaiseiVersion *version) {
 	size_t wrote_now = 0, wrote_total = 0;
 
 	if(!(wrote_now = SDL_WriteU8(rwops, version->major))) {
@@ -51,7 +51,7 @@ size_t taisei_version_write(SDL_RWops *rwops, TaiseiVersion *version) {
 		wrote_total += wrote_now;
 	}
 
-	if(!(wrote_now = 2 * SDL_WriteLE16(rwops, version->tweak))) {
+	if(!(wrote_now = 2 * SDL_WriteU16LE(rwops, version->tweak))) {
 		return wrote_total;
 	} else {
 		wrote_total += wrote_now;

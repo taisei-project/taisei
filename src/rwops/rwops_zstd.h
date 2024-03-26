@@ -13,8 +13,11 @@
 
 #define RW_ZSTD_LEVEL_DEFAULT 0
 
-SDL_RWops *SDL_RWWrapZstdReader(SDL_RWops *src, bool autoclose);
-SDL_RWops *SDL_RWWrapZstdWriter(SDL_RWops *src, int clevel, bool autoclose);
+SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, bool autoclose);
+SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel,
+				   bool autoclose);
 
 // NOTE: uses inefficient emulation to implement seeking. Source must be seekable as well.
-SDL_RWops *SDL_RWWrapZstdReaderSeekable(SDL_RWops *src, int64_t uncompressed_size, bool autoclose);
+SDL_IOStream *SDL_RWWrapZstdReaderSeekable(SDL_IOStream *src,
+					   int64_t uncompressed_size,
+					   bool autoclose);

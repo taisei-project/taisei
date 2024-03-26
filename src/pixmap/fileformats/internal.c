@@ -19,14 +19,15 @@ enum {
 
 static const uint8_t pxi_magic[] = { 0xe2, 0x99, 0xa5, 0x52, 0x65, 0x69, 0x6d, 0x75 };
 
-static bool px_internal_probe(SDL_RWops *stream) {
+static bool px_internal_probe(SDL_IOStream *stream) {
 	uint8_t magic[sizeof(pxi_magic)] = { 0 };
-	SDL_RWread(stream, magic, sizeof(magic), 1);
+	SDL_ReadIO(stream, magic, sizeof(magic));
 	return !memcmp(magic, pxi_magic, sizeof(magic));
 }
 
-static bool px_internal_save(SDL_RWops *stream, const Pixmap *pixmap, const PixmapSaveOptions *opts) {
-	SDL_RWops *cstream = NULL;
+static bool px_internal_save(SDL_IOStream *stream, const Pixmap *pixmap,
+			     const PixmapSaveOptions *opts) {
+	SDL_IOStream *cstream = NULL;
 
 	#define CHECK_WRITE(expr, expected_size) \
 		do { \
@@ -54,7 +55,7 @@ static bool px_internal_save(SDL_RWops *stream, const Pixmap *pixmap, const Pixm
 	W_U8(cstream, pixmap->origin);
 	W_BYTES(cstream, pixmap->data.untyped, pixmap->data_size);
 
-	SDL_RWclose(cstream);
+	SDL_CloseIO(cstream);
 	cstream = NULL;
 
 	W_U32(stream, crc32);
@@ -63,26 +64,27 @@ static bool px_internal_save(SDL_RWops *stream, const Pixmap *pixmap, const Pixm
 
 fail:
 	if(cstream) {
-		SDL_RWclose(cstream);
+		SDL_CloseIO(cstream);
 	}
 
 	return false;
 }
 
-static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
+static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
+			     PixmapFormat preferred_format) {
 	assume(pixmap->data.untyped == NULL);
 
-	SDL_RWops *cstream = NULL;
+	SDL_IOStream *cstream = NULL;
 
 	uint8_t magic[sizeof(pxi_magic)] = { 0 };
-	SDL_RWread(stream, magic, 1, sizeof(magic));
+	SDL_ReadIO(stream, magic, sizeof(magic));
 
 	if(memcmp(magic, pxi_magic, sizeof(magic))) {
 		log_error("Bad magic header");
 		return false;
 	}
 
-	uint16_t version = SDL_ReadLE16(stream);
+	uint16_t version = SDL_ReadU16LE(stream);
 	if(version != PXI_VERSION) {
 		log_error("Bad version %u; expected %u", version, PXI_VERSION);
 		return false;
@@ -93,10 +95,10 @@ static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat pre
 
 	// TODO validate and verify consistency of data_size/width/height/format
 
-	pixmap->width = SDL_ReadLE32(cstream);
-	pixmap->height = SDL_ReadLE32(cstream);
-	pixmap->data_size = SDL_ReadLE32(cstream);
-	pixmap->format = SDL_ReadLE16(cstream);
+	pixmap->width = SDL_ReadU32LE(cstream);
+	pixmap->height = SDL_ReadU32LE(cstream);
+	pixmap->data_size = SDL_ReadU32LE(cstream);
+	pixmap->format = SDL_ReadU16LE(cstream);
 	pixmap->origin = SDL_ReadU8(cstream);
 
 	if(pixmap->data_size > PIXMAP_BUFFER_MAX_SIZE) {
@@ -113,17 +115,19 @@ static bool px_internal_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat pre
 	}
 
 	pixmap->data.untyped = mem_alloc(pixmap->data_size);
-	size_t read = SDL_RWread(cstream, pixmap->data.untyped, 1, pixmap->data_size);
+	size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		SDL_ReadIO(cstream, pixmap->data.untyped,
+			   pixmap->data_size);
 
 	if(read != pixmap->data_size) {
 		log_error("Read %zu bytes, expected %u", read, pixmap->data_size);
 		goto fail;
 	}
 
-	SDL_RWclose(cstream);
+	SDL_CloseIO(cstream);
 	cstream = NULL;
 
-	uint32_t crc32_in = SDL_ReadLE32(stream);
+	uint32_t crc32_in = SDL_ReadU32LE(stream);
 
 	if(crc32_in != crc32) {
 		log_error("CRC32 mismatch: 0x%08x != 0x%08x", crc32_in, crc32);
@@ -139,7 +143,7 @@ fail:
 	}
 
 	if(cstream) {
-		SDL_RWclose(cstream);
+		SDL_CloseIO(cstream);
 	}
 
 	return false;

@@ -165,7 +165,7 @@ typedef struct PlayInfoHeader {
 	#undef PLAYINFO_FIELD
 } PlayInfoHeader;
 
-static size_t playinfo_header_read(SDL_RWops *vfile, PlayInfoHeader *h) {
+static size_t playinfo_header_read(SDL_IOStream *vfile, PlayInfoHeader *h) {
 	#define PLAYINFO_FIELD(t,f) \
 		h->f = READFUNC(t)(vfile);
 	PLAYINFO_HEADER_FIELDS
@@ -173,7 +173,8 @@ static size_t playinfo_header_read(SDL_RWops *vfile, PlayInfoHeader *h) {
 	return playinfo_header_size();
 }
 
-static size_t playinfo_header_write(SDL_RWops *vfile, const PlayInfoHeader *h) {
+static size_t playinfo_header_write(SDL_IOStream *vfile,
+				    const PlayInfoHeader *h) {
 	#define PLAYINFO_FIELD(t,f) \
 		WRITEFUNC(t)(vfile, h->f);
 	PLAYINFO_HEADER_FIELDS
@@ -181,7 +182,7 @@ static size_t playinfo_header_write(SDL_RWops *vfile, const PlayInfoHeader *h) {
 	return playinfo_header_size();
 }
 
-static size_t playinfo_data_read(SDL_RWops *vfile, StageProgress *p) {
+static size_t playinfo_data_read(SDL_IOStream *vfile, StageProgress *p) {
 	#define PLAYINFO_FIELD(t,f) \
 		p->global.f = READFUNC(t)(vfile);
 	PLAYINFO_FIELDS
@@ -189,7 +190,7 @@ static size_t playinfo_data_read(SDL_RWops *vfile, StageProgress *p) {
 	return playinfo_size(1) - playinfo_header_size();
 }
 
-static size_t playinfo_data_write(SDL_RWops *vfile, const StageProgress *p) {
+static size_t playinfo_data_write(SDL_IOStream *vfile, const StageProgress *p) {
 	#define PLAYINFO_FIELD(t,f) \
 		WRITEFUNC(t)(vfile, p->global.f);
 	PLAYINFO_FIELDS
@@ -197,7 +198,7 @@ static size_t playinfo_data_write(SDL_RWops *vfile, const StageProgress *p) {
 	return playinfo_size(1) - playinfo_header_size();
 }
 
-static size_t playinfo2_data_read(SDL_RWops *vfile, StageProgress *p) {
+static size_t playinfo2_data_read(SDL_IOStream *vfile, StageProgress *p) {
 	#define PLAYINFO_FIELD(t,f) \
 		p->global.f = READFUNC(t)(vfile);
 	PLAYINFO2_FIELDS_GLOBAL
@@ -219,7 +220,8 @@ static size_t playinfo2_data_read(SDL_RWops *vfile, StageProgress *p) {
 	return playinfo2_size(1) - playinfo_header_size();
 }
 
-static size_t playinfo2_data_write(SDL_RWops *vfile, const StageProgress *p) {
+static size_t playinfo2_data_write(SDL_IOStream *vfile,
+				   const StageProgress *p) {
 	#define PLAYINFO_FIELD(t,f) \
 		WRITEFUNC(t)(vfile, p->global.f);
 	PLAYINFO2_FIELDS_GLOBAL
@@ -241,14 +243,16 @@ static size_t playinfo2_data_write(SDL_RWops *vfile, const StageProgress *p) {
 	return playinfo2_size(1) - playinfo_header_size();
 }
 
-static bool progress_read_verify_cmd_size(SDL_RWops *vfile, uint8_t cmd, uint16_t cmdsize, uint16_t expectsize) {
+static bool progress_read_verify_cmd_size(SDL_IOStream *vfile, uint8_t cmd,
+					  uint16_t cmdsize,
+					  uint16_t expectsize) {
 	if(cmdsize == expectsize) {
 		return true;
 	}
 
 	log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
 
-	if(SDL_RWseek(vfile, cmdsize, RW_SEEK_CUR) < 0) {
+	if(SDL_SeekIO(vfile, cmdsize, SDL_IO_SEEK_CUR) < 0) {
 		log_sdl_error(LOG_WARN, "SDL_RWseek");
 	}
 
@@ -464,7 +468,7 @@ static void progress_read(SDL_RWops *file) {
 }
 
 typedef void (*cmd_preparefunc_t)(size_t*, void**);
-typedef void (*cmd_writefunc_t)(SDL_RWops*, void**);
+typedef void (*cmd_writefunc_t)(SDL_IOStream*, void**);
 
 typedef struct cmd_writer_t {
 	cmd_preparefunc_t prepare;
@@ -499,7 +503,7 @@ static void progress_prepare_cmd_unlock_stages(size_t *bufsize, void **arg) {
 	*arg = (void*)(intptr_t)num_unlocked;
 }
 
-static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_unlock_stages(SDL_IOStream *vfile, void **arg) {
 	int num_unlocked = (intptr_t)*arg;
 
 	if(!num_unlocked) {
@@ -507,7 +511,7 @@ static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
 	}
 
 	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES);
-	SDL_WriteLE16(vfile, num_unlocked * 2);
+	SDL_WriteU16LE(vfile, num_unlocked * 2);
 
 	int n = stageinfo_get_num_stages();
 	for(int i = 0; i < n; ++i) {
@@ -515,7 +519,7 @@ static void progress_write_cmd_unlock_stages(SDL_RWops *vfile, void **arg) {
 		StageProgress *p = stageinfo_get_progress(stg, D_Any, false);
 
 		if(p && p->unlocked) {
-			SDL_WriteLE16(vfile, stg->id);
+			SDL_WriteU16LE(vfile, stg->id);
 		}
 	}
 }
@@ -558,7 +562,8 @@ static void progress_prepare_cmd_unlock_stages_with_difficulties(size_t *bufsize
 	*arg = (void*)(intptr_t)num_unlocked;
 }
 
-static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_unlock_stages_with_difficulties(SDL_IOStream *vfile,
+							       void **arg) {
 	int num_unlocked = (intptr_t)*arg;
 
 	if(!num_unlocked) {
@@ -566,7 +571,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 	}
 
 	SDL_WriteU8(vfile, PCMD_UNLOCK_STAGES_WITH_DIFFICULTY);
-	SDL_WriteLE16(vfile, num_unlocked * 3);
+	SDL_WriteU16LE(vfile, num_unlocked * 3);
 
 	int n = stageinfo_get_num_stages();
 	for(int i = 0; i < n; ++i) {
@@ -586,7 +591,7 @@ static void progress_write_cmd_unlock_stages_with_difficulties(SDL_RWops *vfile,
 		}
 
 		if(dflags) {
-			SDL_WriteLE16(vfile, stg->id);
+			SDL_WriteU16LE(vfile, stg->id);
 			SDL_WriteU8(vfile, dflags);
 		}
 	}
@@ -601,17 +606,17 @@ static void progress_prepare_cmd_hiscore(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
 }
 
-static void progress_write_cmd_hiscore(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_hiscore(SDL_IOStream *vfile, void **arg) {
 	// Legacy 32-bit command for compatibility
 	// NOTE: must be written BEFORE the 64-bit command
 
 	SDL_WriteU8(vfile, PCMD_HISCORE);
-	SDL_WriteLE16(vfile, sizeof(uint32_t));
-	SDL_WriteLE32(vfile, progress.hiscore & 0xFFFFFFFFu);
+	SDL_WriteU16LE(vfile, sizeof(uint32_t));
+	SDL_WriteU32LE(vfile, progress.hiscore & 0xFFFFFFFFu);
 
 	SDL_WriteU8(vfile, PCMD_HISCORE_64BIT);
-	SDL_WriteLE16(vfile, sizeof(uint64_t));
-	SDL_WriteLE64(vfile, progress.hiscore);
+	SDL_WriteU16LE(vfile, sizeof(uint64_t));
+	SDL_WriteU64LE(vfile, progress.hiscore);
 }
 
 //
@@ -663,7 +668,7 @@ static void progress_prepare_cmd_stage_playinfo(size_t *bufsize, void **arg) {
 	}
 }
 
-static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_stage_playinfo(SDL_IOStream *vfile, void **arg) {
 	struct cmd_stage_playinfo_data *data = *arg;
 
 	if(!data->elems.num_elements) {
@@ -671,7 +676,7 @@ static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	}
 
 	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO);
-	SDL_WriteLE16(vfile, playinfo_size(data->elems.num_elements));
+	SDL_WriteU16LE(vfile, playinfo_size(data->elems.num_elements));
 
 	dynarray_foreach_elem(&data->elems, auto e, {
 		playinfo_header_write(vfile, &e->head);
@@ -679,7 +684,7 @@ static void progress_write_cmd_stage_playinfo(SDL_RWops *vfile, void **arg) {
 	});
 
 	SDL_WriteU8(vfile, PCMD_STAGE_PLAYINFO2);
-	SDL_WriteLE16(vfile, playinfo2_size(data->elems.num_elements));
+	SDL_WriteU16LE(vfile, playinfo2_size(data->elems.num_elements));
 
 	dynarray_foreach_elem(&data->elems, auto e, {
 		playinfo_header_write(vfile, &e->head);
@@ -712,7 +717,7 @@ static void progress_prepare_cmd_endings(size_t *bufsize, void **arg) {
 	}
 }
 
-static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_endings(SDL_IOStream *vfile, void **arg) {
 	uint16_t sz = (uintptr_t)*arg;
 
 	if(!sz) {
@@ -720,12 +725,12 @@ static void progress_write_cmd_endings(SDL_RWops *vfile, void **arg) {
 	}
 
 	SDL_WriteU8(vfile, PCMD_ENDINGS);
-	SDL_WriteLE16(vfile, sz);
+	SDL_WriteU16LE(vfile, sz);
 
 	for(int i = 0; i < NUM_ENDINGS; ++i) {
 		if(progress.achieved_endings[i]) {
 			SDL_WriteU8(vfile, i);
-			SDL_WriteLE32(vfile, progress.achieved_endings[i]);
+			SDL_WriteU32LE(vfile, progress.achieved_endings[i]);
 		}
 	}
 }
@@ -738,9 +743,9 @@ static void progress_prepare_cmd_game_settings(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint8_t) * 3;
 }
 
-static void progress_write_cmd_game_settings(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_game_settings(SDL_IOStream *vfile, void **arg) {
 	SDL_WriteU8(vfile, PCMD_GAME_SETTINGS);
-	SDL_WriteLE16(vfile, sizeof(uint8_t) * 3);
+	SDL_WriteU16LE(vfile, sizeof(uint8_t) * 3);
 	SDL_WriteU8(vfile, progress.game_settings.difficulty);
 	SDL_WriteU8(vfile, progress.game_settings.character);
 	SDL_WriteU8(vfile, progress.game_settings.shotmode);
@@ -754,9 +759,9 @@ static void progress_prepare_cmd_game_version(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + TAISEI_VERSION_SIZE;
 }
 
-static void progress_write_cmd_game_version(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_game_version(SDL_IOStream *vfile, void **arg) {
 	SDL_WriteU8(vfile, PCMD_GAME_VERSION);
-	SDL_WriteLE16(vfile, TAISEI_VERSION_SIZE);
+	SDL_WriteU16LE(vfile, TAISEI_VERSION_SIZE);
 
 	TaiseiVersion v;
 	TAISEI_VERSION_GET_CURRENT(&v);
@@ -773,10 +778,10 @@ static void progress_prepare_cmd_unlock_bgms(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
 }
 
-static void progress_write_cmd_unlock_bgms(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_unlock_bgms(SDL_IOStream *vfile, void **arg) {
 	SDL_WriteU8(vfile, PCMD_UNLOCK_BGMS);
-	SDL_WriteLE16(vfile, sizeof(uint64_t));
-	SDL_WriteLE64(vfile, progress.unlocked_bgms);
+	SDL_WriteU16LE(vfile, sizeof(uint64_t));
+	SDL_WriteU64LE(vfile, progress.unlocked_bgms);
 }
 
 //
@@ -787,10 +792,11 @@ static void progress_prepare_cmd_unlock_cutscenes(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint64_t);
 }
 
-static void progress_write_cmd_unlock_cutscenes(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_unlock_cutscenes(SDL_IOStream *vfile,
+						void **arg) {
 	SDL_WriteU8(vfile, PCMD_UNLOCK_CUTSCENES);
-	SDL_WriteLE16(vfile, sizeof(uint64_t));
-	SDL_WriteLE64(vfile, progress.unlocked_cutscenes);
+	SDL_WriteU16LE(vfile, sizeof(uint64_t));
+	SDL_WriteU64LE(vfile, progress.unlocked_cutscenes);
 }
 
 //
@@ -803,11 +809,11 @@ static void progress_prepare_cmd_unknown(size_t *bufsize, void **arg) {
 	}
 }
 
-static void progress_write_cmd_unknown(SDL_RWops *vfile, void **arg) {
+static void progress_write_cmd_unknown(SDL_IOStream *vfile, void **arg) {
 	for(UnknownCmd *c = progress.unknown; c; c = c->next) {
 		SDL_WriteU8(vfile, c->cmd);
-		SDL_WriteLE16(vfile, c->size);
-		SDL_RWwrite(vfile, c->data, c->size, 1);
+		SDL_WriteU16LE(vfile, c->size);
+		SDL_WriteIO(vfile, c->data, c->size);
 	}
 }
 
@@ -825,9 +831,10 @@ attr_unused static void progress_write_cmd_test(SDL_RWops *vfile, void **arg) {
 	SDL_WriteLE32(vfile, 0xdeadbeef);
 }
 
-static void progress_write(SDL_RWops *file) {
+static void progress_write(SDL_IOStream *file) {
 	size_t bufsize = 0;
-	SDL_RWwrite(file, progress_magic_bytes, 1, sizeof(progress_magic_bytes));
+	SDL_WriteIO(file, progress_magic_bytes,
+		    sizeof(progress_magic_bytes));
 
 	cmd_writer_t cmdtable[] = {
 		{progress_prepare_cmd_game_version, progress_write_cmd_game_version, NULL},
@@ -856,15 +863,16 @@ static void progress_write(SDL_RWops *file) {
 
 	auto buf = ALLOC_ARRAY(bufsize, uint8_t);
 	memset(buf, 0x7f, bufsize);
-	SDL_RWops *vfile = SDL_RWFromMem(buf, bufsize);
+	SDL_IOStream *vfile = SDL_IOFromMem(buf, bufsize);
 
 	for(cmd_writer_t *w = cmdtable; w->prepare; ++w) {
-		attr_unused size_t oldpos = SDL_RWtell(vfile);
+		attr_unused size_t oldpos = SDL_TellIO(vfile);
 		w->write(vfile, &w->data);
-		log_debug("write %i: %i", (int)(w - cmdtable), (int)(SDL_RWtell(vfile) - oldpos));
+		log_debug("write %i: %i", (int)(w - cmdtable),
+			  (int)(SDL_TellIO(vfile) - oldpos));
 	}
 
-	if(SDL_RWtell(vfile) != bufsize) {
+	if(SDL_TellIO(vfile) != bufsize) {
 		mem_free(buf);
 		log_fatal("Buffer is inconsistent");
 		return;
@@ -872,15 +880,16 @@ static void progress_write(SDL_RWops *file) {
 
 	uint32_t cs = progress_checksum(buf, bufsize);
 	// no byteswapping here
-	SDL_RWwrite(file, &cs, 4, 1);
+	SDL_WriteIO(file, &cs, 4);
 
-	if(!SDL_RWwrite(file, buf, bufsize, 1)) {
+	if(!/* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+		SDL_WriteIO(file, buf, bufsize)) {
 		log_error("SDL_RWwrite() failed: %s", SDL_GetError());
 		return;
 	}
 
 	mem_free(buf);
-	SDL_RWclose(vfile);
+	SDL_CloseIO(vfile);
 }
 
 void progress_unlock_all(void) {
@@ -911,8 +920,8 @@ static void fix_ending_cutscene(EndingID ending, CutsceneID cutscene) {
 	}
 }
 
-static SDL_RWops *progress_open_file_read(void) {
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
+static SDL_IOStream *progress_open_file_read(void) {
+	SDL_IOStream *file = vfs_open(PROGRESS_FILE, VFS_MODE_READ);
 
 	if(file) {
 		return SDL_RWWrapZstdReader(file, true);
@@ -930,8 +939,8 @@ static SDL_RWops *progress_open_file_read(void) {
 	return NULL;
 }
 
-static SDL_RWops *progress_open_file_write(void) {
-	SDL_RWops *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
+static SDL_IOStream *progress_open_file_write(void) {
+	SDL_IOStream *file = vfs_open(PROGRESS_FILE, VFS_MODE_WRITE);
 
 	if(file) {
 		return SDL_RWWrapZstdWriter(file, 20, true);
@@ -949,14 +958,14 @@ void progress_load(void) {
 	progress_save();
 #endif
 
-	SDL_RWops *file = progress_open_file_read();
+	SDL_IOStream *file = progress_open_file_read();
 
 	if(!file) {
 		return;
 	}
 
 	progress_read(file);
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 
 	// Fixup old saves
 	fix_ending_cutscene(ENDING_BAD_REIMU,   CUTSCENE_ID_REIMU_BAD_END);
@@ -968,10 +977,10 @@ void progress_load(void) {
 }
 
 void progress_save(void) {
-	SDL_RWops *file = progress_open_file_write();
+	SDL_IOStream *file = progress_open_file_write();
 
 	progress_write(file);
-	SDL_RWclose(file);
+	SDL_CloseIO(file);
 }
 
 static void* delete_unknown_cmd(List **dest, List *elem, void *arg) {

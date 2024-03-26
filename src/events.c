@@ -40,7 +40,7 @@ void events_init(void) {
 		log_fatal("%s", s);
 	}
 
-	SDL_EventState(SDL_MOUSEMOTION, SDL_DISABLE);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_MOTION, SDL_FALSE);
 
 	events_register_default_handlers();
 }
@@ -113,11 +113,11 @@ void events_unregister_handler(EventHandlerProc proc) {
 
 static void events_apply_flags(EventFlags flags) {
 	if(flags & EFLAG_TEXT) {
-		if(!SDL_IsTextInputActive()) {
+		if(!SDL_TextInputActive()) {
 			SDL_StartTextInput();
 		}
 	} else {
-		if(SDL_IsTextInputActive()) {
+		if(SDL_TextInputActive()) {
 			SDL_StopTextInput();
 		}
 	}
@@ -199,7 +199,8 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 		}
 
 		SDL_Event events[8];
-		int nevents = SDL_PeepEvents(events, ARRAY_SIZE(events), SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT);
+		int nevents = SDL_PeepEvents(events, ARRAY_SIZE(events), SDL_GETEVENT,
+					     SDL_EVENT_FIRST, SDL_EVENT_LAST);
 
 		if(UNLIKELY(nevents < 0)) {
 			log_sdl_error(LOG_ERROR, "SDL_PeepEvents");
@@ -245,7 +246,7 @@ void events_emit(TaiseiEvent type, int32_t code, void *data1, void *data2) {
 	uint32_t sdltype = MAKE_TAISEI_EVENT(type);
 	assert(IS_TAISEI_EVENT(sdltype));
 
-	if(!SDL_EventState(sdltype, SDL_QUERY)) {
+	if(!SDL_EventEnabled(sdltype)) {
 		return;
 	}
 
@@ -347,12 +348,12 @@ static EventHandler default_handlers[] = {
 #ifdef DEBUG_WINDOW_EVENTS
 	{ .proc = events_handler_debug_winevt,          .priority = EPRIO_SYSTEM,       .event_type = SDL_WINDOWEVENT },
 #endif
-	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_QUIT },
+	{ .proc = events_handler_quit,                  .priority = EPRIO_SYSTEM,       .event_type = SDL_EVENT_QUIT },
 	{ .proc = events_handler_keyrepeat_workaround,  .priority = EPRIO_CAPTURE,      .event_type = 0 },
-	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYDOWN },
-	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_KEYUP },
+	{ .proc = events_handler_clipboard,             .priority = EPRIO_CAPTURE,      .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_hotkeys,               .priority = EPRIO_HOTKEYS,      .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_key_down,              .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_DOWN },
+	{ .proc = events_handler_key_up,                .priority = EPRIO_TRANSLATION,  .event_type = SDL_EVENT_KEY_UP },
 
 	{NULL}
 };
@@ -377,7 +378,7 @@ static bool events_handler_quit(SDL_Event *event, void *arg) {
 static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 	hrtime_t timenow = time_get();
 
-	if(event->type != SDL_KEYDOWN) {
+	if(event->type != SDL_EVENT_KEY_DOWN) {
 		uint32_t te = TAISEI_EVENT(event->type);
 
 		if(te < TE_MENU_FIRST || te > TE_MENU_LAST) {
@@ -398,11 +399,11 @@ static bool events_handler_keyrepeat_workaround(SDL_Event *event, void *arg) {
 }
 
 static bool events_handler_clipboard(SDL_Event *event, void *arg) {
-	if(!SDL_IsTextInputActive()) {
+	if(!SDL_TextInputActive()) {
 		return false;
 	}
 
-	if(event->key.keysym.mod & KMOD_CTRL && event->key.keysym.scancode == SDL_SCANCODE_V) {
+	if(event->key.keysym.mod & SDL_KMOD_CTRL && event->key.keysym.scancode == SDL_SCANCODE_V) {
 		if(SDL_HasClipboardText()) {
 			memset(event, 0, sizeof(SDL_Event));
 			event->type = MAKE_TAISEI_EVENT(TE_CLIPBOARD_PASTE);
@@ -505,7 +506,7 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 		return true;
 	}
 
-	if((scan == SDL_SCANCODE_RETURN && (mod & KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
+	if((scan == SDL_SCANCODE_RETURN && (mod & SDL_KMOD_ALT)) || scan == config_get_int(CONFIG_KEY_FULLSCREEN)) {
 		video_set_fullscreen(!video_is_fullscreen());
 		return true;
 	}

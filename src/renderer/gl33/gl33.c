@@ -395,7 +395,7 @@ static int get_framebuffer_height(Framebuffer *fb) {
 	if(fb == NULL) {
 		SDL_Window *win = SDL_GL_GetCurrentWindow();
 		assume(win != NULL);
-		SDL_GL_GetDrawableSize(win, NULL, &fb_height);
+		SDL_GetWindowSizeInPixels(win, NULL, &fb_height);
 	} else {
 		for(FramebufferAttachment a = FRAMEBUFFER_ATTACH_COLOR0; a < FRAMEBUFFER_MAX_ATTACHMENTS; ++a) {
 			if(fb->attachments[a] != NULL) {
@@ -463,7 +463,7 @@ void gl33_sync_scissor(void) {
 static IntExtent gl33_get_default_framebuffer_size(void) {
 	IntExtent s;
 	// TODO: cache this at window creation time and refresh on resize events?
-	SDL_GL_GetDrawableSize(R.window, &s.w, &s.h);
+	SDL_GetWindowSizeInPixels(R.window, &s.w, &s.h);
 	return s;
 }
 
@@ -1192,7 +1192,8 @@ static void gl33_shutdown(void) {
 }
 
 static SDL_Window *gl33_create_window(const char *title, int x, int y, int w, int h, uint32_t flags) {
-	SDL_Window *window = SDL_CreateWindow(title, x, y, w, h, flags | SDL_WINDOW_OPENGL);
+	SDL_Window *window = SDL_CreateWindowWithPosition(title, x, y, w, h,
+							  flags | SDL_WINDOW_OPENGL);
 
 	if(!window) {
 		log_sdl_error(LOG_FATAL, "SDL_CreateWindow");
