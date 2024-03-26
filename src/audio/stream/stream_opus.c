@@ -146,7 +146,7 @@ static bool astream_opus_init(AudioStream *stream, OggOpusFile *opus) {
 
 static int opus_rwops_read(void *_stream, unsigned char *_ptr, int _nbytes) {
 	SDL_IOStream *rw = _stream;
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 	SDL_ReadIO(rw, _ptr, _nbytes);
 }
 

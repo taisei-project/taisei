@@ -30,13 +30,13 @@ static int64_t dummy_size(SDL_IOStream *rw) {
 
 static size_t dummy_read(SDL_IOStream *rw, void *ptr, size_t size,
 			 size_t maxnum) {
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 	SDL_ReadIO(DUMMY_SOURCE(rw), ptr, size * maxnum);
 }
 
 static size_t dummy_write(SDL_IOStream *rw, const void *ptr, size_t size,
 			  size_t maxnum) {
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 	SDL_WriteIO(DUMMY_SOURCE(rw), ptr, size * maxnum);
 }
 

@@ -855,9 +855,9 @@ static bool video_handle_window_event(SDL_Event *event, void *arg) {
 	switch(event->window.event) {
 		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED :
 			// This event is generated for any resizes, including calls to SDL_SetWindowSize.
-			// It's followed by SDL_WINDOWEVENT_RESIZED for external resizes (from the WM or the
+			// It's followed by SDL_EVENT_WINDOW_RESIZED for external resizes (from the WM or the
 			// user). We only need to handle external resizes.
-			log_debug("SDL_WINDOWEVENT_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
+			log_debug("SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED: %ix%i", event->window.data1, event->window.data2);
 
 			// Catch resizes by the SDL portlib itself, when the console is docked/undocked
 			// https://github.com/devkitPro/SDL/issues/31
@@ -937,7 +937,7 @@ uint video_current_display(void) {
 	int display = SDL_GetDisplayForWindow(video.window);
 
 	if(display < 0) {
-		log_sdl_error(LOG_WARN, "SDL_GetWindowDisplayIndex");
+		log_sdl_error(LOG_WARN, "SDL_GetDisplayForWindow");
 		display = 1;
 	}
 

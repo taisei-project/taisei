@@ -127,15 +127,15 @@ typedef struct UnknownCmd {
 	PLAYINFO_FIELD(uint32_t, num_cleared) \
 	PLAYINFO_FIELD(uint64_t, hiscore) \
 
-#define WRITEFUNC_uint64_t SDL_WriteLE64
-#define WRITEFUNC_uint32_t SDL_WriteLE32
-#define WRITEFUNC_uint16_t SDL_WriteLE16
+#define WRITEFUNC_uint64_t SDL_WriteU64LE
+#define WRITEFUNC_uint32_t SDL_WriteU32LE
+#define WRITEFUNC_uint16_t SDL_WriteU16LE
 #define WRITEFUNC_uint8_t  SDL_WriteU8
 #define WRITEFUNC(t) WRITEFUNC_##t
 
-#define READFUNC_uint64_t SDL_ReadLE64
-#define READFUNC_uint32_t SDL_ReadLE32
-#define READFUNC_uint16_t SDL_ReadLE16
+#define READFUNC_uint64_t SDL_ReadU64LE
+#define READFUNC_uint32_t SDL_ReadU32LE
+#define READFUNC_uint16_t SDL_ReadU16LE
 #define READFUNC_uint8_t  SDL_ReadU8
 #define READFUNC(t) READFUNC_##t
 
@@ -253,13 +253,13 @@ static bool progress_read_verify_cmd_size(SDL_IOStream *vfile, uint8_t cmd,
 	log_warn("Command %x with bad size %u ignored", cmd, cmdsize);
 
 	if(SDL_SeekIO(vfile, cmdsize, SDL_IO_SEEK_CUR) < 0) {
-		log_sdl_error(LOG_WARN, "SDL_RWseek");
+		log_sdl_error(LOG_WARN, "SDL_SeekIO");
 	}
 
 	return false;
 }
 
-static void progress_read(SDL_RWops *file) {
+static void progress_read(SDL_IOStream *file) {
 	for(int i = 0; i < sizeof(progress_magic_bytes); ++i) {
 		if(SDL_ReadU8(file) != progress_magic_bytes[i]) {
 			log_error("Invalid header");
@@ -269,14 +269,14 @@ static void progress_read(SDL_RWops *file) {
 
 	uint32_t checksum_fromfile;
 	// no byteswapping here
-	SDL_RWread(file, &checksum_fromfile, 4, 1);
+	SDL_ReadIO(file, &checksum_fromfile, 4, 1);
 
 	const size_t chunk_size = (1 << 12);
 	DYNAMIC_ARRAY(uint8_t) buf = {};
 
 	for(;;) {
 		dynarray_ensure_capacity(&buf, buf.num_elements + chunk_size);
-		size_t read = SDL_RWread(file, buf.data + buf.num_elements, 1, chunk_size);
+		size_t read = SDL_ReadIO(file, buf.data + buf.num_elements, 1, chunk_size);
 		buf.num_elements += read;
 
 		if(buf.num_elements > PROGRESS_MAXFILESIZE) {
@@ -290,29 +290,29 @@ static void progress_read(SDL_RWops *file) {
 		}
 	}
 
-	SDL_RWops *vfile = SDL_RWFromMem(buf.data, buf.num_elements);
+	SDL_IOStream *vfile = SDL_IOFromMem(buf.data, buf.num_elements);
 	uint32_t checksum = progress_checksum(buf.data, buf.num_elements);
 
 	if(checksum != checksum_fromfile) {
 		log_error("Bad checksum: %x != %x", checksum, checksum_fromfile);
-		SDL_RWclose(vfile);
+		SDL_CloseIO(vfile);
 		dynarray_free_data(&buf);
 		return;
 	}
 
 	TaiseiVersion version_info = { 0 };
 
-	while(SDL_RWtell(vfile) < buf.num_elements) {
+	while(SDL_TellIO(vfile) < buf.num_elements) {
 		ProgfileCommand cmd = (int8_t)SDL_ReadU8(vfile);
 		uint16_t cur = 0;
-		uint16_t cmdsize = SDL_ReadLE16(vfile);
+		uint16_t cmdsize = SDL_ReadU16LE(vfile);
 
 		log_debug("at %i: %i (%i)", cur, cmd, cmdsize);
 
 		switch(cmd) {
 			case PCMD_UNLOCK_STAGES:
 				while(cur < cmdsize) {
-					StageProgress *p = stageinfo_get_progress_by_id(SDL_ReadLE16(vfile), D_Any, true);
+					StageProgress *p = stageinfo_get_progress_by_id(SDL_ReadU16LE(vfile), D_Any, true);
 					if(p) {
 						p->unlocked = true;
 					}
@@ -322,7 +322,7 @@ static void progress_read(SDL_RWops *file) {
 
 			case PCMD_UNLOCK_STAGES_WITH_DIFFICULTY:
 				while(cur < cmdsize) {
-					uint16_t stg = SDL_ReadLE16(vfile);
+					uint16_t stg = SDL_ReadU16LE(vfile);
 					uint8_t dflags = SDL_ReadU8(vfile);
 					StageInfo *info = stageinfo_get_by_id(stg);
 
@@ -340,11 +340,11 @@ static void progress_read(SDL_RWops *file) {
 				break;
 
 			case PCMD_HISCORE:
-				progress.hiscore = SDL_ReadLE32(vfile);
+				progress.hiscore = SDL_ReadU32LE(vfile);
 				break;
 
 			case PCMD_HISCORE_64BIT:
-				progress.hiscore = SDL_ReadLE64(vfile);
+				progress.hiscore = SDL_ReadU64LE(vfile);
 				break;
 
 			case PCMD_STAGE_PLAYINFO:
@@ -382,7 +382,7 @@ static void progress_read(SDL_RWops *file) {
 			case PCMD_ENDINGS:
 				while(cur < cmdsize) {
 					uint8_t ending = SDL_ReadU8(vfile); cur += sizeof(uint8_t);
-					uint32_t num_achieved = SDL_ReadLE32(vfile); cur += sizeof(uint32_t);
+					uint32_t num_achieved = SDL_ReadU32LE(vfile); cur += sizeof(uint32_t);
 
 					if(ending < NUM_ENDINGS) {
 						progress.achieved_endings[ending] = num_achieved;
@@ -416,13 +416,13 @@ static void progress_read(SDL_RWops *file) {
 
 			case PCMD_UNLOCK_BGMS:
 				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint64_t))) {
-					progress.unlocked_bgms |= SDL_ReadLE64(vfile);
+					progress.unlocked_bgms |= SDL_ReadU64LE(vfile);
 				}
 				break;
 
 			case PCMD_UNLOCK_CUTSCENES:
 				if(progress_read_verify_cmd_size(vfile, cmd, cmdsize, sizeof(uint64_t))) {
-					progress.unlocked_cutscenes |= SDL_ReadLE64(vfile);
+					progress.unlocked_cutscenes |= SDL_ReadU64LE(vfile);
 				}
 				break;
 
@@ -434,7 +434,7 @@ static void progress_read(SDL_RWops *file) {
 					.size = cmdsize,
 					.data = ALLOC_ARRAY(cmdsize, uint8_t)
 				});
-				SDL_RWread(vfile, c->data, c->size, 1);
+				SDL_ReadIO(vfile, c->data, c->size, 1);
 				list_append(&progress.unknown, c);
 
 				break;
@@ -464,7 +464,7 @@ static void progress_read(SDL_RWops *file) {
 	}
 
 	dynarray_free_data(&buf);
-	SDL_RWclose(vfile);
+	SDL_CloseIO(vfile);
 }
 
 typedef void (*cmd_preparefunc_t)(size_t*, void**);
@@ -825,10 +825,10 @@ attr_unused static void progress_prepare_cmd_test(size_t *bufsize, void **arg) {
 	*bufsize += CMD_HEADER_SIZE + sizeof(uint32_t);
 }
 
-attr_unused static void progress_write_cmd_test(SDL_RWops *vfile, void **arg) {
+attr_unused static void progress_write_cmd_test(SDL_IOStream *vfile, void **arg) {
 	SDL_WriteU8(vfile, 0x7f);
-	SDL_WriteLE16(vfile, sizeof(uint32_t));
-	SDL_WriteLE32(vfile, 0xdeadbeef);
+	SDL_WriteU16LE(vfile, sizeof(uint32_t));
+	SDL_WriteU32LE(vfile, 0xdeadbeef);
 }
 
 static void progress_write(SDL_IOStream *file) {
@@ -882,9 +882,9 @@ static void progress_write(SDL_IOStream *file) {
 	// no byteswapping here
 	SDL_WriteIO(file, &cs, 4);
 
-	if(!/* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	if(!/* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 		SDL_WriteIO(file, buf, bufsize)) {
-		log_error("SDL_RWwrite() failed: %s", SDL_GetError());
+		log_error("SDL_WriteIO() failed: %s", SDL_GetError());
 		return;
 	}
 

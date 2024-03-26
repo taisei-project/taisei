@@ -109,13 +109,13 @@ typedef struct PurgatoryNode {
 
 struct InternalResource {
 	Resource res;
-	SDL_mutex *mutex;
-	SDL_cond *cond;
+	SDL_Mutex *mutex;
+	SDL_Condition *cond;
 	InternalResLoadState *load;
 	char *name;
 	PurgatoryNode purgatory_node;
 	ResourceStatus status;
-	SDL_atomic_t refcount;
+	SDL_AtomicInt refcount;
 	uint32_t generation_id;
 
 	// Reloading works by allocating a temporary InternalResource, attempting to load the resource
@@ -138,7 +138,7 @@ struct InternalResource {
 	ht_ires_counted_set_t dependents;
 
 #if DEBUG_LOCKS
-	SDL_atomic_t num_locks;
+	SDL_AtomicInt num_locks;
 #endif
 };
 
@@ -228,7 +228,7 @@ static void (ires_unlock)(InternalResource *ires, DebugInfo dbg) {
 #define ires_cond_wait(ires) ires_cond_wait(ires, _DEBUG_INFO_)
 static void (ires_cond_wait)(InternalResource *ires, DebugInfo dbg) {
 	ires_update_num_locks(ires, -1);
-	SDL_CondWait(ires->cond, ires->mutex);
+	SDL_WaitCondition(ires->cond, ires->mutex);
 	ires_update_num_locks(ires, 1);
 }
 
@@ -243,7 +243,7 @@ INLINE void ires_unlock(InternalResource *ires) {
 }
 
 INLINE void ires_cond_wait(InternalResource *ires) {
-	SDL_CondWait(ires->cond, ires->mutex);
+	SDL_WaitCondition(ires->cond, ires->mutex);
 }
 
 #endif  // DEBUG_LOCKS
@@ -333,12 +333,12 @@ static bool ires_decref(InternalResource *ires) {
 
 attr_returns_nonnull
 static InternalResource *ires_alloc(ResourceType rtype) {
-	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
+	SDL_LockSpinlock(&res_gstate.ires_freelist_lock);
 	InternalResource *ires = res_gstate.ires_freelist;
 	if(ires) {
 		res_gstate.ires_freelist = ires->reload_buddy;
 	}
-	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
+	SDL_UnlockSpinlock(&res_gstate.ires_freelist_lock);
 
 	if(ires) {
 		assert(!ires_in_purgatory(ires));
@@ -349,7 +349,7 @@ static InternalResource *ires_alloc(ResourceType rtype) {
 	} else {
 		ires = ALLOC(typeof(*ires));
 		ires->mutex = SDL_CreateMutex();
-		ires->cond = SDL_CreateCond();
+		ires->cond = SDL_CreateCondition();
 		ires->res.type = rtype;
 	}
 
@@ -387,10 +387,10 @@ static void ires_release(InternalResource *ires) {
 	ires->dependents = (ht_ires_counted_set_t) { };
 	ires->generation_id++;
 
-	SDL_AtomicLock(&res_gstate.ires_freelist_lock);
+	SDL_LockSpinlock(&res_gstate.ires_freelist_lock);
 	ires->reload_buddy = res_gstate.ires_freelist;
 	res_gstate.ires_freelist = ires;
-	SDL_AtomicUnlock(&res_gstate.ires_freelist_lock);
+	SDL_UnlockSpinlock(&res_gstate.ires_freelist_lock);
 	ires_unlock(ires);
 }
 
@@ -398,7 +398,7 @@ attr_nonnull_all
 static void ires_free(InternalResource *ires) {
 	ires_free_meta(ires);
 	SDL_DestroyMutex(ires->mutex);
-	SDL_DestroyCond(ires->cond);
+	SDL_DestroyCondition(ires->cond);
 	mem_free(ires);
 }
 

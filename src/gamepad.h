@@ -41,7 +41,7 @@ typedef enum GamepadEmulatedButton {
 } GamepadEmulatedButton;
 
 typedef enum GamepadButton {
-	// must match SDL_GameControllerButton
+	// must match SDL_GamepadButton
 	GAMEPAD_BUTTON_INVALID = -1,
 #ifdef __SWITCH__
 	GAMEPAD_BUTTON_B,
@@ -85,7 +85,7 @@ typedef enum GamepadButton {
 } GamepadButton;
 
 typedef enum GamepadAxis {
-	// must match SDL_GameControllerAxis
+	// must match SDL_GamepadAxis
 	GAMEPAD_AXIS_INVALID = -1,
 	GAMEPAD_AXIS_LEFT_X,
 	GAMEPAD_AXIS_LEFT_Y,

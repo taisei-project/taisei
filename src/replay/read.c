@@ -284,9 +284,9 @@ static bool _replay_read_events(ReplayReadContext *ctx) {
 		for(int j = 0; j < stg->num_events; ++j) {
 			ReplayEvent *evt = dynarray_append(&stg->events, {});
 
-			CHECKPROP(evt->frame = SDL_ReadLE32(ctx->stream), u);
+			CHECKPROP(evt->frame = SDL_ReadU32LE(ctx->stream), u);
 			CHECKPROP(evt->type = SDL_ReadU8(ctx->stream), u);
-			CHECKPROP(evt->value = SDL_ReadLE16(ctx->stream), u);
+			CHECKPROP(evt->value = SDL_ReadU16LE(ctx->stream), u);
 		}
 	});
 
@@ -314,7 +314,7 @@ bool replay_read(Replay *rpy, SDL_IOStream *file, ReplayReadMode mode,
 	filesize = SDL_SizeIO(file);
 
 	if(filesize < 0) {
-		log_warn("%s: SDL_RWsize() failed: %s", source, SDL_GetError());
+		log_warn("%s: SDL_GetIOSize() failed: %s", source, SDL_GetError());
 	}
 
 	ReplayReadContext _ctx = {
@@ -393,7 +393,7 @@ bool replay_read(Replay *rpy, SDL_IOStream *file, ReplayReadMode mode,
 			});
 
 			if(SDL_SeekIO(file, rpy->fileoffset, SDL_IO_SEEK_SET) < 0) {
-				log_error("%s: SDL_RWseek() failed: %s", source, SDL_GetError());
+				log_error("%s: SDL_SeekIO() failed: %s", source, SDL_GetError());
 				return false;
 			}
 		}

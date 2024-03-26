@@ -12,10 +12,10 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
-char *SDL_RWgets(SDL_RWops *rwops, char *buf, size_t bufsize) attr_nonnull_all;
-char *SDL_RWgets_realloc(SDL_RWops *rwops, char **buf, size_t *bufsize) attr_nonnull_all;
-size_t SDL_RWprintf(SDL_RWops *rwops, const char* fmt, ...) attr_printf(2, 3) attr_nonnull_all;
-void *SDL_RWreadAll(SDL_RWops *rwops, size_t *out_size, size_t max_size) attr_nonnull_all;
+char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) attr_nonnull_all;
+char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) attr_nonnull_all;
+size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) attr_printf(2, 3) attr_nonnull_all;
+void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) attr_nonnull_all;
 void SDL_RWsync(SDL_IOStream *rwops);
 
 // This is for the very few legitimate uses for printf/fprintf that shouldn't be replaced with log_*

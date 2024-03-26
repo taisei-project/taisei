@@ -39,7 +39,7 @@ typedef struct ShaderSourceMetaGLSL {
 	GLSLAttribute *attributes;
 } ShaderSourceMetaGLSL;
 
-typedef SDL_RWops *(*GLSLSourceOpenCallback)(const char *path, void *userdata);
+typedef SDL_IOStream *(*GLSLSourceOpenCallback)(const char *path, void *userdata);
 
 typedef struct GLSLSourceOptions {
 	GLSLVersion version;

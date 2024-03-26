@@ -132,7 +132,7 @@ static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
 	uint8_t *pos = start;
 
 	while(in->size < request_size) {
-		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 			SDL_ReadIO(z->wrapped, pos, (end - pos));
 
 		if(read == 0) {
@@ -309,11 +309,11 @@ static bool rwzstd_compress(SDL_IOStream *rw, ZSTD_EndDirective edir,
 	}
 
 	if(out->pos > 0) {
-		size_t written = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+		size_t written = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 			SDL_WriteIO(z->wrapped, out->dst, out->pos);
 
 		if(UNLIKELY(written != out->pos)) {
-			SDL_SetError("SDL_RWwrite() returned %zi; expected %zi. Error: %s", written, out->pos, SDL_GetError());
+			SDL_SetError("SDL_WriteIO() returned %zi; expected %zi. Error: %s", written, out->pos, SDL_GetError());
 			log_debug("%s", SDL_GetError());
 			return false;
 		}

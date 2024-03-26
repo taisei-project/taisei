@@ -59,4 +59,4 @@ VFS_NODE_TYPE(VFSZipPathNode, {
 });
 
 VFSNode *vfs_zippath_create(VFSZipNode *zipnode, zip_int64_t idx);
-SDL_RWops *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) attr_nonnull_all;
+SDL_IOStream *vfs_zippath_make_rwops(VFSZipPathNode *zpnode) attr_nonnull_all;

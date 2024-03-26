@@ -37,9 +37,9 @@ static bool px_internal_save(SDL_IOStream *stream, const Pixmap *pixmap,
 			} \
 		} while(0)
 
-	#define W_BYTES(stream, data, size) CHECK_WRITE(SDL_RWwrite(stream, data, size, 1), size)
-	#define W_U32(stream, val) CHECK_WRITE(SDL_WriteLE32(stream, val), sizeof(uint32_t))
-	#define W_U16(stream, val) CHECK_WRITE(SDL_WriteLE16(stream, val), sizeof(uint16_t))
+	#define W_BYTES(stream, data, size) CHECK_WRITE(SDL_WriteIO(stream, data, size, 1), size)
+	#define W_U32(stream, val) CHECK_WRITE(SDL_WriteU32LE(stream, val), sizeof(uint32_t))
+	#define W_U16(stream, val) CHECK_WRITE(SDL_WriteU16LE(stream, val), sizeof(uint16_t))
 	#define W_U8(stream, val)  CHECK_WRITE(SDL_WriteU8(stream, val), sizeof(uint8_t))
 
 	W_BYTES(stream, pxi_magic, sizeof(pxi_magic));
@@ -115,7 +115,7 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 	}
 
 	pixmap->data.untyped = mem_alloc(pixmap->data_size);
-	size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 		SDL_ReadIO(cstream, pixmap->data.untyped,
 			   pixmap->data_size);
 

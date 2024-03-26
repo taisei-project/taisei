@@ -104,7 +104,7 @@ bool replay_load_syspath(Replay *rpy, const char *path, ReplayReadMode mode) {
 	} else {
 		file = SDL_IOFromFile(path, "rb");
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
 			return false;
 		}
 	}
@@ -129,7 +129,7 @@ bool replay_save_syspath(Replay *rpy, const char *path, uint16_t version) {
 	} else {
 		file = SDL_IOFromFile(path, "wb");
 		if(!file) {
-			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			log_sdl_error(LOG_ERROR, "SDL_IOFromFile");
 			return false;
 		}
 	}

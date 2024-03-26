@@ -76,7 +76,7 @@ size_t SDL_RWprintf(SDL_IOStream *rwops, const char* fmt, ...) {
 	char *str = vstrfmt(fmt, args);
 	va_end(args);
 
-	size_t ret = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	size_t ret = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 		SDL_WriteIO(rwops, str, strlen(str));
 	mem_free(str);
 
@@ -110,7 +110,7 @@ static void *SDL_RWreadAll_known_size(SDL_IOStream *rwops, size_t file_size,
 	assert(end >= start);
 
 	for(;;) {
-		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 			SDL_ReadIO(rwops, pbuf, (end - pbuf));
 		assert(read <= end - pbuf);
 
@@ -151,7 +151,7 @@ void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) {
 	size_t total_size = 0;
 
 	for(;;) {
-		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 			SDL_ReadIO(rwops, chunk, chunk_size);
 
 		if(read == 0) {
@@ -163,7 +163,7 @@ void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) {
 			return buf;
 		}
 
-		size_t write = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+		size_t write = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 			SDL_WriteIO(autobuf, chunk, chunk_size);
 
 		if(UNLIKELY(write != read)) {

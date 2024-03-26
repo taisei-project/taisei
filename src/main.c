@@ -351,7 +351,7 @@ int main(int argc, char **argv) {
 			ctx->replay_out_stream = SDL_IOFromFile(ctx->cli.out_replay, "wb");
 
 			if(!ctx->replay_out_stream) {
-				log_sdl_error(LOG_FATAL, "SDL_RWFromFile");
+				log_sdl_error(LOG_FATAL, "SDL_IOFromFile");
 			}
 
 			ctx->replay_out = alloc_replay();

@@ -15,7 +15,7 @@ static void pngutil_rwops_write_data(png_structp png_ptr, png_bytep data, png_si
 }
 
 static void pngutil_rwops_flush_data(png_structp png_ptr) {
-	// no flush operation in SDL_RWops
+	// no flush operation in SDL_IOStream
 }
 
 static void pngutil_rwops_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {

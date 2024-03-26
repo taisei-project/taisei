@@ -19,7 +19,7 @@
 #include "util/stringops.h"
 
 #include <SDL3/SDL_bits.h>
-#include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_Mutex.h>
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -46,7 +46,7 @@ typedef struct LogFilterEntry {
 static struct {
 	Logger *outputs;
 	size_t num_outputs;
-	SDL_mutex *mutex;
+	SDL_Mutex *mutex;
 	uint enabled_log_levels;
 
 	struct {
@@ -56,8 +56,8 @@ static struct {
 
 	struct {
 		Thread *thread;
-		SDL_mutex *mutex;
-		SDL_cond *cond;
+		SDL_Mutex *mutex;
+		SDL_Condition *cond;
 		LIST_ANCHOR(QueuedLogEntry) queue;
 		int shutdown;
 	} queue;
@@ -424,7 +424,7 @@ static void log_queue_init(void) {
 	}
 
 	if(!(logging.queue.cond = SDL_CreateCondition())) {
-		log_sdl_error(LOG_ERROR, "SDL_CreateCond");
+		log_sdl_error(LOG_ERROR, "SDL_CreateCondition");
 		return;
 	}
 

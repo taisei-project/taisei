@@ -24,11 +24,11 @@ typedef enum TaskManagerState {
 
 struct TaskManager {
 	LIST_ANCHOR(Task) queue;
-	SDL_sem *queue_sem;
+	SDL_Semaphore *queue_sem;
 	SDL_SpinLock queue_lock;
 	uint numthreads;
 	TaskManagerState state;
-	SDL_atomic_t numtasks;
+	SDL_AtomicInt numtasks;
 	Thread *threads[];
 };
 
@@ -85,7 +85,7 @@ static Task *taskmgr_pop_queue(TaskManager *mgr) {
 
 static void *taskmgr_thread(void *arg) {
 	TaskManager *mgr = arg;
-	attr_unused SDL_threadID tid = SDL_GetCurrentThreadID();
+	attr_unused SDL_ThreadID tid = SDL_GetCurrentThreadID();
 
 	TaskManagerState state = mgr->state;
 	SDL_Semaphore *qsem = mgr->queue_sem;
@@ -234,7 +234,7 @@ Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	}
 
 	if(!(task->cond = SDL_CreateCondition())) {
-		log_sdl_error(LOG_WARN, "SDL_CreateCond");
+		log_sdl_error(LOG_WARN, "SDL_CreateCondition");
 		goto fail;
 	}
 

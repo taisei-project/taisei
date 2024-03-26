@@ -48,7 +48,7 @@ int64_t rwutil_seek_emulated(SDL_IOStream *rw, int64_t offset, int whence,
 
 	if(new_pos < 0) {
 		assert(sz < 0);
-		return sz;  // assume SDL_RWsize set an error;
+		return sz;  // assume SDL_GetIOSize set an error;
 	}
 
 	return rwutil_seek_emulated_abs(rw, new_pos, pos, reopen, readbuf_size, readbuf);
@@ -71,7 +71,7 @@ int64_t rwutil_seek_emulated_abs(SDL_IOStream *rw, int64_t new_pos,
 
 	while(new_pos > *pos) {
 		size_t want_read_size = min(new_pos - *pos, readbuf_size);
-		size_t read_size = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+		size_t read_size = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 			SDL_ReadIO(rw, readbuf, want_read_size);
 		assert(read_size <= want_read_size);
 

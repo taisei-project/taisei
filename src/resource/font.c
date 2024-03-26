@@ -277,7 +277,7 @@ static ulong ftstream_read(FT_Stream stream, ulong offset, uchar *buffer, ulong 
 		return error;
 	}
 
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 	SDL_ReadIO(rwops, buffer, count);
 }
 
@@ -317,7 +317,7 @@ static FT_Face load_font_face(char *vfspath, long index) {
 		.pathname.pointer = syspath,
 		.read = ftstream_read,
 		.close = ftstream_close,
-		.size = SDL_RWsize(rwops),
+		.size = SDL_GetIOSize(rwops),
 	});
 
 	FT_Open_Args ftargs = {

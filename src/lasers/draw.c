@@ -107,7 +107,7 @@ static struct {
 	struct {
 		VertexArray *va;
 		VertexBuffer *vb;
-		SDL_RWops *vb_stream;
+		SDL_IOStream *vb_stream;
 		Model quad;
 	} pass1, pass2;
 

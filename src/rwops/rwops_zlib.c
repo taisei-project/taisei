@@ -262,7 +262,7 @@ static size_t inflate_read(SDL_IOStream *rw, void *ptr, size_t size,
 		z->stream->avail_in = z->buffer_fillsize - (z->buffer_ptr - z->buffer);
 
 		if(!z->stream->avail_in) {
-			z->buffer_fillsize = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+			z->buffer_fillsize = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 				SDL_ReadIO(z->wrapped, z->buffer,
 					   z->buffer_size);
 			z->buffer_ptr = z->buffer;

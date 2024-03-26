@@ -367,11 +367,11 @@ static void load_model_stage1(ResourceLoadState *st) {
 
 	#define TRY_SEEK(ofs) \
 		do { \
-			if(SDL_RWseek(rw, ofs, RW_SEEK_SET) < 0) { \
+			if(SDL_SeekIO(rw, ofs, SDL_IO_SEEK_SET) < 0) { \
 				log_error("%s: %s", path, SDL_GetError()); \
 				goto fail; \
 			} \
-			assert(SDL_RWtell(rw) == ofs); \
+			assert(SDL_TellIO(rw) == ofs); \
 		} while(0)
 
 	#define TRY(...) \

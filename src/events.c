@@ -286,52 +286,52 @@ static bool events_handler_debug_winevt(SDL_Event *event, void *arg) {
 
 	if(event->type == SDL_WINDOWEVENT) {
 		switch(event->window.event) {
-			case SDL_WINDOWEVENT_SHOWN:
+			case SDL_EVENT_WINDOW_SHOWN:
 				log_info("Window %d shown", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_HIDDEN:
+			case SDL_EVENT_WINDOW_HIDDEN:
 				log_info("Window %d hidden", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_EXPOSED:
+			case SDL_EVENT_WINDOW_EXPOSED:
 				log_info("Window %d exposed", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_MOVED:
+			case SDL_EVENT_WINDOW_MOVED:
 				log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
 				break;
-			case SDL_WINDOWEVENT_RESIZED:
+			case SDL_EVENT_WINDOW_RESIZED:
 				log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
 				break;
-			case SDL_WINDOWEVENT_SIZE_CHANGED:
+			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
 				log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
 				break;
-			case SDL_WINDOWEVENT_MINIMIZED:
+			case SDL_EVENT_WINDOW_MINIMIZED:
 				log_info("Window %d minimized", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_MAXIMIZED:
+			case SDL_EVENT_WINDOW_MAXIMIZED:
 				log_info("Window %d maximized", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_RESTORED:
+			case SDL_EVENT_WINDOW_RESTORED:
 				log_info("Window %d restored", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_ENTER:
+			case SDL_EVENT_WINDOW_MOUSE_ENTER:
 				log_info("Mouse entered window %d", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_LEAVE:
+			case SDL_EVENT_WINDOW_MOUSE_LEAVE:
 				log_info("Mouse left window %d", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_FOCUS_GAINED:
+			case SDL_EVENT_WINDOW_FOCUS_GAINED:
 				log_info("Window %d gained keyboard focus", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_FOCUS_LOST:
+			case SDL_EVENT_WINDOW_FOCUS_LOST:
 				log_info("Window %d lost keyboard focus", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_CLOSE:
+			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 				log_info("Window %d closed", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_TAKE_FOCUS:
+			case SDL_EVENT_WINDOW_TAKE_FOCUS:
 				log_info("Window %d is offered a focus", event->window.windowID);
 				break;
-			case SDL_WINDOWEVENT_HIT_TEST:
+			case SDL_EVENT_WINDOW_HIT_TEST:
 				log_info("Window %d has a special hit test", event->window.windowID);
 				break;
 			default:

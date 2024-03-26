@@ -332,7 +332,7 @@ VFSNode *vfs_zipfile_create(VFSNode *source) {
 	SDL_TLSID tls = SDL_CreateTLS();
 
 	if(!tls) {
-		vfs_set_error("SDL_TLSCreate() failed: %s", SDL_GetError());
+		vfs_set_error("SDL_CreateTLS() failed: %s", SDL_GetError());
 		return NULL;
 	}
 

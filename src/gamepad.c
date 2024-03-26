@@ -140,7 +140,7 @@ static bool gamepad_update_device_list(void) {
 	log_info("Updating gamepad devices list");
 
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
-		SDL_GameControllerClose(dev->controller);
+		SDL_CloseGamepad(dev->controller);
 	});
 
 	gamepad.devices.num_elements = 0;
@@ -173,11 +173,11 @@ static bool gamepad_update_device_list(void) {
 
 		auto dev = dynarray_append(&gamepad.devices, {
 			.sdl_id = i,
-			.controller = SDL_GameControllerOpen(i),
+			.controller = SDL_OpenGamepad(i),
 		});
 
 		if(dev->controller == NULL) {
-			log_sdl_error(LOG_WARN, "SDL_GameControllerOpen");
+			log_sdl_error(LOG_WARN, "SDL_OpenGamepad");
 			--gamepad.devices.num_elements;
 			continue;
 		}
@@ -217,7 +217,7 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 		*guid_out = 0;
 
 		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
-		SDL_JoystickGetGUIDString(guid, guid_out, guid_out_sz);
+		SDL_GetJoystickGUIDString(guid, guid_out, guid_out_sz);
 
 		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
 			*out_localdevnum = i;
@@ -331,7 +331,7 @@ void gamepad_shutdown(void) {
 
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
 		if(dev->controller) {
-			SDL_GameControllerClose(dev->controller);
+			SDL_CloseGamepad(dev->controller);
 		}
 	});
 

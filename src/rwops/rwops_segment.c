@@ -110,8 +110,8 @@ static size_t segment_readwrite(SDL_IOStream *rw, void *ptr, size_t size,
 	size_t onum;
 
 	if(pos < 0) {
-		log_debug("SDL_RWtell failed (%i): %s", (int)pos, SDL_GetError());
-		SDL_SetError("segment_readwrite: SDL_RWtell failed (%i) %s", (int)pos, SDL_GetError());
+		log_debug("SDL_TellIO failed (%i): %s", (int)pos, SDL_GetError());
+		SDL_SetError("segment_readwrite: SDL_TellIO failed (%i) %s", (int)pos, SDL_GetError());
 
 		// this could be a non-seekable stream, like /dev/stdin...
 		// let's assume nothing else uses the wrapped stream and try to guess the current position

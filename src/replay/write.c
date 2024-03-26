@@ -13,14 +13,14 @@
 #include "rwops/rwops_autobuf.h"
 
 attr_nonnull_all
-static void replay_write_string(SDL_RWops *file, char *str, uint16_t version) {
+static void replay_write_string(SDL_IOStream *file, char *str, uint16_t version) {
 	if(version >= REPLAY_STRUCT_VERSION_TS102000_REV1) {
 		SDL_WriteU8(file, strlen(str));
 	} else {
-		SDL_WriteLE16(file, strlen(str));
+		SDL_WriteU16LE(file, strlen(str));
 	}
 
-	SDL_RWwrite(file, str, 1, strlen(str));
+	SDL_WriteIO(file, str, 1, strlen(str));
 }
 
 static void fix_flags(Replay *rpy) {
@@ -104,9 +104,9 @@ static bool replay_write_stage(ReplayStage *stg, SDL_IOStream *file,
 
 static void replay_write_stage_events(ReplayStage *stg, SDL_IOStream *file) {
 	dynarray_foreach_elem(&stg->events, ReplayEvent *evt, {
-		SDL_WriteLE32(file, evt->frame);
+		SDL_WriteU32LE(file, evt->frame);
 		SDL_WriteU8(file, evt->type);
-		SDL_WriteLE16(file, evt->value);
+		SDL_WriteU16LE(file, evt->value);
 	});
 }
 
@@ -154,8 +154,8 @@ bool replay_write(Replay *rpy, SDL_IOStream *file, uint16_t version) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		if(!replay_write_stage(stg, vfile, base_version)) {
 			if(compression) {
-				SDL_RWclose(vfile);
-				SDL_RWclose(abuf);
+				SDL_CloseIO(vfile);
+				SDL_CloseIO(abuf);
 			}
 
 			return false;

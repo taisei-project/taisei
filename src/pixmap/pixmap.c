@@ -84,7 +84,7 @@ static PixmapFileFormatHandler *pixmap_probe_stream(SDL_IOStream *stream) {
 
 		bool match = h->probe(stream);
 		if(SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET) < 0) {
-			log_sdl_error(LOG_ERROR, "SDL_RWseek");
+			log_sdl_error(LOG_ERROR, "SDL_SeekIO");
 			return NULL;
 		}
 

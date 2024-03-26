@@ -111,7 +111,7 @@ static size_t splayer_process_channel(StreamPlayer *plr, int chan, size_t bufsiz
 			ssize_t read = SDL_GetAudioStreamData(pipe, buf, buf_end - buf);
 
 			if(UNLIKELY(read < 0)) {
-				log_sdl_error(LOG_ERROR, "SDL_AudioStreamGet");
+				log_sdl_error(LOG_ERROR, "SDL_GetAudioStreamData");
 				break;
 			}
 

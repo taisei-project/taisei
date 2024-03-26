@@ -64,7 +64,7 @@ void vfs_init(void) {
 	if(vfs_tls_id) {
 		vfs_tls_fallback = NULL;
 	} else {
-		log_warn("SDL_TLSCreate(): failed: %s", SDL_GetError());
+		log_warn("SDL_CreateTLS(): failed: %s", SDL_GetError());
 		vfs_tls_fallback = ALLOC(typeof(*vfs_tls_fallback));
 	}
 }

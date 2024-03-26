@@ -51,13 +51,13 @@ static int64_t auto_seek(SDL_IOStream *rw, int64_t offset, int whence) {
 }
 
 static int64_t auto_size(SDL_IOStream *rw) {
-	// return SDL_RWsize(BUFFER(rw)->memrw);
+	// return SDL_GetIOSize(BUFFER(rw)->memrw);
 	return BUFFER(rw)->size;
 }
 
 static size_t auto_read(SDL_IOStream *rw, void *ptr, size_t size,
 			size_t maxnum) {
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 	SDL_ReadIO(BUFFER(rw)->memrw, ptr, size * maxnum);
 }
 
@@ -74,7 +74,7 @@ static size_t auto_write(SDL_IOStream *rw, const void *ptr, size_t size,
 		auto_realloc(b, newsize);
 	}
 
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 	SDL_WriteIO(BUFFER(rw)->memrw, ptr, size * maxnum);
 }
 

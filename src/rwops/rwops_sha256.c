@@ -49,7 +49,7 @@ static void rwsha256_update_sha256(SDL_IOStream *rw, const void *data,
 
 static size_t rwsha256_read(SDL_IOStream *rw, void *ptr, size_t size,
 			    size_t maxnum) {
-	size_t result = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	size_t result = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 		SDL_ReadIO(DATA(rw)->src, ptr, size * maxnum);
 	rwsha256_update_sha256(rw, ptr, size, result);
 	return result;
@@ -58,7 +58,7 @@ static size_t rwsha256_read(SDL_IOStream *rw, void *ptr, size_t size,
 static size_t rwsha256_write(SDL_IOStream *rw, const void *ptr, size_t size,
 			     size_t maxnum) {
 	rwsha256_update_sha256(rw, ptr, size, maxnum);
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 	SDL_WriteIO(DATA(rw)->src, ptr, size * maxnum);
 }
 

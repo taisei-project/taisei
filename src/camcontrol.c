@@ -155,7 +155,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = mouse_event,
 			.arg = cam,
-			.event_type = SDL_MOUSEMOTION,
+			.event_type = SDL_EVENT_MOUSE_MOTION,
 		}
 	);
 
@@ -163,7 +163,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = wheel_event,
 			.arg = &move_speed,
-			.event_type = SDL_MOUSEWHEEL,
+			.event_type = SDL_EVENT_MOUSE_WHEEL,
 		}
 	);
 
@@ -171,7 +171,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = keydown_event,
 			.arg = &estate,
-			.event_type = SDL_KEYDOWN,
+			.event_type = SDL_EVENT_KEY_DOWN,
 		}
 	);
 
@@ -179,7 +179,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = focus_gained_event,
 			.arg = &estate,
-			.event_type = SDL_WINDOWEVENT_FOCUS_GAINED,
+			.event_type = SDL_EVENT_WINDOW_FOCUS_GAINED,
 		}
 	);
 
@@ -187,7 +187,7 @@ TASK(camera_control, { Camera3D *cam; }) {
 		&(EventHandler) {
 			.proc = focus_lost_event,
 			.arg = &estate,
-			.event_type = SDL_WINDOWEVENT_FOCUS_LOST,
+			.event_type = SDL_EVENT_WINDOW_FOCUS_LOST,
 		}
 	);
 

@@ -63,7 +63,7 @@ static int64_t trace_size(SDL_IOStream *rw) {
 
 static size_t trace_read(SDL_IOStream *rw, void *ptr, size_t size,
 			 size_t maxnum) {
-	size_t r = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWread() */
+	size_t r = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
 		SDL_ReadIO(TRACE_SOURCE(rw), ptr, size * maxnum);
 	TRACE(rw, "read(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, r);
 	TRACE(rw, "`--> %"PRIi64, SDL_TellIO(TRACE_SOURCE(rw)));
@@ -77,7 +77,7 @@ static size_t trace_read(SDL_IOStream *rw, void *ptr, size_t size,
 
 static size_t trace_write(SDL_IOStream *rw, const void *ptr, size_t size,
 			  size_t maxnum) {
-	size_t w = /* FIXME MIGRATION: double-check if you use the returned value of SDL_RWwrite() */
+	size_t w = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
 		SDL_WriteIO(TRACE_SOURCE(rw), ptr, size * maxnum);
 	TRACE(rw, "write(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, w);
 
