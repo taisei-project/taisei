@@ -11,7 +11,7 @@
 
 #include "defs.h"
 
-#include <SDL3/SDL_rwops.h>
+#include <SDL3/SDL_iostream.h>
 
 typedef enum GLSLProfile {
 	GLSL_PROFILE_NONE,

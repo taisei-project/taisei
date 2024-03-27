@@ -39,11 +39,12 @@ int64_t rwutil_compute_seek_pos(int64_t offset, int whence, int64_t pos, int64_t
 	return new_pos;
 }
 
-int64_t rwutil_seek_emulated(SDL_IOStream *rw, int64_t offset, int whence,
-			     int64_t *pos, rwutil_reopen_func reopen,
-			     size_t readbuf_size, void *readbuf
+int64_t rwutil_seek_emulated(
+	SDL_IOStream *rw, int64_t offset, int whence,
+	int64_t *pos, rwutil_reopen_func reopen, void *reopen_arg,
+	size_t readbuf_size, void *readbuf
 ) {
-	int64_t sz = SDL_SizeIO(rw);
+	int64_t sz = SDL_GetIOSize(rw);
 	int64_t new_pos = rwutil_compute_seek_pos(offset, whence, *pos, sz);
 
 	if(new_pos < 0) {
@@ -51,13 +52,14 @@ int64_t rwutil_seek_emulated(SDL_IOStream *rw, int64_t offset, int whence,
 		return sz;  // assume SDL_GetIOSize set an error;
 	}
 
-	return rwutil_seek_emulated_abs(rw, new_pos, pos, reopen, readbuf_size, readbuf);
+	return rwutil_seek_emulated_abs(rw, new_pos, pos, reopen, reopen_arg, readbuf_size, readbuf);
 }
 
-int64_t rwutil_seek_emulated_abs(SDL_IOStream *rw, int64_t new_pos,
-				 int64_t *pos,
-				 rwutil_reopen_func reopen,
-				 size_t readbuf_size, void *readbuf
+int64_t rwutil_seek_emulated_abs(
+	SDL_IOStream *rw,
+	int64_t new_pos, int64_t *pos,
+	rwutil_reopen_func reopen, void *reopen_arg,
+	size_t readbuf_size, void *readbuf
 ) {
 	assert(new_pos >= 0);
 

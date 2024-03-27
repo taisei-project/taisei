@@ -51,7 +51,7 @@ static zip_int64_t vfs_zipfile_srcfunc(void *userdata, void *data, zip_uint64_t 
 
 			if(tls->stream) {
 				stat->valid |= ZIP_STAT_SIZE | ZIP_STAT_COMP_SIZE;
-				stat->size = SDL_SizeIO(tls->stream);
+				stat->size = SDL_GetIOSize(tls->stream);
 				stat->comp_size = stat->size;
 			}
 

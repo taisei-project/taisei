@@ -11,7 +11,7 @@
 
 #include <SDL3/SDL.h>
 
-typedef int (*rwutil_reopen_func)(SDL_IOStream *rw);
+typedef int (*rwutil_reopen_func)(void *context);
 
 /*
  * Compute an absolute seek position from `offset` and `whence`, give a stream open at `pos` of
@@ -36,9 +36,18 @@ int64_t rwutil_compute_seek_pos(int64_t offset, int whence, int64_t pos, int64_t
  *
  * Returns the new value of *pos.
  */
-int64_t rwutil_seek_emulated(SDL_IOStream *rw, int64_t offset, int whence, int64_t *pos, rwutil_reopen_func reopen, size_t readbuf_size, void *readbuf) attr_nonnull_all attr_nodiscard;
+int64_t rwutil_seek_emulated(
+	SDL_IOStream *rw, int64_t offset, int whence,
+	int64_t *pos, rwutil_reopen_func reopen, void *reopen_arg,
+	size_t readbuf_size, void *readbuf
+) attr_nonnull_all attr_nodiscard;
 
 /*
  * Like rwutil_seek_emulated, but takes an absolute position instead of offset and whence.
  */
-int64_t rwutil_seek_emulated_abs(SDL_IOStream *rw, int64_t new_pos, int64_t *pos, rwutil_reopen_func reopen, size_t readbuf_size, void *readbuf) attr_nonnull_all attr_nodiscard;
+int64_t rwutil_seek_emulated_abs(
+	SDL_IOStream *rw,
+	int64_t new_pos, int64_t *pos,
+	rwutil_reopen_func reopen, void *reopen_arg,
+	size_t readbuf_size, void *readbuf
+) attr_nonnull_all attr_nodiscard;

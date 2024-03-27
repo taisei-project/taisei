@@ -22,9 +22,19 @@ char *SDL_RWgets(SDL_IOStream *rwops, char *buf, size_t bufsize) {
 	char c, *ptr = buf, *end = buf + bufsize - 1;
 	assert(end > ptr);
 
-	while((c = SDL_ReadU8(rwops)) && ptr <= end) {
-		if((*ptr++ = c) == '\n')
+	while(ptr <= end) {
+		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
+			log_sdl_error(LOG_ERROR, "SDL_ReadU8");
 			break;
+		}
+
+		if(!c) {
+			break;
+		}
+
+		if((*ptr++ = c) == '\n') {
+			break;
+		}
 	}
 
 	if(ptr == buf)
@@ -44,7 +54,16 @@ char *SDL_RWgets_realloc(SDL_IOStream *rwops, char **buf, size_t *bufsize) {
 	char c, *ptr = *buf, *end = *buf + *bufsize - 1;
 	assert(end >= ptr);
 
-	while((c = SDL_ReadU8(rwops))) {
+	while(true) {
+		if(!SDL_ReadU8(rwops, (uint8_t*)&c)) {
+			log_sdl_error(LOG_ERROR, "SDL_ReadU8");
+			break;
+		}
+
+		if(!c) {
+			break;
+		}
+
 		*ptr++ = c;
 
 		if(ptr > end) {
@@ -124,7 +143,7 @@ static void *SDL_RWreadAll_known_size(SDL_IOStream *rwops, size_t file_size,
 }
 
 void *SDL_RWreadAll(SDL_IOStream *rwops, size_t *out_size, size_t max_size) {
-	ssize_t file_size = SDL_SizeIO(rwops);
+	int64_t file_size = SDL_GetIOSize(rwops);
 
 	if(file_size >= 0) {
 		if(max_size && file_size > max_size) {
