@@ -134,7 +134,7 @@ static SDL_IOStream *rwzstd_alloc(
 	return io;
 }
 
-static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
+static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size, SDL_IOStatus *status) {
 	ZSTD_inBuffer *in = &z->reader.in_buffer;
 
 	if(request_size > z->reader.in_buffer_alloc_size) {
@@ -165,8 +165,8 @@ static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
 	uint8_t *pos = start;
 
 	while(in->size < request_size) {
-		size_t read = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-			SDL_ReadIO(z->wrapped, pos, (end - pos));
+		size_t read = SDL_ReadIO(z->wrapped, pos, (end - pos));
+		*status = SDL_GetIOStatus(z->wrapped);  // FIXME not sure if correct
 
 		if(read == 0) {
 			break;
@@ -195,7 +195,7 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 
 	while(out.pos < out.size && have_input) {
 		if(in->size - in->pos < z->reader.next_read_size) {
-			rwzstd_reader_fill_in_buffer(z, z->reader.next_read_size);
+			rwzstd_reader_fill_in_buffer(z, z->reader.next_read_size, status);
 
 			if(in->size - in->pos < z->reader.next_read_size) {
 				// end of stream
@@ -203,15 +203,15 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 			}
 		}
 
-		size_t status = ZSTD_decompressStream(stream, &out, in);
+		size_t zstatus = ZSTD_decompressStream(stream, &out, in);
 
-		if(UNLIKELY(ZSTD_isError(status))) {
-			SDL_SetError("ZSTD_decompressStream() failed: %s", ZSTD_getErrorName(status));
+		if(UNLIKELY(ZSTD_isError(zstatus))) {
+			SDL_SetError("ZSTD_decompressStream() failed: %s", ZSTD_getErrorName(zstatus));
 			log_debug("%s", SDL_GetError());
 			return 0;
 		}
 
-		z->reader.next_read_size = status;
+		z->reader.next_read_size = zstatus;
 	}
 
 	z->pos += out.pos;
@@ -254,7 +254,8 @@ static SDL_IOStream *rwzstd_open_reader(
 
 		size_t psize = z->reader.in_buffer.size;
 		size_t header_size = 24;  // a bit larger than ZSTD_FRAMEHEADERSIZE_MAX from private API
-		rwzstd_reader_fill_in_buffer(z, header_size);
+		SDL_IOStatus status;  // FIXME
+		rwzstd_reader_fill_in_buffer(z, header_size, &status);
 		z->reader.next_read_size -= z->reader.in_buffer.size - psize;
 
 		ZSTD_inBuffer *in = &z->reader.in_buffer;
