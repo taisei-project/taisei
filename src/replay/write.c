@@ -20,7 +20,7 @@ static void replay_write_string(SDL_IOStream *file, char *str, uint16_t version)
 		SDL_WriteU16LE(file, strlen(str));
 	}
 
-	SDL_WriteIO(file, str, 1, strlen(str));
+	SDL_WriteIO(file, str, strlen(str));
 }
 
 static void fix_flags(Replay *rpy) {

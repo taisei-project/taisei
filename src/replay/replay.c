@@ -10,6 +10,8 @@
 #include "struct.h"
 #include "stage.h"
 
+#include "rwops/rwops_stdiofp.h"
+
 void replay_destroy_events(Replay *rpy) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {
 		replay_stage_destroy_events(stg);
