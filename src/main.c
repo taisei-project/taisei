@@ -23,6 +23,7 @@
 #include "replay/demoplayer.h"
 #include "replay/struct.h"
 #include "replay/tsrtool.h"
+#include "rwops/rwops_stdiofp.h"
 #include "stage.h"
 #include "stageobjects.h"
 #include "taskmanager.h"
@@ -209,11 +210,8 @@ static void log_system_specs(void) {
 	// log_info("CPU type: %s", SDL_GetCPUType());
 	// log_info("CPU name: %s", SDL_GetCPUName());
 	log_info("CacheLine size: %d", SDL_GetCPUCacheLineSize());
-	log_info("RDTSC: %d", SDL_HasRDTSC());
 	log_info("Altivec: %d", SDL_HasAltiVec());
 	log_info("MMX: %d", SDL_HasMMX());
-	log_info("3DNow: %d",
-		 /* FIXME MIGRATION: SDL_Has3DNow() has been removed; there is no replacement. */0);
 	log_info("SSE: %d", SDL_HasSSE());
 	log_info("SSE2: %d", SDL_HasSSE2());
 	log_info("SSE3: %d", SDL_HasSSE3());
@@ -221,9 +219,7 @@ static void log_system_specs(void) {
 	log_info("SSE4.2: %d", SDL_HasSSE42());
 	log_info("AVX: %d", SDL_HasAVX());
 	log_info("AVX2: %d", SDL_HasAVX2());
-#if SDL_VERSION_ATLEAST(2, 0, 6)
 	log_info("NEON: %d", SDL_HasNEON());
-#endif
 	log_info("RAM: %d MB", SDL_GetSystemRAM());
 }
 
