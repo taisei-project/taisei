@@ -26,77 +26,68 @@ struct crc32_data {
 	bool autoclose;
 };
 
-#define DATA(rw) ((struct crc32_data*)((rw)->hidden.unknown.data1))
+static int rwcrc32_close(void *ctx) {
+	struct crc32_data *cdata = ctx;
 
-static int rwcrc32_close(SDL_IOStream *rw) {
-	if(DATA(rw)->autoclose) {
-		SDL_CloseIO(DATA(rw)->src);
+	if(cdata->autoclose) {
+		SDL_CloseIO(cdata->src);
 	}
 
-	mem_free(DATA(rw));
-	SDL_FreeRW(rw);
+	mem_free(cdata);
 	return 0;
 }
 
-static int64_t rwcrc32_seek(SDL_IOStream *rw, int64_t offset, int whence) {
-	SDL_SetError("Stream is not seekable");
-	return -1;
+static int64_t rwcrc32_size(void *ctx) {
+	struct crc32_data *cdata = ctx;
+	return SDL_GetIOSize(cdata->src);
 }
 
-static int64_t rwcrc32_size(SDL_IOStream *rw) {
-	return SDL_SizeIO(DATA(rw)->src);
+static void rwcrc32_update_crc(struct crc32_data *cdata, const void *data, size_t size, char mode) {
+	attr_unused uint32_t old = *cdata->crc32_ptr;
+	*cdata->crc32_ptr = crc32(*cdata->crc32_ptr, data, size);
+	RWCRC32_DEBUG("%c %zu bytes: 0x%08x --> 0x%08x", mode, size, old, *cdata->crc32_ptr);
 }
 
-static void rwcrc32_update_crc(SDL_IOStream *rw, const void *data,
-			       size_t size, size_t maxnum, char mode) {
-	assert(size <= UINT32_MAX);
-	assert(maxnum <= UINT32_MAX);
-	assert(size * maxnum <= UINT32_MAX);
-	attr_unused uint32_t old = *DATA(rw)->crc32_ptr;
-	*DATA(rw)->crc32_ptr = crc32(*DATA(rw)->crc32_ptr, data, size * maxnum);
-	RWCRC32_DEBUG("%c %zu bytes: 0x%08x --> 0x%08x", mode, size * maxnum, old, *DATA(rw)->crc32_ptr);
+static size_t rwcrc32_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	struct crc32_data *cdata = ctx;
+	size = SDL_ReadIO(cdata->src, ptr, size);
+	*status = SDL_GetIOStatus(cdata->src);
+	rwcrc32_update_crc(cdata, ptr, size, 'R');
+	return size;
 }
 
-static size_t rwcrc32_read(SDL_IOStream *rw, void *ptr, size_t size,
-			   size_t maxnum) {
-	size_t result = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-		SDL_ReadIO(DATA(rw)->src, ptr, size * maxnum);
-	rwcrc32_update_crc(rw, ptr, size, maxnum, 'R');
-	return result;
+static size_t rwcrc32_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+	struct crc32_data *cdata = ctx;
+	size = SDL_WriteIO(cdata->src, ptr, size);
+	*status = SDL_GetIOStatus(cdata->src);
+	rwcrc32_update_crc(cdata, ptr, size, 'W');
+	return size;
 }
 
-static size_t rwcrc32_write(SDL_IOStream *rw, const void *ptr, size_t size,
-			    size_t maxnum) {
-	rwcrc32_update_crc(rw, ptr, size, maxnum, 'W');
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
-	SDL_WriteIO(DATA(rw)->src, ptr, size * maxnum);
-}
-
-SDL_IOStream *SDL_RWWrapCRC32(SDL_IOStream *src, uint32_t *crc32_ptr,
-			      bool autoclose) {
+SDL_IOStream *SDL_RWWrapCRC32(SDL_IOStream *src, uint32_t *crc32_ptr, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
-	SDL_IOStream *rw = SDL_AllocRW();
+	SDL_IOStreamInterface iface = {
+		.size = rwcrc32_size,
+		.close = rwcrc32_close,
+		.read = rwcrc32_read,
+		.write = rwcrc32_write,
+	};
 
-	if(UNLIKELY(!rw)) {
+	auto cdata = ALLOC(struct crc32_data, {
+		.autoclose = autoclose,
+		.crc32_ptr = crc32_ptr,
+		.src = src,
+	});
+
+	SDL_IOStream *io = SDL_OpenIO(&iface, cdata);
+
+	if(UNLIKELY(!io)) {
+		mem_free(cdata);
 		return NULL;
 	}
 
-	memset(rw, 0, sizeof(SDL_IOStream));
-
-	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->hidden.unknown.data1 = ALLOC(struct crc32_data);
-	DATA(rw)->src = src;
-	DATA(rw)->crc32_ptr = crc32_ptr;
-	DATA(rw)->autoclose = autoclose;
-
-	rw->size = rwcrc32_size;
-	rw->seek = rwcrc32_seek;
-	rw->close = rwcrc32_close;
-	rw->read = rwcrc32_read;
-	rw->write = rwcrc32_write;
-
-	return rw;
+	return io;
 }
