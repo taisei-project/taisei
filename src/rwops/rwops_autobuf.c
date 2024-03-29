@@ -8,65 +8,61 @@
 
 #include "rwops_autobuf.h"
 
-#define BUFFER(rw) ((Buffer*)((rw)->hidden.unknown.data1))
-
 typedef struct Buffer {
-	SDL_IOStream *memrw;
+	SDL_IOStream *memio;
 	void *data;
 	void **ptr;
 	size_t size;
 } Buffer;
 
 static void auto_realloc(Buffer *b, size_t newsize) {
-	size_t pos = SDL_TellIO(b->memrw);
-	SDL_CloseIO(b->memrw);
+	size_t pos = SDL_TellIO(b->memio);
+	SDL_CloseIO(b->memio);
 
 	b->size = newsize;
 	b->data = mem_realloc(b->data, b->size);
-	b->memrw = SDL_IOFromMem(b->data, b->size);
+	b->memio = SDL_IOFromMem(b->data, b->size);
 
 	if(b->ptr) {
 		*b->ptr = b->data;
 	}
 
 	if(pos > 0) {
-		SDL_SeekIO(b->memrw, pos, SDL_IO_SEEK_SET);
+		SDL_SeekIO(b->memio, pos, SDL_IO_SEEK_SET);
 	}
 }
 
-static int auto_close(SDL_IOStream *rw) {
-	if(rw) {
-		Buffer *b = BUFFER(rw);
-		SDL_CloseIO(b->memrw);
-		mem_free(b->data);
-		mem_free(b);
-		SDL_FreeRW(rw);
-	}
-
+static int auto_close(void *ctx) {
+	Buffer *b = ctx;
+	SDL_CloseIO(b->memio);
+	mem_free(b->data);
+	mem_free(b);
 	return 0;
 }
 
-static int64_t auto_seek(SDL_IOStream *rw, int64_t offset, int whence) {
-	return SDL_SeekIO(BUFFER(rw)->memrw, offset, whence);
+static int64_t auto_seek(void *ctx, int64_t offset, int whence) {
+	Buffer *b = ctx;
+	return SDL_SeekIO(b->memio, offset, whence);
 }
 
-static int64_t auto_size(SDL_IOStream *rw) {
-	// return SDL_GetIOSize(BUFFER(rw)->memrw);
-	return BUFFER(rw)->size;
+static int64_t auto_size(void *ctx) {
+	Buffer *b = ctx;
+	// return SDL_GetIOSize(b->memrw);
+	return b->size;
 }
 
-static size_t auto_read(SDL_IOStream *rw, void *ptr, size_t size,
-			size_t maxnum) {
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-	SDL_ReadIO(BUFFER(rw)->memrw, ptr, size * maxnum);
+static size_t auto_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	Buffer *b = ctx;
+	size = SDL_ReadIO(b->memio, ptr, size);
+	*status = SDL_GetIOStatus(b->memio);
+	return size;
 }
 
-static size_t auto_write(SDL_IOStream *rw, const void *ptr, size_t size,
-			 size_t maxnum) {
-	Buffer *b = BUFFER(rw);
+static size_t auto_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+	Buffer *b = ctx;
 	size_t newsize = b->size;
 
-	while(size * maxnum > newsize - SDL_TellIO(rw)) {
+	while(size > newsize - SDL_TellIO(b->memio)) {
 		newsize *= 2;
 	}
 
@@ -74,37 +70,38 @@ static size_t auto_write(SDL_IOStream *rw, const void *ptr, size_t size,
 		auto_realloc(b, newsize);
 	}
 
-	return /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
-	SDL_WriteIO(BUFFER(rw)->memrw, ptr, size * maxnum);
+	size = SDL_WriteIO(b->memio, ptr, size);
+	*status = SDL_GetIOStatus(b->memio);
+	return size;
 }
 
 SDL_IOStream *SDL_RWAutoBuffer(void **ptr, size_t initsize) {
-	SDL_IOStream *rw = SDL_AllocRW();
-
-	if(UNLIKELY(!rw)) {
-		return NULL;
-	}
-
-	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->seek = auto_seek;
-	rw->size = auto_size;
-	rw->read = auto_read;
-	rw->write = auto_write;
-	rw->close = auto_close;
+	SDL_IOStreamInterface iface = {
+		.close = auto_close,
+		.read = auto_read,
+		.seek = auto_seek,
+		.size = auto_size,
+		.write = auto_write,
+	};
 
 	auto b = ALLOC(Buffer, {
 		.size = initsize,
-		.data = mem_alloc(initsize),
 		.ptr = ptr,
 	});
 
-	b->memrw = SDL_IOFromMem(b->data, b->size);
+	SDL_IOStream *io = SDL_OpenIO(&iface, b);
+
+	if(UNLIKELY(!io)) {
+		mem_free(b);
+		return NULL;
+	}
+
+	b->memio = NOT_NULL(SDL_IOFromMem(b->data, b->size));
+	b->data = mem_alloc(initsize);
 
 	if(ptr) {
 		*ptr = b->data;
 	}
 
-	rw->hidden.unknown.data1 = b;
-
-	return rw;
+	return io;
 }
