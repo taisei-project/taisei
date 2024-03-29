@@ -105,5 +105,10 @@ SDL_IOStream *SDL_RWFromFP(FILE *fp, SDL_bool autoclose)
 	if (!rwops) {
 		iface.close(rwopsdata);
 	}
+
+	SDL_PropertiesID props = SDL_GetIOProperties(rwops);
+	assume(props != 0);
+	SDL_SetProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, fp);
+
 	return rwops;
 }
