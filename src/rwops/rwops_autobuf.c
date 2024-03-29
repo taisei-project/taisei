@@ -96,8 +96,8 @@ SDL_IOStream *SDL_RWAutoBuffer(void **ptr, size_t initsize) {
 		return NULL;
 	}
 
-	b->memio = NOT_NULL(SDL_IOFromMem(b->data, b->size));
 	b->data = mem_alloc(initsize);
+	b->memio = NOT_NULL(SDL_IOFromMem(b->data, b->size));
 
 	if(ptr) {
 		*ptr = b->data;
