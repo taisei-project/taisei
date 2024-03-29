@@ -150,6 +150,7 @@ static bool gamepad_update_device_list(void) {
 	if(num_joysticks < 1) {
 		dynarray_free_data(&gamepad.devices);
 		log_info("No joysticks attached");
+		SDL_free(joysticks);
 		return false;
 	}
 
@@ -188,6 +189,8 @@ static bool gamepad_update_device_list(void) {
 		int n = DEVNUM(dev);
 		log_info("Found device '%s' (#%i): %s", guid_str, n, gamepad_device_name(n));
 	}
+
+	SDL_free(joysticks);
 
 	if(!gamepad.devices.num_elements) {
 		log_info("No usable devices");
