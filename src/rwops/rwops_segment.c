@@ -17,10 +17,8 @@ typedef struct Segment {
 	bool autoclose;
 } Segment;
 
-#define SEGMENT(rw) ((Segment*)((rw)->hidden.unknown.data1))
-
-static int64_t segment_seek(SDL_IOStream *rw, int64_t offset, int whence) {
-	Segment *s = SEGMENT(rw);
+static int64_t segment_seek(void *ctx, int64_t offset, int whence) {
+	Segment *s = ctx;
 
 	switch(whence) {
 		case SDL_IO_SEEK_CUR : {
@@ -52,7 +50,7 @@ static int64_t segment_seek(SDL_IOStream *rw, int64_t offset, int whence) {
 		}
 
 		case SDL_IO_SEEK_END : {
-			int64_t size = SDL_SizeIO(s->wrapped);
+			int64_t size = SDL_GetIOSize(s->wrapped);
 
 			if(size < 0) {
 				return size;
@@ -88,9 +86,9 @@ static int64_t segment_seek(SDL_IOStream *rw, int64_t offset, int whence) {
 	return result;
 }
 
-static int64_t segment_size(SDL_IOStream *rw) {
-	Segment *s = SEGMENT(rw);
-	int64_t size = SDL_SizeIO(s->wrapped);
+static int64_t segment_size(void *ctx) {
+	Segment *s = ctx;
+	int64_t size = SDL_GetIOSize(s->wrapped);
 
 	if(size < 0) {
 		return size;
@@ -103,11 +101,10 @@ static int64_t segment_size(SDL_IOStream *rw) {
 	return size - s->start;
 }
 
-static size_t segment_readwrite(SDL_IOStream *rw, void *ptr, size_t size,
-				size_t maxnum, bool write) {
-	Segment *s = SEGMENT(rw);
+static size_t segment_readwrite(
+	Segment *s, void *ptr, size_t size, bool write, SDL_IOStatus *status
+) {
 	int64_t pos = SDL_TellIO(s->wrapped);
-	size_t onum;
 
 	if(pos < 0) {
 		log_debug("SDL_TellIO failed (%i): %s", (int)pos, SDL_GetError());
@@ -115,7 +112,7 @@ static size_t segment_readwrite(SDL_IOStream *rw, void *ptr, size_t size,
 
 		// this could be a non-seekable stream, like /dev/stdin...
 		// let's assume nothing else uses the wrapped stream and try to guess the current position
-		// this only works if the actual positon in the stream at the time of segment creation matched s->start...
+		// this only works if the actual position in the stream at the time of segment creation matched s->start...
 		pos = s->pos;
 	} else {
 		s->pos = pos;
@@ -128,83 +125,68 @@ static size_t segment_readwrite(SDL_IOStream *rw, void *ptr, size_t size,
 	}
 
 	int64_t maxsize = s->end - pos;
-
-	while(size * maxnum > maxsize) {
-		if(!--maxnum) {
-			return 0;
-		}
-	}
+	size = min(size, maxsize);
 
 	if(write) {
-		onum = SDL_WriteIO(s->wrapped, ptr, size * maxnum);
-		onum = (onum <= 0) ? 0 : onum / size;
+		size = SDL_WriteIO(s->wrapped, ptr, size);
 	} else {
-		onum = SDL_ReadIO(s->wrapped, ptr, size * maxnum);
-		onum = (onum <= 0) ? 0 : onum / size;
+		size = SDL_ReadIO(s->wrapped, ptr, size);
 	}
 
-	s->pos += onum / size;
+	*status = SDL_GetIOStatus(s->wrapped);
+	s->pos += size;
 	assert(s->pos <= s->end);
-
-	return onum;
+	return size;
 }
 
-static size_t segment_read(SDL_IOStream *rw, void *ptr, size_t size,
-			   size_t maxnum) {
-	return segment_readwrite(rw, ptr, size, maxnum, false);
+static size_t segment_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	return segment_readwrite(ctx, ptr, size, false, status);
 }
 
-static size_t segment_write(SDL_IOStream *rw, const void *ptr, size_t size,
-			    size_t maxnum) {
-	return segment_readwrite(rw, (void*)ptr, size, maxnum, true);
+static size_t segment_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
+	return segment_readwrite(ctx, (void*)ptr, size, true, status);
 }
 
-static int segment_close(SDL_IOStream *rw) {
-	if(rw) {
-		Segment *s = SEGMENT(rw);
+static int segment_close(void *ctx) {
+	Segment *s = ctx;
 
-		if(s->autoclose) {
-			SDL_CloseIO(s->wrapped);
-		}
-
-		mem_free(s);
-		SDL_FreeRW(rw);
+	if(s->autoclose) {
+		SDL_CloseIO(s->wrapped);
 	}
 
+	mem_free(s);
 	return 0;
 }
 
-SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end,
-				bool autoclose) {
+SDL_IOStream *SDL_RWWrapSegment(SDL_IOStream *src, size_t start, size_t end, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
 	assert(end > start);
 
-	SDL_IOStream *rw = SDL_AllocRW();
+	SDL_IOStreamInterface iface = {
+		.seek = segment_seek,
+		.size = segment_size,
+		.read = segment_read,
+		.write = segment_write,
+		.close = segment_close,
+	};
 
-	if(UNLIKELY(!rw)) {
-		return NULL;
-	}
-
-	memset(rw, 0, sizeof(SDL_IOStream));
-
-	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->seek = segment_seek;
-	rw->size = segment_size;
-	rw->read = segment_read;
-	rw->write = segment_write;
-	rw->close = segment_close;
-	rw->hidden.unknown.data1 = ALLOC(Segment, {
+	auto s = ALLOC(Segment, {
 		.wrapped = src,
 		.start = start,
 		.end = end,
 		.autoclose = autoclose,
-
-		// fallback for non-seekable streams
-		.pos = start,
+		.pos = start,  // fallback for non-seekable streams
 	});
 
-	return rw;
+	SDL_IOStream *io = SDL_OpenIO(&iface, s);
+
+	if(UNLIKELY(!io)) {
+		mem_free(s);
+		return NULL;
+	}
+
+	return io;
 }
