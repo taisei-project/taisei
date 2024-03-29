@@ -16,6 +16,7 @@
 
 typedef struct ZstdData {
 	SDL_IOStream *wrapped;
+	SDL_IOStream *iostream;
 	int64_t pos;
 
 	union {
@@ -38,11 +39,13 @@ typedef struct ZstdData {
 	bool autoclose;
 } ZstdData;
 
-#define ZDATA(rw) NOT_NULL((ZstdData*)(NOT_NULL(rw)->hidden.unknown.data1))
+static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, int whence);
 
-static int64_t rwzstd_seek(SDL_IOStream *rw, int64_t offset, int whence) {
+static int64_t rwzstd_seek(void *ctx, int64_t offset, int whence) {
+	ZstdData *zdata = ctx;
+
 	if(!offset && whence == SDL_IO_SEEK_CUR) {
-		return ZDATA(rw)->pos;
+		return zdata->pos;
 	}
 
 	return SDL_SetError("Can't seek in a zstd stream");
@@ -52,53 +55,83 @@ static int64_t rwzstd_size_invalid(SDL_IOStream *rw) {
 	return SDL_SetError("Can't get size of a zstd stream");
 }
 
-static int64_t rwzstd_size(SDL_IOStream *rw) {
-	return ZDATA(rw)->reader.uncompressed_size;
-}
+static int64_t rwzstd_size(void *ctx) {
+	ZstdData *zdata = ctx;
+	int64_t size = zdata->reader.uncompressed_size;
 
-static int rwzstd_close(SDL_IOStream *rw) {
-	ZstdData *z = ZDATA(rw);
-
-	if(z->autoclose) {
-		SDL_CloseIO(z->wrapped);
+	if(size < 0) {
+		return SDL_SetError("Uncompressed stream size is unknown");
 	}
 
-	mem_free(z);
-	SDL_FreeRW(rw);
+	return size;
+}
 
+static int rwzstd_reader_close(void *ctx);
+static int rwzstd_writer_close(void *ctx);
+
+static int rwzstd_close(void *ctx) {
+	ZstdData *zdata = ctx;
+
+	if(zdata->autoclose) {
+		SDL_CloseIO(zdata->wrapped);
+	}
+
+	mem_free(zdata);
 	return 0;
 }
 
-static size_t rwzstd_read_invalid(SDL_IOStream *rw, void *ptr, size_t size,
-				  size_t maxnum) {
+static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status);
+
+static size_t rwzstd_read_invalid(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	SDL_SetError("Can't read from a zstd writer stream");
+	*status = SDL_IO_STATUS_WRITEONLY;
 	return 0;
 }
 
-static size_t rwzstd_write_invalid(SDL_IOStream *rw, const void *ptr,
-				   size_t size, size_t maxnum) {
+static size_t rwzstd_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status);
+
+static size_t rwzstd_write_invalid(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
 	SDL_SetError("Can't write to a zstd reader stream");
+	*status = SDL_IO_STATUS_READONLY;
 	return 0;
 }
 
-static SDL_IOStream *rwzstd_alloc(SDL_IOStream *wrapped, bool autoclose) {
-	SDL_IOStream *rw = SDL_AllocRW();
+static SDL_IOStream *rwzstd_alloc(
+	ZstdData **out_zdata, SDL_IOStream *wrapped, bool autoclose, bool writer, bool emulate_seek
+) {
+	SDL_IOStreamInterface iface = {
+		.seek = emulate_seek ? rwzstd_seek_emulated : rwzstd_seek,
+		.size = rwzstd_size,
+	};
 
-	if(!rw) {
-		return NULL;
+	if(writer) {
+		iface.write = rwzstd_write;
+		iface.read = rwzstd_read_invalid;
+		iface.close = rwzstd_writer_close;
+		iface.seek = rwzstd_seek;
+		assume(!emulate_seek);
+	} else {
+		iface.write = rwzstd_write_invalid;
+		iface.read = rwzstd_read;
+		iface.close = rwzstd_reader_close;
 	}
 
-	memset(rw, 0, sizeof(SDL_IOStream));
-
-	rw->type = SDL_RWOPS_UNKNOWN;
-	rw->seek = rwzstd_seek;
-	rw->size = rwzstd_size_invalid;
-	rw->hidden.unknown.data1 = ALLOC(ZstdData, {
+	auto zdata = ALLOC(ZstdData, {
 		.wrapped = wrapped,
 		.autoclose = autoclose,
 	});
 
-	return rw;
+
+	SDL_IOStream *io = SDL_OpenIO(&iface, zdata);
+
+	if(!io) {
+		mem_free(zdata);
+	} else {
+		zdata->iostream = io;
+		*out_zdata = zdata;
+	}
+
+	return io;
 }
 
 static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
@@ -149,13 +182,12 @@ static size_t rwzstd_reader_fill_in_buffer(ZstdData *z, size_t request_size) {
 	return pos - start;
 }
 
-static size_t rwzstd_read(SDL_IOStream *rw, void *ptr, size_t size,
-			  size_t maxnum) {
-	ZstdData *z = ZDATA(rw);
+static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
+	ZstdData *z = ctx;
 	ZSTD_inBuffer *in = &z->reader.in_buffer;
 	ZSTD_outBuffer out = {
 		.dst = ptr,
-		.size = size * maxnum,
+		.size = size,
 	};
 	ZSTD_DStream *stream = NOT_NULL(z->reader.stream);
 
@@ -186,81 +218,36 @@ static size_t rwzstd_read(SDL_IOStream *rw, void *ptr, size_t size,
 	return out.pos / size;
 }
 
-static int rwzstd_reader_close(SDL_IOStream *rw) {
-	ZstdData *z = ZDATA(rw);
+static int rwzstd_reader_close(void *ctx) {
+	ZstdData *z = ctx;
 	ZSTD_freeDStream(z->reader.stream);
 	mem_free((void*)z->reader.in_buffer.src);
-	return rwzstd_close(rw);
+	return rwzstd_close(z);
 }
 
-SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, bool autoclose) {
+static SDL_IOStream *rwzstd_open_reader(
+	SDL_IOStream *src, bool autoclose, bool seekable, int64_t uncompressed_size
+) {
 	if(!src) {
 		return NULL;
 	}
 
-	SDL_IOStream *rw = rwzstd_alloc(src, autoclose);
+	ZstdData *z;
+	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, false, false);
 
-	if(!rw) {
+	if(!io) {
 		return NULL;
 	}
 
-	rw->write = rwzstd_write_invalid;
-	rw->read = rwzstd_read;
-	rw->close = rwzstd_reader_close;
+	assume(z != NULL);
 
-	ZstdData *z = ZDATA(rw);
 	z->reader.stream = NOT_NULL(ZSTD_createDStream());
 	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
 	z->reader.in_buffer_alloc_size = max(z->reader.next_read_size, 16384);
 	z->reader.in_buffer.src = mem_alloc(z->reader.in_buffer_alloc_size);
 	z->reader.next_read_size = z->reader.in_buffer_alloc_size;
 
-	return rw;
-}
-
-static int rwzstd_reopen(SDL_IOStream *rw) {
-	ZstdData *z = ZDATA(rw);
-
-	int64_t srcpos = SDL_SeekIO(z->wrapped, 0, SDL_IO_SEEK_SET);
-
-	if(srcpos < 0) {
-		return srcpos;
-	}
-
-	assert(srcpos == 0);
-
-	z->pos = 0;
-	z->reader.in_buffer.pos = 0;
-	z->reader.in_buffer.size = 0;
-	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
-
-	return 0;
-}
-
-static int64_t rwzstd_seek_emulated(SDL_IOStream *rw, int64_t offset,
-				    int whence) {
-	ZstdData *z = ZDATA(rw);
-	char buf[1024];
-
-	return rwutil_seek_emulated(
-		rw, offset, whence,
-		&z->pos, rwzstd_reopen, sizeof(buf), buf
-	);
-}
-
-SDL_IOStream *SDL_RWWrapZstdReaderSeekable(SDL_IOStream *src,
-					   int64_t uncompressed_size,
-					   bool autoclose) {
-	SDL_IOStream *rw = SDL_RWWrapZstdReader(src, autoclose);
-
-	if(!rw) {
-		return NULL;
-	}
-
-	rw->seek = rwzstd_seek_emulated;
-	ZstdData *z = ZDATA(rw);
-
-	if(uncompressed_size < 0) {
+	if(seekable && uncompressed_size < 0) {
 		// Try to get it from the zstd frame header.
 		// This won't work correctly for multi-frame content.
 		// The content size may also not be present in the header.
@@ -286,17 +273,51 @@ SDL_IOStream *SDL_RWWrapZstdReaderSeekable(SDL_IOStream *src,
 		}
 	}
 
-	if(uncompressed_size >= 0) {
-		rw->size = rwzstd_size;
-		z->reader.uncompressed_size = uncompressed_size;
-	}
+	z->reader.uncompressed_size = uncompressed_size;
 
-	return rw;
+	return io;
+
 }
 
-static bool rwzstd_compress(SDL_IOStream *rw, ZSTD_EndDirective edir,
-			    size_t *status) {
-	ZstdData *z = ZDATA(rw);
+SDL_IOStream *SDL_RWWrapZstdReader(SDL_IOStream *src, bool autoclose) {
+	return rwzstd_open_reader(src, autoclose, false, -1);
+}
+
+static int rwzstd_reopen(void *ctx) {
+	ZstdData *z = ctx;
+	int64_t srcpos = SDL_SeekIO(z->wrapped, 0, SDL_IO_SEEK_SET);
+
+	if(srcpos < 0) {
+		return srcpos;
+	}
+
+	assert(srcpos == 0);
+
+	z->pos = 0;
+	z->reader.in_buffer.pos = 0;
+	z->reader.in_buffer.size = 0;
+	z->reader.next_read_size = ZSTD_initDStream(z->reader.stream);
+
+	return 0;
+}
+
+static int64_t rwzstd_seek_emulated(void *ctx, int64_t offset, int whence) {
+	ZstdData *z = ctx;
+	char buf[1024];
+
+	return rwutil_seek_emulated(
+		z->iostream, offset, whence,
+		&z->pos, rwzstd_reopen, z, sizeof(buf), buf
+	);
+}
+
+SDL_IOStream *SDL_RWWrapZstdReaderSeekable(
+	SDL_IOStream *src, int64_t uncompressed_size, bool autoclose
+) {
+	return rwzstd_open_reader(src, autoclose, true, uncompressed_size);
+}
+
+static bool rwzstd_compress(ZstdData *z, ZSTD_EndDirective edir, size_t *status) {
 	ZSTD_outBuffer *out = &z->writer.out_buffer;
 	ZSTD_inBuffer *in = &z->reader.in_buffer;
 
@@ -324,11 +345,8 @@ static bool rwzstd_compress(SDL_IOStream *rw, ZSTD_EndDirective edir,
 	return true;
 }
 
-static size_t rwzstd_write(SDL_IOStream *rw, const void *data_in, size_t size,
-			   size_t maxnum) {
-	ZstdData *z = ZDATA(rw);
-	size_t wsize = size * maxnum;
-
+static size_t rwzstd_write(void *ctx, const void *data_in, size_t size, SDL_IOStatus *status) {
+	ZstdData *z = ctx;
 	ZSTD_inBuffer *in = &z->writer.in_buffer;
 	uint8_t *in_root = (uint8_t*)in->src;
 
@@ -342,29 +360,31 @@ static size_t rwzstd_write(SDL_IOStream *rw, const void *data_in, size_t size,
 
 	size_t in_free = z->writer.in_buffer_alloc_size - in->size;
 
-	if(UNLIKELY(in_free < wsize)) {
-		in_root = mem_realloc(in_root, z->writer.in_buffer_alloc_size + (wsize - in_free));
+	if(UNLIKELY(in_free < size)) {
+		in_root = mem_realloc(in_root, z->writer.in_buffer_alloc_size + (size - in_free));
 		in->src = in_root;
 	}
 
-	memcpy(in_root + in->size, data_in, wsize);
-	in->size += wsize;
-	z->pos += wsize;
+	memcpy(in_root + in->size, data_in, size);
+	in->size += size;
+	z->pos += size;
 
-	size_t status;
+	size_t zstatus;
 
-	if(LIKELY(rwzstd_compress(rw, ZSTD_e_continue, &status))) {
-		return maxnum;
+	if(LIKELY(rwzstd_compress(z, ZSTD_e_continue, &zstatus))) {
+		return size;
 	}
 
+	*status = SDL_IO_STATUS_ERROR;
 	return 0;
 }
 
-static bool rwzstd_writer_flush(SDL_IOStream *rw, ZSTD_EndDirective edir) {
+static bool rwzstd_writer_flush(void *ctx, ZSTD_EndDirective edir) {
+	ZstdData *z = ctx;
 	size_t status;
 
 	do {
-		if(UNLIKELY(!rwzstd_compress(rw, edir, &status))) {
+		if(UNLIKELY(!rwzstd_compress(z, edir, &status))) {
 			return false;
 		}
 	} while(status != 0);
@@ -372,16 +392,15 @@ static bool rwzstd_writer_flush(SDL_IOStream *rw, ZSTD_EndDirective edir) {
 	return true;
 }
 
-static int rwzstd_writer_close(SDL_IOStream *rw) {
-	ZstdData *z = ZDATA(rw);
-
-	bool flush_ok = rwzstd_writer_flush(rw, ZSTD_e_end);
+static int rwzstd_writer_close(void *ctx) {
+	ZstdData *z = ctx;
+	bool flush_ok = rwzstd_writer_flush(z, ZSTD_e_end);
 
 	ZSTD_freeCStream(z->writer.stream);
 	mem_free(z->writer.out_buffer.dst);
 	mem_free((void*)z->writer.in_buffer.src);
 
-	int r = rwzstd_close(rw);
+	int r = rwzstd_close(z);
 
 	if(!flush_ok && r >= 0) {
 		return -1;
@@ -396,17 +415,13 @@ SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel,
 		return NULL;
 	}
 
-	SDL_IOStream *rw = rwzstd_alloc(src, autoclose);
+	ZstdData *z;
+	SDL_IOStream *io = rwzstd_alloc(&z, src, autoclose, true, false);
 
-	if(UNLIKELY(!rw)) {
+	if(UNLIKELY(!io)) {
 		return NULL;
 	}
 
-	rw->write = rwzstd_write;
-	rw->read = rwzstd_read_invalid;
-	rw->close = rwzstd_writer_close;
-
-	ZstdData *z = ZDATA(rw);
 	z->writer.stream = NOT_NULL(ZSTD_createCStream());
 	z->writer.out_buffer.size = ZSTD_CStreamOutSize();
 	z->writer.out_buffer.dst = mem_alloc(z->writer.out_buffer.size);
@@ -421,5 +436,5 @@ SDL_IOStream *SDL_RWWrapZstdWriter(SDL_IOStream *src, int clevel,
 
 	ZSTD_CCtx_setParameter(z->writer.stream, ZSTD_c_compressionLevel, clevel);
 
-	return rw;
+	return io;
 }
