@@ -37,7 +37,7 @@ static bool px_internal_save(SDL_IOStream *stream, const Pixmap *pixmap,
 			} \
 		} while(0)
 
-	#define W_BYTES(stream, data, size) CHECK_WRITE(SDL_WriteIO(stream, data, size, 1), size)
+	#define W_BYTES(stream, data, size) CHECK_WRITE(SDL_WriteIO(stream, data, size) == size, size)
 	#define W_U32(stream, val) CHECK_WRITE(SDL_WriteU32LE(stream, val), sizeof(uint32_t))
 	#define W_U16(stream, val) CHECK_WRITE(SDL_WriteU16LE(stream, val), sizeof(uint16_t))
 	#define W_U8(stream, val)  CHECK_WRITE(SDL_WriteU8(stream, val), sizeof(uint8_t))
@@ -76,6 +76,8 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 
 	SDL_IOStream *cstream = NULL;
 
+	// TODO check for read errors
+
 	uint8_t magic[sizeof(pxi_magic)] = { 0 };
 	SDL_ReadIO(stream, magic, sizeof(magic));
 
@@ -84,7 +86,9 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 		return false;
 	}
 
-	uint16_t version = SDL_ReadU16LE(stream);
+	uint16_t version = 0;
+	SDL_ReadU16LE(stream, &version);
+
 	if(version != PXI_VERSION) {
 		log_error("Bad version %u; expected %u", version, PXI_VERSION);
 		return false;
@@ -95,11 +99,18 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 
 	// TODO validate and verify consistency of data_size/width/height/format
 
-	pixmap->width = SDL_ReadU32LE(cstream);
-	pixmap->height = SDL_ReadU32LE(cstream);
-	pixmap->data_size = SDL_ReadU32LE(cstream);
-	pixmap->format = SDL_ReadU16LE(cstream);
-	pixmap->origin = SDL_ReadU8(cstream);
+	SDL_ReadU32LE(cstream, &pixmap->width);
+	SDL_ReadU32LE(cstream, &pixmap->height);
+	SDL_ReadU32LE(cstream, &pixmap->data_size);
+
+	uint16_t tmp_u16 = 0;
+	uint8_t tmp_u8 = 0;
+
+	SDL_ReadU16LE(cstream, &tmp_u16);
+	pixmap->format = tmp_u16;
+
+	SDL_ReadU8(cstream, &tmp_u8);
+	pixmap->origin = tmp_u8;
 
 	if(pixmap->data_size > PIXMAP_BUFFER_MAX_SIZE) {
 		log_error("Data size is too large");
@@ -127,7 +138,8 @@ static bool px_internal_load(SDL_IOStream *stream, Pixmap *pixmap,
 	SDL_CloseIO(cstream);
 	cstream = NULL;
 
-	uint32_t crc32_in = SDL_ReadU32LE(stream);
+	uint32_t crc32_in = 0;
+	SDL_ReadU32LE(stream, &crc32_in);
 
 	if(crc32_in != crc32) {
 		log_error("CRC32 mismatch: 0x%08x != 0x%08x", crc32_in, crc32);
