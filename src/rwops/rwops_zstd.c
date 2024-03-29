@@ -215,7 +215,7 @@ static size_t rwzstd_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *statu
 	}
 
 	z->pos += out.pos;
-	return out.pos / size;
+	return out.pos;
 }
 
 static int rwzstd_reader_close(void *ctx) {
