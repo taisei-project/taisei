@@ -15,35 +15,25 @@
 typedef struct CommonBuffer CommonBuffer;
 
 struct CommonBuffer {
-	union {
-		SDL_IOStream stream;
-		struct {
-			char padding[offsetof(SDL_IOStream, hidden)];
+	SDL_IOStream *stream;
 
-			struct {
-				char *buffer;
-				size_t update_begin;
-				size_t update_end;
-			} cache;
+	struct {
+		char *buffer;
+		size_t update_begin;
+		size_t update_end;
+	} cache;
 
-			size_t offset;
-			size_t size;
-			size_t commited_size;
-			GLuint gl_handle;
-			GLuint gl_usage_hint;
-			uint bindidx;
-			char debug_label[R_DEBUG_LABEL_SIZE];
+	size_t offset;
+	size_t size;
+	size_t commited_size;
+	GLuint gl_handle;
+	GLuint gl_usage_hint;
+	uint bindidx;
+	char debug_label[R_DEBUG_LABEL_SIZE];
 
-			void (*pre_bind)(CommonBuffer *self);
-			void (*post_bind)(CommonBuffer *self);
-		};
-	};
+	void (*pre_bind)(CommonBuffer *self);
+	void (*post_bind)(CommonBuffer *self);
 };
-
-static_assert(
-	offsetof(CommonBuffer, stream) == 0,
-	"stream should be the first member in CommonBuffer for simplicity"
-);
 
 CommonBuffer *gl33_buffer_create(uint bindidx, size_t alloc_size);
 void gl33_buffer_init_cache(CommonBuffer *cbuf, size_t capacity);
