@@ -9,8 +9,8 @@
 #include "rwops_dummy.h"
 
 // autoclose bit encoded as lowest bit of the context pointer, which is normally always 0
-#define DUMMY_SOURCE(ctx)    ((SDL_IOStream*)((uintptr_t)(ctx) & ~1u))
-#define DUMMY_AUTOCLOSE(ctx) ((bool)((uintptr_t)(ctx) & 1u))
+#define DUMMY_SOURCE(ctx)    ((SDL_IOStream*)((uintptr_t)(ctx) & ~1ull))
+#define DUMMY_AUTOCLOSE(ctx) ((bool)((uintptr_t)(ctx) & 1ull))
 
 static int dummy_close(void *ctx) {
 	if(DUMMY_AUTOCLOSE(ctx)) {
