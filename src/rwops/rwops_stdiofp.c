@@ -77,6 +77,7 @@ static int SDLCALL stdio_close(void *userdata)
 			status = SDL_Error(SDL_EFWRITE);
 		}
 	}
+	SDL_free(rwopsdata);
 	return status;
 }
 
