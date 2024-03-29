@@ -850,7 +850,8 @@ static bool video_handle_config_event(SDL_Event *evt, void *arg) {
 
 uint video_num_displays(void) {
 	int num_displays;
-	const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+
+	SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);  // FIXME: cache this
 
 	// FIXME: we pretend to have 1 display in case something goes wrong… why?
 
@@ -861,15 +862,17 @@ uint video_num_displays(void) {
 
 	if(num_displays < 1) {
 		log_sdl_error(LOG_WARN, "SDL_GetDisplays() returned 0 displays");
+		SDL_free(displays);
 		return 1;
 	}
 
+	SDL_free(displays);
 	return num_displays;
 }
 
 const char *video_display_name(uint id) {
 	int num_displays;
-	const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+	SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);  // FIXME: cache this
 
 	// FIXME: we pretend to have 1 display in case something goes wrong… why?
 
@@ -880,16 +883,19 @@ const char *video_display_name(uint id) {
 
 	if(num_displays < 1) {
 		log_sdl_error(LOG_WARN, "SDL_GetDisplays() returned 0 displays");
+		SDL_free(displays);
 		return "Unknown";
 	}
 
 	assert(id < num_displays);
 
 	if(id >= num_displays) {
+		SDL_free(displays);
 		return "Unknown";
 	}
 
 	const char *name = SDL_GetDisplayName(displays[id]);
+	SDL_free(displays);
 
 	if(name == NULL) {
 		log_sdl_error(LOG_WARN, "SDL_GetDisplayName");
@@ -908,14 +914,16 @@ uint video_current_display(void) {
 	}
 
 	int num_displays;
-	const SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+	SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);  // TODO: cache this
 
 	for(int i = 0; i < num_displays; ++i) {
 		if(displays[i] == display) {
+			SDL_free(displays);
 			return i;
 		}
 	}
 
+	SDL_free(displays);
 	assert(0 && "Display index for window not found");
 	return 0;
 }
