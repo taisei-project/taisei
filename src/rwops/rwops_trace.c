@@ -59,29 +59,29 @@ static int64_t trace_size(void *ctx) {
 	return s;
 }
 
-static size_t trace_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *pstatus) {
+static size_t trace_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *status) {
 	TData *tdata = ctx;
 	size_t r = SDL_ReadIO(tdata->wrapped, ptr, size);
-	SDL_IOStatus status = SDL_GetIOStatus(tdata->wrapped);
+	*status = SDL_GetIOStatus(tdata->wrapped);
 
-	TRACE(tdata, "read(dest=%p; size=%zu) = %zu; status = %i", ptr, size, r, status);
+	TRACE(tdata, "read(dest=%p; size=%zu) = %zu; status = %i", ptr, size, r, *status);
 	TRACE(tdata, "`--> %"PRIi64, SDL_TellIO(tdata->wrapped));
 
-	if(status != SDL_IO_STATUS_READY && status != SDL_IO_STATUS_EOF) {
+	if(*status != SDL_IO_STATUS_READY && *status != SDL_IO_STATUS_EOF) {
 		TRACE_ERR(tdata);
 	}
 
 	return r;
 }
 
-static size_t trace_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *pstatus) {
+static size_t trace_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *status) {
 	TData *tdata = ctx;
 	size_t w = SDL_WriteIO(tdata->wrapped, ptr, size);
-	SDL_IOStatus status = SDL_GetIOStatus(tdata->wrapped);
+	*status = SDL_GetIOStatus(tdata->wrapped);
 
-	TRACE(tdata, "write(dest=%p; size=%zu) = %zu; status = %i", ptr, size, w, status);
+	TRACE(tdata, "write(dest=%p; size=%zu) = %zu; status = %i", ptr, size, w, *status);
 
-	if(status != SDL_IO_STATUS_READY) {
+	if(*status != SDL_IO_STATUS_READY) {
 		TRACE_ERR(tdata);
 	}
 
