@@ -125,11 +125,11 @@ static void events_apply_flags(EventFlags flags) {
 	TaiseiEvent type;
 
 	for(type = TE_MENU_FIRST; type <= TE_MENU_LAST; ++type) {
-		SDL_EventState(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_MENU));
+		SDL_SetEventEnabled(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_MENU));
 	}
 
 	for(type = TE_GAME_FIRST; type <= TE_GAME_LAST; ++type) {
-		SDL_EventState(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_GAME));
+		SDL_SetEventEnabled(MAKE_TAISEI_EVENT(type), (bool)(flags & EFLAG_GAME));
 	}
 }
 
@@ -284,65 +284,60 @@ attr_unused
 static bool events_handler_debug_winevt(SDL_Event *event, void *arg) {
 	// copied from SDL wiki almost verbatim
 
-	if(event->type == SDL_WINDOWEVENT) {
-		switch(event->window.event) {
-			case SDL_EVENT_WINDOW_SHOWN:
-				log_info("Window %d shown", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_HIDDEN:
-				log_info("Window %d hidden", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_EXPOSED:
-				log_info("Window %d exposed", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_MOVED:
-				log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_EVENT_WINDOW_RESIZED:
-				log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-				log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
-				break;
-			case SDL_EVENT_WINDOW_MINIMIZED:
-				log_info("Window %d minimized", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_MAXIMIZED:
-				log_info("Window %d maximized", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_RESTORED:
-				log_info("Window %d restored", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_MOUSE_ENTER:
-				log_info("Mouse entered window %d", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-				log_info("Mouse left window %d", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_FOCUS_GAINED:
-				log_info("Window %d gained keyboard focus", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_FOCUS_LOST:
-				log_info("Window %d lost keyboard focus", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-				log_info("Window %d closed", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_TAKE_FOCUS:
-				log_info("Window %d is offered a focus", event->window.windowID);
-				break;
-			case SDL_EVENT_WINDOW_HIT_TEST:
-				log_info("Window %d has a special hit test", event->window.windowID);
-				break;
-			default:
-				log_warn("Window %d got unknown event %d", event->window.windowID, event->window.event);
+	switch(event->type) {
+		case SDL_EVENT_WINDOW_SHOWN:
+			log_info("Window %d shown", event->window.windowID);
 			break;
-		}
+		case SDL_EVENT_WINDOW_HIDDEN:
+			log_info("Window %d hidden", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_EXPOSED:
+			log_info("Window %d exposed", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOVED:
+			log_info("Window %d moved to %d,%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+			log_info("Window %d resized to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			log_info("Window %d size changed to %dx%d", event->window.windowID, event->window.data1, event->window.data2);
+			break;
+		case SDL_EVENT_WINDOW_MINIMIZED:
+			log_info("Window %d minimized", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MAXIMIZED:
+			log_info("Window %d maximized", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_RESTORED:
+			log_info("Window %d restored", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOUSE_ENTER:
+			log_info("Mouse entered window %d", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+			log_info("Mouse left window %d", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_FOCUS_GAINED:
+			log_info("Window %d gained keyboard focus", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_FOCUS_LOST:
+			log_info("Window %d lost keyboard focus", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+			log_info("Window %d closed", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_TAKE_FOCUS:
+			log_info("Window %d is offered a focus", event->window.windowID);
+			break;
+		case SDL_EVENT_WINDOW_HIT_TEST:
+			log_info("Window %d has a special hit test", event->window.windowID);
+			break;
+		break;
 	}
 
 	return false;
 }
-
 
 static EventHandler default_handlers[] = {
 #ifdef DEBUG_WINDOW_EVENTS
