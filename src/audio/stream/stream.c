@@ -33,18 +33,18 @@ bool astream_spec_equals(const AudioStreamSpec *s1, const AudioStreamSpec *s2) {
 }
 
 SDL_AudioStream *astream_create_sdl_stream(AudioStream *source, const AudioStreamSpec *dest_spec) {
-	return SDL_CreateAudioStream(
-		source->spec.sample_format,
-		source->spec.channels,
-		source->spec.sample_rate,
-		dest_spec->sample_format,
-		dest_spec->channels,
-		dest_spec->sample_rate
-	);
+	return SDL_CreateAudioStream(&(SDL_AudioSpec) {
+		.channels = source->spec.channels,
+		.format = source->spec.sample_format,
+		.freq = source->spec.sample_rate,
+	}, &(SDL_AudioSpec) {
+		.channels = dest_spec->channels,
+		.format = dest_spec->sample_format,
+		.freq = dest_spec->sample_rate,
+	});
 }
 
-bool astream_open(AudioStream *stream, SDL_IOStream *rwops,
-		  const char *filename) {
+bool astream_open(AudioStream *stream, SDL_IOStream *rwops, const char *filename) {
 	bool ok = false;
 
 	ok = astream_opus_open(stream, rwops);
