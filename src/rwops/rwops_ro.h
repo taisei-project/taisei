@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL3/SDL.h>
+#include "rwops_dummy.h"
 
-SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose);
+INLINE SDL_IOStream *SDL_RWWrapReadOnly(SDL_IOStream *src, bool autoclose) {
+	return SDL_RWWrapDummy(src, autoclose, true);
+}

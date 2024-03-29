@@ -11,4 +11,4 @@
 
 #include <SDL3/SDL.h>
 
-SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose);
+SDL_IOStream *SDL_RWWrapDummy(SDL_IOStream *src, bool autoclose, bool readonly);
