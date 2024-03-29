@@ -60,11 +60,11 @@ INLINE void addangle(float *a, float d) {
 static void set_mouse_grab(struct cc_state *s, bool enable) {
 	enable = enable && s->grab_enabled && !s->game_paused;
 
-	SDL_SetWindowGrab(s->w, enable);
+	SDL_SetWindowMouseGrab(s->w, enable);
 	SDL_CaptureMouse(enable);
 	SDL_SetRelativeMouseMode(enable);
-	SDL_EventState(SDL_EVENT_MOUSE_MOTION, enable);
-	SDL_EventState(SDL_EVENT_MOUSE_WHEEL, enable);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_MOTION, enable);
+	SDL_SetEventEnabled(SDL_EVENT_MOUSE_WHEEL, enable);
 }
 
 static bool keydown_event(SDL_Event *e, void *a) {
