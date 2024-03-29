@@ -9,113 +9,111 @@
 #include "rwops_trace.h"
 #include "log.h"
 
-#define TRACE_SOURCE(rw) ((SDL_IOStream*)((rw)->hidden.unknown.data1))
-#define TRACE_TDATA(rw) ((TData*)((rw)->hidden.unknown.data2))
-#define TRACE_AUTOCLOSE(rw) (TRACE_TDATA(rw)->autoclose)
-#define TRACE_TAG(rw) (TRACE_TDATA(rw)->tag)
-
-#define TRACE(rw, fmt, ...) \
-	log_debug("[%lx :: %p :: %s] " fmt, SDL_GetCurrentThreadID(), (void*)(rw), TRACE_TAG(rw), __VA_ARGS__)
+#define TRACE(tdata, fmt, ...) \
+	log_debug("[%lx :: %p :: %s] " fmt, SDL_GetCurrentThreadID(), (tdata), (tdata)->tag, __VA_ARGS__)
 
 #define TRACE_ERR(rw) \
 	TRACE((rw), "Error: %s", SDL_GetError())
 
 typedef struct TData {
+	SDL_IOStream *wrapped;
 	bool autoclose;
 	char tag[];
 } TData;
 
-static int trace_close(SDL_IOStream *rw) {
+static int trace_close(void *ctx) {
+	TData *tdata = ctx;
 	int ret = 0;
 
-	if(TRACE_AUTOCLOSE(rw)) {
-		ret = SDL_CloseIO(TRACE_SOURCE(rw));
-		TRACE(rw, "close() = %i", ret);
+	if(tdata->autoclose) {
+		ret = SDL_CloseIO(tdata->wrapped);
+		TRACE(tdata, "close() = %i", ret);
 
 		if(ret < 0) {
-			TRACE_ERR(rw);
+			TRACE_ERR(tdata);
 		}
 	}
 
-	TRACE(rw, "closed %i", ret);
-	mem_free(rw->hidden.unknown.data2);
-	SDL_FreeRW(rw);
+	TRACE(tdata, "closed %i", ret);
+	mem_free(tdata);
 	return ret;
 }
 
-static int64_t trace_seek(SDL_IOStream *rw, int64_t offset, int whence) {
-	int64_t p = SDL_SeekIO(TRACE_SOURCE(rw), offset, whence);
-	TRACE(rw, "seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, offset, whence, p);
+static int64_t trace_seek(void *ctx, int64_t offset, int whence) {
+	TData *tdata = ctx;
+	int64_t p = SDL_SeekIO(tdata->wrapped, offset, whence);
+	TRACE(tdata, "seek(offset=%"PRIi64"; whence=%i) = %"PRIi64, offset, whence, p);
 	if(p < 0) {
-		TRACE_ERR(rw);
+		TRACE_ERR(tdata);
 	}
 	return p;
 }
 
-static int64_t trace_size(SDL_IOStream *rw) {
-	int64_t s = SDL_SizeIO(TRACE_SOURCE(rw));
-	TRACE(rw, "size() = %"PRIi64, s);
+static int64_t trace_size(void *ctx) {
+	TData *tdata = ctx;
+	int64_t s = SDL_GetIOSize(tdata->wrapped);
+	TRACE(tdata, "size() = %"PRIi64, s);
 	if(s < 0) {
-		TRACE_ERR(rw);
+		TRACE_ERR(tdata);
 	}
 	return s;
 }
 
-static size_t trace_read(SDL_IOStream *rw, void *ptr, size_t size,
-			 size_t maxnum) {
-	size_t r = /* FIXME MIGRATION: double-check if you use the returned value of SDL_ReadIO() */
-		SDL_ReadIO(TRACE_SOURCE(rw), ptr, size * maxnum);
-	TRACE(rw, "read(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, r);
-	TRACE(rw, "`--> %"PRIi64, SDL_TellIO(TRACE_SOURCE(rw)));
+static size_t trace_read(void *ctx, void *ptr, size_t size, SDL_IOStatus *pstatus) {
+	TData *tdata = ctx;
+	size_t r = SDL_ReadIO(tdata->wrapped, ptr, size);
+	SDL_IOStatus status = SDL_GetIOStatus(tdata->wrapped);
 
-	if(r < size * maxnum) {
-		TRACE_ERR(rw);
+	TRACE(tdata, "read(dest=%p; size=%zu) = %zu; status = %i", ptr, size, r, status);
+	TRACE(tdata, "`--> %"PRIi64, SDL_TellIO(tdata->wrapped));
+
+	if(status != SDL_IO_STATUS_READY && status != SDL_IO_STATUS_EOF) {
+		TRACE_ERR(tdata);
 	}
 
 	return r;
 }
 
-static size_t trace_write(SDL_IOStream *rw, const void *ptr, size_t size,
-			  size_t maxnum) {
-	size_t w = /* FIXME MIGRATION: double-check if you use the returned value of SDL_WriteIO() */
-		SDL_WriteIO(TRACE_SOURCE(rw), ptr, size * maxnum);
-	TRACE(rw, "write(dest=%p; size=%zu; num=%zu) = %zu", ptr, size, maxnum, w);
+static size_t trace_write(void *ctx, const void *ptr, size_t size, SDL_IOStatus *pstatus) {
+	TData *tdata = ctx;
+	size_t w = SDL_WriteIO(tdata->wrapped, ptr, size);
+	SDL_IOStatus status = SDL_GetIOStatus(tdata->wrapped);
 
-	if(w < size * maxnum) {
-		TRACE_ERR(rw);
+	TRACE(tdata, "write(dest=%p; size=%zu) = %zu; status = %i", ptr, size, w, status);
+
+	if(status != SDL_IO_STATUS_READY) {
+		TRACE_ERR(tdata);
 	}
 
 	return w;
 }
 
-SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag,
-			      bool autoclose) {
+SDL_IOStream *SDL_RWWrapTrace(SDL_IOStream *src, const char *tag, bool autoclose) {
 	if(UNLIKELY(!src)) {
 		return NULL;
 	}
 
-	SDL_IOStream *rw = SDL_AllocRW();
+	SDL_IOStreamInterface iface = {
+		.size = trace_size,
+		.seek = trace_seek,
+		.close = trace_close,
+		.read = trace_read,
+		.write = trace_write,
+	};
 
-	if(UNLIKELY(!rw)) {
+	size_t taglen = strlen(tag) + 1;
+	auto tdata = ALLOC_FLEX(TData, taglen);
+	tdata->wrapped = src;
+	tdata->autoclose = autoclose;
+	memcpy(tdata->tag, tag, taglen);
+
+	SDL_IOStream *io = SDL_OpenIO(&iface, tdata);
+
+	if(UNLIKELY(!io)) {
+		mem_free(tdata);
 		return NULL;
 	}
 
-	memset(rw, 0, sizeof(SDL_IOStream));
-
-	auto tdata = ALLOC_FLEX(TData, strlen(tag) + 1);
-	tdata->autoclose = autoclose;
-	strcpy(tdata->tag, tag);
-
-	rw->hidden.unknown.data1 = src;
-	rw->hidden.unknown.data2 = tdata;
-	rw->type = SDL_RWOPS_UNKNOWN;
-
-	rw->size = trace_size;
-	rw->seek = trace_seek;
-	rw->close = trace_close;
-	rw->read = trace_read;
-	rw->write = trace_write;
-
-	TRACE(rw, "opened; src=%p", (void*)src);
-	return rw;
+	TRACE(tdata, "opened; src=%p", (void*)src);
+	return io;
 }
