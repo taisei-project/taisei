@@ -19,7 +19,7 @@
 #include "util/stringops.h"
 
 #include <SDL3/SDL_bits.h>
-#include <SDL3/SDL_Mutex.h>
+#include <SDL3/SDL_mutex.h>
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);
@@ -684,25 +684,33 @@ static void log_fmtconsole_free(FormatterObj *fobj) {
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #include <unistd.h>
 
-static bool output_supports_ansi_sequences(const SDL_IOStream *output) {
+static bool output_supports_ansi_sequences(SDL_IOStream *output) {
 	if(!strcmp(env_get("TERM", "dumb"), "dumb")) {
 		return false;
 	}
 
-	if(output->type != SDL_RWOPS_STDFILE) {
+	SDL_PropertiesID props = SDL_GetIOProperties(output);
+
+	if(!props) {
 		return false;
 	}
 
-	return isatty(fileno(output->hidden.stdio.fp));
+	FILE *fp = SDL_GetProperty(props, SDL_PROP_IOSTREAM_STDIO_FILE_POINTER, NULL);
+
+	if(!fp) {
+		return false;
+	}
+
+	return isatty(fileno(fp));
 }
 #else
-static bool output_supports_ansi_sequences(const SDL_IOStream *output) {
+static bool output_supports_ansi_sequences(SDL_IOStream *output) {
 	// TODO: Handle it for windows. The windows console supports ANSI escapes, but requires special setup.
 	return false;
 }
 #endif
 
-void log_formatter_console(FormatterObj *obj, const SDL_IOStream *output) {
+void log_formatter_console(FormatterObj *obj, SDL_IOStream *output) {
 	obj->data = ALLOC(ConsoleFormatterData, {
 		.cfg = {
 			.color = (
@@ -753,7 +761,7 @@ static int log_fmtfile_format(FormatterObj *obj, StringBuffer *buf, LogEntry *en
 	return len;
 }
 
-void log_formatter_file(FormatterObj *obj, const SDL_IOStream *output) {
+void log_formatter_file(FormatterObj *obj, SDL_IOStream *output) {
 	obj->format = log_fmtfile_format;
 }
 

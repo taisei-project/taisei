@@ -121,7 +121,7 @@ struct FormatterObj {
 };
 
 // "constructor". initializer, actually.
-typedef void Formatter(FormatterObj *obj, const SDL_IOStream *output);
+typedef void Formatter(FormatterObj *obj, SDL_IOStream *output);
 
 extern Formatter log_formatter_file;
 extern Formatter log_formatter_console;
