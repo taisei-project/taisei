@@ -65,7 +65,9 @@ static const char *iqm_va_format_str(uint32_t type) {
 }
 
 static bool read_fields(SDL_IOStream *rw, size_t n, uint32_t fields[n]) {
-	if(SDL_ReadIO(rw, fields, sizeof(fields[0]) * n) != n) {
+	size_t read_size = sizeof(fields[0]) * n;
+
+	if(SDL_ReadIO(rw, fields, read_size) != read_size) {
 		return false;
 	}
 
@@ -87,9 +89,12 @@ static bool read_floats(SDL_IOStream *rw, size_t n, float floats[n]) {
 	return false;
 }
 
-static bool iqm_read_header(const char *fpath, SDL_IOStream *rw,
-			    IQMHeader *hdr) {
-	if(SDL_ReadIO(rw, &hdr->magic, sizeof(hdr->magic)) != 1) {
+static bool iqm_read_header(const char *fpath, SDL_IOStream *rw, IQMHeader *hdr) {
+	if(SDL_ReadIO(rw, &hdr->magic, sizeof(hdr->magic)) != sizeof(hdr->magic)) {
+		if(SDL_GetIOStatus(rw) == SDL_IO_STATUS_EOF) {
+			SDL_SetError("Premature EOF");
+		}
+
 		log_error("%s: read error: %s", fpath, SDL_GetError());
 		return false;
 	}
