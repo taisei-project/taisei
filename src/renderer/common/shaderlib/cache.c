@@ -38,6 +38,8 @@ static uint8_t *shader_cache_construct_entry(const ShaderSource *src, const Shad
 		return NULL;
 	}
 
+	// TODO: check for IO errors
+
 	SDL_WriteU8(dest, CACHE_VERSION);
 	SDL_WriteU8(dest, src->stage);
 	SDL_WriteU8(dest, src->lang.lang);
@@ -146,6 +148,18 @@ fail:
 	return result;
 }
 
+#define READ(_file, _func, _type) ({ \
+	_type _tmp = 0; \
+	if(UNLIKELY(!(_func)((_file), &_tmp))) { \
+		log_error("Read error: %s", SDL_GetError()); \
+	} \
+	_tmp; \
+})
+
+#define READU8(_file)    READ(_file, SDL_ReadU8,    uint8_t)
+#define READU16LE(_file) READ(_file, SDL_ReadU16LE, uint16_t)
+#define READU32LE(_file) READ(_file, SDL_ReadU32LE, uint32_t)
+
 static bool shader_cache_load_entry(SDL_IOStream *stream,
 				    ShaderSource *out_src) {
 	uint32_t crc = CRC_INIT;
@@ -154,27 +168,29 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 	memset(out_src, 0, sizeof(*out_src));
 	out_src->content = NULL;
 
-	if(SDL_ReadU8(s) != CACHE_VERSION) {
+	// TODO check for IO errors
+
+	if(READU8(s) != CACHE_VERSION) {
 		log_error("Version mismatch");
 		goto fail;
 	}
 
-	out_src->stage = SDL_ReadU8(s);
+	out_src->stage = READU8(s);
 
 	memset(&out_src->lang, 0, sizeof(out_src->lang));
-	out_src->lang.lang = SDL_ReadU8(s);
+	out_src->lang.lang = READU8(s);
 
-	if(SDL_ReadU8(s) > 0) {
+	if(READU8(s) > 0) {
 		log_error("Cache entry contains macros, this is not implemented");
 		goto fail;
 	}
 
 	switch(out_src->lang.lang) {
 		case SHLANG_GLSL: {
-			out_src->lang.glsl.version.version = SDL_ReadU16LE(s);
-			out_src->lang.glsl.version.profile = SDL_ReadU8(s);
+			out_src->lang.glsl.version.version = READU16LE(s);
+			out_src->lang.glsl.version.profile = READU8(s);
 
-			uint nattrs = SDL_ReadU8(s);
+			uint nattrs = READU8(s);
 
 			if(nattrs > 0) {
 				out_src->meta.glsl.num_attributes = nattrs;
@@ -182,8 +198,8 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 
 				for(uint i = 0; i < nattrs; ++i) {
 					GLSLAttribute *attr = out_src->meta.glsl.attributes + i;
-					attr->location = SDL_ReadU32LE(s);
-					uint len = SDL_ReadU8(s);
+					attr->location = READU32LE(s);
+					uint len = READU8(s);
 					attr->name = mem_alloc(len + 1);
 					SDL_ReadIO(s, attr->name, len);
 				}
@@ -192,7 +208,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 		}
 
 		case SHLANG_SPIRV: {
-			out_src->lang.spirv.target = SDL_ReadU8(s);
+			out_src->lang.spirv.target = READU8(s);
 			break;
 		}
 
@@ -202,7 +218,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 		}
 	}
 
-	out_src->content_size = SDL_ReadU32LE(s);
+	out_src->content_size = READU32LE(s);
 	out_src->content = mem_alloc(out_src->content_size);
 
 	if(SDL_ReadIO(s, out_src->content, out_src->content_size) != 1) {
@@ -210,7 +226,7 @@ static bool shader_cache_load_entry(SDL_IOStream *stream,
 		goto fail;
 	}
 
-	uint32_t file_crc = SDL_ReadU32LE(stream);
+	uint32_t file_crc = READU32LE(stream);
 
 	if(crc != file_crc) {
 		log_error("CRC mismatch (%08x != %08x), cache entry is corrupted", crc, file_crc);
