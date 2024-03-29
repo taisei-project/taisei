@@ -32,7 +32,6 @@ typedef struct GamepadButtonState {
 typedef struct GamepadDevice {
 	SDL_Gamepad *controller;
 	SDL_JoystickID joy_instance;
-	int sdl_id;
 } GamepadDevice;
 
 static struct {
@@ -96,27 +95,6 @@ static void gamepad_load_all_mappings(void) {
 	gamepad_load_mappings("storage/gamecontrollerdb.txt", false);
 }
 
-static const char* gamepad_device_name_unmapped(int idx) {
-	const char *name = /* FIXME MIGRATION: check for valid instance */
-		SDL_GetGamepadInstanceName(GetJoystickInstanceFromIndex(idx));
-
-	if(name == NULL) {
-		return "Unknown device";
-	}
-
-	if(!strcasecmp(name, "Xinput Controller")) {
-		// HACK: let's try to get a more descriptive name...
-		const char *prev_name = name;
-		name = SDL_JoystickNameForIndex(idx);
-
-		if(name == NULL) {
-			name = prev_name;
-		}
-	}
-
-	return name;
-}
-
 static inline GamepadDevice* gamepad_get_device(int num) {
 	if(num < 0 || num >= gamepad.devices.num_elements) {
 		return NULL;
@@ -125,19 +103,43 @@ static inline GamepadDevice* gamepad_get_device(int num) {
 	return dynarray_get_ptr(&gamepad.devices, num);
 }
 
-const char* gamepad_device_name(int num) {
+const char *gamepad_device_name(int num) {
 	GamepadDevice *dev = gamepad_get_device(num);
+	static const char *const default_name = "Unknown device";
+	const char *name = NULL;
 
-	if(dev) {
-		return gamepad_device_name_unmapped(dev->sdl_id);
+	if(!dev) {
+		return default_name;
 	}
 
-	return NULL;
+	name = SDL_GetGamepadName(dev->controller);
+
+	if(!name) {
+		return default_name;
+	}
+
+	if(!strcasecmp(name, "Xinput Controller")) {
+		// HACK: let's try to get a more descriptive name…
+		const char *jname = SDL_GetJoystickInstanceName(dev->joy_instance);
+
+		if(jname != NULL) {
+			name = jname;
+		}
+	}
+
+	return name;
 }
 
 static bool gamepad_update_device_list(void) {
-	int cnt = SDL_NumJoysticks();
 	log_info("Updating gamepad devices list");
+
+	int num_joysticks;
+	SDL_JoystickID *joysticks = SDL_GetJoysticks(&num_joysticks);
+
+	if(!joysticks) {
+		log_sdl_error(LOG_ERROR, "SDL_GetJoysticks");
+		return false;
+	}
 
 	dynarray_foreach_elem(&gamepad.devices, auto dev, {
 		SDL_CloseGamepad(dev->controller);
@@ -145,16 +147,16 @@ static bool gamepad_update_device_list(void) {
 
 	gamepad.devices.num_elements = 0;
 
-	if(!cnt) {
+	if(num_joysticks < 1) {
 		dynarray_free_data(&gamepad.devices);
 		log_info("No joysticks attached");
 		return false;
 	}
 
-	dynarray_ensure_capacity(&gamepad.devices, cnt);
+	dynarray_ensure_capacity(&gamepad.devices, num_joysticks);
 
-	for(int i = 0; i < cnt; ++i) {
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(i);
+	for(int i = 0; i < num_joysticks; ++i) {
+		SDL_JoystickGUID guid = SDL_GetJoystickInstanceGUID(joysticks[i]);
 		char guid_str[33] = { 0 };
 		SDL_GetJoystickGUIDString(guid, guid_str, sizeof(guid_str));
 
@@ -163,16 +165,17 @@ static bool gamepad_update_device_list(void) {
 			continue;
 		}
 
-		if(!/* FIXME MIGRATION: check for valid instance */
-			SDL_IsGamepad(GetJoystickInstanceFromIndex(i))) {
-			log_warn("Joystick at index %i (name: \"%s\"; guid: %s) is not recognized as a game controller by SDL. "
-					 "Most likely it just doesn't have a mapping. See https://git.io/vdvdV for solutions",
-				i, SDL_JoystickNameForIndex(i), guid_str);
+		if(!	SDL_IsGamepad(joysticks[i])) {
+			log_warn(
+				"Joystick at index %i (name: \"%s\"; guid: %s) is not recognized as a game controller by SDL. "
+				"Most likely it just doesn't have a mapping. See https://git.io/vdvdV for solutions",
+				i, SDL_GetJoystickInstanceName(joysticks[i]), guid_str
+			);
 			continue;
 		}
 
 		auto dev = dynarray_append(&gamepad.devices, {
-			.sdl_id = i,
+			.joy_instance = joysticks[i],
 			.controller = SDL_OpenGamepad(i),
 		});
 
@@ -182,15 +185,8 @@ static bool gamepad_update_device_list(void) {
 			continue;
 		}
 
-		dev->joy_instance = SDL_JoystickGetDeviceInstanceID(i);
-
-		if(dev->joy_instance < 0) {
-			log_sdl_error(LOG_WARN, "SDL_JoystickGetDeviceInstanceID");
-			--gamepad.devices.num_elements;
-			continue;
-		}
-
-		log_info("Found device '%s' (#%i): %s", guid_str, DEVNUM(dev), gamepad_device_name_unmapped(i));
+		int n = DEVNUM(dev);
+		log_info("Found device '%s' (#%i): %s", guid_str, n, gamepad_device_name(n));
 	}
 
 	if(!gamepad.devices.num_elements) {
@@ -201,7 +197,7 @@ static bool gamepad_update_device_list(void) {
 	return true;
 }
 
-static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+static GamepadDevice *gamepad_find_device_by_guid(const char *guid_str, char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
 	if(gamepad.devices.num_elements < 1) {
 		*out_localdevnum = GAMEPAD_DEVNUM_INVALID;
 		return NULL;
@@ -216,7 +212,7 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 	dynarray_foreach(&gamepad.devices, int i, auto dev, {
 		*guid_out = 0;
 
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
+		SDL_JoystickGUID guid = SDL_GetJoystickInstanceGUID(dev->joy_instance);
 		SDL_GetJoystickGUIDString(guid, guid_out, guid_out_sz);
 
 		if(!strcasecmp(guid_str, guid_out) || !strcasecmp(guid_str, "default")) {
@@ -229,7 +225,7 @@ static GamepadDevice* gamepad_find_device_by_guid(const char *guid_str, char *gu
 	return NULL;
 }
 
-static GamepadDevice* gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
+static GamepadDevice *gamepad_find_device(char *guid_out, size_t guid_out_sz, int *out_localdevnum) {
 	GamepadDevice *dev;
 	const char *want_guid = config_get_str(CONFIG_GAMEPAD_DEVICE);
 
@@ -283,9 +279,9 @@ bool gamepad_update_devices(void) {
 	return true;
 }
 
-static inline void set_events_state(int state) {
-	SDL_JoystickEventState(state);
-	SDL_GameControllerEventState(state);
+static inline void set_events_state(bool state) {
+	SDL_SetJoystickEventsEnabled(state);
+	SDL_SetGamepadEventsEnabled(state);
 }
 
 void gamepad_init(void) {
@@ -293,7 +289,7 @@ void gamepad_init(void) {
 		return;
 	}
 
-	set_events_state(SDL_IGNORE);
+	set_events_state(false);
 
 	if(!config_get_int(CONFIG_GAMEPAD_ENABLED)) {
 		return;
@@ -316,7 +312,7 @@ void gamepad_init(void) {
 		.priority = EPRIO_TRANSLATION,
 	});
 
-	set_events_state(SDL_ENABLE);
+	set_events_state(true);
 }
 
 void gamepad_shutdown(void) {
@@ -337,7 +333,7 @@ void gamepad_shutdown(void) {
 
 	dynarray_free_data(&gamepad.devices);
 
-	set_events_state(SDL_IGNORE);
+	set_events_state(false);
 	SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
 
 	memset(&gamepad, 0, sizeof(gamepad));
@@ -796,7 +792,7 @@ void gamepad_device_guid(int num, char *guid_str, size_t guid_str_sz) {
 	GamepadDevice *dev = gamepad_get_device(num);
 
 	if(dev) {
-		SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(dev->sdl_id);
+		SDL_JoystickGUID guid = SDL_GetJoystickInstanceGUID(dev->joy_instance);
 		SDL_GetJoystickGUIDString(guid, guid_str, guid_str_sz);
 	}
 }
