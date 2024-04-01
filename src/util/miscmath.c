@@ -99,14 +99,6 @@ cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsil
 	return *val = capproach_asymptotic(*val, target, rate, epsilon);
 }
 
-double cabs2(cmplx c) {
-	return re(c) * re(c) + im(c) * im(c);
-}
-
-float cabs2f(cmplxf c) {
-	return re(c) * re(c) + im(c) * im(c);
-}
-
 cmplx cnormalize(cmplx c) {
 	cmplx r = c / sqrt(re(c) * re(c) + im(c) * im(c));
 	// NOTE: clang generates a function call for isnan()...
@@ -156,14 +148,6 @@ cmplx cwdiv(cmplx c0, cmplx c1) {
 
 cmplxf cwdivf(cmplxf c0, cmplxf c1) {
 	return CMPLXF(re(c0) / re(c1), im(c0) / im(c1));
-}
-
-double cdot(cmplx c0, cmplx c1) {
-	return re(c0) * re(c1) + im(c0) * im(c1);
-}
-
-float cdotf(cmplxf c0, cmplxf c1) {
-	return re(c0) * re(c1) + im(c0) * im(c1);
 }
 
 cmplx cswap(cmplx c) {

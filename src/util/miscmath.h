@@ -63,8 +63,6 @@ cmplx capproach_asymptotic(cmplx val, cmplx target, double rate, double epsilon)
 double approach_asymptotic_p(double *val, double target, double rate, double epsilon);
 float fapproach_asymptotic_p(float *val, float target, float rate, float epsilon);
 cmplx capproach_asymptotic_p(cmplx *val, cmplx target, double rate, double epsilon);
-double cabs2(cmplx c) attr_const;
-float cabs2f(cmplxf c) attr_const;
 cmplx cnormalize(cmplx c) attr_const;
 cmplx cclampabs(cmplx c, double maxabs) attr_const;
 cmplx cwclamp(cmplx c, cmplx cmin, cmplx cmax) attr_const;
@@ -73,8 +71,6 @@ cmplx cwmul(cmplx c0, cmplx c1) attr_const;
 cmplxf cwmulf(cmplxf c0, cmplxf c1) attr_const;
 cmplx cwdiv(cmplx c0, cmplx c1) attr_const;
 cmplxf cwdivf(cmplxf c0, cmplxf c1) attr_const;
-double cdot(cmplx c0, cmplx c1) attr_const;
-float cdotf(cmplxf c0, cmplxf c1) attr_const;
 cmplx cswap(cmplx c) attr_const;
 cmplxf cswapf(cmplxf c) attr_const;
 double ccross(cmplx a, cmplx b) attr_const;
@@ -110,6 +106,22 @@ uint64_t umuldiv64(uint64_t x, uint64_t multiplier, uint64_t divisor);
 	assert(isfinite(_temp)) ; \
 	_temp; \
 })
+
+INLINE double cabs2(cmplx c) {
+	return re(c) * re(c) + im(c) * im(c);
+}
+
+INLINE float cabs2f(cmplxf c) {
+	return re(c) * re(c) + im(c) * im(c);
+}
+
+INLINE double cdot(cmplx c0, cmplx c1) {
+	return re(c0) * re(c1) + im(c0) * im(c1);
+}
+
+INLINE float cdotf(cmplxf c0, cmplxf c1) {
+	return re(c0) * re(c1) + im(c0) * im(c1);
+}
 
 INLINE cmplx cmul_finite(cmplx a, cmplx b) {
 	double ra = ASSUME_FINITE(re(a));
