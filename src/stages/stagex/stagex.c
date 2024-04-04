@@ -37,7 +37,7 @@ struct stagex_spells_s stagex_spells = {
 	},
 	.boss = {
 		.infinity_network = {
-			{-1, -1, -1, 1}, AT_SurvivalSpell, "Obliteration “Infinity Network”", 90, 80000,
+			{-1, -1, -1, 1}, AT_SurvivalSpell, "Network “Ethereal Ethernet”", 60, 80000,
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_infinity_network),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+100.0*I, 7,
 		},
