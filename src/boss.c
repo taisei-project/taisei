@@ -652,6 +652,7 @@ DEFINE_TASK(boss_particles) {
 				.timeout = 180,
 				.draw_rule = pdraw_timeout_scale(2, 0.01),
 				.angle = rng_angle(),
+				.flags = PFLAG_MANUALANGLE,
 			));
 		}
 
