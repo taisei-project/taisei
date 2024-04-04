@@ -28,6 +28,14 @@ typedef struct LaserSamplingParams {
 	float time_step;
 } LaserSamplingParams;
 
+typedef struct LaserWidthParams {
+	float midpoint;
+	float tail;
+	float tail_factor;
+	float exponent;
+	float scale;
+} LaserWidthParams;
+
 void lasers_init(void) {
 	laserintern_init();
 	laserdraw_init();
@@ -130,7 +138,7 @@ bool clear_laser(Laser *l, uint flags) {
 
 static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingParams *out_params) {
 	float t;
-	int c;
+	float c;
 
 	c = l->timespan;
 	t = (global.frames - l->birthtime) * l->speed - l->timespan + l->timeshift;
@@ -148,24 +156,31 @@ static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingPar
 		return false;
 	}
 
-	out_params->num_samples = c / step;
+	float ns = ceilf(c / step);
+	out_params->num_samples = ns;
 	out_params->time_shift = t;
-	out_params->time_step = step;
+	out_params->time_step = c / (ns - 1);
 
 	return true;
 }
 
-static float calc_sample_width(
-	Laser *l, float sample, float half_samples, float width_factor, float tail
-) {
-	float mid_ofs = sample - half_samples;
-	float w = width_factor * (mid_ofs - tail) * (mid_ofs + tail);
+static inline void calc_width_params(const Laser *l, LaserWidthParams *wp) {
+	wp->midpoint = l->timespan * 0.5f;
+	wp->tail = l->timespan * 0.625;
+	wp->tail_factor = -1.0f / (wp->tail * wp->tail);
+	wp->exponent = l->width_exponent;
+	wp->scale = 0.75f * l->width;
+}
 
-	if(l->width_exponent != 1.0) {
-		w = powf(w, l->width_exponent);
+static float calc_sample_width(const LaserWidthParams *wp, float t) {
+	float mid_ofs = t - wp->midpoint;
+	float w = wp->tail_factor * (mid_ofs - wp->tail) * (mid_ofs + wp->tail);
+
+	if(wp->exponent != 1.0) {
+		w = powf(w, wp->exponent);
 	}
 
-	return 0.75f * l->width * w;
+	return wp->scale * w;
 }
 
 static void laserseg_flip(LaserSegment *s) {
@@ -191,14 +206,13 @@ static int quantize_laser(Laser *l) {
 	}
 
 	// Precomputed magic parameters for width calculation
-	float half_samples = sp.num_samples * 0.5;
-	float tail = sp.num_samples / 1.6;
-	float width_factor = -1 / (tail * tail);
+	LaserWidthParams wp;
+	calc_width_params(l, &wp);
 
 	// Maximum value of `1 - cos(angle)` between two curve segments to reduce to straight lines
-	const float thres_angular = 1e-4;
+	const float thres_angular = 1e-4f;
 	// Maximum laser-time sample difference between two segment points (for width interpolation)
-	const float thres_temporal = sp.num_samples / 16.0;
+	const float thres_temporal = sp.num_samples / 16.0f;
 	// These values should be kept as high as possible without introducing artifacts.
 
 	// Time value of current sample
@@ -215,7 +229,7 @@ static int quantize_laser(Laser *l) {
 
 	// Width value of the last included sample
 	// Initialized to the width at t0
-	float w0 = calc_sample_width(l, 0, half_samples, width_factor, tail);
+	float w0 = calc_sample_width(&wp, 0);
 
 	// Already sampled the first point, so shift
 	t += sp.time_step;
@@ -259,7 +273,7 @@ static int quantize_laser(Laser *l) {
 			}
 		}
 
-		float w = calc_sample_width(l, i, half_samples, width_factor, tail);
+		float w = calc_sample_width(&wp, t - sp.time_shift);
 
 		float xa = re(a);
 		float ya = im(a);
