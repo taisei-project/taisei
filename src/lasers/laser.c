@@ -83,9 +83,15 @@ Laser *create_laserline(cmplx pos, cmplx dir, float charge, float dur, const Col
 }
 
 Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float dur, const Color *clr) {
-	float lt = 200;
-	cmplx m = (b - a) / lt;
-	Laser *l = create_laser(a, lt, dur, clr, las_linear, m, 0, 0, 0);
+	// NOTE: timespan influences number of samples used for quantization (about 2x the amount).
+	// Multiple samples are still needed for lines because the width is non-uniform.
+	// TODO: make this a separate parameter and optimize sample counts for other line-type lasers
+	// (accelerated, non-static linear, etc.)
+	// This value works well for the default exponent (1.0), but may need to be adjusted for other
+	// values. 0 exponent can get away with 1 sample, because the width is then constant.
+	float timespan = 4;
+	Laser *l = create_laser(0, timespan, dur, clr, las_linear, 0, 0, 0, 0);
+	laserline_set_ab(l, a, b);
 	INVOKE_TASK(laser_charge,
 		.laser = ENT_BOX(l),
 		.charge_delay = charge,
