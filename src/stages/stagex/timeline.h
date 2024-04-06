@@ -6,13 +6,9 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stagex_timeline_h
-#define IGUARD_stages_stagex_timeline_h
-
+#pragma once
 #include "taisei.h"
 
 #include "coroutine.h"
 
 DECLARE_EXTERN_TASK(stagex_timeline);
-
-#endif // IGUARD_stages_stagex_timeline_h

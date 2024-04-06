@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stagex_yumemi_h
-#define IGUARD_stages_stagex_yumemi_h
-
+#pragma once
 #include "taisei.h"
 
 #include "entity.h"
@@ -39,5 +37,3 @@ void stagex_yumemi_slave_laser_sweep(YumemiSlave *slave, real s, cmplx target);
 Boss *stagex_spawn_yumemi(cmplx pos);
 
 void stagex_draw_yumemi_spellbg_voronoi(Boss *boss, int time);
-
-#endif // IGUARD_stages_stagex_yumemi_h

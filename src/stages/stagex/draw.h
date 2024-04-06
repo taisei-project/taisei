@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#ifndef IGUARD_stages_stagex_draw_h
-#define IGUARD_stages_stagex_draw_h
-
+#pragma once
 #include "taisei.h"
 
 #include "renderer/api.h"
@@ -65,5 +63,3 @@ extern ShaderRule stagex_postprocess_effects[];
 
 #define STAGEX_BG_SEGMENT_PERIOD 11.2
 #define STAGEX_BG_MAX_RANGE (64 * STAGEX_BG_SEGMENT_PERIOD)
-
-#endif // IGUARD_stages_stagex_draw_h

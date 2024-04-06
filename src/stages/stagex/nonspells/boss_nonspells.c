@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
 */
 
-#include "boss.h"
 #include "taisei.h"
 
 #include "nonspells.h"
 #include "../yumemi.h"
 
+#include "boss.h"
 #include "stage.h"
 #include "common_tasks.h"
 #include "global.h"
