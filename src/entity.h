@@ -285,23 +285,23 @@ INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray 
 #define _ent_array_iterator MACROHAX_ADDLINENUM(_ent_array_iterator)
 #define _ent_array_temp MACROHAX_ADDLINENUM(_ent_array_temp)
 
-#define ENT_ARRAY_FOREACH(_array, _var, _block) do { \
+#define ENT_ARRAY_FOREACH(_array, _var, ...) do { \
 	for(uint _ent_array_iterator = 0; _ent_array_iterator < (_array)->size; ++_ent_array_iterator) { \
 		void *_ent_array_temp = ENT_ARRAY_GET((_array), _ent_array_iterator); \
 		if(_ent_array_temp != NULL) { \
 			_var = _ent_array_temp; \
-			_block \
+			__VA_ARGS__ \
 		} \
 	} \
 } while(0)
 
-#define ENT_ARRAY_FOREACH_COUNTER(_array, _cntr_var, _ent_var, _block) do { \
+#define ENT_ARRAY_FOREACH_COUNTER(_array, _cntr_var, _ent_var, ...) do { \
 	for(uint _ent_array_iterator = 0; _ent_array_iterator < (_array)->size; ++_ent_array_iterator) { \
 		void *_ent_array_temp = ENT_ARRAY_GET((_array), _ent_array_iterator); \
 		if(_ent_array_temp != NULL) { \
 			_cntr_var = _ent_array_iterator; \
 			_ent_var = _ent_array_temp; \
-			_block \
+			__VA_ARGS__ \
 		} \
 	} \
 } while(0)
