@@ -51,6 +51,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_pipe_dream),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.alignment = {
+			{-1, -1, -1, 7}, AT_Spellcard, "Address Space “Pointer Alignment”", 90, 80000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_alignment),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
+		},
 	},
 };
 
