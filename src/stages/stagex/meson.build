@@ -9,6 +9,7 @@ stagex_src = files(
     'spells/sierpinski.c',
     'spells/mem_copy.c',
     'spells/pipe_dream.c',
+    'spells/alignment.c',
     'stagex.c',
     'timeline.c',
     'yumemi.c',
