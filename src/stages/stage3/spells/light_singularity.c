@@ -15,9 +15,9 @@
 #include "global.h"
 
 TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
-	Laser *l = TASK_BIND(create_laser(ARGS.pos,
+	Laser *l = TASK_BIND(create_lasercurve3c(ARGS.pos,
 		200, 10000, RGBA(0.0, 0.2, 1.0, 0.0), las_sine_expanding,
-		ARGS.vel, ARGS.amp, ARGS.freq, 0
+		ARGS.vel, ARGS.amp, ARGS.freq
 	));
 
 	laser_make_static(l);

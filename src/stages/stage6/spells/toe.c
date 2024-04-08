@@ -377,20 +377,20 @@ TASK(toe_laser_respawn, { cmplx pos; cmplx vel; int type; }) {
 }
 
 DEFINE_TASK(toe_laser) {
-	Laser *l = TASK_BIND(create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, RGBA(1, 1, 1, 0),
-		toe_laser_pos,
-		ARGS.vel,
-		ARGS.type,
-		0,
-		0
-	));
+	Laser *l = TASK_BIND(
+		create_lasercurve2c(ARGS.pos, LASER_LENGTH, ARGS.deathtime, RGBA(1, 1, 1, 0),
+			toe_laser_pos,
+			ARGS.vel,
+			ARGS.type
+		)
+	);
 	toe_laser_particle(l, ARGS.pos);
 
 	cmplx drift = 0.2 * I;
 
 	for(int t = 0;; t++) {
 		if(t == l->deathtime - 1) {
-			cmplx newpos = l->prule(l, l->deathtime);
+			cmplx newpos = laser_pos_at(l, l->deathtime);
 			INVOKE_TASK(toe_laser_respawn, newpos, ARGS.vel, ARGS.type);
 		}
 

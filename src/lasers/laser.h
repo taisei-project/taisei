@@ -16,15 +16,30 @@
 #include "resource/shader_program.h"
 #include "entity.h"
 
-typedef LIST_ANCHOR(Laser) LaserList;
+typedef cmplx LaserRuleFunc(Laser *p, real t, void *ruledata);
 
-typedef cmplx (*LaserPosRule)(Laser* l, float time);
+typedef struct LaserRule {
+	LaserRuleFunc *func;
+	alignas(cmplx) char data[sizeof(cmplx) * 5];
+} LaserRule;
+
+typedef cmplx (*LegacyLaserPosRule)(Laser *l, float time);
+typedef LegacyLaserPosRule LaserPosRule
+	attr_deprecated("For compatibility with legacy rules");
+
+typedef LIST_ANCHOR(Laser) LaserList;
 
 DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
-	cmplx args[4];
 
-	LaserPosRule prule;
+	union {
+		LaserRule rule;
+		struct {
+			char _padding[offsetof(LaserRule, data)];
+			cmplx args[(sizeof(LaserRule) - offsetof(LaserRule, data)) / sizeof(cmplx)]
+				attr_deprecated("For compatibility with legacy rules");
+		};
+	};
 
 	struct {
 		int segments_ofs;
@@ -50,10 +65,14 @@ DEFINE_ENTITY_TYPE(Laser, {
 	uchar collision_active : 1;
 });
 
-#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) create_laser(p, time, deathtime, clr, rule, a0, 0, 0, 0)
-#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) create_laser(p, time, deathtime, clr, rule, a0, a1, 0, 0)
-#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) create_laser(p, time, deathtime, clr, rule, a0, a1, a2, 0)
-#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) create_laser(p, time, deathtime, clr, rule, a0, a1, a2, a3)
+#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) \
+	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, 0, 0, 0))
+#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) \
+	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, 0, 0))
+#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) \
+	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, a2, 0))
+#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) \
+	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, a2, a3))
 
 void lasers_init(void);
 void lasers_shutdown(void);
@@ -66,18 +85,11 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 void laserline_set_ab(Laser *l, cmplx a, cmplx b);
 void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir);
 
-Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserPosRule prule, cmplx a0, cmplx a1, cmplx a2, cmplx a3);
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserRule rule);
 
 bool laser_is_active(Laser *l);
 bool laser_is_clearable(Laser *l);
 bool clear_laser(Laser *l, uint flags);
-
-cmplx las_linear(Laser *l, float t);
-cmplx las_accel(Laser *l, float t);
-cmplx las_sine(Laser *l, float t);
-cmplx las_sine_expanding(Laser *l, float t);
-cmplx las_turning(Laser *l, float t);
-cmplx las_circle(Laser *l, float t);
 
 void laser_make_static(Laser *l);
 void laser_charge(Laser *l, int t, float charge, float width);
@@ -110,8 +122,14 @@ typedef struct LaserTraceSample {
 typedef void *(*LaserTraceFunc)(Laser *l, const LaserTraceSample *sample, void *userdata);
 void *laser_trace(Laser *l, real step, LaserTraceFunc trace, void *userdata);
 
+INLINE cmplx laser_pos_at(Laser *l, real t) {
+	return l->rule.func(l, t, &l->rule.data);
+}
+
 DECLARE_EXTERN_TASK(laser_charge, {
 	BoxedLaser laser;
 	float charge_delay;
 	float target_width;
 });
+
+#include "rules.h"

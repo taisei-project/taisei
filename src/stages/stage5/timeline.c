@@ -678,9 +678,9 @@ TASK(lasertrap_warning, { cmplx pos; int time; real radius; }) {
 static Laser *laser_arc(cmplx center, real lifetime, real radius, real arcangle, real arcshift) {
 	real a = arcangle/lifetime;
 
-	Laser *l = create_laser(
+	Laser *l = create_lasercurve2c(
 		center, lifetime, lifetime, RGBA(0.5, 0.1, 1.0, 0), las_circle,
-		a + I*arcshift/a, radius, 0, 0
+		a + I*arcshift/a, radius
 	);
 
 	laser_make_static(l);
@@ -708,11 +708,11 @@ TASK(lasertrap_arc_bullet, { BoxedLaser l; int timeout; }) {
 	));
 
 	Laser *l = NOT_NULL(ENT_UNBOX(ARGS.l));
-	p->pos = l->prule(l, 0);
+	p->pos = laser_pos_at(l, 0);
 
 	for(;(l = ENT_UNBOX(ARGS.l)); YIELD) {
 		p->prevpos = p->pos;
-		p->pos = l->prule(l, 0);
+		p->pos = laser_pos_at(l, 0);
 		iku_lightning_particle(p->pos);
 	}
 

@@ -46,11 +46,7 @@ void lasers_shutdown(void) {
 	laserintern_shutdown();
 }
 
-Laser *create_laser(
-	cmplx pos, float time, float deathtime, const Color *color,
-	LaserPosRule prule,
-	cmplx a0, cmplx a1, cmplx a2, cmplx a3
-) {
+Laser *create_laser(cmplx pos, float time, float deathtime, const Color *color, LaserRule rule) {
 	Laser *l = objpool_acquire(&stage_object_pools.lasers);
 	alist_push(&global.lasers, l);
 
@@ -59,11 +55,7 @@ Laser *create_laser(
 	l->deathtime = deathtime;
 	l->pos = pos;
 	l->color = *color;
-	l->args[0] = a0;
-	l->args[1] = a1;
-	l->args[2] = a2;
-	l->args[3] = a3;
-	l->prule = prule;
+	l->rule = rule;
 	l->width = 10;
 	l->width_exponent = 1.0;
 	l->speed = 1;
@@ -73,7 +65,7 @@ Laser *create_laser(
 	l->ent.draw_func = laserdraw_ent_drawfunc;
 	ent_register(&l->ent, ENT_TYPE_ID(Laser));
 
-	l->prule(l, EVENT_BIRTH);
+	laser_pos_at(l, EVENT_BIRTH);
 
 	return l;
 }
@@ -90,7 +82,7 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 	// This value works well for the default exponent (1.0), but may need to be adjusted for other
 	// values. 0 exponent can get away with 1 sample, because the width is then constant.
 	float timespan = 4;
-	Laser *l = create_laser(0, timespan, dur, clr, las_linear, 0, 0, 0, 0);
+	Laser *l = create_laser(0, timespan, dur, clr, laser_rule_linear(0));
 	laserline_set_ab(l, a, b);
 	INVOKE_TASK(laser_charge,
 		.laser = ENT_BOX(l),
@@ -101,8 +93,9 @@ Laser *create_laserline_ab(cmplx a, cmplx b, float width, float charge, float du
 }
 
 void laserline_set_ab(Laser *l, cmplx a, cmplx b) {
+	auto rd = NOT_NULL(laser_get_ruledata_linear(l));
+	rd->velocity = (b - a) / l->timespan;
 	l->pos = a;
-	l->args[0] = (b - a) / l->timespan;
 }
 
 void laserline_set_posdir(Laser *l, cmplx pos, cmplx dir) {
@@ -231,7 +224,7 @@ static int quantize_laser(Laser *l) {
 	// Begin constructing at t0
 	// WARNING: these must be double precision to prevent cross-platform replay desync
 	cmplx a, b;
-	a = l->prule(l, t0);
+	a = laser_pos_at(l, t0);
 
 	// Width value of the last included sample
 	// Initialized to the width at t0
@@ -241,7 +234,7 @@ static int quantize_laser(Laser *l) {
 	t += sp.time_step;
 
 	// Vector from A to B of the last included segment, and its squared length.
-	cmplxf v0 = a - l->prule(l, t0 - sp.time_step);
+	cmplxf v0 = a - laser_pos_at(l, t0 - sp.time_step);
 	float v0_abs2 = cabs2f(v0);
 
 	float viewmargin = l->width * 0.5f;
@@ -256,7 +249,7 @@ static int quantize_laser(Laser *l) {
 	bottom_right.as_cmplx = a;
 
 	for(uint i = 1; i < sp.num_samples; ++i, t += sp.time_step) {
-		b = l->prule(l, t);
+		b = laser_pos_at(l, t);
 
 		if(i < sp.num_samples - 1 && (t - t0) < thres_temporal) {
 			cmplxf v1 = b - a;
@@ -670,89 +663,6 @@ bool laser_intersects_circle(Laser *l, Circle circle) {
 	};
 
 	return laser_intersects_ellipse(l, ellipse);
-}
-
-cmplx las_linear(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	return l->pos + l->args[0]*t;
-}
-
-cmplx las_accel(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	return l->pos + l->args[0]*t + 0.5*l->args[1]*t*t;
-}
-
-cmplx las_sine(Laser *l, float t) {               // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-	// this is actually shaped like a sine wave
-
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	cmplx line_vel = l->args[0];
-	cmplx line_dir = line_vel / cabs(line_vel);
-	cmplx line_normal = im(line_dir) - I*re(line_dir);
-	cmplx sine_amp = l->args[1];
-	real sine_freq = re(l->args[2]);
-	real sine_phase = re(l->args[3]);
-
-	cmplx sine_ofs = line_normal * sine_amp * sin(sine_freq * t + sine_phase);
-	return l->pos + t * line_vel + sine_ofs;
-}
-
-cmplx las_sine_expanding(Laser *l, float t) { // [0] = velocity; [1] = sine amplitude; [2] = sine frequency; [3] = sine phase
-
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	cmplx velocity = l->args[0];
-	real amplitude = re(l->args[1]);
-	real frequency = re(l->args[2]);
-	real phase = re(l->args[3]);
-
-	real angle = carg(velocity);
-	real speed = cabs(velocity);
-
-	real s = (frequency * t + phase);
-	return l->pos + cdir(angle + amplitude * sin(s)) * t * speed;
-}
-
-cmplx las_turning(Laser *l, float t) { // [0] = vel0; [1] = vel1; [2] r: turn begin time, i: turn end time
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	cmplx v0 = l->args[0];
-	cmplx v1 = l->args[1];
-	float begin = re(l->args[2]);
-	float end = im(l->args[2]);
-
-	float a = clamp((t - begin) / (end - begin), 0, 1);
-	a = 1.0 - (0.5 + 0.5 * cos(a * M_PI));
-	a = 1.0 - pow(1.0 - a, 2);
-
-	cmplx v = v1 * a + v0 * (1 - a);
-
-	return l->pos + v * t;
-}
-
-cmplx las_circle(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
-
-	real turn_speed = re(l->args[0]);
-	real time_ofs = im(l->args[0]);
-	real radius = re(l->args[1]);
-
-	return l->pos + radius * cdir(turn_speed * (t + time_ofs));
 }
 
 void laser_charge(Laser *l, int t, float charge, float width) {

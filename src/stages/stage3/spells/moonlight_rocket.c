@@ -64,7 +64,7 @@ TASK(laser_bullet, { BoxedProjectile p; BoxedLaser l; CoEvent *event; int event_
 	Projectile *p = TASK_BIND(ARGS.p);
 
 	for(int t = 0; (l = ENT_UNBOX(ARGS.l)); ++t, YIELD) {
-		p->pos = l->prule(l, t);
+		p->pos = laser_pos_at(l, t);
 
 		if(t == 0) {
 			p->prevpos = p->pos;

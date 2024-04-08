@@ -22,8 +22,8 @@ TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool 
 
 	real speed = ARGS.fast ? 2.0 : 1.5;
 
-	cmplx pos = l->prule(l, ARGS.laser_offset);
-	cmplx dir = cnormalize(pos - l->prule(l, ARGS.laser_offset-0.1));
+	cmplx pos = laser_pos_at(l, ARGS.laser_offset);
+	cmplx dir = cnormalize(pos - laser_pos_at(l, ARGS.laser_offset-0.1));
 	dir *= cdir(angle_ampl * sin(scatter_time * ARGS.angle_freq) * cos(2 * scatter_time * ARGS.angle_freq));
 
 	PROJECTILE(

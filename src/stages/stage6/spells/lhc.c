@@ -21,7 +21,7 @@ static real lhc_target_height(int turn) {
 TASK(lhc_laser, { BoxedEllyBaryons baryons; int baryon_idx; real direction; Color color;}) {
 	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 
-	Laser *l = TASK_BIND(create_laser(baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color, las_linear, ARGS.direction * VIEWPORT_W * 0.005, 0, 0, 0));
+	Laser *l = TASK_BIND(create_lasercurve1c(baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color, las_linear, ARGS.direction * VIEWPORT_W * 0.005));
 	l->unclearable = true;
 
 	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), 200, 30);
