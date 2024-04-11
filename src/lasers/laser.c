@@ -294,7 +294,7 @@ static int quantize_laser(Laser *l) {
 			LaserSegment *seg = dynarray_append(&lintern.segments, {
 				.pos   = {   a,  b },
 				.width = {  w0,  w },
-				.time  = { -t0, -t },
+				.time  = { sp.time_shift - t0, sp.time_shift - t },
 			});
 
 			if(w < w0) {
