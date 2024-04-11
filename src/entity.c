@@ -237,3 +237,14 @@ void _ent_array_compact_Entity(BoxedEntityArray *a) {
 		}
 	}
 }
+
+int _ent_array_add_firstfree_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
+	for(int i = 0; i < a->size; ++i) {
+		if(!ENT_UNBOX(a->array[i])) {
+			a->array[i] = box;
+			return i;
+		}
+	}
+
+	return _ent_array_add_BoxedEntity(box, a);
+}
