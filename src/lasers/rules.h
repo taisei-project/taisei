@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "laser.h"
+#include "ringbuf.h"
 
 cmplx las_linear(Laser *l, float t) attr_deprecated("Use laser_rule_linear");
 cmplx las_accel(Laser *l, float t) attr_deprecated("Use laser_rule_accelerated");
@@ -72,6 +73,19 @@ typedef struct LaserRuleCompatData {
 LaserRule laser_rule_compat(LegacyLaserPosRule oldrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3)
 	attr_deprecated("Use the new rule format (see laser/rules.h)");
 LaserRuleCompatData *laser_get_ruledata_compat(Laser *l);
+
+typedef struct LaserRuleDynamicTaskData {
+	MoveParams move;
+	RING_BUFFER(cmplx) history;
+} LaserRuleDynamicTaskData;
+
+typedef struct LaserRuleDynamicData {
+	const BoxedTask control_task;
+	LaserRuleDynamicTaskData *const task_data;
+} LaserRuleDynamicData;
+
+Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, const Color *color);
+LaserRuleDynamicData *laser_get_ruledata_dynamic(Laser *l);
 
 #define MAKE_LASER_RULE(func, data) ({ \
     union { \
