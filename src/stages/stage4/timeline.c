@@ -603,7 +603,8 @@ TASK(laser_pattern_fairy, { cmplx pos; cmplx dir; }) {
 		int count = 5;
 		real length = difficulty_value(20,30,40,50);
 		for(int i = 0; i < count; i++) {
-			create_lasercurve1c(e->pos, length, 200, RGBA(0.7, 1.0, 0.2, 0), las_linear, 3*ARGS.dir*cdir(M_TAU/count * i));
+			create_laser(e->pos, length, 200, RGBA(0.7, 1.0, 0.2, 0),
+				laser_rule_linear(3*ARGS.dir*cdir(M_TAU/count * i)));
 		}
 		play_sfx("laser1");
 

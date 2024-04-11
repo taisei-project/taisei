@@ -57,7 +57,8 @@ TASK(kurumi_blowwall_exploder, { cmplx pos; cmplx acceleration; }) {
 
 static void kurumi_blowwall_laser(Boss *b, cmplx direction, bool explode) {
 	cmplx acceleration = 0.1 * (1 + explode) * direction;
-	create_lasercurve2c(b->pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0), las_accel, 0, acceleration);
+	create_laser(b->pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0),
+		laser_rule_accelerated(0, acceleration));
 
 	if(explode) {
 		play_sfx("laser1");

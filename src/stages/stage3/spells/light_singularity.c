@@ -15,9 +15,9 @@
 #include "global.h"
 
 TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
-	Laser *l = TASK_BIND(create_lasercurve3c(ARGS.pos,
-		200, 10000, RGBA(0.0, 0.2, 1.0, 0.0), las_sine_expanding,
-		ARGS.vel, ARGS.amp, ARGS.freq
+	Laser *l = TASK_BIND(create_laser(
+		ARGS.pos, 200, 10000, RGBA(0.0, 0.2, 1.0, 0.0),
+		laser_rule_sine_expanding(ARGS.vel, ARGS.amp, ARGS.freq, 0)
 	));
 
 	laser_make_static(l);
@@ -26,16 +26,18 @@ TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 	real spin_factor = difficulty_value(1.05, 1.4, 1.75, 2.1);
 	cmplx r = cdir(M_PI/500.0 * spin_factor);
 
+	auto rd = NOT_NULL(laser_get_ruledata_sine_expanding(l));
+
 	for(int t = 0;; ++t, YIELD) {
 		if(t == 140) {
 			play_sfx("laser1");
 		}
 
-		laser_charge(l, t, 150, 10 + 10 * psin(re(l->args[0]) + t / 60.0));
-		l->args[3] = t / 10.0;  // phase
-		l->args[0] *= r;
+		laser_charge(l, t, 150, 10 + 10 * psin(re(rd->velocity) + t / 60.0));
+		rd->phase = t / 10.0;
+		rd->velocity *= r;
 
-		l->color = *HSLA((carg(l->args[0]) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
+		l->color = *HSLA((carg(rd->velocity) + M_PI) / (M_PI * 2), 1.0, 0.5, 0.0);
 	}
 }
 

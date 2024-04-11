@@ -128,7 +128,8 @@ TASK(kurumi_vladsarmy_bigfairy, { cmplx pos; cmplx target; }) {
 			cmplx dir = cdir(M_TAU * j / count);
 			if(global.diff == D_Lunatic)
 				dir *= phase;
-			create_lasercurve2c(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0), las_accel, dir, 0.1 * dir);
+			create_laser(e->pos, 20, 200, RGBA(1.0, 0.3, 0.7, 0.0),
+				laser_rule_accelerated(dir, 0.1 * dir));
 			PROJECTILE(
 				.proto = pp_bullet,
 				.pos = e->pos,

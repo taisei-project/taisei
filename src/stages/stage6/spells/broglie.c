@@ -164,8 +164,8 @@ TASK(broglie_charger_bullet, {
 	cmplx aim = ARGS.aim_rot * cnormalize(center - NOT_NULL(ENT_UNBOX(ARGS.boss))->pos);
 
 	for(int lnum = 0; lnum < 2; ++lnum) {
-		Laser *l = create_lasercurve4c(center, 75, 100, RGBA(1, 1, 1, 0), las_sine,
-			5 * aim, s_ampl, s_freq, lnum * M_PI);
+		Laser *l = create_laser(center, 75, 100, RGBA(1, 1, 1, 0),
+			laser_rule_sine(5 * aim, s_ampl, s_freq, lnum * M_PI));
 
 		l->width = 20;
 		INVOKE_TASK(broglie_laser, ENT_BOX(l), hue + lnum / 6.0);

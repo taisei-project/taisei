@@ -83,8 +83,9 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	Boss *boss = TASK_BIND(ARGS.boss);
 
 	real dt = ARGS.rocket_time;
-	Laser *l = create_lasercurve4c(
-		ARGS.pos, dt, dt, &ARGS.color, las_sine_expanding, 2.5*ARGS.dir, M_PI/20, 0.2, ARGS.phase
+	Laser *l = create_laser(
+		ARGS.pos, dt, dt, &ARGS.color,
+		laser_rule_sine_expanding(2.5*ARGS.dir, M_PI/20, 0.2, ARGS.phase)
 	);
 
 	Projectile *p = PROJECTILE(
@@ -113,7 +114,7 @@ TASK(rocket, { BoxedBoss boss; cmplx pos; cmplx dir; Color color; real phase; re
 	dt = sqrt(2 * cabs(dist) / ARGS.accel_rate);
 	dt += 2 * rng_f64s();
 
-	l = create_lasercurve2c(p->pos, dt, dt, RGBA(0.4, 0.9, 1.0, 0.0), las_accel, 0, accel);
+	l = create_laser(p->pos, dt, dt, RGBA(0.4, 0.9, 1.0, 0.0), laser_rule_accelerated(0, accel));
 	l->width = 15;
 	INVOKE_TASK(laser_bullet, ENT_BOX(p), ENT_BOX(l), &events.explosion, dt);
 	WAIT_EVENT_OR_DIE(&events.explosion);

@@ -123,8 +123,9 @@ TASK(spawner, { SunArgs sun; cmplx dir; int num_bullets; }) {
 
 	real lspeed = difficulty_value(2, 2, 3, 3);
 
-	auto l = create_lasercurve2c(
-		sun->pos, t/8, t, RGBA(0, 0.5, 1, 0), las_accel, 0, -lspeed*p->move.acceleration);
+	auto l = create_laser(
+		sun->pos, t/8, t, RGBA(0, 0.5, 1, 0),
+		laser_rule_accelerated(0, -lspeed*p->move.acceleration));
 	l->width = 20;
 	create_laserline_ab(o, sun->pos, 10, t, t, RGBA(0, 0.5, 1, 0));
 	play_sfx("laser1");

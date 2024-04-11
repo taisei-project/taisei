@@ -21,7 +21,9 @@ static real lhc_target_height(int turn) {
 TASK(lhc_laser, { BoxedEllyBaryons baryons; int baryon_idx; real direction; Color color;}) {
 	EllyBaryons *baryons = NOT_NULL(ENT_UNBOX(ARGS.baryons));
 
-	Laser *l = TASK_BIND(create_lasercurve1c(baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color, las_linear, ARGS.direction * VIEWPORT_W * 0.005));
+	Laser *l = TASK_BIND(create_laser(
+		baryons->poss[ARGS.baryon_idx], 200, 300, &ARGS.color,
+		laser_rule_linear(ARGS.direction * VIEWPORT_W * 0.005)));
 	l->unclearable = true;
 
 	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), 200, 30);
@@ -117,7 +119,9 @@ DEFINE_EXTERN_TASK(stage6_spell_lhc) {
 		for(int i = 0; i < count; i++) {
 			cmplx vel = 3 * rng_dir();
 
-			Laser *l = create_lasercurve2c(pos, laser_lifetime, 300, RGBA(0.5, 0.3, 0.9, 0), las_accel, vel, 0.02 * rng_real() * sign(re(vel)));
+			Laser *l = create_laser(
+				pos, laser_lifetime, 300, RGBA(0.5, 0.3, 0.9, 0),
+				laser_rule_accelerated(vel, 0.02 * rng_real() * sign(re(vel))));
 			l->width = 15;
 
 			real speed1 = rng_range(1, 3.5);

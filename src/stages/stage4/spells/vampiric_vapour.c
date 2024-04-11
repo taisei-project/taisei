@@ -82,7 +82,8 @@ TASK(kurumi_vampvape_slave, { cmplx pos; cmplx target; int time_offset; }) {
 	cmplx direction = cnormalize(ARGS.target - ARGS.pos);
 	cmplx acceleration = 0.2 * direction;
 
-	create_lasercurve2c(ARGS.pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0), las_accel, 0, acceleration);
+	create_laser(ARGS.pos, 50, 100, RGBA(1.0, 0.3, 0.3, 0.0),
+		laser_rule_accelerated(0, acceleration));
 
 	int travel_time = sqrt(2 * cabs(ARGS.target - ARGS.pos) / cabs(acceleration));
 	WAIT(travel_time);

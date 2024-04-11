@@ -81,7 +81,8 @@ TASK(kurumi_aniwall_slave, { cmplx pos; cmplx direction; }) {
 	INVOKE_SUBTASK(mover_update, &m);
 	INVOKE_SUBTASK(stage4_boss_slave_visual, &m.pos, .interval = 1);
 
-	create_lasercurve2c(ARGS.pos, 50, 80, RGBA(1.0, 0.4, 0.4, 0.0), las_accel, 0, m.move.acceleration);
+	create_laser(ARGS.pos, 50, 80, RGBA(1.0, 0.4, 0.4, 0.0),
+		laser_rule_accelerated(0, m.move.acceleration));
 
 	real velocity_boost = re(ARGS.direction) > 0 ? 1 : 0.7;
 

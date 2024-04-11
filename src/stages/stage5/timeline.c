@@ -335,7 +335,8 @@ TASK(laser_fairy, {
 		cmplx n = cnormalize(global.plr.pos - e->pos) * cdir((0.02 * dir_mod) * x);
 		real fac = (0.5 + 0.2 * angle_mod);
 
-		create_lasercurve2c(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0), las_accel, fac * 4 * n, fac * 0.05 * n);
+		create_laser(e->pos, 100, 300, RGBA(0.7, 0.3, 1, 0),
+			laser_rule_accelerated(fac * 4 * n, fac * 0.05 * n));
 
 		PROJECTILE(
 			.proto = pp_plainball,
@@ -678,9 +679,9 @@ TASK(lasertrap_warning, { cmplx pos; int time; real radius; }) {
 static Laser *laser_arc(cmplx center, real lifetime, real radius, real arcangle, real arcshift) {
 	real a = arcangle/lifetime;
 
-	Laser *l = create_lasercurve2c(
-		center, lifetime, lifetime, RGBA(0.5, 0.1, 1.0, 0), las_circle,
-		a + I*arcshift/a, radius
+	Laser *l = create_laser(
+		center, lifetime, lifetime, RGBA(0.5, 0.1, 1.0, 0),
+		laser_rule_arc(radius, a, arcshift/a)
 	);
 
 	laser_make_static(l);
@@ -689,11 +690,12 @@ static Laser *laser_arc(cmplx center, real lifetime, real radius, real arcangle,
 
 TASK(animate_arc, { BoxedLaser arc; real radius_delta; }) {
 	auto arc = TASK_BIND(ARGS.arc);
+	auto rd = NOT_NULL(laser_get_ruledata_arc(arc));
 
 	for(;;YIELD) {
-		arc->args[1] += ARGS.radius_delta;
-		real a = re(arc->args[0]);
-		arc->args[0] = a + I * (im(arc->args[0]) * a + M_TAU/194) / a;
+		rd->radius += ARGS.radius_delta;
+		real a = rd->turn_speed;
+		rd->time_ofs = (rd->time_ofs * a + M_TAU/194) / a;
 	}
 }
 

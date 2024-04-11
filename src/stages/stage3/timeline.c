@@ -400,7 +400,8 @@ TASK(laserball, { cmplx origin; cmplx velocity; Color *color; real freq_factor; 
 			.color = RGBA(1, 1, 1, 0),
 		);
 
-		create_lasercurve4c(p->pos, lt, dt, &p->color, las_sine_expanding, lv, amp, freq, i * phase);
+		create_laser(p->pos, lt, dt, &p->color,
+			laser_rule_sine_expanding(lv, amp, freq, i * phase));
 
 		for(int t = 0; t < delay; ++t) {
 			YIELD;
