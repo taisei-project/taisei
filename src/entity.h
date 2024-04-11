@@ -242,9 +242,11 @@ typedef struct BoxedEntityArray {
 			uint size; \
 		}; \
 	} Boxed##typename##Array; \
-	INLINE void _ent_array_add_##typename(Boxed##typename box, Boxed##typename##Array *a) { \
-		assert(a->size < a->capacity); \
-		a->array[a->size++] = box; \
+	INLINE int _ent_array_add_##typename(Boxed##typename box, Boxed##typename##Array *a) { \
+		return _ent_array_add_BoxedEntity(box.as_generic, &a->as_generic_UNSAFE); \
+	} \
+	INLINE int _ent_array_add_firstfree_##typename(Boxed##typename box, Boxed##typename##Array *a) { \
+		return _ent_array_add_firstfree_BoxedEntity(box.as_generic, &a->as_generic_UNSAFE); \
 	} \
 	INLINE void _ent_array_compact_##typename(Boxed##typename##Array *a) { \
 		_ent_array_compact_Entity(&a->as_generic_UNSAFE); \
@@ -252,19 +254,32 @@ typedef struct BoxedEntityArray {
 
 void _ent_array_compact_Entity(BoxedEntityArray *a);
 
+INLINE int _ent_array_add_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
+	assert(a->size < a->capacity);
+	int i = a->size++;
+	a->array[i] = box;
+	return i;
+}
+
+INLINE int _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray *a) {
+	return _ent_array_add_BoxedEntity(ENT_BOX(ent), a);
+}
+
+int _ent_array_add_firstfree_BoxedEntity(BoxedEntity box, BoxedEntityArray *a);
+
+INLINE int _ent_array_add_firstfree_Entity(
+	struct EntityInterface *ent, BoxedEntityArray *a
+) {
+	return _ent_array_add_firstfree_BoxedEntity(ENT_BOX(ent), a);
+}
+
 ENTITIES(ENT_EMIT_ARRAY_DEFS,)
 #undef ENT_EMIT_ARRAY_DEFS
 
-INLINE void _ent_array_add_BoxedEntity(BoxedEntity box, BoxedEntityArray *a) {
-	assert(a->size < a->capacity);
-	a->array[a->size++] = box;
-}
-
-INLINE void _ent_array_add_Entity(struct EntityInterface *ent, BoxedEntityArray *a) {
-	_ent_array_add_BoxedEntity(ENT_BOX(ent), a);
-}
-
-#define ENT_ARRAY_ADD(_array, _ent) ENT_BOXED_DISPATCH_FUNCTION(_ent_array_add_, ENT_BOX_OR_PASSTHROUGH(_ent), _array)
+#define ENT_ARRAY_ADD(_array, _ent) \
+	ENT_BOXED_DISPATCH_FUNCTION(_ent_array_add_, ENT_BOX_OR_PASSTHROUGH(_ent), _array)
+#define ENT_ARRAY_ADD_FIRSTFREE(_array, _ent) \
+	ENT_BOXED_DISPATCH_FUNCTION(_ent_array_add_firstfree_, ENT_BOX_OR_PASSTHROUGH(_ent), _array)
 #define ENT_ARRAY_GET_BOXED(_array, _index) ((_array)->array[_index])
 #define ENT_ARRAY_GET(_array, _index) ENT_UNBOX(ENT_ARRAY_GET_BOXED(_array, _index))
 #define ENT_ARRAY_COMPACT(_array) \
