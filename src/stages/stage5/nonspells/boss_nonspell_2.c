@@ -10,13 +10,28 @@
 
 #include "nonspells.h"
 
-static cmplx bolts2_laser(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		return 0;
-	}
+typedef struct LaserRuleBolts2Data {
+	cmplx target;
+	real sign;
+	real difficulty;
+} LaserRuleBolt2Data;
 
-	double diff = re(l->args[2]);
-	return re(l->args[0]) + I * im(l->pos) + sign(im(l->args[0] - l->pos)) * 0.06 * I * t * t + (20 + 4 * diff) * sin(t * 0.025 * diff + re(l->args[0])) * l->args[1];
+static cmplx bolts2_laser_rule_impl(Laser *l, real t, void *ruledata) {
+	LaserRuleBolt2Data *rd = ruledata;
+	return
+		re(rd->target) +
+		I * im(l->pos) +
+		sign(im(rd->target - l->pos)) * 0.06 * I * t * t +
+		(20 + 4 * rd->difficulty) * sin(t * 0.025 * rd->difficulty + re(rd->target)) * rd->sign;
+}
+
+static LaserRule bolts2_laser_rule(cmplx target, real sign) {
+	LaserRuleBolt2Data rd = {
+		.target = target,
+		.sign = sign,
+		.difficulty = global.diff,
+	};
+	return MAKE_LASER_RULE(bolts2_laser_rule_impl, rd);
 }
 
 TASK(laser_drop, { BoxedBoss boss; }) {
@@ -24,7 +39,8 @@ TASK(laser_drop, { BoxedBoss boss; }) {
 	for(int x = 0;; x++, WAIT(60)) {
 		aniplayer_queue(&boss->ani, (x&1) ? "dashdown_left" : "dashdown_right", 1);
 		aniplayer_queue(&boss->ani, "main", 0);
-		create_lasercurve3c(re(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0), bolts2_laser, global.plr.pos, (x&1) * 2 - 1, global.diff);
+		create_laser(re(global.plr.pos), 100, 200, RGBA(0.3, 1, 1, 0),
+			bolts2_laser_rule(global.plr.pos, (x&1) * 2 - 1));
 		play_sfx_ex("laser1", 0, false);
 	}
 }
