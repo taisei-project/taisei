@@ -12,27 +12,39 @@
 
 #include "common_tasks.h"
 
-static cmplx maxwell_laser(Laser *l, float t) {
-	if(t == EVENT_BIRTH) {
-		l->unclearable = true;
-		return 0;
-	}
+typedef struct LaserRuleMaxwellData {
+	cmplx dir;
+	real amplitude;
+	real phase;
+} LaserRuleMaxwellData;
 
-	cmplx direction = l->args[0];
-	real amplitude = re(l->args[2]);
-	real phase = im(l->args[2]);
-
-	return l->pos + direction * t * (1 + I * amplitude * 0.02 * sin(0.1 * t + phase));
+static cmplx maxwell_laser_rule_impl(Laser *l, real t, void *ruledata) {
+	LaserRuleMaxwellData *rd = ruledata;
+	return l->pos + rd->dir * t * (1 + I * rd->amplitude * 0.02 * sin(0.1 * t + rd->phase));
 }
 
+static LaserRule maxwell_laser_rule(cmplx dir, real amplitude, real phase) {
+	LaserRuleMaxwellData rd = {
+		.dir = dir,
+		.amplitude = amplitude,
+		.phase = phase,
+	};
+	return MAKE_LASER_RULE(maxwell_laser_rule_impl, rd);
+}
+
+static IMPL_LASER_RULE_DATAGETTER(maxwell_laser_rule_data, maxwell_laser_rule_impl, LaserRuleMaxwellData)
+
 TASK(maxwell_laser, { cmplx pos; cmplx dir; real phase; real phase_speed; }) {
-	Laser *l = TASK_BIND(create_lasercurve1c(ARGS.pos, 200, 10000, RGBA(0, 0.2, 1, 0.0), maxwell_laser, ARGS.dir*VIEWPORT_H*0.005));
+	Laser *l = TASK_BIND(
+		create_laser(ARGS.pos, 200, 10000, RGBA(0, 0.2, 1, 0.0),
+			maxwell_laser_rule(ARGS.dir*VIEWPORT_H*0.005, 0, ARGS.phase)));
+	l->unclearable = true;
+	auto rd = NOT_NULL(maxwell_laser_rule_data(l));
 
 	INVOKE_SUBTASK(laser_charge, ENT_BOX(l), .charge_delay = 200, .target_width = 15);
 
-	real phase = ARGS.phase;
-	real phase_speed = ARGS.phase_speed;
 	real amplitude = 0;
+	real phase_speed = ARGS.phase_speed;
 	real target_amplitude = difficulty_value(6.045, 6.435, 6.825, 7.215);
 
 	INVOKE_SUBTASK_DELAYED(60, common_easing_animated, &amplitude, target_amplitude, 39, glm_ease_quad_in);
@@ -49,11 +61,12 @@ TASK(maxwell_laser, { cmplx pos; cmplx dir; real phase; real phase_speed; }) {
 		if(global.diff > D_Normal) {
 			f = tanh(steepness * sin(t / 120.0)) * fcorrection;
 		}
+
 		l->color.b = 0.5 + 0.5 * f;
 		l->color.r = 0.5 - 0.5 * f;
 
-		phase += phase_speed * f;
-		l->args[2] = f * amplitude + I * phase;
+		rd->phase += phase_speed * f;
+		rd->amplitude = f * amplitude;
 		YIELD;
 	}
 }
