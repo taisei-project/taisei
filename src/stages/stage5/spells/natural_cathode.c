@@ -10,8 +10,22 @@
 
 #include "spells.h"
 
-static cmplx cathode_laser(Laser *l, float t) {
-	return l->pos + l->args[0] * sqrt(200 * t) * cdir(re(l->args[1]) * t);
+typedef struct LaserRuleCathodeData {
+	cmplx dir;
+	real turn_factor;
+} LaserRuleCathodeData;
+
+static cmplx cathode_laser_rule_impl(Laser *l, real t, void *ruledata) {
+	LaserRuleCathodeData *rd = ruledata;
+	return l->pos + rd->dir * sqrt(200 * t) * cdir(rd->turn_factor * t);
+}
+
+static LaserRule cathode_laser_rule(cmplx dir, real turn_factor) {
+	LaserRuleCathodeData rd = {
+		.dir = dir,
+		.turn_factor = turn_factor,
+	};
+	return MAKE_LASER_RULE(cathode_laser_rule_impl, rd);
 }
 
 TASK(balls, { BoxedBoss boss; }) {
@@ -76,11 +90,7 @@ DEFINE_EXTERN_TASK(stage5_spell_natural_cathode) {
 			aniplayer_queue(&boss->ani, "main", 0);
 
 			for(int i = 0; i < c; i++) {
-				create_lasercurve2c(boss->pos, 60, 260, RGBA(0.4, 1, 1, 0), cathode_laser,
-					2 * dir,
-					0.015 * s
-				);
-
+				create_laser(boss->pos, 60, 260, RGBA(0.4, 1, 1, 0), cathode_laser_rule(2 * dir, 0.015 * s));
 				dir *= r;
 			}
 
