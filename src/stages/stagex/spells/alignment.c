@@ -46,7 +46,7 @@ TASK(grid_lasers) {
 
 			if(l->collision_active) {
 				cmplx q = l->args[0] * l->timespan;
-				real w = 0.5*VIEWPORT_W/GRID_W; l->width;
+				real w = 0.5*VIEWPORT_W/GRID_W;
 				cmplx expand = -conj(I * w * cnormalize(q));
 
 				Rect hurtbox = {
