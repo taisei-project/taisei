@@ -271,42 +271,33 @@ TASK(toe_boson, { cmplx pos; cmplx wait_pos; cmplx vel; int num_warps; int activ
 	}
 }
 
-static cmplx toe_laser_pos(Laser *l, float t) { // a[0]: direction, a[1]: type
-	int type = re(l->args[1]+0.5);
+typedef struct LaserRuleTOEData {
+	cmplx velocity;
+	real width;
+	int type;
+} LaserRuleTOEData;
 
-	if(t == EVENT_BIRTH) {
-		switch(type) {
-		case 0:
-			l->color = *RGBA(0.4, 0.4, 1.0, 0.0);
-			break;
-		case 1:
-			l->color = *RGBA(1.0, 0.4, 0.4, 0.0);
-			break;
-		case 2:
-			l->color = *RGBA(0.4, 1.0, 0.4, 0.0);
-			break;
-		case 3:
-			l->color = *RGBA(1.0, 0.4, 1.0, 0.0);
-			break;
-		default:
-			log_fatal("Unknown Elly laser type.");
-		}
-		return 0;
+static cmplx toe_laser_rule_impl(Laser *l, real t, void *ruledata) {
+	LaserRuleTOEData *rd = ruledata;
+
+	switch(rd->type) {
+		case 0: return l->pos + rd->velocity * t;
+		case 1: return l->pos + rd->velocity * (t + rd->width * I * sin(t / rd->width));
+		case 2: return l->pos + rd->velocity * (t + rd->width * (0.6 * (cos(3 * t / rd->width) - 1) + I * sin(3 * t /
+rd->width)));
+		case 3: return l->pos + rd->velocity * (t + floor(t / rd->width) * rd->width);
 	}
 
-	real width = difficulty_value(3.5, 5, 6.5, 8);
-	switch(type) {
-	case 0:
-		return l->pos + l->args[0] * t;
-	case 1:
-		return l->pos + l->args[0] * (t + width * I * sin(t / width));
-	case 2:
-		return l->pos + l->args[0] * (t + width * (0.6 * (cos(3 * t / width) - 1) + I * sin(3 * t / width)));
-	case 3:
-		return l->pos + l->args[0] * (t + floor(t / width) * width);
-	}
+	UNREACHABLE;
+}
 
-	return 0;
+static LaserRule toe_laser_rule(cmplx velocity, int type) {
+	LaserRuleTOEData rd = {
+		.velocity = velocity,
+		.type = type,
+		.width = difficulty_value(3.5, 5, 6.5, 8),
+	};
+	return MAKE_LASER_RULE(toe_laser_rule_impl, rd);
 }
 
 static void toe_laser_particle(Laser *l, cmplx origin) {
@@ -377,13 +368,16 @@ TASK(toe_laser_respawn, { cmplx pos; cmplx vel; int type; }) {
 }
 
 DEFINE_TASK(toe_laser) {
+	static const Color type_to_color[] = {
+		{0.4, 0.4, 1.0, 0.0},
+		{1.0, 0.4, 0.4, 0.0},
+		{0.4, 1.0, 0.4, 0.0},
+		{1.0, 0.4, 1.0, 0.0},
+	};
+
 	Laser *l = TASK_BIND(
-		create_lasercurve2c(ARGS.pos, LASER_LENGTH, ARGS.deathtime, RGBA(1, 1, 1, 0),
-			toe_laser_pos,
-			ARGS.vel,
-			ARGS.type
-		)
-	);
+		create_laser(ARGS.pos, LASER_LENGTH, ARGS.deathtime, &type_to_color[ARGS.type],
+			toe_laser_rule(ARGS.vel, ARGS.type)));
 	toe_laser_particle(l, ARGS.pos);
 
 	cmplx drift = 0.2 * I;
