@@ -35,8 +35,6 @@ typedef struct StageClearBonus {
 
 void stage_enter(StageInfo *stage, ResourceGroup *rg, CallChain next);
 void stage_finish(int gameover);
-
-void stage_pause(void);
 void stage_gameover(void);
 
 void stage_start_bgm(const char *bgm);

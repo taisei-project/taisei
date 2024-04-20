@@ -40,6 +40,7 @@ typedef struct StageFrameState {
 	bool quicksave_is_automatic;
 	bool quickload_requested;
 	bool was_skipping;
+	bool paused;
 	uint32_t dynstage_generation;
 	int transition_delay;
 	int desync_check_freq;
@@ -255,7 +256,17 @@ static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, ctx));
 }
 
-void stage_pause(void) {
+static void stage_unpause(CallChainResult ccr) {
+	StageFrameState *fstate = ccr.ctx;
+	fstate->paused = false;
+}
+
+static void stage_pause(StageFrameState *fstate) {
+	if(fstate->paused) {
+		log_debug("Pause request ignored, already paused");
+		return;
+	}
+
 	if(global.gameover == GAMEOVER_TRANSITIONING || stage_is_skip_mode()) {
 		return;
 	}
@@ -268,7 +279,8 @@ void stage_pause(void) {
 		m = create_ingame_menu();
 	}
 
-	stage_enter_ingame_menu(m, NULL, NO_CALLCHAIN);
+	fstate->paused = true;
+	stage_enter_ingame_menu(m, NULL, CALLCHAIN(stage_unpause, fstate));
 }
 
 void stage_gameover(void) {
@@ -288,6 +300,7 @@ void stage_gameover(void) {
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
+	StageFrameState *fstate = NOT_NULL(arg);
 	TaiseiEvent type = TAISEI_EVENT(event->type);
 	int32_t code = event->user.code;
 
@@ -306,7 +319,7 @@ static bool stage_input_common(SDL_Event *event, void *arg) {
 			break;
 
 		case TE_GAME_PAUSE:
-			stage_pause();
+			stage_pause(fstate);
 			break;
 
 		default:
@@ -522,10 +535,12 @@ static void leave_replay_mode(StageFrameState *fstate, ReplayState *rp_in) {
 static void replay_input(StageFrameState *fstate) {
 	if(!should_skip_frame(fstate)) {
 		events_poll((EventHandler[]){
-			{ .proc =
-				stage_is_demo_mode()
-					? stage_input_handler_demo
-					: stage_input_handler_replay
+			{
+				.proc =
+					stage_is_demo_mode()
+						? stage_input_handler_demo
+						: stage_input_handler_replay,
+				.arg = fstate,
 			},
 			{ NULL }
 		}, EFLAG_GAME);
@@ -1011,6 +1026,14 @@ static void stage_end_loop(void *ctx);
 static void stage_stub_proc(void) { }
 static void stage_preload_stub_proc(ResourceGroup *rg) { }
 
+static void process_input(StageFrameState *fstate) {
+	if(global.replay.input.replay != NULL) {
+		replay_input(fstate);
+	} else {
+		stage_input(fstate);
+	}
+}
+
 TASK(stage_comain, { StageFrameState *fstate; }) {
 	StageFrameState *fstate = ARGS.fstate;
 	StageInfo *stage = fstate->stage;
@@ -1022,13 +1045,12 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 		display_stage_title(stage);
 	}
 
-	for(;;YIELD) {
-		if(global.replay.input.replay != NULL) {
-			replay_input(fstate);
-		} else {
-			stage_input(fstate);
-		}
+	YIELD;
 
+	bool first_frame = true;
+
+	for(;;) {
+		process_input(fstate);
 		process_boss(&global.boss);
 		process_enemies(&global.enemies);
 		process_projectiles(&global.projs, true);
@@ -1052,6 +1074,13 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 			if(global.boss) {
 				ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
 			}
+		}
+
+		if(first_frame) {
+			// HACK: Run frame 0 logic twice for compatibility with a v1.4 bug
+			first_frame = false;
+		} else {
+			YIELD;
 		}
 	}
 }
