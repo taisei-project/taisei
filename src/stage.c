@@ -1047,9 +1047,7 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 
 	YIELD;
 
-	bool first_frame = true;
-
-	for(;;) {
+	for(;;YIELD) {
 		process_input(fstate);
 		process_boss(&global.boss);
 		process_enemies(&global.enemies);
@@ -1074,13 +1072,6 @@ TASK(stage_comain, { StageFrameState *fstate; }) {
 			if(global.boss) {
 				ent_damage(&global.boss->ent, &(DamageInfo) { 400, DMG_PLAYER_SHOT } );
 			}
-		}
-
-		if(first_frame) {
-			// HACK: Run frame 0 logic twice for compatibility with a v1.4 bug
-			first_frame = false;
-		} else {
-			YIELD;
 		}
 	}
 }
