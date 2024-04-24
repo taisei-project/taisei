@@ -12,3 +12,4 @@
 #define ENTITIES_STAGEX(X, ...) \
 	X(YumemiSlave, __VA_ARGS__) \
 	X(BossShield, __VA_ARGS__) \
+	END_OF_ENTITIES
