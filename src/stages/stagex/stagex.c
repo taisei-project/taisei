@@ -61,6 +61,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_alignment),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.rings = {
+			{-1, -1, -1, 8}, AT_Spellcard, "Protection Domain “Ring ∞”", 90, 80000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_rings),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
+		},
 	},
 };
 
