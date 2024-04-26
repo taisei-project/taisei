@@ -50,84 +50,81 @@ static inline const char* webp_error_str(VP8StatusCode code)  {
 }
 
 static bool px_webp_load(SDL_RWops *stream, Pixmap *pixmap, PixmapFormat preferred_format) {
-	WebPDecoderConfig config;
-	int status = WebPInitDecoderConfig(&config);
+	size_t webp_bufsize;
+	// 64MB ought to be enough for anybody
+	uint8_t *webp_buffer = SDL_RWreadAll(stream, &webp_bufsize, 1024 * 1024 * 64);
 
-	if(!status) {
-		log_error("Library ABI mismatch");
+	if(UNLIKELY(!webp_buffer)) {
+		log_sdl_error(LOG_ERROR, "SDL_RWreadAll");
 		return false;
 	}
-
-	// NOTE: We read the image upside down here to avoid needing to flip it for
-	// the GL backend. This is just a slight optimization, not a hard dependency.
-	// config.options.flip = true;
-	// pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	// BUG: Unfortunately, the decoder seems to ignore the flip option, at least in
-	// some instances.
-
-	// TODO: Make sure this isn't counter-productive with our own inter-resource
-	// loading parallelism.
-	config.options.use_threads = true;
-
-	// TODO: Investigate the effect of dithering on image quality and decoding
-	// time. Only relevant for lossy images.
-	// config.options.dithering_strength = 50;
-	// config.options.alpha_dithering_strength = 50;
 
 	WebPBitstreamFeatures features;
-	uint8_t buf[BUFSIZ] = { 0 };
-	size_t data_available = SDL_RWread(stream, buf, 1, sizeof(buf));
+	VP8StatusCode status = WebPGetFeatures(webp_buffer, webp_bufsize, &features);
 
-	status = WebPGetFeatures(buf, data_available, &features);
-
-	if(status != VP8_STATUS_OK) {
+	if(UNLIKELY(status != VP8_STATUS_OK)) {
+		mem_free(webp_buffer);
 		log_error("WebPGetFeatures() failed: %s", webp_error_str(status));
-		return false;
-	}
-
-	WebPIDecoder *idec = WebPINewDecoder(&config.output);
-
-	if(idec == NULL) {
-		log_error("WebPINewDecoder() failed");
 		return false;
 	}
 
 	pixmap->width = features.width;
 	pixmap->height = features.height;
-	pixmap->format = features.has_alpha ? PIXMAP_FORMAT_RGBA8 : PIXMAP_FORMAT_RGB8;
+
+	if(!features.has_alpha || preferred_format == PIXMAP_FORMAT_RGB8) {
+		pixmap->format = PIXMAP_FORMAT_RGB8;
+	} else {
+		pixmap->format = PIXMAP_FORMAT_RGBA8;
+	}
+
+	// TODO: add a way to indicate preference
+	pixmap->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
 
 	size_t pixel_size = PIXMAP_FORMAT_PIXEL_SIZE(pixmap->format);
+	size_t scanline_size = pixel_size * pixmap->width;
 
-	if(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / (pixmap->width * pixel_size)) {
-		WebPIDelete(idec);
+	if(UNLIKELY(pixmap->height > PIXMAP_BUFFER_MAX_SIZE / scanline_size)) {
+		mem_free(webp_buffer);
 		log_error("The image is too large");
 		return false;
 	}
 
 	pixmap->data.untyped = pixmap_alloc_buffer_for_copy(pixmap, &pixmap->data_size);
+	bool ok = false;
 
-	config.output.is_external_memory = true;
-	config.output.colorspace = features.has_alpha ? MODE_RGBA : MODE_RGB;
-	config.output.u.RGBA.rgba = pixmap->data.untyped;
-	config.output.u.RGBA.size = pixmap->data_size;
-	config.output.u.RGBA.stride = pixel_size * pixmap->width;
+	int stride;
+	uint8_t *begin;
 
-	do {
-		status = WebPIAppend(idec, buf, data_available);
+	if(pixmap->origin == PIXMAP_ORIGIN_BOTTOMLEFT) {
+		stride = -(int)scanline_size;
+		begin = (uint8_t*)pixmap->data.untyped + pixmap->data_size - scanline_size;
+	} else {
+		stride = scanline_size;
+		begin = pixmap->data.untyped;
+	}
 
-		if(status != VP8_STATUS_OK && status != VP8_STATUS_SUSPENDED) {
-			log_error("WebPIAppend() failed: %s", webp_error_str(status));
-			mem_free(pixmap->data.untyped);
-			pixmap->data.untyped = NULL;
-			break;
+	if(pixmap->format == PIXMAP_FORMAT_RGBA8) {
+		if(UNLIKELY(!(ok = WebPDecodeRGBAInto(
+			webp_buffer, webp_bufsize, begin, pixmap->data_size, stride))
+		)) {
+			log_error("WebPDecodeRGBAInto() failed");
 		}
+	} else {
+		if(UNLIKELY(!(ok = WebPDecodeRGBInto(
+			webp_buffer, webp_bufsize, begin, pixmap->data_size, stride))
+		)) {
+			log_error("WebPDecodeRGBInto() failed");
+		}
+	}
 
-		data_available = SDL_RWread(stream, buf, 1, sizeof(buf));
-	} while(data_available > 0);
+	mem_free(webp_buffer);
 
-	WebPIDelete(idec);
-	WebPFreeDecBuffer(&config.output);
-	return pixmap->data.untyped != NULL;
+	if(UNLIKELY(!ok)) {
+		mem_free(pixmap->data.untyped);
+		pixmap->data.untyped = NULL;
+	}
+
+	return ok;
 }
 
 PixmapFileFormatHandler pixmap_fileformat_webp = {
