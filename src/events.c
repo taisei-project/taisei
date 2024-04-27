@@ -16,6 +16,7 @@
 
 static hrtime_t keyrepeat_paused_until;
 static int global_handlers_lock = 0;
+static DYNAMIC_ARRAY(EventHandler) global_handlers_pending;
 static DYNAMIC_ARRAY(EventHandler) global_handlers;
 static DYNAMIC_ARRAY(SDL_Event) deferred_events;
 
@@ -56,6 +57,7 @@ void events_shutdown(void) {
 #endif
 
 	dynarray_free_data(&global_handlers);
+	dynarray_free_data(&global_handlers_pending);
 }
 
 static bool events_invoke_handler(SDL_Event *event, EventHandler *handler) {
@@ -80,7 +82,11 @@ void events_register_handler(EventHandler *handler) {
 	assert(handler->priority >= EPRIO_FIRST);
 	assert(handler->priority <= EPRIO_LAST);
 
-	dynarray_append(&global_handlers, *handler);
+	if(global_handlers_lock) {
+		dynarray_append(&global_handlers_pending, *handler);
+	} else {
+		dynarray_append(&global_handlers, *handler);
+	}
 
 	// don't bother sorting, since most of the time we will need to re-sort it
 	// together with local handlers when polling
@@ -221,6 +227,11 @@ void events_poll(EventHandler *handlers, EventFlags flags) {
 
 	if(--global_handlers_lock == 0) {
 		dynarray_filter(&global_handlers, hfilter_remove_pending, NULL);
+		dynarray_ensure_capacity(&global_handlers, global_handlers.num_elements + global_handlers_pending.num_elements);
+		dynarray_foreach_elem(&global_handlers_pending, EventHandler *h, {
+			*dynarray_append(&global_handlers) = *h;
+		});
+		global_handlers_pending.num_elements = 0;
 	}
 
 	dynarray_foreach_elem(&deferred_events, SDL_Event *evt, {
