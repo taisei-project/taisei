@@ -86,13 +86,17 @@ static void *taskmgr_thread(void *arg) {
 	TaskManagerState state = mgr->state;
 	SDL_sem *qsem = mgr->queue_sem;
 
-	while(state == TMGR_STATE_RUNNING) {
+	while(state != TMGR_STATE_ABORTED) {
 		SDL_SemWait(qsem);
 
 		Task *task = taskmgr_pop_queue(mgr);
 		state = mgr->state;
 
 		if(UNLIKELY(task == NULL)) {
+			if(state == TMGR_STATE_SHUTDOWN) {
+				break;
+			}
+
 			continue;
 		}
 
@@ -210,6 +214,7 @@ static int task_prio_func(List *ltask) {
 
 Task *taskmgr_submit(TaskManager *mgr, TaskParams params) {
 	assert(params.callback != NULL);
+	assert(mgr->state == TMGR_STATE_RUNNING);
 
 	auto task = ALLOC(Task, {
 		.callback = params.callback,
