@@ -133,6 +133,12 @@ static void null_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags fla
 static void null_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) { }
 static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
 
+static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, Allocator *allocator, Pixmap *out_pixmap, void *userdata, FramebufferReadAsyncCallback callback) {
+	out_pixmap->data.untyped = NULL;
+	out_pixmap->data_size = 0;
+	callback(allocator, out_pixmap, userdata);
+}
+
 static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
 static int64_t null_vertex_buffer_stream_size(SDL_RWops *rw) { return (1 << 16); }
 static size_t null_vertex_buffer_stream_write(SDL_RWops *rw, const void *data, size_t size, size_t num) { return num; }
@@ -257,6 +263,7 @@ RendererBackend _r_backend_null = {
 		.framebuffer_clear = null_framebuffer_clear,
 		.framebuffer_copy = null_framebuffer_copy,
 		.framebuffer_get_size = null_framebuffer_get_size,
+		.framebuffer_read_async = null_framebuffer_read_async,
 		.vertex_buffer_create = null_vertex_buffer_create,
 		.vertex_buffer_get_debug_label = null_vertex_buffer_get_debug_label,
 		.vertex_buffer_set_debug_label = null_vertex_buffer_set_debug_label,

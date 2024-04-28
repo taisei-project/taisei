@@ -36,3 +36,16 @@ void gl33_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags f
 IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer);
 void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label);
 const char *gl33_framebuffer_get_debug_label(Framebuffer* fb);
+
+void gl33_framebuffer_read_async(
+	Framebuffer *framebuffer,
+	FramebufferAttachment attachment,
+	IntRect region,
+	Allocator *allocator,
+	Pixmap *pxm,
+	void *userdata,
+	FramebufferReadAsyncCallback callback
+);
+
+void gl33_framebuffer_process_read_requests(void);
+void gl33_framebuffer_finalize_read_requests(void);
