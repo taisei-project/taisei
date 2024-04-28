@@ -938,8 +938,8 @@ void video_shutdown(void) {
 	fbmgr_shutdown();
 	events_unregister_handler(video_handle_window_event);
 	events_unregister_handler(video_handle_config_event);
-	SDL_DestroyWindow(video.window);
 	r_shutdown();
+	SDL_DestroyWindow(video.window);
 	dynarray_free_data(&video.win_modes);
 	dynarray_free_data(&video.fs_modes);
 	SDL_VideoQuit();
