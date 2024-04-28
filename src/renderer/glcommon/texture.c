@@ -37,7 +37,7 @@
 
 #define XFER_COMPRESSED(comp) { GL_NONE, GL_NONE, PIXMAP_FORMAT_##comp }
 
-static DYNAMIC_ARRAY(GLTextureFormatInfo) g_formats;
+static GLTextureFormatInfoArray g_formats;
 
 attr_unused
 static void dump_tex_flags(StringBuffer *buf, GLTextureFormatFlags flags) {
@@ -656,4 +656,8 @@ GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg
 	)
 
 	return best;
+}
+
+const GLTextureFormatInfoArray *glcommon_get_texture_formats(void) {
+	return &g_formats;
 }
