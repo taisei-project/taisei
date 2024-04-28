@@ -501,7 +501,8 @@ static bool events_handler_hotkeys(SDL_Event *event, void *arg) {
 	SDL_Keymod mod = event->key.keysym.mod;
 
 	if(scan == config_get_int(CONFIG_KEY_SCREENSHOT)) {
-		video_take_screenshot();
+		bool viewport_only = (mod & KMOD_ALT);
+		video_take_screenshot(viewport_only);
 		return true;
 	}
 
