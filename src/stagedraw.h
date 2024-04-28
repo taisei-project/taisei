@@ -30,6 +30,7 @@ typedef COEVENTS_ARRAY(
 void stage_draw_preload(ResourceGroup *rg);
 void stage_draw_init(void);
 void stage_draw_shutdown(void);
+bool stage_draw_is_initialized(void);
 
 StageDrawEvents *stage_get_draw_events(void);
 
