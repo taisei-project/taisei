@@ -836,6 +836,7 @@ GLenum gl33_bindidx_to_glenum(BufferBindingIndex bindidx) {
 		[GL33_BUFFER_BINDING_ARRAY] = GL_ARRAY_BUFFER,
 		[GL33_BUFFER_BINDING_COPY_WRITE] = GL_COPY_WRITE_BUFFER,
 		[GL33_BUFFER_BINDING_PIXEL_UNPACK] = GL_PIXEL_UNPACK_BUFFER,
+		[GL33_BUFFER_BINDING_PIXEL_PACK] = GL_PIXEL_PACK_BUFFER,
 	};
 
 	static_assert(sizeof(map) == sizeof(GLenum) * GL33_NUM_BUFFER_BINDINGS, "Fix the lookup table");
@@ -1187,6 +1188,7 @@ static void gl33_post_init(void) {
 }
 
 static void gl33_shutdown(void) {
+	gl33_framebuffer_finalize_read_requests();
 	glcommon_unload_library();
 	SDL_GL_DeleteContext(R.gl_context);
 }
@@ -1389,6 +1391,7 @@ static void gl33_swap(SDL_Window *window) {
 #endif
 	r_framebuffer(prev_fb);
 
+	gl33_framebuffer_process_read_requests();
 	gl33_stats_post_frame();
 
 	// We can't rely on viewport being preserved across frames,
@@ -1507,6 +1510,7 @@ RendererBackend _r_backend_gl33 = {
 		.framebuffer_clear = gl33_framebuffer_clear,
 		.framebuffer_copy = gl33_framebuffer_copy,
 		.framebuffer_get_size = gl33_framebuffer_get_size,
+		.framebuffer_read_async = gl33_framebuffer_read_async,
 		.vertex_buffer_create = gl33_vertex_buffer_create,
 		.vertex_buffer_set_debug_label = gl33_vertex_buffer_set_debug_label,
 		.vertex_buffer_get_debug_label = gl33_vertex_buffer_get_debug_label,

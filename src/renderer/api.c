@@ -640,6 +640,42 @@ Framebuffer* r_framebuffer_current(void) {
 	return B.framebuffer_current();
 }
 
+void r_framebuffer_read_async(
+	Framebuffer *framebuffer,
+	FramebufferAttachment attachment,
+	IntRect region,
+	Allocator *allocator,
+	Pixmap *out_pixmap,
+	void *userdata,
+	FramebufferReadAsyncCallback callback
+) {
+	B.framebuffer_read_async(
+		framebuffer, attachment, region, allocator, out_pixmap, userdata, callback
+	);
+}
+
+void r_framebuffer_read_viewport_async(
+	Framebuffer *framebuffer,
+	FramebufferAttachment attachment,
+	Allocator *allocator,
+	Pixmap *out_pixmap,
+	void *userdata,
+	FramebufferReadAsyncCallback callback
+) {
+	FloatRect vp;
+	r_framebuffer_viewport_current(framebuffer, &vp);
+
+	IntRect region = {
+		.x = vp.x,
+		.y = vp.y,
+		.w = ceilf(vp.w),
+		.h = ceilf(vp.h),
+	};
+
+	r_framebuffer_read_async(
+		framebuffer, attachment, region, allocator, out_pixmap, userdata, callback);
+}
+
 VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data) {
 	return B.vertex_buffer_create(capacity, data);
 }

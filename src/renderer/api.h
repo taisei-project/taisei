@@ -16,6 +16,7 @@
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 #include "resource/texture.h"
+#include "memory/allocator.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;
@@ -217,6 +218,8 @@ typedef enum FramebufferAttachment {
 enum {
 	FRAMEBUFFER_MAX_OUTPUTS = FRAMEBUFFER_MAX_COLOR_ATTACHMENTS,
 };
+
+typedef void (*FramebufferReadAsyncCallback)(Allocator *allocator, Pixmap *pixmap, void *userdata);
 
 typedef enum Primitive {
 	PRIM_POINTS,
@@ -772,6 +775,8 @@ void r_framebuffer_destroy(Framebuffer *fb) attr_nonnull(1);
 void r_framebuffer_clear(Framebuffer *fb, BufferKindFlags flags, const Color *colorval, float depthval);
 void r_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) attr_nonnull_all;
 IntExtent r_framebuffer_get_size(Framebuffer *fb);
+void r_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, Allocator *allocator, Pixmap *out_pixmap, void *userdata, FramebufferReadAsyncCallback callback);
+void r_framebuffer_read_viewport_async(Framebuffer *framebuffer, FramebufferAttachment attachment, Allocator *allocator, Pixmap *out_pixmap, void *userdata, FramebufferReadAsyncCallback callback);
 
 void r_framebuffer(Framebuffer *fb);
 Framebuffer* r_framebuffer_current(void);

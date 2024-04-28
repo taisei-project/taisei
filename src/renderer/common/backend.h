@@ -92,6 +92,7 @@ typedef struct RendererFuncs {
 	void (*framebuffer_clear)(Framebuffer *framebuffer, BufferKindFlags flags, const Color *colorval, float depthval);
 	void (*framebuffer_copy)(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags);
 	IntExtent (*framebuffer_get_size)(Framebuffer *framebuffer);
+	void (*framebuffer_read_async)(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, Allocator *allocator, Pixmap *out_pixmap, void *userdata, FramebufferReadAsyncCallback callback);
 
 	void (*framebuffer)(Framebuffer *framebuffer);
 	Framebuffer* (*framebuffer_current)(void);
