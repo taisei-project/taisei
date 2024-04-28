@@ -72,7 +72,7 @@ void video_get_viewport_size(float *width, float *height);
 bool video_is_fullscreen(void);
 bool video_is_resizable(void);
 extern VideoCapabilityState (*video_query_capability)(VideoCapability cap);
-void video_take_screenshot(void);
+void video_take_screenshot(bool viewport_only);
 void video_swap_buffers(void);
 uint video_num_displays(void);
 uint video_current_display(void);

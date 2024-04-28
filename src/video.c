@@ -18,8 +18,14 @@
 #include "video_postprocess.h"
 #include "dynarray.h"
 #include "version.h"
+#include "stagedraw.h"
 
 typedef DYNAMIC_ARRAY(VideoMode) VideoModeArray;
+
+typedef enum FramedumpSource {
+	FRAMEDUMP_SRC_SCREEN,
+	FRAMEDUMP_SRC_VIEWPORT,
+} FramedumpSource;
 
 static struct {
 	VideoModeArray fs_modes;
@@ -31,13 +37,28 @@ static struct {
 	VideoBackend backend;
 	double scaling_factor;
 	uint num_resize_events;
+
+	struct {
+		char *name_prefix;
+		size_t name_prefix_len;
+		size_t frame_count;
+		int compression;
+		FramedumpSource source;
+	} framedump;
 } video;
+
+#define FRAMEDUMP_FILENAME_SUFFIX ".png"
+#define FRAMEDUMP_FILENAME_NUM_DIGITS 8
+#define FRAMEDUMP_FILENAME_EXTRA_BUFSIZE \
+	(FRAMEDUMP_FILENAME_NUM_DIGITS + sizeof(FRAMEDUMP_FILENAME_SUFFIX))
+#define FRAMEDUMP_FILENAME_FORMAT "%08u" FRAMEDUMP_FILENAME_SUFFIX
 
 VideoCapabilityState (*video_query_capability)(VideoCapability cap);
 
 typedef struct ScreenshotTaskData {
-	char *dest_path;
+	char *dest_path;     // NULL if in framedump mode
 	Pixmap image;
+	uint32_t frame_num;  // for framedump mode only
 } ScreenshotTaskData;
 
 #define VIDEO_MIN_SIZE_FACTOR 0.8
@@ -623,18 +644,40 @@ void video_set_display(uint idx) {
 
 static void *video_screenshot_task(void *arg) {
 	ScreenshotTaskData *tdata = arg;
-
 	pixmap_convert_inplace_realloc(&tdata->image, PIXMAP_FORMAT_RGB8);
 
 	PixmapPNGSaveOptions opts = PIXMAP_DEFAULT_PNG_SAVE_OPTIONS;
-	opts.zlib_compression_level = 9;
 
-	bool ok = pixmap_save_file(tdata->dest_path, &tdata->image, &opts.base);
+	if(tdata->dest_path) {
+		opts.zlib_compression_level = 9;
 
-	if(LIKELY(ok)) {
-		char *syspath = vfs_repr(tdata->dest_path, true);
-		log_info("Saved screenshot as %s", syspath);
-		mem_free(syspath);
+		bool ok = pixmap_save_file(tdata->dest_path, &tdata->image, &opts.base);
+
+		if(LIKELY(ok)) {
+			char *syspath = vfs_repr(tdata->dest_path, true);
+			log_info("Saved screenshot as %s", syspath);
+			mem_free(syspath);
+		}
+	} else {  // framedump mode
+		char buf[video.framedump.name_prefix_len + FRAMEDUMP_FILENAME_EXTRA_BUFSIZE];
+		snprintf(buf, sizeof(buf), "%s" FRAMEDUMP_FILENAME_FORMAT, video.framedump.name_prefix, tdata->frame_num);
+
+		SDL_RWops *stream = SDL_RWFromFile(buf, "wb");
+
+		if(UNLIKELY(!stream)) {
+			log_sdl_error(LOG_ERROR, "SDL_RWFromFile");
+			return NULL;
+		}
+
+		opts.zlib_compression_level = video.framedump.compression;
+		bool ok = pixmap_save_stream(stream, &tdata->image, &opts.base);
+		SDL_RWclose(stream);
+
+		if(LIKELY(ok)) {
+			log_debug("Frame dump: %s", buf);
+		} else {
+			log_error("Frame dump failed: %s", buf);
+		}
 	}
 
 	return NULL;
@@ -647,26 +690,58 @@ static void video_screenshot_free_task_data(void *arg) {
 	mem_free(tdata);
 }
 
-void video_take_screenshot(void) {
-	ScreenshotTaskData tdata;
-	memset(&tdata, 0, sizeof(tdata));
-
-	if(!r_screenshot(&tdata.image)) {
-		log_error("Failed to take a screenshot");
+static void video_take_screenshot_callback(Allocator *allocator, Pixmap *px, void *userdata) {
+	if(!px->data.untyped) {
+		log_error("Failed to capture image");
 		return;
 	}
+
+	task_detach(taskmgr_global_submit((TaskParams) {
+		.callback = video_screenshot_task,
+		.userdata = userdata,
+		.userdata_free_callback = video_screenshot_free_task_data,
+	}));
+}
+
+void video_take_screenshot(bool viewport_only) {
+	auto tdata = ALLOC(ScreenshotTaskData);
 
 	SystemTime systime;
 	char timestamp[FILENAME_TIMESTAMP_MIN_BUF_SIZE];
 	get_system_time(&systime);
 	filename_timestamp(timestamp, sizeof(timestamp), systime);
-	tdata.dest_path = strfmt("storage/screenshots/taisei_%s.png", timestamp);
+	tdata->dest_path = strfmt("storage/screenshots/taisei_%s.png", timestamp);
 
-	task_detach(taskmgr_global_submit((TaskParams) {
-		.callback = video_screenshot_task,
-		.userdata = memdup(&tdata, sizeof(tdata)),
-		.userdata_free_callback = video_screenshot_free_task_data,
-	}));
+	Framebuffer *fb = NULL;
+	FramebufferAttachment attachment = FRAMEBUFFER_ATTACH_NONE;
+
+	if(viewport_only && stage_draw_is_initialized()) {
+		fb = stage_get_fbpair(FBPAIR_FG)->front;
+		attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	}
+
+	r_framebuffer_read_viewport_async(
+		fb, attachment, &default_allocator, &tdata->image, tdata, video_take_screenshot_callback);
+}
+
+static void video_take_framedump(void) {
+	Framebuffer *fb = NULL;
+	FramebufferAttachment attachment = FRAMEBUFFER_ATTACH_NONE;
+
+	if(video.framedump.source == FRAMEDUMP_SRC_VIEWPORT) {
+		if(!stage_draw_is_initialized()) {
+			return;
+		}
+
+		fb = stage_get_fbpair(FBPAIR_FG)->front;
+		attachment = FRAMEBUFFER_ATTACH_COLOR0;
+	}
+
+	auto tdata = ALLOC(ScreenshotTaskData);
+	tdata->frame_num = video.framedump.frame_count++;
+
+	r_framebuffer_read_viewport_async(
+		fb, attachment, &default_allocator, &tdata->image, tdata, video_take_screenshot_callback);
 }
 
 bool video_is_resizable(void) {
@@ -863,6 +938,31 @@ uint video_current_display(void) {
 	return display;
 }
 
+static void video_init_framedump(void) {
+	const char *framedump_dir = env_get("TAISEI_FRAMEDUMP", NULL);
+	const char *framedump_src = env_get("TAISEI_FRAMEDUMP_SOURCE", "screen");
+
+	if(framedump_dir == NULL) {
+		return;
+	}
+
+	if(!strcasecmp(framedump_src, "screen")) {
+		video.framedump.source = FRAMEDUMP_SRC_SCREEN;
+	} else if(!strcasecmp(framedump_src, "viewport")) {
+		video.framedump.source = FRAMEDUMP_SRC_VIEWPORT;
+	} else {
+		log_warn("Unknown source '%s'; assuming 'screen'", framedump_src);
+		video.framedump.source = FRAMEDUMP_SRC_SCREEN;
+	}
+
+	video.framedump.compression = env_get("TAISEI_FRAMEDUMP_COMPRESSION", 1);
+
+	video.framedump.name_prefix_len = strlen(framedump_dir);
+	video.framedump.name_prefix = mem_alloc(
+		video.framedump.name_prefix_len + FRAMEDUMP_FILENAME_EXTRA_BUFSIZE);
+	memcpy(video.framedump.name_prefix, framedump_dir, video.framedump.name_prefix_len);
+}
+
 void video_init(void) {
 	video_init_sdl();
 
@@ -924,6 +1024,7 @@ void video_init(void) {
 		.event_type = MAKE_TAISEI_EVENT(TE_CONFIG_UPDATED),
 	});
 
+	video_init_framedump();
 	log_info("Video subsystem initialized");
 }
 
@@ -943,6 +1044,7 @@ void video_shutdown(void) {
 	dynarray_free_data(&video.win_modes);
 	dynarray_free_data(&video.fs_modes);
 	SDL_VideoQuit();
+	mem_free(video.framedump.name_prefix);
 }
 
 Framebuffer *video_get_screen_framebuffer(void) {
@@ -971,6 +1073,10 @@ void video_swap_buffers(void) {
 		r_framebuffer(prev_fb);
 	} else {
 		r_swap(video.window);
+	}
+
+	if(video.framedump.name_prefix) {
+		video_take_framedump();
 	}
 
 	// XXX: Unfortunately, there seems to be no reliable way to sync this up with events
