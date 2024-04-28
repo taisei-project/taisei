@@ -49,7 +49,10 @@ typedef struct GLTextureFormatMatchConfig {
 	} flags;
 } GLTextureFormatMatchConfig;
 
+typedef DYNAMIC_ARRAY(GLTextureFormatInfo) GLTextureFormatInfoArray;
+
 void glcommon_init_texture_formats(void);
 void glcommon_free_texture_formats(void);
+const GLTextureFormatInfoArray *glcommon_get_texture_formats(void);
 
 GLTextureFormatInfo *glcommon_match_format(const GLTextureFormatMatchConfig *cfg);
