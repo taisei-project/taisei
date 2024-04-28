@@ -82,6 +82,10 @@ static struct {
 	}
 };
 
+bool stage_draw_is_initialized(void) {
+	return stagedraw.mfb_group;
+}
+
 static double fb_scale(void) {
 	float vp_width, vp_height;
 	video_get_viewport_size(&vp_width, &vp_height);
