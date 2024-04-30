@@ -132,8 +132,6 @@ typedef struct RendererFuncs {
 	VsyncMode (*vsync_current)(void);
 
 	void (*swap)(SDL_Window *window);
-
-	bool (*screenshot)(Pixmap *dst);
 } RendererFuncs;
 
 typedef struct RendererBackend {

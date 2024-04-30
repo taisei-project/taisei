@@ -71,19 +71,6 @@ void gles_init_context(SDL_Window *w) {
 	GLVT_OF(_r_backend_gl33).init_context(w);
 }
 
-bool gles_screenshot(Pixmap *out) {
-	FloatRect vp;
-	r_framebuffer_viewport_current(NULL, &vp);
-	out->width = vp.w;
-	out->height = vp.h;
-	out->format = PIXMAP_FORMAT_RGBA8;
-	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glReadPixels(vp.x, vp.y, vp.w, vp.h, GL_RGBA, GL_UNSIGNED_BYTE, out->data.untyped);
-	return true;
-}
-
 bool gles_texture_dump(Texture *tex, uint mipmap, uint layer, Pixmap *dst) {
 	// No glGetTexImage in GLES
 	// TODO maybe set up a transient framebuffer to read from?
