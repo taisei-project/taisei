@@ -644,21 +644,17 @@ void r_framebuffer_read_async(
 	Framebuffer *framebuffer,
 	FramebufferAttachment attachment,
 	IntRect region,
-	Allocator *allocator,
-	Pixmap *out_pixmap,
 	void *userdata,
 	FramebufferReadAsyncCallback callback
 ) {
 	B.framebuffer_read_async(
-		framebuffer, attachment, region, allocator, out_pixmap, userdata, callback
+		framebuffer, attachment, region, userdata, callback
 	);
 }
 
 void r_framebuffer_read_viewport_async(
 	Framebuffer *framebuffer,
 	FramebufferAttachment attachment,
-	Allocator *allocator,
-	Pixmap *out_pixmap,
 	void *userdata,
 	FramebufferReadAsyncCallback callback
 ) {
@@ -673,7 +669,7 @@ void r_framebuffer_read_viewport_async(
 	};
 
 	r_framebuffer_read_async(
-		framebuffer, attachment, region, allocator, out_pixmap, userdata, callback);
+		framebuffer, attachment, region, userdata, callback);
 }
 
 VertexBuffer* r_vertex_buffer_create(size_t capacity, void *data) {
