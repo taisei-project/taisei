@@ -12,7 +12,7 @@
 #include "gl33.h"
 #include "../glcommon/debug.h"
 
-static GLuint r_attachment_to_gl_attachment[] = {
+GLuint r_attachment_to_gl_attachment[] = {
 	[FRAMEBUFFER_ATTACH_DEPTH] = GL_DEPTH_ATTACHMENT,
 	[FRAMEBUFFER_ATTACH_COLOR0] = GL_COLOR_ATTACHMENT0,
 	[FRAMEBUFFER_ATTACH_COLOR1] = GL_COLOR_ATTACHMENT1,
@@ -249,142 +249,16 @@ IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
 	return fb_size;
 }
 
-typedef struct FramebufferReadRequest {
-	FramebufferReadAsyncCallback callback;
-	void *userdata;
-	GLuint pbo;
-	GLsync sync;
-	GLenum sync_result;
-	GLbitfield sync_flags;
-	struct {
-		uint width;
-		uint height;
-		PixmapFormat format;
-	} transfer;
-} FramebufferReadRequest;
-
-static FramebufferReadRequest read_requests[4];
-
-static void handle_read_request(FramebufferReadRequest *rq, bool ok) {
-	glDeleteSync(NOT_NULL(rq->sync));
-	rq->sync = NULL;
-	rq->sync_result = GL_NONE;
-
-	if(ok) {
-		assert(rq->pbo != 0);
-		auto prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_PACK);
-		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, rq->pbo);
-		gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_PACK);
-
-		auto data_size = pixmap_data_size(rq->transfer.format, rq->transfer.width, rq->transfer.height);
-		rq->callback(&(Pixmap) {
-			.width = rq->transfer.width,
-			.height = rq->transfer.height,
-			.format = rq->transfer.format,
-			.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
-			.data_size = data_size,
-			.data.untyped = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, data_size, GL_MAP_READ_BIT)
-		}, rq->userdata);
-
-		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
-		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, prev_pbo);
-	} else {
-		rq->callback(NULL, rq->userdata);
-	}
-}
-
-static GLenum sync_read_request(FramebufferReadRequest *rq, GLuint64 timeout) {
-	if(!rq->sync) {
-		return GL_NONE;
-	}
-
-	rq->sync_result = glClientWaitSync(rq->sync, rq->sync_flags, timeout);
-	rq->sync_flags = 0;
-
-	switch(rq->sync_result) {
-		case GL_ALREADY_SIGNALED:
-		case GL_CONDITION_SATISFIED:
-			handle_read_request(rq, true);
-			break;
-		case GL_WAIT_FAILED:
-			handle_read_request(rq, false);
-			break;
-		case GL_TIMEOUT_EXPIRED:
-			break;
-		default: UNREACHABLE;
-	}
-
-	return rq->sync_result;
-}
-
-static FramebufferReadRequest *alloc_read_request_timeout(GLuint64 timeout) {
-	for(int i = 0; i < ARRAY_SIZE(read_requests); ++i) {
-		auto rq = read_requests + i;
-		if(sync_read_request(rq, timeout) == GL_NONE) {
-			return rq;
-		}
-	}
-
-	return NULL;
-}
-
-static FramebufferReadRequest *alloc_read_request(void) {
-	auto rq = alloc_read_request_timeout(0);
-
-	if(rq) {
-		return rq;
-	}
-
-	log_warn("Queue is full, forcing synchronization");
-	rq = alloc_read_request_timeout(UINT64_MAX);
-	return NOT_NULL(rq);
-}
-
-void gl33_framebuffer_process_read_requests(void) {
-	for(int i = 0; i < ARRAY_SIZE(read_requests); ++i) {
-		sync_read_request(read_requests + i, 0);
-	}
-}
-
-void gl33_framebuffer_finalize_read_requests(void) {
-	gl33_framebuffer_process_read_requests();
-
-	for(int i = 0; i < ARRAY_SIZE(read_requests); ++i) {
-		auto rq = read_requests + 1;
-		sync_read_request(rq, UINT64_MAX);
-
-		if(rq->sync) {
-			glDeleteSync(rq->sync);
-			rq->sync = NULL;
-			rq->sync_result = GL_NONE;
-		}
-
-		if(rq->pbo) {
-			glDeleteBuffers(1, &rq->pbo);
-			rq->pbo = 0;
-		}
-	}
-}
-
-void gl33_framebuffer_read_async(
-	Framebuffer *framebuffer,
-	FramebufferAttachment attachment,
-	IntRect region,
-	void *userdata,
-	FramebufferReadAsyncCallback callback
+GLTextureFormatInfo *gl33_framebuffer_get_format(
+	Framebuffer *framebuffer, FramebufferAttachment attachment
 ) {
 	GLTextureFormatInfo *fmtinfo = NULL;
 
 	if(framebuffer) {
-		assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer->gl_fbo);
-		glReadBuffer(r_attachment_to_gl_attachment[attachment]);
 		FramebufferAttachmentQueryResult aq = gl33_framebuffer_query_attachment(framebuffer, attachment);
 		fmtinfo = NOT_NULL(aq.texture)->fmt_info;
 	} else {
 		assert(attachment == FRAMEBUFFER_ATTACH_NONE);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		glReadBuffer(GL_BACK);
 
 		GLenum ifmt = GL_RGBA8;  // FIXME how to query this?
 
@@ -395,36 +269,21 @@ void gl33_framebuffer_read_async(
 				break;
 			}
 		});
-
-		assume(fmtinfo != NULL);
 	}
 
-	auto rq = alloc_read_request();
-	rq->transfer.width = region.w;
-	rq->transfer.height = region.h;
-	rq->transfer.format = fmtinfo->transfer_format.pixmap_format;
-	rq->userdata = userdata;
-	rq->callback = callback;
-	rq->sync_flags = GL_SYNC_FLUSH_COMMANDS_BIT;
+	return NOT_NULL(fmtinfo);
+}
 
-	if(!rq->pbo) {
-		glGenBuffers(1, &rq->pbo);
+void gl33_framebuffer_bind_for_read(
+	Framebuffer *framebuffer, FramebufferAttachment attachment
+) {
+	if(framebuffer) {
+		assert(attachment >= 0 && attachment < FRAMEBUFFER_MAX_ATTACHMENTS);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer->gl_fbo);
+		glReadBuffer(r_attachment_to_gl_attachment[attachment]);
+	} else {
+		assert(attachment == FRAMEBUFFER_ATTACH_NONE);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glReadBuffer(GL_BACK);
 	}
-
-	auto prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_PACK);
-	gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, rq->pbo);
-	gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_PACK);
-	auto data_size = pixmap_data_size(rq->transfer.format, rq->transfer.width, rq->transfer.height);
-	glBufferData(GL_PIXEL_PACK_BUFFER, data_size, NULL, GL_STREAM_READ);
-
-	glReadPixels(
-		region.x, region.y, region.w, region.h,
-		fmtinfo->transfer_format.gl_format, fmtinfo->transfer_format.gl_type,
-		NULL
-	);
-
-	rq->sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	rq->sync_flags = GL_SYNC_FLUSH_COMMANDS_BIT;
-
-	gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, prev_pbo);
 }

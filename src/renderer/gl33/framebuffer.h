@@ -23,6 +23,8 @@ struct Framebuffer {
 	char debug_label[R_DEBUG_LABEL_SIZE];
 };
 
+extern GLuint r_attachment_to_gl_attachment[];
+
 void gl33_framebuffer_prepare(Framebuffer *framebuffer);
 
 Framebuffer *gl33_framebuffer_create(void);
@@ -37,13 +39,9 @@ IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer);
 void gl33_framebuffer_set_debug_label(Framebuffer *fb, const char *label);
 const char *gl33_framebuffer_get_debug_label(Framebuffer* fb);
 
-void gl33_framebuffer_read_async(
-	Framebuffer *framebuffer,
-	FramebufferAttachment attachment,
-	IntRect region,
-	void *userdata,
-	FramebufferReadAsyncCallback callback
-);
+// FIXME this function may lie :(
+GLTextureFormatInfo *gl33_framebuffer_get_format(
+	Framebuffer *framebuffer, FramebufferAttachment attachment);
 
-void gl33_framebuffer_process_read_requests(void);
-void gl33_framebuffer_finalize_read_requests(void);
+void gl33_framebuffer_bind_for_read(
+	Framebuffer *framebuffer, FramebufferAttachment attachment);
