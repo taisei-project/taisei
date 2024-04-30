@@ -250,14 +250,17 @@ IntExtent gl33_framebuffer_get_effective_size(Framebuffer *framebuffer) {
 }
 
 typedef struct FramebufferReadRequest {
-	Pixmap *target;
-	Allocator *allocator;
-	void *userdata;
 	FramebufferReadAsyncCallback callback;
+	void *userdata;
 	GLuint pbo;
 	GLsync sync;
 	GLenum sync_result;
 	GLbitfield sync_flags;
+	struct {
+		uint width;
+		uint height;
+		PixmapFormat format;
+	} transfer;
 } FramebufferReadRequest;
 
 static FramebufferReadRequest read_requests[4];
@@ -267,23 +270,27 @@ static void handle_read_request(FramebufferReadRequest *rq, bool ok) {
 	rq->sync = NULL;
 	rq->sync_result = GL_NONE;
 
-	auto pxm = rq->target;
-
 	if(ok) {
-		// data_size already specified
-		pxm->data.untyped = allocator_alloc(rq->allocator, pxm->data_size);
 		assert(rq->pbo != 0);
 		auto prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_PACK);
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, rq->pbo);
 		gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_PACK);
-		glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, pxm->data_size, pxm->data.untyped);
+
+		auto data_size = pixmap_data_size(rq->transfer.format, rq->transfer.width, rq->transfer.height);
+		rq->callback(&(Pixmap) {
+			.width = rq->transfer.width,
+			.height = rq->transfer.height,
+			.format = rq->transfer.format,
+			.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
+			.data_size = data_size,
+			.data.untyped = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, data_size, GL_MAP_READ_BIT)
+		}, rq->userdata);
+
+		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, prev_pbo);
 	} else {
-		pxm->data_size = 0;
-		pxm->data.untyped = NULL;
+		rq->callback(NULL, rq->userdata);
 	}
-
-	rq->callback(rq->allocator, rq->target, rq->userdata);
 }
 
 static GLenum sync_read_request(FramebufferReadRequest *rq, GLuint64 timeout) {
@@ -363,8 +370,6 @@ void gl33_framebuffer_read_async(
 	Framebuffer *framebuffer,
 	FramebufferAttachment attachment,
 	IntRect region,
-	Allocator *allocator,
-	Pixmap *pxm,
 	void *userdata,
 	FramebufferReadAsyncCallback callback
 ) {
@@ -394,16 +399,10 @@ void gl33_framebuffer_read_async(
 		assume(fmtinfo != NULL);
 	}
 
-	*pxm = (Pixmap) {
-		.width = region.w,
-		.height = region.h,
-		.format = fmtinfo->transfer_format.pixmap_format,
-		.origin = PIXMAP_ORIGIN_BOTTOMLEFT,
-	};
-
 	auto rq = alloc_read_request();
-	rq->allocator = allocator;
-	rq->target = pxm;
+	rq->transfer.width = region.w;
+	rq->transfer.height = region.h;
+	rq->transfer.format = fmtinfo->transfer_format.pixmap_format;
 	rq->userdata = userdata;
 	rq->callback = callback;
 	rq->sync_flags = GL_SYNC_FLUSH_COMMANDS_BIT;
@@ -412,12 +411,11 @@ void gl33_framebuffer_read_async(
 		glGenBuffers(1, &rq->pbo);
 	}
 
-	pxm->data_size = pixmap_data_size(pxm->format, pxm->width, pxm->height);
-
 	auto prev_pbo = gl33_buffer_current(GL33_BUFFER_BINDING_PIXEL_PACK);
 	gl33_bind_buffer(GL33_BUFFER_BINDING_PIXEL_PACK, rq->pbo);
 	gl33_sync_buffer(GL33_BUFFER_BINDING_PIXEL_PACK);
-	glBufferData(GL_PIXEL_PACK_BUFFER, pxm->data_size, NULL, GL_STREAM_READ);
+	auto data_size = pixmap_data_size(rq->transfer.format, rq->transfer.width, rq->transfer.height);
+	glBufferData(GL_PIXEL_PACK_BUFFER, data_size, NULL, GL_STREAM_READ);
 
 	glReadPixels(
 		region.x, region.y, region.w, region.h,

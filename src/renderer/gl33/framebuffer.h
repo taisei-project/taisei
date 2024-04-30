@@ -41,8 +41,6 @@ void gl33_framebuffer_read_async(
 	Framebuffer *framebuffer,
 	FramebufferAttachment attachment,
 	IntRect region,
-	Allocator *allocator,
-	Pixmap *pxm,
 	void *userdata,
 	FramebufferReadAsyncCallback callback
 );

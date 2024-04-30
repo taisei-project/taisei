@@ -690,11 +690,16 @@ static void video_screenshot_free_task_data(void *arg) {
 	mem_free(tdata);
 }
 
-static void video_take_screenshot_callback(Allocator *allocator, Pixmap *px, void *userdata) {
-	if(!px->data.untyped) {
+static void video_take_screenshot_callback(const Pixmap *px, void *userdata) {
+	if(!px) {
 		log_error("Failed to capture image");
 		return;
 	}
+
+	ScreenshotTaskData *tdata = userdata;
+	// NOTE: could convert formats here to avoid a double copy,
+	// but it's faster to do it on the task thread.
+	pixmap_copy_alloc(px, &tdata->image);
 
 	task_detach(taskmgr_global_submit((TaskParams) {
 		.callback = video_screenshot_task,
@@ -721,7 +726,7 @@ void video_take_screenshot(bool viewport_only) {
 	}
 
 	r_framebuffer_read_viewport_async(
-		fb, attachment, &default_allocator, &tdata->image, tdata, video_take_screenshot_callback);
+		fb, attachment, tdata, video_take_screenshot_callback);
 }
 
 static void video_take_framedump(void) {
@@ -741,7 +746,7 @@ static void video_take_framedump(void) {
 	tdata->frame_num = video.framedump.frame_count++;
 
 	r_framebuffer_read_viewport_async(
-		fb, attachment, &default_allocator, &tdata->image, tdata, video_take_screenshot_callback);
+		fb, attachment, tdata, video_take_screenshot_callback);
 }
 
 bool video_is_resizable(void) {

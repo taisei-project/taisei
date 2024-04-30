@@ -133,10 +133,8 @@ static void null_framebuffer_clear(Framebuffer *framebuffer, BufferKindFlags fla
 static void null_framebuffer_copy(Framebuffer *dst, Framebuffer *src, BufferKindFlags flags) { }
 static IntExtent null_framebuffer_get_size(Framebuffer *framebuffer) { return (IntExtent) { 64, 64 }; }
 
-static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, Allocator *allocator, Pixmap *out_pixmap, void *userdata, FramebufferReadAsyncCallback callback) {
-	out_pixmap->data.untyped = NULL;
-	out_pixmap->data_size = 0;
-	callback(allocator, out_pixmap, userdata);
+static void null_framebuffer_read_async(Framebuffer *framebuffer, FramebufferAttachment attachment, IntRect region, void *userdata, FramebufferReadAsyncCallback callback) {
+	callback(NULL, userdata);
 }
 
 static int64_t null_vertex_buffer_stream_seek(SDL_RWops *rw, int64_t offset, int whence) { return 0; }
