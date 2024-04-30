@@ -46,7 +46,6 @@ RendererBackend _r_backend_gles30 = {
 	.funcs = {
 		.init = gles30_init,
 		.texture_dump = gles_texture_dump,
-		.screenshot = gles_screenshot,
 
 	#if BROKEN_GL_BLIT_FRAMEBUFFER
 		.shutdown = gles30_shutdown,

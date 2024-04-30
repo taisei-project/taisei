@@ -194,8 +194,6 @@ static VsyncMode null_vsync_current(void) { return VSYNC_NONE; }
 
 static void null_swap(SDL_Window *window) { }
 
-static bool null_screenshot(Pixmap *dest) { return false; }
-
 RendererBackend _r_backend_null = {
 	.name = "null",
 	.funcs = {
@@ -292,6 +290,5 @@ RendererBackend _r_backend_null = {
 		.vsync = null_vsync,
 		.vsync_current = null_vsync_current,
 		.swap = null_swap,
-		.screenshot = null_screenshot,
 	},
 };

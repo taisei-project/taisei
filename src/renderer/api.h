@@ -823,8 +823,6 @@ VsyncMode r_vsync_current(void);
 
 void r_swap(SDL_Window *window);
 
-bool r_screenshot(Pixmap *dest) attr_nodiscard attr_nonnull(1);
-
 void r_mat_mv_push(void);
 void r_mat_mv_push_premade(mat4 mat);
 void r_mat_mv_push_identity(void);

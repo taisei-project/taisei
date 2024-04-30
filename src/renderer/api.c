@@ -841,10 +841,6 @@ void r_swap(SDL_Window *window) {
 	B.swap(window);
 }
 
-bool r_screenshot(Pixmap *out) {
-	return B.screenshot(out);
-}
-
 // uniforms garbage; hope your compiler is smart enough to inline most of this
 
 // TODO: verify sampler-to-texture type consistency?

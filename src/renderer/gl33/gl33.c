@@ -1426,18 +1426,6 @@ static DepthTestFunc gl33_depth_func_current(void) {
 	return R.depth_test.func.pending;
 }
 
-static bool gl33_screenshot(Pixmap *out) {
-	FloatRect *vp = &R.viewport.default_framebuffer;
-	out->width = vp->w;
-	out->height = vp->h;
-	out->format = PIXMAP_FORMAT_RGB8;
-	out->origin = PIXMAP_ORIGIN_BOTTOMLEFT;
-	out->data.untyped = pixmap_alloc_buffer_for_copy(out, &out->data_size);
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-	glReadPixels(vp->x, vp->y, vp->w, vp->h, GL_RGB, GL_UNSIGNED_BYTE, out->data.untyped);
-	return true;
-}
-
 static void gl33_scissor(IntRect scissor) {
 	R.scissor.pending = scissor;
 }
@@ -1542,7 +1530,6 @@ RendererBackend _r_backend_gl33 = {
 		.vsync = gl33_vsync,
 		.vsync_current = gl33_vsync_current,
 		.swap = gl33_swap,
-		.screenshot = gl33_screenshot,
 	},
 	.custom = &(GLBackendData) {
 		.vtable = {
