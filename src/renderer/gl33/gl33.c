@@ -17,6 +17,7 @@
 #include "shader_object.h"
 #include "shader_program.h"
 #include "framebuffer.h"
+#include "framebuffer_async_read.h"
 #include "common_buffer.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
