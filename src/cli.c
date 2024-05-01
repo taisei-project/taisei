@@ -96,6 +96,8 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 		{{"credits",            no_argument,        0, 'c'},            "Show the credits scene and exit"},
 		{{"renderer",           required_argument,  0, OPT_RENDERER},   "Choose the rendering backend", renderer_list},
 		{{"populate-cache",     no_argument,        0, OPT_POPCACHE},   "Attempt to load all available resources, populating the cache, then exit"},
+		{{"width",              required_argument,  0, 'W'},            "Set window width", "WIDTH"},
+		{{"height",             required_argument,  0, 'H'},            "Set window height", "HEIGHT"},
 		{{"help",               no_argument,        0, 'h'},            "Print help and exit"},
 		{{"version",            no_argument,        0, 'v'},            "Print version and exit"},
 		{ 0 }
@@ -256,6 +258,12 @@ int cli_args(int argc, char **argv, CLIAction *a) {
 			break;
 		case OPT_UNLOCKALL:
 			a->unlock_all = true;
+			break;
+		case 'W':
+			a->width = strtol(optarg, NULL, 10);
+			break;
+		case 'H':
+			a->height = strtol(optarg, NULL, 10);
 			break;
 		default:
 			UNREACHABLE;
