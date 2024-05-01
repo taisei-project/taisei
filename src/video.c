@@ -968,7 +968,7 @@ static void video_init_framedump(void) {
 	memcpy(video.framedump.name_prefix, framedump_dir, video.framedump.name_prefix_len);
 }
 
-void video_init(void) {
+void video_init(const VideoInitParams *params) {
 	video_init_sdl();
 
 	const char *driver = SDL_GetCurrentVideoDriver();
@@ -1007,11 +1007,28 @@ void video_init(void) {
 
 	r_init();
 
+	int w, h;
+	bool fullscreen;
+
+	if(params->width > 0 || params->height > 0) {
+		w = params->width;
+		h = params->height;
+		fullscreen = false;
+
+		if(w <= 0) {
+			w = rint(h * VIDEO_ASPECT_RATIO);
+		} else if(h <= 0) {
+			h = rint(w / VIDEO_ASPECT_RATIO);
+		}
+	} else {
+		w = config_get_int(CONFIG_VID_WIDTH);
+		h = config_get_int(CONFIG_VID_HEIGHT);
+		fullscreen = config_get_int(CONFIG_FULLSCREEN);
+	}
+
 	video_set_mode(
 		config_get_int(CONFIG_VID_DISPLAY),
-		config_get_int(CONFIG_VID_WIDTH),
-		config_get_int(CONFIG_VID_HEIGHT),
-		config_get_int(CONFIG_FULLSCREEN),
+		w, h, fullscreen,
 		config_get_int(CONFIG_VID_RESIZABLE)
 	);
 

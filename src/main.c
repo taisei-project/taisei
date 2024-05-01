@@ -380,7 +380,10 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	time_init();
 	init_global(&ctx->cli);
 	events_init();
-	video_init();
+	video_init(&(VideoInitParams) {
+		.width = ctx->cli.width,
+		.height = ctx->cli.height,
+	});
 	filewatch_init();
 	res_init();
 	r_post_init();

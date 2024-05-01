@@ -36,6 +36,8 @@ struct CLIAction {
 	CutsceneID cutscene;
 	bool force_intro;
 	bool unlock_all;
+	int width;
+	int height;
 };
 
 int cli_args(int argc, char **argv, CLIAction *a);

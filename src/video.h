@@ -25,6 +25,11 @@ enum {
 
 #define SCREEN_SIZE { SCREEN_W, SCREEN_H }
 
+typedef struct VideoInitParams {
+	int width;
+	int height;
+} VideoInitParams;
+
 typedef union VideoMode {
 	// NOTE: These really should be floats, since this represents abstract screen coordinates, not pixels.
 	// However, SDL's API expects integers everywhere, so it does not really make sense.
@@ -62,7 +67,7 @@ typedef enum VideoCapabilityState {
 	VIDEO_CURRENTLY_UNAVAILABLE,
 } VideoCapabilityState;
 
-void video_init(void);
+void video_init(const VideoInitParams *params);
 void video_post_init(void);
 void video_shutdown(void);
 void video_set_mode(uint display, uint w, uint h, bool fs, bool resizable);
