@@ -12,8 +12,9 @@
 #include "global.h"
 #include "version.h"
 #include "util/strbuf.h"
+#include "bitarray.h"
 
-static bool config_initialized = false;
+#define CONFIG_FILE "storage/config"
 
 CONFIGDEFS_EXPORT ConfigEntry configdefs[] = {
 	#define CONFIGDEF(type,entryname,default,ufield) { type, entryname, { .ufield = default } },
@@ -40,28 +41,6 @@ typedef struct ConfigEntryList {
 } ConfigEntryList;
 
 static ConfigEntryList *unknowndefs = NULL;
-
-void config_init(void) {
-	if(config_initialized) {
-		return;
-	}
-
-	#define CONFIGDEF_KEYBINDING(id,entryname,default)
-	#define CONFIGDEF_GPKEYBINDING(id,entryname,default)
-	#define CONFIGDEF_INT(id,entryname,default)
-	#define CONFIGDEF_FLOAT(id,entryname,default)
-	#define CONFIGDEF_STRING(id,entryname,default) stralloc(&configdefs[CONFIG_##id].val.s, default);
-
-	CONFIGDEFS
-
-	#undef CONFIGDEF_KEYBINDING
-	#undef CONFIGDEF_GPKEYBINDING
-	#undef CONFIGDEF_INT
-	#undef CONFIGDEF_FLOAT
-	#undef CONFIGDEF_STRING
-
-	config_initialized = true;
-}
 
 static void config_delete_unknown_entries(void);
 
@@ -97,7 +76,9 @@ static int config_compare_values(ConfigEntryType type, ConfigValue val0, ConfigV
 			return (val0.f > val1.f) - (val0.f < val1.f);
 
 		case CONFIG_TYPE_STRING:
-			return strcmp(val0.s, val1.s);
+			return val0.s
+					? (val1.s ? strcmp(val0.s, val1.s) : -1)
+					: (val1.s ? 1 : 0);
 
 		default:
 			UNREACHABLE;
@@ -194,7 +175,7 @@ static void config_dump_stringval(StringBuffer *buf, ConfigEntryType etype, Conf
 			break;
 
 		case CONFIG_TYPE_STRING:
-			strbuf_cat(buf, val->s);
+			strbuf_cat(buf, val->s ?: "(null)");
 			break;
 
 		case CONFIG_TYPE_FLOAT:
@@ -228,7 +209,10 @@ static void config_set_val(ConfigIndex idx, ConfigValue v) {
 	strbuf_free(&sb);
 #endif
 
-	events_emit(TE_CONFIG_UPDATED, idx, &e->val, &oldv);
+	if(SDL_WasInit(SDL_INIT_EVENTS)) {
+		events_emit(TE_CONFIG_UPDATED, idx, &e->val, &oldv);
+	}
+
 	config_free_value(ctype, &oldv);
 }
 
@@ -327,7 +311,7 @@ void config_save(void) {
 #define FLOATOF(s) ((float)strtod(s, NULL))
 
 typedef struct ConfigParseState {
-	int first_entry;
+	BIT_ARRAY(CONFIGIDX_NUM) touched_settings;
 } ConfigParseState;
 
 static bool config_set(const char *key, const char *val, void *data) {
@@ -338,20 +322,27 @@ static bool config_set(const char *key, const char *val, void *data) {
 		log_warn("Unknown setting '%s'", key);
 		config_set_unknown(key, val);
 
-		if(state->first_entry < 0) {
-			state->first_entry = CONFIGIDX_NUM;
-		}
-
 		return true;
 	}
 
-	if(state->first_entry < 0) {
-		state->first_entry = (intptr_t)(e - configdefs);
-	}
+	ConfigIndex idx = e - configdefs;
+	assert((uintptr_t)idx < CONFIGIDX_NUM);
+	bitarray_set(&state->touched_settings, idx, true);
+
+	bool error = false;
+	ConfigValue cval = { };
 
 	switch(e->type) {
 		case CONFIG_TYPE_INT:
-			e->val.i = INTOF(val);
+			cval.i = INTOF(val);
+			break;
+
+		case CONFIG_TYPE_FLOAT:
+			cval.f = FLOATOF(val);
+			break;
+
+		case CONFIG_TYPE_STRING:
+			cval.s = (char*)val;
 			break;
 
 		case CONFIG_TYPE_KEYBINDING: {
@@ -359,8 +350,9 @@ static bool config_set(const char *key, const char *val, void *data) {
 
 			if(scan == SDL_SCANCODE_UNKNOWN) {
 				log_warn("Unknown key '%s'", val);
+				error = true;
 			} else {
-				e->val.i = scan;
+				cval.i = scan;
 			}
 
 			break;
@@ -371,20 +363,19 @@ static bool config_set(const char *key, const char *val, void *data) {
 
 			if(btn == GAMEPAD_BUTTON_INVALID) {
 				log_warn("Unknown gamepad button '%s'", val);
+				error = true;
 			} else {
-				e->val.i = btn;
+				cval.i = btn;
 			}
 
 			break;
 		}
 
-		case CONFIG_TYPE_STRING:
-			stralloc(&e->val.s, val);
-			break;
+		default: UNREACHABLE;
+	}
 
-		case CONFIG_TYPE_FLOAT:
-			e->val.f = FLOATOF(val);
-			break;
+	if(!error) {
+		config_set_val(idx, cval);
 	}
 
 	return true;
@@ -393,11 +384,13 @@ static bool config_set(const char *key, const char *val, void *data) {
 #undef INTOF
 #undef FLOATOF
 
-typedef void (*ConfigUpgradeFunc)(void);
+typedef void (*ConfigUpgradeFunc)(ConfigParseState *state);
 
-static void config_upgrade_1(void) {
+static void config_upgrade_1(ConfigParseState *state) {
 	// reset vsync to the default value
-	config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
+	if(bitarray_get(&state->touched_settings, CONFIG_VSYNC)) {
+		config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
+	}
 
 	// this version also changes meaning of the vsync value
 	// previously it was: 0 = on,  1 = off, 2 = adaptive, because mia doesn't know how my absolutely genius options menu works.
@@ -405,22 +398,34 @@ static void config_upgrade_1(void) {
 }
 
 #ifdef __EMSCRIPTEN__
-static void config_upgrade_2(void) {
+static void config_upgrade_2(ConfigParseState *state) {
 	// emscripten defaults for these have been changed
-	config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
-	config_set_int(CONFIG_FXAA, CONFIG_FXAA_DEFAULT);
+	if(bitarray_get(&state->touched_settings, CONFIG_VSYNC)) {
+		config_set_int(CONFIG_VSYNC, CONFIG_VSYNC_DEFAULT);
+	}
+
+	if(bitarray_get(&state->touched_settings, CONFIG_FXAA)) {
+		config_set_int(CONFIG_FXAA, CONFIG_FXAA_DEFAULT);
+	}
 }
 #else
 #define config_upgrade_2 NULL
 #endif
 
-static void config_upgrade_3(void) {
-	config_set_int(CONFIG_MIXER_CHUNKSIZE, CONFIG_CHUNKSIZE_DEFAULT);
+static void config_upgrade_3(ConfigParseState *state) {
+	if(bitarray_get(&state->touched_settings, CONFIG_MIXER_CHUNKSIZE)) {
+		config_set_int(CONFIG_MIXER_CHUNKSIZE, CONFIG_CHUNKSIZE_DEFAULT);
+	}
 }
 
-static void config_upgrade_4(void) {
-	config_set_float(CONFIG_GAMEPAD_BTNREPEAT_DELAY, CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT);
-	config_set_float(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL, CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT);
+static void config_upgrade_4(ConfigParseState *state) {
+	if(bitarray_get(&state->touched_settings, CONFIG_GAMEPAD_BTNREPEAT_DELAY)) {
+		config_set_float(CONFIG_GAMEPAD_BTNREPEAT_DELAY, CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT);
+	}
+
+	if(bitarray_get(&state->touched_settings, CONFIG_GAMEPAD_BTNREPEAT_INTERVAL)) {
+		config_set_float(CONFIG_GAMEPAD_BTNREPEAT_INTERVAL, CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT);
+	}
 }
 
 static ConfigUpgradeFunc config_upgrades[] = {
@@ -438,7 +443,11 @@ static ConfigUpgradeFunc config_upgrades[] = {
 	config_upgrade_4,
 };
 
-static void config_apply_upgrades(int start) {
+static void config_set_version_latest(void) {
+	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));
+}
+
+static void config_apply_upgrades(int start, ConfigParseState *state) {
 	int num_upgrades = sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc);
 
 	if(start > num_upgrades) {
@@ -449,52 +458,53 @@ static void config_apply_upgrades(int start) {
 	for(int upgrade = start; upgrade < num_upgrades; ++upgrade) {
 		if(config_upgrades[upgrade]) {
 			log_info("Upgrading config to version %i", upgrade + 1);
-			config_upgrades[upgrade]();
+			config_upgrades[upgrade](state);
 		} else {
 			log_debug("Upgrade to version %i is a no-op", upgrade + 1);
 		}
 	}
+
+	config_set_version_latest();
+}
+
+static bool config_load_stream(SDL_RWops *stream) {
+	config_set_int(CONFIG_VERSION, 0);
+	ConfigParseState state = {};
+
+	if(!parse_keyvalue_stream_cb(stream, config_set, &state)) {
+		log_warn("Errors occured while parsing the configuration file");
+	}
+
+	config_apply_upgrades(config_get_int(CONFIG_VERSION), &state);
+	return true;
+}
+
+static bool config_load_file(const char *vfspath, LogLevel fail_loglevel) {
+	SDL_RWops *stream = vfs_open(vfspath, VFS_MODE_READ);
+	char *syspath_alloc = vfs_repr(vfspath, true);
+	const char *syspath = syspath_alloc ?: vfspath;
+	log_info("Loading configuration from %s", syspath);
+
+	if(UNLIKELY(!stream)) {
+		log_custom(fail_loglevel, "VFS error: %s", vfs_get_error());
+
+		if(vfs_query(vfspath).exists) {
+			log_error("Config file %s exists but is not readable", syspath);
+		}
+
+		mem_free(syspath_alloc);
+		return false;
+	}
+
+	mem_free(syspath_alloc);
+	bool ok = config_load_stream(stream);
+	SDL_RWclose(stream);
+	return ok;
 }
 
 void config_load(void) {
-	config_init();
-
-	char *config_path = vfs_repr(CONFIG_FILE, true);
-	SDL_RWops *config_file = vfs_open(CONFIG_FILE, VFS_MODE_READ);
-
-	if(config_file) {
-		log_info("Loading configuration from %s", config_path);
-
-		auto state = ALLOC(ConfigParseState);
-		state->first_entry = -1;
-
-		if(!parse_keyvalue_stream_cb(config_file, config_set, state)) {
-			log_warn("Errors occured while parsing the configuration file");
-		}
-
-		if(state->first_entry != CONFIG_VERSION) {
-			// config file was likely written by an old version of taisei that is unaware of the upgrade mechanism.
-			config_set_int(CONFIG_VERSION, 0);
-		}
-
-		mem_free(state);
-		SDL_RWclose(config_file);
-
-		config_apply_upgrades(config_get_int(CONFIG_VERSION));
-	} else {
-		VFSInfo i = vfs_query(CONFIG_FILE);
-
-		if(i.error) {
-			log_error("VFS error: %s", vfs_get_error());
-		} else if(i.exists) {
-			log_error("Config file %s is not readable", config_path);
-		}
-	}
-
-	mem_free(config_path);
-
-	// set config version to the latest
-	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));
+	config_reset();
+	config_load_file(CONFIG_FILE, LOG_INFO);
 
 #ifdef __SWITCH__
 	config_set_int(CONFIG_GAMEPAD_ENABLED, true);
@@ -521,6 +531,6 @@ void config_reset(void) {
 	#undef CONFIGDEF_FLOAT
 	#undef CONFIGDEF_STRING
 
-	// set config version to the latest
-	config_set_int(CONFIG_VERSION, sizeof(config_upgrades) / sizeof(ConfigUpgradeFunc));
+	config_set_version_latest();
+	config_load_file("res/config.default", LOG_INFO);
 }
