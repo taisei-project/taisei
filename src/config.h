@@ -11,8 +11,6 @@
 
 #include <SDL_keycode.h>
 
-#define CONFIG_FILE "storage/config"
-
 /*
 	Define these macros, then use CONFIGDEFS to expand them all for all config entries, or KEYDEFS for just keybindings.
 	Don't forget to undef them afterwards.
@@ -211,19 +209,16 @@ typedef struct ConfigEntry {
 	ConfigValue val;
 } ConfigEntry;
 
-#define CONFIG_LOAD_BUFSIZE 256
-
 KeyIndex config_key_from_scancode(int scan);
 GamepadKeyIndex config_gamepad_key_from_gamepad_button(int btn);
 KeyIndex config_key_from_gamepad_key(GamepadKeyIndex gpkey);
 GamepadKeyIndex config_gamepad_key_from_key(KeyIndex key);
 KeyIndex config_key_from_gamepad_button(int btn);
 
-void config_reset(void);
-void config_init(void);
-void config_shutdown(void);
 void config_load(void);
 void config_save(void);
+void config_reset(void);
+void config_shutdown(void);
 
 #ifndef DEBUG
 	#define CONFIG_RAWACCESS
