@@ -189,14 +189,28 @@ static bool ingame_menu_interrupts_bgm(void) {
 	return global.stage->type != STAGE_SPELL;
 }
 
-typedef struct IngameMenuContext {
+static inline bool is_quicksave_allowed(void) {
+#ifndef DEBUG
+	if(!global.is_practice_mode) {
+		return false;
+	}
+#endif
+
+	if(global.gameover != GAMEOVER_NONE) {
+		return false;
+	}
+
+	return true;
+}
+
+typedef struct IngameMenuCallContext {
 	CallChain next;
 	BGM *saved_bgm;
 	double saved_bgm_pos;
 	bool bgm_interrupted;
-} IngameMenuContext;
+} IngameMenuCallContext;
 
-static void setup_ingame_menu_bgm(IngameMenuContext *ctx, BGM *bgm) {
+static void setup_ingame_menu_bgm(IngameMenuCallContext *ctx, BGM *bgm) {
 	if(ingame_menu_interrupts_bgm()) {
 		ctx->bgm_interrupted = true;
 
@@ -210,7 +224,7 @@ static void setup_ingame_menu_bgm(IngameMenuContext *ctx, BGM *bgm) {
 	}
 }
 
-static void resume_bgm(IngameMenuContext *ctx) {
+static void resume_bgm(IngameMenuCallContext *ctx) {
 	if(ctx->bgm_interrupted) {
 		if(ctx->saved_bgm) {
 			audio_bgm_play(ctx->saved_bgm, true, ctx->saved_bgm_pos, 0.5);
@@ -224,7 +238,7 @@ static void resume_bgm(IngameMenuContext *ctx) {
 }
 
 static void stage_leave_ingame_menu(CallChainResult ccr) {
-	IngameMenuContext *ctx = ccr.ctx;
+	IngameMenuCallContext *ctx = ccr.ctx;
 	MenuData *m = ccr.result;
 
 	if(m->state != MS_Dead) {
@@ -250,7 +264,7 @@ static void stage_leave_ingame_menu(CallChainResult ccr) {
 
 static void stage_enter_ingame_menu(MenuData *m, BGM *bgm, CallChain next) {
 	events_emit(TE_GAME_PAUSE_STATE_CHANGED, true, NULL, NULL);
-	auto ctx = ALLOC(IngameMenuContext, { .next = next });
+	auto ctx = ALLOC(IngameMenuCallContext, { .next = next });
 	setup_ingame_menu_bgm(ctx, bgm);
 	pause_all_sfx();
 	enter_menu(m, CALLCHAIN(stage_leave_ingame_menu, ctx));
@@ -285,6 +299,41 @@ static void stage_pause(StageFrameState *fstate) {
 
 static void stage_do_quickload(StageFrameState *fstate);
 
+static void stage_continue_game(void) {
+	log_info("The game is being continued...");
+	player_event(&global.plr, &global.replay.input, &global.replay.output, EV_CONTINUE, 0);
+}
+
+static void gameover_menu_result(CallChainResult ccr) {
+	GameoverMenuAction *_action = ccr.ctx;
+	auto action = *_action;
+	mem_free(_action);
+
+	switch(action) {
+		case GAMEOVERMENU_ACTION_QUIT:
+			if(global.plr.stats.total.continues_used >= MAX_CONTINUES) {
+				global.gameover = GAMEOVER_DEFEAT;
+			} else {
+				global.gameover = GAMEOVER_ABORT;
+			}
+			break;
+
+		case GAMEOVERMENU_ACTION_CONTINUE:
+			stage_continue_game();
+			break;
+
+		case GAMEOVERMENU_ACTION_RESTART:
+			global.gameover = GAMEOVER_RESTART;
+			break;
+
+		case GAMEOVERMENU_ACTION_QUICKLOAD:
+			stage_do_quickload(_current_stage_state);
+			break;
+
+		default: UNREACHABLE;
+	}
+}
+
 void stage_gameover(void) {
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
 		auto fstate = _current_stage_state;
@@ -303,7 +352,14 @@ void stage_gameover(void) {
 		progress_unlock_bgm("gameover");
 	}
 
-	stage_enter_ingame_menu(create_gameover_menu(), bgm, NO_CALLCHAIN);
+	auto action = ALLOC(GameoverMenuAction);
+	auto menu = create_gameover_menu(&(GameoverMenuParams) {
+		.output = action,
+		.quickload_shown = is_quicksave_allowed(),
+		.quickload_enabled = _current_stage_state->quicksave != NULL,
+	});
+
+	stage_enter_ingame_menu(menu, bgm, CALLCHAIN(gameover_menu_result, action));
 }
 
 static bool stage_input_common(SDL_Event *event, void *arg) {
@@ -395,20 +451,6 @@ static Replay *create_quicksave_replay(ReplayStage *rstg_src) {
 
 	log_info("Created quicksave replay on frame %i", global.frames);
 	return rpy;
-}
-
-static inline bool is_quicksave_allowed(void) {
-#ifndef DEBUG
-	if(!global.is_practice_mode) {
-		return false;
-	}
-#endif
-
-	if(global.gameover != GAMEOVER_NONE) {
-		return false;
-	}
-
-	return true;
 }
 
 static void stage_do_quicksave(StageFrameState *fstate, bool isauto) {
