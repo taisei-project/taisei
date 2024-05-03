@@ -283,9 +283,16 @@ static void stage_pause(StageFrameState *fstate) {
 	stage_enter_ingame_menu(m, NULL, CALLCHAIN(stage_unpause, fstate));
 }
 
+static void stage_do_quickload(StageFrameState *fstate);
+
 void stage_gameover(void) {
 	if(global.stage->type == STAGE_SPELL && config_get_int(CONFIG_SPELLSTAGE_AUTORESTART)) {
-		global.gameover = GAMEOVER_RESTART;
+		auto fstate = _current_stage_state;
+		if(fstate->quicksave) {
+			stage_do_quickload(fstate);
+		} else {
+			global.gameover = GAMEOVER_RESTART;
+		}
 		return;
 	}
 
