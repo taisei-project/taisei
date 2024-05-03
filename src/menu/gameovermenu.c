@@ -14,40 +14,79 @@
 #include "stats.h"
 #include "global.h"
 
-static void continue_game(MenuData *m, void *arg) {
-	log_info("The game is being continued...");
-	player_event(&global.plr, &global.replay.input, &global.replay.output, EV_CONTINUE, 0);
+typedef struct GameoverMenuContext {
+	IngameMenuContext base;
+	GameoverMenuAction *output;
+} GameoverMenuContext;
+
+static void set_action(MenuData *m, void *arg) {
+	GameoverMenuContext *ctx = m->context;
+	*ctx->output = (uintptr_t)arg;
 }
 
-static void give_up(MenuData *m, void *arg) {
-	global.gameover = (MAX_CONTINUES - global.plr.stats.total.continues_used) ? GAMEOVER_ABORT : GAMEOVER_DEFEAT;
+static MenuEntry *add_action_entry(MenuData *m, char *text, GameoverMenuAction action, bool enabled) {
+	return add_menu_entry(m, text, enabled ? set_action : NULL, (void*)action);
 }
 
-MenuData *create_gameover_menu(void) {
+static MenuEntry *add_quickload_entry(MenuData *m, const GameoverMenuParams *params) {
+	if(!params->quickload_shown) {
+		return NULL;
+	}
+
+	return add_action_entry(m, "Load Quicksave", GAMEOVERMENU_ACTION_QUICKLOAD, params->quickload_enabled);
+}
+
+static void free_gameover_menu(MenuData *m) {
+	mem_free(m->context);
+}
+
+MenuData *create_gameover_menu(const GameoverMenuParams *params) {
 	MenuData *m = alloc_menu();
+
+	auto ctx = ALLOC(GameoverMenuContext, {
+		.output = params->output,
+	});
+
+	*ctx->output = GAMEOVERMENU_ACTION_DEFAULT;
 
 	m->draw = draw_ingame_menu;
 	m->logic = update_ingame_menu;
+	m->end = free_gameover_menu;
 	m->flags = MF_Transient | MF_AlwaysProcessInput;
 	m->transition = TransEmpty;
+	m->context = ctx;
+
+	add_quickload_entry(m, params);
 
 	if(global.stage->type == STAGE_SPELL) {
-		m->context = "Spell Failed";
+		ctx->base.title = "Spell Failed";
 
-		add_menu_entry(m, "Retry", restart_game, NULL)->transition = TransFadeBlack;
-		add_menu_entry(m, "Give up", give_up, NULL)->transition = TransFadeBlack;
+		add_action_entry(m, "Restart", GAMEOVERMENU_ACTION_RESTART, true)
+			->transition = TransFadeBlack;
+		add_action_entry(m, "Give up", GAMEOVERMENU_ACTION_QUIT, true)
+			->transition = TransFadeBlack;
 	} else {
-		m->context = "Game Over";
+		ctx->base.title = "Game Over";
 
 		char s[64];
 		int c = MAX_CONTINUES - global.plr.stats.total.continues_used;
-		snprintf(s, sizeof(s), "Continue (%i)", c);
-		add_menu_entry(m, s, c ? continue_game : NULL, NULL);
-		add_menu_entry(m, "Restart the Game", restart_game, NULL)->transition = TransFadeBlack;
-		add_menu_entry(m, c? "Give up" : "Return to Title", give_up, NULL)->transition = TransFadeBlack;
+		bool have_continues = c > 0;
 
-		if(!c)
-			m->cursor = 1;
+		if(have_continues) {
+			snprintf(s, sizeof(s), "Continue (%i)", c);
+		} else {
+			snprintf(s, sizeof(s), "Continue");
+		}
+
+		add_action_entry(m, s, GAMEOVERMENU_ACTION_CONTINUE, have_continues);
+		add_action_entry(m, "Restart the Game", GAMEOVERMENU_ACTION_RESTART, true)
+			->transition = TransFadeBlack;
+		add_action_entry(m, have_continues ? "Give up" : "Return to Title", GAMEOVERMENU_ACTION_QUIT, true)
+			->transition = TransFadeBlack;
+	}
+
+	while(!dynarray_get(&m->entries, m->cursor).action) {
+		++m->cursor;
 	}
 
 	set_transition(TransEmpty, 0, m->transition_out_time, NO_CALLCHAIN);

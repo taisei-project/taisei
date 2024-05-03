@@ -11,4 +11,19 @@
 
 #include "menu.h"
 
-MenuData *create_gameover_menu(void);
+typedef enum GameoverMenuAction {
+	GAMEOVERMENU_ACTION_DEFAULT,
+	GAMEOVERMENU_ACTION_RESTART,
+	GAMEOVERMENU_ACTION_QUIT,
+	GAMEOVERMENU_ACTION_CONTINUE,
+	GAMEOVERMENU_ACTION_QUICKLOAD,
+} GameoverMenuAction;
+
+typedef struct GameoverMenuParams {
+	GameoverMenuAction *output;
+	bool quickload_shown;
+	bool quickload_enabled;
+} GameoverMenuParams;
+
+MenuData *create_gameover_menu(const GameoverMenuParams *params)
+	attr_nonnull_all attr_returns_allocated;

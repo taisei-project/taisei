@@ -11,6 +11,10 @@
 
 #include "menu.h"
 
+typedef struct IngameMenuContext {
+	const char *title;
+} IngameMenuContext;
+
 void draw_ingame_menu_bg(MenuData *menu, float f);
 void draw_ingame_menu(MenuData *menu);
 
