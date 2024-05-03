@@ -37,7 +37,22 @@ typedef enum BindingType {
 	BT_VideoDisplay,
 } BindingType;
 
+typedef enum OptionsMenuEntryArgType {
+	ARGTYPE_BIND = 0xafafaf00,
+	ARGTYPE_OTHER,
+} OptionsMenuEntryArgType;
+
+// Shared header for all structs used as args in menu entries,
+// because past me had the brilliant idea of storing the bindings in there
+// and now there is a need to tell them apart from other stuff.
+// One of these days I'm gonna rewrite this whole file from scratch (copium)
+// along with the entire menu system (mega copium), but that day is not today.
+typedef struct OptionsMenuArgHeader {
+	OptionsMenuEntryArgType type;
+} OptionsMenuArgHeader;
+
 typedef struct OptionBinding {
+	OptionsMenuArgHeader header;
 	union {
 		char **values;
 		char *strvalue;
@@ -62,6 +77,7 @@ typedef struct OptionBinding {
 
 static OptionBinding* bind_new(void) {
 	return ALLOC(OptionBinding, {
+		.header.type = ARGTYPE_BIND,
 		.selected = -1,
 		.configentry = -1,
 	});
@@ -83,7 +99,18 @@ static void bind_free(OptionBinding *bind) {
 
 static OptionBinding* bind_get(MenuData *m, int idx) {
 	MenuEntry *e = dynarray_get_ptr(&m->entries, idx);
-	return e->arg == m? NULL : e->arg;
+	OptionsMenuArgHeader *header = e->arg;
+
+	if(!header) {
+		return NULL;
+	}
+
+	if(header->type == ARGTYPE_BIND) {
+		return CASTPTR_ASSUME_ALIGNED(header, OptionBinding);
+	}
+
+	assume(header->type == ARGTYPE_OTHER);
+	return NULL;
 }
 
 // BT_IntValue: integer and boolean options
@@ -447,11 +474,30 @@ static int bind_gamepad_set(OptionBinding *b, int v) {
 
 // --- Creating, destroying, filling the menu --- //
 
+typedef struct ConfirmDialog {
+	OptionsMenuArgHeader header;
+	const char *const text;
+	void (*const action)(void);
+} ConfirmDialog;
+
+static const ConfirmDialog dialog_reset_default = {
+	.header.type = ARGTYPE_OTHER,
+	.text = "Reset all settings to defaults?",
+	.action = config_reset,
+};
+
+static const ConfirmDialog dialog_reset_saved = {
+	.header.type = ARGTYPE_OTHER,
+	.text = "Reset all settings to the last saved values?",
+	.action = config_load,
+};
+
 typedef struct OptionsMenuContext {
 	const char *title;
 	void *data;
 	MenuData *submenu;
 	MenuData *submenu_fading;
+	ConfirmDialog *confirm_dialog;
 	float submenu_alpha;
 } OptionsMenuContext;
 
@@ -564,15 +610,13 @@ static void options_enter_sub(MenuData *parent, MenuData *(*construct)(MenuData*
 		options_enter_sub(parent, construct); \
 	}
 
-static void reset_to_defaults_draw(MenuData *m) {
+static void confirm_dialog_draw(MenuData *m) {
 	OptionsMenuContext *ctx = m->context;
 	float alpha = ctx->submenu_alpha;
 
-	static const char confirm_text[] = "Reset all settings to defaults?";
-
 	float lineskip = font_get_lineskip(res_font("standard"));
 	float height = lineskip * 4;
-	float width  = text_width(res_font("standard"), confirm_text, 0) + 64;
+	float width  = text_width(res_font("standard"), ctx->confirm_dialog->text, 0) + 64;
 
 	r_state_push();
 	alpha *= 0.7;
@@ -594,7 +638,7 @@ static void reset_to_defaults_draw(MenuData *m) {
 
 	r_state_pop();
 
-	text_draw(confirm_text, &(TextParams) {
+	text_draw(ctx->confirm_dialog->text, &(TextParams) {
 		.align = ALIGN_CENTER,
 		.color = RGBA_MUL_ALPHA(1, 1, 1, alpha),
 		.pos = { SCREEN_W*0.5, SCREEN_H*0.5 - lineskip * 0.5 },
@@ -624,18 +668,19 @@ static void reset_to_defaults_draw(MenuData *m) {
 }
 
 static void confirm_reset(MenuData *m, void *a) {
-	config_reset();
+	OptionsMenuContext *ctx = m->context;
+	ctx->confirm_dialog->action();
 	menu_action_close(m, a);
 }
 
-static void reset_to_defaults_logic(MenuData *m) {
+static void confirm_dialog_logic(MenuData *m) {
 	animate_menu_list_entries(m);
 }
 
-static void reset_to_defaults(MenuData *m, void *a) {
+static void confirm_dialog(MenuData *m, void *a) {
 	MenuData *sub = alloc_menu();
-	sub->draw = reset_to_defaults_draw;
-	sub->logic = reset_to_defaults_logic;
+	sub->draw = confirm_dialog_draw;
+	sub->logic = confirm_dialog_logic;
 	sub->flags = MF_Transient | MF_Abortable;
 	sub->transition = NULL;
 	sub->context = m->context;
@@ -647,6 +692,7 @@ static void reset_to_defaults(MenuData *m, void *a) {
 	assert(!ctx->submenu);
 	ctx->submenu = sub;
 	ctx->submenu_alpha = 0;
+	ctx->confirm_dialog = a;
 
 	if(ctx->submenu_fading) {
 		free_menu(ctx->submenu_fading);
@@ -1061,7 +1107,11 @@ MenuData* create_options_menu(void) {
 	add_menu_entry(m, "Gamepad & Joystick options…", enter_options_menu_gamepad, NULL);
 	add_menu_separator(m);
 
-	auto e = add_menu_entry(m, "Reset to defaults", reset_to_defaults, NULL);
+	auto e = add_menu_entry(
+		m, "Reload from last saved", confirm_dialog, (void*)&dialog_reset_saved);
+	e->transition = NULL;
+	e = add_menu_entry(
+		m, "Reset to defaults", confirm_dialog, (void*)&dialog_reset_default);
 	e->transition = NULL;
 	add_menu_separator(m);
 
