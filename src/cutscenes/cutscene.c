@@ -67,6 +67,8 @@ typedef struct CutsceneState {
 	int skip_timer;
 	int advance_timer;
 	int fadeout_timer;
+
+	bool interruptible;
 } CutsceneState;
 
 static void clear_text(CutsceneState *st) {
@@ -183,6 +185,10 @@ static bool cutscene_event(SDL_Event *evt, void *ctx) {
 
 	if(evt->type == MAKE_TAISEI_EVENT(TE_MENU_ACCEPT)) {
 		cutscene_advance(st);
+	}
+
+	if(evt->type == MAKE_TAISEI_EVENT(TE_MENU_ABORT) && st->interruptible) {
+		cutscene_interrupt(st);
 	}
 
 	return false;
@@ -477,6 +483,7 @@ static CutsceneState *cutscene_state_new(const CutscenePhase phases[]) {
 void cutscene_enter(CallChain next, CutsceneID id) {
 	assert((uint)id < NUM_CUTSCENE_IDS);
 
+	bool interruptible = progress_is_cutscene_unlocked(id);
 	progress_unlock_cutscene(id);
 	const Cutscene *cs = g_cutscenes + id;
 
@@ -490,6 +497,7 @@ void cutscene_enter(CallChain next, CutsceneID id) {
 	CutsceneState *st = cutscene_state_new(cs->phases);
 	st->cc = next;
 	st->bg_state.transition_rate = 1/80.0f;
+	st->interruptible = interruptible;
 	progress_unlock_bgm(cs->bgm);
 	audio_bgm_play(res_bgm(cs->bgm), true, 0, 1);
 	demoplayer_suspend();
