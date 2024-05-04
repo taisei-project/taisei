@@ -50,7 +50,7 @@ bool gamekeypressed(KeyIndex key) {
 static SDL_atomic_t quitting;
 
 void taisei_quit(void) {
-	if(global.is_kiosk_mode) {
+	if(global.is_kiosk_mode && env_get("TAISEI_KIOSK_PREVENT_QUIT", true)) {
 		log_info("Running in kiosk mode; exit request ignored");
 		return;
 	}
