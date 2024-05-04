@@ -24,6 +24,7 @@
 #include "stage.h"
 #include "version.h"
 #include "plrmodes.h"
+#include "watchdog.h"
 
 static MenuEntry *spell_practice_entry;
 static MenuEntry *stage_practice_entry;
@@ -65,6 +66,12 @@ static void begin_main_menu(MenuData *m) {
 }
 
 static void update_main_menu(MenuData *menu) {
+	if(watchdog_signaled()) {
+		menu->cursor = 0;
+	}
+
+	watchdog_reset();
+
 	menu->drawdata[1] += 0.1*(menu->cursor-menu->drawdata[1]);
 
 	dynarray_foreach(&menu->entries, int i, MenuEntry *e, {

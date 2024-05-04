@@ -50,6 +50,8 @@ typedef enum {
 
 	TE_FILEWATCH,
 
+	TE_WATCHDOG,
+
 	NUM_TAISEI_EVENTS
 } TaiseiEvent;
 

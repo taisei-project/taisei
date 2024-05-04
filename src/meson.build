@@ -100,6 +100,7 @@ taisei_src = files(
     'version.c',
     'video.c',
     'video_postprocess.c',
+    'watchdog.c',
 )
 
 if is_developer_build

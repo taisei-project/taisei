@@ -30,6 +30,7 @@
 #include "common_tasks.h"
 #include "stageinfo.h"
 #include "dynstage.h"
+#include "watchdog.h"
 
 typedef struct StageFrameState {
 	StageInfo *stage;
@@ -947,6 +948,10 @@ static LogicFrameAction stage_logic_frame(void *arg) {
 	StageInfo *stage = fstate->stage;
 
 	stage_update_fps(fstate);
+
+	if(watchdog_signaled() && !stage_is_demo_mode()) {
+		global.gameover = GAMEOVER_ABORT;
+	}
 
 	if(stage_is_skip_mode()) {
 		global.plr.iddqd = true;
