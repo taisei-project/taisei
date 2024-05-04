@@ -14,6 +14,7 @@
 #include "eventloop/eventloop.h"
 #include "replay/demoplayer.h"
 #include "util/graphics.h"
+#include "watchdog.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {
 	return dynarray_append(&menu->entries, {
@@ -200,6 +201,11 @@ static LogicFrameAction menu_logic_frame(void *arg) {
 	}
 
 	menu->frames++;
+
+	if(watchdog_signaled()) {
+		menu->selected = -1;
+		close_menu(menu);
+	}
 
 	if(menu->state != MS_FadeOut || menu->flags & MF_AlwaysProcessInput) {
 		assert(menu->input);

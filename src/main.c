@@ -35,6 +35,13 @@
 #include "eventloop/eventloop.h"
 #include "replay/demoplayer.h"
 #include "replay/tsrtool.h"
+#include "watchdog.h"
+
+static bool watchdog_handler(SDL_Event *evt, void *arg) {
+	assert(evt->type == MAKE_TAISEI_EVENT(TE_WATCHDOG));
+	config_reset();
+	return true;
+}
 
 attr_unused
 static void taisei_shutdown(void) {
@@ -48,6 +55,11 @@ static void taisei_shutdown(void) {
 	r_release_resources();
 	res_shutdown();
 
+	if(global.is_kiosk_mode) {
+		events_unregister_handler(watchdog_handler);
+	}
+
+	watchdog_shutdown();
 	demoplayer_shutdown();
 	progress_unload();
 	stage_objpools_shutdown();
@@ -380,6 +392,16 @@ static void main_post_vfsinit(CallChainResult ccr) {
 	time_init();
 	init_global(&ctx->cli);
 	events_init();
+
+	if(global.is_kiosk_mode) {
+		watchdog_init(env_get("TAISEI_KIOSK_TIMEOUT", 60 * FPS));
+		events_register_handler(&(EventHandler) {
+			.priority = EPRIO_SYSTEM,
+			.event_type = MAKE_TAISEI_EVENT(TE_WATCHDOG),
+			.proc = watchdog_handler,
+		});
+	}
+
 	video_init(&(VideoInitParams) {
 		.width = ctx->cli.width,
 		.height = ctx->cli.height,

@@ -23,6 +23,7 @@
 #include "video.h"
 #include "eventloop/eventloop.h"
 #include "replay/demoplayer.h"
+#include "watchdog.h"
 
 #define SKIP_DELAY 3
 #define AUTO_ADVANCE_TIME_BEFORE_TEXT FPS * 2
@@ -30,7 +31,10 @@
 #define AUTO_ADVANCE_TIME_CROSS_SCENE FPS * 180
 
 // TODO maybe make transitions configurable?
-#define CUTSCENE_FADE_OUT 200
+enum {
+	CUTSCENE_FADE_OUT = 200,
+	CUTSCENE_INTERRUPT_FADE_OUT = 15,
+};
 
 typedef struct CutsceneBGState {
 	Texture *scene;
@@ -118,8 +122,12 @@ static bool skip_text_animation(CutsceneState *st) {
 	return animation_skipped;
 }
 
-static void begin_fadeout(CutsceneState *st) {
-	const int fade_frames = CUTSCENE_FADE_OUT;
+static void begin_fadeout(CutsceneState *st, int fade_frames) {
+	if(st->fadeout_timer) {
+		log_debug("Already fading out, timer = %i", st->fadeout_timer);
+		return;
+	}
+
 	audio_bgm_stop((FPS * fade_frames) / 4000.0);
 	set_transition(TransFadeBlack, fade_frames, fade_frames, NO_CALLCHAIN);
 	st->fadeout_timer = fade_frames;
@@ -148,7 +156,7 @@ static void cutscene_advance(CutsceneState *st) {
 
 			if((++st->phase)->background == NULL) {
 				st->phase = NULL;
-				begin_fadeout(st);
+				begin_fadeout(st, CUTSCENE_FADE_OUT);
 			} else {
 				switch_bg(st, st->phase->background);
 			}
@@ -166,6 +174,10 @@ static void cutscene_advance(CutsceneState *st) {
 	reset_timers(st);
 }
 
+static void cutscene_interrupt(CutsceneState *st) {
+	begin_fadeout(st, CUTSCENE_INTERRUPT_FADE_OUT);
+}
+
 static bool cutscene_event(SDL_Event *evt, void *ctx) {
 	CutsceneState *st = ctx;
 
@@ -178,6 +190,10 @@ static bool cutscene_event(SDL_Event *evt, void *ctx) {
 
 static LogicFrameAction cutscene_logic_frame(void *ctx) {
 	CutsceneState *st = ctx;
+
+	if(watchdog_signaled()) {
+		cutscene_interrupt(st);
+	}
 
 	update_transition();
 	events_poll((EventHandler[]) {
