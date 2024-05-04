@@ -246,7 +246,6 @@ transpile_glsl = transpile_glsl and validate_glsl
 # @begin validate
 if validate_glsl
     foreach fname : glsl_files
-        message(f'fname: @fname@')
         stage = fname.split('.')[-2]
 
         spirv = custom_target(
