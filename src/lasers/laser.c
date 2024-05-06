@@ -155,10 +155,10 @@ static bool laser_prepare_sampling_params(Laser *l, float step, LaserSamplingPar
 		return false;
 	}
 
-	float ns = ceilf(c / step);
+	float ns = ceilf((c + step) / step);
 	out_params->num_samples = ns;
 	out_params->time_shift = t;
-	out_params->time_step = c / (ns - 1);
+	out_params->time_step = (c + step) / ns;
 
 	return true;
 }
@@ -248,7 +248,9 @@ static int quantize_laser(Laser *l) {
 	top_left.as_cmplx = a;
 	bottom_right.as_cmplx = a;
 
-	for(uint i = 1; i < sp.num_samples; ++i, t += sp.time_step) {
+	float maxtime = sp.time_shift + l->timespan;
+
+	for(uint i = 1; i < sp.num_samples; ++i, t = min(t + sp.time_step, maxtime)) {
 		b = laser_pos_at(l, t);
 
 		if(i < sp.num_samples - 1 && (t - t0) < thres_temporal) {
