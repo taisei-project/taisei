@@ -736,6 +736,11 @@ static bool ellipse_predicate(EntityInterface *ent, void *varg) {
 
 void stage_clear_hazards_at(cmplx origin, double radius, ClearHazardsFlags flags) {
 	Circle area = { origin, radius };
+
+	if(UNLIKELY(radius <= 0)) {
+		return;
+	}
+
 	stage_clear_hazards_predicate(proximity_predicate, &area, flags);
 }
 
