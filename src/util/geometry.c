@@ -109,6 +109,13 @@ bool lineseg_ellipse_intersect(LineSegment seg, Ellipse e) {
 	seg.b -= e.origin;
 
 	double ratio = re(e.axes) / im(e.axes);
+
+	if(UNLIKELY(ratio != ratio || !ratio)) {
+		// either axis is nan or 0?
+		assert(0 && "Bad ellipse");
+		return false;
+	}
+
 	cmplx rotation = cdir(-e.angle);
 	seg.a = cmul_finite(seg.a, rotation);
 	seg.b = cmul_finite(seg.b, rotation);
