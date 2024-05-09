@@ -36,12 +36,25 @@ typedef struct LaserWidthParams {
 	float scale;
 } LaserWidthParams;
 
+typedef struct LaserSample {
+	cmplx p;
+	float t;
+} LaserSample;
+
+typedef DYNAMIC_ARRAY(LaserSample) LaserSampleArray;
+
+static struct {
+	LaserSampleArray samples;
+} lasers;
+
 void lasers_init(void) {
+	lasers.samples = (LaserSampleArray) {};
 	laserintern_init();
 	laserdraw_init();
 }
 
 void lasers_shutdown(void) {
+	dynarray_free_data(&lasers.samples);
 	laserdraw_shutdown();
 	laserintern_shutdown();
 }
@@ -188,6 +201,20 @@ static void laserseg_flip(LaserSegment *s) {
 	SWAP(s->width.a, s->width.b);
 }
 
+static void fill_samples(
+	LaserSampleArray *array, const LaserSamplingParams *sp, Laser *l
+) {
+	array->num_elements = 0;
+	dynarray_ensure_capacity(array, sp->num_samples);
+
+	float t = sp->time_shift;
+	float maxtime = sp->time_shift + l->timespan;
+
+	for(uint i = 0; i < sp->num_samples; ++i, t = min(t + sp->time_step, maxtime)) {
+		dynarray_append(array, { laser_pos_at(l, t), t });
+	}
+}
+
 attr_hot
 static int quantize_laser(Laser *l) {
 	// Break the laser curve into small line segments, simplify and cull them,
@@ -204,6 +231,9 @@ static int quantize_laser(Laser *l) {
 		return 0;
 	}
 
+	// Sample all points now
+	fill_samples(&lasers.samples, &sp, l);
+
 	// Precomputed magic parameters for width calculation
 	LaserWidthParams wp;
 	calc_width_params(l, &wp);
@@ -214,24 +244,18 @@ static int quantize_laser(Laser *l) {
 	const float thres_temporal = sp.num_samples / 16.0f;
 	// These values should be kept as high as possible without introducing artifacts.
 
-	// Time value of current sample
-	float t = sp.time_shift;
-
 	// Time value of last included sample
-	float t0 = t;
+	float t0 = dynarray_get(&lasers.samples, 0).t;
 
 	// Points of the current line segment
 	// Begin constructing at t0
 	// WARNING: these must be double precision to prevent cross-platform replay desync
 	cmplx a, b;
-	a = laser_pos_at(l, t0);
+	a = dynarray_get(&lasers.samples, 0).p;
 
 	// Width value of the last included sample
 	// Initialized to the width at t0
 	float w0 = calc_sample_width(&wp, 0);
-
-	// Already sampled the first point, so shift
-	t += sp.time_step;
 
 	// Vector from A to B of the last included segment, and its squared length.
 	cmplxf v0 = a - laser_pos_at(l, t0 - sp.time_step);
@@ -248,12 +272,12 @@ static int quantize_laser(Laser *l) {
 	top_left.as_cmplx = a;
 	bottom_right.as_cmplx = a;
 
-	float maxtime = sp.time_shift + l->timespan;
+	auto last_sample = lasers.samples.data + (lasers.samples.num_elements - 1);
 
-	for(uint i = 1; i < sp.num_samples; ++i, t = min(t + sp.time_step, maxtime)) {
-		b = laser_pos_at(l, t);
+	for(auto sample = lasers.samples.data + 1; sample <= last_sample; ++sample) {
+		b = sample->p;
 
-		if(i < sp.num_samples - 1 && (t - t0) < thres_temporal) {
+		if(sample != last_sample && (sample->t - t0) < thres_temporal) {
 			cmplxf v1 = b - a;
 
 			// dot(a, b) == |a|*|b|*cos(theta)
@@ -269,12 +293,31 @@ static int quantize_laser(Laser *l) {
 			float cosTheta = dot / norm;
 			float d = 1.0f - fabsf(cosTheta);
 
+			// try to skip the sample if the accumulated angle delta is too low
 			if(d < thres_angular) {
-				continue;
+				// try to detect abrupt angle changes by examining the next sample
+				// without this step, lasers with a discontinuous angle gradient will be unstable
+
+				cmplx c = (sample + 1)->p;
+				cmplxf v2 = c - b;
+				dot = cdotf(v1, v2);
+				norm2 = cabs2f(v1) * cabs2f(v2);
+
+				if(norm2 == 0) {
+					continue;
+				}
+
+				norm = sqrtf(norm2);
+				cosTheta = dot / norm;
+				d = 1.0f - fabsf(cosTheta);
+
+				if(d < thres_angular) {
+					continue;
+				}
 			}
 		}
 
-		float w = calc_sample_width(&wp, t - sp.time_shift);
+		float w = calc_sample_width(&wp, sample->t - sp.time_shift);
 
 		float xa = re(a);
 		float ya = im(a);
@@ -289,7 +332,7 @@ static int quantize_laser(Laser *l) {
 			LaserSegment *seg = dynarray_append(&lintern.segments, {
 				.pos   = {   a,  b },
 				.width = {  w0,  w },
-				.time  = { sp.time_shift - t0, sp.time_shift - t },
+				.time  = { sp.time_shift - t0, sp.time_shift - sample->t },
 			});
 
 			if(w < w0) {
@@ -306,7 +349,7 @@ static int quantize_laser(Laser *l) {
 			bottom_right.y = max(bottom_right.y, max(ya, yb));
 		}
 
-		t0 = t;
+		t0 = sample->t;
 		w0 = w;
 		v0 = b - a;
 		v0_abs2 = cabs2f(v0);
