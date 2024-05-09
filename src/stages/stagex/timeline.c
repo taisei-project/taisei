@@ -502,7 +502,48 @@ static int midboss_section(void) {
 	return t;
 }
 
+TASK(laser45, { cmplx origin; cmplx dir; cmplx r; const Color *clr; }) {
+	int d0 = 60;
+	int d1 = 15;
+
+	play_sfx("laser1");
+
+	MoveParams *move;
+	auto l = TASK_BIND(create_dynamic_laser(ARGS.origin, 120, (d0+d1) * 4, ARGS.clr, &move));
+	l->width_exponent = 0.5;
+
+	cmplx r = ARGS.r;
+	*move = move_linear(ARGS.dir * 3);
+
+	for(;;) {
+		WAIT(d0);
+		move->velocity *= r;
+		WAIT(d1);
+		move->velocity *= r;
+	}
+}
+
+TASK(fairy_laser45, { cmplx origin; }) {
+	auto e = TASK_BIND(espawn_huge_fairy(ARGS.origin, ITEMS(.points = 5)));
+	ecls_anyfairy_summon(e, 60);
+
+	for(int i = 0; i < 3; ++i) {
+		RADIAL_LOOP(l, 8, I) {
+			INVOKE_TASK(laser45, e->pos, l.dir, cdir(M_PI/4), RGB(0.5, 0.1, 0.8));
+			INVOKE_TASK_DELAYED(30, laser45, e->pos, l.dir, cdir(-M_PI/4), RGB(0.1, 0.5, 0.8));
+		}
+		WAIT(400);
+	}
+
+	enemy_kill(e);
+}
+
 DEFINE_EXTERN_TASK(stagex_timeline) {
+	WAIT(400);
+
+	INVOKE_TASK(fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
+
+
 	WAIT(5762);
 	int midboss_time = midboss_section();
 	stagex_bg_trigger_next_phase();
