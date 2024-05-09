@@ -146,6 +146,7 @@ TASK(laser_dynamic, {
 	float timespan;
 	float deathtime;
 	const Color *color;
+	MoveParams **out_move;
 }) {
 	int histsize = ceilf(ARGS.timespan) + 2;
 	assume(histsize > 2);
@@ -159,6 +160,10 @@ TASK(laser_dynamic, {
 		ARGS.pos, ARGS.timespan, ARGS.deathtime, ARGS.color,
 		laser_rule_dynamic(THIS_TASK, &td)
 	));
+
+	if(LIKELY(ARGS.out_move)) {
+		*ARGS.out_move = &td.move;
+	}
 
 	*ARGS.out_laser = l;
 	ringbuf_push(&td.history, l->pos);  // HACK: this works around some edge cases but we can probably
@@ -174,9 +179,11 @@ TASK(laser_dynamic, {
 	STALL;
 }
 
-Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, const Color *color) {
+Laser *create_dynamic_laser(
+	cmplx pos, float time, float deathtime, const Color *color, MoveParams **out_move
+) {
 	Laser *l;
-	INVOKE_TASK(laser_dynamic, &l, pos, time, deathtime, color);
+	INVOKE_TASK(laser_dynamic, &l, pos, time, deathtime, color, out_move);
 	return l;
 }
 
