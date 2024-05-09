@@ -215,6 +215,41 @@ static void fill_samples(
 	}
 }
 
+static bool segment_is_visible(cmplxf a, cmplxf b, const FloatRect *bounds) {
+	float xa = re(a);
+	float ya = im(a);
+	float xb = re(b);
+	float yb = im(b);
+
+	float left = bounds->x;
+	float right = left + bounds->w;
+	float top = bounds->y;
+	float bottom = top + bounds->h;
+
+	// Either point inside viewport? Definitely visible.
+	if(xa >= left && xa <= right && ya >= top && ya <= bottom) return true;
+	if(xb >= left && xb <= right && yb >= top && yb <= bottom) return true;
+
+	// Both points to the same side of viewport? Definitely invisible.
+	if(xa < left   && xb < left)   return false;
+	if(xa > right  && xb > right)  return false;
+	if(ya < top    && yb < top)    return false;
+	if(ya > bottom && yb > bottom) return false;
+
+	// One point above bounds, other below, both within horizonal bounds.
+	// This segment will always intersect the viewport, thus visibe.
+	// Note that this is very rare.
+	// We only handle it here because the code below can't deal with this specific case.
+	if(xa >= left && xa <= right && xb >= left && xb <= right) return true;
+
+	// In every other case, the segment is only visible if it crosses one of the vertical boundaries.
+	float m = (im(a) - im(b)) / (re(a) - re(b));
+	float c = im(a) - m * re(a);
+	float y0 = m * left + c;
+	float y1 = m * right + c;
+	return max(y0, y1) >= top && min(y0, y1) <= bottom;
+}
+
 attr_hot
 static int quantize_laser(Laser *l) {
 	// Break the laser curve into small line segments, simplify and cull them,
@@ -261,7 +296,7 @@ static int quantize_laser(Laser *l) {
 	cmplxf v0 = a - laser_pos_at(l, t0 - sp.time_step);
 	float v0_abs2 = cabs2f(v0);
 
-	float viewmargin = l->width * 0.5f;
+	float viewmargin = LASER_SDF_RANGE + l->width * 0.5f;
 	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
 	viewbounds.w += viewmargin * 2.0f;
 	viewbounds.h += viewmargin * 2.0f;
@@ -319,14 +354,7 @@ static int quantize_laser(Laser *l) {
 
 		float w = calc_sample_width(&wp, sample->t - sp.time_shift);
 
-		float xa = re(a);
-		float ya = im(a);
-		float xb = re(b);
-		float yb = im(b);
-
-		bool visible =
-			(xa > viewbounds.x && xa < viewbounds.w && ya > viewbounds.y && ya < viewbounds.h) ||
-			(xb > viewbounds.x && xb < viewbounds.w && yb > viewbounds.y && yb < viewbounds.h);
+		bool visible = segment_is_visible(a, b, &viewbounds);
 
 		if(visible) {
 			LaserSegment *seg = dynarray_append(&lintern.segments, {
@@ -342,6 +370,11 @@ static int quantize_laser(Laser *l) {
 			}
 
 			assert(seg->width.a <= seg->width.b);
+
+			float xa = re(a);
+			float ya = im(a);
+			float xb = re(b);
+			float yb = im(b);
 
 			top_left.x     = min(    top_left.x, min(xa, xb));
 			top_left.y     = min(    top_left.y, min(ya, yb));
