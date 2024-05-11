@@ -194,7 +194,7 @@ TASK(animate_bg, { StageXDrawData *draw_data; }) {
 	animate_bg_post_midboss(draw_data, 60 * 7);
 	animate_bg_descent(draw_data, &draw_data->events.next_phase);
 	INVOKE_TASK(animate_value_asymptotic, &draw_data->fog.exponent, 8.0f, 0.01f);
-	INVOKE_TASK(animate_value, &draw_data->tower_global_dissolution, 1.0f, 1.0f/180.0f);
+	INVOKE_TASK(animate_value, &draw_data->tower_global_dissolution, 1.0f, 1.0f/500.0f);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[0], 0, 0.02, 1e-4);
 	INVOKE_TASK(animate_value_asymptotic, &stage_3d_context.cam.pos[1], 0, 0.02, 1e-4);
 }
