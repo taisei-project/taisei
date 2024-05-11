@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "boss.h"
 #include "taisei.h"
 
 #include "stagex.h"
@@ -64,6 +65,11 @@ struct stagex_spells_s stagex_spells = {
 		.rings = {
 			{-1, -1, -1, 8}, AT_Spellcard, "Protection Domain “Ring ∞”", 90, 80000,
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_rings),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
+		},
+		.lambda_calculus = {
+			{-1, -1, -1, 9}, AT_Spellcard, "Lambda Calculus “Currying Fervor”", 90, 80000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_lambda_calculus),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
 	},

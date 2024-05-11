@@ -11,6 +11,7 @@ stagex_src = files(
     'spells/pipe_dream.c',
     'spells/alignment.c',
     'spells/rings.c',
+    'spells/lambda_calculus.c',
     'stagex.c',
     'timeline.c',
     'yumemi.c',
