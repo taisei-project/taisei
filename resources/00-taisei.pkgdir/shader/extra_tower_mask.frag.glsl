@@ -7,9 +7,9 @@
 void main(void) {
 	// Unfortunately this produces severe artifacts if computed in the vertex shader
 	vec2 uv;
-	uv.y = distance(worldPos, vec3(0, 0, worldPos.z)) / 10 + worldPos.z / 120;
-	uv.x = atan(worldPos.x, worldPos.y) / pi;
-	uv = (r_textureMatrix * vec4(uv, 0, 1)).xy;
+	uv.y = distance(worldPos.xyz, vec3(0, 0, worldPos.z)) / 10 + worldPos.z / 120;
+	uv.x = atan(worldPos.x, worldPos.y) + worldPos.z * 0.04;
+	uv.x = 0.5 + 0.5 * sin(uv.x);
 
 	vec4 s_mask = texture(tex_mask, uv);
 	vec4 s_noise = texture(tex_noise, uv);
