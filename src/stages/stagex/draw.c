@@ -140,16 +140,7 @@ static void bg_tower_draw_mask(vec3 pos) {
 	r_mat_mv_translate_v(pos);
 
 	uint32_t tmp = float_to_bits(pos[2]);
-	float tex_ofs_x = fsplitmix(&tmp);
-	float tex_ofs_y = fsplitmix(&tmp);
-	float tex_rot = fsplitmix(&tmp);
-	float tex_scale_x = 0.7 + fsplitmix(&tmp) * 0.4;
-	float tex_scale_y = 0.7 + fsplitmix(&tmp) * 0.4;
 	float phase = fsplitmix(&tmp);
-	r_mat_tex_push();
-	r_mat_tex_translate(tex_ofs_x, tex_ofs_y, 0);
-	r_mat_tex_rotate(tex_rot * M_PI * 2, 0, 0, 1);
-	r_mat_tex_scale(tex_scale_x, tex_scale_y, 0);
 	r_shader("extra_tower_mask");
 	r_uniform_sampler("tex_noise", "cell_noise");
 	r_uniform_sampler("tex_mask", "stagex/dissolve_mask");
@@ -168,7 +159,6 @@ static void bg_tower_draw_mask(vec3 pos) {
 	r_uniform_sampler("tex_mod", NOT_NULL(draw_data->models.wall.mat->roughness_map));
 	r_draw_model_ptr(draw_data->models.wall.mdl, 0, 0);
 
-	r_mat_tex_pop();
 	r_mat_mv_pop();
 	r_state_pop();
 }
@@ -183,10 +173,8 @@ static void set_bg_uniforms(void) {
 		draw_data->codetex_num_segments,
 		1.0f / draw_data->codetex_num_segments
 	);
-	r_uniform_vec2("dissolve",
-		1 - draw_data->tower_global_dissolution,
-		(1 - draw_data->tower_global_dissolution) * (1 - draw_data->tower_global_dissolution)
-	);
+
+	r_uniform_float("global_dissolve", draw_data->tower_global_dissolution * 5);
 	r_uniform_float("time", global.frames / 60.0f);
 }
 

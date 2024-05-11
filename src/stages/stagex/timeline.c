@@ -559,7 +559,7 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	stagex_bg_trigger_next_phase();
 
 	STAGE_BOOKMARK(pre-boss);
-	WAIT(BPM168_4BEATS * 3);
+	WAIT(BPM168_4BEATS * 6);
 
 	INVOKE_TASK(spawn_boss);
 	while(!global.boss) YIELD;
