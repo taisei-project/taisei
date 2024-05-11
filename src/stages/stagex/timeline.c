@@ -325,8 +325,10 @@ TASK(spawn_boss) {
 	boss_add_attack_from_info(boss, &stagex_spells.boss.infinity_network, false);
 	boss_add_attack_task(boss, AT_Normal, "non4", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_4), NULL);
 	boss_add_attack_from_info(boss, &stagex_spells.boss.pipe_dream, false);
-// 	boss_add_attack_task(boss, AT_Normal, "non5", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_5), NULL);
-//	boss_add_attack_task(boss, AT_Normal, "non6", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_6), NULL);
+	boss_add_attack_task(boss, AT_Normal, "non5", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_5), NULL);
+	boss_add_attack_from_info(boss, &stagex_spells.boss.alignment, false);
+	boss_add_attack_task(boss, AT_Normal, "non6", 60, 40000, TASK_INDIRECT(BossAttack, stagex_boss_nonspell_6), NULL);
+	boss_add_attack_from_info(boss, &stagex_spells.boss.rings, false);
 
 	boss_engage(boss);
 }
@@ -547,7 +549,6 @@ DEFINE_EXTERN_TASK(stagex_timeline) {
 	WAIT(400);
 
 	INVOKE_TASK(fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
-
 
 	WAIT(5762);
 	int midboss_time = midboss_section();
