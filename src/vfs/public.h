@@ -69,6 +69,7 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) attr_nonnull(1, 2);
 // these are defined in private.c, but need to be accessible from external code
 void vfs_init(void);
 void vfs_shutdown(void);
+bool vfs_initialized(void);
 const char* vfs_get_error(void) attr_returns_nonnull;
 
 void vfs_sync(VFSSyncMode mode, CallChain next);

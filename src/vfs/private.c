@@ -11,7 +11,7 @@
 #include "private.h"
 #include "vdir.h"
 
-VFSNode *vfs_root;
+VFSNode *vfs_root = NULL;
 
 typedef struct vfs_tls_s {
 	char *error_str;
@@ -207,6 +207,10 @@ void vfs_print_tree_recurse(SDL_RWops *dest, VFSNode *root, char *prefix, const 
 }
 
 const char* vfs_get_error(void) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return "VFS is not initialized";
+	}
+
 	vfs_tls_t *tls = vfs_tls_get();
 	return tls->error_str ? tls->error_str : "No error";
 }
