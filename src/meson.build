@@ -76,7 +76,6 @@ taisei_src = files(
     'item.c',
     'list.c',
     'log.c',
-    'main.c',
     'move.c',
     'objectpool.c',
     'player.c',
@@ -102,6 +101,8 @@ taisei_src = files(
     'video_postprocess.c',
     'watchdog.c',
 )
+
+taisei_main_src = files('main.c')
 
 if is_developer_build
     taisei_src += files(
@@ -199,6 +200,7 @@ endif
 configure_file(configuration : config, output : 'build_config.h')
 
 taisei_basename = (macos_app_bundle ? 'Taisei' : 'taisei')
+have_libtaisei = false
 
 if host_machine.system() == 'emscripten'
     if get_option('b_staticpic')
@@ -362,7 +364,7 @@ if host_machine.system() == 'emscripten'
         warning('Installing private static library to work around a Meson bug: https://github.com/mesonbuild/meson/issues/12638')
     endif
 
-    libtaisei = static_library(taisei_basename, taisei_src, version_deps,
+    libtaisei = static_library(taisei_basename, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps,
         c_pch : 'pch/taisei_pch.h',
         c_args : [em_common_args, taisei_c_args],
@@ -408,7 +410,7 @@ if host_machine.system() == 'emscripten'
     bindist_deps += taisei_html
 elif host_machine.system() == 'nx'
     taisei_elf_name = '@0@.elf'.format(taisei_basename)
-    taisei_elf = executable(taisei_elf_name, taisei_src, version_deps,
+    taisei_elf = executable(taisei_elf_name, taisei_src, taisei_main_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
@@ -451,14 +453,28 @@ elif host_machine.system() == 'nx'
     )
     bindist_deps += taisei_nro
 else
-    taisei = executable(taisei_basename, taisei_src, version_deps,
+    libtaisei = static_library(taisei_basename, taisei_src, version_deps,
         dependencies : taisei_deps,
         c_args : taisei_c_args,
         c_pch : 'pch/taisei_pch.h',
+        install : false,
+    )
+
+    libtaisei_dep = declare_dependency(
+        compile_args : taisei_c_args,
+        dependencies : taisei_deps,
+        include_directories : include_directories('.'),
+        link_with : libtaisei,
+    )
+
+    taisei = executable(taisei_basename, taisei_main_src,
+        dependencies : stages_live_reload ? libtaisei_dep.as_link_whole() : libtaisei_dep,
         win_subsystem : get_option('win_console') ? 'console' : 'windows',
         install : true,
         install_dir : bindir,
         export_dynamic : stages_live_reload,
     )
+
     bindist_deps += taisei
+    have_libtaisei = true
 endif
