@@ -219,3 +219,9 @@ option(
     type : 'feature',
     description: 'Integrate with the GameMode daemon, if running'
 )
+
+option(
+    'tests',
+    type : 'feature',
+    description : 'Build various test programs'
+)

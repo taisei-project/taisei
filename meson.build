@@ -624,6 +624,7 @@ subdir('doc')
 subdir('xdg')
 subdir('atlas')
 subdir('src')
+subdir('test')
 
 if macos_app_bundle
     dmg_target = run_target('dmg',
