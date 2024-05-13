@@ -67,16 +67,16 @@ static Projectile *spawn_lambda_bullet(LambdaAbstraction *data, cmplx pos, MoveP
 
 static LambdaAbstraction *lambda_array_add(LambdaAbstractionArray *lambdas, LambdaAbstraction l) {
 	dynarray_foreach(lambdas, int i, LambdaAbstraction *lold, {
-	    i=i;
 		if(ENT_UNBOX(lold->ref) == NULL) {
 			*lold = l;
 			return lold;
 		}
 	});
+
 	if(lambdas->num_elements < 100) {
-    	return dynarray_append(lambdas, l);
-    }
-    return NULL;
+		return dynarray_append(lambdas, l);
+	}
+	return NULL;
 }	
 
 static void lambda_apply(LambdaAbstractionArray *lambdas, LambdaAbstraction *l1, LambdaAbstraction *l2) {
@@ -113,23 +113,23 @@ static void lambda_apply(LambdaAbstractionArray *lambdas, LambdaAbstraction *l1,
 
 	kill_projectile(p1);
 	kill_projectile(p2);
-	memset(&l1->ref, 0, sizeof(l1->ref));
-	memset(&l2->ref, 0, sizeof(l2->ref));
+	l1->ref = (BoxedProjectile) {};
+	l2->ref = (BoxedProjectile) {};
 }
 
 static void lambda_array_collisions(LambdaAbstractionArray *lambdas) {
 	dynarray_foreach(lambdas, int i, LambdaAbstraction *l1, {
-	    auto p1 = ENT_UNBOX(l1->ref);
-	    if(p1 == NULL) {
-	    	continue;
-	    }
-		// XXX: how to do without internal flag?
-	    if(p1->birthtime >= global.frames-1) {
-	    	continue;
-	    }
-	    
+		auto p1 = ENT_UNBOX(l1->ref);
+		if(p1 == NULL) {
+			continue;
+		}
+
+		if(p1->birthtime >= global.frames-1) {
+			continue;
+		}
+		
 		dynarray_foreach(lambdas, int j, LambdaAbstraction *l2, {
-		    auto p2 = ENT_UNBOX(l2->ref);
+			auto p2 = ENT_UNBOX(l2->ref);
 			if(i <= j || ENT_UNBOX(l1->ref) == NULL || p2 == NULL) {
 				continue;
 			}
@@ -163,7 +163,7 @@ static LambdaAbstraction random_abstraction(int count, uint64_t bits) {
 	assert(count < LAMBDA_MAX_NUM_PRODUCTS);
 
 	LambdaAbstraction ld;
-	memset(&ld, 0, sizeof(ld));
+	ld = (LambdaAbstraction) {};
 	
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU/count * i);
@@ -176,7 +176,7 @@ static LambdaAbstraction random_abstraction(int count, uint64_t bits) {
 }
 
 TASK(lambda_calculus_slave_move, { BoxedYumemiSlave slave; int type;}) {
-	auto slave = NOT_NULL(ENT_UNBOX(ARGS.slave));
+	auto slave = TASK_BIND(ARGS.slave);
 
 	int dir = 1-ARGS.type * 3;
 	for(int t = 0;; t++) {
@@ -221,8 +221,5 @@ DEFINE_EXTERN_TASK(stagex_spell_lambda_calculus) {
 	INVOKE_TASK(lambda_calculus_slave, boss->pos + 100, 0, &lambdas);
 	INVOKE_TASK(lambda_calculus_slave, boss->pos - 100, 1, &lambdas);
 	
-
-	for(;;) {
-		YIELD;
-	}
+	STALL;
 }
