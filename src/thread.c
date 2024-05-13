@@ -134,6 +134,11 @@ static int SDLCALL sdlthread_entry(void *data) {
 }
 
 Thread *thread_create(const char *name, ThreadProc proc, void *userdata, ThreadPriority prio) {
+	if(UNLIKELY(!threads.main_id)) {
+		log_error("Thread subsystem is not initialized");
+		return NULL;
+	}
+
 	size_t nsize = strlen(name) + 1;
 	auto thrd = ALLOC_FLEX(Thread, nsize);
 	memcpy(thrd->name, name, nsize);
