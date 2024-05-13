@@ -8,3 +8,5 @@ if opt_tests.disabled()
 endif
 
 test_incdir = include_directories('.')
+
+subdir('renderer')
