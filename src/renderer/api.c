@@ -33,6 +33,8 @@ static struct {
 
 void r_init(void) {
 	_r_backend_init();
+	_r_state_init();
+	_r_mat_init();
 }
 
 typedef struct BlurInfo {
@@ -42,9 +44,7 @@ typedef struct BlurInfo {
 } BlurInfo;
 
 void r_post_init(void) {
-	_r_state_init();
 	B.post_init();
-	_r_mat_init();
 	_r_models_init();
 	_r_sprite_batch_init();
 
