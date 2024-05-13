@@ -417,7 +417,7 @@ CoTask *cotask_active(void) {
 
 	koishi_coroutine_t *co = NOT_NULL(koishi_active());
 
-	if(co == co_main) {
+	if(co == co_main || UNLIKELY(co_main == NULL)) {
 		return NULL;
 	}
 
