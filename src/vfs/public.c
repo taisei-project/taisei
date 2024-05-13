@@ -16,6 +16,10 @@ typedef struct VFSDir {
 } VFSDir;
 
 bool vfs_mount_alias(const char *dst, const char *src) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char dstbuf[strlen(dst)+1];
 	char srcbuf[strlen(src)+1];
 
@@ -33,6 +37,10 @@ bool vfs_mount_alias(const char *dst, const char *src) {
 }
 
 bool vfs_unmount(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1], *parent, *subdir;
 	path = vfs_path_normalize(path, p);
 	vfs_path_split_right(p, &parent, &subdir);
@@ -49,6 +57,10 @@ bool vfs_unmount(const char *path) {
 }
 
 SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return NULL;
+	}
+
 	SDL_RWops *rwops = NULL;
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
@@ -70,6 +82,10 @@ SDL_RWops* vfs_open(const char *path, VFSOpenMode mode) {
 }
 
 VFSInfo vfs_query(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return VFSINFO_ERROR;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -90,6 +106,10 @@ VFSInfo vfs_query(const char *path) {
 }
 
 bool vfs_mkdir(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -160,6 +180,10 @@ bool vfs_mkparents(const char *path) {
 }
 
 char* vfs_repr(const char *path, bool try_syspath) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char buf[strlen(path)+1];
 	path = vfs_path_normalize(path, buf);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -175,6 +199,10 @@ char* vfs_repr(const char *path, bool try_syspath) {
 }
 
 bool vfs_print_tree(SDL_RWops *dest, const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+3], *trail;
 	vfs_path_normalize(path, p);
 
@@ -199,6 +227,10 @@ bool vfs_print_tree(SDL_RWops *dest, const char *path) {
 }
 
 VFSDir* vfs_dir_open(const char *path) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return false;
+	}
+
 	char p[strlen(path)+1];
 	path = vfs_path_normalize(path, p);
 	VFSNode *node = vfs_locate(vfs_root, path);
@@ -226,6 +258,10 @@ void vfs_dir_close(VFSDir *dir) {
 }
 
 const char* vfs_dir_read(VFSDir *dir) {
+	if(UNLIKELY(!vfs_initialized())) {
+		return NULL;
+	}
+
 	return vfs_node_iter(dir->node, &dir->opaque);
 }
 
@@ -307,4 +343,8 @@ void* vfs_dir_walk(const char *path, void* (*visit)(const char *path, void *arg)
 
 	vfs_dir_close(dir);
 	return result;
+}
+
+bool vfs_initialized(void) {
+	return vfs_root != NULL;
 }
