@@ -23,23 +23,11 @@ typedef struct LaserRule {
 	alignas(cmplx) char data[sizeof(cmplx) * 5];
 } LaserRule;
 
-typedef cmplx (*LegacyLaserPosRule)(Laser *l, float time);
-typedef LegacyLaserPosRule LaserPosRule
-	attr_deprecated("For compatibility with legacy rules");
-
 typedef LIST_ANCHOR(Laser) LaserList;
 
 DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
-
-	union {
-		LaserRule rule;
-		struct {
-			char _padding[offsetof(LaserRule, data)];
-			cmplx args[(sizeof(LaserRule) - offsetof(LaserRule, data)) / sizeof(cmplx)]
-				attr_deprecated("For compatibility with legacy rules");
-		};
-	};
+	LaserRule rule;
 
 	struct {
 		int segments_ofs;
@@ -64,15 +52,6 @@ DEFINE_ENTITY_TYPE(Laser, {
 	uchar unclearable : 1;
 	uchar collision_active : 1;
 });
-
-#define create_lasercurve1c(p, time, deathtime, clr, rule, a0) \
-	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, 0, 0, 0))
-#define create_lasercurve2c(p, time, deathtime, clr, rule, a0, a1) \
-	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, 0, 0))
-#define create_lasercurve3c(p, time, deathtime, clr, rule, a0, a1, a2) \
-	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, a2, 0))
-#define create_lasercurve4c(p, time, deathtime, clr, rule, a0, a1, a2, a3) \
-	create_laser(p, time, deathtime, clr, laser_rule_compat(rule, a0, a1, a2, a3))
 
 void lasers_init(void);
 void lasers_shutdown(void);

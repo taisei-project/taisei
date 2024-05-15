@@ -12,15 +12,6 @@
 #include "laser.h"
 #include "ringbuf.h"
 
-cmplx las_linear(Laser *l, float t) attr_deprecated("Use laser_rule_linear");
-cmplx las_accel(Laser *l, float t) attr_deprecated("Use laser_rule_accelerated");
-cmplx las_sine(Laser *l, float t) attr_deprecated("Use laser_rule_sine");
-cmplx las_sine_expanding(Laser *l, float t) attr_deprecated("Use laser_rule_sine_expanding");
-cmplx las_turning(Laser *l, float t) attr_deprecated("No replacement");
-cmplx las_circle(Laser *l, float t) attr_deprecated("Use laser_rule_arc");
-
-extern LaserRuleFunc laser_rule_compat_adapter;
-
 typedef struct LaserRuleLinearData {
 	cmplx velocity;
 } LaserRuleLinearData;
@@ -64,15 +55,6 @@ typedef struct LaserRuleArcData {
 
 LaserRule laser_rule_arc(cmplx radius, real turnspeed, real timeofs);
 LaserRuleArcData *laser_get_ruledata_arc(Laser *l);
-
-typedef struct LaserRuleCompatData {
-	cmplx args[4];
-	LegacyLaserPosRule oldrule;
-} LaserRuleCompatData;
-
-LaserRule laser_rule_compat(LegacyLaserPosRule oldrule, cmplx a0, cmplx a1, cmplx a2, cmplx a3)
-	attr_deprecated("Use the new rule format (see laser/rules.h)");
-LaserRuleCompatData *laser_get_ruledata_compat(Laser *l);
 
 typedef struct LaserRuleDynamicTaskData {
 	MoveParams move;
