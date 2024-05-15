@@ -45,7 +45,8 @@ TASK(grid_lasers) {
 			color_lerp(&l->color, RGBA(1, 0.7, 0, 0), (l->width - 3) / 7);
 
 			if(l->collision_active) {
-				cmplx q = l->args[0] * l->timespan;
+				auto rd = NOT_NULL(laser_get_ruledata_linear(l));
+				cmplx q = rd->velocity * l->timespan;
 				real w = 0.5*VIEWPORT_W/GRID_W;
 				cmplx expand = -conj(I * w * cnormalize(q));
 
