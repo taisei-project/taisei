@@ -66,26 +66,33 @@ static Projectile *spawn_lambda_bullet(LambdaAbstraction *data, cmplx pos, MoveP
 }
 
 static LambdaAbstraction *lambda_array_add(LambdaAbstractionArray *lambdas, LambdaAbstraction l) {
-	dynarray_foreach(lambdas, int i, LambdaAbstraction *lold, {
+	dynarray_foreach_elem(lambdas, LambdaAbstraction *lold, {
 		if(ENT_UNBOX(lold->ref) == NULL) {
 			*lold = l;
 			return lold;
 		}
 	});
 
-	if(lambdas->num_elements < 100) {
-		return dynarray_append(lambdas, l);
-	}
-	return NULL;
+	return dynarray_append(lambdas, l);
 }	
 
 static void lambda_apply(LambdaAbstractionArray *lambdas, LambdaAbstraction *l1, LambdaAbstraction *l2) {
+	int lambda_population = 0;
+	dynarray_foreach_elem(lambdas, auto l, {
+		if(ENT_UNBOX(l->ref) != NULL) {
+			lambda_population++;
+		}
+	});
+
+	log_warn("%d", lambda_population);
+	if(lambda_population > 50) {
+		return;
+	}
+	
 	auto p1 = NOT_NULL(ENT_UNBOX(l1->ref));
 	auto p2 = NOT_NULL(ENT_UNBOX(l2->ref));
 	play_sfx("redirect");
 	
-	// to prevent chain reactions
-	cmplx offset = rng_dir();
 	
 	for(int c = 0; c < l1->count; c++) {
 		cmplx v = cdir(M_TAU * c / l1->count);
@@ -99,12 +106,10 @@ static void lambda_apply(LambdaAbstractionArray *lambdas, LambdaAbstraction *l1,
 			}
 		} else {
 			auto move = l1->moves[c];
-			move.velocity *= offset;
-			move.acceleration *= offset;
 
 			PROJECTILE(
 				.proto = lambda_proto(l1->types[c]),
-				.pos = p1->pos + 10 * offset * v,
+				.pos = p1->pos + 10 * v,
 				.move = move,
 				.color = &l1->colors[c],
 			);
@@ -162,9 +167,8 @@ TASK(lambda_array_process, { LambdaAbstractionArray *lambdas; }) {
 static LambdaAbstraction random_abstraction(int count, uint64_t bits) {
 	assert(count < LAMBDA_MAX_NUM_PRODUCTS);
 
-	LambdaAbstraction ld;
-	ld = (LambdaAbstraction) {};
-	
+	LambdaAbstraction ld = {};
+
 	for(int i = 0; i < count; i++) {
 		cmplx dir = cdir(M_TAU/count * i);
 		ld.moves[i] = move_accelerated(dir, 0.02 * cdir(1.4) * dir);
@@ -175,35 +179,53 @@ static LambdaAbstraction random_abstraction(int count, uint64_t bits) {
 	return ld;
 }
 
-TASK(lambda_calculus_slave_move, { BoxedYumemiSlave slave; int type;}) {
+TASK(lambda_calculus_slave_move, { BoxedYumemiSlave slave; int type; int duration;}) {
 	auto slave = TASK_BIND(ARGS.slave);
 
-	int dir = 1-ARGS.type * 3;
-	for(int t = 0;; t++) {
-		slave->pos = global.boss->pos + 100 * cdir(0.05*dir*t);
+	int dir = 1 - ARGS.type * 2;
+	for(int t = 0; t < ARGS.duration; t++) {
+		slave->pos = global.boss->pos + 100 * dir * cdir(M_TAU / ARGS.duration * dir * t);
 		YIELD;
 	}
 }
 
+TASK(lambda_calculus_slave_track, { BoxedYumemiSlave slave; int type; int duration;}) {
+	auto slave = TASK_BIND(ARGS.slave);
+	int dir = 1 - ARGS.type * 2;
+	for(int t = 0; t < ARGS.duration; t++) {
+		slave->pos = global.boss->pos + 100 * dir;
+		YIELD;
+	}
+}
+
+
 TASK(lambda_calculus_slave, { cmplx pos; int type; LambdaAbstractionArray *lambdas; }) {
 	auto slave = TASK_BIND(stagex_host_yumemi_slave(ARGS.pos, ARGS.type));
-	INVOKE_SUBTASK(lambda_calculus_slave_move, ENT_BOX(slave), ARGS.type);
 
-	WAIT(40);
+	int dir = 1-ARGS.type * 2;
+
 	for(;;) {
+		INVOKE_SUBTASK_DELAYED(50, common_charge, 0, RGBA(0.5, 0.2, 0.5, 0), 50, .sound = COMMON_CHARGE_SOUNDS, .anchor = &slave->pos);
+		INVOKE_SUBTASK(lambda_calculus_slave_track, ENT_BOX(slave), ARGS.type, 100);
+		WAIT(100);
 
-		for(int i = -1; i <= 1; i++) {
-			cmplx offset = cdir(0.1*i);
-			cmplx vel = 3*(offset*global.plr.pos - slave->pos)/cabs(global.plr.pos - global.boss->pos);
+		int nsteps = 9;
+		int interval = 5;
+		INVOKE_SUBTASK(lambda_calculus_slave_move, ENT_BOX(slave), ARGS.type, nsteps * interval);
+
+		for(int i = -nsteps/2; i <= nsteps/2; i++) {
+			cmplx offset = cdir(0.1*i*dir);
+
+			cmplx target = offset*(global.plr.pos - slave->pos) + slave->pos;
+			cmplx vel = 3*(target - slave->pos)/cabs(target - global.boss->pos);
 			LambdaAbstraction ld = random_abstraction(7, global.frames*global.frames + ARGS.type*124);
 			auto bullet = spawn_lambda_bullet(&ld, slave->pos, move_linear(vel));
 			ld.ref = ENT_BOX(bullet);
 			lambda_array_add(ARGS.lambdas, ld);
 
-			WAIT(20);
+			WAIT(interval);
 		}
 
-		WAIT(100);
 	}
 	
 }
@@ -218,8 +240,18 @@ DEFINE_EXTERN_TASK(stagex_spell_lambda_calculus) {
 
 	INVOKE_SUBTASK(lambda_array_process, &lambdas);
 
-	INVOKE_TASK(lambda_calculus_slave, boss->pos + 100, 0, &lambdas);
-	INVOKE_TASK(lambda_calculus_slave, boss->pos - 100, 1, &lambdas);
+	INVOKE_SUBTASK(lambda_calculus_slave, boss->pos + 100, 0, &lambdas);
+	INVOKE_SUBTASK(lambda_calculus_slave, boss->pos - 100, 1, &lambdas);
 	
-	STALL;
+
+	cmplx positions[] = {
+		VIEWPORT_W/2.0 + 100*I,
+		VIEWPORT_W - 100 +  500*I,
+		100 + 500 * I,
+	};
+
+	for(int i = 0;; i++) {
+		boss->move = move_towards(0, global.plr.pos, 0.01);
+		WAIT(160);
+	}
 }
