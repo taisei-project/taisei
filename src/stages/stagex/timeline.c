@@ -193,8 +193,8 @@ TASK(ngoner_proj, { cmplx pos; cmplx target; int stop_time; int laser_time; cmpl
 }
 
 TASK(ngoner_laser, { cmplx pos; cmplx dir; }) {
-	create_lasercurve1c(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), las_linear, ARGS.dir);
-	create_lasercurve1c(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), las_linear, -ARGS.dir);
+	create_laser(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), laser_rule_linear(ARGS.dir));
+	create_laser(ARGS.pos, 60, 360, RGBA(0.1,0.9,1.0,0.1), laser_rule_linear(ARGS.dir));
 }
 
 TASK(ngoner_fairy, { cmplx pos; }) {
