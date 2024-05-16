@@ -15,6 +15,7 @@ import sys
 import re
 import itertools
 import contextlib
+import datetime
 
 from pathlib import Path
 
@@ -26,9 +27,16 @@ copyright_comment_prefix = r"""/*
  * See COPYING for further information.
  * ---"""
 
-copyright_comment_default_copyrights = r"""
- * Copyright (c) 2011-2019, Lukas Weber <laochailan@web.de>.
- * Copyright (c) 2012-2019, Andrei Alexeyev <akari@taisei-project.org>.
+copyright_comment_default_pattern = re.compile(r"""^
+\s*\* Copyright \(c\) 2011-(\d\d\d\d), Lukas Weber <laochailan@web\.de>\.
+\s*\* Copyright \(c\) 2012-(\d\d\d\d), Andrei Alexeyev <akari@taisei-project\.org>\.
+ ?$""")
+
+YEAR = datetime.datetime.now().year
+
+copyright_comment_default_copyrights = rf"""
+ * Copyright (c) 2011-{YEAR}, Lukas Weber <laochailan@web.de>.
+ * Copyright (c) 2012-{YEAR}, Andrei Alexeyev <akari@taisei-project.org>.
 """
 
 use_pragma_once = True
@@ -58,12 +66,12 @@ def header_template(match):
     pre_taisei_h = match.group(3) or ''
     guard2 = match.group(4) or ''
 
-    if not copyright_contributors.strip():
+    if not copyright_contributors.strip() or copyright_comment_default_pattern.match(copyright_contributors):
         copyright_contributors = copyright_comment_default_copyrights
 
     return (
         f'{copyright_comment_prefix}' +
-        (copyright_contributors + '*/\n' + guard1 + guard2 + pre_taisei_h) +
+        (copyright_contributors.rstrip() + '\n */\n' + guard1 + guard2 + pre_taisei_h) +
         '\n#include "taisei.h"\n\n'
     )
 
