@@ -58,7 +58,7 @@ guard_regex = re.compile(rf'\s*?\n{guard_header_pattern}\s*?\n+(.*?)\n{hash_patt
 header_regex = re.compile(rf'^(?:(?:\s*?/\*.*?---)(.*?)\*/)?{pragma_once_or_guard_header_pattern}(?:\s*?(\n{pre_taiseih_block_pattern}))?{pragma_once_or_guard_header_pattern}(?:\s*?{include_taiseih_pattern})?\s*', re.DOTALL)
 badchar_regex = re.compile(rf'[^{guard_chars}]')
 missing_guard_test_regex = re.compile(rf'^(?:\s*?/\*.*?\*/)\n(?:\n{pre_taiseih_block_pattern})?\n{include_taiseih_pattern}\n', re.DOTALL)
-
+taiseih_removal_regex = re.compile(r'([ \t]*?)?#[ \t]*include[ \t]+"taisei.h"\n\n?', re.MULTILINE)
 
 def header_template(match):
     copyright_contributors = match.group(1) or ''
@@ -138,6 +138,9 @@ class Janitor:
                 text = text.replace('#include "taisei.h"', '#pragma once\n#include "taisei.h"')
                 text = self.update_header(text)
                 text = self.transform_include_guards(text, path)
+        else:
+            # remove taisei.h include from non-headers
+            text = taiseih_removal_regex.sub('', text)
 
         update_text_file(path, text)
 
