@@ -7,8 +7,6 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#include "taisei.h"
-
 #include "public.h"
 #include "setup.h"
 #include "util.h"

@@ -5,8 +5,6 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#include "taisei.h"
-
 #include "arch_switch.h"
 #include "renderer/glcommon/debug.h"
 

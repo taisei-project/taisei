@@ -7,8 +7,6 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#include "taisei.h"
-
 #include "setup.h"
 #include "emscripten_fetch_public.h"
 #include "decompress_wrapper_public.h"
