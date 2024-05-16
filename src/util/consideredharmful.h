@@ -11,6 +11,9 @@
 
 #include <stdio.h>
 
+// XXX: this header trips some of these deprecation warnings; include it early as a workaround
+#include <SDL_cpuinfo.h>
+
 //
 // safeguards against some dangerous or otherwise undesirable practices
 //
@@ -72,7 +75,6 @@ int rand(void);
 #undef srand
 attr_deprecated("Use tsrand_seed instead")
 void srand(uint);
-
 
 INLINE void *libc_malloc(size_t size) { return malloc(size); }
 #undef malloc
