@@ -11,8 +11,6 @@
 
 #include "util/macrohax.h"
 
-#include <SDL.h>
-
 /*
  * NOTE: All allocation functions return zero-initialized memory (except realloc) and never NULL.
  */
