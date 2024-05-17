@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include <SDL_events.h>
 
 typedef enum {
 	TE_INVALID = -1,

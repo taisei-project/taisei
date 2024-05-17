@@ -8,7 +8,7 @@
 
 #include "sfxbgm_common.h"
 #include "audio/backend.h"
-#include "util.h"
+#include "util/io.h"
 
 static const char *const *get_exts(bool isbgm, uint *numexts) {
 	const char *const *exts = (isbgm

@@ -10,7 +10,6 @@
 #include "draw.h"
 
 #include "stageutils.h"
-#include "coroutine.h"
 #include "common_tasks.h"
 #include "util/glm.h"
 
@@ -43,8 +42,6 @@ void stage2_bg_enable_hina_lights(void) {
 		.ease = glm_ease_sine_in,
 	);
 }
-
-#include "camcontrol.h"
 
 TASK(animate_bg_fullstage) {
 	Camera3D *cam = &stage_3d_context.cam;

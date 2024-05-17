@@ -7,10 +7,10 @@
  */
 
 #include "resource.h"
+
+#include "audio/audio.h"
 #include "sfx.h"
-#include "audio/backend.h"
 #include "sfxbgm_common.h"
-#include "util.h"
 
 static char *sound_path(const char *name) {
 	return sfxbgm_make_path(SFX_PATH_PREFIX, name, false);

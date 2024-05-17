@@ -7,8 +7,8 @@
  */
 
 #include "portrait.h"
+
 #include "renderer/api.h"
-#include "config.h"
 
 #define RETURN_RESOURCE_NAME(name1, suffix, name2) \
 	assert(bufsize >= strlen(PORTRAIT_PREFIX) + strlen(name1) + strlen(suffix) + strlen(name2) + 1); \

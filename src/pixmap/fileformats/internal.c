@@ -7,6 +7,8 @@
  */
 
 #include "fileformats.h"
+
+#include "log.h"
 #include "rwops/rwops_crc32.h"
 #include "util.h"
 

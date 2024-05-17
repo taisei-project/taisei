@@ -6,9 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
 #include "shader_object.h"
+
 #include "renderer/api.h"
+#include "util/io.h"
 
 struct shobj_type {
 	const char *ext;

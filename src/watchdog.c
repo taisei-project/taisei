@@ -6,9 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "watchdog.h"
+
 #include "events.h"
 #include "log.h"
-#include "watchdog.h"
 
 static struct {
 	int countdown;

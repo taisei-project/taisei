@@ -10,8 +10,10 @@
 #include "taisei.h"
 
 #include "../stage1.h"
-#include "boss.h"
-#include "stage.h"
+
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../cirno.h"  // IWYU pragma: export
+#include "../misc.h"  // IWYU pragma: export
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_perfect_freeze, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage1_spell_crystal_rain, BossAttack);

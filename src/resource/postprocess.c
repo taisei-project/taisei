@@ -6,12 +6,13 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <SDL.h>
-
-#include "util.h"
 #include "postprocess.h"
+
 #include "resource.h"
 #include "renderer/api.h"
+#include "util/kvparser.h"
+
+#include <SDL.h>
 
 #define PP_PATH_PREFIX SHPROG_PATH_PREFIX
 #define PP_EXTENSION ".pp"

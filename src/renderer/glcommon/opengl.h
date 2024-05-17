@@ -99,8 +99,6 @@ typedef void (APIENTRY *PFNGLREQUESTEXTENSIONANGLEPROC) (const GLchar *name);
 typedef void (APIENTRY *PFNGLDISABLEEXTENSIONANGLEPROC) (const GLchar *name);
 #endif /* GL_ANGLE_request_extension */
 
-#include "assert.h"
-
 // NOTE: The ability to query supported GLSL versions was added in GL 4.3,
 // but it's not exposed by any extension. This is pretty silly.
 #ifndef GL_NUM_SHADING_LANGUAGE_VERSIONS

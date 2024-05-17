@@ -7,14 +7,18 @@
  */
 
 #include "charselect.h"
-#include "menu.h"
-#include "mainmenu.h"
+
+#include "audio/audio.h"
 #include "common.h"
-#include "global.h"
-#include "video.h"
+#include "events.h"
+#include "menu.h"
+#include "menu/mainmenu.h"
+#include "plrmodes.h"
+#include "portrait.h"
+#include "progress.h"
 #include "util/glm.h"
 #include "util/graphics.h"
-#include "portrait.h"
+#include "video.h"
 
 #define SELECTED_SUBSHOT(m) (((CharMenuContext*)(m)->context)->subshot)
 #define DESCRIPTION_WIDTH (SCREEN_W / 3 + 40)

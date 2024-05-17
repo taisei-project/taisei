@@ -7,8 +7,9 @@
  */
 
 #include "vertex_buffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
 
 VertexBuffer* gl33_vertex_buffer_create(size_t capacity, void *data) {
 	VertexBuffer *vbuf = (VertexBuffer*)gl33_buffer_create(GL33_BUFFER_BINDING_ARRAY, sizeof(VertexBuffer));

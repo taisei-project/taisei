@@ -7,11 +7,13 @@
  */
 
 #include "stage2.h"
-#include "spells/spells.h"
-#include "hina.h"
-#include "draw.h"
+
 #include "background_anim.h"
-#include "timeline.h"
+#include "draw.h"
+#include "hina.h"
+#include "spells/spells.h"
+#include "stage.h"
+#include "timeline.h"   // IWYU pragma: keep
 
 #include "global.h"
 #include "portrait.h"

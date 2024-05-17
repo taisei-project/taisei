@@ -6,16 +6,18 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "submenus.h"
+
+#include "difficultyselect.h"
+#include "media.h"
 #include "menu.h"
 #include "options.h"
-#include "stageselect.h"
 #include "replayview.h"
 #include "spellpractice.h"
 #include "stagepractice.h"
-#include "difficultyselect.h"
-#include "media.h"
+#include "stageselect.h"
+
 #include "global.h"
-#include "submenus.h"
 
 static void on_leave_options(CallChainResult ccr) {
 	MenuData *m = ccr.result;

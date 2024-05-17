@@ -16,7 +16,7 @@ DIAGNOSTIC_CLANG(ignored "-Wnullability-completeness")
 #include <zip.h>
 DIAGNOSTIC_CLANG(pop)
 
-#include "util/libzip_compat.h"
+#include "util/libzip_compat.h"   // IWYU pragma: export
 
 #include "private.h"
 #include "hashtable.h"

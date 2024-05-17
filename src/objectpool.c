@@ -7,8 +7,7 @@
  */
 
 #include "objectpool.h"
-#include "util.h"
-#include "list.h"
+
 #include "memory/arena.h"
 
 void objpool_init(

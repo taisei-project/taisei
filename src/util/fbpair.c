@@ -7,8 +7,6 @@
  */
 
 #include "fbpair.h"
-#include "global.h"
-#include "util.h"
 
 static void fbpair_destroy_fb(Framebuffer *fb) {
 	fbutil_destroy_attachments(fb);

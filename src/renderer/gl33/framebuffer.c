@@ -7,8 +7,10 @@
  */
 
 #include "framebuffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
+#include "texture.h"
 
 GLuint r_attachment_to_gl_attachment[] = {
 	[FRAMEBUFFER_ATTACH_DEPTH] = GL_DEPTH_ATTACHMENT,

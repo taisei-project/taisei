@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "common_tasks.h"
-#include "../kurumi.h"
-
-#include "global.h"
 
 static Projectile *vapor_particle(cmplx pos, const Color *clr) {
 	return PARTICLE(

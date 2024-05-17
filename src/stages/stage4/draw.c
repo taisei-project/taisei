@@ -7,9 +7,11 @@
  */
 
 #include "draw.h"
-#include "stageutils.h"
+
 #include "global.h"
+#include "stageutils.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 
 #define LIGHT_OFS    { 2.7f,  4.86f, 0.3f }
 #define CORRIDOR_POS { 0.0f, 25.0f, 3.0f }

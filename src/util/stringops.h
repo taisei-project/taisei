@@ -13,7 +13,6 @@
 #include <SDL.h>
 
 #include "systime.h"
-#include "memory.h"
 
 #define UNICODE_UNKNOWN 0xFFFD
 #define UNICODE_BOM_NATIVE  0xFEFF

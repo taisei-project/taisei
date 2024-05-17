@@ -9,9 +9,8 @@
 #include "background_anim.h"
 #include "draw.h"
 
-#include "global.h"
-#include "stageutils.h"
 #include "common_tasks.h"
+#include "stageutils.h"
 
 TASK(stage5_bg_update) {
 	Stage5DrawData *stage5_draw_data = stage5_get_draw_data();

@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "stageinfo.h"
 #include "util/fbpair.h"
-#include "stagedraw.h"
 
 typedef struct Stage1DrawData {
 	FBPair water_fbpair;

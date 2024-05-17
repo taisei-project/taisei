@@ -7,8 +7,9 @@
  */
 
 #include "thread.h"
-#include "log.h"
+
 #include "hashtable.h"
+#include "log.h"
 
 #include <SDL_thread.h>
 

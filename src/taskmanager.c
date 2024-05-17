@@ -7,8 +7,14 @@
  */
 
 #include "taskmanager.h"
+
 #include "list.h"
-#include "util.h"
+#include "log.h"
+#include "util/env.h"
+
+#include <SDL_atomic.h>
+#include <SDL_mutex.h>
+#include <SDL_thread.h>
 
 typedef enum TaskManagerState {
 	TMGR_STATE_SHUTDOWN,

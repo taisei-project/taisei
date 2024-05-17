@@ -8,6 +8,9 @@
 
 #include "backend.h"
 
+#include "util.h"
+#include "util/env.h"
+
 #undef R
 #define R(x) extern RendererBackend _r_backend_##x;
 TAISEI_BUILDCONF_RENDERER_BACKENDS

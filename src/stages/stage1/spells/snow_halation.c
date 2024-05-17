@@ -7,11 +7,6 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "stagetext.h"
-#include "global.h"
 
 static Color *halation_color(Color *out_clr, float phase) {
 	if(phase < 0.5) {

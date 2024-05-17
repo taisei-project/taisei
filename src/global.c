@@ -8,6 +8,9 @@
 
 #include "global.h"
 
+#include "util/env.h"
+#include "gamepad.h"
+
 Global global;
 
 void init_global(CLIAction *cli) {

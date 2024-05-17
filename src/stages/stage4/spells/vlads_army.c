@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../kurumi.h"
-#include "enemy_classes.h"
-
-#include "global.h"
 
 // TODO SUPER REDESIGN THIS, IT'S A MESS!
 

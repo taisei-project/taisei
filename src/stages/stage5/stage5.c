@@ -7,15 +7,16 @@
  */
 
 #include "stage5.h"
-#include "draw.h"
+
 #include "background_anim.h"
+#include "draw.h"
 #include "iku.h"
 #include "spells/spells.h"
 #include "timeline.h"
 
+#include "common_tasks.h"
 #include "global.h"
 #include "portrait.h"
-#include "common_tasks.h"
 
 struct stage5_spells_s stage5_spells = {
 	.mid = {

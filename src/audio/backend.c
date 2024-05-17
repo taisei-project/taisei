@@ -7,7 +7,8 @@
  */
 
 #include "backend.h"
-#include "util.h"
+
+#include "util/env.h"
 
 #undef A
 #define A(x) extern AudioBackend _a_backend_##x;

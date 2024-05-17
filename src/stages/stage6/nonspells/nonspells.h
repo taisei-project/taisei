@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "global.h"
-#include "boss.h"
-#include "stage.h"
-
-#include "stages/stage6/elly.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../elly.h"  // IWYU pragma: export
 
 DECLARE_EXTERN_TASK(stage6_boss_nonspell_scythe_common, { BoxedEllyScythe scythe; });
 DECLARE_EXTERN_TASK(stage6_boss_nonspell_baryons_common, { BoxedEllyBaryons baryons; });

@@ -7,11 +7,14 @@
  */
 
 #include "menu.h"
-#include "global.h"
-#include "video.h"
+
+#include "audio/audio.h"
 #include "eventloop/eventloop.h"
+#include "events.h"
+#include "global.h"
 #include "replay/demoplayer.h"
 #include "util/graphics.h"
+#include "video.h"
 #include "watchdog.h"
 
 MenuEntry *add_menu_entry(MenuData *menu, const char *name, MenuAction action, void *arg) {

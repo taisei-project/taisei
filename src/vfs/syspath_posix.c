@@ -6,13 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include "syspath.h"
+
+#include "util/stringops.h"
+
 #include <dirent.h>
 #include <errno.h>
-
-#include "syspath.h"
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;

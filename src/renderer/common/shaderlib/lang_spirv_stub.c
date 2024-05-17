@@ -6,9 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "shaderlib.h"
 #include "lang_spirv_private.h"
-#include "util.h"
+#include "shaderlib.h"
+
+#include "log.h"
 
 void spirv_init_compiler(void) { }
 void spirv_shutdown_compiler(void) { }

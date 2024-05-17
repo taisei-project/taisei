@@ -7,17 +7,16 @@
  */
 
 #include "api.h"
+
 #include "common/backend.h"
 #include "common/matstack.h"
-#include "common/sprite_batch.h"
 #include "common/models.h"
+#include "common/sprite_batch.h"
 #include "common/state.h"
-#include "util/glm.h"
-#include "util/graphics.h"
+#include "coroutine/coroutine.h"
 #include "resource/resource.h"
 #include "resource/texture.h"
-#include "resource/sprite.h"
-#include "coroutine.h"
+#include "util/glm.h"
 
 #define B _r_backend.funcs
 

@@ -9,9 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "dialog.h"
-#include "resource/resource.h"
-
+#include "dialog.h"  // IWYU pragma: export
+#include "coroutine/taskdsl.h"
 
 #define DIALOG_SCRIPTS \
 	WITH_EVENTS    (Stage1PreBoss,     (boss_appears, music_changes)) \

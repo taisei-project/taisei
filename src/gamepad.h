@@ -9,10 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-
 #include "events.h"
 #include "config.h"
+
+#include <SDL.h>
 
 typedef enum GamepadAxisDigitalValue {
 	AXISVAL_LEFT  = -1,

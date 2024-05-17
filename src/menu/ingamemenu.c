@@ -6,15 +6,18 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "menu.h"
-#include "common.h"
 #include "ingamemenu.h"
-#include "submenus.h"
+
+#include "common.h"
+#include "events.h"
 #include "global.h"
-#include "stagedraw.h"
-#include "video.h"
-#include "options.h"
+#include "menu.h"
 #include "renderer/api.h"
+#include "resource/font.h"
+#include "stagedraw.h"
+#include "submenus.h"
+#include "util/graphics.h"
+#include "video.h"
 
 static void return_to_title(MenuData *m, void *arg) {
 	global.gameover = GAMEOVER_ABORT;

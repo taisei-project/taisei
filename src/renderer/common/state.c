@@ -7,8 +7,8 @@
  */
 
 #include "state.h"
+
 #include "backend.h"
-#include "matstack.h"
 
 #define RSTATE_STACK_SIZE 16
 

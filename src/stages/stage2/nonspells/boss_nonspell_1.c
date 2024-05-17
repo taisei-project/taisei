@@ -8,9 +8,6 @@
 
 #include "nonspells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 TASK(wander, { BoxedBoss boss; }) {
 	Rect wander_bounds = viewport_bounds(80);
 	wander_bounds.bottom = 130;

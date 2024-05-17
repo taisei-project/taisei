@@ -8,9 +8,6 @@
 
 #include "spells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 TASK(change_velocity, { BoxedProjectile p; cmplx v; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 	p->move = move_asymptotic_halflife(p->move.velocity, ARGS.v, 20);

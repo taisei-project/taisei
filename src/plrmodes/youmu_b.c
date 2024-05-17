@@ -6,11 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "youmu.h"
+
+#include "audio/audio.h"
+#include "dialog/youmu.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "youmu.h"
+#include "stage.h"
 #include "util/glm.h"
-#include "stagedraw.h"
 
 #define SHOT_BASIC_DAMAGE 60
 #define SHOT_BASIC_DELAY 6

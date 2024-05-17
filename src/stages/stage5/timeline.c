@@ -7,13 +7,10 @@
  */
 
 #include "timeline.h"
-#include "stage5.h"
+
 #include "background_anim.h"
 #include "nonspells/nonspells.h"
-#include "spells/spells.h"
-
-#include "coroutine.h"
-#include "enemy_classes.h"
+#include "stage5.h"
 
 static void stage5_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;

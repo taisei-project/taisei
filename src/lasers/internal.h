@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "laser.h"
-#include "util.h"
 #include "dynarray.h"
 
 typedef struct LaserInternalData {

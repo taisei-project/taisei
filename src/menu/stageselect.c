@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "global.h"
+#include "stageselect.h"
+
+#include "common.h"
 #include "menu.h"
 #include "options.h"
-#include "stage.h"
-#include "stageselect.h"
-#include "common.h"
+
 #include "video.h"
 #include "stageinfo.h"
 

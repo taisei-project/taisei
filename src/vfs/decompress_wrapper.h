@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "decompress_wrapper_public.h"
 #include "private.h"
 
 VFSNode *vfs_decomp_wrap(VFSNode *base);

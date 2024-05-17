@@ -7,6 +7,7 @@
  */
 
 #include "color.h"
+#include "util/stringops.h"
 
 #define COLOR_OP(c1, op, c2) do { \
 	(c1)->r = (c1)->r op (c2)->r; \
@@ -184,7 +185,7 @@ bool color_equals(const Color *clr, const Color *clr2) {
 	);
 }
 
-char* color_str(const Color *clr) {
+char *color_str(const Color *clr) {
 	return strfmt(
 		"RGBA(%f, %f, %f, %f) at %p",
 		clr->r,

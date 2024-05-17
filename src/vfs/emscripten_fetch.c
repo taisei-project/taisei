@@ -8,9 +8,9 @@
 
 #include "emscripten_fetch.h"
 #include "emscripten_fetch_public.h"
+
 #include "resindex.h"
 #include "rwops/rwops_dummy.h"
-#include "util.h"
 
 #include <dirent.h>
 #include <emscripten/fetch.h>

@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../wriggle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 static void wriggle_fstorm_proj_draw(Projectile *p, int time, ProjDrawRuleArgs args) {
 	SpriteParamsBuffer spbuf;

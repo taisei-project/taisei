@@ -9,7 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "coroutine/taskdsl.h"
+#include "renderer/api.h"
+#include "move.h"
 
 DEFINE_ENTITY_TYPE(IkuSlave, {
 	struct {

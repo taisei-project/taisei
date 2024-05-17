@@ -9,9 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "util/fbpair.h"
-#include "stagedraw.h"
+#include "stageinfo.h"
 #include "stageutils.h"
+#include "util/fbpair.h"
 
 enum {
 	NUM_STARS = 400

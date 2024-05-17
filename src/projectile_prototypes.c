@@ -7,8 +7,6 @@
  */
 
 #include "projectile.h"
-#include "util.h"
-#include "random.h"
 
 typedef struct PPBasicPriv {
 	const char *sprite_name;

@@ -6,12 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "rwops_zlib.h"
+
+#include "log.h"
+#include "rwops_util.h"
+#include "util/miscmath.h"
+
 #include <SDL.h>
 #include <zlib.h>
-
-#include "rwops_zlib.h"
-#include "rwops_util.h"
-#include "util.h"
 
 #define MIN_CHUNK_SIZE 1024
 

@@ -7,9 +7,9 @@
  */
 
 #include "random.h"
-#include "util.h"
 
-#include <time.h>
+#include "util.h"
+#include "util/miscmath.h"
 
 static RandomState *rng_active_state;
 

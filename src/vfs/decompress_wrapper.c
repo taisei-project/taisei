@@ -7,9 +7,13 @@
  */
 
 #include "decompress_wrapper.h"
+#include "decompress_wrapper_public.h"
+
+#include "hashtable.h"
 #include "rwops/rwops_ro.h"
 #include "rwops/rwops_zstd.h"
 #include "util/strbuf.h"
+#include "util/stringops.h"
 
 // NOTE: Largely based on readonly_wrapper. Sorry for the copypasta.
 // This is currently hardcoded to only support transparent decompression of .zst files.

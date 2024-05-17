@@ -7,7 +7,9 @@
  */
 
 #include "arena.h"
+
 #include "util.h"
+#include "util/miscmath.h"
 #include "../util.h"
 
 #define ARENA_MIN_ALLOC 4096

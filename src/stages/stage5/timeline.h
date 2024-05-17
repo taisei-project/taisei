@@ -9,9 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "boss.h"  // IWYU pragma: keep
 
 void stage5_events(void);
-Boss* stage5_spawn_iku(cmplx);
+Boss *stage5_spawn_iku(cmplx);
 
 DECLARE_EXTERN_TASK(stage5_timeline);

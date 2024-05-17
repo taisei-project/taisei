@@ -10,8 +10,9 @@
 #include "taisei.h"
 
 #include "../api.h"
+#include "../common/backend.h"
+#include "../glcommon/texture.h"
 #include "opengl.h"
-#include "texture.h"
 
 struct Framebuffer {
 	Texture *attachments[FRAMEBUFFER_MAX_ATTACHMENTS];

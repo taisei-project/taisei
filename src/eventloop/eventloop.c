@@ -6,12 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "eventloop.h"
 #include "eventloop_private.h"
-#include "util.h"
+
 #include "global.h"
-#include "video.h"
-#include "vfs/public.h"
 #include "thread.h"
+#include "util.h"
+#include "vfs/public.h"
+#include "video.h"
 
 struct evloop_s evloop;
 

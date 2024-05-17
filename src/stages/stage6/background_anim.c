@@ -9,7 +9,6 @@
 #include "background_anim.h"
 #include "draw.h"
 
-#include "global.h"
 #include "stageutils.h"
 #include "common_tasks.h"
 
@@ -59,7 +58,7 @@ void stage6_bg_stop_boss_rotation(void) {
 	cam->pos[0] = -6;
 	cam->pos[1] = 0;
 }
-	
+
 
 static float ease_final(float t, float from, float to, float outfrac) {
 	float slope = 2/(1 + outfrac);

@@ -11,13 +11,13 @@
 
 #include "dynarray.h"
 
-#include "cotask.h"
-
 typedef enum CoEventStatus {
 	CO_EVENT_PENDING,
 	CO_EVENT_SIGNALED,
 	CO_EVENT_CANCELED,
 } CoEventStatus;
+
+typedef struct BoxedTask BoxedTask;
 
 typedef struct CoEvent {
 	DYNAMIC_ARRAY(BoxedTask) subscribers;
@@ -39,6 +39,8 @@ typedef struct CoEventSnapshot {
 typedef COEVENTS_ARRAY(
 	finished
 ) CoTaskEvents;
+
+#include "cotask.h"
 
 void coevent_init(CoEvent *evt);
 void coevent_signal(CoEvent *evt);

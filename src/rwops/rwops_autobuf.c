@@ -7,7 +7,6 @@
  */
 
 #include "rwops_autobuf.h"
-#include "rwops_segment.h"
 
 #define BUFFER(rw) ((Buffer*)((rw)->hidden.unknown.data1))
 

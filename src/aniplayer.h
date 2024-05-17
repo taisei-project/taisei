@@ -66,7 +66,6 @@
 // Similar examples occur throughout the code so if you want context, you can just look there.
 //
 #include "resource/animation.h"
-#include "stageobjects.h"
 #include "list.h"
 
 typedef struct AniQueueEntry AniQueueEntry;

@@ -9,13 +9,11 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
-#include "projectile.h"
-#include "objectpool.h"
+#include "coroutine/coevent.h"
 #include "entity.h"
-#include "coroutine.h"
 #include "move.h"
 #include "resource/resource.h"
+#include "util.h"
 
 #ifdef DEBUG
 	#define ENEMY_DEBUG

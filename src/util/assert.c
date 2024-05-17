@@ -7,8 +7,10 @@
  */
 
 #include "assert.h"
+
 #include "util.h"
 #include "log.h"
+#include "util/io.h"
 
 void _ts_assert_fail(
 	const char *cond, const char *msg, const char *func, const char *file, int line, bool use_log

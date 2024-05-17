@@ -9,8 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "resource/shader_object.h"
+#include "../api.h"
+#include "../common/shaderlib/shaderlib.h"
 #include "opengl.h"
+#include "resource/shader_object.h"
 
 struct ShaderObject {
 	GLuint gl_handle;

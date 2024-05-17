@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "util/compat.h"
-#include "util/macrohax.h"
 
 typedef int32_t ringbuf_size_t;
 

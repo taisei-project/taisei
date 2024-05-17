@@ -7,12 +7,14 @@
  */
 
 #include "shaderlib.h"
+#include "cache.h"
 
-#include "util.h"
+#include "log.h"
 #include "util/sha256.h"
 #include "rwops/rwops_crc32.h"
 #include "rwops/rwops_autobuf.h"
 #include "rwops/rwops_zstd.h"
+#include "vfs/public.h"
 
 #define CACHE_VERSION 5
 #define CRC_INIT 0

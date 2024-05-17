@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 TASK(broglie_particle, { BoxedLaser laser; real laser_offset; Color color; bool fast; real angle_freq; }) {
 	Laser *l = TASK_BIND(ARGS.laser);
 

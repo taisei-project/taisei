@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "basisu.h"
+#include "pixmap/pixmap.h"
 
 #include <basisu_transcoder_c_api.h>
 

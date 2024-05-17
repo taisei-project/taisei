@@ -7,13 +7,14 @@
  */
 
 #include "tsrtool.h"
-#include "replay.h"
-#include "struct.h"
-#include "stage.h"
 
+#include "replay.h"
+#include "stage.h"
+#include "struct.h"
+
+#include "plrmodes.h"
 #include "util.h"
 #include "util/strbuf.h"
-#include "plrmodes.h"
 
 typedef struct Command {
 	const char *name;

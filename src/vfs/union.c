@@ -8,6 +8,9 @@
 
 #include "union.h"
 
+#include "dynarray.h"
+#include "hashtable.h"
+
 VFS_NODE_TYPE(VFSUnionNode, {
 	DYNAMIC_ARRAY(VFSNode*) members;
 });

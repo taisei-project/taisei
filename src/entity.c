@@ -7,10 +7,11 @@
  */
 
 #include "entity.h"
-#include "util.h"
-#include "renderer/api.h"
-#include "global.h"
+
 #include "dynarray.h"
+#include "global.h"
+#include "renderer/api.h"
+#include "util.h"
 
 typedef struct EntityDrawHook EntityDrawHook;
 typedef LIST_ANCHOR(EntityDrawHook) EntityDrawHookList;

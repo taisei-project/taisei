@@ -7,11 +7,11 @@
  */
 
 #include "stageutils.h"
+
 #include "global.h"
-#include "util/glm.h"
-#include "video.h"
-#include "resource/model.h"
 #include "resource/material.h"
+#include "resource/model.h"
+#include "util/glm.h"
 
 Stage3D stage_3d_context;
 

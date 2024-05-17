@@ -7,9 +7,10 @@
  */
 
 #include "dpstest.h"
-#include "global.h"
-#include "enemy.h"
+
 #include "enemy_classes.h"
+#include "enemy.h"
+#include "global.h"
 
 TASK(single_fairy) {
 	for(;;) {

@@ -6,7 +6,11 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "internal.h"
+#include "coroutine/coevent.h"
+#include "coroutine/coevent_internal.h"
+#include "coroutine/cotask_internal.h"
+
+#include "util.h"
 
 void coevent_init(CoEvent *evt) {
 	static uint32_t g_uid;

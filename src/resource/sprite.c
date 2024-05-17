@@ -7,8 +7,9 @@
  */
 
 #include "sprite.h"
-#include "video.h"
+
 #include "renderer/api.h"
+#include "util/kvparser.h"
 
 static char *sprite_path(const char *name) {
 	char *path = strjoin(SPRITE_PATH_PREFIX, name, SPRITE_EXTENSION, NULL);

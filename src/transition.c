@@ -7,8 +7,8 @@
  */
 
 #include "transition.h"
-#include "menu/ingamemenu.h"
-#include "global.h"
+
+#include "renderer/api.h"
 #include "util/graphics.h"
 
 Transition transition;

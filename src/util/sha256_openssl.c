@@ -7,7 +7,7 @@
  */
 
 #include "sha256.h"
-#include "util.h"
+#include "util/stringops.h"
 
 #include <openssl/evp.h>
 

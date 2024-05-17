@@ -9,10 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
-
-#include "util/strbuf.h"
 #include "thread.h"
+#include "util/strbuf.h"
+
+#include <SDL.h>
 
 enum {
 	_LOG_DEBUG_ID,

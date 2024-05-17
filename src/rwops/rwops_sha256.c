@@ -7,7 +7,6 @@
  */
 
 #include "rwops_sha256.h"
-#include "util.h"
 
 struct sha256_data {
 	SDL_RWops *src;

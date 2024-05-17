@@ -7,8 +7,8 @@
  */
 
 #include "spells.h"
-#include "stagetext.h"
-#include "common_tasks.h"
+
+#include "../draw.h"
 
 #define LASER_LENGTH 60
 

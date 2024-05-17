@@ -9,9 +9,9 @@
 #include "../backend.h"
 #include "../stream/mixer.h"
 
-#include "util.h"
 #include "rwops/rwops_autobuf.h"
 #include "config.h"
+#include "util/io.h"
 
 #define AUDIO_FREQ 48000
 #define AUDIO_FORMAT AUDIO_F32SYS

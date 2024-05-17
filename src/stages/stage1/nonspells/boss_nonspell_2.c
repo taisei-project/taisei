@@ -7,11 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(snowburst, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);

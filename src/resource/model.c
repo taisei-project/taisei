@@ -7,10 +7,11 @@
  */
 
 #include "model.h"
-#include "list.h"
-#include "resource.h"
-#include "renderer/api.h"
+
 #include "iqm.h"
+#include "renderer/api.h"
+#include "resource.h"
+#include "util.h"
 
 #define MDL_PATH_PREFIX "res/models/"
 #define MDL_EXTENSION ".iqm"

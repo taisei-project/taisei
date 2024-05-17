@@ -7,8 +7,10 @@
  */
 
 #include "gamemode.h"
-#include "util.h"
+
+#include "log.h"
 #include "taskmanager.h"
+#include "util/env.h"
 
 #include <gamemode_client.h>
 

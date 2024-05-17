@@ -8,8 +8,10 @@
 
 #include "wriggle.h"
 
+#include "boss.h"
+
 Boss *stage2_spawn_wriggle(cmplx pos) {
-	Boss* wriggle = create_boss("Wriggle", "wriggle", pos);
+	Boss *wriggle = create_boss("Wriggle", "wriggle", pos);
 	wriggle->glowcolor = *RGB(0.2, 0.4, 0.5);
 	wriggle->shadowcolor = *RGBA_MUL_ALPHA(0.4, 0.2, 0.6, 0.5);
 	return wriggle;

@@ -7,7 +7,7 @@
  */
 
 #include "gamemode.h"
-#include "util.h"
+#include "log.h"
 
 void gamemode_init(void) {
 	log_info("Compiled without GameMode integration");

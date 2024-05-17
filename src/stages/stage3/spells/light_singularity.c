@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../wriggle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(singularity_laser, { cmplx pos; cmplx vel; real amp; real freq; }) {
 	Laser *l = TASK_BIND(create_laser(ARGS.pos,

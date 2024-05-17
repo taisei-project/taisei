@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "coroutine.h"
+#include "coroutine/taskdsl.h"
 
 DECLARE_EXTERN_TASK(stage2_timeline);

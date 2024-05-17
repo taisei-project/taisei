@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include "util/glm.h"
 
 enum {
 	MATSTACK_LIMIT = 32,

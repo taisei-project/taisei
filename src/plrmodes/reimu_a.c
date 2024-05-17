@@ -6,11 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "reimu.h"
+
+#include "audio/audio.h"
+#include "common_tasks.h"
+#include "dialog/reimu.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "reimu.h"
 #include "stagedraw.h"
-#include "common_tasks.h"
+#include "util/graphics.h"
 
 #define SHOT_FORWARD_DMG 50
 #define SHOT_FORWARD_DELAY 3

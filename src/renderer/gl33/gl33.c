@@ -7,25 +7,24 @@
  */
 
 #include "gl33.h"
+
 #include "../api.h"
-#include "../common/matstack.h"
 #include "../common/backend.h"
+#include "../common/matstack.h"
 #include "../common/sprite_batch.h"
-#include "texture.h"
-#include "shader_object.h"
-#include "shader_program.h"
-#include "framebuffer.h"
-#include "framebuffer_async_read.h"
-#include "common_buffer.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
-#include "vertex_array.h"
 #include "../glcommon/debug.h"
 #include "../glcommon/vtable.h"
-#include "resource/resource.h"
-#include "resource/model.h"
-#include "util/glm.h"
+#include "common_buffer.h"
+#include "framebuffer_async_read.h"
+#include "framebuffer.h"
+#include "index_buffer.h"
+#include "shader_object.h"
+#include "shader_program.h"
+#include "texture.h"
 #include "util/env.h"
+#include "util/glm.h"
+#include "vertex_array.h"
+#include "vertex_buffer.h"
 
 // #define GL33_DEBUG_TEXUNITS
 // #define GL33_DRAW_STATS

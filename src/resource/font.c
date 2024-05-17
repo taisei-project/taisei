@@ -6,21 +6,22 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_STROKER_H
-#include FT_MODULE_H
-
 #include "font.h"
+
 #include "config.h"
+#include "dynarray.h"
 #include "events.h"
 #include "renderer/api.h"
 #include "util.h"
 #include "util/glm.h"
-#include "util/graphics.h"
+#include "util/kvparser.h"
 #include "util/rectpack.h"
 #include "video.h"
-#include "dynarray.h"
+
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_STROKER_H
+#include FT_MODULE_H
 
 static void init_fonts(void);
 static void post_init_fonts(void);

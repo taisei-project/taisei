@@ -9,9 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "stage.h"
 #include "resource/resource.h"
-#include "util/graphics.h"
+#include "stage.h"
+#include "util/fbpair.h"
+#include "util/fbutil.h"
 
 typedef enum StageFBPair {
 	FBPAIR_BG,

@@ -7,9 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../kurumi.h"
-
-#include "global.h"
 
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_1) {
 	STAGE_BOOKMARK(boss-non1);

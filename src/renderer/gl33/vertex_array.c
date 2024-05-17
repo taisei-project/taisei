@@ -7,10 +7,11 @@
  */
 
 #include "vertex_array.h"
-#include "vertex_buffer.h"
-#include "index_buffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
+#include "index_buffer.h"
+#include "vertex_buffer.h"
 
 static GLenum va_type_to_gl_type[] = {
 	[VA_FLOAT]  = GL_FLOAT,

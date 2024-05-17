@@ -8,6 +8,8 @@
 
 #include "misc.h"
 
+#include "stages/common_imports.h"
+
 Projectile *stage1_spawn_stain(cmplx pos, float angle, int to) {
 	return PARTICLE(
 		.sprite = "stain",

@@ -9,8 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "defs.h"
-#include "cache.h"
+#include "defs.h"  // IWYU prama: export
 
 #include "lang_glsl.h"
 #include "lang_spirv.h"

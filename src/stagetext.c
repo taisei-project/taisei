@@ -7,8 +7,10 @@
  */
 
 #include "stagetext.h"
-#include "list.h"
+
 #include "global.h"
+#include "objectpool.h"
+#include "stageobjects.h"
 
 static StageText *textlist = NULL;
 

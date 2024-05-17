@@ -8,9 +8,11 @@
 
 #include "framebuffer_async_read.h"
 #include "framebuffer.h"
+
 #include "../glcommon/texture.h"
 #include "gl33.h"
 #include "opengl.h"
+#include "util.h"
 
 typedef struct FramebufferReadRequest {
 	FramebufferReadAsyncCallback callback;

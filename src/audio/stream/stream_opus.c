@@ -7,6 +7,8 @@
  */
 
 #include "stream_opus.h"
+
+#include "log.h"
 #include "util.h"
 
 #include <opusfile.h>

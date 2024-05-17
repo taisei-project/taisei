@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "dialog.h"
+#include "dialog_interface.h"
 
 extern PlayerDialogTasks dialog_tasks_marisa;

@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "coevent.h"
+
 // #define EVT_DEBUG
 
 #ifdef EVT_DEBUG

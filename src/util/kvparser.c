@@ -7,9 +7,10 @@
  */
 
 #include "kvparser.h"
+
+#include "io.h"
 #include "log.h"
 #include "stringops.h"
-#include "io.h"
 #include "vfs/public.h"
 
 bool parse_keyvalue_stream_cb(SDL_RWops *strm, KVCallback callback, void *data) {

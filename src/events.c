@@ -7,10 +7,11 @@
  */
 
 #include "events.h"
+
 #include "config.h"
 #include "global.h"
+#include "transition.h"
 #include "video.h"
-#include "gamepad.h"
 
 static hrtime_t keyrepeat_paused_until;
 static int global_handlers_lock = 0;

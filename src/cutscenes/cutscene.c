@@ -12,15 +12,17 @@
 
 #include "audio/audio.h"
 #include "color.h"
+#include "eventloop/eventloop.h"
+#include "events.h"
 #include "global.h"
 #include "progress.h"
 #include "renderer/api.h"
+#include "replay/demoplayer.h"
+#include "transition.h"
 #include "util/fbmgr.h"
 #include "util/glm.h"
 #include "util/graphics.h"
 #include "video.h"
-#include "eventloop/eventloop.h"
-#include "replay/demoplayer.h"
 #include "watchdog.h"
 
 #define SKIP_DELAY 3

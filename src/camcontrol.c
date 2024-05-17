@@ -8,11 +8,13 @@
 
 #include "camcontrol.h"
 
+#include "events.h"
+#include "global.h"
 #include "stagetext.h"
-#include "coroutine.h"
 #include "util/glm.h"
 #include "video.h"
 #include "entity.h"
+#include "coroutine/taskdsl.h"
 
 #define CAMCTRL_MOVE_SPEED      0.1
 // for scroll wheel move speed adjustment

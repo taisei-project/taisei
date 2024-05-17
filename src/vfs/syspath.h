@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "private.h"
-#include "syspath_public.h"
 
 extern char *vfs_syspath_separators;
 VFSNode *vfs_syspath_create(const char *path);

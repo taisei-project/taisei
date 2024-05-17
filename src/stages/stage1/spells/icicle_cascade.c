@@ -7,9 +7,6 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
-
-#include "global.h"
 
 TASK(cirno_icicle, { cmplx pos; cmplx vel; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(

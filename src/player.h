@@ -9,16 +9,14 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
-#include "enemy.h"
-#include "gamepad.h"
 #include "aniplayer.h"
-#include "stats.h"
-#include "resource/resource.h"
-#include "resource/animation.h"
+#include "color.h"
+#include "coroutine/coevent.h"
 #include "entity.h"
-#include "replay/state.h"
 #include "replay/eventcodes.h"
+#include "replay/state.h"
+#include "resource/resource.h"
+#include "stats.h"
 
 #ifdef DEBUG
 	#define PLR_DPS_STATS

@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
 #include "hashtable.h"
 #include "../api.h"
 #include "opengl.h"

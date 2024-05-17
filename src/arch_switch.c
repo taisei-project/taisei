@@ -7,6 +7,8 @@
 
 #include "arch_switch.h"
 #include "renderer/glcommon/debug.h"
+#include "util/env.h"
+#include "util/io.h"
 
 #include <unistd.h>
 #include <switch/services/applet.h>

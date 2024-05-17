@@ -6,14 +6,19 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "global.h"
 #include "stagedraw.h"
-#include "stagetext.h"
-#include "video.h"
-#include "resource/postprocess.h"
+
 #include "entity.h"
-#include "util/fbmgr.h"
+#include "events.h"
+#include "global.h"
 #include "replay/struct.h"
+#include "resource/postprocess.h"
+#include "stageobjects.h"
+#include "stagetext.h"
+#include "util/env.h"
+#include "util/fbmgr.h"
+#include "util/graphics.h"
+#include "video.h"
 
 #ifdef DEBUG
 	#define GRAPHS_DEFAULT 1

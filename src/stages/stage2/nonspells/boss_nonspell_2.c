@@ -8,9 +8,6 @@
 
 #include "nonspells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 TASK(speen, { BoxedBoss boss; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 	aniplayer_queue(&boss->ani, "guruguru", 0);

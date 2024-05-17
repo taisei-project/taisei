@@ -8,7 +8,6 @@
 
 #include "framerate.h"
 #include "global.h"
-#include "video.h"
 
 void fpscounter_reset(FPSCounter *fps) {
 	hrtime_t frametime = HRTIME_RESOLUTION / FPS;

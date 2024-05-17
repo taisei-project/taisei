@@ -9,9 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "util/crap.h"
-#include "util/miscmath.h"
-
 typedef struct RandomState {
 	uint64_t state[4];
 #ifdef DEBUG

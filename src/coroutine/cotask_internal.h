@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+#include "cotask.h"
+
 #ifdef __EMSCRIPTEN__
 	#define CO_STACK_SIZE (64 * 1024)
 #else

@@ -6,11 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "syspath.h"
+#include "util/stringops.h"
+
 #include <windows.h>
 #include <shlwapi.h>
 #include <SDL.h>
-
-#include "syspath.h"
 
 VFS_NODE_TYPE(VFSSysPathNode, {
 	char *path;

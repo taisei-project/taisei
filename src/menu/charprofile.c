@@ -6,16 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "events.h"
-#include "resource/resource.h"
 #include "charprofile.h"
+
+#include "audio/audio.h"
+#include "common.h"
+#include "events.h"
 #include "mainmenu.h"
 #include "portrait.h"
-#include "common.h"
 #include "progress.h"
-#include "options.h"
-#include "global.h"
-#include "portrait.h"
+#include "resource/font.h"
+#include "resource/resource.h"
 #include "util/glm.h"
 #include "video.h"
 

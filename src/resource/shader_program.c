@@ -6,9 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
 #include "shader_program.h"
+
 #include "renderer/api.h"
+#include "util/kvparser.h"
 
 static char *shader_program_path(const char *name) {
 	return strjoin(SHPROG_PATH_PREFIX, name, SHPROG_EXT, NULL);

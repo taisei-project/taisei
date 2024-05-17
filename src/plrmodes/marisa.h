@@ -10,12 +10,11 @@
 #include "taisei.h"
 
 #include "plrmodes.h"
-#include "marisa_a.h"
-#include "marisa_b.h"
-#include "dialog/marisa.h"
-#include "color.h"
+#include "coroutine/taskdsl.h"
 
 extern PlayerCharacter character_marisa;
+extern PlayerMode plrmode_marisa_a;
+extern PlayerMode plrmode_marisa_b;
 
 typedef struct MarisaBeamInfo {
 	cmplx origin;

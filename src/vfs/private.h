@@ -13,11 +13,11 @@
  *  This file should not be included by code outside of the vfs/ directory
  */
 
-#include "util.h"
+#include "public.h"  // IWYU pragma: export
+#include "pathutil.h"  // IWYU pragma: export
+#include "error.h"  // IWYU pragma: export
 
-#include "public.h"
-#include "pathutil.h"
-#include "error.h"
+#include "util.h"
 
 typedef struct VFSNode VFSNode;
 typedef struct VFSNodeFuncs VFSNodeFuncs;

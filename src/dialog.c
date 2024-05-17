@@ -7,8 +7,10 @@
  */
 
 #include "dialog.h"
+
 #include "global.h"
 #include "portrait.h"
+#include "resource/font.h"
 
 void dialog_init(Dialog *d) {
 	memset(d, 0, sizeof(*d));

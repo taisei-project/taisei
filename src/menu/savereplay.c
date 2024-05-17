@@ -7,13 +7,18 @@
  */
 
 #include "savereplay.h"
-#include "mainmenu.h"
-#include "global.h"
-#include "replay/struct.h"
-#include "plrmodes.h"
+
 #include "common.h"
-#include "video.h"
+#include "mainmenu.h"
+
+#include "config.h"
+#include "difficulty.h"
+#include "events.h"
+#include "plrmodes.h"
+#include "progress.h"
+#include "replay/struct.h"
 #include "util/graphics.h"
+#include "video.h"
 
 attr_nonnull_all
 static void do_save_replay(Replay *rpy) {

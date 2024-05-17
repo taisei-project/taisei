@@ -7,10 +7,9 @@
  */
 
 #include "state.h"
+#include "log.h"
 #include "struct.h"
 #include "eventcodes.h"
-
-#include "util.h"
 
 void replay_state_init_play(ReplayState *rst, Replay *rpy, ReplayStage *rstage) {
 	memset(rst, 0, sizeof(*rst));

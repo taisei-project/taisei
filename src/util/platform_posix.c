@@ -6,9 +6,9 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <time.h>
-
 #include "systime.h"
+
+#include <time.h>
 
 void get_system_time(SystemTime *systime) {
 	#if defined(TAISEI_BUILDCONF_HAVE_TIMESPEC)

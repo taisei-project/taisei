@@ -8,7 +8,6 @@
 
 #include "stringops.h"
 #include "miscmath.h"
-#include "assert.h"
 
 bool strendswith(const char *s, const char *e) {
 	int ls = strlen(s);

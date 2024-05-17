@@ -7,10 +7,10 @@
  */
 
 #include "eventloop_private.h"
-#include "util.h"
-#include "framerate.h"
-#include "thread.h"
+
 #include "global.h"
+#include "thread.h"
+#include "util/env.h"
 
 void eventloop_run(void) {
 	assert(thread_current_is_main());

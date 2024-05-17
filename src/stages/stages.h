@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "stage.h"
+#include "stageinfo.h"
 
 typedef struct StagesExports {
 	struct {

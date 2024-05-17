@@ -7,10 +7,12 @@
  */
 
 #include "loadpacks.h"
+
 #include "public.h"
-#include "setup.h"
 #include "error.h"
-#include "util.h"
+
+#include "log.h"
+#include "util/stringops.h"
 
 static bool vfs_mount_pkgdir(const char *dst, const char *src) {
 	VFSInfo stat = vfs_query(src);

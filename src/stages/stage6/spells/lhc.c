@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 #define LHC_PERIOD 400
 
 static real lhc_target_height(int turn) {

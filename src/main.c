@@ -6,34 +6,37 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "audio/audio.h"
+#include "cli.h"
+#include "coroutine/coroutine.h"
+#include "credits.h"
+#include "cutscenes/cutscene.h"
+#include "dynstage.h"
+#include "eventloop/eventloop.h"
+#include "filewatch/filewatch.h"
+#include "gamepad.h"
+#include "global.h"
+#include "log.h"
+#include "menu/mainmenu.h"
+#include "menu/savereplay.h"
+#include "progress.h"
+#include "replay/demoplayer.h"
+#include "replay/struct.h"
+#include "replay/tsrtool.h"
+#include "stage.h"
+#include "stageobjects.h"
+#include "taskmanager.h"
+#include "util/env.h"
+#include "util/gamemode.h"
+#include "util/io.h"
+#include "version.h"
+#include "vfs/setup.h"
+#include "video.h"
+#include "watchdog.h"
+
 #include <locale.h>
 #include <png.h>
 #include <zlib.h>
-
-#include "global.h"
-#include "video.h"
-#include "audio/audio.h"
-#include "stageinfo.h"
-#include "menu/mainmenu.h"
-#include "menu/savereplay.h"
-#include "gamepad.h"
-#include "progress.h"
-#include "log.h"
-#include "cli.h"
-#include "vfs/setup.h"
-#include "version.h"
-#include "credits.h"
-#include "taskmanager.h"
-#include "coroutine.h"
-#include "util/gamemode.h"
-#include "cutscenes/cutscene.h"
-#include "replay/struct.h"
-#include "filewatch/filewatch.h"
-#include "dynstage.h"
-#include "eventloop/eventloop.h"
-#include "replay/demoplayer.h"
-#include "replay/tsrtool.h"
-#include "watchdog.h"
 
 static bool watchdog_handler(SDL_Event *evt, void *arg) {
 	assert(evt->type == MAKE_TAISEI_EVENT(TE_WATCHDOG));

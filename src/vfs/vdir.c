@@ -8,6 +8,8 @@
 
 #include "vdir.h"
 
+#include "hashtable.h"
+
 VFS_NODE_TYPE(VFSVDirNode, {
 	ht_str2ptr_t table;
 });

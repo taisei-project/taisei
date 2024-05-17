@@ -6,16 +6,20 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "log.h"
+
+#include "coroutine/cotask.h"
+#include "list.h"
+#include "random.h"
+#include "thread.h"
+#include "util.h"
+#include "util/env.h"
+#include "util/io.h"
+#include "util/strbuf.h"
+#include "util/stringops.h"
+
 #include <SDL_bits.h>
 #include <SDL_mutex.h>
-
-#include "log.h"
-#include "util.h"
-#include "list.h"
-#include "util/strbuf.h"
-#include "thread.h"
-#include "random.h"
-#include "coroutine/cotask.h"
 
 typedef struct Logger {
 	LIST_INTERFACE(struct Logger);

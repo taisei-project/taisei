@@ -9,8 +9,8 @@
 #include "texture_loader/texture_loader.h"
 
 #include "global.h"
-#include "video.h"
 #include "renderer/api.h"
+#include "video.h"
 
 static bool texture_transfer(void *dst, void *src) {
 	return r_texture_transfer(dst, src);

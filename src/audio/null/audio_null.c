@@ -7,7 +7,8 @@
  */
 
 #include "../backend.h"
-#include "util.h"
+
+#include "util/env.h"
 
 static bool audio_null_init(void) {
 	if(strcmp(env_get("TAISEI_AUDIO_BACKEND", ""), "null")) { // don't warn if we asked for this

@@ -8,6 +8,10 @@
 
 #include "material.h"
 
+#include "util.h"
+#include "util/io.h"
+#include "util/kvparser.h"
+
 static char *material_path(const char *basename);
 static bool material_check_path(const char *path);
 static void material_load_stage1(ResourceLoadState *st);

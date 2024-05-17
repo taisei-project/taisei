@@ -6,10 +6,8 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "zipfile.h"
 #include "zipfile_impl.h"
 #include "syspath.h"
-#include "rwops/all.h"
 
 #define ZTLS(zpnode) vfs_zipfile_get_tls((zpnode)->zipnode, true)
 

@@ -7,7 +7,7 @@
  */
 
 #include "rwops_trace.h"
-#include "util.h"
+#include "log.h"
 
 #define TRACE_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
 #define TRACE_TDATA(rw) ((TData*)((rw)->hidden.unknown.data2))

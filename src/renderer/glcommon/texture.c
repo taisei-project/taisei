@@ -7,7 +7,7 @@
  */
 
 #include "texture.h"
-#include "vtable.h"
+
 #include "../api.h"
 
 #include "util.h"

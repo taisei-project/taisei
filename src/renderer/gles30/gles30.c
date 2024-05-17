@@ -7,9 +7,9 @@
  */
 
 #include "gles30.h"
+
+#include "../glcommon/vtable.h"
 #include "../glescommon/gles.h"
-#include "../gl33/gl33.h"
-#include "fbcopy_fallback.h"
 
 // NOTE: Actually WebGL
 #ifdef STATIC_GLES3
@@ -28,6 +28,9 @@ static void gles30_init(void) {
 }
 
 #if BROKEN_GL_BLIT_FRAMEBUFFER
+#include "../gl33/gl33.h"
+#include "fbcopy_fallback.h"
+
 static void gles30_init_context(SDL_Window *w) {
 	gles_init_context(w);
 	gles30_fbcopyfallback_init();

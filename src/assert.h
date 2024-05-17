@@ -10,4 +10,4 @@
 #include "taisei.h"
 
 // WARNING: This file intentionally shadows the standard header!
-#include "util/assert.h"
+#include "util/assert.h"  // IWYU pragma: export

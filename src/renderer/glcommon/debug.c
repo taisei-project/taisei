@@ -7,8 +7,9 @@
  */
 
 #include "debug.h"
-#include "util.h"
+
 #include "../api.h"
+#include "util/env.h"
 
 #ifndef STATIC_GLES3
 

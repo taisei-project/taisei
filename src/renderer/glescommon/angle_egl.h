@@ -9,4 +9,6 @@
 #pragma once
 #include "taisei.h"
 
+#include <SDL_video.h>
+
 SDL_GLContext gles_create_context_angle(SDL_Window *window, int major, int minor, bool webgl);

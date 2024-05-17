@@ -7,7 +7,6 @@
  */
 
 #include "rwops_dummy.h"
-#include "util.h"
 
 #define DUMMY_SOURCE(rw) ((SDL_RWops*)((rw)->hidden.unknown.data1))
 #define DUMMY_AUTOCLOSE(rw) ((bool)((rw)->hidden.unknown.data2))

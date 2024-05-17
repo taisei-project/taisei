@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../scuttle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 #define SHOT_OFS1 CMPLX(20, 8)
 #define SHOT_OFS2 CMPLX(-14, -42)

@@ -8,7 +8,9 @@
 
 #include "stream.h"
 #include "stream_opus.h"
-#include "util.h"
+
+#include "log.h"
+#include "util/miscmath.h"
 
 #define PROCS(stream) (*NOT_NULL((stream)->procs))
 #define PROC(stream, proc) (NOT_NULL(PROCS(stream).proc))

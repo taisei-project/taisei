@@ -11,6 +11,8 @@
 
 #include <SDL.h>
 
+// IWYU pragma: private, include "util.h"
+
 void inherit_missing_pointers(uint num, void *dest[num], void *const base[num]) attr_nonnull(2, 3);
 
 typedef union FloatBits {

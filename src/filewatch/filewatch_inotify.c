@@ -7,8 +7,10 @@
  */
 
 #include "filewatch.h"
-#include "util.h"
+
 #include "events.h"
+#include "hashtable.h"
+#include "list.h"
 #include "vfs/syspath_public.h"
 
 #include <alloca.h>

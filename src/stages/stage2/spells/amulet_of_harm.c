@@ -8,9 +8,6 @@
 
 #include "spells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 TASK(spinner_bullet_redirect, { BoxedProjectile p; MoveParams move; }) {
 	Projectile *p = TASK_BIND(ARGS.p);
 	cmplx ov = p->move.velocity;

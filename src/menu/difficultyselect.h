@@ -11,5 +11,5 @@
 
 #include "menu.h"
 
-MenuData* create_difficulty_menu(void);
+MenuData *create_difficulty_menu(void);
 void draw_difficulty_menu(MenuData *m);

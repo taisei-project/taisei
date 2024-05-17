@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "common_tasks.h"
-#include "../kurumi.h"
-
-#include "global.h"
 
 TASK(kurumi_redspike_slave, { cmplx pos; int direction; }) {
 	cmplx pos = ARGS.pos;

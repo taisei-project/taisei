@@ -7,9 +7,7 @@
  */
 
 #include "graphics.h"
-#include "global.h"
 #include "video.h"
-#include "pixmap/pixmap.h"
 
 void set_ortho(float w, float h) {
 	r_mat_proj_ortho(0, w, h, 0, -100, 100);

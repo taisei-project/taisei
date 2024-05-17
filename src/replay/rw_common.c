@@ -7,6 +7,8 @@
  */
 
 #include "rw_common.h"
+
+#include "log.h"
 #include "rwops/rwops_zlib.h"
 #include "rwops/rwops_zstd.h"
 

@@ -9,7 +9,5 @@
 #pragma once
 #include "taisei.h"
 
-#include "public.h"
-
 bool vfs_mount_resindex_layered(const char *mountpoint, const char *backend_vfspath)
 	attr_nonnull(1, 2) attr_nodiscard;

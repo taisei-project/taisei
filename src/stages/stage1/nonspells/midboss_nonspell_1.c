@@ -7,11 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 #define SNOWFLAKE_ARMS 6
 

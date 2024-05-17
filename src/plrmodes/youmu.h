@@ -9,12 +9,13 @@
 #pragma once
 #include "taisei.h"
 
+#include "move.h"
 #include "plrmodes.h"
-#include "youmu_a.h"
-#include "youmu_b.h"
-#include "dialog/youmu.h"
+#include "renderer/api.h"
 
 extern PlayerCharacter character_youmu;
+extern PlayerMode plrmode_youmu_a;
+extern PlayerMode plrmode_youmu_b;
 
 typedef struct YoumuBombBGData {
 	Framebuffer *buffer;

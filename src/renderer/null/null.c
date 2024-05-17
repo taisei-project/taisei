@@ -7,7 +7,6 @@
  */
 
 #include "../api.h"
-#include "resource/shader_object.h"
 #include "../common/backend.h"
 
 static char placeholder;

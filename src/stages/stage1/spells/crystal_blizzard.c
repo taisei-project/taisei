@@ -7,11 +7,6 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(crystal_wall) {
 	int num_crystals = difficulty_value(18, 21, 24, 27);

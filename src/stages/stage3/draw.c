@@ -8,10 +8,10 @@
 
 #include "draw.h"
 
-#include "stagedraw.h"
 #include "stageutils.h"
 #include "global.h"
 #include "util/glm.h"
+#include "util/graphics.h"
 
 static Stage3DrawData *stage3_draw_data;
 

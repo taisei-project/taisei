@@ -9,7 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../hina.h"  // IWYU pragma: export
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_amulet_of_harm, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_spell_wheel_of_fortune, BossAttack);

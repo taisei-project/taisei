@@ -9,6 +9,10 @@
 #include "texture_loader.h"
 #include "basisu.h"
 
+#include "util.h"
+#include "util/io.h"
+#include "util/kvparser.h"
+
 void texture_loader_cleanup_stage1(TextureLoadData *ld) {
 	mem_free(ld->src_paths.main);
 	ld->src_paths.main = NULL;

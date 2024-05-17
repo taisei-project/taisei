@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "draw.h"
-
-#include "util.h"
-#include "projectile.h"
-#include "resource/shader_program.h"
+#include "color.h"
+#include "coroutine/taskdsl.h"
 #include "entity.h"
 
 typedef LIST_ANCHOR(Laser) LaserList;

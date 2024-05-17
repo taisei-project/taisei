@@ -7,7 +7,6 @@
  */
 
 #include "miscmath.h"
-#include "assert.h"
 
 double lerp(double v0, double v1, double f) {
 	return f * (v1 - v0) + v0;

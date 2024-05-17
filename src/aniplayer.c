@@ -7,8 +7,8 @@
  */
 
 #include "aniplayer.h"
+
 #include "list.h"
-#include "global.h"
 #include "stageobjects.h"
 
 void aniplayer_create(AniPlayer *plr, Animation *ani, const char *startsequence) {

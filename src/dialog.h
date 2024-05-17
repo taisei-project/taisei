@@ -12,7 +12,7 @@
 #include "color.h"
 #include "resource/resource.h"
 #include "resource/sprite.h"
-#include "coroutine.h"
+#include "coroutine/coevent.h"
 
 typedef enum DialogSide {
 	DIALOG_SIDE_RIGHT,

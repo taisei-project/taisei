@@ -7,12 +7,12 @@
  */
 
 #include "io.h"
-#include "log.h"
-#include "vfs/public.h"
+
 #include "assert.h"
-#include "stringops.h"
+#include "log.h"
 #include "rwops/rwops_autobuf.h"
-#include "util/crap.h"
+#include "stringops.h"
+#include "vfs/public.h"
 
 #ifdef TAISEI_BUILDCONF_HAVE_POSIX
 #include <unistd.h>

@@ -7,7 +7,7 @@
  */
 
 #include "rwops_segment.h"
-#include "util.h"
+#include "log.h"
 
 typedef struct Segment {
 	SDL_RWops *wrapped;

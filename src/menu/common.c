@@ -7,20 +7,22 @@
  */
 
 #include "common.h"
-#include "global.h"
-#include "menu.h"
-#include "savereplay.h"
-#include "difficultyselect.h"
-#include "cutscenes/cutscene.h"
+
+#include "audio/audio.h"
 #include "charselect.h"
 #include "credits.h"
+#include "cutscenes/cutscene.h"
+#include "difficultyselect.h"
+#include "global.h"
 #include "mainmenu.h"
+#include "menu.h"
 #include "progress.h"
-#include "video.h"
-#include "replay/struct.h"
 #include "replay/state.h"
-#include "util/graphics.h"
+#include "replay/struct.h"
+#include "resource/font.h"
+#include "savereplay.h"
 #include "stage.h"
+#include "video.h"
 
 typedef struct StartGameContext {
 	StageInfo *restart_stage;

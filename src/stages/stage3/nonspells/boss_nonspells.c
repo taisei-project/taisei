@@ -7,10 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../wriggle.h"
-
-#include "global.h"
-#include "common_tasks.h"
 
 TASK(slave, { BoxedBoss boss; real rot_speed; real rot_initial; int level; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);

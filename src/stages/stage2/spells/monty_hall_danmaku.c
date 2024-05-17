@@ -8,9 +8,6 @@
 
 #include "spells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 #define NUM_SLOTS 3
 #define SLOT_WIDTH (VIEWPORT_W / (real)NUM_SLOTS)
 

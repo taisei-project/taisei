@@ -6,19 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "timeline.h"
-#include "stage3.h"
-#include "wriggle.h"
+#include "timeline.h"   // IWYU pragma: keep
+
+#include "draw.h"
+#include "nonspells/nonspells.h"
 #include "scuttle.h"
 #include "spells/spells.h"
-#include "nonspells/nonspells.h"
-#include "background_anim.h"
-#include "draw.h"
+#include "stage3.h"
+#include "wriggle.h"
 
-#include "global.h"
-#include "stagetext.h"
-#include "common_tasks.h"
-#include "enemy_classes.h"
+#include "stages/common_imports.h"
 
 static void stage3_dialog_post_boss(void) {
 	PlayerMode *pm = global.plr.mode;

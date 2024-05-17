@@ -6,8 +6,9 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "private.h"
-#include "syspath.h"
+#include "pathutil.h"
+
+#include "public.h"
 
 char *vfs_path_normalize(const char *path, char *out) {
 	const char *p = path;

@@ -7,7 +7,7 @@
  */
 
 #include "rwops_util.h"
-#include "util.h"
+#include "util/miscmath.h"
 
 int64_t rwutil_compute_seek_pos(int64_t offset, int whence, int64_t pos, int64_t size) {
 	int64_t new_pos;

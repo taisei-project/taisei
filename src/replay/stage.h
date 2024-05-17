@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "replay.h"
-#include "player.h"
 #include "stageinfo.h"
 #include "difficulty.h"
 

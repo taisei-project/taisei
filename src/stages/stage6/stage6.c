@@ -8,14 +8,14 @@
 
 #include "stage6.h"
 
-#include "draw.h"
 #include "background_anim.h"
+#include "draw.h"
 #include "elly.h"
 #include "spells/spells.h"
 #include "timeline.h"
 
-#include "portrait.h"
 #include "common_tasks.h"
+#include "portrait.h"
 
 /*
  *	See the definition of AttackInfo in boss.h for information on how to set up the idmaps.

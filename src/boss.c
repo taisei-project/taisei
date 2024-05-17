@@ -7,16 +7,20 @@
  */
 
 #include "boss.h"
-#include "global.h"
-#include "stage.h"
-#include "stagetext.h"
-#include "stagedraw.h"
-#include "entity.h"
-#include "util/glm.h"
-#include "portrait.h"
-#include "stages/stage5/stage5.h"  // for unlockable bonus BGM
-#include "stageobjects.h"
+
+#include "audio/audio.h"
 #include "dynstage.h"
+#include "entity.h"
+#include "global.h"
+#include "portrait.h"
+#include "stage.h"
+#include "stagedraw.h"
+#include "stageobjects.h"
+#include "stages/stage5/stage5.h"  // for unlockable bonus BGM
+#include "stagetext.h"
+#include "util/env.h"
+#include "util/glm.h"
+#include "util/graphics.h"
 
 #define DAMAGE_PER_POWER_POINT 500.0f
 #define DAMAGE_PER_POWER_ITEM  (DAMAGE_PER_POWER_POINT * POWER_VALUE)

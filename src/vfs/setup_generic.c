@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "public.h"
 #include "setup.h"
-#include "error.h"
-#include "util.h"
+
 #include "loadpacks.h"
 #include "platform_paths/platform_paths.h"
+#include "public.h"
+#include "util/env.h"
 
 // NOTE: For simplicity, we will assume that vfs_sync is not needed in this backend.
 

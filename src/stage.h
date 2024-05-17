@@ -9,13 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "projectile.h"
-#include "boss.h"
-#include "difficulty.h"
-#include "util/graphics.h"
 #include "dialog.h"
-#include "coroutine.h"
-#include "dynarray.h"
 #include "stageinfo.h"
 #include "resource/resource.h"
 

@@ -6,17 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "timeline.h"
-#include "wriggle.h"
-#include "hina.h"
-#include "nonspells/nonspells.h"
-#include "stage2.h"
-#include "background_anim.h"
+#include "timeline.h"   // IWYU pragma: keep
 
-#include "stage.h"
-#include "global.h"
-#include "common_tasks.h"
-#include "enemy_classes.h"
+#include "background_anim.h"
+#include "hina.h"
+#include "nonspells/nonspells.h"   // IWYU pragma: keep
+#include "stage2.h"
+#include "wriggle.h"
+
+#include "stages/common_imports.h"
 
 TASK(spinshot_fairy_attack_spawn_projs, {
 	BoxedEnemy e;

@@ -13,11 +13,11 @@
 // Please include this in any C file where access to the glm_* functions is needed.
 // You don't need to include this if you just want the types.
 
-#include "util.h"
+// IWYU pragma: always_keep
 
 DIAGNOSTIC(push)
 DIAGNOSTIC(ignored "-Wdeprecated-declarations")
-#include <cglm/cglm.h>
+#include <cglm/cglm.h>  // IWYU pragma: export
 DIAGNOSTIC(pop)
 
 typedef float (*glm_ease_t)(float);
