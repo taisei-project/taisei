@@ -7,7 +7,6 @@
  */
 
 #include "list.h"
-#include "global.h"
 
 #undef list_insert
 List* list_insert(List **dest, List *elem) {

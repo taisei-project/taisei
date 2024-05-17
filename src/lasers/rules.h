@@ -10,6 +10,7 @@
 #include "taisei.h"
 
 #include "laser.h"
+#include "move.h"
 #include "ringbuf.h"
 
 typedef struct LaserRuleLinearData {

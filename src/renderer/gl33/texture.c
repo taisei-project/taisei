@@ -7,10 +7,12 @@
  */
 
 #include "texture.h"
+
 #include "../api.h"
-#include "opengl.h"
-#include "gl33.h"
 #include "../glcommon/debug.h"
+#include "gl33.h"
+#include "opengl.h"
+#include "util.h"
 
 static GLenum class_to_gltarget(TextureClass cls) {
 	switch(cls) {

@@ -6,8 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "hashtable.h"
-#include "util.h"
+#include "hashtable.h"   // IWYU pragma: keep
 
 #define HT_IMPL
 #include "hashtable_predefs.inc.h"

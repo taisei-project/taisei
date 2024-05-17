@@ -8,7 +8,10 @@
 
 #include "readonly_wrapper.h"
 #include "private.h"
+
+#include "log.h"
 #include "rwops/rwops_ro.h"
+#include "util/stringops.h"
 
 VFS_NODE_TYPE(VFSReadOnlyNode, {
 	VFSNode *wrapped;

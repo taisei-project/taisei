@@ -9,10 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "renderer/api.h"
-#include "difficulty.h"
 #include "boss.h"
+#include "difficulty.h"
 #include "progress.h"
+#include "renderer/api.h"
 
 typedef void (*StageProc)(void);
 typedef void (*StagePreloadProc)(ResourceGroup *rg);

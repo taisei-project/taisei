@@ -8,7 +8,6 @@
 
 #include "difficulty.h"
 #include "resource/resource.h"
-#include "global.h"
 
 typedef struct DiffDef {
 	const char *name;

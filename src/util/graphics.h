@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "fbpair.h"
 #include "resource/font.h"
 
 void set_ortho(float w, float h);

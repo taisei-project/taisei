@@ -7,7 +7,8 @@
  */
 
 #include "env.h"
-#include "util.h"
+
+#include "log.h"
 
 const char *env_get_string(const char *var, const char *fallback) {
 	const char *val = SDL_getenv(var);

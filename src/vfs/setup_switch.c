@@ -7,9 +7,9 @@
  * Copyright (c) 2019, p-sam <p-sam@d3vs.net>.
  */
 
-#include "public.h"
 #include "setup.h"
-#include "util.h"
+
+#include "util/stringops.h"
 
 static void vfs_setup_onsync(CallChainResult ccr) {
 	const char *program_dir = nxGetProgramDir();

@@ -7,10 +7,16 @@
  */
 
 #include "gamepad.h"
+
 #include "config.h"
+#include "dynarray.h"
 #include "events.h"
-#include "global.h"
 #include "hirestime.h"
+#include "log.h"
+#include "transition.h"
+#include "util/miscmath.h"
+#include "util/stringops.h"
+#include "vfs/public.h"
 
 typedef struct GamepadAxisState {
 	int16_t raw;

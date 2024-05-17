@@ -8,8 +8,11 @@
 
 #include "basisu.h"
 #include "basisu_cache.h"
-#include "util/io.h"
+
 #include "rwops/rwops_sha256.h"
+#include "util.h"
+#include "util/env.h"
+#include "util/io.h"
 
 #include <basisu_transcoder_c_api.h>
 

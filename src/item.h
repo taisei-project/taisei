@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
 #include "resource/resource.h"
-#include "resource/texture.h"
 #include "resource/sprite.h"
-#include "objectpool.h"
 #include "entity.h"
 
 typedef LIST_ANCHOR(Item) ItemList;

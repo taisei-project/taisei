@@ -7,10 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../scuttle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(bite_bullet, { cmplx pos; cmplx vel; }) {
 	Color phase_colors[] = {

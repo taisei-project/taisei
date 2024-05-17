@@ -7,6 +7,7 @@
  */
 
 #include "mixer.h"
+
 #include "util.h"
 #include "../backend.h"
 

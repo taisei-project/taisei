@@ -9,16 +9,15 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
-#include "resource/resource.h"
-#include "resource/sprite.h"
-#include "resource/shader_program.h"
 #include "color.h"
-#include "objectpool.h"
-#include "renderer/api.h"
+#include "coroutine/coevent.h"
 #include "entity.h"
 #include "move.h"
-#include "coroutine.h"
+#include "renderer/api.h"
+#include "resource/resource.h"
+#include "resource/shader_program.h"
+#include "resource/sprite.h"
+#include "util.h"
 
 #if defined(DEBUG) && !defined(RNG_API_CHECK)
 	#define PROJ_DEBUG

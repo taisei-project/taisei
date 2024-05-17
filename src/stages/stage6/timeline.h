@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "boss.h"  // IWYU pragma: keep
 
-Boss* stage6_spawn_elly(cmplx);
+Boss *stage6_spawn_elly(cmplx);
 DECLARE_EXTERN_TASK(stage6_timeline);

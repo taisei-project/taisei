@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "draw.h"
-
-#include "util.h"
-#include "projectile.h"
-#include "resource/shader_program.h"
+#include "color.h"
+#include "coroutine/taskdsl.h"
 #include "entity.h"
 
 typedef cmplx LaserRuleFunc(Laser *p, real t, void *ruledata);
@@ -111,4 +108,4 @@ DECLARE_EXTERN_TASK(laser_charge, {
 	float target_width;
 });
 
-#include "rules.h"
+#include "rules.h"  // IWYU pragma: export

@@ -6,9 +6,8 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
-#include "gl33.h"
 #include "shader_object.h"
+
 #include "../glcommon/debug.h"
 #include "../glcommon/shaders.h"
 

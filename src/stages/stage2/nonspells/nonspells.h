@@ -9,11 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
-#include "stage.h"
-
-void hina_cards1(Boss *h, int time);
-void hina_cards2(Boss *h, int time);
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../hina.h"  // IWYU pragma: export
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_midboss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage2_boss_nonspell_1, BossAttack);

@@ -6,17 +6,20 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <getopt.h>
-
 #include "cli.h"
-#include "difficulty.h"
-#include "util.h"
-#include "log.h"
-#include "stage.h"
-#include "plrmodes.h"
-#include "version.h"
+
 #include "cutscenes/cutscene.h"
 #include "cutscenes/scenes.h"
+#include "difficulty.h"
+#include "log.h"
+#include "plrmodes.h"
+#include "stageinfo.h"
+#include "util.h"
+#include "util/env.h"
+#include "util/io.h"
+#include "version.h"
+
+#include <getopt.h>
 
 struct TsOption { struct option opt; const char *help; const char *argname; };
 

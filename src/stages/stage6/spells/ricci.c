@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 /* !!! You are entering Akari danmaku code !!! (rejuvenated by lao) */
 // FIXME: This awful timing system is an relic of a shameful coroutine-less past; rewrite this.
 #define SAFE_RADIUS_DELAY 300

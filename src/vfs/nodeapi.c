@@ -8,6 +8,7 @@
 
 #include "private.h"
 #include "rwops/rwops_ro.h"
+#include "util/strbuf.h"
 
 VFSInfo vfs_node_query(VFSNode *node) {
 	assert(node->funcs != NULL);

@@ -7,9 +7,6 @@
  */
 
 #include "spells.h"
-#include "common_tasks.h"
-
-#include "global.h"
 
 TASK(kurumi_blowwall_exploder, { cmplx pos; cmplx acceleration; }) {
 

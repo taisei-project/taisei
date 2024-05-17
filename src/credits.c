@@ -7,16 +7,22 @@
  */
 
 #include "credits.h"
-#include "global.h"
-#include "stages/stage6/draw.h"
-#include "video.h"
-#include "resource/model.h"
-#include "renderer/api.h"
-#include "util/fbmgr.h"
-#include "util/glm.h"
+
+#include "audio/audio.h"
 #include "dynarray.h"
 #include "eventloop/eventloop.h"
+#include "events.h"
+#include "global.h"
+#include "menu/menu.h"
+#include "renderer/api.h"
 #include "replay/demoplayer.h"
+#include "resource/font.h"
+#include "stageutils.h"
+#include "transition.h"
+#include "util/fbmgr.h"
+#include "util/glm.h"
+#include "util/graphics.h"
+#include "video.h"
 
 typedef struct CreditsEntry {
 	char **data;

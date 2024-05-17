@@ -10,10 +10,10 @@
 #include "taisei.h"
 
 #include "../api.h"
-#include "opengl.h"
-#include "resource/texture.h"
 #include "../common/backend.h"
 #include "common_buffer.h"
+#include "opengl.h"
+#include "resource/texture.h"
 
 typedef struct TextureUnit TextureUnit;
 

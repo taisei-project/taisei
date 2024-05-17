@@ -8,6 +8,7 @@
 
 #include "stream_pcm.h"
 
+#include "log.h"
 #include "util.h"
 
 static ssize_t astream_pcm_read(AudioStream *stream, size_t buffer_size, void *buffer) {

@@ -10,9 +10,10 @@
 #include "taisei.h"
 
 #include "transition.h"
-#include "events.h"
 #include "util/callchain.h"
 #include "dynarray.h"
+
+#include <SDL_events.h>
 
 #define IMENU_BLUR 0.05
 

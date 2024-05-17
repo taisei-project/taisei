@@ -7,11 +7,8 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
 
 #ifdef SPELL_BENCHMARK
-
-#include "global.h"
 
 static void stage1_spell_benchmark_proc(Boss *b, int t) {
 	int N = 5000; // number of particles on the screen

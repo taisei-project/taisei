@@ -7,11 +7,6 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
-
-#include "stage.h"
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(crystal_rain_drops) {
 	const int nshots = difficulty_value(1, 2, 4, 5);

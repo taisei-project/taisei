@@ -7,13 +7,14 @@
  */
 
 #include "musicroom.h"
-#include "resource/resource.h"
-#include "resource/font.h"
+
 #include "audio/audio.h"
-#include "progress.h"
 #include "common.h"
 #include "options.h"
+#include "progress.h"
 #include "renderer/api.h"
+#include "resource/font.h"
+#include "resource/resource.h"
 #include "video.h"
 
 enum {

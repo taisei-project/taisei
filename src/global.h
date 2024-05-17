@@ -9,42 +9,20 @@
 #pragma once
 #include "taisei.h"
 
+#include "cli.h"
+#include "config.h"
+#include "dialog.h"
+#include "enemy.h"
+#include "framerate.h"
+#include "item.h"
+#include "lasers/laser.h"
+#include "projectile.h"
+#include "random.h"
+#include "replay/state.h"
+#include "stageinfo.h"
+
 #include <SDL.h>
 #include <SDL_platform.h>
-
-#include "util.h"
-#include "color.h"
-
-#include "resource/sfx.h"
-#include "resource/bgm.h"
-#include "resource/font.h"
-#include "resource/animation.h"
-
-#include "menu/menu.h"
-
-#include "player.h"
-#include "projectile.h"
-#include "enemy.h"
-#include "item.h"
-#include "boss.h"
-#include "laser.h"
-#include "dialog.h"
-#include "list.h"
-#include "config.h"
-#include "resource/resource.h"
-#include "replay/state.h"
-#include "random.h"
-#include "events.h"
-#include "difficulty.h"
-#include "color.h"
-#include "audio/audio.h"
-#include "rwops/all.h"
-#include "cli.h"
-#include "hirestime.h"
-#include "log.h"
-#include "framerate.h"
-#include "renderer/api.h"
-#include "stageinfo.h"
 
 enum {
 	// defaults

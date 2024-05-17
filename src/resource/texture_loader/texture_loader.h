@@ -11,7 +11,6 @@
 
 #include "renderer/api.h"
 #include "resource/resource.h"
-#include "resource/texture.h"
 
 typedef struct TextureLoadCubemap {
 	Pixmap faces[6];

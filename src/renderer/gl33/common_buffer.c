@@ -7,6 +7,7 @@
  */
 
 #include "common_buffer.h"
+
 #include "gl33.h"
 
 #define STREAM_CBUF(rw) ((CommonBuffer*)rw)

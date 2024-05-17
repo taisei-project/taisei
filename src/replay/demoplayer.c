@@ -7,11 +7,15 @@
  */
 
 #include "demoplayer.h"
+
+#include "events.h"
+#include "global.h"
+#include "menu/menu.h"
 #include "replay.h"
 #include "replay/struct.h"
-#include "global.h"
+#include "transition.h"
+#include "util/env.h"
 #include "vfs/public.h"
-#include "events.h"
 
 #define DEMOPLAYER_DIR_PATH        "res/demos"
 #define DEMOPLAYER_WAIT_TIME       (60 * FPS)

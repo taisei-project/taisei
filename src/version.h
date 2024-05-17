@@ -9,8 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
 #include "util/strbuf.h"
+
+#include <SDL_rwops.h>
 
 #ifdef TAISEI_BUILDCONF_DEBUG
 	#define TAISEI_VERSION_BUILD_TYPE_0 "debug"

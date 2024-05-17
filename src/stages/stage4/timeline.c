@@ -6,19 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "stage4.h"
 #include "timeline.h"
-#include "draw.h"
-#include "background_anim.h"
-#include "nonspells/nonspells.h"
-#include "kurumi.h"
 
-#include "global.h"
-#include "stage.h"
-#include "enemy.h"
-#include "enemy_classes.h"
-#include "laser.h"
-#include "common_tasks.h"
+#include "background_anim.h"
+#include "kurumi.h"
+#include "nonspells/nonspells.h"
+#include "stage4.h"
+
+#include "stages/common_imports.h"
 #include "../stage6/elly.h"
 
 static void stage4_dialog_pre_boss(void) {

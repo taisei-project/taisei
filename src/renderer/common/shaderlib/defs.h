@@ -9,6 +9,8 @@
 #pragma once
 #include "taisei.h"
 
+// IWYU pragma: private, include "renderer/common/shaderlib/shaderlib.h"
+
 typedef enum ShaderStage {
 	SHADER_STAGE_INVALID,
 	SHADER_STAGE_VERTEX,

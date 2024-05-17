@@ -6,12 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
-#include "rwops/rwops_autobuf.h"
 #include "opengl.h"
+
 #include "debug.h"
+#include "rwops/rwops_autobuf.h"
 #include "shaders.h"
 #include "texture.h"
+#include "util/env.h"
+#include "util/io.h"
 
 struct glext_s glext = { 0 };
 

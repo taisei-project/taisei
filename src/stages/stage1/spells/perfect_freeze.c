@@ -7,11 +7,6 @@
  */
 
 #include "spells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(move_frozen, { BoxedProjectileArray *parray; }) {
 	DECLARE_ENT_ARRAY(Projectile, projs, ARGS.parray->size);

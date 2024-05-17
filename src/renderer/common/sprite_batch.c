@@ -7,10 +7,10 @@
  */
 
 #include "sprite_batch.h"
+
 #include "../api.h"
 #include "util/glm.h"
 #include "resource/sprite.h"
-#include "resource/model.h"
 
 #define SPRITE_BATCH_STATS 0
 

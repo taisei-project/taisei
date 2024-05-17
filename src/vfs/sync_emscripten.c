@@ -7,7 +7,8 @@
  */
 
 #include "public.h"
-#include "util.h"
+
+#include "log.h"
 
 #include <emscripten.h>
 

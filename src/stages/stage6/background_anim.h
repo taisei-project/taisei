@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "coroutine.h"
-
 void stage6_bg_start_fall_over(void);
 
 void stage6_bg_start_boss_rotation(void);

@@ -12,13 +12,10 @@
 
 #include "global.h"
 #include "list.h"
-#include "stageobjects.h"
-#include "stagedraw.h"
 #include "renderer/api.h"
-#include "resource/model.h"
-#include "util/fbmgr.h"
+#include "stage.h"
+#include "stageobjects.h"
 #include "util/glm.h"
-#include "video.h"
 
 typedef struct LaserSamplingParams {
 	uint num_samples;

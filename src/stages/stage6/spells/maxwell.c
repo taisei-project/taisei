@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 typedef struct LaserRuleMaxwellData {
 	cmplx dir;
 	real amplitude;

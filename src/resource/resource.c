@@ -8,15 +8,6 @@
 
 #include "resource.h"
 
-#include "config.h"
-#include "events.h"
-#include "filewatch/filewatch.h"
-#include "menu/mainmenu.h"
-#include "renderer/common/backend.h"
-#include "taskmanager.h"
-#include "video.h"
-#include "eventloop/eventloop.h"
-
 #include "animation.h"
 #include "bgm.h"
 #include "font.h"
@@ -28,6 +19,13 @@
 #include "shader_program.h"
 #include "sprite.h"
 #include "texture.h"
+
+#include "eventloop/eventloop.h"
+#include "events.h"
+#include "filewatch/filewatch.h"
+#include "taskmanager.h"
+#include "util.h"
+#include "util/env.h"
 
 #define DEBUG_LOAD 0
 #define DEBUG_LOCKS 0

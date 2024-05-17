@@ -8,17 +8,20 @@
 
 #include "player.h"
 
-#include "projectile.h"
+#include "audio/audio.h"
+#include "entity.h"
+#include "gamepad.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "stage.h"
-#include "stagetext.h"
-#include "stagedraw.h"
-#include "stats.h"
-#include "entity.h"
-#include "util/glm.h"
+#include "projectile.h"
 #include "replay/stage.h"
 #include "replay/struct.h"
+#include "stage.h"
+#include "stagedraw.h"
+#include "stagetext.h"
+#include "stats.h"
+#include "util/glm.h"
+#include "util/graphics.h"
 
 DEFINE_ENTITY_TYPE(PlayerIndicators, {
 	Player *plr;

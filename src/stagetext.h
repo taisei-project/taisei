@@ -9,9 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
 #include "color.h"
-#include "objectpool.h"
 #include "resource/font.h"
 
 typedef struct StageText StageText;

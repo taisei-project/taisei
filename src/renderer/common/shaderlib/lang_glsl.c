@@ -6,11 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "lang_glsl.h"
 #include "shaderlib.h"
+
+#include "log.h"
 #include "rwops/rwops_autobuf.h"
+#include "util/io.h"
+#include "util/stringops.h"
 #include "vfs/pathutil.h"
 #include "vfs/public.h"
-#include "util.h"
 
 enum {
 	GLSL_INCLUDE_DEPTH = 42,

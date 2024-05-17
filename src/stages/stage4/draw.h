@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "stagedraw.h"
 #include "color.h"
+#include "stageinfo.h"
 #include "stageutils.h"
 
 typedef struct Stage4DrawData {

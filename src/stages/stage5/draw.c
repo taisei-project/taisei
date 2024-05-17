@@ -11,7 +11,7 @@
 #include "global.h"
 #include "stageutils.h"
 #include "util/glm.h"
-#include "resource/model.h"
+#include "util/graphics.h"
 
 static Stage5DrawData *stage5_draw_data;
 

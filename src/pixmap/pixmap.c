@@ -7,8 +7,12 @@
  */
 
 #include "pixmap.h"
+
 #include "fileformats/fileformats.h"
+#include "log.h"
 #include "util.h"
+#include "util/io.h"
+#include "vfs/public.h"
 
 static PixmapFileFormatHandler *fileformat_handlers[] = {
 	[PIXMAP_FILEFORMAT_INTERNAL] = &pixmap_fileformat_internal,

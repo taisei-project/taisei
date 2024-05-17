@@ -10,19 +10,19 @@
 #include "taisei.h"
 
 // Common standard library headers
-#include <complex.h>
-#include <ctype.h>
-#include <float.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <math.h>
-#include <stdalign.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdnoreturn.h>
-#include <string.h>
+#include <complex.h>       // IWYU pragma: export
+#include <ctype.h>         // IWYU pragma: export
+#include <float.h>         // IWYU pragma: export
+#include <inttypes.h>      // IWYU pragma: export
+#include <limits.h>        // IWYU pragma: export
+#include <math.h>          // IWYU pragma: export
+#include <stdalign.h>      // IWYU pragma: export
+#include <stdbool.h>       // IWYU pragma: export
+#include <stddef.h>        // IWYU pragma: export
+#include <stdint.h>        // IWYU pragma: export
+#include <stdlib.h>        // IWYU pragma: export
+#include <stdnoreturn.h>   // IWYU pragma: export
+#include <string.h>        // IWYU pragma: export
 
 // clang defines this too
 #ifndef __GNUC__
@@ -35,7 +35,7 @@
 	#define _TAISEI_SRC_FILE __FILE__
 #endif
 
-#include "util/assert.h"
+#include "util/assert.h"   // IWYU pragma: export
 
 #ifdef __FAST_MATH__
 	#error -ffast-math is prohibited
@@ -182,7 +182,7 @@ typedef _Complex double cmplx;
 #endif
 
 // polyfill CMPLX macros
-#include "compat_cmplx.h"
+#include "compat_cmplx.h"   // IWYU pragma: export
 
 /*
  * Abstract away the nasty GNU attribute syntax.

@@ -9,10 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
-
-#include "stages/stage6/draw.h"
-#include "stages/stage6/elly.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../elly.h"  // IWYU pragma: export
 
 #define ELLY_TOE_TARGET_POS (VIEWPORT_W/2+VIEWPORT_H/2*I)
 

@@ -7,16 +7,18 @@
  */
 
 #include "stage3.h"
-#include "draw.h"
+
 #include "background_anim.h"
-#include "wriggle.h"
+#include "draw.h"
 #include "scuttle.h"
 #include "spells/spells.h"
-#include "timeline.h"
+#include "timeline.h"   // IWYU pragma: keep
+#include "wriggle.h"
 
+#include "common_tasks.h"
 #include "global.h"
 #include "portrait.h"
-#include "common_tasks.h"
+#include "stage.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.

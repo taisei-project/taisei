@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 TASK(eigenstate_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 
@@ -24,7 +22,7 @@ TASK(eigenstate_baryons, { BoxedBoss boss; BoxedEllyBaryons baryons; }) {
 		}
 		YIELD;
 	}
-}	
+}
 
 TASK(eigenstate_bullet, { cmplx pos; cmplx v0; cmplx v1; Color color; }) {
 	Projectile *p = TASK_BIND(PROJECTILE(
@@ -42,7 +40,7 @@ TASK(eigenstate_bullet, { cmplx pos; cmplx v0; cmplx v1; Color color; }) {
 
 TASK(eigenstate_spawn_bullets, { BoxedEllyBaryons baryons; int baryon_idx; }) {
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
-	
+
 	int interval = difficulty_value(138, 126, 114, 102);
 	real deflection = difficulty_value(0.3, 0.2, 0.1, 0);
 
@@ -55,7 +53,7 @@ TASK(eigenstate_spawn_bullets, { BoxedEllyBaryons baryons; int baryon_idx; }) {
 
 			for(int j = 0; j < 3; j++) {
 				cmplx v1 = v0 * (1 + 0.6 * I * (j-1) * cdir(deflection));
-				
+
 				INVOKE_TASK(eigenstate_bullet,
 					    .pos = baryons->poss[ARGS.baryon_idx] + 60 * cdir(M_TAU/count*i),
 					    .v0 = v0,

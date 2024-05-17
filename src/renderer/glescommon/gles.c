@@ -7,9 +7,12 @@
  */
 
 #include "gles.h"
+
 #include "../common/backend.h"
 #include "../gl33/gl33.h"
+#include "../glcommon/vtable.h"
 #include "angle_egl.h"
+#include "util/env.h"
 
 #ifdef _WIN32
 	// Enable WebGL compatibility mode on Windows, because cubemaps are broken in the D3D11 backend

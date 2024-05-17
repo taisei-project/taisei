@@ -1,4 +1,5 @@
 
+#include "util/miscmath.h"
 #include "util/macrohax.h"
 
 #define _CONV_IN_IS_FLOAT ((float)_CONV_IN_MAX == 1.0f)

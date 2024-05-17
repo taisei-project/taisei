@@ -7,8 +7,9 @@
  */
 
 #include "allocator.h"
+
+#include "log.h"
 #include "util.h"
-#include "../util.h"
 
 static void *allocator_default_alloc(Allocator *alloc, size_t size) {
 	return mem_alloc(size);

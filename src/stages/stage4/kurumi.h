@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "boss.h"   // IWYU pragma: keep
 
 DECLARE_EXTERN_TASK(stage4_boss_nonspell_burst, { BoxedBoss boss; int duration; int count; });
 DECLARE_EXTERN_TASK(stage4_boss_nonspell_redirect, { BoxedProjectile proj; MoveParams new_move; });

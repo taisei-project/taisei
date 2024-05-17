@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 TASK(spawn_square, {
 	BoxedProjectileArray *projectiles;
 	cmplx pos;

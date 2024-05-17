@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../wriggle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 TASK(aimcircle, { int lifetime; int focustime; }) {
 	auto p = TASK_BIND(PARTICLE(

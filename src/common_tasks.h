@@ -9,11 +9,13 @@
 #pragma once
 #include "taisei.h"
 
-#include "coroutine.h"
-#include "item.h"
-#include "move.h"
+// IWYU pragma: always_keep
+
+#include "coroutine/taskdsl.h"
 #include "entity.h"
 #include "global.h"
+#include "item.h"
+#include "move.h"
 #include "util/glm.h"
 
 DECLARE_EXTERN_TASK(

@@ -6,15 +6,13 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "player.h"
-#include "global.h"
-#include "stage.h"
-#include "portrait.h"
-
 #include "plrmodes.h"
+
+#include "plrmodes/reimu.h"
 #include "plrmodes/marisa.h"
 #include "plrmodes/youmu.h"
-#include "plrmodes/reimu.h"
+
+#include "portrait.h"
 
 static PlayerCharacter *player_characters[] = {
 	&character_reimu,

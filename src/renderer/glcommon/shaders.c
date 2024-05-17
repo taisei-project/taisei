@@ -7,9 +7,12 @@
  */
 
 #include "shaders.h"
-#include "util.h"
+
+#include "log.h"
 #include "opengl.h"
 #include "rwops/rwops_autobuf.h"
+#include "util/io.h"
+#include "util/stringops.h"
 
 ShaderLangInfoArray glcommon_shader_lang_table = { 0 };
 

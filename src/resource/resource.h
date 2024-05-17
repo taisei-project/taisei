@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "hashtable.h"
 #include "dynarray.h"
+#include "hashtable.h"
 #include "vfs/public.h"
 
 typedef enum ResourceType {

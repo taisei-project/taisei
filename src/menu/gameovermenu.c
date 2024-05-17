@@ -6,11 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "menu.h"
 #include "gameovermenu.h"
-#include "ingamemenu.h"
-#include "stats.h"
+
 #include "global.h"
+#include "ingamemenu.h"
+#include "menu.h"
+#include "stats.h"
 
 typedef struct GameoverMenuContext {
 	IngameMenuContext base;

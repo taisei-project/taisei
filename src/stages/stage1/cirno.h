@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "entity.h"
 
 Boss *stage1_spawn_cirno(cmplx pos);
 void stage1_draw_cirno_spellbg(Boss *boss, int time);

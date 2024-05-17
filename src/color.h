@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include "util/miscmath.h"
 
 typedef union Color3 {
 	struct { float r, g, b; };
@@ -51,37 +51,37 @@ Color* color_hsla(Color *clr, float h, float s, float l, float a)
 void color_get_hsl(const Color *c, float *out_h, float *out_s, float *out_l)
 	attr_nonnull(1);
 
-Color* color_add(Color *clr, const Color *clr2)
+Color *color_add(Color *clr, const Color *clr2)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_sub(Color *clr, const Color *clr2)
+Color *color_sub(Color *clr, const Color *clr2)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_mul(Color *clr, const Color *clr2)
+Color *color_mul(Color *clr, const Color *clr2)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_mul_alpha(Color *clr)
+Color *color_mul_alpha(Color *clr)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_mul_scalar(Color *clr, float scalar)
+Color *color_mul_scalar(Color *clr, float scalar)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_div(Color *clr, const Color *clr2)
+Color *color_div(Color *clr, const Color *clr2)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_div_alpha(Color *clr)
+Color *color_div_alpha(Color *clr)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_div_scalar(Color *clr, float scalar)
+Color *color_div_scalar(Color *clr, float scalar)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_lerp(Color *clr, const Color *clr2, float a)
+Color *color_lerp(Color *clr, const Color *clr2, float a)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_approach(Color *clr, const Color *clr2, float delta)
+Color *color_approach(Color *clr, const Color *clr2, float delta)
 	attr_nonnull(1) attr_returns_nonnull;
 
-Color* color_set_opacity(Color *clr, float opacity)
+Color *color_set_opacity(Color *clr, float opacity)
 	attr_nonnull(1) attr_returns_nonnull;
 
 /*
@@ -91,5 +91,5 @@ Color* color_set_opacity(Color *clr, float opacity)
 bool color_equals(const Color *clr, const Color *clr2)
 	attr_nonnull(1, 2);
 
-char* color_str(const Color *clr)
+char *color_str(const Color *clr)
 	attr_nonnull(1) attr_returns_allocated;

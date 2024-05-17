@@ -7,10 +7,10 @@
  */
 
 #include "animation.h"
-#include "texture.h"
-#include "resource.h"
-#include "list.h"
+
 #include "renderer/api.h"
+#include "resource.h"
+#include "util/kvparser.h"
 
 static char *animation_path(const char *name) {
 	return strjoin(ANI_PATH_PREFIX, name, ANI_EXTENSION, NULL);

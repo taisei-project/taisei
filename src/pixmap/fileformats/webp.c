@@ -6,8 +6,9 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
 #include "fileformats.h"
+#include "log.h"
+#include "util/io.h"
 
 #include <webp/decode.h>
 

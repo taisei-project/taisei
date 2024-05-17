@@ -6,11 +6,13 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "difficulty.h"
 #include "difficultyselect.h"
-#include "mainmenu.h"
+
 #include "common.h"
-#include "global.h"
+#include "difficulty.h"
+#include "mainmenu.h"
+#include "progress.h"
+#include "resource/font.h"
 #include "video.h"
 
 // FIXME: put this into the menu struct somehow (drawdata is a bad system)

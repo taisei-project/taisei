@@ -7,7 +7,8 @@
  */
 
 #include "angle_egl.h"
-#include "util.h"
+
+#include "log.h"
 
 SDL_GLContext gles_create_context_angle(SDL_Window *window, int major, int minor, bool webgl) {
 	log_fatal("Built without custom ANGLE EGL code path");

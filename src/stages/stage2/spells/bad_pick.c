@@ -8,9 +8,6 @@
 
 #include "spells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 #define SLOTS 5
 
 static int slot_of_position(cmplx pos) {

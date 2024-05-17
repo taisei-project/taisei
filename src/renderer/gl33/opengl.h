@@ -9,4 +9,4 @@
 #pragma once
 #include "taisei.h"
 
-#include "../glcommon/opengl.h"
+#include "../glcommon/opengl.h"  // IWYU pragma: export

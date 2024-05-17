@@ -6,8 +6,11 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "shaderlib.h"
 #include "lang_spirv_private.h"
+#include "shaderlib.h"
+#include "cache.h"
+
+#include "log.h"
 #include "util.h"
 
 static bool shader_cache_entry_name(

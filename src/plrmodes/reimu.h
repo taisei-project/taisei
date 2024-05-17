@@ -10,7 +10,6 @@
 #include "taisei.h"
 
 #include "plrmodes.h"
-#include "dialog/reimu.h"
 
 extern PlayerCharacter character_reimu;
 extern PlayerMode plrmode_reimu_a;

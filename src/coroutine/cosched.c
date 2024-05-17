@@ -6,7 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "internal.h"
+#include "coroutine/cosched.h"
+#include "coroutine/cotask.h"
+#include "coroutine/cotask_internal.h"
+#include "hashtable.h"
 
 void cosched_init(CoSched *sched) {
 	memset(sched, 0, sizeof(*sched));

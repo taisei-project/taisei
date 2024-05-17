@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "enemy.h"
 #include "boss.h"
 
 #define FERMIONTIME 1000

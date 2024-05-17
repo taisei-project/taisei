@@ -6,16 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "resource/resource.h"
 #include "enemy.h"
 
+#include "audio/audio.h"
+#include "entity.h"
 #include "global.h"
-#include "projectile.h"
 #include "list.h"
-#include "aniplayer.h"
+#include "projectile.h"
+#include "resource/resource.h"
 #include "stageobjects.h"
 #include "util/glm.h"
-#include "entity.h"
 
 #ifdef create_enemy_p
 #undef create_enemy_p

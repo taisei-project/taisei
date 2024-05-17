@@ -9,10 +9,13 @@
 #pragma once
 #include "taisei.h"
 
-#include "build_config.h"
-#include "util/compat.h"
-#include "util/consideredharmful.h"
-#include "memory/memory.h"
+// IWYU pragma: always_keep
+
+#include "build_config.h"             // IWYU pragma: export
+#include "util/compat.h"              // IWYU pragma: export
+#include "util/assert.h"              // IWYU pragma: export
+#include "util/consideredharmful.h"   // IWYU pragma: export
+#include "memory/memory.h"            // IWYU pragma: export
 
 #ifdef TAISEI_BUILDCONF_DEVELOPER
 	// TODO: maybe rename this

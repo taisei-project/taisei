@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "entity.h"
 
 Boss *stage3_spawn_scuttle(cmplx pos);
 void stage3_draw_scuttle_spellbg(Boss *boss, int time);

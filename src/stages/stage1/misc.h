@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "stage.h"
+#include "entity.h"
 
 Projectile *stage1_spawn_stain(cmplx pos, float angle, int to);

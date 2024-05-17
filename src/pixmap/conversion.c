@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "log.h"
 #include "pixmap.h"
-#include "util.h"
 
 // NOTE: this is pretty stupid and not at all optimized, patches welcome
 

@@ -9,6 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "entity.h"
 
 Boss *stage2_spawn_wriggle(cmplx pos);

@@ -7,13 +7,6 @@
  */
 
 #include "stageobjects.h"
-#include "projectile.h"
-#include "item.h"
-#include "enemy.h"
-#include "laser.h"
-#include "stagetext.h"
-#include "boss.h"
-#include "aniplayer.h"
 
 #define INIT_ARENA_SIZE (8 << 20)
 

@@ -6,9 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "util.h"
 #include "hirestime.h"
+
+#include "log.h"
 #include "thread.h"
+#include "util/env.h"
+#include "util/miscmath.h"
+
+#include <SDL_timer.h>
 
 static bool use_hires;
 static hrtime_t time_current;

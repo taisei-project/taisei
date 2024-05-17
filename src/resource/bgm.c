@@ -6,11 +6,11 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "resource.h"
 #include "bgm.h"
+
+#include "resource.h"
 #include "audio/backend.h"
 #include "sfxbgm_common.h"
-#include "util.h"
 
 static char *bgm_path(const char *name) {
 	return sfxbgm_make_path(BGM_PATH_PREFIX, name, true);

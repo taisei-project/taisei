@@ -7,8 +7,9 @@
  */
 
 #include "platform_paths.h"
-#include "util.h"
+
 #include "../syspath_public.h"
+#include "log.h"
 
 #include <SDL.h>
 

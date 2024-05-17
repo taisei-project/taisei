@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "coroutine/taskdsl.h"
 
 DECLARE_EXTERN_TASK(stage4_timeline);
 

@@ -8,6 +8,9 @@
 
 #include "private.h"
 
+#include "dynarray.h"
+#include "log.h"
+
 typedef struct VFSDir {
 	VFSNode *node;
 	void *opaque;

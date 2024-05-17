@@ -9,10 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "common_tasks.h"
-#include "stage.h"
-
-#include "stages/stage5/iku.h"
+#include "stages/common_imports.h"  // IWYU pragma: export
+#include "../iku.h"  // IWYU pragma: export
 
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_boss_nonspell_1, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stage5_boss_nonspell_2, BossAttack);

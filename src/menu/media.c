@@ -7,12 +7,13 @@
  */
 
 #include "media.h"
-#include "musicroom.h"
-#include "cutsceneview.h"
+
 #include "charprofile.h"
 #include "common.h"
+#include "cutsceneview.h"
+#include "musicroom.h"
+
 #include "options.h"
-#include "global.h"
 #include "video.h"
 
 static void menu_action_enter_musicroom(MenuData *menu, void *arg) {

@@ -6,10 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "youmu.h"
+
 #include "global.h"
 #include "plrmodes.h"
-#include "youmu.h"
 #include "stagedraw.h"
+#include "util/graphics.h"
 
 PlayerCharacter character_youmu = {
 	.id = PLR_CHAR_YOUMU,

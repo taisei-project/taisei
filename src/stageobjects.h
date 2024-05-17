@@ -10,6 +10,13 @@
 #include "taisei.h"
 
 #include "objectpool.h"
+#include "aniplayer.h"  // IWYU pragma: export
+#include "projectile.h"  // IWYU pragma: export
+#include "item.h"  // IWYU pragma: export
+#include "enemy.h"  // IWYU pragma: export
+#include "lasers/laser.h"  // IWYU pragma: export
+#include "stagetext.h"  // IWYU pragma: export
+#include "boss.h"  // IWYU pragma: export
 
 #define OBJECT_POOLS \
 	OBJECT_POOL(Projectile, projectiles) \

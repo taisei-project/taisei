@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "readonly_wrapper_public.h"
 #include "private.h"
 
-VFSNode* vfs_ro_wrap(VFSNode *base);
+VFSNode *vfs_ro_wrap(VFSNode *base);

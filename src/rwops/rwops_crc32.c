@@ -7,7 +7,6 @@
  */
 
 #include "rwops_crc32.h"
-#include "util.h"
 
 #include <zlib.h>
 

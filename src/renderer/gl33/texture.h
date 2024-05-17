@@ -9,11 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "gl33.h"
 #include "../api.h"
-#include "resource/resource.h"
+#include "../glcommon/texture.h"
+#include "gl33.h"
 #include "resource/texture.h"
-#include "../glcommon/vtable.h"
 
 typedef struct Texture {
 	GLTextureFormatInfo *fmt_info;

@@ -7,6 +7,9 @@
  */
 
 #include "basisu_cache.h"
+#include "basisu.h"
+
+#include "log.h"
 #include "pixmap/pixmap.h"
 #include "rwops/rwops_zstd.h"
 

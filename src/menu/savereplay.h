@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "menu.h"
 #include "util/callchain.h"
 #include "replay/replay.h"
 

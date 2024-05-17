@@ -12,7 +12,7 @@
 #include "resource.h"
 #include "shader_program.h"
 #include "renderer/api.h"
-#include "util/graphics.h"
+#include "util/fbpair.h"
 
 typedef struct PostprocessShader PostprocessShader;
 typedef struct PostprocessShaderUniform PostprocessShaderUniform;

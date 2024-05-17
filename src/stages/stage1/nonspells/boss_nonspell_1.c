@@ -7,10 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../cirno.h"
-#include "../misc.h"
-
-#include "global.h"
 
 DEFINE_EXTERN_TASK(stage1_boss_nonspell_1) {
 	Boss *boss = INIT_BOSS_ATTACK(&ARGS);

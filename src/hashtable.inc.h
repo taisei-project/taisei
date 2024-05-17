@@ -4,7 +4,6 @@
 #include "hashtable.h"
 #include "list.h"
 #include "util/stringops.h"
-#include "util/assert.h"
 #include "log.h"
 
 #include <SDL.h>

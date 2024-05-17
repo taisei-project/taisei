@@ -9,7 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "coroutine/taskdsl.h"
+#include "entity.h"
+#include "renderer/api.h"
 
 DEFINE_ENTITY_TYPE(WriggleSlave, {
 	struct {

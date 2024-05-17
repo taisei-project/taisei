@@ -6,12 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "gl33.h"
 #include "shader_program.h"
-#include "shader_object.h"
-#include "texture.h"
-#include "../glcommon/debug.h"
+#include "shader_object.h"  // IWYU pragma: keep
+
 #include "../api.h"
+#include "../glcommon/debug.h"
+#include "gl33.h"
+#include "texture.h"
+#include "util.h"
 
 static Uniform *sampler_uniforms;
 

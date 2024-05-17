@@ -9,6 +9,11 @@
 #include "private.h"
 #include "vdir.h"
 
+#include "list.h"
+#include "log.h"
+#include "util/io.h"
+#include "util/stringops.h"
+
 VFSNode *vfs_root = NULL;
 
 typedef struct vfs_tls_s {

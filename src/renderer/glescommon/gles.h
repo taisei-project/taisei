@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "../glcommon/vtable.h"
+#include "../common/backend.h"
 
 void gles_init(RendererBackend *gles_backend, int major, int minor);
 void gles_init_context(SDL_Window *w);

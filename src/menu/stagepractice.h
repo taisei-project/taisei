@@ -12,4 +12,4 @@
 #include "menu.h"
 #include "difficulty.h"
 
-MenuData* create_stgpract_menu(Difficulty diff);
+MenuData *create_stgpract_menu(Difficulty diff);

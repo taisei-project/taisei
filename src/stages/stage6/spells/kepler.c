@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 static ProjPrototype *kepler_pick_bullet(int tier) {
 	switch(tier) {
 		case 0:  return pp_soul;

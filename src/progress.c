@@ -6,13 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <zlib.h>
-
 #include "progress.h"
+
 #include "stageinfo.h"
+#include "util.h"
 #include "version.h"
-#include "rwops/rwops_autobuf.h"
 #include "rwops/rwops_zstd.h"
+
+#include <zlib.h>
 
 /*
 	This module implements a persistent storage of a player's game progress, such as unlocked stages, high-scores etc.

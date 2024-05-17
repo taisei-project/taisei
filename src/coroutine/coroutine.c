@@ -6,8 +6,8 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "internal.h"
-#include "util.h"
+#include "coroutine/coroutine.h"
+#include "coroutine/cotask_internal.h"
 
 void coroutines_init(void) {
 	cotask_global_init();

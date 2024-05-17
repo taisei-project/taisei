@@ -9,10 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "sprite.h"
-#include "hashtable.h"
-#include "resource.h"
 #include "renderer/api.h"
+#include "resource.h"
+#include "sprite.h"
 
 typedef enum {
 	ALIGN_LEFT = 0, // must be 0

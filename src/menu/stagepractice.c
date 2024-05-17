@@ -7,11 +7,12 @@
  */
 
 #include "stagepractice.h"
+
 #include "common.h"
 #include "options.h"
-#include "global.h"
-#include "video.h"
+
 #include "stageinfo.h"
+#include "video.h"
 
 static void draw_stgpract_menu(MenuData *m) {
 	draw_options_menu_bg(m);

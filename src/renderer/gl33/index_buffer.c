@@ -7,8 +7,9 @@
  */
 
 #include "index_buffer.h"
-#include "gl33.h"
+
 #include "../glcommon/debug.h"
+#include "gl33.h"
 
 static void gl33_index_buffer_pre_bind(CommonBuffer *cbuf) {
 	IndexBuffer *ibuf = (IndexBuffer*)cbuf;

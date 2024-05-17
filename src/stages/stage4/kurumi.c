@@ -8,6 +8,7 @@
 
 #include "kurumi.h"
 
+#include "audio/audio.h"
 #include "global.h"
 
 DEFINE_EXTERN_TASK(stage4_boss_nonspell_burst) {

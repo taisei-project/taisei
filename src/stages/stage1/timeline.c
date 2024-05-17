@@ -6,17 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "timeline.h"
-#include "stage1.h"
-#include "cirno.h"
-#include "spells/spells.h"
-#include "nonspells/nonspells.h"
-#include "background_anim.h"
+#include "timeline.h"   // IWYU pragma: keep
 
-#include "global.h"
-#include "stagetext.h"
-#include "common_tasks.h"
-#include "enemy_classes.h"
+#include "background_anim.h"
+#include "cirno.h"
+#include "nonspells/nonspells.h"   // IWYU pragma: keep
+#include "spells/spells.h"   // IWYU pragma: keep
+#include "stage1.h"
+
+#include "stages/common_imports.h"
 
 TASK(burst_fairy, { BoxedEnemy e; cmplx target_pos; cmplx exit_dir; }) {
 	Enemy *e = TASK_BIND(ARGS.e);

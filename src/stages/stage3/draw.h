@@ -9,8 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "util/fbpair.h"
-#include "stagedraw.h"
+#include "stageinfo.h"
 #include "stageutils.h"
 
 typedef struct Stage3DrawData {

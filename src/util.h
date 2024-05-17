@@ -9,22 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "util/assert.h"
-#include "util/crap.h"
-#include "util/debug.h"
-#include "util/env.h"
-#include "util/geometry.h"
-// #include "util/glm.h"
-// #include "util/graphics.h"
-#include "util/io.h"
-#include "util/kvparser.h"
-#include "util/miscmath.h"
-// #include "util/pngcruft.h"
-#include "util/stringops.h"
-#include "util/callchain.h"
-
-// FIXME: might not be the best place for these
-#include "log.h"
-#include "vfs/public.h"
-#include "util/consideredharmful.h"
-#include "dynarray.h"
+#include "util/assert.h"  // IWYU pragma: export
+#include "util/crap.h"  // IWYU pragma: export
+#include "util/debug.h"  // IWYU pragma: export

@@ -7,10 +7,8 @@
  */
 
 #include "fbcopy_fallback.h"
-#include "gles30.h"
-#include "../glescommon/gles.h"
-#include "../gl33/gl33.h"
-#include "resource/model.h"
+
+#include "util.h"
 
 static ShaderProgram *blit_shader;
 static struct {

@@ -6,13 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "dynstage.h"
+
+#include "events.h"
+#include "filewatch/filewatch.h"
+
 #ifndef TAISEI_BUILDCONF_HAVE_POSIX
 #error Stage hot reloading is only supported on POSIX systems
 #endif
-
-#include "dynstage.h"
-#include "events.h"
-#include "filewatch/filewatch.h"
 
 #include <dirent.h>
 #include <dlfcn.h>

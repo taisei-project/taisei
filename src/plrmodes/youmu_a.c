@@ -6,11 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "youmu.h"
+
+#include "audio/audio.h"
+#include "dialog/youmu.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "youmu.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
+#include "util/graphics.h"
 
 #define SHOT_SELF_DELAY 6
 #define SHOT_SELF_DAMAGE 60

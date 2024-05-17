@@ -7,9 +7,12 @@
  */
 
 #include "angle_egl.h"
+
 #include "../glcommon/debug.h"
 #include "glad/egl.h"
+#include "log.h"
 #include "util.h"
+#include "util/env.h"
 
 /*
  * All this garbage here serves one purpose: create a WebGL-compatible ANGLE context.

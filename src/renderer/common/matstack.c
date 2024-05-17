@@ -6,10 +6,10 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../api.h"
 #include "matstack.h"
+
+#include "../api.h"
 #include "util/glm.h"
-#include "state.h"
 
 void matstack_reset(MatrixStack *ms) {
 	ms->head = ms->stack;

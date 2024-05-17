@@ -6,16 +6,18 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "global.h"
+#include "replayview.h"
+
+#include "common.h"
 #include "menu.h"
 #include "options.h"
-#include "mainmenu.h"
-#include "replayview.h"
+
+#include "audio/audio.h"
 #include "plrmodes.h"
-#include "video.h"
-#include "common.h"
-#include "replay/state.h"
 #include "replay/struct.h"
+#include "resource/font.h"
+#include "stageinfo.h"
+#include "video.h"
 
 // Type of MenuData.context
 typedef struct ReplayviewContext {

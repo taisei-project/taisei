@@ -6,17 +6,21 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "global.h"
 #include "video.h"
+
+#include "dynarray.h"
+#include "events.h"
+#include "global.h"
 #include "renderer/api.h"
-#include "util/pngcruft.h"
+#include "rwops/rwops_autobuf.h"
+#include "stagedraw.h"
+#include "taskmanager.h"
+#include "util/env.h"
 #include "util/fbmgr.h"
 #include "util/graphics.h"
-#include "taskmanager.h"
-#include "video_postprocess.h"
-#include "dynarray.h"
+#include "util/io.h"
 #include "version.h"
-#include "stagedraw.h"
+#include "video_postprocess.h"
 
 typedef DYNAMIC_ARRAY(VideoMode) VideoModeArray;
 

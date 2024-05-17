@@ -11,8 +11,6 @@
 #include "rwops/rwops_util.h"
 #include "rwops/rwops_zstd.h"
 
-#include "util.h"
-
 #define FORCE_MANUAL_DECOMPRESSION (0)
 
 #if FORCE_MANUAL_DECOMPRESSION

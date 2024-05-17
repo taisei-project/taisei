@@ -7,8 +7,8 @@
  */
 
 #include "platform_paths.h"
-#include "util.h"
 #include "../syspath_public.h"
+#include "util/env.h"
 
 const char *vfs_platformpath_cache(void) {
 	static char *cached;

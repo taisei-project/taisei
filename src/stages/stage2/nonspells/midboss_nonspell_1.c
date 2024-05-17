@@ -8,9 +8,6 @@
 
 #include "nonspells.h"
 
-#include "global.h"
-#include "common_tasks.h"
-
 TASK(spawn_bugs, { BoxedBoss boss; BoxedProjectileArray *bugs; }) {
 	Boss *boss = TASK_BIND(ARGS.boss);
 

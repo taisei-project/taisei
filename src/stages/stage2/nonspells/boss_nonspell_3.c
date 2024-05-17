@@ -7,10 +7,6 @@
  */
 
 #include "nonspells.h"
-#include "../hina.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 // Pattern contributed by raz, originally written for danmakufu
 // The port is almost direct, and a bit rough

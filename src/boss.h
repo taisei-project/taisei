@@ -9,13 +9,14 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
-#include "difficulty.h"
+#include "move.h"
+#include "taisei.h"
+
 #include "aniplayer.h"
 #include "color.h"
-#include "projectile.h"
+#include "coroutine/taskdsl.h"
+#include "difficulty.h"
 #include "entity.h"
-#include "coroutine.h"
 #include "resource/resource.h"
 
 #define BOSS_HURT_RADIUS 16

@@ -6,15 +6,18 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include <stdio.h>
-
-#include "menu.h"
-#include "common.h"
 #include "options.h"
+
+#include "common.h"
 #include "mainmenu.h"
-#include "global.h"
-#include "video.h"
+#include "menu.h"
+
+#include "audio/audio.h"
+#include "gamepad.h"
 #include "util/graphics.h"
+#include "video.h"
+
+#include <stdio.h>
 
 typedef struct OptionBinding OptionBinding;
 

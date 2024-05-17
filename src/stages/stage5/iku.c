@@ -8,8 +8,6 @@
 
 #include "iku.h"
 
-#include "stage5.h"
-
 #include "common_tasks.h"
 
 static void iku_slave_draw(EntityInterface *e) {

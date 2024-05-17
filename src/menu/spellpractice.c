@@ -7,9 +7,11 @@
  */
 
 #include "spellpractice.h"
+
 #include "common.h"
 #include "options.h"
-#include "global.h"
+
+#include "stageinfo.h"
 #include "video.h"
 
 static void draw_spell_menu(MenuData *m) {

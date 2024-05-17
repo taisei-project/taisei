@@ -7,16 +7,12 @@
  */
 
 #include "timeline.h"
-#include "stage6.h"
-#include "draw.h"
+
 #include "background_anim.h"
-#include "enemy_classes.h"
-
 #include "elly.h"
-#include "spells/spells.h"
 #include "nonspells/nonspells.h"
-
-#include "common_tasks.h"
+#include "spells/spells.h"
+#include "stage6.h"
 
 TASK(hacker_fairy, { cmplx pos; MoveParams exit_move; }) {
 	Enemy *e = TASK_BIND(espawn_super_fairy(ARGS.pos, ITEMS(

@@ -6,10 +6,13 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "marisa.h"
+
+#include "audio/audio.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "marisa.h"
 #include "stagedraw.h"
+#include "util/graphics.h"
 
 PlayerCharacter character_marisa = {
 	.id = PLR_CHAR_MARISA,

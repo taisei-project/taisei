@@ -9,8 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
 #include "resource.h"
+#include "util/geometry.h"
 
 typedef struct Texture Texture;
 

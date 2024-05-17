@@ -9,9 +9,9 @@
 #pragma once
 #include "taisei.h"
 
-#include "dialog.h"
-#include "stage.h"
-#include "portrait.h"
+#include "dialog.h"  // IWYU pragma: export
+#include "stage.h"  // IWYU pragma: export
+#include "portrait.h"  // IWYU pragma: export
 
 #define DIALOG_BEGIN(_interface) \
 	if(ARGS.called_for_preload) { \

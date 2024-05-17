@@ -7,6 +7,8 @@
  */
 
 #include "item.h"
+
+#include "audio/audio.h"
 #include "global.h"
 #include "list.h"
 #include "stage.h"

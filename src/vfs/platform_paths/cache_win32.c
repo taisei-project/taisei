@@ -7,7 +7,7 @@
  */
 
 #include "platform_paths.h"
-#include "util.h"
+#include "../public.h"
 
 typedef struct tagLOGFONTW LOGFONTW;  /* broken piece of shit garbage windows headers */
 

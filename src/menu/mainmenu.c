@@ -7,21 +7,19 @@
  */
 
 #include "mainmenu.h"
+
+#include "charselect.h"
+#include "common.h"
 #include "menu.h"
 #include "submenus.h"
 
-#include "common.h"
-
-#include "savereplay.h"
-#include "stagepractice.h"
-#include "difficultyselect.h"
-#include "charselect.h"
-
+#include "audio/audio.h"
+#include "events.h"
 #include "global.h"
-#include "video.h"
-#include "stage.h"
+#include "resource/font.h"
+#include "util/graphics.h"
 #include "version.h"
-#include "plrmodes.h"
+#include "video.h"
 #include "watchdog.h"
 
 static MenuEntry *spell_practice_entry;

@@ -7,8 +7,9 @@
  */
 
 #include "models.h"
+
 #include "../api.h"
-#include "resource/model.h"
+#include "util.h"
 
 static struct {
 	VertexBuffer *vbuf;

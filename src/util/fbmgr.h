@@ -9,10 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "renderer/api.h"
 #include "fbpair.h"
 #include "geometry.h"
 #include "list.h"
+#include "renderer/api.h"
 
 typedef struct FramebufferResizeStrategy {
 	void (*resize_func)(void *userdata, IntExtent *out_dimensions, FloatRect *out_viewport);

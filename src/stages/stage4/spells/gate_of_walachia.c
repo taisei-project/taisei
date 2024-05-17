@@ -6,11 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "common_tasks.h"
 #include "spells.h"
-#include "../kurumi.h"
-
-#include "global.h"
 
 TASK(kurumi_walachia_slave_move_turn, { cmplx *vel; int duration; cmplx offset; }) {
 	for(int i = 0; i < ARGS.duration; i++, YIELD) {
@@ -21,12 +17,12 @@ TASK(kurumi_walachia_slave_move_turn, { cmplx *vel; int duration; cmplx offset; 
 
 TASK(kurumi_walachia_slave_move, { cmplx *pos; cmplx *vel; cmplx direction; }) {
 	INVOKE_SUBTASK_DELAYED(40, kurumi_walachia_slave_move_turn, ARGS.vel, 60, ARGS.direction);
-	
+
 	for(int i = 0;; i++, YIELD) {
 		*ARGS.pos += 2 * *ARGS.vel * (sin(i / 10.0) + 1.5);
 	}
 
-}	
+}
 
 TASK(kurumi_walachia_slave, { cmplx pos; cmplx direction; int lifetime; }) {
 	cmplx pos = ARGS.pos;

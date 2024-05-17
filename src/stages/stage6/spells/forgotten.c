@@ -8,8 +8,6 @@
 
 #include "spells.h"
 
-#include "common_tasks.h"
-
 TASK(forgotten_baryons_movement, { BoxedEllyBaryons baryons; BoxedBoss boss; }) {
 	EllyBaryons *baryons = TASK_BIND(ARGS.baryons);
 

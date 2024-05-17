@@ -9,9 +9,8 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
+#include "renderer/api.h"
 #include "resource/material.h"
-#include "global.h" // remove when STAGE3D_DEFAULT_ASPECT aspect is removed
 
 typedef struct Stage3D Stage3D;
 

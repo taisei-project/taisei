@@ -12,14 +12,6 @@
 #include "resource.h"
 #include "renderer/api.h"
 
-struct Model {
-	VertexArray *vertex_array;
-	size_t num_vertices;
-	size_t num_indices;
-	size_t offset;
-	Primitive primitive;
-};
-
 DEFINE_RESOURCE_GETTER(Model, res_model, RES_MODEL)
 DEFINE_OPTIONAL_RESOURCE_GETTER(Model, res_model_optional, RES_MODEL)
 

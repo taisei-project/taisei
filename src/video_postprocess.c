@@ -6,12 +6,12 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "log.h"
+#include "video_postprocess.h"
+
 #include "resource/postprocess.h"
+#include "util/fbmgr.h"
 #include "util/graphics.h"
 #include "video.h"
-#include "video_postprocess.h"
-#include "util/fbmgr.h"
 
 struct VideoPostProcess {
 	ManagedFramebufferGroup *mfb_group;

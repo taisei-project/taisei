@@ -7,9 +7,9 @@
  */
 
 #include "enemy_classes.h"
+
 #include "common_tasks.h"
 #include "global.h"
-#include "coroutine.h"
 
 #define ECLASS_HP_SWIRL         100
 #define ECLASS_HP_FAIRY         400

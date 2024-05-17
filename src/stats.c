@@ -8,7 +8,6 @@
 
 #include "stats.h"
 
-#include "global.h"
 #include "log.h"
 
 void stats_init(Stats *stats) {

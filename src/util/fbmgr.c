@@ -7,9 +7,11 @@
  */
 
 #include "fbmgr.h"
-#include "list.h"
-#include "events.h"
+
 #include "config.h"
+#include "events.h"
+#include "list.h"
+#include "util.h"
 #include "video.h"
 
 typedef struct ManagedFramebufferData ManagedFramebufferData;

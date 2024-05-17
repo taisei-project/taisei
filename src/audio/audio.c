@@ -7,12 +7,15 @@
  */
 
 #include "audio.h"
+
 #include "backend.h"
-#include "resource/resource.h"
-#include "resource/bgm.h"
-#include "resource/sfx.h"
+#include "events.h"
 #include "global.h"
+#include "resource/bgm.h"
+#include "resource/resource.h"
+#include "resource/sfx.h"
 #include "stage.h"
+#include "util/kvparser.h"
 
 #define LOOPTIMEOUTFRAMES 10
 #define DEFAULT_SFX_VOLUME 100

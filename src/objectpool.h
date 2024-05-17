@@ -9,7 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "list.h"
 #include "memory/arena.h"
 
 typedef struct ObjectPool ObjectPool;

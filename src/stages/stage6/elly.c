@@ -6,11 +6,14 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "global.h"
 #include "elly.h"
+
 #include "draw.h"
-#include "util/glm.h"
 #include "spells/spells.h"
+
+#include "stagedraw.h"
+#include "util/glm.h"
+#include "util/graphics.h"
 
 TASK(elly_animate_colors, { BoxedBoss boss; }) {
 	auto boss = TASK_BIND(ARGS.boss);

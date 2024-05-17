@@ -9,8 +9,6 @@
 #pragma once
 #include "taisei.h"
 
-#include "coroutine.h"
-
 void stage5_bg_raise_lightning(void);
 void stage5_bg_lower_camera(void);
 

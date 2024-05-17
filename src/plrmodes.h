@@ -9,12 +9,10 @@
 #pragma once
 #include "taisei.h"
 
-#include "enemy.h"
-#include "projectile.h"
-#include "player.h"
 #include "cutscenes/cutscene.h"
-#include "dialog.h"
+#include "dialog/dialog_interface.h"
 #include "endings.h"
+#include "player.h"
 
 typedef enum {
 	// WARNING: Reordering this will break current replays, and possibly even progress files.

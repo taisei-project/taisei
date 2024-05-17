@@ -8,7 +8,9 @@
 
 #include "rwops_zstd.h"
 #include "rwops_util.h"
-#include "util.h"
+
+#include "log.h"
+#include "util/miscmath.h"
 
 #include <zstd.h>
 

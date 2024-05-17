@@ -6,6 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "log.h"
 #include "shaderlib.h"
 #include "lang_spirv_private.h"
 

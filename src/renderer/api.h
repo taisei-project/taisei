@@ -9,14 +9,12 @@
 #pragma once
 #include "taisei.h"
 
-#include "util.h"
-#include "pixmap/pixmap.h"
 #include "color.h"
-#include "common/shaderlib/shaderlib.h"
+#include "pixmap/pixmap.h"
+#include "renderer/common/shaderlib/shaderlib.h"
 #include "resource/resource.h"
 #include "resource/shader_program.h"
 #include "resource/texture.h"
-#include "memory/allocator.h"
 
 typedef struct Texture Texture;
 typedef struct Framebuffer Framebuffer;
@@ -229,6 +227,14 @@ typedef enum Primitive {
 	PRIM_TRIANGLE_STRIP,
 	PRIM_TRIANGLES,
 } Primitive;
+
+struct Model {
+	VertexArray *vertex_array;
+	size_t num_vertices;
+	size_t num_indices;
+	size_t offset;
+	Primitive primitive;
+};
 
 typedef enum VertexAttribType {
 	VA_FLOAT,

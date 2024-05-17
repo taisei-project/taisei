@@ -9,7 +9,6 @@
 #include "replay.h"
 #include "struct.h"
 #include "stage.h"
-#include "state.h"
 
 void replay_destroy_events(Replay *rpy) {
 	dynarray_foreach_elem(&rpy->stages, ReplayStage *stg, {

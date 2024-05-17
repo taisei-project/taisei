@@ -7,10 +7,6 @@
  */
 
 #include "spells.h"
-#include "../wriggle.h"
-
-#include "common_tasks.h"
-#include "global.h"
 
 typedef struct SunContext {
 	int bullets_absorbed;

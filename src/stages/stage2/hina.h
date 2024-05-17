@@ -9,7 +9,7 @@
 #pragma once
 #include "taisei.h"
 
-#include "boss.h"
+#include "boss.h"   // IWYU pragma: keep
 
 Boss *stage2_spawn_hina(cmplx pos);
 void stage2_draw_hina_spellbg(Boss *h, int time);

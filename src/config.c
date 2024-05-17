@@ -7,10 +7,14 @@
  */
 
 #include "config.h"
-#include "global.h"
-#include "version.h"
-#include "util/strbuf.h"
+
 #include "bitarray.h"
+#include "gamepad.h"
+#include "global.h"   // IWYU pragma: keep
+#include "util/kvparser.h"
+#include "util/strbuf.h"
+#include "version.h"
+#include "vfs/public.h"
 
 #define CONFIG_FILE "storage/config"
 

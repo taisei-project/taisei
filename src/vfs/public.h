@@ -9,13 +9,14 @@
 #pragma once
 #include "taisei.h"
 
-#include <SDL.h>
+#include "syspath_public.h"  // IWYU pragma: export
+#include "union_public.h"  // IWYU pragma: export
+#include "zipfile_public.h"  // IWYU pragma: export
+#include "readonly_wrapper_public.h"  // IWYU pragma: export
 
-#include "syspath_public.h"
-#include "union_public.h"
-#include "zipfile_public.h"
-#include "readonly_wrapper_public.h"
 #include "util/callchain.h"
+
+#include <SDL.h>
 
 typedef struct VFSInfo {
 	uchar error       : 1;

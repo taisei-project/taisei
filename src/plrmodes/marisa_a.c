@@ -6,12 +6,16 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
+#include "marisa.h"
+
+#include "audio/audio.h"
+#include "common_tasks.h"
+#include "dialog/marisa.h"
 #include "global.h"
 #include "plrmodes.h"
-#include "marisa.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
-#include "common_tasks.h"
+#include "util/graphics.h"
 
 #define SHOT_FORWARD_DAMAGE 60
 #define SHOT_FORWARD_DELAY 6

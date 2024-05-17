@@ -6,7 +6,11 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "internal.h"
+#include "coroutine/cotask.h"
+#include "coroutine/cotask_internal.h"
+#include "coroutine/coevent_internal.h"
+#include "log.h"
+#include "thread.h"
 
 static CoTaskList task_pool;
 static koishi_coroutine_t *co_main;
