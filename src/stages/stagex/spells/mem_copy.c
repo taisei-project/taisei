@@ -6,11 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "global.h"
-#include "util/glm.h"
-#include "common_tasks.h"
-#include "stage.h"
+#include "spells.h"
 
 // TODO naming not ideal… CELLS vs CELL
 #define CELLS_W 3
