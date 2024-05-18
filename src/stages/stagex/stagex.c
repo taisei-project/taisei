@@ -72,6 +72,11 @@ struct stagex_spells_s stagex_spells = {
 			TASK_INDIRECT_INIT(BossAttack, stagex_spell_lambda_calculus),
 			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
 		},
+		.lambda_calculus = {
+			{-1, -1, -1, 10}, AT_Spellcard, "Subnet Topology “Dimensional Routing”", 90, 80000,
+			TASK_INDIRECT_INIT(BossAttack, stagex_spell_hilbert_curve),
+			stagex_draw_yumemi_spellbg_voronoi, VIEWPORT_W/2.0+120.0*I, 7,
+		},
 	},
 };
 

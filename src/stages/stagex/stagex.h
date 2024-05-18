@@ -28,6 +28,7 @@ extern struct stagex_spells_s {
 		AttackInfo alignment;
 		AttackInfo rings;
 		AttackInfo lambda_calculus;
+		AttackInfo hilbert_curve;
 	} boss;
 
 	// required for iteration
@@ -47,6 +48,7 @@ DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_infinity_network, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_sierpinski, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_mem_copy, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_lambda_calculus, BossAttack);
+DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_hilbert_curve, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_pipe_dream, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_alignment, BossAttack);
 DECLARE_EXTERN_TASK_WITH_INTERFACE(stagex_spell_rings, BossAttack);
