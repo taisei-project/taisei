@@ -6,10 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "stage.h"
-#include "global.h"
-#include "util/glm.h"
+#include "spells.h"
 
 typedef struct LatticeNode LatticeNode;
 struct LatticeNode {

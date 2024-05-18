@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "global.h"
-#include "common_tasks.h"
+#include "spells.h"
 
 static void spawn_circle(cmplx pos, real phase, real radius, int count, real collapse_time) {
 	for(int i = 0; i < count; i++) {
