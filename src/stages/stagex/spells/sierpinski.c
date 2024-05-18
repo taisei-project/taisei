@@ -6,12 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "../yumemi.h"
-
-#include "stage.h"
-#include "global.h"
-#include "common_tasks.h"
+#include "spells.h"
 
 static int idxmod(int i, int n) {   // TODO move into utils?
 	return (n + i) % n;
