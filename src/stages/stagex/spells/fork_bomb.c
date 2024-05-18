@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "global.h"
-#include "common_tasks.h"
+#include "spells.h"
 
 static void draw_scuttle_proj(Projectile *p, int t, ProjDrawRuleArgs args) {
 	Animation *ani = res_anim("boss/scuttle");

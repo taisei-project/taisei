@@ -6,15 +6,15 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "stagex.h"
 #include "yumemi.h"
 #include "draw.h"
 #include "stagex.h"
 
+#include "audio/audio.h"
 #include "common_tasks.h"
+#include "global.h"
 #include "renderer/api.h"
 #include "util/glm.h"
-#include "global.h"
 
 #define BOMBSHIELD_RADIUS 128
 

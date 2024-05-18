@@ -6,9 +6,7 @@
  * Copyright (c) 2012-2024, Andrei Alexeyev <akari@taisei-project.org>.
  */
 
-#include "../stagex.h"
-#include "global.h"
-#include "common_tasks.h"
+#include "spells.h"
 
 TASK(animate_radii, { real *radius_inner; real *radius_outer; }) {
 	*ARGS.radius_inner = 100;
