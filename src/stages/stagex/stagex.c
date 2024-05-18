@@ -8,9 +8,14 @@
 
 #include "stagex.h"
 
+#include "background_anim.h"
 #include "draw.h"
-#include "background_anim.h"   // IWYU pragma: keep
+#include "spells/spells.h"
 #include "timeline.h"   // IWYU pragma: keep
+#include "yumemi.h"
+
+#include "global.h"
+#include "stage.h"
 
 /*
  *  See the definition of AttackInfo in boss.h for information on how to set up the idmaps.
