@@ -7,7 +7,6 @@
  */
 
 #include "timeline.h"   // IWYU pragma: keep
-#include "draw.h"
 #include "background_anim.h"
 #include "nonspells/nonspells.h"
 #include "stagex.h"

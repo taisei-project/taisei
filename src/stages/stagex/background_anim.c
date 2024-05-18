@@ -9,11 +9,9 @@
 #include "background_anim.h"   // IWYU pragma: keep
 #include "draw.h"
 
-#include "util/glm.h"
 #include "random.h"
 #include "stageutils.h"
-#include "stagetext.h"
-#include "global.h"
+#include "util/glm.h"
 
 TASK(animate_value, { float *val; float target; float rate; }) {
 	while(*ARGS.val != ARGS.target) {
