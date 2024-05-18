@@ -69,6 +69,20 @@ typedef struct LaserRuleDynamicData {
 Laser *create_dynamic_laser(cmplx pos, float time, float deathtime, const Color *color, MoveParams **out_move);
 LaserRuleDynamicData *laser_get_ruledata_dynamic(Laser *l);
 
+
+typedef struct LaserRuleChainTaskData {
+	int num_links;
+	cmplx *links;
+} LaserRuleChainTaskData;
+
+typedef struct LaserRuleChainData {
+	const BoxedTask control_task;
+	LaserRuleChainTaskData *const task_data;
+} LaserRuleChainData;
+
+Laser *create_chain_laser(real deathtime, const Color *color, int num_links, cmplx **links);
+LaserRuleChainData *laser_get_ruledata_chain(Laser *l);
+
 #define MAKE_LASER_RULE(func, data) ({ \
     union { \
 		LaserRule r; \
