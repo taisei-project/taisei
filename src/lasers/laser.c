@@ -210,9 +210,20 @@ static void fill_samples(
 	float t = sp->time_shift;
 	float maxtime = sp->time_shift + l->timespan;
 
-	for(uint i = 0; i < sp->num_samples; ++i, t = min(t + sp->time_step, maxtime)) {
-		dynarray_append(array, { laser_pos_at(l, t), t });
+	LaserSample *prev = dynarray_append(array, { laser_pos_at(l, t), t });
+	t += sp->time_step;
+
+	for(uint i = 1; i < sp->num_samples; ++i, t = min(t + sp->time_step, maxtime)) {
+		auto p = laser_pos_at(l, t);
+		if(prev->p != p) {
+			prev = dynarray_append(array, { p, t });
+		}
 	}
+
+	// log_debug("%i / %i samples filled", array->num_elements, sp->num_samples);
+
+	dynarray_get_ptr(array, array->num_elements - 1)->t = maxtime;
+	assert(dynarray_get_ptr(array, array->num_elements - 2)->t < maxtime);
 }
 
 static bool segment_is_visible(cmplxf a, cmplxf b, const FloatRect *bounds) {
@@ -266,6 +277,8 @@ static int quantize_laser(Laser *l) {
 		return 0;
 	}
 
+	assert(sp.num_samples > 1);
+
 	// Sample all points now
 	fill_samples(&lasers.samples, &sp, l);
 
@@ -293,8 +306,9 @@ static int quantize_laser(Laser *l) {
 	float w0 = calc_sample_width(&wp, 0);
 
 	// Vector from A to B of the last included segment, and its squared length.
-	cmplxf v0 = a - laser_pos_at(l, t0 - sp.time_step);
+	cmplxf v0 = a - dynarray_get(&lasers.samples, 1).p;
 	float v0_abs2 = cabs2f(v0);
+	assume(v0_abs2 != 0);
 
 	float viewmargin = LASER_SDF_RANGE + l->width * 0.5f;
 	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
@@ -318,11 +332,7 @@ static int quantize_laser(Laser *l) {
 			// dot(a, b) == |a|*|b|*cos(theta)
 			float dot = cdotf(v0, v1);
 			float norm2 = v0_abs2 * cabs2f(v1);
-
-			if(norm2 == 0.0f) {
-				// degenerate case
-				continue;
-			}
+			assert(norm2 != 0);
 
 			float norm = sqrtf(norm2);
 			float cosTheta = dot / norm;
@@ -337,10 +347,7 @@ static int quantize_laser(Laser *l) {
 				cmplxf v2 = c - b;
 				dot = cdotf(v1, v2);
 				norm2 = cabs2f(v1) * cabs2f(v2);
-
-				if(norm2 == 0) {
-					continue;
-				}
+				assert(norm2 != 0);
 
 				norm = sqrtf(norm2);
 				cosTheta = dot / norm;
@@ -386,6 +393,7 @@ static int quantize_laser(Laser *l) {
 		w0 = w;
 		v0 = b - a;
 		v0_abs2 = cabs2f(v0);
+		assume(v0_abs2 != 0);
 		a = b;
 	}
 
