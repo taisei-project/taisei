@@ -31,11 +31,11 @@ TASK(hilbert_curve, { cmplx center; cmplx size; int levels; }) {
 
 	int length = 1<<(2*ARGS.levels);
 
-	cmplx *positions;
+	cmplx positions[length];
 	int turns[length];
 	cmplx new_shifts[length];
 
-	auto l = TASK_BIND(create_chain_laser(1000, RGBA(0.9,0.4,0.9,0.2), length, &positions));
+	auto l = TASK_BIND(create_chain_laser(1000, RGBA(0.9,0.4,0.9,0.2), length, positions));
 	laser_make_static(l);
 	l->unclearable = true;
 

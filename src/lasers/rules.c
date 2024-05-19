@@ -193,31 +193,29 @@ static cmplx laser_rule_chain_impl(Laser *l, real t, void *ruledata) {
 	}
 
 	LaserRuleChainData *rd = ruledata;
-	assert(cotask_unbox(rd->control_task));
-	LaserRuleChainTaskData *td = rd->task_data;
 
-	assert(td->num_links > 0);
+	assert(rd->num_links > 0);
 
-	real tofs = clamp(t * (td->num_links-1) / l->timespan, 0, td->num_links-1);
+	real tofs = clamp(t, 0, rd->num_links-1);
 
 	int i0 = floor(tofs);
 	int i1 = ceil(tofs);
 	real ifract = tofs - i0;
 
-	assert(i0 >= 0 && i1 < td->num_links);
+	assert(i0 >= 0 && i1 < rd->num_links);
 
-	cmplx v0 = td->links[i0];
-	cmplx v1 = td->links[i1];
+	cmplx v0 = rd->links[i0];
+	cmplx v1 = rd->links[i1];
 	
 	return clerp(v0, v1, ifract);
 }
 
 static LaserRule laser_rule_chain(
-	BoxedTask control_task, LaserRuleChainTaskData *task_data
+	int num_links, cmplx links[num_links]
 ) {
 	LaserRuleChainData rd = {
-		.control_task = control_task,
-		.task_data = task_data,
+		.num_links = num_links,
+		.links = links,
 	};
 	return MAKE_LASER_RULE(laser_rule_chain_impl, rd);
 }
@@ -230,33 +228,23 @@ TASK(laser_chain, {
 	float deathtime;
 	const Color *color;
 	int num_links;
-	cmplx **out_links;
+	cmplx *links;
 }) {
-
-	cmplx *links = TASK_MALLOC(ARGS.num_links * sizeof(cmplx));
-	LaserRuleChainTaskData td = {
-		.num_links = ARGS.num_links,
-		.links = links,
-	};
 
 	auto l = TASK_BIND(create_laser(
 		0, ARGS.deathtime*10, ARGS.deathtime, ARGS.color,
-		laser_rule_chain(THIS_TASK, &td)
+		laser_rule_chain(ARGS.num_links, ARGS.links)
 	));
-
-	if(LIKELY(ARGS.out_links)) {
-		*ARGS.out_links = links;
-	}
 
 	*ARGS.out_laser = l;
 	STALL;
 }
 
 Laser *create_chain_laser(
-	real deathtime, const Color *color, int num_links, cmplx **out_links
+	real deathtime, const Color *color, int num_links, cmplx links[num_links]
 ) {
 	Laser *l;
-	INVOKE_TASK(laser_chain, &l, deathtime, color, num_links, out_links);
+	INVOKE_TASK(laser_chain, &l, deathtime, color, num_links, links);
 	return l;
 }
 /*
