@@ -539,10 +539,41 @@ TASK(fairy_laser45, { cmplx origin; }) {
 	enemy_kill(e);
 }
 
-DEFINE_EXTERN_TASK(stagex_timeline) {
-	WAIT(400);
+TASK(intro_swirl, { cmplx origin; cmplx dir; }) {
+	auto e = TASK_BIND(espawn_swirl(ARGS.origin, ITEMS(.points = 0)));
+	vec3 p = { 0, 0, stage_3d_context.cam.pos[2] - 150 };
+	ecls_anyenemy_fake3dmovein(e, &stage_3d_context.cam, p, 180);
+	e->move = move_accelerated(0, ARGS.dir * -0.05);
+	WAIT(5);
+	PROJECTILE(
+		.proto = pp_bullet,
+		.pos = e->pos,
+		.move = move_asymptotic_simple(2 * cnormalize(global.plr.pos - e->pos), 2),
+		.color = RGB(0, 0, 1),
+	);
+	// enemy_kill(e);
+}
 
-	INVOKE_TASK(fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
+DEFINE_EXTERN_TASK(stagex_timeline) {
+	WAIT(BPM168_4BEATS * 2);
+
+	{
+		int t = BPM168_4BEATS * 1000;
+		int interval = 8;
+		cmplx r = cdir(0.3);
+		cmplx dir = -I;
+		for(;t - interval > 0; t -= interval) {
+			INVOKE_SUBTASK(intro_swirl, 0.5*(VIEWPORT_W+VIEWPORT_H*I) + 80 * dir, dir);
+			dir *= r;
+			WAIT(interval);
+		}
+		log_debug("%i", t);
+	}
+
+
+	// WAIT(400);
+
+	// INVOKE_TASK(fairy_laser45, 0.5*(VIEWPORT_W+VIEWPORT_H*I));
 
 	WAIT(5762);
 	int midboss_time = midboss_section();
