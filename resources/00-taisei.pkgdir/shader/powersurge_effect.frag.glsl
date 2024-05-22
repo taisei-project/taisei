@@ -29,9 +29,7 @@ vec4 colormap(vec4 c) {
 
 void main(void) {
 	vec2 uv = texCoord;
-	vec2 gradX = dFdx(uv);
-	vec2 gradY = dFdy(uv);
-	vec4 c = textureGrad(shotlayer, uv, gradX, gradY);
+	vec4 c = texture(shotlayer, uv);
 
 	#ifdef ENABLE_ALPHA_CULLING
 	if(all(lessThan(c, vec4(1.0 / 255.0)))) {
@@ -49,9 +47,9 @@ void main(void) {
 	vec4 m = vec4(vec3(0), 1);
 	float t = (time + c.a * 0.2) * 0.1 + 92.123431 + fwidth(c.a);
 
-	m.rgb += textureGrad(flowlayer, uv + 0.0524 * vec2(3.123*sin(t*1.632), t*36.345), gradX, gradY).rgb;
-	m.rgb += textureGrad(flowlayer, uv + 0.0531 * vec2(t*13.624, -t*49.851), gradX, gradY).rgb;
-	m.rgb += textureGrad(flowlayer, uv + 0.0543 * vec2(-t*12.931, -t*24.341), gradX, gradY).rgb;
+	m.rgb += texture(flowlayer, uv + 0.0524 * vec2(3.123*sin(t*1.632), t*36.345)).rgb;
+	m.rgb += texture(flowlayer, uv + 0.0531 * vec2(t*13.624, -t*49.851)).rgb;
+	m.rgb += texture(flowlayer, uv + 0.0543 * vec2(-t*12.931, -t*24.341)).rgb;
 
 	m.rgb = hueShift(clamp(m.rgb / 2.5, 0, 1), time * 0.1 + uv.y);
 
