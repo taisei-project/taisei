@@ -22,6 +22,10 @@ typedef struct LaserRule {
 
 typedef LIST_ANCHOR(Laser) LaserList;
 
+typedef struct LaserBBox {
+	FloatOffset top_left, bottom_right;
+} LaserBBox;
+
 DEFINE_ENTITY_TYPE(Laser, {
 	cmplx pos;
 	LaserRule rule;
@@ -29,9 +33,7 @@ DEFINE_ENTITY_TYPE(Laser, {
 	struct {
 		int segments_ofs;
 		int num_segments;
-		struct {
-			FloatOffset top_left, bottom_right;
-		} bbox;
+		LaserBBox bbox;
 	} _internal;
 
 	Color color;
