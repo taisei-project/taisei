@@ -62,7 +62,7 @@ static void animate_bg_intro(StageXDrawData *draw_data) {
 			}
 
 			if(frame == 61) {
-				INVOKE_TASK_DELAYED(60, animate_value, &stage_3d_context.cam.vel[2], -0.38f, 0.002f);
+				INVOKE_TASK_DELAYED(60, animate_value, &stage_3d_context.cam.vel[2], -0.28f, 0.002f);
 			}
 
 			fapproach_p(&transition, 1.0f, 1.0f/300.0f);
@@ -73,7 +73,7 @@ static void animate_bg_intro(StageXDrawData *draw_data) {
 }
 
 static void animate_bg_descent(StageXDrawData *draw_data, CoEvent *stop_condition) {
-	const float max_dist = 1.5f;
+	const float max_dist = 1.25f;
 	const float max_spin = RAD2DEG*0.01f;
 	float dist = 0.0f;
 	float target_dist = 0.0f;
@@ -87,7 +87,7 @@ static void animate_bg_descent(StageXDrawData *draw_data, CoEvent *stop_conditio
 		stage_3d_context.cam.pos[0] =  r * cos(a);
 		stage_3d_context.cam.pos[1] = -r * sin(a);
 		// stage_3d_context.cam.rot.roll += spin * sin(0.4331*a);
-		fapproach_asymptotic_p(&draw_data->tower_spin,  spin * sin(0.4331*a), 0.02, 1e-4);
+		fapproach_asymptotic_p(&draw_data->tower_spin, spin * sin(0.331*a), 0.02, 1e-4);
 		fapproach_p(&spin, max_spin, max_spin / 240.0f);
 
 		fapproach_asymptotic_p(&dist, target_dist, 0.01, 1e-4);
@@ -153,7 +153,7 @@ TASK(animate_light, { StageXDrawData *draw_data; }) {
 
 	for(;;) {
 		Color c;
-		c.r = psinf(draw_data->fog.t);
+		c.r = 0.5f + 0.5f * psinf(draw_data->fog.t);
 		c.g = 0.25f * c.r * powf(pcosf(draw_data->fog.t), 1.25f);
 		c.b = c.r * c.g;
 
@@ -167,13 +167,15 @@ TASK(animate_light, { StageXDrawData *draw_data; }) {
 		c.b = lerpf(c.b, 0.8f*b, w);
 		c.a = 1.0f;
 
-// 		color_lerp(&c, RGBA(1, 1, 1, 1), 0.2);
+		color_lerp(&c, RGBA(1, 0.5, 0.6, 1), 0.1);
 		draw_data->fog.color = c;
 
 		YIELD;
 		draw_data->fog.t += rate;
 	}
 }
+
+#include "camcontrol.h"
 
 TASK(animate_bg, { StageXDrawData *draw_data; }) {
 	StageXDrawData *draw_data = ARGS.draw_data;
@@ -186,7 +188,12 @@ TASK(animate_bg, { StageXDrawData *draw_data; }) {
 	INVOKE_TASK(animate_value, &draw_data->plr_influence, 1.0f, 1.0f/120.0f);
 	animate_bg_intro(draw_data);
 	INVOKE_TASK_DELAYED(520, animate_value, &draw_data->fog.red_flash_intensity, 1.0f, 1.0f/320.0f);
-	INVOKE_TASK_DELAYED(200, animate_value, &stage_3d_context.cam.vel[2], -0.56f, 0.002f);
+
+	// glm_vec3_zero(stage_3d_context.cam.vel);
+	// camcontrol_init(&stage_3d_context.cam);
+	// return;
+
+	INVOKE_TASK_DELAYED(200, animate_value, &stage_3d_context.cam.vel[2], -0.36f, 0.002f);
 	animate_bg_descent(draw_data, &draw_data->events.next_phase);
 	animate_bg_midboss(draw_data, &draw_data->events.next_phase);
 	animate_bg_post_midboss(draw_data, 60 * 7);
