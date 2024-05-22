@@ -102,7 +102,7 @@ void camera3d_project(Camera3D *cam, vec3 pos, vec3 dest) {
 
 	mat4 mpersp;
 	glm_perspective(cam->fovy, cam->aspect, cam->near, cam->far, mpersp);
-	camera3d_apply_rotations(cam, mpersp);
+	camera3d_apply_transforms(cam, mpersp);
 
 	glm_project(pos, mpersp, viewport, dest);
 }
