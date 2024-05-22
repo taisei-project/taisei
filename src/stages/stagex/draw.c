@@ -8,14 +8,18 @@
 
 #include "draw.h"
 
+#include "color.h"
 #include "global.h"
 #include "random.h"
 #include "renderer/api.h"
 #include "stagedraw.h"
 #include "stageutils.h"
+#include "util.h"
+#include "util/compat.h"
 #include "util/glm.h"
 #include "util/graphics.h"
 #include "util/io.h"
+#include "util/miscmath.h"
 
 static StageXDrawData *draw_data;
 
@@ -62,10 +66,10 @@ static void lightwave(Camera3D *cam, PointLight3D *light, float t) {
 	glm_vec3_scale(light->radiance, a, light->radiance);
 }
 
-static void stagex_bg_setup_pbr_lighting(Camera3D *cam) {
+static void stagex_bg_setup_pbr_lighting(Camera3D *cam, vec3 seg_pos) {
 	StageXDrawData *draw_data = stagex_get_draw_data();
 
-	float p = 100;
+	float p = 150;
 	float f = 10000 * draw_data->fog.opacity;
 
 	Color c = draw_data->fog.color;
@@ -74,8 +78,9 @@ static void stagex_bg_setup_pbr_lighting(Camera3D *cam) {
 	float l = 500;
 
 	PointLight3D lights[] = {
-		{ { cam->pos[0], cam->pos[1], cam->pos[2] }, { 0.8, 0.5, 1.0 } },
+		{ { cam->pos[0], cam->pos[1], cam->pos[2] }, { 0.8, 0.5, 0.6 } },
 		{ { 0, 0, STAGEX_BG_MAX_RANGE/6 }, { l, l/4, 0 } },
+		{ { 0, 0, cam->pos[2] - 60 }, { 100, 0, 500 } },
 	};
 
 	lightwave(cam, lights+1, draw_data->fog.t / M_TAU + 0.1f);
@@ -91,21 +96,22 @@ static void stagex_bg_setup_pbr_lighting(Camera3D *cam) {
 	camera3d_set_point_light_uniforms(cam, ARRAY_SIZE(lights), lights);
 }
 
-static void stagex_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env) {
-	stagex_bg_setup_pbr_lighting(cam);
+static void stagex_bg_setup_pbr_env(Camera3D *cam, PBREnvironment *env, vec3 seg_pos) {
+	stagex_bg_setup_pbr_lighting(cam, seg_pos);
 	env->environment_map = draw_data->env_map;
-// 	glm_vec3_broadcast(0.1, env->ambient_color);
+	// glm_vec3_broadcast(0.5, env->ambient_color);
+	// glm_vec3_copy((vec3) { 0.5, 0.3, 0.0 }, env->ambient_color);
 	camera3d_apply_inverse_transforms(cam, env->cam_inverse_transform);
 }
 
 static void bg_begin_3d(void) {
-	stage_3d_context.cam.rot.pitch += draw_data->plr_pitch;
-	stage_3d_context.cam.rot.yaw += draw_data->plr_yaw;
+	// stage_3d_context.cam.rot.pitch += draw_data->plr_pitch;
+	// stage_3d_context.cam.rot.yaw += draw_data->plr_yaw;
 }
 
 static void bg_end_3d(void) {
-	stage_3d_context.cam.rot.pitch -= draw_data->plr_pitch;
-	stage_3d_context.cam.rot.yaw -= draw_data->plr_yaw;
+	// stage_3d_context.cam.rot.pitch -= draw_data->plr_pitch;
+	// stage_3d_context.cam.rot.yaw -= draw_data->plr_yaw;
 }
 
 static uint bg_tower_pos(Stage3D *s3d, vec3 pos, float maxrange) {
@@ -122,7 +128,7 @@ static void bg_tower_draw_solid(vec3 pos) {
 	r_shader("pbr");
 
 	PBREnvironment env = { 0 };
-	stagex_bg_setup_pbr_env(&stage_3d_context.cam, &env);
+	stagex_bg_setup_pbr_env(&stage_3d_context.cam, &env, pos);
 
 	pbr_draw_model(&draw_data->models.metal, &env);
 	pbr_draw_model(&draw_data->models.stairs, &env);
