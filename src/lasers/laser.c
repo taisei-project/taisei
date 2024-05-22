@@ -218,7 +218,10 @@ static void fill_samples(
 	// log_debug("%i / %i samples filled", array->num_elements, sp->num_samples);
 
 	dynarray_get_ptr(array, array->num_elements - 1)->t = maxtime;
-	assert(dynarray_get_ptr(array, array->num_elements - 2)->t < maxtime);
+
+	if(array->num_elements > 1) {
+		assert(dynarray_get_ptr(array, array->num_elements - 2)->t < maxtime);
+	}
 }
 
 static bool segment_is_visible(cmplxf a, cmplxf b, const FloatRect *bounds) {
@@ -256,65 +259,62 @@ static bool segment_is_visible(cmplxf a, cmplxf b, const FloatRect *bounds) {
 	return max(y0, y1) >= top && min(y0, y1) <= bottom;
 }
 
-attr_hot
-static int quantize_laser(Laser *l) {
-	// Break the laser curve into small line segments, simplify and cull them,
-	// compute the bounding box.
+static LaserSegment *add_segment(Laser *l, const LaserSegment *cseg) {
+	auto seg = dynarray_append(&lintern.segments, *cseg);
 
-	l->_internal.segments_ofs = lintern.segments.num_elements;
-	l->_internal.num_segments = 0;
-
-	LaserSamplingParams sp;
-
-	if(!laser_prepare_sampling_params(l, 0.5f, &sp)) {
-		l->_internal.bbox.top_left.as_cmplx = 0;
-		l->_internal.bbox.bottom_right.as_cmplx = 0;
-		return 0;
+	if(cseg->width.b < cseg->width.a) {
+		// NOTE: the uneven capsule distance function may not work correctly in cases where
+		//       radius(A) > radius(B) and circle A contains circle B.
+		laserseg_flip(seg);
 	}
 
-	assert(sp.num_samples > 1);
+	assert(seg->width.a <= seg->width.b);
 
-	// Sample all points now
-	fill_samples(&lasers.samples, &sp, l);
+	float xa = re(cseg->pos.a);
+	float ya = im(cseg->pos.a);
+	float xb = re(cseg->pos.b);
+	float yb = im(cseg->pos.b);
 
-	// Precomputed magic parameters for width calculation
-	LaserWidthParams wp;
-	calc_width_params(l, &wp);
+	auto bbox = &l->_internal.bbox;
+	bbox->top_left.x     = min(    bbox->top_left.x, min(xa, xb));
+	bbox->top_left.y     = min(    bbox->top_left.y, min(ya, yb));
+	bbox->bottom_right.x = max(bbox->bottom_right.x, max(xa, xb));
+	bbox->bottom_right.y = max(bbox->bottom_right.y, max(ya, yb));
 
+	return seg;
+}
+
+static void construct_segments(
+	Laser *l,
+	const LaserSamplingParams *sp,
+	const LaserWidthParams *wp,
+	const FloatRect *viewbounds
+) {
 	// Maximum value of `1 - cos(angle)` between two curve segments to reduce to straight lines
 	const float thres_angular = 1e-4f;
 	// Maximum laser-time sample difference between two segment points (for width interpolation)
-	const float thres_temporal = sp.num_samples / 16.0f;
+	const float thres_temporal = sp->num_samples / 16.0f;
 	// These values should be kept as high as possible without introducing artifacts.
 
+	auto sample0 = dynarray_get_ptr(&lasers.samples, 0);
+
 	// Time value of last included sample
-	float t0 = dynarray_get(&lasers.samples, 0).t;
+	float t0 = sample0->t;
 
 	// Points of the current line segment
 	// Begin constructing at t0
 	// WARNING: these must be double precision to prevent cross-platform replay desync
 	cmplx a, b;
-	a = dynarray_get(&lasers.samples, 0).p;
+	a = sample0->p;
 
 	// Width value of the last included sample
 	// Initialized to the width at t0
-	float w0 = calc_sample_width(&wp, 0);
+	float w0 = calc_sample_width(wp, 0);
 
 	// Vector from A to B of the last included segment, and its squared length.
 	cmplxf v0 = a - dynarray_get(&lasers.samples, 1).p;
 	float v0_abs2 = cabs2f(v0);
 	assume(v0_abs2 != 0);
-
-	float viewmargin = LASER_SDF_RANGE + l->width * 0.5f;
-	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
-	viewbounds.w += viewmargin * 2.0f;
-	viewbounds.h += viewmargin * 2.0f;
-	viewbounds.x -= viewmargin;
-	viewbounds.y -= viewmargin;
-
-	FloatOffset top_left, bottom_right;
-	top_left.as_cmplx = a;
-	bottom_right.as_cmplx = a;
 
 	auto last_sample = lasers.samples.data + (lasers.samples.num_elements - 1);
 
@@ -354,34 +354,14 @@ static int quantize_laser(Laser *l) {
 			}
 		}
 
-		float w = calc_sample_width(&wp, sample->t - sp.time_shift);
+		float w = calc_sample_width(wp, sample->t - sp->time_shift);
 
-		bool visible = segment_is_visible(a, b, &viewbounds);
-
-		if(visible) {
-			LaserSegment *seg = dynarray_append(&lintern.segments, {
+		if(segment_is_visible(a, b, viewbounds)) {
+			add_segment(l, &(LaserSegment) {
 				.pos   = {   a,  b },
 				.width = {  w0,  w },
-				.time  = { sp.time_shift - t0, sp.time_shift - sample->t },
+				.time  = { sp->time_shift - t0, sp->time_shift - sample->t },
 			});
-
-			if(w < w0) {
-				// NOTE: the uneven capsule distance function may not work correctly in cases where
-				//       radius(A) > radius(B) and circle A contains circle B.
-				laserseg_flip(seg);
-			}
-
-			assert(seg->width.a <= seg->width.b);
-
-			float xa = re(a);
-			float ya = im(a);
-			float xb = re(b);
-			float yb = im(b);
-
-			top_left.x     = min(    top_left.x, min(xa, xb));
-			top_left.y     = min(    top_left.y, min(ya, yb));
-			bottom_right.x = max(bottom_right.x, max(xa, xb));
-			bottom_right.y = max(bottom_right.y, max(ya, yb));
 		}
 
 		t0 = sample->t;
@@ -391,13 +371,65 @@ static int quantize_laser(Laser *l) {
 		assume(v0_abs2 != 0);
 		a = b;
 	}
+}
+
+attr_hot
+static int quantize_laser(Laser *l) {
+	// Break the laser curve into small line segments, simplify and cull them,
+	// compute the bounding box.
+
+	l->_internal.segments_ofs = lintern.segments.num_elements;
+	l->_internal.num_segments = 0;
+
+	LaserSamplingParams sp;
+
+	if(!laser_prepare_sampling_params(l, 0.5f, &sp)) {
+		l->_internal.bbox.top_left.as_cmplx = 0;
+		l->_internal.bbox.bottom_right.as_cmplx = 0;
+		return 0;
+	}
+
+	assert(sp.num_samples > 0);
+
+	float viewmargin = LASER_SDF_RANGE + l->width * 0.5f;
+	FloatRect viewbounds = { .extent = VIEWPORT_SIZE };
+	viewbounds.w += viewmargin * 2.0f;
+	viewbounds.h += viewmargin * 2.0f;
+	viewbounds.x -= viewmargin;
+	viewbounds.y -= viewmargin;
+
+	// Precomputed magic parameters for width calculation
+	LaserWidthParams wp;
+	calc_width_params(l, &wp);
+
+	// Sample all points now
+	fill_samples(&lasers.samples, &sp, l);
+
+	auto sample0 = dynarray_get_ptr(&lasers.samples, 0);
+
+	LaserBBox *bbox = &l->_internal.bbox;
+	bbox->top_left.as_cmplx = bbox->bottom_right.as_cmplx = sample0->p;
+
+	if(UNLIKELY(lasers.samples.num_elements == 1)) {
+		cmplxf p = sample0->p;
+
+		if(segment_is_visible(p, p, &viewbounds)) {
+			float w = calc_sample_width(&wp, sample0->t - sp.time_shift);
+			float t = sp.time_shift - sample0->t;
+
+			add_segment(l, &(LaserSegment) {
+				.pos   = { sample0->p, sample0->p },
+				.width = { w, w },
+				.time  = { t, t },
+			});
+		}
+	} else {
+		construct_segments(l, &sp, &wp, &viewbounds);
+	}
 
 	float aabb_margin = LASER_SDF_RANGE + l->width * 0.5f;
-	top_left.as_cmplx -= aabb_margin * (1.0f + I);
-	bottom_right.as_cmplx += aabb_margin * (1.0f + I);
-
-	l->_internal.bbox.top_left = top_left;
-	l->_internal.bbox.bottom_right = bottom_right;
+	bbox->top_left.as_cmplx -= aabb_margin * (1.0f + I);
+	bbox->bottom_right.as_cmplx += aabb_margin * (1.0f + I);
 
 	l->_internal.num_segments = lintern.segments.num_elements - l->_internal.segments_ofs;
 	return l->_internal.num_segments;
