@@ -31,6 +31,7 @@ glsl_files = [
     'fireparticles.vert.glsl',
     'fxaa.frag.glsl',
     'fxaa.vert.glsl',
+    'gamepad_circle.frag.glsl',
     'glitch.frag.glsl',
     'graph.frag.glsl',
     'healthbar.vert.glsl',

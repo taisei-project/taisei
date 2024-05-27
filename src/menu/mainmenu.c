@@ -288,6 +288,7 @@ void menu_preload(ResourceGroup *rg) {
 	NULL);
 
 	res_group_preload(rg, RES_SHADER_PROGRAM, RESF_DEFAULT,
+		"gamepad_circle",
 		"mainmenubg",
 		"sprite_circleclipped_indicator",
 	NULL);

@@ -136,5 +136,8 @@ void gamepad_get_player_analog_input(int *xaxis, int *yaxis);
 double gamepad_normalize_axis_value(int val);
 int gamepad_denormalize_axis_value(double val);
 
+double gamepad_get_normalized_deadzone(void);
+double gamepad_get_normalized_maxzone(void);
+
 #define GAMEPAD_AXIS_MAX_VALUE 32767
 #define GAMEPAD_AXIS_MIN_VALUE -32768
