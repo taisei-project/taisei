@@ -14,6 +14,7 @@
 #include "hirestime.h"
 #include "log.h"
 #include "transition.h"
+#include "util.h"
 #include "util/miscmath.h"
 #include "util/stringops.h"
 #include "vfs/public.h"
@@ -357,8 +358,12 @@ static int gamepad_axis2gameevt(GamepadAxis id) {
 	return -1;
 }
 
-static inline double gamepad_get_deadzone(void) {
+double gamepad_get_normalized_deadzone(void) {
 	return clamp(config_get_float(CONFIG_GAMEPAD_AXIS_DEADZONE), MIN_DEADZONE, MAX_DEADZONE);
+}
+
+double gamepad_get_normalized_maxzone(void) {
+	return clamp(config_get_float(CONFIG_GAMEPAD_AXIS_MAXZONE), 0, 1);
 }
 
 int gamepad_axis_value(GamepadAxis id) {
@@ -419,40 +424,6 @@ static void gamepad_update_game_axis(GamepadAxis axis, int oldval) {
 	}
 }
 
-static cmplx gamepad_restrict_analog_input(cmplx z) {
-	typedef enum {
-		UP = (1 << 0),
-		DOWN = (1 << 1),
-		RIGHT = (1 << 3),
-		LEFT = (1 << 2),
-	} MoveDir;
-
-	double x = re(z);
-	double y = im(z);
-
-	MoveDir move = 0;
-
-	if(x || y) {
-		int d = (int)rint(atan2(-y, x) / (M_PI/4));
-
-		switch(d) {
-			case  0:         move =    0 | RIGHT; break;
-			case -1:         move =   UP | RIGHT; break;
-			case -2:         move =   UP | 0;     break;
-			case -3:         move =   UP | LEFT;  break;
-			case -4: case 4: move =    0 | LEFT;  break;
-			case  3:         move = DOWN | LEFT;  break;
-			case  2:         move = DOWN | 0;     break;
-			case  1:         move = DOWN | RIGHT; break;
-		}
-	}
-
-	x = (bool)(move & RIGHT) - (bool)(move & LEFT);
-	y = (bool)(move & UP)    - (bool)(move & DOWN);
-
-	return CMPLX(x, y);
-}
-
 static double gamepad_apply_sensitivity(double p, double sens) {
 	if(sens == 0) {
 		return p;
@@ -475,6 +446,47 @@ static cmplx square_to_circle(cmplx z) {
 	return CMPLX(u, v);
 }
 
+static cmplx gamepad_snap_analog_direction(cmplx z) {
+	double snap = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_SNAP), 0, 1);
+
+	if(snap == 0) {
+		return z;
+	}
+
+	double diagonal_bias = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_SNAP_DIAG_BIAS), -1, 1);
+	double w_cardinal = 1 - diagonal_bias;
+	double w_diagonal = 1 + diagonal_bias;
+
+	#define D 0.7071067811865475
+	struct { cmplx v; double weight; } directions[] = {
+		{ CMPLX( 1,  0), w_cardinal },
+		{ CMPLX( 0,  1), w_cardinal },
+		{ CMPLX(-1,  0), w_cardinal },
+		{ CMPLX( 0, -1), w_cardinal },
+		{ CMPLX( D,  D), w_diagonal },
+		{ CMPLX( D, -D), w_diagonal },
+		{ CMPLX(-D, -D), w_diagonal },
+		{ CMPLX(-D,  D), w_diagonal },
+	};
+	#undef D
+
+	double m = cabs(z);
+	double thres = snap * M_PI/ARRAY_SIZE(directions);
+
+	for(int i = 0; i < ARRAY_SIZE(directions); ++i) {
+		cmplx q = directions[i].v;
+		double delta_angle = acos(cdot(q, z) / m);
+
+		if(delta_angle < thres * directions[i].weight) {
+			z = q * m;
+			break;
+		}
+
+	}
+
+	return z;
+}
+
 void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
 	int xraw = gamepad_player_axis_value(PLRAXIS_LR);
 	int yraw = gamepad_player_axis_value(PLRAXIS_UD);
@@ -482,8 +494,8 @@ void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
 	*xaxis = 0;
 	*yaxis = 0;
 
-	double deadzone = gamepad_get_deadzone();
-	double maxzone = config_get_float(CONFIG_GAMEPAD_AXIS_MAXZONE);
+	double deadzone = gamepad_get_normalized_deadzone();
+	double maxzone = gamepad_get_normalized_maxzone();
 
 	cmplx z = CMPLX(
 		gamepad_normalize_axis_value(xraw),
@@ -503,25 +515,32 @@ void gamepad_get_player_analog_input(int *xaxis, int *yaxis) {
 	double raw_abs = sqrt(raw_abs2);
 	assert(raw_abs > 0);
 
-	double new_abs = (raw_abs - deadzone) / (maxzone - deadzone);
-	new_abs = gamepad_apply_sensitivity(new_abs, config_get_float(CONFIG_GAMEPAD_AXIS_SENS));
-	z *= new_abs / raw_abs;
+	if(deadzone < maxzone) {
+		double new_abs;
+		if(raw_abs >= maxzone) {
+			new_abs = max(raw_abs, 1);
+		} else {
+			new_abs = (min(raw_abs, maxzone) - deadzone) / (maxzone - deadzone);
+			new_abs = gamepad_apply_sensitivity(new_abs, config_get_float(CONFIG_GAMEPAD_AXIS_SENS));
+		}
+		z *= new_abs / raw_abs;
+	} else {
+		z /= raw_abs;
+	}
 
 	z = CMPLX(
 		gamepad_apply_sensitivity(re(z), config_get_float(CONFIG_GAMEPAD_AXIS_LR_SENS)),
 		gamepad_apply_sensitivity(im(z), config_get_float(CONFIG_GAMEPAD_AXIS_UD_SENS))
 	);
 
-	if(!config_get_int(CONFIG_GAMEPAD_AXIS_FREE)) {
-		z = gamepad_restrict_analog_input(z);
-	}
+	z = gamepad_snap_analog_direction(z);
 
 	*xaxis = gamepad_denormalize_axis_value(re(z));
 	*yaxis = gamepad_denormalize_axis_value(im(z));
 }
 
 static int gamepad_axis_get_digital_value(int raw) {
-	double deadzone = gamepad_get_deadzone();
+	double deadzone = gamepad_get_normalized_deadzone();
 	deadzone = max(deadzone, 0.5);
 	int threshold = GAMEPAD_AXIS_MAX_VALUE * deadzone;
 

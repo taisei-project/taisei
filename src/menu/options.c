@@ -9,15 +9,22 @@
 #include "options.h"
 
 #include "common.h"
+#include "config.h"
+#include "events.h"
 #include "mainmenu.h"
 #include "menu.h"
 
 #include "audio/audio.h"
 #include "gamepad.h"
+#include "renderer/api.h"
+#include "resource/font.h"
 #include "util/graphics.h"
 #include "video.h"
 
-#include <stdio.h>
+#define OPTIONS_ACTIVE_X_OFFSET 20   /* FIXME hardcoded in draw_menu_list */
+#define OPTIONS_ITEM_HEIGHT     20   /* FIXME hardcoded in draw_menu_list */
+#define OPTIONS_X_MARGIN 100
+#define OPTIONS_Y_MARGIN 100
 
 typedef struct OptionBinding OptionBinding;
 
@@ -500,6 +507,11 @@ typedef struct OptionsMenuContext {
 	MenuData *submenu_fading;
 	ConfirmDialog *confirm_dialog;
 	float submenu_alpha;
+	void (*draw_overlay)(MenuData *m, struct OptionsMenuContext *ctx);
+	struct {
+		bool allowed;
+		bool active;
+	} gamepad_testmode;
 } OptionsMenuContext;
 
 static void destroy_options_menu(MenuData *m) {
@@ -879,12 +891,83 @@ static void destroy_options_menu_gamepad(MenuData *m) {
 	destroy_options_menu(m);
 }
 
+static inline GamepadButton options_gamepad_testing_button(void) {
+	return config_get_int(CONFIG_GAMEPAD_KEY_FOCUS);
+}
+
+static void draw_gamepad_options_overlay(MenuData *m, OptionsMenuContext *ctx) {
+	float csize = 86;
+
+	int x, y;
+	gamepad_get_player_analog_input(&x, &y);
+
+	cmplx in_processed = CMPLX(
+		gamepad_normalize_axis_value(x),
+		gamepad_normalize_axis_value(y));
+
+	cmplx in_raw = CMPLX(
+		gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_LR)),
+		gamepad_normalize_axis_value(gamepad_player_axis_value(PLRAXIS_UD)));
+
+	double deadzone = gamepad_get_normalized_deadzone();
+	double maxzone = gamepad_get_normalized_maxzone();
+
+	r_mat_mv_push();
+	r_mat_mv_translate(
+		SCREEN_W - OPTIONS_X_MARGIN,
+		OPTIONS_Y_MARGIN + 6.5f*OPTIONS_ITEM_HEIGHT,
+	0);
+	r_mat_mv_scale(csize, csize, 0);
+	r_mat_mv_translate(0.5f, 0.5f, 0);
+	float snap = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_SNAP), 0, 1);
+	float diagonal_bias = clamp(config_get_float(CONFIG_GAMEPAD_AXIS_SNAP_DIAG_BIAS), -1, 1);
+	float w_cardinal = 1.0f - diagonal_bias;
+	float w_diagonal = 1.0f + diagonal_bias;
+	float thres_card = (snap * (float)M_PI/8.0f) * w_cardinal;
+	float thres_diag = (snap * (float)M_PI/8.0f) * w_diagonal;
+	r_shader("gamepad_circle");
+	r_uniform_vec4("snap_angles_sincos", sinf(thres_card), cosf(thres_card), sinf(thres_diag), cosf(thres_diag));
+	r_uniform_vec2("deadzones", deadzone, maxzone);
+
+	if(ctx->gamepad_testmode.active) {
+		r_uniform_vec4("joy_pointers", re(in_processed), im(in_processed), re(in_raw), im(in_raw));
+		r_color4(1, 1, 1, 1);
+	} else {
+		r_uniform_vec4("joy_pointers", 69, 69, 69, 69);
+		r_color4(0.7, 0.7, 0.7, 0.7);
+	}
+
+	r_draw_quad();
+	r_mat_mv_pop();
+
+	char buf[128];
+	GamepadButton test_btn = options_gamepad_testing_button();
+
+	if(ctx->gamepad_testmode.active) {
+		snprintf(buf, sizeof(buf),
+			"Press any button on your gamepad to exit joystick testing mode");
+	} else {
+		snprintf(buf, sizeof(buf),
+			"Press %s on your gamepad to enter joystick testing mode",
+			gamepad_button_name(test_btn));
+	}
+
+	text_draw(buf, &(TextParams) {
+		.pos = { SCREEN_W/2.0f, SCREEN_H - OPTIONS_Y_MARGIN },
+		.align = ALIGN_CENTER,
+		.shader = "text_default",
+		.color = RGBA(0.7, 0.7, 0.7, 0.7),
+	});
+}
+
 static MenuData* create_options_menu_gamepad(MenuData *parent) {
 	MenuData *m = create_options_menu_base("Gamepad Options");
 	m->end = destroy_options_menu_gamepad;
 
 	OptionsMenuContext *ctx = m->context;
 	ctx->data = strdup(config_get_str(CONFIG_GAMEPAD_DEVICE));
+	ctx->draw_overlay = draw_gamepad_options_overlay;
+	ctx->gamepad_testmode.allowed = true;
 
 	OptionBinding *b;
 
@@ -903,14 +986,20 @@ static MenuData* create_options_menu_gamepad(MenuData *parent) {
 
 	add_menu_separator(m);
 
-	add_menu_entry(m, "Axes mode", do_nothing,
-		b = bind_option(CONFIG_GAMEPAD_AXIS_FREE, bind_common_onoff_get, bind_common_onoff_set)
-	);	bind_addvalue(b, "free");
-		bind_addvalue(b, "restricted");
-
 	add_menu_entry(m, "Remap square input into circular", do_nothing,
 		b = bind_option(CONFIG_GAMEPAD_AXIS_SQUARECIRCLE, bind_common_onoff_get, bind_gamepad_set)
 	);	bind_onoff(b);
+
+	add_menu_separator(m);
+
+	add_menu_entry(m, "Direction snap factor", do_nothing,
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP, 0, 1, 0.05)
+	);
+
+	add_menu_entry(m, "Diagonal bias", do_nothing,
+		b = bind_scale(CONFIG_GAMEPAD_AXIS_SNAP_DIAG_BIAS, -1, 1, 0.05)
+	);	b->pad++;
+
 
 	add_menu_separator(m);
 
@@ -1140,7 +1229,7 @@ void draw_options_menu_bg(MenuData* menu) {
 static void update_options_menu(MenuData *menu) {
 	menu->drawdata[0] += ((SCREEN_W/2 - 100) - menu->drawdata[0])/10.0;
 	menu->drawdata[1] += ((SCREEN_W - 200) * 1.75 - menu->drawdata[1])/10.0;
-	menu->drawdata[2] += (20*menu->cursor - menu->drawdata[2])/10.0;
+	menu->drawdata[2] += (OPTIONS_ITEM_HEIGHT*menu->cursor - menu->drawdata[2])/10.0;
 
 	animate_menu_list_entries(menu);
 
@@ -1185,12 +1274,13 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 	}
 
 	text_draw(e->name, &(TextParams) {
-		.pos = { (1 + (bind ? bind->pad : 0)) * 20 - e->drawdata, 20*i },
+		.pos = { (1 + (bind ? bind->pad : 0)) * OPTIONS_ACTIVE_X_OFFSET - e->drawdata, OPTIONS_ITEM_HEIGHT*i },
 		.color = &clr,
 	});
 
 	if(bind) {
-		int j, origin = SCREEN_W - 220;
+		float margin = OPTIONS_X_MARGIN * 2 + OPTIONS_ACTIVE_X_OFFSET;
+		float origin = SCREEN_W - margin;
 
 		switch(bind->type) {
 			case BT_IntValue: {
@@ -1204,7 +1294,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						val,
 						ALIGN_RIGHT,
 						origin,
-						20*i,
+						OPTIONS_ITEM_HEIGHT*i,
 						fnt_int,
 						fnt_fract,
 						&clr,
@@ -1212,7 +1302,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						false
 					);
 				} else if(bind->values) {
-					for(j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
+					for(int j = bind->displaysingle? val : bind->valrange_max; (j+1) && (!bind->displaysingle || j == val); --j) {
 						if(j != bind->valrange_max && !bind->displaysingle) {
 							origin -= text_width(res_font("standard"), bind->values[j+1], 0) + 5;
 						}
@@ -1224,7 +1314,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 						}
 
 						text_draw(bind->values[j], &(TextParams) {
-							.pos = { origin, 20*i },
+							.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 							.align = ALIGN_RIGHT,
 							.color = &clr,
 						});
@@ -1245,7 +1335,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 			case BT_KeyBinding: {
 				if(bind->blockinput) {
 					text_draw("Press a key to assign, ESC to cancel", &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = RGBA(0.5, 1, 0.5, 1),
 					});
@@ -1257,7 +1347,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					}
 
 					text_draw(txt, &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
@@ -1294,10 +1384,10 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					}
 
 					text_draw(txt, &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
-						.max_width = (SCREEN_W - 220) / 2,
+						.max_width = (SCREEN_W - margin) / 2,
 					});
 				}
 
@@ -1319,10 +1409,10 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				char buf[64];
 				snprintf(buf, sizeof(buf), "#%i: %s", bind->selected + 1, video_display_name(bind->selected));
 				text_draw(buf, &(TextParams) {
-					.pos = { origin, 20*i },
+					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
 					.color = &clr,
-					.max_width = (SCREEN_W - 220) / 2,
+					.max_width = (SCREEN_W - margin) / 2,
 				});
 				break;
 			}
@@ -1336,7 +1426,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 											: "Press a button to assign, Back to cancel";
 
 					text_draw(text, &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = RGBA(0.5, 1, 0.5, 1),
 					});
@@ -1344,13 +1434,13 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					int id = config_get_int(bind->configentry);
 					const char *name = (is_axis ? gamepad_axis_name(id) : gamepad_button_name(id));
 					text_draw(name, &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
 				} else {
 					text_draw("Unbound", &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
@@ -1362,14 +1452,14 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				if(bind->blockinput) {
 					if(*bind->strvalue) {
 						text_draw(bind->strvalue, &(TextParams) {
-							.pos = { origin, 20*i },
+							.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 							.align = ALIGN_RIGHT,
 							.color = RGBA(0.5, 1, 0.5, 1.0),
 						});
 					}
 				} else {
 					text_draw(config_get_str(bind->configentry), &(TextParams) {
-						.pos = { origin, 20*i },
+						.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 						.align = ALIGN_RIGHT,
 						.color = &clr,
 					});
@@ -1391,7 +1481,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 
 				snprintf(tmp, sizeof(tmp), "%dx%d", w, h);
 				text_draw(tmp, &(TextParams) {
-					.pos = { origin, 20*i },
+					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
 					.color = &clr,
 				});
@@ -1403,7 +1493,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 				char tmp[32];
 				snprintf(tmp, sizeof(tmp), "%gx  %dx%d", video_get_scaling_factor(), fbsize.w, fbsize.h);
 				text_draw(tmp, &(TextParams) {
-					.pos = { origin, 20*i },
+					.pos = { origin, OPTIONS_ITEM_HEIGHT*i },
 					.align = ALIGN_RIGHT,
 					.color = &clr,
 				});
@@ -1427,7 +1517,7 @@ static void options_draw_item(MenuEntry *e, int i, int cnt, void *ctx) {
 					strcpy(tmp, "0%");
 
 				r_mat_mv_push();
-				r_mat_mv_translate(origin - (w+cw) * 0.5, 20 * i, 0);
+				r_mat_mv_translate(origin - (w+cw) * 0.5, OPTIONS_ITEM_HEIGHT * i, 0);
 				text_draw(tmp, &(TextParams) {
 					.pos = { -((w+cw) * 0.5 + 10), 0 },
 					.align = ALIGN_RIGHT,
@@ -1457,8 +1547,14 @@ static void draw_options_menu(MenuData *menu) {
 	r_state_push();
 	draw_options_menu_bg(menu);
 	draw_menu_title(menu, ctx->title);
-	draw_menu_list(menu, 100, 100, options_draw_item, SCREEN_H * 1.1, menu);
+	draw_menu_list(menu, OPTIONS_X_MARGIN, OPTIONS_Y_MARGIN, options_draw_item, SCREEN_H * 1.1, menu);
 	r_state_pop();
+
+	if(ctx->draw_overlay) {
+		r_state_push();
+		ctx->draw_overlay(menu, ctx);
+		r_state_pop();
+	}
 
 	if(ctx->submenu_fading) {
 		r_state_push();
@@ -1707,8 +1803,20 @@ static bool options_text_input_handler(SDL_Event *event, void *arg) {
 
 static bool options_input_handler(SDL_Event *event, void *arg) {
 	MenuData *menu = arg;
+	OptionsMenuContext *ctx = menu->context;
 	OptionBinding *bind = bind_get(menu, menu->cursor);
 	TaiseiEvent type = TAISEI_EVENT(event->type);
+
+	switch(type) {
+		case TE_MENU_CURSOR_UP:
+		case TE_MENU_CURSOR_DOWN:
+		case TE_MENU_CURSOR_LEFT:
+		case TE_MENU_CURSOR_RIGHT:
+			if((intptr_t)event->user.data1 == INDEV_GAMEPAD && ctx->gamepad_testmode.active) {
+				return false;
+			}
+		default: break;
+	}
 
 	switch(type) {
 		case TE_MENU_CURSOR_UP:
@@ -1782,6 +1890,26 @@ static bool options_input_handler(SDL_Event *event, void *arg) {
 			play_sfx_ui("hit");
 			menu->selected = -1;
 			close_menu(menu);
+		break;
+
+		case TE_GAMEPAD_BUTTON_DOWN:
+			if(ctx->gamepad_testmode.allowed) {
+				if(ctx->gamepad_testmode.active) {
+					switch(event->user.code) {
+						case GAMEPAD_BUTTON_ANALOG_STICK_DOWN:
+						case GAMEPAD_BUTTON_ANALOG_STICK_LEFT:
+						case GAMEPAD_BUTTON_ANALOG_STICK_RIGHT:
+						case GAMEPAD_BUTTON_ANALOG_STICK_UP:
+							break;
+						default:
+							ctx->gamepad_testmode.active = false;
+					}
+				} else {
+					if(event->user.code == options_gamepad_testing_button()) {
+						ctx->gamepad_testmode.active = true;
+					}
+				}
+			}
 		break;
 
 		default: break;

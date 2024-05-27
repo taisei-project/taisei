@@ -123,13 +123,14 @@
 	CONFIGDEF_STRING    (GAMEPAD_DEVICE,            "gamepad_device",                       "any") \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_UD,           "gamepad_axis_ud",                      1) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_LR,           "gamepad_axis_lr",                      0) \
-	CONFIGDEF_INT       (GAMEPAD_AXIS_FREE,         "gamepad_axis_free",                    1) \
 	CONFIGDEF_INT       (GAMEPAD_AXIS_SQUARECIRCLE, "gamepad_axis_square_to_circle",        0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_SENS,         "gamepad_axis_sensitivity",             0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_UD_SENS,      "gamepad_axis_ud_sensitivity",          0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_LR_SENS,      "gamepad_axis_lr_sensitivity",          0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_DEADZONE,     "gamepad_axis_deadzone",                0.1) \
 	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_MAXZONE,      "gamepad_axis_maxzone",                 0.9) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_SNAP,         "gamepad_axis_snap",                    0.5) \
+	CONFIGDEF_FLOAT     (GAMEPAD_AXIS_SNAP_DIAG_BIAS, "gamepad_axis_snap_diagonal_bias",    0.0) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_DELAY,   "gamepad_button_repeat_delay",          CONFIG_GAMEPAD_BTNREPEAT_DELAY_DEFAULT) \
 	CONFIGDEF_FLOAT     (GAMEPAD_BTNREPEAT_INTERVAL,"gamepad_button_repeat_interval",       CONFIG_GAMEPAD_BTNREPEAT_INTERVAL_DEFAULT) \
 	GPKEYDEFS \
