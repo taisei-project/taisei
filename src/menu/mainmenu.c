@@ -127,10 +127,11 @@ MenuData* create_main_menu(void) {
 	add_menu_entry(m, "Replays", menu_action_enter_replayview, NULL);
 	add_menu_entry(m, "Media Room", menu_action_enter_media, NULL);
 	add_menu_entry(m, "Options", menu_action_enter_options, NULL);
-#ifndef __EMSCRIPTEN__
-	add_menu_entry(m, "Quit", global.is_kiosk_mode ? NULL : menu_action_close, NULL)->transition = TransFadeBlack;
-	m->input = main_menu_input;
-#endif
+
+	if(!taisei_is_quit_hidden()) {
+		add_menu_entry(m, "Quit", menu_action_close, NULL)->transition = TransFadeBlack;
+		m->input = main_menu_input;
+	}
 
 	stage_practice_entry = dynarray_get_ptr(&m->entries, stage_practice_idx);
 	spell_practice_entry = dynarray_get_ptr(&m->entries, spell_practice_idx);
