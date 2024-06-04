@@ -68,8 +68,8 @@
 	CONFIGDEF_GPKEYBINDING(KEY_RIGHT,           "gamepad_key_right",    GAMEPAD_BUTTON_DPAD_RIGHT) \
 	CONFIGDEF_GPKEYBINDING(KEY_FOCUS,           "gamepad_key_focus",    GAMEPAD_BUTTON_X) \
 	CONFIGDEF_GPKEYBINDING(KEY_SHOT,            "gamepad_key_shot",     GAMEPAD_BUTTON_A) \
-	CONFIGDEF_GPKEYBINDING(KEY_BOMB,            "gamepad_key_bomb",     GAMEPAD_BUTTON_Y) \
-	CONFIGDEF_GPKEYBINDING(KEY_SPECIAL,         "gamepad_key_special",  GAMEPAD_BUTTON_SHOULDER_RIGHT) \
+	CONFIGDEF_GPKEYBINDING(KEY_BOMB,            "gamepad_key_bomb",     GAMEPAD_BUTTON_TRIGGER_LEFT) \
+	CONFIGDEF_GPKEYBINDING(KEY_SPECIAL,         "gamepad_key_special",  GAMEPAD_BUTTON_TRIGGER_RIGHT) \
 	CONFIGDEF_GPKEYBINDING(KEY_SKIP,            "gamepad_key_skip",     GAMEPAD_BUTTON_B) \
 
 
